@@ -12,6 +12,19 @@ class MetricsSeriesList: ObservableObject, RandomAccessCollection, RangeReplacea
 
 	@Published var series: [MetricsChartSeries]
 
+	/// Namespace under which each series' `visible` flag is persisted. When `nil`, visibility is
+	/// not saved (the default for the collection-conformance initializers).
+	private let persistenceKey: String?
+	/// Backing store for persisted visibility. Defaults to `.standard`; tests inject an isolated suite.
+	private let store: UserDefaults
+
+	init(persistenceKey: String? = nil, series: [MetricsChartSeries], store: UserDefaults = .standard) {
+		self.series = series
+		self.persistenceKey = persistenceKey
+		self.store = store
+		applyPersistedVisibility()
+	}
+
 	var visible: [MetricsChartSeries] {
 		return series.filter { $0.visible }
 	}
@@ -20,7 +33,22 @@ class MetricsSeriesList: ObservableObject, RandomAccessCollection, RangeReplacea
 		if series.contains(aSeries) {
 			self.objectWillChange.send()
 			aSeries.visible.toggle()
+			persistVisibility()
 		}
+	}
+
+	private var storageKey: String? {
+		persistenceKey.map { "metricsSeriesVisibility.\($0)" }
+	}
+
+	private func applyPersistedVisibility() {
+		MetricsVisibilityPersistence.restore(series, key: storageKey, store: store,
+			id: { $0.id }, setVisible: { $0.visible = $1 })
+	}
+
+	private func persistVisibility() {
+		MetricsVisibilityPersistence.persist(series, key: storageKey, store: store,
+			id: { $0.id }, isVisible: { $0.visible })
 	}
 
 	func foregroundStyle<T>(forName: String, chartRange: ClosedRange<T>? = nil) -> AnyShapeStyle? where T: BinaryFloatingPoint {
@@ -122,9 +150,15 @@ class MetricsSeriesList: ObservableObject, RandomAccessCollection, RangeReplacea
 	typealias Element = MetricsChartSeries
 	typealias SubSequence = ArraySlice<Element>
 
-	required init() { series = [] }
+	required init() {
+		series = []
+		persistenceKey = nil
+		store = .standard
+	}
 	required init<S: Sequence>(_ series: S) where S.Element == Element {
 		self.series = Array(series)
+		persistenceKey = nil
+		store = .standard
 	}
 
 	var startIndex: Int { series.startIndex }

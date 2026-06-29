@@ -1,5 +1,9 @@
 # Implementation Plan: Docs Release Versioning
 
+> **⚠️ Superseded (2026-06):** The pre-release banner and `--beta` flag described
+> here were removed entirely. See the note at the top of [spec.md](spec.md). Retained
+> as a historical design record.
+
 **Branch**: `013-docs-release-versioning` | **Date**: 2026-06-05 | **Spec**: [spec.md](spec.md)  
 **Input**: Feature specification from `specs/013-docs-release-versioning/spec.md`
 

@@ -89,7 +89,7 @@ jobs:
               '',
               'If this PR does **not** require a doc update (e.g., internal refactor, bug fix, test change), add the **`skip-docs-check`** label to dismiss this warning.',
               '',
-              'After updating `docs/`, re-run `bash scripts/build-docs.sh --output Meshtastic/Resources/docs --beta` locally and commit the regenerated HTML bundle.',
+              'After updating `docs/`, re-run `bash scripts/build-docs.sh --output Meshtastic/Resources/docs` locally and commit the regenerated HTML bundle.',
             ].join('\n');
 
             // Find and update an existing bot comment, or create a new one

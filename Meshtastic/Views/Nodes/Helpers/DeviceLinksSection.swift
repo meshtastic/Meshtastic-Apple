@@ -25,13 +25,7 @@ struct DeviceLinksSection: View {
 	/// its `targets` contain this device's `platformioTarget`.
 	private var matchingLinks: [DeviceLinkEntity] {
 		let userRegion = Locale.current.region?.identifier ?? ""
-		return allLinks.filter { link in
-			guard link.targets.contains(platformioTarget) else { return false }
-			// Marketplace links only show where that retailer ships
-			// (nil regions = not a marketplace, empty = worldwide).
-			guard link.isMarketplace, let regions = link.regions, !regions.isEmpty else { return true }
-			return regions.contains(userRegion)
-		}
+		return allLinks.filter { $0.isVisible(forTarget: platformioTarget, userRegion: userRegion) }
 		.sorted { lhs, rhs in
 			// Vendor links first, marketplace links after; alphabetical within each group.
 			if lhs.isMarketplace != rhs.isMarketplace { return !lhs.isMarketplace }

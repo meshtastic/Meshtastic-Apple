@@ -58,6 +58,14 @@ final class DiscoveryScanEngine {
 	// MARK: Internal State
 
 	private var homePreset: ModemPresets?
+	/// Full snapshot of the LoRa config as it was before the scan started, so every field
+	/// (frequency slot, overrides, MQTT flags, …) can be restored exactly afterward (#1952).
+	private var homeLoRaConfig: Config.LoRaConfig?
+	/// Snapshot of the user's primary channel, captured only when the scan temporarily switches its
+	/// key to the default so the radio can decode the public mesh. Restored verbatim when the scan
+	/// finishes. Channel changes don't reboot the radio, so this is applied before — and restored
+	/// after — the LoRa preset changes, while the connection is still up.
+	private var homePrimaryChannel: Channel?
 	private var presetQueue: [ModemPresets] = []
 	private var currentPresetResult: DiscoveryPresetResultEntity?
 	private var dwellTask: Task<Void, Never>?
@@ -82,6 +90,27 @@ final class DiscoveryScanEngine {
 		let airUtilTx: Double
 	}
 	private var deviceMetricsHistory: [Int64: [DeviceMetricsEntry]] = [:]
+
+	/// When the current preset's dwell began. Local-stats telemetry from the connected node that
+	/// arrives at/after this time reflects the preset's frequency, so it's used to window the
+	/// noise-floor / channel-utilization samples captured for the preset result.
+	private var presetDwellStart: Date?
+
+	/// Set for a "current preset" scan: seed the preset's results from everything already in
+	/// SwiftData at dwell start (so the run reflects all accumulated data, not just packets that
+	/// arrive during this dwell) and consider the full local-stats history for RF metrics.
+	private var seedFromExistingData = false
+
+	/// Short dwell used by `startCurrentPresetScan()` — the report is built from seeded history,
+	/// so it only needs a brief window to fold in any live packets before finalizing.
+	static let currentPresetScanDwell: TimeInterval = 60
+
+	/// The well-known public/default channel key (single byte `0x01`, i.e. "AQ=="). A primary
+	/// channel using this key — or no key at all — can decode the public mesh.
+	private static let defaultChannelKey = Data([0x01])
+
+	/// Paces the animated reveal of seeded nodes onto the map during a current-preset scan.
+	private var seedTask: Task<Void, Never>?
 
 	var isScanning: Bool {
 		switch currentState {
@@ -126,9 +155,20 @@ final class DiscoveryScanEngine {
 		// Record home preset from current LoRa config
 		let connectedNodeNum = Int64(UserDefaults.preferredPeripheralNum)
 		let connectedNode = getNodeInfo(id: connectedNodeNum, context: context)
-		if let loraConfig = connectedNode?.loRaConfig {
+		if let loraConfig = connectedNode?.loRaConfig, !loraConfig.isDeleted {
 			homePreset = ModemPresets(rawValue: Int(loraConfig.modemPreset))
+			// Snapshot the complete config so restore puts back the frequency slot and all
+			// other LoRa settings exactly — not just the modem preset (#1952). Each scan preset
+			// is sent on the default frequency slot (see sendPresetChange); this snapshot is what
+			// returns the user to their real slot when the scan finishes.
+			homeLoRaConfig = loRaConfigProto(from: loraConfig, presetOverride: nil)
 		}
+
+		// If the primary channel isn't the default public channel, temporarily switch it (key + name)
+		// so the radio can decode the public mesh and derive its frequency during the scan. Channel
+		// changes don't reboot the radio, so this is sent now (while connected) ahead of any preset
+		// change, and restored before teardown.
+		await prepareDefaultPublicChannel(connectedNode: connectedNode)
 
 		// Create session
 		let newSession = DiscoverySessionEntity()
@@ -187,6 +227,20 @@ final class DiscoveryScanEngine {
 		currentPresetResult = presetResult
 		modelContext?.insert(presetResult)
 
+		// Start the local-stats window for this preset. The radio is offline during the config
+		// change/reboot, so no stale samples land before the new frequency is active.
+		presetDwellStart = Date()
+
+		// "Current preset" scan: fold in everything already collected for this preset so the run
+		// reflects accumulated history, and widen the local-stats window to the full history. The
+		// seeded nodes are revealed onto the map progressively over the dwell (accelerated
+		// playback) rather than all at once.
+		if seedFromExistingData {
+			presetDwellStart = nil
+			seedTask?.cancel()
+			seedTask = Task { [weak self] in await self?.revealSeededNodesFromDatabase() }
+		}
+
 		Logger.discovery.info("📡 [Discovery] Shifting to preset: \(nextPreset.name)")
 
 		// Check if already on this preset (skip config change)
@@ -206,6 +260,41 @@ final class DiscoveryScanEngine {
 		await sendPresetChange(nextPreset)
 	}
 
+	// MARK: - LoRa Config Helper
+
+	/// Builds a complete `Config.LoRaConfig` proto from the stored entity, preserving every
+	/// field. `saveLoRaConfig` replaces the device's entire LoRa config, so any field left at
+	/// its proto default is written as 0/false on the radio — e.g. `channelNum` (frequency
+	/// slot) → 0, which silently moves the radio off the user's frequency and wipes their
+	/// settings. The discovery scan only needs to change the modem preset, so everything else
+	/// must be carried through (#1952).
+	/// - Parameter presetOverride: when set, replaces the modem preset (used while shifting
+	///   presets); when `nil`, the entity's own preset is used (used to snapshot/restore home).
+	///
+	/// Internal (not private) so the field-preservation guarantee can be unit-tested.
+	func loRaConfigProto(from entity: LoRaConfigEntity, presetOverride: ModemPresets?) -> Config.LoRaConfig {
+		var config = Config.LoRaConfig()
+		if let resolvedPreset = presetOverride ?? ModemPresets(rawValue: Int(entity.modemPreset)) {
+			config.modemPreset = resolvedPreset.protoEnumValue()
+		}
+		config.region = Config.LoRaConfig.RegionCode(rawValue: Int(entity.regionCode)) ?? .unset
+		config.usePreset = entity.usePreset
+		config.hopLimit = UInt32(entity.hopLimit)
+		config.txEnabled = entity.txEnabled
+		config.txPower = entity.txPower
+		config.channelNum = UInt32(entity.channelNum)
+		config.bandwidth = UInt32(entity.bandwidth)
+		config.codingRate = UInt32(entity.codingRate)
+		config.spreadFactor = UInt32(entity.spreadFactor)
+		config.frequencyOffset = entity.frequencyOffset
+		config.overrideFrequency = entity.overrideFrequency
+		config.overrideDutyCycle = entity.overrideDutyCycle
+		config.sx126XRxBoostedGain = entity.sx126xRxBoostedGain
+		config.ignoreMqtt = entity.ignoreMqtt
+		config.configOkToMqtt = entity.okToMqtt
+		return config
+	}
+
 	// MARK: - Send Preset Change
 
 	private func sendPresetChange(_ preset: ModemPresets) async {
@@ -219,16 +308,26 @@ final class DiscoveryScanEngine {
 			return
 		}
 
-		var loraConfig = Config.LoRaConfig()
-		loraConfig.modemPreset = preset.protoEnumValue()
-
-		// Copy existing config values if available
+		// Carry through EVERY existing LoRa field, changing only the modem preset. The device
+		// applies the whole config, so building a partial one zeroes the omitted fields —
+		// notably bandwidth/codingRate/spreadFactor and the MQTT/override flags — which would
+		// silently wipe the user's settings (#1952).
+		//
+		// The one field we deliberately DON'T carry through is the frequency slot: the scan must
+		// run on the default slot (0) so the firmware auto-derives each preset's frequency from
+		// the primary channel. A user's custom frequency slot can't be translated across presets,
+		// so scanning on it would listen on the wrong frequency and find nothing. The user's real
+		// slot is snapshotted in `homeLoRaConfig` and restored verbatim when the scan finishes.
+		let loraConfig: Config.LoRaConfig
 		if let existingConfig = connectedNode.loRaConfig, !existingConfig.isDeleted {
-			loraConfig.region = Config.LoRaConfig.RegionCode(rawValue: Int(existingConfig.regionCode)) ?? .unset
-			loraConfig.hopLimit = UInt32(existingConfig.hopLimit)
-			loraConfig.txEnabled = existingConfig.txEnabled
-			loraConfig.txPower = existingConfig.txPower
-			loraConfig.usePreset = existingConfig.usePreset
+			var scanConfig = loRaConfigProto(from: existingConfig, presetOverride: preset)
+			scanConfig.channelNum = 0
+			loraConfig = scanConfig
+		} else {
+			var minimal = Config.LoRaConfig()
+			minimal.modemPreset = preset.protoEnumValue()
+			loraConfig = minimal
+			Logger.discovery.warning("📡 [Discovery] No existing LoRa config to copy — sending preset-only config")
 		}
 
 		do {
@@ -307,17 +406,61 @@ final class DiscoveryScanEngine {
 		}
 	}
 
+	/// Seconds to wait for the device to reboot before we stop requiring an observed BLE
+	/// disconnect (see `awaitingDisconnect`). A reboot+reconnect normally completes within this.
+	private static let reconnectGraceSeconds = 30
+	/// Hard cap on the whole reconnect wait before giving up.
+	private static let reconnectTimeoutSeconds = 120
+
+	/// Once the post-preset-change reconnect window elapses, decide where a still-`.reconnecting`
+	/// scan should go: connected & subscribed → resume dwelling (covers a missed disconnect edge
+	/// or a recovered link); otherwise the link is genuinely down → pause. Pure for testability.
+	nonisolated static func reconnectTimeoutResolution(isConnected: Bool, isSubscribed: Bool) -> DiscoveryScanState {
+		(isConnected && isSubscribed) ? .dwell : .paused
+	}
+
 	private func startReconnectTimeout() {
 		reconnectTimeoutTask?.cancel()
 		reconnectTimeoutTask = Task { [weak self] in
-			do {
-				try await Task.sleep(for: .seconds(120))
-				guard let self, self.currentState == .reconnecting else { return }
-				Logger.discovery.warning("📡 [Discovery] Reconnect timeout (120s) → Paused")
-				self.transitionTo(.paused)
-			} catch {
-				// Cancelled — expected when reconnection succeeds
+			// Grace period: give the device time to reboot and BLE to cycle. If we never observe
+			// the disconnect edge (missed event, or a reconnect faster than the observer can see
+			// it), stop requiring it — otherwise the scan hangs on this preset forever and never
+			// rotates (#1952 item 3).
+			do { try await Task.sleep(for: .seconds(Self.reconnectGraceSeconds)) } catch { return }
+			guard let self, self.currentState == .reconnecting else { return }
+
+			// After the grace period we no longer require an observed disconnect edge.
+			if self.awaitingDisconnect {
+				self.awaitingDisconnect = false
+				Logger.discovery.warning("📡 [Discovery] No disconnect observed \(Self.reconnectGraceSeconds)s after preset change — no longer requiring one")
 			}
+			// If the device is back — whether or not we ever saw the disconnect, and whether or
+			// not the observer's subscribe edge fired — proceed to dwell now rather than waiting
+			// out the full timeout. (Checked regardless of awaitingDisconnect: the observer
+			// clears it on the disconnect edge, so gating this on it would skip the fast path in
+			// exactly the missed-subscribe-edge case it exists to handle.)
+			let connected = self.accessoryManager?.isConnected ?? false
+			let subscribed = self.accessoryManager.map { $0.state == .subscribed } ?? false
+			if connected && subscribed {
+				Logger.discovery.info("📡 [Discovery] Connected & subscribed after grace → Dwell")
+				self.transitionTo(.dwell)
+				self.startDwellTimer()
+				return
+			}
+
+			// Still not back: wait out the remaining window. With `awaitingDisconnect` now clear,
+			// the connection observer will advance us to dwell the instant we reconnect. If the
+			// window fully elapses, recover if we're somehow connected, else pause.
+			let remaining = Self.reconnectTimeoutSeconds - Self.reconnectGraceSeconds
+			do { try await Task.sleep(for: .seconds(remaining)) } catch { return }
+			guard self.currentState == .reconnecting else { return }
+			let resolution = Self.reconnectTimeoutResolution(
+				isConnected: self.accessoryManager?.isConnected ?? false,
+				isSubscribed: self.accessoryManager.map { $0.state == .subscribed } ?? false
+			)
+			Logger.discovery.warning("📡 [Discovery] Reconnect window elapsed (\(Self.reconnectTimeoutSeconds)s) → \(resolution)")
+			self.transitionTo(resolution)
+			if resolution == .dwell { self.startDwellTimer() }
 		}
 	}
 
@@ -374,6 +517,9 @@ final class DiscoveryScanEngine {
 
 			guard !Task.isCancelled else { return }
 			Logger.discovery.info("📡 [Discovery] Dwell complete for preset: \(self.activePreset?.name ?? "unknown")")
+
+			// Make sure the animated seed reveal has finished so every node is counted.
+			await self.seedTask?.value
 
 			// Finalize preset result
 			self.finalizePresetResult()
@@ -557,9 +703,10 @@ final class DiscoveryScanEngine {
 		Logger.discovery.info("📡 [Discovery] Stopping scan...")
 		dwellTask?.cancel()
 		reconnectTimeoutTask?.cancel()
+		seedTask?.cancel()
 		transitionTo(.restoring)
 
-		// Save partial results
+		// Save partial results (whatever was revealed so far)
 		finalizePresetResult()
 		session?.completionStatus = "stopped"
 
@@ -575,8 +722,16 @@ extension DiscoveryScanEngine {
 	// MARK: - Restore Home Preset
 
 	func restoreHomePreset() async {
-		guard let homePreset, let accessoryManager, let context = modelContext else {
-			Logger.discovery.info("📡 [Discovery] No home preset to restore → Idle")
+		// Restore the primary channel FIRST, while the link is up — channel changes don't reboot,
+		// so this must happen before the LoRa restore below (which does reboot the radio). No-op
+		// unless the scan switched the key to the default.
+		await restorePrimaryChannel()
+
+		// Restore the full config snapshot captured at scan start — preset, frequency slot,
+		// overrides and all — rather than rebuilding a partial config that would drop the
+		// user's frequency slot and other settings (#1952).
+		guard let homeLoRaConfig, let accessoryManager, let context = modelContext else {
+			Logger.discovery.info("📡 [Discovery] No home config to restore → Idle")
 			cleanupAndIdle()
 			return
 		}
@@ -585,27 +740,16 @@ extension DiscoveryScanEngine {
 		guard let connectedNode = getNodeInfo(id: connectedNodeNum, context: context),
 			  let fromUser = connectedNode.user,
 			  let toUser = connectedNode.user else {
-			Logger.discovery.error("📡 [Discovery] Cannot restore home preset — no connected node")
+			Logger.discovery.error("📡 [Discovery] Cannot restore home config — no connected node")
 			cleanupAndIdle()
 			return
 		}
 
-		var loraConfig = Config.LoRaConfig()
-		loraConfig.modemPreset = homePreset.protoEnumValue()
-
-		if let existingConfig = connectedNode.loRaConfig, !existingConfig.isDeleted {
-			loraConfig.region = Config.LoRaConfig.RegionCode(rawValue: Int(existingConfig.regionCode)) ?? .unset
-			loraConfig.hopLimit = UInt32(existingConfig.hopLimit)
-			loraConfig.txEnabled = existingConfig.txEnabled
-			loraConfig.txPower = existingConfig.txPower
-			loraConfig.usePreset = existingConfig.usePreset
-		}
-
 		do {
-			_ = try await accessoryManager.saveLoRaConfig(config: loraConfig, fromUser: fromUser, toUser: toUser)
-			Logger.discovery.info("📡 [Discovery] Restored home preset: \(homePreset.name)")
+			_ = try await accessoryManager.saveLoRaConfig(config: homeLoRaConfig, fromUser: fromUser, toUser: toUser)
+			Logger.discovery.info("📡 [Discovery] Restored home LoRa config — preset: \(self.homePreset?.name ?? "unknown"), frequency slot: \(homeLoRaConfig.channelNum)")
 		} catch {
-			Logger.discovery.error("📡 [Discovery] Failed to restore home preset: \(error.localizedDescription)")
+			Logger.discovery.error("📡 [Discovery] Failed to restore home config: \(error.localizedDescription)")
 		}
 
 		cleanupAndIdle()
@@ -710,8 +854,17 @@ extension DiscoveryScanEngine {
 		connectionObserver?.cancel()
 		accessoryManager?.discoveryScanEngine = nil
 		deviceMetricsHistory = [:]
+		presetDwellStart = nil
+		seedFromExistingData = false
+		seedTask?.cancel()
+		seedTask = nil
 		awaitingDisconnect = false
 		interruptedDwellRemaining = nil
+		// Clear both home snapshots together so a later scan that starts without a readable
+		// LoRa config doesn't inherit a stale preset/config from a previous scan (#1952).
+		homePreset = nil
+		homeLoRaConfig = nil
+		homePrimaryChannel = nil
 		transitionTo(.idle)
 	}
 
@@ -726,31 +879,49 @@ extension DiscoveryScanEngine {
 			return
 		}
 
-		// Read most recent local stats (metricsType == 4) persisted by MeshPackets
-		let localStatsTelemetry = connectedNode.telemetries
+		// All local stats (metricsType == 4) persisted by MeshPackets, oldest → newest.
+		let allLocalStats = connectedNode.telemetries
 			.filter { $0.metricsType == 4 }
 			.sorted { ($0.time ?? .distantPast) < ($1.time ?? .distantPast) }
 
-		guard let latest = localStatsTelemetry.last else {
+		// Prefer the samples that arrived during THIS preset's dwell — they reflect the preset's
+		// frequency. Fall back to the single most recent sample if none landed in the window.
+		let windowStart = presetDwellStart ?? .distantPast
+		let windowed = allLocalStats.filter { ($0.time ?? .distantPast) >= windowStart }
+		let samples = windowed.isEmpty ? Array(allLocalStats.suffix(1)) : windowed
+
+		guard let latest = samples.last else {
 			Logger.discovery.info("📡 [Discovery] No local stats telemetry found for connected node")
 			return
 		}
 
-		// Channel utilization and airtime
-		if let channelUtil = latest.channelUtilization {
-			result.averageChannelUtilization = Double(channelUtil)
+		// Channel utilization and airtime — average the point-in-time readings over the window.
+		let channelUtils = samples.compactMap { $0.channelUtilization.map(Double.init) }
+		if !channelUtils.isEmpty {
+			result.averageChannelUtilization = channelUtils.reduce(0, +) / Double(channelUtils.count)
 		}
-		if let airtime = latest.airUtilTx {
-			result.averageAirtimeRate = Double(airtime)
+		let airtimes = samples.compactMap { $0.airUtilTx.map(Double.init) }
+		if !airtimes.isEmpty {
+			result.averageAirtimeRate = airtimes.reduce(0, +) / Double(airtimes.count)
 		}
 
-		// Raw local stats (mirrors live activity data)
+		// Noise floor (dBm) — average over the window when the local-stats packets carry it.
+		// Frequency-specific, so this characterizes how quiet the preset's channel was.
+		let noiseFloors = samples.compactMap { $0.noiseFloor.map(Double.init) }
+		if !noiseFloors.isEmpty {
+			result.averageNoiseFloor = noiseFloors.reduce(0, +) / Double(noiseFloors.count)
+			result.noiseFloorSampleCount = noiseFloors.count
+		}
+
+		// Raw local stats — counters are cumulative, so use the latest sample.
 		result.numPacketsTx = Int(latest.numPacketsTx)
 		result.numPacketsRx = Int(latest.numPacketsRx)
 		result.numPacketsRxBad = Int(latest.numPacketsRxBad)
 		result.numRxDupe = Int(latest.numRxDupe)
 		result.numTxRelay = Int(latest.numTxRelay)
 		result.numTxRelayCanceled = Int(latest.numTxRelayCanceled)
+		result.numOnlineNodes = Int(latest.numOnlineNodes)
+		result.numTotalNodes = Int(latest.numTotalNodes)
 		if let uptime = latest.uptimeSeconds {
 			result.uptimeSeconds = Int(uptime)
 		}
@@ -766,6 +937,202 @@ extension DiscoveryScanEngine {
 			result.packetFailureRate = Double(badRx) / Double(totalPackets)
 		}
 
-		Logger.discovery.info("📡 [Discovery] Local stats captured — Ch Util: \(latest.channelUtilization ?? 0)%, Airtime: \(latest.airUtilTx ?? 0)%, Tx: \(totalTx), Rx: \(totalRx), Bad: \(badRx)")
+		let noiseFloorLog = result.noiseFloorSampleCount > 0 ? String(format: "%.0f dBm (%d samples)", result.averageNoiseFloor, result.noiseFloorSampleCount) : "n/a"
+		Logger.discovery.info("📡 [Discovery] Local stats captured (\(samples.count) sample(s)) — Ch Util: \(String(format: "%.1f", result.averageChannelUtilization))%, Airtime: \(String(format: "%.2f", result.averageAirtimeRate))%, Noise Floor: \(noiseFloorLog), Tx: \(totalTx), Rx: \(totalRx), Bad: \(badRx)")
+	}
+}
+
+// MARK: - DiscoveryScanEngine + Current Preset Scan
+
+extension DiscoveryScanEngine {
+
+	/// Starts a discovery scan limited to the radio's CURRENT modem preset, seeded with everything
+	/// already in SwiftData. The radio is already on this preset, so there's no config change or
+	/// reboot — the dwell begins immediately and `seedDiscoveredNodesFromDatabase()` folds in all
+	/// accumulated data so the run reflects "one long run" on the current preset, then live packets
+	/// during the dwell keep refining it.
+	func startCurrentPresetScan() async {
+		guard currentState == .idle else {
+			Logger.discovery.warning("📡 [Discovery] Cannot start current-preset scan — not idle")
+			return
+		}
+		guard let context = modelContext else {
+			Logger.discovery.error("📡 [Discovery] Cannot start current-preset scan — no model context")
+			return
+		}
+
+		let connectedNodeNum = Int64(UserDefaults.preferredPeripheralNum)
+		let preset = (getNodeInfo(id: connectedNodeNum, context: context)?.loRaConfig?.modemPreset)
+			.flatMap { ModemPresets(rawValue: Int($0)) } ?? .longFast
+
+		selectedPresets = [preset]
+		seedFromExistingData = true
+		// The report comes from seeded history — only dwell briefly to fold in live packets.
+		dwellDuration = Self.currentPresetScanDwell
+		Logger.discovery.info("📡 [Discovery] Starting current-preset scan on \(preset.name, privacy: .public) (seeded; \(Int(Self.currentPresetScanDwell))s dwell)")
+		await startScan()
+	}
+
+	/// Reveals a discovered node for every node already known in SwiftData onto the map
+	/// progressively over the dwell — an accelerated playback of the accumulated history rather
+	/// than dumping them all at once. Names, hops/role, last position, and per-node message/sensor
+	/// counts are filled in; nodes a live packet already added this dwell are skipped. Used by
+	/// `startCurrentPresetScan()`.
+	func revealSeededNodesFromDatabase() async {
+		guard let context = modelContext, let session, let result = currentPresetResult else { return }
+		let presetName = activePreset?.name ?? result.presetName
+		let connectedNodeNum = Int64(UserDefaults.preferredPeripheralNum)
+
+		// Per-node text-message counts (single fetch, grouped by sender).
+		var messageCounts: [Int64: Int] = [:]
+		if let messages = try? context.fetch(FetchDescriptor<MessageEntity>()) {
+			for msg in messages {
+				if let from = msg.fromUser?.num { messageCounts[from, default: 0] += 1 }
+			}
+		}
+
+		let allNodes = (try? context.fetch(FetchDescriptor<NodeInfoEntity>())) ?? []
+		// Skip the connected node and any node a live packet already added this dwell.
+		let candidates = allNodes.filter { node in
+			node.num != connectedNodeNum
+				&& !session.discoveredNodes.contains(where: { $0.nodeNum == node.num && $0.presetName == presetName })
+		}
+		guard !candidates.isEmpty else { return }
+
+		let userLat = session.userLatitude
+		let userLon = session.userLongitude
+
+		// Spread the reveal across ~85% of the dwell (so it finishes before finalize), in batches
+		// over ~120 ticks for a smooth, accelerated fill regardless of mesh size.
+		let revealWindow = max(2.0, dwellDuration * 0.85)
+		let ticks = 120.0
+		let tick = max(0.08, revealWindow / ticks)
+		let batchSize = max(1, Int((Double(candidates.count) / ticks).rounded(.up)))
+
+		var index = 0
+		var seeded = 0
+		while index < candidates.count {
+			if Task.isCancelled { break }
+			let end = min(index + batchSize, candidates.count)
+			for node in candidates[index..<end] {
+				let dn = DiscoveredNodeEntity()
+				dn.nodeNum = node.num
+				dn.shortName = node.user?.shortName ?? ""
+				dn.longName = node.user?.longName ?? ""
+				let hops = Int(node.hopsAway)
+				dn.hopCount = hops
+				dn.neighborType = hops <= 1 ? "direct" : "mesh"
+				dn.snr = node.snr
+				dn.rssi = Int(node.rssi)
+				// Infrastructure roles: Router (2), Router Late (11), Client Base (12)
+				dn.isInfrastructure = [2, 11, 12].contains(Int(node.user?.role ?? 0))
+				if let pos = node.positions.last {
+					dn.latitude = pos.latitude ?? 0.0
+					dn.longitude = pos.longitude ?? 0.0
+					if userLat != 0.0 || userLon != 0.0, dn.latitude != 0.0 || dn.longitude != 0.0 {
+						let userLocation = CLLocation(latitude: userLat, longitude: userLon)
+						let nodeLocation = CLLocation(latitude: dn.latitude, longitude: dn.longitude)
+						dn.distanceFromUser = userLocation.distance(from: nodeLocation)
+					}
+				}
+				dn.messageCount = messageCounts[node.num] ?? 0
+				// Sensor packets ≈ environment (1) + air-quality (2) telemetry the node has reported.
+				dn.sensorPacketCount = node.telemetries.filter { $0.metricsType == 1 || $0.metricsType == 2 }.count
+				dn.presetName = presetName
+				dn.session = session
+				dn.presetResult = result
+				context.insert(dn)
+				session.discoveredNodes.append(dn)
+				result.nodes.append(dn)
+				seeded += 1
+			}
+			index = end
+			if index < candidates.count {
+				try? await Task.sleep(for: .seconds(tick))
+			}
+		}
+
+		Logger.discovery.info("📡 [Discovery] Revealed \(seeded) seeded node(s) onto the map for \(presetName, privacy: .public)")
+	}
+}
+
+// MARK: - DiscoveryScanEngine + Primary Channel
+
+extension DiscoveryScanEngine {
+
+	/// Builds a complete `Channel` proto from a stored `ChannelEntity`, preserving name, key,
+	/// up/downlink, and position precision so a saved copy round-trips the user's channel exactly.
+	/// Internal (not private) so the snapshot/restore fidelity can be unit-tested.
+	func channelProto(from entity: ChannelEntity) -> Channel {
+		var channel = Channel()
+		channel.index = entity.index
+		channel.role = Channel.Role(rawValue: Int(entity.role)) ?? .secondary
+		channel.settings.name = entity.name ?? ""
+		channel.settings.psk = entity.psk ?? Data()
+		channel.settings.uplinkEnabled = entity.uplinkEnabled
+		channel.settings.downlinkEnabled = entity.downlinkEnabled
+		channel.settings.moduleSettings.positionPrecision = UInt32(entity.positionPrecision)
+		return channel
+	}
+
+	/// Whether the primary channel is already the default public channel — i.e. both the default key
+	/// (none, empty, or the single `0x01` byte) AND the default (empty) name. The public mesh uses
+	/// the empty name (the firmware renders it as "LongFast"); a custom name produces a different
+	/// channel hash and a different derived frequency, so it must be defaulted for the scan too.
+	private static func isDefaultPublicChannel(_ channel: ChannelEntity) -> Bool {
+		let keyIsDefault = channel.psk == nil || channel.psk?.isEmpty == true || channel.psk == defaultChannelKey
+		let nameIsDefault = channel.name == nil || channel.name?.isEmpty == true
+		return keyIsDefault && nameIsDefault
+	}
+
+	/// If the connected radio's primary channel isn't the default public channel, snapshot it and
+	/// send a copy with the default key AND default (empty) name so the scan can both decode the
+	/// public mesh and derive the public-mesh frequency for each preset (the firmware derives the
+	/// frequency from the primary channel name + preset). A no-op when the primary is already the
+	/// default public channel. `saveChannel` doesn't reboot the radio, so this applies immediately
+	/// while the link is up; `restorePrimaryChannel()` puts the original channel back when the scan
+	/// finishes.
+	private func prepareDefaultPublicChannel(connectedNode: NodeInfoEntity?) async {
+		guard let accessoryManager,
+			  let connectedNode,
+			  let fromUser = connectedNode.user,
+			  let primary = connectedNode.myInfo?.channels.first(where: { $0.role == 1 }) else { return }
+
+		guard !Self.isDefaultPublicChannel(primary) else { return }
+
+		// Snapshot the real primary channel so it can be restored verbatim after the scan.
+		homePrimaryChannel = channelProto(from: primary)
+
+		var scanChannel = channelProto(from: primary)
+		scanChannel.settings.psk = Self.defaultChannelKey
+		scanChannel.settings.name = ""
+		do {
+			_ = try await accessoryManager.saveChannel(channel: scanChannel, fromUser: fromUser, toUser: fromUser)
+			Logger.discovery.info("📡 [Discovery] Primary channel temporarily switched to the default public channel for the scan")
+		} catch {
+			// Leave the snapshot in place so restore still runs; surface the failure.
+			Logger.discovery.error("📡 [Discovery] Failed to set default public channel: \(error.localizedDescription)")
+		}
+	}
+
+	/// Restores the user's original primary channel captured in `prepareDefaultKeyChannel`. No-op
+	/// unless the scan switched the key. Called before the LoRa restore (which reboots) so it lands
+	/// while the link is up.
+	private func restorePrimaryChannel() async {
+		guard let homePrimaryChannel, let accessoryManager, let context = modelContext else { return }
+		let connectedNodeNum = Int64(UserDefaults.preferredPeripheralNum)
+		guard let connectedNode = getNodeInfo(id: connectedNodeNum, context: context),
+			  let fromUser = connectedNode.user else {
+			Logger.discovery.error("📡 [Discovery] Cannot restore primary channel — no connected node")
+			self.homePrimaryChannel = nil
+			return
+		}
+		do {
+			_ = try await accessoryManager.saveChannel(channel: homePrimaryChannel, fromUser: fromUser, toUser: fromUser)
+			Logger.discovery.info("📡 [Discovery] Restored the primary channel key after the scan")
+		} catch {
+			Logger.discovery.error("📡 [Discovery] Failed to restore primary channel: \(error.localizedDescription)")
+		}
+		self.homePrimaryChannel = nil
 	}
 }

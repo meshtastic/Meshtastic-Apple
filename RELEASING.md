@@ -44,7 +44,7 @@ without the “Pre-release — subject to change” warning.
    ```
    The script will:
    - Verify `MARKETING_VERSION` matches the argument
-   - Rebuild all bundled HTML without the pre-release banner
+   - Rebuild all bundled HTML
    - Commit the result with message `docs: rebuild for vX.YY.ZZ release`
    - Create annotated tag `vX.YY.ZZ`
 3. Push the commit and tag:
@@ -59,13 +59,12 @@ For full details and error recovery, see
 ## Documentation Publishing & Website Sync
 
 Documentation publishes **only at a tagged release** — never from day-to-day commits
-to `main`. Pushing the `vX.YY.ZZ` tag (step 3 above) runs three GitHub Actions
+to `main`. Pushing the `vX.YY.ZZ` tag (step 3 above) runs two GitHub Actions
 workflows:
 
 | Workflow | What it does |
 |---|---|
-| [`docs-release-gate.yml`](.github/workflows/docs-release-gate.yml) | Fails the release if any bundled HTML still carries the pre-release banner. If it fails, re-run `scripts/cut-release-docs.sh X.YY.ZZ`, then **delete and recreate the tag** — re-running the script makes a new commit, so a plain re-push won't move the existing tag. The workflow prints the exact recovery commands (`git tag -d vX.YY.ZZ && git push origin :refs/tags/vX.YY.ZZ`, then re-tag and push `vX.YY.ZZ`). |
-| [`docs-release.yml`](.github/workflows/docs-release.yml) | Builds and deploys this repo's GitHub Pages docs site (production, no beta banner). |
+| [`docs-release.yml`](.github/workflows/docs-release.yml) | Builds and deploys this repo's GitHub Pages docs site. |
 | [`docs-release-bundle.yml`](.github/workflows/docs-release-bundle.yml) | Creates the GitHub **Release** for the tag and attaches `meshtastic-apple-docs-<version>.tar.gz` — the canonical English user/developer guides and screenshots, in the repo's `docs/` layout. |
 
 **Website (meshtastic.org) sync.** The main docs site pulls Apple docs from this repo

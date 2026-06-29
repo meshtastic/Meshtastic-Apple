@@ -52,6 +52,60 @@ struct RouterURLRoutingTests {
 		#expect(router.messagesState == nil)
 	}
 
+	// MARK: - messagesSection (durable, payload-free sidebar selection)
+
+	@Test @MainActor func route_messages_channelId_setsPayloadFreeSection() {
+		let router = Router()
+		router.route(url: URL(string: "meshtastic:///messages?channelId=5&messageId=99")!)
+		// The deep-link payload lives on messagesState; the sidebar section is the payload-free
+		// sibling so it matches a real sidebar row.
+		#expect(router.messagesState == .channels(channelId: 5, messageId: 99))
+		#expect(router.messagesSection == .channels())
+	}
+
+	@Test @MainActor func route_messages_userNum_setsPayloadFreeSection() {
+		let router = Router()
+		router.route(url: URL(string: "meshtastic:///messages?userNum=42&messageId=7")!)
+		#expect(router.messagesState == .directMessages(userNum: 42, messageId: 7))
+		#expect(router.messagesSection == .directMessages())
+	}
+
+	@Test @MainActor func route_messages_noParams_clearsSection() {
+		let router = Router()
+		router.route(url: URL(string: "meshtastic:///messages?channelId=5")!)
+		router.route(url: URL(string: "meshtastic:///messages")!)
+		#expect(router.messagesSection == nil)
+	}
+
+	@Test @MainActor func popToRoot_messages_clearsStateAndSection() {
+		let router = Router()
+		router.route(url: URL(string: "meshtastic:///messages?channelId=5")!)
+		#expect(router.messagesSection == .channels())
+		router.popToRoot(tab: .messages)
+		#expect(router.messagesState == nil)
+		#expect(router.messagesSection == nil)
+	}
+
+	@Test @MainActor func init_derivesSectionFromMessagesState() {
+		// Restoration path: a Router built from a persisted NavigationState should expose the
+		// payload-free section immediately, before any view consumes the deep link.
+		let router = Router(navigationState: NavigationState(
+			selectedTab: .messages,
+			messages: .channels(channelId: 3, messageId: 1)
+		))
+		#expect(router.messagesState == .channels(channelId: 3, messageId: 1))
+		#expect(router.messagesSection == .channels())
+	}
+
+	@Test @MainActor func navigationState_setter_derivesSection() {
+		let router = Router()
+		router.navigationState = NavigationState(
+			selectedTab: .messages,
+			messages: .directMessages(userNum: 8)
+		)
+		#expect(router.messagesSection == .directMessages())
+	}
+
 	@Test @MainActor func route_connect() {
 		let router = Router()
 		let url = URL(string: "meshtastic:///connect")!

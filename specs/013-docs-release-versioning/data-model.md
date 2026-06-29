@@ -29,7 +29,7 @@ Side effects:
 - Annotated tag `v<version>` created
 
 **Transition: release → pre-release**  
-Triggered by: any subsequent `bash scripts/build-docs.sh --output Meshtastic/Resources/docs --beta` call (happens automatically on `main` via `docs-deploy.yml` after the next commit)  
+Triggered by: any subsequent `bash scripts/build-docs.sh --output Meshtastic/Resources/docs` call (happens automatically on `main` via `docs-deploy.yml` after the next commit)  
 Side effects: HTML files rebuilt with `pre-release-banner` div; no tag action
 
 ---

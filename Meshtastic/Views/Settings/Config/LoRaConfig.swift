@@ -55,6 +55,34 @@ struct LoRaConfig: View {
 		return formatter
 	}()
 
+	/// Whether the connected radio runs firmware new enough for the 2.8 LoRa
+	/// region/preset rework. Gates the new ham regions and narrow/tiny presets so
+	/// they can't be set on 2.7.x-and-earlier devices.
+	private var supports2_8: Bool {
+		accessoryManager.checkIsVersionSupported(forVersion: "2.8.0")
+	}
+
+	/// The compatibility info the firmware advertised for the currently selected
+	/// region, if any. Absent ⇒ no constraint (spec §5.1 / §5.2). Only consulted
+	/// when the connected radio supports the 2.8 rework, so a map left over from a
+	/// previously-connected 2.8 device is ignored on a 2.7.x radio.
+	private var regionPresetInfo: RegionPresetInfo? {
+		guard supports2_8, let code = RegionCodes(rawValue: region)?.protoEnumValue() else { return nil }
+		return accessoryManager.loRaRegionPresets[code]
+	}
+
+	/// Modem presets offered in the picker: the firmware-gated set, further
+	/// constrained to the selected region's legal list when the firmware provided
+	/// one. Never empty (spec §6 — never show an empty picker).
+	private var availablePresets: [ModemPresets] {
+		let base = ModemPresets.selectable(supports2_8: supports2_8)
+		if let info = regionPresetInfo, !info.presets.isEmpty {
+			let constrained = base.filter { info.presets.contains($0.protoEnumValue()) }
+			if !constrained.isEmpty { return constrained }
+		}
+		return base
+	}
+
 	var body: some View {
 		Form {
 			ConfigHeader(title: "LoRa", config: \.loRaConfig, node: node, onAppear: setLoRaValues)
@@ -63,13 +91,33 @@ struct LoRaConfig: View {
 
 				VStack(alignment: .leading) {
 					Picker("Region", selection: $region ) {
-						ForEach(RegionCodes.userSelectable) { r in
+						// 2.8-only regions (ham/amateur bands, EU SRD/narrow) are
+						// hidden when the connected radio runs firmware older than
+						// 2.8, which has no band table for them.
+						ForEach(RegionCodes.selectable(supports2_8: supports2_8)) { r in
 							Text(r.description)
 						}
 					}
 					Text("The region where you will be using your radios.")
 						.foregroundColor(.gray)
 						.font(.callout)
+				}
+
+				if let info = regionPresetInfo, info.licensedOnly {
+					let licensed = node?.user?.isLicensed ?? false
+					HStack(alignment: .top, spacing: 8) {
+						Image(systemName: licensed ? "checkmark.seal.fill" : "exclamationmark.triangle.fill")
+							.foregroundColor(licensed ? .green : .orange)
+						VStack(alignment: .leading, spacing: 2) {
+							Text("Licensed band")
+								.font(.callout).bold()
+							Text(licensed
+								 ? "This region is restricted to licensed amateur radio operators. Your operator profile is marked as licensed.".localized
+								 : "This region is restricted to licensed amateur radio operators. Enable “Licensed Operator” and set your call sign in User Config before transmitting.".localized)
+								.foregroundColor(.gray)
+								.font(.caption)
+						}
+					}
 				}
 
 				Toggle(isOn: $usePreset) {
@@ -80,9 +128,10 @@ struct LoRaConfig: View {
 				if usePreset {
 					VStack(alignment: .leading) {
 						Picker("Presets", selection: $modemPreset ) {
-							// Lite / Narrow presets are intentionally hidden
-							// for now — `userSelectable` filters them out.
-							ForEach(ModemPresets.userSelectable) { m in
+							// Constrained to the selected region's legal presets when
+							// the firmware advertises a region→preset map (2.8+), and
+							// to the firmware-gated set otherwise.
+							ForEach(availablePresets) { m in
 								Text(m.description)
 							}
 						}
@@ -236,6 +285,10 @@ struct LoRaConfig: View {
 		}
 		.onChange(of: region) { _, newRegion in
 			if newRegion != node?.loRaConfig?.regionCode ?? -1 { hasChanges = true }
+			applyRegionPresetDefault(forRegion: newRegion)
+		}
+		.onChange(of: accessoryManager.loRaRegionPresets) { _, _ in
+			applyRegionPresetDefault(forRegion: region)
 		}
 		.onChange(of: usePreset) { _, newPreset in
 			if newPreset != node?.loRaConfig?.usePreset { hasChanges = true }
@@ -277,6 +330,26 @@ struct LoRaConfig: View {
 			if newOkToMqtt != node?.loRaConfig?.okToMqtt { hasChanges = true }
 		}
 	}
+	/// When the user switches region, pre-select the appropriate preset: a
+	/// factory-flashed node defaults to Long Turbo for US on 2.8 firmware, and
+	/// otherwise an illegal current preset falls back to the region's advertised
+	/// default (spec §5.3 / §6). See `ModemPresets.presetToSelect` for the rules.
+	/// A nil result keeps the current selection.
+	private func applyRegionPresetDefault(forRegion newRegion: Int) {
+		guard let code = RegionCodes(rawValue: newRegion)?.protoEnumValue() else { return }
+		let factoryFresh = (node?.loRaConfig?.regionCode ?? 0) == RegionCodes.unset.rawValue
+		if let preset = ModemPresets.presetToSelect(
+			forRegion: code,
+			factoryFresh: factoryFresh,
+			supports2_8: supports2_8,
+			usePreset: usePreset,
+			regionInfo: accessoryManager.loRaRegionPresets[code],
+			currentPreset: ModemPresets(rawValue: modemPreset)
+		) {
+			modemPreset = preset.rawValue
+		}
+	}
+
 	func setLoRaValues() {
 		if node?.loRaConfig?.modemPreset ?? 0 == 2 {
 			node?.loRaConfig?.modemPreset = 0

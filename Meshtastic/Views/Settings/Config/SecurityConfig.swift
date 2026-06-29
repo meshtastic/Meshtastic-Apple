@@ -54,7 +54,23 @@ struct SecurityConfig: View {
 				.font(.title3)
 			Section(header: Text("Direct Message Key")) {
 				VStack(alignment: .leading) {
-					Label("Public Key", systemImage: "key")
+					HStack(alignment: .firstTextBaseline) {
+						Label("Public Key", systemImage: "key")
+						Spacer()
+						// Explicit copy action. On Mac Catalyst `.textSelection(.enabled)` on a
+						// Text inside a Form does not reliably offer a right-click "Copy", so the
+						// selection-only approach left macOS users unable to copy their key (#1943).
+						Button {
+							UIPasteboard.general.string = publicKey
+						} label: {
+							Image(systemName: "doc.on.doc")
+							Text("Copy")
+						}
+						.buttonStyle(.bordered)
+						.buttonBorderShape(.capsule)
+						.controlSize(.small)
+						.disabled(publicKey.isEmpty)
+					}
 					Text(publicKey)
 						.font(idiom == .phone ? .caption : .callout)
 						.allowsTightening(true)
@@ -62,6 +78,9 @@ struct SecurityConfig: View {
 						.keyboardType(.alphabet)
 						.foregroundStyle(.tertiary)
 						.disableAutocorrection(true)
+						// Retained as the iOS copy path (long-press to select); the Copy button
+						// above is the reliable path on Mac Catalyst, where this doesn't offer
+						// a right-click "Copy" inside a Form (#1943).
 						.textSelection(.enabled)
 						.background(
 							RoundedRectangle(cornerRadius: 10.0)

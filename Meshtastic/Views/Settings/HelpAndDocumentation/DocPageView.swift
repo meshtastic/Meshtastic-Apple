@@ -157,7 +157,7 @@ struct DocPageView: View {
 		.onReceive(NotificationCenter.default.publisher(for: DocTranslationService.languageBecameAvailableNotification)) { _ in
 			// Language pack just installed — retry title if it wasn't translated yet
 			if translatedTitle == nil {
-				let languageCode = Locale.current.language.languageCode?.identifier ?? "en"
+				let languageCode = Bundle.main.documentationLanguageCode
 				guard languageCode != "en" else { return }
 				Task {
 					await DocTranslationService.shared.clearUIStringCache()
@@ -173,7 +173,7 @@ struct DocPageView: View {
 	// MARK: - Translation Loading
 
 	private func startTranslation() {
-		let languageCode = Locale.current.language.languageCode?.identifier ?? "en"
+		let languageCode = Bundle.main.documentationLanguageCode
 		guard languageCode != "en" else { return }
 
 		// If DocBundle already loaded from translated folder, htmlURL points to translated file

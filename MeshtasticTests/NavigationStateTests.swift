@@ -94,6 +94,32 @@ struct MessagesNavigationStateTests {
 		let b = MessagesNavigationState.channels(channelId: 1)
 		#expect(a.hashValue == b.hashValue)
 	}
+
+	// MARK: sidebarSection
+
+	@Test func sidebarSection_channels_stripsPayload() {
+		// A notification deep link carries channelId/messageId; the sidebar only has a
+		// payload-free `.channels()` row, so the section must normalize to match it.
+		#expect(MessagesNavigationState.channels(channelId: 2, messageId: 5).sidebarSection == .channels())
+		#expect(MessagesNavigationState.channels(channelId: 7).sidebarSection == .channels())
+	}
+
+	@Test func sidebarSection_directMessages_stripsPayload() {
+		#expect(MessagesNavigationState.directMessages(userNum: 42, messageId: 9).sidebarSection == .directMessages())
+		#expect(MessagesNavigationState.directMessages(userNum: 13).sidebarSection == .directMessages())
+	}
+
+	@Test func sidebarSection_payloadFree_isIdentity() {
+		// A manual sidebar tap already produces a payload-free value; normalizing is a no-op.
+		#expect(MessagesNavigationState.channels().sidebarSection == .channels())
+		#expect(MessagesNavigationState.directMessages().sidebarSection == .directMessages())
+	}
+
+	@Test func sidebarSection_preservesSection() {
+		// Normalization must not cross sections (channels must never become directMessages).
+		#expect(MessagesNavigationState.channels(channelId: 1).sidebarSection != .directMessages())
+		#expect(MessagesNavigationState.directMessages(userNum: 1).sidebarSection != .channels())
+	}
 }
 
 // MARK: - MapNavigationState

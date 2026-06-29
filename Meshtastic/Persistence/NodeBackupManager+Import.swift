@@ -286,22 +286,38 @@ extension NodeBackupManager {
 			dst.sent = src.sent
 			dst.snr = src.snr
 			dst.time = src.time
+			dst.fromNum = src.fromNum
+			dst.toNum = src.toNum
 			if let srcNode = src.node, let liveNode = nodesByNum[srcNode.num] {
 				dst.node = liveNode
 			}
 			liveContext.insert(dst)
 			for srcHop in src.hops {
 				let dstHop = TraceRouteHopEntity()
-				dstHop.altitude = srcHop.altitude
 				dstHop.back = srcHop.back
-				dstHop.latitudeI = srcHop.latitudeI
-				dstHop.longitudeI = srcHop.longitudeI
+				dstHop.index = srcHop.index
 				dstHop.name = srcHop.name
 				dstHop.num = srcHop.num
 				dstHop.snr = srcHop.snr
 				dstHop.time = srcHop.time
 				dstHop.traceRoute = dst
 				liveContext.insert(dstHop)
+			}
+			for srcPosition in src.nodePositions {
+				let dstPosition = TraceRouteNodePositionEntity()
+				dstPosition.num = srcPosition.num
+				dstPosition.altitude = srcPosition.altitude
+				dstPosition.heading = srcPosition.heading
+				dstPosition.latitudeI = srcPosition.latitudeI
+				dstPosition.longitudeI = srcPosition.longitudeI
+				dstPosition.precisionBits = srcPosition.precisionBits
+				dstPosition.satsInView = srcPosition.satsInView
+				dstPosition.seqNo = srcPosition.seqNo
+				dstPosition.snr = srcPosition.snr
+				dstPosition.speed = srcPosition.speed
+				dstPosition.time = srcPosition.time
+				dstPosition.traceRoute = dst
+				liveContext.insert(dstPosition)
 			}
 		}
 	}

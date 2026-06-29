@@ -436,55 +436,55 @@ public struct DeviceMetrics: Sendable {
   ///
   /// 0-100 (>100 means powered)
   public var batteryLevel: UInt32 {
-    get {return _batteryLevel ?? 0}
+    get {_batteryLevel ?? 0}
     set {_batteryLevel = newValue}
   }
   /// Returns true if `batteryLevel` has been explicitly set.
-  public var hasBatteryLevel: Bool {return self._batteryLevel != nil}
+  public var hasBatteryLevel: Bool {self._batteryLevel != nil}
   /// Clears the value of `batteryLevel`. Subsequent reads from it will return its default value.
   public mutating func clearBatteryLevel() {self._batteryLevel = nil}
 
   ///
   /// Voltage measured
   public var voltage: Float {
-    get {return _voltage ?? 0}
+    get {_voltage ?? 0}
     set {_voltage = newValue}
   }
   /// Returns true if `voltage` has been explicitly set.
-  public var hasVoltage: Bool {return self._voltage != nil}
+  public var hasVoltage: Bool {self._voltage != nil}
   /// Clears the value of `voltage`. Subsequent reads from it will return its default value.
   public mutating func clearVoltage() {self._voltage = nil}
 
   ///
   /// Utilization for the current channel, including well formed TX, RX and malformed RX (aka noise).
   public var channelUtilization: Float {
-    get {return _channelUtilization ?? 0}
+    get {_channelUtilization ?? 0}
     set {_channelUtilization = newValue}
   }
   /// Returns true if `channelUtilization` has been explicitly set.
-  public var hasChannelUtilization: Bool {return self._channelUtilization != nil}
+  public var hasChannelUtilization: Bool {self._channelUtilization != nil}
   /// Clears the value of `channelUtilization`. Subsequent reads from it will return its default value.
   public mutating func clearChannelUtilization() {self._channelUtilization = nil}
 
   ///
   /// Percent of airtime for transmission used within the last hour.
   public var airUtilTx: Float {
-    get {return _airUtilTx ?? 0}
+    get {_airUtilTx ?? 0}
     set {_airUtilTx = newValue}
   }
   /// Returns true if `airUtilTx` has been explicitly set.
-  public var hasAirUtilTx: Bool {return self._airUtilTx != nil}
+  public var hasAirUtilTx: Bool {self._airUtilTx != nil}
   /// Clears the value of `airUtilTx`. Subsequent reads from it will return its default value.
   public mutating func clearAirUtilTx() {self._airUtilTx = nil}
 
   ///
   /// How long the device has been running since the last reboot (in seconds)
   public var uptimeSeconds: UInt32 {
-    get {return _uptimeSeconds ?? 0}
+    get {_uptimeSeconds ?? 0}
     set {_uptimeSeconds = newValue}
   }
   /// Returns true if `uptimeSeconds` has been explicitly set.
-  public var hasUptimeSeconds: Bool {return self._uptimeSeconds != nil}
+  public var hasUptimeSeconds: Bool {self._uptimeSeconds != nil}
   /// Clears the value of `uptimeSeconds`. Subsequent reads from it will return its default value.
   public mutating func clearUptimeSeconds() {self._uptimeSeconds = nil}
 
@@ -509,66 +509,66 @@ public struct EnvironmentMetrics: @unchecked Sendable {
   ///
   /// Temperature measured
   public var temperature: Float {
-    get {return _storage._temperature ?? 0}
+    get {_storage._temperature ?? 0}
     set {_uniqueStorage()._temperature = newValue}
   }
   /// Returns true if `temperature` has been explicitly set.
-  public var hasTemperature: Bool {return _storage._temperature != nil}
+  public var hasTemperature: Bool {_storage._temperature != nil}
   /// Clears the value of `temperature`. Subsequent reads from it will return its default value.
   public mutating func clearTemperature() {_uniqueStorage()._temperature = nil}
 
   ///
   /// Relative humidity percent measured
   public var relativeHumidity: Float {
-    get {return _storage._relativeHumidity ?? 0}
+    get {_storage._relativeHumidity ?? 0}
     set {_uniqueStorage()._relativeHumidity = newValue}
   }
   /// Returns true if `relativeHumidity` has been explicitly set.
-  public var hasRelativeHumidity: Bool {return _storage._relativeHumidity != nil}
+  public var hasRelativeHumidity: Bool {_storage._relativeHumidity != nil}
   /// Clears the value of `relativeHumidity`. Subsequent reads from it will return its default value.
   public mutating func clearRelativeHumidity() {_uniqueStorage()._relativeHumidity = nil}
 
   ///
   /// Barometric pressure in hPA measured
   public var barometricPressure: Float {
-    get {return _storage._barometricPressure ?? 0}
+    get {_storage._barometricPressure ?? 0}
     set {_uniqueStorage()._barometricPressure = newValue}
   }
   /// Returns true if `barometricPressure` has been explicitly set.
-  public var hasBarometricPressure: Bool {return _storage._barometricPressure != nil}
+  public var hasBarometricPressure: Bool {_storage._barometricPressure != nil}
   /// Clears the value of `barometricPressure`. Subsequent reads from it will return its default value.
   public mutating func clearBarometricPressure() {_uniqueStorage()._barometricPressure = nil}
 
   ///
   /// Gas resistance in MOhm measured
   public var gasResistance: Float {
-    get {return _storage._gasResistance ?? 0}
+    get {_storage._gasResistance ?? 0}
     set {_uniqueStorage()._gasResistance = newValue}
   }
   /// Returns true if `gasResistance` has been explicitly set.
-  public var hasGasResistance: Bool {return _storage._gasResistance != nil}
+  public var hasGasResistance: Bool {_storage._gasResistance != nil}
   /// Clears the value of `gasResistance`. Subsequent reads from it will return its default value.
   public mutating func clearGasResistance() {_uniqueStorage()._gasResistance = nil}
 
   ///
   /// Voltage measured (To be depreciated in favor of PowerMetrics in Meshtastic 3.x)
   public var voltage: Float {
-    get {return _storage._voltage ?? 0}
+    get {_storage._voltage ?? 0}
     set {_uniqueStorage()._voltage = newValue}
   }
   /// Returns true if `voltage` has been explicitly set.
-  public var hasVoltage: Bool {return _storage._voltage != nil}
+  public var hasVoltage: Bool {_storage._voltage != nil}
   /// Clears the value of `voltage`. Subsequent reads from it will return its default value.
   public mutating func clearVoltage() {_uniqueStorage()._voltage = nil}
 
   ///
   /// Current measured (To be depreciated in favor of PowerMetrics in Meshtastic 3.x)
   public var current: Float {
-    get {return _storage._current ?? 0}
+    get {_storage._current ?? 0}
     set {_uniqueStorage()._current = newValue}
   }
   /// Returns true if `current` has been explicitly set.
-  public var hasCurrent: Bool {return _storage._current != nil}
+  public var hasCurrent: Bool {_storage._current != nil}
   /// Clears the value of `current`. Subsequent reads from it will return its default value.
   public mutating func clearCurrent() {_uniqueStorage()._current = nil}
 
@@ -576,66 +576,66 @@ public struct EnvironmentMetrics: @unchecked Sendable {
   /// relative scale IAQ value as measured by Bosch BME680 . value 0-500.
   /// Belongs to Air Quality but is not particle but VOC measurement. Other VOC values can also be put in here.
   public var iaq: UInt32 {
-    get {return _storage._iaq ?? 0}
+    get {_storage._iaq ?? 0}
     set {_uniqueStorage()._iaq = newValue}
   }
   /// Returns true if `iaq` has been explicitly set.
-  public var hasIaq: Bool {return _storage._iaq != nil}
+  public var hasIaq: Bool {_storage._iaq != nil}
   /// Clears the value of `iaq`. Subsequent reads from it will return its default value.
   public mutating func clearIaq() {_uniqueStorage()._iaq = nil}
 
   ///
   /// RCWL9620 Doppler Radar Distance Sensor, used for water level detection. Float value in mm.
   public var distance: Float {
-    get {return _storage._distance ?? 0}
+    get {_storage._distance ?? 0}
     set {_uniqueStorage()._distance = newValue}
   }
   /// Returns true if `distance` has been explicitly set.
-  public var hasDistance: Bool {return _storage._distance != nil}
+  public var hasDistance: Bool {_storage._distance != nil}
   /// Clears the value of `distance`. Subsequent reads from it will return its default value.
   public mutating func clearDistance() {_uniqueStorage()._distance = nil}
 
   ///
   /// VEML7700 high accuracy ambient light(Lux) digital 16-bit resolution sensor.
   public var lux: Float {
-    get {return _storage._lux ?? 0}
+    get {_storage._lux ?? 0}
     set {_uniqueStorage()._lux = newValue}
   }
   /// Returns true if `lux` has been explicitly set.
-  public var hasLux: Bool {return _storage._lux != nil}
+  public var hasLux: Bool {_storage._lux != nil}
   /// Clears the value of `lux`. Subsequent reads from it will return its default value.
   public mutating func clearLux() {_uniqueStorage()._lux = nil}
 
   ///
   /// VEML7700 high accuracy white light(irradiance) not calibrated digital 16-bit resolution sensor.
   public var whiteLux: Float {
-    get {return _storage._whiteLux ?? 0}
+    get {_storage._whiteLux ?? 0}
     set {_uniqueStorage()._whiteLux = newValue}
   }
   /// Returns true if `whiteLux` has been explicitly set.
-  public var hasWhiteLux: Bool {return _storage._whiteLux != nil}
+  public var hasWhiteLux: Bool {_storage._whiteLux != nil}
   /// Clears the value of `whiteLux`. Subsequent reads from it will return its default value.
   public mutating func clearWhiteLux() {_uniqueStorage()._whiteLux = nil}
 
   ///
   /// Infrared lux
   public var irLux: Float {
-    get {return _storage._irLux ?? 0}
+    get {_storage._irLux ?? 0}
     set {_uniqueStorage()._irLux = newValue}
   }
   /// Returns true if `irLux` has been explicitly set.
-  public var hasIrLux: Bool {return _storage._irLux != nil}
+  public var hasIrLux: Bool {_storage._irLux != nil}
   /// Clears the value of `irLux`. Subsequent reads from it will return its default value.
   public mutating func clearIrLux() {_uniqueStorage()._irLux = nil}
 
   ///
   /// Ultraviolet lux
   public var uvLux: Float {
-    get {return _storage._uvLux ?? 0}
+    get {_storage._uvLux ?? 0}
     set {_uniqueStorage()._uvLux = newValue}
   }
   /// Returns true if `uvLux` has been explicitly set.
-  public var hasUvLux: Bool {return _storage._uvLux != nil}
+  public var hasUvLux: Bool {_storage._uvLux != nil}
   /// Clears the value of `uvLux`. Subsequent reads from it will return its default value.
   public mutating func clearUvLux() {_uniqueStorage()._uvLux = nil}
 
@@ -643,117 +643,117 @@ public struct EnvironmentMetrics: @unchecked Sendable {
   /// Wind direction in degrees
   /// 0 degrees = North, 90 = East, etc...
   public var windDirection: UInt32 {
-    get {return _storage._windDirection ?? 0}
+    get {_storage._windDirection ?? 0}
     set {_uniqueStorage()._windDirection = newValue}
   }
   /// Returns true if `windDirection` has been explicitly set.
-  public var hasWindDirection: Bool {return _storage._windDirection != nil}
+  public var hasWindDirection: Bool {_storage._windDirection != nil}
   /// Clears the value of `windDirection`. Subsequent reads from it will return its default value.
   public mutating func clearWindDirection() {_uniqueStorage()._windDirection = nil}
 
   ///
   /// Wind speed in m/s
   public var windSpeed: Float {
-    get {return _storage._windSpeed ?? 0}
+    get {_storage._windSpeed ?? 0}
     set {_uniqueStorage()._windSpeed = newValue}
   }
   /// Returns true if `windSpeed` has been explicitly set.
-  public var hasWindSpeed: Bool {return _storage._windSpeed != nil}
+  public var hasWindSpeed: Bool {_storage._windSpeed != nil}
   /// Clears the value of `windSpeed`. Subsequent reads from it will return its default value.
   public mutating func clearWindSpeed() {_uniqueStorage()._windSpeed = nil}
 
   ///
   /// Weight in KG
   public var weight: Float {
-    get {return _storage._weight ?? 0}
+    get {_storage._weight ?? 0}
     set {_uniqueStorage()._weight = newValue}
   }
   /// Returns true if `weight` has been explicitly set.
-  public var hasWeight: Bool {return _storage._weight != nil}
+  public var hasWeight: Bool {_storage._weight != nil}
   /// Clears the value of `weight`. Subsequent reads from it will return its default value.
   public mutating func clearWeight() {_uniqueStorage()._weight = nil}
 
   ///
   /// Wind gust in m/s
   public var windGust: Float {
-    get {return _storage._windGust ?? 0}
+    get {_storage._windGust ?? 0}
     set {_uniqueStorage()._windGust = newValue}
   }
   /// Returns true if `windGust` has been explicitly set.
-  public var hasWindGust: Bool {return _storage._windGust != nil}
+  public var hasWindGust: Bool {_storage._windGust != nil}
   /// Clears the value of `windGust`. Subsequent reads from it will return its default value.
   public mutating func clearWindGust() {_uniqueStorage()._windGust = nil}
 
   ///
   /// Wind lull in m/s
   public var windLull: Float {
-    get {return _storage._windLull ?? 0}
+    get {_storage._windLull ?? 0}
     set {_uniqueStorage()._windLull = newValue}
   }
   /// Returns true if `windLull` has been explicitly set.
-  public var hasWindLull: Bool {return _storage._windLull != nil}
+  public var hasWindLull: Bool {_storage._windLull != nil}
   /// Clears the value of `windLull`. Subsequent reads from it will return its default value.
   public mutating func clearWindLull() {_uniqueStorage()._windLull = nil}
 
   ///
   /// Radiation in µR/h
   public var radiation: Float {
-    get {return _storage._radiation ?? 0}
+    get {_storage._radiation ?? 0}
     set {_uniqueStorage()._radiation = newValue}
   }
   /// Returns true if `radiation` has been explicitly set.
-  public var hasRadiation: Bool {return _storage._radiation != nil}
+  public var hasRadiation: Bool {_storage._radiation != nil}
   /// Clears the value of `radiation`. Subsequent reads from it will return its default value.
   public mutating func clearRadiation() {_uniqueStorage()._radiation = nil}
 
   ///
   /// Rainfall in the last hour in mm
   public var rainfall1H: Float {
-    get {return _storage._rainfall1H ?? 0}
+    get {_storage._rainfall1H ?? 0}
     set {_uniqueStorage()._rainfall1H = newValue}
   }
   /// Returns true if `rainfall1H` has been explicitly set.
-  public var hasRainfall1H: Bool {return _storage._rainfall1H != nil}
+  public var hasRainfall1H: Bool {_storage._rainfall1H != nil}
   /// Clears the value of `rainfall1H`. Subsequent reads from it will return its default value.
   public mutating func clearRainfall1H() {_uniqueStorage()._rainfall1H = nil}
 
   ///
   /// Rainfall in the last 24 hours in mm
   public var rainfall24H: Float {
-    get {return _storage._rainfall24H ?? 0}
+    get {_storage._rainfall24H ?? 0}
     set {_uniqueStorage()._rainfall24H = newValue}
   }
   /// Returns true if `rainfall24H` has been explicitly set.
-  public var hasRainfall24H: Bool {return _storage._rainfall24H != nil}
+  public var hasRainfall24H: Bool {_storage._rainfall24H != nil}
   /// Clears the value of `rainfall24H`. Subsequent reads from it will return its default value.
   public mutating func clearRainfall24H() {_uniqueStorage()._rainfall24H = nil}
 
   ///
   /// Soil moisture measured (% 1-100)
   public var soilMoisture: UInt32 {
-    get {return _storage._soilMoisture ?? 0}
+    get {_storage._soilMoisture ?? 0}
     set {_uniqueStorage()._soilMoisture = newValue}
   }
   /// Returns true if `soilMoisture` has been explicitly set.
-  public var hasSoilMoisture: Bool {return _storage._soilMoisture != nil}
+  public var hasSoilMoisture: Bool {_storage._soilMoisture != nil}
   /// Clears the value of `soilMoisture`. Subsequent reads from it will return its default value.
   public mutating func clearSoilMoisture() {_uniqueStorage()._soilMoisture = nil}
 
   ///
   /// Soil temperature measured (*C)
   public var soilTemperature: Float {
-    get {return _storage._soilTemperature ?? 0}
+    get {_storage._soilTemperature ?? 0}
     set {_uniqueStorage()._soilTemperature = newValue}
   }
   /// Returns true if `soilTemperature` has been explicitly set.
-  public var hasSoilTemperature: Bool {return _storage._soilTemperature != nil}
+  public var hasSoilTemperature: Bool {_storage._soilTemperature != nil}
   /// Clears the value of `soilTemperature`. Subsequent reads from it will return its default value.
   public mutating func clearSoilTemperature() {_uniqueStorage()._soilTemperature = nil}
 
   ///
   /// One-wire temperature (*C)
   public var oneWireTemperature: [Float] {
-    get {return _storage._oneWireTemperature}
+    get {_storage._oneWireTemperature}
     set {_uniqueStorage()._oneWireTemperature = newValue}
   }
 
@@ -774,176 +774,176 @@ public struct PowerMetrics: Sendable {
   ///
   /// Voltage (Ch1)
   public var ch1Voltage: Float {
-    get {return _ch1Voltage ?? 0}
+    get {_ch1Voltage ?? 0}
     set {_ch1Voltage = newValue}
   }
   /// Returns true if `ch1Voltage` has been explicitly set.
-  public var hasCh1Voltage: Bool {return self._ch1Voltage != nil}
+  public var hasCh1Voltage: Bool {self._ch1Voltage != nil}
   /// Clears the value of `ch1Voltage`. Subsequent reads from it will return its default value.
   public mutating func clearCh1Voltage() {self._ch1Voltage = nil}
 
   ///
   /// Current (Ch1)
   public var ch1Current: Float {
-    get {return _ch1Current ?? 0}
+    get {_ch1Current ?? 0}
     set {_ch1Current = newValue}
   }
   /// Returns true if `ch1Current` has been explicitly set.
-  public var hasCh1Current: Bool {return self._ch1Current != nil}
+  public var hasCh1Current: Bool {self._ch1Current != nil}
   /// Clears the value of `ch1Current`. Subsequent reads from it will return its default value.
   public mutating func clearCh1Current() {self._ch1Current = nil}
 
   ///
   /// Voltage (Ch2)
   public var ch2Voltage: Float {
-    get {return _ch2Voltage ?? 0}
+    get {_ch2Voltage ?? 0}
     set {_ch2Voltage = newValue}
   }
   /// Returns true if `ch2Voltage` has been explicitly set.
-  public var hasCh2Voltage: Bool {return self._ch2Voltage != nil}
+  public var hasCh2Voltage: Bool {self._ch2Voltage != nil}
   /// Clears the value of `ch2Voltage`. Subsequent reads from it will return its default value.
   public mutating func clearCh2Voltage() {self._ch2Voltage = nil}
 
   ///
   /// Current (Ch2)
   public var ch2Current: Float {
-    get {return _ch2Current ?? 0}
+    get {_ch2Current ?? 0}
     set {_ch2Current = newValue}
   }
   /// Returns true if `ch2Current` has been explicitly set.
-  public var hasCh2Current: Bool {return self._ch2Current != nil}
+  public var hasCh2Current: Bool {self._ch2Current != nil}
   /// Clears the value of `ch2Current`. Subsequent reads from it will return its default value.
   public mutating func clearCh2Current() {self._ch2Current = nil}
 
   ///
   /// Voltage (Ch3)
   public var ch3Voltage: Float {
-    get {return _ch3Voltage ?? 0}
+    get {_ch3Voltage ?? 0}
     set {_ch3Voltage = newValue}
   }
   /// Returns true if `ch3Voltage` has been explicitly set.
-  public var hasCh3Voltage: Bool {return self._ch3Voltage != nil}
+  public var hasCh3Voltage: Bool {self._ch3Voltage != nil}
   /// Clears the value of `ch3Voltage`. Subsequent reads from it will return its default value.
   public mutating func clearCh3Voltage() {self._ch3Voltage = nil}
 
   ///
   /// Current (Ch3)
   public var ch3Current: Float {
-    get {return _ch3Current ?? 0}
+    get {_ch3Current ?? 0}
     set {_ch3Current = newValue}
   }
   /// Returns true if `ch3Current` has been explicitly set.
-  public var hasCh3Current: Bool {return self._ch3Current != nil}
+  public var hasCh3Current: Bool {self._ch3Current != nil}
   /// Clears the value of `ch3Current`. Subsequent reads from it will return its default value.
   public mutating func clearCh3Current() {self._ch3Current = nil}
 
   ///
   /// Voltage (Ch4)
   public var ch4Voltage: Float {
-    get {return _ch4Voltage ?? 0}
+    get {_ch4Voltage ?? 0}
     set {_ch4Voltage = newValue}
   }
   /// Returns true if `ch4Voltage` has been explicitly set.
-  public var hasCh4Voltage: Bool {return self._ch4Voltage != nil}
+  public var hasCh4Voltage: Bool {self._ch4Voltage != nil}
   /// Clears the value of `ch4Voltage`. Subsequent reads from it will return its default value.
   public mutating func clearCh4Voltage() {self._ch4Voltage = nil}
 
   ///
   /// Current (Ch4)
   public var ch4Current: Float {
-    get {return _ch4Current ?? 0}
+    get {_ch4Current ?? 0}
     set {_ch4Current = newValue}
   }
   /// Returns true if `ch4Current` has been explicitly set.
-  public var hasCh4Current: Bool {return self._ch4Current != nil}
+  public var hasCh4Current: Bool {self._ch4Current != nil}
   /// Clears the value of `ch4Current`. Subsequent reads from it will return its default value.
   public mutating func clearCh4Current() {self._ch4Current = nil}
 
   ///
   /// Voltage (Ch5)
   public var ch5Voltage: Float {
-    get {return _ch5Voltage ?? 0}
+    get {_ch5Voltage ?? 0}
     set {_ch5Voltage = newValue}
   }
   /// Returns true if `ch5Voltage` has been explicitly set.
-  public var hasCh5Voltage: Bool {return self._ch5Voltage != nil}
+  public var hasCh5Voltage: Bool {self._ch5Voltage != nil}
   /// Clears the value of `ch5Voltage`. Subsequent reads from it will return its default value.
   public mutating func clearCh5Voltage() {self._ch5Voltage = nil}
 
   ///
   /// Current (Ch5)
   public var ch5Current: Float {
-    get {return _ch5Current ?? 0}
+    get {_ch5Current ?? 0}
     set {_ch5Current = newValue}
   }
   /// Returns true if `ch5Current` has been explicitly set.
-  public var hasCh5Current: Bool {return self._ch5Current != nil}
+  public var hasCh5Current: Bool {self._ch5Current != nil}
   /// Clears the value of `ch5Current`. Subsequent reads from it will return its default value.
   public mutating func clearCh5Current() {self._ch5Current = nil}
 
   ///
   /// Voltage (Ch6)
   public var ch6Voltage: Float {
-    get {return _ch6Voltage ?? 0}
+    get {_ch6Voltage ?? 0}
     set {_ch6Voltage = newValue}
   }
   /// Returns true if `ch6Voltage` has been explicitly set.
-  public var hasCh6Voltage: Bool {return self._ch6Voltage != nil}
+  public var hasCh6Voltage: Bool {self._ch6Voltage != nil}
   /// Clears the value of `ch6Voltage`. Subsequent reads from it will return its default value.
   public mutating func clearCh6Voltage() {self._ch6Voltage = nil}
 
   ///
   /// Current (Ch6)
   public var ch6Current: Float {
-    get {return _ch6Current ?? 0}
+    get {_ch6Current ?? 0}
     set {_ch6Current = newValue}
   }
   /// Returns true if `ch6Current` has been explicitly set.
-  public var hasCh6Current: Bool {return self._ch6Current != nil}
+  public var hasCh6Current: Bool {self._ch6Current != nil}
   /// Clears the value of `ch6Current`. Subsequent reads from it will return its default value.
   public mutating func clearCh6Current() {self._ch6Current = nil}
 
   ///
   /// Voltage (Ch7)
   public var ch7Voltage: Float {
-    get {return _ch7Voltage ?? 0}
+    get {_ch7Voltage ?? 0}
     set {_ch7Voltage = newValue}
   }
   /// Returns true if `ch7Voltage` has been explicitly set.
-  public var hasCh7Voltage: Bool {return self._ch7Voltage != nil}
+  public var hasCh7Voltage: Bool {self._ch7Voltage != nil}
   /// Clears the value of `ch7Voltage`. Subsequent reads from it will return its default value.
   public mutating func clearCh7Voltage() {self._ch7Voltage = nil}
 
   ///
   /// Current (Ch7)
   public var ch7Current: Float {
-    get {return _ch7Current ?? 0}
+    get {_ch7Current ?? 0}
     set {_ch7Current = newValue}
   }
   /// Returns true if `ch7Current` has been explicitly set.
-  public var hasCh7Current: Bool {return self._ch7Current != nil}
+  public var hasCh7Current: Bool {self._ch7Current != nil}
   /// Clears the value of `ch7Current`. Subsequent reads from it will return its default value.
   public mutating func clearCh7Current() {self._ch7Current = nil}
 
   ///
   /// Voltage (Ch8)
   public var ch8Voltage: Float {
-    get {return _ch8Voltage ?? 0}
+    get {_ch8Voltage ?? 0}
     set {_ch8Voltage = newValue}
   }
   /// Returns true if `ch8Voltage` has been explicitly set.
-  public var hasCh8Voltage: Bool {return self._ch8Voltage != nil}
+  public var hasCh8Voltage: Bool {self._ch8Voltage != nil}
   /// Clears the value of `ch8Voltage`. Subsequent reads from it will return its default value.
   public mutating func clearCh8Voltage() {self._ch8Voltage = nil}
 
   ///
   /// Current (Ch8)
   public var ch8Current: Float {
-    get {return _ch8Current ?? 0}
+    get {_ch8Current ?? 0}
     set {_ch8Current = newValue}
   }
   /// Returns true if `ch8Current` has been explicitly set.
-  public var hasCh8Current: Bool {return self._ch8Current != nil}
+  public var hasCh8Current: Bool {self._ch8Current != nil}
   /// Clears the value of `ch8Current`. Subsequent reads from it will return its default value.
   public mutating func clearCh8Current() {self._ch8Current = nil}
 
@@ -979,275 +979,275 @@ public struct AirQualityMetrics: @unchecked Sendable {
   ///
   /// Concentration Units Standard PM1.0 in ug/m3
   public var pm10Standard: UInt32 {
-    get {return _storage._pm10Standard ?? 0}
+    get {_storage._pm10Standard ?? 0}
     set {_uniqueStorage()._pm10Standard = newValue}
   }
   /// Returns true if `pm10Standard` has been explicitly set.
-  public var hasPm10Standard: Bool {return _storage._pm10Standard != nil}
+  public var hasPm10Standard: Bool {_storage._pm10Standard != nil}
   /// Clears the value of `pm10Standard`. Subsequent reads from it will return its default value.
   public mutating func clearPm10Standard() {_uniqueStorage()._pm10Standard = nil}
 
   ///
   /// Concentration Units Standard PM2.5 in ug/m3
   public var pm25Standard: UInt32 {
-    get {return _storage._pm25Standard ?? 0}
+    get {_storage._pm25Standard ?? 0}
     set {_uniqueStorage()._pm25Standard = newValue}
   }
   /// Returns true if `pm25Standard` has been explicitly set.
-  public var hasPm25Standard: Bool {return _storage._pm25Standard != nil}
+  public var hasPm25Standard: Bool {_storage._pm25Standard != nil}
   /// Clears the value of `pm25Standard`. Subsequent reads from it will return its default value.
   public mutating func clearPm25Standard() {_uniqueStorage()._pm25Standard = nil}
 
   ///
   /// Concentration Units Standard PM10.0 in ug/m3
   public var pm100Standard: UInt32 {
-    get {return _storage._pm100Standard ?? 0}
+    get {_storage._pm100Standard ?? 0}
     set {_uniqueStorage()._pm100Standard = newValue}
   }
   /// Returns true if `pm100Standard` has been explicitly set.
-  public var hasPm100Standard: Bool {return _storage._pm100Standard != nil}
+  public var hasPm100Standard: Bool {_storage._pm100Standard != nil}
   /// Clears the value of `pm100Standard`. Subsequent reads from it will return its default value.
   public mutating func clearPm100Standard() {_uniqueStorage()._pm100Standard = nil}
 
   ///
   /// Concentration Units Environmental PM1.0 in ug/m3
   public var pm10Environmental: UInt32 {
-    get {return _storage._pm10Environmental ?? 0}
+    get {_storage._pm10Environmental ?? 0}
     set {_uniqueStorage()._pm10Environmental = newValue}
   }
   /// Returns true if `pm10Environmental` has been explicitly set.
-  public var hasPm10Environmental: Bool {return _storage._pm10Environmental != nil}
+  public var hasPm10Environmental: Bool {_storage._pm10Environmental != nil}
   /// Clears the value of `pm10Environmental`. Subsequent reads from it will return its default value.
   public mutating func clearPm10Environmental() {_uniqueStorage()._pm10Environmental = nil}
 
   ///
   /// Concentration Units Environmental PM2.5 in ug/m3
   public var pm25Environmental: UInt32 {
-    get {return _storage._pm25Environmental ?? 0}
+    get {_storage._pm25Environmental ?? 0}
     set {_uniqueStorage()._pm25Environmental = newValue}
   }
   /// Returns true if `pm25Environmental` has been explicitly set.
-  public var hasPm25Environmental: Bool {return _storage._pm25Environmental != nil}
+  public var hasPm25Environmental: Bool {_storage._pm25Environmental != nil}
   /// Clears the value of `pm25Environmental`. Subsequent reads from it will return its default value.
   public mutating func clearPm25Environmental() {_uniqueStorage()._pm25Environmental = nil}
 
   ///
   /// Concentration Units Environmental PM10.0 in ug/m3
   public var pm100Environmental: UInt32 {
-    get {return _storage._pm100Environmental ?? 0}
+    get {_storage._pm100Environmental ?? 0}
     set {_uniqueStorage()._pm100Environmental = newValue}
   }
   /// Returns true if `pm100Environmental` has been explicitly set.
-  public var hasPm100Environmental: Bool {return _storage._pm100Environmental != nil}
+  public var hasPm100Environmental: Bool {_storage._pm100Environmental != nil}
   /// Clears the value of `pm100Environmental`. Subsequent reads from it will return its default value.
   public mutating func clearPm100Environmental() {_uniqueStorage()._pm100Environmental = nil}
 
   ///
   /// 0.3um Particle Count in #/0.1l
   public var particles03Um: UInt32 {
-    get {return _storage._particles03Um ?? 0}
+    get {_storage._particles03Um ?? 0}
     set {_uniqueStorage()._particles03Um = newValue}
   }
   /// Returns true if `particles03Um` has been explicitly set.
-  public var hasParticles03Um: Bool {return _storage._particles03Um != nil}
+  public var hasParticles03Um: Bool {_storage._particles03Um != nil}
   /// Clears the value of `particles03Um`. Subsequent reads from it will return its default value.
   public mutating func clearParticles03Um() {_uniqueStorage()._particles03Um = nil}
 
   ///
   /// 0.5um Particle Count in #/0.1l
   public var particles05Um: UInt32 {
-    get {return _storage._particles05Um ?? 0}
+    get {_storage._particles05Um ?? 0}
     set {_uniqueStorage()._particles05Um = newValue}
   }
   /// Returns true if `particles05Um` has been explicitly set.
-  public var hasParticles05Um: Bool {return _storage._particles05Um != nil}
+  public var hasParticles05Um: Bool {_storage._particles05Um != nil}
   /// Clears the value of `particles05Um`. Subsequent reads from it will return its default value.
   public mutating func clearParticles05Um() {_uniqueStorage()._particles05Um = nil}
 
   ///
   /// 1.0um Particle Count in #/0.1l
   public var particles10Um: UInt32 {
-    get {return _storage._particles10Um ?? 0}
+    get {_storage._particles10Um ?? 0}
     set {_uniqueStorage()._particles10Um = newValue}
   }
   /// Returns true if `particles10Um` has been explicitly set.
-  public var hasParticles10Um: Bool {return _storage._particles10Um != nil}
+  public var hasParticles10Um: Bool {_storage._particles10Um != nil}
   /// Clears the value of `particles10Um`. Subsequent reads from it will return its default value.
   public mutating func clearParticles10Um() {_uniqueStorage()._particles10Um = nil}
 
   ///
   /// 2.5um Particle Count in #/0.1l
   public var particles25Um: UInt32 {
-    get {return _storage._particles25Um ?? 0}
+    get {_storage._particles25Um ?? 0}
     set {_uniqueStorage()._particles25Um = newValue}
   }
   /// Returns true if `particles25Um` has been explicitly set.
-  public var hasParticles25Um: Bool {return _storage._particles25Um != nil}
+  public var hasParticles25Um: Bool {_storage._particles25Um != nil}
   /// Clears the value of `particles25Um`. Subsequent reads from it will return its default value.
   public mutating func clearParticles25Um() {_uniqueStorage()._particles25Um = nil}
 
   ///
   /// 5.0um Particle Count in #/0.1l
   public var particles50Um: UInt32 {
-    get {return _storage._particles50Um ?? 0}
+    get {_storage._particles50Um ?? 0}
     set {_uniqueStorage()._particles50Um = newValue}
   }
   /// Returns true if `particles50Um` has been explicitly set.
-  public var hasParticles50Um: Bool {return _storage._particles50Um != nil}
+  public var hasParticles50Um: Bool {_storage._particles50Um != nil}
   /// Clears the value of `particles50Um`. Subsequent reads from it will return its default value.
   public mutating func clearParticles50Um() {_uniqueStorage()._particles50Um = nil}
 
   ///
   /// 10.0um Particle Count in #/0.1l
   public var particles100Um: UInt32 {
-    get {return _storage._particles100Um ?? 0}
+    get {_storage._particles100Um ?? 0}
     set {_uniqueStorage()._particles100Um = newValue}
   }
   /// Returns true if `particles100Um` has been explicitly set.
-  public var hasParticles100Um: Bool {return _storage._particles100Um != nil}
+  public var hasParticles100Um: Bool {_storage._particles100Um != nil}
   /// Clears the value of `particles100Um`. Subsequent reads from it will return its default value.
   public mutating func clearParticles100Um() {_uniqueStorage()._particles100Um = nil}
 
   ///
   /// CO2 concentration in ppm
   public var co2: UInt32 {
-    get {return _storage._co2 ?? 0}
+    get {_storage._co2 ?? 0}
     set {_uniqueStorage()._co2 = newValue}
   }
   /// Returns true if `co2` has been explicitly set.
-  public var hasCo2: Bool {return _storage._co2 != nil}
+  public var hasCo2: Bool {_storage._co2 != nil}
   /// Clears the value of `co2`. Subsequent reads from it will return its default value.
   public mutating func clearCo2() {_uniqueStorage()._co2 = nil}
 
   ///
   /// CO2 sensor temperature in degC
   public var co2Temperature: Float {
-    get {return _storage._co2Temperature ?? 0}
+    get {_storage._co2Temperature ?? 0}
     set {_uniqueStorage()._co2Temperature = newValue}
   }
   /// Returns true if `co2Temperature` has been explicitly set.
-  public var hasCo2Temperature: Bool {return _storage._co2Temperature != nil}
+  public var hasCo2Temperature: Bool {_storage._co2Temperature != nil}
   /// Clears the value of `co2Temperature`. Subsequent reads from it will return its default value.
   public mutating func clearCo2Temperature() {_uniqueStorage()._co2Temperature = nil}
 
   ///
   /// CO2 sensor relative humidity in %
   public var co2Humidity: Float {
-    get {return _storage._co2Humidity ?? 0}
+    get {_storage._co2Humidity ?? 0}
     set {_uniqueStorage()._co2Humidity = newValue}
   }
   /// Returns true if `co2Humidity` has been explicitly set.
-  public var hasCo2Humidity: Bool {return _storage._co2Humidity != nil}
+  public var hasCo2Humidity: Bool {_storage._co2Humidity != nil}
   /// Clears the value of `co2Humidity`. Subsequent reads from it will return its default value.
   public mutating func clearCo2Humidity() {_uniqueStorage()._co2Humidity = nil}
 
   ///
   /// Formaldehyde sensor formaldehyde concentration in ppb
   public var formFormaldehyde: Float {
-    get {return _storage._formFormaldehyde ?? 0}
+    get {_storage._formFormaldehyde ?? 0}
     set {_uniqueStorage()._formFormaldehyde = newValue}
   }
   /// Returns true if `formFormaldehyde` has been explicitly set.
-  public var hasFormFormaldehyde: Bool {return _storage._formFormaldehyde != nil}
+  public var hasFormFormaldehyde: Bool {_storage._formFormaldehyde != nil}
   /// Clears the value of `formFormaldehyde`. Subsequent reads from it will return its default value.
   public mutating func clearFormFormaldehyde() {_uniqueStorage()._formFormaldehyde = nil}
 
   ///
   /// Formaldehyde sensor relative humidity in %RH
   public var formHumidity: Float {
-    get {return _storage._formHumidity ?? 0}
+    get {_storage._formHumidity ?? 0}
     set {_uniqueStorage()._formHumidity = newValue}
   }
   /// Returns true if `formHumidity` has been explicitly set.
-  public var hasFormHumidity: Bool {return _storage._formHumidity != nil}
+  public var hasFormHumidity: Bool {_storage._formHumidity != nil}
   /// Clears the value of `formHumidity`. Subsequent reads from it will return its default value.
   public mutating func clearFormHumidity() {_uniqueStorage()._formHumidity = nil}
 
   ///
   /// Formaldehyde sensor temperature in degrees Celsius
   public var formTemperature: Float {
-    get {return _storage._formTemperature ?? 0}
+    get {_storage._formTemperature ?? 0}
     set {_uniqueStorage()._formTemperature = newValue}
   }
   /// Returns true if `formTemperature` has been explicitly set.
-  public var hasFormTemperature: Bool {return _storage._formTemperature != nil}
+  public var hasFormTemperature: Bool {_storage._formTemperature != nil}
   /// Clears the value of `formTemperature`. Subsequent reads from it will return its default value.
   public mutating func clearFormTemperature() {_uniqueStorage()._formTemperature = nil}
 
   ///
   /// Concentration Units Standard PM4.0 in ug/m3
   public var pm40Standard: UInt32 {
-    get {return _storage._pm40Standard ?? 0}
+    get {_storage._pm40Standard ?? 0}
     set {_uniqueStorage()._pm40Standard = newValue}
   }
   /// Returns true if `pm40Standard` has been explicitly set.
-  public var hasPm40Standard: Bool {return _storage._pm40Standard != nil}
+  public var hasPm40Standard: Bool {_storage._pm40Standard != nil}
   /// Clears the value of `pm40Standard`. Subsequent reads from it will return its default value.
   public mutating func clearPm40Standard() {_uniqueStorage()._pm40Standard = nil}
 
   ///
   /// 4.0um Particle Count in #/0.1l
   public var particles40Um: UInt32 {
-    get {return _storage._particles40Um ?? 0}
+    get {_storage._particles40Um ?? 0}
     set {_uniqueStorage()._particles40Um = newValue}
   }
   /// Returns true if `particles40Um` has been explicitly set.
-  public var hasParticles40Um: Bool {return _storage._particles40Um != nil}
+  public var hasParticles40Um: Bool {_storage._particles40Um != nil}
   /// Clears the value of `particles40Um`. Subsequent reads from it will return its default value.
   public mutating func clearParticles40Um() {_uniqueStorage()._particles40Um = nil}
 
   ///
   /// PM Sensor Temperature
   public var pmTemperature: Float {
-    get {return _storage._pmTemperature ?? 0}
+    get {_storage._pmTemperature ?? 0}
     set {_uniqueStorage()._pmTemperature = newValue}
   }
   /// Returns true if `pmTemperature` has been explicitly set.
-  public var hasPmTemperature: Bool {return _storage._pmTemperature != nil}
+  public var hasPmTemperature: Bool {_storage._pmTemperature != nil}
   /// Clears the value of `pmTemperature`. Subsequent reads from it will return its default value.
   public mutating func clearPmTemperature() {_uniqueStorage()._pmTemperature = nil}
 
   ///
   /// PM Sensor humidity
   public var pmHumidity: Float {
-    get {return _storage._pmHumidity ?? 0}
+    get {_storage._pmHumidity ?? 0}
     set {_uniqueStorage()._pmHumidity = newValue}
   }
   /// Returns true if `pmHumidity` has been explicitly set.
-  public var hasPmHumidity: Bool {return _storage._pmHumidity != nil}
+  public var hasPmHumidity: Bool {_storage._pmHumidity != nil}
   /// Clears the value of `pmHumidity`. Subsequent reads from it will return its default value.
   public mutating func clearPmHumidity() {_uniqueStorage()._pmHumidity = nil}
 
   ///
   /// PM Sensor VOC Index
   public var pmVocIdx: Float {
-    get {return _storage._pmVocIdx ?? 0}
+    get {_storage._pmVocIdx ?? 0}
     set {_uniqueStorage()._pmVocIdx = newValue}
   }
   /// Returns true if `pmVocIdx` has been explicitly set.
-  public var hasPmVocIdx: Bool {return _storage._pmVocIdx != nil}
+  public var hasPmVocIdx: Bool {_storage._pmVocIdx != nil}
   /// Clears the value of `pmVocIdx`. Subsequent reads from it will return its default value.
   public mutating func clearPmVocIdx() {_uniqueStorage()._pmVocIdx = nil}
 
   ///
   /// PM Sensor NOx Index
   public var pmNoxIdx: Float {
-    get {return _storage._pmNoxIdx ?? 0}
+    get {_storage._pmNoxIdx ?? 0}
     set {_uniqueStorage()._pmNoxIdx = newValue}
   }
   /// Returns true if `pmNoxIdx` has been explicitly set.
-  public var hasPmNoxIdx: Bool {return _storage._pmNoxIdx != nil}
+  public var hasPmNoxIdx: Bool {_storage._pmNoxIdx != nil}
   /// Clears the value of `pmNoxIdx`. Subsequent reads from it will return its default value.
   public mutating func clearPmNoxIdx() {_uniqueStorage()._pmNoxIdx = nil}
 
   ///
   /// Typical Particle Size in um
   public var particlesTps: Float {
-    get {return _storage._particlesTps ?? 0}
+    get {_storage._particlesTps ?? 0}
     set {_uniqueStorage()._particlesTps = newValue}
   }
   /// Returns true if `particlesTps` has been explicitly set.
-  public var hasParticlesTps: Bool {return _storage._particlesTps != nil}
+  public var hasParticlesTps: Bool {_storage._particlesTps != nil}
   /// Clears the value of `particlesTps`. Subsequent reads from it will return its default value.
   public mutating func clearParticlesTps() {_uniqueStorage()._particlesTps = nil}
 
@@ -1382,33 +1382,33 @@ public struct HealthMetrics: Sendable {
   ///
   /// Heart rate (beats per minute)
   public var heartBpm: UInt32 {
-    get {return _heartBpm ?? 0}
+    get {_heartBpm ?? 0}
     set {_heartBpm = newValue}
   }
   /// Returns true if `heartBpm` has been explicitly set.
-  public var hasHeartBpm: Bool {return self._heartBpm != nil}
+  public var hasHeartBpm: Bool {self._heartBpm != nil}
   /// Clears the value of `heartBpm`. Subsequent reads from it will return its default value.
   public mutating func clearHeartBpm() {self._heartBpm = nil}
 
   ///
   /// SpO2 (blood oxygen saturation) level
   public var spO2: UInt32 {
-    get {return _spO2 ?? 0}
+    get {_spO2 ?? 0}
     set {_spO2 = newValue}
   }
   /// Returns true if `spO2` has been explicitly set.
-  public var hasSpO2: Bool {return self._spO2 != nil}
+  public var hasSpO2: Bool {self._spO2 != nil}
   /// Clears the value of `spO2`. Subsequent reads from it will return its default value.
   public mutating func clearSpO2() {self._spO2 = nil}
 
   ///
   /// Body temperature in degrees Celsius
   public var temperature: Float {
-    get {return _temperature ?? 0}
+    get {_temperature ?? 0}
     set {_temperature = newValue}
   }
   /// Returns true if `temperature` has been explicitly set.
-  public var hasTemperature: Bool {return self._temperature != nil}
+  public var hasTemperature: Bool {self._temperature != nil}
   /// Clears the value of `temperature`. Subsequent reads from it will return its default value.
   public mutating func clearTemperature() {self._temperature = nil}
 
@@ -1443,22 +1443,22 @@ public struct HostMetrics: Sendable {
   ///
   /// Secondary system disk space free
   public var diskfree2Bytes: UInt64 {
-    get {return _diskfree2Bytes ?? 0}
+    get {_diskfree2Bytes ?? 0}
     set {_diskfree2Bytes = newValue}
   }
   /// Returns true if `diskfree2Bytes` has been explicitly set.
-  public var hasDiskfree2Bytes: Bool {return self._diskfree2Bytes != nil}
+  public var hasDiskfree2Bytes: Bool {self._diskfree2Bytes != nil}
   /// Clears the value of `diskfree2Bytes`. Subsequent reads from it will return its default value.
   public mutating func clearDiskfree2Bytes() {self._diskfree2Bytes = nil}
 
   ///
   /// Tertiary disk space free
   public var diskfree3Bytes: UInt64 {
-    get {return _diskfree3Bytes ?? 0}
+    get {_diskfree3Bytes ?? 0}
     set {_diskfree3Bytes = newValue}
   }
   /// Returns true if `diskfree3Bytes` has been explicitly set.
-  public var hasDiskfree3Bytes: Bool {return self._diskfree3Bytes != nil}
+  public var hasDiskfree3Bytes: Bool {self._diskfree3Bytes != nil}
   /// Clears the value of `diskfree3Bytes`. Subsequent reads from it will return its default value.
   public mutating func clearDiskfree3Bytes() {self._diskfree3Bytes = nil}
 
@@ -1478,11 +1478,11 @@ public struct HostMetrics: Sendable {
   /// Optional User-provided string for arbitrary host system information
   /// that doesn't make sense as a dedicated entry.
   public var userString: String {
-    get {return _userString ?? String()}
+    get {_userString ?? String()}
     set {_userString = newValue}
   }
   /// Returns true if `userString` has been explicitly set.
-  public var hasUserString: Bool {return self._userString != nil}
+  public var hasUserString: Bool {self._userString != nil}
   /// Clears the value of `userString`. Subsequent reads from it will return its default value.
   public mutating func clearUserString() {self._userString = nil}
 
@@ -1505,7 +1505,7 @@ public struct Telemetry: @unchecked Sendable {
   ///
   /// Seconds since 1970 - or 0 for unknown/unset
   public var time: UInt32 {
-    get {return _storage._time}
+    get {_storage._time}
     set {_uniqueStorage()._time = newValue}
   }
 
@@ -1671,33 +1671,33 @@ public struct SEN5XState: Sendable {
   ///
   /// Last VOC state time for SEN55
   public var vocStateTime: UInt32 {
-    get {return _vocStateTime ?? 0}
+    get {_vocStateTime ?? 0}
     set {_vocStateTime = newValue}
   }
   /// Returns true if `vocStateTime` has been explicitly set.
-  public var hasVocStateTime: Bool {return self._vocStateTime != nil}
+  public var hasVocStateTime: Bool {self._vocStateTime != nil}
   /// Clears the value of `vocStateTime`. Subsequent reads from it will return its default value.
   public mutating func clearVocStateTime() {self._vocStateTime = nil}
 
   ///
   /// Last VOC state validity flag for SEN55
   public var vocStateValid: Bool {
-    get {return _vocStateValid ?? false}
+    get {_vocStateValid ?? false}
     set {_vocStateValid = newValue}
   }
   /// Returns true if `vocStateValid` has been explicitly set.
-  public var hasVocStateValid: Bool {return self._vocStateValid != nil}
+  public var hasVocStateValid: Bool {self._vocStateValid != nil}
   /// Clears the value of `vocStateValid`. Subsequent reads from it will return its default value.
   public mutating func clearVocStateValid() {self._vocStateValid = nil}
 
   ///
   /// VOC state array (8x uint8t) for SEN55
   public var vocStateArray: UInt64 {
-    get {return _vocStateArray ?? 0}
+    get {_vocStateArray ?? 0}
     set {_vocStateArray = newValue}
   }
   /// Returns true if `vocStateArray` has been explicitly set.
-  public var hasVocStateArray: Bool {return self._vocStateArray != nil}
+  public var hasVocStateArray: Bool {self._vocStateArray != nil}
   /// Clears the value of `vocStateArray`. Subsequent reads from it will return its default value.
   public mutating func clearVocStateArray() {self._vocStateArray = nil}
 

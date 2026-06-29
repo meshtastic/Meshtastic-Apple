@@ -28,12 +28,13 @@ struct MessageContextMenuItems: View {
 			Text("Channel") + Text(": \(message.channel)")
 		}
 		.onAppear {
-			DispatchQueue.global(qos: .userInitiated).async {
-				let result = message.relayDisplay()
-				DispatchQueue.main.async {
-					relayDisplay = result
-				}
-			}
+			// relayDisplay() is @MainActor and reads the shared main ModelContext plus
+			// SwiftData @Model relationships, none of which are thread-safe. The previous
+			// DispatchQueue.global hop ran it on background threads — concurrently across
+			// every visible message's context menu — which corrupted the SwiftData object
+			// graph and aborted with a double-free (SIGABRT in libmalloc). onAppear already
+			// runs on the main actor, so call it directly on the right queue.
+			relayDisplay = message.relayDisplay()
 		}
 
 		Button("Tapback") {

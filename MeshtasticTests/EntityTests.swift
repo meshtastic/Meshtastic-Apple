@@ -94,6 +94,57 @@ struct CreateNodeInfoTests {
 	}
 }
 
+// MARK: - findOrCreateNode Tests
+//
+// NodeInfoEntity.num is @Attribute(.unique). SwiftData resolves unique collisions against the saved
+// store only — not against un-saved inserts pending in the same context — so a plain fetch-then-
+// insert can leave two pending rows with the same num and trap at save. That was the top 2.7.13
+// crash (issue 4fb84588: createNodeInfo from upsertPositionPacket on a POSITION packet that arrives
+// before the node's NodeInfo). findOrCreateNode dedups against pending inserts too.
+
+@Suite("findOrCreateNode")
+struct FindOrCreateNodeTests {
+
+	/// A fresh context over the shared container isolates this test's pending inserts from others.
+	@MainActor private func freshContext() -> ModelContext {
+		ModelContext(sharedModelContainer)
+	}
+
+	@Test @MainActor func dedupesPendingInsertBeforeSave() throws {
+		let context = freshContext()
+		let num: Int64 = 0x1A2B_3C40
+
+		let first = findOrCreateNode(num: num, context: context)
+		// Not saved yet: a plain fetch wouldn't see it, but findOrCreateNode checks pending inserts.
+		let second = findOrCreateNode(num: num, context: context)
+
+		#expect(first === second)
+		let pending = context.insertedModelsArray.compactMap { $0 as? NodeInfoEntity }.filter { $0.num == num }
+		#expect(pending.count == 1)
+
+		// The original bug trapped here — saving two pending rows with the same unique `num`.
+		try context.save()
+		var descriptor = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == num })
+		descriptor.fetchLimit = 2
+		#expect(try context.fetch(descriptor).count == 1)
+	}
+
+	@Test @MainActor func returnsExistingSavedNode() throws {
+		let context = freshContext()
+		let num: Int64 = 0x0BAD_F00D
+
+		let created = findOrCreateNode(num: num, context: context)
+		try context.save()
+
+		let again = findOrCreateNode(num: num, context: context)
+		#expect(created.num == again.num)
+
+		var descriptor = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == num })
+		descriptor.fetchLimit = 2
+		#expect(try context.fetch(descriptor).count == 1)
+	}
+}
+
 // MARK: - UserEntity.hardwareImage Tests
 
 @Suite("UserEntity hardwareImage", .serialized)

@@ -10,7 +10,7 @@
 <h1>Map &amp; Waypoints</h1>
 <p>The Map tab shows all nodes that have shared a position, overlaid on an Apple Maps base layer.</p>
 <h2>Node Pins</h2>
-<p>Each node that has reported a GPS position appears as a coloured circle pin on the map. The <strong>green solid line</strong> shows a directly connected node; <strong>orange dashed lines</strong> show nodes reached via the mesh. A purple star marks a waypoint. Tap a pin to see the node name, last heard time, signal info, and a shortcut to send a direct message.</p>
+<p>Each node that has reported a GPS position appears as a colored circle pin on the map. The <strong>green solid line</strong> shows a directly connected node; <strong>orange dashed lines</strong> show nodes reached via the mesh. A purple star marks a waypoint. Tap a pin to see the node name, last heard time, signal info, and a shortcut to send a direct message.</p>
 <p>Pins update automatically when a new position packet is received from the mesh.</p>
 <h2>Filtering Nodes on the Map</h2>
 <p>Tap the <strong>filter button</strong> (funnel icon, <code>line.3.horizontal.decrease.circle</code>) in the bottom-right toolbar to open the Map Filters sheet. When any filter is active, the icon appears <strong>filled</strong> to indicate filtering is in effect.</p>
@@ -40,7 +40,7 @@
 </tr>
 <tr>
 <td>Favorites</td>
-<td>Show only nodes you have starred as favourites</td>
+<td>Show only nodes you have starred as favorites</td>
 </tr>
 <tr>
 <td>Distance</td>
@@ -94,6 +94,18 @@ Enable the <strong>Via LoRa</strong> filter and disable <strong>Via MQTT</strong
 <p>Tap an existing waypoint pin, then tap <strong>Edit</strong>. Changes broadcast to the mesh immediately.</p>
 <h3>Deleting a Waypoint</h3>
 <p>Tap the waypoint, then tap <strong>Delete</strong>. The deletion broadcasts to all nodes.</p>
+<h2>Trace Routes on the Map</h2>
+<p>A trace route can be drawn on the map to show the path a packet took through the mesh. Open <strong>Settings → Logging → Trace Routes</strong> (or a node's Trace Route log), select a route, and tap <strong>Show on Map</strong>.</p>
+<h3>Reading the Route</h3>
+<ul>
+<li><strong>Colored legs</strong> — each hop is colored by its signal quality (SNR), using the same scale as the LoRa signal meter: <strong>green</strong> (good), <strong>yellow</strong> (fair), <strong>orange</strong> (bad), <strong>red</strong> (none).</li>
+<li><strong>Solid vs. dashed</strong> — the <strong>solid</strong> line is the outbound path toward the target; the <strong>dashed</strong> line is the return path back to the originator.</li>
+<li><strong>Arrows</strong> — chevrons along each line point in the direction of travel.</li>
+<li><strong>Endpoints</strong> — a <strong>green</strong> marker is the originator; a <strong>red</strong> marker is the target.</li>
+</ul>
+<h3>3D Flyover</h3>
+<p>Tap <strong>▶</strong> in the route banner for a guided 3D flythrough over satellite imagery: it flies the outbound path, lands at the target, then flies the return path and eases back to the map. Tap the <strong>speed control</strong> to cycle the pace from 1× up to 5× (1×, 1.5×, 2×, 2.5×, 3×, 4×, 5×) — adjustable mid-flight — and <strong>■</strong> to stop.</p>
+<p>Tap the <strong>legend</strong> button (map icon, bottom-right) for a key to the colors and markers.</p>
 <h2>Node Trail</h2>
 <p>When a node has reported multiple positions over time, a trail line connects the historical positions on the map, showing the node's path.</p>
 <h2>Your Location</h2>

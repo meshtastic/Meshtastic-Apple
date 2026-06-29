@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # scripts/cut-release-docs.sh
-# Rebuilds in-app HTML docs without the pre-release banner, commits, and tags.
+# Rebuilds in-app HTML docs, copies doc screenshots, commits, and tags.
 # Usage: bash scripts/cut-release-docs.sh <version>
 # See specs/013-docs-release-versioning/contracts/script-contract.md for full interface.
 
@@ -112,8 +112,8 @@ main() {
     check_docs_clean
     info "All pre-flight checks passed (version: $VERSION)"
 
-    # Rebuild in-app docs without --beta
-    info "Rebuilding in-app docs without pre-release banner..."
+    # Rebuild in-app docs
+    info "Rebuilding in-app docs..."
     bash "$REPO_ROOT/scripts/build-docs.sh" --output "$REPO_ROOT/Meshtastic/Resources/docs"
 
     # Copy doc-referenced screenshots
@@ -141,7 +141,7 @@ main() {
 
     # Success summary
     echo ""
-    info "Rebuilt in-app docs without pre-release banner"
+    info "Rebuilt in-app docs"
     info "${changed_count} HTML file(s) changed in commit ${short_sha}"
     info "Tag v${VERSION} created → ${short_sha}"
     echo ""

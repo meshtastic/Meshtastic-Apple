@@ -96,7 +96,7 @@
 
 - [x] T021 [P] Update `docs/user/nodes.md` with documentation about hardware info panel (support tiers), and the "I want one" device purchase links section
 - [x] T022 [P] Update `docs/user/settings.md` with documentation about the Device Links directory and Erase All App Data repopulating the device catalog
-- [x] T023 Run `bash scripts/build-docs.sh --output Meshtastic/Resources/docs --beta` to regenerate bundled HTML
+- [x] T023 Run `bash scripts/build-docs.sh --output Meshtastic/Resources/docs` to regenerate bundled HTML
 - [ ] T024 Run quickstart.md validation — build, launch, verify links appear for a known device
 - [x] T025 Verify SwiftLint passes with no new warnings (`swiftlint lint`)
 

@@ -8,7 +8,11 @@
 // For information on using the generated types, please see the documentation:
 //   https://github.com/apple/swift-protobuf/
 
+#if canImport(FoundationEssentials)
+import FoundationEssentials
+#else
 import Foundation
+#endif
 import SwiftProtobuf
 
 // If the compiler emits an error on this type, it is because this file
@@ -52,6 +56,10 @@ public struct PositionLite: Sendable {
   ///
   /// TODO: REPLACE
   public var locationSource: Position.LocSource = .locUnset
+
+  ///
+  /// Indicates the bits of precision set by the sending node
+  public var precisionBits: UInt32 = 0
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -103,11 +111,11 @@ public struct UserLite: Sendable {
   ///
   /// Whether or not the node can be messaged
   public var isUnmessagable: Bool {
-    get {return _isUnmessagable ?? false}
+    get {_isUnmessagable ?? false}
     set {_isUnmessagable = newValue}
   }
   /// Returns true if `isUnmessagable` has been explicitly set.
-  public var hasIsUnmessagable: Bool {return self._isUnmessagable != nil}
+  public var hasIsUnmessagable: Bool {self._isUnmessagable != nil}
   /// Clears the value of `isUnmessagable`. Subsequent reads from it will return its default value.
   public mutating func clearIsUnmessagable() {self._isUnmessagable = nil}
 
@@ -118,129 +126,79 @@ public struct UserLite: Sendable {
   fileprivate var _isUnmessagable: Bool? = nil
 }
 
-public struct NodeInfoLite: @unchecked Sendable {
+public struct NodeInfoLite: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
   ///
   /// The node number
-  public var num: UInt32 {
-    get {return _storage._num}
-    set {_uniqueStorage()._num = newValue}
-  }
+  public var num: UInt32 = 0
 
   ///
-  /// The user info for this node
-  public var user: UserLite {
-    get {return _storage._user ?? UserLite()}
-    set {_uniqueStorage()._user = newValue}
-  }
-  /// Returns true if `user` has been explicitly set.
-  public var hasUser: Bool {return _storage._user != nil}
-  /// Clears the value of `user`. Subsequent reads from it will return its default value.
-  public mutating func clearUser() {_uniqueStorage()._user = nil}
-
-  ///
-  /// This position data. Note: before 1.2.14 we would also store the last time we've heard from this node in position.time, that is no longer true.
-  /// Position.time now indicates the last time we received a POSITION from that node.
-  public var position: PositionLite {
-    get {return _storage._position ?? PositionLite()}
-    set {_uniqueStorage()._position = newValue}
-  }
-  /// Returns true if `position` has been explicitly set.
-  public var hasPosition: Bool {return _storage._position != nil}
-  /// Clears the value of `position`. Subsequent reads from it will return its default value.
-  public mutating func clearPosition() {_uniqueStorage()._position = nil}
-
-  ///
-  /// Returns the Signal-to-noise ratio (SNR) of the last received message,
-  /// as measured by the receiver. Return SNR of the last received message in dB
-  public var snr: Float {
-    get {return _storage._snr}
-    set {_uniqueStorage()._snr = newValue}
-  }
+  /// In-memory SNR of the last received message in dB. Not serialised directly:
+  /// always zeroed before encode; persisted as snr_q4 = 19 below.
+  public var snr: Float = 0
 
   ///
   /// Set to indicate the last time we received a packet from this node
-  public var lastHeard: UInt32 {
-    get {return _storage._lastHeard}
-    set {_uniqueStorage()._lastHeard = newValue}
-  }
-
-  ///
-  /// The latest device metrics for the node.
-  public var deviceMetrics: DeviceMetrics {
-    get {return _storage._deviceMetrics ?? DeviceMetrics()}
-    set {_uniqueStorage()._deviceMetrics = newValue}
-  }
-  /// Returns true if `deviceMetrics` has been explicitly set.
-  public var hasDeviceMetrics: Bool {return _storage._deviceMetrics != nil}
-  /// Clears the value of `deviceMetrics`. Subsequent reads from it will return its default value.
-  public mutating func clearDeviceMetrics() {_uniqueStorage()._deviceMetrics = nil}
+  public var lastHeard: UInt32 = 0
 
   ///
   /// local channel index we heard that node on. Only populated if its not the default channel.
-  public var channel: UInt32 {
-    get {return _storage._channel}
-    set {_uniqueStorage()._channel = newValue}
-  }
-
-  ///
-  /// True if we witnessed the node over MQTT instead of LoRA transport
-  public var viaMqtt: Bool {
-    get {return _storage._viaMqtt}
-    set {_uniqueStorage()._viaMqtt = newValue}
-  }
+  public var channel: UInt32 = 0
 
   ///
   /// Number of hops away from us this node is (0 if direct neighbor)
   public var hopsAway: UInt32 {
-    get {return _storage._hopsAway ?? 0}
-    set {_uniqueStorage()._hopsAway = newValue}
+    get {_hopsAway ?? 0}
+    set {_hopsAway = newValue}
   }
   /// Returns true if `hopsAway` has been explicitly set.
-  public var hasHopsAway: Bool {return _storage._hopsAway != nil}
+  public var hasHopsAway: Bool {self._hopsAway != nil}
   /// Clears the value of `hopsAway`. Subsequent reads from it will return its default value.
-  public mutating func clearHopsAway() {_uniqueStorage()._hopsAway = nil}
-
-  ///
-  /// True if node is in our favorites list
-  /// Persists between NodeDB internal clean ups
-  public var isFavorite: Bool {
-    get {return _storage._isFavorite}
-    set {_uniqueStorage()._isFavorite = newValue}
-  }
-
-  ///
-  /// True if node is in our ignored list
-  /// Persists between NodeDB internal clean ups
-  public var isIgnored: Bool {
-    get {return _storage._isIgnored}
-    set {_uniqueStorage()._isIgnored = newValue}
-  }
+  public mutating func clearHopsAway() {self._hopsAway = nil}
 
   ///
   /// Last byte of the node number of the node that should be used as the next hop to reach this node.
-  public var nextHop: UInt32 {
-    get {return _storage._nextHop}
-    set {_uniqueStorage()._nextHop = newValue}
-  }
+  public var nextHop: UInt32 = 0
 
   ///
-  /// Bitfield for storing booleans.
-  /// LSB 0 is_key_manually_verified
-  /// LSB 1 is_muted
-  public var bitfield: UInt32 {
-    get {return _storage._bitfield}
-    set {_uniqueStorage()._bitfield = newValue}
-  }
+  /// Bitfield for storing booleans. See NODEINFO_BITFIELD_* in src/mesh/NodeDB.h.
+  public var bitfield: UInt32 = 0
+
+  ///
+  /// A full name for this user, i.e. "Kevin Hester".
+  public var longName: String = String()
+
+  ///
+  /// A VERY short name, ideally two characters or an emoji.
+  /// Suitable for a tiny OLED screen.
+  public var shortName: String = String()
+
+  ///
+  /// Hardware model the user's device is running.
+  public var hwModel: HardwareModel = .unset
+
+  ///
+  /// The user's role in the mesh.
+  public var role: Config.DeviceConfig.Role = .client
+
+  ///
+  /// The public key of the user's device, for PKI-based encrypted DMs.
+  public var publicKey: Data = Data()
+
+  ///
+  /// Q4-encoded SNR: dB × 4, sint32 zigzag. Matches RouteDiscovery convention.
+  /// Encode: snr_q4 = (int32_t)(snr * 4.0f). Decode: snr = snr_q4 / 4.0f.
+  /// float snr is always zeroed on disk; this field carries all persisted SNR.
+  public var snrQ4: Int32 = 0
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
 
-  fileprivate var _storage = _StorageClass.defaultInstance
+  fileprivate var _hopsAway: UInt32? = nil
 }
 
 ///
@@ -257,29 +215,29 @@ public struct DeviceState: @unchecked Sendable {
   ///
   /// Read only settings/info about this node
   public var myNode: MyNodeInfo {
-    get {return _storage._myNode ?? MyNodeInfo()}
+    get {_storage._myNode ?? MyNodeInfo()}
     set {_uniqueStorage()._myNode = newValue}
   }
   /// Returns true if `myNode` has been explicitly set.
-  public var hasMyNode: Bool {return _storage._myNode != nil}
+  public var hasMyNode: Bool {_storage._myNode != nil}
   /// Clears the value of `myNode`. Subsequent reads from it will return its default value.
   public mutating func clearMyNode() {_uniqueStorage()._myNode = nil}
 
   ///
   /// My owner info
   public var owner: User {
-    get {return _storage._owner ?? User()}
+    get {_storage._owner ?? User()}
     set {_uniqueStorage()._owner = newValue}
   }
   /// Returns true if `owner` has been explicitly set.
-  public var hasOwner: Bool {return _storage._owner != nil}
+  public var hasOwner: Bool {_storage._owner != nil}
   /// Clears the value of `owner`. Subsequent reads from it will return its default value.
   public mutating func clearOwner() {_uniqueStorage()._owner = nil}
 
   ///
   /// Received packets saved for delivery to the phone
   public var receiveQueue: [MeshPacket] {
-    get {return _storage._receiveQueue}
+    get {_storage._receiveQueue}
     set {_uniqueStorage()._receiveQueue = newValue}
   }
 
@@ -288,7 +246,7 @@ public struct DeviceState: @unchecked Sendable {
   /// incompatible changes This integer is set at build time and is private to
   /// NodeDB.cpp in the device code.
   public var version: UInt32 {
-    get {return _storage._version}
+    get {_storage._version}
     set {_uniqueStorage()._version = newValue}
   }
 
@@ -297,11 +255,11 @@ public struct DeviceState: @unchecked Sendable {
   /// so we can show it on the screen.
   /// Might be null
   public var rxTextMessage: MeshPacket {
-    get {return _storage._rxTextMessage ?? MeshPacket()}
+    get {_storage._rxTextMessage ?? MeshPacket()}
     set {_uniqueStorage()._rxTextMessage = newValue}
   }
   /// Returns true if `rxTextMessage` has been explicitly set.
-  public var hasRxTextMessage: Bool {return _storage._rxTextMessage != nil}
+  public var hasRxTextMessage: Bool {_storage._rxTextMessage != nil}
   /// Clears the value of `rxTextMessage`. Subsequent reads from it will return its default value.
   public mutating func clearRxTextMessage() {_uniqueStorage()._rxTextMessage = nil}
 
@@ -312,7 +270,7 @@ public struct DeviceState: @unchecked Sendable {
   ///
   /// NOTE: This field was marked as deprecated in the .proto file.
   public var noSave: Bool {
-    get {return _storage._noSave}
+    get {_storage._noSave}
     set {_uniqueStorage()._noSave = newValue}
   }
 
@@ -322,7 +280,7 @@ public struct DeviceState: @unchecked Sendable {
   ///
   /// NOTE: This field was marked as deprecated in the .proto file.
   public var didGpsReset: Bool {
-    get {return _storage._didGpsReset}
+    get {_storage._didGpsReset}
     set {_uniqueStorage()._didGpsReset = newValue}
   }
 
@@ -331,18 +289,18 @@ public struct DeviceState: @unchecked Sendable {
   /// so we can show it on the screen.
   /// Might be null
   public var rxWaypoint: MeshPacket {
-    get {return _storage._rxWaypoint ?? MeshPacket()}
+    get {_storage._rxWaypoint ?? MeshPacket()}
     set {_uniqueStorage()._rxWaypoint = newValue}
   }
   /// Returns true if `rxWaypoint` has been explicitly set.
-  public var hasRxWaypoint: Bool {return _storage._rxWaypoint != nil}
+  public var hasRxWaypoint: Bool {_storage._rxWaypoint != nil}
   /// Clears the value of `rxWaypoint`. Subsequent reads from it will return its default value.
   public mutating func clearRxWaypoint() {_uniqueStorage()._rxWaypoint = nil}
 
   ///
   /// The mesh's nodes with their available gpio pins for RemoteHardware module
   public var nodeRemoteHardwarePins: [NodeRemoteHardwarePin] {
-    get {return _storage._nodeRemoteHardwarePins}
+    get {_storage._nodeRemoteHardwarePins}
     set {_uniqueStorage()._nodeRemoteHardwarePins = newValue}
   }
 
@@ -351,6 +309,98 @@ public struct DeviceState: @unchecked Sendable {
   public init() {}
 
   fileprivate var _storage = _StorageClass.defaultInstance
+}
+
+public struct NodePositionEntry: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var num: UInt32 = 0
+
+  public var position: PositionLite {
+    get {_position ?? PositionLite()}
+    set {_position = newValue}
+  }
+  /// Returns true if `position` has been explicitly set.
+  public var hasPosition: Bool {self._position != nil}
+  /// Clears the value of `position`. Subsequent reads from it will return its default value.
+  public mutating func clearPosition() {self._position = nil}
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+
+  fileprivate var _position: PositionLite? = nil
+}
+
+public struct NodeTelemetryEntry: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var num: UInt32 = 0
+
+  public var deviceMetrics: DeviceMetrics {
+    get {_deviceMetrics ?? DeviceMetrics()}
+    set {_deviceMetrics = newValue}
+  }
+  /// Returns true if `deviceMetrics` has been explicitly set.
+  public var hasDeviceMetrics: Bool {self._deviceMetrics != nil}
+  /// Clears the value of `deviceMetrics`. Subsequent reads from it will return its default value.
+  public mutating func clearDeviceMetrics() {self._deviceMetrics = nil}
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+
+  fileprivate var _deviceMetrics: DeviceMetrics? = nil
+}
+
+public struct NodeEnvironmentEntry: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var num: UInt32 = 0
+
+  public var environmentMetrics: EnvironmentMetrics {
+    get {_environmentMetrics ?? EnvironmentMetrics()}
+    set {_environmentMetrics = newValue}
+  }
+  /// Returns true if `environmentMetrics` has been explicitly set.
+  public var hasEnvironmentMetrics: Bool {self._environmentMetrics != nil}
+  /// Clears the value of `environmentMetrics`. Subsequent reads from it will return its default value.
+  public mutating func clearEnvironmentMetrics() {self._environmentMetrics = nil}
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+
+  fileprivate var _environmentMetrics: EnvironmentMetrics? = nil
+}
+
+public struct NodeStatusEntry: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var num: UInt32 = 0
+
+  public var status: StatusMessage {
+    get {_status ?? StatusMessage()}
+    set {_status = newValue}
+  }
+  /// Returns true if `status` has been explicitly set.
+  public var hasStatus: Bool {self._status != nil}
+  /// Clears the value of `status`. Subsequent reads from it will return its default value.
+  public mutating func clearStatus() {self._status = nil}
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+
+  fileprivate var _status: StatusMessage? = nil
 }
 
 public struct NodeDatabase: Sendable {
@@ -367,6 +417,16 @@ public struct NodeDatabase: Sendable {
   ///
   /// New lite version of NodeDB to decrease memory footprint
   public var nodes: [NodeInfoLite] = []
+
+  /// Per-NodeNum satellite arrays. Constrained platforms (e.g. STM32WL) omit
+  /// these via MESHTASTIC_EXCLUDE_*DB build flags.
+  public var positions: [NodePositionEntry] = []
+
+  public var telemetry: [NodeTelemetryEntry] = []
+
+  public var status: [NodeStatusEntry] = []
+
+  public var environment: [NodeEnvironmentEntry] = []
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -413,44 +473,44 @@ public struct BackupPreferences: Sendable {
   ///
   /// The node's configuration
   public var config: LocalConfig {
-    get {return _config ?? LocalConfig()}
+    get {_config ?? LocalConfig()}
     set {_config = newValue}
   }
   /// Returns true if `config` has been explicitly set.
-  public var hasConfig: Bool {return self._config != nil}
+  public var hasConfig: Bool {self._config != nil}
   /// Clears the value of `config`. Subsequent reads from it will return its default value.
   public mutating func clearConfig() {self._config = nil}
 
   ///
   /// The node's module configuration
   public var moduleConfig: LocalModuleConfig {
-    get {return _moduleConfig ?? LocalModuleConfig()}
+    get {_moduleConfig ?? LocalModuleConfig()}
     set {_moduleConfig = newValue}
   }
   /// Returns true if `moduleConfig` has been explicitly set.
-  public var hasModuleConfig: Bool {return self._moduleConfig != nil}
+  public var hasModuleConfig: Bool {self._moduleConfig != nil}
   /// Clears the value of `moduleConfig`. Subsequent reads from it will return its default value.
   public mutating func clearModuleConfig() {self._moduleConfig = nil}
 
   ///
   /// The node's channels
   public var channels: ChannelFile {
-    get {return _channels ?? ChannelFile()}
+    get {_channels ?? ChannelFile()}
     set {_channels = newValue}
   }
   /// Returns true if `channels` has been explicitly set.
-  public var hasChannels: Bool {return self._channels != nil}
+  public var hasChannels: Bool {self._channels != nil}
   /// Clears the value of `channels`. Subsequent reads from it will return its default value.
   public mutating func clearChannels() {self._channels = nil}
 
   ///
   /// The node's user (owner) information
   public var owner: User {
-    get {return _owner ?? User()}
+    get {_owner ?? User()}
     set {_owner = newValue}
   }
   /// Returns true if `owner` has been explicitly set.
-  public var hasOwner: Bool {return self._owner != nil}
+  public var hasOwner: Bool {self._owner != nil}
   /// Clears the value of `owner`. Subsequent reads from it will return its default value.
   public mutating func clearOwner() {self._owner = nil}
 
@@ -470,7 +530,7 @@ fileprivate let _protobuf_package = "meshtastic"
 
 extension PositionLite: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".PositionLite"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}latitude_i\0\u{3}longitude_i\0\u{1}altitude\0\u{1}time\0\u{3}location_source\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}latitude_i\0\u{3}longitude_i\0\u{1}altitude\0\u{1}time\0\u{3}location_source\0\u{3}precision_bits\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -483,6 +543,7 @@ extension PositionLite: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
       case 3: try { try decoder.decodeSingularInt32Field(value: &self.altitude) }()
       case 4: try { try decoder.decodeSingularFixed32Field(value: &self.time) }()
       case 5: try { try decoder.decodeSingularEnumField(value: &self.locationSource) }()
+      case 6: try { try decoder.decodeSingularUInt32Field(value: &self.precisionBits) }()
       default: break
       }
     }
@@ -504,6 +565,9 @@ extension PositionLite: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     if self.locationSource != .locUnset {
       try visitor.visitSingularEnumField(value: self.locationSource, fieldNumber: 5)
     }
+    if self.precisionBits != 0 {
+      try visitor.visitSingularUInt32Field(value: self.precisionBits, fieldNumber: 6)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -513,6 +577,7 @@ extension PositionLite: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     if lhs.altitude != rhs.altitude {return false}
     if lhs.time != rhs.time {return false}
     if lhs.locationSource != rhs.locationSource {return false}
+    if lhs.precisionBits != rhs.precisionBits {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -589,153 +654,93 @@ extension UserLite: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
 
 extension NodeInfoLite: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".NodeInfoLite"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}num\0\u{1}user\0\u{1}position\0\u{1}snr\0\u{3}last_heard\0\u{3}device_metrics\0\u{1}channel\0\u{3}via_mqtt\0\u{3}hops_away\0\u{3}is_favorite\0\u{3}is_ignored\0\u{3}next_hop\0\u{1}bitfield\0")
-
-  fileprivate class _StorageClass {
-    var _num: UInt32 = 0
-    var _user: UserLite? = nil
-    var _position: PositionLite? = nil
-    var _snr: Float = 0
-    var _lastHeard: UInt32 = 0
-    var _deviceMetrics: DeviceMetrics? = nil
-    var _channel: UInt32 = 0
-    var _viaMqtt: Bool = false
-    var _hopsAway: UInt32? = nil
-    var _isFavorite: Bool = false
-    var _isIgnored: Bool = false
-    var _nextHop: UInt32 = 0
-    var _bitfield: UInt32 = 0
-
-      // This property is used as the initial default value for new instances of the type.
-      // The type itself is protecting the reference to its storage via CoW semantics.
-      // This will force a copy to be made of this reference when the first mutation occurs;
-      // hence, it is safe to mark this as `nonisolated(unsafe)`.
-      static nonisolated(unsafe) let defaultInstance = _StorageClass()
-
-    private init() {}
-
-    init(copying source: _StorageClass) {
-      _num = source._num
-      _user = source._user
-      _position = source._position
-      _snr = source._snr
-      _lastHeard = source._lastHeard
-      _deviceMetrics = source._deviceMetrics
-      _channel = source._channel
-      _viaMqtt = source._viaMqtt
-      _hopsAway = source._hopsAway
-      _isFavorite = source._isFavorite
-      _isIgnored = source._isIgnored
-      _nextHop = source._nextHop
-      _bitfield = source._bitfield
-    }
-  }
-
-  fileprivate mutating func _uniqueStorage() -> _StorageClass {
-    if !isKnownUniquelyReferenced(&_storage) {
-      _storage = _StorageClass(copying: _storage)
-    }
-    return _storage
-  }
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}num\0\u{2}\u{3}snr\0\u{3}last_heard\0\u{2}\u{2}channel\0\u{4}\u{2}hops_away\0\u{4}\u{3}next_hop\0\u{1}bitfield\0\u{3}long_name\0\u{3}short_name\0\u{3}hw_model\0\u{1}role\0\u{3}public_key\0\u{3}snr_q4\0\u{b}user\0\u{b}position\0\u{b}device_metrics\0\u{b}via_mqtt\0\u{b}is_favorite\0\u{b}is_ignored\0\u{c}\u{2}\u{1}\u{c}\u{3}\u{1}\u{c}\u{6}\u{1}\u{c}\u{8}\u{1}\u{c}\u{a}\u{1}\u{c}\u{b}\u{1}")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    _ = _uniqueStorage()
-    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
-      while let fieldNumber = try decoder.nextFieldNumber() {
-        // The use of inline closures is to circumvent an issue where the compiler
-        // allocates stack space for every case branch when no optimizations are
-        // enabled. https://github.com/apple/swift-protobuf/issues/1034
-        switch fieldNumber {
-        case 1: try { try decoder.decodeSingularUInt32Field(value: &_storage._num) }()
-        case 2: try { try decoder.decodeSingularMessageField(value: &_storage._user) }()
-        case 3: try { try decoder.decodeSingularMessageField(value: &_storage._position) }()
-        case 4: try { try decoder.decodeSingularFloatField(value: &_storage._snr) }()
-        case 5: try { try decoder.decodeSingularFixed32Field(value: &_storage._lastHeard) }()
-        case 6: try { try decoder.decodeSingularMessageField(value: &_storage._deviceMetrics) }()
-        case 7: try { try decoder.decodeSingularUInt32Field(value: &_storage._channel) }()
-        case 8: try { try decoder.decodeSingularBoolField(value: &_storage._viaMqtt) }()
-        case 9: try { try decoder.decodeSingularUInt32Field(value: &_storage._hopsAway) }()
-        case 10: try { try decoder.decodeSingularBoolField(value: &_storage._isFavorite) }()
-        case 11: try { try decoder.decodeSingularBoolField(value: &_storage._isIgnored) }()
-        case 12: try { try decoder.decodeSingularUInt32Field(value: &_storage._nextHop) }()
-        case 13: try { try decoder.decodeSingularUInt32Field(value: &_storage._bitfield) }()
-        default: break
-        }
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularUInt32Field(value: &self.num) }()
+      case 4: try { try decoder.decodeSingularFloatField(value: &self.snr) }()
+      case 5: try { try decoder.decodeSingularFixed32Field(value: &self.lastHeard) }()
+      case 7: try { try decoder.decodeSingularUInt32Field(value: &self.channel) }()
+      case 9: try { try decoder.decodeSingularUInt32Field(value: &self._hopsAway) }()
+      case 12: try { try decoder.decodeSingularUInt32Field(value: &self.nextHop) }()
+      case 13: try { try decoder.decodeSingularUInt32Field(value: &self.bitfield) }()
+      case 14: try { try decoder.decodeSingularStringField(value: &self.longName) }()
+      case 15: try { try decoder.decodeSingularStringField(value: &self.shortName) }()
+      case 16: try { try decoder.decodeSingularEnumField(value: &self.hwModel) }()
+      case 17: try { try decoder.decodeSingularEnumField(value: &self.role) }()
+      case 18: try { try decoder.decodeSingularBytesField(value: &self.publicKey) }()
+      case 19: try { try decoder.decodeSingularSInt32Field(value: &self.snrQ4) }()
+      default: break
       }
     }
   }
 
   public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every if/case branch local when no optimizations
-      // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
-      // https://github.com/apple/swift-protobuf/issues/1182
-      if _storage._num != 0 {
-        try visitor.visitSingularUInt32Field(value: _storage._num, fieldNumber: 1)
-      }
-      try { if let v = _storage._user {
-        try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
-      } }()
-      try { if let v = _storage._position {
-        try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
-      } }()
-      if _storage._snr.bitPattern != 0 {
-        try visitor.visitSingularFloatField(value: _storage._snr, fieldNumber: 4)
-      }
-      if _storage._lastHeard != 0 {
-        try visitor.visitSingularFixed32Field(value: _storage._lastHeard, fieldNumber: 5)
-      }
-      try { if let v = _storage._deviceMetrics {
-        try visitor.visitSingularMessageField(value: v, fieldNumber: 6)
-      } }()
-      if _storage._channel != 0 {
-        try visitor.visitSingularUInt32Field(value: _storage._channel, fieldNumber: 7)
-      }
-      if _storage._viaMqtt != false {
-        try visitor.visitSingularBoolField(value: _storage._viaMqtt, fieldNumber: 8)
-      }
-      try { if let v = _storage._hopsAway {
-        try visitor.visitSingularUInt32Field(value: v, fieldNumber: 9)
-      } }()
-      if _storage._isFavorite != false {
-        try visitor.visitSingularBoolField(value: _storage._isFavorite, fieldNumber: 10)
-      }
-      if _storage._isIgnored != false {
-        try visitor.visitSingularBoolField(value: _storage._isIgnored, fieldNumber: 11)
-      }
-      if _storage._nextHop != 0 {
-        try visitor.visitSingularUInt32Field(value: _storage._nextHop, fieldNumber: 12)
-      }
-      if _storage._bitfield != 0 {
-        try visitor.visitSingularUInt32Field(value: _storage._bitfield, fieldNumber: 13)
-      }
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    if self.num != 0 {
+      try visitor.visitSingularUInt32Field(value: self.num, fieldNumber: 1)
+    }
+    if self.snr.bitPattern != 0 {
+      try visitor.visitSingularFloatField(value: self.snr, fieldNumber: 4)
+    }
+    if self.lastHeard != 0 {
+      try visitor.visitSingularFixed32Field(value: self.lastHeard, fieldNumber: 5)
+    }
+    if self.channel != 0 {
+      try visitor.visitSingularUInt32Field(value: self.channel, fieldNumber: 7)
+    }
+    try { if let v = self._hopsAway {
+      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 9)
+    } }()
+    if self.nextHop != 0 {
+      try visitor.visitSingularUInt32Field(value: self.nextHop, fieldNumber: 12)
+    }
+    if self.bitfield != 0 {
+      try visitor.visitSingularUInt32Field(value: self.bitfield, fieldNumber: 13)
+    }
+    if !self.longName.isEmpty {
+      try visitor.visitSingularStringField(value: self.longName, fieldNumber: 14)
+    }
+    if !self.shortName.isEmpty {
+      try visitor.visitSingularStringField(value: self.shortName, fieldNumber: 15)
+    }
+    if self.hwModel != .unset {
+      try visitor.visitSingularEnumField(value: self.hwModel, fieldNumber: 16)
+    }
+    if self.role != .client {
+      try visitor.visitSingularEnumField(value: self.role, fieldNumber: 17)
+    }
+    if !self.publicKey.isEmpty {
+      try visitor.visitSingularBytesField(value: self.publicKey, fieldNumber: 18)
+    }
+    if self.snrQ4 != 0 {
+      try visitor.visitSingularSInt32Field(value: self.snrQ4, fieldNumber: 19)
     }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: NodeInfoLite, rhs: NodeInfoLite) -> Bool {
-    if lhs._storage !== rhs._storage {
-      let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
-        let _storage = _args.0
-        let rhs_storage = _args.1
-        if _storage._num != rhs_storage._num {return false}
-        if _storage._user != rhs_storage._user {return false}
-        if _storage._position != rhs_storage._position {return false}
-        if _storage._snr != rhs_storage._snr {return false}
-        if _storage._lastHeard != rhs_storage._lastHeard {return false}
-        if _storage._deviceMetrics != rhs_storage._deviceMetrics {return false}
-        if _storage._channel != rhs_storage._channel {return false}
-        if _storage._viaMqtt != rhs_storage._viaMqtt {return false}
-        if _storage._hopsAway != rhs_storage._hopsAway {return false}
-        if _storage._isFavorite != rhs_storage._isFavorite {return false}
-        if _storage._isIgnored != rhs_storage._isIgnored {return false}
-        if _storage._nextHop != rhs_storage._nextHop {return false}
-        if _storage._bitfield != rhs_storage._bitfield {return false}
-        return true
-      }
-      if !storagesAreEqual {return false}
-    }
+    if lhs.num != rhs.num {return false}
+    if lhs.snr != rhs.snr {return false}
+    if lhs.lastHeard != rhs.lastHeard {return false}
+    if lhs.channel != rhs.channel {return false}
+    if lhs._hopsAway != rhs._hopsAway {return false}
+    if lhs.nextHop != rhs.nextHop {return false}
+    if lhs.bitfield != rhs.bitfield {return false}
+    if lhs.longName != rhs.longName {return false}
+    if lhs.shortName != rhs.shortName {return false}
+    if lhs.hwModel != rhs.hwModel {return false}
+    if lhs.role != rhs.role {return false}
+    if lhs.publicKey != rhs.publicKey {return false}
+    if lhs.snrQ4 != rhs.snrQ4 {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -867,9 +872,165 @@ extension DeviceState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
   }
 }
 
+extension NodePositionEntry: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".NodePositionEntry"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}num\0\u{1}position\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularUInt32Field(value: &self.num) }()
+      case 2: try { try decoder.decodeSingularMessageField(value: &self._position) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    if self.num != 0 {
+      try visitor.visitSingularUInt32Field(value: self.num, fieldNumber: 1)
+    }
+    try { if let v = self._position {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+    } }()
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: NodePositionEntry, rhs: NodePositionEntry) -> Bool {
+    if lhs.num != rhs.num {return false}
+    if lhs._position != rhs._position {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension NodeTelemetryEntry: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".NodeTelemetryEntry"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}num\0\u{3}device_metrics\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularUInt32Field(value: &self.num) }()
+      case 2: try { try decoder.decodeSingularMessageField(value: &self._deviceMetrics) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    if self.num != 0 {
+      try visitor.visitSingularUInt32Field(value: self.num, fieldNumber: 1)
+    }
+    try { if let v = self._deviceMetrics {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+    } }()
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: NodeTelemetryEntry, rhs: NodeTelemetryEntry) -> Bool {
+    if lhs.num != rhs.num {return false}
+    if lhs._deviceMetrics != rhs._deviceMetrics {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension NodeEnvironmentEntry: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".NodeEnvironmentEntry"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}num\0\u{3}environment_metrics\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularUInt32Field(value: &self.num) }()
+      case 2: try { try decoder.decodeSingularMessageField(value: &self._environmentMetrics) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    if self.num != 0 {
+      try visitor.visitSingularUInt32Field(value: self.num, fieldNumber: 1)
+    }
+    try { if let v = self._environmentMetrics {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+    } }()
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: NodeEnvironmentEntry, rhs: NodeEnvironmentEntry) -> Bool {
+    if lhs.num != rhs.num {return false}
+    if lhs._environmentMetrics != rhs._environmentMetrics {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension NodeStatusEntry: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".NodeStatusEntry"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}num\0\u{1}status\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularUInt32Field(value: &self.num) }()
+      case 2: try { try decoder.decodeSingularMessageField(value: &self._status) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    if self.num != 0 {
+      try visitor.visitSingularUInt32Field(value: self.num, fieldNumber: 1)
+    }
+    try { if let v = self._status {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+    } }()
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: NodeStatusEntry, rhs: NodeStatusEntry) -> Bool {
+    if lhs.num != rhs.num {return false}
+    if lhs._status != rhs._status {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
 extension NodeDatabase: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".NodeDatabase"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}version\0\u{1}nodes\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}version\0\u{1}nodes\0\u{1}positions\0\u{1}telemetry\0\u{1}status\0\u{1}environment\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -879,6 +1040,10 @@ extension NodeDatabase: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularUInt32Field(value: &self.version) }()
       case 2: try { try decoder.decodeRepeatedMessageField(value: &self.nodes) }()
+      case 3: try { try decoder.decodeRepeatedMessageField(value: &self.positions) }()
+      case 4: try { try decoder.decodeRepeatedMessageField(value: &self.telemetry) }()
+      case 5: try { try decoder.decodeRepeatedMessageField(value: &self.status) }()
+      case 6: try { try decoder.decodeRepeatedMessageField(value: &self.environment) }()
       default: break
       }
     }
@@ -891,12 +1056,28 @@ extension NodeDatabase: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     if !self.nodes.isEmpty {
       try visitor.visitRepeatedMessageField(value: self.nodes, fieldNumber: 2)
     }
+    if !self.positions.isEmpty {
+      try visitor.visitRepeatedMessageField(value: self.positions, fieldNumber: 3)
+    }
+    if !self.telemetry.isEmpty {
+      try visitor.visitRepeatedMessageField(value: self.telemetry, fieldNumber: 4)
+    }
+    if !self.status.isEmpty {
+      try visitor.visitRepeatedMessageField(value: self.status, fieldNumber: 5)
+    }
+    if !self.environment.isEmpty {
+      try visitor.visitRepeatedMessageField(value: self.environment, fieldNumber: 6)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: NodeDatabase, rhs: NodeDatabase) -> Bool {
     if lhs.version != rhs.version {return false}
     if lhs.nodes != rhs.nodes {return false}
+    if lhs.positions != rhs.positions {return false}
+    if lhs.telemetry != rhs.telemetry {return false}
+    if lhs.status != rhs.status {return false}
+    if lhs.environment != rhs.environment {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

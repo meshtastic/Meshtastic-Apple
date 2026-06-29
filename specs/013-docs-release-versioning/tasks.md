@@ -77,7 +77,7 @@
 
 **Independent Test**: Open `.github/workflows/docs-deploy.yml` and confirm `build-docs.sh` is called with `--beta`; no code changes required for this story to pass
 
-- [x] T017 [P] [US3] Verify `.github/workflows/docs-deploy.yml` line 86 calls `bash scripts/build-docs.sh --output Meshtastic/Resources/docs --beta`; if `--beta` is absent (it is present as of the plan date), add it (spec.md §User Story 3 acceptance scenario 1)
+- [x] T017 [P] [US3] Verify `.github/workflows/docs-deploy.yml` line 86 calls `bash scripts/build-docs.sh --output Meshtastic/Resources/docs`; if `--beta` is absent (it is present as of the plan date), add it (spec.md §User Story 3 acceptance scenario 1)
 
 **Checkpoint**: US3 satisfied with zero or one line change — existing workflow already correct
 

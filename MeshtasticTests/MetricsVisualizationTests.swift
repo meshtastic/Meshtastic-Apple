@@ -280,6 +280,125 @@ struct MetricsTableColumnPropertyTests {
 	}
 }
 
+// MARK: - Visibility Persistence
+
+/// Tests that column/series visibility selections survive the view being recreated (the bug from
+/// issue #1615). Each test injects an isolated `UserDefaults` suite so it neither reads nor clobbers
+/// `UserDefaults.standard`.
+@Suite("Metrics visibility persistence", .serialized)
+struct MetricsVisibilityPersistenceTests {
+
+	private func makeDefaults(_ suiteName: String) -> UserDefaults {
+		let defaults = UserDefaults(suiteName: suiteName)!
+		defaults.removePersistentDomain(forName: suiteName)
+		return defaults
+	}
+
+	private func makeColumn(id: String, visible: Bool = true) -> MetricsTableColumn {
+		MetricsTableColumn(
+			id: id,
+			keyPath: \TelemetryEntity.batteryLevel,
+			name: id,
+			abbreviatedName: id,
+			visible: visible
+		) { _, _ in EmptyView() }
+	}
+
+	private func makeSeries(id: String, visible: Bool = true) -> MetricsChartSeries {
+		MetricsChartSeries(
+			id: id,
+			keyPath: \TelemetryEntity.batteryLevel,
+			name: id,
+			abbreviatedName: id,
+			visible: visible,
+			foregroundStyle: { _ in Color(red: 0.0, green: 0.0, blue: 1.0) }
+		) { _, _, time, value in
+			LineMark(x: .value("Time", time), y: .value("Value", Int(value ?? 0)))
+		}
+	}
+
+	// MARK: Columns
+
+	@Test("Column visibility persists across new instances with the same key")
+	func columnVisibilityPersists() {
+		let defaults = makeDefaults("MetricsVisibility.columns.persist")
+		let list = MetricsColumnList(persistenceKey: "env", columns: [
+			makeColumn(id: "temp", visible: true),
+			makeColumn(id: "lux", visible: false)
+		], store: defaults)
+
+		list.toggleVisibity(for: list.column(withId: "temp")!)   // true -> false
+		list.toggleVisibity(for: list.column(withId: "lux")!)    // false -> true
+
+		// A freshly built list (as happens when the view is recreated) restores the selections.
+		let restored = MetricsColumnList(persistenceKey: "env", columns: [
+			makeColumn(id: "temp", visible: true),
+			makeColumn(id: "lux", visible: false)
+		], store: defaults)
+
+		#expect(restored.column(withId: "temp")?.visible == false)
+		#expect(restored.column(withId: "lux")?.visible == true)
+	}
+
+	@Test("Columns absent from saved state keep their default visibility")
+	func columnForwardCompatibility() {
+		let defaults = makeDefaults("MetricsVisibility.columns.forward")
+		let list = MetricsColumnList(persistenceKey: "env", columns: [makeColumn(id: "temp", visible: true)], store: defaults)
+		list.toggleVisibity(for: list.column(withId: "temp")!) // persists { temp: false }
+
+		// A later app version adds a column that isn't in the saved map.
+		let restored = MetricsColumnList(persistenceKey: "env", columns: [
+			makeColumn(id: "temp", visible: true),
+			makeColumn(id: "newColumn", visible: true)
+		], store: defaults)
+
+		#expect(restored.column(withId: "temp")?.visible == false)     // restored from storage
+		#expect(restored.column(withId: "newColumn")?.visible == true) // default preserved
+	}
+
+	@Test("Without a persistence key, column visibility is not saved")
+	func columnNoKeyNoPersistence() {
+		let defaults = makeDefaults("MetricsVisibility.columns.nokey")
+		let list = MetricsColumnList(columns: [makeColumn(id: "temp", visible: true)], store: defaults)
+		list.toggleVisibity(for: list[0]) // true -> false, but nothing is persisted
+
+		let restored = MetricsColumnList(columns: [makeColumn(id: "temp", visible: true)], store: defaults)
+		#expect(restored.column(withId: "temp")?.visible == true)
+	}
+
+	// MARK: Series
+
+	@Test("Series visibility persists across new instances with the same key")
+	func seriesVisibilityPersists() {
+		let defaults = makeDefaults("MetricsVisibility.series.persist")
+		let list = MetricsSeriesList(persistenceKey: "env", series: [
+			makeSeries(id: "temp", visible: true),
+			makeSeries(id: "humidity", visible: false)
+		], store: defaults)
+
+		list.toggleVisibity(for: list.series.first { $0.id == "temp" }!)     // true -> false
+		list.toggleVisibity(for: list.series.first { $0.id == "humidity" }!) // false -> true
+
+		let restored = MetricsSeriesList(persistenceKey: "env", series: [
+			makeSeries(id: "temp", visible: true),
+			makeSeries(id: "humidity", visible: false)
+		], store: defaults)
+
+		#expect(restored.series.first { $0.id == "temp" }?.visible == false)
+		#expect(restored.series.first { $0.id == "humidity" }?.visible == true)
+	}
+
+	@Test("Without a persistence key, series visibility is not saved")
+	func seriesNoKeyNoPersistence() {
+		let defaults = makeDefaults("MetricsVisibility.series.nokey")
+		let list = MetricsSeriesList(persistenceKey: nil, series: [makeSeries(id: "temp", visible: true)], store: defaults)
+		list.toggleVisibity(for: list.series[0]) // true -> false, but nothing is persisted
+
+		let restored = MetricsSeriesList(persistenceKey: nil, series: [makeSeries(id: "temp", visible: true)], store: defaults)
+		#expect(restored.series.first { $0.id == "temp" }?.visible == true)
+	}
+}
+
 // MARK: - Plottable floatValue extension
 
 @Suite("Plottable floatValue")

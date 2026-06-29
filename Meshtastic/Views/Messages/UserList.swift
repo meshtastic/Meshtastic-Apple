@@ -129,7 +129,7 @@ private struct FilteredUserList: View {
 		let dateFormatString = (localeDateFormat ?? "MM/dd/YY")
 		let activeDeviceNum = Int64(accessoryManager.activeDeviceNum ?? 0)
 		let visibleUsers = users.filter { $0.num != activeDeviceNum }
-		let summaryUsers = allUsers.filter { $0.num != activeDeviceNum && $0.lastMessage != nil }
+		let summaryUsers = visibleUsers.filter { $0.lastMessage != nil }
 		let summaryRefreshKey = directMessageSummaryRefreshKey(for: summaryUsers)
 		let currentDay = Calendar.current.dateComponents([.day], from: Date()).day ?? 0
 

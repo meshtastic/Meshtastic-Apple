@@ -1,8 +1,16 @@
 # Feature Specification: Docs Release Versioning
 
+> **⚠️ Superseded (2026-06):** The pre-release banner and the `--beta` build flag
+> this spec is built around have been removed entirely — docs no longer show a
+> pre-release banner in-app or on the website, so there is no banner to strip at
+> release time. `cut-release-docs.sh` still rebuilds/commits/tags the in-app docs,
+> but the `docs-release-gate.yml` banner check and the `--beta` flag are gone. This
+> document is retained as a historical design record and no longer reflects current
+> behavior.
+
 **Feature Branch**: `013-docs-release-versioning`  
 **Created**: 2026-06-05  
-**Status**: Draft
+**Status**: Superseded
 
 ## User Scenarios & Testing *(mandatory)*
 
