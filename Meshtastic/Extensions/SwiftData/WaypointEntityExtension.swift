@@ -105,6 +105,7 @@ extension WaypointEntity {
 		geofenceRadius = Int(waypoint.geofenceRadius)
 		notifyOnEnter = waypoint.notifyOnEnter
 		notifyOnExit = waypoint.notifyOnExit
+		notifyFavoritesOnly = waypoint.notifyFavoritesOnly
 		hasBoundingBox = waypoint.hasBoundingBox
 		if waypoint.hasBoundingBox {
 			boundingBoxLatitudeNorthI = waypoint.boundingBox.latitudeNorthI

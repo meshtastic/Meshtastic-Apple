@@ -3,8 +3,8 @@
 //  Meshtastic
 //
 //  Schema version 2: adds geofence fields to WaypointEntity
-//  (geofenceRadius, bounding-box corners, notifyOnEnter / notifyOnExit),
-//  backed by the new Waypoint protobuf geofence fields.
+//  (geofenceRadius, bounding-box corners, notifyOnEnter / notifyOnExit /
+//  notifyFavoritesOnly), backed by the new Waypoint protobuf geofence fields.
 //
 //  The change is purely additive — no models were added or removed — so the
 //  model-type list is unchanged from V1 and the V1→V2 migration is lightweight

@@ -30,8 +30,8 @@ enum MeshtasticMigrationPlan: SchemaMigrationPlan {
 	/// properties, renaming with @Attribute(originalName:), etc.).
 	/// Use `.custom` when you need to transform data programmatically.
 	/// V1 → V2: adds the additive WaypointEntity geofence fields (geofenceRadius,
-	/// bounding-box corners, notifyOnEnter / notifyOnExit). All new fields carry
-	/// defaults, so SwiftData can infer the migration automatically.
+	/// bounding-box corners, notifyOnEnter / notifyOnExit / notifyFavoritesOnly). All
+	/// new fields carry defaults, so SwiftData can infer the migration automatically.
 	static let migrateV1toV2 = MigrationStage.lightweight(
 		fromVersion: MeshtasticSchemaV1.self,
 		toVersion: MeshtasticSchemaV2.self

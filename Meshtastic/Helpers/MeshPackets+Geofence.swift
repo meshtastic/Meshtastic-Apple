@@ -4,8 +4,8 @@
 //
 //  Evaluates received node positions against waypoint geofences and raises local
 //  enter/exit notifications. Backed entirely by the Waypoint protobuf geofence
-//  fields (geofenceRadius / boundingBox / notifyOnEnter / notifyOnExit) — there is
-//  no separate geofence model.
+//  fields (geofenceRadius / boundingBox / notifyOnEnter / notifyOnExit /
+//  notifyFavoritesOnly) — there is no separate geofence model.
 //
 
 @preconcurrency import SwiftData
@@ -46,12 +46,23 @@ extension MeshPackets {
 		)
 		guard let waypoints = try? modelContext.fetch(descriptor) else { return }
 
+		// Resolved lazily once per call: whether this node is a favorite on THIS receiver, used by
+		// waypoints set to notify for favorites only.
+		var nodeIsFavorite: Bool?
+
 		for waypoint in waypoints {
 			guard let isInside = waypoint.contains(location: location) else { continue }
 			let key = "\(waypoint.id)-\(nodeNum)"
 			let previous = GeofenceCrossingStore.shared.update(key: key, isInside: isInside)
 			// First observation establishes a baseline; only a genuine change notifies.
 			guard let wasInside = previous, wasInside != isInside else { continue }
+
+			// Favorites-only: only alert for nodes the receiver has marked as favorite. Applies to
+			// both enter and exit; favorite status is resolved locally on this device.
+			if waypoint.notifyFavoritesOnly {
+				if nodeIsFavorite == nil { nodeIsFavorite = isFavoriteNode(nodeNum) }
+				if nodeIsFavorite == false { continue }
+			}
 
 			let name = waypoint.name ?? "Geofence"
 			if isInside && waypoint.notifyOnEnter {
@@ -60,6 +71,13 @@ extension MeshPackets {
 				scheduleGeofenceNotification(waypointId: waypoint.id, waypointName: name, nodeNum: nodeNum, nodeName: nodeName, entered: false)
 			}
 		}
+	}
+
+	/// Whether `nodeNum` is marked as a favorite on this device (resolved locally per receiver).
+	private func isFavoriteNode(_ nodeNum: Int64) -> Bool {
+		var descriptor = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate<NodeInfoEntity> { $0.num == nodeNum })
+		descriptor.fetchLimit = 1
+		return ((try? modelContext.fetch(descriptor))?.first?.favorite) ?? false
 	}
 
 	private func scheduleGeofenceNotification(waypointId: Int64, waypointName: String, nodeNum: Int64, nodeName: String, entered: Bool) {

@@ -33,6 +33,7 @@ struct WaypointForm: View {
 	@State private var geofenceRadius: Double = 0 // meters; 0 = no circular geofence
 	@State private var notifyOnEnter: Bool = false
 	@State private var notifyOnExit: Bool = false
+	@State private var notifyFavoritesOnly: Bool = false
 	@State private var geofenceBounds: GeoBounds?
 	@State private var showingBoundsSelector: Bool = false
 	@State private var selectedDetent: PresentationDetent = .medium
@@ -180,6 +181,12 @@ struct WaypointForm: View {
 							Label("Notify on Exit", systemImage: "bell.slash")
 						}
 						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						if notifyOnEnter || notifyOnExit {
+							Toggle(isOn: $notifyFavoritesOnly) {
+								Label("Favorites Only", systemImage: "star")
+							}
+							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						}
 					}
 				}
 			}
@@ -513,6 +520,7 @@ struct WaypointForm: View {
 				geofenceRadius = Double(waypoint.geofenceRadius)
 				notifyOnEnter = waypoint.notifyOnEnter
 				notifyOnExit = waypoint.notifyOnExit
+				notifyFavoritesOnly = waypoint.notifyFavoritesOnly
 				if waypoint.hasBoundingBox {
 					geofenceBounds = GeoBounds(
 						minLon: Double(waypoint.boundingBoxLongitudeWestI) / 1e7,
@@ -528,6 +536,7 @@ struct WaypointForm: View {
 				geofenceRadius = 0
 				notifyOnEnter = false
 				notifyOnExit = false
+				notifyFavoritesOnly = false
 				geofenceBounds = nil
 				expires = false
 				expire = Date.now.addingTimeInterval(60 * 480)
@@ -562,6 +571,7 @@ struct WaypointForm: View {
 		waypointProto.geofenceRadius = UInt32(max(0, geofenceRadius).rounded())
 		waypointProto.notifyOnEnter = notifyOnEnter
 		waypointProto.notifyOnExit = notifyOnExit
+		waypointProto.notifyFavoritesOnly = notifyFavoritesOnly
 		if let b = geofenceBounds {
 			var box = BoundingBox()
 			box.longitudeWestI = Int32((b.minLon * 1e7).rounded())

@@ -37,6 +37,8 @@ final class WaypointEntity {
 	/// Raise a local notification when a tracked node enters / exits this geofence.
 	var notifyOnEnter: Bool = false
 	var notifyOnExit: Bool = false
+	/// When set, only raise enter/exit notifications for nodes marked as favorites on this receiver.
+	var notifyFavoritesOnly: Bool = false
 
 	init() {}
 }
