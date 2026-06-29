@@ -14117,9 +14117,6 @@
     "Bitrate" : {
 
     },
-    "Bits" : {
-
-    },
     "BLE" : {
       "localizations" : {
         "da" : {
@@ -34150,12 +34147,6 @@
         }
       }
     },
-    "Exhaust Hop Position" : {
-
-    },
-    "Exhaust Hop Telemetry" : {
-
-    },
     "Expanded" : {
 
     },
@@ -41080,9 +41071,6 @@
         }
       }
     },
-    "Hop Management" : {
-
-    },
     "Hops" : {
 
     },
@@ -47248,6 +47236,9 @@
         }
       }
     },
+    "Licensed band" : {
+
+    },
     "Licensed Operator" : {
       "localizations" : {
         "da" : {
@@ -50568,7 +50559,13 @@
     "Max Transmit Power" : {
 
     },
+    "Maximum hop distance from the requestor at which direct NodeInfo responses are served from the local cache." : {
+
+    },
     "Maximum packets allowed per node within the rate limit window." : {
+
+    },
+    "Maximum unknown/undecryptable packets per rate window before the source is dropped." : {
 
     },
     "Mesh activity update" : {
@@ -52443,9 +52440,6 @@
           }
         }
       }
-    },
-    "Minimum hop distance from requestor before responding to NodeInfo requests." : {
-
     },
     "Minimum interval in seconds between position updates from the same node." : {
 
@@ -57613,9 +57607,6 @@
       }
     },
     "NTP Server" : {
-
-    },
-    "Number of bits of precision for position deduplication (0-32)." : {
 
     },
     "Number of hops" : {
@@ -71995,9 +71986,6 @@
         }
       }
     },
-    "Router Preserve Hops" : {
-
-    },
     "Routes" : {
       "localizations" : {
         "da" : {
@@ -78532,12 +78520,6 @@
           }
         }
       }
-    },
-    "Set hop_limit to 0 for relayed position broadcasts (own packets unaffected)." : {
-
-    },
-    "Set hop_limit to 0 for relayed telemetry broadcasts (own packets unaffected)." : {
-
     },
     "Set LoRa Region" : {
       "localizations" : {

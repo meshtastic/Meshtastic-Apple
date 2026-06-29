@@ -9,8 +9,20 @@ class Router: ObservableObject {
 	@Published
 	var selectedTab: NavigationState.Tab
 
+	/// Transient deep-link *command* for the Messages tab (carries the channelId/userNum payload).
+	/// Set by `route(url:)` / restoration and consumed exactly once by the Messages view, which
+	/// resolves it into a selected conversation and then clears it. Kept separate from
+	/// `messagesSection` so the one-shot payload never reaches the sidebar selection and so a later
+	/// tab re-appear can't re-resolve it and snap the user back into the notified conversation.
 	@Published
 	var messagesState: MessagesNavigationState?
+
+	/// Durable, payload-free Messages sidebar/section selection (`.channels()` / `.directMessages()`
+	/// / nil). Drives the sidebar `List` selection and the content column. Because it only ever
+	/// holds payload-free values it always matches a sidebar row, keeping the collapsed
+	/// `NavigationSplitView` back stack intact. Survives across tab switches; reset by `popToRoot`.
+	@Published
+	var messagesSection: MessagesNavigationState?
 
 	@Published
 	var mapState: MapNavigationState?
@@ -36,6 +48,7 @@ class Router: ObservableObject {
 		set {
 			selectedTab = newValue.selectedTab
 			messagesState = newValue.messages
+			messagesSection = newValue.messages?.sidebarSection
 			selectedNodeNum = newValue.nodeListSelectedNodeNum
 			mapState = newValue.map
 			if let setting = newValue.settings {
@@ -89,6 +102,7 @@ class Router: ObservableObject {
 	) {
 		self.selectedTab = navigationState.selectedTab
 		self.messagesState = navigationState.messages
+		self.messagesSection = navigationState.messages?.sidebarSection
 		if let num = navigationState.nodeListSelectedNodeNum {
 			self.selectedNodeNum = num
 		}
@@ -154,6 +168,7 @@ class Router: ObservableObject {
 		}
 		selectedTab = .messages
 		messagesState = state
+		messagesSection = state?.sidebarSection
 	}
 
 	private func routeNodes(_ components: URLComponents) {
@@ -180,6 +195,7 @@ class Router: ObservableObject {
 		switch tab {
 		case .messages:
 			messagesState = nil
+			messagesSection = nil
 		case .nodes:
 			selectedNodeNum = nil
 		case .map:

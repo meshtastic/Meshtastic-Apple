@@ -28,44 +28,44 @@ public struct DeviceConnectionStatus: Sendable {
   ///
   /// WiFi Status
   public var wifi: WifiConnectionStatus {
-    get {return _wifi ?? WifiConnectionStatus()}
+    get {_wifi ?? WifiConnectionStatus()}
     set {_wifi = newValue}
   }
   /// Returns true if `wifi` has been explicitly set.
-  public var hasWifi: Bool {return self._wifi != nil}
+  public var hasWifi: Bool {self._wifi != nil}
   /// Clears the value of `wifi`. Subsequent reads from it will return its default value.
   public mutating func clearWifi() {self._wifi = nil}
 
   ///
   /// WiFi Status
   public var ethernet: EthernetConnectionStatus {
-    get {return _ethernet ?? EthernetConnectionStatus()}
+    get {_ethernet ?? EthernetConnectionStatus()}
     set {_ethernet = newValue}
   }
   /// Returns true if `ethernet` has been explicitly set.
-  public var hasEthernet: Bool {return self._ethernet != nil}
+  public var hasEthernet: Bool {self._ethernet != nil}
   /// Clears the value of `ethernet`. Subsequent reads from it will return its default value.
   public mutating func clearEthernet() {self._ethernet = nil}
 
   ///
   /// Bluetooth Status
   public var bluetooth: BluetoothConnectionStatus {
-    get {return _bluetooth ?? BluetoothConnectionStatus()}
+    get {_bluetooth ?? BluetoothConnectionStatus()}
     set {_bluetooth = newValue}
   }
   /// Returns true if `bluetooth` has been explicitly set.
-  public var hasBluetooth: Bool {return self._bluetooth != nil}
+  public var hasBluetooth: Bool {self._bluetooth != nil}
   /// Clears the value of `bluetooth`. Subsequent reads from it will return its default value.
   public mutating func clearBluetooth() {self._bluetooth = nil}
 
   ///
   /// Serial Status
   public var serial: SerialConnectionStatus {
-    get {return _serial ?? SerialConnectionStatus()}
+    get {_serial ?? SerialConnectionStatus()}
     set {_serial = newValue}
   }
   /// Returns true if `serial` has been explicitly set.
-  public var hasSerial: Bool {return self._serial != nil}
+  public var hasSerial: Bool {self._serial != nil}
   /// Clears the value of `serial`. Subsequent reads from it will return its default value.
   public mutating func clearSerial() {self._serial = nil}
 
@@ -89,11 +89,11 @@ public struct WifiConnectionStatus: Sendable {
   ///
   /// Connection status
   public var status: NetworkConnectionStatus {
-    get {return _status ?? NetworkConnectionStatus()}
+    get {_status ?? NetworkConnectionStatus()}
     set {_status = newValue}
   }
   /// Returns true if `status` has been explicitly set.
-  public var hasStatus: Bool {return self._status != nil}
+  public var hasStatus: Bool {self._status != nil}
   /// Clears the value of `status`. Subsequent reads from it will return its default value.
   public mutating func clearStatus() {self._status = nil}
 
@@ -122,11 +122,11 @@ public struct EthernetConnectionStatus: Sendable {
   ///
   /// Connection status
   public var status: NetworkConnectionStatus {
-    get {return _status ?? NetworkConnectionStatus()}
+    get {_status ?? NetworkConnectionStatus()}
     set {_status = newValue}
   }
   /// Returns true if `status` has been explicitly set.
-  public var hasStatus: Bool {return self._status != nil}
+  public var hasStatus: Bool {self._status != nil}
   /// Clears the value of `status`. Subsequent reads from it will return its default value.
   public mutating func clearStatus() {self._status = nil}
 

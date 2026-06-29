@@ -240,6 +240,17 @@ extension AccessoryManager {
 		}
 	}
 
+	/// Decode the region → legal-preset map the radio advertises during the
+	/// want_config handshake (2.8+). Stored on the AccessoryManager so the LoRa
+	/// config screen can constrain its preset picker to the selected region's
+	/// legal set. Older firmware never sends this; the map simply stays empty and
+	/// the UI falls back to its unconstrained behavior.
+	func handleRegionPresets(_ regionPresets: LoRaRegionPresetMap) {
+		let decoded = regionPresets.decoded()
+		loRaRegionPresets = decoded
+		Logger.services.info("✅ [handleRegionPresets] decoded \(decoded.count, privacy: .public) region(s) from \(regionPresets.groups.count, privacy: .public) preset group(s)")
+	}
+
 	func handleDeviceMetadata(_ metadata: DeviceMetadata) async {
 		// Note: moved firmware version check to be inline with connection process
 		guard let device = activeConnection?.device, let deviceNum = device.num else {

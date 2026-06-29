@@ -55,10 +55,31 @@ struct OfflineMapDownloadProgress: Identifiable, Equatable {
 	var estimatedBytes: Int64 = 0
 }
 
+/// Reasons a download can't proceed (surfaced to the user).
+enum OfflineMapError: LocalizedError {
+	case exceedsPerMapLimit(Int64)
+
+	var errorDescription: String? {
+		switch self {
+		case .exceedsPerMapLimit(let limit):
+			let formatted = ByteCountFormatter.string(fromByteCount: limit, countStyle: .file)
+			return "This map is larger than the \(formatted) per-map limit. Zoom in or lower the detail level."
+		}
+	}
+}
+
 @MainActor
 final class OfflineMapManager: ObservableObject {
 
 	static let shared = OfflineMapManager()
+
+	// MARK: - Limits
+	/// Maximum size of a single downloaded map.
+	static let maxRegionBytes: Int64 = 512 * 1024 * 1024            // 0.5 GB
+	/// Maximum number of downloaded maps kept at once.
+	static let maxRegions = 10
+	/// Maximum combined size of all downloaded maps.
+	static let maxTotalBytes: Int64 = 3 * 1024 * 1024 * 1024        // 3 GB
 
 	/// Completed, persisted regions, newest first.
 	@Published private(set) var regions: [OfflineMapRegion] = []
@@ -77,9 +98,8 @@ final class OfflineMapManager: ObservableObject {
 	/// Whether a download is in flight (one region at a time).
 	var isDownloading: Bool { activeDownload != nil }
 
-	/// Begins extracting a region in the background, publishing progress to `activeDownload`.
-	/// On success the region is persisted and `activeDownload` is cleared.
 	/// The first existing region whose extent intersects `bounds` (ignoring `excluding`), or nil.
+	/// Downloads must not overlap — avoids duplicate coverage.
 	func overlappingRegion(with bounds: GeoBounds, excluding: OfflineMapRegion? = nil) -> OfflineMapRegion? {
 		regions.first { region in
 			region.id != excluding?.id &&
@@ -88,16 +108,38 @@ final class OfflineMapManager: ObservableObject {
 		}
 	}
 
+	/// Why a download of `estimatedBytes` (replacing `replacing`) can't proceed against the limits, or
+	/// nil if it can. Drives the Download button's disabled state + reason message, and is a backstop.
+	func downloadBlockReason(estimatedBytes: Int64, replacing: OfflineMapRegion?) -> String? {
+		let effectiveCount = regions.count - (replacing != nil ? 1 : 0)
+		if effectiveCount >= Self.maxRegions {
+			return String(localized: "You can keep up to \(Self.maxRegions) offline maps. Remove one to download another.")
+		}
+		if estimatedBytes > Self.maxRegionBytes {
+			let limit = ByteCountFormatter.string(fromByteCount: Self.maxRegionBytes, countStyle: .file)
+			return String(localized: "This map is larger than the \(limit) per-map limit. Zoom in or lower the detail.")
+		}
+		let otherTotal = totalSize - (replacing?.fileSize ?? 0)
+		if otherTotal + estimatedBytes > Self.maxTotalBytes {
+			let limit = ByteCountFormatter.string(fromByteCount: Self.maxTotalBytes, countStyle: .file)
+			return String(localized: "This would exceed the \(limit) total offline storage limit. Remove a map first.")
+		}
+		return nil
+	}
+
 	func startDownload(name: String, bounds: GeoBounds, detail: OfflineMapDetailLevel, replacing: OfflineMapRegion? = nil) {
 		guard activeDownload == nil, let archive = newArchiveURL() else { return }
 		// Don't allow regions to overlap (excluding the one being replaced) — avoids duplicate coverage.
 		guard overlappingRegion(with: bounds, excluding: replacing) == nil else { return }
+		// Backstop the count limit (the UI also disables Download); per-map size is enforced below.
+		guard regions.count - (replacing != nil ? 1 : 0) < Self.maxRegions else { return }
 		let regionID = UUID()
 		let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
 		let finalName = trimmedName.isEmpty ? String(localized: "Offline Map") : trimmedName
 		activeDownload = OfflineMapDownloadProgress(id: regionID, name: finalName, state: .preparing, fractionCompleted: nil)
 
 		downloadTask = Task { [weak self] in
+			guard let self else { return }
 			let extractor = PMTilesExtractor()
 			do {
 				guard let build = await extractor.latestBuild() else { throw PMTilesExtractorError.noBuildAvailable }
@@ -105,24 +147,25 @@ final class OfflineMapManager: ObservableObject {
 					sourceURL: build.url, sourceBuild: build.build,
 					bounds: bounds, minZoom: detail.minZoom, maxZoom: detail.maxZoom
 				)
-				await self?.markDownloading(estimatedBytes: plan.payloadBytes)
-				try await extractor.extract(plan: plan, to: archive.url) { written, total in
-					Task { @MainActor [weak self] in self?.updateProgress(written: written, total: total) }
+				guard plan.payloadBytes <= Self.maxRegionBytes else { throw OfflineMapError.exceedsPerMapLimit(Self.maxRegionBytes) }
+				await self.markDownloading(estimatedBytes: plan.payloadBytes)
+				try await extractor.extract(plan: plan, to: archive.url) { [weak self] written, total in
+					Task { @MainActor in self?.updateProgress(written: written, total: total) }
 				}
 				let region = OfflineMapRegion(
 					id: regionID, name: finalName, fileName: archive.fileName,
 					bounds: plan.bounds, minZoom: plan.minZoom, maxZoom: plan.maxZoom,
 					fileSize: 0, sourceBuild: build.build
 				)
-				await self?.finishDownload(region: region, removing: replacing)
+				await self.finishDownload(region: region, removing: replacing)
 			} catch is CancellationError {
 				try? FileManager.default.removeItem(at: archive.url)
-				await self?.clearDownload()
+				await self.clearDownload()
 			} catch {
 				try? FileManager.default.removeItem(at: archive.url)
 				let message = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
 				Logger.services.error("🗺️ [Offline] Download failed: \(message, privacy: .public)")
-				await self?.failDownload(message: message)
+				await self.failDownload(message: message)
 			}
 		}
 	}
@@ -205,19 +248,25 @@ final class OfflineMapManager: ObservableObject {
 		directoryURL()?.appendingPathComponent(Self.manifestName)
 	}
 
-	/// Newest downloaded region's archive URL — filesystem-only, so it can be read off the
-	/// main actor (e.g. by the offline tile provider). Returns `nil` when nothing is downloaded.
-	nonisolated static func newestRegionFileURL() -> URL? {
-		guard let documents = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else { return nil }
+	/// All persisted regions read straight from the manifest, newest first — filesystem-only, so it can
+	/// be read off the main actor (e.g. by the offline tile provider at init).
+	nonisolated static func persistedRegions() -> [OfflineMapRegion] {
+		guard let documents = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else { return [] }
 		let dir = documents.appendingPathComponent(directoryName, isDirectory: true)
 		let manifest = dir.appendingPathComponent(manifestName)
 		guard let data = try? Data(contentsOf: manifest),
-			  let regions = try? JSONDecoder().decode([OfflineMapRegion].self, from: data) else { return nil }
-		for region in regions.sorted(by: { $0.createdDate > $1.createdDate }) {
+			  let regions = try? JSONDecoder().decode([OfflineMapRegion].self, from: data) else { return [] }
+		return regions.sorted(by: { $0.createdDate > $1.createdDate })
+	}
+
+	/// Archive URLs for every downloaded region whose file exists on disk (newest first).
+	nonisolated static func allRegionFileURLs() -> [URL] {
+		guard let documents = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else { return [] }
+		let dir = documents.appendingPathComponent(directoryName, isDirectory: true)
+		return persistedRegions().compactMap { region in
 			let url = dir.appendingPathComponent(region.fileName)
-			if FileManager.default.fileExists(atPath: url.path) { return url }
+			return FileManager.default.fileExists(atPath: url.path) ? url : nil
 		}
-		return nil
 	}
 
 	// MARK: - Loading & saving
@@ -299,10 +348,5 @@ final class OfflineMapManager: ObservableObject {
 
 	var formattedTotalSize: String {
 		ByteCountFormatter.string(fromByteCount: totalSize, countStyle: .file)
-	}
-
-	/// Archive URLs for every downloaded region, for rendering offline coverage.
-	var regionFileURLs: [URL] {
-		regions.compactMap { fileURL(for: $0) }
 	}
 }

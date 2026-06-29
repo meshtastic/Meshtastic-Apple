@@ -14,6 +14,10 @@ Recent user-facing changes from roughly the last 12 months. Newest at the top.
 Show roughly the last 12 months of changes; archive entries older than a year by removing them.
 -->
 
+**Jun 2026** — [Settings](settings.md) — LoRa region/preset compatibility (firmware 2.8+): the Presets picker is filtered to those legal for the selected region, switches to the region default when needed, and warns on licensed amateur (ham) bands. The new 2.8 ham/narrow regions and presets are hidden on 2.7.x and earlier radios.
+
+**Jun 2026** — [Settings](settings.md) — Traffic Management updated for the 2.8 firmware schema: features are now enabled implicitly by a non-zero value; the precision-bits and hop-management options were removed.
+
 **Jun 2026** — [Nodes](nodes.md) — Persistent node filters: online, favorites, distance, hops, roles, and connection-type filters are now remembered between launches and shared across the Nodes list, Messages contacts, and map. Search text still clears on relaunch.
 
 **Jun 2026** — [Getting Started](getting-started.md) — Redesigned first-launch setup: a clearer guided flow for Bluetooth, Local Network, Notifications, Location, and Siri permissions with colored icons and per-notification toggles.

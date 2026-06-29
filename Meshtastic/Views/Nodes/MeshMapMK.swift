@@ -217,20 +217,25 @@ struct MeshMapMK: View {
 			layer: selectedMapLayer == .offline ? .standard : selectedMapLayer,
 			showsTraffic: showTraffic,
 			showsPointsOfInterest: showPointsOfInterest,
-			showsUserLocation: showUserLocation
+			showsUserLocation: showUserLocation,
+			controlsBottomInset: 72   // lift compass + pitch toggle above the bottom button bar
 		)
 	}
 
-	/// Offline archive to render when offline tiles are enabled: the newest user-downloaded region.
-	/// (No bundled demo fallback — offline shows only what the user has downloaded.)
-	private var offlineTilesURL: URL? {
-		guard enableOfflineTiles else { return nil }
-		return OfflineMapManager.newestRegionFileURL()
+	/// All downloaded regions to render when offline tiles are enabled (pruned to on-disk regions at
+	/// load). Empty when offline tiles are off or nothing is downloaded.
+	private var offlineRegions: [OfflineMapRegion] {
+		enableOfflineTiles ? offlineMapManager.regions : []
 	}
 
-	/// Offline coverage bounds passed to ClusterMapView (drives the accent border + capsule).
-	private var offlineCoverageBounds: GeoBounds? {
-		enableOfflineTiles && offlineVectors.isAvailable ? offlineVectors.coverageBounds : nil
+	/// Archive URLs for every downloaded region — decoded + merged by `offlineVectors`.
+	private var offlineRegionURLs: [URL] {
+		offlineRegions.compactMap { offlineMapManager.fileURL(for: $0) }
+	}
+
+	/// Coverage box for each downloaded region (accent borders + capsules), shown once vectors load.
+	private var offlineCoverageAreas: [GeoBounds] {
+		offlineVectors.isAvailable ? offlineRegions.map { $0.bounds } : []
 	}
 	/// Cheap change-detector for the route set (drives rebuildRouteContent via onChange).
 	/// Change-detector for the waypoint set (rebuild markers on add/remove/move/icon change).
@@ -250,11 +255,10 @@ struct MeshMapMK: View {
 				coordinate: { spreadOverrides[$0.nodeNum] ?? $0.coordinate },
 				region: $visibleRegion,
 				clustering: enableMapClustering,
-				tilesURL: nil,
 				onSelect: { snapshot in selectedWaypoint = nil; editingWaypoint = nil; selectedNode = MeshMapSelectedNode(id: snapshot.nodeNum) },
 				configuration: clusterConfiguration,
 				overlays: combinedMapOverlays(),
-				coverageBounds: isMapVisible ? offlineCoverageBounds : nil,
+				coverageAreas: isMapVisible ? offlineCoverageAreas : [],
 				decorations: combinedMapDecorations(),
 				onMapLongPress: { coordinate in beginNewWaypoint(at: coordinate) },
 				onMapCreated: { flyover.mapView = $0 },
@@ -265,7 +269,7 @@ struct MeshMapMK: View {
 			}
 	}
 
-	/// Banner shown while a trace route is drawn on the map, with a button to clear it.
+	/// Banner shown while a trace route is drawn on the map, with controls to fly through and clear it.
 	@ViewBuilder private var traceRouteBanner: some View {
 		if let route = selectedTraceRoute {
 			let fromName = getNodeInfo(id: route.fromNum, context: context)?.user?.shortName ?? route.fromNum.toHex()
@@ -496,6 +500,7 @@ struct MeshMapMK: View {
 			rebuildGeoJSONOverlays()
 			rebuildRouteContent()
 			applyTraceRouteSelection()
+			offlineMapManager.loadIfNeeded()
 			reloadOfflineSource()
 			rebuildOfflineVectorOverlays()
 
@@ -668,7 +673,7 @@ struct MeshMapMK: View {
 								/// Re-bind the offline vector provider to the active archive (newest downloaded region, else the
 								/// bundled demo) and decode it. Cheap no-op when the archive hasn't changed.
 								private func reloadOfflineSource() {
-									offlineVectors.reload(url: offlineTilesURL)
+									offlineVectors.reload(urls: offlineRegionURLs)
 									decodeOfflineIfVisible()
 								}
 
@@ -678,13 +683,15 @@ struct MeshMapMK: View {
 									if offlineRegionOnScreen() { offlineVectors.updateIfNeeded() }
 								}
 
-								/// Whether the offline coverage box intersects the current (padded) viewport.
+								/// Whether ANY offline vector coverage box intersects the current (padded) viewport.
 								private func offlineRegionOnScreen() -> Bool {
-									guard enableOfflineTiles, let bounds = offlineVectors.coverageBounds, let region = visibleRegion else { return false }
+									guard enableOfflineTiles, let region = visibleRegion, !offlineVectors.coverageAreas.isEmpty else { return false }
 									let latPad = region.span.latitudeDelta * 0.75, lonPad = region.span.longitudeDelta * 0.75
 									let vMinLat = region.center.latitude - latPad, vMaxLat = region.center.latitude + latPad
 									let vMinLon = region.center.longitude - lonPad, vMaxLon = region.center.longitude + lonPad
-									return bounds.minLat <= vMaxLat && bounds.maxLat >= vMinLat && bounds.minLon <= vMaxLon && bounds.maxLon >= vMinLon
+									return offlineVectors.coverageAreas.contains { bounds in
+										bounds.minLat <= vMaxLat && bounds.maxLat >= vMinLat && bounds.minLon <= vMaxLon && bounds.maxLon >= vMinLon
+									}
 								}
 
 								private func rebuildAllMapContent() {
@@ -737,18 +744,21 @@ struct MeshMapMK: View {
 										)
 										if let overlay = styled.createOverlay() {
 											overlays.append(ClusterMapOverlay(id: "geojson-\(styled.id)", overlay: overlay, style: style))
-										} else if let coordinate = styled.feature.geometry.coordinates.toCoordinate() {
+										} else {
+											// Point yields one marker; MultiPoint yields one per sub-coordinate.
 											let radius = styled.feature.markerRadius
-											decorations.append(ClusterMapDecoration(
-												id: "geojson-pt-\(styled.id)",
-												coordinate: coordinate,
-												content: AnyView(
-													Circle()
-														.fill(styled.fillColor)
-														.overlay(Circle().stroke(styled.strokeColor, style: stroke))
-														.frame(width: radius * 2, height: radius * 2)
-												)
-											))
+											for (index, coordinate) in styled.feature.markerCoordinates.enumerated() {
+												decorations.append(ClusterMapDecoration(
+													id: "geojson-pt-\(styled.id)-\(index)",
+													coordinate: coordinate,
+													content: AnyView(
+														Circle()
+															.fill(styled.fillColor)
+															.overlay(Circle().stroke(styled.strokeColor, style: stroke))
+															.frame(width: radius * 2, height: radius * 2)
+													)
+												))
+											}
 										}
 									}
 									geoJSONOverlays = overlays
@@ -928,81 +938,143 @@ struct MeshMapMK: View {
 		let key = "\(enableOfflineTiles)|\(offlineVectors.isAvailable)|\(offlineVectors.revision)|\(colorScheme == .dark)"
 		guard key != lastOfflineOverlaysKey else { return }
 		lastOfflineOverlaysKey = key
-		guard enableOfflineTiles, offlineVectors.isAvailable, let bounds = offlineVectors.coverageBounds else {
+		guard enableOfflineTiles, offlineVectors.isAvailable, !offlineVectors.coverageAreas.isEmpty else {
 			if !offlineVectorOverlays.isEmpty { offlineVectorOverlays = [] }
 			return
 		}
 		let dark = colorScheme == .dark
 		var result: [ClusterMapOverlay] = []
-		// Earth base fill for the whole coverage box (so gaps read as land, not Apple basemap).
-		var earth = [
-			CLLocationCoordinate2D(latitude: bounds.minLat, longitude: bounds.minLon),
-			CLLocationCoordinate2D(latitude: bounds.minLat, longitude: bounds.maxLon),
-			CLLocationCoordinate2D(latitude: bounds.maxLat, longitude: bounds.maxLon),
-			CLLocationCoordinate2D(latitude: bounds.maxLat, longitude: bounds.minLon)
-		]
-		result.append(ClusterMapOverlay(
-			id: "offline-earth",
-			overlay: MKPolygon(coordinates: &earth, count: earth.count),
-			style: ClusterMapOverlayStyle(strokeUIColor: nil, fillUIColor: Self.offlineEarthColor(dark: dark), lineWidth: 0, level: .aboveRoads)
-		))
-		// Water / park fills.
-		for polygon in offlineVectors.polygons {
-			guard let fill = Self.offlineFillColor(polygon.role, dark: dark), polygon.coordinates.count >= 3 else { continue }
-			var coords = polygon.coordinates
+
+		// 1) Earth base fill for each coverage box (so gaps read as land, not the Apple basemap).
+		for (index, bounds) in offlineVectors.coverageAreas.enumerated() {
+			var earth = [
+				CLLocationCoordinate2D(latitude: bounds.minLat, longitude: bounds.minLon),
+				CLLocationCoordinate2D(latitude: bounds.minLat, longitude: bounds.maxLon),
+				CLLocationCoordinate2D(latitude: bounds.maxLat, longitude: bounds.maxLon),
+				CLLocationCoordinate2D(latitude: bounds.maxLat, longitude: bounds.minLon)
+			]
 			result.append(ClusterMapOverlay(
-				id: "offline-fill-\(polygon.id)",
-				overlay: MKPolygon(coordinates: &coords, count: coords.count),
+				id: "offline-earth-\(index)",
+				overlay: MKPolygon(coordinates: &earth, count: earth.count),
+				style: ClusterMapOverlayStyle(strokeUIColor: nil, fillUIColor: Self.offlineEarthColor(dark: dark), lineWidth: 0, level: .aboveRoads)
+			))
+		}
+
+		// 2) Water / park fills, batched per role (parks under water).
+		let fillsByRole = Dictionary(grouping: offlineVectors.polygons, by: { $0.role })
+		for role in [OfflineFeatureRole.park, .green, .water] {
+			guard let polys = fillsByRole[role], let fill = Self.offlineFillColor(role, dark: dark) else { continue }
+			let shapes = polys.compactMap { poly -> MKPolygon? in
+				guard poly.coordinates.count >= 3 else { return nil }
+				var coords = poly.coordinates
+				return MKPolygon(coordinates: &coords, count: coords.count)
+			}
+			guard !shapes.isEmpty else { continue }
+			result.append(ClusterMapOverlay(
+				id: "offline-fill-\(role)",
+				overlay: MKMultiPolygon(shapes),
 				style: ClusterMapOverlayStyle(strokeUIColor: nil, fillUIColor: fill, lineWidth: 0, level: .aboveRoads)
 			))
 		}
-		// Arterial road network.
-		for line in offlineVectors.arterials {
-			guard let stroke = Self.offlineStrokeColor(line.role, dark: dark), line.coordinates.count >= 2 else { continue }
-			var coords = line.coordinates
+
+		// 3) Roads, batched per role into MKMultiPolylines (keeps the dense grid to a few overlays).
+		let roadsByRole = Dictionary(grouping: offlineVectors.roads, by: { $0.role })
+		func roadMultiPolyline(_ role: OfflineFeatureRole) -> MKMultiPolyline? {
+			guard let lines = roadsByRole[role] else { return nil }
+			let shapes = lines.compactMap { line -> MKPolyline? in
+				guard line.coordinates.count >= 2 else { return nil }
+				var coords = line.coordinates
+				return MKPolyline(coordinates: &coords, count: coords.count)
+			}
+			return shapes.isEmpty ? nil : MKMultiPolyline(shapes)
+		}
+		let roadClasses: [OfflineFeatureRole] = [.minorRoad, .mediumRoad, .majorRoad]
+		// Casing pass (light mode only) gives the Apple white-road-with-outline look.
+		for role in roadClasses {
+			guard let casing = Self.offlineRoadCasingColor(role, dark: dark), let multi = roadMultiPolyline(role) else { continue }
 			result.append(ClusterMapOverlay(
-				id: "offline-road-\(line.id)",
-				overlay: MKPolyline(coordinates: &coords, count: coords.count),
-				style: ClusterMapOverlayStyle(strokeUIColor: stroke, fillUIColor: nil, lineWidth: Self.offlineLineWidth(line.role), lineCap: .round, level: .aboveRoads)
+				id: "offline-road-casing-\(role)",
+				overlay: multi,
+				style: ClusterMapOverlayStyle(strokeUIColor: casing, fillUIColor: nil, lineWidth: Self.offlineRoadCasingWidth(role), lineCap: .round, level: .aboveRoads)
 			))
 		}
+		// Fill pass — white centerlines (light) / lighter-than-land gray (dark).
+		for role in roadClasses {
+			guard let fill = Self.offlineRoadFillColor(role, dark: dark), let multi = roadMultiPolyline(role) else { continue }
+			result.append(ClusterMapOverlay(
+				id: "offline-road-fill-\(role)",
+				overlay: multi,
+				style: ClusterMapOverlayStyle(strokeUIColor: fill, fillUIColor: nil, lineWidth: Self.offlineRoadWidth(role), lineCap: .round, level: .aboveRoads)
+			))
+		}
+		// Rail + admin boundaries (single dashed stroke, both modes).
+		for role in [OfflineFeatureRole.rail, .boundary] {
+			guard let color = Self.offlineLineColor(role, dark: dark), let multi = roadMultiPolyline(role) else { continue }
+			result.append(ClusterMapOverlay(
+				id: "offline-line-\(role)",
+				overlay: multi,
+				style: ClusterMapOverlayStyle(strokeUIColor: color, fillUIColor: nil, lineWidth: 1.0, lineDash: [2, 3], lineCap: .butt, level: .aboveRoads)
+			))
+		}
+
 		offlineVectorOverlays = result
 	}
 
+	// MARK: Offline basemap palette (approximates Apple Maps Standard, light + dark)
+
 	private static func offlineEarthColor(dark: Bool) -> UIColor {
-		dark ? UIColor(red: 0.180, green: 0.180, blue: 0.190, alpha: 1) : UIColor(red: 0.940, green: 0.935, blue: 0.920, alpha: 1)
+		dark ? UIColor(red: 0.137, green: 0.137, blue: 0.145, alpha: 1)
+			 : UIColor(red: 0.953, green: 0.945, blue: 0.929, alpha: 1)
 	}
 
 	private static func offlineFillColor(_ role: OfflineFeatureRole, dark: Bool) -> UIColor? {
 		switch role {
-			case .water: return dark ? UIColor(red: 0.160, green: 0.220, blue: 0.300, alpha: 1) : UIColor(red: 0.680, green: 0.800, blue: 0.920, alpha: 1)
-			case .park, .green: return dark ? UIColor(red: 0.170, green: 0.235, blue: 0.185, alpha: 1) : UIColor(red: 0.830, green: 0.890, blue: 0.795, alpha: 1)
-			case .land: return dark ? UIColor(red: 0.185, green: 0.185, blue: 0.195, alpha: 1) : UIColor(red: 0.925, green: 0.920, blue: 0.905, alpha: 1)
-			default: return nil
+		case .water: return dark ? UIColor(red: 0.094, green: 0.169, blue: 0.267, alpha: 1) : UIColor(red: 0.667, green: 0.831, blue: 0.953, alpha: 1)
+		case .park, .green: return dark ? UIColor(red: 0.122, green: 0.176, blue: 0.133, alpha: 1) : UIColor(red: 0.776, green: 0.882, blue: 0.706, alpha: 1)
+		case .land: return offlineEarthColor(dark: dark)
+		default: return nil
 		}
 	}
 
-	private static func offlineStrokeColor(_ role: OfflineFeatureRole, dark: Bool) -> UIColor? {
+	/// Road fill: white centerline (light) or a lighter-than-land gray (dark).
+	private static func offlineRoadFillColor(_ role: OfflineFeatureRole, dark: Bool) -> UIColor? {
 		switch role {
-			case .majorRoad: return dark ? UIColor(red: 0.62, green: 0.56, blue: 0.42, alpha: 1) : UIColor(red: 0.99, green: 0.78, blue: 0.42, alpha: 1)
-			case .mediumRoad: return dark ? UIColor(red: 0.55, green: 0.56, blue: 0.59, alpha: 1) : UIColor(red: 0.99, green: 0.99, blue: 0.98, alpha: 1)
-			case .minorRoad: return dark ? UIColor(red: 0.42, green: 0.43, blue: 0.46, alpha: 1) : UIColor(red: 0.90, green: 0.90, blue: 0.88, alpha: 1)
-			case .path: return dark ? UIColor(white: 0.40, alpha: 1) : UIColor(white: 0.80, alpha: 1)
-			case .rail: return dark ? UIColor(red: 0.48, green: 0.49, blue: 0.52, alpha: 1) : UIColor(red: 0.62, green: 0.62, blue: 0.64, alpha: 1)
-			case .boundary: return dark ? UIColor(red: 0.50, green: 0.46, blue: 0.56, alpha: 1) : UIColor(red: 0.58, green: 0.54, blue: 0.62, alpha: 1)
-			default: return nil
+		case .majorRoad: return dark ? UIColor(red: 0.46, green: 0.46, blue: 0.49, alpha: 1) : .white
+		case .mediumRoad: return dark ? UIColor(red: 0.38, green: 0.38, blue: 0.41, alpha: 1) : .white
+		case .minorRoad: return dark ? UIColor(red: 0.31, green: 0.31, blue: 0.34, alpha: 1) : .white
+		default: return nil
 		}
 	}
 
-	private static func offlineLineWidth(_ role: OfflineFeatureRole) -> CGFloat {
+	/// Road casing (light mode only): a warm-gray outline that makes the white roads read on pale land.
+	private static func offlineRoadCasingColor(_ role: OfflineFeatureRole, dark: Bool) -> UIColor? {
+		guard !dark else { return nil }
 		switch role {
-			case .majorRoad: return 2.8
-			case .mediumRoad: return 1.8
-			case .minorRoad: return 1.2
-			case .path: return 0.8
-			case .rail: return 1.0
-			case .boundary: return 1.0
-			default: return 1.0
+		case .majorRoad, .mediumRoad, .minorRoad: return UIColor(red: 0.835, green: 0.824, blue: 0.800, alpha: 1)
+		default: return nil
+		}
+	}
+
+	private static func offlineRoadWidth(_ role: OfflineFeatureRole) -> CGFloat {
+		switch role {
+		case .majorRoad: return 3.0
+		case .mediumRoad: return 2.2
+		case .minorRoad: return 1.3
+		default: return 1.0
+		}
+	}
+
+	/// Casing is ~1.4 pt wider than the fill (about 0.7 pt of outline each side).
+	private static func offlineRoadCasingWidth(_ role: OfflineFeatureRole) -> CGFloat {
+		offlineRoadWidth(role) + 1.4
+	}
+
+	/// Rail / admin-boundary stroke color (single dashed line, both modes).
+	private static func offlineLineColor(_ role: OfflineFeatureRole, dark: Bool) -> UIColor? {
+		switch role {
+		case .rail: return dark ? UIColor(red: 0.45, green: 0.46, blue: 0.49, alpha: 1) : UIColor(red: 0.62, green: 0.62, blue: 0.64, alpha: 1)
+		case .boundary: return dark ? UIColor(red: 0.50, green: 0.46, blue: 0.56, alpha: 1) : UIColor(red: 0.66, green: 0.62, blue: 0.70, alpha: 1)
+		default: return nil
 		}
 	}
 

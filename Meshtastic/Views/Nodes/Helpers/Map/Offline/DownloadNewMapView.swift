@@ -7,6 +7,7 @@
 
 import SwiftUI
 import MapKit
+import CoreLocation
 import OSLog
 
 struct DownloadNewMapView: View {
@@ -16,6 +17,8 @@ struct DownloadNewMapView: View {
 	@State private var query = ""
 	@State private var target: OfflineRegionTarget?
 	@State private var resolving = false
+	/// Reverse-geocoded name of the current location (e.g. "Bellevue"), shown as the row subtitle.
+	@State private var currentPlaceName: String?
 
 	/// Default framing for a freshly-picked place; the selector lets the user adjust.
 	private let defaultSpan = MKCoordinateSpan(latitudeDelta: 0.5, longitudeDelta: 0.5)
@@ -26,14 +29,25 @@ struct DownloadNewMapView: View {
 				Section {
 					Button {
 						target = OfflineRegionTarget(
-							name: String(localized: "Current Location"),
+							name: currentPlaceName ?? String(localized: "Current Location"),
 							region: MKCoordinateRegion(center: coordinate, span: defaultSpan)
 						)
 					} label: {
-						Label {
-							Text("Current Location")
-						} icon: {
+						HStack(spacing: 12) {
 							Image(systemName: "location.fill")
+								.font(.system(size: 15, weight: .semibold))
+								.foregroundStyle(Color.accentColor)
+								.frame(width: 34, height: 34)
+								.background(Circle().fill(Color(.systemGray5)))
+							VStack(alignment: .leading, spacing: 1) {
+								Text("Current Location")
+									.foregroundStyle(.primary)
+								if let currentPlaceName {
+									Text(currentPlaceName)
+										.font(.caption)
+										.foregroundStyle(.secondary)
+								}
+							}
 						}
 					}
 				}
@@ -60,6 +74,10 @@ struct DownloadNewMapView: View {
 		}
 		.searchable(text: $query, prompt: Text("Cities, parks, and more"))
 		.onChange(of: query) { _, newValue in search.update(newValue) }
+		.task {
+			guard currentPlaceName == nil, let coordinate = LocationsHandler.currentPreciseLocation else { return }
+			currentPlaceName = await Self.placeName(for: coordinate)
+		}
 		.overlay {
 			if resolving { ProgressView() }
 		}
@@ -72,6 +90,13 @@ struct DownloadNewMapView: View {
 			// When a download begins (from the selector), unwind back to the list.
 			if downloading { dismiss() }
 		}
+	}
+
+	/// Reverse-geocodes the current location to a short place name (city) for the row subtitle.
+	private static func placeName(for coordinate: CLLocationCoordinate2D) async -> String? {
+		let location = CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude)
+		let placemark = try? await CLGeocoder().reverseGeocodeLocation(location).first
+		return placemark?.locality ?? placemark?.subAdministrativeArea ?? placemark?.name
 	}
 
 	private func resolve(_ completion: MKLocalSearchCompletion) async {

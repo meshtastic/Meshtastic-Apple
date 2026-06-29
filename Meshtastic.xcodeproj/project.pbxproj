@@ -209,7 +209,6 @@
 		B96123C9177242AFA768AA8F /* DeviceMetadataEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 509A1C42A695463093654617 /* DeviceMetadataEntity.swift */; };
 		BB0000000000000000000000 /* PMTilesArchive.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000000 /* PMTilesArchive.swift */; };
 		BB0001000000000000000000 /* MBTilesArchive.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001000000000000000000 /* MBTilesArchive.swift */; };
-		BB0002000000000000000000 /* VectorTileRasterizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0002000000000000000000 /* VectorTileRasterizer.swift */; };
 		BB0003000000000000000000 /* PMTilesMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0003000000000000000000 /* PMTilesMapView.swift */; };
 		BB0004000000000000000000 /* ClusterMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0004000000000000000000 /* ClusterMapView.swift */; };
 		BB0005000000000000000000 /* MeshMapMK.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0005000000000000000000 /* MeshMapMK.swift */; };
@@ -718,7 +717,6 @@
 		AA00010022E2730EC0060000 /* ConnectViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectViewTests.swift; sourceTree = "<group>"; };
 		AA0001022F07A4B000600001 /* MeshtasticDataModelV 57.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 57.xcdatamodel"; sourceTree = "<group>"; };
 		AA0001042F07A4B000600001 /* TAKModuleConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TAKModuleConfig.swift; sourceTree = "<group>"; };
-		AA0002000000000000000000 /* VectorTileRasterizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = VectorTileRasterizer.swift; path = Meshtastic/Helpers/Map/VectorTileRasterizer.swift; sourceTree = SOURCE_ROOT; };
 		AA000201CPLAY000000000001 /* CarPlaySceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarPlaySceneDelegate.swift; sourceTree = "<group>"; };
 		AA000201CPLAY000000000003 /* CarPlayIntentDonation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarPlayIntentDonation.swift; sourceTree = "<group>"; };
 		AA0003000000000000000000 /* PMTilesMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PMTilesMapView.swift; path = Meshtastic/Views/Nodes/Helpers/Map/PMTilesMapView.swift; sourceTree = SOURCE_ROOT; };
@@ -2058,7 +2056,6 @@
 			children = (
 				AA0000000000000000000000 /* PMTilesArchive.swift */,
 				AA0001000000000000000000 /* MBTilesArchive.swift */,
-				AA0002000000000000000000 /* VectorTileRasterizer.swift */,
 				AA0003000000000000000000 /* PMTilesMapView.swift */,
 				AA0005000000000000000000 /* MeshMapMK.swift */,
 				AA0004000000000000000000 /* ClusterMapView.swift */,
@@ -2752,7 +2749,6 @@
 				BBFF00000000000000000007 /* RegionSelectorView.swift in Sources */,
 				BBFF00000000000000000008 /* OfflineMapDetailView.swift in Sources */,
 				BB0001000000000000000000 /* MBTilesArchive.swift in Sources */,
-				BB0002000000000000000000 /* VectorTileRasterizer.swift in Sources */,
 				BB0003000000000000000000 /* PMTilesMapView.swift in Sources */,
 				BB0005000000000000000000 /* MeshMapMK.swift in Sources */,
 				BB0004000000000000000000 /* ClusterMapView.swift in Sources */,
@@ -3273,7 +3269,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.7.15;
+				MARKETING_VERSION = 2.7.16;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
@@ -3307,7 +3303,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.7.15;
+				MARKETING_VERSION = 2.7.16;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
@@ -3462,6 +3458,7 @@
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Meshtastic/Meshtastic.entitlements;
+				"CODE_SIGN_ENTITLEMENTS[sdk=macosx*]" = "Meshtastic/Meshtastic-Catalyst.entitlements";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -3487,7 +3484,7 @@
 					"@executable_path/Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.6;
-				MARKETING_VERSION = 2.7.15;
+				MARKETING_VERSION = 2.7.16;
 				OTHER_LDFLAGS = (
 					"-weak_framework",
 					SwiftUI,
@@ -3511,6 +3508,7 @@
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Meshtastic/Meshtastic.entitlements;
+				"CODE_SIGN_ENTITLEMENTS[sdk=macosx*]" = "Meshtastic/Meshtastic-Catalyst.entitlements";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -3536,7 +3534,7 @@
 					"@executable_path/Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.6;
-				MARKETING_VERSION = 2.7.15;
+				MARKETING_VERSION = 2.7.16;
 				OTHER_LDFLAGS = (
 					"-weak_framework",
 					SwiftUI,
@@ -3572,7 +3570,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.6;
-				MARKETING_VERSION = 2.7.15;
+				MARKETING_VERSION = 2.7.16;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.Widgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -3607,7 +3605,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.6;
-				MARKETING_VERSION = 2.7.15;
+				MARKETING_VERSION = 2.7.16;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.Widgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";

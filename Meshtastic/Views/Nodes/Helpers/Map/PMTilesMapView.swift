@@ -2,12 +2,10 @@
 //  PMTilesMapView.swift
 //  Meshtastic
 //
-//  A SwiftUI shim around `MKMapView` that displays an OFFLINE raster PMTiles archive
-//  as the basemap (via `MKTileOverlay`) with a GeoJSON overlay drawn on top.
-//
-//  SwiftUI's `Map` can't host a custom `MKTileOverlay`, so this wraps `MKMapView` in a
-//  `UIViewRepresentable`. MapKit only rasterizes tiles, so the PMTiles archive must be
-//  RASTER (PNG/JPEG/WEBP) — vector (MVT) PMTiles need a vector renderer (MapLibre).
+//  Native vector rendering of an OFFLINE Protomaps `.pmtiles` archive. `OfflineVectorTileProvider`
+//  decodes the MVT tiles into MapKit shapes (polygons / polylines) once per region, which the
+//  MKMapView-backed map draws as overlays — so the offline basemap composites directly with the
+//  map's annotations, with no rasterization and no second map.
 //
 
 import GISTools
@@ -15,41 +13,6 @@ import MapKit
 import MVTTools
 import OSLog
 import SwiftUI
-
-// MARK: - Tile overlay backed by a PMTiles archive
-
-final class OfflineTileOverlay: MKTileOverlay {
-	private let source: OfflineTileSource
-	/// Selects the dark color palette when rasterizing vector tiles.
-	let dark: Bool
-
-	init(source: OfflineTileSource, dark: Bool = false) {
-		self.source = source
-		self.dark = dark
-		super.init(urlTemplate: nil)
-		self.tileSize = CGSize(width: 256, height: 256)
-		self.minimumZ = Int(source.tileMinZoom)
-		self.maximumZ = Int(source.tileMaxZoom)
-		// Replace Apple's basemap entirely so the map is fully offline.
-		self.canReplaceMapContent = true
-	}
-
-	override func loadTile(at path: MKTileOverlayPath, result: @escaping (Data?, Error?) -> Void) {
-		// Both PMTiles and (after the source's own TMS flip) MBTiles are addressed by the
-		// standard slippy-map (XYZ, origin top-left) scheme — same as MKTileOverlayPath.
-		guard path.z >= 0, path.x >= 0, path.y >= 0,
-			  let data = source.tileData(z: UInt8(path.z), x: UInt32(path.x), y: UInt32(path.y)) else {
-			result(nil, nil) // no tile here — MapKit leaves it blank
-			return
-		}
-		if source.isVectorTiles {
-			// Rasterize the MVT to a PNG in Swift so MapKit can display it (no MapLibre).
-			result(VectorTileRasterizer.png(mvt: data, z: path.z, x: path.x, y: path.y, dark: dark), nil)
-		} else {
-			result(data, nil) // already raster
-		}
-	}
-}
 
 // MARK: - Native vector rendering of offline MVT tiles (drawn IN a SwiftUI Map)
 //
@@ -115,18 +78,20 @@ final class OfflineVectorTileProvider: ObservableObject {
 	/// overlay, so overlay COUNT is the dominant cost — roads are stitched (see `stitch`) from
 	/// thousands of short MVT segments into a few hundred long polylines with the identical look.
 	@Published private(set) var polygons: [OfflineMapPolygon] = []
-	/// Arterial network (major/medium/rail) — the only roads rendered. The residential grid is
-	/// dropped on purpose: thousands of SwiftUI-Map overlays hang MapKit on camera changes.
-	@Published private(set) var arterials: [OfflineMapPolyline] = []
+	/// Full road network (incl. the residential/neighborhood grid), stitched into long polylines.
+	/// Rendered as a few batched MKMultiPolylines per role, so the whole grid stays smooth.
+	@Published private(set) var roads: [OfflineMapPolyline] = []
 	/// Bumped once each time a decode publishes, so observers rebuild exactly once per decode.
 	@Published private(set) var revision = 0
 
 	private(set) var isAvailable = false
-	/// The archive's coverage box (for the base fill + coverage rectangle), nil if unavailable.
-	private(set) var coverageBounds: GeoBounds?
-	private var source: OfflineTileSource?
-	/// URL the provider is currently bound to, so reload(url:) can no-op when it hasn't changed.
-	private var loadedURL: URL?
+	/// Coverage box for each loaded archive (for the base fills + coverage rectangles). One per region.
+	private(set) var coverageAreas: [GeoBounds] = []
+	/// One opened vector archive + its coverage box.
+	private struct VectorSource { let url: URL; let source: OfflineTileSource; let bounds: GeoBounds }
+	private var vectorSources: [VectorSource] = []
+	/// URLs the provider is currently bound to, so reload(urls:) can no-op when unchanged.
+	private var loadedURLs: [URL] = []
 	private let queue = DispatchQueue(label: "offline.vector.decode", qos: .userInitiated)
 	private var didLoad = false
 
@@ -139,61 +104,73 @@ final class OfflineVectorTileProvider: ObservableObject {
 		var key: String { "\(z)/\(x)/\(y)" }
 	}
 
-	init(url: URL? = OfflineVectorTileProvider.defaultURL) {
-		applySource(url: url)
+	init(urls: [URL] = OfflineVectorTileProvider.defaultURLs) {
+		applySources(urls: urls)
 	}
 
-	/// (Re)bind to an archive URL (newest downloaded region, or the bundled demo tiles).
-	private func applySource(url: URL?) {
-		if let url, let src = OfflineTileSourceFactory.source(for: url), src.isVectorTiles {
-			source = src; isAvailable = true; coverageBounds = src.geographicBounds; loadedURL = url
-		} else {
-			source = nil; isAvailable = false; coverageBounds = nil; loadedURL = nil
+	/// (Re)bind to the set of downloaded street archives, opening each vector source.
+	private func applySources(urls: [URL]) {
+		var result: [VectorSource] = []
+		for url in urls {
+			if let src = OfflineTileSourceFactory.source(for: url), src.isVectorTiles, let bounds = src.geographicBounds {
+				result.append(VectorSource(url: url, source: src, bounds: bounds))
+			}
 		}
+		vectorSources = result
+		isAvailable = !result.isEmpty
+		coverageAreas = result.map { $0.bounds }
+		loadedURLs = urls
 	}
 
-	/// Switch to a different archive (e.g. a freshly downloaded region) and re-decode. No-op when the
-	/// URL is unchanged; clears the old overlays + re-decodes when it changes.
-	func reload(url: URL?) {
-		if url != loadedURL {
-			applySource(url: url)
-			didLoad = false
-			polygons = []
-			arterials = []
-			revision += 1   // drop the old region's overlays now; the decode publishes the new set
-		}
-		// NOTE: does NOT decode here — the caller decodes lazily (only when the region is on screen).
+	/// Switch to a different set of archives (e.g. after a new download) and re-decode. No-op when the
+	/// URL set is unchanged; clears the old overlays + re-decodes when it changes.
+	func reload(urls: [URL]) {
+		guard urls != loadedURLs else { return }
+		applySources(urls: urls)
+		didLoad = false
+		polygons = []
+		roads = []
+		revision += 1   // drop the old overlays now; the decode publishes the merged new set
+		// NOTE: does NOT decode here — the caller decodes lazily (only when a region is on screen).
 	}
 
-	nonisolated static var defaultURL: URL? {
-		// User-downloaded offline regions only — no bundled demo fallback.
-		OfflineMapManager.newestRegionFileURL()
+	nonisolated static var defaultURLs: [URL] {
+		// All user-downloaded regions (the provider keeps only the vector ones).
+		OfflineMapManager.allRegionFileURLs()
 	}
 
 	/// Decode the whole coverage box ONCE at a fixed detail zoom, stitch road segments per role, and
 	/// publish a single time. Vector geometry is resolution-independent, so it renders at every map
 	/// zoom with no reload (no flashing). Decoded once and never replaced — no per-pan overlay churn.
 	func updateIfNeeded() {
-		guard !didLoad, let source, let bounds = source.geographicBounds else { return }
+		guard !didLoad, !vectorSources.isEmpty else { return }
 		didLoad = true
-		let tiles = Self.boundsTiles(source: source, bounds: bounds, maxTiles: maxTiles)
-		guard !tiles.isEmpty else { didLoad = false; return }
+		let snapshot = vectorSources
+		let cap = maxTiles
 		queue.async { [weak self] in
-			let result = Self.build(source: source, bounds: bounds, tiles: tiles)
-			Logger.services.info("📦 [Offline] \(result.stats.description)")
-			let arterials = result.polylines.filter { Self.isArterial($0.role) }
+			var allPolygons: [OfflineMapPolygon] = []
+			var allRoads: [OfflineMapPolyline] = []
+			for (index, entry) in snapshot.enumerated() {
+				let tiles = Self.boundsTiles(source: entry.source, bounds: entry.bounds, maxTiles: cap)
+				guard !tiles.isEmpty else { continue }
+				let result = Self.build(source: entry.source, bounds: entry.bounds, tiles: tiles)
+				Logger.services.info("📦 [Offline] region \(index): \(result.stats.description)")
+				// Namespace ids per source so merged overlays never collide in the map's id-diff.
+				allPolygons.append(contentsOf: result.polygons.map {
+					OfflineMapPolygon(id: "\(index)/\($0.id)", role: $0.role, coordinates: $0.coordinates)
+				})
+				// All road classes (incl. the residential grid); footways were already dropped at decode.
+				for line in result.polylines {
+					allRoads.append(OfflineMapPolyline(id: "\(index)/\(line.id)", role: line.role, coordinates: line.coordinates))
+				}
+			}
 			Task { @MainActor [weak self] in
 				guard let self else { return }
-				self.polygons = result.polygons
-				self.arterials = arterials
+				self.polygons = allPolygons
+				self.roads = allRoads
 				self.revision += 1
 			}
 		}
-	}
-
-	/// Arterials are always drawn when the box is visible; everything else is the zoom-in-only grid.
-	nonisolated static func isArterial(_ role: OfflineFeatureRole) -> Bool {
-		role == .majorRoad || role == .mediumRoad || role == .rail || role == .boundary
 	}
 
 	/// Painter's order for stitched road layers (earlier = underneath).
