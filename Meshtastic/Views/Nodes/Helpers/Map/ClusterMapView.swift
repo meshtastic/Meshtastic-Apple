@@ -72,7 +72,7 @@ final class DirectionalPolylineRenderer: MKPolylineRenderer {
 
 		// Sizes are in screen points, converted to the renderer's space by dividing by the zoom scale.
 		let size = 10 / zoomScale
-		let spacing = 52 / zoomScale
+		let spacing = 156 / zoomScale
 		guard spacing > 0 else { return }
 
 		context.setStrokeColor((strokeColor ?? .white).cgColor)
