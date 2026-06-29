@@ -19,8 +19,7 @@ enum MeshtasticMigrationPlan: SchemaMigrationPlan {
 	/// SwiftData uses this ordering to determine which migrations to apply.
 	static var schemas: [any VersionedSchema.Type] {
 		[
-			MeshtasticSchemaV1.self,
-			MeshtasticSchemaV2.self
+			MeshtasticSchemaV1.self
 		]
 	}
 
@@ -29,17 +28,11 @@ enum MeshtasticMigrationPlan: SchemaMigrationPlan {
 	/// SwiftData can infer the migration automatically (adding optional
 	/// properties, renaming with @Attribute(originalName:), etc.).
 	/// Use `.custom` when you need to transform data programmatically.
-	/// V1 → V2: adds the additive WaypointEntity geofence fields (geofenceRadius,
-	/// bounding-box corners, notifyOnEnter / notifyOnExit / notifyFavoritesOnly). All
-	/// new fields carry defaults, so SwiftData can infer the migration automatically.
-	static let migrateV1toV2 = MigrationStage.lightweight(
-		fromVersion: MeshtasticSchemaV1.self,
-		toVersion: MeshtasticSchemaV2.self
-	)
-
 	static var stages: [MigrationStage] {
 		[
-			migrateV1toV2
+			// No migrations yet — V1 is the initial (unreleased) version, so
+			// model changes go directly into V1 rather than a new versioned
+			// schema + stage. Add migrations here only once V1 has shipped.
 		]
 	}
 }
