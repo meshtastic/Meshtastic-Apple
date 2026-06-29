@@ -30,11 +30,11 @@ public struct ServiceEnvelope: Sendable {
   ///
   /// The (probably encrypted) packet
   public var packet: MeshPacket {
-    get {return _packet ?? MeshPacket()}
+    get {_packet ?? MeshPacket()}
     set {_packet = newValue}
   }
   /// Returns true if `packet` has been explicitly set.
-  public var hasPacket: Bool {return self._packet != nil}
+  public var hasPacket: Bool {self._packet != nil}
   /// Clears the value of `packet`. Subsequent reads from it will return its default value.
   public mutating func clearPacket() {self._packet = nil}
 
