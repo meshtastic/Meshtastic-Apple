@@ -98,6 +98,14 @@ actor TCPConnection: Connection {
 						Logger.transport.debug("🌐 [TCP] startReader: EOF while waiting for length")
 					}
 				} catch {
+					// An intentional teardown cancels this task (and the NWConnection), which surfaces
+					// here as a receive error. Do NOT treat that as a reconnectable failure — the
+					// explicit `disconnect(shouldReconnect:)` call that cancelled us already yielded the
+					// correct event. Emitting `.error(shouldReconnect: true)` here races that intent and
+					// can trigger an auto-reconnect right after a user-initiated disconnect (the timing
+					// varies by OS — observed on iOS 18). Only a genuine, un-cancelled read error should
+					// request a reconnect.
+					if Task.isCancelled { break }
 					Logger.transport.error("🌐 [TCP] startReader: Error reading from TCP: \(error, privacy: .public)")
 					try? await self.disconnect(withError: error, shouldReconnect: true)
 					break

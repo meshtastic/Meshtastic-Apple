@@ -277,6 +277,7 @@ enum DiscoverySummaryPDF {
 				drawStatPair("Sensor Pkts", "\(result.sensorPacketCount)", x: col1)
 				drawStatPair("Ch Util", result.averageChannelUtilization > 0 ? String(format: "%.1f%%", result.averageChannelUtilization) : "—", x: col2)
 				drawStatPair("Airtime", result.averageAirtimeRate > 0 ? String(format: "%.2f%%", result.averageAirtimeRate) : "—", x: col3)
+				drawStatPair("Noise", result.noiseFloorSampleCount > 0 ? String(format: "%.0f dBm", result.averageNoiseFloor) : "—", x: col4)
 				y += 26
 
 				// Per-preset AI summary
@@ -302,6 +303,7 @@ enum DiscoverySummaryPDF {
 				$0.packetSuccessRate > 0 || $0.packetFailureRate > 0
 				|| $0.numPacketsTx > 0 || $0.numPacketsRx > 0
 				|| $0.averageChannelUtilization > 0 || $0.averageAirtimeRate > 0
+				|| $0.noiseFloorSampleCount > 0
 			}
 
 			if hasRFData {
@@ -310,7 +312,8 @@ enum DiscoverySummaryPDF {
 				for result in session.presetResults where
 					result.packetSuccessRate > 0 || result.packetFailureRate > 0
 					|| result.numPacketsTx > 0 || result.numPacketsRx > 0
-					|| result.averageChannelUtilization > 0 || result.averageAirtimeRate > 0 {
+					|| result.averageChannelUtilization > 0 || result.averageAirtimeRate > 0
+					|| result.noiseFloorSampleCount > 0 {
 					checkPage(needed: 80)
 
 					let presetAttrs: [NSAttributedString.Key: Any] = [.font: presetTitleFont, .foregroundColor: black]
@@ -343,6 +346,9 @@ enum DiscoverySummaryPDF {
 					var footerParts: [String] = []
 					if result.numTotalNodes > 0 {
 						footerParts.append("\(result.numOnlineNodes)/\(result.numTotalNodes) nodes online")
+					}
+					if result.noiseFloorSampleCount > 0 {
+						footerParts.append("Noise floor: \(String(format: "%.0f dBm", result.averageNoiseFloor))")
 					}
 					if result.uptimeSeconds > 0 {
 						footerParts.append("Uptime: \(uptimeString(result.uptimeSeconds))")

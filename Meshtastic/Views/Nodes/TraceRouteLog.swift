@@ -14,6 +14,7 @@ struct TraceRouteLog: View {
 	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
 	@ObservedObject var locationsHandler = LocationsHandler.shared
 	@Environment(\.modelContext) private var context
+	@EnvironmentObject var router: Router
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@State private var isPresentingClearLogConfirm: Bool = false
 	@State var isExporting = false
@@ -101,6 +102,16 @@ struct TraceRouteLog: View {
 									.symbolRenderingMode(.hierarchical)
 							}
 							.font(.title3)
+							if selectedRoute?.hasPositions ?? false, let routeID = selectedRoute?.id {
+								Button {
+									router.selectedTab = .map
+									router.mapState = .traceRoute(routeID)
+								} label: {
+									Label("Show on Map", systemImage: "map")
+								}
+								.buttonStyle(.bordered)
+								.padding(.top, 4)
+							}
 						} else if !(selectedRoute?.sent ?? true) {
 								Label {
 									VStack {

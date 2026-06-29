@@ -391,7 +391,7 @@ actor MeshPackets {
 					}
 				} else {
 					if fromNum > 0 {
-						let newNode = createNodeInfo(num: Int64(fromNum), context: modelContext)
+						let newNode = findOrCreateNode(num: Int64(fromNum), context: modelContext)
 						newNode.metadata = newMetadata
 					}
 				}
@@ -1025,17 +1025,17 @@ actor MeshPackets {
 
 						let fifteenMinutesLater = Calendar.current.date(byAdding: .minute, value: (Int(15) ), to: Date())!
 						let date = Date.now...fifteenMinutesLater
-						let updatedMeshStatus = MeshActivityAttributes.MeshActivityStatus(uptimeSeconds: telemetry.uptimeSeconds.map { UInt32($0) },
+						let updatedMeshStatus = MeshActivityAttributes.MeshActivityStatus(uptimeSeconds: telemetry.uptimeSeconds.map { UInt32(bitPattern: $0) },
 																						  channelUtilization: telemetry.channelUtilization,
 																						  airtime: telemetry.airUtilTx,
-																						  sentPackets: UInt32(telemetry.numPacketsTx),
-																						  receivedPackets: UInt32(telemetry.numPacketsRx),
-																						  badReceivedPackets: UInt32(telemetry.numPacketsRxBad),
-																						  dupeReceivedPackets: UInt32(telemetry.numRxDupe),
-																						  packetsSentRelay: UInt32(telemetry.numTxRelay),
-																						  packetsCanceledRelay: UInt32(telemetry.numTxRelayCanceled),
-																						  nodesOnline: UInt32(telemetry.numOnlineNodes),
-																						  totalNodes: UInt32(telemetry.numTotalNodes),
+																						  sentPackets: UInt32(bitPattern: telemetry.numPacketsTx),
+																						  receivedPackets: UInt32(bitPattern: telemetry.numPacketsRx),
+																						  badReceivedPackets: UInt32(bitPattern: telemetry.numPacketsRxBad),
+																						  dupeReceivedPackets: UInt32(bitPattern: telemetry.numRxDupe),
+																						  packetsSentRelay: UInt32(bitPattern: telemetry.numTxRelay),
+																						  packetsCanceledRelay: UInt32(bitPattern: telemetry.numTxRelayCanceled),
+																						  nodesOnline: UInt32(bitPattern: telemetry.numOnlineNodes),
+																						  totalNodes: UInt32(bitPattern: telemetry.numTotalNodes),
 																						  timerRange: date)
 
 						let alertConfiguration = AlertConfiguration(title: "Mesh activity update", body: "Updated Node Stats Data.", sound: .default)

@@ -50,19 +50,15 @@ enum MarkdownConverter {
 		return html
 	}
 
-	/// Wraps converted HTML body in a full HTML document with CSS link and optional pre-release banner.
+	/// Wraps converted HTML body in a full HTML document with CSS link.
 	static func wrapInHTMLDocument(
 		_ body: String,
 		title: String,
 		pageId: String,
 		languageCode: String,
-		cssHref: String = "../assets/docs.css",
-		includePreReleaseBanner: Bool = true
+		cssHref: String = "../assets/docs.css"
 	) -> String {
-		let banner = includePreReleaseBanner
-			? "<div class=\"pre-release-banner\">⚠️ <strong>Pre-release</strong> — subject to change</div>"
-			: ""
-		return "<!DOCTYPE html>\n<html lang=\"\(languageCode)\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>\(escapeHTML(title))</title>\n  <link rel=\"stylesheet\" href=\"\(cssHref)\">\n</head>\n<body data-page=\"\(pageId)\">\n\(banner)\(body)</body>\n</html>"
+		return "<!DOCTYPE html>\n<html lang=\"\(languageCode)\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>\(escapeHTML(title))</title>\n  <link rel=\"stylesheet\" href=\"\(cssHref)\">\n</head>\n<body data-page=\"\(pageId)\">\n\(body)</body>\n</html>"
 	}
 
 	/// Wraps converted HTML body using an absolute file URL to the bundled CSS.
@@ -80,9 +76,7 @@ enum MarkdownConverter {
 		} else {
 			cssHref = "../assets/docs.css"
 		}
-		let hasBanner = body.contains("pre-release-banner")
-		let banner = hasBanner ? "" : "<div class=\"pre-release-banner\">⚠️ <strong>Pre-release</strong> — subject to change</div>"
-		return "<!DOCTYPE html>\n<html lang=\"\(languageCode)\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>\(escapeHTML(title))</title>\n  <link rel=\"stylesheet\" href=\"\(cssHref)\">\n</head>\n<body data-page=\"\(pageId)\">\n\(banner)\(body)</body>\n</html>"
+		return "<!DOCTYPE html>\n<html lang=\"\(languageCode)\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>\(escapeHTML(title))</title>\n  <link rel=\"stylesheet\" href=\"\(cssHref)\">\n</head>\n<body data-page=\"\(pageId)\">\n\(body)</body>\n</html>"
 	}
 
 	/// Re-wraps an already-complete HTML document with an absolute CSS URL.
@@ -97,7 +91,6 @@ enum MarkdownConverter {
 		} else {
 			body = html
 		}
-		// Body already contains the banner from wrapInHTMLDocument — pass through without adding another
 		return wrapInHTMLDocumentForFile(body, title: title, pageId: pageId, languageCode: languageCode)
 	}
 

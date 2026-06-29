@@ -43,17 +43,51 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 	case eu917 = 31
 	case euN868 = 32
 	case lora24 = 13
+	case itu32M = 33
+	case itu170Cm = 34
+	case itu270Cm = 35
+	case itu370Cm = 36
+	case itu2125Cm = 37
 
-	/// Regions not available until firmware 2.8.
-	static var userSelectable: [RegionCodes] {
-		allCases.filter { region in
-			switch region {
-			case .itu12M, .itu22M, .eu866, .eu874, .eu917, .euN868:
-				return false
-			default:
-				return true
-			}
+	/// Regions reworked / added in the 2.8 firmware (amateur/ham bands and the
+	/// EU SRD / narrow bands). Firmware older than 2.8 has no band table for
+	/// these and would silently clamp the selection, so they must not be offered
+	/// when connected to a 2.7.x-or-earlier device.
+	var requiresFirmware2_8: Bool {
+		switch self {
+		case .eu866, .euN868, .itu12M, .itu22M, .itu32M, .itu170Cm, .itu270Cm, .itu370Cm, .itu2125Cm:
+			return true
+		default:
+			return false
 		}
+	}
+
+	/// Regions the firmware enumerates but the app does not yet surface in the
+	/// picker (no firmware band table / not ready). Hidden on every firmware.
+	var isHiddenFromPicker: Bool {
+		switch self {
+		case .eu874, .eu917:
+			return true
+		default:
+			return false
+		}
+	}
+
+	/// Regions selectable for a connected device, given whether its firmware
+	/// implements the 2.8 region rework. On older firmware the 2.8-only regions
+	/// are dropped so the user can't pick a value the radio doesn't understand.
+	static func selectable(supports2_8: Bool) -> [RegionCodes] {
+		allCases.filter { region in
+			if region.isHiddenFromPicker { return false }
+			if region.requiresFirmware2_8 && !supports2_8 { return false }
+			return true
+		}
+	}
+
+	/// The conservative (pre-2.8) selectable set. Retained for callers that have
+	/// no connected-firmware context (e.g. the discovery scan preset list).
+	static var userSelectable: [RegionCodes] {
+		selectable(supports2_8: false)
 	}
 
 	var topic: String {
@@ -122,6 +156,16 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 			"EU_917"
 		case .euN868:
 			"EU_N_868"
+		case .itu32M:
+			"ITU3_2M"
+		case .itu170Cm:
+			"ITU1_70CM"
+		case .itu270Cm:
+			"ITU2_70CM"
+		case .itu370Cm:
+			"ITU3_70CM"
+		case .itu2125Cm:
+			"ITU2_125CM"
 		case .lora24:
 			"LORA_24"
 		} }
@@ -192,6 +236,16 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 			return "European Union 917MHz".localized
 		case .euN868:
 			return "European Union 868MHz (Narrow)".localized
+		case .itu32M:
+			return "ITU Region 3 / Amateur 2m".localized
+		case .itu170Cm:
+			return "ITU Region 1 / Amateur 70cm".localized
+		case .itu270Cm:
+			return "ITU Region 2 / Amateur 70cm".localized
+		case .itu370Cm:
+			return "ITU Region 3 / Amateur 70cm".localized
+		case .itu2125Cm:
+			return "ITU Region 2 / Amateur 1.25m".localized
 		case .lora24:
 			return "2.4 Ghz".localized
 		}
@@ -264,6 +318,16 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 			return 10
 		case .euN868:
 			return 10
+		case .itu32M:
+			return 100
+		case .itu170Cm:
+			return 100
+		case .itu270Cm:
+			return 100
+		case .itu370Cm:
+			return 100
+		case .itu2125Cm:
+			return 100
 		}
 	}
 	var isCountry: Bool {
@@ -333,6 +397,16 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 		case .eu917:
 			return false
 		case .euN868:
+			return false
+		case .itu32M:
+			return false
+		case .itu170Cm:
+			return false
+		case .itu270Cm:
+			return false
+		case .itu370Cm:
+			return false
+		case .itu2125Cm:
 			return false
 		}
 	}
@@ -405,6 +479,16 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 			return Config.LoRaConfig.RegionCode.eu917
 		case .euN868:
 			return Config.LoRaConfig.RegionCode.euN868
+		case .itu32M:
+			return Config.LoRaConfig.RegionCode.itu32M
+		case .itu170Cm:
+			return Config.LoRaConfig.RegionCode.itu170Cm
+		case .itu270Cm:
+			return Config.LoRaConfig.RegionCode.itu270Cm
+		case .itu370Cm:
+			return Config.LoRaConfig.RegionCode.itu370Cm
+		case .itu2125Cm:
+			return Config.LoRaConfig.RegionCode.itu2125Cm
 		}
 	}
 }
@@ -424,23 +508,66 @@ enum ModemPresets: Int, CaseIterable, Identifiable {
 	case liteSlow = 11
 	case narrowFast = 12
 	case narrowSlow = 13
+	case tinyFast = 14
+	case tinySlow = 15
 
-	/// Presets that should appear in user-facing pickers (LoRa config,
-	/// discovery scan). The Lite (125 kHz EU 866) and Narrow (62.5 kHz
-	/// EU 868) presets are intentionally hidden from selection for now —
-	/// they still exist as cases so a radio already configured on one of
-	/// them round-trips through protobuf and renders the correct label in
-	/// node lists, but the user can't pick them yet. Add the matching
-	/// cases back to this array when the firmware/UI rollout is ready.
-	static var userSelectable: [ModemPresets] {
-		allCases.filter { preset in
-			switch preset {
-			case .liteFast, .liteSlow, .narrowFast, .narrowSlow:
-				return false
-			default:
-				return true
-			}
+	/// Presets added in the 2.8 firmware: Lite (125 kHz), Narrow (62.5 kHz) and
+	/// Tiny (20 kHz, ham). Firmware older than 2.8 does not implement them, so
+	/// they must not be offered when connected to a 2.7.x-or-earlier device.
+	/// They still exist as cases so a radio already configured on one of them
+	/// round-trips through protobuf and renders the correct label in node lists.
+	var requiresFirmware2_8: Bool {
+		switch self {
+		case .liteFast, .liteSlow, .narrowFast, .narrowSlow, .tinyFast, .tinySlow:
+			return true
+		default:
+			return false
 		}
+	}
+
+	/// Presets selectable for a connected device, given whether its firmware
+	/// implements the 2.8 rework. On older firmware the 2.8-only presets are
+	/// dropped. Callers should additionally constrain this to the selected
+	/// region's legal set via `RegionPresetInfo` when the firmware provides one.
+	static func selectable(supports2_8: Bool) -> [ModemPresets] {
+		allCases.filter { supports2_8 || !$0.requiresFirmware2_8 }
+	}
+
+	/// The conservative (pre-2.8) selectable set. Retained for callers that have
+	/// no connected-firmware context (e.g. the discovery scan preset list).
+	static var userSelectable: [ModemPresets] {
+		selectable(supports2_8: false)
+	}
+
+	/// Decides which modem preset to pre-select when the region changes, given the
+	/// firmware's advertised compatibility info for that region. Returns `nil` to
+	/// keep the current selection. Pure (no view state) so it can be unit-tested.
+	///
+	/// Rules, in order:
+	/// 1. Only acts on 2.8 firmware with `usePreset` on; otherwise keep current.
+	/// 2. A factory-flashed node (region not yet configured) defaults to
+	///    `longTurbo` when **US** is selected, provided Long Turbo is legal there.
+	/// 3. Otherwise, if the current preset is not legal in the region, fall back to
+	///    that region's advertised default. A legal current preset is kept.
+	static func presetToSelect(
+		forRegion region: Config.LoRaConfig.RegionCode,
+		factoryFresh: Bool,
+		supports2_8: Bool,
+		usePreset: Bool,
+		regionInfo: RegionPresetInfo?,
+		currentPreset: ModemPresets?
+	) -> ModemPresets? {
+		guard supports2_8, usePreset else { return nil }
+
+		if factoryFresh, region == .us,
+		   regionInfo == nil || regionInfo?.presets.contains(.longTurbo) == true {
+			return .longTurbo
+		}
+
+		guard let info = regionInfo, !info.presets.isEmpty,
+			  let current = currentPreset else { return nil }
+		if info.presets.contains(current.protoEnumValue()) { return nil }
+		return ModemPresets(rawValue: info.defaultPreset.rawValue)
 	}
 
 	var id: Int { self.rawValue }
@@ -472,6 +599,10 @@ enum ModemPresets: Int, CaseIterable, Identifiable {
 			return "Narrow - Fast".localized
 		case .narrowSlow:
 			return "Narrow - Slow".localized
+		case .tinyFast:
+			return "Tiny - Fast".localized
+		case .tinySlow:
+			return "Tiny - Slow".localized
 		}
 	}
 	var name: String {
@@ -502,6 +633,10 @@ enum ModemPresets: Int, CaseIterable, Identifiable {
 			return "NarrowFast"
 		case .narrowSlow:
 			return "NarrowSlow"
+		case .tinyFast:
+			return "TinyFast"
+		case .tinySlow:
+			return "TinySlow"
 		}
 	}
 	func snrLimit() -> Float {
@@ -535,6 +670,11 @@ enum ModemPresets: Int, CaseIterable, Identifiable {
 			return -10
 		case .narrowSlow:
 			return -12.5
+		case .tinyFast:
+			// 20kHz ham presets — narrowest bandwidth, best link budget.
+			return -12.5
+		case .tinySlow:
+			return -15
 		}
 	}
 	func protoEnumValue() -> Config.LoRaConfig.ModemPreset {
@@ -565,6 +705,10 @@ enum ModemPresets: Int, CaseIterable, Identifiable {
 			return Config.LoRaConfig.ModemPreset.narrowFast
 		case .narrowSlow:
 			return Config.LoRaConfig.ModemPreset.narrowSlow
+		case .tinyFast:
+			return Config.LoRaConfig.ModemPreset.tinyFast
+		case .tinySlow:
+			return Config.LoRaConfig.ModemPreset.tinySlow
 		}
 	}
 }
@@ -591,5 +735,43 @@ enum Bandwidths: Int, CaseIterable, Identifiable {
 		case .fiveHundred:
 			return "500 kHz"
 		}
+	}
+}
+
+///
+/// Decoded, flattened view of a `LoRaRegionPresetMap` group for a single region:
+/// the modem presets that are legal there, the firmware's default preset, and
+/// whether the band is licensed-only (ham). Built from the grouped wire form per
+/// the 2.8 "LoRa Region → Preset Compatibility" client spec.
+struct RegionPresetInfo: Equatable {
+	/// The modem presets the firmware considers legal for this region.
+	let presets: Set<Config.LoRaConfig.ModemPreset>
+	/// The firmware's default preset for this region; always a member of `presets`.
+	/// Selected when the user switches to this region and the current preset is
+	/// not legal there.
+	let defaultPreset: Config.LoRaConfig.ModemPreset
+	/// True for amateur/ham bands. The UI should warn/gate and coordinate with the
+	/// operator's `is_licensed` flag.
+	let licensedOnly: Bool
+}
+
+extension LoRaRegionPresetMap {
+	/// Flatten the grouped wire form into a per-region lookup (spec §4). A region
+	/// entry whose `group_index` is out of range is skipped defensively, which
+	/// tolerates malformed or forward-compatible data. A region absent from the
+	/// result carries no constraint and must not be restricted by the client.
+	func decoded() -> [Config.LoRaConfig.RegionCode: RegionPresetInfo] {
+		var result: [Config.LoRaConfig.RegionCode: RegionPresetInfo] = [:]
+		for regionGroup in regionGroups {
+			let index = Int(regionGroup.groupIndex)
+			guard groups.indices.contains(index) else { continue }
+			let group = groups[index]
+			result[regionGroup.region] = RegionPresetInfo(
+				presets: Set(group.presets),
+				defaultPreset: group.defaultPreset,
+				licensedOnly: group.licensedOnly
+			)
+		}
+		return result
 	}
 }
