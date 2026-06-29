@@ -300,7 +300,8 @@ struct MeshMapMK: View {
 							.frame(minWidth: 30)
 					}
 					.buttonStyle(.bordered)
-					.accessibilityLabel("Flyover speed \(String(format: "%g times", flyover.speedMultiplier))")
+					// Text(_:) localizes via the "Flyover speed %@" key; pass a language-agnostic "2×".
+					.accessibilityLabel(Text("Flyover speed \(String(format: "%g×", flyover.speedMultiplier))"))
 					Button {
 						if flyover.isFlying {
 							flyover.stop()
@@ -312,7 +313,7 @@ struct MeshMapMK: View {
 							.foregroundStyle(flyover.isFlying ? Color.red : Color.accentColor)
 					}
 					.buttonStyle(.plain)
-					.accessibilityLabel(flyover.isFlying ? "Stop flyover" : "Start flyover")
+					.accessibilityLabel(flyover.isFlying ? Text("Stop flyover") : Text("Start flyover"))
 				}
 				Button {
 					clearTraceRoute()
