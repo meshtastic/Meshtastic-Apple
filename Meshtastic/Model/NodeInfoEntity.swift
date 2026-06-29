@@ -133,3 +133,25 @@ final class NodeInfoEntity {
 
 	init() {}
 }
+
+extension NodeInfoEntity {
+	/// Orders nodes for the admin / configuration node picker in `Settings.swift`:
+	/// favorited nodes first, then non-favorites, with each group keeping the input's
+	/// relative order. This restores the favorite-on-top behavior of the legacy
+	/// CoreData `@FetchRequest` sort, which was lost in the SwiftData conversion
+	/// (PR #1668).
+	///
+	/// `nodes` is expected to already be sorted by `lastHeard` descending — as the
+	/// Settings `@Query` provides — so the partition yields favorites (most-recent
+	/// first) ahead of non-favorites (most-recent first). It's a `Bool`-keyed
+	/// partition rather than a SwiftData `@Query` sort because `favorite` is a
+	/// `Bool`, and `Bool` is not `Comparable`, so it cannot be a `SortDescriptor`
+	/// key on a non-`NSObject` `@Model`.
+	///
+	/// Implemented as a stable O(n) partition (rather than an O(n log n) re-sort) so
+	/// it is cheap to call per render, and deterministic across re-renders as long as
+	/// the input order is stable.
+	static func adminPickerOrder(_ nodes: [NodeInfoEntity]) -> [NodeInfoEntity] {
+		nodes.filter(\.favorite) + nodes.filter { !$0.favorite }
+	}
+}

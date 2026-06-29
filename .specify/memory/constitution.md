@@ -9,7 +9,7 @@ Sync Impact Report
       in-app and on the website — using the shared
       `**Month YYYY** — [Page](path.md) — sentence` format showing ~12 months;
       docs/index.md is a Quick Links hub; no release notes / RELEASENOTES.md;
-      rebuild in-app HTML with `--beta`
+      rebuild in-app HTML after editing docs
   Added sections: none
   Removed sections: N/A
   Templates requiring updates:
@@ -219,9 +219,8 @@ cross-platform consistency as standards evolve.
   The website home `docs/index.md` is a Quick Links nav hub (no changelog),
   and the guide landings `docs/user.md` / `docs/developer.md` link to their
   "What's New" child rather than duplicating it. After editing any in-app
-  doc, run `scripts/build-docs.sh --output Meshtastic/Resources/docs --beta`
-  to regenerate the bundled HTML under `Meshtastic/Resources/docs/` (the
-  `--beta` flag preserves the pre-release banner the repo ships with).
+  doc, run `scripts/build-docs.sh --output Meshtastic/Resources/docs`
+  to regenerate the bundled HTML under `Meshtastic/Resources/docs/`.
 
 ## Governance
 

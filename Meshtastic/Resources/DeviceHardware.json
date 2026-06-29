@@ -784,7 +784,7 @@
     "platformioTarget": "seeed-xiao-s3",
     "architecture": "esp32-s3",
     "activelySupported": true,
-    "supportLevel": 3,
+    "supportLevel": 1,
     "displayName": "Seeed Xiao ESP32-S3",
     "tags": [
       "Seeed"
@@ -1455,7 +1455,10 @@
     "tags": [
       "Elecrow"
     ],
-    "requiresDfu": false
+    "requiresDfu": false,
+    "images": [
+      "thinknode_m7.svg"
+    ]
   },
   {
     "hwModel": 134,
@@ -1473,5 +1476,32 @@
     ],
     "requiresDfu": true,
     "partitionScheme": "16MB"
+  },
+  {
+    "hwModel": 83,
+    "hwModelSlug": "TLORA_C6",
+    "platformioTarget": "tlora-c6",
+    "architecture": "esp32-c6",
+    "activelySupported": false,
+    "supportLevel": 1,
+    "displayName": "LilyGo T-Lora C6",
+    "tags": [
+      "LilyGo"
+    ],
+    "images": [
+      "tlora-c6.svg"
+    ]
+  },
+  {
+    "hwModel": 133,
+    "hwModelSlug": "HELTEC_MESH_NODE_T1",
+    "platformioTarget": "heltec-mesh-node-t1",
+    "architecture": "nrf52840",
+    "activelySupported": false,
+    "supportLevel": 1,
+    "displayName": "Heltec Mesh Node T1",
+    "tags": [
+      "Heltec"
+    ]
   }
 ]

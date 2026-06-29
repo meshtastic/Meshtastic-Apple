@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="../assets/docs.css">
 </head>
 <body data-page="measurement">
-<div class="pre-release-banner">⚠️ <strong>Pre-release</strong> — subject to change</div><h1>Measurement &amp; Locale</h1>
+<h1>Measurement &amp; Locale</h1>
 <p>How the app converts metric device data to locale-aware display values. All rules are defined in <a href="https://github.com/meshtastic/design/blob/master/standards/meshtastic_design_standards_latest.html">Meshtastic Design Standards v1.4, Section 10</a>.</p>
 <h2>Core Principle</h2>
 <p>Meshtastic devices transmit all data in <strong>metric SI units</strong>. The app wraps raw values in Swift <code>Measurement</code> types with the correct source unit, then lets the OS format them for the user's locale. No manual <code>if metric … else imperial</code> branching is needed for most quantities.</p>

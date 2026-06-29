@@ -15,7 +15,6 @@
 | Build docs | `bash scripts/build-docs.sh --output _site/beta` | HTML files, `index.json`, CSS in `_site/beta/` |
 | Copy snapshots | `bash scripts/copy-snapshots.sh --output _site/beta/assets/screenshots` | PNGs |
 | Check bundle size | Built into `build-docs.sh` — exits non-zero if > 10 MB, warning at 8 MB | Pass/fail |
-| Mark beta pages | `build-docs.sh` injects `<div class="pre-release-banner">Pre-release — subject to change</div>` when `--beta` flag set | HTML with banner |
 | Upload Pages artifact | `actions/upload-pages-artifact@v3` | Artifact |
 | Deploy | `actions/deploy-pages@v4` | Live GitHub Pages update |
 
@@ -67,11 +66,10 @@
 ## `build-docs.sh` Interface
 
 ```
-Usage: scripts/build-docs.sh --output <dir> [--beta]
+Usage: scripts/build-docs.sh --output <dir>
 
 Options:
   --output <dir>   Directory to write generated HTML, index.json, and assets
-  --beta           Inject pre-release banner into all pages
 
 Exit codes:
   0   Success (size within limits)

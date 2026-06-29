@@ -97,7 +97,7 @@
 
 - [X] T020 [P] Update `docs/user/settings.md` — add section documenting automatic translation behavior (language detection, caching, fallback to English)
 - [X] T021 [P] Create unit tests in `MeshtasticTests/DocTranslationTests.swift` — test SHA-256 hashing, manifest serialization/deserialization, LRU eviction logic, cache invalidation on hash mismatch, locale detection (English skip)
-- [X] T022 Run `bash scripts/build-docs.sh --output Meshtastic/Resources/docs --beta` and commit regenerated HTML
+- [X] T022 Run `bash scripts/build-docs.sh --output Meshtastic/Resources/docs` and commit regenerated HTML
 
 ---
 

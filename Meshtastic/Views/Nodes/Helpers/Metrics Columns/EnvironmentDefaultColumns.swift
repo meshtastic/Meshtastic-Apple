@@ -12,7 +12,7 @@ import SwiftUI
 // This is the default configuration used by the EnvironmentMetricsLog view for the table
 extension MetricsColumnList {
 	static var environmentDefaultColumns: MetricsColumnList {
-		MetricsColumnList(columns: [
+		MetricsColumnList(persistenceKey: "environment", columns: [
 			// Temperature Series Configuration
 			MetricsTableColumn(
 				id: "temperature",

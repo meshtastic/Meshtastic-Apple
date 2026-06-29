@@ -391,7 +391,7 @@ actor MeshPackets {
 					}
 				} else {
 					if fromNum > 0 {
-						let newNode = createNodeInfo(num: Int64(fromNum), context: modelContext)
+						let newNode = findOrCreateNode(num: Int64(fromNum), context: modelContext)
 						newNode.metadata = newMetadata
 					}
 				}
@@ -493,7 +493,7 @@ actor MeshPackets {
 						}
 					}
 
-					if (nodeInfo.position.longitudeI != 0 && nodeInfo.position.latitudeI != 0) && (nodeInfo.position.latitudeI != 373346000 && nodeInfo.position.longitudeI != -1220090000) {
+					if nodeInfo.position.hasValidCoordinates {
 						let position = PositionEntity()
 						modelContext.insert(position)
 						position.latest = true
@@ -609,7 +609,7 @@ actor MeshPackets {
 
 					if nodeInfo.hasPosition {
 
-						if (nodeInfo.position.longitudeI != 0 && nodeInfo.position.latitudeI != 0) && (nodeInfo.position.latitudeI != 373346000 && nodeInfo.position.longitudeI != -1220090000) {
+						if nodeInfo.position.hasValidCoordinates {
 
 							let position = PositionEntity()
 							modelContext.insert(position)
@@ -1025,17 +1025,17 @@ actor MeshPackets {
 
 						let fifteenMinutesLater = Calendar.current.date(byAdding: .minute, value: (Int(15) ), to: Date())!
 						let date = Date.now...fifteenMinutesLater
-						let updatedMeshStatus = MeshActivityAttributes.MeshActivityStatus(uptimeSeconds: telemetry.uptimeSeconds.map { UInt32($0) },
+						let updatedMeshStatus = MeshActivityAttributes.MeshActivityStatus(uptimeSeconds: telemetry.uptimeSeconds.map { UInt32(bitPattern: $0) },
 																						  channelUtilization: telemetry.channelUtilization,
 																						  airtime: telemetry.airUtilTx,
-																						  sentPackets: UInt32(telemetry.numPacketsTx),
-																						  receivedPackets: UInt32(telemetry.numPacketsRx),
-																						  badReceivedPackets: UInt32(telemetry.numPacketsRxBad),
-																						  dupeReceivedPackets: UInt32(telemetry.numRxDupe),
-																						  packetsSentRelay: UInt32(telemetry.numTxRelay),
-																						  packetsCanceledRelay: UInt32(telemetry.numTxRelayCanceled),
-																						  nodesOnline: UInt32(telemetry.numOnlineNodes),
-																						  totalNodes: UInt32(telemetry.numTotalNodes),
+																						  sentPackets: UInt32(bitPattern: telemetry.numPacketsTx),
+																						  receivedPackets: UInt32(bitPattern: telemetry.numPacketsRx),
+																						  badReceivedPackets: UInt32(bitPattern: telemetry.numPacketsRxBad),
+																						  dupeReceivedPackets: UInt32(bitPattern: telemetry.numRxDupe),
+																						  packetsSentRelay: UInt32(bitPattern: telemetry.numTxRelay),
+																						  packetsCanceledRelay: UInt32(bitPattern: telemetry.numTxRelayCanceled),
+																						  nodesOnline: UInt32(bitPattern: telemetry.numOnlineNodes),
+																						  totalNodes: UInt32(bitPattern: telemetry.numTotalNodes),
 																						  timerRange: date)
 
 						let alertConfiguration = AlertConfiguration(title: "Mesh activity update", body: "Updated Node Stats Data.", sound: .default)
@@ -1467,5 +1467,26 @@ actor MeshPackets {
 		} catch {
 			Logger.mesh.error("Error Deserializing WAYPOINT_APP packet.")
 		}
+	}
+}
+
+extension Position {
+	/// True when the position carries usable, non-placeholder coordinates.
+	///
+	/// Requires both components to be non-zero, matching the app-wide coordinate convention
+	/// (see `PositionEntity.nodeCoordinate`): a position with one axis unset/zero is treated
+	/// as "no location" and would not render, so it must not be persisted as a valid fix.
+	/// The Apple Park simulator default is also rejected — but only the exact placeholder,
+	/// since a real position that shares just one coordinate with Apple Park is legitimate.
+	var hasValidCoordinates: Bool {
+		guard latitudeI != 0, longitudeI != 0 else { return false }
+		let isApplePark = latitudeI == 373346000 && longitudeI == -1220090000
+		return !isApplePark
+	}
+}
+
+extension NodeInfo {
+	var isValidPosition: Bool {
+		hasPosition && position.hasValidCoordinates
 	}
 }

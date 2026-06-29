@@ -2,6 +2,7 @@
 
 import Foundation
 import Testing
+import MeshtasticProtobufs
 
 @testable import Meshtastic
 
@@ -87,5 +88,90 @@ struct DiscoveryScanEngineTests {
 			let scanning = await engine.isScanning
 			#expect(!scanning, "Expected isScanning=false for state \(state)")
 		}
+	}
+
+	// MARK: - Reconnect timeout resolution (#1952 item 3)
+
+	@Test func reconnectTimeoutResolvesToDwellOnlyWhenConnectedAndSubscribed() {
+		// Connected & subscribed → resume dwelling (covers a missed disconnect edge that
+		// previously left the scan hung on one preset and never rotating).
+		#expect(DiscoveryScanEngine.reconnectTimeoutResolution(isConnected: true, isSubscribed: true) == .dwell)
+		// Anything short of fully connected → pause (link genuinely down).
+		#expect(DiscoveryScanEngine.reconnectTimeoutResolution(isConnected: false, isSubscribed: false) == .paused)
+		#expect(DiscoveryScanEngine.reconnectTimeoutResolution(isConnected: true, isSubscribed: false) == .paused)
+		#expect(DiscoveryScanEngine.reconnectTimeoutResolution(isConnected: false, isSubscribed: true) == .paused)
+	}
+}
+
+// MARK: - LoRa config preservation (#1952)
+
+/// `loRaConfigProto` is the full-fidelity copy used to snapshot the user's config at scan
+/// start and restore it verbatim afterward, so it must carry through every LoRa field. Building
+/// a partial config previously zeroed omitted fields on the device — bandwidth, coding rate,
+/// MQTT flags, etc. — wiping the user's settings and never restoring them. These lock in that
+/// `loRaConfigProto` preserves the full config.
+///
+/// Note: the per-preset config the scan actually sends forces the default frequency slot
+/// (`channelNum = 0`) in `sendPresetChange` so the firmware auto-derives each preset's
+/// frequency; the user's real slot lives only in the snapshot and is restored when the scan
+/// ends. `loRaConfigProto` itself never zeroes the slot — that override is applied at send time.
+@MainActor
+@Suite("DiscoveryScanEngine LoRa config preservation (#1952)")
+struct DiscoveryScanEngineLoRaConfigTests {
+
+	/// A config entity with distinctive non-default values in every field.
+	private func makeEntity() -> LoRaConfigEntity {
+		let entity = LoRaConfigEntity()
+		entity.modemPreset = Int32(ModemPresets.longFast.rawValue)
+		entity.regionCode = 1 // US
+		entity.usePreset = true
+		entity.hopLimit = 5
+		entity.txEnabled = true
+		entity.txPower = 27
+		entity.channelNum = 20
+		entity.bandwidth = 250
+		entity.codingRate = 8
+		entity.spreadFactor = 11
+		entity.frequencyOffset = 1.5
+		entity.overrideFrequency = 915.0
+		entity.overrideDutyCycle = true
+		entity.sx126xRxBoostedGain = true
+		entity.ignoreMqtt = true
+		entity.okToMqtt = true
+		return entity
+	}
+
+	@Test("loRaConfigProto overrides only the preset and carries through every other field")
+	func presetChangePreservesAllFields() {
+		let engine = DiscoveryScanEngine()
+		let config = engine.loRaConfigProto(from: makeEntity(), presetOverride: .longSlow)
+
+		// Only the modem preset changes.
+		#expect(config.modemPreset == ModemPresets.longSlow.protoEnumValue())
+		// Everything else is carried through (the #1952 bug zeroed these). The frequency slot is
+		// preserved here for the snapshot/restore path; the scan send path zeroes it separately.
+		#expect(config.channelNum == 20)
+		#expect(config.region.rawValue == 1)
+		#expect(config.usePreset)
+		#expect(config.hopLimit == 5)
+		#expect(config.txEnabled)
+		#expect(config.txPower == 27)
+		#expect(config.bandwidth == 250)
+		#expect(config.codingRate == 8)
+		#expect(config.spreadFactor == 11)
+		#expect(config.frequencyOffset == 1.5)
+		#expect(config.overrideFrequency == 915.0)
+		#expect(config.overrideDutyCycle)
+		#expect(config.sx126XRxBoostedGain)
+		#expect(config.ignoreMqtt)
+		#expect(config.configOkToMqtt)
+	}
+
+	@Test("Home snapshot (no override) keeps the entity's own preset and frequency slot")
+	func homeSnapshotKeepsPresetAndSlot() {
+		let engine = DiscoveryScanEngine()
+		let config = engine.loRaConfigProto(from: makeEntity(), presetOverride: nil)
+		#expect(config.modemPreset == ModemPresets.longFast.protoEnumValue())
+		#expect(config.channelNum == 20)
 	}
 }
