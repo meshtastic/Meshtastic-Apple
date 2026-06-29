@@ -447,14 +447,16 @@ extension AccessoryManager {
 			Logger.services.error("Error while sending saveChannelSet request.  No active device.")
 			throw AccessoryError.ioFailed("No active device")
 		}
-		// Before we get started delete the existing channels from the myNodeInfo
-		if !addChannels {
-			tryClearExistingChannels()
-		}
-
 		let decodedString = base64UrlString.base64urlToBase64()
 		if let decodedData = Data(base64Encoded: decodedString) {
 			let channelSet: ChannelSet = try ChannelSet(serializedBytes: decodedData)
+
+			// Only clear the existing channels once we have a valid channel set to
+			// replace them with — a malformed link must not wipe local channels while
+			// leaving the device untouched (which would read as a silent success).
+			if !addChannels {
+				tryClearExistingChannels()
+			}
 
 			var myInfo: MyInfoEntity!
 			var i: Int32 = 0
@@ -527,60 +529,53 @@ extension AccessoryManager {
 				try await send(toRadio, debugDescription: logString)
 				await MeshPackets.shared.channelPacket(channel: chan, fromNum: self.activeDeviceNum ?? 0)
 			}
-			if !addChannels {
+			// Replacing channels also replaces the LoRa config, but only when the
+			// channel set actually carries one. Pushing a default-initialized
+			// LoRaConfig (region UNSET) would knock the radio off its frequency.
+			let didSendLoRaConfig = !addChannels && channelSet.hasLoraConfig
+			if didSendLoRaConfig {
 				// Save the LoRa Config and the device will reboot
 				var adminPacket = AdminMessage()
 				adminPacket.setConfig.lora = channelSet.loraConfig
 				adminPacket.setConfig.lora.configOkToMqtt = okToMQTT // Preserve users okToMQTT choice
-				var meshPacket: MeshPacket = MeshPacket()
+				var meshPacket = MeshPacket()
 				meshPacket.to = UInt32(deviceNum)
-				meshPacket.from	= UInt32(deviceNum)
+				meshPacket.from = UInt32(deviceNum)
 				meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
-				meshPacket.priority =  MeshPacket.Priority.reliable
+				meshPacket.priority = MeshPacket.Priority.reliable
 				meshPacket.wantAck = true
 				meshPacket.channel = 0
-				var dataMessage = DataMessage()
-				guard let adminData: Data = try? adminPacket.serializedData() else {
-					throw AccessoryError.ioFailed("sendReboot: Unable to serialize Admin packet")
+				guard let adminData = try? adminPacket.serializedData() else {
+					throw AccessoryError.ioFailed("saveChannelSet: Unable to serialize LoRa Config packet")
 				}
+				var dataMessage = DataMessage()
 				dataMessage.payload = adminData
 				dataMessage.portnum = PortNum.adminApp
 				meshPacket.decoded = dataMessage
-				var toRadio: ToRadio!
-				toRadio = ToRadio()
+				var toRadio = ToRadio()
 				toRadio.packet = meshPacket
-				
+
 				let logString = String.localizedStringWithFormat("Sent a LoRa.Config for: %@".localized, String(deviceNum))
 				try await send(toRadio, debugDescription: logString)
 			}
-			if !addChannels {
-				// Save the LoRa Config and the device will reboot
-				var adminPacket = AdminMessage()
-				adminPacket.setConfig.lora = channelSet.loraConfig
-				adminPacket.setConfig.lora.configOkToMqtt = okToMQTT // Preserve users okToMQTT choice
-				var meshPacket: MeshPacket = MeshPacket()
-				meshPacket.to = UInt32(deviceNum)
-				meshPacket.from	= UInt32(deviceNum)
-				meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
-				meshPacket.priority =  MeshPacket.Priority.reliable
-				meshPacket.wantAck = true
-				meshPacket.channel = 0
-				var dataMessage = DataMessage()
-				guard let adminData: Data = try? adminPacket.serializedData() else {
-					throw AccessoryError.ioFailed("sendReboot: Unable to serialize Admin packet")
+
+			// Re-sync after the change. When we sent a LoRa config the device reboots
+			// and the connection drops, so the follow-up wantConfig is expected to fail
+			// — treat that as success since the channels/config were already delivered.
+			// When no reboot is expected, let wantConfig errors surface normally.
+			if didSendLoRaConfig {
+				do {
+					Logger.transport.debug("[AccessoryManager] sending wantConfig after channel set (device may reboot)")
+					try await sendWantConfig()
+				} catch {
+					Logger.transport.warning("[AccessoryManager] wantConfig after channel set did not complete; device is likely rebooting: \(error.localizedDescription, privacy: .public)")
 				}
-				dataMessage.payload = adminData
-				dataMessage.portnum = PortNum.adminApp
-				meshPacket.decoded = dataMessage
-				var toRadio: ToRadio!
-				toRadio = ToRadio()
-				toRadio.packet = meshPacket
-				
-				let logString = String.localizedStringWithFormat("Sent a LoRa.Config for: %@".localized, String(deviceNum))
-				try await send(toRadio, debugDescription: logString)
+			} else {
+				Logger.transport.debug("[AccessoryManager] sending wantConfig for saveChannelSet")
+				try await sendWantConfig()
 			}
-			Logger.transport.debug("[AccessoryManager] sending wantConfig for saveChannelSet")
-			try await sendWantConfig()
+		} else {
+			throw AccessoryError.appError("Invalid channel set data")
 		}
 	}
 
