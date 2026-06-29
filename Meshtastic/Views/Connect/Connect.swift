@@ -38,9 +38,6 @@ struct Connect: View {
 	@State private var pendingNymeaDevice: NymeaDiscoveredDevice?
 	@State private var isSwitchingRadio = false
 	@State private var showingShutdownConfirm = false
-	/// The node to shut down, captured when "Power Off" is tapped so the confirmed
-	/// action doesn't depend on `safeNode` still being live at confirm time.
-	@State private var shutdownUser: UserEntity?
 
 	private var sortedAvailableDevices: [Device] {
 		accessoryManager.devices.sorted { lhs, rhs in
@@ -226,7 +223,6 @@ struct Connect: View {
 											Label("Disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
 										}
 										Button(role: .destructive) {
-											shutdownUser = node.user
 											showingShutdownConfirm = true
 										} label: {
 											Label("Power Off", systemImage: "power")
@@ -411,9 +407,9 @@ struct Connect: View {
 					)
 				}
 			}
-			// Attached to the always-present List (not the connected-device subtree) so the
-			// confirmation survives a connection state change between the long-press and the
-			// user tapping "Shutdown Node?".
+			// Attached to the root VStack (not the connected-device subtree, which unmounts
+			// on disconnect) so the confirmation survives a connection state change between
+			// the long-press and the user tapping "Shutdown Node?".
 			.confirmationDialog(
 				"Are you sure?",
 				isPresented: $showingShutdownConfirm,
@@ -421,8 +417,12 @@ struct Connect: View {
 			) {
 				Button("Shutdown Node?", role: .destructive) {
 					Task {
-						guard let user = shutdownUser else {
-							Logger.mesh.warning("Shutdown skipped: no target node available")
+						// Resolve through `safeNode` at confirm time rather than capturing the
+						// node/user earlier: a cached @Model can fault if the context is recreated
+						// (disconnect/reconnect, node switch) while the dialog is up, and reading a
+						// faulted model traps. `safeNode` gates on `modelContext != nil`.
+						guard let user = safeNode?.user else {
+							Logger.mesh.warning("Shutdown skipped: no live connected node")
 							return
 						}
 						do {
