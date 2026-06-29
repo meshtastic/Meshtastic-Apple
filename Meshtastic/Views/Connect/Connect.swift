@@ -38,6 +38,9 @@ struct Connect: View {
 	@State private var pendingNymeaDevice: NymeaDiscoveredDevice?
 	@State private var isSwitchingRadio = false
 	@State private var showingShutdownConfirm = false
+	/// Stable identity of the node whose context menu opened the shutdown dialog, captured at tap
+	/// time so the confirmation can't drift to a different node if the connection changes first.
+	@State private var pendingShutdownNodeNum: Int64?
 
 	private var sortedAvailableDevices: [Device] {
 		accessoryManager.devices.sorted { lhs, rhs in
@@ -70,15 +73,21 @@ struct Connect: View {
 	/// otherwise nil. Reading attributes on a faulted/detached `@Model` traps, so callers gate
 	/// every read through this. Static + value-in/value-out so it can be unit-tested directly.
 	static func liveNode(_ node: NodeInfoEntity?) -> NodeInfoEntity? {
-		guard let node, node.modelContext != nil else { return nil }
+		guard let node, node.modelContext != nil, !node.isDeleted else { return nil }
 		return node
 	}
 
-	/// The user a shutdown should be sent to, or nil when the connected node has detached/faulted
-	/// (in which case the confirmed shutdown is safely skipped rather than crashing on a faulted
-	/// `@Model`). Resolved at confirm time — never captured ahead of the dialog.
-	static func shutdownTarget(for node: NodeInfoEntity?) -> UserEntity? {
-		liveNode(node)?.user
+	/// The user a shutdown should be sent to, or nil when the shutdown must be safely skipped.
+	///
+	/// Resolved at confirm time — never captured ahead of the dialog — so a faulted/detached
+	/// `@Model` is gated by `liveNode` rather than trapping (the #2006 crash class). It also
+	/// verifies the live node still matches `expectedNum`, the identity captured when the menu was
+	/// opened: the dialog deliberately survives connection changes, so without this check a radio
+	/// switch between the long-press and tapping "Shutdown Node?" would shut down the newly
+	/// connected node instead of the one the user chose.
+	static func shutdownTarget(for node: NodeInfoEntity?, expectedNum: Int64?) -> UserEntity? {
+		guard let expectedNum, let live = liveNode(node), live.num == expectedNum else { return nil }
+		return live.user
 	}
 
 	var body: some View {
@@ -237,6 +246,10 @@ struct Connect: View {
 											Label("Disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
 										}
 										Button(role: .destructive) {
+											// Re-check liveness at tap time: the menu-captured `node` can fault if
+											// the context is recreated between the menu appearing and this tap, and
+											// reading `.num` on a faulted @Model would trap (the #2006 crash class).
+											pendingShutdownNodeNum = Connect.liveNode(node)?.num
 											showingShutdownConfirm = true
 										} label: {
 											Label("Power Off", systemImage: "power")
@@ -434,9 +447,11 @@ struct Connect: View {
 						// Resolve the target at confirm time rather than capturing it ahead of the
 						// dialog: a cached @Model can fault if the context is recreated (disconnect/
 						// reconnect, node switch) while the dialog is up, and reading a faulted model
-						// traps. shutdownTarget gates on modelContext != nil.
-						guard let user = Connect.shutdownTarget(for: node) else {
-							Logger.mesh.warning("Shutdown skipped: no live connected node")
+						// traps. shutdownTarget gates on modelContext != nil and verifies the live
+						// node still matches the identity captured when the menu was opened, so the
+						// shutdown can't drift to a node connected after the long-press.
+						guard let user = Connect.shutdownTarget(for: node, expectedNum: pendingShutdownNodeNum) else {
+							Logger.mesh.warning("Shutdown skipped: no live connected node or connection changed")
 							return
 						}
 						do {

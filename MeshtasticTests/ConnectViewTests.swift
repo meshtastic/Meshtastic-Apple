@@ -389,10 +389,10 @@ struct ConnectViewCreationTests {
 		#expect(view.node?.num == 42)
 	}
 
-	// MARK: shutdownTarget(for:) — resolution + faulted-node guard
+	// MARK: shutdownTarget(for:expectedNum:) — resolution + faulted-node + drift guards
 
 	@Test func shutdownTarget_nilNode_returnsNil() {
-		#expect(Connect.shutdownTarget(for: nil) == nil)
+		#expect(Connect.shutdownTarget(for: nil, expectedNum: 0x5060_7080) == nil)
 	}
 
 	@Test func shutdownTarget_detachedNode_returnsNil() {
@@ -402,7 +402,7 @@ struct ConnectViewCreationTests {
 		node.num = 0xDEAD_BEEF
 		node.user = UserEntity()
 
-		#expect(Connect.shutdownTarget(for: node) == nil)
+		#expect(Connect.shutdownTarget(for: node, expectedNum: node.num) == nil)
 	}
 
 	@Test func shutdownTarget_liveNodeWithUser_returnsUser() {
@@ -419,7 +419,7 @@ struct ConnectViewCreationTests {
 		// by `num`, not `===` — SwiftData isn't contractually required to hand back the same
 		// instance for a to-one relationship after insert.
 		withExtendedLifetime(context) {
-			#expect(Connect.shutdownTarget(for: node)?.num == 0x5060_7099)
+			#expect(Connect.shutdownTarget(for: node, expectedNum: 0x5060_7080)?.num == 0x5060_7099)
 		}
 	}
 
@@ -430,7 +430,35 @@ struct ConnectViewCreationTests {
 		context.insert(node)
 
 		withExtendedLifetime(context) {
-			#expect(Connect.shutdownTarget(for: node) == nil)
+			#expect(Connect.shutdownTarget(for: node, expectedNum: node.num) == nil)
+		}
+	}
+
+	@Test func shutdownTarget_nilExpectedNum_returnsNil() {
+		// No captured identity (menu never recorded one) must skip the shutdown rather than
+		// fall through to whatever node is currently connected.
+		let context = freshContext()
+		let node = NodeInfoEntity()
+		node.num = 0x2122_2324
+		node.user = UserEntity()
+		context.insert(node)
+
+		withExtendedLifetime(context) {
+			#expect(Connect.shutdownTarget(for: node, expectedNum: nil) == nil)
+		}
+	}
+
+	@Test func shutdownTarget_mismatchedNum_returnsNil() {
+		// The connection drifted to a different node while the dialog was up: the live node no
+		// longer matches the identity captured at the long-press, so the shutdown is skipped.
+		let context = freshContext()
+		let node = NodeInfoEntity()
+		node.num = 0x3132_3334
+		node.user = UserEntity()
+		context.insert(node)
+
+		withExtendedLifetime(context) {
+			#expect(Connect.shutdownTarget(for: node, expectedNum: 0x4142_4344) == nil)
 		}
 	}
 
