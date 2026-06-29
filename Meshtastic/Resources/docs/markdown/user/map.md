@@ -10,7 +10,7 @@ The Map tab shows all nodes that have shared a position, overlaid on an Apple Ma
 
 ## Node Pins
 
-Each node that has reported a GPS position appears as a coloured circle pin on the map. The **green solid line** shows a directly connected node; **orange dashed lines** show nodes reached via the mesh. A purple star marks a waypoint. Tap a pin to see the node name, last heard time, signal info, and a shortcut to send a direct message.
+Each node that has reported a GPS position appears as a colored circle pin on the map. The **green solid line** shows a directly connected node; **orange dashed lines** show nodes reached via the mesh. A purple star marks a waypoint. Tap a pin to see the node name, last heard time, signal info, and a shortcut to send a direct message.
 
 Pins update automatically when a new position packet is received from the mesh.
 
@@ -24,7 +24,7 @@ Tap the **filter button** (funnel icon, `line.3.horizontal.decrease.circle`) in 
 | Via MQTT | Show only nodes bridged through MQTT |
 | Online | Show only nodes heard within the last 2 hours |
 | Encrypted | Show only nodes using PKI encryption |
-| Favorites | Show only nodes you have starred as favourites |
+| Favorites | Show only nodes you have starred as favorites |
 | Distance | Limit to nodes within a chosen radius of your current location |
 | Hops Away | Slider from **All** to **7** — restricts by hop count (0 = direct only) |
 | Roles | Filter by one or more device roles (e.g. Router, Client, Repeater) |
@@ -59,6 +59,28 @@ Tap an existing waypoint pin, then tap **Edit**. Changes broadcast to the mesh i
 ### Deleting a Waypoint
 
 Tap the waypoint, then tap **Delete**. The deletion broadcasts to all nodes.
+
+### Geofences
+
+A geofence turns a waypoint into a watched area: when a node's reported position crosses into or out of it, your device raises a local notification. Open a waypoint, tap **Edit**, and use the **Geofence** section.
+
+| Control | Description |
+|---------|-------------|
+| Radius | A circular geofence centered on the waypoint, from 0.1 to 10 miles. Choose **Off** for no circle. |
+| Bounding Box | A rectangular geofence. Tap **Set Bounding Box** to draw one on the map, **Edit Bounding Box** to adjust it, or **Remove Bounding Box** to clear it. |
+
+You can use a radius, a bounding box, or both — a node counts as inside if it falls within *either* shape.
+
+Once a radius or bounding box is set, notification options appear:
+
+| Option | Description |
+|--------|-------------|
+| Notify on Enter | Alert when a node moves into the geofence. |
+| Notify on Exit | Alert when a node leaves the geofence. |
+| Favorites Only | Shown when Enter or Exit is on. Limits alerts to nodes you have starred as favorites. |
+
+> **Note**
+> Geofences are evaluated on your own device as position packets arrive from the mesh, so alerts reflect what your radio has heard rather than live tracking. Tapping an alert opens the waypoint on the map. **Favorites Only** uses the favorite status set on *this* device, so each receiver decides which nodes are worth an alert.
 
 ## Node Trail
 

@@ -12,7 +12,7 @@ The Nodes tab shows every device your radio has heard on the mesh. Tap any node 
 
 | Element | Meaning |
 |---------|---------|
-| ![Node circle](../assets/screenshots/circleTextDefault.png) | **Short Name & Long Name** — each node has a short name (up to 4 bytes) shown in the coloured circle and a long name displayed next to it. The circle colour is derived from the node number. The short name can be an emoji or initials. |
+| ![Node circle](../assets/screenshots/circleTextDefault.png) | **Short Name & Long Name** — each node has a short name (up to 4 bytes) shown in the colored circle and a long name displayed next to it. The circle color is derived from the node number. The short name can be an emoji or initials. |
 | ![Online](../assets/screenshots/nodeOnline.png) | **Online** — the node has been heard recently and is considered online. |
 | ![Idle / Sleeping](../assets/screenshots/nodeIdle.png) | **Idle / Sleeping** — the node has not been heard from recently and may be asleep or out of range. |
 | ![Hops Away](../assets/screenshots/hopsAway.png) | **Hops Away** — the number of intermediate nodes relaying messages between you and this node. No hops means direct communication. |

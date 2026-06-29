@@ -10,7 +10,7 @@
 <h1>Map &amp; Waypoints</h1>
 <p>The Map tab shows all nodes that have shared a position, overlaid on an Apple Maps base layer.</p>
 <h2>Node Pins</h2>
-<p>Each node that has reported a GPS position appears as a coloured circle pin on the map. The <strong>green solid line</strong> shows a directly connected node; <strong>orange dashed lines</strong> show nodes reached via the mesh. A purple star marks a waypoint. Tap a pin to see the node name, last heard time, signal info, and a shortcut to send a direct message.</p>
+<p>Each node that has reported a GPS position appears as a colored circle pin on the map. The <strong>green solid line</strong> shows a directly connected node; <strong>orange dashed lines</strong> show nodes reached via the mesh. A purple star marks a waypoint. Tap a pin to see the node name, last heard time, signal info, and a shortcut to send a direct message.</p>
 <p>Pins update automatically when a new position packet is received from the mesh.</p>
 <h2>Filtering Nodes on the Map</h2>
 <p>Tap the <strong>filter button</strong> (funnel icon, <code>line.3.horizontal.decrease.circle</code>) in the bottom-right toolbar to open the Map Filters sheet. When any filter is active, the icon appears <strong>filled</strong> to indicate filtering is in effect.</p>
@@ -40,7 +40,7 @@
 </tr>
 <tr>
 <td>Favorites</td>
-<td>Show only nodes you have starred as favourites</td>
+<td>Show only nodes you have starred as favorites</td>
 </tr>
 <tr>
 <td>Distance</td>
@@ -94,6 +94,52 @@ Enable the <strong>Via LoRa</strong> filter and disable <strong>Via MQTT</strong
 <p>Tap an existing waypoint pin, then tap <strong>Edit</strong>. Changes broadcast to the mesh immediately.</p>
 <h3>Deleting a Waypoint</h3>
 <p>Tap the waypoint, then tap <strong>Delete</strong>. The deletion broadcasts to all nodes.</p>
+<h3>Geofences</h3>
+<p>A geofence turns a waypoint into a watched area: when a node's reported position crosses into or out of it, your device raises a local notification. Open a waypoint, tap <strong>Edit</strong>, and use the <strong>Geofence</strong> section.</p>
+<table>
+<thead>
+<tr>
+<th>Control</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Radius</td>
+<td>A circular geofence centered on the waypoint, from 0.1 to 10 miles. Choose <strong>Off</strong> for no circle.</td>
+</tr>
+<tr>
+<td>Bounding Box</td>
+<td>A rectangular geofence. Tap <strong>Set Bounding Box</strong> to draw one on the map, <strong>Edit Bounding Box</strong> to adjust it, or <strong>Remove Bounding Box</strong> to clear it.</td>
+</tr>
+</tbody>
+</table>
+<p>You can use a radius, a bounding box, or both — a node counts as inside if it falls within <em>either</em> shape.</p>
+<p>Once a radius or bounding box is set, notification options appear:</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Notify on Enter</td>
+<td>Alert when a node moves into the geofence.</td>
+</tr>
+<tr>
+<td>Notify on Exit</td>
+<td>Alert when a node leaves the geofence.</td>
+</tr>
+<tr>
+<td>Favorites Only</td>
+<td>Shown when Enter or Exit is on. Limits alerts to nodes you have starred as favorites.</td>
+</tr>
+</tbody>
+</table>
+<div class="tips-callout"><strong>Note</strong>
+Geofences are evaluated on your own device as position packets arrive from the mesh, so alerts reflect what your radio has heard rather than live tracking. Tapping an alert opens the waypoint on the map. <strong>Favorites Only</strong> uses the favorite status set on <em>this</em> device, so each receiver decides which nodes are worth an alert.</div>
 <h2>Node Trail</h2>
 <p>When a node has reported multiple positions over time, a trail line connects the historical positions on the map, showing the node's path.</p>
 <h2>Your Location</h2>

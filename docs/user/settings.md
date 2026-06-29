@@ -10,7 +10,7 @@ The Settings tab lets you configure the app and your connected Meshtastic radio.
 
 ## App Settings
 
-General app preferences including map style, notification behaviour, and theme. These affect only the app — not the radio.
+General app preferences including map style, notification behavior, and theme. These affect only the app — not the radio.
 
 ### Data Management
 
