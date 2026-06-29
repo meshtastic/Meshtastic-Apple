@@ -108,6 +108,24 @@ struct MeshMapMK: View {
 		return getNodeInfo(id: num, context: context)?.latestPosition?.nodeCoordinate
 	}
 
+	/// Update the distance-filter fallback location ONLY when it actually changes. `fallbackLocation`
+	/// is `@Published` on the shared `filters` object, so an unconditional write publishes
+	/// `objectWillChange` and re-renders `body` — which re-runs the heavy position filter and, because
+	/// the filter depends on `fallbackLocation`, can spiral to 100% CPU on Mac Catalyst.
+	private func syncFallbackLocation() {
+		let coordinate = activeDeviceCoordinate
+		guard !Self.coordinatesEqual(filters.fallbackLocation, coordinate) else { return }
+		filters.fallbackLocation = coordinate
+	}
+
+	private static func coordinatesEqual(_ lhs: CLLocationCoordinate2D?, _ rhs: CLLocationCoordinate2D?) -> Bool {
+		switch (lhs, rhs) {
+		case (nil, nil): return true
+		case let (a?, b?): return abs(a.latitude - b.latitude) < 1e-7 && abs(a.longitude - b.longitude) < 1e-7
+		default: return false
+		}
+	}
+
 	@Query(filter: #Predicate<PositionEntity> { $0.nodePosition != nil && $0.latest == true && $0.nodePosition?.ignored != true })
 	private var allLatestPositions: [PositionEntity]
 
@@ -239,7 +257,8 @@ struct MeshMapMK: View {
 				coverageBounds: isMapVisible ? offlineCoverageBounds : nil,
 				decorations: combinedMapDecorations(),
 				onMapLongPress: { coordinate in beginNewWaypoint(at: coordinate) },
-				onMapCreated: { flyover.mapView = $0 }
+				onMapCreated: { flyover.mapView = $0 },
+				suppressRegionUpdates: flyover.isFlying
 			) { snapshot in
 				MeshMapMKNodePin(nodeNum: snapshot.nodeNum, shortName: snapshot.shortName, isOnline: snapshot.isOnline, calculatedDelay: snapshot.calculatedDelay, dense: isDense)
 					.equatable()
@@ -441,7 +460,7 @@ struct MeshMapMK: View {
 		}
 			.onChange(of: positionState.key) {
 				refreshVisiblePositionSnapshots(from: positionState.positions)
-				filters.fallbackLocation = activeDeviceCoordinate
+				syncFallbackLocation()
 				decodeOfflineIfVisible()
 			}
 			.onChange(of: offlineMapManager.regions) {
@@ -451,10 +470,10 @@ struct MeshMapMK: View {
 				rebuildAllMapContent()
 			}
 			.onChange(of: allLatestPositions) {
-				filters.fallbackLocation = activeDeviceCoordinate
+				syncFallbackLocation()
 			}
 			.onChange(of: accessoryManager.activeDeviceNum) {
-				filters.fallbackLocation = activeDeviceCoordinate
+				syncFallbackLocation()
 			}
 			.onChange(of: accessoryManager.isInBackground) {
 				// Foreground/background flips isMapVisible; refresh so the overlay-bearing
@@ -463,7 +482,7 @@ struct MeshMapMK: View {
 			}
 			.onAppear {
 				UIApplication.shared.isIdleTimerDisabled = true
-				filters.fallbackLocation = activeDeviceCoordinate
+				syncFallbackLocation()
 				refreshMapWindowOpenState()
 			// Initialize enabled overlay configs with all active files
 			// Migrate the legacy `.offline` base layer to the new independent offline-tiles overlay.
@@ -499,7 +518,7 @@ struct MeshMapMK: View {
 		})
 		.onChange(of: router.selectedTab) { _, newTab in
 			if newTab == .map {
-				filters.fallbackLocation = activeDeviceCoordinate
+				syncFallbackLocation()
 				refreshMapWindowOpenState()
 				UIApplication.shared.isIdleTimerDisabled = true
 				refreshVisiblePositionSnapshots()
@@ -879,7 +898,9 @@ struct MeshMapMK: View {
 		tracerouteDecorations = decorations
 	}
 
-	/// Center/zoom the camera to fit the selected trace route's nodes.
+	/// Center/zoom the camera to fit the selected trace route's nodes. Drives the MKMapView directly
+	/// (not the `visibleRegion` binding) so the framing doesn't kick off a region-binding feedback
+	/// loop that re-renders `body` repeatedly (which pegs the main thread on Mac Catalyst).
 	private func frameTraceRoute() {
 		guard let route = selectedTraceRoute else { return }
 		let coords = route.forwardCoordinates + route.backCoordinates
@@ -892,7 +913,12 @@ struct MeshMapMK: View {
 			latitudeDelta: max((maxLat - minLat) * 1.4, 0.02),
 			longitudeDelta: max((maxLon - minLon) * 1.4, 0.02)
 		)
-		visibleRegion = MKCoordinateRegion(center: center, span: span)
+		let region = MKCoordinateRegion(center: center, span: span)
+		if let mapView = flyover.mapView {
+			mapView.setRegion(region, animated: false)
+		} else {
+			visibleRegion = region
+		}
 	}
 
 /// Build the offline basemap as native MKOverlays (earth fill + water/park fills + arterial roads)

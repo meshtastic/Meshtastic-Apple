@@ -126,6 +126,10 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 	/// Handed the underlying `MKMapView` once it's created, so a caller can drive the camera directly
 	/// (e.g. a guided 3D flyover). Called once from `makeUIView`.
 	let onMapCreated: ((MKMapView) -> Void)?
+	/// When true, region changes are NOT written back into `region` and don't drive SwiftUI updates.
+	/// Set while the caller is animating the camera itself (e.g. a flyover) so the per-frame region
+	/// changes don't re-render `body` (which can spiral on Mac Catalyst with many annotations).
+	let suppressRegionUpdates: Bool
 
 	@Environment(\.colorScheme) private var colorScheme
 
@@ -145,6 +149,7 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 		onMapTap: ((CLLocationCoordinate2D) -> Void)? = nil,
 		onMapLongPress: ((CLLocationCoordinate2D) -> Void)? = nil,
 		onMapCreated: ((MKMapView) -> Void)? = nil,
+		suppressRegionUpdates: Bool = false,
 		@ViewBuilder content pinContent: @escaping (Item) -> Pin,
 		@ViewBuilder clusterContent: @escaping (Int) -> Cluster
 	) {
@@ -161,6 +166,7 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 		self.onMapTap = onMapTap
 		self.onMapLongPress = onMapLongPress
 		self.onMapCreated = onMapCreated
+		self.suppressRegionUpdates = suppressRegionUpdates
 		self.pinContent = pinContent
 		self.clusterContent = clusterContent
 	}
@@ -261,6 +267,7 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 		coordinator.onSelect = onSelect
 		coordinator.onMapTap = onMapTap
 		coordinator.onMapLongPress = onMapLongPress
+		coordinator.suppressRegionUpdates = suppressRegionUpdates
 	}
 
 	// MARK: - Coordinator (MKMapViewDelegate + diffing + camera sync + offline overlay)
@@ -314,6 +321,8 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 		/// True for the duration of a user-driven region write-back (so an interleaved update won't
 		/// fight the gesture by re-applying the binding mid-pan).
 		var isUpdatingRegionFromMap = false
+		/// While true, region-change callbacks don't write the binding (caller is driving the camera).
+		var suppressRegionUpdates = false
 
 		/// Shared clustering identifier — all clustered item annotations use the same one so MapKit
 		/// groups them. (Computed, not stored: the Coordinator is nested in the generic
@@ -693,6 +702,8 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 				isApplyingExternalRegion = false
 				return
 			}
+			// Caller is driving the camera (e.g. a flyover) — don't write the binding / re-render.
+			guard !suppressRegionUpdates else { return }
 			guard let regionBinding else { return }
 			let newRegion = mapView.region
 			// Skip no-op writes so we don't thrash SwiftUI state (guard #2).
@@ -741,6 +752,7 @@ extension ClusterMapView where Cluster == ClusterBadge {
 		onMapTap: ((CLLocationCoordinate2D) -> Void)? = nil,
 		onMapLongPress: ((CLLocationCoordinate2D) -> Void)? = nil,
 		onMapCreated: ((MKMapView) -> Void)? = nil,
+		suppressRegionUpdates: Bool = false,
 		@ViewBuilder content pinContent: @escaping (Item) -> Pin
 	) {
 		self.init(items: items,
@@ -756,6 +768,7 @@ extension ClusterMapView where Cluster == ClusterBadge {
 				onMapTap: onMapTap,
 				onMapLongPress: onMapLongPress,
 				onMapCreated: onMapCreated,
+				suppressRegionUpdates: suppressRegionUpdates,
 				  content: pinContent,
 				  clusterContent: { ClusterBadge(count: $0) })
 	}
