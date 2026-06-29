@@ -80,7 +80,10 @@ struct PulsingCircle: View {
 	private let period: Double = 2.4
 
 	var body: some View {
-		TimelineView(.animation) { timeline in
+		// Cap the clock to ~20 fps: a slow 2.4s breath looks identical, but with many ONLINE pins each
+		// hosted in an MKAnnotationView, an uncapped `.animation` clock re-renders every pin every
+		// display frame and never lets the map go idle (janky at rest on Mac Catalyst).
+		TimelineView(.animation(minimumInterval: 1.0 / 20.0, paused: false)) { timeline in
 			let elapsed = timeline.date.timeIntervalSinceReferenceDate + calculatedDelay
 			let phase = elapsed.truncatingRemainder(dividingBy: period) / period
 			// Smooth 0.9 -> 1.1 -> 0.9 ease via a cosine, continuous across cycles.

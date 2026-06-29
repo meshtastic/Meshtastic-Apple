@@ -57,6 +57,51 @@ struct ClusterMapOverlayStyle {
 	var lineDash: [NSNumber]?
 	var lineCap: CGLineCap = .round
 	var level: MKOverlayLevel = .aboveLabels
+	/// Draw chevrons along the line pointing in the direction of travel (uses the stroke color).
+	var directional: Bool = false
+}
+
+/// An `MKPolylineRenderer` that also draws small chevrons along the line pointing in the direction of
+/// travel, at a roughly constant on-screen size + spacing. Drawn in the renderer's (north-up) map
+/// space so the arrows rotate and scale with the map. Used for trace route direction indicators.
+final class DirectionalPolylineRenderer: MKPolylineRenderer {
+	override func draw(_ mapRect: MKMapRect, zoomScale: MKZoomScale, in context: CGContext) {
+		super.draw(mapRect, zoomScale: zoomScale, in: context)
+		guard let line = overlay as? MKPolyline, line.pointCount >= 2 else { return }
+		let points = line.points()
+
+		// Sizes are in screen points, converted to the renderer's space by dividing by the zoom scale.
+		let size = 10 / zoomScale
+		let spacing = 156 / zoomScale
+		guard spacing > 0 else { return }
+
+		context.setStrokeColor((strokeColor ?? .white).cgColor)
+		context.setLineWidth(max(lineWidth, 3) / zoomScale)
+		context.setLineCap(.round)
+		context.setLineJoin(.round)
+
+		var carry = spacing * 0.5
+		for i in 1..<line.pointCount {
+			let a = point(for: points[i - 1])
+			let b = point(for: points[i])
+			let dx = b.x - a.x, dy = b.y - a.y
+			let segLength = (dx * dx + dy * dy).squareRoot()
+			guard segLength > 0 else { continue }
+			let ux = dx / segLength, uy = dy / segLength   // unit direction of travel
+			let px = -uy, py = ux                          // perpendicular
+			var d = carry
+			while d < segLength {
+				let tipX = a.x + ux * d, tipY = a.y + uy * d
+				let backX = tipX - ux * size, backY = tipY - uy * size
+				context.move(to: CGPoint(x: backX + px * size * 0.7, y: backY + py * size * 0.7))
+				context.addLine(to: CGPoint(x: tipX, y: tipY))
+				context.addLine(to: CGPoint(x: backX - px * size * 0.7, y: backY - py * size * 0.7))
+				d += spacing
+			}
+			context.strokePath()
+			carry = d - segLength
+		}
+	}
 }
 
 /// A caller overlay (route polyline, accuracy circle, convex hull, GeoJSON shape) + its style.
@@ -142,6 +187,13 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 	/// Tap / long-press on EMPTY map (not on a pin/marker) -> caller coordinate (create waypoint).
 	let onMapTap: ((CLLocationCoordinate2D) -> Void)?
 	let onMapLongPress: ((CLLocationCoordinate2D) -> Void)?
+	/// Handed the underlying `MKMapView` once it's created, so a caller can drive the camera directly
+	/// (e.g. a guided 3D flyover). Called once from `makeUIView`.
+	let onMapCreated: ((MKMapView) -> Void)?
+	/// When true, region changes are NOT written back into `region` and don't drive SwiftUI updates.
+	/// Set while the caller is animating the camera itself (e.g. a flyover) so the per-frame region
+	/// changes don't re-render `body` (which can spiral on Mac Catalyst with many annotations).
+	let suppressRegionUpdates: Bool
 
 	@Environment(\.colorScheme) private var colorScheme
 
@@ -160,6 +212,8 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 		decorations: [ClusterMapDecoration] = [],
 		onMapTap: ((CLLocationCoordinate2D) -> Void)? = nil,
 		onMapLongPress: ((CLLocationCoordinate2D) -> Void)? = nil,
+		onMapCreated: ((MKMapView) -> Void)? = nil,
+		suppressRegionUpdates: Bool = false,
 		@ViewBuilder content pinContent: @escaping (Item) -> Pin,
 		@ViewBuilder clusterContent: @escaping (Int) -> Cluster
 	) {
@@ -175,6 +229,8 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 		self.decorations = decorations
 		self.onMapTap = onMapTap
 		self.onMapLongPress = onMapLongPress
+		self.onMapCreated = onMapCreated
+		self.suppressRegionUpdates = suppressRegionUpdates
 		self.pinContent = pinContent
 		self.clusterContent = clusterContent
 	}
@@ -231,6 +287,9 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 		// Seed the annotations through the same diffing path used by updates.
 		context.coordinator.sync(items: items, coordinate: coordinate,
 								 clustering: clustering, on: mapView)
+
+		// Hand the map to the caller (e.g. for a guided camera flyover).
+		onMapCreated?(mapView)
 		return mapView
 	}
 
@@ -276,6 +335,7 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 		coordinator.onSelect = onSelect
 		coordinator.onMapTap = onMapTap
 		coordinator.onMapLongPress = onMapLongPress
+		coordinator.suppressRegionUpdates = suppressRegionUpdates
 	}
 
 	// MARK: - Coordinator (MKMapViewDelegate + diffing + camera sync + offline overlay)
@@ -293,6 +353,8 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 		/// Empty-map tap / long-press handlers (create waypoint), set each render.
 		var onMapTap: ((CLLocationCoordinate2D) -> Void)?
 		var onMapLongPress: ((CLLocationCoordinate2D) -> Void)?
+		/// While true, region-change callbacks don't write the binding (caller is driving the camera).
+		var suppressRegionUpdates = false
 
 		/// id → the backing annotation currently on the map. The single source of truth for diffing.
 		private var annotationsByID: [Item.ID: ItemAnnotation<Item>] = [:]
@@ -358,17 +420,17 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 				case .standard, .offline:
 					// Offline tiles are now an independent overlay (drawn on top of whatever base is
 					// selected), so a stray `.offline` base value just maps to the clean Standard base.
-					let standard = MKStandardMapConfiguration(elevationStyle: .realistic)
+					let standard = MKStandardMapConfiguration(elevationStyle: .flat)
 					standard.pointOfInterestFilter = poi
 					standard.showsTraffic = config.showsTraffic
 					mapView.preferredConfiguration = standard
 				case .hybrid:
-					let hybrid = MKHybridMapConfiguration(elevationStyle: .realistic)
+					let hybrid = MKHybridMapConfiguration(elevationStyle: .flat)
 					hybrid.pointOfInterestFilter = poi
 					hybrid.showsTraffic = config.showsTraffic
 					mapView.preferredConfiguration = hybrid
 				case .satellite:
-					mapView.preferredConfiguration = MKImageryMapConfiguration(elevationStyle: .realistic)
+					mapView.preferredConfiguration = MKImageryMapConfiguration(elevationStyle: .flat)
 				}
 			}
 
@@ -721,7 +783,8 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 			switch overlay {
 			case let circle as MKCircle: renderer = MKCircleRenderer(circle: circle)
 			case let polygon as MKPolygon: renderer = MKPolygonRenderer(polygon: polygon)
-			case let polyline as MKPolyline: renderer = MKPolylineRenderer(polyline: polyline)
+			case let polyline as MKPolyline:
+				renderer = style.directional ? DirectionalPolylineRenderer(polyline: polyline) : MKPolylineRenderer(polyline: polyline)
 			case let multi as MKMultiPolyline: renderer = MKMultiPolylineRenderer(multiPolyline: multi)
 			case let multi as MKMultiPolygon: renderer = MKMultiPolygonRenderer(multiPolygon: multi)
 			default: return MKOverlayRenderer(overlay: overlay)
@@ -742,6 +805,8 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 				isApplyingExternalRegion = false
 				return
 			}
+			// Caller is driving the camera (e.g. a flyover) — don't write the binding / re-render.
+			guard !suppressRegionUpdates else { return }
 			guard let regionBinding else { return }
 			let newRegion = mapView.region
 			// Skip no-op writes so we don't thrash SwiftUI state (guard #2).
@@ -789,6 +854,8 @@ extension ClusterMapView where Cluster == ClusterBadge {
 		decorations: [ClusterMapDecoration] = [],
 		onMapTap: ((CLLocationCoordinate2D) -> Void)? = nil,
 		onMapLongPress: ((CLLocationCoordinate2D) -> Void)? = nil,
+		onMapCreated: ((MKMapView) -> Void)? = nil,
+		suppressRegionUpdates: Bool = false,
 		@ViewBuilder content pinContent: @escaping (Item) -> Pin
 	) {
 		self.init(items: items,
@@ -803,6 +870,8 @@ extension ClusterMapView where Cluster == ClusterBadge {
 				decorations: decorations,
 				onMapTap: onMapTap,
 				onMapLongPress: onMapLongPress,
+				onMapCreated: onMapCreated,
+				suppressRegionUpdates: suppressRegionUpdates,
 				  content: pinContent,
 				  clusterContent: { ClusterBadge(count: $0) })
 	}

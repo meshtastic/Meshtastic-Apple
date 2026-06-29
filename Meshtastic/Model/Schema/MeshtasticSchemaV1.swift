@@ -26,6 +26,7 @@ enum MeshtasticSchemaV1: VersionedSchema {
 			PaxCounterEntity.self,
 			TraceRouteEntity.self,
 			TraceRouteHopEntity.self,
+			TraceRouteNodePositionEntity.self,
 			RouteEntity.self,
 			LocationEntity.self,
 			// Device hardware & firmware entities
