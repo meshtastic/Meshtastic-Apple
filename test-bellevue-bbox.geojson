@@ -1,0 +1,25 @@
+{
+  "type": "FeatureCollection",
+  "bbox": [-122.24, 47.56, -122.10, 47.66],
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "I-405 corridor",
+        "stroke": "#264653",
+        "stroke-width": 4,
+        "stroke-opacity": 0.9
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-122.1888, 47.5620],
+          [-122.1889, 47.5900],
+          [-122.1875, 47.6150],
+          [-122.1900, 47.6400],
+          [-122.1890, 47.6580]
+        ]
+      }
+    }
+  ]
+}

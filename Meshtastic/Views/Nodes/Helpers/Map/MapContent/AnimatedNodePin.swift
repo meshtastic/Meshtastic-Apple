@@ -22,25 +22,31 @@ struct AnimatedNodePin: View, Equatable {
 	}
 
 	var body: some View {
-		ZStack {
-			// Pass the calculatedDelay to the PulsingCircle view
-			if isOnline && showsPulse {
-				if #available(iOS 18, macOS 15, *) {
-					PulsingCircle(nodeColor: nodeColor, calculatedDelay: calculatedDelay)
+		// The pulse is drawn as a *background* of the pin, never a sibling in a sizing ZStack, so it
+		// stays concentric with the pin and can't change the hosted view's measured size (which the
+		// MapKit annotation view re-reads on every reuse). That keeps the halo centered instead of
+		// drifting above the node as it animates.
+		pin
+			.background {
+				if isOnline && showsPulse {
+					if #available(iOS 18, macOS 15, *) {
+						PulsingCircle(nodeColor: nodeColor, calculatedDelay: calculatedDelay)
+					}
 				}
 			}
+	}
 
-			if hasDetectionSensorMetrics {
-				Image(systemName: "sensor.fill")
-					.symbolRenderingMode(.palette)
-					.symbolEffect(.variableColor)
-					.padding()
-					.foregroundStyle(.white)
-					.background(swiftUIColor)
-					.clipShape(Circle())
-			} else {
-				CircleText(text: shortName ?? "?", color: swiftUIColor, circleSize: 40)
-			}
+	@ViewBuilder private var pin: some View {
+		if hasDetectionSensorMetrics {
+			Image(systemName: "sensor.fill")
+				.symbolRenderingMode(.palette)
+				.symbolEffect(.variableColor)
+				.padding()
+				.foregroundStyle(.white)
+				.background(swiftUIColor)
+				.clipShape(Circle())
+		} else {
+			CircleText(text: shortName ?? "?", color: swiftUIColor, circleSize: 40)
 		}
 	}
 
@@ -62,25 +68,28 @@ struct AnimatedNodePin: View, Equatable {
 	}
 }
 
+/// A softly breathing halo behind online nodes. Driven by an absolute-time `TimelineView` clock
+/// rather than `@State` + `.onAppear` + `repeatForever`, so it never restarts or jumps when MapKit
+/// recycles/reconfigures the annotation view (which it does constantly on pan/zoom/declutter). The
+/// per-node `calculatedDelay` phase-shifts each node so they don't all pulse in unison.
 struct PulsingCircle: View {
 	let nodeColor: UIColor
 	let calculatedDelay: Double
-	@State private var isPulsing = false
+
+	/// Seconds for one full breath (out and back), matching the previous 1.2s-each-way feel.
+	private let period: Double = 2.4
 
 	var body: some View {
-		Circle()
-			.fill(Color(nodeColor.lighter()).opacity(0.3))
-			.frame(width: 50, height: 50)
-			.scaleEffect(isPulsing ? 1.1 : 0.9)
-			.animation(
-				.easeInOut(duration: 1.2).repeatForever(autoreverses: true).delay(calculatedDelay),
-				value: isPulsing
-			)
-			.onAppear {
-				isPulsing = true
-			}
-			.onDisappear {
-				isPulsing = false
-			}
+		TimelineView(.animation) { timeline in
+			let elapsed = timeline.date.timeIntervalSinceReferenceDate + calculatedDelay
+			let phase = elapsed.truncatingRemainder(dividingBy: period) / period
+			// Smooth 0.9 -> 1.1 -> 0.9 ease via a cosine, continuous across cycles.
+			let eased = (1 - cos(phase * 2 * .pi)) / 2
+			let scale = 0.9 + 0.2 * eased
+			Circle()
+				.fill(Color(nodeColor.lighter()).opacity(0.3))
+				.frame(width: 50, height: 50)
+				.scaleEffect(scale)
+		}
 	}
 }

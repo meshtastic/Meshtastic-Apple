@@ -1,5 +1,5 @@
 {
-  "originHash" : "02e9d207c7ae3d3a8b5bd176e842a65b5ef636da7b4f30c3bbebdc7c606b8348",
+  "originHash" : "4ab71d491cc4fdebca1908171b0ecbf5078c5b34a6ba6edef106dd3f3a95ed52",
   "pins" : [
     {
       "identity" : "cocoamqtt",
@@ -17,6 +17,24 @@
       "state" : {
         "revision" : "d5e75dd7fdc721a5234c415a111664c0605f2164",
         "version" : "3.11.0"
+      }
+    },
+    {
+      "identity" : "gis-tools",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Outdooractive/gis-tools",
+      "state" : {
+        "revision" : "777aaa8ac64de78c3a3662a031f4f3a54098ae53",
+        "version" : "1.13.6"
+      }
+    },
+    {
+      "identity" : "gzipswift",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/1024jp/GzipSwift.git",
+      "state" : {
+        "revision" : "41d37421fe2cbbfae4a5593dc29d12999fb73cd7",
+        "version" : "7.0.0"
       }
     },
     {
@@ -47,6 +65,15 @@
       }
     },
     {
+      "identity" : "mvt-tools",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Outdooractive/mvt-tools.git",
+      "state" : {
+        "revision" : "01d54cd8ef0169c739f7e674d8698551f9df1ea1",
+        "version" : "1.10.4"
+      }
+    },
+    {
       "identity" : "opentelemetry-swift-core",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/open-telemetry/opentelemetry-swift-core",
@@ -62,6 +89,15 @@
       "state" : {
         "revision" : "c6bfd1af48efcc9a9ad203665db12375ba6b145a",
         "version" : "4.0.8"
+      }
+    },
+    {
+      "identity" : "swift-argument-parser",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-argument-parser",
+      "state" : {
+        "revision" : "6a52f3251125d74daf04fcbd5e6f08a75d074382",
+        "version" : "1.8.2"
       }
     },
     {
@@ -89,6 +125,15 @@
       "state" : {
         "revision" : "06c57924455064182d6b217f06ebc05d00cb2990",
         "version" : "1.5.0"
+      }
+    },
+    {
+      "identity" : "swift-log",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-log.git",
+      "state" : {
+        "revision" : "92448c359f00ebe36ae97d3bd9086f13c7692b5a",
+        "version" : "1.13.2"
       }
     },
     {
