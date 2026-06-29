@@ -719,14 +719,20 @@ private struct RegionInfo {
 		case .euN868:
 			self.init(freqStart: 869.4, freqEnd: 869.65)
 		case .itu32M:
-			// ITU Region 3 / Amateur 2m — same allocation as itu12M / itu22M.
+			// ITU Region 3 Amateur Radio 2m band.
 			self.init(freqStart: 144.0, freqEnd: 148.0)
-		case .itu170Cm, .itu270Cm, .itu370Cm, .itu2125Cm:
-			// 70cm / 1.25m amateur bands added in 2.8. No verified channel-plan
-			// frequency range for this view yet, so report "no region info" rather
-			// than display an unverified range. Kept explicit (not a default) so a
-			// future region still triggers a compile error here.
-			return nil
+		case .itu170Cm:
+			// ITU Region 1 Amateur Radio 70cm band.
+			self.init(freqStart: 430.0, freqEnd: 440.0)
+		case .itu270Cm:
+			// ITU Region 2 Amateur Radio 70cm band.
+			self.init(freqStart: 420.0, freqEnd: 450.0)
+		case .itu370Cm:
+			// ITU Region 3 Amateur Radio 70cm band.
+			self.init(freqStart: 430.0, freqEnd: 450.0)
+		case .itu2125Cm:
+			// ITU Region 2 Amateur Radio 1.25m (125cm) band.
+			self.init(freqStart: 220.0, freqEnd: 225.0)
 		}
 	}
 

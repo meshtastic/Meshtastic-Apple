@@ -57,6 +57,10 @@ struct MeshMapMK: View {
 	@State private var spreadOverrides: [Int64: CLLocationCoordinate2D] = [:]
 	/// Guards the one-time initial camera framing (GPS-centered, zoomed out, ~100 miles max).
 	@State private var didInitialFrame = false
+	/// One-shot camera move fed to the map. Set ONCE by the initial framing; after that the user
+	/// drives the camera and we never move it programmatically, so a flood of incoming positions
+	/// can't re-frame the map mid-gesture.
+	@State private var cameraCommand: ClusterMapCameraCommand?
 	/// Offline basemap rendered as native MKOverlays (slate/cream vector content) -- matches the old
 	/// SwiftUI map's look and aligns the coverage border/label exactly (no tile-grid mismatch).
 	@StateObject private var offlineVectors = OfflineVectorTileProvider()
@@ -66,6 +70,14 @@ struct MeshMapMK: View {
 	/// Route polylines + start/finish markers, rebuilt only when the route set changes.
 	@State private var routeOverlays: [ClusterMapOverlay] = []
 	@State private var routeDecorations: [ClusterMapDecoration] = []
+	/// A single trace route drawn on the map (forward solid + return dashed polyline + endpoint
+	/// markers), set when arriving via a `meshtastic:///map?tracerouteId=` deep link.
+	@State private var selectedTraceRoute: TraceRouteEntity?
+	@State private var tracerouteOverlays: [ClusterMapOverlay] = []
+	@State private var tracerouteDecorations: [ClusterMapDecoration] = []
+	@State private var lastTraceRouteKey = "init"
+	/// Drives the guided 3D camera flythrough along the selected trace route.
+	@StateObject private var flyover = TraceRouteFlyover()
 	@AppStorage("enableMapWaypoints") private var showWaypoints = true
 	@AppStorage("mapOverlaysEnabled") private var mapOverlaysEnabled = false
 	@State private var waypointDecorations: [ClusterMapDecoration] = []
@@ -100,6 +112,24 @@ struct MeshMapMK: View {
 	private var activeDeviceCoordinate: CLLocationCoordinate2D? {
 		guard let num = accessoryManager.activeDeviceNum else { return nil }
 		return getNodeInfo(id: num, context: context)?.latestPosition?.nodeCoordinate
+	}
+
+	/// Update the distance-filter fallback location ONLY when it actually changes. `fallbackLocation`
+	/// is `@Published` on the shared `filters` object, so an unconditional write publishes
+	/// `objectWillChange` and re-renders `body` — which re-runs the heavy position filter and, because
+	/// the filter depends on `fallbackLocation`, can spiral to 100% CPU on Mac Catalyst.
+	private func syncFallbackLocation() {
+		let coordinate = activeDeviceCoordinate
+		guard !Self.coordinatesEqual(filters.fallbackLocation, coordinate) else { return }
+		filters.fallbackLocation = coordinate
+	}
+
+	private static func coordinatesEqual(_ lhs: CLLocationCoordinate2D?, _ rhs: CLLocationCoordinate2D?) -> Bool {
+		switch (lhs, rhs) {
+		case (nil, nil): return true
+		case let (a?, b?): return abs(a.latitude - b.latitude) < 1e-7 && abs(a.longitude - b.longitude) < 1e-7
+		default: return false
+		}
 	}
 
 	@Query(filter: #Predicate<PositionEntity> { $0.nodePosition != nil && $0.latest == true && $0.nodePosition?.ignored != true })
@@ -230,17 +260,76 @@ struct MeshMapMK: View {
 				items: visiblePositionSnapshots,
 				coordinate: { spreadOverrides[$0.nodeNum] ?? $0.coordinate },
 				region: $visibleRegion,
+				cameraCommand: cameraCommand,
 				clustering: enableMapClustering,
 				onSelect: { snapshot in selectedWaypoint = nil; editingWaypoint = nil; selectedNode = MeshMapSelectedNode(id: snapshot.nodeNum) },
 				configuration: clusterConfiguration,
 				overlays: combinedMapOverlays(),
 				coverageAreas: isMapVisible ? offlineCoverageAreas : [],
 				decorations: combinedMapDecorations(),
-				onMapLongPress: { coordinate in beginNewWaypoint(at: coordinate) }
+				onMapLongPress: { coordinate in beginNewWaypoint(at: coordinate) },
+				onMapCreated: { flyover.mapView = $0 },
+				suppressRegionUpdates: flyover.isFlying
 			) { snapshot in
 				MeshMapMKNodePin(nodeNum: snapshot.nodeNum, shortName: snapshot.shortName, isOnline: snapshot.isOnline, calculatedDelay: snapshot.calculatedDelay, dense: isDense)
 					.equatable()
 			}
+	}
+
+	/// Banner shown while a trace route is drawn on the map, with controls to fly through and clear it.
+	@ViewBuilder private var traceRouteBanner: some View {
+		if let route = selectedTraceRoute {
+			let fromName = getNodeInfo(id: route.fromNum, context: context)?.user?.shortName ?? route.fromNum.toHex()
+			let toName = getNodeInfo(id: route.toNum, context: context)?.user?.shortName ?? route.toNum.toHex()
+			let flyLegs = traceRouteFlyoverLegs(for: route)
+			HStack(spacing: 10) {
+				Image(systemName: "point.3.connected.trianglepath.dotted")
+				Text("Trace Route: \(fromName) → \(toName)")
+					.font(.callout)
+					.fontWeight(.medium)
+					.lineLimit(1)
+				if flyLegs.contains(where: { $0.count >= 2 }) {
+					// Speed toggle: cycle 1× (base/slow) → 1.5× → 2× → 2.5× → 3× → 4× → 5× (400% faster). Live-adjustable.
+					Button {
+						let steps: [Double] = [1, 1.5, 2, 2.5, 3, 4, 5]
+						let next = (steps.firstIndex(of: flyover.speedMultiplier) ?? 0) + 1
+						flyover.speedMultiplier = steps[next % steps.count]
+					} label: {
+						Text(String(format: "%g×", flyover.speedMultiplier))
+							.font(.caption)
+							.fontWeight(.semibold)
+							.monospacedDigit()
+							.frame(minWidth: 30)
+					}
+					.buttonStyle(.bordered)
+					// Text(_:) localizes via the "Flyover speed %@" key; pass a language-agnostic "2×".
+					.accessibilityLabel(Text("Flyover speed \(String(format: "%g×", flyover.speedMultiplier))"))
+					Button {
+						if flyover.isFlying {
+							flyover.stop()
+						} else {
+							flyover.start(legs: flyLegs)
+						}
+					} label: {
+						Image(systemName: flyover.isFlying ? "stop.circle.fill" : "play.circle.fill")
+							.foregroundStyle(flyover.isFlying ? Color.red : Color.accentColor)
+					}
+					.buttonStyle(.plain)
+					.accessibilityLabel(flyover.isFlying ? Text("Stop flyover") : Text("Start flyover"))
+				}
+				Button {
+					clearTraceRoute()
+				} label: {
+					Image(systemName: "xmark.circle.fill")
+						.foregroundStyle(.secondary)
+				}
+				.buttonStyle(.plain)
+			}
+			.padding(.horizontal, 14)
+			.padding(.vertical, 8)
+			.background(.thinMaterial, in: Capsule())
+			.padding(.top, 8)
+		}
 	}
 
 	/// The map + its sheets + the bottom button bar, split out of `body` so the long modifier
@@ -248,6 +337,7 @@ struct MeshMapMK: View {
 	@ViewBuilder private var mapWithSheets: some View {
 		meshClusterMapView
 			.ignoresSafeArea()
+			.overlay(alignment: .top) { traceRouteBanner }
 				.sheet(item: $selectedNode) { selection in
 					if let node = getNodeInfo(id: selection.id, context: context) {
 						NavigationStack {
@@ -294,6 +384,7 @@ struct MeshMapMK: View {
 				}
 				.onChange(of: router.mapState) {
 					guard case .map = router.selectedTab else { return }
+					applyTraceRouteSelection()
 					// TODO: handle deep link for waypoints
 				}
 				.onChange(of: selectedMapLayer) { _, newMapLayer in
@@ -395,7 +486,7 @@ struct MeshMapMK: View {
 		}
 			.onChange(of: positionState.key) {
 				refreshVisiblePositionSnapshots(from: positionState.positions)
-				filters.fallbackLocation = activeDeviceCoordinate
+				syncFallbackLocation()
 				decodeOfflineIfVisible()
 			}
 			.onChange(of: offlineMapManager.regions) {
@@ -405,10 +496,10 @@ struct MeshMapMK: View {
 				rebuildAllMapContent()
 			}
 			.onChange(of: allLatestPositions) {
-				filters.fallbackLocation = activeDeviceCoordinate
+				syncFallbackLocation()
 			}
 			.onChange(of: accessoryManager.activeDeviceNum) {
-				filters.fallbackLocation = activeDeviceCoordinate
+				syncFallbackLocation()
 			}
 			.onChange(of: accessoryManager.isInBackground) {
 				// Foreground/background flips isMapVisible; refresh so the overlay-bearing
@@ -417,7 +508,7 @@ struct MeshMapMK: View {
 			}
 			.onAppear {
 				UIApplication.shared.isIdleTimerDisabled = true
-				filters.fallbackLocation = activeDeviceCoordinate
+				syncFallbackLocation()
 				refreshMapWindowOpenState()
 			// Initialize enabled overlay configs with all active files
 			// Migrate the legacy `.offline` base layer to the new independent offline-tiles overlay.
@@ -430,6 +521,7 @@ struct MeshMapMK: View {
 			rebuildWaypointDecorations()
 			rebuildGeoJSONOverlays()
 			rebuildRouteContent()
+			applyTraceRouteSelection()
 			offlineMapManager.loadIfNeeded()
 			reloadOfflineSource()
 			rebuildOfflineVectorOverlays()
@@ -453,11 +545,13 @@ struct MeshMapMK: View {
 		})
 		.onChange(of: router.selectedTab) { _, newTab in
 			if newTab == .map {
-				filters.fallbackLocation = activeDeviceCoordinate
+				syncFallbackLocation()
 				refreshMapWindowOpenState()
 				UIApplication.shared.isIdleTimerDisabled = true
 				refreshVisiblePositionSnapshots()
+				applyTraceRouteSelection()
 			} else {
+				flyover.stop(restoreCamera: false)
 				UIApplication.shared.isIdleTimerDisabled = false
 				GeoJSONOverlayManager.shared.clearCache()
 				visiblePositionSnapshots = []
@@ -548,9 +642,10 @@ struct MeshMapMK: View {
 
 	/// One-time initial camera framing. Centers on the phone's GPS (else the connected device's GPS,
 	/// else the node centroid) and zooms out to fit nearby nodes -- capped at ~100 miles so we "start
-	/// zoomed out but local." After it fires once the user drives the camera; we never re-frame.
+	/// zoomed out but local." After it fires once the user drives the camera; we never re-frame, even
+	/// as positions pour in.
 	private func frameInitialRegionIfNeeded() {
-		guard !didInitialFrame, visibleRegion == nil else { return }
+		guard !didInitialFrame else { return }
 		let nodeCoords = allLatestPositions.compactMap { $0.nodeCoordinate ?? $0.fuzzedNodeCoordinate }
 		guard let center = LocationsHandler.currentLocation ?? activeDeviceCoordinate ?? coordinateCentroid(of: nodeCoords) else {
 			return // No GPS and no nodes yet -- try again on the next refresh.
@@ -565,10 +660,14 @@ struct MeshMapMK: View {
 		let latDelta = min(max(maxLat * 2.5, minSpan), maxSpan)
 		let lonDelta = min(max(maxLon * 2.5, minSpan), maxSpan)
 		didInitialFrame = true
-		visibleRegion = MKCoordinateRegion(
+		let region = MKCoordinateRegion(
 			center: center,
 			span: MKCoordinateSpan(latitudeDelta: latDelta, longitudeDelta: lonDelta)
 		)
+		// Seed `visibleRegion` so content filtering reflects the frame immediately, and emit the
+		// one-shot command that actually moves the map (the only programmatic camera move we make).
+		visibleRegion = region
+		cameraCommand = ClusterMapCameraCommand(id: UUID(), region: region)
 	}
 
 	/// Average of a coordinate list (nil when empty).
@@ -633,8 +732,11 @@ struct MeshMapMK: View {
 
 								private func combinedMapOverlays() -> [ClusterMapOverlay] {
 									guard isMapVisible else { return [] }
-									var result = offlineVectorOverlays
+									// Hide the offline vector basemap while a trace route is shown (jump + flyover) so
+									// MapKit doesn't re-rasterize all that geometry at the new region; restored on clear.
+									var result = selectedTraceRoute != nil ? [] : offlineVectorOverlays
 									result += routeOverlays
+									result += tracerouteOverlays
 									result += mapOverlays
 									result += geoJSONOverlays
 									result += geofenceOverlays
@@ -644,6 +746,7 @@ struct MeshMapMK: View {
 								private func combinedMapDecorations() -> [ClusterMapDecoration] {
 									guard isMapVisible else { return [] }
 									var result = routeDecorations
+									result += tracerouteDecorations
 									result += waypointDecorations
 									result += geoJSONDecorations
 									return result
@@ -785,6 +888,123 @@ struct MeshMapMK: View {
 			routeOverlays = overlays
 			routeDecorations = decorations
 		}
+
+	/// Resolve the trace route requested via `router.mapState` (a `meshtastic:///map?tracerouteId=`
+	/// deep link), draw it, and frame the camera around it. Clears any drawn route when the map
+	/// state moves elsewhere.
+	private func applyTraceRouteSelection() {
+		guard case .map = router.selectedTab else { return }
+		if case let .traceRoute(id)? = router.mapState {
+			let isNewSelection = selectedTraceRoute?.id != id
+			if isNewSelection {
+				selectedTraceRoute = getTraceRoute(id: id, context: context)
+			}
+			rebuildTraceRouteContent()
+			frameTraceRoute()
+		} else if selectedTraceRoute != nil {
+			flyover.stop(restoreCamera: false)
+			selectedTraceRoute = nil
+			rebuildTraceRouteContent()
+		}
+	}
+
+	/// Stop drawing the trace route and forget the deep-link selection.
+	private func clearTraceRoute() {
+		flyover.stop(restoreCamera: false)
+		selectedTraceRoute = nil
+		router.mapState = nil
+		rebuildTraceRouteContent()
+	}
+
+	/// Ordered coordinates for a flythrough: out along the forward path, then back along the return
+	/// path (skipping the shared target endpoint) so it reads as a round trip.
+	/// The flyover legs for a route: the forward path, then (if present) the return path. The flyover
+	/// flies them in turn with a slow landing between.
+	private func traceRouteFlyoverLegs(for route: TraceRouteEntity) -> [[(coordinate: CLLocationCoordinate2D, altitude: CLLocationDistance)]] {
+		var legs: [[(coordinate: CLLocationCoordinate2D, altitude: CLLocationDistance)]] = []
+		let forward = route.forwardLocationPath
+		if forward.count >= 2 { legs.append(forward) }
+		let back = route.backLocationPath
+		if back.count >= 2 { legs.append(back) }
+		return legs
+	}
+
+	/// Build the forward (solid) + return (dashed) polylines and origin/target markers for the
+	/// selected trace route. Each leg is colored by that hop's SNR using the same signal-meter math
+	/// as the LoRa signal indicator (green/yellow/orange/red). Limited to nodes with a snapshot.
+	private func rebuildTraceRouteContent() {
+		let key = selectedTraceRoute.map { "\($0.id)|\($0.nodePositions.count)" } ?? "none"
+		guard key != lastTraceRouteKey else { return }
+		lastTraceRouteKey = key
+		guard let route = selectedTraceRoute else {
+			if !tracerouteOverlays.isEmpty { tracerouteOverlays = [] }
+			if !tracerouteDecorations.isEmpty { tracerouteDecorations = [] }
+			return
+		}
+		var overlays: [ClusterMapOverlay] = []
+		var decorations: [ClusterMapDecoration] = []
+		let idKey = route.persistentModelID.hashValue
+		let modemPreset = ModemPresets(rawValue: UserDefaults.modemPreset) ?? .longFast
+
+		// Forward (solid) — one polyline per leg, colored by the SNR measured at the node it arrives at.
+		let forward = route.forwardSignalPath
+		if forward.count >= 2 {
+			for i in 1..<forward.count {
+				var seg = [forward[i - 1].coordinate, forward[i].coordinate]
+				overlays.append(ClusterMapOverlay(
+					id: "traceroute-fwd-\(idKey)-\(i)",
+					overlay: MKPolyline(coordinates: &seg, count: 2),
+					style: ClusterMapOverlayStyle(strokeUIColor: UIColor(getSnrColor(snr: forward[i].snr, preset: modemPreset)), fillUIColor: nil, lineWidth: 4, lineCap: .round, directional: true)
+				))
+			}
+		}
+		// Return (dashed) — same per-leg signal coloring.
+		let back = route.backSignalPath
+		if back.count >= 2 {
+			for i in 1..<back.count {
+				var seg = [back[i - 1].coordinate, back[i].coordinate]
+				overlays.append(ClusterMapOverlay(
+					id: "traceroute-back-\(idKey)-\(i)",
+					overlay: MKPolyline(coordinates: &seg, count: 2),
+					style: ClusterMapOverlayStyle(strokeUIColor: UIColor(getSnrColor(snr: back[i].snr, preset: modemPreset)), fillUIColor: nil, lineWidth: 3, lineDash: [2, 8], lineCap: .round, directional: true)
+				))
+			}
+		}
+		let byNum = route.nodePositionsByNum
+		if let origin = byNum[route.fromNum]?.coordinate {
+			decorations.append(ClusterMapDecoration(id: "traceroute-origin-\(idKey)", coordinate: origin,
+			                                        content: AnyView(RouteEndpointMarker(color: .green))))
+		}
+		if let target = byNum[route.toNum]?.coordinate {
+			decorations.append(ClusterMapDecoration(id: "traceroute-target-\(idKey)", coordinate: target,
+			                                        content: AnyView(RouteEndpointMarker(color: .red))))
+		}
+		tracerouteOverlays = overlays
+		tracerouteDecorations = decorations
+	}
+
+	/// Center/zoom the camera to fit the selected trace route's nodes. Drives the MKMapView directly
+	/// (not the `visibleRegion` binding) so the framing doesn't kick off a region-binding feedback
+	/// loop that re-renders `body` repeatedly (which pegs the main thread on Mac Catalyst).
+	private func frameTraceRoute() {
+		guard let route = selectedTraceRoute else { return }
+		let coords = route.forwardCoordinates + route.backCoordinates
+		guard !coords.isEmpty else { return }
+		let lats = coords.map { $0.latitude }, lons = coords.map { $0.longitude }
+		guard let minLat = lats.min(), let maxLat = lats.max(),
+		      let minLon = lons.min(), let maxLon = lons.max() else { return }
+		let center = CLLocationCoordinate2D(latitude: (minLat + maxLat) / 2, longitude: (minLon + maxLon) / 2)
+		let span = MKCoordinateSpan(
+			latitudeDelta: max((maxLat - minLat) * 1.4, 0.02),
+			longitudeDelta: max((maxLon - minLon) * 1.4, 0.02)
+		)
+		let region = MKCoordinateRegion(center: center, span: span)
+		if let mapView = flyover.mapView {
+			mapView.setRegion(region, animated: false)
+		} else {
+			visibleRegion = region
+		}
+	}
 
 /// Build the offline basemap as native MKOverlays (earth fill + water/park fills + arterial roads)
 	/// from the decoded vector tiles, using the same slate/cream palette as the old SwiftUI map. Stable

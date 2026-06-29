@@ -82,6 +82,23 @@ Once a radius or bounding box is set, notification options appear:
 > **Note**
 > Geofences are evaluated on your own device as position packets arrive from the mesh, so alerts reflect what your radio has heard rather than live tracking. Tapping an alert opens the waypoint on the map. **Favorites Only** uses the favorite status set on *this* device, so each receiver decides which nodes are worth an alert.
 
+## Trace Routes on the Map
+
+A trace route can be drawn on the map to show the path a packet took through the mesh. Open **Settings → Logging → Trace Routes** (or a node's Trace Route log), select a route, and tap **Show on Map**.
+
+### Reading the Route
+
+- **Colored legs** — each hop is colored by its signal quality (SNR), using the same scale as the LoRa signal meter: **green** (good), **yellow** (fair), **orange** (bad), **red** (none).
+- **Solid vs. dashed** — the **solid** line is the outbound path toward the target; the **dashed** line is the return path back to the originator.
+- **Arrows** — chevrons along each line point in the direction of travel.
+- **Endpoints** — a **green** marker is the originator; a **red** marker is the target.
+
+### 3D Flyover
+
+Tap **▶** in the route banner for a guided 3D flythrough over satellite imagery: it flies the outbound path, lands at the target, then flies the return path and eases back to the map. Tap the **speed control** to cycle the pace from 1× up to 5× (1×, 1.5×, 2×, 2.5×, 3×, 4×, 5×) — adjustable mid-flight — and **■** to stop.
+
+Tap the **legend** button (map icon, bottom-right) for a key to the colors and markers.
+
 ## Node Trail
 
 When a node has reported multiple positions over time, a trail line connects the historical positions on the map, showing the node's path.

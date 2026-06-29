@@ -7,7 +7,12 @@ import SwiftUI
 struct ContentView: View {
 	@ObservedObject var appState: AppState
 	@EnvironmentObject var accessoryManager: AccessoryManager
-	@State var router: Router
+	// Observe (not just hold) the router so a *programmatic* `selectedTab` change re-renders
+	// ContentView and the TabView re-reads its selection binding immediately. As plain @State this
+	// view never subscribed to the router's objectWillChange, so a programmatic tab switch only took
+	// effect on the next incidental re-render (e.g. an unread-count change) — instant on a busy live
+	// mesh, but a 20–60s stall in a quiet/seeded session.
+	@ObservedObject var router: Router
 	@State var isShowingDeviceOnboardingFlow: Bool = false
 
 	init(appState: AppState, router: Router) {
