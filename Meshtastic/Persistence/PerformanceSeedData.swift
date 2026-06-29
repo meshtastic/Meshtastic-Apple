@@ -175,7 +175,9 @@ enum PerformanceSeedData {
 		insertTelemetry(for: node, index: index, now: now, configuration: configuration, context: context)
 		insertPositions(for: node, index: index, now: now, configuration: configuration, context: context)
 
-		if index.isMultiple(of: 25) {
+		// Seed a trace route on every 4th node (skipping the first few so the target isn't the
+		// originator itself) — gives a handful of complete, multi-hop, both-ways routes to test with.
+		if index >= 4, index.isMultiple(of: 4) {
 			insertTraceRoute(for: node, index: index, now: now, baseNodeNum: baseNodeNum, context: context)
 		}
 	}
@@ -327,25 +329,49 @@ enum PerformanceSeedData {
 		traceRoute.node = node
 		traceRoute.fromNum = baseNodeNum
 		traceRoute.toNum = node.num
-		traceRoute.hopsBack = -1
 		context.insert(traceRoute)
 
-		// Ordered forward path: our node -> a couple of earlier seeded nodes -> the target. Only
-		// reference nodes that already exist (num < target) so the snapshot lookups resolve.
-		var pathNums: [Int64] = [baseNodeNum]
-		for candidate in [baseNodeNum + Int64(index / 3), baseNodeNum + Int64(index / 2)]
-		where candidate != baseNodeNum && candidate < node.num {
-			pathNums.append(candidate)
+		// Forward path: originator -> several earlier seeded nodes -> target. More intermediate hops
+		// make a richer flyover; only reference nodes that already exist (num < target) so the
+		// snapshot lookups resolve.
+		var forwardNums: [Int64] = [baseNodeNum]
+		for divisor in [6, 5, 4, 3, 2] {
+			let candidate = baseNodeNum + Int64(index / divisor)
+			if candidate != baseNodeNum, candidate < node.num, !forwardNums.contains(candidate) {
+				forwardNums.append(candidate)
+			}
 		}
-		pathNums.append(node.num)
-		traceRoute.hopsTowards = Int32(max(0, pathNums.count - 2))
+		forwardNums.append(node.num)
+		traceRoute.hopsTowards = Int32(max(0, forwardNums.count - 2))
+
+		// Return path: target -> back through the same intermediate nodes -> originator. The stored
+		// back hops are the intermediate return nodes only (endpoints are bracketed when rendering).
+		let returnIntermediates = Array(forwardNums.dropFirst().dropLast().reversed())
+		traceRoute.hopsBack = Int32(returnIntermediates.count)
 
 		// Spread hop SNRs across the good/fair/bad/none bands (relative to longFast's -17.5 limit) so
 		// the per-leg signal coloring is visible when testing with seeded routes.
 		let snrSpread: [Float] = [8, -12, -19, -21, -24, -30]
-		for (hopIndex, num) in pathNums.enumerated() {
+		var snapshotted = Set<Int64>()
+		func snapshot(_ num: Int64, _ hopNode: NodeInfoEntity?) {
+			guard !snapshotted.contains(num), let position = hopNode?.latestPosition, position.nodeCoordinate != nil else { return }
+			snapshotted.insert(num)
+			let snap = TraceRouteNodePositionEntity()
+			snap.num = num
+			snap.latitudeI = position.latitudeI
+			snap.longitudeI = position.longitudeI
+			snap.altitude = position.altitude
+			snap.time = position.time
+			snap.traceRoute = traceRoute
+			context.insert(snap)
+			traceRoute.hasPositions = true
+		}
+
+		// Forward hops (toward the target).
+		for (hopIndex, num) in forwardNums.enumerated() {
 			let hopNode = num == node.num ? node : getNodeInfo(id: num, context: context)
 			let hop = TraceRouteHopEntity()
+			hop.back = false
 			hop.index = Int32(hopIndex)
 			hop.num = num
 			hop.name = hopNode?.user?.longName
@@ -353,18 +379,22 @@ enum PerformanceSeedData {
 			hop.time = traceRoute.time
 			hop.traceRoute = traceRoute
 			context.insert(hop)
+			snapshot(num, hopNode)
+		}
 
-			if let position = hopNode?.latestPosition, position.nodeCoordinate != nil {
-				let snapshot = TraceRouteNodePositionEntity()
-				snapshot.num = num
-				snapshot.latitudeI = position.latitudeI
-				snapshot.longitudeI = position.longitudeI
-				snapshot.altitude = position.altitude
-				snapshot.time = position.time
-				snapshot.traceRoute = traceRoute
-				context.insert(snapshot)
-				traceRoute.hasPositions = true
-			}
+		// Return hops (back toward the originator) — intermediate nodes only, with distinct SNRs.
+		for (hopIndex, num) in returnIntermediates.enumerated() {
+			let hopNode = getNodeInfo(id: num, context: context)
+			let hop = TraceRouteHopEntity()
+			hop.back = true
+			hop.index = Int32(hopIndex)
+			hop.num = num
+			hop.name = hopNode?.user?.longName
+			hop.snr = snrSpread[(index + hopIndex + 3) % snrSpread.count]
+			hop.time = traceRoute.time
+			hop.traceRoute = traceRoute
+			context.insert(hop)
+			snapshot(num, hopNode)
 		}
 	}
 

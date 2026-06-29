@@ -72,6 +72,12 @@ struct MeshMapMK: View {
 	@State private var tracerouteOverlays: [ClusterMapOverlay] = []
 	@State private var tracerouteDecorations: [ClusterMapDecoration] = []
 	@State private var lastTraceRouteKey = "init"
+	/// Temporarily drops the offline vector basemap while the camera jumps to a trace route, so
+	/// MapKit isn't re-rendering the whole offline overlay set at the new region all at once.
+	@State private var deferOfflineOverlays = false
+	/// Shows a loading indicator while the map switches to a trace route and the offline basemap
+	/// re-renders at the new location.
+	@State private var traceRouteLoading = false
 	/// Drives the guided 3D camera flythrough along the selected trace route.
 	@StateObject private var flyover = TraceRouteFlyover()
 	@AppStorage("enableMapWaypoints") private var showWaypoints = true
@@ -274,19 +280,33 @@ struct MeshMapMK: View {
 		if let route = selectedTraceRoute {
 			let fromName = getNodeInfo(id: route.fromNum, context: context)?.user?.shortName ?? route.fromNum.toHex()
 			let toName = getNodeInfo(id: route.toNum, context: context)?.user?.shortName ?? route.toNum.toHex()
-			let flyPath = traceRouteFlyoverPath(for: route)
+			let flyLegs = traceRouteFlyoverLegs(for: route)
 			HStack(spacing: 10) {
 				Image(systemName: "point.3.connected.trianglepath.dotted")
 				Text("Trace Route: \(fromName) → \(toName)")
 					.font(.callout)
 					.fontWeight(.medium)
 					.lineLimit(1)
-				if flyPath.count >= 2 {
+				if flyLegs.contains(where: { $0.count >= 2 }) {
+					// Speed toggle: cycle 1× (base/slow) → 1.5× → 2× (100% faster). Live-adjustable.
+					Button {
+						let steps: [Double] = [1, 1.5, 2]
+						let next = (steps.firstIndex(of: flyover.speedMultiplier) ?? 0) + 1
+						flyover.speedMultiplier = steps[next % steps.count]
+					} label: {
+						Text(String(format: "%g×", flyover.speedMultiplier))
+							.font(.caption)
+							.fontWeight(.semibold)
+							.monospacedDigit()
+							.frame(minWidth: 30)
+					}
+					.buttonStyle(.bordered)
+					.accessibilityLabel("Flyover speed \(String(format: "%g times", flyover.speedMultiplier))")
 					Button {
 						if flyover.isFlying {
 							flyover.stop()
 						} else {
-							flyover.start(path: flyPath)
+							flyover.start(legs: flyLegs)
 						}
 					} label: {
 						Image(systemName: flyover.isFlying ? "stop.circle.fill" : "play.circle.fill")
@@ -310,12 +330,29 @@ struct MeshMapMK: View {
 		}
 	}
 
+	/// A loading indicator shown while the map switches to a trace route and the offline basemap
+	/// re-renders at the new location.
+	@ViewBuilder private var traceRouteLoadingOverlay: some View {
+		if traceRouteLoading {
+			VStack(spacing: 10) {
+				ProgressView()
+					.controlSize(.large)
+				Text("Loading Map…")
+					.font(.callout)
+					.foregroundStyle(.secondary)
+			}
+			.padding(24)
+			.background(.thinMaterial, in: RoundedRectangle(cornerRadius: 14))
+		}
+	}
+
 	/// The map + its sheets + the bottom button bar, split out of `body` so the long modifier
 	/// chain type-checks in pieces (the whole thing in one `body` exceeded the solver budget).
 	@ViewBuilder private var mapWithSheets: some View {
 		meshClusterMapView
 			.ignoresSafeArea()
 			.overlay(alignment: .top) { traceRouteBanner }
+			.overlay { traceRouteLoadingOverlay }
 				.sheet(item: $selectedNode) { selection in
 					if let node = getNodeInfo(id: selection.id, context: context) {
 						NavigationStack {
@@ -705,7 +742,7 @@ struct MeshMapMK: View {
 
 								private func combinedMapOverlays() -> [ClusterMapOverlay] {
 									guard isMapVisible else { return [] }
-									var result = offlineVectorOverlays
+									var result = (deferOfflineOverlays || flyover.isFlying) ? [] : offlineVectorOverlays
 									result += routeOverlays
 									result += tracerouteOverlays
 									result += mapOverlays
@@ -833,10 +870,25 @@ struct MeshMapMK: View {
 	private func applyTraceRouteSelection() {
 		guard case .map = router.selectedTab else { return }
 		if case let .traceRoute(id)? = router.mapState {
-			if selectedTraceRoute?.id != id {
+			let isNewSelection = selectedTraceRoute?.id != id
+			if isNewSelection {
 				selectedTraceRoute = getTraceRoute(id: id, context: context)
 			}
 			rebuildTraceRouteContent()
+			if isNewSelection {
+				// Drop the offline vector basemap for the camera jump so MapKit isn't re-rendering the
+				// whole offline overlay set at the new region all at once; restore it once settled. Show
+				// a loading indicator while the map switches — both the offline and Apple basemaps can
+				// be slow to re-render at the new location.
+				deferOfflineOverlays = true
+				traceRouteLoading = true
+				Task { @MainActor in
+					try? await Task.sleep(for: .milliseconds(500))
+					deferOfflineOverlays = false
+					try? await Task.sleep(for: .milliseconds(300))
+					traceRouteLoading = false
+				}
+			}
 			frameTraceRoute()
 		} else if selectedTraceRoute != nil {
 			flyover.stop(restoreCamera: false)
@@ -855,13 +907,15 @@ struct MeshMapMK: View {
 
 	/// Ordered coordinates for a flythrough: out along the forward path, then back along the return
 	/// path (skipping the shared target endpoint) so it reads as a round trip.
-	private func traceRouteFlyoverPath(for route: TraceRouteEntity) -> [(coordinate: CLLocationCoordinate2D, altitude: CLLocationDistance)] {
-		var path = route.forwardLocationPath
+	/// The flyover legs for a route: the forward path, then (if present) the return path. The flyover
+	/// flies them in turn with a slow landing between.
+	private func traceRouteFlyoverLegs(for route: TraceRouteEntity) -> [[(coordinate: CLLocationCoordinate2D, altitude: CLLocationDistance)]] {
+		var legs: [[(coordinate: CLLocationCoordinate2D, altitude: CLLocationDistance)]] = []
+		let forward = route.forwardLocationPath
+		if forward.count >= 2 { legs.append(forward) }
 		let back = route.backLocationPath
-		if back.count >= 2 {
-			path += back.dropFirst()
-		}
-		return path
+		if back.count >= 2 { legs.append(back) }
+		return legs
 	}
 
 	/// Build the forward (solid) + return (dashed) polylines and origin/target markers for the
@@ -889,7 +943,7 @@ struct MeshMapMK: View {
 				overlays.append(ClusterMapOverlay(
 					id: "traceroute-fwd-\(idKey)-\(i)",
 					overlay: MKPolyline(coordinates: &seg, count: 2),
-					style: ClusterMapOverlayStyle(strokeUIColor: UIColor(getSnrColor(snr: forward[i].snr, preset: modemPreset)), fillUIColor: nil, lineWidth: 4, lineCap: .round)
+					style: ClusterMapOverlayStyle(strokeUIColor: UIColor(getSnrColor(snr: forward[i].snr, preset: modemPreset)), fillUIColor: nil, lineWidth: 4, lineCap: .round, directional: true)
 				))
 			}
 		}
@@ -901,7 +955,7 @@ struct MeshMapMK: View {
 				overlays.append(ClusterMapOverlay(
 					id: "traceroute-back-\(idKey)-\(i)",
 					overlay: MKPolyline(coordinates: &seg, count: 2),
-					style: ClusterMapOverlayStyle(strokeUIColor: UIColor(getSnrColor(snr: back[i].snr, preset: modemPreset)), fillUIColor: nil, lineWidth: 3, lineDash: [2, 8], lineCap: .round)
+					style: ClusterMapOverlayStyle(strokeUIColor: UIColor(getSnrColor(snr: back[i].snr, preset: modemPreset)), fillUIColor: nil, lineWidth: 3, lineDash: [2, 8], lineCap: .round, directional: true)
 				))
 			}
 		}

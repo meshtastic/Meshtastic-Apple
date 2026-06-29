@@ -57,6 +57,51 @@ struct ClusterMapOverlayStyle {
 	var lineDash: [NSNumber]?
 	var lineCap: CGLineCap = .round
 	var level: MKOverlayLevel = .aboveLabels
+	/// Draw chevrons along the line pointing in the direction of travel (uses the stroke color).
+	var directional: Bool = false
+}
+
+/// An `MKPolylineRenderer` that also draws small chevrons along the line pointing in the direction of
+/// travel, at a roughly constant on-screen size + spacing. Drawn in the renderer's (north-up) map
+/// space so the arrows rotate and scale with the map. Used for trace route direction indicators.
+final class DirectionalPolylineRenderer: MKPolylineRenderer {
+	override func draw(_ mapRect: MKMapRect, zoomScale: MKZoomScale, in context: CGContext) {
+		super.draw(mapRect, zoomScale: zoomScale, in: context)
+		guard let line = overlay as? MKPolyline, line.pointCount >= 2 else { return }
+		let points = line.points()
+
+		// Sizes are in screen points, converted to the renderer's space by dividing by the zoom scale.
+		let size = 10 / zoomScale
+		let spacing = 52 / zoomScale
+		guard spacing > 0 else { return }
+
+		context.setStrokeColor((strokeColor ?? .white).cgColor)
+		context.setLineWidth(max(lineWidth, 3) / zoomScale)
+		context.setLineCap(.round)
+		context.setLineJoin(.round)
+
+		var carry = spacing * 0.5
+		for i in 1..<line.pointCount {
+			let a = point(for: points[i - 1])
+			let b = point(for: points[i])
+			let dx = b.x - a.x, dy = b.y - a.y
+			let segLength = (dx * dx + dy * dy).squareRoot()
+			guard segLength > 0 else { continue }
+			let ux = dx / segLength, uy = dy / segLength   // unit direction of travel
+			let px = -uy, py = ux                          // perpendicular
+			var d = carry
+			while d < segLength {
+				let tipX = a.x + ux * d, tipY = a.y + uy * d
+				let backX = tipX - ux * size, backY = tipY - uy * size
+				context.move(to: CGPoint(x: backX + px * size * 0.7, y: backY + py * size * 0.7))
+				context.addLine(to: CGPoint(x: tipX, y: tipY))
+				context.addLine(to: CGPoint(x: backX - px * size * 0.7, y: backY - py * size * 0.7))
+				d += spacing
+			}
+			context.strokePath()
+			carry = d - segLength
+		}
+	}
 }
 
 /// A caller overlay (route polyline, accuracy circle, convex hull, GeoJSON shape) + its style.
@@ -708,7 +753,8 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 			switch overlay {
 			case let circle as MKCircle: renderer = MKCircleRenderer(circle: circle)
 			case let polygon as MKPolygon: renderer = MKPolygonRenderer(polygon: polygon)
-			case let polyline as MKPolyline: renderer = MKPolylineRenderer(polyline: polyline)
+			case let polyline as MKPolyline:
+				renderer = style.directional ? DirectionalPolylineRenderer(polyline: polyline) : MKPolylineRenderer(polyline: polyline)
 			case let multi as MKMultiPolyline: renderer = MKMultiPolylineRenderer(multiPolyline: multi)
 			case let multi as MKMultiPolygon: renderer = MKMultiPolygonRenderer(multiPolygon: multi)
 			default: return MKOverlayRenderer(overlay: overlay)
