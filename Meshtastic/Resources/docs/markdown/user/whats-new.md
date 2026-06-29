@@ -14,6 +14,8 @@ Recent user-facing changes from roughly the last 12 months. Newest at the top.
 Show roughly the last 12 months of changes; archive entries older than a year by removing them.
 -->
 
+**Jun 2026** — [Map & Waypoints](map.md) — Trace routes on the map: signal-colored, directional outbound/return lines (green→red by hop SNR) with a guided 3D satellite flyover and speed control, opened with Show on Map.
+
 **Jun 2026** — [Messages](messages.md) — Packet signing (firmware 2.8+): verified, signed broadcast messages now show a green shield, and Message Details reveals "Signed · verified". The encryption lock (private DMs) is unchanged; unsigned traffic is never flagged.
 
 **Jun 2026** — [Nodes](nodes.md) — Signed node: nodes that sign their broadcasts show a green shield "Signed node — Verified automatically" row in the detail view (firmware 2.8+), reflecting automatic, radio-observed trust.
