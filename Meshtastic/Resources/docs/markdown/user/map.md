@@ -73,7 +73,7 @@ A trace route can be drawn on the map to show the path a packet took through the
 
 ### 3D Flyover
 
-Tap **▶** in the route banner for a guided 3D flythrough over satellite imagery: it flies the outbound path, lands at the target, then flies the return path and eases back to the map. Use the **speed control** (1× / 1.5× / 2×) to set the pace — adjustable mid-flight — and **■** to stop.
+Tap **▶** in the route banner for a guided 3D flythrough over satellite imagery: it flies the outbound path, lands at the target, then flies the return path and eases back to the map. Tap the **speed control** to cycle the pace from 1× up to 5× (1×, 1.5×, 2×, 2.5×, 3×, 4×, 5×) — adjustable mid-flight — and **■** to stop.
 
 Tap the **legend** button (map icon, bottom-right) for a key to the colors and markers.
 

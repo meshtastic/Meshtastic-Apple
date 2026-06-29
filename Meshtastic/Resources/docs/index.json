@@ -201,8 +201,8 @@
         "navOrder": 6,
         "keywords": [
             "map",
-            "nodes",
             "tap",
+            "nodes",
             "show",
             "node",
             "waypoint",
@@ -220,6 +220,7 @@
             "trace",
             "over",
             "location",
+            "from",
             "all",
             "then",
             "target",
@@ -228,10 +229,9 @@
             "satellite",
             "right",
             "pin",
-            "mqtt",
-            "layer"
+            "mqtt"
         ],
-        "charCount": 3696
+        "charCount": 3737
     },
     {
         "id": "messages",
