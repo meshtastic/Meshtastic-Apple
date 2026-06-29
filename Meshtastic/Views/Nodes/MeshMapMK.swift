@@ -76,12 +76,6 @@ struct MeshMapMK: View {
 	@State private var tracerouteOverlays: [ClusterMapOverlay] = []
 	@State private var tracerouteDecorations: [ClusterMapDecoration] = []
 	@State private var lastTraceRouteKey = "init"
-	/// Temporarily drops the offline vector basemap while the camera jumps to a trace route, so
-	/// MapKit isn't re-rendering the whole offline overlay set at the new region all at once.
-	@State private var deferOfflineOverlays = false
-	/// Shows a loading indicator while the map switches to a trace route and the offline basemap
-	/// re-renders at the new location.
-	@State private var traceRouteLoading = false
 	/// Drives the guided 3D camera flythrough along the selected trace route.
 	@StateObject private var flyover = TraceRouteFlyover()
 	@AppStorage("enableMapWaypoints") private var showWaypoints = true
@@ -335,29 +329,12 @@ struct MeshMapMK: View {
 		}
 	}
 
-	/// A loading indicator shown while the map switches to a trace route and the offline basemap
-	/// re-renders at the new location.
-	@ViewBuilder private var traceRouteLoadingOverlay: some View {
-		if traceRouteLoading {
-			VStack(spacing: 10) {
-				ProgressView()
-					.controlSize(.large)
-				Text("Loading Map…")
-					.font(.callout)
-					.foregroundStyle(.secondary)
-			}
-			.padding(24)
-			.background(.thinMaterial, in: RoundedRectangle(cornerRadius: 14))
-		}
-	}
-
 	/// The map + its sheets + the bottom button bar, split out of `body` so the long modifier
 	/// chain type-checks in pieces (the whole thing in one `body` exceeded the solver budget).
 	@ViewBuilder private var mapWithSheets: some View {
 		meshClusterMapView
 			.ignoresSafeArea()
 			.overlay(alignment: .top) { traceRouteBanner }
-			.overlay { traceRouteLoadingOverlay }
 				.sheet(item: $selectedNode) { selection in
 					if let node = getNodeInfo(id: selection.id, context: context) {
 						NavigationStack {
@@ -752,7 +729,9 @@ struct MeshMapMK: View {
 
 								private func combinedMapOverlays() -> [ClusterMapOverlay] {
 									guard isMapVisible else { return [] }
-									var result = (deferOfflineOverlays || flyover.isFlying) ? [] : offlineVectorOverlays
+									// Hide the offline vector basemap while a trace route is shown (jump + flyover) so
+									// MapKit doesn't re-rasterize all that geometry at the new region; restored on clear.
+									var result = selectedTraceRoute != nil ? [] : offlineVectorOverlays
 									result += routeOverlays
 									result += tracerouteOverlays
 									result += mapOverlays
@@ -885,20 +864,6 @@ struct MeshMapMK: View {
 				selectedTraceRoute = getTraceRoute(id: id, context: context)
 			}
 			rebuildTraceRouteContent()
-			if isNewSelection {
-				// Drop the offline vector basemap for the camera jump so MapKit isn't re-rendering the
-				// whole offline overlay set at the new region all at once; restore it once settled. Show
-				// a loading indicator while the map switches — both the offline and Apple basemaps can
-				// be slow to re-render at the new location.
-				deferOfflineOverlays = true
-				traceRouteLoading = true
-				Task { @MainActor in
-					try? await Task.sleep(for: .milliseconds(500))
-					deferOfflineOverlays = false
-					try? await Task.sleep(for: .milliseconds(300))
-					traceRouteLoading = false
-				}
-			}
 			frameTraceRoute()
 		} else if selectedTraceRoute != nil {
 			flyover.stop(restoreCamera: false)

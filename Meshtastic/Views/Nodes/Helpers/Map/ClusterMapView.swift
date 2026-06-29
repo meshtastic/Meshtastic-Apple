@@ -420,17 +420,17 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 				case .standard, .offline:
 					// Offline tiles are now an independent overlay (drawn on top of whatever base is
 					// selected), so a stray `.offline` base value just maps to the clean Standard base.
-					let standard = MKStandardMapConfiguration(elevationStyle: .realistic)
+					let standard = MKStandardMapConfiguration(elevationStyle: .flat)
 					standard.pointOfInterestFilter = poi
 					standard.showsTraffic = config.showsTraffic
 					mapView.preferredConfiguration = standard
 				case .hybrid:
-					let hybrid = MKHybridMapConfiguration(elevationStyle: .realistic)
+					let hybrid = MKHybridMapConfiguration(elevationStyle: .flat)
 					hybrid.pointOfInterestFilter = poi
 					hybrid.showsTraffic = config.showsTraffic
 					mapView.preferredConfiguration = hybrid
 				case .satellite:
-					mapView.preferredConfiguration = MKImageryMapConfiguration(elevationStyle: .realistic)
+					mapView.preferredConfiguration = MKImageryMapConfiguration(elevationStyle: .flat)
 				}
 			}
 

@@ -104,8 +104,6 @@ struct TraceRouteLog: View {
 							.font(.title3)
 							if selectedRoute?.hasPositions ?? false, let routeID = selectedRoute?.id {
 								Button {
-									// Navigate in-app directly — routing through openURL bounces the deep
-									// link out to the OS and back, which is laggy (esp. on Mac Catalyst).
 									router.selectedTab = .map
 									router.mapState = .traceRoute(routeID)
 								} label: {

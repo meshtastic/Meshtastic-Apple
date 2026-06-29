@@ -111,8 +111,6 @@ struct AllTraceRoutesLog: View {
 			.font(.title3)
 			if route.hasPositions {
 				Button {
-					// Navigate in-app directly — routing through openURL bounces the deep link out to
-					// the OS and back, which is noticeably laggy (especially on Mac Catalyst).
 					router.selectedTab = .map
 					router.mapState = .traceRoute(route.id)
 				} label: {
