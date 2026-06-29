@@ -124,6 +124,23 @@ struct ClusterMapDecoration: Identifiable {
 	var onTap: (() -> Void)?
 }
 
+// MARK: - One-shot camera command
+
+/// A one-shot programmatic camera move. The wrapper applies each distinct command EXACTLY ONCE
+/// (tracked by `id` in the coordinator), so re-renders never re-apply it and streaming data can't
+/// yank the camera out from under the user. Use this — not the continuous `region` binding — to
+/// drive the camera (e.g. the initial framing). After the command fires, the user owns the camera
+/// and we never push the region back in.
+struct ClusterMapCameraCommand: Equatable {
+	let id: UUID
+	let region: MKCoordinateRegion
+	var animated: Bool = false
+
+	static func == (lhs: ClusterMapCameraCommand, rhs: ClusterMapCameraCommand) -> Bool {
+		lhs.id == rhs.id
+	}
+}
+
 // MARK: - Public declarative API
 
 /// A data-driven map. Pass your `items` and a `@ViewBuilder` that turns one item into its annotation
@@ -144,9 +161,13 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 	let items: [Item]
 	/// Per-item coordinate. A closure (not a key-path constraint) so items model location freely.
 	let coordinate: (Item) -> CLLocationCoordinate2D
-	/// Two-way camera binding. A `nil` wrapped value means "don't drive the camera"; supply a real
-	/// binding to read the user's pans/zooms back out AND to push programmatic region changes in.
+	/// Camera WRITE-BACK binding (map → SwiftUI). Supply a real binding to read the user's pans/zooms
+	/// back out (e.g. to filter visible content). We never push this value back INTO the map — that's
+	/// what `cameraCommand` is for — so high-frequency data updates can't fight the user's gestures.
 	let region: Binding<MKCoordinateRegion?>?
+	/// One-shot programmatic camera move (e.g. the initial frame), applied exactly once per distinct
+	/// id. The ONLY thing that moves the camera programmatically; after it fires the user is in control.
+	let cameraCommand: ClusterMapCameraCommand?
 	/// When true, annotations share a `clusteringIdentifier` so MapKit collapses nearby pins.
 	let clustering: Bool
 	/// Builds the SwiftUI view for one item's pin.
@@ -182,6 +203,7 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 		items: [Item],
 		coordinate: @escaping (Item) -> CLLocationCoordinate2D,
 		region: Binding<MKCoordinateRegion?>? = nil,
+		cameraCommand: ClusterMapCameraCommand? = nil,
 		clustering: Bool = true,
 		onSelect: ((Item) -> Void)? = nil,
 		configuration: ClusterMapConfiguration = .init(),
@@ -198,6 +220,7 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 		self.items = items
 		self.coordinate = coordinate
 		self.region = region
+		self.cameraCommand = cameraCommand
 		self.clustering = clustering
 		self.onSelect = onSelect
 		self.configuration = configuration
@@ -252,10 +275,12 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 		context.coordinator.syncCoverage(areas: coverageAreas, dark: colorScheme == .dark, on: mapView)
 		context.coordinator.syncDecorations(decorations, on: mapView)
 
-		// Initial camera, if the caller drives one. Guarded so we don't echo it back out.
-		if let region = region?.wrappedValue {
+		// Initial camera, if a one-shot command is already pending at creation. Guarded so we don't
+		// echo it back out. (The continuous `region` binding is never pushed INTO the map.)
+		if let command = cameraCommand {
+			context.coordinator.appliedCameraCommandID = command.id
 			context.coordinator.isApplyingExternalRegion = true
-			mapView.setRegion(region, animated: false)
+			mapView.setRegion(command.region, animated: false)
 			context.coordinator.isApplyingExternalRegion = false
 		}
 
@@ -288,13 +313,15 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 		context.coordinator.sync(items: items, coordinate: coordinate,
 								 clustering: clustering, on: mapView)
 
-		// 3) Push an external region change in — but never while the user is driving the map, and
-		//    skip no-op writes. That's the feedback-loop guard (see Coordinator).
-		if let region = region?.wrappedValue,
-		   !context.coordinator.isUpdatingRegionFromMap,
-		   !context.coordinator.regionsApproximatelyEqual(mapView.region, region) {
+		// 3) Apply a one-shot camera command (e.g. the initial frame) EXACTLY ONCE. We deliberately
+		//    do NOT push the `region` binding back into the map: under heavy traffic the data churns
+		//    every frame, and a reactive setRegion would fight the user's pan/zoom and "re-frame" the
+		//    map constantly. After the initial command fires, the user owns the camera.
+		if let command = cameraCommand,
+		   context.coordinator.appliedCameraCommandID != command.id {
+			context.coordinator.appliedCameraCommandID = command.id
 			context.coordinator.isApplyingExternalRegion = true
-			mapView.setRegion(region, animated: true)
+			mapView.setRegion(command.region, animated: command.animated)
 			// Cleared in regionDidChangeAnimated; also clear async in case no event fires.
 			DispatchQueue.main.async { context.coordinator.isApplyingExternalRegion = false }
 		}
@@ -367,6 +394,9 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 		/// True for the duration of a user-driven region write-back (so an interleaved update won't
 		/// fight the gesture by re-applying the binding mid-pan).
 		var isUpdatingRegionFromMap = false
+		/// id of the last `ClusterMapCameraCommand` we applied, so each command moves the camera once
+		/// and re-renders never re-apply it (the guard that keeps streaming data off the camera).
+		var appliedCameraCommandID: UUID?
 
 		/// Shared clustering identifier — all clustered item annotations use the same one so MapKit
 		/// groups them. (Computed, not stored: the Coordinator is nested in the generic
@@ -815,6 +845,7 @@ extension ClusterMapView where Cluster == ClusterBadge {
 		items: [Item],
 		coordinate: @escaping (Item) -> CLLocationCoordinate2D,
 		region: Binding<MKCoordinateRegion?>? = nil,
+		cameraCommand: ClusterMapCameraCommand? = nil,
 		clustering: Bool = true,
 		onSelect: ((Item) -> Void)? = nil,
 		configuration: ClusterMapConfiguration = .init(),
@@ -830,6 +861,7 @@ extension ClusterMapView where Cluster == ClusterBadge {
 		self.init(items: items,
 				  coordinate: coordinate,
 				  region: region,
+				  cameraCommand: cameraCommand,
 				  clustering: clustering,
 				  onSelect: onSelect,
 				  configuration: configuration,

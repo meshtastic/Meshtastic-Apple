@@ -57,6 +57,10 @@ struct MeshMapMK: View {
 	@State private var spreadOverrides: [Int64: CLLocationCoordinate2D] = [:]
 	/// Guards the one-time initial camera framing (GPS-centered, zoomed out, ~100 miles max).
 	@State private var didInitialFrame = false
+	/// One-shot camera move fed to the map. Set ONCE by the initial framing; after that the user
+	/// drives the camera and we never move it programmatically, so a flood of incoming positions
+	/// can't re-frame the map mid-gesture.
+	@State private var cameraCommand: ClusterMapCameraCommand?
 	/// Offline basemap rendered as native MKOverlays (slate/cream vector content) -- matches the old
 	/// SwiftUI map's look and aligns the coverage border/label exactly (no tile-grid mismatch).
 	@StateObject private var offlineVectors = OfflineVectorTileProvider()
@@ -260,6 +264,7 @@ struct MeshMapMK: View {
 				items: visiblePositionSnapshots,
 				coordinate: { spreadOverrides[$0.nodeNum] ?? $0.coordinate },
 				region: $visibleRegion,
+				cameraCommand: cameraCommand,
 				clustering: enableMapClustering,
 				onSelect: { snapshot in selectedWaypoint = nil; editingWaypoint = nil; selectedNode = MeshMapSelectedNode(id: snapshot.nodeNum) },
 				configuration: clusterConfiguration,
@@ -657,9 +662,10 @@ struct MeshMapMK: View {
 
 	/// One-time initial camera framing. Centers on the phone's GPS (else the connected device's GPS,
 	/// else the node centroid) and zooms out to fit nearby nodes -- capped at ~100 miles so we "start
-	/// zoomed out but local." After it fires once the user drives the camera; we never re-frame.
+	/// zoomed out but local." After it fires once the user drives the camera; we never re-frame, even
+	/// as positions pour in.
 	private func frameInitialRegionIfNeeded() {
-		guard !didInitialFrame, visibleRegion == nil else { return }
+		guard !didInitialFrame else { return }
 		let nodeCoords = allLatestPositions.compactMap { $0.nodeCoordinate ?? $0.fuzzedNodeCoordinate }
 		guard let center = LocationsHandler.currentLocation ?? activeDeviceCoordinate ?? coordinateCentroid(of: nodeCoords) else {
 			return // No GPS and no nodes yet -- try again on the next refresh.
@@ -674,10 +680,14 @@ struct MeshMapMK: View {
 		let latDelta = min(max(maxLat * 2.5, minSpan), maxSpan)
 		let lonDelta = min(max(maxLon * 2.5, minSpan), maxSpan)
 		didInitialFrame = true
-		visibleRegion = MKCoordinateRegion(
+		let region = MKCoordinateRegion(
 			center: center,
 			span: MKCoordinateSpan(latitudeDelta: latDelta, longitudeDelta: lonDelta)
 		)
+		// Seed `visibleRegion` so content filtering reflects the frame immediately, and emit the
+		// one-shot command that actually moves the map (the only programmatic camera move we make).
+		visibleRegion = region
+		cameraCommand = ClusterMapCameraCommand(id: UUID(), region: region)
 	}
 
 	/// Average of a coordinate list (nil when empty).
