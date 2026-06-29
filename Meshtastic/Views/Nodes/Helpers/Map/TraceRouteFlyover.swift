@@ -17,7 +17,7 @@ final class TraceRouteFlyover: NSObject, ObservableObject {
 	/// True while a flyover is animating; drives the play/stop affordance in the map UI.
 	@Published private(set) var isFlying = false
 
-	/// Playback speed multiplier: 1 = the base (slow) speed, up to 3 = 200% faster. Live-adjustable
+	/// Playback speed multiplier: 1 = the base (slow) speed, up to 5 = 400% faster. Live-adjustable
 	/// mid-flight from the playback bar.
 	@Published var speedMultiplier: Double = 1
 

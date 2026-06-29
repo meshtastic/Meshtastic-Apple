@@ -287,9 +287,9 @@ struct MeshMapMK: View {
 					.fontWeight(.medium)
 					.lineLimit(1)
 				if flyLegs.contains(where: { $0.count >= 2 }) {
-					// Speed toggle: cycle 1× (base/slow) → 1.5× → 2× → 2.5× → 3× (200% faster). Live-adjustable.
+					// Speed toggle: cycle 1× (base/slow) → 1.5× → 2× → 2.5× → 3× → 4× → 5× (400% faster). Live-adjustable.
 					Button {
-						let steps: [Double] = [1, 1.5, 2, 2.5, 3]
+						let steps: [Double] = [1, 1.5, 2, 2.5, 3, 4, 5]
 						let next = (steps.firstIndex(of: flyover.speedMultiplier) ?? 0) + 1
 						flyover.speedMultiplier = steps[next % steps.count]
 					} label: {
