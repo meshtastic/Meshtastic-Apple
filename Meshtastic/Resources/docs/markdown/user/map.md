@@ -10,7 +10,7 @@ The Map tab shows all nodes that have shared a position, overlaid on an Apple Ma
 
 ## Node Pins
 
-Each node that has reported a GPS position appears as a coloured circle pin on the map. The **green solid line** shows a directly connected node; **orange dashed lines** show nodes reached via the mesh. A purple star marks a waypoint. Tap a pin to see the node name, last heard time, signal info, and a shortcut to send a direct message.
+Each node that has reported a GPS position appears as a colored circle pin on the map. The **green solid line** shows a directly connected node; **orange dashed lines** show nodes reached via the mesh. A purple star marks a waypoint. Tap a pin to see the node name, last heard time, signal info, and a shortcut to send a direct message.
 
 Pins update automatically when a new position packet is received from the mesh.
 
@@ -24,7 +24,7 @@ Tap the **filter button** (funnel icon, `line.3.horizontal.decrease.circle`) in 
 | Via MQTT | Show only nodes bridged through MQTT |
 | Online | Show only nodes heard within the last 2 hours |
 | Encrypted | Show only nodes using PKI encryption |
-| Favorites | Show only nodes you have starred as favourites |
+| Favorites | Show only nodes you have starred as favorites |
 | Distance | Limit to nodes within a chosen radius of your current location |
 | Hops Away | Slider from **All** to **7** — restricts by hop count (0 = direct only) |
 | Roles | Filter by one or more device roles (e.g. Router, Client, Repeater) |
@@ -59,6 +59,23 @@ Tap an existing waypoint pin, then tap **Edit**. Changes broadcast to the mesh i
 ### Deleting a Waypoint
 
 Tap the waypoint, then tap **Delete**. The deletion broadcasts to all nodes.
+
+## Trace Routes on the Map
+
+A trace route can be drawn on the map to show the path a packet took through the mesh. Open **Settings → Logging → Trace Routes** (or a node's Trace Route log), select a route, and tap **Show on Map**.
+
+### Reading the Route
+
+- **Colored legs** — each hop is colored by its signal quality (SNR), using the same scale as the LoRa signal meter: **green** (good), **yellow** (fair), **orange** (bad), **red** (none).
+- **Solid vs. dashed** — the **solid** line is the outbound path toward the target; the **dashed** line is the return path back to the originator.
+- **Arrows** — chevrons along each line point in the direction of travel.
+- **Endpoints** — a **green** marker is the originator; a **red** marker is the target.
+
+### 3D Flyover
+
+Tap **▶** in the route banner for a guided 3D flythrough over satellite imagery: it flies the outbound path, lands at the target, then flies the return path and eases back to the map. Tap the **speed control** to cycle the pace from 1× up to 5× (1×, 1.5×, 2×, 2.5×, 3×, 4×, 5×) — adjustable mid-flight — and **■** to stop.
+
+Tap the **legend** button (map icon, bottom-right) for a key to the colors and markers.
 
 ## Node Trail
 

@@ -8,7 +8,11 @@
 // For information on using the generated types, please see the documentation:
 //   https://github.com/apple/swift-protobuf/
 
+#if canImport(FoundationEssentials)
+import FoundationEssentials
+#else
 import Foundation
+#endif
 import SwiftProtobuf
 
 // If the compiler emits an error on this type, it is because this file
@@ -84,7 +88,7 @@ public struct AdminMessage: @unchecked Sendable {
   /// The client MUST include the same key with any set_x commands. Key expires after 300 seconds.
   /// Prevents replay attacks for admin messages.
   public var sessionPasskey: Data {
-    get {return _storage._sessionPasskey}
+    get {_storage._sessionPasskey}
     set {_uniqueStorage()._sessionPasskey = newValue}
   }
 
@@ -1279,6 +1283,67 @@ public struct LockdownAuth: Sendable {
   /// the locked state. Always honoured regardless of current lock state.
   public var lockNow: Bool = false
 
+  ///
+  /// Optional per-boot uptime cap on the unlocked session, in seconds.
+  /// 0 = unlimited (token-only enforcement, suitable for unattended
+  /// tower / infrastructure nodes).
+  ///
+  /// When non-zero, the firmware arms an uptime timer at unlock. On
+  /// each expiry, while there is still boot-count budget, the firmware
+  /// decrements the on-flash boot count in place, revokes per-
+  /// connection admin auth (clients must re-authenticate to see
+  /// content), re-engages the screen lock, and re-arms the timer
+  /// without rebooting. Mesh routing keeps running across session
+  /// boundaries; only when the boot-count budget reaches zero does
+  /// the device hard-lock and reboot.
+  ///
+  /// Total exposure ceiling = ((resolved boot count) + 1) * max_session_seconds.
+  /// The +1 accounts for the initial passphrase-unlocked session
+  /// itself, since boots_remaining is the number of subsequent
+  /// session rolls (each consuming one boot from the rollback ledger).
+  /// The resolved boot count is the value the firmware writes into the
+  /// token at unlock time: the client-supplied boots_remaining when
+  /// non-zero, otherwise the firmware default (TOKEN_DEFAULT_BOOTS).
+  /// Note that boots_remaining == 0 in this message means "use firmware
+  /// default", NOT "zero boots" — a client computing the ceiling for
+  /// display should mirror that resolution rather than multiplying the
+  /// raw request value.
+  ///
+  /// The cap is persisted in the token, so it survives token-based
+  /// auto-unlock across reboots. Explicit operator Lock Now still
+  /// deletes the token and forces passphrase re-entry.
+  ///
+  /// Uses millis() (CPU uptime), not wall-clock time, so the cap is
+  /// immune to GPS spoofing, RTC backup-battery removal, and Faraday
+  /// cage isolation — none of those move the uptime counter. The only
+  /// way to reset the session clock is a reboot, which costs a boot
+  /// from the on-flash, HMAC-bound counter.
+  public var maxSessionSeconds: UInt32 = 0
+
+  ///
+  /// Disable lockdown mode. Requires a valid passphrase in the same
+  /// message (the device must prove the operator owns it before
+  /// reverting at-rest encryption). On success the firmware decrypts
+  /// every stored config / channel / nodedb file back to plaintext,
+  /// removes the wrapped DEK, unlock token, monotonic-counter, and
+  /// backoff files, and reboots out of lockdown.
+  ///
+  /// This is the inverse of the provision/unlock path: it is how the
+  /// client app's "lockdown mode" toggle returns a device to normal
+  /// operation.
+  ///
+  /// NOT reversed by this operation: APPROTECT. Once the debug port
+  /// lockout has been burned (on silicon where it is effective) it is
+  /// permanent — disabling lockdown decrypts your data and removes the
+  /// access gates, but the SWD/JTAG port stays locked for the life of
+  /// the device (recoverable only via a full chip erase over a debug
+  /// probe, which destroys all data). Clients should make this
+  /// irreversibility clear at the moment lockdown is first enabled.
+  ///
+  /// When true the passphrase field is still required; boots_remaining,
+  /// valid_until_epoch, max_session_seconds, and lock_now are ignored.
+  public var disable: Bool = false
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
@@ -1308,6 +1373,11 @@ public struct HamParameters: Sendable {
   ///
   /// Optional short name of user
   public var shortName: String = String()
+
+  ///
+  /// Optional long name of user
+  /// Appended to callsign
+  public var longName: String = String()
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -1342,11 +1412,11 @@ public struct SharedContact: Sendable {
   ///
   /// The User of the contact
   public var user: User {
-    get {return _user ?? User()}
+    get {_user ?? User()}
     set {_user = newValue}
   }
   /// Returns true if `user` has been explicitly set.
-  public var hasUser: Bool {return self._user != nil}
+  public var hasUser: Bool {self._user != nil}
   /// Clears the value of `user`. Subsequent reads from it will return its default value.
   public mutating func clearUser() {self._user = nil}
 
@@ -1385,11 +1455,11 @@ public struct KeyVerificationAdmin: Sendable {
   ///
   /// The 4 digit code generated by the remote node, and communicated outside the mesh
   public var securityNumber: UInt32 {
-    get {return _securityNumber ?? 0}
+    get {_securityNumber ?? 0}
     set {_securityNumber = newValue}
   }
   /// Returns true if `securityNumber` has been explicitly set.
-  public var hasSecurityNumber: Bool {return self._securityNumber != nil}
+  public var hasSecurityNumber: Bool {self._securityNumber != nil}
   /// Clears the value of `securityNumber`. Subsequent reads from it will return its default value.
   public mutating func clearSecurityNumber() {self._securityNumber = nil}
 
@@ -1465,44 +1535,44 @@ public struct SensorConfig: Sendable {
   ///
   /// SCD4X CO2 Sensor configuration
   public var scd4XConfig: SCD4X_config {
-    get {return _scd4XConfig ?? SCD4X_config()}
+    get {_scd4XConfig ?? SCD4X_config()}
     set {_scd4XConfig = newValue}
   }
   /// Returns true if `scd4XConfig` has been explicitly set.
-  public var hasScd4XConfig: Bool {return self._scd4XConfig != nil}
+  public var hasScd4XConfig: Bool {self._scd4XConfig != nil}
   /// Clears the value of `scd4XConfig`. Subsequent reads from it will return its default value.
   public mutating func clearScd4XConfig() {self._scd4XConfig = nil}
 
   ///
   /// SEN5X PM Sensor configuration
   public var sen5XConfig: SEN5X_config {
-    get {return _sen5XConfig ?? SEN5X_config()}
+    get {_sen5XConfig ?? SEN5X_config()}
     set {_sen5XConfig = newValue}
   }
   /// Returns true if `sen5XConfig` has been explicitly set.
-  public var hasSen5XConfig: Bool {return self._sen5XConfig != nil}
+  public var hasSen5XConfig: Bool {self._sen5XConfig != nil}
   /// Clears the value of `sen5XConfig`. Subsequent reads from it will return its default value.
   public mutating func clearSen5XConfig() {self._sen5XConfig = nil}
 
   ///
   /// SCD30 CO2 Sensor configuration
   public var scd30Config: SCD30_config {
-    get {return _scd30Config ?? SCD30_config()}
+    get {_scd30Config ?? SCD30_config()}
     set {_scd30Config = newValue}
   }
   /// Returns true if `scd30Config` has been explicitly set.
-  public var hasScd30Config: Bool {return self._scd30Config != nil}
+  public var hasScd30Config: Bool {self._scd30Config != nil}
   /// Clears the value of `scd30Config`. Subsequent reads from it will return its default value.
   public mutating func clearScd30Config() {self._scd30Config = nil}
 
   ///
   /// SHTXX temperature and relative humidity sensor configuration
   public var shtxxConfig: SHTXX_config {
-    get {return _shtxxConfig ?? SHTXX_config()}
+    get {_shtxxConfig ?? SHTXX_config()}
     set {_shtxxConfig = newValue}
   }
   /// Returns true if `shtxxConfig` has been explicitly set.
-  public var hasShtxxConfig: Bool {return self._shtxxConfig != nil}
+  public var hasShtxxConfig: Bool {self._shtxxConfig != nil}
   /// Clears the value of `shtxxConfig`. Subsequent reads from it will return its default value.
   public mutating func clearShtxxConfig() {self._shtxxConfig = nil}
 
@@ -1524,77 +1594,77 @@ public struct SCD4X_config: Sendable {
   ///
   /// Set Automatic self-calibration enabled
   public var setAsc: Bool {
-    get {return _setAsc ?? false}
+    get {_setAsc ?? false}
     set {_setAsc = newValue}
   }
   /// Returns true if `setAsc` has been explicitly set.
-  public var hasSetAsc: Bool {return self._setAsc != nil}
+  public var hasSetAsc: Bool {self._setAsc != nil}
   /// Clears the value of `setAsc`. Subsequent reads from it will return its default value.
   public mutating func clearSetAsc() {self._setAsc = nil}
 
   ///
   /// Recalibration target CO2 concentration in ppm (FRC or ASC)
   public var setTargetCo2Conc: UInt32 {
-    get {return _setTargetCo2Conc ?? 0}
+    get {_setTargetCo2Conc ?? 0}
     set {_setTargetCo2Conc = newValue}
   }
   /// Returns true if `setTargetCo2Conc` has been explicitly set.
-  public var hasSetTargetCo2Conc: Bool {return self._setTargetCo2Conc != nil}
+  public var hasSetTargetCo2Conc: Bool {self._setTargetCo2Conc != nil}
   /// Clears the value of `setTargetCo2Conc`. Subsequent reads from it will return its default value.
   public mutating func clearSetTargetCo2Conc() {self._setTargetCo2Conc = nil}
 
   ///
   /// Reference temperature in degC
   public var setTemperature: Float {
-    get {return _setTemperature ?? 0}
+    get {_setTemperature ?? 0}
     set {_setTemperature = newValue}
   }
   /// Returns true if `setTemperature` has been explicitly set.
-  public var hasSetTemperature: Bool {return self._setTemperature != nil}
+  public var hasSetTemperature: Bool {self._setTemperature != nil}
   /// Clears the value of `setTemperature`. Subsequent reads from it will return its default value.
   public mutating func clearSetTemperature() {self._setTemperature = nil}
 
   ///
   /// Altitude of sensor in meters above sea level. 0 - 3000m (overrides ambient pressure)
   public var setAltitude: UInt32 {
-    get {return _setAltitude ?? 0}
+    get {_setAltitude ?? 0}
     set {_setAltitude = newValue}
   }
   /// Returns true if `setAltitude` has been explicitly set.
-  public var hasSetAltitude: Bool {return self._setAltitude != nil}
+  public var hasSetAltitude: Bool {self._setAltitude != nil}
   /// Clears the value of `setAltitude`. Subsequent reads from it will return its default value.
   public mutating func clearSetAltitude() {self._setAltitude = nil}
 
   ///
   /// Sensor ambient pressure in Pa. 70000 - 120000 Pa (overrides altitude)
   public var setAmbientPressure: UInt32 {
-    get {return _setAmbientPressure ?? 0}
+    get {_setAmbientPressure ?? 0}
     set {_setAmbientPressure = newValue}
   }
   /// Returns true if `setAmbientPressure` has been explicitly set.
-  public var hasSetAmbientPressure: Bool {return self._setAmbientPressure != nil}
+  public var hasSetAmbientPressure: Bool {self._setAmbientPressure != nil}
   /// Clears the value of `setAmbientPressure`. Subsequent reads from it will return its default value.
   public mutating func clearSetAmbientPressure() {self._setAmbientPressure = nil}
 
   ///
   /// Perform a factory reset of the sensor
   public var factoryReset: Bool {
-    get {return _factoryReset ?? false}
+    get {_factoryReset ?? false}
     set {_factoryReset = newValue}
   }
   /// Returns true if `factoryReset` has been explicitly set.
-  public var hasFactoryReset: Bool {return self._factoryReset != nil}
+  public var hasFactoryReset: Bool {self._factoryReset != nil}
   /// Clears the value of `factoryReset`. Subsequent reads from it will return its default value.
   public mutating func clearFactoryReset() {self._factoryReset = nil}
 
   ///
   /// Power mode for sensor (true for low power, false for normal)
   public var setPowerMode: Bool {
-    get {return _setPowerMode ?? false}
+    get {_setPowerMode ?? false}
     set {_setPowerMode = newValue}
   }
   /// Returns true if `setPowerMode` has been explicitly set.
-  public var hasSetPowerMode: Bool {return self._setPowerMode != nil}
+  public var hasSetPowerMode: Bool {self._setPowerMode != nil}
   /// Clears the value of `setPowerMode`. Subsequent reads from it will return its default value.
   public mutating func clearSetPowerMode() {self._setPowerMode = nil}
 
@@ -1619,22 +1689,22 @@ public struct SEN5X_config: Sendable {
   ///
   /// Reference temperature in degC
   public var setTemperature: Float {
-    get {return _setTemperature ?? 0}
+    get {_setTemperature ?? 0}
     set {_setTemperature = newValue}
   }
   /// Returns true if `setTemperature` has been explicitly set.
-  public var hasSetTemperature: Bool {return self._setTemperature != nil}
+  public var hasSetTemperature: Bool {self._setTemperature != nil}
   /// Clears the value of `setTemperature`. Subsequent reads from it will return its default value.
   public mutating func clearSetTemperature() {self._setTemperature = nil}
 
   ///
   /// One-shot mode (true for low power - one-shot mode, false for normal - continuous mode)
   public var setOneShotMode: Bool {
-    get {return _setOneShotMode ?? false}
+    get {_setOneShotMode ?? false}
     set {_setOneShotMode = newValue}
   }
   /// Returns true if `setOneShotMode` has been explicitly set.
-  public var hasSetOneShotMode: Bool {return self._setOneShotMode != nil}
+  public var hasSetOneShotMode: Bool {self._setOneShotMode != nil}
   /// Clears the value of `setOneShotMode`. Subsequent reads from it will return its default value.
   public mutating func clearSetOneShotMode() {self._setOneShotMode = nil}
 
@@ -1654,66 +1724,66 @@ public struct SCD30_config: Sendable {
   ///
   /// Set Automatic self-calibration enabled
   public var setAsc: Bool {
-    get {return _setAsc ?? false}
+    get {_setAsc ?? false}
     set {_setAsc = newValue}
   }
   /// Returns true if `setAsc` has been explicitly set.
-  public var hasSetAsc: Bool {return self._setAsc != nil}
+  public var hasSetAsc: Bool {self._setAsc != nil}
   /// Clears the value of `setAsc`. Subsequent reads from it will return its default value.
   public mutating func clearSetAsc() {self._setAsc = nil}
 
   ///
   /// Recalibration target CO2 concentration in ppm (FRC or ASC)
   public var setTargetCo2Conc: UInt32 {
-    get {return _setTargetCo2Conc ?? 0}
+    get {_setTargetCo2Conc ?? 0}
     set {_setTargetCo2Conc = newValue}
   }
   /// Returns true if `setTargetCo2Conc` has been explicitly set.
-  public var hasSetTargetCo2Conc: Bool {return self._setTargetCo2Conc != nil}
+  public var hasSetTargetCo2Conc: Bool {self._setTargetCo2Conc != nil}
   /// Clears the value of `setTargetCo2Conc`. Subsequent reads from it will return its default value.
   public mutating func clearSetTargetCo2Conc() {self._setTargetCo2Conc = nil}
 
   ///
   /// Reference temperature in degC
   public var setTemperature: Float {
-    get {return _setTemperature ?? 0}
+    get {_setTemperature ?? 0}
     set {_setTemperature = newValue}
   }
   /// Returns true if `setTemperature` has been explicitly set.
-  public var hasSetTemperature: Bool {return self._setTemperature != nil}
+  public var hasSetTemperature: Bool {self._setTemperature != nil}
   /// Clears the value of `setTemperature`. Subsequent reads from it will return its default value.
   public mutating func clearSetTemperature() {self._setTemperature = nil}
 
   ///
   /// Altitude of sensor in meters above sea level. 0 - 3000m (overrides ambient pressure)
   public var setAltitude: UInt32 {
-    get {return _setAltitude ?? 0}
+    get {_setAltitude ?? 0}
     set {_setAltitude = newValue}
   }
   /// Returns true if `setAltitude` has been explicitly set.
-  public var hasSetAltitude: Bool {return self._setAltitude != nil}
+  public var hasSetAltitude: Bool {self._setAltitude != nil}
   /// Clears the value of `setAltitude`. Subsequent reads from it will return its default value.
   public mutating func clearSetAltitude() {self._setAltitude = nil}
 
   ///
   /// Power mode for sensor (true for low power, false for normal)
   public var setMeasurementInterval: UInt32 {
-    get {return _setMeasurementInterval ?? 0}
+    get {_setMeasurementInterval ?? 0}
     set {_setMeasurementInterval = newValue}
   }
   /// Returns true if `setMeasurementInterval` has been explicitly set.
-  public var hasSetMeasurementInterval: Bool {return self._setMeasurementInterval != nil}
+  public var hasSetMeasurementInterval: Bool {self._setMeasurementInterval != nil}
   /// Clears the value of `setMeasurementInterval`. Subsequent reads from it will return its default value.
   public mutating func clearSetMeasurementInterval() {self._setMeasurementInterval = nil}
 
   ///
   /// Perform a factory reset of the sensor
   public var softReset: Bool {
-    get {return _softReset ?? false}
+    get {_softReset ?? false}
     set {_softReset = newValue}
   }
   /// Returns true if `softReset` has been explicitly set.
-  public var hasSoftReset: Bool {return self._softReset != nil}
+  public var hasSoftReset: Bool {self._softReset != nil}
   /// Clears the value of `softReset`. Subsequent reads from it will return its default value.
   public mutating func clearSoftReset() {self._softReset = nil}
 
@@ -1737,11 +1807,11 @@ public struct SHTXX_config: Sendable {
   ///
   /// Accuracy mode (0 = low, 1 = medium, 2 = high)
   public var setAccuracy: UInt32 {
-    get {return _setAccuracy ?? 0}
+    get {_setAccuracy ?? 0}
     set {_setAccuracy = newValue}
   }
   /// Returns true if `setAccuracy` has been explicitly set.
-  public var hasSetAccuracy: Bool {return self._setAccuracy != nil}
+  public var hasSetAccuracy: Bool {self._setAccuracy != nil}
   /// Clears the value of `setAccuracy`. Subsequent reads from it will return its default value.
   public mutating func clearSetAccuracy() {self._setAccuracy = nil}
 
@@ -2734,7 +2804,7 @@ extension AdminMessage.OTAEvent: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
 
 extension LockdownAuth: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".LockdownAuth"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}passphrase\0\u{3}boots_remaining\0\u{3}valid_until_epoch\0\u{3}lock_now\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}passphrase\0\u{3}boots_remaining\0\u{3}valid_until_epoch\0\u{3}lock_now\0\u{3}max_session_seconds\0\u{1}disable\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2746,6 +2816,8 @@ extension LockdownAuth: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
       case 2: try { try decoder.decodeSingularUInt32Field(value: &self.bootsRemaining) }()
       case 3: try { try decoder.decodeSingularUInt32Field(value: &self.validUntilEpoch) }()
       case 4: try { try decoder.decodeSingularBoolField(value: &self.lockNow) }()
+      case 5: try { try decoder.decodeSingularUInt32Field(value: &self.maxSessionSeconds) }()
+      case 6: try { try decoder.decodeSingularBoolField(value: &self.disable) }()
       default: break
       }
     }
@@ -2764,6 +2836,12 @@ extension LockdownAuth: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     if self.lockNow != false {
       try visitor.visitSingularBoolField(value: self.lockNow, fieldNumber: 4)
     }
+    if self.maxSessionSeconds != 0 {
+      try visitor.visitSingularUInt32Field(value: self.maxSessionSeconds, fieldNumber: 5)
+    }
+    if self.disable != false {
+      try visitor.visitSingularBoolField(value: self.disable, fieldNumber: 6)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -2772,6 +2850,8 @@ extension LockdownAuth: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     if lhs.bootsRemaining != rhs.bootsRemaining {return false}
     if lhs.validUntilEpoch != rhs.validUntilEpoch {return false}
     if lhs.lockNow != rhs.lockNow {return false}
+    if lhs.maxSessionSeconds != rhs.maxSessionSeconds {return false}
+    if lhs.disable != rhs.disable {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -2779,7 +2859,7 @@ extension LockdownAuth: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
 
 extension HamParameters: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".HamParameters"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}call_sign\0\u{3}tx_power\0\u{1}frequency\0\u{3}short_name\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}call_sign\0\u{3}tx_power\0\u{1}frequency\0\u{3}short_name\0\u{3}long_name\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2791,6 +2871,7 @@ extension HamParameters: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
       case 2: try { try decoder.decodeSingularInt32Field(value: &self.txPower) }()
       case 3: try { try decoder.decodeSingularFloatField(value: &self.frequency) }()
       case 4: try { try decoder.decodeSingularStringField(value: &self.shortName) }()
+      case 5: try { try decoder.decodeSingularStringField(value: &self.longName) }()
       default: break
       }
     }
@@ -2809,6 +2890,9 @@ extension HamParameters: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
     if !self.shortName.isEmpty {
       try visitor.visitSingularStringField(value: self.shortName, fieldNumber: 4)
     }
+    if !self.longName.isEmpty {
+      try visitor.visitSingularStringField(value: self.longName, fieldNumber: 5)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -2817,6 +2901,7 @@ extension HamParameters: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
     if lhs.txPower != rhs.txPower {return false}
     if lhs.frequency != rhs.frequency {return false}
     if lhs.shortName != rhs.shortName {return false}
+    if lhs.longName != rhs.longName {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
