@@ -718,6 +718,15 @@ private struct RegionInfo {
 			self.init(freqStart: 917.0, freqEnd: 921.0)
 		case .euN868:
 			self.init(freqStart: 869.4, freqEnd: 869.65)
+		case .itu32M:
+			// ITU Region 3 / Amateur 2m — same allocation as itu12M / itu22M.
+			self.init(freqStart: 144.0, freqEnd: 148.0)
+		case .itu170Cm, .itu270Cm, .itu370Cm, .itu2125Cm:
+			// 70cm / 1.25m amateur bands added in 2.8. No verified channel-plan
+			// frequency range for this view yet, so report "no region info" rather
+			// than display an unverified range. Kept explicit (not a default) so a
+			// future region still triggers a compile error here.
+			return nil
 		}
 	}
 
@@ -748,6 +757,8 @@ private extension ModemPresets {
 			return 0.125
 		case .narrowFast, .narrowSlow:
 			return 0.0625
+		case .tinyFast, .tinySlow:
+			return 0.020
 		}
 	}
 }
