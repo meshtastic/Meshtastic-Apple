@@ -208,6 +208,11 @@
 		B734732C0C394582BD6CD0CA /* urls.json in Resources */ = {isa = PBXBuildFile; fileRef = AF44FDF549704E29A8E5FE2F /* urls.json */; };
 		B96123C9177242AFA768AA8F /* DeviceMetadataEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 509A1C42A695463093654617 /* DeviceMetadataEntity.swift */; };
 		BB0000000000000000000000 /* PMTilesArchive.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000000 /* PMTilesArchive.swift */; };
+		BB0001000000000000000000 /* MBTilesArchive.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001000000000000000000 /* MBTilesArchive.swift */; };
+		BB0003000000000000000000 /* PMTilesMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0003000000000000000000 /* PMTilesMapView.swift */; };
+		BB0004000000000000000000 /* ClusterMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0004000000000000000000 /* ClusterMapView.swift */; };
+		BB0005000000000000000000 /* MeshMapMK.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0005000000000000000000 /* MeshMapMK.swift */; };
+		BB0F1900000000000000F190 /* TraceRouteFlyover.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0F1900000000000000F190 /* TraceRouteFlyover.swift */; };
 		BBFF00000000000000000001 /* OfflineMapRegion.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAFF00000000000000000001 /* OfflineMapRegion.swift */; };
 		BBFF00000000000000000002 /* OfflineMapManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAFF00000000000000000002 /* OfflineMapManager.swift */; };
 		BBFF00000000000000000003 /* PMTilesExtractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAFF00000000000000000003 /* PMTilesExtractor.swift */; };
@@ -217,10 +222,6 @@
 		BBFF00000000000000000007 /* RegionSelectorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAFF00000000000000000007 /* RegionSelectorView.swift */; };
 		BBFF00000000000000000008 /* OfflineMapDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAFF00000000000000000008 /* OfflineMapDetailView.swift */; };
 		BBFF00000000000000000009 /* PMTilesExtractorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAFF00000000000000000009 /* PMTilesExtractorTests.swift */; };
-		BB0001000000000000000000 /* MBTilesArchive.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001000000000000000000 /* MBTilesArchive.swift */; };
-		BB0003000000000000000000 /* PMTilesMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0003000000000000000000 /* PMTilesMapView.swift */; };
-		BB0005000000000000000000 /* MeshMapMK.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0005000000000000000000 /* MeshMapMK.swift */; };
-		BB0004000000000000000000 /* ClusterMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0004000000000000000000 /* ClusterMapView.swift */; };
 		BC10380F2DD4334400B00BFA /* AddContactIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC10380E2DD4333C00B00BFA /* AddContactIntent.swift */; };
 		BC6B45FF2CB2F98900723CEB /* SaveChannelSettingsIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC6B45FE2CB2F98900723CEB /* SaveChannelSettingsIntent.swift */; };
 		BC996F276BA82B1229C119D8 /* DiscoveryHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41EB21EF91CA0B50FDC20B85 /* DiscoveryHistoryView.swift */; };
@@ -240,6 +241,7 @@
 		BCE2D3C72C7B0D0A008E6199 /* ShortcutsProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCE2D3C62C7B0D0A008E6199 /* ShortcutsProvider.swift */; };
 		BCE2D3C92C7C377F008E6199 /* FactoryResetNodeIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCE2D3C82C7C377F008E6199 /* FactoryResetNodeIntent.swift */; };
 		BD7B1A838F8245A0B6BE56C5 /* WatchSessionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84CCF00CDD3D48C9B9DCA554 /* WatchSessionManager.swift */; };
+		BF1A0001CABF0001DEAD0001 /* AllTraceRoutesLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF1A0002CABF0002DEAD0002 /* AllTraceRoutesLog.swift */; };
 		C1B995B38DC97D13D90D9C1A /* DiscoverySummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1B6FB13C4D4E03503BB1DF8 /* DiscoverySummaryView.swift */; };
 		C54AC9F4DA920A4F718CE21A /* DiscoveryScanEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAD14FA280F0A130730DEB93 /* DiscoveryScanEngineTests.swift */; };
 		C79BFC99EDCC89DD45082753 /* DiscoveryScanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5CA8BAC814CF82E127EEABF /* DiscoveryScanView.swift */; };
@@ -710,15 +712,6 @@
 		918722D2C1474B2D99ED01DC /* UserEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserEntity.swift; sourceTree = "<group>"; };
 		A97241903A924144A3EEB679 /* PositionEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionEntity.swift; sourceTree = "<group>"; };
 		AA0000000000000000000000 /* PMTilesArchive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PMTilesArchive.swift; path = Meshtastic/Helpers/Map/PMTilesArchive.swift; sourceTree = SOURCE_ROOT; };
-		AAFF00000000000000000001 /* OfflineMapRegion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OfflineMapRegion.swift; path = Meshtastic/Helpers/Map/OfflineMapRegion.swift; sourceTree = SOURCE_ROOT; };
-		AAFF00000000000000000002 /* OfflineMapManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OfflineMapManager.swift; path = Meshtastic/Helpers/Map/OfflineMapManager.swift; sourceTree = SOURCE_ROOT; };
-		AAFF00000000000000000003 /* PMTilesExtractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PMTilesExtractor.swift; path = Meshtastic/Helpers/Map/PMTilesExtractor.swift; sourceTree = SOURCE_ROOT; };
-		AAFF00000000000000000004 /* OfflineMapThumbnail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OfflineMapThumbnail.swift; path = Meshtastic/Views/Nodes/Helpers/Map/Offline/OfflineMapThumbnail.swift; sourceTree = SOURCE_ROOT; };
-		AAFF00000000000000000005 /* OfflineMapsList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OfflineMapsList.swift; path = Meshtastic/Views/Nodes/Helpers/Map/Offline/OfflineMapsList.swift; sourceTree = SOURCE_ROOT; };
-		AAFF00000000000000000006 /* DownloadNewMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DownloadNewMapView.swift; path = Meshtastic/Views/Nodes/Helpers/Map/Offline/DownloadNewMapView.swift; sourceTree = SOURCE_ROOT; };
-		AAFF00000000000000000007 /* RegionSelectorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RegionSelectorView.swift; path = Meshtastic/Views/Nodes/Helpers/Map/Offline/RegionSelectorView.swift; sourceTree = SOURCE_ROOT; };
-		AAFF00000000000000000008 /* OfflineMapDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OfflineMapDetailView.swift; path = Meshtastic/Views/Nodes/Helpers/Map/Offline/OfflineMapDetailView.swift; sourceTree = SOURCE_ROOT; };
-		AAFF00000000000000000009 /* PMTilesExtractorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PMTilesExtractorTests.swift; path = MeshtasticTests/PMTilesExtractorTests.swift; sourceTree = SOURCE_ROOT; };
 		AA000002303050030000B001 /* Color+Brand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+Brand.swift"; sourceTree = "<group>"; };
 		AA0001000000000000000000 /* MBTilesArchive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = MBTilesArchive.swift; path = Meshtastic/Helpers/Map/MBTilesArchive.swift; sourceTree = SOURCE_ROOT; };
 		AA00010022E2730EC0060000 /* ConnectViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectViewTests.swift; sourceTree = "<group>"; };
@@ -727,9 +720,8 @@
 		AA000201CPLAY000000000001 /* CarPlaySceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarPlaySceneDelegate.swift; sourceTree = "<group>"; };
 		AA000201CPLAY000000000003 /* CarPlayIntentDonation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarPlayIntentDonation.swift; sourceTree = "<group>"; };
 		AA0003000000000000000000 /* PMTilesMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PMTilesMapView.swift; path = Meshtastic/Views/Nodes/Helpers/Map/PMTilesMapView.swift; sourceTree = SOURCE_ROOT; };
-		AA0005000000000000000000 /* MeshMapMK.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = MeshMapMK.swift; path = Meshtastic/Views/Nodes/MeshMapMK.swift; sourceTree = SOURCE_ROOT; };
-		AA0004000000000000000000 /* ClusterMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ClusterMapView.swift; path = Meshtastic/Views/Nodes/Helpers/Map/ClusterMapView.swift; sourceTree = SOURCE_ROOT; };
 		AA000301CPTST000000000001 /* CarPlayTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarPlayTests.swift; sourceTree = "<group>"; };
+		AA0004000000000000000000 /* ClusterMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ClusterMapView.swift; path = Meshtastic/Views/Nodes/Helpers/Map/ClusterMapView.swift; sourceTree = SOURCE_ROOT; };
 		AA000401SIRI000000000010 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = en; path = en.lproj/AppIntentVocabulary.plist; sourceTree = "<group>"; };
 		AA000401SIRI000000000011 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = de; path = de.lproj/AppIntentVocabulary.plist; sourceTree = "<group>"; };
 		AA000401SIRI000000000012 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = es; path = es.lproj/AppIntentVocabulary.plist; sourceTree = "<group>"; };
@@ -747,6 +739,7 @@
 		AA000401SIRI000000000024 /* ko */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = ko; path = ko.lproj/AppIntentVocabulary.plist; sourceTree = "<group>"; };
 		AA000401SIRI000000000025 /* zh-Hant */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "zh-Hant"; path = "zh-Hant.lproj/AppIntentVocabulary.plist"; sourceTree = "<group>"; };
 		AA000401SIRI000000000026 /* pt-BR */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "pt-BR"; path = "pt-BR.lproj/AppIntentVocabulary.plist"; sourceTree = "<group>"; };
+		AA0005000000000000000000 /* MeshMapMK.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = MeshMapMK.swift; path = Meshtastic/Views/Nodes/MeshMapMK.swift; sourceTree = SOURCE_ROOT; };
 		AA0005WTCH00000000FR0001 /* MeshtasticWatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticWatchApp.swift; sourceTree = "<group>"; };
 		AA0005WTCH00000000FR0002 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		AA0005WTCH00000000FR0003 /* MeshNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshNode.swift; sourceTree = "<group>"; };
@@ -782,9 +775,19 @@
 		AA00SDRF0003 /* FirmwareReleaseEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirmwareReleaseEntity.swift; sourceTree = "<group>"; };
 		AA0120250000000000000B02 /* PacketStreamModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PacketStreamModel.swift; sourceTree = "<group>"; };
 		AA0120250000000000000C02 /* PacketStreamModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PacketStreamModelTests.swift; sourceTree = "<group>"; };
+		AA0F1900000000000000F190 /* TraceRouteFlyover.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TraceRouteFlyover.swift; path = Meshtastic/Views/Nodes/Helpers/Map/TraceRouteFlyover.swift; sourceTree = SOURCE_ROOT; };
 		AA10D0002D00000000000001 /* DiscoverySummaryPDF.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoverySummaryPDF.swift; sourceTree = "<group>"; };
 		AA11223344556677AABB0002 /* DiscoveryTips.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveryTips.swift; sourceTree = "<group>"; };
 		AAD14FA280F0A130730DEB93 /* DiscoveryScanEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveryScanEngineTests.swift; sourceTree = "<group>"; };
+		AAFF00000000000000000001 /* OfflineMapRegion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OfflineMapRegion.swift; path = Meshtastic/Helpers/Map/OfflineMapRegion.swift; sourceTree = SOURCE_ROOT; };
+		AAFF00000000000000000002 /* OfflineMapManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OfflineMapManager.swift; path = Meshtastic/Helpers/Map/OfflineMapManager.swift; sourceTree = SOURCE_ROOT; };
+		AAFF00000000000000000003 /* PMTilesExtractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PMTilesExtractor.swift; path = Meshtastic/Helpers/Map/PMTilesExtractor.swift; sourceTree = SOURCE_ROOT; };
+		AAFF00000000000000000004 /* OfflineMapThumbnail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OfflineMapThumbnail.swift; path = Meshtastic/Views/Nodes/Helpers/Map/Offline/OfflineMapThumbnail.swift; sourceTree = SOURCE_ROOT; };
+		AAFF00000000000000000005 /* OfflineMapsList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OfflineMapsList.swift; path = Meshtastic/Views/Nodes/Helpers/Map/Offline/OfflineMapsList.swift; sourceTree = SOURCE_ROOT; };
+		AAFF00000000000000000006 /* DownloadNewMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DownloadNewMapView.swift; path = Meshtastic/Views/Nodes/Helpers/Map/Offline/DownloadNewMapView.swift; sourceTree = SOURCE_ROOT; };
+		AAFF00000000000000000007 /* RegionSelectorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RegionSelectorView.swift; path = Meshtastic/Views/Nodes/Helpers/Map/Offline/RegionSelectorView.swift; sourceTree = SOURCE_ROOT; };
+		AAFF00000000000000000008 /* OfflineMapDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OfflineMapDetailView.swift; path = Meshtastic/Views/Nodes/Helpers/Map/Offline/OfflineMapDetailView.swift; sourceTree = SOURCE_ROOT; };
+		AAFF00000000000000000009 /* PMTilesExtractorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PMTilesExtractorTests.swift; path = MeshtasticTests/PMTilesExtractorTests.swift; sourceTree = SOURCE_ROOT; };
 		AB61EBF02E3326DC00B35962 /* NodeListItemCompact.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeListItemCompact.swift; sourceTree = "<group>"; };
 		AB6E72752E3FC85A00639328 /* LayoutEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutEnums.swift; sourceTree = "<group>"; };
 		ABA8E63F2E2F2A2300E27791 /* AppIconButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIconButton.swift; sourceTree = "<group>"; };
@@ -812,6 +815,7 @@
 		BCE2D3C62C7B0D0A008E6199 /* ShortcutsProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutsProvider.swift; sourceTree = "<group>"; };
 		BCE2D3C82C7C377F008E6199 /* FactoryResetNodeIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FactoryResetNodeIntent.swift; sourceTree = "<group>"; };
 		BEC437CA60D4A60C870E63CA /* DiscoveredNodeEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveredNodeEntity.swift; sourceTree = "<group>"; };
+		BF1A0002CABF0002DEAD0002 /* AllTraceRoutesLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllTraceRoutesLog.swift; sourceTree = "<group>"; };
 		BF32D1D722C64814981AB215 /* DeviceLinkEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceLinkEntity.swift; sourceTree = "<group>"; };
 		CA63632A10C2DD076FA222BE /* IntentHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntentHandler.swift; sourceTree = "<group>"; };
 		CDA6A18109101FA06A9FBBFB /* SetMessageAttributeIntentHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetMessageAttributeIntentHandler.swift; sourceTree = "<group>"; };
@@ -1832,6 +1836,7 @@
 				DD97E96728EFE9A00056DDA4 /* About.swift */,
 				DDD5BB152C28B1E4007E03CA /* AppData.swift */,
 				DDD5BB082C285DDC007E03CA /* AppLog.swift */,
+				BF1A0002CABF0002DEAD0002 /* AllTraceRoutesLog.swift */,
 				DD4A911D2708C65400501B7E /* AppSettings.swift */,
 				24506086F81240A9BFE18FA6 /* DeviceLinkDirectory.swift */,
 				ABB99DEA2E2EA1C500CFBD05 /* AppIconPicker.swift */,
@@ -1960,6 +1965,15 @@
 				AA009MDC0000001000000001 /* MarkdownConverter.swift */,
 				AA009DTU0000001000000001 /* DocsTranslationUploader.swift */,
 				AA009CTF0000001000000001 /* CommunityTranslationFetcher.swift */,
+				AAFF00000000000000000001 /* OfflineMapRegion.swift */,
+				AAFF00000000000000000002 /* OfflineMapManager.swift */,
+				AAFF00000000000000000003 /* PMTilesExtractor.swift */,
+				AAFF00000000000000000004 /* OfflineMapThumbnail.swift */,
+				AAFF00000000000000000005 /* OfflineMapsList.swift */,
+				AAFF00000000000000000006 /* DownloadNewMapView.swift */,
+				AAFF00000000000000000007 /* RegionSelectorView.swift */,
+				AAFF00000000000000000008 /* OfflineMapDetailView.swift */,
+				AAFF00000000000000000009 /* PMTilesExtractorTests.swift */,
 			);
 			name = "Recovered References";
 			sourceTree = "<group>";
@@ -2045,6 +2059,7 @@
 				AA0003000000000000000000 /* PMTilesMapView.swift */,
 				AA0005000000000000000000 /* MeshMapMK.swift */,
 				AA0004000000000000000000 /* ClusterMapView.swift */,
+				AA0F1900000000000000F190 /* TraceRouteFlyover.swift */,
 				DDD3A2B12D5127B40045EB48 /* ci_scripts */,
 				DDDBC87A2BC62E4E001E8DF7 /* Settings.bundle */,
 				25AECD4E2C2F723200862C8E /* Localizable.xcstrings */,
@@ -2737,6 +2752,7 @@
 				BB0003000000000000000000 /* PMTilesMapView.swift in Sources */,
 				BB0005000000000000000000 /* MeshMapMK.swift in Sources */,
 				BB0004000000000000000000 /* ClusterMapView.swift in Sources */,
+				BB0F1900000000000000F190 /* TraceRouteFlyover.swift in Sources */,
 				86CCA3EEDD7E1036893B2663 /* DiscoverySessionEntity.swift in Sources */,
 				82F6BD3326F1BFEAF0F16723 /* DiscoveryPresetResultEntity.swift in Sources */,
 				84468ADE09D001043DECFD86 /* DiscoveredNodeEntity.swift in Sources */,
@@ -2990,6 +3006,7 @@
 				251926872C3BAE2200249DF5 /* NodeAlertsButton.swift in Sources */,
 				DDA1C48E28DB49D3009933EC /* ChannelRoles.swift in Sources */,
 				DDD5BB092C285DDC007E03CA /* AppLog.swift in Sources */,
+				BF1A0001CABF0001DEAD0001 /* AllTraceRoutesLog.swift in Sources */,
 				DD8ED9C8289CE4B900B3B0AB /* RoutingError.swift in Sources */,
 				108FFECB2DD3F43C00BFAA81 /* ShareContactQRDialog.swift in Sources */,
 				233E99C52D84A0B600CC3A77 /* CompactWidget.swift in Sources */,

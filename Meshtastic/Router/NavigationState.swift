@@ -35,6 +35,8 @@ enum MessagesNavigationState: Hashable {
 enum MapNavigationState: Hashable {
 	case selectedNode(Int64)
 	case waypoint(Int64)
+	/// Show a specific trace route (by its request id) drawn on the map.
+	case traceRoute(Int64)
 }
 
 // MARK: Settings
@@ -71,6 +73,7 @@ enum SettingsNavigationState: String {
 	case telemetry
 	case trafficManagement
 	case debugLogs
+	case traceRoutes
 	case appFiles
 	case firmwareUpdates
 	case deviceLinks

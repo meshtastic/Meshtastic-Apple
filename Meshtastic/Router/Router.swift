@@ -216,12 +216,18 @@ class Router: ObservableObject {
 			.first(where: { $0.name == "waypointId" })?
 			.value
 			.flatMap(Int64.init)
+		let traceRouteId = components.queryItems?
+			.first(where: { $0.name == "tracerouteId" })?
+			.value
+			.flatMap(Int64.init)
 
 		selectedTab = .map
 		mapState = if let nodeId {
 			.selectedNode(nodeId)
 		} else if let waypointId {
 			.waypoint(waypointId)
+		} else if let traceRouteId {
+			.traceRoute(traceRouteId)
 		} else {
 			nil
 		}
