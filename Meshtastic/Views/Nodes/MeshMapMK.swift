@@ -668,18 +668,21 @@ struct MeshMapMK: View {
 										)
 										if let overlay = styled.createOverlay() {
 											overlays.append(ClusterMapOverlay(id: "geojson-\(styled.id)", overlay: overlay, style: style))
-										} else if let coordinate = styled.feature.geometry.coordinates.toCoordinate() {
+										} else {
+											// Point yields one marker; MultiPoint yields one per sub-coordinate.
 											let radius = styled.feature.markerRadius
-											decorations.append(ClusterMapDecoration(
-												id: "geojson-pt-\(styled.id)",
-												coordinate: coordinate,
-												content: AnyView(
-													Circle()
-														.fill(styled.fillColor)
-														.overlay(Circle().stroke(styled.strokeColor, style: stroke))
-														.frame(width: radius * 2, height: radius * 2)
-												)
-											))
+											for (index, coordinate) in styled.feature.markerCoordinates.enumerated() {
+												decorations.append(ClusterMapDecoration(
+													id: "geojson-pt-\(styled.id)-\(index)",
+													coordinate: coordinate,
+													content: AnyView(
+														Circle()
+															.fill(styled.fillColor)
+															.overlay(Circle().stroke(styled.strokeColor, style: stroke))
+															.frame(width: radius * 2, height: radius * 2)
+													)
+												))
+											}
 										}
 									}
 									geoJSONOverlays = overlays
