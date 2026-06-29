@@ -340,13 +340,16 @@ enum PerformanceSeedData {
 		pathNums.append(node.num)
 		traceRoute.hopsTowards = Int32(max(0, pathNums.count - 2))
 
+		// Spread hop SNRs across the good/fair/bad/none bands (relative to longFast's -17.5 limit) so
+		// the per-leg signal coloring is visible when testing with seeded routes.
+		let snrSpread: [Float] = [8, -12, -19, -21, -24, -30]
 		for (hopIndex, num) in pathNums.enumerated() {
 			let hopNode = num == node.num ? node : getNodeInfo(id: num, context: context)
 			let hop = TraceRouteHopEntity()
 			hop.index = Int32(hopIndex)
 			hop.num = num
 			hop.name = hopNode?.user?.longName
-			hop.snr = node.snr
+			hop.snr = snrSpread[(index + hopIndex) % snrSpread.count]
 			hop.time = traceRoute.time
 			hop.traceRoute = traceRoute
 			context.insert(hop)

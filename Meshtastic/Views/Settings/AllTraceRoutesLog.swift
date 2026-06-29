@@ -13,7 +13,7 @@ import OSLog
 struct AllTraceRoutesLog: View {
 	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
 	@Environment(\.modelContext) private var context
-	@Environment(\.openURL) private var openURL
+	@EnvironmentObject var router: Router
 	@EnvironmentObject var accessoryManager: AccessoryManager
 
 	@Query(sort: \TraceRouteEntity.time, order: .reverse)
@@ -111,9 +111,10 @@ struct AllTraceRoutesLog: View {
 			.font(.title3)
 			if route.hasPositions {
 				Button {
-					if let url = URL(string: "meshtastic:///map?tracerouteId=\(route.id)") {
-						openURL(url)
-					}
+					// Navigate in-app directly — routing through openURL bounces the deep link out to
+					// the OS and back, which is noticeably laggy (especially on Mac Catalyst).
+					router.selectedTab = .map
+					router.mapState = .traceRoute(route.id)
 				} label: {
 					Label("Show on Map", systemImage: "map")
 				}

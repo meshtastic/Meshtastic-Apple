@@ -286,7 +286,7 @@ struct MeshMapMK: View {
 						if flyover.isFlying {
 							flyover.stop()
 						} else {
-							flyover.start(coordinates: flyPath)
+							flyover.start(path: flyPath)
 						}
 					} label: {
 						Image(systemName: flyover.isFlying ? "stop.circle.fill" : "play.circle.fill")
@@ -855,9 +855,9 @@ struct MeshMapMK: View {
 
 	/// Ordered coordinates for a flythrough: out along the forward path, then back along the return
 	/// path (skipping the shared target endpoint) so it reads as a round trip.
-	private func traceRouteFlyoverPath(for route: TraceRouteEntity) -> [CLLocationCoordinate2D] {
-		var path = route.forwardCoordinates
-		let back = route.backCoordinates
+	private func traceRouteFlyoverPath(for route: TraceRouteEntity) -> [(coordinate: CLLocationCoordinate2D, altitude: CLLocationDistance)] {
+		var path = route.forwardLocationPath
+		let back = route.backLocationPath
 		if back.count >= 2 {
 			path += back.dropFirst()
 		}
@@ -865,7 +865,8 @@ struct MeshMapMK: View {
 	}
 
 	/// Build the forward (solid) + return (dashed) polylines and origin/target markers for the
-	/// selected trace route. Limited to nodes we have a snapshotted position for.
+	/// selected trace route. Each leg is colored by that hop's SNR using the same signal-meter math
+	/// as the LoRa signal indicator (green/yellow/orange/red). Limited to nodes with a snapshot.
 	private func rebuildTraceRouteContent() {
 		let key = selectedTraceRoute.map { "\($0.id)|\($0.nodePositions.count)" } ?? "none"
 		guard key != lastTraceRouteKey else { return }
@@ -878,22 +879,31 @@ struct MeshMapMK: View {
 		var overlays: [ClusterMapOverlay] = []
 		var decorations: [ClusterMapDecoration] = []
 		let idKey = route.persistentModelID.hashValue
+		let modemPreset = ModemPresets(rawValue: UserDefaults.modemPreset) ?? .longFast
 
-		var forward = route.forwardCoordinates
+		// Forward (solid) — one polyline per leg, colored by the SNR measured at the node it arrives at.
+		let forward = route.forwardSignalPath
 		if forward.count >= 2 {
-			overlays.append(ClusterMapOverlay(
-				id: "traceroute-fwd-\(idKey)",
-				overlay: MKPolyline(coordinates: &forward, count: forward.count),
-				style: ClusterMapOverlayStyle(strokeUIColor: .systemBlue, fillUIColor: nil, lineWidth: 4, lineCap: .round)
-			))
+			for i in 1..<forward.count {
+				var seg = [forward[i - 1].coordinate, forward[i].coordinate]
+				overlays.append(ClusterMapOverlay(
+					id: "traceroute-fwd-\(idKey)-\(i)",
+					overlay: MKPolyline(coordinates: &seg, count: 2),
+					style: ClusterMapOverlayStyle(strokeUIColor: UIColor(getSnrColor(snr: forward[i].snr, preset: modemPreset)), fillUIColor: nil, lineWidth: 4, lineCap: .round)
+				))
+			}
 		}
-		var back = route.backCoordinates
+		// Return (dashed) — same per-leg signal coloring.
+		let back = route.backSignalPath
 		if back.count >= 2 {
-			overlays.append(ClusterMapOverlay(
-				id: "traceroute-back-\(idKey)",
-				overlay: MKPolyline(coordinates: &back, count: back.count),
-				style: ClusterMapOverlayStyle(strokeUIColor: .systemTeal, fillUIColor: nil, lineWidth: 3, lineDash: [2, 8], lineCap: .round)
-			))
+			for i in 1..<back.count {
+				var seg = [back[i - 1].coordinate, back[i].coordinate]
+				overlays.append(ClusterMapOverlay(
+					id: "traceroute-back-\(idKey)-\(i)",
+					overlay: MKPolyline(coordinates: &seg, count: 2),
+					style: ClusterMapOverlayStyle(strokeUIColor: UIColor(getSnrColor(snr: back[i].snr, preset: modemPreset)), fillUIColor: nil, lineWidth: 3, lineDash: [2, 8], lineCap: .round)
+				))
+			}
 		}
 		let byNum = route.nodePositionsByNum
 		if let origin = byNum[route.fromNum]?.coordinate {

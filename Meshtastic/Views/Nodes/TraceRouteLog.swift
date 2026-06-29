@@ -14,7 +14,7 @@ struct TraceRouteLog: View {
 	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
 	@ObservedObject var locationsHandler = LocationsHandler.shared
 	@Environment(\.modelContext) private var context
-	@Environment(\.openURL) private var openURL
+	@EnvironmentObject var router: Router
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@State private var isPresentingClearLogConfirm: Bool = false
 	@State var isExporting = false
@@ -104,9 +104,10 @@ struct TraceRouteLog: View {
 							.font(.title3)
 							if selectedRoute?.hasPositions ?? false, let routeID = selectedRoute?.id {
 								Button {
-									if let url = URL(string: "meshtastic:///map?tracerouteId=\(routeID)") {
-										openURL(url)
-									}
+									// Navigate in-app directly — routing through openURL bounces the deep
+									// link out to the OS and back, which is laggy (esp. on Mac Catalyst).
+									router.selectedTab = .map
+									router.mapState = .traceRoute(routeID)
 								} label: {
 									Label("Show on Map", systemImage: "map")
 								}
