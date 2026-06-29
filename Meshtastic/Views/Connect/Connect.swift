@@ -63,8 +63,22 @@ struct Connect: View {
 	/// during render. `modelContext` is safe metadata (nil on a detached/deleted object), so
 	/// gating every read through this accessor prevents the crash. (Same guard pattern as #1944.)
 	private var safeNode: NodeInfoEntity? {
+		Connect.liveNode(node)
+	}
+
+	/// Returns `node` only while it is still a live SwiftData object (`modelContext != nil`),
+	/// otherwise nil. Reading attributes on a faulted/detached `@Model` traps, so callers gate
+	/// every read through this. Static + value-in/value-out so it can be unit-tested directly.
+	static func liveNode(_ node: NodeInfoEntity?) -> NodeInfoEntity? {
 		guard let node, node.modelContext != nil else { return nil }
 		return node
+	}
+
+	/// The user a shutdown should be sent to, or nil when the connected node has detached/faulted
+	/// (in which case the confirmed shutdown is safely skipped rather than crashing on a faulted
+	/// `@Model`). Resolved at confirm time — never captured ahead of the dialog.
+	static func shutdownTarget(for node: NodeInfoEntity?) -> UserEntity? {
+		liveNode(node)?.user
 	}
 
 	var body: some View {
@@ -417,11 +431,11 @@ struct Connect: View {
 			) {
 				Button("Shutdown Node?", role: .destructive) {
 					Task {
-						// Resolve through `safeNode` at confirm time rather than capturing the
-						// node/user earlier: a cached @Model can fault if the context is recreated
-						// (disconnect/reconnect, node switch) while the dialog is up, and reading a
-						// faulted model traps. `safeNode` gates on `modelContext != nil`.
-						guard let user = safeNode?.user else {
+						// Resolve the target at confirm time rather than capturing it ahead of the
+						// dialog: a cached @Model can fault if the context is recreated (disconnect/
+						// reconnect, node switch) while the dialog is up, and reading a faulted model
+						// traps. shutdownTarget gates on modelContext != nil.
+						guard let user = Connect.shutdownTarget(for: node) else {
 							Logger.mesh.warning("Shutdown skipped: no live connected node")
 							return
 						}
