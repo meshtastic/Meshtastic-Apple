@@ -298,6 +298,7 @@
 		DD000031FWEDTENUM0000001 /* FirmwareEditionEnum.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000031FWEDTENUM0000000 /* FirmwareEditionEnum.swift */; };
 		DD00003ASUPPORTLVL0000001 /* SupportLevel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD00003ASUPPORTLVL0000000 /* SupportLevel.swift */; };
 		DD00003C000SNAP00000001 /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = DD00003B000SNAP00000000 /* SnapshotTesting */; };
+		DD0000CHSETST0000000001 /* ChannelSetSaveTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD0000CHSETST0000000000 /* ChannelSetSaveTests.swift */; };
 		DD007BAE2AA4E91200F5FA12 /* MyInfoEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD007BAD2AA4E91200F5FA12 /* MyInfoEntityExtension.swift */; };
 		DD007BB02AA5981000F5FA12 /* NodeInfoEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD007BAF2AA5981000F5FA12 /* NodeInfoEntityExtension.swift */; };
 		DD09240001E7FAD600E70001 /* MapLegend.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD09240002E7FAD600E70001 /* MapLegend.swift */; };
@@ -855,6 +856,7 @@
 		DD000030EVTFWNTST0000000 /* EventFirmwareNotificationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventFirmwareNotificationTests.swift; sourceTree = "<group>"; };
 		DD000031FWEDTENUM0000000 /* FirmwareEditionEnum.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirmwareEditionEnum.swift; sourceTree = "<group>"; };
 		DD00003ASUPPORTLVL0000000 /* SupportLevel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupportLevel.swift; sourceTree = "<group>"; };
+		DD0000CHSETST0000000000 /* ChannelSetSaveTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelSetSaveTests.swift; sourceTree = "<group>"; };
 		DD007BAD2AA4E91200F5FA12 /* MyInfoEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyInfoEntityExtension.swift; sourceTree = "<group>"; };
 		DD007BAF2AA5981000F5FA12 /* NodeInfoEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeInfoEntityExtension.swift; sourceTree = "<group>"; };
 		DD04804A2E9295A5005F946C /* MeshtasticDataModelV 55.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 55.xcdatamodel"; sourceTree = "<group>"; };
@@ -1584,6 +1586,7 @@
 				AA003DOC0000001000000008 /* DocTranslationTests.swift */,
 				DD0000DEVLNKTST000000000 /* DeviceLinkTests.swift */,
 				BEEF00102F00000100000003 /* MeshtasticChannelURLTests.swift */,
+				DD0000CHSETST0000000000 /* ChannelSetSaveTests.swift */,
 			);
 			path = MeshtasticTests;
 			sourceTree = "<group>";
@@ -2615,6 +2618,7 @@
 				AA003DOC0000002000000005 /* DocBundleTests.swift in Sources */,
 				AA003DOC0000002000000008 /* DocTranslationTests.swift in Sources */,
 				DD0000DEVLNKTST000000001 /* DeviceLinkTests.swift in Sources */,
+				DD0000CHSETST0000000001 /* ChannelSetSaveTests.swift in Sources */,
 				AA009MCT0000002000000001 /* MarkdownConverterTests.swift in Sources */,
 				AA0001012E2730EC00600001 /* ConnectViewTests.swift in Sources */,
 				DD9C70102E9F2A0000029299 /* DeviceOnboardingTests.swift in Sources */,
