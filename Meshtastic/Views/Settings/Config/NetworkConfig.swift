@@ -33,6 +33,7 @@ struct NetworkConfig: View {
 	@State var udpEnabled = false
 	
 	var body: some View {
+		let staticValid = staticConfigIsValid
 		Form {
 			ConfigHeader(title: "Network", config: \.networkConfig, node: node, onAppear: setNetworkValues)
 			
@@ -141,27 +142,27 @@ struct NetworkConfig: View {
 								Label("IP", systemImage: "number")
 								TextField("0.0.0.0", text: $staticIp)
 									.foregroundColor(Self.isValidIPv4Field(staticIp) ? .gray : .red)
-									.keyboardType(.decimalPad)
+									.keyboardType(.numbersAndPunctuation)
 							}
 							HStack {
 								Label("Gateway", systemImage: "arrow.triangle.branch")
 								TextField("0.0.0.0", text: $staticGateway)
 									.foregroundColor(Self.isValidIPv4Field(staticGateway) ? .gray : .red)
-									.keyboardType(.decimalPad)
+									.keyboardType(.numbersAndPunctuation)
 							}
 							HStack {
 								Label("Subnet", systemImage: "circle.grid.cross")
 								TextField("255.255.255.0", text: $staticSubnet)
 									.foregroundColor(Self.isValidIPv4Field(staticSubnet) ? .gray : .red)
-									.keyboardType(.decimalPad)
+									.keyboardType(.numbersAndPunctuation)
 							}
 							HStack {
 								Label("DNS", systemImage: "magnifyingglass")
 								TextField("0.0.0.0", text: $staticDns)
 									.foregroundColor(Self.isValidIPv4Field(staticDns) ? .gray : .red)
-									.keyboardType(.decimalPad)
+									.keyboardType(.numbersAndPunctuation)
 							}
-							if !staticConfigIsValid {
+							if !staticValid {
 								Text("Enter valid IPv4 addresses (e.g. 192.168.1.10). Leave a field blank to leave it unset.")
 									.font(.callout)
 									.foregroundColor(.red)
@@ -212,7 +213,7 @@ struct NetworkConfig: View {
 					_ = try await accessoryManager.saveNetworkConfig(config: network, fromUser: fromUser, toUser: toUser)
 				}
 			}
-			.disabled(!staticConfigIsValid)
+			.disabled(!staticValid)
 			}
 		}
 		.navigationTitle("Network Config")
