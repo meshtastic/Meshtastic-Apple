@@ -718,6 +718,21 @@ private struct RegionInfo {
 			self.init(freqStart: 917.0, freqEnd: 921.0)
 		case .euN868:
 			self.init(freqStart: 869.4, freqEnd: 869.65)
+		case .itu32M:
+			// ITU Region 3 Amateur Radio 2m band.
+			self.init(freqStart: 144.0, freqEnd: 148.0)
+		case .itu170Cm:
+			// ITU Region 1 Amateur Radio 70cm band.
+			self.init(freqStart: 430.0, freqEnd: 440.0)
+		case .itu270Cm:
+			// ITU Region 2 Amateur Radio 70cm band.
+			self.init(freqStart: 420.0, freqEnd: 450.0)
+		case .itu370Cm:
+			// ITU Region 3 Amateur Radio 70cm band.
+			self.init(freqStart: 430.0, freqEnd: 450.0)
+		case .itu2125Cm:
+			// ITU Region 2 Amateur Radio 1.25m (125cm) band.
+			self.init(freqStart: 220.0, freqEnd: 225.0)
 		}
 	}
 
@@ -748,6 +763,8 @@ private extension ModemPresets {
 			return 0.125
 		case .narrowFast, .narrowSlow:
 			return 0.0625
+		case .tinyFast, .tinySlow:
+			return 0.020
 		}
 	}
 }
