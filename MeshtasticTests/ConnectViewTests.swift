@@ -352,6 +352,35 @@ struct NavigationStateTests {
 	}
 }
 
+// MARK: - Connect View Tests
+
+/// Issue #2006 gates the connection screen's "Power Off" action behind a
+/// `confirmationDialog` so a node can't be shut down by an accidental tap. The gating
+/// itself (a `@State` flag + a system overlay) has no unit-test seam in this codebase —
+/// there's no ViewInspector, `AccessoryManager` is a concrete type, and confirmation
+/// dialogs don't render into snapshots — so it's covered by manual/UI verification.
+///
+/// These are constructibility smoke tests: they guard that the added state and dialog
+/// don't break `Connect`'s initializer and that a provided node is threaded through.
+/// The node is left un-inserted so nothing leaks into the shared test container.
+@Suite("Connect view")
+@MainActor
+struct ConnectViewCreationTests {
+
+	@Test func constructsWithoutNode() async {
+		let view = Connect(router: Router())
+		#expect(view.node == nil)
+	}
+
+	@Test func threadsProvidedNodeThrough() async {
+		let node = NodeInfoEntity()
+		node.num = 42
+
+		let view = Connect(router: Router(), node: node)
+		#expect(view.node?.num == 42)
+	}
+}
+
 // MARK: - InvalidVersion View Tests
 
 @Suite("InvalidVersion")
