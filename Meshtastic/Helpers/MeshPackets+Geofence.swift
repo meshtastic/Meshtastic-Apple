@@ -1,0 +1,84 @@
+//
+//  MeshPackets+Geofence.swift
+//  Meshtastic
+//
+//  Evaluates received node positions against waypoint geofences and raises local
+//  enter/exit notifications. Backed entirely by the Waypoint protobuf geofence
+//  fields (geofenceRadius / boundingBox / notifyOnEnter / notifyOnExit) — there is
+//  no separate geofence model.
+//
+
+@preconcurrency import SwiftData
+import CoreLocation
+import Foundation
+import OSLog
+
+/// Thread-safe, in-memory record of whether each (waypoint, node) pair was last seen
+/// inside its geofence. Not persisted: the first observation of a pair only establishes
+/// a baseline and never notifies, so an app relaunch cannot produce spurious alerts.
+final class GeofenceCrossingStore: @unchecked Sendable {
+	static let shared = GeofenceCrossingStore()
+	private let queue = DispatchQueue(label: "com.meshtastic.geofence.crossing")
+	private var states: [String: Bool] = [:]
+
+	/// Records the new inside/outside state and returns the previous one
+	/// (`nil` the first time a pair is seen).
+	func update(key: String, isInside: Bool) -> Bool? {
+		queue.sync {
+			let previous = states[key]
+			states[key] = isInside
+			return previous
+		}
+	}
+}
+
+extension MeshPackets {
+
+	/// Evaluate a newly received node position against every notifying waypoint geofence.
+	/// Call from `upsertPositionPacket` once a valid position has been stored.
+	func evaluateGeofences(nodeNum: Int64, latitudeI: Int32, longitudeI: Int32, nodeName: String) {
+		guard latitudeI != 0 || longitudeI != 0 else { return }
+		let location = CLLocation(latitude: Double(latitudeI) / 1e7, longitude: Double(longitudeI) / 1e7)
+
+		// Only consider waypoints that actually want enter/exit notifications.
+		let descriptor = FetchDescriptor<WaypointEntity>(
+			predicate: #Predicate<WaypointEntity> { $0.notifyOnEnter || $0.notifyOnExit }
+		)
+		guard let waypoints = try? modelContext.fetch(descriptor) else { return }
+
+		for waypoint in waypoints {
+			guard let isInside = waypoint.contains(location: location) else { continue }
+			let key = "\(waypoint.id)-\(nodeNum)"
+			let previous = GeofenceCrossingStore.shared.update(key: key, isInside: isInside)
+			// First observation establishes a baseline; only a genuine change notifies.
+			guard let wasInside = previous, wasInside != isInside else { continue }
+
+			let name = waypoint.name ?? "Geofence"
+			if isInside && waypoint.notifyOnEnter {
+				scheduleGeofenceNotification(waypointId: waypoint.id, waypointName: name, nodeNum: nodeNum, nodeName: nodeName, entered: true)
+			} else if !isInside && waypoint.notifyOnExit {
+				scheduleGeofenceNotification(waypointId: waypoint.id, waypointName: name, nodeNum: nodeNum, nodeName: nodeName, entered: false)
+			}
+		}
+	}
+
+	private func scheduleGeofenceNotification(waypointId: Int64, waypointName: String, nodeNum: Int64, nodeName: String, entered: Bool) {
+		let title = entered ? "Entered \(waypointName)" : "Left \(waypointName)"
+		let body = entered ? "\(nodeName) entered \(waypointName)" : "\(nodeName) left \(waypointName)"
+		Task { @MainActor in
+			let manager = LocalNotificationManager()
+			manager.notifications = [
+				Notification(
+					id: "geofence.\(waypointId).\(nodeNum).\(entered ? "enter" : "exit")",
+					title: title,
+					subtitle: "",
+					content: body,
+					target: "map",
+					path: "meshtastic:///map?waypointid=\(waypointId)"
+				)
+			]
+			manager.schedule()
+			Logger.services.info("🔔 [Geofence] \(nodeName, privacy: .public) \(entered ? "entered" : "left", privacy: .public) \(waypointName, privacy: .public)")
+		}
+	}
+}
