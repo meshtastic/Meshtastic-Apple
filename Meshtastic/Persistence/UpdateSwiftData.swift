@@ -153,92 +153,78 @@ extension MeshPackets {
 		// targets were also deleted in the same uncommitted batch, tripping an internal assertion
 		// (`_assertionFailure` in `objectdestroy` → SIGTRAP — the 2.7.15 clearDatabase crash). Saving
 		// after each delete keeps every reconcile against already-committed, consistent state.
-		// Mirrors PersistenceController.clearDatabase.
-		func commit() {
+		//
+		// `commit()` THROWS and any failure aborts the whole clear: swallowing a failed save would
+		// leave that type's deletions pending, so the next save would reconcile multiple types at once
+		// and re-create the very multi-type batch this avoids. Mirrors PersistenceController.clearDatabase.
+		func commit() throws {
 			guard modelContext.hasChanges else { return }
-			do {
-				try modelContext.save()
-			} catch {
-				Logger.data.error("💥 Failed to save while clearing database: \(error.localizedDescription, privacy: .public)")
-			}
+			try modelContext.save()
 		}
 
-		// Sever the DeviceHardware many-to-many from the owning side first (a batch delete alone trips
-		// the mandatory MTM nullify inverse between DeviceHardwareEntity.tags and
-		// DeviceHardwareTagEntity.devices), saving before deleting the tag/image entities.
 		do {
+			// Sever the DeviceHardware many-to-many from the owning side first (a batch delete alone
+			// trips the mandatory MTM nullify inverse between DeviceHardwareEntity.tags and
+			// DeviceHardwareTagEntity.devices), saving before deleting the tag/image entities.
 			let hardwareDevices = try modelContext.fetch(FetchDescriptor<DeviceHardwareEntity>())
 			for device in hardwareDevices {
 				device.tags.removeAll()
 			}
-			commit()
+			try commit()
 			try modelContext.delete(model: DeviceHardwareTagEntity.self)
-			commit()
+			try commit()
 			try modelContext.delete(model: DeviceHardwareImageEntity.self)
-			commit()
-		} catch {
-			Logger.data.error("\(error.localizedDescription, privacy: .public)")
-		}
+			try commit()
 
-		// Collect favorite node IDs before the delete loop so we can
-		// skip related entities that belong to preserved nodes.
-		var favoriteNodeNums: Set<Int64> = []
-		if preserveFavorites {
-			let favDescriptor = FetchDescriptor<NodeInfoEntity>(
-				predicate: #Predicate<NodeInfoEntity> { $0.favorite == true }
-			)
-			favoriteNodeNums = Set((try? modelContext.fetch(favDescriptor))?.map(\.num) ?? [])
-		}
-
-		let allModels: [any PersistentModel.Type] = MeshtasticSchema.allModels
-		for modelType in allModels {
-			if !includeRoutes && (modelType == RouteEntity.self || modelType == LocationEntity.self) {
-				continue
-			}
-			if modelType == DeviceHardwareTagEntity.self || modelType == DeviceHardwareImageEntity.self {
-				continue // already deleted above
-			}
-			if preserveFavorites && modelType == NodeInfoEntity.self {
-				// Keep favorited nodes so the device and app stay in sync when the
-				// firmware is told to preserve favorites (nodedbReset = true).
-				let descriptor = FetchDescriptor<NodeInfoEntity>(
-					predicate: #Predicate<NodeInfoEntity> { node in
-						node.favorite == false
-					}
+			// Collect favorite node IDs before the delete loop so we can skip related entities that
+			// belong to preserved nodes. If this fetch fails we abort rather than treat the set as
+			// empty — otherwise we'd delete the very favorites we were asked to preserve.
+			var favoriteNodeNums: Set<Int64> = []
+			if preserveFavorites {
+				let favDescriptor = FetchDescriptor<NodeInfoEntity>(
+					predicate: #Predicate<NodeInfoEntity> { $0.favorite == true }
 				)
-				do {
-					let nonFavorites = try modelContext.fetch(descriptor)
-					for node in nonFavorites {
+				favoriteNodeNums = Set(try modelContext.fetch(favDescriptor).map(\.num))
+			}
+
+			for modelType in MeshtasticSchema.allModels {
+				if !includeRoutes && (modelType == RouteEntity.self || modelType == LocationEntity.self) {
+					continue
+				}
+				if modelType == DeviceHardwareTagEntity.self || modelType == DeviceHardwareImageEntity.self {
+					continue // already deleted above
+				}
+				if preserveFavorites && modelType == NodeInfoEntity.self {
+					// Keep favorited nodes so the device and app stay in sync when the
+					// firmware is told to preserve favorites (nodedbReset = true).
+					let descriptor = FetchDescriptor<NodeInfoEntity>(
+						predicate: #Predicate<NodeInfoEntity> { node in
+							node.favorite == false
+						}
+					)
+					for node in try modelContext.fetch(descriptor) {
 						modelContext.delete(node)
 					}
-				} catch {
-					Logger.data.error("\(error.localizedDescription, privacy: .public)")
+					try commit()
+					continue
 				}
-				commit()
-				continue
-			}
-			if preserveFavorites && modelType == UserEntity.self {
-				// Only delete users not belonging to favorite nodes.
-				do {
-					let allUsers = try modelContext.fetch(FetchDescriptor<UserEntity>())
-					for user in allUsers {
+				if preserveFavorites && modelType == UserEntity.self {
+					// Only delete users not belonging to favorite nodes.
+					for user in try modelContext.fetch(FetchDescriptor<UserEntity>()) {
 						if let userNodeNum = user.userNode?.num, favoriteNodeNums.contains(userNodeNum) {
 							continue
 						}
 						modelContext.delete(user)
 					}
-				} catch {
-					Logger.data.error("\(error.localizedDescription, privacy: .public)")
+					try commit()
+					continue
 				}
-				commit()
-				continue
-			}
-			do {
 				try modelContext.delete(model: modelType)
-				commit()
-			} catch {
-				Logger.data.error("\(error.localizedDescription, privacy: .public)")
+				try commit()
 			}
+		} catch {
+			// Abort before the next type so a failed save can't leave a multi-type batch pending.
+			Logger.data.error("💥 Failed while clearing database, aborted: \(error.localizedDescription, privacy: .public)")
 		}
 	}
 	
