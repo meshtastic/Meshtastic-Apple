@@ -331,10 +331,18 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 		if let command = cameraCommand,
 		   coordinator.appliedCameraCommandID != command.id {
 			coordinator.appliedCameraCommandID = command.id
+			let currentRegion = mapView.region
 			coordinator.isApplyingExternalRegion = true
 			mapView.setRegion(command.region, animated: command.animated)
-			// Cleared in regionDidChangeAnimated; also clear async in case no event fires.
-			DispatchQueue.main.async { coordinator.isApplyingExternalRegion = false }
+			// `regionDidChangeAnimated` clears the guard when the move completes — for an *animated*
+			// move that's only after the animation finishes, so we must NOT clear it early. Only fall
+			// back to an async clear when the target equals the current region: MapKit fires no
+			// callback then, so without this the guard would stick and suppress the next user pan.
+			// (An unconditional async clear would race ahead of an animated move's later callback and
+			// let the programmatic change leak into `regionBinding`.)
+			if coordinator.regionsApproximatelyEqual(currentRegion, command.region) {
+				DispatchQueue.main.async { coordinator.isApplyingExternalRegion = false }
+			}
 		}
 	}
 
