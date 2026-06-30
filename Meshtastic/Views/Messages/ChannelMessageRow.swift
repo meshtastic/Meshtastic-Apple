@@ -51,6 +51,20 @@ struct ChannelMessageRow: View {
 	}
 
 	var body: some View {
+		// A retained message row can re-evaluate its body after the underlying MessageEntity has been
+		// deleted/invalidated (messages are pruned underneath the list). Reading any persisted property
+		// of a deleted @Model — directly, via the `fromUser` relationship, or through the MessageEntity
+		// computed-property extensions — fatally traps in SwiftData (SIGTRAP). Bail to an empty row when
+		// the message is no longer live; the List drops it on its next rebuild. Mirrors the NodeListItem
+		// guard.
+		if message.modelContext != nil && !message.isDeleted {
+			rowContent
+		} else {
+			EmptyView()
+		}
+	}
+
+	@ViewBuilder private var rowContent: some View {
 		VStack(alignment: .leading, spacing: 0) {
 			
 			// Timestamp Header
