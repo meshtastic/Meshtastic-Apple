@@ -27,6 +27,7 @@ struct Tools: View {
 	@State private var exportConfigFilename = "device-config"
 	@State private var isPresentingExportFailedAlert = false
 	@State private var exportFailedMessage = "The device configuration could not be prepared for export."
+	@State private var isPresentingExportWarning = false
 
 	var connectedNode: NodeInfoEntity? {
 		if let num = accessoryManager.activeDeviceNum {
@@ -77,7 +78,7 @@ struct Tools: View {
 							.font(.caption)
 							.foregroundColor(.secondary)
 						Button {
-							exportConfiguration(for: node)
+							isPresentingExportWarning = true
 						} label: {
 							Label("Export Configuration", systemImage: "square.and.arrow.up")
 						}
@@ -91,10 +92,29 @@ struct Tools: View {
 		}
 		.navigationTitle("Tools")
 		.navigationBarTitleDisplayMode(.inline)
+		.confirmationDialog(
+			"Export Device Configuration",
+			isPresented: $isPresentingExportWarning,
+			titleVisibility: .visible
+		) {
+			Button("Export Configuration") {
+				// Re-resolve the connected node at confirm time — the entity is fetched fresh rather than
+				// captured at button-tap, so it can't be a stale/faulted object if the device disconnects
+				// while the dialog is open. Defer to the next runloop so presenting the file exporter isn't
+				// swallowed by the confirmation dialog's dismissal animation.
+				DispatchQueue.main.async {
+					guard let node = connectedNode else { return }
+					exportConfiguration(for: node)
+				}
+			}
+			Button("Cancel", role: .cancel) { }
+		} message: {
+			Text("This backup contains sensitive security material — your node's private key, admin keys, channel keys (PSKs), and Wi-Fi/MQTT passwords. Anyone with this file can join and administer your mesh, so only share it with people you trust.")
+		}
 		.fileExporter(
 			isPresented: $isExportingConfig,
 			document: exportConfigDocument,
-			contentType: UTType(filenameExtension: "cfg") ?? .data,
+			contentType: .meshtasticDeviceProfile,
 			defaultFilename: exportConfigFilename
 		) { result in
 			switch result {
@@ -122,11 +142,11 @@ struct Tools: View {
 		do {
 			let data = try node.exportDeviceProfile().serializedData()
 			exportConfigDocument = DeviceProfileDocument(profileData: data)
-			let nodeName = node.user?.longName ?? "Node"
-			// Strip path-illegal characters (e.g. "/" in a longName like "Base/Repeater") so the
-			// exporter doesn't fail or mangle the saved filename.
-			let safeNodeName = nodeName.components(separatedBy: CharacterSet(charactersIn: "/\\:")).joined(separator: "-")
-			exportConfigFilename = "\(safeNodeName) Config \(Date.now.exportTimestamp)"
+			exportConfigFilename = DeviceProfileDocument.exportFilename(
+				shortName: node.user?.shortName,
+				longName: node.user?.longName,
+				date: .now
+			)
 			isExportingConfig = true
 		} catch {
 			Logger.services.error("Failed to serialize device profile: \(error.localizedDescription, privacy: .public)")
