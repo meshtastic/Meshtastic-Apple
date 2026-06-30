@@ -26,6 +26,7 @@ struct Tools: View {
 	@State private var exportConfigDocument = DeviceProfileDocument()
 	@State private var exportConfigFilename = "device-config"
 	@State private var isPresentingExportFailedAlert = false
+	@State private var exportFailedMessage = "The device configuration could not be prepared for export."
 
 	var connectedNode: NodeInfoEntity? {
 		if let num = accessoryManager.activeDeviceNum {
@@ -100,13 +101,20 @@ struct Tools: View {
 			case .success:
 				Logger.services.info("Device configuration export succeeded.")
 			case .failure(let error):
+				// A user dismissing the export sheet can surface as a cancellation failure on some OS
+				// versions — don't show an error for that, only for genuine write failures.
+				if (error as? CocoaError)?.code == .userCancelled { break }
 				Logger.services.error("Device configuration export failed: \(error.localizedDescription, privacy: .public)")
+				// Surface the write failure in-app too — the file could not be saved (permissions,
+				// disk full, file-provider error), not just a prepare/serialization failure.
+				exportFailedMessage = "The device configuration could not be saved. Please try again."
+				isPresentingExportFailedAlert = true
 			}
 		}
 		.alert("Export Failed", isPresented: $isPresentingExportFailedAlert) {
 			Button("OK") { }.keyboardShortcut(.defaultAction)
 		} message: {
-			Text("The device configuration could not be prepared for export.")
+			Text(exportFailedMessage)
 		}
 	}
 
@@ -115,10 +123,14 @@ struct Tools: View {
 			let data = try node.exportDeviceProfile().serializedData()
 			exportConfigDocument = DeviceProfileDocument(profileData: data)
 			let nodeName = node.user?.longName ?? "Node"
-			exportConfigFilename = "\(nodeName) Config \(Date.now.exportTimestamp)"
+			// Strip path-illegal characters (e.g. "/" in a longName like "Base/Repeater") so the
+			// exporter doesn't fail or mangle the saved filename.
+			let safeNodeName = nodeName.components(separatedBy: CharacterSet(charactersIn: "/\\:")).joined(separator: "-")
+			exportConfigFilename = "\(safeNodeName) Config \(Date.now.exportTimestamp)"
 			isExportingConfig = true
 		} catch {
 			Logger.services.error("Failed to serialize device profile: \(error.localizedDescription, privacy: .public)")
+			exportFailedMessage = "The device configuration could not be prepared for export."
 			isPresentingExportFailedAlert = true
 		}
 	}

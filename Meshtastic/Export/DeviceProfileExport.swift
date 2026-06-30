@@ -342,20 +342,15 @@ extension TAKConfigEntity {
 extension TrafficManagementConfigEntity {
 	var protoConfig: ModuleConfig.TrafficManagementConfig {
 		var config = ModuleConfig.TrafficManagementConfig()
-		config.enabled = enabled
-		config.positionDedupEnabled = positionDedupEnabled
-		config.positionPrecisionBits = UInt32(truncatingIfNeeded: positionPrecisionBits)
+		// The proto's bool toggle fields were removed in favour of the "non-zero uint32 implies
+		// enabled" convention, so only emit the surviving uint32 fields. The companion booleans
+		// (positionDedupEnabled, rateLimitEnabled, …) are reconstructed from these on import
+		// (see TrafficManagementConfig.setTrafficManagementValues).
 		config.positionMinIntervalSecs = UInt32(truncatingIfNeeded: positionMinIntervalSecs)
-		config.nodeinfoDirectResponse = nodeinfoDirectResponse
 		config.nodeinfoDirectResponseMaxHops = UInt32(truncatingIfNeeded: nodeinfoDirectResponseMaxHops)
-		config.rateLimitEnabled = rateLimitEnabled
 		config.rateLimitWindowSecs = UInt32(truncatingIfNeeded: rateLimitWindowSecs)
 		config.rateLimitMaxPackets = UInt32(truncatingIfNeeded: rateLimitMaxPackets)
-		config.dropUnknownEnabled = dropUnknownEnabled
 		config.unknownPacketThreshold = UInt32(truncatingIfNeeded: unknownPacketThreshold)
-		config.exhaustHopTelemetry = exhaustHopTelemetry
-		config.exhaustHopPosition = exhaustHopPosition
-		config.routerPreserveHops = routerPreserveHops
 		return config
 	}
 }
