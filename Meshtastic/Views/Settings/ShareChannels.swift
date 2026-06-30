@@ -65,20 +65,36 @@ struct ShareChannels: View {
 				.listRowSeparator(.hidden)
 		}
 		.padding(.horizontal)
-			GeometryReader { bounds in
-				let smallest = min(bounds.size.width, bounds.size.height)
-				ScrollView {
-					if node != nil && node?.myInfo != nil {
-						if shareableChannels.isEmpty {
+
+		GeometryReader { bounds in
+			let smallest = min(bounds.size.width, bounds.size.height)
+			ScrollView {
+				if node != nil && node?.myInfo != nil {
+					if shareableChannels.isEmpty {
+						ContentUnavailableView(
+							"No Shareable Channels",
+							systemImage: "qrcode",
+							description: Text("Connect to a radio with channel settings before sharing.")
+						)
+						.padding(.vertical, 24)
+					} else {
+						channelSelectionGrid
+
+						if channelSet.settings.isEmpty {
 							ContentUnavailableView(
-								"No Shareable Channels",
+								"No Channels Selected",
 								systemImage: "qrcode",
-								description: Text("Connect to a radio with channel settings before sharing.")
+								description: Text("Select at least one channel before sharing.")
+							)
+							.padding(.vertical, 24)
+						} else if channelsUrl.isEmpty {
+							ContentUnavailableView(
+								"Share Link Unavailable",
+								systemImage: "qrcode",
+								description: Text("Select channels again before sharing.")
 							)
 							.padding(.vertical, 24)
 						} else {
-							channelSelectionGrid
-
 							let qrImage = qrCodeImage.generateQRCode(from: channelsUrl)
 							VStack {
 								Toggle(isOn: $replaceChannels) {
@@ -86,38 +102,39 @@ struct ShareChannels: View {
 								}
 								.tint(.accentColor)
 								.toggleStyle(.button)
-							.buttonStyle(.bordered)
-							.buttonBorderShape(.capsule)
-							.controlSize(.large)
-							.padding(.top)
-							.padding(.bottom)
-
-							ShareLink("Share QR Code & Link",
-										item: Image(uiImage: qrImage),
-										subject: Text("Meshtastic Node \(node?.user?.shortName ?? "????") has shared channels with you"),
-										message: Text(channelsUrl),
-										preview: SharePreview("Meshtastic Node \(node?.user?.shortName ?? "????") has shared channels with you",
-															image: Image(uiImage: qrImage))
-							)
-							.buttonStyle(.bordered)
+								.buttonStyle(.bordered)
 								.buttonBorderShape(.capsule)
 								.controlSize(.large)
+								.padding(.top)
 								.padding(.bottom)
+
+								ShareLink("Share QR Code & Link",
+											item: Image(uiImage: qrImage),
+											subject: Text("Meshtastic Node \(node?.user?.shortName ?? "????") has shared channels with you"),
+											message: Text(channelsUrl),
+											preview: SharePreview("Meshtastic Node \(node?.user?.shortName ?? "????") has shared channels with you",
+																image: Image(uiImage: qrImage))
+								)
+								.buttonStyle(.bordered)
+									.buttonBorderShape(.capsule)
+									.controlSize(.large)
+									.padding(.bottom)
 
 								Image(uiImage: qrImage)
 									.resizable()
 									.scaledToFit()
-								.frame(
-									minWidth: smallest * (UIDevice.current.userInterfaceIdiom == .phone ? 0.75 : 0.6),
-									maxWidth: smallest * (UIDevice.current.userInterfaceIdiom == .phone ? 0.75 : 0.6),
-									minHeight: smallest * (UIDevice.current.userInterfaceIdiom == .phone ? 0.75 : 0.6),
-									maxHeight: smallest * (UIDevice.current.userInterfaceIdiom == .phone ? 0.75 : 0.6),
+									.frame(
+										minWidth: smallest * (UIDevice.current.userInterfaceIdiom == .phone ? 0.75 : 0.6),
+										maxWidth: smallest * (UIDevice.current.userInterfaceIdiom == .phone ? 0.75 : 0.6),
+										minHeight: smallest * (UIDevice.current.userInterfaceIdiom == .phone ? 0.75 : 0.6),
+										maxHeight: smallest * (UIDevice.current.userInterfaceIdiom == .phone ? 0.75 : 0.6),
 										alignment: .top
 									)
 							}
 						}
 					}
 				}
+			}
 			.sheet(isPresented: $showingHelp) {
 				ChannelsHelp()
 					.presentationDetents([.large])
@@ -225,9 +242,9 @@ struct ShareChannels: View {
 		return ((channel.name?.isEmpty ?? true ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)").camelCaseToWords()
 	}
 
-		func generateChannelSet() {
-			channelSet = ChannelSet()
-			var loRaConfig = Config.LoRaConfig()
+	func generateChannelSet() {
+		channelSet = ChannelSet()
+		var loRaConfig = Config.LoRaConfig()
 		loRaConfig.region =  RegionCodes(rawValue: Int(node?.loRaConfig?.regionCode ?? 0))!.protoEnumValue()
 		loRaConfig.modemPreset = ModemPresets(rawValue: Int(node?.loRaConfig?.modemPreset ?? 0))!.protoEnumValue()
 		loRaConfig.bandwidth = UInt32(node?.loRaConfig?.bandwidth ?? 0)
@@ -243,59 +260,70 @@ struct ShareChannels: View {
 		loRaConfig.ignoreMqtt = node?.loRaConfig?.ignoreMqtt ?? false
 		loRaConfig.overrideFrequency = node?.loRaConfig?.overrideFrequency ?? 0.0
 		channelSet.loraConfig = loRaConfig
-		if node?.myInfo != nil && (node?.myInfo?.channels.count ?? 0) > 0 {
-			for ch in node?.myInfo?.channels ?? [] where ch.role > 0 {
-				var includeChannel = false
-				switch ch.index {
-				case 0:
-					if includeChannel0 {
-						includeChannel = true
-					}
-				case 1:
-					if includeChannel1 {
-						includeChannel = true
-					}
-				case 2:
-					if includeChannel2 {
-						includeChannel = true
-					}
-				case 3:
-					if includeChannel3 {
-						includeChannel = true
-					}
-				case 4:
-					if includeChannel4 {
-						includeChannel = true
-					}
-				case 5:
-					if includeChannel5 {
-						includeChannel = true
-					}
-				case 6:
-					if includeChannel6 {
-						includeChannel = true
-					}
-				case 7:
-					if includeChannel7 {
-						includeChannel = true
-					}
-				default:
-					includeChannel = false
+
+		guard node?.myInfo != nil && (node?.myInfo?.channels.count ?? 0) > 0 else {
+			channelsUrl = ""
+			return
+		}
+
+		for ch in node?.myInfo?.channels ?? [] where ch.role > 0 {
+			var includeChannel = false
+			switch ch.index {
+			case 0:
+				if includeChannel0 {
+					includeChannel = true
 				}
-				if includeChannel {
-					var channelSettings = ChannelSettings()
-					channelSettings.name = ch.name ?? ""
-					channelSettings.psk = ch.psk ?? Data()
-					channelSettings.id = UInt32(ch.id)
-					channelSettings.moduleSettings.positionPrecision = UInt32(ch.positionPrecision)
-					channelSettings.moduleSettings.isMuted = ch.mute
-					channelSet.settings.append(channelSettings)
+			case 1:
+				if includeChannel1 {
+					includeChannel = true
 				}
+			case 2:
+				if includeChannel2 {
+					includeChannel = true
+				}
+			case 3:
+				if includeChannel3 {
+					includeChannel = true
+				}
+			case 4:
+				if includeChannel4 {
+					includeChannel = true
+				}
+			case 5:
+				if includeChannel5 {
+					includeChannel = true
+				}
+			case 6:
+				if includeChannel6 {
+					includeChannel = true
+				}
+			case 7:
+				if includeChannel7 {
+					includeChannel = true
+				}
+			default:
+				includeChannel = false
 			}
-			guard let urlString = try? MeshtasticChannelURL.urlString(for: channelSet, addChannels: !replaceChannels) else {
-				return
-			}
-			channelsUrl = urlString
+
+			if includeChannel {
+				var channelSettings = ChannelSettings()
+				channelSettings.name = ch.name ?? ""
+				channelSettings.psk = ch.psk ?? Data()
+				channelSettings.id = UInt32(ch.id)
+				channelSettings.moduleSettings.positionPrecision = UInt32(ch.positionPrecision)
+				channelSettings.moduleSettings.isMuted = ch.mute
+				channelSet.settings.append(channelSettings)
 			}
 		}
+
+		guard !channelSet.settings.isEmpty else {
+			channelsUrl = ""
+			return
+		}
+		guard let urlString = try? MeshtasticChannelURL.urlString(for: channelSet, addChannels: !replaceChannels) else {
+			channelsUrl = ""
+			return
+		}
+		channelsUrl = urlString
 	}
+}

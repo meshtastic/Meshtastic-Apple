@@ -1,15 +1,31 @@
+//
+//  MeshtasticChannelURL.swift
+//  Meshtastic
+//
+//  Centralized parsing and generation for Meshtastic channel URLs.
+//
+
 import Foundation
 import MeshtasticProtobufs
 
+// MARK: - MeshtasticChannelURL
+
 struct MeshtasticChannelURL: Sendable {
+
+	// MARK: - Constants
+
 	static let host = "meshtastic.org"
 	static let appScheme = "meshtastic"
 	static let channelPathSegment = "e"
 	static let canonicalPrefix = "https://meshtastic.org/e/"
 
+	// MARK: - Properties
+
 	let payload: String
 	let channelSet: ChannelSet
 	let addChannels: Bool
+
+	// MARK: - Errors
 
 	enum ParseError: LocalizedError, Equatable {
 		case empty
@@ -34,6 +50,8 @@ struct MeshtasticChannelURL: Sendable {
 		}
 	}
 
+	// MARK: - Public API
+
 	static func parse(_ value: String, defaultAddChannels: Bool = false) throws -> MeshtasticChannelURL {
 		let trimmed = value
 			.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -53,6 +71,8 @@ struct MeshtasticChannelURL: Sendable {
 		return MeshtasticChannelURL(payload: parsed.payload, channelSet: channelSet, addChannels: parsed.addChannels)
 	}
 
+	// MARK: - URL Helpers
+
 	static func urlString(for channelSet: ChannelSet, addChannels: Bool = false) throws -> String {
 		let encodedPayload = try payloadString(for: channelSet)
 		let query = addChannels ? "?add=true" : ""
@@ -66,6 +86,8 @@ struct MeshtasticChannelURL: Sendable {
 	static func payloadString(for channelSet: ChannelSet) throws -> String {
 		try channelSet.serializedData().base64EncodedString().base64ToBase64url()
 	}
+
+	// MARK: - Parsing Helpers
 
 	private static func parsePayloadAndMode(from value: String, defaultAddChannels: Bool) throws -> (payload: String, addChannels: Bool) {
 		guard let url = URL(string: value), url.scheme != nil || url.host != nil else {
@@ -93,14 +115,14 @@ struct MeshtasticChannelURL: Sendable {
 	private static func isChannelURL(_ url: URL) -> Bool {
 		if url.scheme?.lowercased() == appScheme {
 			let pathSegments = pathSegments(for: url)
-			if pathSegments.first == channelPathSegment {
-				return true
+			if url.host == nil {
+				return pathSegments == [channelPathSegment]
 			}
-			return url.host?.lowercased() == channelPathSegment
+			return url.host?.lowercased() == channelPathSegment && pathSegments.isEmpty
 		}
 
 		guard url.host?.lowercased() == Self.host else { return false }
-		return pathSegments(for: url).first == channelPathSegment
+		return pathSegments(for: url) == [channelPathSegment]
 	}
 
 	private static func pathSegments(for url: URL) -> [String] {
@@ -133,6 +155,8 @@ struct MeshtasticChannelURL: Sendable {
 
 		return nil
 	}
+
+	// MARK: - Decoding Helpers
 
 	private static func decodeChannelSet(payload: String) throws -> ChannelSet {
 		let decodedString = payload.base64urlToBase64()

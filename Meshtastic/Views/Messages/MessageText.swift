@@ -8,7 +8,7 @@ import Translation
 struct MessageText: View {
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
-	
+
 	let message: MessageEntity
 	let tapBackDestination: MessageDestination
 	let isCurrentUser: Bool
@@ -18,7 +18,7 @@ struct MessageText: View {
 	@State private var saveChannelLink: SaveChannelLinkData?
 	@State private var isShowingDeleteConfirmation = false
 	@State private var isShowingTranslationPresentation = false
-	
+
 	var body: some View {
 		messageContent
 			.environment(\.openURL, OpenURLAction { url in
@@ -46,7 +46,7 @@ struct MessageText: View {
 				Button("Cancel", role: .cancel) {}
 			}
 	}
-	
+
 	private var sourceMessageText: String {
 		message.messagePayload ?? "EMPTY MESSAGE"
 	}
@@ -133,7 +133,7 @@ struct MessageText: View {
 				)
 			}
 	}
-	
+
 	@ViewBuilder
 	private var messageOverlays: some View {
 		if message.pkiEncrypted && message.realACK || !isCurrentUser && message.pkiEncrypted {
@@ -180,7 +180,7 @@ struct MessageText: View {
 				.offset(x: 38, y: 8)
 		}
 	}
-	
+
 	private func handleURL(_ url: URL) -> OpenURLAction.Result {
 		saveChannelLink = nil
 		var addChannels = false
@@ -194,16 +194,16 @@ struct MessageText: View {
 				addChannels = channelLink.addChannels
 				self.saveChannelLink = SaveChannelLinkData(data: channelLink.payload, add: addChannels)
 				Logger.services.debug("Add Channel: \(addChannels, privacy: .public)")
-				Logger.mesh.debug("Opening Channel Settings URL: \(url.absoluteString, privacy: .public)")
+				Logger.mesh.debug("Opening Channel Settings URL")
 				return .handled // Prevent default browser opening
 			} catch {
-				Logger.services.error("Invalid channel URL: \(url.absoluteString, privacy: .public) \(error.localizedDescription, privacy: .public)")
+				Logger.services.error("Invalid channel URL: \(error.localizedDescription, privacy: .public)")
 				return .discarded
 			}
 		}
 		return .systemAction // Open other URLs in browser
 	}
-	
+
 	private func deleteMessage() {
 		context.delete(message)
 		do {

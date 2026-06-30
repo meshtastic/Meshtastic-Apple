@@ -237,11 +237,16 @@ struct SaveChannelQRCode: View {
 		let selectable = incomingChannels.indices.filter { index in
 			!addChannels || !isDuplicate(incomingChannels[index])
 		}
-		selectedChannelIndices = Set(selectable.prefix(max(0, 8 - (addChannels ? currentChannelCount : 0))))
+		let availableSlots = max(0, 8 - (addChannels ? currentChannelCount : 0))
+		selectedChannelIndices = Set(selectable.prefix(availableSlots))
 
-		if addChannels && selectedTotal > 8 {
-			errorMessage = "There are not enough free channel slots for every selected channel."
+		let slotLimitMessage = "There are not enough free channel slots for every selected channel."
+		if addChannels && selectable.count > availableSlots {
+			errorMessage = slotLimitMessage
 			showError = true
+		} else if errorMessage == slotLimitMessage {
+			errorMessage = ""
+			showError = false
 		}
 	}
 

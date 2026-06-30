@@ -82,6 +82,15 @@ struct MeshtasticChannelURLTests {
 		}
 	}
 
+	@Test func rejectsNestedCustomSchemeChannelPath() throws {
+		let payload = try MeshtasticChannelURL.payloadString(for: makeChannelSet())
+
+		#expect(!MeshtasticChannelURL.canHandle(try #require(URL(string: "meshtastic://anything/e/#\(payload)"))))
+		#expect(throws: MeshtasticChannelURL.ParseError.notChannelURL) {
+			_ = try MeshtasticChannelURL.parse("meshtastic://anything/e/#\(payload)")
+		}
+	}
+
 	private func makeChannelSet() -> ChannelSet {
 		var lora = Config.LoRaConfig()
 		lora.hopLimit = 5

@@ -470,6 +470,10 @@ extension AccessoryManager {
 		}
 
 		var channelSet = incomingChannelSet
+		let incomingChannelNames = channelSet.settings.map(\.name)
+		guard Set(incomingChannelNames).count == incomingChannelNames.count else {
+			throw AccessoryError.appError("Channel names must be unique")
+		}
 		var i: Int32 = 0
 
 		if addChannels {
@@ -501,12 +505,9 @@ extension AccessoryManager {
 			if let txPower = currentLoRaConfig?.txPower {
 				channelSet.loraConfig.txPower = txPower
 			}
-
-			// Only clear local channels after the incoming QR has been decoded
-			// and validated, otherwise malformed links can wipe local state.
-			tryClearExistingChannels()
 		}
 
+		var deliveredChannels: [Channel] = []
 		for cs in channelSet.settings {
 			var chan = Channel()
 			chan.role = (i == 0) ? .primary : .secondary
@@ -547,7 +548,7 @@ extension AccessoryManager {
 
 			let logString = String.localizedStringWithFormat("Sent a Channel for: %@ Channel Index %d".localized, String(deviceNum), chan.index)
 			try await send(toRadio, debugDescription: logString)
-			await MeshPackets.shared.channelPacket(channel: chan, fromNum: self.activeDeviceNum ?? 0)
+			deliveredChannels.append(chan)
 		}
 
 		// Replacing channels also replaces the LoRa config (the replace-mode guard
@@ -576,6 +577,15 @@ extension AccessoryManager {
 
 			let logString = String.localizedStringWithFormat("Sent a LoRa.Config for: %@".localized, String(deviceNum))
 			try await send(toRadio, debugDescription: logString)
+		}
+
+		// Mirror delivered channels locally only after channel and LoRa writes
+		// succeed, so a failed replace cannot wipe local state.
+		if !addChannels {
+			tryClearExistingChannels()
+		}
+		for chan in deliveredChannels {
+			await MeshPackets.shared.channelPacket(channel: chan, fromNum: deviceNum)
 		}
 
 		// Re-sync after the change. When we sent a LoRa config the device reboots
