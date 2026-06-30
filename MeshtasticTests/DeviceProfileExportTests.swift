@@ -168,19 +168,21 @@ struct DeviceProfileExportTests {
 		#expect(proto.team == .cyan)
 	}
 
-	@Test("TrafficManagementConfig round-trips its toggles and limits")
+	@Test("TrafficManagementConfig exports its uint32 limits")
 	func trafficManagementConfig() {
 		let entity = TrafficManagementConfigEntity()
-		entity.enabled = true
-		entity.rateLimitEnabled = true
+		entity.positionMinIntervalSecs = 30
+		entity.nodeinfoDirectResponseMaxHops = 2
+		entity.rateLimitWindowSecs = 60
 		entity.rateLimitMaxPackets = 42
-		entity.routerPreserveHops = true
+		entity.unknownPacketThreshold = 5
 
 		let proto = entity.protoConfig
-		#expect(proto.enabled == true)
-		#expect(proto.rateLimitEnabled == true)
+		#expect(proto.positionMinIntervalSecs == 30)
+		#expect(proto.nodeinfoDirectResponseMaxHops == 2)
+		#expect(proto.rateLimitWindowSecs == 60)
 		#expect(proto.rateLimitMaxPackets == 42)
-		#expect(proto.routerPreserveHops == true)
+		#expect(proto.unknownPacketThreshold == 5)
 	}
 
 	@Test("StatusMessageConfig maps the node status text")
@@ -236,7 +238,7 @@ struct DeviceProfileExportTests {
 		node.takConfig = tak
 
 		let traffic = TrafficManagementConfigEntity()
-		traffic.enabled = true
+		traffic.rateLimitMaxPackets = 7
 		node.trafficManagementConfig = traffic
 
 		let status = StatusMessageConfigEntity()
@@ -245,7 +247,7 @@ struct DeviceProfileExportTests {
 
 		let profile = node.exportDeviceProfile()
 		#expect(profile.moduleConfig.tak.role == .teamMember)
-		#expect(profile.moduleConfig.trafficManagement.enabled == true)
+		#expect(profile.moduleConfig.trafficManagement.rateLimitMaxPackets == 7)
 		#expect(profile.moduleConfig.statusmessage.nodeStatus == "QRT")
 	}
 

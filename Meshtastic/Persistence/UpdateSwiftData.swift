@@ -1077,14 +1077,15 @@ extension MeshPackets {
 					modelContext.insert(newSecurityConfig)
 					newSecurityConfig.publicKey = config.publicKey
 					newSecurityConfig.privateKey = config.privateKey
+					// Only rewrite admin keys when the node actually reported some (a non-empty array):
+					// an empty array is treated as "no update" rather than wiping stored keys, matching
+					// the original guard. When keys ARE reported, assign every positional slot so a slot
+					// the node no longer reports (shrink from 3 keys to 1/2) is cleared instead of
+					// retaining a stale retired key — see existing-entity branch.
 					if config.adminKey.count > 0 {
 						newSecurityConfig.adminKey = config.adminKey[0]
-						if config.adminKey.count > 1 {
-							newSecurityConfig.adminKey2 = config.adminKey[1]
-						}
-						if config.adminKey.count > 2 {
-							newSecurityConfig.adminKey3 = config.adminKey[2]
-						}
+						newSecurityConfig.adminKey2 = config.adminKey.count > 1 ? config.adminKey[1] : nil
+						newSecurityConfig.adminKey3 = config.adminKey.count > 2 ? config.adminKey[2] : nil
 					}
 					newSecurityConfig.isManaged = config.isManaged
 					newSecurityConfig.serialEnabled = config.serialEnabled
@@ -1094,14 +1095,16 @@ extension MeshPackets {
 				} else {
 					fetchedNode[0].securityConfig?.publicKey = config.publicKey
 					fetchedNode[0].securityConfig?.privateKey = config.privateKey
+					// Only rewrite admin keys when the node actually reported some (a non-empty array):
+					// an empty array is treated as "no update" rather than wiping stored keys, matching
+					// the original guard. When keys ARE reported, assign every positional slot so a slot
+					// the node no longer reports (shrink from 3 keys to 1/2) is cleared instead of
+					// retaining a stale retired key — which the device-profile export would otherwise
+					// write back into the .cfg backup.
 					if config.adminKey.count > 0 {
 						fetchedNode[0].securityConfig?.adminKey = config.adminKey[0]
-						if config.adminKey.count > 1 {
-							fetchedNode[0].securityConfig?.adminKey2 = config.adminKey[1]
-						}
-						if config.adminKey.count > 2 {
-							fetchedNode[0].securityConfig?.adminKey3 = config.adminKey[2]
-						}
+						fetchedNode[0].securityConfig?.adminKey2 = config.adminKey.count > 1 ? config.adminKey[1] : nil
+						fetchedNode[0].securityConfig?.adminKey3 = config.adminKey.count > 2 ? config.adminKey[2] : nil
 					}
 					fetchedNode[0].securityConfig?.isManaged = config.isManaged
 					fetchedNode[0].securityConfig?.serialEnabled = config.serialEnabled
@@ -1741,6 +1744,9 @@ extension MeshPackets {
 					fetchedNode[0].storeForwardConfig?.records = Int32(config.records)
 					fetchedNode[0].storeForwardConfig?.historyReturnMax = Int32(config.historyReturnMax)
 					fetchedNode[0].storeForwardConfig?.historyReturnWindow = Int32(config.historyReturnWindow)
+					// Refresh the server flag too, otherwise toggling server mode on the device is never
+					// reflected after the first sync and the device-profile export keeps writing the old value.
+					fetchedNode[0].storeForwardConfig?.isRouter = config.isServer
 				}
 				if sessionPasskey != nil {
 					fetchedNode[0].sessionPasskey = sessionPasskey
