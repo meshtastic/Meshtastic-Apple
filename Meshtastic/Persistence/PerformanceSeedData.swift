@@ -117,6 +117,23 @@ enum PerformanceSeedData {
 		(try? context.fetchCount(FetchDescriptor<MessageEntity>())) ?? 0
 	}
 
+	/// Node number for a seeded node at `index`.
+	///
+	/// The app derives a node's map/pin color from `UIColor(hex: UInt32(num))` — i.e. the low 24 bits
+	/// of the number become its RGB. Sequential numbers (`base + index`) leave those bits at `0, 1,
+	/// 2, …`, which all render as near-identical near-black, so every seeded node looked the same
+	/// color. Scramble the index with a multiplicative (golden-ratio) hash so the low 24 bits — and
+	/// thus the colors — spread across the wheel like real, randomly-numbered radios do.
+	///
+	/// The hash is a bijection mod 2²⁴ (the constant is odd → coprime to 2²⁴), so numbers stay unique
+	/// for any realistic node count, index 0 maps back to `baseNodeNum` (the local node), and every
+	/// number stays ≤ `0x0AFFFFFF` — well under `UInt32.max`, which `UInt32(num)` requires (it traps
+	/// on overflow).
+	private static func seededNodeNum(baseNodeNum: Int64, index: Int) -> Int64 {
+		let scrambled = (UInt32(truncatingIfNeeded: index) &* 0x9E3779) & 0x00FF_FFFF
+		return baseNodeNum + Int64(scrambled)
+	}
+
 	private static func insertNode(
 		index: Int,
 		baseNodeNum: Int64,
@@ -124,7 +141,7 @@ enum PerformanceSeedData {
 		configuration: PerformanceSeedConfiguration,
 		context: ModelContext
 	) {
-		let nodeNum = baseNodeNum + Int64(index)
+		let nodeNum = seededNodeNum(baseNodeNum: baseNodeNum, index: index)
 		let node = NodeInfoEntity()
 		node.id = nodeNum
 		node.num = nodeNum
@@ -336,8 +353,12 @@ enum PerformanceSeedData {
 		// snapshot lookups resolve.
 		var forwardNums: [Int64] = [baseNodeNum]
 		for divisor in [6, 5, 4, 3, 2] {
-			let candidate = baseNodeNum + Int64(index / divisor)
-			if candidate != baseNodeNum, candidate < node.num, !forwardNums.contains(candidate) {
+			let hopIndex = index / divisor
+			// hopIndex < index (divisor ≥ 2) so the node was seeded earlier and exists; skip 0, which
+			// is the originator (baseNodeNum) already at the head of the path.
+			guard hopIndex > 0 else { continue }
+			let candidate = seededNodeNum(baseNodeNum: baseNodeNum, index: hopIndex)
+			if !forwardNums.contains(candidate) {
 				forwardNums.append(candidate)
 			}
 		}
@@ -406,7 +427,7 @@ enum PerformanceSeedData {
 	) {
 		guard configuration.directMessageCount > 0 || configuration.channelMessageCount > 0 else { return }
 		guard let localUser = fetchUser(num: baseNodeNum, context: context),
-			  let remoteUser = fetchUser(num: baseNodeNum + 1, context: context) else {
+			  let remoteUser = fetchUser(num: seededNodeNum(baseNodeNum: baseNodeNum, index: 1), context: context) else {
 			Logger.data.error("📈 [PerfSeed] Unable to seed messages without local and remote users")
 			return
 		}

@@ -63,7 +63,7 @@ struct MyViewSnapshotTests {
 <li>Commit reference PNGs alongside the test file.</li>
 </ul>
 <h3>Embedding Dark/Light Snapshot Pairs in Docs</h3>
-<p>When a view is snapshotted in both colour schemes (e.g. <code>foo_light.png</code> + <code>foo_dark.png</code>), embedding both <code>![]()</code> tags side-by-side causes both images to appear simultaneously on the Jekyll site and in the in-app viewer. Use an HTML <code>&lt;picture&gt;</code> element instead:</p>
+<p>When a view is snapshotted in both color schemes (e.g. <code>foo_light.png</code> + <code>foo_dark.png</code>), embedding both <code>![]()</code> tags side-by-side causes both images to appear simultaneously on the Jekyll site and in the in-app viewer. Use an HTML <code>&lt;picture&gt;</code> element instead:</p>
 <pre><code class="language-html">&lt;picture&gt;
   &lt;source media=&quot;(prefers-color-scheme: dark)&quot; srcset=&quot;../assets/screenshots/foo_dark.png&quot; /&gt;
   &lt;img src=&quot;../assets/screenshots/foo_light.png&quot; alt=&quot;Description&quot; /&gt;

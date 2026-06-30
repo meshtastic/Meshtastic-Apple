@@ -203,35 +203,35 @@
             "map",
             "tap",
             "nodes",
-            "show",
             "node",
             "waypoint",
             "only",
+            "show",
             "position",
-            "path",
             "mesh",
+            "path",
             "lora",
             "line",
+            "geofence",
+            "from",
+            "box",
+            "bounding",
             "via",
             "route",
             "icon",
             "filter",
+            "favorites",
+            "description",
             "waypoints",
             "trace",
+            "radius",
             "over",
             "location",
-            "from",
-            "all",
-            "then",
-            "target",
-            "solid",
-            "signal",
-            "satellite",
-            "right",
-            "pin",
-            "mqtt"
+            "heard",
+            "each",
+            "device"
         ],
-        "charCount": 3737
+        "charCount": 4983
     },
     {
         "id": "messages",
@@ -270,7 +270,7 @@
             "encryption",
             "direct"
         ],
-        "charCount": 7384
+        "charCount": 7383
     },
     {
         "id": "mqtt",
@@ -348,7 +348,7 @@
             "section",
             "search"
         ],
-        "charCount": 6865
+        "charCount": 6863
     },
     {
         "id": "settings",
@@ -387,7 +387,7 @@
             "packets",
             "module"
         ],
-        "charCount": 8587
+        "charCount": 8586
     },
     {
         "id": "signal-meter",
@@ -609,7 +609,7 @@
             "location",
             "heading",
             "compass",
-            "colour",
+            "color",
             "bearing",
             "apple",
             "toward",
@@ -621,7 +621,7 @@
             "finding",
             "current"
         ],
-        "charCount": 3113
+        "charCount": 3107
     },
     {
         "id": "whats-new",
@@ -631,14 +631,14 @@
         "keywords": [
             "new",
             "settings",
-            "page",
             "jun",
+            "page",
+            "nodes",
             "messages",
+            "map",
             "app",
             "region",
             "now",
-            "nodes",
-            "map",
             "list",
             "docs",
             "device",
@@ -651,16 +651,16 @@
             "radios",
             "node",
             "lora",
+            "local",
             "live",
             "ios",
             "hop",
             "filters",
             "explaining",
             "documentation",
-            "config",
-            "carplay"
+            "config"
         ],
-        "charCount": 4366
+        "charCount": 4569
     },
     {
         "id": "adding-features",
@@ -1011,7 +1011,7 @@
             "schema",
             "nodeinfoentity"
         ],
-        "charCount": 9727
+        "charCount": 9726
     },
     {
         "id": "tak-protocol",
@@ -1089,7 +1089,7 @@
             "suite",
             "screenshots"
         ],
-        "charCount": 3698
+        "charCount": 3697
     },
     {
         "id": "transport",

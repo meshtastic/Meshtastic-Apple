@@ -23,5 +23,22 @@ final class WaypointEntity {
 	var longitudeI: Int32 = 0
 	var name: String?
 
+	// MARK: Geofence (mirrors the Waypoint protobuf geofence fields)
+
+	/// Circular geofence radius in meters, centred on the waypoint's own location. 0 = no circle.
+	var geofenceRadius: Int = 0
+	/// Whether a rectangular bounding-box geofence is set (mirrors Waypoint.hasBoundingBox).
+	var hasBoundingBox: Bool = false
+	/// Bounding-box corners as degrees × 1e7 (sfixed32), matching latitudeI / longitudeI.
+	var boundingBoxLatitudeNorthI: Int32 = 0
+	var boundingBoxLatitudeSouthI: Int32 = 0
+	var boundingBoxLongitudeEastI: Int32 = 0
+	var boundingBoxLongitudeWestI: Int32 = 0
+	/// Raise a local notification when a tracked node enters / exits this geofence.
+	var notifyOnEnter: Bool = false
+	var notifyOnExit: Bool = false
+	/// When set, only raise enter/exit notifications for nodes marked as favorites on this receiver.
+	var notifyFavoritesOnly: Bool = false
+
 	init() {}
 }

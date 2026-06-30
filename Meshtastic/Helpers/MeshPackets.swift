@@ -1433,6 +1433,7 @@ actor MeshPackets {
 					waypoint.icon = Int64(waypointMessage.icon)
 					waypoint.locked = waypointMessage.lockedTo != 0
 					waypoint.createdBy = Int64(packet.from)
+					waypoint.applyGeofence(from: waypointMessage)
 					if waypointMessage.expire >= 1 {
 						waypoint.expire = Date(timeIntervalSince1970: TimeInterval(Int64(waypointMessage.expire)))
 					} else {
@@ -1477,6 +1478,7 @@ actor MeshPackets {
 							existingWaypoint.icon = Int64(waypointMessage.icon)
 							existingWaypoint.locked = waypointMessage.lockedTo != 0
 							existingWaypoint.lastUpdatedBy = Int64(packet.from)
+							existingWaypoint.applyGeofence(from: waypointMessage)
 							if waypointMessage.expire >= 1 {
 								existingWaypoint.expire = Date(timeIntervalSince1970: TimeInterval(Int64(waypointMessage.expire)))
 							} else {

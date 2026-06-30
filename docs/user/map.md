@@ -60,6 +60,28 @@ Tap an existing waypoint pin, then tap **Edit**. Changes broadcast to the mesh i
 
 Tap the waypoint, then tap **Delete**. The deletion broadcasts to all nodes.
 
+### Geofences
+
+A geofence turns a waypoint into a watched area: when a node's reported position crosses into or out of it, your device raises a local notification. Open a waypoint, tap **Edit**, and use the **Geofence** section.
+
+| Control | Description |
+|---------|-------------|
+| Radius | A circular geofence centered on the waypoint, from 0.1 to 10 miles. Choose **Off** for no circle. |
+| Bounding Box | A rectangular geofence. Tap **Set Bounding Box** to draw one on the map, **Edit Bounding Box** to adjust it, or **Remove Bounding Box** to clear it. |
+
+You can use a radius, a bounding box, or both — a node counts as inside if it falls within *either* shape.
+
+Once a radius or bounding box is set, notification options appear:
+
+| Option | Description |
+|--------|-------------|
+| Notify on Enter | Alert when a node moves into the geofence. |
+| Notify on Exit | Alert when a node leaves the geofence. |
+| Favorites Only | Shown when Enter or Exit is on. Limits alerts to nodes you have starred as favorites. |
+
+> **Note**
+> Geofences are evaluated on your own device as position packets arrive from the mesh, so alerts reflect what your radio has heard rather than live tracking. Tapping an alert opens the waypoint on the map. **Favorites Only** uses the favorite status set on *this* device, so each receiver decides which nodes are worth an alert.
+
 ## Trace Routes on the Map
 
 A trace route can be drawn on the map to show the path a packet took through the mesh. Open **Settings → Logging → Trace Routes** (or a node's Trace Route log), select a route, and tap **Show on Map**.

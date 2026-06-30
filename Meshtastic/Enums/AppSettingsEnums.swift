@@ -69,6 +69,37 @@ enum MeshMapDistances: Double, CaseIterable, Identifiable {
 	}
 }
 
+/// Geofence circle radius options — raw values in meters, displayed in the
+/// user's locale units via MKDistanceFormatter.
+enum GeofenceRadius: Double, CaseIterable, Identifiable {
+	// 0.1 – 1.0 miles in 0.1-mile steps, then 2…10 miles. 1 mile = 1609.344 m.
+	case pointOneMile = 160.9344
+	case pointTwoMiles = 321.8688
+	case pointThreeMiles = 482.8032
+	case pointFourMiles = 643.7376
+	case pointFiveMiles = 804.672
+	case pointSixMiles = 965.6064
+	case pointSevenMiles = 1126.5408
+	case pointEightMiles = 1287.4752
+	case pointNineMiles = 1448.4096
+	case oneMile = 1609.344
+	case twoMiles = 3218.688
+	case threeMiles = 4828.032
+	case fourMiles = 6437.376
+	case fiveMiles = 8046.72
+	case sixMiles = 9656.064
+	case sevenMiles = 11265.408
+	case eightMiles = 12874.752
+	case nineMiles = 14484.096
+	case tenMiles = 16093.44
+	var id: Double { self.rawValue }
+	var description: String {
+		let distanceFormatter = MKDistanceFormatter()
+		distanceFormatter.unitStyle = .abbreviated
+		return distanceFormatter.string(fromDistance: self.rawValue)
+	}
+}
+
 enum UserTrackingModes: Int, CaseIterable, Identifiable {
 	case none = 0
 	case follow = 1

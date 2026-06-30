@@ -2619,6 +2619,13 @@ public struct Waypoint: Sendable {
   /// waypoint's geofence (the circular radius and/or the bounding box).
   public var notifyOnExit: Bool = false
 
+  ///
+  /// If true, only raise geofence enter/exit notifications for nodes that are
+  /// marked as favorites on the receiving device. Applies to both notify_on_enter
+  /// and notify_on_exit. Favorite status is resolved locally per receiver, so the
+  /// same waypoint alerts each node only for its own favorites.
+  public var notifyFavoritesOnly: Bool = false
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
@@ -5387,7 +5394,7 @@ extension BoundingBox: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
 
 extension Waypoint: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".Waypoint"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0\u{3}latitude_i\0\u{3}longitude_i\0\u{1}expire\0\u{3}locked_to\0\u{1}name\0\u{1}description\0\u{1}icon\0\u{3}geofence_radius\0\u{3}bounding_box\0\u{3}notify_on_enter\0\u{3}notify_on_exit\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0\u{3}latitude_i\0\u{3}longitude_i\0\u{1}expire\0\u{3}locked_to\0\u{1}name\0\u{1}description\0\u{1}icon\0\u{3}geofence_radius\0\u{3}bounding_box\0\u{3}notify_on_enter\0\u{3}notify_on_exit\0\u{3}notify_favorites_only\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -5407,6 +5414,7 @@ extension Waypoint: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
       case 10: try { try decoder.decodeSingularMessageField(value: &self._boundingBox) }()
       case 11: try { try decoder.decodeSingularBoolField(value: &self.notifyOnEnter) }()
       case 12: try { try decoder.decodeSingularBoolField(value: &self.notifyOnExit) }()
+      case 13: try { try decoder.decodeSingularBoolField(value: &self.notifyFavoritesOnly) }()
       default: break
       }
     }
@@ -5453,6 +5461,9 @@ extension Waypoint: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     if self.notifyOnExit != false {
       try visitor.visitSingularBoolField(value: self.notifyOnExit, fieldNumber: 12)
     }
+    if self.notifyFavoritesOnly != false {
+      try visitor.visitSingularBoolField(value: self.notifyFavoritesOnly, fieldNumber: 13)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -5469,6 +5480,7 @@ extension Waypoint: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     if lhs._boundingBox != rhs._boundingBox {return false}
     if lhs.notifyOnEnter != rhs.notifyOnEnter {return false}
     if lhs.notifyOnExit != rhs.notifyOnExit {return false}
+    if lhs.notifyFavoritesOnly != rhs.notifyFavoritesOnly {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
