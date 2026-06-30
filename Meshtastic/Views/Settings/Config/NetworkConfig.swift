@@ -33,6 +33,7 @@ struct NetworkConfig: View {
 	@State var udpEnabled = false
 	
 	var body: some View {
+		let staticValid = staticConfigIsValid
 		Form {
 			ConfigHeader(title: "Network", config: \.networkConfig, node: node, onAppear: setNetworkValues)
 			
@@ -140,26 +141,32 @@ struct NetworkConfig: View {
 							HStack {
 								Label("IP", systemImage: "number")
 								TextField("0.0.0.0", text: $staticIp)
-									.foregroundColor(.gray)
-									.keyboardType(.decimalPad)
+									.foregroundColor(Self.isValidIPv4Field(staticIp) ? .gray : .red)
+									.keyboardType(.numbersAndPunctuation)
 							}
 							HStack {
 								Label("Gateway", systemImage: "arrow.triangle.branch")
 								TextField("0.0.0.0", text: $staticGateway)
-									.foregroundColor(.gray)
-									.keyboardType(.decimalPad)
+									.foregroundColor(Self.isValidIPv4Field(staticGateway) ? .gray : .red)
+									.keyboardType(.numbersAndPunctuation)
 							}
 							HStack {
 								Label("Subnet", systemImage: "circle.grid.cross")
 								TextField("255.255.255.0", text: $staticSubnet)
-									.foregroundColor(.gray)
-									.keyboardType(.decimalPad)
+									.foregroundColor(Self.isValidIPv4Field(staticSubnet) ? .gray : .red)
+									.keyboardType(.numbersAndPunctuation)
 							}
 							HStack {
 								Label("DNS", systemImage: "magnifyingglass")
 								TextField("0.0.0.0", text: $staticDns)
-									.foregroundColor(.gray)
-									.keyboardType(.decimalPad)
+									.foregroundColor(Self.isValidIPv4Field(staticDns) ? .gray : .red)
+									.keyboardType(.numbersAndPunctuation)
+							}
+							if !staticValid {
+								Text("Enter valid IPv4 addresses (e.g. 192.168.1.10). Leave a field blank to leave it unset.")
+									.font(.callout)
+									.foregroundColor(.red)
+									.fixedSize(horizontal: false, vertical: true)
 							}
 						}
 					}
@@ -206,6 +213,7 @@ struct NetworkConfig: View {
 					_ = try await accessoryManager.saveNetworkConfig(config: network, fromUser: fromUser, toUser: toUser)
 				}
 			}
+			.disabled(!staticValid)
 			}
 		}
 		.navigationTitle("Network Config")
@@ -311,6 +319,45 @@ struct NetworkConfig: View {
 		let parts = ipString.split(separator: ".").compactMap { UInt32($0) }
 		guard parts.count == 4, parts.allSatisfy({ $0 <= 255 }) else { return 0 }
 		return parts[0] | (parts[1] << 8) | (parts[2] << 16) | (parts[3] << 24)
+	}
+
+	/// True when the field holds a well-formed IPv4 address. An empty field is allowed here —
+	/// callers decide whether a blank value is acceptable for a given field (see
+	/// `staticConfigIsValid`). A non-empty value must be a complete, in-range dotted quad with
+	/// each octet 1-3 ASCII digits, which also rejects sign characters and whitespace that
+	/// `UInt32` alone would accept. Without this, `ipStringToUInt32` silently turns a typo like
+	/// `192.168.1` or `192.168.1.300` into 0.0.0.0 and writes it to the firmware.
+	static func isValidIPv4Field(_ ipString: String) -> Bool {
+		if ipString.isEmpty { return true }
+		let parts = ipString.split(separator: ".", omittingEmptySubsequences: false)
+		guard parts.count == 4 else { return false }
+		return parts.allSatisfy { part in
+			guard part.count <= 3,
+				part.allSatisfy({ $0.isASCII && $0.isNumber }),
+				let value = UInt32(part) else { return false }
+			return value <= 255
+		}
+	}
+
+	/// Pure save-gating logic, kept free of `@State` so it can be unit-tested directly. Returns
+	/// false only when a static-mode field holds a malformed address. Always true in DHCP mode,
+	/// where the static fields are ignored. A blank field is allowed and means "unset" (written
+	/// as 0.0.0.0) — this matches how the firmware round-trips an unconfigured field
+	/// (`uint32ToIpString(0)` is ""), so a node already in static mode with zeroed fields loads
+	/// cleanly and unrelated edits stay saveable. Only a non-empty typo (e.g. `192.168.1` or
+	/// `192.168.1.300`) blocks the save.
+	static func isStaticConfigValid(addressMode: Int, ip: String, gateway: String, subnet: String, dns: String) -> Bool {
+		guard addressMode == 1 else { return true }
+		return isValidIPv4Field(ip)
+			&& isValidIPv4Field(gateway)
+			&& isValidIPv4Field(subnet)
+			&& isValidIPv4Field(dns)
+	}
+
+	/// Drives the Save button's `.disabled` and the inline error text. Thin wrapper over the
+	/// testable `isStaticConfigValid(...)`.
+	var staticConfigIsValid: Bool {
+		Self.isStaticConfigValid(addressMode: addressMode, ip: staticIp, gateway: staticGateway, subnet: staticSubnet, dns: staticDns)
 	}
 
 	func uint32ToIpString(_ value: UInt32) -> String {
