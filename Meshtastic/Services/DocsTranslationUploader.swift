@@ -193,7 +193,7 @@ actor DocsTranslationUploader {
 		guard !uploadedFilesThisSession.contains(filePath) else { return }
 
 		// Ensure section names and UI chrome strings are translated and cached
-		let chromeStrings = ["Help & Docs", "Search docs"] + DocSection.allCases.map(\.displayName)
+		let chromeStrings = ["Help & Documentation", "Search docs"] + DocSection.allCases.map(\.displayName)
 		for source in chromeStrings {
 			_ = await DocTranslationService.shared.translatedUIString(source, targetLanguage: languageCode)
 		}
