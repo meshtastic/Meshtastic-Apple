@@ -639,6 +639,16 @@ enum ModemPresets: Int, CaseIterable, Identifiable {
 			return "TinySlow"
 		}
 	}
+	var defaultCodingRate: Int {
+		switch self {
+		case .longTurbo, .longModerate, .longSlow:
+			return 8
+		case .narrowFast, .narrowSlow:
+			return 6
+		default:
+			return 5
+		}
+	}
 	func snrLimit() -> Float {
 		switch self {
 		case .longFast:
@@ -710,6 +720,37 @@ enum ModemPresets: Int, CaseIterable, Identifiable {
 		case .tinySlow:
 			return Config.LoRaConfig.ModemPreset.tinySlow
 		}
+	}
+}
+
+enum CodingRates {
+	static let validRange = 5...8
+
+	static func options(usePreset: Bool, modemPreset: ModemPresets?) -> [Int] {
+		guard usePreset else {
+			return Array(validRange)
+		}
+		let defaultCodingRate = modemPreset?.defaultCodingRate ?? ModemPresets.longFast.defaultCodingRate
+		return [0] + validRange.filter { $0 > defaultCodingRate }
+	}
+
+	static func normalized(_ codingRate: Int, usePreset: Bool, modemPreset: ModemPresets?) -> Int {
+		let options = options(usePreset: usePreset, modemPreset: modemPreset)
+		if options.contains(codingRate) {
+			return codingRate
+		}
+		if usePreset {
+			return 0
+		}
+		return validRange.lowerBound
+	}
+
+	static func description(for codingRate: Int, modemPreset: ModemPresets?) -> String {
+		if codingRate == 0 {
+			let defaultCodingRate = modemPreset?.defaultCodingRate ?? ModemPresets.longFast.defaultCodingRate
+			return String.localizedStringWithFormat("Preset Default (4/%d)".localized, defaultCodingRate)
+		}
+		return "4/\(codingRate)"
 	}
 }
 
