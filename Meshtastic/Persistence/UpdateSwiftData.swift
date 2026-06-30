@@ -1060,8 +1060,18 @@ extension MeshPackets {
 		}
 	}
 	
+	/// Mirrors the proto's positional `adminKey` repeated field onto the entity's three scalar slots,
+	/// clearing any slot the device no longer reports (a shrink from 3→1/2, or all the way to none) so a
+	/// retired key isn't retained and later written back into a device-profile (.cfg) export. Kept as one
+	/// helper so the insert and update branches of the security upsert stay in lockstep.
+	private func applyAdminKeys(_ adminKeys: [Data], to entity: SecurityConfigEntity) {
+		entity.adminKey = adminKeys.first
+		entity.adminKey2 = adminKeys.count > 1 ? adminKeys[1] : nil
+		entity.adminKey3 = adminKeys.count > 2 ? adminKeys[2] : nil
+	}
+
 	func upsertSecurityConfigPacket(config: Config.SecurityConfig, nodeNum: Int64, sessionPasskey: Data? = Data()) {
-		
+
 		let logString = String.localizedStringWithFormat("Security config received: @".localized, String(nodeNum))
 		Logger.data.info("🛡️ \(logString, privacy: .public)")
 		
@@ -1077,39 +1087,20 @@ extension MeshPackets {
 					modelContext.insert(newSecurityConfig)
 					newSecurityConfig.publicKey = config.publicKey
 					newSecurityConfig.privateKey = config.privateKey
-					// Only rewrite admin keys when the node actually reported some (a non-empty array):
-					// an empty array is treated as "no update" rather than wiping stored keys, matching
-					// the original guard. When keys ARE reported, assign every positional slot so a slot
-					// the node no longer reports (shrink from 3 keys to 1/2) is cleared instead of
-					// retaining a stale retired key — see existing-entity branch.
-					if config.adminKey.count > 0 {
-						newSecurityConfig.adminKey = config.adminKey[0]
-						newSecurityConfig.adminKey2 = config.adminKey.count > 1 ? config.adminKey[1] : nil
-						newSecurityConfig.adminKey3 = config.adminKey.count > 2 ? config.adminKey[2] : nil
-					}
+					applyAdminKeys(config.adminKey, to: newSecurityConfig)
 					newSecurityConfig.isManaged = config.isManaged
 					newSecurityConfig.serialEnabled = config.serialEnabled
 					newSecurityConfig.debugLogApiEnabled = config.debugLogApiEnabled
 					newSecurityConfig.adminChannelEnabled = config.adminChannelEnabled
 					fetchedNode[0].securityConfig = newSecurityConfig
-				} else {
-					fetchedNode[0].securityConfig?.publicKey = config.publicKey
-					fetchedNode[0].securityConfig?.privateKey = config.privateKey
-					// Only rewrite admin keys when the node actually reported some (a non-empty array):
-					// an empty array is treated as "no update" rather than wiping stored keys, matching
-					// the original guard. When keys ARE reported, assign every positional slot so a slot
-					// the node no longer reports (shrink from 3 keys to 1/2) is cleared instead of
-					// retaining a stale retired key — which the device-profile export would otherwise
-					// write back into the .cfg backup.
-					if config.adminKey.count > 0 {
-						fetchedNode[0].securityConfig?.adminKey = config.adminKey[0]
-						fetchedNode[0].securityConfig?.adminKey2 = config.adminKey.count > 1 ? config.adminKey[1] : nil
-						fetchedNode[0].securityConfig?.adminKey3 = config.adminKey.count > 2 ? config.adminKey[2] : nil
-					}
-					fetchedNode[0].securityConfig?.isManaged = config.isManaged
-					fetchedNode[0].securityConfig?.serialEnabled = config.serialEnabled
-					fetchedNode[0].securityConfig?.debugLogApiEnabled = config.debugLogApiEnabled
-					fetchedNode[0].securityConfig?.adminChannelEnabled = config.adminChannelEnabled
+				} else if let securityConfig = fetchedNode[0].securityConfig {
+					securityConfig.publicKey = config.publicKey
+					securityConfig.privateKey = config.privateKey
+					applyAdminKeys(config.adminKey, to: securityConfig)
+					securityConfig.isManaged = config.isManaged
+					securityConfig.serialEnabled = config.serialEnabled
+					securityConfig.debugLogApiEnabled = config.debugLogApiEnabled
+					securityConfig.adminChannelEnabled = config.adminChannelEnabled
 				}
 				if sessionPasskey?.count != 0 {
 					fetchedNode[0].sessionPasskey = sessionPasskey
