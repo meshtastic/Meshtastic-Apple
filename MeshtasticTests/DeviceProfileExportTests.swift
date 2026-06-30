@@ -8,6 +8,7 @@
 import Foundation
 import Testing
 import MeshtasticProtobufs
+import UniformTypeIdentifiers
 
 @testable import Meshtastic
 
@@ -289,5 +290,57 @@ struct DeviceProfileExportTests {
 
 		let profile = node.exportDeviceProfile()
 		#expect(profile.channelURL.hasPrefix("https://meshtastic.org/e/#"))
+	}
+}
+
+@Suite("DeviceProfile export filename")
+struct DeviceProfileExportFilenameTests {
+
+	/// A fixed date so the `yyyyMMdd` stamp is deterministic. Built in the runner's current time zone
+	/// (no explicit `timeZone`) at noon, so it formats to the same calendar day as `exportDateStamp`
+	/// regardless of where the test runs.
+	private var fixedDate: Date {
+		var components = DateComponents()
+		components.year = 2026
+		components.month = 5
+		components.day = 4
+		components.hour = 12
+		return Calendar(identifier: .gregorian).date(from: components)!
+	}
+
+	@Test("Android-style filename uses the short name, date stamp, and nodeConfig suffix")
+	func androidStyleFilename() {
+		let name = DeviceProfileDocument.exportFilename(shortName: "ABCD", longName: "Base Station", date: fixedDate)
+		#expect(name == "Meshtastic_ABCD_20260504_nodeConfig")
+	}
+
+	@Test("Falls back to the long name when no short name is set")
+	func fallsBackToLongName() {
+		let name = DeviceProfileDocument.exportFilename(shortName: "  ", longName: "Base Station", date: fixedDate)
+		#expect(name == "Meshtastic_Base Station_20260504_nodeConfig")
+	}
+
+	@Test("Falls back to Node when neither name is usable")
+	func fallsBackToNode() {
+		let name = DeviceProfileDocument.exportFilename(shortName: nil, longName: nil, date: fixedDate)
+		#expect(name == "Meshtastic_Node_20260504_nodeConfig")
+	}
+
+	@Test("Strips path-illegal characters from the chosen name")
+	func stripsIllegalCharacters() {
+		let name = DeviceProfileDocument.exportFilename(shortName: "Base/Repeater:1", longName: nil, date: fixedDate)
+		#expect(name == "Meshtastic_Base-Repeater-1_20260504_nodeConfig")
+	}
+
+	@Test("A name made only of illegal characters falls back to Node")
+	func allIllegalCharactersFallsBackToNode() {
+		let name = DeviceProfileDocument.exportFilename(shortName: "/", longName: "::", date: fixedDate)
+		#expect(name == "Meshtastic_Node_20260504_nodeConfig")
+	}
+
+	@Test("Exported UTType carries the cfg extension so the exporter appends .cfg")
+	func deviceProfileUTType() {
+		#expect(UTType.meshtasticDeviceProfile.preferredFilenameExtension == "cfg")
+		#expect(UTType.meshtasticDeviceProfile.conforms(to: .data))
 	}
 }
