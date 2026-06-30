@@ -187,6 +187,23 @@ struct NodeDetail: View {
 					.textSelection(.enabled)
 			}
 			.accessibilityElement(children: .combine)
+			// Signed node = automatic trust, observed from the radio. Because NodeInfo is itself a signed
+			// broadcast, the node's identity is verified by extension. Ordered above the public-key (has-key)
+			// row so the section reads most-trusted-first. Affirmative only — never shown for unsigned nodes.
+			if node.hasXeddsaSigned {
+				HStack {
+					Label {
+						Text("Signed node")
+					} icon: {
+						Image(systemName: "checkmark.shield.fill")
+							.foregroundColor(.green)
+					}
+					Spacer()
+					Text("Verified automatically")
+						.foregroundStyle(.secondary)
+				}
+				.accessibilityElement(children: .combine)
+			}
 			if let user = node.user, user.keyMatch {
 				let publicKey = node.num == connectedNode?.num
 				? node.securityConfig?.publicKey?.base64EncodedString() ?? ""

@@ -25,6 +25,9 @@ struct MessageContextMenuItems: View {
 			if message.pkiEncrypted {
 				Label("Encrypted", systemImage: "lock")
 			}
+			if message.xeddsaSigned {
+				Label("Signed · verified", systemImage: "checkmark.shield.fill")
+			}
 			Text("Channel") + Text(": \(message.channel)")
 		}
 		.onAppear {
@@ -86,6 +89,10 @@ struct MessageContextMenuItems: View {
 			VStack {
 				Text("\(messageDate.formatted(date: .numeric, time: .standard))")
 					.foregroundColor(.gray)
+			}
+
+			if message.xeddsaSigned {
+				Text("Verified with the sender's key.")
 			}
 
 			if let relayDisplay {

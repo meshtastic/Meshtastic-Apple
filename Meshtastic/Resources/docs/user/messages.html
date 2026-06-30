@@ -114,6 +114,13 @@ Select a node from the drop-down to manage connected or remote devices.</div>
 </tbody>
 </table>
 <hr />
+<h3>Signing</h3>
+<p>A green shield (🛡️) on a broadcast message bubble means the message is <strong>signed and verified</strong> — the radio cryptographically verified an XEdDSA signature over the sender's identity key (firmware 2.8 or later). The shield answers a different question from the encryption lock: the <strong>lock</strong> means a direct message is <em>private</em>, while the <strong>shield</strong> means a broadcast is <em>authentic</em> (you know who really sent it).</p>
+<ul>
+<li>The shield appears only on broadcast/channel messages, never on direct messages, and only when verification succeeded. Long-press a signed message to see <strong>Signed · verified</strong> in the context menu, then open <strong>Message Details</strong> for &quot;Verified with the sender's key.&quot;</li>
+<li>Unsigned messages show nothing — there is no warning. Direct messages, oversized broadcasts, and traffic from older firmware are all legitimately unsigned, so the absence of a shield does not indicate a problem. The radio drops broadcasts whose signature fails verification before they ever reach the app, so a shown signed message is verified by construction.</li>
+</ul>
+<hr />
 <h3>Tapback Reactions</h3>
 <p>Long press any message and tap <strong>Tapback</strong> to send an emoji reaction.</p>
 <hr />

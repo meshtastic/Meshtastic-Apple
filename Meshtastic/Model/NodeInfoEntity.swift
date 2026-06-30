@@ -14,6 +14,9 @@ final class NodeInfoEntity {
 	var channel: Int32 = 0
 	var favorite: Bool = false
 	var firstHeard: Date?
+	/// True when this node signs its broadcast packets via XEdDSA and the radio has verified at least one
+	/// (NodeInfo.has_xeddsa_signed, field 14). Observed automatic trust — not a configurable setting.
+	var hasXeddsaSigned: Bool = false
 	var hopsAway: Int32 = 0
 	var id: Int64 = 0
 	var ignored: Bool = false

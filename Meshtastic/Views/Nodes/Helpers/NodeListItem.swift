@@ -127,6 +127,11 @@ struct NodeListItem: View {
 			}
 			desc += ", " + signalString
 		}
+		// Mirror the visual "Signed node" trust signal (see the shield row below) so VoiceOver
+		// announces it too — affirmative only, never for unsigned nodes.
+		if node.hasXeddsaSigned {
+			desc += ", " + "Signed node".localized
+		}
 		return desc
 	}
 	
@@ -216,6 +221,13 @@ struct NodeListItem: View {
 							Image(systemName: "star.fill")
 								.symbolRenderingMode(.multicolor)
 						}
+					}
+					// Signed node = XEdDSA-signed NodeInfo broadcast → identity verified by the radio.
+					// Affirmative only; never shown for unsigned nodes. Mirrors the Node Detail row.
+					if node.hasXeddsaSigned {
+						IconAndText(systemName: "checkmark.shield.fill",
+									imageColor: .green,
+									text: "Signed node".localized)
 					}
 					if isDirectlyConnected {
 						IconAndText(systemName: "antenna.radiowaves.left.and.right.circle.fill",

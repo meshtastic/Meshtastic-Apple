@@ -1,6 +1,46 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Signed · verified" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Signed · verified"
+          }
+        }
+      }
+    },
+    "Signed node" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Signed node"
+          }
+        }
+      }
+    },
+    "Verified automatically" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verified automatically"
+          }
+        }
+      }
+    },
+    "Verified with the sender's key." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verified with the sender's key."
+          }
+        }
+      }
+    },
     "" : {
       "localizations" : {
         "da" : {
