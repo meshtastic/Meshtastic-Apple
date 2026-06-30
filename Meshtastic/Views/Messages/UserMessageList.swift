@@ -25,6 +25,14 @@ private struct UserMessageTimelineCursor: Comparable {
 private struct UserMessageListChangeToken: Equatable {
 	let latest: UserMessageTimelineCursor?
 	let count: Int
+	// Tallies of outgoing messages whose ACK has resolved, kept as separate delivered/errored
+	// counts rather than a single sum: an errored→delivered transition leaves the sum unchanged
+	// (delivered +1, errored −1) but moves both tallies, so the token still changes and the list
+	// reloads. An incoming ACK changes neither `latest` nor `count`, so without these the
+	// poll-based refresh would never reload and the row would stay on "Waiting to be
+	// acknowledged" until the view is rebuilt.
+	let deliveredAckCount: Int
+	let erroredAckCount: Int
 }
 
 struct UserMessageList: View {
@@ -128,10 +136,43 @@ struct UserMessageList: View {
 
 	private func fetchMessageChangeToken(latestMessage: MessageEntity? = nil) throws -> UserMessageListChangeToken {
 		let latest = try latestMessage ?? fetchMessages(limit: 1).first
+		let acks = try Self.resolvedAckCounts(in: context, toUserNum: user.num)
 		return UserMessageListChangeToken(
 			latest: latest.map(cursor(for:)),
-			count: try fetchIncomingMessageCount() + fetchOutgoingMessageCount()
+			count: try fetchIncomingMessageCount() + fetchOutgoingMessageCount(),
+			deliveredAckCount: acks.delivered,
+			erroredAckCount: acks.errored
 		)
+	}
+
+	/// Tallies of outgoing messages in this conversation whose ACK has resolved — delivered
+	/// (`receivedACK`) and failed (`ackError != 0`) counted separately. A message is shown as
+	/// "Waiting to be acknowledged" until one of these is set, and keeping the tallies distinct
+	/// means every transition (waiting→delivered, waiting→errored, errored→delivered, or a retry
+	/// resetting either) moves at least one tally, so the list reloads. Only outgoing messages
+	/// carry ACK state, so the incoming side is excluded. Exposed `static` so the regression tests
+	/// exercise these exact predicates instead of hand-mirrored copies.
+	///
+	/// Two single-term `fetchCount`s rather than one `||` predicate: a compound `||` (and an extra
+	/// `&&` term such as an `isEmoji` filter) exceeds the `#Predicate` macro's type-check budget.
+	/// Not filtering `isEmoji` only means an acked tapback triggers one extra benign reload.
+	static func resolvedAckCounts(in context: ModelContext, toUserNum userNum: Int64) throws -> (delivered: Int, errored: Int) {
+		let detectionSensorPortNum: Int32 = 10
+		let deliveredDescriptor = FetchDescriptor<MessageEntity>(
+			predicate: #Predicate<MessageEntity> {
+				$0.toUser?.num == userNum
+				&& $0.admin == false && $0.portNum != detectionSensorPortNum
+				&& $0.receivedACK
+			}
+		)
+		let erroredDescriptor = FetchDescriptor<MessageEntity>(
+			predicate: #Predicate<MessageEntity> {
+				$0.toUser?.num == userNum
+				&& $0.admin == false && $0.portNum != detectionSensorPortNum
+				&& $0.ackError != 0
+			}
+		)
+		return (try context.fetchCount(deliveredDescriptor), try context.fetchCount(erroredDescriptor))
 	}
 
 	private func fetchIncomingMessageCount() throws -> Int {
