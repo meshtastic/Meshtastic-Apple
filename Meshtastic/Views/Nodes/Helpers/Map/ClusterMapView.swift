@@ -168,6 +168,9 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 	/// One-shot programmatic camera move (e.g. the initial frame), applied exactly once per distinct
 	/// id. The ONLY thing that moves the camera programmatically; after it fires the user is in control.
 	let cameraCommand: ClusterMapCameraCommand?
+	/// Floor fallback: while no camera command has framed the map yet, follow the user's location
+	/// instead of sitting at MKMapView's default (0,0) region. A camera command supersedes this.
+	let followsUserLocationUntilFramed: Bool
 	/// When true, annotations share a `clusteringIdentifier` so MapKit collapses nearby pins.
 	let clustering: Bool
 	/// Builds the SwiftUI view for one item's pin.
@@ -204,6 +207,7 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 		coordinate: @escaping (Item) -> CLLocationCoordinate2D,
 		region: Binding<MKCoordinateRegion?>? = nil,
 		cameraCommand: ClusterMapCameraCommand? = nil,
+		followsUserLocationUntilFramed: Bool = false,
 		clustering: Bool = true,
 		onSelect: ((Item) -> Void)? = nil,
 		configuration: ClusterMapConfiguration = .init(),
@@ -221,6 +225,7 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 		self.coordinate = coordinate
 		self.region = region
 		self.cameraCommand = cameraCommand
+		self.followsUserLocationUntilFramed = followsUserLocationUntilFramed
 		self.clustering = clustering
 		self.onSelect = onSelect
 		self.configuration = configuration
@@ -240,8 +245,15 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 	func makeCoordinator() -> Coordinator { Coordinator() }
 
 	func makeUIView(context: Context) -> MKMapView {
-		let mapView = MKMapView()
+		let mapView = LayoutObservingMapView()
 		mapView.delegate = context.coordinator
+		// Backstop for landing a deferred initial frame: if the map gains its first non-zero size via a
+		// layout pass that emits neither an updateUIView nor a region-change delegate call, this fires.
+		// Cheap no-op once nothing is pending.
+		mapView.onLayout = { [weak coordinator = context.coordinator, weak mapView] in
+			guard let coordinator, let mapView else { return }
+			coordinator.applyPendingCameraCommandIfPossible(on: mapView)
+		}
 		refreshClosures(on: context.coordinator)
 
 		// Register the reusable view classes ONCE. With registered classes MapKit dequeues + reuses
@@ -275,14 +287,14 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 		context.coordinator.syncCoverage(areas: coverageAreas, dark: colorScheme == .dark, on: mapView)
 		context.coordinator.syncDecorations(decorations, on: mapView)
 
-		// Initial camera, if a one-shot command is already pending at creation. Guarded so we don't
-		// echo it back out. (The continuous `region` binding is never pushed INTO the map.)
+		// Initial camera, if a one-shot command is already pending at creation. Routed through the
+		// pending mechanism so it isn't lost when the map has no layout size yet (it retries once sized).
 		if let command = cameraCommand {
-			context.coordinator.appliedCameraCommandID = command.id
-			context.coordinator.isApplyingExternalRegion = true
-			mapView.setRegion(command.region, animated: false)
-			context.coordinator.isApplyingExternalRegion = false
+			context.coordinator.pendingCameraCommand = command
+			context.coordinator.applyPendingCameraCommandIfPossible(on: mapView)
 		}
+		// Follow-the-user floor while nothing has framed the map yet (avoids the default (0,0) view).
+		context.coordinator.applyUserTrackingFallback(followsUserLocationUntilFramed, on: mapView)
 
 		// Seed the annotations through the same diffing path used by updates.
 		context.coordinator.sync(items: items, coordinate: coordinate,
@@ -327,23 +339,15 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 		// 3) Apply a one-shot camera command (e.g. the initial frame) EXACTLY ONCE. We deliberately
 		//    do NOT push the `region` binding back into the map: under heavy traffic the data churns
 		//    every frame, and a reactive setRegion would fight the user's pan/zoom and "re-frame" the
-		//    map constantly. After the initial command fires, the user owns the camera.
-		if let command = cameraCommand,
-		   coordinator.appliedCameraCommandID != command.id {
-			coordinator.appliedCameraCommandID = command.id
-			let currentRegion = mapView.region
-			coordinator.isApplyingExternalRegion = true
-			mapView.setRegion(command.region, animated: command.animated)
-			// `regionDidChangeAnimated` clears the guard when the move completes — for an *animated*
-			// move that's only after the animation finishes, so we must NOT clear it early. Only fall
-			// back to an async clear when the target equals the current region: MapKit fires no
-			// callback then, so without this the guard would stick and suppress the next user pan.
-			// (An unconditional async clear would race ahead of an animated move's later callback and
-			// let the programmatic change leak into `regionBinding`.)
-			if coordinator.regionsApproximatelyEqual(currentRegion, command.region) {
-				DispatchQueue.main.async { coordinator.isApplyingExternalRegion = false }
-			}
+		//    map constantly. After the initial command fires, the user owns the camera. A new command
+		//    becomes pending; `applyPendingCameraCommandIfPossible` lands it once the map is sized.
+		if let command = cameraCommand, coordinator.appliedCameraCommandID != command.id {
+			coordinator.pendingCameraCommand = command
 		}
+		coordinator.applyPendingCameraCommandIfPossible(on: mapView)
+
+		// 4) Follow-the-user floor (no-op once a command has landed) so we never sit at (0,0).
+		coordinator.applyUserTrackingFallback(followsUserLocationUntilFramed, on: mapView)
 	}
 
 	/// Re-capture the SwiftUI builders + camera binding onto the (persistent) coordinator.
@@ -423,6 +427,15 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 		/// id of the last `ClusterMapCameraCommand` we applied, so each command moves the camera once
 		/// and re-renders never re-apply it (the guard that keeps streaming data off the camera).
 		var appliedCameraCommandID: UUID?
+		/// A camera command received but not yet *landed* — the map can't honor `setRegion` until it has
+		/// a real (non-zero) layout size, so we hold the command here and retry (on each update and when
+		/// the visible region first changes after layout) until it actually applies. Without this, an
+		/// initial frame applied pre-layout is silently dropped yet marked done, stranding the map at the
+		/// default (0,0) region.
+		var pendingCameraCommand: ClusterMapCameraCommand?
+		/// Whether the follow-the-user floor has been asserted. Latched so we set `.follow` only once and
+		/// never re-assert it over the user's manual pan (see `applyUserTrackingFallback`).
+		var didApplyUserTrackingFallback = false
 
 		/// Shared clustering identifier — all clustered item annotations use the same one so MapKit
 		/// groups them. (Computed, not stored: the Coordinator is nested in the generic
@@ -823,7 +836,52 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 			return renderer
 		}
 
+		// MARK: One-shot camera command (self-healing: retries until it lands)
+
+		/// Apply the pending camera command IFF the map has a real layout size. `setRegion` on a
+		/// zero-bounds map is silently dropped (MapKit can't aspect-fit the span), so we defer and let a
+		/// later call — the next `updateUIView` or `mapViewDidChangeVisibleRegion` after layout — retry.
+		/// Marks the command applied and clears the pending slot only once it has actually been sent.
+		func applyPendingCameraCommandIfPossible(on mapView: MKMapView) {
+			guard let command = pendingCameraCommand else { return }
+			guard mapView.bounds.width > 1, mapView.bounds.height > 1 else { return } // not laid out yet
+			appliedCameraCommandID = command.id
+			pendingCameraCommand = nil
+			let currentRegion = mapView.region
+			isApplyingExternalRegion = true
+			mapView.setRegion(command.region, animated: command.animated)
+			// `regionDidChangeAnimated` clears the guard when the move completes — for an *animated*
+			// move that's only after the animation finishes, so we must NOT clear it early. Only fall
+			// back to an async clear when the target equals the current region: MapKit fires no
+			// callback then, so without this the guard would stick and suppress the next user pan.
+			// (An unconditional async clear would race ahead of an animated move's later callback and
+			// let the programmatic change leak into `regionBinding`.)
+			if regionsApproximatelyEqual(currentRegion, command.region) {
+				DispatchQueue.main.async { self.isApplyingExternalRegion = false }
+			}
+		}
+
+		/// Floor fallback: follow the user's location while no camera command has framed the map yet, so
+		/// we never sit at MKMapView's default (0,0) region. Applied AT MOST ONCE: re-asserting `.follow`
+		/// on every `updateUIView` would fight the user (MapKit demotes follow→none on a manual pan, and
+		/// we'd snap it straight back). Once it's asserted, the user — or a landed camera command, whose
+		/// `setRegion` cancels follow — owns the camera; we never force tracking again.
+		func applyUserTrackingFallback(_ follow: Bool, on mapView: MKMapView) {
+			guard follow, !didApplyUserTrackingFallback,
+				  appliedCameraCommandID == nil, pendingCameraCommand == nil else { return }
+			didApplyUserTrackingFallback = true
+			if mapView.userTrackingMode != .follow { mapView.userTrackingMode = .follow }
+		}
+
 		// MARK: Camera write-back (user gestures → region binding), loop-guarded
+
+		/// Lighter-weight than `regionDidChangeAnimated`; fires as the region changes, including the
+		/// first time MapKit computes one for a freshly-laid-out (now non-zero) frame — our cue to land a
+		/// camera command that was deferred while the map had no size. Guarded by `pendingCameraCommand`
+		/// so it's a cheap no-op during normal panning.
+		func mapViewDidChangeVisibleRegion(_ mapView: MKMapView) {
+			if pendingCameraCommand != nil { applyPendingCameraCommandIfPossible(on: mapView) }
+		}
 
 		func mapView(_ mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
 			// Ignore the callback caused by our own external write (guard #1).
@@ -872,6 +930,7 @@ extension ClusterMapView where Cluster == ClusterBadge {
 		coordinate: @escaping (Item) -> CLLocationCoordinate2D,
 		region: Binding<MKCoordinateRegion?>? = nil,
 		cameraCommand: ClusterMapCameraCommand? = nil,
+		followsUserLocationUntilFramed: Bool = false,
 		clustering: Bool = true,
 		onSelect: ((Item) -> Void)? = nil,
 		configuration: ClusterMapConfiguration = .init(),
@@ -888,6 +947,7 @@ extension ClusterMapView where Cluster == ClusterBadge {
 				  coordinate: coordinate,
 				  region: region,
 				  cameraCommand: cameraCommand,
+				  followsUserLocationUntilFramed: followsUserLocationUntilFramed,
 				  clustering: clustering,
 				  onSelect: onSelect,
 				  configuration: configuration,
@@ -900,6 +960,19 @@ extension ClusterMapView where Cluster == ClusterBadge {
 				suppressRegionUpdates: suppressRegionUpdates,
 				  content: pinContent,
 				  clusterContent: { ClusterBadge(count: $0) })
+	}
+}
+
+// MARK: - Layout-observing map view (lands a deferred initial frame once the map is sized)
+
+/// `MKMapView` that forwards `layoutSubviews` so a camera command deferred while the map had no size
+/// can be applied the moment it first gets a non-zero frame — covering layout passes that emit no
+/// region-change delegate call or `updateUIView`. `onLayout` is a cheap no-op when nothing is pending.
+private final class LayoutObservingMapView: MKMapView {
+	var onLayout: (() -> Void)?
+	override func layoutSubviews() {
+		super.layoutSubviews()
+		onLayout?()
 	}
 }
 

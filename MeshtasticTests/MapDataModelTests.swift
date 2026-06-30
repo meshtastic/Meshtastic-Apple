@@ -3,6 +3,7 @@
 
 import Testing
 import Foundation
+import MapKit
 @testable import Meshtastic
 
 // MARK: - MapDataMetadata Tests
@@ -279,3 +280,87 @@ struct OfflineVectorPerfTests {
 }
 
 // swiftlint:enable disable_print
+
+// MARK: - Map region persistence (issue #2016: map reset to South Atlantic / (0,0))
+
+/// Regression coverage for the map restoring MKMapView's default (0,0) "South Atlantic" region.
+/// The map persists its last viewport and restores it on launch; these tests pin the rule that a
+/// (0,0) / invalid region can never round-trip, so the bug can't silently return.
+@Suite("MeshMapRegionPersistence")
+struct MeshMapRegionPersistenceTests {
+
+	private func region(_ lat: Double, _ lon: Double, _ latDelta: Double = 0.3, _ lonDelta: Double = 0.3) -> MKCoordinateRegion {
+		MKCoordinateRegion(
+			center: CLLocationCoordinate2D(latitude: lat, longitude: lon),
+			span: MKCoordinateSpan(latitudeDelta: latDelta, longitudeDelta: lonDelta)
+		)
+	}
+
+	// MARK: isPersistable
+
+	@Test func isPersistable_acceptsValidRegion() {
+		#expect(MeshMapRegionPersistence.isPersistable(region(47.6062, -122.3321)))
+	}
+
+	@Test func isPersistable_rejectsNullIsland() {
+		// The exact (0,0) default region MKMapView shows unconfigured — the reported bug.
+		#expect(!MeshMapRegionPersistence.isPersistable(region(0, 0)))
+	}
+
+	@Test func isPersistable_rejectsNearNullIsland() {
+		// Float noise around (0,0) must also be rejected so it can't sneak past the guard.
+		#expect(!MeshMapRegionPersistence.isPersistable(region(0.00005, -0.00005)))
+	}
+
+	@Test func isPersistable_acceptsEquatorAndPrimeMeridianAwayFromOrigin() {
+		// A real location ON the equator (lat 0) or prime meridian (lon 0) — but not at the origin —
+		// is legitimate and must NOT be rejected (only the (0,0) corner is the default sentinel).
+		#expect(MeshMapRegionPersistence.isPersistable(region(0, -78.4678)))   // Quito, ~equator
+		#expect(MeshMapRegionPersistence.isPersistable(region(51.4769, 0)))    // Greenwich, prime meridian
+	}
+
+	@Test func isPersistable_rejectsNonPositiveSpan() {
+		#expect(!MeshMapRegionPersistence.isPersistable(region(47.6, -122.3, 0, 0.3)))
+		#expect(!MeshMapRegionPersistence.isPersistable(region(47.6, -122.3, 0.3, 0)))
+	}
+
+	@Test func isPersistable_rejectsOutOfRangeCoordinate() {
+		// CLLocationCoordinate2DIsValid rejects |lat| > 90 / |lon| > 180.
+		#expect(!MeshMapRegionPersistence.isPersistable(region(120, 0)))
+		#expect(!MeshMapRegionPersistence.isPersistable(region(0, 300)))
+	}
+
+	// MARK: restoredRegion
+
+	@Test func restoredRegion_roundTripsValidRegion() {
+		let restored = MeshMapRegionPersistence.restoredRegion(
+			hasSaved: true, latitude: 47.6062, longitude: -122.3321, latitudeDelta: 0.4, longitudeDelta: 0.5
+		)
+		#expect(restored != nil)
+		#expect(abs((restored?.center.latitude ?? 0) - 47.6062) < 1e-9)
+		#expect(abs((restored?.center.longitude ?? 0) + 122.3321) < 1e-9)
+		#expect(abs((restored?.span.latitudeDelta ?? 0) - 0.4) < 1e-9)
+		#expect(abs((restored?.span.longitudeDelta ?? 0) - 0.5) < 1e-9)
+	}
+
+	@Test func restoredRegion_nilWhenNotSaved() {
+		// Fresh install: hasSaved=false must yield nil so framing falls through to GPS/nodes/follow.
+		#expect(MeshMapRegionPersistence.restoredRegion(
+			hasSaved: false, latitude: 47.6, longitude: -122.3, latitudeDelta: 0.3, longitudeDelta: 0.3
+		) == nil)
+	}
+
+	@Test func restoredRegion_selfHealsPersistedNullIsland() {
+		// A (0,0) written by a pre-fix build must NOT be restored — otherwise the bug persists across
+		// the upgrade. The restore path reapplies the same reject as saving.
+		#expect(MeshMapRegionPersistence.restoredRegion(
+			hasSaved: true, latitude: 0, longitude: 0, latitudeDelta: 180, longitudeDelta: 360
+		) == nil)
+	}
+
+	@Test func restoredRegion_nilWhenSpanZeroed() {
+		#expect(MeshMapRegionPersistence.restoredRegion(
+			hasSaved: true, latitude: 47.6, longitude: -122.3, latitudeDelta: 0, longitudeDelta: 0
+		) == nil)
+	}
+}

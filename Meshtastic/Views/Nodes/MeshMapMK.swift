@@ -61,6 +61,18 @@ struct MeshMapMK: View {
 	/// drives the camera and we never move it programmatically, so a flood of incoming positions
 	/// can't re-frame the map mid-gesture.
 	@State private var cameraCommand: ClusterMapCameraCommand?
+	/// Floor fallback: while we have nothing to frame on yet (no saved region, no GPS, no node
+	/// positions), follow the user's location instead of sitting at MKMapView's default (0,0) region
+	/// — the "South Atlantic Ocean" the map otherwise reset to. A real frame later supersedes this.
+	@State private var followUserLocation = false
+	/// Persisted last map region, restored on launch so the map reopens where the user left it
+	/// (parity with the pre-MKMapView map). `hasSavedRegion` gates validity so a fresh install
+	/// doesn't read a 0/0 default as a real coordinate.
+	@AppStorage("meshMapHasSavedRegion") private var hasSavedRegion = false
+	@AppStorage("meshMapLastLatitude") private var lastRegionLatitude = 0.0
+	@AppStorage("meshMapLastLongitude") private var lastRegionLongitude = 0.0
+	@AppStorage("meshMapLastLatDelta") private var lastRegionLatDelta = 0.0
+	@AppStorage("meshMapLastLonDelta") private var lastRegionLonDelta = 0.0
 	/// Offline basemap rendered as native MKOverlays (slate/cream vector content) -- matches the old
 	/// SwiftUI map's look and aligns the coverage border/label exactly (no tile-grid mismatch).
 	@StateObject private var offlineVectors = OfflineVectorTileProvider()
@@ -259,6 +271,7 @@ struct MeshMapMK: View {
 				coordinate: { spreadOverrides[$0.nodeNum] ?? $0.coordinate },
 				region: $visibleRegion,
 				cameraCommand: cameraCommand,
+				followsUserLocationUntilFramed: followUserLocation,
 				clustering: enableMapClustering,
 				onSelect: { snapshot in selectedWaypoint = nil; editingWaypoint = nil; selectedNode = MeshMapSelectedNode(id: snapshot.nodeNum) },
 				configuration: clusterConfiguration,
@@ -499,7 +512,10 @@ struct MeshMapMK: View {
 			.onChange(of: accessoryManager.activeDeviceNum) {
 				syncFallbackLocation()
 			}
-			.onChange(of: accessoryManager.isInBackground) {
+			.onChange(of: accessoryManager.isInBackground) { _, isInBackground in
+				// Save the viewport before the app is backgrounded (it may be terminated without ever
+				// firing onDisappear), so the next launch reopens where the user left the map.
+				if isInBackground { persistCurrentRegion() }
 				// Foreground/background flips isMapVisible; refresh so the overlay-bearing
 				// snapshots are dropped when backgrounded and rebuilt when foregrounded.
 				refreshVisiblePositionSnapshots(from: positionState.positions)
@@ -537,6 +553,7 @@ struct MeshMapMK: View {
 			refreshVisiblePositionSnapshots(from: positionState.positions)
 		}
 		.onDisappear(perform: {
+			persistCurrentRegion()
 			UIApplication.shared.isIdleTimerDisabled = false
 			GeoJSONOverlayManager.shared.clearCache()
 			visiblePositionSnapshots = []
@@ -549,6 +566,7 @@ struct MeshMapMK: View {
 				refreshVisiblePositionSnapshots()
 				applyTraceRouteSelection()
 			} else {
+				persistCurrentRegion()
 				flyover.stop(restoreCamera: false)
 				UIApplication.shared.isIdleTimerDisabled = false
 				GeoJSONOverlayManager.shared.clearCache()
@@ -638,15 +656,28 @@ struct MeshMapMK: View {
 		return overrides
 	}
 
-	/// One-time initial camera framing. Centers on the phone's GPS (else the connected device's GPS,
+	/// One-time initial camera framing. Prefers the user's persisted last region (so the map reopens
+	/// where they left it); otherwise centers on the phone's GPS (else the connected device's GPS,
 	/// else the node centroid) and zooms out to fit nearby nodes -- capped at ~100 miles so we "start
 	/// zoomed out but local." After it fires once the user drives the camera; we never re-frame, even
 	/// as positions pour in.
 	private func frameInitialRegionIfNeeded() {
 		guard !didInitialFrame else { return }
+
+		// 1) Restore the user's last region if we have one. Matches the pre-migration behavior and can
+		//    never land on (0,0) (persistRegion only stores valid, user-driven regions).
+		if let saved = savedRegion {
+			applyInitialFrame(saved)
+			return
+		}
+
+		// 2) Frame on the best available origin, fitting nearby nodes.
 		let nodeCoords = allLatestPositions.compactMap { $0.nodeCoordinate ?? $0.fuzzedNodeCoordinate }
 		guard let center = LocationsHandler.currentLocation ?? activeDeviceCoordinate ?? coordinateCentroid(of: nodeCoords) else {
-			return // No GPS and no nodes yet -- try again on the next refresh.
+			// 3) Nothing to frame on yet: follow the user's location as a floor (never sit at the
+			//    default (0,0) South Atlantic view) and retry on the next refresh once data arrives.
+			followUserLocation = true
+			return
 		}
 		// ~100 miles is about 1.45 deg latitude; floor ~20 miles so a lone node still starts zoomed out.
 		let maxSpan = 1.45, minSpan = 0.30
@@ -657,15 +688,53 @@ struct MeshMapMK: View {
 		}
 		let latDelta = min(max(maxLat * 2.5, minSpan), maxSpan)
 		let lonDelta = min(max(maxLon * 2.5, minSpan), maxSpan)
-		didInitialFrame = true
-		let region = MKCoordinateRegion(
+		applyInitialFrame(MKCoordinateRegion(
 			center: center,
 			span: MKCoordinateSpan(latitudeDelta: latDelta, longitudeDelta: lonDelta)
-		)
-		// Seed `visibleRegion` so content filtering reflects the frame immediately, and emit the
-		// one-shot command that actually moves the map (the only programmatic camera move we make).
+		))
+	}
+
+	/// Commit the one-shot initial frame: mark it done, drop the follow-the-user floor, seed
+	/// `visibleRegion` so content filtering reflects the frame immediately, and emit the one-shot
+	/// command that actually moves the map (the only programmatic camera move we make).
+	private func applyInitialFrame(_ region: MKCoordinateRegion) {
+		didInitialFrame = true
+		followUserLocation = false
 		visibleRegion = region
 		cameraCommand = ClusterMapCameraCommand(id: UUID(), region: region)
+	}
+
+	/// The persisted last region, or nil when there isn't a valid one saved. Validation (incl. the
+	/// (0,0) reject that also self-heals any (0,0) saved by a pre-fix build) lives in the testable
+	/// `MeshMapRegionPersistence` helper.
+	private var savedRegion: MKCoordinateRegion? {
+		MeshMapRegionPersistence.restoredRegion(
+			hasSaved: hasSavedRegion,
+			latitude: lastRegionLatitude,
+			longitude: lastRegionLongitude,
+			latitudeDelta: lastRegionLatDelta,
+			longitudeDelta: lastRegionLonDelta
+		)
+	}
+
+	/// Save the map's current viewport so the next launch reopens here. Called at natural commit points
+	/// (leaving the tab / backgrounding) rather than on every region callback, so user panning doesn't
+	/// hammer UserDefaults on the gesture hot path. Persists regardless of `didInitialFrame` so a
+	/// follow-mode session's final viewport is still saved.
+	private func persistCurrentRegion() {
+		guard let visibleRegion else { return }
+		persistRegion(visibleRegion)
+	}
+
+	/// Save a (validated) region so the next launch reopens here. Rejects (0,0) so MKMapView's default
+	/// (0,0) region — the "South Atlantic" the user reported — can never be persisted and restored.
+	private func persistRegion(_ region: MKCoordinateRegion) {
+		guard MeshMapRegionPersistence.isPersistable(region) else { return }
+		lastRegionLatitude = region.center.latitude
+		lastRegionLongitude = region.center.longitude
+		lastRegionLatDelta = region.span.latitudeDelta
+		lastRegionLonDelta = region.span.longitudeDelta
+		hasSavedRegion = true
 	}
 
 	/// Average of a coordinate list (nil when empty).
@@ -1342,5 +1411,43 @@ private struct RouteEndpointMarker: View {
 			.fill(color)
 			.overlay(Circle().stroke(.white, lineWidth: 3))
 			.frame(width: 15, height: 15)
+	}
+}
+
+// MARK: - Region persistence rules
+
+/// Pure validation + (de)serialization for the map's persisted last region, factored out of the
+/// `MeshMapMK` view so the issue #2016 regression — the map restoring MKMapView's default (0,0)
+/// "South Atlantic" region — is unit-testable without a live map view. `internal` so tests can reach
+/// it via `@testable import`.
+enum MeshMapRegionPersistence {
+	/// Center magnitude (deg) at/under which we treat a region as the (0,0) "Null Island" default and
+	/// refuse to persist or restore it. No Meshtastic mesh realistically sits in this open-ocean cell,
+	/// so rejecting it is safe and stops the default map region from ever being saved.
+	static let nullIslandEpsilon = 0.0001
+
+	/// Whether `region` is safe to persist/restore: a valid, non-(0,0) center with positive spans.
+	static func isPersistable(_ region: MKCoordinateRegion) -> Bool {
+		let center = region.center
+		guard CLLocationCoordinate2DIsValid(center),
+			  region.span.latitudeDelta > 0, region.span.longitudeDelta > 0 else { return false }
+		return !(abs(center.latitude) < nullIslandEpsilon && abs(center.longitude) < nullIslandEpsilon)
+	}
+
+	/// Reconstruct a persisted region from stored fields, or nil when unset/invalid. Applies the same
+	/// `isPersistable` gate as saving, so a (0,0) written by a pre-fix build is self-healed (ignored).
+	static func restoredRegion(
+		hasSaved: Bool,
+		latitude: Double,
+		longitude: Double,
+		latitudeDelta: Double,
+		longitudeDelta: Double
+	) -> MKCoordinateRegion? {
+		guard hasSaved else { return nil }
+		let region = MKCoordinateRegion(
+			center: CLLocationCoordinate2D(latitude: latitude, longitude: longitude),
+			span: MKCoordinateSpan(latitudeDelta: latitudeDelta, longitudeDelta: longitudeDelta)
+		)
+		return isPersistable(region) ? region : nil
 	}
 }
