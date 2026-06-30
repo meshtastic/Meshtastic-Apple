@@ -528,6 +528,7 @@
             "open",
             "scripts",
             "polite",
+            "documentation",
             "translated",
             "strings",
             "script",
@@ -540,10 +541,9 @@
             "english",
             "directly",
             "bin",
-            "automatically",
-            "version"
+            "automatically"
         ],
-        "charCount": 4735
+        "charCount": 4753
     },
     {
         "id": "units-and-locale",
