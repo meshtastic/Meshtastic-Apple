@@ -39,7 +39,7 @@ struct NodeListItemCompact: View {
 		return f
 	}()
 
-	private func accessibilityDescription(batteryLevel: Int32?, cachedLocationData: (nodeLocation: CLLocation, myLocation: CLLocation)?) -> String {
+	private func accessibilityDescription(batteryLevel: Int32?, cachedLocationData: (nodeLocation: CLLocation, myLocation: CLLocation)?, status: String?) -> String {
 		var desc = ""
 		if let shortName = node.user?.shortName {
 			desc = shortName.formatNodeNameForVoiceOver()
@@ -53,6 +53,9 @@ struct NodeListItemCompact: View {
 		}
 		if node.favorite {
 			desc += ", favorite"
+		}
+		if let status {
+			desc += ", status: " + status
 		}
 		if let lastHeard = node.lastHeard {
 			let relative = Self.relativeDateFormatter.localizedString(for: lastHeard, relativeTo: Date())
@@ -157,7 +160,9 @@ struct NodeListItemCompact: View {
 		if shouldShowLastHeard {
 			lines += 1
 		}
-		
+
+		// Note: the status row's contribution is added by the caller via the resolved
+		// `statusMessage` value, so `node.statusMessageDisplay` is evaluated only once.
 		return lines
 	}
 	
@@ -175,7 +180,9 @@ struct NodeListItemCompact: View {
 	}
 
 	@ViewBuilder private var rowContent: some View {
-		let circleSize = max(minCircle, min(maxCircle, baseUnit * CGFloat(lineNums)))
+		// Resolve the status once per render; reused for the row, circle sizing, and a11y.
+		let statusMessage = node.statusMessageDisplay
+		let circleSize = max(minCircle, min(maxCircle, baseUnit * CGFloat(lineNums + (statusMessage != nil ? 1 : 0))))
 		let cachedBatteryLevel = (shouldShowPower || shouldShowTelemetry) ? rowSummary?.batteryLevel : nil
 		let needsLatestPosition = shouldShowTelemetry || (shouldShowLocation && connectedNode != node.num)
 		let cachedLatestNodeCoordinate = needsLatestPosition ? rowSummary?.latestNodeCoordinate : nil
@@ -213,6 +220,19 @@ struct NodeListItemCompact: View {
 							Image(systemName: "star.fill")
 								.symbolRenderingMode(.multicolor)
 						}
+					}
+					// User-authored status broadcast by the node, directly beneath the name.
+					// Single-line clamp keeps the compact row dense; omitted when empty.
+					// Untrusted free text: rendered verbatim as plain text only.
+					if let statusMessage {
+						NodeCardStatusRow(
+							status: statusMessage,
+							iconWidth: nil,
+							iconFont: .caption,
+							textFont: .caption,
+							lineLimit: 1
+						)
+						.padding(EdgeInsets(top: 0, leading: 6, bottom: 0, trailing: 0))
 					}
 					if shouldShowLastHeard && node.lastHeard?.timeIntervalSince1970 ?? 0 > 0 && node.lastHeard! < Calendar.current.date(byAdding: .year, value: 1, to: Date())! {
 						
@@ -310,7 +330,7 @@ struct NodeListItemCompact: View {
 				}
 			}
 			.accessibilityElement(children: .ignore)
-			.accessibilityLabel(accessibilityDescription(batteryLevel: cachedBatteryLevel, cachedLocationData: cachedLocationData))
+			.accessibilityLabel(accessibilityDescription(batteryLevel: cachedBatteryLevel, cachedLocationData: cachedLocationData, status: statusMessage))
 	}
 }
 
