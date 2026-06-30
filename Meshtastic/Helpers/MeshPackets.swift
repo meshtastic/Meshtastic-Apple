@@ -376,8 +376,8 @@ actor MeshPackets {
 				newMetadata.hasBluetooth = metadata.hasBluetooth_p
 				newMetadata.hasEthernet	= metadata.hasEthernet_p
 				newMetadata.role = Int32(metadata.role.rawValue)
-				newMetadata.positionFlags = Int32(metadata.positionFlags)
-				newMetadata.excludedModules = Int32(metadata.excludedModules)
+				newMetadata.positionFlags = Int32(truncatingIfNeeded: metadata.positionFlags)
+				newMetadata.excludedModules = Int32(truncatingIfNeeded: metadata.excludedModules)
 				// Swift does strings weird, this does work to get the version without the github hash
 				let lastDotIndex = metadata.firmwareVersion.lastIndex(of: ".")
 				var version = metadata.firmwareVersion[...(lastDotIndex ?? String.Index(utf16Offset: 6, in: metadata.firmwareVersion))]
@@ -433,7 +433,7 @@ actor MeshPackets {
 					if nodeInfo.hasDeviceMetrics {
 						let telemetry = TelemetryEntity()
 						modelContext.insert(telemetry)
-						telemetry.batteryLevel = Int32(nodeInfo.deviceMetrics.batteryLevel)
+						telemetry.batteryLevel = Int32(truncatingIfNeeded: nodeInfo.deviceMetrics.batteryLevel)
 						telemetry.voltage = nodeInfo.deviceMetrics.voltage
 						telemetry.channelUtilization = nodeInfo.deviceMetrics.channelUtilization
 						telemetry.airUtilTx = nodeInfo.deviceMetrics.airUtilTx
@@ -600,7 +600,7 @@ actor MeshPackets {
 
 						let newTelemetry = TelemetryEntity()
 						modelContext.insert(newTelemetry)
-						newTelemetry.batteryLevel = Int32(nodeInfo.deviceMetrics.batteryLevel)
+						newTelemetry.batteryLevel = Int32(truncatingIfNeeded: nodeInfo.deviceMetrics.batteryLevel)
 						newTelemetry.voltage = nodeInfo.deviceMetrics.voltage
 						newTelemetry.channelUtilization = nodeInfo.deviceMetrics.channelUtilization
 						newTelemetry.airUtilTx = nodeInfo.deviceMetrics.airUtilTx
@@ -912,9 +912,9 @@ actor MeshPackets {
 				Logger.data.debug("📈 [Telemetry] Device Metrics Received for Node: \(packet.from.toHex(), privacy: .public)")
 				telemetry.airUtilTx = telemetryMessage.deviceMetrics.hasAirUtilTx.then(telemetryMessage.deviceMetrics.airUtilTx)
 				telemetry.channelUtilization = telemetryMessage.deviceMetrics.hasChannelUtilization.then(telemetryMessage.deviceMetrics.channelUtilization)
-				telemetry.batteryLevel = telemetryMessage.deviceMetrics.hasBatteryLevel.then(Int32(telemetryMessage.deviceMetrics.batteryLevel))
+				telemetry.batteryLevel = telemetryMessage.deviceMetrics.hasBatteryLevel.then(Int32(truncatingIfNeeded: telemetryMessage.deviceMetrics.batteryLevel))
 				telemetry.voltage = telemetryMessage.deviceMetrics.hasVoltage.then(telemetryMessage.deviceMetrics.voltage)
-				telemetry.uptimeSeconds = telemetryMessage.deviceMetrics.hasUptimeSeconds.then(Int32(telemetryMessage.deviceMetrics.uptimeSeconds))
+				telemetry.uptimeSeconds = telemetryMessage.deviceMetrics.hasUptimeSeconds.then(Int32(truncatingIfNeeded: telemetryMessage.deviceMetrics.uptimeSeconds))
 				telemetry.metricsType = 0
 				Logger.statistics.debug("📈 [Mesh Statistics] Channel Utilization: \(telemetryMessage.deviceMetrics.channelUtilization, privacy: .public) Airtime: \(telemetryMessage.deviceMetrics.airUtilTx, privacy: .public) for Node: \(packet.from.toHex(), privacy: .public)")
 			} else if telemetryMessage.variant == Telemetry.OneOf_Variant.environmentMetrics(telemetryMessage.environmentMetrics) {
@@ -945,7 +945,7 @@ actor MeshPackets {
 				telemetry.metricsType = 1
 			} else if telemetryMessage.variant == Telemetry.OneOf_Variant.localStats(telemetryMessage.localStats) {
 				// Local Stats for Live activity
-				telemetry.uptimeSeconds = Int32(telemetryMessage.localStats.uptimeSeconds)
+				telemetry.uptimeSeconds = Int32(truncatingIfNeeded: telemetryMessage.localStats.uptimeSeconds)
 				telemetry.channelUtilization = telemetryMessage.localStats.channelUtilization
 				telemetry.airUtilTx = telemetryMessage.localStats.airUtilTx
 				telemetry.numPacketsTx = Int32(truncatingIfNeeded: telemetryMessage.localStats.numPacketsTx)
@@ -1021,17 +1021,26 @@ actor MeshPackets {
 				// Low Battery notification
 				if connectedNode == Int64(packet.from) {
 					let batteryLevel = telemetry.batteryLevel ?? 0
-					Task {@MainActor in
-						if UserDefaults.lowBatteryNotifications && batteryLevel > 0 && batteryLevel < 4 {
+					if UserDefaults.lowBatteryNotifications && batteryLevel > 0 && batteryLevel < 4 {
+						// Only when the notification will actually fire: snapshot plain values from the
+						// SwiftData-backed telemetry/relationships before the MainActor hop, so the
+						// deferred Task can't read these context-bound models after they've been
+						// invalidated (the same pattern the text-message path follows). Gating first also
+						// avoids faulting the user relationship and running the formatter on every packet.
+						let notificationID = "notification.lowbattery.\(packet.from)"
+						let shortName = telemetry.nodeTelemetry?.user?.shortName ?? "UNK"
+						let batteryText = telemetry.batteryLevel?.formatted(.number) ?? Constants.nilValueIndicator
+						let nodeNum = telemetry.nodeTelemetry?.num ?? 0
+						Task {@MainActor in
 							let manager = LocalNotificationManager()
 							manager.notifications = [
 								Notification(
-									id: ("notification.lowbattery.\(packet.from)"),
+									id: notificationID,
 									title: "Critically Low Battery!",
-									subtitle: "AKA \(telemetry.nodeTelemetry?.user?.shortName ?? "UNK")",
-									content: "Time to charge your radio, there is \(telemetry.batteryLevel?.formatted(.number) ?? Constants.nilValueIndicator)% battery remaining.",
+									subtitle: "AKA \(shortName)",
+									content: "Time to charge your radio, there is \(batteryText)% battery remaining.",
 									target: "nodes",
-									path: "meshtastic:///nodes?nodenum=\(telemetry.nodeTelemetry?.num ?? 0)"
+									path: "meshtastic:///nodes?nodenum=\(nodeNum)"
 								)
 							]
 							manager.schedule()
