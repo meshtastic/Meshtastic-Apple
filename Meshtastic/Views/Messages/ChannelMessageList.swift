@@ -25,6 +25,20 @@ private struct ChannelMessageTimelineCursor: Comparable {
 private struct ChannelMessageListChangeToken: Equatable {
 	let latest: ChannelMessageTimelineCursor?
 	let count: Int
+	// Tallies of messages whose ACK has resolved, kept as separate delivered/errored counts
+	// rather than a single sum: an errored→delivered transition leaves the sum unchanged
+	// (delivered +1, errored −1) but moves both tallies, so the token still changes and the list
+	// reloads. Together with `latest`/`count` these cover every ACK transition the app produces:
+	// in-place mutations only ever move a message *into* delivered/errored (a tally changes), and
+	// the sole route back to "waiting" is RetryButton, which deletes the message and inserts a
+	// fresh one — moving `latest`/`count`. (There is deliberately no `max(ackTimestamp)` signal:
+	// `ackTimestamp` is stamped from the remote `packet.rxTime`, so it isn't reliably monotonic
+	// and would add an unindexed sort to the 5s poll for a net-zero case that can't occur.) An
+	// incoming ACK changes neither `latest` nor `count`, so without these tallies the poll-based
+	// refresh would never reload and the row would stay on "Waiting to be acknowledged" until the
+	// view is rebuilt.
+	let deliveredAckCount: Int
+	let erroredAckCount: Int
 }
 
 struct ChannelMessageList: View {
@@ -128,10 +142,37 @@ struct ChannelMessageList: View {
 
 	private func fetchMessageChangeToken(latestMessage: MessageEntity? = nil) throws -> ChannelMessageListChangeToken {
 		let latest = try latestMessage ?? fetchMessages(limit: 1).first
+		let acks = try Self.resolvedAckCounts(in: context, channelIndex: channel.index)
 		return ChannelMessageListChangeToken(
 			latest: latest.map(cursor(for:)),
-			count: try fetchMessageCount()
+			count: try fetchMessageCount(),
+			deliveredAckCount: acks.delivered,
+			erroredAckCount: acks.errored
 		)
+	}
+
+	/// Resolved-ACK tallies for this channel: delivered (`receivedACK`) and failed
+	/// (`ackError != 0`) counted separately. A message is shown as "Waiting to be acknowledged"
+	/// until it resolves; folding both tallies into the change token makes the poll reload on any
+	/// ACK state change. Keeping them distinct means errored→delivered (which keeps the sum
+	/// constant) still moves a tally. Exposed `static` so the regression tests exercise these
+	/// exact predicates.
+	///
+	/// Two single-term `fetchCount`s rather than one `||` predicate: a compound `||` (and a fourth
+	/// `&&` term such as an `isEmoji` filter) exceeds the `#Predicate` macro's type-check budget.
+	/// Not filtering `isEmoji` only means an acked tapback triggers one extra benign reload.
+	static func resolvedAckCounts(in context: ModelContext, channelIndex: Int32) throws -> (delivered: Int, errored: Int) {
+		let deliveredDescriptor = FetchDescriptor<MessageEntity>(
+			predicate: #Predicate<MessageEntity> {
+				$0.channel == channelIndex && $0.toUser == nil && $0.receivedACK
+			}
+		)
+		let erroredDescriptor = FetchDescriptor<MessageEntity>(
+			predicate: #Predicate<MessageEntity> {
+				$0.channel == channelIndex && $0.toUser == nil && $0.ackError != 0
+			}
+		)
+		return (try context.fetchCount(deliveredDescriptor), try context.fetchCount(erroredDescriptor))
 	}
 
 	private func fetchMessageCount() throws -> Int {
