@@ -118,7 +118,7 @@ actor DocTranslationService {
 		var entries: [TranslatedSearchEntry] = []
 
 		// Pre-translate section names and UI chrome so they end up in the cache / nav-labels
-		let chromeStrings = ["Help & Docs", "Search docs"] + DocSection.allCases.map(\.displayName)
+		let chromeStrings = ["Help & Documentation", "Search docs"] + DocSection.allCases.map(\.displayName)
 		for source in chromeStrings {
 			_ = await translatedUIString(source, targetLanguage: languageCode)
 		}
@@ -473,7 +473,7 @@ actor DocTranslationService {
 		if !Task.isCancelled {
 			await CommunityTranslationFetcher.shared.fetchNavLabels(languageCode: languageCode)
 			await CommunityTranslationFetcher.shared.fetchSearchIndex(languageCode: languageCode)
-			let chromeStrings = ["Help & Docs", "Search docs"] + DocSection.allCases.map(\.displayName)
+			let chromeStrings = ["Help & Documentation", "Search docs"] + DocSection.allCases.map(\.displayName)
 			for source in chromeStrings {
 				guard !Task.isCancelled else { break }
 				_ = await translatedUIString(source, targetLanguage: languageCode)
@@ -567,7 +567,7 @@ actor DocTranslationService {
 		await CommunityTranslationFetcher.shared.fetchSearchIndex(languageCode: languageCode)
 
 		// Translate all nav chrome strings
-		let chromeStrings = ["Help & Docs", "Search docs"] + DocSection.allCases.map(\.displayName)
+		let chromeStrings = ["Help & Documentation", "Search docs"] + DocSection.allCases.map(\.displayName)
 		for source in chromeStrings {
 			guard !Task.isCancelled else { return }
 			_ = await translatedUIString(source, targetLanguage: languageCode)
