@@ -43,7 +43,7 @@ struct DocBrowserView: View {
 	}
 
 	private var translatedNavigationTitle: String {
-		translatedLabels["navTitle"] ?? "Help & Docs"
+		translatedLabels["navTitle"] ?? "Help & Documentation"
 	}
 
 	private var translatedSearchPrompt: String {
@@ -288,7 +288,7 @@ struct DocBrowserView: View {
 
 			// All candidate keys
 			var allKeys: [(key: String, source: String)] = [
-				("navTitle", "Help & Docs"),
+				("navTitle", "Help & Documentation"),
 				("searchPrompt", "Search docs")
 			]
 			for section in DocSection.allCases {
