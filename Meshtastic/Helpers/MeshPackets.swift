@@ -1107,10 +1107,14 @@ actor MeshPackets {
 				case .alertApp:           messageLabel = "🔔 [Alert]"
 				default:                  messageLabel = "💬 [Text Message]"
 				}
+				// A store-and-forward router broadcast is addressed to the local node yet is a channel
+				// broadcast everywhere else (toUser == nil, shield shown), so classify it as a broadcast
+				// here too rather than treating it as a DM.
+				let isBroadcastMessage = packet.to == Constants.maximumNodeNum || storeForwardBroadcast
 				// Show channel/broadcast text in the stream; redact direct-message content (only
 				// mark it "(DM)") so private 1:1 text isn't persisted to the unified log.
 				let messageDetail: String
-				if packet.to == Constants.maximumNodeNum {
+				if isBroadcastMessage {
 					let preview = (messageText ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
 					messageDetail = preview.count > 100 ? String(preview.prefix(100)) + "…" : preview
 				} else {
@@ -1140,9 +1144,11 @@ actor MeshPackets {
 					newMessage.channel = Int32(packet.channel)
 					newMessage.portNum = Int32(packet.decoded.portnum.rawValue)
 					/// Radio-verified XEdDSA signature for this received broadcast. Firmware only sets this on
-					/// broadcasts, but gate on the broadcast address too so the "verified" shield can never
-					/// appear on a DM even if a stray/spoofed packet carries the flag.
-					newMessage.xeddsaSigned = packet.xeddsaSigned && packet.to == Constants.maximumNodeNum
+					/// broadcasts, but gate on the broadcast classification too so the "verified" shield can
+					/// never appear on a DM even if a stray/spoofed packet carries the flag. `isBroadcastMessage`
+					/// (computed above) also covers store-and-forward router broadcasts, which are addressed
+					/// to the local node yet treated as channel broadcasts (toUser == nil).
+					newMessage.xeddsaSigned = packet.xeddsaSigned && isBroadcastMessage
 					if packet.decoded.portnum == PortNum.detectionSensorApp {
 						if !UserDefaults.enableDetectionNotifications {
 							newMessage.read = true

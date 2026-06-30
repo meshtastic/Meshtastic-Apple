@@ -58,6 +58,34 @@ struct XEdDSASigningTests {
 		#expect(nodeInfo.hasXeddsaSigned_p == false)
 	}
 
+	// MARK: - Protobuf wire bytes (pin the field numbers + default omission)
+	//
+	// Encode→decode round-trips alone would still pass if the field number changed or if `false`
+	// started being emitted, so assert the exact emitted bytes for the isolated field instead.
+
+	@Test func meshPacket_xeddsaSigned_emitsField22Tag() throws {
+		var packet = MeshPacket()
+		packet.xeddsaSigned = true
+		// field 22, varint wire type: tag = (22 << 3) | 0 = 176 → varint [0xB0, 0x01]; value true = 0x01.
+		#expect(Array(try packet.serializedData()) == [0xB0, 0x01, 0x01])
+	}
+
+	@Test func meshPacket_defaultFalse_omitsField22() throws {
+		// proto3 omits a false bool, so an otherwise-empty packet serializes to nothing on the wire.
+		#expect(try MeshPacket().serializedData().isEmpty)
+	}
+
+	@Test func nodeInfo_hasXeddsaSigned_emitsField14Tag() throws {
+		var nodeInfo = NodeInfo()
+		nodeInfo.hasXeddsaSigned_p = true
+		// field 14, varint wire type: tag = (14 << 3) | 0 = 112 = 0x70; value true = 0x01.
+		#expect(Array(try nodeInfo.serializedData()) == [0x70, 0x01])
+	}
+
+	@Test func nodeInfo_defaultFalse_omitsField14() throws {
+		#expect(try NodeInfo().serializedData().isEmpty)
+	}
+
 	// MARK: - Entity defaults
 
 	@Test @MainActor func messageEntity_xeddsaSigned_defaultsFalse() throws {
@@ -105,18 +133,34 @@ struct XEdDSAIngestionTests {
 		return ni
 	}
 
-	private func textPacket(id: UInt32, from: UInt32, to: UInt32, signed: Bool) -> MeshPacket {
-		var data = DataMessage()
-		data.portnum = .textMessageApp
-		data.payload = Data("hi".utf8)
+	private func packet(id: UInt32, from: UInt32, to: UInt32, signed: Bool, decoded: DataMessage) -> MeshPacket {
 		var packet = MeshPacket()
 		packet.id = id
 		packet.from = from
 		packet.to = to
 		packet.channel = 0
-		packet.decoded = data
+		packet.decoded = decoded
 		packet.xeddsaSigned = signed
 		return packet
+	}
+
+	private func textPacket(id: UInt32, from: UInt32, to: UInt32, signed: Bool) -> MeshPacket {
+		var data = DataMessage()
+		data.portnum = .textMessageApp
+		data.payload = Data("hi".utf8)
+		return packet(id: id, from: from, to: to, signed: signed, decoded: data)
+	}
+
+	/// A store-and-forward *router text broadcast*: addressed to the local node (not the broadcast
+	/// address) yet semantically a channel broadcast, carried as a StoreAndForward payload.
+	private func storeForwardBroadcastPacket(id: UInt32, from: UInt32, to: UInt32, signed: Bool) -> MeshPacket {
+		var sf = StoreAndForward()
+		sf.rr = .routerTextBroadcast
+		sf.text = Data("hi".utf8)
+		var data = DataMessage()
+		data.portnum = .storeForwardApp
+		data.payload = (try? sf.serializedData()) ?? Data()
+		return packet(id: id, from: from, to: to, signed: signed, decoded: data)
 	}
 
 	// MARK: node-level flag (NodeInfo.has_xeddsa_signed → NodeInfoEntity.hasXeddsaSigned)
@@ -163,5 +207,15 @@ struct XEdDSAIngestionTests {
 		let packet = textPacket(id: UInt32(id), from: 0xA02, to: 0x01, signed: true)
 		await mp.textMessageAppPacket(packet: packet, wantRangeTestPackets: true, connectedNode: 0x01, appState: nil)
 		#expect(fetchMessage(id)?.xeddsaSigned == false)
+	}
+
+	/// A signed store-and-forward router broadcast is addressed to the local node (to != broadcast
+	/// address) but is a channel broadcast, so its verified shield must survive the broadcast gate.
+	@Test @MainActor func storeForwardBroadcast_signed_setsFlag() async {
+		let mp = MeshPackets(modelContainer: sharedModelContainer)
+		let id: Int64 = 0x00B0_0203
+		let packet = storeForwardBroadcastPacket(id: UInt32(id), from: 0xA03, to: 0x01, signed: true)
+		await mp.textMessageAppPacket(packet: packet, wantRangeTestPackets: true, connectedNode: 0x01, storeForward: true, appState: nil)
+		#expect(fetchMessage(id)?.xeddsaSigned == true)
 	}
 }

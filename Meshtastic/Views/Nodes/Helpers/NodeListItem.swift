@@ -127,6 +127,11 @@ struct NodeListItem: View {
 			}
 			desc += ", " + signalString
 		}
+		// Mirror the visual "Signed node" trust signal (see the shield row below) so VoiceOver
+		// announces it too — affirmative only, never for unsigned nodes.
+		if node.hasXeddsaSigned {
+			desc += ", " + "Signed node".localized
+		}
 		return desc
 	}
 	
