@@ -147,21 +147,35 @@ extension MeshPackets {
 	}
 	
 	public func clearDatabase(includeRoutes: Bool, preserveFavorites: Bool = false) {
-		// Delete entities that are on the inverse side of many-to-many relationships first to avoid
-		// constraint trigger violations. A batch `delete(model:)` alone trips the mandatory MTM
-		// nullify inverse between DeviceHardwareEntity.tags and DeviceHardwareTagEntity.devices, so
-		// first sever the relationship from the owning side and save before deleting the tag/image
-		// entities. Mirrors PersistenceController.clearDatabase.
+		// Delete + SAVE one model type at a time. SwiftData's batch `delete(model:)` ENQUEUES a
+		// deletion (committed on the next save) and nullifies inverse relationships. Reconciling MANY
+		// types' deletions in a SINGLE trailing save makes SwiftData tear down objects whose inverse
+		// targets were also deleted in the same uncommitted batch, tripping an internal assertion
+		// (`_assertionFailure` in `objectdestroy` → SIGTRAP — the 2.7.15 clearDatabase crash). Saving
+		// after each delete keeps every reconcile against already-committed, consistent state.
+		// Mirrors PersistenceController.clearDatabase.
+		func commit() {
+			guard modelContext.hasChanges else { return }
+			do {
+				try modelContext.save()
+			} catch {
+				Logger.data.error("💥 Failed to save while clearing database: \(error.localizedDescription, privacy: .public)")
+			}
+		}
+
+		// Sever the DeviceHardware many-to-many from the owning side first (a batch delete alone trips
+		// the mandatory MTM nullify inverse between DeviceHardwareEntity.tags and
+		// DeviceHardwareTagEntity.devices), saving before deleting the tag/image entities.
 		do {
 			let hardwareDevices = try modelContext.fetch(FetchDescriptor<DeviceHardwareEntity>())
 			for device in hardwareDevices {
 				device.tags.removeAll()
 			}
-			if modelContext.hasChanges {
-				try modelContext.save()
-			}
+			commit()
 			try modelContext.delete(model: DeviceHardwareTagEntity.self)
+			commit()
 			try modelContext.delete(model: DeviceHardwareImageEntity.self)
+			commit()
 		} catch {
 			Logger.data.error("\(error.localizedDescription, privacy: .public)")
 		}
@@ -200,6 +214,7 @@ extension MeshPackets {
 				} catch {
 					Logger.data.error("\(error.localizedDescription, privacy: .public)")
 				}
+				commit()
 				continue
 			}
 			if preserveFavorites && modelType == UserEntity.self {
@@ -215,18 +230,15 @@ extension MeshPackets {
 				} catch {
 					Logger.data.error("\(error.localizedDescription, privacy: .public)")
 				}
+				commit()
 				continue
 			}
 			do {
 				try modelContext.delete(model: modelType)
+				commit()
 			} catch {
 				Logger.data.error("\(error.localizedDescription, privacy: .public)")
 			}
-		}
-		do {
-			try modelContext.save()
-		} catch {
-			Logger.data.error("💥 Failed to save after clearing database: \(error.localizedDescription, privacy: .public)")
 		}
 	}
 	

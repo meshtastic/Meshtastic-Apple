@@ -202,6 +202,12 @@ class PersistenceController {
 
 	@MainActor
 	public func clearDatabase(includeRoutes: Bool = true) {
+		// Delete + SAVE one model type at a time. A batch `delete(model:)` enqueues a deletion that is
+		// committed on the next save and nullifies inverse relationships; reconciling MANY types'
+		// deletions in a SINGLE trailing save tears down objects whose inverse targets were also
+		// deleted in the same uncommitted batch and trips an internal SwiftData assertion (SIGTRAP).
+		// Saving after each delete keeps every reconcile against already-committed, consistent state.
+		// Mirrors MeshPackets.clearDatabase.
 		do {
 			let hardwareDevices = try container.mainContext.fetch(FetchDescriptor<DeviceHardwareEntity>())
 			for device in hardwareDevices {
@@ -214,7 +220,9 @@ class PersistenceController {
 			// Delete entities that are on the inverse side of many-to-many
 			// relationships first to avoid constraint trigger violations.
 			try container.mainContext.delete(model: DeviceHardwareTagEntity.self)
+			try container.mainContext.save()
 			try container.mainContext.delete(model: DeviceHardwareImageEntity.self)
+			try container.mainContext.save()
 
 			for modelType in MeshtasticSchema.allModels {
 				if !includeRoutes && (modelType == RouteEntity.self || modelType == LocationEntity.self) {
@@ -224,8 +232,8 @@ class PersistenceController {
 					continue // already deleted above
 				}
 				try container.mainContext.delete(model: modelType)
+				try container.mainContext.save()
 			}
-			try container.mainContext.save()
 			Logger.data.error("SwiftData database truncated. All app data has been erased.")
 		} catch {
 			Logger.data.error("Failed to clear SwiftData database: \(error.localizedDescription, privacy: .public)")
