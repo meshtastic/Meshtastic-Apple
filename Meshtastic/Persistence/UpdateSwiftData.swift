@@ -1058,8 +1058,18 @@ extension MeshPackets {
 		}
 	}
 	
+	/// Mirrors the proto's positional `adminKey` repeated field onto the entity's three scalar slots,
+	/// clearing any slot the device no longer reports (a shrink from 3→1/2, or all the way to none) so a
+	/// retired key isn't retained and later written back into a device-profile (.cfg) export. Kept as one
+	/// helper so the insert and update branches of the security upsert stay in lockstep.
+	private func applyAdminKeys(_ adminKeys: [Data], to entity: SecurityConfigEntity) {
+		entity.adminKey = adminKeys.first
+		entity.adminKey2 = adminKeys.count > 1 ? adminKeys[1] : nil
+		entity.adminKey3 = adminKeys.count > 2 ? adminKeys[2] : nil
+	}
+
 	func upsertSecurityConfigPacket(config: Config.SecurityConfig, nodeNum: Int64, sessionPasskey: Data? = Data()) {
-		
+
 		let logString = String.localizedStringWithFormat("Security config received: @".localized, String(nodeNum))
 		Logger.data.info("🛡️ \(logString, privacy: .public)")
 		
@@ -1075,36 +1085,20 @@ extension MeshPackets {
 					modelContext.insert(newSecurityConfig)
 					newSecurityConfig.publicKey = config.publicKey
 					newSecurityConfig.privateKey = config.privateKey
-					if config.adminKey.count > 0 {
-						newSecurityConfig.adminKey = config.adminKey[0]
-						if config.adminKey.count > 1 {
-							newSecurityConfig.adminKey2 = config.adminKey[1]
-						}
-						if config.adminKey.count > 2 {
-							newSecurityConfig.adminKey3 = config.adminKey[2]
-						}
-					}
+					applyAdminKeys(config.adminKey, to: newSecurityConfig)
 					newSecurityConfig.isManaged = config.isManaged
 					newSecurityConfig.serialEnabled = config.serialEnabled
 					newSecurityConfig.debugLogApiEnabled = config.debugLogApiEnabled
 					newSecurityConfig.adminChannelEnabled = config.adminChannelEnabled
 					fetchedNode[0].securityConfig = newSecurityConfig
-				} else {
-					fetchedNode[0].securityConfig?.publicKey = config.publicKey
-					fetchedNode[0].securityConfig?.privateKey = config.privateKey
-					if config.adminKey.count > 0 {
-						fetchedNode[0].securityConfig?.adminKey = config.adminKey[0]
-						if config.adminKey.count > 1 {
-							fetchedNode[0].securityConfig?.adminKey2 = config.adminKey[1]
-						}
-						if config.adminKey.count > 2 {
-							fetchedNode[0].securityConfig?.adminKey3 = config.adminKey[2]
-						}
-					}
-					fetchedNode[0].securityConfig?.isManaged = config.isManaged
-					fetchedNode[0].securityConfig?.serialEnabled = config.serialEnabled
-					fetchedNode[0].securityConfig?.debugLogApiEnabled = config.debugLogApiEnabled
-					fetchedNode[0].securityConfig?.adminChannelEnabled = config.adminChannelEnabled
+				} else if let securityConfig = fetchedNode[0].securityConfig {
+					securityConfig.publicKey = config.publicKey
+					securityConfig.privateKey = config.privateKey
+					applyAdminKeys(config.adminKey, to: securityConfig)
+					securityConfig.isManaged = config.isManaged
+					securityConfig.serialEnabled = config.serialEnabled
+					securityConfig.debugLogApiEnabled = config.debugLogApiEnabled
+					securityConfig.adminChannelEnabled = config.adminChannelEnabled
 				}
 				if sessionPasskey?.count != 0 {
 					fetchedNode[0].sessionPasskey = sessionPasskey
@@ -1540,6 +1534,7 @@ extension MeshPackets {
 					fetchedNode[0].mqttConfig?.jsonEnabled = config.jsonEnabled
 					fetchedNode[0].mqttConfig?.tlsEnabled = config.tlsEnabled
 					fetchedNode[0].mqttConfig?.mapReportingEnabled = config.mapReportingEnabled
+					fetchedNode[0].mqttConfig?.mapReportingShouldReportLocation = config.mapReportSettings.shouldReportLocation
 					fetchedNode[0].mqttConfig?.mapPositionPrecision = Int32(config.mapReportSettings.positionPrecision)
 					fetchedNode[0].mqttConfig?.mapPublishIntervalSecs = Int32(config.mapReportSettings.publishIntervalSecs)
 				}
@@ -1738,6 +1733,9 @@ extension MeshPackets {
 					fetchedNode[0].storeForwardConfig?.records = Int32(config.records)
 					fetchedNode[0].storeForwardConfig?.historyReturnMax = Int32(config.historyReturnMax)
 					fetchedNode[0].storeForwardConfig?.historyReturnWindow = Int32(config.historyReturnWindow)
+					// Refresh the server flag too, otherwise toggling server mode on the device is never
+					// reflected after the first sync and the device-profile export keeps writing the old value.
+					fetchedNode[0].storeForwardConfig?.isRouter = config.isServer
 				}
 				if sessionPasskey != nil {
 					fetchedNode[0].sessionPasskey = sessionPasskey

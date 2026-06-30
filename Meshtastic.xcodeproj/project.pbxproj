@@ -115,6 +115,7 @@
 		25F5D5C02C3F6DA6008036E3 /* Router.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25F5D5BF2C3F6DA6008036E3 /* Router.swift */; };
 		25F5D5C22C3F6E4B008036E3 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25F5D5C12C3F6E4B008036E3 /* AppState.swift */; };
 		25F5D5D12C4375DF008036E3 /* RouterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25F5D5D02C4375DF008036E3 /* RouterTests.swift */; };
+		AA20D0002D00000000000021 /* DeviceProfileExportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA20D0002D00000000000020 /* DeviceProfileExportTests.swift */; };
 		2849A5E4CE9FDC1DB33DFA34 /* TAKConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01028778B8BFD81F7A039593 /* TAKConnection.swift */; };
 		300424F80C4A445A0FBAE82D /* TAKMeshtasticBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87D006C85B250291D5925F30 /* TAKMeshtasticBridge.swift */; };
 		3D3417B42E2730EC006A988B /* GeoJSONOverlayManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D3417B32E2730EC006A988B /* GeoJSONOverlayManager.swift */; };
@@ -390,6 +391,8 @@
 		DD86D40A287F04F100BAEB7A /* InvalidVersion.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD86D409287F04F100BAEB7A /* InvalidVersion.swift */; };
 		DD86D40C287F401000BAEB7A /* SaveChannelQRCode.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD86D40B287F401000BAEB7A /* SaveChannelQRCode.swift */; };
 		DD86D40F2881BE4C00BAEB7A /* CsvDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD86D40E2881BE4C00BAEB7A /* CsvDocument.swift */; };
+		AA20D0002D00000000000011 /* DeviceProfileExport.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA20D0002D00000000000010 /* DeviceProfileExport.swift */; };
+		AA20D0002D00000000000013 /* DeviceProfileDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA20D0002D00000000000012 /* DeviceProfileDocument.swift */; };
 		DD86D4112881D16900BAEB7A /* WriteCsvFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD86D4102881D16900BAEB7A /* WriteCsvFile.swift */; };
 		DD8EBF43285058FA00426DCA /* DisplayConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD8EBF42285058FA00426DCA /* DisplayConfig.swift */; };
 		DD8ED9C52898D51F00B3B0AB /* NetworkConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD8ED9C42898D51F00B3B0AB /* NetworkConfig.swift */; };
@@ -672,6 +675,7 @@
 		25F5D5C12C3F6E4B008036E3 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
 		25F5D5C72C4375A8008036E3 /* MeshtasticTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MeshtasticTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		25F5D5D02C4375DF008036E3 /* RouterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouterTests.swift; sourceTree = "<group>"; };
+		AA20D0002D00000000000020 /* DeviceProfileExportTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceProfileExportTests.swift; sourceTree = "<group>"; };
 		281DB7C20B6F46B89F4AB29E /* DeviceLinksSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceLinksSection.swift; sourceTree = "<group>"; };
 		2B37CCEE8B44A4BA123ED118 /* TAKServerManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TAKServerManager.swift; sourceTree = "<group>"; };
 		31483AF5F5354D3481698E32 /* TelemetryEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelemetryEntity.swift; sourceTree = "<group>"; };
@@ -993,6 +997,8 @@
 		DD86D409287F04F100BAEB7A /* InvalidVersion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvalidVersion.swift; sourceTree = "<group>"; };
 		DD86D40B287F401000BAEB7A /* SaveChannelQRCode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaveChannelQRCode.swift; sourceTree = "<group>"; };
 		DD86D40E2881BE4C00BAEB7A /* CsvDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CsvDocument.swift; sourceTree = "<group>"; };
+		AA20D0002D00000000000010 /* DeviceProfileExport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceProfileExport.swift; sourceTree = "<group>"; };
+		AA20D0002D00000000000012 /* DeviceProfileDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceProfileDocument.swift; sourceTree = "<group>"; };
 		DD86D4102881D16900BAEB7A /* WriteCsvFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WriteCsvFile.swift; sourceTree = "<group>"; };
 		DD8EBF42285058FA00426DCA /* DisplayConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayConfig.swift; sourceTree = "<group>"; };
 		DD8ED9C42898D51F00B3B0AB /* NetworkConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkConfig.swift; sourceTree = "<group>"; };
@@ -1557,6 +1563,7 @@
 				AA00010022E2730EC0060000 /* ConnectViewTests.swift */,
 				DD9C70112E9F2A0000029299 /* DeviceOnboardingTests.swift */,
 				25F5D5D02C4375DF008036E3 /* RouterTests.swift */,
+				AA20D0002D00000000000020 /* DeviceProfileExportTests.swift */,
 				05DCA1AE2F646B3B00D0724C /* NodeFilterParametersTests.swift */,
 				05A1B2C42F70000100D0FC40 /* SettingsNodeSortTests.swift */,
 				AA0120250000000000000C02 /* PacketStreamModelTests.swift */,
@@ -1983,6 +1990,8 @@
 			children = (
 				DD8169FE272476C700F4AB02 /* LogDocument.swift */,
 				DD86D40E2881BE4C00BAEB7A /* CsvDocument.swift */,
+				AA20D0002D00000000000010 /* DeviceProfileExport.swift */,
+				AA20D0002D00000000000012 /* DeviceProfileDocument.swift */,
 				DD86D4102881D16900BAEB7A /* WriteCsvFile.swift */,
 				AA10D0002D00000000000001 /* DiscoverySummaryPDF.swift */,
 			);
@@ -2665,6 +2674,7 @@
 				AA0001012E2730EC00600001 /* ConnectViewTests.swift in Sources */,
 				DD9C70102E9F2A0000029299 /* DeviceOnboardingTests.swift in Sources */,
 				25F5D5D12C4375DF008036E3 /* RouterTests.swift in Sources */,
+				AA20D0002D00000000000021 /* DeviceProfileExportTests.swift in Sources */,
 				0516B3FE2F68892000D0FC40 /* NodeFilterParametersTests.swift in Sources */,
 				05A1B2C32F70000100D0FC40 /* SettingsNodeSortTests.swift in Sources */,
 				AA0120250000000000000C01 /* PacketStreamModelTests.swift in Sources */,
@@ -3033,6 +3043,8 @@
 				DD6F65762C6EA5490053C113 /* AckErrors.swift in Sources */,
 				DDDB445029F8AC9C00EE2349 /* UIImage.swift in Sources */,
 				DD86D40F2881BE4C00BAEB7A /* CsvDocument.swift in Sources */,
+				AA20D0002D00000000000011 /* DeviceProfileExport.swift in Sources */,
+				AA20D0002D00000000000013 /* DeviceProfileDocument.swift in Sources */,
 				AA10D0012D00000000000001 /* DiscoverySummaryPDF.swift in Sources */,
 				23A1AFB72E42BD2500E46C96 /* RXTXIndicatorView.swift in Sources */,
 				DDB75A1E2A0B0CD0006ED576 /* LoRaSignalStrengthIndicator.swift in Sources */,
