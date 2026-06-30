@@ -39,8 +39,8 @@ struct MessageAckStatusRefreshTests {
 	/// Total resolved (delivered + errored) count via the *production* helper, so the tests
 	/// exercise the real predicates rather than a hand-mirrored copy that could silently drift.
 	private func resolvedChannelCount(_ channelIndex: Int32) throws -> Int {
-		let counts = try ChannelMessageList.resolvedAckCounts(in: context, channelIndex: channelIndex)
-		return counts.delivered + counts.errored
+		let acks = try ChannelMessageList.resolvedAckCounts(in: context, channelIndex: channelIndex)
+		return acks.delivered + acks.errored
 	}
 
 	/// Mirrors `ChannelMessageList.fetchMessageCount()` (the legacy token's `count`).
@@ -107,16 +107,16 @@ struct MessageAckStatusRefreshTests {
 	}
 
 	@Test func channelErroredThenDelivered_movesToken() throws {
-		// Finding #1 regression: a message that resolves to an error and is then delivered keeps
-		// the *summed* resolved count constant (delivered +1, errored −1). The change token must
-		// still move so the row updates from the error display to "Acknowledged".
+		// A message that resolves to an error and is then delivered keeps the *summed* resolved
+		// count constant (delivered +1, errored −1). Tracking the tallies separately means a tally
+		// still moves, so the token changes and the row updates from the error to "Acknowledged".
 		let channelIndex: Int32 = 7_705
 		let msg = try insertChannelMessage(channelIndex: channelIndex, messageId: 970_500_001)
 
 		msg.ackError = Int32(RoutingError.maxRetransmit.rawValue)
 		try context.save()
 		let errored = try ChannelMessageList.resolvedAckCounts(in: context, channelIndex: channelIndex)
-		#expect(errored == (delivered: 0, errored: 1))
+		#expect(errored.delivered == 0 && errored.errored == 1)
 
 		// A later success packet flips ackError→0 and receivedACK→true.
 		msg.ackError = 0
@@ -124,10 +124,38 @@ struct MessageAckStatusRefreshTests {
 		try context.save()
 		let delivered = try ChannelMessageList.resolvedAckCounts(in: context, channelIndex: channelIndex)
 
-		#expect(delivered == (delivered: 1, errored: 0))
+		#expect(delivered.delivered == 1 && delivered.errored == 0)
 		// The summed count would be blind to this transition; the separate tallies are not.
 		#expect(errored.delivered + errored.errored == delivered.delivered + delivered.errored)
 		#expect(errored != delivered)
+	}
+
+	@Test func channelRetry_movesLatestCursorWhenTallyNetsZero() throws {
+		// The net-zero-tally concern (two messages making offsetting same-type ACK transitions in
+		// one poll window) can only arise via RetryButton, which is the sole route back to
+		// "waiting" — and it *deletes* the failed message and *inserts* a fresh one rather than
+		// mutating in place. So even when the errored tally nets to zero, the brand-new message
+		// becomes the newest row and moves the legacy `latest` cursor, changing the token. This is
+		// why a separate ackTimestamp signal isn't needed.
+		let channelIndex: Int32 = 7_706
+		let msgA = try insertChannelMessage(channelIndex: channelIndex, messageId: 970_600_001, timestamp: 1_700_000_000)
+		let msgB = try insertChannelMessage(channelIndex: channelIndex, messageId: 970_600_002, timestamp: 1_700_000_010)
+		msgB.ackError = Int32(RoutingError.maxRetransmit.rawValue)
+		try context.save()
+		let erroredBefore = try resolvedChannelCount(channelIndex)
+		let cursorBefore = try latestChannelCursor(channelIndex)
+		#expect(erroredBefore == 1)
+
+		// A resolves to errored (+1). B is retried: the failed row is deleted and a new waiting row
+		// is sent (newest timestamp). Errored tally nets to zero (A +1, B −1 via deletion)…
+		msgA.ackError = Int32(RoutingError.maxRetransmit.rawValue)
+		context.delete(msgB)
+		try insertChannelMessage(channelIndex: channelIndex, messageId: 970_600_003, timestamp: 1_700_000_020)
+		try context.save()
+
+		#expect(try resolvedChannelCount(channelIndex) == erroredBefore)
+		// …but the freshly-sent retry message is now the newest, so the `latest` cursor moved.
+		#expect(try latestChannelCursor(channelIndex) != cursorBefore)
 	}
 
 	@Test func channelRoutingError_movesResolvedCount() throws {
@@ -143,28 +171,19 @@ struct MessageAckStatusRefreshTests {
 		#expect(try resolvedChannelCount(channelIndex) == 1)
 	}
 
-	@Test func channelRetry_resetsResolvedCount() throws {
-		let channelIndex: Int32 = 7_703
-		let msg = try insertChannelMessage(channelIndex: channelIndex, messageId: 970_300_001)
-
-		// Resolve as failed, then retry (RetryButton path) clears the ACK state back to waiting.
-		msg.ackError = Int32(RoutingError.maxRetransmit.rawValue)
-		try context.save()
-		#expect(try resolvedChannelCount(channelIndex) == 1)
-
-		msg.receivedACK = false
-		msg.ackError = 0
-		try context.save()
-
-		// Back to "Waiting…", and the token moves again so the row reflects the reset.
-		#expect(try resolvedChannelCount(channelIndex) == 0)
-	}
-
 	@Test func incomingChannelMessage_isNotCountedAsResolved() throws {
 		let channelIndex: Int32 = 7_704
-		// Incoming broadcast: same channel scope, but no ACK state (it isn't ours to ack).
-		try insertChannelMessage(channelIndex: channelIndex, messageId: 970_400_001)
+		// An incoming broadcast from another node. Incoming channel messages are never
+		// self-acknowledged — the device doesn't ACK its own received traffic — so receivedACK
+		// stays false and ackError stays 0, which is the genuine state under test. (The channel
+		// change-token predicate is intentionally sender-agnostic, so the guarantee is "unresolved
+		// rows don't count", not "incoming rows are filtered out".)
+		let sender = try makeUser(num: 0x2017_00AA)
+		let incoming = try insertChannelMessage(channelIndex: channelIndex, messageId: 970_400_001)
+		incoming.fromUser = sender
+		try context.save()
 
+		#expect(incoming.receivedACK == false && incoming.ackError == 0)
 		#expect(try totalChannelCount(channelIndex) == 1)
 		#expect(try resolvedChannelCount(channelIndex) == 0)
 	}
@@ -174,8 +193,8 @@ struct MessageAckStatusRefreshTests {
 	/// Total resolved (delivered + errored) count via the *production* helper, so the tests
 	/// exercise the real predicates rather than a hand-mirrored copy that could silently drift.
 	private func resolvedDirectCount(userNum: Int64) throws -> Int {
-		let counts = try UserMessageList.resolvedAckCounts(in: context, toUserNum: userNum)
-		return counts.delivered + counts.errored
+		let acks = try UserMessageList.resolvedAckCounts(in: context, toUserNum: userNum)
+		return acks.delivered + acks.errored
 	}
 
 	private func makeUser(num: Int64) throws -> UserEntity {
@@ -216,22 +235,24 @@ struct MessageAckStatusRefreshTests {
 	}
 
 	@Test func directMessageErroredThenDelivered_movesToken() throws {
-		// Finding #1 regression, DM path: error then delivery leaves the summed count unchanged
-		// but must still move the change token so the conversation reloads.
+		// DM path: error then delivery leaves the summed count unchanged, but a separate tally
+		// still moves so the change token differs and the conversation reloads. (The net-zero
+		// offsetting case is covered by the same retry-deletes-and-reinserts mechanism asserted in
+		// channelRetry_movesLatestCursorWhenTallyNetsZero — it is identical for both lists.)
 		let user = try makeUser(num: 0x2017_0004)
 		let msg = try insertOutgoingDirectMessage(to: user, messageId: 971_000_004)
 
 		msg.ackError = Int32(RoutingError.noResponse.rawValue)
 		try context.save()
 		let errored = try UserMessageList.resolvedAckCounts(in: context, toUserNum: user.num)
-		#expect(errored == (delivered: 0, errored: 1))
+		#expect(errored.delivered == 0 && errored.errored == 1)
 
 		msg.ackError = 0
 		msg.receivedACK = true
 		try context.save()
 		let delivered = try UserMessageList.resolvedAckCounts(in: context, toUserNum: user.num)
 
-		#expect(delivered == (delivered: 1, errored: 0))
+		#expect(delivered.delivered == 1 && delivered.errored == 0)
 		#expect(errored.delivered + errored.errored == delivered.delivered + delivered.errored)
 		#expect(errored != delivered)
 	}
