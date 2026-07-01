@@ -27,6 +27,12 @@ Channel conversations load the most recent **50 messages** by default. Scroll to
 
 The channel form lets you configure the channel name, encryption key, role, position sharing, and MQTT uplink/downlink settings.
 
+### Channel QR Codes
+
+Use **Share QR Code** from Settings to choose which configured channels to share. The generated Meshtastic channel link includes the selected channel settings and the LoRa config needed for another radio to communicate on the same mesh.
+
+When you open or scan a Meshtastic channel link, review the listed channels and choose whether to **Replace Channels** or **Add Channels**. Replace mode overwrites the current radio channel set, while add mode appends the incoming channels when there are free slots and no duplicate channel names.
+
 ### Channel Security
 
 | Icon | Meaning |
