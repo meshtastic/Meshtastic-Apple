@@ -18,280 +18,336 @@ struct SaveChannelLinkData: Identifiable {
 struct SaveChannelQRCode: View {
 	@Environment(\.dismiss) private var dismiss
 	@Environment(\.modelContext) private var context
+
 	let channelSetLink: String
 	@State var addChannels: Bool = false
 	var accessoryManager: AccessoryManager
 
-	@State private var showError: Bool = false
-	@State private var errorMessage: String = ""
-	// @State private var connectedToDevice: Bool = false
+	@State private var channelLink: MeshtasticChannelURL?
+	@State private var incomingChannels: [ChannelSettings] = []
+	@State private var selectedChannelIndices = Set<Int>()
+	@State private var currentChannelNames = Set<String>()
+	@State private var currentChannelCount = 0
 	@State private var loraChanges: [String] = []
-	@State private var okToMQTT: Bool = false
+	@State private var okToMQTT = false
+	@State private var showError = false
+	@State private var errorMessage = ""
+	@State private var isSaving = false
+
+	private var selectedIncomingChannels: [ChannelSettings] {
+		incomingChannels.enumerated().compactMap { index, channel in
+			selectedChannelIndices.contains(index) ? channel : nil
+		}
+	}
+
+	private var canReplace: Bool {
+		channelLink?.channelSet.hasLoraConfig == true
+	}
+
+	private var selectedTotal: Int {
+		addChannels ? currentChannelCount + selectedChannelIndices.count : selectedChannelIndices.count
+	}
+
+	private var saveDisabled: Bool {
+		channelLink == nil ||
+		!accessoryManager.isConnected ||
+		isSaving ||
+		selectedChannelIndices.isEmpty ||
+		selectedTotal > 8 ||
+		(!addChannels && !canReplace)
+	}
+
 	var body: some View {
-		VStack {
-			Text("\(addChannels ? "Add" : "Replace all") Channels?")
-				.font(.title)
-			Text("These settings will \(addChannels ? "add channels without changing any LoRa config values." : "replace all channels. The current LoRa Config will be replaced, if there are substantial changes to the LoRa config the device will reboot automatically.")")
-				.fixedSize(horizontal: false, vertical: true)
-				.foregroundColor(.gray)
-				.font(.title3)
-				.padding()
-
-			if !loraChanges.isEmpty && !addChannels {
-				VStack(alignment: .leading) {
-					Text("LoRa Config Changes:")
-						.font(.headline)
-						.padding(.bottom, 5)
-					ForEach(loraChanges, id: \.self) { change in
-						Text("• \(change)")
-							.font(.callout)
-							.foregroundColor(.orange)
-					}
+		NavigationStack {
+			ScrollView {
+				VStack(alignment: .leading, spacing: 18) {
+					header
+					importModePicker
+					channelSelection
+					loraChangeSummary
+					errorSummary
 				}
 				.padding()
 			}
-			if showError {
-				Text(errorMessage.isEmpty ? "Channels being added from the QR code did not save. When adding channels the names must be unique." : errorMessage)
-					.fixedSize(horizontal: false, vertical: true)
-					.foregroundColor(.red)
+			.navigationTitle("Channel QR Code")
+			.navigationBarTitleDisplayMode(.inline)
+			.toolbar {
+				ToolbarItem(placement: .cancellationAction) {
+					Button("Cancel") {
+						dismiss()
+					}
+				}
+				ToolbarItem(placement: .confirmationAction) {
+					Button(isSaving ? "Saving" : "Save") {
+						save()
+					}
+					.disabled(saveDisabled)
+				}
+			}
+			.onAppear {
+				loadChannelLink()
+			}
+			.onChange(of: addChannels) {
+				if !addChannels && !canReplace {
+					addChannels = true
+					errorMessage = "This channel link does not include LoRa settings, so it can only add channels."
+					showError = true
+				}
+				reselectChannels()
+			}
+		}
+	}
+
+	private var header: some View {
+		VStack(alignment: .leading, spacing: 8) {
+			Text(addChannels ? "Add Channels" : "Replace Channels")
+				.font(.title2.bold())
+
+			Text(
+				addChannels ?
+				"Selected channels will be appended to the connected radio. Existing channels and LoRa settings are preserved." :
+				"Selected channels will replace the connected radio's channel list. LoRa settings from the QR code will be applied."
+			)
+			.foregroundStyle(.secondary)
+
+			if !accessoryManager.isConnected {
+				Label("Connect to a radio before saving.", systemImage: "antenna.radiowaves.left.and.right.slash")
+					.foregroundStyle(.orange)
+			}
+		}
+	}
+
+	private var importModePicker: some View {
+		VStack(alignment: .leading, spacing: 8) {
+			Picker("Import Mode", selection: $addChannels) {
+				Text("Replace").tag(false)
+				Text("Add").tag(true)
+			}
+			.pickerStyle(.segmented)
+
+			if addChannels {
+				Text("\(selectedTotal) of 8 channel slots will be used.")
 					.font(.callout)
-					.padding()
+					.foregroundStyle(selectedTotal > 8 ? .red : .secondary)
+			} else if !canReplace {
+				Text("Replace is unavailable because this link was shared as add-only.")
+					.font(.callout)
+					.foregroundStyle(.secondary)
 			}
-			HStack {
-				if !showError {
-					Button {
-						// Extract channel data if it's a full URL
-						let channelData: String
-						if channelSetLink.hasPrefix("http") || channelSetLink.hasPrefix("meshtastic://") {
-							guard let extractedData = extractChannelDataFromURL(channelSetLink) else {
-								Logger.data.error("Failed to extract channel data from URL during save: \(channelSetLink)")
-								errorMessage = "Invalid channel URL format"
-								showError = true
-								return
-							}
-							channelData = extractedData
-						} else {
-							channelData = channelSetLink
-						}
+		}
+	}
 
-						Task {
-							do {
-								try await accessoryManager.saveChannelSet(base64UrlString: channelData, addChannels: addChannels, okToMQTT: okToMQTT)
-								Task { @MainActor in
-									dismiss()
-								}
-							} catch {
-								Task { @MainActor in
-									errorMessage = "Failed to save channel configuration"
-									showError = true
-								}
-							}
-						}
-					} label: {
-						Label("Save", systemImage: "square.and.arrow.down")
-					}
-					.buttonStyle(.bordered)
-					.buttonBorderShape(.capsule)
-					.controlSize(.large)
-					.padding()
-					.disabled(!accessoryManager.isConnected)
+	private var channelSelection: some View {
+		VStack(alignment: .leading, spacing: 10) {
+			Text("Channels")
+				.font(.headline)
 
-					#if targetEnvironment(macCatalyst)
-					Button {
-						dismiss()
-					} label: {
-						Label("Cancel", systemImage: "xmark")
-					}
-					.buttonStyle(.bordered)
-					.buttonBorderShape(.capsule)
-					.controlSize(.large)
-					.padding()
-					#endif
-				} else {
-					Button {
-						dismiss()
-					} label: {
-						Label("Cancel", systemImage: "xmark")
-					}
-					.buttonStyle(.bordered)
-					.buttonBorderShape(.capsule)
-					.controlSize(.large)
-					.padding()
+			if incomingChannels.isEmpty {
+				ContentUnavailableView("No Channels", systemImage: "qrcode", description: Text("This QR code did not contain channel settings."))
+			} else {
+				ForEach(Array(incomingChannels.enumerated()), id: \.offset) { index, channel in
+					channelRow(index: index, channel: channel)
 				}
 			}
 		}
-		.onAppear {
-			Logger.data.info("Ch set link \(channelSetLink)")
-			// connectedToDevice = accessoryManager.connectToPreferredDevice()
-			fetchLoRaConfigChanges()
-		}
 	}
-	private func extractChannelDataFromURL(_ urlString: String) -> String? {
-		Logger.data.info("Extracting channel data from URL: \(urlString)")
-		if let url = URL(string: urlString) {
-			// Get the fragment (part after #)
-			if let fragment = url.fragment, !fragment.isEmpty {
-				Logger.data.info("Extracted fragment from URL: \(fragment)")
-				return fragment
-			}
-		}
-		// Fallback: manually extract everything after the last #
-		if let hashIndex = urlString.lastIndex(of: "#") {
-			let startIndex = urlString.index(after: hashIndex)
-			let channelData = String(urlString[startIndex...])
-			if !channelData.isEmpty {
-				Logger.data.info("Extracted channel data manually: \(channelData)")
-				return channelData
-			}
-		}
-		Logger.data.error("Failed to extract channel data from URL: \(urlString)")
-		return nil
-	}
-	private func fetchLoRaConfigChanges() {
-		var currentLoRaConfig: Config.LoRaConfig?
 
-		// First, extract the actual channel data from the URL if it's a full URL
-		let channelData: String
-		if channelSetLink.hasPrefix("http") || channelSetLink.hasPrefix("meshtastic://") {
-			guard let extractedData = extractChannelDataFromURL(channelSetLink) else {
-				Logger.data.error("Failed to extract channel data from URL: \(channelSetLink)")
-				errorMessage = "Invalid channel URL format"
-				showError = true
-				return
+	@ViewBuilder
+	private func channelRow(index: Int, channel: ChannelSettings) -> some View {
+		let duplicate = addChannels && isDuplicate(channel)
+		HStack(spacing: 12) {
+			Toggle(isOn: Binding(
+				get: { selectedChannelIndices.contains(index) },
+				set: { selected in
+					if selected {
+						selectedChannelIndices.insert(index)
+					} else if selectedChannelIndices.count > 1 {
+						selectedChannelIndices.remove(index)
+					}
+				}
+			)) {
+				VStack(alignment: .leading, spacing: 3) {
+					Text(channelTitle(channel, index: index))
+						.font(.body.weight(.medium))
+					Text(duplicate ? "Already on this radio" : encryptionDescription(channel))
+						.font(.caption)
+						.foregroundStyle(duplicate ? .orange : .secondary)
+				}
 			}
-			channelData = extractedData
-		} else {
-			// Assume it's already the base64 data
-			channelData = channelSetLink
+			.disabled(duplicate)
 		}
-		Logger.data.info("Processing channel data: \(channelData)")
-		// Fetch current LoRa config
-		let activeNum = Int64(accessoryManager.activeDeviceNum ?? 0)
+		.padding()
+		.background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 14))
+	}
+
+	@ViewBuilder
+	private var loraChangeSummary: some View {
+		if !addChannels && !loraChanges.isEmpty {
+			VStack(alignment: .leading, spacing: 8) {
+				Text("LoRa Changes")
+					.font(.headline)
+				ForEach(loraChanges, id: \.self) { change in
+					Text("• \(change)")
+						.font(.callout)
+						.foregroundStyle(.orange)
+				}
+			}
+			.padding()
+			.background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 14))
+		}
+	}
+
+	@ViewBuilder
+	private var errorSummary: some View {
+		if showError {
+			Text(errorMessage)
+				.font(.callout)
+				.foregroundStyle(.red)
+				.padding()
+				.frame(maxWidth: .infinity, alignment: .leading)
+				.background(Color.red.opacity(0.12), in: RoundedRectangle(cornerRadius: 14))
+		}
+	}
+
+	private func loadChannelLink() {
+		do {
+			let parsed = try MeshtasticChannelURL.parse(channelSetLink, defaultAddChannels: addChannels)
+			let current = currentRadioState()
+
+			channelLink = parsed
+			incomingChannels = parsed.channelSet.settings
+			currentChannelNames = current.channelNames
+			currentChannelCount = current.channelCount
+			okToMQTT = current.loraConfig?.configOkToMqtt ?? false
+			addChannels = parsed.addChannels || !parsed.channelSet.hasLoraConfig
+			loraChanges = loraConfigChanges(current: current.loraConfig, incoming: parsed.channelSet)
+			showError = false
+			errorMessage = ""
+			reselectChannels()
+		} catch {
+			channelLink = nil
+			incomingChannels = []
+			selectedChannelIndices = []
+			errorMessage = error.localizedDescription
+			showError = true
+		}
+	}
+
+	private func reselectChannels() {
+		let selectable = incomingChannels.indices.filter { index in
+			!addChannels || !isDuplicate(incomingChannels[index])
+		}
+		let availableSlots = max(0, 8 - (addChannels ? currentChannelCount : 0))
+		selectedChannelIndices = Set(selectable.prefix(availableSlots))
+
+		let slotLimitMessage = "There are not enough free channel slots for every selected channel."
+		if addChannels && selectable.count > availableSlots {
+			errorMessage = slotLimitMessage
+			showError = true
+		} else if errorMessage == slotLimitMessage {
+			errorMessage = ""
+			showError = false
+		}
+	}
+
+	private func save() {
+		guard var channelSet = channelLink?.channelSet else {
+			return
+		}
+
+		channelSet.settings = selectedIncomingChannels
+		isSaving = true
+		showError = false
+
+		Task {
+			do {
+				try await accessoryManager.saveChannelSet(channelSet: channelSet, addChannels: addChannels, okToMQTT: okToMQTT)
+				await MainActor.run {
+					dismiss()
+				}
+			} catch {
+				await MainActor.run {
+					errorMessage = error.localizedDescription
+					showError = true
+					isSaving = false
+				}
+			}
+		}
+	}
+
+	private func currentRadioState() -> (channelNames: Set<String>, channelCount: Int, loraConfig: Config.LoRaConfig?) {
+		guard let activeDeviceNum = accessoryManager.activeDeviceNum else {
+			return ([], 0, nil)
+		}
+		let activeNum = Int64(activeDeviceNum)
+
 		let descriptor = FetchDescriptor<NodeInfoEntity>(
 			predicate: #Predicate { $0.num == activeNum }
 		)
 
 		do {
-			let nodes = try context.fetch(descriptor)
-			if let node = nodes.first {
-				currentLoRaConfig = node.loRaConfig?.toProto()
+			guard let node = try context.fetch(descriptor).first else {
+				return ([], 0, nil)
 			}
+			let channels = node.myInfo?.channels ?? []
+			let names = Set(channels.compactMap { $0.name?.isEmpty == false ? $0.name : nil })
+			return (names, channels.count, node.loRaConfig?.toProto())
 		} catch {
-			Logger.data.error("Failed to fetch NodeInfoEntity: \(error.localizedDescription, privacy: .public)")
-		}
-		// Decode base64url string
-		let decodedString = channelData.base64urlToBase64()
-		guard let decodedData = Data(base64Encoded: decodedString) else {
-			Logger.data.error("Invalid base64 for ChannelSet data: \(channelData, privacy: .public)")
-			errorMessage = "Invalid channel data format"
-			showError = true
-			return
-		}
-		do {
-			let channelSet = try ChannelSet(serializedBytes: decodedData)
-			let newLoRaConfig = channelSet.loraConfig
-			var changes: [String] = []
-
-			// Preserve user's current okToMQTT setting
-			okToMQTT = currentLoRaConfig?.configOkToMqtt ?? false
-
-			if let current = currentLoRaConfig {
-				// Compare each field and track changes
-				if current.hopLimit != newLoRaConfig.hopLimit {
-					changes.append("Hop Limit: \(current.hopLimit) -> \(newLoRaConfig.hopLimit)")
-				}
-				if current.region != newLoRaConfig.region {
-					let currentRegionDesc = RegionCodes(rawValue: Int(current.region.rawValue))?.description ?? "Unknown"
-					let newRegionDesc = RegionCodes(rawValue: Int(newLoRaConfig.region.rawValue))?.description ?? "Unknown"
-					changes.append("Region: \(currentRegionDesc) -> \(newRegionDesc)")
-				}
-				if current.modemPreset != newLoRaConfig.modemPreset {
-					let currentPresetDesc = ModemPresets(rawValue: Int(current.modemPreset.rawValue))?.description ?? "Unknown"
-					let newPresetDesc = ModemPresets(rawValue: Int(newLoRaConfig.modemPreset.rawValue))?.description ?? "Unknown"
-					changes.append("Modem Preset: \(currentPresetDesc) -> \(newPresetDesc)")
-				}
-				if current.usePreset != newLoRaConfig.usePreset {
-					changes.append("Use Preset: \(current.usePreset) -> \(newLoRaConfig.usePreset)")
-				}
-				if current.txEnabled != newLoRaConfig.txEnabled {
-					changes.append("Transmit Enabled: \(current.txEnabled) -> \(newLoRaConfig.txEnabled)")
-				}
-				if current.txPower != newLoRaConfig.txPower {
-					changes.append("Transmit Power: \(current.txPower)dBm -> \(newLoRaConfig.txPower)dBm")
-				}
-				if current.channelNum != newLoRaConfig.channelNum {
-					changes.append("Channel Number: \(current.channelNum) -> \(newLoRaConfig.channelNum)")
-				}
-				if current.bandwidth != newLoRaConfig.bandwidth {
-					changes.append("Bandwidth: \(current.bandwidth) -> \(newLoRaConfig.bandwidth)")
-				}
-				if current.codingRate != newLoRaConfig.codingRate {
-					changes.append("Coding Rate: \(current.codingRate) -> \(newLoRaConfig.codingRate)")
-				}
-				if current.spreadFactor != newLoRaConfig.spreadFactor {
-					changes.append("Spread Factor: \(current.spreadFactor) -> \(newLoRaConfig.spreadFactor)")
-				}
-				if current.sx126XRxBoostedGain != newLoRaConfig.sx126XRxBoostedGain {
-					changes.append("RX Boosted Gain: \(current.sx126XRxBoostedGain) -> \(newLoRaConfig.sx126XRxBoostedGain)")
-				}
-				if current.overrideFrequency != newLoRaConfig.overrideFrequency {
-					changes.append("Override Frequency: \(current.overrideFrequency) -> \(newLoRaConfig.overrideFrequency)")
-				}
-				if current.ignoreMqtt != newLoRaConfig.ignoreMqtt {
-					changes.append("Ignore MQTT: \(current.ignoreMqtt) -> \(newLoRaConfig.ignoreMqtt)")
-				}
-			} else {
-				// Compare against default values when no current config exists
-				let defaultConfig = getDefaultLoRaConfig()
-				if newLoRaConfig.hopLimit != defaultConfig.hopLimit {
-					changes.append("Hop Limit: \(defaultConfig.hopLimit) -> \(newLoRaConfig.hopLimit)")
-				}
-				if newLoRaConfig.region != defaultConfig.region {
-					let newRegionDesc = RegionCodes(rawValue: Int(newLoRaConfig.region.rawValue))?.description ?? "Unknown"
-					changes.append("Region: Unset -> \(newRegionDesc)")
-				}
-				if newLoRaConfig.modemPreset != defaultConfig.modemPreset {
-					let newPresetDesc = ModemPresets(rawValue: Int(newLoRaConfig.modemPreset.rawValue))?.description ?? "Unknown"
-					changes.append("Modem Preset: Long Fast -> \(newPresetDesc)")
-				}
-				if newLoRaConfig.usePreset != defaultConfig.usePreset {
-					changes.append("Use Preset: \(defaultConfig.usePreset) -> \(newLoRaConfig.usePreset)")
-				}
-				if newLoRaConfig.txEnabled != defaultConfig.txEnabled {
-					changes.append("Transmit Enabled: \(defaultConfig.txEnabled) -> \(newLoRaConfig.txEnabled)")
-				}
-				if newLoRaConfig.txPower != defaultConfig.txPower {
-					changes.append("Transmit Power: \(defaultConfig.txPower)dBm -> \(newLoRaConfig.txPower)dBm")
-				}
-				if newLoRaConfig.channelNum != defaultConfig.channelNum {
-					changes.append("Channel Number: \(defaultConfig.channelNum) -> \(newLoRaConfig.channelNum)")
-				}
-				if newLoRaConfig.bandwidth != defaultConfig.bandwidth {
-					changes.append("Bandwidth: \(defaultConfig.bandwidth) -> \(newLoRaConfig.bandwidth)")
-				}
-				if newLoRaConfig.codingRate != defaultConfig.codingRate {
-					changes.append("Coding Rate: \(defaultConfig.codingRate) -> \(newLoRaConfig.codingRate)")
-				}
-				if newLoRaConfig.spreadFactor != defaultConfig.spreadFactor {
-					changes.append("Spread Factor: \(defaultConfig.spreadFactor) -> \(newLoRaConfig.spreadFactor)")
-				}
-				if newLoRaConfig.sx126XRxBoostedGain != defaultConfig.sx126XRxBoostedGain {
-					changes.append("RX Boosted Gain: \(defaultConfig.sx126XRxBoostedGain) -> \(newLoRaConfig.sx126XRxBoostedGain)")
-				}
-				if newLoRaConfig.overrideFrequency != defaultConfig.overrideFrequency {
-					changes.append("Override Frequency: \(defaultConfig.overrideFrequency) -> \(newLoRaConfig.overrideFrequency)")
-				}
-				if newLoRaConfig.ignoreMqtt != defaultConfig.ignoreMqtt {
-					changes.append("Ignore MQTT: \(defaultConfig.ignoreMqtt) -> \(newLoRaConfig.ignoreMqtt)")
-				}
-			}
-			loraChanges = changes
-		} catch {
-			Logger.data.error("Failed to decode ChannelSet: \(error.localizedDescription, privacy: .public)")
-			errorMessage = "Failed to decode channel configuration"
-			showError = true
+			Logger.data.error("Failed to fetch current channel state: \(error.localizedDescription, privacy: .public)")
+			return ([], 0, nil)
 		}
 	}
+
+	private func loraConfigChanges(current: Config.LoRaConfig?, incoming: ChannelSet) -> [String] {
+		guard incoming.hasLoraConfig else {
+			return []
+		}
+
+		let newLoRaConfig = incoming.loraConfig
+		let currentConfig = current ?? getDefaultLoRaConfig()
+		var changes: [String] = []
+
+		if currentConfig.hopLimit != newLoRaConfig.hopLimit {
+			changes.append("Hop Limit: \(currentConfig.hopLimit) -> \(newLoRaConfig.hopLimit)")
+		}
+		if currentConfig.region != newLoRaConfig.region {
+			let currentRegionDesc = RegionCodes(rawValue: Int(currentConfig.region.rawValue))?.description ?? "Unknown"
+			let newRegionDesc = RegionCodes(rawValue: Int(newLoRaConfig.region.rawValue))?.description ?? "Unknown"
+			changes.append("Region: \(currentRegionDesc) -> \(newRegionDesc)")
+		}
+		if currentConfig.modemPreset != newLoRaConfig.modemPreset {
+			let currentPresetDesc = ModemPresets(rawValue: Int(currentConfig.modemPreset.rawValue))?.description ?? "Unknown"
+			let newPresetDesc = ModemPresets(rawValue: Int(newLoRaConfig.modemPreset.rawValue))?.description ?? "Unknown"
+			changes.append("Modem Preset: \(currentPresetDesc) -> \(newPresetDesc)")
+		}
+		if currentConfig.usePreset != newLoRaConfig.usePreset {
+			changes.append("Use Preset: \(currentConfig.usePreset) -> \(newLoRaConfig.usePreset)")
+		}
+		if currentConfig.channelNum != newLoRaConfig.channelNum {
+			changes.append("Channel Number: \(currentConfig.channelNum) -> \(newLoRaConfig.channelNum)")
+		}
+		if currentConfig.bandwidth != newLoRaConfig.bandwidth {
+			changes.append("Bandwidth: \(currentConfig.bandwidth) -> \(newLoRaConfig.bandwidth)")
+		}
+		if currentConfig.codingRate != newLoRaConfig.codingRate {
+			changes.append("Coding Rate: \(currentConfig.codingRate) -> \(newLoRaConfig.codingRate)")
+		}
+		if currentConfig.spreadFactor != newLoRaConfig.spreadFactor {
+			changes.append("Spread Factor: \(currentConfig.spreadFactor) -> \(newLoRaConfig.spreadFactor)")
+		}
+		if currentConfig.sx126XRxBoostedGain != newLoRaConfig.sx126XRxBoostedGain {
+			changes.append("RX Boosted Gain: \(currentConfig.sx126XRxBoostedGain) -> \(newLoRaConfig.sx126XRxBoostedGain)")
+		}
+		if currentConfig.overrideFrequency != newLoRaConfig.overrideFrequency {
+			changes.append("Override Frequency: \(currentConfig.overrideFrequency) -> \(newLoRaConfig.overrideFrequency)")
+		}
+		if currentConfig.ignoreMqtt != newLoRaConfig.ignoreMqtt {
+			changes.append("Ignore MQTT: \(currentConfig.ignoreMqtt) -> \(newLoRaConfig.ignoreMqtt)")
+		}
+
+		return changes
+	}
+
 	private func getDefaultLoRaConfig() -> Config.LoRaConfig {
 		var config = Config.LoRaConfig()
 		config.hopLimit = 3
@@ -310,7 +366,26 @@ struct SaveChannelQRCode: View {
 		config.configOkToMqtt = false
 		return config
 	}
+
+	private func isDuplicate(_ channel: ChannelSettings) -> Bool {
+		guard !channel.name.isEmpty else {
+			return false
+		}
+		return currentChannelNames.contains(channel.name)
+	}
+
+	private func channelTitle(_ channel: ChannelSettings, index: Int) -> String {
+		if !channel.name.isEmpty {
+			return channel.name.camelCaseToWords()
+		}
+		return index == 0 ? "Primary" : "Channel \(index)"
+	}
+
+	private func encryptionDescription(_ channel: ChannelSettings) -> String {
+		channel.psk.count < 3 ? "Unencrypted" : "Encrypted"
+	}
 }
+
 extension LoRaConfigEntity {
 	func toProto() -> Config.LoRaConfig {
 		var config = Config.LoRaConfig()

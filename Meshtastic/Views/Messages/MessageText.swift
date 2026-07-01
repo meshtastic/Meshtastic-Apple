@@ -8,7 +8,7 @@ import Translation
 struct MessageText: View {
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
-	
+
 	let message: MessageEntity
 	let tapBackDestination: MessageDestination
 	let isCurrentUser: Bool
@@ -18,7 +18,7 @@ struct MessageText: View {
 	@State private var saveChannelLink: SaveChannelLinkData?
 	@State private var isShowingDeleteConfirmation = false
 	@State private var isShowingTranslationPresentation = false
-	
+
 	var body: some View {
 		messageContent
 			.environment(\.openURL, OpenURLAction { url in
@@ -46,7 +46,7 @@ struct MessageText: View {
 				Button("Cancel", role: .cancel) {}
 			}
 	}
-	
+
 	private var sourceMessageText: String {
 		message.messagePayload ?? "EMPTY MESSAGE"
 	}
@@ -133,7 +133,7 @@ struct MessageText: View {
 				)
 			}
 	}
-	
+
 	@ViewBuilder
 	private var messageOverlays: some View {
 		if message.pkiEncrypted && message.realACK || !isCurrentUser && message.pkiEncrypted {
@@ -180,7 +180,7 @@ struct MessageText: View {
 				.offset(x: 38, y: 8)
 		}
 	}
-	
+
 	private func handleURL(_ url: URL) -> OpenURLAction.Result {
 		saveChannelLink = nil
 		var addChannels = false
@@ -188,28 +188,22 @@ struct MessageText: View {
 			// Handle contact URL
 			ContactURLHandler.handleContactUrl(url: url, accessoryManager: AccessoryManager.shared)
 			return .handled // Prevent default browser opening
-		} else if url.absoluteString.lowercased().contains("meshtastic.org/e/") {
-			// Handle channel URL
-			let components = url.absoluteString.components(separatedBy: "#")
-			guard !components.isEmpty, let lastComponent = components.last else {
-				Logger.services.error("No valid components found in channel URL: \(url.absoluteString, privacy: .public)")
+		} else if MeshtasticChannelURL.canHandle(url) {
+			do {
+				let channelLink = try MeshtasticChannelURL.parse(url.absoluteString)
+				addChannels = channelLink.addChannels
+				self.saveChannelLink = SaveChannelLinkData(data: channelLink.payload, add: addChannels)
+				Logger.services.debug("Add Channel: \(addChannels, privacy: .public)")
+				Logger.mesh.debug("Opening Channel Settings URL")
+				return .handled // Prevent default browser opening
+			} catch {
+				Logger.services.error("Invalid channel URL: \(error.localizedDescription, privacy: .public)")
 				return .discarded
 			}
-			addChannels = Bool(url.query?.contains("add=true") ?? false)
-			guard let lastComponent = components.last else {
-				Logger.services.error("Channel URL missing fragment component: \(url.absoluteString, privacy: .public)")
-				self.saveChannelLink = nil
-				return .discarded
-			}
-			let cs = lastComponent.components(separatedBy: "?").first ?? ""
-			self.saveChannelLink = SaveChannelLinkData(data: cs, add: addChannels)
-			Logger.services.debug("Add Channel: \(addChannels, privacy: .public)")
-			Logger.mesh.debug("Opening Channel Settings URL: \(url.absoluteString, privacy: .public)")
-			return .handled // Prevent default browser opening
 		}
 		return .systemAction // Open other URLs in browser
 	}
-	
+
 	private func deleteMessage() {
 		context.delete(message)
 		do {

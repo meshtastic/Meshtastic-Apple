@@ -240,12 +240,12 @@
         "navOrder": 3,
         "keywords": [
             "channel",
+            "channels",
             "message",
             "text",
             "key",
             "messages",
             "formatting",
-            "channels",
             "markdown",
             "delimiters",
             "not",
@@ -263,14 +263,14 @@
             "style",
             "select",
             "press",
+            "meshtastic",
             "meaning",
             "location",
+            "link",
             "ios",
-            "field",
-            "encryption",
-            "direct"
+            "from"
         ],
-        "charCount": 7384
+        "charCount": 7924
     },
     {
         "id": "mqtt",
