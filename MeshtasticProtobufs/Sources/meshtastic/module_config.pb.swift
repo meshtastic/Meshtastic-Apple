@@ -238,6 +238,16 @@ public struct ModuleConfig: Sendable {
     set {payloadVariant = .tak(newValue)}
   }
 
+  ///
+  /// MeshBeacon module config
+  public var meshBeacon: ModuleConfig.MeshBeaconConfig {
+    get {
+      if case .meshBeacon(let v)? = payloadVariant {return v}
+      return ModuleConfig.MeshBeaconConfig()
+    }
+    set {payloadVariant = .meshBeacon(newValue)}
+  }
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   ///
@@ -291,6 +301,9 @@ public struct ModuleConfig: Sendable {
     ///
     /// TAK team/role configuration for TAK_TRACKER
     case tak(ModuleConfig.TAKConfig)
+    ///
+    /// MeshBeacon module config
+    case meshBeacon(ModuleConfig.MeshBeaconConfig)
 
   }
 
@@ -356,11 +369,11 @@ public struct ModuleConfig: Sendable {
     ///
     /// Settings for reporting information about our node to a map via MQTT
     public var mapReportSettings: ModuleConfig.MapReportSettings {
-      get {return _mapReportSettings ?? ModuleConfig.MapReportSettings()}
+      get {_mapReportSettings ?? ModuleConfig.MapReportSettings()}
       set {_mapReportSettings = newValue}
     }
     /// Returns true if `mapReportSettings` has been explicitly set.
-    public var hasMapReportSettings: Bool {return self._mapReportSettings != nil}
+    public var hasMapReportSettings: Bool {self._mapReportSettings != nil}
     /// Clears the value of `mapReportSettings`. Subsequent reads from it will return its default value.
     public mutating func clearMapReportSettings() {self._mapReportSettings = nil}
 
@@ -700,60 +713,31 @@ public struct ModuleConfig: Sendable {
     // methods supported on all messages.
 
     ///
-    /// Master enable for traffic management module
-    public var enabled: Bool = false
-
-    ///
-    /// Enable position deduplication to drop redundant position broadcasts
-    public var positionDedupEnabled: Bool = false
-
-    ///
-    /// Number of bits of precision for position deduplication (0-32)
-    public var positionPrecisionBits: UInt32 = 0
-
-    ///
-    /// Minimum interval in seconds between position updates from the same node
+    /// Minimum interval in seconds between position updates from the same node.
+    /// A non-zero value implicitly enables the suppression window; 0 disables it.
     public var positionMinIntervalSecs: UInt32 = 0
 
     ///
-    /// Enable direct response to NodeInfo requests from local cache
-    public var nodeinfoDirectResponse: Bool = false
-
-    ///
-    /// Minimum hop distance from requestor before responding to NodeInfo requests
+    /// Maximum hop distance from the requestor at which direct NodeInfo responses
+    /// are served from the local cache. A non-zero value implicitly enables direct
+    /// response; 0 disables it.
     public var nodeinfoDirectResponseMaxHops: UInt32 = 0
 
     ///
-    /// Enable per-node rate limiting to throttle chatty nodes
-    public var rateLimitEnabled: Bool = false
-
-    ///
-    /// Time window in seconds for rate limiting calculations
+    /// Time window in seconds for per-node rate limiting.
+    /// A non-zero value implicitly enables rate limiting; 0 disables it.
     public var rateLimitWindowSecs: UInt32 = 0
 
     ///
-    /// Maximum packets allowed per node within the rate limit window
+    /// Maximum packets allowed per node within the rate limit window.
+    /// A non-zero value implicitly enables rate limiting; 0 disables it.
     public var rateLimitMaxPackets: UInt32 = 0
 
     ///
-    /// Enable dropping of unknown/undecryptable packets per rate_limit_window_secs
-    public var dropUnknownEnabled: Bool = false
-
-    ///
-    /// Number of unknown packets before dropping from a node
+    /// Maximum unknown/undecryptable packets per rate window before the source
+    /// is dropped. A non-zero value implicitly enables unknown-packet filtering;
+    /// 0 disables it.
     public var unknownPacketThreshold: UInt32 = 0
-
-    ///
-    /// Set hop_limit to 0 for relayed telemetry broadcasts (own packets unaffected)
-    public var exhaustHopTelemetry: Bool = false
-
-    ///
-    /// Set hop_limit to 0 for relayed position broadcasts (own packets unaffected)
-    public var exhaustHopPosition: Bool = false
-
-    ///
-    /// Preserve hop_limit for router-to-router traffic
-    public var routerPreserveHops: Bool = false
 
     public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -1407,6 +1391,237 @@ public struct ModuleConfig: Sendable {
   }
 
   ///
+  /// MeshBeacon module config
+  public struct MeshBeaconConfig: @unchecked Sendable {
+    // SwiftProtobuf.Message conformance is added in an extension below. See the
+    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+    // methods supported on all messages.
+
+    ///
+    /// Bitwise-OR of Flags values (listen / broadcast / legacy-split toggles).
+    public var flags: UInt32 {
+      get {_storage._flags}
+      set {_uniqueStorage()._flags = newValue}
+    }
+
+    ///
+    /// Optional: node ID to send beacon messages AS.
+    /// When set, the `from` field of outgoing beacon packets is set to this node ID,
+    /// making beacons appear to originate from that node.
+    /// When unset (0), beacons are sent as the local node.
+    /// A remote admin can only set this field to their own node ID.
+    public var broadcastSendAsNode: UInt32 {
+      get {_storage._broadcastSendAsNode}
+      set {_uniqueStorage()._broadcastSendAsNode = newValue}
+    }
+
+    ///
+    /// Message to include in each beacon broadcast. Max 100 bytes enforced by firmware.
+    public var broadcastMessage: String {
+      get {_storage._broadcastMessage}
+      set {_uniqueStorage()._broadcastMessage = newValue}
+    }
+
+    ///
+    /// Optional channel (name + PSK) to advertise in the MeshBeacon offer_channel field.
+    public var broadcastOfferChannel: ChannelSettings {
+      get {_storage._broadcastOfferChannel ?? ChannelSettings()}
+      set {_uniqueStorage()._broadcastOfferChannel = newValue}
+    }
+    /// Returns true if `broadcastOfferChannel` has been explicitly set.
+    public var hasBroadcastOfferChannel: Bool {_storage._broadcastOfferChannel != nil}
+    /// Clears the value of `broadcastOfferChannel`. Subsequent reads from it will return its default value.
+    public mutating func clearBroadcastOfferChannel() {_uniqueStorage()._broadcastOfferChannel = nil}
+
+    ///
+    /// Optional region to advertise in the MeshBeacon offer_region field.
+    public var broadcastOfferRegion: Config.LoRaConfig.RegionCode {
+      get {_storage._broadcastOfferRegion}
+      set {_uniqueStorage()._broadcastOfferRegion = newValue}
+    }
+
+    ///
+    /// Optional modem preset to advertise in the MeshBeacon offer_preset field.
+    public var broadcastOfferPreset: Config.LoRaConfig.ModemPreset {
+      get {_storage._broadcastOfferPreset ?? .longFast}
+      set {_uniqueStorage()._broadcastOfferPreset = newValue}
+    }
+    /// Returns true if `broadcastOfferPreset` has been explicitly set.
+    public var hasBroadcastOfferPreset: Bool {_storage._broadcastOfferPreset != nil}
+    /// Clears the value of `broadcastOfferPreset`. Subsequent reads from it will return its default value.
+    public mutating func clearBroadcastOfferPreset() {_uniqueStorage()._broadcastOfferPreset = nil}
+
+    ///
+    /// Single-target TX channel: channel settings (name + PSK) to send beacons on.
+    /// If unset, beacons go out on the primary channel. Used only when broadcast_targets is empty.
+    /// NOTE: the single-target path embeds the ChannelSettings inline here, whereas a
+    /// broadcast_targets entry references a channel-table slot by channel_index instead — see
+    /// BroadcastTarget. The two paths are equal, first-class options; only this representation differs.
+    public var broadcastOnChannel: ChannelSettings {
+      get {_storage._broadcastOnChannel ?? ChannelSettings()}
+      set {_uniqueStorage()._broadcastOnChannel = newValue}
+    }
+    /// Returns true if `broadcastOnChannel` has been explicitly set.
+    public var hasBroadcastOnChannel: Bool {_storage._broadcastOnChannel != nil}
+    /// Clears the value of `broadcastOnChannel`. Subsequent reads from it will return its default value.
+    public mutating func clearBroadcastOnChannel() {_uniqueStorage()._broadcastOnChannel = nil}
+
+    ///
+    /// Region to use when sending beacons on broadcast_on_preset.
+    public var broadcastOnRegion: Config.LoRaConfig.RegionCode {
+      get {_storage._broadcastOnRegion}
+      set {_uniqueStorage()._broadcastOnRegion = newValue}
+    }
+
+    ///
+    /// Modem preset to use when sending beacons.
+    /// If different from current config, the radio is temporarily switched for TX.
+    public var broadcastOnPreset: Config.LoRaConfig.ModemPreset {
+      get {_storage._broadcastOnPreset ?? .longFast}
+      set {_uniqueStorage()._broadcastOnPreset = newValue}
+    }
+    /// Returns true if `broadcastOnPreset` has been explicitly set.
+    public var hasBroadcastOnPreset: Bool {_storage._broadcastOnPreset != nil}
+    /// Clears the value of `broadcastOnPreset`. Subsequent reads from it will return its default value.
+    public mutating func clearBroadcastOnPreset() {_uniqueStorage()._broadcastOnPreset = nil}
+
+    ///
+    /// How often to broadcast, in seconds. Min 3600 (1 h), default 3600.
+    public var broadcastIntervalSecs: UInt32 {
+      get {_storage._broadcastIntervalSecs}
+      set {_uniqueStorage()._broadcastIntervalSecs = newValue}
+    }
+
+    ///
+    /// Multi-target broadcast list.
+    /// When non-empty the broadcaster transmits one beacon copy per entry in sequence,
+    /// each temporarily switching the radio to that entry's preset/region/channel.
+    /// When empty, the broadcaster uses the scalar broadcast_on_preset / broadcast_on_region /
+    /// broadcast_on_channel fields instead (the single-target path).
+    /// Single- and multi-target are equal, first-class options — neither is preferred or
+    /// deprecated. They differ only in how the TX channel is named: broadcast_on_channel embeds a
+    /// ChannelSettings inline, while a target references an existing channel-table slot by
+    /// channel_index (see BroadcastTarget).
+    public var broadcastTargets: [ModuleConfig.MeshBeaconConfig.BroadcastTarget] {
+      get {_storage._broadcastTargets}
+      set {_uniqueStorage()._broadcastTargets = newValue}
+    }
+
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    ///
+    /// Boolean options for the beacon module, packed into the `flags` bitfield below.
+    /// OR the FLAG_* values together; a flag is on when its bit is set.
+    public enum Flags: SwiftProtobuf.Enum, Swift.CaseIterable {
+      public typealias RawValue = Int
+
+      ///
+      /// No options enabled.
+      case flagNone // = 0
+
+      ///
+      /// Enable receiving MESH_BEACON_APP packets from other nodes.
+      /// The text portion is delivered to the local message inbox.
+      /// Offered channel/preset are stored for the client app to act on.
+      case flagListenEnabled // = 1
+
+      ///
+      /// Enable periodically broadcasting MESH_BEACON_APP packets from this node.
+      case flagBroadcastEnabled // = 2
+
+      ///
+      /// When both text and offer content are present, split the beacon into a separate
+      /// MESH_BEACON_APP (offer only) and TEXT_MESSAGE_APP (text only) packet, so firmware
+      /// that only decodes TEXT_MESSAGE_APP still receives the human-readable text.
+      case flagLegacySplit // = 4
+      case UNRECOGNIZED(Int)
+
+      public init() {
+        self = .flagNone
+      }
+
+      public init?(rawValue: Int) {
+        switch rawValue {
+        case 0: self = .flagNone
+        case 1: self = .flagListenEnabled
+        case 2: self = .flagBroadcastEnabled
+        case 4: self = .flagLegacySplit
+        default: self = .UNRECOGNIZED(rawValue)
+        }
+      }
+
+      public var rawValue: Int {
+        switch self {
+        case .flagNone: return 0
+        case .flagListenEnabled: return 1
+        case .flagBroadcastEnabled: return 2
+        case .flagLegacySplit: return 4
+        case .UNRECOGNIZED(let i): return i
+        }
+      }
+
+      // The compiler won't synthesize support with the UNRECOGNIZED case.
+      public static let allCases: [ModuleConfig.MeshBeaconConfig.Flags] = [
+        .flagNone,
+        .flagListenEnabled,
+        .flagBroadcastEnabled,
+        .flagLegacySplit,
+      ]
+
+    }
+
+    ///
+    /// One entry in the multi-target broadcast list.
+    /// The broadcaster transmits one beacon copy per entry, each on its own radio settings.
+    public struct BroadcastTarget: Sendable {
+      // SwiftProtobuf.Message conformance is added in an extension below. See the
+      // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+      // methods supported on all messages.
+
+      ///
+      /// Modem preset to use for this target.
+      /// Falls back to the running config preset if unset.
+      public var preset: Config.LoRaConfig.ModemPreset {
+        get {_preset ?? .longFast}
+        set {_preset = newValue}
+      }
+      /// Returns true if `preset` has been explicitly set.
+      public var hasPreset: Bool {self._preset != nil}
+      /// Clears the value of `preset`. Subsequent reads from it will return its default value.
+      public mutating func clearPreset() {self._preset = nil}
+
+      ///
+      /// Region to use for this target. UNSET means use the running config region.
+      public var region: Config.LoRaConfig.RegionCode = .unset
+
+      ///
+      /// Index into the device's channel table (0..MAX_NUM_CHANNELS-1) of the channel to
+      /// transmit this target's beacon on. The referenced channel must already be configured
+      /// on the node (its key is needed to encrypt). If unset, the default channel for the
+      /// preset is used.
+      public var channelIndex: UInt32 {
+        get {_channelIndex ?? 0}
+        set {_channelIndex = newValue}
+      }
+      /// Returns true if `channelIndex` has been explicitly set.
+      public var hasChannelIndex: Bool {self._channelIndex != nil}
+      /// Clears the value of `channelIndex`. Subsequent reads from it will return its default value.
+      public mutating func clearChannelIndex() {self._channelIndex = nil}
+
+      public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+      public init() {}
+
+      fileprivate var _preset: Config.LoRaConfig.ModemPreset? = nil
+      fileprivate var _channelIndex: UInt32? = nil
+    }
+
+    public init() {}
+
+    fileprivate var _storage = _StorageClass.defaultInstance
+  }
+
+  ///
   /// TAK team/role configuration
   public struct TAKConfig: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
@@ -1465,7 +1680,7 @@ extension RemoteHardwarePinType: SwiftProtobuf._ProtoNameProviding {
 
 extension ModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ModuleConfig"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}mqtt\0\u{1}serial\0\u{3}external_notification\0\u{3}store_forward\0\u{3}range_test\0\u{1}telemetry\0\u{3}canned_message\0\u{1}audio\0\u{3}remote_hardware\0\u{3}neighbor_info\0\u{3}ambient_lighting\0\u{3}detection_sensor\0\u{1}paxcounter\0\u{1}statusmessage\0\u{3}traffic_management\0\u{1}tak\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}mqtt\0\u{1}serial\0\u{3}external_notification\0\u{3}store_forward\0\u{3}range_test\0\u{1}telemetry\0\u{3}canned_message\0\u{1}audio\0\u{3}remote_hardware\0\u{3}neighbor_info\0\u{3}ambient_lighting\0\u{3}detection_sensor\0\u{1}paxcounter\0\u{1}statusmessage\0\u{3}traffic_management\0\u{1}tak\0\u{3}mesh_beacon\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -1681,6 +1896,19 @@ extension ModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
           self.payloadVariant = .tak(v)
         }
       }()
+      case 17: try {
+        var v: ModuleConfig.MeshBeaconConfig?
+        var hadOneofValue = false
+        if let current = self.payloadVariant {
+          hadOneofValue = true
+          if case .meshBeacon(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .meshBeacon(v)
+        }
+      }()
       default: break
       }
     }
@@ -1755,6 +1983,10 @@ extension ModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     case .tak?: try {
       guard case .tak(let v)? = self.payloadVariant else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 16)
+    }()
+    case .meshBeacon?: try {
+      guard case .meshBeacon(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 17)
     }()
     case nil: break
     }
@@ -2152,7 +2384,7 @@ extension ModuleConfig.PaxcounterConfig: SwiftProtobuf.Message, SwiftProtobuf._M
 
 extension ModuleConfig.TrafficManagementConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = ModuleConfig.protoMessageName + ".TrafficManagementConfig"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}enabled\0\u{3}position_dedup_enabled\0\u{3}position_precision_bits\0\u{3}position_min_interval_secs\0\u{3}nodeinfo_direct_response\0\u{3}nodeinfo_direct_response_max_hops\0\u{3}rate_limit_enabled\0\u{3}rate_limit_window_secs\0\u{3}rate_limit_max_packets\0\u{3}drop_unknown_enabled\0\u{3}unknown_packet_threshold\0\u{3}exhaust_hop_telemetry\0\u{3}exhaust_hop_position\0\u{3}router_preserve_hops\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{4}\u{4}position_min_interval_secs\0\u{4}\u{2}nodeinfo_direct_response_max_hops\0\u{4}\u{2}rate_limit_window_secs\0\u{3}rate_limit_max_packets\0\u{4}\u{2}unknown_packet_threshold\0\u{b}enabled\0\u{b}position_dedup_enabled\0\u{b}position_precision_bits\0\u{b}nodeinfo_direct_response\0\u{b}rate_limit_enabled\0\u{b}drop_unknown_enabled\0\u{b}exhaust_hop_telemetry\0\u{b}exhaust_hop_position\0\u{b}router_preserve_hops\0\u{c}\u{1}\u{1}\u{c}\u{2}\u{1}\u{c}\u{3}\u{1}\u{c}\u{5}\u{1}\u{c}\u{7}\u{1}\u{c}\u{a}\u{1}\u{c}\u{c}\u{1}\u{c}\u{d}\u{1}\u{c}\u{e}\u{1}")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2160,46 +2392,22 @@ extension ModuleConfig.TrafficManagementConfig: SwiftProtobuf.Message, SwiftProt
       // allocates stack space for every case branch when no optimizations are
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
-      case 1: try { try decoder.decodeSingularBoolField(value: &self.enabled) }()
-      case 2: try { try decoder.decodeSingularBoolField(value: &self.positionDedupEnabled) }()
-      case 3: try { try decoder.decodeSingularUInt32Field(value: &self.positionPrecisionBits) }()
       case 4: try { try decoder.decodeSingularUInt32Field(value: &self.positionMinIntervalSecs) }()
-      case 5: try { try decoder.decodeSingularBoolField(value: &self.nodeinfoDirectResponse) }()
       case 6: try { try decoder.decodeSingularUInt32Field(value: &self.nodeinfoDirectResponseMaxHops) }()
-      case 7: try { try decoder.decodeSingularBoolField(value: &self.rateLimitEnabled) }()
       case 8: try { try decoder.decodeSingularUInt32Field(value: &self.rateLimitWindowSecs) }()
       case 9: try { try decoder.decodeSingularUInt32Field(value: &self.rateLimitMaxPackets) }()
-      case 10: try { try decoder.decodeSingularBoolField(value: &self.dropUnknownEnabled) }()
       case 11: try { try decoder.decodeSingularUInt32Field(value: &self.unknownPacketThreshold) }()
-      case 12: try { try decoder.decodeSingularBoolField(value: &self.exhaustHopTelemetry) }()
-      case 13: try { try decoder.decodeSingularBoolField(value: &self.exhaustHopPosition) }()
-      case 14: try { try decoder.decodeSingularBoolField(value: &self.routerPreserveHops) }()
       default: break
       }
     }
   }
 
   public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    if self.enabled != false {
-      try visitor.visitSingularBoolField(value: self.enabled, fieldNumber: 1)
-    }
-    if self.positionDedupEnabled != false {
-      try visitor.visitSingularBoolField(value: self.positionDedupEnabled, fieldNumber: 2)
-    }
-    if self.positionPrecisionBits != 0 {
-      try visitor.visitSingularUInt32Field(value: self.positionPrecisionBits, fieldNumber: 3)
-    }
     if self.positionMinIntervalSecs != 0 {
       try visitor.visitSingularUInt32Field(value: self.positionMinIntervalSecs, fieldNumber: 4)
     }
-    if self.nodeinfoDirectResponse != false {
-      try visitor.visitSingularBoolField(value: self.nodeinfoDirectResponse, fieldNumber: 5)
-    }
     if self.nodeinfoDirectResponseMaxHops != 0 {
       try visitor.visitSingularUInt32Field(value: self.nodeinfoDirectResponseMaxHops, fieldNumber: 6)
-    }
-    if self.rateLimitEnabled != false {
-      try visitor.visitSingularBoolField(value: self.rateLimitEnabled, fieldNumber: 7)
     }
     if self.rateLimitWindowSecs != 0 {
       try visitor.visitSingularUInt32Field(value: self.rateLimitWindowSecs, fieldNumber: 8)
@@ -2207,39 +2415,18 @@ extension ModuleConfig.TrafficManagementConfig: SwiftProtobuf.Message, SwiftProt
     if self.rateLimitMaxPackets != 0 {
       try visitor.visitSingularUInt32Field(value: self.rateLimitMaxPackets, fieldNumber: 9)
     }
-    if self.dropUnknownEnabled != false {
-      try visitor.visitSingularBoolField(value: self.dropUnknownEnabled, fieldNumber: 10)
-    }
     if self.unknownPacketThreshold != 0 {
       try visitor.visitSingularUInt32Field(value: self.unknownPacketThreshold, fieldNumber: 11)
-    }
-    if self.exhaustHopTelemetry != false {
-      try visitor.visitSingularBoolField(value: self.exhaustHopTelemetry, fieldNumber: 12)
-    }
-    if self.exhaustHopPosition != false {
-      try visitor.visitSingularBoolField(value: self.exhaustHopPosition, fieldNumber: 13)
-    }
-    if self.routerPreserveHops != false {
-      try visitor.visitSingularBoolField(value: self.routerPreserveHops, fieldNumber: 14)
     }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: ModuleConfig.TrafficManagementConfig, rhs: ModuleConfig.TrafficManagementConfig) -> Bool {
-    if lhs.enabled != rhs.enabled {return false}
-    if lhs.positionDedupEnabled != rhs.positionDedupEnabled {return false}
-    if lhs.positionPrecisionBits != rhs.positionPrecisionBits {return false}
     if lhs.positionMinIntervalSecs != rhs.positionMinIntervalSecs {return false}
-    if lhs.nodeinfoDirectResponse != rhs.nodeinfoDirectResponse {return false}
     if lhs.nodeinfoDirectResponseMaxHops != rhs.nodeinfoDirectResponseMaxHops {return false}
-    if lhs.rateLimitEnabled != rhs.rateLimitEnabled {return false}
     if lhs.rateLimitWindowSecs != rhs.rateLimitWindowSecs {return false}
     if lhs.rateLimitMaxPackets != rhs.rateLimitMaxPackets {return false}
-    if lhs.dropUnknownEnabled != rhs.dropUnknownEnabled {return false}
     if lhs.unknownPacketThreshold != rhs.unknownPacketThreshold {return false}
-    if lhs.exhaustHopTelemetry != rhs.exhaustHopTelemetry {return false}
-    if lhs.exhaustHopPosition != rhs.exhaustHopPosition {return false}
-    if lhs.routerPreserveHops != rhs.routerPreserveHops {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -2777,6 +2964,194 @@ extension ModuleConfig.StatusMessageConfig: SwiftProtobuf.Message, SwiftProtobuf
 
   public static func ==(lhs: ModuleConfig.StatusMessageConfig, rhs: ModuleConfig.StatusMessageConfig) -> Bool {
     if lhs.nodeStatus != rhs.nodeStatus {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension ModuleConfig.MeshBeaconConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = ModuleConfig.protoMessageName + ".MeshBeaconConfig"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}flags\0\u{4}\u{2}broadcast_send_as_node\0\u{3}broadcast_message\0\u{3}broadcast_offer_channel\0\u{3}broadcast_offer_region\0\u{3}broadcast_offer_preset\0\u{3}broadcast_on_channel\0\u{3}broadcast_on_region\0\u{3}broadcast_on_preset\0\u{3}broadcast_interval_secs\0\u{4}\u{2}broadcast_targets\0")
+
+  fileprivate class _StorageClass {
+    var _flags: UInt32 = 0
+    var _broadcastSendAsNode: UInt32 = 0
+    var _broadcastMessage: String = String()
+    var _broadcastOfferChannel: ChannelSettings? = nil
+    var _broadcastOfferRegion: Config.LoRaConfig.RegionCode = .unset
+    var _broadcastOfferPreset: Config.LoRaConfig.ModemPreset? = nil
+    var _broadcastOnChannel: ChannelSettings? = nil
+    var _broadcastOnRegion: Config.LoRaConfig.RegionCode = .unset
+    var _broadcastOnPreset: Config.LoRaConfig.ModemPreset? = nil
+    var _broadcastIntervalSecs: UInt32 = 0
+    var _broadcastTargets: [ModuleConfig.MeshBeaconConfig.BroadcastTarget] = []
+
+      // This property is used as the initial default value for new instances of the type.
+      // The type itself is protecting the reference to its storage via CoW semantics.
+      // This will force a copy to be made of this reference when the first mutation occurs;
+      // hence, it is safe to mark this as `nonisolated(unsafe)`.
+      static nonisolated(unsafe) let defaultInstance = _StorageClass()
+
+    private init() {}
+
+    init(copying source: _StorageClass) {
+      _flags = source._flags
+      _broadcastSendAsNode = source._broadcastSendAsNode
+      _broadcastMessage = source._broadcastMessage
+      _broadcastOfferChannel = source._broadcastOfferChannel
+      _broadcastOfferRegion = source._broadcastOfferRegion
+      _broadcastOfferPreset = source._broadcastOfferPreset
+      _broadcastOnChannel = source._broadcastOnChannel
+      _broadcastOnRegion = source._broadcastOnRegion
+      _broadcastOnPreset = source._broadcastOnPreset
+      _broadcastIntervalSecs = source._broadcastIntervalSecs
+      _broadcastTargets = source._broadcastTargets
+    }
+  }
+
+  fileprivate mutating func _uniqueStorage() -> _StorageClass {
+    if !isKnownUniquelyReferenced(&_storage) {
+      _storage = _StorageClass(copying: _storage)
+    }
+    return _storage
+  }
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    _ = _uniqueStorage()
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      while let fieldNumber = try decoder.nextFieldNumber() {
+        // The use of inline closures is to circumvent an issue where the compiler
+        // allocates stack space for every case branch when no optimizations are
+        // enabled. https://github.com/apple/swift-protobuf/issues/1034
+        switch fieldNumber {
+        case 1: try { try decoder.decodeSingularUInt32Field(value: &_storage._flags) }()
+        case 3: try { try decoder.decodeSingularUInt32Field(value: &_storage._broadcastSendAsNode) }()
+        case 4: try { try decoder.decodeSingularStringField(value: &_storage._broadcastMessage) }()
+        case 5: try { try decoder.decodeSingularMessageField(value: &_storage._broadcastOfferChannel) }()
+        case 6: try { try decoder.decodeSingularEnumField(value: &_storage._broadcastOfferRegion) }()
+        case 7: try { try decoder.decodeSingularEnumField(value: &_storage._broadcastOfferPreset) }()
+        case 8: try { try decoder.decodeSingularMessageField(value: &_storage._broadcastOnChannel) }()
+        case 9: try { try decoder.decodeSingularEnumField(value: &_storage._broadcastOnRegion) }()
+        case 10: try { try decoder.decodeSingularEnumField(value: &_storage._broadcastOnPreset) }()
+        case 11: try { try decoder.decodeSingularUInt32Field(value: &_storage._broadcastIntervalSecs) }()
+        case 13: try { try decoder.decodeRepeatedMessageField(value: &_storage._broadcastTargets) }()
+        default: break
+        }
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every if/case branch local when no optimizations
+      // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+      // https://github.com/apple/swift-protobuf/issues/1182
+      if _storage._flags != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._flags, fieldNumber: 1)
+      }
+      if _storage._broadcastSendAsNode != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._broadcastSendAsNode, fieldNumber: 3)
+      }
+      if !_storage._broadcastMessage.isEmpty {
+        try visitor.visitSingularStringField(value: _storage._broadcastMessage, fieldNumber: 4)
+      }
+      try { if let v = _storage._broadcastOfferChannel {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 5)
+      } }()
+      if _storage._broadcastOfferRegion != .unset {
+        try visitor.visitSingularEnumField(value: _storage._broadcastOfferRegion, fieldNumber: 6)
+      }
+      try { if let v = _storage._broadcastOfferPreset {
+        try visitor.visitSingularEnumField(value: v, fieldNumber: 7)
+      } }()
+      try { if let v = _storage._broadcastOnChannel {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 8)
+      } }()
+      if _storage._broadcastOnRegion != .unset {
+        try visitor.visitSingularEnumField(value: _storage._broadcastOnRegion, fieldNumber: 9)
+      }
+      try { if let v = _storage._broadcastOnPreset {
+        try visitor.visitSingularEnumField(value: v, fieldNumber: 10)
+      } }()
+      if _storage._broadcastIntervalSecs != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._broadcastIntervalSecs, fieldNumber: 11)
+      }
+      if !_storage._broadcastTargets.isEmpty {
+        try visitor.visitRepeatedMessageField(value: _storage._broadcastTargets, fieldNumber: 13)
+      }
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: ModuleConfig.MeshBeaconConfig, rhs: ModuleConfig.MeshBeaconConfig) -> Bool {
+    if lhs._storage !== rhs._storage {
+      let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
+        let _storage = _args.0
+        let rhs_storage = _args.1
+        if _storage._flags != rhs_storage._flags {return false}
+        if _storage._broadcastSendAsNode != rhs_storage._broadcastSendAsNode {return false}
+        if _storage._broadcastMessage != rhs_storage._broadcastMessage {return false}
+        if _storage._broadcastOfferChannel != rhs_storage._broadcastOfferChannel {return false}
+        if _storage._broadcastOfferRegion != rhs_storage._broadcastOfferRegion {return false}
+        if _storage._broadcastOfferPreset != rhs_storage._broadcastOfferPreset {return false}
+        if _storage._broadcastOnChannel != rhs_storage._broadcastOnChannel {return false}
+        if _storage._broadcastOnRegion != rhs_storage._broadcastOnRegion {return false}
+        if _storage._broadcastOnPreset != rhs_storage._broadcastOnPreset {return false}
+        if _storage._broadcastIntervalSecs != rhs_storage._broadcastIntervalSecs {return false}
+        if _storage._broadcastTargets != rhs_storage._broadcastTargets {return false}
+        return true
+      }
+      if !storagesAreEqual {return false}
+    }
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension ModuleConfig.MeshBeaconConfig.Flags: SwiftProtobuf._ProtoNameProviding {
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0FLAG_NONE\0\u{1}FLAG_LISTEN_ENABLED\0\u{1}FLAG_BROADCAST_ENABLED\0\u{2}\u{2}FLAG_LEGACY_SPLIT\0")
+}
+
+extension ModuleConfig.MeshBeaconConfig.BroadcastTarget: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = ModuleConfig.MeshBeaconConfig.protoMessageName + ".BroadcastTarget"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}preset\0\u{1}region\0\u{4}\u{2}channel_index\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularEnumField(value: &self._preset) }()
+      case 2: try { try decoder.decodeSingularEnumField(value: &self.region) }()
+      case 4: try { try decoder.decodeSingularUInt32Field(value: &self._channelIndex) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    try { if let v = self._preset {
+      try visitor.visitSingularEnumField(value: v, fieldNumber: 1)
+    } }()
+    if self.region != .unset {
+      try visitor.visitSingularEnumField(value: self.region, fieldNumber: 2)
+    }
+    try { if let v = self._channelIndex {
+      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 4)
+    } }()
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: ModuleConfig.MeshBeaconConfig.BroadcastTarget, rhs: ModuleConfig.MeshBeaconConfig.BroadcastTarget) -> Bool {
+    if lhs._preset != rhs._preset {return false}
+    if lhs.region != rhs.region {return false}
+    if lhs._channelIndex != rhs._channelIndex {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

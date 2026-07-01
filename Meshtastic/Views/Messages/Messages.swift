@@ -42,9 +42,25 @@ struct Messages: View {
 		Binding(get: { self.node }, set: { self.nodeNum = $0?.num })
 	}
 
+	/// Sidebar selection binding. Reads/writes the durable, payload-free `router.messagesSection`,
+	/// so the bound value always matches a `.channels()` / `.directMessages()` row and the
+	/// collapsed `NavigationSplitView` back stack stays intact. The setter only fires on a user tap
+	/// (selecting a different section), where we also reset the detail pane so the new section
+	/// starts with nothing selected — matching the behavior of a fresh sidebar navigation.
+	private var sidebarSelection: Binding<MessagesNavigationState?> {
+		Binding(
+			get: { self.router.messagesSection },
+			set: { newValue in
+				self.router.messagesSection = newValue
+				self.channelSelection = nil
+				self.userSelection = nil
+			}
+		)
+	}
+
 	var body: some View {
 		NavigationSplitView(columnVisibility: $columnVisibility) {
-			List(selection: $router.messagesState) {
+			List(selection: sidebarSelection) {
 				NavigationLink(value: MessagesNavigationState.channels()) {
 					Spacer()
 					Label {
@@ -97,7 +113,7 @@ struct Messages: View {
 				}
 			}
 		} content: {
-			switch router.messagesState {
+			switch router.messagesSection {
 			case .channels:
 				ChannelList(node: nodeBinding, channelSelection: $channelSelection)
 					// Removed navigationTitle and navigationBarTitleDisplayMode here.
@@ -115,9 +131,9 @@ struct Messages: View {
 						ChannelMessageList(myInfo: myInfo, channel: channelSelection)
 					} else if let userSelection {
 						UserMessageList(user: userSelection)
-					} else if case .channels = router.messagesState {
+					} else if case .channels = router.messagesSection {
 						Text("Select a channel")
-					} else if case .directMessages = router.messagesState {
+					} else if case .directMessages = router.messagesSection {
 						Text("Select a conversation")
 					}
 				}
@@ -128,39 +144,66 @@ struct Messages: View {
 				}
 			}
 		}.onAppear {
-			setupNavigationState()
-		}.onChange(of: router.messagesState) {
-			setupNavigationState()
+			// Handles the deep link set by `route(url:)` before this view began observing.
+			consumeDeepLink(router.messagesState)
+		}.onChange(of: router.messagesState) { _, newValue in
+			consumeDeepLink(newValue)
+		}.onChange(of: router.messagesSection) { _, newValue in
+			// A reset (e.g. `popToRoot` on disconnect) nils the section; clear the detail pane to
+			// match. Section *changes* between .channels/.directMessages are reset by the sidebar
+			// setter and by `consumeDeepLink`, so only the nil case needs handling here.
+			if newValue == nil {
+				channelSelection = nil
+				userSelection = nil
+			}
 		}
 	}
 
-	private func setupNavigationState() {
+	private func bootstrapNodeNum() {
 		let nodeId = Int64(UserDefaults.preferredPeripheralNum)
 		if nodeId > 0 && nodeNum == nil {
 			nodeNum = nodeId
 		}
+	}
 
-		guard let state = router.messagesState else {
-			channelSelection = nil
-			userSelection = nil
-			return
-		}
+	/// Resolves a deep-link `messagesState` into the selected conversation, then clears the payload
+	/// so it's consumed exactly once. Clearing `router.messagesState` re-fires the `onChange` above
+	/// with `nil`, which this guard turns into a no-op — selections are never clobbered. If the
+	/// target can't be resolved yet (e.g. channels not loaded on a cold launch) the payload is left
+	/// in place so a later `onAppear` can retry instead of silently dropping the deep link.
+	private func consumeDeepLink(_ state: MessagesNavigationState?) {
+		bootstrapNodeNum()
+		guard let state else { return }
 
 		switch state {
 		case .channels(channelId: let channelId, messageId: _):
-			if let channelId {
-				channelSelection = node?.myInfo?.channels.first { $0.id == channelId }
-			} else {
+			router.messagesSection = .channels()
+			guard let channelId else {
 				channelSelection = nil
 				userSelection = nil
+				break
 			}
+			guard let channel = node?.myInfo?.channels.first(where: { $0.id == channelId }) else {
+				return // Not resolvable yet — keep the payload and retry on the next appear.
+			}
+			channelSelection = channel
+			// Clear the sibling DM selection so the detail pane (which prioritizes
+			// channelSelection) can't surface a stale conversation under the Channels section.
+			userSelection = nil
 		case .directMessages(userNum: let userNum, messageId: _):
+			router.messagesSection = .directMessages()
 			if let userNum {
+				// getUser always resolves (creating a placeholder if needed), so a DM deep link
+				// never needs the cold-launch retry that the channel branch does.
 				userSelection = getUser(id: userNum, context: context)
 			} else {
-				channelSelection = nil
 				userSelection = nil
 			}
+			// Clear the sibling channel selection: the detail pane prioritizes channelSelection,
+			// so a previously-open channel would otherwise mask this DM and show the wrong thread.
+			channelSelection = nil
 		}
+
+		router.messagesState = nil // Consumed — prevents a re-appear from re-resolving it.
 	}
 }

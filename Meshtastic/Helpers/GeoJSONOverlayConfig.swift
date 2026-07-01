@@ -165,6 +165,19 @@ struct GeoJSONFeature: Codable {
 		default: return 4.0
 		}
 	}
+
+	/// Coordinates to draw as map markers. A Point yields one coordinate; a MultiPoint yields
+	/// one per sub-coordinate. Empty for every other geometry type (those render as overlays).
+	var markerCoordinates: [CLLocationCoordinate2D] {
+		switch geometry.type.lowercased() {
+		case "point":
+			return geometry.coordinates.toCoordinate().map { [$0] } ?? []
+		case "multipoint":
+			return geometry.coordinates.toCoordinates()
+		default:
+			return []
+		}
+	}
 }
 
 // MARK: - Styled Feature Wrapper
@@ -188,6 +201,13 @@ struct GeoJSONStyledFeature: Identifiable {
 
 	/// Builds an MKOverlay from a GeoJSON feature. Static so it can be called from init.
 	private static func makeOverlay(for feature: GeoJSONFeature) -> MKOverlay? {
+		// Point/MultiPoint geometries render as map annotations (markers), not overlays —
+		// MKGeoJSONDecoder returns an MKPointAnnotation (not an MKOverlay) for them, so running them
+		// through the overlay path below logged a spurious "no valid MKOverlay geometry" error for
+		// every point. Skip them silently; they're drawn via the annotation path (#1970).
+		let geometryType = feature.geometry.type.lowercased()
+		guard geometryType != "point", geometryType != "multipoint" else { return nil }
+
 		let featureDict: [String: Any] = [
 			"type": feature.type,
 			"geometry": [
@@ -346,5 +366,12 @@ enum AnyCodableValue: Codable {
 			return CLLocationCoordinate2D(latitude: lat, longitude: lon)
 		}
 		return nil
+	}
+
+	/// Convert a MultiPoint-style array of [lon, lat] pairs to coordinates.
+	/// Malformed entries are skipped rather than failing the whole set.
+	func toCoordinates() -> [CLLocationCoordinate2D] {
+		guard case .array(let items) = self else { return [] }
+		return items.compactMap { $0.toCoordinate() }
 	}
 }

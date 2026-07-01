@@ -147,86 +147,84 @@ extension MeshPackets {
 	}
 	
 	public func clearDatabase(includeRoutes: Bool, preserveFavorites: Bool = false) {
-		// Delete entities that are on the inverse side of many-to-many relationships first to avoid
-		// constraint trigger violations. A batch `delete(model:)` alone trips the mandatory MTM
-		// nullify inverse between DeviceHardwareEntity.tags and DeviceHardwareTagEntity.devices, so
-		// first sever the relationship from the owning side and save before deleting the tag/image
-		// entities. Mirrors PersistenceController.clearDatabase.
+		// Delete + SAVE one model type at a time. SwiftData's batch `delete(model:)` ENQUEUES a
+		// deletion (committed on the next save) and nullifies inverse relationships. Reconciling MANY
+		// types' deletions in a SINGLE trailing save makes SwiftData tear down objects whose inverse
+		// targets were also deleted in the same uncommitted batch, tripping an internal assertion
+		// (`_assertionFailure` in `objectdestroy` → SIGTRAP — the 2.7.15 clearDatabase crash). Saving
+		// after each delete keeps every reconcile against already-committed, consistent state.
+		//
+		// `commit()` THROWS and any failure aborts the whole clear: swallowing a failed save would
+		// leave that type's deletions pending, so the next save would reconcile multiple types at once
+		// and re-create the very multi-type batch this avoids. Mirrors PersistenceController.clearDatabase.
+		func commit() throws {
+			guard modelContext.hasChanges else { return }
+			try modelContext.save()
+		}
+
 		do {
+			// Sever the DeviceHardware many-to-many from the owning side first (a batch delete alone
+			// trips the mandatory MTM nullify inverse between DeviceHardwareEntity.tags and
+			// DeviceHardwareTagEntity.devices), saving before deleting the tag/image entities.
 			let hardwareDevices = try modelContext.fetch(FetchDescriptor<DeviceHardwareEntity>())
 			for device in hardwareDevices {
 				device.tags.removeAll()
 			}
-			if modelContext.hasChanges {
-				try modelContext.save()
-			}
+			try commit()
 			try modelContext.delete(model: DeviceHardwareTagEntity.self)
+			try commit()
 			try modelContext.delete(model: DeviceHardwareImageEntity.self)
-		} catch {
-			Logger.data.error("\(error.localizedDescription, privacy: .public)")
-		}
+			try commit()
 
-		// Collect favorite node IDs before the delete loop so we can
-		// skip related entities that belong to preserved nodes.
-		var favoriteNodeNums: Set<Int64> = []
-		if preserveFavorites {
-			let favDescriptor = FetchDescriptor<NodeInfoEntity>(
-				predicate: #Predicate<NodeInfoEntity> { $0.favorite == true }
-			)
-			favoriteNodeNums = Set((try? modelContext.fetch(favDescriptor))?.map(\.num) ?? [])
-		}
-
-		let allModels: [any PersistentModel.Type] = MeshtasticSchema.allModels
-		for modelType in allModels {
-			if !includeRoutes && (modelType == RouteEntity.self || modelType == LocationEntity.self) {
-				continue
-			}
-			if modelType == DeviceHardwareTagEntity.self || modelType == DeviceHardwareImageEntity.self {
-				continue // already deleted above
-			}
-			if preserveFavorites && modelType == NodeInfoEntity.self {
-				// Keep favorited nodes so the device and app stay in sync when the
-				// firmware is told to preserve favorites (nodedbReset = true).
-				let descriptor = FetchDescriptor<NodeInfoEntity>(
-					predicate: #Predicate<NodeInfoEntity> { node in
-						node.favorite == false
-					}
+			// Collect favorite node IDs before the delete loop so we can skip related entities that
+			// belong to preserved nodes. If this fetch fails we abort rather than treat the set as
+			// empty — otherwise we'd delete the very favorites we were asked to preserve.
+			var favoriteNodeNums: Set<Int64> = []
+			if preserveFavorites {
+				let favDescriptor = FetchDescriptor<NodeInfoEntity>(
+					predicate: #Predicate<NodeInfoEntity> { $0.favorite == true }
 				)
-				do {
-					let nonFavorites = try modelContext.fetch(descriptor)
-					for node in nonFavorites {
+				favoriteNodeNums = Set(try modelContext.fetch(favDescriptor).map(\.num))
+			}
+
+			for modelType in MeshtasticSchema.allModels {
+				if !includeRoutes && (modelType == RouteEntity.self || modelType == LocationEntity.self) {
+					continue
+				}
+				if modelType == DeviceHardwareTagEntity.self || modelType == DeviceHardwareImageEntity.self {
+					continue // already deleted above
+				}
+				if preserveFavorites && modelType == NodeInfoEntity.self {
+					// Keep favorited nodes so the device and app stay in sync when the
+					// firmware is told to preserve favorites (nodedbReset = true).
+					let descriptor = FetchDescriptor<NodeInfoEntity>(
+						predicate: #Predicate<NodeInfoEntity> { node in
+							node.favorite == false
+						}
+					)
+					for node in try modelContext.fetch(descriptor) {
 						modelContext.delete(node)
 					}
-				} catch {
-					Logger.data.error("\(error.localizedDescription, privacy: .public)")
+					try commit()
+					continue
 				}
-				continue
-			}
-			if preserveFavorites && modelType == UserEntity.self {
-				// Only delete users not belonging to favorite nodes.
-				do {
-					let allUsers = try modelContext.fetch(FetchDescriptor<UserEntity>())
-					for user in allUsers {
+				if preserveFavorites && modelType == UserEntity.self {
+					// Only delete users not belonging to favorite nodes.
+					for user in try modelContext.fetch(FetchDescriptor<UserEntity>()) {
 						if let userNodeNum = user.userNode?.num, favoriteNodeNums.contains(userNodeNum) {
 							continue
 						}
 						modelContext.delete(user)
 					}
-				} catch {
-					Logger.data.error("\(error.localizedDescription, privacy: .public)")
+					try commit()
+					continue
 				}
-				continue
-			}
-			do {
 				try modelContext.delete(model: modelType)
-			} catch {
-				Logger.data.error("\(error.localizedDescription, privacy: .public)")
+				try commit()
 			}
-		}
-		do {
-			try modelContext.save()
 		} catch {
-			Logger.data.error("💥 Failed to save after clearing database: \(error.localizedDescription, privacy: .public)")
+			// Abort before the next type so a failed save can't leave a multi-type batch pending.
+			Logger.data.error("💥 Failed while clearing database, aborted: \(error.localizedDescription, privacy: .public)")
 		}
 	}
 	
@@ -1860,40 +1858,34 @@ extension MeshPackets {
 		do {
 			let fetchedNode = try modelContext.fetch(fetchNodeInfoRequest)
 			if !fetchedNode.isEmpty {
-				if fetchedNode[0].trafficManagementConfig == nil {
-					let newConfig = TrafficManagementConfigEntity()
-					modelContext.insert(newConfig)
-					newConfig.enabled = config.enabled
-					newConfig.positionDedupEnabled = config.positionDedupEnabled
-					newConfig.positionPrecisionBits = Int32(config.positionPrecisionBits)
-					newConfig.positionMinIntervalSecs = Int32(config.positionMinIntervalSecs)
-					newConfig.nodeinfoDirectResponse = config.nodeinfoDirectResponse
-					newConfig.nodeinfoDirectResponseMaxHops = Int32(config.nodeinfoDirectResponseMaxHops)
-					newConfig.rateLimitEnabled = config.rateLimitEnabled
-					newConfig.rateLimitWindowSecs = Int32(config.rateLimitWindowSecs)
-					newConfig.rateLimitMaxPackets = Int32(config.rateLimitMaxPackets)
-					newConfig.dropUnknownEnabled = config.dropUnknownEnabled
-					newConfig.unknownPacketThreshold = Int32(config.unknownPacketThreshold)
-					newConfig.exhaustHopTelemetry = config.exhaustHopTelemetry
-					newConfig.exhaustHopPosition = config.exhaustHopPosition
-					newConfig.routerPreserveHops = config.routerPreserveHops
-					fetchedNode[0].trafficManagementConfig = newConfig
+				let entity: TrafficManagementConfigEntity
+				if let existing = fetchedNode[0].trafficManagementConfig {
+					entity = existing
 				} else {
-					fetchedNode[0].trafficManagementConfig?.enabled = config.enabled
-					fetchedNode[0].trafficManagementConfig?.positionDedupEnabled = config.positionDedupEnabled
-					fetchedNode[0].trafficManagementConfig?.positionPrecisionBits = Int32(config.positionPrecisionBits)
-					fetchedNode[0].trafficManagementConfig?.positionMinIntervalSecs = Int32(config.positionMinIntervalSecs)
-					fetchedNode[0].trafficManagementConfig?.nodeinfoDirectResponse = config.nodeinfoDirectResponse
-					fetchedNode[0].trafficManagementConfig?.nodeinfoDirectResponseMaxHops = Int32(config.nodeinfoDirectResponseMaxHops)
-					fetchedNode[0].trafficManagementConfig?.rateLimitEnabled = config.rateLimitEnabled
-					fetchedNode[0].trafficManagementConfig?.rateLimitWindowSecs = Int32(config.rateLimitWindowSecs)
-					fetchedNode[0].trafficManagementConfig?.rateLimitMaxPackets = Int32(config.rateLimitMaxPackets)
-					fetchedNode[0].trafficManagementConfig?.dropUnknownEnabled = config.dropUnknownEnabled
-					fetchedNode[0].trafficManagementConfig?.unknownPacketThreshold = Int32(config.unknownPacketThreshold)
-					fetchedNode[0].trafficManagementConfig?.exhaustHopTelemetry = config.exhaustHopTelemetry
-					fetchedNode[0].trafficManagementConfig?.exhaustHopPosition = config.exhaustHopPosition
-					fetchedNode[0].trafficManagementConfig?.routerPreserveHops = config.routerPreserveHops
+					entity = TrafficManagementConfigEntity()
+					modelContext.insert(entity)
+					fetchedNode[0].trafficManagementConfig = entity
 				}
+
+				// 2.8 schema dropped the per-feature boolean flags and the
+				// precision-bits / hop-management fields. Each feature is now enabled
+				// implicitly by a non-zero value, so derive the stored booleans (still
+				// used by the config UI) from the incoming interval/threshold values.
+				let positionDedup = config.positionMinIntervalSecs > 0
+				let nodeinfoDirect = config.nodeinfoDirectResponseMaxHops > 0
+				let rateLimit = config.rateLimitWindowSecs > 0 || config.rateLimitMaxPackets > 0
+				let dropUnknown = config.unknownPacketThreshold > 0
+
+				entity.enabled = positionDedup || nodeinfoDirect || rateLimit || dropUnknown
+				entity.positionDedupEnabled = positionDedup
+				entity.positionMinIntervalSecs = Int32(config.positionMinIntervalSecs)
+				entity.nodeinfoDirectResponse = nodeinfoDirect
+				entity.nodeinfoDirectResponseMaxHops = Int32(config.nodeinfoDirectResponseMaxHops)
+				entity.rateLimitEnabled = rateLimit
+				entity.rateLimitWindowSecs = Int32(config.rateLimitWindowSecs)
+				entity.rateLimitMaxPackets = Int32(config.rateLimitMaxPackets)
+				entity.dropUnknownEnabled = dropUnknown
+				entity.unknownPacketThreshold = Int32(config.unknownPacketThreshold)
 				if sessionPasskey != nil {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)

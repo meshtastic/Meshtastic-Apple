@@ -63,28 +63,35 @@ struct NodeDetail: View {
 	@State var showingCompassSheet = false
 	
 	var body: some View {
-		ScrollViewReader { scrollView in
-			Color.clear
-				.frame(height: 0) // Ensure it has no height
-				.id("topOfList")
-				nodeDetailList
-				.sheet(isPresented: $showingCompassSheet) {
-					CompassView(waypointLocation: latestPosition?.nodeCoordinate ?? nil, waypointLongName: node.user?.longName ?? nil, waypointShortName: node.user?.shortName ?? nil, color: Color(UIColor(hex: UInt32(node.num))))
+		if node.modelContext != nil {
+			ScrollViewReader { scrollView in
+				Color.clear
+					.frame(height: 0) // Ensure it has no height
+					.id("topOfList")
+					nodeDetailList
+					.sheet(isPresented: $showingCompassSheet) {
+						CompassView(waypointLocation: latestPosition?.nodeCoordinate ?? nil, waypointLongName: node.user?.longName ?? nil, waypointShortName: node.user?.shortName ?? nil, color: Color(UIColor(hex: UInt32(node.num))))
+							}
+					.onAppear {
+						refreshNodeSummary()
+						scrollView.scrollTo("topOfList", anchor: .top)
+					}
+						.onChange(of: node.lastHeard) {
+							refreshNodeSummary()
 						}
-				.onAppear {
-					refreshNodeSummary()
-					scrollView.scrollTo("topOfList", anchor: .top)
-				}
-					.onChange(of: node.lastHeard) {
-						refreshNodeSummary()
-					}
-					.onReceive(NotificationCenter.default.publisher(for: .nodeLogAvailabilityDidChange)) { notification in
-						guard notification.object as? Int64 == node.num else { return }
-						refreshNodeSummary()
-					}
-					.contentMargins(.top, 0, for: .scrollContent)
-				.navigationTitle(String(node.user?.longName?.addingVariationSelectors ?? "Unknown".localized))
-				.navigationBarTitleDisplayMode(.inline)
+						.onReceive(NotificationCenter.default.publisher(for: .nodeLogAvailabilityDidChange)) { notification in
+							guard notification.object as? Int64 == node.num else { return }
+							refreshNodeSummary()
+						}
+						.contentMargins(.top, 0, for: .scrollContent)
+					.navigationTitle(String(node.user?.longName?.addingVariationSelectors ?? "Unknown".localized))
+					.navigationBarTitleDisplayMode(.inline)
+			}
+		} else {
+			// Node was deleted or detached (e.g. after a database reset / node switch).
+			// Reading any attribute on a faulted @Model traps during render, so render
+			// nothing — the navigation stack pops this detail as its data source updates.
+			Color.clear
 		}
 	}
 
