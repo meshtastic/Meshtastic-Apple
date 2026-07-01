@@ -1426,11 +1426,17 @@ enum MeshMapRegionPersistence {
 	/// so rejecting it is safe and stops the default map region from ever being saved.
 	static let nullIslandEpsilon = 0.0001
 
-	/// Whether `region` is safe to persist/restore: a valid, non-(0,0) center with positive spans.
+	/// Whether `region` is safe to persist/restore: a valid, non-(0,0) center with finite, positive,
+	/// in-bounds spans. The span deltas must be finite and within MapKit's valid range (≤180° lat,
+	/// ≤360° lon) — a bare `> 0` check would accept `.infinity` (and a stored garbage value could
+	/// reach `MKMapView.setRegion` on launch); `NaN` already fails `> 0`.
 	static func isPersistable(_ region: MKCoordinateRegion) -> Bool {
 		let center = region.center
+		let span = region.span
 		guard CLLocationCoordinate2DIsValid(center),
-			  region.span.latitudeDelta > 0, region.span.longitudeDelta > 0 else { return false }
+			  span.latitudeDelta.isFinite, span.longitudeDelta.isFinite,
+			  span.latitudeDelta > 0, span.longitudeDelta > 0,
+			  span.latitudeDelta <= 180, span.longitudeDelta <= 360 else { return false }
 		return !(abs(center.latitude) < nullIslandEpsilon && abs(center.longitude) < nullIslandEpsilon)
 	}
 

@@ -324,6 +324,23 @@ struct MeshMapRegionPersistenceTests {
 		#expect(!MeshMapRegionPersistence.isPersistable(region(47.6, -122.3, 0.3, 0)))
 	}
 
+	@Test func isPersistable_rejectsNonFiniteSpan() {
+		// `infinity > 0` is true, so a bare positivity check would accept it and let a garbage span
+		// reach MKMapView.setRegion. NaN already fails `> 0` but is pinned here too.
+		#expect(!MeshMapRegionPersistence.isPersistable(region(47.6, -122.3, .infinity, 0.3)))
+		#expect(!MeshMapRegionPersistence.isPersistable(region(47.6, -122.3, 0.3, .infinity)))
+		#expect(!MeshMapRegionPersistence.isPersistable(region(47.6, -122.3, .nan, 0.3)))
+		#expect(!MeshMapRegionPersistence.isPersistable(region(47.6, -122.3, 0.3, .nan)))
+	}
+
+	@Test func isPersistable_rejectsOutOfRangeSpan() {
+		// Finite but larger than the whole globe (>180° lat / >360° lon), e.g. a corrupted stored value.
+		#expect(!MeshMapRegionPersistence.isPersistable(region(47.6, -122.3, .greatestFiniteMagnitude, 0.3)))
+		#expect(!MeshMapRegionPersistence.isPersistable(region(47.6, -122.3, 0.3, .greatestFiniteMagnitude)))
+		#expect(!MeshMapRegionPersistence.isPersistable(region(47.6, -122.3, 181, 0.3)))
+		#expect(!MeshMapRegionPersistence.isPersistable(region(47.6, -122.3, 0.3, 361)))
+	}
+
 	@Test func isPersistable_rejectsOutOfRangeCoordinate() {
 		// CLLocationCoordinate2DIsValid rejects |lat| > 90 / |lon| > 180.
 		#expect(!MeshMapRegionPersistence.isPersistable(region(120, 0)))
@@ -361,6 +378,20 @@ struct MeshMapRegionPersistenceTests {
 	@Test func restoredRegion_nilWhenSpanZeroed() {
 		#expect(MeshMapRegionPersistence.restoredRegion(
 			hasSaved: true, latitude: 47.6, longitude: -122.3, latitudeDelta: 0, longitudeDelta: 0
+		) == nil)
+	}
+
+	@Test func restoredRegion_nilWhenSpanNonFiniteOrOversized() {
+		// A corrupted persisted span (non-finite or larger than the globe) must be rejected on the
+		// restore path so it never reaches MKMapView.setRegion at launch.
+		#expect(MeshMapRegionPersistence.restoredRegion(
+			hasSaved: true, latitude: 47.6, longitude: -122.3, latitudeDelta: .infinity, longitudeDelta: 0.3
+		) == nil)
+		#expect(MeshMapRegionPersistence.restoredRegion(
+			hasSaved: true, latitude: 47.6, longitude: -122.3, latitudeDelta: 0.3, longitudeDelta: .nan
+		) == nil)
+		#expect(MeshMapRegionPersistence.restoredRegion(
+			hasSaved: true, latitude: 47.6, longitude: -122.3, latitudeDelta: .greatestFiniteMagnitude, longitudeDelta: 0.3
 		) == nil)
 	}
 }
