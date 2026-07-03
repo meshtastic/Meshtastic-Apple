@@ -260,6 +260,7 @@ class FirmwareFile: ObservableObject, Hashable, Equatable {
 		// last); a release without a locale variant 404s and falls through.
 		var lastError: Error?
 		for candidateRemoteUrl in remoteUrlCandidates {
+			try Task.checkCancellation()
 			do {
 				let (tempLocalUrl, response) = try await URLSession.shared.download(from: candidateRemoteUrl)
 
@@ -274,6 +275,8 @@ class FirmwareFile: ObservableObject, Hashable, Equatable {
 				try FileManager.default.moveItem(at: tempLocalUrl, to: localUrl)
 				self.status = .downloaded
 				return
+			} catch let urlError as URLError where urlError.code == .cancelled {
+				throw urlError
 			} catch {
 				lastError = error
 			}
