@@ -1,4 +1,5 @@
 import Foundation
+import SwiftData
 import SwiftUI
 import Testing
 
@@ -349,6 +350,158 @@ struct NavigationStateTests {
 		#expect(state1 == state2)
 		#expect(state1 != state3)
 		#expect(state1.hashValue == state2.hashValue)
+	}
+}
+
+// MARK: - Connect View Tests
+
+/// Issue #2006 gates the connection screen's "Power Off" action behind a
+/// `confirmationDialog` so a node can't be shut down by an accidental tap. The dialog
+/// presentation itself (a `@State` flag + a system overlay) has no unit-test seam here —
+/// there's no ViewInspector, `AccessoryManager` is a concrete type, and confirmation
+/// dialogs don't render into snapshots — so that part is covered by manual/UI verification.
+///
+/// The safety-critical logic *is* unit-tested below: `Connect.shutdownTarget(for:)` resolves
+/// the user a shutdown is sent to and must return nil for a detached/faulted node, otherwise
+/// `sendShutdown` would read attributes on a faulted `@Model` and trap (the #2006 crash class).
+@Suite("Connect view")
+@MainActor
+struct ConnectViewCreationTests {
+
+	/// A fresh context over the shared container isolates this test's pending inserts from
+	/// other suites; nothing is saved, so nothing leaks.
+	private func freshContext() -> ModelContext {
+		ModelContext(sharedModelContainer)
+	}
+
+	// MARK: Constructibility smoke tests
+
+	@Test func constructsWithoutNode() async {
+		let view = Connect(router: Router())
+		#expect(view.node == nil)
+	}
+
+	@Test func threadsProvidedNodeThrough() async {
+		let node = NodeInfoEntity()
+		node.num = 42
+
+		let view = Connect(router: Router(), node: node)
+		#expect(view.node?.num == 42)
+	}
+
+	// MARK: shutdownTarget(for:expectedNum:) — resolution + faulted-node + drift guards
+
+	@Test func shutdownTarget_nilNode_returnsNil() {
+		#expect(Connect.shutdownTarget(for: nil, expectedNum: 0x5060_7080) == nil)
+	}
+
+	@Test func shutdownTarget_detachedNode_returnsNil() {
+		// A node never inserted into a context has `modelContext == nil`, the same state a
+		// cached node lands in after a context recreation. Resolving must skip it, not crash.
+		let node = NodeInfoEntity()
+		node.num = 0xDEAD_BEEF
+		node.user = UserEntity()
+
+		#expect(Connect.shutdownTarget(for: node, expectedNum: node.num) == nil)
+	}
+
+	@Test func shutdownTarget_liveNodeWithUser_returnsUser() {
+		let context = freshContext()
+		let node = NodeInfoEntity()
+		node.num = 0x5060_7080
+		let user = UserEntity()
+		user.num = 0x5060_7099  // distinct sentinel so we know we got node.user back
+		node.user = user
+		context.insert(node)
+
+		// withExtendedLifetime keeps `context` alive past the assertion: if ARC released it,
+		// the inserted node's modelContext would go nil and falsely fail the live path. Compare
+		// by `num`, not `===` — SwiftData isn't contractually required to hand back the same
+		// instance for a to-one relationship after insert.
+		withExtendedLifetime(context) {
+			#expect(Connect.shutdownTarget(for: node, expectedNum: 0x5060_7080)?.num == 0x5060_7099)
+		}
+	}
+
+	@Test func shutdownTarget_liveNodeWithoutUser_returnsNil() {
+		let context = freshContext()
+		let node = NodeInfoEntity()
+		node.num = 0x1112_1314
+		context.insert(node)
+
+		withExtendedLifetime(context) {
+			#expect(Connect.shutdownTarget(for: node, expectedNum: node.num) == nil)
+		}
+	}
+
+	@Test func shutdownTarget_nilExpectedNum_returnsNil() {
+		// No captured identity (menu never recorded one) must skip the shutdown rather than
+		// fall through to whatever node is currently connected.
+		let context = freshContext()
+		let node = NodeInfoEntity()
+		node.num = 0x2122_2324
+		node.user = UserEntity()
+		context.insert(node)
+
+		withExtendedLifetime(context) {
+			#expect(Connect.shutdownTarget(for: node, expectedNum: nil) == nil)
+		}
+	}
+
+	@Test func shutdownTarget_mismatchedNum_returnsNil() {
+		// The connection drifted to a different node while the dialog was up: the live node no
+		// longer matches the identity captured at the long-press, so the shutdown is skipped.
+		let context = freshContext()
+		let node = NodeInfoEntity()
+		node.num = 0x3132_3334
+		node.user = UserEntity()
+		context.insert(node)
+
+		withExtendedLifetime(context) {
+			#expect(Connect.shutdownTarget(for: node, expectedNum: 0x4142_4344) == nil)
+		}
+	}
+
+	// MARK: liveNode(_:) — the modelContext guard the whole view relies on
+
+	@Test func liveNode_nilAndDetached_returnNil() {
+		#expect(Connect.liveNode(nil) == nil)
+
+		let detached = NodeInfoEntity()
+		detached.num = 0x2122_2324
+		#expect(Connect.liveNode(detached) == nil)
+	}
+
+	@Test func liveNode_inserted_returnsNode() {
+		let context = freshContext()
+		let node = NodeInfoEntity()
+		node.num = 0x3132_3334
+		context.insert(node)
+
+		withExtendedLifetime(context) {
+			#expect(Connect.liveNode(node) === node)
+		}
+	}
+
+	@Test func liveNode_insertedThenDeleted_returnsNil() throws {
+		// The real #2006/#1944 path: a node that was live and then detached. Deleting it is the
+		// closest reproducible analogue in a unit test to the context recreation that happens on
+		// a node switch / disconnect-reconnect. The guard must skip the detached node so a later
+		// `.user` read never traps on a faulted @Model.
+		let context = freshContext()
+		let node = NodeInfoEntity()
+		node.num = 0x4142_4344
+		context.insert(node)
+		try context.save()
+		withExtendedLifetime(context) {
+			#expect(Connect.liveNode(node) === node)  // live while inserted
+		}
+
+		context.delete(node)
+		try context.save()
+		withExtendedLifetime(context) {
+			#expect(Connect.liveNode(node) == nil)  // detached after delete → guard skips it
+		}
 	}
 }
 

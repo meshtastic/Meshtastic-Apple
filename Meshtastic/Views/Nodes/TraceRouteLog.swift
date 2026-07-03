@@ -88,20 +88,38 @@ struct TraceRouteLog: View {
 				ScrollView {
 					if selectedRoute != nil {
 						if selectedRoute?.response ?? false && selectedRoute?.hopsTowards ?? 0 >= 0 {
+							let routeValue = selectedRoute?.routeText ?? "Unknown".localized
+							let routeBackValue = selectedRoute?.routeBackText ?? "Unknown".localized
 							Label {
-								Text("Route: \(selectedRoute?.routeText ?? "Unknown".localized)")
+								Text("Route: \(routeValue)")
+									.textSelection(.enabled)
 							} icon: {
 								Image(systemName: "signpost.right")
 									.symbolRenderingMode(.hierarchical)
 							}
 							.font(.title3)
+							.contextMenu {
+								Button {
+									UIPasteboard.general.string = String(localized: "Route: \(routeValue)")
+								} label: {
+									Label("Copy", systemImage: "doc.on.doc")
+								}
+							}
 							Label {
-								Text("Route Back: \(selectedRoute?.routeBackText ?? "Unknown".localized)")
+								Text("Route Back: \(routeBackValue)")
+									.textSelection(.enabled)
 							} icon: {
 								Image(systemName: "signpost.left")
 									.symbolRenderingMode(.hierarchical)
 							}
 							.font(.title3)
+							.contextMenu {
+								Button {
+									UIPasteboard.general.string = String(localized: "Route Back: \(routeBackValue)")
+								} label: {
+									Label("Copy", systemImage: "doc.on.doc")
+								}
+							}
 							if selectedRoute?.hasPositions ?? false, let routeID = selectedRoute?.id {
 								Button {
 									router.selectedTab = .map

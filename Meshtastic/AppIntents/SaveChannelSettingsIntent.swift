@@ -25,36 +25,17 @@ struct SaveChannelSettingsIntent: AppIntent {
 			throw AppIntentErrors.AppIntentError.notConnected
 		}
 
-		// Ensure the URL contains the expected "meshtastic.org/e/#" structure
-		if channelUrl.absoluteString.lowercased().contains("meshtastic.org/e/#") {
-			// Split the URL to get the portion after "#"
-			let components = channelUrl.absoluteString.components(separatedBy: "#")
-			// Add channels flag based on the URL query parameter (if present)
-			let addChannels = Bool(channelUrl["add"] ?? "false") ?? false
-			var channelSettings: String?
-			// Extract the Base64 encoded channel settings (after "#")
-			if let lastComponent = components.last {
-				channelSettings = lastComponent.components(separatedBy: "?").first // Ignore any query parameters
-			}
-
-			// If valid channel settings are extracted, attempt to save them
-			if let channelSettings = channelSettings {
-				Task {
-					do {
-						// Call the AcessoryManager to save the channel settings
-						try await AccessoryManager.shared.saveChannelSet(base64UrlString: channelSettings, addChannels: addChannels)
-					} catch {
-						throw AppIntentErrors.AppIntentError.message("Failed to save the channel settings.")
-					}
-				}
-			} else {
-				throw AppIntentErrors.AppIntentError.message("Invalid Channel URL: Unable to extract settings.")
-			}
-
-			// Return a success result
+		do {
+			let channelLink = try MeshtasticChannelURL.parse(channelUrl.absoluteString)
+			try await AccessoryManager.shared.saveChannelSet(
+				channelSet: channelLink.channelSet,
+				addChannels: channelLink.addChannels
+			)
 			return .result()
-		} else {
-			throw AppIntentErrors.AppIntentError.message("The URL is not a valid Meshtastic channel link.")
+		} catch let error as MeshtasticChannelURL.ParseError {
+			throw AppIntentErrors.AppIntentError.message(error.localizedDescription)
+		} catch {
+			throw AppIntentErrors.AppIntentError.message("Failed to save the channel settings.")
 		}
 	}
 }

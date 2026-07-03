@@ -57,6 +57,9 @@ extension AccessoryManager {
 					self.updateState(.connecting)
 				}
 				self.updateDevice(deviceId: device.id, key: \.connectionState, value: .connecting)
+				// Lockdown: reset per-connection state. Firmware requires re-auth on every
+				// new BLE connection even if storage is already unlocked.
+				self.lockdownCoordinator?.onConnect(peripheralID: device.id)
 			}
 			
 			// Step 1: Setup the connection

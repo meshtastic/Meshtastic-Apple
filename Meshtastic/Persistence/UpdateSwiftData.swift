@@ -351,6 +351,7 @@ extension MeshPackets {
 				}
 				if let nodeInfoMessage = try? NodeInfo(serializedBytes: packet.decoded.payload) {
 					newNode.favorite = nodeInfoMessage.isFavorite
+					newNode.hasXeddsaSigned = nodeInfoMessage.hasXeddsaSigned_p
 				}
 				if packet.hopStart != 0 && packet.hopLimit <= packet.hopStart {
 					newNode.hopsAway = Int32(packet.hopStart - packet.hopLimit)
@@ -467,6 +468,9 @@ extension MeshPackets {
 				if let nodeInfoMessage = try? NodeInfo(serializedBytes: packet.decoded.payload) {
 
 					fetchedNode[0].favorite = nodeInfoMessage.isFavorite
+					// has_xeddsa_signed means the node has signed ≥1 verified broadcast and persists; latch it
+					// so a later NodeInfo that omits the bit doesn't downgrade a node we've seen sign.
+					fetchedNode[0].hasXeddsaSigned = fetchedNode[0].hasXeddsaSigned || nodeInfoMessage.hasXeddsaSigned_p
 					if nodeInfoMessage.hasDeviceMetrics {
 						let telemetry = TelemetryEntity()
 						modelContext.insert(telemetry)
