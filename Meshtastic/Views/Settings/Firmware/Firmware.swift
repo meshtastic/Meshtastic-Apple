@@ -274,7 +274,7 @@ private struct FirmwareContentView: View {
 			  !platformioTarget.isEmpty else {
 			return nil
 		}
-		if nodeRegion != .unset {
+		if nodeRegion.prefersLocalizedFontFirmware {
 			return "firmware-\(platformioTarget)-<version>[-\(nodeRegion.topic)]"
 		}
 		return "firmware-\(platformioTarget)-<version>"
