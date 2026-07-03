@@ -242,35 +242,35 @@
             "map",
             "tap",
             "nodes",
-            "show",
             "node",
             "waypoint",
             "only",
+            "show",
             "position",
-            "path",
             "mesh",
+            "path",
             "lora",
             "line",
+            "geofence",
+            "from",
+            "box",
+            "bounding",
             "via",
             "route",
             "icon",
             "filter",
+            "favorites",
+            "description",
             "waypoints",
             "trace",
+            "radius",
             "over",
             "location",
-            "from",
-            "all",
-            "then",
-            "target",
-            "solid",
-            "signal",
-            "satellite",
-            "right",
-            "pin",
-            "mqtt"
+            "heard",
+            "each",
+            "device"
         ],
-        "charCount": 3737
+        "charCount": 4983
     },
     {
         "id": "messages",
@@ -285,9 +285,9 @@
             "key",
             "text",
             "formatting",
+            "not",
             "markdown",
             "delimiters",
-            "not",
             "selection",
             "direct",
             "bold",
@@ -309,7 +309,7 @@
             "shield",
             "select"
         ],
-        "charCount": 8968
+        "charCount": 9014
     },
     {
         "id": "mqtt",
@@ -387,7 +387,7 @@
             "display",
             "detail"
         ],
-        "charCount": 8152
+        "charCount": 8150
     },
     {
         "id": "settings",
@@ -648,7 +648,7 @@
             "location",
             "heading",
             "compass",
-            "colour",
+            "color",
             "bearing",
             "apple",
             "toward",
@@ -660,7 +660,7 @@
             "finding",
             "current"
         ],
-        "charCount": 3113
+        "charCount": 3107
     },
     {
         "id": "whats-new",
@@ -669,14 +669,15 @@
         "navOrder": 0,
         "keywords": [
             "new",
-            "settings",
             "jun",
+            "settings",
             "node",
+            "nodes",
             "messages",
             "page",
-            "nodes",
             "now",
             "local",
+            "map",
             "list",
             "firmware",
             "device",
@@ -687,7 +688,6 @@
             "radios",
             "quot",
             "per",
-            "map",
             "docs",
             "watch",
             "verified",
@@ -699,7 +699,7 @@
             "recent",
             "passphrase"
         ],
-        "charCount": 5432
+        "charCount": 5635
     },
     {
         "id": "adding-features",
@@ -1050,7 +1050,7 @@
             "schema",
             "nodeinfoentity"
         ],
-        "charCount": 9727
+        "charCount": 9726
     },
     {
         "id": "tak-protocol",
@@ -1128,7 +1128,7 @@
             "suite",
             "screenshots"
         ],
-        "charCount": 3698
+        "charCount": 3697
     },
     {
         "id": "transport",

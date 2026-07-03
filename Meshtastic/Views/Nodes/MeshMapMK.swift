@@ -84,6 +84,8 @@ struct MeshMapMK: View {
 	/// User-uploaded GeoJSON overlays: lines/polygons -> overlays, points -> decorations.
 	@State private var geoJSONOverlays: [ClusterMapOverlay] = []
 	@State private var geoJSONDecorations: [ClusterMapDecoration] = []
+	/// Geofence overlays: per-waypoint radius circles and bounding-box rectangles.
+	@State private var geofenceOverlays: [ClusterMapOverlay] = []
 	/// Last inputs each rebuild ran for; skip when unchanged so overlay objects stay stable (no flash).
 	@State private var lastOfflineOverlaysKey = ""
 	@State private var lastRouteKey = "init"
@@ -244,7 +246,7 @@ struct MeshMapMK: View {
 	/// Cheap change-detector for the route set (drives rebuildRouteContent via onChange).
 	/// Change-detector for the waypoint set (rebuild markers on add/remove/move/icon change).
 	private var waypointsKey: String {
-		allWaypoints.map { "\($0.id)|\($0.icon)|\($0.latitudeI)|\($0.longitudeI)" }.joined(separator: ",")
+		allWaypoints.map { "\($0.id)|\($0.icon)|\($0.latitudeI)|\($0.longitudeI)|\($0.geofenceRadius)|\($0.hasBoundingBox ? 1 : 0)|\($0.boundingBoxLatitudeNorthI)|\($0.boundingBoxLatitudeSouthI)|\($0.boundingBoxLongitudeEastI)|\($0.boundingBoxLongitudeWestI)" }.joined(separator: ",")
 	}
 	private var routesKey: String {
 		routes.map { "\($0.color)|\($0.locations.count)" }.joined(separator: ",")
@@ -737,6 +739,7 @@ struct MeshMapMK: View {
 									result += tracerouteOverlays
 									result += mapOverlays
 									result += geoJSONOverlays
+									result += geofenceOverlays
 									return result
 								}
 
@@ -799,9 +802,12 @@ struct MeshMapMK: View {
 					lastWaypointKey = key
 					guard showWaypoints else {
 						if !waypointDecorations.isEmpty { waypointDecorations = [] }
+						if !geofenceOverlays.isEmpty { geofenceOverlays = [] }
 						return
 					}
-					waypointDecorations = allWaypoints.filter { $0.expire == nil || $0.expire! >= Date.now }.map { waypoint in
+					let visibleWaypoints = allWaypoints.filter { $0.expire == nil || $0.expire! >= Date.now }
+					geofenceOverlays = buildGeofenceOverlays(from: visibleWaypoints)
+					waypointDecorations = visibleWaypoints.map { waypoint in
 						let icon = String(UnicodeScalar(Int(waypoint.icon)) ?? "📍")
 						return ClusterMapDecoration(
 							id: "waypoint-\(waypoint.persistentModelID.hashValue)",
@@ -810,6 +816,35 @@ struct MeshMapMK: View {
 							onTap: { selectedNode = nil; editingWaypoint = nil; selectedWaypoint = waypoint }
 						)
 					}
+				}
+
+				/// Build geofence overlays (radius circle + bounding-box rectangle) for any waypoint
+				/// that defines a geofence.
+				private func buildGeofenceOverlays(from waypoints: [WaypointEntity]) -> [ClusterMapOverlay] {
+					var result: [ClusterMapOverlay] = []
+					let style = ClusterMapOverlayStyle(
+						strokeUIColor: UIColor.systemOrange,
+						fillUIColor: UIColor.systemOrange.withAlphaComponent(0.12),
+						lineWidth: 2
+					)
+					for waypoint in waypoints {
+						let key = waypoint.persistentModelID.hashValue
+						if waypoint.geofenceRadius > 0, let center = waypoint.waypointCoordinate {
+							result.append(ClusterMapOverlay(
+								id: "geofence-circle-\(key)",
+								overlay: MKCircle(center: center, radius: CLLocationDistance(waypoint.geofenceRadius)),
+								style: style
+							))
+						}
+						if var corners = waypoint.boundingBoxCoordinates {
+							result.append(ClusterMapOverlay(
+								id: "geofence-box-\(key)",
+								overlay: MKPolygon(coordinates: &corners, count: corners.count),
+								style: style
+							))
+						}
+					}
+					return result
 				}
 
 				/// Long-press on empty map -> a new in-memory waypoint at that point, opening the edit form.

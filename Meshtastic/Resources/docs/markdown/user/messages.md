@@ -104,9 +104,9 @@ Long press any message and tap **Tapback** to send an emoji reaction.
 
 ![Message status reference](../assets/screenshots/ackErrors.png)
 
-| Colour | Meaning |
+| Color | Meaning |
 |--------|---------|
-| Grey | Successful delivery. |
+| Gray | Successful delivery. |
 | Orange bubble | **Acknowledged by another node** — message was relayed but not confirmed by the final recipient. |
 
 The following errors may appear on a message bubble (red unless noted):
@@ -125,7 +125,7 @@ The following errors may appear on a message bubble (red unless noted):
 | Bad Request | Malformed packet rejected by the destination. |
 | Not Authorized | The destination node refused the request due to permissions. |
 
-> Grey indicates successful delivery. Orange indicates a retryable error. Red indicates a permanent failure that will not succeed on retry.
+> Gray indicates successful delivery. Orange indicates the message was relayed but not confirmed by the final recipient. Red indicates a permanent failure that will not succeed on retry.
 
 ---
 

@@ -634,6 +634,9 @@ extension MeshPackets {
 						position.nodePosition = fetchedNode[0]
 						fetchedNode[0].latestPositionCache = position
 
+						let geofenceNodeName = fetchedNode[0].user?.longName ?? fetchedNode[0].user?.shortName ?? "\(packet.from)"
+						evaluateGeofences(nodeNum: posNum, latitudeI: positionMessage.latitudeI, longitudeI: positionMessage.longitudeI, nodeName: geofenceNodeName)
+
 						if position.precisionBits == 32 || position.precisionBits == 0 {
 							// Full precision: drop a near-duplicate of the previous latest (within 9m).
 							if let previousLatest,
