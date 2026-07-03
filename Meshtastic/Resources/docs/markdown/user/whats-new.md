@@ -14,6 +14,8 @@ Recent user-facing changes from roughly the last 12 months. Newest at the top.
 Show roughly the last 12 months of changes; archive entries older than a year by removing them.
 -->
 
+**Jul 2026** — [Lockdown Mode](lockdown.md) — Support for hardened lockdown-firmware radios: set or enter the device passphrase in a full-screen prompt, with per-radio Keychain passphrase storage and silent re-unlock, optional session limits (boots, hours, per-boot cap), and Lock Now / Forget Stored Passphrase in Security settings.
+
 **Jun 2026** — [Nodes](nodes.md) — Local display names: give any node a local nickname shown in place of its long name across the node list, node detail, and messages. Set it from the long-press menu or the Name row in Node Detail — local-only, never sent over the mesh.
 
 **Jun 2026** — [Map & Waypoints](map.md) — Trace routes on the map: signal-colored, directional outbound/return lines (green→red by hop SNR) with a guided 3D satellite flyover and speed control, opened with Show on Map.

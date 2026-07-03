@@ -195,6 +195,45 @@
         "charCount": 2899
     },
     {
+        "id": "lockdown",
+        "title": "Lockdown Mode",
+        "section": "user",
+        "navOrder": 8,
+        "keywords": [
+            "passphrase",
+            "device",
+            "session",
+            "radio",
+            "lockdown",
+            "app",
+            "shows",
+            "prompt",
+            "locked",
+            "unlocked",
+            "unlock",
+            "time",
+            "section",
+            "never",
+            "firmware",
+            "enter",
+            "again",
+            "stored",
+            "reboots",
+            "only",
+            "mode",
+            "limits",
+            "limit",
+            "connect",
+            "configuration",
+            "cap",
+            "boots",
+            "before",
+            "automatically",
+            "wrong"
+        ],
+        "charCount": 3447
+    },
+    {
         "id": "map",
         "title": "Map &amp; Waypoints",
         "section": "user",
@@ -360,11 +399,11 @@
             "radio",
             "device",
             "node",
+            "firmware",
             "region",
             "position",
             "language",
             "from",
-            "firmware",
             "settings",
             "traffic",
             "nodes",
@@ -387,7 +426,7 @@
             "packets",
             "module"
         ],
-        "charCount": 8587
+        "charCount": 8766
     },
     {
         "id": "signal-meter",
@@ -630,8 +669,8 @@
         "navOrder": 0,
         "keywords": [
             "new",
-            "jun",
             "settings",
+            "jun",
             "node",
             "messages",
             "page",
@@ -639,15 +678,17 @@
             "now",
             "local",
             "list",
+            "firmware",
+            "device",
             "app",
             "signed",
             "show",
             "region",
+            "radios",
             "quot",
+            "per",
             "map",
-            "firmware",
             "docs",
-            "device",
             "watch",
             "verified",
             "translation",
@@ -656,11 +697,9 @@
             "signal",
             "row",
             "recent",
-            "radios",
-            "message",
-            "mesh"
+            "passphrase"
         ],
-        "charCount": 5113
+        "charCount": 5432
     },
     {
         "id": "adding-features",
