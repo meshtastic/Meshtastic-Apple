@@ -180,6 +180,7 @@
 		AA003DOC0000002000000006 /* DocTranslationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA003DOC0000001000000006 /* DocTranslationService.swift */; };
 		AA003DOC0000002000000007 /* TranslationCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA003DOC0000001000000007 /* TranslationCache.swift */; };
 		AA003DOC0000002000000008 /* DocTranslationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA003DOC0000001000000008 /* DocTranslationTests.swift */; };
+		DD000031STATMSGDISP00001 /* StatusMessageDisplayTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000031STATMSGDISP00000 /* StatusMessageDisplayTests.swift */; };
 		AA003DOC0000004000000001 /* docs in Resources */ = {isa = PBXBuildFile; fileRef = AA003DOC0000005000000001 /* docs */; };
 		AA003FM00000002000000001 /* FoundationModelAvailability.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA003FM00000001000000001 /* FoundationModelAvailability.swift */; };
 		AA004FMT0000002000000001 /* MarkdownFormatting.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA004FMT0000001000000001 /* MarkdownFormatting.swift */; };
@@ -305,6 +306,7 @@
 		DD000029APSTFWTST0000001 /* AppSettingsAndFirmwareTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000029APSTFWTST0000000 /* AppSettingsAndFirmwareTests.swift */; };
 		DD00002AINTREMTST00000001 /* IntentAndRemainingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD00002AINTREMTST00000000 /* IntentAndRemainingTests.swift */; };
 		DD00002BMSHPKTELTST000001 /* MeshPacketsAndTelemetryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD00002BMSHPKTELTST000000 /* MeshPacketsAndTelemetryTests.swift */; };
+		DD00002BACKSTATUSRT000001 /* MessageAckStatusRefreshTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD00002BACKSTATUSRT000000 /* MessageAckStatusRefreshTests.swift */; };
 		DD00002DSNPVWTST000000001 /* SwiftUIViewSnapshotTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD00002DSNPVWTST000000000 /* SwiftUIViewSnapshotTests.swift */; };
 		DD00002ESDMIGTST000000001 /* SwiftDataMigrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD00002ESDMIGTST000000000 /* SwiftDataMigrationTests.swift */; };
 		DD00002FSHRDTSTCNT000001 /* SharedTestContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD00002FSHRDTSTCNT000000 /* SharedTestContainer.swift */; };
@@ -762,6 +764,7 @@
 		AA003DOC0000001000000006 /* DocTranslationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocTranslationService.swift; sourceTree = "<group>"; };
 		AA003DOC0000001000000007 /* TranslationCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TranslationCache.swift; path = Meshtastic/Services/TranslationCache.swift; sourceTree = "<group>"; };
 		AA003DOC0000001000000008 /* DocTranslationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocTranslationTests.swift; sourceTree = "<group>"; };
+		DD000031STATMSGDISP00000 /* StatusMessageDisplayTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusMessageDisplayTests.swift; sourceTree = "<group>"; };
 		AA003DOC0000005000000001 /* docs */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = folder; path = docs; sourceTree = "<group>"; };
 		AA003FM00000001000000001 /* FoundationModelAvailability.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = FoundationModelAvailability.swift; path = Meshtastic/Services/FoundationModelAvailability.swift; sourceTree = "<group>"; };
 		AA004FMT0000001000000001 /* MarkdownFormatting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownFormatting.swift; sourceTree = "<group>"; };
@@ -880,6 +883,7 @@
 		DD000029APSTFWTST0000000 /* AppSettingsAndFirmwareTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettingsAndFirmwareTests.swift; sourceTree = "<group>"; };
 		DD00002AINTREMTST00000000 /* IntentAndRemainingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntentAndRemainingTests.swift; sourceTree = "<group>"; };
 		DD00002BMSHPKTELTST000000 /* MeshPacketsAndTelemetryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshPacketsAndTelemetryTests.swift; sourceTree = "<group>"; };
+		DD00002BACKSTATUSRT000000 /* MessageAckStatusRefreshTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageAckStatusRefreshTests.swift; sourceTree = "<group>"; };
 		DD00002DSNPVWTST000000000 /* SwiftUIViewSnapshotTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIViewSnapshotTests.swift; sourceTree = "<group>"; };
 		DD00002ESDMIGTST000000000 /* SwiftDataMigrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDataMigrationTests.swift; sourceTree = "<group>"; };
 		DD00002FSHRDTSTCNT000000 /* SharedTestContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedTestContainer.swift; sourceTree = "<group>"; };
@@ -1609,6 +1613,7 @@
 				DD000029APSTFWTST0000000 /* AppSettingsAndFirmwareTests.swift */,
 				DD00002AINTREMTST00000000 /* IntentAndRemainingTests.swift */,
 				DD00002BMSHPKTELTST000000 /* MeshPacketsAndTelemetryTests.swift */,
+				DD00002BACKSTATUSRT000000 /* MessageAckStatusRefreshTests.swift */,
 				DD00002DSNPVWTST000000000 /* SwiftUIViewSnapshotTests.swift */,
 				AA004FMT0000001000000004 /* MarkdownFormattingTests.swift */,
 				DD00002ESDMIGTST000000000 /* SwiftDataMigrationTests.swift */,
@@ -1617,6 +1622,7 @@
 				AA009MCT0000001000000001 /* MarkdownConverterTests.swift */,
 				AA003DOC0000001000000008 /* DocTranslationTests.swift */,
 				DD0000DEVLNKTST000000000 /* DeviceLinkTests.swift */,
+				DD000031STATMSGDISP00000 /* StatusMessageDisplayTests.swift */,
 			);
 			path = MeshtasticTests;
 			sourceTree = "<group>";
@@ -2664,6 +2670,7 @@
 				AA003DOC0000002000000005 /* DocBundleTests.swift in Sources */,
 				AA003DOC0000002000000008 /* DocTranslationTests.swift in Sources */,
 				DD0000DEVLNKTST000000001 /* DeviceLinkTests.swift in Sources */,
+				DD000031STATMSGDISP00001 /* StatusMessageDisplayTests.swift in Sources */,
 				AA009MCT0000002000000001 /* MarkdownConverterTests.swift in Sources */,
 				AA0001012E2730EC00600001 /* ConnectViewTests.swift in Sources */,
 				DD9C70102E9F2A0000029299 /* DeviceOnboardingTests.swift in Sources */,
@@ -2715,6 +2722,7 @@
 				DD000029APSTFWTST0000001 /* AppSettingsAndFirmwareTests.swift in Sources */,
 				DD00002AINTREMTST00000001 /* IntentAndRemainingTests.swift in Sources */,
 				DD00002BMSHPKTELTST000001 /* MeshPacketsAndTelemetryTests.swift in Sources */,
+				DD00002BACKSTATUSRT000001 /* MessageAckStatusRefreshTests.swift in Sources */,
 				DD00002DSNPVWTST000000001 /* SwiftUIViewSnapshotTests.swift in Sources */,
 				AA004FMT0000002000000004 /* MarkdownFormattingTests.swift in Sources */,
 				DD00002ESDMIGTST000000001 /* SwiftDataMigrationTests.swift in Sources */,
