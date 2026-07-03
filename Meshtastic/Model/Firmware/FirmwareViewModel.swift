@@ -63,7 +63,7 @@ class FirmwareViewModel: ObservableObject {
 		let descriptor = FetchDescriptor<FirmwareReleaseEntity>()
 		do {
 			let firmwareReleases = try context.fetch(descriptor)
-			let localeTags = preferredRegion == .unset ? [] : preferredRegion.firmwareLocaleTagCandidates
+			let localeTags = preferredRegion.prefersLocalizedFontFirmware ? preferredRegion.firmwareLocaleTagCandidates : []
 			for release in firmwareReleases {
 				if let architecture = hardwareArchitecture {
 					for firmwareType in FirmwareFile.validFilenameSuffixes(forArchitecture: architecture) {
