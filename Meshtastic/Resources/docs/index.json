@@ -630,20 +630,21 @@
         "navOrder": 0,
         "keywords": [
             "new",
-            "settings",
             "jun",
-            "page",
+            "settings",
+            "node",
             "messages",
+            "page",
             "nodes",
             "now",
-            "node",
+            "local",
+            "list",
             "app",
             "signed",
             "show",
             "region",
             "quot",
             "map",
-            "list",
             "firmware",
             "docs",
             "device",
@@ -653,14 +654,13 @@
             "translate",
             "snr",
             "signal",
+            "row",
             "recent",
             "radios",
             "message",
-            "lora",
-            "live",
-            "ios"
+            "mesh"
         ],
-        "charCount": 4852
+        "charCount": 5113
     },
     {
         "id": "adding-features",
