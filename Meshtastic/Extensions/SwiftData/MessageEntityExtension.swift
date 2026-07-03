@@ -62,17 +62,27 @@ extension MessageEntity {
 
 	@MainActor
 	func relayDisplay() -> String? {
+		// This message can be read from a retained row after it (or the models it reaches through)
+		// were deleted underneath the list; reading a persisted property of a dead @Model fatally
+		// traps in SwiftData (SIGTRAP). Bail while `self` is no longer live before touching any of
+		// its stored properties. Mirrors the row guard in ChannelMessageRow/UserMessageRow (#2014).
+		guard modelContext != nil, !isDeleted else { return nil }
 
 		guard self.relayNode != 0 else { return nil }
-		let context = PersistenceController.shared.context
-
 		let relaySuffix = Int64(self.relayNode & 0xFF)
+		let hexFallback = String(format: "Node 0x%02X", UInt32(self.relayNode & 0xFF))
+
+		let context = PersistenceController.shared.context
 		let descriptor = FetchDescriptor<UserEntity>()
 
 		guard let users = try? context.fetch(descriptor) else {
-			return String(format: "Node 0x%02X", UInt32(self.relayNode & 0xFF))
+			return hexFallback
 		}
-		let matchingUsers = users.filter { ($0.num & 0xFF) == relaySuffix }
+		// Only consider users still live in the context — a freshly-fetched set can still contain
+		// entries being torn down, and reading their name or `userNode` relationship would trap.
+		let matchingUsers = users.filter { user in
+			user.modelContext != nil && !user.isDeleted && (user.num & 0xFF) == relaySuffix
+		}
 
 		// If exactly one match is found, return its name
 		if matchingUsers.count == 1 {
@@ -80,10 +90,11 @@ extension MessageEntity {
 			if !name.isEmpty { return name }
 		}
 
-		// If no exact match, find the node with the smallest hopsAway
+		// If no exact match, find the node with the smallest hopsAway. Guard the userNode
+		// relationship read per user so a faulted node can't trap the comparison.
 		if let closestNode = matchingUsers.min(by: { lhs, rhs in
-			guard let lhsHops = lhs.userNode?.hopsAway,
-				let rhsHops = rhs.userNode?.hopsAway
+			guard let lhsHops = lhs.liveUserNode?.hopsAway,
+				let rhsHops = rhs.liveUserNode?.hopsAway
 			else {
 				return false
 			}
@@ -94,6 +105,16 @@ extension MessageEntity {
 		}
 
 		// Fallback to hex node number if no matches
-		return String(format: "Node 0x%02X", UInt32(self.relayNode & 0xFF))
+		return hexFallback
+	}
+}
+
+extension UserEntity {
+	/// The `userNode` relationship, but only when this user is still live in its context. Reading a
+	/// relationship on a deleted/zombie @Model fatally traps in SwiftData; callers on render paths
+	/// use this so a node pruned underneath them can't crash the read.
+	var liveUserNode: NodeInfoEntity? {
+		guard modelContext != nil, !isDeleted else { return nil }
+		return userNode
 	}
 }
