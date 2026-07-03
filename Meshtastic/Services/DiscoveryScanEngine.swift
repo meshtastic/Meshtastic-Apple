@@ -140,7 +140,13 @@ final class DiscoveryScanEngine {
 			Logger.discovery.warning("📡 [Discovery] Cannot start scan — no presets selected")
 			return
 		}
-		guard let accessoryManager, accessoryManager.isConnected else {
+		// A normal multi-preset scan drives the radio through each preset, so it requires a live
+		// connection. The seeded "Analyze Current Preset" pass (seedFromExistingData) is built
+		// entirely from local SwiftData and sends nothing to the radio, so it may run offline —
+		// e.g. reviewing your mesh with no radio connected. Only that seeded path is exempt from
+		// the connection requirement.
+		let isConnected = accessoryManager?.isConnected ?? false
+		guard seedFromExistingData || isConnected else {
 			Logger.discovery.warning("📡 [Discovery] Cannot start scan — radio not connected")
 			return
 		}
@@ -152,23 +158,29 @@ final class DiscoveryScanEngine {
 		// Clear any previous error
 		errorMessage = nil
 
-		// Record home preset from current LoRa config
 		let connectedNodeNum = Int64(UserDefaults.preferredPeripheralNum)
 		let connectedNode = getNodeInfo(id: connectedNodeNum, context: context)
-		if let loraConfig = connectedNode?.loRaConfig, !loraConfig.isDeleted {
-			homePreset = ModemPresets(rawValue: Int(loraConfig.modemPreset))
-			// Snapshot the complete config so restore puts back the frequency slot and all
-			// other LoRa settings exactly — not just the modem preset (#1952). Each scan preset
-			// is sent on the default frequency slot (see sendPresetChange); this snapshot is what
-			// returns the user to their real slot when the scan finishes.
-			homeLoRaConfig = loRaConfigProto(from: loraConfig, presetOverride: nil)
-		}
 
-		// If the primary channel isn't the default public channel, temporarily switch it (key + name)
-		// so the radio can decode the public mesh and derive its frequency during the scan. Channel
-		// changes don't reboot the radio, so this is sent now (while connected) ahead of any preset
-		// change, and restored before teardown.
-		await prepareDefaultPublicChannel(connectedNode: connectedNode)
+		// Connection-only setup: snapshot the home LoRa config and, if needed, temporarily switch
+		// the primary channel to the default public channel. Skipped entirely when running offline —
+		// the seeded pass never sends config, so there is nothing to snapshot, switch, or restore.
+		if isConnected {
+			// Record home preset from current LoRa config
+			if let loraConfig = connectedNode?.loRaConfig, !loraConfig.isDeleted {
+				homePreset = ModemPresets(rawValue: Int(loraConfig.modemPreset))
+				// Snapshot the complete config so restore puts back the frequency slot and all
+				// other LoRa settings exactly — not just the modem preset (#1952). Each scan preset
+				// is sent on the default frequency slot (see sendPresetChange); this snapshot is what
+				// returns the user to their real slot when the scan finishes.
+				homeLoRaConfig = loRaConfigProto(from: loraConfig, presetOverride: nil)
+			}
+
+			// If the primary channel isn't the default public channel, temporarily switch it (key + name)
+			// so the radio can decode the public mesh and derive its frequency during the scan. Channel
+			// changes don't reboot the radio, so this is sent now (while connected) ahead of any preset
+			// change, and restored before teardown.
+			await prepareDefaultPublicChannel(connectedNode: connectedNode)
+		}
 
 		// Create session
 		let newSession = DiscoverySessionEntity()
@@ -191,11 +203,15 @@ final class DiscoveryScanEngine {
 
 		Logger.discovery.info("📡 [Discovery] Scan started with \(self.selectedPresets.count) presets, dwell: \(self.dwellDuration)s")
 
-		// Register engine with AccessoryManager for packet forwarding
-		accessoryManager.discoveryScanEngine = self
+		// Register engine with AccessoryManager for packet forwarding.
+		accessoryManager?.discoveryScanEngine = self
 
-		// Observe connection state changes
-		observeConnectionState()
+		// Observe connection state changes — only when connected. A seeded offline pass has no
+		// link to watch, and the reconnect/dwell-interruption machinery (which would otherwise
+		// see "disconnected" and pause the dwell) must not fire for it.
+		if isConnected {
+			observeConnectionState()
+		}
 
 		// Start first preset
 		await shiftToNextPreset()
@@ -239,6 +255,16 @@ final class DiscoveryScanEngine {
 			presetDwellStart = nil
 			seedTask?.cancel()
 			seedTask = Task { [weak self] in await self?.revealSeededNodesFromDatabase() }
+
+			// The seeded "Analyze Current Preset" pass never changes the radio's preset — it dwells
+			// on the preset the radio already uses (or, when offline, the last-known/default preset)
+			// and builds the report from local data plus any live packets. Skip the config change and
+			// all of its reconnect/reboot machinery, and begin dwelling immediately. This also lets
+			// the pass run with no radio connected — there is nothing to send.
+			Logger.discovery.info("📡 [Discovery] Seeded current-preset pass — dwelling on \(nextPreset.name) without a config change")
+			transitionTo(.dwell)
+			startDwellTimer()
+			return
 		}
 
 		Logger.discovery.info("📡 [Discovery] Shifting to preset: \(nextPreset.name)")
@@ -961,9 +987,14 @@ extension DiscoveryScanEngine {
 			return
 		}
 
+		// Prefer the connected node's live LoRa preset. When no node/config is available — e.g.
+		// running offline with no radio connected — fall back to the last preset the app persisted
+		// in UserDefaults, then to LongFast. This lets "Analyze Current Preset" work fully offline.
 		let connectedNodeNum = Int64(UserDefaults.preferredPeripheralNum)
 		let preset = (getNodeInfo(id: connectedNodeNum, context: context)?.loRaConfig?.modemPreset)
-			.flatMap { ModemPresets(rawValue: Int($0)) } ?? .longFast
+			.flatMap { ModemPresets(rawValue: Int($0)) }
+			?? ModemPresets(rawValue: UserDefaults.modemPreset)
+			?? .longFast
 
 		selectedPresets = [preset]
 		seedFromExistingData = true

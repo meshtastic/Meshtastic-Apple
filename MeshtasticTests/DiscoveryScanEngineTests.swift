@@ -3,6 +3,7 @@
 import Foundation
 import Testing
 import MeshtasticProtobufs
+import SwiftData
 
 @testable import Meshtastic
 
@@ -46,6 +47,42 @@ struct DiscoveryScanEngineTests {
 		await engine.startScan()
 		let state = await engine.currentState
 		#expect(state == .idle)
+	}
+
+	/// A normal multi-preset scan changes the radio's preset, so it must stay gated on a live
+	/// connection even when the engine is fully configured with a model context.
+	@MainActor
+	@Test func normalScanStillRequiresConnectionWhenConfigured() async {
+		let engine = DiscoveryScanEngine()
+		let manager = AccessoryManager(transports: [])
+		engine.configure(accessoryManager: manager, modelContext: sharedModelContainer.mainContext)
+		#expect(!manager.isConnected)
+		engine.selectedPresets = [.longFast]
+		await engine.startScan()
+		#expect(engine.currentState == .idle, "A normal multi-preset scan must not start without a connection")
+		withExtendedLifetime(manager) {}
+	}
+
+	/// "Analyze Current Preset" (FR-028) is seeded entirely from local SwiftData and sends nothing
+	/// to the radio, so it MUST run with no radio connected. A fresh AccessoryManager reports
+	/// isConnected == false, standing in for the offline case.
+	@MainActor
+	@Test func analyzeCurrentPresetStartsAndEndsCleanlyWithoutConnection() async {
+		let engine = DiscoveryScanEngine()
+		let manager = AccessoryManager(transports: [])
+		engine.configure(accessoryManager: manager, modelContext: sharedModelContainer.mainContext)
+		#expect(!manager.isConnected)
+
+		await engine.startCurrentPresetScan()
+		// Seeded pass begins dwelling immediately — no connection required, no config change.
+		#expect(engine.currentState == .dwell)
+		#expect(engine.activePreset != nil)
+		#expect(engine.session != nil)
+
+		await engine.stopScan()
+		// Tears down cleanly back to idle without any radio calls (nothing was snapshotted).
+		#expect(engine.currentState == .idle)
+		withExtendedLifetime(manager) {}
 	}
 
 	// MARK: - State Enumeration

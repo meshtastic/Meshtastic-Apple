@@ -23,15 +23,6 @@ struct DiscoveryScanView: View {
 
 	@State private var engine: DiscoveryScanEngine?
 
-	private var connectedNode: NodeInfoEntity? {
-		let nodeNum = Int64(UserDefaults.preferredPeripheralNum)
-		var descriptor = FetchDescriptor<NodeInfoEntity>(
-			predicate: #Predicate { $0.num == nodeNum }
-		)
-		descriptor.fetchLimit = 1
-		return try? context.fetch(descriptor).first
-	}
-
 	private var availablePresets: [ModemPresets] {
 		// Lite / Narrow presets are intentionally hidden from selection
 		// for now — see `ModemPresets.userSelectable`.
@@ -99,9 +90,11 @@ struct DiscoveryScanView: View {
 				if engine.currentState == .idle {
 					presetPickerSection
 					dwellConfigSection
-					if connectedNode != nil {
-						currentDataReportSection(engine)
-					}
+					// "Analyze Current Preset" is seeded from local SwiftData and sends nothing to
+					// the radio, so it's always available — including with no radio connected (review
+					// your mesh offline). The full multi-preset "Start Scan" below stays gated on a
+					// live connection because it changes the radio's preset.
+					currentDataReportSection(engine)
 				}
 
 				scanControlSection(engine)
@@ -262,7 +255,7 @@ struct DiscoveryScanView: View {
 	private func currentDataReportSection(_ engine: DiscoveryScanEngine) -> some View {
 		Section(
 			header: Text("Current Preset"),
-			footer: Text("Analyze only your radio's current preset, seeded with everything already collected — every node heard, per-node message and sensor counts, and RF health including noise floor — so the run starts from your full history rather than an empty scan. Stop anytime to view the summary.")
+			footer: Text("Analyze only your current preset, seeded with everything already collected — every node heard, per-node message and sensor counts, and RF health including noise floor — so the run starts from your full history rather than an empty scan. Runs even with no radio connected. Stop anytime to view the summary.")
 		) {
 			Button {
 				Task { await engine.startCurrentPresetScan() }
