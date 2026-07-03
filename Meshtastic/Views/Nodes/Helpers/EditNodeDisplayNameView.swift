@@ -11,7 +11,11 @@ struct EditNodeDisplayNameView: View {
 	@Environment(\.dismiss) private var dismiss
 	let node: NodeInfoEntity
 	@State private var displayName: String = ""
-	@State private var hasChanges: Bool = false
+	/// The value loaded in `onAppear`, so Save is only enabled on a real edit — comparing against
+	/// a plain "did anything change" flag would also fire when `onAppear` assigns `displayName` from
+	/// the store, enabling Save (and letting a no-op tap re-save the same value and re-post
+	/// `didChangeNotification`) the instant the sheet opens for a node that already has a name.
+	@State private var initialDisplayName: String = ""
 
 	var body: some View {
 		NavigationStack {
@@ -19,7 +23,6 @@ struct EditNodeDisplayNameView: View {
 				Section {
 					TextField("Display name", text: $displayName)
 						.autocorrectionDisabled(true)
-						.onChange(of: displayName) { _, _ in hasChanges = true }
 				} footer: {
 					Text("This name is only shown on this device. The node's real name is unchanged for sharing and export.")
 				}
@@ -27,7 +30,6 @@ struct EditNodeDisplayNameView: View {
 					Section {
 						Button(role: .destructive) {
 							displayName = ""
-							hasChanges = true
 						} label: {
 							Label("Remove custom name", systemImage: "trash")
 						}
@@ -48,11 +50,13 @@ struct EditNodeDisplayNameView: View {
 						NodeDisplayNameStore.setDisplayName(trimmed.isEmpty ? nil : trimmed, for: node.num)
 						dismiss()
 					}
-					.disabled(!hasChanges)
+					.disabled(displayName == initialDisplayName)
 				}
 			}
 			.onAppear {
-				displayName = NodeDisplayNameStore.displayName(for: node.num) ?? ""
+				let current = NodeDisplayNameStore.displayName(for: node.num) ?? ""
+				displayName = current
+				initialDisplayName = current
 			}
 		}
 	}

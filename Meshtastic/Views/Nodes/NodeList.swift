@@ -391,13 +391,16 @@ private struct FilteredNodeList: View {
 		node: NodeInfoEntity,
 		connectedNode: NodeInfoEntity?
 	) -> some View {
+		// Local-only rename — never touches the mesh (NodeDisplayNameStore), so unlike the actions
+		// below it doesn't need an active device connection. Available for any node in the local
+		// database regardless of connection state.
+		Button {
+			nodeForDisplayNameEdit = node
+		} label: {
+			Label("Set display name", systemImage: "pencil.circle")
+		}
 		if let connectedNode {
 			FavoriteNodeButton(node: node)
-			Button {
-				nodeForDisplayNameEdit = node
-			} label: {
-				Label("Set display name", systemImage: "pencil.circle")
-			}
 			if let user = node.user {
 				NodeAlertsButton(context: context, node: node, user: user)
 			}

@@ -10,7 +10,8 @@ import Foundation
 enum NodeDisplayNameStore {
 	private static let key = "nodeDisplayNames"
 
-	/// Posted when any display name is set or cleared so UI can refresh.
+	/// Posted when a display name is set or cleared, `object` = the node's `num` (`Int64`) so
+	/// observers can scope their refresh to the node they're showing — mirrors `.nodeLogAvailabilityDidChange`.
 	/// `NSNotification.Name`, not `Notification.Name` — this app declares its own top-level
 	/// `Notification` struct (LocalNotificationManager.swift) that shadows Foundation's.
 	static let didChangeNotification = NSNotification.Name("NodeDisplayNameStoreDidChange")
@@ -31,7 +32,7 @@ enum NodeDisplayNameStore {
 			all.removeValue(forKey: key)
 		}
 		save(all)
-		NotificationCenter.default.post(name: didChangeNotification, object: nil)
+		NotificationCenter.default.post(name: didChangeNotification, object: nodeNum)
 	}
 
 	private static func storageKey(_ nodeNum: Int64) -> String {

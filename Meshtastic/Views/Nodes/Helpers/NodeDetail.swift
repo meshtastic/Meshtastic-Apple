@@ -80,7 +80,12 @@ struct NodeDetail: View {
 					.sheet(isPresented: $showingDisplayNameSheet) {
 						EditNodeDisplayNameView(node: node)
 					}
-					.onReceive(NotificationCenter.default.publisher(for: NodeDisplayNameStore.didChangeNotification)) { _ in
+					.onReceive(NotificationCenter.default.publisher(for: NodeDisplayNameStore.didChangeNotification)) { notification in
+						// Scoped to this node: the notification's object is unconditionally `nil`
+						// otherwise, and `displayNameRefresh` drives `.id()` below (which recreates
+						// the list and re-triggers its scroll-to-top onAppear) -- renaming an
+						// unrelated node elsewhere must not yank this detail view back to the top.
+						guard notification.object as? Int64 == node.num else { return }
 						displayNameRefresh += 1
 					}
 					.onAppear {

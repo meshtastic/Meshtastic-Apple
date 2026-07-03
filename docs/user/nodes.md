@@ -96,7 +96,7 @@ The full node row shows the circle avatar, battery level, encryption status, las
 Long-press any node in the list to access quick actions:
 
 - **Add to favorites / Remove from favorites** — star important nodes so they appear at the top of the list
-- **Set display name** — give a node a local nickname (see [Display Names](#display-names) below)
+- **Set display name** — give a node a local nickname (see Display Names below)
 - **Mute notifications / Unmute** — silence alerts from this node
 - **Message** — open a direct message conversation with this node
 - **Trace Route** — discover the path messages take to reach this node
