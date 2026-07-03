@@ -10,7 +10,7 @@ The Settings tab lets you configure the app and your connected Meshtastic radio.
 
 ## App Settings
 
-General app preferences including map style, notification behaviour, and theme. These affect only the app — not the radio.
+General app preferences including map style, notification behavior, and theme. These affect only the app — not the radio.
 
 ### Data Management
 
@@ -42,6 +42,8 @@ Manage up to 8 channels (0–7). Channel 0 is the primary broadcast channel. Add
 ### Security
 
 Configure PKI (Public Key Infrastructure) encryption for direct messages. Requires firmware 2.5+.
+
+On hardened lockdown-firmware radios, this page also shows a **Lockdown** section with the session status, a **Lock Now** button, and a **Forget Stored Passphrase** button. See [Lockdown Mode](lockdown.md).
 
 ### User
 

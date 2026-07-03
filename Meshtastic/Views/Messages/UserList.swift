@@ -291,7 +291,7 @@ private struct DirectMessageUserRow: View {
 						Image(systemName: "lock.open.fill")
 							.foregroundColor(.yellow)
 					}
-					Text(user.longName ?? "Unknown".localized)
+					Text(user.displayLongName)
 						.font(.headline)
 						.allowsTightening(true)
 					Spacer()

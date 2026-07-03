@@ -183,6 +183,11 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	@Published var isInBackground: Bool = false
 	@Published var firmwareEdition: FirmwareEditions = .vanilla
 
+	/// MESHTASTIC_LOCKDOWN-hardened firmware state machine. See
+	/// Meshtastic/Helpers/LockdownCoordinator.swift and
+	/// specs/007-lockdown-mode/. Set by MeshtasticApp at startup.
+	var lockdownCoordinator: LockdownCoordinator?
+
 	/// Region → legal-preset lookup advertised by the connected radio during the
 	/// want_config handshake (FromRadio.region_presets, 2.8+). Empty when the
 	/// firmware predates the feature or hasn't sent it yet — callers must treat an
@@ -352,6 +357,10 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			self.activeConnection = nil
 		}
 		self.activeDeviceNum = nil
+
+		// Lockdown: clear per-connection state. If a Lock Now was in flight, the
+		// disconnect resolves the coordinator to `.lockNowAcknowledged`.
+		lockdownCoordinator?.onDisconnect()
 		
 		connectionEventTask?.cancel()
 		connectionEventTask = nil
@@ -895,7 +904,13 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			if state == .subscribed {
 				Task { try? await sendWantConfig() }
 			}
-			
+
+		case .lockdownStatus(let status):
+			// MESHTASTIC_LOCKDOWN-hardened firmware reports state after config_complete_id
+			// (and again in response to each LockdownAuth admin command). Route to the
+			// coordinator, which owns the per-connection state machine + passphrase cache.
+			lockdownCoordinator?.handle(status)
+
 		default:
 			Logger.transport.error("Unknown FromRadio variant: \(decodedInfo.payloadVariant.debugDescription)")
 		}
@@ -954,9 +969,14 @@ extension AccessoryManager {
 		checkIsVersionSupported(forVersion: "2.8.0")
 	}
 
-	/// StatusMessage module was introduced in firmware 2.6.0.
+	/// The Status Message module (`ModuleConfig.StatusMessageConfig` + the
+	/// `NODE_STATUS_APP` broadcast) ships in firmware 2.8.0 (design#115). Gate the editor on
+	/// it so we don't expose a broken/empty config screen on a *known* older firmware.
+	/// `checkIsVersionSupported` is intentionally permissive when the version is unknown
+	/// (first-launch / reconnect window) — matching every other capability gate here — so the
+	/// editor still appears until the radio reports a confirmed sub-2.8.0 version.
 	var supportsStatusMessage: Bool {
-		checkIsVersionSupported(forVersion: "2.6.0")
+		checkIsVersionSupported(forVersion: "2.8.0")
 	}
 }
 
