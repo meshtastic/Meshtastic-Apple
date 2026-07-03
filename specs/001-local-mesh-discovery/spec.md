@@ -93,9 +93,32 @@ A user whose hardware does not support the SX1280/SX1281 2.4 GHz radio should no
 
 ---
 
+### User Story 6 — Discover, Display, and Join Meshes via Beacons (Priority: P6)
+
+Some radios run in *beacon mode* and periodically broadcast a `MESH_BEACON_APP` packet advertising their mesh — a short message plus, optionally, the channel (name + PSK), region, and modem preset it runs on. While scanning, the user's radio hears these beacons and the discovery feature captures them, shows them in the results, and uses them to steer the scan: a mesh advertised on the public channel adds its preset to the scan automatically, and a mesh advertised on a **custom channel** is tuned into directly (using the key the beacon broadcast) so even a private mesh is found and measured. From the results the user can tap **Switch to this channel** to join the advertised mesh.
+
+**Why this priority**: Beacons let discovery find meshes the user didn't know to look for — including private, custom-channel meshes that the public-channel scan cannot hear — and turn "there's a mesh over there" into an actionable join. It depends on the P1 scan engine and the packet-ingestion path.
+
+**Independent Test**: With a second radio beaconing a custom channel + preset, run a scan on any preset; verify the beacon appears in the Beacons section with its message and offered channel/preset/region, that a dwell tunes to the advertised channel and lists its nodes, and that **Switch to this channel** reconfigures the radio onto that mesh.
+
+**Acceptance Scenarios**:
+
+1. **Given** a scan is dwelling, **When** a `MESH_BEACON_APP` packet is received from another node, **Then** the app decodes the `MeshBeacon`, stores it against the session and current preset result, and shows it in the summary's Beacons section with its message, sender, offered preset/region/channel, and SNR.
+2. **Given** a beacon advertises a modem preset on the **public channel** (no custom channel) that the scan has not queued or completed, **When** it is received, **Then** that preset is appended to the scan queue so the run also dwells on it.
+3. **Given** a preset was previously heard in a beacon, **When** the user next opens the scan setup, **Then** that preset is pre-selected in the Modem Presets list and marked with a beacon icon.
+4. **Given** a beacon advertises a **custom channel** (non-empty name + PSK), **When** it is received, **Then** a scan target carrying that channel is queued; when it dwells, the radio's primary channel is tuned to the offered name + PSK (and region/preset), so the dwell lands on that mesh's derived frequency and can decode it. Its results are labeled `Preset · ChannelName`.
+5. **Given** a beacon in the results advertised a channel, **When** the user taps **Switch to this channel** and confirms, **Then** the app sets the radio's primary channel to the offered channel and applies the offered region and preset; the radio reboots and reconnects on that mesh.
+6. **Given** no beacons are heard during a scan, **When** the summary renders, **Then** the Beacons section is hidden entirely.
+
+---
+
 ### Edge Cases
 
 - **Radio disconnects mid-dwell (not reboot)**: If the BLE connection is lost and does not recover within 60 seconds, the scan pauses and alerts the user. Partial data for the current preset is retained.
+- **Beacon from the scanning node itself**: A beacon whose sender is the connected node is ignored (not stored, not queued).
+- **Beacon advertises an already-scanned or already-queued mesh**: The target is not queued again — duplicates are suppressed by target identity (preset + region + channel), so a repeatedly-broadcast beacon adds its mesh to the scan at most once.
+- **Beacon offers a preset but no channel**: Treated as a public-channel target — the preset is scanned on the default public channel (no channel switch).
+- **Beacon advertises a custom channel followed by a public/manual target**: After a custom-channel dwell, the scan reverts the primary channel to the default public channel before the next public target so it hears the public mesh again.
 - **User leaves the Discovery screen mid-scan**: The scan continues in the background. Returning to the screen resumes the UI (map, timer) from current state.
 - **No nodes discovered on a preset**: The preset card in the summary shows "0 nodes found" and the AI factors this into its recommendation.
 - **NeighborInfo references an unknown node**: A mesh-neighbor marker is placed at an unknown location (omitted from the map) but counted in the summary statistics.
@@ -136,14 +159,18 @@ flowchart TD
     D -->|EnvironmentMetrics| H[Sensor Counter]
     D -->|TEXT_MESSAGE_APP| I[Message Counter]
     D -->|LocalStats| J[Mesh Health Analyzer]
+    D -->|MESH_BEACON_APP| N[Beacon Store + Scan-Target Queue]
     E --> K[DiscoverySession — SwiftData]
     F --> K
     G --> K
     H --> K
     I --> K
     J --> K
+    N --> K
+    N -->|advertised preset / custom channel| B
     K --> L[Summary Report]
     L --> M[On-Device AI Recommendation]
+    K --> O[Beacons Section + Switch to This Channel]
 ```
 
 ## Requirements *(mandatory)*
@@ -178,12 +205,20 @@ flowchart TD
 - **FR-026**: The system MUST allow a scan to run regardless of the user's primary channel configuration. If the primary channel is not the default public channel (default key AND empty name), the system MUST snapshot it and temporarily switch it to the default public channel — default key (`0x01`) and empty name — so the radio can decode the public mesh and derive its frequency, then restore the original primary channel when the scan finishes or is stopped. Channel changes do not reboot the radio, so the switch MUST be applied before any preset/LoRa change (while connected) and the restore MUST run before the LoRa-config restore (which does reboot). The system MUST NOT block the scan or require the user to manually reset their primary channel key beforehand.
 - **FR-027**: When the connected radio reports `LocalStats` telemetry carrying a noise-floor value, the system MUST capture the **noise floor** (dBm) per preset (averaged over the preset's dwell window) on `DiscoveryPresetResultEntity`, surface it in the summary (per-preset card and an RF Health card that calls out the quietest channel), include it in the on-device AI analysis, and include it in the PDF export. A lower (more negative) noise floor indicates a cleaner channel.
 - **FR-028**: The system MUST provide an **Analyze Current Preset** action that runs a single, short (~60s) pass on the radio's current modem preset, seeded from everything already in the database (every known node with per-node message/sensor counts and RF health), revealing the seeded nodes onto the map progressively (accelerated playback) and folding in any live packets during the dwell. Because the radio is already on this preset, no config change or reboot occurs. The user may stop at any time to view the summary.
+- **FR-029**: During each dwell window the system MUST ingest `MESH_BEACON_APP` packets, decode the `MeshBeacon` payload (message, optional offered channel [name + PSK], optional offered region, optional offered modem preset), and persist each as a `DiscoveredBeacon` associated with the session and the active preset result. Beacons from the connected (scanning) node itself MUST be ignored.
+- **FR-030**: The system MUST display received beacons in the scan summary in a Beacons section showing each beacon's message, sender, offered preset/region/channel (as applicable), and signal strength (SNR). The section MUST be hidden when no beacons were received.
+- **FR-031**: When a beacon advertises a modem preset on the **public channel** (no custom channel) that is neither the active target, already queued, nor already completed this session, the system MUST append that preset to the scan queue so the run also dwells on it, and reflect it in the user-visible preset selection.
+- **FR-032**: In the scan setup, the system MUST pre-select (once, non-destructively) any modem preset for which a beacon has previously been recorded, and flag such presets with a beacon indicator so the user understands why they are selected.
+- **FR-033**: When a beacon advertises a **custom channel** (non-empty name + PSK), the system MUST queue a scan target that carries that channel, and when the target dwells MUST tune the radio's primary channel to the offered name + PSK (and apply any offered region) before the preset change, so the dwell lands on that mesh's derived frequency and can decode it. The scan MUST snapshot the user's real primary channel the first time it tunes away and restore it when the scan finishes or is stopped (extending FR-026). Discovered nodes and the preset result for such a target MUST be keyed by a label that includes the channel (e.g. `Preset · ChannelName`) so a public target and a custom-channel target on the same preset do not collide, and after a custom-channel dwell the system MUST revert to the default public channel before the next public/manual target. The well-tested public-channel scan path MUST be unchanged when no custom-channel beacons are present.
+- **FR-034**: The system MUST provide a **Switch to this channel** action on beacons that advertised a channel. On confirmation it MUST set the radio's primary channel to the offered channel (name + PSK) and apply the offered region and modem preset (with `channelNum = 0` so the frequency derives from the new channel), carrying the radio's other existing LoRa fields through so they are not wiped. This reboots the radio onto the advertised mesh. Failures MUST be surfaced to the user.
 
 ### Key Entities
 
 - **DiscoverySession**: A single scan run. Attributes: timestamp, presets scanned (list), total unique nodes found (deduplicated by node number across all presets), average channel utilization, total text messages counted, total sensor packets counted, furthest node distance, completion status (complete / stopped / interrupted), AI summary text, home preset (original preset to restore), user latitude, user longitude.
 - **DiscoveryPresetResult**: Per-preset data within a session. Attributes: preset name, dwell duration (seconds), unique nodes found, direct neighbor count, mesh neighbor count, infrastructure node count, message count, sensor packet count, average channel utilization, average airtime rate, packet success rate, packet failure rate, average noise floor (dBm) and noise-floor sample count (FR-027), AI summary text, raw LocalStats fields (numPacketsTx, numPacketsRx, numPacketsRxBad, numRxDupe, numTxRelay, numTxRelayCanceled, numOnlineNodes, numTotalNodes, uptimeSeconds).
-- **DiscoveredNode**: A node observed during a session. Attributes: node number, short name, long name, neighbor type (direct / mesh), latitude, longitude, distance from user, hop count, SNR, RSSI, message count, sensor packet count, preset on which discovered.
+- **DiscoveredNode**: A node observed during a session. Attributes: node number, short name, long name, neighbor type (direct / mesh), latitude, longitude, distance from user, hop count, SNR, RSSI, message count, sensor packet count, and the scan target on which discovered (the target label — preset name, or `Preset · ChannelName` for a custom-channel beacon target).
+- **DiscoveredBeacon**: A `MESH_BEACON_APP` beacon heard during a session. Attributes: sender node number, short/long name, message text, offered region (raw value; 0 = unset), offered modem preset (raw value; sentinel −1 = none, since 0 is a valid preset), offered channel name and PSK plus a "has offered channel" flag, SNR, RSSI, timestamp, and the target label it was heard on. Linked to its `DiscoverySession` (cascade) and `DiscoveryPresetResult` (nullify). The offered PSK is broadcast in the beacon (not a local secret) and is required to tune to / join the advertised mesh.
+- **ScanTarget** (in-memory, not persisted): a single dwell target — a modem preset, an optional region override, and an optional custom channel (name + PSK). Manual selections and public-channel beacons carry no channel and run on the default public channel; custom-channel beacons carry the advertised channel. Its label keys the per-target results.
 
 ## Success Criteria *(mandatory)*
 
@@ -213,6 +248,13 @@ flowchart TD
 - Q: Can a user analyze just their current preset quickly? → A: Yes — "Analyze Current Preset" runs a ~60s pass seeded from existing data with an accelerated map reveal, no config change or reboot (FR-028).
 - Q: What additional RF-health metric is captured? → A: Noise floor (dBm) per preset from LocalStats, shown in the summary RF Health card (quietest channel), the AI analysis, and the PDF export (FR-027).
 
+### Session 2026-07-03
+
+- Q: What are mesh beacons and how does discovery use them? → A: `MESH_BEACON_APP` packets advertise a mesh (message + optional channel/region/preset). During a scan they are captured as `DiscoveredBeacon` records and shown in a Beacons section; the meshes they advertise are added to the scan (FR-029–FR-031).
+- Q: Can discovery scan a mesh on a custom channel (custom name/PSK), not just a preset? → A: Yes. A beacon's custom channel changes both the derived frequency (from the channel name) and the encryption (its PSK), so scanning the bare preset on the public channel can't hear it. The scan queue is generalized to scan targets that can carry a channel; a custom-channel target tunes the radio to the offered name + PSK during its dwell and reverts to the public channel afterward. The public-channel scan path is unchanged when no such beacons are present (FR-033).
+- Q: How does a beacon-advertised preset get selected? → A: A public-channel beacon's preset is appended to the running scan queue and pre-selected (with a beacon icon) in the next scan setup (FR-031, FR-032).
+- Q: Can the user join a beaconed mesh? → A: Yes — a **Switch to this channel** action on a beacon that advertised a channel sets the primary channel to the offered channel and applies its region/preset, rebooting onto that mesh (FR-034).
+
 ## Assumptions
 
 - The user has a Meshtastic radio connected via BLE with firmware that supports `AdminMessage` for LoRa config changes.
@@ -220,7 +262,9 @@ flowchart TD
 - NeighborInfo packets are broadcast by at least some nodes in the mesh. If no NeighborInfo is received, the "Mesh Neighbors" layer will be empty and the summary will reflect this.
 - The on-device AI model (Apple Foundation Model) is available on the user's hardware. If the model is unavailable (e.g., older devices), the summary section falls back to a structured table without natural-language narrative.
 - Position data for the user's own node is available via GPS or manual pin. If no position is available, topology polylines and distance calculations are omitted.
-- The existing `saveLoRaConfig` method in `AccessoryManager+ToRadio.swift` is used to send preset changes (and to restore the home config). The existing `saveChannel` method is used to switch the primary channel to the default public channel for the scan and restore it afterward (FR-026). No new protobuf message types are required.
+- The existing `saveLoRaConfig` method in `AccessoryManager+ToRadio.swift` is used to send preset changes (and to restore the home config). The existing `saveChannel` method is used to switch the primary channel — to the default public channel for a public scan (FR-026) and to a beacon's advertised channel for a custom-channel target and for **Switch to this channel** (FR-033, FR-034). The `joinBeaconMesh` method composes `saveChannel` + `saveLoRaConfig` for the join action.
+- Beacon support consumes the `MeshBeacon` message (`MESH_BEACON_APP`, port 37) from the `mesh_beacon.proto` bindings, which were added upstream and regenerated into `MeshtasticProtobufs`. No app-defined protobuf types are added — the client only reads beacons (it does not transmit them).
+- `MESH_BEACON_APP` packets are decoded and, while a scan is active, routed to the discovery engine; outside a scan they are logged only. A beacon's offered channel/region/preset is advisory — the firmware never auto-applies it; the client stores it and acts on it only via the scan queue or the explicit Switch to this channel action.
 - `saveChannel` (a `setChannel` admin message) does not reboot the radio, whereas `saveLoRaConfig` does. The restore order therefore matters: the primary channel is restored first (while connected), then the LoRa config (which reboots).
 - NeighborInfo packet processing (currently logged but unhandled at port 71) will need to be implemented as part of this feature.
 - The "2-Packet Rule" for airtime rate requires that the dwell window is long enough (≥15 min) for most nodes to send at least two DeviceMetrics packets at their default telemetry interval.
