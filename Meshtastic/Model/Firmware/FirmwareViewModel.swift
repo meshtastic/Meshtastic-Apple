@@ -38,9 +38,14 @@ extension FirmwareViewModel {
 class FirmwareViewModel: ObservableObject {
 	@Published var firmwareFiles: [FirmwareFile] = []
 	let hardware: DeviceHardwareEntity
+	/// The connected node's LoRa region; non-Latin regions get locale-tagged
+	/// remote artifact candidates so the right on-device fonts ship. `.unset`
+	/// keeps the previous generic-only behavior.
+	let preferredRegion: RegionCodes
 
-	init(forHardware: DeviceHardwareEntity) {
+	init(forHardware: DeviceHardwareEntity, preferredRegion: RegionCodes = .unset) {
 		self.hardware = forHardware
+		self.preferredRegion = preferredRegion
 		Task {
 			refresh()
 		}
@@ -58,15 +63,16 @@ class FirmwareViewModel: ObservableObject {
 		let descriptor = FetchDescriptor<FirmwareReleaseEntity>()
 		do {
 			let firmwareReleases = try context.fetch(descriptor)
+			let localeTags = preferredRegion.prefersLocalizedFontFirmware ? preferredRegion.firmwareLocaleTagCandidates : []
 			for release in firmwareReleases {
 				if let architecture = hardwareArchitecture {
 					for firmwareType in FirmwareFile.validFilenameSuffixes(forArchitecture: architecture) {
-						let firmwareFile = try FirmwareFile(firmware: release, hardware: hardware, type: firmwareType)
+						let firmwareFile = try FirmwareFile(firmware: release, hardware: hardware, type: firmwareType, localeTags: localeTags)
 						newFirmwareList[firmwareFile.localUrl.lastPathComponent] = firmwareFile
 					}
 				} else {
 					// Just the default
-					let firmwareFile = try FirmwareFile(firmware: release, hardware: hardware)
+					let firmwareFile = try FirmwareFile(firmware: release, hardware: hardware, localeTags: localeTags)
 					newFirmwareList[firmwareFile.localUrl.lastPathComponent] = firmwareFile
 				}
 			}

@@ -19,6 +19,7 @@ struct MeshtasticAppleApp: App {
 	@UIApplicationDelegateAdaptor(MeshtasticAppDelegate.self) private var appDelegate
 #endif
 	@StateObject var appState: AppState
+	@StateObject private var lockdownCoordinator: LockdownCoordinator
 	private let persistenceController: PersistenceController?
 	private let accessoryManager: AccessoryManager
 	@Environment(\.scenePhase) var scenePhase
@@ -91,6 +92,14 @@ struct MeshtasticAppleApp: App {
 		accessoryManager = AccessoryManager.shared
 		accessoryManager.appState = appState
 
+		// Lockdown coordinator. Constructed here so it lives at app scope and is
+		// injected into the SwiftUI environment for views to observe. The sender
+		// is wired after construction to avoid an init-time cycle with AccessoryManager.
+		let lockdown = LockdownCoordinator()
+		lockdown.setSender(accessoryManager)
+		accessoryManager.lockdownCoordinator = lockdown
+		self._lockdownCoordinator = StateObject(wrappedValue: lockdown)
+
 		self._appState = StateObject(wrappedValue: appState)
 
 		self.persistenceController = persistenceController
@@ -131,38 +140,35 @@ struct MeshtasticAppleApp: App {
 		}
 	}
 
-	private func handleChannelLinkURL(_ url: URL, fromActivity: Bool) {
+	@discardableResult
+	private func handleChannelLinkURL(_ url: URL, fromActivity: Bool) -> Bool {
 		// Reset the state before processing a new URL
 		self.saveChannelLink = nil
 
-		guard url.absoluteString.lowercased().contains("meshtastic.org/e/") else {
-			return
+		guard MeshtasticChannelURL.canHandle(url) else {
+			return false
 		}
 
-		let queryParams = url.queryParameters
-		let addChannels = Bool(queryParams?["add"] ?? "false") ?? false
-		var channelData: String?
-		let urlString = url.absoluteString
-
-		if let fragment = urlString.components(separatedBy: "#").last, !fragment.isEmpty {
-			channelData = fragment.components(separatedBy: "?").first
-		}
-		
-		guard let finalChannelData = channelData, !finalChannelData.isEmpty else {
-			Logger.mesh.error("Could not extract channel data from URL: \(url.absoluteString, privacy: .public)")
-			return
+		let channelLink: MeshtasticChannelURL
+		do {
+			channelLink = try MeshtasticChannelURL.parse(url.absoluteString)
+		} catch {
+			Logger.mesh.error("Could not parse channel URL: \(error.localizedDescription, privacy: .public)")
+			return false
 		}
 
-		self.saveChannelLink = SaveChannelLinkData(data: finalChannelData, add: addChannels)
-		Logger.services.debug("Add Channel \(addChannels, privacy: .public) with data: \(finalChannelData, privacy: .public)")
-		
+		self.saveChannelLink = SaveChannelLinkData(data: channelLink.payload, add: channelLink.addChannels)
+		Logger.services.debug("Add Channel \(channelLink.addChannels, privacy: .public)")
+
 		// Log based on the calling context
 		let source = fromActivity ? "User Activity" : "Open URL"
-		Logger.mesh.debug("User wants to open a Channel Settings URL (\(source)): \(url.absoluteString, privacy: .public)")
+		Logger.mesh.debug("User wants to open a Channel Settings URL (\(source, privacy: .public))")
+		return true
 	}
-	
+
 	var body: some Scene {
 		WindowGroup {
+			Group {
 			if Self.isRunningTests {
 				Color.clear
 			} else {
@@ -183,38 +189,38 @@ struct MeshtasticAppleApp: App {
 					#if !targetEnvironment(macCatalyst)
 					.presentationDragIndicator(.visible)
 					#endif
-				}
-				.onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { userActivity in
-					Logger.mesh.debug("URL received \(userActivity, privacy: .public)")
-					self.incomingUrl = userActivity.webpageURL
-					self.saveChannelLink = nil
+					}
+					.onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { userActivity in
+						Logger.mesh.debug("Browsing web user activity received")
+						self.incomingUrl = userActivity.webpageURL
+						self.saveChannelLink = nil
 
-					if let url = userActivity.webpageURL {
-						if url.absoluteString.lowercased().contains("meshtastic.org/v/#") == true {
-							ContactURLHandler.handleContactUrl(url: url, accessoryManager: accessoryManager)
-						} else if url.absoluteString.lowercased().contains("meshtastic.org/e/") == true {
-							// **Consolidated Call for User Activity**
-							handleChannelLinkURL(url, fromActivity: true)
+						if let url = userActivity.webpageURL {
+							if url.absoluteString.lowercased().contains("meshtastic.org/v/#") == true {
+								ContactURLHandler.handleContactUrl(url: url, accessoryManager: accessoryManager)
+							} else if MeshtasticChannelURL.canHandle(url) {
+								// **Consolidated Call for User Activity**
+								handleChannelLinkURL(url, fromActivity: true)
+							}
+						}
+
+						if self.saveChannelLink != nil {
+							Logger.mesh.debug("User wants to open Channel Settings URL")
 						}
 					}
+					.onOpenURL(perform: { (url) in
+						Logger.mesh.debug("URL received")
+						self.incomingUrl = url
 
-					if self.saveChannelLink != nil {
-						Logger.mesh.debug("User wants to open Channel Settings URL: \(String(describing: self.incomingUrl!.relativeString), privacy: .public)")
-					}
-				}
-				.onOpenURL(perform: { (url) in
-					Logger.mesh.debug("Some sort of URL was received \(url, privacy: .public)")
-					self.incomingUrl = url
-					
-					if url.absoluteString.lowercased().contains("meshtastic.org/v/#") {
-						ContactURLHandler.handleContactUrl(url: url, accessoryManager: accessoryManager)
-					} else if url.absoluteString.lowercased().contains("meshtastic.org/e/") {
-						// **Consolidated Call for Open URL**
-						handleChannelLinkURL(url, fromActivity: false)
-					} else if url.absoluteString.lowercased().contains("meshtastic:///") {
-						appState.router.route(url: url)
-					}
-				})
+						if url.absoluteString.lowercased().contains("meshtastic.org/v/#") {
+							ContactURLHandler.handleContactUrl(url: url, accessoryManager: accessoryManager)
+						} else if MeshtasticChannelURL.canHandle(url) {
+							// **Consolidated Call for Open URL**
+							handleChannelLinkURL(url, fromActivity: false)
+						} else if url.absoluteString.lowercased().contains("meshtastic:///") {
+							appState.router.route(url: url)
+						}
+					})
 				.task {
 					try? Tips.configure(
 						[
@@ -231,6 +237,15 @@ struct MeshtasticAppleApp: App {
 				.environmentObject(accessoryManager)
 				.environmentObject(appState.router)
 				.environmentObject(MeshtasticAPI.shared)
+			}
+			}
+			.onChange(of: lockdownCoordinator.state) { _, newState in
+				// US-3: when the coordinator resolves to .lockNowAcknowledged
+				// (either via inbound LOCKED status or a BLE disconnect race),
+				// tear down the connection so the next reconnect re-auths.
+				if case .lockNowAcknowledged = newState {
+					Task { try? await accessoryManager.closeConnection() }
+				}
 			}
 		}
 		.onChange(of: scenePhase) { (_, newScenePhase) in
@@ -262,6 +277,7 @@ struct MeshtasticAppleApp: App {
 		}
 		.environmentObject(appState)
 		.environmentObject(accessoryManager)
+		.environmentObject(lockdownCoordinator)
 		.environmentObject(appState.router)
 		.environmentObject(MeshtasticAPI.shared)
 
@@ -272,6 +288,7 @@ struct MeshtasticAppleApp: App {
 					.modelContainer(persistenceController!.container)
 					.environmentObject(appState)
 					.environmentObject(accessoryManager)
+					.environmentObject(lockdownCoordinator)
 					.environmentObject(appState.router)
 					.environmentObject(MeshtasticAPI.shared)
 			}

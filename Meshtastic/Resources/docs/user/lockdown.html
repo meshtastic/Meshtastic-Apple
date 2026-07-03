@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lockdown Mode</title>
+  <link rel="stylesheet" href="../assets/docs.css">
+</head>
+<body data-page="lockdown">
+<h1>Lockdown Mode</h1>
+<p>Lockdown mode is a hardened-firmware feature (<code>MESHTASTIC_LOCKDOWN</code> builds) that keeps a radio's storage locked until a passphrase is presented. When you connect to a lockdown-enabled device, the app requires the passphrase before you can use the rest of the app with that radio. Standard firmware is unaffected — if your radio doesn't run a lockdown build, you will never see any of these screens.</p>
+<h2>First-Time Setup</h2>
+<p>The first time you connect to a lockdown-capable device that has never been provisioned, the app shows a full-screen <strong>Set device passphrase</strong> prompt.</p>
+<ol>
+<li>Enter a passphrase between 1 and 32 bytes. A counter below the field shows the current length.</li>
+<li>Optionally expand the <strong>Session</strong> section to limit how long an unlock lasts (see <a href="#session-limits">Session Limits</a> below).</li>
+<li>Tap <strong>Set Passphrase</strong>.</li>
+</ol>
+<p>Pick a passphrase you can re-enter — it protects the device's storage, and the radio will require it again after the session expires.</p>
+<h2>Unlocking a Device</h2>
+<p>When you connect to a locked device, the app shows a full-screen <strong>Unlock device</strong> prompt. Enter the passphrase and tap <strong>Unlock</strong>. The prompt can't be swiped away — the device requires authentication before the app can talk to it.</p>
+<p>After a successful unlock, the app stores the passphrase for that specific radio in the iOS Keychain (on this device only — it is never synced to iCloud) and silently replays it on future connections, so you normally only type it once per device. If the stored passphrase stops working (for example, it was changed elsewhere), the app clears it and asks you to enter the current one.</p>
+<h3>Wrong Passphrase and Rate Limiting</h3>
+<p>A wrong passphrase shows an inline error so you can try again. If the firmware rate-limits repeated attempts, the app shows a <strong>Too many attempts</strong> countdown; when the timer elapses, the passphrase prompt returns automatically.</p>
+<h2>Session Limits</h2>
+<p>When setting or entering a passphrase, the <strong>Session</strong> section lets you cap how long the unlocked session lasts. All fields are optional — leave them empty for the firmware defaults.</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Boots remaining</td>
+<td>How many reboots the session survives before the passphrase is required again.</td>
+</tr>
+<tr>
+<td>Hours valid</td>
+<td>Wall-clock lifetime of the session. Empty means no time limit.</td>
+</tr>
+<tr>
+<td>Session cap (minutes)</td>
+<td>Per-boot uptime cap. When it elapses the device reboots; the next boot unlocks automatically if boots remain.</td>
+</tr>
+</tbody>
+</table>
+<h2>Managing Lockdown in Settings</h2>
+<p>While a session is unlocked, <strong>Settings → Radio Configuration → Security</strong> shows a <strong>Lockdown</strong> section with:</p>
+<ul>
+<li><strong>Session status</strong> — currently Unlocked, plus boots remaining and the session expiry (or &quot;No time limit&quot;).</li>
+<li><strong>Lock Now</strong> — immediately revokes the session and reboots the device locked. You will need the passphrase to reconnect. The app disconnects automatically once the device confirms.</li>
+<li><strong>Forget Stored Passphrase</strong> — removes the passphrase saved for this radio from the iOS Keychain. The next connection will prompt for it again.</li>
+</ul>
+<p>The section is hidden entirely for radios that don't report lockdown state.</p>
+<h2>Notes</h2>
+<ul>
+<li>The passphrase is sent only to the connected radio over the direct connection; it is never transmitted over the mesh.</li>
+<li>Each radio has its own stored passphrase, keyed to that radio — forgetting one device's passphrase doesn't affect others.</li>
+<li>A locked device suppresses configuration prompts (such as the region-unset banner) until the session is unlocked, since its configuration can't be reached while locked.</li>
+</ul>
+</body>
+</html>

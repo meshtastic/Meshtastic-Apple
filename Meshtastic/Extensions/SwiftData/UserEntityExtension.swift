@@ -10,6 +10,16 @@ import Foundation
 import MeshtasticProtobufs
 
 extension UserEntity {
+	/// Local display name for this node (if set), otherwise the device longName. The device
+	/// shortName (avatar circle badge) is never overridden by a local display name -- it stays
+	/// the node's actual short code so it keeps matching what other nodes/clients see.
+	var displayLongName: String {
+		if let custom = NodeDisplayNameStore.displayName(for: num) {
+			return custom
+		}
+		return longName ?? "Unknown".localized
+	}
+
 	@MainActor
 	var messageList: [MessageEntity] {
 		guard let ctx = modelContext else { return [] }
