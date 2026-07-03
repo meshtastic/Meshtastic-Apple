@@ -1,6 +1,138 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Apply the selected configuration to the connected node?" : {
+
+    },
+    "Includes %@. Only import files from a source you trust." : {
+
+    },
+    "It replaces this node's identity and admin keys, which can break existing direct messages." : {
+
+    },
+    "MQTT password" : {
+
+    },
+    "The radio will reboot to apply LoRa/channel changes." : {
+
+    },
+    "This overwrites sensitive security material on the connected node." : {
+
+    },
+    "Wi-Fi password" : {
+
+    },
+    "channel keys (PSKs)" : {
+
+    },
+    "sensitive credentials" : {
+
+    },
+    "your node's private key & admin keys" : {
+
+    },
+    "Apply Configuration" : {
+
+    },
+    "Apply a saved configuration file (radio, module, and channel settings) to the connected node." : {
+
+    },
+    "Apply this saved configuration to %@." : {
+
+    },
+    "Applying LoRa/channel settings reboots the radio; it will briefly disconnect." : {
+
+    },
+    "Canned Message" : {
+
+    },
+    "Changes this node's identity (private/public key) and admin keys — can break existing direct messages and lock local administration." : {
+
+    },
+    "Channel changes may have partially applied. Re-import Channels & LoRa to bring the node to a consistent state." : {
+
+    },
+    "Channels & LoRa" : {
+
+    },
+    "Connect to a node to export its configuration." : {
+
+    },
+    "Connect to a node to import a configuration." : {
+
+    },
+    "Connect to a radio before importing." : {
+
+    },
+    "Export Configuration" : {
+
+    },
+    "Export Device Configuration" : {
+
+    },
+    "Export Failed" : {
+
+    },
+    "Import Configuration" : {
+
+    },
+    "Import Device Configuration" : {
+
+    },
+    "Import Failed" : {
+
+    },
+    "Import cancelled — sent %lld of %lld setting%@." : {
+
+    },
+    "Import stopped after a failure — sent %lld setting%@ first." : {
+
+    },
+    "LoRa Region" : {
+
+    },
+    "Modules" : {
+
+    },
+    "Not Applied" : {
+
+    },
+    "Owner Name" : {
+
+    },
+    "Radio & Device" : {
+
+    },
+    "Reconnect to the node to confirm the changes were applied." : {
+
+    },
+    "Ringtone & Canned Messages" : {
+
+    },
+    "Save the connected node's full configuration (radio, module, and channel settings) to a file you can back up or import on another device." : {
+
+    },
+    "Sections to Import" : {
+
+    },
+    "Security & Identity" : {
+
+    },
+    "Sent %lld setting%@ to the node." : {
+
+    },
+    "This backup contains sensitive security material — your node's private key, admin keys, channel keys (PSKs), and Wi-Fi/MQTT passwords. Anyone with this file can join and administer your mesh, so only share it with people you trust." : {
+
+    },
+    "This import overwrites sensitive material" : {
+
+    },
+    "This is taking longer than expected. You can cancel or dismiss." : {
+
+    },
+    "Your radio is rebooting to apply LoRa/channel changes — reconnect to verify." : {
+
+    },
     "lockdown.backoff.body %lld" : {
       "extractionState" : "manual",
       "localizations" : {

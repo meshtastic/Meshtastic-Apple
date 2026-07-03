@@ -36,8 +36,11 @@ struct DeviceProfileImportResult {
 	var failed: (kind: ImportItemKind, message: String)? = nil
 	/// True when a reboot-causing item (Channels & LoRa) was applied — the radio will disconnect briefly.
 	var rebooting: Bool = false
+	/// True when the run stopped because it was cancelled (user tapped Cancel or the task was cancelled)
+	/// rather than failing. The current and remaining items are recorded as `skipped`, not `failed`.
+	var wasCancelled: Bool = false
 
-	var isCompleteSuccess: Bool { failed == nil }
+	var isCompleteSuccess: Bool { failed == nil && !wasCancelled }
 }
 
 // MARK: - Engine
@@ -62,6 +65,14 @@ enum DeviceProfileImporter {
 		let items = plan.items(for: selection)
 
 		for (index, item) in items.enumerated() {
+			// Cancellation (user tapped Cancel, or the surrounding task was cancelled): stop cleanly,
+			// treating the current and remaining items as not-applied rather than failed.
+			if Task.isCancelled {
+				result.wasCancelled = true
+				result.skipped = items[index...].map(\.kind)
+				return result
+			}
+
 			// A disconnect before the terminal reboot step is a genuine partial failure — record it and
 			// mark the untried items skipped rather than blindly sending into a dead link.
 			guard gateway.isConnected else {
@@ -79,6 +90,11 @@ enum DeviceProfileImporter {
 				try await gateway.apply(item)
 				result.applied.append(item.kind)
 				if item.causesReboot { result.rebooting = true }
+			} catch is CancellationError {
+				// A cancellation-aware send observed the cancel — same handling as the loop-top check.
+				result.wasCancelled = true
+				result.skipped = items[index...].map(\.kind)
+				return result
 			} catch {
 				result.failed = (item.kind, error.localizedDescription)
 				// Everything after the failed item never ran.

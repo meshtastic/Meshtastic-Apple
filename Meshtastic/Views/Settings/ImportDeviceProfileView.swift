@@ -24,6 +24,10 @@ struct ImportDeviceProfileView: View {
 	@State private var phase: Phase = .review
 	@State private var progress: ProgressState?
 	@State private var isPresentingConfirm = false
+	@State private var importTask: Task<Void, Never>?
+	/// Liveness backstop: set true if the apply is still running after a grace period so the user can
+	/// always leave even if a single send stalls on the transport.
+	@State private var canForceDismiss = false
 
 	private enum Phase: Equatable {
 		case review
@@ -76,24 +80,33 @@ struct ImportDeviceProfileView: View {
 			.navigationBarTitleDisplayMode(.inline)
 			.toolbar {
 				ToolbarItem(placement: .cancellationAction) {
-					Button(isReviewing ? "Cancel" : "Done") { dismiss() }
-						.disabled(isApplying)
+					if isApplying {
+						// Always give the user a way out of an in-progress import. Cancel stops the run at the
+						// next step; once the grace period elapses the same button also force-dismisses so a
+						// stalled send can never trap the sheet.
+						Button(canForceDismiss ? "Dismiss" : "Cancel") {
+							importTask?.cancel()
+							if canForceDismiss { dismiss() }
+						}
+					} else {
+						Button(isReviewing ? "Cancel" : "Done") { dismiss() }
+					}
 				}
-				if isReviewing {
+				if isReviewing && !isApplying {
 					ToolbarItem(placement: .confirmationAction) {
-						Button(isApplying ? "Importing…" : "Import") { isPresentingConfirm = true }
+						Button("Import") { isPresentingConfirm = true }
 							.disabled(!canImport)
 					}
 				}
 			}
 			.confirmationDialog("Apply Configuration", isPresented: $isPresentingConfirm, titleVisibility: .visible) {
-				Button("Apply Configuration", role: .destructive) { Task { await runImport() } }
+				Button("Apply Configuration", role: .destructive) { startImport() }
 				Button("Cancel", role: .cancel) { }
 			} message: {
 				Text(confirmationMessage)
 			}
 		}
-		.interactiveDismissDisabled(isApplying)
+		.interactiveDismissDisabled(isApplying && !canForceDismiss)
 	}
 
 	private var isReviewing: Bool {
@@ -111,6 +124,11 @@ struct ImportDeviceProfileView: View {
 					.font(.callout)
 				if !accessoryManager.isConnected {
 					Label("Connect to a radio before importing.", systemImage: "antenna.radiowaves.left.and.right.slash")
+						.font(.caption)
+						.foregroundColor(.orange)
+				}
+				if isApplying && canForceDismiss {
+					Label("This is taking longer than expected. You can cancel or dismiss.", systemImage: "clock.arrow.circlepath")
 						.font(.caption)
 						.foregroundColor(.orange)
 				}
@@ -197,37 +215,53 @@ struct ImportDeviceProfileView: View {
 		List {
 			Section {
 				if result.isCompleteSuccess {
-					Label("Applied \(result.applied.count) setting\(result.applied.count == 1 ? "" : "s").", systemImage: "checkmark.circle.fill")
+					// Sends are fire-and-forget (no device ack), so report what was sent and nudge the user
+					// to verify rather than claiming the device confirmed every change.
+					Label("Sent \(result.applied.count) setting\(result.applied.count == 1 ? "" : "s") to the node.", systemImage: "checkmark.circle.fill")
 						.foregroundColor(.green)
+				} else if result.wasCancelled {
+					Label("Import cancelled — sent \(result.applied.count) of \(result.applied.count + result.skipped.count) setting\(result.applied.count + result.skipped.count == 1 ? "" : "s").", systemImage: "xmark.circle.fill")
+						.foregroundColor(.orange)
 				} else {
-					Label("Import stopped after a failure.", systemImage: "exclamationmark.triangle.fill")
+					Label("Import stopped after a failure — sent \(result.applied.count) setting\(result.applied.count == 1 ? "" : "s") first.", systemImage: "exclamationmark.triangle.fill")
 						.foregroundColor(.orange)
 				}
 				if result.rebooting {
 					Text("Your radio is rebooting to apply LoRa/channel changes — reconnect to verify.")
 						.font(.caption)
 						.foregroundColor(.secondary)
+				} else if !result.applied.isEmpty {
+					Text("Reconnect to the node to confirm the changes were applied.")
+						.font(.caption)
+						.foregroundColor(.secondary)
+				}
+				// A destructive channel replace can half-complete: the node may already be on a different
+				// primary channel/PSK even though the step is reported as failed.
+				if result.failed?.kind == .channelURL {
+					Text("Channel changes may have partially applied. Re-import Channels & LoRa to bring the node to a consistent state.")
+						.font(.caption)
+						.foregroundColor(.orange)
 				}
 			}
 			if let failed = result.failed {
 				Section("Failed") {
 					VStack(alignment: .leading, spacing: 2) {
-						Text(failed.kind.rawValue)
+						Text(failed.kind.displayName)
 						Text(failed.message).font(.caption).foregroundColor(.secondary)
 					}
 				}
 			}
 			if !result.applied.isEmpty {
-				Section("Applied") {
+				Section("Sent") {
 					ForEach(result.applied, id: \.rawValue) { kind in
-						Label(kind.rawValue, systemImage: "checkmark").foregroundColor(.secondary)
+						Label(kind.displayName, systemImage: "checkmark").foregroundColor(.secondary)
 					}
 				}
 			}
 			if !result.skipped.isEmpty {
 				Section("Not Applied") {
 					ForEach(result.skipped, id: \.rawValue) { kind in
-						Text(kind.rawValue).foregroundColor(.secondary)
+						Text(kind.displayName).foregroundColor(.secondary)
 					}
 				}
 			}
@@ -236,6 +270,18 @@ struct ImportDeviceProfileView: View {
 
 	// MARK: Apply
 
+	private func startImport() {
+		guard importTask == nil else { return }   // no re-entrant / double apply
+		canForceDismiss = false
+		importTask = Task { await runImport() }
+		// Liveness backstop: if the run is still going after a grace period (e.g. a single send stalled on
+		// the transport), let the user out. The apply keeps running harmlessly in the background.
+		Task {
+			try? await Task.sleep(nanoseconds: 90 * 1_000_000_000)
+			if isApplying { canForceDismiss = true }
+		}
+	}
+
 	private func runImport() async {
 		// Re-resolve the connected node at apply time so a device that dropped while the sheet was open
 		// can't leave us acting on a stale/faulted entity.
@@ -243,6 +289,7 @@ struct ImportDeviceProfileView: View {
 			phase = .done(DeviceProfileImportResult(
 				failed: (kind: plan.items(for: selection).first?.kind ?? .owner, message: "No connected node.")
 			))
+			importTask = nil
 			return
 		}
 		phase = .applying
@@ -252,38 +299,41 @@ struct ImportDeviceProfileView: View {
 			selection: selection,
 			gateway: gateway,
 			progress: { item, index, total in
-				progress = ProgressState(title: item.summary, index: index, total: total)
+				progress = ProgressState(title: item.kind.displayName, index: index, total: total)
 			}
 		)
 		progress = nil
-		phase = .done(result)
+		importTask = nil
+		canForceDismiss = false
+		// Only publish the result if we're still the active apply (the user may have force-dismissed).
+		if isApplying { phase = .done(result) }
 	}
 
 	// MARK: Copy
 
 	private var sensitiveDetail: String {
 		var parts: [String] = []
-		if selection.contains(.security) { parts.append("your node's private key & admin keys") }
-		if selection.contains(.channelsAndLoRa) { parts.append("channel keys (PSKs)") }
-		if selection.contains(.network) { parts.append("Wi-Fi password") }
-		if plan.items(for: selection).contains(where: { $0.kind == .mqtt }) { parts.append("MQTT password") }
-		let list = parts.isEmpty ? "sensitive credentials" : parts.joined(separator: ", ")
-		return "Includes \(list). Only import files from a source you trust."
+		if selection.contains(.security) { parts.append("your node's private key & admin keys".localized) }
+		if selection.contains(.channelsAndLoRa) { parts.append("channel keys (PSKs)".localized) }
+		if selection.contains(.network) { parts.append("Wi-Fi password".localized) }
+		if plan.items(for: selection).contains(where: { $0.kind == .mqtt }) { parts.append("MQTT password".localized) }
+		let list = parts.isEmpty ? "sensitive credentials".localized : parts.joined(separator: ", ")
+		return String(format: "Includes %@. Only import files from a source you trust.".localized, list)
 	}
 
 	private var confirmationMessage: String {
 		var lines: [String] = []
 		if plan.containsSensitive(in: selection) {
-			lines.append("This overwrites sensitive security material on the connected node.")
+			lines.append("This overwrites sensitive security material on the connected node.".localized)
 		}
 		if selection.contains(.security) {
-			lines.append("It replaces this node's identity and admin keys, which can break existing direct messages.")
+			lines.append("It replaces this node's identity and admin keys, which can break existing direct messages.".localized)
 		}
 		if plan.willReboot(in: selection) {
-			lines.append("The radio will reboot to apply LoRa/channel changes.")
+			lines.append("The radio will reboot to apply LoRa/channel changes.".localized)
 		}
 		if lines.isEmpty {
-			lines.append("Apply the selected configuration to the connected node?")
+			lines.append("Apply the selected configuration to the connected node?".localized)
 		}
 		return lines.joined(separator: " ")
 	}

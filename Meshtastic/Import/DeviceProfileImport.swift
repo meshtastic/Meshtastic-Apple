@@ -43,14 +43,14 @@ enum ImportSection: String, CaseIterable, Identifiable {
 
 	var title: String {
 		switch self {
-		case .owner: return "Owner Name"
-		case .radioAndDevice: return "Radio & Device"
-		case .network: return "Network"
-		case .modules: return "Modules"
-		case .personalization: return "Ringtone & Canned Messages"
-		case .fixedPosition: return "Fixed Position"
-		case .security: return "Security & Identity"
-		case .channelsAndLoRa: return "Channels & LoRa"
+		case .owner: return "Owner Name".localized
+		case .radioAndDevice: return "Radio & Device".localized
+		case .network: return "Network".localized
+		case .modules: return "Modules".localized
+		case .personalization: return "Ringtone & Canned Messages".localized
+		case .fixedPosition: return "Fixed Position".localized
+		case .security: return "Security & Identity".localized
+		case .channelsAndLoRa: return "Channels & LoRa".localized
 		}
 	}
 
@@ -70,6 +70,41 @@ enum ImportItemKind: String, Equatable {
 	case neighborInfo, ambientLighting, detectionSensor, paxcounter, tak, trafficManagement, statusMessage
 	case ringtone, cannedMessagesText, fixedPosition
 	case channelURL, loraConfig
+
+	/// Human-readable, localized label for progress and result screens (the raw case name is not
+	/// user-facing). Casing matches the existing config-screen strings so translations are reused.
+	var displayName: String {
+		switch self {
+		case .owner: return "Owner Name".localized
+		case .deviceConfig: return "Device".localized
+		case .displayConfig: return "Display".localized
+		case .positionConfig: return "Position".localized
+		case .powerConfig: return "Power".localized
+		case .networkConfig: return "Network".localized
+		case .bluetoothConfig: return "Bluetooth".localized
+		case .securityConfig: return "Security & Identity".localized
+		case .mqtt: return "MQTT".localized
+		case .serial: return "Serial".localized
+		case .externalNotification: return "External Notification".localized
+		case .storeForward: return "Store & Forward".localized
+		case .rangeTest: return "Range Test".localized
+		case .telemetry: return "Telemetry".localized
+		case .cannedMessage: return "Canned Message".localized
+		case .audio: return "Audio".localized
+		case .neighborInfo: return "Neighbor Info".localized
+		case .ambientLighting: return "Ambient Lighting".localized
+		case .detectionSensor: return "Detection Sensor".localized
+		case .paxcounter: return "PAX Counter".localized
+		case .tak: return "TAK".localized
+		case .trafficManagement: return "Traffic Management".localized
+		case .statusMessage: return "Status Message".localized
+		case .ringtone: return "Ringtone".localized
+		case .cannedMessagesText: return "Canned Messages".localized
+		case .fixedPosition: return "Fixed Position".localized
+		case .channelURL: return "Channels & LoRa".localized
+		case .loraConfig: return "LoRa Region".localized
+		}
+	}
 }
 
 /// The already-built protobuf value for a single send. Holding concrete protos (not closures) keeps the

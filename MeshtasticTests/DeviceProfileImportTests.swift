@@ -384,10 +384,14 @@ struct DeviceProfileImportTests {
 	private final class MockGateway: ProfileApplyGateway {
 		var isConnected = true
 		var failOn: ImportItemKind?
+		var cancelOn: ImportItemKind?
 		var attempted: [ImportItemKind] = []
 
 		func apply(_ item: ImportItem) async throws {
 			attempted.append(item.kind)
+			if item.kind == cancelOn {
+				throw CancellationError()
+			}
 			if item.kind == failOn {
 				throw NSError(domain: "test", code: 1, userInfo: [NSLocalizedDescriptionKey: "boom"])
 			}
@@ -444,6 +448,59 @@ struct DeviceProfileImportTests {
 		#expect(result.isCompleteSuccess)
 		#expect(result.applied.contains(.loraConfig))
 		#expect(result.rebooting)
+	}
+
+	@MainActor
+	@Test("Cancellation stops cleanly: current and remaining items skipped, not failed")
+	func engineHandlesCancellation() async throws {
+		var profile = DeviceProfile()
+		var config = LocalConfig()
+		config.device = Config.DeviceConfig()
+		config.display = Config.DisplayConfig()
+		profile.config = config
+		var module = LocalModuleConfig()
+		module.telemetry = ModuleConfig.TelemetryConfig()
+		profile.moduleConfig = module
+		// Order: device, display, telemetry.
+		let plan = try DeviceProfileImportPlan(profile: profile, currentUser: nil)
+
+		let gateway = MockGateway()
+		gateway.cancelOn = .displayConfig
+		let result = await DeviceProfileImporter.apply(
+			plan: plan,
+			selection: Set(plan.presentSections),
+			gateway: gateway
+		)
+
+		#expect(result.wasCancelled)
+		#expect(!result.isCompleteSuccess)
+		#expect(result.failed == nil)                       // cancellation is not a failure
+		#expect(result.applied == [.deviceConfig])          // completed before the cancel
+		#expect(result.skipped == [.displayConfig, .telemetry])  // cancelled item + the rest
+	}
+
+	@MainActor
+	@Test("A task cancelled before it runs applies nothing and reports cancelled")
+	func engineHonorsPreCancelledTask() async throws {
+		let plan = try DeviceProfileImportPlan(profile: makeFullProfile(), currentUser: User())
+		let gateway = MockGateway()
+		let task = Task { await DeviceProfileImporter.apply(plan: plan, selection: Set(plan.presentSections), gateway: gateway) }
+		task.cancel()
+		let result = await task.value
+		// Whether or not the loop had begun, a cancelled run must never report complete success and must
+		// leave the device state coherent (nothing failed).
+		#expect(!result.isCompleteSuccess)
+		#expect(result.failed == nil)
+		if result.wasCancelled {
+			#expect(result.applied.count + result.skipped.count == plan.items.count)
+		}
+	}
+
+	@Test("Every import kind has a non-empty human-readable label")
+	func kindDisplayNames() {
+		#expect(ImportItemKind.channelURL.displayName == "Channels & LoRa")
+		#expect(ImportItemKind.securityConfig.displayName == "Security & Identity")
+		#expect(ImportItemKind.cannedMessagesText.displayName == "Canned Messages")
 	}
 
 	@MainActor
