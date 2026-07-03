@@ -132,6 +132,10 @@ final class LockdownCoordinator: ObservableObject {
 						   validUntilEpoch: status.validUntilEpoch)
 		case .unlockFailed:
 			handleUnlockFailed(backoffSeconds: status.backoffSeconds)
+		case .disabled:
+			// Lockdown supported but not active (never provisioned, or explicitly
+			// disabled). Functionally equivalent to .none: no blocking UI.
+			state = .none
 		case .unspecified, .UNRECOGNIZED:
 			// Forward-compat: ignore. spec.md Assumptions calls this out.
 			logger.warning("Ignoring LockdownStatus with unspecified/unrecognized state")

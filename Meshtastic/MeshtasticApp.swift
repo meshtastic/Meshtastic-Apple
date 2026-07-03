@@ -172,6 +172,7 @@ struct MeshtasticAppleApp: App {
 	
 	var body: some Scene {
 		WindowGroup {
+			Group {
 			if Self.isRunningTests {
 				Color.clear
 			} else {
@@ -240,6 +241,7 @@ struct MeshtasticAppleApp: App {
 				.environmentObject(accessoryManager)
 				.environmentObject(appState.router)
 				.environmentObject(MeshtasticAPI.shared)
+			}
 			}
 			.onChange(of: lockdownCoordinator.state) { _, newState in
 				// US-3: when the coordinator resolves to .lockNowAcknowledged
