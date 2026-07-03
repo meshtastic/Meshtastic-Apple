@@ -61,7 +61,7 @@ struct NodeDetail: View {
 		return (fromUser, toUser)
 	}
 	@State var showingCompassSheet = false
-	@State private var showingDisplayNameSheet = false
+	@State private var nodeForDisplayNameEdit: NodeInfoEntity?
 	/// Bumped whenever a local display name is set/cleared to force this view to re-render —
 	/// NodeDisplayNameStore is plain UserDefaults, not a SwiftData/@Bindable property, so nothing
 	/// else here would pick up the change.
@@ -75,11 +75,9 @@ struct NodeDetail: View {
 					.id("topOfList")
 					nodeDetailList
 					.sheet(isPresented: $showingCompassSheet) {
-						CompassView(waypointLocation: latestPosition?.nodeCoordinate ?? nil, waypointLongName: node.user?.displayLongName, waypointShortName: node.user?.displayShortName, color: Color(UIColor(hex: UInt32(node.num))))
+						CompassView(waypointLocation: latestPosition?.nodeCoordinate ?? nil, waypointLongName: node.user?.displayLongName, waypointShortName: node.user?.shortName, color: Color(UIColor(hex: UInt32(node.num))))
 							}
-					.sheet(isPresented: $showingDisplayNameSheet) {
-						EditNodeDisplayNameView(node: node)
-					}
+					.displayNameAlert(node: $nodeForDisplayNameEdit)
 					.onReceive(NotificationCenter.default.publisher(for: NodeDisplayNameStore.didChangeNotification)) { notification in
 						// Scoped to this node: the notification's object is unconditionally `nil`
 						// otherwise, and `displayNameRefresh` drives `.id()` below (which recreates
@@ -134,7 +132,7 @@ struct NodeDetail: View {
 			HStack(alignment: .center) {
 				Spacer()
 				CircleText(
-					text: node.user?.displayShortName ?? "?",
+					text: node.user?.shortName ?? "?",
 					color: Color(UIColor(hex: UInt32(node.num))),
 					circleSize: 75
 				)
@@ -296,13 +294,13 @@ struct NodeDetail: View {
 			// Local-only display name shown instead of the device long name. Never leaves this
 			// device (not sent over the mesh, not exported/shared) — see NodeDisplayNameStore.
 			Button {
-				showingDisplayNameSheet = true
+				nodeForDisplayNameEdit = node
 			} label: {
 				HStack {
 					Label {
-						Text("Display name")
+						Text("Name")
 					} icon: {
-						Image(systemName: "pencil.circle")
+						Image(systemName: "person.crop.circle")
 							.symbolRenderingMode(.hierarchical)
 					}
 					Spacer()

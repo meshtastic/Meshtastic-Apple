@@ -41,11 +41,10 @@ struct NodeListItemCompact: View {
 
 	private func accessibilityDescription(batteryLevel: Int32?, cachedLocationData: (nodeLocation: CLLocation, myLocation: CLLocation)?, status: String?) -> String {
 		var desc = ""
-		// Branch on the RAW shortName/longName presence, not the display-name variants: those
-		// always return a non-nil, non-empty value (falling back to "?"), so branching on them
-		// directly would make the longName branch unreachable for a node with no device shortName.
-		if let user = node.user, let shortName = user.shortName, !shortName.isEmpty {
-			desc = user.displayShortName.formatNodeNameForVoiceOver()
+		// The device shortName is never overridden by a local display name, so it's safe to branch
+		// on it directly here; only the longName fallback needs the display-name-aware variant.
+		if let shortName = node.user?.shortName, !shortName.isEmpty {
+			desc = shortName.formatNodeNameForVoiceOver()
 		} else if let user = node.user, let longName = user.longName, !longName.isEmpty {
 			desc = user.displayLongName
 		} else {
@@ -214,7 +213,7 @@ struct NodeListItemCompact: View {
 			HStack {
 				// First Column
 				VStack(alignment: .center) {
-					CircleText(text: node.user?.displayShortName ?? "?", color: Color(UIColor(hex: UInt32(node.num))), circleSize: circleSize)
+					CircleText(text: node.user?.shortName ?? "?", color: Color(UIColor(hex: UInt32(node.num))), circleSize: circleSize)
 						.padding(.trailing, 5)
 					if shouldShowPower, let batteryLevel = cachedBatteryLevel {
 						BatteryCompact(batteryLevel: batteryLevel, font: .caption2, iconFont: .caption, color: .accentColor)

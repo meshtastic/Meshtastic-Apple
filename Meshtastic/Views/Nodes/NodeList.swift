@@ -161,9 +161,7 @@ struct NodeList: View {
 		.sheet(item: $shareContactNode) { selectedNode in
 			ShareContactQRDialog(manuallyVerified: false, node: selectedNode.toProto())
 		}
-		.sheet(item: $nodeForDisplayNameEdit) { node in
-			EditNodeDisplayNameView(node: node)
-		}
+		.displayNameAlert(node: $nodeForDisplayNameEdit)
 		.navigationSplitViewColumnWidth(min: 100, ideal: 300, max: .infinity)
 		.toolbar {
 			ToolbarItem(placement: .topBarLeading) {
@@ -397,7 +395,7 @@ private struct FilteredNodeList: View {
 		Button {
 			nodeForDisplayNameEdit = node
 		} label: {
-			Label("Set display name", systemImage: "pencil.circle")
+			Label("Display name", systemImage: "person.crop.circle")
 		}
 		if let connectedNode {
 			FavoriteNodeButton(node: node)

@@ -327,15 +327,14 @@
             "packets",
             "messages",
             "key",
+            "shows",
             "not",
             "list",
             "hardware",
             "broadcasts",
-            "shows",
             "row",
             "public",
             "firmware",
-            "display",
             "direct",
             "client",
             "supported",
@@ -346,9 +345,10 @@
             "links",
             "hops",
             "heard",
+            "display",
             "detail"
         ],
-        "charCount": 8085
+        "charCount": 8152
     },
     {
         "id": "settings",
