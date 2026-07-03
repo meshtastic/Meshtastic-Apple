@@ -20,47 +20,41 @@ struct LocalWeatherConditions: View {
 	@State private var attributionLink: URL?
 	@State private var attributionLogo: URL?
 	@Environment(\.colorScheme) var colorScheme: ColorScheme
+	@Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
 	var body: some View {
 		if location != nil {
-			GeometryReader { geometry in
-				VStack(alignment: .center) {
-					// Determine the number of columns based on the screen width
-					let columns = geometry.size.width > 600 ? 4 : 2
-					let gridItemLayout = Array(repeating: GridItem(.flexible(), spacing: 20), count: columns)
+			VStack(alignment: .center) {
+				// Column count from the size class so this view sizes to its content. A root
+				// GeometryReader is greedy (reports no intrinsic height), which forced the parent
+				// to feed a measured height back in — a layout feedback loop that pinned the CPU.
+				let columns = horizontalSizeClass == .regular ? 4 : 2
+				let gridItemLayout = Array(repeating: GridItem(.flexible(), spacing: 20), count: columns)
 
-					LazyVGrid(columns: gridItemLayout) {
-						WeatherConditionsCompactWidget(temperature: temperature, symbolName: symbolName, description: condition?.description.uppercased() ?? "??")
-							.padding(.bottom, columns == 2 ? 10 : 0)
-						HumidityCompactWidget(humidity: humidity ?? 0, dewPoint: dewPoint)
-							.padding(.bottom, columns == 2 ? 10 : 0)
-						PressureCompactWidget(pressure: String(pressure?.value ?? 0.0 / 100), unit: pressure?.unit.symbol ?? "??", low: pressure?.value ?? 0.0 <= 1009.144)
-						WindCompactWidget(speed: windSpeed, gust: windGust, direction: windCompassDirection)
-					}
-					
-					HStack {
-						AsyncImage(url: attributionLogo) { image in
-							image
-								.resizable()
-								.scaledToFit()
-							    .frame(height: 10)
-						} placeholder: {
-							ProgressView()
-								.controlSize(.mini)
-						}
-						Link("Other data sources", destination: attributionLink ?? URL(string: "https://weather-data.apple.com/legal-attribution.html")!)
-							.font(.caption2)
-					}
-					.offset(y: -2)
-					.padding(.bottom, -15)
+				LazyVGrid(columns: gridItemLayout) {
+					WeatherConditionsCompactWidget(temperature: temperature, symbolName: symbolName, description: condition?.description.uppercased() ?? "??")
+						.padding(.bottom, columns == 2 ? 10 : 0)
+					HumidityCompactWidget(humidity: humidity ?? 0, dewPoint: dewPoint)
+						.padding(.bottom, columns == 2 ? 10 : 0)
+					PressureCompactWidget(pressure: String(pressure?.value ?? 0.0 / 100), unit: pressure?.unit.symbol ?? "??", low: pressure?.value ?? 0.0 <= 1009.144)
+					WindCompactWidget(speed: windSpeed, gust: windGust, direction: windCompassDirection)
 				}
-				.background(
-					// Use GeometryReader here to get the VGrid's height
-					GeometryReader { proxy in
-						// Set the preference key with the VGrid's height
-						Color.clear.preference(key: WeatherKitTilesHeightKey.self, value: proxy.size.height)
+				
+				HStack {
+					AsyncImage(url: attributionLogo) { image in
+						image
+							.resizable()
+							.scaledToFit()
+						    .frame(height: 10)
+					} placeholder: {
+						ProgressView()
+							.controlSize(.mini)
 					}
-				)
+					Link("Other data sources", destination: attributionLink ?? URL(string: "https://weather-data.apple.com/legal-attribution.html")!)
+						.font(.caption2)
+				}
+				.offset(y: -2)
+				.padding(.bottom, -15)
 			}
 			.task {
 				do {

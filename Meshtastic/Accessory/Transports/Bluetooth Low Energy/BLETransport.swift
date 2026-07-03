@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import SwiftData
+@preconcurrency import SwiftData
 @preconcurrency import CoreBluetooth
 import SwiftUI
 import OSLog
@@ -392,11 +392,11 @@ actor BLETransport: Transport {
 		// Get the device name
 		if let nodeNum {
 			let nodeNumVal = Int64(nodeNum)
-			let descriptor = FetchDescriptor<NodeInfoEntity>(
-				predicate: #Predicate { $0.num == nodeNumVal }
-			)
 			let names: (String?, String?) = await MainActor.run {
 				do {
+					let descriptor = FetchDescriptor<NodeInfoEntity>(
+						predicate: #Predicate { $0.num == nodeNumVal }
+					)
 					let context = PersistenceController.shared.context
 					let fetchedNodes = try context.fetch(descriptor)
 					if let first = fetchedNodes.first {

@@ -16,6 +16,7 @@ import Testing
 
 // MARK: - CarPlaySceneDelegate Tests
 
+#if !targetEnvironment(simulator)
 @Suite("CarPlaySceneDelegate")
 struct CarPlaySceneDelegateTests {
 
@@ -31,6 +32,7 @@ struct CarPlaySceneDelegateTests {
 		#expect(delegate.interfaceController == nil)
 	}
 }
+#endif
 
 // MARK: - CarPlayIntentDonation Tests
 

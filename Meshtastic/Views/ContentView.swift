@@ -8,7 +8,12 @@ struct ContentView: View {
 	@ObservedObject var appState: AppState
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@EnvironmentObject var lockdown: LockdownCoordinator
-	@State var router: Router
+	// Observe (not just hold) the router so a *programmatic* `selectedTab` change re-renders
+	// ContentView and the TabView re-reads its selection binding immediately. As plain @State this
+	// view never subscribed to the router's objectWillChange, so a programmatic tab switch only took
+	// effect on the next incidental re-render (e.g. an unread-count change) — instant on a busy live
+	// mesh, but a 20–60s stall in a quiet/seeded session.
+	@ObservedObject var router: Router
 	@State var isShowingDeviceOnboardingFlow: Bool = false
 
 	/// True when the connected device's lockdown state requires the user to act
@@ -80,22 +85,22 @@ struct ContentView: View {
 				}
 				.badge(appState.totalUnreadMessages)
 
-				Tab("Connect", systemImage: "link", value: NavigationState.Tab.connect) {
-					Connect(
-						router: appState.router
-					)
-				}
-
 				Tab("Nodes", systemImage: "flipphone", value: NavigationState.Tab.nodes) {
 					NodeList()
 				}
 
-				Tab("Mesh Map", systemImage: "map", value: NavigationState.Tab.map) {
-					MeshMap(router: appState.router)
+				Tab("Map", systemImage: "map", value: NavigationState.Tab.map) {
+					MeshMapMK(router: appState.router)
 				}
 
 				Tab("Settings", systemImage: "gear", value: NavigationState.Tab.settings) {
 					Settings()
+				}
+
+				Tab("Connect", systemImage: "link", value: NavigationState.Tab.connect) {
+					Connect(
+						router: appState.router
+					)
 				}
 			}
 		} else {
@@ -111,6 +116,24 @@ struct ContentView: View {
 				.tag(NavigationState.Tab.messages)
 				.badge(appState.totalUnreadMessages)
 
+				NodeList()
+				.tabItem {
+					Label("Nodes", systemImage: "flipphone")
+				}
+				.tag(NavigationState.Tab.nodes)
+
+				MeshMapMK(router: appState.router)
+				.tabItem {
+					Label("Map", systemImage: "map")
+				}
+				.tag(NavigationState.Tab.map)
+
+				Settings()
+				.tabItem {
+					Label("Settings", systemImage: "gear")
+				}
+				.tag(NavigationState.Tab.settings)
+
 				Connect(
 					router: appState.router
 				)
@@ -118,24 +141,6 @@ struct ContentView: View {
 					Label("Connect", systemImage: "link")
 				}
 				.tag(NavigationState.Tab.connect)
-
-				NodeList()
-			.tabItem {
-					Label("Nodes", systemImage: "flipphone")
-				}
-				.tag(NavigationState.Tab.nodes)
-
-				MeshMap(router: appState.router)
-				.tabItem {
-					Label("Mesh Map", systemImage: "map")
-				}
-				.tag(NavigationState.Tab.map)
-
-				Settings()
-			.tabItem {
-				Label("Settings", systemImage: "gear")
-			}
-				.tag(NavigationState.Tab.settings)
 			}
 		}
 	}

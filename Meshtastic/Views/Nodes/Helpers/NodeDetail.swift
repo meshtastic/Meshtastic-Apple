@@ -4,10 +4,25 @@
  */
 
 import SwiftUI
+import Foundation
 import WeatherKit
 import MapKit
 import CoreLocation
 import OSLog
+
+extension NSNotification.Name {
+	static let nodeLogAvailabilityDidChange = NSNotification.Name("nodeLogAvailabilityDidChange")
+}
+
+private struct NodeDetailLogAvailability {
+	var hasDeviceMetrics = false
+	var hasPositions = false
+	var hasEnvironmentMetrics = false
+	var hasTraceRoutes = false
+	var hasPowerMetrics = false
+	var hasDetectionSensorMetrics = false
+	var hasPax = false
+}
 
 struct NodeDetail: View {
 	private let gridItemLayout = Array(repeating: GridItem(.flexible(), spacing: 10), count: 2)
@@ -26,7 +41,11 @@ struct NodeDetail: View {
 	@State private var dateFormatRelative: Bool = true
 	@Bindable	var node: NodeInfoEntity
 	var showMapLink: Bool = true
-	@State private var environmentSectionHeight: CGFloat = 0
+	@State private var latestPosition: PositionEntity?
+	@State private var latestDeviceMetrics: TelemetryEntity?
+	@State private var latestEnvironmentMetrics: TelemetryEntity?
+	@State private var latestPowerMetrics: TelemetryEntity?
+	@State private var logAvailability = NodeDetailLogAvailability()
 
 	/// The currently BLE-connected (or remotely administered) node, derived reactively
 	/// from accessoryManager.activeDeviceNum so it stays current if the connection changes.
@@ -42,22 +61,52 @@ struct NodeDetail: View {
 		return (fromUser, toUser)
 	}
 	@State var showingCompassSheet = false
-	
+	@State private var nodeForDisplayNameEdit: NodeInfoEntity?
+	/// Bumped whenever a local display name is set/cleared to force this view to re-render —
+	/// NodeDisplayNameStore is plain UserDefaults, not a SwiftData/@Bindable property, so nothing
+	/// else here would pick up the change.
+	@State private var displayNameRefresh = 0
+
 	var body: some View {
-		ScrollViewReader { scrollView in
-			Color.clear
-				.frame(height: 0) // Ensure it has no height
-				.id("topOfList")
-			nodeDetailList
-			.sheet(isPresented: $showingCompassSheet) {
-				CompassView(waypointLocation: node.latestPosition?.nodeCoordinate ?? nil, waypointLongName: node.user?.longName ?? nil, waypointShortName: node.user?.shortName ?? nil, color: Color(UIColor(hex: UInt32(node.num))))
+		if node.modelContext != nil {
+			ScrollViewReader { scrollView in
+				Color.clear
+					.frame(height: 0) // Ensure it has no height
+					.id("topOfList")
+					nodeDetailList
+					.sheet(isPresented: $showingCompassSheet) {
+						CompassView(waypointLocation: latestPosition?.nodeCoordinate ?? nil, waypointLongName: node.user?.displayLongName, waypointShortName: node.user?.shortName, color: Color(UIColor(hex: UInt32(node.num))))
+							}
+					.displayNameAlert(node: $nodeForDisplayNameEdit)
+					.onReceive(NotificationCenter.default.publisher(for: NodeDisplayNameStore.didChangeNotification)) { notification in
+						// Scoped to this node: the notification's object is unconditionally `nil`
+						// otherwise, and `displayNameRefresh` drives `.id()` below (which recreates
+						// the list and re-triggers its scroll-to-top onAppear) -- renaming an
+						// unrelated node elsewhere must not yank this detail view back to the top.
+						guard notification.object as? Int64 == node.num else { return }
+						displayNameRefresh += 1
 					}
-			.onAppear {
-				scrollView.scrollTo("topOfList", anchor: .top)
+					.onAppear {
+						refreshNodeSummary()
+						scrollView.scrollTo("topOfList", anchor: .top)
+					}
+						.onChange(of: node.lastHeard) {
+							refreshNodeSummary()
+						}
+						.onReceive(NotificationCenter.default.publisher(for: .nodeLogAvailabilityDidChange)) { notification in
+							guard notification.object as? Int64 == node.num else { return }
+							refreshNodeSummary()
+						}
+						.contentMargins(.top, 0, for: .scrollContent)
+					.navigationTitle(String((node.user?.displayLongName ?? "Unknown".localized).addingVariationSelectors))
+					.navigationBarTitleDisplayMode(.inline)
+					.id(displayNameRefresh)
 			}
-			.contentMargins(.top, 0, for: .scrollContent)
-			.navigationTitle(String(node.user?.longName?.addingVariationSelectors ?? "Unknown".localized))
-			.navigationBarTitleDisplayMode(.inline)
+		} else {
+			// Node was deleted or detached (e.g. after a database reset / node switch).
+			// Reading any attribute on a faulted @Model traps during render, so render
+			// nothing — the navigation stack pops this detail as its data source updates.
+			Color.clear
 		}
 	}
 
@@ -102,7 +151,7 @@ struct NodeDetail: View {
 					}
 					.accessibilityElement(children: .combine)
 				}
-				if node.telemetries.count > 0 {
+				if latestDeviceMetrics != nil {
 					Spacer()
 					BatteryGauge(node: node)
 				}
@@ -129,6 +178,25 @@ struct NodeDetail: View {
 					}
 				}
 			}
+			// Local-only display name shown instead of the device long name. Never leaves this
+			// device (not sent over the mesh, not exported/shared) — see NodeDisplayNameStore.
+			Button {
+				nodeForDisplayNameEdit = node
+			} label: {
+				HStack {
+					Label {
+						Text("Name")
+					} icon: {
+						Image(systemName: "person.crop.circle")
+							.symbolRenderingMode(.hierarchical)
+					}
+					Spacer()
+					Text(node.user?.displayLongName ?? "—")
+						.foregroundStyle(.secondary)
+						.lineLimit(1)
+				}
+			}
+			.accessibilityElement(children: .combine)
 			HStack {
 				Label {
 					Text("Node Number")
@@ -153,6 +221,23 @@ struct NodeDetail: View {
 					.textSelection(.enabled)
 			}
 			.accessibilityElement(children: .combine)
+			// Signed node = automatic trust, observed from the radio. Because NodeInfo is itself a signed
+			// broadcast, the node's identity is verified by extension. Ordered above the public-key (has-key)
+			// row so the section reads most-trusted-first. Affirmative only — never shown for unsigned nodes.
+			if node.hasXeddsaSigned {
+				HStack {
+					Label {
+						Text("Signed node")
+					} icon: {
+						Image(systemName: "checkmark.shield.fill")
+							.foregroundColor(.green)
+					}
+					Spacer()
+					Text("Verified automatically")
+						.foregroundStyle(.secondary)
+				}
+				.accessibilityElement(children: .combine)
+			}
 			if let user = node.user, user.keyMatch {
 				let publicKey = node.num == connectedNode?.num
 				? node.securityConfig?.publicKey?.base64EncodedString() ?? ""
@@ -202,6 +287,29 @@ struct NodeDetail: View {
 				}
 				.accessibilityElement(children: .combine)
 			}
+			// User-authored status broadcast by the node. Omitted entirely when empty
+			// (no placeholder / em-dash). Untrusted free text — rendered verbatim as
+			// plain text, never markup. `Text(_: String)` does not parse markdown.
+			// Detail has more room than the cards (design#115), so it shows the full
+			// status rather than the 2-line card clamp — but still capped so a remote
+			// node broadcasting newline-laden text (the 80-byte cap is only enforced on
+			// the local save path) can't grow the row without bound.
+			if let status = node.statusMessageDisplay {
+				HStack(alignment: .top) {
+					Label {
+						Text("Status Message")
+					} icon: {
+						Image(systemName: NodeStatusStyle.glyph)
+							.symbolRenderingMode(.hierarchical)
+					}
+					Spacer()
+					Text(status)
+						.multilineTextAlignment(.trailing)
+						.lineLimit(6)
+						.textSelection(.enabled)
+				}
+				.accessibilityElement(children: .combine)
+			}
 			if node.user?.unmessagable ?? false {
 				HStack {
 					Label {
@@ -215,10 +323,10 @@ struct NodeDetail: View {
 				}
 				.accessibilityElement(children: .combine)
 			}
-			if let dm = node.telemetries.filter({ $0.metricsType == 0 }).last, let uptimeSeconds = dm.uptimeSeconds {
-				HStack {
-					Label {
-						Text("\("Uptime".localized)")
+				if let dm = latestDeviceMetrics, let uptimeSeconds = dm.uptimeSeconds {
+					HStack {
+						Label {
+							Text("\("Uptime".localized)")
 					} icon: {
 						Image(systemName: "checkmark.circle.fill")
 							.foregroundColor(.green)
@@ -286,17 +394,13 @@ struct NodeDetail: View {
 
 	@ViewBuilder
 	private var environmentSection: some View {
-		if node.hasPositions && UserDefaults.environmentEnableWeatherKit
-			|| node.hasDataForLatestEnvironmentMetrics(attributes: ["iaq", "temperature", "relativeHumidity", "barometricPressure", "windSpeed", "radiation", "weight", "Distance", "soilTemperature", "soilMoisture"]) {
+		if latestPosition != nil && UserDefaults.environmentEnableWeatherKit
+			|| hasDataForLatestEnvironmentMetrics(attributes: ["iaq", "temperature", "relativeHumidity", "barometricPressure", "windSpeed", "radiation", "weight", "Distance", "soilTemperature", "soilMoisture"]) {
 			Section("Environment") {
 				VStack(spacing: 0) {
-					if !node.hasEnvironmentMetrics {
-						LocalWeatherConditions(location: node.latestPosition?.nodeLocation)
-							.frame(height: environmentSectionHeight)
-							.onPreferenceChange(WeatherKitTilesHeightKey.self) { newHeight in
-								self.environmentSectionHeight = newHeight
-							}
-					} else if let metrics = node.latestEnvironmentMetrics {
+					if latestEnvironmentMetrics == nil {
+						LocalWeatherConditions(location: latestPosition?.nodeLocation)
+					} else if let metrics = latestEnvironmentMetrics {
 						VStack {
 							if metrics.iaq ?? -1 > 0 {
 								IndoorAirQuality(iaq: Int(metrics.iaq ?? 0), displayMode: .gradient)
@@ -386,12 +490,10 @@ struct NodeDetail: View {
 
 	@ViewBuilder
 	private var powerSection: some View {
-		if node.hasPowerMetrics && node.latestPowerMetrics != nil {
+		if let powerMetrics = latestPowerMetrics {
 			Section("Power") {
 				VStack {
-					if let metric = node.latestPowerMetrics {
-						PowerMetrics(metric: metric)
-					}
+					PowerMetrics(metric: powerMetrics)
 				}
 				.accessibilityElement(children: .combine)
 			}
@@ -402,6 +504,14 @@ struct NodeDetail: View {
 
 	@ViewBuilder
 	private var logsSection: some View {
+		let hasDeviceMetrics = logAvailability.hasDeviceMetrics
+		let hasPositions = logAvailability.hasPositions
+		let hasEnvironmentMetrics = logAvailability.hasEnvironmentMetrics
+		let hasTraceRoutes = logAvailability.hasTraceRoutes
+		let hasPowerMetrics = logAvailability.hasPowerMetrics
+		let hasDetectionSensorMetrics = logAvailability.hasDetectionSensorMetrics
+		let hasPax = logAvailability.hasPax
+
 		Section("Logs") {
 			NavigationLink {
 				DeviceMetricsLog(node: node)
@@ -413,7 +523,7 @@ struct NodeDetail: View {
 						.symbolRenderingMode(.multicolor)
 				}
 			}
-			.disabled(!node.hasDeviceMetrics)
+			.disabled(!hasDeviceMetrics)
 			if showMapLink {
 				NavigationLink {
 					NodeMapSwiftUI(node: node, showUserLocation: connectedNode?.num ?? 0 == node.num)
@@ -425,7 +535,7 @@ struct NodeDetail: View {
 							.symbolRenderingMode(.multicolor)
 					}
 				}
-				.disabled(!node.hasPositions)
+				.disabled(!hasPositions)
 			}
 			NavigationLink {
 				PositionLog(node: node)
@@ -437,7 +547,7 @@ struct NodeDetail: View {
 						.symbolRenderingMode(.multicolor)
 				}
 			}
-			.disabled(!node.hasPositions)
+			.disabled(!hasPositions)
 			NavigationLink {
 				EnvironmentMetricsLog(node: node)
 			} label: {
@@ -448,7 +558,7 @@ struct NodeDetail: View {
 						.symbolRenderingMode(.multicolor)
 				}
 			}
-			.disabled(!node.hasEnvironmentMetrics)
+			.disabled(!hasEnvironmentMetrics)
 			NavigationLink {
 				TraceRouteLog(node: node)
 			} label: {
@@ -459,7 +569,7 @@ struct NodeDetail: View {
 						.symbolRenderingMode(.multicolor)
 				}
 			}
-			.disabled(node.traceRoutes.count == 0)
+			.disabled(!hasTraceRoutes)
 			NavigationLink {
 				PowerMetricsLog(node: node)
 			} label: {
@@ -470,7 +580,7 @@ struct NodeDetail: View {
 						.symbolRenderingMode(.multicolor)
 				}
 			}
-			.disabled(!node.hasPowerMetrics)
+			.disabled(!hasPowerMetrics)
 			NavigationLink {
 				DetectionSensorLog(node: node)
 			} label: {
@@ -481,8 +591,19 @@ struct NodeDetail: View {
 						.symbolRenderingMode(.multicolor)
 				}
 			}
-			.disabled(!node.hasDetectionSensorMetrics)
-			if node.hasPax {
+			.disabled(!hasDetectionSensorMetrics)
+			NavigationLink {
+				LocalStatsLog(node: node)
+			} label: {
+				Label {
+					Text("Local Stats Log")
+				} icon: {
+					Image(systemName: "chart.bar")
+						.symbolRenderingMode(.multicolor)
+				}
+			}
+			.disabled(!node.hasLocalStats)
+			if hasPax {
 				NavigationLink {
 					PaxCounterLog(node: node)
 				} label: {
@@ -493,7 +614,7 @@ struct NodeDetail: View {
 							.symbolRenderingMode(.multicolor)
 					}
 				}
-				.disabled(!node.hasPax)
+				.disabled(!hasPax)
 			}
 		}
 	}
@@ -528,6 +649,7 @@ struct NodeDetail: View {
 						node: node,
 						connectedNode: connectedNode
 					)
+					RequestLocalStatsButton(node: node)
 					ExchangeUserInfoButton(
 						node: node,
 						connectedNode: connectedNode
@@ -541,9 +663,9 @@ struct NodeDetail: View {
 							node: node
 						)
 					}
-					if node.hasPositions {
+					if let latestPosition {
 					#if !targetEnvironment(macCatalyst)
-						if node.latestPosition?.isPreciseLocation == true {
+						if latestPosition.isPreciseLocation {
 							Button {
 								showingCompassSheet = true
 							} label: {
@@ -667,6 +789,42 @@ struct NodeDetail: View {
 				.disabled(administrationUserPair == nil)
 			}
 		}
+	}
+
+	private func refreshNodeSummary() {
+		let deviceMetrics = node.latestDeviceMetrics
+		let environmentMetrics = node.latestEnvironmentMetrics
+		let powerMetrics = node.latestPowerMetrics
+		let position = node.latestPosition
+		latestDeviceMetrics = deviceMetrics
+		latestEnvironmentMetrics = environmentMetrics
+		latestPowerMetrics = powerMetrics
+		latestPosition = position
+		logAvailability = NodeDetailLogAvailability(
+			hasDeviceMetrics: deviceMetrics != nil,
+			hasPositions: position != nil,
+			hasEnvironmentMetrics: environmentMetrics != nil,
+			hasTraceRoutes: node.hasTraceRoutes,
+			hasPowerMetrics: powerMetrics != nil,
+			hasDetectionSensorMetrics: node.hasDetectionSensorMetrics,
+			hasPax: node.hasPax
+		)
+	}
+
+	private func hasDataForLatestEnvironmentMetrics(attributes: [String]) -> Bool {
+		guard let latest = latestEnvironmentMetrics else { return false }
+		let mirror = Mirror(reflecting: latest)
+		for attribute in attributes {
+			if let child = mirror.children.first(where: { $0.label == attribute }) {
+				let childMirror = Mirror(reflecting: child.value)
+				if childMirror.displayStyle == .optional {
+					if childMirror.children.count > 0 { return true }
+				} else {
+					return true
+				}
+			}
+		}
+		return false
 	}
 }
 

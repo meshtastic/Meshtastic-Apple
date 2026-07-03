@@ -1938,3 +1938,100 @@ struct TAKIdentitySectionSnapshotTests {
 		)
 	}
 }
+
+// MARK: - AppLogFilter accordion (spec 012)
+
+@Suite("AppLogFilter Accordion")
+@MainActor
+struct AppLogFilterAccordionTests {
+
+	private func filter(expanded: Bool) -> AppLogFilter {
+		AppLogFilter(
+			categories: .constant(Set(LogCategories.allCases.map(\.id))),
+			levels: .constant(Set(LogLevels.allCases.map(\.id))),
+			isPacketStreamOn: .constant(false),
+			categoriesExpanded: .constant(expanded),
+			levelsExpanded: .constant(expanded)
+		)
+	}
+
+	// Note: the precise ≥50% on-screen footprint reduction (SC-003) is verified on-device
+	// in the quickstart pass — a scrollable Form does not expose a meaningful intrinsic
+	// height via sizeThatFits, so it can't be asserted reliably here. This test instead
+	// proves the accordion actually changes the rendered layout (rows shown vs hidden).
+	@Test("Collapsing changes the rendered layout (rows hidden)")
+	func collapsingHidesRows() {
+		let collapsed = renderImage(filter(expanded: false), width: 390, height: 700).pngData()
+		let expanded = renderImage(filter(expanded: true), width: 390, height: 700).pngData()
+		#expect(collapsed != nil && expanded != nil)
+		#expect(collapsed != expanded)
+	}
+
+	@Test("Both filter states render without crashing")
+	func rendersBothStates() {
+		#expect(renderImage(filter(expanded: false), width: 390).cgImage != nil)
+		#expect(renderImage(filter(expanded: true), width: 390).cgImage != nil)
+	}
+
+	@Test("Packet Stream on renders and differs from off (US4 placement/indication)")
+	func packetStreamOnState() {
+		let off = renderImage(filter(expanded: false), width: 390, height: 700).pngData()
+		let on = renderImage(
+			AppLogFilter(
+				categories: .constant(Set(LogCategories.allCases.map(\.id))),
+				levels: .constant(Set(LogLevels.allCases.map(\.id))),
+				isPacketStreamOn: .constant(true),
+				categoriesExpanded: .constant(false),
+				levelsExpanded: .constant(false)
+			),
+			width: 390,
+			height: 700
+		).pngData()
+		#expect(off != nil && on != nil)
+		#expect(off != on)
+	}
+}
+
+// MARK: - DeviceOnboarding Snapshot Tests
+//
+// Snapshots of the redesigned first-launch permission flow (#1938) for the
+// Getting Started docs. Each screen is an accessible computed property on
+// DeviceOnboarding; we render them at full device height so the Spacer-pinned
+// Continue button lands at the bottom as it does on-device. The shared
+// AccessoryManager is injected because DeviceOnboarding declares it as an
+// @EnvironmentObject — it is not read during render (only in the Continue
+// button actions), but its presence keeps the host stable.
+
+@Suite("DeviceOnboarding Snapshots")
+@MainActor
+struct DeviceOnboardingSnapshotTests {
+
+	private func screen<V: View>(_ view: V) -> some View {
+		view.environmentObject(AccessoryManager.shared)
+	}
+
+	@Test("Bluetooth permission screen")
+	func bluetoothScreen() async {
+		await assertViewSnapshot(of: screen(DeviceOnboarding().bluetoothView), width: 390, height: 844, named: "onboarding_bluetooth", forDocs: true)
+	}
+
+	@Test("Local network permission screen")
+	func localNetworkScreen() async {
+		await assertViewSnapshot(of: screen(DeviceOnboarding().localNetworkView), width: 390, height: 844, named: "onboarding_localNetwork", forDocs: true)
+	}
+
+	@Test("Notifications permission screen")
+	func notificationsScreen() async {
+		await assertViewSnapshot(of: screen(DeviceOnboarding().notificationView), width: 390, height: 844, named: "onboarding_notifications", forDocs: true)
+	}
+
+	@Test("Location permission screen")
+	func locationScreen() async {
+		await assertViewSnapshot(of: screen(DeviceOnboarding().locationView), width: 390, height: 844, named: "onboarding_location", forDocs: true)
+	}
+
+	@Test("Siri & Shortcuts screen")
+	func siriScreen() async {
+		await assertViewSnapshot(of: screen(DeviceOnboarding().siriView), width: 390, height: 844, named: "onboarding_siri", forDocs: true)
+	}
+}

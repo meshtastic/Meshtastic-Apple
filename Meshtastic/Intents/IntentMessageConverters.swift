@@ -7,7 +7,7 @@
 //
 
 import Intents
-import SwiftData
+@preconcurrency import SwiftData
 
 enum IntentMessageConverters {
 	static let meshtasticDomain = "@meshtastic.local"

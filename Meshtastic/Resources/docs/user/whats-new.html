@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>What's New</title>
+  <link rel="stylesheet" href="../assets/docs.css">
+</head>
+<body data-page="whats-new">
+<h1>What's New</h1>
+<p>Recent user-facing changes from roughly the last 12 months. Newest at the top.</p>
+<!-- INDEX_WHATS_NEW_START -->
+<!-- Add new entries at the top. Format:
+**Month YYYY** — [Page title](relative/path.md) — One sentence describing what changed or why it matters.
+Show roughly the last 12 months of changes; archive entries older than a year by removing them.
+-->
+<p><strong>Jun 2026</strong> — <a href="nodes.html">Nodes</a> — Local display names: give any node a local nickname shown in place of its long name across the node list, node detail, and messages. Set it from the long-press menu or the Name row in Node Detail — local-only, never sent over the mesh.</p>
+<p><strong>Jun 2026</strong> — <a href="map.html">Map &amp; Waypoints</a> — Trace routes on the map: signal-colored, directional outbound/return lines (green→red by hop SNR) with a guided 3D satellite flyover and speed control, opened with Show on Map.</p>
+<p><strong>Jun 2026</strong> — <a href="messages.html">Messages</a> — Packet signing (firmware 2.8+): verified, signed broadcast messages now show a green shield, and Message Details reveals &quot;Signed · verified&quot;. The encryption lock (private DMs) is unchanged; unsigned traffic is never flagged.</p>
+<p><strong>Jun 2026</strong> — <a href="nodes.html">Nodes</a> — Signed node: nodes that sign their broadcasts show a green shield &quot;Signed node — Verified automatically&quot; row in the detail view (firmware 2.8+), reflecting automatic, radio-observed trust.</p>
+<p><strong>Jun 2026</strong> — <a href="settings.html">Settings</a> — LoRa region/preset compatibility (firmware 2.8+): the Presets picker is filtered to those legal for the selected region, switches to the region default when needed, and warns on licensed amateur (ham) bands. The new 2.8 ham/narrow regions and presets are hidden on 2.7.x and earlier radios.</p>
+<p><strong>Jun 2026</strong> — <a href="settings.html">Settings</a> — Traffic Management updated for the 2.8 firmware schema: features are now enabled implicitly by a non-zero value; the precision-bits and hop-management options were removed.</p>
+<p><strong>Jun 2026</strong> — <a href="nodes.html">Nodes</a> — Persistent node filters: online, favorites, distance, hops, roles, and connection-type filters are now remembered between launches and shared across the Nodes list, Messages contacts, and map. Search text still clears on relaunch.</p>
+<p><strong>Jun 2026</strong> — <a href="getting-started.html">Getting Started</a> — Redesigned first-launch setup: a clearer guided flow for Bluetooth, Local Network, Notifications, Location, and Siri permissions with colored icons and per-notification toggles.</p>
+<p><strong>Jun 2026</strong> — <a href="mqtt.html">MQTT</a> — MQTT client proxy improvements: per-channel downlink subscriptions, zero-hop injection to prevent RF re-broadcast, password masking, and removal of the deprecated JSON mode toggle.</p>
+<p><strong>Jun 2026</strong> — <a href="settings.html">Settings</a> — Packet Stream: watch mesh packets cross the network live in the Debug Logs view, paced for readability, with collapsible Categories and Log Levels filters.</p>
+<p><strong>May 2026</strong> — <a href="settings.html">Settings</a> — Audio Module Config: Codec2 voice communication settings, only available on 2.4 GHz radios (LORA_24 region).</p>
+<p><strong>May 2026</strong> — <a href="settings.html">Settings</a> — Neighbor Info Module Config: neighbor info broadcasting with configurable update interval (4–72 hours).</p>
+<p><strong>May 2026</strong> — <a href="settings.html">Settings</a> — Pax Counter: added WiFi and BLE RSSI threshold fields for device counting sensitivity.</p>
+<p><strong>May 2026</strong> — <a href="settings.html">Settings</a> — Compass Orientation: new 8-option picker in Display config for radios mounted at non-standard angles.</p>
+<p><strong>May 2026</strong> — <a href="translate.html">Translate</a> — Docs Translation Pipeline: community-sourced translations shared via CDN so future users get instant localized docs.</p>
+<p><strong>May 2026</strong> — <a href="translate.html">Translate</a> — Automatic Documentation Translation: on iOS 26+, in-app docs are translated into your device language using the Apple Translation framework.</p>
+<p><strong>May 2026</strong> — <a href="meshtastic:///settings/helpDocs">Documentation</a> — Ask Chirpy: on iOS 26+, tap the sparkle icon in the docs to ask an on-device AI assistant grounded in this documentation; with internet it may also reference meshtastic.org sources.</p>
+<p><strong>May 2026</strong> — <a href="messages.html">Messages</a> — Message Formatting Toolbar (iOS 18+/macOS 15+): bold, italic, strikethrough, code, and link formatting with live preview.</p>
+<p><strong>May 2026</strong> — <a href="nodes.html">Nodes</a> — Node List Layout: switchable Complete and Compact density modes; Compact reduces row height for large meshes.</p>
+<p><strong>May 2026</strong> — <a href="units-and-locale.html">Units, Measurement &amp; Locale</a> — New page explaining how the app automatically adapts temperatures, distances, speeds, and times to your device's regional settings.</p>
+<p><strong>May 2026</strong> — <a href="messages.html">Messages</a> — Channel conversations now load the most recent 50 messages with a Load More button for older history.</p>
+<p><strong>May 2026</strong> — <a href="carplay.html">CarPlay</a> — Direct message list is now capped at 200 users sorted by most recent, improving performance on large meshes.</p>
+<p><strong>May 2026</strong> — <a href="translate.html">Translate</a> — New page explaining how to contribute app translations via Xcode string catalogs.</p>
+<p><strong>May 2026</strong> — <a href="signal-meter.html">Signal Meter</a> — New deep-dive page explaining how the LoRa signal quality meter works, why negative SNR values are normal, and how to interpret RSSI vs. SNR.</p>
+<p><strong>May 2026</strong> — <a href="watch.html">Apple Watch App</a> — New page covering the companion watch app: node list, fox hunt compass, and how it syncs with your iPhone.</p>
+<p><strong>Apr 2026</strong> — <a href="carplay.html">CarPlay</a> — New page documenting CarPlay support: channels, direct messages, Siri voice commands, and Live Activity.</p>
+<p><strong>Apr 2026</strong> — <a href="discovery.html">Discovery</a> — New page covering the local mesh discovery scanner for mapping nearby nodes.</p>
+<!-- INDEX_WHATS_NEW_END -->
+</body>
+</html>

@@ -55,24 +55,29 @@ struct MapLegend: View {
 				}
 				routeSection
 				if isMeshMap {
+					traceRouteSection
 					convexHullSection
 				}
 			}
 			.navigationTitle("Map Legend")
 			.navigationBarTitleDisplayMode(.inline)
 		}
-#if targetEnvironment(macCatalyst)
-		Spacer()
-		Button {
-			dismiss()
-		} label: {
-			Label("Close", systemImage: "xmark")
+		#if targetEnvironment(macCatalyst)
+		.overlay(alignment: .topLeading) {
+			Button {
+				dismiss()
+			} label: {
+				Image(systemName: "xmark.circle.fill")
+					.font(.system(size: 34))
+					.symbolRenderingMode(.palette)
+					.foregroundStyle(.white, Color(.systemGray3))
+			}
+			.buttonStyle(.plain)
+			.padding(.top, 12)
+			.padding(.leading, 14)
 		}
-		.buttonStyle(.bordered)
-		.buttonBorderShape(.capsule)
-		.controlSize(.large)
-		.padding(.bottom)
-#endif
+		#endif
+
 	}
 
 	// MARK: - Sections
@@ -159,6 +164,33 @@ struct MapLegend: View {
 			)
 		} header: {
 			Text("Routes")
+		}
+	}
+
+	private var traceRouteSection: some View {
+		Section {
+			MapLegendItem(
+				symbol: AnyView(traceRouteSignalSymbol),
+				title: String(localized: "Signal Strength"),
+				subtitle: String(localized: "Each leg is colored by its hop SNR — green (good), yellow (fair), orange (bad), red (none).")
+			)
+			MapLegendItem(
+				symbol: AnyView(traceRouteOutboundSymbol),
+				title: String(localized: "Outbound Path"),
+				subtitle: String(localized: "Solid line toward the target; arrows point in the direction of travel.")
+			)
+			MapLegendItem(
+				symbol: AnyView(traceRouteReturnSymbol),
+				title: String(localized: "Return Path"),
+				subtitle: String(localized: "Dashed line back to the originator.")
+			)
+			MapLegendItem(
+				symbol: AnyView(traceRouteEndpointsSymbol),
+				title: String(localized: "Origin & Target"),
+				subtitle: String(localized: "Green marks the originator, red marks the target node.")
+			)
+		} header: {
+			Text("Trace Routes")
 		}
 	}
 
@@ -257,6 +289,57 @@ struct MapLegend: View {
 			}
 			.stroke(style: StrokeStyle(lineWidth: 3, lineCap: .round, dash: [6, 6]))
 			.foregroundStyle(Color.blue)
+		}
+	}
+
+	private var traceRouteSignalSymbol: some View {
+		HStack(spacing: 2) {
+			ForEach([Color.green, Color.yellow, Color.orange, Color.red], id: \.self) { color in
+				Capsule().fill(color).frame(width: 7, height: 4)
+			}
+		}
+	}
+
+	private var traceRouteOutboundSymbol: some View {
+		ZStack {
+			Path { path in
+				path.move(to: CGPoint(x: 2, y: 20))
+				path.addLine(to: CGPoint(x: 38, y: 20))
+			}
+			.stroke(style: StrokeStyle(lineWidth: 4, lineCap: .round))
+			.foregroundStyle(Color.green)
+			Image(systemName: "chevron.right")
+				.font(.system(size: 9, weight: .heavy))
+				.foregroundStyle(.white)
+				.offset(x: 4)
+		}
+	}
+
+	private var traceRouteReturnSymbol: some View {
+		ZStack {
+			Path { path in
+				path.move(to: CGPoint(x: 2, y: 20))
+				path.addLine(to: CGPoint(x: 38, y: 20))
+			}
+			.stroke(style: StrokeStyle(lineWidth: 3, lineCap: .round, dash: [2, 4]))
+			.foregroundStyle(Color.teal)
+			Image(systemName: "chevron.right")
+				.font(.system(size: 9, weight: .heavy))
+				.foregroundStyle(.white)
+				.offset(x: 4)
+		}
+	}
+
+	private var traceRouteEndpointsSymbol: some View {
+		HStack(spacing: 6) {
+			Circle()
+				.fill(Color.green)
+				.strokeBorder(Color.white, lineWidth: 2)
+				.frame(width: 14, height: 14)
+			Circle()
+				.fill(Color.red)
+				.strokeBorder(Color.white, lineWidth: 2)
+				.frame(width: 14, height: 14)
 		}
 	}
 

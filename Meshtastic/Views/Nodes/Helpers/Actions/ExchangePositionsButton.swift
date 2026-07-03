@@ -10,8 +10,12 @@ struct ExchangePositionsButton: View {
 	@State private var isPresentingPositionSentAlert: Bool = false
 	@State private var isPresentingPositionFailedAlert: Bool = false
 
-    var body: some View {
-		let hopsAway = Int32(truncatingIfNeeded: node.hopsAway > connectedNode.loRaConfig?.hopLimit ?? 0 ? node.hopsAway : connectedNode.loRaConfig?.hopLimit ?? 0)
+	var body: some View {
+		let configuredHopLimit: Int32 = {
+			guard let config = connectedNode.loRaConfig, !config.isDeleted else { return 3 }
+			return config.hopLimit > 0 ? config.hopLimit : 3
+		}()
+		let hopsAway = Int32(truncatingIfNeeded: node.hopsAway > configuredHopLimit ? node.hopsAway : configuredHopLimit)
 		Button {
 			Task {
 				do {
@@ -59,7 +63,7 @@ struct ExchangePositionsButton: View {
 		} message: {
 			Text("Failed to get a valid position to exchange.")
 		}
-    }
+	}
 }
 
 // TODO: Fix preview for SwiftData

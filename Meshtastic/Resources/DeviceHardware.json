@@ -784,7 +784,7 @@
     "platformioTarget": "seeed-xiao-s3",
     "architecture": "esp32-s3",
     "activelySupported": true,
-    "supportLevel": 3,
+    "supportLevel": 1,
     "displayName": "Seeed Xiao ESP32-S3",
     "tags": [
       "Seeed"
@@ -1318,6 +1318,21 @@
     ]
   },
   {
+    "hwModel": 118,
+    "hwModelSlug": "RAK6421",
+    "platformioTarget": "native",
+    "architecture": "portduino",
+    "activelySupported": true,
+    "supportLevel": 1,
+    "displayName": "RAK6421 Hat+",
+    "tags": [
+      "RAK"
+    ],
+    "images": [
+      "meshtasticd_tux.svg"
+    ]
+  },
+  {
     "hwModel": 119,
     "hwModelSlug": "THINKNODE_M4",
     "platformioTarget": "thinknode_m4",
@@ -1347,6 +1362,21 @@
     "requiresDfu": true,
     "images": [
       "thinknode_m6.svg"
+    ]
+  },
+  {
+    "hwModel": 121,
+    "hwModelSlug": "MESHSTICK_1262",
+    "platformioTarget": "native",
+    "architecture": "portduino",
+    "activelySupported": true,
+    "supportLevel": 1,
+    "displayName": "Elecrow Meshstick 1262",
+    "tags": [
+      "Elecrow"
+    ],
+    "images": [
+      "meshtasticd_tux.svg"
     ]
   },
   {
@@ -1404,14 +1434,74 @@
     "hwModelSlug": "HELTEC_MESH_NODE_T096",
     "platformioTarget": "heltec-mesh-node-t096",
     "architecture": "nrf52840",
-    "activelySupported": false,
+    "activelySupported": true,
     "supportLevel": 1,
-    "displayName": "Heltec Mesh Node 096",
+    "displayName": "Heltec Mesh Node T096",
     "tags": [
       "Heltec"
     ],
     "images": [
-      "heltec-mesh-node-t096.svg"
+      "heltec-t096.svg"
+    ]
+  },
+  {
+    "hwModel": 129,
+    "hwModelSlug": "THINKNODE_M7",
+    "platformioTarget": "thinknode_m7",
+    "architecture": "esp32-s3",
+    "activelySupported": false,
+    "supportLevel": 1,
+    "displayName": "ThinkNode M7",
+    "tags": [
+      "Elecrow"
+    ],
+    "requiresDfu": false,
+    "images": [
+      "thinknode_m7.svg"
+    ]
+  },
+  {
+    "hwModel": 134,
+    "hwModelSlug": "STATION_G3",
+    "platformioTarget": "station-g3",
+    "architecture": "esp32-s3",
+    "activelySupported": false,
+    "supportLevel": 1,
+    "displayName": "Station G3",
+    "tags": [
+      "B&Q"
+    ],
+    "images": [
+      "station-g3.svg"
+    ],
+    "requiresDfu": true,
+    "partitionScheme": "16MB"
+  },
+  {
+    "hwModel": 83,
+    "hwModelSlug": "TLORA_C6",
+    "platformioTarget": "tlora-c6",
+    "architecture": "esp32-c6",
+    "activelySupported": false,
+    "supportLevel": 1,
+    "displayName": "LilyGo T-Lora C6",
+    "tags": [
+      "LilyGo"
+    ],
+    "images": [
+      "tlora-c6.svg"
+    ]
+  },
+  {
+    "hwModel": 133,
+    "hwModelSlug": "HELTEC_MESH_NODE_T1",
+    "platformioTarget": "heltec-mesh-node-t1",
+    "architecture": "nrf52840",
+    "activelySupported": false,
+    "supportLevel": 1,
+    "displayName": "Heltec Mesh Node T1",
+    "tags": [
+      "Heltec"
     ]
   }
 ]

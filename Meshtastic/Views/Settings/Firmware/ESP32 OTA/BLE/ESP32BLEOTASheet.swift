@@ -97,18 +97,25 @@ struct ESP32BLEOTASheet: View {
 			.listSectionSpacing(.compact)
 			.navigationTitle("ESP32 BLE Updater")
 			.navigationBarTitleDisplayMode(.inline)
-			.toolbar {
-				ToolbarItem(placement: .cancellationAction) {
-					Button("Done") {
-						if let onUpdateComplete, ota.otaStatus == .completed {
-							onUpdateComplete()
-						} else {
-							dismiss()
-						}
-					}
-					.disabled(![.idle, .completed, .error].contains(ota.otaStatus))
+
+		}
+		.overlay(alignment: .topLeading) {
+			Button {
+				if let onUpdateComplete, ota.otaStatus == .completed {
+					onUpdateComplete()
+				} else {
+					dismiss()
 				}
+			} label: {
+				Image(systemName: "xmark.circle.fill")
+					.font(.title)
+					.symbolRenderingMode(.palette)
+					.foregroundStyle(.white, Color(.systemGray3))
 			}
+			.buttonStyle(.plain)
+			.padding()
+			.disabled(![.idle, .completed, .error].contains(ota.otaStatus))
+			.opacity(![.idle, .completed, .error].contains(ota.otaStatus) ? 0.3 : 1.0)
 		}
 		.task {
 			// Attempt to grab peripheral from current BLE connection

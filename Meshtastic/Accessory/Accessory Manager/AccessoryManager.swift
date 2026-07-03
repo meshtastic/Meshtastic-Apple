@@ -5,6 +5,7 @@
 
 import Foundation
 import SwiftUI
+import SwiftData
 import MeshtasticProtobufs
 import CoreBluetooth
 import OSLog
@@ -126,6 +127,49 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	lazy var context = PersistenceController.shared.context
 	let mqttManager = MqttClientProxyManager.shared
 
+	// MARK: - Database reset
+
+	/// Call after a full data clear (clear app data / device reset / node switch). Reopens the
+	/// SwiftData container fresh and repoints the MeshPackets actor and this manager's cached
+	/// `context` at it, so no long-lived context keeps stale objects that would trap
+	/// ("destroyed by ModelContext.reset") when a reconnect reuses freed SQLite rowids.
+	func repointToFreshContainer() {
+		PersistenceController.shared.recreateContainer()
+		MeshPackets.recreateShared()
+		context = PersistenceController.shared.context
+	}
+
+	/// `repointToFreshContainer()` plus a UI refresh: bumps `databaseResetID` so @Query-backed
+	/// views rebind to the recreated container. Use at clear sites with no follow-up reconnect;
+	/// the node-switch flow repoints first and refreshes the UI itself after its restore.
+	///
+	/// Pops every tab to its root and yields *before* recreating the container. Detail views such
+	/// as `ChannelMessageList` bind a `@Bindable ChannelEntity` directly; if one is still mounted
+	/// when the container is torn down, reading that now-invalid object traps with "This model
+	/// instance was destroyed by calling ModelContext.reset". Popping + yielding lets SwiftUI
+	/// unmount those views first. Mirrors the node-switch flow in `backupCurrentAndRestoreDatabase`
+	/// (Views/Connect/Connect.swift).
+	func resetDatabaseAfterClear() async {
+		// `appState` (and its `router`) are wired up at launch and are required for the safety
+		// guarantee here. Bail loudly rather than recreating the container without first popping the
+		// detail views: a half-done reset (container torn down, views still mounted) would
+		// reintroduce the exact ModelContext.reset crash this method exists to prevent. The data was
+		// already cleared by the preceding `clearDatabase`, so skipping the container swap is the
+		// safe degradation.
+		guard let appState else {
+			Logger.data.error("💾 [Database] resetDatabaseAfterClear skipped: appState is nil — cannot pop views before recreating the container")
+			return
+		}
+		let router = appState.router
+		router.popToRoot(tab: .messages)
+		router.popToRoot(tab: .nodes)
+		router.popToRoot(tab: .map)
+		router.popToRoot(tab: .settings)
+		await Task.yield()
+		repointToFreshContainer()
+		appState.databaseResetID = UUID()
+	}
+
 	// Published Stuff
 	@Published var mqttProxyConnected: Bool = false
 	@Published var devices: [Device] = []
@@ -143,6 +187,12 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	/// Meshtastic/Helpers/LockdownCoordinator.swift and
 	/// specs/007-lockdown-mode/. Set by MeshtasticApp at startup.
 	var lockdownCoordinator: LockdownCoordinator?
+
+	/// Region → legal-preset lookup advertised by the connected radio during the
+	/// want_config handshake (FromRadio.region_presets, 2.8+). Empty when the
+	/// firmware predates the feature or hasn't sent it yet — callers must treat an
+	/// absent region (or an empty map) as "no constraint". Reset on disconnect.
+	@Published var loRaRegionPresets: [Config.LoRaConfig.RegionCode: RegionPresetInfo] = [:]
 
 	var activeConnection: (device: Device, connection: any Connection)?
 
@@ -185,6 +235,12 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	
 	var heartbeatTimer: ResettableTimer?
 	var heartbeatResponseTimer: ResettableTimer?
+	/// How long a TCP/serial connection may sit idle (no data or log packets) before we send a
+	/// keep-alive heartbeat. The timer is resettable, so an active link never sends one — heartbeats
+	/// only fire after this much silence. BLE does not use this at all (Core Bluetooth manages the
+	/// link); see `Transport.requiresPeriodicHeartbeat`.
+	static let heartbeatInterval: TimeInterval = 15.0
+	private var isClosingConnection = false
 
 	init(transports: [any Transport] = [BLETransport(), TCPTransport()]) {
 		self.transports = transports
@@ -217,8 +273,8 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	func sendWantConfig() async throws {
 		if let inProgressWantConfigContinuation = wantConfigContinuation {
 			Logger.transport.info("[Accessory] Existing continuation for wantConfig(Config). Cancelling.")
-			inProgressWantConfigContinuation.resume(throwing: CancellationError())
 			wantConfigContinuation = nil
+			inProgressWantConfigContinuation.resume(throwing: CancellationError())
 		}
 		guard let connection = activeConnection?.connection else {
 			Logger.transport.error("Unable to send wantConfig (config): No device connected")
@@ -250,8 +306,8 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	func sendWantDatabase() async throws {
 		if let firstDatabaseNodeInfoContinuation = firstDatabaseNodeInfoContinuation {
 			Logger.transport.info("[Accessory] Existing continuation for firstDatabaseNodeInfo. Cancelling.")
-			firstDatabaseNodeInfoContinuation.resume(throwing: CancellationError())
 			self.firstDatabaseNodeInfoContinuation = nil
+			firstDatabaseNodeInfoContinuation.resume(throwing: CancellationError())
 		}
 		
 		guard let connection = activeConnection?.connection else {
@@ -287,6 +343,13 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	// If you are calling this in response to an error, then you should have
 	// exposed the error to the UI or handled the error prior to calling this.
 	func closeConnection() async throws {
+		guard !isClosingConnection else {
+			Logger.transport.debug("[AccessoryManager] closeConnection ignored while teardown is already in progress")
+			return
+		}
+		isClosingConnection = true
+		defer { isClosingConnection = false }
+
 		Logger.transport.debug("[AccessoryManager] received disconnect request")
 
 		if let activeConnection {
@@ -323,6 +386,11 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		await wantDatabaseGate.cancelAll()
 		await wantDatabaseGate.reset()
 
+		// Stop the MQTT proxy so it doesn't forward broker packets over BLE during reconnect,
+		// which would starve the wantConfig handshake. initializeMqtt() restarts it in Step 8.
+		// Disconnect unconditionally — mqttProxyConnected can be stale during a teardown race.
+		mqttManager.mqttClientProxy?.disconnect()
+
 		// Save any pending changes and let SwiftData manage object lifecycle on disconnect.
 		try? context.save()
 		Logger.data.info("💾 [AccessoryManager] Saved context on disconnect")
@@ -341,6 +409,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	
 	// Should only be called by UI-facing callers.
 	func disconnect() async throws {
+		guard !isClosingConnection else { return }
 		self.userRequestedConnectionCancellation = true
 		// Cancel ongoing connection task if it exists
 		await self.connectionStepper?.cancel()
@@ -407,6 +476,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			self.isConnected = false
 			self.isConnecting = false
 			self.firmwareEdition = .vanilla
+			self.loRaRegionPresets = [:]
 		case .connecting, .communicating, .retrying:
 			self.isConnected = false
 			self.isConnecting = true
@@ -431,25 +501,39 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	}
 
 	func didReceive(_ event: ConnectionEvent) async {
+		let shouldIgnoreTransientEvent = isClosingConnection || userRequestedConnectionCancellation || activeConnection == nil
+
 		packetsReceived += 1
 
 		switch event {
 		case .data(let fromRadio):
+			guard !shouldIgnoreTransientEvent else {
+				Logger.transport.debug("[Accessory] Dropping data event during disconnect teardown")
+				return
+			}
 			// Logger.transport.info("✅ [Accessory] didReceive: \(fromRadio.payloadVariant.debugDescription)")
 			await self.processFromRadio(fromRadio)
 			Task {
 				await self.heartbeatResponseTimer?.cancel(withReason: "Data packet received")
-				await self.heartbeatTimer?.reset(delay: .seconds(15.0))
+				await self.heartbeatTimer?.reset(delay: .seconds(Self.heartbeatInterval))
 			}
 
 		case .logMessage(let message):
+			guard !shouldIgnoreTransientEvent else {
+				Logger.transport.debug("[Accessory] Dropping log event during disconnect teardown")
+				return
+			}
 			self.didReceiveLog(message: message)
 			Task {
 				await self.heartbeatResponseTimer?.cancel(withReason: "Log message packet received")
-				await self.heartbeatTimer?.reset(delay: .seconds(15.0))
+				await self.heartbeatTimer?.reset(delay: .seconds(Self.heartbeatInterval))
 			}
 		
 		case .rssiUpdate(let rssi):
+			guard !shouldIgnoreTransientEvent else {
+				Logger.transport.debug("[Accessory] Dropping RSSI update during disconnect teardown")
+				return
+			}
 			guard let deviceId = self.activeConnection?.device.id else {
 				Logger.transport.error("Could not update RSSI, no active connection")
 				return
@@ -583,7 +667,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 						}
 					}
 				case .remoteHardwareApp:
-					Logger.mesh.info("🕸️ MESH PACKET received for Remote Hardware App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
+					Logger.mesh.info("[Remote Hardware] packet received from \(packet.from.toHex(), privacy: .public)")
 				case .positionApp:
 					await MeshPackets.shared.upsertPositionPacket(packet: packet)
 					WatchSessionManager.shared.sendNodesToWatch()
@@ -627,16 +711,16 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 				case .adminApp:
 					await MeshPackets.shared.adminAppPacket(packet: packet)
 				case .replyApp:
-					Logger.mesh.info("🕸️ MESH PACKET received for Reply App handling as a text message")
+					Logger.mesh.info("[Reply] packet received from \(packet.from.toHex(), privacy: .public)")
 					guard let deviceNum = activeConnection?.device.num else {
 						Logger.mesh.error("🕸️ No active connection. Unable to determine connectedNodeNum for replyApp.")
 						return
 					}
 					await MeshPackets.shared.textMessageAppPacket(packet: packet, wantRangeTestPackets: wantRangeTestPackets, connectedNode: deviceNum, appState: appState)
 				case .ipTunnelApp:
-					Logger.mesh.info("🕸️ MESH PACKET received for IP Tunnel App UNHANDLED UNHANDLED")
+					Logger.mesh.info("[IP Tunnel] packet received from \(packet.from.toHex(), privacy: .public)")
 				case .serialApp:
-					Logger.mesh.info("🕸️ MESH PACKET received for Serial App UNHANDLED UNHANDLED")
+					Logger.mesh.info("[Serial] packet received from \(packet.from.toHex(), privacy: .public)")
 				case .storeForwardApp:
 					guard let deviceNum = activeConnection?.device.num else {
 						Logger.mesh.error("🕸️ No active connection. Unable to determine connectedNodeNum for storeAndForward.")
@@ -656,7 +740,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 							appState: appState
 						)
 					} else {
-						Logger.mesh.info("🕸️ MESH PACKET received for Range Test App Range testing is disabled.")
+						Logger.mesh.info("[Range Test] packet received from \(packet.from.toHex(), privacy: .public)")
 					}
 				case .telemetryApp:
 					guard let deviceNum = activeConnection?.device.num else {
@@ -665,21 +749,21 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 					}
 					await MeshPackets.shared.telemetryPacket(packet: packet, connectedNode: deviceNum)
 				case .textMessageCompressedApp:
-					Logger.mesh.info("🕸️ MESH PACKET received for Text Message Compressed App UNHANDLED")
+					Logger.mesh.info("[Text Message Compressed] packet received from \(packet.from.toHex(), privacy: .public)")
 				case .zpsApp:
-					Logger.mesh.info("🕸️ MESH PACKET received for Zero Positioning System App UNHANDLED")
+					Logger.mesh.info("[Zero Positioning System] packet received from \(packet.from.toHex(), privacy: .public)")
 				case .privateApp:
-					Logger.mesh.info("🕸️ MESH PACKET received for Private App UNHANDLED UNHANDLED")
+					Logger.mesh.info("[Private] packet received from \(packet.from.toHex(), privacy: .public)")
 				case .atakForwarder:
 					handleATAKForwarderPacket(packet)
 				case .simulatorApp:
-					Logger.mesh.info("🕸️ MESH PACKET received for Simulator App UNHANDLED UNHANDLED")
+					Logger.mesh.info("[Simulator] packet received from \(packet.from.toHex(), privacy: .public)")
 				case .storeForwardPlusplusApp:
-					Logger.mesh.info("🕸️ MESH PACKET received for SFPP App UNHANDLED UNHANDLED")
+					Logger.mesh.info("[SFPP] packet received from \(packet.from.toHex(), privacy: .public)")
 				case .audioApp:
-					Logger.mesh.info("🕸️ MESH PACKET received for Audio App UNHANDLED UNHANDLED")
+					Logger.mesh.info("[Audio] packet received from \(packet.from.toHex(), privacy: .public)")
 				case .nodeStatusApp:
-					Logger.mesh.info("🕸️ MESH PACKET received for Node Status App UNHANDLED")
+					await MeshPackets.shared.upsertNodeStatusPacket(packet: packet)
 				case .tracerouteApp:
 					handleTraceRouteApp(packet)
 				case .neighborinfoApp:
@@ -687,15 +771,17 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 						if let engine = discoveryScanEngine, engine.isScanning {
 							engine.handleNeighborInfo(neighborInfo, packet: decodedInfo.packet)
 						} else {
-							Logger.mesh.info("🕸️ MESH PACKET received for Neighbor Info App UNHANDLED \((try? neighborInfo.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
+							Logger.mesh.info("[Neighbor Info] packet received from \(packet.from.toHex(), privacy: .public) — \(neighborInfo.neighbors.count, privacy: .public) neighbors")
 						}
 					}
 				case .paxcounterApp:
 					await MeshPackets.shared.paxCounterPacket(packet: decodedInfo.packet)
 				case .mapReportApp:
-					Logger.mesh.info("🕸️ MESH PACKET received Map Report App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
+					Logger.mesh.info("[Map Report] packet received from \(packet.from.toHex(), privacy: .public)")
+				case .meshBeaconApp:
+					Logger.mesh.info("[Mesh Beacon] packet received from \(packet.from.toHex(), privacy: .public)")
 				case .UNRECOGNIZED:
-					Logger.mesh.info("🕸️ MESH PACKET received UNRECOGNIZED App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
+					Logger.mesh.info("[Unrecognized] packet received from \(packet.from.toHex(), privacy: .public)")
 				case .max:
 					Logger.services.info("MAX PORT NUM OF 511")
 				case .atakPlugin:
@@ -703,28 +789,30 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 				case .atakPluginV2:
 					handleATAKPluginV2Packet(packet)
 				case .powerstressApp:
-					Logger.mesh.info("🕸️ MESH PACKET received for Power Stress App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
+					Logger.mesh.info("[Power Stress] packet received from \(packet.from.toHex(), privacy: .public)")
 				case .reticulumTunnelApp:
-					Logger.mesh.info("🕸️ MESH PACKET received for Reticulum Tunnel App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
+					Logger.mesh.info("[Reticulum Tunnel] packet received from \(packet.from.toHex(), privacy: .public)")
 				case .keyVerificationApp:
-					Logger.mesh.warning("🕸️ MESH PACKET received for Key Verification App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
+					Logger.mesh.info("[Key Verification] packet received from \(packet.from.toHex(), privacy: .public)")
 				case .cayenneApp:
-					Logger.mesh.info("🕸️ MESH PACKET received Cayenne App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
+					Logger.mesh.info("[Cayenne] packet received from \(packet.from.toHex(), privacy: .public)")
 				case .groupalarmApp:
-					Logger.mesh.info("🕸️ MESH PACKET received Group Alarm App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
+					Logger.mesh.info("[Group Alarm] packet received from \(packet.from.toHex(), privacy: .public)")
 				case .lorawanBridge:
-					Logger.mesh.info("🕸️ MESH PACKET received for LoRaWAN Bridge UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
+					Logger.mesh.info("[LoRaWAN Bridge] packet received from \(packet.from.toHex(), privacy: .public)")
 				case .remoteShellApp:
-					Logger.mesh.info("🕸️ MESH PACKET received for Remote Shell UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
-				case .atakPluginV2:
-					Logger.mesh.info("🕸️ MESH PACKET received ATAK Plugin V2 App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
+					Logger.mesh.info("[Remote Shell] packet received from \(packet.from.toHex(), privacy: .public)")
 				case .unknownApp:
-					Logger.mesh.warning("🕸️ MESH PACKET received for unknown App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
+					Logger.mesh.info("[Unknown] packet received from \(packet.from.toHex(), privacy: .public)")
 				}
 			}
-			// Save any pending updateAnyPacketFrom changes for packets that
-			// don't have a dedicated handler (UNHANDLED cases above).
-			await MeshPackets.shared.savePendingChanges()
+			// Flush via the debouncer rather than saving immediately. This runs for
+			// EVERY packet, so an immediate save here force-flushed the whole context
+			// on every packet — defeating the position/telemetry debounce and firing a
+			// main-context merge (and a full @Query re-sort) ~10×/sec under load. A
+			// debounced flush coalesces these to ≤1 save / 2s (5s hard ceiling) and also
+			// covers the updateAnyPacketFrom mutations for portnums with no dedicated handler.
+			await MeshPackets.shared.scheduleDebouncedSave()
 
 		case .nodeInfo(let nodeInfo):
 			await handleNodeInfo(nodeInfo)
@@ -741,19 +829,22 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		case .metadata(let metadata):
 			await handleDeviceMetadata(metadata)
 
+		case .regionPresets(let regionPresets):
+			handleRegionPresets(regionPresets)
+
 		case .deviceuiConfig:
 #if DEBUG
-			Logger.mesh.info("🕸️ MESH PACKET received for deviceUIConfig UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
+			Logger.admin.info("🕸️ MESH PACKET received for deviceUIConfig UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
 #endif
 		case .fileInfo:
 #if DEBUG
-			Logger.mesh.info("🕸️ MESH PACKET received for fileInfo UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
+			Logger.admin.info("🕸️ MESH PACKET received for fileInfo UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
 #endif
 		case .queueStatus:
 #if DEBUG
-			Logger.mesh.info("🕸️ MESH PACKET received for queueStatus \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
+			Logger.transport.info("🕸️ MESH PACKET received for queueStatus \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
 #else
-			Logger.mesh.info("🕸️ MESH PACKET received for heartbeat response")
+			Logger.transport.info("🕸️ MESH PACKET received for heartbeat response")
 #endif
 		case .logRecord(let record):
 			didReceiveLog(message: record.stringRepresentation)
@@ -787,8 +878,8 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 				// If we get the "done" for NONCE_ONLY_DB, but are still waiting for the first NodeInfo,
 				// Then the database is probably empty, and can continue
 				if let firstDatabaseNodeInfoContinuation {
-					firstDatabaseNodeInfoContinuation.resume()
 					self.firstDatabaseNodeInfoContinuation = nil
+					firstDatabaseNodeInfoContinuation.resume()
 				}
 				
 				// Perform a single batch save after database retrieval completes
@@ -821,7 +912,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			lockdownCoordinator?.handle(status)
 
 		default:
-			Logger.mesh.error("Unknown FromRadio variant: \(decodedInfo.payloadVariant.debugDescription)")
+			Logger.transport.error("Unknown FromRadio variant: \(decodedInfo.payloadVariant.debugDescription)")
 		}
 
 	}
@@ -877,6 +968,16 @@ extension AccessoryManager {
 	var supportsTAKv2: Bool {
 		checkIsVersionSupported(forVersion: "2.8.0")
 	}
+
+	/// The Status Message module (`ModuleConfig.StatusMessageConfig` + the
+	/// `NODE_STATUS_APP` broadcast) ships in firmware 2.8.0 (design#115). Gate the editor on
+	/// it so we don't expose a broken/empty config screen on a *known* older firmware.
+	/// `checkIsVersionSupported` is intentionally permissive when the version is unknown
+	/// (first-launch / reconnect window) — matching every other capability gate here — so the
+	/// editor still appears until the radio reports a confirmed sub-2.8.0 version.
+	var supportsStatusMessage: Bool {
+		checkIsVersionSupported(forVersion: "2.8.0")
+	}
 }
 
 extension AccessoryManager {
@@ -887,7 +988,10 @@ extension AccessoryManager {
 			self.heartbeatTimer = nil
 		}
 		
-		self.heartbeatTimer = ResettableTimer(isRepeating: true, debugName: Bundle.main.isDebug ? "Send Heartbeat" : nil) {
+		// No debugName: this timer is reset on every received data/log packet, so a per-reset debug
+		// line would flood the log on busy TCP/serial links. The meaningful "heartbeat sent" log
+		// below still fires only when a heartbeat is actually sent (i.e. after an idle interval).
+		self.heartbeatTimer = ResettableTimer(isRepeating: true) {
 			Logger.transport.debug("💓 [Heartbeat] Sending periodic heartbeat")
 			try? await self.sendHeartbeat()
 		}
@@ -895,7 +999,10 @@ extension AccessoryManager {
 		// We can send heartbeats for older versions just fine, but only 2.7.4 and up will respond with
 		// a definite queueStatus packet.
 		if self.checkIsVersionSupported(forVersion: "2.7.4") {
-			self.heartbeatResponseTimer = ResettableTimer(isRepeating: false, debugName: Bundle.main.isDebug ? "Heartbeat Timeout" : nil) { @MainActor in
+			// No debugName: this timer is cancelled on every received data/log packet, so a per-cancel
+			// debug line would flood the log on busy links. The timeout error below still fires if a
+			// heartbeat truly goes unanswered.
+			self.heartbeatResponseTimer = ResettableTimer(isRepeating: false) { @MainActor in
 				Logger.transport.error("💓 [Heartbeat] Connection Timeout: Did not receive a packet after heartbeat.")
 				// If we're in the middle of a connection cancel it.
 				await self.connectionStepper?.cancel()
@@ -909,7 +1016,7 @@ extension AccessoryManager {
 				}
 			}
 		}
-		await self.heartbeatTimer?.reset(delay: .seconds(15.0))
+		await self.heartbeatTimer?.reset(delay: .seconds(Self.heartbeatInterval))
 	}
 }
 
@@ -921,6 +1028,9 @@ enum PossiblyAlreadyDoneContinuation {
 extension AccessoryManager {
 	func appDidEnterBackground() {
 		if self.state == .uninitialized { return }
+		// Persist any debounced position/telemetry/nodeinfo changes before suspension,
+		// since the debounce timer may not fire while backgrounded.
+		Task { await MeshPackets.shared.flushDebouncedSaves() }
 		if let connection = self.activeConnection?.connection {
 			Logger.transport.info("[AccessoryManager] informing active connection that we are entering the background")
 			Task { await connection.appDidEnterBackground() }

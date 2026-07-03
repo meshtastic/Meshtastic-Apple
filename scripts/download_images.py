@@ -45,8 +45,13 @@ def load_manifest(manifest_path, log_warning):
         return {}
 
 def save_manifest(data, manifest_path):
+    # sort_keys makes the output deterministic. The 'files' map is populated in
+    # thread-completion order (ThreadPoolExecutor / as_completed), which varies run to
+    # run; without sorting, identical data serializes in a different key order each time,
+    # producing noisy "sort-only" diffs. Sorting keys yields a stable, reorder-free file.
     with open(manifest_path, 'w') as f:
-        json.dump(data, f, indent=2)
+        json.dump(data, f, indent=2, sort_keys=True)
+        f.write('\n')
 
 def download_image(url, local_path, log_warning):
     """

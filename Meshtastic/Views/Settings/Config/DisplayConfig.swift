@@ -20,8 +20,8 @@ struct DisplayConfig: View {
 	@State var hasChanges = false
 	@State var screenOnSeconds = 0
 	@State var screenCarouselInterval = 0
-	@State var gpsFormat = 0
 	@State var compassNorthTop = false
+	@State var compassOrientation = 0
 	@State var wakeOnTapOrMotion = false
 	@State var flipScreen = false
 	@State var oledType = 0
@@ -36,11 +36,25 @@ struct DisplayConfig: View {
 			
 			Section(header: Text("Device Screen")) {
 				
-				Toggle(isOn: $compassNorthTop) {
-					Label("Always point north", systemImage: "location.north.circle")
-					Text("The compass heading on the screen outside of the circle will always point north.")
+				if accessoryManager.checkIsVersionSupported(forVersion: "2.3.13") {
+					VStack(alignment: .leading) {
+						Picker("Compass Orientation", selection: $compassOrientation) {
+							ForEach(CompassOrientations.allCases) { co in
+								Text(co.description)
+									.tag(co.rawValue)
+							}
+						}
+						Text("Indicates how to rotate or invert the compass output for accurate display.")
+							.foregroundColor(.gray)
+							.font(.callout)
+					}
+				} else {
+					Toggle(isOn: $compassNorthTop) {
+						Label("Always point north", systemImage: "location.north.circle")
+						Text("The compass heading on the screen outside of the circle will always point north.")
+					}
+					.tint(Color.accentColor)
 				}
-				.tint(Color.accentColor)
 				
 				Toggle(isOn: $use12HourClock) {
 					Label("12 Hour Clock", systemImage: "clock")
@@ -137,6 +151,7 @@ struct DisplayConfig: View {
 						dc.screenOnSecs = UInt32(screenOnSeconds)
 						dc.autoScreenCarouselSecs = UInt32(screenCarouselInterval)
 						dc.compassNorthTop = compassNorthTop
+						dc.compassOrientation = CompassOrientations(rawValue: compassOrientation)?.protoEnumValue() ?? .degrees0
 						dc.wakeOnTapOrMotion = wakeOnTapOrMotion
 						dc.flipScreen = flipScreen
 						dc.oled = OledTypes(rawValue: oledType)!.protoEnumValue()
@@ -173,6 +188,9 @@ struct DisplayConfig: View {
 		.onChange(of: compassNorthTop) { oldCompassNorthTop, newCompassNorthTop in
 			if oldCompassNorthTop != newCompassNorthTop && newCompassNorthTop != node?.displayConfig?.compassNorthTop { hasChanges = true }
 		}
+		.onChange(of: compassOrientation) { oldCompassOrientation, newCompassOrientation in
+			if oldCompassOrientation != newCompassOrientation && newCompassOrientation != Int(node?.displayConfig?.compassOrientation ?? 0) { hasChanges = true }
+		}
 		.onChange(of: wakeOnTapOrMotion) { oldWakeOnTapOrMotion, newWakeOnTapOrMotion in
 			if oldWakeOnTapOrMotion != newWakeOnTapOrMotion && newWakeOnTapOrMotion != node?.displayConfig?.wakeOnTapOrMotion { hasChanges = true }
 		}
@@ -199,6 +217,7 @@ struct DisplayConfig: View {
 		self.screenOnSeconds = Int(node?.displayConfig?.screenOnSeconds ?? 0)
 		self.screenCarouselInterval = Int(node?.displayConfig?.screenCarouselInterval ?? 0)
 		self.compassNorthTop = node?.displayConfig?.compassNorthTop ?? false
+		self.compassOrientation = Int(node?.displayConfig?.compassOrientation ?? 0)
 		self.wakeOnTapOrMotion = node?.displayConfig?.wakeOnTapOrMotion ?? false
 		self.flipScreen = node?.displayConfig?.flipScreen ?? false
 		self.oledType = Int(node?.displayConfig?.oledType ?? 0)

@@ -233,3 +233,49 @@ struct NotificationModelTests {
 		#expect(n.critical == true)
 	}
 }
+
+// MARK: - Offline Vector Basemap Performance
+
+// Benchmark intentionally prints its measurements to the test log for perf tuning.
+// swiftlint:disable disable_print
+
+/// Headless benchmark for the offline Protomaps vector decode + road stitching pipeline.
+/// Drives quantitative perf tuning (overlay count is the dominant SwiftUI-Map cost).
+/// Reads the local `bellevue.pmtiles`; skips cleanly if it isn't present.
+@MainActor
+@Suite("Offline Vector Basemap Perf")
+struct OfflineVectorPerfTests {
+
+	/// Repo-relative so it works on any clone (the file lives at the repo root, two levels up from
+	/// this test source). Read via the build machine's path — the simulator can reach host paths.
+	private var bellevueURL: URL {
+		URL(fileURLWithPath: #filePath)
+			.deletingLastPathComponent()      // MeshtasticTests/
+			.deletingLastPathComponent()      // repo root
+			.appendingPathComponent("bellevue.pmtiles")
+	}
+
+	@Test("decode + stitch Bellevue — zoom sweep")
+	func benchmark() throws {
+		let url = bellevueURL
+		guard FileManager.default.fileExists(atPath: url.path) else {
+			print("OFFLINE-PERF: bellevue.pmtiles not found at \(url.path) — skipping")
+			return
+		}
+		// Zoom sweep (no clutter filtering).
+		for maxTiles in [8, 16, 48] {
+			if let stats = OfflineVectorTileProvider.measure(url: url, maxTiles: maxTiles, minFillMeters: 0, minRoadMeters: 0) {
+				print("OFFLINE-PERF[z-sweep maxTiles=\(maxTiles)]: \(stats)")
+			}
+		}
+		// Clutter-filter sweep at z13 (maxTiles=16) — drop tiny fills + short road stubs.
+		for threshold in [(0.0, 0.0), (25.0, 30.0), (40.0, 60.0), (60.0, 100.0)] {
+			if let stats = OfflineVectorTileProvider.measure(url: url, maxTiles: 16, minFillMeters: threshold.0, minRoadMeters: threshold.1) {
+				print("OFFLINE-PERF[z13 fill≥\(Int(threshold.0))m road≥\(Int(threshold.1))m]: \(stats)")
+			}
+		}
+		#expect(true)
+	}
+}
+
+// swiftlint:enable disable_print

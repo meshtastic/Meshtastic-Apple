@@ -14,7 +14,7 @@ General app preferences including map style, notification behaviour, and theme. 
 
 ### Data Management
 
-- **Erase All App Data** — clears the local database, translation cache, and all stored settings. Use this as a last resort.
+- **Erase All App Data** — clears the local database, translation cache, and all stored settings, then immediately reloads the bundled device hardware catalog. Use this as a last resort.
 - **NodeDB Reset** — resets the node database on your connected radio. When prompted, you can choose to **Preserve Favorites** so your starred nodes are retained after the reset.
 - **Reset App Settings** — restores default app preferences without affecting your node database.
 
@@ -28,10 +28,12 @@ LoRa settings control how your radio communicates on the mesh:
 
 | Setting | Description |
 |---------|-------------|
-| Region | Your geographical region. **Must be set correctly** — using the wrong region is illegal and prevents communication with local nodes. Available regions include the standard set plus Nepal 865MHz, Brazil 902MHz, ITU Region 1 Amateur 2m, ITU Region 2/3 Amateur 2m, and the EU 866 / 874 / 917 / 868-narrow bands. |
-| Modem Preset | Speed/range trade-off. Most users should use Long Fast or Long Slow. |
+| Region | Your geographical region. **Must be set correctly** — using the wrong region is illegal and prevents communication with local nodes. The standard regions are always available; the amateur (ham) 2m / 70cm / 1.25m bands and the EU 866 / narrow bands require firmware **2.8.0 or later** and only appear when your connected radio supports them. |
+| Modem Preset | Speed/range trade-off. Most users should use Long Fast or Long Slow. On firmware 2.8+, the preset list is filtered to those that are legal for the selected region (see below). |
 | Hop Limit | The number of times a message is repeated by other nodes. Higher values increase range but also mesh traffic. |
 | Frequency Slot | Fine-tune the exact frequency within your region. |
+
+On firmware **2.8.0 or later**, the radio tells the app which modem presets are legal in each region. When you pick a region, the Presets list narrows to the compatible set, and if your current preset isn't allowed there the app switches you to that region's default. Setting the region to **US** on a newly flashed node defaults the preset to **Long Turbo**. Amateur (ham) bands such as the Tiny and Narrow presets are marked **licensed** — the app shows a warning, and you should enable **Licensed Operator** (and set your call sign) in **User** config before transmitting. On older firmware the full preset list is shown unchanged.
 
 ### Channels
 
@@ -57,6 +59,21 @@ Device role, serial output, debug log streaming, and node info broadcast interva
 
 Screen timeout, auto-carousel of screens, flip screen for alternate mounting orientations, and OLED contrast.
 
+#### Compass Orientation
+
+Controls which direction the on-device compass points when the screen is at rest. Use this when your radio is mounted at an angle or upside-down.
+
+| Option | Description |
+|--------|-------------|
+| 0° | Default orientation — north at the top. |
+| 90° | Rotated 90° clockwise. |
+| 180° | Rotated 180° (upside-down). |
+| 270° | Rotated 270° clockwise (90° counter-clockwise). |
+| 0° Inverted | Default orientation with the display flipped (mirrored). |
+| 90° Inverted | 90° clockwise with the display flipped. |
+| 180° Inverted | 180° with the display flipped. |
+| 270° Inverted | 270° clockwise with the display flipped. |
+
 ### Network
 
 Wi-Fi SSID/password for TCP connection, NTP server, and Ethernet (supported hardware only).
@@ -76,16 +93,41 @@ Optional feature modules. Only available when your connected node supports the m
 | Module | Description |
 |--------|-------------|
 | Ambient Lighting | Control NeoPixel/LED lighting on supported hardware. |
+| Audio | Codec2 voice communication settings. Only available when LoRa region is set to **LORA_24** (2.4 GHz). Configure Codec2 encoding, bitrate, PTT pin, and I2S GPIO pins. |
 | Canned Messages | Pre-programmed message shortcuts accessible from the device buttons. |
 | Detection Sensor | Configure PIR motion or contact sensors. |
 | External Notification | Buzzer or LED alerts for incoming messages. |
 | MQTT | Uplink/downlink messages to an MQTT broker for internet bridging. |
+| Neighbor Info | Periodically broadcasts information about directly-heard neighbors to help visualise mesh topology. Update interval ranges from 4 hours (default) to 72 hours. Enable **Transmit over LoRa** to share neighbour data over the radio in addition to MQTT and PhoneAPI. |
 | Range Test | Automated range testing with position logging. |
-| Pax Counter | Anonymised foot-traffic counting via Bluetooth/Wi-Fi probe detection. |
+| Pax Counter | Anonymised foot-traffic counting via Bluetooth/Wi-Fi probe detection. Configure WiFi Threshold (dBm) and BLE Threshold (dBm) to control the RSSI sensitivity for device counting — default is −80 dBm for both. |
 | Ringtone | Custom RTTTL melodies for notification tones. |
 | Store & Forward | Store packets for nodes that are temporarily offline. |
 | Serial | UART serial output for integration with other hardware. |
+| Status Message | Set a custom status message broadcast to the mesh. |
 | Telemetry | Device, environment, and air-quality sensor reporting. |
+| Traffic Management | Mesh traffic optimisation — position deduplication, rate limiting, and unknown-packet filtering. Requires firmware 2.8.0+. |
+
+### Traffic Management
+
+The Traffic Management module helps reduce unnecessary mesh traffic and improve network efficiency. It is available on nodes running firmware **2.8.0 or later**. Each feature is enabled implicitly by a non-zero value — turning a section's toggle off (or the master **Enabled** switch) clears its values and disables that feature on the radio.
+
+| Setting | Description |
+|---------|-------------|
+| Enabled | Master enable for the traffic management module. |
+| **Position Deduplication** | |
+| Position Dedup | Drop redundant position broadcasts from the same node. |
+| Min Interval (s) | Minimum seconds between position updates from the same node. |
+| **NodeInfo Direct Response** | |
+| Direct Response | Respond to NodeInfo requests directly from local cache instead of flooding the mesh. |
+| Max Hops | Maximum hop distance from the requestor at which direct NodeInfo responses are served from the local cache. |
+| **Rate Limiting** | |
+| Rate Limiting | Enable per-node rate limiting to throttle chatty nodes. |
+| Window (s) | Time window in seconds for rate limiting calculations. |
+| Max Packets | Maximum packets allowed per node within the rate limit window. |
+| **Unknown Packet Handling** | |
+| Drop Unknown | Enable dropping of unknown/undecryptable packets. |
+| Threshold | Maximum unknown/undecryptable packets per rate window before the source is dropped. |
 
 ## Firmware Updates
 

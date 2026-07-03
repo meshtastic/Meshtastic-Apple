@@ -24,8 +24,8 @@ struct MQTTConfig: View {
 	@State var username = ""
 	@State var password = ""
 	@State var encryptionEnabled = true
-	@State var jsonEnabled = false
 	@State var tlsEnabled = false
+	@State private var showPassword = false
 	@State var root = "msh"
 	@State var selectedTopic = ""
 	@State var mqttConnected: Bool = false
@@ -83,14 +83,6 @@ struct MQTTConfig: View {
 						Label("Encryption Enabled", systemImage: "lock.icloud")
 					}
 					.tint(.accentColor)
-					
-					if !proxyToClientEnabled {
-						Toggle(isOn: $jsonEnabled) {
-							Label("JSON Enabled", systemImage: "ellipsis.curlybraces")
-							Text("JSON mode is a limited, unencrypted MQTT output for locally integrating with home assistant")
-						}
-						.tint(.accentColor)
-					}
 				}
 				
 				Section(header: Text("Map Report")) {
@@ -213,19 +205,31 @@ struct MQTTConfig: View {
 						.keyboardType(.default)
 						HStack {
 							Label("Password", systemImage: "wallet.pass")
-							TextField("Password", text: $password)
-								.foregroundColor(.gray)
-								.autocapitalization(.none)
-								.disableAutocorrection(true)
-								.onChange(of: password) {
-									var totalBytes = password.utf8.count
-									// Only mess with the value if it is too big
-									while totalBytes > 31 {
-										password = String(password.dropLast())
-										totalBytes = password.utf8.count
-									}
+							Group {
+								if showPassword {
+									TextField("Password", text: $password)
+								} else {
+									SecureField("Password", text: $password)
 								}
-								.foregroundColor(.gray)
+							}
+							.foregroundColor(.gray)
+							.autocapitalization(.none)
+							.disableAutocorrection(true)
+							.onChange(of: password) {
+								var totalBytes = password.utf8.count
+								while totalBytes > 31 {
+									password = String(password.dropLast())
+									totalBytes = password.utf8.count
+								}
+							}
+							Button {
+								showPassword.toggle()
+							} label: {
+								Image(systemName: showPassword ? "eye.slash" : "eye")
+									.foregroundColor(.secondary)
+							}
+							.buttonStyle(.plain)
+							.accessibilityLabel(showPassword ? "Hide password" : "Show password")
 						}
 						.keyboardType(.default)
 						.listRowSeparator(/*@START_MENU_TOKEN@*/.visible/*@END_MENU_TOKEN@*/)
@@ -270,7 +274,6 @@ struct MQTTConfig: View {
 						mqtt.password = self.password
 						mqtt.root = self.root
 						mqtt.encryptionEnabled = self.encryptionEnabled
-						mqtt.jsonEnabled = self.jsonEnabled
 						mqtt.tlsEnabled = self.tlsEnabled
 						mqtt.mapReportingEnabled = self.mapReportingEnabled
 						mqtt.mapReportSettings.shouldReportLocation = UserDefaults.mapReportingOptIn
@@ -284,9 +287,6 @@ struct MQTTConfig: View {
 				if oldEnabled != newEnabled && newEnabled != node?.mqttConfig?.enabled { hasChanges = true }
 			}
 			.onChange(of: proxyToClientEnabled) { oldProxy, newProxyToClientEnabled in
-				if newProxyToClientEnabled {
-					jsonEnabled = false
-				}
 				if oldProxy != newProxyToClientEnabled && newProxyToClientEnabled != node?.mqttConfig?.proxyToClientEnabled { hasChanges = true }
 			}
 			.onChange(of: address) { oldAddress, newAddress in
@@ -316,12 +316,6 @@ struct MQTTConfig: View {
 			}
 			.onChange(of: encryptionEnabled) { oldEncryption, newEncryptionEnabled in
 				if oldEncryption != newEncryptionEnabled && newEncryptionEnabled != node?.mqttConfig?.encryptionEnabled { hasChanges = true }
-			}
-			.onChange(of: jsonEnabled) { oldJson, newJsonEnabled in
-				if newJsonEnabled {
-					proxyToClientEnabled = false
-				}
-				if oldJson != newJsonEnabled && newJsonEnabled != node?.mqttConfig?.jsonEnabled { hasChanges = true }
 			}
 			.onChange(of: tlsEnabled) { oldTls, newTlsEnabled in
 				if defaultServer && accessoryManager.checkIsVersionSupported(forVersion: "2.7.3") {
@@ -363,10 +357,14 @@ struct MQTTConfig: View {
 				request: accessoryManager.requestMqttModuleConfig
 			)
 		}
+		.onChange(of: accessoryManager.mqttProxyConnected) { _, connected in
+			mqttConnected = connected
+		}
 	}
-	
+}
+
+private extension MQTTConfig {
 	func setMqttValues() {
-		
 		nearbyTopics = []
 		let geocoder = CLGeocoder()
 		if LocationsHandler.shared.locationsArray.count > 0 {
@@ -377,52 +375,34 @@ struct MQTTConfig: View {
 					Logger.services.error("Failed to reverse geocode location: \(error.localizedDescription, privacy: .public)")
 					return
 				}
-				
 				if let placemarks = placemarks, let placemark = placemarks.first {
-					/// Country Topic unless your region is a country
 					if !(region?.isCountry ?? false) {
 						let countryTopic = defaultTopic + "/" + (placemark.isoCountryCode ?? "")
-						if !countryTopic.isEmpty {
-							nearbyTopics.append(countryTopic)
-						}
+						if !countryTopic.isEmpty { nearbyTopics.append(countryTopic) }
 					}
 					let stateTopic = defaultTopic + "/" + (placemark.administrativeArea ?? "")
-					if !stateTopic.isEmpty {
-						nearbyTopics.append(stateTopic)
-					}
+					if !stateTopic.isEmpty { nearbyTopics.append(stateTopic) }
 					let countyTopic = defaultTopic + "/" + (placemark.administrativeArea ?? "") + "/" + (placemark.subAdministrativeArea?.lowercased().replacingOccurrences(of: " ", with: "") ?? "")
-					if !countyTopic.isEmpty {
-						nearbyTopics.append(countyTopic)
-					}
+					if !countyTopic.isEmpty { nearbyTopics.append(countyTopic) }
 					let cityTopic = defaultTopic + "/" + (placemark.administrativeArea ?? "") + "/" + (placemark.locality?.lowercased().replacingOccurrences(of: " ", with: "") ?? "")
-					if !cityTopic.isEmpty {
-						nearbyTopics.append(cityTopic)
-					}
-					let neightborhoodTopic = defaultTopic + "/" + (placemark.administrativeArea ?? "") + "/" + (placemark.subLocality?.lowercased()
+					if !cityTopic.isEmpty { nearbyTopics.append(cityTopic) }
+					let neighborhoodTopic = defaultTopic + "/" + (placemark.administrativeArea ?? "") + "/" + (placemark.subLocality?.lowercased()
 						.replacingOccurrences(of: " ", with: "")
 						.replacingOccurrences(of: "'", with: "") ?? "")
-					if !neightborhoodTopic.isEmpty {
-						nearbyTopics.append(neightborhoodTopic)
-					}
+					if !neighborhoodTopic.isEmpty { nearbyTopics.append(neighborhoodTopic) }
 				} else {
 					Logger.services.debug("No Location")
 				}
 			})
 		}
-		
 		self.enabled = node?.mqttConfig?.enabled ?? false
 		self.proxyToClientEnabled = node?.mqttConfig?.proxyToClientEnabled ?? false
 		self.address = node?.mqttConfig?.address ?? ""
-		if address.lowercased().contains("mqtt.meshtastic.org") {
-			defaultServer = true
-		} else {
-			defaultServer = false
-		}
+		defaultServer = address.lowercased().contains("mqtt.meshtastic.org")
 		self.username = node?.mqttConfig?.username ?? ""
 		self.password = node?.mqttConfig?.password ?? ""
 		self.root = node?.mqttConfig?.root ?? "msh"
 		self.encryptionEnabled = node?.mqttConfig?.encryptionEnabled ?? false
-		self.jsonEnabled = node?.mqttConfig?.jsonEnabled ?? false
 		if defaultServer && accessoryManager.checkIsVersionSupported(forVersion: "2.7.3") {
 			self.tlsEnabled = true
 		} else {
@@ -430,16 +410,10 @@ struct MQTTConfig: View {
 		}
 		self.mqttConnected = accessoryManager.mqttProxyConnected
 		self.mapReportingEnabled = node?.mqttConfig?.mapReportingEnabled ?? false
-		if node?.mqttConfig?.mapPublishIntervalSecs ?? 0 < 3600 {
-			self.mapPublishIntervalSecs = UpdateInterval(from: 3600)
-		} else {
-			self.mapPublishIntervalSecs = UpdateInterval(from: Int(node?.mqttConfig?.mapPublishIntervalSecs ?? 3600))
-		}
+		self.mapPublishIntervalSecs = UpdateInterval(from: max(3600, Int(node?.mqttConfig?.mapPublishIntervalSecs ?? 3600)))
 		self.mapPositionPrecision = Double(node?.mqttConfig?.mapPositionPrecision ?? 14)
 		self.mapReportingOptIn = UserDefaults.mapReportingOptIn
-		if mapPositionPrecision < 11 || mapPositionPrecision > 14 {
-			self.mapPositionPrecision = 14
-		}
+		if mapPositionPrecision < 11 || mapPositionPrecision > 14 { self.mapPositionPrecision = 14 }
 		self.hasChanges = false
 	}
 }

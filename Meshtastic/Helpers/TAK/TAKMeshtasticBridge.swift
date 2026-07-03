@@ -8,7 +8,7 @@
 import Foundation
 import MeshtasticProtobufs
 import OSLog
-import SwiftData
+@preconcurrency import SwiftData
 
 /// Bridges CoT messages between TAK clients and the Meshtastic mesh network
 /// Handles bidirectional conversion and message routing

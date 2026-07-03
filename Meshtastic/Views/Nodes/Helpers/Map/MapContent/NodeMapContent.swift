@@ -11,6 +11,7 @@ import SwiftData
 struct NodeMapContent: MapContent {
 
 	@Bindable var node: NodeInfoEntity
+	let positions: [PositionEntity]
 	/// Map State User Defaults
 	@AppStorage("meshMapShowNodeHistory") private var showNodeHistory = false
 	@AppStorage("meshMapShowRouteLines") private var showRouteLines = false
@@ -36,7 +37,7 @@ struct NodeMapContent: MapContent {
 
 	@MapContentBuilder
 	var nodeMap: some MapContent {
-		let positionArray = node.positions
+		let positionArray = positions
 
 		/// Node Color from node.num
 		let nodeColor = UIColor(hex: UInt32(node.num))
@@ -168,7 +169,7 @@ struct NodeMapContent: MapContent {
 
 	@MapContentBuilder
 	var body: some MapContent {
-		if node.positions.count > 0 {
+		if positions.count > 0 {
 			nodeMap
 		}
 	}

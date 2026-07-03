@@ -1,13 +1,13 @@
 {
-  "originHash" : "e56f9e53692970c9c44ca80438169dfa525899032e6a99947858195a6d4896a7",
+  "originHash" : "11f0c5490d1168ef30f18d8d128eff6002676d0f891554c3d9659ef05419bdc5",
   "pins" : [
     {
       "identity" : "cocoamqtt",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/emqx/CocoaMQTT",
       "state" : {
-        "revision" : "22b98acc75bdca77917a1093bd3e1b45ef6e9718",
-        "version" : "2.1.9"
+        "revision" : "7ad043c42b91944958bc81f8694eba1fde55ff0d",
+        "version" : "2.2.3"
       }
     },
     {
@@ -17,6 +17,24 @@
       "state" : {
         "revision" : "2cddcb47c021365c5a6ebc377cb379aa979c450e",
         "version" : "3.4.0"
+      }
+    },
+    {
+      "identity" : "gis-tools",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Outdooractive/gis-tools",
+      "state" : {
+        "revision" : "777aaa8ac64de78c3a3662a031f4f3a54098ae53",
+        "version" : "1.13.6"
+      }
+    },
+    {
+      "identity" : "gzipswift",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/1024jp/GzipSwift.git",
+      "state" : {
+        "revision" : "41d37421fe2cbbfae4a5593dc29d12999fb73cd7",
+        "version" : "7.0.0"
       }
     },
     {
@@ -35,6 +53,15 @@
       "state" : {
         "revision" : "ce3e18607fd01079495f86ff6195d8a3ca469f73",
         "version" : "1.0.8"
+      }
+    },
+    {
+      "identity" : "mvt-tools",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Outdooractive/mvt-tools.git",
+      "state" : {
+        "revision" : "01d54cd8ef0169c739f7e674d8698551f9df1ea1",
+        "version" : "1.10.4"
       }
     },
     {
@@ -65,6 +92,15 @@
       }
     },
     {
+      "identity" : "swift-argument-parser",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-argument-parser",
+      "state" : {
+        "revision" : "6a52f3251125d74daf04fcbd5e6f08a75d074382",
+        "version" : "1.8.2"
+      }
+    },
+    {
       "identity" : "swift-cmark",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/swiftlang/swift-cmark.git",
@@ -83,6 +119,15 @@
       }
     },
     {
+      "identity" : "swift-log",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-log.git",
+      "state" : {
+        "revision" : "92448c359f00ebe36ae97d3bd9086f13c7692b5a",
+        "version" : "1.13.2"
+      }
+    },
+    {
       "identity" : "swift-markdown",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/swiftlang/swift-markdown",
@@ -96,8 +141,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-protobuf.git",
       "state" : {
-        "revision" : "c169a5744230951031770e27e475ff6eefe51f9d",
-        "version" : "1.33.3"
+        "revision" : "f6506eaa86ed2e01cb0ae14a75035b7fdbf0918f",
+        "version" : "1.38.0"
       }
     },
     {
@@ -132,8 +177,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/meshtastic/TAKPacket-SDK.git",
       "state" : {
-        "revision" : "c7faf1f65f723d63b24df310d3db2b5879c561ba",
-        "version" : "0.2.3"
+        "revision" : "25658b6b16b20500f8561c7acbf86349e77e5db8",
+        "version" : "0.5.1"
       }
     },
     {

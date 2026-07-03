@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="../assets/docs.css">
 </head>
 <body data-page="telemetry">
-<div class="pre-release-banner">⚠️ <strong>Pre-release</strong> — subject to change</div><h1>Telemetry &amp; Sensors</h1>
+<h1>Telemetry &amp; Sensors</h1>
 <p>Meshtastic nodes can report sensor data across the mesh, giving you visibility into the physical environment at remote locations.</p>
 <h2>Telemetry Types</h2>
 <table>
@@ -21,6 +21,10 @@
 <tr>
 <td>Device Metrics</td>
 <td>Battery level, battery voltage, channel utilisation, airtime fraction</td>
+</tr>
+<tr>
+<td>Local Stats</td>
+<td>Packets received/transmitted, relayed packets, duplicate packets, bad receives, node counts, noise floor</td>
 </tr>
 <tr>
 <td>Environment</td>
@@ -73,6 +77,9 @@
 </tr>
 </tbody>
 </table>
+<h3>Local Stats</h3>
+<p>Local Stats are radio diagnostics reported by the node itself. They help diagnose mesh traffic and receiver conditions with counters for received packets, transmitted packets, relayed packets, duplicate packets, bad receives, canceled packets, online nodes, total nodes, and noise floor.</p>
+<p>Noise floor readings are shown in dBm when available. They can change quickly and should be interpreted with context: antenna direction, nearby interference, and external filters can all affect the displayed value.</p>
 <h3>Air Quality</h3>
 <p><img src="../assets/screenshots/iaqScale.png" alt="IAQ Scale" /></p>
 <p>The Indoor Air Quality scale shows category bands from Excellent (green) through Hazardous (maroon). The app supports multiple display modes for air quality readings:</p>
@@ -172,8 +179,12 @@
 <td>How often environment sensor data is broadcast.</td>
 </tr>
 <tr>
+<td>Air Quality Metrics Enabled</td>
+<td>Enable or disable air quality sensor reporting. When enabled, the interval picker appears.</td>
+</tr>
+<tr>
 <td>Air Quality Interval</td>
-<td>How often air quality sensor data is broadcast.</td>
+<td>How often air quality sensor data is broadcast. Default is 30 minutes.</td>
 </tr>
 <tr>
 <td>Environment Screen</td>

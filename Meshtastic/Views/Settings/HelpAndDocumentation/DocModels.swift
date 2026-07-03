@@ -95,6 +95,8 @@ struct DocPage: Identifiable, Hashable {
 	/// SF Symbol name for this page in the table of contents.
 	var systemImage: String {
 		switch id {
+		// What's New (first item in each guide)
+		case "whats-new":		return "newspaper.fill"
 		// User Guide
 		case "getting-started":	return "star.fill"
 		case "bluetooth":		return "custom.bluetooth"
@@ -162,7 +164,7 @@ final class DocBundle {
 	func allPages() -> [DocPage] { pages }
 
 	func load() {
-		let languageCode = Locale.current.language.languageCode?.identifier ?? "en"
+		let languageCode = Bundle.main.documentationLanguageCode
 
 		// Try loading from pre-rendered translated folder first
 		if languageCode != "en", let translatedPages = loadTranslated(languageCode: languageCode) {

@@ -16,60 +16,66 @@ struct NRFDFUSheet: View {
 	let firmwareToFlash: URL
 	
 	var body: some View {
-		NavigationView {
-			Group {
-				if showWarningAlert {
-					UpdateWarningSheet(
-						onDismiss: { dismiss() },
-						onAccept: { showWarningAlert = false }
-					)
-				} else {
-					VStack(spacing: 20.0) {
-						Text("DFU Firmware Update")
-							.font(.headline)
+		VStack {
+			if showWarningAlert {
+				UpdateWarningSheet(
+					onDismiss: { dismiss() },
+					onAccept: { showWarningAlert = false }
+				)
+			} else {
+				VStack(spacing: 20.0) {
+					Text("Nordic DFU Update")
+						.font(.title2.bold())
 
-						Text("Please do not leave this screen until this process is complete.")
-							.multilineTextAlignment(.center)
-							.padding()
+					Text("DFU Firmware Update")
+						.font(.headline)
 
-						CircularProgressView(progress: dfuViewModel.progress, isIndeterminate: (self.dfuViewModel.state == .starting), size: 225.0, subtitleText: dfuViewModel.statusMessage)
+					Text("Please do not leave this screen until this process is complete.")
+						.multilineTextAlignment(.center)
+						.padding()
 
-						Group {
-							switch dfuViewModel.state {
-							case .idle:
-								Button("Begin Update") {
-									Task {
-										if let connection = accessoryManager.activeConnection?.connection as? BLEConnection {
-											let peripheral = await connection.peripheral
-											dfuViewModel.startDFU(peripheral: peripheral, zipFileUrl: firmwareToFlash)
-										}
+					CircularProgressView(progress: dfuViewModel.progress, isIndeterminate: (self.dfuViewModel.state == .starting), size: 225.0, subtitleText: dfuViewModel.statusMessage)
+
+					Group {
+						switch dfuViewModel.state {
+						case .idle:
+							Button("Begin Update") {
+								Task {
+									if let connection = accessoryManager.activeConnection?.connection as? BLEConnection {
+										let peripheral = await connection.peripheral
+										dfuViewModel.startDFU(peripheral: peripheral, zipFileUrl: firmwareToFlash)
 									}
 								}
-								.controlSize(.large)
-								.frame(maxWidth: .infinity)
-								.cornerRadius(10)
-								.buttonStyle(.borderedProminent)
-
-							case .uploading, .starting, .success:
-								Text(dfuViewModel.rotatingMessage)
-									.multilineTextAlignment(.center)
-									.padding(.horizontal)
-							case .error(let message):
-								Text("Error: \(message)")
 							}
-						}.frame(minHeight: 250.0)
-					}
+							.controlSize(.large)
+							.frame(maxWidth: .infinity)
+							.cornerRadius(10)
+							.buttonStyle(.borderedProminent)
+
+						case .uploading, .starting, .success:
+							Text(dfuViewModel.rotatingMessage)
+								.multilineTextAlignment(.center)
+								.padding(.horizontal)
+						case .error(let message):
+							Text("Error: \(message)")
+						}
+					}.frame(minHeight: 250.0)
 				}
 			}
-			.toolbar {
-				ToolbarItem(placement: .navigationBarLeading) {
-					Button("Done") {
-						dismiss()
-					}.disabled([.starting, .uploading].contains(dfuViewModel.state))
-				}
+		}
+		.overlay(alignment: .topLeading) {
+			Button {
+				dismiss()
+			} label: {
+				Image(systemName: "xmark.circle.fill")
+					.font(.title)
+					.symbolRenderingMode(.palette)
+					.foregroundStyle(.white, Color(.systemGray3))
 			}
-			.navigationTitle("Nordic DFU Update")
-			.navigationBarTitleDisplayMode(.inline)
+			.buttonStyle(.plain)
+			.padding()
+			.disabled([.starting, .uploading].contains(dfuViewModel.state))
+			.opacity([.starting, .uploading].contains(dfuViewModel.state) ? 0.3 : 1.0)
 		}
 		.interactiveDismissDisabled(true)
 	}
@@ -117,7 +123,7 @@ private struct UpdateWarningSheet: View {
 				Button(role: .destructive) {
 					onAccept()
 				} label: {
-					Text("I Know What I'm Doing")
+					Text("I Know What I\'m Doing")
 						.frame(maxWidth: .infinity)
 				}
 				.buttonStyle(.borderedProminent)

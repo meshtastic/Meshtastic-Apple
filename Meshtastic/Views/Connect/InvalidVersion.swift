@@ -89,19 +89,23 @@ struct InvalidVersion: View {
 				.padding(.bottom, 20)
 			}
 
-			#if targetEnvironment(macCatalyst)
+		}
+
+		#if targetEnvironment(macCatalyst)
+		.overlay(alignment: .topLeading) {
 			Button {
 				dismiss()
 			} label: {
-				Label("Close", systemImage: "xmark")
-					.frame(maxWidth: .infinity)
+				Image(systemName: "xmark.circle.fill")
+					.font(.system(size: 34))
+					.symbolRenderingMode(.palette)
+					.foregroundStyle(.white, Color(.systemGray3))
 			}
-			.buttonStyle(.borderedProminent)
-			.buttonBorderShape(.capsule)
-			.controlSize(.large)
-			.padding()
-			#endif
+			.buttonStyle(.plain)
+			.padding(.top, 12)
+			.padding(.leading, 14)
 		}
+		#endif
 	}
 }
 

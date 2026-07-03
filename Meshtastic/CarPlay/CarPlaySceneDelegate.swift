@@ -14,7 +14,7 @@ import CarPlay
 import Combine
 import Intents
 import OSLog
-import SwiftData
+@preconcurrency import SwiftData
 import UserNotifications
 #if canImport(ActivityKit)
 import ActivityKit
@@ -420,12 +420,12 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 
 		let descriptor = FetchDescriptor<MessageEntity>(
 			predicate: #Predicate { message in
-				message.read == false && message.toUser == nil
+				message.read == false
 			}
 		)
 		let results = (try? context.fetch(descriptor)) ?? []
 		var counts = [Int32: Int]()
-		for message in results where channelSet.contains(message.channel) {
+		for message in results where message.toUser == nil && channelSet.contains(message.channel) {
 			counts[message.channel, default: 0] += 1
 		}
 		return counts
@@ -511,14 +511,15 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 				message.read == false &&
 				message.admin == false &&
 				message.isEmoji == false &&
-				message.toUser == nil &&
 				message.channel == channelIndex
 			},
 			sortBy: [SortDescriptor(\MessageEntity.messageTimestamp, order: .reverse)]
 		)
-		descriptor.fetchLimit = 1
+		// toUser == nil intentionally absent from predicate (crashes SwiftData on iOS 26).
+		// Fetch a small batch and pick the first channel message in Swift.
+		descriptor.fetchLimit = 5
 
-		guard let message = (try? context.fetch(descriptor))?.first,
+		guard let message = (try? context.fetch(descriptor))?.first(where: { $0.toUser == nil }),
 			  let fromUser = message.fromUser else { return }
 
 		postCommunicationNotification(
@@ -730,17 +731,17 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 		let timerSeconds = 900 // 15 minute local stats interval
 		let future = Date(timeIntervalSinceNow: Double(timerSeconds))
 		let initialState = MeshActivityAttributes.ContentState(
-			uptimeSeconds: UInt32(mostRecent?.uptimeSeconds ?? 0),
+			uptimeSeconds: UInt32(bitPattern: mostRecent?.uptimeSeconds ?? 0),
 			channelUtilization: mostRecent?.channelUtilization ?? 0.0,
 			airtime: mostRecent?.airUtilTx ?? 0.0,
-			sentPackets: UInt32(mostRecent?.numPacketsTx ?? 0),
-			receivedPackets: UInt32(mostRecent?.numPacketsRx ?? 0),
-			badReceivedPackets: UInt32(mostRecent?.numPacketsRxBad ?? 0),
-			dupeReceivedPackets: UInt32(mostRecent?.numRxDupe ?? 0),
-			packetsSentRelay: UInt32(mostRecent?.numTxRelay ?? 0),
-			packetsCanceledRelay: UInt32(mostRecent?.numTxRelayCanceled ?? 0),
-			nodesOnline: UInt32(mostRecent?.numOnlineNodes ?? 0),
-			totalNodes: UInt32(mostRecent?.numTotalNodes ?? 0),
+			sentPackets: UInt32(bitPattern: mostRecent?.numPacketsTx ?? 0),
+			receivedPackets: UInt32(bitPattern: mostRecent?.numPacketsRx ?? 0),
+			badReceivedPackets: UInt32(bitPattern: mostRecent?.numPacketsRxBad ?? 0),
+			dupeReceivedPackets: UInt32(bitPattern: mostRecent?.numRxDupe ?? 0),
+			packetsSentRelay: UInt32(bitPattern: mostRecent?.numTxRelay ?? 0),
+			packetsCanceledRelay: UInt32(bitPattern: mostRecent?.numTxRelayCanceled ?? 0),
+			nodesOnline: UInt32(bitPattern: mostRecent?.numOnlineNodes ?? 0),
+			totalNodes: UInt32(bitPattern: mostRecent?.numTotalNodes ?? 0),
 			timerRange: Date.now...future
 		)
 

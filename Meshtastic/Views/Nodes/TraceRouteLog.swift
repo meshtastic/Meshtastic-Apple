@@ -14,12 +14,14 @@ struct TraceRouteLog: View {
 	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
 	@ObservedObject var locationsHandler = LocationsHandler.shared
 	@Environment(\.modelContext) private var context
+	@EnvironmentObject var router: Router
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@State private var isPresentingClearLogConfirm: Bool = false
 	@State var isExporting = false
 	@State var exportString = ""
 	@Bindable var node: NodeInfoEntity
-	@State private var selectedRoute: TraceRouteEntity?
+	@State private var traceRoutes: [TraceRouteEntity] = []
+	@State private var selectedRouteID: PersistentIdentifier?
 	// Map Configuration
 	@Namespace var mapScope
 	@State var mapStyle: MapStyle = MapStyle.standard(elevation: .realistic, emphasis: MapStyle.StandardEmphasis.muted, pointsOfInterest: .all, showsTraffic: true)
@@ -31,11 +33,16 @@ struct TraceRouteLog: View {
 	@State var angle: Angle = .zero
 	@State var animation: Animation?
 
+	private var selectedRoute: TraceRouteEntity? {
+		guard let selectedRouteID else { return nil }
+		return traceRoutes.first { $0.persistentModelID == selectedRouteID }
+	}
+
 	var body: some View {
 		HStack(alignment: .top) {
 			VStack {
 				VStack {
-					List(node.traceRoutes.reversed(), id: \.self, selection: $selectedRoute) { route in
+					List(traceRoutes, id: \.persistentModelID, selection: $selectedRouteID) { route in
 						Label {
 							let routeTime = route.time?.formatted(date: .numeric, time: .shortened) ?? "Unknown".localized
 							if route.response && route.hopsTowards == route.hopsBack {
@@ -60,9 +67,13 @@ struct TraceRouteLog: View {
 						}
 						.swipeActions {
 							Button(role: .destructive) {
+								if selectedRouteID == route.persistentModelID {
+									selectedRouteID = nil
+								}
 								context.delete(route)
 								do {
 									try context.save()
+									refreshTraceRoutes()
 								} catch let error as NSError {
 									Logger.data.error("\(error.localizedDescription, privacy: .public)")
 								}
@@ -77,20 +88,48 @@ struct TraceRouteLog: View {
 				ScrollView {
 					if selectedRoute != nil {
 						if selectedRoute?.response ?? false && selectedRoute?.hopsTowards ?? 0 >= 0 {
+							let routeValue = selectedRoute?.routeText ?? "Unknown".localized
+							let routeBackValue = selectedRoute?.routeBackText ?? "Unknown".localized
 							Label {
-								Text("Route: \(selectedRoute?.routeText ?? "Unknown".localized)")
+								Text("Route: \(routeValue)")
+									.textSelection(.enabled)
 							} icon: {
 								Image(systemName: "signpost.right")
 									.symbolRenderingMode(.hierarchical)
 							}
 							.font(.title3)
+							.contextMenu {
+								Button {
+									UIPasteboard.general.string = String(localized: "Route: \(routeValue)")
+								} label: {
+									Label("Copy", systemImage: "doc.on.doc")
+								}
+							}
 							Label {
-								Text("Route Back: \(selectedRoute?.routeBackText ?? "Unknown".localized)")
+								Text("Route Back: \(routeBackValue)")
+									.textSelection(.enabled)
 							} icon: {
 								Image(systemName: "signpost.left")
 									.symbolRenderingMode(.hierarchical)
 							}
 							.font(.title3)
+							.contextMenu {
+								Button {
+									UIPasteboard.general.string = String(localized: "Route Back: \(routeBackValue)")
+								} label: {
+									Label("Copy", systemImage: "doc.on.doc")
+								}
+							}
+							if selectedRoute?.hasPositions ?? false, let routeID = selectedRoute?.id {
+								Button {
+									router.selectedTab = .map
+									router.mapState = .traceRoute(routeID)
+								} label: {
+									Label("Show on Map", systemImage: "map")
+								}
+								.buttonStyle(.bordered)
+								.padding(.top, 4)
+							}
 						} else if !(selectedRoute?.sent ?? true) {
 								Label {
 									VStack {
@@ -216,12 +255,26 @@ struct TraceRouteLog: View {
 			}
 			.navigationTitle("Trace Route Log")
 		}
+		.onAppear {
+			refreshTraceRoutes()
+		}
+		.onChange(of: node.lastHeard) {
+			refreshTraceRoutes()
+		}
 		.toolbar {
 			ToolbarItem(placement: .topBarTrailing) {
 				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
 			}
 		}
 	}
+
+	private func refreshTraceRoutes() {
+		traceRoutes = node.safeTraceRoutes()
+		if let selectedRouteID, !traceRoutes.contains(where: { $0.persistentModelID == selectedRouteID }) {
+			self.selectedRouteID = nil
+		}
+	}
+
 	@ViewBuilder func contents(animation: Animation? = nil) -> some View {
 		ForEach(0..<indexes, id: \.self) { idx in
 			TraceRouteComponent(animation: animation) {

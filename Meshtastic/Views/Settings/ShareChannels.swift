@@ -227,7 +227,9 @@ struct ShareChannels: View {
 			.sheet(isPresented: $showingHelp) {
 				ChannelsHelp()
 					.presentationDetents([.large])
+					#if !targetEnvironment(macCatalyst)
 					.presentationDragIndicator(.visible)
+					#endif
 			}
 			.safeAreaInset(edge: .bottom, alignment: .leading) {
 				HStack {
@@ -330,6 +332,8 @@ struct ShareChannels: View {
 					channelSettings.name = ch.name!
 					channelSettings.psk = ch.psk!
 					channelSettings.id = UInt32(ch.id)
+					channelSettings.moduleSettings.positionPrecision = UInt32(ch.positionPrecision)
+					channelSettings.moduleSettings.isMuted = ch.mute
 					channelSet.settings.append(channelSettings)
 				}
 			}

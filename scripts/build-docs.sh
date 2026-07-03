@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # scripts/build-docs.sh
 # Converts GFM markdown docs to HTML, injects CSS, builds keyword index, enforces bundle size.
-# Usage: bash scripts/build-docs.sh --output <dir> [--beta]
+# Usage: bash scripts/build-docs.sh --output <dir>
 # See specs/003-app-docs-markdown/contracts/ci-workflow-contract.md for full interface.
 
 set -euo pipefail
@@ -10,7 +10,6 @@ set -euo pipefail
 DOCS_SIZE_WARN_BYTES="${DOCS_SIZE_WARN_BYTES:-8388608}"   # 8 MB
 DOCS_SIZE_LIMIT_BYTES="${DOCS_SIZE_LIMIT_BYTES:-10485760}" # 10 MB
 OUTPUT_DIR=""
-BETA_FLAG=false
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 SOURCE_DIR="$REPO_ROOT/docs"
 CSS_SOURCE="$REPO_ROOT/Meshtastic/Resources/docs/assets/docs.css"
@@ -22,13 +21,9 @@ while [[ $# -gt 0 ]]; do
             OUTPUT_DIR="$2"
             shift 2
             ;;
-        --beta)
-            BETA_FLAG=true
-            shift
-            ;;
         *)
             echo "Unknown argument: $1" >&2
-            echo "Usage: $0 --output <dir> [--beta]" >&2
+            echo "Usage: $0 --output <dir>" >&2
             exit 1
             ;;
     esac
@@ -57,12 +52,6 @@ if [[ "$(realpath "$CSS_SOURCE")" != "$(realpath "$OUTPUT_DIR/assets/docs.css" 2
     cp "$CSS_SOURCE" "$OUTPUT_DIR/assets/docs.css"
 fi
 
-# ── Beta banner ───────────────────────────────────────────────────────────────
-BETA_BANNER=""
-if [[ "$BETA_FLAG" == true ]]; then
-    BETA_BANNER='<div class="pre-release-banner">⚠️ <strong>Pre-release</strong> — subject to change</div>'
-fi
-
 # ── HTML template ─────────────────────────────────────────────────────────────
 html_template() {
     local title="$1"
@@ -78,7 +67,7 @@ html_template() {
   <link rel="stylesheet" href="../assets/docs.css">
 </head>
 <body data-page="${page_id}">
-${BETA_BANNER}${content}
+${content}
 </body>
 </html>
 EOF

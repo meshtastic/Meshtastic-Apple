@@ -4,6 +4,7 @@
 import Testing
 import Foundation
 import SwiftData
+import MeshtasticProtobufs
 @testable import Meshtastic
 
 // MARK: - In-Memory Persistence Helper
@@ -90,6 +91,57 @@ struct CreateNodeInfoTests {
 		let hex = Int64(0xDEADBEEF).toHex()
 		let last4 = String(hex.suffix(4))
 		#expect(node.user?.shortName == last4)
+	}
+}
+
+// MARK: - findOrCreateNode Tests
+//
+// NodeInfoEntity.num is @Attribute(.unique). SwiftData resolves unique collisions against the saved
+// store only — not against un-saved inserts pending in the same context — so a plain fetch-then-
+// insert can leave two pending rows with the same num and trap at save. That was the top 2.7.13
+// crash (issue 4fb84588: createNodeInfo from upsertPositionPacket on a POSITION packet that arrives
+// before the node's NodeInfo). findOrCreateNode dedups against pending inserts too.
+
+@Suite("findOrCreateNode")
+struct FindOrCreateNodeTests {
+
+	/// A fresh context over the shared container isolates this test's pending inserts from others.
+	@MainActor private func freshContext() -> ModelContext {
+		ModelContext(sharedModelContainer)
+	}
+
+	@Test @MainActor func dedupesPendingInsertBeforeSave() throws {
+		let context = freshContext()
+		let num: Int64 = 0x1A2B_3C40
+
+		let first = findOrCreateNode(num: num, context: context)
+		// Not saved yet: a plain fetch wouldn't see it, but findOrCreateNode checks pending inserts.
+		let second = findOrCreateNode(num: num, context: context)
+
+		#expect(first === second)
+		let pending = context.insertedModelsArray.compactMap { $0 as? NodeInfoEntity }.filter { $0.num == num }
+		#expect(pending.count == 1)
+
+		// The original bug trapped here — saving two pending rows with the same unique `num`.
+		try context.save()
+		var descriptor = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == num })
+		descriptor.fetchLimit = 2
+		#expect(try context.fetch(descriptor).count == 1)
+	}
+
+	@Test @MainActor func returnsExistingSavedNode() throws {
+		let context = freshContext()
+		let num: Int64 = 0x0BAD_F00D
+
+		let created = findOrCreateNode(num: num, context: context)
+		try context.save()
+
+		let again = findOrCreateNode(num: num, context: context)
+		#expect(created.num == again.num)
+
+		var descriptor = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == num })
+		descriptor.fetchLimit = 2
+		#expect(try context.fetch(descriptor).count == 1)
 	}
 }
 
@@ -588,6 +640,37 @@ struct NodeInfoEntityComputedTests {
 		#expect(node.hasTraceRoutes == false)
 	}
 
+	@Test @MainActor func safeTraceRoutes_includesPendingRoutes() throws {
+		let container = try makeTestContainer()
+		let context = container.mainContext
+		let node = NodeInfoEntity()
+		node.num = Int64.random(in: 900_000...999_999)
+		context.insert(node)
+
+		let pendingRoute = TraceRouteEntity()
+		pendingRoute.node = node
+		pendingRoute.time = Date().addingTimeInterval(-60)
+		pendingRoute.sent = true
+		pendingRoute.response = false
+		context.insert(pendingRoute)
+
+		let respondedRoute = TraceRouteEntity()
+		respondedRoute.node = node
+		respondedRoute.time = Date()
+		respondedRoute.sent = true
+		respondedRoute.response = true
+		context.insert(respondedRoute)
+
+		try context.save()
+
+		let routes = node.safeTraceRoutes()
+		#expect(node.hasTraceRoutes == true)
+		#expect(routes.count == 2)
+		#expect(routes[0].response == true)
+		#expect(routes[1].response == false)
+		#expect(routes.contains { $0.sent && !$0.response })
+	}
+
 	@Test @MainActor func isStoreForwardRouter_noConfig_returnsFalse() throws {
 		let node = try makeNode()
 		#expect(node.isStoreForwardRouter == false)
@@ -609,5 +692,94 @@ struct NodeInfoEntityComputedTests {
 		let node = try makeNode()
 		node.lastHeard = Date().addingTimeInterval(-3 * 3600) // 3 hours ago
 		#expect(node.isOnline == false)
+	}
+}
+
+// MARK: - ChannelEntity protoBuf Tests
+
+@Suite("ChannelEntity protoBuf", .serialized)
+struct ChannelEntityProtoBufTests {
+
+	@MainActor
+	private func makeChannel(positionPrecision: Int32 = 14, mute: Bool = false) throws -> ChannelEntity {
+		let context = TestContainerProvider.shared.mainContext
+		let channel = ChannelEntity()
+		channel.index = 1
+		channel.name = "Test"
+		channel.psk = Data(repeating: 0xAB, count: 32)
+		channel.role = 2
+		channel.positionPrecision = positionPrecision
+		channel.mute = mute
+		context.insert(channel)
+		return channel
+	}
+
+	@Test @MainActor func protoBuf_includesModuleSettings() throws {
+		let channel = try makeChannel(positionPrecision: 14)
+		let proto = channel.protoBuf
+		#expect(proto.settings.hasModuleSettings == true)
+		#expect(proto.settings.moduleSettings.positionPrecision == 14)
+	}
+
+	@Test @MainActor func protoBuf_zeroPositionPrecision_includesModuleSettings() throws {
+		let channel = try makeChannel(positionPrecision: 0)
+		let proto = channel.protoBuf
+		#expect(proto.settings.hasModuleSettings == true)
+		#expect(proto.settings.moduleSettings.positionPrecision == 0)
+	}
+
+	@Test @MainActor func protoBuf_muteFlag_included() throws {
+		let channel = try makeChannel(positionPrecision: 14, mute: true)
+		let proto = channel.protoBuf
+		#expect(proto.settings.moduleSettings.isMuted == true)
+	}
+}
+
+// MARK: - ChannelSettings moduleSettings for QR Import Tests
+
+@Suite("ChannelSettings QR Import moduleSettings")
+struct ChannelSettingsQRImportTests {
+
+	@Test func channelSettings_withoutModuleSettings_hasModuleSettingsFalse() {
+		// Simulates a QR-imported channel that has no moduleSettings
+		var cs = ChannelSettings()
+		cs.name = "TestChannel"
+		cs.psk = Data(repeating: 0xAB, count: 32)
+		#expect(cs.hasModuleSettings == false)
+	}
+
+	@Test func channelSettings_afterSettingPositionPrecision_hasModuleSettingsTrue() {
+		// Verifies that explicitly setting moduleSettings makes it present
+		var cs = ChannelSettings()
+		cs.name = "TestChannel"
+		cs.psk = Data(repeating: 0xAB, count: 32)
+		cs.moduleSettings.positionPrecision = 0
+		cs.moduleSettings.isMuted = false
+		#expect(cs.hasModuleSettings == true)
+		#expect(cs.moduleSettings.positionPrecision == 0)
+	}
+
+	@Test func channel_fromQRSettings_getsModuleSettingsAfterFix() {
+		// Simulates the fix: QR-imported ChannelSettings without moduleSettings
+		// gets moduleSettings explicitly set to defaults before sending to device
+		var cs = ChannelSettings()
+		cs.name = "Fr_Balise"
+		cs.psk = Data(repeating: 0xCD, count: 32)
+		// QR code doesn't include moduleSettings
+		#expect(cs.hasModuleSettings == false)
+
+		// Apply the fix: set moduleSettings when absent
+		var chan = Channel()
+		chan.role = .primary
+		chan.settings = cs
+		if !cs.hasModuleSettings {
+			chan.settings.moduleSettings.positionPrecision = 0
+			chan.settings.moduleSettings.isMuted = false
+		}
+
+		// Verify the channel now has moduleSettings with safe defaults
+		#expect(chan.settings.hasModuleSettings == true)
+		#expect(chan.settings.moduleSettings.positionPrecision == 0)
+		#expect(chan.settings.moduleSettings.isMuted == false)
 	}
 }

@@ -11,83 +11,81 @@ import MapKit
 
 struct NodeInfoItem: View {
 
-	@Bindable var node: NodeInfoEntity
+    @Bindable var node: NodeInfoEntity
 
-	var body: some View {
+    var body: some View {
 
-		Divider()
+        Divider()
 
-		HStack {
+        HStack {
 
-			VStack(alignment: .center) {
-				CircleText(text: node.user?.shortName ?? "?", color: Color(UIColor(hex: UInt32(node.num))), circleSize: 65)
-			}
-			if let user = node.user {
-				Divider()
-				VStack {
-					Image(user.hwModel ?? "unset".localized)
-						.resizable()
-						.aspectRatio(contentMode: .fit)
-						.frame(width: 75, height: 75)
-						.cornerRadius(5)
-					Text(String(user.hwModel ?? "unset".localized))
-						.font(.caption2).fixedSize()
-				}
-			}
-			if node.snr != 0 {
-				Divider()
-				VStack(alignment: .center) {
-					let signalStrength = getLoRaSignalStrength(snr: node.snr, rssi: node.rssi, preset: ModemPresets.longModerate)
-					LoRaSignalStrengthIndicator(signalStrength: signalStrength)
-					Text("Signal \(signalStrength.description)").font(.footnote)
-					Text("SNR \(String(format: "%.2f", node.snr))dB")
-						.foregroundColor(getSnrColor(snr: node.snr, preset: ModemPresets.longModerate))
-						.font(.caption2)
-					Text("RSSI \(node.rssi)dB")
-						.foregroundColor(getRssiColor(rssi: node.rssi))
-						.font(.caption2)
-				}
-			}
-			let deviceMetrics = node.telemetries.filter { $0.metricsType == 0 }
-			if deviceMetrics.count >= 1 {
-				Divider()
-				let mostRecent = deviceMetrics.last
-				VStack(alignment: .center) {
-					BatteryGauge(batteryLevel: Double(mostRecent?.batteryLevel ?? 0))
-					if mostRecent?.voltage ?? 0 > 0 {
+            VStack(alignment: .center) {
+                CircleText(text: node.user?.shortName ?? "?", color: Color(UIColor(hex: UInt32(node.num))), circleSize: 65)
+            }
+            if let user = node.user {
+                Divider()
+                VStack {
+                    Image(user.hwModel ?? "unset".localized)
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 75, height: 75)
+                        .cornerRadius(5)
+                    Text(String(user.hwModel ?? "unset".localized))
+                        .font(.caption2).fixedSize()
+                }
+            }
+            if node.snr != 0 {
+                Divider()
+                VStack(alignment: .center) {
+                    let signalStrength = getLoRaSignalStrength(snr: node.snr, rssi: node.rssi, preset: ModemPresets.longModerate)
+                    LoRaSignalStrengthIndicator(signalStrength: signalStrength)
+                    Text("Signal \(signalStrength.description)").font(.footnote)
+                    Text("SNR \(String(format: "%.2f", node.snr))dB")
+                        .foregroundColor(getSnrColor(snr: node.snr, preset: ModemPresets.longModerate))
+                        .font(.caption2)
+                    Text("RSSI \(node.rssi)dB")
+                        .foregroundColor(getRssiColor(rssi: node.rssi))
+                        .font(.caption2)
+                }
+            }
+            if let mostRecent = node.latestDeviceMetrics {
+                Divider()
+                VStack(alignment: .center) {
+                    BatteryGauge(batteryLevel: Double(mostRecent.batteryLevel ?? 0))
+                    if mostRecent.voltage ?? 0 > 0 {
 
-						Text(String(format: "%.2f", mostRecent?.voltage ?? 0) + " V")
-							.font(.callout)
-							.foregroundColor(.gray)
-							.fixedSize()
-					}
-				}
-			}
-		}
-		Divider()
-		HStack(alignment: .center) {
-			VStack {
-				HStack {
-					Image(systemName: "number")
-						.font(.title2)
-						.foregroundColor(.accentColor)
-						.symbolRenderingMode(.hierarchical)
-					Text("Node Number:").font(.title2)
-				}
-				Text(String(node.num)).font(.title3).foregroundColor(.gray)
-			}
-			Divider()
-			VStack {
-				HStack {
-					Image(systemName: "person")
-						.font(.title2)
-						.foregroundColor(.accentColor)
-						.symbolRenderingMode(.hierarchical)
-					Text("User Id:").font(.title2)
-				}
-				Text(node.user?.userId ?? "?").font(.title3).foregroundColor(.gray)
-			}
-		}
-		Divider()
-	}
+                        Text(String(format: "%.2f", mostRecent.voltage ?? 0) + " V")
+                            .font(.callout)
+                            .foregroundColor(.gray)
+                            .fixedSize()
+                    }
+                }
+            }
+        }
+        Divider()
+        HStack(alignment: .center) {
+            VStack {
+                HStack {
+                    Image(systemName: "number")
+                        .font(.title2)
+                        .foregroundColor(.accentColor)
+                        .symbolRenderingMode(.hierarchical)
+                    Text("Node Number:").font(.title2)
+                }
+                Text(String(node.num)).font(.title3).foregroundColor(.gray)
+            }
+            Divider()
+            VStack {
+                HStack {
+                    Image(systemName: "person")
+                        .font(.title2)
+                        .foregroundColor(.accentColor)
+                        .symbolRenderingMode(.hierarchical)
+                    Text("User Id:").font(.title2)
+                }
+                Text(node.user?.userId ?? "?").font(.title3).foregroundColor(.gray)
+            }
+        }
+        Divider()
+    }
 }

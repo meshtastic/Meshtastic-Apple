@@ -8,7 +8,7 @@
 import SwiftUI
 import UniformTypeIdentifiers
 import OSLog
-import SwiftData
+@preconcurrency import SwiftData
 import MeshtasticProtobufs
 
 enum CertificateImportType {

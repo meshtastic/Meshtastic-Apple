@@ -22,6 +22,10 @@ struct PaxCounterLog: View {
 	@State private var wifiChartColor: Color = .orange
 	@State private var paxChartColor: Color = .green
 	@Bindable  var node: NodeInfoEntity
+	@State private var paxCounters: [PaxCounterEntity] = []
+	@State private var chartData: [PaxCounterEntity] = []
+	@State private var maxValue: Int32 = 5
+	@State private var totalReadings = 0
 
 	@ViewBuilder
 	private func paxChart(chartData: [PaxCounterEntity], maxValue: Int32) -> some View {
@@ -76,23 +80,16 @@ struct PaxCounterLog: View {
 
 	var body: some View {
 		VStack {
-			if node.hasPax {
-
-				let oneWeekAgo = Calendar.current.date(byAdding: .day, value: -7, to: Date())
-				let pax = Array(node.pax.reversed())
-				let chartData = pax
-						.filter { if let time = $0.time, let cutoff = oneWeekAgo { return time >= cutoff } else { return false } }
-						.sorted { ($0.time ?? .distantPast) < ($1.time ?? .distantPast) }
-				let maxValue = (chartData.map { $0.wifi }.max() ?? 0) + (chartData.map { $0.ble }.max() ?? 0) + 5
+			if totalReadings > 0 {
 				if chartData.count > 0 {
-					GroupBox(label: Label("\(pax.count) Readings Total", systemImage: "chart.xyaxis.line")) {
+					GroupBox(label: Label("\(totalReadings) Readings Total", systemImage: "chart.xyaxis.line")) {
 						paxChart(chartData: chartData, maxValue: maxValue)
 					}
 					.frame(minHeight: 250)
 				}
 				if UIScreen.main.bounds.size.width > 768 && (UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac) {
 					// Add a table for mac and ipad
-					Table(pax) {
+					Table(paxCounters) {
 						TableColumn("BLE") { pc in
 							Text("\(pc.ble)")
 						}
@@ -140,7 +137,7 @@ struct PaxCounterLog: View {
 									.font(.caption)
 									.fontWeight(.bold)
 							}
-							ForEach(pax) { pc in
+							ForEach(paxCounters) { pc in
 								GridRow {
 									Text(String(pc.ble))
 										.font(.caption)
@@ -162,49 +159,59 @@ struct PaxCounterLog: View {
 						.padding(.trailing, 5)
 					}
 				}
-				HStack {
-					Button(role: .destructive) {
-						isPresentingClearLogConfirm = true
-					} label: {
-						Label("Clear", systemImage: "trash.fill")
-					}
-					.buttonStyle(.bordered)
-					.buttonBorderShape(.capsule)
-					.controlSize(.large)
-					.padding(.bottom)
-					.padding(.leading)
-					.confirmationDialog(
-						"Are you sure?",
-						isPresented: $isPresentingClearLogConfirm,
-						titleVisibility: .visible
-					) {
-						Button("Delete all pax data?", role: .destructive) {
-							Task {
-								if await MeshPackets.shared.clearPax(destNum: node.num) {
-									Logger.services.info("Cleared Pax Counter for \(node.num, privacy: .public)")
-								} else {
-									Logger.services.error("Clear Pax Counter Log Failed")
+					HStack {
+						Button(role: .destructive) {
+							isPresentingClearLogConfirm = true
+						} label: {
+							Label("Clear", systemImage: "trash.fill")
+						}
+						.buttonStyle(.bordered)
+						.buttonBorderShape(.capsule)
+						.controlSize(.large)
+						.padding(.bottom)
+						.padding(.leading)
+						.confirmationDialog(
+							"Are you sure?",
+							isPresented: $isPresentingClearLogConfirm,
+							titleVisibility: .visible
+						) {
+							Button("Delete all pax data?", role: .destructive) {
+								Task {
+									if await MeshPackets.shared.clearPax(destNum: node.num) {
+										Logger.services.info("Cleared Pax Counter for \(node.num, privacy: .public)")
+										await MainActor.run {
+											refreshPaxCounters()
+											NotificationCenter.default.post(name: .nodeLogAvailabilityDidChange, object: node.num)
+										}
+									} else {
+										Logger.services.error("Clear Pax Counter Log Failed")
+									}
 								}
 							}
 						}
-					}
 
-					Button {
-						exportString = paxToCsvFile(pax: pax)
-						isExporting = true
-					} label: {
-						Label("Save", systemImage: "square.and.arrow.down")
+						Button {
+							exportString = paxToCsvFile(pax: node.paxCountersSortedByTime(context: context, ascending: true))
+							isExporting = true
+						} label: {
+							Label("Save", systemImage: "square.and.arrow.down")
+						}
+						.buttonStyle(.bordered)
+						.buttonBorderShape(.capsule)
+						.controlSize(.large)
+						.padding(.bottom)
+						.padding(.trailing)
 					}
-					.buttonStyle(.bordered)
-					.buttonBorderShape(.capsule)
-					.controlSize(.large)
-					.padding(.bottom)
-					.padding(.trailing)
+				} else {
+					ContentUnavailableView("No PAX Counter Logs", systemImage: "slash.circle")
 				}
-			} else {
-				ContentUnavailableView("No PAX Counter Logs", systemImage: "slash.circle")
 			}
-		}
+	.onAppear {
+		refreshPaxCounters()
+	}
+	.onChange(of: node.lastHeard) {
+		refreshPaxCounters()
+	}
 		.navigationTitle("PAX Counter Log")
 		.navigationBarTitleDisplayMode(.inline)
 		.toolbar {
@@ -227,6 +234,16 @@ struct PaxCounterLog: View {
 				}
 			}
 		)
+	}
+
+	private func refreshPaxCounters() {
+		totalReadings = node.paxCount(context: context)
+		paxCounters = node.paxCountersSortedByTime(context: context, ascending: false, limit: 500)
+		let oneWeekAgo = Calendar.current.date(byAdding: .day, value: -7, to: Date()) ?? Date.distantPast
+		chartData = paxCounters
+			.filter { ($0.time ?? Date.distantPast) >= oneWeekAgo }
+			.sorted { ($0.time ?? .distantPast) < ($1.time ?? .distantPast) }
+		maxValue = (chartData.map { $0.wifi }.max() ?? 0) + (chartData.map { $0.ble }.max() ?? 0) + 5
 	}
 }
 

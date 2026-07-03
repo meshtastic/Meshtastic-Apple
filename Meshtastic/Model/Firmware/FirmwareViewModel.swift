@@ -7,7 +7,7 @@
 
 import Foundation
 import SwiftUI
-import SwiftData
+@preconcurrency import SwiftData
 import OSLog
 
 extension FirmwareViewModel {

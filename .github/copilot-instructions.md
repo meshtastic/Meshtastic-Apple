@@ -195,7 +195,7 @@ The app ships a complete offline documentation system (feature `003-app-docs-mar
   - The `**` closing the title must be immediately adjacent to the last word (no trailing space): `> **Tip — Title**` ✓, `> **Tip — Title **` ✗.
 - **After editing any `.md` file under `docs/`**, regenerate the bundled HTML and commit it:
   ```bash
-  bash scripts/build-docs.sh --output Meshtastic/Resources/docs --beta
+  bash scripts/build-docs.sh --output Meshtastic/Resources/docs
   ```
   Then copy updated snapshots if needed:
   ```bash
@@ -223,10 +223,11 @@ CI is handled by Xcode Cloud via `ci_scripts/ci_pre_xcodebuild.sh`. Do not modif
 - Application Support directory (file-based cache — translated .md files + metadata JSON) (008-docs-auto-translation)
 
 ## Recent Changes
+- 012-packet-stream-log-filter: Live OSLog packet stream in the debug log viewer (incremental `OSLogStore` polling, paced reveal, bounded retention), accordion filter sections, and a `Logger.mesh` category audit (packets only; outbound moved from `.transport`; PII redaction preserved)
 - 001-local-mesh-discovery: Added Swift (latest stable), Swift Concurrency (`async`/`await`, `@MainActor`) + SwiftUI, MapKit, CoreBluetooth (via AccessoryManager), MeshtasticProtobufs, FoundationModels (iOS 26+)
 
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan
-at `specs/009-docs-translation-pipeline/plan.md`
+at `specs/013-docs-release-versioning/plan.md`
 <!-- SPECKIT END -->

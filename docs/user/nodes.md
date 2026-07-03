@@ -95,10 +95,36 @@ The full node row shows the circle avatar, battery level, encryption status, las
 
 Long-press any node in the list to access quick actions:
 
-- **Favorite / Unfavorite** — star important nodes so they appear at the top of the list
-- **Request Client History** — for Store & Forward nodes, request any messages you may have missed while offline
+- **Add to favorites / Remove from favorites** — star important nodes so they appear at the top of the list
+- **Display name** — give a node a local nickname (see Display Names below)
+- **Mute notifications / Unmute** — silence alerts from this node
+- **Message** — open a direct message conversation with this node
 - **Trace Route** — discover the path messages take to reach this node
-- **Delete Node** — remove the node from your local database
+- **Ignore / Remove from ignored** — hide this node from normal views
+- **Remove** — remove the node from your local database
+
+## Display Names
+
+You can give any node a local nickname that's shown throughout the app instead of its device long name — in the node list, node details, and messages. Set it from the node's long-press menu ("Display name") or from the **Name** row in Node Detail. The avatar circle always shows the node's actual short code, unaffected by the nickname.
+
+Display names are stored only on this device and are never sent over the mesh, shared, or exported — they don't change the node's real identity, so QR codes and contact sharing still use the device's actual name.
+
+## Filtering & Search
+
+Tap the filter icon above the list to narrow which nodes are shown. Filters apply across the Nodes list, the contacts picker in Messages, and the map, so a filter set in one place takes effect everywhere.
+
+| Filter | What it shows |
+|--------|---------------|
+| **Online** | Only nodes heard in the last two hours. |
+| **Favorites** | Only nodes you have starred. |
+| **Public Key Encryption** | Only nodes using PKI-encrypted direct messages. |
+| **Environment** | Only nodes reporting environment telemetry (temperature, humidity, pressure). |
+| **Hops Away** | Limit to nodes within a chosen number of hops, including direct (0-hop) only. |
+| **Distance** | Limit to nodes within a chosen radius of your location. Falls back to the connected device's last position when phone location is unavailable. |
+| **Roles** | Show only the device roles you select. |
+| **Connection** | Show nodes reachable via LoRa, via MQTT, or both. At least one is always kept on. |
+
+Filters are **remembered between launches** — the app reopens with the same filters applied. Search text is the exception: it is intentionally cleared on relaunch so you never reopen into a stale search that hides most of your nodes. Use the **reset** affordance to clear every filter and the search text at once.
 
 ## Additional Icons
 
@@ -114,10 +140,48 @@ Tap a node and scroll to the Logs section for detailed metrics:
 | ![Detection Sensor](../assets/screenshots/logDetectionSensor.png) | Motion or door open/close alerts from the node. |
 | ![Trace Routes](../assets/screenshots/logTraceRoutes.png) | Recorded trace route paths showing the hops a message took through the mesh. |
 
+## Local Stats and Noise Floor
+
+Local Stats show radio diagnostics reported by a node, including packets received, packets transmitted, duplicate packets, relayed packets, bad receives, canceled packets, online node count, total node count, and noise floor.
+
+Noise floor is displayed in dBm when the node reports it. Treat it as a directional diagnostic instead of an absolute site score: readings can vary quickly, and external filters can lower or skew the displayed value because of insertion loss or in-band interference.
+
 ## Node Detail View
 
 Tap any node to see the full detail view with hardware info, signal metrics, environment sensors, and log navigation:
 
 ![Node Detail](../assets/screenshots/nodeDetail.png)
+
+### Signed Node
+
+If a node signs its broadcast packets, a green shield (🛡️) **Signed node** row appears in the detail view, marked **Verified automatically**. This means the radio has cryptographically verified an XEdDSA signature from this node (firmware 2.8 or later). Because a node's identity broadcast is itself signed, its name and identity are verified by extension.
+
+This is *automatic* trust observed from the radio — distinct from manually verifying a contact's public key out-of-band, which is a separate, user-asserted action. The row only ever affirms the good state; nodes that don't sign simply show no shield, which is not a warning.
+
+### Hardware Info
+
+The hardware section shows information about the physical device running the node. The section title reflects the device's support status:
+
+| Status | Meaning |
+|--------|---------|
+| **Supported Hardware** | Device is actively supported with firmware updates. |
+| **Discontinued Hardware** | Device is no longer supported and does not receive firmware updates. |
+
+For supported devices, the support tier is shown below the hardware name:
+
+| Tier | Description |
+|------|-------------|
+| Flagship | Recommended device with full feature support and active development. |
+| Niche | Supported device with active firmware updates and a specialised form factor. |
+| Legacy | Older device that still receives firmware updates but may lack some features. |
+
+### Where to Buy
+
+For devices with known purchase links, an **I want one** section appears below the hardware info. It shows the official vendor link and regional marketplace options (Amazon, Rokland, AliExpress, and others) sourced from [msh.to](https://msh.to).
+
+Marketplace links are filtered to your device region, so only stores that ship to your area are shown. Vendor links (directly from the device manufacturer) are always shown regardless of region.
+
+> **Tip — No purchase links shown**
+> Purchase links require an internet connection on first launch and after clearing app data. Connect the app to update the device catalog.
 
 [Device Configuration Docs →](https://meshtastic.org/docs/configuration/radio/device/)

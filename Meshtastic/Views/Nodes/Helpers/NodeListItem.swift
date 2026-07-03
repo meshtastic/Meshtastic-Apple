@@ -9,6 +9,41 @@ import SwiftUI
 import CoreLocation
 import Foundation
 
+struct NodeListRowSummary {
+	// Snapshot the position and device metrics as plain value types at construction
+	// time rather than vending live PositionEntity/TelemetryEntity objects. SwiftData
+	// fatally traps (SIGTRAP in _SD_get_faulting_backingdata_tsd) if a deleted @Model's
+	// persisted property is read, and both position rows and telemetry history are
+	// pruned constantly underneath the list (telemetry via shouldPruneTelemetryHistory,
+	// nullify relationship — so the captured metrics row can be deleted while the node
+	// stays live). A view body holding either live object can crash mid-render; value-
+	// type snapshots can never fault.
+	let batteryLevel: Int32?
+	let hasDeviceMetrics: Bool
+	let hasPosition: Bool
+	let latestNodeCoordinate: CLLocationCoordinate2D?
+	let hasEnvironmentMetrics: Bool
+	let hasDetectionSensorMetrics: Bool
+	let hasTraceRoutes: Bool
+
+	@MainActor init(
+		node: NodeInfoEntity,
+		includeDeviceMetrics: Bool = true,
+		includePosition: Bool = true,
+		includeLogAvailability: Bool = true
+	) {
+		let latestDeviceMetrics = includeDeviceMetrics ? node.latestDeviceMetrics : nil
+		batteryLevel = latestDeviceMetrics?.batteryLevel
+		hasDeviceMetrics = latestDeviceMetrics != nil
+		let latestPosition = includePosition ? node.latestPosition : nil
+		hasPosition = latestPosition != nil
+		latestNodeCoordinate = latestPosition?.nodeCoordinate
+		hasEnvironmentMetrics = includeLogAvailability ? node.hasEnvironmentMetrics : false
+		hasDetectionSensorMetrics = includeLogAvailability ? node.hasDetectionSensorMetrics : false
+		hasTraceRoutes = includeLogAvailability ? node.hasTraceRoutes : false
+	}
+}
+
 struct NodeListItem: View {
 
 	private static let relativeDateFormatter: RelativeDateTimeFormatter = {
@@ -23,12 +58,14 @@ struct NodeListItem: View {
 		return f
 	}()
 
-	private func accessibilityDescription(cachedMetrics: TelemetryEntity?, cachedLocationData: (PositionEntity, CLLocation)?) -> String {
+	private func accessibilityDescription(batteryLevel: Int32?, cachedLocationData: (nodeLocation: CLLocation, myLocation: CLLocation)?, status: String?) -> String {
 		var desc = ""
-		if let shortName = node.user?.shortName {
+		// The device shortName is never overridden by a local display name, so it's safe to branch
+		// on it directly here; only the longName fallback needs the display-name-aware variant.
+		if let shortName = node.user?.shortName, !shortName.isEmpty {
 			desc = shortName.formatNodeNameForVoiceOver()
-		} else if let longName = node.user?.longName {
-			desc = longName
+		} else if let user = node.user, let longName = user.longName, !longName.isEmpty {
+			desc = user.displayLongName
 		} else {
 			desc = "Unknown".localized + " " + "Node".localized
 		}
@@ -37,6 +74,9 @@ struct NodeListItem: View {
 		}
 		if node.favorite {
 			desc += ", favorite"
+		}
+		if let status {
+			desc += ", status: " + status
 		}
 		if let lastHeard = node.lastHeard {
 			let relative = Self.relativeDateFormatter.localizedString(for: lastHeard, relativeTo: Date())
@@ -54,7 +94,7 @@ struct NodeListItem: View {
 		if node.hopsAway > 0 {
 			desc += ", \(node.hopsAway) hops away"
 		}
-		if let battery = cachedMetrics?.batteryLevel {
+		if let battery = batteryLevel {
 			if battery > 100 {
 				desc += ", " + "Plugged in".localized
 			} else if battery == 100 {
@@ -63,8 +103,7 @@ struct NodeListItem: View {
 				desc += ", battery \(battery)%"
 			}
 		}
-		if !isDirectlyConnected, let (lastPosition, myCoord) = cachedLocationData {
-			let nodeCoord = CLLocation(latitude: lastPosition.nodeCoordinate!.latitude, longitude: lastPosition.nodeCoordinate!.longitude)
+		if !isDirectlyConnected, let (nodeCoord, myCoord) = cachedLocationData {
 			let metersAway = nodeCoord.distance(from: myCoord)
 			let formattedDistance = Self.distanceFormatter.string(fromMeters: metersAway)
 			desc += ", " + String(format: "%@: %@", "Distance".localized, formattedDistance)
@@ -93,10 +132,16 @@ struct NodeListItem: View {
 			}
 			desc += ", " + signalString
 		}
+		// Mirror the visual "Signed node" trust signal (see the shield row below) so VoiceOver
+		// announces it too — affirmative only, never for unsigned nodes.
+		if node.hasXeddsaSigned {
+			desc += ", " + "Signed node".localized
+		}
 		return desc
 	}
 	
 	@Bindable var node: NodeInfoEntity
+	@State private var rowSummary: NodeListRowSummary?
 	var isDirectlyConnected: Bool
 	var connectedNode: Int64
 	var modemPreset: ModemPresets = ModemPresets(rawValue: UserDefaults.modemPreset) ?? ModemPresets.longFast
@@ -116,38 +161,58 @@ struct NodeListItem: View {
 		return (image, color)
 	}
 	
-	var locationData: (PositionEntity, CLLocation)? {
-		guard let lastPostion = node.latestPosition else {
+	func locationData(for nodeCoordinate: CLLocationCoordinate2D?) -> (nodeLocation: CLLocation, myLocation: CLLocation)? {
+		guard let nodeCoordinate else {
 			return nil
 		}
 		guard let currentLocation = LocationsHandler.shared.locationsArray.last else {
 			return nil
 		}
-		
+
 		let myCoord = CLLocation(latitude: currentLocation.coordinate.latitude, longitude: currentLocation.coordinate.longitude)
-		
-		if lastPostion.nodeCoordinate != nil && myCoord.coordinate.longitude != LocationsHandler.DefaultLocation.longitude && myCoord.coordinate.latitude != LocationsHandler.DefaultLocation.latitude {
-			return (lastPostion, myCoord)
+
+		if myCoord.coordinate.longitude != LocationsHandler.DefaultLocation.longitude && myCoord.coordinate.latitude != LocationsHandler.DefaultLocation.latitude {
+			return (CLLocation(latitude: nodeCoordinate.latitude, longitude: nodeCoordinate.longitude), myCoord)
 		}
 		return nil
 	}
 	
 	var body: some View {
-		// Cache all expensive computed properties ONCE to avoid repeated FetchDescriptor queries
-		let cachedMetrics = node.latestDeviceMetrics
-		let cachedLocationData = locationData
-		let cachedHasPositions = node.hasPositions
-		let cachedHasDeviceMetrics = cachedMetrics != nil
-		let cachedHasEnvironmentMetrics = node.hasEnvironmentMetrics
-		let cachedHasDetectionSensorMetrics = node.hasDetectionSensorMetrics
-		let cachedHasTraceRoutes = node.hasTraceRoutes
+		// A List row view can be retained and re-evaluate its body after the underlying
+		// node row has been deleted (nodes/positions are pruned constantly). Reading any
+		// persisted property of a deleted @Model fatally traps in SwiftData, so bail to an
+		// empty row when the node is no longer live — the List drops it on its next rebuild.
+		// Mirrors the modelContext guard already used in NodeList/NodeDetail.
+		if node.modelContext != nil && !node.isDeleted {
+			rowContent
+		} else {
+			EmptyView()
+		}
+	}
+
+	@ViewBuilder private var rowContent: some View {
+		let cachedBatteryLevel = rowSummary?.batteryLevel
+		let cachedLocationData = connectedNode == node.num ? nil : locationData(for: rowSummary?.latestNodeCoordinate)
+		let cachedHasPositions = rowSummary?.hasPosition ?? false
+		let cachedHasDeviceMetrics = rowSummary?.hasDeviceMetrics ?? false
+		let cachedHasEnvironmentMetrics = rowSummary?.hasEnvironmentMetrics ?? false
+		let cachedHasDetectionSensorMetrics = rowSummary?.hasDetectionSensorMetrics ?? false
+		let cachedHasTraceRoutes = rowSummary?.hasTraceRoutes ?? false
 		let cachedHasLogs = cachedHasPositions || cachedHasEnvironmentMetrics || cachedHasDetectionSensorMetrics || cachedHasTraceRoutes
-		LazyVStack(alignment: .leading) {
+		// Resolve the status once per render and reuse it for the row + accessibility label,
+		// rather than re-traversing the relationship for each read.
+		let statusMessage = node.statusMessageDisplay
+		// A plain VStack — NOT LazyVStack. A LazyVStack reports inconsistent self-sized
+		// heights when measured inside a List cell (it sizes lazily from a scroll viewport),
+		// which sends UICollectionViewCompositionalLayout into a recursive layout loop and
+		// traps on iOS 18+/26 (_UICollectionViewFeedbackLoopDebugger). The laziness was also
+		// pointless here — it wrapped a single HStack.
+		VStack(alignment: .leading) {
 			HStack {
 				VStack(alignment: .center) {
 					CircleText(text: node.user?.shortName ?? "?", color: Color(UIColor(hex: UInt32(node.num))), circleSize: 70)
 						.padding(.trailing, 5)
-					if let batteryLevel = cachedMetrics?.batteryLevel {
+					if let batteryLevel = cachedBatteryLevel {
 						BatteryCompact(batteryLevel: batteryLevel, font: .caption, iconFont: .callout, color: .accentColor)
 							.padding(.trailing, 5)
 					}
@@ -157,13 +222,31 @@ struct NodeListItem: View {
 						let (image, color) = userKeyStatus
 						IconAndText(systemName: image,
 									imageColor: color,
-									text: node.user?.longName?.addingVariationSelectors ?? "Unknown".localized,
+									text: node.user?.displayLongName.addingVariationSelectors ?? "Unknown".localized,
 									textColor: .primary)
 						if node.favorite {
 							Spacer()
 							Image(systemName: "star.fill")
 								.symbolRenderingMode(.multicolor)
 						}
+					}
+					// Signed node = XEdDSA-signed NodeInfo broadcast → identity verified by the radio.
+					// Affirmative only; never shown for unsigned nodes. Mirrors the Node Detail row.
+					if node.hasXeddsaSigned {
+						IconAndText(systemName: "checkmark.shield.fill",
+									imageColor: .green,
+									text: "Signed node".localized)
+					}
+					// User-authored status broadcast by the node — shown directly beneath the
+					// name, clamped to 2 lines so it can never grow the card unbounded. Omitted
+					// entirely when empty (no placeholder). Untrusted free text: plain only.
+					if let statusMessage {
+						NodeCardStatusRow(
+							status: statusMessage,
+							iconWidth: 30,
+							textFont: UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption,
+							lineLimit: 2
+						)
 					}
 					if isDirectlyConnected {
 						IconAndText(systemName: "antenna.radiowaves.left.and.right.circle.fill",
@@ -191,8 +274,7 @@ struct NodeListItem: View {
 					
 					if connectedNode != node.num {
 						HStack {
-							if let (lastPostion, myCoord) = cachedLocationData {
-								let nodeCoord = CLLocation(latitude: lastPostion.nodeCoordinate!.latitude, longitude: lastPostion.nodeCoordinate!.longitude)
+							if let (nodeCoord, myCoord) = cachedLocationData {
 								let metersAway = nodeCoord.distance(from: myCoord)
 								Image(systemName: "lines.measurement.horizontal")
 									.font(.callout)
@@ -264,14 +346,59 @@ struct NodeListItem: View {
 		}
 		.padding(.top, 3)
 		.padding(.bottom, 3)
+		.task(id: node.lastHeard) {
+			rowSummary = await MainActor.run {
+				NodeListRowSummary(node: node)
+			}
+		}
 		.accessibilityElement(children: .ignore)
-		.accessibilityLabel(accessibilityDescription(cachedMetrics: cachedMetrics, cachedLocationData: cachedLocationData))
+		.accessibilityLabel(accessibilityDescription(batteryLevel: cachedBatteryLevel, cachedLocationData: cachedLocationData, status: statusMessage))
+	}
+}
+
+/// Single source of truth for the Status Message presentation so the Notes glyph, color,
+/// and plain-text/clamp policy stay identical across every surface that shows a node's
+/// status (the two list cards and node detail) — the design spec requires the *same* Notes
+/// icon on every surface and client.
+enum NodeStatusStyle {
+	/// The Notes glyph that labels a node's status everywhere it appears.
+	static let glyph = "note.text"
+}
+
+/// The user-authored status row shown directly beneath a node's name on the list cards
+/// (`NodeListItem`, `NodeListItemCompact`). Renders the Notes glyph (decorative) plus the
+/// status as verbatim, clamped, plain text — `Text(_: String)` never parses markdown, so
+/// untrusted mesh text can't inject markup. Callers gate on `node.statusMessageDisplay`.
+struct NodeCardStatusRow: View {
+	let status: String
+	/// Width of the leading icon column; pass the surrounding rows' column width (e.g. 30)
+	/// to keep the glyph aligned with sibling metadata icons, or `nil` for natural width.
+	var iconWidth: CGFloat?
+	var iconFont: Font = .callout
+	var textFont: Font
+	var lineLimit: Int
+
+	var body: some View {
+		HStack(alignment: .top) {
+			Image(systemName: NodeStatusStyle.glyph)
+				.font(iconFont)
+				.symbolRenderingMode(.hierarchical)
+				.foregroundColor(.secondary)
+				.frame(width: iconWidth)
+				.accessibilityHidden(true)
+			Text(status)
+				.font(textFont)
+				.foregroundColor(.primary)
+				.lineLimit(lineLimit)
+				.truncationMode(.tail)
+				.allowsTightening(true)
+		}
 	}
 }
 
 struct DefaultIcon: View {
 	let systemName: String
-	
+
 	var body: some View {
 		Image(systemName: systemName)
 			.symbolRenderingMode(.hierarchical)

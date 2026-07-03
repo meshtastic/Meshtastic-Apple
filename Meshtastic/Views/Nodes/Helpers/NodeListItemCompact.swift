@@ -39,12 +39,14 @@ struct NodeListItemCompact: View {
 		return f
 	}()
 
-	private func accessibilityDescription(cachedMetrics: TelemetryEntity?, cachedLocationData: (PositionEntity, CLLocation)?) -> String {
+	private func accessibilityDescription(batteryLevel: Int32?, cachedLocationData: (nodeLocation: CLLocation, myLocation: CLLocation)?, status: String?) -> String {
 		var desc = ""
-		if let shortName = node.user?.shortName {
+		// The device shortName is never overridden by a local display name, so it's safe to branch
+		// on it directly here; only the longName fallback needs the display-name-aware variant.
+		if let shortName = node.user?.shortName, !shortName.isEmpty {
 			desc = shortName.formatNodeNameForVoiceOver()
-		} else if let longName = node.user?.longName {
-			desc = longName
+		} else if let user = node.user, let longName = user.longName, !longName.isEmpty {
+			desc = user.displayLongName
 		} else {
 			desc = "Unknown".localized + " " + "Node".localized
 		}
@@ -53,6 +55,9 @@ struct NodeListItemCompact: View {
 		}
 		if node.favorite {
 			desc += ", favorite"
+		}
+		if let status {
+			desc += ", status: " + status
 		}
 		if let lastHeard = node.lastHeard {
 			let relative = Self.relativeDateFormatter.localizedString(for: lastHeard, relativeTo: Date())
@@ -70,7 +75,7 @@ struct NodeListItemCompact: View {
 		if node.hopsAway > 0 {
 			desc += ", \(node.hopsAway) hops away"
 		}
-		if let battery = cachedMetrics?.batteryLevel {
+		if let battery = batteryLevel {
 			if battery > 100 {
 				desc += ", " + "Plugged in".localized
 			} else if battery == 100 {
@@ -79,8 +84,7 @@ struct NodeListItemCompact: View {
 				desc += ", battery \(battery)%"
 			}
 		}
-		if !isDirectlyConnected, let (lastPosition, myCoord) = cachedLocationData {
-			let nodeCoord = CLLocation(latitude: lastPosition.nodeCoordinate!.latitude, longitude: lastPosition.nodeCoordinate!.longitude)
+		if !isDirectlyConnected, let (nodeCoord, myCoord) = cachedLocationData {
 			let metersAway = nodeCoord.distance(from: myCoord)
 			let formattedDistance = Self.distanceFormatter.string(fromMeters: metersAway)
 			desc += ", " + String(format: "%@: %@", "Distance".localized, formattedDistance)
@@ -109,12 +113,18 @@ struct NodeListItemCompact: View {
 			}
 			desc += ", " + signalString
 		}
+		// Mirror the visual "Signed node" shield (rendered below) so VoiceOver announces it in the
+		// compact list too — affirmative only, never for unsigned nodes.
+		if node.hasXeddsaSigned {
+			desc += ", " + "Signed node".localized
+		}
 		return desc
 	}
-	
-	@Bindable var node: NodeInfoEntity
-	var isDirectlyConnected: Bool
-	var connectedNode: Int64
+
+		@Bindable var node: NodeInfoEntity
+		@State private var rowSummary: NodeListRowSummary?
+		var isDirectlyConnected: Bool
+		var connectedNode: Int64
 	var modemPreset: ModemPresets = ModemPresets(rawValue: UserDefaults.modemPreset) ?? ModemPresets.longFast
 	
 	var userKeyStatus: (String, Color) {
@@ -132,18 +142,18 @@ struct NodeListItemCompact: View {
 		return (image, color)
 	}
 	
-	var locationData: (PositionEntity, CLLocation)? {
-		guard let lastPostion = node.latestPosition else {
+	func locationData(for nodeCoordinate: CLLocationCoordinate2D?) -> (nodeLocation: CLLocation, myLocation: CLLocation)? {
+		guard let nodeCoordinate else {
 			return nil
 		}
 		guard let currentLocation = LocationsHandler.shared.locationsArray.last else {
 			return nil
 		}
-		
+
 		let myCoord = CLLocation(latitude: currentLocation.coordinate.latitude, longitude: currentLocation.coordinate.longitude)
-		
-		if lastPostion.nodeCoordinate != nil && myCoord.coordinate.longitude != LocationsHandler.DefaultLocation.longitude && myCoord.coordinate.latitude != LocationsHandler.DefaultLocation.latitude {
-			return (lastPostion, myCoord)
+
+		if myCoord.coordinate.longitude != LocationsHandler.DefaultLocation.longitude && myCoord.coordinate.latitude != LocationsHandler.DefaultLocation.latitude {
+			return (CLLocation(latitude: nodeCoordinate.latitude, longitude: nodeCoordinate.longitude), myCoord)
 		}
 		return nil
 	}
@@ -157,27 +167,55 @@ struct NodeListItemCompact: View {
 		if shouldShowLastHeard {
 			lines += 1
 		}
-		
+
+		// The signed-node ("Signed node") row renders on its own line whenever the node is signed,
+		// so reserve space for it too — otherwise the avatar circle is sized too short for signed
+		// nodes, most visibly when last-heard / telemetry rows are disabled.
+		if node.hasXeddsaSigned {
+			lines += 1
+		}
+
+		// Note: the status row's contribution is added by the caller via the resolved
+		// `statusMessage` value, so `node.statusMessageDisplay` is evaluated only once.
 		return lines
 	}
 	
 	var body: some View {
-		let circleSize = max(minCircle, min(maxCircle, baseUnit * CGFloat(lineNums)))
-		// Cache all expensive computed properties ONCE to avoid repeated FetchDescriptor queries
-		let cachedMetrics = node.latestDeviceMetrics
-		let cachedLocationData = locationData
-		let cachedHasPositions = node.hasPositions
-		let cachedHasDeviceMetrics = cachedMetrics != nil
-		let cachedHasEnvironmentMetrics = node.hasEnvironmentMetrics
-		let cachedHasDetectionSensorMetrics = node.hasDetectionSensorMetrics
-		let cachedHasTraceRoutes = node.hasTraceRoutes
-		LazyVStack(alignment: .leading) {
+		// A List row view can be retained and re-evaluate its body after the underlying
+		// node row has been deleted (nodes/positions are pruned constantly). Reading any
+		// persisted property of a deleted @Model fatally traps in SwiftData, so bail to an
+		// empty row when the node is no longer live — the List drops it on its next rebuild.
+		// Mirrors the modelContext guard already used in NodeList/NodeDetail.
+		if node.modelContext != nil && !node.isDeleted {
+			rowContent
+		} else {
+			EmptyView()
+		}
+	}
+
+	@ViewBuilder private var rowContent: some View {
+		// Resolve the status once per render; reused for the row, circle sizing, and a11y.
+		let statusMessage = node.statusMessageDisplay
+		let circleSize = max(minCircle, min(maxCircle, baseUnit * CGFloat(lineNums + (statusMessage != nil ? 1 : 0))))
+		let cachedBatteryLevel = (shouldShowPower || shouldShowTelemetry) ? rowSummary?.batteryLevel : nil
+		let needsLatestPosition = shouldShowTelemetry || (shouldShowLocation && connectedNode != node.num)
+		let cachedLatestNodeCoordinate = needsLatestPosition ? rowSummary?.latestNodeCoordinate : nil
+		let cachedLocationData = (shouldShowLocation && connectedNode != node.num) ? locationData(for: cachedLatestNodeCoordinate) : nil
+		let cachedHasPositions = shouldShowTelemetry ? (rowSummary?.hasPosition ?? false) : false
+		let cachedHasDeviceMetrics = shouldShowTelemetry && (rowSummary?.hasDeviceMetrics ?? false)
+		let cachedHasEnvironmentMetrics = shouldShowTelemetry ? rowSummary?.hasEnvironmentMetrics ?? false : false
+		let cachedHasDetectionSensorMetrics = shouldShowTelemetry ? rowSummary?.hasDetectionSensorMetrics ?? false : false
+		let cachedHasTraceRoutes = shouldShowTelemetry ? rowSummary?.hasTraceRoutes ?? false : false
+		// Plain VStack, not LazyVStack: a LazyVStack inside a List cell returns inconsistent
+		// self-sized heights and trips UICollectionViewCompositionalLayout's recursive
+		// layout-loop trap on iOS 18+/26. See NodeListItem for the full explanation.
+		VStack(alignment: .leading) {
 			HStack {
 				// First Column
 				VStack(alignment: .center) {
 					CircleText(text: node.user?.shortName ?? "?", color: Color(UIColor(hex: UInt32(node.num))), circleSize: circleSize)
 						.padding(.trailing, 5)
-					if shouldShowPower, let batteryLevel = cachedMetrics?.batteryLevel {
+					if shouldShowPower, let batteryLevel = cachedBatteryLevel {
 						BatteryCompact(batteryLevel: batteryLevel, font: .caption2, iconFont: .caption, color: .accentColor)
 							.padding(.trailing, 5)
 					}
@@ -189,13 +227,33 @@ struct NodeListItemCompact: View {
 						let (image, color) = userKeyStatus
 						IconAndText(systemName: image,
 									imageColor: color,
-									text: node.user?.longName?.addingVariationSelectors ?? "Unknown".localized,
+									text: node.user?.displayLongName.addingVariationSelectors ?? "Unknown".localized,
 									textColor: .primary)
 						if node.favorite {
 							Spacer()
 							Image(systemName: "star.fill")
 								.symbolRenderingMode(.multicolor)
 						}
+					}
+					// Signed node = XEdDSA-signed NodeInfo broadcast → identity verified by the radio.
+					// Affirmative only; never shown for unsigned nodes. Mirrors the Node Detail row.
+					if node.hasXeddsaSigned {
+						IconAndText(systemName: "checkmark.shield.fill",
+									imageColor: .green,
+									text: "Signed node".localized)
+					}
+					// User-authored status broadcast by the node, directly beneath the name.
+					// Single-line clamp keeps the compact row dense; omitted when empty.
+					// Untrusted free text: rendered verbatim as plain text only.
+					if let statusMessage {
+						NodeCardStatusRow(
+							status: statusMessage,
+							iconWidth: nil,
+							iconFont: .caption,
+							textFont: .caption,
+							lineLimit: 1
+						)
+						.padding(EdgeInsets(top: 0, leading: 6, bottom: 0, trailing: 0))
 					}
 					if shouldShowLastHeard && node.lastHeard?.timeIntervalSince1970 ?? 0 > 0 && node.lastHeard! < Calendar.current.date(byAdding: .year, value: 1, to: Date())! {
 						
@@ -212,8 +270,7 @@ struct NodeListItemCompact: View {
 					// Distance, bearing, hops, signal, role, telemetry row
 					HStack(alignment: .center, spacing: 6) {
 						if shouldShowLocation && connectedNode != node.num {
-							if let (lastPostion, myCoord) = cachedLocationData {
-								let nodeCoord = CLLocation(latitude: lastPostion.nodeCoordinate!.latitude, longitude: lastPostion.nodeCoordinate!.longitude)
+							if let (nodeCoord, myCoord) = cachedLocationData {
 								let metersAway = nodeCoord.distance(from: myCoord)
 								DistanceText(meters: metersAway, isCompact: true)
 									.font(.callout)
@@ -281,10 +338,20 @@ struct NodeListItemCompact: View {
 				// End Second Column
 			}
 		}
-		.padding(.top, 2)
-		.padding(.bottom, 2)
-		.accessibilityElement(children: .ignore)
-		.accessibilityLabel(accessibilityDescription(cachedMetrics: cachedMetrics, cachedLocationData: cachedLocationData))
+			.padding(.top, 2)
+			.padding(.bottom, 2)
+			.task(id: node.lastHeard) {
+				rowSummary = await MainActor.run {
+					NodeListRowSummary(
+						node: node,
+						includeDeviceMetrics: shouldShowPower || shouldShowTelemetry,
+						includePosition: needsLatestPosition,
+						includeLogAvailability: shouldShowTelemetry
+					)
+				}
+			}
+			.accessibilityElement(children: .ignore)
+			.accessibilityLabel(accessibilityDescription(batteryLevel: cachedBatteryLevel, cachedLocationData: cachedLocationData, status: statusMessage))
 	}
 }
 

@@ -20,10 +20,41 @@ struct ChannelsHelp: View {
 								.brightness(0.2)
 						),
 						title: String(localized: "Primary Channel"),
-						subtitle: String(localized: "A channel index of 0 indicates the primary channel where broadcast packets are sent. Location data is broadcast from the first channel where it is enabled with firmware 2.7 forward.")
+						subtitle: String(localized: "A channel index of 0 indicates the primary channel where broadcast packets are sent. On firmware 2.6.10 and later, location data is broadcast from the first channel where it is enabled.")
 					)
 				} header: {
 					Text("Channel Index")
+				}
+				Section {
+					HelpItem(
+						symbol: AnyView(
+							Image(systemName: "location.fill")
+								.font(.title3)
+								.foregroundColor(.green)
+						),
+						title: String(localized: "Location Sharing"),
+						subtitle: String(localized: "Marks the channel currently used for position broadcasts.")
+					)
+					HelpItem(
+						symbol: AnyView(
+							Image(systemName: "icloud.and.arrow.up")
+								.font(.title3)
+								.foregroundColor(.blue)
+						),
+						title: String(localized: "MQTT Uplink"),
+						subtitle: String(localized: "Packets from this channel can be forwarded to MQTT when MQTT is configured.")
+					)
+					HelpItem(
+						symbol: AnyView(
+							Image(systemName: "icloud.and.arrow.down")
+								.font(.title3)
+								.foregroundColor(.blue)
+						),
+						title: String(localized: "MQTT Downlink"),
+						subtitle: String(localized: "MQTT packets for this channel can be sent back over LoRa when MQTT is configured.")
+					)
+				} header: {
+					Text("Channel Icons")
 				}
 				Section {
 					HelpItem(
@@ -69,23 +100,31 @@ struct ChannelsHelp: View {
 			}
 			.navigationTitle("Channels Help")
 			.navigationBarTitleDisplayMode(.inline)
-#if targetEnvironment(macCatalyst)
-			Spacer()
+		}
+
+		#if targetEnvironment(macCatalyst)
+		.overlay(alignment: .topLeading) {
 			Button {
 				dismiss()
 			} label: {
-				Label("Close", systemImage: "xmark")
+				Image(systemName: "xmark.circle.fill")
+					.font(.system(size: 34))
+					.symbolRenderingMode(.palette)
+					.foregroundStyle(.white, Color(.systemGray3))
 			}
-			.buttonStyle(.bordered)
-			.buttonBorderShape(.capsule)
-			.controlSize(.large)
-			.padding(.bottom)
-#endif
+			.buttonStyle(.plain)
+			.padding(.top, 12)
+			.padding(.leading, 14)
 		}
+		#endif
 		.presentationDetents([.large])
 		.presentationContentInteraction(.scrolls)
+		#if !targetEnvironment(macCatalyst)
 		.presentationDragIndicator(.visible)
+		#endif
 		.presentationBackgroundInteraction(.enabled(upThrough: .large))
+
+
 	}
 }
 

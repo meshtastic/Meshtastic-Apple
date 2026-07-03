@@ -7,6 +7,7 @@
 
 #if os(iOS)
 import Intents
+import SwiftData
 import SwiftUI
 import OSLog
 
@@ -23,6 +24,12 @@ class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificat
 		UserDefaults.standard.register(defaults: ["meshMapRecentering": true])
 		UserDefaults.standard.register(defaults: ["meshMapShowNodeHistory": true])
 		UserDefaults.standard.register(defaults: ["meshMapShowRouteLines": true])
+#if DEBUG
+		if PerformanceSeedData.configuration != nil {
+			Logger.services.info("📈 [PerfSeed] Skipping location, TAK, and Siri startup for simulator performance run")
+			return true
+		}
+#endif
 		UNUserNotificationCenter.current().delegate = self
 		let locationsHandler = LocationsHandler.shared
 		locationsHandler.startLocationUpdates()
@@ -36,9 +43,13 @@ class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificat
 		}
 		// Request Siri authorization so intent donations work and CarPlay messaging is available.
 		#if !targetEnvironment(macCatalyst)
+		#if targetEnvironment(simulator)
+		Logger.services.info("Skipping Siri authorization request in simulator benchmark harness")
+		#else
 		INPreferences.requestSiriAuthorization { status in
 			Logger.services.info("Siri authorization status: \(String(describing: status))")
 		}
+		#endif
 		#endif
 		return true
 	}
@@ -48,6 +59,42 @@ class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificat
 	/// Routes incoming SiriKit intents to the appropriate handler for CarPlay and Siri messaging support.
 	func application(_ application: UIApplication, handlerFor intent: INIntent) -> Any? {
 		IntentHandler().handler(for: intent)
+	}
+
+	// MARK: - CarPlay Mark As Read
+
+	/// Marks all unread messages in a CarPlay conversation as read after Siri reads them aloud.
+	private func markCarPlayMessagesAsRead(conversationId: String) {
+		let context = PersistenceController.shared.context
+		do {
+			if conversationId.hasPrefix("dm-"), let nodeNum = Int64(conversationId.replacingOccurrences(of: "dm-", with: "")) {
+				let descriptor = FetchDescriptor<MessageEntity>(
+					predicate: #Predicate { message in
+						message.read == false && message.fromUser?.num == nodeNum
+					}
+				)
+				let messages = try context.fetch(descriptor)
+				for message in messages {
+					message.read = true
+				}
+			} else if conversationId.hasPrefix("channel-"), let channelIndex = Int32(conversationId.replacingOccurrences(of: "channel-", with: "")) {
+				let descriptor = FetchDescriptor<MessageEntity>(
+					predicate: #Predicate { message in
+						message.read == false && message.channel == channelIndex
+					}
+				)
+				let messages = try context.fetch(descriptor)
+				for message in messages where message.toUser == nil {
+					message.read = true
+				}
+			}
+			if context.hasChanges {
+				try context.save()
+				Logger.services.info("🚗 [CarPlay] Marked messages as read for \(conversationId, privacy: .public)")
+			}
+		} catch {
+			Logger.services.error("🚗 [CarPlay] Failed to mark messages as read: \(error.localizedDescription, privacy: .public)")
+		}
 	}
 
 	// Lets us show the notification in the app in the foreground
@@ -69,7 +116,12 @@ class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificat
 
 		switch response.actionIdentifier {
 		case UNNotificationDefaultActionIdentifier:
-			break
+			// When Siri finishes reading a CarPlay message aloud, the notification
+			// response arrives here. Mark all unread messages in that conversation as read.
+			if userInfo["carplay_repost"] as? Bool == true,
+			   let threadId = response.notification.request.content.threadIdentifier as String? {
+				markCarPlayMessagesAsRead(conversationId: threadId)
+			}
 		case "messageNotification.thumbsUpAction":
 			if let channel = userInfo["channel"] as? Int32,
 			   let replyID = userInfo["messageId"] as? Int64 {

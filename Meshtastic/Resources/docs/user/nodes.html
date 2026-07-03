@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="../assets/docs.css">
 </head>
 <body data-page="nodes">
-<div class="pre-release-banner">⚠️ <strong>Pre-release</strong> — subject to change</div><h1>Nodes List</h1>
+<h1>Nodes List</h1>
 <p>The Nodes tab shows every device your radio has heard on the mesh. Tap any node for details.</p>
 <h2>Node Status</h2>
 <table>
@@ -166,11 +166,62 @@
 <h2>Context Menu Actions</h2>
 <p>Long-press any node in the list to access quick actions:</p>
 <ul>
-<li><strong>Favorite / Unfavorite</strong> — star important nodes so they appear at the top of the list</li>
-<li><strong>Request Client History</strong> — for Store &amp; Forward nodes, request any messages you may have missed while offline</li>
+<li><strong>Add to favorites / Remove from favorites</strong> — star important nodes so they appear at the top of the list</li>
+<li><strong>Display name</strong> — give a node a local nickname (see Display Names below)</li>
+<li><strong>Mute notifications / Unmute</strong> — silence alerts from this node</li>
+<li><strong>Message</strong> — open a direct message conversation with this node</li>
 <li><strong>Trace Route</strong> — discover the path messages take to reach this node</li>
-<li><strong>Delete Node</strong> — remove the node from your local database</li>
+<li><strong>Ignore / Remove from ignored</strong> — hide this node from normal views</li>
+<li><strong>Remove</strong> — remove the node from your local database</li>
 </ul>
+<h2>Display Names</h2>
+<p>You can give any node a local nickname that's shown throughout the app instead of its device long name — in the node list, node details, and messages. Set it from the node's long-press menu (&quot;Display name&quot;) or from the <strong>Name</strong> row in Node Detail. The avatar circle always shows the node's actual short code, unaffected by the nickname.</p>
+<p>Display names are stored only on this device and are never sent over the mesh, shared, or exported — they don't change the node's real identity, so QR codes and contact sharing still use the device's actual name.</p>
+<h2>Filtering &amp; Search</h2>
+<p>Tap the filter icon above the list to narrow which nodes are shown. Filters apply across the Nodes list, the contacts picker in Messages, and the map, so a filter set in one place takes effect everywhere.</p>
+<table>
+<thead>
+<tr>
+<th>Filter</th>
+<th>What it shows</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Online</strong></td>
+<td>Only nodes heard in the last two hours.</td>
+</tr>
+<tr>
+<td><strong>Favorites</strong></td>
+<td>Only nodes you have starred.</td>
+</tr>
+<tr>
+<td><strong>Public Key Encryption</strong></td>
+<td>Only nodes using PKI-encrypted direct messages.</td>
+</tr>
+<tr>
+<td><strong>Environment</strong></td>
+<td>Only nodes reporting environment telemetry (temperature, humidity, pressure).</td>
+</tr>
+<tr>
+<td><strong>Hops Away</strong></td>
+<td>Limit to nodes within a chosen number of hops, including direct (0-hop) only.</td>
+</tr>
+<tr>
+<td><strong>Distance</strong></td>
+<td>Limit to nodes within a chosen radius of your location. Falls back to the connected device's last position when phone location is unavailable.</td>
+</tr>
+<tr>
+<td><strong>Roles</strong></td>
+<td>Show only the device roles you select.</td>
+</tr>
+<tr>
+<td><strong>Connection</strong></td>
+<td>Show nodes reachable via LoRa, via MQTT, or both. At least one is always kept on.</td>
+</tr>
+</tbody>
+</table>
+<p>Filters are <strong>remembered between launches</strong> — the app reopens with the same filters applied. Search text is the exception: it is intentionally cleared on relaunch so you never reopen into a stale search that hides most of your nodes. Use the <strong>reset</strong> affordance to clear every filter and the search text at once.</p>
 <h2>Additional Icons</h2>
 <p>Tap a node and scroll to the Logs section for detailed metrics:</p>
 <table>
@@ -211,9 +262,63 @@
 </tr>
 </tbody>
 </table>
+<h2>Local Stats and Noise Floor</h2>
+<p>Local Stats show radio diagnostics reported by a node, including packets received, packets transmitted, duplicate packets, relayed packets, bad receives, canceled packets, online node count, total node count, and noise floor.</p>
+<p>Noise floor is displayed in dBm when the node reports it. Treat it as a directional diagnostic instead of an absolute site score: readings can vary quickly, and external filters can lower or skew the displayed value because of insertion loss or in-band interference.</p>
 <h2>Node Detail View</h2>
 <p>Tap any node to see the full detail view with hardware info, signal metrics, environment sensors, and log navigation:</p>
 <p><img src="../assets/screenshots/nodeDetail.png" alt="Node Detail" /></p>
+<h3>Signed Node</h3>
+<p>If a node signs its broadcast packets, a green shield (🛡️) <strong>Signed node</strong> row appears in the detail view, marked <strong>Verified automatically</strong>. This means the radio has cryptographically verified an XEdDSA signature from this node (firmware 2.8 or later). Because a node's identity broadcast is itself signed, its name and identity are verified by extension.</p>
+<p>This is <em>automatic</em> trust observed from the radio — distinct from manually verifying a contact's public key out-of-band, which is a separate, user-asserted action. The row only ever affirms the good state; nodes that don't sign simply show no shield, which is not a warning.</p>
+<h3>Hardware Info</h3>
+<p>The hardware section shows information about the physical device running the node. The section title reflects the device's support status:</p>
+<table>
+<thead>
+<tr>
+<th>Status</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Supported Hardware</strong></td>
+<td>Device is actively supported with firmware updates.</td>
+</tr>
+<tr>
+<td><strong>Discontinued Hardware</strong></td>
+<td>Device is no longer supported and does not receive firmware updates.</td>
+</tr>
+</tbody>
+</table>
+<p>For supported devices, the support tier is shown below the hardware name:</p>
+<table>
+<thead>
+<tr>
+<th>Tier</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Flagship</td>
+<td>Recommended device with full feature support and active development.</td>
+</tr>
+<tr>
+<td>Niche</td>
+<td>Supported device with active firmware updates and a specialised form factor.</td>
+</tr>
+<tr>
+<td>Legacy</td>
+<td>Older device that still receives firmware updates but may lack some features.</td>
+</tr>
+</tbody>
+</table>
+<h3>Where to Buy</h3>
+<p>For devices with known purchase links, an <strong>I want one</strong> section appears below the hardware info. It shows the official vendor link and regional marketplace options (Amazon, Rokland, AliExpress, and others) sourced from <a href="https://msh.to">msh.to</a>.</p>
+<p>Marketplace links are filtered to your device region, so only stores that ship to your area are shown. Vendor links (directly from the device manufacturer) are always shown regardless of region.</p>
+<div class="tips-callout"><strong>Tip — No purchase links shown</strong>
+Purchase links require an internet connection on first launch and after clearing app data. Connect the app to update the device catalog.</div>
 <p><a href="https://meshtastic.org/docs/configuration/radio/device/">Device Configuration Docs →</a></p>
 </body>
 </html>

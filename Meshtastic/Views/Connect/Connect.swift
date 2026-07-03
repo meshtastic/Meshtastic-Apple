@@ -7,7 +7,7 @@
 
 import SwiftUI
 import MapKit
-import SwiftData
+@preconcurrency import SwiftData
 import CoreLocation
 import CoreBluetooth
 import OSLog
@@ -24,6 +24,9 @@ struct Connect: View {
 	@Environment(\.colorScheme) private var colorScheme
 	@State var router: Router
 	@State var node: NodeInfoEntity?
+	/// Cached battery level for the connected node. Refreshed on an interval (see `.task`)
+	/// rather than fetched in `body`, which re-ran a TelemetryEntity query on every render.
+	@State private var connectedBatteryLevel: Int32?
 	@State var isUnsetRegion = false
 	@State var invalidFirmwareVersion = false
 	@State var showSecurityVersionNag = false
@@ -34,7 +37,60 @@ struct Connect: View {
 	@ObservedObject private var nymeaProvisioning = NymeaProvisioningManager.shared
 	@Environment(\.scenePhase) private var scenePhase
 	@State private var pendingNymeaDevice: NymeaDiscoveredDevice?
-	
+	@State private var isSwitchingRadio = false
+	@State private var showingShutdownConfirm = false
+	/// Stable identity of the node whose context menu opened the shutdown dialog, captured at tap
+	/// time so the confirmation can't drift to a different node if the connection changes first.
+	@State private var pendingShutdownNodeNum: Int64?
+
+	private var sortedAvailableDevices: [Device] {
+		accessoryManager.devices.sorted { lhs, rhs in
+			let preferredId = UserDefaults.preferredPeripheralId
+			let lhsIsPreferred = lhs.id.uuidString == preferredId
+			let rhsIsPreferred = rhs.id.uuidString == preferredId
+
+			if lhsIsPreferred != rhsIsPreferred {
+				return lhsIsPreferred
+			}
+
+			return lhs.name.localizedCaseInsensitiveCompare(rhs.name) == .orderedAscending
+		}
+	}
+
+	/// The connected node, but only while it's still a live SwiftData object.
+	///
+	/// `node` is cached in `@State` and survives across connection state changes, so after a
+	/// disconnect/reconnect or node switch — which recreate the ModelContext/container — the
+	/// cached reference can become faulted or detached. Reading any real attribute on a faulted
+	/// `@Model` traps (`_SD_get_faulting_backingdata` → `SIGTRAP`), and because the Connect tab
+	/// is always mounted and re-renders on `accessoryManager` state changes, that trap fires
+	/// during render. `modelContext` is safe metadata (nil on a detached/deleted object), so
+	/// gating every read through this accessor prevents the crash. (Same guard pattern as #1944.)
+	private var safeNode: NodeInfoEntity? {
+		Connect.liveNode(node)
+	}
+
+	/// Returns `node` only while it is still a live SwiftData object (`modelContext != nil`),
+	/// otherwise nil. Reading attributes on a faulted/detached `@Model` traps, so callers gate
+	/// every read through this. Static + value-in/value-out so it can be unit-tested directly.
+	static func liveNode(_ node: NodeInfoEntity?) -> NodeInfoEntity? {
+		guard let node, node.modelContext != nil, !node.isDeleted else { return nil }
+		return node
+	}
+
+	/// The user a shutdown should be sent to, or nil when the shutdown must be safely skipped.
+	///
+	/// Resolved at confirm time — never captured ahead of the dialog — so a faulted/detached
+	/// `@Model` is gated by `liveNode` rather than trapping (the #2006 crash class). It also
+	/// verifies the live node still matches `expectedNum`, the identity captured when the menu was
+	/// opened: the dialog deliberately survives connection changes, so without this check a radio
+	/// switch between the long-press and tapping "Shutdown Node?" would shut down the newly
+	/// connected node instead of the one the user chose.
+	static func shutdownTarget(for node: NodeInfoEntity?, expectedNum: Int64?) -> UserEntity? {
+		guard let expectedNum, let live = liveNode(node), live.num == expectedNum else { return nil }
+		return live.user
+	}
+
 	var body: some View {
 		NavigationStack {
 			VStack(spacing: 0) {
@@ -49,16 +105,16 @@ struct Connect: View {
 							VStack(alignment: .leading) {
 								HStack {
 									VStack(alignment: .center) {
-										CircleText(text: node?.user?.shortName?.addingVariationSelectors ?? "?", color: Color(UIColor(hex: UInt32(node?.num ?? 0))), circleSize: 90)
+										CircleText(text: safeNode?.user?.shortName?.addingVariationSelectors ?? "?", color: Color(UIColor(hex: UInt32(safeNode?.num ?? 0))), circleSize: 90)
 											.padding(.trailing, 5)
-										if let batteryLevel = latestBatteryLevel(for: node) {
+										if let batteryLevel = connectedBatteryLevel {
 											BatteryCompact(batteryLevel: batteryLevel, font: .caption, iconFont: .callout, color: .accentColor)
 												.padding(.trailing, 5)
 										}
 									}
 									.padding(.trailing)
 									VStack(alignment: .leading) {
-										if node != nil {
+										if safeNode != nil {
 											HStack {
 												Text(connectedDevice.longName?.addingVariationSelectors ?? "Unknown".localized).font(.title2)
 												if connectedDevice.wasRestored {
@@ -78,8 +134,8 @@ struct Connect: View {
 											Spacer()
 										}
 										.padding(0)
-										if node != nil {
-											Text("Firmware Version").font(.callout)+Text(": \(node?.metadata?.firmwareVersion ?? "Unknown".localized)")
+										if safeNode != nil {
+											Text("Firmware Version").font(.callout)+Text(": \(safeNode?.metadata?.firmwareVersion ?? "Unknown".localized)")
 												.font(.callout).foregroundColor(Color.gray)
 										}
 										if accessoryManager.firmwareEdition.isEvent {
@@ -153,13 +209,14 @@ struct Connect: View {
 										}
 									} label: {
 										Label("Disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
-									}.disabled(!accessoryManager.allowDisconnect)
+									}
+									.disabled(!accessoryManager.allowDisconnect)
 								}
 							}
 							.contextMenu {
 								
-								if node != nil {
-									Label("\(String(node!.num))", systemImage: "number")
+								if let node = safeNode {
+									Label("\(String(node.num))", systemImage: "number")
 #if !targetEnvironment(macCatalyst)
 									if accessoryManager.state == .subscribed {
 										Button {
@@ -190,14 +247,11 @@ struct Connect: View {
 											Label("Disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
 										}
 										Button(role: .destructive) {
-											Task {
-												do {
-													try await accessoryManager.sendShutdown(fromUser: node!.user!, toUser: node!.user!)
-												} catch {
-													Logger.mesh.error("Shutdown Failed: \(error)")
-												}
-											}
-											
+											// Re-check liveness at tap time: the menu-captured `node` can fault if
+											// the context is recreated between the menu appearing and this tap, and
+											// reading `.num` on a faulted @Model would trap (the #2006 crash class).
+											pendingShutdownNodeNum = Connect.liveNode(node)?.num
+											showingShutdownConfirm = true
 										} label: {
 											Label("Power Off", systemImage: "power")
 										}
@@ -212,7 +266,7 @@ struct Connect: View {
 							if isUnsetRegion && !lockdown.isBlockingSession {
 								HStack {
 									NavigationLink {
-										LoRaConfig(node: node)
+										LoRaConfig(node: safeNode)
 									} label: {
 										Label("Set LoRa Region", systemImage: "globe.americas.fill")
 											.foregroundColor(.red)
@@ -255,7 +309,8 @@ struct Connect: View {
 											}
 										} label: {
 											Label("Disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
-										}.disabled(!accessoryManager.allowDisconnect)
+										}
+										.disabled(!accessoryManager.allowDisconnect)
 									}
 								}
 								
@@ -284,16 +339,16 @@ struct Connect: View {
 							Section(header: HStack {
 								Text("Available Radios").font(.title)
 								Spacer()
-								ManualConnectionMenu()
+								ManualConnectionMenu(isSwitchingRadio: $isSwitchingRadio)
 							}) {
-								ForEach(accessoryManager.devices.sorted(by: { $0.name < $1.name })) { device in
-									DeviceConnectRow(device: device)
+									ForEach(sortedAvailableDevices) { device in
+										DeviceConnectRow(device: device, isSwitchingRadio: $isSwitchingRadio)
 								}
 							}
 						if manualConnections.connectionsList.count > 0 {
 							Section(header: Text("Manual Connections").font(.title)) {
 								ForEach(manualConnections.connectionsList) { device in
-									DeviceConnectRow(device: device)
+										DeviceConnectRow(device: device, isSwitchingRadio: $isSwitchingRadio)
 #if targetEnvironment(macCatalyst)
 										.contextMenu {
 											Button {
@@ -350,9 +405,27 @@ struct Connect: View {
 					Spacer()
 				}
 				.padding(.bottom, 10)
-				
 			}
 			.background(Color(.systemGroupedBackground))
+			.disabled(isSwitchingRadio)
+			.overlay {
+				if isSwitchingRadio {
+					ZStack {
+						Color.black.opacity(0.2)
+							.ignoresSafeArea()
+
+						VStack(spacing: 14) {
+							ProgressView()
+								.controlSize(.large)
+							Text("Switching Radio")
+								.font(.headline)
+						}
+						.padding(.horizontal, 28)
+						.padding(.vertical, 22)
+						.background(.regularMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+					}
+				}
+			}
 			.navigationTitle("Connect")
 			.toolbar {
 				ToolbarItem(placement: .topBarLeading) {
@@ -363,11 +436,38 @@ struct Connect: View {
 						deviceConnected: accessoryManager.isConnected,
 						name: accessoryManager.activeConnection?.device.shortName ?? "?",
 						mqttProxyConnected: accessoryManager.mqttProxyConnected,
-						mqttTopic: accessoryManager.mqttManager.topic
+						mqttTopic: accessoryManager.mqttManager.topics.first ?? ""
 					)
 				}
 			}
-			
+			// Attached to the root VStack (not the connected-device subtree, which unmounts
+			// on disconnect) so the confirmation survives a connection state change between
+			// the long-press and the user tapping "Shutdown Node?".
+			.confirmationDialog(
+				"Are you sure?",
+				isPresented: $showingShutdownConfirm,
+				titleVisibility: .visible
+			) {
+				Button("Shutdown Node?", role: .destructive) {
+					Task {
+						// Resolve the target at confirm time rather than capturing it ahead of the
+						// dialog: a cached @Model can fault if the context is recreated (disconnect/
+						// reconnect, node switch) while the dialog is up, and reading a faulted model
+						// traps. shutdownTarget gates on modelContext != nil and verifies the live
+						// node still matches the identity captured when the menu was opened, so the
+						// shutdown can't drift to a node connected after the long-press.
+						guard let user = Connect.shutdownTarget(for: node, expectedNum: pendingShutdownNodeNum) else {
+							Logger.mesh.warning("Shutdown skipped: no live connected node or connection changed")
+							return
+						}
+						do {
+							try await accessoryManager.sendShutdown(fromUser: user, toUser: user)
+						} catch {
+							Logger.mesh.error("Shutdown Failed: \(error)")
+						}
+					}
+				}
+			}
 		}
 		// TODO: REMOVING VERSION STUFF?
 		//		.sheet(isPresented: $invalidFirmwareVersion, onDismiss: didDismissSheet) {
@@ -430,6 +530,15 @@ struct Connect: View {
 		.onChange(of: scenePhase) { _, _ in updateNymeaDiscovery() }
 		.onChange(of: accessoryManager.isConnected) { _, _ in updateNymeaDiscovery() }
 		.onChange(of: accessoryManager.isConnecting) { _, _ in updateNymeaDiscovery() }
+		.task(id: safeNode?.num) {
+			// Refresh the connected node's battery on an interval instead of fetching in
+			// `body` (which re-ran the TelemetryEntity query on every render — costly while
+			// ingestion churns the node @Query). Battery changes slowly, so 15s is plenty.
+			while !Task.isCancelled {
+				connectedBatteryLevel = latestBatteryLevel(for: node)
+				try? await Task.sleep(for: .seconds(15))
+			}
+		}
 	}
 
 	/// Fetch only the latest device metrics battery level without faulting all telemetries.
@@ -478,17 +587,17 @@ struct Connect: View {
 		let activityAttributes = MeshActivityAttributes(nodeNum: Int(node?.num ?? 0), name: node?.user?.longName?.addingVariationSelectors ?? "unknown", shortName: node?.user?.shortName ?? "?")
 		
 		let future = Date(timeIntervalSinceNow: Double(timerSeconds))
-		let initialContentState = MeshActivityAttributes.ContentState(uptimeSeconds: UInt32(mostRecent?.uptimeSeconds ?? 0),
+		let initialContentState = MeshActivityAttributes.ContentState(uptimeSeconds: UInt32(bitPattern: mostRecent?.uptimeSeconds ?? 0),
 																	  channelUtilization: mostRecent?.channelUtilization ?? 0.0,
 																	  airtime: mostRecent?.airUtilTx ?? 0.0,
-																	  sentPackets: UInt32(mostRecent?.numPacketsTx ?? 0),
-																	  receivedPackets: UInt32(mostRecent?.numPacketsRx ?? 0),
-																	  badReceivedPackets: UInt32(mostRecent?.numPacketsRxBad ?? 0),
-																	  dupeReceivedPackets: UInt32(mostRecent?.numRxDupe ?? 0),
-																	  packetsSentRelay: UInt32(mostRecent?.numTxRelay ?? 0),
-																	  packetsCanceledRelay: UInt32(mostRecent?.numTxRelayCanceled ?? 0),
-																	  nodesOnline: UInt32(mostRecent?.numOnlineNodes ?? 0),
-																	  totalNodes: UInt32(mostRecent?.numTotalNodes ?? 0),
+																	  sentPackets: UInt32(bitPattern: mostRecent?.numPacketsTx ?? 0),
+																	  receivedPackets: UInt32(bitPattern: mostRecent?.numPacketsRx ?? 0),
+																	  badReceivedPackets: UInt32(bitPattern: mostRecent?.numPacketsRxBad ?? 0),
+																	  dupeReceivedPackets: UInt32(bitPattern: mostRecent?.numRxDupe ?? 0),
+																	  packetsSentRelay: UInt32(bitPattern: mostRecent?.numTxRelay ?? 0),
+																	  packetsCanceledRelay: UInt32(bitPattern: mostRecent?.numTxRelayCanceled ?? 0),
+																	  nodesOnline: UInt32(bitPattern: mostRecent?.numOnlineNodes ?? 0),
+																	  totalNodes: UInt32(bitPattern: mostRecent?.numTotalNodes ?? 0),
 																	  timerRange: Date.now...future)
 		
 		let activityContent = ActivityContent(state: initialContentState, staleDate: Calendar.current.date(byAdding: .minute, value: 15, to: Date())!)
@@ -545,6 +654,7 @@ struct ManualConnectionMenu: View {
 
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.modelContext) private var context
+	@Binding var isSwitchingRadio: Bool
 
 	private struct IterableTransport: Identifiable {
 		let id: UUID
@@ -555,8 +665,9 @@ struct ManualConnectionMenu: View {
 	
 	private var transports: [IterableTransport]
 	
-	init() {
-		self.transports = AccessoryManager.shared.transports.filter { $0.supportsManualConnection}.map { transport in
+	init(isSwitchingRadio: Binding<Bool>) {
+		self._isSwitchingRadio = isSwitchingRadio
+		self.transports = AccessoryManager.shared.transports.filter { $0.supportsManualConnection }.map { transport in
 			IterableTransport(id: UUID(), icon: transport.type.icon, title: transport.type.rawValue, transport: transport)
 		}
 	}
@@ -564,8 +675,6 @@ struct ManualConnectionMenu: View {
 	@State private var selectedTransport: IterableTransport?
 	@State private var showAlert: Bool = false
 	@State private var connectionString = ""
-	@State var presentingSwitchPreferredPeripheral = false
-	@State var deviceForManualConnection: Device?
 
 	var body: some View {
 		Menu {
@@ -602,32 +711,13 @@ struct ManualConnectionMenu: View {
 								try await selectedTransport.transport.manuallyConnect(toDevice: device)
 							}
 						} else {
-							deviceForManualConnection = device
-							presentingSwitchPreferredPeripheral = true
+							Task {
+								await performRadioSwitch(device, isSwitchingRadio: $isSwitchingRadio, accessoryManager: accessoryManager)
+							}
 						}
 					}
 				}
 			})
-		}.confirmationDialog("Connecting to a new radio will clear all app data on the phone.", isPresented: $presentingSwitchPreferredPeripheral, titleVisibility: .visible) {
-			Button("Connect to new radio?", role: .destructive) {
-				Task {
-					if let device = deviceForManualConnection {
-						UserDefaults.preferredPeripheralId = device.id.uuidString
-						UserDefaults.preferredPeripheralNum = 0
-						if accessoryManager.allowDisconnect {
-							try await accessoryManager.disconnect()
-						}
-						await MeshPackets.shared.flushDebouncedSaves()
-						await MeshPackets.shared.clearDatabase(includeRoutes: false)
-						MeshPackets.recreateShared()
-						clearNotifications()
-						try await selectedTransport?.transport.manuallyConnect(toDevice: device)
-						
-						// Clean up just in case
-						deviceForManualConnection = nil
-					}
-				}
-			}
 		}
 	}
 }
@@ -635,8 +725,8 @@ struct ManualConnectionMenu: View {
 struct DeviceConnectRow: View {
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
-	@State var presentingSwitchPreferredPeripheral = false
 	let device: Device
+	@Binding var isSwitchingRadio: Bool
 	
 	var body: some View {
 		HStack {
@@ -652,10 +742,9 @@ struct DeviceConnectRow: View {
 			VStack(alignment: .leading) {
 				Button(action: {
 					if UserDefaults.preferredPeripheralId.count > 0 && device.id.uuidString != UserDefaults.preferredPeripheralId {
-						if accessoryManager.allowDisconnect {
-							Task { try await accessoryManager.disconnect() }
+						Task {
+							await performRadioSwitch(device, isSwitchingRadio: $isSwitchingRadio, accessoryManager: accessoryManager)
 						}
-						presentingSwitchPreferredPeripheral = true
 					} else {
 						Task {
 							try? await accessoryManager.connect(to: device)
@@ -692,27 +781,165 @@ struct DeviceConnectRow: View {
 				}
 			}
 		}.padding([.bottom, .top])
-			.confirmationDialog("Connecting to a new radio will clear all app data on the phone.", isPresented: $presentingSwitchPreferredPeripheral, titleVisibility: .visible) {
-				Button("Connect to new radio?", role: .destructive) {
-					Task {
-						UserDefaults.preferredPeripheralId = device.id.uuidString
-						UserDefaults.preferredPeripheralNum = 0
-						if accessoryManager.allowDisconnect {
-							try await accessoryManager.disconnect()
-						}
-						// Flush pending saves, clear database via the MeshPackets actor
-						// (not the main context) to avoid destroying model instances that
-						// views still reference, then recreate with a fresh ModelContext.
-						await MeshPackets.shared.flushDebouncedSaves()
-						await MeshPackets.shared.clearDatabase(includeRoutes: false)
-						MeshPackets.recreateShared()
-						clearNotifications()
-						
-						try await accessoryManager.connect(to: device)
-						
-					}
-				}
-			}
+	}
+}
+
+@MainActor
+func performRadioSwitch(_ device: Device, isSwitchingRadio: Binding<Bool>, accessoryManager: AccessoryManager) async {
+	isSwitchingRadio.wrappedValue = true
+
+	await switchToDevice(
+		device,
+		accessoryManager: accessoryManager,
+		appState: accessoryManager.appState,
+		onRestoreComplete: {
+			isSwitchingRadio.wrappedValue = false
+		}
+	)
+}
+
+@MainActor
+func backupCurrentDatabase(forTargetNode targetNodeNum: Int64?, accessoryManager: AccessoryManager) async {
+	let currentNodeNum = accessoryManager.activeDeviceNum ?? {
+		let num = Int64(UserDefaults.preferredPeripheralNum)
+		return num > 0 ? num : nil
+	}()
+	let currentNodeName = currentNodeNum.flatMap { num in
+		accessoryManager.devices.first(where: { $0.num == num })?.longName
+	}
+
+	await MeshPackets.shared.flushDebouncedSaves()
+	try? accessoryManager.context.save()
+
+	if let currentNodeNum, currentNodeNum != targetNodeNum {
+		Logger.backup.info("💾 Creating backup for current node \(currentNodeNum) before restore")
+		let backupResult = await NodeBackupManager.shared.createBackup(
+			forNode: currentNodeNum,
+			nodeName: currentNodeName
+		)
+		switch backupResult {
+		case .success(let entry):
+			Logger.backup.info("💾 Backup created: \(entry.fileSize) bytes for node \(currentNodeNum)")
+		case .skipped(let reason):
+			Logger.backup.warning("💾 Backup skipped: \(reason, privacy: .public)")
+		case .noBackupFound:
+			break
+		}
+	} else if currentNodeNum == targetNodeNum {
+		Logger.backup.info("💾 Skipping current backup because target backup is for the active node")
+	} else {
+		Logger.backup.warning("💾 No current node num — skipping backup")
+	}
+}
+
+@MainActor
+func backupCurrentAndRestoreDatabase(
+	forNode targetNodeNum: Int64,
+	accessoryManager: AccessoryManager,
+	appState: AppState,
+	selectedTab: NavigationState.Tab,
+	disconnectCurrentDevice: Bool = false
+) async -> NodeBackupResult {
+	await backupCurrentDatabase(forTargetNode: targetNodeNum, accessoryManager: accessoryManager)
+
+	if disconnectCurrentDevice, accessoryManager.allowDisconnect {
+		Logger.backup.info("💾 Disconnecting current device before restore")
+		try? await accessoryManager.disconnect()
+	}
+
+	appState.router.popToRoot(tab: .messages)
+	appState.router.popToRoot(tab: .nodes)
+	appState.router.popToRoot(tab: .map)
+	appState.router.popToRoot(tab: .settings)
+	appState.router.selectedTab = selectedTab
+	await Task.yield()
+
+	await MeshPackets.shared.flushDebouncedSaves()
+	await MeshPackets.shared.clearDatabase(includeRoutes: false)
+	// Repoint at a fresh container so the restore below (and the post-restore UI refresh) operate
+	// on a context with no stale registrations. The databaseResetID bump stays after the restore.
+	accessoryManager.repointToFreshContainer()
+	Logger.backup.info("💾 Database cleared and container recreated")
+
+	let restoreResult = await NodeBackupManager.shared.restoreFromBackup(
+		forNode: targetNodeNum,
+		into: PersistenceController.shared.container
+	)
+
+	// The clear ran on the MeshPackets context and the restore imported through a separate
+	// liveContext, neither of which the UI's main context observes — and a batch delete sends
+	// no change notification, so the existing @Query views keep their previously-fetched
+	// results (the previous node's nodes/pins linger; e.g. switching back to a local node
+	// still shows the other node's map pins). Bumping databaseResetID re-identifies the root
+	// view, forcing every @Query to re-execute its fetch and return only the restored data.
+	appState.databaseResetID = UUID()
+
+	return restoreResult
+}
+
+// MARK: - Node Switch Helper
+
+/// Handles the full node-switch lifecycle: backup, clear, restore, connect.
+///
+/// Flow:
+/// 1. Capture current node number
+/// 2. Flush pending writes
+/// 3. Create backup of current node's database (full SQLite file copy)
+/// 4. Disconnect from current device
+/// 5. Clear database via MeshPackets actor (empties @Query results safely)
+/// 6. Swap database files and recreate ModelContainer (full restore)
+/// 7. Trigger UI reset so views rebind to the new container
+/// 8. Connect to new device (radio sends updates on top of restored data)
+@MainActor
+func switchToDevice(
+	_ device: Device,
+	accessoryManager: AccessoryManager,
+	appState: AppState,
+	onRestoreComplete: (@MainActor () -> Void)? = nil
+) async {
+	let resolvedTargetNodeNum = await NodeBackupManager.shared.resolveNodeNum(forPeripheralId: device.id.uuidString)
+	let targetNodeNum = device.num ?? resolvedTargetNodeNum
+	let currentNodeNum = accessoryManager.activeDeviceNum ?? {
+		let num = Int64(UserDefaults.preferredPeripheralNum)
+		return num > 0 ? num : nil
+	}()
+	Logger.backup.info("💾 Node switch — current: \(currentNodeNum.map { String($0) } ?? "nil", privacy: .public), target: \(targetNodeNum.map { String($0) } ?? "unknown", privacy: .public)")
+
+	// 4. Disconnect from current device
+	if accessoryManager.allowDisconnect {
+		try? await accessoryManager.disconnect()
+	}
+
+	await backupCurrentDatabase(forTargetNode: targetNodeNum, accessoryManager: accessoryManager)
+
+	if let targetNodeNum {
+		let restoreResult = await backupCurrentAndRestoreDatabase(
+			forNode: targetNodeNum,
+			accessoryManager: accessoryManager,
+			appState: appState,
+			selectedTab: .connect
+		)
+		switch restoreResult {
+		case .success:
+			Logger.backup.info("💾 Backup restored for target node \(targetNodeNum)")
+		case .skipped(let reason):
+			Logger.backup.warning("💾 Restore skipped: \(reason, privacy: .public)")
+		case .noBackupFound:
+			Logger.backup.info("💾 No backup for target node \(targetNodeNum) — radio will populate fresh data")
+		}
+	} else {
+		Logger.backup.warning("💾 Target node num is nil — cannot restore, radio will populate fresh data")
+	}
+
+	onRestoreComplete?()
+
+	// 8. Clear notifications and connect to new device
+	clearNotifications()
+	do {
+		try await accessoryManager.connect(to: device, refreshDeviceHardwareFromAPI: true)
+		Logger.backup.info("💾 Connected to target device successfully")
+	} catch {
+		Logger.backup.error("💾 Failed to connect to target: \(error.localizedDescription, privacy: .public)")
 	}
 }
 
