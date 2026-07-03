@@ -131,11 +131,11 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 		case .sg923:
 			"SG_923"
 		case .ph433:
-			"ph_433"
+			"PH_433"
 		case .ph868:
-			"ph_868"
+			"PH_868"
 		case .ph915:
-			"ph_915"
+			"PH_915"
 		case .kz433:
 			"KZ_433"
 		case .kz863:
