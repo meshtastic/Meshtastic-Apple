@@ -637,6 +637,57 @@ extension AccessoryManager {
 		return Int64(meshPacket.id)
 	}
 
+	/// Join a mesh advertised by a beacon: set the primary channel to the offered channel (name +
+	/// PSK), then apply the offered region/preset. The channel change lands first (no reboot); the
+	/// LoRa config change reboots the radio onto the advertised mesh. `region`/`preset` fall back to
+	/// the radio's current values when the beacon didn't advertise them. `channelNum` is forced to 0
+	/// so the firmware derives the frequency from the new channel name + preset + region.
+	@MainActor
+	public func joinBeaconMesh(channelName: String, channelPSK: Data, region: RegionCodes?, preset: ModemPresets?) async throws {
+		guard let deviceNum = self.activeConnection?.device.num else {
+			throw AccessoryError.ioFailed("No active device")
+		}
+		guard let node = getNodeInfo(id: Int64(deviceNum), context: context), let user = node.user else {
+			throw AccessoryError.appError("Connected node not found")
+		}
+
+		// 1. Set the primary channel to the beacon's offered channel (no reboot).
+		var channel = Channel()
+		channel.index = 0
+		channel.role = .primary
+		channel.settings.name = channelName
+		channel.settings.psk = channelPSK
+		_ = try await saveChannel(channel: channel, fromUser: user, toUser: user)
+
+		// 2. Apply region/preset (reboots). Carry the full existing LoRa config so unrelated fields
+		//    (bandwidth, coding rate, overrides, MQTT flags…) aren't wiped.
+		var lora = Config.LoRaConfig()
+		if let existing = node.loRaConfig, !existing.isDeleted {
+			lora.usePreset = existing.usePreset
+			lora.hopLimit = UInt32(existing.hopLimit)
+			lora.txEnabled = existing.txEnabled
+			lora.txPower = existing.txPower
+			lora.bandwidth = UInt32(existing.bandwidth)
+			lora.codingRate = UInt32(existing.codingRate)
+			lora.spreadFactor = UInt32(existing.spreadFactor)
+			lora.frequencyOffset = existing.frequencyOffset
+			lora.overrideFrequency = existing.overrideFrequency
+			lora.overrideDutyCycle = existing.overrideDutyCycle
+			lora.sx126XRxBoostedGain = existing.sx126xRxBoostedGain
+			lora.ignoreMqtt = existing.ignoreMqtt
+			lora.configOkToMqtt = existing.okToMqtt
+			lora.region = Config.LoRaConfig.RegionCode(rawValue: Int(existing.regionCode)) ?? .unset
+			lora.modemPreset = ModemPresets(rawValue: Int(existing.modemPreset))?.protoEnumValue() ?? .longFast
+		}
+		if let region { lora.region = region.protoEnumValue() }
+		if let preset { lora.modemPreset = preset.protoEnumValue() }
+		lora.usePreset = true
+		// Derive the frequency from the new channel + preset + region rather than a stale slot.
+		lora.channelNum = 0
+		_ = try await saveLoRaConfig(config: lora, fromUser: user, toUser: user)
+		Logger.services.info("🔀 [Beacon] Switched to advertised channel '\(channelName, privacy: .private)' and applied preset/region")
+	}
+
 	public func sendWaypoint(waypoint: Waypoint) async throws {
 		guard let deviceNum = self.activeConnection?.device.num else {
 			Logger.services.error("Error while sending sendWaypoint request.  No active device.")

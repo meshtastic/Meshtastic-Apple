@@ -14,7 +14,7 @@ Recent user-facing changes from roughly the last 12 months. Newest at the top.
 Show roughly the last 12 months of changes; archive entries older than a year by removing them.
 -->
 
-**Jul 2026** — [Local Mesh Discovery](discovery.md) — Mesh beacons: scans now capture beacons advertising a mesh (message, channel, region, preset), show them in the results, auto-add any advertised preset to the running scan, and pre-select those presets next time.
+**Jul 2026** — [Local Mesh Discovery](discovery.md) — Mesh beacons: scans capture beacons advertising a mesh (message, channel, region, preset) and show them in the results. Public-channel presets are auto-added to the scan and pre-selected next time; custom-channel beacons are tuned into directly (name + key) so even private meshes are found. Each beaconed channel gets a Switch to this channel button to join it.
 
 **Jul 2026** — [Lockdown Mode](lockdown.md) — Support for hardened lockdown-firmware radios: set or enter the device passphrase in a full-screen prompt, with per-radio Keychain passphrase storage and silent re-unlock, optional session limits (boots, hours, per-boot cap), and Lock Now / Forget Stored Passphrase in Security settings.
 

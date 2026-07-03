@@ -28,6 +28,9 @@ final class DiscoveredBeaconEntity {
 	var offerPreset: Int = -1
 	/// Name of the channel the beacon offered, when it advertised one.
 	var offerChannelName: String = ""
+	/// Pre-shared key of the offered channel. Broadcast in the beacon (not a local secret), and
+	/// required to actually tune to / join the advertised mesh.
+	var offerChannelPSK: Data = Data()
 	var hasOfferChannel: Bool = false
 	var snr: Float = 0.0
 	var rssi: Int = 0

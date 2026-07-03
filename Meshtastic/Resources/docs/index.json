@@ -83,18 +83,21 @@
         "section": "user",
         "navOrder": 11,
         "keywords": [
-            "scan",
             "channel",
+            "scan",
             "preset",
-            "setting",
             "mesh",
             "radio",
-            "local",
+            "beacon",
+            "setting",
             "settings",
+            "local",
             "frequency",
             "discovery",
-            "beacon",
             "results",
+            "uses",
+            "public",
+            "one",
             "noise",
             "modem",
             "lora",
@@ -105,16 +108,13 @@
             "then",
             "slot",
             "report",
+            "region",
             "radios",
-            "public",
-            "one",
             "nodes",
             "more",
-            "default",
-            "best",
-            "area"
+            "key"
         ],
-        "charCount": 4720
+        "charCount": 5606
     },
     {
         "id": "firmware",
@@ -675,8 +675,9 @@
             "nodes",
             "messages",
             "page",
-            "now",
             "local",
+            "channel",
+            "now",
             "mesh",
             "show",
             "region",
@@ -696,10 +697,9 @@
             "translation",
             "translate",
             "snr",
-            "signal",
-            "row"
+            "signal"
         ],
-        "charCount": 5886
+        "charCount": 6036
     },
     {
         "id": "adding-features",

@@ -16,6 +16,8 @@ import FoundationModels
 struct DiscoverySummaryView: View {
 	let session: DiscoverySessionEntity
 
+	@EnvironmentObject private var accessoryManager: AccessoryManager
+
 	@State private var aiSummary: String = ""
 	@State private var isGeneratingAI: Bool = false
 	@State private var generatingPresets: Set<String> = []
@@ -23,6 +25,9 @@ struct DiscoverySummaryView: View {
 	@State private var isExportingPDF: Bool = false
 	@State private var isGeneratingPDF: Bool = false
 	@State private var pdfDocument: PDFDocument?
+	/// Beacon awaiting a "switch to this channel" confirmation; drives the alert.
+	@State private var beaconToJoin: DiscoveredBeaconEntity?
+	@State private var joinErrorMessage: String?
 
 	var body: some View {
 		List {
@@ -71,6 +76,51 @@ struct DiscoverySummaryView: View {
 			await generateAIRecommendation()
 			await generateFoundationModelPresetSummaries()
 		}
+		.alert("Switch to this channel?", isPresented: Binding(
+			get: { beaconToJoin != nil },
+			set: { if !$0 { beaconToJoin = nil } }
+		), presenting: beaconToJoin) { beacon in
+			Button("Cancel", role: .cancel) { beaconToJoin = nil }
+			Button("Switch") { switchToBeaconChannel(beacon) }
+		} message: { beacon in
+			Text(beaconSwitchPrompt(beacon))
+		}
+		.alert("Couldn't switch channel", isPresented: Binding(
+			get: { joinErrorMessage != nil },
+			set: { if !$0 { joinErrorMessage = nil } }
+		)) {
+			Button("OK", role: .cancel) { joinErrorMessage = nil }
+		} message: {
+			Text(joinErrorMessage ?? "")
+		}
+	}
+
+	/// Applies a beacon's advertised channel + region/preset to the connected radio. The radio
+	/// reboots onto the advertised mesh; failures surface in an alert.
+	private func switchToBeaconChannel(_ beacon: DiscoveredBeaconEntity) {
+		beaconToJoin = nil
+		Task {
+			do {
+				try await accessoryManager.joinBeaconMesh(
+					channelName: beacon.offerChannelName,
+					channelPSK: beacon.offerChannelPSK,
+					region: beacon.offeredRegion,
+					preset: beacon.offeredPreset
+				)
+			} catch {
+				joinErrorMessage = error.localizedDescription
+			}
+		}
+	}
+
+	private func beaconSwitchPrompt(_ beacon: DiscoveredBeaconEntity) -> String {
+		var parts = ["This sets your radio's primary channel to \"\(beacon.offerChannelName)\""]
+		if let preset = beacon.offeredPreset { parts.append("the \(preset.description) preset") }
+		if let region = beacon.offeredRegion { parts.append("region \(region.description)") }
+		let joined = parts.count > 1
+			? parts.dropLast().joined(separator: ", ") + " and " + parts.last!
+			: parts[0]
+		return "\(joined). Your radio will reboot and reconnect on the new mesh. Your previous channel settings will be replaced."
 	}
 
 	// MARK: - Session Overview
@@ -179,6 +229,20 @@ struct DiscoverySummaryView: View {
 				Text("Heard on \(beacon.heardOnPresetName)")
 					.font(.caption2)
 					.foregroundStyle(.secondary)
+			}
+
+			// Only offer the switch when the beacon advertised a channel to join.
+			if beacon.hasOfferChannel, !beacon.offerChannelName.isEmpty {
+				Button {
+					beaconToJoin = beacon
+				} label: {
+					Label("Switch to this channel", systemImage: "arrow.triangle.2.circlepath")
+						.font(.caption)
+				}
+				.buttonStyle(.bordered)
+				.controlSize(.small)
+				.disabled(!accessoryManager.isConnected)
+				.padding(.top, 2)
 			}
 		}
 		.padding(.vertical, 4)
