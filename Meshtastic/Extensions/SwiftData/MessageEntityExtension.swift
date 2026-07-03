@@ -75,8 +75,9 @@ extension MessageEntity {
 		let matchingUsers = users.filter { ($0.num & 0xFF) == relaySuffix }
 
 		// If exactly one match is found, return its name
-		if matchingUsers.count == 1, let name = matchingUsers.first?.longName, !name.isEmpty {
-			return "\(name)"
+		if matchingUsers.count == 1 {
+			let name = matchingUsers.first!.displayLongName
+			if !name.isEmpty { return name }
 		}
 
 		// If no exact match, find the node with the smallest hopsAway
@@ -87,8 +88,9 @@ extension MessageEntity {
 				return false
 			}
 			return lhsHops < rhsHops
-		}), let name = closestNode.longName, !name.isEmpty {
-			return "\(name)"
+		}) {
+			let name = closestNode.displayLongName
+			if !name.isEmpty { return name }
 		}
 
 		// Fallback to hex node number if no matches

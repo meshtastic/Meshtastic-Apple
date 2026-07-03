@@ -8,7 +8,7 @@ import Translation
 struct MessageText: View {
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
-	
+
 	let message: MessageEntity
 	let tapBackDestination: MessageDestination
 	let isCurrentUser: Bool
@@ -18,7 +18,7 @@ struct MessageText: View {
 	@State private var saveChannelLink: SaveChannelLinkData?
 	@State private var isShowingDeleteConfirmation = false
 	@State private var isShowingTranslationPresentation = false
-	
+
 	var body: some View {
 		messageContent
 			.environment(\.openURL, OpenURLAction { url in
@@ -46,7 +46,7 @@ struct MessageText: View {
 				Button("Cancel", role: .cancel) {}
 			}
 	}
-	
+
 	private var sourceMessageText: String {
 		message.messagePayload ?? "EMPTY MESSAGE"
 	}
@@ -134,32 +134,42 @@ struct MessageText: View {
 			}
 	}
 	
-	@ViewBuilder
-	private var messageOverlays: some View {
+	/// Bottom-trailing status badges (encryption lock, signing shield, store-forward envelope), laid out
+	/// in a single row so they sit side by side instead of stacking on the same corner pixel when a
+	/// message qualifies for more than one (e.g. a signed store-and-forward broadcast).
+	private var cornerBadges: [(symbol: String, tint: Color)] {
+		var badges: [(symbol: String, tint: Color)] = []
+		// Lock = private: a PKI-encrypted DM.
 		if message.pkiEncrypted && message.realACK || !isCurrentUser && message.pkiEncrypted {
-			VStack(alignment: .trailing) {
-				Spacer()
-				HStack {
-					Spacer()
-					Image(systemName: "lock.circle.fill")
-						.symbolRenderingMode(.palette)
-						.foregroundStyle(.white, .green)
-						.font(.system(size: 20))
-						.offset(x: 8, y: 8)
-				}
-			}
+			badges.append((symbol: "lock.circle.fill", tint: .green))
+		}
+		// Shield = authentic: a radio-verified, XEdDSA-signed broadcast. Affirmative only — unsigned
+		// traffic shows nothing, and the ingest path only sets the flag on broadcasts, never DMs.
+		if message.xeddsaSigned {
+			badges.append((symbol: "checkmark.shield.fill", tint: .green))
 		}
 		if message.portNum == Int32(PortNum.storeForwardApp.rawValue) {
+			badges.append((symbol: "envelope.circle.fill", tint: .gray))
+		}
+		return badges
+	}
+
+	@ViewBuilder
+	private var messageOverlays: some View {
+		let badges = cornerBadges
+		if !badges.isEmpty {
 			VStack(alignment: .trailing) {
 				Spacer()
-				HStack {
+				HStack(spacing: 2) {
 					Spacer()
-					Image(systemName: "envelope.circle.fill")
-						.symbolRenderingMode(.palette)
-						.foregroundStyle(.white, .gray)
-						.font(.system(size: 20))
-						.offset(x: 8, y: 8)
+					ForEach(Array(badges.enumerated()), id: \.offset) { _, badge in
+						Image(systemName: badge.symbol)
+							.symbolRenderingMode(.palette)
+							.foregroundStyle(.white, badge.tint)
+							.font(.system(size: 20))
+					}
 				}
+				.offset(x: 8, y: 8)
 			}
 		}
 		if tapBackDestination.overlaySensorMessage && message.portNum == Int32(PortNum.detectionSensorApp.rawValue) {
@@ -180,7 +190,7 @@ struct MessageText: View {
 				.offset(x: 38, y: 8)
 		}
 	}
-	
+
 	private func handleURL(_ url: URL) -> OpenURLAction.Result {
 		saveChannelLink = nil
 		var addChannels = false
@@ -188,28 +198,22 @@ struct MessageText: View {
 			// Handle contact URL
 			ContactURLHandler.handleContactUrl(url: url, accessoryManager: AccessoryManager.shared)
 			return .handled // Prevent default browser opening
-		} else if url.absoluteString.lowercased().contains("meshtastic.org/e/") {
-			// Handle channel URL
-			let components = url.absoluteString.components(separatedBy: "#")
-			guard !components.isEmpty, let lastComponent = components.last else {
-				Logger.services.error("No valid components found in channel URL: \(url.absoluteString, privacy: .public)")
+		} else if MeshtasticChannelURL.canHandle(url) {
+			do {
+				let channelLink = try MeshtasticChannelURL.parse(url.absoluteString)
+				addChannels = channelLink.addChannels
+				self.saveChannelLink = SaveChannelLinkData(data: channelLink.payload, add: addChannels)
+				Logger.services.debug("Add Channel: \(addChannels, privacy: .public)")
+				Logger.mesh.debug("Opening Channel Settings URL")
+				return .handled // Prevent default browser opening
+			} catch {
+				Logger.services.error("Invalid channel URL: \(error.localizedDescription, privacy: .public)")
 				return .discarded
 			}
-			addChannels = Bool(url.query?.contains("add=true") ?? false)
-			guard let lastComponent = components.last else {
-				Logger.services.error("Channel URL missing fragment component: \(url.absoluteString, privacy: .public)")
-				self.saveChannelLink = nil
-				return .discarded
-			}
-			let cs = lastComponent.components(separatedBy: "?").first ?? ""
-			self.saveChannelLink = SaveChannelLinkData(data: cs, add: addChannels)
-			Logger.services.debug("Add Channel: \(addChannels, privacy: .public)")
-			Logger.mesh.debug("Opening Channel Settings URL: \(url.absoluteString, privacy: .public)")
-			return .handled // Prevent default browser opening
 		}
 		return .systemAction // Open other URLs in browser
 	}
-	
+
 	private func deleteMessage() {
 		context.delete(message)
 		do {

@@ -167,12 +167,16 @@
 <p>Long-press any node in the list to access quick actions:</p>
 <ul>
 <li><strong>Add to favorites / Remove from favorites</strong> — star important nodes so they appear at the top of the list</li>
+<li><strong>Display name</strong> — give a node a local nickname (see Display Names below)</li>
 <li><strong>Mute notifications / Unmute</strong> — silence alerts from this node</li>
 <li><strong>Message</strong> — open a direct message conversation with this node</li>
 <li><strong>Trace Route</strong> — discover the path messages take to reach this node</li>
 <li><strong>Ignore / Remove from ignored</strong> — hide this node from normal views</li>
 <li><strong>Remove</strong> — remove the node from your local database</li>
 </ul>
+<h2>Display Names</h2>
+<p>You can give any node a local nickname that's shown throughout the app instead of its device long name — in the node list, node details, and messages. Set it from the node's long-press menu (&quot;Display name&quot;) or from the <strong>Name</strong> row in Node Detail. The avatar circle always shows the node's actual short code, unaffected by the nickname.</p>
+<p>Display names are stored only on this device and are never sent over the mesh, shared, or exported — they don't change the node's real identity, so QR codes and contact sharing still use the device's actual name.</p>
 <h2>Filtering &amp; Search</h2>
 <p>Tap the filter icon above the list to narrow which nodes are shown. Filters apply across the Nodes list, the contacts picker in Messages, and the map, so a filter set in one place takes effect everywhere.</p>
 <table>
@@ -264,6 +268,9 @@
 <h2>Node Detail View</h2>
 <p>Tap any node to see the full detail view with hardware info, signal metrics, environment sensors, and log navigation:</p>
 <p><img src="../assets/screenshots/nodeDetail.png" alt="Node Detail" /></p>
+<h3>Signed Node</h3>
+<p>If a node signs its broadcast packets, a green shield (🛡️) <strong>Signed node</strong> row appears in the detail view, marked <strong>Verified automatically</strong>. This means the radio has cryptographically verified an XEdDSA signature from this node (firmware 2.8 or later). Because a node's identity broadcast is itself signed, its name and identity are verified by extension.</p>
+<p>This is <em>automatic</em> trust observed from the radio — distinct from manually verifying a contact's public key out-of-band, which is a separate, user-asserted action. The row only ever affirms the good state; nodes that don't sign simply show no shield, which is not a warning.</p>
 <h3>Hardware Info</h3>
 <p>The hardware section shows information about the physical device running the node. The section title reflects the device's support status:</p>
 <table>

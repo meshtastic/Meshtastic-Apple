@@ -69,6 +69,10 @@ extension FirmwareFile {
 class FirmwareFile: ObservableObject, Hashable, Equatable {
 	let localUrl: URL
 	let remoteUrl: URL?
+	/// Remote artifact URLs to try in order: region/locale-tagged variants
+	/// first (when the node's LoRa region prefers localized-font firmware),
+	/// generic artifact last. `remoteUrl` is the first candidate.
+	let remoteUrlCandidates: [URL]
 	let versionId: String
 	let platformioTarget: String
 	let releaseType: ReleaseType
@@ -79,7 +83,7 @@ class FirmwareFile: ObservableObject, Hashable, Equatable {
 	
 	let versionMajor, versionMinor, versionPatch: Int
 	
-	init(firmware: FirmwareReleaseEntity, hardware: DeviceHardwareEntity, type: FirmwareType? = nil) throws {
+	init(firmware: FirmwareReleaseEntity, hardware: DeviceHardwareEntity, type: FirmwareType? = nil, localeTags: [String] = []) throws {
 		// Get the target and architecture from the given DeviceHardwareEntity
 		guard let target = hardware.platformioTarget else { throw FirmwareFileError.unknownTarget }
 		self.platformioTarget = target
@@ -120,10 +124,14 @@ class FirmwareFile: ObservableObject, Hashable, Equatable {
 		let fileNameVersion = versionId.hasPrefix("v") ? String(versionId.dropFirst()) : versionId
 		let fileName = "firmware-\(target)-\(fileNameVersion)\(firmwareType)"
 		self.localUrl = FirmwareFile.localFirmwareStorageURL.appendingPathComponent(fileName)
-		self.remoteUrl = FirmwareFile.remoteFirmwareURLPrefix
-			.appendingPathComponent("firmware-\(fileNameVersion)")
-			.appendingPathComponent(fileName)
-		
+		self.remoteUrlCandidates = Self.makeRemoteURLCandidates(
+			target: target,
+			version: fileNameVersion,
+			firmwareType: firmwareType,
+			localeTags: localeTags
+		)
+		self.remoteUrl = self.remoteUrlCandidates.first
+
 		if FileManager.default.fileExists(atPath: localUrl.path) {
 			self.status = .downloaded
 		} else {
@@ -239,33 +247,45 @@ class FirmwareFile: ObservableObject, Hashable, Equatable {
 		self.remoteUrl = FirmwareFile.remoteFirmwareURLPrefix
 			.appendingPathComponent("firmware-\(fileNameVersion)")
 			.appendingPathComponent(fileName)
+		self.remoteUrlCandidates = [self.remoteUrl].compactMap { $0 }
 	}
 	
 	@MainActor
 	func download() async throws {
-		guard let remoteUrl else {
+		guard !remoteUrlCandidates.isEmpty else {
 			throw FirmwareFileError.unknownRemoteURL
 		}
-		do {
-			let (tempLocalUrl, response) = try await URLSession.shared.download(from: remoteUrl)
 
-			if let httpResponse = response as? HTTPURLResponse, !(200...299).contains(httpResponse.statusCode) {
-				throw URLError(.badServerResponse)
+		// Try each candidate in order (locale-tagged variants first, generic
+		// last); a release without a locale variant 404s and falls through.
+		var lastError: Error?
+		for candidateRemoteUrl in remoteUrlCandidates {
+			try Task.checkCancellation()
+			do {
+				let (tempLocalUrl, response) = try await URLSession.shared.download(from: candidateRemoteUrl)
+
+				if let httpResponse = response as? HTTPURLResponse, !(200...299).contains(httpResponse.statusCode) {
+					throw URLError(.badServerResponse)
+				}
+
+				if FileManager.default.fileExists(atPath: localUrl.path) {
+					try FileManager.default.removeItem(at: localUrl)
+				}
+
+				try FileManager.default.moveItem(at: tempLocalUrl, to: localUrl)
+				self.status = .downloaded
+				return
+			} catch let urlError as URLError where urlError.code == .cancelled {
+				throw urlError
+			} catch {
+				lastError = error
 			}
-
-			if FileManager.default.fileExists(atPath: localUrl.path) {
-				try FileManager.default.removeItem(at: localUrl)
-			}
-
-			try FileManager.default.moveItem(at: tempLocalUrl, to: localUrl)
-
-			self.status = .downloaded
-
-		} catch {
-			try? FileManager.default.removeItem(at: localUrl)
-			self.status = .error(error.localizedDescription)
-			throw error
 		}
+
+		try? FileManager.default.removeItem(at: localUrl)
+		let finalError = lastError ?? URLError(.badServerResponse)
+		self.status = .error(finalError.localizedDescription)
+		throw finalError
 	}
 	
 	static func validFilenameSuffixes(forArchitecture: Architecture) -> [FirmwareType] {
@@ -297,5 +317,26 @@ class FirmwareFile: ObservableObject, Hashable, Equatable {
 		hasher.combine(releaseType)
 		hasher.combine(firmwareType)
 		hasher.combine(architecture)
+	}
+
+	private static func makeRemoteURLCandidates(
+		target: String,
+		version: String,
+		firmwareType: FirmwareType,
+		localeTags: [String]
+	) -> [URL] {
+		let directory = remoteFirmwareURLPrefix.appendingPathComponent("firmware-\(version)")
+		var fileNames: [String] = []
+		var seen = Set<String>()
+		func append(_ value: String) {
+			guard !seen.contains(value) else { return }
+			seen.insert(value)
+			fileNames.append(value)
+		}
+		for tag in localeTags where !tag.isEmpty {
+			append("firmware-\(target)-\(version)-\(tag)\(firmwareType.rawValue)")
+		}
+		append("firmware-\(target)-\(version)\(firmwareType.rawValue)")
+		return fileNames.map { directory.appendingPathComponent($0) }
 	}
 }

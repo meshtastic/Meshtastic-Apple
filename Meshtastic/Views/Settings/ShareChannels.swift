@@ -47,9 +47,15 @@ struct ShareChannels: View {
 	@State var includeChannel7 = true
 	@State var replaceChannels = true
 	var node: NodeInfoEntity?
-	@State private var channelsUrl =  "https://www.meshtastic.org/e/#"
+	@State private var channelsUrl =  "https://meshtastic.org/e/#"
 	var qrCodeImage = QrCodeImage()
 	@State private var showingHelp = false
+
+	private var shareableChannels: [ChannelEntity] {
+		(node?.myInfo?.channels ?? [])
+			.filter { $0.role > 0 }
+			.sorted { $0.index < $1.index }
+	}
 
 	var body: some View {
 
@@ -59,167 +65,72 @@ struct ShareChannels: View {
 				.listRowSeparator(.hidden)
 		}
 		.padding(.horizontal)
+
 		GeometryReader { bounds in
 			let smallest = min(bounds.size.width, bounds.size.height)
 			ScrollView {
 				if node != nil && node?.myInfo != nil {
-					Grid {
-						GridRow {
-							Spacer()
-							Text("Include")
-								.font(.caption)
-								.fontWeight(.bold)
-								.padding(.trailing)
-							Text("Channel")
-								.font(.caption)
-								.fontWeight(.bold)
-								.padding(.trailing)
-							Text("Encrypted")
-								.font(.caption)
-								.fontWeight(.bold)
-						}
-						ForEach(node?.myInfo?.channels ?? [], id: \.self) { (channel: ChannelEntity) in
-							GridRow {
-								Spacer()
-								if channel.index == 0 {
-									Toggle("Channel 0 Included", isOn: $includeChannel0)
-										.toggleStyle(.switch)
-										.labelsHidden()
-									Text(((channel.name?.isEmpty ?? true ? "Primary" : channel.name) ?? "Primary").camelCaseToWords())
-									ChannelLock(channel: channel)
-								} else if channel.index == 1 && channel.role > 0 {
-									Toggle("Channel 1 Included", isOn: $includeChannel1)
-										.toggleStyle(.switch)
-										.labelsHidden()
-										.disabled(channel.role == 1)
-											Text(((channel.name?.isEmpty ?? true ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)").camelCaseToWords()).fixedSize()
-									if channel.psk?.hexDescription.count ??  0 <  3 {
-										Image(systemName: "lock.slash.fill")
-											.foregroundColor(.red)
-									} else {
-										Image(systemName: "lock.fill")
-											.foregroundColor(.green)
-									}
-								} else if channel.index == 2 && channel.role > 0 {
-									Toggle("Channel 2 Included", isOn: $includeChannel2)
-										.toggleStyle(.switch)
-										.labelsHidden()
-										.disabled(channel.role == 1)
-									Text(((channel.name?.isEmpty ?? true ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)").camelCaseToWords()).fixedSize()
-									if channel.psk?.hexDescription.count ??  0 <  3 {
-										Image(systemName: "lock.slash.fill")
-											.foregroundColor(.red)
-									} else {
-										Image(systemName: "lock.fill")
-											.foregroundColor(.green)
-									}
-								} else if channel.index == 3 && channel.role > 0 {
-									Toggle("Channel 3 Included", isOn: $includeChannel3)
-										.toggleStyle(.switch)
-										.labelsHidden()
-										.disabled(channel.role == 1)
-									Text(((channel.name?.isEmpty ?? true ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)").camelCaseToWords()).fixedSize()
-									if channel.psk?.hexDescription.count ??  0 <  3 {
-										Image(systemName: "lock.slash.fill")
-											.foregroundColor(.red)
-									} else {
-										Image(systemName: "lock.fill")
-											.foregroundColor(.green)
-									}
-								} else if channel.index == 4  && channel.role > 0 {
-									Toggle("Channel 4 Included", isOn: $includeChannel4)
-										.toggleStyle(.switch)
-										.labelsHidden()
-										.disabled(channel.role == 1)
-									Text(((channel.name?.isEmpty ?? true ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)").camelCaseToWords()).fixedSize()
-									if channel.psk?.hexDescription.count ??  0 <  3 {
-										Image(systemName: "lock.slash.fill")
-											.foregroundColor(.red)
-									} else {
-										Image(systemName: "lock.fill")
-											.foregroundColor(.green)
-									}
-								} else if channel.index == 5 && channel.role > 0 {
-									Toggle("Channel 5 Included", isOn: $includeChannel5)
-										.toggleStyle(.switch)
-										.labelsHidden()
-										.disabled(channel.role == 1)
-									Text(((channel.name?.isEmpty ?? true ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)").camelCaseToWords()).fixedSize()
-									if channel.psk?.hexDescription.count ??  0 <  3 {
-										Image(systemName: "lock.slash.fill")
-											.foregroundColor(.red)
-									} else {
-										Image(systemName: "lock.fill")
-											.foregroundColor(.green)
-									}
-								} else if channel.index == 6  && channel.role > 0 {
-									Toggle("Channel 6 Included", isOn: $includeChannel6)
-										.toggleStyle(.switch)
-										.labelsHidden()
-										.disabled(channel.role == 1)
-									Text(((channel.name?.isEmpty ?? true ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)").camelCaseToWords()).fixedSize()
-									if channel.psk?.hexDescription.count ??  0 <  3 {
-										Image(systemName: "lock.slash.fill")
-											.foregroundColor(.red)
-									} else {
-										Image(systemName: "lock.fill")
-											.foregroundColor(.green)
-									}
-								} else if channel.index == 7 && channel.role > 0 {
-									Toggle("Channel 7 Included", isOn: $includeChannel7)
-										.toggleStyle(.switch)
-										.labelsHidden()
-										.disabled(channel.role == 1)
-									Text(((channel.name?.isEmpty ?? true ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)").camelCaseToWords()).fixedSize()
-									if channel.psk?.hexDescription.count ??  0 <  3 {
-										Image(systemName: "lock.slash.fill")
-											.foregroundColor(.red)
-									} else {
-										Image(systemName: "lock.fill")
-											.foregroundColor(.green)
-									}
-								}
-								Spacer()
-							}
-						}
-					}
+					if shareableChannels.isEmpty {
+						ContentUnavailableView(
+							"No Shareable Channels",
+							systemImage: "qrcode",
+							description: Text("Connect to a radio with channel settings before sharing.")
+						)
+						.padding(.vertical, 24)
+					} else {
+						channelSelectionGrid
 
-					let qrImage = qrCodeImage.generateQRCode(from: channelsUrl)
-					VStack {
-						if node != nil {
-							Toggle(isOn: $replaceChannels) {
-								Label(replaceChannels ? "Replace Channels" : "Add Channels", systemImage: replaceChannels ? "arrow.triangle.2.circlepath.circle" : "plus.app")
-							}
-							.tint(.accentColor)
-							.toggleStyle(.button)
-							.buttonStyle(.bordered)
-							.buttonBorderShape(.capsule)
-							.controlSize(.large)
-							.padding(.top)
-							.padding(.bottom)
-
-							ShareLink("Share QR Code & Link",
-										item: Image(uiImage: qrImage),
-										subject: Text("Meshtastic Node \(node?.user?.shortName ?? "????") has shared channels with you"),
-										message: Text(channelsUrl),
-										preview: SharePreview("Meshtastic Node \(node?.user?.shortName ?? "????") has shared channels with you",
-															image: Image(uiImage: qrImage))
+						if channelSet.settings.isEmpty {
+							ContentUnavailableView(
+								"No Channels Selected",
+								systemImage: "qrcode",
+								description: Text("Select at least one channel before sharing.")
 							)
-							.buttonStyle(.bordered)
-							.buttonBorderShape(.capsule)
-							.controlSize(.large)
-							.padding(.bottom)
+							.padding(.vertical, 24)
+						} else if channelsUrl.isEmpty {
+							ContentUnavailableView(
+								"Share Link Unavailable",
+								systemImage: "qrcode",
+								description: Text("Select channels again before sharing.")
+							)
+							.padding(.vertical, 24)
+						} else {
+							let qrImage = qrCodeImage.generateQRCode(from: channelsUrl)
+							VStack {
+								Toggle(isOn: $replaceChannels) {
+									Label(replaceChannels ? "Replace Channels" : "Add Channels", systemImage: replaceChannels ? "arrow.triangle.2.circlepath.circle" : "plus.app")
+								}
+								.tint(.accentColor)
+								.toggleStyle(.button)
+								.buttonStyle(.bordered)
+								.buttonBorderShape(.capsule)
+								.controlSize(.large)
+								.padding(.top)
+								.padding(.bottom)
 
-							Image(uiImage: qrImage)
-								.resizable()
-								.scaledToFit()
-								.frame(
-									minWidth: smallest * (UIDevice.current.userInterfaceIdiom == .phone ? 0.75 : 0.6),
-									maxWidth: smallest * (UIDevice.current.userInterfaceIdiom == .phone ? 0.75 : 0.6),
-									minHeight: smallest * (UIDevice.current.userInterfaceIdiom == .phone ? 0.75 : 0.6),
-									maxHeight: smallest * (UIDevice.current.userInterfaceIdiom == .phone ? 0.75 : 0.6),
-									alignment: .top
+								ShareLink("Share QR Code & Link",
+											item: Image(uiImage: qrImage),
+											subject: Text("Meshtastic Node \(node?.user?.shortName ?? "????") has shared channels with you"),
+											message: Text(channelsUrl),
+											preview: SharePreview("Meshtastic Node \(node?.user?.shortName ?? "????") has shared channels with you",
+																image: Image(uiImage: qrImage))
 								)
+								.buttonStyle(.bordered)
+									.buttonBorderShape(.capsule)
+									.controlSize(.large)
+									.padding(.bottom)
+
+								Image(uiImage: qrImage)
+									.resizable()
+									.scaledToFit()
+									.frame(
+										minWidth: smallest * (UIDevice.current.userInterfaceIdiom == .phone ? 0.75 : 0.6),
+										maxWidth: smallest * (UIDevice.current.userInterfaceIdiom == .phone ? 0.75 : 0.6),
+										minHeight: smallest * (UIDevice.current.userInterfaceIdiom == .phone ? 0.75 : 0.6),
+										maxHeight: smallest * (UIDevice.current.userInterfaceIdiom == .phone ? 0.75 : 0.6),
+										alignment: .top
+									)
+							}
 						}
 					}
 				}
@@ -268,8 +179,69 @@ struct ShareChannels: View {
 			.onChange(of: includeChannel6) { generateChannelSet() }
 			.onChange(of: includeChannel7) { generateChannelSet() }
 			.onChange(of: replaceChannels) { generateChannelSet() }
+			}
+		}
+
+	private var channelSelectionGrid: some View {
+		Grid(alignment: .leading, horizontalSpacing: 18, verticalSpacing: 10) {
+			GridRow {
+				Text("Include")
+					.font(.caption)
+					.fontWeight(.bold)
+				Text("Channel")
+					.font(.caption)
+					.fontWeight(.bold)
+				Text("Encrypted")
+					.font(.caption)
+					.fontWeight(.bold)
+			}
+
+			ForEach(shareableChannels, id: \.self) { channel in
+				GridRow {
+					Toggle("Channel \(channel.index) Included", isOn: includeBinding(for: channel.index))
+						.toggleStyle(.switch)
+						.labelsHidden()
+						.disabled(channel.role == 1 && channel.index != 0)
+					Text(channelDisplayName(channel))
+						.fixedSize(horizontal: false, vertical: true)
+					ChannelLock(channel: channel)
+				}
+			}
+		}
+		.frame(maxWidth: .infinity, alignment: .center)
+		.padding(.horizontal)
+	}
+
+	private func includeBinding(for index: Int32) -> Binding<Bool> {
+		switch index {
+		case 0:
+			return $includeChannel0
+		case 1:
+			return $includeChannel1
+		case 2:
+			return $includeChannel2
+		case 3:
+			return $includeChannel3
+		case 4:
+			return $includeChannel4
+		case 5:
+			return $includeChannel5
+		case 6:
+			return $includeChannel6
+		case 7:
+			return $includeChannel7
+		default:
+			return .constant(false)
 		}
 	}
+
+	private func channelDisplayName(_ channel: ChannelEntity) -> String {
+		if channel.index == 0 && (channel.name?.isEmpty ?? true) {
+			return "Primary"
+		}
+		return ((channel.name?.isEmpty ?? true ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)").camelCaseToWords()
+	}
+
 	func generateChannelSet() {
 		channelSet = ChannelSet()
 		var loRaConfig = Config.LoRaConfig()
@@ -288,59 +260,70 @@ struct ShareChannels: View {
 		loRaConfig.ignoreMqtt = node?.loRaConfig?.ignoreMqtt ?? false
 		loRaConfig.overrideFrequency = node?.loRaConfig?.overrideFrequency ?? 0.0
 		channelSet.loraConfig = loRaConfig
-		if node?.myInfo != nil && (node?.myInfo?.channels.count ?? 0) > 0 {
-			for ch in node?.myInfo?.channels ?? [] where ch.role > 0 {
-				var includeChannel = false
-				switch ch.index {
-				case 0:
-					if includeChannel0 {
-						includeChannel = true
-					}
-				case 1:
-					if includeChannel1 {
-						includeChannel = true
-					}
-				case 2:
-					if includeChannel2 {
-						includeChannel = true
-					}
-				case 3:
-					if includeChannel3 {
-						includeChannel = true
-					}
-				case 4:
-					if includeChannel4 {
-						includeChannel = true
-					}
-				case 5:
-					if includeChannel5 {
-						includeChannel = true
-					}
-				case 6:
-					if includeChannel6 {
-						includeChannel = true
-					}
-				case 7:
-					if includeChannel7 {
-						includeChannel = true
-					}
-				default:
-					includeChannel = false
-				}
-				if includeChannel {
-					var channelSettings = ChannelSettings()
-					channelSettings.name = ch.name!
-					channelSettings.psk = ch.psk!
-					channelSettings.id = UInt32(ch.id)
-					channelSettings.moduleSettings.positionPrecision = UInt32(ch.positionPrecision)
-					channelSettings.moduleSettings.isMuted = ch.mute
-					channelSet.settings.append(channelSettings)
-				}
-			}
-			guard let settingsString = try? channelSet.serializedData().base64EncodedString() else {
-				return
-			}
-			channelsUrl = ("https://meshtastic.org/e/\(replaceChannels ? "" : "?add=true")#\(settingsString.base64ToBase64url())")
+
+		guard node?.myInfo != nil && (node?.myInfo?.channels.count ?? 0) > 0 else {
+			channelsUrl = ""
+			return
 		}
+
+		for ch in node?.myInfo?.channels ?? [] where ch.role > 0 {
+			var includeChannel = false
+			switch ch.index {
+			case 0:
+				if includeChannel0 {
+					includeChannel = true
+				}
+			case 1:
+				if includeChannel1 {
+					includeChannel = true
+				}
+			case 2:
+				if includeChannel2 {
+					includeChannel = true
+				}
+			case 3:
+				if includeChannel3 {
+					includeChannel = true
+				}
+			case 4:
+				if includeChannel4 {
+					includeChannel = true
+				}
+			case 5:
+				if includeChannel5 {
+					includeChannel = true
+				}
+			case 6:
+				if includeChannel6 {
+					includeChannel = true
+				}
+			case 7:
+				if includeChannel7 {
+					includeChannel = true
+				}
+			default:
+				includeChannel = false
+			}
+
+			if includeChannel {
+				var channelSettings = ChannelSettings()
+				channelSettings.name = ch.name ?? ""
+				channelSettings.psk = ch.psk ?? Data()
+				channelSettings.id = UInt32(ch.id)
+				channelSettings.moduleSettings.positionPrecision = UInt32(ch.positionPrecision)
+				channelSettings.moduleSettings.isMuted = ch.mute
+				channelSet.settings.append(channelSettings)
+			}
+		}
+
+		guard !channelSet.settings.isEmpty else {
+			channelsUrl = ""
+			return
+		}
+		guard let urlString = try? MeshtasticChannelURL.urlString(for: channelSet, addChannels: !replaceChannels) else {
+			channelsUrl = ""
+			return
+		}
+		channelsUrl = urlString
 	}
 }

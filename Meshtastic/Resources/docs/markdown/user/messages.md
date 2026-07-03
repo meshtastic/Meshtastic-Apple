@@ -27,6 +27,12 @@ Channel conversations load the most recent **50 messages** by default. Scroll to
 
 The channel form lets you configure the channel name, encryption key, role, position sharing, and MQTT uplink/downlink settings.
 
+### Channel QR Codes
+
+Use **Share QR Code** from Settings to choose which configured channels to share. The generated Meshtastic channel link includes the selected channel settings and the LoRa config needed for another radio to communicate on the same mesh.
+
+When you open or scan a Meshtastic channel link, review the listed channels and choose whether to **Replace Channels** or **Add Channels**. Replace mode overwrites the current radio channel set, while add mode appends the incoming channels when there are free slots and no duplicate channel names.
+
 ### Channel Security
 
 | Icon | Meaning |
@@ -70,6 +76,15 @@ The channel form lets you configure the channel name, encryption key, role, posi
 | ![Shared Key](../assets/screenshots/lockOpen.png) | **Shared Key** — direct messages are using the shared key for the channel. |
 | ![Public Key Encryption](../assets/screenshots/lockClosed.png) | **Public Key Encryption** — direct messages use the public key infrastructure for encryption. Requires firmware 2.5 or later. |
 | ![PKI Mismatch](../assets/screenshots/keySlash.png) | **Public Key Mismatch** — the most recent public key for this node does not match the previously recorded key. Verify who you are messaging with by comparing public keys in person or over the phone. |
+
+---
+
+### Signing
+
+A green shield (🛡️) on a broadcast message bubble means the message is **signed and verified** — the radio cryptographically verified an XEdDSA signature over the sender's identity key (firmware 2.8 or later). The shield answers a different question from the encryption lock: the **lock** means a direct message is *private*, while the **shield** means a broadcast is *authentic* (you know who really sent it).
+
+- The shield appears only on broadcast/channel messages, never on direct messages, and only when verification succeeded. Long-press a signed message to see **Signed · verified** in the context menu, then open **Message Details** for "Verified with the sender's key."
+- Unsigned messages show nothing — there is no warning. Direct messages, oversized broadcasts, and traffic from older firmware are all legitimately unsigned, so the absence of a shield does not indicate a problem. The radio drops broadcasts whose signature fails verification before they ever reach the app, so a shown signed message is verified by construction.
 
 ---
 

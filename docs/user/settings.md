@@ -43,6 +43,8 @@ Manage up to 8 channels (0–7). Channel 0 is the primary broadcast channel. Add
 
 Configure PKI (Public Key Infrastructure) encryption for direct messages. Requires firmware 2.5+.
 
+On hardened lockdown-firmware radios, this page also shows a **Lockdown** section with the session status, a **Lock Now** button, and a **Forget Stored Passphrase** button. See [Lockdown Mode](lockdown.md).
+
 ### User
 
 Set your Long Name (display name) and Short Name (4-character/emoji identifier shown in the node circle).
