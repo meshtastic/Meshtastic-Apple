@@ -140,30 +140,30 @@ struct NetworkConfig: View {
 						Section(header: Text("Static IPv4 Configuration")) {
 							HStack {
 								Label("IP", systemImage: "number")
-								TextField("0.0.0.0", text: $staticIp)
-									.foregroundColor(Self.isValidIPv4Field(staticIp) ? .gray : .red)
+								TextField("192.168.1.10", text: $staticIp)
+									.foregroundColor(Self.isRequiredIPv4FieldValid(staticIp) ? .gray : .red)
 									.keyboardType(.numbersAndPunctuation)
 							}
 							HStack {
 								Label("Gateway", systemImage: "arrow.triangle.branch")
-								TextField("0.0.0.0", text: $staticGateway)
-									.foregroundColor(Self.isValidIPv4Field(staticGateway) ? .gray : .red)
+								TextField("192.168.1.1", text: $staticGateway)
+									.foregroundColor(Self.isRequiredIPv4FieldValid(staticGateway) ? .gray : .red)
 									.keyboardType(.numbersAndPunctuation)
 							}
 							HStack {
 								Label("Subnet", systemImage: "circle.grid.cross")
 								TextField("255.255.255.0", text: $staticSubnet)
-									.foregroundColor(Self.isValidIPv4Field(staticSubnet) ? .gray : .red)
+									.foregroundColor(Self.isRequiredIPv4FieldValid(staticSubnet) ? .gray : .red)
 									.keyboardType(.numbersAndPunctuation)
 							}
 							HStack {
 								Label("DNS", systemImage: "magnifyingglass")
-								TextField("0.0.0.0", text: $staticDns)
+								TextField("Optional", text: $staticDns)
 									.foregroundColor(Self.isValidIPv4Field(staticDns) ? .gray : .red)
 									.keyboardType(.numbersAndPunctuation)
 							}
 							if !staticValid {
-								Text("Enter valid IPv4 addresses (e.g. 192.168.1.10). Leave a field blank to leave it unset.")
+								Text("IP, gateway, and subnet are required and must be valid IPv4 addresses (e.g. 192.168.1.10). DNS may be left blank.")
 									.font(.callout)
 									.foregroundColor(.red)
 									.fixedSize(horizontal: false, vertical: true)
@@ -339,18 +339,26 @@ struct NetworkConfig: View {
 		}
 	}
 
-	/// Pure save-gating logic, kept free of `@State` so it can be unit-tested directly. Returns
-	/// false only when a static-mode field holds a malformed address. Always true in DHCP mode,
-	/// where the static fields are ignored. A blank field is allowed and means "unset" (written
-	/// as 0.0.0.0) — this matches how the firmware round-trips an unconfigured field
-	/// (`uint32ToIpString(0)` is ""), so a node already in static mode with zeroed fields loads
-	/// cleanly and unrelated edits stay saveable. Only a non-empty typo (e.g. `192.168.1` or
-	/// `192.168.1.300`) blocks the save.
+	/// Field-tint helper for IP / gateway / subnet, which are required in static mode: blank
+	/// reads as invalid so the field shows red and the user can see what is blocking Save.
+	/// DNS keeps the plain `isValidIPv4Field` check since blank DNS is allowed.
+	static func isRequiredIPv4FieldValid(_ ipString: String) -> Bool {
+		!ipString.isEmpty && isValidIPv4Field(ipString)
+	}
+
+	/// Pure save-gating logic, kept free of `@State` so it can be unit-tested directly. Always
+	/// true in DHCP mode, where the static fields are ignored. In static mode the save is
+	/// blocked when any field holds a malformed address (e.g. `192.168.1` or `192.168.1.300`,
+	/// which `ipStringToUInt32` would silently write as 0.0.0.0), and when IP, gateway, or
+	/// subnet is blank — a static config without them is non-functional, the same class of
+	/// silently-broken config as a typo. DNS is the one optional field: blank means "unset"
+	/// (written as 0.0.0.0), matching how the firmware round-trips an unconfigured field
+	/// (`uint32ToIpString(0)` is "").
 	static func isStaticConfigValid(addressMode: Int, ip: String, gateway: String, subnet: String, dns: String) -> Bool {
 		guard addressMode == 1 else { return true }
-		return isValidIPv4Field(ip)
-			&& isValidIPv4Field(gateway)
-			&& isValidIPv4Field(subnet)
+		return !ip.isEmpty && isValidIPv4Field(ip)
+			&& !gateway.isEmpty && isValidIPv4Field(gateway)
+			&& !subnet.isEmpty && isValidIPv4Field(subnet)
 			&& isValidIPv4Field(dns)
 	}
 
