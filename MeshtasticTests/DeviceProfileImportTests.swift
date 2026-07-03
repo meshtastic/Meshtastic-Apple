@@ -291,9 +291,11 @@ struct DeviceProfileImportTests {
 		let all = Set(plan.presentSections)
 		#expect(plan.containsSensitive(in: all))
 		#expect(plan.willReboot(in: all))
-		// Deselecting the sensitive/reboot sections clears both aggregates.
-		let safe: Set<ImportSection> = [.owner, .radioAndDevice, .modules, .personalization, .fixedPosition]
-		#expect(!plan.willReboot(in: safe))
+		// A selection with no security/network/MQTT/channel items is neither sensitive nor a reboot.
+		// (Modules is excluded because the MQTT module config carries a password.)
+		let nonSensitive: Set<ImportSection> = [.owner, .radioAndDevice, .personalization, .fixedPosition]
+		#expect(!plan.containsSensitive(in: nonSensitive))
+		#expect(!plan.willReboot(in: nonSensitive))
 	}
 
 	@Test("A channel URL terminal item is flagged sensitive because it carries channel PSKs")
@@ -487,12 +489,13 @@ struct DeviceProfileImportTests {
 		let task = Task { await DeviceProfileImporter.apply(plan: plan, selection: Set(plan.presentSections), gateway: gateway) }
 		task.cancel()
 		let result = await task.value
-		// Whether or not the loop had begun, a cancelled run must never report complete success and must
-		// leave the device state coherent (nothing failed).
-		#expect(!result.isCompleteSuccess)
+		// The cancel may or may not land before the loop starts, but either way the run must stay coherent:
+		// nothing is reported as failed, and every item is accounted for as applied or skipped.
 		#expect(result.failed == nil)
+		#expect(result.applied.count + result.skipped.count == plan.items.count)
+		// A cancelled run is never reported as a complete success.
 		if result.wasCancelled {
-			#expect(result.applied.count + result.skipped.count == plan.items.count)
+			#expect(!result.isCompleteSuccess)
 		}
 	}
 

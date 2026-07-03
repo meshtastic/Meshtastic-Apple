@@ -306,7 +306,7 @@ The exported file includes your node's private key, admin keys, channel keys (PS
 </tbody>
 </table>
 <p>All present sections are selected by default <strong>except Security &amp; Identity</strong>, which is off by default: importing it replaces this node's cryptographic identity (its private/public key) and admin keys, which can break existing direct messages and lock you out of local administration. Leave it off when cloning a configuration onto a second radio that should keep its own identity.</p>
-<div class="warning-callout"><strong>Warning — Import overwrites settings on your radio</strong>
+<div class="warning-callout"><strong>Warning — Import overwrites your radio's settings</strong>
 Importing writes the selected settings — including any secrets in the file — onto the connected node. Only import files from a source you trust.</div>
 <p>Applying <strong>Channels &amp; LoRa</strong> reboots the radio, so it briefly disconnects; the app reports this so you can reconnect to verify. Settings are applied in order and the import stops at the first failure, telling you exactly what was and wasn't applied. Re-running an import is safe.</p>
 <h2>Automatic Documentation Translation</h2>

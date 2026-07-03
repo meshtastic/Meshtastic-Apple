@@ -444,8 +444,8 @@ extension NodeInfoEntity {
 			var settings = ChannelSettings()
 			settings.name = channel.name ?? ""
 			settings.psk = channel.psk ?? Data()
-			settings.id = UInt32(channel.id)
-			settings.moduleSettings.positionPrecision = UInt32(channel.positionPrecision)
+			settings.id = UInt32(truncatingIfNeeded: channel.id)
+			settings.moduleSettings.positionPrecision = UInt32(truncatingIfNeeded: channel.positionPrecision)
 			settings.moduleSettings.isMuted = channel.mute
 			channelSet.settings.append(settings)
 		}
