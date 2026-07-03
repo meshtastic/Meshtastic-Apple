@@ -77,6 +77,12 @@ final class LockdownCoordinator: ObservableObject {
 	private var pendingMaxSessionSeconds: UInt32 = 0
 	private var pendingLockNow = false
 
+	/// Returns the coordinator to passphrase entry when an unlock backoff
+	/// deadline passes. Without this the non-dismissable sheet counts down to
+	/// "0 s" and stays there — the firmware only reports backoff in response to
+	/// an attempt; it does not push a new status when the window elapses.
+	private var backoffExpiryTask: Task<Void, Never>?
+
 	// MARK: Init
 
 	init(sender: LockdownSender? = nil,
@@ -100,6 +106,7 @@ final class LockdownCoordinator: ObservableObject {
 		wasAutoAttempt = false
 		clearPendingPassphrase()
 		pendingLockNow = false
+		cancelBackoffExpiry()
 		state = .none
 	}
 
@@ -113,6 +120,7 @@ final class LockdownCoordinator: ObservableObject {
 		}
 		wasAutoAttempt = false
 		clearPendingPassphrase()
+		cancelBackoffExpiry()
 		currentPeripheralID = nil
 	}
 
@@ -122,6 +130,9 @@ final class LockdownCoordinator: ObservableObject {
 	/// AccessoryManager, which has already destructured the oneof.
 	func handle(_ status: LockdownStatus) {
 		logger.info("LockdownStatus state=\(String(describing: status.state)) reason='\(status.lockReason, privacy: .public)' boots=\(status.bootsRemaining) until=\(status.validUntilEpoch) backoff=\(status.backoffSeconds)")
+		// A fresh status supersedes any running backoff countdown; entering a new
+		// backoff re-arms it in enterBackoff.
+		cancelBackoffExpiry()
 		switch status.state {
 		case .needsProvision:
 			state = .needsProvision
@@ -194,7 +205,7 @@ final class LockdownCoordinator: ObservableObject {
 		if wasAuto {
 			if backoffSeconds > 0 {
 				logger.info("Auto-unlock rate-limited (backoff=\(backoffSeconds)s)")
-				state = .unlockBackoff(deadline: Date(timeIntervalSinceNow: TimeInterval(backoffSeconds)))
+				enterBackoff(seconds: backoffSeconds)
 			} else {
 				// Cached passphrase is wrong (likely rotated server-side).
 				if let peripheralID = currentPeripheralID {
@@ -205,9 +216,21 @@ final class LockdownCoordinator: ObservableObject {
 			}
 		} else {
 			if backoffSeconds > 0 {
-				state = .unlockBackoff(deadline: Date(timeIntervalSinceNow: TimeInterval(backoffSeconds)))
+				enterBackoff(seconds: backoffSeconds)
 			} else {
 				state = .unlockFailed
+			}
+		}
+	}
+
+	private func enterBackoff(seconds: UInt32) {
+		state = .unlockBackoff(deadline: Date(timeIntervalSinceNow: TimeInterval(seconds)))
+		backoffExpiryTask?.cancel()
+		backoffExpiryTask = Task { [weak self] in
+			try? await Task.sleep(nanoseconds: UInt64(seconds) * 1_000_000_000)
+			guard let self, !Task.isCancelled else { return }
+			if case .unlockBackoff = self.state {
+				self.state = .locked(reason: "needs_auth")
 			}
 		}
 	}
@@ -256,6 +279,11 @@ final class LockdownCoordinator: ObservableObject {
 	}
 
 	// MARK: Private helpers
+
+	private func cancelBackoffExpiry() {
+		backoffExpiryTask?.cancel()
+		backoffExpiryTask = nil
+	}
 
 	/// Wipes the in-memory pending passphrase. Called at every state-transition
 	/// boundary so the string lives in memory only for the request/response

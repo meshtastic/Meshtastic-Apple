@@ -222,13 +222,16 @@ private struct PassphraseEntryContent: View {
 	private func submit() {
 		guard isSubmitEnabled else { return }
 		let boots = bootsParsed ?? 0
+		// Clamp instead of trapping: UInt32 arithmetic overflows (and crashes) for
+		// large user-typed Hours/Minutes values, e.g. 2000000 hours * 3600.
 		let validUntilEpoch: UInt32 = {
 			guard let hours = hoursParsed, hours > 0 else { return 0 }
-			return UInt32(Date().timeIntervalSince1970) + hours * 3600
+			let epoch = UInt64(Date().timeIntervalSince1970) + UInt64(hours) * 3600
+			return UInt32(clamping: epoch)
 		}()
 		let maxSessionSeconds: UInt32 = {
 			guard let minutes = sessionMinutesParsed, minutes > 0 else { return 0 }
-			return minutes * 60
+			return UInt32(clamping: UInt64(minutes) * 60)
 		}()
 		lockdown.submitPassphrase(passphrase,
 								  bootsRemaining: boots,

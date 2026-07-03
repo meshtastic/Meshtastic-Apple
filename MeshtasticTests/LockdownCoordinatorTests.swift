@@ -208,6 +208,25 @@ final class LockdownCoordinatorTests: XCTestCase {
 		XCTAssertEqual(store.entries[peripheralID]?.passphrase, "good", "cache should survive rate-limit")
 	}
 
+	func testHandle_unlockBackoff_deadlinePassed_returnsToPassphraseEntry() async throws {
+		let (coordinator, _, _) = makeCoordinator()
+		coordinator.onConnect(peripheralID: peripheralID)
+		coordinator.handle(makeStatus(state: .locked, lockReason: "needs_auth"))
+		coordinator.submitPassphrase("x", bootsRemaining: 0, validUntilEpoch: 0)
+		coordinator.handle(makeStatus(state: .unlockFailed, backoffSeconds: 1))
+
+		guard case .unlockBackoff = coordinator.state else {
+			XCTFail("Expected .unlockBackoff, got \(coordinator.state)")
+			return
+		}
+
+		// The firmware never pushes a status when the window elapses, so the
+		// coordinator must return to entry on its own.
+		try await Task.sleep(nanoseconds: 1_500_000_000)
+		XCTAssertEqual(coordinator.state, .locked(reason: "needs_auth"),
+					   "backoff expiry should return to passphrase entry")
+	}
+
 	// MARK: Lock Now (US-3)
 
 	func testLockNow_setsPendingAndSendsEmptyPassphraseAuth() {
