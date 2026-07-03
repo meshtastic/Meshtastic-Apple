@@ -39,12 +39,14 @@ struct NodeListItemCompact: View {
 		return f
 	}()
 
-	private func accessibilityDescription(cachedMetrics: TelemetryEntity?, cachedLocationData: (nodeLocation: CLLocation, myLocation: CLLocation)?) -> String {
+	private func accessibilityDescription(batteryLevel: Int32?, cachedLocationData: (nodeLocation: CLLocation, myLocation: CLLocation)?, status: String?) -> String {
 		var desc = ""
-		if let shortName = node.user?.shortName {
+		// The device shortName is never overridden by a local display name, so it's safe to branch
+		// on it directly here; only the longName fallback needs the display-name-aware variant.
+		if let shortName = node.user?.shortName, !shortName.isEmpty {
 			desc = shortName.formatNodeNameForVoiceOver()
-		} else if let longName = node.user?.longName {
-			desc = longName
+		} else if let user = node.user, let longName = user.longName, !longName.isEmpty {
+			desc = user.displayLongName
 		} else {
 			desc = "Unknown".localized + " " + "Node".localized
 		}
@@ -53,6 +55,9 @@ struct NodeListItemCompact: View {
 		}
 		if node.favorite {
 			desc += ", favorite"
+		}
+		if let status {
+			desc += ", status: " + status
 		}
 		if let lastHeard = node.lastHeard {
 			let relative = Self.relativeDateFormatter.localizedString(for: lastHeard, relativeTo: Date())
@@ -70,7 +75,7 @@ struct NodeListItemCompact: View {
 		if node.hopsAway > 0 {
 			desc += ", \(node.hopsAway) hops away"
 		}
-		if let battery = cachedMetrics?.batteryLevel {
+		if let battery = batteryLevel {
 			if battery > 100 {
 				desc += ", " + "Plugged in".localized
 			} else if battery == 100 {
@@ -107,6 +112,11 @@ struct NodeListItemCompact: View {
 				signalString = "Signal strength strong".localized
 			}
 			desc += ", " + signalString
+		}
+		// Mirror the visual "Signed node" shield (rendered below) so VoiceOver announces it in the
+		// compact list too — affirmative only, never for unsigned nodes.
+		if node.hasXeddsaSigned {
+			desc += ", " + "Signed node".localized
 		}
 		return desc
 	}
@@ -157,7 +167,16 @@ struct NodeListItemCompact: View {
 		if shouldShowLastHeard {
 			lines += 1
 		}
-		
+
+		// The signed-node ("Signed node") row renders on its own line whenever the node is signed,
+		// so reserve space for it too — otherwise the avatar circle is sized too short for signed
+		// nodes, most visibly when last-heard / telemetry rows are disabled.
+		if node.hasXeddsaSigned {
+			lines += 1
+		}
+
+		// Note: the status row's contribution is added by the caller via the resolved
+		// `statusMessage` value, so `node.statusMessageDisplay` is evaluated only once.
 		return lines
 	}
 	
@@ -175,13 +194,15 @@ struct NodeListItemCompact: View {
 	}
 
 	@ViewBuilder private var rowContent: some View {
-		let circleSize = max(minCircle, min(maxCircle, baseUnit * CGFloat(lineNums)))
-		let cachedMetrics = (shouldShowPower || shouldShowTelemetry) ? rowSummary?.latestDeviceMetrics : nil
+		// Resolve the status once per render; reused for the row, circle sizing, and a11y.
+		let statusMessage = node.statusMessageDisplay
+		let circleSize = max(minCircle, min(maxCircle, baseUnit * CGFloat(lineNums + (statusMessage != nil ? 1 : 0))))
+		let cachedBatteryLevel = (shouldShowPower || shouldShowTelemetry) ? rowSummary?.batteryLevel : nil
 		let needsLatestPosition = shouldShowTelemetry || (shouldShowLocation && connectedNode != node.num)
 		let cachedLatestNodeCoordinate = needsLatestPosition ? rowSummary?.latestNodeCoordinate : nil
 		let cachedLocationData = (shouldShowLocation && connectedNode != node.num) ? locationData(for: cachedLatestNodeCoordinate) : nil
 		let cachedHasPositions = shouldShowTelemetry ? (rowSummary?.hasPosition ?? false) : false
-		let cachedHasDeviceMetrics = shouldShowTelemetry && cachedMetrics != nil
+		let cachedHasDeviceMetrics = shouldShowTelemetry && (rowSummary?.hasDeviceMetrics ?? false)
 		let cachedHasEnvironmentMetrics = shouldShowTelemetry ? rowSummary?.hasEnvironmentMetrics ?? false : false
 		let cachedHasDetectionSensorMetrics = shouldShowTelemetry ? rowSummary?.hasDetectionSensorMetrics ?? false : false
 		let cachedHasTraceRoutes = shouldShowTelemetry ? rowSummary?.hasTraceRoutes ?? false : false
@@ -194,7 +215,7 @@ struct NodeListItemCompact: View {
 				VStack(alignment: .center) {
 					CircleText(text: node.user?.shortName ?? "?", color: Color(UIColor(hex: UInt32(node.num))), circleSize: circleSize)
 						.padding(.trailing, 5)
-					if shouldShowPower, let batteryLevel = cachedMetrics?.batteryLevel {
+					if shouldShowPower, let batteryLevel = cachedBatteryLevel {
 						BatteryCompact(batteryLevel: batteryLevel, font: .caption2, iconFont: .caption, color: .accentColor)
 							.padding(.trailing, 5)
 					}
@@ -206,13 +227,33 @@ struct NodeListItemCompact: View {
 						let (image, color) = userKeyStatus
 						IconAndText(systemName: image,
 									imageColor: color,
-									text: node.user?.longName?.addingVariationSelectors ?? "Unknown".localized,
+									text: node.user?.displayLongName.addingVariationSelectors ?? "Unknown".localized,
 									textColor: .primary)
 						if node.favorite {
 							Spacer()
 							Image(systemName: "star.fill")
 								.symbolRenderingMode(.multicolor)
 						}
+					}
+					// Signed node = XEdDSA-signed NodeInfo broadcast → identity verified by the radio.
+					// Affirmative only; never shown for unsigned nodes. Mirrors the Node Detail row.
+					if node.hasXeddsaSigned {
+						IconAndText(systemName: "checkmark.shield.fill",
+									imageColor: .green,
+									text: "Signed node".localized)
+					}
+					// User-authored status broadcast by the node, directly beneath the name.
+					// Single-line clamp keeps the compact row dense; omitted when empty.
+					// Untrusted free text: rendered verbatim as plain text only.
+					if let statusMessage {
+						NodeCardStatusRow(
+							status: statusMessage,
+							iconWidth: nil,
+							iconFont: .caption,
+							textFont: .caption,
+							lineLimit: 1
+						)
+						.padding(EdgeInsets(top: 0, leading: 6, bottom: 0, trailing: 0))
 					}
 					if shouldShowLastHeard && node.lastHeard?.timeIntervalSince1970 ?? 0 > 0 && node.lastHeard! < Calendar.current.date(byAdding: .year, value: 1, to: Date())! {
 						
@@ -310,7 +351,7 @@ struct NodeListItemCompact: View {
 				}
 			}
 			.accessibilityElement(children: .ignore)
-			.accessibilityLabel(accessibilityDescription(cachedMetrics: cachedMetrics, cachedLocationData: cachedLocationData))
+			.accessibilityLabel(accessibilityDescription(batteryLevel: cachedBatteryLevel, cachedLocationData: cachedLocationData, status: statusMessage))
 	}
 }
 

@@ -7,8 +7,20 @@ import SwiftUI
 struct ContentView: View {
 	@ObservedObject var appState: AppState
 	@EnvironmentObject var accessoryManager: AccessoryManager
-	@State var router: Router
+	@EnvironmentObject var lockdown: LockdownCoordinator
+	// Observe (not just hold) the router so a *programmatic* `selectedTab` change re-renders
+	// ContentView and the TabView re-reads its selection binding immediately. As plain @State this
+	// view never subscribed to the router's objectWillChange, so a programmatic tab switch only took
+	// effect on the next incidental re-render (e.g. an unread-count change) — instant on a busy live
+	// mesh, but a 20–60s stall in a quiet/seeded session.
+	@ObservedObject var router: Router
 	@State var isShowingDeviceOnboardingFlow: Bool = false
+
+	/// True when the connected device's lockdown state requires the user to act
+	/// (provision a passphrase, unlock, or wait out a backoff). The sheet is
+	/// non-dismissable; it only closes when the coordinator transitions to a
+	/// non-blocking state (.none, .unlocked, .lockNowAcknowledged).
+	private var isLockdownGateActive: Bool { lockdown.isBlockingSession }
 
 	init(appState: AppState, router: Router) {
 		self.appState = appState
@@ -26,6 +38,12 @@ struct ContentView: View {
 					DeviceOnboarding()
 				}
 			)
+			.fullScreenCover(isPresented: Binding(
+				get: { isLockdownGateActive },
+				set: { _ in /* non-dismissable; coordinator state controls visibility */ }
+			)) {
+				LockdownSheet()
+			}
 			.onAppear {
 				if UserDefaults.firstLaunch {
 					isShowingDeviceOnboardingFlow = true
@@ -72,7 +90,7 @@ struct ContentView: View {
 				}
 
 				Tab("Map", systemImage: "map", value: NavigationState.Tab.map) {
-					MeshMap(router: appState.router)
+					MeshMapMK(router: appState.router)
 				}
 
 				Tab("Settings", systemImage: "gear", value: NavigationState.Tab.settings) {
@@ -104,7 +122,7 @@ struct ContentView: View {
 				}
 				.tag(NavigationState.Tab.nodes)
 
-				MeshMap(router: appState.router)
+				MeshMapMK(router: appState.router)
 				.tabItem {
 					Label("Map", systemImage: "map")
 				}

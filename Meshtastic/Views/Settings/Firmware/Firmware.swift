@@ -78,7 +78,10 @@ private struct FirmwareContentView: View {
 	
 	let node: NodeInfoEntity
 	let hardware: DeviceHardwareEntity
-	
+	/// The node's LoRa region at the time this view was created; drives
+	/// region-aware artifact selection and the locale-variant guidance rows.
+	let nodeRegion: RegionCodes
+
 	// We can safely init the StateObject here because 'hardware' is passed in
 	@StateObject var firmwareList: FirmwareViewModel
 	@State private var firmwareSelection = FirmwareTab.stable
@@ -99,7 +102,9 @@ private struct FirmwareContentView: View {
 	init(node: NodeInfoEntity, hardware: DeviceHardwareEntity) {
 		self.node = node
 		self.hardware = hardware
-		_firmwareList = StateObject(wrappedValue: FirmwareViewModel(forHardware: hardware))
+		let region = node.loRaConfig.flatMap { RegionCodes(rawValue: Int($0.regionCode)) } ?? .unset
+		self.nodeRegion = region
+		_firmwareList = StateObject(wrappedValue: FirmwareViewModel(forHardware: hardware, preferredRegion: region))
 	}
 	
 	var body: some View {
@@ -134,6 +139,25 @@ private struct FirmwareContentView: View {
 				VStack(alignment: .leading) {
 					Text("Current Firmware Version").font(.caption).foregroundColor(.secondary)
 					Text("\(node.metadata?.firmwareVersion ?? "Unknown")")
+				}
+				VStack(alignment: .leading) {
+					Text("Intended LoRa Region").font(.caption).foregroundColor(.secondary)
+					Text(intendedRegionLabel)
+				}
+				if shouldShowRegionUnsetWarning {
+					Label("Set a LoRa region before installing firmware.", systemImage: "exclamationmark.triangle.fill")
+						.foregroundStyle(.orange)
+						.font(.caption)
+				} else if shouldShowLocaleVariantWarning {
+					Label("This region may require a locale-specific firmware file for correct on-device text rendering.", systemImage: "character.book.closed.fill")
+						.foregroundStyle(.orange)
+						.font(.caption)
+				}
+				if let suggestedFileNameHint {
+					VStack(alignment: .leading, spacing: 2) {
+						Text("Suggested file pattern").font(.caption).foregroundColor(.secondary)
+						Text(suggestedFileNameHint).font(.caption).textSelection(.enabled)
+					}
 				}
 			}
 			.listRowSeparator(.hidden)
@@ -230,6 +254,32 @@ private struct FirmwareContentView: View {
 		}
 	}
 	
+	var intendedRegionLabel: String {
+		"\(nodeRegion.description) (\(nodeRegion.topic))"
+	}
+
+	var shouldShowRegionUnsetWarning: Bool {
+		nodeRegion == .unset
+	}
+
+	var shouldShowLocaleVariantWarning: Bool {
+		nodeRegion.prefersLocalizedFontFirmware
+	}
+
+	/// Example artifact filename for this hardware, with the optional locale
+	/// tag shown for regions that ship localized-font variants. Selectable so
+	/// users hunting for a file on meshtastic.github.io can copy it.
+	var suggestedFileNameHint: String? {
+		guard let platformioTarget = hardware.platformioTarget?.trimmingCharacters(in: .whitespacesAndNewlines),
+			  !platformioTarget.isEmpty else {
+			return nil
+		}
+		if nodeRegion.prefersLocalizedFontFirmware {
+			return "firmware-\(platformioTarget)-<version>[-\(nodeRegion.topic)]"
+		}
+		return "firmware-\(platformioTarget)-<version>"
+	}
+
 	var allowedTypes: [UTType] {
 		switch hardware.architecture.flatMap( {Architecture(rawValue: $0) }) {
 		case .esp32, .esp32C3, .esp32S3, .esp32C6:

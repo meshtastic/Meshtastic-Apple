@@ -134,32 +134,42 @@ struct MessageText: View {
 			}
 	}
 	
-	@ViewBuilder
-	private var messageOverlays: some View {
+	/// Bottom-trailing status badges (encryption lock, signing shield, store-forward envelope), laid out
+	/// in a single row so they sit side by side instead of stacking on the same corner pixel when a
+	/// message qualifies for more than one (e.g. a signed store-and-forward broadcast).
+	private var cornerBadges: [(symbol: String, tint: Color)] {
+		var badges: [(symbol: String, tint: Color)] = []
+		// Lock = private: a PKI-encrypted DM.
 		if message.pkiEncrypted && message.realACK || !isCurrentUser && message.pkiEncrypted {
-			VStack(alignment: .trailing) {
-				Spacer()
-				HStack {
-					Spacer()
-					Image(systemName: "lock.circle.fill")
-						.symbolRenderingMode(.palette)
-						.foregroundStyle(.white, .green)
-						.font(.system(size: 20))
-						.offset(x: 8, y: 8)
-				}
-			}
+			badges.append((symbol: "lock.circle.fill", tint: .green))
+		}
+		// Shield = authentic: a radio-verified, XEdDSA-signed broadcast. Affirmative only — unsigned
+		// traffic shows nothing, and the ingest path only sets the flag on broadcasts, never DMs.
+		if message.xeddsaSigned {
+			badges.append((symbol: "checkmark.shield.fill", tint: .green))
 		}
 		if message.portNum == Int32(PortNum.storeForwardApp.rawValue) {
+			badges.append((symbol: "envelope.circle.fill", tint: .gray))
+		}
+		return badges
+	}
+
+	@ViewBuilder
+	private var messageOverlays: some View {
+		let badges = cornerBadges
+		if !badges.isEmpty {
 			VStack(alignment: .trailing) {
 				Spacer()
-				HStack {
+				HStack(spacing: 2) {
 					Spacer()
-					Image(systemName: "envelope.circle.fill")
-						.symbolRenderingMode(.palette)
-						.foregroundStyle(.white, .gray)
-						.font(.system(size: 20))
-						.offset(x: 8, y: 8)
+					ForEach(Array(badges.enumerated()), id: \.offset) { _, badge in
+						Image(systemName: badge.symbol)
+							.symbolRenderingMode(.palette)
+							.foregroundStyle(.white, badge.tint)
+							.font(.system(size: 20))
+					}
 				}
+				.offset(x: 8, y: 8)
 			}
 		}
 		if tapBackDestination.overlaySensorMessage && message.portNum == Int32(PortNum.detectionSensorApp.rawValue) {

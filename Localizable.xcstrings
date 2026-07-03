@@ -1,6 +1,299 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "lockdown.backoff.body %lld" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Try again in %lld s"
+          }
+        }
+      }
+    },
+    "lockdown.backoff.explanation" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Wait for the timer to elapse before trying again."
+          }
+        }
+      }
+    },
+    "lockdown.backoff.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Too many attempts"
+          }
+        }
+      }
+    },
+    "lockdown.connecting" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Connecting to device…"
+          }
+        }
+      }
+    },
+    "lockdown.locked.auto_replay_failed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Stored passphrase no longer works. Enter the current one."
+          }
+        }
+      }
+    },
+    "lockdown.locked.needs_auth" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "This device is locked. Enter the passphrase to continue."
+          }
+        }
+      }
+    },
+    "lockdown.locked.token_expired" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Your session has expired. Re-enter the passphrase."
+          }
+        }
+      }
+    },
+    "lockdown.locked.token_rtc" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Device clock unavailable; passphrase required."
+          }
+        }
+      }
+    },
+    "lockdown.locked.token_tamper" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Stored credentials invalid; re-enter the passphrase."
+          }
+        }
+      }
+    },
+    "lockdown.passphrase.field" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Passphrase"
+          }
+        }
+      }
+    },
+    "lockdown.passphrase.wrong" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Wrong passphrase. Try again."
+          }
+        }
+      }
+    },
+    "lockdown.session.boots_caption" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Leave empty for firmware default."
+          }
+        }
+      }
+    },
+    "lockdown.session.boots_remaining" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Boots remaining (optional)"
+          }
+        }
+      }
+    },
+    "lockdown.session.cap_caption" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Per-boot uptime cap. Leave empty for no cap. Device reboots when the cap elapses; next boot auto-unlocks via the boot-count TTL."
+          }
+        }
+      }
+    },
+    "lockdown.session.cap_minutes" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Session cap (minutes)"
+          }
+        }
+      }
+    },
+    "lockdown.session.hours_caption" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Leave empty for no time limit."
+          }
+        }
+      }
+    },
+    "lockdown.session.hours_valid" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Hours valid (optional)"
+          }
+        }
+      }
+    },
+    "lockdown.session.section" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Session"
+          }
+        }
+      }
+    },
+    "lockdown.set_passphrase.hint" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "First-time setup. Pick a passphrase you can re-enter."
+          }
+        }
+      }
+    },
+    "lockdown.set_passphrase.submit" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Set Passphrase"
+          }
+        }
+      }
+    },
+    "lockdown.set_passphrase.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Set device passphrase"
+          }
+        }
+      }
+    },
+    "lockdown.unlock.submit" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Unlock"
+          }
+        }
+      }
+    },
+    "lockdown.unlock.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Unlock device"
+          }
+        }
+      }
+    },
+    "Signed · verified" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Signed · verified"
+          }
+        }
+      }
+    },
+    "Signed node" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Signed node"
+          }
+        }
+      }
+    },
+    "Verified automatically" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verified automatically"
+          }
+        }
+      }
+    },
+    "Verified with the sender's key." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verified with the sender's key."
+          }
+        }
+      }
+    },
     "" : {
       "localizations" : {
         "da" : {
@@ -1402,6 +1695,30 @@
         }
       }
     },
+    "%@ · Slot %@" : {
+      "comment" : "A row that shows the frequency and slot of a channel.",
+      "isCommentAutoGenerated" : true,
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · Slot %2$@"
+          }
+        }
+      }
+    },
+    "%@ · Updated %@" : {
+      "comment" : "A description of a downloaded offline map, including its size and the date it was last updated. The argument is the size of the map, the second argument is the formatted date of the last update.",
+      "isCommentAutoGenerated" : true,
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · Updated %2$@"
+          }
+        }
+      }
+    },
     "%@ (%@)" : {
       "localizations" : {
         "da" : {
@@ -1755,6 +2072,30 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$@ %2$lld 秒"
+          }
+        }
+      }
+    },
+    "%@ • %@ Towards • %@ Back" : {
+      "comment" : "A label that shows the time a trace route was created, the number of hops the route took towards the destination, and the number of hops the route took back. The first argument is a date and time. The second argument is the string “%arg Hops”. The third argument is the number of hops the route took back.",
+      "isCommentAutoGenerated" : true,
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ • %2$@ Towards • %3$@ Back"
+          }
+        }
+      }
+    },
+    "%@ → %@" : {
+      "comment" : "A label displaying the start and end nodes of a trace route. The first argument is the name or hex-encoded ID of the starting node. The second argument is the name or hex-encoded ID of the destination node.",
+      "isCommentAutoGenerated" : true,
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ → %2$@"
           }
         }
       }
@@ -2173,7 +2514,6 @@
         }
       }
     },
-
     "%@ documentation page" : {
       "comment" : "Accessibility label and hint for the web view showing the documentation for a given page. The argument is the name of the page.",
       "isCommentAutoGenerated" : true,
@@ -2305,6 +2645,14 @@
           }
         }
       }
+    },
+    "%@ used on this device" : {
+      "comment" : "A footnote that shows the size of the offline map data on the user's device. The argument is the size of the offline map data in bytes.",
+      "isCommentAutoGenerated" : true
+    },
+    "%@ will be freed on this device." : {
+      "comment" : "A message in a confirmation dialog that lets the user remove an offline map. The argument is the size of the map.",
+      "isCommentAutoGenerated" : true
     },
     "%@, %@" : {
       "localizations" : {
@@ -2887,7 +3235,6 @@
         }
       }
     },
-
     "%d Hops" : {
       "localizations" : {
         "da" : {
@@ -3238,6 +3585,16 @@
         }
       }
     },
+    "%lld downloaded · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld downloaded · %2$@"
+          }
+        }
+      }
+    },
     "%lld duplicate" : {
       "comment" : "A label that indicates that a packet was received more than once.",
       "isCommentAutoGenerated" : true,
@@ -3564,7 +3921,6 @@
         }
       }
     },
-
     "%lld Mesh" : {
       "localizations" : {
         "de" : {
@@ -5062,7 +5418,6 @@
         }
       }
     },
-
     "1" : {
       "localizations" : {
         "de" : {
@@ -6397,7 +6752,6 @@
         }
       }
     },
-
     "256 bit" : {
       "localizations" : {
         "da" : {
@@ -6490,7 +6844,6 @@
         }
       }
     },
-
     "700B bps" : {
       "localizations" : {
         "zh-Hant-TW" : {
@@ -6501,7 +6854,6 @@
         }
       }
     },
-
     "1200 bps" : {
       "localizations" : {
         "zh-Hant-TW" : {
@@ -6512,7 +6864,6 @@
         }
       }
     },
-
     "1300 bps" : {
       "localizations" : {
         "zh-Hant-TW" : {
@@ -6523,7 +6874,6 @@
         }
       }
     },
-
     "1400 bps" : {
       "localizations" : {
         "zh-Hant-TW" : {
@@ -6534,7 +6884,6 @@
         }
       }
     },
-
     "1600 bps" : {
       "localizations" : {
         "zh-Hant-TW" : {
@@ -6545,7 +6894,6 @@
         }
       }
     },
-
     "2400 bps" : {
       "localizations" : {
         "zh-Hant-TW" : {
@@ -6556,7 +6904,6 @@
         }
       }
     },
-
     "3200 bps" : {
       "localizations" : {
         "zh-Hant-TW" : {
@@ -6567,7 +6914,6 @@
         }
       }
     },
-
     "8089" : {
       "comment" : "The port number for the TAK Server.",
       "isCommentAutoGenerated" : true,
@@ -6636,6 +6982,7 @@
     },
     "A channel index of 0 indicates the primary channel where broadcast packets are sent. Location data is broadcast from the first channel where it is enabled with firmware 2.7 forward." : {
       "comment" : "Description of the primary channel, which is the channel used for broadcasting location data.",
+      "extractionState" : "stale",
       "isCommentAutoGenerated" : true,
       "localizations" : {
         "de" : {
@@ -6699,6 +7046,10 @@
           }
         }
       }
+    },
+    "A channel index of 0 indicates the primary channel where broadcast packets are sent. On firmware 2.6.10 and later, location data is broadcast from the first channel where it is enabled." : {
+      "comment" : "Description of",
+      "isCommentAutoGenerated" : true
     },
     "A default self-signed certificate is included for localhost connections. Import a custom .p12 if needed. Client CA (.pem) validates connecting TAK clients." : {
       "localizations" : {
@@ -8656,7 +9007,6 @@
         }
       }
     },
-
     "Admin Keys" : {
       "localizations" : {
         "de" : {
@@ -9567,7 +9917,6 @@
         }
       }
     },
-
     "Air Quality Sensor Options" : {
       "localizations" : {
         "zh-Hant-TW" : {
@@ -9578,7 +9927,6 @@
         }
       }
     },
-
     "Airtime" : {
       "localizations" : {
         "da" : {
@@ -11173,7 +11521,6 @@
         }
       }
     },
-
     "An open source, off-grid, decentralized, mesh network that runs on affordable, low-power radios." : {
       "localizations" : {
         "da" : {
@@ -12656,7 +13003,6 @@
         }
       }
     },
-
     "Audio Config" : {
       "localizations" : {
         "zh-Hant-TW" : {
@@ -12667,7 +13013,6 @@
         }
       }
     },
-
     "Auto-Fix Channel" : {
       "comment" : "A button label that initiates the process of automatically fixing the TAK server's primary communication channel.",
       "isCommentAutoGenerated" : true,
@@ -13412,7 +13757,6 @@
         }
       }
     },
-
     "Bandwidth" : {
       "localizations" : {
         "da" : {
@@ -14328,7 +14672,6 @@
         }
       }
     },
-
     "BLE" : {
       "localizations" : {
         "da" : {
@@ -14655,7 +14998,6 @@
         }
       }
     },
-
     "Bluetooth" : {
       "localizations" : {
         "da" : {
@@ -15232,7 +15574,6 @@
         }
       }
     },
-
     "Button GPIO" : {
       "localizations" : {
         "da" : {
@@ -15912,7 +16253,6 @@
         }
       }
     },
-
     "Canceled: %d" : {
       "localizations" : {
         "zh-Hant-TW" : {
@@ -15923,7 +16263,6 @@
         }
       }
     },
-
     "Canned Messages" : {
       "localizations" : {
         "da" : {
@@ -18136,6 +18475,9 @@
         }
       }
     },
+    "Channel Icons" : {
+
+    },
     "Channel Index" : {
       "comment" : "A heading for the channel index.",
       "isCommentAutoGenerated" : true,
@@ -19168,6 +19510,10 @@
         }
       }
     },
+    "Choose Area" : {
+      "comment" : "A title for the view that lets the user choose an area to download.",
+      "isCommentAutoGenerated" : true
+    },
     "Choosing the Right Device Role" : {
       "localizations" : {
         "de" : {
@@ -19231,6 +19577,10 @@
           }
         }
       }
+    },
+    "Cities, parks, and more" : {
+      "comment" : "A prompt for a search bar.",
+      "isCommentAutoGenerated" : true
     },
     "Clear" : {
       "localizations" : {
@@ -20266,6 +20616,9 @@
         }
       }
     },
+    "Cluster Nodes" : {
+
+    },
     "Codec2 Enabled" : {
       "localizations" : {
         "zh-Hant-TW" : {
@@ -20276,7 +20629,6 @@
         }
       }
     },
-
     "Codec2 Settings" : {
       "localizations" : {
         "zh-Hant-TW" : {
@@ -20287,7 +20639,6 @@
         }
       }
     },
-
     "Coding Rate" : {
       "localizations" : {
         "da" : {
@@ -20556,7 +20907,6 @@
         }
       }
     },
-
     "Compass" : {
       "localizations" : {
         "de" : {
@@ -20637,7 +20987,6 @@
         }
       }
     },
-
     "Complete a Local Mesh Discovery scan to see results here." : {
       "comment" : "A description of the content of the view.",
       "isCommentAutoGenerated" : true,
@@ -23535,7 +23884,6 @@
         }
       }
     },
-
     "Counter Clockwise Rotary Event" : {
       "localizations" : {
         "da" : {
@@ -23776,7 +24124,6 @@
         }
       }
     },
-
     "Created by:" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -24149,6 +24496,10 @@
         }
       }
     },
+    "Current Location" : {
+      "comment" : "Name of the map target when the user selects their current location.",
+      "isCommentAutoGenerated" : true
+    },
     "Current Preset" : {
       "comment" : "A label displayed above the current",
       "isCommentAutoGenerated" : true,
@@ -24242,6 +24593,10 @@
           }
         }
       }
+    },
+    "Dashed line back to the originator." : {
+      "comment" : "A description of a dashed line that represents the return path of a trace route.",
+      "isCommentAutoGenerated" : true
     },
     "Dashed line showing a recorded route path." : {
       "comment" : "A description of a dashed line that shows a recorded route path.",
@@ -24533,7 +24888,6 @@
         }
       }
     },
-
     "Debug" : {
       "localizations" : {
         "da" : {
@@ -25426,7 +25780,6 @@
         }
       }
     },
-
     "Delete all pax data?" : {
       "localizations" : {
         "da" : {
@@ -26228,6 +26581,10 @@
           }
         }
       }
+    },
+    "Detail" : {
+      "comment" : "A label that describes the zoom range of the map.",
+      "isCommentAutoGenerated" : true
     },
     "Details" : {
       "comment" : "The title of a screen that shows the details of a single object.",
@@ -28236,7 +28593,6 @@
         }
       }
     },
-
     "Dilution of precision (DOP) PDOP used by default" : {
       "localizations" : {
         "da" : {
@@ -28795,7 +29151,6 @@
         }
       }
     },
-
     "Disabled" : {
       "localizations" : {
         "da" : {
@@ -30192,7 +30547,6 @@
         }
       }
     },
-
     "Do not close the app during the update." : {
       "comment" : "A warning that the app will be closed during the update.",
       "isCommentAutoGenerated" : true,
@@ -30813,6 +31167,13 @@
         }
       }
     },
+    "Download map areas to use without a connection." : {
+
+    },
+    "Download New Map" : {
+      "comment" : "A title for a screen that lets the user download a new map.",
+      "isCommentAutoGenerated" : true
+    },
     "Download TAK Server Data Package" : {
       "localizations" : {
         "de" : {
@@ -30955,6 +31316,10 @@
         }
       }
     },
+    "Drag the box, its corners, or the map to frame an area" : {
+      "comment" : "A description of how to use the map selector.",
+      "isCommentAutoGenerated" : true
+    },
     "Drop Pin in Maps" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -31042,7 +31407,6 @@
         }
       }
     },
-
     "Drop Unknown" : {
       "localizations" : {
         "zh-Hant-TW" : {
@@ -31053,7 +31417,6 @@
         }
       }
     },
-
     "Dupes" : {
       "localizations" : {
         "zh-Hant-TW" : {
@@ -31064,7 +31427,6 @@
         }
       }
     },
-
     "Dupes: %d" : {
       "localizations" : {
         "zh-Hant-TW" : {
@@ -31075,7 +31437,6 @@
         }
       }
     },
-
     "Dwell Duration" : {
       "comment" : "A label for the dwell duration picker.",
       "isCommentAutoGenerated" : true,
@@ -31205,6 +31566,10 @@
           }
         }
       }
+    },
+    "Each leg is colored by its hop SNR — green (good), yellow (fair), orange (bad), red (none)." : {
+      "comment" : "A description of the signal strength color coding for a trace route.",
+      "isCommentAutoGenerated" : true
     },
     "Each node has a short name (up to 4 bytes) shown in the colored circle, and a long name displayed next to it. The circle color is based on the node number. The short name can be an emoji or initials." : {
       "localizations" : {
@@ -31921,7 +32286,6 @@
         }
       }
     },
-
     "Enable dropping of unknown/undecryptable packets." : {
       "localizations" : {
         "zh-Hant-TW" : {
@@ -31932,7 +32296,6 @@
         }
       }
     },
-
     "Enable neighbor info broadcasting. Periodically sends information about directly-heard neighbors to help visualize mesh topology." : {
       "comment" : "A description of the neighbor info broadcasting feature.",
       "isCommentAutoGenerated" : true,
@@ -32037,7 +32400,6 @@
         }
       }
     },
-
     "Enable TAK Server" : {
       "localizations" : {
         "de" : {
@@ -34615,7 +34977,6 @@
         }
       }
     },
-
     "Expiration" : {
       "localizations" : {
         "de" : {
@@ -37857,6 +38218,10 @@
         }
       }
     },
+    "Flyover speed %@" : {
+      "comment" : "A button that starts or stops a flyover along a trace route. The argument is the string “%g times”.",
+      "isCommentAutoGenerated" : true
+    },
     "For all Mqtt functionality other than the map report you must also set uplink and downlink for each channel you want to bridge over Mqtt." : {
       "localizations" : {
         "da" : {
@@ -38783,7 +39148,6 @@
         }
       }
     },
-
     "Generate a data package (.zip) to configure TAK clients to connect to this server." : {
       "localizations" : {
         "de" : {
@@ -39475,7 +39839,6 @@
         }
       }
     },
-
     "GPIO Output Duration" : {
       "localizations" : {
         "da" : {
@@ -40196,6 +40559,10 @@
         }
       }
     },
+    "Green marks the originator, red marks the target node." : {
+      "comment" : "A description of the color-coded endpoints of a trace route.",
+      "isCommentAutoGenerated" : true
+    },
     "Grey indicates successful delivery. Orange indicates a retryable error. Red indicates a permanent failure that will not succeed on retry." : {
       "comment" : "A description of the colors used in the AckErrors view.",
       "isCommentAutoGenerated" : true,
@@ -40343,6 +40710,9 @@
           }
         }
       }
+    },
+    "Groups nearby nodes into one numbered pin; tap it to zoom in. Turn off to always show every node." : {
+
     },
     "Gusts %@" : {
       "localizations" : {
@@ -40750,6 +41120,7 @@
     },
     "Help & Docs" : {
       "comment" : "The title of the help and documentation view.",
+      "extractionState" : "stale",
       "isCommentAutoGenerated" : true,
       "localizations" : {
         "de" : {
@@ -41249,7 +41620,6 @@
         }
       }
     },
-
     "Hide password" : {
       "localizations" : {
         "zh-Hant-TW" : {
@@ -41260,7 +41630,6 @@
         }
       }
     },
-
     "Hides the map legend." : {
       "localizations" : {
         "de" : {
@@ -41335,7 +41704,6 @@
         }
       }
     },
-
     "HIGH" : {
       "localizations" : {
         "da" : {
@@ -41417,6 +41785,10 @@
           }
         }
       }
+    },
+    "High detail" : {
+      "comment" : "Label for a higher-detail offline map option.",
+      "isCommentAutoGenerated" : true
     },
     "History Return Max" : {
       "localizations" : {
@@ -41580,7 +41952,6 @@
         }
       }
     },
-
     "Hops Away" : {
       "localizations" : {
         "da" : {
@@ -42083,7 +42454,6 @@
         }
       }
     },
-
     "How often device metrics are sent out over the mesh. Default is 30 minutes." : {
       "localizations" : {
         "da" : {
@@ -43000,7 +43370,6 @@
         }
       }
     },
-
     "I2S DIN" : {
       "localizations" : {
         "zh-Hant-TW" : {
@@ -43011,7 +43380,6 @@
         }
       }
     },
-
     "I2S SCK" : {
       "localizations" : {
         "zh-Hant-TW" : {
@@ -43022,7 +43390,6 @@
         }
       }
     },
-
     "I2S SD" : {
       "localizations" : {
         "zh-Hant-TW" : {
@@ -43033,7 +43400,6 @@
         }
       }
     },
-
     "I2S serial clock pin." : {
       "localizations" : {
         "zh-Hant-TW" : {
@@ -43044,7 +43410,6 @@
         }
       }
     },
-
     "I2S serial data pin." : {
       "localizations" : {
         "zh-Hant-TW" : {
@@ -43055,7 +43420,6 @@
         }
       }
     },
-
     "I2S word select pin." : {
       "localizations" : {
         "zh-Hant-TW" : {
@@ -43066,7 +43430,6 @@
         }
       }
     },
-
     "I2S WS" : {
       "localizations" : {
         "zh-Hant-TW" : {
@@ -43077,7 +43440,6 @@
         }
       }
     },
-
     "IAQ" : {
       "localizations" : {
         "da" : {
@@ -45197,7 +45559,6 @@
         }
       }
     },
-
     "Indicates reduced GPS precision. The node is somewhere within the shaded area." : {
       "comment" : "A description of a position precision circle.",
       "isCommentAutoGenerated" : true,
@@ -45904,7 +46265,6 @@
         }
       }
     },
-
     "IP Address" : {
       "localizations" : {
         "de" : {
@@ -47035,7 +47395,6 @@
         }
       }
     },
-
     "Last updated by:" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -47889,7 +48248,6 @@
         }
       }
     },
-
     "Licensed Operator" : {
       "localizations" : {
         "da" : {
@@ -48146,7 +48504,6 @@
         }
       }
     },
-
     "LIVE" : {
       "comment" : "A label that indicates a live state",
       "isCommentAutoGenerated" : true,
@@ -48169,7 +48526,6 @@
         }
       }
     },
-
     "Load Earlier Messages" : {
       "comment" : "A button that loads older messages.",
       "isCommentAutoGenerated" : true,
@@ -48793,7 +49149,6 @@
         }
       }
     },
-
     "Local Stats Log" : {
       "localizations" : {
         "zh-Hant-TW" : {
@@ -48804,7 +49159,6 @@
         }
       }
     },
-
     "Local Stats Requested" : {
       "comment" : "The title of an alert that appears when a user successfully requests a local stats update.",
       "isCommentAutoGenerated" : true,
@@ -48827,7 +49181,10 @@
         }
       }
     },
-
+    "Location Sharing" : {
+      "comment" : "Title of a help item that describes the location sharing channel.",
+      "isCommentAutoGenerated" : true
+    },
     "Location:" : {
       "localizations" : {
         "da" : {
@@ -50930,6 +51287,10 @@
         }
       }
     },
+    "Map data © OpenStreetMap, Protomaps" : {
+      "comment" : "A copyright notice for OpenStreetMap and Protomaps.",
+      "isCommentAutoGenerated" : true
+    },
     "Map Legend" : {
       "comment" : "A title for a view that displays a map legend.",
       "isCommentAutoGenerated" : true,
@@ -51254,6 +51615,14 @@
         }
       }
     },
+    "Map updated" : {
+      "comment" : "A label that displays the date and time of the last update to a map.",
+      "isCommentAutoGenerated" : true
+    },
+    "Marks the channel currently used for position broadcasts." : {
+      "comment" : "Text displayed in a help item for the location sharing channel.",
+      "isCommentAutoGenerated" : true
+    },
     "Master enable for the traffic management module." : {
       "localizations" : {
         "zh-Hant-TW" : {
@@ -51264,7 +51633,6 @@
         }
       }
     },
-
     "Max Hops" : {
       "localizations" : {
         "zh-Hant-TW" : {
@@ -51275,7 +51643,6 @@
         }
       }
     },
-
     "Max Packets" : {
       "localizations" : {
         "zh-Hant-TW" : {
@@ -51286,7 +51653,6 @@
         }
       }
     },
-
     "Max Transmit Power" : {
       "localizations" : {
         "zh-Hant-TW" : {
@@ -51297,7 +51663,6 @@
         }
       }
     },
-
     "Maximum hop distance from the requestor at which direct NodeInfo responses are served from the local cache." : {
       "localizations" : {
         "zh-Hant-TW" : {
@@ -51308,7 +51673,6 @@
         }
       }
     },
-
     "Maximum packets allowed per node within the rate limit window." : {
       "localizations" : {
         "zh-Hant-TW" : {
@@ -51319,7 +51683,6 @@
         }
       }
     },
-
     "Maximum unknown/undecryptable packets per rate window before the source is dropped." : {
       "localizations" : {
         "zh-Hant-TW" : {
@@ -51330,7 +51693,6 @@
         }
       }
     },
-
     "Mesh activity update" : {
       "localizations" : {
         "da" : {
@@ -52192,7 +52554,6 @@
         }
       }
     },
-
     "Meshtastic® Copyright Meshtastic LLC" : {
       "localizations" : {
         "da" : {
@@ -53137,7 +53498,6 @@
         }
       }
     },
-
     "Minimum Distance" : {
       "localizations" : {
         "da" : {
@@ -53230,7 +53590,6 @@
         }
       }
     },
-
     "Minimum required: **%@**" : {
       "comment" : "A label displaying the minimum required firmware version.",
       "isCommentAutoGenerated" : true,
@@ -53987,6 +54346,18 @@
         }
       }
     },
+    "MQTT Downlink" : {
+      "comment" : "MQTT downlink channel help text.",
+      "isCommentAutoGenerated" : true
+    },
+    "MQTT packets for this channel can be sent back over LoRa when MQTT is configured." : {
+      "comment" : "MQTT downlink channel help text.",
+      "isCommentAutoGenerated" : true
+    },
+    "MQTT Uplink" : {
+      "comment" : "MQTT uplink channel help text.",
+      "isCommentAutoGenerated" : true
+    },
     "msh.to/%@" : {
       "comment" : "A label that links to a specific device link. The argument is the short code of the device link.",
       "isCommentAutoGenerated" : true,
@@ -54653,7 +55024,6 @@
         }
       }
     },
-
     "Neighbor Info Config" : {
       "comment" : "The title of the Neighbor Info configuration screen.",
       "isCommentAutoGenerated" : true,
@@ -55006,7 +55376,6 @@
         }
       }
     },
-
     "Network Status Orange" : {
       "localizations" : {
         "da" : {
@@ -56086,7 +56455,6 @@
         }
       }
     },
-
     "No LocalStats data collected" : {
       "comment" : "A message displayed when a user has not yet collected LocalStats data.",
       "isCommentAutoGenerated" : true,
@@ -56229,6 +56597,10 @@
           }
         }
       }
+    },
+    "No offline maps yet. Download an area to use the map without a connection." : {
+      "comment" : "A message displayed when there are no offline maps available.",
+      "isCommentAutoGenerated" : true
     },
     "No PAX Counter Logs" : {
       "localizations" : {
@@ -56558,7 +56930,6 @@
         }
       }
     },
-
     "No records found for %@" : {
       "comment" : "A view that shows when a list is empty. The argument is the name of the entity being listed.",
       "isCommentAutoGenerated" : true,
@@ -56682,6 +57053,10 @@
           }
         }
       }
+    },
+    "No Trace Routes" : {
+      "comment" : "A title for a view that shows when there are no trace routes.",
+      "isCommentAutoGenerated" : true
     },
     "Node" : {
       "localizations" : {
@@ -57642,7 +58017,6 @@
         }
       }
     },
-
     "Nodes" : {
       "localizations" : {
         "da" : {
@@ -57807,7 +58181,6 @@
         }
       }
     },
-
     "Noise" : {
       "localizations" : {
         "zh-Hant-TW" : {
@@ -57818,7 +58191,6 @@
         }
       }
     },
-
     "Noise Floor" : {
       "localizations" : {
         "zh-Hant-TW" : {
@@ -57829,7 +58201,6 @@
         }
       }
     },
-
     "Noise Floor %d dBm" : {
       "localizations" : {
         "zh-Hant-TW" : {
@@ -57840,7 +58211,6 @@
         }
       }
     },
-
     "Noise Floor Info" : {
       "localizations" : {
         "zh-Hant-TW" : {
@@ -57851,7 +58221,6 @@
         }
       }
     },
-
     "Noise Floor No Reading" : {
       "localizations" : {
         "zh-Hant-TW" : {
@@ -57862,7 +58231,6 @@
         }
       }
     },
-
     "Nordic DFU Update" : {
       "comment" : "The title of the Nordic DFU update screen.",
       "isCommentAutoGenerated" : true,
@@ -58529,7 +58897,6 @@
         }
       }
     },
-
     "Number of hops" : {
       "localizations" : {
         "da" : {
@@ -58776,6 +59143,21 @@
         }
       }
     },
+    "Observed" : {
+      "comment" : "A label indicating that a trace route was observed.",
+      "isCommentAutoGenerated" : true
+    },
+    "Offline Map" : {
+      "comment" : "Default name for an offline map.",
+      "isCommentAutoGenerated" : true
+    },
+    "OFFLINE MAP" : {
+      "comment" : "A label displayed in the top-center of the map.",
+      "isCommentAutoGenerated" : true
+    },
+    "Offline Maps" : {
+
+    },
     "Offline Node" : {
       "comment" : "A description of an offline node.",
       "isCommentAutoGenerated" : true,
@@ -58835,6 +59217,10 @@
           }
         }
       }
+    },
+    "Offline Tiles" : {
+      "comment" : "The title of a view that displays a map of a city with offline tiles.",
+      "isCommentAutoGenerated" : true
     },
     "Ok" : {
       "localizations" : {
@@ -59796,7 +60182,6 @@
         }
       }
     },
-
     "Open Local File..." : {
       "localizations" : {
         "de" : {
@@ -60463,6 +60848,10 @@
         }
       }
     },
+    "Origin & Target" : {
+      "comment" : "A label displayed for the originator and target nodes in a trace route.",
+      "isCommentAutoGenerated" : true
+    },
     "OS Log Entry Details" : {
       "localizations" : {
         "da" : {
@@ -60758,6 +61147,10 @@
           }
         }
       }
+    },
+    "Outbound Path" : {
+      "comment" : "A description of the path taken by a message on its way to the target.",
+      "isCommentAutoGenerated" : true
     },
     "Output live debug logging over serial, view and export position-redacted device logs over Bluetooth." : {
       "localizations" : {
@@ -61087,6 +61480,10 @@
         }
       }
     },
+    "Overlaps “%@”. Move or resize so it doesn’t overlap an existing map." : {
+      "comment" : "A warning to show when the selected area overlaps an existing map. The argument is the name of the existing map.",
+      "isCommentAutoGenerated" : true
+    },
     "Override automatic OLED screen detection." : {
       "localizations" : {
         "da" : {
@@ -61331,7 +61728,6 @@
         }
       }
     },
-
     "Packets" : {
       "localizations" : {
         "zh-Hant-TW" : {
@@ -61342,7 +61738,10 @@
         }
       }
     },
-
+    "Packets from this channel can be forwarded to MQTT when MQTT is configured." : {
+      "comment" : "Text displayed in a help item that describes how MQTT uplink packets from a channel can be forwarded to MQTT when MQTT is",
+      "isCommentAutoGenerated" : true
+    },
     "Packets Rx" : {
       "localizations" : {
         "zh-Hant-TW" : {
@@ -61353,7 +61752,6 @@
         }
       }
     },
-
     "Packets Tx" : {
       "localizations" : {
         "zh-Hant-TW" : {
@@ -61364,7 +61762,6 @@
         }
       }
     },
-
     "Pairing Mode" : {
       "localizations" : {
         "da" : {
@@ -63589,7 +63986,6 @@
         }
       }
     },
-
     "Position Deduplication" : {
       "localizations" : {
         "zh-Hant-TW" : {
@@ -63600,7 +63996,6 @@
         }
       }
     },
-
     "Position Exchange Failed" : {
       "localizations" : {
         "da" : {
@@ -65481,6 +65876,10 @@
         }
       }
     },
+    "Preparing…" : {
+      "comment" : "A message displayed when an offline map is being prepared.",
+      "isCommentAutoGenerated" : true
+    },
     "Presets" : {
       "localizations" : {
         "da" : {
@@ -66649,7 +67048,6 @@
         }
       }
     },
-
     "Public Key" : {
       "localizations" : {
         "da" : {
@@ -66900,7 +67298,6 @@
         }
       }
     },
-
     "PWD" : {
       "localizations" : {
         "da" : {
@@ -67587,7 +67984,6 @@
         }
       }
     },
-
     "Re-run Analysis" : {
       "comment" : "A button that triggers a re-run of the analysis.",
       "isCommentAutoGenerated" : true,
@@ -69013,7 +69409,6 @@
         }
       }
     },
-
     "Relayed by %d %@" : {
       "localizations" : {
         "de" : {
@@ -69100,7 +69495,6 @@
         }
       }
     },
-
     "Release Notes" : {
       "localizations" : {
         "da" : {
@@ -69575,6 +69969,10 @@
         }
       }
     },
+    "Remove Download" : {
+      "comment" : "A button that deletes a map from the user's device.",
+      "isCommentAutoGenerated" : true
+    },
     "Remove from favorites" : {
       "localizations" : {
         "da" : {
@@ -69720,6 +70118,18 @@
           }
         }
       }
+    },
+    "Remove this offline map?" : {
+      "comment" : "A confirmation dialog for removing an offline map.",
+      "isCommentAutoGenerated" : true
+    },
+    "Rename" : {
+      "comment" : "A button that renames a downloaded map.",
+      "isCommentAutoGenerated" : true
+    },
+    "Rename Map" : {
+      "comment" : "A dialog that appears when the user taps the rename button.",
+      "isCommentAutoGenerated" : true
     },
     "Replace Channels" : {
       "localizations" : {
@@ -69995,7 +70405,6 @@
         }
       }
     },
-
     "Request PKI Admin: %@" : {
       "localizations" : {
         "da" : {
@@ -70077,6 +70486,10 @@
           }
         }
       }
+    },
+    "Requested" : {
+      "comment" : "A label indicating that a trace route was requested.",
+      "isCommentAutoGenerated" : true
     },
     "Required" : {
       "comment" : "A field for entering a Wi-Fi password.",
@@ -70394,7 +70807,6 @@
         }
       }
     },
-
     "Reset node database, preserving favorites?" : {
       "localizations" : {
         "zh-Hant-TW" : {
@@ -70405,7 +70817,6 @@
         }
       }
     },
-
     "Reset node filters" : {
       "comment" : "A button that resets all active node filters.",
       "isCommentAutoGenerated" : true,
@@ -70574,7 +70985,10 @@
         }
       }
     },
-
+    "Resize Area" : {
+      "comment" : "A button that opens a map view for resizing a downloaded region.",
+      "isCommentAutoGenerated" : true
+    },
     "Respond to NodeInfo requests directly from local cache." : {
       "localizations" : {
         "zh-Hant-TW" : {
@@ -70585,7 +70999,6 @@
         }
       }
     },
-
     "Restart" : {
       "localizations" : {
         "da" : {
@@ -70888,7 +71301,6 @@
         }
       }
     },
-
     "Restoring Backup" : {
       "localizations" : {
         "zh-Hant-TW" : {
@@ -70899,7 +71311,6 @@
         }
       }
     },
-
     "Resume" : {
       "localizations" : {
         "da" : {
@@ -71477,6 +71888,10 @@
           }
         }
       }
+    },
+    "Return Path" : {
+      "comment" : "A description of the return path of a trace route.",
+      "isCommentAutoGenerated" : true
     },
     "Review the app" : {
       "localizations" : {
@@ -73414,7 +73829,6 @@
         }
       }
     },
-
     "RSSI threshold for WiFi device counting. Default is −80 dBm." : {
       "localizations" : {
         "zh-Hant-TW" : {
@@ -73425,7 +73839,6 @@
         }
       }
     },
-
     "Rsyslog Server" : {
       "localizations" : {
         "zh-Hant-TW" : {
@@ -73436,7 +73849,6 @@
         }
       }
     },
-
     "RX Boosted Gain" : {
       "localizations" : {
         "da" : {
@@ -75085,7 +75497,6 @@
         }
       }
     },
-
     "Secure mTLS connection on port 8089. Both server and client certificates are required. TAK Channel Index selects the channel index where TAK messages will be sent." : {
       "comment" : "A footer for the TAK Server configuration section.",
       "isCommentAutoGenerated" : true,
@@ -79268,7 +79679,6 @@
         }
       }
     },
-
     "Session Detail" : {
       "comment" : "A title for a view that displays details of a single discovery session.",
       "isCommentAutoGenerated" : true,
@@ -81419,7 +81829,6 @@
         }
       }
     },
-
     "Show nodes" : {
       "localizations" : {
         "da" : {
@@ -81571,6 +81980,9 @@
           }
         }
       }
+    },
+    "Show on Map" : {
+
     },
     "Show on the mesh map." : {
       "localizations" : {
@@ -81730,7 +82142,6 @@
         }
       }
     },
-
     "Show Translation" : {
       "comment" : "A label for a button that toggles whether the translation of a message is shown.",
       "isCommentAutoGenerated" : true,
@@ -81812,6 +82223,9 @@
           }
         }
       }
+    },
+    "Shows a saved offline map over the covered area, so it still works without an internet connection." : {
+
     },
     "Shows direction and distance to a node based on GPS positions. Requires both your device and the remote node to share location." : {
       "localizations" : {
@@ -81951,7 +82365,6 @@
         }
       }
     },
-
     "Shut Down" : {
       "localizations" : {
         "da" : {
@@ -82556,6 +82969,10 @@
         }
       }
     },
+    "Signal Strength" : {
+      "comment" : "A label displayed above the signal strength legend.",
+      "isCommentAutoGenerated" : true
+    },
     "Signal Strength Meter" : {
       "localizations" : {
         "de" : {
@@ -83008,6 +83425,14 @@
           }
         }
       }
+    },
+    "Size" : {
+      "comment" : "A label that describes the size of a map.",
+      "isCommentAutoGenerated" : true
+    },
+    "Size of selected map: %@" : {
+      "comment" : "A label that shows the size of the selected map area. The value is a localized string that describes the area in square kilometers. The argument is the string “—”.",
+      "isCommentAutoGenerated" : true
     },
     "Smart Position" : {
       "localizations" : {
@@ -83757,6 +84182,13 @@
         }
       }
     },
+    "Solid line toward the target; arrows point in the direction of travel." : {
+
+    },
+    "Source" : {
+      "comment" : "A label that displays the source of a map.",
+      "isCommentAutoGenerated" : true
+    },
     "Speed" : {
       "localizations" : {
         "da" : {
@@ -84397,6 +84829,10 @@
         }
       }
     },
+    "Standard" : {
+      "comment" : "Label for a high-detail offline map download.",
+      "isCommentAutoGenerated" : true
+    },
     "Start" : {
       "localizations" : {
         "da" : {
@@ -84496,6 +84932,10 @@
           }
         }
       }
+    },
+    "Start flyover" : {
+      "comment" : "A button that starts a flyover over the trace route.",
+      "isCommentAutoGenerated" : true
     },
     "Start Scan" : {
       "comment" : "A button that starts a scan.",
@@ -84639,7 +85079,6 @@
         }
       }
     },
-
     "Static IPv4 Configuration" : {
       "localizations" : {
         "zh-Hant-TW" : {
@@ -84650,7 +85089,6 @@
         }
       }
     },
-
     "Status" : {
       "localizations" : {
         "de" : {
@@ -84725,7 +85163,6 @@
         }
       }
     },
-
     "Status Message Config" : {
       "comment" : "The title of the screen that allows the user to configure the status message that is broadcast to other nodes.",
       "isCommentAutoGenerated" : true,
@@ -84869,6 +85306,10 @@
           }
         }
       }
+    },
+    "Stop flyover" : {
+      "comment" : "A button that stops a flyover.",
+      "isCommentAutoGenerated" : true
     },
     "Stop Scan" : {
       "comment" : "A button that stops a scan.",
@@ -85192,7 +85633,6 @@
         }
       }
     },
-
     "Subscribed" : {
       "localizations" : {
         "da" : {
@@ -85591,7 +86031,6 @@
         }
       }
     },
-
     "Table Empty" : {
       "comment" : "A title for a view that shows when a list is empty.",
       "isCommentAutoGenerated" : true,
@@ -87148,7 +87587,6 @@
         }
       }
     },
-
     "The channel is encrypted with a 128 or 256 bit AES key." : {
       "comment" : "Text displayed in a list item that describes a channel that is encrypted with a 128 or 256 bit AES key.",
       "isCommentAutoGenerated" : true,
@@ -88479,6 +88917,7 @@
     },
     "The primary channel handles broadcast traffic. Add secondary channels for separate messaging groups, each secured by their own key. [Learn more](https://meshtastic.org/docs/configuration/tips/)" : {
       "comment" : "A description of the channels feature.",
+      "extractionState" : "stale",
       "isCommentAutoGenerated" : true,
       "localizations" : {
         "de" : {
@@ -88542,6 +88981,10 @@
           }
         }
       }
+    },
+    "The primary channel handles broadcast traffic. The location icon marks which channel sends your position; cloud icons show MQTT uplink and downlink. Add secondary channels for separate messaging groups. [Learn more](https://meshtastic.org/docs/configuration/tips/)" : {
+      "comment" : "A description of the channels screen.",
+      "isCommentAutoGenerated" : true
     },
     "The primary channel must use the default key to perform a discovery scan." : {
       "comment" : "A warning message that appears when the primary channel is not using the default key.",
@@ -90094,6 +90537,10 @@
         }
       }
     },
+    "This map is larger than the %@ per-map limit. Zoom in or lower the detail." : {
+      "comment" : "A description of an error that might occur when downloading a map. The argument is the size limit, formatted in bytes.",
+      "isCommentAutoGenerated" : true
+    },
     "This message was likely not delivered." : {
       "localizations" : {
         "da" : {
@@ -90560,6 +91007,9 @@
         }
       }
     },
+    "This would exceed the %@ total offline storage limit. Remove a map first." : {
+
+    },
     "Threshold" : {
       "localizations" : {
         "zh-Hant-TW" : {
@@ -90570,7 +91020,6 @@
         }
       }
     },
-
     "Time" : {
       "localizations" : {
         "da" : {
@@ -90811,7 +91260,6 @@
         }
       }
     },
-
     "Time Zone" : {
       "localizations" : {
         "da" : {
@@ -91186,7 +91634,6 @@
         }
       }
     },
-
     "Timing and Overrides" : {
       "localizations" : {
         "de" : {
@@ -92643,6 +93090,18 @@
         }
       }
     },
+    "Trace Route: %@ → %@" : {
+      "comment" : "A title that shows the start and end of a trace route. The argument is the start name, the second argument is the end name.",
+      "isCommentAutoGenerated" : true,
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Trace Route: %1$@ → %2$@"
+          }
+        }
+      }
+    },
     "Trace Routes" : {
       "localizations" : {
         "de" : {
@@ -92864,7 +93323,6 @@
         }
       }
     },
-
     "Traffic Management Config" : {
       "localizations" : {
         "zh-Hant-TW" : {
@@ -92875,7 +93333,6 @@
         }
       }
     },
-
     "Translate" : {
       "comment" : "A button to translate a message.",
       "isCommentAutoGenerated" : true,
@@ -92952,7 +93409,6 @@
         }
       }
     },
-
     "Translating…" : {
       "comment" : "A label that appears while a web page is being translated.",
       "isCommentAutoGenerated" : true,
@@ -94471,7 +94927,6 @@
         }
       }
     },
-
     "Unmessagable" : {
       "localizations" : {
         "de" : {
@@ -97747,7 +98202,6 @@
         }
       }
     },
-
     "Utilizes the network connection on your phone to connect to MQTT." : {
       "localizations" : {
         "da" : {
@@ -98824,7 +99278,6 @@
         }
       }
     },
-
     "Waiting to be acknowledged. . ." : {
       "localizations" : {
         "da" : {
@@ -100600,7 +101053,6 @@
         }
       }
     },
-
     "Will sleep everything as much as possible, for the tracker and sensor role this will also include the lora radio. Don't use this setting if you want to use your device with the phone apps or are using a device without a user button." : {
       "localizations" : {
         "da" : {
@@ -100793,7 +101245,6 @@
         }
       }
     },
-
     "Write Contact to NFC Tag" : {
       "comment" : "A button that writes a contact to an NFC tag.",
       "isCommentAutoGenerated" : true,
@@ -101576,6 +102027,10 @@
           }
         }
       }
+    },
+    "You can keep up to %lld offline maps. Remove one to download another." : {
+      "comment" : "A message that a map can't be downloaded because the user has reached the maximum number of offline maps.",
+      "isCommentAutoGenerated" : true
     },
     "Your channel has been configured for TAK. To share the QR code: go to Settings > Share QR Code" : {
       "comment" : "A message displayed when a user successfully configures their primary channel for TAK. It instructs the user to share the QR code to invite TAK buddies.",

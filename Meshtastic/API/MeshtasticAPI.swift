@@ -142,6 +142,9 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 	// MARK: - Main Logic
 	
 	func refreshFirmwareAPIData() async throws {
+		// No container in seed/test mode — the DB-backed API is intentionally disabled there
+		// (see the singleton init), so skip rather than force-unwrap a nil container.
+		guard let container else { return }
 		await MainActor.run {
 			self.isLoadingFirmwareList = true
 		}
@@ -154,7 +157,7 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 
 		// All DB work on mainContext so @Query observers see changes
 		await MainActor.run {
-			let context = container!.mainContext
+			let context = container.mainContext
 
 			for stableRelease in decodedFirmware.releases.stable {
 				self.processFirmware(release: stableRelease, releaseType: .stable, context: context)
@@ -194,6 +197,7 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 	}
 
 	func refreshDevicesAPIData() async throws {
+		guard let container else { return }
 		// Silent background update — bundled data already loaded at launch, no spinner needed.
 		defer {
 			Task { @MainActor in self.isLoadingDeviceList = false }
@@ -206,7 +210,7 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 
 		// PHASE 2: Database on mainContext so @Query observers see changes
 		try await MainActor.run {
-			let context = container!.mainContext
+			let context = container.mainContext
 
 			// 1. Update Devices and Tags
 			for device in decodedDevices {
@@ -275,7 +279,7 @@ deviceEntity.architecture = device.architecture
 
 		// Final cleanup of images on mainContext
 		await MainActor.run {
-			let context = container!.mainContext
+			let context = container.mainContext
 			Self.deleteOrphanedImages(context: context)
 			try? context.save()
 		}
@@ -287,13 +291,14 @@ deviceEntity.architecture = device.architecture
 
 	/// Import the msh.to URL catalog into `DeviceLinkEntity` records.
 	private func importDeviceLinks() async {
+		guard let container else { return }
 		guard let decoded = await loadMshToUrls() else {
 			Logger.services.warning("Unable to load msh.to urls (API and bundled fallback both failed)")
 			return
 		}
 
 		await MainActor.run {
-			let context = container!.mainContext
+			let context = container.mainContext
 			var importedCount = 0
 			let importedShortCodes = Set(decoded.routes.map { $0.shortCode })
 
@@ -415,6 +420,7 @@ deviceEntity.architecture = device.architecture
 	
 	/// Handles the logic of checking ETag -> Checking DB -> Downloading -> Bundle Fallback -> Saving
 	private func processImage(imageName: String, platform: String ) async {
+		guard let container else { return }
 		let url = Self.imageURLPrefix.appendingPathComponent(imageName)
 
 		// 1. Network: Try to get ETag (Optional - might fail if offline or timeout)
@@ -422,7 +428,7 @@ deviceEntity.architecture = device.architecture
 
 		// 2. DB: Check if we already have this version or a usable cached version
 		let isUpToDate: Bool = await MainActor.run {
-			let context = container!.mainContext
+			let context = container.mainContext
 			var imageDescriptor = FetchDescriptor<DeviceHardwareImageEntity>(
 				predicate: #Predicate { $0.fileName == imageName }
 			)
@@ -477,7 +483,7 @@ deviceEntity.architecture = device.architecture
 		}
 
 		await MainActor.run {
-			let context = container!.mainContext
+			let context = container.mainContext
 
 			// Find the Device
 			var deviceDescriptor = FetchDescriptor<DeviceHardwareEntity>(
@@ -555,11 +561,12 @@ deviceEntity.architecture = device.architecture
 
 extension MeshtasticAPI {
 	func refreshBundledDevicesData() async throws {
+		guard let container else { return }
 		await MainActor.run { self.isLoadingDeviceList = true }
 		let bundledData = try Self.bundledDeviceHardwareData()
 		let decodedDevices = try decoder.decode([DeviceHardware].self, from: bundledData)
 		try await MainActor.run {
-			let context = container!.mainContext
+			let context = container.mainContext
 			for device in decodedDevices {
 				let target = device.platformioTarget
 				var descriptor = FetchDescriptor<DeviceHardwareEntity>(predicate: #Predicate { $0.platformioTarget == target })
@@ -609,7 +616,7 @@ extension MeshtasticAPI {
 			}
 		}
 		await MainActor.run {
-			let context = container!.mainContext
+			let context = container.mainContext
 			Self.deleteOrphanedImages(context: context)
 			try? context.save()
 		}

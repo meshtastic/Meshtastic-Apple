@@ -409,6 +409,13 @@ struct Settings: View {
 					Image(systemName: "scroll")
 				}
 			}
+			NavigationLink(value: SettingsNavigationState.traceRoutes) {
+				Label {
+					Text("Trace Routes")
+				} icon: {
+					Image(systemName: "point.3.connected.trianglepath.dotted")
+				}
+			}
 		}
 	}
 
@@ -676,6 +683,8 @@ struct Settings: View {
 					TrafficManagementConfig(node: configNode)
 				case .debugLogs:
 					AppLog()
+				case .traceRoutes:
+					AllTraceRoutesLog()
 				case .appFiles:
 					AppData()
 				case .firmwareUpdates:

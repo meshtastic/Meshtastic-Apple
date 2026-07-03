@@ -165,6 +165,19 @@ struct GeoJSONFeature: Codable {
 		default: return 4.0
 		}
 	}
+
+	/// Coordinates to draw as map markers. A Point yields one coordinate; a MultiPoint yields
+	/// one per sub-coordinate. Empty for every other geometry type (those render as overlays).
+	var markerCoordinates: [CLLocationCoordinate2D] {
+		switch geometry.type.lowercased() {
+		case "point":
+			return geometry.coordinates.toCoordinate().map { [$0] } ?? []
+		case "multipoint":
+			return geometry.coordinates.toCoordinates()
+		default:
+			return []
+		}
+	}
 }
 
 // MARK: - Styled Feature Wrapper
@@ -353,5 +366,12 @@ enum AnyCodableValue: Codable {
 			return CLLocationCoordinate2D(latitude: lat, longitude: lon)
 		}
 		return nil
+	}
+
+	/// Convert a MultiPoint-style array of [lon, lat] pairs to coordinates.
+	/// Malformed entries are skipped rather than failing the whole set.
+	func toCoordinates() -> [CLLocationCoordinate2D] {
+		guard case .array(let items) = self else { return [] }
+		return items.compactMap { $0.toCoordinate() }
 	}
 }

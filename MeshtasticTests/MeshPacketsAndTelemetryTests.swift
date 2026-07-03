@@ -4,6 +4,8 @@
 import Testing
 import Foundation
 import SwiftUI
+import SwiftData
+import MeshtasticProtobufs
 @testable import Meshtastic
 
 // MARK: - generateMessageMarkdown Tests
@@ -539,5 +541,136 @@ struct EXICodecErrorPathTests {
 			// Compressed should be smaller than original for repetitive data
 			#expect(result.count < longXML.utf8.count)
 		}
+	}
+}
+
+// MARK: - telemetryPacket ingestion (regression for #2004)
+
+@Suite("telemetryPacket ingestion")
+@MainActor
+struct TelemetryPacketIngestTests {
+
+	/// A connected node num used only to mark packets as "received over the mesh"
+	/// (connectedNode != packet.from); it is never created by `telemetryPacket`.
+	private static let connectedNode: Int64 = 0x2004_FFFF
+
+	/// Builds a decoded environment-telemetry `MeshPacket`, mirroring how firmware delivers a
+	/// remote node's reading over the mesh.
+	private func makeEnvironmentTelemetryPacket(
+		from nodeNum: UInt32,
+		temperature: Float,
+		reportedTime: UInt32,
+		rxTime: UInt32
+	) throws -> MeshPacket {
+		var environment = EnvironmentMetrics()
+		environment.temperature = temperature
+
+		var telemetry = Telemetry()
+		telemetry.environmentMetrics = environment
+		telemetry.time = reportedTime
+
+		var dataMessage = DataMessage()
+		dataMessage.payload = try telemetry.serializedData()
+		dataMessage.portnum = .telemetryApp
+
+		var packet = MeshPacket()
+		packet.id = 0x2004
+		packet.from = nodeNum
+		packet.to = UInt32.max
+		packet.rxTime = rxTime
+		packet.rxSnr = 5.5
+		packet.rxRssi = -90
+		packet.decoded = dataMessage
+		return packet
+	}
+
+	/// Latest environment (`metricsType == 1`) telemetry for `nodeNum`, read back through a fresh
+	/// context so we observe what `telemetryPacket` actually persisted — the same predicate the
+	/// node detail UI uses.
+	private func fetchLatestEnvironmentTelemetry(forNode nodeNum: Int64) throws -> TelemetryEntity? {
+		let context = ModelContext(sharedModelContainer)
+		let environmentType: Int32 = 1
+		var descriptor = FetchDescriptor<TelemetryEntity>(
+			predicate: #Predicate<TelemetryEntity> {
+				$0.nodeTelemetry?.num == nodeNum && $0.metricsType == environmentType
+			},
+			sortBy: [SortDescriptor(\TelemetryEntity.time, order: .reverse)]
+		)
+		descriptor.fetchLimit = 1
+		return try context.fetch(descriptor).first
+	}
+
+	/// Fix #2: telemetry from a node with no `NodeInfoEntity` yet must create the node and link the
+	/// reading, instead of being saved as an orphan row (nodeTelemetry == nil) the UI can never query.
+	@Test func environmentTelemetryFromUnknownNode_createsNodeAndLinksReading() async throws {
+		let nodeNum: UInt32 = 0x2004_AA01
+		let packet = try makeEnvironmentTelemetryPacket(
+			from: nodeNum,
+			temperature: 23.5,
+			reportedTime: 1_700_000_500,
+			rxTime: 1_700_000_000
+		)
+
+		let mesh = MeshPackets(modelContainer: sharedModelContainer)
+		await mesh.telemetryPacket(packet: packet, connectedNode: Self.connectedNode)
+		await mesh.flushDebouncedSaves()
+
+		let num = Int64(nodeNum)
+		let context = ModelContext(sharedModelContainer)
+		let nodes = try context.fetch(
+			FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == num })
+		)
+		#expect(nodes.count == 1)
+		// A node minted from telemetry must be stamped lastHeard here, since updateAnyPacketFrom
+		// only updates nodes that already existed; otherwise it reads as never-heard.
+		#expect(nodes.first?.lastHeard == Date(timeIntervalSince1970: 1_700_000_000))
+
+		let latest = try fetchLatestEnvironmentTelemetry(forNode: num)
+		#expect(latest != nil)
+		#expect(latest?.temperature == 23.5)
+		#expect(latest?.nodeTelemetry?.num == num)
+	}
+
+	/// Fix #1: a remote node that reports `time == 0` (no RTC/GPS) must fall back to the packet
+	/// receive time, not 1970, otherwise the reading is hidden by the latest-sort / 7-day window.
+	@Test func environmentTelemetryWithZeroTime_fallsBackToReceiveTime() async throws {
+		let nodeNum: UInt32 = 0x2004_AA02
+		let receiveTime: UInt32 = 1_700_000_000
+		let packet = try makeEnvironmentTelemetryPacket(
+			from: nodeNum,
+			temperature: 19.0,
+			reportedTime: 0,
+			rxTime: receiveTime
+		)
+
+		let mesh = MeshPackets(modelContainer: sharedModelContainer)
+		await mesh.telemetryPacket(packet: packet, connectedNode: Self.connectedNode)
+		await mesh.flushDebouncedSaves()
+
+		let latest = try fetchLatestEnvironmentTelemetry(forNode: Int64(nodeNum))
+		#expect(latest != nil)
+		#expect(latest?.time == Date(timeIntervalSince1970: TimeInterval(receiveTime)))
+	}
+
+	/// Fix #1 (continued): with no usable time source at all (reported time and rxTime both 0),
+	/// fall back to "now" rather than 1970 so the reading still surfaces in recent history.
+	@Test func environmentTelemetryWithNoTimeSource_fallsBackToNow() async throws {
+		let nodeNum: UInt32 = 0x2004_AA03
+		let packet = try makeEnvironmentTelemetryPacket(
+			from: nodeNum,
+			temperature: 21.0,
+			reportedTime: 0,
+			rxTime: 0
+		)
+
+		let mesh = MeshPackets(modelContainer: sharedModelContainer)
+		await mesh.telemetryPacket(packet: packet, connectedNode: Self.connectedNode)
+		await mesh.flushDebouncedSaves()
+
+		let latest = try fetchLatestEnvironmentTelemetry(forNode: Int64(nodeNum))
+		#expect(latest != nil)
+		// Far newer than the 1970 epoch the old code would have stored.
+		let year2020 = Date(timeIntervalSince1970: 1_577_836_800)
+		#expect((latest?.time ?? .distantPast) > year2020)
 	}
 }
