@@ -10,6 +10,24 @@ import Foundation
 import MeshtasticProtobufs
 
 extension UserEntity {
+	/// Local display name for this node (if set), otherwise the device longName.
+	var displayLongName: String {
+		if let custom = NodeDisplayNameStore.displayName(for: num) {
+			return custom
+		}
+		return longName ?? "Unknown".localized
+	}
+
+	/// Short label for this node: first 4 characters of display name if set, otherwise device shortName.
+	var displayShortName: String {
+		if let custom = NodeDisplayNameStore.displayName(for: num) {
+			let trimmed = custom.trimmingCharacters(in: .whitespacesAndNewlines)
+			if trimmed.isEmpty { return shortName ?? "?" }
+			return String(trimmed.prefix(4))
+		}
+		return shortName ?? "?"
+	}
+
 	@MainActor
 	var messageList: [MessageEntity] {
 		guard let ctx = modelContext else { return [] }

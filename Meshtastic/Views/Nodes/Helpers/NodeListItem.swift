@@ -60,9 +60,9 @@ struct NodeListItem: View {
 
 	private func accessibilityDescription(batteryLevel: Int32?, cachedLocationData: (nodeLocation: CLLocation, myLocation: CLLocation)?, status: String?) -> String {
 		var desc = ""
-		if let shortName = node.user?.shortName {
+		if let shortName = node.user?.displayShortName {
 			desc = shortName.formatNodeNameForVoiceOver()
-		} else if let longName = node.user?.longName {
+		} else if let longName = node.user?.displayLongName {
 			desc = longName
 		} else {
 			desc = "Unknown".localized + " " + "Node".localized
@@ -208,7 +208,7 @@ struct NodeListItem: View {
 		VStack(alignment: .leading) {
 			HStack {
 				VStack(alignment: .center) {
-					CircleText(text: node.user?.shortName ?? "?", color: Color(UIColor(hex: UInt32(node.num))), circleSize: 70)
+					CircleText(text: node.user?.displayShortName ?? "?", color: Color(UIColor(hex: UInt32(node.num))), circleSize: 70)
 						.padding(.trailing, 5)
 					if let batteryLevel = cachedBatteryLevel {
 						BatteryCompact(batteryLevel: batteryLevel, font: .caption, iconFont: .callout, color: .accentColor)
@@ -220,7 +220,7 @@ struct NodeListItem: View {
 						let (image, color) = userKeyStatus
 						IconAndText(systemName: image,
 									imageColor: color,
-									text: node.user?.longName?.addingVariationSelectors ?? "Unknown".localized,
+									text: node.user?.displayLongName.addingVariationSelectors ?? "Unknown".localized,
 									textColor: .primary)
 						if node.favorite {
 							Spacer()

@@ -270,7 +270,7 @@
             "shield",
             "select"
         ],
-        "charCount": 8406
+        "charCount": 8428
     },
     {
         "id": "mqtt",
@@ -318,37 +318,37 @@
         "navOrder": 4,
         "keywords": [
             "node",
-            "nodes",
             "device",
+            "nodes",
             "from",
-            "only",
-            "packets",
-            "key",
-            "shown",
-            "messages",
-            "not",
             "name",
+            "only",
+            "shown",
+            "packets",
+            "messages",
+            "key",
+            "not",
+            "list",
             "hardware",
             "broadcasts",
             "shows",
+            "row",
             "public",
-            "list",
             "firmware",
+            "display",
             "direct",
             "client",
             "supported",
-            "row",
+            "mesh",
+            "long",
             "location",
+            "local",
             "links",
             "hops",
             "heard",
-            "channel",
-            "view",
-            "updates",
-            "tap",
-            "status"
+            "detail"
         ],
-        "charCount": 7506
+        "charCount": 8085
     },
     {
         "id": "settings",

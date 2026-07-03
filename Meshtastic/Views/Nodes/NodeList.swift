@@ -21,6 +21,7 @@ struct NodeList: View {
 	@State private var isPresentingDeleteNodeAlert = false
 	@State private var deleteNodeId: Int64 = 0
 	@State private var shareContactNode: NodeInfoEntity?
+	@State private var nodeForDisplayNameEdit: NodeInfoEntity?
 	@ObservedObject var filters = NodeFilterParameters.shared
 	@State var isEditingFilters = false
 	@State private var showingHelp = false
@@ -79,6 +80,7 @@ struct NodeList: View {
 			isPresentingDeleteNodeAlert: $isPresentingDeleteNodeAlert,
 			deleteNodeId: $deleteNodeId,
 			shareContactNode: $shareContactNode,
+			nodeForDisplayNameEdit: $nodeForDisplayNameEdit,
 			nodeListDensity: $nodeListDensity,
 			selectedNodeNum: $router.selectedNodeNum
 		)
@@ -159,6 +161,9 @@ struct NodeList: View {
 		.sheet(item: $shareContactNode) { selectedNode in
 			ShareContactQRDialog(manuallyVerified: false, node: selectedNode.toProto())
 		}
+		.sheet(item: $nodeForDisplayNameEdit) { node in
+			EditNodeDisplayNameView(node: node)
+		}
 		.navigationSplitViewColumnWidth(min: 100, ideal: 300, max: .infinity)
 		.toolbar {
 			ToolbarItem(placement: .topBarLeading) {
@@ -222,6 +227,7 @@ private struct FilteredNodeList: View {
 	@Binding var isPresentingDeleteNodeAlert: Bool
 	@Binding var deleteNodeId: Int64
 	@Binding var shareContactNode: NodeInfoEntity?
+	@Binding var nodeForDisplayNameEdit: NodeInfoEntity?
 	@Binding var nodeListDensity: NodeListDensity
 	@Binding var selectedNodeNum: Int64?
 	var filters: NodeFilterParameters
@@ -232,6 +238,7 @@ private struct FilteredNodeList: View {
 		isPresentingDeleteNodeAlert: Binding<Bool>,
 		deleteNodeId: Binding<Int64>,
 		shareContactNode: Binding<NodeInfoEntity?>,
+		nodeForDisplayNameEdit: Binding<NodeInfoEntity?>,
 		nodeListDensity: Binding<NodeListDensity>,
 		selectedNodeNum: Binding<Int64?>
 	) {
@@ -240,6 +247,7 @@ private struct FilteredNodeList: View {
 		self._isPresentingDeleteNodeAlert = isPresentingDeleteNodeAlert
 		self._deleteNodeId = deleteNodeId
 		self._shareContactNode = shareContactNode
+		self._nodeForDisplayNameEdit = nodeForDisplayNameEdit
 		self._nodeListDensity = nodeListDensity
 		self._selectedNodeNum = selectedNodeNum
 
@@ -385,6 +393,11 @@ private struct FilteredNodeList: View {
 	) -> some View {
 		if let connectedNode {
 			FavoriteNodeButton(node: node)
+			Button {
+				nodeForDisplayNameEdit = node
+			} label: {
+				Label("Set display name", systemImage: "pencil.circle")
+			}
 			if let user = node.user {
 				NodeAlertsButton(context: context, node: node, user: user)
 			}
