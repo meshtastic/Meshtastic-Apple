@@ -178,6 +178,25 @@ struct NodeDetail: View {
 					}
 				}
 			}
+			// Local-only display name shown instead of the device long name. Never leaves this
+			// device (not sent over the mesh, not exported/shared) — see NodeDisplayNameStore.
+			Button {
+				nodeForDisplayNameEdit = node
+			} label: {
+				HStack {
+					Label {
+						Text("Name")
+					} icon: {
+						Image(systemName: "person.crop.circle")
+							.symbolRenderingMode(.hierarchical)
+					}
+					Spacer()
+					Text(node.user?.displayLongName ?? "—")
+						.foregroundStyle(.secondary)
+						.lineLimit(1)
+				}
+			}
+			.accessibilityElement(children: .combine)
 			HStack {
 				Label {
 					Text("Node Number")
@@ -291,25 +310,6 @@ struct NodeDetail: View {
 				}
 				.accessibilityElement(children: .combine)
 			}
-			// Local-only display name shown instead of the device long name. Never leaves this
-			// device (not sent over the mesh, not exported/shared) — see NodeDisplayNameStore.
-			Button {
-				nodeForDisplayNameEdit = node
-			} label: {
-				HStack {
-					Label {
-						Text("Name")
-					} icon: {
-						Image(systemName: "person.crop.circle")
-							.symbolRenderingMode(.hierarchical)
-					}
-					Spacer()
-					Text(node.user?.displayLongName ?? "—")
-						.foregroundStyle(.secondary)
-						.lineLimit(1)
-				}
-			}
-			.accessibilityElement(children: .combine)
 			if node.user?.unmessagable ?? false {
 				HStack {
 					Label {
