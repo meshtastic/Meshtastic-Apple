@@ -1,6 +1,18 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "%@ entered %@" : {
+      "comment" : "Geofence notification body. First %@ is the node name, second %@ is the waypoint name."
+    },
+    "%@ left %@" : {
+      "comment" : "Geofence notification body. First %@ is the node name, second %@ is the waypoint name."
+    },
+    "Entered %@" : {
+      "comment" : "Geofence notification title when a node enters the waypoint area. %@ is the waypoint name."
+    },
+    "Left %@" : {
+      "comment" : "Geofence notification title when a node leaves the waypoint area. %@ is the waypoint name."
+    },
     "lockdown.backoff.body %lld" : {
       "extractionState" : "manual",
       "localizations" : {

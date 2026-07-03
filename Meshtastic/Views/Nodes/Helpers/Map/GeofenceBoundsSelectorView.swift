@@ -71,11 +71,11 @@ struct GeofenceBoundsSelectorView: View {
 					}
 					.onAppear {
 						currentRegion = initialRegion
-						initRect(size: geo.size)
+						initRect(proxy: proxy, size: geo.size)
 						recompute(proxy: proxy, size: geo.size)
 					}
 					.onChange(of: geo.size) { _, newSize in
-						clampRect(to: newSize)
+						clampRect(proxy: proxy, to: newSize)
 						recompute(proxy: proxy, size: newSize)
 					}
 				}
@@ -209,15 +209,44 @@ struct GeofenceBoundsSelectorView: View {
 		return CGRect(x: minX, y: minY, width: maxX - minX, height: maxY - minY)
 	}
 
-	private func initRect(size: CGSize) {
+	private func initRect(proxy: MapProxy, size: CGSize) {
 		guard selectionRect == .zero, size.width > 0, size.height > 0 else { return }
+		// When editing an existing box, frame the selection rectangle on that box so tapping
+		// Done without dragging preserves it instead of saving the generic default inset.
+		if let existing = initialBounds, let rect = rect(for: existing, proxy: proxy, size: size) {
+			selectionRect = normalizedClamped(rect.minX, rect.minY, rect.maxX, rect.maxY, in: size)
+			return
+		}
 		let area = usableRect(in: size)
 		selectionRect = (area.width > 120 && area.height > 120) ? area.insetBy(dx: 30, dy: 30) : area
 	}
 
-	private func clampRect(to size: CGSize) {
+	/// Projects a geographic box onto the view's local coordinate space. Prefers the exact
+	/// `MapProxy.convert`; falls back to the current region's linear projection when the proxy
+	/// isn't ready yet, and returns nil if neither is available (caller uses the inset default).
+	private func rect(for b: GeoBounds, proxy: MapProxy, size: CGSize) -> CGRect? {
+		let northWest = CLLocationCoordinate2D(latitude: b.maxLat, longitude: b.minLon)
+		let southEast = CLLocationCoordinate2D(latitude: b.minLat, longitude: b.maxLon)
+		if let nw = proxy.convert(northWest, to: .local), let se = proxy.convert(southEast, to: .local) {
+			return CGRect(x: min(nw.x, se.x), y: min(nw.y, se.y), width: abs(se.x - nw.x), height: abs(se.y - nw.y))
+		}
+		guard let region = currentRegion, size.width > 0, size.height > 0 else { return nil }
+		let leftLon = region.center.longitude - region.span.longitudeDelta / 2
+		let topLat = region.center.latitude + region.span.latitudeDelta / 2
+		let lonPerPx = region.span.longitudeDelta / size.width
+		let latPerPx = region.span.latitudeDelta / size.height
+		guard lonPerPx > 0, latPerPx > 0 else { return nil }
+		return CGRect(
+			x: (b.minLon - leftLon) / lonPerPx,
+			y: (topLat - b.maxLat) / latPerPx,
+			width: (b.maxLon - b.minLon) / lonPerPx,
+			height: (b.maxLat - b.minLat) / latPerPx
+		)
+	}
+
+	private func clampRect(proxy: MapProxy, to size: CGSize) {
 		guard size.width > 0, size.height > 0 else { return }
-		if selectionRect == .zero { initRect(size: size); return }
+		if selectionRect == .zero { initRect(proxy: proxy, size: size); return }
 		selectionRect = normalizedClamped(selectionRect.minX, selectionRect.minY, selectionRect.maxX, selectionRect.maxY, in: size)
 	}
 

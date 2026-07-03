@@ -52,7 +52,10 @@ extension MeshPackets {
 
 		for waypoint in waypoints {
 			guard let isInside = waypoint.contains(location: location) else { continue }
-			let key = "\(waypoint.id)-\(nodeNum)"
+			// Key on the geofence geometry as well as the waypoint/node pair: if the radius or
+			// bounding box changes, the new key re-establishes a baseline rather than reusing the
+			// stale inside/outside state, which would otherwise fire a spurious enter/exit alert.
+			let key = "\(waypoint.id)-\(nodeNum)-\(waypoint.geofenceRadius)-\(waypoint.boundingBoxLatitudeNorthI)-\(waypoint.boundingBoxLatitudeSouthI)-\(waypoint.boundingBoxLongitudeEastI)-\(waypoint.boundingBoxLongitudeWestI)"
 			let previous = GeofenceCrossingStore.shared.update(key: key, isInside: isInside)
 			// First observation establishes a baseline; only a genuine change notifies.
 			guard let wasInside = previous, wasInside != isInside else { continue }
@@ -81,8 +84,12 @@ extension MeshPackets {
 	}
 
 	private func scheduleGeofenceNotification(waypointId: Int64, waypointName: String, nodeNum: Int64, nodeName: String, entered: Bool) {
-		let title = entered ? "Entered \(waypointName)" : "Left \(waypointName)"
-		let body = entered ? "\(nodeName) entered \(waypointName)" : "\(nodeName) left \(waypointName)"
+		let title = entered
+			? String.localizedStringWithFormat("Entered %@".localized, waypointName)
+			: String.localizedStringWithFormat("Left %@".localized, waypointName)
+		let body = entered
+			? String.localizedStringWithFormat("%@ entered %@".localized, nodeName, waypointName)
+			: String.localizedStringWithFormat("%@ left %@".localized, nodeName, waypointName)
 		Task { @MainActor in
 			let manager = LocalNotificationManager()
 			manager.notifications = [
@@ -96,7 +103,9 @@ extension MeshPackets {
 				)
 			]
 			manager.schedule()
-			Logger.services.info("🔔 [Geofence] \(nodeName, privacy: .public) \(entered ? "entered" : "left", privacy: .public) \(waypointName, privacy: .public)")
+			// Enter/exit reveals a node's movement relative to a named place; keep the event
+			// visible but redact the node and waypoint names from logs.
+			Logger.services.info("🔔 [Geofence] \(nodeName, privacy: .private) \(entered ? "entered" : "left", privacy: .public) \(waypointName, privacy: .private)")
 		}
 	}
 }

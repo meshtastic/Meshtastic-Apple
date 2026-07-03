@@ -569,9 +569,15 @@ struct WaypointForm: View {
 	
 	private func applyGeofence(to waypointProto: inout Waypoint) {
 		waypointProto.geofenceRadius = UInt32(max(0, geofenceRadius).rounded())
-		waypointProto.notifyOnEnter = notifyOnEnter
-		waypointProto.notifyOnExit = notifyOnExit
-		waypointProto.notifyFavoritesOnly = notifyFavoritesOnly
+		// The notification toggles are hidden in the UI when no geofence exists, but their
+		// @State values persist. Normalize before serializing so turning a geofence off can't
+		// leak stale `true` flags onto the mesh; favorites-only only applies when notifying.
+		let hasGeofence = geofenceRadius > 0 || geofenceBounds != nil
+		let serializedNotifyOnEnter = hasGeofence && notifyOnEnter
+		let serializedNotifyOnExit = hasGeofence && notifyOnExit
+		waypointProto.notifyOnEnter = serializedNotifyOnEnter
+		waypointProto.notifyOnExit = serializedNotifyOnExit
+		waypointProto.notifyFavoritesOnly = (serializedNotifyOnEnter || serializedNotifyOnExit) && notifyFavoritesOnly
 		if let b = geofenceBounds {
 			var box = BoundingBox()
 			box.longitudeWestI = Int32((b.minLon * 1e7).rounded())

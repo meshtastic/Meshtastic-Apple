@@ -285,9 +285,9 @@
             "key",
             "text",
             "formatting",
+            "not",
             "markdown",
             "delimiters",
-            "not",
             "selection",
             "direct",
             "bold",
@@ -309,7 +309,7 @@
             "shield",
             "select"
         ],
-        "charCount": 8967
+        "charCount": 9014
     },
     {
         "id": "mqtt",
