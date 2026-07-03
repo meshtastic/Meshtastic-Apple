@@ -403,6 +403,10 @@
 		DD86D40F2881BE4C00BAEB7A /* CsvDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD86D40E2881BE4C00BAEB7A /* CsvDocument.swift */; };
 		AA20D0002D00000000000011 /* DeviceProfileExport.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA20D0002D00000000000010 /* DeviceProfileExport.swift */; };
 		AA20D0002D00000000000013 /* DeviceProfileDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA20D0002D00000000000012 /* DeviceProfileDocument.swift */; };
+		AA20D0002D00000000000031 /* DeviceProfileImport.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA20D0002D00000000000030 /* DeviceProfileImport.swift */; };
+		AA20D0002D00000000000033 /* DeviceProfileImporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA20D0002D00000000000032 /* DeviceProfileImporter.swift */; };
+		AA20D0002D00000000000035 /* ImportDeviceProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA20D0002D00000000000034 /* ImportDeviceProfileView.swift */; };
+		AA20D0002D00000000000041 /* DeviceProfileImportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA20D0002D00000000000040 /* DeviceProfileImportTests.swift */; };
 		DD86D4112881D16900BAEB7A /* WriteCsvFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD86D4102881D16900BAEB7A /* WriteCsvFile.swift */; };
 		DD8EBF43285058FA00426DCA /* DisplayConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD8EBF42285058FA00426DCA /* DisplayConfig.swift */; };
 		DD8ED9C52898D51F00B3B0AB /* NetworkConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD8ED9C42898D51F00B3B0AB /* NetworkConfig.swift */; };
@@ -1034,6 +1038,10 @@
 		DD86D40E2881BE4C00BAEB7A /* CsvDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CsvDocument.swift; sourceTree = "<group>"; };
 		AA20D0002D00000000000010 /* DeviceProfileExport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceProfileExport.swift; sourceTree = "<group>"; };
 		AA20D0002D00000000000012 /* DeviceProfileDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceProfileDocument.swift; sourceTree = "<group>"; };
+		AA20D0002D00000000000030 /* DeviceProfileImport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceProfileImport.swift; sourceTree = "<group>"; };
+		AA20D0002D00000000000032 /* DeviceProfileImporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceProfileImporter.swift; sourceTree = "<group>"; };
+		AA20D0002D00000000000034 /* ImportDeviceProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportDeviceProfileView.swift; sourceTree = "<group>"; };
+		AA20D0002D00000000000040 /* DeviceProfileImportTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceProfileImportTests.swift; sourceTree = "<group>"; };
 		DD86D4102881D16900BAEB7A /* WriteCsvFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WriteCsvFile.swift; sourceTree = "<group>"; };
 		DD8EBF42285058FA00426DCA /* DisplayConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayConfig.swift; sourceTree = "<group>"; };
 		DD8ED9C42898D51F00B3B0AB /* NetworkConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkConfig.swift; sourceTree = "<group>"; };
@@ -1601,6 +1609,7 @@
 				DD9C70112E9F2A0000029299 /* DeviceOnboardingTests.swift */,
 				25F5D5D02C4375DF008036E3 /* RouterTests.swift */,
 				AA20D0002D00000000000020 /* DeviceProfileExportTests.swift */,
+				AA20D0002D00000000000040 /* DeviceProfileImportTests.swift */,
 				05DCA1AE2F646B3B00D0724C /* NodeFilterParametersTests.swift */,
 				DD0000A20EDD5A00000000B2 /* XEdDSASigningTests.swift */,
 				05A1B2C42F70000100D0FC40 /* SettingsNodeSortTests.swift */,
@@ -1897,6 +1906,7 @@
 				DDAB580C2B0DAA9E00147258 /* Routes.swift */,
 				DDE9659B2B1C3B6A00531070 /* RouteRecorder.swift */,
 				DD86D40B287F401000BAEB7A /* SaveChannelQRCode.swift */,
+				AA20D0002D00000000000034 /* ImportDeviceProfileView.swift */,
 				DD3501882852FC3B000FC853 /* Settings.swift */,
 				DD3CC6B428E33FD100FA9159 /* ShareChannels.swift */,
 				DDCE4E2B2869F92900BE9F8F /* UserConfig.swift */,
@@ -2043,6 +2053,15 @@
 			path = Export;
 			sourceTree = "<group>";
 		};
+		AA20D0002D0000000000003A /* Import */ = {
+			isa = PBXGroup;
+			children = (
+				AA20D0002D00000000000030 /* DeviceProfileImport.swift */,
+				AA20D0002D00000000000032 /* DeviceProfileImporter.swift */,
+			);
+			path = Import;
+			sourceTree = "<group>";
+		};
 		DD8ED9C6289CE4A100B3B0AB /* Enums */ = {
 			isa = PBXGroup;
 			children = (
@@ -2159,6 +2178,7 @@
 				DD90860A26F645B700DC5189 /* Meshtastic.entitlements */,
 				DD8ED9C6289CE4A100B3B0AB /* Enums */,
 				DD86D40D2881BDB300BAEB7A /* Export */,
+				AA20D0002D0000000000003A /* Import */,
 				DDDB443E29F79A9400EE2349 /* Extensions */,
 				DDC2E1A526CEB32B0042C5E4 /* Helpers */,
 				DDC2E18826CE24EE0042C5E4 /* Model */,
@@ -2743,6 +2763,7 @@
 				DD9C70102E9F2A0000029299 /* DeviceOnboardingTests.swift in Sources */,
 				25F5D5D12C4375DF008036E3 /* RouterTests.swift in Sources */,
 				AA20D0002D00000000000021 /* DeviceProfileExportTests.swift in Sources */,
+				AA20D0002D00000000000041 /* DeviceProfileImportTests.swift in Sources */,
 				0516B3FE2F68892000D0FC40 /* NodeFilterParametersTests.swift in Sources */,
 				DD0000A10EDD5A00000000B1 /* XEdDSASigningTests.swift in Sources */,
 				05A1B2C32F70000100D0FC40 /* SettingsNodeSortTests.swift in Sources */,
@@ -3120,6 +3141,9 @@
 				DD86D40F2881BE4C00BAEB7A /* CsvDocument.swift in Sources */,
 				AA20D0002D00000000000011 /* DeviceProfileExport.swift in Sources */,
 				AA20D0002D00000000000013 /* DeviceProfileDocument.swift in Sources */,
+				AA20D0002D00000000000031 /* DeviceProfileImport.swift in Sources */,
+				AA20D0002D00000000000033 /* DeviceProfileImporter.swift in Sources */,
+				AA20D0002D00000000000035 /* ImportDeviceProfileView.swift in Sources */,
 				AA10D0012D00000000000001 /* DiscoverySummaryPDF.swift in Sources */,
 				23A1AFB72E42BD2500E46C96 /* RXTXIndicatorView.swift in Sources */,
 				DDB75A1E2A0B0CD0006ED576 /* LoRaSignalStrengthIndicator.swift in Sources */,

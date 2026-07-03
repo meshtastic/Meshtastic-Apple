@@ -1811,6 +1811,36 @@ extension AccessoryManager {
 		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
 	}
 
+	/// Sets an explicit fixed position from supplied coordinates (e.g. restored from an imported device
+	/// profile), rather than the phone's current GPS fix. The companion `setFixedPosition(fromUser:channel:)`
+	/// pulls coordinates from `getPositionFromPhoneGPS` and can't set arbitrary coordinates; this overload
+	/// fills that gap. The position config's `fixedPosition` flag (sent separately) is what tells the
+	/// firmware to actually use these coordinates.
+	public func setFixedPosition(_ position: Position, fromUser: UserEntity, toUser: UserEntity, channel: Int32 = 0) async throws -> Int64 {
+		var adminPacket = AdminMessage()
+		adminPacket.setFixedPosition = position
+		if fromUser != toUser {
+			adminPacket.sessionPasskey = toUser.userNode?.sessionPasskey ?? Data()
+		}
+		var meshPacket = MeshPacket()
+		meshPacket.to = UInt32(toUser.num)
+		meshPacket.from = UInt32(fromUser.num)
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.priority = MeshPacket.Priority.reliable
+		meshPacket.wantAck = true
+		meshPacket.channel = UInt32(channel)
+		var dataMessage = DataMessage()
+		guard let serializedData: Data = try? adminPacket.serializedData() else {
+			throw AccessoryError.ioFailed("setFixedPosition: Unable to serialize admin packet")
+		}
+		dataMessage.payload = serializedData
+		dataMessage.portnum = PortNum.adminApp
+		meshPacket.decoded = dataMessage
+		let messageDescription = "🚀 Sent Set Fixed Position (imported) Admin Message to: \(toUser.longName ?? "Unknown".localized)"
+		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
+		return Int64(meshPacket.id)
+	}
+
 	public func removeFixedPosition(fromUser: UserEntity, channel: Int32) async throws {
 		var adminPacket = AdminMessage()
 		adminPacket.removeFixedPosition = true

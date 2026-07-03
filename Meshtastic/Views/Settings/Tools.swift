@@ -29,6 +29,17 @@ struct Tools: View {
 	@State private var exportFailedMessage = "The device configuration could not be prepared for export."
 	@State private var isPresentingExportWarning = false
 
+	@State private var isImportingConfig = false
+	@State private var pendingImport: PendingImport?
+	@State private var isPresentingImportFailedAlert = false
+	@State private var importFailedMessage = "This file isn't a valid Meshtastic configuration."
+
+	/// Identifiable wrapper so a parsed plan can drive `.sheet(item:)`.
+	private struct PendingImport: Identifiable {
+		let id = UUID()
+		let plan: DeviceProfileImportPlan
+	}
+
 	var connectedNode: NodeInfoEntity? {
 		if let num = accessoryManager.activeDeviceNum {
 			return getNodeInfo(id: num, context: context)
@@ -88,6 +99,23 @@ struct Tools: View {
 							.foregroundColor(.secondary)
 					}
 				}
+
+				Section(header: Text("Import Device Configuration")) {
+					if connectedNode != nil {
+						Text("Apply a saved configuration file (radio, module, and channel settings) to the connected node.")
+							.font(.caption)
+							.foregroundColor(.secondary)
+						Button {
+							isImportingConfig = true
+						} label: {
+							Label("Import Configuration", systemImage: "square.and.arrow.down")
+						}
+					} else {
+						Text("Connect to a node to import a configuration.")
+							.font(.caption)
+							.foregroundColor(.secondary)
+					}
+				}
 			}
 		}
 		.navigationTitle("Tools")
@@ -135,6 +163,66 @@ struct Tools: View {
 			Button("OK") { }.keyboardShortcut(.defaultAction)
 		} message: {
 			Text(exportFailedMessage)
+		}
+		.fileImporter(
+			isPresented: $isImportingConfig,
+			allowedContentTypes: [.meshtasticDeviceProfile],
+			allowsMultipleSelection: false
+		) { result in
+			handleImport(result)
+		}
+		.sheet(item: $pendingImport) { pending in
+			ImportDeviceProfileView(plan: pending.plan)
+				.environmentObject(accessoryManager)
+		}
+		.alert("Import Failed", isPresented: $isPresentingImportFailedAlert) {
+			Button("OK") { }.keyboardShortcut(.defaultAction)
+		} message: {
+			Text(importFailedMessage)
+		}
+	}
+
+	/// Reads at most `cap + 1` bytes from a file so an oversized file is caught by the caller's size guard
+	/// without loading the whole file into memory — independent of whether the file provider reports a size.
+	private static func readCapped(_ url: URL, cap: Int) throws -> Data {
+		let handle = try FileHandle(forReadingFrom: url)
+		defer { try? handle.close() }
+		return try handle.read(upToCount: cap + 1) ?? Data()
+	}
+
+	private func handleImport(_ result: Result<[URL], Error>) {
+		switch result {
+		case .success(let urls):
+			guard let url = urls.first else { return }
+			guard let node = connectedNode, let currentUser = node.user?.toProto() else {
+				importFailedMessage = "Connect to a node before importing a configuration."
+				isPresentingImportFailedAlert = true
+				return
+			}
+			// Access the security-scoped file the picker handed us, and always release it afterwards.
+			let didAccess = url.startAccessingSecurityScopedResource()
+			defer { if didAccess { url.stopAccessingSecurityScopedResource() } }
+			do {
+				// Read at most one byte past the cap so an oversized (or size-unreported) file is rejected
+				// by parseDeviceProfile without ever loading the whole thing into memory.
+				let data = try Self.readCapped(url, cap: DeviceProfileImportPlan.maxProfileBytes)
+				let profile = try DeviceProfileImportPlan.parseDeviceProfile(data)
+				let plan = try DeviceProfileImportPlan(profile: profile, currentUser: currentUser)
+				pendingImport = PendingImport(plan: plan)
+			} catch DeviceProfileImportError.nothingToImport {
+				importFailedMessage = "This configuration file doesn't contain anything to import."
+				isPresentingImportFailedAlert = true
+			} catch {
+				Logger.services.error("Device configuration import failed to parse: \(error.localizedDescription, privacy: .public)")
+				importFailedMessage = "This file isn't a valid Meshtastic configuration."
+				isPresentingImportFailedAlert = true
+			}
+		case .failure(let error):
+			// A user dismissing the picker can surface as a cancellation — don't treat that as an error.
+			if (error as? CocoaError)?.code == .userCancelled { return }
+			Logger.services.error("Device configuration import picker failed: \(error.localizedDescription, privacy: .public)")
+			importFailedMessage = "The configuration file could not be opened."
+			isPresentingImportFailedAlert = true
 		}
 	}
 
