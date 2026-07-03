@@ -28,6 +28,7 @@ struct DiscoverySummaryView: View {
 		List {
 			sessionOverviewSection
 			presetResultsSection
+			beaconsSection
 			rfHealthSection
 			aiRecommendationSection
 		}
@@ -119,6 +120,84 @@ struct DiscoverySummaryView: View {
 				}
 			}
 		}
+	}
+
+	// MARK: - Beacons
+
+	/// Beacons heard during the scan, newest first. Hidden entirely when none were received so the
+	/// section doesn't add noise to scans on meshes that don't run beacon nodes.
+	@ViewBuilder
+	private var beaconsSection: some View {
+		let beacons = session.beacons.sorted { $0.timestamp > $1.timestamp }
+		if !beacons.isEmpty {
+			Section {
+				ForEach(beacons) { beacon in
+					beaconCard(beacon)
+				}
+			} header: {
+				Label("Beacons", systemImage: "dot.radiowaves.left.and.right")
+			} footer: {
+				Text("Nodes advertising a mesh to join. A preset offered by a beacon is added to the scan automatically.")
+			}
+		}
+	}
+
+	@ViewBuilder
+	private func beaconCard(_ beacon: DiscoveredBeaconEntity) -> some View {
+		VStack(alignment: .leading, spacing: 6) {
+			HStack {
+				Text(beacon.displayName)
+					.font(.headline)
+				Spacer()
+				Text("\(String(format: "%.1f", beacon.snr)) SNR")
+					.font(.caption)
+					.monospacedDigit()
+					.foregroundStyle(.secondary)
+			}
+
+			if !beacon.message.isEmpty {
+				Text(beacon.message)
+					.font(.subheadline)
+					.fixedSize(horizontal: false, vertical: true)
+			}
+
+			// Offered preset / region / channel chips — only what the beacon actually advertised.
+			let chips = beaconChips(beacon)
+			if !chips.isEmpty {
+				HStack(spacing: 6) {
+					ForEach(chips, id: \.self) { chip in
+						Text(chip)
+							.font(.caption2)
+							.padding(.horizontal, 8)
+							.padding(.vertical, 3)
+							.background(Color.accentColor.opacity(0.15), in: Capsule())
+					}
+				}
+			}
+
+			if !beacon.heardOnPresetName.isEmpty {
+				Text("Heard on \(beacon.heardOnPresetName)")
+					.font(.caption2)
+					.foregroundStyle(.secondary)
+			}
+		}
+		.padding(.vertical, 4)
+	}
+
+	/// Builds the "advertised" chips for a beacon (preset, region, channel), skipping anything the
+	/// beacon didn't offer.
+	private func beaconChips(_ beacon: DiscoveredBeaconEntity) -> [String] {
+		var chips: [String] = []
+		if let preset = beacon.offeredPreset {
+			chips.append(preset.description)
+		}
+		if let region = beacon.offeredRegion {
+			chips.append(region.description)
+		}
+		if beacon.hasOfferChannel, !beacon.offerChannelName.isEmpty {
+			chips.append("#\(beacon.offerChannelName)")
+		}
+		return chips
 	}
 
 	@ViewBuilder

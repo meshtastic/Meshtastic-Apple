@@ -575,6 +575,61 @@ final class DiscoveryScanEngine {
 		}
 	}
 
+	/// Store a MESH_BEACON_APP beacon heard during a dwell and, when it advertises a modem preset
+	/// we haven't scanned or queued yet, auto-add that preset to the scan so this run also dwells
+	/// on it. Beacons announce "there is a mesh on this channel/region/preset," so hearing one is a
+	/// strong signal that the advertised preset is worth scanning.
+	func handleBeacon(_ beacon: MeshBeacon, packet: MeshPacket) {
+		guard currentState == .dwell, let context = modelContext else { return }
+
+		let fromNodeNum = Int64(packet.from)
+		// Skip beacons from the scanning node itself.
+		let connectedNodeNum = Int64(UserDefaults.preferredPeripheralNum)
+		guard fromNodeNum != connectedNodeNum else { return }
+
+		let entity = DiscoveredBeaconEntity()
+		entity.nodeNum = fromNodeNum
+		entity.message = beacon.message
+		entity.offerRegion = beacon.offerRegion != .unset ? beacon.offerRegion.rawValue : 0
+		entity.offerPreset = beacon.hasOfferPreset ? beacon.offerPreset.rawValue : -1
+		entity.hasOfferChannel = beacon.hasOfferChannel
+		entity.offerChannelName = beacon.hasOfferChannel ? beacon.offerChannel.name : ""
+		entity.snr = packet.rxSnr
+		entity.rssi = Int(packet.rxRssi)
+		entity.timestamp = Date()
+		entity.heardOnPresetName = activePreset?.name ?? ""
+		entity.session = session
+		entity.presetResult = currentPresetResult
+
+		if let knownNode = getNodeInfo(id: fromNodeNum, context: context) {
+			entity.shortName = knownNode.user?.shortName ?? ""
+			entity.longName = knownNode.user?.longName ?? ""
+		}
+
+		context.insert(entity)
+		session?.beacons.append(entity)
+		currentPresetResult?.beacons.append(entity)
+
+		Logger.discovery.info("📡 [Discovery] Beacon from \(fromNodeNum, privacy: .private) — offerPreset \(entity.offerPreset), offerRegion \(entity.offerRegion)")
+
+		autoQueueBeaconPreset(beacon)
+	}
+
+	/// If the beacon advertises a modem preset that isn't the active preset, already queued, or
+	/// already dwelled this session, append it to the scan queue. `shiftToNextPreset()` consumes
+	/// the queue with `removeFirst()`, so appending only extends future dwells and never disrupts
+	/// the current one.
+	private func autoQueueBeaconPreset(_ beacon: MeshBeacon) {
+		guard beacon.hasOfferPreset, let preset = ModemPresets(rawValue: beacon.offerPreset.rawValue) else { return }
+		if activePreset == preset { return }
+		if presetQueue.contains(preset) { return }
+		if session?.presetResults.contains(where: { $0.presetName == preset.name }) == true { return }
+
+		presetQueue.append(preset)
+		if !selectedPresets.contains(preset) { selectedPresets.append(preset) }
+		Logger.discovery.info("📡 [Discovery] Auto-queued beacon-advertised preset: \(preset.name)")
+	}
+
 	func handleMeshPacket(_ packet: MeshPacket, portNum: PortNum) {
 		guard currentState == .dwell, let context = modelContext else { return }
 

@@ -779,7 +779,12 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 				case .mapReportApp:
 					Logger.mesh.info("[Map Report] packet received from \(packet.from.toHex(), privacy: .public)")
 				case .meshBeaconApp:
-					Logger.mesh.info("[Mesh Beacon] packet received from \(packet.from.toHex(), privacy: .public)")
+					if let beacon = try? MeshBeacon(serializedBytes: decodedInfo.packet.decoded.payload),
+					   let engine = discoveryScanEngine, engine.isScanning {
+						engine.handleBeacon(beacon, packet: decodedInfo.packet)
+					} else {
+						Logger.mesh.info("[Mesh Beacon] packet received from \(packet.from.toHex(), privacy: .public)")
+					}
 				case .UNRECOGNIZED:
 					Logger.mesh.info("[Unrecognized] packet received from \(packet.from.toHex(), privacy: .public)")
 				case .max:

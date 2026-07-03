@@ -14,6 +14,8 @@ Recent user-facing changes from roughly the last 12 months. Newest at the top.
 Show roughly the last 12 months of changes; archive entries older than a year by removing them.
 -->
 
+**Jul 2026** — [Local Mesh Discovery](discovery.md) — Mesh beacons: scans now capture beacons advertising a mesh (message, channel, region, preset), show them in the results, auto-add any advertised preset to the running scan, and pre-select those presets next time.
+
 **Jul 2026** — [Lockdown Mode](lockdown.md) — Support for hardened lockdown-firmware radios: set or enter the device passphrase in a full-screen prompt, with per-radio Keychain passphrase storage and silent re-unlock, optional session limits (boots, hours, per-boot cap), and Lock Now / Forget Stored Passphrase in Security settings.
 
 **Jun 2026** — [Map & Waypoints](map.md) — Waypoint geofences: give a waypoint a circular radius and/or a bounding box and get a local alert when nodes enter or leave it, optionally limited to your favorites.

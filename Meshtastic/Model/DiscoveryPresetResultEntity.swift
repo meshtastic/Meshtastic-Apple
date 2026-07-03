@@ -49,5 +49,8 @@ final class DiscoveryPresetResultEntity {
 	@Relationship(deleteRule: .nullify, inverse: \DiscoveredNodeEntity.presetResult)
 	var nodes: [DiscoveredNodeEntity] = []
 
+	@Relationship(deleteRule: .nullify, inverse: \DiscoveredBeaconEntity.presetResult)
+	var beacons: [DiscoveredBeaconEntity] = []
+
 	init() {}
 }

@@ -20,6 +20,9 @@ struct DiscoveryScanView: View {
 	@State private var selectedPresets: Set<ModemPresets> = []
 	@State private var dwellMinutes: Int = 15
 	@State private var showHistory = false
+	/// Ensures beacon-advertised presets are pre-selected only once per appearance, so the seed
+	/// never fights a deliberate deselection the user makes afterward.
+	@State private var didAutoSelectBeaconPresets = false
 
 	@State private var engine: DiscoveryScanEngine?
 
@@ -36,6 +39,16 @@ struct DiscoveryScanView: View {
 		// Lite / Narrow presets are intentionally hidden from selection
 		// for now — see `ModemPresets.userSelectable`.
 		ModemPresets.userSelectable
+	}
+
+	/// Selectable presets we've heard a beacon advertise (across all past sessions). These are
+	/// pre-checked when the picker first appears so a fresh scan includes any mesh a beacon told us
+	/// about, and flagged with a beacon icon in the row.
+	private var beaconPresets: Set<ModemPresets> {
+		let descriptor = FetchDescriptor<DiscoveredBeaconEntity>()
+		guard let beacons = try? context.fetch(descriptor) else { return [] }
+		let available = Set(availablePresets)
+		return Set(beacons.compactMap { $0.offeredPreset }).intersection(available)
 	}
 
 	private let discoveryScanTip = DiscoveryScanTip()
@@ -68,6 +81,12 @@ struct DiscoveryScanView: View {
 				}
 				engine?.configure(accessoryManager: accessoryManager, modelContext: context)
 				engine?.checkForInterruptedSessions(context: context)
+				// Auto-select presets we've heard beacons for, once, so a fresh scan covers any
+				// mesh a beacon advertised. Union-only: never clears the user's own choices.
+				if !didAutoSelectBeaconPresets {
+					didAutoSelectBeaconPresets = true
+					selectedPresets.formUnion(beaconPresets)
+				}
 			}
 		}
 	}
@@ -218,7 +237,8 @@ struct DiscoveryScanView: View {
 	}
 
 	private var presetPickerSection: some View {
-		Section(header: Text("Modem Presets")) {
+		let beaconAdvertised = beaconPresets
+		return Section {
 			ForEach(availablePresets) { preset in
 				Button {
 					if selectedPresets.contains(preset) {
@@ -229,6 +249,11 @@ struct DiscoveryScanView: View {
 				} label: {
 					HStack {
 						Text(preset.description)
+						if beaconAdvertised.contains(preset) {
+							Image(systemName: "dot.radiowaves.left.and.right")
+								.foregroundStyle(.blue)
+								.help("A beacon advertised this preset")
+						}
 						Spacer()
 						if selectedPresets.contains(preset) {
 							Image(systemName: "checkmark")
@@ -237,6 +262,12 @@ struct DiscoveryScanView: View {
 					}
 				}
 				.foregroundStyle(.primary)
+			}
+		} header: {
+			Text("Modem Presets")
+		} footer: {
+			if !beaconAdvertised.isEmpty {
+				Label("Presets marked with a beacon icon were advertised by a beacon and pre-selected.", systemImage: "dot.radiowaves.left.and.right")
 			}
 		}
 	}
