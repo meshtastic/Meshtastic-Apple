@@ -31,9 +31,31 @@ struct DiscoveryScanView: View {
 	@State private var engine: DiscoveryScanEngine?
 
 	private var availablePresets: [ModemPresets] {
-		// Lite / Narrow presets are intentionally hidden from selection
-		// for now — see `ModemPresets.userSelectable`.
-		ModemPresets.userSelectable
+		// When connected to a 2.8 radio that advertised a region→preset map, show exactly that
+		// region's legal presets. This is the ONLY case where the 2.8-only Lite/Narrow/Tiny presets
+		// can appear — and only where the region actually permits them.
+		if accessoryManager.checkIsVersionSupported(forVersion: "2.8.0"),
+		   let regionCode = connectedRegionCode,
+		   let info = accessoryManager.loRaRegionPresets[regionCode], !info.presets.isEmpty {
+			let constrained = ModemPresets.selectable(supports2_8: true)
+				.filter { info.presets.contains($0.protoEnumValue()) }
+			if !constrained.isEmpty { return constrained }
+		}
+		// Otherwise (offline, or the firmware advertised no region map) show the widely-supported
+		// preset set — never the 2.8-only Lite/Narrow/Tiny presets, which would otherwise appear as
+		// unusable grey tiles.
+		return ModemPresets.userSelectable
+	}
+
+	/// The connected radio's region as the protobuf enum used to key `loRaRegionPresets`, derived the
+	/// same way as the LoRa Config screen (`RegionCodes(rawValue:)` on the stored region code).
+	private var connectedRegionCode: Config.LoRaConfig.RegionCode? {
+		let num = Int64(UserDefaults.preferredPeripheralNum)
+		var descriptor = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == num })
+		descriptor.fetchLimit = 1
+		guard let raw = (try? context.fetch(descriptor))?.first?.loRaConfig?.regionCode,
+			  let region = RegionCodes(rawValue: Int(raw)) else { return nil }
+		return region.protoEnumValue()
 	}
 
 	/// Most-common public-mesh presets from MQTT telemetry (LongFast dominant, MediumFast a distant
@@ -519,7 +541,7 @@ extension DiscoveryScanView {
 		let beaconAdvertised = beaconPresets
 		let popular = Set(popularPresets)
 		return Section {
-			LazyVGrid(columns: [GridItem(.adaptive(minimum: 110), spacing: 8)], spacing: 8) {
+			LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 3), spacing: 8) {
 				ForEach(availablePresets) { preset in
 					presetChip(
 						preset,
@@ -533,8 +555,13 @@ extension DiscoveryScanView {
 		} header: {
 			sectionHeader("Modem Presets", systemImage: "antenna.radiowaves.left.and.right")
 		} footer: {
-			if !beaconAdvertised.isEmpty {
-				Label("Presets marked with a beacon icon were advertised by a beacon and pre-selected.", systemImage: "dot.radiowaves.left.and.right")
+			VStack(alignment: .leading, spacing: 4) {
+				if availablePresets.contains(where: { popular.contains($0) }) {
+					Label("A star marks the presets most public meshes use — pre-selected for you.", systemImage: "star.fill")
+				}
+				if !beaconAdvertised.isEmpty {
+					Label("A beacon icon marks a preset a beacon advertised — also pre-selected.", systemImage: "dot.radiowaves.left.and.right")
+				}
 			}
 		}
 	}
@@ -570,12 +597,14 @@ extension DiscoveryScanView {
 							.foregroundStyle(Color.white)
 					}
 				}
+				.frame(height: 14)
 				Text(preset.description)
-					.font(.footnote.weight(.medium))
+					.font(.caption2.weight(.medium))
 					.multilineTextAlignment(.center)
-					.fixedSize(horizontal: false, vertical: true)
+					.lineLimit(2)
+					.minimumScaleFactor(0.6)
 			}
-			.frame(maxWidth: .infinity)
+			.frame(maxWidth: .infinity, minHeight: 48)
 			.padding(.vertical, 10)
 			.padding(.horizontal, 8)
 			.foregroundStyle(isSelected ? Color.white : Color.primary)
@@ -666,7 +695,7 @@ extension DiscoveryScanView {
 				VStack(alignment: .leading, spacing: 3) {
 					Text("\(spanLengthText(from: span.start, to: span.end)) of mesh data")
 						.font(.headline)
-					Text("since \(shortDate(span.start)) · reflects your whole history, not just the 60s dwell")
+					Text("since \(shortDate(span.start)) · first heard → last heard")
 						.font(.caption)
 						.foregroundStyle(.secondary)
 				}
@@ -681,7 +710,7 @@ extension DiscoveryScanView {
 		} header: {
 			sectionHeader("Current Preset", systemImage: "doc.text.magnifyingglass")
 		} footer: {
-			Text("Analyze only your current preset, seeded with everything already collected — every node heard, per-node message and sensor counts, and RF health including noise floor — so the run starts from your full history rather than an empty scan. Runs even with no radio connected. Stop anytime to view the summary.")
+			Text("Reports on your current preset using everything already collected — every known node with its message, sensor, and RF-health stats — with no preset change or reboot. Works even with no radio connected.")
 		}
 	}
 
