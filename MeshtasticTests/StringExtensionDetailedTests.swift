@@ -84,18 +84,6 @@ struct StringEmojiDetectionDetailedTests {
 @Suite("String Manipulation")
 struct StringManipulationTests {
 
-	@Test func camelCaseToWords_simple() {
-		#expect("helloWorld".camelCaseToWords() == "hello World")
-	}
-
-	@Test func camelCaseToWords_multipleWords() {
-		#expect("myVariableName".camelCaseToWords() == "my Variable Name")
-	}
-
-	@Test func camelCaseToWords_acronym() {
-		#expect("parseHTMLContent".camelCaseToWords() == "parse HTML Content")
-	}
-
 	@Test func length() {
 		#expect("Hello".length == 5)
 		#expect("".length == 0)

@@ -57,6 +57,7 @@ extension UserDefaults {
 		case enableMapRouteLines
 		case enableMapTraffic
 		case enableMapPointsOfInterest
+		case enableMapPreciseLocationsOnly
 		case enableOfflineMaps
 		case enableMapShowFavorites
 		case mapTileServer
@@ -130,6 +131,9 @@ extension UserDefaults {
 
 	@UserDefault(.enableMapPointsOfInterest, defaultValue: false)
 	static var enableMapPointsOfInterest: Bool
+
+	@UserDefault(.enableMapPreciseLocationsOnly, defaultValue: false)
+	static var enableMapPreciseLocationsOnly: Bool
 
 	@UserDefault(.enableMapShowFavorites, defaultValue: false)
 	static var enableMapShowFavorites: Bool

@@ -96,16 +96,38 @@ actor MeshPackets {
 	/// Call after DB retrieval completes or periodically to release accumulated memory.
 	static func recreateShared() {
 		_lock.lock()
+		let previous = _shared
 		_shared = MeshPackets(modelContainer: _container)
 		_lock.unlock()
+		// Invalidate the retired instance. In-flight tasks that captured `MeshPackets.shared`
+		// before the swap (a debounced save, a late packet for the previous radio) still hold
+		// the old actor, whose context is bound to the old container — which points at the SAME
+		// on-disk store as the new one. Letting those writes land after a device-switch
+		// clearDatabase resurrects the previous radio's rows (nodes bleeding across devices)
+		// and can trip reused-rowid "destroyed by ModelContext.reset" traps.
+		Task { await previous.invalidate() }
 		Logger.data.info("♻️ [MeshPackets] Recreated shared instance to release ModelContext memory")
 	}
 
 	// MARK: - Save Helpers
 
+	/// Set when this instance has been replaced by `recreateShared()`. A retired instance must
+	/// never persist again — see `recreateShared()`.
+	private var invalidated = false
+
+	func invalidate() {
+		invalidated = true
+		debounceSaveTask?.cancel()
+		debounceSaveTask = nil
+	}
+
 	/// Saves any pending changes in the model context. Call once at the end of each
 	/// top-level packet handler to batch all mutations from a single packet into one write.
 	func savePendingChanges(caller: String = #function) {
+		guard !invalidated else {
+			Logger.data.warning("💾 [\(caller, privacy: .public)] Dropped save on retired MeshPackets instance")
+			return
+		}
 		guard modelContext.hasChanges else { return }
 		do {
 			try modelContext.save()
@@ -139,6 +161,7 @@ actor MeshPackets {
 	/// keep arriving continuously, a save is forced every 5 seconds.
 	/// Use for high-frequency packet types (position, telemetry) instead of `savePendingChanges`.
 	func scheduleDebouncedSave() {
+		guard !invalidated else { return }
 		debounceSaveTask?.cancel()
 		let elapsed = ContinuousClock.now - lastDebouncedSaveTime
 		if elapsed >= Self.maxDebounceDelay {
@@ -522,6 +545,10 @@ actor MeshPackets {
 						if !deferSave {
 							savePendingChanges()
 							Logger.data.debug("💾 Saved a new Node Info For: \(String(nodeInfo.num), privacy: .public)")
+						} else {
+							// Deferred (node-DB dump): batch writes, but still persist at least
+							// every maxDebounceDelay so a long dump isn't one giant save.
+							scheduleDebouncedSave()
 						}
 						return newNode.persistentModelID
 					} catch {
@@ -639,6 +666,8 @@ actor MeshPackets {
 						if !deferSave {
 							savePendingChanges()
 							Logger.data.debug("💾 [Node Info] saved for \(nodeInfo.num.toHex(), privacy: .public)")
+						} else {
+							scheduleDebouncedSave()
 						}
 						return fetchedNode[0].persistentModelID
 					} catch {

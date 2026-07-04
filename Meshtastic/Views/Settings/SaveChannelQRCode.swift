@@ -376,7 +376,7 @@ struct SaveChannelQRCode: View {
 
 	private func channelTitle(_ channel: ChannelSettings, index: Int) -> String {
 		if !channel.name.isEmpty {
-			return channel.name.camelCaseToWords()
+			return channel.name
 		}
 		return index == 0 ? "Primary" : "Channel \(index)"
 	}

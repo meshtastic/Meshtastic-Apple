@@ -71,6 +71,16 @@ extension PositionEntity {
 		precisionBits == 32 || precisionBits == 0
 	}
 
+	/// `precisionBits` range for reduced-precision positions. These are rendered at a fuzzed
+	/// coordinate with a translucent accuracy circle on the map (as opposed to `isPreciseLocation`,
+	/// which renders at the exact coordinate). Centralized here so the map's filter/render/snapshot
+	/// paths can't drift if the range ever changes.
+	static let reducedPrecisionBits: ClosedRange<Int32> = 12...15
+
+	var isReducedPrecision: Bool {
+		Self.reducedPrecisionBits ~= precisionBits
+	}
+
 	var fuzzedNodeCoordinate: CLLocationCoordinate2D? {
 		// With reduced precisionBits, many nodes can overlap on the map, making them unclickable.
 		// Use a hash of the position ID to fuzz coordinate slightly so that these nodes can be distinguished at the higest zoom levels. This allows them to be clicked individually.

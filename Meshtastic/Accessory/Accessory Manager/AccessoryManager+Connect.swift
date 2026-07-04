@@ -139,18 +139,26 @@ extension AccessoryManager {
 			}
 			
 			// Step 5: Send WantConfig (database)
-			Step(timeout: .seconds(3.0), onFailure: .retryStep(attempts: 3)) { @MainActor _ in
+			Step(timeout: .seconds(10.0), onFailure: .retryStep(attempts: 3)) { @MainActor _ in
 				guard wantDatabase else {
 					Logger.transport.info("👟 [Connect] Step 5: wantDatabase = false, skipping wantDatabase")
+					return
+				}
+				// A retry of this step must never re-request the dump while one is already
+				// streaming: the radio would restart the node DB from the top and the two dumps
+				// would interleave (slow connects, duplicate processing). If nodes are already
+				// arriving, treat the request as delivered and let Step 5a's gate do the waiting.
+				if case .retrievingDatabase(let nodeCount) = self.state, nodeCount > 0 {
+					Logger.transport.info("🔗👟 [Connect] Step 5: node dump already streaming (\(nodeCount) nodes) — not re-requesting")
 					return
 				}
 				Logger.transport.info("🔗👟 [Connect] Step 5: Send wantConfig (database)")
 				self.updateState(.retrievingDatabase(nodeCount: 0))
 				self.allowDisconnect = true
-				
+
 				Logger.transport.info("🔗 Saving preferredPeripheralId: \(device.id.uuidString)")
 				UserDefaults.preferredPeripheralId = device.id.uuidString
-				
+
 				try await self.sendWantDatabase()
 			}
 			
@@ -224,6 +232,11 @@ extension AccessoryManager {
 			Step { @MainActor _ in
 				Logger.transport.debug("🔗👟 [Connect] Step 8: Initialize MQTT and Location Provider")
 				self.stopDiscovery()
+				// Prune stale nodes now that the dump is in, instead of at the head of
+				// sendWantConfig where the fetch+delete+save serialized ahead of the whole
+				// handshake on the ingestion actor. Post-dump lastHeard values also make the
+				// pruning decisions more accurate.
+				_ = await MeshPackets.shared.clearStaleNodes(nodeExpireDays: Int(UserDefaults.purgeStaleNodeDays))
 				await self.initializeMqtt()
 				self.initializeLocationProvider()
 				if transport.requiresPeriodicHeartbeat {

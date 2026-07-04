@@ -334,28 +334,6 @@ struct Base64URLTests {
 	}
 }
 
-// MARK: - String camelCaseToWords
-
-@Suite("String camelCaseToWords")
-struct CamelCaseTests {
-
-	@Test func simpleCamelCase() {
-		#expect("helloWorld".camelCaseToWords() == "hello World")
-	}
-
-	@Test func multipleParts() {
-		#expect("myLongVariableName".camelCaseToWords() == "my Long Variable Name")
-	}
-
-	@Test func alreadySeparated() {
-		#expect("hello".camelCaseToWords() == "hello")
-	}
-
-	@Test func acronym() {
-		#expect("parseHTTPResponse".camelCaseToWords() == "parse HTTP Response")
-	}
-}
-
 // MARK: - String subscript
 
 @Suite("String Subscript Extended")

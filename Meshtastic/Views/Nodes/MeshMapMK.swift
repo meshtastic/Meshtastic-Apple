@@ -39,6 +39,8 @@ struct MeshMapMK: View {
 	/// base layer -- so the styled offline box + coverage border work over Standard/Hybrid/Satellite.
 	@AppStorage("enableOfflineTiles") private var enableOfflineTiles = false
 	@AppStorage("enableMapClustering") private var enableMapClustering = true
+	/// Hide nodes whose latest position is reduced-precision (the ones drawn with a precision circle).
+	@AppStorage("enableMapPreciseLocationsOnly") private var preciseLocationsOnly = false
 	/// Map overlay configs
 	@State private var enabledOverlayConfigs: Set<UUID> = []
 	// Map Configuration
@@ -171,21 +173,30 @@ struct MeshMapMK: View {
 		return showOpenWindowButton ? router.selectedTab == .map : true
 	}
 
+	/// Latest positions eligible for the mesh map. When "Precise Locations Only" is enabled, drop
+	/// reduced-precision positions (the same range `rebuildOverlays` draws the translucent precision
+	/// circle for) so the imprecise pins and their circles hide together.
+	private var mapEligiblePositions: [PositionEntity] {
+		guard preciseLocationsOnly else { return allLatestPositions }
+		return allLatestPositions.filter { !$0.isReducedPrecision }
+	}
+
 	/// Positions actually passed to the map — empty when the tab is off-screen
 	/// so MapKit drops its annotation view trees and reduces memory.
 	private var visiblePositions: [PositionEntity] {
 		guard isMapVisible else { return [] }
 
+		let eligiblePositions = mapEligiblePositions
 		guard let visibleRegion else {
 			guard filters.isFiltering || !filters.searchText.isEmpty else {
-				return densityLimitedPositions(allLatestPositions)
+				return densityLimitedPositions(eligiblePositions)
 			}
-			return densityLimitedPositions(filteredPositions(from: allLatestPositions))
+			return densityLimitedPositions(filteredPositions(from: eligiblePositions))
 		}
-		let positionsInRegion = allLatestPositions.filter { $0.isInMapRegion(visibleRegion, paddingMultiplier: 1.4) }
+		let positionsInRegion = eligiblePositions.filter { $0.isInMapRegion(visibleRegion, paddingMultiplier: 1.4) }
 		// MapKit can briefly report a stale/empty camera region while restoring
 		// the tab or handling deep links. Never blank all pins because of that.
-		let positions = positionsInRegion.isEmpty ? allLatestPositions : positionsInRegion
+		let positions = positionsInRegion.isEmpty ? eligiblePositions : positionsInRegion
 		guard filters.isFiltering || !filters.searchText.isEmpty else {
 			return densityLimitedPositions(positions)
 		}
@@ -578,6 +589,7 @@ struct MeshMapMK: View {
 
 	private var filterRefreshKey: Int64 {
 		var key: Int64 = 0
+		combine(&key, preciseLocationsOnly ? 1 : 0)
 		combine(&key, stableStringKey(filters.searchText.lowercased()))
 		combine(&key, filters.isOnline ? 1 : 0)
 		combine(&key, filters.isPkiEncrypted ? 1 : 0)
@@ -646,7 +658,9 @@ struct MeshMapMK: View {
 	/// as positions pour in.
 	private func frameInitialRegionIfNeeded() {
 		guard !didInitialFrame else { return }
-		let nodeCoords = allLatestPositions.compactMap { $0.nodeCoordinate ?? $0.fuzzedNodeCoordinate }
+		// Frame from the same set the map actually shows, so "Precise Locations Only" doesn't start
+		// the camera centered on hidden reduced-precision nodes.
+		let nodeCoords = mapEligiblePositions.compactMap { $0.nodeCoordinate ?? $0.fuzzedNodeCoordinate }
 		guard let center = LocationsHandler.currentLocation ?? activeDeviceCoordinate ?? coordinateCentroid(of: nodeCoords) else {
 			return // No GPS and no nodes yet -- try again on the next refresh.
 		}
@@ -1161,7 +1175,7 @@ struct MeshMapMK: View {
 
 		// Reduced-precision accuracy circles, deduped by location + precision (lowest nodeNum wins).
 		var lowestNumForKey: [ReducedPrecisionMapCircleKey: Int64] = [:]
-		for snap in visiblePositionSnapshots where 12...15 ~= snap.precisionBits {
+		for snap in visiblePositionSnapshots where PositionEntity.reducedPrecisionBits ~= snap.precisionBits {
 			let key = ReducedPrecisionMapCircleKey(latitudeI: snap.latitudeI, longitudeI: snap.longitudeI, precisionBits: snap.precisionBits)
 			if let existing = lowestNumForKey[key] {
 				if snap.nodeNum < existing { lowestNumForKey[key] = snap.nodeNum }
@@ -1209,7 +1223,7 @@ struct MeshMapMK: View {
 				position.fuzzedNodeCoordinate ?? LocationsHandler.DefaultLocation
 			}
 			let precisionBits = position.precisionBits
-			guard 12...15 ~= precisionBits || precisionBits == 32 else { return nil }
+			guard PositionEntity.reducedPrecisionBits ~= precisionBits || precisionBits == 32 else { return nil }
 			let node = position.nodePosition
 			let nodeNum = node?.num ?? 0
 				return MeshMapPositionSnapshot(

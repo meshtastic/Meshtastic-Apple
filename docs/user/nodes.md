@@ -126,6 +126,8 @@ Tap the filter icon above the list to narrow which nodes are shown. Filters appl
 
 Filters are **remembered between launches** — the app reopens with the same filters applied. Search text is the exception: it is intentionally cleared on relaunch so you never reopen into a stale search that hides most of your nodes. Use the **reset** affordance to clear every filter and the search text at once.
 
+The map has one additional filter of its own — **Precise Locations Only**, which hides nodes reporting an approximate (reduced-precision) location. See [Map & Waypoints](map.md) for details.
+
 ## Additional Icons
 
 Tap a node and scroll to the Logs section for detailed metrics:

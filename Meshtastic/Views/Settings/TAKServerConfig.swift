@@ -429,12 +429,12 @@ struct TAKServerConfig: View {
 	private func channelLabel(_ channel: ChannelEntity) -> some View {
 		if channel.name?.isEmpty ?? false {
 			if channel.role == 1 {
-				Text(String("PrimaryChannel").camelCaseToWords())
+				Text(String("Primary Channel"))
 			} else {
-				Text(String("Channel \(channel.index)").camelCaseToWords())
+				Text(String("Channel \(channel.index)"))
 			}
 		} else {
-			Text(String(channel.name ?? "Channel \(channel.index)").camelCaseToWords())
+			Text(String(channel.name ?? "Channel \(channel.index)"))
 		}
 	}
 

@@ -146,7 +146,11 @@ extension MeshPackets {
 		}
 	}
 	
-	public func clearDatabase(includeRoutes: Bool, preserveFavorites: Bool = false) {
+	/// Returns true when every delete committed; false when the clear aborted part-way (callers
+	/// that require an empty store — the device-switch and cross-device reset paths — must
+	/// escalate, e.g. destroy and recreate the store, rather than proceed on a half-cleared one).
+	@discardableResult
+	public func clearDatabase(includeRoutes: Bool, preserveFavorites: Bool = false) -> Bool {
 		// Delete + SAVE one model type at a time. SwiftData's batch `delete(model:)` ENQUEUES a
 		// deletion (committed on the next save) and nullifies inverse relationships. Reconciling MANY
 		// types' deletions in a SINGLE trailing save makes SwiftData tear down objects whose inverse
@@ -163,12 +167,17 @@ extension MeshPackets {
 		}
 
 		do {
-			// Sever the DeviceHardware many-to-many from the owning side first (a batch delete alone
-			// trips the mandatory MTM nullify inverse between DeviceHardwareEntity.tags and
-			// DeviceHardwareTagEntity.devices), saving before deleting the tag/image entities.
+			// Sever the DeviceHardware relationships from the owning side first: a batch delete
+			// alone trips the mandatory MTM nullify inverse between DeviceHardwareEntity.tags and
+			// DeviceHardwareTagEntity.devices, and likewise batch-deleting the images fails with
+			// "mandatory OTO nullify inverse on DeviceHardwareImageEntity/device" while any device
+			// still references them ("Constraint trigger violation" — which aborted the whole clear
+			// and quietly left EVERY entity in place, the direct cause of one radio's nodes
+			// surviving into another radio's session). Save the severing before the batch deletes.
 			let hardwareDevices = try modelContext.fetch(FetchDescriptor<DeviceHardwareEntity>())
 			for device in hardwareDevices {
 				device.tags.removeAll()
+				device.images.removeAll()
 			}
 			try commit()
 			try modelContext.delete(model: DeviceHardwareTagEntity.self)
@@ -222,9 +231,11 @@ extension MeshPackets {
 				try modelContext.delete(model: modelType)
 				try commit()
 			}
+			return true
 		} catch {
 			// Abort before the next type so a failed save can't leave a multi-type batch pending.
 			Logger.data.error("💥 Failed while clearing database, aborted: \(error.localizedDescription, privacy: .public)")
+			return false
 		}
 	}
 	

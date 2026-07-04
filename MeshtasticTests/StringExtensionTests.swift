@@ -139,41 +139,6 @@ struct CharacterEmojiTests {
 	}
 }
 
-// MARK: - CamelCase Conversion
-
-@Suite("String camelCaseToWords")
-struct StringCamelCaseTests {
-
-	@Test func simpleCamelCase_splitsCorrectly() {
-		#expect("camelCase".camelCaseToWords() == "camel Case")
-	}
-
-	@Test func pascalCase_splitsCorrectly() {
-		#expect("PascalCase".camelCaseToWords() == "Pascal Case")
-	}
-
-	@Test func multipleWords_splitsCorrectly() {
-		#expect("myVariableName".camelCaseToWords() == "my Variable Name")
-	}
-
-	@Test func singleWord_unchanged() {
-		#expect("hello".camelCaseToWords() == "hello")
-	}
-
-	@Test func emptyString_unchanged() {
-		#expect("".camelCaseToWords() == "")
-	}
-
-	@Test func allCaps_unchanged() {
-		// Pure uppercase with no transitions stays together
-		#expect("ABC".camelCaseToWords() == "ABC")
-	}
-
-	@Test func acronymFollowedByWord_splitCorrectly() {
-		#expect("HTTPSConnection".camelCaseToWords() == "HTTPS Connection")
-	}
-}
-
 // MARK: - Subscript and Substring
 
 @Suite("String Subscript & Substring")

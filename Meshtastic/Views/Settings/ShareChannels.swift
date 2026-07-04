@@ -239,7 +239,7 @@ struct ShareChannels: View {
 		if channel.index == 0 && (channel.name?.isEmpty ?? true) {
 			return "Primary"
 		}
-		return ((channel.name?.isEmpty ?? true ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)").camelCaseToWords()
+		return (channel.name?.isEmpty ?? true ? "Channel \(channel.index)" : channel.name) ?? "Channel \(channel.index)"
 	}
 
 	func generateChannelSet() {
