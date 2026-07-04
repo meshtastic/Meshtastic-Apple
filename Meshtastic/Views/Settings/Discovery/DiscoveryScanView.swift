@@ -18,11 +18,15 @@ struct DiscoveryScanView: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
 
 	@State private var selectedPresets: Set<ModemPresets> = []
+	/// Custom-channel targets (from beacons that advertised a channel) the user has selected to scan.
+	@State private var selectedChannels: Set<BeaconChannel> = []
 	@State private var dwellMinutes: Int = 15
 	@State private var showHistory = false
 	/// Ensures beacon-advertised presets are pre-selected only once per appearance, so the seed
 	/// never fights a deliberate deselection the user makes afterward.
 	@State private var didAutoSelectBeaconPresets = false
+	/// Same one-shot pre-selection guard for beacon-advertised custom channels.
+	@State private var didAutoSelectBeaconChannels = false
 
 	@State private var engine: DiscoveryScanEngine?
 
@@ -78,6 +82,11 @@ struct DiscoveryScanView: View {
 					didAutoSelectBeaconPresets = true
 					selectedPresets.formUnion(beaconPresets)
 				}
+				// Same one-shot pre-selection for custom channels a beacon advertised.
+				if !didAutoSelectBeaconChannels {
+					didAutoSelectBeaconChannels = true
+					selectedChannels.formUnion(beaconChannels)
+				}
 			}
 		}
 	}
@@ -108,6 +117,7 @@ struct DiscoveryScanView: View {
 
 				if engine.currentState == .idle {
 					presetPickerSection
+					beaconChannelsSection
 					dwellConfigSection
 					// "Analyze Current Preset" is seeded from local SwiftData and sends nothing to
 					// the radio, so it's always available — including with no radio connected (review
@@ -219,6 +229,7 @@ struct DiscoveryScanView: View {
 				.buttonStyle(.bordered)
 				Button {
 					selectedPresets = []
+					selectedChannels = []
 					engine.session = nil
 					engine.currentState = .idle
 				} label: {
@@ -261,6 +272,54 @@ struct DiscoveryScanView: View {
 		} footer: {
 			if !beaconAdvertised.isEmpty {
 				Label("Presets marked with a beacon icon were advertised by a beacon and pre-selected.", systemImage: "dot.radiowaves.left.and.right")
+			}
+		}
+	}
+
+	// MARK: - Beacon Channels
+
+	/// A row per custom channel a beacon advertised. Selecting one adds a target that tunes the scan
+	/// to that mesh's channel (name + PSK), so private meshes a beacon told us about can be scanned
+	/// directly — distinct from the Modem Presets rows, which only run on the default public channel.
+	@ViewBuilder
+	private var beaconChannelsSection: some View {
+		let channels = beaconChannels
+		if !channels.isEmpty {
+			Section {
+				ForEach(channels) { channel in
+					Button {
+						if selectedChannels.contains(channel) {
+							selectedChannels.remove(channel)
+						} else {
+							selectedChannels.insert(channel)
+						}
+					} label: {
+						HStack {
+							Image(systemName: "lock.fill")
+								.font(.caption)
+								.foregroundStyle(.secondary)
+							VStack(alignment: .leading, spacing: 1) {
+								Text(channel.name)
+								Text(channel.preset.description)
+									.font(.caption)
+									.foregroundStyle(.secondary)
+							}
+							Image(systemName: "dot.radiowaves.left.and.right")
+								.foregroundStyle(.blue)
+								.help("Advertised by a beacon")
+							Spacer()
+							if selectedChannels.contains(channel) {
+								Image(systemName: "checkmark")
+									.foregroundStyle(.blue)
+							}
+						}
+					}
+					.foregroundStyle(.primary)
+				}
+			} header: {
+				Text("Beacon Channels")
+			} footer: {
+				Text("Private channels advertised by beacons. Selecting one tunes the scan to that mesh so its traffic can be decoded.")
 			}
 		}
 	}
@@ -372,12 +431,13 @@ struct DiscoveryScanView: View {
 			if engine.currentState == .idle {
 				Button {
 					engine.selectedPresets = Array(selectedPresets)
+					engine.selectedBeaconTargets = selectedChannels.map { $0.scanTarget }
 					engine.dwellDuration = TimeInterval(dwellMinutes * 60)
 					Task { await engine.startScan() }
 				} label: {
 					Label("Start Scan", systemImage: "play.fill")
 				}
-				.disabled(selectedPresets.isEmpty || !accessoryManager.isConnected)
+				.disabled((selectedPresets.isEmpty && selectedChannels.isEmpty) || !accessoryManager.isConnected)
 			} else if engine.isScanning {
 				Button(role: .destructive) {
 					Task { await engine.stopScan() }
@@ -387,6 +447,7 @@ struct DiscoveryScanView: View {
 			} else if engine.currentState == .complete {
 				Button {
 					selectedPresets = []
+					selectedChannels = []
 					engine.session = nil
 					engine.currentState = .idle
 				} label: {
@@ -415,5 +476,39 @@ struct DiscoveryScanView: View {
 		let mins = Int(seconds) / 60
 		let secs = Int(seconds) % 60
 		return String(format: "%d:%02d", mins, secs)
+	}
+}
+
+// MARK: - Beacon channel model
+
+extension DiscoveryScanView {
+
+	/// A custom channel advertised by a beacon, shown as its own selectable row in the scan setup.
+	/// Deduped by name + preset; carries the PSK/region needed to tune the radio to that mesh.
+	struct BeaconChannel: Hashable, Identifiable {
+		let name: String
+		let psk: Data
+		let preset: ModemPresets
+		let regionRaw: Int
+		var id: String { "\(name)|\(preset.rawValue)" }
+		var scanTarget: ScanTarget {
+			ScanTarget(preset: preset, regionRaw: regionRaw > 0 ? regionRaw : nil, channelName: name, channelPSK: psk)
+		}
+	}
+
+	/// Distinct custom channels heard from beacons across past sessions, for the Beacon Channels
+	/// section. A beacon must advertise both a channel name and a modem preset to be tunable.
+	var beaconChannels: [BeaconChannel] {
+		let descriptor = FetchDescriptor<DiscoveredBeaconEntity>()
+		guard let beacons = try? context.fetch(descriptor) else { return [] }
+		var seen = Set<String>()
+		var channels: [BeaconChannel] = []
+		for beacon in beacons where beacon.hasOfferChannel && !beacon.offerChannelName.isEmpty {
+			guard let preset = beacon.offeredPreset else { continue }
+			let channel = BeaconChannel(name: beacon.offerChannelName, psk: beacon.offerChannelPSK,
+										preset: preset, regionRaw: beacon.offerRegion)
+			if seen.insert(channel.id).inserted { channels.append(channel) }
+		}
+		return channels.sorted { $0.name < $1.name }
 	}
 }

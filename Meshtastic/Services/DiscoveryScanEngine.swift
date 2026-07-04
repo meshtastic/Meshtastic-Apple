@@ -88,6 +88,10 @@ final class DiscoveryScanEngine {
 	private var scanChannelIsCustom = false
 	var dwellTimeRemaining: TimeInterval = 0
 	var selectedPresets: [ModemPresets] = []
+	/// Custom-channel targets the user pre-selected in the scan setup (from beacons that advertised
+	/// a channel). Queued alongside `selectedPresets` when the scan starts, so a beacon's private
+	/// mesh can be included up front instead of only being auto-queued if its beacon is heard again.
+	var selectedBeaconTargets: [ScanTarget] = []
 	var dwellDuration: TimeInterval = 900 // 15 minutes default
 	var session: DiscoverySessionEntity?
 	var errorMessage: String?
@@ -173,8 +177,8 @@ final class DiscoveryScanEngine {
 			Logger.discovery.warning("📡 [Discovery] Cannot start scan — not idle (state: \(self.currentState))")
 			return
 		}
-		guard !selectedPresets.isEmpty else {
-			Logger.discovery.warning("📡 [Discovery] Cannot start scan — no presets selected")
+		guard !selectedPresets.isEmpty || !selectedBeaconTargets.isEmpty else {
+			Logger.discovery.warning("📡 [Discovery] Cannot start scan — no presets or beacon channels selected")
 			return
 		}
 		// A normal multi-preset scan drives the radio through each preset, so it requires a live
@@ -221,7 +225,7 @@ final class DiscoveryScanEngine {
 
 		// Create session
 		let newSession = DiscoverySessionEntity()
-		newSession.presetsScanned = selectedPresets.map(\.name).joined(separator: ",")
+		newSession.presetsScanned = (selectedPresets.map(\.name) + selectedBeaconTargets.map(\.label)).joined(separator: ",")
 		newSession.homePreset = homePreset?.name ?? ""
 		newSession.completionStatus = "inProgress"
 
@@ -234,9 +238,13 @@ final class DiscoveryScanEngine {
 		context.insert(newSession)
 		session = newSession
 
-		// Build preset queue — manual selections run on the default public channel. Beacon targets
-		// (including custom-channel ones) are appended dynamically as beacons arrive during dwells.
+		// Build preset queue — manual selections run on the default public channel. Custom-channel
+		// targets the user pre-selected (from beacons) are queued next; further beacon targets are
+		// still appended dynamically as beacons arrive during dwells.
 		presetQueue = selectedPresets.map { ScanTarget(preset: $0) }
+		for target in selectedBeaconTargets where !presetQueue.contains(target) {
+			presetQueue.append(target)
+		}
 		deviceMetricsHistory = [:]
 
 		Logger.discovery.info("📡 [Discovery] Scan started with \(self.selectedPresets.count) presets, dwell: \(self.dwellDuration)s")
