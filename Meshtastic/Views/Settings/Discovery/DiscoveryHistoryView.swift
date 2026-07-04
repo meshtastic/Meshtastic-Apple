@@ -21,7 +21,12 @@ struct DiscoveryHistoryView: View {
 				NavigationLink {
 					DiscoveryBeaconsView()
 				} label: {
-					Label("Passive Beacons", systemImage: "dot.radiowaves.left.and.right")
+					VStack(alignment: .leading, spacing: 2) {
+						Label("Nearby Meshes", systemImage: "dot.radiowaves.left.and.right")
+						Text("Meshes heard advertising themselves via beacons.")
+							.font(.caption)
+							.foregroundStyle(.secondary)
+					}
 				}
 			}
 			if sessions.isEmpty {

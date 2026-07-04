@@ -1104,6 +1104,15 @@ extension AccessoryManager {
 		let connectedNodeNum = Int64(UserDefaults.preferredPeripheralNum)
 		guard fromNodeNum != connectedNodeNum else { return }
 
+		// FR-015: only capture passive beacons when the connected node is configured to listen
+		// (MeshBeaconConfig FLAG_LISTEN_ENABLED). Without the config synced, or with listening off,
+		// we don't store — this is in addition to the "no active scan" gate at the call site.
+		let listenFlags = getNodeInfo(id: connectedNodeNum, context: context)?.meshBeaconConfig?.flags ?? 0
+		guard MeshBeaconFlags.has(listenFlags, MeshBeaconFlags.listenEnabled) else {
+			Logger.mesh.debug("📡 [Beacon] Passive beacon ignored — listening not enabled on connected node")
+			return
+		}
+
 		let hasCustomChannel = beacon.hasOfferChannel && !beacon.offerChannel.name.isEmpty
 		let channelName = hasCustomChannel ? beacon.offerChannel.name : ""
 

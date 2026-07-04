@@ -31,9 +31,9 @@ struct DiscoveryBeaconsView: View {
 		List {
 			if passiveBeacons.isEmpty {
 				ContentUnavailableView(
-					"No Passive Beacons",
+					"No Nearby Meshes",
 					systemImage: "dot.radiowaves.left.and.right",
-					description: Text("Beacons heard while you're not running a scan will appear here.")
+					description: Text("Meshes heard advertising themselves via beacons will appear here.")
 				)
 			} else {
 				Section {
@@ -42,11 +42,11 @@ struct DiscoveryBeaconsView: View {
 					}
 					.onDelete(perform: deleteBeacons)
 				} footer: {
-					Text("Nodes advertising a mesh, heard outside a scan. These also pre-select in the next scan setup.")
+					Text("Meshes heard advertising themselves via beacons, outside a scan. These also pre-select in the next scan setup.")
 				}
 			}
 		}
-		.navigationTitle("Passive Beacons")
+		.navigationTitle("Nearby Meshes")
 	}
 
 	@ViewBuilder

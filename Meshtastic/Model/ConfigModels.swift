@@ -79,6 +79,59 @@ final class DetectionSensorConfigEntity {
 }
 
 @Model
+final class MeshBeaconConfigEntity {
+	/// Bitwise-OR of `ModuleConfig.MeshBeaconConfig.Flags` (listen / broadcast / legacy-split).
+	var flags: Int32 = 0
+	/// Human-readable text broadcast in each beacon (firmware limit: 100 UTF-8 bytes).
+	var broadcastMessage: String = ""
+	/// Channel the beacon *advertises* to listeners (offer_channel). Empty name = no offer.
+	var broadcastOfferChannelName: String = ""
+	var broadcastOfferChannelPSK: Data = Data()
+	/// RegionCodes raw value advertised in offer_region; 0 = unset / not offered.
+	var broadcastOfferRegion: Int32 = 0
+	/// ModemPresets raw value advertised in offer_preset, or -1 when not offered (0 = LongFast).
+	var broadcastOfferPreset: Int32 = -1
+	/// Single-target TX channel (broadcast_on_channel); used only when `broadcastTargets` is empty.
+	var broadcastOnChannelName: String = ""
+	var broadcastOnChannelPSK: Data = Data()
+	/// RegionCodes raw value for single-target TX (broadcast_on_region); 0 = unset (running config).
+	var broadcastOnRegion: Int32 = 0
+	/// ModemPresets raw value for single-target TX, or -1 when unset (running config).
+	var broadcastOnPreset: Int32 = -1
+	/// How often to broadcast; firmware minimum & default is 3600 s.
+	var broadcastIntervalSecs: Int32 = 3600
+	/// Spoof the `from` of outgoing beacons as this node id; 0 = local node.
+	var broadcastSendAsNode: Int64 = 0
+
+	@Relationship(deleteRule: .cascade, inverse: \BroadcastTargetEntity.meshBeaconConfig)
+	var broadcastTargets: [BroadcastTargetEntity] = []
+
+	var meshBeaconConfigNode: NodeInfoEntity?
+
+	init() {}
+}
+
+@Model
+final class BroadcastTargetEntity {
+	/// ModemPresets raw value for this target, or -1 when unset (falls back to running config).
+	var preset: Int32 = -1
+	/// RegionCodes raw value for this target; 0 = unset (running config).
+	var region: Int32 = 0
+	/// Index into the node's channel table to transmit this target on, or -1 when unset.
+	var channelIndex: Int32 = -1
+
+	var meshBeaconConfig: MeshBeaconConfigEntity?
+
+	init() {}
+
+	init(preset: Int32, region: Int32, channelIndex: Int32) {
+		self.preset = preset
+		self.region = region
+		self.channelIndex = channelIndex
+	}
+}
+
+@Model
 final class DeviceConfigEntity {
 	var buttonGpio: Int32 = 0
 	var buzzerGpio: Int32 = 0

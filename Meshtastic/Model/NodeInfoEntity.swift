@@ -60,6 +60,9 @@ final class NodeInfoEntity {
 	@Relationship(deleteRule: .nullify, inverse: \LoRaConfigEntity.loRaConfigNode)
 	var loRaConfig: LoRaConfigEntity?
 
+	@Relationship(deleteRule: .cascade, inverse: \MeshBeaconConfigEntity.meshBeaconConfigNode)
+	var meshBeaconConfig: MeshBeaconConfigEntity?
+
 	@Relationship(deleteRule: .nullify, inverse: \DeviceMetadataEntity.metadataNode)
 	var metadata: DeviceMetadataEntity?
 

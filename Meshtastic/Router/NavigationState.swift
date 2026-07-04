@@ -60,6 +60,7 @@ enum SettingsNavigationState: String {
 	case audio
 	case cannedMessages
 	case detectionSensor
+	case meshBeacon
 	case externalNotification
 	case mqtt
 	case neighborInfo

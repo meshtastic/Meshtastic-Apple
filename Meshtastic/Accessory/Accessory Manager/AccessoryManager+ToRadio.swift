@@ -730,16 +730,53 @@ extension AccessoryManager {
 		return channel
 	}
 
-	/// Add a beacon's advertised channel to a free secondary slot without touching the primary
-	/// channel or LoRa config — so **no reboot** (contract C3 / FR-016, research D2). Used by the
-	/// Add channel action, which is only offered when the offered mesh already runs on the radio's
-	/// current preset/region/frequency slot.
-	///
-	/// Picks the lowest free secondary index (1–7). When all secondary slots are taken it throws a
-	/// clear error for the UI to surface — the full "replace an existing secondary" picker (D2) is a
-	/// follow-on.
+	/// A secondary channel slot a beacon channel could replace (research D2).
+	public struct BeaconSecondaryChannel: Identifiable, Sendable {
+		public let index: Int32
+		public let name: String
+		public var id: Int32 { index }
+	}
+
+	/// The connected node's secondary channels (index 1–7) that a beacon channel could replace when
+	/// no free slot is available (research D2). Never returns the primary (index 0); falls back to
+	/// "Channel N" for an unnamed slot.
 	@MainActor
-	public func addBeaconChannel(channelName: String, channelPSK: Data) async throws {
+	public func beaconReplaceableSecondaryChannels() -> [BeaconSecondaryChannel] {
+		guard let deviceNum = self.activeConnection?.device.num,
+			  let node = getNodeInfo(id: Int64(deviceNum), context: context) else {
+			return []
+		}
+		return (node.myInfo?.channels ?? [])
+			.filter { $0.index >= 1 && $0.index <= 7 }
+			.sorted { $0.index < $1.index }
+			.map { channel in
+				let name = channel.name?.isEmpty == false ? channel.name! : "Channel \(channel.index)"
+				return BeaconSecondaryChannel(index: channel.index, name: name)
+			}
+	}
+
+	/// Whether at least one secondary slot (1–7) is free on the connected node.
+	@MainActor
+	public func beaconHasFreeSecondarySlot() -> Bool {
+		guard let deviceNum = self.activeConnection?.device.num,
+			  let node = getNodeInfo(id: Int64(deviceNum), context: context) else {
+			return false
+		}
+		let usedIndexes = Set(node.myInfo?.channels.map { $0.index } ?? [])
+		return (Int32(1)...Int32(7)).contains { !usedIndexes.contains($0) }
+	}
+
+	/// Add a beacon's advertised channel to a secondary slot without touching the primary channel or
+	/// LoRa config — so **no reboot** (contract C3 / FR-016, research D2). Used by the Add channel
+	/// action, which is only offered when the offered mesh already runs on the radio's current
+	/// preset/region/frequency slot.
+	///
+	/// When `replacingIndex` is nil, picks the lowest free secondary index (1–7); when all secondary
+	/// slots are taken, throws so the UI can offer the replace-a-secondary picker (D2). When
+	/// `replacingIndex` is provided, writes into that (secondary) slot, overwriting the channel there —
+	/// never the primary (index 0).
+	@MainActor
+	public func addBeaconChannel(channelName: String, channelPSK: Data, replacingIndex: Int32? = nil) async throws {
 		guard let deviceNum = self.activeConnection?.device.num else {
 			throw AccessoryError.ioFailed("No active device")
 		}
@@ -747,17 +784,27 @@ extension AccessoryManager {
 			throw AccessoryError.appError("Connected node not found")
 		}
 
-		let usedIndexes = Set(node.myInfo?.channels.map { $0.index } ?? [])
-		// Secondary slots are 1...7 (0 is reserved for the primary channel).
-		guard let freeIndex = (Int32(1)...Int32(7)).first(where: { !usedIndexes.contains($0) }) else {
-			throw AccessoryError.appError("No free channel slot — remove a secondary channel first")
+		let targetIndex: Int32
+		if let replacingIndex {
+			// Protect the primary channel — only secondary slots may be replaced (D2).
+			guard (Int32(1)...Int32(7)).contains(replacingIndex) else {
+				throw AccessoryError.appError("Cannot replace the primary channel")
+			}
+			targetIndex = replacingIndex
+		} else {
+			let usedIndexes = Set(node.myInfo?.channels.map { $0.index } ?? [])
+			// Secondary slots are 1...7 (0 is reserved for the primary channel).
+			guard let freeIndex = (Int32(1)...Int32(7)).first(where: { !usedIndexes.contains($0) }) else {
+				throw AccessoryError.appError("No free channel slot — remove a secondary channel first")
+			}
+			targetIndex = freeIndex
 		}
 
 		// D5: an offered channel with an empty PSK is an "open channel" — use the default public key.
 		let effectivePSK = channelPSK.isEmpty ? Data([1]) : channelPSK
 
 		var channel = Channel()
-		channel.index = freeIndex
+		channel.index = targetIndex
 		channel.role = .secondary
 		channel.settings.name = channelName
 		channel.settings.psk = effectivePSK
@@ -769,7 +816,7 @@ extension AccessoryManager {
 		// Mirror the added channel into local state so it appears immediately (no reboot / re-sync).
 		await MeshPackets.shared.channelPacket(channel: channel, fromNum: deviceNum)
 
-		Logger.mesh.info("➕ [Beacon] Added advertised channel '\(channelName, privacy: .private)' to secondary slot \(freeIndex, privacy: .public) — no reboot")
+		Logger.mesh.info("➕ [Beacon] Added advertised channel '\(channelName, privacy: .private)' to secondary slot \(targetIndex, privacy: .public) — no reboot")
 	}
 
 	public func sendWaypoint(waypoint: Waypoint) async throws {
@@ -1202,6 +1249,36 @@ extension AccessoryManager {
 		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
 
 		await MeshPackets.shared.upsertDetectionSensorModuleConfigPacket(config: config, nodeNum: toUser.num)
+
+		return Int64(meshPacket.id)
+	}
+
+	public func saveMeshBeaconModuleConfig(config: ModuleConfig.MeshBeaconConfig, fromUser: UserEntity, toUser: UserEntity) async throws -> Int64 {
+
+		var adminPacket = AdminMessage()
+		adminPacket.setModuleConfig.meshBeacon = config
+		if fromUser != toUser {
+			adminPacket.sessionPasskey = toUser.userNode?.sessionPasskey ?? Data()
+		}
+		var meshPacket: MeshPacket = MeshPacket()
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.to = UInt32(toUser.num)
+		meshPacket.from	= UInt32(fromUser.num)
+		meshPacket.priority =  MeshPacket.Priority.reliable
+		meshPacket.wantAck = true
+
+		var dataMessage = DataMessage()
+		guard let adminData: Data = try? adminPacket.serializedData() else {
+			throw AccessoryError.ioFailed("saveMeshBeaconModuleConfig: Unable to serialize admin packet")
+		}
+		dataMessage.payload = adminData
+		dataMessage.portnum = PortNum.adminApp
+		meshPacket.decoded = dataMessage
+
+		let messageDescription = "🛟 Saved Mesh Beacon Module Config for \(toUser.longName ?? "Unknown".localized)"
+		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
+
+		await MeshPackets.shared.upsertMeshBeaconModuleConfigPacket(config: config, nodeNum: toUser.num)
 
 		return Int64(meshPacket.id)
 	}

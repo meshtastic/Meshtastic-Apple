@@ -261,6 +261,8 @@ actor MeshPackets {
 			upsertCannedMessagesModuleConfigPacket(config: config.cannedMessage, nodeNum: nodeNum)
 		case .detectionSensor:
 			upsertDetectionSensorModuleConfigPacket(config: config.detectionSensor, nodeNum: nodeNum)
+		case .meshBeacon:
+			upsertMeshBeaconModuleConfigPacket(config: config.meshBeacon, nodeNum: nodeNum)
 		case .externalNotification:
 			upsertExternalNotificationModuleConfigPacket(config: config.externalNotification, nodeNum: nodeNum)
 		case .mqtt:

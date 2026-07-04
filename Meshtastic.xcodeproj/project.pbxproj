@@ -146,6 +146,9 @@
 		DDBEAC0010000000000000B1 /* DiscoveredBeaconEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDBEAC0010000000000000A1 /* DiscoveredBeaconEntity.swift */; };
 		DDBEAC0010000000000000F1 /* LoRaChannelCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDBEAC0010000000000000E1 /* LoRaChannelCalculator.swift */; };
 		DDBEAC001000000000000111 /* DiscoveryBeaconsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDBEAC001000000000000101 /* DiscoveryBeaconsView.swift */; };
+		DDBEAC001000000000000171 /* MeshBeaconConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDBEAC001000000000000161 /* MeshBeaconConfig.swift */; };
+		DDBEAC001000000000000191 /* MeshBeaconConfigHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDBEAC001000000000000181 /* MeshBeaconConfigHelper.swift */; };
+		DDBEAC001000000000000211 /* MeshBeaconConfigEditorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDBEAC001000000000000201 /* MeshBeaconConfigEditorTests.swift */; };
 		85D0F28AE7CE44C39B6BEBF8 /* MyInfoEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC5970BC1CAF4B66999C7248 /* MyInfoEntity.swift */; };
 		86CCA3EEDD7E1036893B2663 /* DiscoverySessionEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B9C39534FE860C7FCF5B9A2 /* DiscoverySessionEntity.swift */; };
 		898C6C4E60B640B3A285AF25 /* ConfigModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B88B4AE298C43D1B8F4516C /* ConfigModels.swift */; };
@@ -860,6 +863,9 @@
 		DDBEAC0010000000000000A1 /* DiscoveredBeaconEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveredBeaconEntity.swift; sourceTree = "<group>"; };
 		DDBEAC0010000000000000E1 /* LoRaChannelCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoRaChannelCalculator.swift; sourceTree = "<group>"; };
 		DDBEAC001000000000000101 /* DiscoveryBeaconsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveryBeaconsView.swift; sourceTree = "<group>"; };
+		DDBEAC001000000000000161 /* MeshBeaconConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshBeaconConfig.swift; sourceTree = "<group>"; };
+		DDBEAC001000000000000181 /* MeshBeaconConfigHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshBeaconConfigHelper.swift; sourceTree = "<group>"; };
+		DDBEAC001000000000000201 /* MeshBeaconConfigEditorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshBeaconConfigEditorTests.swift; sourceTree = "<group>"; };
 		BF1A0002CABF0002DEAD0002 /* AllTraceRoutesLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllTraceRoutesLog.swift; sourceTree = "<group>"; };
 		BF32D1D722C64814981AB215 /* DeviceLinkEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceLinkEntity.swift; sourceTree = "<group>"; };
 		CA63632A10C2DD076FA222BE /* IntentHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntentHandler.swift; sourceTree = "<group>"; };
@@ -1626,6 +1632,7 @@
 				DDBEAC0010000000000000C1 /* DiscoveredBeaconEntityTests.swift */,
 				DDBEAC001000000000000121 /* ModemPresetFrequencySlotTests.swift */,
 				DDBEAC001000000000000141 /* BeaconAddVsSwitchTests.swift */,
+				DDBEAC001000000000000201 /* MeshBeaconConfigEditorTests.swift */,
 				18295AFE686247778632C6DE /* NetworkConfigIPConversionTests.swift */,
 				64C6057F9508D4356DAF411F /* DiscoveryModelTests.swift */,
 				AA003DOC0000001000000005 /* DocBundleTests.swift */,
@@ -1963,6 +1970,7 @@
 				DEA1C1312F10002000A1B2C3 /* AudioConfig.swift */,
 				DD6193762862F90F00E59241 /* CannedMessagesConfig.swift */,
 				DDC4C9FE2A8D982900CE201C /* DetectionSensorConfig.swift */,
+				DDBEAC001000000000000161 /* MeshBeaconConfig.swift */,
 				DD6193742862F6E600E59241 /* ExternalNotificationConfig.swift */,
 				DD2160AE28C5552500C17253 /* MQTTConfig.swift */,
 				DEA1C1332F10002000A1B2C3 /* NeighborInfoConfig.swift */,
@@ -2341,6 +2349,7 @@
 				6B83C70A9A33A56C3AFA6AF7 /* NodeDisplayNameStore.swift */,
 				6D825E612C34786C008DBEE4 /* CommonRegex.swift */,
 				DDBEAC0010000000000000E1 /* LoRaChannelCalculator.swift */,
+				DDBEAC001000000000000181 /* MeshBeaconConfigHelper.swift */,
 				3D3417B32E2730EC006A988B /* GeoJSONOverlayManager.swift */,
 				AA004FMT0000001000000001 /* MarkdownFormatting.swift */,
 				C37572859BC745C4284A9B42 /* TAK */,
@@ -2746,6 +2755,7 @@
 				DDBEAC0010000000000000D1 /* DiscoveredBeaconEntityTests.swift in Sources */,
 				DDBEAC001000000000000131 /* ModemPresetFrequencySlotTests.swift in Sources */,
 				DDBEAC001000000000000151 /* BeaconAddVsSwitchTests.swift in Sources */,
+				DDBEAC001000000000000211 /* MeshBeaconConfigEditorTests.swift in Sources */,
 				FDAF8808342245C4817C93EC /* NetworkConfigIPConversionTests.swift in Sources */,
 				1396606FC903D7DA662B6326 /* DiscoveryModelTests.swift in Sources */,
 				AA003DOC0000002000000005 /* DocBundleTests.swift in Sources */,
@@ -2856,6 +2866,7 @@
 				84468ADE09D001043DECFD86 /* DiscoveredNodeEntity.swift in Sources */,
 				DDBEAC0010000000000000B1 /* DiscoveredBeaconEntity.swift in Sources */,
 				DDBEAC0010000000000000F1 /* LoRaChannelCalculator.swift in Sources */,
+				DDBEAC001000000000000191 /* MeshBeaconConfigHelper.swift in Sources */,
 				DDBEAC001000000000000111 /* DiscoveryBeaconsView.swift in Sources */,
 				EE7E2D900ACAC8053153354A /* DiscoveryScanEngine.swift in Sources */,
 				C79BFC99EDCC89DD45082753 /* DiscoveryScanView.swift in Sources */,
@@ -3196,6 +3207,7 @@
 				2346A71D2E2FB9C500CB9239 /* SerialTransport.swift in Sources */,
 				BCDDFA9A2DBB180D0065189C /* ScrollToBottomButton.swift in Sources */,
 				DDC4C9FF2A8D982900CE201C /* DetectionSensorConfig.swift in Sources */,
+				DDBEAC001000000000000171 /* MeshBeaconConfig.swift in Sources */,
 				2349A04A2EAE4DA30060A581 /* ManualConnectionList.swift in Sources */,
 				234D99EF2F96FD5A00D26B89 /* WifiProvisioningView.swift in Sources */,
 				234D99F02F96FD5A00D26B89 /* WifiNetworkListView.swift in Sources */,

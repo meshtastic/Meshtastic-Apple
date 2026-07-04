@@ -32,6 +32,8 @@ struct DiscoverySummaryView: View {
 	/// Beacon awaiting an "add channel" confirmation; drives the Add alert.
 	@State private var beaconToAdd: DiscoveredBeaconEntity?
 	@State private var addErrorMessage: String?
+	/// Beacon awaiting a "replace which secondary channel?" choice when no free slot exists (D2).
+	@State private var beaconToReplace: DiscoveredBeaconEntity?
 
 	var body: some View {
 		List {
@@ -113,6 +115,24 @@ struct DiscoverySummaryView: View {
 			Button("OK", role: .cancel) { addErrorMessage = nil }
 		} message: {
 			Text(addErrorMessage ?? "")
+		}
+		.confirmationDialog(
+			"Replace which channel?",
+			isPresented: Binding(
+				get: { beaconToReplace != nil },
+				set: { if !$0 { beaconToReplace = nil } }
+			),
+			titleVisibility: .visible,
+			presenting: beaconToReplace
+		) { beacon in
+			ForEach(accessoryManager.beaconReplaceableSecondaryChannels()) { channel in
+				Button("\(channel.name) (slot \(channel.index))", role: .destructive) {
+					replaceBeaconChannel(beacon, atIndex: channel.index)
+				}
+			}
+			Button("Cancel", role: .cancel) { beaconToReplace = nil }
+		} message: { _ in
+			Text("All secondary channel slots are full. Choose an existing secondary channel to replace — your primary channel is never touched.")
 		}
 	}
 
@@ -816,15 +836,38 @@ extension DiscoverySummaryView {
 		return preset.androidChannelName
 	}
 
-	/// Adds a beacon's advertised channel to a free secondary slot (no reboot); failures surface in
-	/// an alert.
+	/// Adds a beacon's advertised channel to a free secondary slot (no reboot). When every secondary
+	/// slot is full, presents the replace-a-secondary picker instead of erroring (D2). Failures
+	/// surface in an alert.
 	func addBeaconChannel(_ beacon: DiscoveredBeaconEntity) {
 		beaconToAdd = nil
+		// No free slot → let the user choose an existing secondary to replace (never the primary).
+		guard accessoryManager.beaconHasFreeSecondarySlot() else {
+			beaconToReplace = beacon
+			return
+		}
 		Task {
 			do {
 				try await accessoryManager.addBeaconChannel(
 					channelName: beacon.offerChannelName,
 					channelPSK: beacon.offerChannelPSK
+				)
+			} catch {
+				addErrorMessage = error.localizedDescription
+			}
+		}
+	}
+
+	/// Replaces the secondary channel at `index` with the beacon's advertised channel (D2). Cancelling
+	/// the picker makes no change.
+	func replaceBeaconChannel(_ beacon: DiscoveredBeaconEntity, atIndex index: Int32) {
+		beaconToReplace = nil
+		Task {
+			do {
+				try await accessoryManager.addBeaconChannel(
+					channelName: beacon.offerChannelName,
+					channelPSK: beacon.offerChannelPSK,
+					replacingIndex: index
 				)
 			} catch {
 				addErrorMessage = error.localizedDescription
