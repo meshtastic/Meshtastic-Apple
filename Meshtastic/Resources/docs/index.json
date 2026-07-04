@@ -360,8 +360,8 @@
             "device",
             "nodes",
             "from",
-            "name",
             "only",
+            "name",
             "shown",
             "packets",
             "messages",
@@ -373,21 +373,21 @@
             "broadcasts",
             "row",
             "public",
+            "location",
             "firmware",
             "direct",
             "client",
             "supported",
             "mesh",
             "long",
-            "location",
             "local",
             "links",
             "hops",
             "heard",
-            "display",
-            "detail"
+            "filter",
+            "display"
         ],
-        "charCount": 8150
+        "charCount": 8333
     },
     {
         "id": "settings",

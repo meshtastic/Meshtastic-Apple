@@ -174,11 +174,11 @@ struct MeshMapMK: View {
 	}
 
 	/// Latest positions eligible for the mesh map. When "Precise Locations Only" is enabled, drop
-	/// reduced-precision positions (precisionBits 12...15 — the same range `rebuildOverlays` draws
-	/// the translucent precision circle for) so the imprecise pins and their circles hide together.
+	/// reduced-precision positions (the same range `rebuildOverlays` draws the translucent precision
+	/// circle for) so the imprecise pins and their circles hide together.
 	private var mapEligiblePositions: [PositionEntity] {
 		guard preciseLocationsOnly else { return allLatestPositions }
-		return allLatestPositions.filter { !(12...15 ~= $0.precisionBits) }
+		return allLatestPositions.filter { !$0.isReducedPrecision }
 	}
 
 	/// Positions actually passed to the map — empty when the tab is off-screen
@@ -658,7 +658,9 @@ struct MeshMapMK: View {
 	/// as positions pour in.
 	private func frameInitialRegionIfNeeded() {
 		guard !didInitialFrame else { return }
-		let nodeCoords = allLatestPositions.compactMap { $0.nodeCoordinate ?? $0.fuzzedNodeCoordinate }
+		// Frame from the same set the map actually shows, so "Precise Locations Only" doesn't start
+		// the camera centered on hidden reduced-precision nodes.
+		let nodeCoords = mapEligiblePositions.compactMap { $0.nodeCoordinate ?? $0.fuzzedNodeCoordinate }
 		guard let center = LocationsHandler.currentLocation ?? activeDeviceCoordinate ?? coordinateCentroid(of: nodeCoords) else {
 			return // No GPS and no nodes yet -- try again on the next refresh.
 		}
@@ -1173,7 +1175,7 @@ struct MeshMapMK: View {
 
 		// Reduced-precision accuracy circles, deduped by location + precision (lowest nodeNum wins).
 		var lowestNumForKey: [ReducedPrecisionMapCircleKey: Int64] = [:]
-		for snap in visiblePositionSnapshots where 12...15 ~= snap.precisionBits {
+		for snap in visiblePositionSnapshots where PositionEntity.reducedPrecisionBits ~= snap.precisionBits {
 			let key = ReducedPrecisionMapCircleKey(latitudeI: snap.latitudeI, longitudeI: snap.longitudeI, precisionBits: snap.precisionBits)
 			if let existing = lowestNumForKey[key] {
 				if snap.nodeNum < existing { lowestNumForKey[key] = snap.nodeNum }
@@ -1221,7 +1223,7 @@ struct MeshMapMK: View {
 				position.fuzzedNodeCoordinate ?? LocationsHandler.DefaultLocation
 			}
 			let precisionBits = position.precisionBits
-			guard 12...15 ~= precisionBits || precisionBits == 32 else { return nil }
+			guard PositionEntity.reducedPrecisionBits ~= precisionBits || precisionBits == 32 else { return nil }
 			let node = position.nodePosition
 			let nodeNum = node?.num ?? 0
 				return MeshMapPositionSnapshot(
