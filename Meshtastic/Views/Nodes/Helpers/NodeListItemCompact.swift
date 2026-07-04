@@ -333,7 +333,9 @@ struct NodeListItemCompact: View {
 		}
 			.padding(.top, 2)
 			.padding(.bottom, 2)
-			.task(id: node.lastHeard) {
+			// Gate the identity on liveness too: `.task(id:)` reads `node.lastHeard` during body
+			// construction, which would fault on an invalidated model before the body's guard runs.
+			.task(id: (node.modelContext != nil && !node.isDeleted) ? node.lastHeard : nil) {
 				// Refresh the snapshot when the node changes, but only while it is still live.
 				guard node.modelContext != nil && !node.isDeleted else { return }
 				rowSummary = NodeListRowSummary(

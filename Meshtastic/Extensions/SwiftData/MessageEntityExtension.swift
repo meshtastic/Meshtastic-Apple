@@ -90,16 +90,14 @@ extension MessageEntity {
 			if !name.isEmpty { return name }
 		}
 
-		// If no exact match, find the node with the smallest hopsAway. Guard the userNode
-		// relationship read per user so a faulted node can't trap the comparison.
-		if let closestNode = matchingUsers.min(by: { lhs, rhs in
-			guard let lhsHops = lhs.liveUserNode?.hopsAway,
-				let rhsHops = rhs.liveUserNode?.hopsAway
-			else {
-				return false
-			}
-			return lhsHops < rhsHops
-		}) {
+		// If no exact match, find the node with the smallest hopsAway. Users whose hops are unknown
+		// can't be ranked, so filter them out before comparing — leaving them in makes the comparator
+		// return false for every pair involving them, which isn't a strict weak ordering and lets a
+		// nil-hops user "win" purely by its position in the array. Fall back to the first match when
+		// none have hops. `liveUserNode` guards the relationship read so a faulted node can't trap.
+		let rankable = matchingUsers.filter { $0.liveUserNode?.hopsAway != nil }
+		if let closestNode = rankable.min(by: { ($0.liveUserNode?.hopsAway ?? .max) < ($1.liveUserNode?.hopsAway ?? .max) })
+			?? matchingUsers.first {
 			let name = closestNode.displayLongName
 			if !name.isEmpty { return name }
 		}
