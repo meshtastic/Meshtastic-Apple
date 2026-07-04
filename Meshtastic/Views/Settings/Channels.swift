@@ -490,12 +490,12 @@ private struct ChannelRow: View {
 
 	private var title: String {
 		if let name = channel.name, !name.isEmpty {
-			return String(name.camelCaseToWords())
+			return name
 		}
 		if channel.role == 1 {
-			return String("PrimaryChannel").camelCaseToWords()
+			return "Primary Channel"
 		}
-		return String("Channel \(channel.index)").camelCaseToWords()
+		return "Channel \(channel.index)"
 	}
 
 	private var subtitle: String {

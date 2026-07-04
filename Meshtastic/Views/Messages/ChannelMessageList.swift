@@ -450,7 +450,7 @@ struct ChannelMessageList: View {
 			ToolbarItem(placement: .principal) {
 				HStack {
 					CircleText(text: String(channel.index), color: .accentColor, circleSize: 44).fixedSize()
-					Text(String(channel.name ?? "Unknown").camelCaseToWords()).font(.headline)
+					Text(String(channel.name ?? "Unknown")).font(.headline)
 				}
 			}
 			ToolbarItem(placement: .navigationBarTrailing) {
