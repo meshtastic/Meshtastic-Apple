@@ -602,4 +602,178 @@ enum PerformanceSeedData {
 		return value == "1" || value == "true" || value == "yes"
 	}
 }
+
+// MARK: - Discovery beacon seeding
+
+@MainActor
+extension PerformanceSeedData {
+
+	/// Seeded beacons use node numbers in this range so a relaunch can detect an existing seed and
+	/// skip re-inserting (invisible to the UI, unlike a name/summary marker).
+	private static var beaconSeedBase: Int64 { 0x0BEA_C000 }
+
+	/// One beacon's seed values (kept as a single struct so the builder stays under the parameter
+	/// count limit and the sample data reads as a table).
+	private struct BeaconSpec {
+		let idx: Int64
+		let short: String
+		let long: String
+		let message: String
+		let preset: Int
+		let region: Int
+		let channelName: String
+		let hasChannel: Bool
+		let snr: Float
+		let rssi: Int
+		let heardOn: String
+	}
+
+	/// Seed one completed Discovery scan session populated with sample mesh beacons, gated by the
+	/// `--meshtastic-seed-beacons` launch argument (or `MESHTASTIC_SEED_BEACONS=1`). Independent of
+	/// the node performance seed: it neither resets the store nor blocks a live radio connection, so
+	/// the seeded Discovery history can be viewed while the app is connected to a real/replay radio.
+	static func seedDiscoveryBeaconsIfRequested(using controller: PersistenceController) {
+		let args = ProcessInfo.processInfo.arguments
+		let env = ProcessInfo.processInfo.environment
+		guard args.contains("--meshtastic-seed-beacons") || boolValue("MESHTASTIC_SEED_BEACONS", environment: env) else { return }
+
+		let context = controller.container.mainContext
+
+		// Idempotent: if any seeded beacon is already present, do nothing.
+		let base = beaconSeedBase
+		let ceiling = beaconSeedBase + 0x100
+		let existing = try? context.fetch(
+			FetchDescriptor<DiscoveredBeaconEntity>(predicate: #Predicate { $0.nodeNum >= base && $0.nodeNum < ceiling })
+		)
+		if let existing, !existing.isEmpty {
+			Logger.data.info("📡 [BeaconSeed] Seeded beacons already present; skipping")
+			return
+		}
+
+		let now = Date()
+		let session = DiscoverySessionEntity()
+		session.timestamp = now
+		session.presetsScanned = "LongFast, ShortTurbo, LongSlow"
+		session.totalUniqueNodes = 120
+		session.averageChannelUtilization = 7.9
+		session.totalTextMessages = 342
+		session.totalSensorPackets = 110
+		session.furthestNodeDistance = 4200.0
+		session.completionStatus = "complete"
+		session.homePreset = "LongFast"
+		session.userLatitude = 36.1699   // Las Vegas — DEF CON
+		session.userLongitude = -115.1398
+		session.aiSummaryText = "Seeded DEF CON discovery session: 3 presets swept, 6 mesh beacons heard across LongFast/ShortTurbo/LongSlow."
+		context.insert(session)
+
+		let rLongFast = presetResult(session: session, context: context, name: "LongFast", dwell: 90,
+									 unique: 68, direct: 12, mesh: 40, infra: 16, msgs: 210, sensors: 55, util: 8.5, noise: -118.0)
+		let rShortTurbo = presetResult(session: session, context: context, name: "ShortTurbo", dwell: 60,
+									 unique: 34, direct: 8, mesh: 20, infra: 6, msgs: 96, sensors: 38, util: 6.2, noise: -121.0)
+		let rLongSlow = presetResult(session: session, context: context, name: "LongSlow", dwell: 60,
+									 unique: 18, direct: 4, mesh: 11, infra: 3, msgs: 36, sensors: 17, util: 4.1, noise: -123.0)
+		let resultsByPreset = [rLongFast, rShortTurbo, rLongSlow].reduce(into: [String: DiscoveryPresetResultEntity]()) {
+			$0[$1.presetName] = $1
+		}
+
+		let specs: [BeaconSpec] = [
+			BeaconSpec(idx: 1, short: "DC33", long: "DEF CON Mesh", message: "DEF CON 33 official mesh — LongFast, US",
+					   preset: ModemPresets.longFast.rawValue, region: RegionCodes.us.rawValue, channelName: "", hasChannel: false,
+					   snr: 6.5, rssi: -92, heardOn: "LongFast"),
+			BeaconSpec(idx: 2, short: "HAX", long: "Hackers Village", message: "Join the Hax channel for CTF coordination",
+					   preset: ModemPresets.shortTurbo.rawValue, region: RegionCodes.us.rawValue, channelName: "Hax", hasChannel: true,
+					   snr: 9.2, rssi: -80, heardOn: "ShortTurbo"),
+			BeaconSpec(idx: 3, short: "HRV", long: "Ham Radio Village", message: "HRV net running all weekend",
+					   preset: ModemPresets.longSlow.rawValue, region: RegionCodes.us.rawValue, channelName: "", hasChannel: false,
+					   snr: 4.4, rssi: -101, heardOn: "LongSlow"),
+			BeaconSpec(idx: 4, short: "CHV", long: "Car Hacking Village", message: "CHV mesh — switch over to join",
+					   preset: ModemPresets.longSlow.rawValue, region: RegionCodes.us.rawValue, channelName: "CarHax", hasChannel: true,
+					   snr: 3.1, rssi: -104, heardOn: "LongFast"),
+			BeaconSpec(idx: 5, short: "LPV", long: "Lockpick Village", message: "Meet at the Lockpick Village",
+					   preset: ModemPresets.longFast.rawValue, region: 0, channelName: "", hasChannel: false,
+					   snr: 7.7, rssi: -88, heardOn: "LongFast"),
+			// No name, no offered preset — exercises the hex-fallback display and the "no chips" path.
+			BeaconSpec(idx: 6, short: "", long: "", message: "anonymous beacon",
+					   preset: -1, region: 0, channelName: "", hasChannel: false,
+					   snr: 1.2, rssi: -110, heardOn: "ShortTurbo")
+		]
+
+		for spec in specs {
+			insertBeacon(spec, session: session, presetResult: resultsByPreset[spec.heardOn], now: now, context: context)
+		}
+
+		do {
+			try context.save()
+			Logger.data.info("📡 [BeaconSeed] Seeded 1 discovery session with \(specs.count, privacy: .public) beacons")
+		} catch {
+			Logger.data.error("📡 [BeaconSeed] Failed to seed beacons: \(error.localizedDescription, privacy: .public)")
+		}
+	}
+
+	// swiftlint:disable:next function_parameter_count
+	private static func presetResult(
+		session: DiscoverySessionEntity,
+		context: ModelContext,
+		name: String,
+		dwell: Int,
+		unique: Int,
+		direct: Int,
+		mesh: Int,
+		infra: Int,
+		msgs: Int,
+		sensors: Int,
+		util: Double,
+		noise: Double
+	) -> DiscoveryPresetResultEntity {
+		let result = DiscoveryPresetResultEntity()
+		result.presetName = name
+		result.dwellDurationSeconds = dwell
+		result.uniqueNodesFound = unique
+		result.directNeighborCount = direct
+		result.meshNeighborCount = mesh
+		result.infrastructureNodeCount = infra
+		result.messageCount = msgs
+		result.sensorPacketCount = sensors
+		result.averageChannelUtilization = util
+		result.averageNoiseFloor = noise
+		result.numOnlineNodes = unique
+		result.numTotalNodes = unique + 12
+		result.session = session
+		context.insert(result)
+		return result
+	}
+
+	private static func insertBeacon(
+		_ spec: BeaconSpec,
+		session: DiscoverySessionEntity,
+		presetResult: DiscoveryPresetResultEntity?,
+		now: Date,
+		context: ModelContext
+	) {
+		let beacon = DiscoveredBeaconEntity()
+		beacon.nodeNum = beaconSeedBase + spec.idx
+		beacon.shortName = spec.short
+		beacon.longName = spec.long
+		beacon.message = spec.message
+		beacon.offerPreset = spec.preset
+		beacon.offerRegion = spec.region
+		beacon.hasOfferChannel = spec.hasChannel
+		if spec.hasChannel {
+			beacon.offerChannelName = spec.channelName
+			var psk = Data(count: 16)
+			let salt = Int(spec.idx) * 7
+			for i in 0..<16 {
+				psk[i] = UInt8((i * 37 + salt + 11) & 0xFF)
+			}
+			beacon.offerChannelPSK = psk
+		}
+		beacon.snr = spec.snr
+		beacon.rssi = spec.rssi
+		beacon.heardOnPresetName = spec.heardOn
+		beacon.timestamp = now
+		beacon.session = session
+		beacon.presetResult = presetResult
+		context.insert(beacon)
+	}
+}
 #endif

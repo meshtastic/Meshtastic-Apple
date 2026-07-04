@@ -116,6 +116,12 @@ struct MeshtasticAppleApp: App {
 				router: appState.router
 			)
 		}
+		// Independent of the node performance seed: seeds a sample Discovery session with beacons
+		// when launched with --meshtastic-seed-beacons, without resetting the store or blocking a
+		// live radio connection.
+		if let persistenceController {
+			PerformanceSeedData.seedDiscoveryBeaconsIfRequested(using: persistenceController)
+		}
 #endif
 
 		if !Self.isRunningTests {
