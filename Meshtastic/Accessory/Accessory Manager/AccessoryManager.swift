@@ -210,6 +210,14 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	var shouldAutomaticallyConnectToPreferredPeripheralAfterError = true
 	var userRequestedConnectionCancellation = false
 
+	/// True while a device switch (backup → clear → restore → connect) is in flight.
+	/// Suppresses the discovery restart in `closeConnection()` and auto-connect on
+	/// discovery events: the disconnect at the start of a switch must not let discovery
+	/// fire a concurrent connect whose node dump would interleave with the database
+	/// clear/restore (one source of nodes bleeding between radios). Set/cleared by
+	/// `switchToDevice` (Views/Connect/Connect.swift).
+	var isSwitchingDevices = false
+
 	// Conncetion process
 	var connectionSteps: SequentialSteps?
 	
@@ -281,8 +289,11 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			return
 		}
 
-		_ = await MeshPackets.shared.clearStaleNodes(nodeExpireDays: Int(UserDefaults.purgeStaleNodeDays))
-		
+		// Note: stale-node pruning used to run here, serializing a full fetch+delete+save on the
+		// ingestion actor ahead of the config handshake and node-DB dump (one cause of slow/hung
+		// connects). It now runs after the connection completes — see connect() Step 8 — where it
+		// also prunes against post-dump lastHeard values instead of pre-dump ones.
+
 		try await withTaskCancellationHandler {
 			var toRadio: ToRadio = ToRadio()
 			toRadio.wantConfigID = UInt32(NONCE_ONLY_CONFIG)
@@ -403,8 +414,14 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		// startDiscovery() would silently no-op and the device would never reappear in the list.
 		discoveryTask?.cancel()
 		discoveryTask = nil
-		
-		self.startDiscovery()
+
+		// During a device switch the teardown must NOT re-arm discovery: with autoconnect on,
+		// discovery can immediately re-connect (and start a node dump) while the switch is
+		// still clearing/restoring the database — interleaving one radio's dump with another
+		// radio's data. The switch flow restarts discovery itself if its connect fails.
+		if !isSwitchingDevices {
+			self.startDiscovery()
+		}
 	}
 	
 	// Should only be called by UI-facing callers.
@@ -874,25 +891,31 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			case UInt32(NONCE_ONLY_DB):
 				// Open the gate for the wantDatabaseContinuation
 				Task { await wantDatabaseGate.open() }
-				
+
 				// If we get the "done" for NONCE_ONLY_DB, but are still waiting for the first NodeInfo,
 				// Then the database is probably empty, and can continue
 				if let firstDatabaseNodeInfoContinuation {
 					self.firstDatabaseNodeInfoContinuation = nil
 					firstDatabaseNodeInfoContinuation.resume()
 				}
-				
+
 				// Perform a single batch save after database retrieval completes
 				// This significantly improves performance on reconnect
-				do {
-					try context.save()
-					Logger.data.info("💾 [Database] Batch saved all node info after database retrieval")
+				Task {
+					// The dump was ingested with deferred saves on the MeshPackets actor
+					// (see handleNodeInfo); flush it so every node from the dump is persisted
+					// now rather than waiting on the debounce timer.
+					await MeshPackets.shared.flushDebouncedSaves()
+					do {
+						try context.save()
+						Logger.data.info("💾 [Database] Batch saved all node info after database retrieval")
 
-					// Push updated node data to the companion Watch app
-					WatchSessionManager.shared.sendNodesToWatch()
-				} catch {
-					let nsError = error as NSError
-					Logger.data.error("💥 [Database] Error saving batch node info: \(nsError, privacy: .public)")
+						// Push updated node data to the companion Watch app
+						WatchSessionManager.shared.sendNodesToWatch()
+					} catch {
+						let nsError = error as NSError
+						Logger.data.error("💥 [Database] Error saving batch node info: \(nsError, privacy: .public)")
+					}
 				}
 				
 			default:

@@ -834,7 +834,7 @@ func backupCurrentDatabase(forTargetNode targetNodeNum: Int64?, accessoryManager
 
 @MainActor
 func backupCurrentAndRestoreDatabase(
-	forNode targetNodeNum: Int64,
+	forNode targetNodeNum: Int64?,
 	accessoryManager: AccessoryManager,
 	appState: AppState,
 	selectedTab: NavigationState.Tab,
@@ -855,16 +855,39 @@ func backupCurrentAndRestoreDatabase(
 	await Task.yield()
 
 	await MeshPackets.shared.flushDebouncedSaves()
-	await MeshPackets.shared.clearDatabase(includeRoutes: false)
-	// Repoint at a fresh container so the restore below (and the post-restore UI refresh) operate
-	// on a context with no stale registrations. The databaseResetID bump stays after the restore.
-	accessoryManager.repointToFreshContainer()
-	Logger.backup.info("💾 Database cleared and container recreated")
+	let cleared = await MeshPackets.shared.clearDatabase(includeRoutes: false)
+	if cleared {
+		// Repoint at a fresh container so the restore below (and the post-restore UI refresh)
+		// operate on a context with no stale registrations. The databaseResetID bump stays after
+		// the restore.
+		accessoryManager.repointToFreshContainer()
+		Logger.backup.info("💾 Database cleared and container recreated")
+	} else {
+		// The per-model clear aborted part-way (e.g. a relationship constraint failed a batch
+		// delete). A half-cleared store MUST NOT receive the next radio's dump — that is exactly
+		// how nodes bleed between radios — so escalate: destroy the store files and reopen a
+		// guaranteed-empty container. The current radio's data was backed up above; routes are
+		// lost in this (already-broken) path, which beats merging two radios' databases.
+		Logger.backup.error("💾 clearDatabase failed — escalating to store destruction before the switch")
+		PersistenceController.shared.destroyStoreAndRecreateContainer()
+		// Repoint re-creates once more on the fresh (now empty) store and rebuilds the
+		// MeshPackets actor + cached context; the double recreate is harmless.
+		accessoryManager.repointToFreshContainer()
+	}
 
-	let restoreResult = await NodeBackupManager.shared.restoreFromBackup(
-		forNode: targetNodeNum,
-		into: PersistenceController.shared.container
-	)
+	// The clear above is unconditional — a switch must NEVER dump the new radio's nodes on top
+	// of the old radio's (nodes have no owner column; the store is global). The restore is the
+	// only optional part: with no resolvable target node (first connect to a never-seen radio)
+	// there is simply no backup to import, and the radio populates the now-empty store fresh.
+	let restoreResult: NodeBackupResult
+	if let targetNodeNum {
+		restoreResult = await NodeBackupManager.shared.restoreFromBackup(
+			forNode: targetNodeNum,
+			into: PersistenceController.shared.container
+		)
+	} else {
+		restoreResult = .noBackupFound
+	}
 
 	// The clear ran on the MeshPackets context and the restore imported through a separate
 	// liveContext, neither of which the UI's main context observes — and a batch delete sends
@@ -905,30 +928,39 @@ func switchToDevice(
 	}()
 	Logger.backup.info("💾 Node switch — current: \(currentNodeNum.map { String($0) } ?? "nil", privacy: .public), target: \(targetNodeNum.map { String($0) } ?? "unknown", privacy: .public)")
 
+	// Mark the switch in flight so the disconnect's teardown doesn't re-arm discovery and
+	// auto-connect can't launch a second connect + node dump while the store is mid-reset.
+	accessoryManager.isSwitchingDevices = true
+	defer {
+		accessoryManager.isSwitchingDevices = false
+		// closeConnection suppressed its usual discovery restart during the switch; if the
+		// switch's connect didn't succeed, restart discovery now so devices reappear.
+		if !accessoryManager.isConnected {
+			accessoryManager.startDiscovery()
+		}
+	}
+
 	// 4. Disconnect from current device
 	if accessoryManager.allowDisconnect {
 		try? await accessoryManager.disconnect()
 	}
 
-	await backupCurrentDatabase(forTargetNode: targetNodeNum, accessoryManager: accessoryManager)
-
-	if let targetNodeNum {
-		let restoreResult = await backupCurrentAndRestoreDatabase(
-			forNode: targetNodeNum,
-			accessoryManager: accessoryManager,
-			appState: appState,
-			selectedTab: .connect
-		)
-		switch restoreResult {
-		case .success:
-			Logger.backup.info("💾 Backup restored for target node \(targetNodeNum)")
-		case .skipped(let reason):
-			Logger.backup.warning("💾 Restore skipped: \(reason, privacy: .public)")
-		case .noBackupFound:
-			Logger.backup.info("💾 No backup for target node \(targetNodeNum) — radio will populate fresh data")
-		}
-	} else {
-		Logger.backup.warning("💾 Target node num is nil — cannot restore, radio will populate fresh data")
+	// Clear (always) and restore (when the target has a backup). Runs even when the target
+	// node number is unknown — a switch to a never-seen radio previously skipped the clear
+	// and dumped the new radio's nodes on top of the old radio's data.
+	let restoreResult = await backupCurrentAndRestoreDatabase(
+		forNode: targetNodeNum,
+		accessoryManager: accessoryManager,
+		appState: appState,
+		selectedTab: .connect
+	)
+	switch restoreResult {
+	case .success:
+		Logger.backup.info("💾 Backup restored for target node \(targetNodeNum.map { String($0) } ?? "?", privacy: .public)")
+	case .skipped(let reason):
+		Logger.backup.warning("💾 Restore skipped: \(reason, privacy: .public)")
+	case .noBackupFound:
+		Logger.backup.info("💾 No backup for target node \(targetNodeNum.map { String($0) } ?? "unknown", privacy: .public) — radio will populate fresh data")
 	}
 
 	onRestoreComplete?()
