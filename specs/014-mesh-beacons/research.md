@@ -80,3 +80,39 @@ Firmware listen behavior worth mirroring: the `FLAG_LISTEN_ENABLED` comment stat
 - [meshtastic/protobufs — portnums.proto](https://github.com/meshtastic/protobufs/blob/master/meshtastic/portnums.proto)
 - [meshtastic/Meshtastic-Android](https://github.com/meshtastic/Meshtastic-Android)
 - [jkpg-mesh/mesh-beacon-Module (community firmware module)](https://github.com/jkpg-mesh/mesh-beacon-Module)
+
+---
+
+# Phase 0 Decisions (plan)
+
+The parity findings above are the input; this section is the plan's decision log. Several of the "open questions carried into the spec" were resolved in the spec's `## Clarifications` (Session 2026-07-04): message-length → block-with-error, interval → block-below-3600, multi-target → full (targets + send-as-node), `FLAG_LEGACY_SPLIT` → manage automatically, passive-listen → session-less `DiscoveredBeacon` + Beacons list, editor home → Settings → Module Configuration. The remaining decisions:
+
+## D1 — Frequency-slot derivation (FR-017)
+
+**Decision**: Add a pure helper (extend `ModemPresets` in `LoraConfigEnums.swift`) computing a channel's operating slot from `(channelName, modemPreset, region)` as firmware does — region+preset bandwidth → number of channels, then `slot = (nameHash(channelName) % numChannels) + 1` for `channel_num == 0`. Compare the beacon channel's slot to the connected radio's current primary slot; **Add** is offered only on a match.
+**Rationale**: Adding a secondary channel never retunes (frequency derives from the *primary* name), so Add only works when the offered mesh is already on the current frequency. Slot derivation is the only correct gate — "same preset" is insufficient.
+**Alternatives**: preset+region-only gate (would offer Add for meshes the radio can't hear); ask firmware (no such round-trip; value is deterministic). Validate against firmware vectors in `ModemPresetFrequencySlotTests`.
+
+## D2 — No free secondary slot (FR-017 clarification)
+
+**Decision**: When slots 1–7 are all occupied, **Add** presents a picker to replace an existing *secondary* channel (never the primary); cancel = no change.
+**Rationale**: Rejecting is a dead end; replacing matches intent; protecting the primary avoids self-eviction. **Alternatives**: reject-with-message; auto-evict oldest (surprising).
+
+## D3 — Switch partial-failure rollback (edge case / open Q8)
+
+**Decision**: Snapshot the primary channel before `joinBeaconMesh` mutates it; if the channel write succeeds but the region/preset apply fails, roll the primary channel back and surface the error.
+**Rationale**: A new channel on the old preset/region strands the radio on an undecodable frequency; both-or-neither is least surprising. Safe because the channel write does not reboot. **Alternatives**: leave-partial+warn; no rollback (current gap).
+
+## D5 — Named channel with empty PSK (edge case / open Q7)
+
+**Decision**: Treat an offered channel name with empty PSK as the default/public key (as firmware does) and label it "open channel"; do not reject.
+**Rationale**: Empty-PSK is a valid Meshtastic channel; rejecting drops legitimate open meshes.
+
+## D7 — MeshBeaconConfig editor mechanics (FR-009–014)
+
+**Decision**: New SwiftUI screen `Views/Settings/Config/Module/MeshBeaconConfig.swift` in the Module Configuration list; reads `ModuleConfig.MeshBeaconConfig`, writes via `AdminMessage` `setModuleConfig.meshBeacon` through `AccessoryManager`; blocking client-side validation (message ≤ 100 bytes, interval ≥ 3600 s) with inline errors; full multi-target support. Mirrors existing module-config screens.
+**Rationale**: Consistency (Constitution I/III) and matches the clarify decisions.
+
+## Technical unknowns
+
+All standard for this repo (SwiftUI/SwiftData/protobuf/Swift Testing, iOS·iPadOS·macOS) — no NEEDS CLARIFICATION. One process gate: fetch the canonical Meshtastic Client Design Standards before building the config-editor UI (Constitution VIII).
