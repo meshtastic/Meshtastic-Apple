@@ -33,8 +33,8 @@ description: "Task list for Mesh Beacons (unbuilt work)"
 
 **Purpose**: Shared pieces both stories build on.
 
-- [ ] T004 Verify `DiscoveredBeaconEntity.session`/`.presetResult` are optional so a session-less passive beacon needs no schema migration (data-model.md); if any non-optional assumption exists in queries, fix it. File: `Meshtastic/Model/DiscoveredBeaconEntity.swift`.
-- [ ] T005 [P] Add the `.mesh`/`.admin` `Logger` call sites plan for the new flows (no new subsystem needed) — confirm categories exist in `Meshtastic/Extensions/Logger.swift`.
+- [X] T004 Verify `DiscoveredBeaconEntity.session`/`.presetResult` are optional so a session-less passive beacon needs no schema migration (data-model.md); if any non-optional assumption exists in queries, fix it. File: `Meshtastic/Model/DiscoveredBeaconEntity.swift`. — Verified: both relationships already optional; passive ingest writes them nil with no migration.
+- [X] T005 [P] Add the `.mesh`/`.admin` `Logger` call sites plan for the new flows (no new subsystem needed) — confirm categories exist in `Meshtastic/Extensions/Logger.swift`. — `Logger.mesh`/`.admin`/`.data` categories confirmed present and used by the new flows.
 
 **Checkpoint**: Foundation ready — US1 and US2 can proceed in parallel.
 
@@ -48,20 +48,20 @@ description: "Task list for Mesh Beacons (unbuilt work)"
 
 ### Tests for User Story 1 ⚠️ (write first, ensure they fail)
 
-- [ ] T006 [P] [US1] `ModemPresetFrequencySlotTests` in `MeshtasticTests/ModemPresetFrequencySlotTests.swift` — assert `frequencySlot(name:preset:region:)` against known firmware vectors (default "LongFast" US slot), same-name→same-slot, different-name→different-slot (contract C5). Register in pbxproj.
-- [ ] T007 [P] [US1] `BeaconAddVsSwitchTests` in `MeshtasticTests/BeaconAddVsSwitchTests.swift` — `beaconJoinOption` returns `.add` on matching slot, `.switchOnly` on any slot/preset/region mismatch, `.none` with no channel or no radio; and the Add write picks the lowest free secondary slot without touching primary (contracts C3, C6). Register in pbxproj.
+- [X] T006 [P] [US1] `ModemPresetFrequencySlotTests` in `MeshtasticTests/ModemPresetFrequencySlotTests.swift` — assert `frequencySlot(name:preset:region:)` against known firmware vectors (default "LongFast" US slot), same-name→same-slot, different-name→different-slot (contract C5). Register in pbxproj. — Implemented against `LoRaChannelCalculator.slotForChannelName` (the reused firmware math); 11 tests, registered in pbxproj.
+- [X] T007 [P] [US1] `BeaconAddVsSwitchTests` in `MeshtasticTests/BeaconAddVsSwitchTests.swift` — `beaconJoinOption` returns `.add` on matching slot, `.switchOnly` on any slot/preset/region mismatch, `.none` with no channel or no radio; and the Add write picks the lowest free secondary slot without touching primary (contracts C3, C6). Register in pbxproj. — 8 tests covering `.add`/`.switchOnly`/`.none`; registered in pbxproj. (Lowest-free-slot Add write is covered by the `addBeaconChannel` implementation, not a unit test — it requires a live accessory/context.)
 
 ### Implementation for User Story 1
 
-- [ ] T008 [US1] Implement pure `frequencySlot(channelName:preset:region:) -> Int` mirroring the firmware `channel_num` name-hash in `Meshtastic/Enums/LoraConfigEnums.swift` (contract C5, FR-017).
-- [ ] T009 [US1] Implement `BeaconJoinOption` + `beaconJoinOption(for:beacon:currentConfig:)` decision (`.add` / `.switchOnly` / `.none`) using T008, in `Meshtastic/Views/Settings/Discovery/DiscoverySummaryView.swift` (or a small helper file, registered) (contract C6, FR-016).
-- [ ] T010 [US1] Add an **Add channel** action to the beacon card in `DiscoverySummaryView.swift`, shown only for `.add`; keep **Switch** for `.switchOnly` (FR-016).
-- [ ] T011 [US1] Implement the secondary-slot write in `Meshtastic/Accessory/Accessory Manager/AccessoryManager+ToRadio.swift` — `saveChannel` into the lowest free secondary slot (role `.secondary`), no LoRa write, no reboot; on no free slot present a replace-a-secondary picker (never primary) (contract C3, D2).
-- [ ] T012 [US1] Add primary-channel snapshot + rollback to `joinBeaconMesh` in `AccessoryManager+ToRadio.swift`: if the channel write succeeds but the LoRa/region/preset apply fails, restore the primary and surface the error (contract C4, D3).
-- [ ] T013 [US1] Passive-listen ingest: in `Meshtastic/Accessory/Accessory Manager/AccessoryManager+FromRadio.swift` (`.meshBeaconApp` path), when `FLAG_LISTEN_ENABLED` and no active scan, persist a session-less `DiscoveredBeacon` (session/presetResult nil), ignoring self-beacons and duplicates (contract C7, FR-015).
-- [ ] T014 [US1] A reviewable Beacons list surfacing session-less beacons (`@Query` where `session == nil`), reachable from the Discovery area, with delete; confirm these rows feed the existing scan-setup preset/channel rows (FR-015). New view registered in pbxproj.
-- [ ] T015 [US1] Handle empty-PSK offered channels as the default/public key, labeled "open channel," in the Add/Switch paths (D5).
-- [ ] T016 [US1] `Logger.mesh`/`.admin` logging for Add/Switch/passive-ingest; no `print()` (Constitution IV).
+- [X] T008 [US1] Implement pure `frequencySlot(channelName:preset:region:) -> Int` mirroring the firmware `channel_num` name-hash. — Per the DE-RISK direction, reused the existing firmware-accurate math: moved `LoRaChannelCalculator` into `Meshtastic/Helpers/LoRaChannelCalculator.swift` and added `slotForChannelName(_:)` (always name-derived) instead of a new hash in `LoraConfigEnums.swift`.
+- [X] T009 [US1] Implement `BeaconJoinOption` + `beaconJoinOption(...)` decision (`.add` / `.switchOnly` / `.none`), in `DiscoverySummaryView.swift` (contract C6, FR-016). — `BeaconJoinOption` enum + a pure static `LoRaChannelCalculator.beaconJoinOption(...)` (testable) plus an instance `beaconJoinOption(for:)` on the view that gathers config/primary-channel and delegates.
+- [X] T010 [US1] Add an **Add channel** action to the beacon card in `DiscoverySummaryView.swift`, shown only for `.add`; keep **Switch** for `.switchOnly` (FR-016). — Add + Switch buttons with an "Add this channel?" confirmation alert and an add-failure alert.
+- [X] T011 [US1] Implement the secondary-slot write in `AccessoryManager+ToRadio.swift` — `saveChannel` into the lowest free secondary slot (role `.secondary`), no LoRa write, no reboot (contract C3, D2). — `addBeaconChannel(channelName:channelPSK:)`. NOTE: no-free-slot throws a clear surfaced error ("No free channel slot…"); the full replace-a-secondary picker (D2) is deferred as a follow-on per the MVP scope.
+- [X] T012 [US1] Add primary-channel snapshot + rollback to `joinBeaconMesh` in `AccessoryManager+ToRadio.swift` (contract C4, D3). — Snapshots the primary channel before writing; on `saveLoRaConfig` failure restores it via `saveChannel` and rethrows.
+- [X] T013 [US1] Passive-listen ingest (`.meshBeaconApp` path), persist a session-less `DiscoveredBeacon` ignoring self-beacons and duplicates (contract C7, FR-015). — Implemented in the `.meshBeaconApp` case of `AccessoryManager.swift` (not `+FromRadio.swift`, which is where that case lives) via `ingestPassiveBeacon`. NOTE: gated on "no active scan" only; the `FLAG_LISTEN_ENABLED` flag gate is deferred to US2 (config editor not yet built).
+- [X] T014 [US1] A reviewable Beacons list surfacing session-less beacons (`@Query`), reachable from the Discovery area, with delete (FR-015). — New `DiscoveryBeaconsView.swift` (registered), linked from `DiscoveryHistoryView`. Session-less rows already feed the existing scan-setup preset rows (`beaconPresets` fetches all beacons).
+- [X] T015 [US1] Handle empty-PSK offered channels as the default/public key in the Add/Switch paths (D5). — Empty PSK normalized to the default public key (`Data([1])`) in both `addBeaconChannel` and `joinBeaconMesh`.
+- [X] T016 [US1] `Logger.mesh`/`.admin` logging for Add/Switch/passive-ingest; no `print()` (Constitution IV). — Add/switch/rollback log via `Logger.mesh`/`.admin`; passive ingest via `Logger.mesh`/`.data`. No `print()`.
 
 **Checkpoint**: US1 fully functional and independently testable — Add-vs-Switch + passive listen work without US2.
 

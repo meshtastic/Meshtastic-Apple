@@ -17,6 +17,7 @@ struct DiscoverySummaryView: View {
 	let session: DiscoverySessionEntity
 
 	@EnvironmentObject private var accessoryManager: AccessoryManager
+	@Environment(\.modelContext) private var context
 
 	@State private var aiSummary: String = ""
 	@State private var isGeneratingAI: Bool = false
@@ -28,6 +29,9 @@ struct DiscoverySummaryView: View {
 	/// Beacon awaiting a "switch to this channel" confirmation; drives the alert.
 	@State private var beaconToJoin: DiscoveredBeaconEntity?
 	@State private var joinErrorMessage: String?
+	/// Beacon awaiting an "add channel" confirmation; drives the Add alert.
+	@State private var beaconToAdd: DiscoveredBeaconEntity?
+	@State private var addErrorMessage: String?
 
 	var body: some View {
 		List {
@@ -92,6 +96,23 @@ struct DiscoverySummaryView: View {
 			Button("OK", role: .cancel) { joinErrorMessage = nil }
 		} message: {
 			Text(joinErrorMessage ?? "")
+		}
+		.alert("Add this channel?", isPresented: Binding(
+			get: { beaconToAdd != nil },
+			set: { if !$0 { beaconToAdd = nil } }
+		), presenting: beaconToAdd) { beacon in
+			Button("Cancel", role: .cancel) { beaconToAdd = nil }
+			Button("Add") { addBeaconChannel(beacon) }
+		} message: { beacon in
+			Text("Add \"\(beacon.offerChannelName)\" as an additional channel — your radio keeps its current mesh, no reboot.")
+		}
+		.alert("Couldn't add channel", isPresented: Binding(
+			get: { addErrorMessage != nil },
+			set: { if !$0 { addErrorMessage = nil } }
+		)) {
+			Button("OK", role: .cancel) { addErrorMessage = nil }
+		} message: {
+			Text(addErrorMessage ?? "")
 		}
 	}
 
@@ -231,17 +252,33 @@ struct DiscoverySummaryView: View {
 					.foregroundStyle(.secondary)
 			}
 
-			// Only offer the switch when the beacon advertised a channel to join.
-			if beacon.hasOfferChannel, !beacon.offerChannelName.isEmpty {
-				Button {
-					beaconToJoin = beacon
-				} label: {
-					Label("Switch to this channel", systemImage: "arrow.triangle.2.circlepath")
-						.font(.caption)
+			// Offer join actions only when the beacon advertised a channel. When the offered mesh
+			// already runs on the radio's current preset/region/frequency slot, Add (no reboot) is
+			// offered alongside Switch; otherwise only Switch (retune + reboot) is shown (FR-016).
+			let joinOption = beaconJoinOption(for: beacon)
+			if joinOption != .none {
+				HStack(spacing: 8) {
+					if joinOption == .add {
+						Button {
+							beaconToAdd = beacon
+						} label: {
+							Label("Add channel", systemImage: "plus.circle")
+								.font(.caption)
+						}
+						.buttonStyle(.bordered)
+						.controlSize(.small)
+						.disabled(!accessoryManager.isConnected)
+					}
+					Button {
+						beaconToJoin = beacon
+					} label: {
+						Label("Switch to this channel", systemImage: "arrow.triangle.2.circlepath")
+							.font(.caption)
+					}
+					.buttonStyle(.bordered)
+					.controlSize(.small)
+					.disabled(!accessoryManager.isConnected)
 				}
-				.buttonStyle(.bordered)
-				.controlSize(.small)
-				.disabled(!accessoryManager.isConnected)
 				.padding(.top, 2)
 			}
 		}
@@ -736,5 +773,62 @@ struct DiscoverySummaryView: View {
 		formatter.unitOptions = .naturalScale
 		formatter.numberFormatter.maximumFractionDigits = 1
 		return formatter.string(from: measurement)
+	}
+}
+
+// MARK: - Beacon join (Add vs Switch, FR-016/FR-017)
+
+extension DiscoverySummaryView {
+
+	/// Decide which join action a beacon supports on the connected radio (contract C6). Reads the
+	/// connected node's LoRa config + primary channel and delegates to the pure decision in
+	/// `LoRaChannelCalculator`.
+	func beaconJoinOption(for beacon: DiscoveredBeaconEntity) -> BeaconJoinOption {
+		let num = Int64(UserDefaults.preferredPeripheralNum)
+		let node = getNodeInfo(id: num, context: context)
+		return LoRaChannelCalculator.beaconJoinOption(
+			hasOfferChannel: beacon.hasOfferChannel,
+			offerChannelName: beacon.offerChannelName,
+			offeredPreset: beacon.offeredPreset,
+			offerRegion: beacon.offerRegion,
+			isConnected: accessoryManager.isConnected,
+			loRaConfig: node?.loRaConfig,
+			primaryChannelName: beaconPrimaryChannelName(for: node)
+		)
+	}
+
+	/// The connected node's primary channel name for slot derivation. Mirrors the Channels editor's
+	/// firmware-accurate rule: use the named primary channel; when the primary is the unnamed default
+	/// public channel, fall back to the preset's default channel name (what the firmware hashes),
+	/// which is what makes the slot comparison correct.
+	private func beaconPrimaryChannelName(for node: NodeInfoEntity?) -> String {
+		guard let node else { return "" }
+		if let primary = node.myInfo?.channels.first(where: { $0.index == 0 || $0.role == 1 }),
+		   let name = primary.name, !name.isEmpty {
+			return name
+		}
+		if node.loRaConfig?.usePreset == false {
+			return "Custom"
+		}
+		guard let preset = ModemPresets(rawValue: Int(node.loRaConfig?.modemPreset ?? 0)) else {
+			return "LongFast"
+		}
+		return preset.androidChannelName
+	}
+
+	/// Adds a beacon's advertised channel to a free secondary slot (no reboot); failures surface in
+	/// an alert.
+	func addBeaconChannel(_ beacon: DiscoveredBeaconEntity) {
+		beaconToAdd = nil
+		Task {
+			do {
+				try await accessoryManager.addBeaconChannel(
+					channelName: beacon.offerChannelName,
+					channelPSK: beacon.offerChannelPSK
+				)
+			} catch {
+				addErrorMessage = error.localizedDescription
+			}
+		}
 	}
 }

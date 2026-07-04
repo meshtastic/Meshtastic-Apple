@@ -796,11 +796,18 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 				case .mapReportApp:
 					Logger.mesh.info("[Map Report] packet received from \(packet.from.toHex(), privacy: .public)")
 				case .meshBeaconApp:
-					if let beacon = try? MeshBeacon(serializedBytes: decodedInfo.packet.decoded.payload),
-					   let engine = discoveryScanEngine, engine.isScanning {
-						engine.handleBeacon(beacon, packet: decodedInfo.packet)
+					if let beacon = try? MeshBeacon(serializedBytes: decodedInfo.packet.decoded.payload) {
+						if let engine = discoveryScanEngine, engine.isScanning {
+							engine.handleBeacon(beacon, packet: decodedInfo.packet)
+						} else {
+							// No active scan: passively capture the beacon as a session-less record so it
+							// shows in the Beacons list and feeds the next scan setup (FR-015). Gated on "no
+							// active scan" only for now; wiring the MeshBeaconConfig FLAG_LISTEN_ENABLED flag
+							// is a US2 follow-on.
+							ingestPassiveBeacon(beacon, packet: decodedInfo.packet)
+						}
 					} else {
-						Logger.mesh.info("[Mesh Beacon] packet received from \(packet.from.toHex(), privacy: .public)")
+						Logger.mesh.info("[Mesh Beacon] packet received from \(packet.from.toHex(), privacy: .public) — failed to decode payload")
 					}
 				case .UNRECOGNIZED:
 					Logger.mesh.info("[Unrecognized] packet received from \(packet.from.toHex(), privacy: .public)")
@@ -1078,6 +1085,70 @@ extension AccessoryManager {
 				Logger.transport.info("[AccessoryManager] Previosuly in the background but not scanning, starting scanning again")
 				self.startDiscovery()
 			}
+		}
+	}
+}
+
+// MARK: - Passive beacon listen (FR-015 / contract C7)
+
+extension AccessoryManager {
+
+	/// Persist a `MESH_BEACON_APP` beacon heard outside an active scan as a session-less
+	/// `DiscoveredBeaconEntity` (session / presetResult nil). Ignores beacons from the connected
+	/// node itself and de-dupes against a recent identical capture (same node + channel within a
+	/// short window) so a beacon broadcast repeatedly doesn't spam the list.
+	func ingestPassiveBeacon(_ beacon: MeshBeacon, packet: MeshPacket) {
+		let fromNodeNum = Int64(packet.from)
+
+		// Ignore self-beacons (FR-001/FR-002).
+		let connectedNodeNum = Int64(UserDefaults.preferredPeripheralNum)
+		guard fromNodeNum != connectedNodeNum else { return }
+
+		let hasCustomChannel = beacon.hasOfferChannel && !beacon.offerChannel.name.isEmpty
+		let channelName = hasCustomChannel ? beacon.offerChannel.name : ""
+
+		// De-dupe: skip if we already stored a session-less beacon from this node + channel within the
+		// last 5 minutes. (The session-less check is done in memory to avoid a relationship predicate.)
+		let cutoff = Date().addingTimeInterval(-300)
+		let descriptor = FetchDescriptor<DiscoveredBeaconEntity>(
+			predicate: #Predicate { entity in
+				entity.nodeNum == fromNodeNum
+				&& entity.offerChannelName == channelName
+				&& entity.timestamp > cutoff
+			}
+		)
+		if let existing = try? context.fetch(descriptor),
+		   existing.contains(where: { $0.session == nil }) {
+			return
+		}
+
+		let entity = DiscoveredBeaconEntity()
+		entity.nodeNum = fromNodeNum
+		entity.message = beacon.message
+		entity.offerRegion = beacon.offerRegion != .unset ? beacon.offerRegion.rawValue : 0
+		entity.offerPreset = beacon.hasOfferPreset ? beacon.offerPreset.rawValue : -1
+		entity.hasOfferChannel = hasCustomChannel
+		entity.offerChannelName = channelName
+		entity.offerChannelPSK = hasCustomChannel ? beacon.offerChannel.psk : Data()
+		entity.snr = packet.rxSnr
+		entity.rssi = Int(packet.rxRssi)
+		entity.timestamp = Date()
+		entity.heardOnPresetName = ""
+		// Session-less: heard passively, not during a scan.
+		entity.session = nil
+		entity.presetResult = nil
+
+		if let knownNode = getNodeInfo(id: fromNodeNum, context: context) {
+			entity.shortName = knownNode.user?.shortName ?? ""
+			entity.longName = knownNode.user?.longName ?? ""
+		}
+
+		context.insert(entity)
+		do {
+			try context.save()
+			Logger.mesh.info("📡 [Beacon] Passively captured beacon from \(packet.from.toHex(), privacy: .public) — customChannel \(hasCustomChannel, privacy: .public)")
+		} catch {
+			Logger.data.error("🚫 Failed to persist passive beacon: \(error.localizedDescription, privacy: .public)")
 		}
 	}
 }

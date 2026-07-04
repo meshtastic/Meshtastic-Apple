@@ -651,12 +651,21 @@ extension AccessoryManager {
 			throw AccessoryError.appError("Connected node not found")
 		}
 
+		// Snapshot the current primary channel so a partial failure (channel write succeeds but the
+		// LoRa apply fails) can be rolled back — otherwise the radio is stranded on a new channel with
+		// the old preset/region on an undecodable frequency (research D3 / contract C4).
+		let primarySnapshot = beaconPrimaryChannelSnapshot(for: node)
+
+		// D5: an offered channel with an empty PSK is an "open channel" — use the well-known default
+		// public key rather than sending an empty (no-encryption) key.
+		let effectivePSK = channelPSK.isEmpty ? Data([1]) : channelPSK
+
 		// 1. Set the primary channel to the beacon's offered channel (no reboot).
 		var channel = Channel()
 		channel.index = 0
 		channel.role = .primary
 		channel.settings.name = channelName
-		channel.settings.psk = channelPSK
+		channel.settings.psk = effectivePSK
 		_ = try await saveChannel(channel: channel, fromUser: user, toUser: user)
 
 		// 2. Apply region/preset (reboots). Carry the full existing LoRa config so unrelated fields
@@ -684,8 +693,83 @@ extension AccessoryManager {
 		lora.usePreset = true
 		// Derive the frequency from the new channel + preset + region rather than a stale slot.
 		lora.channelNum = 0
-		_ = try await saveLoRaConfig(config: lora, fromUser: user, toUser: user)
-		Logger.services.info("🔀 [Beacon] Switched to advertised channel '\(channelName, privacy: .private)' and applied preset/region")
+		do {
+			_ = try await saveLoRaConfig(config: lora, fromUser: user, toUser: user)
+		} catch {
+			// Roll the primary channel back so we don't strand the radio between meshes. The channel
+			// write doesn't reboot, so this restore is safe.
+			Logger.admin.error("🔀 [Beacon] LoRa apply failed after channel write; rolling back primary channel: \(error.localizedDescription, privacy: .public)")
+			if let primarySnapshot {
+				do {
+					_ = try await saveChannel(channel: primarySnapshot, fromUser: user, toUser: user)
+					Logger.admin.info("🔀 [Beacon] Rolled back primary channel after failed switch")
+				} catch {
+					Logger.admin.error("🔀 [Beacon] Primary channel rollback also failed: \(error.localizedDescription, privacy: .public)")
+				}
+			}
+			throw error
+		}
+		Logger.mesh.info("🔀 [Beacon] Switched to advertised channel '\(channelName, privacy: .private)' and applied preset/region")
+	}
+
+	/// Reconstruct a `Channel` proto for the connected node's current primary channel (index 0),
+	/// used to roll back a failed Switch. Returns `nil` when there's no stored primary to restore.
+	@MainActor
+	private func beaconPrimaryChannelSnapshot(for node: NodeInfoEntity) -> Channel? {
+		guard let primary = node.myInfo?.channels.first(where: { $0.index == 0 || $0.role == 1 }) else {
+			return nil
+		}
+		var channel = Channel()
+		channel.index = 0
+		channel.role = .primary
+		channel.settings.name = primary.name ?? ""
+		channel.settings.psk = primary.psk ?? Data()
+		channel.settings.uplinkEnabled = primary.uplinkEnabled
+		channel.settings.downlinkEnabled = primary.downlinkEnabled
+		channel.settings.moduleSettings.positionPrecision = UInt32(primary.positionPrecision)
+		return channel
+	}
+
+	/// Add a beacon's advertised channel to a free secondary slot without touching the primary
+	/// channel or LoRa config — so **no reboot** (contract C3 / FR-016, research D2). Used by the
+	/// Add channel action, which is only offered when the offered mesh already runs on the radio's
+	/// current preset/region/frequency slot.
+	///
+	/// Picks the lowest free secondary index (1–7). When all secondary slots are taken it throws a
+	/// clear error for the UI to surface — the full "replace an existing secondary" picker (D2) is a
+	/// follow-on.
+	@MainActor
+	public func addBeaconChannel(channelName: String, channelPSK: Data) async throws {
+		guard let deviceNum = self.activeConnection?.device.num else {
+			throw AccessoryError.ioFailed("No active device")
+		}
+		guard let node = getNodeInfo(id: Int64(deviceNum), context: context), let user = node.user else {
+			throw AccessoryError.appError("Connected node not found")
+		}
+
+		let usedIndexes = Set(node.myInfo?.channels.map { $0.index } ?? [])
+		// Secondary slots are 1...7 (0 is reserved for the primary channel).
+		guard let freeIndex = (Int32(1)...Int32(7)).first(where: { !usedIndexes.contains($0) }) else {
+			throw AccessoryError.appError("No free channel slot — remove a secondary channel first")
+		}
+
+		// D5: an offered channel with an empty PSK is an "open channel" — use the default public key.
+		let effectivePSK = channelPSK.isEmpty ? Data([1]) : channelPSK
+
+		var channel = Channel()
+		channel.index = freeIndex
+		channel.role = .secondary
+		channel.settings.name = channelName
+		channel.settings.psk = effectivePSK
+		// Default to no position sharing on an added foreign channel.
+		channel.settings.moduleSettings.positionPrecision = 0
+
+		_ = try await saveChannel(channel: channel, fromUser: user, toUser: user)
+
+		// Mirror the added channel into local state so it appears immediately (no reboot / re-sync).
+		await MeshPackets.shared.channelPacket(channel: channel, fromNum: deviceNum)
+
+		Logger.mesh.info("➕ [Beacon] Added advertised channel '\(channelName, privacy: .private)' to secondary slot \(freeIndex, privacy: .public) — no reboot")
 	}
 
 	public func sendWaypoint(waypoint: Waypoint) async throws {

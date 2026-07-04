@@ -17,6 +17,13 @@ struct DiscoveryHistoryView: View {
 
 	var body: some View {
 		List {
+			Section {
+				NavigationLink {
+					DiscoveryBeaconsView()
+				} label: {
+					Label("Passive Beacons", systemImage: "dot.radiowaves.left.and.right")
+				}
+			}
 			if sessions.isEmpty {
 				ContentUnavailableView(
 					"No Discovery Sessions",
