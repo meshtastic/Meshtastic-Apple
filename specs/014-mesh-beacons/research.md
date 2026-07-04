@@ -1,6 +1,6 @@
 # Research: Mesh Beacons — cross-platform / protobuf parity
 
-**Feature**: `001-local-mesh-discovery` (beacons — supporting research)
+**Feature**: `014-mesh-beacons`
 **Date**: 2026-07-04
 **Method**: Read of the local regenerated protobufs and app source, plus web research against `github.com/meshtastic/protobufs`, `github.com/meshtastic/Meshtastic-Android`, and `meshtastic.org`. Network was reachable; findings below note which were confirmed vs. uncertain.
 
