@@ -93,7 +93,7 @@ description: "Task list for Mesh Beacons (unbuilt work)"
 
 - [ ] T023 [P] Snapshot tests for the beacon card **Add channel** state and the MeshBeaconConfig editor in `MeshtasticTests/SwiftUIViewSnapshotTests.swift` (delete/re-record references on a clean run).
 - [ ] T024 [P] Docs: add `docs/user/whats-new.md` + `docs/user/discovery.md` (or a beacon page) entries; run `scripts/build-docs.sh --output Meshtastic/Resources/docs`; keep DeviceHardware.json/image_manifest.json churn out of the commit.
-- [ ] T025 Run `/speckit-clarify` or resolve the remaining spec `[NEEDS CLARIFICATION]` (FR-017 no-free-slot is decided in research D2 — update the spec marker to match).
+- [ ] T025 Keep spec ↔ research clarifications in sync — the four prior `[NEEDS CLARIFICATION]` items are now resolved in both spec and research (empty-PSK → D5, Switch-rollback → D3, `FLAG_LEGACY_SPLIT` → D4, no-free-slot → D2); verify no open `[NEEDS CLARIFICATION]` remains before `/speckit-implement`.
 - [ ] T026 Lint-clean pass (SwiftLint) and confirm all new `.swift` files are registered in `project.pbxproj` (build fails-open otherwise).
 - [ ] T027 Run quickstart.md validation (2-radio Add/Switch/no-free-slot/config-round-trip; offline via the `--meshtastic-seed-beacons` seed) and confirm SC-003, SC-006, SC-007 and no regression of the existing discovery suites (SC-005).
 
