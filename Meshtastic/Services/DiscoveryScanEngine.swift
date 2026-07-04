@@ -1109,6 +1109,12 @@ extension DiscoveryScanEngine {
 
 extension DiscoveryScanEngine {
 
+	/// True while the active run is a seeded "Analyze Current Preset" pass — built from the full
+	/// local history rather than a live multi-preset scan. Read-only mirror of the private
+	/// `seedFromExistingData` flag so the setup/progress UI can show the collected-data span
+	/// alongside the short (~60s) dwell timer.
+	var isSeededRun: Bool { seedFromExistingData }
+
 	/// Starts a discovery scan limited to the radio's CURRENT modem preset, seeded with everything
 	/// already in SwiftData. The radio is already on this preset, so there's no config change or
 	/// reboot — the dwell begins immediately and `seedDiscoveredNodesFromDatabase()` folds in all
