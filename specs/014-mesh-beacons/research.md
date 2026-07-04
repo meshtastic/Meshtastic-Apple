@@ -40,7 +40,7 @@ From `module_config.pb.swift` (`ModuleConfig.MeshBeaconConfig`), matching upstre
 
 `BroadcastTarget`: `preset` (optional `ModemPreset`, falls back to running config), `region` (`RegionCode`, UNSET = running config), `channel_index` (optional `UInt32`, index into the node's channel table — the referenced channel must already exist so its key is available). Note the two TX-channel representations: the single-target path embeds `ChannelSettings` inline (`broadcast_on_channel`), whereas a `BroadcastTarget` references a channel-table slot by index — described upstream as equal, first-class options.
 
-Firmware listen behavior worth mirroring: the `FLAG_LISTEN_ENABLED` comment states the **text portion is delivered to the local message inbox** and offered channel/preset are cached for the client. The Apple app currently routes beacons to the discovery engine only during a scan and otherwise logs them — it does not deliver beacon text to the inbox. This informs the passive-listen open question (spec FR-020 / US7).
+Firmware listen behavior worth mirroring: the `FLAG_LISTEN_ENABLED` comment states the **text portion is delivered to the local message inbox** and offered channel/preset are cached for the client. The Apple app currently routes beacons to the discovery engine only during a scan and otherwise logs them — it does not deliver beacon text to the inbox. This informs the passive-listen open question (spec FR-015).
 
 ## What the Apple app implements today (receive side)
 
@@ -69,7 +69,7 @@ Firmware listen behavior worth mirroring: the `FLAG_LISTEN_ENABLED` comment stat
 3. **Interval UX**: clamp vs. reject below 3600 s; which interval presets to offer. *(FR-017)*
 4. **Multi-target scope**: does v1 read/preserve/edit `broadcast_targets` and `broadcast_send_as_node`, or only the single-target scalar path? *(FR-018)*
 5. **`FLAG_LEGACY_SPLIT`**: expose to users or manage automatically. *(FR-019)*
-6. **Passive listen**: capture beacons outside a scan? Deliver text to the inbox (per firmware), a dedicated Beacons list, or both? Persistence when there is no `DiscoverySession`? Join-outside-scan in scope? *(FR-020 / US7)*
+6. **Passive listen**: capture beacons outside a scan? Deliver text to the inbox (per firmware), a dedicated Beacons list, or both? Persistence when there is no `DiscoverySession`? Join-outside-scan in scope? *(FR-015)*
 7. **Named channel with empty/default PSK** in a received beacon — treat as default key or reject as not joinable? *(edge case)*
 8. **Join rollback** — if a Switch-to-this-channel join partially applies then fails, roll back the primary-channel change? *(edge case)*
 

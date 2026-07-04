@@ -666,6 +666,10 @@ extension AccessoryManager {
 		channel.role = .primary
 		channel.settings.name = channelName
 		channel.settings.psk = effectivePSK
+		// Default to no position sharing on a foreign/beacon-advertised mesh (privacy). Otherwise the
+		// firmware defaults moduleSettings to full precision (32), leaking exact GPS coordinates —
+		// mirrors addBeaconChannel's handling for the same "join someone else's mesh" scenario.
+		channel.settings.moduleSettings.positionPrecision = 0
 		_ = try await saveChannel(channel: channel, fromUser: user, toUser: user)
 
 		// 2. Apply region/preset (reboots). Carry the full existing LoRa config so unrelated fields

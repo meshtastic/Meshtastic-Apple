@@ -59,7 +59,14 @@ struct MeshBeaconConfig: View {
 	private var intervalValue: Int32 { Int32(intervalText) ?? 0 }
 	private var isMessageValid: Bool { MeshBeaconValidation.isMessageValid(broadcastMessage) }
 	private var isIntervalValid: Bool { MeshBeaconValidation.isIntervalValid(intervalValue) }
-	private var canSave: Bool { isMessageValid && isIntervalValid }
+	// A node number is a UInt32. Empty = 0 = "this node". Reject non-digits or values that overflow
+	// UInt32 so we never silently wrap a bad value (e.g. a pasted "-1") into a bogus node number.
+	private var isSendAsNodeValid: Bool {
+		if sendAsNodeText.isEmpty { return true }
+		guard let value = UInt64(sendAsNodeText) else { return false }
+		return value <= UInt64(UInt32.max)
+	}
+	private var canSave: Bool { isMessageValid && isIntervalValid && isSendAsNodeValid }
 
 	var body: some View {
 		Group {
@@ -139,11 +146,14 @@ struct MeshBeaconConfig: View {
 	private func targetsMatchEntity() -> Bool {
 		let entityTargets = node?.meshBeaconConfig?.broadcastTargets ?? []
 		guard entityTargets.count == targets.count else { return false }
-		for (draft, entity) in zip(targets, entityTargets) where
-			draft.preset != entity.preset || draft.region != entity.region || draft.channelIndex != entity.channelIndex {
-			return false
-		}
-		return true
+		// `broadcastTargets` is a SwiftData to-many relationship whose order isn't guaranteed, so
+		// compare content-sorted key tuples rather than zipping positionally (which would falsely
+		// flag hasChanges when the same targets are returned in a different order).
+		let draftKeys = targets.map { [$0.preset, $0.region, $0.channelIndex] }
+			.sorted { $0.lexicographicallyPrecedes($1) }
+		let entityKeys = entityTargets.map { [$0.preset, $0.region, $0.channelIndex] }
+			.sorted { $0.lexicographicallyPrecedes($1) }
+		return draftKeys == entityKeys
 	}
 
 	private var optionsSection: some View {
@@ -268,9 +278,15 @@ struct MeshBeaconConfig: View {
 					.keyboardType(.numberPad)
 					.multilineTextAlignment(.trailing)
 			}
-			Text("Spoof the sender of outgoing beacons. 0 uses this node. Remote admin may only set its own node number.")
-				.font(.caption)
-				.foregroundStyle(.secondary)
+			if !isSendAsNodeValid {
+				Text("Enter a node number between 0 and \(UInt32.max). 0 uses this node.")
+					.font(.caption)
+					.foregroundStyle(.red)
+			} else {
+				Text("Spoof the sender of outgoing beacons. 0 uses this node. Remote admin may only set its own node number.")
+					.font(.caption)
+					.foregroundStyle(.secondary)
+			}
 		}
 	}
 
@@ -383,7 +399,9 @@ struct MeshBeaconConfig: View {
 		}
 
 		config.broadcastIntervalSecs = UInt32(truncatingIfNeeded: intervalValue)
-		config.broadcastSendAsNode = UInt32(truncatingIfNeeded: Int64(sendAsNodeText) ?? 0)
+		// Validated by isSendAsNodeValid before save; parse directly (no truncating wrap) and fall
+		// back to 0 ("this node") for an empty field.
+		config.broadcastSendAsNode = UInt32(sendAsNodeText) ?? 0
 
 		config.broadcastTargets = targets.map { draft in
 			var target = ModuleConfig.MeshBeaconConfig.BroadcastTarget()

@@ -801,9 +801,9 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 							engine.handleBeacon(beacon, packet: decodedInfo.packet)
 						} else {
 							// No active scan: passively capture the beacon as a session-less record so it
-							// shows in the Beacons list and feeds the next scan setup (FR-015). Gated on "no
-							// active scan" only for now; wiring the MeshBeaconConfig FLAG_LISTEN_ENABLED flag
-							// is a US2 follow-on.
+							// shows in the Beacons list and feeds the next scan setup (FR-015). Two gates
+							// apply: "no active scan" here, plus the connected node's MeshBeaconConfig
+							// FLAG_LISTEN_ENABLED enforced inside ingestPassiveBeacon.
 							ingestPassiveBeacon(beacon, packet: decodedInfo.packet)
 						}
 					} else {
