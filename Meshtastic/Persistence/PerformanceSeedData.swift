@@ -651,9 +651,10 @@ extension PerformanceSeedData {
 		}
 
 		let now = Date()
+		let presets = ModemPresets.userSelectable
 		let session = DiscoverySessionEntity()
 		session.timestamp = now
-		session.presetsScanned = "LongFast, ShortTurbo, LongSlow"
+		session.presetsScanned = presets.map { $0.description }.joined(separator: ", ")
 		session.totalUniqueNodes = 120
 		session.averageChannelUtilization = 7.9
 		session.totalTextMessages = 342
@@ -663,48 +664,74 @@ extension PerformanceSeedData {
 		session.homePreset = "LongFast"
 		session.userLatitude = 36.1699   // Las Vegas — DEF CON
 		session.userLongitude = -115.1398
-		session.aiSummaryText = "Seeded DEF CON discovery session: 3 presets swept, 6 mesh beacons heard across LongFast/ShortTurbo/LongSlow."
+		session.aiSummaryText = "Seeded DEF CON discovery session: swept every selectable preset (a public beacon on each), plus custom-channel beacons and discovered nodes."
 		context.insert(session)
 
-		let rLongFast = presetResult(session: session, context: context, name: "LongFast", dwell: 90,
-									 unique: 68, direct: 12, mesh: 40, infra: 16, msgs: 210, sensors: 55, util: 8.5, noise: -118.0)
-		let rShortTurbo = presetResult(session: session, context: context, name: "ShortTurbo", dwell: 60,
-									 unique: 34, direct: 8, mesh: 20, infra: 6, msgs: 96, sensors: 38, util: 6.2, noise: -121.0)
-		let rLongSlow = presetResult(session: session, context: context, name: "LongSlow", dwell: 60,
-									 unique: 18, direct: 4, mesh: 11, infra: 3, msgs: 36, sensors: 17, util: 4.1, noise: -123.0)
-		let resultsByPreset = [rLongFast, rShortTurbo, rLongSlow].reduce(into: [String: DiscoveryPresetResultEntity]()) {
-			$0[$1.presetName] = $1
+		// One dwell result per selectable preset, so the session looks like a full sweep.
+		var resultsByPreset: [String: DiscoveryPresetResultEntity] = [:]
+		for (i, preset) in presets.enumerated() {
+			let unique = max(6, 60 - i * 7)
+			let util = max(2.0, 8.5 - Double(i))
+			let noise = -118.0 - Double(i)
+			let result = presetResult(session: session, context: context, name: preset.description, dwell: 60,
+									  unique: unique, direct: max(2, 12 - i), mesh: max(3, 30 - i * 3),
+									  infra: max(1, 10 - i), msgs: max(8, 180 - i * 20), sensors: max(4, 50 - i * 5),
+									  util: util, noise: noise)
+			resultsByPreset[preset.description] = result
 		}
 
-		let specs: [BeaconSpec] = [
-			BeaconSpec(idx: 1, short: "DC33", long: "DEF CON Mesh", message: "DEF CON 33 official mesh — LongFast, US",
-					   preset: ModemPresets.longFast.rawValue, region: RegionCodes.us.rawValue, channelName: "", hasChannel: false,
-					   snr: 6.5, rssi: -92, heardOn: "LongFast"),
-			BeaconSpec(idx: 2, short: "HAX", long: "Hackers Village", message: "Join the Hax channel for CTF coordination",
-					   preset: ModemPresets.shortTurbo.rawValue, region: RegionCodes.us.rawValue, channelName: "Hax", hasChannel: true,
-					   snr: 9.2, rssi: -80, heardOn: "ShortTurbo"),
-			BeaconSpec(idx: 3, short: "HRV", long: "Ham Radio Village", message: "HRV net running all weekend",
-					   preset: ModemPresets.longSlow.rawValue, region: RegionCodes.us.rawValue, channelName: "", hasChannel: false,
-					   snr: 4.4, rssi: -101, heardOn: "LongSlow"),
-			BeaconSpec(idx: 4, short: "CHV", long: "Car Hacking Village", message: "CHV mesh — switch over to join",
-					   preset: ModemPresets.longSlow.rawValue, region: RegionCodes.us.rawValue, channelName: "CarHax", hasChannel: true,
-					   snr: 3.1, rssi: -104, heardOn: "LongFast"),
-			BeaconSpec(idx: 5, short: "LPV", long: "Lockpick Village", message: "Meet at the Lockpick Village",
-					   preset: ModemPresets.longFast.rawValue, region: 0, channelName: "", hasChannel: false,
-					   snr: 7.7, rssi: -88, heardOn: "LongFast"),
-			// No name, no offered preset — exercises the hex-fallback display and the "no chips" path.
-			BeaconSpec(idx: 6, short: "", long: "", message: "anonymous beacon",
-					   preset: -1, region: 0, channelName: "", hasChannel: false,
-					   snr: 1.2, rssi: -110, heardOn: "ShortTurbo")
-		]
+		var idx: Int64 = 0
+		var beaconCount = 0
 
-		for spec in specs {
-			insertBeacon(spec, session: session, presetResult: resultsByPreset[spec.heardOn], now: now, context: context)
+		// A public beacon advertising each selectable preset — so every preset row in the scan setup
+		// gets a beacon icon and is pre-selected.
+		for (i, preset) in presets.enumerated() {
+			idx += 1
+			let name = preset.description
+			let spec = BeaconSpec(idx: idx, short: "PB\(i + 1)", long: "\(name) Mesh",
+								  message: "Public beacon advertising \(name)",
+								  preset: preset.rawValue, region: RegionCodes.us.rawValue,
+								  channelName: "", hasChannel: false,
+								  snr: Float(8 - i), rssi: -85 - i * 2, heardOn: name)
+			insertBeacon(spec, session: session, presetResult: resultsByPreset[name], now: now, context: context)
+			beaconCount += 1
+		}
+
+		// Custom-channel beacons — each advertises a channel, so each gets a "Switch to this channel"
+		// action in the session summary.
+		func addCustom(_ short: String, _ long: String, channel: String, preset: ModemPresets) {
+			idx += 1
+			let name = preset.description
+			let spec = BeaconSpec(idx: idx, short: short, long: long,
+								  message: "\(long) — join the \(channel) channel",
+								  preset: preset.rawValue, region: RegionCodes.us.rawValue,
+								  channelName: channel, hasChannel: true,
+								  snr: 7.5, rssi: -90, heardOn: name)
+			insertBeacon(spec, session: session, presetResult: resultsByPreset[name], now: now, context: context)
+			beaconCount += 1
+		}
+		addCustom("HAX", "Hackers Village", channel: "Hax", preset: .shortTurbo)
+		addCustom("CHV", "Car Hacking Village", channel: "CarHax", preset: .longSlow)
+		addCustom("AIV", "AI Village", channel: "AIVillage", preset: .longFast)
+
+		// Anonymous, no-preset beacon (exercises the hex-fallback display + the "no chips" path).
+		idx += 1
+		let firstName = presets.first?.description ?? "LongFast"
+		insertBeacon(BeaconSpec(idx: idx, short: "", long: "", message: "anonymous beacon",
+								preset: -1, region: 0, channelName: "", hasChannel: false,
+								snr: 1.2, rssi: -110, heardOn: firstName),
+					 session: session, presetResult: resultsByPreset[firstName], now: now, context: context)
+		beaconCount += 1
+
+		// Discovered nodes around the user, so the discovery map / results are populated too.
+		let firstResult = resultsByPreset[firstName] ?? resultsByPreset.values.first
+		for i in 0..<18 {
+			insertDiscoveredNode(index: i, presetName: firstName, session: session, presetResult: firstResult, context: context)
 		}
 
 		do {
 			try context.save()
-			Logger.data.info("📡 [BeaconSeed] Seeded 1 discovery session with \(specs.count, privacy: .public) beacons")
+			Logger.data.info("📡 [BeaconSeed] Seeded 1 discovery session with \(beaconCount, privacy: .public) beacons across \(presets.count, privacy: .public) presets")
 		} catch {
 			Logger.data.error("📡 [BeaconSeed] Failed to seed beacons: \(error.localizedDescription, privacy: .public)")
 		}
@@ -741,6 +768,34 @@ extension PerformanceSeedData {
 		result.session = session
 		context.insert(result)
 		return result
+	}
+
+	private static func insertDiscoveredNode(
+		index: Int,
+		presetName: String,
+		session: DiscoverySessionEntity,
+		presetResult: DiscoveryPresetResultEntity?,
+		context: ModelContext
+	) {
+		let node = DiscoveredNodeEntity()
+		node.nodeNum = 0x0D00_0000 + Int64(index)
+		node.shortName = "N" + String(format: "%03d", index)
+		node.longName = "Discovered Node \(index)"
+		node.neighborType = index % 3 == 0 ? "direct" : "mesh"
+		// A small deterministic grid around Las Vegas so the discovery map has content.
+		node.latitude = 36.1699 + Double(index % 6) * 0.008 - 0.02
+		node.longitude = -115.1398 + Double(index / 6) * 0.008 - 0.01
+		node.distanceFromUser = Double(200 + index * 150)
+		node.hopCount = index % 5
+		node.snr = Float(9 - index % 9)
+		node.rssi = -75 - index % 30
+		node.messageCount = index * 2
+		node.sensorPacketCount = index
+		node.isInfrastructure = index % 4 == 0
+		node.presetName = presetName
+		node.session = session
+		node.presetResult = presetResult
+		context.insert(node)
 	}
 
 	private static func insertBeacon(
