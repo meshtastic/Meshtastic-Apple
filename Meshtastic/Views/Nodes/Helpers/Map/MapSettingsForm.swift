@@ -19,6 +19,7 @@ struct MapSettingsForm: View {
 	@AppStorage("mapOverlaysEnabled") private var mapOverlaysEnabled = false
 	@AppStorage("enableOfflineTiles") private var enableOfflineTiles = false
 	@AppStorage("enableMapClustering") private var enableMapClustering = true
+	@AppStorage("enableMapPreciseLocationsOnly") private var preciseLocationsOnly = false
 	@ObservedObject private var mapDataManager = MapDataManager.shared
 	@ObservedObject private var offlineMapManager = OfflineMapManager.shared
 	@Binding var traffic: Bool
@@ -69,6 +70,19 @@ struct MapSettingsForm: View {
 							} icon: {
 								Image(systemName: "signpost.right.and.left")
 									.symbolRenderingMode(.multicolor)
+							}
+						}
+						.tint(.accentColor)
+						Toggle(isOn: $preciseLocationsOnly) {
+							Label {
+								VStack(alignment: .leading) {
+									Text("Precise Locations Only")
+									Text("Hides nodes that broadcast an approximate location (the ones drawn with a translucent precision circle).")
+										.font(.caption)
+										.foregroundColor(.secondary)
+								}
+							} icon: {
+								Image(systemName: "scope")
 							}
 						}
 						.tint(.accentColor)

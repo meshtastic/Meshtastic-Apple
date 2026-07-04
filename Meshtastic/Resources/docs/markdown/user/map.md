@@ -42,6 +42,18 @@ Tap the layer icon (top-right) to switch between:
 | Satellite | Aerial imagery |
 | GeoJSON Overlays | Custom map layers loaded from `.geojson` files in the app's file storage |
 
+## Map Options
+
+Tap the **info button** (`info.circle`) in the bottom-right toolbar to open the Map Options sheet. Alongside the base layer picker it offers:
+
+| Option | Description |
+|--------|-------------|
+| Waypoints | Show or hide waypoint markers on the map |
+| Precise Locations Only | Hide nodes that broadcast an approximate (reduced-precision) location. Imprecise nodes are normally drawn with a translucent circle showing how large the possible area is; turn this on to show only nodes reporting an exact position. Both the imprecise pins and their precision circles are hidden. |
+| Convex Hull | Draw an outline around the outermost LoRa nodes to visualize mesh coverage |
+| Traffic | Show Apple Maps live traffic |
+| Points of Interest | Show Apple Maps points of interest |
+
 ## Waypoints
 
 Waypoints are named points of interest you can share across the mesh.
