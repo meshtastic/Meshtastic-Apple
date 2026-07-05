@@ -279,6 +279,7 @@
 		D9C983A22B79D1A600BDBE6A /* RequestPositionButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C983A12B79D1A600BDBE6A /* RequestPositionButton.swift */; };
 		DCC919C6B47C15BB0795456C /* Tools.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D5AD8037A0D583C614B0597 /* Tools.swift */; };
 		DD000001275499A500A42001 /* PerformanceSeedData.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000000275499A500A42001 /* PerformanceSeedData.swift */; };
+		DD000003275499A500A42001 /* MarketingCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000002275499A500A42001 /* MarketingCapture.swift */; };
 		DD000001NODNAVTST00000001 /* NodeNavigationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000001NODNAVTST00000000 /* NodeNavigationTests.swift */; };
 		DD000002STREXTTST00000001 /* StringExtensionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000002STREXTTST00000000 /* StringExtensionTests.swift */; };
 		DD000003NUMEXTTST00000001 /* NumericExtensionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000003NUMEXTTST00000000 /* NumericExtensionTests.swift */; };
@@ -888,6 +889,7 @@
 		DB55D64F064C45ADBD31ABF8 /* RouteModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteModels.swift; sourceTree = "<group>"; };
 		DC5970BC1CAF4B66999C7248 /* MyInfoEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyInfoEntity.swift; sourceTree = "<group>"; };
 		DD000000275499A500A42001 /* PerformanceSeedData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerformanceSeedData.swift; sourceTree = "<group>"; };
+		DD000002275499A500A42001 /* MarketingCapture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarketingCapture.swift; sourceTree = "<group>"; };
 		DD000001NODNAVTST00000000 /* NodeNavigationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeNavigationTests.swift; sourceTree = "<group>"; };
 		DD000002STREXTTST00000000 /* StringExtensionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StringExtensionTests.swift; sourceTree = "<group>"; };
 		DD000003NUMEXTTST00000000 /* NumericExtensionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NumericExtensionTests.swift; sourceTree = "<group>"; };
@@ -2367,6 +2369,7 @@
 				DEA1C1232F10001000A1B2C3 /* NodeBackupManaging.swift */,
 				DDC4D567275499A500A4208E /* Persistence.swift */,
 				DD000000275499A500A42001 /* PerformanceSeedData.swift */,
+				DD000002275499A500A42001 /* MarketingCapture.swift */,
 				DD964FC52975DBFD007C176F /* QuerySwiftData.swift */,
 				DD3CC6C128EB9D4900FA9159 /* UpdateSwiftData.swift */,
 			);
@@ -2986,6 +2989,7 @@
 				DEA1C1322F10002000A1B2C3 /* NeighborInfoConfig.swift in Sources */,
 				DDC4D568275499A500A4208E /* Persistence.swift in Sources */,
 				DD000001275499A500A42001 /* PerformanceSeedData.swift in Sources */,
+				DD000003275499A500A42001 /* MarketingCapture.swift in Sources */,
 				DEA1C0DE2F10000100A1B2C3 /* CoreDataMigrationService.swift in Sources */,
 				DDD6EEAF29BC024700383354 /* Firmware.swift in Sources */,
 				DD77093B2AA1ABB8007A8BF0 /* BluetoothTips.swift in Sources */,

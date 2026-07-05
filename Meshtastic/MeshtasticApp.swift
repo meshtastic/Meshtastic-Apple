@@ -131,8 +131,11 @@ struct MeshtasticAppleApp: App {
 			// Initialize WatchConnectivity session
 			_ = WatchSessionManager.shared
 #if DEBUG
-			// Show tips in development
-			try? Tips.resetDatastore()
+			// Show tips in development — but not during marketing screenshot capture, where TipKit
+			// popovers would clutter the shots.
+			if !CommandLine.arguments.contains("--marketing-capture") {
+				try? Tips.resetDatastore()
+			}
 #endif
 			if !UserDefaults.firstLaunch {
 				// If this is first launch, we will show onboarding screens which
@@ -228,15 +231,19 @@ struct MeshtasticAppleApp: App {
 						}
 					})
 				.task {
-					try? Tips.configure(
-						[
-							// Reset which tips have been shown and what parameters have been tracked, useful during testing and for this sample project
-							.datastoreLocation(.applicationDefault),
-							// When should the tips be presented? If you use .immediate, they'll all be presented whenever a screen with a tip appears.
-							// You can adjust this on per tip level as well
-							.displayFrequency(.immediate)
-						]
-					)
+					// Skip TipKit entirely during marketing screenshot capture so tip popovers never
+					// appear in the shots (unconfigured TipKit displays nothing).
+					if !CommandLine.arguments.contains("--marketing-capture") {
+						try? Tips.configure(
+							[
+								// Reset which tips have been shown and what parameters have been tracked, useful during testing and for this sample project
+								.datastoreLocation(.applicationDefault),
+								// When should the tips be presented? If you use .immediate, they'll all be presented whenever a screen with a tip appears.
+								// You can adjust this on per tip level as well
+								.displayFrequency(.immediate)
+							]
+						)
+					}
 				}
 				.modelContainer(persistenceController!.container)
 				.environmentObject(appState)

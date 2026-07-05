@@ -52,6 +52,12 @@ struct ContentView: View {
 			.onChange(of: UserDefaults.showDeviceOnboarding) {_, newValue in
 				isShowingDeviceOnboardingFlow = newValue
 			}
+			.task {
+#if DEBUG
+				// No-op unless launched with --marketing-capture (see MarketingCapture / PerformanceSeedData).
+				await MarketingCapture.runIfNeeded(router: router, accessoryManager: accessoryManager)
+#endif
+			}
 	}
 
 	// MARK: - Tab Reselection

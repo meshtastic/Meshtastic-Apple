@@ -62,13 +62,6 @@ struct DiscoveryScanView: View {
 	/// second); auto-selected so a first scan covers the presets most meshes actually use.
 	private let popularPresets: [ModemPresets] = [.longFast, .medFast]
 
-	/// Caps the idle configuration screen's width on wide layouts (iPad / Mac Catalyst) so the
-	/// chip grid and data cards read as an intentional, centered panel rather than stretching
-	/// edge-to-edge. iPhone keeps the full width (`.infinity`).
-	private var idleListMaxWidth: CGFloat {
-		usesFillMapLayout ? 700 : .infinity
-	}
-
 	/// Selectable presets we've heard a beacon advertise (across all past sessions). These are
 	/// pre-checked when the picker first appears so a fresh scan includes any mesh a beacon told us
 	/// about, and flagged with a beacon icon in the row.
@@ -90,10 +83,9 @@ struct DiscoveryScanView: View {
 					// status header and the map filling all remaining space (no scrolling).
 					mapFillingLayout(engine, session: session)
 				} else {
-					// Idle configuration (and iPhone scanning): a scrolling List. On wide layouts the
-					// List is capped and centered so the config panel doesn't sprawl across a Mac window.
+					// Idle configuration (and iPhone scanning): a scrolling List that fills the pane on
+					// every layout (iPhone, iPad, Mac Catalyst).
 					scanList(proxy: proxy)
-						.frame(maxWidth: idleListMaxWidth)
 						.frame(maxWidth: .infinity)
 				}
 			}
