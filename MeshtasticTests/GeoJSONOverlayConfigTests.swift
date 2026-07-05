@@ -4,6 +4,9 @@
 import Testing
 import Foundation
 import CoreLocation
+import MapKit
+import SwiftUI
+import UIKit
 @testable import Meshtastic
 
 // MARK: - AnyCodableValue Tests
@@ -263,9 +266,12 @@ struct GeoJSONFeaturePropertyTests {
 		#expect(feature.effectiveFillColor == "#0000FF")
 	}
 
-	@Test func effectiveFillColor_noOpacity_returnsBlack() {
+	@Test func effectiveFillColor_usesFillEvenWithoutExplicitOpacity() {
+		// A fill color with no explicit fill-opacity now resolves to the fill (visibility is governed
+		// separately by effectiveFillOpacity, which defaults to a visible value here).
 		let feature = makeFeature(properties: ["fill": .string("#0000FF")])
-		#expect(feature.effectiveFillColor == "#000000")
+		#expect(feature.effectiveFillColor == "#0000FF")
+		#expect(feature.effectiveFillOpacity == 0.35)
 	}
 
 	@Test func markerRadius_small() {
@@ -415,5 +421,107 @@ struct GeoJSONFeatureCollectionCodableTests {
 		#expect(feature.fillOpacity == 0.5)
 		#expect(feature.strokeColor == "#000000")
 		#expect(feature.strokeWidth == 2.0)
+	}
+}
+
+// MARK: - Color styling: Site Planner coverage + color/rgb() (meshtastic/design#118)
+
+@Suite("GeoJSON color styling")
+struct GeoJSONColorStylingTests {
+
+	private struct RGBA { let r, g, b, a: Double }
+
+	/// Resolve a SwiftUI Color to sRGB components + alpha for assertions.
+	private func rgba(_ color: Color) -> RGBA {
+		var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+		UIColor(color).getRed(&r, green: &g, blue: &b, alpha: &a)
+		return RGBA(r: Double(r), g: Double(g), b: Double(b), a: Double(a))
+	}
+
+	private func decodeFirst(_ json: String) throws -> GeoJSONFeature {
+		let collection = try JSONDecoder().decode(GeoJSONFeatureCollection.self, from: Data(json.utf8))
+		return collection.features[0]
+	}
+
+	@Test func colorCss_parsesRgb() {
+		let c = rgba(Color(css: "rgb(0, 128, 255)"))
+		#expect(abs(c.r - 0.0) < 0.02)
+		#expect(abs(c.g - 128.0 / 255.0) < 0.02)
+		#expect(abs(c.b - 1.0) < 0.02)
+		#expect(abs(c.a - 1.0) < 0.02)
+	}
+
+	@Test func colorCss_parsesHexFallback() {
+		let c = rgba(Color(css: "#0080ff"))
+		#expect(abs(c.r - 0.0) < 0.02)
+		#expect(abs(c.g - 128.0 / 255.0) < 0.02)
+		#expect(abs(c.b - 1.0) < 0.02)
+	}
+
+	/// A real Meshtastic Site Planner coverage export (post design#118): a MultiPolygon contour with
+	/// simplestyle `fill`/`stroke` (hex) plus the legacy `color` (rgb) and `dbm`/`label`. It must parse
+	/// to an overlay and render with a visible, colored fill.
+	@Test func sitePlannerCoverage_rendersFilledColoredOverlay() throws {
+		let json = """
+		{ "type": "FeatureCollection", "features": [
+			{ "type": "Feature",
+			  "geometry": { "type": "MultiPolygon",
+				"coordinates": [[[[-122.40, 47.60], [-122.30, 47.60], [-122.30, 47.70], [-122.40, 47.70], [-122.40, 47.60]]]] },
+			  "properties": { "dbm": -110, "color": "rgb(0, 128, 255)", "label": "≥ -110 dBm",
+				"fill": "#0080ff", "fill-opacity": 0.35, "stroke": "#0080ff", "stroke-width": 1, "stroke-opacity": 0.8 } }
+		]}
+		"""
+		let feature = try decodeFirst(json)
+		#expect(feature.effectiveFillColor == "#0080ff")
+		#expect(feature.effectiveFillOpacity == 0.35)
+
+		let styled = GeoJSONStyledFeature(feature: feature, overlayId: "test")
+		#expect(styled.precomputedOverlay is MKMultiPolygon) // geometry parsed into a renderable overlay
+		let fill = rgba(styled.fillColor)
+		#expect(abs(fill.a - 0.35) < 0.02) // filled, not transparent
+		#expect(abs(fill.b - 1.0) < 0.02)  // blue coverage color, not black
+	}
+
+	/// A `color`-only export (rgb, no simplestyle keys) — the case this change adds support for. Before,
+	/// it rendered as a bare black outline; now it fills with the color at a sensible default opacity.
+	@Test func colorOnly_fillsWithRgbColor() throws {
+		let json = """
+		{ "type": "FeatureCollection", "features": [
+			{ "type": "Feature",
+			  "geometry": { "type": "Polygon",
+				"coordinates": [[[-122.40, 47.60], [-122.30, 47.60], [-122.30, 47.70], [-122.40, 47.70], [-122.40, 47.60]]] },
+			  "properties": { "color": "rgb(0, 128, 255)", "dbm": -110 } }
+		]}
+		"""
+		let feature = try decodeFirst(json)
+		#expect(feature.effectiveFillColor == "rgb(0, 128, 255)")
+		#expect(feature.effectiveStrokeColor == "rgb(0, 128, 255)")
+		#expect(feature.effectiveFillOpacity == 0.35)
+
+		let fill = rgba(GeoJSONStyledFeature(feature: feature, overlayId: "t").fillColor)
+		#expect(abs(fill.a - 0.35) < 0.02)
+		#expect(abs(fill.b - 1.0) < 0.02)
+	}
+
+	@Test func explicitZeroFillOpacity_staysUnfilled() throws {
+		let json = """
+		{ "type": "FeatureCollection", "features": [
+			{ "type": "Feature",
+			  "geometry": { "type": "Polygon", "coordinates": [[[0, 0], [1, 0], [1, 1], [0, 0]]] },
+			  "properties": { "fill": "#0000ff", "fill-opacity": 0 } }
+		]}
+		"""
+		#expect(try decodeFirst(json).effectiveFillOpacity == 0.0) // explicit 0 wins
+	}
+
+	@Test func noColorNoFill_staysUnfilled() throws {
+		let json = """
+		{ "type": "FeatureCollection", "features": [
+			{ "type": "Feature",
+			  "geometry": { "type": "Polygon", "coordinates": [[[0, 0], [1, 0], [1, 1], [0, 0]]] },
+			  "properties": { "stroke": "#ff0000" } }
+		]}
+		"""
+		#expect(try decodeFirst(json).effectiveFillOpacity == 0.0) // stroke only, nothing to fill
 	}
 }
