@@ -37,6 +37,27 @@ extension Color {
 			opacity: Double(a) / 255
 		)
 	}
+
+	/// Initialize a Color from a CSS-style color string: `rgb(r,g,b)` / `rgba(r,g,b,a)` or a hex
+	/// string. Some GeoJSON producers (e.g. the Meshtastic Site Planner's coverage export) put an
+	/// `rgb(...)` value in the `color` property; `init(hex:)` alone can't parse those.
+	init(css: String) {
+		let value = css.trimmingCharacters(in: .whitespaces)
+		if value.lowercased().hasPrefix("rgb") {
+			let components = value
+				.drop { $0 != "(" }.dropFirst()
+				.prefix { $0 != ")" }
+				.split(separator: ",")
+				.map { $0.trimmingCharacters(in: .whitespaces) }
+			if components.count >= 3,
+			   let r = Double(components[0]), let g = Double(components[1]), let b = Double(components[2]) {
+				let a = components.count >= 4 ? (Double(components[3]) ?? 1) : 1
+				self.init(.sRGB, red: r / 255, green: g / 255, blue: b / 255, opacity: a)
+				return
+			}
+		}
+		self.init(hex: value)
+	}
 	///  Returns a boolean for a SwiftUI Color to determine what color of text to use
 	/// - Returns: true if the color is light
 	func isLight() -> Bool {
