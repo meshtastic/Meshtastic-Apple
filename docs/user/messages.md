@@ -195,3 +195,24 @@ On Mac Catalyst, pressing **Enter** sends the message. Press **Shift+Enter** to 
 
 > **Tip — Message Limit**
 > Messages are limited to 200 bytes. Markdown delimiters count toward this limit (e.g., `**bold**` uses 4 extra bytes for the `**` pairs). The byte counter in the toolbar shows remaining space.
+
+---
+
+## @Mentions
+
+You can mention a specific node in any message by typing `@` followed by a name. An autocomplete list of known nodes appears, filterable by long name, short name, or user ID. Tap a row to insert the mention.
+
+### How mentions work
+
+When you select a node from the autocomplete list, the app inserts a mention token (`@!<hex-id>`) into the message. The hex ID is the node's numeric identifier, which stays stable even if the node's display name changes later. This format is shared with Android and Web clients so mentions resolve correctly on all platforms.
+
+### Reading mentions
+
+In received messages, mention tokens are automatically resolved to the node's current display name and rendered as tappable links. Tapping a mention navigates to that node's detail screen. The name updates live — if a node renames itself, existing messages show the new name immediately.
+
+### Mention notifications
+
+If a channel message mentions your own node (even on a muted channel), the app delivers a notification for that message. This ensures you are notified when someone addresses you directly in a group conversation.
+
+> **Tip — Mention format**
+> The mention token sent on the wire is `@!<hex-id>` (e.g. `@!deadbeef`). You can also type this token directly if you know the node's hex ID.
