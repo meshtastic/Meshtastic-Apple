@@ -115,15 +115,7 @@ struct MessageContextMenuItems: View {
 			if message.relays != 0 && message.realACK == false {
 				Text("Relayed by \(message.relays) \(message.relays == 1 ? "node" : "nodes")")
 			}
-			if isCurrentUser && message.receivedACK {
-				let status = message.deliveryStatus(isDirectMessage: tapBackDestination.isDirectMessage)
-				Text(status.text)
-				Text(status.detail)
-			} else if isCurrentUser && message.ackError == 0 {
-				let status = message.deliveryStatus(isDirectMessage: tapBackDestination.isDirectMessage)
-				Text(status.text)
-				Text(status.detail)
-			} else if isCurrentUser && message.ackError > 0 {
+			if isCurrentUser {
 				let status = message.deliveryStatus(isDirectMessage: tapBackDestination.isDirectMessage)
 				Text(status.text)
 					.fixedSize(horizontal: false, vertical: true)

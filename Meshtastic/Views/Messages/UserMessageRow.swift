@@ -128,6 +128,7 @@ struct UserMessageRow: View {
 				}
 				
 				VStack(alignment: isCurrentUser ? .trailing : .leading) {
+					let deliveryStatus = isCurrentUser ? message.deliveryStatus(isDirectMessage: true) : nil
 					
 					// Sender Name Header
 					if !isCurrentUser && message.fromUser != nil {
@@ -148,7 +149,7 @@ struct UserMessageRow: View {
 							onTapback(message)
 						}
 						
-						if isCurrentUser && message.deliveryStatus(isDirectMessage: true).canRetry {
+						if let deliveryStatus, deliveryStatus.canRetry {
 							RetryButton(message: message, destination: .user(user))
 						}
 					}
@@ -157,8 +158,8 @@ struct UserMessageRow: View {
 					
 					// ACK Error
 					HStack {
-						if isCurrentUser {
-							MessageDeliveryStatusLabel(status: message.deliveryStatus(isDirectMessage: true))
+						if let deliveryStatus {
+							MessageDeliveryStatusLabel(status: deliveryStatus)
 						}
 					}
 				}

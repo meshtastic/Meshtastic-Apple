@@ -119,6 +119,7 @@ struct ChannelMessageRow: View {
 				}
 				
 				VStack(alignment: isCurrentUser ? .trailing : .leading) {
+					let deliveryStatus = isCurrentUser ? message.deliveryStatus(isDirectMessage: false) : nil
 					let isDetectionSensorMessage = message.portNum == Int32(PortNum.detectionSensorApp.rawValue)
 					
 					// Sender Name Header
@@ -140,7 +141,7 @@ struct ChannelMessageRow: View {
 							onTapback(message)
 						}
 						
-						if isCurrentUser && message.deliveryStatus(isDirectMessage: false).canRetry {
+						if let deliveryStatus, deliveryStatus.canRetry {
 							RetryButton(message: message, destination: .channel(channel))
 						}
 					}
@@ -149,8 +150,8 @@ struct ChannelMessageRow: View {
 					
 					// ACK Status / Error
 					HStack {
-						if isCurrentUser && !isDetectionSensorMessage {
-							MessageDeliveryStatusLabel(status: message.deliveryStatus(isDirectMessage: false))
+						if let deliveryStatus, !isDetectionSensorMessage {
+							MessageDeliveryStatusLabel(status: deliveryStatus)
 						}
 					}
 				}
