@@ -233,6 +233,9 @@
 		BBFF00000000000000000007 /* RegionSelectorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAFF00000000000000000007 /* RegionSelectorView.swift */; };
 		BBFF00000000000000000008 /* OfflineMapDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAFF00000000000000000008 /* OfflineMapDetailView.swift */; };
 		BBFF00000000000000000009 /* PMTilesExtractorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAFF00000000000000000009 /* PMTilesExtractorTests.swift */; };
+		DDA1B0000000000000000001 /* AirQualityCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA1C0000000000000000001 /* AirQualityCalculator.swift */; };
+		DDA1B0000000000000000002 /* AirQualityMetricsLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA1C0000000000000000002 /* AirQualityMetricsLog.swift */; };
+		DDA1B0000000000000000003 /* AirQualityCalculatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA1C0000000000000000003 /* AirQualityCalculatorTests.swift */; };
 		BC10380F2DD4334400B00BFA /* AddContactIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC10380E2DD4333C00B00BFA /* AddContactIntent.swift */; };
 		BC6B45FF2CB2F98900723CEB /* SaveChannelSettingsIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC6B45FE2CB2F98900723CEB /* SaveChannelSettingsIntent.swift */; };
 		BC996F276BA82B1229C119D8 /* DiscoveryHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41EB21EF91CA0B50FDC20B85 /* DiscoveryHistoryView.swift */; };
@@ -833,6 +836,9 @@
 		AAFF00000000000000000007 /* RegionSelectorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RegionSelectorView.swift; path = Meshtastic/Views/Nodes/Helpers/Map/Offline/RegionSelectorView.swift; sourceTree = SOURCE_ROOT; };
 		AAFF00000000000000000008 /* OfflineMapDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OfflineMapDetailView.swift; path = Meshtastic/Views/Nodes/Helpers/Map/Offline/OfflineMapDetailView.swift; sourceTree = SOURCE_ROOT; };
 		AAFF00000000000000000009 /* PMTilesExtractorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PMTilesExtractorTests.swift; path = MeshtasticTests/PMTilesExtractorTests.swift; sourceTree = SOURCE_ROOT; };
+		DDA1C0000000000000000001 /* AirQualityCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AirQualityCalculator.swift; path = Meshtastic/Helpers/AirQualityCalculator.swift; sourceTree = SOURCE_ROOT; };
+		DDA1C0000000000000000002 /* AirQualityMetricsLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AirQualityMetricsLog.swift; path = Meshtastic/Views/Nodes/AirQualityMetricsLog.swift; sourceTree = SOURCE_ROOT; };
+		DDA1C0000000000000000003 /* AirQualityCalculatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AirQualityCalculatorTests.swift; path = MeshtasticTests/AirQualityCalculatorTests.swift; sourceTree = SOURCE_ROOT; };
 		AB61EBF02E3326DC00B35962 /* NodeListItemCompact.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeListItemCompact.swift; sourceTree = "<group>"; };
 		AB6E72752E3FC85A00639328 /* LayoutEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutEnums.swift; sourceTree = "<group>"; };
 		ABA8E63F2E2F2A2300E27791 /* AppIconButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIconButton.swift; sourceTree = "<group>"; };
@@ -2052,6 +2058,9 @@
 				AAFF00000000000000000007 /* RegionSelectorView.swift */,
 				AAFF00000000000000000008 /* OfflineMapDetailView.swift */,
 				AAFF00000000000000000009 /* PMTilesExtractorTests.swift */,
+				DDA1C0000000000000000001 /* AirQualityCalculator.swift */,
+				DDA1C0000000000000000002 /* AirQualityMetricsLog.swift */,
+				DDA1C0000000000000000003 /* AirQualityCalculatorTests.swift */,
 			);
 			name = "Recovered References";
 			sourceTree = "<group>";
@@ -2810,6 +2819,7 @@
 				DD00001CMAPDATTST0000001 /* MapDataModelTests.swift in Sources */,
 				DD00001CMAPDMGRTST000001 /* MapDataManagerTests.swift in Sources */,
 				BBFF00000000000000000009 /* PMTilesExtractorTests.swift in Sources */,
+				DDA1B0000000000000000003 /* AirQualityCalculatorTests.swift in Sources */,
 				DD00001DCDENTTST00000001 /* EntityTests.swift in Sources */,
 				DD00001EURLDETTST0000001 /* URLExtensionDetailedTests.swift in Sources */,
 				DD00001FFWVMERRTST000001 /* FirmwareViewModelErrorTests.swift in Sources */,
@@ -2863,6 +2873,8 @@
 				BBFF00000000000000000006 /* DownloadNewMapView.swift in Sources */,
 				BBFF00000000000000000007 /* RegionSelectorView.swift in Sources */,
 				BBFF00000000000000000008 /* OfflineMapDetailView.swift in Sources */,
+				DDA1B0000000000000000001 /* AirQualityCalculator.swift in Sources */,
+				DDA1B0000000000000000002 /* AirQualityMetricsLog.swift in Sources */,
 				BB0001000000000000000000 /* MBTilesArchive.swift in Sources */,
 				BB0003000000000000000000 /* PMTilesMapView.swift in Sources */,
 				BB0005000000000000000000 /* MeshMapMK.swift in Sources */,

@@ -20,6 +20,7 @@ private struct NodeDetailLogAvailability {
 	var hasEnvironmentMetrics = false
 	var hasTraceRoutes = false
 	var hasPowerMetrics = false
+	var hasAirQualityMetrics = false
 	var hasDetectionSensorMetrics = false
 	var hasPax = false
 }
@@ -509,6 +510,7 @@ struct NodeDetail: View {
 		let hasEnvironmentMetrics = logAvailability.hasEnvironmentMetrics
 		let hasTraceRoutes = logAvailability.hasTraceRoutes
 		let hasPowerMetrics = logAvailability.hasPowerMetrics
+		let hasAirQualityMetrics = logAvailability.hasAirQualityMetrics
 		let hasDetectionSensorMetrics = logAvailability.hasDetectionSensorMetrics
 		let hasPax = logAvailability.hasPax
 
@@ -581,6 +583,17 @@ struct NodeDetail: View {
 				}
 			}
 			.disabled(!hasPowerMetrics)
+			NavigationLink {
+				AirQualityMetricsLog(node: node)
+			} label: {
+				Label {
+					Text("Air Quality Metrics Log")
+				} icon: {
+					Image(systemName: "aqi.medium")
+						.symbolRenderingMode(.multicolor)
+				}
+			}
+			.disabled(!hasAirQualityMetrics)
 			NavigationLink {
 				DetectionSensorLog(node: node)
 			} label: {
@@ -806,6 +819,7 @@ struct NodeDetail: View {
 			hasEnvironmentMetrics: environmentMetrics != nil,
 			hasTraceRoutes: node.hasTraceRoutes,
 			hasPowerMetrics: powerMetrics != nil,
+			hasAirQualityMetrics: node.hasAirQualityMetrics,
 			hasDetectionSensorMetrics: node.hasDetectionSensorMetrics,
 			hasPax: node.hasPax
 		)

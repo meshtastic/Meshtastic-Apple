@@ -918,7 +918,7 @@ actor MeshPackets {
 
 	func telemetryPacket(packet: MeshPacket, connectedNode: Int64) {
 		if let telemetryMessage = try? Telemetry(serializedBytes: packet.decoded.payload) {
-			if telemetryMessage.variant != Telemetry.OneOf_Variant.deviceMetrics(telemetryMessage.deviceMetrics) && telemetryMessage.variant != Telemetry.OneOf_Variant.environmentMetrics(telemetryMessage.environmentMetrics) && telemetryMessage.variant != Telemetry.OneOf_Variant.localStats(telemetryMessage.localStats) && telemetryMessage.variant != Telemetry.OneOf_Variant.powerMetrics(telemetryMessage.powerMetrics) {
+			if telemetryMessage.variant != Telemetry.OneOf_Variant.deviceMetrics(telemetryMessage.deviceMetrics) && telemetryMessage.variant != Telemetry.OneOf_Variant.environmentMetrics(telemetryMessage.environmentMetrics) && telemetryMessage.variant != Telemetry.OneOf_Variant.localStats(telemetryMessage.localStats) && telemetryMessage.variant != Telemetry.OneOf_Variant.powerMetrics(telemetryMessage.powerMetrics) && telemetryMessage.variant != Telemetry.OneOf_Variant.airQualityMetrics(telemetryMessage.airQualityMetrics) {
 				/// Other unhandled telemetry packets
 				return
 			}
@@ -1008,6 +1008,18 @@ actor MeshPackets {
 				telemetry.powerCh3Voltage = telemetryMessage.powerMetrics.hasCh3Voltage.then(telemetryMessage.powerMetrics.ch3Voltage)
 				telemetry.powerCh3Current = telemetryMessage.powerMetrics.hasCh3Current.then(telemetryMessage.powerMetrics.ch3Current)
 				telemetry.metricsType = 2
+			} else if telemetryMessage.variant == Telemetry.OneOf_Variant.airQualityMetrics(telemetryMessage.airQualityMetrics) {
+				// Air Quality Metrics (particulate matter). Persisted here, in the main ingest path, so
+				// PM data is queryable by the UI — previously these packets were only counted by the
+				// Discovery scan engine and otherwise discarded. See meshtastic/design#54.
+				Logger.data.debug("📈 [Telemetry] Air Quality Metrics Received for Node: \(packet.from.toHex(), privacy: .public)")
+				telemetry.pm10Standard = telemetryMessage.airQualityMetrics.hasPm10Standard.then(telemetryMessage.airQualityMetrics.pm10Standard)
+				telemetry.pm25Standard = telemetryMessage.airQualityMetrics.hasPm25Standard.then(telemetryMessage.airQualityMetrics.pm25Standard)
+				telemetry.pm100Standard = telemetryMessage.airQualityMetrics.hasPm100Standard.then(telemetryMessage.airQualityMetrics.pm100Standard)
+				telemetry.pm10Environmental = telemetryMessage.airQualityMetrics.hasPm10Environmental.then(telemetryMessage.airQualityMetrics.pm10Environmental)
+				telemetry.pm25Environmental = telemetryMessage.airQualityMetrics.hasPm25Environmental.then(telemetryMessage.airQualityMetrics.pm25Environmental)
+				telemetry.pm100Environmental = telemetryMessage.airQualityMetrics.hasPm100Environmental.then(telemetryMessage.airQualityMetrics.pm100Environmental)
+				telemetry.metricsType = 3
 			}
 			telemetry.snr = packet.rxSnr
 			telemetry.rssi = packet.rxRssi

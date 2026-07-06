@@ -191,6 +191,36 @@ extension NodeInfoEntity {
 		return ((try? ctx.fetch(descriptor)) ?? []).isEmpty == false
 	}
 
+	var hasAirQualityMetrics: Bool {
+		guard let ctx = modelContext else { return false }
+		let nodeNum = self.num
+		let metricsType: Int32 = 3
+		var descriptor = FetchDescriptor<TelemetryEntity>(
+			predicate: #Predicate<TelemetryEntity> { $0.nodeTelemetry?.num == nodeNum && $0.metricsType == metricsType }
+		)
+		descriptor.fetchLimit = 1
+		return ((try? ctx.fetch(descriptor)) ?? []).isEmpty == false
+	}
+
+	/// The most recent reported PM2.5 concentration (µg/m³) for this node, if any.
+	var latestPm25: UInt32? {
+		safeTelemetries(ofType: 3).first(where: { $0.pm25Standard != nil })?.pm25Standard
+	}
+
+	/// The current EPA NowCast AQI (0–500) computed from this node's PM2.5 history, or `nil` when
+	/// there isn't enough recent history (per meshtastic/design#54). Callers should fall back to the
+	/// raw `latestPm25` reading rather than showing a misleading instantaneous value.
+	func currentNowCastAqi(now: Date = Date()) -> Int? {
+		let readings: [(time: TimeInterval, pm25: Double)] = safeTelemetries(ofType: 3).compactMap { telemetry in
+			guard let pm25 = telemetry.pm25Standard, let time = telemetry.time else { return nil }
+			return (time.timeIntervalSince1970, Double(pm25))
+		}
+		guard let nowCast = AirQualityCalculator.computeNowCastPm25(readings: readings, nowEpochSeconds: now.timeIntervalSince1970) else {
+			return nil
+		}
+		return AirQualityCalculator.pm25ToAqi(nowCast)
+	}
+
 	var latestLocalStats: TelemetryEntity? {
 		guard let ctx = modelContext else { return nil }
 		let nodeNum = self.num

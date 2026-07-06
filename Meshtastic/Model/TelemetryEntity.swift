@@ -35,6 +35,13 @@ final class TelemetryEntity {
 	var irLux: Float?
 	var lux: Float?
 	var noiseFloor: Int32?
+	// Air quality (particulate matter, µg/m³) from the AirQualityMetrics telemetry variant.
+	var pm10Standard: UInt32?
+	var pm25Standard: UInt32?
+	var pm100Standard: UInt32?
+	var pm10Environmental: UInt32?
+	var pm25Environmental: UInt32?
+	var pm100Environmental: UInt32?
 	var powerCh1Current: Float?
 	var powerCh1Voltage: Float?
 	var powerCh2Current: Float?
