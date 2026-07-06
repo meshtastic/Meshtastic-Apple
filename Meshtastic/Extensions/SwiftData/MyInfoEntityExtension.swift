@@ -34,7 +34,10 @@ extension MyInfoEntity {
 			}
 		)
 		let messages = (try? context.fetch(descriptor)) ?? []
-		return messages.filter { $0.toUser == nil }.count
+		// A muted ("Hide Alerts") channel is silent: exclude its messages so they never
+		// contribute to the app icon badge or the in-app Messages tab badge.
+		let mutedChannelIndexes = Set(channels.filter { $0.mute }.map { $0.index })
+		return messages.filter { $0.toUser == nil && !mutedChannelIndexes.contains($0.channel) }.count
 	}
 
 	@MainActor

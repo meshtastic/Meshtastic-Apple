@@ -66,10 +66,29 @@ extension UserEntity {
 
 	@MainActor
 	func unreadMessages(context: ModelContext, skipLastMessageCheck: Bool = false) -> Int {
+		// A muted ("Hide Alerts") direct-message conversation is silent: it never contributes to
+		// the unread/badge counts that drive the app icon badge and the in-app Messages tab badge.
+		// This helper is used both per-conversation (called on a remote party — self.mute gates it)
+		// and as an aggregate over all DMs (called on the connected node's own user, where the muted
+		// party is the message's counterpart). Exclude both cases: self-muted, and — for the
+		// aggregate — the unread of every muted conversation, so muted DMs never badge.
+		guard !self.mute else { return 0 }
 		guard self.lastMessage != nil || skipLastMessageCheck else { return 0 }
 		guard let ctx = modelContext else { return 0 }
-		return ((try? fetchIncomingMessageCount(context: ctx, unreadOnly: true)) ?? 0)
+		let total = ((try? fetchIncomingMessageCount(context: ctx, unreadOnly: true)) ?? 0)
 			+ ((try? fetchOutgoingMessageCount(context: ctx, unreadOnly: true)) ?? 0)
+		// Subtract the unread from muted conversations. A muted counterpart's unread messages are
+		// counted by `total` (this user is the connected node, the counterpart is fromUser/toUser),
+		// so remove each muted user's unread contribution. Muted DMs are rare, so this fetch is only
+		// paid when at least one exists.
+		let mutedDescriptor = FetchDescriptor<UserEntity>(predicate: #Predicate<UserEntity> { $0.mute == true })
+		let mutedUsers = (try? ctx.fetch(mutedDescriptor)) ?? []
+		let mutedUnread = mutedUsers.reduce(0) { running, mutedUser in
+			running
+				+ ((try? mutedUser.fetchIncomingMessageCount(context: ctx, unreadOnly: true)) ?? 0)
+				+ ((try? mutedUser.fetchOutgoingMessageCount(context: ctx, unreadOnly: true)) ?? 0)
+		}
+		return max(0, total - mutedUnread)
 	}
 
 	@MainActor

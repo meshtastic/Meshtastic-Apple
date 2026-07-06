@@ -43,6 +43,9 @@ extension ChannelEntity {
 
 	@MainActor
 	func unreadMessages(context: ModelContext) -> Int {
+		// A muted ("Hide Alerts") channel is silent: it never contributes to the unread/badge
+		// counts that drive the app icon badge and the in-app Messages tab badge.
+		guard !self.mute else { return 0 }
 		let channelIndex = self.index
 		let descriptor = FetchDescriptor<MessageEntity>(
 			predicate: #Predicate<MessageEntity> { msg in

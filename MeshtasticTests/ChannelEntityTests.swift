@@ -45,4 +45,46 @@ final class ChannelEntityTests: XCTestCase {
         XCTAssertEqual(fetched.first?.name, "Test Channel")
         XCTAssertTrue(fetched.first?.uplinkEnabled ?? false)
     }
+
+    /// Inserts an unread channel broadcast (toUser == nil, not an emoji/tapback) on `channelIndex`.
+    @MainActor private func insertUnreadChannelMessage(channelIndex: Int32, messageId: Int64) {
+        let message = MessageEntity()
+        message.messageId = messageId
+        message.channel = channelIndex
+        message.isEmoji = false
+        message.read = false
+        message.toUser = nil
+        context.insert(message)
+    }
+
+    /// A muted ("Hide Alerts") channel must report zero unread so it never badges the app icon or
+    /// the in-app Messages tab, while an unmuted channel still reports its real unread count.
+    @MainActor func testMutedChannelReportsZeroUnread() throws {
+        let mutedIndex: Int32 = 91
+        let unmutedIndex: Int32 = 92
+
+        let mutedChannel = ChannelEntity()
+        mutedChannel.index = mutedIndex
+        mutedChannel.mute = true
+        context.insert(mutedChannel)
+
+        let unmutedChannel = ChannelEntity()
+        unmutedChannel.index = unmutedIndex
+        unmutedChannel.mute = false
+        context.insert(unmutedChannel)
+
+        insertUnreadChannelMessage(channelIndex: mutedIndex, messageId: 9_1001)
+        insertUnreadChannelMessage(channelIndex: mutedIndex, messageId: 9_1002)
+        insertUnreadChannelMessage(channelIndex: unmutedIndex, messageId: 9_2001)
+        try context.save()
+
+        // Muted channel: silent — contributes zero to the badge.
+        XCTAssertEqual(mutedChannel.unreadMessages(context: context), 0)
+        // Unmuted channel: unaffected by the mute filter.
+        XCTAssertEqual(unmutedChannel.unreadMessages(context: context), 1)
+
+        // Un-muting the channel restores its unread count.
+        mutedChannel.mute = false
+        XCTAssertEqual(mutedChannel.unreadMessages(context: context), 2)
+    }
 }

@@ -46,8 +46,18 @@ class AppState: ObservableObject {
 			}
 		)
 		let unread = (try? context.fetch(unreadDescriptor)) ?? []
-		let channelCount = unread.filter { $0.toUser == nil }.count
-		let dmCount = unread.filter { $0.toUser != nil && !$0.admin }.count
+		// A muted ("Hide Alerts") channel or DM conversation is silent — exclude its unread
+		// messages from every badge count (app icon + in-app Messages tab). A channel message is
+		// muted when its channel index is muted; a DM is muted when the other party (fromUser) is
+		// muted. Fetch the muted channel indexes once and filter in Swift to match the existing
+		// pattern (comparing an optional relationship to nil in a #Predicate crashes SwiftData on
+		// iOS 26, so the mute join stays out of the predicate too).
+		let mutedChannelDescriptor = FetchDescriptor<ChannelEntity>(
+			predicate: #Predicate<ChannelEntity> { $0.mute == true }
+		)
+		let mutedChannelIndexes = Set(((try? context.fetch(mutedChannelDescriptor)) ?? []).map { $0.index })
+		let channelCount = unread.filter { $0.toUser == nil && !mutedChannelIndexes.contains($0.channel) }.count
+		let dmCount = unread.filter { $0.toUser != nil && !$0.admin && !($0.fromUser?.mute ?? false) }.count
 		if unreadChannelMessages != channelCount {
 			unreadChannelMessages = channelCount
 		}
