@@ -93,9 +93,11 @@ enum PerformanceSeedData {
 		)
 		UserDefaults.standard.set(Int(0x0A00_0000), forKey: "preferredPeripheralNum")
 		if configuration.style == .marketing {
-			// Show individual colored node pins on the map (not count bubbles) so it reads as a real
-			// mesh. All node positions are on land.
-			UserDefaults.standard.set(false, forKey: "enableMapClustering")
+			// Leave clustering on: at the seeded mesh's default map framing, dense downtown nodes
+			// cluster into bubbles while sparser suburban ones stay as individual pins — a natural
+			// blend of both, rather than forcing all-clustered or all-individual. All node positions
+			// are on land.
+			UserDefaults.standard.set(true, forKey: "enableMapClustering")
 		}
 	}
 
@@ -971,6 +973,16 @@ enum MarketingSeed {
 	/// ~4 nodes per anchor. `> 100` per the marketing brief.
 	static var nodeCount: Int { 144 }
 
+	/// Anchors picked to render as a single, unclustered pin on the map screenshot instead of their
+	/// usual small ~4-node cluster bubble — geographically isolated suburbs (Renton, Shoreline, Mercer
+	/// Island), so the map shows a blend of dense downtown clusters and individual outlying nodes
+	/// rather than uniform small clusters everywhere. Their `ring > 0` slots (which would otherwise
+	/// jitter a few more nodes around the same anchor) are redirected to the next anchor instead — safe
+	/// because `ring > 0` names are generic handles, never anchor-specific (see `name(for:anchor:ring:)`),
+	/// so nothing wrong-looking gets named after a place it isn't near. Total node count and every
+	/// hero-node index (`nodeNum(for:)`) are unaffected — only where the "extra" nodes land changes.
+	static let soloAnchorIndices: Set<Int> = [29, 33, 34] // Renton Node, Shoreline Relay, Mercer Island
+
 	// MARK: Coordinates
 
 	/// Node number for the marketing node at `index`. Mirrors `PerformanceSeedData.seededNodeNum` (base
@@ -982,8 +994,12 @@ enum MarketingSeed {
 	}
 
 	static func coordinate(for index: Int) -> (latitude: Double, longitude: Double) {
-		let anchor = anchors[index % anchors.count]
+		var anchorIndex = index % anchors.count
 		let ring = index / anchors.count
+		if ring > 0 && soloAnchorIndices.contains(anchorIndex) {
+			anchorIndex = (anchorIndex + 1) % anchors.count
+		}
+		let anchor = anchors[anchorIndex]
 		guard ring > 0 else { return (anchor.lat, anchor.lon) }
 		let dLat = (unit(index * 2 + 1, salt: 0xA0761D6478BD642F) - 0.5) * 2 * anchor.radius
 		let dLon = (unit(index * 2 + 2, salt: 0xE7037ED1A0B428DB) - 0.5) * 2 * anchor.radius

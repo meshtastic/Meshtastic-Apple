@@ -658,6 +658,18 @@ struct MeshMapMK: View {
 	/// as positions pour in.
 	private func frameInitialRegionIfNeeded() {
 		guard !didInitialFrame else { return }
+#if DEBUG
+		// Marketing capture wants a tighter frame than the real "fit everything, capped at ~100mi"
+		// logic below produces — at that wide a zoom the seeded mesh's ~19 downtown anchors clustered
+		// into one giant bubble with the map screenshot showing nothing but cluster counts. A closer
+		// frame lets some anchors still cluster while others render as individual pins.
+		if MarketingCapture.isActive, let region = MarketingCapture.pendingMapRegion {
+			didInitialFrame = true
+			visibleRegion = region
+			cameraCommand = ClusterMapCameraCommand(id: UUID(), region: region)
+			return
+		}
+#endif
 		// Frame from the same set the map actually shows, so "Precise Locations Only" doesn't start
 		// the camera centered on hidden reduced-precision nodes.
 		let nodeCoords = mapEligiblePositions.compactMap { $0.nodeCoordinate ?? $0.fuzzedNodeCoordinate }

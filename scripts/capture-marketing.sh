@@ -29,7 +29,10 @@ OUT_DIR="marketing"
 SEATTLE_LOC="47.6205,-122.3400"       # central Seattle — the map frames on the mesh centroid here
 MAC_WINDOW="1280x832"                 # 13" MacBook Air logical size (points); @2x = 2560x1664
 LAUNCH_ARGS=(--meshtastic-marketing-seed --marketing-capture)
-EXPECTED_SHOTS=7
+# iPhone captures a standalone node-list shot that iPad/Mac Catalyst skip (their node-detail is
+# already a split view showing both) — see MarketingCapture.capturesNodeListSeparately.
+EXPECTED_SHOTS_IPHONE=5
+EXPECTED_SHOTS_IPAD_MAC=4
 APPEARANCES=("light" "dark")
 
 # Simulator devices (App Store sizes). Edit to taste.
@@ -62,10 +65,14 @@ udid_for_device() {
 }
 
 capture_sim() {
-	local device="$1" appear="$2" udid slug cont shots dest count
+	local device="$1" appear="$2" udid slug cont shots dest count expected
 	udid="$(udid_for_device "$device" || true)"
 	if [ -z "${udid:-}" ]; then echo "  ⚠︎ '$device' not available — skipping" >&2; return; fi
 	slug="$(slugify "$device")"
+	case "$device" in
+		*iPad*) expected="$EXPECTED_SHOTS_IPAD_MAC" ;;
+		*) expected="$EXPECTED_SHOTS_IPHONE" ;;
+	esac
 	echo "  • $device / $appear"
 	xcrun simctl boot "$udid" >/dev/null 2>&1 || true
 	xcrun simctl bootstatus "$udid" -b >/dev/null 2>&1 || true
@@ -80,7 +87,7 @@ capture_sim() {
 	shots="$cont/Documents/marketing/$appear"
 	for _ in $(seq 1 60); do
 		count="$(find "$shots" -maxdepth 1 -name '*.png' 2>/dev/null | wc -l | tr -d ' ')"
-		[ "${count:-0}" -ge "$EXPECTED_SHOTS" ] && break
+		[ "${count:-0}" -ge "$expected" ] && break
 		sleep 2
 	done
 	dest="$OUT_DIR/$slug/$appear"; mkdir -p "$dest"
@@ -106,7 +113,7 @@ capture_catalyst() {
 	open -n "$MAC_APP" --args "${LAUNCH_ARGS[@]}" --marketing-appearance "$appear" --marketing-size "$MAC_WINDOW"
 	for _ in $(seq 1 60); do
 		count="$(find "$shots" -maxdepth 1 -name '*.png' 2>/dev/null | wc -l | tr -d ' ')"
-		[ "${count:-0}" -ge "$EXPECTED_SHOTS" ] && break
+		[ "${count:-0}" -ge "$EXPECTED_SHOTS_IPAD_MAC" ] && break
 		sleep 2
 	done
 	dest="$OUT_DIR/mac-catalyst/$appear"; mkdir -p "$dest"

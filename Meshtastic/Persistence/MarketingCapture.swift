@@ -12,6 +12,7 @@
 #if DEBUG
 import SwiftUI
 import OSLog
+import MapKit
 import MeshtasticProtobufs
 
 #if canImport(UIKit)
@@ -32,6 +33,11 @@ enum MarketingCapture {
 
 	/// True when the app was launched to capture marketing screenshots.
 	static var isActive: Bool { CommandLine.arguments.contains("--marketing-capture") }
+
+	/// Set by the coordinator just before the map step so `MeshMapMK.frameInitialRegionIfNeeded()` uses
+	/// this instead of its normal "fit every node, capped at ~100mi" framing — at that wide a zoom the
+	/// seeded mesh's dense downtown anchors all clustered into one bubble with nothing else visible.
+	static var pendingMapRegion: MKCoordinateRegion?
 
 	/// Value following a launch flag, e.g. `--marketing-appearance dark` → "dark".
 	static func argValue(_ flag: String) -> String? {
@@ -81,57 +87,72 @@ enum MarketingCapture {
 
 	// MARK: Steps
 
+	/// iPad and Mac Catalyst show node list + node detail together in a split view, so the standalone
+	/// node-list shot is redundant there — node-detail alone already conveys both. iPhone still needs
+	/// it since the two are separate screens there.
+	private static var capturesNodeListSeparately: Bool {
+#if targetEnvironment(macCatalyst)
+		return false
+#elseif canImport(UIKit)
+		return UIDevice.current.userInterfaceIdiom != .pad
+#else
+		return true
+#endif
+	}
+
 	/// Full-screen screens, root-level views captured before pushed views that share a NavigationStack.
+	/// Capped at 5 screens (10 shots at light+dark) to match the App Store's per-device-size limit —
+	/// iPad/Mac drop node-list (see `capturesNodeListSeparately`), landing at 4 screens / 8 shots there.
 	private static func makeSteps(router: Router) -> [CaptureStep] {
 		let nodeDetailNum = MarketingSeed.nodeNum(for: 4)  // U-District Solar (a favorite, rich telemetry)
-		let dmPartnerNum = MarketingSeed.nodeNum(for: 1)   // Ballard Beacon (the seeded DM thread partner)
 
-		return [
-			CaptureStep(name: "01-nodes", navigate: {
+		var steps: [CaptureStep] = []
+
+		if capturesNodeListSeparately {
+			steps.append(CaptureStep(name: "01-nodes", navigate: {
 				router.popToRoot(tab: .nodes)
 				router.selectedNodeNum = nil
 				router.selectedTab = .nodes
-			}, settle: .milliseconds(2200), cleanup: nil),
+			}, settle: .milliseconds(2200), cleanup: nil))
+		}
 
-			CaptureStep(name: "02-map", navigate: {
-				router.mapState = nil
-				router.selectedTab = .map
-			}, settle: .milliseconds(4500), cleanup: nil), // MapKit needs time to frame + load tiles
+		steps.append(CaptureStep(name: "02-map", navigate: {
+			// A tighter frame than "fit everything" — see `pendingMapRegion`'s doc comment.
+			pendingMapRegion = MKCoordinateRegion(
+				center: CLLocationCoordinate2D(latitude: 47.6100, longitude: -122.2900),
+				span: MKCoordinateSpan(latitudeDelta: 0.22, longitudeDelta: 0.30)
+			)
+			router.mapState = nil
+			router.selectedTab = .map
+		}, settle: .milliseconds(4500), cleanup: {
+			pendingMapRegion = nil
+		})) // MapKit needs time to frame + load tiles
 
-			CaptureStep(name: "03-node-detail", navigate: {
-				router.navigateToNodeDetail(nodeNum: nodeDetailNum)
-			}, settle: .milliseconds(2800), cleanup: {
-				router.selectedNodeNum = nil
-			}),
+		steps.append(CaptureStep(name: "03-node-detail", navigate: {
+			router.navigateToNodeDetail(nodeNum: nodeDetailNum)
+		}, settle: .milliseconds(2800), cleanup: {
+			router.selectedNodeNum = nil
+		}))
 
-			CaptureStep(name: "04-messages-channel", navigate: {
-				router.selectedTab = .messages
-				router.messagesSection = .channels()
-				router.messagesState = .channels(channelId: 0)
-			}, settle: .milliseconds(2800), cleanup: {
-				router.popToRoot(tab: .messages)
-			}),
+		// One messaging shot (channel — livelier for marketing than a 1:1 DM), not two.
+		steps.append(CaptureStep(name: "04-messages", navigate: {
+			router.selectedTab = .messages
+			router.messagesSection = .channels()
+			router.messagesState = .channels(channelId: 0)
+		}, settle: .milliseconds(2800), cleanup: {
+			router.popToRoot(tab: .messages)
+		}))
 
-			CaptureStep(name: "05-messages-dm", navigate: {
-				router.selectedTab = .messages
-				router.messagesSection = .directMessages()
-				router.messagesState = .directMessages(userNum: dmPartnerNum)
-			}, settle: .milliseconds(2800), cleanup: {
-				router.popToRoot(tab: .messages)
-			}),
+		// Discovery, not Settings — the newer mesh-beacon discovery feature sells better than a
+		// generic settings list.
+		steps.append(CaptureStep(name: "05-discovery", navigate: {
+			router.selectedTab = .settings
+			router.settingsPath = [.localMeshDiscovery]
+		}, settle: .milliseconds(2800), cleanup: {
+			router.settingsPath = []
+		}))
 
-			CaptureStep(name: "06-settings", navigate: {
-				router.settingsPath = []
-				router.selectedTab = .settings
-			}, settle: .milliseconds(2000), cleanup: nil),
-
-			CaptureStep(name: "07-discovery", navigate: {
-				router.selectedTab = .settings
-				router.settingsPath = [.localMeshDiscovery]
-			}, settle: .milliseconds(2800), cleanup: {
-				router.settingsPath = []
-			})
-		]
+		return steps
 	}
 
 	/// Populate `AccessoryManager` with a fake connected session (the seeded local node), so every
