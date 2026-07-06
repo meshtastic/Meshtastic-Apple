@@ -10,7 +10,7 @@ import SwiftUI
 struct RoutingErrorDetailedTests {
 
 	@Test func allCases_count() {
-		#expect(RoutingError.allCases.count == 17)
+		#expect(RoutingError.allCases.count == 18)
 	}
 
 	@Test func rawValues() {
@@ -31,6 +31,7 @@ struct RoutingErrorDetailedTests {
 		#expect(RoutingError.adminBadSessionKey.rawValue == 36)
 		#expect(RoutingError.adminPublicKeyUnauthorized.rawValue == 37)
 		#expect(RoutingError.rateLimitExceeded.rawValue == 38)
+		#expect(RoutingError.pkiSendFailPublicKey.rawValue == 39)
 	}
 
 	@Test func id_matchesRawValue() {
@@ -60,12 +61,20 @@ struct RoutingErrorDetailedTests {
 	@Test func canRetry_retryableErrors() {
 		let retryable: [RoutingError] = [
 			.noRoute, .gotNak, .timeout, .noInterface, .maxRetransmit,
-			.noChannel, .noResponse, .dutyCycleLimit, .badRequest,
-			.notAuthorized, .pkiFailed, .pkiUnknownPubkey,
-			.adminBadSessionKey, .adminPublicKeyUnauthorized, .rateLimitExceeded
+			.noResponse, .dutyCycleLimit, .pkiFailed, .pkiUnknownPubkey,
+			.adminBadSessionKey, .rateLimitExceeded, .pkiSendFailPublicKey
 		]
 		for error in retryable {
 			#expect(error.canRetry == true, "Expected \(error) to be retryable")
+		}
+	}
+
+	@Test func canRetry_nonRetryableErrors() {
+		let nonRetryable: [RoutingError] = [
+			.none, .noChannel, .tooLarge, .badRequest, .notAuthorized, .adminPublicKeyUnauthorized
+		]
+		for error in nonRetryable {
+			#expect(error.canRetry == false, "Expected \(error) not to show blind retry")
 		}
 	}
 

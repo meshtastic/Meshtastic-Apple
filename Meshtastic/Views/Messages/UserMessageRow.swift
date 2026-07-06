@@ -143,10 +143,12 @@ struct UserMessageRow: View {
 							isCurrentUser: isCurrentUser
 						) {
 							self.replyMessageId = message.messageId
-							self.messageFieldFocused = true						} onTapback: {
-							onTapback(message)						}
+							self.messageFieldFocused = true
+						} onTapback: {
+							onTapback(message)
+						}
 						
-						if isCurrentUser && message.canRetry || (isCurrentUser && message.receivedACK && !message.realACK) {
+						if isCurrentUser && message.deliveryStatus(isDirectMessage: true).canRetry {
 							RetryButton(message: message, destination: .user(user))
 						}
 					}
@@ -155,23 +157,8 @@ struct UserMessageRow: View {
 					
 					// ACK Error
 					HStack {
-						let ackErrorVal = RoutingError(rawValue: Int(message.ackError))
-						if isCurrentUser && message.receivedACK {
-							// Ack Received
-							if message.realACK {
-								Text("\(ackErrorVal?.display ?? "Empty Ack Error")")
-									.font(.caption2)
-									.foregroundStyle(ackErrorVal?.color ?? Color.secondary)
-							} else {
-								Text("Acknowledged by another node").font(.caption2).foregroundColor(.orange)
-							}
-						} else if isCurrentUser && message.ackError == 0 {
-							// Empty Error
-							Text("Waiting to be acknowledged. . .").font(.caption2).foregroundColor(.yellow)
-						} else if isCurrentUser && message.ackError > 0 {
-							Text("\(ackErrorVal?.display ?? "Empty Ack Error")").fixedSize(horizontal: false, vertical: true)
-								.foregroundStyle(ackErrorVal?.color ?? Color.red)
-								.font(.caption2)
+						if isCurrentUser {
+							MessageDeliveryStatusLabel(status: message.deliveryStatus(isDirectMessage: true))
 						}
 					}
 				}

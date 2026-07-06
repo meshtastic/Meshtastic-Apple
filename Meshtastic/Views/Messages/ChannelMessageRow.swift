@@ -140,7 +140,7 @@ struct ChannelMessageRow: View {
 							onTapback(message)
 						}
 						
-						if isCurrentUser && message.canRetry {
+						if isCurrentUser && message.deliveryStatus(isDirectMessage: false).canRetry {
 							RetryButton(message: message, destination: .channel(channel))
 						}
 					}
@@ -149,15 +149,8 @@ struct ChannelMessageRow: View {
 					
 					// ACK Status / Error
 					HStack {
-						let ackErrorVal = RoutingError(rawValue: Int(message.ackError))
-						if isCurrentUser && message.receivedACK {
-							Text("\(ackErrorVal?.display ?? "Empty Ack Error")").fixedSize(horizontal: false, vertical: true)
-								.foregroundStyle(ackErrorVal?.color ?? Color.red).font(.caption2)
-						} else if isCurrentUser && message.ackError == 0 {
-							Text("Waiting to be acknowledged. . .").font(.caption2).foregroundColor(.orange)
-						} else if isCurrentUser && !isDetectionSensorMessage {
-							Text("\(ackErrorVal?.display ?? "Empty Ack Error")").fixedSize(horizontal: false, vertical: true)
-								.foregroundStyle(ackErrorVal?.color ?? Color.red).font(.caption2)
+						if isCurrentUser && !isDetectionSensorMessage {
+							MessageDeliveryStatusLabel(status: message.deliveryStatus(isDirectMessage: false))
 						}
 					}
 				}

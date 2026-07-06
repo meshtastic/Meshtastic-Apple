@@ -16,7 +16,7 @@ struct RoutingErrorTests {
 	}
 
 	@Test func none_displayIsAcknowledged() {
-		#expect(RoutingError.none.display == "Acknowledged")
+		#expect(RoutingError.none.display == "Delivered to recipient")
 	}
 
 	@Test func none_canRetryIsFalse() {

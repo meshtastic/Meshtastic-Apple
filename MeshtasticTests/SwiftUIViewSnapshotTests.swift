@@ -194,6 +194,55 @@ struct AckErrorsSnapshotTests {
 	}
 }
 
+// MARK: - MessageDeliveryStatus Snapshot Tests
+
+private struct MessageDeliveryStatusValidationGallery: View {
+	private let statuses: [(name: String, status: MessageDeliveryStatus)] = [
+		("Sending", .sending),
+		("Channel implicit ACK", .deliveredToMesh),
+		("DM implicit ACK", .relayedNotConfirmed),
+		("Explicit ACK", .deliveredToRecipient),
+		("No ACK", .failed(.maxRetransmit)),
+		("No channel", .failed(.noChannel)),
+		("Encrypted send failed", .failed(.pkiFailed)),
+		("Recipient key unavailable", .failed(.pkiSendFailPublicKey)),
+		("Recipient missing sender key", .failed(.pkiUnknownPubkey)),
+		("Too large", .failed(.tooLarge))
+	]
+
+	var body: some View {
+		VStack(alignment: .leading, spacing: 10) {
+			ForEach(Array(statuses.enumerated()), id: \.offset) { _, item in
+				VStack(alignment: .leading, spacing: 3) {
+					Text(item.name)
+						.font(.caption)
+						.foregroundStyle(.secondary)
+					MessageDeliveryStatusLabel(status: item.status)
+					Text(item.status.detail)
+						.font(.caption2)
+						.foregroundStyle(.secondary)
+						.fixedSize(horizontal: false, vertical: true)
+				}
+				.frame(maxWidth: .infinity, alignment: .leading)
+			}
+		}
+		.padding(12)
+	}
+}
+
+@Suite("MessageDeliveryStatus Snapshots")
+struct MessageDeliveryStatusSnapshotTests {
+
+	@Test("Message delivery status states")
+	func messageDeliveryStatusStates() async {
+		await assertViewSnapshot(
+			of: MessageDeliveryStatusValidationGallery(),
+			width: 350,
+			named: "messageDeliveryStatusStates"
+		)
+	}
+}
+
 // MARK: - LockLegend Snapshot Tests
 
 @Suite("LockLegend Snapshots")
