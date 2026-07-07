@@ -46,12 +46,36 @@ struct RoutingErrorDetailedTests {
 		}
 	}
 
-	@Test func display_noneIsAcknowledged() {
+	@Test func display_noneIsDeliveredToRecipient() {
 		#expect(RoutingError.none.display == "Delivered to recipient")
 	}
 
 	@Test func display_noChannelUsesSourceBackedMeaning() {
 		#expect(RoutingError.noChannel.display == "Channel/key mismatch")
+	}
+
+	@Test func display_usesSourceBackedRoutingErrorWording() {
+		let expected: [(RoutingError, String)] = [
+			(.none, "Delivered to recipient"),
+			(.noInterface, "No radio interface"),
+			(.maxRetransmit, "Failed to deliver to mesh"),
+			(.noChannel, "Channel/key mismatch"),
+			(.tooLarge, "Message is too large to send"),
+			(.noResponse, "No app response"),
+			(.dutyCycleLimit, "Duty cycle limit"),
+			(.badRequest, "Invalid request"),
+			(.notAuthorized, "Not authorized"),
+			(.pkiFailed, "Could not send encrypted message"),
+			(.pkiUnknownPubkey, "Recipient needs your key"),
+			(.adminBadSessionKey, "Admin session expired"),
+			(.adminPublicKeyUnauthorized, "Admin key not authorized"),
+			(.rateLimitExceeded, "Rate limited"),
+			(.pkiSendFailPublicKey, "Recipient key unavailable")
+		]
+
+		for (error, display) in expected {
+			#expect(error.display == display)
+		}
 	}
 
 	@Test func description_noChannelUsesSourceBackedMeaning() {

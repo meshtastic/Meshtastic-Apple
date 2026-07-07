@@ -15,7 +15,7 @@ struct RoutingErrorTests {
 		}
 	}
 
-	@Test func none_displayIsAcknowledged() {
+	@Test func none_displayIsDeliveredToRecipient() {
 		#expect(RoutingError.none.display == "Delivered to recipient")
 	}
 

@@ -142,11 +142,15 @@ Send channel broadcasts and direct messages. Long press any message for actions 
 <tbody>
 <tr>
 <td>Gray</td>
-<td>Successful delivery.</td>
+<td><strong>Delivered to mesh</strong> or <strong>Delivered to recipient</strong>.</td>
 </tr>
 <tr>
-<td>Orange bubble</td>
-<td><strong>Acknowledged by another node</strong> — message was relayed but not confirmed by the final recipient.</td>
+<td>Orange</td>
+<td><strong>Sending...</strong> while pending, or <strong>Relayed, not confirmed by recipient</strong> for an unconfirmed direct-message relay or retryable warning.</td>
+</tr>
+<tr>
+<td>Red</td>
+<td>Permanent failures such as <strong>Message is too large to send</strong>; retry is not shown.</td>
 </tr>
 </tbody>
 </table>
@@ -160,53 +164,65 @@ Send channel broadcasts and direct messages. Long press any message for actions 
 </thead>
 <tbody>
 <tr>
-<td>No Route</td>
-<td>No route was found to the destination node.</td>
+<td>Failed to deliver to mesh</td>
+<td>Delivery was not confirmed after retries, timeout, or an explicit negative acknowledgement.</td>
 </tr>
 <tr>
-<td>Got NAK</td>
-<td>The destination node explicitly rejected the message.</td>
+<td>Channel/key mismatch</td>
+<td>The sender or recipient could not use a matching channel/key for this message.</td>
 </tr>
 <tr>
-<td>Timeout</td>
-<td>The message timed out waiting for acknowledgement.</td>
+<td>Message is too large to send</td>
+<td>The encoded packet exceeds the LoRa message size limit.</td>
 </tr>
 <tr>
-<td>No Interface</td>
-<td>The radio interface is unavailable.</td>
+<td>No radio interface</td>
+<td>The sender has no usable radio interface for this message.</td>
 </tr>
 <tr>
-<td>Max Retransmit</td>
-<td>Maximum retransmission attempts reached without success.</td>
+<td>Duty cycle limit</td>
+<td>Local airtime limits are temporarily blocking sends.</td>
 </tr>
 <tr>
-<td>No Channel</td>
-<td>The specified channel does not exist on the destination.</td>
+<td>Rate limited</td>
+<td>Messages are being sent too quickly.</td>
 </tr>
 <tr>
-<td>Too Large</td>
-<td>The packet exceeds the maximum allowed size.</td>
+<td>No app response</td>
+<td>The destination received the request, but no app or module responded.</td>
 </tr>
 <tr>
-<td>No Response</td>
-<td>No response received from the destination.</td>
+<td>Invalid request</td>
+<td>The destination rejected the request as invalid.</td>
 </tr>
 <tr>
-<td>PKI Failed</td>
-<td>Public key infrastructure encryption/decryption failed.</td>
+<td>Not authorized</td>
+<td>The destination refused this request because it is not authorized.</td>
 </tr>
 <tr>
-<td>Bad Request</td>
-<td>Malformed packet rejected by the destination.</td>
+<td>Could not send encrypted message</td>
+<td>The encrypted PKI send path could not be used.</td>
 </tr>
 <tr>
-<td>Not Authorized</td>
-<td>The destination node refused the request due to permissions.</td>
+<td>Recipient needs your key</td>
+<td>The recipient does not know your public key yet.</td>
+</tr>
+<tr>
+<td>Recipient key unavailable</td>
+<td>Your node does not have the recipient's public key yet.</td>
+</tr>
+<tr>
+<td>Admin session expired</td>
+<td>The admin session key is missing, expired, or invalid.</td>
+</tr>
+<tr>
+<td>Admin key not authorized</td>
+<td>The remote node does not authorize your admin key.</td>
 </tr>
 </tbody>
 </table>
 <blockquote>
-<p>Gray indicates successful delivery. Orange indicates the message was relayed but not confirmed by the final recipient. Red indicates a permanent failure that will not succeed on retry.</p>
+<p>Gray indicates successful delivery. Orange indicates sending, an unconfirmed relay, or another retryable warning. Red indicates a permanent failure that will not succeed on retry.</p>
 </blockquote>
 <hr />
 <h2>Link Appearance</h2>

@@ -42,7 +42,7 @@ enum RoutingError: Int, CaseIterable, Identifiable {
 		case .timeout:
 			return "Timed out".localized
 		case .noInterface:
-			return "Radio interface unavailable".localized
+			return "No radio interface".localized
 		case .maxRetransmit:
 			return "Failed to deliver to mesh".localized
 		case .noChannel:
@@ -50,13 +50,13 @@ enum RoutingError: Int, CaseIterable, Identifiable {
 		case .tooLarge:
 			return "Message is too large to send".localized
 		case .noResponse:
-			return "No response from recipient".localized
+			return "No app response".localized
 		case .dutyCycleLimit:
-			return "Duty cycle limit reached".localized
+			return "Duty cycle limit".localized
 		case .badRequest:
-			return "Message request invalid".localized
+			return "Invalid request".localized
 		case .notAuthorized:
-			return "Not authorized to send".localized
+			return "Not authorized".localized
 		case .pkiFailed:
 			return "Could not send encrypted message".localized
 		case .pkiUnknownPubkey:
@@ -66,7 +66,7 @@ enum RoutingError: Int, CaseIterable, Identifiable {
 		case .adminPublicKeyUnauthorized:
 			return "Admin key not authorized".localized
 		case .rateLimitExceeded:
-			return "Sending too quickly".localized
+			return "Rate limited".localized
 		case .pkiSendFailPublicKey:
 			return "Recipient key unavailable".localized
 		}
