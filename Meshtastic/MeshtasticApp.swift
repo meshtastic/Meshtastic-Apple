@@ -221,7 +221,11 @@ struct MeshtasticAppleApp: App {
 						Logger.mesh.debug("URL received")
 						self.incomingUrl = url
 
-						if url.absoluteString.lowercased().contains("meshtastic.org/v/#") {
+						if url.isFileURL {
+							// "Open in Meshtastic" from the Share Sheet / Files app / drag-and-drop —
+							// distinct from the meshtastic:// scheme handled below.
+							appState.router.importMapFile(url: url)
+						} else if url.absoluteString.lowercased().contains("meshtastic.org/v/#") {
 							ContactURLHandler.handleContactUrl(url: url, accessoryManager: accessoryManager)
 						} else if MeshtasticChannelURL.canHandle(url) {
 							// **Consolidated Call for Open URL**

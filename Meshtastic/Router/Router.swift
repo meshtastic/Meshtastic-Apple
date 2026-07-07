@@ -256,6 +256,23 @@ class Router: ObservableObject {
 		}
 	}
 
+	/// Imports a GeoJSON map overlay handed to the app as a file URL — e.g. via "Open in Meshtastic"
+	/// from the Share Sheet, the Files app, or a drag-and-drop — reusing the same pipeline as the
+	/// in-app file picker and the `importGeoJSON` deep link. Called from `onOpenURL` for file URLs,
+	/// which is a distinct path from `route(url:)` (that only handles `meshtastic://` scheme URLs).
+	func importMapFile(url: URL) {
+		selectedTab = .map
+
+		Task {
+			do {
+				let metadata = try await MapDataManager.shared.processUploadedFile(from: url)
+				Logger.services.info("🗺️ [App] Imported '\(metadata.originalName, privacy: .public)' (\(metadata.overlayCount, privacy: .public) overlays) via Open In.")
+			} catch {
+				Logger.services.error("🗺️ [App] Open In GeoJSON import failed: \(error.localizedDescription, privacy: .public)")
+			}
+		}
+	}
+
 	private func routeSettings(_ components: URLComponents) {
 		let segments = components.path
 			.split(separator: "/")
