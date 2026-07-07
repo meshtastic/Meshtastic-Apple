@@ -104,32 +104,28 @@ Long press any message and tap **Tapback** to send an emoji reaction.
 
 ![Message status reference](../assets/screenshots/ackErrors.png)
 
-| Color | Meaning |
-|--------|---------|
-| Gray | **Delivered to mesh** or **Delivered to recipient**. |
-| Orange | **Sending...** while pending, or **Relayed, not confirmed by recipient** for an unconfirmed direct-message relay or retryable warning. |
-| Red | Permanent failures such as **Message is too large to send**; retry is not shown. |
+The message status row combines a short label, SF Symbol icon, and color. Color reinforces the text; it is not the only signal.
 
-The following errors may appear on a message bubble (red unless noted):
-
-| Status | Description |
-|--------|-------------|
-| Failed to deliver to mesh | Delivery was not confirmed after retries, timeout, or an explicit negative acknowledgement. |
-| Channel/key mismatch | The sender or recipient could not use a matching channel/key for this message. |
-| Message is too large to send | The encoded packet exceeds the LoRa message size limit. |
-| No radio interface | The sender has no usable radio interface for this message. |
-| Duty cycle limit | Local airtime limits are temporarily blocking sends. |
-| Rate limited | Messages are being sent too quickly. |
-| No app response | The destination received the request, but no app or module responded. |
-| Invalid request | The destination rejected the request as invalid. |
-| Not authorized | The destination refused this request because it is not authorized. |
-| Could not send encrypted message | The encrypted PKI send path could not be used. |
-| Recipient needs your key | The recipient does not know your public key yet. |
-| Recipient key unavailable | Your node does not have the recipient's public key yet. |
-| Admin session expired | The admin session key is missing, expired, or invalid. |
-| Admin key not authorized | The remote node does not authorize your admin key. |
-
-> Gray indicates successful delivery. Orange indicates sending, an unconfirmed relay, or another retryable warning. Red indicates a permanent failure that will not succeed on retry.
+| Icon | Color | Status | Description |
+|------|-------|--------|-------------|
+| `clock` | Orange | Sending... | Waiting for the mesh to acknowledge this message. |
+| `checkmark.circle.fill` | Gray | Delivered to mesh | A node on the mesh confirmed this channel message. |
+| `checkmark.circle.fill` | Gray | Delivered to recipient | The direct-message recipient confirmed this message. |
+| `exclamationmark.circle.fill` | Orange | Relayed, not confirmed by recipient | A node relayed this direct message, but the recipient has not confirmed it. Retry is available. |
+| `exclamationmark.circle.fill` | Orange | Failed to deliver to mesh | Delivery was not confirmed after retries, timeout, or an explicit negative acknowledgement. Retry is available. |
+| `xmark.circle.fill` | Red | Channel/key mismatch | The sender or recipient could not use a matching channel/key for this message. |
+| `xmark.circle.fill` | Red | Message is too large to send | The encoded packet exceeds the LoRa message size limit. Shorten the message before sending again. |
+| `exclamationmark.circle.fill` | Orange | No radio interface | The sender has no usable radio interface for this message. Retry is available. |
+| `exclamationmark.circle.fill` | Orange | Duty cycle limit | Local airtime limits are temporarily blocking sends. Retry is available after waiting. |
+| `exclamationmark.circle.fill` | Orange | Rate limited | Messages are being sent too quickly. Retry is available after waiting. |
+| `exclamationmark.circle.fill` | Orange | No app response | The destination received the request, but no app or module responded. Retry is available. |
+| `xmark.circle.fill` | Red | Invalid request | The destination rejected the request as invalid. |
+| `xmark.circle.fill` | Red | Not authorized | The destination refused this request because it is not authorized. |
+| `exclamationmark.circle.fill` | Orange | Could not send encrypted message | The encrypted PKI send path could not be used. Retry is available after node info or keys sync. |
+| `exclamationmark.circle.fill` | Orange | Recipient needs your key | The recipient does not know your public key yet. Retry is available after node info syncs. |
+| `exclamationmark.circle.fill` | Orange | Recipient key unavailable | Your node does not have the recipient's public key yet. Retry is available after node info syncs. |
+| `exclamationmark.circle.fill` | Orange | Admin session expired | The admin session key is missing, expired, or invalid. Retry is available after requesting a new session. |
+| `xmark.circle.fill` | Red | Admin key not authorized | The remote node does not authorize your admin key. |
 
 ---
 

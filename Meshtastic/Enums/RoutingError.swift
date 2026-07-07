@@ -36,11 +36,11 @@ enum RoutingError: Int, CaseIterable, Identifiable {
 		case .none:
 			return "Delivered to recipient".localized
 		case .noRoute:
-			return "No route to recipient".localized
+			return "Failed to deliver to mesh".localized
 		case .gotNak:
-			return "Message was rejected".localized
+			return "Failed to deliver to mesh".localized
 		case .timeout:
-			return "Timed out".localized
+			return "Failed to deliver to mesh".localized
 		case .noInterface:
 			return "No radio interface".localized
 		case .maxRetransmit:

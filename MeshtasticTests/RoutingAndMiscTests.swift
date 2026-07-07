@@ -57,6 +57,9 @@ struct RoutingErrorDetailedTests {
 	@Test func display_usesSourceBackedRoutingErrorWording() {
 		let expected: [(RoutingError, String)] = [
 			(.none, "Delivered to recipient"),
+			(.noRoute, "Failed to deliver to mesh"),
+			(.gotNak, "Failed to deliver to mesh"),
+			(.timeout, "Failed to deliver to mesh"),
 			(.noInterface, "No radio interface"),
 			(.maxRetransmit, "Failed to deliver to mesh"),
 			(.noChannel, "Channel/key mismatch"),
