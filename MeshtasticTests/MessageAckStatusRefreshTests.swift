@@ -346,7 +346,7 @@ struct MessageAckStatusRefreshTests {
 		let tooLarge = MessageEntity()
 		tooLarge.ackError = Int32(RoutingError.tooLarge.rawValue)
 
-		#expect(noChannel.deliveryStatus(isDirectMessage: false).text == "No channel selected")
+		#expect(noChannel.deliveryStatus(isDirectMessage: false).text == "Channel/key mismatch")
 		#expect(noChannel.deliveryStatus(isDirectMessage: false).canRetry == false)
 		#expect(tooLarge.deliveryStatus(isDirectMessage: false).text == "Message is too large to send")
 		#expect(tooLarge.deliveryStatus(isDirectMessage: false).canRetry == false)

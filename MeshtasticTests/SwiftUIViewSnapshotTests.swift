@@ -203,7 +203,7 @@ private struct MessageDeliveryStatusValidationGallery: View {
 		("DM implicit ACK", .relayedNotConfirmed),
 		("Explicit ACK", .deliveredToRecipient),
 		("No ACK", .failed(.maxRetransmit)),
-		("No channel", .failed(.noChannel)),
+		("Channel/key mismatch", .failed(.noChannel)),
 		("Encrypted send failed", .failed(.pkiFailed)),
 		("Recipient key unavailable", .failed(.pkiSendFailPublicKey)),
 		("Recipient missing sender key", .failed(.pkiUnknownPubkey)),

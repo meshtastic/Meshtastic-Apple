@@ -19,6 +19,10 @@ struct RoutingErrorTests {
 		#expect(RoutingError.none.display == "Delivered to recipient")
 	}
 
+	@Test func noChannel_displayUsesSourceBackedMeaning() {
+		#expect(RoutingError.noChannel.display == "Channel/key mismatch")
+	}
+
 	@Test func none_canRetryIsFalse() {
 		#expect(!RoutingError.none.canRetry)
 	}

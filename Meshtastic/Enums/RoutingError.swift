@@ -46,7 +46,7 @@ enum RoutingError: Int, CaseIterable, Identifiable {
 		case .maxRetransmit:
 			return "Failed to deliver to mesh".localized
 		case .noChannel:
-			return "No channel selected".localized
+			return "Channel/key mismatch".localized
 		case .tooLarge:
 			return "Message is too large to send".localized
 		case .noResponse:
@@ -86,7 +86,7 @@ enum RoutingError: Int, CaseIterable, Identifiable {
 		case .maxRetransmit:
 			return "No node confirmed this message. Try again when you have better signal or more mesh coverage.".localized
 		case .noChannel:
-			return "Select a channel before sending.".localized
+			return "Check the channel and key settings before sending again.".localized
 		case .tooLarge:
 			return "Shorten the message and send it again.".localized
 		case .noResponse:
