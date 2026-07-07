@@ -212,7 +212,9 @@ private struct NodeListEntry: Identifiable {
 
 /// Sendable inputs for the SwiftData `#Predicate` shared by the live `@Query` and the off-main
 /// recompute, so the two can never drift (both build the predicate from the same source).
-private struct NodePredicateInputs: Equatable {
+///
+/// Internal (not private) so `NodeListFilteringTests` can build the shared predicate directly.
+struct NodePredicateInputs: Equatable {
 	let showIgnored: Bool
 	let showFavorite: Bool
 	let filterViaLoraOnly: Bool
@@ -243,7 +245,9 @@ private struct NodePredicateInputs: Equatable {
 /// to the background `ModelContext`, so the background fetch must not gate on it. The live `@Query`
 /// (which reflects the toggle immediately) re-applies the filter when `recompute()` intersects the
 /// background nums with the live objects, so the favorite state shown always tracks the live store.
-private func makeNodeListPredicate(_ p: NodePredicateInputs, applyFavoriteFilter: Bool = true) -> Predicate<NodeInfoEntity> {
+// Internal (not private) so `NodeListFilteringTests` can assert the shared predicate's filtering,
+// including the `applyFavoriteFilter` superset semantics the off-main fetch relies on.
+func makeNodeListPredicate(_ p: NodePredicateInputs, applyFavoriteFilter: Bool = true) -> Predicate<NodeInfoEntity> {
 	let showIgnored = p.showIgnored
 	let showFavorite = p.showFavorite && applyFavoriteFilter
 	let filterViaLoraOnly = p.filterViaLoraOnly
@@ -271,7 +275,9 @@ private func makeNodeListPredicate(_ p: NodePredicateInputs, applyFavoriteFilter
 /// A fully-Sendable snapshot of the filter state, built on the main actor and consumed by the
 /// off-main scan. Carrying only value types means no `@MainActor` object or SwiftData model crosses
 /// the isolation boundary.
-private struct FilterSnapshot: Sendable {
+///
+/// Internal (not private) so `NodeListFilteringTests` can drive `computeNodeOrder` off-main.
+struct FilterSnapshot: Sendable {
 	let predicate: NodePredicateInputs
 	let normalizedSearchText: String
 	let roleFilter: Bool
@@ -358,7 +364,8 @@ private final class NodeListRecomputeTrigger {
 ///
 /// Returns `nil` (not `[]`) if the fetch itself fails, so the caller can preserve the currently
 /// displayed list instead of blanking it on a transient SwiftData error.
-private func computeNodeOrder(container: ModelContainer, snapshot s: FilterSnapshot) -> [Int64]? {
+// Internal (not private) so `NodeListFilteringTests` can exercise the full off-main fetch/match path.
+func computeNodeOrder(container: ModelContainer, snapshot s: FilterSnapshot) -> [Int64]? {
 	let context = ModelContext(container)
 	let descriptor = FetchDescriptor<NodeInfoEntity>(
 		predicate: makeNodeListPredicate(s.predicate, applyFavoriteFilter: false),
