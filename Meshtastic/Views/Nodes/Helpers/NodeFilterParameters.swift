@@ -8,7 +8,7 @@
 import CoreLocation
 import SwiftUI
 
-struct NodeDistanceFilterBounds {
+struct NodeDistanceFilterBounds: Sendable {
 	private static let coordinateScale = 10_000_000.0
 	private static let earthRadiusMeters = 6_371_009.0
 
