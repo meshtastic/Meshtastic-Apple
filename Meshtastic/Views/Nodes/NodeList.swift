@@ -237,9 +237,15 @@ private struct NodePredicateInputs: Equatable {
 /// Builds the query-level predicate (ignored/favorite/viaLora/viaMqtt/hopsAway). Used by BOTH the
 /// `@Query` in `FilteredNodeList.init` and the off-main `computeNodeOrder`, guaranteeing identical
 /// filtering on both sides of the isolation boundary.
-private func makeNodeListPredicate(_ p: NodePredicateInputs) -> Predicate<NodeInfoEntity> {
+///
+/// `applyFavoriteFilter` lets the off-main fetch drop the `favorite` gate so it stays a SUPERSET for
+/// that locally-mutable flag: a node just toggled favorite in the live context may not yet be visible
+/// to the background `ModelContext`, so the background fetch must not gate on it. The live `@Query`
+/// (which reflects the toggle immediately) re-applies the filter when `recompute()` intersects the
+/// background nums with the live objects, so the favorite state shown always tracks the live store.
+private func makeNodeListPredicate(_ p: NodePredicateInputs, applyFavoriteFilter: Bool = true) -> Predicate<NodeInfoEntity> {
 	let showIgnored = p.showIgnored
-	let showFavorite = p.showFavorite
+	let showFavorite = p.showFavorite && applyFavoriteFilter
 	let filterViaLoraOnly = p.filterViaLoraOnly
 	let filterViaMqttOnly = p.filterViaMqttOnly
 	let filterHopsDirect = p.filterHopsDirect
@@ -346,15 +352,25 @@ private final class NodeListRecomputeTrigger {
 ///
 /// Deliberately does NOT partition into connected/favorite/regular: that ordering depends on
 /// `node.favorite` and the active device, which the caller applies on the main actor from the LIVE
-/// @Query objects. Otherwise an in-place favorite toggle (possibly not yet saved to the store this
-/// background context reads) would be invisible until the write committed.
-private func computeNodeOrder(container: ModelContainer, snapshot s: FilterSnapshot) -> [Int64] {
+/// @Query objects. For the same reason it drops the `favorite` gate from its fetch predicate
+/// (`applyFavoriteFilter: false`) so the result is a SUPERSET — an in-place favorite toggle not yet
+/// visible to this background context can't hide a node; the live @Query re-applies the filter.
+///
+/// Returns `nil` (not `[]`) if the fetch itself fails, so the caller can preserve the currently
+/// displayed list instead of blanking it on a transient SwiftData error.
+private func computeNodeOrder(container: ModelContainer, snapshot s: FilterSnapshot) -> [Int64]? {
 	let context = ModelContext(container)
 	let descriptor = FetchDescriptor<NodeInfoEntity>(
-		predicate: makeNodeListPredicate(s.predicate),
+		predicate: makeNodeListPredicate(s.predicate, applyFavoriteFilter: false),
 		sortBy: [SortDescriptor(\NodeInfoEntity.lastHeard, order: .reverse)]
 	)
-	guard let nodes = try? context.fetch(descriptor) else { return [] }
+	let nodes: [NodeInfoEntity]
+	do {
+		nodes = try context.fetch(descriptor)
+	} catch {
+		Logger.data.error("🚫 [NodeList] Off-main node fetch failed, keeping current list: \(error.localizedDescription, privacy: .public)")
+		return nil
+	}
 
 	let lookup = NodeListFilterLookup(
 		nodes: nodes,
@@ -452,10 +468,17 @@ private struct FilteredNodeList: View {
 		// so the off-main fetch always reads the SAME store the List renders from (previews/tests/any
 		// injected container included).
 		let container = context.container
-		let matching = await Task.detached(priority: .userInitiated) {
+		let result = await Task.detached(priority: .userInitiated) {
 			computeNodeOrder(container: container, snapshot: snapshot)
 		}.value
 		guard !Task.isCancelled else { return }
+		// `nil` means the off-main fetch threw (already logged): keep the current list rather than
+		// blanking it on a transient SwiftData error. An empty match set is `[]`, not `nil`, and DOES
+		// clear the list as expected.
+		guard let matching = result else {
+			hasCompletedFirstRecompute = true
+			return
+		}
 
 		// Map matching nums onto the LIVE @Query objects and partition using their current favorite /
 		// active-device state (cheap scalar reads — no relationship fault). The `modelContext != nil`
@@ -556,9 +579,14 @@ private struct FilteredNodeList: View {
 			// (search/filter edits, node inserts/deletes) still refresh instantly via the onChange
 			// triggers below — this only backstops the un-observable inputs.
 			let backstop = Task {
-				while !Task.isCancelled {
-					try? await Task.sleep(for: .milliseconds(1500))
-					continuation.yield(())
+				do {
+					while true {
+						try await Task.sleep(for: .milliseconds(1500))
+						try Task.checkCancellation()
+						continuation.yield(())
+					}
+				} catch {
+					// Cancelled (sleep or checkCancellation threw): stop yielding and exit cleanly.
 				}
 			}
 			defer { backstop.cancel() }
