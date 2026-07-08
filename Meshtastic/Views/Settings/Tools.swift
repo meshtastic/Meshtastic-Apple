@@ -195,7 +195,7 @@ private struct RFSitePlanningTool: View {
 							handleMapTap(coordinate)
 						}
 				)
-				.ignoresSafeArea(.container, edges: [.top, .horizontal])
+				.ignoresSafeArea(.container, edges: .horizontal)
 			}
 			linkProfileOverlay
 		}
