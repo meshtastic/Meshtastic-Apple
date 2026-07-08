@@ -143,7 +143,6 @@ private struct RFSitePlanningTool: View {
 	@AppStorage("sitePlannerCoverageSignalThresholdDbm") private var signalThresholdDbm = -130.0
 
 	@State private var position = MapCameraPosition.automatic
-	@State private var mapCenterCoordinate: CLLocationCoordinate2D?
 	@State private var mode: RFSitePlanningMode = .coverage
 	@State private var coverageCoordinate: CLLocationCoordinate2D?
 	@State private var linkStartCoordinate: CLLocationCoordinate2D?
@@ -185,12 +184,6 @@ private struct RFSitePlanningTool: View {
 				.mapStyle(.standard(elevation: .realistic, pointsOfInterest: .excludingAll, showsTraffic: false))
 				.mapControls {
 					MapScaleView()
-					MapPitchToggle()
-					MapUserLocationButton()
-					MapCompass()
-				}
-				.onMapCameraChange(frequency: .onEnd) { context in
-					mapCenterCoordinate = context.camera.centerCoordinate
 				}
 				.simultaneousGesture(
 					SpatialTapGesture(coordinateSpace: .local)
@@ -201,8 +194,6 @@ private struct RFSitePlanningTool: View {
 				)
 				.ignoresSafeArea(.container, edges: [.top, .horizontal])
 			}
-			centerTarget
-				.allowsHitTesting(false)
 		}
 		.safeAreaInset(edge: .bottom, spacing: 0) {
 			plannerFooter
@@ -210,18 +201,6 @@ private struct RFSitePlanningTool: View {
 		.navigationTitle("RF Site Planner")
 		.navigationBarTitleDisplayMode(.inline)
 		.toolbar(.hidden, for: .tabBar)
-		.toolbar {
-			ToolbarItemGroup(placement: .topBarTrailing) {
-				NavigationLink(destination: MapDataFiles()) {
-					Image(systemName: "folder")
-				}
-				Button {
-					isShowingSettings = true
-				} label: {
-					Image(systemName: "slider.horizontal.3")
-				}
-			}
-		}
 		.sheet(isPresented: $isShowingSettings) {
 			RFSitePlanningSettingsSheet(
 				txHeightMeters: $txHeightMeters,
@@ -249,18 +228,9 @@ private struct RFSitePlanningTool: View {
 		.onAppear {
 			mapDataManager.initialize()
 			if let coordinate = activeDeviceCoordinate ?? LocationsHandler.currentPreciseLocation {
-				mapCenterCoordinate = coordinate
 				position = .camera(MapCamera(centerCoordinate: coordinate, distance: 25_000))
 			}
 		}
-	}
-
-	private var centerTarget: some View {
-		Image(systemName: "scope")
-			.font(.title3.weight(.medium))
-			.foregroundStyle(.primary)
-			.shadow(color: .black.opacity(0.25), radius: 2)
-			.accessibilityHidden(true)
 	}
 
 	@MapContentBuilder
@@ -318,6 +288,8 @@ private struct RFSitePlanningTool: View {
 				}
 				.pickerStyle(.segmented)
 
+				plannerActionRow
+
 				switch mode {
 				case .coverage:
 					coverageControls
@@ -331,18 +303,27 @@ private struct RFSitePlanningTool: View {
 		.background(.bar)
 	}
 
+	private var plannerActionRow: some View {
+		HStack(spacing: 8) {
+			NavigationLink(destination: MapDataFiles()) {
+				Label("Map Data", systemImage: "folder")
+			}
+			.buttonStyle(.bordered)
+
+			Button {
+				isShowingSettings = true
+			} label: {
+				Label("RF Settings", systemImage: "slider.horizontal.3")
+			}
+			.buttonStyle(.bordered)
+		}
+		.font(.subheadline)
+	}
+
 	private var coverageControls: some View {
 		VStack(alignment: .leading, spacing: 8) {
 			selectionRow("Source", value: Self.coordinateString(coverageCoordinate))
 			HStack(spacing: 8) {
-				Button {
-					setPointFromMapCenter()
-				} label: {
-					Label("Set Source", systemImage: "scope")
-				}
-				.buttonStyle(.bordered)
-				.disabled(mapCenterCoordinate == nil)
-
 				Button {
 					generateCoverage()
 				} label: {
@@ -386,14 +367,6 @@ private struct RFSitePlanningTool: View {
 
 			HStack(spacing: 8) {
 				Button {
-					setPointFromMapCenter()
-				} label: {
-					Label(centerSetButtonTitle, systemImage: "scope")
-				}
-				.buttonStyle(.bordered)
-				.disabled(mapCenterCoordinate == nil)
-
-				Button {
 					analyzeLink()
 				} label: {
 					Label(isAnalyzingLink ? "Analyzing" : "Analyze", systemImage: "point.topleft.down.curvedto.point.bottomright.up")
@@ -415,13 +388,6 @@ private struct RFSitePlanningTool: View {
 		}
 	}
 
-	private var centerSetButtonTitle: String {
-		if linkStartCoordinate == nil || linkEndCoordinate != nil {
-			return "Set TX"
-		}
-		return "Set RX"
-	}
-
 	private func selectionRow(_ title: String, value: String) -> some View {
 		HStack(alignment: .firstTextBaseline) {
 			Text(title)
@@ -432,11 +398,6 @@ private struct RFSitePlanningTool: View {
 				.minimumScaleFactor(0.75)
 		}
 		.font(.subheadline)
-	}
-
-	private func setPointFromMapCenter() {
-		guard let mapCenterCoordinate else { return }
-		handleMapTap(mapCenterCoordinate)
 	}
 
 	private func handleMapTap(_ coordinate: CLLocationCoordinate2D) {
@@ -561,7 +522,7 @@ private struct RFSitePlanningTool: View {
 	}
 
 	private static func coordinateString(_ coordinate: CLLocationCoordinate2D?) -> String {
-		guard let coordinate else { return "Tap map or set from center" }
+		guard let coordinate else { return "Tap map" }
 		return shortCoordinateString(coordinate)
 	}
 
