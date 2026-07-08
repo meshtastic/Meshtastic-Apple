@@ -149,6 +149,9 @@ private struct RFSitePlanningTool: View {
 	@State private var linkEndCoordinate: CLLocationCoordinate2D?
 	@State private var linkResult: SitePlannerPointToPointResult?
 	@State private var presentedLinkResult: SitePlannerPointToPointResult?
+	@State private var isLinkProfileVisible = false
+	@State private var linkProfileOffset = CGSize.zero
+	@GestureState private var linkProfileDragOffset = CGSize.zero
 	@State private var generatedOverlayIDs: Set<UUID> = []
 	@State private var isGeneratingCoverage = false
 	@State private var isAnalyzingLink = false
@@ -183,7 +186,7 @@ private struct RFSitePlanningTool: View {
 				}
 				.mapStyle(.standard(elevation: .realistic, pointsOfInterest: .excludingAll, showsTraffic: false))
 				.mapControls {
-					MapScaleView()
+					MapUserLocationButton()
 				}
 				.simultaneousGesture(
 					SpatialTapGesture(coordinateSpace: .local)
@@ -194,6 +197,7 @@ private struct RFSitePlanningTool: View {
 				)
 				.ignoresSafeArea(.container, edges: [.top, .horizontal])
 			}
+			linkProfileOverlay
 		}
 		.safeAreaInset(edge: .bottom, spacing: 0) {
 			plannerFooter
@@ -230,6 +234,39 @@ private struct RFSitePlanningTool: View {
 			if let coordinate = activeDeviceCoordinate ?? LocationsHandler.currentPreciseLocation {
 				position = .camera(MapCamera(centerCoordinate: coordinate, distance: 25_000))
 			}
+		}
+	}
+
+	@ViewBuilder
+	private var linkProfileOverlay: some View {
+		if mode == .pointToPoint, let linkResult, isLinkProfileVisible {
+			RFSitePlanningLinkProfilePanel(
+				result: linkResult,
+				onShowDetails: {
+					presentedLinkResult = linkResult
+				},
+				onClose: {
+					isLinkProfileVisible = false
+				}
+			)
+			.padding(.horizontal, 12)
+			.padding(.top, 72)
+			.offset(
+				x: linkProfileOffset.width + linkProfileDragOffset.width,
+				y: linkProfileOffset.height + linkProfileDragOffset.height
+			)
+			.gesture(
+				DragGesture(minimumDistance: 8)
+					.updating($linkProfileDragOffset) { value, state, _ in
+						state = value.translation
+					}
+					.onEnded { value in
+						linkProfileOffset.width += value.translation.width
+						linkProfileOffset.height += value.translation.height
+					}
+			)
+			.transition(.move(edge: .top).combined(with: .opacity))
+			.zIndex(1)
 		}
 	}
 
@@ -378,6 +415,7 @@ private struct RFSitePlanningTool: View {
 					linkStartCoordinate = nil
 					linkEndCoordinate = nil
 					linkResult = nil
+					isLinkProfileVisible = false
 				}
 				.buttonStyle(.bordered)
 
@@ -409,9 +447,11 @@ private struct RFSitePlanningTool: View {
 				linkStartCoordinate = coordinate
 				linkEndCoordinate = nil
 				linkResult = nil
+				isLinkProfileVisible = false
 			} else {
 				linkEndCoordinate = coordinate
 				linkResult = nil
+				isLinkProfileVisible = false
 			}
 		}
 	}
@@ -484,7 +524,8 @@ private struct RFSitePlanningTool: View {
 				let result = try await NativeSitePlannerPointToPointClient().analyze(request: request)
 				await MainActor.run {
 					linkResult = result
-					presentedLinkResult = result
+					isLinkProfileVisible = true
+					linkProfileOffset = .zero
 					isAnalyzingLink = false
 				}
 			} catch {
@@ -679,7 +720,7 @@ private struct RFSitePlanningSettingsSheet: View {
 }
 
 @available(iOS 18, *)
-private struct RFSitePlanningLinkResultSheet: View {
+private struct RFSitePlanningTerrainProfileChart: View {
 	let result: SitePlannerPointToPointResult
 
 	private var chartSamples: [SitePlannerPointToPointSample] {
@@ -692,6 +733,132 @@ private struct RFSitePlanningLinkResultSheet: View {
 		}
 		return samples
 	}
+
+	var body: some View {
+		Chart {
+			ForEach(Array(chartSamples.enumerated()), id: \.offset) { _, sample in
+				LineMark(
+					x: .value("Distance", sample.distanceKm),
+					y: .value("Elevation", sample.groundElevationMeters),
+					series: .value("Series", "Terrain")
+				)
+				.foregroundStyle(.brown)
+				LineMark(
+					x: .value("Distance", sample.distanceKm),
+					y: .value("Elevation", sample.sightLineElevationMeters),
+					series: .value("Series", "Line of Sight")
+				)
+				.foregroundStyle(.blue)
+				LineMark(
+					x: .value("Distance", sample.distanceKm),
+					y: .value("Elevation", sample.fresnel60ElevationMeters),
+					series: .value("Series", "60% Fresnel")
+				)
+				.foregroundStyle(.orange)
+			}
+			if let obstruction = result.directObstruction ?? result.fresnelObstruction {
+				PointMark(
+					x: .value("Distance", obstruction.distanceKm),
+					y: .value("Elevation", obstruction.groundElevationMeters)
+				)
+				.foregroundStyle(.red)
+				.symbolSize(80)
+			}
+		}
+	}
+}
+
+@available(iOS 18, *)
+private struct RFSitePlanningLinkProfilePanel: View {
+	let result: SitePlannerPointToPointResult
+	var onShowDetails: () -> Void
+	var onClose: () -> Void
+
+	private var statusColor: Color {
+		if !result.linkMeetsThreshold {
+			return .red
+		}
+		if !result.hasDirectLineOfSight || !result.hasFresnelClearance {
+			return .orange
+		}
+		return .green
+	}
+
+	private var statusTitle: String {
+		if !result.linkMeetsThreshold {
+			return "Below threshold"
+		}
+		if !result.hasDirectLineOfSight || !result.hasFresnelClearance {
+			return "Obstructed"
+		}
+		return "Link clear"
+	}
+
+	var body: some View {
+		VStack(alignment: .leading, spacing: 8) {
+			Capsule()
+				.fill(.secondary.opacity(0.45))
+				.frame(width: 38, height: 4)
+				.frame(maxWidth: .infinity)
+
+			HStack(alignment: .firstTextBaseline, spacing: 8) {
+				Label(statusTitle, systemImage: result.linkMeetsThreshold ? "checkmark.circle.fill" : "xmark.circle.fill")
+					.foregroundStyle(statusColor)
+					.font(.headline)
+				Spacer()
+				Button {
+					onShowDetails()
+				} label: {
+					Image(systemName: "info.circle")
+				}
+				.buttonStyle(.borderless)
+				Button {
+					onClose()
+				} label: {
+					Image(systemName: "xmark.circle.fill")
+				}
+				.buttonStyle(.borderless)
+				.foregroundStyle(.secondary)
+			}
+
+			HStack(spacing: 12) {
+				metric("Loss", "\(Self.decimalString(result.lossDb)) dB")
+				metric("Signal", "\(Self.decimalString(result.signalDbm)) dBm")
+				metric("Margin", "\(Self.decimalString(result.linkMarginDb)) dB")
+			}
+
+			RFSitePlanningTerrainProfileChart(result: result)
+				.chartXAxisLabel("Distance (km)")
+				.chartYAxisLabel("Elevation (m)")
+				.frame(height: 170)
+		}
+		.padding(12)
+		.background(.regularMaterial, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+		.shadow(color: .black.opacity(0.22), radius: 10, y: 4)
+		.accessibilityElement(children: .contain)
+	}
+
+	private func metric(_ title: String, _ value: String) -> some View {
+		VStack(alignment: .leading, spacing: 2) {
+			Text(title)
+				.font(.caption)
+				.foregroundStyle(.secondary)
+			Text(value)
+				.font(.caption.weight(.semibold))
+				.lineLimit(1)
+				.minimumScaleFactor(0.75)
+		}
+		.frame(maxWidth: .infinity, alignment: .leading)
+	}
+
+	private static func decimalString(_ value: Double) -> String {
+		String(format: "%.1f", value)
+	}
+}
+
+@available(iOS 18, *)
+private struct RFSitePlanningLinkResultSheet: View {
+	let result: SitePlannerPointToPointResult
 
 	var body: some View {
 		NavigationStack {
@@ -720,36 +887,7 @@ private struct RFSitePlanningLinkResultSheet: View {
 				}
 
 				Section(header: Text("Terrain Profile")) {
-					Chart {
-						ForEach(Array(chartSamples.enumerated()), id: \.offset) { _, sample in
-							LineMark(
-								x: .value("Distance", sample.distanceKm),
-								y: .value("Elevation", sample.groundElevationMeters),
-								series: .value("Series", "Terrain")
-							)
-							.foregroundStyle(.brown)
-							LineMark(
-								x: .value("Distance", sample.distanceKm),
-								y: .value("Elevation", sample.sightLineElevationMeters),
-								series: .value("Series", "Line of Sight")
-							)
-							.foregroundStyle(.blue)
-							LineMark(
-								x: .value("Distance", sample.distanceKm),
-								y: .value("Elevation", sample.fresnel60ElevationMeters),
-								series: .value("Series", "60% Fresnel")
-							)
-							.foregroundStyle(.orange)
-						}
-						if let obstruction = result.directObstruction ?? result.fresnelObstruction {
-							PointMark(
-								x: .value("Distance", obstruction.distanceKm),
-								y: .value("Elevation", obstruction.groundElevationMeters)
-							)
-							.foregroundStyle(.red)
-							.symbolSize(80)
-						}
-					}
+					RFSitePlanningTerrainProfileChart(result: result)
 					.chartXAxisLabel("Distance (km)")
 					.chartYAxisLabel("Elevation (m)")
 					.frame(height: 260)
