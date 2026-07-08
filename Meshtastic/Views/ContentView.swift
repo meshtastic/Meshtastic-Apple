@@ -7,7 +7,7 @@ import SwiftUI
 struct ContentView: View {
 	@ObservedObject var appState: AppState
 	@EnvironmentObject var accessoryManager: AccessoryManager
-	@State var router: Router
+	@ObservedObject var router: Router
 	@State var isShowingDeviceOnboardingFlow: Bool = false
 
 	init(appState: AppState, router: Router) {
@@ -42,12 +42,12 @@ struct ContentView: View {
 	/// already-active tab pops its navigation stack back to root.
 	private var tabSelection: Binding<NavigationState.Tab> {
 		Binding(
-			get: { appState.router.selectedTab },
+			get: { router.selectedTab },
 			set: { newTab in
-				if newTab == appState.router.selectedTab {
-					appState.router.popToRoot(tab: newTab)
+				if newTab == router.selectedTab {
+					router.popToRoot(tab: newTab)
 				}
-				appState.router.selectedTab = newTab
+				router.selectedTab = newTab
 			}
 		)
 	}
@@ -60,7 +60,7 @@ struct ContentView: View {
 			TabView(selection: tabSelection) {
 				Tab("Messages", systemImage: "message", value: NavigationState.Tab.messages) {
 					Messages(
-						router: appState.router,
+						router: router,
 						unreadChannelMessages: $appState.unreadChannelMessages,
 						unreadDirectMessages: $appState.unreadDirectMessages
 					)
@@ -72,7 +72,7 @@ struct ContentView: View {
 				}
 
 				Tab("Map", systemImage: "map", value: NavigationState.Tab.map) {
-					MeshMap(router: appState.router)
+					MeshMap(router: router)
 				}
 
 				Tab("Settings", systemImage: "gear", value: NavigationState.Tab.settings) {
@@ -81,14 +81,14 @@ struct ContentView: View {
 
 				Tab("Connect", systemImage: "link", value: NavigationState.Tab.connect) {
 					Connect(
-						router: appState.router
+						router: router
 					)
 				}
 			}
 		} else {
 			TabView(selection: tabSelection) {
 				Messages(
-					router: appState.router,
+					router: router,
 					unreadChannelMessages: $appState.unreadChannelMessages,
 					unreadDirectMessages: $appState.unreadDirectMessages
 				)
@@ -104,7 +104,7 @@ struct ContentView: View {
 				}
 				.tag(NavigationState.Tab.nodes)
 
-				MeshMap(router: appState.router)
+				MeshMap(router: router)
 				.tabItem {
 					Label("Map", systemImage: "map")
 				}
@@ -117,7 +117,7 @@ struct ContentView: View {
 				.tag(NavigationState.Tab.settings)
 
 				Connect(
-					router: appState.router
+					router: router
 				)
 				.tabItem {
 					Label("Connect", systemImage: "link")

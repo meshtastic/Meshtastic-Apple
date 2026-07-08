@@ -52,8 +52,8 @@ struct Tools: View {
 	var body: some View {
 		VStack {
 			List {
-				Section(header: Text("Create Node Contact NFC Tag")) {
-					if let node = connectedNode {
+				if let node = connectedNode {
+					Section(header: Text("Create Node Contact NFC Tag")) {
 						Text("Node Name: \(node.user?.longName ?? "Unknown".localized)")
 						#if !targetEnvironment(macCatalyst)
 						Button {
@@ -67,7 +67,17 @@ struct Tools: View {
 				}
 				Section(header: Text("RF Planning")) {
 					NavigationLink(destination: RFSitePlanningTool()) {
-						Label("RF Site Planner", systemImage: "antenna.radiowaves.left.and.right")
+						HStack(spacing: 12) {
+							Image(systemName: "antenna.radiowaves.left.and.right")
+								.foregroundStyle(.accent)
+								.frame(width: 28)
+							VStack(alignment: .leading, spacing: 2) {
+								Text("RF Site Planner")
+								Text("Coverage and point-to-point links")
+									.font(.caption)
+									.foregroundStyle(.secondary)
+							}
+						}
 					}
 				}
 			}

@@ -214,10 +214,10 @@ class Router: ObservableObject {
 	private func routeSettings(_ components: URLComponents) {
 		let segments = components.path
 			.split(separator: "/")
-			.dropFirst()
 			.map(String.init)
+		let settingsSegments = segments.first == "settings" ? Array(segments.dropFirst()) : segments
 
-		let settingFromPath = segments.first
+		let settingFromPath = settingsSegments.first
 			.flatMap(SettingsNavigationState.init(rawValue:))
 
 		selectedTab = .settings
@@ -227,7 +227,7 @@ class Router: ObservableObject {
 			settingsPath = []
 		}
 
-		if settingFromPath == .localMeshDiscovery && segments.count > 1 && segments[1] == "history" {
+		if settingFromPath == .localMeshDiscovery && settingsSegments.count > 1 && settingsSegments[1] == "history" {
 			discoveryShowHistory = true
 		}
 	}
