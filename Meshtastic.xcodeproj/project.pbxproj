@@ -331,6 +331,7 @@
 		DD00003ASUPPORTLVL0000001 /* SupportLevel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD00003ASUPPORTLVL0000000 /* SupportLevel.swift */; };
 		DD00003C000SNAP00000001 /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = DD00003B000SNAP00000000 /* SnapshotTesting */; };
 		DD0000CHSETST0000000001 /* ChannelSetSaveTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD0000CHSETST0000000000 /* ChannelSetSaveTests.swift */; };
+		DD0000MQTTFWDFLTTST00001 /* MqttForwardFilterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD0000MQTTFWDFLTTST00000 /* MqttForwardFilterTests.swift */; };
 		DD0000DEVLNKTST000000001 /* DeviceLinkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD0000DEVLNKTST000000000 /* DeviceLinkTests.swift */; };
 		DD1827FB0000000000000002 /* RegionCodesFirmwareLocaleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1827FA0000000000000002 /* RegionCodesFirmwareLocaleTests.swift */; };
 		DD007BAE2AA4E91200F5FA12 /* MyInfoEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD007BAD2AA4E91200F5FA12 /* MyInfoEntityExtension.swift */; };
@@ -473,6 +474,7 @@
 		DDC94FCE29CF55310082EA6E /* RtttlConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC94FCD29CF55310082EA6E /* RtttlConfig.swift */; };
 		DDCE4E2C2869F92900BE9F8F /* UserConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDCE4E2B2869F92900BE9F8F /* UserConfig.swift */; };
 		DDD43FE32A78C8900083A3E9 /* MqttClientProxyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDD43FE22A78C8900083A3E9 /* MqttClientProxyManager.swift */; };
+		DD0000MQTTFWDFLT00000001 /* MqttForwardFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD0000MQTTFWDFLT00000000 /* MqttForwardFilter.swift */; };
 		DDD5BB092C285DDC007E03CA /* AppLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDD5BB082C285DDC007E03CA /* AppLog.swift */; };
 		DDD5BB0B2C285E45007E03CA /* LogDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDD5BB0A2C285E45007E03CA /* LogDetail.swift */; };
 		DDD5BB102C285FB3007E03CA /* AppLogFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDD5BB0F2C285FB3007E03CA /* AppLogFilter.swift */; };
@@ -941,6 +943,7 @@
 		DD000031FWEDTENUM0000000 /* FirmwareEditionEnum.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirmwareEditionEnum.swift; sourceTree = "<group>"; };
 		DD00003ASUPPORTLVL0000000 /* SupportLevel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupportLevel.swift; sourceTree = "<group>"; };
 		DD0000CHSETST0000000000 /* ChannelSetSaveTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelSetSaveTests.swift; sourceTree = "<group>"; };
+		DD0000MQTTFWDFLTTST00000 /* MqttForwardFilterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MqttForwardFilterTests.swift; sourceTree = "<group>"; };
 		DD0000DEVLNKTST000000000 /* DeviceLinkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceLinkTests.swift; sourceTree = "<group>"; };
 		DD1827FA0000000000000002 /* RegionCodesFirmwareLocaleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegionCodesFirmwareLocaleTests.swift; sourceTree = "<group>"; };
 		DD007BAD2AA4E91200F5FA12 /* MyInfoEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyInfoEntityExtension.swift; sourceTree = "<group>"; };
@@ -1130,6 +1133,7 @@
 		DDD28D372C0CD2670063CFA3 /* MeshtasticDataModelV 37.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 37.xcdatamodel"; sourceTree = "<group>"; };
 		DDD3A2B22D5127CF0045EB48 /* ci_pre_xcodebuild.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = ci_pre_xcodebuild.sh; sourceTree = "<group>"; };
 		DDD43FE22A78C8900083A3E9 /* MqttClientProxyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MqttClientProxyManager.swift; sourceTree = "<group>"; };
+		DD0000MQTTFWDFLT00000000 /* MqttForwardFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MqttForwardFilter.swift; sourceTree = "<group>"; };
 		DDD5BB082C285DDC007E03CA /* AppLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLog.swift; sourceTree = "<group>"; };
 		DDD5BB0A2C285E45007E03CA /* LogDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogDetail.swift; sourceTree = "<group>"; };
 		DDD5BB0C2C285F00007E03CA /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
@@ -1688,6 +1692,7 @@
 				DD0000DEVLNKTST000000000 /* DeviceLinkTests.swift */,
 				BEEF00102F00000100000003 /* MeshtasticChannelURLTests.swift */,
 				DD0000CHSETST0000000000 /* ChannelSetSaveTests.swift */,
+				DD0000MQTTFWDFLTTST00000 /* MqttForwardFilterTests.swift */,
 				DD1827FA0000000000000002 /* RegionCodesFirmwareLocaleTests.swift */,
 				DD000031STATMSGDISP00000 /* StatusMessageDisplayTests.swift */,
 			);
@@ -2391,6 +2396,7 @@
 			isa = PBXGroup;
 			children = (
 				DDD43FE22A78C8900083A3E9 /* MqttClientProxyManager.swift */,
+				DD0000MQTTFWDFLT00000000 /* MqttForwardFilter.swift */,
 			);
 			path = Mqtt;
 			sourceTree = "<group>";
@@ -2770,6 +2776,7 @@
 				DD7E5750000000000000008B /* LockdownPassphraseStoreTests.swift in Sources */,
 				DD0000DEVLNKTST000000001 /* DeviceLinkTests.swift in Sources */,
 				DD0000CHSETST0000000001 /* ChannelSetSaveTests.swift in Sources */,
+				DD0000MQTTFWDFLTTST00001 /* MqttForwardFilterTests.swift in Sources */,
 				DD1827FB0000000000000002 /* RegionCodesFirmwareLocaleTests.swift in Sources */,
 				DD000031STATMSGDISP00001 /* StatusMessageDisplayTests.swift in Sources */,
 				AA009MCT0000002000000001 /* MarkdownConverterTests.swift in Sources */,
@@ -3085,6 +3092,7 @@
 				DDB8F4142A9EE5F000230ECE /* ChannelList.swift in Sources */,
 				BCB35B4F2E5FC42500B04F60 /* MessageNodeIntent.swift in Sources */,
 				DDD43FE32A78C8900083A3E9 /* MqttClientProxyManager.swift in Sources */,
+				DD0000MQTTFWDFLT00000001 /* MqttForwardFilter.swift in Sources */,
 				BCD7448D2E0F2FAA00F265A2 /* ContactURLHandler.swift in Sources */,
 				BEEF00102F00000100000002 /* MeshtasticChannelURL.swift in Sources */,
 				DD007BB02AA5981000F5FA12 /* NodeInfoEntityExtension.swift in Sources */,

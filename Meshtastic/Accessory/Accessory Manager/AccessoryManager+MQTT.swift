@@ -98,13 +98,31 @@ extension AccessoryManager {
 			return
 		}
 
+		let rawData = Data(message.payload)
+
+		// Parse the ServiceEnvelope once. Fail open: unparseable bytes are
+		// forwarded unchanged (nil `parsed`), exactly as before this filter existed.
+		let parsed = try? ServiceEnvelope(serializedData: rawData)
+
+		// Drop provably-undeliverable packets before spending any BLE bandwidth on
+		// them. In client-proxy mode the public broker floods payload-less stubs the
+		// node can only decrypt-fail and discard; stopping them here saves BLE
+		// airtime, a decrypt attempt, and a node-side WARN per packet.
+		if let envelope = parsed {
+			let myHex = myNodeNum == 0 ? "" : myNodeNum.toHex()
+			if MqttForwardFilter.decide(envelope: envelope, myNodeHex: myHex) == .dropNoPayload {
+				mqttProxyDroppedNoPayload += 1
+				Logger.services.debug("📲 [MQTT] drop (no payload) topic=\(message.topic, privacy: .public) count=\(self.mqttProxyDroppedNoPayload, privacy: .public)")
+				return
+			}
+		}
+
 		// Clamp hop_limit to 0 on downlink ServiceEnvelopes before forwarding to
 		// the device. Packets with hop_limit > 0 would be re-broadcast over RF,
 		// flooding the mesh with traffic that arrived via MQTT. hop_start is
 		// preserved so receivers can still compute how far the packet travelled.
-		let rawData = Data(message.payload)
 		let forwardData: Data
-		if var envelope = try? ServiceEnvelope(serializedData: rawData),
+		if var envelope = parsed,
 		   envelope.hasPacket, envelope.packet.hopLimit > 0 {
 			let original = envelope.packet.hopLimit
 			envelope.packet.hopLimit = 0
