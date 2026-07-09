@@ -80,10 +80,13 @@ actor SerialConnection: Connection {
 
 			let payload = readBuffer.subdata(in: 4..<totalPacketLength)
 
-			if let fromRadio = try? FromRadio(serializedBytes: payload) {
+			switch FromRadioDecoder.classify(payload) {
+			case .decoded(let fromRadio):
 				eventStreamContinuation?.yield(.data(fromRadio))
-			} else {
-				Logger.transport.error("🔱 [Serial] Failed to deserialize payload. Skipping packet.")
+			case .skipInvalidUTF8(let error):
+				Logger.transport.error("🔱 [Serial] Skipping FromRadio frame with invalid UTF-8 (\(payload.count) bytes): \(error, privacy: .public)")
+			case .failed(let error):
+				Logger.transport.error("🔱 [Serial] Failed to deserialize payload, skipping packet: \(error, privacy: .public)")
 			}
 
 			readBuffer.removeSubrange(0..<totalPacketLength)

@@ -89,10 +89,19 @@ actor TCPConnection: Connection {
 
 					if let length = try? await readInteger() {
 						let payload = try await receiveData(min: Int(length), max: Int(length))
-						if let fromRadio = try? FromRadio(serializedBytes: payload) {
+						switch FromRadioDecoder.classify(payload) {
+						case .decoded(let fromRadio):
 							await connectionStreamContinuation?.yield(.data(fromRadio))
-						} else {
-							try await self.disconnect(withError: AccessoryError.disconnected("Network connection dropped"), shouldReconnect: true)
+						case .skipInvalidUTF8(let error):
+							// A string field failed UTF-8 validation; skip this frame and keep reading
+							// rather than tearing down an otherwise healthy connection over one
+							// unparseable field. receiveData(min:max:) already consumed exactly `length`
+							// bytes, so the stream stays magic-byte aligned for the next frame.
+							Logger.transport.error("🌐 [TCP] Skipping FromRadio frame with invalid UTF-8 (\(payload.count) bytes): \(error, privacy: .public)")
+						case .failed(let error):
+							// Genuine framing/stream corruption — disconnect and allow reconnect recovery.
+							Logger.transport.error("🌐 [TCP] FromRadio decode failed (framing/stream corruption): \(error, privacy: .public)")
+							try await self.disconnect(withError: error, shouldReconnect: true)
 						}
 					} else {
 						Logger.transport.debug("🌐 [TCP] startReader: EOF while waiting for length")

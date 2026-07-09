@@ -9,7 +9,6 @@ import Foundation
 @preconcurrency import CoreBluetooth
 import OSLog
 import MeshtasticProtobufs
-import SwiftProtobuf
 
 let meshtasticServiceCBUUID = CBUUID(string: "0x6BA1B218-15A8-461F-9FA8-5DCAE273EAFD")
 let TORADIO_UUID = CBUUID(string: "0xF75C76D2-129E-4DAD-A1DD-7866124401E7")
@@ -167,32 +166,25 @@ actor BLEConnection: Connection {
 				break
 			}
 
-			do {
-				let decodedInfo = try FromRadio(serializedBytes: data)
+			switch FromRadioDecoder.classify(data) {
+			case .decoded(let decodedInfo):
 				connectionStreamContinuation?.yield(.data(decodedInfo))
-			} catch {
-				if isInvalidUTF8DecodeError(error) {
-					// Skip known invalid UTF-8 payloads to avoid reconnect loops when
-					// a remote node has corrupt string data in the node database.
-					Logger.transport.error("⚠️ [BLE] Failed to decode FromRadio packet due to invalid UTF-8 (\(data.count) bytes), skipping: \(error)")
-				} else {
-					// Other decode errors are likely transport/framing issues.
-					let decodeError = error
-					do {
-						try await self.disconnect(withError: decodeError, shouldReconnect: true)
-					} catch let disconnectError {
-						Logger.transport.error("⚠️ [BLE] Failed to disconnect after FromRadio decode failure: \(disconnectError)")
-					}
-					throw decodeError
+			case .skipInvalidUTF8(let error):
+				// A string field failed UTF-8 validation; skip this frame and keep draining
+				// rather than dropping the connection over one unparseable field.
+				Logger.transport.error("⚠️ [BLE] Skipping FromRadio frame with invalid UTF-8 (\(data.count) bytes): \(error, privacy: .public)")
+			case .failed(let error):
+				// Other decode errors are likely transport/framing issues.
+				do {
+					try await self.disconnect(withError: error, shouldReconnect: true)
+				} catch let disconnectError {
+					Logger.transport.error("⚠️ [BLE] Failed to disconnect after FromRadio decode failure: \(disconnectError)")
 				}
+				throw error
 			}
 		} while true
 	}
 
-	private func isInvalidUTF8DecodeError(_ error: Error) -> Bool {
-		(error as? BinaryDecodingError) == .invalidUTF8
-	}
-	
 	func didReceiveLogMessage(_ logMessage: String) {
 		self.connectionStreamContinuation?.yield(.logMessage(logMessage))
 	}
