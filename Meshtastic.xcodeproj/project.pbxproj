@@ -779,9 +779,11 @@
 		AA000401SIRI000000000022 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "zh-Hans"; path = "zh-Hans.lproj/AppIntentVocabulary.plist"; sourceTree = "<group>"; };
 		AA000401SIRI000000000023 /* zh-Hant-TW */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "zh-Hant-TW"; path = "zh-Hant-TW.lproj/AppIntentVocabulary.plist"; sourceTree = "<group>"; };
 		AA000402IPLS000000000010 /* zh-Hant-TW */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant-TW"; path = "zh-Hant-TW.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
+		AA000402IPLS000000000011 /* uk */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = uk; path = uk.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		AA000401SIRI000000000024 /* ko */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = ko; path = ko.lproj/AppIntentVocabulary.plist; sourceTree = "<group>"; };
 		AA000401SIRI000000000025 /* zh-Hant */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "zh-Hant"; path = "zh-Hant.lproj/AppIntentVocabulary.plist"; sourceTree = "<group>"; };
 		AA000401SIRI000000000026 /* pt-BR */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "pt-BR"; path = "pt-BR.lproj/AppIntentVocabulary.plist"; sourceTree = "<group>"; };
+		AA000401SIRI000000000027 /* uk */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = uk; path = uk.lproj/AppIntentVocabulary.plist; sourceTree = "<group>"; };
 		AA0005000000000000000000 /* MeshMapMK.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = MeshMapMK.swift; path = Meshtastic/Views/Nodes/MeshMapMK.swift; sourceTree = SOURCE_ROOT; };
 		AA0005WTCH00000000FR0001 /* MeshtasticWatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticWatchApp.swift; sourceTree = "<group>"; };
 		AA0005WTCH00000000FR0002 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -2638,6 +2640,7 @@
 				ru,
 				se,
 				sr,
+				uk,
 				"zh-Hans",
 				"zh-Hant",
 				"zh-Hant-TW",
@@ -3331,6 +3334,7 @@
 				AA000401SIRI000000000024 /* ko */,
 				AA000401SIRI000000000025 /* zh-Hant */,
 				AA000401SIRI000000000026 /* pt-BR */,
+				AA000401SIRI000000000027 /* uk */,
 			);
 			name = AppIntentVocabulary.plist;
 			sourceTree = "<group>";
@@ -3339,6 +3343,7 @@
 			isa = PBXVariantGroup;
 			children = (
 				AA000402IPLS000000000010 /* zh-Hant-TW */,
+				AA000402IPLS000000000011 /* uk */,
 			);
 			name = InfoPlist.strings;
 			sourceTree = "<group>";
