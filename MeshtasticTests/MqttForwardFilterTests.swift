@@ -22,15 +22,13 @@ struct MqttForwardFilterTests {
 		gatewayID: String = "!aabbccdd",
 		channelID: String = "LongFast",
 		hasPacket: Bool = true,
-		payload: MeshPacket.OneOf_PayloadVariant? = nil,
-		channel: UInt32 = 0
+		payload: MeshPacket.OneOf_PayloadVariant? = nil
 	) -> ServiceEnvelope {
 		var env = ServiceEnvelope()
 		env.gatewayID = gatewayID
 		env.channelID = channelID
 		if hasPacket {
 			var pkt = MeshPacket()
-			pkt.channel = channel
 			if let payload {
 				pkt.payloadVariant = payload
 			}
@@ -51,7 +49,7 @@ struct MqttForwardFilterTests {
 
 	@Test("Encrypted payload is forwarded")
 	func encryptedForwarded() {
-		let env = makeEnvelope(payload: .encrypted(Data([0x01, 0x02, 0x03])), channel: 0x08)
+		let env = makeEnvelope(payload: .encrypted(Data([0x01, 0x02, 0x03])))
 		#expect(MqttForwardFilter.decide(envelope: env, myNodeHex: myHex) == .forward)
 	}
 
@@ -59,8 +57,8 @@ struct MqttForwardFilterTests {
 
 	@Test("Payload-less packet is dropped")
 	func payloadlessDropped() {
-		// The observed LongFast flood: a packet with no payload variant, channel 0.
-		let env = makeEnvelope(payload: nil, channel: 0)
+		// The observed LongFast flood: a packet with no payload variant.
+		let env = makeEnvelope(payload: nil)
 		#expect(MqttForwardFilter.decide(envelope: env, myNodeHex: myHex) == .dropNoPayload)
 	}
 
