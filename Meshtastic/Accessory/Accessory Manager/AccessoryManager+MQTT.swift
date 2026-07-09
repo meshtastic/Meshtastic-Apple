@@ -12,10 +12,12 @@ import OSLog
 import MeshtasticProtobufs
 
 // Serialises MQTT-sourced BLE writes by allowing at most one forwarded packet
-// in-flight over BLE at any time. CocoaMQTT calls its delegate on a background
-// thread; this actor gates entry and drops packets that arrive while a write is
-// already in progress rather than queuing them, preventing the device firmware
-// from being overwhelmed by global broker traffic.
+// in-flight over BLE at any time. CocoaMQTT delivers its delegate callbacks on
+// its default `delegateQueue` (DispatchQueue.main) and we never override it, so
+// the receive handler runs on the main actor; each forward still kicks off an
+// async BLE write, and this actor gates entry and drops packets that arrive
+// while a write is already in progress rather than queuing them, preventing the
+// device firmware from being overwhelmed by global broker traffic.
 actor MqttForwardGate {
 	private var busy = false
 

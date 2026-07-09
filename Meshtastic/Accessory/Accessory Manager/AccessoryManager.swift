@@ -235,7 +235,9 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 
 	// Debug counter: MQTT client-proxy downlink packets dropped before forwarding
 	// to the device because they carried no payload (see MqttForwardFilter). NOT
-	// @Published — mutated on the MQTT delegate path, read only for debug logging.
+	// @Published — read only for debug logging, so it needn't drive view updates.
+	// Mutated on the main actor: CocoaMQTT delivers delegate callbacks on its
+	// default main delegateQueue, so onMqttMessageReceived runs on MainActor.
 	var mqttProxyDroppedNoPayload: Int = 0
 	
 	// Continuations
