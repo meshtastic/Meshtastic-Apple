@@ -17,6 +17,7 @@ final class DeviceMetadataEntity {
 	var hasBluetooth: Bool = false
 	var hasEthernet: Bool = false
 	var hasWifi: Bool = false
+	var hasXeddsa: Bool = false
 	var hwModel: String?
 	var positionFlags: Int32 = 0
 	var role: Int32 = 0

@@ -43,6 +43,20 @@ Manage up to 8 channels (0–7). Channel 0 is the primary broadcast channel. Add
 
 Configure PKI (Public Key Infrastructure) encryption for direct messages. Requires firmware 2.5+.
 
+#### Packet Authenticity
+
+Firmware that reports XEdDSA support can authenticate the sender of mesh packets. The **Protection Level** setting controls how the radio handles traffic that cannot be authenticated:
+
+| Level | Behavior |
+|-------|----------|
+| Compatible — Accept unsigned | Verifies authentication when present and accepts unsigned traffic for maximum compatibility. |
+| Balanced — Prefer authenticated | Recommended and the default. Rejects unsigned, signable broadcasts from nodes that have previously signed while continuing to accept legacy unsigned traffic. |
+| Strict — Require authentication | Accepts remote packets only when they have a verified XEdDSA signature or were successfully authenticated through PKI decryption. |
+
+Strict applies to every decryptable remote mesh packet, including positions, messages, telemetry, NodeInfo, and routing traffic. Unsigned traffic from older firmware or nodes, licensed (ham) nodes that do not sign, and packets too large to carry a signature will be rejected. Authenticated PKI direct messages remain available. The app asks for confirmation before enabling Strict.
+
+The selector is unavailable when a radio does not report XEdDSA capability. Update that radio's firmware before changing the policy. A verified signature proves which key sent a packet; it does not prove that a reported position or sensor value is true or fresh.
+
 On hardened lockdown-firmware radios, this page also shows a **Lockdown** section with the session status, a **Lock Now** button, and a **Forget Stored Passphrase** button. See [Lockdown Mode](lockdown.md).
 
 ### User

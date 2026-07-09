@@ -52,6 +52,32 @@
 <p>Manage up to 8 channels (0–7). Channel 0 is the primary broadcast channel. Additional channels create isolated messaging groups with their own encryption keys.</p>
 <h3>Security</h3>
 <p>Configure PKI (Public Key Infrastructure) encryption for direct messages. Requires firmware 2.5+.</p>
+<h4>Packet Authenticity</h4>
+<p>Firmware that reports XEdDSA support can authenticate the sender of mesh packets. The <strong>Protection Level</strong> setting controls how the radio handles traffic that cannot be authenticated:</p>
+<table>
+<thead>
+<tr>
+<th>Level</th>
+<th>Behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Compatible — Accept unsigned</td>
+<td>Verifies authentication when present and accepts unsigned traffic for maximum compatibility.</td>
+</tr>
+<tr>
+<td>Balanced — Prefer authenticated</td>
+<td>Recommended and the default. Rejects unsigned, signable broadcasts from nodes that have previously signed while continuing to accept legacy unsigned traffic.</td>
+</tr>
+<tr>
+<td>Strict — Require authentication</td>
+<td>Accepts remote packets only when they have a verified XEdDSA signature or were successfully authenticated through PKI decryption.</td>
+</tr>
+</tbody>
+</table>
+<p>Strict applies to every decryptable remote mesh packet, including positions, messages, telemetry, NodeInfo, and routing traffic. Unsigned traffic from older firmware or nodes, licensed (ham) nodes that do not sign, and packets too large to carry a signature will be rejected. Authenticated PKI direct messages remain available. The app asks for confirmation before enabling Strict.</p>
+<p>The selector is unavailable when a radio does not report XEdDSA capability. Update that radio's firmware before changing the policy. A verified signature proves which key sent a packet; it does not prove that a reported position or sensor value is true or fresh.</p>
 <p>On hardened lockdown-firmware radios, this page also shows a <strong>Lockdown</strong> section with the session status, a <strong>Lock Now</strong> button, and a <strong>Forget Stored Passphrase</strong> button. See <a href="lockdown.html">Lockdown Mode</a>.</p>
 <h3>User</h3>
 <p>Set your Long Name (display name) and Short Name (4-character/emoji identifier shown in the node circle).</p>

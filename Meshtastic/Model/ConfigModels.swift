@@ -336,6 +336,7 @@ final class SecurityConfigEntity {
 	var bluetoothLoggingEnabled: Bool = false
 	var debugLogApiEnabled: Bool = false
 	var isManaged: Bool = false
+	var packetSignaturePolicy: Int32 = 0
 	var privateKey: Data?
 	var publicKey: Data?
 	var serialEnabled: Bool = false

@@ -107,6 +107,217 @@ struct XEdDSASigningTests {
 	}
 }
 
+// MARK: - Configurable packet authenticity
+
+actor MockSecurityConfigConnection: Connection {
+	let type: TransportType = .ble
+	let isConnected = true
+	private(set) var sentPackets: [ToRadio] = []
+
+	var sentSecurityPolicy: Config.SecurityConfig.PacketSignaturePolicy? {
+		for toRadio in sentPackets {
+			guard case let .packet(meshPacket) = toRadio.payloadVariant,
+				  case let .decoded(dataMessage) = meshPacket.payloadVariant,
+				  let admin = try? AdminMessage(serializedBytes: dataMessage.payload),
+				  case let .setConfig(config) = admin.payloadVariant,
+				  case let .security(security) = config.payloadVariant else { continue }
+			return security.packetSignaturePolicy
+		}
+		return nil
+	}
+
+	func send(_ data: ToRadio) async throws {
+		sentPackets.append(data)
+	}
+
+	func connect() async throws -> AsyncStream<ConnectionEvent> {
+		AsyncStream { $0.finish() }
+	}
+
+	func disconnect(withError: Error?, shouldReconnect: Bool) async throws {}
+	func drainPendingPackets() async throws {}
+	func startDrainPendingPackets() throws {}
+	func appDidEnterBackground() {}
+	func appDidBecomeActive() {}
+}
+
+@Suite("Packet authenticity policy", .serialized)
+struct PacketAuthenticityPolicyTests {
+
+	@Test func balanced_isTheWireDefault() throws {
+		let config = Config.SecurityConfig()
+		#expect(config.packetSignaturePolicy == .balanced)
+		#expect(try config.serializedData().isEmpty)
+	}
+
+	@Test func strict_roundTripsOnSecurityConfigField9() throws {
+		var config = Config.SecurityConfig()
+		config.packetSignaturePolicy = .strict
+
+		let bytes = try config.serializedData()
+		let decoded = try Config.SecurityConfig(serializedData: bytes)
+
+		#expect(decoded.packetSignaturePolicy == .strict)
+		#expect(Array(bytes) == [0x48, 0x02])
+	}
+
+	@Test func deviceMetadata_hasXeddsaRoundTripsOnField14() throws {
+		var metadata = DeviceMetadata()
+		metadata.hasXeddsa_p = true
+
+		let bytes = try metadata.serializedData()
+		let decoded = try DeviceMetadata(serializedData: bytes)
+
+		#expect(decoded.hasXeddsa_p == true)
+		#expect(Array(bytes) == [0x70, 0x01])
+	}
+
+	@Test func compatible_appliesWithoutConfirmation() {
+		var state = PacketAuthenticitySelectionState()
+		state.propose(.compatible)
+
+		#expect(state.selected == .compatible)
+		#expect(state.pendingStrict == false)
+	}
+
+	@Test func strict_requiresConfirmationBeforeApplying() {
+		var state = PacketAuthenticitySelectionState()
+		state.propose(.strict)
+
+		#expect(state.selected == .balanced)
+		#expect(state.pendingStrict == true)
+
+		state.confirmStrict()
+		#expect(state.selected == .strict)
+		#expect(state.pendingStrict == false)
+	}
+
+	@Test func cancellingStrict_preservesCurrentPolicy() {
+		var state = PacketAuthenticitySelectionState(selected: .compatible)
+		state.propose(.strict)
+		state.cancelStrict()
+
+		#expect(state.selected == .compatible)
+		#expect(state.pendingStrict == false)
+	}
+
+	@Test func alreadyStrict_doesNotPromptAgain() {
+		var state = PacketAuthenticitySelectionState(selected: .strict)
+		state.propose(.strict)
+
+		#expect(state.selected == .strict)
+		#expect(state.pendingStrict == false)
+	}
+
+	@Test func pickerOptions_useCompatibleBalancedStrictOrder() {
+		#expect(
+			Config.SecurityConfig.PacketSignaturePolicy.packetAuthenticityOptions == [
+				.compatible,
+				.balanced,
+				.strict
+			]
+		)
+	}
+
+	@Test @MainActor func persistenceEntities_defaultToBalancedAndUnsupported() {
+		let context = TestContainerProvider.shared.mainContext
+		let security = SecurityConfigEntity()
+		let metadata = DeviceMetadataEntity()
+		context.insert(security)
+		context.insert(metadata)
+
+		#expect(security.packetSignaturePolicy == 0)
+		#expect(metadata.hasXeddsa == false)
+	}
+
+	@Test @MainActor func capabilityGate_distinguishesUnknownUnsupportedAndSupported() {
+		#expect(PacketAuthenticityCapability(metadata: nil) == .unknown)
+
+		let metadata = DeviceMetadataEntity()
+		#expect(PacketAuthenticityCapability(metadata: metadata) == .unsupported)
+		#expect(PacketAuthenticityCapability(metadata: metadata).allowsChanges == false)
+
+		metadata.hasXeddsa = true
+		#expect(PacketAuthenticityCapability(metadata: metadata) == .supported)
+		#expect(PacketAuthenticityCapability(metadata: metadata).allowsChanges == true)
+	}
+
+	@Test @MainActor func upsertSecurityConfig_persistsPacketAuthenticityPolicy() async throws {
+		let nodeNum: Int64 = 0x00E0_0301
+		let context = PersistenceController.shared.context
+		let descriptor = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == nodeNum })
+		for existing in try context.fetch(descriptor) {
+			context.delete(existing)
+		}
+		try context.save()
+
+		let node = NodeInfoEntity()
+		node.num = nodeNum
+		context.insert(node)
+		try context.save()
+
+		MeshPackets.recreateShared()
+		var config = Config.SecurityConfig()
+		config.packetSignaturePolicy = .compatible
+		await MeshPackets.shared.upsertSecurityConfigPacket(config: config, nodeNum: nodeNum)
+
+		let readContext = ModelContext(PersistenceController.shared.container)
+		let stored = try #require(readContext.fetch(descriptor).first?.securityConfig)
+		#expect(stored.packetSignaturePolicy == Int32(Config.SecurityConfig.PacketSignaturePolicy.compatible.rawValue))
+	}
+
+	@Test @MainActor func saveSecurityConfig_transmitsAndUpdatesPacketAuthenticityPolicy() async throws {
+		let nodeNum: Int64 = 0x00E0_0302
+		let context = PersistenceController.shared.context
+		let descriptor = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == nodeNum })
+		for existing in try context.fetch(descriptor) {
+			context.delete(existing)
+		}
+		let userDescriptor = FetchDescriptor<UserEntity>(predicate: #Predicate { $0.num == nodeNum })
+		for existing in try context.fetch(userDescriptor) {
+			context.delete(existing)
+		}
+		try context.save()
+
+		let node = NodeInfoEntity()
+		node.num = nodeNum
+		let user = UserEntity()
+		user.num = nodeNum
+		let security = SecurityConfigEntity()
+		security.packetSignaturePolicy = Int32(Config.SecurityConfig.PacketSignaturePolicy.compatible.rawValue)
+		context.insert(node)
+		context.insert(user)
+		context.insert(security)
+		node.user = user
+		node.securityConfig = security
+		try context.save()
+
+		let connection = MockSecurityConfigConnection()
+		let manager = AccessoryManager(transports: [])
+		manager.activeDeviceNum = nodeNum
+		manager.activeConnection = (
+			device: Device(
+				id: UUID(),
+				name: "Packet authenticity test",
+				transportType: .ble,
+				identifier: "packet-authenticity-test",
+				connectionState: .connected,
+				num: nodeNum
+			),
+			connection: connection
+		)
+
+		var config = Config.SecurityConfig()
+		config.packetSignaturePolicy = .strict
+		_ = try await manager.saveSecurityConfig(config: config, fromUser: user, toUser: user)
+
+		#expect(await connection.sentSecurityPolicy == .strict)
+		let readContext = ModelContext(PersistenceController.shared.container)
+		let stored = try #require(readContext.fetch(descriptor).first?.securityConfig)
+		#expect(stored.packetSignaturePolicy == Int32(Config.SecurityConfig.PacketSignaturePolicy.strict.rawValue))
+	}
+}
+
 // MARK: - Ingestion behavior
 
 /// Exercises the actual packet→entity ingestion logic that the UI depends on:
@@ -189,7 +400,7 @@ struct XEdDSAIngestionTests {
 		#expect(fetchNode(num)?.hasXeddsaSigned == true)
 	}
 
-	// MARK: per-message flag — broadcast only, never DMs (MeshPacket.xeddsa_signed)
+	// MARK: per-message shield — displayed for broadcast traffic (MeshPacket.xeddsa_signed)
 
 	@Test @MainActor func textMessage_signedBroadcast_setsFlag() async {
 		let mp = MeshPackets(modelContainer: sharedModelContainer)
@@ -199,8 +410,9 @@ struct XEdDSAIngestionTests {
 		#expect(fetchMessage(id)?.xeddsaSigned == true)
 	}
 
-	/// Firmware never sets the flag on DMs, but the ingest path also gates on the broadcast
-	/// address so a stray/spoofed signed DM can never light the "verified" shield.
+	/// Firmware may sign non-PKI unicast traffic, but the message shield intentionally remains a
+	/// broadcast-authenticity indicator. Direct-message authentication is represented by the
+	/// existing PKI lock state, so a signed unicast packet must not light the broadcast shield.
 	@Test @MainActor func textMessage_signedDirectMessage_doesNotSetFlag() async {
 		let mp = MeshPackets(modelContainer: sharedModelContainer)
 		let id: Int64 = 0x00B0_0202
