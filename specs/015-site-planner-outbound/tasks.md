@@ -9,8 +9,8 @@
 
 ## Phase 1: Setup
 
-- [ ] T001 Create the `Meshtastic/Helpers/SitePlanner/` directory that will hold every new type in this feature (per plan.md's Project Structure)
-- [ ] T002 Fetch the live [Meshtastic Client Design Standards](https://raw.githubusercontent.com/meshtastic/design/refs/heads/master/standards/meshtastic_design_standards_latest.md) and note guidance on forms with grouped/collapsible sections, toolbar controls, node-detail actions, in-progress states, palette pickers, and error presentation (Constitution VIII) — could not be resolved during planning (research.md §6); required before T015/T020/T023/T024
+- [X] T001 Create the `Meshtastic/Helpers/SitePlanner/` directory that will hold every new type in this feature (per plan.md's Project Structure)
+- [X] T002 Fetch the live [Meshtastic Client Design Standards](https://raw.githubusercontent.com/meshtastic/design/refs/heads/master/standards/meshtastic_design_standards_latest.md) and note guidance on forms with grouped/collapsible sections, toolbar controls, node-detail actions, in-progress states, palette pickers, and error presentation (Constitution VIII) — **resolved: `_latest.md` is a symlink to `_v1_4.md`, fetched successfully; findings recorded in research.md §6** (Measurement-based unit display, plain-language subtext for advanced fields, null-data suppression, 44×44pt touch targets + Catalyst tooltips on icon-only controls)
 
 ---
 
