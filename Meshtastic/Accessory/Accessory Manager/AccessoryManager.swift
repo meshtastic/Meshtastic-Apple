@@ -532,6 +532,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		guard case let .packet(packet) = data.payloadVariant,
 			  case let .decoded(decoded) = packet.payloadVariant,
 			  decoded.portnum == .adminApp,
+			  packet.to != Constants.maximumNodeNum,
 			  packet.to != UInt32(truncatingIfNeeded: connectedDeviceNum)
 		else { return data }
 

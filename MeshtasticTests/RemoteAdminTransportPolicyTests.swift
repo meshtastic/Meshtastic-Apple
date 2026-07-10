@@ -172,6 +172,22 @@ struct RemoteAdminTransportPolicyTests {
 		#expect(packet.publicKey == Data([0x01, 0x02, 0x03]))
 	}
 
+	@Test("Licensed broadcast Admin is not converted to remote Admin transport")
+	func licensedBroadcastAdminIsUnchanged() async throws {
+		let ownerNum: Int64 = 4_010_000_010
+		_ = try user(num: ownerNum, isLicensed: true)
+		let connection = RecordingRemoteAdminConnection()
+		let manager = makeManager(connectedDeviceNum: ownerNum, connection: connection)
+
+		try await manager.send(adminPacket(from: ownerNum, to: Int64(Constants.maximumNodeNum)))
+
+		let packet = try await lastMeshPacket(from: connection)
+		#expect(packet.to == Constants.maximumNodeNum)
+		#expect(packet.channel == 7)
+		#expect(packet.pkiEncrypted)
+		#expect(packet.publicKey == Data([0x01, 0x02, 0x03]))
+	}
+
 	@Test("Unknown connected-owner mode does not assume licensed transport")
 	func unknownOwnerModeIsUnchanged() async throws {
 		let ownerNum: Int64 = 4_010_000_008
