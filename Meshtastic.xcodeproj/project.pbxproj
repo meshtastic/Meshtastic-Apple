@@ -147,6 +147,8 @@
 		DDBEAC0010000000000000F1 /* LoRaChannelCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDBEAC0010000000000000E1 /* LoRaChannelCalculator.swift */; };
 		515EC0DE00000000000000F1 /* CoverageEstimateParameters.swift in Sources */ = {isa = PBXBuildFile; fileRef = 515EC0DE00000000000000E1 /* CoverageEstimateParameters.swift */; };
 		515EC0DE00000000000000F2 /* LoRaRFHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 515EC0DE00000000000000E2 /* LoRaRFHelpers.swift */; };
+		515EC0DE00000000000000F5 /* CoverageQueryURLBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 515EC0DE00000000000000E5 /* CoverageQueryURLBuilder.swift */; };
+		515EC0DE00000000000000F6 /* CoverageQueryURLBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 515EC0DE00000000000000E6 /* CoverageQueryURLBuilderTests.swift */; };
 		DDBEAC001000000000000111 /* DiscoveryBeaconsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDBEAC001000000000000101 /* DiscoveryBeaconsView.swift */; };
 		DDBEAC001000000000000171 /* MeshBeaconConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDBEAC001000000000000161 /* MeshBeaconConfig.swift */; };
 		DDBEAC001000000000000191 /* MeshBeaconConfigHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDBEAC001000000000000181 /* MeshBeaconConfigHelper.swift */; };
@@ -829,6 +831,7 @@
 		DDBEAC001000000000000121 /* ModemPresetFrequencySlotTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModemPresetFrequencySlotTests.swift; sourceTree = "<group>"; };
 		515EC0DE00000000000000E3 /* CoverageEstimateParametersTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoverageEstimateParametersTests.swift; sourceTree = "<group>"; };
 		515EC0DE00000000000000E4 /* LoRaRFHelpersTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoRaRFHelpersTests.swift; sourceTree = "<group>"; };
+		515EC0DE00000000000000E6 /* CoverageQueryURLBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoverageQueryURLBuilderTests.swift; sourceTree = "<group>"; };
 		DDBEAC001000000000000141 /* BeaconAddVsSwitchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeaconAddVsSwitchTests.swift; sourceTree = "<group>"; };
 		AAFF00000000000000000001 /* OfflineMapRegion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OfflineMapRegion.swift; path = Meshtastic/Helpers/Map/OfflineMapRegion.swift; sourceTree = SOURCE_ROOT; };
 		AAFF00000000000000000002 /* OfflineMapManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OfflineMapManager.swift; path = Meshtastic/Helpers/Map/OfflineMapManager.swift; sourceTree = SOURCE_ROOT; };
@@ -872,6 +875,7 @@
 		DDBEAC0010000000000000E1 /* LoRaChannelCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoRaChannelCalculator.swift; sourceTree = "<group>"; };
 		515EC0DE00000000000000E1 /* CoverageEstimateParameters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoverageEstimateParameters.swift; sourceTree = "<group>"; };
 		515EC0DE00000000000000E2 /* LoRaRFHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoRaRFHelpers.swift; sourceTree = "<group>"; };
+		515EC0DE00000000000000E5 /* CoverageQueryURLBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoverageQueryURLBuilder.swift; sourceTree = "<group>"; };
 		DDBEAC001000000000000101 /* DiscoveryBeaconsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveryBeaconsView.swift; sourceTree = "<group>"; };
 		DDBEAC001000000000000161 /* MeshBeaconConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshBeaconConfig.swift; sourceTree = "<group>"; };
 		DDBEAC001000000000000181 /* MeshBeaconConfigHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshBeaconConfigHelper.swift; sourceTree = "<group>"; };
@@ -1645,6 +1649,7 @@
 				DDBEAC001000000000000121 /* ModemPresetFrequencySlotTests.swift */,
 				515EC0DE00000000000000E3 /* CoverageEstimateParametersTests.swift */,
 				515EC0DE00000000000000E4 /* LoRaRFHelpersTests.swift */,
+				515EC0DE00000000000000E6 /* CoverageQueryURLBuilderTests.swift */,
 				DDBEAC001000000000000141 /* BeaconAddVsSwitchTests.swift */,
 				DDBEAC001000000000000201 /* MeshBeaconConfigEditorTests.swift */,
 				18295AFE686247778632C6DE /* NetworkConfigIPConversionTests.swift */,
@@ -2146,6 +2151,7 @@
 			children = (
 				515EC0DE00000000000000E1 /* CoverageEstimateParameters.swift */,
 				515EC0DE00000000000000E2 /* LoRaRFHelpers.swift */,
+				515EC0DE00000000000000E5 /* CoverageQueryURLBuilder.swift */,
 			);
 			path = SitePlanner;
 			sourceTree = "<group>";
@@ -2782,6 +2788,7 @@
 				DDBEAC001000000000000131 /* ModemPresetFrequencySlotTests.swift in Sources */,
 				515EC0DE00000000000000F3 /* CoverageEstimateParametersTests.swift in Sources */,
 				515EC0DE00000000000000F4 /* LoRaRFHelpersTests.swift in Sources */,
+				515EC0DE00000000000000F6 /* CoverageQueryURLBuilderTests.swift in Sources */,
 				DDBEAC001000000000000151 /* BeaconAddVsSwitchTests.swift in Sources */,
 				DDBEAC001000000000000211 /* MeshBeaconConfigEditorTests.swift in Sources */,
 				FDAF8808342245C4817C93EC /* NetworkConfigIPConversionTests.swift in Sources */,
@@ -2897,6 +2904,7 @@
 				DDBEAC0010000000000000F1 /* LoRaChannelCalculator.swift in Sources */,
 				515EC0DE00000000000000F1 /* CoverageEstimateParameters.swift in Sources */,
 				515EC0DE00000000000000F2 /* LoRaRFHelpers.swift in Sources */,
+				515EC0DE00000000000000F5 /* CoverageQueryURLBuilder.swift in Sources */,
 				DDBEAC001000000000000191 /* MeshBeaconConfigHelper.swift in Sources */,
 				DDBEAC001000000000000111 /* DiscoveryBeaconsView.swift in Sources */,
 				EE7E2D900ACAC8053153354A /* DiscoveryScanEngine.swift in Sources */,
