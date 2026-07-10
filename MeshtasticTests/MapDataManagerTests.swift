@@ -103,3 +103,53 @@ struct MapDataManagerImportFromRemoteTests {
 		#expect(metadata.overlayCount == 2)
 	}
 }
+
+/// `importFromData` (spec 015, T009) — the entry point for a coverage estimate result
+/// delivered in-memory by `CoverageEstimateBridge`, rather than downloaded from a URL.
+@Suite("MapDataManager.importFromData")
+struct MapDataManagerImportFromDataTests {
+
+	private let sampleGeoJSON = Data("""
+	{ "type": "FeatureCollection", "features": [
+		{ "type": "Feature", "geometry": { "type": "Polygon", "coordinates": [[[0, 0], [1, 0], [1, 1], [0, 0]]] },
+		  "properties": { "fill": "#0080ff", "generator": "meshtastic-site-planner", "name": "Test Site" } }
+	]}
+	""".utf8)
+
+	private func cleanUp(_ manager: MapDataManager, _ metadata: MapDataMetadata) async {
+		try? await manager.deleteFile(metadata)
+	}
+
+	@Test func importsInMemoryGeoJSONBySuggestedName() async throws {
+		let manager = MapDataManager()
+		let metadata = try await manager.importFromData(sampleGeoJSON, suggestedName: "Test Site")
+		defer { Task { await cleanUp(manager, metadata) } }
+
+		#expect(metadata.overlayCount == 1)
+		#expect(metadata.format == "geojson")
+		#expect(metadata.originalName == "Test Site")
+	}
+
+	@Test func appendsGeojsonExtensionWhenSuggestedNameHasNone() async throws {
+		let manager = MapDataManager()
+		let metadata = try await manager.importFromData(sampleGeoJSON, suggestedName: "Bare Name")
+		defer { Task { await cleanUp(manager, metadata) } }
+
+		#expect(metadata.filename.hasSuffix(".geojson"))
+	}
+
+	@Test func throwsOnOversizedData() async throws {
+		let manager = MapDataManager()
+		let oversized = Data(repeating: 0, count: 11 * 1024 * 1024) // > 10MB cap
+		await #expect(throws: MapDataError.self) {
+			try await manager.importFromData(oversized, suggestedName: "too-big")
+		}
+	}
+
+	@Test func throwsOnInvalidGeoJSON() async throws {
+		let manager = MapDataManager()
+		await #expect(throws: Error.self) {
+			try await manager.importFromData(Data("not geojson".utf8), suggestedName: "bad")
+		}
+	}
+}

@@ -145,6 +145,8 @@
 		84468ADE09D001043DECFD86 /* DiscoveredNodeEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEC437CA60D4A60C870E63CA /* DiscoveredNodeEntity.swift */; };
 		DDBEAC0010000000000000B1 /* DiscoveredBeaconEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDBEAC0010000000000000A1 /* DiscoveredBeaconEntity.swift */; };
 		DDBEAC0010000000000000F1 /* LoRaChannelCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDBEAC0010000000000000E1 /* LoRaChannelCalculator.swift */; };
+		515EC0DE00000000000000F1 /* CoverageEstimateParameters.swift in Sources */ = {isa = PBXBuildFile; fileRef = 515EC0DE00000000000000E1 /* CoverageEstimateParameters.swift */; };
+		515EC0DE00000000000000F2 /* LoRaRFHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 515EC0DE00000000000000E2 /* LoRaRFHelpers.swift */; };
 		DDBEAC001000000000000111 /* DiscoveryBeaconsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDBEAC001000000000000101 /* DiscoveryBeaconsView.swift */; };
 		DDBEAC001000000000000171 /* MeshBeaconConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDBEAC001000000000000161 /* MeshBeaconConfig.swift */; };
 		DDBEAC001000000000000191 /* MeshBeaconConfigHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDBEAC001000000000000181 /* MeshBeaconConfigHelper.swift */; };
@@ -259,6 +261,8 @@
 		C54AC9F4DA920A4F718CE21A /* DiscoveryScanEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAD14FA280F0A130730DEB93 /* DiscoveryScanEngineTests.swift */; };
 		DDBEAC0010000000000000D1 /* DiscoveredBeaconEntityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDBEAC0010000000000000C1 /* DiscoveredBeaconEntityTests.swift */; };
 		DDBEAC001000000000000131 /* ModemPresetFrequencySlotTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDBEAC001000000000000121 /* ModemPresetFrequencySlotTests.swift */; };
+		515EC0DE00000000000000F3 /* CoverageEstimateParametersTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 515EC0DE00000000000000E3 /* CoverageEstimateParametersTests.swift */; };
+		515EC0DE00000000000000F4 /* LoRaRFHelpersTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 515EC0DE00000000000000E4 /* LoRaRFHelpersTests.swift */; };
 		DDBEAC001000000000000151 /* BeaconAddVsSwitchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDBEAC001000000000000141 /* BeaconAddVsSwitchTests.swift */; };
 		C79BFC99EDCC89DD45082753 /* DiscoveryScanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5CA8BAC814CF82E127EEABF /* DiscoveryScanView.swift */; };
 		D02589957BD040969FCB8663 /* PositionEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = A97241903A924144A3EEB679 /* PositionEntity.swift */; };
@@ -823,6 +827,8 @@
 		AAD14FA280F0A130730DEB93 /* DiscoveryScanEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveryScanEngineTests.swift; sourceTree = "<group>"; };
 		DDBEAC0010000000000000C1 /* DiscoveredBeaconEntityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveredBeaconEntityTests.swift; sourceTree = "<group>"; };
 		DDBEAC001000000000000121 /* ModemPresetFrequencySlotTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModemPresetFrequencySlotTests.swift; sourceTree = "<group>"; };
+		515EC0DE00000000000000E3 /* CoverageEstimateParametersTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoverageEstimateParametersTests.swift; sourceTree = "<group>"; };
+		515EC0DE00000000000000E4 /* LoRaRFHelpersTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoRaRFHelpersTests.swift; sourceTree = "<group>"; };
 		DDBEAC001000000000000141 /* BeaconAddVsSwitchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeaconAddVsSwitchTests.swift; sourceTree = "<group>"; };
 		AAFF00000000000000000001 /* OfflineMapRegion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OfflineMapRegion.swift; path = Meshtastic/Helpers/Map/OfflineMapRegion.swift; sourceTree = SOURCE_ROOT; };
 		AAFF00000000000000000002 /* OfflineMapManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OfflineMapManager.swift; path = Meshtastic/Helpers/Map/OfflineMapManager.swift; sourceTree = SOURCE_ROOT; };
@@ -864,6 +870,8 @@
 		BEC437CA60D4A60C870E63CA /* DiscoveredNodeEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveredNodeEntity.swift; sourceTree = "<group>"; };
 		DDBEAC0010000000000000A1 /* DiscoveredBeaconEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveredBeaconEntity.swift; sourceTree = "<group>"; };
 		DDBEAC0010000000000000E1 /* LoRaChannelCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoRaChannelCalculator.swift; sourceTree = "<group>"; };
+		515EC0DE00000000000000E1 /* CoverageEstimateParameters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoverageEstimateParameters.swift; sourceTree = "<group>"; };
+		515EC0DE00000000000000E2 /* LoRaRFHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoRaRFHelpers.swift; sourceTree = "<group>"; };
 		DDBEAC001000000000000101 /* DiscoveryBeaconsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveryBeaconsView.swift; sourceTree = "<group>"; };
 		DDBEAC001000000000000161 /* MeshBeaconConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshBeaconConfig.swift; sourceTree = "<group>"; };
 		DDBEAC001000000000000181 /* MeshBeaconConfigHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshBeaconConfigHelper.swift; sourceTree = "<group>"; };
@@ -1635,6 +1643,8 @@
 				AAD14FA280F0A130730DEB93 /* DiscoveryScanEngineTests.swift */,
 				DDBEAC0010000000000000C1 /* DiscoveredBeaconEntityTests.swift */,
 				DDBEAC001000000000000121 /* ModemPresetFrequencySlotTests.swift */,
+				515EC0DE00000000000000E3 /* CoverageEstimateParametersTests.swift */,
+				515EC0DE00000000000000E4 /* LoRaRFHelpersTests.swift */,
 				DDBEAC001000000000000141 /* BeaconAddVsSwitchTests.swift */,
 				DDBEAC001000000000000201 /* MeshBeaconConfigEditorTests.swift */,
 				18295AFE686247778632C6DE /* NetworkConfigIPConversionTests.swift */,
@@ -2131,6 +2141,15 @@
 			path = Map;
 			sourceTree = "<group>";
 		};
+		515EC0DE0000000000000601 /* SitePlanner */ = {
+			isa = PBXGroup;
+			children = (
+				515EC0DE00000000000000E1 /* CoverageEstimateParameters.swift */,
+				515EC0DE00000000000000E2 /* LoRaRFHelpers.swift */,
+			);
+			path = SitePlanner;
+			sourceTree = "<group>";
+		};
 		DDC2E14B26CE248E0042C5E4 = {
 			isa = PBXGroup;
 			children = (
@@ -2358,6 +2377,7 @@
 				3D3417B32E2730EC006A988B /* GeoJSONOverlayManager.swift */,
 				AA004FMT0000001000000001 /* MarkdownFormatting.swift */,
 				C37572859BC745C4284A9B42 /* TAK */,
+				515EC0DE0000000000000601 /* SitePlanner */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -2760,6 +2780,8 @@
 				C54AC9F4DA920A4F718CE21A /* DiscoveryScanEngineTests.swift in Sources */,
 				DDBEAC0010000000000000D1 /* DiscoveredBeaconEntityTests.swift in Sources */,
 				DDBEAC001000000000000131 /* ModemPresetFrequencySlotTests.swift in Sources */,
+				515EC0DE00000000000000F3 /* CoverageEstimateParametersTests.swift in Sources */,
+				515EC0DE00000000000000F4 /* LoRaRFHelpersTests.swift in Sources */,
 				DDBEAC001000000000000151 /* BeaconAddVsSwitchTests.swift in Sources */,
 				DDBEAC001000000000000211 /* MeshBeaconConfigEditorTests.swift in Sources */,
 				FDAF8808342245C4817C93EC /* NetworkConfigIPConversionTests.swift in Sources */,
@@ -2873,6 +2895,8 @@
 				84468ADE09D001043DECFD86 /* DiscoveredNodeEntity.swift in Sources */,
 				DDBEAC0010000000000000B1 /* DiscoveredBeaconEntity.swift in Sources */,
 				DDBEAC0010000000000000F1 /* LoRaChannelCalculator.swift in Sources */,
+				515EC0DE00000000000000F1 /* CoverageEstimateParameters.swift in Sources */,
+				515EC0DE00000000000000F2 /* LoRaRFHelpers.swift in Sources */,
 				DDBEAC001000000000000191 /* MeshBeaconConfigHelper.swift in Sources */,
 				DDBEAC001000000000000111 /* DiscoveryBeaconsView.swift in Sources */,
 				EE7E2D900ACAC8053153354A /* DiscoveryScanEngine.swift in Sources */,

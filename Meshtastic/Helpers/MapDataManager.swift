@@ -134,6 +134,27 @@ class MapDataManager: ObservableObject {
 		return try await processUploadedFile(from: tempURL)
 	}
 
+	/// Imports already-in-memory GeoJSON `data` (e.g. a coverage `FeatureCollection` string
+	/// handed over by the Site Planner native bridge — see `CoverageEstimateBridge`) through
+	/// the same validated pipeline as a file pick, by writing it to a temp file first. Mirrors
+	/// `importFromRemote`'s http-download path exactly, since that already solves "I have
+	/// bytes in memory, not a source URL to copy from."
+	func importFromData(_ data: Data, suggestedName: String) async throws -> MapDataMetadata {
+		guard data.count <= maxFileSize else {
+			throw MapDataError.fileTooLarge
+		}
+
+		let filename = suggestedName.lowercased().hasSuffix(".geojson") || suggestedName.lowercased().hasSuffix(".json")
+			? suggestedName
+			: "\(suggestedName).geojson"
+		let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString).appendingPathComponent(filename)
+		try FileManager.default.createDirectory(at: tempURL.deletingLastPathComponent(), withIntermediateDirectories: true)
+		try data.write(to: tempURL)
+		defer { try? FileManager.default.removeItem(at: tempURL) }
+
+		return try await processUploadedFile(from: tempURL)
+	}
+
 	/// Validate uploaded file
 	private func validateFile(at url: URL) throws {
 		let fileAttributes = try url.resourceValues(forKeys: [.fileSizeKey, .isRegularFileKey])
