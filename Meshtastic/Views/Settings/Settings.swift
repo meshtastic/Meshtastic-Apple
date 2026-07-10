@@ -12,8 +12,16 @@ import TipKit
 import MeshtasticProtobufs
 
 enum RemoteAdminWording {
-	static func activeFormat(localOwnerIsLicensed: Bool) -> String {
-		localOwnerIsLicensed ? "Remote Signed Admin: %@" : "Remote PKI Admin: %@"
+	struct ActivePresentation: Equatable {
+		let format: String
+		let systemImage: String
+		let representsVerifiedSignature: Bool
+	}
+
+	static func activePresentation(localOwnerIsLicensed: Bool) -> ActivePresentation {
+		localOwnerIsLicensed
+			? ActivePresentation(format: "Remote Signed Admin: %@", systemImage: "checkmark.shield", representsVerifiedSignature: true)
+			: ActivePresentation(format: "Remote PKI Admin: %@", systemImage: "av.remote", representsVerifiedSignature: false)
 	}
 
 	static func requestFormat(localOwnerIsLicensed: Bool) -> String {
@@ -589,13 +597,14 @@ struct Settings: View {
 											}
 											.tag(Int(node.num))
 										} else if node.canRemoteAdmin && UserDefaults.enableAdministration && node.sessionPasskey != nil {
+											let presentation = RemoteAdminWording.activePresentation(localOwnerIsLicensed: localOwnerIsLicensed)
 											Label {
 												Text(String.localizedStringWithFormat(
-													RemoteAdminWording.activeFormat(localOwnerIsLicensed: localOwnerIsLicensed).localized,
+													presentation.format.localized,
 													node.user?.longName ?? "Unknown".localized
 												))
 											} icon: {
-												Image(systemName: localOwnerIsLicensed ? "checkmark.shield" : "av.remote")
+												Image(systemName: presentation.systemImage)
 											}
 											.font(.caption2)
 											.tag(Int(node.num))

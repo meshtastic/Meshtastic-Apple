@@ -1,7 +1,4 @@
-//
-//  RemoteAdminTransportPolicyTests.swift
-//  MeshtasticTests
-//
+// MARK: RemoteAdminTransportPolicyTests
 
 import Foundation
 import MeshtasticProtobufs
@@ -146,6 +143,7 @@ struct RemoteAdminTransportPolicyTests {
 		let ownerNum: Int64 = 4_010_000_005
 		let remoteNum: Int64 = 4_010_000_006
 		_ = try user(num: ownerNum, isLicensed: false)
+		_ = try user(num: remoteNum, isLicensed: true)
 		let connection = RecordingRemoteAdminConnection()
 		let manager = makeManager(connectedDeviceNum: ownerNum, connection: connection)
 
@@ -206,9 +204,16 @@ struct RemoteAdminTransportPolicyTests {
 
 	@Test("Remote Admin wording distinguishes signed and PKI modes")
 	func conditionalWording() {
-		#expect(RemoteAdminWording.activeFormat(localOwnerIsLicensed: true) == "Remote Signed Admin: %@")
+		let signed = RemoteAdminWording.activePresentation(localOwnerIsLicensed: true)
+		#expect(signed.format == "Remote Signed Admin: %@")
+		#expect(signed.systemImage == "checkmark.shield")
+		#expect(signed.representsVerifiedSignature)
 		#expect(RemoteAdminWording.requestFormat(localOwnerIsLicensed: true) == "Request Signed Admin: %@")
-		#expect(RemoteAdminWording.activeFormat(localOwnerIsLicensed: false) == "Remote PKI Admin: %@")
+
+		let pki = RemoteAdminWording.activePresentation(localOwnerIsLicensed: false)
+		#expect(pki.format == "Remote PKI Admin: %@")
+		#expect(pki.systemImage == "av.remote")
+		#expect(pki.representsVerifiedSignature == false)
 		#expect(RemoteAdminWording.requestFormat(localOwnerIsLicensed: false) == "Request PKI Admin: %@")
 	}
 }
