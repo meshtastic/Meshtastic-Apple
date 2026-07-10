@@ -331,6 +331,7 @@
 		DD00003ASUPPORTLVL0000001 /* SupportLevel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD00003ASUPPORTLVL0000000 /* SupportLevel.swift */; };
 		DD00003C000SNAP00000001 /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = DD00003B000SNAP00000000 /* SnapshotTesting */; };
 		DD0000CHSETST0000000001 /* ChannelSetSaveTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD0000CHSETST0000000000 /* ChannelSetSaveTests.swift */; };
+		DD0000RADMINTST00000001 /* RemoteAdminTransportPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD0000RADMINTST00000000 /* RemoteAdminTransportPolicyTests.swift */; };
 		DD0000MQTTFWDFLTTST00001 /* MqttForwardFilterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD0000MQTTFWDFLTTST00000 /* MqttForwardFilterTests.swift */; };
 		DD0000DEVLNKTST000000001 /* DeviceLinkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD0000DEVLNKTST000000000 /* DeviceLinkTests.swift */; };
 		DD1827FB0000000000000002 /* RegionCodesFirmwareLocaleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1827FA0000000000000002 /* RegionCodesFirmwareLocaleTests.swift */; };
@@ -943,6 +944,7 @@
 		DD000031FWEDTENUM0000000 /* FirmwareEditionEnum.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirmwareEditionEnum.swift; sourceTree = "<group>"; };
 		DD00003ASUPPORTLVL0000000 /* SupportLevel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupportLevel.swift; sourceTree = "<group>"; };
 		DD0000CHSETST0000000000 /* ChannelSetSaveTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelSetSaveTests.swift; sourceTree = "<group>"; };
+		DD0000RADMINTST00000000 /* RemoteAdminTransportPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteAdminTransportPolicyTests.swift; sourceTree = "<group>"; };
 		DD0000MQTTFWDFLTTST00000 /* MqttForwardFilterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MqttForwardFilterTests.swift; sourceTree = "<group>"; };
 		DD0000DEVLNKTST000000000 /* DeviceLinkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceLinkTests.swift; sourceTree = "<group>"; };
 		DD1827FA0000000000000002 /* RegionCodesFirmwareLocaleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegionCodesFirmwareLocaleTests.swift; sourceTree = "<group>"; };
@@ -1692,6 +1694,7 @@
 				DD0000DEVLNKTST000000000 /* DeviceLinkTests.swift */,
 				BEEF00102F00000100000003 /* MeshtasticChannelURLTests.swift */,
 				DD0000CHSETST0000000000 /* ChannelSetSaveTests.swift */,
+				DD0000RADMINTST00000000 /* RemoteAdminTransportPolicyTests.swift */,
 				DD0000MQTTFWDFLTTST00000 /* MqttForwardFilterTests.swift */,
 				DD1827FA0000000000000002 /* RegionCodesFirmwareLocaleTests.swift */,
 				DD000031STATMSGDISP00000 /* StatusMessageDisplayTests.swift */,
@@ -2776,6 +2779,7 @@
 				DD7E5750000000000000008B /* LockdownPassphraseStoreTests.swift in Sources */,
 				DD0000DEVLNKTST000000001 /* DeviceLinkTests.swift in Sources */,
 				DD0000CHSETST0000000001 /* ChannelSetSaveTests.swift in Sources */,
+				DD0000RADMINTST00000001 /* RemoteAdminTransportPolicyTests.swift in Sources */,
 				DD0000MQTTFWDFLTTST00001 /* MqttForwardFilterTests.swift in Sources */,
 				DD1827FB0000000000000002 /* RegionCodesFirmwareLocaleTests.swift in Sources */,
 				DD000031STATMSGDISP00001 /* StatusMessageDisplayTests.swift in Sources */,

@@ -518,10 +518,38 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			  await active.connection.isConnected else {
 			throw AccessoryError.connectionFailed("Not connected to any device")
 		}
-		try await active.connection.send(data)
+		try await active.connection.send(applyingLicensedRemoteAdminPolicy(to: data, connectedDeviceNum: active.device.num))
 		if let debugDescription {
 			Logger.transport.info("📻 \(debugDescription, privacy: .public)")
 		}
+	}
+
+	/// Licensed-mode remote administration is authenticated by the firmware's verified packet
+	/// signature and must remain plaintext on air. Apply that invariant at the final send boundary
+	/// so both the shared Admin helper and older direct-send call sites receive the same treatment.
+	private func applyingLicensedRemoteAdminPolicy(to data: ToRadio, connectedDeviceNum: Int64?) -> ToRadio {
+		guard let connectedDeviceNum else { return data }
+		guard case let .packet(packet) = data.payloadVariant,
+			  case let .decoded(decoded) = packet.payloadVariant,
+			  decoded.portnum == .adminApp,
+			  packet.to != UInt32(truncatingIfNeeded: connectedDeviceNum)
+		else { return data }
+
+		let ownerNum = connectedDeviceNum
+		var descriptor = FetchDescriptor<UserEntity>(predicate: #Predicate { $0.num == ownerNum })
+		descriptor.fetchLimit = 1
+		guard let connectedOwner = try? context.fetch(descriptor).first,
+			  connectedOwner.isLicensed
+		else { return data }
+
+		var plaintextPacket = packet
+		plaintextPacket.channel = 0
+		plaintextPacket.pkiEncrypted = false
+		plaintextPacket.publicKey = Data()
+
+		var result = data
+		result.packet = plaintextPacket
+		return result
 	}
 
 	func didReceive(_ event: ConnectionEvent) async {
