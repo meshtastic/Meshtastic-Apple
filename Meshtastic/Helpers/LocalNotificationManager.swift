@@ -136,6 +136,57 @@ class LocalNotificationManager {
 			}
 		}
 	}
+
+	// Remove already-delivered notifications for an entire channel conversation.
+	//
+	// Called when the user opens or catches up on a channel so that notifications for messages they
+	// have now read stop piling up in Notification Center. Message notifications are tagged in
+	// `userInfo` when scheduled (see `scheduleNotifications`). Channel notifications are identified
+	// by their deep-link `path` (`?channelId=`) so direct messages that happen to share the same
+	// channel index are left untouched. Delivered notifications round-trip through the system, so the
+	// numeric `userInfo` values come back as `NSNumber`.
+	func removeDeliveredNotifications(forChannel channelIndex: Int32) {
+		UNUserNotificationCenter.current().getDeliveredNotifications { notifications in
+			let identifiers = notifications.compactMap { notification -> String? in
+				let userInfo = notification.request.content.userInfo
+				guard let path = userInfo["path"] as? String, path.contains("?channelId="),
+					  let channel = (userInfo["channel"] as? NSNumber)?.int32Value,
+					  channel == channelIndex else {
+					return nil
+				}
+				return notification.request.identifier
+			}
+
+			if !identifiers.isEmpty {
+				Logger.services.debug("Removing \(identifiers.count, privacy: .public) delivered channel notifications")
+				UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: identifiers)
+			}
+		}
+	}
+
+	// Remove already-delivered notifications for an entire direct-message conversation.
+	//
+	// Called when the user opens or catches up on a DM thread. Direct-message notifications are
+	// identified by their deep-link `path` (`?userNum=`) and matched on the remote node number so
+	// channel notifications that carry an unrelated `userNum` value are left untouched.
+	func removeDeliveredNotifications(forDirectMessageUserNum userNum: Int64) {
+		UNUserNotificationCenter.current().getDeliveredNotifications { notifications in
+			let identifiers = notifications.compactMap { notification -> String? in
+				let userInfo = notification.request.content.userInfo
+				guard let path = userInfo["path"] as? String, path.contains("?userNum="),
+					  let num = (userInfo["userNum"] as? NSNumber)?.int64Value,
+					  num == userNum else {
+					return nil
+				}
+				return notification.request.identifier
+			}
+
+			if !identifiers.isEmpty {
+				Logger.services.debug("Removing \(identifiers.count, privacy: .public) delivered direct message notifications")
+				UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: identifiers)
+			}
+		}
+	}
 }
 
 struct Notification {

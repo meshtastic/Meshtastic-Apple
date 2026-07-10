@@ -83,6 +83,9 @@ struct UserMessageList: View {
 				readMessageIDs.append(unreadTapback.messageId)
 			}
 			notificationManager.cancelNotificationsForMessageIds(readMessageIDs)
+			// Also clear any notifications for this conversation that were already delivered to
+			// Notification Center, so opening the DM wipes its piled-up notifications.
+			notificationManager.removeDeliveredNotifications(forDirectMessageUserNum: user.num)
 			if context.hasChanges {
 				try context.save()
 			}

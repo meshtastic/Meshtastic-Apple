@@ -91,6 +91,9 @@ struct ChannelMessageList: View {
 				readMessageIDs.append(unreadTapback.messageId)
 			}
 			notificationManager.cancelNotificationsForMessageIds(readMessageIDs)
+			// Also clear any notifications for this channel that were already delivered to Notification
+			// Center, so catching up on the channel wipes its piled-up notifications.
+			notificationManager.removeDeliveredNotifications(forChannel: channelIndex)
 			if context.hasChanges {
 				try context.save()
 			}
