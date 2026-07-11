@@ -568,9 +568,9 @@ public enum HardwareModel: SwiftProtobuf.Enum, Swift.CaseIterable {
   case heltecMeshNodeT096 // = 127
 
   ///
-  /// Seeed studio T1000-E Pro tracker card. NRF52840 w/ LR2021 radio,
+  /// Seeed studio Mesh Tracker X1card. NRF52840 w/ LR2021 radio,
   /// GPS, button, buzzer, and sensors.
-  case trackerT1000EPro // = 128
+  case meshTrackerX1 // = 128
 
   ///
   /// Elecrow ThinkNode M7, M8 and M9
@@ -613,6 +613,18 @@ public enum HardwareModel: SwiftProtobuf.Enum, Swift.CaseIterable {
   ///
   /// Meshnology W10
   case meshnologyW10 // = 140
+
+  ///
+  /// Heltec ESP32S3 + SX1262
+  case heltecRc32 // = 141
+
+  ///
+  /// Heltec NRF52840 + SX1262
+  case heltecRc52 // = 142
+
+  ///
+  /// Heltec ESP32C6 + SX1262
+  case heltecRcc6 // = 143
 
   ///
   /// ------------------------------------------------------------------------------------------------------------------------------------------
@@ -755,7 +767,7 @@ public enum HardwareModel: SwiftProtobuf.Enum, Swift.CaseIterable {
     case 125: self = .miniEpaperS3
     case 126: self = .tdisplayS3Pro
     case 127: self = .heltecMeshNodeT096
-    case 128: self = .trackerT1000EPro
+    case 128: self = .meshTrackerX1
     case 129: self = .thinknodeM7
     case 130: self = .thinknodeM8
     case 131: self = .thinknodeM9
@@ -768,6 +780,9 @@ public enum HardwareModel: SwiftProtobuf.Enum, Swift.CaseIterable {
     case 138: self = .crowpanelP4
     case 139: self = .heltecMeshTowerV2
     case 140: self = .meshnologyW10
+    case 141: self = .heltecRc32
+    case 142: self = .heltecRc52
+    case 143: self = .heltecRcc6
     case 255: self = .privateHw
     default: self = .UNRECOGNIZED(rawValue)
     }
@@ -903,7 +918,7 @@ public enum HardwareModel: SwiftProtobuf.Enum, Swift.CaseIterable {
     case .miniEpaperS3: return 125
     case .tdisplayS3Pro: return 126
     case .heltecMeshNodeT096: return 127
-    case .trackerT1000EPro: return 128
+    case .meshTrackerX1: return 128
     case .thinknodeM7: return 129
     case .thinknodeM8: return 130
     case .thinknodeM9: return 131
@@ -916,6 +931,9 @@ public enum HardwareModel: SwiftProtobuf.Enum, Swift.CaseIterable {
     case .crowpanelP4: return 138
     case .heltecMeshTowerV2: return 139
     case .meshnologyW10: return 140
+    case .heltecRc32: return 141
+    case .heltecRc52: return 142
+    case .heltecRcc6: return 143
     case .privateHw: return 255
     case .UNRECOGNIZED(let i): return i
     }
@@ -1051,7 +1069,7 @@ public enum HardwareModel: SwiftProtobuf.Enum, Swift.CaseIterable {
     .miniEpaperS3,
     .tdisplayS3Pro,
     .heltecMeshNodeT096,
-    .trackerT1000EPro,
+    .meshTrackerX1,
     .thinknodeM7,
     .thinknodeM8,
     .thinknodeM9,
@@ -1064,6 +1082,9 @@ public enum HardwareModel: SwiftProtobuf.Enum, Swift.CaseIterable {
     .crowpanelP4,
     .heltecMeshTowerV2,
     .meshnologyW10,
+    .heltecRc32,
+    .heltecRc52,
+    .heltecRcc6,
     .privateHw,
   ]
 
@@ -4617,7 +4638,7 @@ public struct ChunkedPayloadResponse: Sendable {
 fileprivate let _protobuf_package = "meshtastic"
 
 extension HardwareModel: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0UNSET\0\u{1}TLORA_V2\0\u{1}TLORA_V1\0\u{1}TLORA_V2_1_1P6\0\u{1}TBEAM\0\u{1}HELTEC_V2_0\0\u{1}TBEAM_V0P7\0\u{1}T_ECHO\0\u{1}TLORA_V1_1P3\0\u{1}RAK4631\0\u{1}HELTEC_V2_1\0\u{1}HELTEC_V1\0\u{1}LILYGO_TBEAM_S3_CORE\0\u{1}RAK11200\0\u{1}NANO_G1\0\u{1}TLORA_V2_1_1P8\0\u{1}TLORA_T3_S3\0\u{1}NANO_G1_EXPLORER\0\u{1}NANO_G2_ULTRA\0\u{1}LORA_TYPE\0\u{1}WIPHONE\0\u{1}WIO_WM1110\0\u{1}RAK2560\0\u{1}HELTEC_HRU_3601\0\u{1}HELTEC_WIRELESS_BRIDGE\0\u{1}STATION_G1\0\u{1}RAK11310\0\u{1}MAKERFABS_TRACKER\0\u{1}MAKERFABS_RESERVED\0\u{1}CANARYONE\0\u{1}RP2040_LORA\0\u{1}STATION_G2\0\u{1}LORA_RELAY_V1\0\u{1}T_ECHO_PLUS\0\u{1}PPR\0\u{1}GENIEBLOCKS\0\u{1}NRF52_UNKNOWN\0\u{1}PORTDUINO\0\u{1}ANDROID_SIM\0\u{1}DIY_V1\0\u{1}NRF52840_PCA10059\0\u{1}DR_DEV\0\u{1}M5STACK\0\u{1}HELTEC_V3\0\u{1}HELTEC_WSL_V3\0\u{1}BETAFPV_2400_TX\0\u{1}BETAFPV_900_NANO_TX\0\u{1}RPI_PICO\0\u{1}HELTEC_WIRELESS_TRACKER\0\u{1}HELTEC_WIRELESS_PAPER\0\u{1}T_DECK\0\u{1}T_WATCH_S3\0\u{1}PICOMPUTER_S3\0\u{1}HELTEC_HT62\0\u{1}EBYTE_ESP32_S3\0\u{1}ESP32_S3_PICO\0\u{1}CHATTER_2\0\u{1}HELTEC_WIRELESS_PAPER_V1_0\0\u{1}HELTEC_WIRELESS_TRACKER_V1_0\0\u{1}UNPHONE\0\u{1}TD_LORAC\0\u{1}CDEBYTE_EORA_S3\0\u{1}TWC_MESH_V4\0\u{1}NRF52_PROMICRO_DIY\0\u{1}RADIOMASTER_900_BANDIT_NANO\0\u{1}HELTEC_CAPSULE_SENSOR_V3\0\u{1}HELTEC_VISION_MASTER_T190\0\u{1}HELTEC_VISION_MASTER_E213\0\u{1}HELTEC_VISION_MASTER_E290\0\u{1}HELTEC_MESH_NODE_T114\0\u{1}SENSECAP_INDICATOR\0\u{1}TRACKER_T1000_E\0\u{1}RAK3172\0\u{1}WIO_E5\0\u{1}RADIOMASTER_900_BANDIT\0\u{1}ME25LS01_4Y10TD\0\u{1}RP2040_FEATHER_RFM95\0\u{1}M5STACK_COREBASIC\0\u{1}M5STACK_CORE2\0\u{1}RPI_PICO2\0\u{1}M5STACK_CORES3\0\u{1}SEEED_XIAO_S3\0\u{1}MS24SF1\0\u{1}TLORA_C6\0\u{1}WISMESH_TAP\0\u{1}ROUTASTIC\0\u{1}MESH_TAB\0\u{1}MESHLINK\0\u{1}XIAO_NRF52_KIT\0\u{1}THINKNODE_M1\0\u{1}THINKNODE_M2\0\u{1}T_ETH_ELITE\0\u{1}HELTEC_SENSOR_HUB\0\u{1}MUZI_BASE\0\u{1}HELTEC_MESH_POCKET\0\u{1}SEEED_SOLAR_NODE\0\u{1}NOMADSTAR_METEOR_PRO\0\u{1}CROWPANEL\0\u{1}LINK_32\0\u{1}SEEED_WIO_TRACKER_L1\0\u{1}SEEED_WIO_TRACKER_L1_EINK\0\u{1}MUZI_R1_NEO\0\u{1}T_DECK_PRO\0\u{1}T_LORA_PAGER\0\u{1}M5STACK_RESERVED\0\u{1}WISMESH_TAG\0\u{1}RAK3312\0\u{1}THINKNODE_M5\0\u{1}HELTEC_MESH_SOLAR\0\u{1}T_ECHO_LITE\0\u{1}HELTEC_V4\0\u{1}M5STACK_C6L\0\u{1}M5STACK_CARDPUTER_ADV\0\u{1}HELTEC_WIRELESS_TRACKER_V2\0\u{1}T_WATCH_ULTRA\0\u{1}THINKNODE_M3\0\u{1}WISMESH_TAP_V2\0\u{1}RAK3401\0\u{1}RAK6421\0\u{1}THINKNODE_M4\0\u{1}THINKNODE_M6\0\u{1}MESHSTICK_1262\0\u{1}TBEAM_1_WATT\0\u{1}T5_S3_EPAPER_PRO\0\u{1}TBEAM_BPF\0\u{1}MINI_EPAPER_S3\0\u{1}TDISPLAY_S3_PRO\0\u{1}HELTEC_MESH_NODE_T096\0\u{1}TRACKER_T1000_E_PRO\0\u{1}THINKNODE_M7\0\u{1}THINKNODE_M8\0\u{1}THINKNODE_M9\0\u{1}HELTEC_V4_R8\0\u{1}HELTEC_MESH_NODE_T1\0\u{1}STATION_G3\0\u{1}T_IMPULSE_PLUS\0\u{1}T_ECHO_CARD\0\u{1}SEEED_WIO_TRACKER_L2\0\u{1}CROWPANEL_P4\0\u{1}HELTEC_MESH_TOWER_V2\0\u{1}MESHNOLOGY_W10\0\u{2}s\u{1}PRIVATE_HW\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0UNSET\0\u{1}TLORA_V2\0\u{1}TLORA_V1\0\u{1}TLORA_V2_1_1P6\0\u{1}TBEAM\0\u{1}HELTEC_V2_0\0\u{1}TBEAM_V0P7\0\u{1}T_ECHO\0\u{1}TLORA_V1_1P3\0\u{1}RAK4631\0\u{1}HELTEC_V2_1\0\u{1}HELTEC_V1\0\u{1}LILYGO_TBEAM_S3_CORE\0\u{1}RAK11200\0\u{1}NANO_G1\0\u{1}TLORA_V2_1_1P8\0\u{1}TLORA_T3_S3\0\u{1}NANO_G1_EXPLORER\0\u{1}NANO_G2_ULTRA\0\u{1}LORA_TYPE\0\u{1}WIPHONE\0\u{1}WIO_WM1110\0\u{1}RAK2560\0\u{1}HELTEC_HRU_3601\0\u{1}HELTEC_WIRELESS_BRIDGE\0\u{1}STATION_G1\0\u{1}RAK11310\0\u{1}MAKERFABS_TRACKER\0\u{1}MAKERFABS_RESERVED\0\u{1}CANARYONE\0\u{1}RP2040_LORA\0\u{1}STATION_G2\0\u{1}LORA_RELAY_V1\0\u{1}T_ECHO_PLUS\0\u{1}PPR\0\u{1}GENIEBLOCKS\0\u{1}NRF52_UNKNOWN\0\u{1}PORTDUINO\0\u{1}ANDROID_SIM\0\u{1}DIY_V1\0\u{1}NRF52840_PCA10059\0\u{1}DR_DEV\0\u{1}M5STACK\0\u{1}HELTEC_V3\0\u{1}HELTEC_WSL_V3\0\u{1}BETAFPV_2400_TX\0\u{1}BETAFPV_900_NANO_TX\0\u{1}RPI_PICO\0\u{1}HELTEC_WIRELESS_TRACKER\0\u{1}HELTEC_WIRELESS_PAPER\0\u{1}T_DECK\0\u{1}T_WATCH_S3\0\u{1}PICOMPUTER_S3\0\u{1}HELTEC_HT62\0\u{1}EBYTE_ESP32_S3\0\u{1}ESP32_S3_PICO\0\u{1}CHATTER_2\0\u{1}HELTEC_WIRELESS_PAPER_V1_0\0\u{1}HELTEC_WIRELESS_TRACKER_V1_0\0\u{1}UNPHONE\0\u{1}TD_LORAC\0\u{1}CDEBYTE_EORA_S3\0\u{1}TWC_MESH_V4\0\u{1}NRF52_PROMICRO_DIY\0\u{1}RADIOMASTER_900_BANDIT_NANO\0\u{1}HELTEC_CAPSULE_SENSOR_V3\0\u{1}HELTEC_VISION_MASTER_T190\0\u{1}HELTEC_VISION_MASTER_E213\0\u{1}HELTEC_VISION_MASTER_E290\0\u{1}HELTEC_MESH_NODE_T114\0\u{1}SENSECAP_INDICATOR\0\u{1}TRACKER_T1000_E\0\u{1}RAK3172\0\u{1}WIO_E5\0\u{1}RADIOMASTER_900_BANDIT\0\u{1}ME25LS01_4Y10TD\0\u{1}RP2040_FEATHER_RFM95\0\u{1}M5STACK_COREBASIC\0\u{1}M5STACK_CORE2\0\u{1}RPI_PICO2\0\u{1}M5STACK_CORES3\0\u{1}SEEED_XIAO_S3\0\u{1}MS24SF1\0\u{1}TLORA_C6\0\u{1}WISMESH_TAP\0\u{1}ROUTASTIC\0\u{1}MESH_TAB\0\u{1}MESHLINK\0\u{1}XIAO_NRF52_KIT\0\u{1}THINKNODE_M1\0\u{1}THINKNODE_M2\0\u{1}T_ETH_ELITE\0\u{1}HELTEC_SENSOR_HUB\0\u{1}MUZI_BASE\0\u{1}HELTEC_MESH_POCKET\0\u{1}SEEED_SOLAR_NODE\0\u{1}NOMADSTAR_METEOR_PRO\0\u{1}CROWPANEL\0\u{1}LINK_32\0\u{1}SEEED_WIO_TRACKER_L1\0\u{1}SEEED_WIO_TRACKER_L1_EINK\0\u{1}MUZI_R1_NEO\0\u{1}T_DECK_PRO\0\u{1}T_LORA_PAGER\0\u{1}M5STACK_RESERVED\0\u{1}WISMESH_TAG\0\u{1}RAK3312\0\u{1}THINKNODE_M5\0\u{1}HELTEC_MESH_SOLAR\0\u{1}T_ECHO_LITE\0\u{1}HELTEC_V4\0\u{1}M5STACK_C6L\0\u{1}M5STACK_CARDPUTER_ADV\0\u{1}HELTEC_WIRELESS_TRACKER_V2\0\u{1}T_WATCH_ULTRA\0\u{1}THINKNODE_M3\0\u{1}WISMESH_TAP_V2\0\u{1}RAK3401\0\u{1}RAK6421\0\u{1}THINKNODE_M4\0\u{1}THINKNODE_M6\0\u{1}MESHSTICK_1262\0\u{1}TBEAM_1_WATT\0\u{1}T5_S3_EPAPER_PRO\0\u{1}TBEAM_BPF\0\u{1}MINI_EPAPER_S3\0\u{1}TDISPLAY_S3_PRO\0\u{1}HELTEC_MESH_NODE_T096\0\u{1}MESH_TRACKER_X1\0\u{1}THINKNODE_M7\0\u{1}THINKNODE_M8\0\u{1}THINKNODE_M9\0\u{1}HELTEC_V4_R8\0\u{1}HELTEC_MESH_NODE_T1\0\u{1}STATION_G3\0\u{1}T_IMPULSE_PLUS\0\u{1}T_ECHO_CARD\0\u{1}SEEED_WIO_TRACKER_L2\0\u{1}CROWPANEL_P4\0\u{1}HELTEC_MESH_TOWER_V2\0\u{1}MESHNOLOGY_W10\0\u{1}HELTEC_RC32\0\u{1}HELTEC_RC52\0\u{1}HELTEC_RCC6\0\u{2}p\u{1}PRIVATE_HW\0")
 }
 
 extension Constants: SwiftProtobuf._ProtoNameProviding {

@@ -116,6 +116,28 @@ public struct DeviceProfile: Sendable {
   /// Clears the value of `cannedMessages`. Subsequent reads from it will return its default value.
   public mutating func clearCannedMessages() {self._cannedMessages = nil}
 
+  ///
+  /// Is the node unmessagable
+  public var isUnmessagable: Bool {
+    get {_isUnmessagable ?? false}
+    set {_isUnmessagable = newValue}
+  }
+  /// Returns true if `isUnmessagable` has been explicitly set.
+  public var hasIsUnmessagable: Bool {self._isUnmessagable != nil}
+  /// Clears the value of `isUnmessagable`. Subsequent reads from it will return its default value.
+  public mutating func clearIsUnmessagable() {self._isUnmessagable = nil}
+
+  ///
+  /// Is this node in licensed user mode
+  public var isLicensed: Bool {
+    get {_isLicensed ?? false}
+    set {_isLicensed = newValue}
+  }
+  /// Returns true if `isLicensed` has been explicitly set.
+  public var hasIsLicensed: Bool {self._isLicensed != nil}
+  /// Clears the value of `isLicensed`. Subsequent reads from it will return its default value.
+  public mutating func clearIsLicensed() {self._isLicensed = nil}
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
@@ -128,6 +150,8 @@ public struct DeviceProfile: Sendable {
   fileprivate var _fixedPosition: Position? = nil
   fileprivate var _ringtone: String? = nil
   fileprivate var _cannedMessages: String? = nil
+  fileprivate var _isUnmessagable: Bool? = nil
+  fileprivate var _isLicensed: Bool? = nil
 }
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
@@ -136,7 +160,7 @@ fileprivate let _protobuf_package = "meshtastic"
 
 extension DeviceProfile: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".DeviceProfile"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}long_name\0\u{3}short_name\0\u{3}channel_url\0\u{1}config\0\u{3}module_config\0\u{3}fixed_position\0\u{1}ringtone\0\u{3}canned_messages\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}long_name\0\u{3}short_name\0\u{3}channel_url\0\u{1}config\0\u{3}module_config\0\u{3}fixed_position\0\u{1}ringtone\0\u{3}canned_messages\0\u{3}is_unmessagable\0\u{3}is_licensed\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -152,6 +176,8 @@ extension DeviceProfile: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
       case 6: try { try decoder.decodeSingularMessageField(value: &self._fixedPosition) }()
       case 7: try { try decoder.decodeSingularStringField(value: &self._ringtone) }()
       case 8: try { try decoder.decodeSingularStringField(value: &self._cannedMessages) }()
+      case 9: try { try decoder.decodeSingularBoolField(value: &self._isUnmessagable) }()
+      case 10: try { try decoder.decodeSingularBoolField(value: &self._isLicensed) }()
       default: break
       }
     }
@@ -186,6 +212,12 @@ extension DeviceProfile: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
     try { if let v = self._cannedMessages {
       try visitor.visitSingularStringField(value: v, fieldNumber: 8)
     } }()
+    try { if let v = self._isUnmessagable {
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 9)
+    } }()
+    try { if let v = self._isLicensed {
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 10)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -198,6 +230,8 @@ extension DeviceProfile: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
     if lhs._fixedPosition != rhs._fixedPosition {return false}
     if lhs._ringtone != rhs._ringtone {return false}
     if lhs._cannedMessages != rhs._cannedMessages {return false}
+    if lhs._isUnmessagable != rhs._isUnmessagable {return false}
+    if lhs._isLicensed != rhs._isLicensed {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

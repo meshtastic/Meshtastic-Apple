@@ -49,6 +49,18 @@ Radio (BLE/TCP/Serial)
   → Publish changes via @Published properties (UI updates)
 ```
 
+## Frame Decoding & Encoding Validation
+
+Every transport turns raw inbound bytes into a `FromRadio` frame through one shared funnel, `FromRadioDecoder.classify(_:)` in `Accessory/Protocols/Connection.swift`, so BLE, TCP, and Serial handle a malformed frame identically instead of each rolling its own `try? FromRadio(serializedBytes:)`. It returns a `FromRadioDecodeOutcome`:
+
+| Outcome | Meaning | Transport action |
+|---------|---------|------------------|
+| `.decoded(FromRadio)` | Frame decoded cleanly | Yield `.data(_)` to `AccessoryManager` |
+| `.skipInvalidUTF8(Error)` | A string field (e.g. a node's `long_name`) failed SwiftProtobuf's UTF-8 validation | Log and **skip the frame**; the connection stays alive and keeps reading |
+| `.failed(Error)` | Genuine framing / wire corruption | BLE & TCP call `disconnect(withError:shouldReconnect:)` and reconnect; Serial logs and skips |
+
+An invalid encoding in a single string field is a per-field content problem, not a transport failure, so it must not tear down an otherwise healthy stream. SwiftProtobuf validates UTF-8 during decode and throws `BinaryDecodingError.invalidUTF8`; `FromRadioDecoder` isolates that case so only genuine framing errors trigger a reconnect.
+
 ## Packet Flow (Outbound)
 
 ```

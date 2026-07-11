@@ -232,6 +232,13 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	// RXTXIndicatorWidget observes these via onChange polling.
 	var packetsSent: Int = 0
 	var packetsReceived: Int = 0
+
+	// Debug counter: MQTT client-proxy downlink packets dropped before forwarding
+	// to the device because they carried no payload (see MqttForwardFilter). NOT
+	// @Published — read only for debug logging, so it needn't drive view updates.
+	// Mutated on the main actor: CocoaMQTT delivers delegate callbacks on its
+	// default main delegateQueue, so onMqttMessageReceived runs on MainActor.
+	var mqttProxyDroppedNoPayload: Int = 0
 	
 	// Continuations
 	var wantConfigContinuation: CheckedContinuation<Void, Error>?
@@ -829,6 +836,8 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 					Logger.mesh.info("[Group Alarm] packet received from \(packet.from.toHex(), privacy: .public)")
 				case .lorawanBridge:
 					Logger.mesh.info("[LoRaWAN Bridge] packet received from \(packet.from.toHex(), privacy: .public)")
+				case .loraOtaApp:
+					Logger.mesh.info("[LoRa OTA] packet received from \(packet.from.toHex(), privacy: .public)")
 				case .remoteShellApp:
 					Logger.mesh.info("[Remote Shell] packet received from \(packet.from.toHex(), privacy: .public)")
 				case .unknownApp:

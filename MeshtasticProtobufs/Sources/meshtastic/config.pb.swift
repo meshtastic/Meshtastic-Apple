@@ -1896,6 +1896,12 @@ public struct Config: Sendable {
       /// Only compatible with SX127x and SX126x chipsets.
       /// Comparable link budget and data rate to LONG_MODERATE.
       case tinySlow // = 15
+
+      ///
+      /// Medium Range - Turbo
+      /// This preset performs similarly to MEDIUM_FAST, but with 500kHz bandwidth.
+      /// It is not legal to use in all regions due to this wider bandwidth.
+      case mediumTurbo // = 16
       case UNRECOGNIZED(Int)
 
       public init() {
@@ -1920,6 +1926,7 @@ public struct Config: Sendable {
         case 13: self = .narrowSlow
         case 14: self = .tinyFast
         case 15: self = .tinySlow
+        case 16: self = .mediumTurbo
         default: self = .UNRECOGNIZED(rawValue)
         }
       }
@@ -1942,6 +1949,7 @@ public struct Config: Sendable {
         case .narrowSlow: return 13
         case .tinyFast: return 14
         case .tinySlow: return 15
+        case .mediumTurbo: return 16
         case .UNRECOGNIZED(let i): return i
         }
       }
@@ -1964,6 +1972,7 @@ public struct Config: Sendable {
         .narrowSlow,
         .tinyFast,
         .tinySlow,
+        .mediumTurbo,
       ]
 
     }
@@ -3069,7 +3078,7 @@ extension Config.LoRaConfig.RegionCode: SwiftProtobuf._ProtoNameProviding {
 }
 
 extension Config.LoRaConfig.ModemPreset: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0LONG_FAST\0\u{1}LONG_SLOW\0\u{1}VERY_LONG_SLOW\0\u{1}MEDIUM_SLOW\0\u{1}MEDIUM_FAST\0\u{1}SHORT_SLOW\0\u{1}SHORT_FAST\0\u{1}LONG_MODERATE\0\u{1}SHORT_TURBO\0\u{1}LONG_TURBO\0\u{1}LITE_FAST\0\u{1}LITE_SLOW\0\u{1}NARROW_FAST\0\u{1}NARROW_SLOW\0\u{1}TINY_FAST\0\u{1}TINY_SLOW\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0LONG_FAST\0\u{1}LONG_SLOW\0\u{1}VERY_LONG_SLOW\0\u{1}MEDIUM_SLOW\0\u{1}MEDIUM_FAST\0\u{1}SHORT_SLOW\0\u{1}SHORT_FAST\0\u{1}LONG_MODERATE\0\u{1}SHORT_TURBO\0\u{1}LONG_TURBO\0\u{1}LITE_FAST\0\u{1}LITE_SLOW\0\u{1}NARROW_FAST\0\u{1}NARROW_SLOW\0\u{1}TINY_FAST\0\u{1}TINY_SLOW\0\u{1}MEDIUM_TURBO\0")
 }
 
 extension Config.LoRaConfig.FEM_LNA_Mode: SwiftProtobuf._ProtoNameProviding {
