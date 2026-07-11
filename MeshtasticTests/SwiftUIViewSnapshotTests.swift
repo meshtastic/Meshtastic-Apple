@@ -1634,6 +1634,59 @@ struct NodeDetailSnapshotTests {
 	}
 }
 
+// MARK: - CoverageEstimateForm / EstimateCoverageButton Snapshot Tests (spec 015, T018)
+
+@Suite("CoverageEstimateForm Snapshots")
+struct CoverageEstimateFormSnapshotTests {
+
+	@Test("Default prefilled state")
+	@MainActor
+	func defaultPrefilledState() async {
+		let params = CoverageEstimateParameters(
+			name: "U-District Solar",
+			latitude: 47.6602,
+			longitude: -122.3132,
+			transmitPowerWatts: 0.1,
+			transmitFrequencyMHz: 906.875
+		)
+		let view = CoverageEstimateForm(initialParameters: params)
+		await assertViewSnapshot(of: view, width: 390, height: 900, named: "coverageEstimateForm_default")
+	}
+}
+
+@Suite("EstimateCoverageButton Snapshots")
+struct EstimateCoverageButtonSnapshotTests {
+
+	@Test("Default state in an Actions-style list")
+	@MainActor
+	func defaultState() async {
+		let container = try! ModelContainer(
+			for: Schema(MeshtasticSchema.allModels),
+			configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+		)
+		let context = container.mainContext
+
+		let node = NodeInfoEntity()
+		node.num = 0xE75432
+		let user = UserEntity()
+		user.longName = "U-District Solar"
+		user.shortName = "UDS"
+		node.user = user
+		let position = PositionEntity()
+		position.latitudeI = 476602000
+		position.longitudeI = -1223132000
+		node.positions = [position]
+		context.insert(node)
+
+		let view = List {
+			EstimateCoverageButton(node: node, connectedNode: node)
+		}
+		.modelContainer(container)
+
+		await assertViewSnapshot(of: view, width: 390, height: 100, named: "estimateCoverageButton_default")
+	}
+}
+
 // MARK: - MQTTConfig Snapshot Tests
 
 @Suite("MQTTConfig Snapshots")

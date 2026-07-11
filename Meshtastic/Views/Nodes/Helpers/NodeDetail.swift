@@ -678,6 +678,7 @@ struct NodeDetail: View {
 						}
 					#endif
 						NavigateToButton(node: node)
+						EstimateCoverageButton(node: node, connectedNode: connectedNode)
 					}
 					#if !targetEnvironment(macCatalyst)
 					if WatchSessionManager.shared.isWatchAvailable {
