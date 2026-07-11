@@ -462,6 +462,7 @@
 		DDB6ABE628B1406100384BA1 /* LoraConfigEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6ABE528B1406100384BA1 /* LoraConfigEnums.swift */; };
 		DD1827FB0000000000000001 /* RegionCodes+FirmwareLocale.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1827FA0000000000000001 /* RegionCodes+FirmwareLocale.swift */; };
 		DDB6CCFB2AAF805100945AF6 /* NodeMapSwiftUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6CCFA2AAF805100945AF6 /* NodeMapSwiftUI.swift */; };
+		515EC0DE00000000000000FD /* MapEstimateCoverageButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 515EC0DE00000000000000ED /* MapEstimateCoverageButton.swift */; };
 		DDB75A0F2A05920E006ED576 /* FileManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB75A0E2A05920E006ED576 /* FileManager.swift */; };
 		DDB75A112A059258006ED576 /* Url.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB75A102A059258006ED576 /* Url.swift */; };
 		DDB75A1A2A05EB67006ED576 /* alpha.png in Resources */ = {isa = PBXBuildFile; fileRef = DDB75A192A05EB67006ED576 /* alpha.png */; };
@@ -1122,6 +1123,7 @@
 		DDB6ABE528B1406100384BA1 /* LoraConfigEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoraConfigEnums.swift; sourceTree = "<group>"; };
 		DD1827FA0000000000000001 /* RegionCodes+FirmwareLocale.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RegionCodes+FirmwareLocale.swift"; sourceTree = "<group>"; };
 		DDB6CCFA2AAF805100945AF6 /* NodeMapSwiftUI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeMapSwiftUI.swift; sourceTree = "<group>"; };
+		515EC0DE00000000000000ED /* MapEstimateCoverageButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapEstimateCoverageButton.swift; sourceTree = "<group>"; };
 		DDB759E12A04B264006ED576 /* MeshtasticDataModelV12.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV12.xcdatamodel; sourceTree = "<group>"; };
 		DDB75A0E2A05920E006ED576 /* FileManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileManager.swift; sourceTree = "<group>"; };
 		DDB75A102A059258006ED576 /* Url.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Url.swift; sourceTree = "<group>"; };
@@ -2153,6 +2155,7 @@
 				DD09240002E7FAD600E70001 /* MapLegend.swift */,
 				DD94B73F2ACCE3BE00DCD1D1 /* MapSettingsForm.swift */,
 				DDB6CCFA2AAF805100945AF6 /* NodeMapSwiftUI.swift */,
+				515EC0DE00000000000000ED /* MapEstimateCoverageButton.swift */,
 				DD13AA482AB73BF400BA0C98 /* PositionPopover.swift */,
 				DD46401F2AFF10F4002A5ECB /* WaypointForm.swift */,
 				AABBCCDD0000000000000006 /* GeofenceBoundsSelectorView.swift */,
@@ -3251,6 +3254,7 @@
 				DD415828285859C4009B0E59 /* TelemetryConfig.swift in Sources */,
 				DD6D5A332CA1178300ED3032 /* TraceRoute.swift in Sources */,
 				DDB6CCFB2AAF805100945AF6 /* NodeMapSwiftUI.swift in Sources */,
+				515EC0DE00000000000000FD /* MapEstimateCoverageButton.swift in Sources */,
 				BCB613872C69A0FB00485544 /* AppIntentErrors.swift in Sources */,
 				DD73FD1128750779000852D6 /* PositionLog.swift in Sources */,
 				DD15E4F52B8BFC8E00654F61 /* PaxCounterLog.swift in Sources */,

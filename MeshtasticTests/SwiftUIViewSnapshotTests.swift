@@ -5,6 +5,7 @@ import Testing
 import SwiftUI
 import SwiftData
 import UIKit
+import CoreLocation
 @testable import Meshtastic
 import MeshtasticProtobufs
 
@@ -1684,6 +1685,23 @@ struct EstimateCoverageButtonSnapshotTests {
 		.modelContainer(container)
 
 		await assertViewSnapshot(of: view, width: 390, height: 100, named: "estimateCoverageButton_default")
+	}
+}
+
+@Suite("MapEstimateCoverageButton Snapshots")
+struct MapEstimateCoverageButtonSnapshotTests {
+
+	@Test("Default state (no radio connected, map-center prefill)")
+	@MainActor
+	func defaultState() async {
+		let container = try! ModelContainer(
+			for: Schema(MeshtasticSchema.allModels),
+			configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+		)
+		let view = MapEstimateCoverageButton(visibleCenter: CLLocationCoordinate2D(latitude: 47.6062, longitude: -122.3321))
+			.environmentObject(AccessoryManager.shared)
+			.modelContainer(container)
+		await assertViewSnapshot(of: view, width: 60, height: 60, transparent: true, named: "mapEstimateCoverageButton_default")
 	}
 }
 

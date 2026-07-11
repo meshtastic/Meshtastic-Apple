@@ -59,9 +59,9 @@
 
 **Independent Test**: From the map, start the estimate control, confirm the prefilled location matches the current map view (not `(0,0)` or stale), submit, and confirm the overlay lands at the intended coordinates (spec.md Acceptance Scenario 1 for US2).
 
-- [ ] T020 [US2] Add a coverage-estimate control to the mesh map's toolbar (in `Meshtastic/Views/Nodes/MeshMapMK.swift` or the appropriate helper under `Meshtastic/Views/Nodes/Helpers/Map/` — confirm exact insertion point against the current toolbar layout at implementation time), opening the same `CoverageEstimateForm` from T015 but prefilling position from the current map view center rather than a node (FR-002) — depends on T015
-- [ ] T021 [US2] Confirm the no-radio-connected fallback (FR-003) also works reached via the map control, not just from a node — depends on T020
-- [ ] T022 [P] [US2] Add a snapshot test for the map-toolbar control's default state in `MeshtasticTests/SwiftUIViewSnapshotTests.swift`
+- [X] T020 [US2] Add a coverage-estimate control to the mesh map's toolbar (in `Meshtastic/Views/Nodes/MeshMapMK.swift` or the appropriate helper under `Meshtastic/Views/Nodes/Helpers/Map/` — confirm exact insertion point against the current toolbar layout at implementation time), opening the same `CoverageEstimateForm` from T015 but prefilling position from the current map view center rather than a node (FR-002) — depends on T015
+- [X] T021 [US2] Confirm the no-radio-connected fallback (FR-003) also works reached via the map control, not just from a node — depends on T020
+- [X] T022 [P] [US2] Add a snapshot test for the map-toolbar control's default state in `MeshtasticTests/SwiftUIViewSnapshotTests.swift`
 
 **Checkpoint**: User Stories 1 AND 2 both work independently.
 

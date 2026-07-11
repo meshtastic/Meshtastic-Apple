@@ -489,6 +489,7 @@ struct MeshMapMK: View {
 								Image(systemName: "macwindow.badge.plus")
 							}
 						}
+						MapEstimateCoverageButton(visibleCenter: visibleRegion?.center)
 						ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
 					}
 				}
