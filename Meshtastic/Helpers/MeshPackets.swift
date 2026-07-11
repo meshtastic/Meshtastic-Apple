@@ -1435,7 +1435,8 @@ actor MeshPackets {
 		}
 	}
 
-	func waypointPacket (packet: MeshPacket) {
+	func waypointPacket (packet: MeshPacket, myNodeNum: UInt32?) {
+		let destination = waypointDestination(packet: packet, myNodeNum: myNodeNum)
 		let waypointDetail = (try? Waypoint(serializedBytes: packet.decoded.payload)).map { w -> String in
 			var parts: [String] = []
 			let name = w.name.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -1478,6 +1479,7 @@ actor MeshPackets {
 					waypoint.icon = Int64(waypointMessage.icon)
 					waypoint.locked = waypointMessage.lockedTo != 0
 					waypoint.createdBy = Int64(packet.from)
+					waypoint.destination = destination
 					waypoint.applyGeofence(from: waypointMessage)
 					if waypointMessage.expire >= 1 {
 						waypoint.expire = Date(timeIntervalSince1970: TimeInterval(Int64(waypointMessage.expire)))
@@ -1523,6 +1525,7 @@ actor MeshPackets {
 							existingWaypoint.icon = Int64(waypointMessage.icon)
 							existingWaypoint.locked = waypointMessage.lockedTo != 0
 							existingWaypoint.lastUpdatedBy = Int64(packet.from)
+							existingWaypoint.destination = destination
 							existingWaypoint.applyGeofence(from: waypointMessage)
 							if waypointMessage.expire >= 1 {
 								existingWaypoint.expire = Date(timeIntervalSince1970: TimeInterval(Int64(waypointMessage.expire)))

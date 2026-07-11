@@ -382,6 +382,9 @@
 		DD457188293C7E63000C49FB /* BLESignalStrengthIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD457187293C7E63000C49FB /* BLESignalStrengthIndicator.swift */; };
 		DD4640202AFF10F4002A5ECB /* WaypointForm.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD46401F2AFF10F4002A5ECB /* WaypointForm.swift */; };
 		AABBCCDD0000000000000005 /* GeofenceBoundsSelectorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABBCCDD0000000000000006 /* GeofenceBoundsSelectorView.swift */; };
+		AABBCCDD0000000000000007 /* WaypointDestination.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABBCCDD0000000000000008 /* WaypointDestination.swift */; };
+		AABBCCDD0000000000000009 /* WaypointRecipientPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABBCCDD000000000000000A /* WaypointRecipientPicker.swift */; };
+		AABBCCDD000000000000000B /* WaypointDestinationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABBCCDD000000000000000C /* WaypointDestinationTests.swift */; };
 		DD4756AB2E9F1A0000029299 /* SecurityVersionNag.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4756AA2E9F1A0000029299 /* SecurityVersionNag.swift */; };
 		DD47E3D626F17ED900029299 /* CircleText.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD47E3D526F17ED900029299 /* CircleText.swift */; };
 		DD4975A52B147BA90026544E /* AmbientLightingConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4975A42B147BA90026544E /* AmbientLightingConfig.swift */; };
@@ -1018,6 +1021,9 @@
 		DD457BC4295D5E35004BCE4D /* MeshtasticDataModelV5.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV5.xcdatamodel; sourceTree = "<group>"; };
 		DD46401F2AFF10F4002A5ECB /* WaypointForm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaypointForm.swift; sourceTree = "<group>"; };
 		AABBCCDD0000000000000006 /* GeofenceBoundsSelectorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeofenceBoundsSelectorView.swift; sourceTree = "<group>"; };
+		AABBCCDD0000000000000008 /* WaypointDestination.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaypointDestination.swift; sourceTree = "<group>"; };
+		AABBCCDD000000000000000A /* WaypointRecipientPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaypointRecipientPicker.swift; sourceTree = "<group>"; };
+		AABBCCDD000000000000000C /* WaypointDestinationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaypointDestinationTests.swift; sourceTree = "<group>"; };
 		DD4756AA2E9F1A0000029299 /* SecurityVersionNag.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityVersionNag.swift; sourceTree = "<group>"; };
 		DD47E3D526F17ED900029299 /* CircleText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircleText.swift; sourceTree = "<group>"; };
 		DD4975A42B147BA90026544E /* AmbientLightingConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmbientLightingConfig.swift; sourceTree = "<group>"; };
@@ -1643,6 +1649,7 @@
 				DDBEAC0010000000000000C1 /* DiscoveredBeaconEntityTests.swift */,
 				DDBEAC001000000000000121 /* ModemPresetFrequencySlotTests.swift */,
 				DDBEAC001000000000000141 /* BeaconAddVsSwitchTests.swift */,
+				AABBCCDD000000000000000C /* WaypointDestinationTests.swift */,
 				DDBEAC001000000000000201 /* MeshBeaconConfigEditorTests.swift */,
 				18295AFE686247778632C6DE /* NetworkConfigIPConversionTests.swift */,
 				64C6057F9508D4356DAF411F /* DiscoveryModelTests.swift */,
@@ -2099,6 +2106,7 @@
 				DD00003ASUPPORTLVL0000000 /* SupportLevel.swift */,
 				DD994B68295F88B60013760A /* IntervalEnums.swift */,
 				D93068D42B812B700066FBC8 /* MessageDestination.swift */,
+				AABBCCDD0000000000000008 /* WaypointDestination.swift */,
 				DDA9515B2BC6631200CEA535 /* TelemetryEnums.swift */,
 				DD000031FWEDTENUM0000000 /* FirmwareEditionEnum.swift */,
 				AB6E72752E3FC85A00639328 /* LayoutEnums.swift */,
@@ -2135,6 +2143,7 @@
 				DD46401F2AFF10F4002A5ECB /* WaypointForm.swift */,
 				AABBCCDD0000000000000006 /* GeofenceBoundsSelectorView.swift */,
 				DD1933752B0835D500771CD5 /* PositionAltitudeChart.swift */,
+				AABBCCDD000000000000000A /* WaypointRecipientPicker.swift */,
 			);
 			path = Map;
 			sourceTree = "<group>";
@@ -2770,6 +2779,7 @@
 				DDBEAC0010000000000000D1 /* DiscoveredBeaconEntityTests.swift in Sources */,
 				DDBEAC001000000000000131 /* ModemPresetFrequencySlotTests.swift in Sources */,
 				DDBEAC001000000000000151 /* BeaconAddVsSwitchTests.swift in Sources */,
+				AABBCCDD000000000000000B /* WaypointDestinationTests.swift in Sources */,
 				DDBEAC001000000000000211 /* MeshBeaconConfigEditorTests.swift in Sources */,
 				FDAF8808342245C4817C93EC /* NetworkConfigIPConversionTests.swift in Sources */,
 				1396606FC903D7DA662B6326 /* DiscoveryModelTests.swift in Sources */,
@@ -2987,6 +2997,7 @@
 				233E99B82D849C6500CC3A77 /* HumidityCompactWidget.swift in Sources */,
 				DD4640202AFF10F4002A5ECB /* WaypointForm.swift in Sources */,
 				AABBCCDD0000000000000005 /* GeofenceBoundsSelectorView.swift in Sources */,
+				AABBCCDD0000000000000009 /* WaypointRecipientPicker.swift in Sources */,
 				233E99C12D849D6000CC3A77 /* DistanceCompactWidget.swift in Sources */,
 				DD769E0328D18BF1001A3F05 /* DeviceMetricsLog.swift in Sources */,
 				108FFECD2DD4005600BFAA81 /* NodeInfoEntityToNodeInfo.swift in Sources */,
@@ -3221,6 +3232,7 @@
 				DDAB580D2B0DAA9E00147258 /* Routes.swift in Sources */,
 				BCB613832C672A2600485544 /* MessageChannelIntent.swift in Sources */,
 				D93068D52B812B700066FBC8 /* MessageDestination.swift in Sources */,
+				AABBCCDD0000000000000007 /* WaypointDestination.swift in Sources */,
 				BC10380F2DD4334400B00BFA /* AddContactIntent.swift in Sources */,
 				DDA9515E2BC6F56F00CEA535 /* IndoorAirQuality.swift in Sources */,
 				DDDB444E29F8AB0E00EE2349 /* Int.swift in Sources */,

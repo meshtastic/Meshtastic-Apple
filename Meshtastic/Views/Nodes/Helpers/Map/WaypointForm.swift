@@ -40,6 +40,9 @@ struct WaypointForm: View {
 	@State private var waypointFailedAlert: Bool = false
 	@State private var createdByNode: NodeInfoEntity?
 	@State private var lastUpdatedByNode: NodeInfoEntity?
+	@State private var connectedNode: NodeInfoEntity?
+	@State private var destination: WaypointDestination = .broadcastPrimary
+	@State private var showingRecipientPicker: Bool = false
 
 	var body: some View {
 		NavigationStack {
@@ -130,6 +133,16 @@ struct WaypointForm: View {
 									}
 								}
 							}
+					}
+					HStack {
+						Text("Send to")
+						Spacer()
+						Button {
+							showingRecipientPicker = true
+						} label: {
+							Text(destinationLabel)
+								.foregroundColor(.secondary)
+						}
 					}
 					Toggle(isOn: $expires) {
 						Label("Expires", systemImage: "clock.badge.xmark")
@@ -232,7 +245,7 @@ struct WaypointForm: View {
 						
 						Task {
 							do {
-								try await accessoryManager.sendWaypoint(waypoint: newWaypoint)
+								try await accessoryManager.sendWaypoint(waypoint: newWaypoint, destination: destination)
 								dismiss()
 							} catch {
 								Logger.mesh.warning("Send waypoint failed: \(error)")
@@ -298,9 +311,13 @@ struct WaypointForm: View {
 							}
 							newWaypoint.expire = UInt32(1)
 							applyGeofence(to: &newWaypoint)
+							// Route the expiry to wherever the waypoint was originally exchanged (a DM or a
+							// secondary channel) — not whatever the picker currently shows — so "delete for
+							// everyone" always reaches the waypoint's actual recipient, even if the user has
+							// the destination picker set to something else mid-edit.
 							Task {
 								do {
-									try await accessoryManager.sendWaypoint(waypoint: newWaypoint)
+									try await accessoryManager.sendWaypoint(waypoint: newWaypoint, destination: waypoint.destination)
 									Task { @MainActor in
 										context.delete(waypoint)
 										do {
@@ -517,6 +534,7 @@ struct WaypointForm: View {
 				if waypoint.locked {
 					locked = true
 				}
+				destination = waypoint.destination
 				geofenceRadius = Double(waypoint.geofenceRadius)
 				notifyOnEnter = waypoint.notifyOnEnter
 				notifyOnExit = waypoint.notifyOnExit
@@ -533,6 +551,7 @@ struct WaypointForm: View {
 				name = ""
 				description = ""
 				locked = false
+				destination = .broadcastPrimary
 				geofenceRadius = 0
 				notifyOnEnter = false
 				notifyOnExit = false
@@ -544,6 +563,9 @@ struct WaypointForm: View {
 				latitude = waypoint.mapCoordinate.latitude
 				longitude = waypoint.mapCoordinate.longitude
 			}
+		}
+		.sheet(isPresented: $showingRecipientPicker) {
+			WaypointRecipientPicker(node: connectedNode, ownNodeNum: accessoryManager.activeDeviceNum, selection: $destination)
 		}
 		.presentationBackgroundInteraction(.enabled(upThrough: .fraction(0.85)))
 		#if !targetEnvironment(macCatalyst)
@@ -589,8 +611,33 @@ struct WaypointForm: View {
 		// No geofenceBounds -> leave boundingBox unset (cleared on the mesh).
 	}
 
+	/// Label for the "Send to" row: the destination's channel name, or a DM node's long/short name/id.
+	/// Delegates the actual fallback rules to `waypointDestinationLabel`, the same helper the recipient
+	/// picker uses, so the two never drift.
+	private var destinationLabel: String {
+		var matchedNode: [NodeInfoEntity] = []
+		if case let .user(num) = destination {
+			let descriptor = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate<NodeInfoEntity> { $0.num == num })
+			matchedNode = (try? context.fetch(descriptor)) ?? []
+		}
+		return waypointDestinationLabel(destination, channels: waypointChannels(for: connectedNode), nodes: matchedNode, node: connectedNode)
+	}
+
 	@MainActor
 	private func fetchNodeInfo() async {
+		// --- Fetch connected node (for channel names / PKC-aware routing in the recipient picker) ---
+		if let deviceNum = accessoryManager.activeDeviceNum {
+			var connectedDescriptor = FetchDescriptor<NodeInfoEntity>(
+				predicate: #Predicate<NodeInfoEntity> { $0.num == deviceNum }
+			)
+			connectedDescriptor.fetchLimit = 1
+			do {
+				connectedNode = try context.fetch(connectedDescriptor).first
+			} catch {
+				Logger.services.warning("Error fetching connected node: \(error.localizedDescription)")
+			}
+		}
+
 		// --- Fetch createdBy node ---
 		if waypoint.createdBy != 0 {
 			let createdByNum = Int64(waypoint.createdBy)

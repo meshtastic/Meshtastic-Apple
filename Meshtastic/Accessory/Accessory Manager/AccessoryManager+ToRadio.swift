@@ -270,6 +270,34 @@ extension AccessoryManager {
 		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
 	}
 
+	/// Applies PKC (public-key encrypted) routing to `meshPacket` when `toUser` has a known public key —
+	/// the same check `sendMessage` uses for direct messages, shared here so waypoint DMs route
+	/// identically instead of re-deriving the rule. Also proactively re-shares our contact info for
+	/// `toUser` with the device, so a peer that's rolled out of the on-device node db doesn't produce a
+	/// PKI Failed error.
+	private func applyPKCRoutingIfNeeded(to meshPacket: inout MeshPacket, toUser: UserEntity?) {
+		guard toUser?.pkiEncrypted ?? false else { return }
+		meshPacket.pkiEncrypted = true
+		meshPacket.publicKey = toUser?.publicKey ?? Data()
+		Task { @MainActor in
+			let am = AccessoryManager.shared
+			if let user = toUser {
+				var contact = SharedContact()
+				contact.manuallyVerified = false
+				contact.nodeNum = UInt32(truncatingIfNeeded: user.num)
+				user.userNode?.favorite = user.userNode?.deviceConfig?.role ?? 0 != DeviceRoles.clientBase.rawValue
+				contact.user = user.toProto()
+				do {
+					let contactString = try contact.serializedData().base64EncodedString()
+					try? await am.addContactFromURL(base64UrlString: contactString)
+					try context.save()
+				} catch {
+					Logger.services.error("Error inserting new contact and resending encrypted send failed message: \(error)")
+				}
+			}
+		}
+	}
+
 	public func sendMessage(message: String, toUserNum: Int64, channel: Int32, isEmoji: Bool, replyID: Int64) async throws {
 		guard let fromUserNum = self.activeConnection?.device.num else {
 			Logger.services.error("Error while sending CannedMessageModule request.  No active device.")
@@ -326,28 +354,7 @@ extension AccessoryManager {
 					dataMessage.portnum = dataType
 
 					var meshPacket = MeshPacket()
-					if newMessage.toUser?.pkiEncrypted ?? false {
-						meshPacket.pkiEncrypted = true
-						meshPacket.publicKey = newMessage.toUser?.publicKey ?? Data()
-						// Send a contact to the phone every time we send a dm so that any nodes that have rolled out of the db are there and we don't get a PKI Failed error
-						Task { @MainActor in
-							let am = AccessoryManager.shared
-							if let user = newMessage.toUser {
-								var contact = SharedContact()
-								contact.manuallyVerified = false
-								contact.nodeNum = UInt32(truncatingIfNeeded: user.num)
-								user.userNode?.favorite = user.userNode?.deviceConfig?.role ?? 0 != DeviceRoles.clientBase.rawValue
-								contact.user = user.toProto()
-								do {
-									let contactString = try contact.serializedData().base64EncodedString()
-									try? await am.addContactFromURL(base64UrlString: contactString)
-									try context.save()
-								} catch {
-									Logger.services.error("Error inserting new contact and resending encrypted send failed message: \(error)")
-								}
-							}
-						}
-					}
+					applyPKCRoutingIfNeeded(to: &meshPacket, toUser: newMessage.toUser)
 					meshPacket.id = UInt32(newMessage.messageId)
 					if toUserNum > 0 {
 						meshPacket.to = UInt32(toUserNum)
@@ -823,7 +830,7 @@ extension AccessoryManager {
 		Logger.mesh.info("➕ [Beacon] Added advertised channel '\(channelName, privacy: .private)' to secondary slot \(targetIndex, privacy: .public) — no reboot")
 	}
 
-	public func sendWaypoint(waypoint: Waypoint) async throws {
+	public func sendWaypoint(waypoint: Waypoint, destination: WaypointDestination = .broadcastPrimary) async throws {
 		guard let deviceNum = self.activeConnection?.device.num else {
 			Logger.services.error("Error while sending sendWaypoint request.  No active device.")
 			throw AccessoryError.ioFailed("No active device")
@@ -835,9 +842,17 @@ extension AccessoryManager {
 
 		let fromNodeNum = UInt32(deviceNum)
 		var meshPacket = MeshPacket()
-		meshPacket.to = Constants.maximumNodeNum
 		meshPacket.from	= fromNodeNum
 		meshPacket.wantAck = true
+		switch destination {
+		case let .channel(index):
+			meshPacket.to = Constants.maximumNodeNum
+			meshPacket.channel = UInt32(index)
+		case let .user(destNum):
+			meshPacket.to = UInt32(destNum)
+			let userFetch = FetchDescriptor<UserEntity>(predicate: #Predicate { $0.num == destNum })
+			applyPKCRoutingIfNeeded(to: &meshPacket, toUser: try? context.fetch(userFetch).first)
+		}
 		var dataMessage = DataMessage()
 		do {
 			dataMessage.payload = try waypoint.serializedData()
@@ -862,6 +877,7 @@ extension AccessoryManager {
 			wayPointEntity.icon	= Int64(waypoint.icon)
 			wayPointEntity.latitudeI = waypoint.latitudeI
 			wayPointEntity.longitudeI = waypoint.longitudeI
+			wayPointEntity.destination = destination
 			if waypoint.expire > 1 {
 				wayPointEntity.expire = Date.init(timeIntervalSince1970: Double(waypoint.expire))
 			} else {

@@ -705,7 +705,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 					}
 				case .waypointApp:
 					Logger.tak.info("WAYPOINT APP CASE REACHED")
-					await MeshPackets.shared.waypointPacket(packet: packet)
+					await MeshPackets.shared.waypointPacket(packet: packet, myNodeNum: self.activeDeviceNum.map(UInt32.init))
 					// Broadcast waypoint to TAK clients
 					if let waypoint = try? Waypoint(serializedBytes: data.payload) {
 						Logger.tak.info("WAYPOINT PARSED: \(waypoint.name)")

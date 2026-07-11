@@ -62,15 +62,25 @@ Waypoints are named points of interest you can share across the mesh.
 
 1. Long press anywhere on the map.
 2. Enter a name, optional description, and lock icon (to limit editing to the creator).
-3. Tap **Save** — the waypoint broadcasts to all nodes on the primary channel.
+3. Tap **Send to** to choose where the waypoint goes (see [Choosing a Recipient](#choosing-a-recipient) below) — it broadcasts to the primary channel by default.
+4. Tap **Save**.
+
+### Choosing a Recipient
+
+Tap **Send to** in the waypoint editor to pick a destination:
+
+- **A channel** — the primary channel (shown by its real name, e.g. "LongFast") or any secondary channel. Everyone on that channel receives the waypoint.
+- **A specific node** — sends the waypoint as a private message only that node receives. Use the search field to narrow the node list by name.
+
+Re-opening an existing waypoint for editing shows the recipient it was originally sent to (or received from), not the default broadcast.
 
 ### Editing a Waypoint
 
-Tap an existing waypoint pin, then tap **Edit**. Changes broadcast to the mesh immediately.
+Tap an existing waypoint pin, then tap **Edit**. Changes are sent to the recipient shown in **Send to**.
 
 ### Deleting a Waypoint
 
-Tap the waypoint, then tap **Delete**. The deletion broadcasts to all nodes.
+Tap the waypoint, then tap **Delete**. **For everyone** re-sends the deletion to whichever channel or node the waypoint was originally exchanged with, so it reaches the same audience the waypoint did.
 
 ### Geofences
 
