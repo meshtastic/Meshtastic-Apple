@@ -109,6 +109,12 @@ struct ModemPresetsTests {
 	@Test func totalCaseCount() {
 		#expect(ModemPresets.allCases.count == 16)
 	}
+
+	@Test func mediumTurbo_values() {
+		#expect(ModemPresets.mediumTurbo.protoEnumValue() == .mediumTurbo)
+		#expect(ModemPresets.mediumTurbo.snrLimit() == -12.5)
+		#expect(ModemPresets.mediumTurbo.bandwidthMHz == 0.5)
+	}
 }
 
 // MARK: - Bandwidths
