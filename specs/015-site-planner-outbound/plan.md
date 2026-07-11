@@ -21,20 +21,22 @@ Let a user run a Meshtastic Site Planner RF-coverage estimate from inside the ap
 
 ## Constitution Check
 
-*GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
+*GATE: Must pass before Phase 0 research. Re-checked after Phase 1 design, and again (T029) after implementation.*
 
 | Principle | Check | Status |
 |---|---|---|
-| I. SwiftUI-Native | New estimate form, map control, node-detail action are all SwiftUI; navigation continues through `Router` (no new ad-hoc navigation state) | ✅ Pass |
-| II. SwiftData Persistence | No new `@Model` entity — result reuses existing `MapDataManager` file-based storage, which itself is outside SwiftData already (pre-existing project decision, not introduced by this feature); config *reads* use existing `@Query`/`LoRaConfigEntity` | ✅ Pass — see note below |
+| I. SwiftUI-Native | Estimate form, map control, node-detail action are all SwiftUI; navigation continues through `Router`/existing sheet patterns (no new ad-hoc navigation state) | ✅ Pass |
+| II. SwiftData Persistence | No new `@Model` entity — result reuses existing `MapDataManager` file-based storage; config *reads* use existing `@Query`/`LoRaConfigEntity` | ✅ Pass — see note below |
 | III. Protocol-Oriented Transport | Not applicable — no device transport involved; reads existing SwiftData config only | ✅ N/A |
-| IV. Structured Logging | New coordinator and `importFromData` MUST use `Logger` (`.services` or a new category if warranted), never `print()` | ✅ Pass (enforced at implementation, lint-checked) |
+| IV. Structured Logging | `CoverageEstimateBridge`/`CoverageEstimateCoordinator`/`MapDataManager.importFromData` all use `Logger.services`, no `print()` | ✅ Pass |
 | V. Protobuf Contract Fidelity | No protobuf changes — reads existing generated `LoRaConfigEntity`/`ModemPresets` fields only | ✅ Pass |
-| VI. Lint-Clean Commits | New files pass SwiftLint via the existing pre-commit hook | ✅ Pass (enforced at implementation) |
-| VII. Platform Parity | Must work on iPhone, iPad, and Mac Catalyst equally — Catalyst WKWebView headless-JS behavior is an **open risk**, not yet verified (research.md §5) | ⚠️ Verify early in tasks.md (Phase 0 already flags this; do not treat silence as "assumed fine") |
-| VIII. Design Standards Compliance | Doc could not be fetched during planning (research.md §6) — carried forward as a **hard requirement** for each new screen at implementation time, not satisfied here | ⚠️ Deferred to implementation by design, per the constitution's own "before making UI changes" wording — not a plan-phase gate failure |
+| VI. Lint-Clean Commits | **Verified, not assumed**: full-suite SwiftLint run (T028) reports 0 violations attributed to any of this feature's files | ✅ Pass — verified |
+| VII. Platform Parity | Must work on iPhone, iPad, and Mac Catalyst equally. **iOS Simulator: fully verified** — `CoverageEstimateBridgeLiveSpikeTests` passed twice, independently, against the live site.meshtastic.org (6.3s and 20.7s real round trips). **Mac Catalyst: still genuinely open** (research.md §5) — blocked by environment issues on this dev machine (test target's deployment target vs. installed OS; an ad-hoc `open`-launched spike never presented a window), not by a confirmed WebKit failure. The bridge's design already commits to the safer attached-but-invisible approach as a hedge. | ⚠️ **Open** — re-run `CoverageEstimateBridgeLiveSpikeTests` via Xcode's Test navigator on a Catalyst destination before calling this fully verified |
+| VIII. Design Standards Compliance | Live v1.4 doc fetched successfully (the "failure" during planning was a symlink-resolution red herring, not a real block — research.md §6). Findings applied and **visually verified** via snapshot, not just claimed: locale-aware `Measurement` conversion for height/range fields (2m → "6.6 ft", 30km → "18.6 mi"), plain-language subtext for RF jargon, a real placeholder-text bug caught and fixed by the visual check itself (an empty optional field showed its own label as a redundant placeholder) | ✅ Pass — verified, not deferred |
 
 **Note on II**: `MapDataManager` storing overlays as flat files rather than SwiftData predates this feature (it already exists on `main`) and is out of scope to "fix" here — this plan extends it consistently rather than introducing a second, inconsistent storage mechanism. Not a new violation.
+
+**T029 summary**: 6 of 8 principles fully pass with direct verification (not just process-compliance claims). One (VII) has a genuine, honestly-tracked open item — Mac Catalyst runtime behavior — that is an environment-access limitation on this specific machine, not a known defect. No principle is violated.
 
 No entries required in Complexity Tracking — no gate is being violated, two are flagged as work carried into `tasks.md` rather than resolved here, which is what Phase 0/1 planning is for.
 

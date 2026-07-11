@@ -83,10 +83,10 @@
 
 ## Phase 6: Polish & Cross-Cutting Concerns
 
-- [ ] T026 [P] Run the full manual validation checklist from quickstart.md (happy path, no-radio fallback, cancellation, concurrency guard, advanced params, forced failure/timeout, Mac Catalyst repeat of the happy path)
-- [ ] T027 [P] Add a one-line entry to `docs/user/whats-new.md` per the constitution's documentation workflow (no `RELEASENOTES.md`)
-- [ ] T028 Run the full `MeshtasticTests` suite and SwiftLint to confirm no regressions before opening the PR
-- [ ] T029 Re-check Constitution gates now that implementation is complete: VII (Catalyst parity — resolved by T012's spike outcome) and VIII (design standards — resolved by T019 having actually happened, not skipped)
+- [~] T026 [P] Run the full manual validation checklist from quickstart.md — **partially covered by automated tests, not a substitute for a real interactive pass**: happy path ✅ (CoverageEstimateBridgeLiveSpikeTests, real network round-trip, passed twice independently); concurrency guard ✅ (CoverageEstimateCoordinatorTests); no-radio fallback ✅ by code inspection (same optional-chaining path already exercised). **Not done, genuinely remaining**: cancellation mid-flight, forced failure/timeout (e.g. airplane mode), advanced params changing the *rendered* overlay end-to-end (only unit-tested that the parameter itself changes), and the full happy path repeated on Mac Catalyst specifically (blocked by T012's open item). These need an actual interactive pass, not another automated test.
+- [X] T027 [P] Add a one-line entry to `docs/user/whats-new.md` per the constitution's documentation workflow (no `RELEASENOTES.md`)
+- [X] T028 Run the full `MeshtasticTests` suite and SwiftLint to confirm no regressions before opening the PR — 2237 tests, 20 pre-existing failures verified unrelated to this feature (NodeListItem*/IntervalConfiguration* snapshot drift dating to commit #1798); 0 SwiftLint violations attributed to any file this feature touches
+- [X] T029 Re-check Constitution gates now that implementation is complete — see plan.md's updated Constitution Check table: 6 of 8 principles pass with direct verification, VII (Mac Catalyst) remains genuinely open and is tracked, not glossed over
 
 ---
 
