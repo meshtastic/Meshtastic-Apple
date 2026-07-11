@@ -46,6 +46,7 @@ struct NodeDetail: View {
 	@State private var latestDeviceMetrics: TelemetryEntity?
 	@State private var latestEnvironmentMetrics: TelemetryEntity?
 	@State private var latestAirQualityMetrics: TelemetryEntity?
+	@State private var airQualityNowCastAQI: Int?
 	@State private var latestPowerMetrics: TelemetryEntity?
 	@State private var logAvailability = NodeDetailLogAvailability()
 
@@ -496,20 +497,27 @@ struct NodeDetail: View {
 		if let metrics = latestAirQualityMetrics,
 		   metrics.pm25Standard != nil || metrics.pm10Standard != nil || metrics.pm100Standard != nil {
 			Section("Air Quality") {
-				// design#54: with insufficient history to compute a NowCast AQI, show the raw
-				// particulate-matter readings (µg/m³) rather than a misleading instantaneous AQI.
-				LazyVGrid(columns: gridItemLayout) {
-					if let pm25 = metrics.pm25Standard {
-						ParticulateMatterCompactWidget(label: "PM2.5", value: pm25)
+				VStack {
+					// design#54: once ~12h of PM2.5 history exists, headline the NowCast-derived EPA AQI
+					// gauge above the raw particulate-matter readings (µg/m³). Without enough history the
+					// gauge is omitted and only the raw readings show — never a misleading instantaneous AQI.
+					if let aqi = airQualityNowCastAQI {
+						AirQualityIndex(aqi: aqi, displayMode: .gradient)
+							.padding(.vertical)
 					}
-					if let pm10 = metrics.pm10Standard {
-						ParticulateMatterCompactWidget(label: "PM1.0", value: pm10)
+					LazyVGrid(columns: gridItemLayout) {
+						if let pm25 = metrics.pm25Standard {
+							ParticulateMatterCompactWidget(label: "PM2.5", value: pm25)
+						}
+						if let pm10 = metrics.pm10Standard {
+							ParticulateMatterCompactWidget(label: "PM1.0", value: pm10)
+						}
+						if let pm100 = metrics.pm100Standard {
+							ParticulateMatterCompactWidget(label: "PM10", value: pm100)
+						}
 					}
-					if let pm100 = metrics.pm100Standard {
-						ParticulateMatterCompactWidget(label: "PM10", value: pm100)
-					}
+					.padding(.bottom)
 				}
-				.padding(.vertical)
 			}
 			.accessibilityElement(children: .combine)
 		}
@@ -836,11 +844,13 @@ struct NodeDetail: View {
 		let deviceMetrics = node.latestDeviceMetrics
 		let environmentMetrics = node.latestEnvironmentMetrics
 		let airQualityMetrics = node.latestAirQualityMetrics
+		let airQualityAQI = node.airQualityNowCastAQI
 		let powerMetrics = node.latestPowerMetrics
 		let position = node.latestPosition
 		latestDeviceMetrics = deviceMetrics
 		latestEnvironmentMetrics = environmentMetrics
 		latestAirQualityMetrics = airQualityMetrics
+		airQualityNowCastAQI = airQualityAQI
 		latestPowerMetrics = powerMetrics
 		latestPosition = position
 		logAvailability = NodeDetailLogAvailability(

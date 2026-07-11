@@ -19,7 +19,7 @@ enum AqiDisplayMode: Int, CaseIterable, Identifiable {
 
 struct AirQualityIndex: View {
 	var aqi: Int
-	var displayMode: IaqDisplayMode = .pill
+	var displayMode: AqiDisplayMode = .pill
 	let gradient = Gradient(colors: [.green, .yellow, .orange, .red, .purple, .magenta])
 
 	var body: some View {
@@ -31,7 +31,7 @@ struct AirQualityIndex: View {
 				RoundedRectangle(cornerRadius: 10)
 					.fill(aqiEnum.color)
 					.frame(width: 125, height: 30)
-				Label("IAQ \(aqi)", systemImage: aqi < 100 ? "aqi.low" : ((aqi > 100 && aqi < 201) ? "aqi.medium" : "aqi.high"))
+				Label("AQI \(aqi)", systemImage: aqi < 100 ? "aqi.low" : ((aqi > 100 && aqi < 201) ? "aqi.medium" : "aqi.high"))
 					.padding(.leading, 4)
 			}
 		case .dot:
@@ -49,7 +49,7 @@ struct AirQualityIndex: View {
 		case .gauge:
 			Gauge(value: Double(aqi), in: 0...500) {
 
-						Text("IAQ")
+						Text("AQI")
 							.foregroundColor(aqiEnum.color)
 					} currentValueLabel: {
 						Text("\(Int(aqi))")
@@ -59,10 +59,10 @@ struct AirQualityIndex: View {
 		case .gradient:
 			HStack {
 				Gauge(value: Double(aqi), in: 0...500) {
-							Text("IAQ")
+							Text("AQI")
 							.foregroundColor(aqiEnum.color)
 						} currentValueLabel: {
-							Text("IAQ ")+Text("\(Int(aqi))")
+							Text("AQI ")+Text("\(Int(aqi))")
 								.foregroundColor(.gray)
 						}
 						.tint(gradient)

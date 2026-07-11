@@ -447,6 +447,7 @@
 		DDA1C48E28DB49D3009933EC /* ChannelRoles.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA1C48D28DB49D3009933EC /* ChannelRoles.swift */; };
 		DDA3DFDA2F10B39600D8F103 /* UIKeyboardType.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA3DFD92F10B39600D8F103 /* UIKeyboardType.swift */; };
 		DDA6B2E928419CF2003E8C16 /* MeshPackets.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA6B2E828419CF2003E8C16 /* MeshPackets.swift */; };
+		E65184282B90D941CB5626CE /* EPAAirQuality.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36D8DBD29BF3C32998C5A0A3 /* EPAAirQuality.swift */; };
 		AABBCCDD0000000000000001 /* MeshPackets+Geofence.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABBCCDD0000000000000002 /* MeshPackets+Geofence.swift */; };
 		DDA9515A2BC6624100CEA535 /* TelemetryWeather.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA951592BC6624100CEA535 /* TelemetryWeather.swift */; };
 		DDA9515C2BC6631200CEA535 /* TelemetryEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA9515B2BC6631200CEA535 /* TelemetryEnums.swift */; };
@@ -1105,6 +1106,7 @@
 		DDA28B1B2D32C89200EF726F /* MeshtasticDataModelV 48.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 48.xcdatamodel"; sourceTree = "<group>"; };
 		DDA3DFD92F10B39600D8F103 /* UIKeyboardType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIKeyboardType.swift; sourceTree = "<group>"; };
 		DDA6B2E828419CF2003E8C16 /* MeshPackets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshPackets.swift; sourceTree = "<group>"; };
+		36D8DBD29BF3C32998C5A0A3 /* EPAAirQuality.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EPAAirQuality.swift; sourceTree = "<group>"; };
 		AABBCCDD0000000000000002 /* MeshPackets+Geofence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MeshPackets+Geofence.swift"; sourceTree = "<group>"; };
 		DDA951592BC6624100CEA535 /* TelemetryWeather.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TelemetryWeather.swift; sourceTree = "<group>"; };
 		DDA9515B2BC6631200CEA535 /* TelemetryEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelemetryEnums.swift; sourceTree = "<group>"; };
@@ -2383,6 +2385,7 @@
 				DD7E5740000000000000007D /* LockdownPassphraseStore.swift */,
 				DD913638270DFF4C00D7ACF3 /* LocalNotificationManager.swift */,
 				DDA6B2E828419CF2003E8C16 /* MeshPackets.swift */,
+				36D8DBD29BF3C32998C5A0A3 /* EPAAirQuality.swift */,
 				AABBCCDD0000000000000002 /* MeshPackets+Geofence.swift */,
 				84CCF00CDD3D48C9B9DCA554 /* WatchSessionManager.swift */,
 				DD3619142B1EF9F900C41C8C /* LocationsHandler.swift */,
@@ -3209,6 +3212,7 @@
 				23A1AFB72E42BD2500E46C96 /* RXTXIndicatorView.swift in Sources */,
 				DDB75A1E2A0B0CD0006ED576 /* LoRaSignalStrengthIndicator.swift in Sources */,
 				DDA6B2E928419CF2003E8C16 /* MeshPackets.swift in Sources */,
+				E65184282B90D941CB5626CE /* EPAAirQuality.swift in Sources */,
 				AABBCCDD0000000000000001 /* MeshPackets+Geofence.swift in Sources */,
 				DDCE4E2C2869F92900BE9F8F /* UserConfig.swift in Sources */,
 				BCB613852C68703800485544 /* NodePositionIntent.swift in Sources */,

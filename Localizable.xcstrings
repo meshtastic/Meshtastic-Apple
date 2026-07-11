@@ -1,6 +1,15 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "AQI" : {
+      "comment" : "Air Quality Index label (acronym) shown on the air quality gauge."
+    },
+    "AQI " : {
+      "comment" : "Air Quality Index label prefix (acronym) preceding the numeric AQI value."
+    },
+    "AQI %lld" : {
+      "comment" : "Air Quality Index label with the numeric AQI value."
+    },
     "Air Quality" : {
       "comment" : "Node detail section header for particulate-matter air quality readings."
     },
