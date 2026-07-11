@@ -3,8 +3,8 @@
 //  Meshtastic
 //
 //  The Site/Transmitter, Receiver, Simulation, and Display sections for a Site Planner
-//  coverage estimate (spec 015, US1/US2). The Environment (advanced) section and the
-//  situation/time-fraction fields are deferred to US3 (T023) — see data-model.md.
+//  coverage estimate (spec 015, US1/US2), plus the Environment/advanced fields behind
+//  a disclosure (US3, T023) — see data-model.md.
 //
 //  Height/range fields (antenna height, receiver height, max range) are edited via
 //  Foundation's Measurement format style so they display in the user's locale unit
@@ -20,11 +20,13 @@ import OSLog
 struct CoverageEstimateForm: View {
 
 	@State private var parameters: CoverageEstimateParameters
+	@State private var showAdvanced = false
 	@ObservedObject private var coordinator = CoverageEstimateCoordinator.shared
 	@Environment(\.dismiss) private var dismiss
 
-	init(initialParameters: CoverageEstimateParameters) {
+	init(initialParameters: CoverageEstimateParameters, initiallyShowAdvanced: Bool = false) {
 		_parameters = State(initialValue: initialParameters)
+		_showAdvanced = State(initialValue: initiallyShowAdvanced)
 	}
 
 	var body: some View {
@@ -141,7 +143,96 @@ struct CoverageEstimateForm: View {
 		Section("Simulation") {
 			RangeField(title: "Max Range", kilometers: $parameters.maxRangeKm, highResolution: parameters.highResolutionTerrain)
 			Toggle("High-Resolution Terrain", isOn: $parameters.highResolutionTerrain)
+			advancedDisclosure
 		}
+	}
+
+	/// Environment fields + the Simulation section's advanced statistical parameters
+	/// (US3, T023) — behind one disclosure so basic use (US1/US2) is unaffected. Each
+	/// technical field carries plain-language subtext per Design Standards §6, since
+	/// these are denser RF/ITM jargon than anything in the base sections.
+	@ViewBuilder
+	private var advancedDisclosure: some View {
+		DisclosureGroup("Advanced", isExpanded: $showAdvanced) {
+			VStack(alignment: .leading, spacing: 4) {
+				HStack {
+					Text("Situation Fraction")
+					Spacer()
+					TextField("Situation Fraction", value: optionalDoubleBinding(\.situationFraction), format: .number.precision(.fractionLength(0...2)), prompt: Text("Default"))
+						.multilineTextAlignment(.trailing)
+						.keyboardType(.decimalPad)
+				}
+				Text("How often the modeled signal level is expected to be met across the coverage area (0–1). Leave blank to use the planner's default.")
+					.font(.caption).foregroundStyle(.secondary)
+			}
+			VStack(alignment: .leading, spacing: 4) {
+				HStack {
+					Text("Time Fraction")
+					Spacer()
+					TextField("Time Fraction", value: optionalDoubleBinding(\.timeFraction), format: .number.precision(.fractionLength(0...2)), prompt: Text("Default"))
+						.multilineTextAlignment(.trailing)
+						.keyboardType(.decimalPad)
+				}
+				Text("How often the modeled signal level is expected to be met over time at a given point (0–1). Leave blank to use the planner's default.")
+					.font(.caption).foregroundStyle(.secondary)
+			}
+			Picker("Radio Climate", selection: $parameters.radioClimate) {
+				ForEach(RadioClimate.allCases) { climate in
+					Text(climate.queryValue.replacingOccurrences(of: "_", with: " ").capitalized).tag(climate)
+				}
+			}
+			Picker("Polarization", selection: $parameters.polarization) {
+				ForEach(Polarization.allCases) { polarization in
+					Text(polarization.rawValue.capitalized).tag(polarization)
+				}
+			}
+			VStack(alignment: .leading, spacing: 4) {
+				HStack {
+					Text("Clutter Height")
+					Spacer()
+					TextField("Clutter Height", value: optionalDoubleBinding(\.clutterHeightMeters), format: .number.precision(.fractionLength(0...1)), prompt: Text("Default"))
+						.multilineTextAlignment(.trailing)
+						.keyboardType(.decimalPad)
+					Text("m").foregroundStyle(.secondary)
+				}
+				Text("Height of trees/buildings assumed to surround the receiver.")
+					.font(.caption).foregroundStyle(.secondary)
+			}
+			HStack {
+				Text("Ground Dielectric")
+				Spacer()
+				TextField("Ground Dielectric", value: optionalDoubleBinding(\.groundDielectric), format: .number.precision(.fractionLength(0...2)), prompt: Text("Default"))
+					.multilineTextAlignment(.trailing)
+					.keyboardType(.decimalPad)
+			}
+			HStack {
+				Text("Ground Conductivity")
+				Spacer()
+				TextField("Ground Conductivity", value: optionalDoubleBinding(\.groundConductivity), format: .number.precision(.fractionLength(0...4)), prompt: Text("Default"))
+					.multilineTextAlignment(.trailing)
+					.keyboardType(.decimalPad)
+				Text("S/m").foregroundStyle(.secondary)
+			}
+			VStack(alignment: .leading, spacing: 4) {
+				HStack {
+					Text("Atmosphere Bending")
+					Spacer()
+					TextField("Atmosphere Bending", value: optionalDoubleBinding(\.atmosphereBending), format: .number.precision(.fractionLength(0...1)), prompt: Text("Default"))
+						.multilineTextAlignment(.trailing)
+						.keyboardType(.decimalPad)
+					Text("N/km").foregroundStyle(.secondary)
+				}
+				Text("How much the radio signal curves to follow the Earth — higher values let it reach further past the horizon.")
+					.font(.caption).foregroundStyle(.secondary)
+			}
+		}
+	}
+
+	/// Bridges an optional `Double` field to a `TextField` binding: an empty field means
+	/// "unset" (the planner's own default applies, per contracts/query-contract.md's
+	/// omission rule), typing a value sets it, clearing the field back to empty un-sets it.
+	private func optionalDoubleBinding(_ keyPath: WritableKeyPath<CoverageEstimateParameters, Double?>) -> Binding<Double?> {
+		Binding(get: { parameters[keyPath: keyPath] }, set: { parameters[keyPath: keyPath] = $0 })
 	}
 
 	@ViewBuilder

@@ -73,9 +73,9 @@
 
 **Independent Test**: Open the form, expand the advanced sections, change the color palette and max range away from defaults, submit, and confirm the resulting overlay visibly reflects both changes (spec.md Acceptance Scenarios for US3).
 
-- [ ] T023 [US3] Extend `CoverageEstimateParameters`/`CoverageEstimateForm` with the Environment section (`clutter_height`, `ground_dielectric`, `ground_conductivity`, `atmosphere_bending`, `radio_climate`, `polarization`) and the Simulation section's advanced fields (`situation_fraction`, `time_fraction`), behind a disclosure so basic use is unaffected, sourcing the enum option lists from the exact code lists confirmed in `meshtastic-site-planner`'s `permalink.ts` constants at implementation time (contracts/query-contract.md's explicit non-goal against hand-copying them into docs) — depends on T015
-- [ ] T024 [US3] Add the `color_scale` palette picker (`plasma` default, `viridis`, `CMRmap`, `cool`, `turbo`, `jet`) and `min_dbm`/`max_dbm`/`overlay_transparency` display controls to the Display section; verify end-to-end that changing the palette actually changes the rendered overlay's colors, not just the request sent — depends on T015
-- [ ] T025 [P] [US3] Add a snapshot test for the expanded advanced/Environment section in `MeshtasticTests/SwiftUIViewSnapshotTests.swift`
+- [X] T023 [US3] Extend `CoverageEstimateParameters`/`CoverageEstimateForm` with the Environment section (`clutter_height`, `ground_dielectric`, `ground_conductivity`, `atmosphere_bending`, `radio_climate`, `polarization`) and the Simulation section's advanced fields (`situation_fraction`, `time_fraction`), behind a disclosure so basic use is unaffected, sourcing the enum option lists from the exact code lists confirmed in `meshtastic-site-planner`'s `permalink.ts` constants at implementation time (contracts/query-contract.md's explicit non-goal against hand-copying them into docs) — depends on T015
+- [X] T024 [US3] Add the `color_scale` palette picker (`plasma` default, `viridis`, `CMRmap`, `cool`, `turbo`, `jet`) and `min_dbm`/`max_dbm`/`overlay_transparency` display controls to the Display section; verify end-to-end that changing the palette actually changes the rendered overlay's colors, not just the request sent — depends on T015
+- [X] T025 [P] [US3] Add a snapshot test for the expanded advanced/Environment section in `MeshtasticTests/SwiftUIViewSnapshotTests.swift`
 
 **Checkpoint**: All three user stories independently functional.
 

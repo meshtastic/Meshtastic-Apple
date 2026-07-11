@@ -1653,6 +1653,23 @@ struct CoverageEstimateFormSnapshotTests {
 		let view = CoverageEstimateForm(initialParameters: params)
 		await assertViewSnapshot(of: view, width: 390, height: 900, named: "coverageEstimateForm_default")
 	}
+
+	@Test("Advanced section expanded (US3, T025)")
+	@MainActor
+	func advancedSectionExpanded() async {
+		var params = CoverageEstimateParameters(
+			name: "U-District Solar",
+			latitude: 47.6602,
+			longitude: -122.3132,
+			transmitPowerWatts: 0.1,
+			transmitFrequencyMHz: 906.875
+		)
+		params.situationFraction = 0.5
+		params.timeFraction = 0.9
+		params.clutterHeightMeters = 3
+		let view = CoverageEstimateForm(initialParameters: params, initiallyShowAdvanced: true)
+		await assertViewSnapshot(of: view, width: 390, height: 1400, named: "coverageEstimateForm_advancedExpanded")
+	}
 }
 
 @Suite("EstimateCoverageButton Snapshots")
