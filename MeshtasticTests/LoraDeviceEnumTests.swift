@@ -107,7 +107,7 @@ struct ModemPresetsTests {
 	}
 
 	@Test func totalCaseCount() {
-		#expect(ModemPresets.allCases.count == 15)
+		#expect(ModemPresets.allCases.count == 16)
 	}
 }
 

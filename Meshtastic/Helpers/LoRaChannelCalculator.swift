@@ -290,7 +290,7 @@ extension ModemPresets {
 
 	var bandwidthMHz: Double {
 		switch self {
-		case .longTurbo, .shortTurbo:
+		case .longTurbo, .shortTurbo, .mediumTurbo:
 			return 0.5
 		case .longFast, .medFast, .medSlow, .shortFast, .shortSlow:
 			return 0.25

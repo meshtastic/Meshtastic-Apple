@@ -91,6 +91,35 @@
   → Write to SwiftData via MeshPackets @ModelActor
   → Publish changes via @Published properties (UI updates)
 </code></pre>
+<h2>Frame Decoding &amp; Encoding Validation</h2>
+<p>Every transport turns raw inbound bytes into a <code>FromRadio</code> frame through one shared funnel, <code>FromRadioDecoder.classify(_:)</code> in <code>Accessory/Protocols/Connection.swift</code>, so BLE, TCP, and Serial handle a malformed frame identically instead of each rolling its own <code>try? FromRadio(serializedBytes:)</code>. It returns a <code>FromRadioDecodeOutcome</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Outcome</th>
+<th>Meaning</th>
+<th>Transport action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>.decoded(FromRadio)</code></td>
+<td>Frame decoded cleanly</td>
+<td>Yield <code>.data(_)</code> to <code>AccessoryManager</code></td>
+</tr>
+<tr>
+<td><code>.skipInvalidUTF8(Error)</code></td>
+<td>A string field (e.g. a node's <code>long_name</code>) failed SwiftProtobuf's UTF-8 validation</td>
+<td>Log and <strong>skip the frame</strong>; the connection stays alive and keeps reading</td>
+</tr>
+<tr>
+<td><code>.failed(Error)</code></td>
+<td>Genuine framing / wire corruption</td>
+<td>BLE &amp; TCP call <code>disconnect(withError:shouldReconnect:)</code> and reconnect; Serial logs and skips</td>
+</tr>
+</tbody>
+</table>
+<p>An invalid encoding in a single string field is a per-field content problem, not a transport failure, so it must not tear down an otherwise healthy stream. SwiftProtobuf validates UTF-8 during decode and throws <code>BinaryDecodingError.invalidUTF8</code>; <code>FromRadioDecoder</code> isolates that case so only genuine framing errors trigger a reconnect.</p>
 <h2>Packet Flow (Outbound)</h2>
 <pre><code>View / Service
   → AccessoryManager+ToRadio.sendPacket(_:)
