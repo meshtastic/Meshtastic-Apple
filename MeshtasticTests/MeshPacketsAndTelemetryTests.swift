@@ -85,6 +85,49 @@ struct LocalStatsTelemetryExportTests {
 	}
 }
 
+// Air Quality (particulate matter) telemetry — issue #2040
+@Suite("Air quality telemetry export")
+struct AirQualityTelemetryExportTests {
+
+	@Test func csvExportsParticulateMatterValues() {
+		let telemetry = TelemetryEntity()
+		telemetry.metricsType = 3
+		telemetry.pm10Standard = 1
+		telemetry.pm25Standard = 2
+		telemetry.pm100Standard = 3
+		telemetry.pm10Environmental = 4
+		telemetry.pm25Environmental = 5
+		telemetry.pm100Environmental = 6
+
+		let csv = telemetryToCsvFile(telemetry: [telemetry], metricsType: 3)
+		let lines = csv.split(separator: "\n")
+
+		// Header names the six PM columns
+		#expect(lines.first?.contains("PM2.5 Std") == true)
+		#expect(lines.first?.contains("PM10 Env") == true)
+
+		// Values are written in field order (PM1.0, PM2.5, PM10 std; then env)
+		let values = lines.last?.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }
+		#expect(values.map { Array($0.prefix(6)) } == ["1", "2", "3", "4", "5", "6"])
+	}
+
+	@Test func csvLeavesMissingParticulateMatterFieldsBlank() {
+		let telemetry = TelemetryEntity()
+		telemetry.metricsType = 3
+		telemetry.pm25Standard = 12
+		// All other PM fields left nil
+
+		let csv = telemetryToCsvFile(telemetry: [telemetry], metricsType: 3)
+		let values = csv.split(separator: "\n").last?.split(separator: ",", omittingEmptySubsequences: false)
+			.map { $0.trimmingCharacters(in: .whitespaces) }
+
+		// pm25Standard is the 2nd field; the rest of the PM fields are empty
+		#expect(values?[1] == "12")
+		#expect(values?[0] == "")
+		#expect(values?[2] == "")
+	}
+}
+
 @Suite("Aqi getAqi boundary values")
 struct AqiGetAqiBoundaryTests {
 
@@ -672,5 +715,84 @@ struct TelemetryPacketIngestTests {
 		// Far newer than the 1970 epoch the old code would have stored.
 		let year2020 = Date(timeIntervalSince1970: 1_577_836_800)
 		#expect((latest?.time ?? .distantPast) > year2020)
+	}
+
+	/// Builds a decoded air-quality-telemetry `MeshPacket` carrying only the three *standard* PM
+	/// concentrations, leaving the *environmental* variants unset so the test can also assert that
+	/// the ingest path's `has`-gating persists absent fields as nil. Issue #2040.
+	private func makeAirQualityTelemetryPacket(
+		from nodeNum: UInt32,
+		pm10Standard: UInt32,
+		pm25Standard: UInt32,
+		pm100Standard: UInt32,
+		reportedTime: UInt32
+	) throws -> MeshPacket {
+		var airQuality = AirQualityMetrics()
+		airQuality.pm10Standard = pm10Standard
+		airQuality.pm25Standard = pm25Standard
+		airQuality.pm100Standard = pm100Standard
+
+		var telemetry = Telemetry()
+		telemetry.airQualityMetrics = airQuality
+		telemetry.time = reportedTime
+
+		var dataMessage = DataMessage()
+		dataMessage.payload = try telemetry.serializedData()
+		dataMessage.portnum = .telemetryApp
+
+		var packet = MeshPacket()
+		packet.id = 0x2004
+		packet.from = nodeNum
+		packet.to = UInt32.max
+		packet.rxTime = reportedTime
+		packet.rxSnr = 5.5
+		packet.rxRssi = -90
+		packet.decoded = dataMessage
+		return packet
+	}
+
+	/// Latest air-quality (`metricsType == 3`) telemetry for `nodeNum`, read back through a fresh
+	/// context so we observe what `telemetryPacket` actually persisted.
+	private func fetchLatestAirQualityTelemetry(forNode nodeNum: Int64) throws -> TelemetryEntity? {
+		let context = ModelContext(sharedModelContainer)
+		let airQualityType: Int32 = 3
+		var descriptor = FetchDescriptor<TelemetryEntity>(
+			predicate: #Predicate<TelemetryEntity> {
+				$0.nodeTelemetry?.num == nodeNum && $0.metricsType == airQualityType
+			},
+			sortBy: [SortDescriptor(\TelemetryEntity.time, order: .reverse)]
+		)
+		descriptor.fetchLimit = 1
+		return try context.fetch(descriptor).first
+	}
+
+	/// Issue #2040 (Stage 1): the `.airQualityMetrics` telemetry variant must be parsed and
+	/// persisted as a `metricsType == 3` row with the PM fields populated, and `has`-gating must
+	/// leave the unreported (environmental) fields as nil rather than storing a spurious 0.
+	@Test func airQualityTelemetry_persistsPMFieldsAsType3() async throws {
+		let nodeNum: UInt32 = 0x2004_AA04
+		let packet = try makeAirQualityTelemetryPacket(
+			from: nodeNum,
+			pm10Standard: 1,
+			pm25Standard: 2,
+			pm100Standard: 3,
+			reportedTime: 1_700_000_500
+		)
+
+		let mesh = MeshPackets(modelContainer: sharedModelContainer)
+		await mesh.telemetryPacket(packet: packet, connectedNode: Self.connectedNode)
+		await mesh.flushDebouncedSaves()
+
+		let latest = try fetchLatestAirQualityTelemetry(forNode: Int64(nodeNum))
+		#expect(latest != nil)
+		#expect(latest?.metricsType == 3)
+		#expect(latest?.pm10Standard == 1)
+		#expect(latest?.pm25Standard == 2)
+		#expect(latest?.pm100Standard == 3)
+		// Unreported environmental fields must stay nil (has-gating), not persist as 0.
+		#expect(latest?.pm10Environmental == nil)
+		#expect(latest?.pm25Environmental == nil)
+		#expect(latest?.pm100Environmental == nil)
+		#expect(latest?.nodeTelemetry?.num == Int64(nodeNum))
 	}
 }

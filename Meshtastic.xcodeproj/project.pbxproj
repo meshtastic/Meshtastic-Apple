@@ -41,6 +41,9 @@
 		231B3F212D087A4C0069A07D /* MetricTableColumn.swift in Sources */ = {isa = PBXBuildFile; fileRef = 231B3F202D087A4C0069A07D /* MetricTableColumn.swift */; };
 		231B3F222D087A4C0069A07D /* MetricsColumnList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 231B3F1F2D087A4C0069A07D /* MetricsColumnList.swift */; };
 		231B3F252D087C3C0069A07D /* EnvironmentDefaultColumns.swift in Sources */ = {isa = PBXBuildFile; fileRef = 231B3F242D087C3C0069A07D /* EnvironmentDefaultColumns.swift */; };
+		D9E2D2530DBAEBAE908F705A /* AirQualityDefaultColumns.swift in Sources */ = {isa = PBXBuildFile; fileRef = 560BEC731E8290A9DE5D87BA /* AirQualityDefaultColumns.swift */; };
+		45BA94472D98A71C4455A639 /* AirQualityDefaultSeries.swift in Sources */ = {isa = PBXBuildFile; fileRef = F51EFEEAA4AF3B42760093E5 /* AirQualityDefaultSeries.swift */; };
+		1937AD59460EECF5D340F686 /* AirQualityMetricsLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 163F1072895C377A3FA9080E /* AirQualityMetricsLog.swift */; };
 		231B3F272D0885240069A07D /* MetricsColumnDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 231B3F262D0885240069A07D /* MetricsColumnDetail.swift */; };
 		232ED4C32E2C5E89009DA392 /* TCPTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 232ED4C22E2C5E89009DA392 /* TCPTransport.swift */; };
 		232ED4C52E2C5EDD009DA392 /* TCPConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 232ED4C42E2C5EDD009DA392 /* TCPConnection.swift */; };
@@ -51,6 +54,7 @@
 		233E99BA2D849C7000CC3A77 /* PressureCompactWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 233E99B92D849C7000CC3A77 /* PressureCompactWidget.swift */; };
 		233E99BC2D849C8C00CC3A77 /* WindCompactWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 233E99BB2D849C8C00CC3A77 /* WindCompactWidget.swift */; };
 		233E99BE2D849D3200CC3A77 /* RadiationCompactWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 233E99BD2D849D3200CC3A77 /* RadiationCompactWidget.swift */; };
+		B27F2D7046759EE0F598A767 /* ParticulateMatterCompactWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = C603D09C8DA5703272994165 /* ParticulateMatterCompactWidget.swift */; };
 		233E99C12D849D6000CC3A77 /* DistanceCompactWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 233E99C02D849D6000CC3A77 /* DistanceCompactWidget.swift */; };
 		233E99C32D849D7A00CC3A77 /* WeightCompactWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 233E99C22D849D7A00CC3A77 /* WeightCompactWidget.swift */; };
 		233E99C52D84A0B600CC3A77 /* CompactWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 233E99C42D84A0B600CC3A77 /* CompactWidget.swift */; };
@@ -637,6 +641,9 @@
 		231B3F1F2D087A4C0069A07D /* MetricsColumnList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricsColumnList.swift; sourceTree = "<group>"; };
 		231B3F202D087A4C0069A07D /* MetricTableColumn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricTableColumn.swift; sourceTree = "<group>"; };
 		231B3F242D087C3C0069A07D /* EnvironmentDefaultColumns.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnvironmentDefaultColumns.swift; sourceTree = "<group>"; };
+		560BEC731E8290A9DE5D87BA /* AirQualityDefaultColumns.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AirQualityDefaultColumns.swift; sourceTree = "<group>"; };
+		F51EFEEAA4AF3B42760093E5 /* AirQualityDefaultSeries.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AirQualityDefaultSeries.swift; sourceTree = "<group>"; };
+		163F1072895C377A3FA9080E /* AirQualityMetricsLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AirQualityMetricsLog.swift; sourceTree = "<group>"; };
 		231B3F262D0885240069A07D /* MetricsColumnDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricsColumnDetail.swift; sourceTree = "<group>"; };
 		232ED4C22E2C5E89009DA392 /* TCPTransport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TCPTransport.swift; sourceTree = "<group>"; };
 		232ED4C42E2C5EDD009DA392 /* TCPConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TCPConnection.swift; sourceTree = "<group>"; };
@@ -648,6 +655,7 @@
 		233E99B92D849C7000CC3A77 /* PressureCompactWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PressureCompactWidget.swift; sourceTree = "<group>"; };
 		233E99BB2D849C8C00CC3A77 /* WindCompactWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindCompactWidget.swift; sourceTree = "<group>"; };
 		233E99BD2D849D3200CC3A77 /* RadiationCompactWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RadiationCompactWidget.swift; sourceTree = "<group>"; };
+		C603D09C8DA5703272994165 /* ParticulateMatterCompactWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParticulateMatterCompactWidget.swift; sourceTree = "<group>"; };
 		233E99C02D849D6000CC3A77 /* DistanceCompactWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DistanceCompactWidget.swift; sourceTree = "<group>"; };
 		233E99C22D849D7A00CC3A77 /* WeightCompactWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeightCompactWidget.swift; sourceTree = "<group>"; };
 		233E99C42D84A0B600CC3A77 /* CompactWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompactWidget.swift; sourceTree = "<group>"; };
@@ -1381,6 +1389,8 @@
 			isa = PBXGroup;
 			children = (
 				231B3F242D087C3C0069A07D /* EnvironmentDefaultColumns.swift */,
+				560BEC731E8290A9DE5D87BA /* AirQualityDefaultColumns.swift */,
+				F51EFEEAA4AF3B42760093E5 /* AirQualityDefaultSeries.swift */,
 				2373AE162D0A26620086C749 /* EnvironmentDefaultSeries.swift */,
 				231B3F262D0885240069A07D /* MetricsColumnDetail.swift */,
 			);
@@ -1397,6 +1407,7 @@
 				233E99BB2D849C8C00CC3A77 /* WindCompactWidget.swift */,
 				DDFEB3BA29900C1200EE7472 /* CurrentConditionsCompact.swift */,
 				233E99BD2D849D3200CC3A77 /* RadiationCompactWidget.swift */,
+				C603D09C8DA5703272994165 /* ParticulateMatterCompactWidget.swift */,
 				233E99C02D849D6000CC3A77 /* DistanceCompactWidget.swift */,
 				233E99C22D849D7A00CC3A77 /* WeightCompactWidget.swift */,
 				233E99C62D84A70900CC3A77 /* SoilCompactWidgets.swift */,
@@ -1891,6 +1902,7 @@
 				B990EE65E4D5CABBA4DD8DC2 /* MapWindow.swift */,
 				DD73FD1028750779000852D6 /* PositionLog.swift */,
 				DD4F23CC28779A3C001D37CB /* EnvironmentMetricsLog.swift */,
+				163F1072895C377A3FA9080E /* AirQualityMetricsLog.swift */,
 				6DEDA5592A957B8E00321D2E /* DetectionSensorLog.swift */,
 				DD15E4F42B8BFC8E00654F61 /* PaxCounterLog.swift */,
 				BCCA0BAA2F1C5C25007648E5 /* LocalStatsLog.swift */,
@@ -2975,6 +2987,9 @@
 				DD3D17E02C3FB67200561584 /* LocalWeatherConditions.swift in Sources */,
 				DD1933782B084F4200771CD5 /* Measurement.swift in Sources */,
 				DD4F23CD28779A3C001D37CB /* EnvironmentMetricsLog.swift in Sources */,
+				D9E2D2530DBAEBAE908F705A /* AirQualityDefaultColumns.swift in Sources */,
+				45BA94472D98A71C4455A639 /* AirQualityDefaultSeries.swift in Sources */,
+				1937AD59460EECF5D340F686 /* AirQualityMetricsLog.swift in Sources */,
 				DD93800E2BA74D0C008BEC06 /* ChannelForm.swift in Sources */,
 				DD41A61529AB0035003C5A37 /* NodeWeatherForecast.swift in Sources */,
 				DDB6ABD628AE742000384BA1 /* BluetoothConfig.swift in Sources */,
@@ -3194,6 +3209,7 @@
 				2519268A2C3BB1B200249DF5 /* ExchangePositionsButton.swift in Sources */,
 				DD86D40A287F04F100BAEB7A /* InvalidVersion.swift in Sources */,
 				233E99BE2D849D3200CC3A77 /* RadiationCompactWidget.swift in Sources */,
+				B27F2D7046759EE0F598A767 /* ParticulateMatterCompactWidget.swift in Sources */,
 				DDD94A502845C8F5004A87A0 /* DateTimeText.swift in Sources */,
 				23C2BE312EEB823900F6A997 /* NRFDFUSheet.swift in Sources */,
 				DDB6ABE228B13FB500384BA1 /* PositionConfigEnums.swift in Sources */,

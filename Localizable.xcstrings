@@ -1,6 +1,18 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Air Quality" : {
+      "comment" : "Node detail section header for particulate-matter air quality readings."
+    },
+    "Air Quality Metrics Log" : {
+      "comment" : "Navigation title and log link for the particulate-matter telemetry log."
+    },
+    "Delete all air quality metrics?" : {
+      "comment" : "Confirmation button to clear the air quality metrics log."
+    },
+    "No Air Quality Metrics" : {
+      "comment" : "Empty state shown when a node has no air quality telemetry."
+    },
     "%@ entered %@" : {
       "comment" : "Geofence notification body. First %@ is the node name, second %@ is the waypoint name."
     },
