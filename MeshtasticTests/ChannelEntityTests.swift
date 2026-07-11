@@ -57,9 +57,10 @@ final class ChannelEntityTests: XCTestCase {
         context.insert(message)
     }
 
-    /// A muted ("Hide Alerts") channel must report zero unread so it never badges the app icon or
-    /// the in-app Messages tab, while an unmuted channel still reports its real unread count.
-    @MainActor func testMutedChannelReportsZeroUnread() throws {
+    /// `ChannelEntity.unreadMessages` drives the in-app ChannelList unread indicator, so it must
+    /// report the channel's true unread count regardless of mute. Muting ("Hide Alerts") only
+    /// suppresses the notification + app-icon/Messages-tab badge, never the in-app unread state.
+    @MainActor func testMutedChannelStillReportsUnreadInApp() throws {
         let mutedIndex: Int32 = 91
         let unmutedIndex: Int32 = 92
 
@@ -78,13 +79,42 @@ final class ChannelEntityTests: XCTestCase {
         insertUnreadChannelMessage(channelIndex: unmutedIndex, messageId: 9_2001)
         try context.save()
 
-        // Muted channel: silent — contributes zero to the badge.
-        XCTAssertEqual(mutedChannel.unreadMessages(context: context), 0)
-        // Unmuted channel: unaffected by the mute filter.
-        XCTAssertEqual(unmutedChannel.unreadMessages(context: context), 1)
-
-        // Un-muting the channel restores its unread count.
-        mutedChannel.mute = false
+        // Muted channel: in-app unread indicator still sees its real unread count.
         XCTAssertEqual(mutedChannel.unreadMessages(context: context), 2)
+        // Unmuted channel: unaffected.
+        XCTAssertEqual(unmutedChannel.unreadMessages(context: context), 1)
+    }
+
+    /// The app-icon / Messages-tab badge, on the other hand, must exclude muted channels. That
+    /// filtering lives in the badge-aggregation path (`AppState.refreshBadgeCount`), so a muted
+    /// channel's unread never reaches the badge even though it still shows in-app. Asserted as a
+    /// delta (mute toggled on the same store state) so it stays robust against the shared
+    /// in-memory test container carrying data from other tests.
+    @MainActor func testBadgeCountExcludesMutedChannel() throws {
+        let channelIndex: Int32 = 93
+
+        let channel = ChannelEntity()
+        channel.index = channelIndex
+        channel.mute = false
+        context.insert(channel)
+
+        insertUnreadChannelMessage(channelIndex: channelIndex, messageId: 9_3001)
+        insertUnreadChannelMessage(channelIndex: channelIndex, messageId: 9_3002)
+        try context.save()
+
+        let appState = AppState(router: Router())
+
+        // Unmuted: the channel's 2 unread are included in the badge count.
+        appState.refreshBadgeCount(context: context)
+        let unmutedBadge = appState.unreadChannelMessages
+
+        // Muting removes exactly this channel's 2 unread from the badge; all other store data,
+        // and therefore every other channel's contribution, is unchanged between the two refreshes.
+        channel.mute = true
+        try context.save()
+        appState.refreshBadgeCount(context: context)
+        let mutedBadge = appState.unreadChannelMessages
+
+        XCTAssertEqual(unmutedBadge - mutedBadge, 2)
     }
 }
