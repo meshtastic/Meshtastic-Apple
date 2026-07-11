@@ -69928,6 +69928,17 @@
         }
       }
     },
+    "Remote Signed Admin: %@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Remote Signed Admin: %@"
+          }
+        }
+      }
+    },
     "Remove" : {
       "localizations" : {
         "da" : {
@@ -70527,6 +70538,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "請求 PKI 管理：%@"
+          }
+        }
+      }
+    },
+    "Request Signed Admin: %@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Request Signed Admin: %@"
           }
         }
       }

@@ -11,6 +11,24 @@ import OSLog
 import TipKit
 import MeshtasticProtobufs
 
+enum RemoteAdminWording {
+	struct ActivePresentation: Equatable {
+		let format: String
+		let systemImage: String
+		let representsVerifiedSignature: Bool
+	}
+
+	static func activePresentation(localOwnerIsLicensed: Bool) -> ActivePresentation {
+		localOwnerIsLicensed
+			? ActivePresentation(format: "Remote Signed Admin: %@", systemImage: "checkmark.shield", representsVerifiedSignature: true)
+			: ActivePresentation(format: "Remote PKI Admin: %@", systemImage: "av.remote", representsVerifiedSignature: false)
+	}
+
+	static func requestFormat(localOwnerIsLicensed: Bool) -> String {
+		localOwnerIsLicensed ? "Request Signed Admin: %@" : "Request PKI Admin: %@"
+	}
+}
+
 struct Settings: View {
 	@Environment(\.modelContext) private var context
 	@Environment(\.colorScheme) private var colorScheme
@@ -26,6 +44,11 @@ struct Settings: View {
 	/// See `NodeInfoEntity.adminPickerOrder`.
 	private var sortedNodes: [NodeInfoEntity] {
 		NodeInfoEntity.adminPickerOrder(nodes)
+	}
+
+	private var localOwnerIsLicensed: Bool {
+		guard let activeDeviceNum = accessoryManager.activeDeviceNum else { return false }
+		return nodes.first(where: { $0.num == activeDeviceNum })?.user?.isLicensed == true
 	}
 
 	@State private var selectedNode: Int = 0
@@ -573,11 +596,15 @@ struct Settings: View {
 												accessoryManager.activeConnection?.device.transportType.icon ?? Image("questionmark.circle")
 											}
 											.tag(Int(node.num))
-										} else if node.canRemoteAdmin && UserDefaults.enableAdministration && node.sessionPasskey != nil { /// Nodes using the new PKI system
+										} else if node.canRemoteAdmin && UserDefaults.enableAdministration && node.sessionPasskey != nil {
+											let presentation = RemoteAdminWording.activePresentation(localOwnerIsLicensed: localOwnerIsLicensed)
 											Label {
-												Text("Remote PKI Admin: \(node.user?.longName ?? "Unknown".localized)")
+												Text(String.localizedStringWithFormat(
+													presentation.format.localized,
+													node.user?.longName ?? "Unknown".localized
+												))
 											} icon: {
-												Image(systemName: "av.remote")
+												Image(systemName: presentation.systemImage)
 											}
 											.font(.caption2)
 											.tag(Int(node.num))
@@ -590,7 +617,10 @@ struct Settings: View {
 											.tag(Int(node.num))
 										} else if UserDefaults.enableAdministration && node.user?.pkiEncrypted ?? false {
 											Label {
-												Text("Request PKI Admin: \(node.user?.longName?.addingVariationSelectors ?? "Unknown".localized)")
+												Text(String.localizedStringWithFormat(
+													RemoteAdminWording.requestFormat(localOwnerIsLicensed: localOwnerIsLicensed).localized,
+													node.user?.longName?.addingVariationSelectors ?? "Unknown".localized
+												))
 											} icon: {
 												Image(systemName: "rectangle.and.hand.point.up.left")
 											}
