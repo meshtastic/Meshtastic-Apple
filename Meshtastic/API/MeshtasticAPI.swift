@@ -706,7 +706,11 @@ extension MeshtasticAPI {
 			Logger.services.warning("Unable to load bundled event_firmware.json")
 			return
 		}
-		await importEventEditions(decoded.editions)
+		// pruneMissing: false — the bundle is a *floor*, not authoritative. It must never delete
+		// an edition that a prior successful live refresh cached but that isn't in the bundled
+		// snapshot; that edition would otherwise vanish on every offline relaunch (the exact
+		// poor-connectivity-at-the-venue scenario this cache exists for).
+		await importEventEditions(decoded.editions, pruneMissing: false)
 		Logger.services.info("Loaded bundled event firmware (\(decoded.editions.count, privacy: .public) editions)")
 	}
 
@@ -740,15 +744,19 @@ extension MeshtasticAPI {
 			return
 		}
 
-		await importEventEditions(decoded.editions)
+		// pruneMissing: true — the live API is authoritative, so an edition it no longer lists is
+		// genuinely retired and should be removed from the cache.
+		await importEventEditions(decoded.editions, pruneMissing: true)
 		UserDefaults.lastEventFirmwareAPIUpdate = Date()
 		Logger.services.info("Refreshed event firmware from API (\(decoded.editions.count, privacy: .public) editions)")
 	}
 
-	/// Upsert the given editions into `EventFirmwareEntity` and delete rows no longer present.
-	/// Called with a non-empty list from both the bundled seed and the live refresh; the caller
-	/// guarantees an empty/failed fetch never reaches here (so the cache is never wiped).
-	private func importEventEditions(_ editions: [EventFirmwarePayload]) async {
+	/// Upsert the given editions into `EventFirmwareEntity`. When `pruneMissing` is true, also
+	/// delete rows not present in `editions` — this is reserved for the **authoritative** live-API
+	/// import. The bundled seed passes `pruneMissing: false` so it only upserts/seeds and never
+	/// deletes an edition cached from a prior successful API refresh. Called with a non-empty
+	/// list from both paths; the caller guarantees an empty/failed fetch never reaches here.
+	private func importEventEditions(_ editions: [EventFirmwarePayload], pruneMissing: Bool) async {
 		guard let container else { return }
 		await MainActor.run {
 			let context = container.mainContext
@@ -795,11 +803,13 @@ extension MeshtasticAPI {
 				entity.firmwareReleaseNotes = payload.firmware?.releaseNotes
 			}
 
-			// Delete editions no longer present in the authoritative payload.
-			let allDescriptor = FetchDescriptor<EventFirmwareEntity>()
-			if let all = try? context.fetch(allDescriptor) {
-				for row in all where !importedKeys.contains(row.edition) {
-					context.delete(row)
+			// Delete editions no longer present — only for the authoritative live-API import.
+			if pruneMissing {
+				let allDescriptor = FetchDescriptor<EventFirmwareEntity>()
+				if let all = try? context.fetch(allDescriptor) {
+					for row in all where !importedKeys.contains(row.edition) {
+						context.delete(row)
+					}
 				}
 			}
 

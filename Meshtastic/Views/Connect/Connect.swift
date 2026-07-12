@@ -42,9 +42,12 @@ struct Connect: View {
 	/// Stable identity of the node whose context menu opened the shutdown dialog, captured at tap
 	/// time so the confirmation can't drift to a different node if the connection changes first.
 	@State private var pendingShutdownNodeNum: Int64?
-	/// Resolved off-device branding for the connected event edition (nil when vanilla or not
-	/// yet cached). Fetched from the `EventFirmwareEntity` cache on connect / appear.
-	@State private var eventFirmware: EventFirmwareEntity?
+	/// All cached event-firmware editions, kept live via `@Query` so branding/lifecycle data
+	/// refreshes automatically once the bundled seed or a later background API refresh populates
+	/// or updates a row — no manual re-fetch wiring on connect / appear. This avoids a nil-cache
+	/// race where, if the edition was already known before the async cache load finished, the
+	/// post-event nudge (and branding) could otherwise never appear for the session.
+	@Query private var eventFirmwareEditions: [EventFirmwareEntity]
 	/// Presents the firmware-update flow from the post-event "return to standard firmware" nudge.
 	@State private var showFirmwareUpdate = false
 	/// Presents the tappable event info sheet (welcome, location, dates, links, firmware, theme).
@@ -572,9 +575,7 @@ struct Connect: View {
 		}
 		.onAppear {
 			updateNymeaDiscovery()
-			resolveEventFirmware()
 		}
-		.onChange(of: accessoryManager.firmwareEdition) { _, _ in resolveEventFirmware() }
 		.onDisappear { nymeaProvisioning.stopDiscovery() }
 		.onChange(of: scenePhase) { _, _ in updateNymeaDiscovery() }
 		.onChange(of: accessoryManager.isConnected) { _, _ in updateNymeaDiscovery() }
@@ -590,27 +591,21 @@ struct Connect: View {
 		}
 	}
 
+	/// The cached branding for the currently connected event edition, or nil when on vanilla
+	/// firmware or the edition isn't cached yet. Reads from the `@Query` results, so it updates
+	/// automatically as the bundled seed / background API refresh populates rows and as the
+	/// connected edition changes — branding and the post-event nudge appear/clear on their own.
+	private var eventFirmware: EventFirmwareEntity? {
+		guard accessoryManager.firmwareEdition.isEvent else { return nil }
+		let key = accessoryManager.firmwareEdition.editionKey
+		return eventFirmwareEditions.first { $0.edition == key }
+	}
+
 	/// The accent color for the ambient event wash, or nil when there's nothing to tint:
 	/// not on an event edition, the user opted out, or no cached accent color yet.
 	private var eventAccentWash: Color? {
 		guard accessoryManager.firmwareEdition.isEvent, useEventTheme else { return nil }
 		return eventFirmware?.accentColorValue
-	}
-
-	/// Resolve the off-device branding for the currently connected event edition from the
-	/// `EventFirmwareEntity` cache. Clears to nil for vanilla firmware so branding and the
-	/// post-event nudge disappear on return to standard firmware.
-	private func resolveEventFirmware() {
-		guard accessoryManager.firmwareEdition.isEvent else {
-			eventFirmware = nil
-			return
-		}
-		let key = accessoryManager.firmwareEdition.editionKey
-		var descriptor = FetchDescriptor<EventFirmwareEntity>(
-			predicate: #Predicate { $0.edition == key }
-		)
-		descriptor.fetchLimit = 1
-		eventFirmware = try? context.fetch(descriptor).first
 	}
 
 	/// Fetch only the latest device metrics battery level without faulting all telemetries.
