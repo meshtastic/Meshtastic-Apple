@@ -27,7 +27,9 @@ private func pmSeries(id: String, keyPath: KeyPath<TelemetryEntity, UInt32?>, na
 					x: .value("Time", time),
 					y: .value(series.abbreviatedName, value)
 				)
-				.interpolationMethod(.catmullRom)
+				// Linear (not Catmull-Rom): raw PM samples are sparse, and spline smoothing can
+				// overshoot between points and imply concentrations that were never measured.
+				.interpolationMethod(.linear)
 				.foregroundStyle(by: .value("Series", series.abbreviatedName))
 				.lineStyle(series.strokeStyle)
 				.alignsMarkStylesWithPlotArea()

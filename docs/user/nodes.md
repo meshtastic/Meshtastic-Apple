@@ -154,6 +154,12 @@ Tap any node to see the full detail view with hardware info, signal metrics, env
 
 ![Node Detail](../assets/screenshots/nodeDetail.png)
 
+### Air Quality
+
+Nodes with a particulate-matter sensor — reporting the firmware's Air Quality telemetry — show an **Air Quality** section with the latest PM2.5, PM1.0, and PM10 readings in µg/m³.
+
+An **Air Quality Metrics Log** entry appears under the node's logs, with a seven-day chart and table of the particulate-matter readings (configurable columns), a **Clear** action to delete stored readings, and **CSV export**.
+
 ### Signed Node
 
 If a node signs its broadcast packets, a green shield (🛡️) **Signed node** row appears in the detail view, marked **Verified automatically**. This means the radio has cryptographically verified an XEdDSA signature from this node (firmware 2.8 or later). Because a node's identity broadcast is itself signed, its name and identity are verified by extension.

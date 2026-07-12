@@ -95,13 +95,15 @@ Key model types:
 | `NodeInfoEntity` | A node heard on the mesh |
 | `MessageEntity` | A channel or direct message |
 | `PositionEntity` | A GPS position update |
-| `TelemetryEntity` | Device/environment sensor data |
+| `TelemetryEntity` | Device, environment, power, air-quality (PM), and local-stats sensor data, discriminated by `metricsType` |
 | `TraceRouteEntity` | A recorded trace route |
 | `WaypointEntity` | A shared map waypoint |
 
 ## Schema Migrations
 
 When you add, rename, or remove properties on a `@Model` type, you must provide a migration. Schema files live in `Meshtastic/Model/Schema/`.
+
+> **Note — V1 is unreleased.** While `MeshtasticSchemaV1` remains the initial, unshipped version, additive `@Model` changes go **directly into V1** rather than a new versioned schema + stage (see the comment in `MeshtasticMigrationPlan.swift`). For example, the air-quality particulate-matter fields on `TelemetryEntity` (`pm10/25/100Standard`, `pm10/25/100Environmental`) were added in place. Start adding `VersionedSchema` versions and migration stages only once V1 has shipped.
 
 ### Adding a New Schema Version
 

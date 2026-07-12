@@ -898,6 +898,11 @@ actor MeshPackets {
 		case .localStats(let m)?:
 			parts.append("stats")
 			parts.append("\(m.numOnlineNodes)/\(m.numTotalNodes) nodes")
+		case .airQualityMetrics(let m)?:
+			parts.append("aqi")
+			if m.hasPm25Standard { parts.append("PM2.5 \(m.pm25Standard)") }
+			if m.hasPm10Standard { parts.append("PM1.0 \(m.pm10Standard)") }
+			if m.hasPm100Standard { parts.append("PM10 \(m.pm100Standard)") }
 		default:
 			return ""
 		}
