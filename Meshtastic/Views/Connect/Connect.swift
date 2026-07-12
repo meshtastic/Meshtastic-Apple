@@ -42,6 +42,11 @@ struct Connect: View {
 	/// Stable identity of the node whose context menu opened the shutdown dialog, captured at tap
 	/// time so the confirmation can't drift to a different node if the connection changes first.
 	@State private var pendingShutdownNodeNum: Int64?
+	/// Resolved off-device branding for the connected event edition (nil when vanilla or not
+	/// yet cached). Fetched from the `EventFirmwareEntity` cache on connect / appear.
+	@State private var eventFirmware: EventFirmwareEntity?
+	/// Presents the firmware-update flow from the post-event "return to standard firmware" nudge.
+	@State private var showFirmwareUpdate = false
 
 	private var sortedAvailableDevices: [Device] {
 		accessoryManager.devices.sorted { lhs, rhs in
@@ -139,9 +144,7 @@ struct Connect: View {
 												.font(.callout).foregroundColor(Color.gray)
 										}
 										if accessoryManager.firmwareEdition.isEvent {
-											Text(accessoryManager.firmwareEdition.name)
-												.font(.callout)
-												.foregroundColor(.orange)
+											EventFirmwareBadge(edition: accessoryManager.firmwareEdition, info: eventFirmware)
 										}
 										switch accessoryManager.state {
 										case .subscribed:
@@ -272,6 +275,15 @@ struct Connect: View {
 											.foregroundColor(.red)
 											.font(.title)
 									}
+								}
+							}
+							// Post-event nudge: the connected device is on an event edition whose
+							// eventEnd (in its IANA zone) is in the past — prompt a return to standard
+							// firmware. A missing/unparseable eventEnd never counts as ended, and the
+							// banner clears automatically on return to .vanilla (isEvent == false).
+							if accessoryManager.firmwareEdition.isEvent, eventFirmware?.hasEnded() == true {
+								EventFirmwareEndedBanner(info: eventFirmware) {
+									showFirmwareUpdate = true
 								}
 							}
 						} else {
@@ -488,6 +500,11 @@ struct Connect: View {
 				.presentationDetents([.large])
 				.presentationDragIndicator(.automatic)
 		}
+		.sheet(isPresented: $showFirmwareUpdate) {
+			NavigationStack {
+				Firmware(node: safeNode)
+			}
+		}
 		.onChange(of: self.accessoryManager.state) { _, state in
 			// Clear stale node data when not subscribed to prevent showing previous connection's info
 			if state != .subscribed {
@@ -525,7 +542,11 @@ struct Connect: View {
 		}) { device in
 			WifiProvisioningView(preselectedDevice: device)
 		}
-		.onAppear { updateNymeaDiscovery() }
+		.onAppear {
+			updateNymeaDiscovery()
+			resolveEventFirmware()
+		}
+		.onChange(of: accessoryManager.firmwareEdition) { _, _ in resolveEventFirmware() }
 		.onDisappear { nymeaProvisioning.stopDiscovery() }
 		.onChange(of: scenePhase) { _, _ in updateNymeaDiscovery() }
 		.onChange(of: accessoryManager.isConnected) { _, _ in updateNymeaDiscovery() }
@@ -539,6 +560,22 @@ struct Connect: View {
 				try? await Task.sleep(for: .seconds(15))
 			}
 		}
+	}
+
+	/// Resolve the off-device branding for the currently connected event edition from the
+	/// `EventFirmwareEntity` cache. Clears to nil for vanilla firmware so branding and the
+	/// post-event nudge disappear on return to standard firmware.
+	private func resolveEventFirmware() {
+		guard accessoryManager.firmwareEdition.isEvent else {
+			eventFirmware = nil
+			return
+		}
+		let key = accessoryManager.firmwareEdition.editionKey
+		var descriptor = FetchDescriptor<EventFirmwareEntity>(
+			predicate: #Predicate { $0.edition == key }
+		)
+		descriptor.fetchLimit = 1
+		eventFirmware = try? context.fetch(descriptor).first
 	}
 
 	/// Fetch only the latest device metrics battery level without faulting all telemetries.
@@ -626,6 +663,67 @@ struct Connect: View {
 		Task {
 			try await accessoryManager.disconnect()
 		}
+	}
+}
+
+/// Compact event-firmware branding for the connected device. Uses the fetched display name
+/// and accent color, falling back to the enum name and `.accentColor` when the off-device
+/// metadata hasn't been cached yet (so a brand-new event still shows *something*).
+struct EventFirmwareBadge: View {
+	let edition: FirmwareEditions
+	let info: EventFirmwareEntity?
+
+	private var title: String { info?.displayName ?? edition.name }
+	private var tint: Color { info?.accentColorValue ?? .accentColor }
+
+	var body: some View {
+		VStack(alignment: .leading, spacing: 2) {
+			HStack(spacing: 4) {
+				Image(systemName: "sparkles")
+					.font(.caption)
+				Text(title)
+					.font(.callout.weight(.semibold))
+			}
+			.foregroundColor(tint)
+			if let welcome = info?.welcomeMessage, !welcome.isEmpty {
+				Text(welcome)
+					.font(.caption)
+					.foregroundColor(.secondary)
+			}
+		}
+	}
+}
+
+/// Persistent "the event is over — return to standard firmware" nudge, shown on the Connect
+/// screen when the connected device runs an event edition whose `eventEnd` has passed. Tapping
+/// it opens the firmware-update flow. Non-dismissible by design (mirrors Android): it clears
+/// only when the device returns to vanilla firmware.
+struct EventFirmwareEndedBanner: View {
+	let info: EventFirmwareEntity?
+	let onUpdate: () -> Void
+
+	var body: some View {
+		Button(action: onUpdate) {
+			HStack(alignment: .top, spacing: 10) {
+				Image(systemName: "exclamationmark.triangle.fill")
+					.foregroundColor(.orange)
+				VStack(alignment: .leading, spacing: 2) {
+					Text("Event has ended")
+						.font(.callout.weight(.semibold))
+						.foregroundColor(.primary)
+					Text("This device is running \(info?.displayName ?? "event") firmware. Update to standard Meshtastic firmware.")
+						.font(.caption)
+						.foregroundColor(.secondary)
+						.multilineTextAlignment(.leading)
+				}
+				Spacer()
+				Image(systemName: "chevron.right")
+					.font(.caption)
+					.foregroundColor(.secondary)
+			}
+			.padding(.vertical, 6)
+		}
+		.buttonStyle(.plain)
 	}
 }
 

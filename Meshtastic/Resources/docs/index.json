@@ -1032,25 +1032,25 @@
             "packet",
             "model",
             "history",
+            "data",
             "child",
             "app",
-            "data",
+            "swift",
+            "launch",
+            "device",
             "var",
             "true",
             "telemetry",
-            "swift",
+            "schema",
             "save",
             "position",
             "per",
             "messages",
-            "launch",
             "use",
             "type",
-            "set",
-            "schema",
-            "nodeinfoentity"
+            "set"
         ],
-        "charCount": 9726
+        "charCount": 10828
     },
     {
         "id": "tak-protocol",

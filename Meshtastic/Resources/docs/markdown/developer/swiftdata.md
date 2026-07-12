@@ -98,6 +98,21 @@ Key model types:
 | `TelemetryEntity` | Device/environment sensor data |
 | `TraceRouteEntity` | A recorded trace route |
 | `WaypointEntity` | A shared map waypoint |
+| `EventFirmwareEntity` | Cached off-device event-firmware branding/lifecycle metadata |
+
+### `EventFirmwareEntity` — off-device event branding cache
+
+`EventFirmwareEntity` is a **runtime cache**, not user data. A device only reports *which*
+event edition it runs via the `MyNodeInfo.firmwareEdition` proto enum (mapped to the
+`FirmwareEditions` Swift enum); the display data for each edition — name, welcome message,
+dates, IANA time zone, accent color, links, theme, and the event's own firmware build — lives
+off-device at `https://api.meshtastic.org/resource/eventFirmware` (version 2). `MeshtasticAPI`
+seeds the cache from the bundled `event_firmware.json` at launch (offline-first) and then
+refreshes it from the live endpoint in the background. The `edition` proto-enum name (e.g.
+`"DEFCON"`) is the unique join key against the connected device's reported edition. Because it
+is a rebuildable cache, a failed/empty refresh is a **no-op** that leaves existing rows intact
+(it never wipes the cache), and the row lives in the unreleased **V1** schema — adding it
+required no new `VersionedSchema`/`MigrationStage` (see below).
 
 ## Schema Migrations
 

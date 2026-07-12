@@ -118,8 +118,24 @@ final class NodeInfoEntity {
 <td><code>WaypointEntity</code></td>
 <td>A shared map waypoint</td>
 </tr>
+<tr>
+<td><code>EventFirmwareEntity</code></td>
+<td>Cached off-device event-firmware branding/lifecycle metadata</td>
+</tr>
 </tbody>
 </table>
+<h3><code>EventFirmwareEntity</code> — off-device event branding cache</h3>
+<p><code>EventFirmwareEntity</code> is a <strong>runtime cache</strong>, not user data. A device only reports <em>which</em>
+event edition it runs via the <code>MyNodeInfo.firmwareEdition</code> proto enum (mapped to the
+<code>FirmwareEditions</code> Swift enum); the display data for each edition — name, welcome message,
+dates, IANA time zone, accent color, links, theme, and the event's own firmware build — lives
+off-device at <code>https://api.meshtastic.org/resource/eventFirmware</code> (version 2). <code>MeshtasticAPI</code>
+seeds the cache from the bundled <code>event_firmware.json</code> at launch (offline-first) and then
+refreshes it from the live endpoint in the background. The <code>edition</code> proto-enum name (e.g.
+<code>&quot;DEFCON&quot;</code>) is the unique join key against the connected device's reported edition. Because it
+is a rebuildable cache, a failed/empty refresh is a <strong>no-op</strong> that leaves existing rows intact
+(it never wipes the cache), and the row lives in the unreleased <strong>V1</strong> schema — adding it
+required no new <code>VersionedSchema</code>/<code>MigrationStage</code> (see below).</p>
 <h2>Schema Migrations</h2>
 <p>When you add, rename, or remove properties on a <code>@Model</code> type, you must provide a migration. Schema files live in <code>Meshtastic/Model/Schema/</code>.</p>
 <h3>Adding a New Schema Version</h3>
