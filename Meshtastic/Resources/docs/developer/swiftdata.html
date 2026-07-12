@@ -108,7 +108,7 @@ final class NodeInfoEntity {
 </tr>
 <tr>
 <td><code>TelemetryEntity</code></td>
-<td>Device/environment sensor data</td>
+<td>Device, environment, power, air-quality (PM), and local-stats sensor data, discriminated by <code>metricsType</code></td>
 </tr>
 <tr>
 <td><code>TraceRouteEntity</code></td>
@@ -122,6 +122,7 @@ final class NodeInfoEntity {
 </table>
 <h2>Schema Migrations</h2>
 <p>When you add, rename, or remove properties on a <code>@Model</code> type, you must provide a migration. Schema files live in <code>Meshtastic/Model/Schema/</code>.</p>
+<div class="tips-callout"><strong>Note — V1 is unreleased.</strong> While <code>MeshtasticSchemaV1</code> remains the initial, unshipped version, additive <code>@Model</code> changes go <strong>directly into V1</strong> rather than a new versioned schema + stage (see the comment in <code>MeshtasticMigrationPlan.swift</code>). For example, the air-quality particulate-matter fields on <code>TelemetryEntity</code> (<code>pm10/25/100Standard</code>, <code>pm10/25/100Environmental</code>) were added in place. Start adding <code>VersionedSchema</code> versions and migration stages only once V1 has shipped.</div>
 <h3>Adding a New Schema Version</h3>
 <ol>
 <li>Create <code>Meshtastic/Model/Schema/MeshtasticSchemaV2.swift</code> with the updated models:</li>
