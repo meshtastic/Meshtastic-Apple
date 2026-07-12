@@ -142,4 +142,92 @@ struct EventFirmwareMetadataTests {
 		let entity = EventFirmwareEntity(edition: "OPEN_SAUCE")
 		#expect(entity.firmwareEdition == .openSauce)
 	}
+
+	// MARK: - Firmware build comparison
+
+	@Test func normalizedVersionStripsLeadingVAndWhitespace() {
+		#expect(EventFirmwareEntity.normalizedVersion("  v2.7.23  ") == "2.7.23")
+		#expect(EventFirmwareEntity.normalizedVersion("2.7.23") == "2.7.23")
+		#expect(EventFirmwareEntity.normalizedVersion(nil) == nil)
+		#expect(EventFirmwareEntity.normalizedVersion("") == nil)
+	}
+
+	@Test func firmwareComparisonMatchesOnEqualVersion() {
+		let entity = EventFirmwareEntity(edition: "HAMVENTION")
+		entity.firmwareVersion = "2.7.23.07741e6"
+		if case .matches = entity.firmwareComparison(againstDeviceVersion: "v2.7.23.07741e6") {} else {
+			Issue.record("expected .matches")
+		}
+	}
+
+	@Test func firmwareComparisonMatchesOnTruncatedDeviceVersion() {
+		// The device reports a shorter version than the full event build — still a match.
+		let entity = EventFirmwareEntity(edition: "HAMVENTION")
+		entity.firmwareVersion = "2.7.23.07741e6"
+		if case .matches = entity.firmwareComparison(againstDeviceVersion: "2.7.23") {} else {
+			Issue.record("expected .matches on prefix")
+		}
+	}
+
+	@Test func firmwareComparisonUpdateAvailableOnDifferentBuild() {
+		let entity = EventFirmwareEntity(edition: "HAMVENTION")
+		entity.firmwareVersion = "2.7.23.07741e6"
+		if case .updateAvailable = entity.firmwareComparison(againstDeviceVersion: "2.6.11.aaaaaaa") {} else {
+			Issue.record("expected .updateAvailable")
+		}
+	}
+
+	@Test func firmwareComparisonRespectsDotBoundary() {
+		// "2.7.2" is a bare-string prefix of "2.7.23" but a DIFFERENT version — must not match.
+		let entity = EventFirmwareEntity(edition: "HAMVENTION")
+		entity.firmwareVersion = "2.7.2"
+		if case .updateAvailable = entity.firmwareComparison(againstDeviceVersion: "2.7.23") {} else {
+			Issue.record("expected .updateAvailable across the dot boundary")
+		}
+	}
+
+	@Test func firmwareComparisonUnknownWhenVersionMissing() {
+		let entity = EventFirmwareEntity(edition: "DEFCON")
+		entity.firmwareVersion = nil
+		if case .unknown = entity.firmwareComparison(againstDeviceVersion: "2.7.23") {} else {
+			Issue.record("expected .unknown when event version missing")
+		}
+	}
+
+	// MARK: - Theme fonts
+
+	@Test func fontResolverRejectsUnavailableFamily() {
+		#expect(EventFirmwareFontResolver.isFamilyAvailable("NoSuchFontFamily_ZZZ") == false)
+		#expect(EventFirmwareFontResolver.isFamilyAvailable(nil) == false)
+		#expect(EventFirmwareFontResolver.isFamilyAvailable("") == false)
+	}
+
+	@Test func fontResolverDetectsSystemFamily() {
+		// Helvetica ships on every iOS device; case-insensitive lookup should find it.
+		#expect(EventFirmwareFontResolver.isFamilyAvailable("Helvetica") == true)
+		#expect(EventFirmwareFontResolver.isFamilyAvailable("helvetica") == true)
+	}
+
+	// MARK: - Palette & dates
+
+	@Test func paletteColorsSkipMalformedEntries() {
+		let entity = EventFirmwareEntity(edition: "DEFCON")
+		entity.themePalette = ["#0D294A", "not-a-color", "#E0004E"]
+		#expect(entity.paletteColors.count == 2)
+	}
+
+	@Test func formattedDateRangeProducesRange() {
+		let entity = EventFirmwareEntity(edition: "DEFCON")
+		entity.eventStart = "2026-08-06"
+		entity.eventEnd = "2026-08-09"
+		entity.timeZone = "America/Los_Angeles"
+		let range = entity.formattedDateRange
+		#expect(range != nil)
+		#expect(range?.contains("–") == true)
+	}
+
+	@Test func formattedDateRangeNilWhenNoDates() {
+		let entity = EventFirmwareEntity(edition: "DEFCON")
+		#expect(entity.formattedDateRange == nil)
+	}
 }

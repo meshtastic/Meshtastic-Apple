@@ -15,6 +15,7 @@
 import Foundation
 import SwiftData
 import SwiftUI
+import UIKit
 
 @Model
 final class EventFirmwareEntity {
@@ -209,5 +210,109 @@ extension EventFirmwareEntity {
 		components.month = month
 		components.day = day
 		return components
+	}
+
+	/// A human-readable, locale-aware event date range (e.g. "Aug 6 – 9, 2026"), or nil when no
+	/// dates parse. Uses `DateIntervalFormatter` so range separators and same-day collapsing
+	/// follow the user's locale.
+	var formattedDateRange: String? {
+		let zone: TimeZone? = timeZone.flatMap { TimeZone(identifier: $0) }
+		switch (eventStartDate, eventEndDate) {
+		case let (start?, end?):
+			let formatter = DateIntervalFormatter()
+			formatter.dateStyle = .medium
+			formatter.timeStyle = .none
+			if let zone { formatter.timeZone = zone }
+			return formatter.string(from: start, to: end)
+		case let (single?, nil), let (nil, single?):
+			let formatter = DateFormatter()
+			formatter.dateStyle = .medium
+			formatter.timeStyle = .none
+			if let zone { formatter.timeZone = zone }
+			return formatter.string(from: single)
+		default:
+			return nil
+		}
+	}
+}
+
+// MARK: - Firmware build comparison
+
+/// Result of comparing an edition's `firmware{}.version` against the connected device's
+/// reported firmware version. We deliberately avoid semantic ordering — event builds carry
+/// custom commit suffixes (e.g. `2.7.23.07741e6`) that don't order meaningfully — so any
+/// mismatch is surfaced as `updateAvailable` and the user decides.
+enum EventFirmwareVersionComparison {
+	case unknown          // missing version on either side
+	case matches          // device already runs the event build
+	case updateAvailable  // event build differs from the device
+}
+
+extension EventFirmwareEntity {
+
+	/// Normalize a version string for comparison: trim whitespace and strip a leading `v`.
+	static func normalizedVersion(_ version: String?) -> String? {
+		guard let value = version?.trimmingCharacters(in: .whitespacesAndNewlines), !value.isEmpty else {
+			return nil
+		}
+		return value.hasPrefix("v") ? String(value.dropFirst()) : value
+	}
+
+	/// Compare this edition's firmware build against the connected device's firmware version.
+	/// A *dot-boundary* prefix match either way counts as `matches` so a truncated device
+	/// version (e.g. `"2.7.23"`) still lines up with the full event build
+	/// (`"2.7.23.07741e6"`), without a bare-substring false positive (`"2.7.2"` must NOT match
+	/// `"2.7.23"`).
+	func firmwareComparison(againstDeviceVersion deviceVersion: String?) -> EventFirmwareVersionComparison {
+		guard let event = Self.normalizedVersion(firmwareVersion),
+			  let device = Self.normalizedVersion(deviceVersion) else {
+			return .unknown
+		}
+		if event == device || device.hasPrefix(event + ".") || event.hasPrefix(device + ".") {
+			return .matches
+		}
+		return .updateAvailable
+	}
+
+	/// The palette colors as SwiftUI `Color`s, skipping any malformed hex entries.
+	var paletteColors: [Color] {
+		themePalette.compactMap { Self.color(fromHex: $0) }
+	}
+}
+
+// MARK: - Theme fonts
+
+/// Resolves an edition's `theme.fonts` (Google Font *family names*, not URLs) into SwiftUI
+/// fonts. A family is used only when it is actually registered on this device (bundled or
+/// installed via a font provider); otherwise the system font is used. This mirrors the
+/// platform-specific font resolution the cross-platform spec calls for — the payload ships a
+/// family name, and each client resolves it however it can, falling back to the system font
+/// (design#120 / Android #6163).
+enum EventFirmwareFontResolver {
+
+	/// Whether a font *family* is available on this device.
+	static func isFamilyAvailable(_ family: String?) -> Bool {
+		guard let family = family?.trimmingCharacters(in: .whitespacesAndNewlines), !family.isEmpty else {
+			return false
+		}
+		let target = family.lowercased()
+		if UIFont.familyNames.contains(where: { $0.lowercased() == target }) {
+			return true
+		}
+		// Also accept an exact PostScript/face name (some families register only a face name).
+		return UIFont(name: family, size: 12) != nil
+	}
+
+	/// A SwiftUI font for `family` at `size` (scaling with Dynamic Type relative to `textStyle`),
+	/// or the system font for that text style when the family isn't available on this device.
+	static func font(family: String?, size: CGFloat, relativeTo textStyle: Font.TextStyle) -> Font {
+		guard isFamilyAvailable(family), let family else {
+			return .system(textStyle)
+		}
+		// Prefer the family's first concrete face name; fall back to the family string itself.
+		if let faceName = UIFont.fontNames(forFamilyName: family).first {
+			return .custom(faceName, size: size, relativeTo: textStyle)
+		}
+		return .custom(family, size: size, relativeTo: textStyle)
 	}
 }
