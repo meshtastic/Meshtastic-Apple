@@ -118,6 +118,11 @@ extension MetricsSeriesList {
 				keyPath: \.barometricPressure,
 				name: "Barometric Pressure",
 				abbreviatedName: "Bar",
+				// Pressure barely moves in absolute terms (typical sea-level range ~950–1050 hPa), so
+				// autoscaling tightly around the data makes ordinary weather swings look dramatic and
+				// buries the reading's real context. Anchor to a fixed sea-level domain; the shared axis
+				// still expands if a high-altitude node reports below this range.
+				initialYAxisRange: 950.0...1050.0,
 				visible: false,
 				foregroundStyle: { _ in
 						.linearGradient(

@@ -28,6 +28,18 @@ struct PowerMetricsLog: View {
 	@State private var powerMetrics: [TelemetryEntity] = []
 	@State private var chartData: [TelemetryEntity] = []
 	@State private var totalReadings = 0
+	@State private var isEditingChannelLabels = false
+	@State private var channelLabels: [String] = []
+
+	private func channelLabel(_ index: Int) -> String {
+		channelLabels.indices.contains(index) ? channelLabels[index] : PowerChannelLabelStore.defaultLabel(channel: index)
+	}
+
+	private func reloadChannelLabels() {
+		channelLabels = (0..<PowerChannelLabelStore.channelCount).map {
+			PowerChannelLabelStore.displayLabel(nodeNum: node.num, channel: $0)
+		}
+	}
 
 	var minMax: (min: Double, max: Double) {
 		let allValues = powerMetrics.flatMap { [
@@ -54,10 +66,19 @@ struct PowerMetricsLog: View {
 					GroupBox(label: Label("\(totalReadings) Readings Total", systemImage: "chart.xyaxis.line")) {
 
 						// allow switching between different channels
-						Picker("Select Channel", selection: $channelSelection) {
-							Text("Channel 1").tag(0)
-							Text("Channel 2").tag(1)
-							Text("Channel 3").tag(2)
+						HStack {
+							Picker("Select Channel", selection: $channelSelection) {
+								Text(channelLabel(0)).tag(0)
+								Text(channelLabel(1)).tag(1)
+								Text(channelLabel(2)).tag(2)
+							}
+							Button {
+								isEditingChannelLabels = true
+							} label: {
+								Image(systemName: "pencil")
+							}
+							.buttonStyle(.borderless)
+							.accessibilityLabel("Rename Channels")
 						}
 
 						Chart {
@@ -116,7 +137,7 @@ struct PowerMetricsLog: View {
 								Spacer()
 								HStack {
 									VStack {
-										Text("Channel 1")
+										Text(channelLabel(0))
 										HStack {
 											Image(systemName: "powerplug.fill")
 												.font(.caption)
@@ -134,7 +155,7 @@ struct PowerMetricsLog: View {
 								Spacer()
 								HStack {
 									VStack {
-										Text("Channel 2")
+										Text(channelLabel(1))
 										HStack {
 											Image(systemName: "powerplug.fill")
 												.font(.caption)
@@ -152,7 +173,7 @@ struct PowerMetricsLog: View {
 								Spacer()
 								HStack {
 									VStack {
-										Text("Channel 3")
+										Text(channelLabel(2))
 										HStack {
 											Image(systemName: "powerplug.fill")
 												.font(.caption)
@@ -269,10 +290,16 @@ struct PowerMetricsLog: View {
 			}
 		}
 		.onAppear {
+			reloadChannelLabels()
 			refreshMetrics()
 		}
 		.onChange(of: node.lastHeard) {
 			refreshMetrics()
+		}
+		.sheet(isPresented: $isEditingChannelLabels) {
+			PowerChannelLabelEditor(nodeNum: node.num) {
+				reloadChannelLabels()
+			}
 		}
 		.navigationTitle("Power Metrics Log")
 		.navigationBarTitleDisplayMode(.inline)

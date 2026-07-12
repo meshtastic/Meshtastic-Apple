@@ -74,6 +74,11 @@ Telemetry is visible in two places:
 1. **Node Detail** — tap any node in the Nodes tab. The Logs section shows the most recent device metrics and environment readings.
 2. **Telemetry Charts** — tap the chart icon in a node detail to see historical graphs for any telemetry type the node has reported.
 
+### Chart Details
+
+- **Power Metrics** — the chart and table label the three power-monitor channels as *Channel 1/2/3* by default. Tap the **pencil** next to the channel picker to rename them (for example *Solar*, *Battery*, *Load*) so you can tell which line is which. Names are saved per node.
+- **Environment** — barometric pressure is charted on a fixed ~950–1050 hPa axis so ordinary weather swings show in context instead of being exaggerated by tight autoscaling. The axis still expands automatically for high-altitude nodes that report below that range.
+
 ## Configuring Telemetry
 
 Go to **Settings → Telemetry** to enable telemetry modules and set reporting intervals:

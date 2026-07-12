@@ -399,6 +399,42 @@ struct MetricsVisibilityPersistenceTests {
 	}
 }
 
+// MARK: - Environment chart Y-axis domain (issue #2046)
+
+/// Barometric pressure should anchor to a fixed sea-level domain (~950–1050 hPa) instead of
+/// autoscaling tightly around its data, while still expanding for out-of-range readings.
+@Suite("Environment chart pressure axis")
+struct EnvironmentPressureAxisTests {
+
+	private func pressureOnlySeriesList() -> MetricsSeriesList {
+		let list = MetricsSeriesList.environmentDefaultChartSeries
+		for series in list.series {
+			series.visible = (series.id == "barometricPressure")
+		}
+		return list
+	}
+
+	@Test("Pressure uses a fixed ~950–1050 hPa domain for typical readings")
+	func pressureFixedDomain() {
+		let list = pressureOnlySeriesList()
+		let te = TelemetryEntity()
+		te.barometricPressure = 1013.0 // typical sea-level pressure
+		let range = list.chartRange(forData: [te])
+		#expect(range.lowerBound <= 950.0)
+		#expect(range.upperBound >= 1050.0)
+	}
+
+	@Test("Pressure axis still expands for readings beyond the fixed floor")
+	func pressureAxisExpandsBelowFloor() {
+		let list = pressureOnlySeriesList()
+		let te = TelemetryEntity()
+		te.barometricPressure = 900.0 // high-altitude node, below the 950 hPa floor
+		let range = list.chartRange(forData: [te])
+		#expect(range.lowerBound <= 900.0)
+		#expect(range.upperBound >= 1050.0)
+	}
+}
+
 // MARK: - Plottable floatValue extension
 
 @Suite("Plottable floatValue")
