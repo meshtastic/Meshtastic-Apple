@@ -651,7 +651,8 @@ enum ModemPresets: Int, CaseIterable, Identifiable {
 		case .longFast:
 			return -17.5
 		case .longSlow:
-			return -7.5
+			// SF12 demodulation floor (~-20 dB). Matches Android's LONG_SLOW value.
+			return -20
 		case .longTurbo:
 			return -12.5
 		case .longModerate:

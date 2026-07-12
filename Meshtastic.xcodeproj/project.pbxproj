@@ -260,6 +260,7 @@
 		C54AC9F4DA920A4F718CE21A /* DiscoveryScanEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAD14FA280F0A130730DEB93 /* DiscoveryScanEngineTests.swift */; };
 		DDBEAC0010000000000000D1 /* DiscoveredBeaconEntityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDBEAC0010000000000000C1 /* DiscoveredBeaconEntityTests.swift */; };
 		DDBEAC001000000000000131 /* ModemPresetFrequencySlotTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDBEAC001000000000000121 /* ModemPresetFrequencySlotTests.swift */; };
+		DDBEAC001000000000000132 /* ModemPresetSnrLimitTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDBEAC001000000000000122 /* ModemPresetSnrLimitTests.swift */; };
 		DDBEAC001000000000000151 /* BeaconAddVsSwitchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDBEAC001000000000000141 /* BeaconAddVsSwitchTests.swift */; };
 		C79BFC99EDCC89DD45082753 /* DiscoveryScanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5CA8BAC814CF82E127EEABF /* DiscoveryScanView.swift */; };
 		D02589957BD040969FCB8663 /* PositionEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = A97241903A924144A3EEB679 /* PositionEntity.swift */; };
@@ -827,6 +828,7 @@
 		AAD14FA280F0A130730DEB93 /* DiscoveryScanEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveryScanEngineTests.swift; sourceTree = "<group>"; };
 		DDBEAC0010000000000000C1 /* DiscoveredBeaconEntityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveredBeaconEntityTests.swift; sourceTree = "<group>"; };
 		DDBEAC001000000000000121 /* ModemPresetFrequencySlotTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModemPresetFrequencySlotTests.swift; sourceTree = "<group>"; };
+		DDBEAC001000000000000122 /* ModemPresetSnrLimitTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModemPresetSnrLimitTests.swift; sourceTree = "<group>"; };
 		DDBEAC001000000000000141 /* BeaconAddVsSwitchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeaconAddVsSwitchTests.swift; sourceTree = "<group>"; };
 		AAFF00000000000000000001 /* OfflineMapRegion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OfflineMapRegion.swift; path = Meshtastic/Helpers/Map/OfflineMapRegion.swift; sourceTree = SOURCE_ROOT; };
 		AAFF00000000000000000002 /* OfflineMapManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OfflineMapManager.swift; path = Meshtastic/Helpers/Map/OfflineMapManager.swift; sourceTree = SOURCE_ROOT; };
@@ -1642,6 +1644,7 @@
 				AAD14FA280F0A130730DEB93 /* DiscoveryScanEngineTests.swift */,
 				DDBEAC0010000000000000C1 /* DiscoveredBeaconEntityTests.swift */,
 				DDBEAC001000000000000121 /* ModemPresetFrequencySlotTests.swift */,
+				DDBEAC001000000000000122 /* ModemPresetSnrLimitTests.swift */,
 				DDBEAC001000000000000141 /* BeaconAddVsSwitchTests.swift */,
 				DDBEAC001000000000000201 /* MeshBeaconConfigEditorTests.swift */,
 				18295AFE686247778632C6DE /* NetworkConfigIPConversionTests.swift */,
@@ -2769,6 +2772,7 @@
 				C54AC9F4DA920A4F718CE21A /* DiscoveryScanEngineTests.swift in Sources */,
 				DDBEAC0010000000000000D1 /* DiscoveredBeaconEntityTests.swift in Sources */,
 				DDBEAC001000000000000131 /* ModemPresetFrequencySlotTests.swift in Sources */,
+				DDBEAC001000000000000132 /* ModemPresetSnrLimitTests.swift in Sources */,
 				DDBEAC001000000000000151 /* BeaconAddVsSwitchTests.swift in Sources */,
 				DDBEAC001000000000000211 /* MeshBeaconConfigEditorTests.swift in Sources */,
 				FDAF8808342245C4817C93EC /* NetworkConfigIPConversionTests.swift in Sources */,
