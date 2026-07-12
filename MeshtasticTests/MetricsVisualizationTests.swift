@@ -418,10 +418,10 @@ struct EnvironmentPressureAxisTests {
 	func pressureFixedDomain() {
 		let list = pressureOnlySeriesList()
 		let te = TelemetryEntity()
-		te.barometricPressure = 1013.0 // typical sea-level pressure
+		te.barometricPressure = 1013.0 // typical sea-level pressure, inside the fixed band
 		let range = list.chartRange(forData: [te])
-		#expect(range.lowerBound <= 950.0)
-		#expect(range.upperBound >= 1050.0)
+		#expect(range.lowerBound == 950.0)
+		#expect(range.upperBound == 1050.0)
 	}
 
 	@Test("Pressure axis still expands for readings beyond the fixed floor")
@@ -430,8 +430,8 @@ struct EnvironmentPressureAxisTests {
 		let te = TelemetryEntity()
 		te.barometricPressure = 900.0 // high-altitude node, below the 950 hPa floor
 		let range = list.chartRange(forData: [te])
-		#expect(range.lowerBound <= 900.0)
-		#expect(range.upperBound >= 1050.0)
+		#expect(range.lowerBound == 900.0)
+		#expect(range.upperBound == 1050.0)
 	}
 }
 
