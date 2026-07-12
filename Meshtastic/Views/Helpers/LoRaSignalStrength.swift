@@ -21,7 +21,7 @@ struct LoRaSignalStrengthMeter: View {
 				LoRaSignalStrengthIndicator(signalStrength: signalStrength)
 				Text("Signal \(signalStrength.description)").font(.footnote)
 				Text("SNR \(String(format: "%.2f", snr))dB")
-					.foregroundColor(getSnrColor(snr: snr, preset: ModemPresets.longFast))
+					.foregroundColor(getSnrColor(snr: snr, preset: preset))
 					.font(.caption2)
 				Text("RSSI \(rssi)dB")
 					.foregroundColor(getRssiColor(rssi: rssi))
