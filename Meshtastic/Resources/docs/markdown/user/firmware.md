@@ -30,6 +30,10 @@ The app can check for and install Meshtastic firmware updates directly on your c
 
 **Do not close the app or move out of Bluetooth range during a firmware update.**
 
+## During the Transfer
+
+While a supported OTA transfer is active, tap **Play Chirpy Hop** to play without leaving the updater. Firmware progress remains visible above the game, and the back button returns to the normal update screen at any time. Keep the Meshtastic app in the foreground until the update finishes.
+
 ## Update Channels
 
 | Channel | Description |
