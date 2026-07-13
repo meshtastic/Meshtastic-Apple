@@ -27,10 +27,13 @@ final class WaypointEntity {
 
 	/// Channel index this waypoint was broadcast on (0 = primary). Only meaningful when
 	/// `destinationNodeNum` is 0 — a DM'd waypoint's channel is irrelevant to where it's routed.
-	var destinationChannel: Int32 = 0
+	/// `private(set)`: write only through `destination` below, which keeps this and `destinationNodeNum`
+	/// mutually exclusive — setting them individually could otherwise leave both non-zero at once, an
+	/// invalid state `destination`'s getter would then have to silently pick a winner for.
+	private(set) var destinationChannel: Int32 = 0
 	/// Node this waypoint was privately sent to (or received from) as a DM. 0 means it's a channel
 	/// broadcast; see `destinationChannel`.
-	var destinationNodeNum: Int64 = 0
+	private(set) var destinationNodeNum: Int64 = 0
 
 	/// The recipient this waypoint is associated with, for re-opening it in the editor or resending it
 	/// (e.g. "delete for everyone") to the same destination it was originally exchanged on.

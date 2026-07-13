@@ -99,6 +99,11 @@ struct WaypointRecipientPicker: View {
 	@Query(sort: \NodeInfoEntity.lastHeard, order: .reverse)
 	private var allNodes: [NodeInfoEntity]
 
+	// Node rows can number in the thousands (see the type doc above), so `filteredNodes` is cached in
+	// @State and only recomputed on an actual filter/list change — not on every body re-render (e.g. a
+	// selection change toggling a checkmark) — to avoid re-scanning + re-labelling the full list needlessly.
+	@State private var filteredNodes: [NodeInfoEntity] = []
+
 	private var channels: [ChannelEntity] {
 		waypointChannels(for: node)
 	}
@@ -107,8 +112,8 @@ struct WaypointRecipientPicker: View {
 		waypointChannelIndexes(channels: channels)
 	}
 
-	private var filteredNodes: [NodeInfoEntity] {
-		waypointFilterNodes(allNodes, excluding: ownNodeNum, matching: filterText)
+	private func updateFilteredNodes() {
+		filteredNodes = waypointFilterNodes(allNodes, excluding: ownNodeNum, matching: filterText)
 	}
 
 	var body: some View {
@@ -150,6 +155,15 @@ struct WaypointRecipientPicker: View {
 					Button("Cancel") { dismiss() }
 				}
 			}
+		}
+		.onAppear {
+			updateFilteredNodes()
+		}
+		.onChange(of: filterText) {
+			updateFilteredNodes()
+		}
+		.onChange(of: allNodes.count) {
+			updateFilteredNodes()
 		}
 	}
 

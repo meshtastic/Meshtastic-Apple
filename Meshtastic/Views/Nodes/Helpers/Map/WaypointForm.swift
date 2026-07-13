@@ -43,6 +43,7 @@ struct WaypointForm: View {
 	@State private var connectedNode: NodeInfoEntity?
 	@State private var destination: WaypointDestination = .broadcastPrimary
 	@State private var showingRecipientPicker: Bool = false
+	@State private var destinationLabel: String = ""
 
 	var body: some View {
 		NavigationStack {
@@ -516,6 +517,10 @@ struct WaypointForm: View {
 		}
 		.task {
 			await fetchNodeInfo()
+			updateDestinationLabel()
+		}
+		.onChange(of: destination) {
+			updateDestinationLabel()
 		}
 		.onAppear {
 			if waypoint.id > 0 {
@@ -611,16 +616,18 @@ struct WaypointForm: View {
 		// No geofenceBounds -> leave boundingBox unset (cleared on the mesh).
 	}
 
-	/// Label for the "Send to" row: the destination's channel name, or a DM node's long/short name/id.
-	/// Delegates the actual fallback rules to `waypointDestinationLabel`, the same helper the recipient
-	/// picker uses, so the two never drift.
-	private var destinationLabel: String {
+	/// Recomputes the cached "Send to" row label. Delegates the actual fallback rules to
+	/// `waypointDestinationLabel`, the same helper the recipient picker uses, so the two never drift.
+	/// Called explicitly (on destination/connectedNode changes) rather than left as a computed property,
+	/// since a computed property here would re-run this SwiftData fetch on every unrelated body
+	/// re-render (e.g. every keystroke in the name/description fields).
+	private func updateDestinationLabel() {
 		var matchedNode: [NodeInfoEntity] = []
 		if case let .user(num) = destination {
 			let descriptor = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate<NodeInfoEntity> { $0.num == num })
 			matchedNode = (try? context.fetch(descriptor)) ?? []
 		}
-		return waypointDestinationLabel(destination, channels: waypointChannels(for: connectedNode), nodes: matchedNode, node: connectedNode)
+		destinationLabel = waypointDestinationLabel(destination, channels: waypointChannels(for: connectedNode), nodes: matchedNode, node: connectedNode)
 	}
 
 	@MainActor
