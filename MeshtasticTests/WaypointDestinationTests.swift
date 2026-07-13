@@ -163,6 +163,29 @@ struct WaypointRecipientLabelTests {
 	func disconnectedFallsBackToGenericBroadcast() {
 		#expect(waypointChannelLabel(index: 0, channels: [], node: nil) == "Broadcast".localized)
 	}
+
+	@Test("A node with a non-preset LoRa config falls back to 'Custom'")
+	func nonPresetLoRaConfigFallsBackToCustom() {
+		let node = NodeInfoEntity()
+		node.num = 123
+		let loRaConfig = LoRaConfigEntity()
+		loRaConfig.usePreset = false
+		node.loRaConfig = loRaConfig
+
+		#expect(waypointChannelLabel(index: 0, channels: [], node: node) == "Custom".localized)
+	}
+
+	@Test("An unresolvable modemPreset rawValue falls back to 'LongFast', matching the Channels settings screen")
+	func unresolvableModemPresetFallsBackToLongFast() {
+		let node = NodeInfoEntity()
+		node.num = 123
+		let loRaConfig = LoRaConfigEntity()
+		loRaConfig.usePreset = true
+		loRaConfig.modemPreset = 99 // no ModemPresets case has this rawValue
+		node.loRaConfig = loRaConfig
+
+		#expect(waypointChannelLabel(index: 0, channels: [], node: node) == "LongFast")
+	}
 }
 
 @Suite("Recipient picker filtering")

@@ -713,7 +713,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 						Logger.mesh.error("🕸️ Unable to determine connectedNodeNum for waypoint packet. Skipping.")
 						return
 					}
-					await MeshPackets.shared.waypointPacket(packet: packet, myNodeNum: UInt32(connectedNodeNum))
+					await MeshPackets.shared.waypointPacket(packet: packet, myNodeNum: UInt32(truncatingIfNeeded: connectedNodeNum))
 					// Broadcast waypoint to TAK clients
 					if let waypoint = try? Waypoint(serializedBytes: data.payload) {
 						Logger.tak.info("WAYPOINT PARSED: \(waypoint.name)")

@@ -75,11 +75,7 @@ struct Channels: View {
 
 	private func normalizeDuplicateChannelsIfNeeded() {
 		guard let channels = node.myInfo?.channels else { return }
-		var uniqueChannels: [Int32: ChannelEntity] = [:]
-		for channel in channels {
-			uniqueChannels[channel.index] = channel
-		}
-		let deduped = uniqueChannels.values.sorted { $0.index < $1.index }
+		let deduped = dedupedChannels(for: node)
 		guard deduped.count != channels.count else { return }
 		node.myInfo?.channels = deduped
 		do {

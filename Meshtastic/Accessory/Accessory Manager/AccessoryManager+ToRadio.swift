@@ -847,7 +847,11 @@ extension AccessoryManager {
 		switch destination {
 		case let .channel(index):
 			meshPacket.to = Constants.maximumNodeNum
-			meshPacket.channel = UInt32(index)
+			// truncatingIfNeeded, not UInt32(index): index round-trips from an incoming packet's
+			// channel field via Int32(truncatingIfNeeded:), which can produce a negative Int32 from a
+			// malformed/out-of-range value — a trapping UInt32(_:) here would crash on resend (e.g.
+			// "delete for everyone") for a waypoint that was never valid to begin with.
+			meshPacket.channel = UInt32(truncatingIfNeeded: index)
 		case let .user(destNum):
 			meshPacket.to = UInt32(destNum)
 			// Waypoint DMs have no source-channel context to inherit (unlike sendMessage, which is always
