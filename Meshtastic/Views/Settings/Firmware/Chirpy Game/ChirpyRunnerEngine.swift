@@ -9,7 +9,7 @@ enum ChirpyRunnerPhase: Equatable {
 enum ChirpyObstacleKind: Hashable {
 	case tallCactus
 	case cactusCluster
-	case flyingPacket
+	case flyingBird
 }
 
 struct ChirpyRunnerEngine: Equatable {
@@ -49,7 +49,7 @@ struct ChirpyRunnerEngine: Equatable {
 		case 1, 4:
 			return .cactusCluster
 		case 3:
-			return .flyingPacket
+			return .flyingBird
 		default:
 			return .tallCactus
 		}
@@ -142,7 +142,7 @@ struct ChirpyRunnerEngine: Equatable {
 			Self.obstacleWidth
 		case .cactusCluster:
 			0.115
-		case .flyingPacket:
+		case .flyingBird:
 			0.1
 		}
 		let horizontalRange = (Self.playerWidth + obstacleWidth) * Self.horizontalHitboxScale
@@ -159,7 +159,7 @@ struct ChirpyRunnerEngine: Equatable {
 			0.0...(Self.obstacleHeight * 0.88)
 		case .cactusCluster:
 			0.0...0.132
-		case .flyingPacket:
+		case .flyingBird:
 			0.115...0.195
 		}
 		return playerTop > obstacleRange.lowerBound && playerBottom < obstacleRange.upperBound

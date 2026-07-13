@@ -384,7 +384,7 @@ struct ChirpyOTARunnerTests {
 	@Test func crouchingClearsALowFlyingObstacle() {
 		var standing = ChirpyRunnerEngine(
 			obstacleX: ChirpyRunnerEngine.playerX,
-			obstacleKind: .flyingPacket
+			obstacleKind: .flyingBird
 		)
 		standing.startRunning()
 		standing.advance(by: 1.0 / 120.0)
@@ -392,7 +392,7 @@ struct ChirpyOTARunnerTests {
 
 		var crouching = ChirpyRunnerEngine(
 			obstacleX: ChirpyRunnerEngine.playerX,
-			obstacleKind: .flyingPacket
+			obstacleKind: .flyingBird
 		)
 		crouching.startRunning()
 		crouching.setCrouching(true)
@@ -407,7 +407,7 @@ struct ChirpyOTARunnerTests {
 
 		#expect(kinds.contains(.tallCactus))
 		#expect(kinds.contains(.cactusCluster))
-		#expect(kinds.contains(.flyingPacket))
+		#expect(kinds.contains(.flyingBird))
 	}
 
 	@Test func OTAStatusClampsProgressAndOnlyAllowsPlayDuringTransfer() {

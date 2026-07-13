@@ -232,8 +232,8 @@ private extension ChirpyRunnerScene {
 		case .cactusCluster:
 			addSaguaro(to: obstacle, x: -25, height: 68)
 			addSaguaro(to: obstacle, x: 18, height: 84)
-		case .flyingPacket:
-			addFlyingPacket(to: obstacle)
+		case .flyingBird:
+			addFlyingBird(to: obstacle)
 		}
 		addChild(obstacle)
 	}
@@ -268,51 +268,69 @@ private extension ChirpyRunnerScene {
 		cactus.addChild(arm)
 	}
 
-	private func addFlyingPacket(to node: SKNode) {
-		let packet = SKNode()
-		packet.position.y = size.height * 0.115
+	private func addFlyingBird(to node: SKNode) {
+		let bird = SKNode()
+		bird.position.y = size.height * 0.145
 
-		let body = SKShapeNode(rectOf: CGSize(width: 58, height: 28), cornerRadius: 7)
+		let body = SKShapeNode(ellipseOf: CGSize(width: 62, height: 32))
 		body.fillColor = inkColor
 		body.strokeColor = .clear
-		packet.addChild(body)
+		bird.addChild(body)
 
-		let nosePath = CGMutablePath()
-		nosePath.move(to: CGPoint(x: 27, y: -14))
-		nosePath.addLine(to: CGPoint(x: 45, y: 0))
-		nosePath.addLine(to: CGPoint(x: 27, y: 14))
-		nosePath.closeSubpath()
-		let nose = SKShapeNode(path: nosePath)
-		nose.fillColor = inkColor
-		nose.strokeColor = .clear
-		packet.addChild(nose)
+		let head = SKShapeNode(circleOfRadius: 14)
+		head.fillColor = inkColor
+		head.strokeColor = .clear
+		head.position = CGPoint(x: -29, y: 7)
+		bird.addChild(head)
 
-		let upperWing = makePacketWing(isUpper: true)
-		upperWing.name = "upperWing"
-		packet.addChild(upperWing)
+		let beakPath = CGMutablePath()
+		beakPath.move(to: CGPoint(x: -40, y: 13))
+		beakPath.addLine(to: CGPoint(x: -64, y: 5))
+		beakPath.addLine(to: CGPoint(x: -40, y: 1))
+		beakPath.closeSubpath()
+		let beak = SKShapeNode(path: beakPath)
+		beak.fillColor = inkColor
+		beak.strokeColor = .clear
+		bird.addChild(beak)
 
-		let lowerWing = makePacketWing(isUpper: false)
-		lowerWing.name = "lowerWing"
-		packet.addChild(lowerWing)
+		let tailPath = CGMutablePath()
+		tailPath.move(to: CGPoint(x: 27, y: 8))
+		tailPath.addLine(to: CGPoint(x: 51, y: 21))
+		tailPath.addLine(to: CGPoint(x: 42, y: 3))
+		tailPath.addLine(to: CGPoint(x: 54, y: -10))
+		tailPath.addLine(to: CGPoint(x: 26, y: -5))
+		tailPath.closeSubpath()
+		let tail = SKShapeNode(path: tailPath)
+		tail.fillColor = inkColor
+		tail.strokeColor = .clear
+		bird.addChild(tail)
+
+		let wing = makeBirdWing()
+		wing.name = "birdWing"
+		bird.addChild(wing)
 
 		let eye = SKShapeNode(circleOfRadius: 3)
 		eye.fillColor = UIColor(white: 0.97, alpha: 1)
 		eye.strokeColor = .clear
-		eye.position = CGPoint(x: 17, y: 5)
-		packet.addChild(eye)
-		node.addChild(packet)
+		eye.position = CGPoint(x: -33, y: 11)
+		bird.addChild(eye)
+		node.addChild(bird)
 	}
 
-	private func makePacketWing(isUpper: Bool) -> SKShapeNode {
-		let direction: CGFloat = isUpper ? 1 : -1
+	private func makeBirdWing() -> SKShapeNode {
 		let path = CGMutablePath()
-		path.move(to: CGPoint(x: -10, y: direction * 5))
-		path.addLine(to: CGPoint(x: -38, y: direction * 28))
-		path.addLine(to: CGPoint(x: 8, y: direction * 11))
+		path.move(to: CGPoint(x: -10, y: 5))
+		path.addCurve(
+			to: CGPoint(x: 18, y: 8),
+			control1: CGPoint(x: -3, y: 35),
+			control2: CGPoint(x: 13, y: 42)
+		)
+		path.addLine(to: CGPoint(x: 9, y: -4))
 		path.closeSubpath()
 		let wing = SKShapeNode(path: path)
 		wing.fillColor = inkColor
 		wing.strokeColor = .clear
+		wing.position = CGPoint(x: 2, y: 5)
 		return wing
 	}
 
@@ -341,28 +359,25 @@ private extension ChirpyRunnerScene {
 
 		switch runner.phase {
 		case .ready, .gameOver:
-			chirpy.size = CGSize(width: 128, height: 168)
 			chirpy.texture = idleTexture
 		case .running where runner.playerY > 0.012:
-			chirpy.size = CGSize(width: 128, height: 168)
 			chirpy.texture = jumpTexture
 		case .running where runner.isCrouching:
-			chirpy.size = CGSize(width: 150, height: 105)
 			chirpy.texture = crouchTexture
 		case .running:
-			chirpy.size = CGSize(width: 128, height: 168)
-			let frame = Int(sceneTime * 7) % runTextures.count
+			let frame = Int(sceneTime * 12) % runTextures.count
 			chirpy.texture = runTextures[frame]
 		}
 	}
 
 	func updateObstacleAnimation() {
-		guard runner.obstacleKind == .flyingPacket else {
+		guard runner.obstacleKind == .flyingBird else {
 			return
 		}
-		let flap = CGFloat(sin(sceneTime * 13)) * 0.22
-		obstacle.childNode(withName: "//upperWing")?.zRotation = flap
-		obstacle.childNode(withName: "//lowerWing")?.zRotation = -flap
+		let flap = CGFloat(sin(sceneTime * 12))
+		let wing = obstacle.childNode(withName: "//birdWing")
+		wing?.zRotation = flap * 0.32
+		wing?.yScale = 0.82 + (abs(flap) * 0.18)
 	}
 
 	func showGameOver() {
