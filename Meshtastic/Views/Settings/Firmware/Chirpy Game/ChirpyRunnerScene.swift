@@ -10,7 +10,13 @@ final class ChirpyRunnerScene: SKScene {
 
 	private let runTextures = [
 		SKTexture(imageNamed: "ChirpyRun1"),
-		SKTexture(imageNamed: "ChirpyRun2")
+		SKTexture(imageNamed: "ChirpyRun2"),
+		SKTexture(imageNamed: "ChirpyRun3"),
+		SKTexture(imageNamed: "ChirpyRun4"),
+		SKTexture(imageNamed: "ChirpyRun5"),
+		SKTexture(imageNamed: "ChirpyRun6"),
+		SKTexture(imageNamed: "ChirpyRun7"),
+		SKTexture(imageNamed: "ChirpyRun8")
 	]
 	private let jumpTexture = SKTexture(imageNamed: "ChirpyJump")
 	private let idleTexture = SKTexture(imageNamed: "ChirpyIdle")
@@ -365,7 +371,8 @@ private extension ChirpyRunnerScene {
 		case .running where runner.isCrouching:
 			chirpy.texture = crouchTexture
 		case .running:
-			let frame = Int(sceneTime * 12) % runTextures.count
+			let cadence = 14 + (ChirpyRunnerEngine.speed(forScore: runner.score) * 8)
+			let frame = Int(sceneTime * cadence) % runTextures.count
 			chirpy.texture = runTextures[frame]
 		}
 	}
