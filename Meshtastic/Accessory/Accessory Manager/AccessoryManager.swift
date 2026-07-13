@@ -705,7 +705,15 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 					}
 				case .waypointApp:
 					Logger.tak.info("WAYPOINT APP CASE REACHED")
-					await MeshPackets.shared.waypointPacket(packet: packet, myNodeNum: self.activeDeviceNum.map(UInt32.init))
+					// Matches the .nodeinfoApp guard below: without a confirmed connectedNodeNum, waypointDestination
+					// can't tell whether we sent this DM ourselves or received it, and would rather skip than guess
+					// wrong (misattributing a DM we sent to ourselves instead of the real recipient). Self-healing —
+					// waypoints get rebroadcast/resynced later once we're fully connected.
+					guard let connectedNodeNum = self.activeDeviceNum else {
+						Logger.mesh.error("🕸️ Unable to determine connectedNodeNum for waypoint packet. Skipping.")
+						return
+					}
+					await MeshPackets.shared.waypointPacket(packet: packet, myNodeNum: UInt32(connectedNodeNum))
 					// Broadcast waypoint to TAK clients
 					if let waypoint = try? Waypoint(serializedBytes: data.payload) {
 						Logger.tak.info("WAYPOINT PARSED: \(waypoint.name)")

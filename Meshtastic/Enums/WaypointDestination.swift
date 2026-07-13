@@ -45,7 +45,7 @@ extension MeshPacket {
 /// back to `packet.from`, the sender.
 func waypointDestination(packet: MeshPacket, myNodeNum: UInt32?) -> WaypointDestination {
 	if packet.isBroadcast {
-		return .channel(Int32(packet.channel))
+		return .channel(Int32(truncatingIfNeeded: packet.channel))
 	}
 	let contact = (myNodeNum != nil && packet.from == myNodeNum) ? packet.to : packet.from
 	return .user(Int64(contact))
