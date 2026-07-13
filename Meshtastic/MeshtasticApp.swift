@@ -27,10 +27,20 @@ struct MeshtasticAppleApp: App {
 	@State var incomingUrl: URL?
 
 	private static let isRunningTests = NSClassFromString("XCTestCase") != nil || ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
+	private static let isChirpyOTADemo: Bool = {
+		#if DEBUG
+		return CommandLine.arguments.contains("--chirpy-ota-demo")
+		#else
+		return false
+		#endif
+	}()
+	private static var shouldInitializeAppServices: Bool {
+		!isRunningTests && !isChirpyOTADemo
+	}
 
 	init() {
 
-		let persistenceController: PersistenceController? = Self.isRunningTests ? nil : PersistenceController.shared
+		let persistenceController: PersistenceController? = Self.shouldInitializeAppServices ? PersistenceController.shared : nil
 #if DEBUG
 		let performanceSeedConfiguration = PerformanceSeedData.configuration
 		if let performanceSeedConfiguration {
@@ -45,7 +55,7 @@ struct MeshtasticAppleApp: App {
 			router: Router()
 		)
 
-		if !Self.isRunningTests {
+		if Self.shouldInitializeAppServices {
 			// Initialize Datadog
 			// RUM Client Tokens are NOT secret
 			let appID = "79fe92a9-74c9-4c8f-ba63-6308384ecfa9"
@@ -124,7 +134,7 @@ struct MeshtasticAppleApp: App {
 		}
 #endif
 
-		if !Self.isRunningTests {
+		if Self.shouldInitializeAppServices {
 			// Initialize map data manager
 			MapDataManager.shared.initialize()
 
@@ -180,6 +190,8 @@ struct MeshtasticAppleApp: App {
 			Group {
 			if Self.isRunningTests {
 				Color.clear
+			} else if Self.isChirpyOTADemo {
+				FirmwareUpdateGameDemoHost()
 			} else {
 				ContentView(
 					appState: appState,

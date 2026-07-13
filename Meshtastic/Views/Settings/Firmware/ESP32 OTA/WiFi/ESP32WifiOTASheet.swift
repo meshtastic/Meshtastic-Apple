@@ -26,6 +26,7 @@ struct ESP32WifiOTASheet: View {
 	
 	@State var alreadyRebooted: Bool = false
 	@State var inRetryWorkflow = false
+	@State private var showChirpyGame = false
 
 	init(binFileURL: URL, host: String? = nil, onUpdateComplete: (() -> Void)? = nil) {
 		self.onUpdateComplete = onUpdateComplete
@@ -95,6 +96,13 @@ struct ESP32WifiOTASheet: View {
 					.listRowBackground(Color.clear)
 				}
 				.listRowSeparator(.hidden)
+
+				if ota.otaState.gamePhase.isActive {
+					Section {
+						FirmwareUpdateGameButton(isPresented: $showChirpyGame, status: gameStatus)
+					}
+					.textCase(nil)
+				}
 			}
 			.listSectionSpacing(.compact)
 			.navigationTitle("ESP32 WiFi Updater")
@@ -119,9 +127,19 @@ struct ESP32WifiOTASheet: View {
 			}
 		}
 		.interactiveDismissDisabled(true)
+		.firmwareUpdateGame(isPresented: $showChirpyGame, status: gameStatus)
 	}
 	
 	// MARK: - Component Views
+
+	private var gameStatus: FirmwareUpdateGameStatus {
+		FirmwareUpdateGameStatus(
+			title: "ESP32 Wi-Fi OTA",
+			message: ota.statusMessage.isEmpty ? ota.otaState.rawValue : ota.statusMessage,
+			progress: ota.progress,
+			phase: ota.otaState.gamePhase
+		)
+	}
 	
 	@ViewBuilder
 	func retryButton() -> some View {

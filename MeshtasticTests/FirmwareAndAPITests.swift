@@ -281,3 +281,131 @@ struct MeshtasticAPIURLTests {
 		#expect(MeshtasticAPI.imageURLPrefix.absoluteString.contains("devices"))
 	}
 }
+
+// MARK: - Chirpy OTA runner
+
+@Suite("Chirpy OTA runner")
+struct ChirpyOTARunnerTests {
+
+	@Test func firstTapStartsTheRunAndJumps() {
+		var runner = ChirpyRunnerEngine(obstacleX: 0.8)
+
+		runner.primaryAction()
+
+		#expect(runner.phase == .running)
+		#expect(runner.verticalVelocity > 0)
+	}
+
+	@Test func aTimelyJumpClearsTheFirstObstacle() {
+		var runner = ChirpyRunnerEngine()
+		runner.primaryAction()
+
+		for _ in 0..<48 {
+			runner.advance(by: 1.0 / 60.0)
+		}
+
+		#expect(runner.phase == .running)
+		#expect(runner.score == 1)
+	}
+
+	@Test func stayingOnTheGroundHitsTheObstacle() {
+		var runner = ChirpyRunnerEngine(obstacleX: 0.38)
+		runner.startRunning()
+
+		for _ in 0..<40 where runner.phase == .running {
+			runner.advance(by: 1.0 / 60.0)
+		}
+
+		#expect(runner.phase == .gameOver)
+	}
+
+	@Test func collisionBoxesAreForgivingAtTheEdge() {
+		var runner = ChirpyRunnerEngine(obstacleX: ChirpyRunnerEngine.playerX + 0.075)
+		runner.startRunning()
+		runner.advance(by: 1.0 / 60.0)
+
+		#expect(runner.phase == .running)
+	}
+
+	@Test func restartClearsScoreAndImmediatelyJumps() {
+		var runner = ChirpyRunnerEngine(obstacleX: ChirpyRunnerEngine.playerX)
+		runner.startRunning()
+		runner.advance(by: 1.0 / 60.0)
+		#expect(runner.phase == .gameOver)
+
+		runner.primaryAction()
+
+		#expect(runner.phase == .running)
+		#expect(runner.score == 0)
+		#expect(runner.verticalVelocity > 0)
+	}
+
+	@Test func difficultyIncreasesButRemainsCapped() {
+		#expect(ChirpyRunnerEngine.speed(forScore: 0) == 0.5)
+		#expect(ChirpyRunnerEngine.speed(forScore: 20) > ChirpyRunnerEngine.speed(forScore: 5))
+		#expect(ChirpyRunnerEngine.speed(forScore: 10_000) == 0.88)
+	}
+
+	@Test func reactingToApproachingObstaclesClearsSeveralObstacles() {
+		var runner = ChirpyRunnerEngine()
+		runner.primaryAction()
+
+		for _ in 0..<(60 * 14) {
+			if runner.obstacleX < 0.43, runner.playerY <= 0.012 {
+				runner.primaryAction()
+			}
+			runner.advance(by: 1.0 / 60.0)
+		}
+
+		#expect(runner.phase == .running)
+		#expect(runner.score >= 5)
+	}
+
+	@Test func OTAStatusClampsProgressAndOnlyAllowsPlayDuringTransfer() {
+		let uploading = FirmwareUpdateGameStatus(
+			title: "ESP32 BLE OTA",
+			message: "Uploading firmware",
+			progress: 1.4,
+			phase: .uploading
+		)
+		let complete = FirmwareUpdateGameStatus(
+			title: "ESP32 BLE OTA",
+			message: "Complete",
+			progress: 1,
+			phase: .complete
+		)
+
+		#expect(uploading.progress == 1)
+		#expect(uploading.percentText == "100%")
+		#expect(uploading.canPlay)
+		#expect(!complete.canPlay)
+	}
+
+	@Test func mockUploadProgressesWhileTheGameIsPresented() {
+		var upload = FirmwareUpdateDemoState(duration: 20)
+		upload.advance(by: 8)
+
+		#expect(upload.status.phase == .uploading)
+		#expect(upload.status.progress == 0.4)
+
+		upload.advance(by: 20)
+
+		#expect(upload.status.phase == .complete)
+		#expect(upload.status.progress == 1)
+	}
+
+	@Test func ESP32OTAStatesMapToGameAvailability() {
+		#expect(LocalOTAStatusCode.waitingForConnection.gamePhase == .connecting)
+		#expect(LocalOTAStatusCode.preparing.gamePhase == .preparing)
+		#expect(LocalOTAStatusCode.transferring.gamePhase == .uploading)
+		#expect(LocalOTAStatusCode.completed.gamePhase == .complete)
+		#expect(LocalOTAStatusCode.error.gamePhase == .failed)
+	}
+
+	@Test func nRFDFUStatesMapToGameAvailability() {
+		#expect(DFUUpdateState.starting.gamePhase == .preparing)
+		#expect(DFUUpdateState.uploading.gamePhase == .uploading)
+		#expect(DFUUpdateState.success.gamePhase == .complete)
+		#expect(DFUUpdateState.error("No device").gamePhase == .failed)
+	}
+}

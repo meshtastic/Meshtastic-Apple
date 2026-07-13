@@ -93,6 +93,9 @@
 		23C2BE312EEB823900F6A997 /* NRFDFUSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23C2BE302EEB823900F6A997 /* NRFDFUSheet.swift */; };
 		23C2BE342EEC3F9600F6A997 /* ESP32OTAIntroSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23C2BE332EEC3F9600F6A997 /* ESP32OTAIntroSheet.swift */; };
 		23C873E32EF9B58C00BFEA7B /* OTAEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23C873E22EF9B58C00BFEA7B /* OTAEnums.swift */; };
+		C0DEC2000000000000000001 /* ChirpyRunnerEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DEC1000000000000000001 /* ChirpyRunnerEngine.swift */; };
+		C0DEC2000000000000000002 /* ChirpyRunnerScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DEC1000000000000000002 /* ChirpyRunnerScene.swift */; };
+		C0DEC2000000000000000003 /* FirmwareUpdateGameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DEC1000000000000000003 /* FirmwareUpdateGameView.swift */; };
 		23D316932E5618D2002FA4FB /* AsyncGate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23D316922E5618D2002FA4FB /* AsyncGate.swift */; };
 		23D9D9392E50DA97005D1C18 /* ResettableTimer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23D9D9382E50DA97005D1C18 /* ResettableTimer.swift */; };
 		23DC50BB2EE76D9C0023838A /* URL+fetch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23DC50BA2EE76D9C0023838A /* URL+fetch.swift */; };
@@ -688,6 +691,9 @@
 		23C2BE302EEB823900F6A997 /* NRFDFUSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NRFDFUSheet.swift; sourceTree = "<group>"; };
 		23C2BE332EEC3F9600F6A997 /* ESP32OTAIntroSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ESP32OTAIntroSheet.swift; sourceTree = "<group>"; };
 		23C873E22EF9B58C00BFEA7B /* OTAEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OTAEnums.swift; sourceTree = "<group>"; };
+		C0DEC1000000000000000001 /* ChirpyRunnerEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChirpyRunnerEngine.swift; sourceTree = "<group>"; };
+		C0DEC1000000000000000002 /* ChirpyRunnerScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChirpyRunnerScene.swift; sourceTree = "<group>"; };
+		C0DEC1000000000000000003 /* FirmwareUpdateGameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirmwareUpdateGameView.swift; sourceTree = "<group>"; };
 		23D316922E5618D2002FA4FB /* AsyncGate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsyncGate.swift; sourceTree = "<group>"; };
 		23D9D9382E50DA97005D1C18 /* ResettableTimer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResettableTimer.swift; sourceTree = "<group>"; };
 		23DC50BA2EE76D9C0023838A /* URL+fetch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "URL+fetch.swift"; sourceTree = "<group>"; };
@@ -1474,12 +1480,23 @@
 			isa = PBXGroup;
 			children = (
 				DDD6EEAE29BC024700383354 /* Firmware.swift */,
+				C0DEC3000000000000000001 /* Chirpy Game */,
 				2315D19E2EECB42D00E0FAE7 /* UF2 Mass Storage */,
 				23C2BE322EEC3F7800F6A997 /* ESP32 OTA */,
 				23C2BE2F2EEB821400F6A997 /* NRF DFU */,
 				23196C712EF42D4300B1504B /* Helpers */,
 			);
 			path = Firmware;
+			sourceTree = "<group>";
+		};
+		C0DEC3000000000000000001 /* Chirpy Game */ = {
+			isa = PBXGroup;
+			children = (
+				C0DEC1000000000000000001 /* ChirpyRunnerEngine.swift */,
+				C0DEC1000000000000000002 /* ChirpyRunnerScene.swift */,
+				C0DEC1000000000000000003 /* FirmwareUpdateGameView.swift */,
+			);
+			path = "Chirpy Game";
 			sourceTree = "<group>";
 		};
 		23C2BE2F2EEB821400F6A997 /* NRF DFU */ = {
@@ -3021,6 +3038,9 @@
 				DD8169FF272476C700F4AB02 /* LogDocument.swift in Sources */,
 				BCD93CBA2D9E11A2006C9214 /* DisconnectNodeIntent.swift in Sources */,
 				23C873E32EF9B58C00BFEA7B /* OTAEnums.swift in Sources */,
+				C0DEC2000000000000000001 /* ChirpyRunnerEngine.swift in Sources */,
+				C0DEC2000000000000000002 /* ChirpyRunnerScene.swift in Sources */,
+				C0DEC2000000000000000003 /* FirmwareUpdateGameView.swift in Sources */,
 				DDC94FC129CE063B0082EA6E /* BatteryLevel.swift in Sources */,
 				230A98402EF86A44004D87F1 /* AsyncCentral.swift in Sources */,
 				231B3F252D087C3C0069A07D /* EnvironmentDefaultColumns.swift in Sources */,

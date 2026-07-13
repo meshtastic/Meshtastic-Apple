@@ -18,6 +18,7 @@ struct ESP32BLEOTASheet: View {
 	
 	@State var rebootSuccessful = false
 	@State var inRetryWorkflow = false
+	@State private var showChirpyGame = false
 	
 	// The stuff we're updating, and the place we're updating it to
 	let binFileURL: URL
@@ -93,6 +94,13 @@ struct ESP32BLEOTASheet: View {
 					.listRowBackground(Color.clear)
 				}
 				.listRowSeparator(.hidden)
+
+				if ota.otaStatus.gamePhase.isActive {
+					Section {
+						FirmwareUpdateGameButton(isPresented: $showChirpyGame, status: gameStatus)
+					}
+					.textCase(nil)
+				}
 			}
 			.listSectionSpacing(.compact)
 			.navigationTitle("ESP32 BLE Updater")
@@ -125,9 +133,19 @@ struct ESP32BLEOTASheet: View {
 		}
 		.interactiveDismissDisabled(true)
 		.textCase(nil)
+		.firmwareUpdateGame(isPresented: $showChirpyGame, status: gameStatus)
 	}
 	
 	// MARK: - Component Views
+
+	private var gameStatus: FirmwareUpdateGameStatus {
+		FirmwareUpdateGameStatus(
+			title: "ESP32 BLE OTA",
+			message: ota.statusMessage.isEmpty ? ota.otaStatus.rawValue : ota.statusMessage,
+			progress: ota.transferProgress,
+			phase: ota.otaStatus.gamePhase
+		)
+	}
 	
 	@ViewBuilder
 	func retryButton() -> some View {
