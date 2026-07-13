@@ -51,12 +51,7 @@ struct Channels: View {
 	@State private var showingHelp = false
 
 	private var displayChannels: [ChannelEntity] {
-		guard let channels = node.myInfo?.channels else { return [] }
-		var byIndex: [Int32: ChannelEntity] = [:]
-		for channel in channels {
-			byIndex[channel.index] = channel
-		}
-		return byIndex.values.sorted { $0.index < $1.index }
+		dedupedChannels(for: node)
 	}
 
 	private var locationSharingChannelIndex: Int32? {
@@ -71,18 +66,7 @@ struct Channels: View {
 	}
 
 	private var primaryChannelName: String {
-		if let primary = displayChannels.first(where: { $0.index == 0 || $0.role == 1 }),
-		   let name = primary.name,
-		   !name.isEmpty {
-			return name
-		}
-		if node.loRaConfig?.usePreset == false {
-			return "Custom"
-		}
-		guard let preset = ModemPresets(rawValue: Int(node.loRaConfig?.modemPreset ?? 0)) else {
-			return "LongFast"
-		}
-		return preset.androidChannelName
+		channelDisplayName(channels: displayChannels, node: node)
 	}
 
 	private var channelFrequencySummary: ChannelFrequencySummary? {

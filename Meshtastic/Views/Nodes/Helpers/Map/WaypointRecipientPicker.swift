@@ -7,23 +7,16 @@ import MeshtasticProtobufs
 import SwiftUI
 @preconcurrency import SwiftData
 
-/// Display label for channel `index`: its configured name, the primary channel's modem-preset name (e.g.
-/// "LongFast", matching how the firmware renders an unnamed primary channel), "Custom" for a non-preset
-/// LoRa config, "Channel N" for an unnamed secondary channel, or a generic "Broadcast" only when no channel
-/// info is available at all (e.g. while disconnected).
+/// Display label for channel `index`: its configured name, else — for the primary channel only —
+/// `channelDisplayName` (the same preset-name/"Custom"/"Broadcast" fallback rules the Channels settings
+/// screen uses, so the two screens never show different names for the same channel), else "Channel N" for
+/// an unnamed secondary channel.
 func waypointChannelLabel(index: Int32, channels: [ChannelEntity], node: NodeInfoEntity?) -> String {
 	if let channel = channels.first(where: { $0.index == index }), let name = channel.name, !name.isEmpty {
 		return name
 	}
 	guard index == 0 else { return "Channel \(index)".localized }
-	guard let node else { return "Broadcast".localized }
-	if node.loRaConfig?.usePreset == false {
-		return "Custom".localized
-	}
-	guard let preset = ModemPresets(rawValue: Int(node.loRaConfig?.modemPreset ?? 0)) else {
-		return "Broadcast".localized
-	}
-	return preset.androidChannelName
+	return channelDisplayName(channels: channels, node: node)
 }
 
 /// Display label for a node, for the recipient picker or the "currently selected" summary: the user's local
@@ -51,14 +44,10 @@ func waypointDestinationLabel(_ destination: WaypointDestination, channels: [Cha
 }
 
 /// The connected node's configured channels (deduped by index, ascending) — used both to render the primary
-/// channel's real name and to list secondary channels in the recipient picker.
+/// channel's real name and to list secondary channels in the recipient picker. Shares its dedup logic with
+/// the Channels settings screen via `dedupedChannels(for:)`.
 func waypointChannels(for node: NodeInfoEntity?) -> [ChannelEntity] {
-	guard let myInfo = node?.myInfo else { return [] }
-	var channelsByIndex: [Int32: ChannelEntity] = [:]
-	for channel in myInfo.channels {
-		channelsByIndex[channel.index] = channel
-	}
-	return channelsByIndex.values.sorted { $0.index < $1.index }
+	dedupedChannels(for: node)
 }
 
 /// Channel rows to list in the recipient picker: the primary channel (0) always appears even if it hasn't
