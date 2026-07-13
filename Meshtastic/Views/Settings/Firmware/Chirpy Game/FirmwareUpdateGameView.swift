@@ -23,6 +23,7 @@ struct FirmwareUpdateGameScreen: View {
 	let status: FirmwareUpdateGameStatus
 	let onClose: () -> Void
 	@State private var scene = ChirpyRunnerScene(size: CGSize(width: 900, height: 620))
+	@State private var crouchGestureActive = false
 
 	var body: some View {
 		VStack(spacing: 0) {
@@ -32,17 +33,16 @@ struct FirmwareUpdateGameScreen: View {
 				SpriteView(scene: scene)
 					.allowsHitTesting(false)
 
-				Button {
-					scene.primaryAction()
-				} label: {
-					Color.black.opacity(0.001)
-						.contentShape(Rectangle())
-				}
-				.buttonStyle(.plain)
-				.disabled(!status.phase.isActive)
-				.accessibilityLabel("Chirpy Hop")
-				.accessibilityHint("Tap to make Chirpy jump")
-				.accessibilityIdentifier("chirpy-game-surface")
+				Color.black.opacity(0.001)
+					.contentShape(Rectangle())
+					.gesture(gameGesture)
+					.accessibilityLabel("Chirpy Hop")
+					.accessibilityHint("Tap to jump or swipe down to crouch")
+					.accessibilityAddTraits(.isButton)
+					.accessibilityAction {
+						scene.primaryAction()
+					}
+					.accessibilityIdentifier("chirpy-game-surface")
 
 				if !status.phase.isActive {
 					FirmwareUpdateFinishedOverlay(status: status, onClose: onClose)
@@ -53,6 +53,11 @@ struct FirmwareUpdateGameScreen: View {
 			HStack(spacing: 8) {
 				Image(systemName: "hand.tap.fill")
 				Image(systemName: "arrow.up")
+				Divider()
+					.frame(height: 22)
+					.padding(.horizontal, 10)
+				Image(systemName: "hand.draw.fill")
+				Image(systemName: "arrow.down")
 			}
 			.font(.headline)
 			.foregroundStyle(.secondary)
@@ -68,6 +73,34 @@ struct FirmwareUpdateGameScreen: View {
 		.onChange(of: status.phase) { _, phase in
 			scene.setUpdateActive(phase.isActive)
 		}
+		.onDisappear {
+			scene.setCrouching(false)
+		}
+	}
+
+	private var gameGesture: some Gesture {
+		DragGesture(minimumDistance: 0)
+			.onChanged { value in
+				guard status.phase.isActive else {
+					return
+				}
+				let shouldCrouch = value.translation.height > 18
+				if shouldCrouch != crouchGestureActive {
+					crouchGestureActive = shouldCrouch
+					scene.setCrouching(shouldCrouch)
+				}
+			}
+			.onEnded { _ in
+				guard status.phase.isActive else {
+					return
+				}
+				if crouchGestureActive {
+					crouchGestureActive = false
+					scene.setCrouching(false)
+				} else {
+					scene.primaryAction()
+				}
+			}
 	}
 }
 

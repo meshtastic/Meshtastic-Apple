@@ -327,7 +327,7 @@ struct ChirpyOTARunnerTests {
 		#expect(runner.phase == .running)
 	}
 
-	@Test func restartClearsScoreAndImmediatelyJumps() {
+	@Test func restartReturnsToReadyWithoutJumping() {
 		var runner = ChirpyRunnerEngine(obstacleX: ChirpyRunnerEngine.playerX)
 		runner.startRunning()
 		runner.advance(by: 1.0 / 60.0)
@@ -335,8 +335,13 @@ struct ChirpyOTARunnerTests {
 
 		runner.primaryAction()
 
-		#expect(runner.phase == .running)
+		#expect(runner.phase == .ready)
 		#expect(runner.score == 0)
+		#expect(runner.verticalVelocity == 0)
+
+		runner.primaryAction()
+
+		#expect(runner.phase == .running)
 		#expect(runner.verticalVelocity > 0)
 	}
 
@@ -359,6 +364,50 @@ struct ChirpyOTARunnerTests {
 
 		#expect(runner.phase == .running)
 		#expect(runner.score >= 5)
+	}
+
+	@Test func frameRateDoesNotChangeJumpPhysics() {
+		var smooth = ChirpyRunnerEngine(obstacleX: 0.95)
+		var delayed = ChirpyRunnerEngine(obstacleX: 0.95)
+		smooth.primaryAction()
+		delayed.primaryAction()
+
+		for _ in 0..<6 {
+			smooth.advance(by: 1.0 / 60.0)
+		}
+		delayed.advance(by: 0.1)
+
+		#expect(abs(smooth.playerY - delayed.playerY) < 0.01)
+		#expect(abs(smooth.obstacleX - delayed.obstacleX) < 0.01)
+	}
+
+	@Test func crouchingClearsALowFlyingObstacle() {
+		var standing = ChirpyRunnerEngine(
+			obstacleX: ChirpyRunnerEngine.playerX,
+			obstacleKind: .flyingPacket
+		)
+		standing.startRunning()
+		standing.advance(by: 1.0 / 120.0)
+		#expect(standing.phase == .gameOver)
+
+		var crouching = ChirpyRunnerEngine(
+			obstacleX: ChirpyRunnerEngine.playerX,
+			obstacleKind: .flyingPacket
+		)
+		crouching.startRunning()
+		crouching.setCrouching(true)
+		crouching.advance(by: 1.0 / 120.0)
+
+		#expect(crouching.phase == .running)
+		#expect(crouching.isCrouching)
+	}
+
+	@Test func obstacleSequenceHasGroundAndFlyingVariety() {
+		let kinds = Set((0..<8).map(ChirpyRunnerEngine.obstacleKind(forScore:)))
+
+		#expect(kinds.contains(.tallCactus))
+		#expect(kinds.contains(.cactusCluster))
+		#expect(kinds.contains(.flyingPacket))
 	}
 
 	@Test func OTAStatusClampsProgressAndOnlyAllowsPlayDuringTransfer() {
