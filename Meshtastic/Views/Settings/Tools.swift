@@ -207,7 +207,8 @@ struct Tools: View {
 				// by parseDeviceProfile without ever loading the whole thing into memory.
 				let data = try Self.readCapped(url, cap: DeviceProfileImportPlan.maxProfileBytes)
 				let profile = try DeviceProfileImportPlan.parseDeviceProfile(data)
-				let plan = try DeviceProfileImportPlan(profile: profile, currentUser: currentUser)
+				let plan = try DeviceProfileImportPlan(profile: profile, currentUser: currentUser,
+													   currentSecurity: node.securityConfig?.protoConfig)
 				pendingImport = PendingImport(plan: plan)
 			} catch DeviceProfileImportError.nothingToImport {
 				importFailedMessage = "This configuration file doesn't contain anything to import."

@@ -364,6 +364,100 @@ struct DeviceProfileImportTests {
 		#expect(user.shortName == "OG")
 	}
 
+	// MARK: - Security merge (partial import — the "keys" half)
+
+	private func baseSecurity() -> Config.SecurityConfig {
+		var base = Config.SecurityConfig()
+		base.privateKey = Data([0xAA, 0xBB])
+		base.publicKey = Data([0xCC, 0xDD])
+		base.adminKey = [Data([0x01]), Data([0x02])]
+		return base
+	}
+
+	@Test("A profile with no keypair keeps the node's identity keys but takes its flags")
+	func securityMergePreservesKeysWhenAbsent() {
+		var profile = Config.SecurityConfig()   // no keys — an event/"official" config
+		profile.isManaged = true
+		profile.adminChannelEnabled = true
+
+		let merged = DeviceProfileImportPlan.securityConfig(from: profile, base: baseSecurity())
+		#expect(merged.privateKey == Data([0xAA, 0xBB]))   // preserved
+		#expect(merged.publicKey == Data([0xCC, 0xDD]))    // preserved
+		#expect(merged.adminKey == [Data([0x01]), Data([0x02])])  // preserved
+		#expect(merged.isManaged)                           // taken from the profile
+		#expect(merged.adminChannelEnabled)                // taken from the profile
+	}
+
+	@Test("A profile that carries a keypair replaces the node's keys (full restore)")
+	func securityMergeReplacesKeysWhenPresent() {
+		var profile = Config.SecurityConfig()
+		profile.privateKey = Data([0x11])
+		profile.publicKey = Data([0x22])
+		profile.adminKey = [Data([0x33])]
+
+		let merged = DeviceProfileImportPlan.securityConfig(from: profile, base: baseSecurity())
+		#expect(merged.privateKey == Data([0x11]))
+		#expect(merged.publicKey == Data([0x22]))
+		#expect(merged.adminKey == [Data([0x33])])
+	}
+
+	@Test("Each key field is preserved independently")
+	func securityMergeIsPerField() {
+		var profile = Config.SecurityConfig()
+		profile.publicKey = Data([0x22])   // public present, private + admin absent
+
+		let merged = DeviceProfileImportPlan.securityConfig(from: profile, base: baseSecurity())
+		#expect(merged.publicKey == Data([0x22]))          // taken from profile
+		#expect(merged.privateKey == Data([0xAA, 0xBB]))   // preserved
+		#expect(merged.adminKey == [Data([0x01]), Data([0x02])])  // preserved
+	}
+
+	@Test("With no base config the profile's security is applied as-is")
+	func securityMergeNoBaseAppliesAsIs() {
+		var profile = Config.SecurityConfig()
+		profile.isManaged = true
+		let merged = DeviceProfileImportPlan.securityConfig(from: profile, base: nil)
+		#expect(merged.privateKey.isEmpty)
+		#expect(merged.publicKey.isEmpty)
+		#expect(merged.isManaged)
+	}
+
+	@Test("The emitted security item carries the key-preserving payload and summary")
+	func securityItemPreservesIdentity() throws {
+		var security = Config.SecurityConfig()
+		security.isManaged = true            // keypair intentionally left empty
+		var config = LocalConfig()
+		config.security = security
+		var profile = DeviceProfile()
+		profile.config = config
+
+		let plan = try DeviceProfileImportPlan(profile: profile, currentUser: nil, currentSecurity: baseSecurity())
+		let item = try #require(plan.items.first { $0.kind == .securityConfig })
+		guard case let .securityConfig(applied) = item.payload else {
+			Issue.record("security item did not carry a .securityConfig payload")
+			return
+		}
+		#expect(applied.privateKey == Data([0xAA, 0xBB]))   // node identity preserved
+		#expect(applied.publicKey == Data([0xCC, 0xDD]))
+		#expect(applied.isManaged)                           // flag from the profile applied
+		#expect(item.summary == "Admin access & flags (keeps this node's keys)")
+	}
+
+	@Test("A profile that carries keys keeps the identity-rewrite summary")
+	func securityItemRewriteSummaryWhenKeysPresent() throws {
+		var security = Config.SecurityConfig()
+		security.privateKey = Data([0x11])
+		security.publicKey = Data([0x22])
+		var config = LocalConfig()
+		config.security = security
+		var profile = DeviceProfile()
+		profile.config = config
+
+		let plan = try DeviceProfileImportPlan(profile: profile, currentUser: nil, currentSecurity: baseSecurity())
+		let item = try #require(plan.items.first { $0.kind == .securityConfig })
+		#expect(item.summary == "Node identity, keys & admin access")
+	}
+
 	// MARK: - Selection filtering
 
 	@Test("items(for:) preserves order and drops unselected sections")

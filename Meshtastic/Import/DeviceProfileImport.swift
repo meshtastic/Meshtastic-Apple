@@ -188,13 +188,36 @@ struct DeviceProfileImportPlan {
 		return user
 	}
 
+	/// Merges a profile's `SecurityConfig` onto the node's current one, PRESERVING the node's existing
+	/// keys whenever the profile doesn't carry them. This is the "keys" half of a partial import (the
+	/// "names" half is `ownerUser`): a Meshtastic security block has no per-field presence, so an
+	/// "official"/event `.cfg` that only sets flags or admin keys but leaves the identity keypair empty
+	/// would otherwise WIPE this node's public/private key on import. An empty key is never a valid
+	/// identity, so treating empty-as-absent is safe: a full backup (keys present) still restores the
+	/// keypair, while a partial config keeps the node's own identity.
+	static func securityConfig(from profile: Config.SecurityConfig, base: Config.SecurityConfig?) -> Config.SecurityConfig {
+		guard let base else { return profile }
+		var merged = profile
+		if merged.privateKey.isEmpty { merged.privateKey = base.privateKey }
+		if merged.publicKey.isEmpty { merged.publicKey = base.publicKey }
+		// Admin keys are a positional repeated field. "Profile carries no admin keys" (empty, or only
+		// empty placeholder slots) is treated as absent so an event config that just flips isManaged /
+		// adminChannelEnabled doesn't drop the node's existing admin keys. A profile that DOES carry admin
+		// keys replaces them (explicit intent).
+		if merged.adminKey.allSatisfy(\.isEmpty) { merged.adminKey = base.adminKey }
+		return merged
+	}
+
 	/// Builds the plan as the has*-gated inverse of `exportDeviceProfile()`, emitting items in apply order.
 	/// - Parameters:
 	///   - profile: the parsed device profile.
 	///   - currentUser: the connected node's current `User` (the merge base for the owner step); when nil,
 	///     the owner step is omitted entirely.
+	///   - currentSecurity: the connected node's current `SecurityConfig`, used as the merge base so a
+	///     partial profile that omits the identity keypair keeps the node's own keys (see
+	///     `securityConfig(from:base:)`). When nil, the profile's security block is applied as-is.
 	/// - Throws: `.nothingToImport` when the profile yields no applyable items.
-	init(profile: DeviceProfile, currentUser: User?) throws {
+	init(profile: DeviceProfile, currentUser: User?, currentSecurity: Config.SecurityConfig? = nil) throws {
 		var items: [ImportItem] = []
 		let config = profile.config
 		let module = profile.moduleConfig
@@ -334,9 +357,12 @@ struct DeviceProfileImportPlan {
 		// 11. Security — opt-in, sensitive. Late because admin-key/isManaged changes can restrict further
 		//     local admin.
 		if profile.hasConfig, config.hasSecurity {
+			// Preserve the node's own keypair when the profile doesn't carry one (partial/event config).
+			let mergedSecurity = DeviceProfileImportPlan.securityConfig(from: config.security, base: currentSecurity)
+			let keepsIdentity = currentSecurity != nil && config.security.privateKey.isEmpty && config.security.publicKey.isEmpty
 			items.append(ImportItem(kind: .securityConfig, section: .security,
-									summary: "Node identity, keys & admin access",
-									isSensitive: true, causesReboot: false, payload: .securityConfig(config.security)))
+									summary: keepsIdentity ? "Admin access & flags (keeps this node's keys)" : "Node identity, keys & admin access",
+									isSensitive: true, causesReboot: false, payload: .securityConfig(mergedSecurity)))
 		}
 
 		// 12. TERMINAL: Channels & LoRa (reboots). Export puts the SAME LoRaConfig in both config.lora and
