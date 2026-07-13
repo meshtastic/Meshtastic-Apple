@@ -850,6 +850,11 @@ extension AccessoryManager {
 			meshPacket.channel = UInt32(index)
 		case let .user(destNum):
 			meshPacket.to = UInt32(destNum)
+			// Waypoint DMs have no source-channel context to inherit (unlike sendMessage, which is always
+			// sent from within a specific channel/DM view) — explicitly use the primary channel's PSK as
+			// the fallback encryption key for non-PKC recipients, matching sendMessage's always-set
+			// meshPacket.channel instead of relying on the protobuf zero-value default.
+			meshPacket.channel = 0
 			let userFetch = FetchDescriptor<UserEntity>(predicate: #Predicate { $0.num == destNum })
 			applyPKCRoutingIfNeeded(to: &meshPacket, toUser: try? context.fetch(userFetch).first)
 		}

@@ -26,10 +26,12 @@ func waypointChannelLabel(index: Int32, channels: [ChannelEntity], node: NodeInf
 	return preset.androidChannelName
 }
 
-/// Display label for a node, for the recipient picker or the "currently selected" summary: long name,
-/// short name, or a fallback derived from its node number — never blank, and never rendered as "Broadcast"
-/// just because a bare/unconfigured node has no name set yet.
+/// Display label for a node, for the recipient picker or the "currently selected" summary: the user's local
+/// custom display name if set (matching every other node label in the app), else the long name, short name,
+/// or a fallback derived from its node number — never blank, and never rendered as "Broadcast" just because
+/// a bare/unconfigured node has no name set yet.
 func waypointNodeLabel(_ node: NodeInfoEntity) -> String {
+	if let custom = NodeDisplayNameStore.displayName(for: node.num) { return custom }
 	if let longName = node.user?.longName, !longName.isEmpty { return longName }
 	if let shortName = node.user?.shortName, !shortName.isEmpty { return shortName }
 	return node.num.toHex()

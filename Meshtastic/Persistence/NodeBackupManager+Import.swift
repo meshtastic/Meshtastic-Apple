@@ -268,6 +268,7 @@ extension NodeBackupManager {
 			dst.longDescription = src.longDescription
 			dst.longitudeI = src.longitudeI
 			dst.name = src.name
+			dst.destination = src.destination
 			liveContext.insert(dst)
 		}
 	}
