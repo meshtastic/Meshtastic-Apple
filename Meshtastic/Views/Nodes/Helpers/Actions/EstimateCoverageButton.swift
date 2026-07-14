@@ -64,6 +64,8 @@ struct EstimateCoverageButton: View {
 			transmitPowerWatts: LoRaRFHelpers.transmitPowerWatts(txPowerDBm: loRaConfig?.txPower ?? 0, region: region),
 			transmitFrequencyMHz: frequency > 0 ? frequency : 915
 		)
+		// Names the stored overlay `<nodeID> <date>` (see CoverageEstimateParameters.overlayName).
+		params.siteIdentifier = node.num.toHex()
 		params.receiverSensitivityDBm = LoRaRFHelpers.receiverSensitivityDBm(for: preset)
 		return params
 	}

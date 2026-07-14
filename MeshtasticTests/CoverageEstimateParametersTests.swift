@@ -26,6 +26,35 @@ struct CoverageEstimateParametersTests {
 		#expect(validParams().isValid)
 	}
 
+	// MARK: Overlay name (node id + date)
+
+	private func fixedDate() -> Date {
+		// Noon on 2026-07-11 in the current time zone — overlayName formats in the local zone
+		// (the file should carry the user's local date), so anchoring to local noon keeps the
+		// assertion deterministic regardless of the test machine's zone.
+		DateComponents(calendar: .current, year: 2026, month: 7, day: 11, hour: 12).date!
+	}
+
+	@Test func overlayNameUsesNodeIdWhenPresent() {
+		var params = validParams()
+		params.siteIdentifier = "!a1b2c3d4"
+		#expect(params.overlayName(date: fixedDate()) == "!a1b2c3d4 2026-07-11")
+	}
+
+	@Test func overlayNameFallsBackToSiteNameWhenNoIdentifier() {
+		var params = validParams()
+		params.siteIdentifier = nil
+		params.name = "Site"
+		#expect(params.overlayName(date: fixedDate()) == "Site 2026-07-11")
+	}
+
+	@Test func overlayNameFallsBackWhenIdentifierEmpty() {
+		var params = validParams()
+		params.siteIdentifier = ""
+		params.name = "Site"
+		#expect(params.overlayName(date: fixedDate()) == "Site 2026-07-11")
+	}
+
 	@Test func missingPositionIsInvalid() {
 		var params = validParams()
 		params.latitude = 0

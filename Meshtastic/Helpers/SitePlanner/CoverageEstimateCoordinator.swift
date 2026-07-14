@@ -101,7 +101,7 @@ final class CoverageEstimateCoordinator: ObservableObject {
 			do {
 				let data = try await bridge.run(params)
 				try Task.checkCancellation()
-				let overlay = try await MapDataManager.shared.importFromData(data, suggestedName: params.name)
+				let overlay = try await MapDataManager.shared.importFromData(data, suggestedName: params.overlayName(date: Date()))
 				self?.finish(.succeeded(overlay: overlay), token: token)
 			} catch is CancellationError {
 				self?.finish(.canceled, token: token)

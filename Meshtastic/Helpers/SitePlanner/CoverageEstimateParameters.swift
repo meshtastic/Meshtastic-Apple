@@ -81,7 +81,14 @@ enum ColorScale: String, CaseIterable, Identifiable {
 struct CoverageEstimateParameters {
 
 	// MARK: Site / Transmitter
+	/// The site name sent to the planner (→ `properties.name` on the exported GeoJSON).
+	/// Friendly (e.g. the node's long name); distinct from the overlay/file name — see
+	/// `overlayName(date:)`.
 	var name: String
+	/// Stable identifier for the estimated site — the node's hex id (`!a1b2c3d4`) when
+	/// estimated from a node (US1), `nil` from the map entry point (US2, no node). Drives
+	/// the overlay/file name so stored coverage maps are identifiable per-node.
+	var siteIdentifier: String?
 	var latitude: Double
 	var longitude: Double
 	var transmitPowerWatts: Double
@@ -156,6 +163,21 @@ extension CoverageEstimateParameters {
 	private static let receiverSensitivityRange: ClosedRange<Double> = -150...(-30)
 	private static let standardMaxRangeKm: Double = 150
 	private static let highResMaxRangeKm: Double = 70
+
+	/// The name for the imported coverage overlay: the node id when estimated from a node
+	/// (US1), otherwise the site name (US2, map entry point), suffixed with the estimate
+	/// `date`. `date` is injected rather than read from `Date()` so this stays unit-testable.
+	///
+	/// Date-only, `yyyy-MM-dd`, formatted with a fixed POSIX locale — this is a stored file
+	/// identifier (sortable, filesystem-safe, stable), deliberately NOT the OS-locale date
+	/// format that governs *displayed* dates (Design Standards §10.6).
+	func overlayName(date: Date) -> String {
+		let base = (siteIdentifier?.isEmpty == false ? siteIdentifier! : name)
+		let formatter = DateFormatter()
+		formatter.locale = Locale(identifier: "en_US_POSIX")
+		formatter.dateFormat = "yyyy-MM-dd"
+		return "\(base) \(formatter.string(from: date))"
+	}
 
 	/// Every validation failure for the current values, per data-model.md. Empty means
 	/// the parameters are safe to send.
