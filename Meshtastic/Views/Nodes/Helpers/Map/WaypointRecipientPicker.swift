@@ -108,7 +108,7 @@ struct WaypointRecipientPicker: View {
 	var body: some View {
 		NavigationStack {
 			List {
-				Section {
+				Section("Channels") {
 					ForEach(channelIndexes, id: \.self) { index in
 						Button {
 							selection = .channel(index)
@@ -121,7 +121,7 @@ struct WaypointRecipientPicker: View {
 						}
 					}
 				}
-				Section {
+				Section("Direct Messages") {
 					ForEach(filteredNodes, id: \.num) { candidate in
 						Button {
 							selection = .user(candidate.num)
