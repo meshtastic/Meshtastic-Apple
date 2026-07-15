@@ -16,14 +16,48 @@ import Foundation
 /// Moved out of `Channels.swift` (was `private struct`) so the Mesh Beacons join
 /// enhancement can reuse the exact same math instead of hand-rolling a second hash.
 struct LoRaChannelCalculator {
-	let config: LoRaConfigEntity?
+	private let regionCode: Int
+	private let usePreset: Bool
+	private let modemPreset: Int
+	private let channelNum: Int
+	private let bandwidth: Int
+	private let overrideFrequency: Double
+	private let frequencyOffset: Double
+
+	init(config: LoRaConfigEntity?) {
+		regionCode = Int(config?.regionCode ?? 0)
+		usePreset = config?.usePreset ?? false
+		modemPreset = Int(config?.modemPreset ?? 0)
+		channelNum = Int(config?.channelNum ?? 0)
+		bandwidth = Int(config?.bandwidth ?? 0)
+		overrideFrequency = Double(config?.overrideFrequency ?? 0)
+		frequencyOffset = Double(config?.frequencyOffset ?? 0)
+	}
+
+	init(
+		regionCode: Int,
+		usePreset: Bool,
+		modemPreset: Int,
+		channelNum: Int,
+		bandwidth: Int,
+		overrideFrequency: Double,
+		frequencyOffset: Double = 0
+	) {
+		self.regionCode = regionCode
+		self.usePreset = usePreset
+		self.modemPreset = modemPreset
+		self.channelNum = channelNum
+		self.bandwidth = bandwidth
+		self.overrideFrequency = overrideFrequency
+		self.frequencyOffset = frequencyOffset
+	}
 
 	private var region: RegionInfo? {
-		RegionInfo(regionCode: Int(config?.regionCode ?? 0))
+		RegionInfo(regionCode: regionCode)
 	}
 
 	var regionName: String {
-		guard let regionCode = RegionCodes(rawValue: Int(config?.regionCode ?? 0)) else {
+		guard let regionCode = RegionCodes(rawValue: regionCode) else {
 			return "Unknown region"
 		}
 		return regionCode.description
@@ -33,8 +67,11 @@ struct LoRaChannelCalculator {
 	/// (the firmware pins the slot when set); otherwise derives it from the primary
 	/// channel name.
 	func effectiveChannelSlot(primaryName: String) -> Int {
-		if let channelNum = config?.channelNum, channelNum != 0 {
-			return Int(channelNum)
+		if channelNum != 0 {
+			return channelNum
+		}
+		if let defaultSlot = region?.defaultSlot, defaultSlot > 0 {
+			return defaultSlot
 		}
 		let numChannels = numChannels()
 		guard numChannels > 0 else { return 0 }
@@ -51,30 +88,30 @@ struct LoRaChannelCalculator {
 	}
 
 	func radioFrequencyMHz(slot: Int) -> Double {
-		guard let config else { return 0 }
-		if config.overrideFrequency != 0 {
-			return Double(config.overrideFrequency)
+		if overrideFrequency != 0 {
+			return overrideFrequency + frequencyOffset
 		}
 		guard let region else { return 0 }
-		let bandwidth = bandwidthMHz(region: region)
-		guard bandwidth > 0, slot > 0 else { return 0 }
-		return region.freqStart + bandwidth / 2 + Double(slot - 1) * bandwidth
+		let bandwidthMHz = bandwidthMHz(region: region)
+		guard bandwidthMHz > 0, slot > 0 else { return 0 }
+		let slotWidth = region.spacing + 2 * region.padding + bandwidthMHz
+		return region.freqStart + bandwidthMHz / 2 + region.padding + Double(slot - 1) * slotWidth + frequencyOffset
 	}
 
 	private func numChannels() -> Int {
 		guard let region else { return 0 }
-		let bandwidth = bandwidthMHz(region: region)
-		guard bandwidth > 0 else { return 1 }
-		return max(Int(floor((region.freqEnd - region.freqStart) / bandwidth)), 1)
+		let bandwidthMHz = bandwidthMHz(region: region)
+		guard bandwidthMHz > 0 else { return 1 }
+		let slotWidth = region.spacing + 2 * region.padding + bandwidthMHz
+		return max(Int(((region.freqEnd - region.freqStart + region.spacing) / slotWidth).rounded()), 1)
 	}
 
 	private func bandwidthMHz(region: RegionInfo) -> Double {
-		guard let config else { return 0 }
-		if config.usePreset {
-			let presetBandwidth = ModemPresets(rawValue: Int(config.modemPreset))?.bandwidthMHz ?? 0
+		if usePreset {
+			let presetBandwidth = ModemPresets(rawValue: modemPreset)?.bandwidthMHz ?? 0
 			return presetBandwidth * (region.wideLoRa ? 3.25 : 1)
 		}
-		switch config.bandwidth {
+		switch bandwidth {
 		case 31:
 			return 0.03125
 		case 62:
@@ -88,7 +125,7 @@ struct LoRaChannelCalculator {
 		case 1600:
 			return 1.625
 		default:
-			return Double(config.bandwidth) / 1000
+			return Double(bandwidth) / 1000
 		}
 	}
 
@@ -185,6 +222,9 @@ struct RegionInfo {
 	let freqStart: Double
 	let freqEnd: Double
 	let wideLoRa: Bool
+	let spacing: Double
+	let padding: Double
+	let defaultSlot: Int
 
 	init?(regionCode: Int) {
 		guard let region = RegionCodes(rawValue: regionCode) else { return nil }
@@ -241,8 +281,10 @@ struct RegionInfo {
 			self.init(freqStart: 865.0, freqEnd: 868.0)
 		case .br902:
 			self.init(freqStart: 902.0, freqEnd: 907.5)
-		case .itu12M, .itu22M:
-			self.init(freqStart: 144.0, freqEnd: 148.0)
+		case .itu12M:
+			self.init(freqStart: 144.0, freqEnd: 146.0, padding: 0.0022, defaultSlot: 26)
+		case .itu22M:
+			self.init(freqStart: 144.0, freqEnd: 148.0, padding: 0.0022, defaultSlot: 51)
 		case .eu866:
 			self.init(freqStart: 866.0, freqEnd: 866.5)
 		case .eu874:
@@ -250,29 +292,34 @@ struct RegionInfo {
 		case .eu917:
 			self.init(freqStart: 917.0, freqEnd: 921.0)
 		case .euN868:
-			self.init(freqStart: 869.4, freqEnd: 869.65)
+			self.init(freqStart: 869.4, freqEnd: 869.65, padding: 0.0104, defaultSlot: 1)
 		case .itu32M:
-			// ITU Region 3 Amateur Radio 2m band.
-			self.init(freqStart: 144.0, freqEnd: 148.0)
+			self.init(freqStart: 144.0, freqEnd: 148.0, padding: 0.0022, defaultSlot: 33)
 		case .itu170Cm:
-			// ITU Region 1 Amateur Radio 70cm band.
-			self.init(freqStart: 430.0, freqEnd: 440.0)
+			self.init(freqStart: 430.0, freqEnd: 440.0, padding: 0.01875, defaultSlot: 37)
 		case .itu270Cm:
-			// ITU Region 2 Amateur Radio 70cm band.
-			self.init(freqStart: 420.0, freqEnd: 450.0)
+			self.init(freqStart: 420.0, freqEnd: 450.0, padding: 0.01875, defaultSlot: 137)
 		case .itu370Cm:
-			// ITU Region 3 Amateur Radio 70cm band.
-			self.init(freqStart: 430.0, freqEnd: 450.0)
+			self.init(freqStart: 430.0, freqEnd: 450.0, padding: 0.01875, defaultSlot: 37)
 		case .itu2125Cm:
-			// ITU Region 2 Amateur Radio 1.25m (125cm) band.
-			self.init(freqStart: 220.0, freqEnd: 225.0)
+			self.init(freqStart: 220.0, freqEnd: 225.0, padding: 0.01875, defaultSlot: 37)
 		}
 	}
 
-	private init(freqStart: Double, freqEnd: Double, wideLoRa: Bool = false) {
+	private init(
+		freqStart: Double,
+		freqEnd: Double,
+		wideLoRa: Bool = false,
+		spacing: Double = 0,
+		padding: Double = 0,
+		defaultSlot: Int = 0
+	) {
 		self.freqStart = freqStart
 		self.freqEnd = freqEnd
 		self.wideLoRa = wideLoRa
+		self.spacing = spacing
+		self.padding = padding
+		self.defaultSlot = defaultSlot
 	}
 }
 
@@ -299,7 +346,7 @@ extension ModemPresets {
 		case .narrowFast, .narrowSlow:
 			return 0.0625
 		case .tinyFast, .tinySlow:
-			return 0.020
+			return 0.0156
 		}
 	}
 }
