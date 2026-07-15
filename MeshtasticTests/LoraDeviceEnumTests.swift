@@ -891,6 +891,21 @@ struct LoRaChannelCalculatorTests {
 		#expect(abs(calculator.radioFrequencyMHz(slot: slot) - 145.020) < 0.001)
 	}
 
+	@Test("Override frequency applies the configured offset regardless of slot")
+	func overrideFrequencyAppliesOffset() {
+		let calculator = LoRaChannelCalculator(
+			regionCode: RegionCodes.itu22M.rawValue,
+			usePreset: true,
+			modemPreset: ModemPresets.tinyFast.rawValue,
+			channelNum: 0,
+			bandwidth: 0,
+			overrideFrequency: 145.500,
+			frequencyOffset: 0.010
+		)
+
+		#expect(abs(calculator.radioFrequencyMHz(slot: 999) - 145.510) < 0.001)
+	}
+
 	@Test("ITU Region 2 1.25m uses the 100 kHz ham channel plan")
 	func itu2OnePointTwoFiveMeterDefault() {
 		let calculator = LoRaChannelCalculator(
