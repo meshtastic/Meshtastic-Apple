@@ -42,6 +42,18 @@ struct Connect: View {
 	/// Stable identity of the node whose context menu opened the shutdown dialog, captured at tap
 	/// time so the confirmation can't drift to a different node if the connection changes first.
 	@State private var pendingShutdownNodeNum: Int64?
+	/// All cached event-firmware editions, kept live via `@Query` so branding/lifecycle data
+	/// refreshes automatically once the bundled seed or a later background API refresh populates
+	/// or updates a row — no manual re-fetch wiring on connect / appear. This avoids a nil-cache
+	/// race where, if the edition was already known before the async cache load finished, the
+	/// post-event nudge (and branding) could otherwise never appear for the session.
+	@Query private var eventFirmwareEditions: [EventFirmwareEntity]
+	/// Presents the firmware-update flow from the post-event "return to standard firmware" nudge.
+	@State private var showFirmwareUpdate = false
+	/// Presents the tappable event info sheet (welcome, location, dates, links, firmware, theme).
+	@State private var showEventInfo = false
+	/// Ambient event theme opt-out, shared with the info sheet's "Use Event Theme" toggle.
+	@AppStorage("useEventTheme") private var useEventTheme: Bool = true
 
 	private var sortedAvailableDevices: [Device] {
 		accessoryManager.devices.sorted { lhs, rhs in
@@ -139,9 +151,9 @@ struct Connect: View {
 												.font(.callout).foregroundColor(Color.gray)
 										}
 										if accessoryManager.firmwareEdition.isEvent {
-											Text(accessoryManager.firmwareEdition.name)
-												.font(.callout)
-												.foregroundColor(.orange)
+											EventFirmwareBadge(edition: accessoryManager.firmwareEdition, info: eventFirmware) {
+												showEventInfo = true
+											}
 										}
 										switch accessoryManager.state {
 										case .subscribed:
@@ -272,6 +284,15 @@ struct Connect: View {
 											.foregroundColor(.red)
 											.font(.title)
 									}
+								}
+							}
+							// Post-event nudge: the connected device is on an event edition whose
+							// eventEnd (in its IANA zone) is in the past — prompt a return to standard
+							// firmware. A missing/unparseable eventEnd never counts as ended, and the
+							// banner clears automatically on return to .vanilla (isEvent == false).
+							if accessoryManager.firmwareEdition.isEvent, eventFirmware?.hasEnded() == true {
+								EventFirmwareEndedBanner(info: eventFirmware) {
+									showFirmwareUpdate = true
 								}
 							}
 						} else {
@@ -406,7 +427,19 @@ struct Connect: View {
 				}
 				.padding(.bottom, 10)
 			}
-			.background(Color(.systemGroupedBackground))
+			.background {
+				// Ambient event branding (design#120, gap #3): a *subtle* accent wash over the
+				// standard grouped background — not a full recolor — gated on the connected event
+				// edition and the user's "Use Event Theme" opt-in. The List sets
+				// scrollContentBackground(.hidden) so this shows through behind its content.
+				ZStack {
+					Color(.systemGroupedBackground)
+					if let wash = eventAccentWash {
+						LinearGradient(colors: [wash.opacity(0.18), .clear], startPoint: .top, endPoint: .center)
+							.ignoresSafeArea()
+					}
+				}
+			}
 			.disabled(isSwitchingRadio)
 			.overlay {
 				if isSwitchingRadio {
@@ -488,6 +521,21 @@ struct Connect: View {
 				.presentationDetents([.large])
 				.presentationDragIndicator(.automatic)
 		}
+		.sheet(isPresented: $showFirmwareUpdate) {
+			NavigationStack {
+				Firmware(node: safeNode)
+			}
+		}
+		.sheet(isPresented: $showEventInfo) {
+			if let info = eventFirmware {
+				EventFirmwareInfoView(
+					edition: accessoryManager.firmwareEdition,
+					info: info,
+					node: safeNode,
+					deviceFirmwareVersion: safeNode?.metadata?.firmwareVersion
+				)
+			}
+		}
 		.onChange(of: self.accessoryManager.state) { _, state in
 			// Clear stale node data when not subscribed to prevent showing previous connection's info
 			if state != .subscribed {
@@ -525,7 +573,9 @@ struct Connect: View {
 		}) { device in
 			WifiProvisioningView(preselectedDevice: device)
 		}
-		.onAppear { updateNymeaDiscovery() }
+		.onAppear {
+			updateNymeaDiscovery()
+		}
 		.onDisappear { nymeaProvisioning.stopDiscovery() }
 		.onChange(of: scenePhase) { _, _ in updateNymeaDiscovery() }
 		.onChange(of: accessoryManager.isConnected) { _, _ in updateNymeaDiscovery() }
@@ -539,6 +589,23 @@ struct Connect: View {
 				try? await Task.sleep(for: .seconds(15))
 			}
 		}
+	}
+
+	/// The cached branding for the currently connected event edition, or nil when on vanilla
+	/// firmware or the edition isn't cached yet. Reads from the `@Query` results, so it updates
+	/// automatically as the bundled seed / background API refresh populates rows and as the
+	/// connected edition changes — branding and the post-event nudge appear/clear on their own.
+	private var eventFirmware: EventFirmwareEntity? {
+		guard accessoryManager.firmwareEdition.isEvent else { return nil }
+		let key = accessoryManager.firmwareEdition.editionKey
+		return eventFirmwareEditions.first { $0.edition == key }
+	}
+
+	/// The accent color for the ambient event wash, or nil when there's nothing to tint:
+	/// not on an event edition, the user opted out, or no cached accent color yet.
+	private var eventAccentWash: Color? {
+		guard accessoryManager.firmwareEdition.isEvent, useEventTheme else { return nil }
+		return eventFirmware?.accentColorValue
 	}
 
 	/// Fetch only the latest device metrics battery level without faulting all telemetries.
@@ -626,6 +693,83 @@ struct Connect: View {
 		Task {
 			try await accessoryManager.disconnect()
 		}
+	}
+}
+
+/// Compact, tappable event-firmware branding for the connected device. Uses the fetched
+/// display name, icon, and accent color, falling back to the enum name / a placeholder icon /
+/// `.accentColor` when the off-device metadata hasn't been cached yet (so a brand-new event
+/// still shows *something*). Tapping opens the full event info sheet.
+struct EventFirmwareBadge: View {
+	let edition: FirmwareEditions
+	let info: EventFirmwareEntity?
+	var onTap: (() -> Void)?
+
+	private var title: String { info?.displayName ?? edition.name }
+	private var tint: Color { info?.accentColorValue ?? .accentColor }
+
+	var body: some View {
+		Button {
+			onTap?()
+		} label: {
+			HStack(spacing: 8) {
+				EventFirmwareIcon(iconUrl: info?.iconUrl, accent: tint, size: 28)
+				VStack(alignment: .leading, spacing: 2) {
+					HStack(spacing: 4) {
+						Text(title)
+							.font(.callout.weight(.semibold))
+						if info != nil {
+							Image(systemName: "info.circle")
+								.font(.caption2)
+						}
+					}
+					.foregroundColor(tint)
+					if let welcome = info?.welcomeMessage, !welcome.isEmpty {
+						Text(welcome)
+							.font(.caption)
+							.foregroundColor(.secondary)
+							.lineLimit(2)
+							.multilineTextAlignment(.leading)
+					}
+				}
+			}
+		}
+		.buttonStyle(.plain)
+		// Nothing to open until the off-device metadata is cached.
+		.disabled(onTap == nil || info == nil)
+	}
+}
+
+/// Persistent "the event is over — return to standard firmware" nudge, shown on the Connect
+/// screen when the connected device runs an event edition whose `eventEnd` has passed. Tapping
+/// it opens the firmware-update flow. Non-dismissible by design (mirrors Android): it clears
+/// only when the device returns to vanilla firmware.
+struct EventFirmwareEndedBanner: View {
+	let info: EventFirmwareEntity?
+	let onUpdate: () -> Void
+
+	var body: some View {
+		Button(action: onUpdate) {
+			HStack(alignment: .top, spacing: 10) {
+				Image(systemName: "exclamationmark.triangle.fill")
+					.foregroundColor(.orange)
+				VStack(alignment: .leading, spacing: 2) {
+					Text("Event has ended")
+						.font(.callout.weight(.semibold))
+						.foregroundColor(.primary)
+					Text("This device is running \(info?.displayName ?? "event") firmware. Update to standard Meshtastic firmware.")
+						.font(.caption)
+						.foregroundColor(.secondary)
+						.multilineTextAlignment(.leading)
+				}
+				Spacer()
+				Image(systemName: "chevron.right")
+					.font(.caption)
+					.foregroundColor(.secondary)
+			}
+			.padding(.vertical, 6)
+		}
+		.buttonStyle(.plain)
 	}
 }
 

@@ -39,6 +39,21 @@ The app can check for and install Meshtastic firmware updates directly on your c
 
 Select the update channel in **Settings → App Settings → Firmware Channel**.
 
+## Event Firmware
+
+Some radios ship with special **event firmware** for gatherings like DEF CON, Open Sauce, Hamvention, or Burning Man. When you connect to a device running event firmware, the **Connect** screen shows an event badge with the event's name and a welcome message, tinted in the event's accent color.
+
+Tap the badge to open the **event info sheet**, which shows the event's location, dates, useful links, and the event firmware build. From there you can:
+
+- Start a **firmware update** for the connected radio.
+- Toggle **Use Event Theme** to turn the ambient accent wash (and event fonts, where available) on or off. Turning it off keeps the event badge visible so you can re-enable it later.
+
+New-node notifications are automatically muted while you're connected to event firmware (events are busy — many nodes appear at once) and restored when you return to standard firmware.
+
+**After the event:** once an event's end date has passed, the Connect screen shows a reminder to return to standard Meshtastic firmware. Tap it to open the firmware update flow. The reminder clears automatically once the device is back on standard firmware.
+
+Event details are fetched from Meshtastic's servers with an offline fallback, so a newly announced event can appear without an app update.
+
 ## Troubleshooting
 
 **Update fails mid-way**
