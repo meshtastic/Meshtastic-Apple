@@ -1,6 +1,8 @@
 # Exclude automatically generated Swift files
 excluded:
   - MeshtasticProtobufs
+  - tools/protoc-gen-fieldmeta-swift/.build
+  - tools/protoc-gen-fieldmeta-swift/Sources/protoc-gen-fieldmeta-swift/meshtastic
 
 line_length: 400
 
