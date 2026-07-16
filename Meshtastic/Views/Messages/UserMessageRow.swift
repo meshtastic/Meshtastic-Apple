@@ -150,7 +150,7 @@ struct UserMessageRow: View {
 						}
 						
 						if let deliveryStatus, deliveryStatus.canRetry {
-							RetryButton(message: message, destination: .user(user))
+							RetryButton(message: message, destination: .user(user), status: deliveryStatus)
 						}
 					}
 					

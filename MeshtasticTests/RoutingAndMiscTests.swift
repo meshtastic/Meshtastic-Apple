@@ -82,7 +82,26 @@ struct RoutingErrorDetailedTests {
 	}
 
 	@Test func description_noChannelUsesSourceBackedMeaning() {
-		#expect(RoutingError.noChannel.description == "Check the channel and key settings before sending again.")
+		#expect(RoutingError.noChannel.description == "The sender or recipient could not use a matching channel/key for this message.")
+	}
+
+	@Test func description_usesActionableDesignIssueWording() {
+		let expected: [(RoutingError, String)] = [
+			(.maxRetransmit, "No node confirmed this message. Try again when you have better signal or more mesh coverage."),
+			(.noChannel, "The sender or recipient could not use a matching channel/key for this message."),
+			(.noInterface, "The sender has no usable radio interface for this message."),
+			(.dutyCycleLimit, "Local airtime limits are temporarily blocking sends. Wait before trying again."),
+			(.rateLimitExceeded, "Messages are being sent too quickly. Wait before trying again."),
+			(.noResponse, "The destination received the request, but no app or module responded. Try again when the recipient is reachable."),
+			(.pkiFailed, "The encrypted send path could not be used. Wait for node info or keys to sync, then try again."),
+			(.pkiUnknownPubkey, "The recipient does not know your public key yet. Your node may share its info automatically; try again after it syncs."),
+			(.pkiSendFailPublicKey, "Your node does not have the recipient's public key yet. Wait for node info to sync, then try again."),
+			(.adminBadSessionKey, "The admin session key is missing, expired, or invalid. Request a new session before trying again.")
+		]
+
+		for (error, description) in expected {
+			#expect(error.description == description)
+		}
 	}
 
 	@Test func canRetry_noneIsFalse() {

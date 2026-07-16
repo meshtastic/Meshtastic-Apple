@@ -78,35 +78,35 @@ enum RoutingError: Int, CaseIterable, Identifiable {
 		case .noRoute:
 			return "No route to the destination node was found in the mesh. Try again when more nodes are reachable.".localized
 		case .gotNak:
-			return "A node in the path rejected this message. Try again when the route changes.".localized
+			return "A node rejected this message. Try again when the route changes.".localized
 		case .timeout:
 			return "No acknowledgment was received in time. Try again when you have better signal or more mesh coverage.".localized
 		case .noInterface:
-			return "The radio interface needed to send this message is unavailable.".localized
+			return "The sender has no usable radio interface for this message.".localized
 		case .maxRetransmit:
 			return "No node confirmed this message. Try again when you have better signal or more mesh coverage.".localized
 		case .noChannel:
-			return "Check the channel and key settings before sending again.".localized
+			return "The sender or recipient could not use a matching channel/key for this message.".localized
 		case .tooLarge:
 			return "Shorten the message and send it again.".localized
 		case .noResponse:
-			return "The recipient did not respond. Try again when the recipient is reachable.".localized
+			return "The destination received the request, but no app or module responded. Try again when the recipient is reachable.".localized
 		case .dutyCycleLimit:
-			return "Your region's duty cycle limit has been reached. Wait before sending again.".localized
+			return "Local airtime limits are temporarily blocking sends. Wait before trying again.".localized
 		case .badRequest:
-			return "The radio could not send this message because the request was invalid.".localized
+			return "The destination rejected this request as invalid.".localized
 		case .notAuthorized:
-			return "Your node is not authorized to send this message in the current context.".localized
+			return "The destination refused this request because it is not authorized.".localized
 		case .pkiFailed:
-			return "Encryption failed. Wait for node info or keys to sync, then try again.".localized
+			return "The encrypted send path could not be used. Wait for node info or keys to sync, then try again.".localized
 		case .pkiUnknownPubkey:
 			return "The recipient does not know your public key yet. Your node may share its info automatically; try again after it syncs.".localized
 		case .adminBadSessionKey:
-			return "The admin session key is invalid or expired. Request a new session before trying again.".localized
+			return "The admin session key is missing, expired, or invalid. Request a new session before trying again.".localized
 		case .adminPublicKeyUnauthorized:
-			return "The remote node does not authorize your admin public key.".localized
+			return "The remote node does not authorize your admin key.".localized
 		case .rateLimitExceeded:
-			return "Too many messages were sent in a short period. Wait before trying again.".localized
+			return "Messages are being sent too quickly. Wait before trying again.".localized
 		case .pkiSendFailPublicKey:
 			return "Your node does not have the recipient's public key yet. Wait for node info to sync, then try again.".localized
 		}

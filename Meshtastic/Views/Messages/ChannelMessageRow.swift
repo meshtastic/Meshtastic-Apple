@@ -142,7 +142,7 @@ struct ChannelMessageRow: View {
 						}
 						
 						if let deliveryStatus, deliveryStatus.canRetry {
-							RetryButton(message: message, destination: .channel(channel))
+							RetryButton(message: message, destination: .channel(channel), status: deliveryStatus)
 						}
 					}
 					
