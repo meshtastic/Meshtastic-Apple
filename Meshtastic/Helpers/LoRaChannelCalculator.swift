@@ -78,11 +78,15 @@ struct LoRaChannelCalculator {
 		return Int(djb2Hash(primaryName) % UInt32(numChannels)) + 1
 	}
 
-	/// The slot a channel with `name` would operate on, **always** derived from the
-	/// name (ignoring any `channelNum` override). This is the slot a beacon's offered
+	/// The slot a channel with `name` would operate on. Regions with a firmware default
+	/// slot use that default when a beacon does not carry an explicit channel number;
+	/// other regions derive the slot from the name. This is the slot a beacon's offered
 	/// channel resolves to on its own mesh, used to decide whether the connected radio
 	/// (whose slot comes from `effectiveChannelSlot`) can already hear it.
 	func slotForChannelName(_ name: String) -> Int {
+		if let defaultSlot = region?.defaultSlot, defaultSlot > 0 {
+			return defaultSlot
+		}
 		let numChannels = numChannels()
 		return numChannels > 0 ? Int(djb2Hash(name) % UInt32(numChannels)) + 1 : 0
 	}
@@ -286,7 +290,7 @@ struct RegionInfo {
 		case .itu22M:
 			self.init(freqStart: 144.0, freqEnd: 148.0, padding: 0.0022, defaultSlot: 51)
 		case .eu866:
-			self.init(freqStart: 866.0, freqEnd: 866.5)
+			self.init(freqStart: 865.6, freqEnd: 867.6, spacing: 0.4, padding: 0.0375)
 		case .eu874:
 			self.init(freqStart: 873.0, freqEnd: 876.0)
 		case .eu917:

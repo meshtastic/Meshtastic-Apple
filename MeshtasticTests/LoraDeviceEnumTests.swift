@@ -875,6 +875,23 @@ struct LoRaChannelCalculatorTests {
 		#expect(abs(calculator.radioFrequencyMHz(slot: slot) - 145.030) < 0.001)
 	}
 
+	@Test("EU_866 LiteFast uses the firmware Lite band plan")
+	func eu866LiteFast() {
+		let calculator = LoRaChannelCalculator(
+			regionCode: RegionCodes.eu866.rawValue,
+			usePreset: true,
+			modemPreset: ModemPresets.liteFast.rawValue,
+			channelNum: 0,
+			bandwidth: 0,
+			overrideFrequency: 0
+		)
+
+		// Firmware PROFILE_LITE: 400 kHz spacing + 37.5 kHz padding on either side
+		// of LiteFast's 125 kHz bandwidth → four 600 kHz slots in 865.6–867.6 MHz.
+		#expect(abs(calculator.radioFrequencyMHz(slot: 1) - 865.700) < 0.001)
+		#expect(abs(calculator.radioFrequencyMHz(slot: 4) - 867.500) < 0.001)
+	}
+
 	@Test("Channel frequency applies the configured offset after the firmware slot calculation")
 	func appliesFrequencyOffset() {
 		let calculator = LoRaChannelCalculator(

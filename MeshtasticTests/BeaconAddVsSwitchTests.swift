@@ -25,6 +25,15 @@ struct BeaconAddVsSwitchTests {
 		return config
 	}
 
+	private func itu2TinyFastConfig(channelNum: Int32 = 0) -> LoRaConfigEntity {
+		let config = LoRaConfigEntity()
+		config.regionCode = Int32(RegionCodes.itu22M.rawValue)
+		config.modemPreset = Int32(ModemPresets.tinyFast.rawValue)
+		config.usePreset = true
+		config.channelNum = channelNum
+		return config
+	}
+
 	// MARK: .add — everything matches
 
 	@Test func addWhenSlotPresetAndRegionMatch() {
@@ -54,6 +63,21 @@ struct BeaconAddVsSwitchTests {
 		#expect(option == .add)
 	}
 
+	@Test func addWhenHamBeaconUsesFirmwareDefaultSlot() {
+		// "TinyFast" hashes to slot 144, but an unset ITU2_2M channel actually uses
+		// the firmware default slot 51 on both meshes.
+		let option = LoRaChannelCalculator.beaconJoinOption(
+			hasOfferChannel: true,
+			offerChannelName: "TinyFast",
+			offeredPreset: .tinyFast,
+			offerRegion: RegionCodes.itu22M.rawValue,
+			isConnected: true,
+			loRaConfig: itu2TinyFastConfig(),
+			primaryChannelName: "TinyFast"
+		)
+		#expect(option == .add)
+	}
+
 	// MARK: .switchOnly — mismatches
 
 	@Test func switchOnlyOnSlotMismatch() {
@@ -66,6 +90,21 @@ struct BeaconAddVsSwitchTests {
 			isConnected: true,
 			loRaConfig: usLongFastConfig(),
 			primaryChannelName: "MyMesh"
+		)
+		#expect(option == .switchOnly)
+	}
+
+	@Test func switchOnlyWhenHamRadioPinsDifferentSlot() {
+		// The beacon resolves to the region's default slot 51, while this radio is
+		// explicitly pinned to slot 52.
+		let option = LoRaChannelCalculator.beaconJoinOption(
+			hasOfferChannel: true,
+			offerChannelName: "TinyFast",
+			offeredPreset: .tinyFast,
+			offerRegion: RegionCodes.itu22M.rawValue,
+			isConnected: true,
+			loRaConfig: itu2TinyFastConfig(channelNum: 52),
+			primaryChannelName: "TinyFast"
 		)
 		#expect(option == .switchOnly)
 	}
