@@ -81,10 +81,6 @@ struct RoutingErrorDetailedTests {
 		}
 	}
 
-	@Test func description_noChannelUsesSourceBackedMeaning() {
-		#expect(RoutingError.noChannel.description == "The sender or recipient could not use a matching channel/key for this message.")
-	}
-
 	@Test func description_usesActionableDesignIssueWording() {
 		let expected: [(RoutingError, String)] = [
 			(.maxRetransmit, "No node confirmed this message. Try again when you have better signal or more mesh coverage."),

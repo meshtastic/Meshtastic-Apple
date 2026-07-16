@@ -20,6 +20,7 @@ struct ChannelMessageRow: View {
 	@Binding var messageToHighlight: Int64
 	let scrollView: ScrollViewProxy
 	let onTapback: (MessageEntity) -> Void
+	let onMessageRetried: () -> Void
 
 	private var isCurrentUser: Bool {
 		Int64(preferredPeripheralNum) == message.fromUser?.num
@@ -35,7 +36,8 @@ struct ChannelMessageRow: View {
 	     messageFieldFocused: FocusState<Bool>.Binding,
 	     messageToHighlight: Binding<Int64>,
 	     scrollView: ScrollViewProxy,
-	     onTapback: @escaping (MessageEntity) -> Void) {
+	     onTapback: @escaping (MessageEntity) -> Void,
+	     onMessageRetried: @escaping () -> Void = {}) {
 		// Initialize ObservedObject with the concrete instance
 		self.message = message
 		self.replyMessage = replyMessage
@@ -48,6 +50,7 @@ struct ChannelMessageRow: View {
 		self._messageToHighlight = messageToHighlight
 		self.scrollView = scrollView
 		self.onTapback = onTapback
+		self.onMessageRetried = onMessageRetried
 	}
 
 	var body: some View {
@@ -142,7 +145,12 @@ struct ChannelMessageRow: View {
 						}
 						
 						if let deliveryStatus, deliveryStatus.canRetry {
-							RetryButton(message: message, destination: .channel(channel), status: deliveryStatus)
+							RetryButton(
+								message: message,
+								destination: .channel(channel),
+								status: deliveryStatus,
+								onMessageSent: onMessageRetried
+							)
 						}
 					}
 					

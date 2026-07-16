@@ -8,7 +8,20 @@ struct RetryButton: View {
 	let message: MessageEntity
 	let destination: MessageDestination
 	let status: MessageDeliveryStatus
+	let onMessageSent: (() -> Void)?
 	@State private var isShowingDetails = false
+
+	init(
+		message: MessageEntity,
+		destination: MessageDestination,
+		status: MessageDeliveryStatus,
+		onMessageSent: (() -> Void)? = nil
+	) {
+		self.message = message
+		self.destination = destination
+		self.status = status
+		self.onMessageSent = onMessageSent
+	}
 
 	var body: some View {
 		Button {
@@ -52,11 +65,7 @@ struct RetryButton: View {
 				try await accessoryManager.sendMessage(message: payload, toUserNum: userNum, channel: channel,
 													   isEmoji: isEmoji, replyID: replyID)
 				if case .channel = destination {
-					// We must refresh the channel to trigger a view update since its relationship
-					// to messages is via a weak fetched property which is not updated by
-					// `bleManager.sendMessage` unlike the user entity.
-					Task { @MainActor in
-					}
+					await MainActor.run { onMessageSent?() }
 				}
 			} catch {
 				// Best effort
