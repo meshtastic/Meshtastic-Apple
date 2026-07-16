@@ -62,8 +62,39 @@ enum FirmwareEditions: Int, CaseIterable, Identifiable {
 		self != .vanilla
 	}
 
+	/// The stable proto enum name used as the join key against the off-device event-firmware
+	/// metadata (`EventFirmwareEntity.edition`). Matches the names in `event_firmware.json`.
+	var editionKey: String {
+		switch self {
+		case .vanilla:
+			return "VANILLA"
+		case .smartCitizen:
+			return "SMART_CITIZEN"
+		case .openSauce:
+			return "OPEN_SAUCE"
+		case .defcon:
+			return "DEFCON"
+		case .burningMan:
+			return "BURNING_MAN"
+		case .hamvention:
+			return "HAMVENTION"
+		case .diyEdition:
+			return "DIY_EDITION"
+		}
+	}
+
 	/// Initialize from the protobuf FirmwareEdition enum
 	init(from protoEdition: FirmwareEdition) {
 		self = FirmwareEditions(rawValue: protoEdition.rawValue) ?? .vanilla
+	}
+
+	/// Initialize from the stable proto edition name (e.g. `"DEFCON"`) used in the
+	/// event-firmware metadata payload. Returns nil for an unknown key so callers can ignore
+	/// editions this app build doesn't know about.
+	init?(editionKey: String) {
+		guard let match = FirmwareEditions.allCases.first(where: { $0.editionKey == editionKey }) else {
+			return nil
+		}
+		self = match
 	}
 }

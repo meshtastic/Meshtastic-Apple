@@ -116,6 +116,7 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 	static let deviceURLEndpoint = URL(string: "https://api.meshtastic.org/resource/deviceHardware")!
 	static let imageURLPrefix = URL(string: "https://flasher.meshtastic.org/img/devices/")!
 	static let firmwareURLEndpoint = URL(string: "https://api.meshtastic.org/github/firmware/list")!
+	static let eventFirmwareURLEndpoint = URL(string: "https://api.meshtastic.org/resource/eventFirmware")!
 	
 	// MARK: - Private properties
 	private let fileManager = FileManager.default
@@ -132,9 +133,14 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 			// Load bundled catalog first — instant display, no network needed.
 			try? await self.refreshBundledDevicesData()
 			try? await self.refreshFirmwareAPIData()
+			// Seed event-firmware branding from the bundle so it survives restarts offline.
+			await self.refreshBundledEventFirmwareData()
 			// Then silently update from the live API in the background.
 			Task.detached(priority: .utility) {
 				try? await self.refreshDevicesAPIData()
+			}
+			Task.detached(priority: .utility) {
+				await self.refreshEventFirmwareAPIData()
 			}
 		}
 	}
@@ -630,5 +636,184 @@ extension MeshtasticAPI {
 			throw MeshtasticAPIError.unableToRetreviveJSON
 		}
 		return bundledData
+	}
+}
+
+// MARK: - Event Firmware Metadata
+
+// Decoding structs for `GET https://api.meshtastic.org/resource/eventFirmware` (version 2).
+// Every field except `edition` is independently optional; a new event may ship with only a
+// subset populated, so all use `decodeIfPresent`.
+private struct EventFirmwareFile: Codable {
+	let version: Int?
+	let editions: [EventFirmwarePayload]
+}
+
+private struct EventFirmwarePayload: Codable {
+	let edition: String
+	let displayName: String?
+	let welcomeMessage: String?
+	let tag: String?
+	let eventStart: String?
+	let eventEnd: String?
+	let timeZone: String?
+	let location: String?
+	let iconUrl: String?
+	let accentColor: String?
+	let domain: String?
+	let links: [EventFirmwareLinkPayload]?
+	let theme: EventFirmwareThemePayload?
+	let firmware: EventFirmwareBuildPayload?
+}
+
+private struct EventFirmwareLinkPayload: Codable {
+	let label: String
+	let url: String
+}
+
+private struct EventFirmwareThemePayload: Codable {
+	let name: String?
+	let tagline: String?
+	let palette: [String]?
+	let fonts: EventFirmwareFontsPayload?
+}
+
+private struct EventFirmwareFontsPayload: Codable {
+	let heading: String?
+	let body: String?
+}
+
+private struct EventFirmwareBuildPayload: Codable {
+	let slug: String?
+	let version: String?
+	let id: String?
+	let title: String?
+	let zipUrl: String?
+	let releaseNotes: String?
+}
+
+extension MeshtasticAPI {
+
+	/// Load the bundled `event_firmware.json` seed into the cache. Runs at launch so event
+	/// branding is available instantly and survives restarts offline (the live refresh then
+	/// updates it in the background). Never throws — a missing/corrupt bundle is logged and
+	/// leaves any existing cache intact.
+	func refreshBundledEventFirmwareData() async {
+		guard container != nil else { return }
+		guard let bundledURL = Bundle.main.url(forResource: "event_firmware", withExtension: "json"),
+			  let data = try? Data(contentsOf: bundledURL),
+			  let decoded = try? decoder.decode(EventFirmwareFile.self, from: data) else {
+			Logger.services.warning("Unable to load bundled event_firmware.json")
+			return
+		}
+		// pruneMissing: false — the bundle is a *floor*, not authoritative. It must never delete
+		// an edition that a prior successful live refresh cached but that isn't in the bundled
+		// snapshot; that edition would otherwise vanish on every offline relaunch (the exact
+		// poor-connectivity-at-the-venue scenario this cache exists for).
+		await importEventEditions(decoded.editions, pruneMissing: false)
+		Logger.services.info("Loaded bundled event firmware (\(decoded.editions.count, privacy: .public) editions)")
+	}
+
+	/// Silently refresh the event-firmware metadata from the live API.
+	///
+	/// IMPORTANT: this deliberately does NOT use the short `data(timeout:)` deadline the device
+	/// and firmware calls use. `api.meshtastic.org` is measured at 20–60s for this resource; a
+	/// short deadline cancels every refresh and pins users to the bundled seed (Android hit
+	/// exactly this and removed its local deadline). We rely on the default URLSession timeout
+	/// plus stale-while-revalidate. An empty or failed response is a **no-op** — it must leave
+	/// the existing cache intact, never wipe it.
+	func refreshEventFirmwareAPIData() async {
+		guard container != nil else { return }
+
+		var request = URLRequest(url: Self.eventFirmwareURLEndpoint)
+		// No short local timeout — see the doc comment above. Revalidate against the server
+		// cache so a 304 is cheap while still surfacing new events.
+		request.cachePolicy = .reloadRevalidatingCacheData
+
+		guard let (data, response) = try? await URLSession.shared.data(for: request),
+			  let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode),
+			  !data.isEmpty else {
+			Logger.services.warning("Event firmware API fetch failed or empty — keeping cached editions")
+			return
+		}
+
+		guard let decoded = try? decoder.decode(EventFirmwareFile.self, from: data),
+			  !decoded.editions.isEmpty else {
+			// A decode failure or an editions-less payload must not clobber the cache.
+			Logger.services.warning("Event firmware API returned no usable editions — keeping cache")
+			return
+		}
+
+		// pruneMissing: true — the live API is authoritative, so an edition it no longer lists is
+		// genuinely retired and should be removed from the cache.
+		await importEventEditions(decoded.editions, pruneMissing: true)
+		UserDefaults.lastEventFirmwareAPIUpdate = Date()
+		Logger.services.info("Refreshed event firmware from API (\(decoded.editions.count, privacy: .public) editions)")
+	}
+
+	/// Upsert the given editions into `EventFirmwareEntity`. When `pruneMissing` is true, also
+	/// delete rows not present in `editions` — this is reserved for the **authoritative** live-API
+	/// import. The bundled seed passes `pruneMissing: false` so it only upserts/seeds and never
+	/// deletes an edition cached from a prior successful API refresh. Called with a non-empty
+	/// list from both paths; the caller guarantees an empty/failed fetch never reaches here.
+	private func importEventEditions(_ editions: [EventFirmwarePayload], pruneMissing: Bool) async {
+		guard let container else { return }
+		await MainActor.run {
+			let context = container.mainContext
+			let importedKeys = Set(editions.map { $0.edition })
+
+			for payload in editions {
+				let key = payload.edition
+				var descriptor = FetchDescriptor<EventFirmwareEntity>(
+					predicate: #Predicate { $0.edition == key }
+				)
+				descriptor.fetchLimit = 1
+
+				let entity: EventFirmwareEntity
+				if let existing = try? context.fetch(descriptor).first {
+					entity = existing
+				} else {
+					entity = EventFirmwareEntity(edition: key)
+					context.insert(entity)
+				}
+
+				entity.displayName = payload.displayName
+				entity.welcomeMessage = payload.welcomeMessage
+				entity.tag = payload.tag
+				entity.eventStart = payload.eventStart
+				entity.eventEnd = payload.eventEnd
+				entity.timeZone = payload.timeZone
+				entity.location = payload.location
+				entity.iconUrl = payload.iconUrl
+				entity.accentColor = payload.accentColor
+				entity.domain = payload.domain
+				entity.setLinks((payload.links ?? []).map {
+					EventFirmwareEntity.Link(label: $0.label, url: $0.url)
+				})
+				entity.themeName = payload.theme?.name
+				entity.themeTagline = payload.theme?.tagline
+				entity.themePalette = payload.theme?.palette ?? []
+				entity.themeFontHeading = payload.theme?.fonts?.heading
+				entity.themeFontBody = payload.theme?.fonts?.body
+				entity.firmwareSlug = payload.firmware?.slug
+				entity.firmwareVersion = payload.firmware?.version
+				entity.firmwareId = payload.firmware?.id
+				entity.firmwareTitle = payload.firmware?.title
+				entity.firmwareZipUrl = payload.firmware?.zipUrl
+				entity.firmwareReleaseNotes = payload.firmware?.releaseNotes
+			}
+
+			// Delete editions no longer present — only for the authoritative live-API import.
+			if pruneMissing {
+				let allDescriptor = FetchDescriptor<EventFirmwareEntity>()
+				if let all = try? context.fetch(allDescriptor) {
+					for row in all where !importedKeys.contains(row.edition) {
+						context.delete(row)
+					}
+				}
+			}
+
+			try? context.save()
+		}
 	}
 }

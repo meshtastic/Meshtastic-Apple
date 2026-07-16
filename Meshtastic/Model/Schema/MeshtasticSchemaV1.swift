@@ -35,6 +35,7 @@ enum MeshtasticSchemaV1: VersionedSchema {
 			DeviceHardwareTagEntity.self,
 			DeviceLinkEntity.self,
 			FirmwareReleaseEntity.self,
+			EventFirmwareEntity.self,
 			// Config entities
 			AmbientLightingConfigEntity.self,
 			AudioConfigEntity.self,

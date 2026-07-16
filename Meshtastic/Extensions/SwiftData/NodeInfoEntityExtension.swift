@@ -107,6 +107,41 @@ extension NodeInfoEntity {
 		return try? ctx.fetch(descriptor).first
 	}
 
+	var latestAirQualityMetrics: TelemetryEntity? {
+		guard let ctx = modelContext else { return nil }
+		let nodeNum = self.num
+		let metricsType: Int32 = 3
+		var descriptor = FetchDescriptor<TelemetryEntity>(
+			predicate: #Predicate<TelemetryEntity> { $0.nodeTelemetry?.num == nodeNum && $0.metricsType == metricsType },
+			sortBy: [SortDescriptor(\TelemetryEntity.time, order: .reverse)]
+		)
+		descriptor.fetchLimit = 1
+		return try? ctx.fetch(descriptor).first
+	}
+
+	/// NowCast-derived AQI (0–500) computed from the last 12 hours of PM2.5 telemetry, or `nil`
+	/// when there isn't enough recent history to compute a NowCast. Per design#54, callers should
+	/// fall back to showing the raw PM2.5 reading rather than a misleading instantaneous AQI.
+	var airQualityNowCastAQI: Int? {
+		let twelveHoursAgo = Calendar.current.date(byAdding: .hour, value: -12, to: Date()) ?? .distantPast
+		let readings = safeTelemetries(ofType: 3).compactMap { telemetry -> (date: Date, pm25: Double)? in
+			guard let time = telemetry.time, time >= twelveHoursAgo, let pm25 = telemetry.pm25Standard else { return nil }
+			return (date: time, pm25: Double(pm25))
+		}
+		return EPAAirQuality.nowCastAQI(from: readings)
+	}
+
+	var hasAirQualityMetrics: Bool {
+		guard let ctx = modelContext else { return false }
+		let nodeNum = self.num
+		let metricsType: Int32 = 3
+		var descriptor = FetchDescriptor<TelemetryEntity>(
+			predicate: #Predicate<TelemetryEntity> { $0.nodeTelemetry?.num == nodeNum && $0.metricsType == metricsType }
+		)
+		descriptor.fetchLimit = 1
+		return ((try? ctx.fetch(descriptor)) ?? []).isEmpty == false
+	}
+
 	var latestPowerMetrics: TelemetryEntity? {
 		guard let ctx = modelContext else { return nil }
 		let nodeNum = self.num

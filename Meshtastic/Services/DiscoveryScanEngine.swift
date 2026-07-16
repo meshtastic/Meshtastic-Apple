@@ -1210,8 +1210,9 @@ extension DiscoveryScanEngine {
 					}
 				}
 				dn.messageCount = messageCounts[node.num] ?? 0
-				// Sensor packets ≈ environment (1) + air-quality (2) telemetry the node has reported.
-				dn.sensorPacketCount = node.telemetries.filter { $0.metricsType == 1 || $0.metricsType == 2 }.count
+				// Sensor packets ≈ environment (1) + air-quality (3) telemetry the node has reported,
+				// matching the live scan's sensorPacketCount (.environmentMetrics + .airQualityMetrics).
+				dn.sensorPacketCount = node.telemetries.filter { $0.metricsType == 1 || $0.metricsType == 3 }.count
 				dn.presetName = presetName
 				dn.session = session
 				dn.presetResult = result
