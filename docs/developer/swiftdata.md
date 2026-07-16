@@ -95,13 +95,30 @@ Key model types:
 | `NodeInfoEntity` | A node heard on the mesh |
 | `MessageEntity` | A channel or direct message |
 | `PositionEntity` | A GPS position update |
-| `TelemetryEntity` | Device/environment sensor data |
+| `TelemetryEntity` | Device, environment, power, air-quality (PM), and local-stats sensor data, discriminated by `metricsType` |
 | `TraceRouteEntity` | A recorded trace route |
 | `WaypointEntity` | A shared map waypoint |
+| `EventFirmwareEntity` | Cached off-device event-firmware branding/lifecycle metadata |
+
+### `EventFirmwareEntity` — off-device event branding cache
+
+`EventFirmwareEntity` is a **runtime cache**, not user data. A device only reports *which*
+event edition it runs via the `MyNodeInfo.firmwareEdition` proto enum (mapped to the
+`FirmwareEditions` Swift enum); the display data for each edition — name, welcome message,
+dates, IANA time zone, accent color, links, theme, and the event's own firmware build — lives
+off-device at `https://api.meshtastic.org/resource/eventFirmware` (version 2). `MeshtasticAPI`
+seeds the cache from the bundled `event_firmware.json` at launch (offline-first) and then
+refreshes it from the live endpoint in the background. The `edition` proto-enum name (e.g.
+`"DEFCON"`) is the unique join key against the connected device's reported edition. Because it
+is a rebuildable cache, a failed/empty refresh is a **no-op** that leaves existing rows intact
+(it never wipes the cache), and the row lives in the unreleased **V1** schema — adding it
+required no new `VersionedSchema`/`MigrationStage` (see below).
 
 ## Schema Migrations
 
 When you add, rename, or remove properties on a `@Model` type, you must provide a migration. Schema files live in `Meshtastic/Model/Schema/`.
+
+> **Note — V1 is unreleased.** While `MeshtasticSchemaV1` remains the initial, unshipped version, additive `@Model` changes go **directly into V1** rather than a new versioned schema + stage (see the comment in `MeshtasticMigrationPlan.swift`). For example, the air-quality particulate-matter fields on `TelemetryEntity` (`pm10/25/100Standard`, `pm10/25/100Environmental`) were added in place. Start adding `VersionedSchema` versions and migration stages only once V1 has shipped.
 
 ### Adding a New Schema Version
 

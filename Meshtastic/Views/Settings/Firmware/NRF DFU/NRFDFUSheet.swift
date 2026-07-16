@@ -12,6 +12,7 @@ struct NRFDFUSheet: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@State var showWarningAlert = true
 	@StateObject private var dfuViewModel = DFUViewModel()
+	@State private var showChirpyGame = false
 	
 	let firmwareToFlash: URL
 	
@@ -60,6 +61,12 @@ struct NRFDFUSheet: View {
 							Text("Error: \(message)")
 						}
 					}.frame(minHeight: 250.0)
+
+					if dfuViewModel.state.gamePhase.isActive {
+						FirmwareUpdateGameButton(isPresented: $showChirpyGame, status: gameStatus)
+							.padding(.horizontal)
+							.padding(.bottom)
+					}
 				}
 			}
 		}
@@ -78,6 +85,16 @@ struct NRFDFUSheet: View {
 			.opacity([.starting, .uploading].contains(dfuViewModel.state) ? 0.3 : 1.0)
 		}
 		.interactiveDismissDisabled(true)
+		.firmwareUpdateGame(isPresented: $showChirpyGame, status: gameStatus)
+	}
+
+	private var gameStatus: FirmwareUpdateGameStatus {
+		FirmwareUpdateGameStatus(
+			title: "nRF DFU",
+			message: dfuViewModel.statusMessage,
+			progress: dfuViewModel.progress,
+			phase: dfuViewModel.state.gamePhase
+		)
 	}
 }
 

@@ -2,8 +2,8 @@
 //  InvalidUTF8Tests.swift
 //  MeshtasticTests
 //
-//  Tests for CVE: invalid UTF-8 in protobuf string fields
-//  causing BLE sync failure and infinite reconnect loop.
+//  Encoding-validation tests for FromRadio decoding: a string field carrying an invalid
+//  UTF-8 sequence must be skipped, not treated as a fatal transport/stream failure.
 //
 
 import Foundation
@@ -14,10 +14,10 @@ import MeshtasticProtobufs
 @Suite("Invalid UTF-8 Protobuf Handling")
 struct InvalidUTF8Tests {
 
-	// MARK: - Demonstrating the Issue
+	// MARK: - SwiftProtobuf UTF-8 validation behavior
 
-	/// Proves that SwiftProtobuf rejects a `FromRadio` containing invalid UTF-8
-	/// in `User.long_name`. This is the root cause of the infinite BLE reconnect loop.
+	/// Confirms SwiftProtobuf rejects a `FromRadio` whose `User.long_name` contains an
+	/// invalid UTF-8 sequence — the decode-time condition the shared funnel handles.
 	@Test func fromRadioWithInvalidUTF8Throws() throws {
 		// Build a valid FromRadio.nodeInfo payload, then corrupt the long_name field
 		// to contain an incomplete multibyte UTF-8 sequence.
@@ -106,6 +106,132 @@ struct InvalidUTF8Tests {
 			#expect(throws: (any Error).self) {
 				_ = try FromRadio(serializedBytes: patched)
 			}
+		}
+	}
+
+	// MARK: - Shared decode funnel: FromRadioDecoder
+
+	/// A truncated-emoji `long_name` must classify as `.skipInvalidUTF8` so every transport
+	/// skips the frame rather than tearing down the stream.
+	@Test func classifierSkipsTruncatedEmojiLongName() throws {
+		var user = User()
+		user.id = "!aabbccdd"
+		user.longName = "Lunar Tower 🌙ok"
+		user.shortName = "LT"
+
+		var nodeInfo = NodeInfo()
+		nodeInfo.num = 0xAABBCCDD
+		nodeInfo.user = user
+
+		var fromRadio = FromRadio()
+		fromRadio.id = 1
+		fromRadio.payloadVariant = .nodeInfo(nodeInfo)
+
+		let data = try fromRadio.serializedData()
+		let validName = Array("Lunar Tower 🌙ok".utf8)
+		let corruptName = Array("Lunar Tower ".utf8) + [0xF0, 0x9F, 0x8C, 0x99] + [0xF0, 0x9F, 0x97]
+
+		let patched = patchProtobufBytes(data: data, find: validName, replace: corruptName)
+		#expect(patched != nil, "Failed to find and patch the long_name in serialized protobuf data")
+
+		if let patched {
+			guard case .skipInvalidUTF8 = FromRadioDecoder.classify(patched) else {
+				Issue.record("Expected .skipInvalidUTF8 for a truncated-emoji long_name")
+				return
+			}
+		}
+	}
+
+	/// The second real-world case (lone lead bytes `E1 F3`) must also be skipped, not
+	/// treated as a transport failure.
+	@Test func classifierSkipsLoneLeadBytesLongName() throws {
+		var user = User()
+		user.id = "!11223344"
+		user.longName = "Meshtastic 37e2"
+		user.shortName = "MS"
+
+		var nodeInfo = NodeInfo()
+		nodeInfo.num = 0x11223344
+		nodeInfo.user = user
+
+		var fromRadio = FromRadio()
+		fromRadio.id = 2
+		fromRadio.payloadVariant = .nodeInfo(nodeInfo)
+
+		let data = try fromRadio.serializedData()
+		let validName = Array("Meshtastic 37e2".utf8)
+		let corruptName: [UInt8] = Array("Mesht".utf8) + [0xE1, 0xF3] + Array("tic 37e2".utf8)
+
+		let patched = patchProtobufBytes(data: data, find: validName, replace: corruptName)
+		#expect(patched != nil, "Failed to find and patch the long_name in serialized protobuf data")
+
+		if let patched {
+			guard case .skipInvalidUTF8 = FromRadioDecoder.classify(patched) else {
+				Issue.record("Expected .skipInvalidUTF8 for lone-lead-byte long_name")
+				return
+			}
+		}
+	}
+
+	/// A valid frame (including multibyte emoji) must classify as `.decoded` — the funnel
+	/// must not over-eagerly skip legitimate names.
+	@Test func classifierDecodesValidEmoji() throws {
+		var user = User()
+		user.id = "!aabbccdd"
+		user.longName = "Lunar Tower 🌙🗼"
+		user.shortName = "LT"
+
+		var nodeInfo = NodeInfo()
+		nodeInfo.num = 0xAABBCCDD
+		nodeInfo.user = user
+
+		var fromRadio = FromRadio()
+		fromRadio.id = 1
+		fromRadio.payloadVariant = .nodeInfo(nodeInfo)
+
+		let data = try fromRadio.serializedData()
+
+		guard case .decoded(let decoded) = FromRadioDecoder.classify(data) else {
+			Issue.record("Expected .decoded for a valid emoji long_name")
+			return
+		}
+		#expect(decoded.nodeInfo.user.longName == "Lunar Tower 🌙🗼")
+	}
+
+	/// A genuinely truncated protobuf (bytes lost mid-field) must classify as `.failed`,
+	/// NOT skipped — so transports still disconnect/reconnect to recover from real
+	/// framing corruption.
+	@Test func classifierFailsOnTruncatedProtobuf() throws {
+		var user = User()
+		user.id = "!aabbccdd"
+		user.longName = "Lunar Tower"
+		user.shortName = "LT"
+
+		var nodeInfo = NodeInfo()
+		nodeInfo.num = 0xAABBCCDD
+		nodeInfo.user = user
+
+		var fromRadio = FromRadio()
+		fromRadio.id = 1
+		fromRadio.payloadVariant = .nodeInfo(nodeInfo)
+
+		let data = try fromRadio.serializedData()
+		let truncated = Data(data.prefix(data.count - 3))
+
+		guard case .failed = FromRadioDecoder.classify(truncated) else {
+			Issue.record("Expected .failed for a truncated protobuf")
+			return
+		}
+	}
+
+	/// Malformed wire bytes (invalid wire type) must classify as `.failed`, preserving
+	/// genuine-corruption recovery.
+	@Test func classifierFailsOnMalformedProtobuf() throws {
+		// 0x0F = field 1, wire type 7 (invalid). Not empty (empty decodes as a valid
+		// empty FromRadio), so this exercises the malformed-wire path.
+		guard case .failed = FromRadioDecoder.classify(Data([0x0F])) else {
+			Issue.record("Expected .failed for malformed protobuf wire bytes")
+			return
 		}
 	}
 
