@@ -18,6 +18,7 @@ struct TextMessageField: View {
 	@State private var typingMessage: String = ""
 	@State private var totalBytes = 0
 	@State private var sendPositionWithMessage = false
+	@State private var mentionQuery: String? = nil
 
 	var body: some View {
 		if #available(iOS 18.0, macOS 15.0, *) {
@@ -33,6 +34,14 @@ struct TextMessageField: View {
 			)
 		} else {
 			VStack(spacing: 0) {
+				if let query = mentionQuery {
+					MentionAutocomplete(query: query) { user in
+						withAnimation(.easeInOut(duration: 0.15)) {
+							typingMessage = MentionParser.insertMentionToken(into: typingMessage, user: user)
+							mentionQuery = nil
+						}
+					}
+				}
 				HStack(alignment: .top) {
 					if replyMessageId != 0 || isFocused {
 						Button {
@@ -65,6 +74,7 @@ struct TextMessageField: View {
 									typingMessage = String(typingMessage.dropLast())
 									totalBytes = typingMessage.utf8.count
 								}
+								mentionQuery = MentionParser.activeMentionQuery(in: value)
 							}
 							.keyboardType(.default)
 							.focused($isFocused)
@@ -181,10 +191,20 @@ private struct FormattingComposeArea: View {
 	@State private var textSelection: TextSelection?
 	@State private var showToolbar = false
 	@State private var showLinkSheet = false
+	@State private var mentionQuery: String? = nil
 
 	var body: some View {
 		VStack(spacing: 0) {
 			MessagePreview(text: typingMessage)
+			if let query = mentionQuery {
+				MentionAutocomplete(query: query) { user in
+					withAnimation(.easeInOut(duration: 0.15)) {
+						textSelection = nil
+						typingMessage = MentionParser.insertMentionToken(into: typingMessage, user: user)
+						mentionQuery = nil
+					}
+				}
+			}
 			HStack(alignment: .top) {
 				if replyMessageId != 0 || isFocused {
 					Button {
@@ -228,6 +248,7 @@ private struct FormattingComposeArea: View {
 							totalBytes = typingMessage.utf8.count
 							textSelection = nil
 						}
+						mentionQuery = MentionParser.activeMentionQuery(in: value)
 					}
 					.keyboardType(.default)
 					.focused($isFocused)
@@ -287,16 +308,19 @@ private struct FormattingComposeArea: View {
 	// text/selection pair where the selection's UTF-16 range is out of bounds. (#1976)
 	private func send() {
 		textSelection = nil
+		mentionQuery = nil
 		onSend()
 	}
 
 	private func alert() {
 		textSelection = nil
+		mentionQuery = nil
 		onAlert()
 	}
 
 	private func requestPosition() {
 		textSelection = nil
+		mentionQuery = nil
 		onRequestPosition()
 	}
 

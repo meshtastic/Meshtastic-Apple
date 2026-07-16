@@ -1406,7 +1406,10 @@ actor MeshPackets {
 									// to ~1/sec — the badge tolerates brief lag and resyncs on app-active and on read.
 									let recountUnread = shouldRecomputeChannelUnread()
 									let connectedNodeNum = connectedNode
-									let shouldNotify = UserDefaults.channelMessageNotifications && newMessage.isEmoji == false && myInfo.channels.contains(where: { $0.index == newMessage.channel && !$0.mute })
+									// Notify if channel notifications are on and the channel isn't muted,
+									// OR if this message @mentions the local node (self-mention always notifies).
+									let isSelfMentioned = MentionParser.containsMention(of: connectedNode, in: messageText ?? "")
+									let shouldNotify = newMessage.isEmoji == false && (isSelfMentioned || (UserDefaults.channelMessageNotifications && myInfo.channels.contains(where: { $0.index == newMessage.channel && !$0.mute })))
 									var channelNotification: Notification?
 									if shouldNotify {
 										var chNotification = Notification(

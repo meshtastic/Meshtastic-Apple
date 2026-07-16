@@ -8,6 +8,7 @@ import Translation
 struct MessageText: View {
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
+	@EnvironmentObject var appState: AppState
 
 	let message: MessageEntity
 	let tapBackDestination: MessageDestination
@@ -101,7 +102,10 @@ struct MessageText: View {
 	}
 
 	private var baseMessageContent: some View {
-		let payload = message.displayedMarkdownPayload
+		let payload = MentionParser.resolveMentions(
+			in: message.displayedMarkdownPayload,
+			context: context
+		)
 		return Group {
 			if let attributed = try? AttributedString(markdown: payload, options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace)) {
 				Text(underlineLinks(in: attributed))
@@ -193,6 +197,15 @@ struct MessageText: View {
 
 	private func handleURL(_ url: URL) -> OpenURLAction.Result {
 		saveChannelLink = nil
+		// Handle meshtastic:/// deep links — node navigation from @mention taps
+		if url.scheme == "meshtastic",
+		   let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
+		   components.path == "/nodes",
+		   let nodeNumStr = components.queryItems?.first(where: { $0.name == "nodenum" })?.value,
+		   let nodeNum = Int64(nodeNumStr) {
+			appState.router.navigateToNodeDetail(nodeNum: nodeNum)
+			return .handled
+		}
 		var addChannels = false
 		if url.absoluteString.lowercased().contains("meshtastic.org/v/#") {
 			// Handle contact URL
