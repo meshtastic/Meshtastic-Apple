@@ -100,32 +100,44 @@ Long press any message and tap **Tapback** to send an emoji reaction.
 
 ---
 
+## Find in Conversation
+
+Tap the **Find in conversation** search field below the title of any channel or direct-message conversation, then type to search that conversation's message text.
+
+- Matching is **case- and accent-insensitive**, and searches the **entire conversation history** — not just the messages currently on screen.
+- A results bar shows your position in the matches (e.g. **2 of 7**); use the **up/down chevrons** to jump to the previous or next match, wrapping around at the ends. The current match is highlighted and scrolled into view, loading older messages automatically if needed.
+- Tap **Cancel** (or clear the field) to dismiss the search and return to the conversation.
+
+Search covers the text of channel broadcasts and direct messages, matching exactly the messages each conversation shows. Emoji reactions aren't matched.
+
+---
+
 ## Message Status
 
 ![Message status reference](../assets/screenshots/ackErrors.png)
 
-| Color | Meaning |
-|--------|---------|
-| Gray | Successful delivery. |
-| Orange bubble | **Acknowledged by another node** — message was relayed but not confirmed by the final recipient. |
+The message status row combines a short label, SF Symbol icon, and color. Color reinforces the text; it is not the only signal.
 
-The following errors may appear on a message bubble (red unless noted):
-
-| Status | Description |
-|--------|-------------|
-| No Route | No route was found to the destination node. |
-| Got NAK | The destination node explicitly rejected the message. |
-| Timeout | The message timed out waiting for acknowledgement. |
-| No Interface | The radio interface is unavailable. |
-| Max Retransmit | Maximum retransmission attempts reached without success. |
-| No Channel | The specified channel does not exist on the destination. |
-| Too Large | The packet exceeds the maximum allowed size. |
-| No Response | No response received from the destination. |
-| PKI Failed | Public key infrastructure encryption/decryption failed. |
-| Bad Request | Malformed packet rejected by the destination. |
-| Not Authorized | The destination node refused the request due to permissions. |
-
-> Gray indicates successful delivery. Orange indicates the message was relayed but not confirmed by the final recipient. Red indicates a permanent failure that will not succeed on retry.
+| Icon | Color | Status | Description |
+|------|-------|--------|-------------|
+| `clock` | Orange | Sending... | Waiting for the mesh to acknowledge this message. |
+| `checkmark.circle.fill` | Gray | Delivered to mesh | A node on the mesh confirmed this channel message. |
+| `checkmark.circle.fill` | Gray | Delivered to recipient | The direct-message recipient confirmed this message. |
+| `exclamationmark.circle.fill` | Orange | Relayed, not confirmed by recipient | A node relayed this direct message, but the recipient has not confirmed it. Retry is available. |
+| `exclamationmark.circle.fill` | Orange | Failed to deliver to mesh | Delivery was not confirmed after retries, timeout, or an explicit negative acknowledgement. Retry is available. |
+| `xmark.circle.fill` | Red | Channel/key mismatch | The sender or recipient could not use a matching channel/key for this message. |
+| `xmark.circle.fill` | Red | Message is too large to send | The encoded packet exceeds the LoRa message size limit. Shorten the message before sending again. |
+| `exclamationmark.circle.fill` | Orange | No radio interface | The sender has no usable radio interface for this message. Retry is available. |
+| `exclamationmark.circle.fill` | Orange | Duty cycle limit | Local airtime limits are temporarily blocking sends. Retry is available after waiting. |
+| `exclamationmark.circle.fill` | Orange | Rate limited | Messages are being sent too quickly. Retry is available after waiting. |
+| `exclamationmark.circle.fill` | Orange | No app response | The destination received the request, but no app or module responded. Retry is available. |
+| `xmark.circle.fill` | Red | Invalid request | The destination rejected the request as invalid. |
+| `xmark.circle.fill` | Red | Not authorized | The destination refused this request because it is not authorized. |
+| `exclamationmark.circle.fill` | Orange | Could not send encrypted message | The encrypted PKI send path could not be used. Retry is available after node info or keys sync. |
+| `exclamationmark.circle.fill` | Orange | Recipient needs your key | The recipient does not know your public key yet. Retry is available after node info syncs. |
+| `exclamationmark.circle.fill` | Orange | Recipient key unavailable | Your node does not have the recipient's public key yet. Retry is available after node info syncs. |
+| `exclamationmark.circle.fill` | Orange | Admin session expired | The admin session key is missing, expired, or invalid. Retry is available after requesting a new session. |
+| `xmark.circle.fill` | Red | Admin key not authorized | The remote node does not authorize your admin key. |
 
 ---
 

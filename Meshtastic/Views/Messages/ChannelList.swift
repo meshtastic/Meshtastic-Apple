@@ -67,14 +67,14 @@ struct ChannelList: View {
 					ChannelLock(channel: channel)
 					if channel.name?.isEmpty ?? false {
 						if channel.role == 1 {
-							Text(String("PrimaryChannel").camelCaseToWords())
+							Text(String("Primary Channel"))
 								.font(.headline)
 						} else {
-							Text(String("Channel \(channel.index)").camelCaseToWords())
+							Text(String("Channel \(channel.index)"))
 								.font(.headline)
 						}
 					} else {
-						Text(String(channel.name ?? "Channel \(channel.index)").camelCaseToWords())
+						Text(String(channel.name ?? "Channel \(channel.index)"))
 							.font(.headline)
 					}
 

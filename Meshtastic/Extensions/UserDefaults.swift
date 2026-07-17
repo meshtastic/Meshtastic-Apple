@@ -57,6 +57,7 @@ extension UserDefaults {
 		case enableMapRouteLines
 		case enableMapTraffic
 		case enableMapPointsOfInterest
+		case enableMapPreciseLocationsOnly
 		case enableOfflineMaps
 		case enableMapShowFavorites
 		case mapTileServer
@@ -86,6 +87,9 @@ extension UserDefaults {
 		case testIntEnum
 		case lastDeviceAPIUpdate
 		case lastFirmwareAPIUpdate
+		case firmwareUpdateNotificationKeys
+		case lastEventFirmwareAPIUpdate
+		case useEventTheme
 	}
 
 	func reset() {
@@ -130,6 +134,9 @@ extension UserDefaults {
 
 	@UserDefault(.enableMapPointsOfInterest, defaultValue: false)
 	static var enableMapPointsOfInterest: Bool
+
+	@UserDefault(.enableMapPreciseLocationsOnly, defaultValue: false)
+	static var enableMapPreciseLocationsOnly: Bool
 
 	@UserDefault(.enableMapShowFavorites, defaultValue: false)
 	static var enableMapShowFavorites: Bool
@@ -190,6 +197,19 @@ extension UserDefaults {
 
 	@UserDefault(.testIntEnum, defaultValue: .one)
 	static var testIntEnum: TestIntEnum
+
+	@UserDefault(.firmwareUpdateNotificationKeys, defaultValue: [])
+	static var firmwareUpdateNotificationKeys: [String]
+
+	static var firmwareUpdateNotificationKeySet: Set<String> {
+		Set(firmwareUpdateNotificationKeys)
+	}
+
+	static func recordFirmwareUpdateNotificationKey(_ key: String) {
+		var keys = firmwareUpdateNotificationKeySet
+		keys.insert(key)
+		firmwareUpdateNotificationKeys = keys.sorted()
+	}
 	
 	static var manualConnections: [Device] {
 		get {
@@ -225,6 +245,15 @@ extension UserDefaults {
 
 	@UserDefault(.lastFirmwareAPIUpdate, defaultValue: .distantPast)
 	static var lastFirmwareAPIUpdate: Date
+
+	@UserDefault(.lastEventFirmwareAPIUpdate, defaultValue: .distantPast)
+	static var lastEventFirmwareAPIUpdate: Date
+
+	/// Whether the ambient event theme (accent wash + edition fonts) is applied. Defaults to on;
+	/// the user can opt out from the event info sheet. Opting out keeps the branding *visible*
+	/// (badge/info surface) so it can be re-enabled — it only suppresses the ambient wash/fonts.
+	@UserDefault(.useEventTheme, defaultValue: true)
+	static var useEventTheme: Bool
 }
 
 enum TestIntEnum: Int, Decodable {

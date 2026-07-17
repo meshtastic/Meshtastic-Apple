@@ -25,11 +25,15 @@ struct NodeInfoItem: View {
 	}
 
 	private var hasDevice: Bool {
-		hardware.first != nil
+		hardwarePresentation != nil
 	}
 
 	private var isActivelySupported: Bool {
-		hardware.first?.activelySupported ?? false
+		hardwarePresentation?.activelySupported ?? false
+	}
+
+	private var hardwarePresentation: HardwareCatalogPresentation? {
+		HardwareCatalogResolver.presentation(for: Int64(node.user?.hwModelId ?? 0), in: hardware)
 	}
 
 	private var supportRosette: some View {
@@ -38,21 +42,30 @@ struct NodeInfoItem: View {
 	}
 
 	private var modelName: String {
-		node.user?.hwDisplayName ?? node.user?.hwModel ?? "Unknown"
+		hardwarePresentation?.displayName ?? node.user?.hwModel ?? "Unknown"
 	}
 
 	private var isPortduino: Bool {
 		node.user?.hwModel == "PORTDUINO"
 	}
 
-	private var supportLevel: SupportLevel {
-		guard let device = hardware.first else { return .discontinued }
-		return SupportLevel(rawValue: device.supportLevel) ?? .discontinued
+	private var supportLevel: SupportLevel? {
+		hardwarePresentation?.supportLevel
+	}
+
+	private var hardwareDescription: String {
+		if let supportLevel {
+			return supportLevel.description
+		}
+		return hasDevice
+			? "This hardware model has multiple indistinguishable variants."
+			: "Hardware model information is unavailable."
 	}
 
 	private var sectionTitle: String {
 		if node.user?.hwModel == "UNSET" { return "Hardware" }
 		if isPortduino { return "Community Hardware" }
+		guard let supportLevel else { return "Hardware" }
 		switch supportLevel {
 		case .flagship:
 			return "Supported Hardware"
@@ -141,13 +154,19 @@ struct NodeInfoItem: View {
 			} else {
 				// MARK: - Discontinued / Unknown Device
 				HStack(spacing: 16) {
-					supportRosette
-						.font(.system(size: 40))
+					if hardwarePresentation?.activelySupported == nil {
+						Image(systemName: "questionmark.circle.fill")
+							.font(.system(size: 40))
+							.foregroundStyle(.secondary)
+					} else {
+						supportRosette
+							.font(.system(size: 40))
+					}
 					VStack(alignment: .leading, spacing: 4) {
 						Text(modelName)
 							.font(.subheadline)
 							.foregroundStyle(.secondary)
-						Text(supportLevel.description)
+						Text(hardwareDescription)
 							.font(.caption)
 							.foregroundStyle(.tertiary)
 					}
@@ -160,7 +179,7 @@ struct NodeInfoItem: View {
 		.accessibilityElement(children: .combine)
 
 		// Device links section (shown only when device has a platformioTarget)
-		if let target = hardware.first?.platformioTarget {
+		if let target = hardwarePresentation?.platformioTarget {
 			DeviceLinksSection(platformioTarget: target)
 		}
 	}

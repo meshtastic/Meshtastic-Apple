@@ -130,84 +130,138 @@ Select a node from the drop-down to manage connected or remote devices.</div>
 <div class="tips-callout"><strong>Tip — Messages</strong>
 Send channel broadcasts and direct messages. Long press any message for actions like copy, reply, tapback, and delivery details.</div>
 <hr />
+<h2>Find in Conversation</h2>
+<p>Tap the <strong>Find in conversation</strong> search field below the title of any channel or direct-message conversation, then type to search that conversation's message text.</p>
+<ul>
+<li>Matching is <strong>case- and accent-insensitive</strong>, and searches the <strong>entire conversation history</strong> — not just the messages currently on screen.</li>
+<li>A results bar shows your position in the matches (e.g. <strong>2 of 7</strong>); use the <strong>up/down chevrons</strong> to jump to the previous or next match, wrapping around at the ends. The current match is highlighted and scrolled into view, loading older messages automatically if needed.</li>
+<li>Tap <strong>Cancel</strong> (or clear the field) to dismiss the search and return to the conversation.</li>
+</ul>
+<p>Search covers the text of channel broadcasts and direct messages, matching exactly the messages each conversation shows. Emoji reactions aren't matched.</p>
+<hr />
 <h2>Message Status</h2>
 <p><img src="../assets/screenshots/ackErrors.png" alt="Message status reference" /></p>
+<p>The message status row combines a short label, SF Symbol icon, and color. Color reinforces the text; it is not the only signal.</p>
 <table>
 <thead>
 <tr>
+<th>Icon</th>
 <th>Color</th>
-<th>Meaning</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Gray</td>
-<td>Successful delivery.</td>
-</tr>
-<tr>
-<td>Orange bubble</td>
-<td><strong>Acknowledged by another node</strong> — message was relayed but not confirmed by the final recipient.</td>
-</tr>
-</tbody>
-</table>
-<p>The following errors may appear on a message bubble (red unless noted):</p>
-<table>
-<thead>
-<tr>
 <th>Status</th>
 <th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>No Route</td>
-<td>No route was found to the destination node.</td>
+<td><code>clock</code></td>
+<td>Orange</td>
+<td>Sending...</td>
+<td>Waiting for the mesh to acknowledge this message.</td>
 </tr>
 <tr>
-<td>Got NAK</td>
-<td>The destination node explicitly rejected the message.</td>
+<td><code>checkmark.circle.fill</code></td>
+<td>Gray</td>
+<td>Delivered to mesh</td>
+<td>A node on the mesh confirmed this channel message.</td>
 </tr>
 <tr>
-<td>Timeout</td>
-<td>The message timed out waiting for acknowledgement.</td>
+<td><code>checkmark.circle.fill</code></td>
+<td>Gray</td>
+<td>Delivered to recipient</td>
+<td>The direct-message recipient confirmed this message.</td>
 </tr>
 <tr>
-<td>No Interface</td>
-<td>The radio interface is unavailable.</td>
+<td><code>exclamationmark.circle.fill</code></td>
+<td>Orange</td>
+<td>Relayed, not confirmed by recipient</td>
+<td>A node relayed this direct message, but the recipient has not confirmed it. Retry is available.</td>
 </tr>
 <tr>
-<td>Max Retransmit</td>
-<td>Maximum retransmission attempts reached without success.</td>
+<td><code>exclamationmark.circle.fill</code></td>
+<td>Orange</td>
+<td>Failed to deliver to mesh</td>
+<td>Delivery was not confirmed after retries, timeout, or an explicit negative acknowledgement. Retry is available.</td>
 </tr>
 <tr>
-<td>No Channel</td>
-<td>The specified channel does not exist on the destination.</td>
+<td><code>xmark.circle.fill</code></td>
+<td>Red</td>
+<td>Channel/key mismatch</td>
+<td>The sender or recipient could not use a matching channel/key for this message.</td>
 </tr>
 <tr>
-<td>Too Large</td>
-<td>The packet exceeds the maximum allowed size.</td>
+<td><code>xmark.circle.fill</code></td>
+<td>Red</td>
+<td>Message is too large to send</td>
+<td>The encoded packet exceeds the LoRa message size limit. Shorten the message before sending again.</td>
 </tr>
 <tr>
-<td>No Response</td>
-<td>No response received from the destination.</td>
+<td><code>exclamationmark.circle.fill</code></td>
+<td>Orange</td>
+<td>No radio interface</td>
+<td>The sender has no usable radio interface for this message. Retry is available.</td>
 </tr>
 <tr>
-<td>PKI Failed</td>
-<td>Public key infrastructure encryption/decryption failed.</td>
+<td><code>exclamationmark.circle.fill</code></td>
+<td>Orange</td>
+<td>Duty cycle limit</td>
+<td>Local airtime limits are temporarily blocking sends. Retry is available after waiting.</td>
 </tr>
 <tr>
-<td>Bad Request</td>
-<td>Malformed packet rejected by the destination.</td>
+<td><code>exclamationmark.circle.fill</code></td>
+<td>Orange</td>
+<td>Rate limited</td>
+<td>Messages are being sent too quickly. Retry is available after waiting.</td>
 </tr>
 <tr>
-<td>Not Authorized</td>
-<td>The destination node refused the request due to permissions.</td>
+<td><code>exclamationmark.circle.fill</code></td>
+<td>Orange</td>
+<td>No app response</td>
+<td>The destination received the request, but no app or module responded. Retry is available.</td>
+</tr>
+<tr>
+<td><code>xmark.circle.fill</code></td>
+<td>Red</td>
+<td>Invalid request</td>
+<td>The destination rejected the request as invalid.</td>
+</tr>
+<tr>
+<td><code>xmark.circle.fill</code></td>
+<td>Red</td>
+<td>Not authorized</td>
+<td>The destination refused this request because it is not authorized.</td>
+</tr>
+<tr>
+<td><code>exclamationmark.circle.fill</code></td>
+<td>Orange</td>
+<td>Could not send encrypted message</td>
+<td>The encrypted PKI send path could not be used. Retry is available after node info or keys sync.</td>
+</tr>
+<tr>
+<td><code>exclamationmark.circle.fill</code></td>
+<td>Orange</td>
+<td>Recipient needs your key</td>
+<td>The recipient does not know your public key yet. Retry is available after node info syncs.</td>
+</tr>
+<tr>
+<td><code>exclamationmark.circle.fill</code></td>
+<td>Orange</td>
+<td>Recipient key unavailable</td>
+<td>Your node does not have the recipient's public key yet. Retry is available after node info syncs.</td>
+</tr>
+<tr>
+<td><code>exclamationmark.circle.fill</code></td>
+<td>Orange</td>
+<td>Admin session expired</td>
+<td>The admin session key is missing, expired, or invalid. Retry is available after requesting a new session.</td>
+</tr>
+<tr>
+<td><code>xmark.circle.fill</code></td>
+<td>Red</td>
+<td>Admin key not authorized</td>
+<td>The remote node does not authorize your admin key.</td>
 </tr>
 </tbody>
 </table>
-<blockquote>
-<p>Gray indicates successful delivery. Orange indicates the message was relayed but not confirmed by the final recipient. Red indicates a permanent failure that will not succeed on retry.</p>
-</blockquote>
 <hr />
 <h2>Link Appearance</h2>
 <p>Links in message bubbles — including URLs, Meshtastic channel links, and markdown <code>[text](url)</code> links — are styled with an underline and the design standards Link color (Blue 400). This makes links visually distinct from regular message text in both light and dark mode. Tapping a link opens it in the browser, or for Meshtastic channel/contact URLs, opens the appropriate in-app handler.</p>

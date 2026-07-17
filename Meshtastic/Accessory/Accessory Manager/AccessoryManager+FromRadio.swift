@@ -92,6 +92,21 @@ extension AccessoryManager {
 
 		updateDevice(key: \.num, value: Int64(myNodeInfo.myNodeNum))
 
+		// Defensive cross-device guard: if this connect landed on another radio's database
+		// without going through the switch flow's clear+restore, reset before ingesting
+		// anything for the new radio. Nodes carry no owner column — the store is global — so
+		// any path that reaches here with a different radio's data (switch to a never-seen
+		// radio, interrupted switch + auto-reconnect, BLE restore) would otherwise merge the
+		// two node sets ("nodes bleeding across databases").
+		//
+		// Trigger only when the store has a MyInfoEntity for a DIFFERENT node and NONE for the
+		// connecting one. A backup restored for this radio always contains its own MyInfo row,
+		// so a legitimate switch+restore never trips this — including legacy backups that may
+		// carry extra foreign rows from the pre-fix bleed era.
+		await defensiveResetIfForeignDatabase(incomingNodeNum: Int64(myNodeInfo.myNodeNum))
+
+		let myInfoId = await MeshPackets.shared.myInfoPacket(myInfo: myNodeInfo, peripheralId: connectedDeviceId)
+
 		// Resolve on a throwaway context, NOT the long-lived main context. After a database clear
 		// (manual reset, or the clear inside a device switch) the main context can still hold an
 		// invalidated instance registered under a rowid that SwiftData then reuses for the
@@ -99,19 +114,20 @@ extension AccessoryManager {
 		// traps with "destroyed by ModelContext.reset". A fresh context has no such registrations,
 		// so it faults the current row from the store.
 		let myInfoResolveContext = ModelContext(context.container)
-		if let myInfoId = await MeshPackets.shared.myInfoPacket(myInfo: myNodeInfo, peripheralId: connectedDeviceId),
-		   let myInfo = try? myInfoResolveContext.model(for: myInfoId) as? MyInfoEntity {
+		if let myInfoId, let myInfo = try? myInfoResolveContext.model(for: myInfoId) as? MyInfoEntity {
 			if let bleName = myInfo.bleName {
 				updateDevice(key: \.name, value: bleName)
 				updateDevice(key: \.longName, value: bleName)
 			}
-			
+
 			if myNodeInfo.nodedbCount > 0 {
 				expectedNodeDBSize = Int(myNodeInfo.nodedbCount)
 			}
-			
-			UserDefaults.preferredPeripheralNum = Int(myInfo.myNodeNum)
+
+			// Compare BEFORE persisting the new num — the previous code assigned first, so
+			// newConnection was always false and this hook was dead.
 			let newConnection = Int64(UserDefaults.preferredPeripheralNum) != Int64(myInfo.myNodeNum)
+			UserDefaults.preferredPeripheralNum = Int(myInfo.myNodeNum)
 			if newConnection {
 				// Onboard a new device connection here
 			}
@@ -124,6 +140,44 @@ extension AccessoryManager {
 
 		// Initialize TAK bridge for TAK integration
 		initializeTAKBridge()
+	}
+
+	/// Detects a connect that landed on a different radio's database (no MyInfo row for the
+	/// connecting node, but rows for other nodes) and resets: back up the foreign radio's data
+	/// so nothing is lost, clear the store, repoint the container, and refresh the UI. See the
+	/// call site in `handleMyInfo` for when this can happen. No-ops for a fresh install (no
+	/// MyInfo rows) and for reconnects/restores (a MyInfo row for the incoming node exists).
+	private func defensiveResetIfForeignDatabase(incomingNodeNum: Int64) async {
+		// Fresh throwaway context: no stale registrations, and this runs before any ingest for
+		// the new radio, so what it sees is exactly what the previous session left behind.
+		let checkContext = ModelContext(context.container)
+		guard let myInfos = try? checkContext.fetch(FetchDescriptor<MyInfoEntity>()), !myInfos.isEmpty else {
+			return // Fresh/empty store — nothing to protect.
+		}
+		let nums = myInfos.map(\.myNodeNum)
+		guard !nums.contains(incomingNodeNum) else {
+			return // The store already belongs to (or was restored for) this radio.
+		}
+
+		Logger.data.warning("💾 [Database] Connected to node \(incomingNodeNum.toHex(), privacy: .public) but the store belongs to \(nums.map { $0.toHex() }.joined(separator: ", "), privacy: .public) — backing up and resetting to prevent cross-device node bleed")
+
+		// Preserve the previous radio's data exactly like the switch flow would have.
+		if let previousNum = nums.first {
+			let previousName = devices.first(where: { $0.num == previousNum })?.longName
+			_ = await NodeBackupManager.shared.createBackup(forNode: previousNum, nodeName: previousName)
+		}
+
+		await MeshPackets.shared.flushDebouncedSaves()
+		let cleared = await MeshPackets.shared.clearDatabase(includeRoutes: false)
+		if !cleared {
+			// A half-cleared store must not receive this radio's dump (that IS the bleed).
+			// Escalate to a guaranteed-empty store; the foreign radio's data was backed up above.
+			Logger.data.error("💾 [Database] clearDatabase failed during cross-device reset — escalating to store destruction")
+			PersistenceController.shared.destroyStoreAndRecreateContainer()
+		}
+		// Pops views, repoints the container (recreating the MeshPackets actor), and bumps
+		// databaseResetID so @Query views rebind before the new radio's data starts landing.
+		await resetDatabaseAfterClear()
 	}
 
 	/// When event firmware is detected (DEFCON, BURNING_MAN, OPEN_SAUCE, etc.),
@@ -150,42 +204,41 @@ extension AccessoryManager {
 			self.firstDatabaseNodeInfoContinuation = nil
 			continuation.resume()
 		}
-		
+
 		guard nodeInfo.num > 0 else {
 			Logger.services.error("NodeInfo packet with a zero nodeNum")
 			return
 		}
 
-		// Check if we're in database retrieval mode to defer saves for performance
-		// Commented out: No need to defer save when nodeInfoPacket is now happening off the main thread
-		// let isRetrievingDatabase = if case .retrievingDatabase = self.state { true } else { false }
-		
 		// TODO: nodeInfoPacket's channel: parameter is not used
-		// deferSave hard coded: No need to defer save when nodeInfoPacket is now happening off the main thread
-		// Resolve on a throwaway context (see handleMyInfo): the long-lived main context can return
-		// a stale instance registered under a rowid reused after a database clear, which traps with
-		// "destroyed by ModelContext.reset". A fresh context faults the current row from the store.
-		let nodeInfoResolveContext = ModelContext(context.container)
-		if let nodeInfoId = await MeshPackets.shared.nodeInfoPacket(nodeInfo: nodeInfo, channel: 0, deferSave: false),
-		   let nodeInfo = try? nodeInfoResolveContext.model(for: nodeInfoId) as? NodeInfoEntity {
-			if let activeDevice = activeConnection?.device, activeDevice.num == nodeInfo.num {
-				if let user = nodeInfo.user {
-					updateDevice(deviceId: activeDevice.id, key: \.shortName, value: user.shortName ?? "?")
-					updateDevice(deviceId: activeDevice.id, key: \.longName, value: user.longName ?? "Unknown".localized)
-					updateDevice(deviceId: activeDevice.id, key: \.hardwareModel, value: user.hwModel)
-					
-					if activeDevice.isManualConnection {
-						// We just received a NodeInfo for the currently connected node and this is a
-						// manual connection.  Update the metadata for the device entry in UserDefaults
-						// with this information for better display later
-						ManualConnectionList.shared.updateDevice(deviceId: activeDevice.id, key: \.shortName, value: user.shortName)
-						ManualConnectionList.shared.updateDevice(deviceId: activeDevice.id, key: \.longName, value: user.longName)
-						ManualConnectionList.shared.updateDevice(deviceId: activeDevice.id, key: \.hardwareModel, value: user.hwModel)
-					}
-				}
+		// Defer the save: during the node-DB dump this handler runs once per node, and a
+		// save-per-node on the ingestion actor (plus a main-actor hop each way) was the
+		// throughput cliff behind slow/hung connects on large meshes. Deferred writes are
+		// flushed by the actor's debounced save (at most every 5s) and finally at
+		// configCompleteID (NONCE_ONLY_DB), which also batch-saves the main context.
+		_ = await MeshPackets.shared.nodeInfoPacket(nodeInfo: nodeInfo, channel: 0, deferSave: true)
+
+		// Update the connected device's display metadata straight from the protobuf — the
+		// previous code resolved the just-inserted entity on a fresh ModelContext for every
+		// node in the dump only to read fields the proto already carries.
+		if let activeDevice = activeConnection?.device, activeDevice.num == Int64(nodeInfo.num), nodeInfo.hasUser {
+			let shortName = nodeInfo.user.shortName
+			let longName = nodeInfo.user.longName
+			let hwModel = String(describing: nodeInfo.user.hwModel).uppercased()
+			updateDevice(deviceId: activeDevice.id, key: \.shortName, value: shortName.isEmpty ? "?" : shortName)
+			updateDevice(deviceId: activeDevice.id, key: \.longName, value: longName.isEmpty ? "Unknown".localized : longName)
+			updateDevice(deviceId: activeDevice.id, key: \.hardwareModel, value: hwModel)
+
+			if activeDevice.isManualConnection {
+				// We just received a NodeInfo for the currently connected node and this is a
+				// manual connection.  Update the metadata for the device entry in UserDefaults
+				// with this information for better display later
+				ManualConnectionList.shared.updateDevice(deviceId: activeDevice.id, key: \.shortName, value: shortName.isEmpty ? nil : shortName)
+				ManualConnectionList.shared.updateDevice(deviceId: activeDevice.id, key: \.longName, value: longName.isEmpty ? nil : longName)
+				ManualConnectionList.shared.updateDevice(deviceId: activeDevice.id, key: \.hardwareModel, value: hwModel)
 			}
 		}
-		
+
 		// Bump the nodeCount
 		if case let .retrievingDatabase(nodeCount: nodeCount) = self.state {
 			updateState(.retrievingDatabase(nodeCount: nodeCount+1))

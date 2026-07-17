@@ -510,15 +510,18 @@ enum ModemPresets: Int, CaseIterable, Identifiable {
 	case narrowSlow = 13
 	case tinyFast = 14
 	case tinySlow = 15
+	case mediumTurbo = 16
 
-	/// Presets added in the 2.8 firmware: Lite (125 kHz), Narrow (62.5 kHz) and
-	/// Tiny (20 kHz, ham). Firmware older than 2.8 does not implement them, so
-	/// they must not be offered when connected to a 2.7.x-or-earlier device.
-	/// They still exist as cases so a radio already configured on one of them
-	/// round-trips through protobuf and renders the correct label in node lists.
+	/// Presets that require firmware newer than 2.7.x: the 2.8 batch — Lite
+	/// (125 kHz), Narrow (62.5 kHz) and Tiny (20 kHz, ham) — plus Medium Turbo
+	/// (500 kHz), which was added upstream after the 2.8 rework. None of them are
+	/// implemented by 2.7.x-or-earlier firmware, so they must not be offered when
+	/// connected to such a device. They still exist as cases so a radio already
+	/// configured on one of them round-trips through protobuf and renders the
+	/// correct label in node lists.
 	var requiresFirmware2_8: Bool {
 		switch self {
-		case .liteFast, .liteSlow, .narrowFast, .narrowSlow, .tinyFast, .tinySlow:
+		case .liteFast, .liteSlow, .narrowFast, .narrowSlow, .tinyFast, .tinySlow, .mediumTurbo:
 			return true
 		default:
 			return false
@@ -603,6 +606,8 @@ enum ModemPresets: Int, CaseIterable, Identifiable {
 			return "Tiny - Fast".localized
 		case .tinySlow:
 			return "Tiny - Slow".localized
+		case .mediumTurbo:
+			return "Medium Range - Turbo".localized
 		}
 	}
 	var name: String {
@@ -637,6 +642,8 @@ enum ModemPresets: Int, CaseIterable, Identifiable {
 			return "TinyFast"
 		case .tinySlow:
 			return "TinySlow"
+		case .mediumTurbo:
+			return "MediumTurbo"
 		}
 	}
 	func snrLimit() -> Float {
@@ -644,7 +651,8 @@ enum ModemPresets: Int, CaseIterable, Identifiable {
 		case .longFast:
 			return -17.5
 		case .longSlow:
-			return -7.5
+			// SF12 demodulation floor (~-20 dB). Matches Android's LONG_SLOW value.
+			return -20
 		case .longTurbo:
 			return -12.5
 		case .longModerate:
@@ -675,6 +683,11 @@ enum ModemPresets: Int, CaseIterable, Identifiable {
 			return -12.5
 		case .tinySlow:
 			return -15
+		case .mediumTurbo:
+			// 500 kHz medium-range turbo; performs similarly to MEDIUM_FAST (-12.5),
+			// whose spreading factor it shares — the wider bandwidth does not change
+			// the (bandwidth-normalised) demodulation SNR floor.
+			return -12.5
 		}
 	}
 	func protoEnumValue() -> Config.LoRaConfig.ModemPreset {
@@ -709,6 +722,8 @@ enum ModemPresets: Int, CaseIterable, Identifiable {
 			return Config.LoRaConfig.ModemPreset.tinyFast
 		case .tinySlow:
 			return Config.LoRaConfig.ModemPreset.tinySlow
+		case .mediumTurbo:
+			return Config.LoRaConfig.ModemPreset.mediumTurbo
 		}
 	}
 }

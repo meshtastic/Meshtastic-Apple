@@ -20,6 +20,7 @@ struct ChannelMessageRow: View {
 	@Binding var messageToHighlight: Int64
 	let scrollView: ScrollViewProxy
 	let onTapback: (MessageEntity) -> Void
+	let onMessageRetried: () -> Void
 
 	private var isCurrentUser: Bool {
 		Int64(preferredPeripheralNum) == message.fromUser?.num
@@ -35,7 +36,8 @@ struct ChannelMessageRow: View {
 	     messageFieldFocused: FocusState<Bool>.Binding,
 	     messageToHighlight: Binding<Int64>,
 	     scrollView: ScrollViewProxy,
-	     onTapback: @escaping (MessageEntity) -> Void) {
+	     onTapback: @escaping (MessageEntity) -> Void,
+	     onMessageRetried: @escaping () -> Void = {}) {
 		// Initialize ObservedObject with the concrete instance
 		self.message = message
 		self.replyMessage = replyMessage
@@ -48,6 +50,7 @@ struct ChannelMessageRow: View {
 		self._messageToHighlight = messageToHighlight
 		self.scrollView = scrollView
 		self.onTapback = onTapback
+		self.onMessageRetried = onMessageRetried
 	}
 
 	var body: some View {
@@ -89,8 +92,12 @@ struct ChannelMessageRow: View {
 							scrollView.scrollTo(messageNum, anchor: .center)
 							Task {
 								DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-									withAnimation(.easeInOut(duration: 0.5)) {
-										messageToHighlight = -1
+									// Only clear if this jump's highlight is still the active one — a search
+									// (or later jump) may have moved the highlight elsewhere in the meantime.
+									if messageToHighlight == messageNum {
+										withAnimation(.easeInOut(duration: 0.5)) {
+											messageToHighlight = -1
+										}
 									}
 								}
 							}
@@ -119,6 +126,7 @@ struct ChannelMessageRow: View {
 				}
 				
 				VStack(alignment: isCurrentUser ? .trailing : .leading) {
+					let deliveryStatus = isCurrentUser ? message.deliveryStatus(isDirectMessage: false) : nil
 					let isDetectionSensorMessage = message.portNum == Int32(PortNum.detectionSensorApp.rawValue)
 					
 					// Sender Name Header
@@ -140,8 +148,13 @@ struct ChannelMessageRow: View {
 							onTapback(message)
 						}
 						
-						if isCurrentUser && message.canRetry {
-							RetryButton(message: message, destination: .channel(channel))
+						if let deliveryStatus, deliveryStatus.canRetry {
+							RetryButton(
+								message: message,
+								destination: .channel(channel),
+								status: deliveryStatus,
+								onMessageSent: onMessageRetried
+							)
 						}
 					}
 					
@@ -149,15 +162,8 @@ struct ChannelMessageRow: View {
 					
 					// ACK Status / Error
 					HStack {
-						let ackErrorVal = RoutingError(rawValue: Int(message.ackError))
-						if isCurrentUser && message.receivedACK {
-							Text("\(ackErrorVal?.display ?? "Empty Ack Error")").fixedSize(horizontal: false, vertical: true)
-								.foregroundStyle(ackErrorVal?.color ?? Color.red).font(.caption2)
-						} else if isCurrentUser && message.ackError == 0 {
-							Text("Waiting to be acknowledged. . .").font(.caption2).foregroundColor(.orange)
-						} else if isCurrentUser && !isDetectionSensorMessage {
-							Text("\(ackErrorVal?.display ?? "Empty Ack Error")").fixedSize(horizontal: false, vertical: true)
-								.foregroundStyle(ackErrorVal?.color ?? Color.red).font(.caption2)
+						if let deliveryStatus, !isDetectionSensorMessage {
+							MessageDeliveryStatusLabel(status: deliveryStatus)
 						}
 					}
 				}
@@ -170,5 +176,11 @@ struct ChannelMessageRow: View {
 			
 		}
 		.id(message.messageId) // ID for scrolling/highlighting
+		.background(
+			RoundedRectangle(cornerRadius: 8)
+				.fill(Color.yellow.opacity(messageToHighlight == message.messageId ? 0.18 : 0))
+				.padding(.horizontal, 4)
+		)
+		.animation(.easeInOut(duration: 0.3), value: messageToHighlight)
 	}
 }

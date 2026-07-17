@@ -29,6 +29,12 @@ struct PowerMetricsLog: View {
 	@State private var chartData: [TelemetryEntity] = []
 	@State private var totalReadings = 0
 
+	// User-editable per-channel labels (e.g. "Solar", "Battery", "Load"), persisted per node so a
+	// user can tell which line is which without memorizing their wiring. Empty entries fall back to
+	// the generic "Channel N". Per meshtastic/design#53 / Meshtastic-Apple#2046.
+	@State private var channelLabels: [String] = ["", "", ""]
+	@State private var isEditingLabels = false
+
 	var minMax: (min: Double, max: Double) {
 		let allValues = powerMetrics.flatMap { [
 			$0.powerCh1Voltage,
@@ -55,9 +61,9 @@ struct PowerMetricsLog: View {
 
 						// allow switching between different channels
 						Picker("Select Channel", selection: $channelSelection) {
-							Text("Channel 1").tag(0)
-							Text("Channel 2").tag(1)
-							Text("Channel 3").tag(2)
+							Text(displayLabel(0)).tag(0)
+							Text(displayLabel(1)).tag(1)
+							Text(displayLabel(2)).tag(2)
 						}
 
 						Chart {
@@ -116,7 +122,7 @@ struct PowerMetricsLog: View {
 								Spacer()
 								HStack {
 									VStack {
-										Text("Channel 1")
+										Text(displayLabel(0))
 										HStack {
 											Image(systemName: "powerplug.fill")
 												.font(.caption)
@@ -134,7 +140,7 @@ struct PowerMetricsLog: View {
 								Spacer()
 								HStack {
 									VStack {
-										Text("Channel 2")
+										Text(displayLabel(1))
 										HStack {
 											Image(systemName: "powerplug.fill")
 												.font(.caption)
@@ -152,7 +158,7 @@ struct PowerMetricsLog: View {
 								Spacer()
 								HStack {
 									VStack {
-										Text("Channel 3")
+										Text(displayLabel(2))
 										HStack {
 											Image(systemName: "powerplug.fill")
 												.font(.caption)
@@ -270,6 +276,7 @@ struct PowerMetricsLog: View {
 		}
 		.onAppear {
 			refreshMetrics()
+			channelLabels = loadChannelLabels()
 		}
 		.onChange(of: node.lastHeard) {
 			refreshMetrics()
@@ -277,8 +284,47 @@ struct PowerMetricsLog: View {
 		.navigationTitle("Power Metrics Log")
 		.navigationBarTitleDisplayMode(.inline)
 		.toolbar {
+			ToolbarItem(placement: .topBarLeading) {
+				Button {
+					isEditingLabels = true
+				} label: {
+					Label("Label Channels", systemImage: "pencil")
+				}
+			}
 			ToolbarItem(placement: .topBarTrailing) {
 				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
+			}
+		}
+		.sheet(isPresented: $isEditingLabels) {
+			NavigationStack {
+				Form {
+					Section {
+						ForEach(0..<3, id: \.self) { index in
+							TextField("Channel \(index + 1)", text: $channelLabels[index])
+								.autocorrectionDisabled()
+						}
+					} header: {
+						Text("Power Channel Labels")
+					} footer: {
+						Text("Give each channel a name (e.g. Solar, Battery, Load). Leave blank to use the default \"Channel N\".")
+					}
+				}
+				.navigationTitle("Label Power Channels")
+				.navigationBarTitleDisplayMode(.inline)
+				.toolbar {
+					ToolbarItem(placement: .cancellationAction) {
+						Button("Cancel") {
+							channelLabels = loadChannelLabels()
+							isEditingLabels = false
+						}
+					}
+					ToolbarItem(placement: .confirmationAction) {
+						Button("Save") {
+							saveChannelLabels()
+							isEditingLabels = false
+						}
+					}
+				}
 			}
 		}
 		.fileExporter(
@@ -305,6 +351,30 @@ struct PowerMetricsLog: View {
 		chartData = powerMetrics
 			.filter { ($0.time ?? Date.distantPast) >= oneWeekAgo }
 			.sorted { ($0.time ?? .distantPast) < ($1.time ?? .distantPast) }
+	}
+
+	// MARK: - Channel labels
+
+	/// Persisted on `node.powerChannelLabels` (SwiftData) rather than `UserDefaults` so labels are
+	/// deleted along with the node instead of accumulating indefinitely after it's forgotten.
+	private func loadChannelLabels() -> [String] {
+		let stored = node.powerChannelLabels
+		return (0..<3).map { index in index < stored.count ? stored[index] : "" }
+	}
+
+	private func saveChannelLabels() {
+		node.powerChannelLabels = channelLabels
+		do {
+			try context.save()
+		} catch let error as NSError {
+			Logger.data.error("\(error.localizedDescription, privacy: .public)")
+		}
+	}
+
+	/// The label shown for a power channel: the user's custom label, or the generic "Channel N" fallback.
+	private func displayLabel(_ index: Int) -> String {
+		let custom = index < channelLabels.count ? channelLabels[index].trimmingCharacters(in: .whitespaces) : ""
+		return custom.isEmpty ? String(format: "Channel %d".localized, index + 1) : custom
 	}
 }
 

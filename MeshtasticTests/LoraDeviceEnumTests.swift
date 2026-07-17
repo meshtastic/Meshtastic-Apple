@@ -107,7 +107,13 @@ struct ModemPresetsTests {
 	}
 
 	@Test func totalCaseCount() {
-		#expect(ModemPresets.allCases.count == 15)
+		#expect(ModemPresets.allCases.count == 16)
+	}
+
+	@Test func mediumTurbo_values() {
+		#expect(ModemPresets.mediumTurbo.protoEnumValue() == .mediumTurbo)
+		#expect(ModemPresets.mediumTurbo.snrLimit() == -12.5)
+		#expect(ModemPresets.mediumTurbo.bandwidthMHz == 0.5)
 	}
 }
 
@@ -832,5 +838,118 @@ struct LoRaPresetSelectionTests {
 		let usNoTurbo = RegionPresetInfo(presets: Set<Preset>([.longFast, .longSlow]), defaultPreset: .longFast, licensedOnly: false)
 		let result = ModemPresets.presetToSelect(forRegion: .us, factoryFresh: true, supports2_8: true, usePreset: true, regionInfo: usNoTurbo, currentPreset: .longFast)
 		#expect(result == nil)
+	}
+}
+
+@Suite("LoRa channel frequency calculation")
+struct LoRaChannelCalculatorTests {
+	@Test("ITU Region 2 TinyFast defaults to firmware slot 51 at 145.010 MHz")
+	func itu2TinyFastDefault() {
+		let calculator = LoRaChannelCalculator(
+			regionCode: RegionCodes.itu22M.rawValue,
+			usePreset: true,
+			modemPreset: ModemPresets.tinyFast.rawValue,
+			channelNum: 0,
+			bandwidth: 0,
+			overrideFrequency: 0
+		)
+
+		let slot = calculator.effectiveChannelSlot(primaryName: "TinyFast")
+		#expect(slot == 51)
+		#expect(abs(calculator.radioFrequencyMHz(slot: slot) - 145.010) < 0.001)
+	}
+
+	@Test("ITU Region 2 TinyFast explicit slots advance by 20 kHz")
+	func itu2TinyFastExplicitSlot() {
+		let calculator = LoRaChannelCalculator(
+			regionCode: RegionCodes.itu22M.rawValue,
+			usePreset: true,
+			modemPreset: ModemPresets.tinyFast.rawValue,
+			channelNum: 52,
+			bandwidth: 0,
+			overrideFrequency: 0
+		)
+
+		let slot = calculator.effectiveChannelSlot(primaryName: "TinyFast")
+		#expect(slot == 52)
+		#expect(abs(calculator.radioFrequencyMHz(slot: slot) - 145.030) < 0.001)
+	}
+
+	@Test("EU_866 LiteFast uses the firmware Lite band plan")
+	func eu866LiteFast() {
+		let calculator = LoRaChannelCalculator(
+			regionCode: RegionCodes.eu866.rawValue,
+			usePreset: true,
+			modemPreset: ModemPresets.liteFast.rawValue,
+			channelNum: 0,
+			bandwidth: 0,
+			overrideFrequency: 0
+		)
+
+		// Firmware PROFILE_LITE: 400 kHz spacing + 37.5 kHz padding on either side
+		// of LiteFast's 125 kHz bandwidth → four 600 kHz slots in 865.6–867.6 MHz.
+		#expect(abs(calculator.radioFrequencyMHz(slot: 1) - 865.700) < 0.001)
+		#expect(abs(calculator.radioFrequencyMHz(slot: 4) - 867.500) < 0.001)
+	}
+
+	@Test("Channel frequency applies the configured offset after the firmware slot calculation")
+	func appliesFrequencyOffset() {
+		let calculator = LoRaChannelCalculator(
+			regionCode: RegionCodes.itu22M.rawValue,
+			usePreset: true,
+			modemPreset: ModemPresets.tinyFast.rawValue,
+			channelNum: 0,
+			bandwidth: 0,
+			overrideFrequency: 0,
+			frequencyOffset: 0.010
+		)
+
+		let slot = calculator.effectiveChannelSlot(primaryName: "TinyFast")
+		#expect(abs(calculator.radioFrequencyMHz(slot: slot) - 145.020) < 0.001)
+	}
+
+	@Test("Override frequency applies the configured offset regardless of slot")
+	func overrideFrequencyAppliesOffset() {
+		let calculator = LoRaChannelCalculator(
+			regionCode: RegionCodes.itu22M.rawValue,
+			usePreset: true,
+			modemPreset: ModemPresets.tinyFast.rawValue,
+			channelNum: 0,
+			bandwidth: 0,
+			overrideFrequency: 145.500,
+			frequencyOffset: 0.010
+		)
+
+		#expect(abs(calculator.radioFrequencyMHz(slot: 999) - 145.510) < 0.001)
+	}
+
+	@Test("ITU Region 2 1.25m uses the 100 kHz ham channel plan")
+	func itu2OnePointTwoFiveMeterDefault() {
+		let calculator = LoRaChannelCalculator(
+			regionCode: RegionCodes.itu2125Cm.rawValue,
+			usePreset: true,
+			modemPreset: ModemPresets.narrowSlow.rawValue,
+			channelNum: 0,
+			bandwidth: 0,
+			overrideFrequency: 0
+		)
+
+		let slot = calculator.effectiveChannelSlot(primaryName: "NarrowSlow")
+		#expect(slot == 37)
+		#expect(abs(calculator.radioFrequencyMHz(slot: slot) - 223.650) < 0.001)
+	}
+
+	@Test("US LongFast keeps standard channel centers")
+	func usLongFast() {
+		let calculator = LoRaChannelCalculator(
+			regionCode: RegionCodes.us.rawValue,
+			usePreset: true,
+			modemPreset: ModemPresets.longFast.rawValue,
+			channelNum: 1,
+			bandwidth: 0,
+			overrideFrequency: 0
+		)
+
+		#expect(abs(calculator.radioFrequencyMHz(slot: 1) - 902.125) < 0.001)
 	}
 }

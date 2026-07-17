@@ -82,6 +82,79 @@ Enable the <strong>Via LoRa</strong> filter and disable <strong>Via MQTT</strong
 </tr>
 </tbody>
 </table>
+<h2>Map Options</h2>
+<p>Tap the <strong>info button</strong> (<code>info.circle</code>) in the bottom-right toolbar to open the Map Options sheet. Alongside the base layer picker it offers:</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Waypoints</td>
+<td>Show or hide waypoint markers on the map</td>
+</tr>
+<tr>
+<td>Precise Locations Only</td>
+<td>Hide nodes that broadcast an approximate (reduced-precision) location. Imprecise nodes are normally drawn with a translucent circle showing how large the possible area is; turn this on to show only nodes reporting an exact position. Both the imprecise pins and their precision circles are hidden.</td>
+</tr>
+<tr>
+<td>Convex Hull</td>
+<td>Draw an outline around the outermost LoRa nodes to visualize mesh coverage</td>
+</tr>
+<tr>
+<td>Traffic</td>
+<td>Show Apple Maps live traffic</td>
+</tr>
+<tr>
+<td>Points of Interest</td>
+<td>Show Apple Maps points of interest</td>
+</tr>
+</tbody>
+</table>
+<h2>Coverage Estimate (Site Planner)</h2>
+<p>Estimate the radio coverage of a transmitter site without leaving the app. The app drives the hosted <a href="https://site.meshtastic.org">Meshtastic Site Planner</a> — a SPLAT!/ITM propagation simulator — and imports the resulting coverage map as a styled GeoJSON overlay.</p>
+<h3>Starting an estimate</h3>
+<p>You can open the estimate form two ways:</p>
+<ul>
+<li><strong>From the map</strong> — tap the coverage button (<code>cellularbars</code>) in the bottom-right toolbar. The form is prefilled from the connected radio and located at the current map centre.</li>
+<li><strong>From a node</strong> — open a node with a known position, scroll to the <strong>Logs</strong> section, and tap <strong>Estimate Coverage</strong>. The map recenters on that node and opens the form prefilled from it.</li>
+</ul>
+<h3>The estimate form</h3>
+<p>The form mirrors the Site Planner's own panels. The <strong>Transmitter</strong> and <strong>Display</strong> sections are open by default; <strong>Receiver</strong> and <strong>Simulation Options</strong> are collapsed.</p>
+<table>
+<thead>
+<tr>
+<th>Section</th>
+<th>Fields</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Site / Transmitter</td>
+<td>Site name, latitude/longitude, transmit power (W), frequency (MHz), antenna height (m), antenna gain (dBi). Location shortcuts fill the coordinates from <strong>My Location</strong>, the selected <strong>Node</strong>, or the <strong>Map Center</strong>.</td>
+</tr>
+<tr>
+<td>Receiver</td>
+<td>Receiver sensitivity (dBm) — the coverage threshold.</td>
+</tr>
+<tr>
+<td>Simulation Options</td>
+<td>Maximum range (km) and a high-resolution terrain toggle (which caps the range at 70 km).</td>
+</tr>
+<tr>
+<td>Display</td>
+<td>Colour palette for the coverage map (Plasma, Viridis, CMRmap, Cool, Turbo, Jet).</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Prefill from the connected radio:</strong> frequency is computed from the radio's region, modem preset, and channel; transmit power is converted from the device's dBm setting; and receiver sensitivity is mapped from the modem preset (for example LongFast → −139 dBm). Antenna gain and height aren't part of the device config, so they keep the planner's defaults. You can edit any value before running.</p>
+<h3>Running it</h3>
+<p>Tap <strong>Estimate</strong>. A progress indicator appears while the planner computes the coverage; you can <strong>Cancel</strong> at any time. When it finishes, the styled coverage map is added as a map overlay (in its dBm colours), the GeoJSON overlays layer is enabled, and the map recenters on the transmitter. The imported layer is managed like any other GeoJSON overlay in <strong>Map Options</strong>.</p>
+<div class="tips-callout"><strong>Note — Requires a network connection</strong>
+The coverage simulation runs in the hosted Site Planner, so an internet connection is needed. Estimates time out after 45 seconds; on failure the flow ends cleanly without leaving a stuck spinner.</div>
 <h2>Waypoints</h2>
 <p>Waypoints are named points of interest you can share across the mesh.</p>
 <h3>Creating a Waypoint</h3>

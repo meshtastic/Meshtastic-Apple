@@ -27,10 +27,20 @@ struct MeshtasticAppleApp: App {
 	@State var incomingUrl: URL?
 
 	private static let isRunningTests = NSClassFromString("XCTestCase") != nil || ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
+	private static let isChirpyOTADemo: Bool = {
+		#if DEBUG
+		return CommandLine.arguments.contains("--chirpy-ota-demo")
+		#else
+		return false
+		#endif
+	}()
+	private static var shouldInitializeAppServices: Bool {
+		!isRunningTests && !isChirpyOTADemo
+	}
 
 	init() {
 
-		let persistenceController: PersistenceController? = Self.isRunningTests ? nil : PersistenceController.shared
+		let persistenceController: PersistenceController? = Self.shouldInitializeAppServices ? PersistenceController.shared : nil
 #if DEBUG
 		let performanceSeedConfiguration = PerformanceSeedData.configuration
 		if let performanceSeedConfiguration {
@@ -45,7 +55,7 @@ struct MeshtasticAppleApp: App {
 			router: Router()
 		)
 
-		if !Self.isRunningTests {
+		if Self.shouldInitializeAppServices {
 			// Initialize Datadog
 			// RUM Client Tokens are NOT secret
 			let appID = "79fe92a9-74c9-4c8f-ba63-6308384ecfa9"
@@ -116,17 +126,26 @@ struct MeshtasticAppleApp: App {
 				router: appState.router
 			)
 		}
+		// Independent of the node performance seed: seeds a sample Discovery session with beacons
+		// when launched with --meshtastic-seed-beacons, without resetting the store or blocking a
+		// live radio connection.
+		if let persistenceController {
+			PerformanceSeedData.seedDiscoveryBeaconsIfRequested(using: persistenceController)
+		}
 #endif
 
-		if !Self.isRunningTests {
+		if Self.shouldInitializeAppServices {
 			// Initialize map data manager
 			MapDataManager.shared.initialize()
 
 			// Initialize WatchConnectivity session
 			_ = WatchSessionManager.shared
 #if DEBUG
-			// Show tips in development
-			try? Tips.resetDatastore()
+			// Show tips in development — but not during marketing screenshot capture, where TipKit
+			// popovers would clutter the shots.
+			if !CommandLine.arguments.contains("--marketing-capture") {
+				try? Tips.resetDatastore()
+			}
 #endif
 			if !UserDefaults.firstLaunch {
 				// If this is first launch, we will show onboarding screens which
@@ -171,6 +190,8 @@ struct MeshtasticAppleApp: App {
 			Group {
 			if Self.isRunningTests {
 				Color.clear
+			} else if Self.isChirpyOTADemo {
+				FirmwareUpdateGameDemoHost()
 			} else {
 				ContentView(
 					appState: appState,
@@ -212,7 +233,11 @@ struct MeshtasticAppleApp: App {
 						Logger.mesh.debug("URL received")
 						self.incomingUrl = url
 
-						if url.absoluteString.lowercased().contains("meshtastic.org/v/#") {
+						if url.isFileURL {
+							// "Open in Meshtastic" from the Share Sheet / Files app / drag-and-drop —
+							// distinct from the meshtastic:// scheme handled below.
+							appState.router.importMapFile(url: url)
+						} else if url.absoluteString.lowercased().contains("meshtastic.org/v/#") {
 							ContactURLHandler.handleContactUrl(url: url, accessoryManager: accessoryManager)
 						} else if MeshtasticChannelURL.canHandle(url) {
 							// **Consolidated Call for Open URL**
@@ -222,15 +247,19 @@ struct MeshtasticAppleApp: App {
 						}
 					})
 				.task {
-					try? Tips.configure(
-						[
-							// Reset which tips have been shown and what parameters have been tracked, useful during testing and for this sample project
-							.datastoreLocation(.applicationDefault),
-							// When should the tips be presented? If you use .immediate, they'll all be presented whenever a screen with a tip appears.
-							// You can adjust this on per tip level as well
-							.displayFrequency(.immediate)
-						]
-					)
+					// Skip TipKit entirely during marketing screenshot capture so tip popovers never
+					// appear in the shots (unconfigured TipKit displays nothing).
+					if !CommandLine.arguments.contains("--marketing-capture") {
+						try? Tips.configure(
+							[
+								// Reset which tips have been shown and what parameters have been tracked, useful during testing and for this sample project
+								.datastoreLocation(.applicationDefault),
+								// When should the tips be presented? If you use .immediate, they'll all be presented whenever a screen with a tip appears.
+								// You can adjust this on per tip level as well
+								.displayFrequency(.immediate)
+							]
+						)
+					}
 				}
 				.modelContainer(persistenceController!.container)
 				.environmentObject(appState)
@@ -249,14 +278,16 @@ struct MeshtasticAppleApp: App {
 			}
 		}
 		.onChange(of: scenePhase) { (_, newScenePhase) in
-			guard !Self.isRunningTests else { return }
+			// Also skipped in Chirpy OTA demo mode, where persistenceController is nil —
+			// backgrounding the demo must not touch (or force-unwrap) SwiftData.
+			guard Self.shouldInitializeAppServices, let persistenceController else { return }
 			accessoryManager.isInBackground = (newScenePhase == .background)
 			switch newScenePhase {
 			case .background:
 				Logger.services.info("🎬 [App] Scene is in the background")
 				accessoryManager.appDidEnterBackground()
 				do {
-					try persistenceController!.container.mainContext.save()
+					try persistenceController.container.mainContext.save()
 					Logger.services.info("💾 [App] Saved SwiftData context when the app went to the background.")
 
 				} catch {
@@ -268,9 +299,7 @@ struct MeshtasticAppleApp: App {
 			case .active:
 				Logger.services.info("🎬 [App] Scene is active")
 				accessoryManager.appDidBecomeActive()
-				if let context = persistenceController?.container.mainContext {
-					appState.refreshBadgeCount(context: context)
-				}
+				appState.refreshBadgeCount(context: persistenceController.container.mainContext)
 			@unknown default:
 				Logger.services.error("🍎 [App] Apple must have changed something")
 			}
@@ -282,10 +311,12 @@ struct MeshtasticAppleApp: App {
 		.environmentObject(MeshtasticAPI.shared)
 
 		WindowGroup("Mesh Map", id: "meshmap-window") {
-			if !Self.isRunningTests {
+			// Gated on shouldInitializeAppServices (not just tests): in Chirpy OTA demo mode
+			// persistenceController is nil, so building this scene would force-unwrap-crash.
+			if Self.shouldInitializeAppServices, let persistenceController {
 				MapWindow()
 					.id(appState.databaseResetID)
-					.modelContainer(persistenceController!.container)
+					.modelContainer(persistenceController.container)
 					.environmentObject(appState)
 					.environmentObject(accessoryManager)
 					.environmentObject(lockdownCoordinator)

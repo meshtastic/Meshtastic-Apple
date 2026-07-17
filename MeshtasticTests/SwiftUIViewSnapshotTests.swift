@@ -1628,6 +1628,7 @@ struct NodeDetailSnapshotTests {
 		let view = NodeDetail(node: node)
 			.environmentObject(AccessoryManager.shared)
 			.environmentObject(MeshtasticAPI.shared)
+			.environmentObject(Router())
 			.modelContainer(container)
 
 		await assertViewSnapshot(of: view, width: 390, height: 1800, named: "nodeDetail", forDocs: true)

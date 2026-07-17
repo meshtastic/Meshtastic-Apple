@@ -85,6 +85,143 @@ struct LocalStatsTelemetryExportTests {
 	}
 }
 
+// EPA PM2.5 → AQI breakpoints and NowCast — issue #2040 / design#54 (Stage 2)
+@Suite("EPA air quality math")
+struct EPAAirQualityTests {
+
+	// MARK: AQI from PM2.5 concentration (current 2024 EPA breakpoints)
+
+	@Test func aqiBreakpointBoundaries() {
+		#expect(EPAAirQuality.aqi(fromPM25: 0.0) == 0)
+		#expect(EPAAirQuality.aqi(fromPM25: 9.0) == 50)     // top of Good
+		#expect(EPAAirQuality.aqi(fromPM25: 9.1) == 51)     // bottom of Moderate
+		#expect(EPAAirQuality.aqi(fromPM25: 35.4) == 100)   // top of Moderate
+		#expect(EPAAirQuality.aqi(fromPM25: 35.5) == 101)   // bottom of USG
+		#expect(EPAAirQuality.aqi(fromPM25: 55.4) == 150)
+		#expect(EPAAirQuality.aqi(fromPM25: 125.4) == 200)
+		#expect(EPAAirQuality.aqi(fromPM25: 225.4) == 300)
+		#expect(EPAAirQuality.aqi(fromPM25: 225.5) == 301)  // bottom of Hazardous
+		#expect(EPAAirQuality.aqi(fromPM25: 325.4) == 500)  // top of the app's AQI scale
+	}
+
+	@Test func aqiClampsAndTruncates() {
+		#expect(EPAAirQuality.aqi(fromPM25: 400.0) == 500)  // above the table → clamp to 500
+		#expect(EPAAirQuality.aqi(fromPM25: 9.05) == 50)    // truncates to 9.0, not rounded up
+		#expect(EPAAirQuality.aqi(fromPM25: -1.0) == nil)   // invalid
+	}
+
+	// MARK: NowCast
+
+	@Test func nowCastConstantSeriesEqualsValue() {
+		let hourly: [Double?] = Array(repeating: 10.0, count: 12)
+		#expect(EPAAirQuality.nowCastPM25(hourly: hourly) == 10.0)
+	}
+
+	@Test func nowCastRequiresTwoOfThreeRecentHours() {
+		// Only the most recent hour present → insufficient.
+		let insufficient: [Double?] = [10.0, nil, nil, 10.0, 10.0, 10.0]
+		#expect(EPAAirQuality.nowCastPM25(hourly: insufficient) == nil)
+		// Two of the three most recent hours present → computes.
+		let sufficient: [Double?] = [10.0, nil, 10.0]
+		#expect(EPAAirQuality.nowCastPM25(hourly: sufficient) == 10.0)
+	}
+
+	@Test func nowCastWeightsRecentHoursMoreHeavily() {
+		// cMin/cMax = 1/100 < 0.5, so the weight factor floors at 0.5.
+		// NowCast = (0.5^0·1 + 0.5^1·100) / (1 + 0.5) = 51 / 1.5 = 34.
+		let hourly: [Double?] = [1.0, 100.0]
+		let nowCast = EPAAirQuality.nowCastPM25(hourly: hourly)
+		#expect(nowCast != nil)
+		#expect(abs((nowCast ?? 0) - 34.0) < 0.0001)
+	}
+
+	@Test func nowCastAQIFromTimestampedReadings() {
+		let calendar = Calendar.current
+		let now = calendar.date(from: DateComponents(year: 2025, month: 6, day: 1, hour: 12, minute: 30)) ?? Date()
+		let readings: [(date: Date, pm25: Double)] = [
+			(now, 10.0),
+			(calendar.date(byAdding: .hour, value: -1, to: now) ?? now, 10.0),
+			(calendar.date(byAdding: .hour, value: -2, to: now) ?? now, 10.0)
+		]
+		// NowCast of a constant 10 µg/m³ → 10.0 → AQI 53 (Moderate).
+		#expect(EPAAirQuality.nowCastAQI(from: readings, now: now, calendar: calendar) == 53)
+	}
+
+	@Test func nowCastAQIReturnsNilWithoutEnoughHistory() {
+		let calendar = Calendar.current
+		let now = calendar.date(from: DateComponents(year: 2025, month: 6, day: 1, hour: 12, minute: 30)) ?? Date()
+		// A single reading is not enough (needs 2 of the 3 most recent hours).
+		#expect(EPAAirQuality.nowCastAQI(from: [(now, 42.0)], now: now, calendar: calendar) == nil)
+	}
+
+	@Test func nowCastAllZeroReadingsIsZero() {
+		// All-zero series: max is 0, so the weight can't be derived — NowCast short-circuits to 0.
+		let hourly: [Double?] = [0.0, 0.0, 0.0]
+		#expect(EPAAirQuality.nowCastPM25(hourly: hourly) == 0.0)
+		#expect(EPAAirQuality.aqi(fromPM25: 0.0) == 0)
+	}
+
+	@Test func nowCastAQIExcludesReadingsOutsideTwelveHourWindow() {
+		let calendar = Calendar.current
+		let now = calendar.date(from: DateComponents(year: 2025, month: 6, day: 1, hour: 12, minute: 30)) ?? Date()
+		// Two recent hours plus one stale reading 20h ago that must be ignored.
+		let readings: [(date: Date, pm25: Double)] = [
+			(now, 10.0),
+			(calendar.date(byAdding: .hour, value: -1, to: now) ?? now, 10.0),
+			(calendar.date(byAdding: .hour, value: -20, to: now) ?? now, 999.0)
+		]
+		// The 999 reading is outside the 12h window; NowCast of the constant 10 → AQI 53.
+		#expect(EPAAirQuality.nowCastAQI(from: readings, now: now, calendar: calendar) == 53)
+	}
+}
+
+// Air Quality (particulate matter) telemetry — issue #2040
+@Suite("Air quality telemetry export")
+struct AirQualityTelemetryExportTests {
+
+	@Test func csvExportsParticulateMatterValues() {
+		let telemetry = TelemetryEntity()
+		telemetry.metricsType = 3
+		telemetry.pm10Standard = 1
+		telemetry.pm25Standard = 2
+		telemetry.pm100Standard = 3
+		telemetry.pm10Environmental = 4
+		telemetry.pm25Environmental = 5
+		telemetry.pm100Environmental = 6
+
+		let csv = telemetryToCsvFile(telemetry: [telemetry], metricsType: 3)
+		let lines = csv.split(separator: "\n")
+
+		// Header names the six PM columns
+		#expect(lines.first?.contains("PM2.5 Std") == true)
+		#expect(lines.first?.contains("PM10 Env") == true)
+
+		// Values are written in field order (PM1.0, PM2.5, PM10 std; then env)
+		let values = lines.last?.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }
+		#expect(values.map { Array($0.prefix(6)) } == ["1", "2", "3", "4", "5", "6"])
+	}
+
+	@Test func csvLeavesMissingParticulateMatterFieldsBlank() {
+		let telemetry = TelemetryEntity()
+		telemetry.metricsType = 3
+		telemetry.pm25Standard = 12
+		// All other PM fields left nil
+
+		let csv = telemetryToCsvFile(telemetry: [telemetry], metricsType: 3)
+		let values = csv.split(separator: "\n").last?.split(separator: ",", omittingEmptySubsequences: false)
+			.map { $0.trimmingCharacters(in: .whitespaces) }
+
+		// Row = 6 PM columns + timestamp. pm25Standard is the 2nd field; every other PM column is blank.
+		#expect(values?.count == 7)
+		#expect(values?[1] == "12")
+		#expect(values?[0] == "")
+		#expect(values?[2] == "")
+		#expect(values?[3] == "")
+		#expect(values?[4] == "")
+		#expect(values?[5] == "")
+	}
+}
+
 @Suite("Aqi getAqi boundary values")
 struct AqiGetAqiBoundaryTests {
 
@@ -672,5 +809,84 @@ struct TelemetryPacketIngestTests {
 		// Far newer than the 1970 epoch the old code would have stored.
 		let year2020 = Date(timeIntervalSince1970: 1_577_836_800)
 		#expect((latest?.time ?? .distantPast) > year2020)
+	}
+
+	/// Builds a decoded air-quality-telemetry `MeshPacket` carrying only the three *standard* PM
+	/// concentrations, leaving the *environmental* variants unset so the test can also assert that
+	/// the ingest path's `has`-gating persists absent fields as nil. Issue #2040.
+	private func makeAirQualityTelemetryPacket(
+		from nodeNum: UInt32,
+		pm10Standard: UInt32,
+		pm25Standard: UInt32,
+		pm100Standard: UInt32,
+		reportedTime: UInt32
+	) throws -> MeshPacket {
+		var airQuality = AirQualityMetrics()
+		airQuality.pm10Standard = pm10Standard
+		airQuality.pm25Standard = pm25Standard
+		airQuality.pm100Standard = pm100Standard
+
+		var telemetry = Telemetry()
+		telemetry.airQualityMetrics = airQuality
+		telemetry.time = reportedTime
+
+		var dataMessage = DataMessage()
+		dataMessage.payload = try telemetry.serializedData()
+		dataMessage.portnum = .telemetryApp
+
+		var packet = MeshPacket()
+		packet.id = 0x2004
+		packet.from = nodeNum
+		packet.to = UInt32.max
+		packet.rxTime = reportedTime
+		packet.rxSnr = 5.5
+		packet.rxRssi = -90
+		packet.decoded = dataMessage
+		return packet
+	}
+
+	/// Latest air-quality (`metricsType == 3`) telemetry for `nodeNum`, read back through a fresh
+	/// context so we observe what `telemetryPacket` actually persisted.
+	private func fetchLatestAirQualityTelemetry(forNode nodeNum: Int64) throws -> TelemetryEntity? {
+		let context = ModelContext(sharedModelContainer)
+		let airQualityType: Int32 = 3
+		var descriptor = FetchDescriptor<TelemetryEntity>(
+			predicate: #Predicate<TelemetryEntity> {
+				$0.nodeTelemetry?.num == nodeNum && $0.metricsType == airQualityType
+			},
+			sortBy: [SortDescriptor(\TelemetryEntity.time, order: .reverse)]
+		)
+		descriptor.fetchLimit = 1
+		return try context.fetch(descriptor).first
+	}
+
+	/// Issue #2040 (Stage 1): the `.airQualityMetrics` telemetry variant must be parsed and
+	/// persisted as a `metricsType == 3` row with the PM fields populated, and `has`-gating must
+	/// leave the unreported (environmental) fields as nil rather than storing a spurious 0.
+	@Test func airQualityTelemetry_persistsPMFieldsAsType3() async throws {
+		let nodeNum: UInt32 = 0x2004_AA04
+		let packet = try makeAirQualityTelemetryPacket(
+			from: nodeNum,
+			pm10Standard: 1,
+			pm25Standard: 2,
+			pm100Standard: 3,
+			reportedTime: 1_700_000_500
+		)
+
+		let mesh = MeshPackets(modelContainer: sharedModelContainer)
+		await mesh.telemetryPacket(packet: packet, connectedNode: Self.connectedNode)
+		await mesh.flushDebouncedSaves()
+
+		let latest = try fetchLatestAirQualityTelemetry(forNode: Int64(nodeNum))
+		#expect(latest != nil)
+		#expect(latest?.metricsType == 3)
+		#expect(latest?.pm10Standard == 1)
+		#expect(latest?.pm25Standard == 2)
+		#expect(latest?.pm100Standard == 3)
+		// Unreported environmental fields must stay nil (has-gating), not persist as 0.
+		#expect(latest?.pm10Environmental == nil)
+		#expect(latest?.pm25Environmental == nil)
+		#expect(latest?.pm100Environmental == nil)
+		#expect(latest?.nodeTelemetry?.num == Int64(nodeNum))
 	}
 }

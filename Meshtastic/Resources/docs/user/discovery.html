@@ -58,6 +58,16 @@
 </tbody>
 </table>
 <p>The <strong>RF Health</strong> card summarises the noise floor across the scan and calls out the quietest channel. Noise floor (and the rest of the report) is also included when you export the scan as a PDF.</p>
+<h2>Beacons</h2>
+<p>Some radios run in <em>beacon mode</em> and periodically broadcast a short message advertising their mesh — optionally the channel, region, and modem preset it runs on. When a scan hears a beacon, it appears in the <strong>Beacons</strong> section of the results, showing the message, who sent it, and any advertised channel/region/preset.</p>
+<p>Beacons also steer the scan for you:</p>
+<ul>
+<li>If a beacon advertises a modem preset on the <strong>public channel</strong>, that preset is <strong>added to the scan automatically</strong>, so the run dwells on it too. The next time you set up a scan, any preset you've previously heard a beacon for is <strong>pre-selected</strong> in the Modem Presets list and marked with a beacon icon.</li>
+<li>If a beacon advertises a <strong>custom channel</strong> (its own name and PSK), the scan tunes the radio to that exact channel — name, key, region, and preset — during a dwell. A custom channel uses a different frequency and encryption than the public mesh, so scanning the bare preset wouldn't find it; discovery uses the key the beacon broadcast to tune in and measure that mesh directly. These targets appear in the results labeled as <strong>Preset · ChannelName</strong>.</li>
+</ul>
+<p>This means a single beacon is enough for discovery to find and measure the mesh it points to — even a private one — without you having to know its settings in advance.</p>
+<h3>Switch to a beaconed channel</h3>
+<p>When a beacon advertises a channel, its entry in the <strong>Beacons</strong> section has a <strong>Switch to this channel</strong> button. Tapping it (and confirming) sets your radio's primary channel to the advertised channel and applies the advertised region and preset. Your radio reboots and reconnects on that mesh, replacing your previous channel settings — so use it when you actually want to join the mesh the beacon is advertising.</p>
 <h2>Applying a Setting</h2>
 <p>Tap a result row and then <strong>Apply Setting</strong> to configure your connected radio to match the most active setting in your area. This updates the LoRa configuration on the radio directly.</p>
 <hr />

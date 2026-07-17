@@ -10,7 +10,7 @@ import SwiftUI
 struct RoutingErrorDetailedTests {
 
 	@Test func allCases_count() {
-		#expect(RoutingError.allCases.count == 17)
+		#expect(RoutingError.allCases.count == 18)
 	}
 
 	@Test func rawValues() {
@@ -31,6 +31,7 @@ struct RoutingErrorDetailedTests {
 		#expect(RoutingError.adminBadSessionKey.rawValue == 36)
 		#expect(RoutingError.adminPublicKeyUnauthorized.rawValue == 37)
 		#expect(RoutingError.rateLimitExceeded.rawValue == 38)
+		#expect(RoutingError.pkiSendFailPublicKey.rawValue == 39)
 	}
 
 	@Test func id_matchesRawValue() {
@@ -45,8 +46,58 @@ struct RoutingErrorDetailedTests {
 		}
 	}
 
-	@Test func display_noneIsAcknowledged() {
-		#expect(RoutingError.none.display.contains("Acknowledged") || RoutingError.none.display.count > 0)
+	@Test func display_noneIsDeliveredToRecipient() {
+		#expect(RoutingError.none.display == "Delivered to recipient")
+	}
+
+	@Test func display_noChannelUsesSourceBackedMeaning() {
+		#expect(RoutingError.noChannel.display == "Channel/key mismatch")
+	}
+
+	@Test func display_usesSourceBackedRoutingErrorWording() {
+		let expected: [(RoutingError, String)] = [
+			(.none, "Delivered to recipient"),
+			(.noRoute, "Failed to deliver to mesh"),
+			(.gotNak, "Failed to deliver to mesh"),
+			(.timeout, "Failed to deliver to mesh"),
+			(.noInterface, "No radio interface"),
+			(.maxRetransmit, "Failed to deliver to mesh"),
+			(.noChannel, "Channel/key mismatch"),
+			(.tooLarge, "Message is too large to send"),
+			(.noResponse, "No app response"),
+			(.dutyCycleLimit, "Duty cycle limit"),
+			(.badRequest, "Invalid request"),
+			(.notAuthorized, "Not authorized"),
+			(.pkiFailed, "Could not send encrypted message"),
+			(.pkiUnknownPubkey, "Recipient needs your key"),
+			(.adminBadSessionKey, "Admin session expired"),
+			(.adminPublicKeyUnauthorized, "Admin key not authorized"),
+			(.rateLimitExceeded, "Rate limited"),
+			(.pkiSendFailPublicKey, "Recipient key unavailable")
+		]
+
+		for (error, display) in expected {
+			#expect(error.display == display)
+		}
+	}
+
+	@Test func description_usesActionableDesignIssueWording() {
+		let expected: [(RoutingError, String)] = [
+			(.maxRetransmit, "No node confirmed this message. Try again when you have better signal or more mesh coverage."),
+			(.noChannel, "The sender or recipient could not use a matching channel/key for this message."),
+			(.noInterface, "The sender has no usable radio interface for this message."),
+			(.dutyCycleLimit, "Local airtime limits are temporarily blocking sends. Wait before trying again."),
+			(.rateLimitExceeded, "Messages are being sent too quickly. Wait before trying again."),
+			(.noResponse, "The destination received the request, but no app or module responded. Try again when the recipient is reachable."),
+			(.pkiFailed, "The encrypted send path could not be used. Wait for node info or keys to sync, then try again."),
+			(.pkiUnknownPubkey, "The recipient does not know your public key yet. Your node may share its info automatically; try again after it syncs."),
+			(.pkiSendFailPublicKey, "Your node does not have the recipient's public key yet. Wait for node info to sync, then try again."),
+			(.adminBadSessionKey, "The admin session key is missing, expired, or invalid. Request a new session before trying again.")
+		]
+
+		for (error, description) in expected {
+			#expect(error.description == description)
+		}
 	}
 
 	@Test func canRetry_noneIsFalse() {
@@ -60,12 +111,20 @@ struct RoutingErrorDetailedTests {
 	@Test func canRetry_retryableErrors() {
 		let retryable: [RoutingError] = [
 			.noRoute, .gotNak, .timeout, .noInterface, .maxRetransmit,
-			.noChannel, .noResponse, .dutyCycleLimit, .badRequest,
-			.notAuthorized, .pkiFailed, .pkiUnknownPubkey,
-			.adminBadSessionKey, .adminPublicKeyUnauthorized, .rateLimitExceeded
+			.noResponse, .dutyCycleLimit, .pkiFailed, .pkiUnknownPubkey,
+			.adminBadSessionKey, .rateLimitExceeded, .pkiSendFailPublicKey
 		]
 		for error in retryable {
 			#expect(error.canRetry == true, "Expected \(error) to be retryable")
+		}
+	}
+
+	@Test func canRetry_nonRetryableErrors() {
+		let nonRetryable: [RoutingError] = [
+			.none, .noChannel, .tooLarge, .badRequest, .notAuthorized, .adminPublicKeyUnauthorized
+		]
+		for error in nonRetryable {
+			#expect(error.canRetry == false, "Expected \(error) not to show blind retry")
 		}
 	}
 

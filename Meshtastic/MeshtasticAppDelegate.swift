@@ -186,7 +186,13 @@ class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificat
 		   let deepLink = userInfo["path"] as? String,
 		   let url = URL(string: deepLink) {
 			Logger.services.info("userNotificationCenter didReceiveResponse handling deeplink: \(targetValue, privacy: .public) \(deepLink, privacy: .public)")
-			router?.route(url: url)
+			if url.scheme == "meshtastic" {
+				router?.route(url: url)
+			} else if targetValue == FirmwareUpdateNotifier.flasherTarget && url.absoluteString == FirmwareUpdateNotifier.flasherPath {
+				UIApplication.shared.open(url)
+			} else {
+				Logger.services.error("Unsupported notification response URL: \(deepLink, privacy: .public)")
+			}
 		} else {
 			Logger.services.error("Failed to handle notification response: \(userInfo, privacy: .public)")
 		}

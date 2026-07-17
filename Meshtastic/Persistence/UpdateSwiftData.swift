@@ -146,7 +146,11 @@ extension MeshPackets {
 		}
 	}
 	
-	public func clearDatabase(includeRoutes: Bool, preserveFavorites: Bool = false) {
+	/// Returns true when every delete committed; false when the clear aborted part-way (callers
+	/// that require an empty store — the device-switch and cross-device reset paths — must
+	/// escalate, e.g. destroy and recreate the store, rather than proceed on a half-cleared one).
+	@discardableResult
+	public func clearDatabase(includeRoutes: Bool, preserveFavorites: Bool = false) -> Bool {
 		// Delete + SAVE one model type at a time. SwiftData's batch `delete(model:)` ENQUEUES a
 		// deletion (committed on the next save) and nullifies inverse relationships. Reconciling MANY
 		// types' deletions in a SINGLE trailing save makes SwiftData tear down objects whose inverse
@@ -163,12 +167,17 @@ extension MeshPackets {
 		}
 
 		do {
-			// Sever the DeviceHardware many-to-many from the owning side first (a batch delete alone
-			// trips the mandatory MTM nullify inverse between DeviceHardwareEntity.tags and
-			// DeviceHardwareTagEntity.devices), saving before deleting the tag/image entities.
+			// Sever the DeviceHardware relationships from the owning side first: a batch delete
+			// alone trips the mandatory MTM nullify inverse between DeviceHardwareEntity.tags and
+			// DeviceHardwareTagEntity.devices, and likewise batch-deleting the images fails with
+			// "mandatory OTO nullify inverse on DeviceHardwareImageEntity/device" while any device
+			// still references them ("Constraint trigger violation" — which aborted the whole clear
+			// and quietly left EVERY entity in place, the direct cause of one radio's nodes
+			// surviving into another radio's session). Save the severing before the batch deletes.
 			let hardwareDevices = try modelContext.fetch(FetchDescriptor<DeviceHardwareEntity>())
 			for device in hardwareDevices {
 				device.tags.removeAll()
+				device.images.removeAll()
 			}
 			try commit()
 			try modelContext.delete(model: DeviceHardwareTagEntity.self)
@@ -222,9 +231,11 @@ extension MeshPackets {
 				try modelContext.delete(model: modelType)
 				try commit()
 			}
+			return true
 		} catch {
 			// Abort before the next type so a failed save can't leave a multi-type batch pending.
 			Logger.data.error("💥 Failed while clearing database, aborted: \(error.localizedDescription, privacy: .public)")
+			return false
 		}
 	}
 	
@@ -402,8 +413,8 @@ extension MeshPackets {
 						let hwDescriptor1 = FetchDescriptor<DeviceHardwareEntity>(
 							predicate: #Predicate { $0.hwModel == fetchHwModel1 }
 						)
-						if let hardwareEntity = try? modelContext.fetch(hwDescriptor1).first {
-							newUser.hwDisplayName = hardwareEntity.displayName
+						if let hardware = try? modelContext.fetch(hwDescriptor1) {
+							newUser.hwDisplayName = HardwareCatalogResolver.presentation(for: fetchHwModel1, in: hardware)?.displayName
 						}
 						newNode.user = newUser
 						
@@ -509,8 +520,8 @@ extension MeshPackets {
 							let hwDescriptor2 = FetchDescriptor<DeviceHardwareEntity>(
 								predicate: #Predicate { $0.hwModel == fetchHwModel2 }
 							)
-							if let hardwareEntity = try? modelContext.fetch(hwDescriptor2).first {
-								user.hwDisplayName = hardwareEntity.displayName
+							if let hardware = try? modelContext.fetch(hwDescriptor2) {
+								user.hwDisplayName = HardwareCatalogResolver.presentation(for: fetchHwModel2, in: hardware)?.displayName
 							}
 						}
 					}
@@ -1320,6 +1331,70 @@ extension MeshPackets {
 		} catch {
 			let nsError = error as NSError
 			Logger.data.error("💥 [DetectionSensorConfigEntity] Fetching node for core data failed: \(nsError, privacy: .public)")
+		}
+	}
+
+	func upsertMeshBeaconModuleConfigPacket(config: ModuleConfig.MeshBeaconConfig, nodeNum: Int64, sessionPasskey: Data? = Data()) {
+
+		let logString = String.localizedStringWithFormat("Mesh Beacon module config received: %@".localized, String(nodeNum))
+		Logger.data.info("📡 \(logString, privacy: .public)")
+
+		let fetchNum = Int64(nodeNum)
+		var fetchNodeInfoRequest = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate<NodeInfoEntity> { $0.num == fetchNum })
+		fetchNodeInfoRequest.fetchLimit = 1
+		do {
+			let fetchedNode = try modelContext.fetch(fetchNodeInfoRequest)
+			// Found a node, save Mesh Beacon Config
+			if !fetchedNode.isEmpty {
+				let entity: MeshBeaconConfigEntity
+				if let existing = fetchedNode[0].meshBeaconConfig {
+					entity = existing
+				} else {
+					entity = MeshBeaconConfigEntity()
+					modelContext.insert(entity)
+					fetchedNode[0].meshBeaconConfig = entity
+				}
+				entity.flags = Int32(truncatingIfNeeded: config.flags)
+				entity.broadcastMessage = config.broadcastMessage
+				entity.broadcastOfferChannelName = config.hasBroadcastOfferChannel ? config.broadcastOfferChannel.name : ""
+				entity.broadcastOfferChannelPSK = config.hasBroadcastOfferChannel ? config.broadcastOfferChannel.psk : Data()
+				entity.broadcastOfferRegion = Int32(config.broadcastOfferRegion.rawValue)
+				entity.broadcastOfferPreset = config.hasBroadcastOfferPreset ? Int32(config.broadcastOfferPreset.rawValue) : -1
+				entity.broadcastOnChannelName = config.hasBroadcastOnChannel ? config.broadcastOnChannel.name : ""
+				entity.broadcastOnChannelPSK = config.hasBroadcastOnChannel ? config.broadcastOnChannel.psk : Data()
+				entity.broadcastOnRegion = Int32(config.broadcastOnRegion.rawValue)
+				entity.broadcastOnPreset = config.hasBroadcastOnPreset ? Int32(config.broadcastOnPreset.rawValue) : -1
+				entity.broadcastIntervalSecs = config.broadcastIntervalSecs > 0 ? Int32(truncatingIfNeeded: config.broadcastIntervalSecs) : 3600
+				entity.broadcastSendAsNode = Int64(config.broadcastSendAsNode)
+
+				// Rebuild the multi-target list from the incoming config (cascade replaces the old rows).
+				for old in entity.broadcastTargets {
+					modelContext.delete(old)
+				}
+				entity.broadcastTargets = config.broadcastTargets.map { target in
+					let newTarget = BroadcastTargetEntity(
+						preset: target.hasPreset ? Int32(target.preset.rawValue) : -1,
+						region: Int32(target.region.rawValue),
+						channelIndex: target.hasChannelIndex ? Int32(truncatingIfNeeded: target.channelIndex) : -1
+					)
+					modelContext.insert(newTarget)
+					return newTarget
+				}
+
+				if sessionPasskey != nil {
+					fetchedNode[0].sessionPasskey = sessionPasskey
+					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
+				}
+				savePendingChanges()
+				Logger.data.info("💾 [MeshBeaconConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
+
+			} else {
+				Logger.data.error("💥 [MeshBeaconConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Mesh Beacon Module Config")
+			}
+
+		} catch {
+			let nsError = error as NSError
+			Logger.data.error("💥 [MeshBeaconConfigEntity] Fetching node for core data failed: \(nsError, privacy: .public)")
 		}
 	}
 

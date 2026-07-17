@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--Generator: Custom SF Symbol - Mesh Radio-->
+<!DOCTYPE svg
+PUBLIC "-//W3C//DTD SVG 1.1//EN"
+       "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 3300 2200">
+ <!--glyph: "mesh.radio", point size: 100.0, template writer version: "138.0.0"-->
+ <style>.monochrome-0 {-sfsymbols-motion-group:0;-sfsymbols-layer-tags:-a1b2c3d4e5f60001}
+
+.multicolor-0:tintColor {-sfsymbols-motion-group:0;-sfsymbols-layer-tags:-a1b2c3d4e5f60001}
+
+.hierarchical-0:primary {-sfsymbols-motion-group:0;-sfsymbols-layer-tags:-a1b2c3d4e5f60001}
+
+.SFSymbolsPreviewWireframe {fill:none;opacity:1.0;stroke:black;stroke-width:0.5}
+</style>
+ <g id="Notes">
+  <rect height="2200" id="artboard" style="fill:white;opacity:1" width="3300" x="0" y="0"/>
+  <line style="fill:none;stroke:black;opacity:1;stroke-width:0.5;" x1="263" x2="3036" y1="292" y2="292"/>
+  <text style="stroke:none;fill:black;font-family:sans-serif;font-size:13;font-weight:bold;" transform="matrix(1 0 0 1 263 322)">Weight/Scale Variations</text>
+  <text style="stroke:none;fill:black;font-family:sans-serif;font-size:13;text-anchor:middle;" transform="matrix(1 0 0 1 559.711 322)">Ultralight</text>
+  <text style="stroke:none;fill:black;font-family:sans-serif;font-size:13;text-anchor:middle;" transform="matrix(1 0 0 1 1449.84 322)">Regular</text>
+  <text style="stroke:none;fill:black;font-family:sans-serif;font-size:13;text-anchor:middle;" transform="matrix(1 0 0 1 2933.4 322)">Black</text>
+  <line style="fill:none;stroke:black;opacity:1;stroke-width:0.5;" x1="263" x2="3036" y1="1903" y2="1903"/>
+  <text id="template-version" style="stroke:none;fill:black;font-family:sans-serif;font-size:13;text-anchor:end;" transform="matrix(1 0 0 1 3036 1933)">Template v.6.0</text>
+  <text style="stroke:none;fill:black;font-family:sans-serif;font-size:13;text-anchor:end;" transform="matrix(1 0 0 1 3036 1951)">Requires Xcode 16 or greater</text>
+  <text id="descriptive-name" style="stroke:none;fill:black;font-family:sans-serif;font-size:13;text-anchor:end;" transform="matrix(1 0 0 1 3036 1969)">Generated from custom.mesh.radio</text>
+  <text style="stroke:none;fill:black;font-family:sans-serif;font-size:13;text-anchor:end;" transform="matrix(1 0 0 1 3036 1987)">Typeset at 100.0 points</text>
+  <text style="stroke:none;fill:black;font-family:sans-serif;font-size:13;" transform="matrix(1 0 0 1 263 726)">Small</text>
+  <text style="stroke:none;fill:black;font-family:sans-serif;font-size:13;" transform="matrix(1 0 0 1 263 1156)">Medium</text>
+  <text style="stroke:none;fill:black;font-family:sans-serif;font-size:13;" transform="matrix(1 0 0 1 263 1586)">Large</text>
+ </g>
+ <g id="Guides">
+  <g id="H-reference" style="fill:#27AAE1;stroke:none;" transform="matrix(1 0 0 1 339 696)">
+   <path d="M0.993654 0L3.63775 0L29.3281-67.1323L30.0303-67.1323L30.0303-70.459L28.1226-70.459ZM11.6885-24.4799L46.9815-24.4799L46.2315-26.7285L12.4385-26.7285ZM55.1196 0L57.7637 0L30.6382-70.459L29.4326-70.459L29.4326-67.1323Z"/>
+  </g>
+  <line id="Baseline-S" style="fill:none;stroke:#27AAE1;opacity:1;stroke-width:0.5;" x1="263" x2="3036" y1="696" y2="696"/>
+  <line id="Capline-S" style="fill:none;stroke:#27AAE1;opacity:1;stroke-width:0.5;" x1="263" x2="3036" y1="625.541" y2="625.541"/>
+  <g id="H-reference" style="fill:#27AAE1;stroke:none;" transform="matrix(1 0 0 1 339 1126)">
+   <path d="M0.993654 0L3.63775 0L29.3281-67.1323L30.0303-67.1323L30.0303-70.459L28.1226-70.459ZM11.6885-24.4799L46.9815-24.4799L46.2315-26.7285L12.4385-26.7285ZM55.1196 0L57.7637 0L30.6382-70.459L29.4326-70.459L29.4326-67.1323Z"/>
+  </g>
+  <line id="Baseline-M" style="fill:none;stroke:#27AAE1;opacity:1;stroke-width:0.5;" x1="263" x2="3036" y1="1126" y2="1126"/>
+  <line id="Capline-M" style="fill:none;stroke:#27AAE1;opacity:1;stroke-width:0.5;" x1="263" x2="3036" y1="1055.54" y2="1055.54"/>
+  <g id="H-reference" style="fill:#27AAE1;stroke:none;" transform="matrix(1 0 0 1 339 1556)">
+   <path d="M0.993654 0L3.63775 0L29.3281-67.1323L30.0303-67.1323L30.0303-70.459L28.1226-70.459ZM11.6885-24.4799L46.9815-24.4799L46.2315-26.7285L12.4385-26.7285ZM55.1196 0L57.7637 0L30.6382-70.459L29.4326-70.459L29.4326-67.1323Z"/>
+  </g>
+  <line id="Baseline-L" style="fill:none;stroke:#27AAE1;opacity:1;stroke-width:0.5;" x1="263" x2="3036" y1="1556" y2="1556"/>
+  <line id="Capline-L" style="fill:none;stroke:#27AAE1;opacity:1;stroke-width:0.5;" x1="263" x2="3036" y1="1485.54" y2="1485.54"/>
+  <line id="left-margin-Ultralight-S" style="fill:none;stroke:#00AEEF;stroke-width:0.5;opacity:1.0;" x1="515.423" x2="515.423" y1="600.785" y2="720.121"/>
+  <line id="right-margin-Ultralight-S" style="fill:none;stroke:#00AEEF;stroke-width:0.5;opacity:1.0;" x1="604" x2="604" y1="600.785" y2="720.121"/>
+  <line id="left-margin-Regular-S" style="fill:none;stroke:#00AEEF;stroke-width:0.5;opacity:1.0;" x1="1405.56" x2="1405.56" y1="600.785" y2="720.121"/>
+  <line id="right-margin-Regular-S" style="fill:none;stroke:#00AEEF;stroke-width:0.5;opacity:1.0;" x1="1494.13" x2="1494.13" y1="600.785" y2="720.121"/>
+  <line id="left-margin-Black-S" style="fill:none;stroke:#00AEEF;stroke-width:0.5;opacity:1.0;" x1="2889.11" x2="2889.11" y1="600.785" y2="720.121"/>
+  <line id="right-margin-Black-S" style="fill:none;stroke:#00AEEF;stroke-width:0.5;opacity:1.0;" x1="2977.69" x2="2977.69" y1="600.785" y2="720.121"/>
+ </g>
+ <g id="Symbols">
+  <g id="Black-S" transform="matrix(1 0 0 1 2889.11 696)">
+   <path class="monochrome-0 multicolor-0:tintColor hierarchical-0:primary SFSymbolsPreviewWireframe" fill-rule="nonzero" d="M26.00 -56.00L60.00 -56.00A8.00 8.00 0 0 1 68.00 -48.00L68.00 -10.00A8.00 8.00 0 0 1 60.00 -2.00L26.00 -2.00A8.00 8.00 0 0 1 18.00 -10.00L18.00 -48.00A8.00 8.00 0 0 1 26.00 -56.00ZM26.00 -52.00A4.00 4.00 0 0 0 22.00 -48.00L22.00 -10.00A4.00 4.00 0 0 0 26.00 -6.00L60.00 -6.00A4.00 4.00 0 0 0 64.00 -10.00L64.00 -48.00A4.00 4.00 0 0 0 60.00 -52.00ZM28.00 -51.00L58.00 -51.00A4.00 4.00 0 0 1 62.00 -47.00L62.00 -31.00A4.00 4.00 0 0 1 58.00 -27.00L28.00 -27.00A4.00 4.00 0 0 1 24.00 -31.00L24.00 -47.00A4.00 4.00 0 0 1 28.00 -51.00ZM26.80 -11.00A2.20 2.20 0 1 0 31.20 -11.00A2.20 2.20 0 1 0 26.80 -11.00ZM37.80 -11.00A2.20 2.20 0 1 0 42.20 -11.00A2.20 2.20 0 1 0 37.80 -11.00ZM48.80 -11.00A2.20 2.20 0 1 0 53.20 -11.00A2.20 2.20 0 1 0 48.80 -11.00ZM59.80 -11.00A2.20 2.20 0 1 0 64.20 -11.00A2.20 2.20 0 1 0 59.80 -11.00ZM26.00 -69.00L26.00 -69.00A4.50 4.50 0 0 1 30.50 -64.50L30.50 -58.50A4.50 4.50 0 0 1 26.00 -54.00L26.00 -54.00A4.50 4.50 0 0 1 21.50 -58.50L21.50 -64.50A4.50 4.50 0 0 1 26.00 -69.00ZM53.00 -62.00A5.00 5.00 0 1 0 63.00 -62.00A5.00 5.00 0 1 0 53.00 -62.00Z"/>
+  </g>
+  <g id="Regular-S" transform="matrix(1 0 0 1 1405.56 696)">
+   <path class="monochrome-0 multicolor-0:tintColor hierarchical-0:primary SFSymbolsPreviewWireframe" fill-rule="nonzero" d="M26.00 -56.00L60.00 -56.00A8.00 8.00 0 0 1 68.00 -48.00L68.00 -10.00A8.00 8.00 0 0 1 60.00 -2.00L26.00 -2.00A8.00 8.00 0 0 1 18.00 -10.00L18.00 -48.00A8.00 8.00 0 0 1 26.00 -56.00ZM26.00 -52.00A4.00 4.00 0 0 0 22.00 -48.00L22.00 -10.00A4.00 4.00 0 0 0 26.00 -6.00L60.00 -6.00A4.00 4.00 0 0 0 64.00 -10.00L64.00 -48.00A4.00 4.00 0 0 0 60.00 -52.00ZM28.00 -51.00L58.00 -51.00A4.00 4.00 0 0 1 62.00 -47.00L62.00 -31.00A4.00 4.00 0 0 1 58.00 -27.00L28.00 -27.00A4.00 4.00 0 0 1 24.00 -31.00L24.00 -47.00A4.00 4.00 0 0 1 28.00 -51.00ZM26.80 -11.00A2.20 2.20 0 1 0 31.20 -11.00A2.20 2.20 0 1 0 26.80 -11.00ZM37.80 -11.00A2.20 2.20 0 1 0 42.20 -11.00A2.20 2.20 0 1 0 37.80 -11.00ZM48.80 -11.00A2.20 2.20 0 1 0 53.20 -11.00A2.20 2.20 0 1 0 48.80 -11.00ZM59.80 -11.00A2.20 2.20 0 1 0 64.20 -11.00A2.20 2.20 0 1 0 59.80 -11.00ZM26.00 -69.00L26.00 -69.00A4.50 4.50 0 0 1 30.50 -64.50L30.50 -58.50A4.50 4.50 0 0 1 26.00 -54.00L26.00 -54.00A4.50 4.50 0 0 1 21.50 -58.50L21.50 -64.50A4.50 4.50 0 0 1 26.00 -69.00ZM53.00 -62.00A5.00 5.00 0 1 0 63.00 -62.00A5.00 5.00 0 1 0 53.00 -62.00Z"/>
+  </g>
+  <g id="Ultralight-S" transform="matrix(1 0 0 1 515.423 696)">
+   <path class="monochrome-0 multicolor-0:tintColor hierarchical-0:primary SFSymbolsPreviewWireframe" fill-rule="nonzero" d="M26.00 -56.00L60.00 -56.00A8.00 8.00 0 0 1 68.00 -48.00L68.00 -10.00A8.00 8.00 0 0 1 60.00 -2.00L26.00 -2.00A8.00 8.00 0 0 1 18.00 -10.00L18.00 -48.00A8.00 8.00 0 0 1 26.00 -56.00ZM26.00 -52.00A4.00 4.00 0 0 0 22.00 -48.00L22.00 -10.00A4.00 4.00 0 0 0 26.00 -6.00L60.00 -6.00A4.00 4.00 0 0 0 64.00 -10.00L64.00 -48.00A4.00 4.00 0 0 0 60.00 -52.00ZM28.00 -51.00L58.00 -51.00A4.00 4.00 0 0 1 62.00 -47.00L62.00 -31.00A4.00 4.00 0 0 1 58.00 -27.00L28.00 -27.00A4.00 4.00 0 0 1 24.00 -31.00L24.00 -47.00A4.00 4.00 0 0 1 28.00 -51.00ZM26.80 -11.00A2.20 2.20 0 1 0 31.20 -11.00A2.20 2.20 0 1 0 26.80 -11.00ZM37.80 -11.00A2.20 2.20 0 1 0 42.20 -11.00A2.20 2.20 0 1 0 37.80 -11.00ZM48.80 -11.00A2.20 2.20 0 1 0 53.20 -11.00A2.20 2.20 0 1 0 48.80 -11.00ZM59.80 -11.00A2.20 2.20 0 1 0 64.20 -11.00A2.20 2.20 0 1 0 59.80 -11.00ZM26.00 -69.00L26.00 -69.00A4.50 4.50 0 0 1 30.50 -64.50L30.50 -58.50A4.50 4.50 0 0 1 26.00 -54.00L26.00 -54.00A4.50 4.50 0 0 1 21.50 -58.50L21.50 -64.50A4.50 4.50 0 0 1 26.00 -69.00ZM53.00 -62.00A5.00 5.00 0 1 0 63.00 -62.00A5.00 5.00 0 1 0 53.00 -62.00Z"/>
+  </g>
+ </g>
+</svg>

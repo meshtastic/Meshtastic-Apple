@@ -63,7 +63,13 @@ struct Settings: View {
 		], excludedModules: excludedModules)
 			|| isTAKModuleSupported(node)
 			|| isTrafficManagementModuleSupported(node)
+			|| isMeshBeaconModuleSupported(node)
 			|| accessoryManager.supportsStatusMessage
+	}
+
+	private func isMeshBeaconModuleSupported(_ node: NodeInfoEntity?) -> Bool {
+		guard node != nil else { return false }
+		return accessoryManager.checkIsVersionSupported(forVersion: "2.8.0")
 	}
 
 	private func isModuleSupported(_ module: ExcludedModules, excludedModules: Int) -> Bool {
@@ -263,6 +269,16 @@ struct Settings: View {
 						Text("Detection Sensor")
 					} icon: {
 						Image(systemName: "sensor")
+					}
+				}
+			}
+
+			if isMeshBeaconModuleSupported(node) {
+				NavigationLink(value: SettingsNavigationState.meshBeacon) {
+					Label {
+						Text("Mesh Beacon")
+					} icon: {
+						Image(systemName: "dot.radiowaves.left.and.right")
 					}
 				}
 			}
@@ -657,6 +673,8 @@ struct Settings: View {
 					CannedMessagesConfig(node: configNode)
 				case .detectionSensor:
 					DetectionSensorConfig(node: configNode)
+				case .meshBeacon:
+					MeshBeaconConfig(node: configNode)
 				case .externalNotification:
 					ExternalNotificationConfig(node: configNode)
 				case .mqtt:

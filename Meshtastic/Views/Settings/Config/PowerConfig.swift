@@ -123,8 +123,8 @@ struct PowerConfig: View {
 				let descriptor = FetchDescriptor<DeviceHardwareEntity>(
 					predicate: #Predicate { $0.hwModel == hwModelValue }
 				)
-				if let hardwareEntity = try? context.fetch(descriptor).first,
-				   let archString = hardwareEntity.architecture,
+				if let hardware = try? context.fetch(descriptor),
+				   let archString = HardwareCatalogResolver.presentation(for: hwModelValue, in: hardware)?.architecture,
 				   let arch = Architecture(rawValue: archString) {
 					architecture = arch
 				}

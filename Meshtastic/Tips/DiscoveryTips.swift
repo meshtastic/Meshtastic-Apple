@@ -18,7 +18,7 @@ struct DiscoveryScanTip: Tip {
 		Text("What does this do?")
 	}
 	var message: Text? {
-		Text("This tool scans your local area to find nearby Meshtastic radios on different frequency settings. It switches between settings automatically, listens for a few minutes on each one, and then shows you which setting works best for your location based on how many radios it finds and how busy the airwaves are. On supported devices, local on-device AI will analyze your scan results and recommend the best setting — no internet connection required.")
+		Text("Scans nearby frequency settings and recommends the best one for your area — on-device, no internet required.")
 	}
 	var image: Image? {
 		Image(systemName: "antenna.radiowaves.left.and.right")

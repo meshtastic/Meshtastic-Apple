@@ -60,6 +60,16 @@ final class TelemetryEntity {
 	var windLull: Float?
 	var windSpeed: Float?
 
+	// MARK: - Air Quality Metrics
+	// Particulate matter concentrations (µg/m³) from the firmware's AirQualityMetrics telemetry
+	// variant (metricsType 3), persisted like the other environment telemetry fields. See issue #2040.
+	var pm10Standard: UInt32?
+	var pm25Standard: UInt32?
+	var pm100Standard: UInt32?
+	var pm10Environmental: UInt32?
+	var pm25Environmental: UInt32?
+	var pm100Environmental: UInt32?
+
 	// Relationship
 	var nodeTelemetry: NodeInfoEntity?
 

@@ -22,6 +22,18 @@ struct ContentView: View {
 	/// non-blocking state (.none, .unlocked, .lockNowAcknowledged).
 	private var isLockdownGateActive: Bool { lockdown.isBlockingSession }
 
+	/// Plain view-state mirror of `isLockdownGateActive`, kept in sync from the
+	/// coordinator via `.onChange`. Presenting the lockdown `fullScreenCover`
+	/// through a *computed* `Binding` — getter reading the `lockdown`
+	/// `@EnvironmentObject`, setter a no-op — produced a presentation binding that
+	/// could never converge, which iOS 17's SwiftUI resolved by re-entering the
+	/// attribute graph until it tripped `_assertionFailure` at first layout (a
+	/// launch crash unique to iOS 17; iOS 18+ tolerated it). Driving the cover
+	/// from real `@State` breaks that cycle. `LockdownSheet` has no dismiss
+	/// affordance, so this stays non-dismissable — only the coordinator leaving a
+	/// blocking state clears it.
+	@State private var isShowingLockdownGate: Bool = false
+
 	init(appState: AppState, router: Router) {
 		self.appState = appState
 		self.router = router
@@ -38,19 +50,32 @@ struct ContentView: View {
 					DeviceOnboarding()
 				}
 			)
-			.fullScreenCover(isPresented: Binding(
-				get: { isLockdownGateActive },
-				set: { _ in /* non-dismissable; coordinator state controls visibility */ }
-			)) {
+			.fullScreenCover(isPresented: $isShowingLockdownGate) {
 				LockdownSheet()
 			}
 			.onAppear {
 				if UserDefaults.firstLaunch {
 					isShowingDeviceOnboardingFlow = true
 				}
+				// Present the gate if the device is already in a blocking state when
+				// this view appears.
+				isShowingLockdownGate = isLockdownGateActive
+			}
+			.onChange(of: isLockdownGateActive) { _, active in
+				// Follow the coordinator's blocking state. The gate never closes from
+				// user interaction (fullScreenCover has no interactive dismiss and
+				// LockdownSheet exposes no dismiss control), so this is the only path
+				// that shows or hides it.
+				isShowingLockdownGate = active
 			}
 			.onChange(of: UserDefaults.showDeviceOnboarding) {_, newValue in
 				isShowingDeviceOnboardingFlow = newValue
+			}
+			.task {
+#if DEBUG
+				// No-op unless launched with --marketing-capture (see MarketingCapture / PerformanceSeedData).
+				await MarketingCapture.runIfNeeded(router: router, accessoryManager: accessoryManager)
+#endif
 			}
 	}
 
@@ -85,7 +110,7 @@ struct ContentView: View {
 				}
 				.badge(appState.totalUnreadMessages)
 
-				Tab("Nodes", systemImage: "flipphone", value: NavigationState.Tab.nodes) {
+				Tab("Nodes", image: "custom.mesh.radio", value: NavigationState.Tab.nodes) {
 					NodeList()
 				}
 
@@ -118,7 +143,7 @@ struct ContentView: View {
 
 				NodeList()
 				.tabItem {
-					Label("Nodes", systemImage: "flipphone")
+					Label("Nodes", image: "custom.mesh.radio")
 				}
 				.tag(NavigationState.Tab.nodes)
 

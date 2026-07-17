@@ -12,6 +12,7 @@ import SwiftData
 
 extension AmbientLightingConfigEntity: @unchecked Sendable {}
 extension BluetoothConfigEntity: @unchecked Sendable {}
+extension BroadcastTargetEntity: @unchecked Sendable {}
 extension CannedMessageConfigEntity: @unchecked Sendable {}
 extension ChannelEntity: @unchecked Sendable {}
 extension DetectionSensorConfigEntity: @unchecked Sendable {}
@@ -29,6 +30,7 @@ extension FirmwareReleaseEntity: @unchecked Sendable {}
 extension LoRaConfigEntity: @unchecked Sendable {}
 extension LocationEntity: @unchecked Sendable {}
 extension MQTTConfigEntity: @unchecked Sendable {}
+extension MeshBeaconConfigEntity: @unchecked Sendable {}
 extension MessageEntity: @unchecked Sendable {}
 extension MyInfoEntity: @unchecked Sendable {}
 extension NetworkConfigEntity: @unchecked Sendable {}

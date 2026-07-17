@@ -96,16 +96,38 @@ actor MeshPackets {
 	/// Call after DB retrieval completes or periodically to release accumulated memory.
 	static func recreateShared() {
 		_lock.lock()
+		let previous = _shared
 		_shared = MeshPackets(modelContainer: _container)
 		_lock.unlock()
+		// Invalidate the retired instance. In-flight tasks that captured `MeshPackets.shared`
+		// before the swap (a debounced save, a late packet for the previous radio) still hold
+		// the old actor, whose context is bound to the old container — which points at the SAME
+		// on-disk store as the new one. Letting those writes land after a device-switch
+		// clearDatabase resurrects the previous radio's rows (nodes bleeding across devices)
+		// and can trip reused-rowid "destroyed by ModelContext.reset" traps.
+		Task { await previous.invalidate() }
 		Logger.data.info("♻️ [MeshPackets] Recreated shared instance to release ModelContext memory")
 	}
 
 	// MARK: - Save Helpers
 
+	/// Set when this instance has been replaced by `recreateShared()`. A retired instance must
+	/// never persist again — see `recreateShared()`.
+	private var invalidated = false
+
+	func invalidate() {
+		invalidated = true
+		debounceSaveTask?.cancel()
+		debounceSaveTask = nil
+	}
+
 	/// Saves any pending changes in the model context. Call once at the end of each
 	/// top-level packet handler to batch all mutations from a single packet into one write.
 	func savePendingChanges(caller: String = #function) {
+		guard !invalidated else {
+			Logger.data.warning("💾 [\(caller, privacy: .public)] Dropped save on retired MeshPackets instance")
+			return
+		}
 		guard modelContext.hasChanges else { return }
 		do {
 			try modelContext.save()
@@ -139,6 +161,7 @@ actor MeshPackets {
 	/// keep arriving continuously, a save is forced every 5 seconds.
 	/// Use for high-frequency packet types (position, telemetry) instead of `savePendingChanges`.
 	func scheduleDebouncedSave() {
+		guard !invalidated else { return }
 		debounceSaveTask?.cancel()
 		let elapsed = ContinuousClock.now - lastDebouncedSaveTime
 		if elapsed >= Self.maxDebounceDelay {
@@ -238,6 +261,8 @@ actor MeshPackets {
 			upsertCannedMessagesModuleConfigPacket(config: config.cannedMessage, nodeNum: nodeNum)
 		case .detectionSensor:
 			upsertDetectionSensorModuleConfigPacket(config: config.detectionSensor, nodeNum: nodeNum)
+		case .meshBeacon:
+			upsertMeshBeaconModuleConfigPacket(config: config.meshBeacon, nodeNum: nodeNum)
 		case .externalNotification:
 			upsertExternalNotificationModuleConfigPacket(config: config.externalNotification, nodeNum: nodeNum)
 		case .mqtt:
@@ -462,8 +487,8 @@ actor MeshPackets {
 						let hwDescriptor = FetchDescriptor<DeviceHardwareEntity>(
 							predicate: #Predicate { $0.hwModel == hwModelValue }
 						)
-						if let hardwareEntity = try? modelContext.fetch(hwDescriptor).first {
-							newUser.hwDisplayName = hardwareEntity.displayName
+						if let hardware = try? modelContext.fetch(hwDescriptor) {
+							newUser.hwDisplayName = HardwareCatalogResolver.presentation(for: hwModelValue, in: hardware)?.displayName
 						}
 						newUser.isLicensed = nodeInfo.user.isLicensed
 						newUser.role = Int32(nodeInfo.user.role.rawValue)
@@ -522,6 +547,10 @@ actor MeshPackets {
 						if !deferSave {
 							savePendingChanges()
 							Logger.data.debug("💾 Saved a new Node Info For: \(String(nodeInfo.num), privacy: .public)")
+						} else {
+							// Deferred (node-DB dump): batch writes, but still persist at least
+							// every maxDebounceDelay so a long dump isn't one giant save.
+							scheduleDebouncedSave()
 						}
 						return newNode.persistentModelID
 					} catch {
@@ -583,8 +612,8 @@ actor MeshPackets {
 							let hwDescriptor2 = FetchDescriptor<DeviceHardwareEntity>(
 								predicate: #Predicate { $0.hwModel == hwModelValue2 }
 							)
-							if let hardwareEntity = try? modelContext.fetch(hwDescriptor2).first {
-								user.hwDisplayName = hardwareEntity.displayName
+							if let hardware = try? modelContext.fetch(hwDescriptor2) {
+								user.hwDisplayName = HardwareCatalogResolver.presentation(for: hwModelValue2, in: hardware)?.displayName
 							}
 						}
 					} else {
@@ -639,6 +668,8 @@ actor MeshPackets {
 						if !deferSave {
 							savePendingChanges()
 							Logger.data.debug("💾 [Node Info] saved for \(nodeInfo.num.toHex(), privacy: .public)")
+						} else {
+							scheduleDebouncedSave()
 						}
 						return fetchedNode[0].persistentModelID
 					} catch {
@@ -867,6 +898,11 @@ actor MeshPackets {
 		case .localStats(let m)?:
 			parts.append("stats")
 			parts.append("\(m.numOnlineNodes)/\(m.numTotalNodes) nodes")
+		case .airQualityMetrics(let m)?:
+			parts.append("aqi")
+			if m.hasPm25Standard { parts.append("PM2.5 \(m.pm25Standard)") }
+			if m.hasPm10Standard { parts.append("PM1.0 \(m.pm10Standard)") }
+			if m.hasPm100Standard { parts.append("PM10 \(m.pm100Standard)") }
 		default:
 			return ""
 		}
@@ -887,7 +923,14 @@ actor MeshPackets {
 
 	func telemetryPacket(packet: MeshPacket, connectedNode: Int64) {
 		if let telemetryMessage = try? Telemetry(serializedBytes: packet.decoded.payload) {
-			if telemetryMessage.variant != Telemetry.OneOf_Variant.deviceMetrics(telemetryMessage.deviceMetrics) && telemetryMessage.variant != Telemetry.OneOf_Variant.environmentMetrics(telemetryMessage.environmentMetrics) && telemetryMessage.variant != Telemetry.OneOf_Variant.localStats(telemetryMessage.localStats) && telemetryMessage.variant != Telemetry.OneOf_Variant.powerMetrics(telemetryMessage.powerMetrics) {
+			let handledVariants: [Telemetry.OneOf_Variant] = [
+				.deviceMetrics(telemetryMessage.deviceMetrics),
+				.environmentMetrics(telemetryMessage.environmentMetrics),
+				.localStats(telemetryMessage.localStats),
+				.powerMetrics(telemetryMessage.powerMetrics),
+				.airQualityMetrics(telemetryMessage.airQualityMetrics)
+			]
+			if !handledVariants.contains(where: { $0 == telemetryMessage.variant }) {
 				/// Other unhandled telemetry packets
 				return
 			}
@@ -977,6 +1020,16 @@ actor MeshPackets {
 				telemetry.powerCh3Voltage = telemetryMessage.powerMetrics.hasCh3Voltage.then(telemetryMessage.powerMetrics.ch3Voltage)
 				telemetry.powerCh3Current = telemetryMessage.powerMetrics.hasCh3Current.then(telemetryMessage.powerMetrics.ch3Current)
 				telemetry.metricsType = 2
+			} else if telemetryMessage.variant == Telemetry.OneOf_Variant.airQualityMetrics(telemetryMessage.airQualityMetrics) {
+				// Air Quality Metrics — particulate matter (µg/m³). Issue #2040 / design#54.
+				Logger.data.debug("📈 [Telemetry] Air Quality Metrics Received for Node: \(packet.from.toHex(), privacy: .public)")
+				telemetry.pm10Standard = telemetryMessage.airQualityMetrics.hasPm10Standard.then(telemetryMessage.airQualityMetrics.pm10Standard)
+				telemetry.pm25Standard = telemetryMessage.airQualityMetrics.hasPm25Standard.then(telemetryMessage.airQualityMetrics.pm25Standard)
+				telemetry.pm100Standard = telemetryMessage.airQualityMetrics.hasPm100Standard.then(telemetryMessage.airQualityMetrics.pm100Standard)
+				telemetry.pm10Environmental = telemetryMessage.airQualityMetrics.hasPm10Environmental.then(telemetryMessage.airQualityMetrics.pm10Environmental)
+				telemetry.pm25Environmental = telemetryMessage.airQualityMetrics.hasPm25Environmental.then(telemetryMessage.airQualityMetrics.pm25Environmental)
+				telemetry.pm100Environmental = telemetryMessage.airQualityMetrics.hasPm100Environmental.then(telemetryMessage.airQualityMetrics.pm100Environmental)
+				telemetry.metricsType = 3
 			}
 			telemetry.snr = packet.rxSnr
 			telemetry.rssi = packet.rxRssi

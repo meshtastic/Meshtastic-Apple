@@ -11,10 +11,15 @@ import MeshtasticProtobufs
 import CoreLocation
 
 extension AccessoryManager {
+	nonisolated static func locationProviderSleepSeconds(configuredInterval: Int) -> Int {
+		max(5, configuredInterval)
+	}
+
 	func initializeLocationProvider() {
 		self.locationTask = Task {
 			repeat {
-				try? await Task.sleep(for: .seconds(30)) // sleep for 30 seconds. This throws if task is cancelled
+				let sleepSeconds = Self.locationProviderSleepSeconds(configuredInterval: UserDefaults.provideLocationInterval)
+				try? await Task.sleep(for: .seconds(sleepSeconds)) // Throws if task is cancelled
 
 				guard let fromNodeNum = activeConnection?.device.num else {
 					return

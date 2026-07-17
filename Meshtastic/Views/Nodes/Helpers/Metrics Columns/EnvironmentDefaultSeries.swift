@@ -118,6 +118,11 @@ extension MetricsSeriesList {
 				keyPath: \.barometricPressure,
 				name: "Barometric Pressure",
 				abbreviatedName: "Bar",
+				// Anchor the axis to the typical sea-level range (~950–1050 hPa) instead of
+				// autoscaling tightly with the other environment series, so the absolute level is
+				// readable and small real changes stay visible. Expands if readings fall outside
+				// (e.g. high-altitude stations). Per meshtastic/design#53 / Meshtastic-Apple#2046.
+				initialYAxisRange: 950.0...1050.0,
 				visible: false,
 				foregroundStyle: { _ in
 						.linearGradient(

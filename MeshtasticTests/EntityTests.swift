@@ -20,6 +20,169 @@ private func makeTestContainer() throws -> ModelContainer {
 	return sharedModelContainer
 }
 
+// MARK: - Hardware catalog presentation
+
+@Suite("Hardware catalog presentation")
+struct HardwareCatalogPresentationTests {
+
+	private func record(
+		model: Int64,
+		slug: String,
+		target: String,
+		displayName: String,
+		activelySupported: Bool,
+		supportLevel: SupportLevel,
+		architecture: String? = nil
+	) -> HardwareCatalogRecord {
+		HardwareCatalogRecord(
+			hwModel: model,
+			hwModelSlug: slug,
+			platformioTarget: target,
+			displayName: displayName,
+			activelySupported: activelySupported,
+			supportLevel: supportLevel,
+			architecture: architecture
+		)
+	}
+
+	@Test func usesCanonicalTargetForTrackerAliasesRegardlessOfCatalogOrder() {
+		let heltec = record(
+			model: 48,
+			slug: "HELTEC_WIRELESS_TRACKER",
+			target: "heltec-wireless-tracker",
+			displayName: "Heltec Wireless Tracker V1.1",
+			activelySupported: true,
+			supportLevel: .flagship
+		)
+		let smallTracksenger = record(
+			model: 48,
+			slug: "HELTEC_WIRELESS_TRACKER",
+			target: "tracksenger",
+			displayName: "TrackSenger (small TFT)",
+			activelySupported: true,
+			supportLevel: .legacy
+		)
+		let largeTracksenger = record(
+			model: 48,
+			slug: "HELTEC_WIRELESS_TRACKER",
+			target: "tracksenger-lcd",
+			displayName: "TrackSenger (big TFT)",
+			activelySupported: false,
+			supportLevel: .legacy
+		)
+		let oledTracksenger = record(
+			model: 48,
+			slug: "HELTEC_WIRELESS_TRACKER",
+			target: "tracksenger-oled",
+			displayName: "TrackSenger (OLED)",
+			activelySupported: true,
+			supportLevel: .legacy
+		)
+
+		let presentation = HardwareCatalogResolver.presentation(
+			for: 48,
+			in: [oledTracksenger, largeTracksenger, smallTracksenger, heltec]
+		)
+
+		#expect(presentation?.displayName == "Heltec Wireless Tracker V1.1")
+		#expect(presentation?.platformioTarget == "heltec-wireless-tracker")
+		#expect(presentation?.supportLevel == .flagship)
+	}
+
+	@Test func preservesMissingCatalogMetadata() {
+		let entity = DeviceHardwareEntity()
+		entity.hwModel = 1
+		entity.hwModelSlug = nil
+		entity.platformioTarget = nil
+		entity.displayName = nil
+
+		let record = HardwareCatalogRecord(entity)
+
+		#expect(record.hwModelSlug == nil)
+		#expect(record.platformioTarget == nil)
+		#expect(record.displayName == nil)
+	}
+
+	@Test func usesRawStringOrderingForEqualPriorityRecords() {
+		let naturalFirst = record(
+			model: 1_000,
+			slug: "AMBIGUOUS_DEVICE",
+			target: "natural-first",
+			displayName: "Device 2",
+			activelySupported: true,
+			supportLevel: .flagship
+		)
+		let rawFirst = record(
+			model: 1_000,
+			slug: "AMBIGUOUS_DEVICE",
+			target: "raw-first",
+			displayName: "Device 10",
+			activelySupported: true,
+			supportLevel: .flagship
+		)
+
+		let presentation = HardwareCatalogResolver.presentation(for: 1_000, in: [naturalFirst, rawFirst])
+
+		#expect(presentation?.displayName == "Device 10")
+		#expect(presentation?.platformioTarget == "raw-first")
+	}
+
+	@Test func choosesPreferredVariantWhenTheProtocolCannotDistinguishIt() {
+		let smallDisplay = record(
+			model: 16,
+			slug: "TLORA_T3_S3",
+			target: "tlora-t3s3-v1",
+			displayName: "LILYGO T-LoRa T3-S3",
+			activelySupported: true,
+			supportLevel: .flagship,
+			architecture: "esp32-s3"
+		)
+		let eInk = record(
+			model: 16,
+			slug: "TLORA_T3_S3",
+			target: "tlora-t3s3-epaper",
+			displayName: "LILYGO T-LoRa T3-S3 E-Ink",
+			activelySupported: true,
+			supportLevel: .flagship,
+			architecture: "esp32-s3"
+		)
+
+		let presentation = HardwareCatalogResolver.presentation(for: 16, in: [eInk, smallDisplay])
+
+		#expect(presentation?.displayName == "LILYGO T-LoRa T3-S3")
+		#expect(presentation?.platformioTarget == "tlora-t3s3-v1")
+		#expect(presentation?.supportLevel == .flagship)
+		#expect(presentation?.activelySupported == true)
+		#expect(presentation?.architecture == "esp32-s3")
+	}
+
+	@Test func choosesBestSupportedVariantForFutureAmbiguousModels() {
+		let active = record(
+			model: 999,
+			slug: "FUTURE_DEVICE",
+			target: "future-device-a",
+			displayName: "Future Device A",
+			activelySupported: true,
+			supportLevel: .flagship
+		)
+		let legacy = record(
+			model: 999,
+			slug: "FUTURE_DEVICE",
+			target: "future-device-b",
+			displayName: "Future Device B",
+			activelySupported: false,
+			supportLevel: .legacy
+		)
+
+		let presentation = HardwareCatalogResolver.presentation(for: 999, in: [legacy, active])
+
+		#expect(presentation?.displayName == "Future Device A")
+		#expect(presentation?.platformioTarget == "future-device-a")
+		#expect(presentation?.supportLevel == .flagship)
+		#expect(presentation?.activelySupported == true)
+	}
+}
+
 // MARK: - createUser Tests
 
 @Suite("createUser")
@@ -91,6 +254,93 @@ struct CreateNodeInfoTests {
 		let hex = Int64(0xDEADBEEF).toHex()
 		let last4 = String(hex.suffix(4))
 		#expect(node.user?.shortName == last4)
+	}
+}
+
+// MARK: - Share Contact QR Tests
+
+@Suite("ShareContactQR")
+struct ShareContactQRTests {
+
+	private func makeNodeInfo(num: UInt32 = 0x1234_ABCD, unmessagable: Bool = false) -> NodeInfo {
+		var user = User()
+		user.id = "!\(String(num, radix: 16))"
+		user.longName = "Node Alpha"
+		user.shortName = "ALFA"
+		user.hwModel = .tbeam
+		user.role = .client
+		user.publicKey = Data([0x01, 0x02, 0x03, 0x04])
+		user.isUnmessagable = unmessagable
+
+		var node = NodeInfo()
+		node.num = num
+		node.user = user
+		return node
+	}
+
+	@Test func contactURLRoundTripsSharedContactPayload() throws {
+		let node = makeNodeInfo()
+
+		let urlString = try #require(ShareContactQR.urlString(for: node, manuallyVerified: true))
+		#expect(urlString.hasPrefix("https://meshtastic.org/v/#"))
+
+		let payload = try #require(urlString.split(separator: "#").last.map(String.init))
+		let decodedData = try #require(Data(base64Encoded: payload.base64urlToBase64()))
+		let contact = try SharedContact(serializedBytes: decodedData)
+
+		#expect(contact.nodeNum == node.num)
+		#expect(contact.user.longName == node.user.longName)
+		#expect(contact.user.shortName == node.user.shortName)
+		#expect(contact.user.publicKey == node.user.publicKey)
+		#expect(contact.manuallyVerified)
+	}
+
+	@Test func contactURLUnavailableForUnmessagableNode() {
+		let node = makeNodeInfo(unmessagable: true)
+
+		#expect(ShareContactQR.urlString(for: node, manuallyVerified: false) == nil)
+		#expect(ShareContactQR.urlString(for: node, manuallyVerified: true) == nil)
+	}
+
+	@Test func contactURLUnavailableWhenUserAbsent() {
+		let node = NodeInfo()
+
+		#expect(!ShareContactQR.canShareContact(for: node))
+		#expect(ShareContactQR.urlString(for: node, manuallyVerified: false) == nil)
+	}
+
+	@Test @MainActor func availabilityUsesNodeUserMessagingState() {
+		let node = NodeInfoEntity()
+		let user = UserEntity()
+		user.unmessagable = false
+		node.user = user
+
+		#expect(ShareContactQR.canShareContact(for: node))
+
+		user.unmessagable = true
+		#expect(!ShareContactQR.canShareContact(for: node))
+
+		node.user = nil
+		#expect(!ShareContactQR.canShareContact(for: node))
+	}
+
+	@Test @MainActor func nodeProtoPreservesUnmessagableStateForQRAvailability() {
+		let node = NodeInfoEntity()
+		let user = UserEntity()
+		user.unmessagable = true
+		node.user = user
+
+		let proto = node.toProto()
+
+		#expect(proto.user.isUnmessagable)
+		#expect(!ShareContactQR.canShareContact(for: proto))
+	}
+
+	@Test @MainActor func userProtoPreservesUnmessagableState() {
+		let user = UserEntity()
+		user.unmessagable = true
+
+		#expect(user.toProto().isUnmessagable)
 	}
 }
 

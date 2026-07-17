@@ -16,6 +16,9 @@ import FoundationModels
 struct DiscoverySummaryView: View {
 	let session: DiscoverySessionEntity
 
+	@EnvironmentObject private var accessoryManager: AccessoryManager
+	@Environment(\.modelContext) private var context
+
 	@State private var aiSummary: String = ""
 	@State private var isGeneratingAI: Bool = false
 	@State private var generatingPresets: Set<String> = []
@@ -23,11 +26,20 @@ struct DiscoverySummaryView: View {
 	@State private var isExportingPDF: Bool = false
 	@State private var isGeneratingPDF: Bool = false
 	@State private var pdfDocument: PDFDocument?
+	/// Beacon awaiting a "switch to this channel" confirmation; drives the alert.
+	@State private var beaconToJoin: DiscoveredBeaconEntity?
+	@State private var joinErrorMessage: String?
+	/// Beacon awaiting an "add channel" confirmation; drives the Add alert.
+	@State private var beaconToAdd: DiscoveredBeaconEntity?
+	@State private var addErrorMessage: String?
+	/// Beacon awaiting a "replace which secondary channel?" choice when no free slot exists (D2).
+	@State private var beaconToReplace: DiscoveredBeaconEntity?
 
 	var body: some View {
 		List {
 			sessionOverviewSection
 			presetResultsSection
+			beaconsSection
 			rfHealthSection
 			aiRecommendationSection
 		}
@@ -70,6 +82,86 @@ struct DiscoverySummaryView: View {
 			await generateAIRecommendation()
 			await generateFoundationModelPresetSummaries()
 		}
+		.alert("Switch to this channel?", isPresented: Binding(
+			get: { beaconToJoin != nil },
+			set: { if !$0 { beaconToJoin = nil } }
+		), presenting: beaconToJoin) { beacon in
+			Button("Cancel", role: .cancel) { beaconToJoin = nil }
+			Button("Switch") { switchToBeaconChannel(beacon) }
+		} message: { beacon in
+			Text(beaconSwitchPrompt(beacon))
+		}
+		.alert("Couldn't switch channel", isPresented: Binding(
+			get: { joinErrorMessage != nil },
+			set: { if !$0 { joinErrorMessage = nil } }
+		)) {
+			Button("OK", role: .cancel) { joinErrorMessage = nil }
+		} message: {
+			Text(joinErrorMessage ?? "")
+		}
+		.alert("Add this channel?", isPresented: Binding(
+			get: { beaconToAdd != nil },
+			set: { if !$0 { beaconToAdd = nil } }
+		), presenting: beaconToAdd) { beacon in
+			Button("Cancel", role: .cancel) { beaconToAdd = nil }
+			Button("Add") { addBeaconChannel(beacon) }
+		} message: { beacon in
+			Text("Add \"\(beacon.offerChannelName)\" as an additional channel — your radio keeps its current mesh, no reboot.")
+		}
+		.alert("Couldn't add channel", isPresented: Binding(
+			get: { addErrorMessage != nil },
+			set: { if !$0 { addErrorMessage = nil } }
+		)) {
+			Button("OK", role: .cancel) { addErrorMessage = nil }
+		} message: {
+			Text(addErrorMessage ?? "")
+		}
+		.confirmationDialog(
+			"Replace which channel?",
+			isPresented: Binding(
+				get: { beaconToReplace != nil },
+				set: { if !$0 { beaconToReplace = nil } }
+			),
+			titleVisibility: .visible,
+			presenting: beaconToReplace
+		) { beacon in
+			ForEach(accessoryManager.beaconReplaceableSecondaryChannels()) { channel in
+				Button("\(channel.name) (slot \(channel.index))", role: .destructive) {
+					replaceBeaconChannel(beacon, atIndex: channel.index)
+				}
+			}
+			Button("Cancel", role: .cancel) { beaconToReplace = nil }
+		} message: { _ in
+			Text("All secondary channel slots are full. Choose an existing secondary channel to replace — your primary channel is never touched.")
+		}
+	}
+
+	/// Applies a beacon's advertised channel + region/preset to the connected radio. The radio
+	/// reboots onto the advertised mesh; failures surface in an alert.
+	private func switchToBeaconChannel(_ beacon: DiscoveredBeaconEntity) {
+		beaconToJoin = nil
+		Task {
+			do {
+				try await accessoryManager.joinBeaconMesh(
+					channelName: beacon.offerChannelName,
+					channelPSK: beacon.offerChannelPSK,
+					region: beacon.offeredRegion,
+					preset: beacon.offeredPreset
+				)
+			} catch {
+				joinErrorMessage = error.localizedDescription
+			}
+		}
+	}
+
+	private func beaconSwitchPrompt(_ beacon: DiscoveredBeaconEntity) -> String {
+		var parts = ["This sets your radio's primary channel to \"\(beacon.offerChannelName)\""]
+		if let preset = beacon.offeredPreset { parts.append("the \(preset.description) preset") }
+		if let region = beacon.offeredRegion { parts.append("region \(region.description)") }
+		let joined = parts.count > 1
+			? parts.dropLast().joined(separator: ", ") + " and " + parts.last!
+			: parts[0]
+		return "\(joined). Your radio will reboot and reconnect on the new mesh. Your previous channel settings will be replaced."
 	}
 
 	// MARK: - Session Overview
@@ -119,6 +211,114 @@ struct DiscoverySummaryView: View {
 				}
 			}
 		}
+	}
+
+	// MARK: - Beacons
+
+	/// Beacons heard during the scan, newest first. Hidden entirely when none were received so the
+	/// section doesn't add noise to scans on meshes that don't run beacon nodes.
+	@ViewBuilder
+	private var beaconsSection: some View {
+		let beacons = session.beacons.sorted { $0.timestamp > $1.timestamp }
+		if !beacons.isEmpty {
+			Section {
+				ForEach(beacons) { beacon in
+					beaconCard(beacon)
+				}
+			} header: {
+				Label("Beacons", systemImage: "dot.radiowaves.left.and.right")
+			} footer: {
+				Text("Nodes advertising a mesh to join. A preset offered by a beacon is added to the scan automatically.")
+			}
+		}
+	}
+
+	@ViewBuilder
+	private func beaconCard(_ beacon: DiscoveredBeaconEntity) -> some View {
+		VStack(alignment: .leading, spacing: 6) {
+			HStack {
+				Text(beacon.displayName)
+					.font(.headline)
+				Spacer()
+				Text("\(String(format: "%.1f", beacon.snr)) SNR")
+					.font(.caption)
+					.monospacedDigit()
+					.foregroundStyle(.secondary)
+			}
+
+			if !beacon.message.isEmpty {
+				Text(beacon.message)
+					.font(.subheadline)
+					.fixedSize(horizontal: false, vertical: true)
+			}
+
+			// Offered preset / region / channel chips — only what the beacon actually advertised.
+			let chips = beaconChips(beacon)
+			if !chips.isEmpty {
+				HStack(spacing: 6) {
+					ForEach(chips, id: \.self) { chip in
+						Text(chip)
+							.font(.caption2)
+							.padding(.horizontal, 8)
+							.padding(.vertical, 3)
+							.background(Color.accentColor.opacity(0.15), in: Capsule())
+					}
+				}
+			}
+
+			if !beacon.heardOnPresetName.isEmpty {
+				Text("Heard on \(beacon.heardOnPresetName)")
+					.font(.caption2)
+					.foregroundStyle(.secondary)
+			}
+
+			// Offer join actions only when the beacon advertised a channel. When the offered mesh
+			// already runs on the radio's current preset/region/frequency slot, Add (no reboot) is
+			// offered alongside Switch; otherwise only Switch (retune + reboot) is shown (FR-016).
+			let joinOption = beaconJoinOption(for: beacon)
+			if joinOption != .none {
+				HStack(spacing: 8) {
+					if joinOption == .add {
+						Button {
+							beaconToAdd = beacon
+						} label: {
+							Label("Add channel", systemImage: "plus.circle")
+								.font(.caption)
+						}
+						.buttonStyle(.bordered)
+						.controlSize(.small)
+						.disabled(!accessoryManager.isConnected)
+					}
+					Button {
+						beaconToJoin = beacon
+					} label: {
+						Label("Switch to this channel", systemImage: "arrow.triangle.2.circlepath")
+							.font(.caption)
+					}
+					.buttonStyle(.bordered)
+					.controlSize(.small)
+					.disabled(!accessoryManager.isConnected)
+				}
+				.padding(.top, 2)
+			}
+		}
+		.padding(.vertical, 4)
+	}
+
+	/// Builds the "advertised" chips for a beacon (preset, region, channel), skipping anything the
+	/// beacon didn't offer.
+	private func beaconChips(_ beacon: DiscoveredBeaconEntity) -> [String] {
+		var chips: [String] = []
+		if let preset = beacon.offeredPreset {
+			chips.append(preset.description)
+		}
+		if let region = beacon.offeredRegion {
+			chips.append(region.description)
+		}
+		if beacon.hasOfferChannel, !beacon.offerChannelName.isEmpty {
+			chips.append("#\(beacon.offerChannelName)")
+		}
+		return chips
 	}
 
 	@ViewBuilder
@@ -593,5 +793,85 @@ struct DiscoverySummaryView: View {
 		formatter.unitOptions = .naturalScale
 		formatter.numberFormatter.maximumFractionDigits = 1
 		return formatter.string(from: measurement)
+	}
+}
+
+// MARK: - Beacon join (Add vs Switch, FR-016/FR-017)
+
+extension DiscoverySummaryView {
+
+	/// Decide which join action a beacon supports on the connected radio (contract C6). Reads the
+	/// connected node's LoRa config + primary channel and delegates to the pure decision in
+	/// `LoRaChannelCalculator`.
+	func beaconJoinOption(for beacon: DiscoveredBeaconEntity) -> BeaconJoinOption {
+		let num = Int64(UserDefaults.preferredPeripheralNum)
+		let node = getNodeInfo(id: num, context: context)
+		return LoRaChannelCalculator.beaconJoinOption(
+			hasOfferChannel: beacon.hasOfferChannel,
+			offerChannelName: beacon.offerChannelName,
+			offeredPreset: beacon.offeredPreset,
+			offerRegion: beacon.offerRegion,
+			isConnected: accessoryManager.isConnected,
+			loRaConfig: node?.loRaConfig,
+			primaryChannelName: beaconPrimaryChannelName(for: node)
+		)
+	}
+
+	/// The connected node's primary channel name for slot derivation. Mirrors the Channels editor's
+	/// firmware-accurate rule: use the named primary channel; when the primary is the unnamed default
+	/// public channel, fall back to the preset's default channel name (what the firmware hashes),
+	/// which is what makes the slot comparison correct.
+	private func beaconPrimaryChannelName(for node: NodeInfoEntity?) -> String {
+		guard let node else { return "" }
+		if let primary = node.myInfo?.channels.first(where: { $0.index == 0 || $0.role == 1 }),
+		   let name = primary.name, !name.isEmpty {
+			return name
+		}
+		if node.loRaConfig?.usePreset == false {
+			return "Custom"
+		}
+		guard let preset = ModemPresets(rawValue: Int(node.loRaConfig?.modemPreset ?? 0)) else {
+			return "LongFast"
+		}
+		return preset.androidChannelName
+	}
+
+	/// Adds a beacon's advertised channel to a free secondary slot (no reboot). When every secondary
+	/// slot is full, presents the replace-a-secondary picker instead of erroring (D2). Failures
+	/// surface in an alert.
+	func addBeaconChannel(_ beacon: DiscoveredBeaconEntity) {
+		beaconToAdd = nil
+		// No free slot → let the user choose an existing secondary to replace (never the primary).
+		guard accessoryManager.beaconHasFreeSecondarySlot() else {
+			beaconToReplace = beacon
+			return
+		}
+		Task {
+			do {
+				try await accessoryManager.addBeaconChannel(
+					channelName: beacon.offerChannelName,
+					channelPSK: beacon.offerChannelPSK
+				)
+			} catch {
+				addErrorMessage = error.localizedDescription
+			}
+		}
+	}
+
+	/// Replaces the secondary channel at `index` with the beacon's advertised channel (D2). Cancelling
+	/// the picker makes no change.
+	func replaceBeaconChannel(_ beacon: DiscoveredBeaconEntity, atIndex index: Int32) {
+		beaconToReplace = nil
+		Task {
+			do {
+				try await accessoryManager.addBeaconChannel(
+					channelName: beacon.offerChannelName,
+					channelPSK: beacon.offerChannelPSK,
+					replacingIndex: index
+				)
+			} catch {
+				addErrorMessage = error.localizedDescription
+			}
+		}
 	}
 }

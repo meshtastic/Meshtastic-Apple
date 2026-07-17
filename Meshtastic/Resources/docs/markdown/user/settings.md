@@ -99,6 +99,7 @@ Optional feature modules. Only available when your connected node supports the m
 | Canned Messages | Pre-programmed message shortcuts accessible from the device buttons. |
 | Detection Sensor | Configure PIR motion or contact sensors. |
 | External Notification | Buzzer or LED alerts for incoming messages. |
+| Mesh Beacon | Advertise this node's mesh so other users' discovery scans can find and join it, and listen for beacons from nearby meshes. Requires firmware 2.8.0+. |
 | MQTT | Uplink/downlink messages to an MQTT broker for internet bridging. |
 | Neighbor Info | Periodically broadcasts information about directly-heard neighbors to help visualise mesh topology. Update interval ranges from 4 hours (default) to 72 hours. Enable **Transmit over LoRa** to share neighbour data over the radio in addition to MQTT and PhoneAPI. |
 | Range Test | Automated range testing with position logging. |

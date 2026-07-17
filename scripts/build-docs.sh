@@ -140,7 +140,7 @@ print(html, end="")
 extract_keywords() {
     local html_file="$1"
     # Strip tags, lowercase, split on non-alpha, count, exclude stop words, take top 30
-    local stop_words="the a an and or but in on at to for of with is are was were be been being have has had do does did will would could should may might shall can this that these those it its we you they he she what when where how which who i me my our your"
+    local stop_words="the a an and or but in on at to for of with is are was were be been being have has had do does did will would could should may might shall can this that these those it its we you they he she what when where how which who i me my our your not over usually during use"
     cat "$html_file" \
         | sed 's/<[^>]*>//g' \
         | tr '[:upper:]' '[:lower:]' \
