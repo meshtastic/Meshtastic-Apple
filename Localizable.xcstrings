@@ -579,6 +579,9 @@
         }
       }
     },
+    "%1$@ reacted %2$@ to \"%3$@\"" : {
+      "comment" : "Tapback/reaction notification body. %1$@ is the sender name, %2$@ is the reaction emoji, %3$@ is the original message text that was reacted to."
+    },
     "%@" : {
       "localizations" : {
         "da" : {

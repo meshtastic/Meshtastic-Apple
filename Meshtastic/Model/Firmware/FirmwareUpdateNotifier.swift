@@ -24,6 +24,8 @@ struct FirmwareUpdateNotificationSource {
 }
 
 struct FirmwareUpdateNotice: Equatable {
+	static let symbolName = "arrow.triangle.2.circlepath"
+
 	let notificationKey: String
 	let deviceName: String
 	let currentVersion: String

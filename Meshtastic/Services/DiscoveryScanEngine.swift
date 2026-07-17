@@ -1176,43 +1176,77 @@ extension DiscoveryScanEngine {
 		let userLat = session.userLatitude
 		let userLon = session.userLongitude
 
+		// Snapshot every value the reveal needs in one synchronous pass, BEFORE the timed loop.
+		// The loop below awaits between batches for most of the dwell; live ingestion keeps
+		// mutating the store the whole time, and touching a `NodeInfoEntity`/`PositionEntity`
+		// whose row was pruned mid-reveal traps in SwiftData's persisted-property accessor
+		// (reproduced under a 100 pkt/s TCP stress replay). Plain values can't be invalidated.
+		struct SeededNodeSnapshot {
+			let nodeNum: Int64
+			let shortName: String
+			let longName: String
+			let hopCount: Int
+			let snr: Float
+			let rssi: Int
+			let isInfrastructure: Bool
+			let latitude: Double
+			let longitude: Double
+			let messageCount: Int
+			let sensorPacketCount: Int
+		}
+		let snapshots: [SeededNodeSnapshot] = candidates.map { node in
+			SeededNodeSnapshot(
+				nodeNum: node.num,
+				shortName: node.user?.shortName ?? "",
+				longName: node.user?.longName ?? "",
+				hopCount: Int(node.hopsAway),
+				snr: node.snr,
+				rssi: Int(node.rssi),
+				// Infrastructure roles: Router (2), Router Late (11), Client Base (12)
+				isInfrastructure: [2, 11, 12].contains(Int(node.user?.role ?? 0)),
+				latitude: node.latestPosition?.latitude ?? 0.0,
+				longitude: node.latestPosition?.longitude ?? 0.0,
+				messageCount: messageCounts[node.num] ?? 0,
+				// Sensor packets ≈ environment (1) + air-quality (3) telemetry the node has reported,
+				// matching the live scan's sensorPacketCount (.environmentMetrics + .airQualityMetrics).
+				sensorPacketCount: node.telemetries.filter { $0.metricsType == 1 || $0.metricsType == 3 }.count
+			)
+		}
+
 		// Spread the reveal across ~85% of the dwell (so it finishes before finalize), in batches
 		// over ~120 ticks for a smooth, accelerated fill regardless of mesh size.
 		let revealWindow = max(2.0, dwellDuration * 0.85)
 		let ticks = 120.0
 		let tick = max(0.08, revealWindow / ticks)
-		let batchSize = max(1, Int((Double(candidates.count) / ticks).rounded(.up)))
+		let batchSize = max(1, Int((Double(snapshots.count) / ticks).rounded(.up)))
 
 		var index = 0
 		var seeded = 0
-		while index < candidates.count {
+		while index < snapshots.count {
 			if Task.isCancelled { break }
-			let end = min(index + batchSize, candidates.count)
-			for node in candidates[index..<end] {
+			// A device switch can reset the container mid-scan; the session/result entities die
+			// with it. Stop revealing rather than trap on the next relationship write.
+			guard session.modelContext != nil, result.modelContext != nil else { break }
+			let end = min(index + batchSize, snapshots.count)
+			for snapshot in snapshots[index..<end] {
 				let dn = DiscoveredNodeEntity()
-				dn.nodeNum = node.num
-				dn.shortName = node.user?.shortName ?? ""
-				dn.longName = node.user?.longName ?? ""
-				let hops = Int(node.hopsAway)
-				dn.hopCount = hops
-				dn.neighborType = hops <= 1 ? "direct" : "mesh"
-				dn.snr = node.snr
-				dn.rssi = Int(node.rssi)
-				// Infrastructure roles: Router (2), Router Late (11), Client Base (12)
-				dn.isInfrastructure = [2, 11, 12].contains(Int(node.user?.role ?? 0))
-				if let pos = node.positions.last {
-					dn.latitude = pos.latitude ?? 0.0
-					dn.longitude = pos.longitude ?? 0.0
-					if userLat != 0.0 || userLon != 0.0, dn.latitude != 0.0 || dn.longitude != 0.0 {
-						let userLocation = CLLocation(latitude: userLat, longitude: userLon)
-						let nodeLocation = CLLocation(latitude: dn.latitude, longitude: dn.longitude)
-						dn.distanceFromUser = userLocation.distance(from: nodeLocation)
-					}
+				dn.nodeNum = snapshot.nodeNum
+				dn.shortName = snapshot.shortName
+				dn.longName = snapshot.longName
+				dn.hopCount = snapshot.hopCount
+				dn.neighborType = snapshot.hopCount <= 1 ? "direct" : "mesh"
+				dn.snr = snapshot.snr
+				dn.rssi = snapshot.rssi
+				dn.isInfrastructure = snapshot.isInfrastructure
+				dn.latitude = snapshot.latitude
+				dn.longitude = snapshot.longitude
+				if userLat != 0.0 || userLon != 0.0, snapshot.latitude != 0.0 || snapshot.longitude != 0.0 {
+					let userLocation = CLLocation(latitude: userLat, longitude: userLon)
+					let nodeLocation = CLLocation(latitude: snapshot.latitude, longitude: snapshot.longitude)
+					dn.distanceFromUser = userLocation.distance(from: nodeLocation)
 				}
-				dn.messageCount = messageCounts[node.num] ?? 0
-				// Sensor packets ≈ environment (1) + air-quality (3) telemetry the node has reported,
-				// matching the live scan's sensorPacketCount (.environmentMetrics + .airQualityMetrics).
-				dn.sensorPacketCount = node.telemetries.filter { $0.metricsType == 1 || $0.metricsType == 3 }.count
+				dn.messageCount = snapshot.messageCount
+				dn.sensorPacketCount = snapshot.sensorPacketCount
 				dn.presetName = presetName
 				dn.session = session
 				dn.presetResult = result
@@ -1222,7 +1256,7 @@ extension DiscoveryScanEngine {
 				seeded += 1
 			}
 			index = end
-			if index < candidates.count {
+			if index < snapshots.count {
 				try? await Task.sleep(for: .seconds(tick))
 			}
 		}

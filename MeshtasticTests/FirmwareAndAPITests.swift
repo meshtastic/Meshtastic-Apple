@@ -212,6 +212,79 @@ struct URLTimeoutErrorTests {
 	}
 }
 
+// MARK: - Firmware release catalog
+
+@Suite("Firmware release catalog")
+struct FirmwareReleaseCatalogTests {
+
+	@Test func mapsGitHubReleasesIntoStableAndAlphaCatalogs() throws {
+		let data = Data("""
+		[
+		  {
+		    "tag_name": "v2.7.30",
+		    "name": "2.7.30",
+		    "html_url": "https://github.com/meshtastic/firmware/releases/tag/v2.7.30",
+		    "zipball_url": "https://api.github.com/repos/meshtastic/firmware/zipball/v2.7.30",
+		    "body": "Stable release notes",
+		    "prerelease": false,
+		    "draft": false
+		  },
+		  {
+		    "tag_name": "v2.7.31.alpha",
+		    "name": null,
+		    "html_url": "https://github.com/meshtastic/firmware/releases/tag/v2.7.31.alpha",
+		    "zipball_url": "https://api.github.com/repos/meshtastic/firmware/zipball/v2.7.31.alpha",
+		    "body": null,
+		    "prerelease": true,
+		    "draft": false
+		  },
+		  {
+		    "tag_name": "v2.7.32-draft",
+		    "name": "Draft",
+		    "html_url": "https://github.com/meshtastic/firmware/releases/tag/v2.7.32-draft",
+		    "zipball_url": "https://api.github.com/repos/meshtastic/firmware/zipball/v2.7.32-draft",
+		    "body": "Not published",
+		    "prerelease": false,
+		    "draft": true
+		  }
+		]
+		""".utf8)
+
+		let releases = try FirmwareReleaseCatalog.decode(data)
+
+		#expect(releases.releases.stable.map(\.id) == ["v2.7.30"])
+		#expect(releases.releases.alpha.map(\.id) == ["v2.7.31.alpha"])
+		#expect(releases.releases.stable.first?.releaseNotes == "Stable release notes")
+		#expect(releases.releases.alpha.first?.title == "v2.7.31.alpha")
+	}
+
+	@Test func preservesMeshtasticAPIResponseFormat() throws {
+		let data = Data("""
+		{
+		  "releases": {
+		    "stable": [
+		      {
+		        "id": "v2.7.30",
+		        "title": "2.7.30",
+		        "page_url": "https://meshtastic.org",
+		        "zip_url": "https://meshtastic.org/firmware.zip",
+		        "release_notes": "Notes"
+		      }
+		    ],
+		    "alpha": []
+		  },
+		  "pullRequests": []
+		}
+		""".utf8)
+
+		let releases = try FirmwareReleaseCatalog.decode(data)
+
+		#expect(releases.releases.stable.map(\.id) == ["v2.7.30"])
+		#expect(releases.releases.alpha.isEmpty)
+		#expect(releases.pullRequests.isEmpty)
+	}
+}
+
 // MARK: - FirmwareFile validFilenameSuffixes
 
 @Suite("FirmwareFile validFilenameSuffixes")

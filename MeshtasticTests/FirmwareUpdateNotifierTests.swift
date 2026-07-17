@@ -151,4 +151,8 @@ struct FirmwareUpdateNotifierTests {
 		#expect(appOTANotice?.accessibilityHint == "Opens Firmware Updates")
 		#expect(flasherNotice?.accessibilityHint == "Opens Meshtastic Flasher")
 	}
+
+	@Test func updateNudgeUsesAnUpdateAffordance() {
+		#expect(FirmwareUpdateNotice.symbolName == "arrow.triangle.2.circlepath")
+	}
 }

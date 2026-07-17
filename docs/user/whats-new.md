@@ -14,6 +14,8 @@ Recent user-facing changes from roughly the last 12 months. Newest at the top.
 Show roughly the last 12 months of changes; archive entries older than a year by removing them.
 -->
 
+**Jul 2026** — [Messages](messages.md) — Received tapback reactions now notify (e.g. "Alice reacted 👍 to …"), matching iMessage and Meshtastic-Android; muted conversations are respected, the unread-badge behavior is unchanged, and reactions to messages your radio never saw are stored silently.
+
 **Jul 2026** — [Local Mesh Discovery](discovery.md) — Mesh beacons: scans capture beacons advertising a mesh (message, channel, region, preset) and show them in the results. Public-channel presets are auto-added to the scan and pre-selected next time; custom-channel beacons are tuned into directly (name + key) so even private meshes are found. Each beaconed channel gets a Switch to this channel button to join it.
 
 **Jul 2026** — [Map & Waypoints](map.md) — Precise locations only: a new Map Options toggle hides nodes that broadcast an approximate (reduced-precision) location — the ones drawn with a translucent precision circle — so the mesh map shows only nodes reporting an exact position.

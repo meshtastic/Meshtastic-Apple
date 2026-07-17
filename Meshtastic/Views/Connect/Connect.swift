@@ -840,9 +840,9 @@ private struct FirmwareUpdateConnectNotice: View {
 	var body: some View {
 		Button(action: action) {
 			HStack(alignment: .top, spacing: 12) {
-				Image(systemName: "exclamationmark.triangle.fill")
+				Image(systemName: FirmwareUpdateNotice.symbolName)
 					.font(.title3)
-					.foregroundColor(.orange)
+					.foregroundColor(.accentColor)
 					.padding(.top, 2)
 					.accessibilityHidden(true)
 				VStack(alignment: .leading, spacing: 2) {

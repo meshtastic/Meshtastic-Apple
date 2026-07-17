@@ -124,7 +124,7 @@ class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificat
 			}
 		case "messageNotification.thumbsUpAction":
 			if let channel = userInfo["channel"] as? Int32,
-			   let replyID = userInfo["messageId"] as? Int64 {
+			   let replyID = userInfo["replyMessageId"] as? Int64 ?? userInfo["messageId"] as? Int64 {
 				Task {
 					do {
 						try await AccessoryManager.shared.sendMessage(
@@ -142,7 +142,7 @@ class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificat
 			}
 		case "messageNotification.thumbsDownAction":
 			if let channel = userInfo["channel"] as? Int32,
-			   let replyID = userInfo["messageId"] as? Int64 {
+			   let replyID = userInfo["replyMessageId"] as? Int64 ?? userInfo["messageId"] as? Int64 {
 				Task {
 					do {
 						try await AccessoryManager.shared.sendMessage(
@@ -161,7 +161,7 @@ class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificat
 		case "messageNotification.replyInputAction":
 			if let userInput = (response as? UNTextInputNotificationResponse)?.userText,
 			   let channel = userInfo["channel"] as? Int32,
-			   let replyID = userInfo["messageId"] as? Int64 {
+			   let replyID = userInfo["replyMessageId"] as? Int64 ?? userInfo["messageId"] as? Int64 {
 				Task {
 					do {
 						try await AccessoryManager.shared.sendMessage(

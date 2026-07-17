@@ -213,8 +213,6 @@ private struct NodeListEntry: Identifiable {
 private struct FilteredNodeList: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@EnvironmentObject var router: Router
-	@Query(sort: \NodeInfoEntity.lastHeard, order: .reverse)
-	private var allNodes: [NodeInfoEntity]
 	@Environment(\.modelContext) private var context
 	/// Throttled snapshot of the filtered/sorted nodes actually shown. Recomputed on a gentle
 	/// cadence (see `.task`) instead of in `body`, so the full-node-set scan in `displayNodes`
@@ -248,18 +246,25 @@ private struct FilteredNodeList: View {
 		self._nodeForDisplayNameEdit = nodeForDisplayNameEdit
 		self._nodeListDensity = nodeListDensity
 		self._selectedNodeNum = selectedNodeNum
+	}
 
-		// Push simple filters into the SwiftData predicate to reduce in-memory work
-		let showIgnored = withFilters.isIgnored
-		let showFavorite = withFilters.isFavorite
-		let filterViaLoraOnly = withFilters.viaLora && !withFilters.viaMqtt
-		let filterViaMqttOnly = !withFilters.viaLora && withFilters.viaMqtt
-		let filterHopsDirect = withFilters.hopsAway == 0.0
-		let filterHopsMax = withFilters.hopsAway > 0.0
-		let maxHops = Int32(withFilters.hopsAway)
+	/// Fetch descriptor for the node set, built from the live shared `filters` at fetch time so
+	/// predicate-level filter edits apply on the next refresh tick. Applied via explicit fetches
+	/// on a throttled cadence (see `.task`) rather than a live `@Query` — a live query
+	/// re-evaluated `body` on every SwiftData write, and under heavy ingestion that meant a
+	/// full-node-set scan per packet, even while the Nodes tab was off-screen (TabView keeps
+	/// tabs alive). Simple filters are pushed into the predicate to reduce in-memory work.
+	private func makeNodeFetchDescriptor() -> FetchDescriptor<NodeInfoEntity> {
+		let showIgnored = filters.isIgnored
+		let showFavorite = filters.isFavorite
+		let filterViaLoraOnly = filters.viaLora && !filters.viaMqtt
+		let filterViaMqttOnly = !filters.viaLora && filters.viaMqtt
+		let filterHopsDirect = filters.hopsAway == 0.0
+		let filterHopsMax = filters.hopsAway > 0.0
+		let maxHops = Int32(filters.hopsAway)
 
-		_allNodes = Query(
-			filter: #Predicate<NodeInfoEntity> { node in
+		return FetchDescriptor<NodeInfoEntity>(
+			predicate: #Predicate<NodeInfoEntity> { node in
 				// Ignored filter (always applied)
 				(showIgnored || !node.ignored) &&
 				(!showIgnored || node.ignored) &&
@@ -274,12 +279,11 @@ private struct FilteredNodeList: View {
 				// Hops within range
 				(!filterHopsMax || (node.hopsAway > 0 && node.hopsAway <= maxHops))
 			},
-			sort: \NodeInfoEntity.lastHeard,
-			order: .reverse
+			sortBy: [SortDescriptor(\NodeInfoEntity.lastHeard, order: .reverse)]
 		)
 	}
 
-	private func displayNodes(activeNodeNum: Int64?) -> [NodeListEntry] {
+	private func displayNodes(from allNodes: [NodeInfoEntity], activeNodeNum: Int64?) -> [NodeListEntry] {
 		let searchText = filters.searchText.lowercased()
 		let onlineThreshold = filters.isOnline ? Date().addingTimeInterval(-7_200) : nil
 		let distanceBounds = filters.currentDistanceBounds
@@ -366,22 +370,27 @@ private struct FilteredNodeList: View {
 			}
 		}
 		.navigationTitle(String.localizedStringWithFormat("Nodes (%@)".localized, String(displayedNodes.count)))
-		.task {
+		.task(id: router.selectedTab) {
 			// Recompute the displayed list on a gentle cadence instead of inside `body`.
-			// During live ingestion the node @Query invalidates on every packet; running
-			// displayNodes (a scan over the whole node set) per write pegged the main thread
-			// on reconnect with a large DB. ~3/sec is imperceptible and keeps CPU sane.
+			// During live ingestion every packet writes to SwiftData; running displayNodes
+			// (a scan over the whole node set) per write pegged the main thread on reconnect
+			// with a large DB. ~3/sec is imperceptible and keeps CPU sane. The scan only runs
+			// while the Nodes tab is frontmost — TabView keeps this view alive on other tabs
+			// (and this task re-fires on every tab switch), so the guard comes first; entering
+			// the tab re-fires the task and refreshes immediately.
+			guard router.selectedTab == .nodes else { return }
+			refreshDisplayedNodes()
 			while !Task.isCancelled {
-				replaceDisplayedNodesIfNeeded(with: displayNodes(activeNodeNum: accessoryManager.activeDeviceNum))
 				try? await Task.sleep(for: .milliseconds(350))
+				refreshDisplayedNodes()
 			}
 		}
-		.onAppear {
-			router.updateNodeIndex(from: allNodes)
-		}
-		.onChange(of: allNodes.count) { _, _ in
-			router.updateNodeIndex(from: allNodes)
-		}
+	}
+
+	private func refreshDisplayedNodes() {
+		let allNodes = (try? context.fetch(makeNodeFetchDescriptor())) ?? []
+		replaceDisplayedNodesIfNeeded(with: displayNodes(from: allNodes, activeNodeNum: accessoryManager.activeDeviceNum))
+		router.updateNodeIndex(from: allNodes)
 	}
 
 	@ViewBuilder

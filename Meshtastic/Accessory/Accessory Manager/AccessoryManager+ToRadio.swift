@@ -379,8 +379,9 @@ extension AccessoryManager {
 						try context.save()
 						Logger.data.info("💾 Saved a new sent message from \(self.activeDeviceNum?.toHex() ?? "0", privacy: .public) to \(toUserNum.toHex(), privacy: .public)")
 						// Donate outgoing message to SiriKit for CarPlay
+						// (CarPlay is iPhone-only, so skip on Mac Catalyst).
 						if !isEmoji {
-							#if os(iOS)
+							#if os(iOS) && !targetEnvironment(macCatalyst)
 							CarPlayIntentDonation.donateOutgoingMessage(content: message, toUserNum: toUserNum, channel: channel)
 							#endif
 						}

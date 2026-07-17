@@ -50,14 +50,14 @@ private struct DeviceHardware: Codable {
 }
 
 /// Firmware Release Lists
-private struct FirmwareReleases: Codable {
+struct FirmwareReleases: Codable {
 	let releases: Releases
 	let pullRequests: [FirmwareRelease]
 }
-private struct Releases: Codable {
+struct Releases: Codable {
 	let stable, alpha: [FirmwareRelease]
 }
-private struct FirmwareRelease: Codable {
+struct FirmwareRelease: Codable {
 	let id, title: String
 	let pageURL: String
 	let zipURL: String
@@ -68,6 +68,59 @@ private struct FirmwareRelease: Codable {
 		case pageURL = "page_url"
 		case zipURL = "zip_url"
 		case releaseNotes = "release_notes"
+	}
+}
+
+private struct GitHubFirmwareRelease: Decodable {
+	let tagName: String
+	let name: String?
+	let htmlURL: String
+	let zipballURL: String
+	let body: String?
+	let prerelease: Bool
+	let draft: Bool
+
+	enum CodingKeys: String, CodingKey {
+		case tagName = "tag_name"
+		case name
+		case htmlURL = "html_url"
+		case zipballURL = "zipball_url"
+		case body
+		case prerelease
+		case draft
+	}
+}
+
+enum FirmwareReleaseCatalog {
+	static func decode(_ data: Data) throws -> FirmwareReleases {
+		let decoder = JSONDecoder()
+		if let meshtasticReleases = try? decoder.decode(FirmwareReleases.self, from: data) {
+			return meshtasticReleases
+		}
+
+		let githubReleases = try decoder.decode([GitHubFirmwareRelease].self, from: data)
+		let publishedReleases = githubReleases.filter { !$0.draft }
+		let stable = publishedReleases
+			.filter { !$0.prerelease }
+			.map { FirmwareRelease(gitHubRelease: $0) }
+		let alpha = publishedReleases
+			.filter(\.prerelease)
+			.map { FirmwareRelease(gitHubRelease: $0) }
+
+		return FirmwareReleases(
+			releases: Releases(stable: stable, alpha: alpha),
+			pullRequests: []
+		)
+	}
+}
+
+private extension FirmwareRelease {
+	init(gitHubRelease: GitHubFirmwareRelease) {
+		id = gitHubRelease.tagName
+		title = gitHubRelease.name ?? gitHubRelease.tagName
+		pageURL = gitHubRelease.htmlURL
+		zipURL = gitHubRelease.zipballURL
+		releaseNotes = gitHubRelease.body
 	}
 }
 
@@ -116,6 +169,7 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 	static let deviceURLEndpoint = URL(string: "https://api.meshtastic.org/resource/deviceHardware")!
 	static let imageURLPrefix = URL(string: "https://flasher.meshtastic.org/img/devices/")!
 	static let firmwareURLEndpoint = URL(string: "https://api.meshtastic.org/github/firmware/list")!
+	static let firmwareGitHubURLEndpoint = URL(string: "https://api.github.com/repos/meshtastic/firmware/releases?per_page=100")!
 	static let eventFirmwareURLEndpoint = URL(string: "https://api.meshtastic.org/resource/eventFirmware")!
 	
 	// MARK: - Private properties
@@ -154,10 +208,19 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 		await MainActor.run {
 			self.isLoadingFirmwareList = true
 		}
-		
-		let apiData = try await Self.firmwareURLEndpoint.data(timeout: 5.0)
-		
-		let decodedFirmware = try decoder.decode(FirmwareReleases.self, from: apiData)
+		defer {
+			Task { @MainActor in self.isLoadingFirmwareList = false }
+		}
+
+		let decodedFirmware: FirmwareReleases
+		do {
+			let apiData = try await Self.firmwareURLEndpoint.data(timeout: 5.0)
+			decodedFirmware = try FirmwareReleaseCatalog.decode(apiData)
+		} catch {
+			Logger.services.warning("Firmware API request failed; falling back to GitHub releases: \(error.localizedDescription, privacy: .public)")
+			let githubData = try await Self.firmwareGitHubURLEndpoint.data(timeout: 5.0)
+			decodedFirmware = try FirmwareReleaseCatalog.decode(githubData)
+		}
 		let stableVersions = Set(decodedFirmware.releases.stable.map { $0.id })
 		let alphaVersions = Set(decodedFirmware.releases.alpha.map { $0.id })
 
@@ -196,10 +259,6 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 		
 		// Save the last update date for the firmware
 		UserDefaults.lastFirmwareAPIUpdate = Date()
-		
-		await MainActor.run {
-			self.isLoadingFirmwareList = false
-		}
 	}
 
 	func refreshDevicesAPIData() async throws {

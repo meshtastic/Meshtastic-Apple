@@ -137,8 +137,36 @@ struct MeshMapMK: View {
 		}
 	}
 
-	@Query(filter: #Predicate<PositionEntity> { $0.nodePosition != nil && $0.latest == true && $0.nodePosition?.ignored != true })
-	private var allLatestPositions: [PositionEntity]
+	/// Latest positions, refreshed on a throttled cadence (see the `.task` in `body`) instead of a
+	/// live `@Query`. Under heavy ingestion (large mesh, TCP replay, reconnect node-DB dump) a live
+	/// query invalidates `body` on every position write, and each evaluation re-ran the
+	/// filter + density sort over the whole set — pegging the main thread at ~100% CPU. A ~2s
+	/// refresh is imperceptible on a map while pan/zoom/filter changes still refresh immediately.
+	@State private var allLatestPositions: [PositionEntity] = []
+	/// Change-detection key of the last applied position state; skips snapshot/overlay rebuilds
+	/// when a periodic refresh finds nothing visibly different.
+	@State private var appliedPositionStateKey: Int64 = .min
+
+	private func fetchLatestPositions() -> [PositionEntity] {
+		let descriptor = FetchDescriptor<PositionEntity>(
+			predicate: #Predicate<PositionEntity> { $0.nodePosition != nil && $0.latest == true && $0.nodePosition?.ignored != true }
+		)
+		return (try? context.fetch(descriptor)) ?? []
+	}
+
+	/// Re-fetch positions, rebuild the derived state, and apply it when it actually changed.
+	/// `force` bypasses the change-detection key (used when visibility flips, so snapshots are
+	/// rebuilt after being dropped even though the underlying positions are unchanged).
+	@MainActor
+	private func refreshPositionState(force: Bool = false) {
+		allLatestPositions = fetchLatestPositions()
+		let state = visiblePositionState
+		guard force || state.key != appliedPositionStateKey else { return }
+		appliedPositionStateKey = state.key
+		refreshVisiblePositionSnapshots(from: state.positions)
+		syncFallbackLocation()
+		decodeOfflineIfVisible()
+	}
 
 	/// Enabled saved routes drawn as polylines + start/finish markers (parity with the old map).
 	@Query(filter: #Predicate<RouteEntity> { $0.enabled == true }, sort: \RouteEntity.name)
@@ -216,17 +244,15 @@ struct MeshMapMK: View {
 			combine(&key, Int64((visibleRegion.span.longitudeDelta * 10_000).rounded(.towardZero)))
 		}
 		combine(&key, filterRefreshKey)
-		for position in positions.prefix(64) {
+		// Hash EVERY visible position: since the throttled refresh, this key is the only gate for
+		// snapshot/overlay rebuilds, and a truncated sample would leave pins beyond it permanently
+		// stale when a node moves without changing the set's count or ordering.
+		for position in positions {
 			combine(&key, Int64(truncatingIfNeeded: position.persistentModelID.hashValue))
 			combine(&key, Int64(position.latitudeI))
 			combine(&key, Int64(position.longitudeI))
 			combine(&key, Int64(position.precisionBits))
 		}
-		if let last = positions.last {
-			combine(&key, Int64(truncatingIfNeeded: last.persistentModelID.hashValue))
-			combine(&key, Int64(last.latitudeI))
-				combine(&key, Int64(last.longitudeI))
-			}
 		return MeshMapVisiblePositionState(positions: positions, key: key)
 	}
 
@@ -486,7 +512,6 @@ struct MeshMapMK: View {
 	}
 
 	var body: some View {
-		let positionState = visiblePositionState
 		NavigationStack {
 			ZStack {
 			mapWithSheets
@@ -514,10 +539,14 @@ struct MeshMapMK: View {
 			}
 			.toolbarBackground(.hidden, for: .navigationBar)
 		}
-			.onChange(of: positionState.key) {
-				refreshVisiblePositionSnapshots(from: positionState.positions)
-				syncFallbackLocation()
-				decodeOfflineIfVisible()
+			.task(id: isMapVisible) {
+				// Throttled position refresh: re-derive the visible positions on a gentle
+				// cadence instead of on every SwiftData write (see `allLatestPositions`).
+				guard isMapVisible else { return }
+				while !Task.isCancelled {
+					refreshPositionState()
+					try? await Task.sleep(for: .seconds(2))
+				}
 			}
 			.onChange(of: offlineMapManager.regions) {
 				reloadOfflineSource()
@@ -525,8 +554,14 @@ struct MeshMapMK: View {
 			.onChange(of: overlayInputsKey) {
 				rebuildAllMapContent()
 			}
-			.onChange(of: allLatestPositions) {
-				syncFallbackLocation()
+			.onChange(of: filterRefreshKey) {
+				// Filter/search edits should reflect immediately, not on the next tick.
+				refreshPositionState(force: true)
+			}
+			.onChange(of: regionRefreshKey) {
+				// Pan/zoom settled: re-filter to the new region now; the state key dedupes
+				// the rebuild when the visible set is unchanged.
+				refreshPositionState()
 			}
 			.onChange(of: accessoryManager.activeDeviceNum) {
 				syncFallbackLocation()
@@ -534,7 +569,7 @@ struct MeshMapMK: View {
 			.onChange(of: accessoryManager.isInBackground) {
 				// Foreground/background flips isMapVisible; refresh so the overlay-bearing
 				// snapshots are dropped when backgrounded and rebuilt when foregrounded.
-				refreshVisiblePositionSnapshots(from: positionState.positions)
+				refreshPositionState(force: true)
 			}
 			.onChange(of: coverageRunner.importedResult) { _, result in
 				guard let result else { return }
@@ -571,7 +606,7 @@ struct MeshMapMK: View {
 			case .offline:
 				mapStyle = MapStyle.hybrid(elevation: .realistic, pointsOfInterest: showPointsOfInterest ? .all : .excludingAll, showsTraffic: showTraffic)
 			}
-			refreshVisiblePositionSnapshots(from: positionState.positions)
+			refreshPositionState(force: true)
 		}
 		.onDisappear(perform: {
 			UIApplication.shared.isIdleTimerDisabled = false
@@ -583,7 +618,7 @@ struct MeshMapMK: View {
 				syncFallbackLocation()
 				refreshMapWindowOpenState()
 				UIApplication.shared.isIdleTimerDisabled = true
-				refreshVisiblePositionSnapshots()
+				refreshPositionState(force: true)
 				applyTraceRouteSelection()
 				consumeCoverageEstimateState()
 			} else {
@@ -718,6 +753,19 @@ struct MeshMapMK: View {
 		isMapWindowOpen = attachedScenes.count > 1
 	}
 
+	/// Quantized camera key so `.onChange` can react to pan/zoom settles even though
+	/// `MKCoordinateRegion` isn't `Equatable`. Same quantization the position-state key uses.
+	private var regionRefreshKey: Int64 {
+		var key: Int64 = 0
+		if let visibleRegion {
+			combine(&key, Int64((visibleRegion.center.latitude * 10_000).rounded(.towardZero)))
+			combine(&key, Int64((visibleRegion.center.longitude * 10_000).rounded(.towardZero)))
+			combine(&key, Int64((visibleRegion.span.latitudeDelta * 10_000).rounded(.towardZero)))
+			combine(&key, Int64((visibleRegion.span.longitudeDelta * 10_000).rounded(.towardZero)))
+		}
+		return key
+	}
+
 	private var filterRefreshKey: Int64 {
 		var key: Int64 = 0
 		combine(&key, preciseLocationsOnly ? 1 : 0)
@@ -738,13 +786,6 @@ struct MeshMapMK: View {
 		combine(&key, filters.viaMqtt ? 1 : 0)
 		return key
 	}
-
-		private func refreshVisiblePositionSnapshots() {
-			visiblePositionSnapshots = makePositionSnapshots(from: visiblePositions)
-			spreadOverrides = computeSpreadOverrides(visiblePositionSnapshots)
-			frameInitialRegionIfNeeded()
-			rebuildOverlays()
-		}
 
 		private func refreshVisiblePositionSnapshots(from positions: [PositionEntity]) {
 			visiblePositionSnapshots = makePositionSnapshots(from: positions)

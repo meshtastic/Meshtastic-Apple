@@ -1143,6 +1143,62 @@ actor MeshPackets {
 		}
 	}
 
+	/// Builds the notification body for a received tapback/reaction, or returns `nil` when the
+	/// reacted-to message isn't known locally (a "phantom" tapback). The reaction is still stored
+	/// as it is today — we just don't surface a notification for something there's nothing to show
+	/// for, matching Android's guard (`MeshDataHandlerImpl.rememberReaction`).
+	///
+	/// Made `static` and context-injected (rather than reading `self.modelContext`) so the
+	/// phantom-tapback guard and body formatting can be exercised directly in unit tests.
+	static func reactionNotificationBody(replyID: Int64, emoji: String?, senderName: String, context: ModelContext) -> String? {
+		guard replyID > 0 else { return nil }
+		let descriptor = FetchDescriptor<MessageEntity>(predicate: #Predicate { $0.messageId == replyID })
+		guard let original = try? context.fetch(descriptor).first else { return nil }
+		let originalText = original.messagePayload ?? ""
+		let reactionEmoji = (emoji?.isEmpty == false) ? emoji! : "❤️"
+		// Mirrors how iMessage phrases a tapback notification ("Name liked …").
+		return String.localizedStringWithFormat(
+			"%1$@ reacted %2$@ to \"%3$@\"".localized,
+			senderName, reactionEmoji, originalText
+		)
+	}
+
+	/// Builds a message/reaction local notification from a (context-bound) `MessageEntity`,
+	/// synchronously, so callers can hand the resulting value to a deferred `@MainActor` Task
+	/// without capturing the entity itself. Collapses the DM/channel × regular/reaction variants
+	/// that differ only in `content`, deep-link `path`, and `userNum`.
+	///
+	/// `replyMessageId` is the message that tapback/reply notification actions should target. It
+	/// defaults to `message.messageId`, but for a reaction notification the caller passes the
+	/// original (reacted-to) message id so actions act on that message rather than the reaction
+	/// packet (which `messageId` — used for notification cancellation — must keep referencing).
+	private func makeMessageNotification(
+		message: MessageEntity,
+		content: String,
+		path: String,
+		userNum: Int64?,
+		critical: Bool,
+		replyMessageId: Int64? = nil
+	) -> Notification {
+		var notification = Notification(
+			id: ("notification.id.\(message.messageId)"),
+			title: "\(message.fromUser?.longName ?? "Unknown".localized)",
+			subtitle: "AKA \(message.fromUser?.shortName ?? "?")",
+			content: content,
+			target: "messages",
+			path: path,
+			messageId: message.messageId,
+			replyMessageId: replyMessageId ?? message.messageId,
+			channel: message.channel,
+			userNum: userNum,
+			critical: critical
+		)
+		#if os(iOS) && !targetEnvironment(macCatalyst)
+		notification.senderIntent = CarPlayIntentDonation.incomingMessageIntent(from: message)
+		#endif
+		return notification
+	}
+
 	func textMessageAppPacket(
 		packet: MeshPacket,
 		wantRangeTestPackets: Bool,
@@ -1347,7 +1403,8 @@ actor MeshPackets {
 					// Send notifications if the message saved properly to core data
 					if messageSaved {
 						// Donate to SiriKit so the message appears in CarPlay Messages
-						#if os(iOS)
+						// (CarPlay is iPhone-only, so skip on Mac Catalyst).
+						#if os(iOS) && !targetEnvironment(macCatalyst)
 						CarPlayIntentDonation.donateReceivedMessage(newMessage)
 						#endif
 
@@ -1362,33 +1419,42 @@ actor MeshPackets {
 									appState?.unreadDirectMessages = unreadCount
 								}
 							}
-							if !(newMessage.fromUser?.mute ?? false) && newMessage.isEmoji == false {
+							if !(newMessage.fromUser?.mute ?? false) {
 								// Build the notification from the model objects now, while this context is valid,
 								// and capture only the resulting value — a deferred Task must not hold `newMessage`
 								// (a context-bound model), since a device switch can reset this context first
 								// ("destroyed by ModelContext.reset").
 								let senderName = newMessage.fromUser?.longName ?? "Unknown".localized
-								var dmNotification = Notification(
-									id: ("notification.id.\(newMessage.messageId)"),
-									title: "\(senderName)",
-									subtitle: "AKA \(newMessage.fromUser?.shortName ?? "?")",
-									content: messageText!,
-									target: "messages",
-									path: "meshtastic:///messages?userNum=\(newMessage.fromUser?.num ?? 0)&messageId=\(newMessage.isEmoji ? newMessage.replyID : newMessage.messageId)",
-									messageId: newMessage.messageId,
-									channel: newMessage.channel,
-									userNum: Int64(packet.from),
-									critical: critical
-								)
-								#if os(iOS)
-								dmNotification.senderIntent = CarPlayIntentDonation.incomingMessageIntent(from: newMessage)
-								#endif
-								let notification = dmNotification
-								Task {@MainActor in
-									let manager = LocalNotificationManager()
-									manager.notifications = [notification]
-									manager.schedule()
-									Logger.services.debug("iOS Notification Scheduled for text message from \(senderName, privacy: .public)")
+								let dmUserNum = Int64(packet.from)
+								var dmNotification: Notification?
+								if newMessage.isEmoji == false {
+									dmNotification = makeMessageNotification(
+										message: newMessage,
+										content: messageText!,
+										path: "meshtastic:///messages?userNum=\(newMessage.fromUser?.num ?? 0)&messageId=\(newMessage.messageId)",
+										userNum: dmUserNum,
+										critical: critical
+									)
+								} else if let reactionBody = MeshPackets.reactionNotificationBody(replyID: newMessage.replyID, emoji: messageText, senderName: senderName, context: modelContext) {
+									// Tapback/reaction: only notify when the reacted-to message is known locally.
+									// A "phantom" tapback (replyID with no matching local message) is stored but not
+									// surfaced — reactionNotificationBody returns nil in that case.
+									dmNotification = makeMessageNotification(
+										message: newMessage,
+										content: reactionBody,
+										path: "meshtastic:///messages?userNum=\(newMessage.fromUser?.num ?? 0)&messageId=\(newMessage.replyID)",
+										userNum: dmUserNum,
+										critical: critical,
+										replyMessageId: newMessage.replyID
+									)
+								}
+								if let notification = dmNotification {
+									Task {@MainActor in
+										let manager = LocalNotificationManager()
+										manager.notifications = [notification]
+										manager.schedule()
+										Logger.services.debug("iOS Notification Scheduled for direct message from \(senderName, privacy: .public)")
+									}
 								}
 							}
 						} else if newMessage.fromUser != nil && newMessage.toUser == nil {
@@ -1406,25 +1472,34 @@ actor MeshPackets {
 									// to ~1/sec — the badge tolerates brief lag and resyncs on app-active and on read.
 									let recountUnread = shouldRecomputeChannelUnread()
 									let connectedNodeNum = connectedNode
-									let shouldNotify = UserDefaults.channelMessageNotifications && newMessage.isEmoji == false && myInfo.channels.contains(where: { $0.index == newMessage.channel && !$0.mute })
+									let channelNotificationsEnabled = UserDefaults.channelMessageNotifications
+										&& !(newMessage.fromUser?.mute ?? false)
+										&& myInfo.channels.contains(where: { $0.index == newMessage.channel && !$0.mute })
+									let senderName = newMessage.fromUser?.longName ?? "Unknown".localized
+									let channelUserNum = Int64(newMessage.fromUser?.userId ?? "0")
 									var channelNotification: Notification?
-									if shouldNotify {
-										var chNotification = Notification(
-											id: ("notification.id.\(newMessage.messageId)"),
-											title: "\(newMessage.fromUser?.longName ?? "Unknown".localized)",
-											subtitle: "AKA \(newMessage.fromUser?.shortName ?? "?")",
-											content: messageText!,
-											target: "messages",
-											path: "meshtastic:///messages?channelId=\(newMessage.channel)&messageId=\(newMessage.isEmoji ? newMessage.replyID : newMessage.messageId)",
-											messageId: newMessage.messageId,
-											channel: newMessage.channel,
-											userNum: Int64(newMessage.fromUser?.userId ?? "0"),
-											critical: critical
-										)
-										#if os(iOS)
-										chNotification.senderIntent = CarPlayIntentDonation.incomingMessageIntent(from: newMessage)
-										#endif
-										channelNotification = chNotification
+									if channelNotificationsEnabled {
+										if newMessage.isEmoji == false {
+											channelNotification = makeMessageNotification(
+												message: newMessage,
+												content: messageText!,
+												path: "meshtastic:///messages?channelId=\(newMessage.channel)&messageId=\(newMessage.messageId)",
+												userNum: channelUserNum,
+												critical: critical
+											)
+										} else if let reactionBody = MeshPackets.reactionNotificationBody(replyID: newMessage.replyID, emoji: messageText, senderName: senderName, context: modelContext) {
+											// Tapback/reaction: only notify when the reacted-to message is known
+											// locally. A "phantom" tapback is stored but not surfaced — the helper
+											// returns nil in that case, per Android's guard.
+											channelNotification = makeMessageNotification(
+												message: newMessage,
+												content: reactionBody,
+												path: "meshtastic:///messages?channelId=\(newMessage.channel)&messageId=\(newMessage.replyID)",
+												userNum: channelUserNum,
+												critical: critical,
+												replyMessageId: newMessage.replyID
+											)
+										}
 									}
 									let notification = channelNotification
 									Task {@MainActor in
