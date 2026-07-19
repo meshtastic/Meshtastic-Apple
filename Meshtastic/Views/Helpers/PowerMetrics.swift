@@ -77,6 +77,8 @@ struct PowerMetricCompactWidget: View {
 		let type: PowerMetricType
 		let value: Float
 		let title: String
+		@ScaledMetric(relativeTo: .largeTitle) private var currentValueSize: CGFloat = 35
+		@ScaledMetric(relativeTo: .largeTitle) private var voltageValueSize: CGFloat = 30
 		var body: some View {
 				VStack(alignment: .leading) {
 						HStack(spacing: 5.0) {
@@ -87,7 +89,9 @@ struct PowerMetricCompactWidget: View {
 										.font(.caption)
 						}
 						Text("\(value, specifier: type == .current ? "%.1f" : "%.2f") \(type == .current ? "mA" : "V")")
-								.font(type == .current ? .system(size: 35) : .system(size: 30))
+								.font(.system(size: type == .current ? currentValueSize : voltageValueSize))
+								.lineLimit(1)
+								.minimumScaleFactor(0.5)
 				}
 				.frame(minWidth: 100, idealWidth: 125, maxWidth: 150, minHeight: 120, idealHeight: 130, maxHeight: 140)
 				.padding()

@@ -11,6 +11,8 @@ struct WindCompactWidget: View {
 	let gust: String?
 	let direction: String?
 
+	@ScaledMetric(relativeTo: .largeTitle) private var valueSize: CGFloat = 35
+
 	var body: some View {
 		let hasGust = ((gust ?? "").isEmpty == false)
 		VStack(alignment: .leading) {
@@ -21,7 +23,9 @@ struct WindCompactWidget: View {
 					.padding(.bottom, 10)
 			}
 			Text(speed)
-				.font(.system(size: 35))
+				.font(.system(size: valueSize))
+				.lineLimit(1)
+				.minimumScaleFactor(0.5)
 			if let gust, !gust.isEmpty {
 				Text("Gusts \(gust)")
 			}

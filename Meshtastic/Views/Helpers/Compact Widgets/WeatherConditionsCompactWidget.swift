@@ -10,6 +10,9 @@ struct WeatherConditionsCompactWidget: View {
 	let temperature: String
 	let symbolName: String
 	let description: String
+
+	@ScaledMetric(relativeTo: .largeTitle) private var valueSizeLarge: CGFloat = 72
+	@ScaledMetric(relativeTo: .largeTitle) private var valueSizeSmall: CGFloat = 54
 	var body: some View {
 		VStack(alignment: .leading) {
 			HStack(spacing: 5.0) {
@@ -23,7 +26,9 @@ struct WeatherConditionsCompactWidget: View {
 					.font(.caption)
 			}
 			Text(temperature)
-				.font(temperature.length < 4 ? .system(size: 72) : .system(size: 54) )
+				.font(.system(size: temperature.length < 4 ? valueSizeLarge : valueSizeSmall))
+				.lineLimit(1)
+				.minimumScaleFactor(0.5)
 		}
 		.frame(minWidth: 100, idealWidth: 125, maxWidth: 150, minHeight: 120, idealHeight: 130, maxHeight: 140)
 		.padding()

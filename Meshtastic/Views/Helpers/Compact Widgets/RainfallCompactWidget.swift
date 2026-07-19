@@ -17,6 +17,9 @@ struct RainfallCompactWidget: View {
 	let rainfall: String
 	let unit: String
 
+	@ScaledMetric(relativeTo: .largeTitle) private var valueSizeLarge: CGFloat = 50
+	@ScaledMetric(relativeTo: .largeTitle) private var valueSizeSmall: CGFloat = 40
+
 	private var icon: Image {
 		if timespan == .rainfall1H {
 			return Image(systemName: "cloud.rain.fill")
@@ -35,9 +38,11 @@ struct RainfallCompactWidget: View {
 			}
 			HStack {
 				Text("\(rainfall)")
-					.font(rainfall.length < 4 ? .system(size: 50) : .system(size: 40) )
+					.font(.system(size: rainfall.length < 4 ? valueSizeLarge : valueSizeSmall))
+					.lineLimit(1)
+					.minimumScaleFactor(0.5)
 				Text(unit)
-					.font(.system(size: 14))
+					.font(.footnote)
 			}
 		}
 		.frame(minWidth: 100, idealWidth: 125, maxWidth: 150, minHeight: 120, idealHeight: 130, maxHeight: 140)

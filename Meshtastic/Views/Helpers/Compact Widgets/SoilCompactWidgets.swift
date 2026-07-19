@@ -11,6 +11,9 @@ struct SoilTemperatureCompactWidget: View {
 	let temperature: String
 	let unit: String
 
+	@ScaledMetric(relativeTo: .largeTitle) private var valueSizeLarge: CGFloat = 50
+	@ScaledMetric(relativeTo: .largeTitle) private var valueSizeSmall: CGFloat = 40
+
 	var body: some View {
 		VStack(alignment: .leading) {
 			HStack(alignment: .firstTextBaseline) {
@@ -23,9 +26,11 @@ struct SoilTemperatureCompactWidget: View {
 			}
 			HStack {
 				Text("\(temperature)")
-					.font(temperature.length < 4 ? .system(size: 50) : .system(size: 40) )
+					.font(.system(size: temperature.length < 4 ? valueSizeLarge : valueSizeSmall))
+					.lineLimit(1)
+					.minimumScaleFactor(0.5)
 				Text(unit)
-					.font(.system(size: 14))
+					.font(.footnote)
 			}
 		}
 		.frame(minWidth: 100, idealWidth: 125, maxWidth: 150, minHeight: 120, idealHeight: 130, maxHeight: 140)
@@ -37,6 +42,9 @@ struct SoilTemperatureCompactWidget: View {
 struct SoilMoistureCompactWidget: View {
 	let moisture: String
 	let unit: String
+
+	@ScaledMetric(relativeTo: .largeTitle) private var valueSizeLarge: CGFloat = 50
+	@ScaledMetric(relativeTo: .largeTitle) private var valueSizeSmall: CGFloat = 40
 
 	var body: some View {
 		VStack(alignment: .leading) {
@@ -50,9 +58,11 @@ struct SoilMoistureCompactWidget: View {
 			}
 			HStack {
 				Text("\(moisture)")
-					.font(moisture.length < 4 ? .system(size: 50) : .system(size: 40) )
+					.font(.system(size: moisture.length < 4 ? valueSizeLarge : valueSizeSmall))
+					.lineLimit(1)
+					.minimumScaleFactor(0.5)
 				Text(unit)
-					.font(.system(size: 14))
+					.font(.footnote)
 			}
 		}
 		.frame(minWidth: 100, idealWidth: 125, maxWidth: 150, minHeight: 120, idealHeight: 130, maxHeight: 140)

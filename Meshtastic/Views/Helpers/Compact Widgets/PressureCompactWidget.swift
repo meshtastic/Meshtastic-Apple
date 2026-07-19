@@ -10,6 +10,9 @@ struct PressureCompactWidget: View {
 	let pressure: String
 	let unit: String
 	let low: Bool
+
+	@ScaledMetric(relativeTo: .largeTitle) private var valueSizeLarge: CGFloat = 35
+	@ScaledMetric(relativeTo: .largeTitle) private var valueSizeSmall: CGFloat = 30
 	var body: some View {
 		VStack(alignment: .leading) {
 			HStack(spacing: 5.0) {
@@ -21,7 +24,9 @@ struct PressureCompactWidget: View {
 					.font(.caption)
 			}
 			Text(pressure)
-				.font(pressure.length < 7 ? .system(size: 35) : .system(size: 30) )
+				.font(.system(size: pressure.length < 7 ? valueSizeLarge : valueSizeSmall))
+				.lineLimit(1)
+				.minimumScaleFactor(0.5)
 			Text(low ? "LOW" : "HIGH")
 				.padding(.bottom, 10)
 			Text(unit)

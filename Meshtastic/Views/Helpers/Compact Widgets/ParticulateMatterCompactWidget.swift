@@ -11,6 +11,9 @@ struct ParticulateMatterCompactWidget: View {
 	let label: String
 	let value: UInt32
 
+	@ScaledMetric(relativeTo: .largeTitle) private var valueSizeLarge: CGFloat = 50
+	@ScaledMetric(relativeTo: .largeTitle) private var valueSizeSmall: CGFloat = 34
+
 	private var formattedValue: String {
 		value.formatted(.number.grouping(.never))
 	}
@@ -27,9 +30,11 @@ struct ParticulateMatterCompactWidget: View {
 			}
 			HStack(alignment: .firstTextBaseline) {
 				Text(verbatim: formattedValue)
-					.font(formattedValue.count < 4 ? .system(size: 50) : .system(size: 34))
+					.font(.system(size: formattedValue.count < 4 ? valueSizeLarge : valueSizeSmall))
+					.lineLimit(1)
+					.minimumScaleFactor(0.5)
 				Text(verbatim: "µg/m³")
-					.font(.system(size: 14))
+					.font(.footnote)
 			}
 		}
 		.frame(minWidth: 100, idealWidth: 125, maxWidth: 150, minHeight: 120, idealHeight: 130, maxHeight: 140)
