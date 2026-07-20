@@ -68,6 +68,11 @@ enum OfflineMapError: LocalizedError {
 	}
 }
 
+enum OfflineMapRemovalReason {
+	case userInitiated
+	case automaticCleanup
+}
+
 @MainActor
 final class OfflineMapManager: ObservableObject {
 
@@ -90,6 +95,8 @@ final class OfflineMapManager: ObservableObject {
 	static let manifestName = "offline_maps.json"
 	private var loaded = false
 	private var downloadTask: Task<Void, Never>?
+	private var downloadCompletion: ((OfflineMapRegion?) -> Void)?
+	private var activeSystemPackID: String?
 
 	private init() {}
 
@@ -127,16 +134,34 @@ final class OfflineMapManager: ObservableObject {
 		return nil
 	}
 
-	func startDownload(name: String, bounds: GeoBounds, detail: OfflineMapDetailLevel, replacing: OfflineMapRegion? = nil) {
-		guard activeDownload == nil, let archive = newArchiveURL() else { return }
+	func startDownload(
+		name: String,
+		bounds: GeoBounds,
+		detail: OfflineMapDetailLevel,
+		replacing: OfflineMapRegion? = nil,
+		systemPackID: String? = nil,
+		onCompletion: ((OfflineMapRegion?) -> Void)? = nil
+	) {
+		guard activeDownload == nil, let archive = newArchiveURL() else {
+			onCompletion?(nil)
+			return
+		}
 		// Don't allow regions to overlap (excluding the one being replaced) — avoids duplicate coverage.
-		guard overlappingRegion(with: bounds, excluding: replacing) == nil else { return }
+		guard overlappingRegion(with: bounds, excluding: replacing) == nil else {
+			onCompletion?(nil)
+			return
+		}
 		// Backstop the count limit (the UI also disables Download); per-map size is enforced below.
-		guard regions.count - (replacing != nil ? 1 : 0) < Self.maxRegions else { return }
+		guard regions.count - (replacing != nil ? 1 : 0) < Self.maxRegions else {
+			onCompletion?(nil)
+			return
+		}
 		let regionID = UUID()
 		let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
 		let finalName = trimmedName.isEmpty ? String(localized: "Offline Map") : trimmedName
 		activeDownload = OfflineMapDownloadProgress(id: regionID, name: finalName, state: .preparing, fractionCompleted: nil)
+		downloadCompletion = onCompletion
+		activeSystemPackID = systemPackID
 
 		downloadTask = Task { [weak self] in
 			guard let self else { return }
@@ -152,6 +177,7 @@ final class OfflineMapManager: ObservableObject {
 				try await extractor.extract(plan: plan, to: archive.url) { [weak self] written, total in
 					Task { @MainActor in self?.updateProgress(written: written, total: total) }
 				}
+				guard PMTilesArchive(url: archive.url) != nil else { throw PMTilesExtractorError.badHeader }
 				let region = OfflineMapRegion(
 					id: regionID, name: finalName, fileName: archive.fileName,
 					bounds: plan.bounds, minZoom: plan.minZoom, maxZoom: plan.maxZoom,
@@ -174,6 +200,8 @@ final class OfflineMapManager: ObservableObject {
 		downloadTask?.cancel()
 		downloadTask = nil
 		activeDownload = nil
+		activeSystemPackID = nil
+		downloadCompletion = nil
 	}
 
 	/// Dismisses a failed download banner.
@@ -201,16 +229,26 @@ final class OfflineMapManager: ObservableObject {
 		add(region)
 		downloadTask = nil
 		activeDownload = nil
+		activeSystemPackID = nil
+		let completion = downloadCompletion
+		downloadCompletion = nil
+		completion?(region)
 	}
 
 	private func failDownload(message: String) {
 		activeDownload?.state = .failed(message)
 		downloadTask = nil
+		activeSystemPackID = nil
+		let completion = downloadCompletion
+		downloadCompletion = nil
+		completion?(nil)
 	}
 
 	private func clearDownload() {
 		downloadTask = nil
 		activeDownload = nil
+		activeSystemPackID = nil
+		downloadCompletion = nil
 	}
 
 	// MARK: - Locations
@@ -324,7 +362,10 @@ final class OfflineMapManager: ObservableObject {
 		save()
 	}
 
-	func remove(_ region: OfflineMapRegion) {
+	func remove(_ region: OfflineMapRegion, reason: OfflineMapRemovalReason = .userInitiated) {
+		if case .userInitiated = reason {
+			BurningManOfflinePackStore.shared.suppressIfManaging(regionID: region.id)
+		}
 		if let fileURL = fileURL(for: region) {
 			try? FileManager.default.removeItem(at: fileURL)
 		}
@@ -348,5 +389,33 @@ final class OfflineMapManager: ObservableObject {
 
 	var formattedTotalSize: String {
 		ByteCountFormatter.string(fromByteCount: totalSize, countStyle: .file)
+	}
+}
+
+extension OfflineMapManager: BurningManOfflinePackDownloading {
+	func region(id: UUID) -> OfflineMapRegion? {
+		loadIfNeeded()
+		return regions.first { $0.id == id }
+	}
+
+	func startSystemPackDownload(
+		packID: String,
+		bounds: GeoBounds,
+		detail: OfflineMapDetailLevel,
+		completion: @escaping (OfflineMapRegion?) -> Void
+	) {
+		loadIfNeeded()
+		startDownload(
+			name: "Burning Man 2026",
+			bounds: bounds,
+			detail: detail,
+			systemPackID: packID,
+			onCompletion: completion
+		)
+	}
+
+	func removeSystemPack(id: UUID, reason: OfflineMapRemovalReason) {
+		guard let region = region(id: id) else { return }
+		remove(region, reason: reason)
 	}
 }

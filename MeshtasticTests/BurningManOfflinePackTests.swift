@@ -68,10 +68,89 @@ struct BurningManOfflinePackTests {
 			now: .burningMan("2026-09-10T08:00:00Z"), location: location
 		) == .retain)
 	}
+
+	@Test @MainActor func reconcileInstallsOnlyOnce() async {
+		let store = InMemoryBurningManPackStore()
+		let downloader = RecordingBurningManPackDownloader()
+		let coordinator = BurningManOfflinePackCoordinator(store: store, downloader: downloader)
+
+		await coordinator.reconcile(now: .burningMan("2026-08-01T12:00:00Z"), location: nil)
+		await coordinator.reconcile(now: .burningMan("2026-08-02T12:00:00Z"), location: nil)
+
+		#expect(downloader.downloadRequests == 1)
+	}
+
+	@Test @MainActor func userRemovalSuppressesLaterInstall() async {
+		let store = InMemoryBurningManPackStore(userSuppressed: true)
+		let downloader = RecordingBurningManPackDownloader()
+
+		await BurningManOfflinePackCoordinator(store: store, downloader: downloader)
+			.reconcile(now: .burningMan("2026-08-01T12:00:00Z"), location: nil)
+
+		#expect(downloader.downloadRequests == 0)
+	}
 }
 
 private extension Date {
 	static func burningMan(_ value: String) -> Date {
 		ISO8601DateFormatter().date(from: value)!
+	}
+}
+
+@MainActor
+private final class InMemoryBurningManPackStore: BurningManOfflinePackStoring {
+	private(set) var regionID: UUID?
+	private(set) var sourceBuild: String?
+	var userSuppressed: Bool
+
+	init(userSuppressed: Bool = false) {
+		self.userSuppressed = userSuppressed
+	}
+
+	func record(region: OfflineMapRegion) {
+		regionID = region.id
+		sourceBuild = region.sourceBuild
+	}
+
+	func clearPack() {
+		regionID = nil
+		sourceBuild = nil
+	}
+
+	func suppressIfManaging(regionID: UUID) {
+		guard self.regionID == regionID else { return }
+		clearPack()
+		userSuppressed = true
+	}
+}
+
+@MainActor
+private final class RecordingBurningManPackDownloader: BurningManOfflinePackDownloading {
+	private var regions: [UUID: OfflineMapRegion] = [:]
+	private(set) var downloadRequests = 0
+	var isDownloading = false
+
+	func region(id: UUID) -> OfflineMapRegion? {
+		regions[id]
+	}
+
+	func startSystemPackDownload(
+		packID: String,
+		bounds: GeoBounds,
+		detail: OfflineMapDetailLevel,
+		completion: @escaping (OfflineMapRegion?) -> Void
+	) {
+		downloadRequests += 1
+		let region = OfflineMapRegion(
+			name: packID, fileName: "burning-man-test.pmtiles", bounds: bounds,
+			minZoom: detail.minZoom, maxZoom: detail.maxZoom, fileSize: 1,
+			sourceBuild: "20260720"
+		)
+		regions[region.id] = region
+		completion(region)
+	}
+
+	func removeSystemPack(id: UUID, reason: OfflineMapRemovalReason) {
+		regions[id] = nil
 	}
 }
