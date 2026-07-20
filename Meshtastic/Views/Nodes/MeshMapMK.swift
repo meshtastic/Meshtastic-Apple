@@ -294,11 +294,6 @@ struct MeshMapMK: View {
 		enableOfflineTiles ? offlineMapManager.regions : []
 	}
 
-	/// Archive URLs for every downloaded region — decoded + merged by `offlineVectors`.
-	private var offlineRegionURLs: [URL] {
-		offlineRegions.compactMap { offlineMapManager.fileURL(for: $0) }
-	}
-
 	/// Coverage box for each downloaded region (accent borders + capsules), shown once vectors load.
 	private var offlineCoverageAreas: [GeoBounds] {
 		offlineVectors.isAvailable ? offlineRegions.map { $0.bounds } : []
@@ -1127,7 +1122,7 @@ struct MeshMapMK: View {
 								/// Re-bind the offline vector provider to the active archive (newest downloaded region, else the
 								/// bundled demo) and decode it. Cheap no-op when the archive hasn't changed.
 								private func reloadOfflineSource() {
-									offlineVectors.reload(urls: offlineRegionURLs)
+									offlineVectors.reload(regions: offlineRegions)
 									decodeOfflineIfVisible()
 								}
 

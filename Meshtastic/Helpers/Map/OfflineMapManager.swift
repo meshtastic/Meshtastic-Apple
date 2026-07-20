@@ -321,14 +321,19 @@ final class OfflineMapManager: ObservableObject {
 		return regions.sorted(by: { $0.createdDate > $1.createdDate })
 	}
 
-	/// Archive URLs for every downloaded region whose file exists on disk (newest first).
-	nonisolated static func allRegionFileURLs() -> [URL] {
+	/// Existing archive files paired with their persisted region metadata (newest first).
+	nonisolated static func persistedRegionFiles() -> [OfflineMapRegionFile] {
 		guard let documents = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else { return [] }
 		let dir = documents.appendingPathComponent(directoryName, isDirectory: true)
 		return persistedRegions().compactMap { region in
 			let url = dir.appendingPathComponent(region.fileName)
-			return FileManager.default.fileExists(atPath: url.path) ? url : nil
+			return FileManager.default.fileExists(atPath: url.path) ? OfflineMapRegionFile(region: region, url: url) : nil
 		}
+	}
+
+	/// Archive URLs for every downloaded region whose file exists on disk (newest first).
+	nonisolated static func allRegionFileURLs() -> [URL] {
+		persistedRegionFiles().map(\.url)
 	}
 
 	// MARK: - Loading & saving

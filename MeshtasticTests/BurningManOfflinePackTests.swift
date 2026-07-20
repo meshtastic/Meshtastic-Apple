@@ -90,6 +90,27 @@ struct BurningManOfflinePackTests {
 		#expect(downloader.requestedDetails == [.high])
 	}
 
+	@Test @MainActor func reconcileReplacesLegacyUntaggedSystemRegion() async {
+		let legacyRegion = OfflineMapRegion(
+			name: "Burning Man 2026",
+			fileName: "burning-man-legacy.pmtiles",
+			bounds: BurningManOfflinePack.bounds,
+			minZoom: 0,
+			maxZoom: OfflineMapDetailLevel.high.maxZoom,
+			fileSize: 1,
+			sourceBuild: "20260720"
+		)
+		let store = InMemoryBurningManPackStore()
+		store.record(region: legacyRegion)
+		let downloader = RecordingBurningManPackDownloader(regions: [legacyRegion])
+
+		await BurningManOfflinePackCoordinator(store: store, downloader: downloader)
+			.reconcile(now: .burningMan("2026-08-01T12:00:00Z"), location: nil)
+
+		#expect(downloader.removedRegionIDs == [legacyRegion.id])
+		#expect(downloader.downloadRequests == 1)
+	}
+
 	@Test func systemRegionPersistsPackIdentity() {
 		let region = OfflineMapRegion(
 			name: "Burning Man 2026",
@@ -209,7 +230,12 @@ private final class RecordingBurningManPackDownloader: BurningManOfflinePackDown
 	private var regions: [UUID: OfflineMapRegion] = [:]
 	private(set) var downloadRequests = 0
 	private(set) var requestedDetails: [OfflineMapDetailLevel] = []
+	private(set) var removedRegionIDs: [UUID] = []
 	var isDownloading = false
+
+	init(regions: [OfflineMapRegion] = []) {
+		self.regions = Dictionary(uniqueKeysWithValues: regions.map { ($0.id, $0) })
+	}
 
 	func region(id: UUID) -> OfflineMapRegion? {
 		regions[id]
@@ -234,6 +260,7 @@ private final class RecordingBurningManPackDownloader: BurningManOfflinePackDown
 
 	func removeSystemPack(id: UUID, reason: OfflineMapRemovalReason) {
 		regions[id] = nil
+		removedRegionIDs.append(id)
 	}
 }
 

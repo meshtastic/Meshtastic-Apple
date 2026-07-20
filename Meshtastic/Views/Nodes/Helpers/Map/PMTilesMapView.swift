@@ -42,6 +42,25 @@ struct OfflineMapPolyline: Identifiable {
 	let coordinates: [CLLocationCoordinate2D]
 }
 
+/// Region identity required to bind an archive consistently before and after the manager loads.
+struct OfflineVectorSourceBinding: Equatable {
+	let url: URL
+	let regionID: UUID
+	let systemPackID: String?
+
+	init(regionFile: OfflineMapRegionFile) {
+		url = regionFile.url
+		regionID = regionFile.region.id
+		systemPackID = regionFile.region.systemPackID
+	}
+
+	init(url: URL, regionID: UUID = UUID(), systemPackID: String?) {
+		self.url = url
+		self.regionID = regionID
+		self.systemPackID = systemPackID
+	}
+}
+
 /// Render-ready offline content plus measurement stats (returned by `OfflineVectorTileProvider.build`).
 struct BuildResult {
 	let polygons: [OfflineMapPolygon]
@@ -96,8 +115,8 @@ final class OfflineVectorTileProvider: ObservableObject {
 		let systemPackID: String?
 	}
 	private var vectorSources: [VectorSource] = []
-	/// URLs the provider is currently bound to, so reload(urls:) can no-op when unchanged.
-	private var loadedURLs: [URL] = []
+	/// Region identities the provider is currently bound to, so metadata changes reload even when URLs match.
+	private var loadedBindings: [OfflineVectorSourceBinding] = []
 	private let queue = DispatchQueue(label: "offline.vector.decode", qos: .userInitiated)
 	private var didLoad = false
 	private var regionObserver: AnyCancellable?
@@ -111,8 +130,8 @@ final class OfflineVectorTileProvider: ObservableObject {
 		var key: String { "\(z)/\(x)/\(y)" }
 	}
 
-	init(urls: [URL] = OfflineVectorTileProvider.defaultURLs) {
-		applySources(urls: urls)
+	init(bindings: [OfflineVectorSourceBinding] = OfflineVectorTileProvider.defaultBindings) {
+		applySources(bindings: bindings)
 		regionObserver = OfflineMapManager.shared.$regions
 			.dropFirst()
 			.receive(on: RunLoop.main)
@@ -122,31 +141,37 @@ final class OfflineVectorTileProvider: ObservableObject {
 	}
 
 	private func reloadDownloadedRegions(_ regions: [OfflineMapRegion]) {
-		let urls = regions.compactMap { OfflineMapManager.shared.fileURL(for: $0) }
-		reload(urls: urls)
+		reload(regions: regions)
 	}
 
 	/// (Re)bind to the set of downloaded street archives, opening each vector source.
-	private func applySources(urls: [URL]) {
+	private func applySources(bindings: [OfflineVectorSourceBinding]) {
 		var result: [VectorSource] = []
-		for url in urls {
+		for binding in bindings {
+			let url = binding.url
 			if let src = OfflineTileSourceFactory.source(for: url), src.isVectorTiles, let bounds = src.geographicBounds {
-				let systemPackID = OfflineMapManager.shared.regions
-					.first { $0.fileName == url.lastPathComponent }?.systemPackID
-				result.append(VectorSource(url: url, source: src, bounds: bounds, systemPackID: systemPackID))
+				result.append(VectorSource(url: url, source: src, bounds: bounds, systemPackID: binding.systemPackID))
 			}
 		}
 		vectorSources = result
 		isAvailable = !result.isEmpty
 		coverageAreas = result.map { $0.bounds }
-		loadedURLs = urls
+		loadedBindings = bindings
 	}
 
-	/// Switch to a different set of archives (e.g. after a new download) and re-decode. No-op when the
-	/// URL set is unchanged; clears the old overlays + re-decodes when it changes.
-	func reload(urls: [URL]) {
-		guard urls != loadedURLs else { return }
-		applySources(urls: urls)
+	/// Switch to a different set of archives (e.g. after a new download) and re-decode. Both URL and
+	/// persisted region identity participate in the no-op check, so a cold-start metadata correction reloads.
+	func reload(regions: [OfflineMapRegion]) {
+		let files = regions.compactMap { region -> OfflineMapRegionFile? in
+			guard let url = OfflineMapManager.shared.fileURL(for: region) else { return nil }
+			return OfflineMapRegionFile(region: region, url: url)
+		}
+		reload(bindings: Self.sourceBindings(for: files))
+	}
+
+	private func reload(bindings: [OfflineVectorSourceBinding]) {
+		guard Self.requiresReload(from: loadedBindings, to: bindings) else { return }
+		applySources(bindings: bindings)
 		didLoad = false
 		polygons = []
 		roads = []
@@ -154,9 +179,19 @@ final class OfflineVectorTileProvider: ObservableObject {
 		// NOTE: does NOT decode here — the caller decodes lazily (only when a region is on screen).
 	}
 
-	nonisolated static var defaultURLs: [URL] {
-		// All user-downloaded regions (the provider keeps only the vector ones).
-		OfflineMapManager.allRegionFileURLs()
+	nonisolated static var defaultBindings: [OfflineVectorSourceBinding] {
+		sourceBindings(for: OfflineMapManager.persistedRegionFiles())
+	}
+
+	nonisolated static func sourceBindings(for regionFiles: [OfflineMapRegionFile]) -> [OfflineVectorSourceBinding] {
+		regionFiles.map(OfflineVectorSourceBinding.init(regionFile:))
+	}
+
+	nonisolated static func requiresReload(
+		from current: [OfflineVectorSourceBinding],
+		to incoming: [OfflineVectorSourceBinding]
+	) -> Bool {
+		current != incoming
 	}
 
 	/// Decode the whole coverage box ONCE at a fixed detail zoom, stitch road segments per role, and

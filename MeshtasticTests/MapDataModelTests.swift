@@ -315,3 +315,42 @@ struct OfflineVectorTileSelectionTests {
 		#expect(genericTiles.allSatisfy { $0.z < 15 })
 	}
 }
+
+@Suite("Offline vector source bindings")
+struct OfflineVectorSourceBindingTests {
+
+	@Test func persistedBurningManSourceCarriesSystemIdentityAtColdLaunch() {
+		let region = OfflineMapRegion(
+			name: "Burning Man 2026",
+			fileName: "burning-man.pmtiles",
+			bounds: BurningManOfflinePack.bounds,
+			minZoom: 0,
+			maxZoom: OfflineMapDetailLevel.high.maxZoom,
+			fileSize: 1,
+			sourceBuild: "20260720",
+			systemPackID: BurningManOfflinePack.packID
+		)
+		let persistedFile = OfflineMapRegionFile(
+			region: region,
+			url: URL(fileURLWithPath: "/tmp/burning-man.pmtiles")
+		)
+
+		let bindings = OfflineVectorTileProvider.sourceBindings(for: [persistedFile])
+
+		#expect(bindings == [OfflineVectorSourceBinding(
+			url: persistedFile.url,
+			regionID: region.id,
+			systemPackID: BurningManOfflinePack.packID
+		)])
+	}
+
+	@Test func identityChangeForSameURLRequiresReload() {
+		let url = URL(fileURLWithPath: "/tmp/burning-man.pmtiles")
+		let regionID = UUID()
+		let generic = OfflineVectorSourceBinding(url: url, regionID: regionID, systemPackID: nil)
+		let system = OfflineVectorSourceBinding(url: url, regionID: regionID, systemPackID: BurningManOfflinePack.packID)
+
+		#expect(OfflineVectorTileProvider.requiresReload(from: [generic], to: [system]))
+		#expect(!OfflineVectorTileProvider.requiresReload(from: [system], to: [system]))
+	}
+}
