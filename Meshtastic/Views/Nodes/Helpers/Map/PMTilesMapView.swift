@@ -121,7 +121,7 @@ final class OfflineVectorTileProvider: ObservableObject {
 	private var didLoad = false
 	private var regionObserver: AnyCancellable?
 
-	/// `boundsTiles` picks the highest fixed zoom whose tile count fits this cap. Residential
+	/// `tiles(...)` picks the highest fixed zoom whose tile count fits this cap. Residential
 	/// streets only exist in Protomaps tiles at z13+, so ~48 lands on z14 (full street grid).
 	private let maxTiles = 48
 

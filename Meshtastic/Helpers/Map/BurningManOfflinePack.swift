@@ -6,6 +6,8 @@
 import CoreLocation
 import Foundation
 
+// MARK: - Policy
+
 enum BurningManPackAction: Equatable {
 	case install
 	case retain
@@ -51,6 +53,8 @@ enum BurningManOfflinePack {
 		return calendar.date(from: DateComponents(year: year, month: month, day: day))!
 	}
 }
+
+// MARK: - Persisted State
 
 @MainActor
 protocol BurningManOfflinePackStoring: AnyObject {
@@ -120,6 +124,8 @@ final class BurningManOfflinePackStore: BurningManOfflinePackStoring {
 	}
 }
 
+// MARK: - Download Integration
+
 @MainActor
 protocol BurningManOfflinePackDownloading: AnyObject {
 	var isDownloading: Bool { get }
@@ -132,6 +138,8 @@ protocol BurningManOfflinePackDownloading: AnyObject {
 	)
 	func removeSystemPack(id: UUID, reason: OfflineMapRemovalReason)
 }
+
+// MARK: - Coordinator
 
 @MainActor
 final class BurningManOfflinePackCoordinator {
@@ -146,6 +154,9 @@ final class BurningManOfflinePackCoordinator {
 	init(store: any BurningManOfflinePackStoring, downloader: any BurningManOfflinePackDownloading) {
 		self.store = store
 		self.downloader = downloader
+		(downloader as? any OfflineMapUserRemovalHandling)?.setUserRemovalHandler { [weak store] regionID in
+			store?.suppressIfManaging(regionID: regionID)
+		}
 	}
 
 	func reconcile(now: Date, location: CLLocation?) async {

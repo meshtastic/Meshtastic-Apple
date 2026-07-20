@@ -136,6 +136,20 @@ struct BurningManOfflinePackTests {
 		#expect(downloader.downloadRequests == 0)
 	}
 
+	@Test @MainActor func userRemovalOfManagedRegionSuppressesLaterInstall() async throws {
+		let store = InMemoryBurningManPackStore()
+		let downloader = RecordingBurningManPackDownloader()
+		let coordinator = BurningManOfflinePackCoordinator(store: store, downloader: downloader)
+
+		await coordinator.reconcile(now: .burningMan("2026-08-01T12:00:00Z"), location: nil)
+		let managedRegionID = try #require(downloader.lastDownloadedRegionID)
+		downloader.simulateUserRemoval(regionID: managedRegionID)
+		await coordinator.reconcile(now: .burningMan("2026-08-02T12:00:00Z"), location: nil)
+
+		#expect(store.userSuppressed)
+		#expect(downloader.downloadRequests == 1)
+	}
+
 	@Test @MainActor func foregroundSchedulesOneReconciliationWithoutRequestingLocationPermission() async {
 		let reconciler = RecordingForegroundReconciler()
 		let locations = RecordingLastKnownLocationSource()
@@ -150,7 +164,6 @@ struct BurningManOfflinePackTests {
 
 		#expect(reconciler.reconcileCalls == 1)
 		#expect(locations.lastKnownLocationReads == 1)
-		#expect(locations.permissionRequests == 0)
 	}
 }
 
@@ -226,12 +239,14 @@ private final class InMemoryBurningManPackStore: BurningManOfflinePackStoring {
 }
 
 @MainActor
-private final class RecordingBurningManPackDownloader: BurningManOfflinePackDownloading {
+private final class RecordingBurningManPackDownloader: BurningManOfflinePackDownloading, OfflineMapUserRemovalHandling {
 	private var regions: [UUID: OfflineMapRegion] = [:]
 	private(set) var downloadRequests = 0
 	private(set) var requestedDetails: [OfflineMapDetailLevel] = []
 	private(set) var removedRegionIDs: [UUID] = []
+	private var onUserRemoval: ((UUID) -> Void)?
 	var isDownloading = false
+	var lastDownloadedRegionID: UUID? { regions.keys.first }
 
 	init(regions: [OfflineMapRegion] = []) {
 		self.regions = Dictionary(uniqueKeysWithValues: regions.map { ($0.id, $0) })
@@ -258,6 +273,15 @@ private final class RecordingBurningManPackDownloader: BurningManOfflinePackDown
 		completion(region)
 	}
 
+	func setUserRemovalHandler(_ handler: @escaping (UUID) -> Void) {
+		onUserRemoval = handler
+	}
+
+	func simulateUserRemoval(regionID: UUID) {
+		regions[regionID] = nil
+		onUserRemoval?(regionID)
+	}
+
 	func removeSystemPack(id: UUID, reason: OfflineMapRemovalReason) {
 		regions[id] = nil
 		removedRegionIDs.append(id)
@@ -276,7 +300,6 @@ private final class RecordingForegroundReconciler: BurningManPackReconciling {
 @MainActor
 private final class RecordingLastKnownLocationSource {
 	private(set) var lastKnownLocationReads = 0
-	private(set) var permissionRequests = 0
 
 	func lastKnownLocation() -> CLLocation? {
 		lastKnownLocationReads += 1

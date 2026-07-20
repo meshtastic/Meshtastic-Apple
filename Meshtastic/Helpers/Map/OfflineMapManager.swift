@@ -96,6 +96,11 @@ enum OfflineMapRemovalReason {
 }
 
 @MainActor
+protocol OfflineMapUserRemovalHandling: AnyObject {
+	func setUserRemovalHandler(_ handler: @escaping (UUID) -> Void)
+}
+
+@MainActor
 final class OfflineMapManager: ObservableObject {
 
 	static let shared = OfflineMapManager()
@@ -119,6 +124,7 @@ final class OfflineMapManager: ObservableObject {
 	private var downloadTask: Task<Void, Never>?
 	private var downloadLifecycle = OfflineMapDownloadLifecycle()
 	private var downloadCompletion: ((OfflineMapRegion?) -> Void)?
+	private var onUserRemoval: ((UUID) -> Void)?
 
 	private init() {}
 
@@ -168,15 +174,17 @@ final class OfflineMapManager: ObservableObject {
 			onCompletion?(nil)
 			return
 		}
-		// Don't allow regions to overlap (excluding the one being replaced) — avoids duplicate coverage.
-		guard overlappingRegion(with: bounds, excluding: replacing) == nil else {
-			onCompletion?(nil)
-			return
-		}
-		// Backstop the count limit (the UI also disables Download); per-map size is enforced below.
-		guard regions.count - (replacing != nil ? 1 : 0) < Self.maxRegions else {
-			onCompletion?(nil)
-			return
+		if systemPackID == nil {
+			// Don't allow user regions to overlap (excluding the one being replaced) — avoids duplicate coverage.
+			guard overlappingRegion(with: bounds, excluding: replacing) == nil else {
+				onCompletion?(nil)
+				return
+			}
+			// Backstop the user-map count limit (the UI also disables Download); per-map size is enforced below.
+			guard regions.count - (replacing != nil ? 1 : 0) < Self.maxRegions else {
+				onCompletion?(nil)
+				return
+			}
 		}
 		let regionID = UUID()
 		guard downloadLifecycle.begin(id: regionID) else {
@@ -393,7 +401,7 @@ final class OfflineMapManager: ObservableObject {
 
 	func remove(_ region: OfflineMapRegion, reason: OfflineMapRemovalReason = .userInitiated) {
 		if case .userInitiated = reason {
-			BurningManOfflinePackStore.shared.suppressIfManaging(regionID: region.id)
+			onUserRemoval?(region.id)
 		}
 		if let fileURL = fileURL(for: region) {
 			try? FileManager.default.removeItem(at: fileURL)
@@ -418,6 +426,12 @@ final class OfflineMapManager: ObservableObject {
 
 	var formattedTotalSize: String {
 		ByteCountFormatter.string(fromByteCount: totalSize, countStyle: .file)
+	}
+}
+
+extension OfflineMapManager: OfflineMapUserRemovalHandling {
+	func setUserRemovalHandler(_ handler: @escaping (UUID) -> Void) {
+		onUserRemoval = handler
 	}
 }
 
