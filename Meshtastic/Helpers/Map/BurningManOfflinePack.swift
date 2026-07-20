@@ -169,7 +169,7 @@ final class BurningManOfflinePackCoordinator {
 		downloader.startSystemPackDownload(
 			packID: BurningManOfflinePack.packID,
 			bounds: BurningManOfflinePack.bounds,
-			detail: .standard
+			detail: .high
 		) { [weak self] region in
 			guard let region else { return }
 			self?.store.record(region: region)

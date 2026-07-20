@@ -430,7 +430,8 @@ extension OfflineVectorTileProvider {
 		// All roads (incl. the residential/neighborhood street grid); footpaths are still skipped.
 		for feature in vector.features(for: "roads") {
 			let kind = (feature.properties["kind"] as? String) ?? (feature.properties["pmap:kind"] as? String)
-			let role = roadRole(kind)
+			let kindDetail = (feature.properties["kind_detail"] as? String) ?? (feature.properties["pmap:kind_detail"] as? String)
+			let role = roadRole(kind: kind, kindDetail: kindDetail)
 			if role == .path { continue } // footways/cycleways: high count, low basemap value
 			appendPolylines(feature.geometry, role: role, bounds: bounds, into: &lines, id: nextID)
 		}
@@ -438,7 +439,8 @@ extension OfflineVectorTileProvider {
 		return (polys, lines)
 	}
 
-	nonisolated private static func roadRole(_ kind: String?) -> OfflineFeatureRole {
+	nonisolated static func roadRole(kind: String?, kindDetail: String?) -> OfflineFeatureRole {
+		if kind == "path", kindDetail == "pedestrian" { return .minorRoad }
 		switch kind {
 		case "highway", "motorway", "freeway", "major_road", "trunk", "primary": return .majorRoad
 		case "medium_road", "secondary", "tertiary": return .mediumRoad

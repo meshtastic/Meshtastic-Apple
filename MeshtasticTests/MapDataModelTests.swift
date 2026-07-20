@@ -279,3 +279,15 @@ struct OfflineVectorPerfTests {
 }
 
 // swiftlint:enable disable_print
+
+@Suite("Offline vector road classification")
+struct OfflineVectorRoadClassificationTests {
+
+	@Test func protomapsPedestrianStreetRemainsVisibleWhileNonStreetPathsAreExcluded() {
+		#expect(OfflineVectorTileProvider.roadRole(kind: "path", kindDetail: "pedestrian") == .minorRoad)
+		#expect(OfflineVectorTileProvider.roadRole(kind: "path", kindDetail: "footway") == .path)
+		#expect(OfflineVectorTileProvider.roadRole(kind: "footway", kindDetail: nil) == .path)
+		#expect(OfflineVectorTileProvider.roadRole(kind: "cycleway", kindDetail: nil) == .path)
+		#expect(OfflineVectorTileProvider.roadRole(kind: "track", kindDetail: nil) == .path)
+	}
+}

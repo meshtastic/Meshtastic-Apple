@@ -80,6 +80,16 @@ struct BurningManOfflinePackTests {
 		#expect(downloader.downloadRequests == 1)
 	}
 
+	@Test @MainActor func reconcileRequestsHighDetailForBurningManStreets() async {
+		let downloader = RecordingBurningManPackDownloader()
+
+		await BurningManOfflinePackCoordinator(
+			store: InMemoryBurningManPackStore(), downloader: downloader
+		).reconcile(now: .burningMan("2026-08-01T12:00:00Z"), location: nil)
+
+		#expect(downloader.requestedDetails == [.high])
+	}
+
 	@Test @MainActor func userRemovalSuppressesLaterInstall() async {
 		let store = InMemoryBurningManPackStore(userSuppressed: true)
 		let downloader = RecordingBurningManPackDownloader()
@@ -183,6 +193,7 @@ private final class InMemoryBurningManPackStore: BurningManOfflinePackStoring {
 private final class RecordingBurningManPackDownloader: BurningManOfflinePackDownloading {
 	private var regions: [UUID: OfflineMapRegion] = [:]
 	private(set) var downloadRequests = 0
+	private(set) var requestedDetails: [OfflineMapDetailLevel] = []
 	var isDownloading = false
 
 	func region(id: UUID) -> OfflineMapRegion? {
@@ -196,6 +207,7 @@ private final class RecordingBurningManPackDownloader: BurningManOfflinePackDown
 		completion: @escaping (OfflineMapRegion?) -> Void
 	) {
 		downloadRequests += 1
+		requestedDetails.append(detail)
 		let region = OfflineMapRegion(
 			name: packID, fileName: "burning-man-test.pmtiles", bounds: bounds,
 			minZoom: detail.minZoom, maxZoom: detail.maxZoom, fileSize: 1,
