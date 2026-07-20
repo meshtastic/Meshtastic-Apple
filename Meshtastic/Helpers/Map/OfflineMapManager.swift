@@ -55,6 +55,28 @@ struct OfflineMapDownloadProgress: Identifiable, Equatable {
 	var estimatedBytes: Int64 = 0
 }
 
+struct OfflineMapDownloadLifecycle {
+	private(set) var activeID: UUID?
+
+	var isDownloading: Bool { activeID != nil }
+
+	mutating func begin(id: UUID) -> Bool {
+		guard activeID == nil else { return false }
+		activeID = id
+		return true
+	}
+
+	mutating func end(id: UUID) -> Bool {
+		guard activeID == id else { return false }
+		activeID = nil
+		return true
+	}
+
+	func isCurrent(_ id: UUID) -> Bool {
+		activeID == id
+	}
+}
+
 /// Reasons a download can't proceed (surfaced to the user).
 enum OfflineMapError: LocalizedError {
 	case exceedsPerMapLimit(Int64)
@@ -95,15 +117,15 @@ final class OfflineMapManager: ObservableObject {
 	static let manifestName = "offline_maps.json"
 	private var loaded = false
 	private var downloadTask: Task<Void, Never>?
+	private var downloadLifecycle = OfflineMapDownloadLifecycle()
 	private var downloadCompletion: ((OfflineMapRegion?) -> Void)?
-	private var activeSystemPackID: String?
 
 	private init() {}
 
 	// MARK: - Downloading
 
 	/// Whether a download is in flight (one region at a time).
-	var isDownloading: Bool { activeDownload != nil }
+	var isDownloading: Bool { downloadLifecycle.isDownloading }
 
 	/// The first existing region whose extent intersects `bounds` (ignoring `excluding`), or nil.
 	/// Downloads must not overlap — avoids duplicate coverage.
@@ -142,7 +164,7 @@ final class OfflineMapManager: ObservableObject {
 		systemPackID: String? = nil,
 		onCompletion: ((OfflineMapRegion?) -> Void)? = nil
 	) {
-		guard activeDownload == nil, let archive = newArchiveURL() else {
+		guard !isDownloading, let archive = newArchiveURL() else {
 			onCompletion?(nil)
 			return
 		}
@@ -157,11 +179,14 @@ final class OfflineMapManager: ObservableObject {
 			return
 		}
 		let regionID = UUID()
+		guard downloadLifecycle.begin(id: regionID) else {
+			onCompletion?(nil)
+			return
+		}
 		let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
 		let finalName = trimmedName.isEmpty ? String(localized: "Offline Map") : trimmedName
 		activeDownload = OfflineMapDownloadProgress(id: regionID, name: finalName, state: .preparing, fractionCompleted: nil)
 		downloadCompletion = onCompletion
-		activeSystemPackID = systemPackID
 
 		downloadTask = Task { [weak self] in
 			guard let self else { return }
@@ -173,9 +198,9 @@ final class OfflineMapManager: ObservableObject {
 					bounds: bounds, minZoom: detail.minZoom, maxZoom: detail.maxZoom
 				)
 				guard plan.payloadBytes <= Self.maxRegionBytes else { throw OfflineMapError.exceedsPerMapLimit(Self.maxRegionBytes) }
-				await self.markDownloading(estimatedBytes: plan.payloadBytes)
+				await self.markDownloading(id: regionID, estimatedBytes: plan.payloadBytes)
 				try await extractor.extract(plan: plan, to: archive.url) { [weak self] written, total in
-					Task { @MainActor in self?.updateProgress(written: written, total: total) }
+					Task { @MainActor in self?.updateProgress(id: regionID, written: written, total: total) }
 				}
 				guard PMTilesArchive(url: archive.url) != nil else { throw PMTilesExtractorError.badHeader }
 				let region = OfflineMapRegion(
@@ -183,25 +208,23 @@ final class OfflineMapManager: ObservableObject {
 					bounds: plan.bounds, minZoom: plan.minZoom, maxZoom: plan.maxZoom,
 					fileSize: 0, sourceBuild: build.build
 				)
-				await self.finishDownload(region: region, removing: replacing)
+				await self.finishDownload(id: regionID, region: region, removing: replacing)
 			} catch is CancellationError {
 				try? FileManager.default.removeItem(at: archive.url)
-				await self.clearDownload()
+				await self.clearDownload(id: regionID)
 			} catch {
 				try? FileManager.default.removeItem(at: archive.url)
 				let message = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
 				Logger.services.error("🗺️ [Offline] Download failed: \(message, privacy: .public)")
-				await self.failDownload(message: message)
+				await self.failDownload(id: regionID, message: message)
 			}
 		}
 	}
 
 	func cancelDownload() {
+		guard let id = downloadLifecycle.activeID else { return }
 		downloadTask?.cancel()
-		downloadTask = nil
-		activeDownload = nil
-		activeSystemPackID = nil
-		downloadCompletion = nil
+		clearDownload(id: id)
 	}
 
 	/// Dismisses a failed download banner.
@@ -210,44 +233,45 @@ final class OfflineMapManager: ObservableObject {
 		activeDownload = nil
 	}
 
-	private func markDownloading(estimatedBytes: Int64) {
+	private func markDownloading(id: UUID, estimatedBytes: Int64) {
+		guard downloadLifecycle.isCurrent(id), activeDownload?.id == id else { return }
 		activeDownload?.state = .downloading
 		activeDownload?.estimatedBytes = estimatedBytes
 		activeDownload?.fractionCompleted = 0
 	}
 
-	private func updateProgress(written: Int64, total: Int64) {
-		guard activeDownload != nil else { return }
+	private func updateProgress(id: UUID, written: Int64, total: Int64) {
+		guard downloadLifecycle.isCurrent(id), activeDownload?.id == id else { return }
 		activeDownload?.bytesWritten = written
 		activeDownload?.estimatedBytes = total
 		activeDownload?.state = .downloading
 		activeDownload?.fractionCompleted = total > 0 ? min(1, Double(written) / Double(total)) : nil
 	}
 
-	private func finishDownload(region: OfflineMapRegion, removing: OfflineMapRegion?) {
+	private func finishDownload(id: UUID, region: OfflineMapRegion, removing: OfflineMapRegion?) {
+		guard activeDownload?.id == id, downloadLifecycle.end(id: id) else { return }
 		if let removing { remove(removing) }
 		add(region)
 		downloadTask = nil
 		activeDownload = nil
-		activeSystemPackID = nil
 		let completion = downloadCompletion
 		downloadCompletion = nil
 		completion?(region)
 	}
 
-	private func failDownload(message: String) {
+	private func failDownload(id: UUID, message: String) {
+		guard activeDownload?.id == id, downloadLifecycle.end(id: id) else { return }
 		activeDownload?.state = .failed(message)
 		downloadTask = nil
-		activeSystemPackID = nil
 		let completion = downloadCompletion
 		downloadCompletion = nil
 		completion?(nil)
 	}
 
-	private func clearDownload() {
+	private func clearDownload(id: UUID) {
+		guard activeDownload?.id == id, downloadLifecycle.end(id: id) else { return }
 		downloadTask = nil
 		activeDownload = nil
-		activeSystemPackID = nil
 		downloadCompletion = nil
 	}
 

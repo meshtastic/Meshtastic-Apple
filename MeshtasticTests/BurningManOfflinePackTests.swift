@@ -91,6 +91,44 @@ struct BurningManOfflinePackTests {
 	}
 }
 
+@Suite("Offline map download lifecycle")
+struct OfflineMapDownloadLifecycleTests {
+
+	@Test func cancelledDownloadCannotClearReplacement() {
+		var lifecycle = OfflineMapDownloadLifecycle()
+		let cancelledID = UUID()
+		let replacementID = UUID()
+
+		let beganCancelled = lifecycle.begin(id: cancelledID)
+		let cancelled = lifecycle.end(id: cancelledID)
+		let beganReplacement = lifecycle.begin(id: replacementID)
+
+		#expect(beganCancelled)
+		#expect(cancelled)
+		#expect(beganReplacement)
+
+		let staleCleanupWasIgnored = !lifecycle.end(id: cancelledID)
+		#expect(staleCleanupWasIgnored)
+		#expect(lifecycle.isCurrent(replacementID))
+	}
+
+	@Test func failedDownloadDoesNotBlockRetry() {
+		var lifecycle = OfflineMapDownloadLifecycle()
+		let failedID = UUID()
+		let retryID = UUID()
+
+		let beganFailed = lifecycle.begin(id: failedID)
+		let endedFailed = lifecycle.end(id: failedID)
+		#expect(beganFailed)
+		#expect(endedFailed)
+		#expect(!lifecycle.isDownloading)
+
+		let beganRetry = lifecycle.begin(id: retryID)
+		#expect(beganRetry)
+		#expect(lifecycle.isCurrent(retryID))
+	}
+}
+
 private extension Date {
 	static func burningMan(_ value: String) -> Date {
 		ISO8601DateFormatter().date(from: value)!
