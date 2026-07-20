@@ -89,7 +89,12 @@ final class OfflineVectorTileProvider: ObservableObject {
 	/// Coverage box for each loaded archive (for the base fills + coverage rectangles). One per region.
 	private(set) var coverageAreas: [GeoBounds] = []
 	/// One opened vector archive + its coverage box.
-	private struct VectorSource { let url: URL; let source: OfflineTileSource; let bounds: GeoBounds }
+	private struct VectorSource {
+		let url: URL
+		let source: OfflineTileSource
+		let bounds: GeoBounds
+		let systemPackID: String?
+	}
 	private var vectorSources: [VectorSource] = []
 	/// URLs the provider is currently bound to, so reload(urls:) can no-op when unchanged.
 	private var loadedURLs: [URL] = []
@@ -126,7 +131,9 @@ final class OfflineVectorTileProvider: ObservableObject {
 		var result: [VectorSource] = []
 		for url in urls {
 			if let src = OfflineTileSourceFactory.source(for: url), src.isVectorTiles, let bounds = src.geographicBounds {
-				result.append(VectorSource(url: url, source: src, bounds: bounds))
+				let systemPackID = OfflineMapManager.shared.regions
+					.first { $0.fileName == url.lastPathComponent }?.systemPackID
+				result.append(VectorSource(url: url, source: src, bounds: bounds, systemPackID: systemPackID))
 			}
 		}
 		vectorSources = result
@@ -164,7 +171,13 @@ final class OfflineVectorTileProvider: ObservableObject {
 			var allPolygons: [OfflineMapPolygon] = []
 			var allRoads: [OfflineMapPolyline] = []
 			for (index, entry) in snapshot.enumerated() {
-				let tiles = Self.boundsTiles(source: entry.source, bounds: entry.bounds, maxTiles: cap)
+				let tiles = Self.tiles(
+					bounds: entry.bounds,
+					minZoom: Int(entry.source.tileMinZoom),
+					maxZoom: Int(entry.source.tileMaxZoom),
+					systemPackID: entry.systemPackID,
+					maxTiles: cap
+				)
 				guard !tiles.isEmpty else { continue }
 				let result = Self.build(source: entry.source, bounds: entry.bounds, tiles: tiles)
 				Logger.services.info("📦 [Offline] region \(index): \(result.stats.description)")
@@ -263,7 +276,13 @@ final class OfflineVectorTileProvider: ObservableObject {
 	) -> OfflineDecodeStats? {
 		guard let source = OfflineTileSourceFactory.source(for: url), source.isVectorTiles,
 			  let bounds = source.geographicBounds else { return nil }
-		let tiles = boundsTiles(source: source, bounds: bounds, maxTiles: maxTiles)
+		let tiles = tiles(
+			bounds: bounds,
+			minZoom: Int(source.tileMinZoom),
+			maxZoom: Int(source.tileMaxZoom),
+			systemPackID: nil,
+			maxTiles: maxTiles
+		)
 		guard !tiles.isEmpty else { return nil }
 		return build(source: source, bounds: bounds, tiles: tiles, minFillMeters: minFillMeters, minRoadMeters: minRoadMeters).stats
 	}
@@ -360,18 +379,26 @@ extension OfflineVectorTileProvider {
 
 	// MARK: Tile math
 
-	/// All tiles covering the archive's coverage box, at the highest zoom whose tile count fits
-	/// the cap. Decoded once; vectors scale to any map zoom.
-	nonisolated private static func boundsTiles(source: OfflineTileSource, bounds: GeoBounds, maxTiles: Int) -> [TileID] {
-		let minZoom = Int(source.tileMinZoom)
-		let maxZoom = Int(source.tileMaxZoom)
+	/// All tiles covering the archive's coverage box. Generic sources use the highest zoom whose
+	/// tile count fits the cap; the identified Burning Man system pack decodes its full z15 coverage.
+	/// Decoded once; vectors scale to any map zoom.
+	nonisolated static func tiles(
+		bounds: GeoBounds,
+		minZoom: Int,
+		maxZoom: Int,
+		systemPackID: String?,
+		maxTiles: Int = 48
+	) -> [TileID] {
 		var zoom = maxZoom
-		while zoom > minZoom {
-			let topLeft = tileXY(lon: bounds.minLon, lat: bounds.maxLat, zoom: zoom)
-			let bottomRight = tileXY(lon: bounds.maxLon, lat: bounds.minLat, zoom: zoom)
-			let count = (abs(bottomRight.x - topLeft.x) + 1) * (abs(bottomRight.y - topLeft.y) + 1)
-			if count <= maxTiles { break }
-			zoom -= 1
+		let isBurningManSystemPack = systemPackID == BurningManOfflinePack.packID && maxZoom == OfflineMapDetailLevel.high.maxZoom
+		if !isBurningManSystemPack {
+			while zoom > minZoom {
+				let topLeft = tileXY(lon: bounds.minLon, lat: bounds.maxLat, zoom: zoom)
+				let bottomRight = tileXY(lon: bounds.maxLon, lat: bounds.minLat, zoom: zoom)
+				let count = (abs(bottomRight.x - topLeft.x) + 1) * (abs(bottomRight.y - topLeft.y) + 1)
+				if count <= maxTiles { break }
+				zoom -= 1
+			}
 		}
 
 		let topLeft = tileXY(lon: bounds.minLon, lat: bounds.maxLat, zoom: zoom)

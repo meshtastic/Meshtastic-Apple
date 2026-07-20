@@ -291,3 +291,27 @@ struct OfflineVectorRoadClassificationTests {
 		#expect(OfflineVectorTileProvider.roadRole(kind: "track", kindDetail: nil) == .path)
 	}
 }
+
+@Suite("Offline vector tile selection")
+struct OfflineVectorTileSelectionTests {
+
+	@Test func burningManSystemPackDecodesAllZ15TilesWhileGenericSourcesStayCapped() {
+		let systemTiles = OfflineVectorTileProvider.tiles(
+			bounds: BurningManOfflinePack.bounds,
+			minZoom: 0,
+			maxZoom: OfflineMapDetailLevel.high.maxZoom,
+			systemPackID: BurningManOfflinePack.packID
+		)
+		let genericTiles = OfflineVectorTileProvider.tiles(
+			bounds: BurningManOfflinePack.bounds,
+			minZoom: 0,
+			maxZoom: OfflineMapDetailLevel.high.maxZoom,
+			systemPackID: nil
+		)
+
+		#expect(systemTiles.count == 225)
+		#expect(systemTiles.allSatisfy { $0.z == 15 })
+		#expect(genericTiles.count <= 48)
+		#expect(genericTiles.allSatisfy { $0.z < 15 })
+	}
+}

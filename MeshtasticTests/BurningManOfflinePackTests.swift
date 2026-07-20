@@ -90,6 +90,21 @@ struct BurningManOfflinePackTests {
 		#expect(downloader.requestedDetails == [.high])
 	}
 
+	@Test func systemRegionPersistsPackIdentity() {
+		let region = OfflineMapRegion(
+			name: "Burning Man 2026",
+			fileName: "burning-man.pmtiles",
+			bounds: BurningManOfflinePack.bounds,
+			minZoom: 0,
+			maxZoom: 15,
+			fileSize: 1,
+			sourceBuild: "20260720",
+			systemPackID: BurningManOfflinePack.packID
+		)
+
+		#expect(region.systemPackID == BurningManOfflinePack.packID)
+	}
+
 	@Test @MainActor func userRemovalSuppressesLaterInstall() async {
 		let store = InMemoryBurningManPackStore(userSuppressed: true)
 		let downloader = RecordingBurningManPackDownloader()
@@ -211,7 +226,7 @@ private final class RecordingBurningManPackDownloader: BurningManOfflinePackDown
 		let region = OfflineMapRegion(
 			name: packID, fileName: "burning-man-test.pmtiles", bounds: bounds,
 			minZoom: detail.minZoom, maxZoom: detail.maxZoom, fileSize: 1,
-			sourceBuild: "20260720"
+			sourceBuild: "20260720", systemPackID: packID
 		)
 		regions[region.id] = region
 		completion(region)

@@ -29,6 +29,8 @@ struct OfflineMapRegion: Identifiable, Codable, Hashable {
 	var updatedDate: Date
 	/// Protomaps daily build the tiles were extracted from, e.g. `"20260623"`.
 	var sourceBuild: String
+	/// Stable identifier for a system-managed region; nil for ordinary user regions.
+	var systemPackID: String?
 
 	init(
 		id: UUID = UUID(),
@@ -40,7 +42,8 @@ struct OfflineMapRegion: Identifiable, Codable, Hashable {
 		fileSize: Int64,
 		createdDate: Date = .now,
 		updatedDate: Date = .now,
-		sourceBuild: String
+		sourceBuild: String,
+		systemPackID: String? = nil
 	) {
 		self.id = id
 		self.name = name
@@ -55,6 +58,7 @@ struct OfflineMapRegion: Identifiable, Codable, Hashable {
 		self.createdDate = createdDate
 		self.updatedDate = updatedDate
 		self.sourceBuild = sourceBuild
+		self.systemPackID = systemPackID
 	}
 
 	var bounds: GeoBounds {

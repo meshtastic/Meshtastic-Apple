@@ -162,7 +162,12 @@ final class BurningManOfflinePackCoordinator {
 	private func installIfNeeded() {
 		guard !store.userSuppressed, !downloader.isDownloading else { return }
 		if let regionID = store.regionID {
-			guard downloader.region(id: regionID) == nil else { return }
+			if let region = downloader.region(id: regionID),
+				region.systemPackID == BurningManOfflinePack.packID,
+				region.maxZoom == OfflineMapDetailLevel.high.maxZoom {
+				return
+			}
+			downloader.removeSystemPack(id: regionID, reason: .automaticCleanup)
 			store.clearPack()
 		}
 

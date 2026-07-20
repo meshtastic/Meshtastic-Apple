@@ -206,7 +206,7 @@ final class OfflineMapManager: ObservableObject {
 				let region = OfflineMapRegion(
 					id: regionID, name: finalName, fileName: archive.fileName,
 					bounds: plan.bounds, minZoom: plan.minZoom, maxZoom: plan.maxZoom,
-					fileSize: 0, sourceBuild: build.build
+					fileSize: 0, sourceBuild: build.build, systemPackID: systemPackID
 				)
 				await self.finishDownload(id: regionID, region: region, removing: replacing)
 			} catch is CancellationError {
