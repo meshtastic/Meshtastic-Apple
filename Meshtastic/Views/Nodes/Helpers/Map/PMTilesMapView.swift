@@ -13,6 +13,7 @@ import MapKit
 import MVTTools
 import OSLog
 import SwiftUI
+import Combine
 
 // MARK: - Native vector rendering of offline MVT tiles (drawn IN a SwiftUI Map)
 //
@@ -94,6 +95,7 @@ final class OfflineVectorTileProvider: ObservableObject {
 	private var loadedURLs: [URL] = []
 	private let queue = DispatchQueue(label: "offline.vector.decode", qos: .userInitiated)
 	private var didLoad = false
+	private var regionObserver: AnyCancellable?
 
 	/// `boundsTiles` picks the highest fixed zoom whose tile count fits this cap. Residential
 	/// streets only exist in Protomaps tiles at z13+, so ~48 lands on z14 (full street grid).
@@ -106,6 +108,17 @@ final class OfflineVectorTileProvider: ObservableObject {
 
 	init(urls: [URL] = OfflineVectorTileProvider.defaultURLs) {
 		applySources(urls: urls)
+		regionObserver = OfflineMapManager.shared.$regions
+			.dropFirst()
+			.receive(on: RunLoop.main)
+			.sink { [weak self] regions in
+				self?.reloadDownloadedRegions(regions)
+			}
+	}
+
+	private func reloadDownloadedRegions(_ regions: [OfflineMapRegion]) {
+		let urls = regions.compactMap { OfflineMapManager.shared.fileURL(for: $0) }
+		reload(urls: urls)
 	}
 
 	/// (Re)bind to the set of downloaded street archives, opening each vector source.
@@ -634,4 +647,3 @@ extension OfflineVectorTileProvider {
 		return CLLocationCoordinate2D(latitude: lat, longitude: start.longitude + t * (end.longitude - start.longitude))
 	}
 }
-

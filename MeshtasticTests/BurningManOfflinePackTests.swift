@@ -89,6 +89,23 @@ struct BurningManOfflinePackTests {
 
 		#expect(downloader.downloadRequests == 0)
 	}
+
+	@Test @MainActor func foregroundSchedulesOneReconciliationWithoutRequestingLocationPermission() async {
+		let reconciler = RecordingForegroundReconciler()
+		let locations = RecordingLastKnownLocationSource()
+		let scheduler = BurningManForegroundScheduler(
+			reconciler: reconciler,
+			lastKnownLocation: { locations.lastKnownLocation() }
+		)
+
+		scheduler.schedule()
+		scheduler.schedule()
+		await Task.yield()
+
+		#expect(reconciler.reconcileCalls == 1)
+		#expect(locations.lastKnownLocationReads == 1)
+		#expect(locations.permissionRequests == 0)
+	}
 }
 
 @Suite("Offline map download lifecycle")
@@ -190,5 +207,25 @@ private final class RecordingBurningManPackDownloader: BurningManOfflinePackDown
 
 	func removeSystemPack(id: UUID, reason: OfflineMapRemovalReason) {
 		regions[id] = nil
+	}
+}
+
+@MainActor
+private final class RecordingForegroundReconciler: BurningManPackReconciling {
+	private(set) var reconcileCalls = 0
+
+	func reconcile(now: Date, location: CLLocation?) async {
+		reconcileCalls += 1
+	}
+}
+
+@MainActor
+private final class RecordingLastKnownLocationSource {
+	private(set) var lastKnownLocationReads = 0
+	private(set) var permissionRequests = 0
+
+	func lastKnownLocation() -> CLLocation? {
+		lastKnownLocationReads += 1
+		return nil
 	}
 }
