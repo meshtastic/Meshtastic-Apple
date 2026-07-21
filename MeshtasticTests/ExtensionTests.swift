@@ -107,8 +107,11 @@ struct UIColorIsLightTests {
 		#expect(!UIColor.black.isLight())
 	}
 
-	@Test func red_isNotLight() {
-		#expect(!UIColor.red.isLight())
+	@Test func red_isLight() {
+		// Pure sRGB red has WCAG relative luminance ~0.2126, above the 0.179 crossover where
+		// black text starts giving better contrast than white (5.25:1 vs 4:1 here). The old
+		// BT.601-luma heuristic called red "dark"; the WCAG formula says otherwise.
+		#expect(UIColor.red.isLight())
 	}
 }
 
