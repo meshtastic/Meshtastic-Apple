@@ -516,7 +516,8 @@ struct MeshMapMK: View {
 						}) {
 							Image(systemName: editingSettings ? "info.circle.fill" : "info.circle")
 						}
-						.accessibilityLabel(String(localized: "Map settings", comment: "VoiceOver label for the map settings toggle button"))
+						.accessibilityLabel(editingSettings ? String(localized: "Hide map settings", comment: "VoiceOver label to hide the map settings panel") : String(localized: "Show map settings", comment: "VoiceOver label to show the map settings panel"))
+						.accessibilityHint(editingSettings ? String(localized: "Hides the map settings panel.", comment: "VoiceOver hint to hide the map settings panel") : String(localized: "Shows the map settings panel.", comment: "VoiceOver hint to show the map settings panel"))
 						.glassButtonStyle()
 					}
 					.controlSize(.regular)
