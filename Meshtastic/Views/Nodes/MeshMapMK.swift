@@ -1215,22 +1215,29 @@ struct MeshMapMK: View {
 	/// Per-leg line width, dash pattern, and dash phase for a trace-route polyline, keyed to signal
 	/// tier so degraded links are legible by shape and not only by the SNR hue. `baseDash` is the
 	/// leg's normal treatment (nil for the solid forward path, a fixed rhythm for the always-dashed
-	/// return path) and is only overridden once the signal drops to fair or worse.
+	/// return path); every tier below good gets its own dash rhythm distinct from `baseDash`, so
+	/// fair/bad/none read differently from a good leg on both the forward and return path.
+	private struct TraceRouteLineStyle {
+		let width: CGFloat
+		let dash: [NSNumber]?
+		let phase: CGFloat
+	}
+
 	private func traceRouteLineStyle(
 		snr: Float,
 		preset: ModemPresets,
 		baseWidth: CGFloat,
 		baseDash: [NSNumber]?
-	) -> (width: CGFloat, dash: [NSNumber]?, phase: CGFloat) {
+	) -> TraceRouteLineStyle {
 		switch getLoRaSignalStrength(snr: snr, rssi: 0, preset: preset) {
 		case .good:
-			return (baseWidth, baseDash, 0)
+			return TraceRouteLineStyle(width: baseWidth, dash: baseDash, phase: 0)
 		case .fair:
-			return (baseWidth - 0.5, baseDash ?? [10, 4], 0)
+			return TraceRouteLineStyle(width: baseWidth - 0.5, dash: [10, 4], phase: 0)
 		case .bad:
-			return (max(baseWidth - 1, 1), [4, 4], 3)
+			return TraceRouteLineStyle(width: max(baseWidth - 1, 1), dash: [4, 4], phase: 3)
 		case .none:
-			return (max(baseWidth - 1.5, 1), [1, 5], 6)
+			return TraceRouteLineStyle(width: max(baseWidth - 1.5, 1), dash: [1, 5], phase: 6)
 		}
 	}
 
