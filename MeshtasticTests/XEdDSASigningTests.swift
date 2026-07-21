@@ -219,6 +219,13 @@ struct PacketAuthenticityPolicyTests {
 		)
 	}
 
+	@Test func policyRail_snapsToNearestDiscretePolicy() {
+		#expect(PacketAuthenticityPolicyRail.policy(closestTo: 0, trackWidth: 300) == .compatible)
+		#expect(PacketAuthenticityPolicyRail.policy(closestTo: 149, trackWidth: 300) == .balanced)
+		#expect(PacketAuthenticityPolicyRail.policy(closestTo: 300, trackWidth: 300) == .strict)
+		#expect(PacketAuthenticityPolicyRail.policy(closestTo: 900, trackWidth: 300) == .strict)
+	}
+
 	@Test @MainActor func persistenceEntities_defaultToCompatibleAndUnsupported() {
 		let context = TestContainerProvider.shared.mainContext
 		let security = SecurityConfigEntity()

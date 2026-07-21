@@ -121,6 +121,110 @@ extension Config.SecurityConfig.PacketSignaturePolicy {
 			)
 		}
 	}
+
+	var packetAuthenticityShortTitle: String {
+		switch self {
+		case .compatible:
+			return String(localized: "Compatible", comment: "Compact title for the Compatible packet authenticity policy.")
+		case .balanced:
+			return String(localized: "Balanced", comment: "Compact title for the Balanced packet authenticity policy.")
+		case .strict:
+			return String(localized: "Strict", comment: "Compact title for the Strict packet authenticity policy.")
+		case .UNRECOGNIZED:
+			return String(localized: "Unknown", comment: "Compact title for an unrecognized packet authenticity policy.")
+		}
+	}
+
+	var packetAuthenticitySymbol: String {
+		switch self {
+		case .compatible:
+			return "arrow.triangle.branch"
+		case .balanced:
+			return "checkmark.shield"
+		case .strict:
+			return "lock.shield.fill"
+		case .UNRECOGNIZED:
+			return "questionmark.shield"
+		}
+	}
+
+	var packetAuthenticityTint: Color {
+		switch self {
+		case .compatible:
+			return .blue
+		case .balanced:
+			return .indigo
+		case .strict:
+			return .orange
+		case .UNRECOGNIZED:
+			return .secondary
+		}
+	}
+}
+
+struct PacketAuthenticityPolicyRail: View {
+	let selected: Config.SecurityConfig.PacketSignaturePolicy
+	let isEnabled: Bool
+	let onPropose: (Config.SecurityConfig.PacketSignaturePolicy) -> Void
+
+	@Namespace private var selectionNamespace
+
+	static func policy(closestTo location: CGFloat, trackWidth: CGFloat) -> Config.SecurityConfig.PacketSignaturePolicy {
+		guard trackWidth > 0 else { return .compatible }
+
+		let normalized = min(max(location / trackWidth, 0), 1)
+		let index = Int((normalized * CGFloat(Config.SecurityConfig.PacketSignaturePolicy.packetAuthenticityOptions.count - 1)).rounded())
+		return Config.SecurityConfig.PacketSignaturePolicy.packetAuthenticityOptions[index]
+	}
+
+	var body: some View {
+		GeometryReader { proxy in
+			HStack(spacing: 0) {
+				ForEach(Config.SecurityConfig.PacketSignaturePolicy.packetAuthenticityOptions, id: \.rawValue) { policy in
+					Button {
+						onPropose(policy)
+					} label: {
+						VStack(spacing: 4) {
+							Image(systemName: policy.packetAuthenticitySymbol)
+							Text(policy.packetAuthenticityShortTitle)
+						}
+						.font(.caption.weight(.semibold))
+						.foregroundStyle(selected == policy ? .primary : .secondary)
+						.frame(maxWidth: .infinity, minHeight: 56)
+						.contentShape(.rect)
+					}
+					.buttonStyle(.plain)
+					.background {
+						if selected == policy {
+							Capsule()
+								.fill(policy.packetAuthenticityTint.opacity(isEnabled ? 0.2 : 0.08))
+								.matchedGeometryEffect(id: "packet-authenticity-selection", in: selectionNamespace)
+								.padding(4)
+						}
+					}
+					.accessibilityLabel(policy.packetAuthenticityTitle)
+					.accessibilityHint(policy.packetAuthenticityDescription)
+					.accessibilityAddTraits(selected == policy ? .isSelected : [])
+				}
+			}
+			.background(.thinMaterial, in: Capsule())
+			.overlay {
+				Capsule()
+					.strokeBorder(.quaternary)
+			}
+			.gesture(
+				DragGesture(minimumDistance: 12)
+					.onEnded { value in
+						guard abs(value.translation.width) > abs(value.translation.height) else { return }
+						onPropose(Self.policy(closestTo: value.location.x, trackWidth: proxy.size.width))
+					}
+			)
+			.animation(.snappy, value: selected)
+		}
+		.frame(height: 64)
+		.disabled(!isEnabled)
+		.accessibilityElement(children: .contain)
+	}
 }
 
 private struct PacketAuthenticitySection: View {
@@ -131,22 +235,15 @@ private struct PacketAuthenticitySection: View {
 
 	var body: some View {
 		Section(header: Text(String(localized: "Packet Authenticity", comment: "Security settings section title."))) {
-			Picker(
-				String(localized: "Protection Level", comment: "Label for the packet authenticity policy picker."),
-				selection: Binding(
-					get: { selection.selected },
-					set: { policy in
-						selection.propose(policy)
-						showStrictConfirmation = selection.pendingStrict
-					}
-				)
-			) {
-				ForEach(Config.SecurityConfig.PacketSignaturePolicy.packetAuthenticityOptions, id: \.rawValue) { policy in
-					Text(policy.packetAuthenticityTitle)
-						.tag(policy)
-				}
+			Text(String(localized: "Protection Level", comment: "Label for the packet authenticity policy control."))
+				.font(.subheadline.weight(.medium))
+			PacketAuthenticityPolicyRail(
+				selected: selection.selected,
+				isEnabled: capability.allowsChanges
+			) { policy in
+				selection.propose(policy)
+				showStrictConfirmation = selection.pendingStrict
 			}
-			.disabled(!capability.allowsChanges)
 			.alert(String(localized: "Require authentication for all remote packets?", comment: "Strict packet authenticity confirmation title."), isPresented: $showStrictConfirmation) {
 				Button(String(localized: "Cancel"), role: .cancel) {
 					selection.cancelStrict()
@@ -186,9 +283,9 @@ struct SecurityConfig: View {
 	@Environment(\.dismiss) private var goBack
 
 	@State private var showLockNowAlert: Bool = false
-	
+
 	let node: NodeInfoEntity?
-	
+
 	@State var hasChanges = false
 	@State var publicKey = ""
 	@State var privateKey = ""
@@ -207,7 +304,7 @@ struct SecurityConfig: View {
 	@State var privateKeyIsSecure = true
 	@State var backupStatus: KeyBackupStatus?
 	@State var backupStatusError: OSStatus?
-	
+
 	private var isValidKeyPair: Bool {
 		guard let privateKeyBytes = Data(base64Encoded: privateKey),
 			  let calculatedPublicKey = generatePublicKeyDisplay(from: privateKeyBytes),
@@ -220,7 +317,7 @@ struct SecurityConfig: View {
 	private var packetAuthenticityCapability: PacketAuthenticityCapability {
 		PacketAuthenticityCapability(metadata: node?.metadata)
 	}
-	
+
 	var body: some View {
 		Form {
 			ConfigHeader(title: "Security", config: \.securityConfig, node: node, onAppear: setSecurityValues)
@@ -428,18 +525,18 @@ struct SecurityConfig: View {
 		.safeAreaInset(edge: .bottom, alignment: .center) {
 			HStack(spacing: 0) {
 				SaveConfigButton(node: node, hasChanges: $hasChanges) {
-					
+
 					if !hasValidPrivateKey || !hasValidAdminKey || !hasValidAdminKey2 || !hasValidAdminKey3 {
 						return
 					}
-					
+
 					guard let deviceNum = accessoryManager.activeDeviceNum,
 						  let connectedNode = getNodeInfo(id: deviceNum, context: context),
 						  let fromUser = connectedNode.user,
 						  let toUser = node?.user else {
 						return
 					}
-					
+
 					var config = Config.SecurityConfig()
 					config.privateKey = Data(base64Encoded: privateKey) ?? Data()
 					config.adminKey = [Data(base64Encoded: adminKey) ?? Data(), Data(base64Encoded: adminKey2) ?? Data(), Data(base64Encoded: adminKey3) ?? Data()]
@@ -447,7 +544,7 @@ struct SecurityConfig: View {
 					config.serialEnabled = serialEnabled
 					config.debugLogApiEnabled = debugLogApiEnabled
 					config.packetSignaturePolicy = packetAuthenticitySelection.selected
-					
+
 					let keyUpdated = node?.securityConfig?.privateKey?.base64EncodedString() ?? "" != privateKey
 					Task {
 						_ = try await accessoryManager.saveSecurityConfig(
@@ -569,7 +666,7 @@ struct SecurityConfig: View {
 			)
 		}
 	}
-	
+
 	func setSecurityValues() {
 		self.publicKey = node?.securityConfig?.publicKey?.base64EncodedString() ?? ""
 		self.privateKey = node?.securityConfig?.privateKey?.base64EncodedString() ?? ""
@@ -582,11 +679,11 @@ struct SecurityConfig: View {
 		self.packetAuthenticitySelection = PacketAuthenticitySelectionState(
 			selected: Config.SecurityConfig.PacketSignaturePolicy(
 				rawValue: Int(node?.securityConfig?.packetSignaturePolicy ?? 0)
-			) ?? .balanced
+			) ?? .compatible
 		)
 		self.hasChanges = false
 	}
-	
+
 	func generatePrivateKey(count: Int) -> Data? {
 		var randomBytes = Data(count: count)
 		let status = randomBytes.withUnsafeMutableBytes { (mutableBytes: UnsafeMutableRawBufferPointer) -> Int32 in
@@ -595,7 +692,7 @@ struct SecurityConfig: View {
 			}
 			return SecRandomCopyBytes(kSecRandomDefault, count, pointer)
 		}
-		
+
 		if status == errSecSuccess {
 			// Generate a random "f" value and then adjust the value to make
 			// it valid as an "s" value for eval().  According to the specification
@@ -611,14 +708,14 @@ struct SecurityConfig: View {
 			return nil
 		}
 	}
-	
+
 	// Generate a new public key for display purposes to show the user what will be changed after the new private key is saved to the device
 	func generatePublicKeyDisplay(from privateKeyData: Data) -> Data? {
 		guard privateKeyData.count == 32 else {
 			Logger.mesh.debug("Invalid private key length. Must be 32 bytes for Curve25519.")
 			return nil
 		}
-		
+
 		do {
 			// Create a Curve25519 private key from raw representation
 			let privateKey = try Curve25519.KeyAgreement.PrivateKey(rawRepresentation: privateKeyData)
@@ -704,13 +801,26 @@ private struct LockdownSection: View {
 
 private struct PacketAuthenticitySectionPreview: View {
 	let capability: PacketAuthenticityCapability
-	@State private var selection = PacketAuthenticitySelectionState()
-	@State private var showStrictConfirmation = false
+	let idiom: UIUserInterfaceIdiom
+	@State private var selection: PacketAuthenticitySelectionState
+	@State private var showStrictConfirmation: Bool
+
+	init(
+		capability: PacketAuthenticityCapability,
+		selection: Config.SecurityConfig.PacketSignaturePolicy = .compatible,
+		showStrictConfirmation: Bool = false,
+		idiom: UIUserInterfaceIdiom = UIDevice.current.userInterfaceIdiom
+	) {
+		self.capability = capability
+		self.idiom = idiom
+		_selection = State(initialValue: PacketAuthenticitySelectionState(selected: selection))
+		_showStrictConfirmation = State(initialValue: showStrictConfirmation)
+	}
 
 	var body: some View {
 		Form {
 			PacketAuthenticitySection(
-				idiom: UIDevice.current.userInterfaceIdiom,
+				idiom: idiom,
 				capability: capability,
 				selection: $selection,
 				showStrictConfirmation: $showStrictConfirmation
@@ -719,22 +829,34 @@ private struct PacketAuthenticitySectionPreview: View {
 	}
 }
 
-#Preview("Packet Authenticity — iPhone Light") {
+#Preview("Packet Authenticity — iPhone Light", traits: .fixedLayout(width: 390, height: 844)) {
 	PacketAuthenticitySectionPreview(capability: .supported)
 		.preferredColorScheme(.light)
-		.previewDevice("iPhone 16 Pro")
 }
 
-#Preview("Packet Authenticity — iPhone Dark") {
-	PacketAuthenticitySectionPreview(capability: .supported)
+#Preview("Packet Authenticity — iPhone Dark", traits: .fixedLayout(width: 390, height: 844)) {
+	PacketAuthenticitySectionPreview(capability: .supported, selection: .balanced)
 		.preferredColorScheme(.dark)
-		.previewDevice("iPhone 16 Pro")
 }
 
-#Preview("Packet Authenticity — iPad Unsupported") {
+#Preview("Packet Authenticity — iPad Strict", traits: .fixedLayout(width: 834, height: 1194)) {
+	PacketAuthenticitySectionPreview(capability: .supported, selection: .strict)
+		.preferredColorScheme(.light)
+}
+
+#Preview("Packet Authenticity — iPad Strict Confirmation", traits: .fixedLayout(width: 834, height: 1194)) {
+	PacketAuthenticitySectionPreview(capability: .supported, showStrictConfirmation: true)
+		.preferredColorScheme(.dark)
+}
+
+#Preview("Packet Authenticity — iPad Unavailable", traits: .fixedLayout(width: 834, height: 1194)) {
 	PacketAuthenticitySectionPreview(capability: .unsupported)
 		.preferredColorScheme(.light)
-		.previewDevice("iPad Pro (11-inch) (M4)")
+}
+
+#Preview("Packet Authenticity — Mac Catalyst", traits: .fixedLayout(width: 1024, height: 768)) {
+	PacketAuthenticitySectionPreview(capability: .supported, selection: .balanced, idiom: .mac)
+		.preferredColorScheme(.light)
 }
 
 #Preview {
