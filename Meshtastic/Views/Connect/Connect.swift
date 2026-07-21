@@ -1225,7 +1225,7 @@ struct NymeaDeviceConnectRow: View {
 		.onTapGesture { onSelect() }
 		.accessibilityElement(children: .combine)
 		.accessibilityLabel(device.name)
-		.accessibilityValue(String(localized: "Wi-Fi Setup"))
+		.accessibilityValue("\(String(localized: "Wi-Fi Setup")), \(signalStrengthAccessibilityDescription)")
 		.accessibilityAddTraits(.isButton)
 		.accessibilityAction {
 			onSelect()
@@ -1237,6 +1237,18 @@ struct NymeaDeviceConnectRow: View {
 		case ..<(-80): return .weak
 		case -80 ..< -65: return .normal
 		default: return .strong
+		}
+	}
+
+	/// Mirrors `SignalStrengthIndicator.accessibilityDescription`. Combining this row into a
+	/// single accessibility element (for the tap-gesture trait fix) replaces, rather than
+	/// appends to, the indicator's own `.accessibilityValue` — so its "Signal strength
+	/// weak/normal/strong" announcement has to be folded in here or VoiceOver users lose it.
+	private var signalStrengthAccessibilityDescription: String {
+		switch rssiToSignalStrength(device.rssi) {
+		case .weak: return String(localized: "Signal strength weak")
+		case .normal: return String(localized: "Signal strength normal")
+		case .strong: return String(localized: "Signal strength strong")
 		}
 	}
 }
