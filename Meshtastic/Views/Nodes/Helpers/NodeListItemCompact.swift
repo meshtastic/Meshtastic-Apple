@@ -290,7 +290,9 @@ struct NodeListItemCompact: View {
 								variableValue: signalTier == .none ? nil : Double(signalTier.rawValue) / Double(LoRaSignalStrength.good.rawValue)
 							)
 								.foregroundColor(getSnrColor(snr: summary.snr, preset: modemPreset))
-								.accessibilityLabel(signalTier.description)
+								.accessibilityLabel(
+									String(localized: "Signal \(signalTier.description)", comment: "VoiceOver: LoRa signal quality of this directly-heard node")
+								)
 						}
 						if shouldShowChannel && summary.channel > 0 {
 							Divider().frame(height: 15)
