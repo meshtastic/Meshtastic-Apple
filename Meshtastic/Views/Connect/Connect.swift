@@ -1223,6 +1223,13 @@ struct NymeaDeviceConnectRow: View {
 		.padding([.bottom, .top])
 		.contentShape(Rectangle())
 		.onTapGesture { onSelect() }
+		.accessibilityElement(children: .combine)
+		.accessibilityLabel(device.name)
+		.accessibilityValue(String(localized: "Wi-Fi Setup"))
+		.accessibilityAddTraits(.isButton)
+		.accessibilityAction {
+			onSelect()
+		}
 	}
 
 	private func rssiToSignalStrength(_ rssi: Int) -> BLESignalStrength {
