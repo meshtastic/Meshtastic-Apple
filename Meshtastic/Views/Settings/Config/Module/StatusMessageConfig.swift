@@ -93,7 +93,13 @@ struct StatusMessageConfig: View {
 				context: context,
 				accessoryManager: accessoryManager,
 				configIsNil: { $0.statusMessageConfig == nil },
-				request: accessoryManager.requestStatusMessageModuleConfig
+				request: accessoryManager.requestStatusMessageModuleConfig,
+				// The status message module config isn't part of the connected node's initial config
+				// download, so it must be explicitly requested for the connected node too — otherwise
+				// `statusMessageConfig` stays nil and the editor is permanently disabled on the local
+				// node (while remote-admin nodes work, since they take the PKI-admin branch). Mirrors
+				// RangeTestConfig, the other on-demand module config.
+				requestForConnectedNode: true
 			)
 		}
 	}
