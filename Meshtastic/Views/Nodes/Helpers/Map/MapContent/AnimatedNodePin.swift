@@ -42,7 +42,7 @@ struct AnimatedNodePin: View, Equatable {
 				.symbolRenderingMode(.palette)
 				.symbolEffect(.variableColor)
 				.padding()
-				.foregroundStyle(.white)
+				.foregroundStyle(swiftUIColor.isLight() ? .black : .white)
 				.background(swiftUIColor)
 				.clipShape(Circle())
 		} else {
