@@ -5,7 +5,7 @@
 
 **How to use this file**: Check off `[x]` as each item is fixed and verified (VoiceOver on-device or Simulator + Accessibility Inspector). This is the persistent tracker — pick up anywhere by scanning for the first unchecked box. Update the "Progress" line below when a batch is completed.
 
-**Progress**: 6 / 60 individual locations fixed (0 / 20 finding clusters fully closed — T002/T015/T016 done but their clusters still have other locations open) — last updated 2026-07-21.
+**Progress**: 9 / 60 individual locations fixed (0 / 20 finding clusters fully closed — T002/T003/T004/T015/T016 done but their clusters still have other locations open) — last updated 2026-07-20.
 
 ---
 
@@ -13,8 +13,8 @@
 
 - [ ] T001 `Widgets/WidgetsLiveActivity.swift` — zero accessibility calls in the whole file. Add `.accessibilityElement(children: .ignore)` + `.accessibilityLabel` to `StatRow` (~line 296-311) and to each icon+fraction pair (lines ~64, 117, 136, 216) and the countdown timer (~line 334). Verify in the widget extension target (Lock Screen/Dynamic Island), not just the main app.
 - [x] T002 `Meshtastic/Views/Messages/TextMessageField/TextMessageField.swift:79,237` — send button (`arrow.up.circle.fill`) has no `.accessibilityLabel`. Add `String(localized: "Send message")`. **Done**: fixed both the legacy (line ~82) and `FormattingComposeArea` (line ~243) send buttons.
-- [ ] T003 [P] `Meshtastic/Views/Messages/UserMessageRow.swift:35-51,180-181` and `ChannelMessageRow.swift:175-176` — combined `accessibilityLabel` (`messageAccessibilityLabel`) overwrites per-badge labels set in `MessageText.swift:172,192,206` (Verified sender, Store and forward, Detection sensor, Showing translated text). Rebuild the combined label from the same source-of-truth flags `MessageText.swift` uses instead of hand-listing only Encrypted/Verified. One fix, two call sites.
-- [ ] T004 `Meshtastic/Views/Messages/UserList.swift:253-316` (`DirectMessageUserRow`) — no accessibility at all: unread dot not `.accessibilityHidden`, lock/star icons unlabeled, no combined element/label. Port the working pattern from `ChannelList.swift:59-66`.
+- [x] T003 [P] `Meshtastic/Views/Messages/UserMessageRow.swift:35-51,180-181` and `ChannelMessageRow.swift:175-176` — combined `accessibilityLabel` (`messageAccessibilityLabel`) overwrites per-badge labels set in `MessageText.swift:172,192,206` (Verified sender, Store and forward, Detection sensor, Showing translated text). Rebuild the combined label from the same source-of-truth flags `MessageText.swift` uses instead of hand-listing only Encrypted/Verified. One fix, two call sites. **Done**: added `MessageEntity.activeStatusBadges(destination:isCurrentUser:)` as the shared source of truth for badge flags + labels; `MessageText`'s corner badges/overlays and both row's combined labels now read from it.
+- [x] T004 `Meshtastic/Views/Messages/UserList.swift:253-316` (`DirectMessageUserRow`) — no accessibility at all: unread dot not `.accessibilityHidden`, lock/star icons unlabeled, no combined element/label. Port the working pattern from `ChannelList.swift:59-66`. **Done**: unread dot hidden/labeled like `ChannelList`, lock/key/star icons labeled, row wrapped in `.accessibilityElement(children: .combine)`.
 - [ ] T005 [P] `Meshtastic/Views/Nodes/Helpers/Metrics Columns/MetricsColumnDetail.swift:46-61,65-77` — `.onTapGesture` row with no interactive trait; VoiceOver double-tap doesn't activate it. Add `.contentShape(Rectangle())` + `.accessibilityElement(children: .combine)` + `.accessibilityLabel` + `.accessibilityValue(Visible/Hidden)` + `.accessibilityAddTraits(.isButton)` + `.accessibilityAction`.
 - [ ] T006 [P] `Meshtastic/Views/Connect/Connect.swift:1202-1225` (`NymeaDeviceConnectRow`) — same `.onTapGesture`-with-no-trait issue as T005; apply the same pattern.
 - [ ] T007 [P] `Meshtastic/Views/Helpers/Weather/IndoorAirQuality.swift:76-78` — same `.onTapGesture`-with-no-trait issue; apply the same pattern.
