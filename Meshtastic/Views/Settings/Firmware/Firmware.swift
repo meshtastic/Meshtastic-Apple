@@ -358,6 +358,7 @@ private struct FirmwareContentView: View {
 					Image(systemName: "arrow.clockwise.circle")
 				}
 				.buttonStyle(.bordered)
+				.accessibilityLabel(String(localized: "Refresh firmware list", comment: "VoiceOver label for the refresh firmware list button"))
 			}
 		}.textCase(nil)
 		#else
@@ -374,6 +375,7 @@ private struct FirmwareContentView: View {
 				} label: {
 					Image(systemName: "arrow.clockwise.circle")
 				}
+				.accessibilityLabel(String(localized: "Refresh firmware list", comment: "VoiceOver label for the refresh firmware list button"))
 			}
 		}.textCase(nil)
 		#endif

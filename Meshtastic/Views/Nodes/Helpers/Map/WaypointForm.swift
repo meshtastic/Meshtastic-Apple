@@ -458,6 +458,7 @@ struct WaypointForm: View {
 						} label: {
 							Image(systemName: "square.and.pencil")
 						}
+						.accessibilityLabel(String(localized: "Edit waypoint", comment: "VoiceOver label for the edit waypoint button"))
 					}
 				}
 			}

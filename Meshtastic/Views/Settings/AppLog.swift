@@ -135,6 +135,7 @@ struct AppLog: View {
 					}) {
 						Image(systemName: "arrow.clockwise.circle")
 					}
+					.accessibilityLabel(String(localized: "Refresh logs", comment: "VoiceOver label for the refresh application logs button"))
 				}
 			}
 #endif
@@ -154,6 +155,7 @@ struct AppLog: View {
 					}) {
 						Image(systemName: "square.and.arrow.down")
 					}
+					.accessibilityLabel(String(localized: "Export logs as CSV", comment: "VoiceOver label for the export application logs to CSV button"))
 				}
 			}
 		}
