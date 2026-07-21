@@ -24,7 +24,11 @@ struct MessageSearchBar: View {
 				.font(.caption)
 				.monospacedDigit()
 				.foregroundStyle(.secondary)
-				.accessibilityLabel(matchCount == 0 ? Text("No matches") : Text("Match \(currentIndex + 1) of \(matchCount)"))
+				.accessibilityLabel(
+					matchCount == 0
+						? String(localized: "No matches", comment: "VoiceOver: no search matches found")
+						: String(localized: "Match \(currentIndex + 1) of \(matchCount)", comment: "VoiceOver: current match position out of the total match count")
+				)
 
 			Spacer()
 
