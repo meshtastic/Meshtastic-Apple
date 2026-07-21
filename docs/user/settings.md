@@ -50,7 +50,7 @@ Firmware that reports XEdDSA support can authenticate the sender of mesh packets
 | Level | Behavior |
 |-------|----------|
 | Compatible — Accept unsigned | Verifies authentication when present and accepts unsigned traffic for maximum compatibility. |
-| Balanced — Prefer authenticated | Recommended and the default. Rejects unsigned, signable broadcasts from nodes that have previously signed while continuing to accept legacy unsigned traffic. |
+| Balanced — Prefer authenticated | Rejects unsigned, signable broadcasts from nodes that have previously signed while continuing to accept legacy unsigned traffic. |
 | Strict — Require authentication | Accepts remote packets only when they have a verified XEdDSA signature or were successfully authenticated through PKI decryption. |
 
 Strict applies to every decryptable remote mesh packet, including positions, messages, telemetry, NodeInfo, and routing traffic. Unsigned traffic from older firmware or nodes, licensed (ham) nodes that do not sign, and packets too large to carry a signature will be rejected. Authenticated PKI direct messages remain available. The app asks for confirmation before enabling Strict.

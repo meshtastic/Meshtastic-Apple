@@ -144,21 +144,21 @@ actor MockSecurityConfigConnection: Connection {
 @Suite("Packet authenticity policy", .serialized)
 struct PacketAuthenticityPolicyTests {
 
-	@Test func balanced_isTheWireDefault() throws {
+	@Test func compatible_isTheWireDefault() throws {
 		let config = Config.SecurityConfig()
-		#expect(config.packetSignaturePolicy == .balanced)
+		#expect(config.packetSignaturePolicy == .compatible)
 		#expect(try config.serializedData().isEmpty)
 	}
 
-	@Test func strict_roundTripsOnSecurityConfigField9() throws {
+	@Test func balanced_roundTripsOnSecurityConfigField9() throws {
 		var config = Config.SecurityConfig()
-		config.packetSignaturePolicy = .strict
+		config.packetSignaturePolicy = .balanced
 
 		let bytes = try config.serializedData()
 		let decoded = try Config.SecurityConfig(serializedData: bytes)
 
-		#expect(decoded.packetSignaturePolicy == .strict)
-		#expect(Array(bytes) == [0x48, 0x02])
+		#expect(decoded.packetSignaturePolicy == .balanced)
+		#expect(Array(bytes) == [0x48, 0x01])
 	}
 
 	@Test func deviceMetadata_hasXeddsaRoundTripsOnField14() throws {
@@ -184,7 +184,7 @@ struct PacketAuthenticityPolicyTests {
 		var state = PacketAuthenticitySelectionState()
 		state.propose(.strict)
 
-		#expect(state.selected == .balanced)
+		#expect(state.selected == .compatible)
 		#expect(state.pendingStrict == true)
 
 		state.confirmStrict()
@@ -219,7 +219,7 @@ struct PacketAuthenticityPolicyTests {
 		)
 	}
 
-	@Test @MainActor func persistenceEntities_defaultToBalancedAndUnsupported() {
+	@Test @MainActor func persistenceEntities_defaultToCompatibleAndUnsupported() {
 		let context = TestContainerProvider.shared.mainContext
 		let security = SecurityConfigEntity()
 		let metadata = DeviceMetadataEntity()

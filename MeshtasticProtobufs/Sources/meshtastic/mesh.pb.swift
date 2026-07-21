@@ -1300,6 +1300,10 @@ public enum FirmwareEdition: SwiftProtobuf.Enum, Swift.CaseIterable {
   case hamvention // = 19
 
   ///
+  /// FAB, the international Fab Lab digital fabrication conference
+  case fab // = 20
+
+  ///
   /// Placeholder for DIY and unofficial events
   case diyEdition // = 127
   case UNRECOGNIZED(Int)
@@ -1316,6 +1320,7 @@ public enum FirmwareEdition: SwiftProtobuf.Enum, Swift.CaseIterable {
     case 17: self = .defcon
     case 18: self = .burningMan
     case 19: self = .hamvention
+    case 20: self = .fab
     case 127: self = .diyEdition
     default: self = .UNRECOGNIZED(rawValue)
     }
@@ -1329,6 +1334,7 @@ public enum FirmwareEdition: SwiftProtobuf.Enum, Swift.CaseIterable {
     case .defcon: return 17
     case .burningMan: return 18
     case .hamvention: return 19
+    case .fab: return 20
     case .diyEdition: return 127
     case .UNRECOGNIZED(let i): return i
     }
@@ -1342,6 +1348,7 @@ public enum FirmwareEdition: SwiftProtobuf.Enum, Swift.CaseIterable {
     .defcon,
     .burningMan,
     .hamvention,
+    .fab,
     .diyEdition,
   ]
 
@@ -4655,7 +4662,7 @@ extension CriticalErrorCode: SwiftProtobuf._ProtoNameProviding {
 }
 
 extension FirmwareEdition: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0VANILLA\0\u{1}SMART_CITIZEN\0\u{2}\u{f}OPEN_SAUCE\0\u{1}DEFCON\0\u{1}BURNING_MAN\0\u{1}HAMVENTION\0\u{2}l\u{1}DIY_EDITION\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0VANILLA\0\u{1}SMART_CITIZEN\0\u{2}\u{f}OPEN_SAUCE\0\u{1}DEFCON\0\u{1}BURNING_MAN\0\u{1}HAMVENTION\0\u{1}FAB\0\u{2}k\u{1}DIY_EDITION\0")
 }
 
 extension ExcludedModules: SwiftProtobuf._ProtoNameProviding {

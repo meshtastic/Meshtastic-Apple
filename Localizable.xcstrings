@@ -1,6 +1,51 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Balanced — Prefer authenticated" : {
+      "comment" : "Balanced packet authenticity policy option."
+    },
+    "Compatible — Accept unsigned" : {
+      "comment" : "Compatible packet authenticity policy option."
+    },
+    "Only processes remote mesh packets authenticated by a verified XEdDSA signature or successful PKI decryption. Unsigned positions, messages, telemetry, and other traffic are ignored; unsigned traffic from older or licensed (ham) nodes and packets too large to sign may disappear." : {
+      "comment" : "Description of the Strict packet authenticity policy."
+    },
+    "Packet Authenticity" : {
+      "comment" : "Security settings section title."
+    },
+    "Protection Level" : {
+      "comment" : "Label for the packet authenticity policy picker."
+    },
+    "Rejects unsigned, signable broadcasts from nodes known to sign while accepting legacy unsigned traffic." : {
+      "comment" : "Description of the Balanced packet authenticity policy."
+    },
+    "Require authentication for all remote packets?" : {
+      "comment" : "Strict packet authenticity confirmation title."
+    },
+    "Strict accepts only remote packets with a verified XEdDSA signature or successful PKI decryption. Unsigned positions, messages, telemetry, and other traffic from older firmware or nodes, licensed (ham) nodes, and packets too large to sign will be rejected. Authenticated PKI direct messages remain available." : {
+      "comment" : "Warning shown before enabling the Strict packet authenticity policy."
+    },
+    "Strict — Require authentication" : {
+      "comment" : "Strict packet authenticity policy option."
+    },
+    "The device has not reported XEdDSA capability. Update its firmware before changing this setting." : {
+      "comment" : "Explanation shown when an older radio has not reported packet-signing capability."
+    },
+    "This device reported a packet authenticity policy that this app version does not recognize." : {
+      "comment" : "Description shown for an unrecognized packet authenticity policy."
+    },
+    "This firmware build does not include XEdDSA packet signing, so this setting is unavailable." : {
+      "comment" : "Explanation shown when packet authenticity controls are unavailable on the connected radio."
+    },
+    "Unknown policy" : {
+      "comment" : "Fallback title for an unrecognized packet authenticity policy."
+    },
+    "Use Strict" : {
+      "comment" : "Confirms enabling the Strict packet authenticity policy."
+    },
+    "Verifies authentication when present and accepts unsigned traffic for maximum compatibility." : {
+      "comment" : "Description of the Compatible packet authenticity policy."
+    },
     "" : {
       "localizations" : {
         "da" : {

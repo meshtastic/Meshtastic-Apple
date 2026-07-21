@@ -16,7 +16,7 @@ struct PacketAuthenticitySelectionState {
 	private(set) var selected: Config.SecurityConfig.PacketSignaturePolicy
 	private(set) var pendingStrict = false
 
-	init(selected: Config.SecurityConfig.PacketSignaturePolicy = .balanced) {
+	init(selected: Config.SecurityConfig.PacketSignaturePolicy = .compatible) {
 		self.selected = selected
 	}
 
@@ -106,8 +106,8 @@ extension Config.SecurityConfig.PacketSignaturePolicy {
 			)
 		case .balanced:
 			return String(
-				localized: "Recommended. Rejects unsigned, signable broadcasts from nodes known to sign while accepting legacy unsigned traffic.",
-				comment: "Description of the default Balanced packet authenticity policy."
+				localized: "Rejects unsigned, signable broadcasts from nodes known to sign while accepting legacy unsigned traffic.",
+				comment: "Description of the Balanced packet authenticity policy."
 			)
 		case .strict:
 			return String(

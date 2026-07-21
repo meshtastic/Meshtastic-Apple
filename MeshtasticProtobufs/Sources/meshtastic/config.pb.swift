@@ -1570,6 +1570,8 @@ public struct Config: Sendable {
 
       ///
       /// Ukraine 868mhz
+      ///
+      /// NOTE: This enum value was marked as deprecated in the .proto file
       case ua868 // = 15
 
       ///
@@ -2137,7 +2139,7 @@ public struct Config: Sendable {
 
     ///
     /// Determines the packet signature policy applied to remotely received mesh packets.
-    public var packetSignaturePolicy: Config.SecurityConfig.PacketSignaturePolicy = .balanced
+    public var packetSignaturePolicy: Config.SecurityConfig.PacketSignaturePolicy = .compatible
 
     public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -2147,13 +2149,14 @@ public struct Config: Sendable {
       public typealias RawValue = Int
 
       ///
-      /// Prefer authenticated packets while retaining compatibility with unsigned packets from nodes not known to sign.
-      /// This is the default and rejects unsigned, signable broadcasts from nodes that have previously signed.
-      case balanced // = 0
+      /// Accept unsigned packets for maximum compatibility while still rejecting malformed or invalid signatures.
+      /// This is the default to avoid legacy nodes dropping signed packets during rebroadcast.
+      case compatible // = 0
 
       ///
-      /// Accept unsigned packets for maximum compatibility while still rejecting malformed or invalid signatures.
-      case compatible // = 1
+      /// Prefer authenticated packets while retaining compatibility with unsigned packets from nodes not known to sign.
+      /// Rejects unsigned, signable broadcasts from nodes that have previously signed.
+      case balanced // = 1
 
       ///
       /// Accept only packets authenticated by a verified XEdDSA signature or successful PKI decryption.
@@ -2162,13 +2165,13 @@ public struct Config: Sendable {
       case UNRECOGNIZED(Int)
 
       public init() {
-        self = .balanced
+        self = .compatible
       }
 
       public init?(rawValue: Int) {
         switch rawValue {
-        case 0: self = .balanced
-        case 1: self = .compatible
+        case 0: self = .compatible
+        case 1: self = .balanced
         case 2: self = .strict
         default: self = .UNRECOGNIZED(rawValue)
         }
@@ -2176,8 +2179,8 @@ public struct Config: Sendable {
 
       public var rawValue: Int {
         switch self {
-        case .balanced: return 0
-        case .compatible: return 1
+        case .compatible: return 0
+        case .balanced: return 1
         case .strict: return 2
         case .UNRECOGNIZED(let i): return i
         }
@@ -2185,8 +2188,8 @@ public struct Config: Sendable {
 
       // The compiler won't synthesize support with the UNRECOGNIZED case.
       public static let allCases: [Config.SecurityConfig.PacketSignaturePolicy] = [
-        .balanced,
         .compatible,
+        .balanced,
         .strict,
       ]
 
@@ -3229,7 +3232,7 @@ extension Config.SecurityConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
     if self.adminChannelEnabled != false {
       try visitor.visitSingularBoolField(value: self.adminChannelEnabled, fieldNumber: 8)
     }
-    if self.packetSignaturePolicy != .balanced {
+    if self.packetSignaturePolicy != .compatible {
       try visitor.visitSingularEnumField(value: self.packetSignaturePolicy, fieldNumber: 9)
     }
     try unknownFields.traverse(visitor: &visitor)
@@ -3250,7 +3253,7 @@ extension Config.SecurityConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
 }
 
 extension Config.SecurityConfig.PacketSignaturePolicy: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0PACKET_SIGNATURE_POLICY_BALANCED\0\u{1}PACKET_SIGNATURE_POLICY_COMPATIBLE\0\u{1}PACKET_SIGNATURE_POLICY_STRICT\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0PACKET_SIGNATURE_POLICY_COMPATIBLE\0\u{1}PACKET_SIGNATURE_POLICY_BALANCED\0\u{1}PACKET_SIGNATURE_POLICY_STRICT\0")
 }
 
 extension Config.SessionkeyConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
