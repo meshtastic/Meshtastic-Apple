@@ -151,7 +151,7 @@ struct ChannelMessageRow: View {
 				
 				VStack(alignment: isCurrentUser ? .trailing : .leading) {
 					let deliveryStatus = isCurrentUser ? message.deliveryStatus(isDirectMessage: false) : nil
-					let isDetectionSensorMessage = message.portNum == Int32(PortNum.detectionSensorApp.rawValue)
+					let isDetectionSensorMessage = message.isDetectionSensorMessage(destination: .channel(channel))
 					
 					// Sender Name Header
 					if !isCurrentUser && message.fromUser != nil {
