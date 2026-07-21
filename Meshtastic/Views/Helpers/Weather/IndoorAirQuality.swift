@@ -75,7 +75,15 @@ struct IndoorAirQuality: View {
 				.padding([.leading, .trailing])
 			}
 		}
+		.contentShape(Rectangle())
 		.onTapGesture {
+			isLegendOpen.toggle()
+		}
+		.accessibilityElement(children: .combine)
+		.accessibilityLabel(String(localized: "Indoor Air Quality") + ", \(iaqEnum.description)")
+		.accessibilityValue(isLegendOpen ? String(localized: "Visible") : String(localized: "Hidden"))
+		.accessibilityAddTraits(.isButton)
+		.accessibilityAction {
 			isLegendOpen.toggle()
 		}
 		.popover(isPresented: self.$isLegendOpen, arrowEdge: .bottom, content: {
