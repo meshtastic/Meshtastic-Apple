@@ -132,7 +132,7 @@ struct ChannelList: View {
 			.alignmentGuide(.listRowSeparatorLeading) {
 				$0[.leading]
 			}
-			.frame(height: 62)
+			.frame(minHeight: 62)
 			.contextMenu {
 				if hasMessages {
 					Button(role: .destructive) {

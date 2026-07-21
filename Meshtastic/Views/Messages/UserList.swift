@@ -313,7 +313,7 @@ private struct DirectMessageUserRow: View {
 				}
 			}
 		}
-		.frame(height: 62)
+		.frame(minHeight: 62)
 		.alignmentGuide(.listRowSeparatorLeading) {
 			$0[.leading]
 		}
