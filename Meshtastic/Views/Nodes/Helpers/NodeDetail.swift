@@ -374,6 +374,10 @@ struct NodeDetail: View {
 				.onTapGesture {
 					dateFormatRelative.toggle()
 				}
+				.accessibilityAddTraits(.isButton)
+				.accessibilityAction {
+					dateFormatRelative.toggle()
+				}
 			}
 			if let lastHeard = node.lastHeard, lastHeard.timeIntervalSince1970 > 0 && lastHeard < Calendar.current.date(byAdding: .year, value: 1, to: Date())! {
 				HStack {
@@ -396,6 +400,10 @@ struct NodeDetail: View {
 				}
 				.accessibilityElement(children: .combine)
 				.onTapGesture {
+					dateFormatRelative.toggle()
+				}
+				.accessibilityAddTraits(.isButton)
+				.accessibilityAction {
 					dateFormatRelative.toggle()
 				}
 			}
