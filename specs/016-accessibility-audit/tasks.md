@@ -83,9 +83,9 @@
 
 ### Color-only signaling
 
-- [ ] T029 `Meshtastic/Views/Nodes/TraceRouteLog.swift:296-300` — `arrowshape.right.fill` tinted by `snrColor` only, no text/shape distinction. Add a per-tier `accessibilityLabel`.
-- [ ] T030 `Meshtastic/Views/Nodes/Helpers/NodeListItemCompact.swift:287-288` — identical SF Symbol across all signal tiers, only color changes. Vary the symbol per tier (e.g. `wifi` / `wifi.slash`) and add `.accessibilityLabel(signalTier.description)`.
-- [ ] T031 `Meshtastic/Views/Nodes/MeshMapMK.swift:1240,1252` — trace-route polylines vary by hue only. Add `lineDashPhase`/width variation keyed to SNR tier so shape, not just hue, encodes strength.
+- [x] T029 `Meshtastic/Views/Nodes/TraceRouteLog.swift:296-300` — `arrowshape.right.fill` tinted by `snrColor` only, no text/shape distinction. Add a per-tier `accessibilityLabel`.
+- [x] T030 `Meshtastic/Views/Nodes/Helpers/NodeListItemCompact.swift:287-288` — identical SF Symbol across all signal tiers, only color changes. Vary the symbol per tier (e.g. `wifi` / `wifi.slash`) and add `.accessibilityLabel(signalTier.description)`.
+- [x] T031 `Meshtastic/Views/Nodes/MeshMapMK.swift:1240,1252` — trace-route polylines vary by hue only. Add `lineDashPhase`/width variation keyed to SNR tier so shape, not just hue, encodes strength.
 
 ### Localization of accessibility strings
 
