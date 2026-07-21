@@ -81,7 +81,7 @@ struct IndoorAirQuality: View {
 		}
 		.accessibilityElement(children: .combine)
 		.accessibilityLabel(String(localized: "Indoor Air Quality") + ", \(iaqEnum.description)")
-		.accessibilityValue(isLegendOpen ? String(localized: "Visible") : String(localized: "Hidden"))
+		.accessibilityValue(isLegendOpen ? String(localized: "Legend shown") : String(localized: "Legend hidden"))
 		.accessibilityAddTraits(.isButton)
 		.accessibilityAction {
 			isLegendOpen.toggle()
