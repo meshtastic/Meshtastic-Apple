@@ -24,7 +24,6 @@ final class NFCReader: NSObject, ObservableObject, NFCNDEFReaderSessionDelegate 
 		case read(onURL: (URL) -> Void)
 	}
 
-	private let logger = Logger(subsystem: "org.meshtastic.app", category: "NFC")
 	private var mode: Mode?
 	private var session: NFCNDEFReaderSession?
 
@@ -67,12 +66,12 @@ final class NFCReader: NSObject, ObservableObject, NFCNDEFReaderSessionDelegate 
 	}
 
 	func readerSessionDidBecomeActive(_ session: NFCNDEFReaderSession) {
-		logger.debug("NFC session became active")
+		Logger.services.debug("NFC session became active")
 	}
 
 	func readerSession(_ session: NFCNDEFReaderSession,
 	                   didInvalidateWithError error: Error) {
-		logger.error("NFC session invalidated: \(error.localizedDescription)")
+		Logger.services.error("NFC session invalidated: \(error.localizedDescription)")
 	}
 
 	func readerSession(_ session: NFCNDEFReaderSession,
@@ -94,7 +93,7 @@ final class NFCReader: NSObject, ObservableObject, NFCNDEFReaderSessionDelegate 
 
 		session.connect(to: tag) { error in
 			if let error {
-				self.logger.error("Failed to connect to tag: \(error.localizedDescription)")
+				Logger.services.error("Failed to connect to tag: \(error.localizedDescription)")
 				session.alertMessage = String(localized: "Failed to connect to tag.")
 				session.invalidate()
 				return
@@ -106,7 +105,7 @@ final class NFCReader: NSObject, ObservableObject, NFCNDEFReaderSessionDelegate 
 			case .read(let onURL):
 				self.read(from: tag, session: session, onURL: onURL)
 			case nil:
-				self.logger.error("NFC tag detected without an active mode")
+				Logger.services.error("NFC tag detected without an active mode")
 				session.invalidate()
 			}
 		}
@@ -117,21 +116,21 @@ final class NFCReader: NSObject, ObservableObject, NFCNDEFReaderSessionDelegate 
 	private func write(payload payloadString: String, to tag: NFCNDEFTag, session: NFCNDEFReaderSession) {
 		tag.queryNDEFStatus { status, capacity, error in
 			if let error {
-				self.logger.error("Failed to query NDEF status: \(error.localizedDescription)")
+				Logger.services.error("Failed to query NDEF status: \(error.localizedDescription)")
 				session.alertMessage = String(localized: "Failed to read tag.")
 				session.invalidate()
 				return
 			}
-			self.logger.debug("Tag NDEF status: \(String(describing: status)), capacity: \(capacity) bytes")
+			Logger.services.debug("Tag NDEF status: \(String(describing: status)), capacity: \(capacity) bytes")
 
 			switch status {
 			case .notSupported:
-				self.logger.error("Tag does not support NDEF")
+				Logger.services.error("Tag does not support NDEF")
 				session.alertMessage = String(localized: "Tag does not support NDEF.")
 				session.invalidate()
 
 			case .readOnly:
-				self.logger.error("Tag is read-only")
+				Logger.services.error("Tag is read-only")
 				session.alertMessage = String(localized: "Tag is read-only.")
 				session.invalidate()
 
@@ -140,7 +139,7 @@ final class NFCReader: NSObject, ObservableObject, NFCNDEFReaderSessionDelegate 
 					NFCNDEFPayload.wellKnownTypeURIPayload(
 						string: payloadString
 					) else {
-					self.logger.error("Invalid NDEF payload")
+					Logger.services.error("Invalid NDEF payload")
 					session.alertMessage = String(localized: "Invalid payload.")
 					session.invalidate()
 					return
@@ -149,7 +148,7 @@ final class NFCReader: NSObject, ObservableObject, NFCNDEFReaderSessionDelegate 
 				let message = NFCNDEFMessage(records: [payload])
 
 				guard message.length <= capacity else {
-					self.logger.error("Payload (\(message.length) bytes) exceeds tag capacity (\(capacity) bytes)")
+					Logger.services.error("Payload (\(message.length) bytes) exceeds tag capacity (\(capacity) bytes)")
 					session.alertMessage = String(localized: "Tag too small to hold this data.")
 					session.invalidate()
 					return
@@ -157,17 +156,17 @@ final class NFCReader: NSObject, ObservableObject, NFCNDEFReaderSessionDelegate 
 
 				tag.writeNDEF(message) { error in
 					if let error {
-						self.logger.error("Failed to write NDEF: \(error.localizedDescription)")
+						Logger.services.error("Failed to write NDEF: \(error.localizedDescription)")
 						session.alertMessage = String(localized: "Failed to write tag.")
 					} else {
-						self.logger.info("Successfully wrote NFC tag")
+						Logger.services.info("Successfully wrote NFC tag")
 						session.alertMessage = String(localized: "NFC tag written successfully.")
 					}
 					session.invalidate()
 				}
 
 			@unknown default:
-				self.logger.error("Unsupported NDEF status")
+				Logger.services.error("Unsupported NDEF status")
 				session.alertMessage = String(localized: "Unsupported tag status.")
 				session.invalidate()
 			}
@@ -179,7 +178,7 @@ final class NFCReader: NSObject, ObservableObject, NFCNDEFReaderSessionDelegate 
 	private func read(from tag: NFCNDEFTag, session: NFCNDEFReaderSession, onURL: @escaping (URL) -> Void) {
 		tag.readNDEF { message, error in
 			if let error {
-				self.logger.error("Failed to read NDEF: \(error.localizedDescription)")
+				Logger.services.error("Failed to read NDEF: \(error.localizedDescription)")
 				session.alertMessage = String(localized: "Failed to read tag.")
 				session.invalidate()
 				return
@@ -202,7 +201,7 @@ final class NFCReader: NSObject, ObservableObject, NFCNDEFReaderSessionDelegate 
 				// meshtastic://e). Anything else falls through to the failure
 				// message below instead of a success HUD followed by silence.
 				guard ContactURLHandler.canHandle(url) || MeshtasticChannelURL.canHandle(url) else { continue }
-				logger.info("Read NFC tag URL")
+				Logger.services.info("Read NFC tag URL")
 				session.alertMessage = String(localized: "NFC tag read successfully.")
 				session.invalidate()
 				Task { @MainActor in
@@ -211,7 +210,7 @@ final class NFCReader: NSObject, ObservableObject, NFCNDEFReaderSessionDelegate 
 				return
 			}
 		}
-		logger.error("No Meshtastic URL found on tag")
+		Logger.services.error("No Meshtastic URL found on tag")
 		session.alertMessage = String(localized: "No Meshtastic link found on this tag.")
 		session.invalidate()
 	}

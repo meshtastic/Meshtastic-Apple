@@ -12,8 +12,10 @@ import OSLog
 
 struct AddContactConfirmationView: View {
 	let pendingContact: PendingContact
-	var accessoryManager: AccessoryManager
+	let accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var dismiss
+	@State private var isAdding = false
+	@State private var failureMessage: String?
 
 	private var shortName: String {
 		let name = pendingContact.contact.user.shortName
@@ -36,26 +38,43 @@ struct AddContactConfirmationView: View {
 				.font(.subheadline)
 				.multilineTextAlignment(.center)
 				.foregroundColor(.secondary)
+			if let failureMessage {
+				Text(failureMessage)
+					.font(.subheadline)
+					.multilineTextAlignment(.center)
+					.foregroundColor(.red)
+			}
 			Button {
-				let base64UrlString = pendingContact.base64UrlString
-				Task {
-					do {
-						try await accessoryManager.addContactFromURL(base64UrlString: base64UrlString)
-						Logger.services.debug("Contact added from URL successfully")
-					} catch {
-						Logger.services.error("Contact added from URL failed with error \(error.localizedDescription, privacy: .public)")
-					}
-				}
-				dismiss()
+				addContact()
 			} label: {
 				Label("Add Contact", systemImage: "person.crop.circle.badge.plus")
 			}
 			.buttonStyle(.borderedProminent)
+			.disabled(isAdding)
 			Button("Cancel") { dismiss() }
 				.padding(.bottom)
 		}
 		.padding()
 		.frame(maxWidth: 350)
+	}
+
+	/// Imports the contact, dismissing only once it actually succeeds so a
+	/// failure leaves the sheet up with an explanation and a retry path.
+	private func addContact() {
+		let base64UrlString = pendingContact.base64UrlString
+		isAdding = true
+		failureMessage = nil
+		Task {
+			do {
+				try await accessoryManager.addContactFromURL(base64UrlString: base64UrlString)
+				Logger.services.debug("Contact added from URL successfully")
+				dismiss()
+			} catch {
+				Logger.services.error("Contact added from URL failed with error \(error.localizedDescription, privacy: .public)")
+				failureMessage = String(localized: "Couldn't add this contact. Check that your node is connected and try again.")
+				isAdding = false
+			}
+		}
 	}
 }
 

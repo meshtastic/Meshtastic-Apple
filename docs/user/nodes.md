@@ -164,7 +164,7 @@ When a radio is connected, a **Share Connected Node** button appears in the node
 
 ### Write a Contact to an NFC Tag
 
-On iPhones with NFC hardware (iOS 18 or later), the contact share sheet also offers **Write to NFC Tag**. Hold a writable, empty NFC tag near the top of your iPhone and the contact link is saved to it. Anyone can then tap that tag with their phone to open the contact in Meshtastic — the tag carries exactly the same link the QR code encodes.
+On iPhones with NFC hardware (iOS 18 or later), the contact share sheet also offers **Write to NFC Tag**. Hold a writable NFC tag near the top of your iPhone and the contact link is saved to it, replacing whatever the tag held before. Anyone can then tap that tag with their phone to open the contact in Meshtastic — the tag carries exactly the same link the QR code encodes.
 
 ### Importing a Shared Contact
 

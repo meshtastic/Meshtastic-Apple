@@ -33,6 +33,32 @@ struct ShareContactURLTests {
 		#expect(ShareContactQR.urlString(for: node, manuallyVerified: false) == nil)
 	}
 
+	@Test(arguments: [
+		"https://meshtastic.org/v/#Cg0aC0J1ZA",
+		"https://www.meshtastic.org/v/#Cg0aC0J1ZA",
+		"HTTPS://MESHTASTIC.ORG/V/#Cg0aC0J1ZA",
+		"meshtastic://v#Cg0aC0J1ZA",
+		"meshtastic:///v#Cg0aC0J1ZA"
+	])
+	func acceptsSupportedContactURLForms(_ value: String) throws {
+		let url = try #require(URL(string: value))
+		#expect(ContactURLHandler.canHandle(url))
+	}
+
+	// Guards against a foreign link merely embedding the contact prefix, which a
+	// plain substring match would have routed into the import flow.
+	@Test(arguments: [
+		"https://example.com/?next=meshtastic.org/v/#Cg0aC0J1ZA",
+		"https://meshtastic.org/e/#Cg0aC0J1ZA",
+		"https://meshtastic.org/v/",
+		"https://meshtastic.org/v/extra#Cg0aC0J1ZA",
+		"https://notmeshtastic.org/v/#Cg0aC0J1ZA"
+	])
+	func rejectsNonContactURLs(_ value: String) throws {
+		let url = try #require(URL(string: value))
+		#expect(!ContactURLHandler.canHandle(url))
+	}
+
 	private func makeNodeInfo() -> NodeInfo {
 		var user = User()
 		user.id = "!1234"

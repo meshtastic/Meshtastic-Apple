@@ -16,13 +16,38 @@ struct ContactURLHandler {
 
 	/// The shared-contact link prefix — the contact counterpart to
 	/// `MeshtasticChannelURL.canonicalPrefix`.
-	static let urlPrefix = "meshtastic.org/v/#"
+	static let canonicalPrefix = "https://meshtastic.org/v/#"
+
+	private static let host = MeshtasticChannelURL.host
+	private static let contactPathSegment = "v"
 
 	/// True when this URL is a Meshtastic shared-contact link. Single source of
 	/// truth for every contact-link entry point (universal links, custom scheme,
 	/// QR scans, and NFC tags).
+	///
+	/// Validates the host, path, and fragment rather than substring-matching the
+	/// whole URL string, so a foreign link that merely embeds `meshtastic.org/v/#`
+	/// (in a query or path) is not mistaken for a contact import.
 	static func canHandle(_ url: URL) -> Bool {
-		url.absoluteString.lowercased().contains(urlPrefix)
+		guard let fragment = url.fragment, !fragment.isEmpty else { return false }
+
+		let pathSegments = url.pathComponents
+			.filter { $0 != "/" }
+			.map { $0.lowercased() }
+
+		// Custom scheme: the segment lands in the host for `meshtastic://v#…`
+		// and in the path for `meshtastic:///v#…`.
+		if url.scheme?.lowercased() == MeshtasticChannelURL.appScheme {
+			if url.host == nil {
+				return pathSegments == [contactPathSegment]
+			}
+			return url.host?.lowercased() == contactPathSegment && pathSegments.isEmpty
+		}
+
+		guard let urlHost = url.host?.lowercased(), urlHost == host || urlHost == "www.\(host)" else {
+			return false
+		}
+		return pathSegments == [contactPathSegment]
 	}
 
 	@MainActor
@@ -54,7 +79,13 @@ struct ContactURLHandler {
 						let contact = try MeshtasticProtobufs.SharedContact(serializedBytes: decodedData)
 						// Present the SwiftUI confirmation sheet (AddContactConfirmationView)
 						// via published state, mirroring the channel-link import flow.
-						accessoryManager.appState?.pendingContactToAdd = PendingContact(
+						guard let appState = accessoryManager.appState else {
+							// Without app state there is no sheet to present, so fail loudly
+							// rather than dropping the import with no user feedback.
+							Logger.services.error("Cannot present contact import: app state is not wired yet.")
+							return
+						}
+						appState.pendingContactToAdd = PendingContact(
 							contact: contact,
 							base64UrlString: contactData
 						)
