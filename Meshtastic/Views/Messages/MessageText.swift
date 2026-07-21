@@ -210,7 +210,7 @@ struct MessageText: View {
 	private func handleURL(_ url: URL) -> OpenURLAction.Result {
 		saveChannelLink = nil
 		var addChannels = false
-		if url.absoluteString.lowercased().contains("meshtastic.org/v/#") {
+		if ContactURLHandler.canHandle(url) {
 			// Handle contact URL
 			ContactURLHandler.handleContactUrl(url: url, accessoryManager: AccessoryManager.shared)
 			return .handled // Prevent default browser opening

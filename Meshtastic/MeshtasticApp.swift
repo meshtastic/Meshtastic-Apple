@@ -184,7 +184,7 @@ struct MeshtasticAppleApp: App {
 			// "Open in Meshtastic" from the Share Sheet / Files app / drag-and-drop —
 			// distinct from the meshtastic:// scheme handled below.
 			appState.router.importMapFile(url: url)
-		} else if url.absoluteString.lowercased().contains("meshtastic.org/v/#") {
+		} else if ContactURLHandler.canHandle(url) {
 			ContactURLHandler.handleContactUrl(url: url, accessoryManager: accessoryManager)
 		} else if MeshtasticChannelURL.canHandle(url) {
 			handleChannelLinkURL(url, fromActivity: fromActivity)

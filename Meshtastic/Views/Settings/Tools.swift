@@ -88,7 +88,7 @@ struct Tools: View {
 	/// uses for incoming links: contact URLs go to ContactURLHandler, channel
 	/// URLs present the SaveChannelQRCode flow.
 	private func handleScannedURL(_ url: URL) {
-		if url.absoluteString.lowercased().contains("meshtastic.org/v/#") {
+		if ContactURLHandler.canHandle(url) {
 			ContactURLHandler.handleContactUrl(url: url, accessoryManager: accessoryManager)
 		} else if MeshtasticChannelURL.canHandle(url) {
 			do {

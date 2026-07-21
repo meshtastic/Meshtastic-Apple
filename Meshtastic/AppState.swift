@@ -1,7 +1,17 @@
 import Combine
+import MeshtasticProtobufs
 import OSLog
 @preconcurrency import SwiftData
 import SwiftUI
+
+/// A contact parsed from a shared contact URL, waiting for the user to
+/// confirm the import. The original base64url payload is kept so the
+/// encoded `manually_verified` bit reaches the radio untouched.
+struct PendingContact: Identifiable {
+	let id = UUID()
+	let contact: SharedContact
+	let base64UrlString: String
+}
 
 class AppState: ObservableObject {
 

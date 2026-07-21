@@ -14,6 +14,17 @@ struct ContactURLHandler {
 
 	static var minimumContactVersion = "2.6.9"
 
+	/// The shared-contact link prefix — the contact counterpart to
+	/// `MeshtasticChannelURL.canonicalPrefix`.
+	static let urlPrefix = "meshtastic.org/v/#"
+
+	/// True when this URL is a Meshtastic shared-contact link. Single source of
+	/// truth for every contact-link entry point (universal links, custom scheme,
+	/// QR scans, and NFC tags).
+	static func canHandle(_ url: URL) -> Bool {
+		url.absoluteString.lowercased().contains(urlPrefix)
+	}
+
 	@MainActor
 	static func handleContactUrl(url: URL, accessoryManager: AccessoryManager) {
 		let supportedVersion = accessoryManager.checkIsVersionSupported(forVersion: minimumContactVersion)

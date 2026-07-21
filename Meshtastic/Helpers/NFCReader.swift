@@ -35,6 +35,8 @@ final class NFCReader: NSObject, ObservableObject, NFCNDEFReaderSessionDelegate 
 	}
 
 	func scan(theActualData: String) {
+		// Tear down any in-flight session so a stale one can't race the new mode.
+		session?.invalidate()
 		mode = .write(payload: theActualData)
 
 		session = NFCNDEFReaderSession(
@@ -50,6 +52,8 @@ final class NFCReader: NSObject, ObservableObject, NFCNDEFReaderSessionDelegate 
 	/// Starts a read session and calls `onURL` (on the main actor) with the
 	/// first https/meshtastic URL found on the tag.
 	func scanToRead(onURL: @escaping (URL) -> Void) {
+		// Tear down any in-flight session so a stale one can't race the new mode.
+		session?.invalidate()
 		mode = .read(onURL: onURL)
 
 		session = NFCNDEFReaderSession(
@@ -197,8 +201,7 @@ final class NFCReader: NSObject, ObservableObject, NFCNDEFReaderSessionDelegate 
 				// (meshtastic.org/v/#) and channel links (meshtastic.org/e/ or
 				// meshtastic://e). Anything else falls through to the failure
 				// message below instead of a success HUD followed by silence.
-				let isContact = url.absoluteString.lowercased().contains("meshtastic.org/v/#")
-				guard isContact || MeshtasticChannelURL.canHandle(url) else { continue }
+				guard ContactURLHandler.canHandle(url) || MeshtasticChannelURL.canHandle(url) else { continue }
 				logger.info("Read NFC tag URL")
 				session.alertMessage = String(localized: "NFC tag read successfully.")
 				session.invalidate()
@@ -215,6 +218,12 @@ final class NFCReader: NSObject, ObservableObject, NFCNDEFReaderSessionDelegate 
 
 	private func url(from record: NFCNDEFPayload) -> URL? {
 		if let url = record.wellKnownTypeURIPayload() {
+			return url
+		}
+		// Well-known Text records carry a status byte and language code before the
+		// text, so decode them properly rather than reading `payload` as raw UTF-8.
+		let (text, _) = record.wellKnownTypeTextPayload()
+		if let text, let url = URL(string: text.trimmingCharacters(in: .whitespacesAndNewlines)) {
 			return url
 		}
 		// Fall back to plain UTF-8 payloads that hold a URL string.

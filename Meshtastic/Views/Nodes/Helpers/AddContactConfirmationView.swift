@@ -10,15 +10,6 @@ import SwiftUI
 import MeshtasticProtobufs
 import OSLog
 
-/// A contact parsed from a shared contact URL, waiting for the user to
-/// confirm the import. The original base64url payload is kept so the
-/// encoded `manually_verified` bit reaches the radio untouched.
-struct PendingContact: Identifiable {
-	let id = UUID()
-	let contact: SharedContact
-	let base64UrlString: String
-}
-
 struct AddContactConfirmationView: View {
 	let pendingContact: PendingContact
 	var accessoryManager: AccessoryManager
@@ -52,7 +43,7 @@ struct AddContactConfirmationView: View {
 						try await accessoryManager.addContactFromURL(base64UrlString: base64UrlString)
 						Logger.services.debug("Contact added from URL successfully")
 					} catch {
-						Logger.services.debug("Contact added from URL failed with error \(error)")
+						Logger.services.error("Contact added from URL failed with error \(error.localizedDescription, privacy: .public)")
 					}
 				}
 				dismiss()
