@@ -259,6 +259,7 @@ struct AppLogFilter: View {
 			.contentShape(Rectangle())
 		}
 		.buttonStyle(.plain)
+		.accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
 	}
 
 	private func toggleCategory(_ id: Int) {

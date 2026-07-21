@@ -42,6 +42,8 @@ struct LoRaSignalStrengthMeter: View {
 				.gaugeStyle(.accessoryLinear)
 				.tint(gradient)
 				.font(.caption)
+				.accessibilityLabel(String(localized: "Signal strength", comment: "VoiceOver: label for the LoRa signal strength gauge"))
+				.accessibilityValue(Text("Signal \(signalStrength.description)"))
 			}
 		}
 	}

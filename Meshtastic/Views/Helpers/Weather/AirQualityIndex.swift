@@ -56,6 +56,8 @@ struct AirQualityIndex: View {
 					}
 					.tint(gradient)
 					.gaugeStyle(.accessoryCircular)
+					.accessibilityLabel(String(localized: "Air quality index", comment: "VoiceOver: label for the air quality index gauge"))
+					.accessibilityValue(Text("AQI \(aqi), \(aqiEnum.description)"))
 		case .gradient:
 			HStack {
 				Gauge(value: Double(aqi), in: 0...500) {
