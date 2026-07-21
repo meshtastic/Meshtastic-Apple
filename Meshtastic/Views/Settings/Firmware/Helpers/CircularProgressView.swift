@@ -74,8 +74,8 @@ struct CircularProgressView: View {
 		.onChange(of: isError) { _, _ in updateAnimationStatus() }
 		.onChange(of: reduceMotion) { _, _ in updateAnimationStatus() }
 		.accessibilityElement(children: .ignore)
-		.accessibilityLabel("Update progress")
-		.accessibilityValue("\(Int(progress * 100)) percent")
+		.accessibilityLabel(String(localized: "Update progress", comment: "VoiceOver label for the firmware update progress ring"))
+		.accessibilityValue(String(localized: "\(Int(progress * 100)) percent", comment: "VoiceOver value spoken as the firmware update completion percentage"))
 	}
 	
 	private func updateAnimationStatus() {
