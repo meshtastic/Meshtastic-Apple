@@ -44,6 +44,7 @@ struct TextMessageField: View {
 							Image(systemName: "x.circle.fill")
 								.font(.largeTitle)
 							}
+							.accessibilityLabel(String(localized: "Cancel reply", comment: "VoiceOver: cancel replying to a message"))
 							if replyMessageId != 0 {
 								Text("Reply")
 									.padding(.top, 10)
@@ -81,6 +82,7 @@ struct TextMessageField: View {
 									.font(.largeTitle)
 									.foregroundColor(.accentColor)
 							}
+							.accessibilityLabel(String(localized: "Send message", comment: "VoiceOver: send the composed message"))
 						}
 					}
 					.padding(15)
@@ -118,6 +120,7 @@ struct TextMessageField: View {
 			} label: {
 				Image(systemName: "face.smiling")
 			}
+			.accessibilityLabel(String(localized: "Emoji picker", comment: "VoiceOver: open the character/emoji picker"))
 			Spacer()
 			#endif
 			AlertButton { typingMessage += "🔔 Alert Bell Character! \u{7}" }
@@ -196,6 +199,7 @@ private struct FormattingComposeArea: View {
 						Image(systemName: "x.circle.fill")
 							.font(.largeTitle)
 					}
+					.accessibilityLabel(String(localized: "Cancel reply", comment: "VoiceOver: cancel replying to a message"))
 					if replyMessageId != 0 {
 						Text("Reply")
 							.padding(.top, 10)
@@ -239,6 +243,7 @@ private struct FormattingComposeArea: View {
 							.font(.largeTitle)
 							.foregroundColor(.accentColor)
 					}
+					.accessibilityLabel(String(localized: "Send message", comment: "VoiceOver: send the composed message"))
 				}
 			}
 			.padding(15)
@@ -318,6 +323,7 @@ private struct FormattingComposeArea: View {
 					} label: {
 						Image(systemName: "face.smiling")
 					}
+					.accessibilityLabel(String(localized: "Emoji picker", comment: "VoiceOver: open the character/emoji picker"))
 					#endif
 					AlertButton(action: alert, compact: true)
 					RequestPositionButton(action: requestPosition, compact: true)

@@ -5,14 +5,14 @@
 
 **How to use this file**: Check off `[x]` as each item is fixed and verified (VoiceOver on-device or Simulator + Accessibility Inspector). This is the persistent tracker — pick up anywhere by scanning for the first unchecked box. Update the "Progress" line below when a batch is completed.
 
-**Progress**: 0 / 60 individual locations fixed (0 / 20 finding clusters fully closed) — last updated 2026-07-21.
+**Progress**: 6 / 60 individual locations fixed (0 / 20 finding clusters fully closed — T002/T015/T016 done but their clusters still have other locations open) — last updated 2026-07-21.
 
 ---
 
 ## Phase 1: Blocker (VoiceOver users cannot perceive or operate the feature)
 
 - [ ] T001 `Widgets/WidgetsLiveActivity.swift` — zero accessibility calls in the whole file. Add `.accessibilityElement(children: .ignore)` + `.accessibilityLabel` to `StatRow` (~line 296-311) and to each icon+fraction pair (lines ~64, 117, 136, 216) and the countdown timer (~line 334). Verify in the widget extension target (Lock Screen/Dynamic Island), not just the main app.
-- [ ] T002 `Meshtastic/Views/Messages/TextMessageField/TextMessageField.swift:79,237` — send button (`arrow.up.circle.fill`) has no `.accessibilityLabel`. Add `String(localized: "Send message")`.
+- [x] T002 `Meshtastic/Views/Messages/TextMessageField/TextMessageField.swift:79,237` — send button (`arrow.up.circle.fill`) has no `.accessibilityLabel`. Add `String(localized: "Send message")`. **Done**: fixed both the legacy (line ~82) and `FormattingComposeArea` (line ~243) send buttons.
 - [ ] T003 [P] `Meshtastic/Views/Messages/UserMessageRow.swift:35-51,180-181` and `ChannelMessageRow.swift:175-176` — combined `accessibilityLabel` (`messageAccessibilityLabel`) overwrites per-badge labels set in `MessageText.swift:172,192,206` (Verified sender, Store and forward, Detection sensor, Showing translated text). Rebuild the combined label from the same source-of-truth flags `MessageText.swift` uses instead of hand-listing only Encrypted/Verified. One fix, two call sites.
 - [ ] T004 `Meshtastic/Views/Messages/UserList.swift:253-316` (`DirectMessageUserRow`) — no accessibility at all: unread dot not `.accessibilityHidden`, lock/star icons unlabeled, no combined element/label. Port the working pattern from `ChannelList.swift:59-66`.
 - [ ] T005 [P] `Meshtastic/Views/Nodes/Helpers/Metrics Columns/MetricsColumnDetail.swift:46-61,65-77` — `.onTapGesture` row with no interactive trait; VoiceOver double-tap doesn't activate it. Add `.contentShape(Rectangle())` + `.accessibilityElement(children: .combine)` + `.accessibilityLabel` + `.accessibilityValue(Visible/Hidden)` + `.accessibilityAddTraits(.isButton)` + `.accessibilityAction`.
@@ -46,8 +46,8 @@
   - `DirectMessagesHelp.swift:47`
   - `NodeListHelp.swift:197`
   - `ChannelsHelp.swift:107`
-- [ ] T015 [P] `TextMessageField.swift:38,190` — cancel-reply button (`x.circle.fill`), add `.accessibilityLabel(String(localized: "Cancel reply"))`.
-- [ ] T016 [P] `TextMessageField.swift:111,311` — emoji picker button (`face.smiling`, Catalyst-only), add a localized label.
+- [x] T015 [P] `TextMessageField.swift:38,190` — cancel-reply button (`x.circle.fill`), add `.accessibilityLabel(String(localized: "Cancel reply"))`. **Done**: fixed both the legacy (line ~47) and `FormattingComposeArea` (line ~202) cancel-reply buttons.
+- [x] T016 [P] `TextMessageField.swift:111,311` — emoji picker button (`face.smiling`, Catalyst-only), add a localized label. **Done**: fixed both the legacy `legacyToolbarContent` (line ~123) and `FormattingComposeArea` `toolbarContent` (line ~326) emoji picker buttons.
 - [ ] T017 [P] Help-toggle buttons with no on/off-reflecting label — add `.accessibilityLabel(showHelp ? "Hide help" : "Show help")` (localized):
   - `Channels.swift:343`
   - `ShareChannels.swift:147`
