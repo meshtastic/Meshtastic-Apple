@@ -231,6 +231,8 @@
 		BCCA0BAB2F1C5C25007648E5 /* LocalStatsLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCCA0BAA2F1C5C25007648E5 /* LocalStatsLog.swift */; };
 		BCCA0BAD2F1C5C60007648E5 /* RequestLocalStatsButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCCA0BAC2F1C5C60007648E5 /* RequestLocalStatsButton.swift */; };
 		BCD7448D2E0F2FAA00F265A2 /* ContactURLHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCD7448C2E0F2FA300F265A2 /* ContactURLHandler.swift */; };
+		BC4EFC0DE2F07200000000A2 /* NFCReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC4EFC0DE2F07200000000A1 /* NFCReader.swift */; };
+		BC4EFC0DE2F07200000000B2 /* AddContactConfirmationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC4EFC0DE2F07200000000B1 /* AddContactConfirmationView.swift */; };
 		BEEF00102F00000100000002 /* MeshtasticChannelURL.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEEF00102F00000100000001 /* MeshtasticChannelURL.swift */; };
 		BCD93CBA2D9E11A2006C9214 /* DisconnectNodeIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCD93CB92D9E11A2006C9214 /* DisconnectNodeIntent.swift */; };
 		BCDDFA9A2DBB180D0065189C /* ScrollToBottomButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCDDFA992DBB180D0065189C /* ScrollToBottomButton.swift */; };
@@ -760,6 +762,8 @@
 		BCCA0BAA2F1C5C25007648E5 /* LocalStatsLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalStatsLog.swift; sourceTree = "<group>"; };
 		BCCA0BAC2F1C5C60007648E5 /* RequestLocalStatsButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestLocalStatsButton.swift; sourceTree = "<group>"; };
 		BCD7448C2E0F2FA300F265A2 /* ContactURLHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactURLHandler.swift; sourceTree = "<group>"; };
+		BC4EFC0DE2F07200000000A1 /* NFCReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NFCReader.swift; sourceTree = "<group>"; };
+		BC4EFC0DE2F07200000000B1 /* AddContactConfirmationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddContactConfirmationView.swift; sourceTree = "<group>"; };
 		BEEF00102F00000100000001 /* MeshtasticChannelURL.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticChannelURL.swift; sourceTree = "<group>"; };
 		BCD93CB92D9E11A2006C9214 /* DisconnectNodeIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisconnectNodeIntent.swift; sourceTree = "<group>"; };
 		BCDDFA992DBB180D0065189C /* ScrollToBottomButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScrollToBottomButton.swift; sourceTree = "<group>"; };
@@ -2120,6 +2124,7 @@
 				517E000000000000000A0002 /* CoverageEstimateRunner.swift */,
 				3D3417C72E29D38A006A988B /* GeoJSONOverlayConfig.swift */,
 				BCD7448C2E0F2FA300F265A2 /* ContactURLHandler.swift */,
+				BC4EFC0DE2F07200000000A1 /* NFCReader.swift */,
 				BEEF00102F00000100000001 /* MeshtasticChannelURL.swift */,
 				DDD43FE12A78C86B0083A3E9 /* Mqtt */,
 				DD1BEF492E0292220090CE24 /* KeychainHelper.swift */,
@@ -2191,6 +2196,7 @@
 			children = (
 				DD4C11E02E8099C3003F2F2E /* PreferenceKeys */,
 				108FFECA2DD3F43C00BFAA81 /* ShareContactQRDialog.swift */,
+				BC4EFC0DE2F07200000000B1 /* AddContactConfirmationView.swift */,
 				231B3F232D087C020069A07D /* Metrics Columns */,
 				DDAD49EB2AFAE82500B4425D /* Map */,
 				DDDB26432AAC0206003AFCB7 /* NodeDetail.swift */,
@@ -2793,6 +2799,8 @@
 				DDD43FE32A78C8900083A3E9 /* MqttClientProxyManager.swift in Sources */,
 				DD0000MQTTFWDFLT00000001 /* MqttForwardFilter.swift in Sources */,
 				BCD7448D2E0F2FAA00F265A2 /* ContactURLHandler.swift in Sources */,
+				BC4EFC0DE2F07200000000A2 /* NFCReader.swift in Sources */,
+				BC4EFC0DE2F07200000000B2 /* AddContactConfirmationView.swift in Sources */,
 				BEEF00102F00000100000002 /* MeshtasticChannelURL.swift in Sources */,
 				DD007BB02AA5981000F5FA12 /* NodeInfoEntityExtension.swift in Sources */,
 				DDBEAC001000000000000300 /* MessageSearch.swift in Sources */,

@@ -18,6 +18,27 @@ struct MeshtasticChannelURLTests {
 		#expect(parsed.channelSet.loraConfig.hopLimit == 5)
 	}
 
+	// The channel URL written to NFC tags (ShareChannels -> NFCWriteButton) is the
+	// same MeshtasticChannelURL.urlString(for:addChannels:) output, so it must
+	// round-trip through parse in both replace and add modes.
+	@Test func nfcWritePayloadRoundTripsInBothModes() throws {
+		let channelSet = makeChannelSet()
+
+		let replaceUrl = try MeshtasticChannelURL.urlString(for: channelSet, addChannels: false)
+		let replaceParsed = try MeshtasticChannelURL.parse(replaceUrl)
+		#expect(replaceParsed.addChannels == false)
+		#expect(replaceParsed.channelSet.settings.first?.name == "Alpha")
+		#expect(replaceParsed.channelSet.settings.first?.psk == Data([1, 2, 3, 4]))
+		#expect(replaceParsed.channelSet.hasLoraConfig)
+
+		let addUrl = try MeshtasticChannelURL.urlString(for: channelSet, addChannels: true)
+		let addParsed = try MeshtasticChannelURL.parse(addUrl)
+		#expect(addParsed.addChannels)
+		#expect(addParsed.channelSet.settings.first?.name == "Alpha")
+		#expect(addParsed.channelSet.settings.first?.psk == Data([1, 2, 3, 4]))
+		#expect(!addParsed.channelSet.hasLoraConfig)
+	}
+
 	@Test(arguments: [
 		"HTTPS://MESHTASTIC.ORG/E/#",
 		"https://meshtastic.org/e#",

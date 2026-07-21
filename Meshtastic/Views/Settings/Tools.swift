@@ -6,9 +6,6 @@
 //
 
 import SwiftUI
-#if !targetEnvironment(macCatalyst)
-import CoreNFC
-#endif
 import MeshtasticProtobufs
 import OSLog
 
@@ -20,6 +17,7 @@ struct Tools: View {
 	#if !targetEnvironment(macCatalyst)
 	@StateObject private var nfcReader = NFCReader()
 	#endif
+	@State private var saveChannelLink: SaveChannelLinkData?
 
 	var connectedNode: NodeInfoEntity? {
 		if let num = accessoryManager.activeDeviceNum {
@@ -32,42 +30,78 @@ struct Tools: View {
 		guard let connectedNode = connectedNode else {
 			return ""
 		}
-
-		var contact = SharedContact()
-		contact.nodeNum = UInt32(connectedNode.num)
-		contact.user = connectedNode.toProto().user
-		contact.manuallyVerified = true
-
-		do {
-			let contactString = try contact.serializedData().base64EncodedString()
-			return "https://meshtastic.org/v/#" + contactString.base64ToBase64url()
-		} catch {
-			Logger.services.error("Error serializing contact: \(error)")
-			return ""
-		}
+		// Sharing the connected node (your own node), so manuallyVerified is
+		// true — the same rule NodeDetail applies for node.num == activeDeviceNum.
+		return ShareContactQR.urlString(for: connectedNode.toProto(), manuallyVerified: true) ?? ""
 	}
 
 	var body: some View {
 		VStack {
 			List {
-				Section(header: Text("Create Node Contact NFC Tag")) {
-					if let node = connectedNode {
-						Text("Node Name: \(node.user?.longName ?? "Unknown".localized)")
-						#if !targetEnvironment(macCatalyst)
-						Button {
-							nfcReader.scan(theActualData: qrString)
-						} label: {
-							Label("Write Contact to NFC Tag", systemImage: "tag")
+				#if !targetEnvironment(macCatalyst)
+				if NFCReader.isAvailable {
+					Section(header: Text("NFC Tags")) {
+						if let node = connectedNode {
+							Text("Node Name: \(node.user?.longName ?? "Unknown".localized)")
+							Button {
+								nfcReader.scan(theActualData: qrString)
+							} label: {
+								Label("Write Contact to NFC Tag", systemImage: "tag")
+							}
+							.disabled(qrString.isEmpty)
+							Text("Hold a writable NFC tag near the top of your iPhone to save your contact to it.")
+								.font(.caption)
+								.foregroundStyle(.secondary)
 						}
-						.disabled(qrString.isEmpty)
-						#endif
+						Button {
+							nfcReader.scanToRead { url in
+								handleScannedURL(url)
+							}
+						} label: {
+							Label("Scan NFC Tag", systemImage: "wave.3.right.circle")
+						}
+						Text("Read a Meshtastic tag to add the contact or channel it contains.")
+							.font(.caption)
+							.foregroundStyle(.secondary)
 					}
 				}
+				#endif
 			}
 		}
 		.navigationTitle("Tools")
 		.navigationBarTitleDisplayMode(.inline)
+		.sheet(item: $saveChannelLink) { link in
+			SaveChannelQRCode(
+				channelSetLink: link.data,
+				addChannels: link.add,
+				accessoryManager: accessoryManager
+			)
+			.presentationDetents([.large])
+			#if !targetEnvironment(macCatalyst)
+			.presentationDragIndicator(.visible)
+			#endif
+		}
 	}
+
+	#if !targetEnvironment(macCatalyst)
+	/// Routes a URL read from an NFC tag through the same handlers the app
+	/// uses for incoming links: contact URLs go to ContactURLHandler, channel
+	/// URLs present the SaveChannelQRCode flow.
+	private func handleScannedURL(_ url: URL) {
+		if url.absoluteString.lowercased().contains("meshtastic.org/v/#") {
+			ContactURLHandler.handleContactUrl(url: url, accessoryManager: accessoryManager)
+		} else if MeshtasticChannelURL.canHandle(url) {
+			do {
+				let channelLink = try MeshtasticChannelURL.parse(url.absoluteString)
+				saveChannelLink = SaveChannelLinkData(data: channelLink.payload, add: channelLink.addChannels)
+			} catch {
+				Logger.services.error("Could not parse channel URL from NFC tag: \(error.localizedDescription, privacy: .public)")
+			}
+		} else {
+			Logger.services.error("NFC tag URL is not a Meshtastic contact or channel link")
+		}
+	}
+	#endif
 }
 
 @available(iOS 18, *)
@@ -76,118 +110,3 @@ struct Tools: View {
 		.environmentObject(AccessoryManager.shared)
 		.modelContainer(PersistenceController.preview.container)
 }
-
-#if !targetEnvironment(macCatalyst)
-@available(iOS 18, *)
-final class NFCReader: NSObject, ObservableObject, NFCNDEFReaderSessionDelegate {
-
-	private let logger = Logger(subsystem: "org.meshtastic.app", category: "NFC")
-	private var payloadString = ""
-	private var session: NFCNDEFReaderSession?
-
-	func scan(theActualData: String) {
-		payloadString = theActualData
-
-		session = NFCNDEFReaderSession(
-			delegate: self,
-			queue: nil,
-			invalidateAfterFirstRead: false
-		)
-
-		session?.alertMessage = "Hold your iPhone near the NFC tag."
-		session?.begin()
-	}
-
-	func readerSessionDidBecomeActive(_ session: NFCNDEFReaderSession) {
-		logger.debug("NFC session became active")
-	}
-
-	func readerSession(_ session: NFCNDEFReaderSession,
-	                   didInvalidateWithError error: Error) {
-		logger.error("NFC session invalidated: \(error.localizedDescription)")
-	}
-
-	func readerSession(_ session: NFCNDEFReaderSession,
-	                   didDetectNDEFs messages: [NFCNDEFMessage]) {
-	}
-
-	func readerSession(_ session: NFCNDEFReaderSession,
-	                   didDetect tags: [NFCNDEFTag]) {
-
-		guard tags.count == 1, let tag = tags.first else {
-			session.alertMessage = "More than one tag detected. Please present only one."
-			DispatchQueue.global().asyncAfter(deadline: .now() + .milliseconds(500)) {
-				session.restartPolling()
-			}
-			return
-		}
-
-		session.connect(to: tag) { error in
-			if let error {
-				self.logger.error("Failed to connect to tag: \(error.localizedDescription)")
-				session.alertMessage = "Failed to connect to tag."
-				session.invalidate()
-				return
-			}
-
-			tag.queryNDEFStatus { status, capacity, error in
-				if let error {
-					self.logger.error("Failed to query NDEF status: \(error.localizedDescription)")
-					session.alertMessage = "Failed to read tag."
-					session.invalidate()
-					return
-				}
-				self.logger.debug("Tag NDEF status: \(String(describing: status)), capacity: \(capacity) bytes")
-
-				switch status {
-				case .notSupported:
-					self.logger.error("Tag does not support NDEF")
-					session.alertMessage = "Tag does not support NDEF."
-					session.invalidate()
-
-				case .readOnly:
-					self.logger.error("Tag is read-only")
-					session.alertMessage = "Tag is read-only."
-					session.invalidate()
-
-				case .readWrite:
-					guard let payload =
-						NFCNDEFPayload.wellKnownTypeURIPayload(
-							string: self.payloadString
-						) else {
-						self.logger.error("Invalid NDEF payload")
-						session.alertMessage = "Invalid payload."
-						session.invalidate()
-						return
-					}
-
-					let message = NFCNDEFMessage(records: [payload])
-
-					guard message.length <= capacity else {
-						self.logger.error("Payload (\(message.length) bytes) exceeds tag capacity (\(capacity) bytes)")
-						session.alertMessage = "Tag too small to hold contact data."
-						session.invalidate()
-						return
-					}
-
-					tag.writeNDEF(message) { error in
-						if let error {
-							self.logger.error("Failed to write NDEF: \(error.localizedDescription)")
-							session.alertMessage = "Failed to write tag."
-						} else {
-							self.logger.info("Successfully wrote NFC tag")
-							session.alertMessage = "NFC tag written successfully."
-						}
-						session.invalidate()
-					}
-
-				@unknown default:
-					self.logger.error("Unsupported NDEF status")
-					session.alertMessage = "Unsupported tag status."
-					session.invalidate()
-				}
-			}
-		}
-	}
-}
-#endif

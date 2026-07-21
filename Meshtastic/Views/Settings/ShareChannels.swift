@@ -120,6 +120,20 @@ struct ShareChannels: View {
 									.controlSize(.large)
 									.padding(.bottom)
 
+								#if !targetEnvironment(macCatalyst)
+								if #available(iOS 18, *) {
+									NFCWriteButton(
+										payload: channelsUrl,
+										caption: "Hold a writable NFC tag near the top of your iPhone to save these channel settings to it."
+									)
+									.buttonStyle(.bordered)
+									.buttonBorderShape(.capsule)
+									.controlSize(.large)
+									.padding(.bottom)
+									.padding(.horizontal)
+								}
+								#endif
+
 								Image(uiImage: qrImage)
 									.resizable()
 									.scaledToFit()

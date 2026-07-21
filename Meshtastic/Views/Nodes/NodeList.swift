@@ -159,13 +159,27 @@ struct NodeList: View {
 			deleteNodeButton
 		}
 		.sheet(item: $shareContactNode) { selectedNode in
-			ShareContactQRDialog(manuallyVerified: false, node: selectedNode.toProto())
+			// Mirror NodeDetail's rule: only your own (connected) node is marked
+			// manually verified when shared.
+			ShareContactQRDialog(
+				manuallyVerified: selectedNode.num == accessoryManager.activeDeviceNum,
+				node: selectedNode.toProto()
+			)
 		}
 		.displayNameAlert(node: $nodeForDisplayNameEdit)
 		.navigationSplitViewColumnWidth(min: 100, ideal: 300, max: .infinity)
 		.toolbar {
 			ToolbarItem(placement: .topBarLeading) {
 				MeshtasticLogo()
+			}
+			if let connectedNode, ShareContactQR.canShareContact(for: connectedNode) {
+				ToolbarItem(placement: .topBarTrailing) {
+					Button {
+						shareContactNode = connectedNode
+					} label: {
+						Label("Share Connected Node", systemImage: "person.crop.circle.badge.plus")
+					}
+				}
 			}
 			ToolbarItem(placement: .topBarTrailing) {
 				ConnectedDevice(

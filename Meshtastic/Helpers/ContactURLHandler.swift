@@ -41,34 +41,12 @@ struct ContactURLHandler {
 				if let decodedData = Data(base64Encoded: decodedString) {
 					do {
 						let contact = try MeshtasticProtobufs.SharedContact(serializedBytes: decodedData)
-						let alertController = UIAlertController(
-							title: "Add Contact",
-							message: "Would you like to add \(contact.user.longName) as a contact?",
-							preferredStyle: .alert
+						// Present the SwiftUI confirmation sheet (AddContactConfirmationView)
+						// via published state, mirroring the channel-link import flow.
+						accessoryManager.appState?.pendingContactToAdd = PendingContact(
+							contact: contact,
+							base64UrlString: contactData
 						)
-						alertController.addAction(UIAlertAction(
-							title: "Yes",
-							style: .default,
-							handler: { _ in
-								Task {
-									do {
-										try await accessoryManager.addContactFromURL(base64UrlString: contactData)
-										Logger.services.debug("Contact added from URL successfully")
-									} catch {
-										Logger.services.debug("Contact added from URL failed with error \(error)")
-									}
-								}
-							}
-						))
-						alertController.addAction(UIAlertAction(
-							title: "No",
-							style: .cancel,
-							handler: nil
-						))
-						if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-						   let rootViewController = windowScene.windows.first?.rootViewController {
-							rootViewController.present(alertController, animated: true)
-						}
 						Logger.services.debug("Contact data extracted from URL: \(contactData, privacy: .public)")
 					} catch {
 						Logger.services.error("Failed to parse contact data: \(error.localizedDescription, privacy: .public)")

@@ -473,15 +473,22 @@ struct Settings: View {
 					Image(systemName: "folder")
 				}
 			}
+			// Tools currently hosts only NFC actions, so hide the entry point
+			// entirely on devices without NFC hardware (iPads, Mac Catalyst)
+			// per Design Standards §3 conditional visibility.
+			#if !targetEnvironment(macCatalyst)
 			if #available(iOS 18, *) {
-				NavigationLink(value: SettingsNavigationState.tools) {
-					Label {
-						Text("Tools")
-					} icon: {
-						Image(systemName: "hammer")
+				if NFCReader.isAvailable {
+					NavigationLink(value: SettingsNavigationState.tools) {
+						Label {
+							Text("Tools")
+						} icon: {
+							Image(systemName: "hammer")
+						}
 					}
 				}
 			}
+			#endif
 		}
 	}
 
