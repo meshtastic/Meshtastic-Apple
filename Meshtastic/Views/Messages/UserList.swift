@@ -43,6 +43,7 @@ struct UserList: View {
 					.tint(Color(UIColor.secondarySystemBackground))
 					.foregroundColor(.accentColor)
 					.buttonStyle(.borderedProminent)
+					.accessibilityLabel(showingHelp ? String(localized: "Hide help", comment: "VoiceOver label for the help toggle button when help is showing") : String(localized: "Show help", comment: "VoiceOver label for the help toggle button when help is hidden"))
 					Spacer()
 					if filters.isFiltering {
 						Button(action: {
@@ -70,6 +71,7 @@ struct UserList: View {
 					.tint(Color(UIColor.secondarySystemBackground))
 					.foregroundColor(.accentColor)
 					.buttonStyle(.borderedProminent)
+					.accessibilityLabel(editingFilters ? String(localized: "Hide contact filters", comment: "VoiceOver label for the contact filter toggle button when filters are showing") : String(localized: "Show contact filters", comment: "VoiceOver label for the contact filter toggle button when filters are hidden"))
 				}
 				.controlSize(.regular)
 				.padding(5)

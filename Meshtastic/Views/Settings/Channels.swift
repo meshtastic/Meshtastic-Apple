@@ -352,6 +352,7 @@ struct Channels: View {
 				.foregroundColor(.accentColor)
 				.buttonStyle(.borderedProminent)
 				.buttonBorderShape(.circle)
+				.accessibilityLabel(showingHelp ? String(localized: "Hide help", comment: "VoiceOver label for the help toggle button when help is showing") : String(localized: "Show help", comment: "VoiceOver label for the help toggle button when help is hidden"))
 			}
 			.controlSize(.regular)
 			.padding(5)
