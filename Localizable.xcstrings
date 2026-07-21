@@ -16904,6 +16904,9 @@
         }
       }
     },
+    "Cancel reply" : {
+      "comment" : "VoiceOver: cancel replying to a message"
+    },
     "Canceled" : {
       "localizations" : {
         "uk" : {
@@ -34307,6 +34310,9 @@
           }
         }
       }
+    },
+    "Emoji picker" : {
+      "comment" : "VoiceOver: open the character/emoji picker"
     },
     "Empty" : {
       "localizations" : {
@@ -85014,6 +85020,9 @@
           }
         }
       }
+    },
+    "Send message" : {
+      "comment" : "VoiceOver: send the composed message"
     },
     "Send question to Chirpy" : {
       "localizations" : {

@@ -5,7 +5,7 @@
 
 **How to use this file**: Check off `[x]` as each item is fixed and verified (VoiceOver on-device or Simulator + Accessibility Inspector). This is the persistent tracker — pick up anywhere by scanning for the first unchecked box. Update the "Progress" line below when a batch is completed.
 
-**Progress**: 6 / 60 individual locations fixed (0 / 20 finding clusters fully closed — T002/T015/T016 done but their clusters still have other locations open) — last updated 2026-07-21.
+**Progress**: 17 / 60 individual locations fixed (2 / 20 finding clusters fully closed — Localization of accessibility strings (T032-T036) and Contrast correctness (T037-T038) are now fully closed; T002/T015/T016 also done but their Icon-only-buttons cluster still has other locations open) — last updated 2026-07-21.
 
 ---
 
