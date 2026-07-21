@@ -203,6 +203,7 @@ struct TAKServerConfig: View {
 				Text(takServer.statusDescription)
 					.foregroundColor(.secondary)
 			}
+			.accessibilityElement(children: .combine)
 
 			if let error = takServer.lastError {
 				HStack {
@@ -212,6 +213,7 @@ struct TAKServerConfig: View {
 						.font(.caption)
 						.foregroundColor(.orange)
 				}
+				.accessibilityElement(children: .combine)
 			}
 
 			if let node = connectedNode,
@@ -225,6 +227,7 @@ struct TAKServerConfig: View {
 						.font(.caption)
 						.foregroundColor(.orange)
 				}
+				.accessibilityElement(children: .combine)
 			}
 		} header: {
 			Text("Server Status")

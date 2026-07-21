@@ -30,6 +30,7 @@ private struct ActivityRow: View {
 				.foregroundColor(.primary)
 		}
 		.padding()
+		.accessibilityElement(children: .combine)
 	}
 }
 

@@ -35,6 +35,7 @@ struct MapLegendItem: View {
 			}
 			Spacer()
 		}
+		.accessibilityElement(children: .combine)
 	}
 }
 

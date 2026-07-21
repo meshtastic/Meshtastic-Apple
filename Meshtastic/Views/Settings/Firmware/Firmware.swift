@@ -132,18 +132,22 @@ private struct FirmwareContentView: View {
 					Text("Platform IO").font(.caption).foregroundColor(.secondary)
 					Text("\(node.myInfo?.pioEnv ?? "Unknown")")
 				}
+				.accessibilityElement(children: .combine)
 				VStack(alignment: .leading) {
 					Text("Architecture").font(.caption).foregroundColor(.secondary)
 					Text("\(hardware.architecture ?? "Unknown")")
 				}
+				.accessibilityElement(children: .combine)
 				VStack(alignment: .leading) {
 					Text("Current Firmware Version").font(.caption).foregroundColor(.secondary)
 					Text("\(node.metadata?.firmwareVersion ?? "Unknown")")
 				}
+				.accessibilityElement(children: .combine)
 				VStack(alignment: .leading) {
 					Text("Intended LoRa Region").font(.caption).foregroundColor(.secondary)
 					Text(intendedRegionLabel)
 				}
+				.accessibilityElement(children: .combine)
 				if shouldShowRegionUnsetWarning {
 					Label("Set a LoRa region before installing firmware.", systemImage: "exclamationmark.triangle.fill")
 						.foregroundStyle(.orange)

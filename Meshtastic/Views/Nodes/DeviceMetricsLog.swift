@@ -108,33 +108,36 @@ struct DeviceMetricsLog: View {
 					/// Single Cell Compact display for phones
 					Table(deviceMetrics, selection: $selection, sortOrder: $sortOrder) {
 						TableColumn("Battery Level") { dm in
-							HStack {
-								Text(dm.time?.formatted(date: .numeric, time: .shortened) ?? "Unknown Age".localized)
-									.font(.caption)
-									.fontWeight(.semibold)
-								Spacer()
-								Image(systemName: "bolt")
-									.font(.caption)
-									.symbolRenderingMode(.multicolor)
-								Text("Volts \(dm.voltage?.formatted(.number.precision(.fractionLength(2))) ?? Constants.nilValueIndicator)")
-									.font(.caption2)
-								BatteryCompact(batteryLevel: dm.batteryLevel, font: .caption, iconFont: .callout, color: .accentColor)
-							}
-							HStack {
-								if let channelUtilization = dm.channelUtilization {
-									// Text("Channel Utilization \(String(format: "%.2f%%", channelUtilization))")
-									Text("Channel Utilization \(channelUtilization.formatted(.number.precision(.fractionLength(2))))%")
-										.foregroundColor(channelUtilization < 25 ? .green : (channelUtilization > 50 ? .red : .orange))
-								} else {
-									Text("Channel Utilization " + Constants.nilValueIndicator)
-										.foregroundColor(.gray)
+							Group {
+								HStack {
+									Text(dm.time?.formatted(date: .numeric, time: .shortened) ?? "Unknown Age".localized)
+										.font(.caption)
+										.fontWeight(.semibold)
+									Spacer()
+									Image(systemName: "bolt")
+										.font(.caption)
+										.symbolRenderingMode(.multicolor)
+									Text("Volts \(dm.voltage?.formatted(.number.precision(.fractionLength(2))) ?? Constants.nilValueIndicator)")
+										.font(.caption2)
+									BatteryCompact(batteryLevel: dm.batteryLevel, font: .caption, iconFont: .callout, color: .accentColor)
 								}
-								// Keep "Airtime" separate here as to avoid creating a new localization key
-								Text("Airtime") + Text(" \(dm.airUtilTx?.formatted(.number.precision(.fractionLength(2))) ?? Constants.nilValueIndicator)%")
-									.foregroundColor(.secondary)
-								Spacer()
+								HStack {
+									if let channelUtilization = dm.channelUtilization {
+										// Text("Channel Utilization \(String(format: "%.2f%%", channelUtilization))")
+										Text("Channel Utilization \(channelUtilization.formatted(.number.precision(.fractionLength(2))))%")
+											.foregroundColor(channelUtilization < 25 ? .green : (channelUtilization > 50 ? .red : .orange))
+									} else {
+										Text("Channel Utilization " + Constants.nilValueIndicator)
+											.foregroundColor(.gray)
+									}
+									// Keep "Airtime" separate here as to avoid creating a new localization key
+									Text("Airtime") + Text(" \(dm.airUtilTx?.formatted(.number.precision(.fractionLength(2))) ?? Constants.nilValueIndicator)%")
+										.foregroundColor(.secondary)
+									Spacer()
+								}
+								.font(.caption)
 							}
-							.font(.caption)
+							.accessibilityElement(children: .combine)
 						}
 						.width(ideal: 200, max: .infinity)
 					}

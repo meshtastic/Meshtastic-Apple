@@ -197,6 +197,7 @@ struct Connect: View {
 												Text("Communicating").font(.callout)
 													.foregroundColor(.orange)
 											}
+											.accessibilityElement(children: .combine)
 										case .retrying(let attempt):
 											HStack {
 												Image(systemName: "square.stack.3d.down.forward")
@@ -206,6 +207,7 @@ struct Connect: View {
 												Text("Retrying (attempt \(attempt))").font(.callout)
 													.foregroundColor(.orange)
 											}
+											.accessibilityElement(children: .combine)
 										default:
 											EmptyView()
 										}
