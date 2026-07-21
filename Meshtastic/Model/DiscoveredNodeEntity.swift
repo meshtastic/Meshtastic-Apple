@@ -34,5 +34,12 @@ final class DiscoveredNodeEntity {
 		messageCount >= sensorPacketCount ? "person.2.fill" : "thermometer.medium"
 	}
 
+	/// A node label for display and VoiceOver, preferring the long name, then short, then the hex id.
+	var displayName: String {
+		if !longName.isEmpty { return longName }
+		if !shortName.isEmpty { return shortName }
+		return String(nodeNum.toHex().suffix(4))
+	}
+
 	init() {}
 }
