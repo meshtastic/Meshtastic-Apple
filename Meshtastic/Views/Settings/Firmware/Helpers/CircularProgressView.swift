@@ -73,6 +73,9 @@ struct CircularProgressView: View {
 		.onChange(of: isIndeterminate) { _, _ in updateAnimationStatus() }
 		.onChange(of: isError) { _, _ in updateAnimationStatus() }
 		.onChange(of: reduceMotion) { _, _ in updateAnimationStatus() }
+		.accessibilityElement(children: .ignore)
+		.accessibilityLabel("Update progress")
+		.accessibilityValue("\(Int(progress * 100)) percent")
 	}
 	
 	private func updateAnimationStatus() {
