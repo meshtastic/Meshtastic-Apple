@@ -89,16 +89,16 @@
 
 ### Localization of accessibility strings
 
-- [ ] T032 [P] `Channels.swift:527,530,533` (`ChannelStatusIcon`) — hardcoded English a11y strings, absent from `Localizable.xcstrings`. Wrap in `String(localized:)` and add keys.
-- [ ] T033 [P] `TextMessageField/FormattingToolbarButtons.swift:107-114` — same localization gap as T032.
-- [ ] T034 [P] `Model/Firmware/FirmwareUpdateNotifier.swift:75-82` (feeds `Connect.swift:869`) — same localization gap as T032.
-- [ ] T035 [P] `Lockdown/LockdownSheet.swift:159,207` — same localization gap as T032.
-- [ ] T036 [P] `Messages/MessageSearchBar.swift:27` — same localization gap as T032.
+- [x] T032 [P] `Channels.swift:527,530,533` (`ChannelStatusIcon`) — hardcoded English a11y strings, absent from `Localizable.xcstrings`. Wrap in `String(localized:)` and add keys.
+- [x] T033 [P] `TextMessageField/FormattingToolbarButtons.swift:107-114` — same localization gap as T032.
+- [x] T034 [P] `Model/Firmware/FirmwareUpdateNotifier.swift:75-82` (feeds `Connect.swift:869`) — same localization gap as T032.
+- [x] T035 [P] `Lockdown/LockdownSheet.swift:159,207` — same localization gap as T032.
+- [x] T036 [P] `Messages/MessageSearchBar.swift:27` — same localization gap as T032.
 
 ### Contrast correctness
 
-- [ ] T037 `Meshtastic/Extensions/Color.swift:63-67,74-78` (`isLight()`) — uses BT.601 luma with a flat 0.5 cutoff instead of WCAG relative luminance. Replace with a `relativeLuminance()` implementation (WCAG formula) and a `>0.179` (~4.5:1) cutoff. This is shared infrastructure — fixing it here fixes T038 below plus `CircleText.swift:25` and `Meshtastic Watch App/Views/WatchCircleText.swift:27` for free.
-- [ ] T038 `Meshtastic/Views/Nodes/Helpers/Map/MapContent/AnimatedNodePin.swift:43-47` — hardcoded `.foregroundStyle(.white)` ignores contrast entirely, unlike `CircleText.swift` one line below. Switch to `nodeColor.isLight() ? .black : .white` (depends on T037 being correct first).
+- [x] T037 `Meshtastic/Extensions/Color.swift:63-67,74-78` (`isLight()`) — uses BT.601 luma with a flat 0.5 cutoff instead of WCAG relative luminance. Replace with a `relativeLuminance()` implementation (WCAG formula) and a `>0.179` (~4.5:1) cutoff. This is shared infrastructure — fixing it here fixes T038 below plus `CircleText.swift:25` and `Meshtastic Watch App/Views/WatchCircleText.swift:27` for free.
+- [x] T038 `Meshtastic/Views/Nodes/Helpers/Map/MapContent/AnimatedNodePin.swift:43-47` — hardcoded `.foregroundStyle(.white)` ignores contrast entirely, unlike `CircleText.swift` one line below. Switch to `nodeColor.isLight() ? .black : .white` (depends on T037 being correct first).
 
 **Checkpoint**: All 11 High clusters (T012-T038) closed → every icon-only control announces a specific action, sliders/gauges report state, signal tiers are distinguishable without color, a11y strings are localized, and contrast decisions use the correct formula.
 
