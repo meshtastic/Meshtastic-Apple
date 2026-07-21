@@ -72,6 +72,16 @@ final class NFCReader: NSObject, ObservableObject, NFCNDEFReaderSessionDelegate 
 	func readerSession(_ session: NFCNDEFReaderSession,
 	                   didInvalidateWithError error: Error) {
 		Logger.services.error("NFC session invalidated: \(error.localizedDescription)")
+		// Drop the finished session and its mode so a read callback stops
+		// retaining whatever view state it captured. Only clear when this is
+		// still the current session: `scan`/`scanToRead` invalidate the previous
+		// one before starting a new one, and this callback arrives afterwards —
+		// clearing unconditionally would tear down the session that replaced it.
+		DispatchQueue.main.async {
+			guard session === self.session else { return }
+			self.session = nil
+			self.mode = nil
+		}
 	}
 
 	func readerSession(_ session: NFCNDEFReaderSession,

@@ -59,6 +59,18 @@ struct ShareContactURLTests {
 		#expect(!ContactURLHandler.canHandle(url))
 	}
 
+	// A payload that survives base64url decoding but is not a SharedContact must
+	// be rejected, so the import sheet reports a failure instead of dismissing as
+	// though it worked.
+	@Test func undecodableContactPayloadIsRejected() {
+		let notAContact = Data([0xFF, 0xFF, 0xFF, 0xFF]).base64EncodedString().base64ToBase64url()
+		let decoded = Data(base64Encoded: notAContact.base64urlToBase64())
+		#expect(decoded != nil)
+		#expect(throws: (any Error).self) {
+			_ = try SharedContact(serializedBytes: try #require(decoded))
+		}
+	}
+
 	private func makeNodeInfo() -> NodeInfo {
 		var user = User()
 		user.id = "!1234"

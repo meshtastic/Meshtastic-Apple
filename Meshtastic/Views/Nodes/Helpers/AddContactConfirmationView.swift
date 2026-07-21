@@ -60,6 +60,11 @@ struct AddContactConfirmationView: View {
 
 	/// Imports the contact, dismissing only once it actually succeeds so a
 	/// failure leaves the sheet up with an explanation and a retry path.
+	///
+	/// `@MainActor` so the task inherits main-actor isolation: the `@State`
+	/// mutations and `dismiss()` below then run on the main actor rather than
+	/// whatever executor the task would otherwise pick up.
+	@MainActor
 	private func addContact() {
 		let base64UrlString = pendingContact.base64UrlString
 		isAdding = true
