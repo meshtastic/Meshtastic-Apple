@@ -31,9 +31,9 @@
 
 ### Icon-only buttons, unlabeled
 
-- [ ] T012 [P] `Meshtastic/Views/Settings/Firmware/NRF DFU/NRFDFUSheet.swift:74` — close button (`xmark.circle.fill`), add `.accessibilityLabel(String(localized: "Close"))`.
-- [ ] T013 [P] `Meshtastic/Views/Settings/Firmware/ESP32 OTA/BLE/ESP32BLEOTASheet.swift:111` — same close-button fix as T012.
-- [ ] T014 [P] macCatalyst-gated close buttons (lower priority than T012/T013 — macOS VoiceOver only), same `.accessibilityLabel(String(localized: "Close"))` fix inside each `#if targetEnvironment(macCatalyst)` block:
+- [x] T012 [P] `Meshtastic/Views/Settings/Firmware/NRF DFU/NRFDFUSheet.swift:74` — close button (`xmark.circle.fill`), add `.accessibilityLabel(String(localized: "Close"))`. **Done**.
+- [x] T013 [P] `Meshtastic/Views/Settings/Firmware/ESP32 OTA/BLE/ESP32BLEOTASheet.swift:111` — same close-button fix as T012. **Done**.
+- [x] T014 [P] macCatalyst-gated close buttons (lower priority than T012/T013 — macOS VoiceOver only), same `.accessibilityLabel(String(localized: "Close"))` fix inside each `#if targetEnvironment(macCatalyst)` block:
   - `RouteRecorder.swift:274`
   - `AppLogFilter.swift:199`
   - `LogDetail.swift:154`
@@ -46,6 +46,8 @@
   - `DirectMessagesHelp.swift:47`
   - `NodeListHelp.swift:197`
   - `ChannelsHelp.swift:107`
+
+  **Done**: all 12 macCatalyst close buttons fixed.
 - [x] T015 [P] `TextMessageField.swift:38,190` — cancel-reply button (`x.circle.fill`), add `.accessibilityLabel(String(localized: "Cancel reply"))`. **Done**: fixed both the legacy (line ~47) and `FormattingComposeArea` (line ~202) cancel-reply buttons.
 - [x] T016 [P] `TextMessageField.swift:111,311` — emoji picker button (`face.smiling`, Catalyst-only), add a localized label. **Done**: fixed both the legacy `legacyToolbarContent` (line ~123) and `FormattingComposeArea` `toolbarContent` (line ~326) emoji picker buttons.
 - [ ] T017 [P] Help-toggle buttons with no on/off-reflecting label — add `.accessibilityLabel(showHelp ? "Hide help" : "Show help")` (localized):
