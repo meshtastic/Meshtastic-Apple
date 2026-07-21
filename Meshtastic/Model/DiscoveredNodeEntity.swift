@@ -35,6 +35,9 @@ final class DiscoveredNodeEntity {
 	}
 
 	/// A node label for display and VoiceOver, preferring the long name, then short, then the hex id.
+	/// The hex fallback intentionally matches `DiscoveryMapView`'s existing `CircleText` fallback
+	/// (last 4 hex digits, not `DiscoveredBeaconEntity.displayName`'s `!%08x` format) so a pin's
+	/// VoiceOver title and its visible abbreviation stay consistent.
 	var displayName: String {
 		if !longName.isEmpty { return longName }
 		if !shortName.isEmpty { return shortName }

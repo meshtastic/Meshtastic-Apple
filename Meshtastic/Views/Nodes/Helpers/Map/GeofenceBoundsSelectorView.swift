@@ -58,7 +58,9 @@ struct GeofenceBoundsSelectorView: View {
 			GeometryReader { geo in
 				MapReader { proxy in
 					ZStack(alignment: .bottom) {
-						Map(position: $camera)
+						// Pan/zoom only, no rotate/pitch: keeps the map north-up so the move handle's
+						// "Move north/south/east/west" VoiceOver actions stay screen-accurate.
+						Map(position: $camera, interactionModes: [.pan, .zoom])
 							.mapStyle(.standard(elevation: .flat, pointsOfInterest: .excludingAll))
 							.onMapCameraChange(frequency: .continuous) { context in
 								currentRegion = context.region
