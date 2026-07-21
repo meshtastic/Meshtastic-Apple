@@ -136,6 +136,7 @@ private struct CredentialRow: View {
 			}
 			.tint(.accentColor)
 			.buttonStyle(.borderless)
+			.accessibilityLabel(String(localized: "Copy \(label)", comment: "VoiceOver label for a credential copy button; %@ is the field name being copied, e.g. Username or Password"))
 		}
 	}
 }
@@ -353,6 +354,7 @@ struct WifiProvisioningView: View {
 							}
 							.tint(.accentColor)
 							.buttonStyle(.borderless)
+							.accessibilityLabel(String(localized: "Copy IP address", comment: "VoiceOver label for the copy IP address button"))
 						}
 					}
 					.padding()
@@ -400,6 +402,7 @@ struct WifiProvisioningView: View {
 								}
 								.tint(.accentColor)
 								.buttonStyle(.borderless)
+								.accessibilityLabel(String(localized: "Copy SSH command", comment: "VoiceOver label for the copy SSH command button"))
 							}
 							.padding(8)
 							.background(Color(.secondarySystemBackground))
