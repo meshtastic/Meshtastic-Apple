@@ -1212,9 +1212,32 @@ struct MeshMapMK: View {
 		return legs
 	}
 
+	/// Per-leg line width, dash pattern, and dash phase for a trace-route polyline, keyed to signal
+	/// tier so degraded links are legible by shape and not only by the SNR hue. `baseDash` is the
+	/// leg's normal treatment (nil for the solid forward path, a fixed rhythm for the always-dashed
+	/// return path) and is only overridden once the signal drops to fair or worse.
+	private func traceRouteLineStyle(
+		snr: Float,
+		preset: ModemPresets,
+		baseWidth: CGFloat,
+		baseDash: [NSNumber]?
+	) -> (width: CGFloat, dash: [NSNumber]?, phase: CGFloat) {
+		switch getLoRaSignalStrength(snr: snr, rssi: 0, preset: preset) {
+		case .good:
+			return (baseWidth, baseDash, 0)
+		case .fair:
+			return (baseWidth - 0.5, baseDash ?? [10, 4], 0)
+		case .bad:
+			return (max(baseWidth - 1, 1), [4, 4], 3)
+		case .none:
+			return (max(baseWidth - 1.5, 1), [1, 5], 6)
+		}
+	}
+
 	/// Build the forward (solid) + return (dashed) polylines and origin/target markers for the
 	/// selected trace route. Each leg is colored by that hop's SNR using the same signal-meter math
-	/// as the LoRa signal indicator (green/yellow/orange/red). Limited to nodes with a snapshot.
+	/// as the LoRa signal indicator (green/yellow/orange/red), and its width/dash rhythm now varies
+	/// with the same tier so signal quality isn't encoded by hue alone. Limited to nodes with a snapshot.
 	private func rebuildTraceRouteContent() {
 		let key = selectedTraceRoute.map { "\($0.id)|\($0.nodePositions.count)" } ?? "none"
 		guard key != lastTraceRouteKey else { return }
@@ -1234,22 +1257,40 @@ struct MeshMapMK: View {
 		if forward.count >= 2 {
 			for i in 1..<forward.count {
 				var seg = [forward[i - 1].coordinate, forward[i].coordinate]
+				let style = traceRouteLineStyle(snr: forward[i].snr, preset: modemPreset, baseWidth: 4, baseDash: nil)
 				overlays.append(ClusterMapOverlay(
 					id: "traceroute-fwd-\(idKey)-\(i)",
 					overlay: MKPolyline(coordinates: &seg, count: 2),
-					style: ClusterMapOverlayStyle(strokeUIColor: UIColor(getSnrColor(snr: forward[i].snr, preset: modemPreset)), fillUIColor: nil, lineWidth: 4, lineCap: .round, directional: true)
+					style: ClusterMapOverlayStyle(
+						strokeUIColor: UIColor(getSnrColor(snr: forward[i].snr, preset: modemPreset)),
+						fillUIColor: nil,
+						lineWidth: style.width,
+						lineDash: style.dash,
+						lineDashPhase: style.phase,
+						lineCap: .round,
+						directional: true
+					)
 				))
 			}
 		}
-		// Return (dashed) — same per-leg signal coloring.
+		// Return (dashed) — same per-leg signal coloring, plus the same tier-driven shape variation.
 		let back = route.backSignalPath
 		if back.count >= 2 {
 			for i in 1..<back.count {
 				var seg = [back[i - 1].coordinate, back[i].coordinate]
+				let style = traceRouteLineStyle(snr: back[i].snr, preset: modemPreset, baseWidth: 3, baseDash: [2, 8])
 				overlays.append(ClusterMapOverlay(
 					id: "traceroute-back-\(idKey)-\(i)",
 					overlay: MKPolyline(coordinates: &seg, count: 2),
-					style: ClusterMapOverlayStyle(strokeUIColor: UIColor(getSnrColor(snr: back[i].snr, preset: modemPreset)), fillUIColor: nil, lineWidth: 3, lineDash: [2, 8], lineCap: .round, directional: true)
+					style: ClusterMapOverlayStyle(
+						strokeUIColor: UIColor(getSnrColor(snr: back[i].snr, preset: modemPreset)),
+						fillUIColor: nil,
+						lineWidth: style.width,
+						lineDash: style.dash,
+						lineDashPhase: style.phase,
+						lineCap: .round,
+						directional: true
+					)
 				))
 			}
 		}

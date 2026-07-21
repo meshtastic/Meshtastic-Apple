@@ -55,6 +55,9 @@ struct ClusterMapOverlayStyle {
 	var fillUIColor: UIColor?
 	var lineWidth: CGFloat = 1
 	var lineDash: [NSNumber]?
+	/// Offset into `lineDash` where the pattern starts. Combined with per-tier dash/width choices,
+	/// this lets a line's shape (not just its stroke color) encode signal quality.
+	var lineDashPhase: CGFloat = 0
 	var lineCap: CGLineCap = .round
 	var level: MKOverlayLevel = .aboveLabels
 	/// Draw chevrons along the line pointing in the direction of travel (uses the stroke color).
@@ -850,6 +853,7 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 			renderer.fillColor = style.fillUIColor
 			renderer.lineWidth = style.lineWidth
 			renderer.lineDashPattern = style.lineDash
+			renderer.lineDashPhase = style.lineDashPhase
 			renderer.lineCap = style.lineCap
 			return renderer
 		}
