@@ -253,7 +253,7 @@ private struct PacketAuthenticitySection: View {
 				}
 			} message: {
 				Text(String(
-					localized: "Strict accepts only remote packets with a verified XEdDSA signature or successful PKI decryption. Unsigned positions, messages, telemetry, and other traffic from older firmware or nodes, licensed (ham) nodes, and packets too large to sign will be rejected. Authenticated PKI direct messages remain available.",
+					localized: "Strict accepts only remote packets with a verified XEdDSA signature or successful PKI decryption. Unsigned positions, messages, telemetry, and other traffic from older-firmware or licensed (ham) nodes, and packets too large to sign will be rejected. Authenticated PKI direct messages remain available.",
 					comment: "Warning shown before enabling the Strict packet authenticity policy."
 				))
 			}
