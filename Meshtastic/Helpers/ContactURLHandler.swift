@@ -92,19 +92,31 @@ struct ContactURLHandler {
 						Logger.services.debug("Contact data extracted from URL: \(contactData, privacy: .public)")
 					} catch {
 						Logger.services.error("Failed to parse contact data: \(error.localizedDescription, privacy: .public)")
-						if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-						   let rootViewController = windowScene.windows.first?.rootViewController {
-							let errorAlert = UIAlertController(
-								title: "Error",
-								message: "Could not process contact information. Invalid format.",
-								preferredStyle: .alert
-							)
-							errorAlert.addAction(UIAlertAction(title: "OK", style: .default))
-							rootViewController.present(errorAlert, animated: true)
-						}
+						presentInvalidContactAlert()
 					}
+				} else {
+					// This previously fell through silently, so a contact link whose
+					// fragment is not valid base64url looked like it imported when
+					// nothing had happened.
+					Logger.services.error("Contact link fragment is not valid base64url data.")
+					presentInvalidContactAlert()
 				}
 			}
 		}
+	}
+
+	@MainActor
+	private static func presentInvalidContactAlert() {
+		guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+			  let rootViewController = windowScene.windows.first?.rootViewController else {
+			return
+		}
+		let errorAlert = UIAlertController(
+			title: "Error",
+			message: "Could not process contact information. Invalid format.",
+			preferredStyle: .alert
+		)
+		errorAlert.addAction(UIAlertAction(title: "OK", style: .default))
+		rootViewController.present(errorAlert, animated: true)
 	}
 }

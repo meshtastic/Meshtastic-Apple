@@ -126,9 +126,6 @@ struct ShareChannels: View {
 										payload: channelsUrl,
 										caption: "Hold a writable NFC tag near the top of your iPhone to save these channel settings to it."
 									)
-									.buttonStyle(.bordered)
-									.buttonBorderShape(.capsule)
-									.controlSize(.large)
 									.padding(.bottom)
 									.padding(.horizontal)
 								}

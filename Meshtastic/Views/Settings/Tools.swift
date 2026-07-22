@@ -18,6 +18,7 @@ struct Tools: View {
 	@StateObject private var nfcReader = NFCReader()
 	#endif
 	@State private var saveChannelLink: SaveChannelLinkData?
+	@State private var scanErrorMessage: String?
 
 	var connectedNode: NodeInfoEntity? {
 		if let num = accessoryManager.activeDeviceNum {
@@ -70,6 +71,18 @@ struct Tools: View {
 		}
 		.navigationTitle("Tools")
 		.navigationBarTitleDisplayMode(.inline)
+		.alert(
+			"Couldn't read tag",
+			isPresented: Binding(
+				get: { scanErrorMessage != nil },
+				set: { if !$0 { scanErrorMessage = nil } }
+			),
+			presenting: scanErrorMessage
+		) { _ in
+			Button("OK", role: .cancel) { scanErrorMessage = nil }
+		} message: { message in
+			Text(message)
+		}
 		.sheet(item: $saveChannelLink) { link in
 			SaveChannelQRCode(
 				channelSetLink: link.data,
@@ -95,10 +108,14 @@ struct Tools: View {
 				let channelLink = try MeshtasticChannelURL.parse(url.absoluteString)
 				saveChannelLink = SaveChannelLinkData(data: channelLink.payload, add: channelLink.addChannels)
 			} catch {
+				// Tell the user rather than only logging, so a tag holding a
+				// malformed channel payload can't look like a successful scan.
 				Logger.services.error("Could not parse channel URL from NFC tag: \(error.localizedDescription, privacy: .public)")
+				scanErrorMessage = error.localizedDescription
 			}
 		} else {
 			Logger.services.error("NFC tag URL is not a Meshtastic contact or channel link")
+			scanErrorMessage = String(localized: "This tag doesn't hold a Meshtastic contact or channel link.")
 		}
 	}
 	#endif

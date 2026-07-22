@@ -59,6 +59,23 @@ struct ShareContactURLTests {
 		#expect(!ContactURLHandler.canHandle(url))
 	}
 
+	// A channel link with no payload passes MeshtasticChannelURL.canHandle (it only
+	// checks host and path), so the NFC read path additionally requires a non-empty
+	// fragment before reporting a successful scan.
+	@Test(arguments: [
+		"https://meshtastic.org/e/#",
+		"https://meshtastic.org/e/",
+		"https://meshtastic.org/v/#"
+	])
+	func payloadlessLinksHaveNoFragmentToImport(_ value: String) throws {
+		let url = try #require(URL(string: value))
+		let fragment = url.fragment ?? ""
+		#expect(fragment.isEmpty)
+		// The contact check rejects these outright; the channel check does not,
+		// which is why the fragment guard exists in NFCReader.deliverFirstURL.
+		#expect(!ContactURLHandler.canHandle(url))
+	}
+
 	// A payload that survives base64url decoding but is not a SharedContact must
 	// be rejected, so the import sheet reports a failure instead of dismissing as
 	// though it worked.

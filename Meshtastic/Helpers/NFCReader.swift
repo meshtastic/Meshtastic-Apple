@@ -210,6 +210,12 @@ final class NFCReader: NSObject, ObservableObject, NFCNDEFReaderSessionDelegate 
 				// (meshtastic.org/v/#) and channel links (meshtastic.org/e/ or
 				// meshtastic://e). Anything else falls through to the failure
 				// message below instead of a success HUD followed by silence.
+				//
+				// Both link types carry their payload in the fragment, and
+				// `MeshtasticChannelURL.canHandle` only checks host and path — so
+				// require a fragment here too, otherwise a payload-less link like
+				// `meshtastic.org/e/#` would report success and then import nothing.
+				guard let fragment = url.fragment, !fragment.isEmpty else { continue }
 				guard ContactURLHandler.canHandle(url) || MeshtasticChannelURL.canHandle(url) else { continue }
 				Logger.services.info("Read NFC tag URL")
 				session.alertMessage = String(localized: "NFC tag read successfully.")
@@ -264,6 +270,11 @@ struct NFCWriteButton: View {
 					Label("Write to NFC Tag", systemImage: "tag")
 				}
 				.disabled(payload.isEmpty)
+				// Styling lives here rather than at each call site so every share
+				// surface presents the same affordance and hit target (§5).
+				.buttonStyle(.bordered)
+				.buttonBorderShape(.capsule)
+				.controlSize(.large)
 				Text(caption)
 					.font(.caption)
 					.foregroundStyle(.secondary)
