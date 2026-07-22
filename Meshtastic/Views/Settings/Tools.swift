@@ -45,7 +45,7 @@ struct Tools: View {
 						if let node = connectedNode {
 							Text("Node Name: \(node.user?.longName ?? "Unknown".localized)")
 							Button {
-								nfcReader.scan(theActualData: qrString)
+								nfcReader.write(payload: qrString)
 							} label: {
 								Label("Write Contact to NFC Tag", systemImage: "tag")
 							}
@@ -110,8 +110,10 @@ struct Tools: View {
 			} catch {
 				// Tell the user rather than only logging, so a tag holding a
 				// malformed channel payload can't look like a successful scan.
+				// The parse error itself is developer-facing and unlocalized, so
+				// it stays in the log and the alert gets plain language.
 				Logger.services.error("Could not parse channel URL from NFC tag: \(error.localizedDescription, privacy: .public)")
-				scanErrorMessage = error.localizedDescription
+				scanErrorMessage = String(localized: "Couldn't read the channel settings on this tag.")
 			}
 		} else {
 			Logger.services.error("NFC tag URL is not a Meshtastic contact or channel link")

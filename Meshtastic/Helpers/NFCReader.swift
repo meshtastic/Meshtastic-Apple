@@ -33,10 +33,11 @@ final class NFCReader: NSObject, ObservableObject, NFCNDEFReaderSessionDelegate 
 		NFCNDEFReaderSession.readingAvailable
 	}
 
-	func scan(theActualData: String) {
+	/// Starts a session that writes `payload` to the next tag presented.
+	func write(payload: String) {
 		// Tear down any in-flight session so a stale one can't race the new mode.
 		session?.invalidate()
-		mode = .write(payload: theActualData)
+		mode = .write(payload: payload)
 
 		session = NFCNDEFReaderSession(
 			delegate: self,
@@ -74,7 +75,7 @@ final class NFCReader: NSObject, ObservableObject, NFCNDEFReaderSessionDelegate 
 		Logger.services.error("NFC session invalidated: \(error.localizedDescription)")
 		// Drop the finished session and its mode so a read callback stops
 		// retaining whatever view state it captured. Only clear when this is
-		// still the current session: `scan`/`scanToRead` invalidate the previous
+		// still the current session: `write`/`scanToRead` invalidate the previous
 		// one before starting a new one, and this callback arrives afterwards —
 		// clearing unconditionally would tear down the session that replaced it.
 		DispatchQueue.main.async {
@@ -265,7 +266,7 @@ struct NFCWriteButton: View {
 		if NFCReader.isAvailable {
 			VStack(spacing: 8) {
 				Button {
-					nfcReader.scan(theActualData: payload)
+					nfcReader.write(payload: payload)
 				} label: {
 					Label("Write to NFC Tag", systemImage: "tag")
 				}
