@@ -147,6 +147,8 @@ It contains an **NFC Tags** section:
 | **Write Contact to NFC Tag** | Saves your connected node's contact link to a writable NFC tag, replacing any content it already held. Hold the tag near the top of your iPhone. |
 | **Scan NFC Tag** | Reads a Meshtastic tag and imports what it holds — a contact opens the add-contact confirmation sheet, a channel link opens the add-or-replace channels flow, exactly as scanning the equivalent QR code would. |
 
+If a scanned tag holds something other than a Meshtastic contact or channel link, or its channel settings can't be read, the scan reports the problem rather than appearing to succeed.
+
 Tags written by the Meshtastic app for Android are interchangeable with these — both platforms write the same contact and channel links.
 
 ## Firmware Updates

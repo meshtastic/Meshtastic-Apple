@@ -271,6 +271,14 @@
 <p>Tap any node to see the full detail view with hardware info, signal metrics, environment sensors, and log navigation:</p>
 <p><img src="../assets/screenshots/nodeDetail.png" alt="Node Detail" /></p>
 <p>For messageable nodes, use <strong>Actions &gt; Share Contact QR</strong> to show a Meshtastic contact link and QR code that another device can scan.</p>
+<h3>Share Connected Node</h3>
+<p>When a radio is connected, a <strong>Share Connected Node</strong> button appears in the node list toolbar. It opens the same share sheet as <strong>Share Contact QR</strong>, pre-filled with your own node — a quick way to hand someone your contact without finding yourself in the list.</p>
+<h3>Write a Contact to an NFC Tag</h3>
+<p>On iPhones with NFC hardware (iOS 18 or later), the contact share sheet also offers <strong>Write to NFC Tag</strong>. Hold a writable NFC tag near the top of your iPhone and the contact link is saved to it, replacing whatever the tag held before. Anyone can then tap that tag with their phone to open the contact in Meshtastic — the tag carries exactly the same link the QR code encodes.</p>
+<h3>Importing a Shared Contact</h3>
+<p>Opening a Meshtastic contact link — by scanning a QR code, tapping a shared link, or tapping an NFC tag — presents a confirmation sheet before anything is added. The sheet shows the node's colored initials, its long name, and an explanation that adding the contact saves their name and public key to your connected node. Choose <strong>Add Contact</strong> to import, or <strong>Cancel</strong> to dismiss.</p>
+<p>If the import fails — most often because the radio disconnected — the sheet stays open and shows the reason so you can reconnect and tap <strong>Add Contact</strong> again. It closes only once the contact has actually been sent to your node. A link that is damaged or truncated is reported as an invalid format instead of being imported.</p>
+<p>Importing a contact requires firmware 2.6.9 or later on the connected node.</p>
 <h3>Air Quality</h3>
 <p>Nodes with a particulate-matter sensor — reporting the firmware's Air Quality telemetry — show an <strong>Air Quality</strong> section with the latest PM2.5, PM1.0, and PM10 readings in µg/m³.</p>
 <p>An <strong>Air Quality Metrics Log</strong> entry appears under the node's logs, with a seven-day chart and table of the particulate-matter readings (configurable columns), a <strong>Clear</strong> action to delete stored readings, and <strong>CSV export</strong>.</p>

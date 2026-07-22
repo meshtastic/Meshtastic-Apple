@@ -170,6 +170,8 @@ On iPhones with NFC hardware (iOS 18 or later), the contact share sheet also off
 
 Opening a Meshtastic contact link — by scanning a QR code, tapping a shared link, or tapping an NFC tag — presents a confirmation sheet before anything is added. The sheet shows the node's colored initials, its long name, and an explanation that adding the contact saves their name and public key to your connected node. Choose **Add Contact** to import, or **Cancel** to dismiss.
 
+If the import fails — most often because the radio disconnected — the sheet stays open and shows the reason so you can reconnect and tap **Add Contact** again. It closes only once the contact has actually been sent to your node. A link that is damaged or truncated is reported as an invalid format instead of being imported.
+
 Importing a contact requires firmware 2.6.9 or later on the connected node.
 
 ### Air Quality
