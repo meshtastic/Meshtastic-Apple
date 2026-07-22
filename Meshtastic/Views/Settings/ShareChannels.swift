@@ -57,6 +57,10 @@ struct ShareChannels: View {
 			.sorted { $0.index < $1.index }
 	}
 
+	private var channelQRMode: ChannelQRMode {
+		ChannelQRMode(addChannels: !replaceChannels)
+	}
+
 	var body: some View {
 
 		VStack {
@@ -95,20 +99,26 @@ struct ShareChannels: View {
 							)
 							.padding(.vertical, 24)
 						} else {
-							let qrImage = qrCodeImage.generateQRCode(from: channelsUrl)
-							VStack {
-								Toggle(isOn: $replaceChannels) {
-									Label(replaceChannels ? "Replace Channels" : "Add Channels", systemImage: replaceChannels ? "arrow.triangle.2.circlepath.circle" : "plus.app")
-								}
-								.tint(.accentColor)
-								.toggleStyle(.button)
-								.buttonStyle(.bordered)
-								.buttonBorderShape(.capsule)
-								.controlSize(.large)
-								.padding(.top)
-								.padding(.bottom)
+								let qrImage = qrCodeImage.generateQRCode(from: channelsUrl)
+								VStack {
+									Toggle(isOn: $replaceChannels) {
+										Label(channelQRMode.title, systemImage: channelQRMode.symbolName)
+									}
+									.tint(.accentColor)
+									.toggleStyle(.button)
+									.buttonStyle(.bordered)
+									.buttonBorderShape(.capsule)
+									.controlSize(.large)
+									.padding(.top)
+									.padding(.bottom)
 
-								ShareLink("Share QR Code & Link",
+									Text(channelQRMode.consequence)
+										.font(.callout)
+										.foregroundStyle(.secondary)
+										.multilineTextAlignment(.center)
+										.padding(.horizontal)
+
+									ShareLink("Share QR Code & Link",
 											item: Image(uiImage: qrImage),
 											subject: Text("Meshtastic Node \(node?.user?.shortName ?? "????") has shared channels with you"),
 											message: Text(channelsUrl),

@@ -8,6 +8,51 @@
 import Foundation
 import MeshtasticProtobufs
 
+enum ChannelQRMode: Sendable {
+	case replace
+	case add
+
+	init(addChannels: Bool) {
+		self = addChannels ? .add : .replace
+	}
+
+	var title: String {
+		switch self {
+		case .replace:
+			return "Replace Channels"
+		case .add:
+			return "Add Channels"
+		}
+	}
+
+	var pickerTitle: String {
+		switch self {
+		case .replace:
+			return "Replace"
+		case .add:
+			return "Add"
+		}
+	}
+
+	var symbolName: String {
+		switch self {
+		case .replace:
+			return "arrow.triangle.2.circlepath.circle"
+		case .add:
+			return "plus.app"
+		}
+	}
+
+	var consequence: String {
+		switch self {
+		case .replace:
+			return "Selected channels will replace the connected radio's channel list. LoRa settings from the QR code will be applied."
+		case .add:
+			return "Selected channels will be appended to the connected radio. Existing channels and LoRa settings are preserved."
+		}
+	}
+}
+
 // MARK: - MeshtasticChannelURL
 
 struct MeshtasticChannelURL: Sendable {
@@ -74,7 +119,11 @@ struct MeshtasticChannelURL: Sendable {
 	// MARK: - URL Helpers
 
 	static func urlString(for channelSet: ChannelSet, addChannels: Bool = false) throws -> String {
-		let encodedPayload = try payloadString(for: channelSet)
+		var payloadChannelSet = channelSet
+		if addChannels {
+			payloadChannelSet.clearLoraConfig()
+		}
+		let encodedPayload = try payloadString(for: payloadChannelSet)
 		let query = addChannels ? "?add=true" : ""
 		return "\(canonicalPrefix)\(query)#\(encodedPayload)"
 	}

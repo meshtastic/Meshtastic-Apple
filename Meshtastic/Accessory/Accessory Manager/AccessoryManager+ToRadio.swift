@@ -552,11 +552,9 @@ extension AccessoryManager {
 			deliveredChannels.append(chan)
 		}
 
-		// Replacing channels also replaces the LoRa config (the replace-mode guard
-		// above guarantees one is present), and sending it reboots the device.
-		let didSendLoRaConfig = !addChannels
-		if didSendLoRaConfig {
-			// Save the LoRa Config and the device will reboot if required.
+		// Replacing channels also replaces the LoRa config; the replace-mode guard
+		// above guarantees one is present.
+		if !addChannels {
 			var adminPacket = AdminMessage()
 			adminPacket.setConfig.lora = channelSet.loraConfig
 			var meshPacket = MeshPacket()
@@ -589,21 +587,8 @@ extension AccessoryManager {
 			await MeshPackets.shared.channelPacket(channel: chan, fromNum: deviceNum)
 		}
 
-		// Re-sync after the change. When we sent a LoRa config the device reboots
-		// and the connection drops, so the follow-up wantConfig is expected to fail
-		// — treat that as success since the channels/config were already delivered.
-		// When no reboot is expected, let wantConfig errors surface normally.
-		if didSendLoRaConfig {
-			do {
-				Logger.transport.debug("[AccessoryManager] sending wantConfig after channel set (device may reboot)")
-				try await sendWantConfig()
-			} catch {
-				Logger.transport.warning("[AccessoryManager] wantConfig after channel set did not complete; device is likely rebooting: \(error.localizedDescription, privacy: .public)")
-			}
-		} else {
-			Logger.transport.debug("[AccessoryManager] sending wantConfig for saveChannelSet")
-			try await sendWantConfig()
-		}
+		Logger.transport.debug("[AccessoryManager] sending wantConfig for saveChannelSet")
+		try await sendWantConfig()
 	}
 
 	private func currentLoRaConfig(for deviceNum: Int64) -> Config.LoRaConfig? {
