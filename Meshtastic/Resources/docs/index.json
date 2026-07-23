@@ -1101,8 +1101,8 @@
             "tests",
             "app",
             "testing",
-            "run",
             "tab",
+            "run",
             "let",
             "snapshots",
             "func",
@@ -1119,16 +1119,16 @@
             "throws",
             "target",
             "new",
+            "meshtasticuitests",
             "both",
             "accessibility",
-            "xcode",
             "value",
             "through",
             "snapshot",
             "screenshots",
             "scheme"
         ],
-        "charCount": 6549
+        "charCount": 6924
     },
     {
         "id": "transport",

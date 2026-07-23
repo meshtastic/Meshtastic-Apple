@@ -34,7 +34,8 @@ struct MyFeatureTests {
 <li>Do not use <code>XCTAssert*</code> in new test files.</li>
 </ul>
 <h2>Running Tests</h2>
-<p>Run with ⌘U in Xcode. There is no CLI test runner — tests require Xcode.</p>
+<p>Run with ⌘U in Xcode, or from the command line with <code>xcodebuild test</code> — see &quot;Running UI Tests&quot;
+below for the exact invocation <code>MeshtasticUITests</code> uses.</p>
 <p>Ensure all existing tests pass before opening a PR. SwiftLint runs on every commit; tests failing due to lint errors will block CI.</p>
 <h2>Snapshot Tests</h2>
 <p>Snapshot tests for SwiftUI views live in <code>MeshtasticTests/SwiftUIViewSnapshotTests.swift</code>.</p>
@@ -100,7 +101,13 @@ final class MyFeatureUITests: XCTestCase {
     @MainActor
     func testSomeFlowIsReachable() {
         let app = XCUIApplication()
-        app.launchArguments += [&quot;--meshtastic-marketing-seed&quot;]  // skip onboarding, seed demo data
+        // Pin the locale so tab-title matching in AccessibilityDriver (see the note below)
+        // doesn't flake on a non-English simulator/device.
+        app.launchArguments += [
+            &quot;--meshtastic-marketing-seed&quot;,  // skip onboarding, seed demo data
+            &quot;-AppleLanguages&quot;, &quot;(en)&quot;,
+            &quot;-AppleLocale&quot;, &quot;en_US&quot;
+        ]
         app.launch()
 
         AccessibilityDriver.run([.tab(&quot;Connect&quot;)], app: app)
