@@ -64,13 +64,9 @@ struct CoverageEstimateForm: View {
 						runner.reset()
 						dismiss()
 					} label: {
-						Image(systemName: "xmark.circle.fill")
-							.font(.title2)
-							.symbolRenderingMode(.palette)
-							.foregroundStyle(.white, Color(.systemGray3))
+						Image(systemName: "xmark")
 					}
-					.buttonStyle(.plain)
-					.accessibilityLabel("Close")
+					.accessibilityLabel(String(localized: "Close", comment: "VoiceOver label for the close button"))
 				}
 				ToolbarItem(placement: .confirmationAction) {
 					Button("Estimate") {
@@ -116,7 +112,7 @@ struct CoverageEstimateForm: View {
 	private var transmitterSection: some View {
 		Section {
 			TextField("Site name", text: $params.name)
-				.accessibilityLabel("Site name")
+				.accessibilityLabel(String(localized: "Site name", comment: "VoiceOver label for the site name field"))
 
 			locationShortcuts
 
@@ -212,7 +208,7 @@ struct CoverageEstimateForm: View {
 			.padding(.vertical, 4)
 		}
 		.accessibilityLabel(Text(title))
-		.accessibilityHint("Fills the transmitter coordinates.")
+		.accessibilityHint(String(localized: "Fills the transmitter coordinates.", comment: "VoiceOver hint for the fill-coordinates button"))
 	}
 
 	private func apply(_ coordinate: CLLocationCoordinate2D) {

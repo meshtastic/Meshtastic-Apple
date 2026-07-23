@@ -143,6 +143,7 @@ extract_keywords() {
     local stop_words="the a an and or but in on at to for of with is are was were be been being have has had do does did will would could should may might shall can this that these those it its we you they he she what when where how which who i me my our your not over usually during use"
     cat "$html_file" \
         | sed 's/<[^>]*>//g' \
+        | sed 's/&[a-zA-Z0-9#]\{1,\};/ /g' \
         | tr '[:upper:]' '[:lower:]' \
         | tr -cs 'a-z0-9' '\n' \
         | grep -v '^[0-9]*$' \

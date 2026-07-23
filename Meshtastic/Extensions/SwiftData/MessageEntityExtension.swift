@@ -9,6 +9,7 @@
 import CoreLocation
 import Foundation
 import MapKit
+import MeshtasticProtobufs
 import SwiftUI
 
 extension MessageEntity {
@@ -127,6 +128,71 @@ extension MessageEntity {
 
 		// Fallback to hex node number if no matches
 		return hexFallback
+	}
+
+	/// Whether this message is a PKI-encrypted direct message. The same test MessageText's
+	/// `cornerBadges` uses for the lock badge.
+	func isEncryptedMessage(isCurrentUser: Bool) -> Bool {
+		(pkiEncrypted && realACK) || (!isCurrentUser && pkiEncrypted)
+	}
+
+	/// Whether this is a store-and-forward broadcast. The same test MessageText's `cornerBadges`
+	/// uses for the envelope badge.
+	var isStoreForwardMessage: Bool {
+		portNum == Int32(PortNum.storeForwardApp.rawValue)
+	}
+
+	/// Whether this message shows the detection-sensor overlay for the given destination. The same
+	/// test MessageText's `messageOverlays` uses for the sensor badge.
+	func isDetectionSensorMessage(destination: MessageDestination) -> Bool {
+		destination.showsDetectionSensorBadge && portNum == Int32(PortNum.detectionSensorApp.rawValue)
+	}
+
+	/// Whether the translated body is currently displayed in place of the original. The same test
+	/// MessageText's `messageOverlays` uses for the translate badge.
+	var isShowingTranslatedText: Bool {
+		showTranslatedMessage && hasTranslatedPayload
+	}
+
+	/// A status badge shown on a message bubble: an encryption lock, a signing shield, a
+	/// store-and-forward envelope, a detection-sensor icon, or a translation indicator. Each case
+	/// owns its own localized VoiceOver label so MessageText's individual badge overlays and the
+	/// message rows' combined `accessibilityLabel` always read the same text for the same badge.
+	enum StatusBadge {
+		case encrypted
+		case verified
+		case storeForward
+		case detectionSensor
+		case translated
+
+		var label: String {
+			switch self {
+			case .encrypted:
+				return String(localized: "Encrypted message", comment: "VoiceOver label for the PKI-encrypted direct message badge")
+			case .verified:
+				return String(localized: "Verified sender", comment: "VoiceOver label for the signed and verified broadcast badge")
+			case .storeForward:
+				return String(localized: "Store and forward message", comment: "VoiceOver label for the store-and-forward badge")
+			case .detectionSensor:
+				return String(localized: "Detection sensor", comment: "VoiceOver label for the detection sensor message badge")
+			case .translated:
+				return String(localized: "Showing translated text", comment: "VoiceOver label for the translated message badge")
+			}
+		}
+	}
+
+	/// The status badges currently active on this message for the given destination and sender
+	/// context. This is the single source of truth both MessageText's per-badge overlays and the
+	/// message rows' combined `accessibilityLabel` read from, so the combined label can never
+	/// silently drop a badge the overlay is showing (issue #016 T003).
+	func activeStatusBadges(destination: MessageDestination, isCurrentUser: Bool) -> [StatusBadge] {
+		var badges: [StatusBadge] = []
+		if isEncryptedMessage(isCurrentUser: isCurrentUser) { badges.append(.encrypted) }
+		if xeddsaSigned { badges.append(.verified) }
+		if isStoreForwardMessage { badges.append(.storeForward) }
+		if isDetectionSensorMessage(destination: destination) { badges.append(.detectionSensor) }
+		if isShowingTranslatedText { badges.append(.translated) }
+		return badges
 	}
 }
 

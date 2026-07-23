@@ -105,6 +105,7 @@ struct NodeList: View {
 				.tint(Color(UIColor.secondarySystemBackground))
 				.foregroundColor(.accentColor)
 				.buttonStyle(.borderedProminent)
+				.accessibilityLabel(showingHelp ? String(localized: "Hide help", comment: "VoiceOver label for the help toggle button when help is showing") : String(localized: "Show help", comment: "VoiceOver label for the help toggle button when help is hidden"))
 				Spacer()
 				if filters.isFiltering {
 					Button(action: {
@@ -118,8 +119,8 @@ struct NodeList: View {
 					.tint(Color(UIColor.secondarySystemBackground))
 					.foregroundColor(.accentColor)
 					.buttonStyle(.borderedProminent)
-					.accessibilityLabel("Reset node filters")
-					.accessibilityHint("Clears all active node filters.")
+					.accessibilityLabel(String(localized: "Reset node filters", comment: "VoiceOver label for the reset node filters button"))
+					.accessibilityHint(String(localized: "Clears all active node filters.", comment: "VoiceOver hint for the reset node filters button"))
 				}
 				Button(action: {
 					withAnimation {
@@ -132,6 +133,7 @@ struct NodeList: View {
 				.tint(Color(UIColor.secondarySystemBackground))
 				.foregroundColor(.accentColor)
 				.buttonStyle(.borderedProminent)
+				.accessibilityLabel(isEditingFilters ? String(localized: "Hide node filters", comment: "VoiceOver label for the node filter toggle button when filters are showing") : String(localized: "Show node filters", comment: "VoiceOver label for the node filter toggle button when filters are hidden"))
 			}
 			.controlSize(.regular)
 			.padding(5)

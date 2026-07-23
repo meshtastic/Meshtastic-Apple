@@ -50,7 +50,7 @@ struct StatusMessageConfig: View {
 									.foregroundColor(.secondary)
 							}
 							.buttonStyle(.plain)
-							.accessibilityLabel("Clear")
+							.accessibilityLabel(String(localized: "Clear", comment: "VoiceOver label for the clear text button"))
 						}
 					}
 					Text("\(nodeStatus.utf8.count)/80 bytes")

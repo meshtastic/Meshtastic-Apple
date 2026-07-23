@@ -28,7 +28,30 @@ struct UserMessageRow: View {
 	private var isCurrentUser: Bool {
 		Int64(preferredPeripheralNum) == message.fromUser?.num
 	}
-	
+
+	/// A single, natural-language description of the message bubble so VoiceOver reads one element
+	/// (sender + text + timestamp + security state) instead of separate fragments. Delivery/read
+	/// status stays its own labeled element (MessageDeliveryStatusLabel) directly after.
+	///
+	/// The badge portion is built from `MessageEntity.activeStatusBadges`, the same source of truth
+	/// MessageText's per-badge overlays read from, so this combined label can't silently drop a
+	/// badge (encrypted, verified, store-and-forward, detection sensor, translated) that the bubble
+	/// itself is showing (issue #016 T003).
+	private var messageAccessibilityLabel: String {
+		let text = message.displayedPayload
+		let time = message.timestamp.formatted(date: .abbreviated, time: .shortened)
+		var parts: [String]
+		if isCurrentUser {
+			parts = [String(localized: "You sent: \(text)", comment: "VoiceOver: label for a message you sent. %@ is the message text")]
+		} else {
+			let sender = message.fromUser?.longName ?? "Unknown".localized
+			parts = [String(localized: "Message from \(sender): \(text)", comment: "VoiceOver: label for a received message. First value is the sender, second is the message text")]
+		}
+		parts.append(time)
+		parts.append(contentsOf: message.activeStatusBadges(destination: .user(user), isCurrentUser: isCurrentUser).map(\.label))
+		return parts.joined(separator: ", ")
+	}
+
 	init(
 		message: MessageEntity,
 		replyMessage: MessageEntity?,
@@ -115,6 +138,7 @@ struct UserMessageRow: View {
 						.padding(10)
 						.overlay(RoundedRectangle(cornerRadius: 18).stroke(Color.blue, lineWidth: 0.5))
 					}
+					.accessibilityLabel(String(localized: "Replying to: \(replyMessage?.displayedPayload ?? "EMPTY MESSAGE")", comment: "VoiceOver: button that jumps to the quoted message being replied to. %@ is the quoted text"))
 					if !isCurrentUser { Spacer(minLength: 50) }
 				}
 			}
@@ -138,6 +162,7 @@ struct UserMessageRow: View {
 					if !isCurrentUser && message.fromUser != nil {
 						Text("\(message.fromUser?.longName ?? "Unknown".localized ) (\(message.fromUser?.userId ?? "?"))")
 							.font(.caption).foregroundColor(.gray).offset(y: 8)
+							.accessibilityHidden(true) // Folded into the message bubble's combined label
 					}
 					
 					// Message Bubble
@@ -152,6 +177,8 @@ struct UserMessageRow: View {
 						} onTapback: {
 							onTapback(message)
 						}
+						.accessibilityElement(children: .combine)
+						.accessibilityLabel(messageAccessibilityLabel)
 						
 						if let deliveryStatus, deliveryStatus.canRetry {
 							RetryButton(message: message, destination: .user(user), status: deliveryStatus)

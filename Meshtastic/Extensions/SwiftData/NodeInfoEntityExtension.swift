@@ -14,12 +14,17 @@ extension NodeInfoEntity {
 	// These use FetchDescriptor with fetchLimit to avoid loading entire relationship arrays.
 
 	var latestPosition: PositionEntity? {
-		// Fast path: the ingest layer keeps this populated, so reads are O(1).
-		if let cached = latestPositionCache {
+		// Fast path: the ingest layer keeps this populated, so reads are O(1). Screen the cached
+		// handle's liveness first — a row the ingest context deleted can linger here until this
+		// context processes the merge, and touching a persisted property on it traps in SwiftData.
+		// (The ingest side now reuses the latest row for near-duplicate fixes, so stale caches are
+		// rare; this is the reader-side backstop.)
+		if let cached = latestPositionCache, cached.modelContext != nil, !cached.isDeleted {
 			return cached
 		}
-		// Fallback for data created without the cache (migrated / restored / seeded): a sorted
-		// limit-1 query. Runs at most once per node until the cache warms on the next position.
+		// Fallback for data created without the cache (migrated / restored / seeded), or when the
+		// cached row is stale: a sorted limit-1 query. Runs at most once per node until the cache
+		// warms on the next position.
 		guard let ctx = modelContext else { return nil }
 		let nodeNum = self.num
 		var descriptor = FetchDescriptor<PositionEntity>(
@@ -236,6 +241,21 @@ extension NodeInfoEntity {
 		)
 		descriptor.fetchLimit = 1
 		return try? ctx.fetch(descriptor).first
+	}
+
+	/// The receiving radio's most recent noise floor (dBm) from Local Stats telemetry
+	/// (`DeviceMetrics.noise_floor`), or nil when it's absent, zero, or older than the
+	/// online threshold (2 h). Used to compute a real link margin (`rssi - noiseFloor`)
+	/// for signal-quality rating instead of guessed fixed RSSI thresholds.
+	var recentNoiseFloor: Int32? {
+		guard let stats = latestLocalStats,
+			  let time = stats.time,
+			  let noiseFloor = stats.noiseFloor,
+			  noiseFloor != 0,
+			  let twoHoursAgo = Calendar.current.date(byAdding: .minute, value: -120, to: Date()),
+			  time.compare(twoHoursAgo) == .orderedDescending
+		else { return nil }
+		return noiseFloor
 	}
 
 	var hasLocalStats: Bool {

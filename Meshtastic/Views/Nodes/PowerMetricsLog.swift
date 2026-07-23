@@ -77,10 +77,10 @@ struct PowerMetricsLog: View {
 										x: .value("Time", point.time ?? Date()),
 										y: .value("Voltage", voltage)
 									)
-									.foregroundStyle(by: .value("Series", "Voltage"))
+									.foregroundStyle(by: .value("Series", "Voltage".localized))
 									.interpolationMethod(.linear)
-									.accessibilityLabel("Voltage")
-									.accessibilityValue("X: \(point.time ?? Date()), Y: \(voltage)")
+									.accessibilityLabel(String(localized: "Voltage at \((point.time ?? Date()).formatted(date: .abbreviated, time: .shortened))", comment: "VoiceOver label for a voltage point on the power metrics chart. %@ is the timestamp."))
+									.accessibilityValue(String(localized: "\(voltage.formatted()) volts", comment: "VoiceOver value spoken as a voltage reading. %@ is the number."))
 								}
 
 								if let current {
@@ -88,16 +88,17 @@ struct PowerMetricsLog: View {
 										x: .value("Time", point.time ?? Date()),
 										y: .value("Current", current)
 									)
-									.foregroundStyle(by: .value("Series", "Current"))
+									.foregroundStyle(by: .value("Series", "Current".localized))
 									.interpolationMethod(.linear)
-									.accessibilityLabel("Current")
-									.accessibilityValue("X: \(point.time ?? Date()), Y: \(current)")
+									.accessibilityLabel(String(localized: "Current at \((point.time ?? Date()).formatted(date: .abbreviated, time: .shortened))", comment: "VoiceOver label for a current point on the power metrics chart. %@ is the timestamp."))
+									.accessibilityValue(String(localized: "\(current.formatted()) milliamps", comment: "VoiceOver value spoken as a current reading in milliamps. %@ is the number."))
 								}
 							}
 
 							if let chartSelection {
 								RuleMark(x: .value("Second", chartSelection, unit: .second))
 									.foregroundStyle(.tertiary.opacity(0.5))
+									.accessibilityHidden(true)
 							}
 
 						}
@@ -108,8 +109,8 @@ struct PowerMetricsLog: View {
 						.chartXSelection(value: $chartSelection)
 						.chartYScale(domain: minMax.min...minMax.max)
 						.chartForegroundStyleScale([
-							"Voltage": .blue,
-							"Current": .green
+							"Voltage".localized: .blue,
+							"Current".localized: .green
 						])
 						.chartLegend(position: .automatic, alignment: .bottom)
 					}
@@ -136,6 +137,7 @@ struct PowerMetricsLog: View {
 											m.powerCh1Current.map { Text("\(String(format: "%.2f", $0))mA") } ?? Text(Constants.nilValueIndicator)
 										}
 									}
+									.accessibilityElement(children: .combine)
 								}
 								Spacer()
 								HStack {
@@ -154,6 +156,7 @@ struct PowerMetricsLog: View {
 											m.powerCh2Current.map { Text("\(String(format: "%.2f", $0))mA") } ?? Text(Constants.nilValueIndicator)
 										}
 									}
+									.accessibilityElement(children: .combine)
 								}
 								Spacer()
 								HStack {
@@ -172,6 +175,7 @@ struct PowerMetricsLog: View {
 											m.powerCh3Current.map { Text("\(String(format: "%.2f", $0))mA") } ?? Text(Constants.nilValueIndicator)
 										}
 									}
+									.accessibilityElement(children: .combine)
 								}
 							}
 						}
@@ -313,10 +317,13 @@ struct PowerMetricsLog: View {
 				.navigationBarTitleDisplayMode(.inline)
 				.toolbar {
 					ToolbarItem(placement: .cancellationAction) {
-						Button("Cancel") {
+						Button {
 							channelLabels = loadChannelLabels()
 							isEditingLabels = false
+						} label: {
+							Image(systemName: "xmark")
 						}
+						.accessibilityLabel(String(localized: "Cancel", comment: "VoiceOver: dismiss the label power channels sheet"))
 					}
 					ToolbarItem(placement: .confirmationAction) {
 						Button("Save") {

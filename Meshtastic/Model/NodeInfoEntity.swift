@@ -151,8 +151,10 @@ extension NodeInfoEntity {
 	/// (PR #1668).
 	///
 	/// `nodes` is expected to already be sorted by `lastHeard` descending — as the
-	/// Settings `@Query` provides — so the partition yields favorites (most-recent
-	/// first) ahead of non-favorites (most-recent first). It's a `Bool`-keyed
+	/// Settings snapshot fetch provides — so the partition yields favorites (most-recent
+	/// first) ahead of non-favorites (most-recent first). Deleted or detached models are
+	/// screened out before their persisted properties are read because a snapshot can
+	/// outlive a node-database reset. It's a `Bool`-keyed
 	/// partition rather than a SwiftData `@Query` sort because `favorite` is a
 	/// `Bool`, and `Bool` is not `Comparable`, so it cannot be a `SortDescriptor`
 	/// key on a non-`NSObject` `@Model`.
@@ -161,7 +163,8 @@ extension NodeInfoEntity {
 	/// it is cheap to call per render, and deterministic across re-renders as long as
 	/// the input order is stable.
 	static func adminPickerOrder(_ nodes: [NodeInfoEntity]) -> [NodeInfoEntity] {
-		nodes.filter(\.favorite) + nodes.filter { !$0.favorite }
+		let liveNodes = nodes.filter { $0.modelContext != nil && !$0.isDeleted }
+		return liveNodes.filter(\.favorite) + liveNodes.filter { !$0.favorite }
 	}
 
 	/// The status message to render on read-only surfaces (node list card and node

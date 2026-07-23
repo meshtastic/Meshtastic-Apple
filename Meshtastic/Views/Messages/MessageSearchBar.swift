@@ -24,7 +24,11 @@ struct MessageSearchBar: View {
 				.font(.caption)
 				.monospacedDigit()
 				.foregroundStyle(.secondary)
-				.accessibilityLabel(matchCount == 0 ? Text("No matches") : Text("Match \(currentIndex + 1) of \(matchCount)"))
+				.accessibilityLabel(
+					matchCount == 0
+						? String(localized: "No matches", comment: "VoiceOver: no search matches found")
+						: String(localized: "Match \(currentIndex + 1) of \(matchCount)", comment: "VoiceOver: current match position out of the total match count")
+				)
 
 			Spacer()
 
@@ -32,13 +36,13 @@ struct MessageSearchBar: View {
 				Image(systemName: "chevron.up")
 			}
 			.disabled(matchCount == 0)
-			.accessibilityLabel("Previous match")
+			.accessibilityLabel(String(localized: "Previous match", comment: "VoiceOver label for the previous search match button"))
 
 			Button(action: onNext) {
 				Image(systemName: "chevron.down")
 			}
 			.disabled(matchCount == 0)
-			.accessibilityLabel("Next match")
+			.accessibilityLabel(String(localized: "Next match", comment: "VoiceOver label for the next search match button"))
 		}
 		.buttonStyle(.borderless)
 		.padding(.horizontal)
@@ -47,6 +51,8 @@ struct MessageSearchBar: View {
 	}
 
 	private var positionText: String {
-		matchCount == 0 ? "No matches" : "\(currentIndex + 1) of \(matchCount)"
+		matchCount == 0
+			? String(localized: "No matches", comment: "Visible search match-count label: no matches found")
+			: String(localized: "\(currentIndex + 1) of \(matchCount)", comment: "Visible search match-count label: current position of total matches")
 	}
 }

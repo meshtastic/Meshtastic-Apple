@@ -1,0 +1,65 @@
+# Fails a PR if the committed project no longer matches project.yml.
+# Keeps the hybrid model honest — the generated project stays in git, and this
+# is what stops it drifting from its source of truth.
+#
+# The XcodeGen version is pinned exactly (.xcodegen-version), not merely
+# floored: generator output is version-dependent (2.46.0 changed target
+# ordering, for example), so a byte comparison is only meaningful against a
+# fixed version. The prebuilt release binary is used rather than Homebrew,
+# whose available version varies by runner image and over time.
+name: XcodeGen drift
+
+on:
+  pull_request:
+    paths:
+      - "project.yml"
+      - ".xcodegen-version"
+      - "Meshtastic.xcodeproj/**"
+      - "**/*.swift"          # a new file should change nothing; prove it,
+                              # and catch files added outside a synced folder
+
+jobs:
+  check:
+    name: Committed project matches project.yml
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install the pinned XcodeGen
+        run: |
+          version=$(tr -d '[:space:]' < .xcodegen-version)
+          echo "Pinned XcodeGen: $version"
+          curl -fsSL -o /tmp/xcodegen.zip \
+            "https://github.com/yonaskolb/XcodeGen/releases/download/${version}/xcodegen.zip"
+          unzip -q /tmp/xcodegen.zip -d /tmp/xcodegen-dist
+          echo "/tmp/xcodegen-dist/xcodegen/bin" >> "$GITHUB_PATH"
+
+      - name: Assert the exact pinned version
+        run: |
+          want=$(tr -d '[:space:]' < .xcodegen-version)
+          have=$(xcodegen --version | sed 's/Version: //' | tr -d '[:space:]')
+          if [ "$have" != "$want" ]; then
+            echo "::error::XcodeGen $have found, but $want is pinned in" \
+                 ".xcodegen-version. Generator output is version-dependent," \
+                 "so the committed project is only reproducible with $want."
+            exit 1
+          fi
+          echo "XcodeGen $have matches the pin."
+
+      - name: Regenerate
+        run: xcodegen generate
+
+      - name: Fail on drift
+        run: |
+          # Stage first: plain `git diff` would miss newly generated files
+          # (a new .xcscheme, for example), which are untracked.
+          git add -A Meshtastic.xcodeproj
+          if ! git diff --staged --quiet -- Meshtastic.xcodeproj; then
+            echo "::error::Meshtastic.xcodeproj is out of date." \
+                 "Regenerate with XcodeGen $(tr -d '[:space:]' < .xcodegen-version)" \
+                 "and commit the result."
+            git diff --staged --stat -- Meshtastic.xcodeproj
+            git diff --staged -- Meshtastic.xcodeproj | head -200
+            exit 1
+          fi
+          echo "Committed project matches project.yml."

@@ -197,6 +197,7 @@ struct Connect: View {
 												Text("Communicating").font(.callout)
 													.foregroundColor(.orange)
 											}
+											.accessibilityElement(children: .combine)
 										case .retrying(let attempt):
 											HStack {
 												Image(systemName: "square.stack.3d.down.forward")
@@ -206,6 +207,7 @@ struct Connect: View {
 												Text("Retrying (attempt \(attempt))").font(.callout)
 													.foregroundColor(.orange)
 											}
+											.accessibilityElement(children: .combine)
 										default:
 											EmptyView()
 										}
@@ -1223,6 +1225,13 @@ struct NymeaDeviceConnectRow: View {
 		.padding([.bottom, .top])
 		.contentShape(Rectangle())
 		.onTapGesture { onSelect() }
+		.accessibilityElement(children: .combine)
+		.accessibilityLabel(device.name)
+		.accessibilityValue("\(String(localized: "Wi-Fi Setup")), \(signalStrengthAccessibilityDescription)")
+		.accessibilityAddTraits(.isButton)
+		.accessibilityAction {
+			onSelect()
+		}
 	}
 
 	private func rssiToSignalStrength(_ rssi: Int) -> BLESignalStrength {
@@ -1230,6 +1239,18 @@ struct NymeaDeviceConnectRow: View {
 		case ..<(-80): return .weak
 		case -80 ..< -65: return .normal
 		default: return .strong
+		}
+	}
+
+	/// Mirrors `SignalStrengthIndicator.accessibilityDescription`. Combining this row into a
+	/// single accessibility element (for the tap-gesture trait fix) replaces, rather than
+	/// appends to, the indicator's own `.accessibilityValue` — so its "Signal strength
+	/// weak/normal/strong" announcement has to be folded in here or VoiceOver users lose it.
+	private var signalStrengthAccessibilityDescription: String {
+		switch rssiToSignalStrength(device.rssi) {
+		case .weak: return String(localized: "Signal strength weak")
+		case .normal: return String(localized: "Signal strength normal")
+		case .strong: return String(localized: "Signal strength strong")
 		}
 	}
 }

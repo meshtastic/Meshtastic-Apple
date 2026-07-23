@@ -46,7 +46,6 @@ extension UserDefaults {
 		case provideLocation
 		case provideLocationInterval
 		case mapLayer
-		case meshMapDistance
 		case enableMapWaypoints
 		case meshMapRecentering
 		case meshMapShowNodeHistory
@@ -85,11 +84,14 @@ extension UserDefaults {
 		case purgeStaleNodeDays
 		case manualConnections
 		case testIntEnum
+		case testDoubleValue
 		case lastDeviceAPIUpdate
 		case lastFirmwareAPIUpdate
 		case firmwareUpdateNotificationKeys
 		case lastEventFirmwareAPIUpdate
 		case useEventTheme
+		case pairedPeripheralIds
+		case migratedPreferredPeripheralPairing
 	}
 
 	func reset() {
@@ -110,9 +112,6 @@ extension UserDefaults {
 
 	@UserDefault(.mapLayer, defaultValue: .standard)
 	static var mapLayer: MapLayer
-
-	@UserDefault(.meshMapDistance, defaultValue: 800000)
-	static var meshMapDistance: Double
 
 	@UserDefault(.enableMapWaypoints, defaultValue: true)
 	static var enableMapWaypoints: Bool
@@ -210,6 +209,38 @@ extension UserDefaults {
 		keys.insert(key)
 		firmwareUpdateNotificationKeys = keys.sorted()
 	}
+
+	/// UUIDs of BLE peripherals we have successfully bonded with (subscription to an
+	/// encrypted characteristic confirmed). Used only as a *hint*: on a first-ever
+	/// connection we allow a long window for the user to enter the pairing PIN, while
+	/// already-bonded peripherals keep the fast reconnect timeouts. Ground truth is
+	/// still the CoreBluetooth callbacks — a stale hint only affects the timeout length,
+	/// never correctness.
+	@UserDefault(.pairedPeripheralIds, defaultValue: [])
+	static var pairedPeripheralIds: [String]
+
+	static func isPairedPeripheral(_ id: UUID) -> Bool {
+		pairedPeripheralIds.contains(id.uuidString)
+	}
+
+	static func rememberPairedPeripheral(_ id: UUID) {
+		var ids = Set(pairedPeripheralIds)
+		guard ids.insert(id.uuidString).inserted else { return }
+		pairedPeripheralIds = ids.sorted()
+	}
+
+	static func forgetPairedPeripheral(_ id: UUID) {
+		var ids = Set(pairedPeripheralIds)
+		guard ids.remove(id.uuidString) != nil else { return }
+		pairedPeripheralIds = ids.sorted()
+	}
+
+	/// One-time flag: whether the legacy `preferredPeripheralId` has been migrated into
+	/// `pairedPeripheralIds`. Once set, the preferred-peripheral fallback is never consulted for
+	/// bonding decisions again, so a bond the user later removes can self-heal back to the long
+	/// pairing window instead of being pinned to the fast reconnect timeout.
+	@UserDefault(.migratedPreferredPeripheralPairing, defaultValue: false)
+	static var migratedPreferredPeripheralPairing: Bool
 	
 	static var manualConnections: [Device] {
 		get {

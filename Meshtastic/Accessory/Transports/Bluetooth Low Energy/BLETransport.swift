@@ -51,7 +51,7 @@ actor BLETransport: Transport {
 		if CBCentralManager.authorization != .notDetermined {
 			centralManager = CBCentralManager(delegate: delegate,
 											  queue: centralQueue,
-											  options: [CBCentralManagerOptionRestoreIdentifierKey: kCentralRestoreID]
+											  options: Self.centralManagerOptions(restoreIdentifier: kCentralRestoreID)
 			)
 		}
 		self.delegate.setTransport(self)
@@ -64,8 +64,31 @@ actor BLETransport: Transport {
 	private func createCentralManager() {
 		centralManager = CBCentralManager(delegate: delegate,
 										  queue: centralQueue,
-										  options: [CBCentralManagerOptionRestoreIdentifierKey: kCentralRestoreID]
+										  options: Self.centralManagerOptions(restoreIdentifier: kCentralRestoreID)
 		)
+	}
+
+	/// The options CBCentralManager is created with, factored out so the contents are testable
+	/// without standing up a real CoreBluetooth stack (static + value-out, same pattern as
+	/// `Connect.liveNode`).
+	///
+	/// `CBCentralManagerOptionShowPowerAlertKey` is explicitly `false`. BLE is one of several
+	/// transports — discovery starts unconditionally on all of them at launch
+	/// (`AccessoryManager.startDiscovery()`) regardless of which transport the user actually
+	/// connects with — so leaving the (default-`true`) system "Bluetooth is turned off" alert
+	/// enabled meant a TCP/WiFi-only user saw it on every launch. Worse, presenting that alert
+	/// blips `scenePhase` (inactive/background then active), and `appDidBecomeActive()` restarts
+	/// BLE discovery whenever there's no active connection yet — which re-triggers the alert,
+	/// producing the dismiss/reappear loop reported in #2139. Suppressing the system alert here
+	/// doesn't change BLE functionality: `BLETransport` already reacts to `.poweredOff` in
+	/// `handleCentralState` and surfaces it as transport status, and the explicit onboarding
+	/// "enable Bluetooth" flow (`BluetoothAuthorizationHelper`) uses its own default-options
+	/// manager, so that user-initiated prompt still appears where it belongs.
+	static func centralManagerOptions(restoreIdentifier: String) -> [String: Any] {
+		[
+			CBCentralManagerOptionRestoreIdentifierKey: restoreIdentifier,
+			CBCentralManagerOptionShowPowerAlertKey: false
+		]
 	}
 
 	func discoverDevices() -> AsyncStream<DiscoveryEvent> {
@@ -166,6 +189,12 @@ actor BLETransport: Transport {
 			}
 
 		case .poweredOff:
+			// Leave status settled on .error rather than immediately overwriting it — this used
+			// to be clobbered by a trailing `status = .ready` a few lines below, so BLE-off was
+			// never actually observable via `status` (issue #2161). `.ready` elsewhere in this
+			// file (see `stopScanning()`) means "poweredOn and available", which powered-off is
+			// the opposite of, so `.error` here also matches this file's own convention for
+			// every other non-powered-on state (.unauthorized, .unsupported, .resetting, etc.).
 			status = .error("Bluetooth is powered off")
 			if let connection = activeConnection {
 				Task {
@@ -174,8 +203,7 @@ actor BLETransport: Transport {
 					await self.connectionDidDisconnect(fromPeripheral: connection.peripheral)
 				}
 			}
-			status = .ready
-			
+
 			// Close the gate to make people wait
 			Task { await setupCompleteGate.reset() }
 

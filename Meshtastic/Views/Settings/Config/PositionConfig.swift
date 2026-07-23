@@ -321,7 +321,9 @@ struct PositionConfig: View {
 			) { fromUser, toUser in
 				var pc = Config.PositionConfig()
 				pc.positionBroadcastSmartEnabled = smartPositionEnabled
-				pc.gpsEnabled = gpsMode == 1
+				// gpsMode is the source of truth; the deprecated gpsEnabled field is
+				// intentionally not written (removed upstream, see issue #2024). Older
+				// firmware sending gpsEnabled is still tolerated on read (setPositionValues).
 				pc.gpsMode = Config.PositionConfig.GpsMode(rawValue: gpsMode) ?? Config.PositionConfig.GpsMode.notPresent
 				pc.fixedPosition = fixedPosition
 				pc.gpsUpdateInterval = UInt32(gpsUpdateInterval)
@@ -499,9 +501,16 @@ struct PositionConfig: View {
 	private func setFixedPosition() {
 		guard let nodeNum = accessoryManager.activeDeviceNum,
 			  nodeNum > 0 else { return }
+		// Resolve the user BEFORE the async hop and without force-unwraps: a device switch or
+		// node deletion mid-flow leaves `node`/`user` nil or invalidated, and `node!.user!`
+		// inside the Task crashed here in the field (SIGTRAP under Concurrency).
+		guard let user = node?.user, user.modelContext != nil else {
+			Logger.mesh.error("Set Position Failed — no live user for connected node")
+			return
+		}
 		Task {
 			do {
-				try await accessoryManager.setFixedPosition(fromUser: node!.user!, channel: 0)
+				try await accessoryManager.setFixedPosition(fromUser: user, channel: 0)
 			} catch {
 				Logger.mesh.error("Set Position Failed")
 			}
@@ -519,9 +528,14 @@ struct PositionConfig: View {
 	private func removeFixedPosition() {
 		guard let nodeNum = accessoryManager.activeDeviceNum,
 			  nodeNum > 0 else { return }
+		// Same guard as setFixedPosition: no force-unwraps across the async hop.
+		guard let user = node?.user, user.modelContext != nil else {
+			Logger.mesh.error("Remove Fixed Position Failed — no live user for connected node")
+			return
+		}
 		Task {
 			do {
-				try await accessoryManager.removeFixedPosition(fromUser: node!.user!, channel: 0)
+				try await accessoryManager.removeFixedPosition(fromUser: user, channel: 0)
 			} catch {
 				Logger.mesh.error("Remove Fixed Position Failed")
 			}

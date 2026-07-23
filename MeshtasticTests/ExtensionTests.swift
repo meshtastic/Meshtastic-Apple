@@ -90,6 +90,11 @@ struct ColorIsLightTests {
 		// Use explicit RGB yellow to ensure 3+ components
 		#expect(Color(red: 1, green: 1, blue: 0).isLight())
 	}
+
+	@Test func cyan_isLight() {
+		// WCAG relative luminance ~0.7874, well above the 0.179 cutoff
+		#expect(Color(red: 0, green: 1, blue: 1).isLight())
+	}
 }
 
 // MARK: - UIColor isLight
@@ -107,8 +112,24 @@ struct UIColorIsLightTests {
 		#expect(!UIColor.black.isLight())
 	}
 
-	@Test func red_isNotLight() {
-		#expect(!UIColor.red.isLight())
+	@Test func red_isLight() {
+		// Pure sRGB red has WCAG relative luminance ~0.2126, above the 0.179 crossover where
+		// black text starts giving better contrast than white (5.25:1 vs 4:1 here). The old
+		// BT.601-luma heuristic called red "dark"; the WCAG formula says otherwise.
+		#expect(UIColor.red.isLight())
+	}
+
+	@Test func yellow_isLight() {
+		// Pure sRGB yellow has WCAG relative luminance ~0.9278, nowhere near the 0.179
+		// cutoff. Use explicit RGB init (not UIColor.yellow) to guarantee 3+ components
+		// in cgColor.components.
+		#expect(UIColor(red: 1, green: 1, blue: 0, alpha: 1).isLight())
+	}
+
+	@Test func cyan_isLight() {
+		// Pure sRGB cyan has WCAG relative luminance ~0.7874, well above the 0.179
+		// cutoff, so it reads as light despite its low BT.601 luma under the old heuristic.
+		#expect(UIColor(red: 0, green: 1, blue: 1, alpha: 1).isLight())
 	}
 }
 

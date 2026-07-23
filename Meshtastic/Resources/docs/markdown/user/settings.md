@@ -22,6 +22,10 @@ General app preferences including map style, notification behavior, and theme. T
 
 Radio configuration requires a connected node. Select your node from the **Configure** section if you have multiple nodes.
 
+### Node selection
+
+The Configure picker lists live nodes from the current node database, with favorites first. If the node database is reset or the selected node disappears, Settings clears that selection instead of opening configuration for a stale node. Reconnect to a radio or choose a currently listed node to continue configuring it.
+
 ### LoRa
 
 LoRa settings control how your radio communicates on the mesh:
@@ -83,6 +87,8 @@ Wi-Fi SSID/password for TCP connection, NTP server, and Ethernet (supported hard
 ### Position
 
 GPS update interval, position precision, and smart position broadcasting. Enable **Broadcast Position** to share your location with the mesh.
+
+The **GPS Mode** selector (Enabled / Disabled / Not Present) is the single source of truth for the GPS state that the app writes to the radio. The older on/off `gpsEnabled` field it replaced is deprecated: the app no longer writes it, but still reads it from older firmware so existing devices keep working. No action is needed when upgrading — your GPS setting is preserved.
 
 ### Power
 

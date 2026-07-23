@@ -22,7 +22,7 @@ struct AddContactIntent: AppIntent {
 			throw AppIntentErrors.AppIntentError.notConnected
 		}
 
-		if contactUrl.absoluteString.lowercased().contains("meshtastic.org/v/#") {
+		if ContactURLHandler.canHandle(contactUrl) {
 			let components = self.contactUrl.absoluteString.components(separatedBy: "#")
 			// Extract contact information from the URL
 			if let contactData = components.last {

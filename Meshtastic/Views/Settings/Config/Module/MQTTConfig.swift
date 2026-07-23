@@ -122,9 +122,13 @@ struct MQTTConfig: View {
 							Slider(value: $mapPositionPrecision, in: 12...15, step: 1) {
 							} minimumValueLabel: {
 								Image(systemName: "plus")
+									.accessibilityHidden(true)
 							} maximumValueLabel: {
 								Image(systemName: "minus")
+									.accessibilityHidden(true)
 							}
+							.accessibilityLabel(String(localized: "Approximate location precision", comment: "VoiceOver label for the approximate location precision slider"))
+							.accessibilityValue(PositionPrecision(rawValue: Int(mapPositionPrecision))?.description ?? "")
 							Text(PositionPrecision(rawValue: Int(mapPositionPrecision))?.description ?? "")
 								.foregroundColor(.gray)
 								.font(.callout)
@@ -229,7 +233,7 @@ struct MQTTConfig: View {
 									.foregroundColor(.secondary)
 							}
 							.buttonStyle(.plain)
-							.accessibilityLabel(showPassword ? "Hide password" : "Show password")
+							.accessibilityLabel(showPassword ? String(localized: "Hide password", comment: "VoiceOver label for the hide password button") : String(localized: "Show password", comment: "VoiceOver label for the show password button"))
 						}
 						.keyboardType(.default)
 						.listRowSeparator(/*@START_MENU_TOKEN@*/.visible/*@END_MENU_TOKEN@*/)

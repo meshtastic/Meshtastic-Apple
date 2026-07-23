@@ -100,12 +100,21 @@ struct NodeListFilter: View {
 							in: -1...7,
 							step: 1
 						) {
-							Text("Speed")
+							Text("Hops Away")
 						} minimumValueLabel: {
 							Text("All")
 						} maximumValueLabel: {
 							Text("7")
 						}
+						.accessibilityValue(
+							filters.hopsAway < 0
+								? String(localized: "All", comment: "VoiceOver: hops-away filter set to no limit")
+								: filters.hopsAway == 0
+									? String(localized: "Direct", comment: "VoiceOver: hops-away filter set to direct connections only")
+									: filters.hopsAway == 1
+										? String(localized: "1 hop away", comment: "VoiceOver: hops-away filter set to 1 hop")
+										: String(localized: "\(Int(filters.hopsAway)) hops away", comment: "VoiceOver: hops-away filter value")
+						)
 
 						if filters.hopsAway >= 0 {
 							if filters.hopsAway == 0 {
@@ -153,6 +162,7 @@ struct NodeListFilter: View {
 					.symbolRenderingMode(.palette)
 					.foregroundStyle(.white, Color(.systemGray3))
 			}
+			.accessibilityLabel(String(localized: "Close", comment: "VoiceOver: dismiss this sheet"))
 			.buttonStyle(.plain)
 			.padding(.top, 12)
 			.padding(.leading, 14)

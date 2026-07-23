@@ -25,6 +25,8 @@ The app remembers each node, hardware target, and stable version it has already 
 3. The radio enters update mode (DFU) and the new firmware is transferred over BLE.
 4. The radio reboots automatically when the update completes.
 
+For ESP32 BLE updates, the app waits for the radio's final verification response before showing success. If the radio reports an error or does not send the final success response, the app keeps the update in a failed state instead of treating the upload as complete.
+
 | Icon | Progress | Description |
 |------|----------|-------------|
 | ![0%](../assets/screenshots/progressZero.png) | Starting | Update initiating — firmware binary downloading. |

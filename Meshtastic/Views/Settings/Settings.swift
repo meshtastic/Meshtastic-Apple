@@ -46,7 +46,7 @@ struct Settings: View {
 
 	private var moduleConfigurationNode: NodeInfoEntity? {
 		let nodeNum = selectedNode > 0 ? selectedNode : preferredNodeNum
-		return nodes.first(where: { $0.num == nodeNum })
+		return sortedNodes.first(where: { $0.num == nodeNum })
 	}
 
 	// The module-support helpers take a pre-resolved node + excluded-modules bitmask so
@@ -115,7 +115,7 @@ struct Settings: View {
 
 	var radioConfigurationSection: some View {
 		Section("Radio Configuration") {
-			let node = nodes.first(where: { $0.num == preferredNodeNum })
+			let node = sortedNodes.first(where: { $0.num == preferredNodeNum })
 			if let node,
 				let loRaConfig = node.loRaConfig,
 				let rc = RegionCodes(rawValue: Int(loRaConfig.regionCode)),
@@ -507,7 +507,7 @@ struct Settings: View {
 		NavigationStack(
 			path: $router.settingsPath
 		) {
-			let node = nodes.first(where: { $0.num == preferredNodeNum })
+			let node = sortedNodes.first(where: { $0.num == preferredNodeNum })
 			List {
 				NavigationLink(value: SettingsNavigationState.about) {
 					Label {
@@ -638,8 +638,8 @@ struct Settings: View {
 				}
 			}
 			.navigationDestination(for: SettingsNavigationState.self) { destination in
-				let node = nodes.first(where: { $0.num == preferredNodeNum })
-				let configNode = nodes.first(where: { $0.num == selectedNode })
+				let node = sortedNodes.first(where: { $0.num == preferredNodeNum })
+				let configNode = sortedNodes.first(where: { $0.num == selectedNode })
 				switch destination {
 				case .about:
 					AboutMeshtastic()
@@ -777,7 +777,12 @@ struct Settings: View {
 				guard router.selectedTab == .settings else { return }
 				refreshNodes()
 				while !Task.isCancelled {
-					try? await Task.sleep(for: .seconds(2))
+					do {
+						try await Task.sleep(for: .seconds(2))
+					} catch {
+						break
+					}
+					guard !Task.isCancelled else { break }
 					refreshNodes()
 				}
 			}
@@ -790,9 +795,14 @@ struct Settings: View {
 			}
 		}
 	}
-	
+
 	func setSelectedNode(to nodeNum: Int) {
-		if nodes.count > 1 {
+		guard sortedNodes.contains(where: { $0.num == nodeNum }) else {
+			selectedNode = 0
+			return
+		}
+
+		if sortedNodes.count > 1 {
 			if selectedNode == 0 {
 				self.selectedNode = Int(accessoryManager.isConnected ? nodeNum : 0)
 			}
@@ -803,8 +813,8 @@ struct Settings: View {
 
 	private func handleSelectedNodeChange(_ newValue: Int) {
 		guard selectedNode > 0,
-			let destinationNode = nodes.first(where: { $0.num == newValue }),
-			let connectedNode = nodes.first(where: { $0.num == preferredNodeNum }),
+			let destinationNode = sortedNodes.first(where: { $0.num == newValue }),
+			let connectedNode = sortedNodes.first(where: { $0.num == preferredNodeNum }),
 			let fromUser = connectedNode.user,
 			connectedNode.myInfo != nil,
 			let toUser = destinationNode.user else { return }

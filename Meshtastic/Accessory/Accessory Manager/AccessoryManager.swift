@@ -233,6 +233,20 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	var packetsSent: Int = 0
 	var packetsReceived: Int = 0
 
+	/// Packet count at the last periodic MeshPackets recycle (see `didReceive`). The ingest
+	/// actor's ModelContext registers every entity it inserts or faults and never lets go, so a
+	/// long high-traffic session accumulates them without bound (a sustained TCP stress replay
+	/// reached millions of live model objects / multi-GB RSS). Recreating the actor releases
+	/// them; connect-time recreation alone doesn't help a session that stays connected.
+	var packetsAtLastIngestRecycle: Int = 0
+	/// How many packets between recycles. Each processed packet leaves a handful of registered
+	/// objects behind, so this bounds the ingest context's working set to a few hundred MB at
+	/// worst. Under a saturating TCP replay this fires every couple of minutes; on a busy real
+	/// mesh every ~10 minutes; on a quiet mesh it may never fire — which is fine, since
+	/// accumulation is proportional to packets processed. Recycling costs one context teardown
+	/// plus cold caches on the next few fetches.
+	static let ingestRecycleInterval = 5_000
+
 	// Debug counter: MQTT client-proxy downlink packets dropped before forwarding
 	// to the device because they carried no payload (see MqttForwardFilter). NOT
 	// @Published — read only for debug logging, so it needn't drive view updates.
@@ -537,6 +551,16 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			}
 			// Logger.transport.info("✅ [Accessory] didReceive: \(fromRadio.payloadVariant.debugDescription)")
 			await self.processFromRadio(fromRadio)
+			// Periodically recycle the ingest actor so its ModelContext releases accumulated
+			// registered objects (see packetsAtLastIngestRecycle). Only while subscribed —
+			// never mid node-DB retrieval — and only here, between packets, where no in-flight
+			// handler still holds the retiring instance. Flush first: recreateShared's
+			// invalidate deliberately drops a retired instance's pending writes.
+			if case .subscribed = state, packetsReceived - packetsAtLastIngestRecycle >= Self.ingestRecycleInterval {
+				packetsAtLastIngestRecycle = packetsReceived
+				await MeshPackets.shared.flushDebouncedSaves()
+				MeshPackets.recreateShared()
+			}
 			Task {
 				await self.heartbeatResponseTimer?.cancel(withReason: "Data packet received")
 				await self.heartbeatTimer?.reset(delay: .seconds(Self.heartbeatInterval))

@@ -54,7 +54,7 @@ struct MessageText: View {
 	private var hasTranslatedText: Bool { message.hasTranslatedPayload }
 
 	private var isShowingTranslatedText: Bool {
-		message.showTranslatedMessage && hasTranslatedText
+		message.isShowingTranslatedText
 	}
 
 	private var canTranslate: Bool {
@@ -134,24 +134,41 @@ struct MessageText: View {
 			}
 	}
 	
+	/// A bottom-trailing status badge (encryption lock, signing shield, store-forward envelope) with
+	/// its symbol, tint, and localized VoiceOver label.
+	private struct CornerBadge: Identifiable {
+		/// Symbols are distinct within a single message's badge set, so this is a stable identity.
+		var id: String { symbol }
+		let symbol: String
+		let tint: Color
+		let label: String
+	}
+
 	/// Bottom-trailing status badges (encryption lock, signing shield, store-forward envelope), laid out
 	/// in a single row so they sit side by side instead of stacking on the same corner pixel when a
 	/// message qualifies for more than one (e.g. a signed store-and-forward broadcast).
-	private var cornerBadges: [(symbol: String, tint: Color)] {
-		var badges: [(symbol: String, tint: Color)] = []
-		// Lock = private: a PKI-encrypted DM.
-		if message.pkiEncrypted && message.realACK || !isCurrentUser && message.pkiEncrypted {
-			badges.append((symbol: "lock.circle.fill", tint: .green))
+	///
+	/// Symbols/tints are drawn per badge here; the underlying flags and labels come from
+	/// `MessageEntity.activeStatusBadges`, the single source of truth shared with the message rows'
+	/// combined `accessibilityLabel` (issue #016 T003).
+	private var cornerBadges: [CornerBadge] {
+		message.activeStatusBadges(destination: tapBackDestination, isCurrentUser: isCurrentUser).compactMap { badge in
+			switch badge {
+			// Lock = private: a PKI-encrypted DM.
+			case .encrypted:
+				return CornerBadge(symbol: "lock.circle.fill", tint: .green, label: badge.label)
+			// Shield = authentic: a radio-verified, XEdDSA-signed broadcast. Affirmative only —
+			// unsigned traffic shows nothing, and the ingest path only sets the flag on broadcasts,
+			// never DMs.
+			case .verified:
+				return CornerBadge(symbol: "checkmark.shield.fill", tint: .green, label: badge.label)
+			case .storeForward:
+				return CornerBadge(symbol: "envelope.circle.fill", tint: .gray, label: badge.label)
+			case .detectionSensor, .translated:
+				// Rendered as their own overlays below, not as corner badges.
+				return nil
+			}
 		}
-		// Shield = authentic: a radio-verified, XEdDSA-signed broadcast. Affirmative only — unsigned
-		// traffic shows nothing, and the ingest path only sets the flag on broadcasts, never DMs.
-		if message.xeddsaSigned {
-			badges.append((symbol: "checkmark.shield.fill", tint: .green))
-		}
-		if message.portNum == Int32(PortNum.storeForwardApp.rawValue) {
-			badges.append((symbol: "envelope.circle.fill", tint: .gray))
-		}
-		return badges
 	}
 
 	@ViewBuilder
@@ -162,17 +179,18 @@ struct MessageText: View {
 				Spacer()
 				HStack(spacing: 2) {
 					Spacer()
-					ForEach(Array(badges.enumerated()), id: \.offset) { _, badge in
+					ForEach(badges) { badge in
 						Image(systemName: badge.symbol)
 							.symbolRenderingMode(.palette)
 							.foregroundStyle(.white, badge.tint)
 							.font(.system(size: 20))
+							.accessibilityLabel(badge.label)
 					}
 				}
 				.offset(x: 8, y: 8)
 			}
 		}
-		if tapBackDestination.overlaySensorMessage && message.portNum == Int32(PortNum.detectionSensorApp.rawValue) {
+		if message.isDetectionSensorMessage(destination: tapBackDestination) {
 			Image(systemName: "sensor.fill")
 				.padding()
 				.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
@@ -180,6 +198,7 @@ struct MessageText: View {
 				.symbolRenderingMode(.multicolor)
 				.symbolEffect(.variableColor.reversing.cumulative, options: .repeat(20).speed(3))
 				.offset(x: 20, y: -20)
+				.accessibilityLabel(MessageEntity.StatusBadge.detectionSensor.label)
 		}
 		if isShowingTranslatedText {
 			Image(systemName: "translate")
@@ -188,13 +207,14 @@ struct MessageText: View {
 				.foregroundStyle(Color.blue)
 				.symbolRenderingMode(.hierarchical)
 				.offset(x: 38, y: 8)
+				.accessibilityLabel(MessageEntity.StatusBadge.translated.label)
 		}
 	}
 
 	private func handleURL(_ url: URL) -> OpenURLAction.Result {
 		saveChannelLink = nil
 		var addChannels = false
-		if url.absoluteString.lowercased().contains("meshtastic.org/v/#") {
+		if ContactURLHandler.canHandle(url) {
 			// Handle contact URL
 			ContactURLHandler.handleContactUrl(url: url, accessoryManager: AccessoryManager.shared)
 			return .handled // Prevent default browser opening
@@ -255,15 +275,6 @@ struct MessageText: View {
 			try context.save()
 		} catch {
 			Logger.data.error("Failed to clear translated message \(message.messageId, privacy: .public): \(error.localizedDescription, privacy: .public)")
-		}
-	}
-}
-
-private extension MessageDestination {
-	var overlaySensorMessage: Bool {
-		switch self {
-		case .user: return false
-		case .channel: return true
 		}
 	}
 }

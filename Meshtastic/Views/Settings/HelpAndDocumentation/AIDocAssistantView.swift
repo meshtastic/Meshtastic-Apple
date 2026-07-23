@@ -108,7 +108,12 @@ struct AIDocAssistantView: View {
 			.navigationBarTitleDisplayMode(.inline)
 			.toolbar {
 				ToolbarItem(placement: .cancellationAction) {
-					Button("Done") { dismiss() }
+					Button {
+						dismiss()
+					} label: {
+						Image(systemName: "xmark")
+					}
+					.accessibilityLabel(String(localized: "Done", comment: "VoiceOver: dismiss the Ask Chirpy assistant sheet"))
 				}
 			}
 		}
@@ -211,7 +216,7 @@ struct AIDocAssistantView: View {
 							.font(sourceLinkFont)
 							.foregroundStyle(Color.accentColor)
 						}
-						.accessibilityLabel("Open \(page.title) documentation")
+						.accessibilityLabel(String(localized: "Open \(page.title) documentation", comment: "VoiceOver label for a documentation source link"))
 					}
 					ForEach(message.sourceWebLinks) { webLink in
 						Link(destination: webLink.url) {
@@ -223,7 +228,7 @@ struct AIDocAssistantView: View {
 							.font(sourceLinkFont)
 							.foregroundStyle(Color.accentColor)
 						}
-						.accessibilityLabel("Open \(webLink.title) on meshtastic.org")
+						.accessibilityLabel(String(localized: "Open \(webLink.title) on meshtastic.org", comment: "VoiceOver label for a meshtastic.org web link"))
 					}
 				}
 				.padding(.leading, avatarWidth)
@@ -352,7 +357,7 @@ struct AIDocAssistantView: View {
 				.focused($isInputFocused)
 				.submitLabel(.send)
 				.onSubmit { Task { await sendQuery() } }
-				.accessibilityLabel("Question input")
+				.accessibilityLabel(String(localized: "Question input", comment: "VoiceOver label for the AI assistant question text field"))
 			Button {
 				Task { await sendQuery() }
 			} label: {
@@ -365,7 +370,7 @@ struct AIDocAssistantView: View {
 					)
 			}
 			.disabled(query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isLoading)
-			.accessibilityLabel(isLoading ? "Chirpy is loading an answer" : "Send question to Chirpy")
+			.accessibilityLabel(isLoading ? String(localized: "Chirpy is loading an answer", comment: "VoiceOver label for the send button while Chirpy is loading") : String(localized: "Send question to Chirpy", comment: "VoiceOver label for the send-question button"))
 		}
 		.padding(.horizontal, 12)
 		.padding(.vertical, 10)

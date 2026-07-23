@@ -78,6 +78,7 @@ struct RouteRecorder: View {
 							.glassButtonStyle()
 							.buttonBorderShape(.circle)
 							.matchedGeometryEffect(id: "Details Button", in: namespace)
+							.accessibilityLabel(locationsHandler.isRecording ? String(localized: "Recording route, view details", comment: "VoiceOver label for the route recording button while a recording is in progress") : String(localized: "View route recording details", comment: "VoiceOver label for the route recording button when idle"))
 
 							Spacer()
 						}
@@ -279,6 +280,7 @@ struct RouteRecorder: View {
 								.symbolRenderingMode(.palette)
 								.foregroundStyle(.white, Color(.systemGray3))
 						}
+						.accessibilityLabel(String(localized: "Close", comment: "VoiceOver: dismiss this sheet"))
 						.buttonStyle(.plain)
 						.padding(.top, 12)
 						.padding(.leading, 14)

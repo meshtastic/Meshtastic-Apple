@@ -16,4 +16,13 @@ enum MessageDestination {
 		case let .channel(channel): return channel.index
 		}
 	}
+
+	/// Whether the detection-sensor badge overlays messages sent to this destination. Detection
+	/// Sensor telemetry only ever overlays channel broadcasts, never direct messages.
+	var showsDetectionSensorBadge: Bool {
+		switch self {
+		case .user: return false
+		case .channel: return true
+		}
+	}
 }

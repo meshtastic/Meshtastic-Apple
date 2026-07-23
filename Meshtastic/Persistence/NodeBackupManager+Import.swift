@@ -40,6 +40,11 @@ extension NodeBackupManager {
 		let backupUsers = try backupContext.fetch(FetchDescriptor<UserEntity>())
 		var usersByNum: [Int64: UserEntity] = [:]
 		for src in backupUsers {
+			// Each `dst` is a freshly-created entity that we insert into the live context — this copy never
+			// overwrites the public key of an already-populated *live* record, so the inbound-mesh
+			// first-wins key protection (UpdateSwiftData / MeshPackets) doesn't apply here. This is a
+			// user-initiated restore of the user's own trusted backup, carrying `keyMatch`/`newPublicKey`
+			// forward verbatim.
 			let dst = UserEntity()
 			dst.hwDisplayName = src.hwDisplayName
 			dst.hwModel = src.hwModel

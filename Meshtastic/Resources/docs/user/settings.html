@@ -19,6 +19,8 @@
 </ul>
 <h2>Radio Configuration</h2>
 <p>Radio configuration requires a connected node. Select your node from the <strong>Configure</strong> section if you have multiple nodes.</p>
+<h3>Node selection</h3>
+<p>The Configure picker lists live nodes from the current node database, with favorites first. If the node database is reset or the selected node disappears, Settings clears that selection instead of opening configuration for a stale node. Reconnect to a radio or choose a currently listed node to continue configuring it.</p>
 <h3>LoRa</h3>
 <p>LoRa settings control how your radio communicates on the mesh:</p>
 <table>
@@ -109,6 +111,7 @@
 <p>Wi-Fi SSID/password for TCP connection, NTP server, and Ethernet (supported hardware only).</p>
 <h3>Position</h3>
 <p>GPS update interval, position precision, and smart position broadcasting. Enable <strong>Broadcast Position</strong> to share your location with the mesh.</p>
+<p>The <strong>GPS Mode</strong> selector (Enabled / Disabled / Not Present) is the single source of truth for the GPS state that the app writes to the radio. The older on/off <code>gpsEnabled</code> field it replaced is deprecated: the app no longer writes it, but still reads it from older firmware so existing devices keep working. No action is needed when upgrading — your GPS setting is preserved.</p>
 <h3>Power</h3>
 <p>Battery saving profiles, sleep modes, and minimum wake time. Critical for solar-powered router nodes.</p>
 <h2>Module Configuration</h2>

@@ -44,7 +44,6 @@
         "section": "user",
         "navOrder": 14,
         "keywords": [
-            "quot",
             "messages",
             "carplay",
             "siri",
@@ -73,7 +72,8 @@
             "device",
             "contact",
             "channels",
-            "automatically"
+            "automatically",
+            "ago"
         ],
         "charCount": 3378
     },
@@ -132,13 +132,13 @@
             "hardware",
             "connected",
             "connect",
+            "ble",
             "version",
             "transfer",
             "tap",
             "stable",
             "shows",
             "progress",
-            "ble",
             "standard",
             "settings",
             "screen",
@@ -151,9 +151,9 @@
             "node",
             "keep",
             "from",
-            "channel"
+            "failed"
         ],
-        "charCount": 3896
+        "charCount": 4163
     },
     {
         "id": "getting-started",
@@ -185,12 +185,12 @@
             "location",
             "ios",
             "first",
-            "amp",
             "within",
             "tip",
             "time",
             "tapping",
-            "started"
+            "started",
+            "setup"
         ],
         "charCount": 2899
     },
@@ -240,37 +240,37 @@
         "navOrder": 6,
         "keywords": [
             "map",
-            "tap",
             "nodes",
             "node",
+            "tap",
             "from",
-            "waypoint",
             "show",
+            "waypoint",
+            "position",
             "only",
             "coverage",
-            "position",
-            "mesh",
-            "site",
+            "location",
             "radio",
             "open",
+            "mesh",
+            "site",
             "lora",
-            "location",
+            "line",
             "estimate",
             "planner",
             "path",
+            "overlays",
             "options",
-            "line",
             "layer",
+            "geojson",
             "geofence",
+            "each",
             "device",
             "description",
             "box",
-            "bounding",
-            "waypoints",
-            "via",
-            "route"
+            "bounding"
         ],
-        "charCount": 8086
+        "charCount": 9906
     },
     {
         "id": "messages",
@@ -297,19 +297,19 @@
             "tap",
             "recipient",
             "node",
+            "meshtastic",
             "conversation",
             "after",
             "selection",
             "bold",
             "radio",
             "public",
+            "links",
             "field",
             "button",
-            "symbol",
-            "preview",
-            "press"
+            "symbol"
         ],
-        "charCount": 11637
+        "charCount": 11883
     },
     {
         "id": "mqtt",
@@ -374,20 +374,20 @@
             "show",
             "section",
             "row",
+            "radio",
             "public",
             "location",
             "direct",
+            "detail",
             "client",
             "supported",
+            "see",
+            "quality",
             "position",
             "mesh",
-            "map",
-            "long",
-            "local",
-            "links",
-            "hops"
+            "map"
         ],
-        "charCount": 9146
+        "charCount": 9447
     },
     {
         "id": "settings",
@@ -400,17 +400,17 @@
             "app",
             "settings",
             "device",
-            "position",
             "from",
+            "position",
             "firmware",
             "region",
             "mesh",
             "connected",
             "language",
             "configuration",
+            "nodes",
             "traffic",
             "only",
-            "nodes",
             "lora",
             "default",
             "translation",
@@ -418,15 +418,15 @@
             "module",
             "messages",
             "display",
-            "amp",
+            "configure",
             "translated",
             "set",
+            "off",
             "management",
             "import",
-            "file",
-            "enable"
+            "file"
         ],
-        "charCount": 11298
+        "charCount": 12005
     },
     {
         "id": "signal-meter",
@@ -434,38 +434,38 @@
         "section": "user",
         "navOrder": 12,
         "keywords": [
-            "signal",
-            "quot",
             "snr",
-            "rssi",
+            "signal",
             "noise",
+            "rssi",
             "meter",
+            "radio",
+            "limit",
             "meshtastic",
+            "floor",
             "than",
             "static",
-            "radio",
             "background",
+            "preset",
             "dbm",
             "bars",
-            "bad",
-            "understand",
-            "preset",
-            "loud",
-            "lora",
             "using",
+            "understand",
+            "two",
+            "still",
+            "margin",
+            "lora",
+            "local",
+            "clarity",
+            "below",
+            "bad",
+            "app",
+            "above",
             "uses",
-            "them",
-            "specific",
             "see",
-            "out",
-            "message",
-            "means",
-            "limit",
-            "like",
-            "good",
-            "friend"
+            "relative"
         ],
-        "charCount": 3992
+        "charCount": 4870
     },
     {
         "id": "tak",
@@ -499,10 +499,10 @@
             "zip",
             "tip",
             "read",
-            "quot",
             "primary",
             "position",
-            "pickers"
+            "pickers",
+            "lora"
         ],
         "charCount": 6073
     },
@@ -561,7 +561,6 @@
             "localizer",
             "local",
             "translate",
-            "amp",
             "translation",
             "review",
             "open",
@@ -580,7 +579,8 @@
             "english",
             "directly",
             "bin",
-            "automatically"
+            "automatically",
+            "version"
         ],
         "charCount": 4753
     },
@@ -602,7 +602,6 @@
             "distances",
             "distance",
             "date",
-            "amp",
             "telemetry",
             "meshtastic",
             "device",
@@ -619,7 +618,8 @@
             "change",
             "altitude",
             "uses",
-            "time"
+            "time",
+            "settings"
         ],
         "charCount": 4753
     },
@@ -680,7 +680,6 @@
             "mesh",
             "local",
             "channel",
-            "quot",
             "show",
             "region",
             "list",
@@ -694,10 +693,11 @@
             "message",
             "jul",
             "docs",
-            "amp",
             "waypoints",
             "watch",
-            "verified"
+            "verified",
+            "translation",
+            "translate"
         ],
         "charCount": 6609
     },
@@ -707,7 +707,6 @@
         "section": "developer",
         "navOrder": 3,
         "keywords": [
-            "quot",
             "settings",
             "view",
             "settingsnavigationstate",
@@ -736,7 +735,8 @@
             "create",
             "adding",
             "url",
-            "tests"
+            "tests",
+            "testing"
         ],
         "charCount": 2664
     },
@@ -830,7 +830,6 @@
             "accessorymanager",
             "logger",
             "root",
-            "quot",
             "packet",
             "extensions",
             "ble",
@@ -853,7 +852,8 @@
             "tips",
             "tcp",
             "swiftdata",
-            "subsystems"
+            "subsystems",
+            "strings"
         ],
         "charCount": 3538
     },
@@ -919,7 +919,6 @@
             "history",
             "device",
             "deep",
-            "amp",
             "mesh",
             "lora",
             "localmeshdiscovery",
@@ -931,7 +930,8 @@
             "view",
             "usernum",
             "user",
-            "urls"
+            "urls",
+            "tools"
         ],
         "charCount": 3527
     },
@@ -980,7 +980,6 @@
         "section": "developer",
         "navOrder": 7,
         "keywords": [
-            "quot",
             "locale",
             "unit",
             "measurement",
@@ -1003,13 +1002,14 @@
             "format",
             "device",
             "date",
-            "amp",
             "universal",
             "unitspeed",
             "unitlength",
             "text",
             "string",
-            "nodes"
+            "nodes",
+            "measurementformatter",
+            "formatter"
         ],
         "charCount": 6352
     },
@@ -1025,20 +1025,21 @@
             "node",
             "stats",
             "simctl",
-            "local",
             "nodes",
-            "store",
             "model",
+            "local",
             "context",
+            "app",
+            "store",
+            "schema",
             "packet",
             "history",
             "data",
             "child",
-            "app",
             "swift",
-            "schema",
-            "launch",
             "device",
+            "nodeinfoentity",
+            "launch",
             "var",
             "true",
             "telemetry",
@@ -1047,10 +1048,9 @@
             "per",
             "new",
             "messages",
-            "type",
-            "set"
+            "from"
         ],
-        "charCount": 11360
+        "charCount": 12601
     },
     {
         "id": "tak-protocol",
@@ -1065,7 +1065,6 @@
             "swift",
             "xml",
             "route",
-            "quot",
             "atak",
             "wire",
             "try",
@@ -1087,7 +1086,8 @@
             "zstd",
             "via",
             "supportstakv2",
-            "routes"
+            "routes",
+            "protobuf"
         ],
         "charCount": 7653
     },
@@ -1098,7 +1098,6 @@
         "navOrder": 6,
         "keywords": [
             "test",
-            "quot",
             "tests",
             "snapshots",
             "run",
@@ -1126,7 +1125,8 @@
             "try",
             "suite",
             "screenshots",
-            "scale"
+            "scale",
+            "saved"
         ],
         "charCount": 3697
     },
@@ -1136,38 +1136,38 @@
         "section": "developer",
         "navOrder": 4,
         "keywords": [
+            "connect",
             "transport",
             "accessorymanager",
-            "connect",
-            "serial",
-            "fromradio",
             "connection",
+            "ble",
+            "serial",
+            "radio",
+            "pairing",
+            "only",
+            "fromradio",
             "tcp",
             "swift",
-            "frame",
-            "ble",
-            "toradio",
-            "refresh",
-            "radio",
-            "packet",
-            "only",
+            "pin",
+            "peripheral",
             "from",
-            "decode",
-            "data",
-            "add",
+            "frame",
+            "first",
+            "error",
+            "disconnect",
+            "bond",
+            "window",
             "transports",
-            "swiftdata",
-            "send",
-            "published",
-            "protocol",
-            "protobuf",
-            "properties",
-            "handlefromradio",
-            "flow",
-            "field",
-            "disconnect"
+            "toradio",
+            "timeout",
+            "sheet",
+            "refresh",
+            "reconnect",
+            "packet",
+            "long",
+            "decode"
         ],
-        "charCount": 4859
+        "charCount": 7603
     },
     {
         "id": "whats-new",

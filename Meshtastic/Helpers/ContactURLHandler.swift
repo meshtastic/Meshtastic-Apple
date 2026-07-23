@@ -14,6 +14,15 @@ struct ContactURLHandler {
 
 	static var minimumContactVersion = "2.6.9"
 
+	static func canHandle(_ url: URL) -> Bool {
+		guard let host = url.host?.lowercased(), ["meshtastic.org", "www.meshtastic.org"].contains(host) else {
+			return false
+		}
+		guard let fragment = url.fragment, !fragment.isEmpty else { return false }
+		let pathSegments = url.pathComponents.filter { $0 != "/" }.map { $0.lowercased() }
+		return pathSegments == ["v"]
+	}
+
 	@MainActor
 	static func handleContactUrl(url: URL, accessoryManager: AccessoryManager) {
 		let supportedVersion = accessoryManager.checkIsVersionSupported(forVersion: minimumContactVersion)

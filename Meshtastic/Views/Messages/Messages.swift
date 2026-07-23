@@ -79,6 +79,10 @@ struct Messages: View {
 				.alignmentGuide(.listRowSeparatorLeading) {
 					$0[.leading]
 				}
+				.accessibilityElement(children: .combine)
+				.accessibilityLabel(unreadChannelMessages > 0
+					? String(localized: "Channels, \(unreadChannelMessages) unread", comment: "VoiceOver: Channels section with unread message count")
+					: String(localized: "Channels", comment: "VoiceOver: Channels section"))
 				NavigationLink(value: MessagesNavigationState.directMessages()) {
 					Spacer()
 					Label {
@@ -97,6 +101,10 @@ struct Messages: View {
 				.alignmentGuide(.listRowSeparatorLeading) {
 					$0[.leading]
 				}
+				.accessibilityElement(children: .combine)
+				.accessibilityLabel(unreadDirectMessages > 0
+					? String(localized: "Direct Messages, \(unreadDirectMessages) unread", comment: "VoiceOver: Direct Messages section with unread message count")
+					: String(localized: "Direct Messages", comment: "VoiceOver: Direct Messages section"))
 				Spacer()
 				TipView(MessagesTip(), arrowEdge: .top)
 					.tipViewStyle(PersistentTipStyle())

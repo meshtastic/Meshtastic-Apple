@@ -37,8 +37,8 @@ struct DetectionSensorLog: View {
 									y: .value("y", 1)
 								)
 							}
-							.accessibilityLabel("Bar Series")
-							.accessibilityValue("X: \(point.timestamp), Y: \(1)")
+							.accessibilityLabel(String(localized: "Detection event at \(point.timestamp.formatted(date: .abbreviated, time: .shortened))", comment: "VoiceOver label for a detection-event bar on the detection sensor chart. %@ is the timestamp."))
+							.accessibilityValue(String(localized: "Detected", comment: "VoiceOver value spoken for a detection-event bar on the detection sensor chart."))
 							.interpolationMethod(.cardinal)
 							.foregroundStyle(
 								.linearGradient(
@@ -55,7 +55,7 @@ struct DetectionSensorLog: View {
 					})
 					.chartXAxis(.automatic)
 					.chartForegroundStyleScale([
-						"Detection events": .green
+						"Detection events".localized: .green
 					])
 					.chartLegend(position: .automatic, alignment: .bottom)
 				}

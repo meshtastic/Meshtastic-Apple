@@ -20,6 +20,10 @@ Transports live in `Meshtastic/Accessory/Transports/`:
 
 Each transport conforms to a `MeshTransport` protocol that exposes `connect()`, `disconnect()`, `send(data:)`, and a `received` publisher.
 
+### BLETransport Status on Bluetooth State Changes
+
+`BLETransport.status` mirrors `CBManagerState` via `handleCentralState(_:central:)`. Only `.poweredOn` settles on `.ready`; every other state — including `.poweredOff` — settles on `.error(...)`. Concretely, when Bluetooth powers off, `status` becomes `.error("Bluetooth is powered off")` and stays there; it does not become `.ready`. This matches `.unauthorized`, `.unsupported`, `.resetting`, and `.unknown`, which all settle on `.error(...)` too.
+
 ## AccessoryManager Extension Map
 
 | Extension | Key Methods |
@@ -78,6 +82,15 @@ View / Service
 During an explicit radio switch from the Connect view, the app uses the same connect pipeline but enables an extra post-config refresh. Once `sendWantConfig()` completes for the newly selected device, the app first applies the bundled `DeviceHardware.json` catalog and bundled device images to SwiftData, then schedules `MeshtasticAPI.shared.refreshDevicesAPIData()` in the background. That network refresh updates the same locally cached hardware catalog from `https://api.meshtastic.org/resource/deviceHardware` without blocking the rest of the connection sequence.
 
 This refresh is only enabled for the switch-radio flow. Automatic reconnects and ordinary connects continue using the standard transport handshake without forcing a hardware catalog refresh.
+
+### BLE Pairing PIN Handshake
+
+A first-ever connection to an encrypted radio makes iOS present a 6-digit pairing PIN sheet. `BLEConnection` gates connect-completion on that bond so the sheet is not torn down before the user can respond:
+
+- **Notification-gated handshake.** After the required characteristics are discovered, `BLEConnection` does *not* resolve the connect step immediately. It subscribes to the `FROMNUM` notify characteristic (always notify-capable and encrypted) and holds the connect continuation open until `didUpdateNotificationState` confirms the subscription. On a first-ever connection that CoreBluetooth callback does not fire until the user dismisses the pairing sheet, so the connection stays alive while the PIN is entered.
+- **Pairing timeout.** `AccessoryManager+Connect` selects the Step 1 timeout based on whether the peripheral is already bonded: a first-time BLE bond gets a long window (90s) so there is time to read and type the PIN, while already-bonded peripherals and non-BLE transports keep the fast reconnect timeout (5s) so a dead/out-of-range radio still fails quickly.
+- **Pairing-failure classification.** A wrong or cancelled PIN surfaces as a `CBATTError` (insufficient authentication/encryption/authorization) or a `CBError` (`encryptionTimedOut`, `peerRemovedPairingInformation`). `BLEConnection.isPairingFailure(_:)` distinguishes these bond failures from benign per-characteristic errors (e.g. "notify not supported") so only real failures fail the connect. Cancelling the sheet often arrives as a plain peripheral disconnect, so `disconnect` also resumes any suspended connect continuation to fail Step 1 fast instead of waiting out the full window.
+- **Paired-hint lifecycle.** The set of bonded peripheral UUIDs is persisted in `UserDefaults.pairedPeripheralIds`. A confirmed subscription calls `rememberPairedPeripheral`; a bond failure or a teardown while still awaiting confirmation calls `forgetPairedPeripheral`, so a bond the user removes in iOS Settings self-heals back to the long pairing window on the next attempt. The legacy `preferredPeripheralId` is migrated into this list exactly once (guarded by `migratedPreferredPeripheralPairing`) so upgrading users skip the long window on their first reconnect without permanently pinning the fast timeout.
 
 ## Adding a New Packet Type
 
