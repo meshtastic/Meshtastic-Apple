@@ -48,7 +48,7 @@ struct RegionCodesTests {
 	}
 
 	@Test func totalCaseCount() {
-		#expect(RegionCodes.allCases.count == 38)
+		#expect(RegionCodes.allCases.count == 37)
 	}
 
 	@Test func eu433_hasDutyCycle10() {
@@ -642,6 +642,20 @@ struct LoRaFirmwareGatingTests {
 		#expect(selectable.contains(.tinyFast))
 		#expect(selectable.contains(.liteSlow))
 	}
+
+	@Test func deprecatedPreset_excludedFromSelectable() {
+		#expect(ModemPresets.longSlow.isDeprecated)
+		#expect(!ModemPresets.selectable(supports2_8: false).contains(.longSlow))
+		#expect(!ModemPresets.selectable(supports2_8: true).contains(.longSlow))
+		#expect(!ModemPresets.userSelectable.contains(.longSlow))
+	}
+
+	@Test func deprecatedPreset_stillExistsForDisplay() {
+		// longSlow remains a case so an existing radio's value round-trips and renders its label.
+		let preset = ModemPresets(rawValue: 1)
+		#expect(preset == .longSlow)
+		#expect(preset?.name == "LongSlow")
+	}
 }
 
 // MARK: - LoRaRegionPresetMap decoding (2.8 region→preset compatibility)
@@ -677,7 +691,7 @@ struct LoRaRegionPresetMapTests {
 			group([.tinyFast, .tinySlow], .tinyFast, true),
 			group([.narrowFast, .narrowSlow], .narrowSlow, true)
 		]
-		let group0Regions: [Region] = [.us, .eu433, .cn, .jp, .anz, .anz433, .ru, .kr, .tw, .in, .nz865, .th, .ua433, .ua868, .my433, .my919, .sg923, .ph433, .ph868, .ph915, .kz433, .kz863, .np865, .br902, .lora24]
+		let group0Regions: [Region] = [.us, .eu433, .cn, .jp, .anz, .anz433, .ru, .kr, .tw, .in, .nz865, .th, .ua433, .my433, .my919, .sg923, .ph433, .ph868, .ph915, .kz433, .kz863, .np865, .br902, .lora24]
 		map.regionGroups = group0Regions.map { entry($0, 0) }
 		map.regionGroups.append(entry(.eu868, 1))
 		map.regionGroups.append(entry(.eu866, 2))
@@ -735,7 +749,7 @@ struct LoRaRegionPresetMapTests {
 	}
 
 	@Test func decode_allRegionsPresent() {
-		#expect(referenceMap().decoded().count == 32)
+		#expect(referenceMap().decoded().count == 31)
 	}
 
 	@Test func absentRegion_hasNoConstraint() {
@@ -753,7 +767,7 @@ struct LoRaRegionPresetMapTests {
 		map.regionGroups.append(bad)
 		let decoded = map.decoded()
 		#expect(decoded[.eu874] == nil)   // skipped defensively (spec §4)
-		#expect(decoded.count == 32)      // unchanged
+		#expect(decoded.count == 31)      // unchanged
 	}
 
 	@Test func emptyMap_decodesEmpty() {

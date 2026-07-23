@@ -76,11 +76,17 @@ struct LoRaConfig: View {
 	/// one. Never empty (spec §6 — never show an empty picker).
 	private var availablePresets: [ModemPresets] {
 		let base = ModemPresets.selectable(supports2_8: supports2_8)
+		var presets = base
 		if let info = regionPresetInfo, !info.presets.isEmpty {
 			let constrained = base.filter { info.presets.contains($0.protoEnumValue()) }
-			if !constrained.isEmpty { return constrained }
+			if !constrained.isEmpty { presets = constrained }
 		}
-		return base
+		// Keep a currently-configured but deprecated preset (e.g. Long Slow on an existing
+		// radio) visible so the picker doesn't render a blank selection.
+		if let current = ModemPresets(rawValue: modemPreset), current.isDeprecated, !presets.contains(current) {
+			presets.append(current)
+		}
+		return presets
 	}
 
 	var body: some View {
@@ -108,6 +114,9 @@ struct LoRaConfig: View {
 					HStack(alignment: .top, spacing: 8) {
 						Image(systemName: licensed ? "checkmark.seal.fill" : "exclamationmark.triangle.fill")
 							.foregroundColor(licensed ? .green : .orange)
+							// Decorative status glyph; the adjacent "Licensed band" title and
+							// description already convey licensed/unlicensed state to VoiceOver.
+							.accessibilityHidden(true)
 						VStack(alignment: .leading, spacing: 2) {
 							Text("Licensed band")
 								.font(.callout).bold()
@@ -226,6 +235,8 @@ struct LoRaConfig: View {
 				HStack {
 					Image(systemName: "antenna.radiowaves.left.and.right")
 						.foregroundColor(.accentColor)
+						// Decorative icon; the Stepper carries the label for VoiceOver.
+						.accessibilityHidden(true)
 					Stepper(txPower == 0 ? "Max Transmit Power" : "\(txPower)dBm Transmit Power", value: $txPower, in: 0...30, step: 1)
 						.padding(5)
 				}

@@ -67,7 +67,7 @@ struct WaypointForm: View {
 								Image(systemName: "location")
 							}
 						}
-						.accessibilityLabel("Set to current location")
+						.accessibilityLabel(String(localized: "Set to current location", comment: "VoiceOver label for the use-my-location button"))
 						HStack {
 							if waypoint.mapCoordinate.latitude != 0 && waypoint.mapCoordinate.longitude != 0 {
 								DistanceText(meters: distance)
@@ -458,6 +458,7 @@ struct WaypointForm: View {
 						} label: {
 							Image(systemName: "square.and.pencil")
 						}
+						.accessibilityLabel(String(localized: "Edit waypoint", comment: "VoiceOver label for the edit waypoint button"))
 					}
 				}
 			}
@@ -560,6 +561,7 @@ struct WaypointForm: View {
 					.symbolRenderingMode(.palette)
 					.foregroundStyle(.white, Color(.systemGray3))
 			}
+			.accessibilityLabel(String(localized: "Close", comment: "VoiceOver: dismiss this sheet"))
 			.buttonStyle(.plain)
 			.padding(.top, 12)
 			.padding(.leading, 14)

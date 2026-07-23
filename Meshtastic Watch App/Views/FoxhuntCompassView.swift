@@ -105,12 +105,23 @@ struct FoxhuntCompassView: View {
 				WatchCircleText(
 					text: node.shortName.isEmpty ? "?" : node.shortName,
 					color: WatchCircleText.color(for: node.num),
-					circleSize: 34
+					circleSize: 34,
+					nodeName: node.longName
 				)
 				.offset(y: -(dialRadius + 64))
 			}
 			.offset(y: 31)
 			.frame(maxWidth: .infinity, maxHeight: .infinity)
+			// The compass is composed of purely decorative rotating shapes
+			// (ring, ticks, needle, cone). Ignore all of them and expose a
+			// single element whose value updates live as heading/bearing/
+			// distance change.
+			.accessibilityElement(children: .ignore)
+			.accessibilityLabel(String(localized: "Foxhunt compass for \(node.longName)", comment: "VoiceOver: label for the foxhunt compass pointing at a node"))
+			.accessibilityValue(accessibilityReadout)
+			// The reading changes as the wearer rotates in place; tell VoiceOver to
+			// re-poll the value while the element stays focused.
+			.accessibilityAddTraits(.updatesFrequently)
 		}
 		.onAppear {
 			locationManager.startUpdates()
@@ -154,6 +165,26 @@ struct FoxhuntCompassView: View {
 			}
 		}
 		.rotationEffect(.degrees(locationManager.heading))
+	}
+
+	// MARK: - Accessibility
+
+	/// A spoken, live-updating reading of the compass: current heading,
+	/// bearing to the target node, and remaining distance.
+	private var accessibilityReadout: String {
+		var parts: [String] = []
+
+		parts.append(String(localized: "Heading \(Int(locationManager.heading.rounded()) % 360) degrees", comment: "VoiceOver: current compass heading in degrees"))
+
+		if let bearing = bearingToNode() {
+			parts.append(String(localized: "Target bearing \(Int(bearing.rounded())) degrees", comment: "VoiceOver: bearing to the target node in degrees"))
+		}
+
+		if let dist = distanceToNode() {
+			parts.append(String(localized: "Distance \(formatDistance(dist))", comment: "VoiceOver: distance to the target node"))
+		}
+
+		return parts.joined(separator: ", ")
 	}
 
 	// MARK: - Calculations
@@ -327,13 +358,23 @@ private struct WatchCompassLabel {
 // MARK: - Color helper
 
 extension Color {
-	/// Quick luminance check so center text is readable on the distance color.
+	/// Quick luminance check so center text is readable on the distance color. Uses the WCAG 2.x
+	/// relative luminance formula (linearized sRGB channels weighted 0.2126/0.7152/0.0722) with the
+	/// >0.179 cutoff where black and white text give equal contrast (~4.5:1 either way) — the same
+	/// formula as `Color.isLight()` in the main target's `Meshtastic/Extensions/Color.swift`,
+	/// duplicated here because that file imports UIKit, which the watchOS target can't link.
 	var isWatchLight: Bool {
-		// Approximate: yellow and lighter colours are "light"
+		// yellow/orange/white can resolve to a <3-component (grayscale) CGColor outside a real view
+		// hierarchy, which would otherwise fall through to the guard below and under-report as
+		// "dark". All three are unambiguously light under WCAG luminance too (~0.9, ~0.48, and 1.0
+		// respectively), so this keeps them correct either way.
 		if self == .yellow || self == .orange || self == .white { return true }
-		// For arbitrary colours, resolve RGBA and compute relative luminance
+		// For arbitrary colours, resolve RGBA and compute WCAG relative luminance.
 		guard let components = cgColor?.components, components.count >= 3 else { return false }
-		let luminance = 0.299 * components[0] + 0.587 * components[1] + 0.114 * components[2]
-		return luminance > 0.6
+		func linearize(_ channel: Double) -> Double {
+			channel <= 0.04045 ? channel / 12.92 : pow((channel + 0.055) / 1.055, 2.4)
+		}
+		let luminance = 0.2126 * linearize(components[0]) + 0.7152 * linearize(components[1]) + 0.0722 * linearize(components[2])
+		return luminance > 0.179
 	}
 }

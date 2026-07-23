@@ -155,6 +155,7 @@ struct SecurityConfig: View {
 							.buttonStyle(.bordered)
 							.buttonBorderShape(.capsule)
 							.controlSize(.small)
+							.accessibilityLabel(String(localized: "Delete key backup", comment: "VoiceOver label for the delete key backup button"))
 						}
 						if let status = backupStatus {
 							let state = status.success
@@ -182,6 +183,7 @@ struct SecurityConfig: View {
 						.buttonStyle(.bordered)
 						.buttonBorderShape(.capsule)
 						.controlSize(.small)
+						.accessibilityLabel(String(localized: "Regenerate private key", comment: "VoiceOver label for the regenerate private key button"))
 					}
 					Text("Generate a new private key to replace the one currently in use. The public key will automatically be regenerated from your private key.")
 						.foregroundStyle(.secondary)
@@ -279,6 +281,10 @@ struct SecurityConfig: View {
 							// Should show a saved successfully alert once I know that to be true
 							// for now just disable the button after a successful save
 							if keyUpdated {
+								// This is the *local* node's own keypair being changed deliberately by the user in the
+								// Security config screen (gated behind `keyUpdated` + an explicit save), not an inbound
+								// mesh key — so the first-wins protection doesn't apply. `keyMatch`/`newPublicKey` track
+								// *remote* contacts' keys, so they are intentionally left untouched here.
 								node?.user?.publicKey = Data(base64Encoded: publicKey) ?? Data()
 								do {
 									try context.save()

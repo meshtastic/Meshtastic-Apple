@@ -42,7 +42,7 @@ struct AnimatedNodePin: View, Equatable {
 				.symbolRenderingMode(.palette)
 				.symbolEffect(.variableColor)
 				.padding()
-				.foregroundStyle(.white)
+				.foregroundStyle(swiftUIColor.isLight() ? .black : .white)
 				.background(swiftUIColor)
 				.clipShape(Circle())
 		} else {
@@ -73,6 +73,7 @@ struct AnimatedNodePin: View, Equatable {
 /// recycles/reconfigures the annotation view (which it does constantly on pan/zoom/declutter). The
 /// per-node `calculatedDelay` phase-shifts each node so they don't all pulse in unison.
 struct PulsingCircle: View {
+	@Environment(\.accessibilityReduceMotion) private var reduceMotion
 	let nodeColor: UIColor
 	let calculatedDelay: Double
 
@@ -80,6 +81,17 @@ struct PulsingCircle: View {
 	private let period: Double = 2.4
 
 	var body: some View {
+		if reduceMotion {
+			// Static halo (no breathing) when Reduce Motion is enabled.
+			Circle()
+				.fill(Color(nodeColor.lighter()).opacity(0.3))
+				.frame(width: 50, height: 50)
+		} else {
+			animatedHalo
+		}
+	}
+
+	private var animatedHalo: some View {
 		// Cap the clock to ~20 fps: a slow 2.4s breath looks identical, but with many ONLINE pins each
 		// hosted in an MKAnnotationView, an uncapped `.animation` clock re-renders every pin every
 		// display frame and never lets the map go idle (janky at rest on Mac Catalyst).

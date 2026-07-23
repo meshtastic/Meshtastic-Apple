@@ -73,9 +73,12 @@ struct SaveChannelQRCode: View {
 			.navigationBarTitleDisplayMode(.inline)
 			.toolbar {
 				ToolbarItem(placement: .cancellationAction) {
-					Button("Cancel") {
+					Button {
 						dismiss()
+					} label: {
+						Image(systemName: "xmark")
 					}
+					.accessibilityLabel(String(localized: "Cancel", comment: "VoiceOver: dismiss the channel QR code sheet"))
 				}
 				ToolbarItem(placement: .confirmationAction) {
 					Button(isSaving ? "Saving" : "Save") {

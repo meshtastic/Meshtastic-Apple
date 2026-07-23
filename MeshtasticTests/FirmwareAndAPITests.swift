@@ -3,6 +3,58 @@ import Testing
 
 @testable import Meshtastic
 
+// MARK: - ESP32 BLE OTA terminal response
+
+@Suite("ESP32 BLE OTA terminal response")
+struct ESP32BLEOTATerminalResponseTests {
+
+	@Test func ackAdvancesChunkAndKeepsStreaming() throws {
+		let decision = try ESP32OTAProtocol.chunkDecision(response: "ACK", nextOffset: 509, fileSize: 1_000)
+		#expect(decision == .advance)
+	}
+
+	@Test func chunkDecisionTrimsWhitespaceAroundResponse() throws {
+		let decision = try ESP32OTAProtocol.chunkDecision(response: " ACK\r\n", nextOffset: 509, fileSize: 1_000)
+		#expect(decision == .advance)
+	}
+
+	@Test func finalAckAdvancesToTerminalResponseWait() throws {
+		let decision = try ESP32OTAProtocol.chunkDecision(response: "ACK", nextOffset: 1_000, fileSize: 1_000)
+		#expect(decision == .advance)
+	}
+
+	@Test func okCompletesOnlyOnFinalChunk() throws {
+		let decision = try ESP32OTAProtocol.chunkDecision(response: "OK", nextOffset: 1_000, fileSize: 1_000)
+		#expect(decision == .complete)
+	}
+
+	@Test func prematureOkFailsClosed() {
+		#expect(throws: BLEOTAFailure.self) {
+			_ = try ESP32OTAProtocol.chunkDecision(response: "OK", nextOffset: 509, fileSize: 1_000)
+		}
+	}
+
+	@Test func errResponseFailsInsteadOfReportingSuccess() {
+		#expect(throws: BLEOTAFailure.self) {
+			_ = try ESP32OTAProtocol.chunkDecision(response: "ERR sha mismatch", nextOffset: 1_000, fileSize: 1_000)
+		}
+	}
+
+	@Test func terminalOkAfterLastAckCompletes() throws {
+		try ESP32OTAProtocol.validateTerminalResponse("OK")
+	}
+
+	@Test func validateTerminalResponseTrimsWhitespace() throws {
+		try ESP32OTAProtocol.validateTerminalResponse(" OK \n")
+	}
+
+	@Test func terminalErrAfterLastAckFails() {
+		#expect(throws: BLEOTAFailure.self) {
+			try ESP32OTAProtocol.validateTerminalResponse("ERR verify failed")
+		}
+	}
+}
+
 // MARK: - FirmwareFileError
 
 @Suite("FirmwareFileError")

@@ -159,6 +159,7 @@ struct LogDetail: View {
 					.symbolRenderingMode(.palette)
 					.foregroundStyle(.white, Color(.systemGray3))
 			}
+			.accessibilityLabel(String(localized: "Close", comment: "VoiceOver: dismiss this sheet"))
 			.buttonStyle(.plain)
 			.padding(.top, 12)
 			.padding(.leading, 14)

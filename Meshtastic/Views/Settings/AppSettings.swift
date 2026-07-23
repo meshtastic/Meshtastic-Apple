@@ -177,6 +177,8 @@ struct AppSettings: View {
 							} maximumValueLabel: {
 								Text("180")
 							}
+							.accessibilityLabel(String(localized: "Days before purging stale nodes", comment: "VoiceOver label for the purge stale nodes days slider"))
+							.accessibilityValue(String(localized: "\(Int(purgeStaleNodeDays)) days", comment: "VoiceOver value announcing the number of days before purging stale nodes"))
 						}
 						Text("Favorited and ignored nodes are always retained. Other nodes are cleared from the app database on the schedule set by the user. (Nodes with PKC keys are always retained for at least 7 days.) This feature only purges nodes from the app that are not stored in the device node database.")
 							.foregroundStyle(.secondary)

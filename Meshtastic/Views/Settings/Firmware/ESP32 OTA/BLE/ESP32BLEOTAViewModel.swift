@@ -178,9 +178,8 @@ final class ESP32BLEOTAViewModel: ObservableObject {
 					throw BLEOTAFailure.unexpectedResponse("Encoding Error")
 				}
 				
-				let trimmed = respStr.trimmingCharacters(in: .whitespacesAndNewlines)
-				
-				if trimmed == "ACK" {
+				switch try ESP32OTAProtocol.chunkDecision(response: respStr, nextOffset: nextOffset, fileSize: fileSize) {
+				case .advance:
 					// Normal chunk processed successfully
 					offset = nextOffset
 					
@@ -189,27 +188,28 @@ final class ESP32BLEOTAViewModel: ObservableObject {
 						self.transferProgress = Double(offset) / Double(fileSize)
 					}
 					
-				} else if trimmed == "OK" {
+				case .complete:
 					// "OK" indicates completion (hash verified, partition set).
-					// This should only happen on the very last chunk.
-					if nextOffset >= fileSize {
-						offset = nextOffset
-						self.transferProgress = 1.0
-						self.otaStatus = .completed
-						self.statusMessage = "Success! Rebooting..."
-						Logger.services.info("OTA Success (OK received on last chunk)")
-						break // Exit loop
-					} else {
-						// OK received before we finished sending? Error.
-						throw BLEOTAFailure.unexpectedResponse("Premature OK received at offset \(nextOffset)")
-					}
-					
-				} else {
-					// Likely ERR or garbage
-					throw BLEOTAFailure.unexpectedResponse(trimmed)
+					offset = nextOffset
+					markUploadCompleted(logMessage: "OTA Success (OK received on last chunk)")
 				}
 			}
 			
+			if self.otaStatus != .completed, offset >= fileSize {
+				guard let terminalData = try await withTimeout(seconds: ESP32OTAProtocol.terminalResponseTimeout, operation: {
+					await iterator.next()
+				}) else {
+					throw BLEOTAFailure.disconnected
+				}
+
+				guard let terminalResponse = String(data: terminalData, encoding: .utf8) else {
+					throw BLEOTAFailure.unexpectedResponse("Encoding Error")
+				}
+
+				try ESP32OTAProtocol.validateTerminalResponse(terminalResponse)
+				markUploadCompleted(logMessage: "OTA Success (OK received after final ACK)")
+			}
+
 			// Double check completion state
 			if self.otaStatus != .completed {
 				throw BLEOTAFailure.unexpectedResponse("Stream ended without OK")
@@ -225,6 +225,13 @@ final class ESP32BLEOTAViewModel: ObservableObject {
 	}
 	
 	// MARK: - Helpers
+
+	private func markUploadCompleted(logMessage: String) {
+		self.transferProgress = 1.0
+		self.otaStatus = .completed
+		self.statusMessage = "Success! Rebooting..."
+		Logger.services.info("\(logMessage)")
+	}
 	
 	/// Executes an async operation with a strict timeout.
 	/// - Parameters:

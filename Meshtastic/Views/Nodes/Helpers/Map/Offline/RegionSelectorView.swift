@@ -85,7 +85,9 @@ struct RegionSelectorView: View {
 		GeometryReader { geo in
 			MapReader { proxy in
 				ZStack(alignment: .bottom) {
-					Map(position: $camera)
+					// Pan/zoom only, no rotate/pitch: keeps the map north-up so the move handle's
+					// "Move north/south/east/west" VoiceOver actions stay screen-accurate.
+					Map(position: $camera, interactionModes: [.pan, .zoom])
 						.mapStyle(.standard(elevation: .flat, pointsOfInterest: .excludingAll))
 						.onMapCameraChange(frequency: .continuous) { context in
 							currentRegion = context.region
@@ -149,6 +151,14 @@ struct RegionSelectorView: View {
 				.background(Circle().fill(.white).shadow(radius: 2))
 				.position(x: selectionRect.midX, y: selectionRect.midY)
 				.gesture(moveGesture(proxy: proxy, size: size))
+				.accessibilityElement()
+				.accessibilityLabel(String(localized: "Move selection", comment: "VoiceOver label for the region rectangle's move handle"))
+				.accessibilityHint(String(localized: "Repositions the selected download area on the map", comment: "VoiceOver hint for the region rectangle's move handle"))
+				.accessibilityAddTraits(.isButton)
+				.accessibilityAction(named: String(localized: "Move north", comment: "VoiceOver custom action: nudge the region area up")) { nudgeMove(dx: 0, dy: -1, proxy: proxy, size: size) }
+				.accessibilityAction(named: String(localized: "Move south", comment: "VoiceOver custom action: nudge the region area down")) { nudgeMove(dx: 0, dy: 1, proxy: proxy, size: size) }
+				.accessibilityAction(named: String(localized: "Move east", comment: "VoiceOver custom action: nudge the region area right")) { nudgeMove(dx: 1, dy: 0, proxy: proxy, size: size) }
+				.accessibilityAction(named: String(localized: "Move west", comment: "VoiceOver custom action: nudge the region area left")) { nudgeMove(dx: -1, dy: 0, proxy: proxy, size: size) }
 
 			// Corner handles — drag to reshape.
 			ForEach(Corner.allCases, id: \.self) { corner in
@@ -159,6 +169,12 @@ struct RegionSelectorView: View {
 					.shadow(radius: 2)
 					.position(handlePosition(corner))
 					.gesture(resizeGesture(corner, proxy: proxy, size: size))
+					.accessibilityElement()
+					.accessibilityLabel(cornerLabel(corner))
+					.accessibilityHint(String(localized: "Adjustable. Swipe up to expand, swipe down to shrink the selected area from this corner", comment: "VoiceOver hint for a region rectangle corner handle"))
+					.accessibilityAdjustableAction { direction in
+						nudgeCorner(corner, direction: direction, proxy: proxy, size: size)
+					}
 			}
 		}
 		.frame(width: size.width, height: size.height, alignment: .topLeading)
@@ -172,6 +188,42 @@ struct RegionSelectorView: View {
 		case .bottomLeading: return CGPoint(x: selectionRect.minX, y: selectionRect.maxY)
 		case .bottomTrailing: return CGPoint(x: selectionRect.maxX, y: selectionRect.maxY)
 		}
+	}
+
+	private func cornerLabel(_ corner: Corner) -> String {
+		switch corner {
+		case .topLeading: return String(localized: "Top leading corner handle", comment: "VoiceOver label for the region rectangle's top leading resize handle")
+		case .topTrailing: return String(localized: "Top trailing corner handle", comment: "VoiceOver label for the region rectangle's top trailing resize handle")
+		case .bottomLeading: return String(localized: "Bottom leading corner handle", comment: "VoiceOver label for the region rectangle's bottom leading resize handle")
+		case .bottomTrailing: return String(localized: "Bottom trailing corner handle", comment: "VoiceOver label for the region rectangle's bottom trailing resize handle")
+		}
+	}
+
+	/// VoiceOver equivalent of `moveGesture`: nudges the whole rect a fixed step in one
+	/// screen-space direction, then clamps and recomputes bounds exactly like a drag does.
+	private func nudgeMove(dx: CGFloat, dy: CGFloat, proxy: MapProxy, size: CGSize) {
+		let step: CGFloat = 20
+		var rect = selectionRect
+		rect.origin.x += dx * step
+		rect.origin.y += dy * step
+		selectionRect = clampedMove(rect, in: size)
+		recompute(proxy: proxy, size: size)
+	}
+
+	/// VoiceOver equivalent of `resizeGesture`: increment grows the rect from `corner` by a
+	/// fixed step (moving the corner away from the rect's center), decrement shrinks it back
+	/// toward center, using the same per-corner min/max math the drag gesture uses.
+	private func nudgeCorner(_ corner: Corner, direction: AccessibilityAdjustmentDirection, proxy: MapProxy, size: CGSize) {
+		let step: CGFloat = direction == .increment ? 20 : -20
+		var minX = selectionRect.minX, minY = selectionRect.minY, maxX = selectionRect.maxX, maxY = selectionRect.maxY
+		switch corner {
+		case .topLeading: minX -= step; minY -= step
+		case .topTrailing: maxX += step; minY -= step
+		case .bottomLeading: minX -= step; maxY += step
+		case .bottomTrailing: maxX += step; maxY += step
+		}
+		selectionRect = normalizedClamped(minX, minY, maxX, maxY, in: size)
+		recompute(proxy: proxy, size: size)
 	}
 
 	private func moveGesture(proxy: MapProxy, size: CGSize) -> some Gesture {

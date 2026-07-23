@@ -84,9 +84,12 @@ struct UF2MassStorageView: View {
 			.toolbar {
 				ToolbarItem(placement: .navigationBarLeading) {
 					// 2. Create a button that calls dismiss()
-					Button("Done") {
+					Button {
 						dismiss()
+					} label: {
+						Image(systemName: "xmark")
 					}
+					.accessibilityLabel(String(localized: "Done", comment: "VoiceOver: dismiss the UF2 firmware update sheet"))
 				}
 			}
 		}.fileExporter(

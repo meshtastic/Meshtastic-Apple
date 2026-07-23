@@ -183,8 +183,13 @@ struct WatchNode: Codable {
 	let snr: Float?
 
 	static func make(from nodeInfo: NodeInfoEntity, userLocation: CLLocation, maxDistanceMeters: Double) -> WatchNode? {
-		guard let user = nodeInfo.user else { return nil }
-		guard let pos = nodeInfo.latestPosition else { return nil }
+		// Liveness screens: this walk runs over every node with a user, often while the app is
+		// backgrounded with ingestion still churning — an entity whose row another context
+		// deleted traps in SwiftData's persisted-property accessor the moment it's read
+		// (the 2.7.17 `58e0e820` background crash). Skip anything not verifiably live.
+		guard nodeInfo.modelContext != nil, !nodeInfo.isDeleted else { return nil }
+		guard let user = nodeInfo.user, user.modelContext != nil, !user.isDeleted else { return nil }
+		guard let pos = nodeInfo.latestPosition, pos.modelContext != nil, !pos.isDeleted else { return nil }
 
 		let latI = pos.latitudeI
 		let lonI = pos.longitudeI

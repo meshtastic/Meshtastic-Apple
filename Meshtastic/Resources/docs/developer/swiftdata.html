@@ -70,6 +70,8 @@ No packets for 2s → save() fires
 }
 </code></pre>
 <p>Use <code>@Query</code> for data that drives the view. Use <code>context.insert(_:)</code> / <code>context.delete(_:)</code> for mutations. Mutations on the main context are safe on the main actor.</p>
+<h3>Snapshot liveness</h3>
+<p>Views that intentionally keep a throttled <code>@State</code> snapshot instead of a live <code>@Query</code> must treat the snapshot as invalid after a node-database reset or a context teardown. Before reading persisted properties from a <code>NodeInfoEntity</code> held in such a snapshot, require both <code>modelContext != nil</code> and <code>!isDeleted</code>. <code>NodeInfoEntity.adminPickerOrder(_:)</code> applies this rule for the Settings node picker, so deleted or detached nodes cannot be selected or rendered from a stale snapshot.</p>
 <h2>Background Writes</h2>
 <p>For writes triggered by incoming radio packets (off the main thread), use the <code>MeshPackets</code> <code>@ModelActor</code>:</p>
 <pre><code class="language-swift">let actor = MeshPackets(modelContainer: PersistenceController.shared.container)
@@ -173,6 +175,29 @@ static let migrateV1toV2 = MigrationStage.custom(
 <li>Update <code>MeshtasticSchema.current</code> to point to the new version.</li>
 </ol>
 <div class="warning-callout"><strong>Warning — Never delete a <code>VersionedSchema</code>.</strong> Migration history must be preserved or the migration plan will fail on devices that skipped intermediate versions.</div>
+<h3>Deprecated Properties</h3>
+<p>When a proto field is deprecated upstream and the app stops using it, <strong>do not remove the corresponding <code>@Model</code> property</strong> — deleting a stored property is a schema change that would require a migration, and while V1 is unreleased there is nowhere to migrate from. Instead, retain the property as-is so:</p>
+<ul>
+<li>the SwiftData schema is unchanged, and</li>
+<li>any values already persisted on-device remain readable.</li>
+</ul>
+<p>The field simply stops being surfaced in the UI, read, or actively written by app code. Mark it with a doc comment noting the deprecation and the tracking issue. Current examples:</p>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Property</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CannedMessageConfigEntity</code></td>
+<td><code>enabled</code></td>
+<td>#2021 — no successor; retained for schema/value compatibility, no longer read or written</td>
+</tr>
+</tbody>
+</table>
 <h2>Query Helpers</h2>
 <p><code>QuerySwiftData.swift</code> contains helper functions for common fetches:</p>
 <pre><code class="language-swift">let node = getNodeInfo(id: nodeNum, context: context)

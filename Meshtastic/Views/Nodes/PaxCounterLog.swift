@@ -38,8 +38,8 @@ struct PaxCounterLog: View {
 							y: .value("y", (point.wifi + point.ble))
 						)
 					}
-					.accessibilityLabel("Total PAX")
-					.accessibilityValue("X: \(pointTime), Y: \(point.wifi + point.ble)")
+					.accessibilityLabel(String(localized: "Total PAX at \(pointTime.formatted(date: .abbreviated, time: .shortened))", comment: "VoiceOver label for a total PAX point on the PAX counter chart. %@ is the timestamp."))
+					.accessibilityValue(String(localized: "\((point.wifi + point.ble).formatted()) devices", comment: "VoiceOver value spoken as a device count on the PAX counter chart. %@ is the number."))
 					.foregroundStyle(paxChartColor)
 					.interpolationMethod(.cardinal)
 
@@ -49,8 +49,8 @@ struct PaxCounterLog: View {
 							y: .value("y", point.wifi)
 						)
 					}
-					.accessibilityLabel("WiFi")
-					.accessibilityValue("X: \(pointTime), Y: \(point.wifi)")
+					.accessibilityLabel(String(localized: "Wi-Fi devices at \(pointTime.formatted(date: .abbreviated, time: .shortened))", comment: "VoiceOver label for a Wi-Fi device-count point on the PAX counter chart. %@ is the timestamp."))
+					.accessibilityValue(String(localized: "\(point.wifi.formatted()) devices", comment: "VoiceOver value spoken as a device count on the PAX counter chart. %@ is the number."))
 					.foregroundStyle(wifiChartColor)
 
 					Plot {
@@ -59,8 +59,8 @@ struct PaxCounterLog: View {
 							y: .value("y", point.ble)
 						)
 					}
-					.accessibilityLabel("BLE")
-					.accessibilityValue("X: \(pointTime), Y: \(point.ble)")
+					.accessibilityLabel(String(localized: "BLE devices at \(pointTime.formatted(date: .abbreviated, time: .shortened))", comment: "VoiceOver label for a BLE device-count point on the PAX counter chart. %@ is the timestamp."))
+					.accessibilityValue(String(localized: "\(point.ble.formatted()) devices", comment: "VoiceOver value spoken as a device count on the PAX counter chart. %@ is the number."))
 					.foregroundStyle(bleChartColor)
 				}
 			}

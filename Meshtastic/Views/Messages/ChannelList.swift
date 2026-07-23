@@ -47,7 +47,10 @@ struct ChannelList: View {
 		NavigationLink(value: channel) {
 			let mostRecent = channel.mostRecentPrivateMessage
 			let hasMessages = mostRecent != nil
-			let hasUnreadMessages = hasMessages && (channel.unreadMessages > 0)
+			// `channel.unreadMessages` runs a FetchRequest; fetch once and reuse for both the
+			// indicator and its VoiceOver label instead of hitting Core Data twice per row.
+			let unreadCount = channel.unreadMessages
+			let hasUnreadMessages = hasMessages && (unreadCount > 0)
 			let lastMessageTime = Date(timeIntervalSince1970: TimeInterval(Int64((mostRecent?.messageTimestamp ?? 0 ))))
 			let lastMessageDay = Calendar.current.dateComponents([.day], from: lastMessageTime).day ?? 0
 			let currentDay = Calendar.current.dateComponents([.day], from: Date()).day ?? 0
@@ -59,6 +62,8 @@ struct ChannelList: View {
 					.foregroundColor(.accentColor)
 					.brightness(0.2)
 			}
+			.accessibilityHidden(!hasUnreadMessages)
+			.accessibilityLabel(String(localized: "\(unreadCount) unread", comment: "VoiceOver: number of unread messages in a channel"))
 			CircleText(text: String(channel.index), color: .accentColor)
 				.brightness(0.2)
 
@@ -102,6 +107,7 @@ struct ChannelList: View {
 					}
 					if channel.mute {
 						Image(systemName: "bell.slash")
+							.accessibilityLabel(String(localized: "Muted", comment: "VoiceOver: channel notifications are muted"))
 					}
 				}
 
@@ -126,7 +132,7 @@ struct ChannelList: View {
 			.alignmentGuide(.listRowSeparatorLeading) {
 				$0[.leading]
 			}
-			.frame(height: 62)
+			.frame(minHeight: 62)
 			.contextMenu {
 				if hasMessages {
 					Button(role: .destructive) {
@@ -208,6 +214,7 @@ struct ChannelList: View {
 				.tint(Color(UIColor.secondarySystemBackground))
 				.foregroundColor(.accentColor)
 				.buttonStyle(.borderedProminent)
+				.accessibilityLabel(showingHelp ? String(localized: "Hide help", comment: "VoiceOver label for the help toggle button when help is showing") : String(localized: "Show help", comment: "VoiceOver label for the help toggle button when help is hidden"))
 			}
 			.controlSize(.regular)
 			.padding(5)

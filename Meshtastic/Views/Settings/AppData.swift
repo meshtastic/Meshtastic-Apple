@@ -68,6 +68,7 @@ struct AppData: View {
 					}
 					.padding(.horizontal)
 					.padding(.vertical, 4)
+					.accessibilityElement(children: .combine)
 				}
 			}
 			Divider()

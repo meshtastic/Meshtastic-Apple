@@ -156,7 +156,7 @@ private struct PassphraseEntryContent: View {
 						.font(.caption)
 						.monospacedDigit()
 						.foregroundStyle(isPassphraseValid ? Color.secondary : Color.red)
-						.accessibilityLabel(Text("Passphrase length \(passphraseByteCount) of 32 bytes"))
+						.accessibilityLabel(String(localized: "Passphrase length \(passphraseByteCount) of 32 bytes", comment: "VoiceOver: current passphrase byte count out of the 32-byte maximum"))
 				}
 			}
 
@@ -204,7 +204,7 @@ private struct PassphraseEntryContent: View {
 					}
 				}
 				.disabled(!isSubmitEnabled)
-				.accessibilityHint(Text(isSubmitEnabled ? "" : "Enter a passphrase between 1 and 32 bytes."))
+				.accessibilityHint(isSubmitEnabled ? "" : String(localized: "Enter a passphrase between 1 and 32 bytes.", comment: "VoiceOver hint: why the submit button is disabled"))
 				if !coordinatorReady {
 					Text("lockdown.connecting")
 						.font(.caption)

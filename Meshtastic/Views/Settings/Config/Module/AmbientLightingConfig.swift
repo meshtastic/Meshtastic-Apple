@@ -37,12 +37,16 @@ struct AmbientLightingConfig: View {
 				HStack {
 					Image(systemName: "eyedropper")
 						.foregroundColor(.accentColor)
+						// Decorative icon; the ColorPicker carries the label for VoiceOver.
+						.accessibilityHidden(true)
 					ColorPicker("Color", selection: $color, supportsOpacity: false)
 						.padding(5)
 				}
 				HStack {
 					Image(systemName: "directcurrent")
 						.foregroundColor(.accentColor)
+						// Decorative icon; the Stepper carries the label for VoiceOver.
+						.accessibilityHidden(true)
 					Stepper("Current: \(current)", value: $current, in: 0...31, step: 1)
 						.padding(5)
 				}

@@ -58,23 +58,41 @@ extension Color {
 		}
 		self.init(hex: value)
 	}
+	///  Returns the WCAG relative luminance of a SwiftUI Color (0 = black, 1 = white).
+	/// - Returns: relative luminance per the WCAG 2.x formula
+	func relativeLuminance() -> Double {
+		guard let components = cgColor?.components, components.count > 2 else {return 0}
+		return wcagRelativeLuminance(red: components[0], green: components[1], blue: components[2])
+	}
 	///  Returns a boolean for a SwiftUI Color to determine what color of text to use
-	/// - Returns: true if the color is light
+	/// - Returns: true if the color is light enough that black text gives at least ~4.5:1 contrast
 	func isLight() -> Bool {
-		guard let components = cgColor?.components, components.count > 2 else {return false}
-		let brightness = ((components[0] * 299) + (components[1] * 587) + (components[2] * 114)) / 1000
-		return (brightness > 0.5)
+		return relativeLuminance() > 0.179
 	}
 	public static let magenta = Color(red: 0.50, green: 0.00, blue: 0.00)
 }
 
+/// WCAG 2.x relative luminance: linearize each sRGB channel (gamma-correct), then weight by
+/// 0.2126/0.7152/0.0722. A 0.179 luminance cutoff corresponds to ~4.5:1 contrast against white,
+/// which is what actually predicts legibility, unlike a flat BT.601 luma threshold.
+private func wcagRelativeLuminance(red: Double, green: Double, blue: Double) -> Double {
+	func linearize(_ channel: Double) -> Double {
+		channel <= 0.04045 ? channel / 12.92 : pow((channel + 0.055) / 1.055, 2.4)
+	}
+	return 0.2126 * linearize(red) + 0.7152 * linearize(green) + 0.0722 * linearize(blue)
+}
+
 extension UIColor {
+	///  Returns the WCAG relative luminance of a UIColor (0 = black, 1 = white).
+	/// - Returns: relative luminance per the WCAG 2.x formula
+	func relativeLuminance() -> Double {
+		guard let components = cgColor.components, components.count > 2 else {return 0}
+		return wcagRelativeLuminance(red: components[0], green: components[1], blue: components[2])
+	}
 	///  Returns a boolean indicating if a color is light
-	/// - Returns: true if the color is light
+	/// - Returns: true if the color is light enough that black text gives at least ~4.5:1 contrast
 	func isLight() -> Bool {
-		guard let components = cgColor.components, components.count > 2 else {return false}
-		let brightness = ((components[0] * 299) + (components[1] * 587) + (components[2] * 114)) / 1000
-		return (brightness > 0.5)
+		return relativeLuminance() > 0.179
 	}
 	///  Returns a UInt32 from a UIColor
 	/// - Returns: UInt32

@@ -38,11 +38,34 @@ extension AccessoryManager {
 		self.activeDeviceNum = nil
 		packetsSent = 0
 		packetsReceived = 0
+		packetsAtLastIngestRecycle = 0
 		expectedNodeDBSize = nil
 	
 		self.allowDisconnect = true
 		self.userRequestedConnectionCancellation = false
-		
+
+		// On a first-ever BLE connection, iOS presents the pairing PIN sheet during
+		// characteristic subscription (Step 1). The user needs time to read and type a
+		// 6-digit PIN, so give the connect step a long window in that case. Already-bonded
+		// peripherals (and non-BLE transports) keep the fast timeout so a dead/out-of-range
+		// radio still fails quickly on reconnect.
+		// One-time migration: seed pairedPeripheralIds from the legacy preferredPeripheralId so
+		// users upgrading to this build (empty pairedPeripheralIds) don't pay the long pairing
+		// window on the first reconnect to a radio they already paired before. After this runs
+		// once, the preferred-peripheral fallback is never consulted again — the remember/forget
+		// lifecycle in BLEConnection becomes the sole source of truth. That way a bond the user
+		// later removes (e.g. via iOS Settings > Bluetooth) self-heals back to the long pairing
+		// window instead of being pinned to the fast reconnect timeout forever.
+		if !UserDefaults.migratedPreferredPeripheralPairing {
+			UserDefaults.migratedPreferredPeripheralPairing = true
+			if let preferredUUID = UUID(uuidString: UserDefaults.preferredPeripheralId) {
+				UserDefaults.rememberPairedPeripheral(preferredUUID)
+			}
+		}
+		let knownBonded = UserDefaults.isPairedPeripheral(device.id)
+		let isFirstTimeBLEBond = device.transportType == .ble && !knownBonded
+		let connectStepTimeout: Duration = isFirstTimeBLEBond ? .seconds(90) : .seconds(5)
+
 		// Prepare to connect
 		self.connectionStepper = SequentialSteps(maxRetries: retries ?? maxRetries, retryDelay: retryDelay) {
 			
@@ -63,7 +86,7 @@ extension AccessoryManager {
 			}
 			
 			// Step 1: Setup the connection
-			Step(timeout: .seconds(5)) { @MainActor _ in
+			Step(timeout: connectStepTimeout) { @MainActor _ in
 				Logger.transport.info("🔗👟[Connect] Step 1: connection to \(device.id, privacy: .public)")
 				do {
 					let connection: Connection

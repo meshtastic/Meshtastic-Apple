@@ -145,7 +145,7 @@ The message status row combines a short label, SF Symbol icon, and color. Color 
 
 ## Link Appearance
 
-Links in message bubbles — including URLs, Meshtastic channel links, and markdown `[text](url)` links — are styled with an underline and the design standards Link color (Blue 400). This makes links visually distinct from regular message text in both light and dark mode. Tapping a link opens it in the browser, or for Meshtastic channel/contact URLs, opens the appropriate in-app handler.
+Links in message bubbles — including URLs, Meshtastic channel links, and markdown `[text](url)` links — are styled with an underline and the design standards Link color (Blue 400). This makes links visually distinct from regular message text in both light and dark mode. Tapping a link opens it in the system browser (Safari on the standard/default setup), except for Meshtastic channel links and contact links in the exact `meshtastic.org/v/#...` or `www.meshtastic.org/v/#...` form, which open the appropriate in-app import flow. Meshtastic documentation links, including `meshtastic.org/docs/...`, continue to open in the system browser.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="../assets/screenshots/messageText_link_dark.png">

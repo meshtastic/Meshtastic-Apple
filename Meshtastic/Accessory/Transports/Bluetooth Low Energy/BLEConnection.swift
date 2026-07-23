@@ -53,6 +53,14 @@ actor BLEConnection: Connection {
 	private var connectContinuation: CheckedContinuation<Void, Error>?
 	private var writeContinuations: [CheckedContinuation<Void, Error>]
 	private var readContinuations: [CheckedContinuation<Data, Error>]
+
+	/// Notify characteristics whose subscription must confirm before the connect
+	/// process is considered complete. Subscribing to an encrypted characteristic is
+	/// what makes iOS present the pairing PIN sheet on a first-ever connection, so we
+	/// hold Step 1 open here until bonding actually completes (or fails) rather than
+	/// resolving optimistically and tearing the connection — and the sheet — down.
+	private var pendingNotifyConfirmations: Set<CBUUID> = []
+	private var isAwaitingNotifyConfirmation: Bool = false
 	
 	private var rssiTask: Task<Void, Never>?
 	
@@ -70,6 +78,25 @@ actor BLEConnection: Connection {
 	}
 	
 	func disconnect(withError error: Error? = nil, shouldReconnect: Bool) async throws {
+		// If we're torn down while still waiting for the pairing subscription to confirm,
+		// bonding did not complete. Forget the paired hint so the next attempt uses the
+		// long pairing window instead of the fast reconnect timeout (self-heals a stale
+		// hint left by a bond the user removed via iOS Settings > Bluetooth).
+		if isAwaitingNotifyConfirmation {
+			isAwaitingNotifyConfirmation = false
+			pendingNotifyConfirmations.removeAll()
+			UserDefaults.forgetPairedPeripheral(peripheral.identifier)
+		}
+
+		// If we're torn down while the connect handshake is still suspended (e.g. the user
+		// cancels the pairing sheet, which iOS commonly delivers as a peripheral disconnect
+		// rather than a characteristic auth error), resume the connect continuation now so
+		// Step 1 fails fast instead of waiting out the full pairing timeout. Idempotent with
+		// the timeout/cancel paths since continueConnectionProcess nils the continuation.
+		if connectContinuation != nil {
+			continueConnectionProcess(throwing: error ?? AccessoryError.disconnected("Disconnected during connect"))
+		}
+
 		if peripheral.state == .connected {
 			if let characteristic = FROMRADIO_characteristic {
 				peripheral.setNotifyValue(false, for: characteristic)
@@ -194,7 +221,10 @@ actor BLEConnection: Connection {
 	}
 	
 	func getPacketStream() -> AsyncStream<ConnectionEvent> {
-		AsyncStream<ConnectionEvent> { continuation in
+		// Bounded like TCPConnection's stream: drop the oldest events under sustained overload
+		// instead of queueing them without limit. BLE can't reach rates that fill this in
+		// practice; the bound is a backstop so no transport can balloon memory.
+		AsyncStream<ConnectionEvent>(bufferingPolicy: .bufferingNewest(4096)) { continuation in
 			// Finish any previous stream so its consumer's `for await` loop terminates cleanly
 			// instead of hanging indefinitely on the abandoned continuation.
 			self.connectionStreamContinuation?.finish()
@@ -275,6 +305,10 @@ actor BLEConnection: Connection {
 	private func requestRSSIRead() {
 		peripheral.readRSSI()
 	}
+}
+
+// MARK: - CBPeripheral delegate event handling & I/O
+extension BLEConnection {
 	
 	func didDiscoverServices(error: Error? ) {
 		if let error = error {
@@ -336,11 +370,14 @@ actor BLEConnection: Connection {
 		}
 		
 		if TORADIO_characteristic != nil && FROMRADIO_characteristic != nil && FROMNUM_characteristic != nil {
-			Logger.transport.info("🛜 [BLE] characteristics ready")
-			self.continueConnectionProcess()
-			
-			// Read initial RSSI on ready
-			peripheral.readRSSI()
+			// Gate connect-completion on the FROMNUM notify subscription confirming.
+			// FROMNUM is always notify-capable and encrypted, so its confirmation is the
+			// definitive "bonding succeeded" signal on a first-ever (PIN) connection. We
+			// wait for the CoreBluetooth callback (which does not fire until the user
+			// dismisses the pairing sheet) instead of resolving immediately.
+			Logger.transport.info("🛜 [BLE] characteristics ready, awaiting FROMNUM subscription confirmation")
+			pendingNotifyConfirmations = [FROMNUM_UUID]
+			isAwaitingNotifyConfirmation = true
 		} else {
 			Logger.transport.info("🛜 [BLE] Missing required characteristics")
 			self.continueConnectionProcess(throwing: AccessoryError.discoveryFailed("Missing required characteristics"))
@@ -383,6 +420,57 @@ actor BLEConnection: Connection {
 		}
 	}
 	
+	func didUpdateNotificationState(characteristic: CBCharacteristic, error: Error?) {
+		if let error {
+			Logger.transport.error("🛜 [BLE] Notify state error for \(characteristic.meshtasticCharacteristicName, privacy: .public): \(error, privacy: .public)")
+			// A pairing/auth failure (wrong or cancelled PIN) surfaces here as a
+			// CBATTError. Treat it as a bond failure even if it lands on a non-gating
+			// characteristic (FROMRADIO/LOGRADIO) — encryption failures typically hit
+			// every subscription. A benign "notify not supported" error on those, by
+			// contrast, is ignored so it can't fail an otherwise-good connect.
+			if isAwaitingNotifyConfirmation
+				&& (pendingNotifyConfirmations.contains(characteristic.uuid) || Self.isPairingFailure(error)) {
+				isAwaitingNotifyConfirmation = false
+				pendingNotifyConfirmations.removeAll()
+				UserDefaults.forgetPairedPeripheral(peripheral.identifier)
+				self.continueConnectionProcess(throwing: error)
+			}
+			return
+		}
+
+		guard isAwaitingNotifyConfirmation else { return }
+		pendingNotifyConfirmations.remove(characteristic.uuid)
+		guard pendingNotifyConfirmations.isEmpty else { return }
+
+		// Subscription confirmed — bonding (if any) completed successfully.
+		isAwaitingNotifyConfirmation = false
+		// Remember this bond so future reconnects use the fast timeouts.
+		UserDefaults.rememberPairedPeripheral(peripheral.identifier)
+		Logger.transport.info("🛜 [BLE] FROMNUM subscription confirmed, connection ready")
+		self.continueConnectionProcess()
+
+		// Read initial RSSI on ready
+		peripheral.readRSSI()
+	}
+
+	/// Whether a notify-state error indicates a BLE pairing/bonding failure (wrong or
+	/// cancelled PIN) rather than a benign per-characteristic issue such as a
+	/// characteristic that does not support notifications.
+	static func isPairingFailure(_ error: Error) -> Bool {
+		if let attError = error as? CBATTError {
+			switch attError.code {
+			case .insufficientAuthentication, .insufficientEncryption, .insufficientAuthorization:
+				return true
+			default:
+				return false
+			}
+		}
+		if let cbError = error as? CBError {
+			return cbError.code == .encryptionTimedOut || cbError.code == .peerRemovedPairingInformation
+		}
+		return false
+	}
+
 	func didWriteValueFor(characteristic: CBCharacteristic, error: Error?) {
 		guard characteristic.uuid == TORADIO_UUID else {
 			Logger.transport.error("🛜 [BLE] didWriteValueFor a characteristic other than TORADIO_UUID.  Should not happen!")
@@ -528,6 +616,10 @@ class BLEConnectionDelegate: NSObject, CBPeripheralDelegate {
 	
 	func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
 		Task { await connection?.didUpdateValueFor(characteristic: characteristic, error: error) }
+	}
+	
+	func peripheral(_ peripheral: CBPeripheral, didUpdateNotificationStateFor characteristic: CBCharacteristic, error: Error?) {
+		Task { await connection?.didUpdateNotificationState(characteristic: characteristic, error: error) }
 	}
 	
 	func peripheral(_ peripheral: CBPeripheral, didWriteValueFor characteristic: CBCharacteristic, error: Error?) {

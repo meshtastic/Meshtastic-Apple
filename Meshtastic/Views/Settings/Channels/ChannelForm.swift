@@ -72,6 +72,7 @@ struct ChannelForm: View {
 						.buttonStyle(.bordered)
 						.buttonBorderShape(.capsule)
 						.controlSize(.small)
+						.accessibilityLabel(String(localized: "Generate channel key", comment: "VoiceOver label for the generate channel key button"))
 					}
 					HStack(alignment: .center) {
 						Text("Key")
@@ -158,9 +159,13 @@ struct ChannelForm: View {
 								Slider(value: $positionPrecision, in: 12...15, step: 1) {
 								} minimumValueLabel: {
 									Image(systemName: "plus")
+										.accessibilityHidden(true)
 								} maximumValueLabel: {
 									Image(systemName: "minus")
+										.accessibilityHidden(true)
 								}
+								.accessibilityLabel(String(localized: "Approximate location precision", comment: "VoiceOver label for the approximate location precision slider"))
+								.accessibilityValue(PositionPrecision(rawValue: Int(positionPrecision))?.description ?? "")
 								Text(PositionPrecision(rawValue: Int(positionPrecision))?.description ?? "")
 									.foregroundColor(.gray)
 									.font(.callout)

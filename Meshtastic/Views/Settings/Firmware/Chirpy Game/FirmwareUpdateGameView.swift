@@ -36,8 +36,8 @@ struct FirmwareUpdateGameScreen: View {
 				Color.black.opacity(0.001)
 					.contentShape(Rectangle())
 					.gesture(gameGesture)
-					.accessibilityLabel("Chirpy Hop")
-					.accessibilityHint("Tap to jump or swipe down to crouch")
+					.accessibilityLabel(String(localized: "Chirpy Hop", comment: "VoiceOver label for the Chirpy game play surface"))
+					.accessibilityHint(String(localized: "Tap to jump or swipe down to crouch", comment: "VoiceOver hint for the Chirpy game controls"))
 					.accessibilityAddTraits(.isButton)
 					.accessibilityAction {
 						scene.primaryAction()
@@ -117,7 +117,7 @@ private struct FirmwareUpdateStatusBand: View {
 			}
 			.buttonStyle(.bordered)
 			.buttonBorderShape(.circle)
-			.accessibilityLabel("Back to firmware update")
+			.accessibilityLabel(String(localized: "Back to firmware update", comment: "VoiceOver label for the close button in the Chirpy game"))
 			.accessibilityIdentifier("chirpy-game-close")
 
 			VStack(alignment: .leading, spacing: 7) {

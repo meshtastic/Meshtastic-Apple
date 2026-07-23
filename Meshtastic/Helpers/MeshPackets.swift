@@ -196,6 +196,17 @@ actor MeshPackets {
 		return true
 	}
 
+	/// Last time the direct-message unread badge was recomputed. Same O(unread) scan and same
+	/// burst hazard as the channel badge, so it gets the same ~1/sec rate limit — under a DM
+	/// flood the badge tolerates a brief lag and resyncs on app-active and on read.
+	private var lastDirectUnreadRecompute: ContinuousClock.Instant?
+	func shouldRecomputeDirectUnread() -> Bool {
+		let now = ContinuousClock.now
+		if let last = lastDirectUnreadRecompute, now - last < .seconds(1) { return false }
+		lastDirectUnreadRecompute = now
+		return true
+	}
+
 	func shouldPrunePositionHistory(for nodeNum: Int64) -> Bool {
 		let nextCount = (positionInsertsSincePrune[nodeNum] ?? 0) + 1
 		if nextCount >= Self.positionPruneInterval {
@@ -295,7 +306,7 @@ actor MeshPackets {
 	func myInfoPacket (myInfo: MyNodeInfo, peripheralId: String) -> PersistentIdentifier? {
 		let logString = String.localizedStringWithFormat("MyInfo received: %@".localized, String(myInfo.myNodeNum))
 		Logger.admin.info("ℹ️ \(logString, privacy: .public)")
-		
+
 		let myNodeNum = Int64(myInfo.myNodeNum)
 		let fetchDescriptor = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == myNodeNum })
 
@@ -339,7 +350,7 @@ actor MeshPackets {
 		if channel.isInitialized && channel.hasSettings && channel.role != Channel.Role.disabled {
 			let logString = String.localizedStringWithFormat("Channel received: %d %@".localized, channel.index, String(fromNum))
 			Logger.admin.info("🎛️ \(logString, privacy: .public)")
-			
+
 			let fetchDescriptor = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == fromNum })
 
 			do {
@@ -387,38 +398,22 @@ actor MeshPackets {
 		if metadata.isInitialized {
 			let logString = String.localizedStringWithFormat("Device Metadata received from: %@".localized, fromNum.toHex())
 			Logger.admin.info("🏷️ \(logString, privacy: .public)")
-			
+
 			let fetchDescriptor = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == fromNum })
 
 			do {
 				let fetchedNode = try modelContext.fetch(fetchDescriptor)
-				let newMetadata = DeviceMetadataEntity()
-				modelContext.insert(newMetadata)
-				newMetadata.time = Date()
-				newMetadata.deviceStateVersion = Int32(metadata.deviceStateVersion)
-				newMetadata.canShutdown = metadata.canShutdown
-				newMetadata.hasWifi = metadata.hasWifi_p
-				newMetadata.hasBluetooth = metadata.hasBluetooth_p
-				newMetadata.hasEthernet	= metadata.hasEthernet_p
-				newMetadata.role = Int32(metadata.role.rawValue)
-				newMetadata.positionFlags = Int32(truncatingIfNeeded: metadata.positionFlags)
-				newMetadata.excludedModules = Int32(truncatingIfNeeded: metadata.excludedModules)
-				// Swift does strings weird, this does work to get the version without the github hash
-				let lastDotIndex = metadata.firmwareVersion.lastIndex(of: ".")
-				var version = metadata.firmwareVersion[...(lastDotIndex ?? String.Index(utf16Offset: 6, in: metadata.firmwareVersion))]
-				version = version.dropLast()
-				newMetadata.firmwareVersion = String(version)
-				if fetchedNode.count > 0 {
-					fetchedNode[0].metadata = newMetadata
-					if sessionPasskey?.count != 0 {
-						fetchedNode[0].sessionPasskey = sessionPasskey
-						fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
-					}
-				} else {
-					if fromNum > 0 {
-						let newNode = findOrCreateNode(num: Int64(fromNum), context: modelContext)
-						newNode.metadata = newMetadata
-					}
+				guard fromNum > 0 else { return }
+				let node = fetchedNode.first ?? findOrCreateNode(num: fromNum, context: modelContext)
+				let storedMetadata = node.metadata ?? DeviceMetadataEntity()
+				if node.metadata == nil {
+					modelContext.insert(storedMetadata)
+					node.metadata = storedMetadata
+				}
+				storedMetadata.update(from: metadata)
+				if sessionPasskey?.count != 0 {
+					node.sessionPasskey = sessionPasskey
+					node.sessionExpiration = Date().addingTimeInterval(300)
 				}
 				savePendingChanges()
 				Logger.data.info("💾 Updated Device Metadata from Admin App Packet For: \(fromNum.toHex(), privacy: .public)")
@@ -581,11 +576,9 @@ actor MeshPackets {
 							modelContext.insert(newUserEntity)
 							fetchedNode[0].user = newUserEntity
 						}
-						// Set the public key for a user if it is empty, don't update
-						if fetchedNode[0].user?.publicKey == nil && !nodeInfo.user.publicKey.isEmpty {
-							fetchedNode[0].user?.pkiEncrypted = true
-							fetchedNode[0].user?.publicKey = nodeInfo.user.publicKey
-						}
+						// First-wins on the public key, consistent with the NodeInfo/User paths in UpdateSwiftData
+						// (previously a `== nil` guard here silently ignored mismatches). See `applyInboundPublicKey`.
+						fetchedNode[0].user?.applyInboundPublicKey(nodeInfo.user.publicKey, nodeNum: Int64(nodeInfo.num))
 						fetchedNode[0].user?.userId = nodeInfo.num.toHex()
 						fetchedNode[0].user?.num = Int64(nodeInfo.num)
 						fetchedNode[0].user?.numString = String(nodeInfo.num)
@@ -690,7 +683,7 @@ actor MeshPackets {
 				if let cmmc = try? CannedMessageModuleConfig(serializedBytes: packet.decoded.payload) {
 					let logString = String.localizedStringWithFormat("Canned Messages Messages Received For: %@".localized, packet.from.toHex())
 					Logger.admin.info("🥫 \(logString, privacy: .public)")
-					
+
 					let packetFrom = Int64(packet.from)
 					let fetchDescriptor = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == packetFrom })
 
@@ -1412,8 +1405,10 @@ actor MeshPackets {
 							return
 						}
 						if newMessage.fromUser != nil && newMessage.toUser != nil {
-							// Set Unread Message Indicators
-							if packet.to == connectedNode {
+							// Set Unread Message Indicators. unreadMessages is O(unread); like the
+							// channel badge, recomputing it for every incoming DM turns a burst into
+							// quadratic work, so it gets the same ~1/sec rate limit.
+							if packet.to == connectedNode, shouldRecomputeDirectUnread() {
 								let unreadCount = await newMessage.toUser?.unreadMessages(context: modelContext, skipLastMessageCheck: true) ?? 0 // skipLastMessageCheck=true because we don't update lastMessage on our own connected node
 								Task { @MainActor in
 									appState?.unreadDirectMessages = unreadCount

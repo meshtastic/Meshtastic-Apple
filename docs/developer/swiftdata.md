@@ -64,6 +64,10 @@ struct MyView: View {
 
 Use `@Query` for data that drives the view. Use `context.insert(_:)` / `context.delete(_:)` for mutations. Mutations on the main context are safe on the main actor.
 
+### Snapshot liveness
+
+Views that intentionally keep a throttled `@State` snapshot instead of a live `@Query` must treat the snapshot as invalid after a node-database reset or a context teardown. Before reading persisted properties from a `NodeInfoEntity` held in such a snapshot, require both `modelContext != nil` and `!isDeleted`. `NodeInfoEntity.adminPickerOrder(_:)` applies this rule for the Settings node picker, so deleted or detached nodes cannot be selected or rendered from a stale snapshot.
+
 ## Background Writes
 
 For writes triggered by incoming radio packets (off the main thread), use the `MeshPackets` `@ModelActor`:
@@ -156,6 +160,19 @@ static let migrateV1toV2 = MigrationStage.custom(
 4. Update `MeshtasticSchema.current` to point to the new version.
 
 > **Warning — Never delete a `VersionedSchema`.** Migration history must be preserved or the migration plan will fail on devices that skipped intermediate versions.
+
+### Deprecated Properties
+
+When a proto field is deprecated upstream and the app stops using it, **do not remove the corresponding `@Model` property** — deleting a stored property is a schema change that would require a migration, and while V1 is unreleased there is nowhere to migrate from. Instead, retain the property as-is so:
+
+- the SwiftData schema is unchanged, and
+- any values already persisted on-device remain readable.
+
+The field simply stops being surfaced in the UI, read, or actively written by app code. Mark it with a doc comment noting the deprecation and the tracking issue. Current examples:
+
+| Model | Property | Notes |
+|-------|----------|-------|
+| `CannedMessageConfigEntity` | `enabled` | #2021 — no successor; retained for schema/value compatibility, no longer read or written |
 
 ## Query Helpers
 

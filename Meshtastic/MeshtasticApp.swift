@@ -156,6 +156,24 @@ struct MeshtasticAppleApp: App {
 					accessoryManager.startDiscovery()
 				}
 			}
+#if DEBUG
+			// Automated perf/stress testing: connect straight to a TCP radio (or replay
+			// server) with `-meshtastic-connect-tcp <host[:port]>`, skipping the Connect
+			// tab entirely. DEBUG-only, like the other automation hooks above.
+			let arguments = ProcessInfo.processInfo.arguments
+			if let flagIndex = arguments.firstIndex(of: "-meshtastic-connect-tcp"),
+			   arguments.indices.contains(flagIndex + 1),
+			   let tcpTransport = accessoryManager.transportForType(.tcp),
+			   let device = tcpTransport.device(forManualConnection: arguments[flagIndex + 1]) {
+				let manager = accessoryManager
+				Task {
+					// Give startup (container, transports, discovery) a beat to settle.
+					try? await Task.sleep(for: .seconds(2))
+					Logger.services.info("🧪 [App] Auto-connecting to TCP device \(device.identifier, privacy: .public) (launch argument)")
+					try? await manager.connect(to: device)
+				}
+			}
+#endif
 		}
 	}
 
@@ -217,7 +235,7 @@ struct MeshtasticAppleApp: App {
 						self.saveChannelLink = nil
 
 						if let url = userActivity.webpageURL {
-							if url.absoluteString.lowercased().contains("meshtastic.org/v/#") == true {
+							if ContactURLHandler.canHandle(url) {
 								ContactURLHandler.handleContactUrl(url: url, accessoryManager: accessoryManager)
 							} else if MeshtasticChannelURL.canHandle(url) {
 								// **Consolidated Call for User Activity**
@@ -237,7 +255,7 @@ struct MeshtasticAppleApp: App {
 							// "Open in Meshtastic" from the Share Sheet / Files app / drag-and-drop —
 							// distinct from the meshtastic:// scheme handled below.
 							appState.router.importMapFile(url: url)
-						} else if url.absoluteString.lowercased().contains("meshtastic.org/v/#") {
+						} else if ContactURLHandler.canHandle(url) {
 							ContactURLHandler.handleContactUrl(url: url, accessoryManager: accessoryManager)
 						} else if MeshtasticChannelURL.canHandle(url) {
 							// **Consolidated Call for Open URL**

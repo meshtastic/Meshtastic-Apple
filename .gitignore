@@ -95,3 +95,6 @@ iOSInjectionProject/
 
 # Marketing screenshot capture output (scripts/capture-marketing.sh)
 marketing/
+
+# Stray xcodebuild output logs (never commit build logs)
+/build*.log

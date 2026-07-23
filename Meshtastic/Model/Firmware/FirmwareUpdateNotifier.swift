@@ -75,9 +75,9 @@ struct FirmwareUpdateNotice: Equatable {
 	var accessibilityHint: String {
 		switch installMethod {
 		case .appOTA:
-			return "Opens Firmware Updates"
+			return String(localized: "Opens Firmware Updates", comment: "VoiceOver hint: tapping this notice opens the Firmware Updates screen")
 		case .flasher:
-			return "Opens Meshtastic Flasher"
+			return String(localized: "Opens Meshtastic Flasher", comment: "VoiceOver hint: tapping this notice opens the Meshtastic Flasher site")
 		}
 	}
 }
