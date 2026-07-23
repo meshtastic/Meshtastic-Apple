@@ -5,6 +5,7 @@
 //  Created by Garth Vander Houwen on 2/28/23.
 //
 #if os(iOS)
+#if !targetEnvironment(macCatalyst)
 #if canImport(ActivityKit)
 import ActivityKit
 import WidgetKit
@@ -370,5 +371,6 @@ struct ExpandedTrailingView: View {
 		.tint(Color("LightIndigo"))
 	}
 }
+#endif
 #endif
 #endif
