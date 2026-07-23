@@ -72,6 +72,56 @@ struct MyViewSnapshotTests {
 <p>This works in both contexts because <code>build-docs.sh</code> invokes <code>cmark-gfm --unsafe</code> (raw HTML is passed through) and <code>WKWebView</code> (used for in-app display) is full WebKit and respects <code>prefers-color-scheme</code>.</p>
 <h3>Regenerating Snapshots</h3>
 <p>Delete the reference PNG and run the test once — it records a new reference. Commit the new reference with your PR.</p>
+<h2>UI Tests (MeshtasticUITests)</h2>
+<p><code>MeshtasticUITests/</code> is a separate target from <code>MeshtasticTests/</code> for accessibility-tree-driven
+UI automation — driving the app through real <code>XCUIApplication</code> element queries and taps, the
+same path VoiceOver and a real user's touches take. This is deliberately <strong>not</strong> the same
+mechanism as <code>MarketingCapture</code> (<code>Meshtastic/Persistence/MarketingCapture.swift</code>), which
+navigates in-process via <code>Router</code> for fast, curated App Store screenshots but bypasses real touch
+dispatch, hit-testing, and accessibility traits entirely — a UI test here proves the target is
+actually reachable and tappable through the accessibility tree, catching a class of regression
+(broken hit-testing, missing/incorrect accessibility traits) in-process navigation can't.</p>
+<p><strong>XCUITest requires <code>XCTestCase</code>, not Swift Testing.</strong> Unlike <code>MeshtasticTests</code>, files in
+<code>MeshtasticUITests/</code> use <code>XCTestCase</code>/<code>XCTFail</code>/<code>continueAfterFailure</code> — this is a deliberate,
+necessary exception to the &quot;no <code>XCTAssert*</code> in new test files&quot; rule above, not a drift from it;
+Swift Testing has no UI-automation equivalent to <code>XCUIApplication</code>.</p>
+<h3>AccessibilityDriver</h3>
+<p><code>AccessibilityDriver.swift</code> provides <code>NavigationStep</code> (<code>tab</code>, <code>tapIdentifier</code>,
+<code>tapButtonLabeled</code>, <code>waitForIdentifier</code>, <code>pause</code>) and a <code>run(_:app:)</code> that fails the calling test
+immediately — not silently — when a step's target never appears, since an unreachable target is
+itself the finding:</p>
+<pre><code class="language-swift">import XCTest
+
+final class MyFeatureUITests: XCTestCase {
+    override func setUpWithError() throws {
+        continueAfterFailure = false
+    }
+
+    @MainActor
+    func testSomeFlowIsReachable() {
+        let app = XCUIApplication()
+        app.launchArguments += [&quot;--meshtastic-marketing-seed&quot;]  // skip onboarding, seed demo data
+        app.launch()
+
+        AccessibilityDriver.run([.tab(&quot;Connect&quot;)], app: app)
+    }
+}
+</code></pre>
+<p>Note on tab lookup: <code>ContentView</code> tags each root tab bar button with a stable
+<code>.accessibilityIdentifier(&quot;tab-*&quot;)</code>, but as of Xcode 26.6 / iOS 18+ that identifier does not
+propagate to the underlying <code>UITabBarButton</code> through SwiftUI's value-based <code>Tab(value:)</code> API
+(confirmed by dumping the live accessibility hierarchy during a real run — the button exposes a
+<code>label:</code> but no <code>identifier:</code> at all). <code>NavigationStep.tab</code> therefore matches on the visible
+title as a working fallback, which means tab lookup is currently locale-dependent — unlike
+<code>.tapIdentifier</code>, which is genuinely identifier-based and locale-independent. See the doc comment
+on <code>NavigationStep.tab</code> for the full story.</p>
+<h3>Running UI Tests</h3>
+<pre><code class="language-bash">xcodebuild -project Meshtastic.xcodeproj -scheme Meshtastic \
+  -destination 'platform=iOS Simulator,name=&lt;device&gt;' \
+  -only-testing:MeshtasticUITests/&lt;SuiteName&gt; test
+</code></pre>
+<p>⌘U also runs them from Xcode alongside <code>MeshtasticTests</code>, since both are wired into the
+<code>Meshtastic</code> scheme's test action.</p>
 <h2>Async Tests</h2>
 <p>For tests involving <code>async/await</code>:</p>
 <pre><code class="language-swift">@Test func asyncOperation() async throws {
