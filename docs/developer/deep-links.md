@@ -55,7 +55,7 @@ history view.
 | [`meshtastic:///settings/appSettings`](meshtastic:///settings/appSettings) | App Settings |
 | [`meshtastic:///settings/helpDocs`](meshtastic:///settings/helpDocs) | Help & Documentation |
 | [`meshtastic:///settings/localMeshDiscovery`](meshtastic:///settings/localMeshDiscovery) | Local Mesh Discovery |
-| `meshtastic:///settings/localMeshDiscovery/history` | Local Mesh Discovery (history view) |
+| [`meshtastic:///settings/localMeshDiscovery/history`](meshtastic:///settings/localMeshDiscovery/history) | Local Mesh Discovery (history view) |
 | [`meshtastic:///settings/routes`](meshtastic:///settings/routes) | Routes |
 | [`meshtastic:///settings/routeRecorder`](meshtastic:///settings/routeRecorder) | Route Recorder |
 | **Radio Config** | |

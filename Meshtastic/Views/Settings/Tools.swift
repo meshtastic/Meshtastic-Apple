@@ -130,7 +130,7 @@ struct Tools: View {
 				// captured at button-tap, so it can't be a stale/faulted object if the device disconnects
 				// while the dialog is open. Defer to the next runloop so presenting the file exporter isn't
 				// swallowed by the confirmation dialog's dismissal animation.
-				DispatchQueue.main.async {
+				Task { @MainActor in
 					guard let node = connectedNode else { return }
 					exportConfiguration(for: node)
 				}
