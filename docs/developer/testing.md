@@ -36,7 +36,8 @@ struct MyFeatureTests {
 
 ## Running Tests
 
-Run with ⌘U in Xcode. There is no CLI test runner — tests require Xcode.
+Run with ⌘U in Xcode, or from the command line with `xcodebuild test` — see "Running UI Tests"
+below for the exact invocation `MeshtasticUITests` uses.
 
 Ensure all existing tests pass before opening a PR. SwiftLint runs on every commit; tests failing due to lint errors will block CI.
 
@@ -121,7 +122,13 @@ final class MyFeatureUITests: XCTestCase {
     @MainActor
     func testSomeFlowIsReachable() {
         let app = XCUIApplication()
-        app.launchArguments += ["--meshtastic-marketing-seed"]  // skip onboarding, seed demo data
+        // Pin the locale so tab-title matching in AccessibilityDriver (see the note below)
+        // doesn't flake on a non-English simulator/device.
+        app.launchArguments += [
+            "--meshtastic-marketing-seed",  // skip onboarding, seed demo data
+            "-AppleLanguages", "(en)",
+            "-AppleLocale", "en_US"
+        ]
         app.launch()
 
         AccessibilityDriver.run([.tab("Connect")], app: app)

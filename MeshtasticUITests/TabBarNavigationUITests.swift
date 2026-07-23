@@ -25,7 +25,13 @@ final class TabBarNavigationUITests: XCTestCase {
 		// Skips onboarding/tips and disables BLE discovery/autoconnect so tab switches aren't
 		// racing a connect attempt or blocked behind a first-launch sheet — see
 		// Meshtastic/Persistence/PerformanceSeedData.swift.
-		app.launchArguments += ["--meshtastic-marketing-seed"]
+		// Pin the locale so NavigationStep.tab's title-based lookup (see AccessibilityDriver.swift)
+		// doesn't flake when the simulator/device isn't running in English.
+		app.launchArguments += [
+			"--meshtastic-marketing-seed",
+			"-AppleLanguages", "(en)",
+			"-AppleLocale", "en_US"
+		]
 		app.launch()
 
 		// English titles: see NavigationStep.tab's doc comment for why tab lookup currently
