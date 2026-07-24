@@ -72,6 +72,19 @@ Application services that are not tied to radio connectivity live in `Meshtastic
 | `DocsTranslationUploader.swift` | Automatically commits translated `.md` files to `meshtastic/translations` repo after background prefetch completes. Performs read-only checks against `meshtastic/meshtastic` and `meshtastic/translations` (no auth), then commits via GitHub Contents API using a fine-grained PAT from `Secrets.json`. Per-file tracking enables retry of failed uploads. |
 | `CommunityTranslationFetcher.swift` | Downloads existing community translations from the GitHub Pages CDN feed (`index.json`) before falling back to on-device translation. Fetches `nav-labels.json` and `search-index.json` for translated UI strings and search keywords. Builds a pre-rendered translated folder so `DocBundle` can load translated pages directly. |
 
+## Offline Maps
+
+`OfflineMapManager` (`Meshtastic/Helpers/Map/`) owns downloaded `.pmtiles` archives under
+`Documents/OfflineMaps/`. `OfflineVectorTileProvider` decodes their MVT vector tiles into native
+MapKit shapes on a background queue; `MeshMapMK` builds the actual `MKPolygon`/`MKMultiPolygon`/
+`MKMultiPolyline` overlays via `MeshMapMK.offlineVectorOverlayGroups`, an `AsyncStream` that yields
+one chunk per role group (earth fill, each fill role, each road pass, rail/boundary) so a dense
+archive's full construction never blocks the main run loop for longer than one group — see
+`DIAGNOSIS-offline-maps-freeze.md` at the repo root for the freeze this fixed and the measured
+perf evidence. `MapConnectivityMonitor` (`Meshtastic/Helpers/Map/`) is a small `NWPathMonitor`-backed
+singleton the map screen consults to skip MapKit's live-network extras (traffic, POI) while there's
+no network path at all, so the app isn't asking MapKit to chase dead requests while offline.
+
 ## Protobufs
 
 The `MeshtasticProtobufs` Swift Package (`MeshtasticProtobufs/Package.swift`) wraps protobuf-generated Swift sources. Regenerate with `./scripts/gen_protos.sh` after updating the `protobufs/` submodule.

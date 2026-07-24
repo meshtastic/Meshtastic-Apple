@@ -78,6 +78,11 @@ struct MeshMapMK: View {
 	@StateObject private var offlineVectors = OfflineVectorTileProvider()
 	/// Downloaded offline regions; observed so a new download re-points offlineVectors.
 	@ObservedObject private var offlineMapManager = OfflineMapManager.shared
+	/// Whether the device currently has ANY network path at all (see DIAGNOSIS-offline-maps-freeze.md).
+	/// Drives `clusterConfiguration` to skip MapKit's live-network extras (traffic, POI) while there is
+	/// genuinely no connectivity, so MapKit isn't chasing dead network requests at the same moment the
+	/// offline vector basemap is doing its own (now-chunked) rebuild work.
+	@ObservedObject private var connectivity = MapConnectivityMonitor.shared
 	@State private var offlineVectorOverlays: [ClusterMapOverlay] = []
 	/// Route polylines + start/finish markers, rebuilt only when the route set changes.
 	@State private var routeOverlays: [ClusterMapOverlay] = []
@@ -100,6 +105,10 @@ struct MeshMapMK: View {
 	@State private var geofenceOverlays: [ClusterMapOverlay] = []
 	/// Last inputs each rebuild ran for; skip when unchanged so overlay objects stay stable (no flash).
 	@State private var lastOfflineOverlaysKey = ""
+	/// Bumped each time `rebuildOfflineVectorOverlays` starts an async build; a build only applies its
+	/// result if this still matches when it finishes, so a superseded (e.g. dark-mode-flipped-again)
+	/// build can't clobber a newer one that started after it.
+	@State private var offlineOverlayBuildGeneration = 0
 	@State private var lastRouteKey = "init"
 	@State private var lastWaypointKey = "init"
 	@State private var lastGeoJSONKey = "init"
@@ -273,10 +282,14 @@ struct MeshMapMK: View {
 	/// Draw the heavy offline detail only while the coverage box is actually on screen (and not at
 	/// Apple basemap type + controls fed to ClusterMapView (Phase 2).
 	private var clusterConfiguration: ClusterMapConfiguration {
+		// While there's genuinely no network path, skip MapKit's own live-network extras (traffic flow,
+		// POI icons) even if the user has them enabled -- they can't render usefully offline anyway, and
+		// not requesting them removes one more source of MapKit tile-fetch contention at exactly the
+		// moment the offline vector basemap is rebuilding (see DIAGNOSIS-offline-maps-freeze.md).
 		ClusterMapConfiguration(
 			layer: selectedMapLayer == .offline ? .standard : selectedMapLayer,
-			showsTraffic: showTraffic,
-			showsPointsOfInterest: showPointsOfInterest,
+			showsTraffic: showTraffic && !connectivity.isOffline,
+			showsPointsOfInterest: showPointsOfInterest && !connectivity.isOffline,
 			showsUserLocation: showUserLocation && isMapVisible,
 			controlsBottomInset: 72   // lift compass + pitch toggle above the bottom button bar
 		)
@@ -1392,6 +1405,13 @@ struct MeshMapMK: View {
 /// Build the offline basemap as native MKOverlays (earth fill + water/park fills + arterial roads)
 	/// from the decoded vector tiles, using the same slate/cream palette as the old SwiftUI map. Stable
 	/// objects, rebuilt only on toggle/appearance/decode so the overlay diff is a no-op between renders.
+	///
+	/// Runs the actual `MKPolygon`/`MKMultiPolygon`/`MKMultiPolyline` construction on an async Task
+	/// that yields to the run loop between each role group (`Self.offlineVectorOverlayGroups`), instead
+	/// of one uninterrupted synchronous pass. A dense "High detail" archive's full street grid can mean
+	/// thousands of shape allocations; built synchronously, that ran as a single main-thread block long
+	/// enough to read as an unresponsive freeze when it landed at the same moment MapKit's own basemap
+	/// was contending for the main run loop under zero connectivity. See DIAGNOSIS-offline-maps-freeze.md.
 	private func rebuildOfflineVectorOverlays() {
 		let key = "\(enableOfflineTiles)|\(offlineVectors.isAvailable)|\(offlineVectors.revision)|\(colorScheme == .dark)"
 		guard key != lastOfflineOverlaysKey else { return }
@@ -1400,82 +1420,159 @@ struct MeshMapMK: View {
 			if !offlineVectorOverlays.isEmpty { offlineVectorOverlays = [] }
 			return
 		}
+
+		// Each distinct rebuild gets its own generation so a superseded build (e.g. dark mode flipped
+		// again mid-build, or the archive set changed again) can't clobber a newer one that started later.
+		offlineOverlayBuildGeneration += 1
+		let generation = offlineOverlayBuildGeneration
 		let dark = colorScheme == .dark
-		var result: [ClusterMapOverlay] = []
+		let coverageAreas = offlineVectors.coverageAreas
+		let polygons = offlineVectors.polygons
+		let roads = offlineVectors.roads
 
-		// 1) Earth base fill for each coverage box (so gaps read as land, not the Apple basemap).
-		for (index, bounds) in offlineVectors.coverageAreas.enumerated() {
-			var earth = [
-				CLLocationCoordinate2D(latitude: bounds.minLat, longitude: bounds.minLon),
-				CLLocationCoordinate2D(latitude: bounds.minLat, longitude: bounds.maxLon),
-				CLLocationCoordinate2D(latitude: bounds.maxLat, longitude: bounds.maxLon),
-				CLLocationCoordinate2D(latitude: bounds.maxLat, longitude: bounds.minLon)
-			]
-			result.append(ClusterMapOverlay(
-				id: "offline-earth-\(index)",
-				overlay: MKPolygon(coordinates: &earth, count: earth.count),
-				style: ClusterMapOverlayStyle(strokeUIColor: nil, fillUIColor: Self.offlineEarthColor(dark: dark), lineWidth: 0, level: .aboveRoads)
-			))
-		}
-
-		// 2) Water / park fills, batched per role (parks under water).
-		let fillsByRole = Dictionary(grouping: offlineVectors.polygons, by: { $0.role })
-		for role in [OfflineFeatureRole.park, .green, .water] {
-			guard let polys = fillsByRole[role], let fill = Self.offlineFillColor(role, dark: dark) else { continue }
-			let shapes = polys.compactMap { poly -> MKPolygon? in
-				guard poly.coordinates.count >= 3 else { return nil }
-				var coords = poly.coordinates
-				return MKPolygon(coordinates: &coords, count: coords.count)
+		Task { @MainActor in
+			guard generation == offlineOverlayBuildGeneration else { return }
+			let clock = ContinuousClock()
+			let start = clock.now
+			var chunkStart = start
+			var worstChunk = Duration.zero
+			var groupCount = 0
+			var overlayCount = 0
+			// Staged locally and swapped in ONCE at the end (not per-chunk) so a rebuild never flashes the
+			// offline basemap to blank while it's mid-build -- the old, still-complete basemap stays on
+			// screen until the new one is fully ready, same atomic-swap display behavior as before this
+			// change (only the CONSTRUCTION got chunked/yielding, not what's visibly on the map).
+			var staged: [ClusterMapOverlay] = []
+			for await group in Self.offlineVectorOverlayGroups(coverageAreas: coverageAreas, polygons: polygons, roads: roads, dark: dark) {
+				guard generation == offlineOverlayBuildGeneration else { return } // superseded mid-build
+				staged += group
+				groupCount += 1
+				overlayCount += group.count
+				let now = clock.now
+				worstChunk = max(worstChunk, chunkStart.duration(to: now))
+				chunkStart = now
 			}
-			guard !shapes.isEmpty else { continue }
-			result.append(ClusterMapOverlay(
-				id: "offline-fill-\(role)",
-				overlay: MKMultiPolygon(shapes),
-				style: ClusterMapOverlayStyle(strokeUIColor: nil, fillUIColor: fill, lineWidth: 0, level: .aboveRoads)
-			))
+			guard generation == offlineOverlayBuildGeneration else { return }
+			offlineVectorOverlays = staged
+			// Perf evidence for PR review: total wall time to build the offline basemap overlays, the
+			// number of (now-yielded) chunks it took, and the single longest uninterrupted main-thread
+			// span among them -- the number that actually matters for "did this look like a freeze".
+			Logger.services.info("🗺️ [Offline] overlay rebuild: \(groupCount) groups / \(overlayCount) overlays in \(start.duration(to: clock.now).formatted()) (worst uninterrupted chunk \(worstChunk.formatted()))")
 		}
+	}
 
-		// 3) Roads, batched per role into MKMultiPolylines (keeps the dense grid to a few overlays).
-		let roadsByRole = Dictionary(grouping: offlineVectors.roads, by: { $0.role })
-		func roadMultiPolyline(_ role: OfflineFeatureRole) -> MKMultiPolyline? {
-			guard let lines = roadsByRole[role] else { return nil }
-			let shapes = lines.compactMap { line -> MKPolyline? in
-				guard line.coordinates.count >= 2 else { return nil }
-				var coords = line.coordinates
-				return MKPolyline(coordinates: &coords, count: coords.count)
+	/// One `[ClusterMapOverlay]` chunk per logical role group (earth fill, each fill role, each road
+	/// pass, rail/boundary), yielding to the run loop after every chunk so a caller iterating this
+	/// stream on the main actor never blocks it for longer than one group's construction cost. Pure
+	/// function of its inputs (no other view-state access), same geometry/styling as before this change
+	/// -- only the scheduling differs. Internal (not `private`) so `OfflineOverlayBuildPerfTests` can
+	/// exercise it directly with synthetic decode data and measure the worst single yielded span --
+	/// the number that actually matters for whether this looks like a freeze.
+	static func offlineVectorOverlayGroups(
+		coverageAreas: [GeoBounds],
+		polygons: [OfflineMapPolygon],
+		roads: [OfflineMapPolyline],
+		dark: Bool
+	) -> AsyncStream<[ClusterMapOverlay]> {
+		AsyncStream { continuation in
+			// A superseded rebuild's CONSUMER stops applying results (generation guard in
+			// `rebuildOfflineVectorOverlays`), but that alone doesn't stop THIS producer from continuing to
+			// run concurrently with whatever superseded it -- two unstructured `Task`s on the shared main
+			// actor have no parent/child relationship. Wire real cancellation through instead: when the
+			// stream terminates for any reason (consumer stops iterating and this `AsyncStream` value goes
+			// out of scope, or `continuation.finish()` below), `onTermination` cancels this producer, and
+			// each `guard !Task.isCancelled` below stops it from building/yielding any further groups.
+			let task = Task { @MainActor in
+				// 1) Earth base fill for each coverage box (so gaps read as land, not the Apple basemap).
+				var earthGroup: [ClusterMapOverlay] = []
+				for (index, bounds) in coverageAreas.enumerated() {
+					var earth = [
+						CLLocationCoordinate2D(latitude: bounds.minLat, longitude: bounds.minLon),
+						CLLocationCoordinate2D(latitude: bounds.minLat, longitude: bounds.maxLon),
+						CLLocationCoordinate2D(latitude: bounds.maxLat, longitude: bounds.maxLon),
+						CLLocationCoordinate2D(latitude: bounds.maxLat, longitude: bounds.minLon)
+					]
+					earthGroup.append(ClusterMapOverlay(
+						id: "offline-earth-\(index)",
+						overlay: MKPolygon(coordinates: &earth, count: earth.count),
+						style: ClusterMapOverlayStyle(strokeUIColor: nil, fillUIColor: Self.offlineEarthColor(dark: dark), lineWidth: 0, level: .aboveRoads)
+					))
+				}
+				if !earthGroup.isEmpty {
+					guard !Task.isCancelled else { continuation.finish(); return }
+					continuation.yield(earthGroup)
+					await Task.yield()
+				}
+
+				// 2) Water / park fills, batched per role (parks under water) -- one chunk per role.
+				let fillsByRole = Dictionary(grouping: polygons, by: { $0.role })
+				for role in [OfflineFeatureRole.park, .green, .water] {
+					guard let polys = fillsByRole[role], let fill = Self.offlineFillColor(role, dark: dark) else { continue }
+					let shapes = polys.compactMap { poly -> MKPolygon? in
+						guard poly.coordinates.count >= 3 else { return nil }
+						var coords = poly.coordinates
+						return MKPolygon(coordinates: &coords, count: coords.count)
+					}
+					guard !shapes.isEmpty else { continue }
+					guard !Task.isCancelled else { continuation.finish(); return }
+					continuation.yield([ClusterMapOverlay(
+						id: "offline-fill-\(role)",
+						overlay: MKMultiPolygon(shapes),
+						style: ClusterMapOverlayStyle(strokeUIColor: nil, fillUIColor: fill, lineWidth: 0, level: .aboveRoads)
+					)])
+					await Task.yield()
+				}
+
+				// 3) Roads, batched per role into MKMultiPolylines (keeps the dense grid to a few overlays).
+				let roadsByRole = Dictionary(grouping: roads, by: { $0.role })
+				func roadMultiPolyline(_ role: OfflineFeatureRole) -> MKMultiPolyline? {
+					guard let lines = roadsByRole[role] else { return nil }
+					let shapes = lines.compactMap { line -> MKPolyline? in
+						guard line.coordinates.count >= 2 else { return nil }
+						var coords = line.coordinates
+						return MKPolyline(coordinates: &coords, count: coords.count)
+					}
+					return shapes.isEmpty ? nil : MKMultiPolyline(shapes)
+				}
+				let roadClasses: [OfflineFeatureRole] = [.minorRoad, .mediumRoad, .majorRoad]
+				// Casing pass (light mode only) gives the Apple white-road-with-outline look.
+				for role in roadClasses {
+					guard let casing = Self.offlineRoadCasingColor(role, dark: dark), let multi = roadMultiPolyline(role) else { continue }
+					guard !Task.isCancelled else { continuation.finish(); return }
+					continuation.yield([ClusterMapOverlay(
+						id: "offline-road-casing-\(role)",
+						overlay: multi,
+						style: ClusterMapOverlayStyle(strokeUIColor: casing, fillUIColor: nil, lineWidth: Self.offlineRoadCasingWidth(role), lineCap: .round, level: .aboveRoads)
+					)])
+					await Task.yield()
+				}
+				// Fill pass — white centerlines (light) / lighter-than-land gray (dark).
+				for role in roadClasses {
+					guard let fill = Self.offlineRoadFillColor(role, dark: dark), let multi = roadMultiPolyline(role) else { continue }
+					guard !Task.isCancelled else { continuation.finish(); return }
+					continuation.yield([ClusterMapOverlay(
+						id: "offline-road-fill-\(role)",
+						overlay: multi,
+						style: ClusterMapOverlayStyle(strokeUIColor: fill, fillUIColor: nil, lineWidth: Self.offlineRoadWidth(role), lineCap: .round, level: .aboveRoads)
+					)])
+					await Task.yield()
+				}
+				// Rail + admin boundaries (single dashed stroke, both modes).
+				for role in [OfflineFeatureRole.rail, .boundary] {
+					guard let color = Self.offlineLineColor(role, dark: dark), let multi = roadMultiPolyline(role) else { continue }
+					guard !Task.isCancelled else { continuation.finish(); return }
+					continuation.yield([ClusterMapOverlay(
+						id: "offline-line-\(role)",
+						overlay: multi,
+						style: ClusterMapOverlayStyle(strokeUIColor: color, fillUIColor: nil, lineWidth: 1.0, lineDash: [2, 3], lineCap: .butt, level: .aboveRoads)
+					)])
+					await Task.yield()
+				}
+
+				continuation.finish()
 			}
-			return shapes.isEmpty ? nil : MKMultiPolyline(shapes)
+			continuation.onTermination = { @Sendable _ in task.cancel() }
 		}
-		let roadClasses: [OfflineFeatureRole] = [.minorRoad, .mediumRoad, .majorRoad]
-		// Casing pass (light mode only) gives the Apple white-road-with-outline look.
-		for role in roadClasses {
-			guard let casing = Self.offlineRoadCasingColor(role, dark: dark), let multi = roadMultiPolyline(role) else { continue }
-			result.append(ClusterMapOverlay(
-				id: "offline-road-casing-\(role)",
-				overlay: multi,
-				style: ClusterMapOverlayStyle(strokeUIColor: casing, fillUIColor: nil, lineWidth: Self.offlineRoadCasingWidth(role), lineCap: .round, level: .aboveRoads)
-			))
-		}
-		// Fill pass — white centerlines (light) / lighter-than-land gray (dark).
-		for role in roadClasses {
-			guard let fill = Self.offlineRoadFillColor(role, dark: dark), let multi = roadMultiPolyline(role) else { continue }
-			result.append(ClusterMapOverlay(
-				id: "offline-road-fill-\(role)",
-				overlay: multi,
-				style: ClusterMapOverlayStyle(strokeUIColor: fill, fillUIColor: nil, lineWidth: Self.offlineRoadWidth(role), lineCap: .round, level: .aboveRoads)
-			))
-		}
-		// Rail + admin boundaries (single dashed stroke, both modes).
-		for role in [OfflineFeatureRole.rail, .boundary] {
-			guard let color = Self.offlineLineColor(role, dark: dark), let multi = roadMultiPolyline(role) else { continue }
-			result.append(ClusterMapOverlay(
-				id: "offline-line-\(role)",
-				overlay: multi,
-				style: ClusterMapOverlayStyle(strokeUIColor: color, fillUIColor: nil, lineWidth: 1.0, lineDash: [2, 3], lineCap: .butt, level: .aboveRoads)
-			))
-		}
-
-		offlineVectorOverlays = result
 	}
 
 	// MARK: Offline basemap palette (approximates Apple Maps Standard, light + dark)
