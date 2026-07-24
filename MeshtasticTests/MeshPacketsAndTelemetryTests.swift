@@ -908,6 +908,62 @@ struct TelemetryPacketIngestTests {
 	}
 }
 
+// MARK: - PAX counter ingestion
+
+@Suite("PAX counter ingestion", .serialized)
+@MainActor
+struct PaxCounterPacketIngestTests {
+	private func makePaxPacket(from nodeNum: UInt32) throws -> MeshPacket {
+		var paxCounter = Paxcount()
+		paxCounter.wifi = 4
+		paxCounter.ble = 7
+		paxCounter.uptime = 60
+
+		var dataMessage = DataMessage()
+		dataMessage.payload = try paxCounter.serializedData()
+		dataMessage.portnum = .paxcounterApp
+
+		var packet = MeshPacket()
+		packet.from = nodeNum
+		packet.decoded = dataMessage
+		return packet
+	}
+
+	@Test func paxCounterFromUnknownNode_doesNotPersistOrphan() async throws {
+		let packet = try makePaxPacket(from: 0x20DE_FC01)
+		let context = ModelContext(sharedModelContainer)
+		let countBefore = try context.fetchCount(FetchDescriptor<PaxCounterEntity>())
+
+		let mesh = MeshPackets(modelContainer: sharedModelContainer)
+		await mesh.paxCounterPacket(packet: packet)
+		await mesh.flushDebouncedSaves()
+
+		let countAfter = try context.fetchCount(FetchDescriptor<PaxCounterEntity>())
+		#expect(countAfter == countBefore)
+	}
+
+	@Test func paxCounterFromKnownNode_persistsLinkedReading() async throws {
+		let nodeNum: UInt32 = 0x20DE_FC02
+		let context = ModelContext(sharedModelContainer)
+		let node = NodeInfoEntity()
+		node.num = Int64(nodeNum)
+		context.insert(node)
+		try context.save()
+
+		let mesh = MeshPackets(modelContainer: sharedModelContainer)
+		await mesh.paxCounterPacket(packet: try makePaxPacket(from: nodeNum))
+		await mesh.flushDebouncedSaves()
+
+		let persistedNodeNum = Int64(nodeNum)
+		let readings = try context.fetch(FetchDescriptor<PaxCounterEntity>(
+			predicate: #Predicate { $0.paxNode?.num == persistedNodeNum }
+		))
+		#expect(readings.count == 1)
+		#expect(readings.first?.wifi == 4)
+		#expect(readings.first?.ble == 7)
+	}
+}
+
 @Suite("device metadata ingestion")
 @MainActor
 struct DeviceMetadataIngestTests {

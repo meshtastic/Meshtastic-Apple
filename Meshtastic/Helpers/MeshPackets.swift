@@ -798,22 +798,20 @@ actor MeshPackets {
 		do {
 			let fetchedNode = try modelContext.fetch(fetchDescriptor)
 
-			if let paxMessage = try? Paxcount(serializedBytes: packet.decoded.payload) {
-
-				let newPax = PaxCounterEntity()
-				modelContext.insert(newPax)
-				newPax.ble = Int32(truncatingIfNeeded: paxMessage.ble)
-				newPax.wifi = Int32(truncatingIfNeeded: paxMessage.wifi)
-				newPax.uptime = Int32(truncatingIfNeeded: paxMessage.uptime)
-				newPax.time = Date()
-
-				if fetchedNode.count > 0 {
-					newPax.paxNode = fetchedNode[0]
-					scheduleDebouncedSave()
-				} else {
-					Logger.data.info("Node Info Not Found")
-				}
+			guard let node = fetchedNode.first else {
+				Logger.data.info("Node Info Not Found")
+				return
 			}
+			guard let paxMessage = try? Paxcount(serializedBytes: packet.decoded.payload) else { return }
+
+			let newPax = PaxCounterEntity()
+			modelContext.insert(newPax)
+			newPax.ble = Int32(truncatingIfNeeded: paxMessage.ble)
+			newPax.wifi = Int32(truncatingIfNeeded: paxMessage.wifi)
+			newPax.uptime = Int32(truncatingIfNeeded: paxMessage.uptime)
+			newPax.time = Date()
+			newPax.paxNode = node
+			scheduleDebouncedSave()
 		} catch {
 
 		}
