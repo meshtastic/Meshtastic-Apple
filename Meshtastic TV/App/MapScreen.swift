@@ -35,13 +35,6 @@ struct MapScreen: View {
 			)
 			.ignoresSafeArea()
 		}
-		.overlay(alignment: .topTrailing) {
-			HStack(spacing: 20) {
-				recenterButton
-				disconnectButton
-			}
-			.padding(40)
-		}
 	}
 
 	/// Menu pressed while the map held focus: pop any open node detail and hand
@@ -51,23 +44,25 @@ struct MapScreen: View {
 		focusedNodeNum = selectedNodeNum ?? client.sortedNodes.first?.num
 	}
 
-	private var recenterButton: some View {
-		Button {
-			selectedNodeNum = nil
-			recenterToken += 1
-		} label: {
-			Label("Re-center", systemImage: "scope")
-				// The brand-green tint renders .bordered pills green-on-green on
-				// tvOS; force a readable label (focus styling still overrides).
-				.foregroundStyle(.white)
-		}
-		.buttonStyle(.bordered)
-		.tint(.secondary)
-	}
-
 	private var nodeList: some View {
 		NavigationStack(path: $navPath) {
 			List {
+				// Map controls live in the list column — the overlay buttons were
+				// unreachable by remote once the map started capturing focus.
+				Section {
+					Button {
+						selectedNodeNum = nil
+						recenterToken += 1
+					} label: {
+						Label("Re-center Map", systemImage: "scope")
+					}
+					Button(role: .destructive) {
+						client.disconnect()
+					} label: {
+						Label("Disconnect", systemImage: "xmark.circle.fill")
+					}
+				}
+
 				Section {
 					ForEach(client.sortedNodes) { node in
 						NavigationLink(value: node.num) {
