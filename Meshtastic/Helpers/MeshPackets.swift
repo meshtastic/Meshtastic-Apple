@@ -1401,6 +1401,10 @@ actor MeshPackets {
 						CarPlayIntentDonation.donateReceivedMessage(newMessage)
 						#endif
 
+						// Let unread-displaying surfaces (badge, CarPlay templates) refresh.
+						// Observers debounce, so posting per saved message is cheap.
+						NotificationCenter.default.post(name: .meshMessagesDidChange, object: nil)
+
 						if packet.decoded.portnum == PortNum.detectionSensorApp && !UserDefaults.enableDetectionNotifications {
 							return
 						}
