@@ -60,6 +60,10 @@ final class NodeCircleAnnotationView: MKAnnotationView {
 		circle.layer.shadowOpacity = 0.35
 		circle.layer.shadowRadius = 3
 		circle.layer.shadowOffset = CGSize(width: 0, height: 1)
+		// Pre-computed shadow shape: without it, every pin pays an offscreen
+		// shadow pass per frame during map animations — with ~100 pins that
+		// drops frames and renders as visual noise mid-flight.
+		circle.layer.shadowPath = UIBezierPath(ovalIn: circle.bounds).cgPath
 		addSubview(circle)
 
 		label.frame = bounds.insetBy(dx: 6, dy: 6)
@@ -250,6 +254,19 @@ struct MeshTVMapView: UIViewRepresentable {
 		}
 		private var lastRecenterToken = 0
 
+		/// Set a region, but CUT instead of flying when the jump is big. A long
+		/// animated flight re-evaluates clustering every frame (pins/clusters
+		/// popping) while tiles stream in behind — which reads as visual static.
+		/// Short hops still animate; anything past city-to-city just cuts.
+		private func setRegionSmart(_ mapView: MKMapView, target: MKCoordinateRegion) {
+			let meters = MKMapPoint(mapView.centerCoordinate)
+				.distance(to: MKMapPoint(target.center))
+			let spanRatio = mapView.region.span.latitudeDelta
+				/ max(target.span.latitudeDelta, 0.0001)
+			let bigJump = meters > 80_000 || spanRatio > 4 || spanRatio < 0.25
+			mapView.setRegion(target, animated: !bigJump)
+		}
+
 		/// Fit the camera to every located node's reported position.
 		@discardableResult
 		private func frameAllNodes(_ mapView: MKMapView, nodes: [MeshNode], animated: Bool) -> Bool {
@@ -268,7 +285,12 @@ struct MeshTVMapView: UIViewRepresentable {
 				latitudeDelta: max((maxLat - minLat) * 1.4, 0.05),
 				longitudeDelta: max((maxLon - minLon) * 1.4, 0.05)
 			)
-			mapView.setRegion(MKCoordinateRegion(center: center, span: span), animated: animated)
+			let region = MKCoordinateRegion(center: center, span: span)
+			if animated {
+				setRegionSmart(mapView, target: region)   // cuts when the jump is big
+			} else {
+				mapView.setRegion(region, animated: false)
+			}
 			return true
 		}
 
@@ -304,9 +326,12 @@ struct MeshTVMapView: UIViewRepresentable {
 					longitudinalMeters: 4_000
 				)
 				if mapView.region.span.latitudeDelta > target.span.latitudeDelta {
-					mapView.setRegion(target, animated: true)
+					self.setRegionSmart(mapView, target: target)
 				} else {
-					mapView.setCenter(annotation.coordinate, animated: true)
+					// Already zoomed in: keep the user's zoom, just move over.
+					self.setRegionSmart(mapView, target: MKCoordinateRegion(
+						center: annotation.coordinate, span: mapView.region.span
+					))
 				}
 			}
 			pendingSelectionFly = fly

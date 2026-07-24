@@ -16,6 +16,10 @@ struct MapScreen: View {
 	@Bindable var client: MeshClient
 	@State private var selectedNodeNum: UInt32?
 	@State private var recenterToken = 0
+	// Row focus is the browse signal on tvOS: List(selection:) does not follow
+	// focus for NavigationLink rows, so track it explicitly and mirror it into
+	// the map selection (debounced map-side).
+	@FocusState private var focusedNodeNum: UInt32?
 
 	var body: some View {
 		HStack(spacing: 0) {
@@ -54,16 +58,20 @@ struct MapScreen: View {
 
 	private var nodeList: some View {
 		NavigationStack {
-			List(selection: $selectedNodeNum) {
+			List {
 				Section {
 					ForEach(client.sortedNodes) { node in
 						NavigationLink(value: node.num) {
 							NodeRow(node: node)
 						}
+						.focused($focusedNodeNum, equals: node.num)
 					}
 				} header: {
 					Text("\(client.nodes.count) nodes · \(client.locatedNodes.count) on map")
 				}
+			}
+			.onChange(of: focusedNodeNum) { _, newValue in
+				if let newValue { selectedNodeNum = newValue }
 			}
 			.navigationDestination(for: UInt32.self) { num in
 				if let node = client.nodes[num] {
