@@ -305,10 +305,15 @@ targets:
         includes:
           - "*.lproj/**"
     dependencies:
+      # platformFilter restores the pre-XcodeGen `platformFilter = ios` on these
+      # embeds: a Mac Catalyst build must not embed watchOS/iOS-only content
+      # ("built for macOS but contains embedded content built for watchOS").
       - target: WidgetsExtension
         embed: true
+        platformFilter: iOS
       - target: "Meshtastic Watch App"
         embed: true
+        platformFilter: iOS
         codeSign: true
         copy:
           destination: productsDirectory

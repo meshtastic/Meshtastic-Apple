@@ -54,6 +54,12 @@ actor BLETransport: Transport {
 	static let poweredOffStatusMessage = "Bluetooth is powered off"
 
 	private var cleanupTask: Task<Void, Never>?
+	/// The in-flight `discoverDevices()` setup work (central-manager creation, waiting for
+	/// poweredOn, the initial `scanForPeripherals()` call). Tracked so `stopActiveDiscovery()`
+	/// can cancel *and await* it, closing the race where that setup work resumes past a
+	/// suspension point and starts scanning after a caller believes discovery is off (#2183
+	/// review).
+	private var discoverySetupTask: Task<Void, Never>?
 	
 	// Transport properties
 	let supportsManualConnection: Bool = false
@@ -134,7 +140,14 @@ actor BLETransport: Transport {
 
 	func discoverDevices() -> AsyncStream<DiscoveryEvent> {
 		AsyncStream { cont in
-			Task {
+			// Stored so `stopActiveDiscovery()` can cancel *and await* this setup work, not just
+			// request its cancellation. `Task.cancel()` is cooperative: without awaiting this
+			// task's completion, `stopActiveDiscovery()` could return while this task is still
+			// suspended on `setupCompleteGate.wait()` (e.g. central manager not yet poweredOn) and
+			// go on to call `scanForPeripherals()` *after* the caller believes discovery is off —
+			// reopening the exact scan-during-pairing race this method exists to close (#2183
+			// review).
+			let setupTask = Task {
 				await self.setDiscoveredDeviceContinuation(cont)
 
 				// Create the CBCentralManager now if it was deferred (authorization was .notDetermined at init).
@@ -143,9 +156,17 @@ actor BLETransport: Transport {
 				}
 				// This gate is opened when the CBCentralManager is in poweredOn state.
 				// Its probably open already, but just to be sure in case we get here too quickly.
-				try await self.setupCompleteGate.wait()
-				
+				do {
+					try await self.setupCompleteGate.wait()
+				} catch {
+					return
+				}
+				// Re-check after every suspension point above: a cancellation requested while this
+				// task was still waiting on the gate must not fall through to actually scanning.
+				guard !Task.isCancelled else { return }
+
 				if await !self.restoreInProgress {
+					guard !Task.isCancelled else { return }
 					centralManager.scanForPeripherals(withServices: [meshtasticServiceCBUUID], options: [CBCentralManagerScanOptionAllowDuplicatesKey: true])
 					
 					let peripherals = await self.discoveredPeripherals.values.map({$0.peripheral})
@@ -158,7 +179,9 @@ actor BLETransport: Transport {
 					}
 				}
 				await setupCleanupTask()
+				await self.clearDiscoverySetupTask()
 			}
+			self.discoverySetupTask = setupTask
 			cont.onTermination = { _ in
 				Logger.transport.error("🛜 [BLE] Discovery event stream has been canecelled.")
 				Task {
@@ -166,6 +189,13 @@ actor BLETransport: Transport {
 				}
 			}
 		}
+	}
+
+	/// Clears the tracked setup task once it finishes on its own (i.e. not via
+	/// `stopActiveDiscovery()`'s cancel-and-await path), so a later `stopActiveDiscovery()` call
+	/// doesn't await a stale, already-completed task reference.
+	private func clearDiscoverySetupTask() {
+		discoverySetupTask = nil
 	}
 	
 	private func setupCleanupTask() {
@@ -188,6 +218,26 @@ actor BLETransport: Transport {
 			}
 			Logger.transport.debug("🛜 [BLE] Discovery clean up task has been canecelled.")
 		}
+	}
+
+	/// Directly stops active scanning and awaits completion — unlike the reactive
+	/// `discoverDevices()` `onTermination` cancellation chain, whose final step spawns a
+	/// detached, unawaited `Task` to reach this actor (see that closure). Because this actor
+	/// method has no internal `await` after the setup-task teardown below, a caller's `await`
+	/// here only returns once `centralManager.stopScan()` has actually executed. Idempotent,
+	/// same as `stopScanning()`.
+	///
+	/// Cancels and awaits `discoverySetupTask` first: `Task.cancel()` alone is cooperative, so
+	/// without awaiting it, that task could still be suspended on `setupCompleteGate.wait()`
+	/// and resume to call `scanForPeripherals()` *after* this method returns — reopening the
+	/// scan-during-pairing race this method exists to close (#2183 review).
+	func stopActiveDiscovery() async {
+		if let discoverySetupTask {
+			discoverySetupTask.cancel()
+			await discoverySetupTask.value
+			self.discoverySetupTask = nil
+		}
+		stopScanning()
 	}
 
 	private func stopScanning() {

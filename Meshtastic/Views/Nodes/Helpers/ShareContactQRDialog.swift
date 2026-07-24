@@ -88,6 +88,14 @@ struct ShareContactQRDialog: View {
 						image: Image(uiImage: qrImage)
 					  )
 			)
+			#if !targetEnvironment(macCatalyst)
+			if #available(iOS 18, *) {
+				NFCWriteButton(
+					payload: qrString,
+					caption: "Hold a writable NFC tag near the top of your iPhone to share this contact."
+				)
+			}
+			#endif
 			Button("Done") { dismiss() }
 				.buttonStyle(.borderedProminent)
 				.padding(.bottom)

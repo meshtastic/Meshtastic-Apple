@@ -174,6 +174,11 @@ extension AccessoryManager {
 				Logger.data.error("Failed to decode contact data: \(error.localizedDescription, privacy: .public)")
 				throw AccessoryError.appError("Unable to decode contact data from QR code.")
 			}
+		} else {
+			// Without this the method returned normally on undecodable input, so
+			// callers treated a failed import as a success.
+			Logger.data.error("Contact payload is not valid base64url data.")
+			throw AccessoryError.appError("Unable to decode contact data from QR code.")
 		}
 	}
 	

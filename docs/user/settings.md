@@ -43,6 +43,8 @@ On firmware **2.8.0 or later**, the radio tells the app which modem presets are 
 
 Manage up to 8 channels (0–7). Channel 0 is the primary broadcast channel. Additional channels create isolated messaging groups with their own encryption keys.
 
+When sharing channels, the share screen shows a QR code and link, and — on iPhones with NFC hardware (iOS 18 or later) — a **Write to NFC Tag** button. Hold a writable NFC tag near the top of your iPhone to save the channel link to it, replacing any content the tag already held; tapping that tag on another phone opens the same add-or-replace channels flow the QR code does.
+
 ### Security
 
 Configure PKI (Public Key Infrastructure) encryption for direct messages. Requires firmware 2.5+.
@@ -137,6 +139,21 @@ The Traffic Management module helps reduce unnecessary mesh traffic and improve 
 | **Unknown Packet Handling** | |
 | Drop Unknown | Enable dropping of unknown/undecryptable packets. |
 | Threshold | Maximum unknown/undecryptable packets per rate window before the source is dropped. |
+
+## Tools
+
+The **Tools** entry appears only on iPhones with NFC hardware running iOS 18 or later; it is hidden on iPads, Mac Catalyst, and any device without an NFC radio.
+
+It contains an **NFC Tags** section:
+
+| Action | What it does |
+|--------|--------------|
+| **Write Contact to NFC Tag** | Saves your connected node's contact link to a writable NFC tag, replacing any content it already held. Hold the tag near the top of your iPhone. |
+| **Scan NFC Tag** | Reads a Meshtastic tag and imports what it holds — a contact opens the add-contact confirmation sheet, a channel link opens the add-or-replace channels flow, exactly as scanning the equivalent QR code would. |
+
+If a scanned tag holds something other than a Meshtastic contact or channel link, or its channel settings can't be read, the scan reports the problem rather than appearing to succeed.
+
+Tags written by the Meshtastic app for Android are interchangeable with these — both platforms write the same contact and channel links.
 
 ## Firmware Updates
 

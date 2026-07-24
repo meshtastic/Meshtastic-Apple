@@ -18,6 +18,28 @@ struct MeshtasticChannelURLTests {
 		#expect(parsed.channelSet.loraConfig.hopLimit == 5)
 	}
 
+	// The channel URL written to NFC tags (ShareChannels -> NFCWriteButton) is the
+	// same MeshtasticChannelURL.urlString(for:addChannels:) output, so it must
+	// round-trip through parse in both replace and add modes.
+	@Test func nfcWritePayloadRoundTripsInBothModes() throws {
+		let channelSet = makeChannelSet()
+		let originalPsk = channelSet.settings.first?.psk
+
+		let replaceUrl = try MeshtasticChannelURL.urlString(for: channelSet, addChannels: false)
+		let replaceParsed = try MeshtasticChannelURL.parse(replaceUrl)
+		#expect(replaceParsed.addChannels == false)
+		#expect(replaceParsed.channelSet.settings.first?.name == "Alpha")
+		#expect(replaceParsed.channelSet.settings.first?.psk == originalPsk)
+		#expect(replaceParsed.channelSet.hasLoraConfig)
+
+		let addUrl = try MeshtasticChannelURL.urlString(for: channelSet, addChannels: true)
+		let addParsed = try MeshtasticChannelURL.parse(addUrl)
+		#expect(addParsed.addChannels)
+		#expect(addParsed.channelSet.settings.first?.name == "Alpha")
+		#expect(addParsed.channelSet.settings.first?.psk == originalPsk)
+		#expect(!addParsed.channelSet.hasLoraConfig)
+	}
+
 	@Test func acceptsAndroidCompatibleWWWChannelURL() throws {
 		let payload = try MeshtasticChannelURL.payloadString(for: makeChannelSet())
 		let parsed = try MeshtasticChannelURL.parse("https://www.meshtastic.org/e/?add=true#\(payload)")

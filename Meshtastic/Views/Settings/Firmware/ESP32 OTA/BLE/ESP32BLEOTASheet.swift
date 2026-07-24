@@ -219,7 +219,7 @@ struct ESP32BLEOTASheet: View {
 					
 					// 4. Disable discovery to focus on the specific OTA device
 					accessoryManager.otaInProgress = true
-					accessoryManager.stopDiscovery()
+					await accessoryManager.stopDiscovery()
 					
 					// 5. Wait briefly for device to reboot
 					try await Task.sleep(nanoseconds: 2_000_000_000) // 2 seconds
