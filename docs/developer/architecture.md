@@ -79,11 +79,12 @@ Application services that are not tied to radio connectivity live in `Meshtastic
 MapKit shapes on a background queue; `MeshMapMK` builds the actual `MKPolygon`/`MKMultiPolygon`/
 `MKMultiPolyline` overlays via `MeshMapMK.offlineVectorOverlayGroups`, an `AsyncStream` that yields
 one chunk per role group (earth fill, each fill role, each road pass, rail/boundary) so a dense
-archive's full construction never blocks the main run loop for longer than one group — see
-`DIAGNOSIS-offline-maps-freeze.md` at the repo root for the freeze this fixed and the measured
-perf evidence. `MapConnectivityMonitor` (`Meshtastic/Helpers/Map/`) is a small `NWPathMonitor`-backed
-singleton the map screen consults to skip MapKit's live-network extras (traffic, POI) while there's
-no network path at all, so the app isn't asking MapKit to chase dead requests while offline.
+archive's full construction never blocks the main run loop for longer than one group (this fixed a
+field-reported freeze when zooming into a downloaded region at street-level scale — see PR #2184
+for the full diagnosis and perf evidence). `MapConnectivityMonitor` (`Meshtastic/Helpers/Map/`) is
+a small `NWPathMonitor`-backed singleton the map screen consults to skip MapKit's live-network
+extras (traffic, POI) while there's no network path at all, so the app isn't asking MapKit to
+chase dead requests while offline.
 
 ## Protobufs
 

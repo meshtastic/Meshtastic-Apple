@@ -145,7 +145,11 @@ struct OfflineOverlayBuildPerfTests {
 		}
 
 		#expect(groupCount == 9)
-		#expect(!overlays.contains { ($0.id as? String)?.hasPrefix("offline-road-casing-") == true })
+		let hasCasingOverlay = overlays.contains { overlay in
+			guard let id = overlay.id as? String else { return false }
+			return id.hasPrefix("offline-road-casing-")
+		}
+		#expect(!hasCasingOverlay)
 	}
 }
 

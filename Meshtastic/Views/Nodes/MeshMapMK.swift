@@ -1417,6 +1417,10 @@ struct MeshMapMK: View {
 		guard key != lastOfflineOverlaysKey else { return }
 		lastOfflineOverlaysKey = key
 		guard enableOfflineTiles, offlineVectors.isAvailable, !offlineVectors.coverageAreas.isEmpty else {
+			// Invalidate any in-flight build too (e.g. offline tiles just got disabled mid-build), so its
+			// stale `generation` check still passes and it later overwrites this deliberate clear with its
+			// (now-unwanted) staged results -- the basemap would silently reappear on its own.
+			offlineOverlayBuildGeneration += 1
 			if !offlineVectorOverlays.isEmpty { offlineVectorOverlays = [] }
 			return
 		}
@@ -1456,9 +1460,19 @@ struct MeshMapMK: View {
 			offlineVectorOverlays = staged
 			// Perf evidence for PR review: total wall time to build the offline basemap overlays, the
 			// number of (now-yielded) chunks it took, and the single longest uninterrupted main-thread
-			// span among them -- the number that actually matters for "did this look like a freeze".
-			Logger.services.info("🗺️ [Offline] overlay rebuild: \(groupCount) groups / \(overlayCount) overlays in \(start.duration(to: clock.now).formatted()) (worst uninterrupted chunk \(worstChunk.formatted()))")
+			// span among them -- the number that actually matters for "did this look like a freeze". This
+			// pipeline runs at millisecond scale, so `Duration.formatted()` (which rounds to whole seconds)
+			// would print "0 s" for almost every real build -- format in milliseconds instead.
+			Logger.services.info("🗺️ [Offline] overlay rebuild: \(groupCount) groups / \(overlayCount) overlays in \(Self.millisecondsString(start.duration(to: clock.now))) (worst uninterrupted chunk \(Self.millisecondsString(worstChunk)))")
 		}
+	}
+
+	/// Formats a `Duration` as `"NN.NN ms"`. `Duration.formatted()`'s default time style rounds to
+	/// whole seconds, which is useless for this pipeline's sub-second timings.
+	private static func millisecondsString(_ duration: Duration) -> String {
+		let parts = duration.components
+		let seconds = Double(parts.seconds) + Double(parts.attoseconds) / 1e18
+		return String(format: "%.2f ms", seconds * 1000)
 	}
 
 	/// One `[ClusterMapOverlay]` chunk per logical role group (earth fill, each fill role, each road
