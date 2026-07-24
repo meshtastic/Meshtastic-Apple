@@ -97,6 +97,8 @@ struct UserMessageList: View {
 			   let connectedUser = connectedNode.user {
 				appState.unreadDirectMessages = connectedUser.unreadMessages(context: context, skipLastMessageCheck: true) // skipLastMessageCheck=true because we don't update lastMessage on our own connected node
 			}
+			// Refresh other unread surfaces (CarPlay templates) too.
+			NotificationCenter.default.post(name: .meshMessagesDidChange, object: nil)
 		} catch {
 			Logger.data.error("Failed to read direct messages: \(error.localizedDescription, privacy: .public)")
 		}
