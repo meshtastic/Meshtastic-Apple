@@ -77,8 +77,28 @@ enum IntentMessageConverters {
 		}
 	}
 
-	/// Looks up a `ChannelEntity` by matching name.
+	/// Looks up a `ChannelEntity` by matching name, scoped to the connected
+	/// node's channel table.
+	///
+	/// Scoping matters: `ChannelEntity` rows exist per `MyInfoEntity`, so anyone
+	/// who has ever connected more than one radio has duplicate rows per index.
+	/// Unscoped, "Channel 2" matched several identical channels and Siri replied
+	/// with a disambiguation between indistinguishable options (or failed) —
+	/// breaking channel replies from CarPlay.
+	@MainActor
 	static func findChannels(matching name: String, in context: ModelContext) -> [ChannelEntity] {
+		let connectedNum = AccessoryManager.shared.activeDeviceNum
+
+		// Filter to the connected node's myInfo in Swift, not the predicate —
+		// optional-relationship comparisons in #Predicate crash SwiftData on iOS 26.
+		func scoped(_ channels: [ChannelEntity]) -> [ChannelEntity] {
+			guard let connectedNum else { return channels }
+			let mine = channels.filter { $0.myInfoChannel?.myNodeNum == connectedNum }
+			// Fall back to the unscoped list if the connected node has no matching
+			// row (e.g. channel DB not yet synced) rather than failing outright.
+			return mine.isEmpty ? channels : mine
+		}
+
 		if let explicitIndex = channelIndex(fromHandleOrName: name) {
 			let explicitIndex32 = Int32(explicitIndex)
 			let descriptor = FetchDescriptor<ChannelEntity>(
@@ -86,25 +106,34 @@ enum IntentMessageConverters {
 					channel.index == explicitIndex32
 				}
 			)
-			return (try? context.fetch(descriptor)) ?? []
+			// The duplicates are interchangeable for index-addressed lookups —
+			// return at most one so resolution never disambiguates identical rows.
+			return Array(scoped((try? context.fetch(descriptor)) ?? []).prefix(1))
 		}
 
 		let normalized = name.lowercased()
 		let channels = (try? context.fetch(FetchDescriptor<ChannelEntity>())) ?? []
-		return channels.filter { channel in
+		let matches = scoped(channels.filter { channel in
 			guard let channelName = channel.name, !channelName.isEmpty else { return false }
 			return channelName.lowercased().contains(normalized)
-		}
+		})
+		// Collapse duplicate (index, name) rows left over from other radios.
+		var seen = Set<Int32>()
+		return matches.filter { seen.insert($0.index).inserted }
 	}
 
-	/// Resolves a channel index from a spoken group name, defaulting to the primary channel.
-	static func channelIndex(for name: String, in context: ModelContext) -> Int {
+	/// Resolves a channel index from a spoken group name. Returns nil when the
+	/// name matches nothing — callers must fail rather than fall back: the old
+	/// default of 0 silently sent channel replies to Primary when Siri's
+	/// transcription didn't match any channel name.
+	@MainActor
+	static func channelIndex(for name: String, in context: ModelContext) -> Int? {
 		if let explicitIndex = channelIndex(fromHandleOrName: name) {
 			return explicitIndex
 		}
 
 		let channels = findChannels(matching: name, in: context)
-		return channels.first.map { Int($0.index) } ?? 0
+		return channels.first.map { Int($0.index) }
 	}
 
 	static func directMessageNodeNum(from value: String) -> Int64? {
