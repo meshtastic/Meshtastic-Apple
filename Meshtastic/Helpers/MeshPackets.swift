@@ -799,7 +799,7 @@ actor MeshPackets {
 			let fetchedNode = try modelContext.fetch(fetchDescriptor)
 
 			guard let node = fetchedNode.first else {
-				Logger.data.info("Node Info Not Found")
+				Logger.data.debug("🗄️ [PaxCounterEntity] Ignoring packet from unknown node \(packet.from.toHex(), privacy: .public)")
 				return
 			}
 			guard let paxMessage = try? Paxcount(serializedBytes: packet.decoded.payload) else { return }
