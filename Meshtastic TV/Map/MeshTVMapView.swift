@@ -281,7 +281,21 @@ struct MeshTVMapView: UIViewRepresentable {
 			guard num != lastAppliedSelection else { return }
 			lastAppliedSelection = num
 			guard let annotation = annotationsByNum[num] else { return }
-			mapView.setCenter(annotation.coordinate, animated: true)
+
+			// Zoom in far enough to break the node out of its cluster — centering
+			// alone at mesh-wide zoom leaves the selection swallowed by a cluster
+			// badge. Only ever zoom IN: if the user is already closer than city
+			// scale, keep their zoom and just center.
+			let target = MKCoordinateRegion(
+				center: annotation.coordinate,
+				latitudinalMeters: 4_000,
+				longitudinalMeters: 4_000
+			)
+			if mapView.region.span.latitudeDelta > target.span.latitudeDelta {
+				mapView.setRegion(target, animated: true)
+			} else {
+				mapView.setCenter(annotation.coordinate, animated: true)
+			}
 		}
 		private var lastAppliedSelection: UInt32?
 
