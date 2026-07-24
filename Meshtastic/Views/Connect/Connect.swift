@@ -375,6 +375,13 @@ struct Connect: View {
 								Spacer()
 								ManualConnectionMenu(isSwitchingRadio: $isSwitchingRadio)
 							}) {
+									// #2175: the system "Bluetooth is turned off" alert is intentionally suppressed
+									// (#2162), so this is the only in-app signal telling a BLE user why no devices
+									// are appearing here. Shown alongside — not instead of — any devices already
+									// found over other transports (TCP/manual).
+									if accessoryManager.isBluetoothPoweredOff {
+										BluetoothPoweredOffRow()
+									}
 									ForEach(sortedAvailableDevices) { device in
 										DeviceConnectRow(device: device, isSwitchingRadio: $isSwitchingRadio)
 								}
@@ -811,6 +818,52 @@ struct EventFirmwareEndedBanner: View {
 			.padding(.vertical, 6)
 		}
 		.buttonStyle(.plain)
+	}
+}
+
+/// Inline "Bluetooth is off" row shown in Available Radios when `AccessoryManager
+/// .isBluetoothPoweredOff` is true — i.e. the BLE transport's status has settled on
+/// `.error(BLETransport.poweredOffStatusMessage)` (see #2161/#2163). The system "Bluetooth is
+/// turned off" alert is intentionally suppressed (#2162), so this row is the only in-app
+/// signal telling a BLE user why no devices are appearing. Tapping it opens Settings (#2175).
+/// Not `private`: `SwiftUIViewSnapshotTests` renders it standalone for `docs/user/bluetooth.md`.
+struct BluetoothPoweredOffRow: View {
+	@Environment(\.openURL) private var openURL
+
+	var body: some View {
+		Button {
+			if let url = URL(string: UIApplication.openSettingsURLString) {
+				openURL(url)
+			}
+		} label: {
+			HStack(alignment: .top, spacing: 10) {
+				Image(systemName: "exclamationmark.triangle.fill")
+					.foregroundColor(.orange)
+					.accessibilityHidden(true)
+				VStack(alignment: .leading, spacing: 2) {
+					Text("Bluetooth is off")
+						.font(.callout.weight(.semibold))
+						.foregroundColor(.primary)
+					Text("Turn on Bluetooth in Settings to see nearby radios.")
+						.font(.caption)
+						.foregroundColor(.secondary)
+						.multilineTextAlignment(.leading)
+						// Without this, the subtitle competes for space with the icon + Spacer inside
+						// the HStack and can get compressed/truncated at larger Dynamic Type sizes
+						// instead of wrapping and growing the row — matches FirmwareUpdateConnectNotice.
+						.fixedSize(horizontal: false, vertical: true)
+				}
+				Spacer()
+				Image(systemName: "chevron.right")
+					.font(.caption)
+					.foregroundColor(.secondary)
+					.accessibilityHidden(true)
+			}
+			.padding(.vertical, 6)
+		}
+		.buttonStyle(.plain)
+		.accessibilityElement(children: .combine)
+		.accessibilityHint("Opens Settings")
 	}
 }
 

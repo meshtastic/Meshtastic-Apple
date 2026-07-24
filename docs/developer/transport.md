@@ -22,7 +22,9 @@ Each transport conforms to a `MeshTransport` protocol that exposes `connect()`, 
 
 ### BLETransport Status on Bluetooth State Changes
 
-`BLETransport.status` mirrors `CBManagerState` via `handleCentralState(_:central:)`. Only `.poweredOn` settles on `.ready`; every other state — including `.poweredOff` — settles on `.error(...)`. Concretely, when Bluetooth powers off, `status` becomes `.error("Bluetooth is powered off")` and stays there; it does not become `.ready`. This matches `.unauthorized`, `.unsupported`, `.resetting`, and `.unknown`, which all settle on `.error(...)` too.
+`BLETransport.status` mirrors `CBManagerState` via `handleCentralState(_:central:)`. `.poweredOn` settles on `.discovering`, not `.ready` — `.ready` is only assigned later, by `stopScanning()`, and only while Bluetooth is still powered on. Every other state — including `.poweredOff` — settles on `.error(...)`. Concretely, when Bluetooth powers off, `status` becomes `.error(BLETransport.poweredOffStatusMessage)` ("Bluetooth is powered off") and stays there. This matches `.unauthorized`, `.unsupported`, `.resetting`, and `.unknown`, which all settle on `.error(...)` too.
+
+`status` is actor-isolated state, so nothing outside `BLETransport` could observe it changing until `statusUpdates() -> AsyncStream<TransportStatus>` was added: it replays the current status to a new subscriber, then yields again on every subsequent change (a `didSet` on `status` drives the broadcast, guarded so an unchanged value never yields a duplicate). `AccessoryManager.observeBLETransportStatus()` is the sole subscriber — it consumes the stream for the app's lifetime and mirrors every value onto `@Published var bleTransportStatus`, from which the computed `isBluetoothPoweredOff` derives. The Connect tab reads `isBluetoothPoweredOff` to show an inline "Bluetooth is off" row in Available Radios, since the system "Bluetooth is turned off" alert is intentionally suppressed (`CBCentralManagerOptionShowPowerAlertKey: false`, see above) and would otherwise be the only in-app signal a BLE user gets.
 
 ## AccessoryManager Extension Map
 

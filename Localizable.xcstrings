@@ -15810,6 +15810,9 @@
         }
       }
     },
+    "Bluetooth is off" : {
+      "comment" : "Connect tab: title shown in Available Radios when the BLE transport reports Bluetooth is powered off (#2175)"
+    },
     "Bold" : {
       "comment" : "VoiceOver: bold formatting toolbar button"
     },
@@ -65454,6 +65457,9 @@
     "Opens Meshtastic Flasher" : {
       "comment" : "VoiceOver hint: tapping this notice opens the Meshtastic Flasher site"
     },
+    "Opens Settings" : {
+      "comment" : "VoiceOver hint: tapping the Bluetooth-is-off row in Connect opens the Settings app (#2175)"
+    },
     "Optional GPIO" : {
       "localizations" : {
         "da" : {
@@ -101965,6 +101971,9 @@
           }
         }
       }
+    },
+    "Turn on Bluetooth in Settings to see nearby radios." : {
+      "comment" : "Connect tab: subtitle shown in Available Radios when the BLE transport reports Bluetooth is powered off (#2175)"
     },
     "Two Hours" : {
       "localizations" : {

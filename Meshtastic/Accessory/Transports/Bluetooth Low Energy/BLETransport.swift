@@ -32,7 +32,26 @@ actor BLETransport: Transport {
 	private var restoredConnectContinuation: CheckedContinuation<Void, Error>?
 	private var setupCompleteGate: AsyncGate
 	private var restoreInProgress: Bool = false
-	var status: TransportStatus = .uninitialized
+	var status: TransportStatus = .uninitialized {
+		didSet {
+			guard status != oldValue else { return }
+			statusContinuation?.yield(status)
+		}
+	}
+	/// Broadcasts every `status` change so `AccessoryManager` can mirror it onto a `@Published`
+	/// property for the UI (see `statusUpdates()`, #2175). Actor-isolated state otherwise has no
+	/// way to reach a SwiftUI view: `status` was already being corrected on `.poweredOff`
+	/// (#2161/#2163), but nothing outside this actor could observe it.
+	private var statusContinuation: AsyncStream<TransportStatus>.Continuation?
+	/// Identifies which `statusUpdates()` call installed the current `statusContinuation`, so its
+	/// `onTermination` only clears the continuation if a later subscriber hasn't already replaced
+	/// it (`AsyncStream.Continuation` isn't `Equatable`, so identity can't be compared directly).
+	private var statusSubscriptionGeneration = 0
+
+	/// The exact message `status` settles on when CoreBluetooth reports `.poweredOff`. Kept as a
+	/// shared constant so callers matching on it (`AccessoryManager.isBluetoothPoweredOff`) don't
+	/// duplicate the string.
+	static let poweredOffStatusMessage = "Bluetooth is powered off"
 
 	private var cleanupTask: Task<Void, Never>?
 	
@@ -89,6 +108,28 @@ actor BLETransport: Transport {
 			CBCentralManagerOptionRestoreIdentifierKey: restoreIdentifier,
 			CBCentralManagerOptionShowPowerAlertKey: false
 		]
+	}
+
+	/// Broadcasts `status` (starting with the current value) so `AccessoryManager` can mirror it
+	/// onto a `@Published` property for the UI. Only one subscriber is expected — `AccessoryManager`
+	/// is the sole owner — so a second call replaces the first's continuation.
+	func statusUpdates() -> AsyncStream<TransportStatus> {
+		statusSubscriptionGeneration += 1
+		let generation = statusSubscriptionGeneration
+		return AsyncStream { continuation in
+			continuation.yield(status)
+			self.statusContinuation = continuation
+			continuation.onTermination = { [weak self] _ in
+				Task { await self?.clearStatusContinuation(generation: generation) }
+			}
+		}
+	}
+
+	/// Only clears `statusContinuation` if no later `statusUpdates()` call has already replaced it
+	/// — otherwise a slow-to-terminate old subscriber could null out a newer, still-live one.
+	private func clearStatusContinuation(generation: Int) {
+		guard generation == statusSubscriptionGeneration else { return }
+		statusContinuation = nil
 	}
 
 	func discoverDevices() -> AsyncStream<DiscoveryEvent> {
@@ -195,7 +236,7 @@ actor BLETransport: Transport {
 			// file (see `stopScanning()`) means "poweredOn and available", which powered-off is
 			// the opposite of, so `.error` here also matches this file's own convention for
 			// every other non-powered-on state (.unauthorized, .unsupported, .resetting, etc.).
-			status = .error("Bluetooth is powered off")
+			status = .error(Self.poweredOffStatusMessage)
 			if let connection = activeConnection {
 				Task {
 					Logger.transport.error("🛜 [BLE] Bluetooth has powered off during active connection. Cleaning up.")

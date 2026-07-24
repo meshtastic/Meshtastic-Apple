@@ -55,7 +55,9 @@ The app displays the Bluetooth signal strength of nearby devices during scanning
 ## Troubleshooting
 
 **Radio not appearing in the list**
-- Ensure Bluetooth is enabled in iOS Settings → Bluetooth.
+- Ensure Bluetooth is enabled in iOS Settings → Bluetooth. If Bluetooth is off, the Connect tab's Available Radios section shows a "Bluetooth is off" row — tap it to jump straight to Settings.
+
+  ![Bluetooth is off row](../assets/screenshots/bluetoothOff.png)
 - Move within 10 meters of the radio.
 - Restart the radio.
 - The app continuously listens for BLE advertisements — nearby radios should appear within a few seconds. If a device disappears from the list, it will reappear automatically when next heard.

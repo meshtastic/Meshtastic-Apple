@@ -182,6 +182,14 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	@Published var isConnecting: Bool = false
 	@Published var isInBackground: Bool = false
 	@Published var firmwareEdition: FirmwareEditions = .vanilla
+	/// Mirrors the BLE transport's `TransportStatus`, most notably `.error(BLETransport.
+	/// poweredOffStatusMessage)` when CoreBluetooth reports `.poweredOff`. Nothing read
+	/// `BLETransport.status` before this (#2175): with the system "Bluetooth is turned off"
+	/// alert intentionally suppressed (#2162), the Connect tab needs its own signal to tell a
+	/// BLE user why no devices are appearing in Available Radios. Kept as the raw status (not
+	/// just a Bool) so other transport error states could drive similar UI later without
+	/// another round of plumbing. See `isBluetoothPoweredOff` below and `observeBLETransportStatus()`.
+	@Published var bleTransportStatus: TransportStatus = .uninitialized
 
 	/// MESHTASTIC_LOCKDOWN-hardened firmware state machine. See
 	/// Meshtastic/Helpers/LockdownCoordinator.swift and
@@ -224,6 +232,9 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	// Public due to file separation
 	var otaInProgress: Bool = false
 	var discoveryTask: Task<Void, Never>?
+	/// Consumes `BLETransport.statusUpdates()` for the lifetime of this manager; see
+	/// `observeBLETransportStatus()`.
+	var bleStatusTask: Task<Void, Never>?
 	var connectionEventTask: Task <Void, Error>?
 	var locationTask: Task<Void, Error>?
 	var connectionStepper: SequentialSteps?
@@ -284,10 +295,37 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 				Logger.data.warning("⚠️ [AccessoryManager] Memory warning — saved context")
 			}
 		}
+
+		observeBLETransportStatus()
 	}
 
 	func transportForType(_ type: TransportType) -> Transport? {
 		return transports.first(where: {$0.type == type })
+	}
+
+	/// True once the BLE transport's status has settled on "Bluetooth is powered off"
+	/// (#2161/#2163). The Connect tab's Available Radios section uses this to show an inline
+	/// message prompting the user to enable Bluetooth in Settings — the system power alert is
+	/// intentionally suppressed (#2162), so this is the only in-app signal for a BLE user whose
+	/// device isn't showing up (#2175).
+	var isBluetoothPoweredOff: Bool {
+		if case .error(BLETransport.poweredOffStatusMessage) = bleTransportStatus {
+			return true
+		}
+		return false
+	}
+
+	/// Subscribes to the BLE transport's status stream for the lifetime of this manager and
+	/// mirrors every change onto `bleTransportStatus`. Safe to call more than once (e.g. from a
+	/// future re-init path) — cancels any prior subscription first.
+	private func observeBLETransportStatus() {
+		guard let bleTransport = transportForType(.ble) as? BLETransport else { return }
+		bleStatusTask?.cancel()
+		bleStatusTask = Task { @MainActor in
+			for await status in await bleTransport.statusUpdates() {
+				self.bleTransportStatus = status
+			}
+		}
 	}
 	
 	func connectToPreferredDevice(device: Device? = nil) {
