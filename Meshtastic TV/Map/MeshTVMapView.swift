@@ -98,13 +98,12 @@ final class NodeCircleAnnotationView: MKAnnotationView {
 		}
 	}
 
-	// Grow when focused so the Siri Remote highlight is obvious from the couch.
-	override func didUpdateFocus(in context: UIFocusUpdateContext, with coordinator: UIFocusAnimationCoordinator) {
-		super.didUpdateFocus(in: context, with: coordinator)
-		coordinator.addCoordinatedAnimations({
-			self.transform = self.isFocused ? CGAffineTransform(scaleX: 1.35, y: 1.35) : .identity
-		})
-	}
+	// Invisible to the focus engine. Annotation views constantly appear/disappear
+	// as clustering re-evaluates during zoom animations; when they're focusable,
+	// every add/remove makes the focus engine re-evaluate — an audible click each
+	// time, which reads as bursts of static on every list transition. The side
+	// list is the selection path, so the pins don't need focus at all.
+	override var canBecomeFocused: Bool { false }
 }
 
 /// Cluster badge matching the iOS `ClusterBadge`: accent circle + member count.
@@ -146,6 +145,11 @@ final class ClusterCircleAnnotationView: MKAnnotationView {
 			displayPriority = .required
 		}
 	}
+
+	// See NodeCircleAnnotationView: cluster views churn hardest during zoom
+	// (splitting/merging), so keeping them out of the focus engine is what
+	// silences transitions.
+	override var canBecomeFocused: Bool { false }
 }
 
 struct MeshTVMapView: UIViewRepresentable {
@@ -276,28 +280,40 @@ struct MeshTVMapView: UIViewRepresentable {
 		func applySelection(_ mapView: MKMapView, selectedNodeNum: UInt32?) {
 			guard let num = selectedNodeNum else {
 				lastAppliedSelection = nil   // re-selecting the same node later must still center
+				pendingSelectionFly?.cancel()
 				return
 			}
 			guard num != lastAppliedSelection else { return }
 			lastAppliedSelection = num
-			guard let annotation = annotationsByNum[num] else { return }
 
-			// Zoom in far enough to break the node out of its cluster — centering
-			// alone at mesh-wide zoom leaves the selection swallowed by a cluster
-			// badge. Only ever zoom IN: if the user is already closer than city
-			// scale, keep their zoom and just center.
-			let target = MKCoordinateRegion(
-				center: annotation.coordinate,
-				latitudinalMeters: 4_000,
-				longitudinalMeters: 4_000
-			)
-			if mapView.region.span.latitudeDelta > target.span.latitudeDelta {
-				mapView.setRegion(target, animated: true)
-			} else {
-				mapView.setCenter(annotation.coordinate, animated: true)
+			// Debounce: tvOS list selection follows focus, so gliding across rows
+			// fires this per row. Launching an animated cross-country fly for each
+			// one overlaps animations and churns clustering the whole way. Only fly
+			// once focus has settled on a row for a beat.
+			pendingSelectionFly?.cancel()
+			let fly = DispatchWorkItem { [weak self, weak mapView] in
+				guard let self, let mapView,
+				      let annotation = self.annotationsByNum[num] else { return }
+				// Zoom in far enough to break the node out of its cluster —
+				// centering alone at mesh-wide zoom leaves the selection swallowed
+				// by a cluster badge. Only ever zoom IN: if the user is already
+				// closer than city scale, keep their zoom and just center.
+				let target = MKCoordinateRegion(
+					center: annotation.coordinate,
+					latitudinalMeters: 4_000,
+					longitudinalMeters: 4_000
+				)
+				if mapView.region.span.latitudeDelta > target.span.latitudeDelta {
+					mapView.setRegion(target, animated: true)
+				} else {
+					mapView.setCenter(annotation.coordinate, animated: true)
+				}
 			}
+			pendingSelectionFly = fly
+			DispatchQueue.main.asyncAfter(deadline: .now() + 0.4, execute: fly)
 		}
 		private var lastAppliedSelection: UInt32?
+		private var pendingSelectionFly: DispatchWorkItem?
 
 		// MARK: MKMapViewDelegate
 
@@ -317,22 +333,5 @@ struct MeshTVMapView: UIViewRepresentable {
 			return view
 		}
 
-		func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
-			if let node = view.annotation as? NodeAnnotation {
-				parent.selectedNodeNum = node.num
-			} else if let cluster = view.annotation as? MKClusterAnnotation {
-				// Zoom into a cluster rather than selecting it.
-				mapView.setRegion(
-					MKCoordinateRegion(
-						center: cluster.coordinate,
-						span: MKCoordinateSpan(
-							latitudeDelta: mapView.region.span.latitudeDelta / 3,
-							longitudeDelta: mapView.region.span.longitudeDelta / 3
-						)
-					),
-					animated: true
-				)
-			}
-		}
 	}
 }
