@@ -151,11 +151,11 @@ struct NodeDetail: View {
 				if node.snr != 0 && !node.viaMqtt && node.hopsAway == 0 {
 					Spacer()
 					VStack {
-						let signalStrength = getLoRaSignalStrength(snr: node.snr, rssi: node.rssi, preset: modemPreset)
+						let signalStrength = getLoRaSignalStrength(snr: node.snr, rssi: node.rssi, preset: modemPreset, noiseFloor: connectedNode?.recentNoiseFloor)
 						LoRaSignalStrengthIndicator(signalStrength: signalStrength)
 						Text("Signal \(signalStrength.description)").font(.footnote)
 						Text("SNR \(String(format: "%.2f", node.snr))dB")
-							.foregroundColor(getSnrColor(snr: node.snr, preset: modemPreset))
+							.foregroundColor(signalStrength.color)
 							.font(.caption)
 						Text("RSSI \(node.rssi)dB")
 							.foregroundColor(getRssiColor(rssi: node.rssi))
@@ -374,6 +374,10 @@ struct NodeDetail: View {
 				.onTapGesture {
 					dateFormatRelative.toggle()
 				}
+				.accessibilityAddTraits(.isButton)
+				.accessibilityAction {
+					dateFormatRelative.toggle()
+				}
 			}
 			if let lastHeard = node.lastHeard, lastHeard.timeIntervalSince1970 > 0 && lastHeard < Calendar.current.date(byAdding: .year, value: 1, to: Date())! {
 				HStack {
@@ -396,6 +400,10 @@ struct NodeDetail: View {
 				}
 				.accessibilityElement(children: .combine)
 				.onTapGesture {
+					dateFormatRelative.toggle()
+				}
+				.accessibilityAddTraits(.isButton)
+				.accessibilityAction {
 					dateFormatRelative.toggle()
 				}
 			}
@@ -739,7 +747,10 @@ struct NodeDetail: View {
 							node: node
 						)
 					}
-					if let latestPosition {
+					// Liveness screen: `latestPosition` is a @State handle refreshed on a cadence;
+					// if ingestion deleted the row since the last refresh, reading a persisted
+					// property on it traps in SwiftData. Skip rendering until the next refresh.
+					if let latestPosition, latestPosition.modelContext != nil, !latestPosition.isDeleted {
 					#if !targetEnvironment(macCatalyst)
 						if latestPosition.isPreciseLocation {
 							Button {

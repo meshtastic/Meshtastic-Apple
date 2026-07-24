@@ -284,8 +284,18 @@ struct NodeListItemCompact: View {
 						}
 						if shouldShowSignal && summary.hopsAway == 0 && summary.snr != 0 && !summary.viaMqtt {
 							Divider().frame(height: 15)
-							DefaultIconCompact(systemName: "dot.radiowaves.left.and.right")
+							// rssi: 0 forces the SNR-only branch so this tier can never disagree with
+							// getSnrColor below, which is also SNR-only (matches TraceRouteLog.swift /
+							// MeshMapMK.swift, the other two call sites in this file's PR).
+							let signalTier = getLoRaSignalStrength(snr: summary.snr, rssi: 0, preset: modemPreset)
+							DefaultIconCompact(
+								systemName: signalTier == .none ? "antenna.radiowaves.left.and.right.slash" : "antenna.radiowaves.left.and.right",
+								variableValue: signalTier == .none ? nil : Double(signalTier.rawValue) / Double(LoRaSignalStrength.good.rawValue)
+							)
 								.foregroundColor(getSnrColor(snr: summary.snr, preset: modemPreset))
+								.accessibilityLabel(
+									String(localized: "Signal \(signalTier.description)", comment: "VoiceOver: LoRa signal quality of this directly-heard node")
+								)
 						}
 						if shouldShowChannel && summary.channel > 0 {
 							Divider().frame(height: 15)
@@ -352,9 +362,12 @@ struct NodeListItemCompact: View {
 
 struct DefaultIconCompact: View {
 	let systemName: String
-	
+	/// Optional 0...1 fill for symbols that support SF Symbols variable color (e.g. the
+	/// radiowaves signal icon), so tiers are distinguishable by rendered shape, not color alone.
+	var variableValue: Double?
+
 	var body: some View {
-		Image(systemName: systemName)
+		Image(systemName: systemName, variableValue: variableValue)
 			.symbolRenderingMode(.hierarchical)
 			.padding(.top, 2)
 			.font(.callout)

@@ -31,7 +31,7 @@ struct RegionCodesFirmwareLocaleTests {
 
 	@Test("Non-Latin regions prefer locale firmware")
 	func nonLatinRegionsPreferLocale() {
-		let nonLatinRegions: [RegionCodes] = [.ru, .ua433, .ua868, .cn, .jp, .kr, .tw, .th]
+		let nonLatinRegions: [RegionCodes] = [.ru, .ua433, .cn, .jp, .kr, .tw, .th]
 		for region in nonLatinRegions {
 			#expect(region.prefersLocalizedFontFirmware, "\(region) should be non-Latin")
 		}
@@ -68,7 +68,7 @@ struct RegionCodesFirmwareLocaleTests {
 	/// latinScriptRegions exhaustiveness — the "new region" trap
 	@Test("All non-unset regions are explicitly classified as Latin or non-Latin")
 	func allRegionsAreExplicitlyClassified() {
-		let knownNonLatin: Set<RegionCodes> = [.ru, .ua433, .ua868, .cn, .jp, .kr, .tw, .th]
+		let knownNonLatin: Set<RegionCodes> = [.ru, .ua433, .cn, .jp, .kr, .tw, .th]
 		let allNonUnset = Set(RegionCodes.allCases.filter { $0 != .unset })
 		#expect(RegionCodes.latinScriptRegions.union(knownNonLatin) == allNonUnset,
 				"A region is missing from latinScriptRegions or knownNonLatin")

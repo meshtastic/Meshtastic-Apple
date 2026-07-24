@@ -76,11 +76,17 @@ struct LoRaConfig: View {
 	/// one. Never empty (spec §6 — never show an empty picker).
 	private var availablePresets: [ModemPresets] {
 		let base = ModemPresets.selectable(supports2_8: supports2_8)
+		var presets = base
 		if let info = regionPresetInfo, !info.presets.isEmpty {
 			let constrained = base.filter { info.presets.contains($0.protoEnumValue()) }
-			if !constrained.isEmpty { return constrained }
+			if !constrained.isEmpty { presets = constrained }
 		}
-		return base
+		// Keep a currently-configured but deprecated preset (e.g. Long Slow on an existing
+		// radio) visible so the picker doesn't render a blank selection.
+		if let current = ModemPresets(rawValue: modemPreset), current.isDeprecated, !presets.contains(current) {
+			presets.append(current)
+		}
+		return presets
 	}
 
 	var body: some View {

@@ -72,6 +72,7 @@ struct ChannelForm: View {
 						.buttonStyle(.bordered)
 						.buttonBorderShape(.capsule)
 						.controlSize(.small)
+						.accessibilityLabel(String(localized: "Generate channel key", comment: "VoiceOver label for the generate channel key button"))
 					}
 					HStack(alignment: .center) {
 						Text("Key")

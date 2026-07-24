@@ -907,3 +907,34 @@ struct TelemetryPacketIngestTests {
 		#expect(latest?.nodeTelemetry?.num == Int64(nodeNum))
 	}
 }
+
+@Suite("device metadata ingestion")
+@MainActor
+struct DeviceMetadataIngestTests {
+	private func makeMetadata(version: String) -> DeviceMetadata {
+		var metadata = DeviceMetadata()
+		metadata.firmwareVersion = version
+		metadata.deviceStateVersion = 1
+		return metadata
+	}
+
+	@Test func repeatedMetadataForNode_reusesExistingEntity() async throws {
+		let nodeNum: Int64 = 0x2004_AA05
+		let mesh = MeshPackets(modelContainer: sharedModelContainer)
+
+		await mesh.deviceMetadataPacket(metadata: makeMetadata(version: "2.7.17.abcdef"), fromNum: nodeNum)
+		let context = ModelContext(sharedModelContainer)
+		let node = try #require(
+			context.fetch(FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == nodeNum })).first
+		)
+		let firstMetadataID = try #require(node.metadata).persistentModelID
+
+		await mesh.deviceMetadataPacket(metadata: makeMetadata(version: "2.7.18.abcdef"), fromNum: nodeNum)
+
+		let refreshedNode = try #require(
+			context.fetch(FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == nodeNum })).first
+		)
+		#expect(refreshedNode.metadata?.persistentModelID == firstMetadataID)
+		#expect(refreshedNode.metadata?.firmwareVersion == "2.7.18")
+	}
+}

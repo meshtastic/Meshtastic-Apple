@@ -137,6 +137,7 @@ struct PowerMetricsLog: View {
 											m.powerCh1Current.map { Text("\(String(format: "%.2f", $0))mA") } ?? Text(Constants.nilValueIndicator)
 										}
 									}
+									.accessibilityElement(children: .combine)
 								}
 								Spacer()
 								HStack {
@@ -155,6 +156,7 @@ struct PowerMetricsLog: View {
 											m.powerCh2Current.map { Text("\(String(format: "%.2f", $0))mA") } ?? Text(Constants.nilValueIndicator)
 										}
 									}
+									.accessibilityElement(children: .combine)
 								}
 								Spacer()
 								HStack {
@@ -173,6 +175,7 @@ struct PowerMetricsLog: View {
 											m.powerCh3Current.map { Text("\(String(format: "%.2f", $0))mA") } ?? Text(Constants.nilValueIndicator)
 										}
 									}
+									.accessibilityElement(children: .combine)
 								}
 							}
 						}
@@ -314,10 +317,13 @@ struct PowerMetricsLog: View {
 				.navigationBarTitleDisplayMode(.inline)
 				.toolbar {
 					ToolbarItem(placement: .cancellationAction) {
-						Button("Cancel") {
+						Button {
 							channelLabels = loadChannelLabels()
 							isEditingLabels = false
+						} label: {
+							Image(systemName: "xmark")
 						}
+						.accessibilityLabel(String(localized: "Cancel", comment: "VoiceOver: dismiss the label power channels sheet"))
 					}
 					ToolbarItem(placement: .confirmationAction) {
 						Button("Save") {

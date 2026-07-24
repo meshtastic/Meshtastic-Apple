@@ -132,7 +132,7 @@ struct ChannelList: View {
 			.alignmentGuide(.listRowSeparatorLeading) {
 				$0[.leading]
 			}
-			.frame(height: 62)
+			.frame(minHeight: 62)
 			.contextMenu {
 				if hasMessages {
 					Button(role: .destructive) {
@@ -214,6 +214,7 @@ struct ChannelList: View {
 				.tint(Color(UIColor.secondarySystemBackground))
 				.foregroundColor(.accentColor)
 				.buttonStyle(.borderedProminent)
+				.accessibilityLabel(showingHelp ? String(localized: "Hide help", comment: "VoiceOver label for the help toggle button when help is showing") : String(localized: "Show help", comment: "VoiceOver label for the help toggle button when help is hidden"))
 			}
 			.controlSize(.regular)
 			.padding(5)

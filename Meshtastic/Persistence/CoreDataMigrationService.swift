@@ -72,6 +72,15 @@ enum CoreDataMigrationService {
 	static func migrate(into swiftDataContainer: ModelContainer) throws {
 		Logger.data.info("⬆️ CoreDataMigrationService: beginning legacy migration")
 
+		// Reset merge state: non-empty only in the rescue scenario (#2152) — releases
+		// 2.7.13–2.7.16 shipped without the legacy model, so affected users upgraded, the
+		// migration threw, and they kept using the app. Their SwiftData store is populated
+		// while the legacy store still sits on disk. When the migration finally runs, legacy
+		// rows fill the history gaps but must not duplicate nodes/users/messages that the
+		// mesh has since re-taught the app, nor clobber their fresher configs and channels.
+		preexistingNodeNums = []
+		preexistingMyInfoNums = []
+
 		let coreDataContainer = try makeCoreDataContainer()
 		let cdContext = coreDataContainer.viewContext
 		cdContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
@@ -223,6 +232,14 @@ private extension CoreDataMigrationService {
 
 	// MARK: NodeInfoEntity
 
+	/// Node nums that already existed in the SwiftData store when the migration started.
+	/// Legacy history (positions, telemetry, messages) still attaches to these nodes, but
+	/// the node row itself, its configs, and its channels are NOT migrated — the live store's
+	/// versions are fresher. See the reset in `migrate(into:)` for the scenario.
+	private(set) static var preexistingNodeNums: Set<Int64> = []
+	/// Same, for MyInfoEntity (keyed by myNodeNum) — gates channel migration.
+	private(set) static var preexistingMyInfoNums: Set<Int64> = []
+
 	static func migrateNodes(
 		cdContext: NSManagedObjectContext,
 		sdContext: ModelContext
@@ -231,18 +248,33 @@ private extension CoreDataMigrationService {
 		let objects = try cdContext.fetch(request)
 		var map = [NSManagedObjectID: NodeInfoEntity]()
 
+		let existingByNum = Dictionary(
+			(try sdContext.fetch(FetchDescriptor<NodeInfoEntity>())).map { ($0.num, $0) },
+			uniquingKeysWith: { first, _ in first }
+		)
+
+		var migrated = 0
 		for obj in objects {
+			let num = (obj.value(forKey: "num") as? Int64) ?? 0
+			if let existing = existingByNum[num] {
+				// Rescue merge: the mesh re-taught the app this node after the failed
+				// migration. Keep the live row; legacy history will attach to it.
+				preexistingNodeNums.insert(num)
+				map[obj.objectID] = existing
+				continue
+			}
 			let sd = NodeInfoEntity()
 			sd.bleName      = obj.value(forKey: "bleName") as? String
 			sd.channel      = (obj.value(forKey: "channel") as? Int32) ?? 0
 			sd.id           = (obj.value(forKey: "id") as? Int64) ?? 0
 			sd.lastHeard    = obj.value(forKey: "lastHeard") as? Date ?? Date()
-			sd.num          = (obj.value(forKey: "num") as? Int64) ?? 0
+			sd.num          = num
 			sd.snr          = (obj.value(forKey: "snr") as? Float) ?? 0
 			sdContext.insert(sd)
 			map[obj.objectID] = sd
+			migrated += 1
 		}
-		Logger.data.info("⬆️ migrated \(objects.count) NodeInfoEntity records")
+		Logger.data.info("⬆️ migrated \(migrated) of \(objects.count) NodeInfoEntity records (\(preexistingNodeNums.count) already present)")
 		return map
 	}
 
@@ -257,24 +289,39 @@ private extension CoreDataMigrationService {
 		let objects = try cdContext.fetch(request)
 		var map = [NSManagedObjectID: UserEntity]()
 
+		let existingByNum = Dictionary(
+			(try sdContext.fetch(FetchDescriptor<UserEntity>())).map { ($0.num, $0) },
+			uniquingKeysWith: { first, _ in first }
+		)
+
+		var migrated = 0
 		for obj in objects {
+			let num = (obj.value(forKey: "num") as? Int64) ?? 0
+			if let existing = existingByNum[num] {
+				map[obj.objectID] = existing
+				continue
+			}
 			let sd = UserEntity()
 			sd.hwModel   = obj.value(forKey: "hwModel") as? String
 			sd.isLicensed = (obj.value(forKey: "isLicensed") as? Bool) ?? false
 			sd.longName  = obj.value(forKey: "longName") as? String
-			sd.num       = (obj.value(forKey: "num") as? Int64) ?? 0
+			sd.num       = num
 			sd.shortName = obj.value(forKey: "shortName") as? String
 			sd.userId    = obj.value(forKey: "userId") as? String
 			// macaddr existed in Core Data but is intentionally dropped in SwiftData
 
 			if let cdNode = obj.value(forKey: "userNode") as? NSManagedObject,
-			   let sdNode = nodeMap[cdNode.objectID] {
+			   let sdNode = nodeMap[cdNode.objectID],
+			   sdNode.user == nil {
+				// Only claim the node when it has no live user; a preexisting node keeps its
+				// (fresher) user rather than being reparented onto the legacy row.
 				sd.userNode = sdNode
 			}
 			sdContext.insert(sd)
 			map[obj.objectID] = sd
+			migrated += 1
 		}
-		Logger.data.info("⬆️ migrated \(objects.count) UserEntity records")
+		Logger.data.info("⬆️ migrated \(migrated) of \(objects.count) UserEntity records")
 		return map
 	}
 
@@ -289,11 +336,23 @@ private extension CoreDataMigrationService {
 		let objects = try cdContext.fetch(request)
 		var map = [NSManagedObjectID: MyInfoEntity]()
 
+		let existingByNum = Dictionary(
+			(try sdContext.fetch(FetchDescriptor<MyInfoEntity>())).map { ($0.myNodeNum, $0) },
+			uniquingKeysWith: { first, _ in first }
+		)
+
+		var migrated = 0
 		for obj in objects {
+			let myNodeNum = (obj.value(forKey: "myNodeNum") as? Int64) ?? 0
+			if let existing = existingByNum[myNodeNum] {
+				preexistingMyInfoNums.insert(myNodeNum)
+				map[obj.objectID] = existing
+				continue
+			}
 			let sd = MyInfoEntity()
 			sd.bleName         = obj.value(forKey: "bleName") as? String
 			sd.minAppVersion   = (obj.value(forKey: "minAppVersion") as? Int32) ?? 0
-			sd.myNodeNum       = (obj.value(forKey: "myNodeNum") as? Int64) ?? 0
+			sd.myNodeNum       = myNodeNum
 			sd.peripheralId    = obj.value(forKey: "peripheralId") as? String
 			sd.rebootCount     = (obj.value(forKey: "rebootCount") as? Int32) ?? 0
 
@@ -303,8 +362,9 @@ private extension CoreDataMigrationService {
 			}
 			sdContext.insert(sd)
 			map[obj.objectID] = sd
+			migrated += 1
 		}
-		Logger.data.info("⬆️ migrated \(objects.count) MyInfoEntity records")
+		Logger.data.info("⬆️ migrated \(migrated) of \(objects.count) MyInfoEntity records")
 		return map
 	}
 
@@ -318,7 +378,15 @@ private extension CoreDataMigrationService {
 		let request = NSFetchRequest<NSManagedObject>(entityName: "ChannelEntity")
 		let objects = try cdContext.fetch(request)
 
+		var migrated = 0
 		for obj in objects {
+			let cdInfo = obj.value(forKey: "myInfoChannel") as? NSManagedObject
+			let sdInfo = cdInfo.flatMap { infoMap[$0.objectID] }
+			if let sdInfo, preexistingMyInfoNums.contains(sdInfo.myNodeNum) {
+				// Rescue merge: this radio's MyInfo survived the failed migration and its
+				// current channel set is fresher than the legacy one — don't duplicate it.
+				continue
+			}
 			let sd = ChannelEntity()
 			sd.downlinkEnabled = (obj.value(forKey: "downlinkEnabled") as? Bool) ?? false
 			sd.id              = (obj.value(forKey: "id") as? Int32) ?? 0
@@ -328,13 +396,13 @@ private extension CoreDataMigrationService {
 			sd.role            = (obj.value(forKey: "role") as? Int32) ?? 0
 			sd.uplinkEnabled   = (obj.value(forKey: "uplinkEnabled") as? Bool) ?? false
 
-			if let cdInfo = obj.value(forKey: "myInfoChannel") as? NSManagedObject,
-			   let sdInfo = infoMap[cdInfo.objectID] {
+			if let sdInfo {
 				sd.myInfoChannel = sdInfo
 			}
 			sdContext.insert(sd)
+			migrated += 1
 		}
-		Logger.data.info("⬆️ migrated \(objects.count) ChannelEntity records")
+		Logger.data.info("⬆️ migrated \(migrated) of \(objects.count) ChannelEntity records")
 	}
 
 	// MARK: MessageEntity
@@ -347,7 +415,15 @@ private extension CoreDataMigrationService {
 		let request = NSFetchRequest<NSManagedObject>(entityName: "MessageEntity")
 		let objects = try cdContext.fetch(request)
 
+		let existingMessageIds = Set(
+			(try sdContext.fetch(FetchDescriptor<MessageEntity>())).map { $0.messageId }
+		)
+
+		var migrated = 0
 		for obj in objects {
+			let messageId = (obj.value(forKey: "messageId") as? Int64) ?? 0
+			// Rescue merge: don't duplicate a message the live store already has.
+			if existingMessageIds.contains(messageId) { continue }
 			let sd = MessageEntity()
 			sd.ackError        = (obj.value(forKey: "ackError") as? Int32) ?? 0
 			sd.ackSNR          = (obj.value(forKey: "ackSNR") as? Float) ?? 0
@@ -356,7 +432,7 @@ private extension CoreDataMigrationService {
 			sd.adminDescription = obj.value(forKey: "adminDescription") as? String
 			sd.channel         = (obj.value(forKey: "channel") as? Int32) ?? 0
 			sd.isEmoji         = (obj.value(forKey: "isEmoji") as? Bool) ?? false
-			sd.messageId       = (obj.value(forKey: "messageId") as? Int64) ?? 0
+			sd.messageId       = messageId
 			sd.messagePayload  = obj.value(forKey: "messagePayload") as? String
 			sd.messageTimestamp = (obj.value(forKey: "messageTimestamp") as? Int32) ?? 0
 			sd.receivedACK     = (obj.value(forKey: "receivedACK") as? Bool) ?? false
@@ -372,8 +448,9 @@ private extension CoreDataMigrationService {
 				sd.toUser = sdTo
 			}
 			sdContext.insert(sd)
+			migrated += 1
 		}
-		Logger.data.info("⬆️ migrated \(objects.count) MessageEntity records")
+		Logger.data.info("⬆️ migrated \(migrated) of \(objects.count) MessageEntity records")
 	}
 
 	// MARK: PositionEntity
@@ -477,7 +554,8 @@ private extension CoreDataMigrationService {
 			nodeMap: nodeMap
 		) { obj -> CannedMessageConfigEntity in
 			let sd = CannedMessageConfigEntity()
-			sd.enabled                = (obj.value(forKey: "enabled") as? Bool) ?? false
+			// enabled is deprecated (no successor) and no longer written — not migrated; the
+			// stored property keeps its default. (#2021)
 			sd.inputbrokerEventCcw    = (obj.value(forKey: "inputbrokerEventCcw") as? Int32) ?? 0
 			sd.inputbrokerEventCw     = (obj.value(forKey: "inputbrokerEventCw") as? Int32) ?? 0
 			sd.inputbrokerEventPress  = (obj.value(forKey: "inputbrokerEventPress") as? Int32) ?? 0
@@ -755,15 +833,23 @@ private extension CoreDataMigrationService {
 		let request = NSFetchRequest<NSManagedObject>(entityName: entityName)
 		let objects = try cdContext.fetch(request)
 
+		var migrated = 0
 		for obj in objects {
+			let cdNode = obj.value(forKey: nodeKey) as? NSManagedObject
+			let sdNode = cdNode.flatMap { nodeMap[$0.objectID] }
+			if let sdNode, preexistingNodeNums.contains(sdNode.num) {
+				// Rescue merge: this node survived the failed migration; its current config
+				// reflects the radio's live state and must not be replaced by the legacy one.
+				continue
+			}
 			let sd = try make(obj)
-			if let cdNode = obj.value(forKey: nodeKey) as? NSManagedObject,
-			   let sdNode = nodeMap[cdNode.objectID] {
+			if let sdNode {
 				wireNode(sdNode, sd)
 			}
 			sdContext.insert(sd)
+			migrated += 1
 		}
-		Logger.data.info("⬆️ migrated \(objects.count) \(entityName) records")
+		Logger.data.info("⬆️ migrated \(migrated) of \(objects.count) \(entityName) records")
 	}
 }
 

@@ -29,6 +29,11 @@ struct ChannelMessageRow: View {
 	/// A single, natural-language description of the message bubble so VoiceOver reads one element
 	/// (sender + text + timestamp + security state) instead of separate fragments. Delivery/read
 	/// status stays its own labeled element (MessageDeliveryStatusLabel) directly after.
+	///
+	/// The badge portion is built from `MessageEntity.activeStatusBadges`, the same source of truth
+	/// MessageText's per-badge overlays read from, so this combined label can't silently drop a
+	/// badge (encrypted, verified, store-and-forward, detection sensor, translated) that the bubble
+	/// itself is showing (issue #016 T003).
 	private var messageAccessibilityLabel: String {
 		let text = message.displayedPayload
 		let time = message.timestamp.formatted(date: .abbreviated, time: .shortened)
@@ -40,12 +45,7 @@ struct ChannelMessageRow: View {
 			parts = [String(localized: "Message from \(sender): \(text)", comment: "VoiceOver: label for a received message. First value is the sender, second is the message text")]
 		}
 		parts.append(time)
-		if (message.pkiEncrypted && message.realACK) || (!isCurrentUser && message.pkiEncrypted) {
-			parts.append(String(localized: "Encrypted", comment: "VoiceOver: message is end-to-end encrypted"))
-		}
-		if message.xeddsaSigned {
-			parts.append(String(localized: "Verified", comment: "VoiceOver: message signature was cryptographically verified"))
-		}
+		parts.append(contentsOf: message.activeStatusBadges(destination: .channel(channel), isCurrentUser: isCurrentUser).map(\.label))
 		return parts.joined(separator: ", ")
 	}
 
@@ -151,7 +151,7 @@ struct ChannelMessageRow: View {
 				
 				VStack(alignment: isCurrentUser ? .trailing : .leading) {
 					let deliveryStatus = isCurrentUser ? message.deliveryStatus(isDirectMessage: false) : nil
-					let isDetectionSensorMessage = message.portNum == Int32(PortNum.detectionSensorApp.rawValue)
+					let isDetectionSensorMessage = message.isDetectionSensorMessage(destination: .channel(channel))
 					
 					// Sender Name Header
 					if !isCurrentUser && message.fromUser != nil {

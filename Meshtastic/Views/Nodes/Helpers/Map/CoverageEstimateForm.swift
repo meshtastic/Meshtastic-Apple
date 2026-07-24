@@ -64,12 +64,8 @@ struct CoverageEstimateForm: View {
 						runner.reset()
 						dismiss()
 					} label: {
-						Image(systemName: "xmark.circle.fill")
-							.font(.title2)
-							.symbolRenderingMode(.palette)
-							.foregroundStyle(.white, Color(.systemGray3))
+						Image(systemName: "xmark")
 					}
-					.buttonStyle(.plain)
 					.accessibilityLabel(String(localized: "Close", comment: "VoiceOver label for the close button"))
 				}
 				ToolbarItem(placement: .confirmationAction) {

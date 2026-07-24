@@ -16,6 +16,9 @@ import Foundation
 enum SeedStyle {
 	case performance
 	case marketing
+	/// A tiny, hand-placed mesh for demoing/QA'ing the map's coincident-node disambiguation picker.
+	/// See `ClusterDemoSeed`.
+	case clusterDemo
 }
 
 @MainActor
@@ -62,6 +65,27 @@ enum PerformanceSeedData {
 			)
 		}
 
+		// Coincident-node demo: a handful of nodes deliberately placed on (near-)coincident coordinates
+		// so the map's un-splittable stack + disambiguation picker reproduce on demand. Opens straight
+		// to the map. Gate: `--meshtastic-cluster-demo`.
+		if arguments.contains("--meshtastic-cluster-demo") || boolValue("MESHTASTIC_CLUSTER_DEMO", environment: environment) {
+			return PerformanceSeedConfiguration(
+				nodeCount: ClusterDemoSeed.nodeCount,
+				telemetryHistoryPerNode: 1,
+				localStatsHistoryPerNode: 1,
+				positionHistoryPerNode: 1,
+				directMessageCount: 0,
+				channelMessageCount: 0,
+				resetStore: true,
+				compactNodeList: false,
+				disableDiscovery: true,
+				initialTab: .map,
+				opensLocalStatsLog: false,
+				localStatsSameHourSeed: false,
+				style: .clusterDemo
+			)
+		}
+
 		let enabled = arguments.contains("--meshtastic-perf-seed") || environment["MESHTASTIC_PERF_SEED_NODES"] != nil
 		guard enabled else { return nil }
 
@@ -96,6 +120,13 @@ enum PerformanceSeedData {
 			// Show individual colored node pins on the map (not count bubbles) so it reads as a real
 			// mesh. All node positions are on land.
 			UserDefaults.standard.set(false, forKey: "enableMapClustering")
+		}
+		if configuration.style == .clusterDemo {
+			// Force clustering ON by default so coincident nodes collapse into one badge and tapping it
+			// exercises the disambiguation picker. Pass `--cluster-demo-no-clustering` to force it OFF
+			// instead, verifying a plain pin tap on a fully-occluded stack still opens the picker.
+			let clusteringOff = ProcessInfo.processInfo.arguments.contains("--cluster-demo-no-clustering")
+			UserDefaults.standard.set(!clusteringOff, forKey: "enableMapClustering")
 		}
 	}
 
@@ -219,6 +250,14 @@ enum PerformanceSeedData {
 		// content (names, hardware, roles, healthy telemetry, recent last-heard).
 		if configuration.style == .marketing {
 			MarketingSeed.apply(to: node, user: user, metadata: metadata, index: index, now: now)
+		} else if configuration.style == .clusterDemo {
+			user.longName = ClusterDemoSeed.longName(for: index)
+			user.shortName = ClusterDemoSeed.shortName(for: index)
+			user.hwDisplayName = user.hwModel
+			node.hopsAway = 0
+			node.viaMqtt = false
+			node.lastHeard = now
+			metadata.time = now
 		}
 
 		context.insert(node)
@@ -328,17 +367,23 @@ enum PerformanceSeedData {
 		configuration: PerformanceSeedConfiguration,
 		context: ModelContext
 	) {
-		let baseCoordinate = configuration.style == .marketing
-			? MarketingSeed.coordinate(for: index)
-			: bayAreaCoordinate(for: index)
+		let baseCoordinate: (latitude: Double, longitude: Double)
+		switch configuration.style {
+		case .marketing: baseCoordinate = MarketingSeed.coordinate(for: index)
+		case .clusterDemo: baseCoordinate = ClusterDemoSeed.coordinate(for: index)
+		case .performance: baseCoordinate = bayAreaCoordinate(for: index)
+		}
+		// The cluster demo relies on the *exact* coincident coordinates, so it must not add the
+		// per-sample walk offset the perf seed uses (it seeds a single position anyway).
+		let sampleWalk = configuration.style == .clusterDemo ? 0.0 : 0.0001
 
 		for sample in 0..<configuration.positionHistoryPerNode {
 			let position = PositionEntity()
 			position.altitude = Int32(5 + (index % 600))
 			position.heading = Int32((index * 17 + sample * 23) % 360)
 			position.latest = sample == 0
-			position.latitudeI = Int32((baseCoordinate.latitude + Double(sample) * 0.0001) * 1e7)
-			position.longitudeI = Int32((baseCoordinate.longitude + Double(sample) * 0.0001) * 1e7)
+			position.latitudeI = Int32((baseCoordinate.latitude + Double(sample) * sampleWalk) * 1e7)
+			position.longitudeI = Int32((baseCoordinate.longitude + Double(sample) * sampleWalk) * 1e7)
 			position.precisionBits = 32
 			position.rssi = node.rssi
 			position.satsInView = Int32(5 + (index % 8))
@@ -904,6 +949,125 @@ extension PerformanceSeedData {
 		beacon.session = session
 		beacon.presetResult = presetResult
 		context.insert(beacon)
+	}
+}
+
+// MARK: - Coincident-node demo seed
+
+/// A tiny, deterministic mesh for demoing/verifying the map's coincident-node disambiguation picker.
+///
+/// With the map fan-out removed, nodes that sit within a few meters of each other stay stacked. When
+/// clustering is on they collapse into one count badge (tap -> picker); with `--cluster-demo-no-clustering`
+/// they render as overlapping pins (a plain pin tap must still open the picker, per the clustering-off
+/// path in `MeshMapMK.presentNodeSelection`).
+///
+/// Scenarios (pick with a launch arg, or `MESHTASTIC_CLUSTER_DEMO_SCENARIO=<name>`; no rebuild needed
+/// to switch once compiled):
+///   • `pairs`  (default)               — local + two 2-node pairs ~0.1 m apart.
+///   • `--cluster-demo-colocated10/30/50` — one exact-coincident stack of N nodes.
+///   • `--cluster-demo-stacks`          — three separate small coincident stacks near each other.
+/// The map's tight-frame span (`frameSpanDegrees`) scales with the scenario so the stack(s) fill the view.
+@MainActor
+enum ClusterDemoSeed {
+	/// Center point all scenarios build around (3rd Ave S, Seattle — matches the earlier screenshots).
+	private static let center = (lat: 47.6001, lon: -122.3301)
+	private static let stackMemberCount = 4
+	private struct StackAnchor { let label: String; let lat: Double; let lon: Double }
+	/// Three coincident stacks arranged in a ~50 m triangle around `center`; members of each share one coordinate.
+	private static let stackAnchors: [StackAnchor] = [
+		StackAnchor(label: "A", lat: 47.60055, lon: -122.33010),  // ~50 m north
+		StackAnchor(label: "B", lat: 47.59970, lon: -122.32948),  // ~50 m southeast
+		StackAnchor(label: "C", lat: 47.59970, lon: -122.33072)   // ~50 m southwest
+	]
+
+	/// Raw scenario token: env var wins, else a `--cluster-demo-<token>` launch arg, else `pairs`.
+	private static var rawScenario: String {
+		if let env = ProcessInfo.processInfo.environment["MESHTASTIC_CLUSTER_DEMO_SCENARIO"]?.lowercased() {
+			return env
+		}
+		let args = ProcessInfo.processInfo.arguments
+		for token in ["colocated10", "colocated30", "colocated50", "stacks", "pairs"] where args.contains("--cluster-demo-\(token)") {
+			return token
+		}
+		return "pairs"
+	}
+
+	/// For a `colocatedN` scenario, the coincident node count N; nil otherwise.
+	private static var colocatedCount: Int? {
+		switch rawScenario {
+		case "colocated10": return 10
+		case "colocated30": return 30
+		case "colocated50": return 50
+		default: return nil
+		}
+	}
+	private static var isStacks: Bool { rawScenario == "stacks" }
+
+	/// Total seeded nodes (index 0 is always the standalone local node).
+	static var nodeCount: Int {
+		if let count = colocatedCount { return 1 + count }
+		if isStacks { return 1 + stackAnchors.count * stackMemberCount }
+		return 5
+	}
+
+	/// Map tight-frame span (degrees latitude). Override with `MESHTASTIC_CLUSTER_DEMO_SPAN=<deg>`.
+	static var frameSpanDegrees: Double {
+		if let raw = ProcessInfo.processInfo.environment["MESHTASTIC_CLUSTER_DEMO_SPAN"], let value = Double(raw) {
+			return value
+		}
+		switch rawScenario {
+		case "stacks": return 0.0024
+		default: return 0.0016
+		}
+	}
+
+	static func coordinate(for index: Int) -> (latitude: Double, longitude: Double) {
+		if colocatedCount != nil {
+			// Local node offset clear of the stack; every other node on the *exact* same point.
+			return index == 0 ? (center.lat + 0.0003, center.lon - 0.0004) : (center.lat, center.lon)
+		}
+		if isStacks {
+			if index == 0 { return (center.lat + 0.0006, center.lon - 0.0009) } // local, NW, clear of stacks
+			let anchor = stackAnchors[(index - 1) / stackMemberCount % stackAnchors.count]
+			return (anchor.lat, anchor.lon)                                     // members coincident per stack
+		}
+		// pairs (the near-coincident default)
+		switch index {
+		case 1: return (47.6000045, -122.33000)  // pair 1
+		case 2: return (47.6000055, -122.33000)  // pair 1, ~0.1 m away
+		case 3: return (47.6001845, -122.33000)  // pair 2, ~20 m north
+		case 4: return (47.6001855, -122.33000)  // pair 2, ~0.1 m away
+		default: return (47.6000950, -122.33028) // local node, standalone (~10 m N, ~21 m W)
+		}
+	}
+
+	static func longName(for index: Int) -> String {
+		if index == 0 { return "My Node" }
+		if colocatedCount != nil { return "Node \(index)" }
+		if isStacks { return "Stack \(shortName(for: index))" }
+		switch index {
+		case 1: return "Demo A (pair 1)"
+		case 2: return "Demo B (pair 1)"
+		case 3: return "Demo C (pair 2)"
+		case 4: return "Demo D (pair 2)"
+		default: return "Demo Node \(index)"
+		}
+	}
+
+	static func shortName(for index: Int) -> String {
+		if index == 0 { return "ME" }
+		if colocatedCount != nil { return "\(index)" }
+		if isStacks {
+			let anchor = stackAnchors[(index - 1) / stackMemberCount % stackAnchors.count]
+			return "\(anchor.label)\((index - 1) % stackMemberCount + 1)"
+		}
+		switch index {
+		case 1: return "A"
+		case 2: return "B"
+		case 3: return "C"
+		case 4: return "D"
+		default: return "N\(index)"
+		}
 	}
 }
 

@@ -13,6 +13,8 @@
 <h2>Node Pins</h2>
 <p>Each node that has reported a GPS position appears as a colored circle pin on the map. The <strong>green solid line</strong> shows a directly connected node; <strong>orange dashed lines</strong> show nodes reached via the mesh. A purple star marks a waypoint. Tap a pin to see the node name, last heard time, signal info, and a shortcut to send a direct message.</p>
 <p>Pins update automatically when a new position packet is received from the mesh.</p>
+<h3>Overlapping nodes at the same spot</h3>
+<p>When several nodes report the <em>same</em> (or nearly the same) location — for example radios sitting on one desk, or nodes broadcasting a reduced-precision position — their pins stack on top of each other and can't be pulled apart by zooming. Tapping the stack (or the numbered count badge, when node clustering is on) opens a <strong>Select a Node</strong> list of every node at that spot. Pick one to open its detail view. This works whether or not clustering is enabled, so an occluded node is always reachable.</p>
 <h2>Filtering Nodes on the Map</h2>
 <p>Tap the <strong>filter button</strong> (funnel icon, <code>line.3.horizontal.decrease.circle</code>) in the bottom-right toolbar to open the Map Filters sheet. When any filter is active, the icon appears <strong>filled</strong> to indicate filtering is in effect.</p>
 <table>
@@ -102,6 +104,14 @@ Enable the <strong>Via LoRa</strong> filter and disable <strong>Via MQTT</strong
 <td>Hide nodes that broadcast an approximate (reduced-precision) location. Imprecise nodes are normally drawn with a translucent circle showing how large the possible area is; turn this on to show only nodes reporting an exact position. Both the imprecise pins and their precision circles are hidden.</td>
 </tr>
 <tr>
+<td>Cluster Nodes</td>
+<td>Group nearby nodes into one numbered pin; tap it to zoom in. Turn off to always show every node individually.</td>
+</tr>
+<tr>
+<td>My Location</td>
+<td>Show or hide your own position (the blue dot) on the map</td>
+</tr>
+<tr>
 <td>Convex Hull</td>
 <td>Draw an outline around the outermost LoRa nodes to visualize mesh coverage</td>
 </tr>
@@ -115,6 +125,10 @@ Enable the <strong>Via LoRa</strong> filter and disable <strong>Via MQTT</strong
 </tr>
 </tbody>
 </table>
+<h3>Offline Maps</h3>
+<p>A dedicated section of the sheet for working without a connection: a link opens the list of downloaded map regions to manage them or download new ones, and the <strong>Offline Tiles</strong> toggle overlays a downloaded region on the base map so it keeps rendering with no internet connection.</p>
+<h3>Map Overlays</h3>
+<p>Custom GeoJSON overlays you've uploaded are listed here, each with its own toggle and file details (format, feature count, size, upload date). Swipe a file left to delete it, or tap <strong>Upload Map Data</strong> to add another. The section's master toggle turns uploaded overlays on the map on or off as a group.</p>
 <h2>Coverage Estimate (Site Planner)</h2>
 <p>Estimate the radio coverage of a transmitter site without leaving the app. The app drives the hosted <a href="https://site.meshtastic.org">Meshtastic Site Planner</a> — a SPLAT!/ITM propagation simulator — and imports the resulting coverage map as a styled GeoJSON overlay.</p>
 <h3>Starting an estimate</h3>
@@ -218,7 +232,7 @@ Geofences are evaluated on your own device as position packets arrive from the m
 <p>A trace route can be drawn on the map to show the path a packet took through the mesh. Open <strong>Settings → Logging → Trace Routes</strong> (or a node's Trace Route log), select a route, and tap <strong>Show on Map</strong>.</p>
 <h3>Reading the Route</h3>
 <ul>
-<li><strong>Colored legs</strong> — each hop is colored by its signal quality (SNR), using the same scale as the LoRa signal meter: <strong>green</strong> (good), <strong>yellow</strong> (fair), <strong>orange</strong> (bad), <strong>red</strong> (none).</li>
+<li><strong>Colored legs</strong> — each hop is colored by its signal quality (SNR), using the same scale as the LoRa signal meter: <strong>green</strong> (good), <strong>yellow</strong> (fair), <strong>orange</strong> (bad), <strong>red</strong> (none). Signal quality is also shown by line weight and dash pattern — legs get progressively thinner and more dashed as quality drops from good to none — so the tier doesn't rely on color alone.</li>
 <li><strong>Solid vs. dashed</strong> — the <strong>solid</strong> line is the outbound path toward the target; the <strong>dashed</strong> line is the return path back to the originator.</li>
 <li><strong>Arrows</strong> — chevrons along each line point in the direction of travel.</li>
 <li><strong>Endpoints</strong> — a <strong>green</strong> marker is the originator; a <strong>red</strong> marker is the target.</li>

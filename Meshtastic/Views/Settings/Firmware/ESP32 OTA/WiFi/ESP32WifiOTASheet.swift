@@ -109,14 +109,17 @@ struct ESP32WifiOTASheet: View {
 			.navigationBarTitleDisplayMode(.inline)
 			.toolbar {
 				ToolbarItem(placement: .cancellationAction) {
-					Button("Done") {
+					Button {
 						if let onUpdateComplete = self.onUpdateComplete, ota.otaState == .completed {
 							onUpdateComplete()
 						} else {
 							dismiss()
 						}
+					} label: {
+						Image(systemName: "xmark")
 					}
 					.disabled(![.idle, .completed, .error].contains(ota.otaState))
+					.accessibilityLabel(String(localized: "Done", comment: "VoiceOver: dismiss the ESP32 WiFi update sheet"))
 				}
 			}
 		}

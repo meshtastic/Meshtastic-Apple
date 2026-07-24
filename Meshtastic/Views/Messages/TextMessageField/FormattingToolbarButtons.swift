@@ -106,11 +106,11 @@ struct FormattingToolbarButtons: View {
 
 	private func accessibilityLabel(for style: MarkdownStyle) -> String {
 		switch style {
-		case .bold: return "Bold"
-		case .italic: return "Italic"
-		case .strikethrough: return "Strikethrough"
-		case .code: return "Code"
-		case .link: return "Link"
+		case .bold: return String(localized: "Bold", comment: "VoiceOver: bold formatting toolbar button")
+		case .italic: return String(localized: "Italic", comment: "VoiceOver: italic formatting toolbar button")
+		case .strikethrough: return String(localized: "Strikethrough", comment: "VoiceOver: strikethrough formatting toolbar button")
+		case .code: return String(localized: "Code", comment: "VoiceOver: inline code formatting toolbar button")
+		case .link: return String(localized: "Link", comment: "VoiceOver: link formatting toolbar button")
 		}
 	}
 }

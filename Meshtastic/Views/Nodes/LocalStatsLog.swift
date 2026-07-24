@@ -95,9 +95,12 @@ struct LocalStatsLog: View {
 					.navigationBarTitleDisplayMode(.inline)
 					.toolbar {
 						ToolbarItem(placement: .confirmationAction) {
-							Button("Done") {
+							Button {
 								isPresentingNoiseFloorInfo = false
+							} label: {
+								Image(systemName: "xmark")
 							}
+							.accessibilityLabel(String(localized: "Done", comment: "VoiceOver: dismiss the noise floor info sheet"))
 						}
 					}
 			}

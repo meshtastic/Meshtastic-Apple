@@ -38,6 +38,13 @@ MeshtasticTests/                # Test target (Swift Testing)
 scripts/                        # Build and utility scripts
 specs/                          # Feature specs (speckit workflow)
 </code></pre>
+<h2>Project Generation</h2>
+<p><code>Meshtastic.xcodeproj</code> is generated from <code>project.yml</code> by <a href="https://github.com/yonaskolb/XcodeGen">XcodeGen</a> rather than hand-maintained. <code>project.yml</code> is the source of truth for targets, build settings, and schemes; the generated <code>.xcodeproj</code> is still committed so the repo builds without installing XcodeGen first.</p>
+<p>Most source directories — including <code>Meshtastic/Views/</code>, <code>Meshtastic/Model/</code>, <code>Meshtastic/Accessory/</code>, <code>MeshtasticTests/</code>, <code>Shared/</code>, and <code>Widgets/</code> — are configured as <code>type: syncedFolder</code> (Xcode 16 synchronized groups). A new file added under one of these directories is picked up automatically; there is no membership checkbox or pbxproj entry to add.</p>
+<p>If you change <code>project.yml</code> (or <code>.xcodegen-version</code>), regenerate the project and commit the result:</p>
+<pre><code class="language-bash">xcodegen generate
+</code></pre>
+<p>The <code>xcodegen-drift.yml</code> CI check regenerates the project on every PR that touches <code>project.yml</code>, <code>.xcodegen-version</code>, <code>Meshtastic.xcodeproj/**</code>, or any <code>.swift</code> file, and fails if the committed project doesn't exactly match — this is what keeps the generated project honest as the source of truth stays in <code>project.yml</code>. XcodeGen's output is version-sensitive, so <code>.xcodegen-version</code> pins an exact release; install that exact version (not whatever Homebrew currently carries) before regenerating locally.</p>
 <h2>Key Files</h2>
 <table>
 <thead>
@@ -47,6 +54,10 @@ specs/                          # Feature specs (speckit workflow)
 </tr>
 </thead>
 <tbody>
+<tr>
+<td><code>project.yml</code></td>
+<td>XcodeGen project specification — the source of truth for <code>Meshtastic.xcodeproj</code></td>
+</tr>
 <tr>
 <td><code>Router/Router.swift</code></td>
 <td>Central navigation controller (<code>@MainActor</code>)</td>

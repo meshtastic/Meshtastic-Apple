@@ -50,13 +50,37 @@ class TCPTransport: NSObject, Transport, NetServiceBrowserDelegate, NetServiceDe
 				self.browser?.searchForServices(ofType: MESHTASTIC_SERVICE_TYPE, inDomain: MESHTASTIC_DOMAIN)
 			}
 			cont.onTermination = { _ in
-				self.browser?.stop()
-				self.services.removeAll()
-				self.pendingServices.removeAll()
+				self.cancelPendingResolutionsAndStopBrowsing()
 				self.continuation = nil
 				self.status = .ready
 			}
 		}
+	}
+
+	/// Directly stops the service browser, mirroring `discoverDevices()`'s `onTermination`.
+	/// TCP's cancellation chain runs synchronously (no detached-Task hop like BLE's), but this
+	/// still gives callers an explicit, awaitable stop rather than depending on `Task.cancel()`
+	/// being noticed at the iterator's next suspension point. Idempotent.
+	func stopActiveDiscovery() async {
+		cancelPendingResolutionsAndStopBrowsing()
+		continuation = nil
+		status = .ready
+	}
+
+	/// `browser.stop()` only stops the browser itself — it does not cancel `NetService`
+	/// instances already mid-`resolve(withTimeout:)`. Without explicitly stopping each pending
+	/// resolution, a late `netServiceDidResolveAddress`/`didNotResolve` callback could still
+	/// land (and yield a device) after a caller believes discovery has fully stopped (#2183
+	/// review). Clearing each service's delegate additionally guarantees no further delegate
+	/// callback fires for it at all, matching Apple's documented cancellation pattern.
+	private func cancelPendingResolutionsAndStopBrowsing() {
+		for service in pendingServices {
+			service.stop()
+			service.delegate = nil
+		}
+		pendingServices.removeAll()
+		browser?.stop()
+		services.removeAll()
 	}
 
 	func netServiceBrowser(_ browser: NetServiceBrowser, didFind service: NetService, moreComing: Bool) {

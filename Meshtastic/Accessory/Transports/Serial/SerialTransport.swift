@@ -61,6 +61,24 @@ class SerialTransport: Transport {
 		}
 	}
 
+	/// Directly stops the discovery task, mirroring `discoverDevices()`'s `onTermination`.
+	/// Gives callers an explicit, awaitable stop rather than depending on `Task.cancel()`
+	/// being noticed at the loop's next `Task.sleep` suspension point. Idempotent.
+	///
+	/// Awaits `task.value` after cancelling: `Task.cancel()` alone is cooperative, so without
+	/// awaiting, the task could still be mid-`getSerialPorts()` or processing results when this
+	/// method returns and callers proceed assuming discovery has stopped (#2183 review).
+	func stopActiveDiscovery() async {
+		let task = discoveryTask
+		task?.cancel()
+		if let task {
+			await task.value
+		}
+		discoveryTask = nil
+		portsAlreadyNotified.removeAll()
+		status = .ready
+	}
+
 //  DEPRICATED: old approach is just matching filenames
 //	private func getSerialPorts() -> [String] {
 //		do {

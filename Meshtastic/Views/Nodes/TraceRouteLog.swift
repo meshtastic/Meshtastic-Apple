@@ -294,10 +294,17 @@ struct TraceRouteLog: View {
 				} else {
 					let i = (idx - 1) / 2
 					let snrColor = getSnrColor(snr: hops[i].snr, preset: modemPreset)
+					let signalTier = getLoRaSignalStrength(snr: hops[i].snr, rssi: 0, preset: modemPreset)
 					Image(systemName: "arrowshape.right.fill")
 						.resizable()
 						.frame(width: idiom == .phone ? 25 : 60, height: idiom == .phone ? 25 : 60)
 						.foregroundColor(snrColor.opacity(0.7))
+						.accessibilityLabel(
+							String(
+								localized: "Signal \(signalTier.description)",
+								comment: "VoiceOver: signal quality of this trace route hop"
+							)
+						)
 				}
 			}
 		}

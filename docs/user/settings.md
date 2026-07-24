@@ -22,6 +22,10 @@ General app preferences including map style, notification behavior, and theme. T
 
 Radio configuration requires a connected node. Select your node from the **Configure** section if you have multiple nodes.
 
+### Node selection
+
+The Configure picker lists live nodes from the current node database, with favorites first. If the node database is reset or the selected node disappears, Settings clears that selection instead of opening configuration for a stale node. Reconnect to a radio or choose a currently listed node to continue configuring it.
+
 ### LoRa
 
 LoRa settings control how your radio communicates on the mesh:

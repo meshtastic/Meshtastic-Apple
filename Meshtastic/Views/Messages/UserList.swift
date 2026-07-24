@@ -43,6 +43,7 @@ struct UserList: View {
 					.tint(Color(UIColor.secondarySystemBackground))
 					.foregroundColor(.accentColor)
 					.buttonStyle(.borderedProminent)
+					.accessibilityLabel(showingHelp ? String(localized: "Hide help", comment: "VoiceOver label for the help toggle button when help is showing") : String(localized: "Show help", comment: "VoiceOver label for the help toggle button when help is hidden"))
 					Spacer()
 					if filters.isFiltering {
 						Button(action: {
@@ -70,6 +71,7 @@ struct UserList: View {
 					.tint(Color(UIColor.secondarySystemBackground))
 					.foregroundColor(.accentColor)
 					.buttonStyle(.borderedProminent)
+					.accessibilityLabel(editingFilters ? String(localized: "Hide contact filters", comment: "VoiceOver label for the contact filter toggle button when filters are showing") : String(localized: "Show contact filters", comment: "VoiceOver label for the contact filter toggle button when filters are hidden"))
 				}
 				.controlSize(.regular)
 				.padding(5)
@@ -263,7 +265,8 @@ private struct DirectMessageUserRow: View {
 	@Binding var userToDeleteMessages: UserEntity?
 
 	private var hasMessages: Bool { summary != nil }
-	private var hasUnreadMessages: Bool { (summary?.unreadCount ?? 0) > 0 }
+	private var unreadCount: Int { summary?.unreadCount ?? 0 }
+	private var hasUnreadMessages: Bool { unreadCount > 0 }
 
 	var body: some View {
 		NavigationLink(value: user) {
@@ -274,6 +277,8 @@ private struct DirectMessageUserRow: View {
 					.foregroundColor(.accentColor)
 					.brightness(0.2)
 			}
+			.accessibilityHidden(!hasUnreadMessages)
+			.accessibilityLabel(String(localized: "\(unreadCount) unread", comment: "VoiceOver: number of unread direct messages from this contact"))
 
 			CircleText(text: user.shortName ?? "?", color: Color(UIColor(hex: UInt32(user.num))))
 
@@ -283,13 +288,16 @@ private struct DirectMessageUserRow: View {
 						if !user.keyMatch {
 							Image(systemName: "key.slash")
 								.foregroundColor(.red)
+								.accessibilityLabel(String(localized: "Encryption key mismatch", comment: "VoiceOver label for a contact whose public key no longer matches"))
 						} else {
 							Image(systemName: "lock.fill")
 								.foregroundColor(.green)
+								.accessibilityLabel(String(localized: "Encrypted", comment: "VoiceOver label for an encrypted contact"))
 						}
 					} else {
 						Image(systemName: "lock.open.fill")
 							.foregroundColor(.yellow)
+							.accessibilityLabel(String(localized: "Not encrypted", comment: "VoiceOver label for an unencrypted contact"))
 					}
 					Text(user.displayLongName)
 						.font(.headline)
@@ -298,6 +306,7 @@ private struct DirectMessageUserRow: View {
 					if user.userNode?.favorite ?? false {
 						Image(systemName: "star.fill")
 							.foregroundColor(.yellow)
+							.accessibilityLabel(String(localized: "Favorite", comment: "VoiceOver label for a favorited contact"))
 					}
 					if let summary {
 						messageTimeText(summary)
@@ -313,7 +322,8 @@ private struct DirectMessageUserRow: View {
 				}
 			}
 		}
-		.frame(height: 62)
+		.accessibilityElement(children: .combine)
+		.frame(minHeight: 62)
 		.alignmentGuide(.listRowSeparatorLeading) {
 			$0[.leading]
 		}
@@ -368,7 +378,10 @@ private struct DirectMessageUserRow: View {
 			Button(role: .destructive) {
 				Task {
 					if let userToDelete = userToDeleteMessages {
-						await MeshPackets.shared.deleteUserMessages(user: userToDelete)
+						await MeshPackets.shared.deleteUserMessages(userNum: userToDelete.num)
+						await MainActor.run {
+							userToDeleteMessages = nil
+						}
 					}
 				}
 			} label: {

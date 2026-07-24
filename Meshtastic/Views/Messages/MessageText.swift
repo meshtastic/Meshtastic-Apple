@@ -54,7 +54,7 @@ struct MessageText: View {
 	private var hasTranslatedText: Bool { message.hasTranslatedPayload }
 
 	private var isShowingTranslatedText: Bool {
-		message.showTranslatedMessage && hasTranslatedText
+		message.isShowingTranslatedText
 	}
 
 	private var canTranslate: Bool {
@@ -147,24 +147,28 @@ struct MessageText: View {
 	/// Bottom-trailing status badges (encryption lock, signing shield, store-forward envelope), laid out
 	/// in a single row so they sit side by side instead of stacking on the same corner pixel when a
 	/// message qualifies for more than one (e.g. a signed store-and-forward broadcast).
+	///
+	/// Symbols/tints are drawn per badge here; the underlying flags and labels come from
+	/// `MessageEntity.activeStatusBadges`, the single source of truth shared with the message rows'
+	/// combined `accessibilityLabel` (issue #016 T003).
 	private var cornerBadges: [CornerBadge] {
-		var badges: [CornerBadge] = []
-		// Lock = private: a PKI-encrypted DM.
-		if message.pkiEncrypted && message.realACK || !isCurrentUser && message.pkiEncrypted {
-			badges.append(CornerBadge(symbol: "lock.circle.fill", tint: .green,
-									  label: String(localized: "Encrypted message", comment: "VoiceOver label for the PKI-encrypted direct message badge")))
+		message.activeStatusBadges(destination: tapBackDestination, isCurrentUser: isCurrentUser).compactMap { badge in
+			switch badge {
+			// Lock = private: a PKI-encrypted DM.
+			case .encrypted:
+				return CornerBadge(symbol: "lock.circle.fill", tint: .green, label: badge.label)
+			// Shield = authentic: a radio-verified, XEdDSA-signed broadcast. Affirmative only —
+			// unsigned traffic shows nothing, and the ingest path only sets the flag on broadcasts,
+			// never DMs.
+			case .verified:
+				return CornerBadge(symbol: "checkmark.shield.fill", tint: .green, label: badge.label)
+			case .storeForward:
+				return CornerBadge(symbol: "envelope.circle.fill", tint: .gray, label: badge.label)
+			case .detectionSensor, .translated:
+				// Rendered as their own overlays below, not as corner badges.
+				return nil
+			}
 		}
-		// Shield = authentic: a radio-verified, XEdDSA-signed broadcast. Affirmative only — unsigned
-		// traffic shows nothing, and the ingest path only sets the flag on broadcasts, never DMs.
-		if message.xeddsaSigned {
-			badges.append(CornerBadge(symbol: "checkmark.shield.fill", tint: .green,
-									  label: String(localized: "Verified sender", comment: "VoiceOver label for the signed and verified broadcast badge")))
-		}
-		if message.portNum == Int32(PortNum.storeForwardApp.rawValue) {
-			badges.append(CornerBadge(symbol: "envelope.circle.fill", tint: .gray,
-									  label: String(localized: "Store and forward message", comment: "VoiceOver label for the store-and-forward badge")))
-		}
-		return badges
 	}
 
 	@ViewBuilder
@@ -186,7 +190,7 @@ struct MessageText: View {
 				.offset(x: 8, y: 8)
 			}
 		}
-		if tapBackDestination.overlaySensorMessage && message.portNum == Int32(PortNum.detectionSensorApp.rawValue) {
+		if message.isDetectionSensorMessage(destination: tapBackDestination) {
 			Image(systemName: "sensor.fill")
 				.padding()
 				.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
@@ -194,7 +198,7 @@ struct MessageText: View {
 				.symbolRenderingMode(.multicolor)
 				.symbolEffect(.variableColor.reversing.cumulative, options: .repeat(20).speed(3))
 				.offset(x: 20, y: -20)
-				.accessibilityLabel(String(localized: "Detection sensor", comment: "VoiceOver label for the detection sensor message badge"))
+				.accessibilityLabel(MessageEntity.StatusBadge.detectionSensor.label)
 		}
 		if isShowingTranslatedText {
 			Image(systemName: "translate")
@@ -203,7 +207,7 @@ struct MessageText: View {
 				.foregroundStyle(Color.blue)
 				.symbolRenderingMode(.hierarchical)
 				.offset(x: 38, y: 8)
-				.accessibilityLabel(String(localized: "Showing translated text", comment: "VoiceOver label for the translated message badge"))
+				.accessibilityLabel(MessageEntity.StatusBadge.translated.label)
 		}
 	}
 
@@ -271,15 +275,6 @@ struct MessageText: View {
 			try context.save()
 		} catch {
 			Logger.data.error("Failed to clear translated message \(message.messageId, privacy: .public): \(error.localizedDescription, privacy: .public)")
-		}
-	}
-}
-
-private extension MessageDestination {
-	var overlaySensorMessage: Bool {
-		switch self {
-		case .user: return false
-		case .channel: return true
 		}
 	}
 }

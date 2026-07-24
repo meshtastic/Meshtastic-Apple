@@ -25,7 +25,6 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 	case nz865 = 11
 	case th = 12
 	case ua433 = 14
-	case ua868 = 15
 	case my433 = 16
 	case my919 = 17
 	case sg923 = 18
@@ -122,8 +121,6 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 			"TH"
 		case .ua433:
 			"UA_433"
-		case .ua868:
-			"UA_868"
 		case .my433:
 			"MY_433"
 		case .my919:
@@ -202,8 +199,6 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 			return "Thailand".localized
 		case .ua433:
 			return "Ukraine 433MHz".localized
-		case .ua868:
-			return "Ukraine 868MHz".localized
 		case .my433:
 			return "Malaysia 433MHz".localized
 		case .my919:
@@ -279,8 +274,6 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 		case .th:
 			return 100
 		case .ua433:
-			return 10
-		case .ua868:
 			return 10
 		case .lora24:
 			return 100
@@ -359,8 +352,6 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 		case .th:
 			return true
 		case .ua433:
-			return true
-		case .ua868:
 			return true
 		case .lora24:
 			return false
@@ -441,8 +432,6 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 			return Config.LoRaConfig.RegionCode.th
 		case .ua433:
 			return Config.LoRaConfig.RegionCode.ua433
-		case .ua868:
-			return Config.LoRaConfig.RegionCode.ua868
 		case .lora24:
 			return Config.LoRaConfig.RegionCode.lora24
 		case .my433:
@@ -528,12 +517,24 @@ enum ModemPresets: Int, CaseIterable, Identifiable {
 		}
 	}
 
+	/// Presets deprecated upstream that must no longer be offered for new selection,
+	/// mirroring how Android filters them out. They remain as cases so a radio already
+	/// configured on one round-trips through protobuf and renders the correct label.
+	var isDeprecated: Bool {
+		switch self {
+		case .longSlow:
+			return true
+		default:
+			return false
+		}
+	}
+
 	/// Presets selectable for a connected device, given whether its firmware
 	/// implements the 2.8 rework. On older firmware the 2.8-only presets are
 	/// dropped. Callers should additionally constrain this to the selected
 	/// region's legal set via `RegionPresetInfo` when the firmware provides one.
 	static func selectable(supports2_8: Bool) -> [ModemPresets] {
-		allCases.filter { supports2_8 || !$0.requiresFirmware2_8 }
+		allCases.filter { !$0.isDeprecated && (supports2_8 || !$0.requiresFirmware2_8) }
 	}
 
 	/// The conservative (pre-2.8) selectable set. Retained for callers that have

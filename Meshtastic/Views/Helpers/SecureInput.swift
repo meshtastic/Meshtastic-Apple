@@ -65,6 +65,7 @@ struct SecureInput: View {
 					Image(systemName: self.isSecure.wrappedValue ? "eye.slash" : "eye")
 						.accentColor(.secondary)
 				}.buttonStyle(BorderlessButtonStyle())
+				.accessibilityLabel(self.isSecure.wrappedValue ? String(localized: "Show password", comment: "VoiceOver label for the button that reveals a masked password field") : String(localized: "Hide password", comment: "VoiceOver label for the button that masks a revealed password field"))
 			}
 		}
 	}

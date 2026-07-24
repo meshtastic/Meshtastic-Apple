@@ -75,7 +75,12 @@ struct EventFirmwareInfoView: View {
 			.navigationBarTitleDisplayMode(.inline)
 			.toolbar {
 				ToolbarItem(placement: .confirmationAction) {
-					Button("Done") { dismiss() }
+					Button {
+						dismiss()
+					} label: {
+						Image(systemName: "xmark")
+					}
+					.accessibilityLabel(String(localized: "Done", comment: "VoiceOver: dismiss the event info sheet"))
 				}
 			}
 		}

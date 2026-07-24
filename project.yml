@@ -1,0 +1,728 @@
+# Generated from project.pbxproj — proof of concept for XcodeGen migration.
+# Regenerate the project with:  xcodegen generate
+name: Meshtastic
+
+options:
+  # Do not inject XcodeGen's own defaults; every setting below comes
+  # verbatim from the current project file.
+  settingPresets: none
+  createIntermediateGroups: true
+  minimumXcodeGenVersion: "2.45.0"
+  defaultConfig: Release
+  groupSortPosition: none
+
+configs:
+  Debug: debug
+  Release: release
+
+packages:
+  SwiftDraw:
+    url: https://github.com/swhitty/SwiftDraw
+    majorVersion: 0.25.3
+  IOS-DFU-Library:
+    url: https://github.com/NordicSemiconductor/IOS-DFU-Library
+    majorVersion: 4.16.0
+  TAKPacket-SDK:
+    url: https://github.com/meshtastic/TAKPacket-SDK.git
+    minorVersion: 0.5.1
+  CocoaMQTT:
+    url: https://github.com/emqx/CocoaMQTT
+    majorVersion: 2.0.0
+  swift-snapshot-testing:
+    url: https://github.com/pointfreeco/swift-snapshot-testing
+    majorVersion: 1.17.0
+  mvt-tools:
+    url: https://github.com/Outdooractive/mvt-tools.git
+    majorVersion: 1.2.1
+  dd-sdk-ios:
+    url: https://github.com/DataDog/dd-sdk-ios.git
+    minVersion: 3.3.0
+    maxVersion: 4.0.0
+  swift-markdown:
+    url: https://github.com/swiftlang/swift-markdown
+    majorVersion: 0.5.0
+  swift-protobuf:
+    url: https://github.com/apple/swift-protobuf.git
+    majorVersion: 1.26.0
+  MeshtasticProtobufs:
+    path: MeshtasticProtobufs
+
+settings:
+  configs:
+    Debug:
+      ALWAYS_SEARCH_USER_PATHS: "NO"
+      ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES: ""
+      ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS: "YES"
+      CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED: "YES"
+      CLANG_ANALYZER_NONNULL: "YES"
+      CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION: "YES_AGGRESSIVE"
+      CLANG_CXX_LANGUAGE_STANDARD: "gnu++14"
+      CLANG_CXX_LIBRARY: "libc++"
+      CLANG_ENABLE_MODULES: "YES"
+      CLANG_ENABLE_OBJC_ARC: "YES"
+      CLANG_ENABLE_OBJC_WEAK: "YES"
+      CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING: "YES"
+      CLANG_WARN_BOOL_CONVERSION: "YES"
+      CLANG_WARN_COMMA: "YES"
+      CLANG_WARN_CONSTANT_CONVERSION: "YES"
+      CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS: "YES"
+      CLANG_WARN_DIRECT_OBJC_ISA_USAGE: "YES_ERROR"
+      CLANG_WARN_DOCUMENTATION_COMMENTS: "YES"
+      CLANG_WARN_EMPTY_BODY: "YES"
+      CLANG_WARN_ENUM_CONVERSION: "YES"
+      CLANG_WARN_INFINITE_RECURSION: "YES"
+      CLANG_WARN_INT_CONVERSION: "YES"
+      CLANG_WARN_NON_LITERAL_NULL_CONVERSION: "YES"
+      CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF: "YES"
+      CLANG_WARN_OBJC_LITERAL_CONVERSION: "YES"
+      CLANG_WARN_OBJC_ROOT_CLASS: "YES_ERROR"
+      CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER: "YES"
+      CLANG_WARN_RANGE_LOOP_ANALYSIS: "YES"
+      CLANG_WARN_STRICT_PROTOTYPES: "YES"
+      CLANG_WARN_SUSPICIOUS_MOVE: "YES"
+      CLANG_WARN_UNGUARDED_AVAILABILITY: "YES_AGGRESSIVE"
+      CLANG_WARN_UNREACHABLE_CODE: "YES"
+      CLANG_WARN__DUPLICATE_METHOD_MATCH: "YES"
+      COPY_PHASE_STRIP: "NO"
+      DEBUG_INFORMATION_FORMAT: "dwarf"
+      DEVELOPMENT_TEAM: "GCH7VS5Y9R"
+      ENABLE_STRICT_OBJC_MSGSEND: "YES"
+      ENABLE_TESTABILITY: "YES"
+      ENABLE_USER_SCRIPT_SANDBOXING: "NO"
+      GCC_C_LANGUAGE_STANDARD: "gnu11"
+      GCC_DYNAMIC_NO_PIC: "NO"
+      GCC_NO_COMMON_BLOCKS: "YES"
+      GCC_OPTIMIZATION_LEVEL: "0"
+      GCC_PREPROCESSOR_DEFINITIONS:
+        - "DEBUG=1"
+        - "$(inherited)"
+      GCC_WARN_64_TO_32_BIT_CONVERSION: "YES"
+      GCC_WARN_ABOUT_RETURN_TYPE: "YES_ERROR"
+      GCC_WARN_UNDECLARED_SELECTOR: "YES"
+      GCC_WARN_UNINITIALIZED_AUTOS: "YES_AGGRESSIVE"
+      GCC_WARN_UNUSED_FUNCTION: "YES"
+      GCC_WARN_UNUSED_VARIABLE: "YES"
+      IPHONEOS_DEPLOYMENT_TARGET: "16.4"
+      LOCALIZATION_PREFERS_STRING_CATALOGS: "YES"
+      MTL_ENABLE_DEBUG_INFO: "INCLUDE_SOURCE"
+      MTL_FAST_MATH: "YES"
+      ONLY_ACTIVE_ARCH: "YES"
+      SDKROOT: "iphoneos"
+      SWIFT_ACTIVE_COMPILATION_CONDITIONS: "DEBUG"
+      SWIFT_OPTIMIZATION_LEVEL: "-Onone"
+      SWIFT_STRICT_CONCURRENCY: "targeted"
+      SWIFT_VERSION: "6.0"
+    Release:
+      ALWAYS_SEARCH_USER_PATHS: "NO"
+      ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES: ""
+      ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS: "YES"
+      CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED: "YES"
+      CLANG_ANALYZER_NONNULL: "YES"
+      CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION: "YES_AGGRESSIVE"
+      CLANG_CXX_LANGUAGE_STANDARD: "gnu++14"
+      CLANG_CXX_LIBRARY: "libc++"
+      CLANG_ENABLE_MODULES: "YES"
+      CLANG_ENABLE_OBJC_ARC: "YES"
+      CLANG_ENABLE_OBJC_WEAK: "YES"
+      CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING: "YES"
+      CLANG_WARN_BOOL_CONVERSION: "YES"
+      CLANG_WARN_COMMA: "YES"
+      CLANG_WARN_CONSTANT_CONVERSION: "YES"
+      CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS: "YES"
+      CLANG_WARN_DIRECT_OBJC_ISA_USAGE: "YES_ERROR"
+      CLANG_WARN_DOCUMENTATION_COMMENTS: "YES"
+      CLANG_WARN_EMPTY_BODY: "YES"
+      CLANG_WARN_ENUM_CONVERSION: "YES"
+      CLANG_WARN_INFINITE_RECURSION: "YES"
+      CLANG_WARN_INT_CONVERSION: "YES"
+      CLANG_WARN_NON_LITERAL_NULL_CONVERSION: "YES"
+      CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF: "YES"
+      CLANG_WARN_OBJC_LITERAL_CONVERSION: "YES"
+      CLANG_WARN_OBJC_ROOT_CLASS: "YES_ERROR"
+      CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER: "YES"
+      CLANG_WARN_RANGE_LOOP_ANALYSIS: "YES"
+      CLANG_WARN_STRICT_PROTOTYPES: "YES"
+      CLANG_WARN_SUSPICIOUS_MOVE: "YES"
+      CLANG_WARN_UNGUARDED_AVAILABILITY: "YES_AGGRESSIVE"
+      CLANG_WARN_UNREACHABLE_CODE: "YES"
+      CLANG_WARN__DUPLICATE_METHOD_MATCH: "YES"
+      COPY_PHASE_STRIP: "NO"
+      DEBUG_INFORMATION_FORMAT: "dwarf-with-dsym"
+      DEVELOPMENT_TEAM: "GCH7VS5Y9R"
+      ENABLE_NS_ASSERTIONS: "NO"
+      ENABLE_STRICT_OBJC_MSGSEND: "YES"
+      ENABLE_USER_SCRIPT_SANDBOXING: "YES"
+      GCC_C_LANGUAGE_STANDARD: "gnu11"
+      GCC_NO_COMMON_BLOCKS: "YES"
+      GCC_WARN_64_TO_32_BIT_CONVERSION: "YES"
+      GCC_WARN_ABOUT_RETURN_TYPE: "YES_ERROR"
+      GCC_WARN_UNDECLARED_SELECTOR: "YES"
+      GCC_WARN_UNINITIALIZED_AUTOS: "YES_AGGRESSIVE"
+      GCC_WARN_UNUSED_FUNCTION: "YES"
+      GCC_WARN_UNUSED_VARIABLE: "YES"
+      IPHONEOS_DEPLOYMENT_TARGET: "16.4"
+      LOCALIZATION_PREFERS_STRING_CATALOGS: "YES"
+      MTL_ENABLE_DEBUG_INFO: "NO"
+      MTL_FAST_MATH: "YES"
+      ONLY_ACTIVE_ARCH: "YES"
+      SDKROOT: "iphoneos"
+      SWIFT_COMPILATION_MODE: "wholemodule"
+      SWIFT_OPTIMIZATION_LEVEL: "-O"
+      SWIFT_STRICT_CONCURRENCY: "targeted"
+      SWIFT_VERSION: "6.0"
+      TARGETED_DEVICE_FAMILY: "1,2,6"
+      VALIDATE_PRODUCT: "YES"
+
+targets:
+  Meshtastic:
+    type: application
+    platform: iOS
+    sources:
+      - path: "Meshtastic/API"
+        type: syncedFolder
+      - path: "Meshtastic/Accessory"
+        type: syncedFolder
+      - path: "Meshtastic/AppIntents"
+        type: syncedFolder
+      - path: "Meshtastic/CarPlay"
+        type: syncedFolder
+      - path: "Meshtastic/Enums"
+        type: syncedFolder
+      - path: "Meshtastic/Export"
+        type: syncedFolder
+      - path: "Meshtastic/Extensions"
+        type: syncedFolder
+      - path: "Meshtastic/Helpers"
+        type: syncedFolder
+      - path: "Meshtastic/Intents"
+        type: syncedFolder
+      - path: "Meshtastic/Measurement"
+        type: syncedFolder
+      - path: "Meshtastic/Model"
+        type: syncedFolder
+      - path: "Meshtastic/Persistence"
+        type: syncedFolder
+      - path: "Meshtastic/Provisioning"
+        type: syncedFolder
+      - path: "Meshtastic/Router"
+        type: syncedFolder
+      - path: "Meshtastic/Services"
+        type: syncedFolder
+      - path: "Shared"
+        type: syncedFolder
+      - path: "Meshtastic/Tips"
+        type: syncedFolder
+      - path: "Meshtastic/Views"
+        type: syncedFolder
+      - path: "Meshtastic/Resources/images"
+        type: syncedFolder
+        excludes:
+          - "crowpanel_2_8.svg"
+          - "crowpanel_3_5.svg"
+          - "crowpanel_5_0.svg"
+          - "crowpanel_7_0.svg"
+          - "diy.svg"
+          - "heltec-ht62-esp32c3-sx1262.svg"
+          - "heltec-mesh-node-t114-case.svg"
+          - "heltec-mesh-node-t114.svg"
+          - "heltec-mesh-solar.svg"
+          - "heltec-v3-case.svg"
+          - "heltec-v3.svg"
+          - "heltec-vision-master-e213.svg"
+          - "heltec-vision-master-e290.svg"
+          - "heltec-vision-master-t190.svg"
+          - "heltec-wireless-paper.svg"
+          - "heltec-wireless-tracker.svg"
+          - "heltec-wsl-v3.svg"
+          - "heltec_mesh_pocket.svg"
+          - "heltec_v4.svg"
+          - "image_manifest.json"
+          - "lilygo-tlora-pager.svg"
+          - "m5_c6l.svg"
+          - "meteor_pro.svg"
+          - "muzi_r1_neo.svg"
+          - "nano-g2-ultra.svg"
+          - "pico.svg"
+          - "promicro.svg"
+          - "rak-wismesh-tap-v2.svg"
+          - "rak-wismeshtap.svg"
+          - "rak11200.svg"
+          - "rak11310.svg"
+          - "rak2560.svg"
+          - "rak4631.svg"
+          - "rak4631_case.svg"
+          - "rak_3312.svg"
+          - "rak_wismesh_tag.svg"
+          - "rpipicow.svg"
+          - "seeed-sensecap-indicator.svg"
+          - "seeed-xiao-s3.svg"
+          - "seeed_solar.svg"
+          - "seeed_xiao_nrf52_kit.svg"
+          - "station-g2.svg"
+          - "t-deck.svg"
+          - "t-echo.svg"
+          - "t-watch-s3.svg"
+          - "tbeam-s3-core.svg"
+          - "tbeam.svg"
+          - "tdeck_pro.svg"
+          - "techo_lite.svg"
+          - "thinknode_m1.svg"
+          - "thinknode_m2.svg"
+          - "tlora-t3s3-epaper.svg"
+          - "tlora-t3s3-v1.svg"
+          - "tlora-v2-1-1_6.svg"
+          - "tlora-v2-1-1_8.svg"
+          - "tracker-t1000-e.svg"
+          - "wio-tracker-wm1110.svg"
+          - "wio_tracker_l1_case.svg"
+          - "wio_tracker_l1_eink.svg"
+      - path: "Meshtastic/MeshtasticApp.swift"
+      - path: "Meshtastic/AppState.swift"
+      - path: "Meshtastic/MeshtasticAppDelegate.swift"
+      - path: "Meshtastic/Assets.xcassets"
+      - path: "Meshtastic/Preview Content/Preview Assets.xcassets"
+      - path: "Meshtastic/Resources/alpha.png"
+      - path: "Meshtastic/Resources/DeviceHardware.json"
+      - path: "Meshtastic/Resources/urls.json"
+      - path: "Meshtastic/Resources/event_firmware.json"
+      - path: "Meshtastic/Resources/AppIcon.icon"
+      - path: "Meshtastic/Resources/AppIconDebug.icon"
+      - path: "Meshtastic/Resources/AppIcon_Chirpy.icon"
+      - path: "Meshtastic/Resources/AppIcon_Ham.icon"
+      - path: "Meshtastic/Resources/AppIcon_MPowered.icon"
+      - path: "Meshtastic/Resources/docs"
+        type: folder
+      - path: "Meshtastic/Resources/Certificates"
+        type: folder
+      - path: "Localizable.xcstrings"
+      - path: "Settings.bundle"
+      - path: "Meshtastic/Meshtastic.xcdatamodeld"
+        buildPhase: none
+      - path: "Meshtastic"
+        type: group
+        includes:
+          - "*.lproj/**"
+    dependencies:
+      - target: WidgetsExtension
+        embed: true
+      - target: "Meshtastic Watch App"
+        embed: true
+        codeSign: true
+        copy:
+          destination: productsDirectory
+          subpath: $(CONTENTS_FOLDER_PATH)/Watch
+      - package: CocoaMQTT
+        product: CocoaMQTT
+      - package: TAKPacket-SDK
+        product: MeshtasticTAK
+      - package: MeshtasticProtobufs
+        product: MeshtasticProtobufs
+      - package: dd-sdk-ios
+        product: DatadogCore
+      - package: dd-sdk-ios
+        product: DatadogCrashReporting
+      - package: dd-sdk-ios
+        product: DatadogLogs
+      - package: dd-sdk-ios
+        product: DatadogRUM
+      - package: dd-sdk-ios
+        product: DatadogTrace
+      - package: IOS-DFU-Library
+        product: NordicDFU
+      - package: SwiftDraw
+        product: SwiftDraw
+      - package: swift-markdown
+        product: Markdown
+      - package: mvt-tools
+        product: MVTTools
+    preBuildScripts:
+      - script: |
+          MARKER="${TARGET_TEMP_DIR}/first-build.marker"
+          
+          if [ ! -f "$MARKER" ]; then
+           # Treating as CLEAN build (or first build in this DerivedData)
+           # Force update all the note board images
+           "$SRCROOT/scripts/download_images.py" --output-dir "$SRCROOT/Meshtastic/Resources/images" --output-json "$SRCROOT/Meshtastic/Resources/DeviceHardware.json" --force
+           touch "$MARKER"
+          else
+           # Incremental build
+           # update only if there was a change in the devices json
+           "$SRCROOT/scripts/download_images.py" --output-dir "$SRCROOT/Meshtastic/Resources/images" --output-json "$SRCROOT/Meshtastic/Resources/DeviceHardware.json"
+          fi
+        name: "Download Node SVG Images"
+        basedOnDependencyAnalysis: false
+      - script: |
+          if [[ "$(uname -m)" == arm64 ]]
+          then
+              export PATH="/opt/homebrew/bin:$PATH"
+          fi
+          
+          if command -v swiftlint >/dev/null 2>&1
+          then
+              swiftlint
+          else
+              echo "warning: `swiftlint` command not found - See https://github.com/realm/SwiftLint#installation for installation instructions."
+          fi
+        name: "Run Script"
+        basedOnDependencyAnalysis: false
+    settings:
+      configs:
+        Debug:
+          ASSETCATALOG_COMPILER_APPICON_NAME: "AppIconDebug"
+          ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: "AccentColor"
+          ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS: "YES"
+          CLANG_ENABLE_MODULES: "YES"
+          CODE_SIGN_ENTITLEMENTS: "Meshtastic/Meshtastic.entitlements"
+          CODE_SIGN_ENTITLEMENTS[sdk=macosx*]: "Meshtastic/Meshtastic-Catalyst.entitlements"
+          CODE_SIGN_IDENTITY[sdk=macosx*]: "Apple Development"
+          CODE_SIGN_STYLE: "Automatic"
+          CURRENT_PROJECT_VERSION: "1"
+          DEVELOPMENT_ASSET_PATHS: "\"Meshtastic/Preview Content\""
+          ENABLE_APP_SANDBOX: "YES"
+          ENABLE_INCOMING_NETWORK_CONNECTIONS: "YES"
+          ENABLE_OUTGOING_NETWORK_CONNECTIONS: "NO"
+          ENABLE_PREVIEWS: "YES"
+          ENABLE_RESOURCE_ACCESS_AUDIO_INPUT: "NO"
+          ENABLE_RESOURCE_ACCESS_BLUETOOTH: "NO"
+          ENABLE_RESOURCE_ACCESS_CALENDARS: "NO"
+          ENABLE_RESOURCE_ACCESS_CAMERA: "NO"
+          ENABLE_RESOURCE_ACCESS_CONTACTS: "NO"
+          ENABLE_RESOURCE_ACCESS_LOCATION: "NO"
+          ENABLE_RESOURCE_ACCESS_PRINTING: "NO"
+          ENABLE_RESOURCE_ACCESS_USB: "NO"
+          INFOPLIST_FILE: "Meshtastic/Info.plist"
+          INFOPLIST_KEY_CFBundleDisplayName: "Meshtastic"
+          INFOPLIST_KEY_LSApplicationCategoryType: "public.app-category.utilities"
+          IPHONEOS_DEPLOYMENT_TARGET: "17.5"
+          LD_RUNPATH_SEARCH_PATHS:
+            - "$(inherited)"
+            - "@executable_path/Frameworks"
+          MACOSX_DEPLOYMENT_TARGET: "14.6"
+          MARKETING_VERSION: "2.7.17"
+          OTHER_LDFLAGS:
+            - "-weak_framework"
+            - "SwiftUI"
+          PRODUCT_BUNDLE_IDENTIFIER: "gvh.MeshtasticClient"
+          PRODUCT_NAME: "$(TARGET_NAME)"
+          SUPPORTS_MACCATALYST: "YES"
+          SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD: "NO"
+          SWIFT_EMIT_LOC_STRINGS: "YES"
+          SWIFT_OPTIMIZATION_LEVEL: "-Onone"
+          SWIFT_VERSION: "5.0"
+          TARGETED_DEVICE_FAMILY: "1,2"
+        Release:
+          ASSETCATALOG_COMPILER_APPICON_NAME: "AppIcon"
+          ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: "AccentColor"
+          ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS: "YES"
+          CLANG_ENABLE_MODULES: "YES"
+          CODE_SIGN_ENTITLEMENTS: "Meshtastic/Meshtastic.entitlements"
+          CODE_SIGN_ENTITLEMENTS[sdk=macosx*]: "Meshtastic/Meshtastic-Catalyst.entitlements"
+          CODE_SIGN_IDENTITY[sdk=macosx*]: "Apple Development"
+          CODE_SIGN_STYLE: "Automatic"
+          CURRENT_PROJECT_VERSION: "1"
+          DEVELOPMENT_ASSET_PATHS: "\"Meshtastic/Preview Content\""
+          ENABLE_APP_SANDBOX: "YES"
+          ENABLE_INCOMING_NETWORK_CONNECTIONS: "YES"
+          ENABLE_OUTGOING_NETWORK_CONNECTIONS: "NO"
+          ENABLE_PREVIEWS: "YES"
+          ENABLE_RESOURCE_ACCESS_AUDIO_INPUT: "NO"
+          ENABLE_RESOURCE_ACCESS_BLUETOOTH: "NO"
+          ENABLE_RESOURCE_ACCESS_CALENDARS: "NO"
+          ENABLE_RESOURCE_ACCESS_CAMERA: "NO"
+          ENABLE_RESOURCE_ACCESS_CONTACTS: "NO"
+          ENABLE_RESOURCE_ACCESS_LOCATION: "NO"
+          ENABLE_RESOURCE_ACCESS_PRINTING: "NO"
+          ENABLE_RESOURCE_ACCESS_USB: "NO"
+          INFOPLIST_FILE: "Meshtastic/Info.plist"
+          INFOPLIST_KEY_CFBundleDisplayName: "Meshtastic"
+          INFOPLIST_KEY_LSApplicationCategoryType: "public.app-category.utilities"
+          IPHONEOS_DEPLOYMENT_TARGET: "17.5"
+          LD_RUNPATH_SEARCH_PATHS:
+            - "$(inherited)"
+            - "@executable_path/Frameworks"
+          MACOSX_DEPLOYMENT_TARGET: "14.6"
+          MARKETING_VERSION: "2.7.17"
+          OTHER_LDFLAGS:
+            - "-weak_framework"
+            - "SwiftUI"
+          PRODUCT_BUNDLE_IDENTIFIER: "gvh.MeshtasticClient"
+          PRODUCT_NAME: "$(TARGET_NAME)"
+          SUPPORTS_MACCATALYST: "YES"
+          SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD: "NO"
+          SWIFT_EMIT_LOC_STRINGS: "YES"
+          SWIFT_VERSION: "5.0"
+          TARGETED_DEVICE_FAMILY: "1,2"
+
+  WidgetsExtension:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: "Shared"
+        type: syncedFolder
+      - path: "Widgets"
+        type: syncedFolder
+        excludes:
+          - "Info.plist"
+          - "WidgetsExtension.entitlements"
+    dependencies:
+      - package: MeshtasticProtobufs
+        product: MeshtasticProtobufs
+    settings:
+      configs:
+        Debug:
+          ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: "AccentColor"
+          ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME: "WidgetBackground"
+          CLANG_CXX_LANGUAGE_STANDARD: "gnu++20"
+          CODE_SIGN_ENTITLEMENTS: "Widgets/WidgetsExtension.entitlements"
+          CODE_SIGN_IDENTITY: "Apple Development"
+          CODE_SIGN_STYLE: "Automatic"
+          CURRENT_PROJECT_VERSION: "1"
+          GENERATE_INFOPLIST_FILE: "YES"
+          INFOPLIST_FILE: "Widgets/Info.plist"
+          INFOPLIST_KEY_CFBundleDisplayName: "Widgets"
+          INFOPLIST_KEY_NSHumanReadableCopyright: ""
+          IPHONEOS_DEPLOYMENT_TARGET: "17.5"
+          LD_RUNPATH_SEARCH_PATHS:
+            - "$(inherited)"
+            - "@executable_path/Frameworks"
+            - "@executable_path/../../Frameworks"
+          MACOSX_DEPLOYMENT_TARGET: "14.6"
+          MARKETING_VERSION: "2.7.17"
+          PRODUCT_BUNDLE_IDENTIFIER: "gvh.MeshtasticClient.Widgets"
+          PRODUCT_NAME: "$(TARGET_NAME)"
+          PROVISIONING_PROFILE_SPECIFIER: ""
+          SKIP_INSTALL: "YES"
+          SUPPORTED_PLATFORMS: "iphoneos iphonesimulator"
+          SUPPORTS_MACCATALYST: "YES"
+          SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD: "NO"
+          SWIFT_EMIT_LOC_STRINGS: "YES"
+          SWIFT_VERSION: "5.0"
+          TARGETED_DEVICE_FAMILY: "1,2"
+        Release:
+          ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: "AccentColor"
+          ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME: "WidgetBackground"
+          CLANG_CXX_LANGUAGE_STANDARD: "gnu++20"
+          CODE_SIGN_ENTITLEMENTS: "Widgets/WidgetsExtension.entitlements"
+          CODE_SIGN_IDENTITY: "Apple Development"
+          CODE_SIGN_STYLE: "Automatic"
+          CURRENT_PROJECT_VERSION: "1"
+          GENERATE_INFOPLIST_FILE: "YES"
+          INFOPLIST_FILE: "Widgets/Info.plist"
+          INFOPLIST_KEY_CFBundleDisplayName: "Widgets"
+          INFOPLIST_KEY_NSHumanReadableCopyright: ""
+          IPHONEOS_DEPLOYMENT_TARGET: "17.5"
+          LD_RUNPATH_SEARCH_PATHS:
+            - "$(inherited)"
+            - "@executable_path/Frameworks"
+            - "@executable_path/../../Frameworks"
+          MACOSX_DEPLOYMENT_TARGET: "14.6"
+          MARKETING_VERSION: "2.7.17"
+          PRODUCT_BUNDLE_IDENTIFIER: "gvh.MeshtasticClient.Widgets"
+          PRODUCT_NAME: "$(TARGET_NAME)"
+          PROVISIONING_PROFILE_SPECIFIER: ""
+          SKIP_INSTALL: "YES"
+          SUPPORTED_PLATFORMS: "iphoneos iphonesimulator"
+          SUPPORTS_MACCATALYST: "YES"
+          SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD: "NO"
+          SWIFT_EMIT_LOC_STRINGS: "YES"
+          SWIFT_VERSION: "5.0"
+          TARGETED_DEVICE_FAMILY: "1,2"
+
+  MeshtasticTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: "MeshtasticTests"
+        type: syncedFolder
+    dependencies:
+      - target: Meshtastic
+      - package: swift-snapshot-testing
+        product: SnapshotTesting
+    settings:
+      configs:
+        Debug:
+          ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS: "YES"
+          BUNDLE_LOADER: "$(TEST_HOST)"
+          CLANG_CXX_LANGUAGE_STANDARD: "gnu++20"
+          CODE_SIGN_STYLE: "Automatic"
+          CURRENT_PROJECT_VERSION: "1"
+          ENABLE_USER_SCRIPT_SANDBOXING: "YES"
+          GCC_C_LANGUAGE_STANDARD: "gnu17"
+          GENERATE_INFOPLIST_FILE: "YES"
+          IPHONEOS_DEPLOYMENT_TARGET: "17.5"
+          MARKETING_VERSION: "1.0"
+          PRODUCT_BUNDLE_IDENTIFIER: "gvh.MeshtasticClient.MeshtasticTests"
+          PRODUCT_NAME: "$(TARGET_NAME)"
+          SUPPORTED_PLATFORMS: "iphoneos iphonesimulator"
+          SUPPORTS_MACCATALYST: "YES"
+          SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD: "NO"
+          SWIFT_ACTIVE_COMPILATION_CONDITIONS: "DEBUG $(inherited)"
+          SWIFT_EMIT_LOC_STRINGS: "NO"
+          SWIFT_VERSION: "5.0"
+          TARGETED_DEVICE_FAMILY: "1,2"
+          TEST_HOST: "$(BUILT_PRODUCTS_DIR)/Meshtastic.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Meshtastic"
+        Release:
+          ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS: "YES"
+          BUNDLE_LOADER: "$(TEST_HOST)"
+          CLANG_CXX_LANGUAGE_STANDARD: "gnu++20"
+          CODE_SIGN_STYLE: "Automatic"
+          CURRENT_PROJECT_VERSION: "1"
+          GCC_C_LANGUAGE_STANDARD: "gnu17"
+          GENERATE_INFOPLIST_FILE: "YES"
+          IPHONEOS_DEPLOYMENT_TARGET: "17.5"
+          MARKETING_VERSION: "1.0"
+          PRODUCT_BUNDLE_IDENTIFIER: "gvh.MeshtasticClient.MeshtasticTests"
+          PRODUCT_NAME: "$(TARGET_NAME)"
+          SUPPORTED_PLATFORMS: "iphoneos iphonesimulator"
+          SUPPORTS_MACCATALYST: "YES"
+          SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD: "NO"
+          SWIFT_EMIT_LOC_STRINGS: "NO"
+          SWIFT_VERSION: "5.0"
+          TARGETED_DEVICE_FAMILY: "1,2"
+          TEST_HOST: "$(BUILT_PRODUCTS_DIR)/Meshtastic.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Meshtastic"
+
+  "Meshtastic Watch App":
+    type: application
+    platform: watchOS
+    sources:
+      - path: "Meshtastic Watch App"
+        type: syncedFolder
+        excludes:
+          - "Info.plist"
+          - "Meshtastic Watch App.entitlements"
+    settings:
+      configs:
+        Debug:
+          ASSETCATALOG_COMPILER_APPICON_NAME: "AppIcon"
+          ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: "AccentColor"
+          ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS: "YES"
+          CODE_SIGN_ENTITLEMENTS: "Meshtastic Watch App/Meshtastic Watch App.entitlements"
+          CODE_SIGN_STYLE: "Automatic"
+          CURRENT_PROJECT_VERSION: "1"
+          DEVELOPMENT_TEAM: "GCH7VS5Y9R"
+          GENERATE_INFOPLIST_FILE: "YES"
+          INFOPLIST_FILE: "Meshtastic Watch App/Info.plist"
+          INFOPLIST_KEY_CFBundleDisplayName: "Meshtastic"
+          INFOPLIST_KEY_CFBundleIconName: "AppIcon"
+          INFOPLIST_KEY_NSLocationWhenInUseUsageDescription: "Meshtastic needs your location to calculate distance and bearing to mesh nodes during foxhunt."
+          INFOPLIST_KEY_WKCompanionAppBundleIdentifier: "gvh.MeshtasticClient"
+          INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp: "NO"
+          LD_RUNPATH_SEARCH_PATHS:
+            - "$(inherited)"
+            - "@executable_path/Frameworks"
+          MARKETING_VERSION: "2.7.17"
+          PRODUCT_BUNDLE_IDENTIFIER: "gvh.MeshtasticClient.watchkitapp"
+          PRODUCT_NAME: "$(TARGET_NAME)"
+          SDKROOT: "watchos"
+          SKIP_INSTALL: "YES"
+          SUPPORTED_PLATFORMS: "watchos watchsimulator"
+          SWIFT_EMIT_LOC_STRINGS: "YES"
+          SWIFT_VERSION: "5.0"
+          TARGETED_DEVICE_FAMILY: "4"
+          WATCHOS_DEPLOYMENT_TARGET: "10.0"
+        Release:
+          ASSETCATALOG_COMPILER_APPICON_NAME: "AppIcon"
+          ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: "AccentColor"
+          ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS: "YES"
+          CODE_SIGN_ENTITLEMENTS: "Meshtastic Watch App/Meshtastic Watch App.entitlements"
+          CODE_SIGN_STYLE: "Automatic"
+          CURRENT_PROJECT_VERSION: "1"
+          DEVELOPMENT_TEAM: "GCH7VS5Y9R"
+          GENERATE_INFOPLIST_FILE: "YES"
+          INFOPLIST_FILE: "Meshtastic Watch App/Info.plist"
+          INFOPLIST_KEY_CFBundleDisplayName: "Meshtastic"
+          INFOPLIST_KEY_CFBundleIconName: "AppIcon"
+          INFOPLIST_KEY_NSLocationWhenInUseUsageDescription: "Meshtastic needs your location to calculate distance and bearing to mesh nodes during foxhunt."
+          INFOPLIST_KEY_WKCompanionAppBundleIdentifier: "gvh.MeshtasticClient"
+          INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp: "NO"
+          LD_RUNPATH_SEARCH_PATHS:
+            - "$(inherited)"
+            - "@executable_path/Frameworks"
+          MARKETING_VERSION: "2.7.17"
+          PRODUCT_BUNDLE_IDENTIFIER: "gvh.MeshtasticClient.watchkitapp"
+          PRODUCT_NAME: "$(TARGET_NAME)"
+          SDKROOT: "watchos"
+          SKIP_INSTALL: "YES"
+          SUPPORTED_PLATFORMS: "watchos watchsimulator"
+          SWIFT_EMIT_LOC_STRINGS: "YES"
+          SWIFT_VERSION: "5.0"
+          TARGETED_DEVICE_FAMILY: "4"
+          WATCHOS_DEPLOYMENT_TARGET: "10.0"
+
+schemes:
+  Meshtastic:
+    build:
+      targets:
+        Meshtastic: all
+    run:
+      config: Debug
+      environmentVariables:
+        - variable: "IDELogRedirectionPolicy"
+          value: "oslogToStdio"
+          isEnabled: true
+        - variable: "PUBLIC_MQTT_USERNAME"
+          value: "meshdev"
+          isEnabled: true
+        - variable: "PUBLIC_MQTT_PASSWORD"
+          value: "large4cats"
+          isEnabled: true
+        - variable: "TRANSLATIONS_GITHUB_TOKEN"
+          value: ""
+          isEnabled: true
+    test:
+      config: Debug
+      targets:
+        - MeshtasticTests
+    profile:
+      config: Release
+    analyze:
+      config: Debug
+    archive:
+      config: Release
+  "Meshtastic (Background BLE)":
+    build:
+      targets:
+        Meshtastic: all
+    run:
+      config: Debug
+      # NOTE: the committed scheme uses launchStyle = 1 ("Wait for
+      # the executable to be launched"), which XcodeGen cannot
+      # express — its Run action has no launchStyle field, and
+      # askForAppToLaunch maps to a different attribute. Generating
+      # this scheme therefore resets it to launch automatically.
+      # See the PR discussion before adopting.
+    test:
+      config: Debug
+    profile:
+      config: Release
+    analyze:
+      config: Debug
+    archive:
+      config: Release
+  WidgetsExtension:
+    build:
+      targets:
+        WidgetsExtension: all
+        Meshtastic: all
+    run:
+      config: Debug
+      executable: Meshtastic
+      environmentVariables:
+        - variable: "_XCWidgetKind"
+          value: ""
+          isEnabled: true
+        - variable: "_XCWidgetDefaultView"
+          value: "timeline"
+          isEnabled: true
+        - variable: "_XCWidgetFamily"
+          value: "systemMedium"
+          isEnabled: true
+    test:
+      config: Debug
+    profile:
+      config: Release
+    analyze:
+      config: Debug
+    archive:
+      config: Release
+

@@ -73,9 +73,13 @@ extension PositionEntity {
 
 	/// `precisionBits` range for reduced-precision positions. These are rendered at a fuzzed
 	/// coordinate with a translucent accuracy circle on the map (as opposed to `isPreciseLocation`,
-	/// which renders at the exact coordinate). Centralized here so the map's filter/render/snapshot
-	/// paths can't drift if the range ever changes.
-	static let reducedPrecisionBits: ClosedRange<Int32> = 12...15
+	/// which renders at the exact coordinate). Matches the full range of configurable position
+	/// precision levels in `PositionPrecision` (2...24) — a narrower 12...15 window previously left
+	/// nodes broadcasting any other configured precision level (e.g. a channel set to a coarser or
+	/// finer precision than the default) neither precise nor reduced-precision, so they were dropped
+	/// from the map entirely instead of showing as a fuzzed pin. Centralized here so the map's
+	/// filter/render/snapshot paths can't drift if the range ever changes.
+	static let reducedPrecisionBits: ClosedRange<Int32> = 2...24
 
 	var isReducedPrecision: Bool {
 		Self.reducedPrecisionBits ~= precisionBits

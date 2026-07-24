@@ -55,6 +55,16 @@ protocol Transport {
 	
 	func device(forManualConnection: String) -> Device?
 	func manuallyConnect(toDevice: Device) async throws
+
+	/// Stops any active discovery/scanning and awaits until it has actually stopped — not just
+	/// that a stop was requested. Cancelling `discoverDevices()`'s `AsyncStream` only *requests*
+	/// shutdown asynchronously (its `onTermination` may itself hop to a detached `Task`, as
+	/// BLE's does to reach the actor); a caller that needs discovery verifiably off before a
+	/// subsequent step begins (e.g. `AccessoryManager.stopDiscovery()` ahead of BLE pairing,
+	/// #2183) must await this instead. Implementations should be idempotent — safe to call
+	/// whether or not discovery is currently active, and safe to call again after the reactive
+	/// `onTermination` path also runs.
+	func stopActiveDiscovery() async
 }
 
 // Used to make stable-ish ID's for accessories that don't have a UUID

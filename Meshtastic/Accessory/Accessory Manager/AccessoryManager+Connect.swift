@@ -43,7 +43,29 @@ extension AccessoryManager {
 	
 		self.allowDisconnect = true
 		self.userRequestedConnectionCancellation = false
-		
+
+		// On a first-ever BLE connection, iOS presents the pairing PIN sheet during
+		// characteristic subscription (Step 1). The user needs time to read and type a
+		// 6-digit PIN, so give the connect step a long window in that case. Already-bonded
+		// peripherals (and non-BLE transports) keep the fast timeout so a dead/out-of-range
+		// radio still fails quickly on reconnect.
+		// One-time migration: seed pairedPeripheralIds from the legacy preferredPeripheralId so
+		// users upgrading to this build (empty pairedPeripheralIds) don't pay the long pairing
+		// window on the first reconnect to a radio they already paired before. After this runs
+		// once, the preferred-peripheral fallback is never consulted again — the remember/forget
+		// lifecycle in BLEConnection becomes the sole source of truth. That way a bond the user
+		// later removes (e.g. via iOS Settings > Bluetooth) self-heals back to the long pairing
+		// window instead of being pinned to the fast reconnect timeout forever.
+		if !UserDefaults.migratedPreferredPeripheralPairing {
+			UserDefaults.migratedPreferredPeripheralPairing = true
+			if let preferredUUID = UUID(uuidString: UserDefaults.preferredPeripheralId) {
+				UserDefaults.rememberPairedPeripheral(preferredUUID)
+			}
+		}
+		let knownBonded = UserDefaults.isPairedPeripheral(device.id)
+		let isFirstTimeBLEBond = device.transportType == .ble && !knownBonded
+		let connectStepTimeout: Duration = isFirstTimeBLEBond ? .seconds(90) : .seconds(5)
+
 		// Prepare to connect
 		self.connectionStepper = SequentialSteps(maxRetries: retries ?? maxRetries, retryDelay: retryDelay) {
 			
@@ -57,6 +79,20 @@ extension AccessoryManager {
 				} else {
 					self.updateState(.connecting)
 				}
+				// Stop discovery/scanning before Step 1 attempts to connect. On a first-ever BLE
+				// bond, Step 1 subscribes to an encrypted characteristic, which is what makes iOS
+				// present the pairing PIN sheet — and CoreBluetooth scanning concurrently with that
+				// bonding handshake is a documented source of `CBATTErrorInsufficientEncryption`,
+				// with the pairing sheet appearing and disappearing almost immediately before the
+				// user can respond. `closeConnection()` above re-arms discovery on a retry, so this
+				// must run after it (last discovery-related call in this step) to guarantee
+				// scanning is off for every attempt, not just the first. `stopDiscovery()` also
+				// clears `discoveredDeviceContinuation`, so a `.poweredOn` state change mid-pairing
+				// (see `handleCentralState`) can't restart the scan out from under Step 1 either.
+				// Awaited: stopDiscovery() awaits the transport's actual scan-stop, not just a
+				// cancellation request, so Step 1 genuinely never starts pairing while still
+				// scanning (#2183 review).
+				await self.stopDiscovery()
 				self.updateDevice(deviceId: device.id, key: \.connectionState, value: .connecting)
 				// Lockdown: reset per-connection state. Firmware requires re-auth on every
 				// new BLE connection even if storage is already unlocked.
@@ -64,7 +100,7 @@ extension AccessoryManager {
 			}
 			
 			// Step 1: Setup the connection
-			Step(timeout: .seconds(5)) { @MainActor _ in
+			Step(timeout: connectStepTimeout) { @MainActor _ in
 				Logger.transport.info("🔗👟[Connect] Step 1: connection to \(device.id, privacy: .public)")
 				do {
 					let connection: Connection
@@ -235,7 +271,7 @@ extension AccessoryManager {
 			// Step 8: Update UI and status to connected
 			Step { @MainActor _ in
 				Logger.transport.debug("🔗👟 [Connect] Step 8: Initialize MQTT and Location Provider")
-				self.stopDiscovery()
+				await self.stopDiscovery()
 				// Prune stale nodes now that the dump is in, instead of at the head of
 				// sendWantConfig where the fetch+delete+save serialized ahead of the whole
 				// handshake on the ingestion actor. Post-dump lastHeard values also make the
