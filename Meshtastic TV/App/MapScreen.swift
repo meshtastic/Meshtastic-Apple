@@ -20,6 +20,7 @@ struct MapScreen: View {
 	// focus for NavigationLink rows, so track it explicitly and mirror it into
 	// the map selection (debounced map-side).
 	@FocusState private var focusedNodeNum: UInt32?
+	@State private var navPath: [UInt32] = []
 
 	var body: some View {
 		HStack(spacing: 0) {
@@ -29,7 +30,8 @@ struct MapScreen: View {
 			MeshTVMapView(
 				nodes: client.locatedNodes,
 				selectedNodeNum: $selectedNodeNum,
-				recenterToken: recenterToken
+				recenterToken: recenterToken,
+				onMenuExit: escapeMap
 			)
 			.ignoresSafeArea()
 		}
@@ -40,6 +42,13 @@ struct MapScreen: View {
 			}
 			.padding(40)
 		}
+	}
+
+	/// Menu pressed while the map held focus: pop any open node detail and hand
+	/// focus back to the node list — without this, MKMapView is a focus trap.
+	private func escapeMap() {
+		navPath = []
+		focusedNodeNum = selectedNodeNum ?? client.sortedNodes.first?.num
 	}
 
 	private var recenterButton: some View {
@@ -57,7 +66,7 @@ struct MapScreen: View {
 	}
 
 	private var nodeList: some View {
-		NavigationStack {
+		NavigationStack(path: $navPath) {
 			List {
 				Section {
 					ForEach(client.sortedNodes) { node in

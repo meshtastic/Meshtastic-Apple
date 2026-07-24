@@ -161,6 +161,12 @@ struct MeshTVMapView: UIViewRepresentable {
 	@Binding var selectedNodeNum: UInt32?
 	/// Increment to re-frame the camera on the whole mesh (see MapScreen's button).
 	var recenterToken: Int = 0
+	/// Called on a Menu press while the map has focus. MKMapView captures the
+	/// directional input for panning and never releases focus on its own, so
+	/// without this the map is a focus trap (and an unhandled Menu press can
+	/// suspend the app instead of going back). MapScreen uses it to hand focus
+	/// back to the node list.
+	var onMenuExit: (() -> Void)?
 
 	func makeCoordinator() -> Coordinator { Coordinator(self) }
 
@@ -169,6 +175,15 @@ struct MeshTVMapView: UIViewRepresentable {
 		mapView.delegate = context.coordinator
 		mapView.showsUserLocation = false          // no GPS on tvOS
 		mapView.mapType = .standard
+
+		// Claim the Menu press while the map (or anything inside it) has focus,
+		// so "back" escapes the map instead of being swallowed / suspending the app.
+		let menuPress = UITapGestureRecognizer(
+			target: context.coordinator,
+			action: #selector(Coordinator.menuPressed)
+		)
+		menuPress.allowedPressTypes = [NSNumber(value: UIPress.PressType.menu.rawValue)]
+		mapView.addGestureRecognizer(menuPress)
 		mapView.register(
 			NodeCircleAnnotationView.self,
 			forAnnotationViewWithReuseIdentifier: NodeCircleAnnotationView.reuseID
@@ -198,6 +213,10 @@ struct MeshTVMapView: UIViewRepresentable {
 
 		init(_ parent: MeshTVMapView) {
 			self.parent = parent
+		}
+
+		@objc func menuPressed() {
+			parent.onMenuExit?()
 		}
 
 		/// Diff the annotation set against `nodes` (add / update coordinate / remove),
