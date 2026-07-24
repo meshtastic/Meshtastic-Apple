@@ -6,7 +6,8 @@
 //
 //  Live mesh map with a focusable node side-list for Siri Remote operation.
 //  The list is the primary, reliable selection path on tvOS; clicking a pin on
-//  the map (focus engine) selects too and keeps the list in sync.
+//  the map (focus engine) selects too and keeps the list in sync. Rows carry the
+//  same node-color circle badges as the map pins (CircleText, shared with iOS).
 //
 
 import SwiftUI
@@ -42,13 +43,34 @@ struct MapScreen: View {
 					Text("\(client.nodes.count) nodes · \(client.locatedNodes.count) on map")
 				}
 			}
-			.navigationTitle(client.host)
 			.navigationDestination(for: UInt32.self) { num in
 				if let node = client.nodes[num] {
 					NodeDetailView(node: node)
 				}
 			}
+			.safeAreaInset(edge: .top) {
+				header
+			}
 		}
+	}
+
+	private var header: some View {
+		HStack(spacing: 20) {
+			Image("m-logo-white")
+				.resizable()
+				.scaledToFit()
+				.frame(height: 44)
+			VStack(alignment: .leading, spacing: 2) {
+				Text("Meshtastic")
+					.font(.system(size: 34, weight: .heavy, design: .rounded))
+				Text(client.host)
+					.font(.caption)
+					.foregroundStyle(.secondary)
+			}
+			Spacer()
+		}
+		.padding(.horizontal, 32)
+		.padding(.vertical, 16)
 	}
 
 	private var disconnectButton: some View {
@@ -66,16 +88,28 @@ private struct NodeRow: View {
 
 	var body: some View {
 		HStack(spacing: 16) {
-			Image(systemName: node.hasLocation ? "mappin.circle.fill" : "antenna.radiowaves.left.and.right")
-				.foregroundStyle(node.hasLocation ? .green : .secondary)
+			// Same circle badge as the map pin (node color + short name).
+			CircleText(
+				text: node.shortName.isEmpty ? "?" : node.shortName,
+				color: Color(UIColor(hex: node.num)),
+				circleSize: 52
+			)
+			.opacity(node.hasLocation ? 1 : 0.45)
+
 			VStack(alignment: .leading, spacing: 4) {
 				Text(node.displayName)
 					.lineLimit(1)
-				if let battery = node.batteryLevel {
-					Text("Battery \(battery)%")
-						.font(.caption)
-						.foregroundStyle(.secondary)
+				HStack(spacing: 12) {
+					if let battery = node.batteryLevel {
+						Label("\(battery)%", systemImage: battery > 20 ? "battery.75percent" : "battery.25percent")
+							.foregroundStyle(Color("LightIndigo"))
+					}
+					if !node.hasLocation {
+						Label("No position", systemImage: "location.slash")
+							.foregroundStyle(.secondary)
+					}
 				}
+				.font(.caption)
 			}
 			Spacer()
 		}

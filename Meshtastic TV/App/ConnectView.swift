@@ -4,7 +4,8 @@
 //
 //  Copyright(c) Garth Vander Houwen 7/24/26.
 //
-//  Bonjour-discovered nodes (tap to connect) plus manual host / port entry.
+//  Bonjour-discovered nodes (tap to connect) plus manual host / port entry,
+//  under a Meshtastic logo hero.
 //
 
 import SwiftUI
@@ -18,35 +19,57 @@ struct ConnectView: View {
 
 	var body: some View {
 		NavigationStack {
-			Form {
-				discoveredSection
+			HStack(alignment: .top, spacing: 60) {
+				hero
+					.frame(maxWidth: 640)
 
-				Section("Manual Connection") {
-					TextField("IP address or hostname", text: $host)
-						.keyboardType(.URL)
-						.textContentType(.URL)
-						.autocorrectionDisabled()
-					TextField("Port", text: $portText)
-						.keyboardType(.numberPad)
-					Button {
-						client.connect(host: trimmedHost, port: port)
-					} label: {
-						Label("Connect", systemImage: "network")
+				Form {
+					discoveredSection
+
+					Section("Manual Connection") {
+						TextField("IP address or hostname", text: $host)
+							.keyboardType(.URL)
+							.textContentType(.URL)
+							.autocorrectionDisabled()
+						TextField("Port", text: $portText)
+							.keyboardType(.numberPad)
+						Button {
+							client.connect(host: trimmedHost, port: port)
+						} label: {
+							Label("Connect", systemImage: "network")
+						}
+						.disabled(trimmedHost.isEmpty)
 					}
-					.disabled(trimmedHost.isEmpty)
-				}
 
-				if case .failed(let message) = client.state {
-					Section {
-						Label(message, systemImage: "exclamationmark.triangle.fill")
-							.foregroundStyle(.red)
+					if case .failed(let message) = client.state {
+						Section {
+							Label(message, systemImage: "exclamationmark.triangle.fill")
+								.foregroundStyle(.red)
+						}
 					}
 				}
 			}
-			.navigationTitle("Meshtastic")
-			.onAppear { discovery.start() }
-			.onDisappear { discovery.stop() }
+			.padding(.top, 40)
 		}
+	}
+
+	private var hero: some View {
+		VStack(alignment: .leading, spacing: 28) {
+			Image("m-logo-white")
+				.resizable()
+				.scaledToFit()
+				.frame(width: 340)
+			Text("Meshtastic")
+				.font(.system(size: 64, weight: .heavy, design: .rounded))
+			Text("Connect to a Meshtastic node on your network and watch the mesh live on the big screen.")
+				.font(.title3)
+				.foregroundStyle(.secondary)
+				.fixedSize(horizontal: false, vertical: true)
+			Label("Radios advertising TCP appear automatically", systemImage: "bonjour")
+				.font(.callout)
+				.foregroundStyle(Color("LightIndigo"))
+		}
+		.frame(maxHeight: .infinity, alignment: .top)
 	}
 
 	@ViewBuilder
@@ -65,9 +88,10 @@ struct ConnectView: View {
 					} label: {
 						HStack(spacing: 16) {
 							Image(systemName: "antenna.radiowaves.left.and.right")
+								.foregroundStyle(Color("LightIndigo"))
 							VStack(alignment: .leading, spacing: 4) {
 								Text(node.name)
-								Text("\(node.host):\(node.port)")
+								Text(verbatim: "\(node.host):\(String(node.port))")
 									.font(.caption)
 									.foregroundStyle(.secondary)
 							}
@@ -78,6 +102,8 @@ struct ConnectView: View {
 		} header: {
 			Text("Discovered Nodes")
 		}
+		.onAppear { discovery.start() }
+		.onDisappear { discovery.stop() }
 	}
 
 	private var trimmedHost: String {

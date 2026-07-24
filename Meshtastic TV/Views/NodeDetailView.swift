@@ -14,6 +14,19 @@ struct NodeDetailView: View {
 
 	var body: some View {
 		Form {
+			Section {
+				HStack(spacing: 24) {
+					CircleText(
+						text: node.shortName.isEmpty ? "?" : node.shortName,
+						color: Color(UIColor(hex: node.num)),
+						circleSize: 96
+					)
+					Text(node.displayName)
+						.font(.system(size: 40, weight: .heavy, design: .rounded))
+				}
+				.listRowBackground(Color.clear)
+			}
+
 			Section("Identity") {
 				LabeledContent("Name", value: node.displayName)
 				if !node.shortName.isEmpty {

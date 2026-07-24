@@ -10,6 +10,10 @@
 //  reported positions of other nodes. Selection is driven by the focus engine
 //  (clicking a pin) and by the side list via `selectedNodeNum`.
 //
+//  Node pins match the iOS map's look: a circle colored by `UIColor(hex: nodeNum)`
+//  with the node's short name inside (see `CircleText` / `AnimatedNodePin`), and
+//  clusters render as an accent circle with a member count (see `ClusterBadge`).
+//
 
 import MapKit
 import SwiftUI
@@ -20,12 +24,117 @@ final class NodeAnnotation: NSObject, MKAnnotation {
 	dynamic var coordinate: CLLocationCoordinate2D
 	var title: String?
 	var subtitle: String?
+	var shortName: String
 
 	init(node: MeshNode, coordinate: CLLocationCoordinate2D) {
 		self.num = node.num
 		self.coordinate = coordinate
 		self.title = node.displayName
 		self.subtitle = node.shortName
+		self.shortName = node.shortName
+	}
+}
+
+/// iOS-map-style node pin: colored circle keyed to the node number, short name
+/// inside, white ring. UIKit-drawn (no SwiftUI hosting) so MapKit reuse on tvOS
+/// stays cheap and the view is focus-engine selectable.
+final class NodeCircleAnnotationView: MKAnnotationView {
+	static let reuseID = "nodeCircle"
+	private static let diameter: CGFloat = 64   // 10-foot UI: larger than iOS's 40
+
+	private let circle = UIView()
+	private let label = UILabel()
+
+	override init(annotation: MKAnnotation?, reuseIdentifier: String?) {
+		super.init(annotation: annotation, reuseIdentifier: reuseIdentifier)
+		let d = Self.diameter
+		frame = CGRect(x: 0, y: 0, width: d, height: d)
+		collisionMode = .circle
+		canShowCallout = true
+
+		circle.frame = bounds
+		circle.layer.cornerRadius = d / 2
+		circle.layer.borderWidth = 3
+		circle.layer.borderColor = UIColor.white.withAlphaComponent(0.9).cgColor
+		circle.layer.shadowColor = UIColor.black.cgColor
+		circle.layer.shadowOpacity = 0.35
+		circle.layer.shadowRadius = 3
+		circle.layer.shadowOffset = CGSize(width: 0, height: 1)
+		addSubview(circle)
+
+		label.frame = bounds.insetBy(dx: 6, dy: 6)
+		label.textAlignment = .center
+		label.font = .systemFont(ofSize: 20, weight: .bold)
+		label.adjustsFontSizeToFitWidth = true
+		label.minimumScaleFactor = 0.4
+		label.baselineAdjustment = .alignCenters
+		circle.addSubview(label)
+	}
+
+	required init?(coder aDecoder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+
+	override var annotation: MKAnnotation? {
+		didSet { configure() }
+	}
+
+	func configure() {
+		guard let node = annotation as? NodeAnnotation else { return }
+		// Same node-color derivation as the iOS map pins.
+		let color = UIColor(hex: node.num)
+		circle.backgroundColor = color
+		label.text = node.shortName.isEmpty ? String(format: "%04x", node.num & 0xffff) : node.shortName
+		label.textColor = color.isLight() ? .black : .white
+		clusteringIdentifier = "meshNode"
+		displayPriority = .required
+	}
+
+	// Grow when focused so the Siri Remote highlight is obvious from the couch.
+	override func didUpdateFocus(in context: UIFocusUpdateContext, with coordinator: UIFocusAnimationCoordinator) {
+		super.didUpdateFocus(in: context, with: coordinator)
+		coordinator.addCoordinatedAnimations({
+			self.transform = self.isFocused ? CGAffineTransform(scaleX: 1.35, y: 1.35) : .identity
+		})
+	}
+}
+
+/// Cluster badge matching the iOS `ClusterBadge`: accent circle + member count.
+final class ClusterCircleAnnotationView: MKAnnotationView {
+	static let reuseID = "clusterCircle"
+	private static let diameter: CGFloat = 56
+
+	private let circle = UIView()
+	private let label = UILabel()
+
+	override init(annotation: MKAnnotation?, reuseIdentifier: String?) {
+		super.init(annotation: annotation, reuseIdentifier: reuseIdentifier)
+		let d = Self.diameter
+		frame = CGRect(x: 0, y: 0, width: d, height: d)
+		collisionMode = .circle
+
+		circle.frame = bounds
+		circle.layer.cornerRadius = d / 2
+		circle.layer.borderWidth = 3
+		circle.layer.borderColor = UIColor.white.withAlphaComponent(0.9).cgColor
+		circle.backgroundColor = UIColor(named: "AccentColor") ?? .systemIndigo
+		addSubview(circle)
+
+		label.frame = bounds
+		label.textAlignment = .center
+		label.font = .systemFont(ofSize: 22, weight: .bold)
+		label.textColor = .white
+		label.adjustsFontSizeToFitWidth = true
+		label.minimumScaleFactor = 0.5
+		circle.addSubview(label)
+	}
+
+	required init?(coder aDecoder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+
+	override var annotation: MKAnnotation? {
+		didSet {
+			guard let cluster = annotation as? MKClusterAnnotation else { return }
+			label.text = "\(cluster.memberAnnotations.count)"
+			displayPriority = .required
+		}
 	}
 }
 
@@ -41,8 +150,12 @@ struct MeshTVMapView: UIViewRepresentable {
 		mapView.showsUserLocation = false          // no GPS on tvOS
 		mapView.mapType = .standard
 		mapView.register(
-			MKMarkerAnnotationView.self,
-			forAnnotationViewWithReuseIdentifier: Coordinator.reuseID
+			NodeCircleAnnotationView.self,
+			forAnnotationViewWithReuseIdentifier: NodeCircleAnnotationView.reuseID
+		)
+		mapView.register(
+			ClusterCircleAnnotationView.self,
+			forAnnotationViewWithReuseIdentifier: ClusterCircleAnnotationView.reuseID
 		)
 		context.coordinator.applyInitialRegion(mapView, nodes: nodes)
 		return mapView
@@ -58,7 +171,6 @@ struct MeshTVMapView: UIViewRepresentable {
 	// MARK: - Coordinator
 
 	final class Coordinator: NSObject, MKMapViewDelegate {
-		static let reuseID = "meshNode"
 		var parent: MeshTVMapView
 		private var didSetInitialRegion = false
 		private var annotationsByNum: [UInt32: NodeAnnotation] = [:]
@@ -89,6 +201,8 @@ struct MeshTVMapView: UIViewRepresentable {
 					}
 					existing.title = node.displayName
 					existing.subtitle = node.shortName
+					existing.shortName = node.shortName
+					(mapView.view(for: existing) as? NodeCircleAnnotationView)?.configure()
 				} else {
 					let annotation = NodeAnnotation(node: node, coordinate: coordinate)
 					annotationsByNum[node.num] = annotation
@@ -132,20 +246,36 @@ struct MeshTVMapView: UIViewRepresentable {
 		// MARK: MKMapViewDelegate
 
 		func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
+			if annotation is MKClusterAnnotation {
+				return mapView.dequeueReusableAnnotationView(
+					withIdentifier: ClusterCircleAnnotationView.reuseID,
+					for: annotation
+				)
+			}
 			guard annotation is NodeAnnotation else { return nil }
 			let view = mapView.dequeueReusableAnnotationView(
-				withIdentifier: Coordinator.reuseID,
+				withIdentifier: NodeCircleAnnotationView.reuseID,
 				for: annotation
-			) as? MKMarkerAnnotationView
-			view?.clusteringIdentifier = "meshNode"
-			view?.animatesWhenAdded = true
-			view?.canShowCallout = true
+			)
+			(view as? NodeCircleAnnotationView)?.configure()
 			return view
 		}
 
 		func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
 			if let node = view.annotation as? NodeAnnotation {
 				parent.selectedNodeNum = node.num
+			} else if let cluster = view.annotation as? MKClusterAnnotation {
+				// Zoom into a cluster rather than selecting it.
+				mapView.setRegion(
+					MKCoordinateRegion(
+						center: cluster.coordinate,
+						span: MKCoordinateSpan(
+							latitudeDelta: mapView.region.span.latitudeDelta / 3,
+							longitudeDelta: mapView.region.span.longitudeDelta / 3
+						)
+					),
+					animated: true
+				)
 			}
 		}
 	}

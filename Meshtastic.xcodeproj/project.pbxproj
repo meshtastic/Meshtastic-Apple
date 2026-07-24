@@ -23,6 +23,7 @@
 		507A9C886BD3A8F135F15762 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A80E1960A69051EE698AAE97 /* Preview Assets.xcassets */; };
 		54D8BBD62304C5917AEE0C2B /* DatadogRUM in Frameworks */ = {isa = PBXBuildFile; productRef = E96998AD4B79F29AF1E2A6D2 /* DatadogRUM */; };
 		5631740093D563F017DA31D7 /* MeshtasticProtobufs in Frameworks */ = {isa = PBXBuildFile; productRef = 52CBDF2188BAF9E2FB8B10A1 /* MeshtasticProtobufs */; };
+		563422694131128F504A5E05 /* Color.swift in Sources */ = {isa = PBXBuildFile; fileRef = E94055F00D3E29383E92FF74 /* Color.swift */; };
 		5C31297EDE4B7294ECE538F4 /* AppIconDebug.icon in Resources */ = {isa = PBXBuildFile; fileRef = 6D159B66B1877A7506D1AB20 /* AppIconDebug.icon */; };
 		62C11A4D1644062EAD31615F /* Settings.bundle in Resources */ = {isa = PBXBuildFile; fileRef = F15A1577564640951AD3EA40 /* Settings.bundle */; };
 		66EFBB4E473C796ACAFF58C2 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = 6776764BA24154B603C76018 /* AppIcon.icon */; };
@@ -34,6 +35,7 @@
 		987BD8AFF176A9670F175E5C /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 26351F51CD01C94D8D82486A /* Localizable.xcstrings */; };
 		9B61C796B61232F1226AAA28 /* DatadogLogs in Frameworks */ = {isa = PBXBuildFile; productRef = 7F3F27310C566077475C7105 /* DatadogLogs */; };
 		A518007AF83AA6E15BE848FD /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = 7F0CA2B608168551C6F95FEB /* SnapshotTesting */; };
+		A98F34F7728746DA306D0C1A /* CircleText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D05DC325F033D282A72589F /* CircleText.swift */; };
 		B80DB8962DBDE2284BC9664A /* urls.json in Resources */ = {isa = PBXBuildFile; fileRef = B079D165838E646EE754DC6E /* urls.json */; };
 		B97B830773C8597258C1A96F /* MeshtasticProtobufs in Frameworks */ = {isa = PBXBuildFile; productRef = 838679D32875D367B9FC8FBF /* MeshtasticProtobufs */; };
 		BB73AFBEB76A7B00550C8F2F /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = A7443D3C9E82A023A4388EFC /* InfoPlist.strings */; };
@@ -145,6 +147,7 @@
 		7676DFAB652A62BCECEE02C8 /* MeshtasticDataModelV8.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV8.xcdatamodel; sourceTree = "<group>"; };
 		79D0E50414CB20BC27C5EA43 /* uk */ = {isa = PBXFileReference; lastKnownFileType = text.plist; name = uk; path = uk.lproj/AppIntentVocabulary.plist; sourceTree = "<group>"; };
 		7CC479B0D213C6E7BEB49872 /* MeshtasticDataModelV 44.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 44.xcdatamodel"; sourceTree = "<group>"; };
+		7D05DC325F033D282A72589F /* CircleText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircleText.swift; sourceTree = "<group>"; };
 		81D5A542DA5164CF87651D93 /* MeshtasticDataModelV17.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV17.xcdatamodel; sourceTree = "<group>"; };
 		82366FE0FE5DF98DF5CACD99 /* MeshtasticDataModelV5.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV5.xcdatamodel; sourceTree = "<group>"; };
 		83983ADF5E6EDF53099C4550 /* MeshtasticDataModelV 25.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 25.xcdatamodel"; sourceTree = "<group>"; };
@@ -197,6 +200,7 @@
 		E4FC9164DF840C79496963DD /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist; name = ru; path = ru.lproj/AppIntentVocabulary.plist; sourceTree = "<group>"; };
 		E81B359C631E51C6461AAE00 /* MeshtasticDataModelV12.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV12.xcdatamodel; sourceTree = "<group>"; };
 		E8849D542B45F20F349E004D /* alpha.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = alpha.png; sourceTree = "<group>"; };
+		E94055F00D3E29383E92FF74 /* Color.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Color.swift; sourceTree = "<group>"; };
 		EE69A594BA2FA1D1F536BC93 /* MeshtasticDataModelV 47.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 47.xcdatamodel"; sourceTree = "<group>"; };
 		EFF3AE2F57E58725578E0F1C /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist; name = en; path = en.lproj/AppIntentVocabulary.plist; sourceTree = "<group>"; };
 		F15A1577564640951AD3EA40 /* Settings.bundle */ = {isa = PBXFileReference; lastKnownFileType = wrapper.cfbundle; path = Settings.bundle; sourceTree = "<group>"; };
@@ -588,6 +592,7 @@
 		10FE857786F2AD24047BFDED /* Extensions */ = {
 			isa = PBXGroup;
 			children = (
+				E94055F00D3E29383E92FF74 /* Color.swift */,
 				B8C15787882CA30C9787154D /* Logger.swift */,
 			);
 			path = Extensions;
@@ -652,6 +657,7 @@
 				9F6D2EC582CAA968D897F796 /* Router */,
 				0B574D8559FE5799ADB5A517 /* Services */,
 				C95A60ECD93D37F4971EC685 /* Tips */,
+				A51EAC97BC38EC607711873D /* Views */,
 				D983771846F46D151DDE372B /* Views */,
 			);
 			path = Meshtastic;
@@ -663,6 +669,22 @@
 				BF325A6359A74DDECD015FA1 /* MeshtasticProtobufs */,
 			);
 			name = Packages;
+			sourceTree = "<group>";
+		};
+		A51EAC97BC38EC607711873D /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				BE994A834A388206BCD4EBE6 /* Helpers */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		BE994A834A388206BCD4EBE6 /* Helpers */ = {
+			isa = PBXGroup;
+			children = (
+				7D05DC325F033D282A72589F /* CircleText.swift */,
+			);
+			path = Helpers;
 			sourceTree = "<group>";
 		};
 		C38AE1DFD847A4C81F189C1B = {
@@ -1077,6 +1099,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A98F34F7728746DA306D0C1A /* CircleText.swift in Sources */,
+				563422694131128F504A5E05 /* Color.swift in Sources */,
 				94F9F3199DB5429EBF21F9E9 /* Connection.swift in Sources */,
 				073D5EF20134D41DF2AC5993 /* Logger.swift in Sources */,
 				977E69BC7382DA7EF386402F /* TCPConnection.swift in Sources */,

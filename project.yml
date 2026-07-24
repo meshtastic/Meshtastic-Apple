@@ -665,6 +665,9 @@ targets:
       - path: "Meshtastic/Accessory/Transports/TCP/TCPConnection.swift"
       - path: "Meshtastic/Accessory/Protocols/Connection.swift"
       - path: "Meshtastic/Extensions/Logger.swift"
+      # Node-pin styling parity with the iOS map (CircleText + Color(hex:)/isLight).
+      - path: "Meshtastic/Views/Helpers/CircleText.swift"
+      - path: "Meshtastic/Extensions/Color.swift"
     dependencies:
       - package: MeshtasticProtobufs
         product: MeshtasticProtobufs
