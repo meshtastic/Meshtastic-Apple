@@ -15,19 +15,41 @@ import SwiftUI
 struct MapScreen: View {
 	@Bindable var client: MeshClient
 	@State private var selectedNodeNum: UInt32?
+	@State private var recenterToken = 0
 
 	var body: some View {
 		HStack(spacing: 0) {
 			nodeList
 				.frame(width: 520)
 
-			MeshTVMapView(nodes: client.locatedNodes, selectedNodeNum: $selectedNodeNum)
-				.ignoresSafeArea()
+			MeshTVMapView(
+				nodes: client.locatedNodes,
+				selectedNodeNum: $selectedNodeNum,
+				recenterToken: recenterToken
+			)
+			.ignoresSafeArea()
 		}
 		.overlay(alignment: .topTrailing) {
-			disconnectButton
-				.padding(40)
+			HStack(spacing: 20) {
+				recenterButton
+				disconnectButton
+			}
+			.padding(40)
 		}
+	}
+
+	private var recenterButton: some View {
+		Button {
+			selectedNodeNum = nil
+			recenterToken += 1
+		} label: {
+			Label("Re-center", systemImage: "scope")
+				// The brand-green tint renders .bordered pills green-on-green on
+				// tvOS; force a readable label (focus styling still overrides).
+				.foregroundStyle(.white)
+		}
+		.buttonStyle(.bordered)
+		.tint(.secondary)
 	}
 
 	private var nodeList: some View {

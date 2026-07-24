@@ -162,7 +162,11 @@ final class MeshClient {
 			node.snr = info.snr
 		}
 
-		nodes[info.num] = node
+		// Every write republishes and re-runs the map/list diff, so skip no-ops —
+		// a busy mesh re-sends NodeInfo frequently with nothing new in it.
+		if nodes[info.num] != node {
+			nodes[info.num] = node
+		}
 	}
 
 	private func ingestPacket(_ packet: MeshPacket) {
@@ -172,8 +176,16 @@ final class MeshClient {
 		      position.hasLatitudeI, position.hasLongitudeI else { return }
 
 		var node = nodes[packet.from] ?? MeshNode(num: packet.from)
-		node.latitude = Double(position.latitudeI) * 1e-7
-		node.longitude = Double(position.longitudeI) * 1e-7
+		let latitude = Double(position.latitudeI) * 1e-7
+		let longitude = Double(position.longitudeI) * 1e-7
+		// Only publish when the fix moved, or lastHeard is meaningfully stale —
+		// stationary nodes beacon their position constantly, and bumping lastHeard
+		// on every packet would re-diff the map each time for no visible change.
+		let moved = node.latitude != latitude || node.longitude != longitude
+		let stale = (node.lastHeard.map { Date().timeIntervalSince($0) > 60 }) ?? true
+		guard moved || stale else { return }
+		node.latitude = latitude
+		node.longitude = longitude
 		node.lastHeard = Date()
 		nodes[packet.from] = node
 	}

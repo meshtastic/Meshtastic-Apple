@@ -74,18 +74,28 @@ final class NodeCircleAnnotationView: MKAnnotationView {
 	required init?(coder aDecoder: NSCoder) { fatalError("init(coder:) has not been implemented") }
 
 	override var annotation: MKAnnotation? {
-		didSet { configure() }
+		didSet {
+			// Only on (re)assignment — never on live updates. Reassigning
+			// `clusteringIdentifier` on every data tick makes MapKit tear down and
+			// rebuild annotation views under the focus engine, which machine-guns
+			// the tvOS focus/selection sounds ("static") while packets stream in.
+			clusteringIdentifier = "meshNode"
+			displayPriority = .required
+			updateContent()
+		}
 	}
 
-	func configure() {
+	/// Cheap, idempotent refresh of the visual content. Safe to call on live updates.
+	func updateContent() {
 		guard let node = annotation as? NodeAnnotation else { return }
 		// Same node-color derivation as the iOS map pins.
 		let color = UIColor(hex: node.num)
-		circle.backgroundColor = color
-		label.text = node.shortName.isEmpty ? String(format: "%04x", node.num & 0xffff) : node.shortName
-		label.textColor = color.isLight() ? .black : .white
-		clusteringIdentifier = "meshNode"
-		displayPriority = .required
+		let text = node.shortName.isEmpty ? String(format: "%04x", node.num & 0xffff) : node.shortName
+		if circle.backgroundColor != color { circle.backgroundColor = color }
+		if label.text != text {
+			label.text = text
+			label.textColor = color.isLight() ? .black : .white
+		}
 	}
 
 	// Grow when focused so the Siri Remote highlight is obvious from the couch.
@@ -141,6 +151,8 @@ final class ClusterCircleAnnotationView: MKAnnotationView {
 struct MeshTVMapView: UIViewRepresentable {
 	let nodes: [MeshNode]
 	@Binding var selectedNodeNum: UInt32?
+	/// Increment to re-frame the camera on the whole mesh (see MapScreen's button).
+	var recenterToken: Int = 0
 
 	func makeCoordinator() -> Coordinator { Coordinator(self) }
 
@@ -165,6 +177,7 @@ struct MeshTVMapView: UIViewRepresentable {
 		context.coordinator.parent = self
 		context.coordinator.sync(mapView, nodes: nodes)
 		context.coordinator.applyInitialRegion(mapView, nodes: nodes)
+		context.coordinator.applyRecenter(mapView, token: recenterToken, nodes: nodes)
 		context.coordinator.applySelection(mapView, selectedNodeNum: selectedNodeNum)
 	}
 
@@ -191,7 +204,9 @@ struct MeshTVMapView: UIViewRepresentable {
 				annotationsByNum[num] = nil
 			}
 
-			// Add or update the rest.
+			// Add or update the rest. Updates must be no-ops when nothing changed —
+			// this runs on every published data tick, and any avoidable mutation here
+			// (retitling, reconfiguring views) churns MapKit + the focus engine.
 			for node in located {
 				guard let coordinate = node.coordinate else { continue }
 				if let existing = annotationsByNum[node.num] {
@@ -199,10 +214,12 @@ struct MeshTVMapView: UIViewRepresentable {
 						existing.coordinate.longitude != coordinate.longitude {
 						existing.coordinate = coordinate
 					}
-					existing.title = node.displayName
-					existing.subtitle = node.shortName
-					existing.shortName = node.shortName
-					(mapView.view(for: existing) as? NodeCircleAnnotationView)?.configure()
+					if existing.title != node.displayName { existing.title = node.displayName }
+					if existing.shortName != node.shortName {
+						existing.subtitle = node.shortName
+						existing.shortName = node.shortName
+						(mapView.view(for: existing) as? NodeCircleAnnotationView)?.updateContent()
+					}
 				} else {
 					let annotation = NodeAnnotation(node: node, coordinate: coordinate)
 					annotationsByNum[node.num] = annotation
@@ -215,9 +232,25 @@ struct MeshTVMapView: UIViewRepresentable {
 		/// No device GPS, so we center on the centroid of reported positions.
 		func applyInitialRegion(_ mapView: MKMapView, nodes: [MeshNode]) {
 			guard !didSetInitialRegion else { return }
-			let coords = nodes.compactMap { $0.coordinate }
-			guard !coords.isEmpty else { return }
+			guard frameAllNodes(mapView, nodes: nodes, animated: false) else { return }
 			didSetInitialRegion = true
+		}
+
+		/// Re-frame on the whole mesh when the user asks (recenter button).
+		func applyRecenter(_ mapView: MKMapView, token: Int, nodes: [MeshNode]) {
+			guard token != lastRecenterToken else { return }
+			lastRecenterToken = token
+			guard token > 0 else { return }   // 0 is the initial value, not a request
+			mapView.deselectAnnotation(mapView.selectedAnnotations.first, animated: false)
+			_ = frameAllNodes(mapView, nodes: nodes, animated: true)
+		}
+		private var lastRecenterToken = 0
+
+		/// Fit the camera to every located node's reported position.
+		@discardableResult
+		private func frameAllNodes(_ mapView: MKMapView, nodes: [MeshNode], animated: Bool) -> Bool {
+			let coords = nodes.compactMap { $0.coordinate }
+			guard !coords.isEmpty else { return false }
 
 			let lats = coords.map(\.latitude)
 			let lons = coords.map(\.longitude)
@@ -231,17 +264,26 @@ struct MeshTVMapView: UIViewRepresentable {
 				latitudeDelta: max((maxLat - minLat) * 1.4, 0.05),
 				longitudeDelta: max((maxLon - minLon) * 1.4, 0.05)
 			)
-			mapView.setRegion(MKCoordinateRegion(center: center, span: span), animated: false)
+			mapView.setRegion(MKCoordinateRegion(center: center, span: span), animated: animated)
+			return true
 		}
 
-		/// Center on and select the annotation chosen from the side list.
+		/// Center on the node chosen from the side list. Center-only, and only when
+		/// the selection actually changed: tvOS `List(selection:)` follows *focus*,
+		/// so this fires for every row the user glides across — animated
+		/// `selectAnnotation` here popped a callout (with its selection sound) per
+		/// row, which read as bursts of static while browsing the list.
 		func applySelection(_ mapView: MKMapView, selectedNodeNum: UInt32?) {
-			guard let num = selectedNodeNum, let annotation = annotationsByNum[num] else { return }
-			if mapView.selectedAnnotations.first as? NodeAnnotation !== annotation {
-				mapView.setCenter(annotation.coordinate, animated: true)
-				mapView.selectAnnotation(annotation, animated: true)
+			guard let num = selectedNodeNum else {
+				lastAppliedSelection = nil   // re-selecting the same node later must still center
+				return
 			}
+			guard num != lastAppliedSelection else { return }
+			lastAppliedSelection = num
+			guard let annotation = annotationsByNum[num] else { return }
+			mapView.setCenter(annotation.coordinate, animated: true)
 		}
+		private var lastAppliedSelection: UInt32?
 
 		// MARK: MKMapViewDelegate
 
@@ -257,7 +299,7 @@ struct MeshTVMapView: UIViewRepresentable {
 				withIdentifier: NodeCircleAnnotationView.reuseID,
 				for: annotation
 			)
-			(view as? NodeCircleAnnotationView)?.configure()
+			(view as? NodeCircleAnnotationView)?.updateContent()
 			return view
 		}
 
