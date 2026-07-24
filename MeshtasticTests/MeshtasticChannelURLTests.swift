@@ -23,19 +23,20 @@ struct MeshtasticChannelURLTests {
 	// round-trip through parse in both replace and add modes.
 	@Test func nfcWritePayloadRoundTripsInBothModes() throws {
 		let channelSet = makeChannelSet()
+		let originalPsk = channelSet.settings.first?.psk
 
 		let replaceUrl = try MeshtasticChannelURL.urlString(for: channelSet, addChannels: false)
 		let replaceParsed = try MeshtasticChannelURL.parse(replaceUrl)
 		#expect(replaceParsed.addChannels == false)
 		#expect(replaceParsed.channelSet.settings.first?.name == "Alpha")
-		#expect(replaceParsed.channelSet.settings.first?.psk == Data([1, 2, 3, 4]))
+		#expect(replaceParsed.channelSet.settings.first?.psk == originalPsk)
 		#expect(replaceParsed.channelSet.hasLoraConfig)
 
 		let addUrl = try MeshtasticChannelURL.urlString(for: channelSet, addChannels: true)
 		let addParsed = try MeshtasticChannelURL.parse(addUrl)
 		#expect(addParsed.addChannels)
 		#expect(addParsed.channelSet.settings.first?.name == "Alpha")
-		#expect(addParsed.channelSet.settings.first?.psk == Data([1, 2, 3, 4]))
+		#expect(addParsed.channelSet.settings.first?.psk == originalPsk)
 		#expect(!addParsed.channelSet.hasLoraConfig)
 	}
 
