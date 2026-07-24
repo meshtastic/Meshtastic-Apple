@@ -17,6 +17,7 @@ import CoreLocation
 /// The coverage-map colour palette (`color_scale` query key). Raw values are the
 /// exact planner tokens; an unknown token falls back to `plasma` planner-side.
 enum SitePlannerColorScale: String, CaseIterable, Identifiable, Hashable {
+	case mesh
 	case plasma
 	case viridis
 	case cmrmap = "CMRmap"
@@ -29,6 +30,7 @@ enum SitePlannerColorScale: String, CaseIterable, Identifiable, Hashable {
 	/// Human-facing palette name for the picker.
 	var displayName: String {
 		switch self {
+		case .mesh: return "Mesh"
 		case .plasma: return "Plasma"
 		case .viridis: return "Viridis"
 		case .cmrmap: return "CMRmap"
@@ -68,7 +70,7 @@ struct SitePlannerParameters: Equatable {
 	var highResolution: Bool = false
 
 	// MARK: Display
-	var colorScale: SitePlannerColorScale = .turbo
+	var colorScale: SitePlannerColorScale = .mesh
 
 	// MARK: - Validation bounds (mirror the planner's `store.ts` / input ranges)
 	static let frequencyRange: ClosedRange<Double> = 20...20_000

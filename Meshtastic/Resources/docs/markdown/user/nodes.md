@@ -159,6 +159,23 @@ Tap any node to see the full detail view with hardware info, signal metrics, env
 ![Node Detail](../assets/screenshots/nodeDetail.png)
 
 For messageable nodes, use **Actions > Share Contact QR** to show a Meshtastic contact link and QR code that another device can scan.
+
+### Share Connected Node
+
+When a radio is connected, a **Share Connected Node** button appears in the node list toolbar. It opens the same share sheet as **Share Contact QR**, pre-filled with your own node — a quick way to hand someone your contact without finding yourself in the list.
+
+### Write a Contact to an NFC Tag
+
+On iPhones with NFC hardware (iOS 18 or later), the contact share sheet also offers **Write to NFC Tag**. Hold a writable NFC tag near the top of your iPhone and the contact link is saved to it, replacing whatever the tag held before. Anyone can then tap that tag with their phone to open the contact in Meshtastic — the tag carries exactly the same link the QR code encodes.
+
+### Importing a Shared Contact
+
+Opening a Meshtastic contact link — by scanning a QR code, tapping a shared link, or tapping an NFC tag — presents a confirmation sheet before anything is added. The sheet shows the node's colored initials, its long name, and an explanation that adding the contact saves their name and public key to your connected node. Choose **Add Contact** to import, or **Cancel** to dismiss.
+
+If the import fails — most often because the radio disconnected — the sheet stays open and shows the reason so you can reconnect and tap **Add Contact** again. It closes only once the contact has actually been sent to your node. A link that is damaged or truncated is reported as an invalid format instead of being imported.
+
+Importing a contact requires firmware 2.6.9 or later on the connected node.
+
 ### Air Quality
 
 Nodes with a particulate-matter sensor — reporting the firmware's Air Quality telemetry — show an **Air Quality** section with the latest PM2.5, PM1.0, and PM10 readings in µg/m³.

@@ -16,7 +16,7 @@
 		31188367797815C745AA63C5 /* docs in Resources */ = {isa = PBXBuildFile; fileRef = 6B3F64B089C3A398FEBE6C9C /* docs */; };
 		3233E2EC4CCC91360E23F283 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = F17AFA19C2AAB3C3ADFB1E33 /* AppState.swift */; };
 		3F091ECD7900D90169754B93 /* DatadogTrace in Frameworks */ = {isa = PBXBuildFile; productRef = 3E5E35695D4334FDDA3BE8F2 /* DatadogTrace */; };
-		40510578B699E4E44B9F1A70 /* WidgetsExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = E4053FDE501FD7E0A02CEA8D /* WidgetsExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		40510578B699E4E44B9F1A70 /* WidgetsExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = E4053FDE501FD7E0A02CEA8D /* WidgetsExtension.appex */; platformFilter = ios; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		4701C2F3A8A60ADE516D7FA0 /* MeshtasticTAK in Frameworks */ = {isa = PBXBuildFile; productRef = F98E8431879FC7025B658B08 /* MeshtasticTAK */; };
 		4748BFF7E7AEF9C8EDA23D91 /* AppIntentVocabulary.plist in Resources */ = {isa = PBXBuildFile; fileRef = E2CAB95992E03077B24E30B5 /* AppIntentVocabulary.plist */; };
 		507A9C886BD3A8F135F15762 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A80E1960A69051EE698AAE97 /* Preview Assets.xcassets */; };
@@ -42,7 +42,7 @@
 		F494AA4C9783F0E204B12D62 /* DatadogCrashReporting in Frameworks */ = {isa = PBXBuildFile; productRef = 43547F7F6DDB3842969DA369 /* DatadogCrashReporting */; };
 		F8D2F62028A2A100CDB80F82 /* MeshtasticProtobufs in Frameworks */ = {isa = PBXBuildFile; productRef = 4AF5AACBB64F141EF02FC7DC /* MeshtasticProtobufs */; };
 		F8E5A8CEE6E96D5D53F6F851 /* Markdown in Frameworks */ = {isa = PBXBuildFile; productRef = C853ED2A7F391E6F315F93B3 /* Markdown */; };
-		FC4CD35864385C9721A9A695 /* Meshtastic Watch App.app in Embed Dependencies */ = {isa = PBXBuildFile; fileRef = ADF6BAC3992D05079F77B35C /* Meshtastic Watch App.app */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		FC4CD35864385C9721A9A695 /* Meshtastic Watch App.app in Embed Dependencies */ = {isa = PBXBuildFile; fileRef = ADF6BAC3992D05079F77B35C /* Meshtastic Watch App.app */; platformFilter = ios; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		FF64E74D859119DFCC57BD80 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0CC33262B2EA2E8463E8BE95 /* Assets.xcassets */; };
 /* End PBXBuildFile section */
 
@@ -1051,11 +1051,13 @@
 		};
 		9F8D08FE8C3920E29BC0C051 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
+			platformFilter = ios;
 			target = C4BC64E061C609D15F5DFAF5 /* Meshtastic Watch App */;
 			targetProxy = 7641B817BB20E264D0A5E4E5 /* PBXContainerItemProxy */;
 		};
 		9FFAEA9121B6A0A05F35FE59 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
+			platformFilter = ios;
 			target = A2F1595BC848E48B138C58E1 /* WidgetsExtension */;
 			targetProxy = 0C865737C7AD7739BD8C50B0 /* PBXContainerItemProxy */;
 		};

@@ -14,13 +14,40 @@ struct ContactURLHandler {
 
 	static var minimumContactVersion = "2.6.9"
 
+	/// The shared-contact link prefix — the contact counterpart to
+	/// `MeshtasticChannelURL.canonicalPrefix`.
+	static let canonicalPrefix = "https://meshtastic.org/v/#"
+
+	private static let host = MeshtasticChannelURL.host
+	private static let contactPathSegment = "v"
+
+	/// True when this URL is a Meshtastic shared-contact link. Single source of
+	/// truth for every contact-link entry point (universal links, custom scheme,
+	/// QR scans, and NFC tags).
+	///
+	/// Validates the host, path, and fragment rather than substring-matching the
+	/// whole URL string, so a foreign link that merely embeds `meshtastic.org/v/#`
+	/// (in a query or path) is not mistaken for a contact import.
 	static func canHandle(_ url: URL) -> Bool {
-		guard let host = url.host?.lowercased(), ["meshtastic.org", "www.meshtastic.org"].contains(host) else {
+		guard let fragment = url.fragment, !fragment.isEmpty else { return false }
+
+		let pathSegments = url.pathComponents
+			.filter { $0 != "/" }
+			.map { $0.lowercased() }
+
+		// Custom scheme: the segment lands in the host for `meshtastic://v#…`
+		// and in the path for `meshtastic:///v#…`.
+		if url.scheme?.lowercased() == MeshtasticChannelURL.appScheme {
+			if url.host == nil {
+				return pathSegments == [contactPathSegment]
+			}
+			return url.host?.lowercased() == contactPathSegment && pathSegments.isEmpty
+		}
+
+		guard let urlHost = url.host?.lowercased(), urlHost == host || urlHost == "www.\(host)" else {
 			return false
 		}
-		guard let fragment = url.fragment, !fragment.isEmpty else { return false }
-		let pathSegments = url.pathComponents.filter { $0 != "/" }.map { $0.lowercased() }
-		return pathSegments == ["v"]
+		return pathSegments == [contactPathSegment]
 	}
 
 	@MainActor
@@ -50,50 +77,46 @@ struct ContactURLHandler {
 				if let decodedData = Data(base64Encoded: decodedString) {
 					do {
 						let contact = try MeshtasticProtobufs.SharedContact(serializedBytes: decodedData)
-						let alertController = UIAlertController(
-							title: "Add Contact",
-							message: "Would you like to add \(contact.user.longName) as a contact?",
-							preferredStyle: .alert
-						)
-						alertController.addAction(UIAlertAction(
-							title: "Yes",
-							style: .default,
-							handler: { _ in
-								Task {
-									do {
-										try await accessoryManager.addContactFromURL(base64UrlString: contactData)
-										Logger.services.debug("Contact added from URL successfully")
-									} catch {
-										Logger.services.debug("Contact added from URL failed with error \(error)")
-									}
-								}
-							}
-						))
-						alertController.addAction(UIAlertAction(
-							title: "No",
-							style: .cancel,
-							handler: nil
-						))
-						if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-						   let rootViewController = windowScene.windows.first?.rootViewController {
-							rootViewController.present(alertController, animated: true)
+						// Present the SwiftUI confirmation sheet (AddContactConfirmationView)
+						// via published state, mirroring the channel-link import flow.
+						guard let appState = accessoryManager.appState else {
+							// Without app state there is no sheet to present, so fail loudly
+							// rather than dropping the import with no user feedback.
+							Logger.services.error("Cannot present contact import: app state is not wired yet.")
+							return
 						}
+						appState.pendingContactToAdd = PendingContact(
+							contact: contact,
+							base64UrlString: contactData
+						)
 						Logger.services.debug("Contact data extracted from URL: \(contactData, privacy: .public)")
 					} catch {
 						Logger.services.error("Failed to parse contact data: \(error.localizedDescription, privacy: .public)")
-						if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-						   let rootViewController = windowScene.windows.first?.rootViewController {
-							let errorAlert = UIAlertController(
-								title: "Error",
-								message: "Could not process contact information. Invalid format.",
-								preferredStyle: .alert
-							)
-							errorAlert.addAction(UIAlertAction(title: "OK", style: .default))
-							rootViewController.present(errorAlert, animated: true)
-						}
+						presentInvalidContactAlert()
 					}
+				} else {
+					// This previously fell through silently, so a contact link whose
+					// fragment is not valid base64url looked like it imported when
+					// nothing had happened.
+					Logger.services.error("Contact link fragment is not valid base64url data.")
+					presentInvalidContactAlert()
 				}
 			}
 		}
+	}
+
+	@MainActor
+	private static func presentInvalidContactAlert() {
+		guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+			  let rootViewController = windowScene.windows.first?.rootViewController else {
+			return
+		}
+		let errorAlert = UIAlertController(
+			title: "Error",
+			message: "Could not process contact information. Invalid format.",
+			preferredStyle: .alert
+		)
+		errorAlert.addAction(UIAlertAction(title: "OK", style: .default))
+		rootViewController.present(errorAlert, animated: true)
 	}
 }
