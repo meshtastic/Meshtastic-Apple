@@ -1,7 +1,17 @@
 import Combine
+import MeshtasticProtobufs
 import OSLog
 @preconcurrency import SwiftData
 import SwiftUI
+
+/// A contact parsed from a shared contact URL, waiting for the user to
+/// confirm the import. The original base64url payload is kept so the
+/// encoded `manually_verified` bit reaches the radio untouched.
+struct PendingContact: Identifiable {
+	let id = UUID()
+	let contact: SharedContact
+	let base64UrlString: String
+}
 
 class AppState: ObservableObject {
 
@@ -12,6 +22,10 @@ class AppState: ObservableObject {
 	/// refetch, so they drop objects cached from the previous node's database. Applied
 	/// as `.id(appState.databaseResetID)` on the root content view.
 	@Published var databaseResetID = UUID()
+	/// A contact parsed from a meshtastic.org/v/# URL (QR code, link, or NFC tag)
+	/// awaiting user confirmation. Presented as a sheet from MeshtasticApp, the
+	/// same pattern the channel-link import uses.
+	@Published var pendingContactToAdd: PendingContact?
 
 	var totalUnreadMessages: Int {
 		unreadChannelMessages + unreadDirectMessages

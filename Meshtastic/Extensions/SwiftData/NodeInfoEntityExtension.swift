@@ -10,6 +10,17 @@ import Foundation
 
 extension NodeInfoEntity {
 
+	/// Returns this node's user only while both sides of the relationship are still backed by
+	/// SwiftData. A node detail view can outlive `clearDatabase`, which removes users before it
+	/// removes nodes; reading a persisted property from that deleted user traps in SwiftData.
+	var liveUser: UserEntity? {
+		guard modelContext != nil, !isDeleted,
+			let user,
+			user.modelContext != nil, !user.isDeleted
+		else { return nil }
+		return user
+	}
+
 	// MARK: - Targeted Fetch Helpers
 	// These use FetchDescriptor with fetchLimit to avoid loading entire relationship arrays.
 

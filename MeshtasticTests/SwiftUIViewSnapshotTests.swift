@@ -1696,6 +1696,24 @@ struct BLESignalStrengthSnapshotTests {
 	}
 }
 
+// MARK: - Bluetooth Powered Off Row Snapshot Tests
+
+@Suite("Bluetooth Powered Off Row Snapshots")
+struct BluetoothPoweredOffRowSnapshotTests {
+
+	@Test("Available Radios row when Bluetooth is off")
+	@MainActor
+	func bluetoothOffRow() async {
+		let view = List {
+			Section {
+				BluetoothPoweredOffRow()
+			}
+		}
+		.listStyle(.insetGrouped)
+		await assertViewSnapshot(of: view, width: 390, height: 160, named: "bluetoothOff", forDocs: true)
+	}
+}
+
 // MARK: - MessagePreview Snapshot Tests
 
 @Suite("MessagePreview Snapshots")

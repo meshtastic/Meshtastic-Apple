@@ -182,6 +182,14 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	@Published var isConnecting: Bool = false
 	@Published var isInBackground: Bool = false
 	@Published var firmwareEdition: FirmwareEditions = .vanilla
+	/// Mirrors the BLE transport's `TransportStatus`, most notably `.error(BLETransport.
+	/// poweredOffStatusMessage)` when CoreBluetooth reports `.poweredOff`. Nothing read
+	/// `BLETransport.status` before this (#2175): with the system "Bluetooth is turned off"
+	/// alert intentionally suppressed (#2162), the Connect tab needs its own signal to tell a
+	/// BLE user why no devices are appearing in Available Radios. Kept as the raw status (not
+	/// just a Bool) so other transport error states could drive similar UI later without
+	/// another round of plumbing. See `isBluetoothPoweredOff` below and `observeBLETransportStatus()`.
+	@Published var bleTransportStatus: TransportStatus = .uninitialized
 
 	/// MESHTASTIC_LOCKDOWN-hardened firmware state machine. See
 	/// Meshtastic/Helpers/LockdownCoordinator.swift and
@@ -224,6 +232,18 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	// Public due to file separation
 	var otaInProgress: Bool = false
 	var discoveryTask: Task<Void, Never>?
+	/// True for the duration of `stopDiscovery()`'s transport-teardown loop, i.e. from just
+	/// after `discoveryTask` is cleared until every transport's `stopActiveDiscovery()` has
+	/// completed. `discoveryTask == nil` alone isn't a safe "discovery is fully stopped" signal
+	/// — it's cleared before that teardown loop even starts — so `startDiscovery()` also checks
+	/// this flag and no-ops while it's set, closing a race where a concurrent caller (e.g.
+	/// `appDidBecomeActive()` after a quick background/foreground toggle) could start a fresh
+	/// scan while the previous `stopDiscovery()` call is still winding down the same transport
+	/// (#2183 review).
+	var isStoppingDiscovery: Bool = false
+	/// Consumes `BLETransport.statusUpdates()` for the lifetime of this manager; see
+	/// `observeBLETransportStatus()`.
+	var bleStatusTask: Task<Void, Never>?
 	var connectionEventTask: Task <Void, Error>?
 	var locationTask: Task<Void, Error>?
 	var connectionStepper: SequentialSteps?
@@ -284,10 +304,37 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 				Logger.data.warning("⚠️ [AccessoryManager] Memory warning — saved context")
 			}
 		}
+
+		observeBLETransportStatus()
 	}
 
 	func transportForType(_ type: TransportType) -> Transport? {
 		return transports.first(where: {$0.type == type })
+	}
+
+	/// True once the BLE transport's status has settled on "Bluetooth is powered off"
+	/// (#2161/#2163). The Connect tab's Available Radios section uses this to show an inline
+	/// message prompting the user to enable Bluetooth in Settings — the system power alert is
+	/// intentionally suppressed (#2162), so this is the only in-app signal for a BLE user whose
+	/// device isn't showing up (#2175).
+	var isBluetoothPoweredOff: Bool {
+		if case .error(BLETransport.poweredOffStatusMessage) = bleTransportStatus {
+			return true
+		}
+		return false
+	}
+
+	/// Subscribes to the BLE transport's status stream for the lifetime of this manager and
+	/// mirrors every change onto `bleTransportStatus`. Safe to call more than once (e.g. from a
+	/// future re-init path) — cancels any prior subscription first.
+	private func observeBLETransportStatus() {
+		guard let bleTransport = transportForType(.ble) as? BLETransport else { return }
+		bleStatusTask?.cancel()
+		bleStatusTask = Task { @MainActor in
+			for await status in await bleTransport.statusUpdates() {
+				self.bleTransportStatus = status
+			}
+		}
 	}
 	
 	func connectToPreferredDevice(device: Device? = nil) {
@@ -1104,7 +1151,11 @@ extension AccessoryManager {
 			Task { await connection.appDidEnterBackground() }
 		} else {
 			Logger.transport.info("[AccessoryManager] suspending scanning while in the background")
-			stopDiscovery()
+			// appDidEnterBackground() itself stays synchronous (called directly from a
+			// non-async scenePhase handler); fire-and-forget the now-async stopDiscovery()
+			// the same way this call site always has — nothing here depends on scanning having
+			// fully stopped before this function returns, unlike Step 0 of the connect flow.
+			Task { await self.stopDiscovery() }
 		}
 	}
 	
@@ -1113,8 +1164,32 @@ extension AccessoryManager {
 		if let connection = self.activeConnection?.connection {
 			Logger.transport.info("[AccessoryManager] informing previously active connection that we are active again")
 			Task { await connection.appDidBecomeActive() }
+		} else if self.isConnecting {
+			// A connect attempt is in flight (Step 0 in AccessoryManager+Connect.swift already
+			// stopped discovery before Step 1 pairs). On a first-ever BLE bond, iOS's system PIN
+			// pairing sheet is out-of-process UI, same as the Bluetooth-power alert (#2139/#2161):
+			// it can blip scenePhase to .inactive/.background and back to .active while it's up.
+			// Restarting the scan here would race the bonding handshake and tear the sheet down
+			// (CBATTErrorInsufficientEncryption) exactly like the scan-during-pairing bug this
+			// guard, together with Step 0, closes off. Wait for the connect attempt to resolve:
+			// on success, discovery is left off (Step 8 calls stopDiscovery(), not startDiscovery() —
+			// there's nothing left for a scenePhase blip to interfere with once activeConnection is
+			// set); on failure, closeConnection() re-arms it. Note there's a narrow, self-correcting
+			// gap during a *retry* triggered by a later-step failure (e.g. Step 5/5a): closeConnection()
+			// nils activeConnection and suspends on its own internal awaits before this step's retry
+			// flips state back to .connecting, so isConnecting can briefly read false with
+			// activeConnection already nil. A scenePhase blip landing in that exact window falls
+			// through to the branch below and restarts the scan — harmless here since bonding already
+			// succeeded before that state is reachable (no PIN sheet at risk), and Step 0 stops the
+			// scan again moments later regardless. Just a brief flicker, not a functional issue.
+			Logger.transport.info("[AccessoryManager] Connect attempt in progress, not restarting discovery")
 		} else {
 			if self.discoveryTask == nil {
+				// startDiscovery() itself no-ops while isStoppingDiscovery is set (see
+				// AccessoryManager+Discovery.swift), so this doesn't need its own check: even if a
+				// concurrent stopDiscovery() call has already nilled discoveryTask but is still
+				// awaiting transport teardown, this call is safely absorbed rather than racing a
+				// fresh scan against it (#2183 review).
 				Logger.transport.info("[AccessoryManager] Previosuly in the background but not scanning, starting scanning again")
 				self.startDiscovery()
 			}

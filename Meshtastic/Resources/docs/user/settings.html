@@ -52,6 +52,7 @@
 <p>On firmware <strong>2.8.0 or later</strong>, the radio tells the app which modem presets are legal in each region. When you pick a region, the Presets list narrows to the compatible set, and if your current preset isn't allowed there the app switches you to that region's default. Setting the region to <strong>US</strong> on a newly flashed node defaults the preset to <strong>Long Turbo</strong>. Amateur (ham) bands such as the Tiny and Narrow presets are marked <strong>licensed</strong> — the app shows a warning, and you should enable <strong>Licensed Operator</strong> (and set your call sign) in <strong>User</strong> config before transmitting. On older firmware the full preset list is shown unchanged.</p>
 <h3>Channels</h3>
 <p>Manage up to 8 channels (0–7). Channel 0 is the primary broadcast channel. Additional channels create isolated messaging groups with their own encryption keys.</p>
+<p>When sharing channels, the share screen shows a QR code and link, and — on iPhones with NFC hardware (iOS 18 or later) — a <strong>Write to NFC Tag</strong> button. Hold a writable NFC tag near the top of your iPhone to save the channel link to it, replacing any content the tag already held; tapping that tag on another phone opens the same add-or-replace channels flow the QR code does.</p>
 <h3>Security</h3>
 <p>Configure PKI (Public Key Infrastructure) encryption for direct messages. Requires firmware 2.5+.</p>
 <p>On hardened lockdown-firmware radios, this page also shows a <strong>Lockdown</strong> section with the session status, a <strong>Lock Now</strong> button, and a <strong>Forget Stored Passphrase</strong> button. See <a href="lockdown.html">Lockdown Mode</a>.</p>
@@ -259,6 +260,29 @@
 </tr>
 </tbody>
 </table>
+<h2>Tools</h2>
+<p>The <strong>Tools</strong> entry appears only on iPhones with NFC hardware running iOS 18 or later; it is hidden on iPads, Mac Catalyst, and any device without an NFC radio.</p>
+<p>It contains an <strong>NFC Tags</strong> section:</p>
+<table>
+<thead>
+<tr>
+<th>Action</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Write Contact to NFC Tag</strong></td>
+<td>Saves your connected node's contact link to a writable NFC tag, replacing any content it already held. Hold the tag near the top of your iPhone.</td>
+</tr>
+<tr>
+<td><strong>Scan NFC Tag</strong></td>
+<td>Reads a Meshtastic tag and imports what it holds — a contact opens the add-contact confirmation sheet, a channel link opens the add-or-replace channels flow, exactly as scanning the equivalent QR code would.</td>
+</tr>
+</tbody>
+</table>
+<p>If a scanned tag holds something other than a Meshtastic contact or channel link, or its channel settings can't be read, the scan reports the problem rather than appearing to succeed.</p>
+<p>Tags written by the Meshtastic app for Android are interchangeable with these — both platforms write the same contact and channel links.</p>
 <h2>Firmware Updates</h2>
 <p>Check for and apply OTA firmware updates to your connected radio directly from the app. See <a href="firmware.html">Firmware Updates</a> for full details.</p>
 <h2>Automatic Documentation Translation</h2>
