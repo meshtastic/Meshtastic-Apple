@@ -155,7 +155,7 @@ enum IntentMessageConverters {
 		}
 
 		if value.hasPrefix("Channel "), let index = Int(value.dropFirst("Channel ".count)) {
-			return index
+			return validChannelIndex(index)
 		}
 
 		let channelPrefix = "channel-"
@@ -164,10 +164,18 @@ enum IntentMessageConverters {
 			let rawIndex = remainder.hasSuffix(meshtasticDomain)
 				? String(remainder.dropLast(meshtasticDomain.count))
 				: remainder
-			return Int(rawIndex)
+			return Int(rawIndex).flatMap(validChannelIndex)
 		}
 
 		return nil
+	}
+
+	/// The mesh supports at most 8 channels (indices 0–7). Rejecting anything
+	/// outside that range here also protects the `Int32(_:)` conversions at
+	/// every caller — an unbounded parse let a malformed handle like
+	/// "channel-2147483648" through as an `Int` and trapped on the send path.
+	private static func validChannelIndex(_ index: Int) -> Int? {
+		(0...7).contains(index) ? index : nil
 	}
 
 	static func channelDisplayName(for index: Int32, named name: String?) -> String {
