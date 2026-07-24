@@ -244,7 +244,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Senden Sie einen Neustart in DFU"
+            "value" : "Senden Sie einen Neustart per DFU"
           }
         },
         "es" : {
@@ -382,7 +382,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Sende eine private Nachricht an einen Meshtastic-Node."
+            "value" : "Sende eine private Nachricht an einen Meshtastic-Knoten."
           }
         },
         "es" : {
@@ -454,7 +454,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Sende eine Meshtastic-Gruppe-Nachricht - sende eine Nachricht an einen Mesh-Kanal"
+            "value" : "Sende eine Meshtastic-Gruppennachricht - sende eine Nachricht an einen Mesh-Kanal"
           }
         },
         "es" : {
@@ -526,7 +526,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Schließe mein Meshtastic-Node aus oder starte ihn neu."
+            "value" : "Schalte mein Meshtastic-Node aus oder starte ihn neu."
           }
         },
         "fr" : {
@@ -1825,8 +1825,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "%@ Konfigurationsdaten wurden über PKC-Admin angefordert, aber keine Antwort wurde vom entfernten Knoten zurückgegeben."
+            "state" : "translated",
+            "value" : "%@ Konfigurationsdaten wurden über PKC-Admin angefordert, aber es wurde keine Antwort vom entfernten Knoten zurückgegeben."
           }
         },
         "es" : {
@@ -1913,7 +1913,7 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "%@ dB"
           }
         },
@@ -2019,7 +2019,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Dokumentation der Seite \"%@\" anzeigen"
           }
         },
@@ -2565,7 +2565,7 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "%@ mA"
           }
         },
@@ -2653,7 +2653,7 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "%@°C"
           }
         },
@@ -2844,14 +2844,14 @@
             "plural" : {
               "one" : {
                 "stringUnit" : {
-                  "state" : "needs_review",
-                  "value" : "Ein Hop"
+                  "state" : "translated",
+                  "value" : "%d Sprung"
                 }
               },
               "other" : {
                 "stringUnit" : {
-                  "state" : "needs_review",
-                  "value" : "Hops"
+                  "state" : "translated",
+                  "value" : "%d Sprünge"
                 }
               }
             }
@@ -3317,8 +3317,8 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "%lld Gesamtlesungen"
+            "state" : "translated",
+            "value" : "%lld Einträge"
           }
         },
         "es" : {
@@ -3406,7 +3406,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "%lld Gesamtdetektionsereignisse"
+            "value" : "%lld Detektionsereignisse Gesamt"
           }
         },
         "es" : {
@@ -3528,7 +3528,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "%lld Duplikate"
           }
         },
@@ -3881,7 +3881,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "%lld Knoten"
           }
         },
@@ -4053,7 +4053,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "%lld empfangen"
           }
         },
@@ -4125,8 +4125,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "%lld Relay wurde abgebrochen"
+            "state" : "translated",
+            "value" : "%lld Weiterleitung wurde abgebrochen"
           }
         },
         "es" : {
@@ -4197,8 +4197,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "%lld relayiert"
+            "state" : "translated",
+            "value" : "%lld weitergeleitet"
           }
         },
         "es" : {
@@ -4269,7 +4269,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "%lld gesendet"
           }
         },
@@ -4666,8 +4666,8 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "(Er)definieren Sie PIN_GPS_EN für Ihr Board."
+            "state" : "translated",
+            "value" : "Legen Sie den PIN_GPS_EN für Ihr Board fest."
           }
         },
         "es" : {
@@ -4835,7 +4835,7 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "1 Byte"
           }
         },
@@ -4923,7 +4923,7 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "1 Hop entfernt"
           }
         },
@@ -5093,7 +5093,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "12-Stunden-Uhr"
           }
         },
@@ -5177,7 +5177,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "120 Minuten"
           }
         },
@@ -5269,7 +5269,7 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "128-Bit"
           }
         },
@@ -5385,7 +5385,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "15 Minuten"
           }
         },
@@ -5538,7 +5538,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "180 Minuten"
           }
         },
@@ -5630,7 +5630,7 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "25"
           }
         },
@@ -5734,7 +5734,7 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "256-Bit"
           }
         },
@@ -5818,7 +5818,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "30 Minuten"
           }
         },
@@ -5906,7 +5906,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "45 Minuten"
           }
         },
@@ -5982,7 +5982,7 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "50"
           }
         },
@@ -6066,7 +6066,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "60 Minuten"
           }
         },
@@ -6142,7 +6142,7 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "7"
           }
         },
@@ -6262,7 +6262,7 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "75"
           }
         },
@@ -6418,7 +6418,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "90 Minuten"
           }
         },
@@ -6559,8 +6559,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Das ist eine Zahl: %d"
+            "state" : "translated",
+            "value" : ": %d"
           }
         },
         "es" : {
@@ -6636,8 +6636,8 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "1%"
+            "state" : "translated",
+            "value" : "< 1%"
           }
         },
         "es" : {
@@ -6720,7 +6720,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Ein QR-Code enthält die LoRa-Konfiguration und die Kanäle, die für Radios zum Kommunizieren benötigt werden. Verwenden Sie `Kanäle ersetzen`, um vorhandene Kanäle zu überschreiben, oder `Kanäle hinzufügen`, um vorhandene Kanäle zu erweitern."
           }
         },
@@ -6796,8 +6796,8 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Eine Trace Route wurde gesendet, keine Antwort wurde empfangen."
+            "state" : "translated",
+            "value" : "Ein Trace Route wurde gesendet, es wurde keine Antwort empfangen."
           }
         },
         "es" : {
@@ -6881,7 +6881,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Ein Kanalindex von 0 weist auf den Hauptkanal hin, von dem Broadcastpakete gesendet werden. Die Standortdaten werden von dem ersten Kanal gesendet, der mit Firmware 2.7 oder höher aktiviert ist."
           }
         },
@@ -6963,7 +6963,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Ein Standard-Zertifikat mit eigenem Schlüssel wird für Verbindungen über localhost bereitgestellt. Falls erforderlich, importiere ein individuelles .p12. Das Client-CA (.pem) validiert die Verbindung zu TAK-Clients."
           }
         },
@@ -7053,7 +7053,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Ein vorheriger Positionsbericht für diesen Knotenpunkt"
           }
         },
@@ -7123,8 +7123,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Ein vorheriges Positionsbericht zeigt die Richtung des Reisewegs."
+            "state" : "translated",
+            "value" : "Ein vorheriger Positionsbericht zeigt die Richtung des Reisewegs."
           }
         },
         "es" : {
@@ -7195,7 +7195,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Ein gemeinsamer Treffpunkt. Halte die Karte lange gedrückt, um einen zu erstellen."
           }
         },
@@ -7848,7 +7848,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Erkannt von einem anderen Knoten"
+            "value" : "Bestätigt von einem anderen Knoten"
           }
         },
         "es" : {
@@ -8126,7 +8126,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Aktive Einstellung"
+            "value" : "Aktive Voreinstellung"
           }
         },
         "es" : {
@@ -8283,7 +8283,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Füge CA hinzu"
           }
         },
@@ -8359,8 +8359,8 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Channel hinzufügen"
+            "state" : "translated",
+            "value" : "Kanal hinzufügen"
           }
         },
         "es" : {
@@ -8447,7 +8447,7 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Kanäle hinzufügen"
           }
         },
@@ -8529,7 +8529,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Kontakt hinzufügen"
           }
         },
@@ -8611,8 +8611,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Füge Meshtastic-Node %@ als Kontakt hinzu"
+            "state" : "translated",
+            "value" : "Füge Meshtastic-Konten %@ als Kontakt hinzu"
           }
         },
         "es" : {
@@ -8772,8 +8772,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Mehr Hilfe"
+            "state" : "translated",
+            "value" : "Weitere Hilfe"
           }
         },
         "es" : {
@@ -8848,7 +8848,7 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Adresse"
           }
         },
@@ -8952,7 +8952,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Admin-Schlüssel"
           }
         },
@@ -9040,7 +9040,7 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Administration"
           }
         },
@@ -9128,7 +9128,7 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Administration aktiviert"
           }
         },
@@ -9304,8 +9304,8 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Erweiterter GPS-Gerät"
+            "state" : "translated",
+            "value" : "Erweitertes GPS-Gerät"
           }
         },
         "es" : {
@@ -9393,7 +9393,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Erweiterte Positionenflaggen"
+            "value" : "Erweiterte Positionsinformationen"
           }
         },
         "es" : {
@@ -9474,7 +9474,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Nur für fortgeschrittene Benutzer."
           }
         },
@@ -10087,7 +10087,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Warnung"
+            "value" : "Achtung"
           }
         },
         "es" : {
@@ -10174,8 +10174,8 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Warnung über den Eingang des Klingels mit dem GPIO-Zuhörer"
+            "state" : "translated",
+            "value" : "Signalisiere mit dem GPIO-Signalgeber bei Eingang eines Klingelsignals"
           }
         },
         "es" : {
@@ -10262,8 +10262,8 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Warnung über GPIO-Buzzer bei Empfang einer Nachricht"
+            "state" : "translated",
+            "value" : "Warnung über GPIO-Signalgeber bei Empfang einer Nachricht"
           }
         },
         "es" : {
@@ -10350,8 +10350,8 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Warnung über den Motor vibrieren, wenn eine Glocke empfangen wird"
+            "state" : "translated",
+            "value" : "Warnung über den Vibrationsmotor, wenn ein Klingelsignal empfangen wird"
           }
         },
         "es" : {
@@ -10439,7 +10439,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Warnung über den GPIO-Motor, wenn eine Nachricht empfangen wird"
+            "value" : "Warnung über den Vibrationsmotor, wenn eine Nachricht empfangen wird"
           }
         },
         "es" : {
@@ -10526,8 +10526,8 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Warnung bei Erhalt eines Klingels"
+            "state" : "translated",
+            "value" : "Warnung bei Erhalt eines Klingelsignals"
           }
         },
         "es" : {
@@ -10614,8 +10614,8 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Warnung bei der Erfassung eines Nachrichten"
+            "state" : "translated",
+            "value" : "Warnung beim Empfang einer Nachricht"
           }
         },
         "es" : {
@@ -10790,7 +10790,7 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Erlauben Sie Positionen anzufordern"
           }
         },
@@ -10951,7 +10951,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Alt"
+            "value" : "Höhe"
           }
         },
         "es" : {
@@ -11215,7 +11215,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Erhöhte Geoidale Trennung"
+            "value" : "Geodätische Höhentrennung"
           }
         },
         "es" : {
@@ -11305,7 +11305,7 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Die Höhe ist die Meeresspiegelhöhe"
           }
         },
@@ -11781,8 +11781,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Ein Rahmen, der alle LoRa-Nodensitzungen auf dem Mesh umschließt."
+            "state" : "translated",
+            "value" : "Eine Umrandung, der alle LoRa-Knoten auf der Mesh-Karte umschließt."
           }
         },
         "es" : {
@@ -12744,8 +12744,8 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Sind Sie sicher, dass Sie diesen Nachricht löschen möchten?"
+            "state" : "translated",
+            "value" : "Sind Sie sicher, dass Sie diese Nachricht löschen möchten?"
           }
         },
         "es" : {
@@ -13022,7 +13022,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Frage Chirpy"
           }
         },
@@ -13088,8 +13088,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Frage Chirpy-Assistent"
+            "state" : "translated",
+            "value" : "Frage Chirpy KI Assistent"
           }
         },
         "es" : {
@@ -13158,7 +13158,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Frage Chirpy..."
           }
         },
@@ -13228,7 +13228,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Frage mich alles über Meshtastic. Ich werde die Dokumente durchsuchen und in einfacher Sprache antworten."
           }
         },
@@ -13402,7 +13402,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Automatisch verbinden"
           }
         },
@@ -13490,8 +13490,8 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Automatisch wechselt auf die nächste Seite auf dem Bildschirm wie ein Karussell, basierend auf dem angegebenen Intervall."
+            "state" : "translated",
+            "value" : "Automatisch auf die nächste Seite des Bildschirms wechseln, wie bei einem Karussell, basierend auf dem angegebenen Intervall."
           }
         },
         "es" : {
@@ -13574,7 +13574,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Verfügbare Netzwerke"
           }
         },
@@ -13840,7 +13840,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Durchschnittliche Kanalauslastung"
           }
         },
@@ -13912,7 +13912,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Binärdatei"
           }
         },
@@ -13988,7 +13988,7 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Bluetooth"
           }
         },
@@ -14076,7 +14076,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "BLE-Gerät"
           }
         },
@@ -14146,7 +14146,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "BLE OTA Aktualisierung"
           }
         },
@@ -14344,8 +14344,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Backup"
+            "state" : "translated",
+            "value" : "Datensicherung / Backup"
           }
         },
         "es" : {
@@ -14488,8 +14488,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Speichere deine private Schlüssel in deinem iCloud-Schlüsselanhänger."
+            "state" : "translated",
+            "value" : "Speichere deine private Schlüssel in deinem iCloud-Schlüsselbund."
           }
         },
         "es" : {
@@ -14681,7 +14681,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Bar-Serie"
+            "value" : "Balkendiagramm"
           }
         },
         "es" : {
@@ -15187,7 +15187,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Die Batterie, Spannung, Kanalnutzung und der Luftzeit des Knotens wurden von der Quelle gemeldet."
+            "value" : "Die Batterieladung, Spannung, Kanalausnutzung und die Sendezeit des Knotens wurden vom Knoten gemeldet."
           }
         },
         "es" : {
@@ -15262,7 +15262,7 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Baudrate"
           }
         },
@@ -15346,7 +15346,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Starte Update"
           }
         },
@@ -15419,7 +15419,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Binary Data (%lld Bytes)"
+            "value" : "Binär Daten (%lld Bytes)"
           }
         },
         "es" : {
@@ -15718,7 +15718,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Bluetooth-Verbindung konfigurieren"
           }
         },
@@ -15979,7 +15979,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Konvertiere Meshtastic-Positionen, -Nodes, -Waypoints und -Nachrichten in TAK/CoT-Format"
+            "value" : "Konvertiere Meshtastic-Positionen, -Knoten, -Wegpunkte und -Nachrichten in TAK/CoT-Format"
           }
         },
         "es" : {
@@ -16147,7 +16147,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "GPIO-Schalter"
+            "value" : "GPIO-Taster"
           }
         },
         "es" : {
@@ -16411,7 +16411,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Indem Sie diese Funktion aktivieren, erklären Sie sich mit der Übertragung Ihrer Echtzeit-Geografischen Lage über das MQTT-Protokoll ohne Verschlüsselung einverstanden. Diese Lageinformationen können für Zwecke wie Live-Kartendatenveröffentlichung, Gerätentrackierung und verwandte Telemetriefunktionen verwendet werden."
+            "value" : "Indem Sie diese Funktion aktivieren, erklären Sie sich mit der Übertragung Ihrer Echtzeit-Geografischen Position über das MQTT-Protokoll ohne Verschlüsselung einverstanden. Diese Positionsinformationen können für Zwecke wie Live-Kartendatenveröffentlichung, Geräte-Nachverfolgung und verwandte Telemetriefunktionen verwendet werden."
           }
         },
         "es" : {
@@ -16987,7 +16987,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Canned Messages"
+            "value" : "Vordefinierte Nachrichten"
           }
         },
         "es" : {
@@ -17093,7 +17093,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Canned Messages Config"
+            "value" : "Konfiguration vordefinierter Nachrichten"
           }
         },
         "es" : {
@@ -17529,7 +17529,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Das ist ein Beispiel für eine kurze Nachricht."
+            "value" : "Kanal Auslastung"
           }
         },
         "es" : {
@@ -17605,7 +17605,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Ch1 Aktuell"
+            "value" : "Ch1 Strom"
           }
         },
         "es" : {
@@ -17781,7 +17781,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Ch2 aktueller Wert"
+            "value" : "Ch2 Strom"
           }
         },
         "es" : {
@@ -17869,7 +17869,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Ch2-Spannung"
+            "value" : "Ch2 Spannung"
           }
         },
         "es" : {
@@ -17957,7 +17957,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Aktuelle Geschwindigkeit"
+            "value" : "Ch3 Strom"
           }
         },
         "es" : {
@@ -18238,8 +18238,8 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Kanäle 0 eingeschlossen"
+            "state" : "translated",
+            "value" : "Kanal 0 eingeschlossen"
           }
         },
         "es" : {
@@ -18327,7 +18327,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Kanäle 1"
+            "value" : "Kanal 1"
           }
         },
         "es" : {
@@ -18415,7 +18415,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Kanäle 1 eingeschlossen"
+            "value" : "Kanal 1 eingeschlossen"
           }
         },
         "es" : {
@@ -18591,7 +18591,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Kanäle 2 eingeschlossen"
+            "value" : "Kanal 2 eingeschlossen"
           }
         },
         "es" : {
@@ -18679,7 +18679,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Kanäle 3"
+            "value" : "Kanal 3"
           }
         },
         "es" : {
@@ -19031,7 +19031,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Kanäle 6 eingeschlossen"
+            "value" : "Kanal 6 eingeschlossen"
           }
         },
         "es" : {
@@ -19119,7 +19119,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Kanäle 7 enthalten"
+            "value" : "Kanal 7 eingeschlossen"
           }
         },
         "es" : {
@@ -19201,7 +19201,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Kanäle"
+            "value" : "Kanal Details"
           }
         },
         "es" : {
@@ -19285,7 +19285,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Der Hauptkanal ist erfolgreich repariert!"
+            "value" : "Der Hauptkanal wurde erfolgreich repariert!"
           }
         },
         "es" : {
@@ -19367,7 +19367,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Kanäle-Index"
+            "value" : "Kanal Index"
           }
         },
         "es" : {
@@ -19531,7 +19531,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Kanäleinstellung"
+            "value" : "Rolle des Kanals"
           }
         },
         "es" : {
@@ -19691,7 +19691,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Kanäle-URL"
+            "value" : "Kanal-URL"
           }
         },
         "es" : {
@@ -19779,7 +19779,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Kanalbelegung"
+            "value" : "Kanalauslastung"
           }
         },
         "es" : {
@@ -19885,7 +19885,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Kanäleinsatz %@%%"
+            "value" : "Kanalauslastung %@%%"
           }
         },
         "es" : {
@@ -19972,7 +19972,7 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Die Kanalnummer muss zwischen 0 und 7 liegen."
           }
         },
@@ -20163,7 +20163,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Hilfe zu Kanälen"
           }
         },
@@ -20325,7 +20325,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Chirpy lädt eine Antwort herunter"
           }
         },
@@ -20408,7 +20408,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Das richtige Gerät wählen"
+            "value" : "Die richtige Geräte-Rolle wählen"
           }
         },
         "es" : {
@@ -20496,7 +20496,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Klar"
+            "value" : "Löschen"
           }
         },
         "es" : {
@@ -20689,8 +20689,8 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Klares Log"
+            "state" : "translated",
+            "value" : "Log Löschen"
           }
         },
         "es" : {
@@ -21019,7 +21019,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Kunde CA-Zertifikat"
+            "value" : "Client CA-Zertifikat"
           }
         },
         "es" : {
@@ -21089,7 +21089,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Kunde-Konfiguration"
+            "value" : "Client-Konfiguration"
           }
         },
         "es" : {
@@ -21429,7 +21429,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Uhrzeigersinnige Drehungsevent"
+            "value" : "Drehung im Uhrzeigersinn"
           }
         },
         "es" : {
@@ -21862,7 +21862,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Kommunikation"
+            "value" : "Kommuniziere"
           }
         },
         "es" : {
@@ -22124,7 +22124,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Erledige eine Lokale Mesh-Entdeckungsscan und siehst die Ergebnisse hier."
+            "value" : "Führe einen Lokalen Mesh-Entdeckungsscan durch und siehe die Ergebnisse hier an."
           }
         },
         "es" : {
@@ -22880,7 +22880,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Verbunden mit einem Knoten"
+            "value" : "Verbinde einen Knoten"
           }
         },
         "es" : {
@@ -22969,7 +22969,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Verbinde dich mit einem neuen Radio?"
+            "value" : "Verbindest ein neues Radio?"
           }
         },
         "es" : {
@@ -23535,7 +23535,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Verknüpfte Radio"
+            "value" : "Verknüpftes Radio"
           }
         },
         "es" : {
@@ -23619,7 +23619,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Verbindung mit dem Firmware: **%@**"
+            "value" : "Verbundene Firmware: **%@**"
           }
         },
         "es" : {
@@ -23887,7 +23887,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Verbindungstest %1$lld von %2$lld"
+            "value" : "Verbindungsversuch %1$lld von %2$lld"
           }
         },
         "en" : {
@@ -24359,7 +24359,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Kontinuierliche Standortaktualisierungen aktivieren"
+            "value" : "Kontinuierliche Standortaktualisierungen an/aus"
           }
         },
         "es" : {
@@ -24522,8 +24522,8 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Steuert das blinkende LED auf dem Gerät. Bei den meisten Geräten steuert dies eines der bis zu 4 LED's, die Ladegerät- und GPS-LED's sind nicht steuerbar."
+            "state" : "translated",
+            "value" : "Steuert die blinkende LED auf dem Gerät. Bei den meisten Geräten steuert dies eine der bis zu 4 LED's, die Ladegerät- und GPS-LED's sind nicht steuerbar."
           }
         },
         "es" : {
@@ -25201,7 +25201,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Uhrzeigersinnige Drehungsevent"
+            "value" : "Drehung gegen den Uhrzeigersinn"
           }
         },
         "es" : {
@@ -26100,7 +26100,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Dashed line, die den gezeichneten Routenweg zeigt."
+            "value" : "Gestrichelte line, die den gezeichneten Routenweg zeigt."
           }
         },
         "es" : {
@@ -27042,8 +27042,8 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Nachrichten löschen"
+            "state" : "translated",
+            "value" : "Nachricht löschen"
           }
         },
         "es" : {
@@ -27130,7 +27130,7 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Nachrichten löschen"
           }
         },
@@ -27395,7 +27395,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Können Sie die Leistungsmetriken löschen?"
+            "value" : "Leistungsmetriken löschen?"
           }
         },
         "es" : {
@@ -27473,8 +27473,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Alle Konfigurationen, Schlüssel und BLE-Bindungen löschen?"
+            "state" : "translated",
+            "value" : "Alle Konfigurationen, Schlüssel und BLE-Verbindungen löschen?"
           }
         },
         "es" : {
@@ -27555,8 +27555,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Löschen Sie alle Konfigurationen?"
+            "state" : "translated",
+            "value" : "Alle Konfigurationen löschen?"
           }
         },
         "es" : {
@@ -27830,7 +27830,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Alle Pakettdaten löschen?"
+            "value" : "Alle PAX-Daten löschen?"
           }
         },
         "es" : {
@@ -27923,7 +27923,7 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Alle Positionen löschen?"
           }
         },
@@ -28091,7 +28091,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Die Beschreibung muss weniger als 100 Bytes sein"
+            "value" : "Die Beschreibung muss weniger als 100 Zeichen lang sein"
           }
         },
         "es" : {
@@ -28256,7 +28256,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Details"
           }
         },
@@ -28326,7 +28326,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Details..."
           }
         },
@@ -28417,7 +28417,7 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Erkennung"
           }
         },
@@ -28612,7 +28612,7 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Sensorkonfiguration für die Erkennung"
           }
         },
@@ -28712,7 +28712,7 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Detektionssensorprotokoll"
           }
         },
@@ -28801,7 +28801,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Detektionsevent"
+            "value" : "Detektionsereignis"
           }
         },
         "es" : {
@@ -28891,7 +28891,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Verarbeitete Ereignisse des Detektionssensors auf dem Knoten, wie z.B. Bewegung oder Alarme für das Öffnen/Schließen von Türen"
           }
         },
@@ -28968,7 +28968,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Die Sensorenmeldungen werden als Textnachrichten empfangen. Wenn Sie Benachrichtigungen aktivieren, erhalten Sie eine Benachrichtigung für jede Empfangene Sensorenmeldung und einen entsprechenden unlesbaren Nachrichtenzettel."
+            "value" : "Die Sensorenmeldungen werden als Textnachrichten empfangen. Wenn Sie Benachrichtigungen aktivieren, erhalten Sie eine Benachrichtigung für jede Empfangene Sensorenmeldung und eine entsprechende ungelesen Markierung."
           }
         },
         "es" : {
@@ -29443,7 +29443,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Dokumente zur Gerätekonfiguration"
           }
         },
@@ -29513,7 +29513,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Gerät verbunden"
           }
         },
@@ -29695,7 +29695,7 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Geräte-Metriken"
           }
         },
@@ -29784,7 +29784,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Messaging-Log des Geräts"
+            "value" : "Metriken-Log des Geräts"
           }
         },
         "es" : {
@@ -29865,7 +29865,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Geräteoptionen"
           }
         },
@@ -29948,7 +29948,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Gerätrolle"
+            "value" : "Geräterolle"
           }
         },
         "es" : {
@@ -30105,7 +30105,7 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Gerätebildschirm"
           }
         },
@@ -30193,7 +30193,7 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Das Gerät wird von einem Mesh-Administrator verwaltet, der Benutzer kann keine der Geräteeinstellungen bearbeiten."
           }
         },
@@ -30277,7 +30277,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Die Gerätestellung ist '%@'. Überlege, sie auf TAK oder TAK Tracker zu setzen, um die optimale Leistung zu erzielen."
           }
         },
@@ -30354,7 +30354,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Standard PDOP-Wert für Präzisionsverteilung"
+            "value" : "Standard (DOP) PDOP-Wert für Präzisionsverteilung"
           }
         },
         "es" : {
@@ -30518,7 +30518,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Direktes Nachrichtskennwort"
+            "value" : "Direktnachrichten Kennwort"
           }
         },
         "es" : {
@@ -30707,7 +30707,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Hilfe für Direktnachrichten"
           }
         },
@@ -30875,7 +30875,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Direkte Nachrichten verwenden die gemeinsame Schlüssel für den Kanal."
+            "value" : "Direkte Nachrichten verwenden den geteilten Schlüssel für den Kanal."
           }
         },
         "es" : {
@@ -31169,7 +31169,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Entferne Knoten"
+            "value" : "Trenne Knoten"
           }
         },
         "es" : {
@@ -31810,7 +31810,7 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Anzeigemodus"
           }
         },
@@ -32140,7 +32140,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Distanz & Richtung"
           }
         },
@@ -32374,7 +32374,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Entfernung und Richtung"
           }
         },
@@ -32446,7 +32446,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Schließe die App nicht während der Aktualisierung."
           }
         },
@@ -32767,7 +32767,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Fertig"
           }
         },
@@ -32980,7 +32980,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Herunterlink-Aktiviert"
+            "value" : "Downlink-Aktiviert"
           }
         },
         "es" : {
@@ -33146,7 +33146,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Download TAK Server Data Package"
+            "value" : "Download TAK Server Daten Paket"
           }
         },
         "es" : {
@@ -33346,7 +33346,7 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Setze einen Pin auf die Karte"
           }
         },
@@ -33489,7 +33489,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Verbleibsdauer"
+            "value" : "Verweilzeit"
           }
         },
         "es" : {
@@ -33629,7 +33629,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "ESP32 BLE-Aktualisator"
+            "value" : "ESP32 BLE Updater"
           }
         },
         "es" : {
@@ -33698,7 +33698,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Das OTA-Aktualisieren des ESP32 erfordert ein Firmware %@ oder höher. Aktualisiere zuerst das Firmware deines Geräts mit dem Web Flasher."
           }
         },
@@ -33769,7 +33769,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "ESP32-Update"
+            "value" : "ESP32 Update"
           }
         },
         "es" : {
@@ -33839,7 +33839,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "ESP32 WiFi-Aktualisator"
+            "value" : "ESP32 WiFi Updater"
           }
         },
         "es" : {
@@ -33921,7 +33921,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Jeder Knoten hat einen kurzen Namen (bis zu 4 Bytes) in der farbigen Kugel angezeigt, und ein längerer Name neben ihm. Die Kugelfarbe basiert auf der Knotennummer. Der kurze Name kann ein Emoji oder Initialen sein."
+            "value" : "Jeder Knoten zeigt einen kurzen Namen (bis zu 4 Bytes) in der farbigen Kugel an, und einen längeren Namen neben ihm. Die Kugelfarbe basiert auf der Knotennummer. Der kurze Name kann ein Emoji oder Initialen sein."
           }
         },
         "es" : {
@@ -33996,7 +33996,7 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Echo"
           }
         },
@@ -34110,7 +34110,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Bearbeiten von Wegpunkt"
+            "value" : "Wegpunkt bearbeiten"
           }
         },
         "es" : {
@@ -34377,7 +34377,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Leere"
+            "value" : "Leer"
           }
         },
         "es" : {
@@ -34461,7 +34461,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Hintergrundaktivität aktivieren"
           }
         },
@@ -34553,7 +34553,7 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Benachrichtigungen aktivieren"
           }
         },
@@ -34635,7 +34635,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "TAK-Server aktivieren"
           }
         },
@@ -34705,7 +34705,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Starte die Übertragung von Gerätemesswerten in das Mesh-Netzwerk. Wenn deaktiviert, werden die Messwerte nur an angeschlossene Clients gesendet."
           }
         },
@@ -34787,7 +34787,7 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Starte das Ausstrahlen von Paketen über UDP auf dem lokalen Netzwerk."
           }
         },
@@ -34926,7 +34926,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Starte dieses Gerät als Verkaufs- und Weiterleitungsserver. Es erfordert ein ESP32-Gerät mit PSRAM."
+            "value" : "Starte dieses Gerät als Zwischenspeicher- und Weiterleitungsserver. Es erfordert ein ESP32-Gerät mit PSRAM."
           }
         },
         "es" : {
@@ -35119,7 +35119,7 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Erlaubt Geräten mit nativer I2S-Audioausgabe, RTTTL über Lautsprecher wie eine Glocke zu verwenden. Zum Beispiel haben T-Watch S3 und T-Deck diese Funktion."
           }
         },
@@ -35290,7 +35290,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Aktiviert den Sensoren-Modul. Er muss auf dem Knoten mit dem Sensor sowie auf allen Knoten aktiviert sein, die Sensoren-Textnachrichten empfangen oder die Sensoren-Log-Datei und die Sensoren-Grafik anzeigen möchten."
+            "value" : "Aktiviert das Sensoren-Modul. Er muss auf dem Knoten mit dem Sensor sowie auf allen Knoten aktiviert sein, die Sensoren-Textnachrichten empfangen oder die Sensoren-Log-Datei und die Sensoren-Grafik anzeigen möchten."
           }
         },
         "es" : {
@@ -35378,7 +35378,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Aktiviert den Modul zum Speichern und Weiterleiten."
+            "value" : "Aktiviert das Modul zum Speichern und Weiterleiten."
           }
         },
         "es" : {
@@ -35465,7 +35465,7 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Das Einschalten des Ethernet-Netzes deaktiviert die Bluetooth-Verbindung zur App."
           }
         },
@@ -35553,7 +35553,7 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Das Einschalten des WLANs deaktiviert die Bluetooth-Verbindung zur App."
           }
         },
@@ -35835,7 +35835,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Encryptierung"
+            "value" : "Verschlüsselung"
           }
         },
         "es" : {
@@ -35911,7 +35911,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Schlüsselverschlüsselung aktiviert"
+            "value" : "Verschlüsselung aktiviert"
           }
         },
         "es" : {
@@ -35994,7 +35994,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Stelle sicher, dass dein Gerät aufgeladen ist."
           }
         },
@@ -36064,7 +36064,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Gib das P12-Passwort ein"
           }
         },
@@ -36137,7 +36137,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Gib Wi-Fi-Passwort ein"
+            "value" : "Gib das Wi-Fi-Passwort ein"
           }
         },
         "es" : {
@@ -36212,7 +36212,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Eingeben Sie Hostname[:Port]"
+            "value" : "Geben Sie Hostname[:Port] ein"
           }
         },
         "es" : {
@@ -37032,7 +37032,7 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Fehler: %@"
           }
         },
@@ -37123,7 +37123,7 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Ethernet-Optionen"
           }
         },
@@ -37288,7 +37288,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Benutzereinstellungen austauschen"
+            "value" : "Benutzerinformationen austauschen"
           }
         },
         "es" : {
@@ -37382,7 +37382,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Ablaufdatum"
           }
         },
@@ -37471,7 +37471,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Zeitpunkt"
+            "value" : "Ablauf-Zeitpunkt"
           }
         },
         "es" : {
@@ -38123,7 +38123,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Ein Neustart des Geräts löscht die Daten des Geräts und der App."
           }
         },
@@ -38206,7 +38206,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Fehler beim Austausch der Benutzerinformationen."
           }
         },
@@ -38289,7 +38289,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Fehlgeschlagen, eine gültige Position zum Austausch zu erhalten"
+            "value" : "Keine gültige Position zum Austausch zu erhalten"
           }
         },
         "es" : {
@@ -38371,7 +38371,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Fehlgeschlagen, eine gültige Position zum Austausch zu erhalten."
+            "value" : "Keine gültige Position zum Austausch zu erhalten."
           }
         },
         "es" : {
@@ -38456,7 +38456,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Falsch"
           }
         },
@@ -38615,7 +38615,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Beliebte und ignorierte Knoten werden immer beibehalten. Andere Knoten werden vom App-Datenbank auf dem von dem Benutzer festgelegten Zeitplan gelöscht. (Knoten mit PKC-Schlüsseln werden immer für mindestens 7 Tage beibehalten.) Diese Funktion löscht nur Knoten aus der App, die nicht im Gerät-Knoten-Datenbank gespeichert sind."
+            "value" : "Favoriten und ignorierte Knoten werden immer beibehalten. Andere Knoten werden aus der App-Datenbank nach dem vom Benutzer festgelegten Zeitplan gelöscht. (Knoten mit PKC-Schlüsseln werden immer für mindestens 7 Tage beibehalten.) Diese Funktion löscht nur Knoten aus der App, die nicht in der Geräte-Knoten-Datenbank gespeichert sind."
           }
         },
         "es" : {
@@ -38952,7 +38952,7 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Fünfzehn Minuten"
           }
         },
@@ -39041,7 +39041,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Speicherverwaltung"
+            "value" : "Dateispeicher"
           }
         },
         "es" : {
@@ -39286,7 +39286,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Finde Gerät"
           }
         },
@@ -39721,7 +39721,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Firmware Datei"
           }
         },
@@ -40207,8 +40207,8 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Erstens gehört"
+            "state" : "translated",
+            "value" : "Zuerst gehört"
           }
         },
         "es" : {
@@ -40379,8 +40379,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Kanäle reparieren"
+            "state" : "translated",
+            "value" : "Kanal reparieren"
           }
         },
         "es" : {
@@ -40451,7 +40451,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Fehler beim Hauptkanal beheben?"
           }
         },
@@ -40634,7 +40634,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Fixierte Position"
+            "value" : "Feste Position"
           }
         },
         "es" : {
@@ -40722,7 +40722,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Schalte das Display um."
+            "value" : "Display umschalten"
           }
         },
         "es" : {
@@ -41169,7 +41169,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Um Sicherheitsgründen kann iOS nicht direkt auf externe USB-Geräte schreiben. Sie müssen das Datei manuell speichern."
           }
         },
@@ -41240,7 +41240,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Foxhunt auf deinem Uhrwerk"
+            "value" : "Foxhunt auf deiner Uhr"
           }
         },
         "es" : {
@@ -41398,7 +41398,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Frequenzüberdrückung"
+            "value" : "Frequenzübersteuerung"
           }
         },
         "es" : {
@@ -41574,7 +41574,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Freundlicher Name"
+            "value" : "Anzeigename"
           }
         },
         "es" : {
@@ -41662,7 +41662,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Freundlicher Name, der für die Formatierung der Nachricht verwendet wird, die an das Mesh gesendet wird. Beispiel: Ein Name \"Bewegung\" würde zu einer Nachricht \"Bewegung erkannt\" führen"
+            "value" : "Anzeigename, der für die Formatierung der Nachricht verwendet wird, die an das Mesh gesendet wird. Beispiel: Ein Name \"Bewegung\" würde zu einer Nachricht \"Bewegung erkannt\" führen"
           }
         },
         "es" : {
@@ -41744,7 +41744,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "%lld von der Radio (RX)"
+            "value" : "%lld vom Radio (RX)"
           }
         },
         "es" : {
@@ -42090,7 +42090,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "GPIO-Pin zum Monitorieren"
+            "value" : "GPIO-Pin zum Überwachen"
           }
         },
         "es" : {
@@ -42266,7 +42266,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "GPIO-Pin für den rotierenden Encoder B-Port."
+            "value" : "GPIO-Pin für den Dreh-Encoder B-Port."
           }
         },
         "es" : {
@@ -42354,7 +42354,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "GPIO-Pin für Drehzahlencoder drücken."
+            "value" : "GPIO-Pin für Dreh-Encoder drücken."
           }
         },
         "es" : {
@@ -42699,7 +42699,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Die GPS-Position des Knotens inklusive Breitengrad, Längengrad und Höhe"
           }
         },
@@ -42962,7 +42962,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Erstelle eine neue private Schlüssel für die Ersetzung des derzeit verwendeten Schlüssels. Der öffentliche Schlüssel wird automatisch aus deinem privaten Schlüssel regeneriert."
+            "value" : "Erstelle einen neuen private Schlüssel für die Ersetzung des derzeit verwendeten Schlüssels. Der öffentliche Schlüssel wird automatisch aus deinem privaten Schlüssel regeneriert."
           }
         },
         "es" : {
@@ -43375,7 +43375,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "GitHub Repository"
           }
         },
@@ -43472,7 +43472,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Grau bedeutet erfolgreiche Lieferung. Orange bedeutet einen wiederholbaren Fehler. Rot bedeutet einen dauerhaften Fehler, der nicht auf Wiederholung erfolgreich sein wird."
+            "value" : "Grau bedeutet erfolgreiche Lieferung. Orange bedeutet einen wiederholbaren Fehler. Rot bedeutet einen dauerhaften Fehler, der bei Wiederholung nicht erfolgreich sein wird."
           }
         },
         "es" : {
@@ -43646,7 +43646,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Windstärke %@"
+            "value" : "Windböhen %@"
           }
         },
         "es" : {
@@ -43992,7 +43992,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Titel"
+            "value" : "Kurs"
           }
         },
         "es" : {
@@ -44164,7 +44164,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Hilfe & Dokumentation"
           }
         },
@@ -44234,7 +44234,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Hilfe & Dokumentation"
           }
         },
@@ -44306,7 +44306,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Hallo, ich bin Chirpy!"
           }
         },
@@ -44382,8 +44382,8 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Alerts verstecken"
+            "state" : "translated",
+            "value" : "Benachrichtigungen ausblenden"
           }
         },
         "es" : {
@@ -44471,8 +44471,8 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Alerts verstecken"
+            "state" : "translated",
+            "value" : "Benachrichtigungen ausblenden"
           }
         },
         "es" : {
@@ -44564,8 +44564,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Legende verstecken"
+            "state" : "translated",
+            "value" : "Legende ausblenden"
           }
         },
         "es" : {
@@ -44634,8 +44634,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Verbergen Sie die Karte-Legende"
+            "state" : "translated",
+            "value" : "Kartenlegende ausblenden"
           }
         },
         "es" : {
@@ -44739,8 +44739,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Hüllt die Kartenlegende."
+            "state" : "translated",
+            "value" : "Blendet die Kartenlegende aus."
           }
         },
         "es" : {
@@ -44847,7 +44847,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Historie Zurücksetzen Max"
+            "value" : "Verlauf zurücksetzen Max"
           }
         },
         "es" : {
@@ -44929,7 +44929,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Historiewindauge zur Rückkehr"
+            "value" : "Aufbewahrungszeitraum für den Verlauf"
           }
         },
         "es" : {
@@ -45384,7 +45384,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Stundenweise Dienstzyklus"
+            "value" : "Stündliche Sendedauer"
           }
         },
         "es" : {
@@ -45471,8 +45471,8 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Wie lange der Bildschirm nach dem Drücken des Benutzerknopfes oder der Empfang von Nachrichten eingeschaltet bleibt."
+            "state" : "translated",
+            "value" : "Wie lange der Bildschirm nach dem Drücken des Benutzerknopfes oder dem Empfang von Nachrichten eingeschaltet bleibt."
           }
         },
         "es" : {
@@ -45575,8 +45575,8 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Wie oft werden die Geräte-Metriken über das Mesh gesendet. Standard ist 30 Minuten."
+            "state" : "translated",
+            "value" : "Wie oft die Geräte-Metriken über das Mesh gesendet werden. Standard ist 30 Minuten."
           }
         },
         "es" : {
@@ -45663,8 +45663,8 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Wie oft werden die Umweltmetriken über das Mesh gesendet. Standard ist 30 Minuten."
+            "state" : "translated",
+            "value" : "Wie oft die Umweltmetriken über das Mesh gesendet werden. Standard ist 30 Minuten."
           }
         },
         "es" : {
@@ -45751,8 +45751,8 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Wie oft werden die Strommetriken über das Mesh gesendet. Standard ist 30 Minuten."
+            "state" : "translated",
+            "value" : "Wie oft die Strommetriken über das Mesh gesendet werden. Standard ist 30 Minuten."
           }
         },
         "es" : {
@@ -45839,7 +45839,7 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Wie oft sollten wir versuchen, eine GPS-Position zu erhalten?"
           }
         },
@@ -45945,7 +45945,7 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Wie oft soll der Detektionssensorzustand an das Mesh gesendet werden, unabhängig vom Detektionsstatus? Standardmäßig: Nie."
           }
         },
@@ -46034,7 +46034,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "How often we can send a message to the mesh when people are detected."
+            "value" : "Wie oft wir eine Nachricht an das Mesh senden dürfen, wenn Menschen detektiert wurden."
           }
         },
         "es" : {
@@ -46135,7 +46135,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Wie aktualisiere ich?"
           }
         },
@@ -46311,7 +46311,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Ich weiß, was ich tue"
           }
         },
@@ -46387,7 +46387,7 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Ich habe die oben stehenden Bedingungen gelesen und verstanden. Ich stimme freiwillig zu, dass meine Node-Daten über MQTT unverschlüsselt übertragen werden."
           }
         },
@@ -46967,7 +46967,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "IP-Adresse"
           }
         },
@@ -47125,7 +47125,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Icons"
           }
         },
@@ -47209,7 +47209,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Identität"
           }
         },
@@ -47281,7 +47281,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Nicht aktiv / Schlafen"
           }
         },
@@ -47357,7 +47357,7 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Wenn DOP aktiviert ist, verwenden Sie HDOP / VDOP-Werte anstelle von PDOP"
           }
         },
@@ -47441,8 +47441,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Wenn das Gerät verbunden ist, drücke die untenstehende Taste, um in DFU-Modus zu booten. Andernfalls drücke du zweimal schnell auf die Reset-Taste deines Geräts."
+            "state" : "translated",
+            "value" : "Wenn das Gerät verbunden ist, drücke die untenstehende Taste, um in DFU-Modus zu booten. Andernfalls drücke zweimal schnell auf die Reset-Taste deines Geräts."
           }
         },
         "es" : {
@@ -47605,7 +47605,7 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Wenn aktiviert, werden alle Pakete, die du schickst, an dein Gerät zurückgesendet."
           }
         },
@@ -47775,8 +47775,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Wenn dein Gerät die richtige Aktualisierungssoftware im OTA_1-Partition geladen hat, kannst du versuchen, den BLE-Aktualisierungsvorgang zu verwenden."
+            "state" : "translated",
+            "value" : "Wenn dein Gerät die richtige Aktualisierungssoftware in der OTA_1-Partition geladen hat, kannst du versuchen, den BLE-Aktualisierungsvorgang zu verwenden."
           }
         },
         "es" : {
@@ -47845,8 +47845,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Wenn dein Gerät die richtige Aktualisierungssoftware im OTA_1-Partition installiert hat, kannst du versuchen, den WiFi-Aktualisierungsvorgang zu verwenden."
+            "state" : "translated",
+            "value" : "Wenn dein Gerät die richtige Aktualisierungssoftware in der OTA_1-Partition installiert hat, kannst du versuchen, den WiFi-Aktualisierungsvorgang zu verwenden."
           }
         },
         "es" : {
@@ -47939,7 +47939,7 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Ignoriere MQTT"
           }
         },
@@ -48028,8 +48028,8 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Ignoriere Node"
+            "state" : "translated",
+            "value" : "Ignoriere Knoten"
           }
         },
         "es" : {
@@ -48110,7 +48110,7 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Ignoriert"
           }
         },
@@ -48262,7 +48262,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Importiere .pem"
           }
         },
@@ -48332,7 +48332,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Importiere einen benutzerdefinierten .p12"
           }
         },
@@ -48402,7 +48402,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Importfehler"
           }
         },
@@ -48562,7 +48562,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Wichtige Hinweise"
           }
         },
@@ -48633,7 +48633,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Außerdem werden Config, Keys und BLE-Bonds gelöscht"
+            "value" : "Neben der Config werden Keys und BLE-Bonds gelöscht"
           }
         },
         "es" : {
@@ -48724,7 +48724,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Include"
+            "value" : "Inkludiere"
           }
         },
         "es" : {
@@ -49005,8 +49005,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Das zeigt eine reduzierte GPS-Genauigkeit. Der Knoten befindet sich irgendwo innerhalb des gezeichneten Bereichs."
+            "state" : "translated",
+            "value" : "Das zeigt eine reduzierte GPS-Genauigkeit. Der Knoten befindet sich irgendwo innerhalb des schattierten Bereichs."
           }
         },
         "es" : {
@@ -49159,7 +49159,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Infrastruktur"
           }
         },
@@ -49463,7 +49463,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Einfügen"
           }
         },
@@ -49535,7 +49535,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Link einfügen"
           }
         },
@@ -49607,7 +49607,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Installiere das Firmware-Paket"
           }
         },
@@ -49859,7 +49859,7 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "JSON-Modus ist eine eingeschränkte, nicht verschlüsselte MQTT-Ausgabe für die lokale Integration mit Home Assistant"
           }
         },
@@ -49943,7 +49943,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Verbinde dich mit dem WLAN"
           }
         },
@@ -50103,8 +50103,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Halte dein Gerät in der Nähe deines Telefons."
+            "state" : "translated",
+            "value" : "Halte dein Gerät in die Nähe deines Telefons."
           }
         },
         "es" : {
@@ -50175,8 +50175,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Hält die Mesh-Karte auf dem neuesten Stand und sendet deine Position an die Mesh, während du andere Apps verwendest."
+            "state" : "translated",
+            "value" : "Hält die Mesh-Karte auf dem neuesten Stand und sendet deine Position an das Mesh, während du andere Apps verwendest."
           }
         },
         "es" : {
@@ -50333,7 +50333,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Backup-Schlüssel"
           }
         },
@@ -50421,8 +50421,8 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Schlüsselmappierung"
+            "state" : "translated",
+            "value" : "Schlüsselzuordnung"
           }
         },
         "es" : {
@@ -50874,7 +50874,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Letzter gehörtes Zeitpunkt"
+            "value" : "Letzter gehörter Zeitpunkt"
           }
         },
         "es" : {
@@ -51175,8 +51175,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Letzter gesehenes Gerät:"
+            "state" : "translated",
+            "value" : "Letztes gesehenes Gerät:"
           }
         },
         "es" : {
@@ -51252,7 +51252,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Letzter gesehenes Gerät: %@"
+            "value" : "Letztes gesehenes Gerät: %@"
           }
         },
         "es" : {
@@ -51957,7 +51957,7 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Lizenzierter Betreiber"
           }
         },
@@ -52061,8 +52061,8 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Begrenze die Intervallen für periodische Übertragungen besonders für Telemetrie und Position. Wenn du die Hopfszahlen erhöhen möchtest, tue dies an Knoten am Rand, nicht an den in der Mitte."
+            "state" : "translated",
+            "value" : "Begrenze die Intervalle für periodische Übertragungen besonders für Telemetrie und Position. Wenn du die Hopzahlen erhöhen möchtest, tue dies an Knoten am Rand, nicht an denen in der Mitte."
           }
         },
         "es" : {
@@ -52635,7 +52635,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Das Laden..."
+            "value" : "Lädt..."
           }
         },
         "es" : {
@@ -53074,7 +53074,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Die Lokalisierung des Mesh-Entdeckers erfordert, dass der primäre Kanal die Standard-Schlüssel verwendet. Bitte aktualisiere den Schlüssel deines primären Kanals auf den Standardwert, bevor du scannst."
+            "value" : "Die Lokalisierung des Mesh-Scanners erfordert, dass der primäre Kanal die Standard-Schlüssel verwendet. Bitte aktualisiere den Schlüssel deines primären Kanals auf den Standardwert, bevor du scannst."
           }
         },
         "es" : {
@@ -53145,8 +53145,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Lokales Netzwerkzugriff"
+            "state" : "translated",
+            "value" : "Lokaler Netzwerkzugriff"
           }
         },
         "es" : {
@@ -53924,7 +53924,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Lange Drücke"
+            "value" : "Lange Drücken"
           }
         },
         "es" : {
@@ -55297,7 +55297,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Manuelle Verbindungskette"
+            "value" : "Manueller Verbindungstext"
           }
         },
         "es" : {
@@ -57222,7 +57222,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Nachrichtennachrichten"
+            "value" : "Nachrichten Benachrichtigungen"
           }
         },
         "es" : {
@@ -58613,7 +58613,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Multiplier"
+            "value" : "Multiplikator"
           }
         },
         "es" : {
@@ -60785,7 +60785,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Kein SSH-Client gefunden. Wir öffnen die App Store, damit du einen installieren kannst."
+            "value" : "Kein SSH-Client gefunden. Wir öffnen den App Store, damit du einen installieren kannst."
           }
         },
         "es" : {
@@ -61142,7 +61142,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Keine Firmware wurde für dieses Gerät heruntergeladen."
+            "value" : "Für dieses Gerät wurde keine Firmware heruntergeladen."
           }
         },
         "es" : {
@@ -61594,7 +61594,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Node Core Data Backup %@/%@ - %@ - %@"
+            "value" : "Knoten Kern Daten Backup %@/%@ - %@ - %@"
           }
         },
         "en" : {
@@ -62216,7 +62216,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Node Status"
+            "value" : "Knoten Status"
           }
         },
         "es" : {
@@ -62432,7 +62432,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Node mit einem aktiven Detektionssensormodul."
+            "value" : "Knoten mit einem aktiven Detektionssensormodul."
           }
         },
         "es" : {
@@ -62996,7 +62996,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Nicht ein gültiger Routenfile"
+            "value" : "Ungültige Routen-Datei"
           }
         },
         "es" : {
@@ -63080,7 +63080,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Bitte beachte, dass das Gerät während der Aktualisierung vorübergehend ausgeschaltet wird."
+            "value" : "Bitte beachte, dass die Geräteverbindung während der Aktualisierung vorübergehend getrennt wird."
           }
         },
         "es" : {
@@ -64090,7 +64090,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Offline-Node"
+            "value" : "Offline-Knoten"
           }
         },
         "es" : {
@@ -64342,7 +64342,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Die Einarbeitung für lizenzierte Betreiber erfordert Firmware 2.0.20 oder höher. Bitte konsultiere deine örtlichen Vorschriften und kontaktiere die örtlichen Amateurfrequenzkoordinatoren mit Fragen."
+            "value" : "Die Integration für lizenzierte Betreiber erfordert Firmware 2.0.20 oder höher. Bitte konsultiere deine örtlichen Vorschriften und kontaktiere die örtlichen Amateurfrequenzkoordinatoren mit Fragen."
           }
         },
         "es" : {
@@ -64726,7 +64726,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Online-Node"
+            "value" : "Online-Knoten"
           }
         },
         "es" : {
@@ -65774,7 +65774,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Andere Netzwerk"
+            "value" : "Anderes Netzwerk"
           }
         },
         "es" : {
@@ -65846,7 +65846,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Andere Netzwerk..."
+            "value" : "Anderes Netzwerk..."
           }
         },
         "es" : {
@@ -66386,7 +66386,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Überwinde die automatische OLED-Bildschirmerkennung."
+            "value" : "Übersteuere die automatische OLED-Bildschirmerkennung."
           }
         },
         "es" : {
@@ -66468,7 +66468,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Änder die Standard-Bildschirmaufstellung."
+            "value" : "Ändere das Standard-Bildschirma Layout."
           }
         },
         "es" : {
@@ -66762,7 +66762,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "PaX-Zähler-Protokoll"
+            "value" : "PAX-Zähler-Protokoll"
           }
         },
         "es" : {
@@ -67945,7 +67945,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Steck %lld"
+            "value" : "Pin %lld"
           }
         },
         "es" : {
@@ -68205,7 +68205,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Stelle dein Gerät in DFU-Modus und verbinde es über USB."
+            "value" : "Schalte dein Gerät in DFU-Modus und verbinde es über USB."
           }
         },
         "es" : {
@@ -70255,7 +70255,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Die Positionen werden von deinem Gerät GPS bereitgestellt. Wenn du deaktiviert oder nicht vorhanden auswählen, kannst du eine feste Position festlegen."
+            "value" : "Die Positionen werden von deinem Gerät GPS bereitgestellt. Wenn du deaktiviert oder nicht vorhanden auswählst, kannst du eine feste Position festlegen."
           }
         },
         "es" : {
@@ -72194,7 +72194,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Geben Sie die Bestätigung"
+            "value" : "Bestätigen Sie"
           }
         },
         "es" : {
@@ -72516,7 +72516,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Offene Schlüsselverschlüsselung"
+            "value" : "Public-Key Verschlüsselung"
           }
         },
         "es" : {
@@ -72604,7 +72604,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Public-Schlüssel-Mismatch"
+            "value" : "Nicht übereinstimmender öffentlicher Schlüssel"
           }
         },
         "es" : {
@@ -72800,7 +72800,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Ruhigheitsstatus"
+            "value" : "RF Status"
           }
         },
         "es" : {
@@ -74226,7 +74226,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Starte das Update neu"
+            "value" : "Neustart und Update beginnen"
           }
         },
         "es" : {
@@ -74645,7 +74645,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Erhaltene Akzeptanz: %@"
+            "value" : "Erhaltene Empfangsbestätigungen: %@"
           }
         },
         "es" : {
@@ -75553,7 +75553,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Entwicklungsnotizen"
+            "value" : "Versionsnotizen"
           }
         },
         "es" : {
@@ -76279,7 +76279,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Änder Kanäle"
+            "value" : "Ersetze Kanäle"
           }
         },
         "es" : {
@@ -77725,7 +77725,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Nodes werden abgerufen..."
+            "value" : "Knoten werden abgerufen..."
           }
         },
         "es" : {
@@ -77795,7 +77795,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Nodes abrufen"
+            "value" : "Knoten abrufen"
           }
         },
         "es" : {
@@ -77877,7 +77877,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Nodes %lld abrufen"
+            "value" : "Knoten %lld abrufen"
           }
         },
         "es" : {
@@ -77953,7 +77953,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Versuch es noch einmal"
+            "value" : "Versuche es noch einmal"
           }
         },
         "es" : {
@@ -78023,7 +78023,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Versuche es noch einmal, aktualisieren"
+            "value" : "Versuche das Update noch einmal"
           }
         },
         "es" : {
@@ -78563,7 +78563,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Ringtons übertragen Sprache"
+            "value" : "Sprache für die Klingelton Übertragung"
           }
         },
         "es" : {
@@ -80428,7 +80428,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Der SNR liegt deutlich unter dem voreingestellten Modem-Grenzwert. Sie können Pakettverluste und eine unzuverlässige Lieferung erwarten."
+            "value" : "Der SNR liegt deutlich unter dem voreingestellten Modem-Grenzwert. Sie können Pakettverluste und eine unzuverlässige Übertragung erwarten."
           }
         },
         "es" : {
@@ -81585,7 +81585,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Scanne diesen QR-Code, um %@ auf ein anderes Gerät hinzuzufügen."
+            "value" : "Scanne diesen QR-Code, um %@ auf einem anderen Gerät hinzuzufügen."
           }
         },
         "es" : {
@@ -83107,7 +83107,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Wähle eine Route nach dem Pfad"
+            "value" : "Wähle eine Traceroute"
           }
         },
         "es" : {
@@ -83459,7 +83459,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Wähle einen Knoten aus dem Dropdown, um mit verbundenen oder entfernten Geräten zu verwalten."
+            "value" : "Wähle einen Knoten aus dem Dropdown, um verbundene oder entfernte Geräte zu verwalten."
           }
         },
         "es" : {
@@ -83541,7 +83541,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Wähle eine Emoji"
+            "value" : "Wähle ein Emoji"
           }
         },
         "es" : {
@@ -83969,7 +83969,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Sende einen ASCII-Ton mit einer Benachrichtigungsnachricht. Nützlich zum Auslösen externer Benachrichtigungen über den Ton."
+            "value" : "Sende eine ASCII-Glocke mit einer Benachrichtigungsnachricht. Nützlich zum Auslösen externer Benachrichtigungen über den Ton."
           }
         },
         "es" : {
@@ -84773,7 +84773,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Versende eine Nachricht an einen bestimmten Meshtastic-Node"
+            "value" : "Versende eine Nachricht an einen bestimmten Meshtastic-Knoten"
           }
         },
         "es" : {
@@ -85028,7 +85028,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Siri und CarPlay verwenden, um Meshtastic-Nachrichten per Handysprech zu senden und zu empfangen."
+            "value" : "Siri und CarPlay verwenden, um Meshtastic-Nachrichten per Freisprechen zu senden und zu empfangen."
           }
         },
         "es" : {
@@ -85100,7 +85100,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Sende Kanäle und Direktnachrichten. Halte lange auf jede Nachricht, um Aktionen wie Kopieren, Antwort geben, Rückmeldung und Lieferdetails zu sehen."
+            "value" : "Sende Kanalnachrichten und Direktnachrichten. Lange auf beliebige Nachricht drücken, um Aktionen wie Kopieren, Antwort geben, Rückmeldung und Übertragungsdetails zu sehen."
           }
         },
         "es" : {
@@ -87458,7 +87458,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Setze dich auf die aktuelle Position"
+            "value" : "Setze Position auf die aktuelle Position"
           }
         },
         "es" : {
@@ -87628,7 +87628,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Setzt die Uhrzeitformat auf 12 Stunden."
+            "value" : "Setzt das Uhrzeitformat auf 12 Stunden."
           }
         },
         "es" : {
@@ -88578,7 +88578,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Kurze Bezeichnung & Langue de description"
+            "value" : "Kurze Bezeichnung und langer Name"
           }
         },
         "es" : {
@@ -88880,7 +88880,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Zeige eine Bestätigungsdialogvoraussetzung, bevor die Werkseinstellungen durchgeführt werden"
+            "value" : "Zeige einen Bestätigungsdialog, bevor die Werkseinstellungen durchgeführt werden"
           }
         },
         "es" : {
@@ -89132,7 +89132,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Zeige die Karte-Legende"
+            "value" : "Zeige die Karten-Legende"
           }
         },
         "es" : {
@@ -89604,7 +89604,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Zeigt die Karte-Legende."
+            "value" : "Zeigt die Karten-Legende."
           }
         },
         "es" : {
@@ -89783,7 +89783,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Schließe / Starte Node"
+            "value" : "Stoppe / Starte Knoten neu"
           }
         },
         "es" : {
@@ -90275,7 +90275,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Signal (Direkt nur)"
+            "value" : "Signal (nur Direkt)"
           }
         },
         "es" : {
@@ -90357,7 +90357,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Signalstärke-Meter"
+            "value" : "Anzeige der Signalstärke"
           }
         },
         "es" : {
@@ -90500,7 +90500,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Signal: Fair"
+            "value" : "Signal: Mäßig"
           }
         },
         "es" : {
@@ -91008,7 +91008,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Bodennässe"
+            "value" : "Bodenfeuchte"
           }
         },
         "es" : {
@@ -91552,7 +91552,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Breitbandfaktor"
+            "value" : "Spreizfaktor"
           }
         },
         "es" : {
@@ -92350,7 +92350,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Verkauf & Weiterleitung"
+            "value" : "Zwischenspeichern & Weiterleiten"
           }
         },
         "es" : {
@@ -92438,7 +92438,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Speicher & Übertragungskonfiguration"
+            "value" : "Speichern & Weiterleitungskonfiguration"
           }
         },
         "es" : {
@@ -95837,7 +95837,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Die schnellste Position aktualisierung wird gesendet, wenn der minimale Abstand erfüllt ist"
+            "value" : "Die schnellste Positionsaktualisierung wird gesendet, wenn der minimale Abstand erfüllt ist"
           }
         },
         "es" : {
@@ -95919,7 +95919,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Die Gradientleiste in der Vollansicht zeigt die allgemeine Signalqualität von rot (kein Signal) über Orange, Gelb bis Grün (guter Signal)."
+            "value" : "Die Gradientleiste in der Vollansicht zeigt die allgemeine Signalqualität von rot (kein Signal) über Orange, Gelb bis Grün (gutes Signal)."
           }
         },
         "es" : {
@@ -96171,7 +96171,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Die minimale Änderung der Entfernung in Metern, um eine intelligente Positionssendung zu betrachten."
+            "value" : "Die minimale Änderung der Entfernung in Metern, um eine intelligente Positionssendung zu auszulösen."
           }
         },
         "es" : {
@@ -96525,7 +96525,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Der nummerierte Kreis zeigt an, welcher Kanal der Node verwendet. Nur angezeigt, wenn der Node auf einem sekundären Kanal (nicht dem primären Kanal 0) ist."
+            "value" : "Der nummerierte Kreis zeigt an, welchen Kanal der Node verwendet. Nur angezeigt, wenn der Node auf einem sekundären Kanal (nicht dem primären Kanal 0) ist."
           }
         },
         "es" : {
@@ -97677,7 +97677,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Diese Werte sind in TAK-Positionenberichten enthalten. Lass entweder Einstellung auf Standard setzen, damit das Firmware Cyan und Teammitglied verwendet."
+            "value" : "Diese Werte sind in TAK-Positionenberichten enthalten. Lasse diese Einstellungen auf Standard gesetzt, damit die Firmware Cyan und Teammitglied verwendet."
           }
         },
         "es" : {
@@ -98105,7 +98105,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Diese Appartements senden auf der ausgewählten Intervallzeit eine Reichweite-Testnachricht aus."
+            "value" : "Dieses Gerät sendet in der ausgewählten Intervallzeit eine Reichweiten-Testnachricht aus."
           }
         },
         "es" : {
@@ -99402,7 +99402,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Timing und Überdrückungen"
+            "value" : "Timing und Überschreibungen"
           }
         },
         "es" : {
@@ -99484,7 +99484,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Send to Radio (TX): %lld"
+            "value" : "Zum Radio (TX): %lld"
           }
         },
         "es" : {
@@ -99572,7 +99572,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Um mit Datenschutzgesetzen wie CCPA und GDPR zu comply, vermeiden wir die Weitergabe von genauen Standortdaten. Stattdessen verwenden wir anonymisierte oder ungefähre (unpräzise) Standortinformationen, um Ihre Privatsphäre zu schützen."
+            "value" : "Um mit Datenschutzgesetzen wie CCPA und GDPR übereinzustimmen, vermeiden wir die Weitergabe von genauen Standortdaten. Stattdessen verwenden wir anonymisierte oder ungefähre (unpräzise) Standortinformationen, um Ihre Privatsphäre zu schützen."
           }
         },
         "es" : {
@@ -99656,7 +99656,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Aktiviere die Karte-Legende"
+            "value" : "Aktiviere die Karten-Legende"
           }
         },
         "es" : {
@@ -99910,7 +99910,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Gesamtaufenthaltszeit"
+            "value" : "Gesamtverweilzeit"
           }
         },
         "es" : {
@@ -100601,7 +100601,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Spuren erstellen"
+            "value" : "Trace route erstellen"
           }
         },
         "es" : {
@@ -101468,7 +101468,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Behandle doppelte Taps auf unterstützten Beschleunigungsmesser als Benutzer-Tastenanschlag."
+            "value" : "Behandle doppelte Taps auf unterstützten Beschleunigungsmesser als Benutzer-Tastendruck."
           }
         },
         "es" : {
@@ -102551,7 +102551,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Ungewiss"
+            "value" : "Unbekannt"
           }
         },
         "es" : {
@@ -102961,7 +102961,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Unset"
+            "value" : "Ungesetzt"
           }
         },
         "es" : {
@@ -103244,7 +103244,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Aktualisierungshintergrund"
+            "value" : "Aktualisierungsintervall"
           }
         },
         "es" : {
@@ -103328,7 +103328,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Warnung beim Neustart des Nordic DFU-Firmwares"
+            "value" : "Warnung beim Flashen einer neuen Nordic DFU-Firmware"
           }
         },
         "es" : {
@@ -105257,7 +105257,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Verwendet, um eine gemeinsame Schlüssel mit einem entfernten Gerät zu erstellen."
+            "value" : "Verwendet, um einen gemeinsamen Schlüssel mit einem entfernten Gerät zu erstellen."
           }
         },
         "es" : {
@@ -105791,7 +105791,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Benutzeroberfläche-Austausch fehlgeschlagen"
+            "value" : "Benutzerinformation-Austausch fehlgeschlagen"
           }
         },
         "es" : {
@@ -106615,7 +106615,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Überprüfe, wer du mit dem Messaging kommunizierst, indem du die öffentlichen Schlüssel persönlich oder telefonisch verglichst. Der aktuellste öffentliche Schlüssel für diesen Knoten entspricht dem zuvor aufgezeichneten Schlüssel nicht. Du kannst den Knoten löschen und ihn erneut mit den Schlüsseln austauschen, wenn die Schlüsseländerung auf einen Fabrikreset oder eine andere absichtliche Aktion zurückzuführen ist, aber dies kann auch auf ein ernsthaftes Sicherheitsproblem hinweisen."
+            "value" : "Überprüfe, mit wem du mit dem Messaging kommunizierst, indem du die öffentlichen Schlüssel persönlich oder telefonisch verglichst. Der aktuellste öffentliche Schlüssel für diesen Knoten entspricht nicht dem zuvor aufgezeichneten Schlüssel. Du kannst den Knoten löschen und erneut die Schlüssel austauschen, wenn die Schlüsseländerung auf einen Fabrikreset oder eine andere absichtliche Aktion zurückzuführen ist, aber dies kann auch auf ein ernsthaftes Sicherheitsproblem hinweisen."
           }
         },
         "es" : {
@@ -107210,7 +107210,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Voltage"
+            "value" : "Spannung"
           }
         },
         "es" : {
@@ -107319,7 +107319,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Voltage %@"
+            "value" : "Spannung %@"
           }
         },
         "es" : {
@@ -107617,7 +107617,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Auf dem Bildschirm aufwachen oder durch Bewegung"
+            "value" : "Bildschirm aufwecken durch Berührung oder durch Bewegung"
           }
         },
         "es" : {
@@ -107773,7 +107773,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Waypoint"
+            "value" : "Wegpunkt"
           }
         },
         "es" : {
@@ -107843,7 +107843,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Waypoint konnte nicht gesendet werden"
+            "value" : "Wegpunkt konnte nicht gesendet werden"
           }
         },
         "es" : {
@@ -108013,7 +108013,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Waypoints"
+            "value" : "Wegpunkte"
           }
         },
         "es" : {
@@ -108664,7 +108664,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Welche Lizenzmodus verwendet: \n* Setzt den Knotennamen auf Ihren Rufzeichen \n* Sendet Knoteninformationen alle 10 Minuten aus \n* Überwacht Frequenz, Arbeitszyklus und Transmissionsleistung \n* Deaktiviert die Verschlüsselung"
+            "value" : "Was der Lizenzmodus macht: \n* Setzt den Knotennamen auf Ihren Rufzeichen \n* Sendet Knoteninformationen alle 10 Minuten aus \n* Überwacht Frequenz, Arbeitszyklus und Transmissionsleistung \n* Deaktiviert die Verschlüsselung"
           }
         },
         "es" : {
@@ -109457,7 +109457,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Ich schlafe alles so viel wie möglich, auch für die Tracker- und Sensorrolle wird dies auch die LoRa-Radioeinschaltung beinhalten. Verwende diese Einstellung nicht, wenn du dein Gerät mit den Telefon-Apps verwenden möchtest oder wenn du ein Gerät ohne Benutzerknopf verwendest."
+            "value" : "Ich schlafe so viel wie möglich, für die Tracker- und Sensorrolle wird dies auch das LoRa-Radio beinhalten. Verwende diese Einstellung nicht, wenn du dein Gerät mit den Telefon-Apps verwenden möchtest oder wenn du ein Gerät ohne Benutzerknopf verwendest."
           }
         },
         "es" : {
@@ -110169,7 +110169,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Du bist kurz davor, das neue Firmware auf dein Gerät zu flashen. Dieser Vorgang birgt Risiken. Unerfolgreiche Updates können fehlschlagen und in einigen Fällen erfordert dies eine Neuflaschung des Bootloaders."
+            "value" : "Du bist kurz davor, die neue Firmware auf dein Gerät zu flashen. Dieser Vorgang birgt Risiken. Updates können fehlschlagen und in einigen Fällen erfordert dies eine Neuflaschung des Bootloaders."
           }
         },
         "es" : {
@@ -110416,7 +110416,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Deine Kanalkonfiguration für TAK ist abgeschlossen. Um den QR-Code zu teilen, geh zu Einstellungen > QR-Code teilen"
+            "value" : "Deine Kanalkonfiguration für TAK ist abgeschlossen. Um den QR-Code zu teilen, gehe zu Einstellungen > QR-Code teilen"
           }
         },
         "es" : {
@@ -110482,7 +110482,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Deine verknüpfte Geräte laufen mit einem älteren Firmware-Build als **%@**, der bekannte Sicherheitslücken enthält. Die Aktualisierung deines Firmwares wird dringend empfohlen, um dein Gerät und dein Mesh-Netzwerk zu schützen."
+            "value" : "Deine verknüpfte Geräte laufen mit einem älteren Firmware-Build als **%@**, der bekannte Sicherheitslücken enthält. Die Aktualisierung deiner Firmware wird dringend empfohlen, um dein Gerät und dein Mesh-Netzwerk zu schützen."
           }
         },
         "es" : {
@@ -110710,7 +110710,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Deine Node sendet regelmäßig eine unverschlüsselte Map-Berichtspaket an den konfigurierten MQTT-Server, das umfasst ID, Kurz- und Langname, ungefähre Lage, Hardwaremodell, Rolle, Firmware-Version, LoRa-Region, Modem-Vorwahl und den Namen des primären Kanals."
+            "value" : "Deine Node sendet regelmäßig ein unverschlüsseltes Map-Berichtspaket an den konfigurierten MQTT-Server, das umfasst ID, Kurz- und Langname, ungefähre Lage, Hardwaremodell, Rolle, Firmware-Version, LoRa-Region, Modem-Vorwahl und den Namen des primären Kanals."
           }
         },
         "es" : {
@@ -110798,7 +110798,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Die Betriebsfrequenz deines Knotens wird basierend auf der Region, dem Modem-Vorwahl und diesem Feld berechnet. Wenn 0, wird der Slot automatisch basierend auf dem Namen des Hauptkanals berechnet."
+            "value" : "Die Betriebsfrequenz deines Knotens wird basierend auf der Region, der Modem-Vorwahl und diesem Feld berechnet. Wenn 0, wird der Slot automatisch basierend auf dem Namen des Hauptkanals berechnet."
           }
         },
         "es" : {
@@ -110882,7 +110882,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Deine Passwort wird direkt über Bluetooth an das Gerät gesendet und wird nie gespeichert."
+            "value" : "Dein Passwort wird direkt über Bluetooth an das Gerät gesendet und wird nie gespeichert."
           }
         },
         "es" : {
@@ -111042,7 +111042,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Deine Hauptschiene verwendet die Standardeinstellungen (keine Bezeichnung oder Standard-Sicherheitsschlüssel). TAK Server läuft in Lese-Nur-Modus."
+            "value" : "Dein Hauptskanal verwendet die Standardeinstellungen (keine Bezeichnung oder Standard-Sicherheitsschlüssel). TAK Server läuft in Lese-Nur-Modus."
           }
         },
         "es" : {
@@ -111194,7 +111194,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Deine Region hat eine %lld%% Arbeitsbelastung. MQTT wird nicht empfohlen, wenn du eine Arbeitsbelastung hast, da der zusätzliche Verkehr dein LoRa-Mesh schnell überlasten wird."
+            "value" : "Deine Region hat eine %lld%% Arbeitsbelastung. MQTT wird nicht empfohlen, wenn du eine Arbeitsbelastungbeschränkung für deine Region hast, da der zusätzliche Verkehr dein LoRa-Mesh schnell überlasten wird."
           }
         },
         "es" : {
