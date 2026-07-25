@@ -21,8 +21,9 @@ struct TCPConnectionSendTests {
 	/// With `connection == nil` (any time after `disconnect()`, which nils it) that whole
 	/// statement was a no-op: the continuation was created, never handed to a completion
 	/// handler, and never resumed. There is no cancellation handler on that continuation
-	/// either, so the caller parked forever and could not be cancelled out of it. Both real
-	/// callers run with `timeout: nil`, so the connect sequence never returned.
+	/// either, so the caller parked forever and could not be cancelled out of it. The two
+	/// heartbeat connect steps are built with `timeout: nil`, so the connect sequence never
+	/// returned and nothing timed it out.
 	///
 	/// Against the unfixed code this test times out at the 3s deadline and fails. Against the
 	/// fixed code `send` throws `AccessoryError.disconnected` promptly.
@@ -45,9 +46,11 @@ struct TCPConnectionSendTests {
 			}
 		}
 
-		let deadline = Date().addingTimeInterval(3)
+		// Monotonic clock, not `Date()`: a wall-clock deadline can collapse or stretch under an
+		// NTP step, device sleep or a debugger pause, which would fail this test against working code.
+		let deadline = ContinuousClock.now.advanced(by: .seconds(3))
 		var finished = false
-		while Date() < deadline {
+		while ContinuousClock.now < deadline {
 			if await flag.isFinished() {
 				finished = true
 				break
@@ -62,10 +65,15 @@ struct TCPConnectionSendTests {
 			return
 		}
 
+		// Pin the exact case AND its payload: `TCPConnection` throws two different `.disconnected`
+		// messages, so matching the case alone would still pass if `send` started failing for the
+		// receive path's reason instead.
 		let thrown = await sendTask.value
-		guard let accessoryError = thrown as? AccessoryError, case .disconnected = accessoryError else {
+		guard let accessoryError = thrown as? AccessoryError,
+			  case .disconnected(let message) = accessoryError else {
 			Issue.record("Expected AccessoryError.disconnected, got \(String(describing: thrown))")
 			return
 		}
+		#expect(message == "Not connected")
 	}
 }
