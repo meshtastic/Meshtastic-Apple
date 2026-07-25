@@ -959,7 +959,7 @@ extension PerformanceSeedData {
 /// With the map fan-out removed, nodes that sit within a few meters of each other stay stacked. When
 /// clustering is on they collapse into one count badge (tap -> picker); with `--cluster-demo-no-clustering`
 /// they render as overlapping pins (a plain pin tap must still open the picker, per the clustering-off
-/// path in `MeshMapMK.presentNodeSelection`).
+/// path in `MeshMapMK.presentItemSelection`).
 ///
 /// Scenarios (pick with a launch arg, or `MESHTASTIC_CLUSTER_DEMO_SCENARIO=<name>`; no rebuild needed
 /// to switch once compiled):

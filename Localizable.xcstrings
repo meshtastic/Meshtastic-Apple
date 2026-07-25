@@ -83096,6 +83096,9 @@
         }
       }
     },
+    "Select an Item (%@)" : {
+      "comment" : "Title of the map picker shown when a tapped cluster or coincident stack contains more than one item (nodes and/or waypoints). %@ is the item count."
+    },
     "Select a Trace Route" : {
       "localizations" : {
         "da" : {
