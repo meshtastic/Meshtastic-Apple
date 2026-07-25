@@ -368,54 +368,77 @@ struct MeshMapMK: View {
 			let fromName = getNodeInfo(id: route.fromNum, context: context)?.user?.shortName ?? route.fromNum.toHex()
 			let toName = getNodeInfo(id: route.toNum, context: context)?.user?.shortName ?? route.toNum.toHex()
 			let flyLegs = traceRouteFlyoverLegs(for: route)
-			HStack(spacing: 10) {
-				Image(systemName: "point.3.connected.trianglepath.dotted")
-				Text("Trace Route: \(fromName) → \(toName)")
-					.font(.callout)
-					.fontWeight(.medium)
-					.lineLimit(1)
-				if flyLegs.contains(where: { $0.count >= 2 }) {
-					// Speed toggle: cycle 1× (base/slow) → 1.5× → 2× → 2.5× → 3× → 4× → 5× (400% faster). Live-adjustable.
-					Button {
-						let steps: [Double] = [1, 1.5, 2, 2.5, 3, 4, 5]
-						let next = (steps.firstIndex(of: flyover.speedMultiplier) ?? 0) + 1
-						flyover.speedMultiplier = steps[next % steps.count]
-					} label: {
-						Text(String(format: "%g×", flyover.speedMultiplier))
-							.font(.caption)
-							.fontWeight(.semibold)
-							.monospacedDigit()
-							.frame(minWidth: 30)
-					}
-					.buttonStyle(.bordered)
-					// Text(_:) localizes via the "Flyover speed %@" key; pass a language-agnostic "2×".
-					.accessibilityLabel(Text("Flyover speed \(String(format: "%g×", flyover.speedMultiplier))"))
-					Button {
-						if flyover.isFlying {
-							flyover.stop()
-						} else {
-							flyover.start(legs: flyLegs)
+			let hasFlyover = flyLegs.contains(where: { $0.count >= 2 })
+			// Pause the flyover when live mesh traffic is high: the flythrough is an MKMapView camera
+			// animation that competes with the SwiftUI re-renders ingestion drives, so it would stutter.
+			let flyoverPaused = hasFlyover && accessoryManager.isHighMeshTraffic
+			VStack(spacing: 6) {
+				HStack(spacing: 10) {
+					Image(systemName: "point.3.connected.trianglepath.dotted")
+					Text("Trace Route: \(fromName) → \(toName)")
+						.font(.callout)
+						.fontWeight(.medium)
+						.lineLimit(1)
+					if hasFlyover {
+						// Speed toggle: cycle 1× (base/slow) → 1.5× → 2× → 2.5× → 3× → 4× → 5× (400% faster). Live-adjustable.
+						Button {
+							let steps: [Double] = [1, 1.5, 2, 2.5, 3, 4, 5]
+							let next = (steps.firstIndex(of: flyover.speedMultiplier) ?? 0) + 1
+							flyover.speedMultiplier = steps[next % steps.count]
+						} label: {
+							Text(String(format: "%g×", flyover.speedMultiplier))
+								.font(.caption)
+								.fontWeight(.semibold)
+								.monospacedDigit()
+								.frame(minWidth: 30)
 						}
+						.buttonStyle(.bordered)
+						// Text(_:) localizes via the "Flyover speed %@" key; pass a language-agnostic "2×".
+						.accessibilityLabel(Text("Flyover speed \(String(format: "%g×", flyover.speedMultiplier))"))
+						Button {
+							if flyover.isFlying {
+								flyover.stop()
+							} else if !flyoverPaused {
+								// Guard as well as disable: never launch a doomed flyover under heavy traffic.
+								flyover.start(legs: flyLegs)
+							}
+						} label: {
+							Image(systemName: flyover.isFlying ? "stop.circle.fill" : "play.circle.fill")
+								.foregroundStyle(flyover.isFlying ? Color.red : (flyoverPaused ? Color.secondary : Color.accentColor))
+						}
+						.buttonStyle(.plain)
+						// Keep the stop button live so a running flyover can always be dismissed; only
+						// block starting a new one while traffic is high.
+						.disabled(flyoverPaused && !flyover.isFlying)
+						.accessibilityLabel(flyover.isFlying ? Text("Stop flyover") : Text("Start flyover"))
+						.accessibilityHint(flyoverPaused && !flyover.isFlying ? Text("Flyover paused — mesh traffic is high") : Text(verbatim: ""))
+					}
+					Button {
+						clearTraceRoute()
 					} label: {
-						Image(systemName: flyover.isFlying ? "stop.circle.fill" : "play.circle.fill")
-							.foregroundStyle(flyover.isFlying ? Color.red : Color.accentColor)
+						Image(systemName: "xmark.circle.fill")
+							.foregroundStyle(.secondary)
 					}
 					.buttonStyle(.plain)
-					.accessibilityLabel(flyover.isFlying ? Text("Stop flyover") : Text("Start flyover"))
+					.accessibilityLabel(String(localized: "Clear trace route", comment: "VoiceOver label for the clear trace route button"))
 				}
-				Button {
-					clearTraceRoute()
-				} label: {
-					Image(systemName: "xmark.circle.fill")
+				.padding(.horizontal, 14)
+				.padding(.vertical, 8)
+				.background(.thinMaterial, in: Capsule())
+
+				if flyoverPaused {
+					// Localized reason shown under the banner while the flyover is held back.
+					Label("Flyover paused — mesh traffic is high", systemImage: "exclamationmark.triangle")
+						.font(.caption2)
 						.foregroundStyle(.secondary)
+						.padding(.horizontal, 12)
+						.padding(.vertical, 4)
+						.background(.thinMaterial, in: Capsule())
+						.transition(.opacity)
 				}
-				.buttonStyle(.plain)
-				.accessibilityLabel(String(localized: "Clear trace route", comment: "VoiceOver label for the clear trace route button"))
 			}
-			.padding(.horizontal, 14)
-			.padding(.vertical, 8)
-			.background(.thinMaterial, in: Capsule())
 			.padding(.top, 8)
+			.animation(.default, value: flyoverPaused)
 		}
 	}
 
@@ -425,6 +448,15 @@ struct MeshMapMK: View {
 		meshClusterMapView
 			.ignoresSafeArea()
 			.overlay(alignment: .top) { traceRouteBanner }
+			.onChange(of: accessoryManager.isHighMeshTraffic) { _, isHigh in
+				// Traffic has been high for a sustained window (the monitor debounces this) — stop an
+				// in-flight flyover so it doesn't grind. The play button's disable + start guard keep it
+				// from relaunching until the rate settles back below the resume watermark.
+				if isHigh && flyover.isFlying {
+					Logger.services.info("🛰️ Pausing trace-route flyover: sustained high mesh traffic")
+					flyover.stop()
+				}
+			}
 				.sheet(item: $selectedNode) { selection in
 					if let node = getNodeInfo(id: selection.id, context: context) {
 						NavigationStack {
