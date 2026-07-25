@@ -60,6 +60,19 @@ actor BLETransport: Transport {
 	/// suspension point and starts scanning after a caller believes discovery is off (#2183
 	/// review).
 	private var discoverySetupTask: Task<Void, Never>?
+
+	/// Seam over `CBCentralManager.retrievePeripherals(withIdentifiers:)`, used by
+	/// `resolvePeripheral(for:)` when the discovery cache misses. `CBPeripheral` can't be
+	/// constructed in a test, so this exists so a test can at least observe *that* the cache-miss
+	/// fallback is consulted — which is precisely what regressed: the old cache-only `guard` threw
+	/// "Peripheral not found" without ever asking CoreBluetooth. `nil` means "use the real
+	/// central manager".
+	private var peripheralRetrieverOverride: (@Sendable (UUID) -> CBPeripheral?)?
+
+	/// Test-only injection point for `peripheralRetrieverOverride`.
+	func setPeripheralRetrieverForTesting(_ retriever: (@Sendable (UUID) -> CBPeripheral?)?) {
+		self.peripheralRetrieverOverride = retriever
+	}
 	
 	// Transport properties
 	let supportsManualConnection: Bool = false
@@ -349,8 +362,48 @@ actor BLETransport: Transport {
 		self.connectionDidDisconnect(fromPeripheral: peripheral)
 	}
 
+	/// Resolves `device` to a `CBPeripheral`, falling back to CoreBluetooth's own registry when
+	/// the discovery cache can't answer.
+	///
+	/// The cache alone is not a valid source here. `stopScanning()` clears
+	/// `discoveredPeripherals`, and the connect sequence deliberately stops discovery *before* it
+	/// connects (Step 0 of `AccessoryManager.connect`, which closes the scan-during-pairing race
+	/// from #2183). Once that stop became genuinely awaited, the cache was guaranteed empty by the
+	/// time Step 1 called `connect(to:)`, so this method threw "Peripheral not found" and
+	/// `centralManager.connect(_:)` was never reached — the radio sat there advertising and never
+	/// saw a connection attempt, while the UI looped on "Attempt 2 of 2".
+	///
+	/// `retrievePeripherals(withIdentifiers:)` is the API meant for this case: reconnecting to a
+	/// peripheral already known to the system, by identifier, without having to scan for it first.
+	private func resolvePeripheral(for device: Device) -> CBPeripheral? {
+		guard let uuid = UUID(uuidString: device.identifier) else {
+			Logger.transport.error("🛜 [BLE] Device identifier is not a UUID: \(device.identifier, privacy: .public)")
+			return nil
+		}
+		if let cached = discoveredPeripherals[uuid]?.peripheral {
+			return cached
+		}
+		let retriever = peripheralRetrieverOverride
+		guard retriever != nil || centralManager != nil else {
+			Logger.transport.error("🛜 [BLE] Cannot resolve peripheral \(uuid, privacy: .public): Bluetooth not initialized.")
+			return nil
+		}
+		let lookup = retriever ?? { [centralManager] uuid in
+			centralManager?.retrievePeripherals(withIdentifiers: [uuid]).first
+		}
+		guard let retrieved = lookup(uuid) else {
+			Logger.transport.error("🛜 [BLE] Peripheral \(uuid, privacy: .public) is neither in the discovery cache nor known to CoreBluetooth.")
+			return nil
+		}
+		Logger.transport.info("🛜 [BLE] Peripheral \(uuid, privacy: .public) not in discovery cache; retrieved it from CoreBluetooth.")
+		// Re-seed the cache so retries and the disconnect cleanup paths (which remove by
+		// identifier) behave exactly as they do for a scan-discovered peripheral.
+		discoveredPeripherals[uuid] = (peripheral: retrieved, lastSeen: Date())
+		return retrieved
+	}
+
 	func connect(to device: Device) async throws -> any Connection {
-		guard let peripheral = discoveredPeripherals[UUID(uuidString: device.identifier)!] else {
+		guard let peripheral = resolvePeripheral(for: device) else {
 			throw AccessoryError.connectionFailed("Peripheral not found")
 		}
 		
@@ -367,24 +420,24 @@ actor BLETransport: Transport {
 						return
 					}
 					self.connectContinuation = cont
-					self.connectingPeripheral = peripheral.peripheral
+					self.connectingPeripheral = peripheral
 					guard centralManager != nil else {
 						cont.resume(throwing: AccessoryError.connectionFailed("Bluetooth not initialized"))
 						return
 					}
-					centralManager.connect(peripheral.peripheral)
+					centralManager.connect(peripheral)
 				}
 				self.activeConnection = newConnection
 				return newConnection
 			} onCancel: {
 				Task {
-					await self.cancelConnectContinuation(for: peripheral.peripheral)
+					await self.cancelConnectContinuation(for: peripheral)
 				}
 			}
 			Logger.transport.debug("🛜 [BLE] Connect complete.")
 			return returnConnection
 		} catch {
-			connectionDidDisconnect(fromPeripheral: peripheral.peripheral)
+			connectionDidDisconnect(fromPeripheral: peripheral)
 			throw error
 		}
 	}
