@@ -179,6 +179,25 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 	
 	@Published var isLoadingDeviceList: Bool = false
 	@Published var isLoadingFirmwareList: Bool = false
+
+	// Device-list loading is reported by two independently-scheduled passes (the local seed and
+	// the network image/link pass) that can overlap — init's cascade, connect Step 3, and the
+	// Reset Database action all drive them. A plain Bool lets whichever pass finishes first clear
+	// the flag out from under one that is still running, so count the passes instead and only
+	// lower the flag when the last one exits.
+	@MainActor private var deviceListLoadDepth = 0
+
+	@MainActor private func beginDeviceListLoad() {
+		deviceListLoadDepth += 1
+		isLoadingDeviceList = true
+	}
+
+	@MainActor private func endDeviceListLoad() {
+		deviceListLoadDepth = max(0, deviceListLoadDepth - 1)
+		if deviceListLoadDepth == 0 {
+			isLoadingDeviceList = false
+		}
+	}
 	
 	// Not private: MeshtasticTests constructs an instance with an in-memory container to
 	// assert the bundled seed stays network-free. `shared` remains the only app-side entry.
@@ -195,11 +214,7 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 			await self.refreshBundledEventFirmwareData()
 			// Then silently update from the live API in the background.
 			Task.detached(priority: .utility) {
-				// Images and msh.to links are network-backed; they were split out of the
-				// bundled seed so no caller can block on them. Run them here, sequentially
-				// ahead of the API refresh, so the two don't stack up concurrent requests.
-				await self.refreshDeviceImagesAndLinks()
-				try? await self.refreshDevicesAPIData()
+				await self.refreshDevicesPreferringAPI()
 			}
 			Task.detached(priority: .utility) {
 				await self.refreshEventFirmwareAPIData()
@@ -271,10 +286,9 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 
 	func refreshDevicesAPIData() async throws {
 		guard let container else { return }
-		// Silent background update — bundled data already loaded at launch, no spinner needed.
-		defer {
-			Task { @MainActor in self.isLoadingDeviceList = false }
-		}
+		// No spinner bookkeeping here: this function raises no loading flag of its own, and the
+		// image/link pass it delegates to in PHASE 3 manages the flag around its own lifetime.
+		// Clearing it here would lower a flag a concurrent seed still needs raised.
 		// PHASE 1: Network only — no bundle fallback (bundle was already loaded at init).
 		let finalData = try await Self.deviceURLEndpoint.data(timeout: 10.0)
 		guard !finalData.isEmpty else { throw MeshtasticAPIError.unableToRetreviveJSON }
@@ -336,28 +350,10 @@ deviceEntity.architecture = device.architecture
 			try context.save()
 		}
 
-		// PHASE 3: Images (Async Mixed)
-		// Now that the devices exist in DB, we process images one by one.
-		// We loop through the *Decoded Structs* (not DB objects) to get URLs.
-		await withTaskGroup(of: Void.self) { group in
-			for device in decodedDevices {
-				group.addTask {
-					guard let imagesList = device.images else { return }
-					for imageName in imagesList {
-						await self.processImage(imageName: imageName, platform: device.platformioTarget)
-					}
-				}
-			}
-		}
-
-		// Final cleanup of images on mainContext
-		await MainActor.run {
-			let context = container.mainContext
-			Self.deleteOrphanedImages(context: context)
-			try? context.save()
-		}
-		// PHASE 4: Import msh.to device links
-		await importDeviceLinks()
+		// PHASE 3: Images and msh.to links. This is the single image/link pass, driven by the
+		// live device list so hardware present only in the API still gets its images. It runs
+		// here, after the metadata upsert, so the device rows the images attach to already exist.
+		await refreshDeviceImagesAndLinks(apiDevices: decodedDevices)
 	}
 
 	// MARK: - Device Links Import
@@ -641,10 +637,10 @@ extension MeshtasticAPI {
 	/// are network-backed and live in `refreshDeviceImagesAndLinks()`; keep them out of here.
 	func refreshBundledDevicesData() async throws {
 		guard let container else { return }
-		await MainActor.run { self.isLoadingDeviceList = true }
+		await beginDeviceListLoad()
 		// Clear on every exit, not just the happy path: a failed bundle read, decode, or save
 		// would otherwise leave the hardware views pinned in their loading state for good.
-		defer { Task { @MainActor in self.isLoadingDeviceList = false } }
+		defer { Task { @MainActor in self.endDeviceListLoad() } }
 		let bundledData = try Self.bundledDeviceHardwareData()
 		let decodedDevices = try decoder.decode([DeviceHardware].self, from: bundledData)
 		try await MainActor.run {
@@ -689,29 +685,90 @@ extension MeshtasticAPI {
 		}
 	}
 
-	/// Refresh device images and the msh.to link catalog.
+	/// Refresh the device catalog, images and msh.to links, preferring the live API.
 	///
-	/// Both hit the network, so this must never be awaited from the connect path. On a captive
-	/// portal or a zero-rated cellular link the image requests neither succeed nor fail fast:
-	/// `URL.eTag()` sets no timeout and inherits `URLSession.shared`'s 60s default, so none of the
-	/// 82 image requests resolve inside connect Step 3's 30s budget (issue #2196). Callers must
-	/// run this detached.
-	func refreshDeviceImagesAndLinks() async {
-		guard let container else { return }
-		// Re-read the bundle rather than taking the decoded list as a parameter: this runs on its
-		// own schedule, decoupled from whoever seeded the catalog. The read is local and cheap.
-		guard let bundledData = try? Self.bundledDeviceHardwareData(),
-			  let decodedDevices = try? decoder.decode([DeviceHardware].self, from: bundledData) else {
-			Logger.services.warning("Unable to load bundled device hardware for image refresh")
-			return
+	/// The API refresh owns the image/link pass and drives it from the live device list; only when
+	/// it fails do we fall back to a bundle-only pass, whose `processImage()` resolves images from
+	/// the app bundle and whose `importDeviceLinks()` falls back to the bundled `urls.json`.
+	///
+	/// This is the shape all three network-pass callers need — launch, the Reset Database action,
+	/// and BLE connect Step 3b — so it lives here rather than being restated at each call site.
+	/// Every one of them must run it detached: both halves hit the network and must never be
+	/// awaited inside connect Step 3's 30s budget (issue #2196).
+	func refreshDevicesPreferringAPI() async {
+		do {
+			try await refreshDevicesAPIData()
+		} catch is CancellationError {
+			// Teardown, not a network failure — starting a second 78-request pass on the way out
+			// would only amplify work. Checked on the caught error rather than `Task.isCancelled`:
+			// callers use unstructured tasks, which inherit priority, task-locals and actor
+			// isolation from the enclosing task but *not* its cancellation.
+		} catch {
+			Logger.services.warning(
+				"Device API refresh failed; falling back to the bundled image/link pass: \(error.localizedDescription, privacy: .public)"
+			)
+			await refreshDeviceImagesAndLinks()
 		}
+	}
+
+	/// Refresh device images and the msh.to link catalog from the bundled catalog alone.
+	///
+	/// This is the offline path: `processImage` falls back to the app bundle, so it is what puts
+	/// device images on screen with no connectivity. When the live API is reachable,
+	/// `refreshDevicesAPIData()` runs the pass instead, from the fuller API device list.
+	func refreshDeviceImagesAndLinks() async {
+		await refreshDeviceImagesAndLinks(apiDevices: nil)
+	}
+
+	/// The single image/link refresh pass.
+	///
+	/// Both halves hit the network, so this must never be awaited from the connect path. On a
+	/// captive portal or a zero-rated cellular link the image requests neither succeed nor fail
+	/// fast: `URL.eTag()` sets no timeout and inherits `URLSession.shared`'s 60s default, so none
+	/// of the 82 image requests resolve inside connect Step 3's 30s budget (issue #2196). Callers
+	/// must run this detached.
+	///
+	/// The work list is the union of the bundled catalog and, when the caller has one, the live
+	/// API list. The bundled seed and the API refresh used to run a pass each, so every online
+	/// startup fetched every ETag twice. Unioning here keeps it to one pass without dropping
+	/// images for hardware that appears in only one of the lists.
+	///
+	/// Deduplication is on image file name, not (platform, name): the request URL derives from the
+	/// file name alone, and `DeviceHardwareImageEntity` is keyed by `fileName` with a single
+	/// `device` relationship, so a name shared by several platforms (3 in the current catalog, and
+	/// 82 entries collapse to 78 names) can only ever belong to one device row. Previously that was
+	/// a fetch per platform racing to claim the row; now it is one fetch attached to the first
+	/// device in catalog order.
+	private func refreshDeviceImagesAndLinks(apiDevices: [DeviceHardware]?) async {
+		guard let container else { return }
+		// The hardware views key their placeholder on this flag: DeviceHardwareImage,
+		// SupportedHardwareBadge and NodeInfoItem all show a spinner while it is true and the
+		// "UNSET" artwork once it is false. Before the seed/network split it stayed raised across
+		// this pass; raising it here keeps that, rather than showing UNSET for the whole download.
+		await beginDeviceListLoad()
+		defer { Task { @MainActor in self.endDeviceListLoad() } }
+
+		let bundledDevices: [DeviceHardware]
+		if let bundledData = try? Self.bundledDeviceHardwareData(),
+		   let decoded = try? decoder.decode([DeviceHardware].self, from: bundledData) {
+			bundledDevices = decoded
+		} else {
+			Logger.services.warning("Unable to load bundled device hardware for image refresh")
+			bundledDevices = []
+		}
+
+		var work: [(imageName: String, platform: String)] = []
+		var seen = Set<String>()
+		for device in bundledDevices + (apiDevices ?? []) {
+			for imageName in device.images ?? [] where seen.insert(imageName).inserted {
+				work.append((imageName: imageName, platform: device.platformioTarget))
+			}
+		}
+
 		await withTaskGroup(of: Void.self) { group in
-			for device in decodedDevices {
+			for item in work {
 				group.addTask {
-					guard let imagesList = device.images else { return }
-					for imageName in imagesList {
-						await self.processImage(imageName: imageName, platform: device.platformioTarget)
-					}
+					await self.processImage(imageName: item.imageName, platform: item.platform)
 				}
 			}
 		}

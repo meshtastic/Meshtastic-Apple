@@ -128,8 +128,11 @@ extension AccessoryManager {
 				}
 				Logger.transport.info("🔗👟 [Connect] Step 3: Send wantConfig (config)")
 				try await self.sendWantConfig()
-				// Always refresh bundled device catalog so hardware info and "I want one" links
-				// are present after any database clear, regardless of who initiated the connect.
+				// Always refresh the bundled device catalog so hardware metadata is present after any
+				// database clear, regardless of who initiated the connect. Metadata only: this call is
+				// awaited inside a 30s Step budget, so it must stay local (issue #2196). Device images
+				// and the "I want one" msh.to links are network-backed and are restored by the detached
+				// pass below instead.
 				do {
 					Logger.transport.info("🔗👟 [Connect] Step 3a: Refresh bundled Meshtastic device hardware data")
 					try await MeshtasticAPI.shared.refreshBundledDevicesData()
@@ -138,15 +141,20 @@ extension AccessoryManager {
 					Logger.services.warning("Failed to refresh bundled device hardware data after config completion: \(error.localizedDescription, privacy: .public)")
 				}
 
-				if refreshDeviceHardwareFromAPI {
-					Logger.transport.info("🔗👟 [Connect] Step 3b: Refresh Meshtastic device hardware API data")
-					Task.detached(priority: .utility) {
-						do {
-							try await MeshtasticAPI.shared.refreshDevicesAPIData()
-							Logger.services.info("✅ [MeshtasticAPI] Refreshed device hardware data after config completion")
-						} catch {
-							Logger.services.warning("Failed to refresh device hardware data after config completion: \(error.localizedDescription, privacy: .public)")
-						}
+				// Step 3b: images and msh.to links. `clearDatabase` batch-deletes
+				// DeviceHardwareImageEntity and DeviceLinkEntity, and a NodeDB/factory reset or a
+				// device switch clears mid-session and then reconnects — so launch-time population is
+				// already gone by the time we get here and something on the connect path has to
+				// restore them. Detached on purpose: both halves hit the network and must never be
+				// awaited inside this Step's 30s budget. `refreshDeviceHardwareFromAPI` defaults to
+				// false, so the bundle-only pass is what runs on a normal reconnect; it resolves
+				// images from the app bundle and msh.to links from the bundled urls.json.
+				Logger.transport.info("🔗👟 [Connect] Step 3b: Refresh device images and msh.to links")
+				Task.detached(priority: .utility) {
+					if refreshDeviceHardwareFromAPI {
+						await MeshtasticAPI.shared.refreshDevicesPreferringAPI()
+					} else {
+						await MeshtasticAPI.shared.refreshDeviceImagesAndLinks()
 					}
 				}
 			}
