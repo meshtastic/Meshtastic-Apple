@@ -215,9 +215,17 @@ extension AccessoryManager {
 			// closeConnection() resets it to closed. Without a timeout, a teardown that races this
 			// step leaves it suspended forever, so connect() never returns and connectionStepper is
 			// never cleared. Bound it so every step in the machine terminates.
-			Step(timeout: .seconds(30)) { @MainActor _ in
+			// This is a backstop for a narrow race (a teardown landing between Step 5 returning and
+			// this step suspending on the gate), not a service-level expectation for the dump, so it
+			// is deliberately far longer than a healthy dump needs. The whole node DB streams inside
+			// this window: the gate opens only after the last NodeInfo has been ingested, and a large
+			// mesh on a slow BLE link reads one frame per round trip. A cap tight enough to abort a
+			// slow-but-healthy dump would be worse than the hang it guards against, because Step 5a
+			// is `.retryAll`, so a timeout restarts the whole pipeline and ends in
+			// AccessoryError.tooManyRetries with autoconnect immediately trying again.
+			Step(timeout: .seconds(120)) { @MainActor _ in
 				guard wantDatabase else {
-					Logger.transport.info("👟 [Connect] Step 4: wantDatabase = false, skipping waitForWantDatabase")
+					Logger.transport.info("👟 [Connect] Step 5a: wantDatabase = false, skipping waitForWantDatabase")
 					return
 				}
 				Logger.transport.info("🔗👟 [Connect] Step 5a: Wait for the final database")
@@ -389,9 +397,10 @@ actor SequentialSteps {
 	func run() async throws {
 		self.isRunning = true
 		// The retry sleeps sit outside the per-step `do`, so an explicit assignment on each exit
-		// path misses a throw from there and leaves isRunning stuck at true. didReceive() reads
-		// isRunning to decide whether to updateState(.discovering), and a stale true suppresses
-		// that transition.
+		// path misses a throw from there and leaves isRunning stuck at true. That matters twice:
+		// connect(to:)'s reentrancy guard refuses to start while this reads true, so a leak blocks
+		// every later connect, and didReceive() re-reads it after a teardown to decide whether to
+		// updateState(.discovering) or leave the transition to an in-flight reconnect.
 		defer { isRunning = false }
 		retryLoop: for attempt in 0..<maxRetries {
 			for stepNumber in 0..<steps.count {

@@ -55,6 +55,13 @@ struct SequentialStepsCancellationTests {
 		return await condition()
 	}
 
+	/// `AccessoryError` is not Equatable, so match the case rather than comparing values.
+	private func isTooManyRetries(_ error: Error?) -> Bool {
+		guard let accessoryError = error as? AccessoryError else { return false }
+		if case .tooManyRetries = accessoryError { return true }
+		return false
+	}
+
 	/// The core regression: a `.retryStep` step cancelled mid-flight, with no external
 	/// error recorded, must not let the machine continue to the following step.
 	@Test func cancelledRetryStepDoesNotAdvanceToTheNextStep() async {
@@ -88,8 +95,11 @@ struct SequentialStepsCancellationTests {
 			runError = error
 		}
 
-		// A cancelled step is a failed step: run() must report failure...
-		#expect(runError != nil)
+		// A cancelled step is a failed step: run() must report failure. maxRetries is 1, so the
+		// outer handler's `continue retryLoop` exhausts the attempt loop and run() ends in
+		// tooManyRetries. Asserting the case (not just non-nil) pins that the cancellation reached
+		// the outer failure handler instead of some other throw ending the run.
+		#expect(isTooManyRetries(runError))
 		// ...and the step after it must never have been entered.
 		#expect(await recorder.startedSteps == [0])
 		#expect(await stepper.isRunning == false)
@@ -123,7 +133,7 @@ struct SequentialStepsCancellationTests {
 			runError = error
 		}
 
-		#expect(runError != nil)
+		#expect(isTooManyRetries(runError))
 		#expect(await recorder.startedSteps == [0])
 		let leftoverExternalError = await stepper.externalError
 		#expect(leftoverExternalError == nil)
@@ -147,7 +157,12 @@ struct SequentialStepsCancellationTests {
 			}
 		}
 
-		try? await stepper.run()
+		// Step 0 succeeds on its third in-place attempt, so the whole run has to complete cleanly.
+		do {
+			try await stepper.run()
+		} catch {
+			Issue.record("run() should have completed without throwing, got \(error)")
+		}
 
 		#expect(await recorder.startedSteps == [0, 0, 0, 1])
 	}
