@@ -441,8 +441,10 @@ actor MeshPackets {
 			// Not Found Insert
 			if fetchedNode.isEmpty && nodeInfo.num > 0 {
 
-				let newNode = NodeInfoEntity()
-					modelContext.insert(newNode)
+				// findOrCreateNode (not a bare insert): NodeInfoEntity.num is @Attribute(.unique) and the
+				// fetch only sees SAVED rows, so a still-pending stub node created by an earlier POSITION
+				// packet for this num would otherwise collide on the unique num and trap on save.
+				let newNode = findOrCreateNode(num: Int64(nodeInfo.num), context: modelContext)
 					newNode.id = Int64(nodeInfo.num)
 					newNode.num = Int64(nodeInfo.num)
 					newNode.channel = Int32(truncatingIfNeeded: nodeInfo.channel)
@@ -470,8 +472,9 @@ actor MeshPackets {
 					newNode.snr = nodeInfo.snr
 					if nodeInfo.hasUser {
 
-						let newUser = UserEntity()
-						modelContext.insert(newUser)
+						// findOrCreateNode already attached a find-or-create user for this num; reuse it
+						// (or find-or-create) instead of a bare insert whose duplicate unique num would trap.
+						let newUser = newNode.user ?? findOrCreateUser(num: Int64(nodeInfo.num), context: modelContext)
 						newUser.userId = nodeInfo.num.toHex()
 						newUser.num = Int64(nodeInfo.num)
 						newUser.longName = nodeInfo.user.longName
@@ -524,7 +527,11 @@ actor MeshPackets {
 						position.altitude = nodeInfo.position.altitude
 						position.satsInView = Int32(truncatingIfNeeded: nodeInfo.position.satsInView)
 						position.speed = Int32(truncatingIfNeeded: nodeInfo.position.groundSpeed)
-						position.heading = Int32(truncatingIfNeeded: nodeInfo.position.groundTrack)
+						// Range-check the UInt32 before converting (mirrors upsertPositionPacket) so a garbage
+						// groundTrack does not persist as an invalid heading.
+						if nodeInfo.position.groundTrack <= 360 {
+							position.heading = Int32(nodeInfo.position.groundTrack)
+						}
 						position.time = Date(timeIntervalSince1970: TimeInterval(Int64(nodeInfo.position.time)))
 						position.nodePosition = newNode
 						newNode.latestPositionCache = position
@@ -572,8 +579,9 @@ actor MeshPackets {
 
 					if nodeInfo.hasUser {
 						if fetchedNode[0].user == nil {
-							let newUserEntity = UserEntity()
-							modelContext.insert(newUserEntity)
+							// findOrCreateUser (not a bare insert): a user row for this unique num may already
+							// exist (orphaned or pending), so a bare insert would trap on save.
+							let newUserEntity = findOrCreateUser(num: Int64(nodeInfo.num), context: modelContext)
 							fetchedNode[0].user = newUserEntity
 						}
 						// First-wins on the public key, consistent with the NodeInfo/User paths in UpdateSwiftData

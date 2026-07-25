@@ -25,25 +25,30 @@ struct SaveChannelSettingsIntent: AppIntent {
 			throw AppIntentErrors.AppIntentError.notConnected
 		}
 
+		let channelLink: MeshtasticChannelURL
 		do {
-			let channelLink = try MeshtasticChannelURL.parse(channelUrl.absoluteString)
-			// Require explicit confirmation before mutating radio state, mirroring the in-app
-			// QR/URL flow (SaveChannelQRCode) and the destructive intents (ShutDownNodeIntent /
-			// FactoryResetNodeIntent). Without this, an untrusted Shortcut could silently replace
-			// the radio's channel list, PSKs, and LoRa config in the background.
-			let mode = channelLink.addChannels ? "add to" : "REPLACE"
-			try await requestConfirmation(
-				result: .result(dialog: "This will \(mode) the channels and LoRa settings on your connected Meshtastic radio. Continue?")
-			)
+			channelLink = try MeshtasticChannelURL.parse(channelUrl.absoluteString)
+		} catch let error as MeshtasticChannelURL.ParseError {
+			throw AppIntentErrors.AppIntentError.message(error.localizedDescription)
+		}
+		// Require explicit confirmation before mutating radio state, mirroring the in-app
+		// QR/URL flow (SaveChannelQRCode) and the destructive intents (ShutDownNodeIntent /
+		// FactoryResetNodeIntent). Without this, an untrusted Shortcut could silently replace
+		// the radio's channel list, PSKs, and LoRa config in the background.
+		// requestConfirmation throws if the user declines; let that cancellation propagate
+		// unchanged rather than mislabeling it as a save failure.
+		let mode = channelLink.addChannels ? "add to" : "REPLACE"
+		try await requestConfirmation(
+			result: .result(dialog: "This will \(mode) the channels and LoRa settings on your connected Meshtastic radio. Continue?")
+		)
+		do {
 			try await AccessoryManager.shared.saveChannelSet(
 				channelSet: channelLink.channelSet,
 				addChannels: channelLink.addChannels
 			)
-			return .result()
-		} catch let error as MeshtasticChannelURL.ParseError {
-			throw AppIntentErrors.AppIntentError.message(error.localizedDescription)
 		} catch {
 			throw AppIntentErrors.AppIntentError.message("Failed to save the channel settings.")
 		}
+		return .result()
 	}
 }

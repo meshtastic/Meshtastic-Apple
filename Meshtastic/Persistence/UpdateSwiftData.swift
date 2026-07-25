@@ -399,8 +399,11 @@ extension MeshPackets {
 						}
 					} else {
 						
-						let newUser = UserEntity()
-						modelContext.insert(newUser)
+						// findOrCreateNode already attached a find-or-create user for this num; reuse it
+						// (or find-or-create) instead of a bare insert. UserEntity.num is @Attribute(.unique)
+						// and the fetch only sees SAVED rows, so a duplicate insert inside the debounce
+						// window would trap on save when a second NODEINFO packet lands.
+						let newUser = newNode.user ?? findOrCreateUser(num: Int64(truncatingIfNeeded: packet.from), context: modelContext)
 						newUser.userId = newNode.num.toHex()
 						newUser.num = Int64(packet.from)
 						newUser.longName = newUserMessage.longName
@@ -542,8 +545,10 @@ extension MeshPackets {
 				} else if let userMessage = try? User(serializedBytes: packet.decoded.payload), !userMessage.id.isEmpty {
 					// Mesh broadcast sends a User protobuf (not wrapped in NodeInfo)
 					if fetchedNode[0].user == nil {
-						let newUser = UserEntity()
-						modelContext.insert(newUser)
+						// findOrCreateUser (not a bare insert): a user row for this unique num may already
+						// exist (orphaned or pending) even though this saved node's user is nil, so a bare
+						// insert would trap on save.
+						let newUser = findOrCreateUser(num: Int64(truncatingIfNeeded: packet.from), context: modelContext)
 						fetchedNode[0].user = newUser
 					}
 					fetchedNode[0].user?.userId = packet.from.toHex()
@@ -670,7 +675,11 @@ extension MeshPackets {
 						if positionMessage.groundTrack <= 360 {
 							position.heading = Int32(positionMessage.groundTrack)
 						}
-						position.precisionBits = Int32(truncatingIfNeeded: positionMessage.precisionBits)
+						// Clamp to the valid maximum (32 = full precision) instead of truncatingIfNeeded: an
+						// oversized UInt32 would wrap to a negative/garbage Int32 that the reduced-precision
+						// prune below (precisionBits != 32 && != 0) would treat as reduced accuracy and erase
+						// this node's stored position history. min(_, 32) is always <= 32 so it can't trap.
+						position.precisionBits = Int32(min(positionMessage.precisionBits, 32))
 						if positionMessage.timestamp != 0 {
 							position.time = Date(timeIntervalSince1970: TimeInterval(Int64(positionMessage.timestamp)))
 						} else {

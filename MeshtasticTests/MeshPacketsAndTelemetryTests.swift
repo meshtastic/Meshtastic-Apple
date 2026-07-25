@@ -952,11 +952,12 @@ struct PositionPacketIngestHardeningTests {
 		await mesh.upsertPositionPacket(packet: packet)
 		await mesh.flushDebouncedSaves()
 
-		// Truncated, not crashed: 0xFFFFFFFF as Int32(truncatingIfNeeded:) == -1. Query by the
-		// sentinel so the assertion doesn't depend on node-relationship linkage internals.
+		// Truncated, not crashed: 0xFFFFFFFF as Int32(truncatingIfNeeded:) == -1. upsertPositionPacket
+		// links the position to the (find-or-created) node, so scope the query to THIS packet's node
+		// instead of the bare sentinel — a pre-existing row could otherwise satisfy it.
 		let context = ModelContext(sharedModelContainer)
 		let truncated = try context.fetch(FetchDescriptor<PositionEntity>(
-			predicate: #Predicate { $0.satsInView == -1 }
+			predicate: #Predicate { $0.nodePosition?.num == persistedNodeNum && $0.satsInView == -1 }
 		))
 		#expect(!truncated.isEmpty, "position was persisted with the truncated value, proving no crash")
 	}

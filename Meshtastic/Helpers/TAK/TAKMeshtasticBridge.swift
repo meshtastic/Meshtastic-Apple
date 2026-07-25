@@ -309,8 +309,8 @@ final class TAKMeshtasticBridge {
 			takPacket.pli = pli
 
 			Logger.tak.debug("TAKPacket.pli created:")
-			Logger.tak.debug("  latitudeI: \(pli.latitudeI) (from \(cot.latitude, privacy: .private))")
-			Logger.tak.debug("  longitudeI: \(pli.longitudeI) (from \(cot.longitude, privacy: .private))")
+			Logger.tak.debug("  latitudeI: \(pli.latitudeI, privacy: .private) (from \(cot.latitude, privacy: .private))")
+			Logger.tak.debug("  longitudeI: \(pli.longitudeI, privacy: .private) (from \(cot.longitude, privacy: .private))")
 			Logger.tak.debug("  altitude: \(pli.altitude) (from \(cot.hae))")
 			Logger.tak.debug("  speed: \(pli.speed), course: \(pli.course)")
 
