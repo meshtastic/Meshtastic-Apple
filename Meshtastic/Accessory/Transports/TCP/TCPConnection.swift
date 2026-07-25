@@ -104,6 +104,10 @@ actor TCPConnection: Connection {
 					// Logger.transport.debug("[TCP] startReader: Found magic byte, waiting for length")
 
 					if let length = try? await readInteger() {
+						// Skip zero-length frames (e.g. a crafted `94 c3 00 00`): calling
+						// receiveData(min:0,max:0) issues an undocumented empty socket read that
+						// can stall the reader loop. A real frame always has a positive length.
+						guard length > 0 else { continue }
 						let payload = try await receiveData(min: Int(length), max: Int(length))
 						switch FromRadioDecoder.classify(payload) {
 						case .decoded(let fromRadio):

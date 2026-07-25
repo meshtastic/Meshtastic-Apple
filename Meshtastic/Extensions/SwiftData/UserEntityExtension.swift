@@ -245,6 +245,22 @@ func createUser(num: Int64, context: ModelContext) throws -> UserEntity {
 		throw PersistenceError.invalidInput(message: "User number cannot be negative.")
 	}
 
+	// Return an existing user for this num rather than inserting a duplicate. UserEntity.num is
+	// @Attribute(.unique); SwiftData resolves unique collisions only against the SAVED store, so
+	// two un-saved inserts with the same num (e.g. crafted back-to-back mesh packets from a new
+	// node inside the debounced-save window) would trap with a fatal SwiftData assertion. Mirror
+	// findOrCreateUser: check the saved store AND pending inserts before creating.
+	var existingDescriptor = FetchDescriptor<UserEntity>(predicate: #Predicate<UserEntity> { $0.num == num })
+	existingDescriptor.fetchLimit = 1
+	if let existing = (try? context.fetch(existingDescriptor))?.first {
+		return existing
+	}
+	if let pending = context.insertedModelsArray.lazy
+		.compactMap({ $0 as? UserEntity })
+		.first(where: { $0.num == num }) {
+		return pending
+	}
+
 	let newUser = UserEntity()
 	newUser.num = num
 	let userId = num.toHex()
