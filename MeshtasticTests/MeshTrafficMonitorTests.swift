@@ -111,4 +111,28 @@ struct MeshTrafficMonitorTests {
 		#expect(monitor.isHighTraffic == false)
 		#expect(monitor.packetsPerSecond == 0)
 	}
+
+	@Test("A connection retry (stop then start) leaves the monitor sampling again")
+	func restartAfterStopResumesSampling() {
+		let monitor = MeshTrafficMonitor()
+
+		// First connection attempt: heavy traffic trips the gate.
+		run(monitor, packetsPerSecond: 40, seconds: 10, from: 0)
+		#expect(monitor.isHighTraffic == true)
+
+		// A connection retry tears the connection down via closeConnection() -> stop(),
+		// then the retry's Step 1 re-establishes the connection and calls start() again.
+		// Regression guard for the flyover gate going dead after a retry: before the fix,
+		// start() was only called once at the top of connect() and never re-run, so this
+		// second session never sampled traffic.
+		monitor.stop()
+		#expect(monitor.isHighTraffic == false)
+		monitor.start()
+		defer { monitor.stop() } // tear down the real sampling timer start() installs
+
+		// The restarted monitor must sample and trip the gate again — it is not dead for
+		// the rest of the session.
+		run(monitor, packetsPerSecond: 40, seconds: 10, from: 100)
+		#expect(monitor.isHighTraffic == true)
+	}
 }
