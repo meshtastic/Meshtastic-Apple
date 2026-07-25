@@ -10,6 +10,22 @@ import Network
 import OSLog
 import MeshtasticProtobufs
 
+/// One-shot latch for a continuation that more than one `NWConnection` state callback can
+/// try to resume. `claim()` returns `true` exactly once; every later caller gets `false` and
+/// must not resume. Instances are constructed on the `TCPConnection` actor and thereafter
+/// mutated only from `TCPConnection.queue`; `NWConnection.start(queue:)` supplies the
+/// happens-before edge between the two, and that queue is serial, so the plain `Bool` needs
+/// no further synchronization.
+private final class ResumeLatch: @unchecked Sendable {
+	private var hasResumed = false
+
+	func claim() -> Bool {
+		if hasResumed { return false }
+		hasResumed = true
+		return true
+	}
+}
+
 actor TCPConnection: Connection {
 	let type = TransportType.tcp
 	
@@ -128,7 +144,14 @@ actor TCPConnection: Connection {
 		let capturedConnection = connection
 		return try await withTaskCancellationHandler {
 			try await withCheckedThrowingContinuation { cont in
-				connection?.receive(minimumIncompleteLength: min, maximumLength: max) { content, _, isComplete, error in
+				// `connection` is nil after disconnect(). Optional-chaining the receive call there
+				// silently skipped registering a completion handler, so the continuation was created
+				// and never resumed and the caller suspended forever. Fail the read instead.
+				guard let capturedConnection else {
+					cont.resume(throwing: AccessoryError.disconnected("Not connected"))
+					return
+				}
+				capturedConnection.receive(minimumIncompleteLength: min, maximumLength: max) { content, _, isComplete, error in
 					if let error = error {
 						cont.resume(throwing: error)
 						return
@@ -163,7 +186,21 @@ actor TCPConnection: Connection {
 		buffer.append(serialized)
 
 		try await withCheckedThrowingContinuation { (cont: CheckedContinuation<Void, Error>) in
-			connection?.send(content: buffer, completion: .contentProcessed { error in
+			// `connection` is nil after disconnect(). Optional-chaining the send call there made the
+			// whole statement a no-op: the continuation was created but never handed to a completion
+			// handler and never resumed, so the caller suspended forever with no cancellation handler
+			// to free it. The two heartbeat connect steps are built with `timeout: nil`, so that
+			// parked the whole connect sequence with nothing to time it out.
+			//
+			// Known remaining gap: this only covers the no-socket case. A live-but-stalled
+			// `NWConnection` (`.waiting`/`.preparing`) still queues the send without completing, and
+			// this continuation has no `withTaskCancellationHandler` (unlike `receiveData` above), so
+			// that variant is still uncancellable.
+			guard let connection else {
+				cont.resume(throwing: AccessoryError.disconnected("Not connected"))
+				return
+			}
+			connection.send(content: buffer, completion: .contentProcessed { error in
 				if let error = error {
 					cont.resume(throwing: error)
 				} else {
@@ -251,15 +288,40 @@ actor TCPConnection: Connection {
 		let newConnection = NWConnection(host: nwHost, port: nwPort, using: .tcp)
 		self.connection = newConnection
 			
+		// This handler resumes `cont` from three terminal states and stays installed until the
+		// awaiting task resumes on the actor and reaches the replacement handler below. That
+		// window spans an executor hop: NWConnection callbacks run on `queue`, the continuation
+		// resumes on the actor. A second terminal state arriving inside it resumed the same
+		// continuation twice, which is an uncatchable SWIFT TASK CONTINUATION MISUSE trap. Two
+		// real paths hit it: .ready followed by the connect timeout or a user disconnect calling
+		// cancel() below (.cancelled), and .ready followed by the peer resetting the socket
+		// (.failed) — which is what a radio that already has a TCP client does.
+		//
+		// The latch makes the handler one-shot: every terminal case claims it before resuming, so
+		// only the first one resumes and any later state falls straight through.
+		//
+		// The handler deliberately does NOT detach itself (`stateUpdateHandler = nil`) after
+		// resuming. That store would run on `queue` while the task this resume just woke is
+		// concurrently installing the replacement monitoring handler below on the actor — nothing
+		// orders the two, so the nil could land last and erase the replacement, silently killing
+		// the post-ready `.failed` -> disconnect/reconnect path. It would also be an
+		// unsynchronized write to the same ARC-managed stored property from two threads, and it
+		// would make the closure capture `newConnection` (a retain cycle) only to break it. The
+		// replacement assignment below is the detach; the latch is what guarantees the single
+		// resume, on the throw path too.
+		let resumeLatch = ResumeLatch()
 		try await withTaskCancellationHandler {
 				try await withCheckedThrowingContinuation { cont in
 					newConnection.stateUpdateHandler = { state in
 						switch state {
 						case .ready:
+							guard resumeLatch.claim() else { return }
 							cont.resume()
 						case .failed(let error):
+							guard resumeLatch.claim() else { return }
 							cont.resume(throwing: error)
 						case .cancelled:
+							guard resumeLatch.claim() else { return }
 							cont.resume(throwing: CancellationError())
 						default:
 							break
