@@ -156,8 +156,9 @@ actor MeshPackets {
 	}
 
 	/// Nodes: cap the total, evicting least-recently-heard first. Never evict favorites — the user
-	/// explicitly kept those. `lastHeard` is optional; nil sorts first (ascending), so never-heard
-	/// stubs go before any dated node, which is the correct "stalest first" order.
+	/// explicitly kept those. Among already-persisted rows, `lastHeard` is optional; nil sorts first
+	/// (ascending), so never-heard stubs go before any dated node, which is the correct "stalest
+	/// first" order.
 	func evictNodesIfOverCap(_ cap: Int) {
 		guard let nodeCount = try? modelContext.fetchCount(FetchDescriptor<NodeInfoEntity>()),
 			  nodeCount > cap else { return }
@@ -166,6 +167,12 @@ actor MeshPackets {
 			sortBy: [SortDescriptor(\.lastHeard, order: .forward)]
 		)
 		descriptor.fetchLimit = nodeCount - cap
+		// Only already-persisted rows are eligible for eviction. Caps are enforced inside
+		// `savePendingChanges` *before* the commit, so a node just created this transaction by
+		// `findOrCreateNode` is still a pending insert with a nil `lastHeard` — which sorts first
+		// (stalest) and would otherwise be deleted before it is ever saved. The count above stays
+		// inclusive of pending inserts, so we free enough persisted rows to make room for them.
+		descriptor.includePendingChanges = false
 		guard let stale = try? modelContext.fetch(descriptor), !stale.isEmpty else { return }
 		for node in stale { modelContext.delete(node) }
 		Logger.data.info("🗄️ [Caps] Evicted \(stale.count, privacy: .public) least-recently-heard node(s) (was \(nodeCount, privacy: .public), cap \(cap, privacy: .public))")
@@ -179,10 +186,28 @@ actor MeshPackets {
 			sortBy: [SortDescriptor(\.lastUpdated, order: .forward)]
 		)
 		descriptor.fetchLimit = waypointCount - cap
+		// Same rationale as node eviction: never delete an un-saved waypoint from the in-flight
+		// transaction (a fresh insert has a nil `lastUpdated` and would sort first). Count stays
+		// inclusive of pending inserts for cap accounting.
+		descriptor.includePendingChanges = false
 		guard let stale = try? modelContext.fetch(descriptor), !stale.isEmpty else { return }
 		for waypoint in stale { modelContext.delete(waypoint) }
 		Logger.data.info("🗄️ [Caps] Evicted \(stale.count, privacy: .public) oldest waypoint(s) (was \(waypointCount, privacy: .public), cap \(cap, privacy: .public))")
 	}
+
+#if DEBUG
+	/// Test-only: reproduces a packet handler that creates a brand-new node stub via
+	/// `findOrCreateNode` (a pending insert with a nil `lastHeard`) and then enforces the node cap in
+	/// the *same* un-saved transaction, exactly as `savePendingChanges` does. The pending insert must
+	/// live in this actor's own `modelContext`, so this seam exists to exercise that path — a
+	/// separate context can't reproduce it. Returns after committing so callers can assert the new
+	/// node survived. See `evictNodesIfOverCap`.
+	func createNodeThenEvict(num: Int64, cap: Int) {
+		_ = findOrCreateNode(num: num, context: modelContext)
+		evictNodesIfOverCap(cap)
+		try? modelContext.save()
+	}
+#endif
 
 	// MARK: - Debounced Save for High-Frequency Packets
 

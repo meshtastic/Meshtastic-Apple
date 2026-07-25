@@ -1040,6 +1040,36 @@ struct EntityCapEvictionTests {
 
 		#expect(try ModelContext(container).fetchCount(FetchDescriptor<NodeInfoEntity>()) == 1)
 	}
+
+	/// Eviction runs inside `savePendingChanges` before the commit, so a node just created this
+	/// transaction is still a pending insert with a nil `lastHeard` — which sorts stalest. It must
+	/// NOT be evicted before it is saved; older persisted rows are freed to make room instead.
+	@Test func newNodeInTransaction_survivesEviction() async throws {
+		let (mesh, container) = try freshMesh()
+		let context = ModelContext(container)
+		let base = Date(timeIntervalSince1970: 1_700_000_000)
+		func makeNode(_ num: Int64, heard: TimeInterval) -> NodeInfoEntity {
+			let node = NodeInfoEntity()
+			node.num = num
+			node.id = num
+			node.lastHeard = base.addingTimeInterval(heard)
+			node.favorite = false
+			return node
+		}
+		// Three persisted non-favorites, all older than "now". With cap = 2, creating one more node
+		// pushes the count to 4, so eviction must delete 2 rows.
+		[makeNode(1, heard: 0), makeNode(2, heard: 10), makeNode(3, heard: 20)].forEach { context.insert($0) }
+		try context.save()
+
+		// Creates pending node 99 (nil lastHeard), enforces cap 2, commits — all one transaction.
+		await mesh.createNodeThenEvict(num: 99, cap: 2)
+
+		let remaining = try ModelContext(container)
+			.fetch(FetchDescriptor<NodeInfoEntity>()).map { $0.num }.sorted()
+		// Total lands at cap (2). The brand-new node (99) is kept — it was excluded from the
+		// deletion candidates — and the two stalest persisted rows (1, 2) are evicted instead.
+		#expect(remaining == [3, 99])
+	}
 }
 
 @Suite("PAX counter ingestion", .serialized)
