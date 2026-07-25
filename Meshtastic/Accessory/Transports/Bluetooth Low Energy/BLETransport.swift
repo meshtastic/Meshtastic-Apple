@@ -31,7 +31,19 @@ actor BLETransport: Transport {
 	private var connectContinuation: CheckedContinuation<BLEConnection, Error>?
 	private var restoredConnectContinuation: CheckedContinuation<Void, Error>?
 	private var setupCompleteGate: AsyncGate
-	private var restoreInProgress: Bool = false
+	/// Suppresses device discovery while `handleWillRestoreState` reconnects. Read by all three
+	/// scan entry points (`didDiscover`, the `discoverDevices()` setup task, and the `.poweredOn`
+	/// re-scan), so it staying latched true means no BLE discovery at all until the process is
+	/// killed. Written only through `beginRestore(for:)` / `endRestore(clearingConnection:)`.
+	private(set) var restoreInProgress: Bool = false
+	/// The peripheral `handleWillRestoreState` is currently restoring. Scopes the restore
+	/// short-circuits in `handleDidConnect` / `handleDidFailToConnect` to that peripheral, the
+	/// same way the normal connect path already checks `connectingPeripheral`.
+	private var restoringPeripheralIdentifier: UUID?
+
+	/// How long a restored connect waits for `didConnect` before giving up. CoreBluetooth connect
+	/// requests never expire on their own, so without this the wait is unbounded.
+	static let restoredConnectTimeout: Duration = .seconds(30)
 	var status: TransportStatus = .uninitialized {
 		didSet {
 			guard status != oldValue else { return }
@@ -452,7 +464,14 @@ actor BLETransport: Transport {
 	}
 
 	func handleDidConnect(peripheral: CBPeripheral, central: CBCentralManager) {
-		if let restoredConnectContinuation {
+		// Only take the restore short-circuit when a restore is actually in flight *for this
+		// peripheral*, matching what the normal path below already does with `connectingPeripheral`.
+		// Unscoped, a leftover restored continuation swallows an unrelated connect's didConnect:
+		// `connectContinuation` is never resumed, no BLEConnection is built, and that connect hangs
+		// until its own timeout.
+		if let restoredConnectContinuation,
+		   restoreInProgress,
+		   peripheral.identifier == restoringPeripheralIdentifier {
 			restoredConnectContinuation.resume()
 			self.restoredConnectContinuation = nil
 			return
@@ -470,7 +489,9 @@ actor BLETransport: Transport {
 	}
 
 	func handleDidFailToConnect(peripheral: CBPeripheral, error: Error?) {
-		if let restoredConnectContinuation {
+		if let restoredConnectContinuation,
+		   restoreInProgress,
+		   peripheral.identifier == restoringPeripheralIdentifier {
 			restoredConnectContinuation.resume(throwing: AccessoryError.connectionFailed("Connection failed during restoration"))
 			self.restoredConnectContinuation = nil
 			return
@@ -500,7 +521,7 @@ actor BLETransport: Transport {
 		}
 		
 		// Prevent device discovery during the restore process
-		restoreInProgress = true
+		beginRestore(for: peripheral.identifier)
 
 		// Create a device object
 		// TODO: maybe serialize the whole device into UserDefaults on connect?
@@ -540,45 +561,61 @@ actor BLETransport: Transport {
 		/// Create a new BLEConnection object and set it as the active connection if the state is connected
 		
 		// Begin a background task to handle the process.
+		//
+		// The restore work runs directly in this task (it used to spawn a second, nested one for
+		// the .connecting case) so the `defer` below covers the whole thing. Every exit has to go
+		// through `endRestore`: it clears the discovery gate plus the rest of the state this method
+		// set up, where the old code cleared only `restoreInProgress` and only on the paths it
+		// happened to reach.
 		Task {
+			var restoredConnectionIsLive = false
+			defer { endRestore(clearingConnection: !restoredConnectionIsLive) }
+
 			switch peripheral.state {
 			case .connecting:
 				let restoredConnection = BLEConnection(peripheral: peripheral, central: central, transport: self)
 				self.activeConnection = restoredConnection
-				Task {
-					do {
-						// Make sure we're in poweredOn before continuing
-						try await self.setupCompleteGate.wait()
-						
-						Logger.transport.error("🛜 [BLE] Restoring peripheral in connecting state.  Waiting for didConnect from delegate.")
-						
-						// Complete the connect with centralManager.connect and wait for the didConnect.
-						try await withCheckedThrowingContinuation { cont in
-							self.restoredConnectContinuation = cont
-							centralManager.connect(peripheral)
-						}
-						
-						Logger.transport.error("🛜 [BLE] Restoring peripheral in connecting state.  ✅ didConnect Received!")
-						let connectTask = Task { @MainActor in
-							try await AccessoryManager.shared.connect(to: device, withConnection: restoredConnection, wantConfig: true, wantDatabase: true, versionCheck: true)
-						}
-						
-						do {
-							try await connectTask.value
-						} catch {
-							Logger.transport.error("🛜 [BLE] Error connecting during state restoration: \(error, privacy: .public)")
-						}
-						self.restoreInProgress = false
-					} catch {
-						// We had a connection failure during restoration.
-						Logger.transport.error("🛜 [BLE] Error restoring peripheral in connecting state. \(error, privacy: .public)")
-						self.restoreInProgress = false
+				do {
+					// Make sure we're in poweredOn before continuing
+					try await self.setupCompleteGate.wait()
+
+					Logger.transport.error("🛜 [BLE] Restoring peripheral in connecting state.  Waiting for didConnect from delegate.")
+
+					// Complete the connect with central.connect and wait for the didConnect,
+					// bounded by a timeout. If the radio was powered off or moved out of range
+					// while the app was killed, none of didConnect/didFailToConnect/
+					// didDisconnectPeripheral ever arrives, so an unbounded wait here suspends
+					// for the life of the process.
+					try await self.awaitRestoredConnect(
+						timeout: Self.restoredConnectTimeout,
+						connect: { central.connect(peripheral) },
+						cancelConnect: { central.cancelPeripheralConnection(peripheral) }
+					)
+
+					Logger.transport.error("🛜 [BLE] Restoring peripheral in connecting state.  ✅ didConnect Received!")
+					restoredConnectionIsLive = true
+					let connectTask = Task { @MainActor in
+						try await AccessoryManager.shared.connect(to: device, withConnection: restoredConnection, wantConfig: true, wantDatabase: true, versionCheck: true)
 					}
+
+					do {
+						try await connectTask.value
+					} catch {
+						Logger.transport.error("🛜 [BLE] Error connecting during state restoration: \(error, privacy: .public)")
+					}
+				} catch {
+					// We had a connection failure during restoration. The connection never reached
+					// BLEConnection.connect(), so nothing will ever call connectionDidDisconnect for
+					// it — the defer above is what drops it.
+					Logger.transport.error("🛜 [BLE] Error restoring peripheral in connecting state. \(error, privacy: .public)")
 				}
 
 			case .connected:
 				let restoredConnection = BLEConnection(peripheral: peripheral, central: central, transport: self)
 				self.activeConnection = restoredConnection
+				// The link is already up, so this connection stays as the activeConnection whatever
+				// the app-level connect below does.
+				restoredConnectionIsLive = true
 				Logger.transport.error("🛜 [BLE] Peripheral Connection found and state is connected setting this connection as the activeConnection.")
 				let connectTask = Task { @MainActor in
 					// In this case we need a full reconnect, so do the wantConfig, wantDatabase, and versionCheck
@@ -590,17 +627,15 @@ actor BLETransport: Transport {
 					Logger.transport.error("🛜 [BLE] Error connecting during state restoration: \(error, privacy: .public)")
 				}
 
-				self.restoreInProgress = false
 				Logger.transport.error("🛜 [BLE] Connection state successfully restored in the background.")
 			default:
 				// Since we're not going to attempt to reconnect in then allow normal device discovery
 				Logger.transport.error("🛜 [BLE] Unhandled state restoration for state: \(cbPeripheralStateDescription(peripheral.state), privacy: .public).")
-				self.restoreInProgress = false
 			}
 		}
 		
 	}
-	
+
 	nonisolated func device(forManualConnection: String) -> Device? {
 		return nil
 	}
@@ -617,10 +652,94 @@ actor BLETransport: Transport {
 			discoveredPeripherals.removeValue(forKey: peripheral.identifier)
 			discoveredDeviceContinuation?.yield(.deviceLost(peripheral.identifier))
 		}
-		
+
+		// This is the single funnel for "the peripheral is gone", so a restore still waiting on
+		// didConnect will never get one. Resume it here instead of leaving it live to be resumed
+		// by a later, unrelated connect's didConnect.
+		if let continuation = restoredConnectContinuation {
+			restoredConnectContinuation = nil
+			continuation.resume(throwing: AccessoryError.disconnected("Peripheral disconnected during state restoration"))
+		}
+
 		self.activeConnection = nil
 		self.connectingPeripheral = nil
 		restoreInProgress = false
+		restoringPeripheralIdentifier = nil
+	}
+}
+
+// MARK: - State restoration lifecycle
+
+extension BLETransport {
+
+	/// Marks a state restore as in flight: suppresses device discovery, and records which
+	/// peripheral the restore short-circuits in `handleDidConnect` / `handleDidFailToConnect`
+	/// apply to.
+	func beginRestore(for peripheralIdentifier: UUID) {
+		restoreInProgress = true
+		restoringPeripheralIdentifier = peripheralIdentifier
+	}
+
+	/// The single exit from a state restore, clearing everything `handleWillRestoreState` set up
+	/// rather than just the discovery gate.
+	///
+	/// A leftover `restoredConnectContinuation` gets resumed by the next unrelated connect's
+	/// didConnect and hangs it; an `activeConnection` for a connection that never actually
+	/// connected makes `connect(to:)`'s busy guards reject every later attempt, and nothing else
+	/// clears it because `BLEConnection.disconnect()` (the only caller of
+	/// `connectionDidDisconnect`) never runs for a connection that never started.
+	///
+	/// `clearingConnection` is false only when the restored connection is genuinely live.
+	func endRestore(clearingConnection: Bool) {
+		restoreInProgress = false
+		restoringPeripheralIdentifier = nil
+		if let continuation = restoredConnectContinuation {
+			restoredConnectContinuation = nil
+			continuation.resume(throwing: AccessoryError.connectionFailed("State restoration ended before the peripheral connected"))
+		}
+		if clearingConnection {
+			activeConnection = nil
+			connectingPeripheral = nil
+		}
+	}
+
+	/// True while a restore is suspended waiting for `didConnect`.
+	var isAwaitingRestoredConnect: Bool { restoredConnectContinuation != nil }
+
+	/// Suspends until the restored peripheral reports `didConnect`, `timeout` elapses, or the
+	/// peripheral is reported gone (`connectionDidDisconnect`). On timeout the outstanding
+	/// CoreBluetooth connect request is withdrawn via `cancelConnect`, since CoreBluetooth keeps
+	/// pending connect requests alive indefinitely.
+	///
+	/// Takes closures rather than a `CBPeripheral` so the timeout behaviour can be exercised in
+	/// tests: `CBPeripheral` has no public initializer.
+	func awaitRestoredConnect(
+		timeout: Duration,
+		connect: @escaping @Sendable () -> Void,
+		cancelConnect: @escaping @Sendable () -> Void
+	) async throws {
+		let watchdog = Task { [weak self] in
+			try? await Task.sleep(for: timeout)
+			guard !Task.isCancelled else { return }
+			await self?.failRestoredConnect(
+				with: AccessoryError.connectionFailed("Timed out waiting for the restored peripheral to connect"),
+				cancelConnect: cancelConnect
+			)
+		}
+		defer { watchdog.cancel() }
+		try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+			self.restoredConnectContinuation = continuation
+			connect()
+		}
+	}
+
+	/// Fails a pending restored connect. No-op if it already resolved, so the watchdog can't
+	/// double-resume a continuation `handleDidConnect` already took.
+	private func failRestoredConnect(with error: Error, cancelConnect: @Sendable () -> Void) {
+		guard let continuation = restoredConnectContinuation else { return }
+		restoredConnectContinuation = nil
+		cancelConnect()
+		continuation.resume(throwing: error)
 	}
 }
 
