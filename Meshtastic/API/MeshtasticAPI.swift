@@ -180,9 +180,13 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 	@Published var isLoadingDeviceList: Bool = false
 	@Published var isLoadingFirmwareList: Bool = false
 	
-	private init(container: ModelContainer?) {
+	// Not private: MeshtasticTests constructs an instance with an in-memory container to
+	// assert the bundled seed stays network-free. `shared` remains the only app-side entry.
+	// `startupRefresh: false` suppresses the launch refresh cascade below so a test can call a
+	// single refresh function in isolation without the detached startup work racing it.
+	init(container: ModelContainer?, startupRefresh: Bool = true) {
 		self.container = container
-		guard container != nil else { return }
+		guard container != nil, startupRefresh else { return }
 		Task.detached {
 			// Load bundled catalog first — instant display, no network needed.
 			try? await self.refreshBundledDevicesData()
@@ -191,6 +195,10 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 			await self.refreshBundledEventFirmwareData()
 			// Then silently update from the live API in the background.
 			Task.detached(priority: .utility) {
+				// Images and msh.to links are network-backed; they were split out of the
+				// bundled seed so no caller can block on them. Run them here, sequentially
+				// ahead of the API refresh, so the two don't stack up concurrent requests.
+				await self.refreshDeviceImagesAndLinks()
 				try? await self.refreshDevicesAPIData()
 			}
 			Task.detached(priority: .utility) {
@@ -625,6 +633,12 @@ deviceEntity.architecture = device.architecture
 }
 
 extension MeshtasticAPI {
+	/// Seed the device catalog from the bundled `DeviceHardware.json`.
+	///
+	/// Local only — decode plus a SwiftData upsert, no network. That is what makes it safe to
+	/// await from latency-sensitive paths such as BLE connect Step 3, which has a 30s budget and
+	/// restarts the whole connect when it is exceeded. Device images and the msh.to link catalog
+	/// are network-backed and live in `refreshDeviceImagesAndLinks()`; keep them out of here.
 	func refreshBundledDevicesData() async throws {
 		guard let container else { return }
 		await MainActor.run { self.isLoadingDeviceList = true }
@@ -670,6 +684,25 @@ extension MeshtasticAPI {
 			Self.deleteOrphanedTags(context: context)
 			try context.save()
 		}
+		await MainActor.run { self.isLoadingDeviceList = false }
+	}
+
+	/// Refresh device images and the msh.to link catalog.
+	///
+	/// Both hit the network, so this must never be awaited from the connect path. On a captive
+	/// portal or a zero-rated cellular link the image requests neither succeed nor fail fast:
+	/// `URL.eTag()` sets no timeout and inherits `URLSession.shared`'s 60s default, so none of the
+	/// 82 image requests resolve inside connect Step 3's 30s budget (issue #2196). Callers must
+	/// run this detached.
+	func refreshDeviceImagesAndLinks() async {
+		guard let container else { return }
+		// Re-read the bundle rather than taking the decoded list as a parameter: this runs on its
+		// own schedule, decoupled from whoever seeded the catalog. The read is local and cheap.
+		guard let bundledData = try? Self.bundledDeviceHardwareData(),
+			  let decodedDevices = try? decoder.decode([DeviceHardware].self, from: bundledData) else {
+			Logger.services.warning("Unable to load bundled device hardware for image refresh")
+			return
+		}
 		await withTaskGroup(of: Void.self) { group in
 			for device in decodedDevices {
 				group.addTask {
@@ -686,7 +719,6 @@ extension MeshtasticAPI {
 			try? context.save()
 		}
 		await importDeviceLinks()
-		await MainActor.run { self.isLoadingDeviceList = false }
 	}
 
 	private static func bundledDeviceHardwareData() throws -> Data {

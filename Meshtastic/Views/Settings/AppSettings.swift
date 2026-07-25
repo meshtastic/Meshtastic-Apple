@@ -214,6 +214,7 @@ struct AppSettings: View {
 								// Repopulate device catalog immediately — no reconnect happens after a full reset.
 								try? await MeshtasticAPI.shared.refreshBundledDevicesData()
 								Task.detached(priority: .utility) {
+									await MeshtasticAPI.shared.refreshDeviceImagesAndLinks()
 									try? await MeshtasticAPI.shared.refreshDevicesAPIData()
 								}
 							}
