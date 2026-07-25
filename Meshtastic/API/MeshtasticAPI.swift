@@ -642,6 +642,9 @@ extension MeshtasticAPI {
 	func refreshBundledDevicesData() async throws {
 		guard let container else { return }
 		await MainActor.run { self.isLoadingDeviceList = true }
+		// Clear on every exit, not just the happy path: a failed bundle read, decode, or save
+		// would otherwise leave the hardware views pinned in their loading state for good.
+		defer { Task { @MainActor in self.isLoadingDeviceList = false } }
 		let bundledData = try Self.bundledDeviceHardwareData()
 		let decodedDevices = try decoder.decode([DeviceHardware].self, from: bundledData)
 		try await MainActor.run {
@@ -684,7 +687,6 @@ extension MeshtasticAPI {
 			Self.deleteOrphanedTags(context: context)
 			try context.save()
 		}
-		await MainActor.run { self.isLoadingDeviceList = false }
 	}
 
 	/// Refresh device images and the msh.to link catalog.

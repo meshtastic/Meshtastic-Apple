@@ -74,7 +74,9 @@ struct MeshtasticAPIBundledSeedTests {
 		RequestRecordingURLProtocol.reset()
 		defer { URLProtocol.unregisterClass(RequestRecordingURLProtocol.self) }
 
-		let api = MeshtasticAPI(container: try makeContainer())
+		// startupRefresh: false — the init cascade would otherwise fire detached firmware,
+		// image, and device requests that race the recorder and make this assertion flaky.
+		let api = MeshtasticAPI(container: try makeContainer(), startupRefresh: false)
 		try await api.refreshBundledDevicesData()
 
 		#expect(
@@ -91,7 +93,7 @@ struct MeshtasticAPIBundledSeedTests {
 	/// the Reset Database action both rely on.
 	@Test @MainActor func bundledSeedPopulatesDeviceCatalog() async throws {
 		let container = try makeContainer()
-		let api = MeshtasticAPI(container: container)
+		let api = MeshtasticAPI(container: container, startupRefresh: false)
 
 		try await api.refreshBundledDevicesData()
 
