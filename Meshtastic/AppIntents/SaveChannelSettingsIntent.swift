@@ -37,10 +37,14 @@ struct SaveChannelSettingsIntent: AppIntent {
 		// the radio's channel list, PSKs, and LoRa config in the background.
 		// requestConfirmation throws if the user declines; let that cancellation propagate
 		// unchanged rather than mislabeling it as a save failure.
-		let mode = channelLink.addChannels ? "add to" : "REPLACE"
-		try await requestConfirmation(
-			result: .result(dialog: "This will \(mode) the channels and LoRa settings on your connected Meshtastic radio. Continue?")
-		)
+		// The add path only sends channels; the replace path also rewrites LoRa config and
+		// reboots the radio. Describe each case accurately so the prompt matches the mutation.
+		// Annotate the type so the ternary's branches coerce to IntentDialog (a bare ternary
+		// of String literals would otherwise infer String, which IntentDialog can't accept).
+		let dialog: IntentDialog = channelLink.addChannels
+			? "This will add channels to your connected Meshtastic radio. Your LoRa settings will not change. Continue?"
+			: "This will REPLACE the channels and LoRa settings on your connected Meshtastic radio. Continue?"
+		try await requestConfirmation(result: .result(dialog: dialog))
 		do {
 			try await AccessoryManager.shared.saveChannelSet(
 				channelSet: channelLink.channelSet,
