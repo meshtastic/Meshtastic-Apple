@@ -799,6 +799,9 @@ actor MeshPackets {
 			let fetchedNode = try modelContext.fetch(fetchDescriptor)
 
 			if let paxMessage = try? Paxcount(serializedBytes: packet.decoded.payload) {
+				// Create the sending node when unheard, same as deviceMetadataPacket and
+				// telemetryPacket — an unlinked reading would persist as an orphan row.
+				let node = fetchedNode.first ?? findOrCreateNode(num: packetFrom, context: modelContext)
 
 				let newPax = PaxCounterEntity()
 				modelContext.insert(newPax)
@@ -806,13 +809,8 @@ actor MeshPackets {
 				newPax.wifi = Int32(truncatingIfNeeded: paxMessage.wifi)
 				newPax.uptime = Int32(truncatingIfNeeded: paxMessage.uptime)
 				newPax.time = Date()
-
-				if fetchedNode.count > 0 {
-					newPax.paxNode = fetchedNode[0]
-					scheduleDebouncedSave()
-				} else {
-					Logger.data.info("Node Info Not Found")
-				}
+				newPax.paxNode = node
+				scheduleDebouncedSave()
 			}
 		} catch {
 
