@@ -908,6 +908,77 @@ struct TelemetryPacketIngestTests {
 	}
 }
 
+// MARK: - PAX counter ingestion
+
+@Suite("PAX counter ingestion", .serialized)
+@MainActor
+struct PaxCounterPacketIngestTests {
+	private func makePaxPacket(from nodeNum: UInt32) throws -> MeshPacket {
+		var paxCounter = Paxcount()
+		paxCounter.wifi = 4
+		paxCounter.ble = 7
+		paxCounter.uptime = 60
+
+		var dataMessage = DataMessage()
+		dataMessage.payload = try paxCounter.serializedData()
+		dataMessage.portnum = .paxcounterApp
+
+		var packet = MeshPacket()
+		packet.from = nodeNum
+		packet.decoded = dataMessage
+		return packet
+	}
+
+	@Test func unknownSender_createsNodeAndLinksReading() async throws {
+		let nodeNum: UInt32 = 0x20DE_FC03
+		let persistedNodeNum = Int64(nodeNum)
+		let context = ModelContext(sharedModelContainer)
+		let orphansBefore = try context.fetchCount(FetchDescriptor<PaxCounterEntity>(
+			predicate: #Predicate { $0.paxNode == nil }
+		))
+
+		let mesh = MeshPackets(modelContainer: sharedModelContainer)
+		await mesh.paxCounterPacket(packet: try makePaxPacket(from: nodeNum))
+		await mesh.flushDebouncedSaves()
+
+		// Hearing the packet created the sender, and the reading is linked to it.
+		#expect(try context.fetchCount(FetchDescriptor<NodeInfoEntity>(
+			predicate: #Predicate { $0.num == persistedNodeNum }
+		)) == 1)
+		let readings = try context.fetch(FetchDescriptor<PaxCounterEntity>(
+			predicate: #Predicate { $0.paxNode?.num == persistedNodeNum }
+		))
+		#expect(readings.count == 1)
+		#expect(readings.first?.wifi == 4)
+		#expect(readings.first?.ble == 7)
+		// The original bug: an unlinked row swept in by the next debounced save.
+		#expect(try context.fetchCount(FetchDescriptor<PaxCounterEntity>(
+			predicate: #Predicate { $0.paxNode == nil }
+		)) == orphansBefore)
+	}
+
+	@Test func knownSender_persistsLinkedReading() async throws {
+		let nodeNum: UInt32 = 0x20DE_FC02
+		let persistedNodeNum = Int64(nodeNum)
+		let context = ModelContext(sharedModelContainer)
+		let node = NodeInfoEntity()
+		node.num = persistedNodeNum
+		context.insert(node)
+		try context.save()
+
+		let mesh = MeshPackets(modelContainer: sharedModelContainer)
+		await mesh.paxCounterPacket(packet: try makePaxPacket(from: nodeNum))
+		await mesh.flushDebouncedSaves()
+
+		let readings = try context.fetch(FetchDescriptor<PaxCounterEntity>(
+			predicate: #Predicate { $0.paxNode?.num == persistedNodeNum }
+		))
+		#expect(readings.count == 1)
+		#expect(readings.first?.wifi == 4)
+		#expect(readings.first?.ble == 7)
+	}
+}
+
 @Suite("device metadata ingestion")
 @MainActor
 struct DeviceMetadataIngestTests {
