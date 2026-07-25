@@ -378,7 +378,14 @@ extension MeshPackets {
 				}
 				if let nodeInfoMessage = try? NodeInfo(serializedBytes: packet.decoded.payload) {
 					newNode.favorite = nodeInfoMessage.isFavorite
-					newNode.hasXeddsaSigned = nodeInfoMessage.hasXeddsaSigned_p
+					// Derive the "Signed node" shield from the radio-verified transport signature
+					// (MeshPacket.xeddsa_signed, set by the local radio only after it cryptographically
+					// verifies this packet's XEdDSA signature) — NOT from the NodeInfo payload's
+					// has_xeddsa_signed bit, which is attacker-controlled over the mesh and would let a
+					// spoofed NODEINFO forge the verified shield. This still marks any node we hear
+					// signing (not just the connected one); the connected radio's NodeDB dump path
+					// (MeshPackets.nodeInfoPacket) keeps sourcing it from the radio's own database.
+					newNode.hasXeddsaSigned = packet.xeddsaSigned
 				}
 				if packet.hopStart != 0 && packet.hopLimit <= packet.hopStart {
 					newNode.hopsAway = Int32(truncatingIfNeeded: packet.hopStart - packet.hopLimit)
@@ -498,9 +505,11 @@ extension MeshPackets {
 				if let nodeInfoMessage = try? NodeInfo(serializedBytes: packet.decoded.payload) {
 
 					fetchedNode[0].favorite = nodeInfoMessage.isFavorite
-					// has_xeddsa_signed means the node has signed ≥1 verified broadcast and persists; latch it
-					// so a later NodeInfo that omits the bit doesn't downgrade a node we've seen sign.
-					fetchedNode[0].hasXeddsaSigned = fetchedNode[0].hasXeddsaSigned || nodeInfoMessage.hasXeddsaSigned_p
+					// Latch the "Signed node" shield from the radio-verified transport signature
+					// (MeshPacket.xeddsa_signed), NOT the attacker-controllable NodeInfo payload bit —
+					// otherwise a spoofed NODEINFO could forge the verified shield for any node. Latching
+					// means one verified signed broadcast persists even if a later packet omits the bit.
+					fetchedNode[0].hasXeddsaSigned = fetchedNode[0].hasXeddsaSigned || packet.xeddsaSigned
 					if nodeInfoMessage.hasDeviceMetrics {
 						let telemetry = TelemetryEntity()
 						modelContext.insert(telemetry)
