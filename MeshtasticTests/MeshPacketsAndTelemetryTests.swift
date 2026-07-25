@@ -963,6 +963,85 @@ struct PositionPacketIngestHardeningTests {
 	}
 }
 
+// MARK: - Global entity caps (node / waypoint eviction)
+
+@Suite("Entity cap eviction", .serialized)
+@MainActor
+struct EntityCapEvictionTests {
+	private func freshMesh() throws -> (MeshPackets, ModelContainer) {
+		let container = try ModelContainer(
+			for: Schema(MeshtasticSchema.allModels),
+			configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+		)
+		return (MeshPackets(modelContainer: container), container)
+	}
+
+	@Test func nodes_evictLeastRecentlyHeard_keepingFavorites() async throws {
+		let (mesh, container) = try freshMesh()
+		let context = ModelContext(container)
+		let base = Date(timeIntervalSince1970: 1_700_000_000)
+		func makeNode(_ num: Int64, heard: TimeInterval, favorite: Bool) -> NodeInfoEntity {
+			let node = NodeInfoEntity()
+			node.num = num
+			node.id = num
+			node.lastHeard = base.addingTimeInterval(heard)
+			node.favorite = favorite
+			return node
+		}
+		// Node 1 is the OLDEST but a favorite (must be protected); 2 and 3 are the oldest
+		// non-favorites (must be evicted); 4 is newest (must survive).
+		[makeNode(1, heard: 0, favorite: true),
+		 makeNode(2, heard: 10, favorite: false),
+		 makeNode(3, heard: 20, favorite: false),
+		 makeNode(4, heard: 30, favorite: false)].forEach { context.insert($0) }
+		try context.save()
+
+		await mesh.evictNodesIfOverCap(2)
+		await mesh.flushDebouncedSaves()
+
+		let remaining = try ModelContext(container)
+			.fetch(FetchDescriptor<NodeInfoEntity>()).map { $0.num }.sorted()
+		// Favorite (1, despite being oldest) + newest (4) survive; oldest non-favorites (2,3) evicted.
+		#expect(remaining == [1, 4])
+	}
+
+	@Test func waypoints_evictOldestLastUpdated() async throws {
+		let (mesh, container) = try freshMesh()
+		let context = ModelContext(container)
+		let base = Date(timeIntervalSince1970: 1_700_000_000)
+		func makeWaypoint(_ id: Int64, updated: TimeInterval) -> WaypointEntity {
+			let waypoint = WaypointEntity()
+			waypoint.id = id
+			waypoint.lastUpdated = base.addingTimeInterval(updated)
+			return waypoint
+		}
+		[makeWaypoint(1, updated: 0),   // oldest
+		 makeWaypoint(2, updated: 10),
+		 makeWaypoint(3, updated: 20)].forEach { context.insert($0) }  // newest
+		try context.save()
+
+		await mesh.evictWaypointsIfOverCap(1)
+		await mesh.flushDebouncedSaves()
+
+		let remaining = try ModelContext(container)
+			.fetch(FetchDescriptor<WaypointEntity>()).map { $0.id }.sorted()
+		#expect(remaining == [3])   // only the most-recently-updated survives
+	}
+
+	@Test func underCap_noEviction() async throws {
+		let (mesh, container) = try freshMesh()
+		let context = ModelContext(container)
+		let node = NodeInfoEntity(); node.num = 7; node.id = 7; node.lastHeard = Date()
+		context.insert(node)
+		try context.save()
+
+		await mesh.evictNodesIfOverCap(10_000)
+		await mesh.flushDebouncedSaves()
+
+		#expect(try ModelContext(container).fetchCount(FetchDescriptor<NodeInfoEntity>()) == 1)
+	}
+}
+
 @Suite("PAX counter ingestion", .serialized)
 @MainActor
 struct PaxCounterPacketIngestTests {
