@@ -294,7 +294,7 @@ extension MeshPackets {
 				node.viaMqtt = packet.viaMqtt
 				
 				if packet.hopStart != 0 && packet.hopLimit <= packet.hopStart {
-					node.hopsAway = Int32(packet.hopStart - packet.hopLimit)
+					node.hopsAway = Int32(truncatingIfNeeded: packet.hopStart - packet.hopLimit)
 					Logger.data.debug("💾 [updateAnyPacketFrom] Updating node \(packet.from.toHex(), privacy: .public) hopsAway=\(node.hopsAway)")
 				}
 				
@@ -381,7 +381,7 @@ extension MeshPackets {
 					newNode.hasXeddsaSigned = nodeInfoMessage.hasXeddsaSigned_p
 				}
 				if packet.hopStart != 0 && packet.hopLimit <= packet.hopStart {
-					newNode.hopsAway = Int32(packet.hopStart - packet.hopLimit)
+					newNode.hopsAway = Int32(truncatingIfNeeded: packet.hopStart - packet.hopLimit)
 				}
 				
 				if let newUserMessage = try? User(serializedBytes: packet.decoded.payload) {
@@ -563,11 +563,11 @@ extension MeshPackets {
 					// Security (finding H1): first-wins on the public key. See `applyInboundPublicKey`.
 					fetchedNode[0].user?.applyInboundPublicKey(userMessage.publicKey, nodeNum: Int64(packet.from))
 					if packet.hopStart != 0 && packet.hopLimit <= packet.hopStart {
-						fetchedNode[0].hopsAway = Int32(packet.hopStart - packet.hopLimit)
+						fetchedNode[0].hopsAway = Int32(truncatingIfNeeded: packet.hopStart - packet.hopLimit)
 					}
 
 				} else if packet.hopStart != 0 && packet.hopLimit <= packet.hopStart {
-					fetchedNode[0].hopsAway = Int32(packet.hopStart - packet.hopLimit)
+					fetchedNode[0].hopsAway = Int32(truncatingIfNeeded: packet.hopStart - packet.hopLimit)
 				}
 				if fetchedNode[0].user == nil {
 					do {
