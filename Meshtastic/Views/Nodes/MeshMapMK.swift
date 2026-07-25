@@ -306,7 +306,11 @@ struct MeshMapMK: View {
 	/// Cheap change-detector for the route set (drives rebuildRouteContent via onChange).
 	/// Change-detector for the waypoint set (rebuild markers on add/remove/move/icon change).
 	private var waypointsKey: String {
-		allWaypoints.map { "\($0.id)|\($0.icon)|\($0.latitudeI)|\($0.longitudeI)|\($0.geofenceRadius)|\($0.hasBoundingBox ? 1 : 0)|\($0.boundingBoxLatitudeNorthI)|\($0.boundingBoxLatitudeSouthI)|\($0.boundingBoxLongitudeEastI)|\($0.boundingBoxLongitudeWestI)" }.joined(separator: ",")
+		// Includes `name` and `expire`: both are now rendered directly from the snapshot (the map
+		// pin and the coincident-item picker), so a rename or an expiry must change this key to
+		// trigger rebuildWaypointItems() — otherwise a stale name / an expired-but-still-tappable
+		// waypoint would linger until some unrelated field changed.
+		allWaypoints.map { "\($0.id)|\($0.name ?? "")|\($0.icon)|\($0.latitudeI)|\($0.longitudeI)|\($0.geofenceRadius)|\($0.hasBoundingBox ? 1 : 0)|\($0.boundingBoxLatitudeNorthI)|\($0.boundingBoxLatitudeSouthI)|\($0.boundingBoxLongitudeEastI)|\($0.boundingBoxLongitudeWestI)|\($0.expire?.timeIntervalSinceReferenceDate ?? 0)" }.joined(separator: ",")
 	}
 	private var routesKey: String {
 		routes.map { "\($0.color)|\($0.locations.count)" }.joined(separator: ",")
