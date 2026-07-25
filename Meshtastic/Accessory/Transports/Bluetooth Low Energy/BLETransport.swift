@@ -61,24 +61,22 @@ actor BLETransport: Transport {
 	/// review).
 	private var discoverySetupTask: Task<Void, Never>?
 
-	/// Seam over `CBCentralManager.retrievePeripherals(withIdentifiers:)`, used by
-	/// `resolvePeripheral(for:)` when the discovery cache misses. `CBPeripheral` can't be
-	/// constructed in a test, so this exists so a test can at least observe *that* the cache-miss
-	/// fallback is consulted — which is precisely what regressed: the old cache-only `guard` threw
-	/// "Peripheral not found" without ever asking CoreBluetooth. `nil` means "use the real
-	/// central manager".
-	private var peripheralRetrieverOverride: (@Sendable (UUID) -> CBPeripheral?)?
+	/// Stands in for `CBCentralManager.retrievePeripherals(withIdentifiers:)` in
+	/// `resolvePeripheral(for:)` when the discovery cache misses. `nil` — the production default —
+	/// means "ask the real central manager". `CBPeripheral` has no public initializer, so this is
+	/// the only way a test can observe *that* the cache-miss fallback is consulted, which is
+	/// exactly what regressed: the old cache-only `guard` gave up without ever asking
+	/// CoreBluetooth. Injected through `init` into a `let` rather than exposed as a mutable
+	/// test-only setter, matching `AccessoryManager.init(transports:)` — this codebase's
+	/// established injection seam — so production code has nothing to swap out mid-flight.
+	private let peripheralRetriever: (@Sendable (UUID) -> CBPeripheral?)?
 
-	/// Test-only injection point for `peripheralRetrieverOverride`.
-	func setPeripheralRetrieverForTesting(_ retriever: (@Sendable (UUID) -> CBPeripheral?)?) {
-		self.peripheralRetrieverOverride = retriever
-	}
-	
 	// Transport properties
 	let supportsManualConnection: Bool = false
 	let requiresPeriodicHeartbeat = false
 			
-	init() {
+	init(peripheralRetriever: (@Sendable (UUID) -> CBPeripheral?)? = nil) {
+		self.peripheralRetriever = peripheralRetriever
 		self.discoveredPeripherals = [:]
 		self.discoveredDeviceContinuation = nil
 		self.delegate = BLEDelegate()
@@ -365,16 +363,21 @@ actor BLETransport: Transport {
 	/// Resolves `device` to a `CBPeripheral`, falling back to CoreBluetooth's own registry when
 	/// the discovery cache can't answer.
 	///
-	/// The cache alone is not a valid source here. `stopScanning()` clears
+	/// The cache alone is not a valid source here: `stopScanning()` clears
 	/// `discoveredPeripherals`, and the connect sequence deliberately stops discovery *before* it
 	/// connects (Step 0 of `AccessoryManager.connect`, which closes the scan-during-pairing race
 	/// from #2183). Once that stop became genuinely awaited, the cache was guaranteed empty by the
-	/// time Step 1 called `connect(to:)`, so this method threw "Peripheral not found" and
-	/// `centralManager.connect(_:)` was never reached — the radio sat there advertising and never
-	/// saw a connection attempt, while the UI looped on "Attempt 2 of 2".
+	/// time Step 1 called `connect(to:)`, so `connect(to:)`'s guard threw "Peripheral not found"
+	/// and `centralManager.connect(_:)` was never reached at all.
 	///
 	/// `retrievePeripherals(withIdentifiers:)` is the API meant for this case: reconnecting to a
 	/// peripheral already known to the system, by identifier, without having to scan for it first.
+	/// It only consults the system's peripheral registry — it does not start a scan — so it does
+	/// not reopen the #2183 race.
+	///
+	/// Deliberately synchronous: the cache read, the retrieval, and the cache write below must not
+	/// be separated by a suspension point, or `stopScanning()`'s `removeAll()` could interleave and
+	/// wipe the entry this method just seeded.
 	private func resolvePeripheral(for device: Device) -> CBPeripheral? {
 		guard let uuid = UUID(uuidString: device.identifier) else {
 			Logger.transport.error("🛜 [BLE] Device identifier is not a UUID: \(device.identifier, privacy: .public)")
@@ -383,21 +386,27 @@ actor BLETransport: Transport {
 		if let cached = discoveredPeripherals[uuid]?.peripheral {
 			return cached
 		}
-		let retriever = peripheralRetrieverOverride
-		guard retriever != nil || centralManager != nil else {
-			Logger.transport.error("🛜 [BLE] Cannot resolve peripheral \(uuid, privacy: .public): Bluetooth not initialized.")
-			return nil
+		let retrieved: CBPeripheral?
+		if let peripheralRetriever {
+			retrieved = peripheralRetriever(uuid)
+		} else {
+			guard let centralManager else {
+				Logger.transport.error("🛜 [BLE] Cannot resolve peripheral \(uuid, privacy: .public): Bluetooth not initialized.")
+				return nil
+			}
+			retrieved = centralManager.retrievePeripherals(withIdentifiers: [uuid]).first
 		}
-		let lookup = retriever ?? { [centralManager] uuid in
-			centralManager?.retrievePeripherals(withIdentifiers: [uuid]).first
-		}
-		guard let retrieved = lookup(uuid) else {
+		guard let retrieved else {
 			Logger.transport.error("🛜 [BLE] Peripheral \(uuid, privacy: .public) is neither in the discovery cache nor known to CoreBluetooth.")
 			return nil
 		}
 		Logger.transport.info("🛜 [BLE] Peripheral \(uuid, privacy: .public) not in discovery cache; retrieved it from CoreBluetooth.")
-		// Re-seed the cache so retries and the disconnect cleanup paths (which remove by
-		// identifier) behave exactly as they do for a scan-discovered peripheral.
+		// Cache the retrieved peripheral so the disconnect cleanup paths, which remove by
+		// identifier, have an entry to remove. This is not what makes retries work — Step 0 calls
+		// `stopDiscovery()` on every attempt, which clears the cache again before the next
+		// `resolvePeripheral` — and unlike a scan-discovered entry it yields no `.deviceFound`
+		// (`discoveredDeviceContinuation` is nil by now) and is not aged out by `cleanupTask`
+		// (`stopScanning()` cancelled it). Same shape as `handleWillRestoreState`'s re-seed.
 		discoveredPeripherals[uuid] = (peripheral: retrieved, lastSeen: Date())
 		return retrieved
 	}
