@@ -28,6 +28,17 @@ extension AccessoryManager {
 		if activeConnection != nil {
 			throw AccessoryError.connectionFailed("Already connected to a device")
 		}
+
+		// `activeConnection` alone is not enough of a reentrancy guard. A step machine that is
+		// still suspended (e.g. waiting on the node-DB gate) has already torn its connection down,
+		// so `activeConnection` is nil while `run()` has not returned and `connectionStepper` has
+		// not been cleared. Overwriting `connectionStepper` there would orphan the previous machine
+		// without cancelling it, and both machines would then run the connected-state steps
+		// (duplicate .subscribed, MQTT init, heartbeat timer) against one link.
+		if let existingStepper = connectionStepper, await existingStepper.isRunning {
+			Logger.transport.error("🔗 [Connect] Refusing to start: a connection process is already running")
+			throw AccessoryError.connectionFailed("A connection attempt is already in progress")
+		}
 		
 		guard let transport = transportForType(device.transportType) else {
 			throw AccessoryError.connectionFailed("No transport for type")
@@ -200,7 +211,11 @@ extension AccessoryManager {
 			}
 			
 			// Step 5a: Wait for end of WantConfig (database)
-			Step { @MainActor _ in
+			// The gate this waits on is only opened by a configComplete for NONCE_ONLY_DB, and
+			// closeConnection() resets it to closed. Without a timeout, a teardown that races this
+			// step leaves it suspended forever, so connect() never returns and connectionStepper is
+			// never cleared. Bound it so every step in the machine terminates.
+			Step(timeout: .seconds(30)) { @MainActor _ in
 				guard wantDatabase else {
 					Logger.transport.info("👟 [Connect] Step 4: wantDatabase = false, skipping waitForWantDatabase")
 					return
@@ -373,6 +388,11 @@ actor SequentialSteps {
 	
 	func run() async throws {
 		self.isRunning = true
+		// The retry sleeps sit outside the per-step `do`, so an explicit assignment on each exit
+		// path misses a throw from there and leaves isRunning stuck at true. didReceive() reads
+		// isRunning to decide whether to updateState(.discovering), and a stale true suppresses
+		// that transition.
+		defer { isRunning = false }
 		retryLoop: for attempt in 0..<maxRetries {
 			for stepNumber in 0..<steps.count {
 				if cancelled {
@@ -415,13 +435,18 @@ actor SequentialSteps {
 								case let SequentialStepError.timeout(stepNumber, afterWaiting):
 									Logger.transport.info("[Inner Retry Step Loop] Sequential process timed out on step \(stepNumber) of \(stepRetries) after waiting \(afterWaiting)")
 								case is CancellationError:
+									// A cancelled step is a failed step. `break stepRetryLoop` here exited the
+									// loop without throwing, so the enclosing `do` completed normally and the
+									// machine advanced to the next step as if this one had succeeded.
+									// Substitute the external error when there is one, otherwise rethrow the
+									// cancellation, and let the outer handler decide to retry or fail.
 									if let externalError {
 										// Something from the outside had an error which caused the cancellation of this step
 										let errorToThrow = externalError
 										self.externalError = nil
 										throw errorToThrow
 									}
-									break stepRetryLoop
+									throw error
 								default:
 									Logger.transport.error("[Inner Retry Step Loop] Sequential process failed on step \(stepNumber) with error: \(error.localizedDescription, privacy: .public)")
 								}
@@ -440,17 +465,13 @@ actor SequentialSteps {
 						// TODO: we could have a .retryStepAndFail and a .retryStepAndContinue instead of just .retryStep to clarify the behavior here
 						continue retryLoop
 					case .fail:
-						isRunning = false
 						throw error
 					}
 				}
 			}
 			// We have finished all steps
-			isRunning = false
 			return
 		}
-		isRunning = false
-		// return
 		throw AccessoryError.tooManyRetries
 	}
 	

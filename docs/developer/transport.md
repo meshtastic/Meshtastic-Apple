@@ -85,6 +85,16 @@ During an explicit radio switch from the Connect view, the app uses the same con
 
 This refresh is only enabled for the switch-radio flow. Automatic reconnects and ordinary connects continue using the standard transport handshake without forcing a hardware catalog refresh.
 
+### Step Failure and Cancellation Semantics
+
+`SequentialSteps` is the small state machine behind the connect pipeline. Three rules keep a failed connect from being mistaken for a successful one:
+
+- **A cancelled step is a failed step.** Steps park on cancellable suspensions (`sendWantDatabase` waits on a continuation, `waitForWantDatabaseResponse` waits on `wantDatabaseGate`), and a teardown resumes those with `CancellationError`. The retry loop rethrows that cancellation instead of moving on, so the machine either retries or fails. If something recorded an error through `cancelCurrentlyExecutingStep(withError:)` first, that error is substituted for the bare cancellation so the UI shows the real cause.
+- **Every step is bounded.** Each step either carries an explicit timeout or completes on its own. The node-DB wait (Step 5a) is capped at 30s because the gate it waits on is only opened by a `configComplete` for `NONCE_ONLY_DB`, and `closeConnection()` resets that gate to closed. Without a cap, a teardown racing that step would suspend the pipeline permanently.
+- **One machine at a time.** `connect(to:)` refuses to start while `connectionStepper` is still running. `activeConnection` alone is not a sufficient guard: a machine suspended after a teardown has already cleared `activeConnection`, and starting a second machine there would leave the first one running against the same `AccessoryManager`.
+
+`isRunning` reports whether a machine is live and is cleared on every exit path, including a throw out of a retry delay. `AccessoryManager.didReceive(_:)` reads it to decide whether an error event should move the UI to `.discovering` or leave it to an in-flight reconnect.
+
 ### BLE Pairing PIN Handshake
 
 A first-ever connection to an encrypted radio makes iOS present a 6-digit pairing PIN sheet. `BLEConnection` gates connect-completion on that bond so the sheet is not torn down before the user can respond:
