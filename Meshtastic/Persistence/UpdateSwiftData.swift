@@ -198,6 +198,10 @@ extension MeshPackets {
 			try commit()
 			try modelContext.delete(model: DeviceHardwareImageEntity.self)
 			try commit()
+			// The image/link network pass is throttled (staleDeviceImageLinkInterval); clearing the
+			// rows it populates must also clear that throttle so the next connect's Step 3b restores
+			// them instead of skipping as "refreshed recently".
+			UserDefaults.lastDeviceImageAndLinkUpdate = .distantPast
 
 			// Collect favorite node IDs before the delete loop so we can skip related entities that
 			// belong to preserved nodes. If this fetch fails we abort rather than treat the set as

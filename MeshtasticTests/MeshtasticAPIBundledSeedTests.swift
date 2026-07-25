@@ -76,6 +76,14 @@ class RequestRecordingURLProtocol: URLProtocol {
 @Suite("MeshtasticAPI bundled device seed", .serialized)
 struct MeshtasticAPIBundledSeedTests {
 
+	/// Start every test from an un-throttled state. The device image/link pass is gated on
+	/// `UserDefaults.lastDeviceImageAndLinkUpdate` (a 48h window), and that store is process-global,
+	/// so without this a prior test that ran the pass would make the next one skip and record zero
+	/// requests. Tests that specifically exercise the throttle set the timestamp themselves.
+	init() {
+		UserDefaults.lastDeviceImageAndLinkUpdate = .distantPast
+	}
+
 	/// A fresh, private in-memory container per test.
 	///
 	/// Deliberately not `SharedTestContainer.sharedModelContainer`: these tests need a virgin
@@ -324,5 +332,46 @@ struct MeshtasticAPIBundledSeedTests {
 			recorded.filter { $0.contains("msh.to/api/urls") }.count == 1,
 			"the msh.to link catalog should be imported exactly once per pass"
 		)
+	}
+
+	/// The image/link pass is throttled to once per `staleDeviceImageLinkInterval` (48h). Step 3b
+	/// fires it on every reconnect, so without the throttle each reconnect re-issued ~78 ETag HEADs.
+	/// The first pass hits the network; a second pass inside the window must issue nothing.
+	@Test @MainActor func imageRefreshThrottledWithinWindow() async throws {
+		URLProtocol.registerClass(RequestRecordingURLProtocol.self)
+		RequestRecordingURLProtocol.reset()
+		defer { URLProtocol.unregisterClass(RequestRecordingURLProtocol.self) }
+
+		let api = MeshtasticAPI(container: try makeContainer(), startupRefresh: false)
+		await api.refreshDeviceImagesAndLinks()
+		#expect(!imageRequests(from: RequestRecordingURLProtocol.recordedURLs).isEmpty,
+				"the first pass should hit the network")
+
+		RequestRecordingURLProtocol.reset()
+		await api.refreshDeviceImagesAndLinks()
+		let secondPass = imageRequests(from: RequestRecordingURLProtocol.recordedURLs)
+		#expect(secondPass.isEmpty,
+				"a second pass inside the 48h window must issue no network requests, got \(secondPass.count)")
+	}
+
+	/// `clearDatabase` wipes `DeviceHardwareImageEntity`/`DeviceLinkEntity` and resets
+	/// `lastDeviceImageAndLinkUpdate` so Step 3b restores them rather than skipping as "refreshed
+	/// recently". Resetting the timestamp (what the clear does) must re-enable the pass in-window.
+	@Test @MainActor func resetTimestampReenablesImageRefreshAfterClear() async throws {
+		URLProtocol.registerClass(RequestRecordingURLProtocol.self)
+		RequestRecordingURLProtocol.reset()
+		defer { URLProtocol.unregisterClass(RequestRecordingURLProtocol.self) }
+
+		let api = MeshtasticAPI(container: try makeContainer(), startupRefresh: false)
+		await api.refreshDeviceImagesAndLinks()   // first pass arms the throttle
+		#expect(!imageRequests(from: RequestRecordingURLProtocol.recordedURLs).isEmpty)
+
+		// Simulate the clearDatabase reset that follows wiping the image/link rows.
+		UserDefaults.lastDeviceImageAndLinkUpdate = .distantPast
+
+		RequestRecordingURLProtocol.reset()
+		await api.refreshDeviceImagesAndLinks()
+		#expect(!imageRequests(from: RequestRecordingURLProtocol.recordedURLs).isEmpty,
+				"resetting the throttle (as clearDatabase does) must let the pass run again in-window")
 	}
 }

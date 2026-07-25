@@ -247,6 +247,9 @@ class PersistenceController {
 			try container.mainContext.save()
 			try container.mainContext.delete(model: DeviceHardwareImageEntity.self)
 			try container.mainContext.save()
+			// Clearing the image/link rows must also reset their refresh throttle so the next pass
+			// restores them rather than skipping as "refreshed recently" (see MeshtasticAPI).
+			UserDefaults.lastDeviceImageAndLinkUpdate = .distantPast
 
 			for modelType in MeshtasticSchema.allModels {
 				if !includeRoutes && (modelType == RouteEntity.self || modelType == LocationEntity.self) {
