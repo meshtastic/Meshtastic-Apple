@@ -71,10 +71,10 @@ actor BLETransport: Transport {
 	/// established injection seam — so production code has nothing to swap out mid-flight.
 	private let peripheralRetriever: (@Sendable (UUID) -> CBPeripheral?)?
 
-	// Transport properties
+	// MARK: - Transport properties
 	let supportsManualConnection: Bool = false
 	let requiresPeriodicHeartbeat = false
-			
+
 	init(peripheralRetriever: (@Sendable (UUID) -> CBPeripheral?)? = nil) {
 		self.peripheralRetriever = peripheralRetriever
 		self.discoveredPeripherals = [:]
