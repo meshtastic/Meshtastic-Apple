@@ -40,6 +40,13 @@ actor BLETransport: Transport {
 	/// short-circuits in `handleDidConnect` / `handleDidFailToConnect` to that peripheral, the
 	/// same way the normal connect path already checks `connectingPeripheral`.
 	private var restoringPeripheralIdentifier: UUID?
+	/// The connection the in-flight restore installed as `activeConnection`. `endRestore` clears
+	/// `activeConnection` only while it is still this exact object, so a restore tearing down late
+	/// can't drop a connection that a normal `connect(to:)` has since installed.
+	private var restoringConnection: BLEConnection?
+	/// Bumped by every `awaitRestoredConnect` call so a watchdog that already woke up can tell it
+	/// belongs to a restore that has since been resolved or replaced, and stay out of the way.
+	private var restoredConnectGeneration = 0
 
 	/// How long a restored connect waits for `didConnect` before giving up. CoreBluetooth connect
 	/// requests never expire on their own, so without this the wait is unbounded.
@@ -575,6 +582,7 @@ actor BLETransport: Transport {
 			case .connecting:
 				let restoredConnection = BLEConnection(peripheral: peripheral, central: central, transport: self)
 				self.activeConnection = restoredConnection
+				self.restoringConnection = restoredConnection
 				do {
 					// Make sure we're in poweredOn before continuing
 					try await self.setupCompleteGate.wait()
@@ -613,6 +621,7 @@ actor BLETransport: Transport {
 			case .connected:
 				let restoredConnection = BLEConnection(peripheral: peripheral, central: central, transport: self)
 				self.activeConnection = restoredConnection
+				self.restoringConnection = restoredConnection
 				// The link is already up, so this connection stays as the activeConnection whatever
 				// the app-level connect below does.
 				restoredConnectionIsLive = true
@@ -654,17 +663,21 @@ actor BLETransport: Transport {
 		}
 
 		// This is the single funnel for "the peripheral is gone", so a restore still waiting on
-		// didConnect will never get one. Resume it here instead of leaving it live to be resumed
-		// by a later, unrelated connect's didConnect.
+		// didConnect will never get one. Resume it here — with the more specific error than
+		// `endRestore` would use — instead of leaving it live to be resumed by a later, unrelated
+		// connect's didConnect.
 		if let continuation = restoredConnectContinuation {
 			restoredConnectContinuation = nil
 			continuation.resume(throwing: AccessoryError.disconnected("Peripheral disconnected during state restoration"))
 		}
+		// Discovery gate + restore bookkeeping goes through `endRestore` so it stays the only
+		// writer of `restoreInProgress`. `clearingConnection: false` because this method clears
+		// `activeConnection` unconditionally below: the peripheral is gone regardless of whether
+		// the connection came from a restore or a normal connect.
+		endRestore(clearingConnection: false)
 
 		self.activeConnection = nil
 		self.connectingPeripheral = nil
-		restoreInProgress = false
-		restoringPeripheralIdentifier = nil
 	}
 }
 
@@ -680,8 +693,11 @@ extension BLETransport {
 		restoringPeripheralIdentifier = peripheralIdentifier
 	}
 
-	/// The single exit from a state restore, clearing everything `handleWillRestoreState` set up
-	/// rather than just the discovery gate.
+	/// The single exit from a state restore, clearing the transport state the restore itself owns
+	/// rather than just the discovery gate. (The `discoveredPeripherals` entry
+	/// `handleWillRestoreState` added is deliberately kept: it is what lets the user reconnect to
+	/// the radio by hand after a failed restore, and the periodic cleanup task prunes it on its
+	/// own once it stops being seen.)
 	///
 	/// A leftover `restoredConnectContinuation` gets resumed by the next unrelated connect's
 	/// didConnect and hangs it; an `activeConnection` for a connection that never actually
@@ -689,25 +705,35 @@ extension BLETransport {
 	/// clears it because `BLEConnection.disconnect()` (the only caller of
 	/// `connectionDidDisconnect`) never runs for a connection that never started.
 	///
-	/// `clearingConnection` is false only when the restored connection is genuinely live.
+	/// The restore task passes `clearingConnection: false` only when the restored connection is
+	/// genuinely live; `connectionDidDisconnect` also passes `false` because it clears
+	/// `activeConnection` itself.
 	func endRestore(clearingConnection: Bool) {
 		restoreInProgress = false
 		restoringPeripheralIdentifier = nil
 		if let continuation = restoredConnectContinuation {
 			restoredConnectContinuation = nil
-			continuation.resume(throwing: AccessoryError.connectionFailed("State restoration ended before the peripheral connected"))
+			continuation.resume(throwing: AccessoryError.connectionFailed(Self.restoreEndedPendingConnectMessage))
 		}
-		if clearingConnection {
+		// Only ever drop the connection this restore installed, and only while it is still the
+		// active one. `connectingPeripheral` is not this method's to clear at all — the restore
+		// path never sets it. Clearing either unconditionally hands the original bug back from the
+		// other direction: a `connect(to:)` that started after something else already released
+		// `activeConnection` (a disconnect, the watchdog) would lose its `connectingPeripheral`, so
+		// `handleDidConnect`'s identity guard fails, `connectContinuation` is never resumed, and
+		// that connect hangs to its own timeout.
+		if clearingConnection, let restoringConnection, activeConnection === restoringConnection {
 			activeConnection = nil
-			connectingPeripheral = nil
 		}
+		restoringConnection = nil
 	}
 
 	/// True while a restore is suspended waiting for `didConnect`.
 	var isAwaitingRestoredConnect: Bool { restoredConnectContinuation != nil }
 
-	/// Suspends until the restored peripheral reports `didConnect`, `timeout` elapses, or the
-	/// peripheral is reported gone (`connectionDidDisconnect`). On timeout the outstanding
+	/// Suspends until the restored peripheral reports `didConnect`, `timeout` elapses, the
+	/// peripheral is reported gone (`connectionDidDisconnect`), the enclosing task is cancelled, or
+	/// another restore supersedes this one. On every one of those give-up paths the outstanding
 	/// CoreBluetooth connect request is withdrawn via `cancelConnect`, since CoreBluetooth keeps
 	/// pending connect requests alive indefinitely.
 	///
@@ -718,29 +744,69 @@ extension BLETransport {
 		connect: @escaping @Sendable () -> Void,
 		cancelConnect: @escaping @Sendable () -> Void
 	) async throws {
+		restoredConnectGeneration += 1
+		let generation = restoredConnectGeneration
 		let watchdog = Task { [weak self] in
 			try? await Task.sleep(for: timeout)
 			guard !Task.isCancelled else { return }
 			await self?.failRestoredConnect(
-				with: AccessoryError.connectionFailed("Timed out waiting for the restored peripheral to connect"),
+				generation: generation,
+				with: AccessoryError.connectionFailed(Self.restoredConnectTimedOutMessage),
 				cancelConnect: cancelConnect
 			)
 		}
 		defer { watchdog.cancel() }
-		try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
-			self.restoredConnectContinuation = continuation
-			connect()
+		// A checked continuation isn't cancellation-aware on its own: without this handler a
+		// cancelled restore task stays suspended here until the watchdog fires, and its
+		// `defer { endRestore }` (the discovery gate) waits that long with it.
+		try await withTaskCancellationHandler {
+			try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+				// A second restore must not orphan the first one's continuation: the task suspended
+				// on it would never resume, so its `defer { endRestore }` never runs and the
+				// discovery gate stays latched — exactly the failure this path exists to prevent.
+				if let superseded = restoredConnectContinuation {
+					restoredConnectContinuation = nil
+					superseded.resume(throwing: AccessoryError.connectionFailed(Self.restoredConnectSupersededMessage))
+				}
+				// Cancellation between entering this function and installing the continuation would
+				// otherwise miss the handler above and leave a CoreBluetooth connect request
+				// outstanding for a restore nobody is waiting on.
+				guard !Task.isCancelled else {
+					continuation.resume(throwing: CancellationError())
+					return
+				}
+				restoredConnectContinuation = continuation
+				connect()
+			}
+		} onCancel: {
+			Task { [weak self] in
+				await self?.failRestoredConnect(
+					generation: generation,
+					with: CancellationError(),
+					cancelConnect: cancelConnect
+				)
+			}
 		}
 	}
 
 	/// Fails a pending restored connect. No-op if it already resolved, so the watchdog can't
-	/// double-resume a continuation `handleDidConnect` already took.
-	private func failRestoredConnect(with error: Error, cancelConnect: @Sendable () -> Void) {
-		guard let continuation = restoredConnectContinuation else { return }
+	/// double-resume a continuation `handleDidConnect` already took, and no-op for a stale
+	/// `generation`, so a watchdog that woke up just as its own wait was resolved can't take down
+	/// the continuation a later restore installed in the meantime.
+	private func failRestoredConnect(generation: Int, with error: Error, cancelConnect: @Sendable () -> Void) {
+		guard generation == restoredConnectGeneration,
+			  let continuation = restoredConnectContinuation else { return }
 		restoredConnectContinuation = nil
 		cancelConnect()
 		continuation.resume(throwing: error)
 	}
+
+	/// Messages the restore path resolves a pending `restoredConnectContinuation` with. Shared
+	/// constants (same reasoning as `poweredOffStatusMessage`) so tests can tell *which* give-up
+	/// path resolved a wait without duplicating the literals or timing the resolution.
+	static let restoreEndedPendingConnectMessage = "State restoration ended before the peripheral connected"
+	static let restoredConnectTimedOutMessage = "Timed out waiting for the restored peripheral to connect"
+	static let restoredConnectSupersededMessage = "Superseded by another state restoration"
 }
 
 class BLEDelegate: NSObject, CBCentralManagerDelegate {

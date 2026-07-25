@@ -63,6 +63,28 @@ struct BLETransportRestoreStateTests {
 		return false
 	}
 
+	/// Which give-up path resolved a wait, identified by the error it threw rather than by how long
+	/// it took. Timing the resolution ("under 2s, so it wasn't the 5s watchdog") is a coin flip on
+	/// a loaded CI simulator; every path throws a distinguishable `AccessoryError`, and a wait that
+	/// isn't resolved at all is caught by the suite's `.timeLimit`.
+	private func accessoryErrorMessage(_ error: Error?) -> String? {
+		switch error as? AccessoryError {
+		case .connectionFailed(let message), .disconnected(let message):
+			return message
+		default:
+			return nil
+		}
+	}
+
+	private func isDisconnected(_ error: Error?) -> Bool {
+		if case .disconnected = error as? AccessoryError { return true }
+		return false
+	}
+
+	/// Long enough that the watchdog cannot plausibly be what resolves a wait these tests resolve
+	/// by hand, short enough that a regression still fails inside the suite's time limit.
+	private static let unreachableTimeout: Duration = .seconds(30)
+
 	/// The radio is powered off or out of range at relaunch: the connect request is issued and
 	/// nothing ever comes back — no didConnect, no didFailToConnect, no didDisconnectPeripheral.
 	/// CoreBluetooth connect requests don't expire, so the wait has to expire on its own,
@@ -74,7 +96,7 @@ struct BLETransportRestoreStateTests {
 		let cancelled = CallFlag()
 		await transport.beginRestore(for: UUID())
 
-		var threw = false
+		var caught: Error?
 		do {
 			try await transport.awaitRestoredConnect(
 				timeout: .milliseconds(300),
@@ -82,10 +104,13 @@ struct BLETransportRestoreStateTests {
 				cancelConnect: { cancelled.record() }
 			)
 		} catch {
-			threw = true
+			caught = error
 		}
 
-		#expect(threw, "an unanswered restored connect must not suspend forever")
+		#expect(
+			accessoryErrorMessage(caught) == BLETransport.restoredConnectTimedOutMessage,
+			"an unanswered restored connect must not suspend forever, and must fail as a timeout"
+		)
 		#expect(cancelled.wasCalled, "the pending CoreBluetooth connect request must be withdrawn on timeout")
 		#expect(await transport.isAwaitingRestoredConnect == false)
 
@@ -106,61 +131,133 @@ struct BLETransportRestoreStateTests {
 
 		let waiter = Task {
 			try await transport.awaitRestoredConnect(
-				timeout: .seconds(5),
+				timeout: Self.unreachableTimeout,
 				connect: { },
 				cancelConnect: { }
 			)
 		}
 		#expect(await waitForPendingRestoredConnect(on: transport))
 
-		let start = ContinuousClock.now
 		await transport.connectionDidDisconnect(fromPeripheral: nil)
 
-		var threw = false
+		var caught: Error?
 		do {
 			try await waiter.value
 		} catch {
-			threw = true
+			caught = error
 		}
-		let elapsed = ContinuousClock.now - start
 
-		#expect(threw)
-		// The disconnect itself has to resolve it. Falling through to the 5s watchdog instead
-		// means the continuation was still live during the window a real connect would land in.
-		#expect(elapsed < .seconds(2), "the disconnect must resolve the restored connect, not leave it for the timeout")
+		// The disconnect is the only path that throws `.disconnected`, so this pins *which* path
+		// resolved the wait. Anything else means the continuation was still live during the window
+		// a real connect would land in.
+		#expect(isDisconnected(caught), "the disconnect must resolve the restored connect, not leave it for the timeout")
 		#expect(await transport.isAwaitingRestoredConnect == false)
 		#expect(await transport.restoreInProgress == false)
 	}
 
 	/// The restore task's `defer` calls `endRestore` on every exit, including exits that happen
-	/// while the connect is still outstanding (a throw from the poweredOn gate, task
-	/// cancellation). Nothing may be left suspended behind it.
+	/// while the connect is still outstanding (a throw from the poweredOn gate). Nothing may be
+	/// left suspended behind it.
 	@Test func endingARestoreResolvesAPendingRestoredConnect() async {
 		let transport = BLETransport()
 		await transport.beginRestore(for: UUID())
 
 		let waiter = Task {
 			try await transport.awaitRestoredConnect(
-				timeout: .seconds(5),
+				timeout: Self.unreachableTimeout,
 				connect: { },
 				cancelConnect: { }
 			)
 		}
 		#expect(await waitForPendingRestoredConnect(on: transport))
 
-		let start = ContinuousClock.now
 		await transport.endRestore(clearingConnection: true)
 
-		var threw = false
+		var caught: Error?
 		do {
 			try await waiter.value
 		} catch {
-			threw = true
+			caught = error
 		}
-		let elapsed = ContinuousClock.now - start
 
-		#expect(threw)
-		#expect(elapsed < .seconds(2))
+		#expect(accessoryErrorMessage(caught) == BLETransport.restoreEndedPendingConnectMessage)
+		#expect(await transport.isAwaitingRestoredConnect == false)
+		#expect(await transport.restoreInProgress == false)
+	}
+
+	/// A checked continuation isn't cancellation-aware, so a cancelled restore task would otherwise
+	/// sit here until the watchdog fires — holding the discovery gate down for the whole timeout.
+	@Test func cancellingTheEnclosingTaskResolvesTheRestoredConnect() async {
+		let transport = BLETransport()
+		let cancelled = CallFlag()
+		await transport.beginRestore(for: UUID())
+
+		let waiter = Task {
+			try await transport.awaitRestoredConnect(
+				timeout: Self.unreachableTimeout,
+				connect: { },
+				cancelConnect: { cancelled.record() }
+			)
+		}
+		#expect(await waitForPendingRestoredConnect(on: transport))
+
+		waiter.cancel()
+
+		var caught: Error?
+		do {
+			try await waiter.value
+		} catch {
+			caught = error
+		}
+
+		#expect(caught is CancellationError, "cancellation must not wait out the watchdog")
+		#expect(cancelled.wasCalled, "a restore that gives up has to withdraw its CoreBluetooth connect request")
+		#expect(await transport.isAwaitingRestoredConnect == false)
+	}
+
+	/// `awaitRestoredConnect` installs its continuation unconditionally, so a second restore
+	/// overwriting the first one's would leave that first task suspended forever — its
+	/// `defer { endRestore }` never runs, and the discovery gate never comes back up.
+	@Test func aSecondRestoredConnectResolvesTheOneItReplaces() async {
+		let transport = BLETransport()
+		await transport.beginRestore(for: UUID())
+
+		let first = Task {
+			try await transport.awaitRestoredConnect(
+				timeout: Self.unreachableTimeout,
+				connect: { },
+				cancelConnect: { }
+			)
+		}
+		#expect(await waitForPendingRestoredConnect(on: transport))
+
+		let second = Task {
+			try await transport.awaitRestoredConnect(
+				timeout: Self.unreachableTimeout,
+				connect: { },
+				cancelConnect: { }
+			)
+		}
+
+		var firstError: Error?
+		do {
+			try await first.value
+		} catch {
+			firstError = error
+		}
+		#expect(accessoryErrorMessage(firstError) == BLETransport.restoredConnectSupersededMessage)
+
+		// The replacement is the live one, and ending the restore still resolves it.
+		#expect(await waitForPendingRestoredConnect(on: transport))
+		await transport.endRestore(clearingConnection: true)
+
+		var secondError: Error?
+		do {
+			try await second.value
+		} catch {
+			secondError = error
+		}
+		#expect(accessoryErrorMessage(secondError) == BLETransport.restoreEndedPendingConnectMessage)
 		#expect(await transport.isAwaitingRestoredConnect == false)
 		#expect(await transport.restoreInProgress == false)
 	}
