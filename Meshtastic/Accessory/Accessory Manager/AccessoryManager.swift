@@ -244,6 +244,17 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	var packetsSent: Int = 0
 	var packetsReceived: Int = 0
 
+	/// Rolling estimate of inbound mesh-packet rate. Drives `isHighMeshTraffic`, which the map reads
+	/// to pause the trace-route 3D flyover when live traffic would make the flythrough janky. Fed one
+	/// `record()` per inbound mesh packet in `processFromRadio`; sampled while a connection is active.
+	let meshTrafficMonitor = MeshTrafficMonitor()
+
+	/// Mirrors `meshTrafficMonitor.isHighTraffic` onto this ObservableObject so views already
+	/// observing AccessoryManager (e.g. the map) react to it without having to observe the nested
+	/// monitor. True while sustained inbound mesh traffic is high enough to pause the map flyover.
+	@Published private(set) var isHighMeshTraffic = false
+	private var meshTrafficCancellable: AnyCancellable?
+
 	/// Packet count at the last periodic MeshPackets recycle (see `didReceive`). The ingest
 	/// actor's ModelContext registers every entity it inserts or faults and never lets go, so a
 	/// long high-traffic session accumulates them without bound (a sustained TCP stress replay
@@ -297,6 +308,15 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		}
 
 		observeBLETransportStatus()
+
+		// Mirror the traffic gate onto our own @Published so map views that already observe this
+		// manager pick up flyover pause/resume. Both objects live on the main actor, so the value
+		// only ever crosses on the main run loop.
+		meshTrafficCancellable = meshTrafficMonitor.$isHighTraffic
+			.removeDuplicates()
+			.sink { [weak self] isHigh in
+				self?.isHighMeshTraffic = isHigh
+			}
 	}
 
 	func transportForType(_ type: TransportType) -> Transport? {
@@ -431,7 +451,11 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		// Lockdown: clear per-connection state. If a Lock Now was in flight, the
 		// disconnect resolves the coordinator to `.lockNowAcknowledged`.
 		lockdownCoordinator?.onDisconnect()
-		
+
+		// Stop sampling and clear the traffic gate so a stale "high traffic" flag can't linger and
+		// keep the map flyover paused after the mesh goes quiet on disconnect.
+		meshTrafficMonitor.stop()
+
 		connectionEventTask?.cancel()
 		connectionEventTask = nil
 		
@@ -727,6 +751,9 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			await handleMyInfo(myNodeInfo)
 
 		case .packet(let packet):
+			// Feed the traffic-rate estimator one tick per inbound mesh packet — this is the busy path
+			// whose re-renders make the map flyover stutter, so it's exactly what we want to measure.
+			meshTrafficMonitor.record()
 			// All received packets get passed through updateAnyPacketFrom to update lastHeard, rxSnr, etc. (like firmware's NodeDB::updateFrom).
 			if let connectedNodeNum = self.activeDeviceNum {
 				await MeshPackets.shared.updateAnyPacketFrom(packet: packet, activeDeviceNum: connectedNodeNum)

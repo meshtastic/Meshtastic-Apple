@@ -40,6 +40,8 @@ extension AccessoryManager {
 		packetsReceived = 0
 		packetsAtLastIngestRecycle = 0
 		expectedNodeDBSize = nil
+		// Start sampling inbound mesh-traffic rate for this connection (map flyover gate).
+		meshTrafficMonitor.start()
 	
 		self.allowDisconnect = true
 		self.userRequestedConnectionCancellation = false
