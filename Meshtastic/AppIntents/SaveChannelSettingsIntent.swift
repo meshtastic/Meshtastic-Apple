@@ -27,6 +27,14 @@ struct SaveChannelSettingsIntent: AppIntent {
 
 		do {
 			let channelLink = try MeshtasticChannelURL.parse(channelUrl.absoluteString)
+			// Require explicit confirmation before mutating radio state, mirroring the in-app
+			// QR/URL flow (SaveChannelQRCode) and the destructive intents (ShutDownNodeIntent /
+			// FactoryResetNodeIntent). Without this, an untrusted Shortcut could silently replace
+			// the radio's channel list, PSKs, and LoRa config in the background.
+			let mode = channelLink.addChannels ? "add to" : "REPLACE"
+			try await requestConfirmation(
+				result: .result(dialog: "This will \(mode) the channels and LoRa settings on your connected Meshtastic radio. Continue?")
+			)
 			try await AccessoryManager.shared.saveChannelSet(
 				channelSet: channelLink.channelSet,
 				addChannels: channelLink.addChannels

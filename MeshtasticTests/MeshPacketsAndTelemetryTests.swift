@@ -910,6 +910,58 @@ struct TelemetryPacketIngestTests {
 
 // MARK: - PAX counter ingestion
 
+// MARK: - Position ingestion — malformed-packet hardening (DEF CON)
+
+@Suite("Position packet ingestion hardening", .serialized)
+@MainActor
+struct PositionPacketIngestHardeningTests {
+	private func makePositionPacket(from nodeNum: UInt32, mutate: (inout Position) -> Void) throws -> MeshPacket {
+		var position = Position()
+		// Real coordinates so the packet passes hasValidCoordinates and reaches the conversions.
+		position.latitudeI = Int32(47.6062 * 1e7)
+		position.longitudeI = Int32(-122.3321 * 1e7)
+		mutate(&position)
+
+		var dataMessage = DataMessage()
+		dataMessage.payload = try position.serializedData()
+		dataMessage.portnum = .positionApp
+
+		var packet = MeshPacket()
+		packet.from = nodeNum
+		packet.decoded = dataMessage
+		return packet
+	}
+
+	/// A single unauthenticated POSITION_APP packet whose UInt32 fields exceed Int32.max must
+	/// no longer SIGTRAP the app (the old `Int32(UInt32)` conversions trapped). The values must
+	/// land truncated rather than crash the process.
+	@Test func oversizedUInt32Fields_doNotCrashAndTruncate() async throws {
+		let nodeNum: UInt32 = 0x20DE_FC10
+		let persistedNodeNum = Int64(nodeNum)
+		let packet = try makePositionPacket(from: nodeNum) { p in
+			p.satsInView = 0xFFFF_FFFF   // > Int32.max — trapped before the fix
+			p.seqNumber = 0xFFFF_FFFF
+			p.groundSpeed = 0x8000_0000
+			p.groundTrack = 0xFFFF_FFFF  // also exercises the pre-conversion range check
+			p.precisionBits = 0xFFFF_FFFF
+		}
+
+		let mesh = MeshPackets(modelContainer: sharedModelContainer)
+		// Reaching this line at all (no fatalError / SIGTRAP) is the core assertion — the old
+		// code trapped here on the first oversized Int32(UInt32) conversion.
+		await mesh.upsertPositionPacket(packet: packet)
+		await mesh.flushDebouncedSaves()
+
+		// Truncated, not crashed: 0xFFFFFFFF as Int32(truncatingIfNeeded:) == -1. Query by the
+		// sentinel so the assertion doesn't depend on node-relationship linkage internals.
+		let context = ModelContext(sharedModelContainer)
+		let truncated = try context.fetch(FetchDescriptor<PositionEntity>(
+			predicate: #Predicate { $0.satsInView == -1 }
+		))
+		#expect(!truncated.isEmpty, "position was persisted with the truncated value, proving no crash")
+	}
+}
+
 @Suite("PAX counter ingestion", .serialized)
 @MainActor
 struct PaxCounterPacketIngestTests {

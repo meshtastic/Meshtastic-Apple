@@ -354,9 +354,11 @@ extension MeshPackets {
 			
 			let fetchedNode = try modelContext.fetch(fetchNodeInfoAppRequest)
 			if fetchedNode.count == 0 {
-				// Not Found Insert
-				let newNode = NodeInfoEntity()
-				modelContext.insert(newNode)
+				// Not Found Insert. Use findOrCreateNode (not a bare insert): NodeInfoEntity.num is
+				// @Attribute(.unique), and the fetch above only sees SAVED rows — a crafted second
+				// NODEINFO packet arriving inside the debounced-save window would otherwise create a
+				// second un-saved node with the same num and trap with a fatal SwiftData assertion.
+				let newNode = findOrCreateNode(num: Int64(packet.from), context: modelContext)
 				newNode.id = Int64(packet.from)
 				newNode.num = Int64(packet.from)
 				newNode.favorite = favorite
@@ -372,7 +374,7 @@ extension MeshPackets {
 				newNode.viaMqtt = packet.viaMqtt
 				
 				if packet.to == Constants.maximumNodeNum || packet.to == UserDefaults.preferredPeripheralNum {
-					newNode.channel = Int32(packet.channel)
+					newNode.channel = Int32(truncatingIfNeeded: packet.channel)
 				}
 				if let nodeInfoMessage = try? NodeInfo(serializedBytes: packet.decoded.payload) {
 					newNode.favorite = nodeInfoMessage.isFavorite
@@ -487,7 +489,7 @@ extension MeshPackets {
 			} else {
 				// Update an existing node
 				if packet.to == Constants.maximumNodeNum || packet.to == UserDefaults.preferredPeripheralNum {
-					fetchedNode[0].channel = Int32(packet.channel)
+					fetchedNode[0].channel = Int32(truncatingIfNeeded: packet.channel)
 				}
 				
 				if let nodeInfoMessage = try? NodeInfo(serializedBytes: packet.decoded.payload) {
@@ -499,7 +501,7 @@ extension MeshPackets {
 					if nodeInfoMessage.hasDeviceMetrics {
 						let telemetry = TelemetryEntity()
 						modelContext.insert(telemetry)
-						telemetry.batteryLevel = Int32(nodeInfoMessage.deviceMetrics.batteryLevel)
+						telemetry.batteryLevel = Int32(truncatingIfNeeded: nodeInfoMessage.deviceMetrics.batteryLevel)
 						telemetry.voltage = nodeInfoMessage.deviceMetrics.voltage
 						telemetry.channelUtilization = nodeInfoMessage.deviceMetrics.channelUtilization
 						telemetry.airUtilTx = nodeInfoMessage.deviceMetrics.airUtilTx
@@ -654,18 +656,21 @@ extension MeshPackets {
 						position.latest = true
 						position.snr = packet.rxSnr
 						position.rssi = packet.rxRssi
-						position.seqNo = Int32(positionMessage.seqNumber)
+						// All of these protobuf fields are UInt32; convert with truncatingIfNeeded
+						// (as the rest of this file does) so an attacker-crafted value > Int32.max
+						// can't SIGTRAP the app on a single unauthenticated POSITION_APP packet.
+						position.seqNo = Int32(truncatingIfNeeded: positionMessage.seqNumber)
 						position.latitudeI = positionMessage.latitudeI
 						position.longitudeI = positionMessage.longitudeI
 						position.altitude = positionMessage.altitude
-						position.satsInView = Int32(positionMessage.satsInView)
-						position.speed = Int32(positionMessage.groundSpeed)
-						let heading = Int32(positionMessage.groundTrack)
-						// Throw out bad haeadings from the device
-						if heading >= 0 && heading <= 360 {
+						position.satsInView = Int32(truncatingIfNeeded: positionMessage.satsInView)
+						position.speed = Int32(truncatingIfNeeded: positionMessage.groundSpeed)
+						// Range-check on the UInt32 before converting — the old code converted first,
+						// so an oversized groundTrack trapped before this guard could run.
+						if positionMessage.groundTrack <= 360 {
 							position.heading = Int32(positionMessage.groundTrack)
 						}
-						position.precisionBits = Int32(positionMessage.precisionBits)
+						position.precisionBits = Int32(truncatingIfNeeded: positionMessage.precisionBits)
 						if positionMessage.timestamp != 0 {
 							position.time = Date(timeIntervalSince1970: TimeInterval(Int64(positionMessage.timestamp)))
 						} else {
@@ -710,7 +715,7 @@ extension MeshPackets {
 							}
 						}
 
-						fetchedNode[0].channel = Int32(packet.channel)
+						fetchedNode[0].channel = Int32(truncatingIfNeeded: packet.channel)
 						
 						scheduleDebouncedSave()
 						Logger.data.debug("📍 [Position] buffered for Node: \(fetchedNode[0].num.toHex(), privacy: .public)")
@@ -744,12 +749,12 @@ extension MeshPackets {
 					modelContext.insert(newBluetoothConfig)
 					newBluetoothConfig.enabled = config.enabled
 					newBluetoothConfig.mode = Int32(config.mode.rawValue)
-					newBluetoothConfig.fixedPin = Int32(config.fixedPin)
+					newBluetoothConfig.fixedPin = Int32(truncatingIfNeeded: config.fixedPin)
 					fetchedNode[0].bluetoothConfig = newBluetoothConfig
 				} else {
 					fetchedNode[0].bluetoothConfig?.enabled = config.enabled
 					fetchedNode[0].bluetoothConfig?.mode = Int32(config.mode.rawValue)
-					fetchedNode[0].bluetoothConfig?.fixedPin = Int32(config.fixedPin)
+					fetchedNode[0].bluetoothConfig?.fixedPin = Int32(truncatingIfNeeded: config.fixedPin)
 				}
 				if sessionPasskey != nil {
 					fetchedNode[0].sessionPasskey = sessionPasskey
@@ -781,8 +786,8 @@ extension MeshPackets {
 					let newDeviceConfig = DeviceConfigEntity()
 					modelContext.insert(newDeviceConfig)
 					newDeviceConfig.role = Int32(config.role.rawValue)
-					newDeviceConfig.buttonGpio = Int32(config.buttonGpio)
-					newDeviceConfig.buzzerGpio =  Int32(config.buzzerGpio)
+					newDeviceConfig.buttonGpio = Int32(truncatingIfNeeded: config.buttonGpio)
+					newDeviceConfig.buzzerGpio =  Int32(truncatingIfNeeded: config.buzzerGpio)
 					newDeviceConfig.rebroadcastMode = Int32(config.rebroadcastMode.rawValue)
 					newDeviceConfig.nodeInfoBroadcastSecs = Int32(truncating: config.nodeInfoBroadcastSecs as NSNumber)
 					newDeviceConfig.doubleTapAsButtonPress = config.doubleTapAsButtonPress
@@ -793,8 +798,8 @@ extension MeshPackets {
 					fetchedNode[0].deviceConfig = newDeviceConfig
 				} else {
 					fetchedNode[0].deviceConfig?.role = Int32(config.role.rawValue)
-					fetchedNode[0].deviceConfig?.buttonGpio = Int32(config.buttonGpio)
-					fetchedNode[0].deviceConfig?.buzzerGpio = Int32(config.buzzerGpio)
+					fetchedNode[0].deviceConfig?.buttonGpio = Int32(truncatingIfNeeded: config.buttonGpio)
+					fetchedNode[0].deviceConfig?.buzzerGpio = Int32(truncatingIfNeeded: config.buzzerGpio)
 					fetchedNode[0].deviceConfig?.rebroadcastMode = Int32(config.rebroadcastMode.rawValue)
 					fetchedNode[0].deviceConfig?.nodeInfoBroadcastSecs = Int32(truncating: config.nodeInfoBroadcastSecs as NSNumber)
 					fetchedNode[0].deviceConfig?.doubleTapAsButtonPress = config.doubleTapAsButtonPress
@@ -891,16 +896,16 @@ extension MeshPackets {
 					newLoRaConfig.regionCode = Int32(config.region.rawValue)
 					newLoRaConfig.usePreset = config.usePreset
 					newLoRaConfig.modemPreset = Int32(config.modemPreset.rawValue)
-					newLoRaConfig.bandwidth = Int32(config.bandwidth)
-					newLoRaConfig.spreadFactor = Int32(config.spreadFactor)
-					newLoRaConfig.codingRate = Int32(config.codingRate)
+					newLoRaConfig.bandwidth = Int32(truncatingIfNeeded: config.bandwidth)
+					newLoRaConfig.spreadFactor = Int32(truncatingIfNeeded: config.spreadFactor)
+					newLoRaConfig.codingRate = Int32(truncatingIfNeeded: config.codingRate)
 					newLoRaConfig.frequencyOffset = config.frequencyOffset
 					newLoRaConfig.overrideFrequency = config.overrideFrequency
 					newLoRaConfig.overrideDutyCycle = config.overrideDutyCycle
-					newLoRaConfig.hopLimit = Int32(config.hopLimit)
-					newLoRaConfig.txPower = Int32(config.txPower)
+					newLoRaConfig.hopLimit = Int32(truncatingIfNeeded: config.hopLimit)
+					newLoRaConfig.txPower = Int32(truncatingIfNeeded: config.txPower)
 					newLoRaConfig.txEnabled = config.txEnabled
-					newLoRaConfig.channelNum = Int32(config.channelNum)
+					newLoRaConfig.channelNum = Int32(truncatingIfNeeded: config.channelNum)
 					newLoRaConfig.sx126xRxBoostedGain = config.sx126XRxBoostedGain
 					newLoRaConfig.ignoreMqtt = config.ignoreMqtt
 					newLoRaConfig.okToMqtt = config.configOkToMqtt
@@ -909,16 +914,16 @@ extension MeshPackets {
 					fetchedNode[0].loRaConfig?.regionCode = Int32(config.region.rawValue)
 					fetchedNode[0].loRaConfig?.usePreset = config.usePreset
 					fetchedNode[0].loRaConfig?.modemPreset = Int32(config.modemPreset.rawValue)
-					fetchedNode[0].loRaConfig?.bandwidth = Int32(config.bandwidth)
-					fetchedNode[0].loRaConfig?.spreadFactor = Int32(config.spreadFactor)
-					fetchedNode[0].loRaConfig?.codingRate = Int32(config.codingRate)
+					fetchedNode[0].loRaConfig?.bandwidth = Int32(truncatingIfNeeded: config.bandwidth)
+					fetchedNode[0].loRaConfig?.spreadFactor = Int32(truncatingIfNeeded: config.spreadFactor)
+					fetchedNode[0].loRaConfig?.codingRate = Int32(truncatingIfNeeded: config.codingRate)
 					fetchedNode[0].loRaConfig?.frequencyOffset = config.frequencyOffset
 					fetchedNode[0].loRaConfig?.overrideFrequency = config.overrideFrequency
 					fetchedNode[0].loRaConfig?.overrideDutyCycle = config.overrideDutyCycle
-					fetchedNode[0].loRaConfig?.hopLimit = Int32(config.hopLimit)
-					fetchedNode[0].loRaConfig?.txPower = Int32(config.txPower)
+					fetchedNode[0].loRaConfig?.hopLimit = Int32(truncatingIfNeeded: config.hopLimit)
+					fetchedNode[0].loRaConfig?.txPower = Int32(truncatingIfNeeded: config.txPower)
 					fetchedNode[0].loRaConfig?.txEnabled = config.txEnabled
-					fetchedNode[0].loRaConfig?.channelNum = Int32(config.channelNum)
+					fetchedNode[0].loRaConfig?.channelNum = Int32(truncatingIfNeeded: config.channelNum)
 					fetchedNode[0].loRaConfig?.sx126xRxBoostedGain = config.sx126XRxBoostedGain
 					fetchedNode[0].loRaConfig?.ignoreMqtt = config.ignoreMqtt
 					fetchedNode[0].loRaConfig?.okToMqtt = config.configOkToMqtt
@@ -959,7 +964,7 @@ extension MeshPackets {
 					newNetworkConfig.wifiPsk = config.wifiPsk
 					newNetworkConfig.ntpServer = config.ntpServer
 					newNetworkConfig.ethEnabled = config.ethEnabled
-					newNetworkConfig.enabledProtocols = Int32(config.enabledProtocols)
+					newNetworkConfig.enabledProtocols = Int32(truncatingIfNeeded: config.enabledProtocols)
 					newNetworkConfig.addressMode = Int32(config.addressMode.rawValue)
 					newNetworkConfig.rsyslogServer = config.rsyslogServer
 					newNetworkConfig.ip = Int32(bitPattern: config.ipv4Config.ip)
@@ -973,7 +978,7 @@ extension MeshPackets {
 					fetchedNode[0].networkConfig?.wifiSsid = config.wifiSsid
 					fetchedNode[0].networkConfig?.wifiPsk = config.wifiPsk
 					fetchedNode[0].networkConfig?.ntpServer = config.ntpServer
-					fetchedNode[0].networkConfig?.enabledProtocols = Int32(config.enabledProtocols)
+					fetchedNode[0].networkConfig?.enabledProtocols = Int32(truncatingIfNeeded: config.enabledProtocols)
 					fetchedNode[0].networkConfig?.addressMode = Int32(config.addressMode.rawValue)
 					fetchedNode[0].networkConfig?.rsyslogServer = config.rsyslogServer
 					fetchedNode[0].networkConfig?.ip = Int32(bitPattern: config.ipv4Config.ip)
@@ -1070,7 +1075,7 @@ extension MeshPackets {
 					let newPowerConfig = PowerConfigEntity()
 					modelContext.insert(newPowerConfig)
 					newPowerConfig.adcMultiplierOverride = config.adcMultiplierOverride
-					newPowerConfig.deviceBatteryInaAddress = Int32(config.deviceBatteryInaAddress)
+					newPowerConfig.deviceBatteryInaAddress = Int32(truncatingIfNeeded: config.deviceBatteryInaAddress)
 					newPowerConfig.isPowerSaving = config.isPowerSaving
 					newPowerConfig.lsSecs = Int32(truncatingIfNeeded: config.lsSecs)
 					newPowerConfig.minWakeSecs = Int32(truncatingIfNeeded: config.minWakeSecs)
@@ -1079,7 +1084,7 @@ extension MeshPackets {
 					fetchedNode[0].powerConfig = newPowerConfig
 				} else {
 					fetchedNode[0].powerConfig?.adcMultiplierOverride = config.adcMultiplierOverride
-					fetchedNode[0].powerConfig?.deviceBatteryInaAddress = Int32(config.deviceBatteryInaAddress)
+					fetchedNode[0].powerConfig?.deviceBatteryInaAddress = Int32(truncatingIfNeeded: config.deviceBatteryInaAddress)
 					fetchedNode[0].powerConfig?.isPowerSaving = config.isPowerSaving
 					fetchedNode[0].powerConfig?.lsSecs = Int32(truncatingIfNeeded: config.lsSecs)
 					fetchedNode[0].powerConfig?.minWakeSecs = Int32(truncatingIfNeeded: config.minWakeSecs)
@@ -1179,21 +1184,21 @@ extension MeshPackets {
 					let newAudioConfig = AudioConfigEntity()
 					modelContext.insert(newAudioConfig)
 					newAudioConfig.codec2Enabled = config.codec2Enabled
-					newAudioConfig.pttPin = Int32(config.pttPin)
+					newAudioConfig.pttPin = Int32(truncatingIfNeeded: config.pttPin)
 					newAudioConfig.bitrate = Int32(config.bitrate.rawValue)
-					newAudioConfig.i2sWs = Int32(config.i2SWs)
-					newAudioConfig.i2sSd = Int32(config.i2SSd)
-					newAudioConfig.i2sDin = Int32(config.i2SDin)
-					newAudioConfig.i2sSck = Int32(config.i2SSck)
+					newAudioConfig.i2sWs = Int32(truncatingIfNeeded: config.i2SWs)
+					newAudioConfig.i2sSd = Int32(truncatingIfNeeded: config.i2SSd)
+					newAudioConfig.i2sDin = Int32(truncatingIfNeeded: config.i2SDin)
+					newAudioConfig.i2sSck = Int32(truncatingIfNeeded: config.i2SSck)
 					fetchedNode[0].audioConfig = newAudioConfig
 				} else {
 					fetchedNode[0].audioConfig?.codec2Enabled = config.codec2Enabled
-					fetchedNode[0].audioConfig?.pttPin = Int32(config.pttPin)
+					fetchedNode[0].audioConfig?.pttPin = Int32(truncatingIfNeeded: config.pttPin)
 					fetchedNode[0].audioConfig?.bitrate = Int32(config.bitrate.rawValue)
-					fetchedNode[0].audioConfig?.i2sWs = Int32(config.i2SWs)
-					fetchedNode[0].audioConfig?.i2sSd = Int32(config.i2SSd)
-					fetchedNode[0].audioConfig?.i2sDin = Int32(config.i2SDin)
-					fetchedNode[0].audioConfig?.i2sSck = Int32(config.i2SSck)
+					fetchedNode[0].audioConfig?.i2sWs = Int32(truncatingIfNeeded: config.i2SWs)
+					fetchedNode[0].audioConfig?.i2sSd = Int32(truncatingIfNeeded: config.i2SSd)
+					fetchedNode[0].audioConfig?.i2sDin = Int32(truncatingIfNeeded: config.i2SDin)
+					fetchedNode[0].audioConfig?.i2sSck = Int32(truncatingIfNeeded: config.i2SSck)
 				}
 				if sessionPasskey != nil {
 					fetchedNode[0].sessionPasskey = sessionPasskey
@@ -1227,10 +1232,10 @@ extension MeshPackets {
 					let newAmbientLightingConfig = AmbientLightingConfigEntity()
 					modelContext.insert(newAmbientLightingConfig)
 					newAmbientLightingConfig.ledState = config.ledState
-					newAmbientLightingConfig.current = Int32(config.current)
-					newAmbientLightingConfig.red = Int32(config.red)
-					newAmbientLightingConfig.green = Int32(config.green)
-					newAmbientLightingConfig.blue = Int32(config.blue)
+					newAmbientLightingConfig.current = Int32(truncatingIfNeeded: config.current)
+					newAmbientLightingConfig.red = Int32(truncatingIfNeeded: config.red)
+					newAmbientLightingConfig.green = Int32(truncatingIfNeeded: config.green)
+					newAmbientLightingConfig.blue = Int32(truncatingIfNeeded: config.blue)
 					fetchedNode[0].ambientLightingConfig = newAmbientLightingConfig
 				} else {
 					
@@ -1240,10 +1245,10 @@ extension MeshPackets {
 						fetchedNode[0].ambientLightingConfig = newAmbientLighting
 					}
 					fetchedNode[0].ambientLightingConfig?.ledState = config.ledState
-					fetchedNode[0].ambientLightingConfig?.current = Int32(config.current)
-					fetchedNode[0].ambientLightingConfig?.red = Int32(config.red)
-					fetchedNode[0].ambientLightingConfig?.green = Int32(config.green)
-					fetchedNode[0].ambientLightingConfig?.blue = Int32(config.blue)
+					fetchedNode[0].ambientLightingConfig?.current = Int32(truncatingIfNeeded: config.current)
+					fetchedNode[0].ambientLightingConfig?.red = Int32(truncatingIfNeeded: config.red)
+					fetchedNode[0].ambientLightingConfig?.green = Int32(truncatingIfNeeded: config.green)
+					fetchedNode[0].ambientLightingConfig?.blue = Int32(truncatingIfNeeded: config.blue)
 				}
 				if sessionPasskey != nil {
 					fetchedNode[0].sessionPasskey = sessionPasskey
@@ -1281,9 +1286,9 @@ extension MeshPackets {
 					newCannedMessageConfig.sendBell = config.sendBell
 					newCannedMessageConfig.rotary1Enabled = config.rotary1Enabled
 					newCannedMessageConfig.updown1Enabled = config.updown1Enabled
-					newCannedMessageConfig.inputbrokerPinA = Int32(config.inputbrokerPinA)
-					newCannedMessageConfig.inputbrokerPinB = Int32(config.inputbrokerPinB)
-					newCannedMessageConfig.inputbrokerPinPress = Int32(config.inputbrokerPinPress)
+					newCannedMessageConfig.inputbrokerPinA = Int32(truncatingIfNeeded: config.inputbrokerPinA)
+					newCannedMessageConfig.inputbrokerPinB = Int32(truncatingIfNeeded: config.inputbrokerPinB)
+					newCannedMessageConfig.inputbrokerPinPress = Int32(truncatingIfNeeded: config.inputbrokerPinPress)
 					newCannedMessageConfig.inputbrokerEventCw = Int32(config.inputbrokerEventCw.rawValue)
 					newCannedMessageConfig.inputbrokerEventCcw = Int32(config.inputbrokerEventCcw.rawValue)
 					newCannedMessageConfig.inputbrokerEventPress = Int32(config.inputbrokerEventPress.rawValue)
@@ -1293,9 +1298,9 @@ extension MeshPackets {
 					fetchedNode[0].cannedMessageConfig?.sendBell = config.sendBell
 					fetchedNode[0].cannedMessageConfig?.rotary1Enabled = config.rotary1Enabled
 					fetchedNode[0].cannedMessageConfig?.updown1Enabled = config.updown1Enabled
-					fetchedNode[0].cannedMessageConfig?.inputbrokerPinA = Int32(config.inputbrokerPinA)
-					fetchedNode[0].cannedMessageConfig?.inputbrokerPinB = Int32(config.inputbrokerPinB)
-					fetchedNode[0].cannedMessageConfig?.inputbrokerPinPress = Int32(config.inputbrokerPinPress)
+					fetchedNode[0].cannedMessageConfig?.inputbrokerPinA = Int32(truncatingIfNeeded: config.inputbrokerPinA)
+					fetchedNode[0].cannedMessageConfig?.inputbrokerPinB = Int32(truncatingIfNeeded: config.inputbrokerPinB)
+					fetchedNode[0].cannedMessageConfig?.inputbrokerPinPress = Int32(truncatingIfNeeded: config.inputbrokerPinPress)
 					fetchedNode[0].cannedMessageConfig?.inputbrokerEventCw = Int32(config.inputbrokerEventCw.rawValue)
 					fetchedNode[0].cannedMessageConfig?.inputbrokerEventCcw = Int32(config.inputbrokerEventCcw.rawValue)
 					fetchedNode[0].cannedMessageConfig?.inputbrokerEventPress = Int32(config.inputbrokerEventPress.rawValue)
@@ -1333,7 +1338,7 @@ extension MeshPackets {
 					newConfig.enabled = config.enabled
 					newConfig.sendBell = config.sendBell
 					newConfig.name = config.name
-					newConfig.monitorPin = Int32(config.monitorPin)
+					newConfig.monitorPin = Int32(truncatingIfNeeded: config.monitorPin)
 					newConfig.triggerType = Int32(config.detectionTriggerType.rawValue)
 					newConfig.usePullup = config.usePullup
 					newConfig.minimumBroadcastSecs = Int32(truncatingIfNeeded: config.minimumBroadcastSecs)
@@ -1343,7 +1348,7 @@ extension MeshPackets {
 					fetchedNode[0].detectionSensorConfig?.enabled = config.enabled
 					fetchedNode[0].detectionSensorConfig?.sendBell = config.sendBell
 					fetchedNode[0].detectionSensorConfig?.name = config.name
-					fetchedNode[0].detectionSensorConfig?.monitorPin = Int32(config.monitorPin)
+					fetchedNode[0].detectionSensorConfig?.monitorPin = Int32(truncatingIfNeeded: config.monitorPin)
 					fetchedNode[0].detectionSensorConfig?.usePullup = config.usePullup
 					fetchedNode[0].detectionSensorConfig?.triggerType = Int32(config.detectionTriggerType.rawValue)
 					fetchedNode[0].detectionSensorConfig?.minimumBroadcastSecs = Int32(truncatingIfNeeded: config.minimumBroadcastSecs)
@@ -1455,11 +1460,11 @@ extension MeshPackets {
 					newExternalNotificationConfig.alertMessageBuzzer = config.alertMessageBuzzer
 					newExternalNotificationConfig.alertMessageVibra = config.alertMessageVibra
 					newExternalNotificationConfig.active = config.active
-					newExternalNotificationConfig.output = Int32(config.output)
-					newExternalNotificationConfig.outputBuzzer = Int32(config.outputBuzzer)
-					newExternalNotificationConfig.outputVibra = Int32(config.outputVibra)
-					newExternalNotificationConfig.outputMilliseconds = Int32(config.outputMs)
-					newExternalNotificationConfig.nagTimeout = Int32(config.nagTimeout)
+					newExternalNotificationConfig.output = Int32(truncatingIfNeeded: config.output)
+					newExternalNotificationConfig.outputBuzzer = Int32(truncatingIfNeeded: config.outputBuzzer)
+					newExternalNotificationConfig.outputVibra = Int32(truncatingIfNeeded: config.outputVibra)
+					newExternalNotificationConfig.outputMilliseconds = Int32(truncatingIfNeeded: config.outputMs)
+					newExternalNotificationConfig.nagTimeout = Int32(truncatingIfNeeded: config.nagTimeout)
 					newExternalNotificationConfig.useI2SAsBuzzer = config.useI2SAsBuzzer
 					fetchedNode[0].externalNotificationConfig = newExternalNotificationConfig
 				} else {
@@ -1472,11 +1477,11 @@ extension MeshPackets {
 					fetchedNode[0].externalNotificationConfig?.alertMessageBuzzer = config.alertMessageBuzzer
 					fetchedNode[0].externalNotificationConfig?.alertMessageVibra = config.alertMessageVibra
 					fetchedNode[0].externalNotificationConfig?.active = config.active
-					fetchedNode[0].externalNotificationConfig?.output = Int32(config.output)
-					fetchedNode[0].externalNotificationConfig?.outputBuzzer = Int32(config.outputBuzzer)
-					fetchedNode[0].externalNotificationConfig?.outputVibra = Int32(config.outputVibra)
-					fetchedNode[0].externalNotificationConfig?.outputMilliseconds = Int32(config.outputMs)
-					fetchedNode[0].externalNotificationConfig?.nagTimeout = Int32(config.nagTimeout)
+					fetchedNode[0].externalNotificationConfig?.output = Int32(truncatingIfNeeded: config.output)
+					fetchedNode[0].externalNotificationConfig?.outputBuzzer = Int32(truncatingIfNeeded: config.outputBuzzer)
+					fetchedNode[0].externalNotificationConfig?.outputVibra = Int32(truncatingIfNeeded: config.outputVibra)
+					fetchedNode[0].externalNotificationConfig?.outputMilliseconds = Int32(truncatingIfNeeded: config.outputMs)
+					fetchedNode[0].externalNotificationConfig?.nagTimeout = Int32(truncatingIfNeeded: config.nagTimeout)
 					fetchedNode[0].externalNotificationConfig?.useI2SAsBuzzer = config.useI2SAsBuzzer
 				}
 				if sessionPasskey != nil {
@@ -1509,12 +1514,12 @@ extension MeshPackets {
 					let newConfig = NeighborInfoConfigEntity()
 					modelContext.insert(newConfig)
 					newConfig.enabled = config.enabled
-					newConfig.updateInterval = Int32(config.updateInterval)
+					newConfig.updateInterval = Int32(truncatingIfNeeded: config.updateInterval)
 					newConfig.transmitOverLora = config.transmitOverLora
 					fetchedNode[0].neighborInfoConfig = newConfig
 				} else {
 					fetchedNode[0].neighborInfoConfig?.enabled = config.enabled
-					fetchedNode[0].neighborInfoConfig?.updateInterval = Int32(config.updateInterval)
+					fetchedNode[0].neighborInfoConfig?.updateInterval = Int32(truncatingIfNeeded: config.updateInterval)
 					fetchedNode[0].neighborInfoConfig?.transmitOverLora = config.transmitOverLora
 				}
 				if sessionPasskey != nil {
@@ -1548,13 +1553,13 @@ extension MeshPackets {
 					let newPaxCounterConfig = PaxCounterConfigEntity()
 					modelContext.insert(newPaxCounterConfig)
 					newPaxCounterConfig.enabled = config.enabled
-					newPaxCounterConfig.updateInterval = Int32(config.paxcounterUpdateInterval)
+					newPaxCounterConfig.updateInterval = Int32(truncatingIfNeeded: config.paxcounterUpdateInterval)
 					newPaxCounterConfig.wifiThreshold = config.wifiThreshold
 					newPaxCounterConfig.bleThreshold = config.bleThreshold
 					fetchedNode[0].paxCounterConfig = newPaxCounterConfig
 				} else {
 					fetchedNode[0].paxCounterConfig?.enabled = config.enabled
-					fetchedNode[0].paxCounterConfig?.updateInterval = Int32(config.paxcounterUpdateInterval)
+					fetchedNode[0].paxCounterConfig?.updateInterval = Int32(truncatingIfNeeded: config.paxcounterUpdateInterval)
 					fetchedNode[0].paxCounterConfig?.wifiThreshold = config.wifiThreshold
 					fetchedNode[0].paxCounterConfig?.bleThreshold = config.bleThreshold
 				}
@@ -1634,8 +1639,8 @@ extension MeshPackets {
 					newMQTTConfig.tlsEnabled = config.tlsEnabled
 					newMQTTConfig.mapReportingEnabled = config.mapReportingEnabled
 					newMQTTConfig.mapReportingShouldReportLocation = config.mapReportSettings.shouldReportLocation
-					newMQTTConfig.mapPositionPrecision = Int32(config.mapReportSettings.positionPrecision)
-					newMQTTConfig.mapPublishIntervalSecs = Int32(config.mapReportSettings.publishIntervalSecs)
+					newMQTTConfig.mapPositionPrecision = Int32(truncatingIfNeeded: config.mapReportSettings.positionPrecision)
+					newMQTTConfig.mapPublishIntervalSecs = Int32(truncatingIfNeeded: config.mapReportSettings.publishIntervalSecs)
 					fetchedNode[0].mqttConfig = newMQTTConfig
 				} else {
 					fetchedNode[0].mqttConfig?.enabled = config.enabled
@@ -1648,8 +1653,8 @@ extension MeshPackets {
 					fetchedNode[0].mqttConfig?.jsonEnabled = config.jsonEnabled
 					fetchedNode[0].mqttConfig?.tlsEnabled = config.tlsEnabled
 					fetchedNode[0].mqttConfig?.mapReportingEnabled = config.mapReportingEnabled
-					fetchedNode[0].mqttConfig?.mapPositionPrecision = Int32(config.mapReportSettings.positionPrecision)
-					fetchedNode[0].mqttConfig?.mapPublishIntervalSecs = Int32(config.mapReportSettings.publishIntervalSecs)
+					fetchedNode[0].mqttConfig?.mapPositionPrecision = Int32(truncatingIfNeeded: config.mapReportSettings.positionPrecision)
+					fetchedNode[0].mqttConfig?.mapPublishIntervalSecs = Int32(truncatingIfNeeded: config.mapReportSettings.publishIntervalSecs)
 				}
 				if sessionPasskey != nil {
 					fetchedNode[0].sessionPasskey = sessionPasskey
@@ -1681,12 +1686,12 @@ extension MeshPackets {
 				if fetchedNode[0].rangeTestConfig == nil {
 					let newRangeTestConfig = RangeTestConfigEntity()
 					modelContext.insert(newRangeTestConfig)
-					newRangeTestConfig.sender = Int32(config.sender)
+					newRangeTestConfig.sender = Int32(truncatingIfNeeded: config.sender)
 					newRangeTestConfig.enabled = config.enabled
 					newRangeTestConfig.save = config.save
 					fetchedNode[0].rangeTestConfig = newRangeTestConfig
 				} else {
-					fetchedNode[0].rangeTestConfig?.sender = Int32(config.sender)
+					fetchedNode[0].rangeTestConfig?.sender = Int32(truncatingIfNeeded: config.sender)
 					fetchedNode[0].rangeTestConfig?.enabled = config.enabled
 					fetchedNode[0].rangeTestConfig?.save = config.save
 				}
@@ -1722,19 +1727,19 @@ extension MeshPackets {
 					modelContext.insert(newSerialConfig)
 					newSerialConfig.enabled = config.enabled
 					newSerialConfig.echo = config.echo
-					newSerialConfig.rxd = Int32(config.rxd)
-					newSerialConfig.txd = Int32(config.txd)
+					newSerialConfig.rxd = Int32(truncatingIfNeeded: config.rxd)
+					newSerialConfig.txd = Int32(truncatingIfNeeded: config.txd)
 					newSerialConfig.baudRate = Int32(config.baud.rawValue)
-					newSerialConfig.timeout = Int32(config.timeout)
+					newSerialConfig.timeout = Int32(truncatingIfNeeded: config.timeout)
 					newSerialConfig.mode = Int32(config.mode.rawValue)
 					fetchedNode[0].serialConfig = newSerialConfig
 				} else {
 					fetchedNode[0].serialConfig?.enabled = config.enabled
 					fetchedNode[0].serialConfig?.echo = config.echo
-					fetchedNode[0].serialConfig?.rxd = Int32(config.rxd)
-					fetchedNode[0].serialConfig?.txd = Int32(config.txd)
+					fetchedNode[0].serialConfig?.rxd = Int32(truncatingIfNeeded: config.rxd)
+					fetchedNode[0].serialConfig?.txd = Int32(truncatingIfNeeded: config.txd)
 					fetchedNode[0].serialConfig?.baudRate = Int32(config.baud.rawValue)
-					fetchedNode[0].serialConfig?.timeout = Int32(config.timeout)
+					fetchedNode[0].serialConfig?.timeout = Int32(truncatingIfNeeded: config.timeout)
 					fetchedNode[0].serialConfig?.mode = Int32(config.mode.rawValue)
 				}
 				if sessionPasskey != nil {
@@ -1835,17 +1840,17 @@ extension MeshPackets {
 					modelContext.insert(newConfig)
 					newConfig.enabled = config.enabled
 					newConfig.heartbeat = config.heartbeat
-					newConfig.records = Int32(config.records)
-					newConfig.historyReturnMax = Int32(config.historyReturnMax)
-					newConfig.historyReturnWindow = Int32(config.historyReturnWindow)
+					newConfig.records = Int32(truncatingIfNeeded: config.records)
+					newConfig.historyReturnMax = Int32(truncatingIfNeeded: config.historyReturnMax)
+					newConfig.historyReturnWindow = Int32(truncatingIfNeeded: config.historyReturnWindow)
 					newConfig.isRouter = config.isServer
 					fetchedNode[0].storeForwardConfig = newConfig
 				} else {
 					fetchedNode[0].storeForwardConfig?.enabled = config.enabled
 					fetchedNode[0].storeForwardConfig?.heartbeat = config.heartbeat
-					fetchedNode[0].storeForwardConfig?.records = Int32(config.records)
-					fetchedNode[0].storeForwardConfig?.historyReturnMax = Int32(config.historyReturnMax)
-					fetchedNode[0].storeForwardConfig?.historyReturnWindow = Int32(config.historyReturnWindow)
+					fetchedNode[0].storeForwardConfig?.records = Int32(truncatingIfNeeded: config.records)
+					fetchedNode[0].storeForwardConfig?.historyReturnMax = Int32(truncatingIfNeeded: config.historyReturnMax)
+					fetchedNode[0].storeForwardConfig?.historyReturnWindow = Int32(truncatingIfNeeded: config.historyReturnWindow)
 				}
 				if sessionPasskey != nil {
 					fetchedNode[0].sessionPasskey = sessionPasskey
@@ -1986,14 +1991,14 @@ extension MeshPackets {
 
 				entity.enabled = positionDedup || nodeinfoDirect || rateLimit || dropUnknown
 				entity.positionDedupEnabled = positionDedup
-				entity.positionMinIntervalSecs = Int32(config.positionMinIntervalSecs)
+				entity.positionMinIntervalSecs = Int32(truncatingIfNeeded: config.positionMinIntervalSecs)
 				entity.nodeinfoDirectResponse = nodeinfoDirect
-				entity.nodeinfoDirectResponseMaxHops = Int32(config.nodeinfoDirectResponseMaxHops)
+				entity.nodeinfoDirectResponseMaxHops = Int32(truncatingIfNeeded: config.nodeinfoDirectResponseMaxHops)
 				entity.rateLimitEnabled = rateLimit
-				entity.rateLimitWindowSecs = Int32(config.rateLimitWindowSecs)
-				entity.rateLimitMaxPackets = Int32(config.rateLimitMaxPackets)
+				entity.rateLimitWindowSecs = Int32(truncatingIfNeeded: config.rateLimitWindowSecs)
+				entity.rateLimitMaxPackets = Int32(truncatingIfNeeded: config.rateLimitMaxPackets)
 				entity.dropUnknownEnabled = dropUnknown
-				entity.unknownPacketThreshold = Int32(config.unknownPacketThreshold)
+				entity.unknownPacketThreshold = Int32(truncatingIfNeeded: config.unknownPacketThreshold)
 				if sessionPasskey != nil {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)

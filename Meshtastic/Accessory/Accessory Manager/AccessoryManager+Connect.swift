@@ -186,7 +186,11 @@ extension AccessoryManager {
 			}
 			
 			// Step 5a: Wait for end of WantConfig (database)
-			Step { @MainActor _ in
+			// Bounded like its sibling steps: without a timeout, a malicious/misbehaving radio
+			// that completes config but never sends the database-complete nonce would wedge the
+			// connect flow in .retrievingDatabase forever (no watchdog until Step 8). 120s is
+			// generous for a large legitimate node-DB dump.
+			Step(timeout: .seconds(120)) { @MainActor _ in
 				guard wantDatabase else {
 					Logger.transport.info("👟 [Connect] Step 4: wantDatabase = false, skipping waitForWantDatabase")
 					return

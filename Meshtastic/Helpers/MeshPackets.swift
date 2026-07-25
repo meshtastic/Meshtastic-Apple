@@ -319,7 +319,7 @@ actor MeshPackets {
 				modelContext.insert(myInfoEntity)
 				myInfoEntity.peripheralId = peripheralId
 				myInfoEntity.myNodeNum = Int64(myInfo.myNodeNum)
-				myInfoEntity.rebootCount = Int32(myInfo.rebootCount)
+				myInfoEntity.rebootCount = Int32(truncatingIfNeeded: myInfo.rebootCount)
 				myInfoEntity.deviceId = myInfo.deviceID
 				if !myInfo.pioEnv.isEmpty {
 					myInfoEntity.pioEnv = myInfo.pioEnv
@@ -331,7 +331,7 @@ actor MeshPackets {
 
 				fetchedMyInfo[0].peripheralId = peripheralId
 				fetchedMyInfo[0].myNodeNum = Int64(myInfo.myNodeNum)
-				fetchedMyInfo[0].rebootCount = Int32(myInfo.rebootCount)
+				fetchedMyInfo[0].rebootCount = Int32(truncatingIfNeeded: myInfo.rebootCount)
 				if !myInfo.pioEnv.isEmpty {
 					fetchedMyInfo[0].pioEnv = myInfo.pioEnv
 				}
@@ -356,7 +356,7 @@ actor MeshPackets {
 			do {
 				let fetchedMyInfo = try modelContext.fetch(fetchDescriptor)
 				if fetchedMyInfo.count == 1 {
-					let existing = fetchedMyInfo[0].channels.first(where: { $0.index == Int32(channel.index) })
+					let existing = fetchedMyInfo[0].channels.first(where: { $0.index == Int32(truncatingIfNeeded: channel.index) })
 					let newChannel: ChannelEntity
 					if let existing {
 						newChannel = existing
@@ -365,8 +365,8 @@ actor MeshPackets {
 						modelContext.insert(newChannel)
 						fetchedMyInfo[0].channels.append(newChannel)
 					}
-					newChannel.id = Int32(channel.index)
-					newChannel.index = Int32(channel.index)
+					newChannel.id = Int32(truncatingIfNeeded: channel.index)
+					newChannel.index = Int32(truncatingIfNeeded: channel.index)
 					newChannel.uplinkEnabled = channel.settings.uplinkEnabled
 					newChannel.downlinkEnabled = channel.settings.downlinkEnabled
 					newChannel.name = channel.settings.name
@@ -445,10 +445,10 @@ actor MeshPackets {
 					modelContext.insert(newNode)
 					newNode.id = Int64(nodeInfo.num)
 					newNode.num = Int64(nodeInfo.num)
-					newNode.channel = Int32(nodeInfo.channel)
+					newNode.channel = Int32(truncatingIfNeeded: nodeInfo.channel)
 					newNode.favorite = nodeInfo.isFavorite
 					newNode.ignored = nodeInfo.isIgnored
-					newNode.hopsAway = Int32(nodeInfo.hopsAway)
+					newNode.hopsAway = Int32(truncatingIfNeeded: nodeInfo.hopsAway)
 					newNode.hasXeddsaSigned = nodeInfo.hasXeddsaSigned_p
 
 					if nodeInfo.hasDeviceMetrics {
@@ -518,13 +518,13 @@ actor MeshPackets {
 						let position = PositionEntity()
 						modelContext.insert(position)
 						position.latest = true
-						position.seqNo = Int32(nodeInfo.position.seqNumber)
+						position.seqNo = Int32(truncatingIfNeeded: nodeInfo.position.seqNumber)
 						position.latitudeI = nodeInfo.position.latitudeI
 						position.longitudeI = nodeInfo.position.longitudeI
 						position.altitude = nodeInfo.position.altitude
-						position.satsInView = Int32(nodeInfo.position.satsInView)
-						position.speed = Int32(nodeInfo.position.groundSpeed)
-						position.heading = Int32(nodeInfo.position.groundTrack)
+						position.satsInView = Int32(truncatingIfNeeded: nodeInfo.position.satsInView)
+						position.speed = Int32(truncatingIfNeeded: nodeInfo.position.groundSpeed)
+						position.heading = Int32(truncatingIfNeeded: nodeInfo.position.groundTrack)
 						position.time = Date(timeIntervalSince1970: TimeInterval(Int64(nodeInfo.position.time)))
 						position.nodePosition = newNode
 						newNode.latestPositionCache = position
@@ -562,10 +562,10 @@ actor MeshPackets {
 						}
 					}
 					fetchedNode[0].snr = nodeInfo.snr
-					fetchedNode[0].channel = Int32(nodeInfo.channel)
+					fetchedNode[0].channel = Int32(truncatingIfNeeded: nodeInfo.channel)
 					fetchedNode[0].favorite = nodeInfo.isFavorite
 					fetchedNode[0].ignored = nodeInfo.isIgnored
-					fetchedNode[0].hopsAway = Int32(nodeInfo.hopsAway)
+					fetchedNode[0].hopsAway = Int32(truncatingIfNeeded: nodeInfo.hopsAway)
 					// has_xeddsa_signed means the node has signed ≥1 verified broadcast and persists; latch it
 					// so a later NodeInfo that omits the bit doesn't downgrade a node we've seen sign.
 					fetchedNode[0].hasXeddsaSigned = fetchedNode[0].hasXeddsaSigned || nodeInfo.hasXeddsaSigned_p
@@ -642,7 +642,7 @@ actor MeshPackets {
 							position.latitudeI = nodeInfo.position.latitudeI
 							position.longitudeI = nodeInfo.position.longitudeI
 							position.altitude = nodeInfo.position.altitude
-							position.satsInView = Int32(nodeInfo.position.satsInView)
+							position.satsInView = Int32(truncatingIfNeeded: nodeInfo.position.satsInView)
 							position.time = Date(timeIntervalSince1970: TimeInterval(Int64(nodeInfo.position.time)))
 							position.nodePosition = fetchedNode[0]
 						}
@@ -1266,7 +1266,7 @@ actor MeshPackets {
 					newMessage.snr = packet.rxSnr
 					newMessage.rssi = packet.rxRssi
 					newMessage.isEmoji = packet.decoded.emoji == 1
-					newMessage.channel = Int32(packet.channel)
+					newMessage.channel = Int32(truncatingIfNeeded: packet.channel)
 					newMessage.portNum = Int32(packet.decoded.portnum.rawValue)
 					/// Radio-verified XEdDSA signature for this received broadcast. Firmware only sets this on
 					/// broadcasts, but gate on the broadcast classification too so the "verified" shield can
@@ -1336,8 +1336,10 @@ actor MeshPackets {
 							if let existingNode = existingNodes.first {
 								existingNode.user = newUser
 							} else {
-								let newNode = NodeInfoEntity()
-								modelContext.insert(newNode)
+								// findOrCreateNode, not a bare insert: num is @Attribute(.unique) and
+								// the fetch above sees only saved rows — a crafted TEXT/NODEINFO pair
+								// from a new node could otherwise double-insert and trap on save.
+								let newNode = findOrCreateNode(num: Int64(newUser.num), context: modelContext)
 								newNode.id = Int64(newUser.num)
 								newNode.num = Int64(newUser.num)
 								newNode.user = newUser

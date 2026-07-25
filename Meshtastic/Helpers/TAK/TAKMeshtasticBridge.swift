@@ -238,7 +238,7 @@ final class TAKMeshtasticBridge {
 		Logger.tak.debug("CoT Input:")
 		Logger.tak.debug("  uid: \(cot.uid)")
 		Logger.tak.debug("  type: \(cot.type)")
-		Logger.tak.debug("  lat: \(cot.latitude), lon: \(cot.longitude), hae: \(cot.hae)")
+		Logger.tak.debug("  lat: \(cot.latitude, privacy: .private), lon: \(cot.longitude, privacy: .private), hae: \(cot.hae)")
 		Logger.tak.debug("  contact: \(cot.contact?.callsign ?? "nil")")
 		Logger.tak.debug("  group: \(cot.group?.name ?? "nil") / \(cot.group?.role ?? "nil")")
 		Logger.tak.debug("  status.battery: \(cot.status?.battery ?? -1)")
@@ -309,8 +309,8 @@ final class TAKMeshtasticBridge {
 			takPacket.pli = pli
 
 			Logger.tak.debug("TAKPacket.pli created:")
-			Logger.tak.debug("  latitudeI: \(pli.latitudeI) (from \(cot.latitude))")
-			Logger.tak.debug("  longitudeI: \(pli.longitudeI) (from \(cot.longitude))")
+			Logger.tak.debug("  latitudeI: \(pli.latitudeI) (from \(cot.latitude, privacy: .private))")
+			Logger.tak.debug("  longitudeI: \(pli.longitudeI) (from \(cot.longitude, privacy: .private))")
 			Logger.tak.debug("  altitude: \(pli.altitude) (from \(cot.hae))")
 			Logger.tak.debug("  speed: \(pli.speed), course: \(pli.course)")
 
@@ -776,7 +776,7 @@ final class TAKMeshtasticBridge {
 		let name = waypoint.name.isEmpty ? "Dropped Pin" : waypoint.name
 		let description = waypoint.description_p.isEmpty ? "Meshtastic Waypoint" : waypoint.description_p
 		
-		Logger.tak.info("Broadcasting waypoint: \(name) at \(latitude), \(longitude), sender: \(senderName)")
+		Logger.tak.info("Broadcasting waypoint: \(name) at \(latitude, privacy: .private), \(longitude, privacy: .private), sender: \(senderName)")
 		
 		// Map Meshtastic emoji icon to appropriate TAK icon
 		let (cotType, iconPath, colorArgb) = getTakIconForWaypoint(waypoint: waypoint)
