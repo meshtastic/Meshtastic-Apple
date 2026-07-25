@@ -963,6 +963,78 @@ struct PositionPacketIngestHardeningTests {
 	}
 }
 
+// MARK: - "Signed node" shield authenticity (forgeable-shield fix)
+
+@Suite("Signed-node shield authenticity", .serialized)
+@MainActor
+struct SignedShieldAuthenticityTests {
+	private func freshMesh() throws -> (MeshPackets, ModelContainer) {
+		let container = try ModelContainer(
+			for: Schema(MeshtasticSchema.allModels),
+			configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+		)
+		return (MeshPackets(modelContainer: container), container)
+	}
+
+	private func makeNodeInfoPacket(from num: UInt32, payloadClaimsSigned: Bool, transportVerified: Bool) throws -> MeshPacket {
+		var nodeInfo = NodeInfo()
+		nodeInfo.num = num
+		nodeInfo.hasXeddsaSigned_p = payloadClaimsSigned
+		var dataMessage = DataMessage()
+		dataMessage.payload = try nodeInfo.serializedData()
+		dataMessage.portnum = .nodeinfoApp
+		var packet = MeshPacket()
+		packet.from = num
+		packet.decoded = dataMessage
+		packet.xeddsaSigned = transportVerified
+		return packet
+	}
+
+	private func fetchNode(_ num: UInt32, in container: ModelContainer) throws -> NodeInfoEntity? {
+		let persisted = Int64(num)
+		return try ModelContext(container)
+			.fetch(FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == persisted })).first
+	}
+
+	@Test func spoofedPayloadBit_doesNotForgeShield() async throws {
+		let (mesh, container) = try freshMesh()
+		let num: UInt32 = 0x20DE_FC50
+		// Attacker claims signed IN THE PAYLOAD, but the radio did NOT verify a signature.
+		let packet = try makeNodeInfoPacket(from: num, payloadClaimsSigned: true, transportVerified: false)
+		await mesh.upsertNodeInfoPacket(packet: packet)
+		await mesh.flushDebouncedSaves()
+
+		let node = try fetchNode(num, in: container)
+		#expect(node != nil)
+		#expect(node?.hasXeddsaSigned == false)   // forge blocked — payload bit is not trusted
+	}
+
+	@Test func radioVerifiedBit_marksSigned() async throws {
+		let (mesh, container) = try freshMesh()
+		let num: UInt32 = 0x20DE_FC51
+		// Payload omits the claim, but the radio VERIFIED the packet's signature — any node we hear
+		// signing (not just the connected one) should legitimately show the shield.
+		let packet = try makeNodeInfoPacket(from: num, payloadClaimsSigned: false, transportVerified: true)
+		await mesh.upsertNodeInfoPacket(packet: packet)
+		await mesh.flushDebouncedSaves()
+
+		#expect(try fetchNode(num, in: container)?.hasXeddsaSigned == true)
+	}
+
+	@Test func latch_survivesLaterUnverifiedPacket() async throws {
+		let (mesh, container) = try freshMesh()
+		let num: UInt32 = 0x20DE_FC52
+		// First a radio-verified signed packet marks the node, then a spoofed/unverified one must
+		// neither downgrade it (latch) nor be able to forge it in the first place.
+		await mesh.upsertNodeInfoPacket(packet: try makeNodeInfoPacket(from: num, payloadClaimsSigned: false, transportVerified: true))
+		await mesh.flushDebouncedSaves()
+		await mesh.upsertNodeInfoPacket(packet: try makeNodeInfoPacket(from: num, payloadClaimsSigned: false, transportVerified: false))
+		await mesh.flushDebouncedSaves()
+
+		#expect(try fetchNode(num, in: container)?.hasXeddsaSigned == true)   // latched, not downgraded
+	}
+}
+
 @Suite("PAX counter ingestion", .serialized)
 @MainActor
 struct PaxCounterPacketIngestTests {
