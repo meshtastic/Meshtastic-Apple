@@ -963,6 +963,187 @@ struct PositionPacketIngestHardeningTests {
 	}
 }
 
+// MARK: - Global entity caps (node / waypoint eviction)
+
+@Suite("Entity cap eviction", .serialized)
+@MainActor
+struct EntityCapEvictionTests {
+	private func freshMesh() throws -> (MeshPackets, ModelContainer) {
+		let container = try ModelContainer(
+			for: Schema(MeshtasticSchema.allModels),
+			configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+		)
+		return (MeshPackets(modelContainer: container), container)
+	}
+
+	@Test func nodes_evictLeastRecentlyHeard_keepingFavorites() async throws {
+		let (mesh, container) = try freshMesh()
+		let context = ModelContext(container)
+		let base = Date(timeIntervalSince1970: 1_700_000_000)
+		func makeNode(_ num: Int64, heard: TimeInterval, favorite: Bool) -> NodeInfoEntity {
+			let node = NodeInfoEntity()
+			node.num = num
+			node.id = num
+			node.lastHeard = base.addingTimeInterval(heard)
+			node.favorite = favorite
+			return node
+		}
+		// Node 1 is the OLDEST but a favorite (must be protected); 2 and 3 are the oldest
+		// non-favorites (must be evicted); 4 is newest (must survive).
+		[makeNode(1, heard: 0, favorite: true),
+		 makeNode(2, heard: 10, favorite: false),
+		 makeNode(3, heard: 20, favorite: false),
+		 makeNode(4, heard: 30, favorite: false)].forEach { context.insert($0) }
+		try context.save()
+
+		await mesh.evictNodesIfOverCap(2)
+		await mesh.flushDebouncedSaves()
+
+		let remaining = try ModelContext(container)
+			.fetch(FetchDescriptor<NodeInfoEntity>()).map { $0.num }.sorted()
+		// Favorite (1, despite being oldest) + newest (4) survive; oldest non-favorites (2,3) evicted.
+		#expect(remaining == [1, 4])
+	}
+
+	@Test func waypoints_evictOldestLastUpdated() async throws {
+		let (mesh, container) = try freshMesh()
+		let context = ModelContext(container)
+		let base = Date(timeIntervalSince1970: 1_700_000_000)
+		func makeWaypoint(_ id: Int64, updated: TimeInterval) -> WaypointEntity {
+			let waypoint = WaypointEntity()
+			waypoint.id = id
+			waypoint.lastUpdated = base.addingTimeInterval(updated)
+			return waypoint
+		}
+		[makeWaypoint(1, updated: 0),   // oldest
+		 makeWaypoint(2, updated: 10),
+		 makeWaypoint(3, updated: 20)].forEach { context.insert($0) }  // newest
+		try context.save()
+
+		await mesh.evictWaypointsIfOverCap(1)
+		await mesh.flushDebouncedSaves()
+
+		let remaining = try ModelContext(container)
+			.fetch(FetchDescriptor<WaypointEntity>()).map { $0.id }.sorted()
+		#expect(remaining == [3])   // only the most-recently-updated survives
+	}
+
+	@Test func underCap_noEviction() async throws {
+		let (mesh, container) = try freshMesh()
+		let context = ModelContext(container)
+		let node = NodeInfoEntity(); node.num = 7; node.id = 7; node.lastHeard = Date()
+		context.insert(node)
+		try context.save()
+
+		await mesh.evictNodesIfOverCap(10_000)
+		await mesh.flushDebouncedSaves()
+
+		#expect(try ModelContext(container).fetchCount(FetchDescriptor<NodeInfoEntity>()) == 1)
+	}
+
+	/// Eviction runs inside `savePendingChanges` before the commit, so a node just created this
+	/// transaction is still a pending insert with a nil `lastHeard` — which sorts stalest. It must
+	/// NOT be evicted before it is saved; older persisted rows are freed to make room instead.
+	@Test func newNodeInTransaction_survivesEviction() async throws {
+		let (mesh, container) = try freshMesh()
+		let context = ModelContext(container)
+		let base = Date(timeIntervalSince1970: 1_700_000_000)
+		func makeNode(_ num: Int64, heard: TimeInterval) -> NodeInfoEntity {
+			let node = NodeInfoEntity()
+			node.num = num
+			node.id = num
+			node.lastHeard = base.addingTimeInterval(heard)
+			node.favorite = false
+			return node
+		}
+		// Three persisted non-favorites, all older than "now". With cap = 2, creating one more node
+		// pushes the count to 4, so eviction must delete 2 rows.
+		[makeNode(1, heard: 0), makeNode(2, heard: 10), makeNode(3, heard: 20)].forEach { context.insert($0) }
+		try context.save()
+
+		// Creates pending node 99 (nil lastHeard), enforces cap 2, commits — all one transaction.
+		await mesh.createNodeThenEvict(num: 99, cap: 2)
+
+		let remaining = try ModelContext(container)
+			.fetch(FetchDescriptor<NodeInfoEntity>()).map { $0.num }.sorted()
+		// Total lands at cap (2). The brand-new node (99) is kept — it was excluded from the
+		// deletion candidates — and the two stalest persisted rows (1, 2) are evicted instead.
+		#expect(remaining == [3, 99])
+	}
+}
+
+// MARK: - "Signed node" shield authenticity (forgeable-shield fix)
+
+@Suite("Signed-node shield authenticity", .serialized)
+@MainActor
+struct SignedShieldAuthenticityTests {
+	private func freshMesh() throws -> (MeshPackets, ModelContainer) {
+		let container = try ModelContainer(
+			for: Schema(MeshtasticSchema.allModels),
+			configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+		)
+		return (MeshPackets(modelContainer: container), container)
+	}
+
+	private func makeNodeInfoPacket(from num: UInt32, payloadClaimsSigned: Bool, transportVerified: Bool) throws -> MeshPacket {
+		var nodeInfo = NodeInfo()
+		nodeInfo.num = num
+		nodeInfo.hasXeddsaSigned_p = payloadClaimsSigned
+		var dataMessage = DataMessage()
+		dataMessage.payload = try nodeInfo.serializedData()
+		dataMessage.portnum = .nodeinfoApp
+		var packet = MeshPacket()
+		packet.from = num
+		packet.decoded = dataMessage
+		packet.xeddsaSigned = transportVerified
+		return packet
+	}
+
+	private func fetchNode(_ num: UInt32, in container: ModelContainer) throws -> NodeInfoEntity? {
+		let persisted = Int64(num)
+		return try ModelContext(container)
+			.fetch(FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == persisted })).first
+	}
+
+	@Test func spoofedPayloadBit_doesNotForgeShield() async throws {
+		let (mesh, container) = try freshMesh()
+		let num: UInt32 = 0x20DE_FC50
+		// Attacker claims signed IN THE PAYLOAD, but the radio did NOT verify a signature.
+		let packet = try makeNodeInfoPacket(from: num, payloadClaimsSigned: true, transportVerified: false)
+		await mesh.upsertNodeInfoPacket(packet: packet)
+		await mesh.flushDebouncedSaves()
+
+		let node = try fetchNode(num, in: container)
+		#expect(node != nil)
+		#expect(node?.hasXeddsaSigned == false)   // forge blocked — payload bit is not trusted
+	}
+
+	@Test func radioVerifiedBit_marksSigned() async throws {
+		let (mesh, container) = try freshMesh()
+		let num: UInt32 = 0x20DE_FC51
+		// Payload omits the claim, but the radio VERIFIED the packet's signature — any node we hear
+		// signing (not just the connected one) should legitimately show the shield.
+		let packet = try makeNodeInfoPacket(from: num, payloadClaimsSigned: false, transportVerified: true)
+		await mesh.upsertNodeInfoPacket(packet: packet)
+		await mesh.flushDebouncedSaves()
+
+		#expect(try fetchNode(num, in: container)?.hasXeddsaSigned == true)
+	}
+
+	@Test func latch_survivesLaterUnverifiedPacket() async throws {
+		let (mesh, container) = try freshMesh()
+		let num: UInt32 = 0x20DE_FC52
+		// First a radio-verified signed packet marks the node, then a spoofed/unverified one must
+		// neither downgrade it (latch) nor be able to forge it in the first place.
+		await mesh.upsertNodeInfoPacket(packet: try makeNodeInfoPacket(from: num, payloadClaimsSigned: false, transportVerified: true))
+		await mesh.flushDebouncedSaves()
+		await mesh.upsertNodeInfoPacket(packet: try makeNodeInfoPacket(from: num, payloadClaimsSigned: false, transportVerified: false))
+		await mesh.flushDebouncedSaves()
+
+		#expect(try fetchNode(num, in: container)?.hasXeddsaSigned == true)   // latched, not downgraded
+	}
+}
+
 @Suite("PAX counter ingestion", .serialized)
 @MainActor
 struct PaxCounterPacketIngestTests {

@@ -128,6 +128,14 @@ actor MeshPackets {
 			Logger.data.warning("💾 [\(caller, privacy: .public)] Dropped save on retired MeshPackets instance")
 			return
 		}
+		// Periodically enforce the global node/waypoint caps before committing, so evictions ride
+		// along in this same save. Every save path funnels through here, so this one hook covers
+		// nodes/waypoints created by any handler.
+		savesSinceEntityCapCheck += 1
+		if savesSinceEntityCapCheck >= Self.entityCapCheckInterval {
+			savesSinceEntityCapCheck = 0
+			enforceEntityCaps()
+		}
 		guard modelContext.hasChanges else { return }
 		do {
 			try modelContext.save()
@@ -136,6 +144,70 @@ actor MeshPackets {
 			Logger.data.error("💥 [\(caller, privacy: .public)] Error saving: \(error.localizedDescription, privacy: .public)")
 		}
 	}
+
+	/// Enforce the global caps on the two attacker-growable, un-capped stores. Runs inside
+	/// `savePendingChanges` (throttled) so the deletes commit in the same write. Cheap in the
+	/// common case: two COUNT queries, and the sorted fetch+delete only runs when actually over cap.
+	/// Split into cap-parameterized helpers below so the eviction order is unit-testable with
+	/// small datasets rather than needing tens of thousands of inserts.
+	func enforceEntityCaps() {
+		evictNodesIfOverCap(Self.maxTotalNodes)
+		evictWaypointsIfOverCap(Self.maxTotalWaypoints)
+	}
+
+	/// Nodes: cap the total, evicting least-recently-heard first. Never evict favorites — the user
+	/// explicitly kept those. Among already-persisted rows, `lastHeard` is optional; nil sorts first
+	/// (ascending), so never-heard stubs go before any dated node, which is the correct "stalest
+	/// first" order.
+	func evictNodesIfOverCap(_ cap: Int) {
+		guard let nodeCount = try? modelContext.fetchCount(FetchDescriptor<NodeInfoEntity>()),
+			  nodeCount > cap else { return }
+		var descriptor = FetchDescriptor<NodeInfoEntity>(
+			predicate: #Predicate { $0.favorite == false },
+			sortBy: [SortDescriptor(\.lastHeard, order: .forward)]
+		)
+		descriptor.fetchLimit = nodeCount - cap
+		// Only already-persisted rows are eligible for eviction. Caps are enforced inside
+		// `savePendingChanges` *before* the commit, so a node just created this transaction by
+		// `findOrCreateNode` is still a pending insert with a nil `lastHeard` — which sorts first
+		// (stalest) and would otherwise be deleted before it is ever saved. The count above stays
+		// inclusive of pending inserts, so we free enough persisted rows to make room for them.
+		descriptor.includePendingChanges = false
+		guard let stale = try? modelContext.fetch(descriptor), !stale.isEmpty else { return }
+		for node in stale { modelContext.delete(node) }
+		Logger.data.info("🗄️ [Caps] Evicted \(stale.count, privacy: .public) least-recently-heard node(s) (was \(nodeCount, privacy: .public), cap \(cap, privacy: .public))")
+	}
+
+	/// Waypoints: cap the total, evicting oldest-last-updated first.
+	func evictWaypointsIfOverCap(_ cap: Int) {
+		guard let waypointCount = try? modelContext.fetchCount(FetchDescriptor<WaypointEntity>()),
+			  waypointCount > cap else { return }
+		var descriptor = FetchDescriptor<WaypointEntity>(
+			sortBy: [SortDescriptor(\.lastUpdated, order: .forward)]
+		)
+		descriptor.fetchLimit = waypointCount - cap
+		// Same rationale as node eviction: never delete an un-saved waypoint from the in-flight
+		// transaction (a fresh insert has a nil `lastUpdated` and would sort first). Count stays
+		// inclusive of pending inserts for cap accounting.
+		descriptor.includePendingChanges = false
+		guard let stale = try? modelContext.fetch(descriptor), !stale.isEmpty else { return }
+		for waypoint in stale { modelContext.delete(waypoint) }
+		Logger.data.info("🗄️ [Caps] Evicted \(stale.count, privacy: .public) oldest waypoint(s) (was \(waypointCount, privacy: .public), cap \(cap, privacy: .public))")
+	}
+
+#if DEBUG
+	/// Test-only: reproduces a packet handler that creates a brand-new node stub via
+	/// `findOrCreateNode` (a pending insert with a nil `lastHeard`) and then enforces the node cap in
+	/// the *same* un-saved transaction, exactly as `savePendingChanges` does. The pending insert must
+	/// live in this actor's own `modelContext`, so this seam exists to exercise that path — a
+	/// separate context can't reproduce it. Returns after committing so callers can assert the new
+	/// node survived. See `evictNodesIfOverCap`.
+	func createNodeThenEvict(num: Int64, cap: Int) {
+		_ = findOrCreateNode(num: num, context: modelContext)
+		evictNodesIfOverCap(cap)
+		try? modelContext.save()
+	}
+#endif
 
 	// MARK: - Debounced Save for High-Frequency Packets
 
@@ -147,15 +219,24 @@ actor MeshPackets {
 	private static let debounceInterval: Duration = .seconds(2)
 	/// Maximum wall-clock time between flushes, even if packets keep arriving.
 	private static let maxDebounceDelay: Duration = .seconds(5)
-	static let maxPositionHistoryPerNode = 5_000
+	static let maxPositionHistoryPerNode = 25_000
 	static let maxTelemetryPerType = 5_000
 	static let maxTotalMessages = 50_000
+	/// Global caps on attacker-growable stores, so noisy mesh traffic (or a deliberate flood)
+	/// can't grow local data without bound. Nodes evict least-recently-heard first; waypoints
+	/// evict oldest-last-updated first. Favorite nodes are never evicted.
+	static let maxTotalNodes = 10_000
+	static let maxTotalWaypoints = 5_000
 	private static let positionPruneInterval = 128
 	private static let telemetryPruneInterval = 128
 	private static let messagePruneInterval = 256
+	/// Enforce the global node/waypoint caps once every N saves. A COUNT is cheap, but not worth
+	/// running on literally every packet save; saves are already debounced under load.
+	private static let entityCapCheckInterval = 64
 	private var positionInsertsSincePrune: [Int64: Int] = [:]
 	private var telemetryInsertsSincePrune: [TelemetryPruneKey: Int] = [:]
 	private var messageInsertsSincePrune = 0
+	private var savesSinceEntityCapCheck = 0
 
 	/// Schedules a debounced save. Each call resets the 2-second timer. If packets
 	/// keep arriving continuously, a save is forced every 5 seconds.
