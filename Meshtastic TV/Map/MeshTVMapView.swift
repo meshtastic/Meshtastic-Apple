@@ -150,10 +150,23 @@ final class ClusterCircleAnnotationView: MKAnnotationView {
 		}
 	}
 
-	// See NodeCircleAnnotationView: cluster views churn hardest during zoom
-	// (splitting/merging), so keeping them out of the focus engine is what
-	// silences transitions.
-	override var canBecomeFocused: Bool { false }
+	// Clusters are the one focusable thing on the map: the remote can land on a
+	// cluster and press Select to zoom in and break it apart (see the map's
+	// didSelect). Node pins stay non-focusable — they're chosen from the side list.
+	override var canBecomeFocused: Bool { true }
+
+	override func didUpdateFocus(in context: UIFocusUpdateContext,
+								 with coordinator: UIFocusAnimationCoordinator) {
+		super.didUpdateFocus(in: context, with: coordinator)
+		let focused = isFocused
+		coordinator.addCoordinatedAnimations {
+			self.transform = focused ? CGAffineTransform(scaleX: 1.3, y: 1.3) : .identity
+			self.circle.layer.borderColor = (focused
+				? UIColor.white
+				: UIColor.white.withAlphaComponent(0.9)).cgColor
+			self.layer.zPosition = focused ? 1 : 0
+		}
+	}
 }
 
 struct MeshTVMapView: UIViewRepresentable {
@@ -353,23 +366,22 @@ struct MeshTVMapView: UIViewRepresentable {
 					self.pendingSelectionNum = nil
 					return
 				}
-				// Zoom in far enough to break the node out of its cluster —
-				// centering alone at mesh-wide zoom leaves the selection swallowed
-				// by a cluster badge. Only ever zoom IN: if the user is already
-				// closer than city scale, keep their zoom and just center.
-				let target = MKCoordinateRegion(
+				// Zoom in tight enough to break the node out of its cluster so the user
+				// can actually see it: at mesh-wide — and even city — zoom, a dense mesh
+				// (e.g. the 900-node sim) leaves the selection swallowed by a cluster
+				// badge. Animate the descent so it reads as zooming *down* onto the node
+				// (the flicker that motivated cutting big jumps is simulator-only; the
+				// device renders the fly smoothly). Only ever zoom IN — if the user is
+				// already tighter than the target, keep their zoom and just recenter.
+				let tight = MKCoordinateRegion(
 					center: annotation.coordinate,
-					latitudinalMeters: 4_000,
-					longitudinalMeters: 4_000
+					latitudinalMeters: Self.selectionZoomMeters,
+					longitudinalMeters: Self.selectionZoomMeters
 				)
-				if mapView.region.span.latitudeDelta > target.span.latitudeDelta {
-					self.setRegionSmart(mapView, target: target)
-				} else {
-					// Already zoomed in: keep the user's zoom, just move over.
-					self.setRegionSmart(mapView, target: MKCoordinateRegion(
-						center: annotation.coordinate, span: mapView.region.span
-					))
-				}
+				let target = mapView.region.span.latitudeDelta > tight.span.latitudeDelta
+					? tight
+					: MKCoordinateRegion(center: annotation.coordinate, span: mapView.region.span)
+				mapView.setRegion(target, animated: true)
 				// Centered — only now mark it applied so gliding back over this row doesn't re-fly.
 				self.lastAppliedSelection = num
 				self.pendingSelectionNum = nil
@@ -377,11 +389,35 @@ struct MeshTVMapView: UIViewRepresentable {
 			pendingSelectionFly = fly
 			DispatchQueue.main.asyncAfter(deadline: .now() + 0.4, execute: fly)
 		}
+		/// How tight to zoom when a node is selected from the list — small enough to
+		/// break the node out of a dense cluster so it's individually visible. Tunable.
+		private static let selectionZoomMeters: CLLocationDistance = 800
 		private var lastAppliedSelection: UInt32?
 		private var pendingSelectionNum: UInt32?
 		private var pendingSelectionFly: DispatchWorkItem?
 
 		// MARK: MKMapViewDelegate
+
+		/// Select a focused cluster (remote press) → zoom to fit its members so the
+		/// cluster breaks apart into individual node pins.
+		func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
+			guard let cluster = view.annotation as? MKClusterAnnotation else { return }
+			mapView.deselectAnnotation(cluster, animated: false)
+			let coords = cluster.memberAnnotations.map(\.coordinate)
+			guard !coords.isEmpty else { return }
+			let lats = coords.map(\.latitude), lons = coords.map(\.longitude)
+			let center = CLLocationCoordinate2D(
+				latitude: (lats.min()! + lats.max()!) / 2,
+				longitude: (lons.min()! + lons.max()!) / 2
+			)
+			// Pad the members' bounding box, with a floor so a tight cluster still
+			// zooms to a level where its pins separate instead of immediately re-clustering.
+			let span = MKCoordinateSpan(
+				latitudeDelta: max((lats.max()! - lats.min()!) * 1.6, 0.02),
+				longitudeDelta: max((lons.max()! - lons.min()!) * 1.6, 0.02)
+			)
+			mapView.setRegion(MKCoordinateRegion(center: center, span: span), animated: true)
+		}
 
 		func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
 			if annotation is MKClusterAnnotation {
