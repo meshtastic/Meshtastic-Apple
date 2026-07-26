@@ -64,6 +64,15 @@ struct DeviceProfileImportResult {
 
 enum DeviceProfileImporter {
 
+	/// Pause between consecutive admin sends.
+	///
+	/// Measured on a Heltec V4 (ESP32-S3): an unpaced burst of 8 module-config writes over ~0.9s had
+	/// only 5 processed on firmware 2.7.27 and 7 on 2.8.0, with the rest dropped and still acked. The
+	/// same burst inside a transaction at roughly this spacing landed 8 of 8 across repeated runs,
+	/// because deferring the flash write makes each message cheap enough for the radio to keep up.
+	/// 150ms keeps a 25-item profile under ~4s while staying well clear of the drop threshold.
+	static let defaultSendInterval: Duration = .milliseconds(150)
+
 	/// Applies the selected sections of a plan inside a firmware edit transaction, aborting on the first
 	/// failure.
 	///
@@ -78,6 +87,9 @@ enum DeviceProfileImporter {
 	///   - plan: the parsed import plan.
 	///   - selection: the sections the user chose to import.
 	///   - gateway: the send seam (production or mock).
+	///   - sendInterval: pause between consecutive sends. The radio drops writes it cannot process in
+	///       time and still acks them, so an unpaced burst loses config silently.
+	///   - sleep: injectable delay, so tests exercise the pacing logic without real time passing.
 	///   - progress: called just before each item is sent, with (item, zero-based index, total count).
 	/// - Returns: what was applied, skipped, or failed, and whether the radio is rebooting.
 	@MainActor
@@ -85,6 +97,8 @@ enum DeviceProfileImporter {
 		plan: DeviceProfileImportPlan,
 		selection: Set<ImportSection>,
 		gateway: ProfileApplyGateway,
+		sendInterval: Duration = defaultSendInterval,
+		sleep: @escaping (Duration) async throws -> Void = { try await Task.sleep(for: $0) },
 		progress: ((ImportItem, Int, Int) -> Void)? = nil
 	) async -> DeviceProfileImportResult {
 		var result = DeviceProfileImportResult()
@@ -110,6 +124,13 @@ enum DeviceProfileImporter {
 			return result
 		}
 		do {
+			// Sent twice on purpose. begin_edit_settings is idempotent (the handler only sets
+			// hasOpenEditTransaction = true, AdminModule.cpp:468-471) and the firmware never acks it, so a
+			// dropped begin is undetectable from here and silently downgrades the whole run to untransacted:
+			// every write then saves to flash, tears down Bluetooth, and schedules its own reboot. That was
+			// observed on hardware. A second copy costs one packet and removes a single point of failure.
+			try await gateway.beginEditSettings()
+			try? await sleep(sendInterval)
 			try await gateway.beginEditSettings()
 			result.usedTransaction = true
 		} catch is CancellationError {
@@ -124,9 +145,11 @@ enum DeviceProfileImporter {
 		}
 
 		// 2. Everything except MQTT/Serial, inside the transaction.
-		_ = await run(transactional, progressOffset: 0, total: total,
+		let context = RunContext(gateway: gateway, sendInterval: sendInterval, sleep: sleep,
+								 progress: progress, total: total)
+		_ = await run(transactional, progressOffset: 0,
 					  pendingAfter: deferredItems.map(\.kind),
-					  gateway: gateway, progress: progress, into: &result)
+					  context: context, into: &result)
 
 		// 3. Commit unconditionally, even when step 2 stopped early. The firmware exposes no abort or
 		//    rollback message, so an uncommitted transaction strands the radio in deferred-save mode where
@@ -135,6 +158,8 @@ enum DeviceProfileImporter {
 		// Whether the link was alive going in decides how to read a throw below.
 		let connectedBeforeCommit = gateway.isConnected
 		do {
+			// Let the radio drain the last write before the commit lands on top of it.
+			try? await sleep(sendInterval)
 			try await gateway.commitEditSettings()
 			result.transactionCommitted = true
 		} catch {
@@ -164,9 +189,8 @@ enum DeviceProfileImporter {
 		// already committed, so the items are reported as needing a reconnect and a second pass.
 		guard result.failed == nil, !result.wasCancelled, !deferredItems.isEmpty else { return result }
 		var deferredOutcome = DeviceProfileImportResult()
-		let allDeferredApplied = await run(deferredItems, progressOffset: transactional.count, total: total,
-										   pendingAfter: [], gateway: gateway, progress: progress,
-										   into: &deferredOutcome)
+		let allDeferredApplied = await run(deferredItems, progressOffset: transactional.count,
+										   pendingAfter: [], context: context, into: &deferredOutcome)
 		result.applied.append(contentsOf: deferredOutcome.applied)
 		if !allDeferredApplied {
 			result.requiresReconnect = deferredItems.map(\.kind)
@@ -176,6 +200,17 @@ enum DeviceProfileImporter {
 		return result
 	}
 
+	/// Everything a phase needs beyond its own item list. Exists to keep `run` within the project's
+	/// parameter-count limit rather than to model anything.
+	@MainActor
+	private struct RunContext {
+		let gateway: ProfileApplyGateway
+		let sendInterval: Duration
+		let sleep: (Duration) async throws -> Void
+		let progress: ((ImportItem, Int, Int) -> Void)?
+		let total: Int
+	}
+
 	/// Applies one ordered run of items, mutating `result`. Returns true when every item was applied.
 	/// On an early stop the current item is recorded as failed (or the run as cancelled) and everything
 	/// after it, including `pendingAfter`, is recorded as skipped.
@@ -183,13 +218,19 @@ enum DeviceProfileImporter {
 	private static func run(
 		_ items: [ImportItem],
 		progressOffset: Int,
-		total: Int,
 		pendingAfter: [ImportItemKind],
-		gateway: ProfileApplyGateway,
-		progress: ((ImportItem, Int, Int) -> Void)?,
+		context: RunContext,
 		into result: inout DeviceProfileImportResult
 	) async -> Bool {
+		let gateway = context.gateway
+		let progress = context.progress
+		let total = context.total
 		for (index, item) in items.enumerated() {
+			// Pace every send after the first. Not cosmetic: an unpaced burst outruns the radio, which drops
+			// the overflow and still reports success, so config goes missing with no client-side signal.
+			if index > 0 {
+				try? await context.sleep(context.sendInterval)
+			}
 			// Cancellation (user tapped Cancel, or the surrounding task was cancelled): stop cleanly,
 			// treating the current and remaining items as not-applied rather than failed.
 			if Task.isCancelled {

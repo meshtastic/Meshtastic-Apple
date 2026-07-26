@@ -662,6 +662,63 @@ struct DeviceProfileImportTests {
 	// MARK: - Edit transaction
 
 	@MainActor
+	@Test("Sends are paced, and begin is sent twice so a dropped begin cannot silently untransact the run")
+	func sendsArePacedAndBeginIsRedundant() async throws {
+		var profile = DeviceProfile()
+		var config = LocalConfig()
+		config.device = Config.DeviceConfig()
+		config.display = Config.DisplayConfig()
+		config.position = Config.PositionConfig()
+		profile.config = config
+		let plan = try DeviceProfileImportPlan(profile: profile, currentUser: nil)
+
+		let gateway = MockGateway()
+		var sleeps: [Duration] = []
+		let result = await DeviceProfileImporter.apply(
+			plan: plan,
+			selection: Set(plan.presentSections),
+			gateway: gateway,
+			sendInterval: .milliseconds(150),
+			sleep: { sleeps.append($0) },   // no real time passes
+			progress: nil
+		)
+
+		#expect(result.isCompleteSuccess)
+		// begin is deliberately duplicated: the firmware never acks it, so a drop is undetectable and
+		// downgrades the whole run to untransacted. Observed on hardware.
+		#expect(gateway.calls.prefix(2) == ["begin", "begin"])
+		#expect(gateway.calls.filter { $0 == "begin" }.count == 2)
+		#expect(gateway.calls.filter { $0 == "commit" }.count == 1)
+		// 3 items -> 2 inter-item pauses, plus one between the two begins and one before the commit.
+		#expect(sleeps.count == 4)
+		#expect(sleeps.allSatisfy { $0 == .milliseconds(150) })
+	}
+
+	@MainActor
+	@Test("A single-item import needs no inter-item pacing")
+	func singleItemImportPacesOnlyAroundTheTransaction() async throws {
+		var profile = DeviceProfile()
+		var config = LocalConfig()
+		config.device = Config.DeviceConfig()
+		profile.config = config
+		let plan = try DeviceProfileImportPlan(profile: profile, currentUser: nil)
+
+		var sleeps: [Duration] = []
+		let result = await DeviceProfileImporter.apply(
+			plan: plan,
+			selection: Set(plan.presentSections),
+			gateway: MockGateway(),
+			sendInterval: .milliseconds(150),
+			sleep: { sleeps.append($0) },
+			progress: nil
+		)
+
+		#expect(result.applied == [.deviceConfig])
+		// One item means no inter-item pause: only the begin-to-begin and pre-commit pauses remain.
+		#expect(sleeps.count == 2)
+	}
+
+	@MainActor
 	@Test("The whole import is bracketed by begin/commit edit settings")
 	func importIsWrappedInATransaction() async throws {
 		var profile = DeviceProfile()
@@ -675,7 +732,8 @@ struct DeviceProfileImportTests {
 		let result = await DeviceProfileImporter.apply(
 			plan: plan,
 			selection: Set(plan.presentSections),
-			gateway: gateway
+			gateway: gateway,
+			sleep: { _ in }
 		)
 
 		#expect(result.isCompleteSuccess)
@@ -683,7 +741,9 @@ struct DeviceProfileImportTests {
 		#expect(result.transactionCommitted)
 		#expect(gateway.calls.first == "begin")
 		#expect(gateway.calls.last == "commit")
-		#expect(gateway.calls == ["begin", "deviceConfig", "displayConfig", "commit"])
+		// begin appears twice by design: it is idempotent and unacked, so a dropped begin would silently
+		// run the whole import untransacted. See sendsArePacedAndBeginIsRedundant.
+		#expect(gateway.calls == ["begin", "begin", "deviceConfig", "displayConfig", "commit"])
 	}
 
 	@MainActor
@@ -704,13 +764,14 @@ struct DeviceProfileImportTests {
 		let result = await DeviceProfileImporter.apply(
 			plan: plan,
 			selection: Set(plan.presentSections),
-			gateway: gateway
+			gateway: gateway,
+			sleep: { _ in }
 		)
 
 		// Firmware disables Bluetooth for MQTT and Serial even inside a transaction
 		// (AdminModule.cpp:1191, :1207), so they run last, after everything else is safely committed.
 		#expect(result.isCompleteSuccess)
-		#expect(gateway.calls == ["begin", "deviceConfig", "telemetry", "commit", "mqtt", "serial"])
+		#expect(gateway.calls == ["begin", "begin", "deviceConfig", "telemetry", "commit", "mqtt", "serial"])
 		let commitIndex = try #require(gateway.calls.firstIndex(of: "commit"))
 		let mqttIndex = try #require(gateway.calls.firstIndex(of: "mqtt"))
 		let serialIndex = try #require(gateway.calls.firstIndex(of: "serial"))
@@ -733,7 +794,8 @@ struct DeviceProfileImportTests {
 		let result = await DeviceProfileImporter.apply(
 			plan: plan,
 			selection: Set(plan.presentSections),
-			gateway: gateway
+			gateway: gateway,
+			sleep: { _ in }
 		)
 
 		// The firmware has no abort message, so an uncommitted transaction would leave it deferring every
@@ -753,7 +815,8 @@ struct DeviceProfileImportTests {
 		let result = await DeviceProfileImporter.apply(
 			plan: plan,
 			selection: Set(plan.presentSections),
-			gateway: gateway
+			gateway: gateway,
+			sleep: { _ in }
 		)
 
 		#expect(!result.usedTransaction)
@@ -779,7 +842,8 @@ struct DeviceProfileImportTests {
 		let result = await DeviceProfileImporter.apply(
 			plan: plan,
 			selection: Set(plan.presentSections),
-			gateway: gateway
+			gateway: gateway,
+			sleep: { _ in }
 		)
 
 		#expect(result.applied == [.deviceConfig])
@@ -807,7 +871,8 @@ struct DeviceProfileImportTests {
 		let result = await DeviceProfileImporter.apply(
 			plan: plan,
 			selection: Set(plan.presentSections),
-			gateway: gateway
+			gateway: gateway,
+			sleep: { _ in }
 		)
 
 		#expect(result.transactionCommitted)
@@ -836,7 +901,8 @@ struct DeviceProfileImportTests {
 		let result = await DeviceProfileImporter.apply(
 			plan: plan,
 			selection: Set(plan.presentSections),
-			gateway: gateway
+			gateway: gateway,
+			sleep: { _ in }
 		)
 
 		#expect(result.applied == [.deviceConfig])
@@ -865,7 +931,8 @@ struct DeviceProfileImportTests {
 		let result = await DeviceProfileImporter.apply(
 			plan: plan,
 			selection: Set(plan.presentSections),
-			gateway: gateway
+			gateway: gateway,
+			sleep: { _ in }
 		)
 
 		#expect(result.applied == [.deviceConfig])
@@ -890,7 +957,8 @@ struct DeviceProfileImportTests {
 		let result = await DeviceProfileImporter.apply(
 			plan: plan,
 			selection: Set(plan.presentSections),
-			gateway: gateway
+			gateway: gateway,
+			sleep: { _ in }
 		)
 
 		#expect(result.isCompleteSuccess)
@@ -909,7 +977,8 @@ struct DeviceProfileImportTests {
 		let ringtoneResult = await DeviceProfileImporter.apply(
 			plan: ringtonePlan,
 			selection: Set(ringtonePlan.presentSections),
-			gateway: MockGateway()
+			gateway: MockGateway(),
+			sleep: { _ in }
 		)
 		#expect(ringtoneResult.isCompleteSuccess)
 		#expect(ringtoneResult.applied == [.ringtone])
@@ -938,7 +1007,8 @@ struct DeviceProfileImportTests {
 		let result = await DeviceProfileImporter.apply(
 			plan: plan,
 			selection: Set(plan.presentSections),
-			gateway: gateway
+			gateway: gateway,
+			sleep: { _ in }
 		)
 
 		#expect(result.wasCancelled)
@@ -953,7 +1023,7 @@ struct DeviceProfileImportTests {
 	func engineHonorsPreCancelledTask() async throws {
 		let plan = try DeviceProfileImportPlan(profile: makeFullProfile(), currentUser: User())
 		let gateway = MockGateway()
-		let task = Task { await DeviceProfileImporter.apply(plan: plan, selection: Set(plan.presentSections), gateway: gateway) }
+		let task = Task { await DeviceProfileImporter.apply(plan: plan, selection: Set(plan.presentSections), gateway: gateway, sleep: { _ in }) }
 		task.cancel()
 		let result = await task.value
 		// The cancel may or may not land before the loop starts, but either way the run must stay coherent:
@@ -982,7 +1052,8 @@ struct DeviceProfileImportTests {
 		let result = await DeviceProfileImporter.apply(
 			plan: plan,
 			selection: Set(plan.presentSections),
-			gateway: gateway
+			gateway: gateway,
+			sleep: { _ in }
 		)
 
 		#expect(result.applied.isEmpty)
@@ -1011,7 +1082,8 @@ struct DeviceProfileImportTests {
 		let result = await DeviceProfileImporter.apply(
 			plan: plan,
 			selection: Set(plan.presentSections),
-			gateway: gateway
+			gateway: gateway,
+			sleep: { _ in }
 		)
 		#expect(result.failed?.kind == .channelURL)
 		// The channel URL never applied, so it contributed no reboot of its own. Assert that directly
