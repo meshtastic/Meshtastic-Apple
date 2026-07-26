@@ -181,6 +181,50 @@ enum DeviceProfileVerifier {
 	}
 }
 
+// MARK: - Production source
+
+/// Reads the connected node's config back out of SwiftData, using the same `protoConfig` accessors the
+/// export path uses, so verification compares like with like.
+@MainActor
+struct NodeProfileConfigSource: ProfileConfigSource {
+	let node: NodeInfoEntity
+	let lastConfigRefresh: Date?
+
+	// swiftlint:disable:next cyclomatic_complexity
+	func currentPayload(for kind: ImportItemKind) -> ImportPayload? {
+		switch kind {
+		case .owner: return node.user.map { ImportPayload.owner($0.toProto()) }
+		case .deviceConfig: return node.deviceConfig.map { .deviceConfig($0.protoConfig) }
+		case .displayConfig: return node.displayConfig.map { .displayConfig($0.protoConfig) }
+		case .positionConfig: return node.positionConfig.map { .positionConfig($0.protoConfig) }
+		case .powerConfig: return node.powerConfig.map { .powerConfig($0.protoConfig) }
+		case .networkConfig: return node.networkConfig.map { .networkConfig($0.protoConfig) }
+		case .bluetoothConfig: return node.bluetoothConfig.map { .bluetoothConfig($0.protoConfig) }
+		case .securityConfig: return node.securityConfig.map { .securityConfig($0.protoConfig) }
+		case .loraConfig: return node.loRaConfig.map { .loraConfig($0.protoConfig) }
+		case .mqtt: return node.mqttConfig.map { .mqtt($0.protoConfig) }
+		case .serial: return node.serialConfig.map { .serial($0.protoConfig) }
+		case .externalNotification:
+			return node.externalNotificationConfig.map { .externalNotification($0.protoConfig) }
+		case .storeForward: return node.storeForwardConfig.map { .storeForward($0.protoConfig) }
+		case .rangeTest: return node.rangeTestConfig.map { .rangeTest($0.protoConfig) }
+		case .telemetry: return node.telemetryConfig.map { .telemetry($0.protoConfig) }
+		case .cannedMessage: return node.cannedMessageConfig.map { .cannedMessage($0.protoConfig) }
+		case .audio: return node.audioConfig.map { .audio($0.protoConfig) }
+		case .neighborInfo: return node.neighborInfoConfig.map { .neighborInfo($0.protoConfig) }
+		case .ambientLighting: return node.ambientLightingConfig.map { .ambientLighting($0.protoConfig) }
+		case .detectionSensor: return node.detectionSensorConfig.map { .detectionSensor($0.protoConfig) }
+		case .paxcounter: return node.paxCounterConfig.map { .paxcounter($0.protoConfig) }
+		case .tak: return node.takConfig.map { .tak($0.protoConfig) }
+		case .trafficManagement:
+			return node.trafficManagementConfig.map { .trafficManagement($0.protoConfig) }
+		case .statusMessage: return node.statusMessageConfig.map { .statusMessage($0.protoConfig) }
+		// The radio never echoes these back in a comparable form.
+		case .ringtone, .cannedMessagesText, .channelURL, .fixedPosition: return nil
+		}
+	}
+}
+
 // MARK: - Payload bridging
 
 extension ImportPayload {

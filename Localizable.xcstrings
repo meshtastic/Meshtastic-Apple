@@ -13655,6 +13655,9 @@
         }
       }
     },
+    "Available once the radio reconnects and sends its configuration back." : {
+
+    },
     "Available Radios" : {
       "localizations" : {
         "da" : {
@@ -16585,6 +16588,9 @@
           }
         }
       }
+    },
+    "Check What Applied" : {
+
     },
     "CHG" : {
       "localizations" : {
@@ -96962,6 +96968,9 @@
         }
       }
     },
+    "The radio still reports its previous value. Import this section again." : {
+
+    },
     "The radio will reboot to apply these changes." : {
 
     },
@@ -106750,6 +106759,9 @@
           }
         }
       }
+    },
+    "Verify Against the Radio" : {
+
     },
     "Verify who you are messaging with by comparing public keys in person or over the phone. The most recent public key for this node does not match the previously recorded key. You can delete the node and let it exchange keys again if the key change was due to a factory reset or other intentional action but this also may indicate a more serious security problem." : {
       "localizations" : {

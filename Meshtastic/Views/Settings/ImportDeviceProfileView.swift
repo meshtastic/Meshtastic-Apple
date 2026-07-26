@@ -28,6 +28,11 @@ struct ImportDeviceProfileView: View {
 	/// Liveness backstop: set true if the apply is still running after a grace period so the user can
 	/// always leave even if a single send stalls on the transport.
 	@State private var canForceDismiss = false
+	/// The node's config as it stood just before the import, so verification can tell an unchanged
+	/// section (the signature of a dropped write) from one the firmware normalized.
+	@State private var configBeforeImport: [ImportItemKind: ImportPayload] = [:]
+	@State private var importFinishedAt: Date?
+	@State private var verification: DeviceProfileVerification?
 
 	private enum Phase: Equatable {
 		case review
@@ -227,6 +232,26 @@ struct ImportDeviceProfileView: View {
 		return items[progress.index].section
 	}
 
+	@ViewBuilder
+	private func verificationRow(_ kind: ImportItemKind, _ outcome: VerificationOutcome) -> some View {
+		VStack(alignment: .leading, spacing: 2) {
+			switch outcome {
+			case .applied:
+				Label(kind.displayName, systemImage: "checkmark.circle.fill").foregroundColor(.green)
+			case .likelyDropped:
+				Label(kind.displayName, systemImage: "xmark.circle.fill").foregroundColor(.orange)
+				Text("The radio still reports its previous value. Import this section again.")
+					.font(.caption).foregroundColor(.secondary)
+			case .inconclusive(let detail):
+				Label(kind.displayName, systemImage: "questionmark.circle").foregroundColor(.secondary)
+				Text(detail).font(.caption).foregroundColor(.secondary)
+			case .notComparable(let reason):
+				Label(kind.displayName, systemImage: "minus.circle").foregroundColor(.secondary)
+				Text(reason).font(.caption).foregroundColor(.secondary)
+			}
+		}
+	}
+
 	private func unsupportedReason(_ support: FirmwareSupport) -> String {
 		switch support {
 		case .fromVersion(let version):
@@ -293,6 +318,31 @@ struct ImportDeviceProfileView: View {
 					}
 				}
 			}
+			// The radio acks writes it silently discards, so "sent" is not "applied". Reading the config
+			// back after the reboot is the only way to tell.
+			Section("Check What Applied") {
+				if let verification {
+					if let unavailable = verification.unavailable {
+						Text(unavailable).font(.caption).foregroundColor(.secondary)
+					} else {
+						ForEach(verification.outcomes, id: \.kind) { entry in
+							verificationRow(entry.kind, entry.outcome)
+						}
+					}
+				} else {
+					Button {
+						runVerification(result)
+					} label: {
+						Label("Verify Against the Radio", systemImage: "checkmark.shield")
+					}
+					.disabled(!canVerify)
+					if !canVerify {
+						Text("Available once the radio reconnects and sends its configuration back.")
+							.font(.caption)
+							.foregroundColor(.secondary)
+					}
+				}
+			}
 			if let failed = result.failed {
 				Section("Failed") {
 					VStack(alignment: .leading, spacing: 2) {
@@ -343,6 +393,14 @@ struct ImportDeviceProfileView: View {
 			return
 		}
 		phase = .applying
+		// Snapshot what the radio holds now. The import cannot be verified from the sends alone: firmware
+		// acks writes it discards, so only a later readback distinguishes applied from lost.
+		let source = NodeProfileConfigSource(node: node, lastConfigRefresh: accessoryManager.lastConfigRefresh)
+		configBeforeImport = Dictionary(
+			uniqueKeysWithValues: plan.items(for: selection).compactMap { item in
+				source.currentPayload(for: item.kind).map { (item.kind, $0) }
+			}
+		)
 		let gateway = AccessoryProfileApplyGateway(accessoryManager: accessoryManager, node: user)
 		let result = await DeviceProfileImporter.apply(
 			plan: plan,
@@ -355,8 +413,32 @@ struct ImportDeviceProfileView: View {
 		progress = nil
 		importTask = nil
 		canForceDismiss = false
+		importFinishedAt = Date()
 		// Only publish the result if we're still the active apply (the user may have force-dismissed).
 		if isApplying { phase = .done(result) }
+	}
+
+	/// True once the radio has sent a fresh configuration since the import finished.
+	///
+	/// Verifying before this would compare against the pre-import cache and report every item as lost,
+	/// which is indistinguishable from a real total failure. So the action stays disabled until the
+	/// radio has actually reported back after its reboot.
+	private var canVerify: Bool {
+		guard let importFinishedAt, let refreshed = accessoryManager.lastConfigRefresh else { return false }
+		return refreshed >= importFinishedAt
+	}
+
+	private func runVerification(_ result: DeviceProfileImportResult) {
+		guard let node = connectedNode else { return }
+		let source = NodeProfileConfigSource(node: node,
+											 lastConfigRefresh: accessoryManager.lastConfigRefresh)
+		verification = DeviceProfileVerifier.verify(
+			applied: result.applied,
+			plan: plan,
+			before: configBeforeImport,
+			source: source,
+			importFinishedAt: importFinishedAt ?? .distantFuture
+		)
 	}
 
 	// MARK: Copy
