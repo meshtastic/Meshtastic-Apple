@@ -232,26 +232,32 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	// Public due to file separation
 	var otaInProgress: Bool = false
 	var discoveryTask: Task<Void, Never>?
-	/// True for the duration of `stopDiscovery()`'s transport-teardown loop, i.e. from just
-	/// after `discoveryTask` is cleared until every transport's `stopActiveDiscovery()` has
-	/// completed. `discoveryTask == nil` alone isn't a safe "discovery is fully stopped" signal
-	/// — it's cleared before that teardown loop even starts — so `startDiscovery()` also checks
-	/// this flag and no-ops while it's set, closing a race where a concurrent caller (e.g.
-	/// `appDidBecomeActive()` after a quick background/foreground toggle) could start a fresh
-	/// scan while the previous `stopDiscovery()` call is still winding down the same transport
-	/// (#2183 review).
-	var isStoppingDiscovery: Bool = false
 	/// Consumes `BLETransport.statusUpdates()` for the lifetime of this manager; see
 	/// `observeBLETransportStatus()`.
 	var bleStatusTask: Task<Void, Never>?
 	var connectionEventTask: Task <Void, Error>?
 	var locationTask: Task<Void, Error>?
+	/// The detached device image/link pass spawned by connect Step 3b. Held so a disconnect can
+	/// cancel it — otherwise, on a captive portal, its ~78 image HEADs hang ~60s each (no request
+	/// timeout) past teardown, wasting network and pinning the hardware-list spinner.
+	var deviceRefreshTask: Task<Void, Never>?
 	var connectionStepper: SequentialSteps?
 	
 	// Flash counters — NOT @Published to avoid triggering re-renders of all observing views.
 	// RXTXIndicatorWidget observes these via onChange polling.
 	var packetsSent: Int = 0
 	var packetsReceived: Int = 0
+
+	/// Rolling estimate of inbound mesh-packet rate. Drives `isHighMeshTraffic`, which the map reads
+	/// to pause the trace-route 3D flyover when live traffic would make the flythrough janky. Fed one
+	/// `record()` per inbound mesh packet in `processFromRadio`; sampled while a connection is active.
+	let meshTrafficMonitor = MeshTrafficMonitor()
+
+	/// Mirrors `meshTrafficMonitor.isHighTraffic` onto this ObservableObject so views already
+	/// observing AccessoryManager (e.g. the map) react to it without having to observe the nested
+	/// monitor. True while sustained inbound mesh traffic is high enough to pause the map flyover.
+	@Published private(set) var isHighMeshTraffic = false
+	private var meshTrafficCancellable: AnyCancellable?
 
 	/// Packet count at the last periodic MeshPackets recycle (see `didReceive`). The ingest
 	/// actor's ModelContext registers every entity it inserts or faults and never lets go, so a
@@ -306,6 +312,15 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		}
 
 		observeBLETransportStatus()
+
+		// Mirror the traffic gate onto our own @Published so map views that already observe this
+		// manager pick up flyover pause/resume. Both objects live on the main actor, so the value
+		// only ever crosses on the main run loop.
+		meshTrafficCancellable = meshTrafficMonitor.$isHighTraffic
+			.removeDuplicates()
+			.sink { [weak self] isHigh in
+				self?.isHighMeshTraffic = isHigh
+			}
 	}
 
 	func transportForType(_ type: TransportType) -> Transport? {
@@ -440,12 +455,22 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		// Lockdown: clear per-connection state. If a Lock Now was in flight, the
 		// disconnect resolves the coordinator to `.lockNowAcknowledged`.
 		lockdownCoordinator?.onDisconnect()
-		
+
+		// Stop sampling and clear the traffic gate so a stale "high traffic" flag can't linger and
+		// keep the map flyover paused after the mesh goes quiet on disconnect.
+		meshTrafficMonitor.stop()
+
 		connectionEventTask?.cancel()
 		connectionEventTask = nil
-		
+
 		locationTask?.cancel()
 		locationTask = nil
+
+		// Cancel the detached device image/link pass so its outstanding image HEADs unwind instead of
+		// hanging past teardown. The pass leaves the throttle un-armed when cancelled, so the next
+		// connect still runs a real restore.
+		deviceRefreshTask?.cancel()
+		deviceRefreshTask = nil
 		
 		await heartbeatTimer?.cancel(withReason: "Closing connection")
 		await heartbeatResponseTimer?.cancel(withReason: "Closing connection")
@@ -736,6 +761,9 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			await handleMyInfo(myNodeInfo)
 
 		case .packet(let packet):
+			// Feed the traffic-rate estimator one tick per inbound mesh packet — this is the busy path
+			// whose re-renders make the map flyover stutter, so it's exactly what we want to measure.
+			meshTrafficMonitor.record()
 			// All received packets get passed through updateAnyPacketFrom to update lastHeard, rxSnr, etc. (like firmware's NodeDB::updateFrom).
 			if let connectedNodeNum = self.activeDeviceNum {
 				await MeshPackets.shared.updateAnyPacketFrom(packet: packet, activeDeviceNum: connectedNodeNum)
@@ -1151,11 +1179,7 @@ extension AccessoryManager {
 			Task { await connection.appDidEnterBackground() }
 		} else {
 			Logger.transport.info("[AccessoryManager] suspending scanning while in the background")
-			// appDidEnterBackground() itself stays synchronous (called directly from a
-			// non-async scenePhase handler); fire-and-forget the now-async stopDiscovery()
-			// the same way this call site always has — nothing here depends on scanning having
-			// fully stopped before this function returns, unlike Step 0 of the connect flow.
-			Task { await self.stopDiscovery() }
+			stopDiscovery()
 		}
 	}
 	
@@ -1164,32 +1188,8 @@ extension AccessoryManager {
 		if let connection = self.activeConnection?.connection {
 			Logger.transport.info("[AccessoryManager] informing previously active connection that we are active again")
 			Task { await connection.appDidBecomeActive() }
-		} else if self.isConnecting {
-			// A connect attempt is in flight (Step 0 in AccessoryManager+Connect.swift already
-			// stopped discovery before Step 1 pairs). On a first-ever BLE bond, iOS's system PIN
-			// pairing sheet is out-of-process UI, same as the Bluetooth-power alert (#2139/#2161):
-			// it can blip scenePhase to .inactive/.background and back to .active while it's up.
-			// Restarting the scan here would race the bonding handshake and tear the sheet down
-			// (CBATTErrorInsufficientEncryption) exactly like the scan-during-pairing bug this
-			// guard, together with Step 0, closes off. Wait for the connect attempt to resolve:
-			// on success, discovery is left off (Step 8 calls stopDiscovery(), not startDiscovery() —
-			// there's nothing left for a scenePhase blip to interfere with once activeConnection is
-			// set); on failure, closeConnection() re-arms it. Note there's a narrow, self-correcting
-			// gap during a *retry* triggered by a later-step failure (e.g. Step 5/5a): closeConnection()
-			// nils activeConnection and suspends on its own internal awaits before this step's retry
-			// flips state back to .connecting, so isConnecting can briefly read false with
-			// activeConnection already nil. A scenePhase blip landing in that exact window falls
-			// through to the branch below and restarts the scan — harmless here since bonding already
-			// succeeded before that state is reachable (no PIN sheet at risk), and Step 0 stops the
-			// scan again moments later regardless. Just a brief flicker, not a functional issue.
-			Logger.transport.info("[AccessoryManager] Connect attempt in progress, not restarting discovery")
 		} else {
 			if self.discoveryTask == nil {
-				// startDiscovery() itself no-ops while isStoppingDiscovery is set (see
-				// AccessoryManager+Discovery.swift), so this doesn't need its own check: even if a
-				// concurrent stopDiscovery() call has already nilled discoveryTask but is still
-				// awaiting transport teardown, this call is safely absorbed rather than racing a
-				// fresh scan against it (#2183 review).
 				Logger.transport.info("[AccessoryManager] Previosuly in the background but not scanning, starting scanning again")
 				self.startDiscovery()
 			}

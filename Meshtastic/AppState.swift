@@ -13,6 +13,17 @@ struct PendingContact: Identifiable {
 	let base64UrlString: String
 }
 
+extension NSNotification.Name {
+	/// Posted whenever message read-state changes anywhere (new message saved,
+	/// messages marked read in a list, Siri/CarPlay read-aloud). Observers that
+	/// display unread state (badge counts, the CarPlay list templates) refresh on
+	/// it — before this existed the CarPlay templates only refreshed on
+	/// connect/disconnect and went stale for the whole drive.
+	/// (NSNotification.Name, not Notification.Name — the app defines its own
+	/// `Notification` model type which shadows Foundation's in some files.)
+	static let meshMessagesDidChange = NSNotification.Name("MeshMessagesDidChange")
+}
+
 class AppState: ObservableObject {
 
 	@Published var router: Router
