@@ -395,8 +395,8 @@
         "section": "user",
         "navOrder": 7,
         "keywords": [
-            "app",
             "node",
+            "app",
             "radio",
             "device",
             "from",
@@ -411,6 +411,7 @@
             "nfc",
             "traffic",
             "translation",
+            "set",
             "rate",
             "only",
             "contact",
@@ -418,7 +419,6 @@
             "configure",
             "channel",
             "translated",
-            "set",
             "management",
             "later",
             "ios",
@@ -426,7 +426,7 @@
             "enable",
             "documentation"
         ],
-        "charCount": 10957
+        "charCount": 11204
     },
     {
         "id": "signal-meter",
