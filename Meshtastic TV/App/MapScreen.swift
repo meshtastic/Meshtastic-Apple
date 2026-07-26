@@ -74,6 +74,11 @@ struct MapScreen: View {
 					} label: {
 						Label("Re-center Map", systemImage: "scope")
 					}
+					NavigationLink {
+						SettingsView()
+					} label: {
+						Label("Settings", systemImage: "gearshape")
+					}
 					Button(role: .destructive) {
 						client.disconnect()
 					} label: {

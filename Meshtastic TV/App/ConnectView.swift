@@ -47,6 +47,14 @@ struct ConnectView: View {
 								.foregroundStyle(.red)
 						}
 					}
+
+					Section {
+						NavigationLink {
+							SettingsView()
+						} label: {
+							Label("Settings", systemImage: "gearshape")
+						}
+					}
 				}
 			}
 			.padding(.top, 40)
