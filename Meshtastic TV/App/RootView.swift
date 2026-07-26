@@ -23,8 +23,9 @@ struct RootView: View {
 				ConnectView(client: client)
 			}
 		}
-		// Meshtastic brand green (the Live Activity / widget tint).
-		.tint(Color("LightIndigo"))
+		// Buttons and icons follow the app AccentColor (Blue 700, matching the iOS
+		// app). The brand green fails WCAG contrast for interactive elements, so it's
+		// reserved for the logo and semantic success — never an app-wide UI tint.
 		// This app is a live wall display: keep the big screen awake so the tvOS
 		// screensaver never interrupts the mesh map while the app is foregrounded.
 		// Re-asserted on every active transition because the system can reset the
@@ -48,7 +49,6 @@ private struct ConnectingView: View {
 				.frame(width: 280)
 			ProgressView()
 				.scaleEffect(1.6)
-				.tint(Color("LightIndigo"))
 			Text("Connecting to \(host)…")
 				.font(.title2)
 				.foregroundStyle(.secondary)

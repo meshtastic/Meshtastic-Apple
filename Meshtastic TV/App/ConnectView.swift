@@ -44,7 +44,7 @@ struct ConnectView: View {
 					if case .failed(let message) = client.state {
 						Section {
 							Label(message, systemImage: "exclamationmark.triangle.fill")
-								.foregroundStyle(.red)
+								.foregroundStyle(Color("MeshtasticError"))
 						}
 					}
 
@@ -73,7 +73,7 @@ struct ConnectView: View {
 				.fixedSize(horizontal: false, vertical: true)
 			Label("Radios advertising TCP appear automatically", systemImage: "bonjour")
 				.font(.callout)
-				.foregroundStyle(Color("LightIndigo"))
+				.foregroundStyle(.secondary)
 		}
 		.frame(maxHeight: .infinity, alignment: .top)
 	}
@@ -94,7 +94,7 @@ struct ConnectView: View {
 					} label: {
 						HStack(spacing: 16) {
 							Image(systemName: "antenna.radiowaves.left.and.right")
-								.foregroundStyle(Color("LightIndigo"))
+								.foregroundStyle(Color("AccentColor"))
 							VStack(alignment: .leading, spacing: 4) {
 								Text(node.name)
 								Text(verbatim: "\(node.host):\(String(node.port))")

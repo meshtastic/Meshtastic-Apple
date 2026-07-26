@@ -126,6 +126,24 @@ struct MapScreen: View {
 		}
 		.padding(.horizontal, 32)
 		.padding(.vertical, 16)
+		.background {
+			// Frost the list rows that scroll up behind the wordmark, fading to clear at
+			// the header's bottom edge so the logo/host never collides with moving data.
+			Rectangle()
+				.fill(.ultraThinMaterial)
+				.mask(
+					LinearGradient(
+						stops: [
+							.init(color: .black, location: 0.0),
+							.init(color: .black, location: 0.7),
+							.init(color: .clear, location: 1.0)
+						],
+						startPoint: .top,
+						endPoint: .bottom
+					)
+				)
+				.ignoresSafeArea(edges: .top)
+		}
 	}
 
 	private var disconnectButton: some View {
@@ -163,7 +181,7 @@ private struct NodeRow: View {
 							Text(lastHeard.formatted(.relative(presentation: .named)))
 						} icon: {
 							Image(systemName: node.isOnline ? "checkmark.circle.fill" : "moon.circle.fill")
-								.foregroundStyle(node.isOnline ? .green : .orange)
+								.foregroundStyle(node.isOnline ? Color("MeshtasticSuccess") : Color("MeshtasticWarning"))
 						}
 					}
 					if let role = node.nodeRole {
