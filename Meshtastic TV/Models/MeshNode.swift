@@ -4,19 +4,28 @@
 //
 //  Copyright(c) Garth Vander Houwen 7/24/26.
 //
-//  Lightweight, in-memory model for a mesh node. Intentionally NOT the SwiftData
-//  `NodeInfoEntity` from the iOS app — the tvOS v1 client keeps everything in memory
-//  and rebuilds it from the FromRadio stream on each connect.
+//  Persistent, tvOS-local model for a mesh node. Deliberately NOT the iOS
+//  `NodeInfoEntity` — that entity's relationship graph is a single connected
+//  component of ~39 tables (messages, channels, traceroutes, every config), so it
+//  can't be subsetted for a map. This is a slim, map-scoped SwiftData store: the
+//  map is populated on relaunch from the last session, before the radio's node-DB
+//  dump completes.
 //
 
 import CoreLocation
 import Foundation
+import SwiftData
 
-struct MeshNode: Identifiable, Hashable {
-	let num: UInt32
+@Model
+final class MeshNode {
 
-	var longName: String
-	var shortName: String
+	/// Node number. Stored as `Int` (Int64-backed — SwiftData/Core Data has no
+	/// native `UInt32`); the full `UInt32` range fits losslessly and is recovered
+	/// by `num`. Upserts key on this via `MeshClient.node(for:)`.
+	var numRaw: Int = 0
+
+	var longName: String = ""
+	var shortName: String = ""
 
 	var latitude: Double?
 	var longitude: Double?
@@ -27,7 +36,13 @@ struct MeshNode: Identifiable, Hashable {
 	var role: String?
 	var hwModel: String?
 
-	var id: UInt32 { num }
+	init(num: UInt32) {
+		self.numRaw = Int(num)
+	}
+
+	// MARK: - Derived
+
+	var num: UInt32 { UInt32(truncatingIfNeeded: numRaw) }
 
 	var hasLocation: Bool { latitude != nil && longitude != nil }
 
@@ -41,27 +56,5 @@ struct MeshNode: Identifiable, Hashable {
 		if !longName.isEmpty { return longName }
 		if !shortName.isEmpty { return shortName }
 		return String(format: "!%08x", num)
-	}
-
-	init(num: UInt32,
-	     longName: String = "",
-	     shortName: String = "",
-	     latitude: Double? = nil,
-	     longitude: Double? = nil,
-	     lastHeard: Date? = nil,
-	     batteryLevel: Int? = nil,
-	     snr: Float? = nil,
-	     role: String? = nil,
-	     hwModel: String? = nil) {
-		self.num = num
-		self.longName = longName
-		self.shortName = shortName
-		self.latitude = latitude
-		self.longitude = longitude
-		self.lastHeard = lastHeard
-		self.batteryLevel = batteryLevel
-		self.snr = snr
-		self.role = role
-		self.hwModel = hwModel
 	}
 }

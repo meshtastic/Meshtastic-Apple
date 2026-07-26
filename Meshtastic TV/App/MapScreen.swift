@@ -11,6 +11,7 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct MapScreen: View {
 	@Bindable var client: MeshClient
@@ -22,13 +23,30 @@ struct MapScreen: View {
 	@FocusState private var focusedNodeNum: UInt32?
 	@State private var navPath: [UInt32] = []
 
+	/// The persisted node store — the map and list read from here, not the client.
+	@Query private var allNodes: [MeshNode]
+
+	/// All nodes for the side list: located first, then alphabetically.
+	private var sortedNodes: [MeshNode] {
+		allNodes.sorted {
+			if $0.hasLocation != $1.hasLocation { return $0.hasLocation }
+			return $0.displayName.localizedCaseInsensitiveCompare($1.displayName) == .orderedAscending
+		}
+	}
+
+	/// Located nodes, most-recently-heard first — the map's data source.
+	private var locatedNodes: [MeshNode] {
+		allNodes.filter(\.hasLocation)
+			.sorted { ($0.lastHeard ?? .distantPast) > ($1.lastHeard ?? .distantPast) }
+	}
+
 	var body: some View {
 		HStack(spacing: 0) {
 			nodeList
 				.frame(width: 520)
 
 			MeshTVMapView(
-				nodes: client.locatedNodes,
+				nodes: locatedNodes,
 				selectedNodeNum: $selectedNodeNum,
 				recenterToken: recenterToken,
 				onMenuExit: escapeMap
@@ -41,7 +59,7 @@ struct MapScreen: View {
 	/// focus back to the node list — without this, MKMapView is a focus trap.
 	private func escapeMap() {
 		navPath = []
-		focusedNodeNum = selectedNodeNum ?? client.sortedNodes.first?.num
+		focusedNodeNum = selectedNodeNum ?? sortedNodes.first?.num
 	}
 
 	private var nodeList: some View {
@@ -64,21 +82,21 @@ struct MapScreen: View {
 				}
 
 				Section {
-					ForEach(client.sortedNodes) { node in
+					ForEach(sortedNodes) { node in
 						NavigationLink(value: node.num) {
 							NodeRow(node: node)
 						}
 						.focused($focusedNodeNum, equals: node.num)
 					}
 				} header: {
-					Text("\(client.nodes.count) nodes · \(client.locatedNodes.count) on map")
+					Text("\(allNodes.count) nodes · \(locatedNodes.count) on map")
 				}
 			}
 			.onChange(of: focusedNodeNum) { _, newValue in
 				if let newValue { selectedNodeNum = newValue }
 			}
 			.navigationDestination(for: UInt32.self) { num in
-				if let node = client.nodes[num] {
+				if let node = allNodes.first(where: { $0.num == num }) {
 					NodeDetailView(node: node)
 				}
 			}

@@ -13,6 +13,7 @@
 import Foundation
 import MeshtasticProtobufs
 import OSLog
+import SwiftData
 
 /// Nonces echoed back by the radio in `config_complete_id`. Mirrors the iOS
 /// `AccessoryManager` constants (which we don't link). Sending `wantConfigID`
@@ -33,9 +34,16 @@ final class MeshClient {
 	}
 
 	private(set) var state: State = .disconnected
-	private(set) var nodes: [UInt32: MeshNode] = [:]
 	private(set) var myNodeNum: UInt32?
 	private(set) var host: String = ""
+
+	/// The tvOS-local SwiftData store the map and list read via `@Query`. Every
+	/// upsert lands here; nothing is kept in memory, so the map survives relaunch.
+	private let context: ModelContext
+
+	init(context: ModelContext) {
+		self.context = context
+	}
 
 	private var connection: TCPConnection?
 	private var consumeTask: Task<Void, Never>?
@@ -44,29 +52,16 @@ final class MeshClient {
 	/// clobber the connection/consumeTask a newer attempt already set up, orphaning its TCPConnection.
 	private var connectTask: Task<Void, Never>?
 
-	/// Nodes that have a usable position, most-recently-heard first — the map's data source.
-	var locatedNodes: [MeshNode] {
-		nodes.values
-			.filter { $0.hasLocation }
-			.sorted { ($0.lastHeard ?? .distantPast) > ($1.lastHeard ?? .distantPast) }
-	}
-
-	/// All nodes for the side list, located ones first then by name.
-	var sortedNodes: [MeshNode] {
-		nodes.values.sorted {
-			if $0.hasLocation != $1.hasLocation { return $0.hasLocation }
-			return $0.displayName.localizedCaseInsensitiveCompare($1.displayName) == .orderedAscending
-		}
-	}
-
 	// MARK: - Connect / disconnect
 
 	func connect(host: String, port: Int) {
 		disconnect()
 		self.host = host
 		state = .connecting
-		nodes = [:]
 		myNodeNum = nil
+		// Note: the persisted node store is intentionally NOT cleared here — keeping
+		// it is what leaves the map populated across relaunches until the radio's
+		// fresh node-DB dump updates it.
 
 		connectTask = Task {
 			do {
@@ -156,34 +151,49 @@ final class MeshClient {
 		}
 	}
 
-	private func upsertNodeInfo(_ info: NodeInfo) {
-		var node = nodes[info.num] ?? MeshNode(num: info.num)
+	/// Fetch the persisted node for `num`, or insert a fresh one. The main context's
+	/// fetch reflects pending inserts, so back-to-back frames for a brand-new node
+	/// reuse the same row rather than duplicating it (all ingest is serial on the
+	/// main actor, so there is no insert race).
+	private func node(for num: UInt32) -> MeshNode {
+		let raw = Int(num)
+		var descriptor = FetchDescriptor<MeshNode>(predicate: #Predicate { $0.numRaw == raw })
+		descriptor.fetchLimit = 1
+		if let existing = try? context.fetch(descriptor).first { return existing }
+		let node = MeshNode(num: num)
+		context.insert(node)
+		return node
+	}
 
+	private func upsertNodeInfo(_ info: NodeInfo) {
+		let node = node(for: info.num)
+
+		// Guard every assignment: writing an unchanged value still marks the model
+		// dirty and re-runs the map/list @Query, and a busy mesh re-sends NodeInfo
+		// frequently with nothing new in it.
 		if info.hasUser {
-			node.longName = info.user.longName
-			node.shortName = info.user.shortName
-			node.role = String(describing: info.user.role)
-			node.hwModel = String(describing: info.user.hwModel)
+			if node.longName != info.user.longName { node.longName = info.user.longName }
+			if node.shortName != info.user.shortName { node.shortName = info.user.shortName }
+			let role = String(describing: info.user.role)
+			if node.role != role { node.role = role }
+			let hw = String(describing: info.user.hwModel)
+			if node.hwModel != hw { node.hwModel = hw }
 		}
 		if info.hasPosition, info.position.hasLatitudeI, info.position.hasLongitudeI {
-			node.latitude = Double(info.position.latitudeI) * 1e-7
-			node.longitude = Double(info.position.longitudeI) * 1e-7
+			let lat = Double(info.position.latitudeI) * 1e-7
+			let lon = Double(info.position.longitudeI) * 1e-7
+			if node.latitude != lat { node.latitude = lat }
+			if node.longitude != lon { node.longitude = lon }
 		}
 		if info.hasDeviceMetrics {
-			node.batteryLevel = Int(info.deviceMetrics.batteryLevel)
+			let battery = Int(info.deviceMetrics.batteryLevel)
+			if node.batteryLevel != battery { node.batteryLevel = battery }
 		}
 		if info.lastHeard > 0 {
-			node.lastHeard = Date(timeIntervalSince1970: TimeInterval(info.lastHeard))
+			let heard = Date(timeIntervalSince1970: TimeInterval(info.lastHeard))
+			if node.lastHeard != heard { node.lastHeard = heard }
 		}
-		if info.snr != 0 {
-			node.snr = info.snr
-		}
-
-		// Every write republishes and re-runs the map/list diff, so skip no-ops —
-		// a busy mesh re-sends NodeInfo frequently with nothing new in it.
-		if nodes[info.num] != node {
-			nodes[info.num] = node
-		}
+		if info.snr != 0, node.snr != info.snr { node.snr = info.snr }
 	}
 
 	private func ingestPacket(_ packet: MeshPacket) {
@@ -192,18 +202,17 @@ final class MeshClient {
 		      let position = try? Position(serializedBytes: data.payload),
 		      position.hasLatitudeI, position.hasLongitudeI else { return }
 
-		var node = nodes[packet.from] ?? MeshNode(num: packet.from)
 		let latitude = Double(position.latitudeI) * 1e-7
 		let longitude = Double(position.longitudeI) * 1e-7
-		// Only publish when the fix moved, or lastHeard is meaningfully stale —
+		let node = node(for: packet.from)
+		// Only write when the fix moved, or lastHeard is meaningfully stale —
 		// stationary nodes beacon their position constantly, and bumping lastHeard
-		// on every packet would re-diff the map each time for no visible change.
+		// on every packet would re-run the map @Query each time for no visible change.
 		let moved = node.latitude != latitude || node.longitude != longitude
 		let stale = (node.lastHeard.map { Date().timeIntervalSince($0) > 60 }) ?? true
 		guard moved || stale else { return }
 		node.latitude = latitude
 		node.longitude = longitude
 		node.lastHeard = Date()
-		nodes[packet.from] = node
 	}
 }

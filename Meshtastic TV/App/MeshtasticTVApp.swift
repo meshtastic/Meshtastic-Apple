@@ -9,14 +9,25 @@
 //
 
 import SwiftUI
+import SwiftData
 
 @main
 struct MeshtasticTVApp: App {
-	@State private var client = MeshClient()
+	private let container: ModelContainer
+	@State private var client: MeshClient
+
+	init() {
+		// Slim tvOS-local store — just `MeshNode` (see MeshNode.swift). Persists the
+		// node database so the map is populated on relaunch before the radio re-dumps.
+		let container = try! ModelContainer(for: MeshNode.self)
+		self.container = container
+		_client = State(initialValue: MeshClient(context: container.mainContext))
+	}
 
 	var body: some Scene {
 		WindowGroup {
 			RootView(client: client)
 		}
+		.modelContainer(container)
 	}
 }
