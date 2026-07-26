@@ -213,8 +213,12 @@ struct AppSettings: View {
 								clearNotifications()
 								// Repopulate device catalog immediately — no reconnect happens after a full reset.
 								try? await MeshtasticAPI.shared.refreshBundledDevicesData()
-								Task.detached(priority: .utility) {
-									try? await MeshtasticAPI.shared.refreshDevicesAPIData()
+								// Images and msh.to links are network-backed, so they run in their own task
+								// rather than blocking the reset from completing. `Task` rather than
+								// `Task.detached` per the repo concurrency guideline; the pass handles its
+								// own cancellation.
+								Task(priority: .utility) {
+									await MeshtasticAPI.shared.refreshDevicesPreferringAPI()
 								}
 							}
 						}

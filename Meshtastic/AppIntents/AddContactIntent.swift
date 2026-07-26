@@ -28,6 +28,14 @@ struct AddContactIntent: AppIntent {
 			if let contactData = components.last {
 				let decodedString = contactData.base64urlToBase64()
 				if Data(base64Encoded: decodedString) != nil {
+					// Confirm before adding a contact, mirroring the in-app
+					// AddContactConfirmationView — an untrusted Shortcut should not be able to
+					// silently inject a contact (and its public key) in the background.
+					// requestConfirmation throws if the user declines; let that cancellation propagate
+					// unchanged rather than mislabeling it as a parse failure.
+					try await requestConfirmation(
+						result: .result(dialog: "Add this Meshtastic contact to your nodes?")
+					)
 					do {
 						try await AccessoryManager.shared.addContactFromURL(base64UrlString: contactData)
 					} catch {

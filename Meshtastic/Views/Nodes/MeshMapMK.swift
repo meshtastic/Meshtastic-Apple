@@ -92,7 +92,13 @@ struct MeshMapMK: View {
 	@StateObject private var flyover = TraceRouteFlyover()
 	@AppStorage("enableMapWaypoints") private var showWaypoints = true
 	@AppStorage("mapOverlaysEnabled") private var mapOverlaysEnabled = false
-	@State private var waypointDecorations: [ClusterMapDecoration] = []
+	/// Waypoints as clustering items (so they merge into node clusters) rather than standalone
+	/// decorations. Rebuilt on add/remove/move/icon change; drawn as an orange emoji circle when a
+	/// waypoint isn't clustered.
+	@State private var waypointSnapshots: [MeshMapWaypointSnapshot] = []
+	/// Snapshot id -> the backing waypoint, so a tapped/picked waypoint opens its form without the
+	/// snapshot having to carry a SwiftData entity.
+	@State private var waypointEntitiesByID: [Int64: WaypointEntity] = [:]
 	/// User-uploaded GeoJSON overlays: lines/polygons -> overlays, points -> decorations.
 	@State private var geoJSONOverlays: [ClusterMapOverlay] = []
 	@State private var geoJSONDecorations: [ClusterMapDecoration] = []
@@ -108,9 +114,9 @@ struct MeshMapMK: View {
 	@State private var editingFilters = false
 	@State var selectedNode: MeshMapSelectedNode?
 	/// A tapped un-splittable coincident stack, shown in a disambiguation picker (nil = hidden).
-	@State private var colocatedStack: ColocatedNodeStack?
-	/// A node chosen in the picker, opened only after that sheet dismisses (so the two don't collide).
-	@State private var pendingColocatedSelection: Int64?
+	@State private var colocatedStack: ColocatedMapStack?
+	/// An item chosen in the picker, opened only after that sheet dismisses (so the two don't collide).
+	@State private var pendingColocatedSelection: MeshMapItem?
 	@State private var visiblePositionSnapshots: [MeshMapPositionSnapshot] = []
 	@State var editingWaypoint: WaypointEntity?
 	@State var selectedWaypoint: WaypointEntity?
@@ -300,7 +306,11 @@ struct MeshMapMK: View {
 	/// Cheap change-detector for the route set (drives rebuildRouteContent via onChange).
 	/// Change-detector for the waypoint set (rebuild markers on add/remove/move/icon change).
 	private var waypointsKey: String {
-		allWaypoints.map { "\($0.id)|\($0.icon)|\($0.latitudeI)|\($0.longitudeI)|\($0.geofenceRadius)|\($0.hasBoundingBox ? 1 : 0)|\($0.boundingBoxLatitudeNorthI)|\($0.boundingBoxLatitudeSouthI)|\($0.boundingBoxLongitudeEastI)|\($0.boundingBoxLongitudeWestI)" }.joined(separator: ",")
+		// Includes `name` and `expire`: both are now rendered directly from the snapshot (the map
+		// pin and the coincident-item picker), so a rename or an expiry must change this key to
+		// trigger rebuildWaypointItems() — otherwise a stale name / an expired-but-still-tappable
+		// waypoint would linger until some unrelated field changed.
+		allWaypoints.map { "\($0.id)|\($0.name ?? "")|\($0.icon)|\($0.latitudeI)|\($0.longitudeI)|\($0.geofenceRadius)|\($0.hasBoundingBox ? 1 : 0)|\($0.boundingBoxLatitudeNorthI)|\($0.boundingBoxLatitudeSouthI)|\($0.boundingBoxLongitudeEastI)|\($0.boundingBoxLongitudeWestI)|\($0.expire?.timeIntervalSinceReferenceDate ?? 0)" }.joined(separator: ",")
 	}
 	private var routesKey: String {
 		routes.map { "\($0.color)|\($0.locations.count)" }.joined(separator: ",")
@@ -311,15 +321,15 @@ struct MeshMapMK: View {
 	/// The map itself, extracted from `body` so the big generic expression type-checks on its own.
 	@ViewBuilder private var meshClusterMapView: some View {
 		ClusterMapView(
-				items: visiblePositionSnapshots,
+				items: combinedMapItems,
 				coordinate: { $0.coordinate },
 				region: $visibleRegion,
 				cameraCommand: cameraCommand,
 				clustering: enableMapClustering,
-				onSelect: { snapshot in presentNodeSelection(for: snapshot) },
-				onColocatedStack: { snapshots in
-					// Coincident stack that zoom-to-fit can't separate -> let the user pick a node by name.
-					presentColocatedStack(snapshots)
+				onSelect: { item in presentItemSelection(for: item) },
+				onColocatedStack: { items in
+					// Coincident stack that zoom-to-fit can't separate -> let the user pick an item by name.
+					presentColocatedStack(items)
 				},
 				configuration: clusterConfiguration,
 				overlays: combinedMapOverlays(),
@@ -328,10 +338,28 @@ struct MeshMapMK: View {
 				onMapLongPress: { coordinate in beginNewWaypoint(at: coordinate) },
 				onMapCreated: { flyover.mapView = $0 },
 				suppressRegionUpdates: flyover.isFlying
-			) { snapshot in
-				MeshMapMKNodePin(nodeNum: snapshot.nodeNum, shortName: snapshot.shortName, isOnline: snapshot.isOnline, calculatedDelay: snapshot.calculatedDelay, dense: isDense)
-					.equatable()
+			) { item in
+				switch item {
+				case let .node(snapshot):
+					MeshMapMKNodePin(nodeNum: snapshot.nodeNum, shortName: snapshot.shortName, isOnline: snapshot.isOnline, calculatedDelay: snapshot.calculatedDelay, dense: isDense)
+						.equatable()
+				case let .waypoint(waypoint):
+					// Distinct waypoint glyph when not clustered (matches the map legend's orange circle).
+					CircleText(text: waypoint.icon, color: .orange, circleSize: 36)
+				}
 			}
+	}
+
+	/// Node position snapshots + waypoint snapshots merged into one clustering item list, so a waypoint
+	/// and nearby nodes collapse into one numbered cluster pin (and waypoints cluster with each other).
+	/// Empty off-screen so MapKit drops its annotation trees.
+	private var combinedMapItems: [MeshMapItem] {
+		guard isMapVisible else { return [] }
+		var result = visiblePositionSnapshots.map { MeshMapItem.node($0) }
+		if showWaypoints {
+			result += waypointSnapshots.map { MeshMapItem.waypoint($0) }
+		}
+		return result
 	}
 
 	/// Banner shown while a trace route is drawn on the map, with controls to fly through and clear it.
@@ -340,54 +368,77 @@ struct MeshMapMK: View {
 			let fromName = getNodeInfo(id: route.fromNum, context: context)?.user?.shortName ?? route.fromNum.toHex()
 			let toName = getNodeInfo(id: route.toNum, context: context)?.user?.shortName ?? route.toNum.toHex()
 			let flyLegs = traceRouteFlyoverLegs(for: route)
-			HStack(spacing: 10) {
-				Image(systemName: "point.3.connected.trianglepath.dotted")
-				Text("Trace Route: \(fromName) → \(toName)")
-					.font(.callout)
-					.fontWeight(.medium)
-					.lineLimit(1)
-				if flyLegs.contains(where: { $0.count >= 2 }) {
-					// Speed toggle: cycle 1× (base/slow) → 1.5× → 2× → 2.5× → 3× → 4× → 5× (400% faster). Live-adjustable.
-					Button {
-						let steps: [Double] = [1, 1.5, 2, 2.5, 3, 4, 5]
-						let next = (steps.firstIndex(of: flyover.speedMultiplier) ?? 0) + 1
-						flyover.speedMultiplier = steps[next % steps.count]
-					} label: {
-						Text(String(format: "%g×", flyover.speedMultiplier))
-							.font(.caption)
-							.fontWeight(.semibold)
-							.monospacedDigit()
-							.frame(minWidth: 30)
-					}
-					.buttonStyle(.bordered)
-					// Text(_:) localizes via the "Flyover speed %@" key; pass a language-agnostic "2×".
-					.accessibilityLabel(Text("Flyover speed \(String(format: "%g×", flyover.speedMultiplier))"))
-					Button {
-						if flyover.isFlying {
-							flyover.stop()
-						} else {
-							flyover.start(legs: flyLegs)
+			let hasFlyover = flyLegs.contains(where: { $0.count >= 2 })
+			// Pause the flyover when live mesh traffic is high: the flythrough is an MKMapView camera
+			// animation that competes with the SwiftUI re-renders ingestion drives, so it would stutter.
+			let flyoverPaused = hasFlyover && accessoryManager.isHighMeshTraffic
+			VStack(spacing: 6) {
+				HStack(spacing: 10) {
+					Image(systemName: "point.3.connected.trianglepath.dotted")
+					Text("Trace Route: \(fromName) → \(toName)")
+						.font(.callout)
+						.fontWeight(.medium)
+						.lineLimit(1)
+					if hasFlyover {
+						// Speed toggle: cycle 1× (base/slow) → 1.5× → 2× → 2.5× → 3× → 4× → 5× (400% faster). Live-adjustable.
+						Button {
+							let steps: [Double] = [1, 1.5, 2, 2.5, 3, 4, 5]
+							let next = (steps.firstIndex(of: flyover.speedMultiplier) ?? 0) + 1
+							flyover.speedMultiplier = steps[next % steps.count]
+						} label: {
+							Text(String(format: "%g×", flyover.speedMultiplier))
+								.font(.caption)
+								.fontWeight(.semibold)
+								.monospacedDigit()
+								.frame(minWidth: 30)
 						}
+						.buttonStyle(.bordered)
+						// Text(_:) localizes via the "Flyover speed %@" key; pass a language-agnostic "2×".
+						.accessibilityLabel(Text("Flyover speed \(String(format: "%g×", flyover.speedMultiplier))"))
+						Button {
+							if flyover.isFlying {
+								flyover.stop()
+							} else if !flyoverPaused {
+								// Guard as well as disable: never launch a doomed flyover under heavy traffic.
+								flyover.start(legs: flyLegs)
+							}
+						} label: {
+							Image(systemName: flyover.isFlying ? "stop.circle.fill" : "play.circle.fill")
+								.foregroundStyle(flyover.isFlying ? Color.red : (flyoverPaused ? Color.secondary : Color.accentColor))
+						}
+						.buttonStyle(.plain)
+						// Keep the stop button live so a running flyover can always be dismissed; only
+						// block starting a new one while traffic is high.
+						.disabled(flyoverPaused && !flyover.isFlying)
+						.accessibilityLabel(flyover.isFlying ? Text("Stop flyover") : Text("Start flyover"))
+						.accessibilityHint(flyoverPaused && !flyover.isFlying ? Text("Flyover paused — mesh traffic is high") : Text(verbatim: ""))
+					}
+					Button {
+						clearTraceRoute()
 					} label: {
-						Image(systemName: flyover.isFlying ? "stop.circle.fill" : "play.circle.fill")
-							.foregroundStyle(flyover.isFlying ? Color.red : Color.accentColor)
+						Image(systemName: "xmark.circle.fill")
+							.foregroundStyle(.secondary)
 					}
 					.buttonStyle(.plain)
-					.accessibilityLabel(flyover.isFlying ? Text("Stop flyover") : Text("Start flyover"))
+					.accessibilityLabel(String(localized: "Clear trace route", comment: "VoiceOver label for the clear trace route button"))
 				}
-				Button {
-					clearTraceRoute()
-				} label: {
-					Image(systemName: "xmark.circle.fill")
+				.padding(.horizontal, 14)
+				.padding(.vertical, 8)
+				.background(.thinMaterial, in: Capsule())
+
+				if flyoverPaused {
+					// Localized reason shown under the banner while the flyover is held back.
+					Label("Flyover paused — mesh traffic is high", systemImage: "exclamationmark.triangle")
+						.font(.caption2)
 						.foregroundStyle(.secondary)
+						.padding(.horizontal, 12)
+						.padding(.vertical, 4)
+						.background(.thinMaterial, in: Capsule())
+						.transition(.opacity)
 				}
-				.buttonStyle(.plain)
-				.accessibilityLabel(String(localized: "Clear trace route", comment: "VoiceOver label for the clear trace route button"))
 			}
-			.padding(.horizontal, 14)
-			.padding(.vertical, 8)
-			.background(.thinMaterial, in: Capsule())
 			.padding(.top, 8)
+			.animation(.default, value: flyoverPaused)
 		}
 	}
 
@@ -397,6 +448,15 @@ struct MeshMapMK: View {
 		meshClusterMapView
 			.ignoresSafeArea()
 			.overlay(alignment: .top) { traceRouteBanner }
+			.onChange(of: accessoryManager.isHighMeshTraffic) { _, isHigh in
+				// Traffic has been high for a sustained window (the monitor debounces this) — stop an
+				// in-flight flyover so it doesn't grind. The play button's disable + start guard keep it
+				// from relaunching until the rate settles back below the resume watermark.
+				if isHigh && flyover.isFlying {
+					Logger.services.info("🛰️ Pausing trace-route flyover: sustained high mesh traffic")
+					flyover.stop()
+				}
+			}
 				.sheet(item: $selectedNode) { selection in
 					if let node = getNodeInfo(id: selection.id, context: context) {
 						NavigationStack {
@@ -424,35 +484,24 @@ struct MeshMapMK: View {
 					}
 				}
 				.sheet(item: $colocatedStack, onDismiss: {
-					// Open the chosen node's detail only after the picker has fully dismissed, so the two
+					// Open the chosen item only after the picker has fully dismissed, so the two
 					// sheets don't fight over presentation.
-					if let nodeNum = pendingColocatedSelection {
+					if let selection = pendingColocatedSelection {
 						pendingColocatedSelection = nil
-						selectNode(nodeNum)
+						open(selection)
 					}
 				}) { stack in
 					NavigationStack {
-						List(stack.nodes) { snapshot in
+						List(stack.items) { item in
 							Button {
-								pendingColocatedSelection = snapshot.nodeNum
+								pendingColocatedSelection = item
 								colocatedStack = nil
 							} label: {
-								// Reuse the standard node-list cell so the disambiguation picker matches
-								// the Nodes tab. Fall back to the snapshot's name if the live node was
-								// pruned between the tap and the sheet appearing.
-								if let node = getNodeInfo(id: snapshot.nodeNum, context: context) {
-									NodeListItem(
-										node: node,
-										isDirectlyConnected: snapshot.nodeNum == accessoryManager.activeDeviceNum,
-										connectedNode: accessoryManager.activeConnection?.device.num ?? -1
-									)
-								} else {
-									Text(snapshot.longName)
-								}
+								colocatedRow(for: item)
 							}
 							.buttonStyle(.plain)
 						}
-						.navigationTitle(String.localizedStringWithFormat("Select a Node (%@)".localized, String(stack.nodes.count)))
+						.navigationTitle(String.localizedStringWithFormat("Select an Item (%@)".localized, String(stack.items.count)))
 						#if !targetEnvironment(macCatalyst)
 						.navigationBarTitleDisplayMode(.inline)
 						#endif
@@ -463,7 +512,7 @@ struct MeshMapMK: View {
 								} label: {
 									Image(systemName: "xmark")
 								}
-								.accessibilityLabel(String(localized: "Cancel", comment: "VoiceOver: dismiss the node disambiguation picker"))
+								.accessibilityLabel(String(localized: "Cancel", comment: "VoiceOver: dismiss the map item disambiguation picker"))
 							}
 						}
 					}
@@ -661,7 +710,7 @@ struct MeshMapMK: View {
 			}
 			let activeFiles = GeoJSONOverlayManager.shared.getUploadedFilesWithState().filter { $0.isActive }
 			enabledOverlayConfigs = Set(activeFiles.map { $0.id })
-			rebuildWaypointDecorations()
+			rebuildWaypointItems()
 			rebuildGeoJSONOverlays()
 			rebuildRouteContent()
 			applyTraceRouteSelection()
@@ -860,36 +909,70 @@ struct MeshMapMK: View {
 		return key
 	}
 
-	/// Route a tapped pin to node detail, or — when other visible nodes sit on (nearly) the same
-	/// point — to the disambiguation picker. MapKit only forms `MKClusterAnnotation`s (which drive
-	/// `onColocatedStack`) when clustering is enabled, so with clustering OFF a pin tap can land on a
-	/// fully-occluded stack; without this the covered nodes would be permanently untappable. Detecting
-	/// coincident siblings here keeps every stacked node reachable regardless of the clustering setting.
-	private func presentNodeSelection(for snapshot: MeshMapPositionSnapshot) {
-		// De-dupe by nodeNum before deciding: two coincident snapshots that share a num (e.g. positions
-		// whose node is nil, both 0) are one selectable node, not a two-row picker.
-		let coincident = MeshMapPositionSnapshot.dedupedByNodeNumSortedByName(
-			MeshMapPositionSnapshot.colocated(
-				with: snapshot,
-				in: visiblePositionSnapshots,
+	/// Route a tapped marker to its detail, or — when other visible markers (nodes and/or waypoints)
+	/// sit on (nearly) the same point — to the disambiguation picker. MapKit only forms
+	/// `MKClusterAnnotation`s (which drive `onColocatedStack`) when clustering is enabled, so with
+	/// clustering OFF a tap can land on a fully-occluded stack; without this the covered markers would
+	/// be permanently untappable. Detecting coincident siblings here keeps every stacked marker
+	/// reachable regardless of the clustering setting.
+	private func presentItemSelection(for item: MeshMapItem) {
+		// De-dupe by identity before deciding: two coincident node snapshots that share a num (e.g.
+		// positions whose node is nil, both 0) are one selectable item, not a two-row picker.
+		let coincident = MeshMapItem.dedupedSortedForPicker(
+			MeshMapItem.colocated(
+				with: item,
+				in: combinedMapItems,
 				withinMeters: MapColocation.spreadMeters
 			)
 		)
 		if coincident.count > 1 {
 			presentColocatedStack(coincident)
 		} else {
-			selectNode(snapshot.nodeNum)
+			open(item)
 		}
 	}
 
-	/// Present the colocated disambiguation picker for a set of coincident nodes. De-dupes by
-	/// `nodeNum` first: the picker's `List` is keyed on `snapshot.id` (== `nodeNum`), so two snapshots
-	/// sharing a num (e.g. positions whose node is nil, both 0) would collide into duplicate List IDs
-	/// and mis-render.
-	private func presentColocatedStack(_ snapshots: [MeshMapPositionSnapshot]) {
+	/// Present the colocated disambiguation picker for a set of coincident items. De-dupes by identity
+	/// first: the picker's `List` is keyed on `MeshMapItem.ID`, so duplicates would collide into
+	/// duplicate List IDs and mis-render.
+	private func presentColocatedStack(_ items: [MeshMapItem]) {
 		selectedWaypoint = nil
 		editingWaypoint = nil
-		colocatedStack = ColocatedNodeStack(nodes: MeshMapPositionSnapshot.dedupedByNodeNumSortedByName(snapshots))
+		colocatedStack = ColocatedMapStack(items: MeshMapItem.dedupedSortedForPicker(items))
+	}
+
+	/// The disambiguation-picker row for one map item: the standard node cell for nodes (matching the
+	/// Nodes tab) or a waypoint's emoji + name for waypoints (matching the map pin / legend).
+	@ViewBuilder
+	private func colocatedRow(for item: MeshMapItem) -> some View {
+		switch item {
+		case let .node(snapshot):
+			// Reuse the standard node-list cell so the picker matches the Nodes tab. Fall back to the
+			// snapshot's name if the live node was pruned between the tap and the sheet appearing.
+			if let node = getNodeInfo(id: snapshot.nodeNum, context: context) {
+				NodeListItem(
+					node: node,
+					isDirectlyConnected: snapshot.nodeNum == accessoryManager.activeDeviceNum,
+					connectedNode: accessoryManager.activeConnection?.device.num ?? -1
+				)
+			} else {
+				Text(snapshot.longName)
+			}
+		case let .waypoint(waypoint):
+			Label {
+				Text(waypoint.name)
+			} icon: {
+				CircleText(text: waypoint.icon, color: .orange, circleSize: 28)
+			}
+		}
+	}
+
+	/// Open a tapped/picked map item: node detail for nodes, the waypoint form for waypoints.
+	private func open(_ item: MeshMapItem) {
+		switch item {
+		case let .node(snapshot): selectNode(snapshot.nodeNum)
+		case let .waypoint(waypoint): openWaypoint(id: waypoint.id)
+		}
 	}
 
 	/// Open a single node's detail sheet, clearing any in-flight waypoint selection first.
@@ -897,6 +980,15 @@ struct MeshMapMK: View {
 		selectedWaypoint = nil
 		editingWaypoint = nil
 		selectedNode = MeshMapSelectedNode(id: nodeNum)
+	}
+
+	/// Open a waypoint's form — the same path a direct waypoint-marker tap takes — resolving the
+	/// backing entity from the snapshot id. No-op if the waypoint was pruned since the snapshot built.
+	private func openWaypoint(id: Int64) {
+		guard let waypoint = waypointEntitiesByID[id] else { return }
+		selectedNode = nil
+		editingWaypoint = nil
+		selectedWaypoint = waypoint
 	}
 
 		private func refreshVisiblePositionSnapshots(from positions: [PositionEntity]) {
@@ -1060,7 +1152,7 @@ struct MeshMapMK: View {
 									reloadOfflineSource()
 									rebuildOfflineVectorOverlays()
 									rebuildRouteContent()
-									rebuildWaypointDecorations()
+									rebuildWaypointItems()
 									rebuildGeoJSONOverlays()
 									rebuildOverlays()
 								}
@@ -1082,7 +1174,6 @@ struct MeshMapMK: View {
 									guard isMapVisible else { return [] }
 									var result = routeDecorations
 									result += tracerouteDecorations
-									result += waypointDecorations
 									result += geoJSONDecorations
 									return result
 								}
@@ -1130,27 +1221,37 @@ struct MeshMapMK: View {
 									geoJSONDecorations = decorations
 								}
 
-/// Build tappable waypoint markers (icon bubble) from saved waypoints; tap -> open the form.
-				private func rebuildWaypointDecorations() {
+/// Build waypoint clustering items (orange emoji circle) from saved waypoints, plus the id -> entity
+			/// lookup used to open a waypoint's form when its marker (or picker row) is tapped. As items —
+			/// not standalone decorations — waypoints merge into node clusters and appear in the picker.
+				private func rebuildWaypointItems() {
 					let key = "\(showWaypoints)|\(waypointsKey)"
 					guard key != lastWaypointKey else { return }
 					lastWaypointKey = key
 					guard showWaypoints else {
-						if !waypointDecorations.isEmpty { waypointDecorations = [] }
+						if !waypointSnapshots.isEmpty { waypointSnapshots = [] }
+						if !waypointEntitiesByID.isEmpty { waypointEntitiesByID = [:] }
 						if !geofenceOverlays.isEmpty { geofenceOverlays = [] }
 						return
 					}
 					let visibleWaypoints = allWaypoints.filter { $0.expire == nil || $0.expire! >= Date.now }
 					geofenceOverlays = buildGeofenceOverlays(from: visibleWaypoints)
-					waypointDecorations = visibleWaypoints.map { waypoint in
+					var snapshots: [MeshMapWaypointSnapshot] = []
+					var entitiesByID: [Int64: WaypointEntity] = [:]
+					snapshots.reserveCapacity(visibleWaypoints.count)
+					for waypoint in visibleWaypoints {
+						let id = Int64(truncatingIfNeeded: waypoint.persistentModelID.hashValue)
 						let icon = String(UnicodeScalar(Int(waypoint.icon)) ?? "📍")
-						return ClusterMapDecoration(
-							id: "waypoint-\(waypoint.persistentModelID.hashValue)",
+						snapshots.append(MeshMapWaypointSnapshot(
+							id: id,
 							coordinate: waypoint.mapCoordinate,
-							content: AnyView(CircleText(text: icon, color: .orange, circleSize: 36)),
-							onTap: { selectedNode = nil; editingWaypoint = nil; selectedWaypoint = waypoint }
-						)
+							name: waypoint.name ?? "Dropped Pin",
+							icon: icon
+						))
+						entitiesByID[id] = waypoint
 					}
+					waypointSnapshots = snapshots
+					waypointEntitiesByID = entitiesByID
 				}
 
 				/// Build geofence overlays (radius circle + bounding-box rectangle) for any waypoint

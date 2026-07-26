@@ -108,9 +108,19 @@ class MqttClientProxyManager {
 		mqttClientProxy = CocoaMQTT(clientID: clientId, host: host, port: UInt16(port))
 		if let mqttClient = mqttClientProxy {
 			mqttClient.enableSSL = useSsl
-			mqttClient.allowUntrustCACertificate = true
+			// Do NOT accept untrusted certs: the didReceive-trust callback below now honors the
+			// real evaluation result, so an on-path attacker with a self-signed cert can no longer
+			// MITM the broker connection to capture credentials or inject spoofed downlinks.
+			mqttClient.allowUntrustCACertificate = false
 			mqttClient.username =  node.mqttConfig?.username
 			mqttClient.password = node.mqttConfig?.password
+			// Credentials on a non-TLS connection are transmitted in cleartext in the MQTT
+			// CONNECT packet. We warn rather than block, since local plaintext brokers are a
+			// legitimate Meshtastic setup; a hard "require TLS for credentials" policy is left
+			// as a product decision.
+			if useSsl == false, (node.mqttConfig?.username?.isEmpty == false || node.mqttConfig?.password?.isEmpty == false) {
+				Logger.mqtt.warning("📲 [MQTT] Sending credentials over a non-TLS connection to \(host, privacy: .public):\(port, privacy: .public) — username/password are in cleartext on the wire.")
+			}
 			mqttClient.keepAlive = 60
 			mqttClient.cleanSession = true
 			if debugLog {
@@ -209,11 +219,12 @@ extension MqttClientProxyManager: CocoaMQTTDelegate {
 		let isValid = SecTrustEvaluateWithError(trust, nil)
 		if isValid {
 			Logger.mqtt.info("📲 [MQTT] TLS cert valid")
-			completionHandler(true)
 		} else {
-			Logger.mqtt.warning("📲 [MQTT] TLS cert invalid — proceeding anyway (allowUntrustCACertificate=true)")
-			completionHandler(true)
+			Logger.mqtt.error("📲 [MQTT] TLS cert invalid — rejecting connection to avoid MITM")
 		}
+		// Honor the evaluation result — an invalid/self-signed cert must fail the handshake,
+		// not be silently accepted.
+		completionHandler(isValid)
 	}
 
 	func mqttDidDisconnect(_ mqtt: CocoaMQTT, withError err: Error?) {

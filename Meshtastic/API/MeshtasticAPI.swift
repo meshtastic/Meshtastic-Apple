@@ -9,6 +9,7 @@ import Foundation
 import OSLog
 import SwiftUI
 import SwiftData
+import os
 
 // These structs are public becase tehy are used elsewhere in the app to represent
 // fields in the Core Data database.
@@ -171,7 +172,13 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 	static let firmwareURLEndpoint = URL(string: "https://api.meshtastic.org/github/firmware/list")!
 	static let firmwareGitHubURLEndpoint = URL(string: "https://api.github.com/repos/meshtastic/firmware/releases?per_page=100")!
 	static let eventFirmwareURLEndpoint = URL(string: "https://api.meshtastic.org/resource/eventFirmware")!
-	
+
+	/// How long a completed device image + msh.to link pass stays fresh before another network pass
+	/// is allowed. `processImage` issues a remote ETag HEAD per image (~78) up front, so running the
+	/// pass on every reconnect is wasteful when nothing changed. `clearDatabase` invalidates the
+	/// throttle (see `DeviceImageLinkThrottle`), so restore-after-clear ignores this window.
+	static let staleDeviceImageLinkInterval: TimeInterval = 48 * 60 * 60
+
 	// MARK: - Private properties
 	private let fileManager = FileManager.default
 	private let decoder = JSONDecoder()
@@ -179,10 +186,33 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 	
 	@Published var isLoadingDeviceList: Bool = false
 	@Published var isLoadingFirmwareList: Bool = false
+
+	// Device-list loading is reported by two independently-scheduled passes (the local seed and
+	// the network image/link pass) that can overlap — init's cascade, connect Step 3, and the
+	// Reset Database action all drive them. A plain Bool lets whichever pass finishes first clear
+	// the flag out from under one that is still running, so count the passes instead and only
+	// lower the flag when the last one exits.
+	@MainActor private var deviceListLoadDepth = 0
+
+	@MainActor private func beginDeviceListLoad() {
+		deviceListLoadDepth += 1
+		isLoadingDeviceList = true
+	}
+
+	@MainActor private func endDeviceListLoad() {
+		deviceListLoadDepth = max(0, deviceListLoadDepth - 1)
+		if deviceListLoadDepth == 0 {
+			isLoadingDeviceList = false
+		}
+	}
 	
-	private init(container: ModelContainer?) {
+	// Not private: MeshtasticTests constructs an instance with an in-memory container to
+	// assert the bundled seed stays network-free. `shared` remains the only app-side entry.
+	// `startupRefresh: false` suppresses the launch refresh cascade below so a test can call a
+	// single refresh function in isolation without the detached startup work racing it.
+	init(container: ModelContainer?, startupRefresh: Bool = true) {
 		self.container = container
-		guard container != nil else { return }
+		guard container != nil, startupRefresh else { return }
 		Task.detached {
 			// Load bundled catalog first — instant display, no network needed.
 			try? await self.refreshBundledDevicesData()
@@ -191,7 +221,7 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 			await self.refreshBundledEventFirmwareData()
 			// Then silently update from the live API in the background.
 			Task.detached(priority: .utility) {
-				try? await self.refreshDevicesAPIData()
+				await self.refreshDevicesPreferringAPI()
 			}
 			Task.detached(priority: .utility) {
 				await self.refreshEventFirmwareAPIData()
@@ -263,10 +293,9 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 
 	func refreshDevicesAPIData() async throws {
 		guard let container else { return }
-		// Silent background update — bundled data already loaded at launch, no spinner needed.
-		defer {
-			Task { @MainActor in self.isLoadingDeviceList = false }
-		}
+		// No spinner bookkeeping here: this function raises no loading flag of its own, and the
+		// image/link pass it delegates to in PHASE 3 manages the flag around its own lifetime.
+		// Clearing it here would lower a flag a concurrent seed still needs raised.
 		// PHASE 1: Network only — no bundle fallback (bundle was already loaded at init).
 		let finalData = try await Self.deviceURLEndpoint.data(timeout: 10.0)
 		guard !finalData.isEmpty else { throw MeshtasticAPIError.unableToRetreviveJSON }
@@ -328,28 +357,10 @@ deviceEntity.architecture = device.architecture
 			try context.save()
 		}
 
-		// PHASE 3: Images (Async Mixed)
-		// Now that the devices exist in DB, we process images one by one.
-		// We loop through the *Decoded Structs* (not DB objects) to get URLs.
-		await withTaskGroup(of: Void.self) { group in
-			for device in decodedDevices {
-				group.addTask {
-					guard let imagesList = device.images else { return }
-					for imageName in imagesList {
-						await self.processImage(imageName: imageName, platform: device.platformioTarget)
-					}
-				}
-			}
-		}
-
-		// Final cleanup of images on mainContext
-		await MainActor.run {
-			let context = container.mainContext
-			Self.deleteOrphanedImages(context: context)
-			try? context.save()
-		}
-		// PHASE 4: Import msh.to device links
-		await importDeviceLinks()
+		// PHASE 3: Images and msh.to links. This is the single image/link pass, driven by the
+		// live device list so hardware present only in the API still gets its images. It runs
+		// here, after the metadata upsert, so the device rows the images attach to already exist.
+		await refreshDeviceImagesAndLinks(apiDevices: decodedDevices)
 	}
 
 	// MARK: - Device Links Import
@@ -486,6 +497,8 @@ deviceEntity.architecture = device.architecture
 	/// Handles the logic of checking ETag -> Checking DB -> Downloading -> Bundle Fallback -> Saving
 	private func processImage(imageName: String, platform: String ) async {
 		guard let container else { return }
+		// Skip if the pass was cancelled (connection teardown) — don't even do the bundle fallback.
+		if Task.isCancelled { return }
 		let url = Self.imageURLPrefix.appendingPathComponent(imageName)
 
 		// 1. Network: Try to get ETag (Optional - might fail if offline or timeout)
@@ -625,9 +638,18 @@ deviceEntity.architecture = device.architecture
 }
 
 extension MeshtasticAPI {
+	/// Seed the device catalog from the bundled `DeviceHardware.json`.
+	///
+	/// Local only — decode plus a SwiftData upsert, no network. That is what makes it safe to
+	/// await from latency-sensitive paths such as BLE connect Step 3, which has a 30s budget and
+	/// restarts the whole connect when it is exceeded. Device images and the msh.to link catalog
+	/// are network-backed and live in `refreshDeviceImagesAndLinks()`; keep them out of here.
 	func refreshBundledDevicesData() async throws {
 		guard let container else { return }
-		await MainActor.run { self.isLoadingDeviceList = true }
+		await beginDeviceListLoad()
+		// Clear on every exit, not just the happy path: a failed bundle read, decode, or save
+		// would otherwise leave the hardware views pinned in their loading state for good.
+		defer { Task { @MainActor in self.endDeviceListLoad() } }
 		let bundledData = try Self.bundledDeviceHardwareData()
 		let decodedDevices = try decoder.decode([DeviceHardware].self, from: bundledData)
 		try await MainActor.run {
@@ -670,15 +692,126 @@ extension MeshtasticAPI {
 			Self.deleteOrphanedTags(context: context)
 			try context.save()
 		}
+	}
+
+	/// Refresh the device catalog, images and msh.to links, preferring the live API.
+	///
+	/// The API refresh owns the image/link pass and drives it from the live device list; only when
+	/// it fails do we fall back to a bundle-only pass, whose `processImage()` resolves images from
+	/// the app bundle and whose `importDeviceLinks()` falls back to the bundled `urls.json`.
+	///
+	/// This is the shape all three network-pass callers need — launch, the Reset Database action,
+	/// and BLE connect Step 3b — so it lives here rather than being restated at each call site.
+	/// Every one of them must run it detached: both halves hit the network and must never be
+	/// awaited inside connect Step 3's 30s budget (issue #2196).
+	func refreshDevicesPreferringAPI() async {
+		do {
+			try await refreshDevicesAPIData()
+		} catch {
+			// A disconnect cancels the Step 3b task that runs this (closeConnection). URLSession
+			// surfaces that cancellation as URLError.cancelled, not CancellationError, but
+			// Task.isCancelled is set either way — treat it as teardown and do NOT start a second
+			// 78-request bundle pass, which would only amplify work on the way out. Any other error is
+			// a genuine API failure, so fall back to the bundle-only pass.
+			guard !Task.isCancelled else { return }
+			Logger.services.warning(
+				"Device API refresh failed; falling back to the bundled image/link pass: \(error.localizedDescription, privacy: .public)"
+			)
+			await refreshDeviceImagesAndLinks()
+		}
+	}
+
+	/// Refresh device images and the msh.to link catalog from the bundled catalog alone.
+	///
+	/// This is the offline path: `processImage` falls back to the app bundle, so it is what puts
+	/// device images on screen with no connectivity. When the live API is reachable,
+	/// `refreshDevicesAPIData()` runs the pass instead, from the fuller API device list.
+	func refreshDeviceImagesAndLinks() async {
+		await refreshDeviceImagesAndLinks(apiDevices: nil)
+	}
+
+	/// The single image/link refresh pass.
+	///
+	/// Both halves hit the network, so this must never be awaited from the connect path. On a
+	/// captive portal or a zero-rated cellular link the image requests neither succeed nor fail
+	/// fast: `URL.eTag()` sets no timeout and inherits `URLSession.shared`'s 60s default, so none
+	/// of the 82 image requests resolve inside connect Step 3's 30s budget (issue #2196). Callers
+	/// must run this detached.
+	///
+	/// The work list is the union of the bundled catalog and, when the caller has one, the live
+	/// API list. The bundled seed and the API refresh used to run a pass each, so every online
+	/// startup fetched every ETag twice. Unioning here keeps it to one pass without dropping
+	/// images for hardware that appears in only one of the lists.
+	///
+	/// Deduplication is on image file name, not (platform, name): the request URL derives from the
+	/// file name alone, and `DeviceHardwareImageEntity` is keyed by `fileName` with a single
+	/// `device` relationship, so a name shared by several platforms (3 in the current catalog, and
+	/// 82 entries collapse to 78 names) can only ever belong to one device row. Previously that was
+	/// a fetch per platform racing to claim the row; now it is one fetch attached to the first
+	/// device in catalog order.
+	private func refreshDeviceImagesAndLinks(apiDevices: [DeviceHardware]?) async {
+		guard let container else { return }
+
+		// Bail before claiming a throttle token if the connection already tore down. closeConnection
+		// cancels the Step 3b task that runs this pass; returning here leaves the throttle un-armed so
+		// the next connect runs a real restore rather than skipping.
+		guard !Task.isCancelled else { return }
+
+		// Throttle the network image/link pass to at most once per `staleDeviceImageLinkInterval`
+		// (48h). `processImage` issues a remote ETag HEAD per image (~78) before it even consults
+		// the cache, and Step 3b fires this on every reconnect, so an un-throttled pass re-hits the
+		// network each connect when nothing changed. A database clear (factory/NodeDB reset,
+		// foreign-database device switch) invalidates the throttle in `clearDatabase`, so the
+		// restore-after-clear pass still runs regardless of this window.
+		//
+		// The token pins this pass to the clear-generation it started under. This runs detached, so
+		// a clear can land while it is still downloading; completing against a stale token must not
+		// re-arm the throttle or the just-wiped rows stay wiped for the rest of the window.
+		guard let throttleToken = DeviceImageLinkThrottle.beginIfStale(
+			interval: Self.staleDeviceImageLinkInterval
+		) else {
+			Logger.services.debug("Device images/links refreshed within the last 48h; skipping network pass.")
+			return
+		}
+
+		// The hardware views key their placeholder on this flag: DeviceHardwareImage,
+		// SupportedHardwareBadge and NodeInfoItem all show a spinner while it is true and the
+		// "UNSET" artwork once it is false. Before the seed/network split it stayed raised across
+		// this pass; raising it here keeps that, rather than showing UNSET for the whole download.
+		await beginDeviceListLoad()
+		defer { Task { @MainActor in self.endDeviceListLoad() } }
+
+		let bundledDevices: [DeviceHardware]
+		if let bundledData = try? Self.bundledDeviceHardwareData(),
+		   let decoded = try? decoder.decode([DeviceHardware].self, from: bundledData) {
+			bundledDevices = decoded
+		} else {
+			Logger.services.warning("Unable to load bundled device hardware for image refresh")
+			bundledDevices = []
+		}
+
+		var work: [(imageName: String, platform: String)] = []
+		var seen = Set<String>()
+		for device in bundledDevices + (apiDevices ?? []) {
+			for imageName in device.images ?? [] where seen.insert(imageName).inserted {
+				work.append((imageName: imageName, platform: device.platformioTarget))
+			}
+		}
+
 		await withTaskGroup(of: Void.self) { group in
-			for device in decodedDevices {
+			for item in work {
+				if Task.isCancelled { break }   // teardown mid-pass: stop queueing image fetches
 				group.addTask {
-					guard let imagesList = device.images else { return }
-					for imageName in imagesList {
-						await self.processImage(imageName: imageName, platform: device.platformioTarget)
-					}
+					await self.processImage(imageName: item.imageName, platform: item.platform)
 				}
 			}
+		}
+		// If the connection tore down mid-pass, skip the orphan cleanup, link import and throttle
+		// completion. Leaving the throttle un-armed makes the next connect run a real restore rather
+		// than skipping a catalog that never finished downloading.
+		guard !Task.isCancelled else {
+			Logger.services.debug("Device image/link pass cancelled (connection teardown); throttle left un-armed.")
+			return
 		}
 		await MainActor.run {
 			let context = container.mainContext
@@ -686,7 +819,11 @@ extension MeshtasticAPI {
 			try? context.save()
 		}
 		await importDeviceLinks()
-		await MainActor.run { self.isLoadingDeviceList = false }
+		// Mark the pass complete so the next reconnect within the window skips the network. Recorded
+		// even when the pass reached no network: processImage falls back to the app bundle, so it
+		// still restored artwork/links locally — the window only bounds how often we re-check for
+		// updates. Dropped if a clear superseded this pass, so the restore still gets its turn.
+		DeviceImageLinkThrottle.complete(token: throttleToken)
 	}
 
 	private static func bundledDeviceHardwareData() throws -> Data {

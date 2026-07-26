@@ -11811,8 +11811,8 @@
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Uma borda que envolve todas as posições dos nós LoRa no mapeamento."
+            "state" : "translated",
+            "value" : "Um contorno que envolve todas as posições dos nós LoRa no mapeamento."
           }
         },
         "uk" : {
@@ -31558,8 +31558,8 @@
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Exibir"
+            "state" : "translated",
+            "value" : "Tela"
           }
         },
         "ru" : {
@@ -40886,6 +40886,9 @@
           }
         }
       }
+    },
+    "Flyover paused — mesh traffic is high" : {
+      "comment" : "Shown on the map when the trace-route flyover is paused because live mesh traffic is too high to animate smoothly."
     },
     "Flyover speed %@" : {
       "comment" : "A button that starts or stops a flyover along a trace route. The argument is the string “%g times”.",
@@ -73567,8 +73570,8 @@
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Teste de intervalo"
+            "state" : "translated",
+            "value" : "Teste de alcance"
           }
         },
         "ru" : {
@@ -73761,8 +73764,8 @@
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "A configuração de teste de intervalo não foi recebida pelo rádio. Tente reconectar ao dispositivo."
+            "state" : "translated",
+            "value" : "A configuração de teste de alcance não foi recebida pelo rádio. Tente reconectar ao dispositivo."
           }
         },
         "uk" : {
@@ -73831,8 +73834,8 @@
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "O teste de faixa requer um canal privado criptografado. O canal principal deste nó está usando uma chave padrão ou vazia."
+            "state" : "translated",
+            "value" : "O teste de alcance requer um canal privado criptografado. O canal principal deste nó está usando uma chave padrão ou vazia."
           }
         },
         "uk" : {
@@ -77830,8 +77833,8 @@
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Retrievendo nós"
+            "state" : "translated",
+            "value" : "Obtendo nós"
           }
         },
         "ru" : {
@@ -77906,8 +77909,8 @@
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Retirando nós %lld"
+            "state" : "translated",
+            "value" : "Obtendo nós %lld"
           }
         },
         "ru" : {
@@ -77988,8 +77991,8 @@
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Recarregar"
+            "state" : "translated",
+            "value" : "Tentar novamente"
           }
         },
         "uk" : {
@@ -78298,8 +78301,8 @@
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Revise o aplicativo"
+            "state" : "translated",
+            "value" : "Avaliar o aplicativo"
           }
         },
         "ru" : {
@@ -78398,8 +78401,8 @@
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Som"
+            "state" : "translated",
+            "value" : "Toque"
           }
         },
         "ru" : {
@@ -78504,8 +78507,8 @@
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Configuração de Som"
+            "state" : "translated",
+            "value" : "Configuração de toque"
           }
         },
         "ru" : {
@@ -78598,8 +78601,8 @@
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Transferência de Som"
+            "state" : "translated",
+            "value" : "Idioma de transferência de toque"
           }
         },
         "ru" : {
@@ -83095,6 +83098,9 @@
           }
         }
       }
+    },
+    "Select an Item (%@)" : {
+      "comment" : "Title of the map picker shown when a tapped cluster or coincident stack contains more than one item (nodes and/or waypoints). %@ is the item count."
     },
     "Select a Trace Route" : {
       "localizations" : {
@@ -92677,8 +92683,8 @@
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Assinado"
+            "state" : "translated",
+            "value" : "Inscrito"
           }
         },
         "ru" : {
@@ -92765,8 +92771,8 @@
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Sucesso na upload '%1$@' com %2$lld sobreposições"
+            "state" : "translated",
+            "value" : "'%@' enviado com sucesso com %lld sobreposições"
           }
         },
         "ru" : {
@@ -93936,8 +93942,8 @@
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Toma uma URL de contato Meshtastic e salva-a no banco de dados dos nós"
+            "state" : "translated",
+            "value" : "Recebe uma URL de contato Meshtastic e a salva no banco de dados de nós"
           }
         },
         "ru" : {
@@ -94018,8 +94024,8 @@
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "To enter an emoji, tap here"
+            "state" : "translated",
+            "value" : "Toque para inserir emoji"
           }
         },
         "ru" : {
@@ -94115,8 +94121,8 @@
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Toque de volta"
+            "state" : "translated",
+            "value" : "Reagir"
           }
         },
         "ru" : {
@@ -95062,8 +95068,8 @@
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "O URL para as configurações do canal"
+            "state" : "translated",
+            "value" : "URL para as configurações do canal"
           }
         },
         "ru" : {
@@ -95144,8 +95150,8 @@
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "O URL para o nó de adição"
+            "state" : "translated",
+            "value" : "URL do nó a adicionar"
           }
         },
         "ru" : {

@@ -128,6 +128,14 @@ actor MeshPackets {
 			Logger.data.warning("💾 [\(caller, privacy: .public)] Dropped save on retired MeshPackets instance")
 			return
 		}
+		// Periodically enforce the global node/waypoint caps before committing, so evictions ride
+		// along in this same save. Every save path funnels through here, so this one hook covers
+		// nodes/waypoints created by any handler.
+		savesSinceEntityCapCheck += 1
+		if savesSinceEntityCapCheck >= Self.entityCapCheckInterval {
+			savesSinceEntityCapCheck = 0
+			enforceEntityCaps()
+		}
 		guard modelContext.hasChanges else { return }
 		do {
 			try modelContext.save()
@@ -136,6 +144,70 @@ actor MeshPackets {
 			Logger.data.error("💥 [\(caller, privacy: .public)] Error saving: \(error.localizedDescription, privacy: .public)")
 		}
 	}
+
+	/// Enforce the global caps on the two attacker-growable, un-capped stores. Runs inside
+	/// `savePendingChanges` (throttled) so the deletes commit in the same write. Cheap in the
+	/// common case: two COUNT queries, and the sorted fetch+delete only runs when actually over cap.
+	/// Split into cap-parameterized helpers below so the eviction order is unit-testable with
+	/// small datasets rather than needing tens of thousands of inserts.
+	func enforceEntityCaps() {
+		evictNodesIfOverCap(Self.maxTotalNodes)
+		evictWaypointsIfOverCap(Self.maxTotalWaypoints)
+	}
+
+	/// Nodes: cap the total, evicting least-recently-heard first. Never evict favorites — the user
+	/// explicitly kept those. Among already-persisted rows, `lastHeard` is optional; nil sorts first
+	/// (ascending), so never-heard stubs go before any dated node, which is the correct "stalest
+	/// first" order.
+	func evictNodesIfOverCap(_ cap: Int) {
+		guard let nodeCount = try? modelContext.fetchCount(FetchDescriptor<NodeInfoEntity>()),
+			  nodeCount > cap else { return }
+		var descriptor = FetchDescriptor<NodeInfoEntity>(
+			predicate: #Predicate { $0.favorite == false },
+			sortBy: [SortDescriptor(\.lastHeard, order: .forward)]
+		)
+		descriptor.fetchLimit = nodeCount - cap
+		// Only already-persisted rows are eligible for eviction. Caps are enforced inside
+		// `savePendingChanges` *before* the commit, so a node just created this transaction by
+		// `findOrCreateNode` is still a pending insert with a nil `lastHeard` — which sorts first
+		// (stalest) and would otherwise be deleted before it is ever saved. The count above stays
+		// inclusive of pending inserts, so we free enough persisted rows to make room for them.
+		descriptor.includePendingChanges = false
+		guard let stale = try? modelContext.fetch(descriptor), !stale.isEmpty else { return }
+		for node in stale { modelContext.delete(node) }
+		Logger.data.info("🗄️ [Caps] Evicted \(stale.count, privacy: .public) least-recently-heard node(s) (was \(nodeCount, privacy: .public), cap \(cap, privacy: .public))")
+	}
+
+	/// Waypoints: cap the total, evicting oldest-last-updated first.
+	func evictWaypointsIfOverCap(_ cap: Int) {
+		guard let waypointCount = try? modelContext.fetchCount(FetchDescriptor<WaypointEntity>()),
+			  waypointCount > cap else { return }
+		var descriptor = FetchDescriptor<WaypointEntity>(
+			sortBy: [SortDescriptor(\.lastUpdated, order: .forward)]
+		)
+		descriptor.fetchLimit = waypointCount - cap
+		// Same rationale as node eviction: never delete an un-saved waypoint from the in-flight
+		// transaction (a fresh insert has a nil `lastUpdated` and would sort first). Count stays
+		// inclusive of pending inserts for cap accounting.
+		descriptor.includePendingChanges = false
+		guard let stale = try? modelContext.fetch(descriptor), !stale.isEmpty else { return }
+		for waypoint in stale { modelContext.delete(waypoint) }
+		Logger.data.info("🗄️ [Caps] Evicted \(stale.count, privacy: .public) oldest waypoint(s) (was \(waypointCount, privacy: .public), cap \(cap, privacy: .public))")
+	}
+
+#if DEBUG
+	/// Test-only: reproduces a packet handler that creates a brand-new node stub via
+	/// `findOrCreateNode` (a pending insert with a nil `lastHeard`) and then enforces the node cap in
+	/// the *same* un-saved transaction, exactly as `savePendingChanges` does. The pending insert must
+	/// live in this actor's own `modelContext`, so this seam exists to exercise that path — a
+	/// separate context can't reproduce it. Returns after committing so callers can assert the new
+	/// node survived. See `evictNodesIfOverCap`.
+	func createNodeThenEvict(num: Int64, cap: Int) {
+		_ = findOrCreateNode(num: num, context: modelContext)
+		evictNodesIfOverCap(cap)
+		try? modelContext.save()
+	}
+#endif
 
 	// MARK: - Debounced Save for High-Frequency Packets
 
@@ -147,15 +219,24 @@ actor MeshPackets {
 	private static let debounceInterval: Duration = .seconds(2)
 	/// Maximum wall-clock time between flushes, even if packets keep arriving.
 	private static let maxDebounceDelay: Duration = .seconds(5)
-	static let maxPositionHistoryPerNode = 5_000
+	static let maxPositionHistoryPerNode = 25_000
 	static let maxTelemetryPerType = 5_000
 	static let maxTotalMessages = 50_000
+	/// Global caps on attacker-growable stores, so noisy mesh traffic (or a deliberate flood)
+	/// can't grow local data without bound. Nodes evict least-recently-heard first; waypoints
+	/// evict oldest-last-updated first. Favorite nodes are never evicted.
+	static let maxTotalNodes = 10_000
+	static let maxTotalWaypoints = 5_000
 	private static let positionPruneInterval = 128
 	private static let telemetryPruneInterval = 128
 	private static let messagePruneInterval = 256
+	/// Enforce the global node/waypoint caps once every N saves. A COUNT is cheap, but not worth
+	/// running on literally every packet save; saves are already debounced under load.
+	private static let entityCapCheckInterval = 64
 	private var positionInsertsSincePrune: [Int64: Int] = [:]
 	private var telemetryInsertsSincePrune: [TelemetryPruneKey: Int] = [:]
 	private var messageInsertsSincePrune = 0
+	private var savesSinceEntityCapCheck = 0
 
 	/// Schedules a debounced save. Each call resets the 2-second timer. If packets
 	/// keep arriving continuously, a save is forced every 5 seconds.
@@ -319,7 +400,7 @@ actor MeshPackets {
 				modelContext.insert(myInfoEntity)
 				myInfoEntity.peripheralId = peripheralId
 				myInfoEntity.myNodeNum = Int64(myInfo.myNodeNum)
-				myInfoEntity.rebootCount = Int32(myInfo.rebootCount)
+				myInfoEntity.rebootCount = Int32(truncatingIfNeeded: myInfo.rebootCount)
 				myInfoEntity.deviceId = myInfo.deviceID
 				if !myInfo.pioEnv.isEmpty {
 					myInfoEntity.pioEnv = myInfo.pioEnv
@@ -331,7 +412,7 @@ actor MeshPackets {
 
 				fetchedMyInfo[0].peripheralId = peripheralId
 				fetchedMyInfo[0].myNodeNum = Int64(myInfo.myNodeNum)
-				fetchedMyInfo[0].rebootCount = Int32(myInfo.rebootCount)
+				fetchedMyInfo[0].rebootCount = Int32(truncatingIfNeeded: myInfo.rebootCount)
 				if !myInfo.pioEnv.isEmpty {
 					fetchedMyInfo[0].pioEnv = myInfo.pioEnv
 				}
@@ -356,7 +437,7 @@ actor MeshPackets {
 			do {
 				let fetchedMyInfo = try modelContext.fetch(fetchDescriptor)
 				if fetchedMyInfo.count == 1 {
-					let existing = fetchedMyInfo[0].channels.first(where: { $0.index == Int32(channel.index) })
+					let existing = fetchedMyInfo[0].channels.first(where: { $0.index == Int32(truncatingIfNeeded: channel.index) })
 					let newChannel: ChannelEntity
 					if let existing {
 						newChannel = existing
@@ -365,8 +446,8 @@ actor MeshPackets {
 						modelContext.insert(newChannel)
 						fetchedMyInfo[0].channels.append(newChannel)
 					}
-					newChannel.id = Int32(channel.index)
-					newChannel.index = Int32(channel.index)
+					newChannel.id = Int32(truncatingIfNeeded: channel.index)
+					newChannel.index = Int32(truncatingIfNeeded: channel.index)
 					newChannel.uplinkEnabled = channel.settings.uplinkEnabled
 					newChannel.downlinkEnabled = channel.settings.downlinkEnabled
 					newChannel.name = channel.settings.name
@@ -441,14 +522,16 @@ actor MeshPackets {
 			// Not Found Insert
 			if fetchedNode.isEmpty && nodeInfo.num > 0 {
 
-				let newNode = NodeInfoEntity()
-					modelContext.insert(newNode)
+				// findOrCreateNode (not a bare insert): NodeInfoEntity.num is @Attribute(.unique) and the
+				// fetch only sees SAVED rows, so a still-pending stub node created by an earlier POSITION
+				// packet for this num would otherwise collide on the unique num and trap on save.
+				let newNode = findOrCreateNode(num: Int64(nodeInfo.num), context: modelContext)
 					newNode.id = Int64(nodeInfo.num)
 					newNode.num = Int64(nodeInfo.num)
-					newNode.channel = Int32(nodeInfo.channel)
+					newNode.channel = Int32(truncatingIfNeeded: nodeInfo.channel)
 					newNode.favorite = nodeInfo.isFavorite
 					newNode.ignored = nodeInfo.isIgnored
-					newNode.hopsAway = Int32(nodeInfo.hopsAway)
+					newNode.hopsAway = Int32(truncatingIfNeeded: nodeInfo.hopsAway)
 					newNode.hasXeddsaSigned = nodeInfo.hasXeddsaSigned_p
 
 					if nodeInfo.hasDeviceMetrics {
@@ -470,8 +553,9 @@ actor MeshPackets {
 					newNode.snr = nodeInfo.snr
 					if nodeInfo.hasUser {
 
-						let newUser = UserEntity()
-						modelContext.insert(newUser)
+						// findOrCreateNode already attached a find-or-create user for this num; reuse it
+						// (or find-or-create) instead of a bare insert whose duplicate unique num would trap.
+						let newUser = newNode.user ?? findOrCreateUser(num: Int64(nodeInfo.num), context: modelContext)
 						newUser.userId = nodeInfo.num.toHex()
 						newUser.num = Int64(nodeInfo.num)
 						newUser.longName = nodeInfo.user.longName
@@ -518,13 +602,17 @@ actor MeshPackets {
 						let position = PositionEntity()
 						modelContext.insert(position)
 						position.latest = true
-						position.seqNo = Int32(nodeInfo.position.seqNumber)
+						position.seqNo = Int32(truncatingIfNeeded: nodeInfo.position.seqNumber)
 						position.latitudeI = nodeInfo.position.latitudeI
 						position.longitudeI = nodeInfo.position.longitudeI
 						position.altitude = nodeInfo.position.altitude
-						position.satsInView = Int32(nodeInfo.position.satsInView)
-						position.speed = Int32(nodeInfo.position.groundSpeed)
-						position.heading = Int32(nodeInfo.position.groundTrack)
+						position.satsInView = Int32(truncatingIfNeeded: nodeInfo.position.satsInView)
+						position.speed = Int32(truncatingIfNeeded: nodeInfo.position.groundSpeed)
+						// Range-check the UInt32 before converting (mirrors upsertPositionPacket) so a garbage
+						// groundTrack does not persist as an invalid heading.
+						if nodeInfo.position.groundTrack <= 360 {
+							position.heading = Int32(nodeInfo.position.groundTrack)
+						}
 						position.time = Date(timeIntervalSince1970: TimeInterval(Int64(nodeInfo.position.time)))
 						position.nodePosition = newNode
 						newNode.latestPositionCache = position
@@ -562,18 +650,19 @@ actor MeshPackets {
 						}
 					}
 					fetchedNode[0].snr = nodeInfo.snr
-					fetchedNode[0].channel = Int32(nodeInfo.channel)
+					fetchedNode[0].channel = Int32(truncatingIfNeeded: nodeInfo.channel)
 					fetchedNode[0].favorite = nodeInfo.isFavorite
 					fetchedNode[0].ignored = nodeInfo.isIgnored
-					fetchedNode[0].hopsAway = Int32(nodeInfo.hopsAway)
+					fetchedNode[0].hopsAway = Int32(truncatingIfNeeded: nodeInfo.hopsAway)
 					// has_xeddsa_signed means the node has signed ≥1 verified broadcast and persists; latch it
 					// so a later NodeInfo that omits the bit doesn't downgrade a node we've seen sign.
 					fetchedNode[0].hasXeddsaSigned = fetchedNode[0].hasXeddsaSigned || nodeInfo.hasXeddsaSigned_p
 
 					if nodeInfo.hasUser {
 						if fetchedNode[0].user == nil {
-							let newUserEntity = UserEntity()
-							modelContext.insert(newUserEntity)
+							// findOrCreateUser (not a bare insert): a user row for this unique num may already
+							// exist (orphaned or pending), so a bare insert would trap on save.
+							let newUserEntity = findOrCreateUser(num: Int64(nodeInfo.num), context: modelContext)
 							fetchedNode[0].user = newUserEntity
 						}
 						// First-wins on the public key, consistent with the NodeInfo/User paths in UpdateSwiftData
@@ -642,7 +731,7 @@ actor MeshPackets {
 							position.latitudeI = nodeInfo.position.latitudeI
 							position.longitudeI = nodeInfo.position.longitudeI
 							position.altitude = nodeInfo.position.altitude
-							position.satsInView = Int32(nodeInfo.position.satsInView)
+							position.satsInView = Int32(truncatingIfNeeded: nodeInfo.position.satsInView)
 							position.time = Date(timeIntervalSince1970: TimeInterval(Int64(nodeInfo.position.time)))
 							position.nodePosition = fetchedNode[0]
 						}
@@ -799,6 +888,9 @@ actor MeshPackets {
 			let fetchedNode = try modelContext.fetch(fetchDescriptor)
 
 			if let paxMessage = try? Paxcount(serializedBytes: packet.decoded.payload) {
+				// Create the sending node when unheard, same as deviceMetadataPacket and
+				// telemetryPacket — an unlinked reading would persist as an orphan row.
+				let node = fetchedNode.first ?? findOrCreateNode(num: packetFrom, context: modelContext)
 
 				let newPax = PaxCounterEntity()
 				modelContext.insert(newPax)
@@ -806,13 +898,8 @@ actor MeshPackets {
 				newPax.wifi = Int32(truncatingIfNeeded: paxMessage.wifi)
 				newPax.uptime = Int32(truncatingIfNeeded: paxMessage.uptime)
 				newPax.time = Date()
-
-				if fetchedNode.count > 0 {
-					newPax.paxNode = fetchedNode[0]
-					scheduleDebouncedSave()
-				} else {
-					Logger.data.info("Node Info Not Found")
-				}
+				newPax.paxNode = node
+				scheduleDebouncedSave()
 			}
 		} catch {
 
@@ -1268,7 +1355,7 @@ actor MeshPackets {
 					newMessage.snr = packet.rxSnr
 					newMessage.rssi = packet.rxRssi
 					newMessage.isEmoji = packet.decoded.emoji == 1
-					newMessage.channel = Int32(packet.channel)
+					newMessage.channel = Int32(truncatingIfNeeded: packet.channel)
 					newMessage.portNum = Int32(packet.decoded.portnum.rawValue)
 					/// Radio-verified XEdDSA signature for this received broadcast. Firmware only sets this on
 					/// broadcasts, but gate on the broadcast classification too so the "verified" shield can
@@ -1338,8 +1425,10 @@ actor MeshPackets {
 							if let existingNode = existingNodes.first {
 								existingNode.user = newUser
 							} else {
-								let newNode = NodeInfoEntity()
-								modelContext.insert(newNode)
+								// findOrCreateNode, not a bare insert: num is @Attribute(.unique) and
+								// the fetch above sees only saved rows — a crafted TEXT/NODEINFO pair
+								// from a new node could otherwise double-insert and trap on save.
+								let newNode = findOrCreateNode(num: Int64(newUser.num), context: modelContext)
 								newNode.id = Int64(newUser.num)
 								newNode.num = Int64(newUser.num)
 								newNode.user = newUser
@@ -1400,6 +1489,10 @@ actor MeshPackets {
 						#if os(iOS) && !targetEnvironment(macCatalyst)
 						CarPlayIntentDonation.donateReceivedMessage(newMessage)
 						#endif
+
+						// Let unread-displaying surfaces (badge, CarPlay templates) refresh.
+						// Observers debounce, so posting per saved message is cheap.
+						NotificationCenter.default.post(name: .meshMessagesDidChange, object: nil)
 
 						if packet.decoded.portnum == PortNum.detectionSensorApp && !UserDefaults.enableDetectionNotifications {
 							return
