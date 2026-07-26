@@ -274,6 +274,16 @@ struct MeshtasticAppleApp: App {
 
 						dispatchIncomingURL(url, fromActivity: false)
 					})
+					// Keep the badge in sync with read-state changes that happen outside
+					// the message lists (Siri/CarPlay read-aloud, background ingest) —
+					// previously those only reconciled on the next scene-active pass.
+					.onReceive(
+						NotificationCenter.default.publisher(for: .meshMessagesDidChange)
+							.debounce(for: .seconds(1), scheduler: DispatchQueue.main)
+					) { _ in
+						guard let persistenceController else { return }
+						appState.refreshBadgeCount(context: persistenceController.container.mainContext)
+					}
 				.task {
 					// Skip TipKit entirely during marketing screenshot capture so tip popovers never
 					// appear in the shots (unconfigured TipKit displays nothing).

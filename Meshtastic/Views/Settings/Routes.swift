@@ -87,8 +87,16 @@ struct Routes: View {
 										let longitude = longIndex >= 0 ? data[longIndex].trimmingCharacters(in: .whitespaces) : "0"
 										let loc = LocationEntity()
 										context.insert(loc)
-										loc.latitudeI = Int32((Double(latitude) ?? 0) * 1e7)
-										loc.longitudeI = Int32((Double(longitude) ?? 0) * 1e7)
+										// Clamp to valid coordinate ranges (and reject non-finite) before scaling:
+										// a malformed CSV cell (huge value, 1e400 -> inf, or nan) would otherwise
+										// make Int32(Double) trap and crash the import. Clamped × 1e7 stays well
+										// within Int32, so the conversion below can no longer overflow.
+										let latValue = Double(latitude) ?? 0
+										let lonValue = Double(longitude) ?? 0
+										let safeLat = latValue.isFinite ? min(max(latValue, -90), 90) : 0
+										let safeLon = lonValue.isFinite ? min(max(lonValue, -180), 180) : 0
+										loc.latitudeI = Int32(safeLat * 1e7)
+										loc.longitudeI = Int32(safeLon * 1e7)
 										newLocations.append(loc)
 									}
 								}

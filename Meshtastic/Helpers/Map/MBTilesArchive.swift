@@ -70,8 +70,11 @@ final class MBTilesArchive: OfflineTileSource {
 			return String(cString: text)
 		}
 
-		tileMinZoom = UInt8(metadata("minzoom").flatMap { Int($0) } ?? 0)
-		tileMaxZoom = UInt8(metadata("maxzoom").flatMap { Int($0) } ?? 22)
+		// Clamp attacker-controlled metadata zoom strings to a valid tile-zoom range: a
+		// value like "9999" or "-1" would otherwise make UInt8(_:) trap on a malicious
+		// .mbtiles archive (the same unchecked-cast class hardened for PMTiles in #2192).
+		tileMinZoom = UInt8(min(max(metadata("minzoom").flatMap { Int($0) } ?? 0, 0), 22))
+		tileMaxZoom = UInt8(min(max(metadata("maxzoom").flatMap { Int($0) } ?? 22, 0), 22))
 		if let parts = metadata("bounds")?.split(separator: ",").compactMap({ Double($0.trimmingCharacters(in: .whitespaces)) }),
 		   parts.count == 4 {
 			geographicBounds = GeoBounds(minLon: parts[0], minLat: parts[1], maxLon: parts[2], maxLat: parts[3])

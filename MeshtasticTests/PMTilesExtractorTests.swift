@@ -46,6 +46,12 @@ struct PMTilesExtractorTileMathTests {
 @Suite("PMTiles directory round-trip")
 struct PMTilesDirectoryRoundTripTests {
 
+	@Test func deserializeDirectory_rejectsZeroFirstOffset() {
+		// count=1, then tileID/runLength/length/offset values of 0. The first
+		// offset is invalid in PMTiles (zero is only a continuation marker).
+		#expect(PMTilesArchive.deserializeDirectory(Data([1, 0, 0, 0, 0])).isEmpty)
+	}
+
 	@Test func serializeDeserialize_preservesEntries() {
 		let entries: [PMTilesArchive.Entry] = [
 			.init(tileID: 5, offset: 0, length: 100, runLength: 1),
@@ -68,6 +74,12 @@ struct PMTilesDirectoryRoundTripTests {
 
 @Suite("PMTiles header round-trip")
 struct PMTilesHeaderRoundTripTests {
+
+	@Test func parseHeader_rejectsTruncatedVersionedHeader() {
+		var truncated = Data("PMTiles".utf8)
+		truncated.append(3)
+		#expect(PMTilesArchive.parseHeader(truncated) == nil)
+	}
 
 	@Test func buildParse_preservesFields() throws {
 		let bounds = GeoBounds(minLon: -122.5, minLat: 47.3, maxLon: -121.9, maxLat: 47.8)
@@ -95,6 +107,43 @@ struct PMTilesHeaderRoundTripTests {
 
 @Suite("PMTiles full file round-trip")
 struct PMTilesFullFileRoundTripTests {
+
+	@Test func archiveWithOutOfRangeDirectoryOffsetDoesNotReadTile() throws {
+		let header = PMTilesExtractor.buildHeader(
+			rootDirOffset: .max, rootDirLength: 1,
+			metadataOffset: 127, metadataLength: 0,
+			tileDataOffset: 127, tileDataLength: 0,
+			numTiles: 0,
+			bounds: GeoBounds(minLon: -1, minLat: -1, maxLon: 1, maxLat: 1),
+			minZoom: 0, maxZoom: 0, tileType: .png, tileCompression: .none
+		)
+		let url = FileManager.default.temporaryDirectory.appendingPathComponent("\(UUID().uuidString).pmtiles")
+		try header.write(to: url)
+		defer { try? FileManager.default.removeItem(at: url) }
+
+		let archive = try #require(PMTilesArchive(url: url))
+		#expect(archive.tileData(z: 0, x: 0, y: 0) == nil)
+	}
+
+	@Test func archiveWithOverflowingTileDataOffsetDoesNotReadTile() throws {
+		let directory = PMTilesExtractor.serializeDirectory([
+			.init(tileID: 0, offset: 1, length: 1, runLength: 1)
+		])
+		let header = PMTilesExtractor.buildHeader(
+			rootDirOffset: 127, rootDirLength: UInt64(directory.count),
+			metadataOffset: 127 + UInt64(directory.count), metadataLength: 0,
+			tileDataOffset: .max, tileDataLength: 0,
+			numTiles: 1,
+			bounds: GeoBounds(minLon: -1, minLat: -1, maxLon: 1, maxLat: 1),
+			minZoom: 0, maxZoom: 0, tileType: .png, tileCompression: .none
+		)
+		let url = FileManager.default.temporaryDirectory.appendingPathComponent("\(UUID().uuidString).pmtiles")
+		try (header + directory).write(to: url)
+		defer { try? FileManager.default.removeItem(at: url) }
+
+		let archive = try #require(PMTilesArchive(url: url))
+		#expect(archive.tileData(z: 0, x: 0, y: 0) == nil)
+	}
 
 	@Test func writtenArchive_readsBackTiles() throws {
 		// Build a small archive the way PMTilesExtractor.extract does, with uncompressed
