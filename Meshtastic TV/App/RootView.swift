@@ -6,9 +6,11 @@
 //
 
 import SwiftUI
+import UIKit
 
 struct RootView: View {
 	@Bindable var client: MeshClient
+	@Environment(\.scenePhase) private var scenePhase
 
 	var body: some View {
 		Group {
@@ -23,6 +25,14 @@ struct RootView: View {
 		}
 		// Meshtastic brand green (the Live Activity / widget tint).
 		.tint(Color("LightIndigo"))
+		// This app is a live wall display: keep the big screen awake so the tvOS
+		// screensaver never interrupts the mesh map while the app is foregrounded.
+		// Re-asserted on every active transition because the system can reset the
+		// flag when the app returns to the foreground.
+		.onAppear { UIApplication.shared.isIdleTimerDisabled = true }
+		.onChange(of: scenePhase) { _, phase in
+			UIApplication.shared.isIdleTimerDisabled = (phase == .active)
+		}
 	}
 }
 
