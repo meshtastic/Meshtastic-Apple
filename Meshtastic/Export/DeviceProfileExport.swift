@@ -376,6 +376,10 @@ extension NodeInfoEntity {
 		if let user {
 			profile.longName = user.longName ?? ""
 			profile.shortName = user.shortName ?? ""
+			// Round-trips with the import's owner merge, which reads this back when present.
+			// is_licensed is deliberately excluded: ham mode is a dedicated onboarding flow, not a
+			// profile field, so a backup must not be able to switch it on.
+			profile.isUnmessagable = user.unmessagable
 		}
 
 		var localConfig = LocalConfig()

@@ -234,8 +234,11 @@ struct Tools: View {
 				// by parseDeviceProfile without ever loading the whole thing into memory.
 				let data = try Self.readCapped(url, cap: DeviceProfileImportPlan.maxProfileBytes)
 				let profile = try DeviceProfileImportPlan.parseDeviceProfile(data)
+				// Pass the connected firmware version so items this radio cannot apply are reported rather
+				// than sent into a silent no-op (the firmware acks unknown module configs as success).
 				let plan = try DeviceProfileImportPlan(profile: profile, currentUser: currentUser,
-													   currentSecurity: node.securityConfig?.protoConfig)
+													   currentSecurity: node.securityConfig?.protoConfig,
+													   firmwareVersion: accessoryManager.connectedVersion)
 				pendingImport = PendingImport(plan: plan)
 			} catch DeviceProfileImportError.nothingToImport {
 				importFailedMessage = "This configuration file doesn't contain anything to import."

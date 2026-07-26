@@ -150,11 +150,30 @@ struct ImportDeviceProfileView: View {
 				}
 			}
 
-			if plan.willReboot(in: selection) {
+			// Every import reboots, not just the LoRa/channel ones: the import runs inside a firmware edit
+			// transaction and commit_edit_settings always saves and reboots (AdminModule.cpp:473-478).
+			// `plan.willReboot` describes individual items, so it understates this and must not gate the warning.
+			if !selection.isEmpty {
 				Section {
-					Label("Applying LoRa/channel settings reboots the radio; it will briefly disconnect.", systemImage: "arrow.clockwise.circle")
+					Label("Applying these settings reboots the radio; it will briefly disconnect.", systemImage: "arrow.clockwise.circle")
 						.font(.caption)
 						.foregroundColor(.orange)
+				}
+			}
+
+			// The radio acks module configs it has no handler for, so an unsupported item would look like it
+			// applied while being silently discarded. Report it here instead of sending it.
+			if !plan.unsupported.isEmpty {
+				Section("Not Supported by This Radio") {
+					ForEach(plan.unsupported, id: \.item.kind) { entry in
+						VStack(alignment: .leading, spacing: 2) {
+							Label(entry.item.kind.displayName, systemImage: "slash.circle")
+								.foregroundColor(.secondary)
+							Text(unsupportedReason(entry.support))
+								.font(.caption)
+								.foregroundColor(.secondary)
+						}
+					}
 				}
 			}
 
@@ -208,6 +227,17 @@ struct ImportDeviceProfileView: View {
 		return items[progress.index].section
 	}
 
+	private func unsupportedReason(_ support: FirmwareSupport) -> String {
+		switch support {
+		case .fromVersion(let version):
+			return String(format: "Needs firmware %@ or newer.".localized, version)
+		case .unimplemented:
+			return "No firmware version supports importing this yet.".localized
+		case .always:
+			return ""
+		}
+	}
+
 	// MARK: Result
 
 	@ViewBuilder
@@ -227,7 +257,7 @@ struct ImportDeviceProfileView: View {
 						.foregroundColor(.orange)
 				}
 				if result.rebooting {
-					Text("Your radio is rebooting to apply LoRa/channel changes — reconnect to verify.")
+					Text("Your radio is rebooting to save the imported settings — reconnect to verify.")
 						.font(.caption)
 						.foregroundColor(.secondary)
 				} else if !result.applied.isEmpty {
@@ -235,12 +265,32 @@ struct ImportDeviceProfileView: View {
 						.font(.caption)
 						.foregroundColor(.secondary)
 				}
+				// The commit is what actually persists an import. If we could not confirm it reached the
+				// radio, the node may have discarded everything and still be holding the edit transaction
+				// open, which also blocks later config writes until it reboots.
+				if result.commitUnconfirmed {
+					Text("The node did not confirm saving these settings. Reconnect and check its configuration; you may need to import again.")
+						.font(.caption)
+						.foregroundColor(.orange)
+				}
 				// A destructive channel replace can half-complete: the node may already be on a different
 				// primary channel/PSK even though the step is reported as failed.
 				if result.failed?.kind == .channelURL {
 					Text("Channel changes may have partially applied. Re-import Channels & LoRa to bring the node to a consistent state.")
 						.font(.caption)
 						.foregroundColor(.orange)
+				}
+			}
+			// Applying MQTT or Serial config makes the firmware drop Bluetooth, so those two are sent last,
+			// after everything else is safely saved. Over BLE the link is usually already gone by then.
+			if !result.requiresReconnect.isEmpty {
+				Section("Needs a Second Pass") {
+					Text("Reconnect to the node and import these again — they could not be sent because applying them disconnects the radio.")
+						.font(.caption)
+						.foregroundColor(.secondary)
+					ForEach(result.requiresReconnect, id: \.self) { kind in
+						Label(kind.displayName, systemImage: "arrow.triangle.2.circlepath")
+					}
 				}
 			}
 			if let failed = result.failed {
@@ -329,8 +379,9 @@ struct ImportDeviceProfileView: View {
 		if selection.contains(.security) {
 			lines.append("It replaces this node's identity and admin keys, which can break existing direct messages.".localized)
 		}
-		if plan.willReboot(in: selection) {
-			lines.append("The radio will reboot to apply LoRa/channel changes.".localized)
+		// Unconditional: the transaction commit reboots regardless of which sections were picked.
+		if !selection.isEmpty {
+			lines.append("The radio will reboot to apply these changes.".localized)
 		}
 		if lines.isEmpty {
 			lines.append("Apply the selected configuration to the connected node?".localized)

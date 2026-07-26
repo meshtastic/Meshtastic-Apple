@@ -24,6 +24,11 @@ protocol ProfileApplyGateway {
 	/// Applies one item, throwing on a genuine failure. Reboot-induced disconnects for the terminal
 	/// Channels & LoRa item are absorbed by the conformer, so a throw here always means a real failure.
 	func apply(_ item: ImportItem) async throws
+	/// Opens the firmware edit transaction (`begin_edit_settings`). While one is open the firmware
+	/// defers every config save, reboot, and Bluetooth teardown until the commit.
+	func beginEditSettings() async throws
+	/// Closes the transaction (`commit_edit_settings`), which performs a single save and one reboot.
+	func commitEditSettings() async throws
 }
 
 // MARK: - Result
@@ -34,8 +39,20 @@ struct DeviceProfileImportResult {
 	var applied: [ImportItemKind] = []
 	var skipped: [ImportItemKind] = []
 	var failed: (kind: ImportItemKind, message: String)? = nil
-	/// True when a reboot-causing item (Channels & LoRa) was applied — the radio will disconnect briefly.
+	/// True when the radio will reboot as a result of this run and so will disconnect briefly.
 	var rebooting: Bool = false
+	/// True once `begin_edit_settings` was accepted, so the firmware deferred saves for this run.
+	var usedTransaction: Bool = false
+	/// True once `commit_edit_settings` was sent and either acked or dropped by the expected reboot.
+	var transactionCommitted: Bool = false
+	/// True when the commit could not be confirmed: either the link was already down when we tried to
+	/// send it (so the radio may still hold an open transaction, deferring every later write from any
+	/// client) or the send failed while still connected. Distinct from `transactionCommitted` because a
+	/// lost ack during the commit's own reboot is the normal, successful path.
+	var commitUnconfirmed: Bool = false
+	/// Items that could not be applied because the commit tore down the transport, and which need a
+	/// reconnect and a second pass. These are NOT failures: the committed profile is already safe.
+	var requiresReconnect: [ImportItemKind] = []
 	/// True when the run stopped because it was cancelled (user tapped Cancel or the task was cancelled)
 	/// rather than failing. The current and remaining items are recorded as `skipped`, not `failed`.
 	var wasCancelled: Bool = false
@@ -47,7 +64,16 @@ struct DeviceProfileImportResult {
 
 enum DeviceProfileImporter {
 
-	/// Applies the selected sections of a plan, in order, aborting on the first failure.
+	/// Applies the selected sections of a plan inside a firmware edit transaction, aborting on the first
+	/// failure.
+	///
+	/// The run is `begin_edit_settings` → items → `commit_edit_settings`. Without that bracket the
+	/// firmware treats each send as a standalone write: it saves to flash, schedules a reboot, and tears
+	/// down Bluetooth for nearly every config (AdminModule.cpp:1161, :1178, :1773, :1779), which drops the
+	/// link a few items into a profile restore. With the transaction open all of that is deferred to a
+	/// single save and one reboot at the commit.
+	///
+	/// MQTT and Serial are deliberately applied AFTER the commit. See `apply` for why.
 	/// - Parameters:
 	///   - plan: the parsed import plan.
 	///   - selection: the sections the user chose to import.
@@ -62,50 +88,144 @@ enum DeviceProfileImporter {
 		progress: ((ImportItem, Int, Int) -> Void)? = nil
 	) async -> DeviceProfileImportResult {
 		var result = DeviceProfileImportResult()
-		let items = plan.items(for: selection)
+		let all = plan.items(for: selection)
+		guard !all.isEmpty else { return result }
 
+		// MQTT and Serial run AFTER the commit, outside the transaction. Firmware calls disableBluetooth()
+		// for exactly those two regardless of an open transaction (AdminModule.cpp:1191 and :1207), unlike
+		// every other config path which gates that call on !hasOpenEditTransaction. Applying them inside
+		// the transaction would drop the BLE link before commit_edit_settings could arrive, and because the
+		// firmware defers every save until commit, the ENTIRE import would be lost rather than just those
+		// two items. Running them after the commit means the rest of the profile is already persisted
+		// before the link is put at risk. Cost: a second reboot when the profile carries either one.
+		let deferredKinds: Set<ImportItemKind> = [.mqtt, .serial]
+		let transactional = all.filter { !deferredKinds.contains($0.kind) }
+		let deferredItems = all.filter { deferredKinds.contains($0.kind) }
+		let total = all.count
+
+		// 1. Open the transaction before anything is sent.
+		guard gateway.isConnected else {
+			result.failed = (all[0].kind, "The radio disconnected before this step could be applied.")
+			result.skipped = all.dropFirst().map(\.kind)
+			return result
+		}
+		do {
+			try await gateway.beginEditSettings()
+			result.usedTransaction = true
+		} catch is CancellationError {
+			result.wasCancelled = true
+			result.skipped = all.map(\.kind)
+			return result
+		} catch {
+			result.failed = (all[0].kind,
+							 "Could not open a settings transaction on the radio: \(error.localizedDescription)")
+			result.skipped = all.dropFirst().map(\.kind)
+			return result
+		}
+
+		// 2. Everything except MQTT/Serial, inside the transaction.
+		_ = await run(transactional, progressOffset: 0, total: total,
+					  pendingAfter: deferredItems.map(\.kind),
+					  gateway: gateway, progress: progress, into: &result)
+
+		// 3. Commit unconditionally, even when step 2 stopped early. The firmware exposes no abort or
+		//    rollback message, so an uncommitted transaction strands the radio in deferred-save mode where
+		//    nothing any client writes afterwards is persisted. Committing a partial profile matches the
+		//    pre-transaction behaviour of aborting on the first failure.
+		// Whether the link was alive going in decides how to read a throw below.
+		let connectedBeforeCommit = gateway.isConnected
+		do {
+			try await gateway.commitEditSettings()
+			result.transactionCommitted = true
+		} catch {
+			if connectedBeforeCommit && !gateway.isConnected {
+				// The link dropped as the commit was processed. That is the normal path: the commit disables
+				// Bluetooth and reboots (AdminModule.cpp:473-478, :2324), so the trailing ack is routinely
+				// lost. The radio did receive the commit.
+				result.transactionCommitted = true
+				Logger.services.warning("Settings transaction commit did not ack; radio is rebooting: \(error.localizedDescription, privacy: .public)")
+			} else {
+				// Either the link was already down (the commit never reached the radio, which is still
+				// holding an open transaction and deferring every later write) or we are still connected and
+				// the send genuinely failed. Neither can be reported as a successful commit.
+				result.commitUnconfirmed = true
+				Logger.services.error("Settings transaction commit unconfirmed (connected before: \(connectedBeforeCommit, privacy: .public), connected now: \(gateway.isConnected, privacy: .public)): \(error.localizedDescription, privacy: .public)")
+			}
+		}
+		// The commit itself saves every segment and reboots, so any run that got that far reboots.
+		if !result.applied.isEmpty { result.rebooting = true }
+
+		// 4. MQTT/Serial, now outside the transaction.
+		//
+		// On BLE this phase normally cannot run at all: the commit calls disableBluetooth(), which is a
+		// hard synchronous teardown (nimbleBluetooth->deinit() / nrf52Bluetooth->shutdown(),
+		// AdminModule.cpp:2324), so the transport is gone before we get here. Over TCP or serial the link
+		// survives and these apply normally. Either way a miss here is NOT a failure: everything else is
+		// already committed, so the items are reported as needing a reconnect and a second pass.
+		guard result.failed == nil, !result.wasCancelled, !deferredItems.isEmpty else { return result }
+		var deferredOutcome = DeviceProfileImportResult()
+		let allDeferredApplied = await run(deferredItems, progressOffset: transactional.count, total: total,
+										   pendingAfter: [], gateway: gateway, progress: progress,
+										   into: &deferredOutcome)
+		result.applied.append(contentsOf: deferredOutcome.applied)
+		if !allDeferredApplied {
+			result.requiresReconnect = deferredItems.map(\.kind)
+				.filter { !deferredOutcome.applied.contains($0) }
+		}
+
+		return result
+	}
+
+	/// Applies one ordered run of items, mutating `result`. Returns true when every item was applied.
+	/// On an early stop the current item is recorded as failed (or the run as cancelled) and everything
+	/// after it, including `pendingAfter`, is recorded as skipped.
+	@MainActor
+	private static func run(
+		_ items: [ImportItem],
+		progressOffset: Int,
+		total: Int,
+		pendingAfter: [ImportItemKind],
+		gateway: ProfileApplyGateway,
+		progress: ((ImportItem, Int, Int) -> Void)?,
+		into result: inout DeviceProfileImportResult
+	) async -> Bool {
 		for (index, item) in items.enumerated() {
 			// Cancellation (user tapped Cancel, or the surrounding task was cancelled): stop cleanly,
 			// treating the current and remaining items as not-applied rather than failed.
 			if Task.isCancelled {
 				result.wasCancelled = true
-				result.skipped = items[index...].map(\.kind)
-				return result
+				result.skipped = items[index...].map(\.kind) + pendingAfter
+				return false
 			}
 
-			// A disconnect before the terminal reboot step is a genuine partial failure — record it and
-			// mark the untried items skipped rather than blindly sending into a dead link.
+			// A disconnect mid-run is a genuine partial failure: record it and mark the untried items
+			// skipped rather than blindly sending into a dead link.
 			guard gateway.isConnected else {
 				result.failed = (item.kind, "The radio disconnected before this step could be applied.")
 				// The current item is the failure, not a skip; only the items after it were never attempted.
-				if index + 1 < items.count {
-					result.skipped = items[(index + 1)...].map(\.kind)
-				}
-				return result
+				result.skipped = items[(index + 1)...].map(\.kind) + pendingAfter
+				return false
 			}
 
-			progress?(item, index, items.count)
+			progress?(item, progressOffset + index, total)
 
 			do {
 				try await gateway.apply(item)
 				result.applied.append(item.kind)
-				if item.causesReboot { result.rebooting = true }
+				if item.mayReboot { result.rebooting = true }
 			} catch is CancellationError {
 				// A cancellation-aware send observed the cancel — same handling as the loop-top check.
 				result.wasCancelled = true
-				result.skipped = items[index...].map(\.kind)
-				return result
+				result.skipped = items[index...].map(\.kind) + pendingAfter
+				return false
 			} catch {
 				result.failed = (item.kind, error.localizedDescription)
 				// Everything after the failed item never ran.
-				if index + 1 < items.count {
-					result.skipped = items[(index + 1)...].map(\.kind)
-				}
-				return result
+				result.skipped = items[(index + 1)...].map(\.kind) + pendingAfter
+				return false
 			}
 		}
-
-		return result
+		return true
 	}
 }
 
@@ -120,6 +240,14 @@ struct AccessoryProfileApplyGateway: ProfileApplyGateway {
 	let node: UserEntity
 
 	var isConnected: Bool { accessoryManager.isConnected }
+
+	func beginEditSettings() async throws {
+		try await accessoryManager.beginEditSettings(fromUser: node, toUser: node)
+	}
+
+	func commitEditSettings() async throws {
+		try await accessoryManager.commitEditSettings(fromUser: node, toUser: node)
+	}
 
 	func apply(_ item: ImportItem) async throws {
 		switch item.payload {

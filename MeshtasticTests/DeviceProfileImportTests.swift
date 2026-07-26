@@ -133,12 +133,58 @@ struct DeviceProfileImportTests {
 			.owner, .deviceConfig, .displayConfig, .positionConfig, .powerConfig, .networkConfig,
 			.bluetoothConfig, .securityConfig, .mqtt, .serial, .externalNotification, .storeForward,
 			.rangeTest, .telemetry, .cannedMessage, .audio, .neighborInfo, .ambientLighting,
-			.detectionSensor, .paxcounter, .tak, .trafficManagement, .statusMessage, .ringtone,
+			.detectionSensor, .paxcounter, .trafficManagement, .statusMessage, .ringtone,
 			.cannedMessagesText, .fixedPosition, .loraConfig
 		]
 		#expect(kinds == expected)
 		// One item per kind (no duplicates).
 		#expect(plan.items.count == expected.count)
+		// .tak is deliberately absent from the send list: no firmware version implements
+		// set_module_config(tak), so sending it would reboot the radio (untransacted) or no-op silently
+		// while still being acked as success. It is reported instead.
+		#expect(!kinds.contains(.tak))
+		#expect(plan.unsupported.map(\.item.kind) == [.tak])
+	}
+
+	@Test("Firmware gating drops items the connected radio cannot apply")
+	func firmwareGating() throws {
+		// statusmessage first shipped in v2.7.20.6658ec2; traffic_management is develop-only.
+		let old = try DeviceProfileImportPlan(profile: makeFullProfile(), currentUser: User(),
+											  firmwareVersion: "2.7.19.abc1234")
+		let oldKinds = Set(old.items.map(\.kind))
+		#expect(!oldKinds.contains(.statusMessage))
+		#expect(!oldKinds.contains(.trafficManagement))
+		#expect(!oldKinds.contains(.tak))
+		#expect(Set(old.unsupported.map(\.item.kind)) == [.statusMessage, .trafficManagement, .tak])
+		// Supported items are untouched by the gate.
+		#expect(oldKinds.contains(.mqtt))
+		#expect(oldKinds.contains(.loraConfig))
+
+		// 2.7.20 gains statusmessage but still not traffic_management.
+		let mid = try DeviceProfileImportPlan(profile: makeFullProfile(), currentUser: User(),
+											  firmwareVersion: "2.7.20.6658ec2")
+		#expect(Set(mid.items.map(\.kind)).contains(.statusMessage))
+		#expect(Set(mid.unsupported.map(\.item.kind)) == [.trafficManagement, .tak])
+
+		// 2.8.0 gains traffic_management; only the never-implemented tak remains.
+		let new = try DeviceProfileImportPlan(profile: makeFullProfile(), currentUser: User(),
+											  firmwareVersion: "2.8.0.3a0c08b")
+		#expect(Set(new.items.map(\.kind)).contains(.trafficManagement))
+		#expect(new.unsupported.map(\.item.kind) == [.tak])
+	}
+
+	@Test("Unknown firmware is permissive, matching the app's other capability checks")
+	func firmwareGatingIsPermissiveWhenUnknown() throws {
+		for version in [nil, "", "0.0.0"] as [String?] {
+			#expect(DeviceProfileImportPlan.isSupported(.fromVersion("2.8.0"), firmwareVersion: version))
+		}
+		// .unimplemented is never permissive: no firmware supports it, known version or not.
+		#expect(!DeviceProfileImportPlan.isSupported(.unimplemented, firmwareVersion: nil))
+		#expect(!DeviceProfileImportPlan.isSupported(.unimplemented, firmwareVersion: "2.8.0"))
+		#expect(DeviceProfileImportPlan.isSupported(.always, firmwareVersion: "2.0.0"))
+		// Numeric comparison, not lexicographic: 2.7.9 must read as older than 2.7.20.
+		#expect(!DeviceProfileImportPlan.isSupported(.fromVersion("2.7.20"), firmwareVersion: "2.7.9"))
+		#expect(DeviceProfileImportPlan.isSupported(.fromVersion("2.7.20"), firmwareVersion: "2.7.26"))
 	}
 
 	@Test("Absent has* fields produce no items")
@@ -281,21 +327,58 @@ struct DeviceProfileImportTests {
 	func flags() throws {
 		let plan = try DeviceProfileImportPlan(profile: makeFullProfile(), currentUser: User())
 		// A standalone LoRa config carries no secret (channel PSKs travel only in the channel URL), so it
-		// is a reboot but not sensitive.
+		// is not sensitive. It also does not reboot — see the reboot table below.
 		let sensitiveKinds = Set(plan.items.filter(\.isSensitive).map(\.kind))
 		#expect(sensitiveKinds == [.securityConfig, .networkConfig, .mqtt])
 
-		let rebootKinds = plan.items.filter(\.causesReboot).map(\.kind)
-		#expect(rebootKinds == [.loraConfig])
+		// Reboot truth, derived from firmware 2.8 (firmware/src/modules/AdminModule.cpp), NOT from what
+		// is convenient for the UI. Outside an open edit transaction:
+		//   - handleSetConfig defaults `requiresReboot = true` (:840). position/network/bluetooth never
+		//     override it; security forces it true (:1153); device/display/power clear it ONLY when every
+		//     relevant field is unchanged (:857/:943/:922), which an import restoring a different profile
+		//     does not satisfy, so treat them as rebooting.
+		//   - LoRa clears it unconditionally on 2.8 (:1060), so set_config(lora) does not reboot there.
+		//     BUT that change (firmware #9962) is develop-only and is in no released tag: on the shipped
+		//     2.7.x line LoRa skips the reboot only when every radio field is unchanged, which restoring a
+		//     profile does not satisfy. The flag is conservative, so .loraConfig is expected to reboot.
+		//   - handleSetModuleConfig defaults `shouldReboot = true` (:1175); only statusmessage (:1275)
+		//     and mesh_beacon (:1360) clear it. Note `tak` has no case at all, so it reboots and silently
+		//     applies nothing.
+		//   - set_owner saves with the default shouldReboot = true (:793), so it reboots.
+		//   - set_channel (:1398) and set_fixed_position (:585) pass shouldReboot = false.
+		//   - ringtone / canned-message text bypass AdminModule and write their proto directly
+		//     (ExternalNotificationModule.handleSetRingtone, CannedMessageModule
+		//      .handleSetCannedMessageModuleMessages), so neither reboots.
+		// `mayReboot` is a conservative "may reboot" flag: the app cannot evaluate the firmware's
+		// field-by-field diff for device/display/power, so it must assume the rebooting case.
+		let expectedReboot: Set<ImportItemKind> = [
+			.owner,
+			.deviceConfig, .displayConfig, .positionConfig, .powerConfig,
+			.networkConfig, .bluetoothConfig, .securityConfig,
+			.mqtt, .serial, .externalNotification, .storeForward, .rangeTest, .telemetry,
+			.cannedMessage, .audio, .neighborInfo, .ambientLighting, .detectionSensor,
+			.paxcounter, .tak, .trafficManagement,
+			.loraConfig
+		]
+		// Explicitly NOT rebooting on any firmware line: .statusMessage, .ringtone, .cannedMessagesText,
+		// .fixedPosition, .channelURL. Note .channelURL was one of only two items the branch originally
+		// flagged reboot-causing, and it is in fact the one item in the terminal step that never reboots.
+		let presentKinds = Set(plan.items.map(\.kind))
+		let rebootKinds = Set(plan.items.filter(\.mayReboot).map(\.kind))
+		#expect(rebootKinds == expectedReboot.intersection(presentKinds))
+		#expect(!rebootKinds.contains(.statusMessage))
+		#expect(!rebootKinds.contains(.fixedPosition))
 
 		let all = Set(plan.presentSections)
 		#expect(plan.containsSensitive(in: all))
 		#expect(plan.willReboot(in: all))
-		// A selection with no security/network/MQTT/channel items is neither sensitive nor a reboot.
+		// A selection with no security/network/MQTT/channel items is not sensitive.
 		// (Modules is excluded because the MQTT module config carries a password.)
 		let nonSensitive: Set<ImportSection> = [.owner, .radioAndDevice, .personalization, .fixedPosition]
 		#expect(!plan.containsSensitive(in: nonSensitive))
-		#expect(!plan.willReboot(in: nonSensitive))
+		// It IS however a reboot: owner and every radioAndDevice config reboot on firmware 2.8. The user
+		// must be warned even when importing only "safe-looking" sections.
+		#expect(plan.willReboot(in: nonSensitive))
 	}
 
 	@Test("A channel URL terminal item is flagged sensitive because it carries channel PSKs")
@@ -305,10 +388,66 @@ struct DeviceProfileImportTests {
 		let plan = try DeviceProfileImportPlan(profile: profile, currentUser: User())
 		let channelItem = try #require(plan.items.first { $0.kind == .channelURL })
 		#expect(channelItem.isSensitive)
-		#expect(channelItem.causesReboot)
+		// set_channel saves with shouldReboot = false (AdminModule.cpp:1398), so a channel URL does not
+		// reboot the radio. The engine currently flags it as its terminal reboot step, which is wrong.
+		#expect(!channelItem.mayReboot)
 	}
 
 	// MARK: - Owner merge
+
+	@Test("Owner merge takes is_unmessagable from the profile when present, else keeps the node's")
+	func ownerMergeAppliesUnmessagable() {
+		var base = User()
+		base.longName = "Old Name"
+		base.shortName = "OLD"
+		base.isUnmessagable = false
+
+		// Present in the profile: the profile wins.
+		var carries = DeviceProfile()
+		carries.longName = "Base Camp"
+		carries.isUnmessagable = true
+		#expect(DeviceProfileImportPlan.ownerUser(from: carries, base: base).isUnmessagable)
+
+		// Absent from the profile: the node's existing value is preserved.
+		var silent = DeviceProfile()
+		silent.longName = "Base Camp"
+		var messagableBase = base
+		messagableBase.isUnmessagable = true
+		#expect(DeviceProfileImportPlan.ownerUser(from: silent, base: messagableBase).isUnmessagable)
+		#expect(!DeviceProfileImportPlan.ownerUser(from: silent, base: base).isUnmessagable)
+	}
+
+	@Test("A profile carrying only is_unmessagable still yields an owner item")
+	func unmessagableAloneYieldsOwnerItem() throws {
+		var profile = DeviceProfile()
+		profile.isUnmessagable = true
+		let plan = try DeviceProfileImportPlan(profile: profile, currentUser: User())
+		#expect(plan.items.map(\.kind) == [.owner])
+	}
+
+	@Test("Owner merge never takes is_licensed from the profile")
+	func ownerMergeDoesNotLeakLicensedFlag() {
+		var profile = DeviceProfile()
+		profile.longName = "Base Camp"
+		profile.shortName = "BC01"
+		profile.isLicensed = true
+
+		var base = User()
+		base.longName = "Old Name"
+		base.shortName = "OLD"
+		base.isLicensed = false
+
+		let merged = DeviceProfileImportPlan.ownerUser(from: profile, base: base)
+
+		#expect(merged.longName == "Base Camp")
+		#expect(merged.shortName == "BC01")
+		// Enabling ham mode is a dedicated onboarding flow: set_ham_mode rewrites the owner, disables
+		// encryption, and applies tx power/frequency. A plain set_owner would bypass all of that and leave
+		// the node flagged licensed without the required side effects, so an imported profile must never
+		// turn it on. Mirrors Android's InstallProfileUseCaseTest "never auto-installs is_licensed"
+		// (InstallProfileUseCaseTest.kt:113) and the deliberate omission in its InstallProfileUseCase.
+		#expect(!merged.isLicensed)
+	}
 
 	@Test("Owner merge overrides only the names present and preserves identity")
 	func ownerMerge() {
@@ -482,9 +621,35 @@ struct DeviceProfileImportTests {
 		var failOn: ImportItemKind?
 		var cancelOn: ImportItemKind?
 		var attempted: [ImportItemKind] = []
+		var failOnBegin = false
+		var failOnCommit = false
+		/// Fired as the commit is sent, so a test can simulate the link dropping with it.
+		var onCommit: (() -> Void)?
+		/// Drops the connection right after this item is applied, simulating a mid-run teardown.
+		var dropConnectionOn: ImportItemKind?
+		/// Every gateway call in order, with the two transaction controls interleaved among the item
+		/// kinds, so tests can assert the begin -> items -> commit -> deferred-items shape.
+		var calls: [String] = []
+
+		func beginEditSettings() async throws {
+			calls.append("begin")
+			if failOnBegin {
+				throw NSError(domain: "test", code: 2, userInfo: [NSLocalizedDescriptionKey: "no transaction"])
+			}
+		}
+
+		func commitEditSettings() async throws {
+			calls.append("commit")
+			onCommit?()
+			if failOnCommit {
+				throw NSError(domain: "test", code: 3, userInfo: [NSLocalizedDescriptionKey: "commit failed"])
+			}
+		}
 
 		func apply(_ item: ImportItem) async throws {
 			attempted.append(item.kind)
+			calls.append(item.kind.rawValue)
+			if item.kind == dropConnectionOn { isConnected = false }
 			if item.kind == cancelOn {
 				throw CancellationError()
 			}
@@ -492,6 +657,193 @@ struct DeviceProfileImportTests {
 				throw NSError(domain: "test", code: 1, userInfo: [NSLocalizedDescriptionKey: "boom"])
 			}
 		}
+	}
+
+	// MARK: - Edit transaction
+
+	@MainActor
+	@Test("The whole import is bracketed by begin/commit edit settings")
+	func importIsWrappedInATransaction() async throws {
+		var profile = DeviceProfile()
+		var config = LocalConfig()
+		config.device = Config.DeviceConfig()
+		config.display = Config.DisplayConfig()
+		profile.config = config
+		let plan = try DeviceProfileImportPlan(profile: profile, currentUser: nil)
+
+		let gateway = MockGateway()
+		let result = await DeviceProfileImporter.apply(
+			plan: plan,
+			selection: Set(plan.presentSections),
+			gateway: gateway
+		)
+
+		#expect(result.isCompleteSuccess)
+		#expect(result.usedTransaction)
+		#expect(result.transactionCommitted)
+		#expect(gateway.calls.first == "begin")
+		#expect(gateway.calls.last == "commit")
+		#expect(gateway.calls == ["begin", "deviceConfig", "displayConfig", "commit"])
+	}
+
+	@MainActor
+	@Test("MQTT and Serial are applied after the commit, outside the transaction")
+	func mqttAndSerialRunAfterCommit() async throws {
+		var profile = DeviceProfile()
+		var config = LocalConfig()
+		config.device = Config.DeviceConfig()
+		profile.config = config
+		var module = LocalModuleConfig()
+		module.mqtt = ModuleConfig.MQTTConfig()
+		module.serial = ModuleConfig.SerialConfig()
+		module.telemetry = ModuleConfig.TelemetryConfig()
+		profile.moduleConfig = module
+		let plan = try DeviceProfileImportPlan(profile: profile, currentUser: nil)
+
+		let gateway = MockGateway()
+		let result = await DeviceProfileImporter.apply(
+			plan: plan,
+			selection: Set(plan.presentSections),
+			gateway: gateway
+		)
+
+		// Firmware disables Bluetooth for MQTT and Serial even inside a transaction
+		// (AdminModule.cpp:1191, :1207), so they run last, after everything else is safely committed.
+		#expect(result.isCompleteSuccess)
+		#expect(gateway.calls == ["begin", "deviceConfig", "telemetry", "commit", "mqtt", "serial"])
+		let commitIndex = try #require(gateway.calls.firstIndex(of: "commit"))
+		let mqttIndex = try #require(gateway.calls.firstIndex(of: "mqtt"))
+		let serialIndex = try #require(gateway.calls.firstIndex(of: "serial"))
+		#expect(mqttIndex > commitIndex)
+		#expect(serialIndex > commitIndex)
+	}
+
+	@MainActor
+	@Test("A failure mid-transaction still commits so the radio is not stranded")
+	func failureStillCommits() async throws {
+		var profile = DeviceProfile()
+		var config = LocalConfig()
+		config.device = Config.DeviceConfig()
+		config.display = Config.DisplayConfig()
+		profile.config = config
+		let plan = try DeviceProfileImportPlan(profile: profile, currentUser: nil)
+
+		let gateway = MockGateway()
+		gateway.failOn = .displayConfig
+		let result = await DeviceProfileImporter.apply(
+			plan: plan,
+			selection: Set(plan.presentSections),
+			gateway: gateway
+		)
+
+		// The firmware has no abort message, so an uncommitted transaction would leave it deferring every
+		// later write from any client. Commit must still be sent on the failure path.
+		#expect(result.failed?.kind == .displayConfig)
+		#expect(gateway.calls.contains("commit"))
+		#expect(result.transactionCommitted)
+	}
+
+	@MainActor
+	@Test("A radio that refuses the transaction fails the run without sending any item")
+	func beginFailureAbortsRun() async throws {
+		let plan = try DeviceProfileImportPlan(profile: makeFullProfile(), currentUser: User())
+
+		let gateway = MockGateway()
+		gateway.failOnBegin = true
+		let result = await DeviceProfileImporter.apply(
+			plan: plan,
+			selection: Set(plan.presentSections),
+			gateway: gateway
+		)
+
+		#expect(!result.usedTransaction)
+		#expect(result.failed != nil)
+		#expect(gateway.attempted.isEmpty)
+		#expect(result.applied.isEmpty)
+	}
+
+	@MainActor
+	@Test("A commit that drops with the link counts as committed, not failed")
+	func commitDropDuringRebootIsNotAFailure() async throws {
+		var profile = DeviceProfile()
+		var config = LocalConfig()
+		config.device = Config.DeviceConfig()
+		profile.config = config
+		let plan = try DeviceProfileImportPlan(profile: profile, currentUser: nil)
+
+		let gateway = MockGateway()
+		gateway.failOnCommit = true
+		gateway.isConnected = true
+		// The commit disables Bluetooth and reboots, so the ack is lost as the link drops.
+		gateway.onCommit = { gateway.isConnected = false }
+		let result = await DeviceProfileImporter.apply(
+			plan: plan,
+			selection: Set(plan.presentSections),
+			gateway: gateway
+		)
+
+		#expect(result.applied == [.deviceConfig])
+		#expect(result.transactionCommitted)
+		#expect(result.failed == nil)
+	}
+
+	@MainActor
+	@Test("When the commit tears down the link, MQTT and Serial need a reconnect rather than failing")
+	func deferredItemsNeedReconnectAfterTeardown() async throws {
+		var profile = DeviceProfile()
+		var config = LocalConfig()
+		config.device = Config.DeviceConfig()
+		profile.config = config
+		var module = LocalModuleConfig()
+		module.mqtt = ModuleConfig.MQTTConfig()
+		module.serial = ModuleConfig.SerialConfig()
+		profile.moduleConfig = module
+		let plan = try DeviceProfileImportPlan(profile: profile, currentUser: nil)
+
+		let gateway = MockGateway()
+		// Mirrors BLE: commit_edit_settings calls disableBluetooth(), a hard synchronous teardown
+		// (AdminModule.cpp:2324), so the transport is gone before the post-commit items can be sent.
+		gateway.onCommit = { gateway.isConnected = false }
+		let result = await DeviceProfileImporter.apply(
+			plan: plan,
+			selection: Set(plan.presentSections),
+			gateway: gateway
+		)
+
+		#expect(result.transactionCommitted)
+		#expect(result.applied == [.deviceConfig])
+		// Not failures: everything else is already committed, these just need a second pass.
+		#expect(result.failed == nil)
+		#expect(result.requiresReconnect == [.mqtt, .serial])
+		#expect(!gateway.attempted.contains(.mqtt))
+		#expect(!gateway.attempted.contains(.serial))
+	}
+
+	@MainActor
+	@Test("A commit sent into an already-dead link is unconfirmed, not committed")
+	func commitIntoDeadLinkIsUnconfirmed() async throws {
+		var profile = DeviceProfile()
+		var config = LocalConfig()
+		config.device = Config.DeviceConfig()
+		config.display = Config.DisplayConfig()
+		profile.config = config
+		let plan = try DeviceProfileImportPlan(profile: profile, currentUser: nil)
+
+		let gateway = MockGateway()
+		// The link dies mid-run, so the commit never reaches the radio and it keeps an open transaction.
+		gateway.dropConnectionOn = .deviceConfig
+		gateway.failOnCommit = true
+		let result = await DeviceProfileImporter.apply(
+			plan: plan,
+			selection: Set(plan.presentSections),
+			gateway: gateway
+		)
+
+		#expect(result.applied == [.deviceConfig])
+		#expect(result.failed?.kind == .displayConfig)
+		// The radio may still be holding the transaction open, so we must not claim it committed.
+		#expect(!result.transactionCommitted)
+		#expect(result.commitUnconfirmed)
 	}
 
 	@MainActor
@@ -525,7 +877,7 @@ struct DeviceProfileImportTests {
 	}
 
 	@MainActor
-	@Test("A fully applied plan with a LoRa step reports rebooting")
+	@Test("Reboot reporting follows the firmware contract, not the plan's terminal step")
 	func engineReportsReboot() async throws {
 		var profile = DeviceProfile()
 		var config = LocalConfig()
@@ -543,7 +895,28 @@ struct DeviceProfileImportTests {
 
 		#expect(result.isCompleteSuccess)
 		#expect(result.applied.contains(.loraConfig))
+		// Both the device config (AdminModule.cpp:840) and, on shipped 2.7.x firmware, the LoRa config
+		// reboot, so this plan reports rebooting. Before the flags were corrected this passed because
+		// LoRa was the ONLY item flagged, which happened to give the same answer for the wrong reason.
 		#expect(result.rebooting)
+
+		// The per-item flag is still per-item at the PLAN level, but a RUN now always ends in a reboot:
+		// commit_edit_settings saves every segment and reboots (AdminModule.cpp:473-478). So a
+		// personalization-only plan carries no reboot-causing item, yet still reboots once at the commit.
+		var ringtoneOnly = DeviceProfile()
+		ringtoneOnly.ringtone = "a:d=4,o=5,b=100:c"
+		let ringtonePlan = try DeviceProfileImportPlan(profile: ringtoneOnly, currentUser: nil)
+		let ringtoneResult = await DeviceProfileImporter.apply(
+			plan: ringtonePlan,
+			selection: Set(ringtonePlan.presentSections),
+			gateway: MockGateway()
+		)
+		#expect(ringtoneResult.isCompleteSuccess)
+		#expect(ringtoneResult.applied == [.ringtone])
+		// No individual item in this plan reboots...
+		#expect(!ringtonePlan.willReboot(in: Set(ringtonePlan.presentSections)))
+		// ...but the transaction commit does, so the run reports rebooting anyway.
+		#expect(ringtoneResult.rebooting)
 	}
 
 	@MainActor
@@ -641,6 +1014,11 @@ struct DeviceProfileImportTests {
 			gateway: gateway
 		)
 		#expect(result.failed?.kind == .channelURL)
-		#expect(!result.rebooting)
+		// The channel URL never applied, so it contributed no reboot of its own. Assert that directly
+		// rather than via `rebooting`: that flag is true here because the device config applied before it
+		// does reboot on firmware 2.8 (AdminModule.cpp:840), which is precisely why `rebooting` cannot be
+		// used as a proxy for "the terminal step succeeded".
+		#expect(result.applied == [.deviceConfig])
+		#expect(!result.applied.contains(.channelURL))
 	}
 }
