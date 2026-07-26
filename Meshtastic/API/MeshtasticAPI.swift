@@ -497,6 +497,8 @@ deviceEntity.architecture = device.architecture
 	/// Handles the logic of checking ETag -> Checking DB -> Downloading -> Bundle Fallback -> Saving
 	private func processImage(imageName: String, platform: String ) async {
 		guard let container else { return }
+		// Skip if the pass was cancelled (connection teardown) — don't even do the bundle fallback.
+		if Task.isCancelled { return }
 		let url = Self.imageURLPrefix.appendingPathComponent(imageName)
 
 		// 1. Network: Try to get ETag (Optional - might fail if offline or timeout)
@@ -705,12 +707,13 @@ extension MeshtasticAPI {
 	func refreshDevicesPreferringAPI() async {
 		do {
 			try await refreshDevicesAPIData()
-		} catch is CancellationError {
-			// Teardown, not a network failure — starting a second 78-request pass on the way out
-			// would only amplify work. Checked on the caught error rather than `Task.isCancelled`:
-			// callers use unstructured tasks, which inherit priority, task-locals and actor
-			// isolation from the enclosing task but *not* its cancellation.
 		} catch {
+			// A disconnect cancels the Step 3b task that runs this (closeConnection). URLSession
+			// surfaces that cancellation as URLError.cancelled, not CancellationError, but
+			// Task.isCancelled is set either way — treat it as teardown and do NOT start a second
+			// 78-request bundle pass, which would only amplify work on the way out. Any other error is
+			// a genuine API failure, so fall back to the bundle-only pass.
+			guard !Task.isCancelled else { return }
 			Logger.services.warning(
 				"Device API refresh failed; falling back to the bundled image/link pass: \(error.localizedDescription, privacy: .public)"
 			)
@@ -748,6 +751,11 @@ extension MeshtasticAPI {
 	/// device in catalog order.
 	private func refreshDeviceImagesAndLinks(apiDevices: [DeviceHardware]?) async {
 		guard let container else { return }
+
+		// Bail before claiming a throttle token if the connection already tore down. closeConnection
+		// cancels the Step 3b task that runs this pass; returning here leaves the throttle un-armed so
+		// the next connect runs a real restore rather than skipping.
+		guard !Task.isCancelled else { return }
 
 		// Throttle the network image/link pass to at most once per `staleDeviceImageLinkInterval`
 		// (48h). `processImage` issues a remote ETag HEAD per image (~78) before it even consults
@@ -792,10 +800,18 @@ extension MeshtasticAPI {
 
 		await withTaskGroup(of: Void.self) { group in
 			for item in work {
+				if Task.isCancelled { break }   // teardown mid-pass: stop queueing image fetches
 				group.addTask {
 					await self.processImage(imageName: item.imageName, platform: item.platform)
 				}
 			}
+		}
+		// If the connection tore down mid-pass, skip the orphan cleanup, link import and throttle
+		// completion. Leaving the throttle un-armed makes the next connect run a real restore rather
+		// than skipping a catalog that never finished downloading.
+		guard !Task.isCancelled else {
+			Logger.services.debug("Device image/link pass cancelled (connection teardown); throttle left un-armed.")
+			return
 		}
 		await MainActor.run {
 			let context = container.mainContext

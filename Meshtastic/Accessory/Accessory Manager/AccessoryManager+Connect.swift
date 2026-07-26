@@ -155,7 +155,11 @@ extension AccessoryManager {
 				// false, so the bundle-only pass is what runs on a normal reconnect; it resolves
 				// images from the app bundle and msh.to links from the bundled urls.json.
 				Logger.transport.info("🔗👟 [Connect] Step 3b: Refresh device images and msh.to links")
-				Task.detached(priority: .utility) {
+				// Held on the manager so closeConnection can cancel it: on a captive portal the pass's
+				// image HEADs would otherwise hang ~60s past a disconnect. A prior pass from a rapid
+				// reconnect is cancelled before the new one replaces the handle.
+				self.deviceRefreshTask?.cancel()
+				self.deviceRefreshTask = Task.detached(priority: .utility) {
 					if refreshDeviceHardwareFromAPI {
 						await MeshtasticAPI.shared.refreshDevicesPreferringAPI()
 					} else {

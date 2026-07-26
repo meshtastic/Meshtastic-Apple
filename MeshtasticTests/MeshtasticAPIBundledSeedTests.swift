@@ -429,4 +429,26 @@ final class MeshtasticAPIBundledSeedTests {
 			interval: MeshtasticAPI.staleDeviceImageLinkInterval
 		) == nil, "a second pass inside the window must be refused")
 	}
+
+	/// A disconnect cancels the Step 3b task running the pass (`closeConnection`). A cancelled pass
+	/// must issue no image requests and leave the throttle un-armed so the next connect runs a real
+	/// restore. Self-cancelling *before* the pass starts trips the worker's early guard
+	/// deterministically — no scheduling race on when `.cancel()` lands.
+	@Test @MainActor func cancelledPassIssuesNoRequestsAndLeavesThrottleUnarmed() async throws {
+		URLProtocol.registerClass(RequestRecordingURLProtocol.self)
+		RequestRecordingURLProtocol.reset()
+		defer { URLProtocol.unregisterClass(RequestRecordingURLProtocol.self) }
+
+		let api = MeshtasticAPI(container: try makeContainer(), startupRefresh: false)
+		let task = Task {
+			withUnsafeCurrentTask { $0?.cancel() }   // cancel before the pass does any work
+			await api.refreshDeviceImagesAndLinks()
+		}
+		await task.value
+
+		#expect(imageRequests(from: RequestRecordingURLProtocol.recordedURLs).isEmpty,
+				"a pass cancelled before it starts must issue no image requests")
+		#expect(UserDefaults.lastDeviceImageAndLinkUpdate == .distantPast,
+				"a cancelled pass must not arm the throttle — the restore is left for the next connect")
+	}
 }
