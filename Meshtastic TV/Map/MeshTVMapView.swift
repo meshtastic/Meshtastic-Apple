@@ -321,20 +321,38 @@ struct MeshTVMapView: UIViewRepresentable {
 		func applySelection(_ mapView: MKMapView, selectedNodeNum: UInt32?) {
 			guard let num = selectedNodeNum else {
 				lastAppliedSelection = nil   // re-selecting the same node later must still center
+				pendingSelectionNum = nil
 				pendingSelectionFly?.cancel()
 				return
 			}
-			guard num != lastAppliedSelection else { return }
-			lastAppliedSelection = num
+			// Skip if we already centered this node, or a fly for it is already pending.
+			guard num != lastAppliedSelection, num != pendingSelectionNum else { return }
+
+			// Focus moved to a different node: cancel any pending fly for the previously focused node
+			// so a stale debounced center can't fire and yank the map away from the new selection —
+			// this must happen even when the new node has no annotation yet.
+			pendingSelectionFly?.cancel()
+			pendingSelectionNum = nil
+
+			// Only schedule a center once the node actually has an annotation. The list can select a
+			// node with no location yet; return WITHOUT marking it applied so the center still happens
+			// once its location arrives (updateUIView re-runs applySelection after sync creates it).
+			guard annotationsByNum[num] != nil else { return }
 
 			// Debounce: tvOS list selection follows focus, so gliding across rows
 			// fires this per row. Launching an animated cross-country fly for each
 			// one overlaps animations and churns clustering the whole way. Only fly
 			// once focus has settled on a row for a beat.
-			pendingSelectionFly?.cancel()
+			pendingSelectionNum = num
 			let fly = DispatchWorkItem { [weak self, weak mapView] in
-				guard let self, let mapView,
-				      let annotation = self.annotationsByNum[num] else { return }
+				guard let self, let mapView else { return }
+				// The annotation can vanish during the debounce (node lost its location or was
+				// evicted). Clear the pending marker so a later re-selection can retry, and leave
+				// lastAppliedSelection unset since we never centered.
+				guard let annotation = self.annotationsByNum[num] else {
+					self.pendingSelectionNum = nil
+					return
+				}
 				// Zoom in far enough to break the node out of its cluster —
 				// centering alone at mesh-wide zoom leaves the selection swallowed
 				// by a cluster badge. Only ever zoom IN: if the user is already
@@ -352,11 +370,15 @@ struct MeshTVMapView: UIViewRepresentable {
 						center: annotation.coordinate, span: mapView.region.span
 					))
 				}
+				// Centered — only now mark it applied so gliding back over this row doesn't re-fly.
+				self.lastAppliedSelection = num
+				self.pendingSelectionNum = nil
 			}
 			pendingSelectionFly = fly
 			DispatchQueue.main.asyncAfter(deadline: .now() + 0.4, execute: fly)
 		}
 		private var lastAppliedSelection: UInt32?
+		private var pendingSelectionNum: UInt32?
 		private var pendingSelectionFly: DispatchWorkItem?
 
 		// MARK: MKMapViewDelegate

@@ -39,6 +39,10 @@ final class MeshClient {
 
 	private var connection: TCPConnection?
 	private var consumeTask: Task<Void, Never>?
+	/// The in-flight connect attempt. Tracked so `disconnect()` (and a fresh `connect()`) can cancel
+	/// an attempt still awaiting the TCP handshake — otherwise a stale attempt could resume later and
+	/// clobber the connection/consumeTask a newer attempt already set up, orphaning its TCPConnection.
+	private var connectTask: Task<Void, Never>?
 
 	/// Nodes that have a usable position, most-recently-heard first — the map's data source.
 	var locatedNodes: [MeshNode] {
@@ -64,9 +68,16 @@ final class MeshClient {
 		nodes = [:]
 		myNodeNum = nil
 
-		Task {
+		connectTask = Task {
 			do {
 				let conn = try await TCPConnection(host: host, port: port)
+				// A newer connect()/disconnect() may have cancelled this attempt while it awaited the
+				// handshake. If so, tear down this now-orphaned connection rather than clobbering the
+				// state the newer attempt already set up.
+				guard !Task.isCancelled else {
+					try? await conn.disconnect(withError: nil, shouldReconnect: false)
+					return
+				}
 				self.connection = conn
 				let stream = try await conn.connect()
 
@@ -82,6 +93,10 @@ final class MeshClient {
 					}
 				}
 			} catch {
+				// A superseded attempt — cancelled by a newer connect()/disconnect() while awaiting
+				// conn.connect() or the wantConfig sends — must not clobber the newer attempt's state
+				// to .failed. Unwind quietly; the newer attempt owns `state` now.
+				guard !Task.isCancelled else { return }
 				Logger.transport.error("📺 [MeshClient] connect failed: \(error.localizedDescription, privacy: .public)")
 				self.state = .failed(error.localizedDescription)
 			}
@@ -89,6 +104,8 @@ final class MeshClient {
 	}
 
 	func disconnect() {
+		connectTask?.cancel()
+		connectTask = nil
 		consumeTask?.cancel()
 		consumeTask = nil
 		let conn = connection
