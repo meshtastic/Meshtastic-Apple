@@ -150,23 +150,13 @@ final class ClusterCircleAnnotationView: MKAnnotationView {
 		}
 	}
 
-	// Clusters are the one focusable thing on the map: the remote can land on a
-	// cluster and press Select to zoom in and break it apart (see the map's
-	// didSelect). Node pins stay non-focusable — they're chosen from the side list.
-	override var canBecomeFocused: Bool { true }
-
-	override func didUpdateFocus(in context: UIFocusUpdateContext,
-								 with coordinator: UIFocusAnimationCoordinator) {
-		super.didUpdateFocus(in: context, with: coordinator)
-		let focused = isFocused
-		coordinator.addCoordinatedAnimations {
-			self.transform = focused ? CGAffineTransform(scaleX: 1.3, y: 1.3) : .identity
-			self.circle.layer.borderColor = (focused
-				? UIColor.white
-				: UIColor.white.withAlphaComponent(0.9)).cgColor
-			self.layer.zPosition = focused ? 1 : 0
-		}
-	}
+	// Non-focusable, like the node pins. Making clusters focusable put focus targets
+	// on the map, and because the map is a UIKit focus context while the side list is
+	// SwiftUI @FocusState, focus got stuck on the map — the two systems don't hand off
+	// cleanly, so returning to the list became a struggle. The list stays the single
+	// selection path; selecting a node from it zooms down tight enough to break it out
+	// of its cluster (see applySelection), which covers "see the node in a cluster".
+	override var canBecomeFocused: Bool { false }
 }
 
 struct MeshTVMapView: UIViewRepresentable {
@@ -181,22 +171,24 @@ struct MeshTVMapView: UIViewRepresentable {
 	/// back to the node list.
 	var onMenuExit: (() -> Void)?
 
+	/// Standard / Hybrid / Satellite, chosen in Settings. Shared via the same
+	/// @AppStorage key so changing it there updates the map live.
+	@AppStorage("tv.mapType") private var mapTypeRaw: Int = Int(MKMapType.standard.rawValue)
+	private var mkMapType: MKMapType { MKMapType(rawValue: UInt(mapTypeRaw)) ?? .standard }
+
 	func makeCoordinator() -> Coordinator { Coordinator(self) }
 
 	func makeUIView(context: Context) -> MKMapView {
 		let mapView = MKMapView()
 		mapView.delegate = context.coordinator
 		mapView.showsUserLocation = false          // no GPS on tvOS
-		mapView.mapType = .standard
-
-		// Claim the Menu press while the map (or anything inside it) has focus,
-		// so "back" escapes the map instead of being swallowed / suspending the app.
-		let menuPress = UITapGestureRecognizer(
-			target: context.coordinator,
-			action: #selector(Coordinator.menuPressed)
-		)
-		menuPress.allowedPressTypes = [NSNumber(value: UIPress.PressType.menu.rawValue)]
-		mapView.addGestureRecognizer(menuPress)
+		mapView.mapType = mkMapType
+		// Pure display: the side list is the only interactive surface. Disabling user
+		// interaction takes the map out of the tvOS focus engine entirely, so focus can
+		// never jump from the list (or a pushed detail like Settings) onto the map — which
+		// was leaving the user stranded on the map. The map still updates programmatically:
+		// selection zoom, recenter, and annotation sync all keep working.
+		mapView.isUserInteractionEnabled = false
 		mapView.register(
 			NodeCircleAnnotationView.self,
 			forAnnotationViewWithReuseIdentifier: NodeCircleAnnotationView.reuseID
@@ -211,6 +203,7 @@ struct MeshTVMapView: UIViewRepresentable {
 
 	func updateUIView(_ mapView: MKMapView, context: Context) {
 		context.coordinator.parent = self
+		if mapView.mapType != mkMapType { mapView.mapType = mkMapType }
 		context.coordinator.sync(mapView, nodes: nodes)
 		context.coordinator.applyInitialRegion(mapView, nodes: nodes)
 		context.coordinator.applyRecenter(mapView, token: recenterToken, nodes: nodes)
@@ -236,6 +229,7 @@ struct MeshTVMapView: UIViewRepresentable {
 		/// keyed by node number so we don't churn the whole map each update.
 		func sync(_ mapView: MKMapView, nodes: [MeshNode]) {
 			let located = nodes.filter { $0.hasLocation }
+			let overrides = spreadOverrides(located)
 			let incoming = Set(located.map { $0.num })
 
 			// Remove annotations for nodes that are gone.
@@ -248,7 +242,11 @@ struct MeshTVMapView: UIViewRepresentable {
 			// this runs on every published data tick, and any avoidable mutation here
 			// (retitling, reconfiguring views) churns MapKit + the focus engine.
 			for node in located {
-				guard let coordinate = node.coordinate else { continue }
+				guard let real = node.coordinate else { continue }
+				// Fan (near-)coincident nodes onto a small ring so a stacked cluster still
+				// separates into individual pins once you zoom in — nodes at the same
+				// coordinate otherwise never split no matter how far you zoom.
+				let coordinate = overrides[node.num] ?? real
 				if let existing = annotationsByNum[node.num] {
 					if existing.coordinate.latitude != coordinate.latitude ||
 						existing.coordinate.longitude != coordinate.longitude {
@@ -266,6 +264,39 @@ struct MeshTVMapView: UIViewRepresentable {
 					mapView.addAnnotation(annotation)
 				}
 			}
+		}
+
+		/// Fan out nodes on (nearly) the same coordinate into a small ring, so a stacked
+		/// cluster breaks into individual pins once zoomed in — coincident nodes otherwise
+		/// never split no matter how far you zoom. Ported from the iOS map's behaviour from
+		/// before the coincident-disambiguation sheet; the ring is larger here because the
+		/// TV's node circles are big and need more separation to un-cluster.
+		private func spreadOverrides(_ nodes: [MeshNode]) -> [UInt32: CLLocationCoordinate2D] {
+			var groups: [Int64: [MeshNode]] = [:]
+			for node in nodes {
+				guard let c = node.coordinate else { continue }
+				// Quantize to ~1 m so only (near-)coincident nodes group together.
+				let latKey = Int64((c.latitude * 1e5).rounded())
+				let lonKey = Int64((c.longitude * 1e5).rounded())
+				groups[latKey &* 100_000_000 &+ lonKey, default: []].append(node)
+			}
+			var overrides: [UInt32: CLLocationCoordinate2D] = [:]
+			let metersPerDegLat = 111_320.0
+			for members in groups.values where members.count > 1 {
+				let sorted = members.sorted { $0.num < $1.num }
+				guard let base = sorted.first?.coordinate else { continue }
+				let metersPerDegLon = max(1.0, metersPerDegLat * cos(base.latitude * .pi / 180))
+				// Grow the ring with crowd size so even a big pile stays individually visible.
+				let radius = 45.0 + Double(sorted.count) * 4.0
+				for (index, member) in sorted.enumerated() {
+					let angle = 2 * Double.pi * Double(index) / Double(sorted.count)
+					overrides[member.num] = CLLocationCoordinate2D(
+						latitude: base.latitude + (radius * sin(angle)) / metersPerDegLat,
+						longitude: base.longitude + (radius * cos(angle)) / metersPerDegLon
+					)
+				}
+			}
+			return overrides
 		}
 
 		/// Frame the located nodes once, when we first have something to show.
@@ -397,27 +428,6 @@ struct MeshTVMapView: UIViewRepresentable {
 		private var pendingSelectionFly: DispatchWorkItem?
 
 		// MARK: MKMapViewDelegate
-
-		/// Select a focused cluster (remote press) → zoom to fit its members so the
-		/// cluster breaks apart into individual node pins.
-		func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
-			guard let cluster = view.annotation as? MKClusterAnnotation else { return }
-			mapView.deselectAnnotation(cluster, animated: false)
-			let coords = cluster.memberAnnotations.map(\.coordinate)
-			guard !coords.isEmpty else { return }
-			let lats = coords.map(\.latitude), lons = coords.map(\.longitude)
-			let center = CLLocationCoordinate2D(
-				latitude: (lats.min()! + lats.max()!) / 2,
-				longitude: (lons.min()! + lons.max()!) / 2
-			)
-			// Pad the members' bounding box, with a floor so a tight cluster still
-			// zooms to a level where its pins separate instead of immediately re-clustering.
-			let span = MKCoordinateSpan(
-				latitudeDelta: max((lats.max()! - lats.min()!) * 1.6, 0.02),
-				longitudeDelta: max((lons.max()! - lons.min()!) * 1.6, 0.02)
-			)
-			mapView.setRegion(MKCoordinateRegion(center: center, span: span), animated: true)
-		}
 
 		func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
 			if annotation is MKClusterAnnotation {
