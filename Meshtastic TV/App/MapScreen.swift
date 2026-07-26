@@ -138,6 +138,8 @@ struct MapScreen: View {
 	}
 }
 
+/// Compact node row, modelled on the iOS `NodeListItemCompact`: node-color circle,
+/// name, then a secondary line of last-heard (green when online) and role.
 private struct NodeRow: View {
 	let node: MeshNode
 
@@ -147,24 +149,33 @@ private struct NodeRow: View {
 			CircleText(
 				text: node.shortName.isEmpty ? "?" : node.shortName,
 				color: Color(UIColor(hex: node.num)),
-				circleSize: 52
+				circleSize: 56
 			)
-			.opacity(node.hasLocation ? 1 : 0.45)
+			.opacity(node.hasLocation ? 1 : 0.55)
 
-			VStack(alignment: .leading, spacing: 4) {
+			VStack(alignment: .leading, spacing: 6) {
 				Text(node.displayName)
 					.lineLimit(1)
-				HStack(spacing: 12) {
-					if let battery = node.batteryLevel {
-						Label("\(battery)%", systemImage: battery > 20 ? "battery.75percent" : "battery.25percent")
-							.foregroundStyle(Color("LightIndigo"))
+
+				HStack(spacing: 14) {
+					if let lastHeard = node.lastHeard {
+						Label {
+							Text(lastHeard.formatted(.relative(presentation: .named)))
+						} icon: {
+							Image(systemName: node.isOnline ? "checkmark.circle.fill" : "moon.circle.fill")
+								.foregroundStyle(node.isOnline ? .green : .orange)
+						}
+					}
+					if let role = node.nodeRole {
+						Label(role.name, systemImage: role.systemName)
 					}
 					if !node.hasLocation {
 						Label("No position", systemImage: "location.slash")
-							.foregroundStyle(.secondary)
 					}
 				}
 				.font(.caption)
+				.foregroundStyle(.secondary)
+				.lineLimit(1)
 			}
 			Spacer()
 		}

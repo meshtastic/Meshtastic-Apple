@@ -172,10 +172,17 @@ final class MeshClient {
 		// dirty and re-runs the map/list @Query, and a busy mesh re-sends NodeInfo
 		// frequently with nothing new in it.
 		if info.hasUser {
-			if node.longName != info.user.longName { node.longName = info.user.longName }
-			if node.shortName != info.user.shortName { node.shortName = info.user.shortName }
-			let role = String(describing: info.user.role)
-			if node.role != role { node.role = role }
+			// Only overwrite the generated "Meshtastic <last4>" default with a real,
+			// non-empty name — some nodes broadcast NodeInfo with empty user fields, and
+			// clobbering the default with "" would put the "?" back.
+			if !info.user.longName.isEmpty, node.longName != info.user.longName {
+				node.longName = info.user.longName
+			}
+			if !info.user.shortName.isEmpty, node.shortName != info.user.shortName {
+				node.shortName = info.user.shortName
+			}
+			let role = Int(info.user.role.rawValue)
+			if node.roleValue != role { node.roleValue = role }
 			let hw = String(describing: info.user.hwModel)
 			if node.hwModel != hw { node.hwModel = hw }
 		}
