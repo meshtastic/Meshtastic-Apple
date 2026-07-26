@@ -14,10 +14,14 @@ import SwiftUI
 
 struct NodeDetailView: View {
 	let node: MeshNode
+	// Font sizes via @ScaledMetric so they track Dynamic Type (mirrors the iOS
+	// NodeListItemCompact); the values are the tvOS-tuned defaults.
+	@ScaledMetric(relativeTo: .title) private var nameFont: CGFloat = 34
+	@ScaledMetric(relativeTo: .caption) private var sectionFont: CGFloat = 20
 
 	var body: some View {
 		ScrollView {
-			VStack(alignment: .leading, spacing: 32) {
+			VStack(alignment: .leading, spacing: TVTheme.sectionSpacing) {
 				header
 
 				section("Identity") {
@@ -53,7 +57,7 @@ struct NodeDetailView: View {
 					}
 				}
 			}
-			.padding(40)
+			.padding(TVTheme.screenPadding)
 			.frame(maxWidth: .infinity, alignment: .leading)
 		}
 		.navigationTitle(node.displayName)
@@ -64,10 +68,10 @@ struct NodeDetailView: View {
 			CircleText(
 				text: node.shortName.isEmpty ? "?" : node.shortName,
 				color: Color(UIColor(hex: node.num)),
-				circleSize: 68
+				circleSize: TVTheme.detailAvatarSize
 			)
 			Text(node.displayName)
-				.font(.system(size: 34, weight: .bold, design: .rounded))
+				.font(.system(size: nameFont, weight: .bold, design: .rounded))
 				.lineLimit(2)
 		}
 	}
@@ -78,7 +82,7 @@ struct NodeDetailView: View {
 	) -> some View {
 		VStack(alignment: .leading, spacing: 6) {
 			Text(title.uppercased())
-				.font(.system(size: 20, weight: .semibold))
+				.font(.system(size: sectionFont, weight: .semibold))
 				.foregroundStyle(.secondary)
 				.padding(.horizontal, 24)
 				.padding(.bottom, 4)
@@ -94,6 +98,7 @@ private struct DetailRow: View {
 	let label: String
 	let value: String
 	@FocusState private var focused: Bool
+	@ScaledMetric(relativeTo: .body) private var valueFont: CGFloat = 26
 
 	init(_ label: String, _ value: String) {
 		self.label = label
@@ -109,11 +114,11 @@ private struct DetailRow: View {
 				.fontWeight(.medium)
 				.multilineTextAlignment(.trailing)
 		}
-		.font(.system(size: 26))
+		.font(.system(size: valueFont))
 		.padding(.vertical, 14)
 		.padding(.horizontal, 24)
 		.background(
-			RoundedRectangle(cornerRadius: 10, style: .continuous)
+			RoundedRectangle(cornerRadius: TVTheme.rowCornerRadius, style: .continuous)
 				.fill(focused ? Color.white.opacity(0.14) : Color.clear)
 		)
 		.focusable()

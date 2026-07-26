@@ -43,7 +43,7 @@ struct MapScreen: View {
 	var body: some View {
 		HStack(spacing: 0) {
 			nodeList
-				.frame(width: 520)
+				.frame(width: TVTheme.sideListWidth)
 
 			MeshTVMapView(
 				nodes: locatedNodes,
@@ -117,7 +117,7 @@ struct MapScreen: View {
 				Image("meshtastic-wordmark-white")
 					.resizable()
 					.scaledToFit()
-					.frame(height: 30)
+					.frame(height: TVTheme.wordmarkHeight)
 				Text(client.host)
 					.font(.caption)
 					.foregroundStyle(.secondary)
@@ -167,7 +167,7 @@ private struct NodeRow: View {
 			CircleText(
 				text: node.shortName.isEmpty ? "?" : node.shortName,
 				color: Color(UIColor(hex: node.num)),
-				circleSize: 56
+				circleSize: TVTheme.listAvatarSize
 			)
 			.opacity(node.hasLocation ? 1 : 0.55)
 

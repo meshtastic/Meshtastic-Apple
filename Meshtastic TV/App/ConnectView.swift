@@ -57,7 +57,7 @@ struct ConnectView: View {
 					}
 				}
 			}
-			.padding(.top, 40)
+			.padding(.top, TVTheme.screenPadding)
 		}
 	}
 
