@@ -55,12 +55,10 @@ struct ConnectView: View {
 
 	private var hero: some View {
 		VStack(alignment: .leading, spacing: 28) {
-			Image("m-logo-white")
+			Image("meshtastic-wordmark-white")
 				.resizable()
 				.scaledToFit()
-				.frame(width: 340)
-			Text("Meshtastic")
-				.font(.system(size: 64, weight: .heavy, design: .rounded))
+				.frame(width: 620)
 			Text("Connect to a Meshtastic node on your network and watch the mesh live on the big screen.")
 				.font(.title3)
 				.foregroundStyle(.secondary)

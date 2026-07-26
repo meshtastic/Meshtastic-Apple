@@ -90,13 +90,11 @@ struct MapScreen: View {
 
 	private var header: some View {
 		HStack(spacing: 20) {
-			Image("m-logo-white")
-				.resizable()
-				.scaledToFit()
-				.frame(height: 44)
-			VStack(alignment: .leading, spacing: 2) {
-				Text("Meshtastic")
-					.font(.system(size: 34, weight: .heavy, design: .rounded))
+			VStack(alignment: .leading, spacing: 6) {
+				Image("meshtastic-wordmark-white")
+					.resizable()
+					.scaledToFit()
+					.frame(height: 30)
 				Text(client.host)
 					.font(.caption)
 					.foregroundStyle(.secondary)
