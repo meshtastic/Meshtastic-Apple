@@ -86,6 +86,7 @@ extension UserDefaults {
 		case testIntEnum
 		case testDoubleValue
 		case lastDeviceAPIUpdate
+		case lastDeviceImageAndLinkUpdate
 		case lastFirmwareAPIUpdate
 		case firmwareUpdateNotificationKeys
 		case lastEventFirmwareAPIUpdate
@@ -273,6 +274,16 @@ extension UserDefaults {
 	}
 	@UserDefault(.lastDeviceAPIUpdate, defaultValue: .distantPast)
 	static var lastDeviceAPIUpdate: Date
+
+	/// When the device image + msh.to link network pass last completed. Throttles that pass (see
+	/// `MeshtasticAPI.staleDeviceImageLinkInterval`); reset to `.distantPast` by `clearDatabase`
+	/// so a database clear still forces a restore regardless of the throttle window.
+	///
+	/// Write through `DeviceImageLinkThrottle`, not directly: the refresh pass runs detached and a
+	/// clear can land mid-pass, so the two writers need the throttle's generation check to stop a
+	/// superseded pass from overwriting the clear's reset.
+	@UserDefault(.lastDeviceImageAndLinkUpdate, defaultValue: .distantPast)
+	static var lastDeviceImageAndLinkUpdate: Date
 
 	@UserDefault(.lastFirmwareAPIUpdate, defaultValue: .distantPast)
 	static var lastFirmwareAPIUpdate: Date

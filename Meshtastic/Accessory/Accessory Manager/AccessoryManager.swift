@@ -237,6 +237,10 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	var bleStatusTask: Task<Void, Never>?
 	var connectionEventTask: Task <Void, Error>?
 	var locationTask: Task<Void, Error>?
+	/// The detached device image/link pass spawned by connect Step 3b. Held so a disconnect can
+	/// cancel it — otherwise, on a captive portal, its ~78 image HEADs hang ~60s each (no request
+	/// timeout) past teardown, wasting network and pinning the hardware-list spinner.
+	var deviceRefreshTask: Task<Void, Never>?
 	var connectionStepper: SequentialSteps?
 	
 	// Flash counters — NOT @Published to avoid triggering re-renders of all observing views.
@@ -458,9 +462,15 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 
 		connectionEventTask?.cancel()
 		connectionEventTask = nil
-		
+
 		locationTask?.cancel()
 		locationTask = nil
+
+		// Cancel the detached device image/link pass so its outstanding image HEADs unwind instead of
+		// hanging past teardown. The pass leaves the throttle un-armed when cancelled, so the next
+		// connect still runs a real restore.
+		deviceRefreshTask?.cancel()
+		deviceRefreshTask = nil
 		
 		await heartbeatTimer?.cancel(withReason: "Closing connection")
 		await heartbeatResponseTimer?.cancel(withReason: "Closing connection")
