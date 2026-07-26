@@ -9,6 +9,7 @@ import Foundation
 import OSLog
 import SwiftUI
 import SwiftData
+import os
 
 // These structs are public becase tehy are used elsewhere in the app to represent
 // fields in the Core Data database.
@@ -174,8 +175,8 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 
 	/// How long a completed device image + msh.to link pass stays fresh before another network pass
 	/// is allowed. `processImage` issues a remote ETag HEAD per image (~78) up front, so running the
-	/// pass on every reconnect is wasteful when nothing changed. `clearDatabase` resets
-	/// `UserDefaults.lastDeviceImageAndLinkUpdate`, so restore-after-clear ignores this window.
+	/// pass on every reconnect is wasteful when nothing changed. `clearDatabase` invalidates the
+	/// throttle (see `DeviceImageLinkThrottle`), so restore-after-clear ignores this window.
 	static let staleDeviceImageLinkInterval: TimeInterval = 48 * 60 * 60
 
 	// MARK: - Private properties
@@ -752,11 +753,15 @@ extension MeshtasticAPI {
 		// (48h). `processImage` issues a remote ETag HEAD per image (~78) before it even consults
 		// the cache, and Step 3b fires this on every reconnect, so an un-throttled pass re-hits the
 		// network each connect when nothing changed. A database clear (factory/NodeDB reset,
-		// foreign-database device switch) resets the timestamp in `clearDatabase`, so the
+		// foreign-database device switch) invalidates the throttle in `clearDatabase`, so the
 		// restore-after-clear pass still runs regardless of this window.
-		let lastImageRefresh = UserDefaults.lastDeviceImageAndLinkUpdate
-		guard lastImageRefresh == .distantPast
-			|| abs(lastImageRefresh.timeIntervalSinceNow) > Self.staleDeviceImageLinkInterval else {
+		//
+		// The token pins this pass to the clear-generation it started under. This runs detached, so
+		// a clear can land while it is still downloading; completing against a stale token must not
+		// re-arm the throttle or the just-wiped rows stay wiped for the rest of the window.
+		guard let throttleToken = DeviceImageLinkThrottle.beginIfStale(
+			interval: Self.staleDeviceImageLinkInterval
+		) else {
 			Logger.services.debug("Device images/links refreshed within the last 48h; skipping network pass.")
 			return
 		}
@@ -798,11 +803,11 @@ extension MeshtasticAPI {
 			try? context.save()
 		}
 		await importDeviceLinks()
-		// Mark the pass complete so the next reconnect within the window skips the network. Set
-		// unconditionally: processImage falls back to the app bundle when offline, so a pass that
-		// reached no network still restored artwork/links locally — the window just bounds how often
-		// we re-check for updates, and a database clear resets this to force an immediate refresh.
-		UserDefaults.lastDeviceImageAndLinkUpdate = Date()
+		// Mark the pass complete so the next reconnect within the window skips the network. Recorded
+		// even when the pass reached no network: processImage falls back to the app bundle, so it
+		// still restored artwork/links locally — the window only bounds how often we re-check for
+		// updates. Dropped if a clear superseded this pass, so the restore still gets its turn.
+		DeviceImageLinkThrottle.complete(token: throttleToken)
 	}
 
 	private static func bundledDeviceHardwareData() throws -> Data {

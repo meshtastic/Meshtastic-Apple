@@ -278,6 +278,10 @@ extension UserDefaults {
 	/// When the device image + msh.to link network pass last completed. Throttles that pass (see
 	/// `MeshtasticAPI.staleDeviceImageLinkInterval`); reset to `.distantPast` by `clearDatabase`
 	/// so a database clear still forces a restore regardless of the throttle window.
+	///
+	/// Write through `DeviceImageLinkThrottle`, not directly: the refresh pass runs detached and a
+	/// clear can land mid-pass, so the two writers need the throttle's generation check to stop a
+	/// superseded pass from overwriting the clear's reset.
 	@UserDefault(.lastDeviceImageAndLinkUpdate, defaultValue: .distantPast)
 	static var lastDeviceImageAndLinkUpdate: Date
 

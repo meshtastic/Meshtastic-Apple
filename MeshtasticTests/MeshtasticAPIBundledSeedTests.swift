@@ -74,14 +74,29 @@ class RequestRecordingURLProtocol: URLProtocol {
 }
 
 @Suite("MeshtasticAPI bundled device seed", .serialized)
-struct MeshtasticAPIBundledSeedTests {
+final class MeshtasticAPIBundledSeedTests {
+
+	/// The throttle timestamp as it was before this test ran, restored in `deinit`.
+	private let priorImageAndLinkUpdate: Date
 
 	/// Start every test from an un-throttled state. The device image/link pass is gated on
 	/// `UserDefaults.lastDeviceImageAndLinkUpdate` (a 48h window), and that store is process-global,
 	/// so without this a prior test that ran the pass would make the next one skip and record zero
 	/// requests. Tests that specifically exercise the throttle set the timestamp themselves.
 	init() {
+		priorImageAndLinkUpdate = UserDefaults.lastDeviceImageAndLinkUpdate
 		UserDefaults.lastDeviceImageAndLinkUpdate = .distantPast
+	}
+
+	/// Hand the process-global throttle back exactly as we found it.
+	///
+	/// The tests below deliberately leave a recent `Date` in `lastDeviceImageAndLinkUpdate` — that
+	/// is what a completed pass writes. Without this restore, any suite that runs after this one
+	/// inherits an armed throttle and its image/link passes silently skip until the 48h window
+	/// expires, which reads as an unrelated test recording zero network requests. This is a `class`
+	/// suite rather than a `struct` purely so there is a `deinit` to restore from.
+	deinit {
+		UserDefaults.lastDeviceImageAndLinkUpdate = priorImageAndLinkUpdate
 	}
 
 	/// A fresh, private in-memory container per test.
@@ -366,12 +381,52 @@ struct MeshtasticAPIBundledSeedTests {
 		await api.refreshDeviceImagesAndLinks()   // first pass arms the throttle
 		#expect(!imageRequests(from: RequestRecordingURLProtocol.recordedURLs).isEmpty)
 
-		// Simulate the clearDatabase reset that follows wiping the image/link rows.
-		UserDefaults.lastDeviceImageAndLinkUpdate = .distantPast
+		// Exactly what clearDatabase does after wiping the image/link rows.
+		DeviceImageLinkThrottle.invalidate()
 
 		RequestRecordingURLProtocol.reset()
 		await api.refreshDeviceImagesAndLinks()
 		#expect(!imageRequests(from: RequestRecordingURLProtocol.recordedURLs).isEmpty,
 				"resetting the throttle (as clearDatabase does) must let the pass run again in-window")
+	}
+
+	/// A refresh pass that a `clearDatabase` superseded must not re-arm the throttle.
+	///
+	/// Step 3b spawns the pass detached, so a clear can land while it is still downloading. The
+	/// pass then finishes and records completion — against rows the clear already deleted. If that
+	/// write lands, the throttle reads "refreshed recently" while the catalog is empty, and the
+	/// restore the clear armed never runs for the rest of the 48h window.
+	@Test func supersededPassDoesNotReArmThrottle() throws {
+		let token = try #require(
+			DeviceImageLinkThrottle.beginIfStale(interval: MeshtasticAPI.staleDeviceImageLinkInterval),
+			"the suite starts un-throttled, so a pass must be claimable"
+		)
+
+		// The clear lands while the pass is still in flight.
+		DeviceImageLinkThrottle.invalidate()
+
+		// The in-flight pass now finishes and tries to record completion.
+		DeviceImageLinkThrottle.complete(token: token)
+
+		#expect(UserDefaults.lastDeviceImageAndLinkUpdate == .distantPast,
+				"a pass superseded by a clear must leave the throttle invalidated so the restore runs")
+		#expect(DeviceImageLinkThrottle.beginIfStale(
+			interval: MeshtasticAPI.staleDeviceImageLinkInterval
+		) != nil, "the next pass must still be claimable after the superseded completion")
+	}
+
+	/// The complement: an uncontended pass records completion and arms the throttle.
+	@Test func uncontendedPassArmsThrottle() throws {
+		let token = try #require(
+			DeviceImageLinkThrottle.beginIfStale(interval: MeshtasticAPI.staleDeviceImageLinkInterval)
+		)
+
+		DeviceImageLinkThrottle.complete(token: token)
+
+		#expect(UserDefaults.lastDeviceImageAndLinkUpdate != .distantPast,
+				"a pass that completed uncontended should record its completion")
+		#expect(DeviceImageLinkThrottle.beginIfStale(
+			interval: MeshtasticAPI.staleDeviceImageLinkInterval
+		) == nil, "a second pass inside the window must be refused")
 	}
 }

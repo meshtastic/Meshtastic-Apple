@@ -200,8 +200,10 @@ extension MeshPackets {
 			try commit()
 			// The image/link network pass is throttled (staleDeviceImageLinkInterval); clearing the
 			// rows it populates must also clear that throttle so the next connect's Step 3b restores
-			// them instead of skipping as "refreshed recently".
-			UserDefaults.lastDeviceImageAndLinkUpdate = .distantPast
+			// them instead of skipping as "refreshed recently". Goes through the throttle rather than
+			// writing the timestamp directly so a pass already in flight is superseded and cannot
+			// re-arm the throttle when it finishes.
+			DeviceImageLinkThrottle.invalidate()
 
 			// Collect favorite node IDs before the delete loop so we can skip related entities that
 			// belong to preserved nodes. If this fetch fails we abort rather than treat the set as
