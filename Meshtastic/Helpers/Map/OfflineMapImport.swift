@@ -1,0 +1,94 @@
+//
+//  OfflineMapImport.swift
+//  Meshtastic
+//
+
+import Foundation
+import UniformTypeIdentifiers
+
+extension UTType {
+	static let meshtasticPMTiles = UTType(importedAs: "gvh.MeshtasticApple.pmtiles")
+}
+
+enum OfflineMapImportError: LocalizedError {
+	case unreadableFile
+	case invalidHeader
+	case unsupportedTileType
+	case invalidBounds
+	case invalidZoomRange
+	case exceedsPerMapLimit
+	case exceedsTotalStorageLimit
+	case exceedsMapCountLimit
+	case duplicateMap
+
+	var errorDescription: String? {
+		switch self {
+		case .unreadableFile:
+			return String(localized: "The offline map file could not be read.")
+		case .invalidHeader:
+			return String(localized: "This file is not a valid PMTiles map.")
+		case .unsupportedTileType:
+			return String(localized: "This PMTiles map uses a tile format that Meshtastic cannot display.")
+		case .invalidBounds:
+			return String(localized: "This PMTiles map has invalid geographic bounds.")
+		case .invalidZoomRange:
+			return String(localized: "This PMTiles map has an invalid zoom range.")
+		case .exceedsPerMapLimit:
+			return String(localized: "This map is larger than the offline-map size limit.")
+		case .exceedsTotalStorageLimit:
+			return String(localized: "This map would exceed the offline-map storage limit.")
+		case .exceedsMapCountLimit:
+			return String(localized: "Remove an offline map before importing another one.")
+		case .duplicateMap:
+			return String(localized: "This offline map is already installed.")
+		}
+	}
+}
+
+struct OfflineMapImportMetadata: Equatable {
+	let bounds: GeoBounds
+	let minZoom: Int
+	let maxZoom: Int
+}
+
+enum OfflineMapImportValidator {
+	static func validate(fileURL: URL) throws -> OfflineMapImportMetadata {
+		guard let fileSize = try? fileURL.resourceValues(forKeys: [.fileSizeKey]).fileSize else {
+			throw OfflineMapImportError.unreadableFile
+		}
+		guard let header = PMTilesArchive.header(url: fileURL) else {
+			throw OfflineMapImportError.invalidHeader
+		}
+		return try validate(header: header, fileSize: Int64(fileSize))
+	}
+
+	static func validate(header: PMTilesHeader, fileSize: Int64) throws -> OfflineMapImportMetadata {
+		guard fileSize > 0 else { throw OfflineMapImportError.unreadableFile }
+		guard fileSize <= OfflineMapStorageLimits.maxRegionBytes else {
+			throw OfflineMapImportError.exceedsPerMapLimit
+		}
+		guard header.tileType == .png || header.tileType == .jpeg || header.tileType == .webp else {
+			throw OfflineMapImportError.unsupportedTileType
+		}
+		guard header.minZoom <= header.maxZoom else {
+			throw OfflineMapImportError.invalidZoomRange
+		}
+		let bounds = header.bounds
+		guard bounds.minLon.isFinite,
+			bounds.maxLon.isFinite,
+			bounds.minLat.isFinite,
+			bounds.maxLat.isFinite,
+			bounds.minLon >= -180,
+			bounds.maxLon <= 180,
+			bounds.minLat >= -90,
+			bounds.maxLat <= 90,
+			bounds.minLon < bounds.maxLon,
+			bounds.minLat < bounds.maxLat
+		else { throw OfflineMapImportError.invalidBounds }
+		return OfflineMapImportMetadata(
+			bounds: bounds,
+			minZoom: Int(header.minZoom),
+			maxZoom: Int(header.maxZoom)
+		)
+	}
+}

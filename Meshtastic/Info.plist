@@ -20,6 +20,16 @@
 		</dict>
 		<dict>
 			<key>CFBundleTypeName</key>
+			<string>PMTiles Map</string>
+			<key>LSHandlerRank</key>
+			<string>Default</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>gvh.MeshtasticApple.pmtiles</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleTypeName</key>
 			<string>GeoJSON Map Data</string>
 			<key>LSHandlerRank</key>
 			<string>Default</string>
@@ -239,6 +249,25 @@
 				<key>public.filename-extension</key>
 				<array>
 					<string>mbtiles</string>
+				</array>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.data</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>PMTiles Map</string>
+			<key>UTTypeIconFiles</key>
+			<array/>
+			<key>UTTypeIdentifier</key>
+			<string>gvh.MeshtasticApple.pmtiles</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>pmtiles</string>
 				</array>
 			</dict>
 		</dict>

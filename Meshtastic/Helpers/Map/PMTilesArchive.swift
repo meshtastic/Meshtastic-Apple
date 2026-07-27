@@ -97,6 +97,14 @@ final class PMTilesArchive {
 		}
 	}
 
+	/// Parses only the fixed PMTiles v3 header without memory-mapping the map payload.
+	static func header(url: URL) -> PMTilesHeader? {
+		guard let handle = try? FileHandle(forReadingFrom: url) else { return nil }
+		defer { try? handle.close() }
+		guard let data = try? handle.read(upToCount: 127), data.count == 127 else { return nil }
+		return parseHeader(data)
+	}
+
 	// MARK: - Header
 
 	static func parseHeader(_ data: Data) -> PMTilesHeader? {

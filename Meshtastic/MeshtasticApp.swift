@@ -11,38 +11,6 @@ import DatadogCrashReporting
 import DatadogRUM
 import DatadogTrace
 import DatadogLogs
-import CoreLocation
-
-@MainActor
-protocol BurningManPackReconciling: AnyObject {
-	func reconcile(now: Date, location: CLLocation?) async
-}
-
-extension BurningManOfflinePackCoordinator: BurningManPackReconciling {}
-
-@MainActor
-final class BurningManForegroundScheduler {
-	private let reconciler: any BurningManPackReconciling
-	private let lastKnownLocation: () -> CLLocation?
-	private var scheduledTask: Task<Void, Never>?
-
-	init(
-		reconciler: any BurningManPackReconciling,
-		lastKnownLocation: @escaping () -> CLLocation?
-	) {
-		self.reconciler = reconciler
-		self.lastKnownLocation = lastKnownLocation
-	}
-
-	func schedule() {
-		guard scheduledTask == nil else { return }
-		let location = lastKnownLocation()
-		scheduledTask = Task { [weak self, reconciler] in
-			await reconciler.reconcile(now: .now, location: location)
-			self?.scheduledTask = nil
-		}
-	}
-}
 
 @main
 struct MeshtasticAppleApp: App {
@@ -57,10 +25,6 @@ struct MeshtasticAppleApp: App {
 	@Environment(\.scenePhase) var scenePhase
 	@State var saveChannelLink: SaveChannelLinkData?
 	@State var incomingUrl: URL?
-	private let burningManForegroundScheduler = BurningManForegroundScheduler(
-		reconciler: BurningManOfflinePackCoordinator.shared,
-		lastKnownLocation: { LocationsHandler.shared.locationsArray.last }
-	)
 
 	private static let isRunningTests = NSClassFromString("XCTestCase") != nil || ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
 	private static let isChirpyOTADemo: Bool = {
@@ -374,7 +338,6 @@ struct MeshtasticAppleApp: App {
 				Logger.services.info("🎬 [App] Scene is active")
 				accessoryManager.appDidBecomeActive()
 				appState.refreshBadgeCount(context: persistenceController.container.mainContext)
-				burningManForegroundScheduler.schedule()
 			@unknown default:
 				Logger.services.error("🍎 [App] Apple must have changed something")
 			}

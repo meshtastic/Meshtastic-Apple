@@ -7,6 +7,7 @@
 //  `.pmtiles` archives. Mirrors the file-backed `MapDataManager` pattern.
 //
 
+import CryptoKit
 import Foundation
 import OSLog
 import SwiftUI
@@ -80,24 +81,23 @@ struct OfflineMapDownloadLifecycle {
 /// Reasons a download can't proceed (surfaced to the user).
 enum OfflineMapError: LocalizedError {
 	case exceedsPerMapLimit(Int64)
+	case storageLimit(String)
 
 	var errorDescription: String? {
 		switch self {
 		case .exceedsPerMapLimit(let limit):
 			let formatted = ByteCountFormatter.string(fromByteCount: limit, countStyle: .file)
 			return "This map is larger than the \(formatted) per-map limit. Zoom in or lower the detail level."
+		case .storageLimit(let message):
+			return message
 		}
 	}
 }
 
-enum OfflineMapRemovalReason {
-	case userInitiated
-	case automaticCleanup
-}
-
-@MainActor
-protocol OfflineMapUserRemovalHandling: AnyObject {
-	func setUserRemovalHandler(_ handler: @escaping (UUID) -> Void)
+enum OfflineMapStorageLimits {
+	static let maxRegionBytes: Int64 = 512 * 1024 * 1024
+	static let maxRegions = 10
+	static let maxTotalBytes: Int64 = 3 * 1024 * 1024 * 1024
 }
 
 @MainActor
@@ -107,11 +107,11 @@ final class OfflineMapManager: ObservableObject {
 
 	// MARK: - Limits
 	/// Maximum size of a single downloaded map.
-	static let maxRegionBytes: Int64 = 512 * 1024 * 1024            // 0.5 GB
+	static let maxRegionBytes = OfflineMapStorageLimits.maxRegionBytes // 0.5 GB
 	/// Maximum number of downloaded maps kept at once.
-	static let maxRegions = 10
+	static let maxRegions = OfflineMapStorageLimits.maxRegions
 	/// Maximum combined size of all downloaded maps.
-	static let maxTotalBytes: Int64 = 3 * 1024 * 1024 * 1024        // 3 GB
+	static let maxTotalBytes = OfflineMapStorageLimits.maxTotalBytes // 3 GB
 
 	/// Completed, persisted regions, newest first.
 	@Published private(set) var regions: [OfflineMapRegion] = []
@@ -124,7 +124,6 @@ final class OfflineMapManager: ObservableObject {
 	private var downloadTask: Task<Void, Never>?
 	private var downloadLifecycle = OfflineMapDownloadLifecycle()
 	private var downloadCompletion: ((OfflineMapRegion?) -> Void)?
-	private var onUserRemoval: ((UUID) -> Void)?
 
 	private init() {}
 
@@ -206,6 +205,9 @@ final class OfflineMapManager: ObservableObject {
 					bounds: bounds, minZoom: detail.minZoom, maxZoom: detail.maxZoom
 				)
 				guard plan.payloadBytes <= Self.maxRegionBytes else { throw OfflineMapError.exceedsPerMapLimit(Self.maxRegionBytes) }
+				if let reason = self.downloadBlockReason(estimatedBytes: plan.payloadBytes, replacing: replacing) {
+					throw OfflineMapError.storageLimit(reason)
+				}
 				await self.markDownloading(id: regionID, estimatedBytes: plan.payloadBytes)
 				try await extractor.extract(plan: plan, to: archive.url) { [weak self] written, total in
 					Task { @MainActor in self?.updateProgress(id: regionID, written: written, total: total) }
@@ -233,6 +235,66 @@ final class OfflineMapManager: ObservableObject {
 		guard let id = downloadLifecycle.activeID else { return }
 		downloadTask?.cancel()
 		clearDownload(id: id)
+	}
+
+	/// Starts the Burning Man map only after an explicit user action from Offline Maps.
+	func startBurningManDownload(completion: ((OfflineMapRegion?) -> Void)? = nil) {
+		loadIfNeeded()
+		guard BurningManOfflinePack.existingRegion(in: regions) == nil else {
+			completion?(nil)
+			return
+		}
+		startDownload(
+			name: "Burning Man 2026",
+			bounds: BurningManOfflinePack.bounds,
+			detail: .high,
+			systemPackID: BurningManOfflinePack.packID,
+			onCompletion: completion
+		)
+	}
+
+	/// Validates and copies an externally supplied raster PMTiles archive into the managed store.
+	/// The caller owns security-scoped access to `sourceURL` when it came from Files or Open In.
+	func importPMTiles(from sourceURL: URL) throws -> OfflineMapRegion {
+		loadIfNeeded()
+		let metadata = try OfflineMapImportValidator.validate(fileURL: sourceURL)
+		guard let fileSize = try? sourceURL.resourceValues(forKeys: [.fileSizeKey]).fileSize else {
+			throw OfflineMapImportError.unreadableFile
+		}
+		let size = Int64(fileSize)
+		let sourceDigest = try digest(of: sourceURL)
+		for region in regions {
+			guard let existingURL = fileURL(for: region),
+				let existingDigest = try? digest(of: existingURL)
+			else { continue }
+			if sourceDigest == existingDigest { throw OfflineMapImportError.duplicateMap }
+		}
+		guard regions.count < Self.maxRegions else {
+			throw OfflineMapImportError.exceedsMapCountLimit
+		}
+		guard totalSize + size <= Self.maxTotalBytes else {
+			throw OfflineMapImportError.exceedsTotalStorageLimit
+		}
+
+		guard let destination = newArchiveURL() else { throw OfflineMapImportError.unreadableFile }
+		do {
+			try FileManager.default.copyItem(at: sourceURL, to: destination.url)
+			let importedName = sourceURL.deletingPathExtension().lastPathComponent
+			let region = OfflineMapRegion(
+				name: importedName.isEmpty ? String(localized: "Imported Offline Map") : importedName,
+				fileName: destination.fileName,
+				bounds: metadata.bounds,
+				minZoom: metadata.minZoom,
+				maxZoom: metadata.maxZoom,
+				fileSize: size,
+				sourceBuild: "Imported"
+			)
+			add(region)
+			return region
+		} catch {
+			try? FileManager.default.removeItem(at: destination.url)
+			throw error
+		}
 	}
 
 	/// Dismisses a failed download banner.
@@ -281,6 +343,16 @@ final class OfflineMapManager: ObservableObject {
 		downloadTask = nil
 		activeDownload = nil
 		downloadCompletion = nil
+	}
+
+	private func digest(of url: URL) throws -> Data {
+		let handle = try FileHandle(forReadingFrom: url)
+		defer { try? handle.close() }
+		var hasher = SHA256()
+		while let chunk = try handle.read(upToCount: 64 * 1024), !chunk.isEmpty {
+			hasher.update(data: chunk)
+		}
+		return Data(hasher.finalize())
 	}
 
 	// MARK: - Locations
@@ -399,10 +471,7 @@ final class OfflineMapManager: ObservableObject {
 		save()
 	}
 
-	func remove(_ region: OfflineMapRegion, reason: OfflineMapRemovalReason = .userInitiated) {
-		if case .userInitiated = reason {
-			onUserRemoval?(region.id)
-		}
+	func remove(_ region: OfflineMapRegion) {
 		if let fileURL = fileURL(for: region) {
 			try? FileManager.default.removeItem(at: fileURL)
 		}
@@ -426,39 +495,5 @@ final class OfflineMapManager: ObservableObject {
 
 	var formattedTotalSize: String {
 		ByteCountFormatter.string(fromByteCount: totalSize, countStyle: .file)
-	}
-}
-
-extension OfflineMapManager: OfflineMapUserRemovalHandling {
-	func setUserRemovalHandler(_ handler: @escaping (UUID) -> Void) {
-		onUserRemoval = handler
-	}
-}
-
-extension OfflineMapManager: BurningManOfflinePackDownloading {
-	func region(id: UUID) -> OfflineMapRegion? {
-		loadIfNeeded()
-		return regions.first { $0.id == id }
-	}
-
-	func startSystemPackDownload(
-		packID: String,
-		bounds: GeoBounds,
-		detail: OfflineMapDetailLevel,
-		completion: @escaping (OfflineMapRegion?) -> Void
-	) {
-		loadIfNeeded()
-		startDownload(
-			name: "Burning Man 2026",
-			bounds: bounds,
-			detail: detail,
-			systemPackID: packID,
-			onCompletion: completion
-		)
-	}
-
-	func removeSystemPack(id: UUID, reason: OfflineMapRemovalReason) {
-		guard let region = region(id: id) else { return }
-		remove(region, reason: reason)
 	}
 }
