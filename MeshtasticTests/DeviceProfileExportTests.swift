@@ -311,36 +311,45 @@ struct DeviceProfileExportFilenameTests {
 	@Test("Android-style filename uses the short name, date stamp, and nodeConfig suffix")
 	func androidStyleFilename() {
 		let name = DeviceProfileDocument.exportFilename(shortName: "ABCD", longName: "Base Station", date: fixedDate)
-		#expect(name == "Meshtastic_ABCD_20260504_nodeConfig")
+		#expect(name == "Meshtastic_ABCD_20260504_nodeConfig.cfg")
 	}
 
 	@Test("Falls back to the long name when no short name is set")
 	func fallsBackToLongName() {
 		let name = DeviceProfileDocument.exportFilename(shortName: "  ", longName: "Base Station", date: fixedDate)
-		#expect(name == "Meshtastic_Base Station_20260504_nodeConfig")
+		#expect(name == "Meshtastic_Base Station_20260504_nodeConfig.cfg")
 	}
 
 	@Test("Falls back to Node when neither name is usable")
 	func fallsBackToNode() {
 		let name = DeviceProfileDocument.exportFilename(shortName: nil, longName: nil, date: fixedDate)
-		#expect(name == "Meshtastic_Node_20260504_nodeConfig")
+		#expect(name == "Meshtastic_Node_20260504_nodeConfig.cfg")
 	}
 
 	@Test("Strips path-illegal characters from the chosen name")
 	func stripsIllegalCharacters() {
 		let name = DeviceProfileDocument.exportFilename(shortName: "Base/Repeater:1", longName: nil, date: fixedDate)
-		#expect(name == "Meshtastic_Base-Repeater-1_20260504_nodeConfig")
+		#expect(name == "Meshtastic_Base-Repeater-1_20260504_nodeConfig.cfg")
 	}
 
 	@Test("A name made only of illegal characters falls back to Node")
 	func allIllegalCharactersFallsBackToNode() {
 		let name = DeviceProfileDocument.exportFilename(shortName: "/", longName: "::", date: fixedDate)
-		#expect(name == "Meshtastic_Node_20260504_nodeConfig")
+		#expect(name == "Meshtastic_Node_20260504_nodeConfig.cfg")
 	}
 
-	@Test("Exported UTType carries the cfg extension so the exporter appends .cfg")
+	@Test("The exported UTType is our declared type and carries the cfg extension")
 	func deviceProfileUTType() {
+		#expect(UTType.meshtasticDeviceProfile.identifier == "com.meshtastic.device-profile")
 		#expect(UTType.meshtasticDeviceProfile.preferredFilenameExtension == "cfg")
 		#expect(UTType.meshtasticDeviceProfile.conforms(to: .data))
+	}
+
+	@Test("The default export filename carries the .cfg extension itself")
+	func exportFilenameCarriesExtension() {
+		// fileExporter does not append the type's preferredFilenameExtension to defaultFilename, so a
+		// name without it produced an extensionless, un-importable file on device.
+		let name = DeviceProfileDocument.exportFilename(shortName: "ABCD", longName: nil, date: fixedDate)
+		#expect(name.hasSuffix(".cfg"))
 	}
 }
