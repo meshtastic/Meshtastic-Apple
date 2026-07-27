@@ -10,6 +10,21 @@ import MeshtasticProtobufs
 import OSLog
 @preconcurrency import SwiftData
 
+extension LocalStatsRequestTransport {
+	static func configure(
+		_ packet: inout MeshPacket,
+		transport: LocalStatsRequestTransport,
+		destinationPublicKey: Data?
+	) -> Bool {
+		guard transport == .remoteAdmin else { return true }
+		guard remoteAdminAvailable(for: destinationPublicKey), let destinationPublicKey else { return false }
+
+		packet.pkiEncrypted = true
+		packet.publicKey = destinationPublicKey
+		return true
+	}
+}
+
 extension AccessoryManager {
 
 	public func getCannedMessageModuleMessages(destNum: Int64, wantResponse: Bool) throws {
@@ -2468,7 +2483,12 @@ extension AccessoryManager {
 		return Int64(meshPacket.id)
 	}
 
-	func sendLocalStatsRequest(destNum: Int64, wantResponse: Bool) async throws {
+	func sendLocalStatsRequest(
+		destNum: Int64,
+		wantResponse: Bool,
+		transport: LocalStatsRequestTransport = .sharedChannel,
+		destinationPublicKey: Data? = nil
+	) async throws {
 		guard let fromNodeNum = self.activeConnection?.device.num else {
 			Logger.services.error("Error while sending local stats request.  No active device.")
 			throw AccessoryError.ioFailed("No active device")
@@ -2483,6 +2503,13 @@ extension AccessoryManager {
 		meshPacket.from = UInt32(fromNodeNum)
 		meshPacket.wantAck = true
 		meshPacket.decoded.wantResponse = wantResponse
+		guard LocalStatsRequestTransport.configure(
+			&meshPacket,
+			transport: transport,
+			destinationPublicKey: destinationPublicKey
+		) else {
+			throw AccessoryError.ioFailed("sendLocalStatsRequest: Remote admin requires the destination public key")
+		}
 
 		var dataMessage = DataMessage()
 		if let serializedData: Data = try? telemetryPacket.serializedData() {

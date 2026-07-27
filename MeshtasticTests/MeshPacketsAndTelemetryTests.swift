@@ -4,6 +4,7 @@
 import Testing
 import Foundation
 import SwiftUI
+import MeshtasticProtobufs
 @testable import Meshtastic
 
 // MARK: - generateMessageMarkdown Tests
@@ -80,6 +81,48 @@ struct LocalStatsTelemetryExportTests {
 		let csv = telemetryToCsvFile(telemetry: [telemetry], metricsType: 4)
 
 		#expect(csv.split(separator: "\n").last?.split(separator: ",").first?.trimmingCharacters(in: .whitespaces) == "0")
+	}
+}
+
+@Suite("Local stats request transport")
+struct LocalStatsRequestTransportTests {
+
+	@Test func directlyAttachedNode_skipsTransportChoice() {
+		#expect(LocalStatsRequestTransport.shouldChooseMethod(from: 0x1234, to: 0x1234) == false)
+	}
+
+	@Test func remoteNode_requiresTransportChoice() {
+		#expect(LocalStatsRequestTransport.shouldChooseMethod(from: 0x1234, to: 0x5678) == true)
+	}
+
+	@Test func remoteAdmin_requiresDestinationPublicKey() {
+		#expect(LocalStatsRequestTransport.remoteAdminAvailable(for: nil) == false)
+		#expect(LocalStatsRequestTransport.remoteAdminAvailable(for: Data()) == false)
+		#expect(LocalStatsRequestTransport.remoteAdminAvailable(for: Data(repeating: 1, count: 32)) == true)
+	}
+
+	@Test func sharedChannel_doesNotEnablePKIOnThePacket() {
+		var packet = MeshPacket()
+
+		#expect(LocalStatsRequestTransport.configure(
+			&packet,
+			transport: .sharedChannel,
+			destinationPublicKey: nil
+		))
+		#expect(packet.pkiEncrypted == false)
+	}
+
+	@Test func remoteAdmin_enablesPKIWithTheDestinationKey() {
+		let publicKey = Data(repeating: 2, count: 32)
+		var packet = MeshPacket()
+
+		#expect(LocalStatsRequestTransport.configure(
+			&packet,
+			transport: .remoteAdmin,
+			destinationPublicKey: publicKey
+		))
+		#expect(packet.pkiEncrypted == true)
+		#expect(packet.publicKey == publicKey)
 	}
 }
 
