@@ -546,6 +546,11 @@ extension BLEConnection {
 					// transient failure does not tear the link down, which also means nothing else can
 					// reach the reconnect branch in `handlePeripheralError`. Escalate here now that the
 					// attempts are spent, then propagate the original error to the caller.
+					//
+					// Cancellation arriving during that last write lands here, past the check at the
+					// top of the loop. A cancelled send is usually the app tearing the link down on
+					// purpose, so escalating would start a reconnect that fights it.
+					try Task.checkCancellation()
 					do {
 						try await handlePeripheralError(error: attError)
 					} catch {
