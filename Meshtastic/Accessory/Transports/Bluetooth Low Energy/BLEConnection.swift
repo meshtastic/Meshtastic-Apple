@@ -532,24 +532,39 @@ extension BLEConnection {
 		// peripheral failing to allocate for this one write, not a broken link, and it shows up on larger
 		// admin messages (set_owner, config sets) while small ones go through. Without this a single
 		// transient failure aborts whatever operation was in flight.
-		for attempt in 0..<Self.writeRetryLimit {
+		for attempt in 0..<Self.writeAttemptLimit {
+			// A cancelled send must not put another write on the wire.
+			try Task.checkCancellation()
 			do {
 				try await performWrite(binaryData, to: characteristic, type: writeType)
 				return
 			} catch let attError as CBATTError where attError.code == .insufficientResources {
-				guard attempt + 1 < Self.writeRetryLimit else {
-					Logger.transport.error("🛜 [BLE] write of \(binaryData.count, privacy: .public)B still refused after \(Self.writeRetryLimit, privacy: .public) attempts")
+				guard attempt + 1 < Self.writeAttemptLimit else {
+					Logger.transport.error("🛜 [BLE] write of \(binaryData.count, privacy: .public)B still refused after \(Self.writeAttemptLimit, privacy: .public) attempts")
+					// Every attempt was refused, so this is no longer a momentary allocation miss.
+					// `didWriteValueFor` deliberately skips the shared error handler for this code so a
+					// transient failure does not tear the link down, which also means nothing else can
+					// reach the reconnect branch in `handlePeripheralError`. Escalate here now that the
+					// attempts are spent, then propagate the original error to the caller.
+					do {
+						try await handlePeripheralError(error: attError)
+					} catch {
+						Logger.transport.error("🛜 [BLE] failed to escalate an exhausted write: \(error, privacy: .public)")
+					}
 					throw attError
 				}
 				let backoff = Duration.milliseconds(120 * (attempt + 1))
 				Logger.transport.error("🛜 [BLE] radio out of buffers for a \(binaryData.count, privacy: .public)B write; retry \(attempt + 1, privacy: .public)")
-				try? await Task.sleep(for: backoff)
+				// Not `try?`: a cancellation during the backoff must propagate rather than fall
+				// through into another write.
+				try await Task.sleep(for: backoff)
 			}
 		}
 	}
 
-	/// Number of times a write is retried when the radio reports it is out of buffers.
-	private static let writeRetryLimit = 4
+	/// Total number of times a single write is attempted when the radio reports it is out of
+	/// buffers: the initial write plus three retries, backing off 120/240/360ms between them.
+	private static let writeAttemptLimit = 4
 
 	private func performWrite(
 		_ binaryData: Data,
