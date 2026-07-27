@@ -79,7 +79,9 @@ View / Service
 
 ### BLE Writes When the Radio Is Out of Buffers
 
-`CBATTError.insufficientResources` on a `TORADIO` write means the peripheral could not allocate for *that one write*. The link is healthy and the next write usually succeeds, so it is handled like an invalid UTF-8 field above — a per-item failure that must not tear down the stream — rather than like genuine wire corruption. It shows up on larger admin messages (`set_owner`, config sets) while 8-33 byte writes on the same connection go through; it was observed on a Heltec V4 (ESP32-S3/NimBLE) refusing a 104 byte write with an ATT MTU of 255 negotiated, so it is buffer exhaustion, not the size limit.
+All of this applies only to `.withResponse` writes. `send` picks the write type from the characteristic's properties, preferring `.withoutResponse` when the radio advertises it, and CoreBluetooth does not call `didWriteValueFor` for that type — `performWrite` resumes its continuation as soon as the value is handed to CoreBluetooth, so no ATT error can come back and there is nothing to retry. Radios that refuse writes this way advertise plain `write`, which is how the path below is reachable at all. A `.withoutResponse` radio running out of buffers is invisible to the app; that backpressure is not handled.
+
+`CBATTError.insufficientResources` on a `.withResponse` `TORADIO` write means the peripheral could not allocate for *that one write*. The link is healthy and the next write usually succeeds, so it is handled like an invalid UTF-8 field above — a per-item failure that must not tear down the stream — rather than like genuine wire corruption. It shows up on larger admin messages (`set_owner`, config sets) while 8-33 byte writes on the same connection go through; it was observed on a Heltec V4 (ESP32-S3/NimBLE) refusing a 104 byte write with an ATT MTU of 255 negotiated, so it is buffer exhaustion, not the size limit.
 
 Two places cooperate on that:
 
