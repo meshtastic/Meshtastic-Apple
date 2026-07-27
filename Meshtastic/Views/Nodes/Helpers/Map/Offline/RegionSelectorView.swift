@@ -405,7 +405,7 @@ struct RegionSelectorView: View {
 	}
 
 	private var canDownload: Bool {
-		bounds != nil && !manager.isDownloading && overlap == nil && warning == nil
+		bounds != nil && !manager.isBusy && overlap == nil && warning == nil
 	}
 
 	// MARK: - Size estimate

@@ -59,7 +59,7 @@ struct OfflineMapImportTests {
 	}
 
 	@MainActor
-	@Test func importCopiesTheSharedArchiveIntoTheManagedStore() throws {
+	@Test func importCopiesTheSharedArchiveIntoTheManagedStore() async throws {
 		let sourceURL = FileManager.default.temporaryDirectory
 			.appendingPathComponent("Shared Playa \(UUID().uuidString).pmtiles")
 		var archive = PMTilesExtractor.buildHeader(
@@ -81,7 +81,7 @@ struct OfflineMapImportTests {
 		defer { try? FileManager.default.removeItem(at: sourceURL) }
 
 		let manager = OfflineMapManager.shared
-		let imported = try manager.importPMTiles(from: sourceURL)
+		let imported = try await manager.importPMTiles(from: sourceURL)
 		defer { manager.remove(imported) }
 
 		#expect(imported.name == sourceURL.deletingPathExtension().lastPathComponent)

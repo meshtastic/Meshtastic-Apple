@@ -51,7 +51,7 @@ struct OfflineMapDetailView: View {
 				LabeledContent("Source", value: current.sourceBuild == "Imported" ? "Imported PMTiles" : "Protomaps \(current.sourceBuild)")
 			}
 
-			if let fileURL = manager.fileURL(for: current) {
+			if let fileURL = manager.fileURL(for: current), FileManager.default.fileExists(atPath: fileURL.path) {
 				Section {
 					ShareLink(item: fileURL) {
 						Label("Share Offline Map", systemImage: "square.and.arrow.up")

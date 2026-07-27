@@ -3,6 +3,7 @@
 //  Meshtastic
 //
 
+import CryptoKit
 import Foundation
 import UniformTypeIdentifiers
 
@@ -20,6 +21,7 @@ enum OfflineMapImportError: LocalizedError {
 	case exceedsTotalStorageLimit
 	case exceedsMapCountLimit
 	case duplicateMap
+	case operationInProgress
 
 	var errorDescription: String? {
 		switch self {
@@ -41,11 +43,13 @@ enum OfflineMapImportError: LocalizedError {
 			return String(localized: "Remove an offline map before importing another one.")
 		case .duplicateMap:
 			return String(localized: "This offline map is already installed.")
+		case .operationInProgress:
+			return String(localized: "Finish the current offline map operation before importing another map.")
 		}
 	}
 }
 
-struct OfflineMapImportMetadata: Equatable {
+struct OfflineMapImportMetadata: Equatable, Sendable {
 	let bounds: GeoBounds
 	let minZoom: Int
 	let maxZoom: Int
@@ -90,5 +94,63 @@ enum OfflineMapImportValidator {
 			minZoom: Int(header.minZoom),
 			maxZoom: Int(header.maxZoom)
 		)
+	}
+}
+
+struct OfflineMapImportSource: Sendable {
+	let fileName: String
+	let fileSize: Int64
+	let digest: Data
+}
+
+struct OfflineMapImportedArchive: Sendable {
+	let metadata: OfflineMapImportMetadata
+	let fileSize: Int64
+	let digest: Data
+}
+
+enum OfflineMapImportWorker {
+	static func inspectSource(at sourceURL: URL) throws -> OfflineMapImportSource {
+		_ = try OfflineMapImportValidator.validate(fileURL: sourceURL)
+		guard let fileSize = try? sourceURL.resourceValues(forKeys: [.fileSizeKey]).fileSize else {
+			throw OfflineMapImportError.unreadableFile
+		}
+		return OfflineMapImportSource(
+			fileName: sourceURL.deletingPathExtension().lastPathComponent,
+			fileSize: Int64(fileSize),
+			digest: try digest(of: sourceURL)
+		)
+	}
+
+	static func existingDigests(for urls: [URL]) -> [Data] {
+		urls.compactMap { try? digest(of: $0) }
+	}
+
+	static func copyAndValidate(from sourceURL: URL, to destinationURL: URL) throws -> OfflineMapImportedArchive {
+		do {
+			try FileManager.default.copyItem(at: sourceURL, to: destinationURL)
+			let metadata = try OfflineMapImportValidator.validate(fileURL: destinationURL)
+			guard let fileSize = try? destinationURL.resourceValues(forKeys: [.fileSizeKey]).fileSize else {
+				throw OfflineMapImportError.unreadableFile
+			}
+			return OfflineMapImportedArchive(
+				metadata: metadata,
+				fileSize: Int64(fileSize),
+				digest: try digest(of: destinationURL)
+			)
+		} catch {
+			try? FileManager.default.removeItem(at: destinationURL)
+			throw error
+		}
+	}
+
+	private static func digest(of url: URL) throws -> Data {
+		let handle = try FileHandle(forReadingFrom: url)
+		defer { try? handle.close() }
+		var hasher = SHA256()
+		while let chunk = try handle.read(upToCount: 64 * 1024), !chunk.isEmpty {
+			hasher.update(data: chunk)
+		}
+		return Data(hasher.finalize())
 	}
 }

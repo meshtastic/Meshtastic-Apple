@@ -263,10 +263,10 @@ class Router: ObservableObject {
 				if hasAccess { url.stopAccessingSecurityScopedResource() }
 			}
 			do {
-				let region = try OfflineMapManager.shared.importPMTiles(from: url)
-				Logger.services.info("🗺️ [Offline] Imported '\(region.name, privacy: .public)' via Open In.")
+				let region = try await OfflineMapManager.shared.importPMTiles(from: url)
+				Logger.services.info("🗺️ [Offline] Imported '\(region.name, privacy: .private)' via Open In.")
 			} catch {
-				Logger.services.error("🗺️ [Offline] PMTiles import failed: \(error.localizedDescription, privacy: .public)")
+				Logger.services.error("🗺️ [Offline] PMTiles import failed: \(error.localizedDescription, privacy: .private)")
 			}
 		}
 	}

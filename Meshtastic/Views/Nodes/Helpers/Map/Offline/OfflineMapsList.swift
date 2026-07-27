@@ -42,7 +42,7 @@ struct OfflineMapsList: View {
 						} label: {
 							Label("Download Burning Man offline map", systemImage: "map.circle.fill")
 						}
-						.disabled(manager.isDownloading)
+						.disabled(manager.isBusy)
 					}
 				} header: {
 					Text("Burning Man")
@@ -63,7 +63,7 @@ struct OfflineMapsList: View {
 				} label: {
 					Label("Download New Map", systemImage: "plus.circle")
 				}
-				.disabled(manager.isDownloading)
+				.disabled(manager.isBusy)
 			}
 
 			if manager.regions.isEmpty {
@@ -126,14 +126,16 @@ struct OfflineMapsList: View {
 		.fileImporter(isPresented: $showingImporter, allowedContentTypes: [.meshtasticPMTiles]) { result in
 			switch result {
 			case .success(let url):
-				let hasAccess = url.startAccessingSecurityScopedResource()
-				defer {
-					if hasAccess { url.stopAccessingSecurityScopedResource() }
-				}
-				do {
-					_ = try manager.importPMTiles(from: url)
-				} catch {
-					importError = error.localizedDescription
+				Task {
+					let hasAccess = url.startAccessingSecurityScopedResource()
+					defer {
+						if hasAccess { url.stopAccessingSecurityScopedResource() }
+					}
+					do {
+						_ = try await manager.importPMTiles(from: url)
+					} catch {
+						importError = error.localizedDescription
+					}
 				}
 			case .failure(let error):
 				importError = error.localizedDescription
@@ -153,7 +155,7 @@ struct OfflineMapsList: View {
 		guard canOfferBurningManMap,
 			burningManRegion == nil,
 			!didDismissBurningManPrompt,
-			!manager.isDownloading
+			!manager.isBusy
 		else { return }
 		showingBurningManPrompt = true
 	}

@@ -7,7 +7,6 @@
 //  `.pmtiles` archives. Mirrors the file-backed `MapDataManager` pattern.
 //
 
-import CryptoKit
 import Foundation
 import OSLog
 import SwiftUI
@@ -117,6 +116,7 @@ final class OfflineMapManager: ObservableObject {
 	@Published private(set) var regions: [OfflineMapRegion] = []
 	/// The currently downloading region, if any (one at a time).
 	@Published var activeDownload: OfflineMapDownloadProgress?
+	@Published private(set) var isImporting = false
 
 	static let directoryName = "OfflineMaps"
 	static let manifestName = "offline_maps.json"
@@ -131,6 +131,7 @@ final class OfflineMapManager: ObservableObject {
 
 	/// Whether a download is in flight (one region at a time).
 	var isDownloading: Bool { downloadLifecycle.isDownloading }
+	var isBusy: Bool { isDownloading || isImporting }
 
 	/// The first existing region whose extent intersects `bounds` (ignoring `excluding`), or nil.
 	/// Downloads must not overlap — avoids duplicate coverage.
@@ -169,7 +170,7 @@ final class OfflineMapManager: ObservableObject {
 		systemPackID: String? = nil,
 		onCompletion: ((OfflineMapRegion?) -> Void)? = nil
 	) {
-		guard !isDownloading, let archive = newArchiveURL() else {
+		guard !isBusy, let archive = newArchiveURL() else {
 			onCompletion?(nil)
 			return
 		}
@@ -205,7 +206,8 @@ final class OfflineMapManager: ObservableObject {
 					bounds: bounds, minZoom: detail.minZoom, maxZoom: detail.maxZoom
 				)
 				guard plan.payloadBytes <= Self.maxRegionBytes else { throw OfflineMapError.exceedsPerMapLimit(Self.maxRegionBytes) }
-				if let reason = self.downloadBlockReason(estimatedBytes: plan.payloadBytes, replacing: replacing) {
+				if systemPackID == nil,
+					let reason = self.downloadBlockReason(estimatedBytes: plan.payloadBytes, replacing: replacing) {
 					throw OfflineMapError.storageLimit(reason)
 				}
 				await self.markDownloading(id: regionID, estimatedBytes: plan.payloadBytes)
@@ -255,38 +257,50 @@ final class OfflineMapManager: ObservableObject {
 
 	/// Validates and copies an externally supplied raster PMTiles archive into the managed store.
 	/// The caller owns security-scoped access to `sourceURL` when it came from Files or Open In.
-	func importPMTiles(from sourceURL: URL) throws -> OfflineMapRegion {
+	func importPMTiles(from sourceURL: URL) async throws -> OfflineMapRegion {
 		loadIfNeeded()
-		let metadata = try OfflineMapImportValidator.validate(fileURL: sourceURL)
-		guard let fileSize = try? sourceURL.resourceValues(forKeys: [.fileSizeKey]).fileSize else {
-			throw OfflineMapImportError.unreadableFile
-		}
-		let size = Int64(fileSize)
-		let sourceDigest = try digest(of: sourceURL)
-		for region in regions {
-			guard let existingURL = fileURL(for: region),
-				let existingDigest = try? digest(of: existingURL)
-			else { continue }
-			if sourceDigest == existingDigest { throw OfflineMapImportError.duplicateMap }
+		guard !isBusy else { throw OfflineMapImportError.operationInProgress }
+		isImporting = true
+		defer { isImporting = false }
+
+		let existingURLs = regions.compactMap(fileURL(for:))
+		let source = try await Task.detached(priority: .userInitiated) {
+			try OfflineMapImportWorker.inspectSource(at: sourceURL)
+		}.value
+		let existingDigests = await Task.detached(priority: .utility) {
+			OfflineMapImportWorker.existingDigests(for: existingURLs)
+		}.value
+		guard !existingDigests.contains(source.digest) else {
+			throw OfflineMapImportError.duplicateMap
 		}
 		guard regions.count < Self.maxRegions else {
 			throw OfflineMapImportError.exceedsMapCountLimit
 		}
-		guard totalSize + size <= Self.maxTotalBytes else {
+		guard totalSize + source.fileSize <= Self.maxTotalBytes else {
 			throw OfflineMapImportError.exceedsTotalStorageLimit
 		}
 
 		guard let destination = newArchiveURL() else { throw OfflineMapImportError.unreadableFile }
 		do {
-			try FileManager.default.copyItem(at: sourceURL, to: destination.url)
-			let importedName = sourceURL.deletingPathExtension().lastPathComponent
+			let imported = try await Task.detached(priority: .userInitiated) {
+				try OfflineMapImportWorker.copyAndValidate(from: sourceURL, to: destination.url)
+			}.value
+			guard !existingDigests.contains(imported.digest) else {
+				throw OfflineMapImportError.duplicateMap
+			}
+			guard regions.count < Self.maxRegions else {
+				throw OfflineMapImportError.exceedsMapCountLimit
+			}
+			guard totalSize + imported.fileSize <= Self.maxTotalBytes else {
+				throw OfflineMapImportError.exceedsTotalStorageLimit
+			}
 			let region = OfflineMapRegion(
-				name: importedName.isEmpty ? String(localized: "Imported Offline Map") : importedName,
+				name: source.fileName.isEmpty ? String(localized: "Imported Offline Map") : source.fileName,
 				fileName: destination.fileName,
-				bounds: metadata.bounds,
-				minZoom: metadata.minZoom,
-				maxZoom: metadata.maxZoom,
-				fileSize: size,
+				bounds: imported.metadata.bounds,
+				minZoom: imported.metadata.minZoom,
+				maxZoom: imported.metadata.maxZoom,
+				fileSize: imported.fileSize,
 				sourceBuild: "Imported"
 			)
 			add(region)
@@ -343,16 +357,6 @@ final class OfflineMapManager: ObservableObject {
 		downloadTask = nil
 		activeDownload = nil
 		downloadCompletion = nil
-	}
-
-	private func digest(of url: URL) throws -> Data {
-		let handle = try FileHandle(forReadingFrom: url)
-		defer { try? handle.close() }
-		var hasher = SHA256()
-		while let chunk = try handle.read(upToCount: 64 * 1024), !chunk.isEmpty {
-			hasher.update(data: chunk)
-		}
-		return Data(hasher.finalize())
 	}
 
 	// MARK: - Locations

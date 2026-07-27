@@ -35,7 +35,7 @@ enum PMTilesCompression: UInt8 {
 }
 
 /// Geographic bounds in degrees.
-struct GeoBounds: Equatable {
+struct GeoBounds: Equatable, Sendable {
 	let minLon: Double
 	let minLat: Double
 	let maxLon: Double
