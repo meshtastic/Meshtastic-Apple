@@ -1,3 +1,5 @@
+// MARK: MessagePreviewText
+
 import SwiftUI
 
 struct MessagePreviewText: View {
