@@ -1160,6 +1160,7 @@ extension MeshPackets {
 					newSecurityConfig.serialEnabled = config.serialEnabled
 					newSecurityConfig.debugLogApiEnabled = config.debugLogApiEnabled
 					newSecurityConfig.adminChannelEnabled = config.adminChannelEnabled
+					newSecurityConfig.packetSignaturePolicy = Int32(config.packetSignaturePolicy.rawValue)
 					fetchedNode[0].securityConfig = newSecurityConfig
 				} else {
 					fetchedNode[0].securityConfig?.publicKey = config.publicKey
@@ -1177,6 +1178,7 @@ extension MeshPackets {
 					fetchedNode[0].securityConfig?.serialEnabled = config.serialEnabled
 					fetchedNode[0].securityConfig?.debugLogApiEnabled = config.debugLogApiEnabled
 					fetchedNode[0].securityConfig?.adminChannelEnabled = config.adminChannelEnabled
+					fetchedNode[0].securityConfig?.packetSignaturePolicy = Int32(config.packetSignaturePolicy.rawValue)
 				}
 				if sessionPasskey?.count != 0 {
 					fetchedNode[0].sessionPasskey = sessionPasskey

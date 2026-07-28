@@ -2054,3 +2054,90 @@ struct DeviceOnboardingSnapshotTests {
 		await assertViewSnapshot(of: screen(DeviceOnboarding().siriView), width: 390, height: 844, named: "onboarding_siri", forDocs: true)
 	}
 }
+
+// MARK: - PacketAuthenticity Snapshot Tests
+
+/// Visual coverage for the Packet Authenticity policy selector, mirroring the Android
+/// screenshot-test matrix in `SettingsScreenshotTests.kt` (Meshtastic-Android#6178): each policy
+/// plus the states where the control is unavailable, in light and dark.
+///
+/// The Strict confirmation is an `.alert`, which a windowless host does not render, so it is
+/// covered by the state-machine tests in `PacketAuthenticityTests` rather than here.
+@Suite("PacketAuthenticity Snapshots")
+struct PacketAuthenticitySnapshotTests {
+
+	@MainActor
+	private func section(
+		_ policy: Config.SecurityConfig.PacketSignaturePolicy,
+		capability: PacketAuthenticityCapability = .supported,
+		isConnected: Bool = true
+	) -> some View {
+		Form {
+			PacketAuthenticitySection(
+				capability: capability,
+				isConnected: isConnected,
+				selection: .constant(PacketAuthenticitySelectionState(selected: policy))
+			)
+		}
+	}
+
+	@Test("Compatible (default) policy, light")
+	@MainActor
+	func compatibleLight() async {
+		await assertViewSnapshot(of: section(.compatible), width: 390, height: 260, colorScheme: .light, named: "packetAuthenticity_compatible_light")
+	}
+
+	@Test("Compatible (default) policy, dark")
+	@MainActor
+	func compatibleDark() async {
+		await assertViewSnapshot(of: section(.compatible), width: 390, height: 260, colorScheme: .dark, named: "packetAuthenticity_compatible_dark")
+	}
+
+	@Test("Balanced policy, light")
+	@MainActor
+	func balancedLight() async {
+		await assertViewSnapshot(of: section(.balanced), width: 390, height: 260, colorScheme: .light, named: "packetAuthenticity_balanced_light")
+	}
+
+	@Test("Balanced policy, dark")
+	@MainActor
+	func balancedDark() async {
+		await assertViewSnapshot(of: section(.balanced), width: 390, height: 260, colorScheme: .dark, named: "packetAuthenticity_balanced_dark")
+	}
+
+	@Test("Strict policy, light")
+	@MainActor
+	func strictLight() async {
+		await assertViewSnapshot(of: section(.strict), width: 390, height: 260, colorScheme: .light, named: "packetAuthenticity_strict_light")
+	}
+
+	@Test("Strict policy, dark")
+	@MainActor
+	func strictDark() async {
+		await assertViewSnapshot(of: section(.strict), width: 390, height: 260, colorScheme: .dark, named: "packetAuthenticity_strict_dark")
+	}
+
+	@Test("Firmware without XEdDSA support, light")
+	@MainActor
+	func unsupportedLight() async {
+		await assertViewSnapshot(of: section(.compatible, capability: .unsupported), width: 390, height: 260, colorScheme: .light, named: "packetAuthenticity_unsupported_light")
+	}
+
+	@Test("Firmware without XEdDSA support, dark")
+	@MainActor
+	func unsupportedDark() async {
+		await assertViewSnapshot(of: section(.compatible, capability: .unsupported), width: 390, height: 260, colorScheme: .dark, named: "packetAuthenticity_unsupported_dark")
+	}
+
+	@Test("Capability not yet reported, light")
+	@MainActor
+	func unknownCapabilityLight() async {
+		await assertViewSnapshot(of: section(.compatible, capability: .unknown), width: 390, height: 300, colorScheme: .light, named: "packetAuthenticity_unknown_light")
+	}
+
+	@Test("Capability not yet reported, dark")
+	@MainActor
+	func unknownCapabilityDark() async {
+		await assertViewSnapshot(of: section(.compatible, capability: .unknown), width: 390, height: 300, colorScheme: .dark, named: "packetAuthenticity_unknown_dark")
+	}
+}
