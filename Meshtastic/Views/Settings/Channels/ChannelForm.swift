@@ -132,7 +132,7 @@ struct ChannelForm: View {
 						Toggle(isOn: $positionsEnabled) {
 							Label(channelRole == 1 ? "Positions Enabled" : "Allow Position Requests", systemImage: positionsEnabled ? "mappin" : "mappin.slash")
 						}
-						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						.toggleStyle(.switch)
 						.disabled(!supportedVersion)
 					}
 
@@ -142,7 +142,7 @@ struct ChannelForm: View {
 								Toggle(isOn: $preciseLocation) {
 									Label("Precise Location", systemImage: "scope")
 								}
-								.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+								.toggleStyle(.switch)
 								.disabled(!supportedVersion)
 								.listRowSeparator(.visible)
 								.onChange(of: preciseLocation) { _, pl in
@@ -177,13 +177,13 @@ struct ChannelForm: View {
 					Toggle(isOn: $uplink) {
 						Label("Uplink Enabled", systemImage: "arrowshape.up")
 					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.toggleStyle(.switch)
 					.listRowSeparator(.visible)
 
 					Toggle(isOn: $downlink) {
 						Label("Downlink Enabled", systemImage: "arrowshape.down")
 					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.toggleStyle(.switch)
 				}
 		}
 		.onChange(of: channelName) {

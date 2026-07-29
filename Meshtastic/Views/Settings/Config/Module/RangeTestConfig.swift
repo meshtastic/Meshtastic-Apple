@@ -57,7 +57,6 @@ struct RangeTestConfig: View {
 				Toggle(isOn: $enabled) {
 					Label("Enabled", systemImage: "figure.walk")
 				}
-				.tint(.accentColor)
 				.listRowSeparator(.visible)
 				UpdateIntervalPicker(
 					config: .rangeTestSender,
@@ -73,7 +72,6 @@ struct RangeTestConfig: View {
 					Label("Save", systemImage: "square.and.arrow.down.fill")
 					Text("Saves a CSV with the range test message details, currently only available on ESP32 devices with a web server.")
 				}
-				.tint(.accentColor)
 				.disabled(!(node != nil && node?.metadata?.hasWifi ?? false))
 				
 			}

@@ -36,7 +36,6 @@ struct AudioConfig: View {
 						Label("Codec2 Enabled", systemImage: "waveform")
 						Text("Enable Codec2 audio encoding/decoding for voice communication over the mesh.")
 					}
-					.tint(.accentColor)
 				}
 
 				if codec2Enabled {

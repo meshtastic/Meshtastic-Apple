@@ -8,23 +8,51 @@ import SwiftUI
 
 struct MeshtasticLogo: View {
 
-	@Environment(\.colorScheme) var colorScheme
+	@Environment(\.colorScheme) private var colorScheme
+	@Environment(\.eventFirmwarePresentation) private var eventPresentation
+	@Environment(\.openEventFirmwareInfo) private var openEventFirmwareInfo
 
 	var body: some View {
+		Group {
+			if let eventPresentation {
+				Button {
+					openEventFirmwareInfo()
+				} label: {
+					EventFirmwareIcon(
+						edition: eventPresentation.edition,
+						iconURL: eventPresentation.info.iconURL,
+						size: 34
+					)
+				}
+				.buttonStyle(.plain)
+				.accessibilityLabel(
+					String(
+						localized: "\(eventPresentation.info.displayName ?? eventPresentation.edition.name) event information",
+						comment: "VoiceOver label for the connected event firmware navigation logo"
+					)
+				)
+			} else {
+				Link(destination: URL(string: "meshtastic:///settings/about")!) {
+					standardLogo
+				}
+			}
+		}
+	}
+
+	@ViewBuilder
+	private var standardLogo: some View {
 		#if targetEnvironment(macCatalyst)
 			VStack {
-				Link(destination: URL(string: "meshtastic:///settings/about")!) {
-					if #available(iOS 26.0, macOS 26.0, *) {
-						Image(colorScheme == .dark ? "logo-white" : "logo-black")
-							.resizable()
-							.foregroundColor(.accentColor)
-							.scaledToFit()
-					} else {
-						Image("logo-white")
-							.resizable()
-							.foregroundColor(.accentColor)
-							.scaledToFit()
-					}
+				if #available(iOS 26.0, macOS 26.0, *) {
+					Image(colorScheme == .dark ? "logo-white" : "logo-black")
+						.resizable()
+						.foregroundColor(.accentColor)
+						.scaledToFit()
+				} else {
+					Image("logo-white")
+						.resizable()
+						.foregroundColor(.accentColor)
+						.scaledToFit()
 				}
 			}
 			.padding(.bottom, 5)
@@ -32,19 +60,15 @@ struct MeshtasticLogo: View {
 		#else
 		if #available(iOS 26.0, macOS 26.0, *) {
 			VStack {
-				Link(destination: URL(string: "meshtastic:///settings/about")!) {
-					Image(colorScheme == .dark ? "logo-white" : "logo-black")
-						.resizable()
-						.scaledToFit()
-				}
+				Image(colorScheme == .dark ? "logo-white" : "logo-black")
+					.resizable()
+					.scaledToFit()
 			}
 		} else {
 			VStack {
-				Link(destination: URL(string: "meshtastic:///settings/about")!) {
-					Image(colorScheme == .dark ? "logo-white" : "logo-black")
-						.resizable()
-						.scaledToFit()
-				}
+				Image(colorScheme == .dark ? "logo-white" : "logo-black")
+					.resizable()
+					.scaledToFit()
 			}
 			.padding(.bottom, 5)
 		}

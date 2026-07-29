@@ -32,7 +32,6 @@ struct AmbientLightingConfig: View {
 					Label("LED State", systemImage: ledState ? "lightbulb.led.fill" : "lightbulb.led")
 					Text("The state of the LED (on/off)")
 				}
-				.tint(.accentColor)
 				
 				HStack {
 					Image(systemName: "eyedropper")
