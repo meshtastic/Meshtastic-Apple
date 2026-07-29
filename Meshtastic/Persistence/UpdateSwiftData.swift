@@ -223,6 +223,9 @@ extension MeshPackets {
 				if modelType == DeviceHardwareTagEntity.self || modelType == DeviceHardwareImageEntity.self {
 					continue // already deleted above
 				}
+				if modelType == EventFirmwareEntity.self {
+					continue // global display cache, not data owned by the connected radio
+				}
 				if preserveFavorites && modelType == NodeInfoEntity.self {
 					// Keep favorited nodes so the device and app stay in sync when the
 					// firmware is told to preserve favorites (nodedbReset = true).

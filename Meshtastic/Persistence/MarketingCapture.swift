@@ -47,6 +47,37 @@ enum MarketingCapture {
 		argValue("--marketing-appearance")?.lowercased() == "dark" ? "dark" : "light"
 	}
 
+	/// DEBUG-only event presentation fixture. Launch with
+	/// `--event-firmware-preview FAB` to inspect the real connected UI without a radio.
+	static func simulateEventFirmwareIfNeeded(_ accessoryManager: AccessoryManager) {
+		guard let key = argValue("--event-firmware-preview"),
+			  let edition = FirmwareEditions(editionKey: key.uppercased()) else {
+			return
+		}
+		simulateConnectedNode(accessoryManager)
+		configureEventFirmwarePreviewNode(accessoryManager, edition: edition)
+		accessoryManager.firmwareEdition = edition
+		accessoryManager.activeConnection?.device.firmwareVersion = previewFirmwareVersion(for: edition)
+	}
+
+	private static func configureEventFirmwarePreviewNode(
+		_ accessoryManager: AccessoryManager,
+		edition: FirmwareEditions
+	) {
+		let nodeNum: Int64 = 0x0A00_0000
+		guard let node = getNodeInfo(id: nodeNum, context: accessoryManager.context) else {
+			return
+		}
+
+		node.myInfo?.pioEnv = "tbeam-s3-core"
+		node.metadata?.hwModel = "LILYGO_TBEAM_S3_CORE"
+		node.metadata?.firmwareVersion = previewFirmwareVersion(for: edition)
+		node.user?.hwModel = "LILYGO_TBEAM_S3_CORE"
+		node.user?.hwModelId = 12
+		node.user?.hwDisplayName = "LILYGO T-Beam Supreme"
+		try? accessoryManager.context.save()
+	}
+
 	/// Entry point, called once from `ContentView.task`. No-op unless `--marketing-capture` is set.
 	/// Assumes the marketing data seed has already run in `MeshtasticAppleApp.init`.
 	static func runIfNeeded(router: Router, accessoryManager: AccessoryManager) async {
@@ -146,6 +177,17 @@ enum MarketingCapture {
 		accessoryManager.activeConnection = (device, MarketingStubConnection())
 		accessoryManager.activeDeviceNum = baseNodeNum
 		accessoryManager.isConnected = true
+	}
+
+	private static func previewFirmwareVersion(for edition: FirmwareEditions) -> String {
+		switch edition {
+		case .fab:
+			return "2.7.27.d250d89"
+		case .defcon:
+			return "2.8.0.b00d76f"
+		default:
+			return "2.7.26.preview"
+		}
 	}
 
 	// MARK: Window snapshot + output

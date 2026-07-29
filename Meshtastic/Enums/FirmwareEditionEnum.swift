@@ -16,6 +16,7 @@ enum FirmwareEditions: Int, CaseIterable, Identifiable {
 	case defcon = 17
 	case burningMan = 18
 	case hamvention = 19
+	case fab = 20
 	case diyEdition = 127
 
 	var id: Int { self.rawValue }
@@ -34,6 +35,8 @@ enum FirmwareEditions: Int, CaseIterable, Identifiable {
 			return "Burning Man".localized
 		case .hamvention:
 			return "Hamvention".localized
+		case .fab:
+			return "FAB".localized
 		case .diyEdition:
 			return "DIY Edition".localized
 		}
@@ -53,6 +56,8 @@ enum FirmwareEditions: Int, CaseIterable, Identifiable {
 			return "Event firmware for Burning Man, the annual gathering in Black Rock Desert.".localized
 		case .hamvention:
 			return "Event firmware for Hamvention, the Dayton amateur radio convention.".localized
+		case .fab:
+			return "Event firmware for the international Fab Lab digital fabrication conference.".localized
 		case .diyEdition:
 			return "Firmware for DIY and unofficial community events.".localized
 		}
@@ -78,8 +83,25 @@ enum FirmwareEditions: Int, CaseIterable, Identifiable {
 			return "BURNING_MAN"
 		case .hamvention:
 			return "HAMVENTION"
+		case .fab:
+			return "FAB"
 		case .diyEdition:
 			return "DIY_EDITION"
+		}
+	}
+
+	/// Edition artwork shipped in the asset catalog for offline fallback. Editions without
+	/// bundled artwork fall back to the standard Meshtastic logo.
+	var bundledIconAssetName: String? {
+		switch self {
+		case .hamvention:
+			return "EventFirmwareHAMVENTION"
+		case .defcon:
+			return "EventFirmwareDEFCON"
+		case .fab:
+			return "EventFirmwareFAB"
+		default:
+			return nil
 		}
 	}
 

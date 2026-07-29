@@ -186,7 +186,6 @@ struct LoRaConfig: View {
 				Toggle(isOn: $usePreset) {
 					Label("Use Preset", systemImage: "list.bullet.rectangle")
 				}
-				.tint(.accentColor)
 
 				if usePreset {
 					VStack(alignment: .leading) {
@@ -210,16 +209,13 @@ struct LoRaConfig: View {
 				Toggle(isOn: $ignoreMqtt) {
 					Label("Ignore MQTT", systemImage: "server.rack")
 				}
-				.tint(.accentColor)
 				Toggle(isOn: $okToMqtt) {
 					Label("Ok to MQTT", systemImage: "network")
 				}
-				.tint(.accentColor)
 
 				Toggle(isOn: $txEnabled) {
 					Label("Transmit Enabled", systemImage: "waveform.path")
 				}
-				.tint(.accentColor)
 
 				 if !usePreset {
 					 HStack {
@@ -249,7 +245,6 @@ struct LoRaConfig: View {
 					}
 					if usePreset {
 						Toggle("Follow Preset Coding Rate", isOn: usePresetCodingRate)
-							.tint(.accentColor)
 						if !canOverridePresetCodingRate {
 							Text("This preset already uses 4/\(defaultCodingRate), the highest redundancy available.")
 								.foregroundColor(.gray)
@@ -321,7 +316,6 @@ struct LoRaConfig: View {
 				Toggle(isOn: $rxBoostedGain) {
 					Label("RX Boosted Gain", systemImage: "waveform.badge.plus")
 				}
-				.tint(.accentColor)
 
 				HStack {
 					Label("Frequency Override", systemImage: "waveform.path.ecg")

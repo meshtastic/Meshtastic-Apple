@@ -36,12 +36,10 @@ struct PowerConfig: View {
 						Label("Power Saving", systemImage: "bolt")
 						Text("Will sleep everything as much as possible, for the tracker and sensor role this will also include the lora radio. Don't use this setting if you want to use your device with the phone apps or are using a device without a user button.")
 					}
-					.tint(.accentColor)
 				}
 				Toggle(isOn: $shutdownOnPowerLoss) {
 					Label("Shutdown on Power Loss", systemImage: "power")
 				}
-				.tint(.accentColor)
 				if shutdownOnPowerLoss {
 					UpdateIntervalPicker(
 						config: .all,
@@ -57,7 +55,6 @@ struct PowerConfig: View {
 					Toggle(isOn: $adcOverride) {
 						Text("ADC Override")
 					}
-					.tint(.accentColor)
 
 					if adcOverride {
 						HStack {

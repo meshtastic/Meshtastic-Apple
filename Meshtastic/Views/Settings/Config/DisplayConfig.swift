@@ -53,20 +53,17 @@ struct DisplayConfig: View {
 						Label("Always point north", systemImage: "location.north.circle")
 						Text("The compass heading on the screen outside of the circle will always point north.")
 					}
-					.tint(Color.accentColor)
 				}
 				
 				Toggle(isOn: $use12HourClock) {
 					Label("12 Hour Clock", systemImage: "clock")
 					Text("Sets the screen clock format to 12-hour.")
 				}
-				.tint(Color.accentColor)
 				
 				Toggle(isOn: $headingBold) {
 					Label("Bold Heading", systemImage: "bold")
 					Text("Bold the heading text on the screen.")
 				}
-				.tint(Color.accentColor)
 				VStack(alignment: .leading) {
 					Picker("Display Units", selection: $units ) {
 						ForEach(Units.allCases) { un in
@@ -106,13 +103,11 @@ struct DisplayConfig: View {
 					Label("Wake Screen on tap or motion", systemImage: "gyroscope")
 					Text("Requires that there be an accelerometer on your device.")
 				}
-				.tint(.accentColor)
 				
 				Toggle(isOn: $flipScreen) {
 					Label("Flip Screen", systemImage: "pip.swap")
 					Text("Flip screen vertically")
 				}
-				.tint(.accentColor)
 				
 				VStack(alignment: .leading) {
 					Picker("Display Mode", selection: $displayMode ) {

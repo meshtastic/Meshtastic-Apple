@@ -226,19 +226,16 @@ struct SecurityConfig: View {
 					Label("Serial Console", systemImage: "terminal")
 					Text("Serial Console over the Stream API.")
 				}
-				.tint(.accentColor)
 				Toggle(isOn: $debugLogApiEnabled) {
 					Label("Debug Logs", systemImage: "ant.fill")
 					Text("Output live debug logging over serial, view and export position-redacted device logs over Bluetooth.")
 				}
-				.tint(.accentColor)
 			}
 			Section(header: Text("Administration")) {
 				Toggle(isOn: $isManaged) {
 					Label("Managed Device", systemImage: "gearshape.arrow.triangle.2.circlepath")
 					Text("Device is managed by a mesh administrator, the user is unable to access any of the device settings.")
 				}
-				.tint(.accentColor)
 				.disabled(adminKey.length == 0)
 				if adminKey.length == 0 {
 					Label("An admin key must be set before enabling managed mode.", systemImage: "exclamationmark.triangle.fill")

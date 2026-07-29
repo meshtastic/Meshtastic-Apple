@@ -840,12 +840,12 @@ extension MeshtasticAPI {
 // Decoding structs for `GET https://api.meshtastic.org/resource/eventFirmware` (version 2).
 // Every field except `edition` is independently optional; a new event may ship with only a
 // subset populated, so all use `decodeIfPresent`.
-private struct EventFirmwareFile: Codable {
+struct EventFirmwareFile {
 	let version: Int?
 	let editions: [EventFirmwarePayload]
 }
 
-private struct EventFirmwarePayload: Codable {
+struct EventFirmwarePayload: Decodable {
 	let edition: String
 	let displayName: String?
 	let welcomeMessage: String?
@@ -860,32 +860,122 @@ private struct EventFirmwarePayload: Codable {
 	let links: [EventFirmwareLinkPayload]?
 	let theme: EventFirmwareThemePayload?
 	let firmware: EventFirmwareBuildPayload?
+
+	private enum CodingKeys: String, CodingKey {
+		case edition
+		case displayName
+		case welcomeMessage
+		case tag
+		case eventStart
+		case eventEnd
+		case timeZone
+		case location
+		case iconUrl
+		case accentColor
+		case domain
+		case links
+		case theme
+		case firmware
+	}
+
+	init(from decoder: Decoder) throws {
+		let container = try decoder.container(keyedBy: CodingKeys.self)
+		edition = try container.decode(String.self, forKey: .edition)
+		displayName = try? container.decodeIfPresent(String.self, forKey: .displayName)
+		welcomeMessage = try? container.decodeIfPresent(String.self, forKey: .welcomeMessage)
+		tag = try? container.decodeIfPresent(String.self, forKey: .tag)
+		eventStart = try? container.decodeIfPresent(String.self, forKey: .eventStart)
+		eventEnd = try? container.decodeIfPresent(String.self, forKey: .eventEnd)
+		timeZone = try? container.decodeIfPresent(String.self, forKey: .timeZone)
+		location = try? container.decodeIfPresent(String.self, forKey: .location)
+		iconUrl = try? container.decodeIfPresent(String.self, forKey: .iconUrl)
+		accentColor = try? container.decodeIfPresent(String.self, forKey: .accentColor)
+		domain = try? container.decodeIfPresent(String.self, forKey: .domain)
+		links = (try? container.decodeIfPresent(
+			[LossyEventFirmwareLink].self,
+			forKey: .links
+		))?.compactMap(\.value)
+		theme = try? container.decodeIfPresent(EventFirmwareThemePayload.self, forKey: .theme)
+		firmware = try? container.decodeIfPresent(EventFirmwareBuildPayload.self, forKey: .firmware)
+	}
 }
 
-private struct EventFirmwareLinkPayload: Codable {
+struct EventFirmwareLinkPayload: Decodable {
 	let label: String
 	let url: String
 }
 
-private struct EventFirmwareThemePayload: Codable {
+private struct LossyEventFirmwareLink: Decodable {
+	let value: EventFirmwareLinkPayload?
+
+	init(from decoder: Decoder) throws {
+		value = try? EventFirmwareLinkPayload(from: decoder)
+	}
+}
+
+struct EventFirmwareThemePayload: Decodable {
 	let name: String?
 	let tagline: String?
+	let colors: EventFirmwareColorsPayload?
 	let palette: [String]?
 	let fonts: EventFirmwareFontsPayload?
 }
 
-private struct EventFirmwareFontsPayload: Codable {
+struct EventFirmwareColorsPayload: Decodable {
+	let primary: String?
+	let secondary: String?
+	let accent: String?
+}
+
+struct EventFirmwareFontsPayload: Decodable {
 	let heading: String?
 	let body: String?
 }
 
-private struct EventFirmwareBuildPayload: Codable {
+struct EventFirmwareBuildPayload: Decodable {
 	let slug: String?
 	let version: String?
 	let id: String?
 	let title: String?
-	let zipUrl: String?
 	let releaseNotes: String?
+}
+
+enum EventFirmwareManifestDecoder {
+
+	/// Decode each edition independently so one missing field or malformed nested value cannot
+	/// suppress otherwise valid event branding.
+	static func decode(_ data: Data) throws -> EventFirmwareFile {
+		guard let root = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+			  let rawEditions = root["editions"] as? [Any] else {
+			throw DecodingError.dataCorrupted(.init(
+				codingPath: [],
+				debugDescription: "Event firmware manifest is missing its editions array"
+			))
+		}
+
+		let decoder = JSONDecoder()
+		let editions = rawEditions.compactMap { rawValue -> EventFirmwarePayload? in
+			guard let rawEdition = rawValue as? [String: Any],
+				  let edition = rawEdition["edition"] as? String,
+				  !edition.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+				  JSONSerialization.isValidJSONObject(rawEdition),
+				  let entryData = try? JSONSerialization.data(withJSONObject: rawEdition) else {
+				return nil
+			}
+			return try? decoder.decode(EventFirmwarePayload.self, from: entryData)
+		}
+		return EventFirmwareFile(version: root["version"] as? Int, editions: editions)
+	}
+}
+
+enum EventFirmwareRefreshPolicy {
+
+	static let minimumAttemptInterval: TimeInterval = 6 * 60 * 60
+
+	static func shouldRefresh(lastAttempt: Date, now: Date = Date()) -> Bool {
+		let elapsed = now.timeIntervalSince(lastAttempt)
+		return elapsed < 0 || elapsed >= minimumAttemptInterval
+	}
 }
 
 extension MeshtasticAPI {
@@ -898,15 +988,13 @@ extension MeshtasticAPI {
 		guard container != nil else { return }
 		guard let bundledURL = Bundle.main.url(forResource: "event_firmware", withExtension: "json"),
 			  let data = try? Data(contentsOf: bundledURL),
-			  let decoded = try? decoder.decode(EventFirmwareFile.self, from: data) else {
+			  let decoded = try? EventFirmwareManifestDecoder.decode(data) else {
 			Logger.services.warning("Unable to load bundled event_firmware.json")
 			return
 		}
-		// pruneMissing: false — the bundle is a *floor*, not authoritative. It must never delete
-		// an edition that a prior successful live refresh cached but that isn't in the bundled
-		// snapshot; that edition would otherwise vanish on every offline relaunch (the exact
-		// poor-connectivity-at-the-venue scenario this cache exists for).
-		await importEventEditions(decoded.editions, pruneMissing: false)
+		// The bundle is a floor. Existing rows came from a newer live response and must not be
+		// downgraded on relaunch while the refresh throttle is active.
+		await importEventEditions(decoded.editions, overwriteExisting: false)
 		Logger.services.info("Loaded bundled event firmware (\(decoded.editions.count, privacy: .public) editions)")
 	}
 
@@ -920,6 +1008,14 @@ extension MeshtasticAPI {
 	/// the existing cache intact, never wipe it.
 	func refreshEventFirmwareAPIData() async {
 		guard container != nil else { return }
+		let attemptDate = Date()
+		guard EventFirmwareRefreshPolicy.shouldRefresh(
+			lastAttempt: UserDefaults.lastEventFirmwareAPIAttempt,
+			now: attemptDate
+		) else {
+			return
+		}
+		UserDefaults.lastEventFirmwareAPIAttempt = attemptDate
 
 		var request = URLRequest(url: Self.eventFirmwareURLEndpoint)
 		// No short local timeout — see the doc comment above. Revalidate against the server
@@ -933,30 +1029,30 @@ extension MeshtasticAPI {
 			return
 		}
 
-		guard let decoded = try? decoder.decode(EventFirmwareFile.self, from: data),
+		guard let decoded = try? EventFirmwareManifestDecoder.decode(data),
 			  !decoded.editions.isEmpty else {
 			// A decode failure or an editions-less payload must not clobber the cache.
 			Logger.services.warning("Event firmware API returned no usable editions — keeping cache")
 			return
 		}
 
-		// pruneMissing: true — the live API is authoritative, so an edition it no longer lists is
-		// genuinely retired and should be removed from the cache.
-		await importEventEditions(decoded.editions, pruneMissing: true)
+		// Treat the remote display manifest as additive. A malformed or partial response must not
+		// delete previously cached editions or erase complete fields.
+		await importEventEditions(decoded.editions, overwriteExisting: true)
 		UserDefaults.lastEventFirmwareAPIUpdate = Date()
 		Logger.services.info("Refreshed event firmware from API (\(decoded.editions.count, privacy: .public) editions)")
 	}
 
-	/// Upsert the given editions into `EventFirmwareEntity`. When `pruneMissing` is true, also
-	/// delete rows not present in `editions` — this is reserved for the **authoritative** live-API
-	/// import. The bundled seed passes `pruneMissing: false` so it only upserts/seeds and never
-	/// deletes an edition cached from a prior successful API refresh. Called with a non-empty
-	/// list from both paths; the caller guarantees an empty/failed fetch never reaches here.
-	private func importEventEditions(_ editions: [EventFirmwarePayload], pruneMissing: Bool) async {
+	/// Merge display-only event metadata into the cache.
+	///
+	/// Bundled data creates missing rows but never overwrites a live row. Live data updates only
+	/// fields it actually supplied, so one malformed/partial edition cannot destroy a complete
+	/// offline cache. Executable artifact URLs and hashes are deliberately not persisted here:
+	/// those require the separate signed per-target OTA contract.
+	func importEventEditions(_ editions: [EventFirmwarePayload], overwriteExisting: Bool) async {
 		guard let container else { return }
 		await MainActor.run {
 			let context = container.mainContext
-			let importedKeys = Set(editions.map { $0.edition })
 
 			for payload in editions {
 				let key = payload.edition
@@ -967,46 +1063,67 @@ extension MeshtasticAPI {
 
 				let entity: EventFirmwareEntity
 				if let existing = try? context.fetch(descriptor).first {
+					guard overwriteExisting else { continue }
 					entity = existing
 				} else {
 					entity = EventFirmwareEntity(edition: key)
 					context.insert(entity)
 				}
 
-				entity.displayName = payload.displayName
-				entity.welcomeMessage = payload.welcomeMessage
-				entity.tag = payload.tag
-				entity.eventStart = payload.eventStart
-				entity.eventEnd = payload.eventEnd
-				entity.timeZone = payload.timeZone
-				entity.location = payload.location
-				entity.iconUrl = payload.iconUrl
-				entity.accentColor = payload.accentColor
-				entity.domain = payload.domain
-				entity.setLinks((payload.links ?? []).map {
-					EventFirmwareEntity.Link(label: $0.label, url: $0.url)
-				})
-				entity.themeName = payload.theme?.name
-				entity.themeTagline = payload.theme?.tagline
-				entity.themePalette = payload.theme?.palette ?? []
-				entity.themeFontHeading = payload.theme?.fonts?.heading
-				entity.themeFontBody = payload.theme?.fonts?.body
-				entity.firmwareSlug = payload.firmware?.slug
-				entity.firmwareVersion = payload.firmware?.version
-				entity.firmwareId = payload.firmware?.id
-				entity.firmwareTitle = payload.firmware?.title
-				entity.firmwareZipUrl = payload.firmware?.zipUrl
-				entity.firmwareReleaseNotes = payload.firmware?.releaseNotes
-			}
-
-			// Delete editions no longer present — only for the authoritative live-API import.
-			if pruneMissing {
-				let allDescriptor = FetchDescriptor<EventFirmwareEntity>()
-				if let all = try? context.fetch(allDescriptor) {
-					for row in all where !importedKeys.contains(row.edition) {
-						context.delete(row)
+				if let value = payload.displayName { entity.displayName = value }
+				if let value = payload.welcomeMessage { entity.welcomeMessage = value }
+				if let value = payload.tag { entity.tag = value }
+				if let value = payload.eventStart { entity.eventStart = value }
+				if let value = payload.eventEnd { entity.eventEnd = value }
+				if let value = payload.timeZone { entity.timeZone = value }
+				if let value = payload.location { entity.location = value }
+				if let value = EventFirmwareURLPolicy.httpsURL(from: payload.iconUrl)?.absoluteString {
+					entity.iconUrl = value
+				}
+				if let value = payload.accentColor,
+				   EventFirmwareEntity.color(fromHex: value) != nil {
+					entity.accentColor = value
+				}
+				if let value = payload.domain { entity.domain = value }
+				if let links = payload.links {
+					let safeLinks = links.map {
+						EventFirmwareEntity.Link(label: $0.label, url: $0.url)
+					}.filter {
+						EventFirmwareURLPolicy.httpsURL(from: $0.url) != nil
+					}
+					if !safeLinks.isEmpty {
+						entity.setLinks(safeLinks)
 					}
 				}
+				if let value = payload.theme?.name { entity.themeName = value }
+				if let value = payload.theme?.tagline { entity.themeTagline = value }
+				if let value = payload.theme?.colors?.primary,
+				   EventFirmwareEntity.color(fromHex: value) != nil {
+					entity.themePrimaryColor = value
+				}
+				if let value = payload.theme?.colors?.secondary,
+				   EventFirmwareEntity.color(fromHex: value) != nil {
+					entity.themeSecondaryColor = value
+				}
+				if let value = payload.theme?.colors?.accent,
+				   EventFirmwareEntity.color(fromHex: value) != nil {
+					entity.themeAccentColor = value
+				}
+				if let palette = payload.theme?.palette {
+					let validPalette = palette.filter {
+						EventFirmwareEntity.color(fromHex: $0) != nil
+					}
+					if !validPalette.isEmpty {
+						entity.themePalette = validPalette
+					}
+				}
+				if let value = payload.theme?.fonts?.heading { entity.themeFontHeading = value }
+				if let value = payload.theme?.fonts?.body { entity.themeFontBody = value }
+				if let value = payload.firmware?.slug { entity.firmwareSlug = value }
+				if let value = payload.firmware?.version { entity.firmwareVersion = value }
+				if let value = payload.firmware?.id { entity.firmwareId = value }
+				if let value = payload.firmware?.title { entity.firmwareTitle = value }
+				if let value = payload.firmware?.releaseNotes { entity.firmwareReleaseNotes = value }
 			}
 
 			try? context.save()

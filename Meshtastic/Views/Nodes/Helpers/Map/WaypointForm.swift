@@ -134,7 +134,7 @@ struct WaypointForm: View {
 					Toggle(isOn: $expires) {
 						Label("Expires", systemImage: "clock.badge.xmark")
 					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.toggleStyle(.switch)
 					if expires {
 						DatePicker("Expire", selection: $expire, in: Date.now...)
 							.datePickerStyle(.compact)
@@ -143,7 +143,7 @@ struct WaypointForm: View {
 					Toggle(isOn: $locked) {
 						Label("Locked", systemImage: "lock")
 					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.toggleStyle(.switch)
 				}
 				Section(header: Text("Geofence")) {
 					Picker(selection: $geofenceRadius) {
@@ -176,16 +176,16 @@ struct WaypointForm: View {
 						Toggle(isOn: $notifyOnEnter) {
 							Label("Notify on Enter", systemImage: "bell")
 						}
-						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						.toggleStyle(.switch)
 						Toggle(isOn: $notifyOnExit) {
 							Label("Notify on Exit", systemImage: "bell.slash")
 						}
-						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						.toggleStyle(.switch)
 						if notifyOnEnter || notifyOnExit {
 							Toggle(isOn: $notifyFavoritesOnly) {
 								Label("Favorites Only", systemImage: "star")
 							}
-							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+							.toggleStyle(.switch)
 						}
 					}
 				}

@@ -17,90 +17,169 @@ struct EventFirmwareNotificationTests {
 		// Reset state before each test
 		UserDefaults.newNodeNotifications = true
 		UserDefaults.nodeNotificationsAutoDisabledForEvent = false
+		UserDefaults.nodeNotificationsUserOverrideForEvent = false
 	}
 
 	@Test func eventFirmwareDisablesNewNodeNotifications() {
-		// Simulate: event firmware detected, not yet auto-disabled
-		UserDefaults.nodeNotificationsAutoDisabledForEvent = false
-		UserDefaults.newNodeNotifications = true
+		let result = EventFirmwareNotificationPolicy.updatedSettings(
+			for: .defcon,
+			current: .init(
+				newNodeNotifications: true,
+				autoDisabledForEvent: false,
+				userOverrideForEvent: false
+			)
+		)
 
-		// Apply logic inline (mirrors applyEventFirmwareNotificationDefaults)
-		let edition = FirmwareEdition.defcon
-		if edition != .vanilla {
-			if !UserDefaults.nodeNotificationsAutoDisabledForEvent {
-				UserDefaults.newNodeNotifications = false
-				UserDefaults.nodeNotificationsAutoDisabledForEvent = true
-			}
-		}
-
-		#expect(UserDefaults.newNodeNotifications == false)
-		#expect(UserDefaults.nodeNotificationsAutoDisabledForEvent == true)
+		#expect(result.newNodeNotifications == false)
+		#expect(result.autoDisabledForEvent == true)
 	}
 
 	@Test func eventFirmwareDoesNotReDisableIfAlreadyAutoDisabled() {
-		// User re-enabled manually; the flag stays true from prior auto-disable
-		UserDefaults.nodeNotificationsAutoDisabledForEvent = true
-		UserDefaults.newNodeNotifications = true
+		let result = EventFirmwareNotificationPolicy.updatedSettings(
+			for: .burningMan,
+			current: .init(
+				newNodeNotifications: true,
+				autoDisabledForEvent: true,
+				userOverrideForEvent: false
+			)
+		)
 
-		let edition = FirmwareEdition.burningMan
-		if edition != .vanilla {
-			if !UserDefaults.nodeNotificationsAutoDisabledForEvent {
-				UserDefaults.newNodeNotifications = false
-				UserDefaults.nodeNotificationsAutoDisabledForEvent = true
-			}
-		}
+		#expect(result.newNodeNotifications == true)
+		#expect(result.autoDisabledForEvent == true)
+	}
 
-		// Should not have changed since already auto-disabled
-		#expect(UserDefaults.newNodeNotifications == true)
+	@Test func eventFirmwarePreservesNotificationsTheUserAlreadyDisabled() {
+		let result = EventFirmwareNotificationPolicy.updatedSettings(
+			for: .defcon,
+			current: .init(
+				newNodeNotifications: false,
+				autoDisabledForEvent: false,
+				userOverrideForEvent: false
+			)
+		)
+
+		#expect(result.newNodeNotifications == false)
+		#expect(result.autoDisabledForEvent == false)
 	}
 
 	@Test func vanillaFirmwareReEnablesNotificationsAfterEventAutoDisable() {
-		// Previously auto-disabled by event firmware
-		UserDefaults.nodeNotificationsAutoDisabledForEvent = true
-		UserDefaults.newNodeNotifications = false
+		let result = EventFirmwareNotificationPolicy.updatedSettings(
+			for: .vanilla,
+			current: .init(
+				newNodeNotifications: false,
+				autoDisabledForEvent: true,
+				userOverrideForEvent: false
+			)
+		)
 
-		let edition = FirmwareEdition.vanilla
-		if edition != .vanilla {
-			if !UserDefaults.nodeNotificationsAutoDisabledForEvent {
-				UserDefaults.newNodeNotifications = false
-				UserDefaults.nodeNotificationsAutoDisabledForEvent = true
-			}
-		} else {
-			if UserDefaults.nodeNotificationsAutoDisabledForEvent {
-				UserDefaults.newNodeNotifications = true
-				UserDefaults.nodeNotificationsAutoDisabledForEvent = false
-			}
-		}
-
-		#expect(UserDefaults.newNodeNotifications == true)
-		#expect(UserDefaults.nodeNotificationsAutoDisabledForEvent == false)
+		#expect(result.newNodeNotifications == true)
+		#expect(result.autoDisabledForEvent == false)
 	}
 
 	@Test func vanillaFirmwareDoesNotTouchPrefsWhenNotPreviouslyAutoDisabled() {
-		// Never connected to event firmware
-		UserDefaults.nodeNotificationsAutoDisabledForEvent = false
-		UserDefaults.newNodeNotifications = false // user manually disabled
+		let result = EventFirmwareNotificationPolicy.updatedSettings(
+			for: .vanilla,
+			current: .init(
+				newNodeNotifications: false,
+				autoDisabledForEvent: false,
+				userOverrideForEvent: false
+			)
+		)
 
-		let edition = FirmwareEdition.vanilla
-		if edition != .vanilla {
-			if !UserDefaults.nodeNotificationsAutoDisabledForEvent {
-				UserDefaults.newNodeNotifications = false
-				UserDefaults.nodeNotificationsAutoDisabledForEvent = true
-			}
-		} else {
-			if UserDefaults.nodeNotificationsAutoDisabledForEvent {
-				UserDefaults.newNodeNotifications = true
-				UserDefaults.nodeNotificationsAutoDisabledForEvent = false
-			}
-		}
+		#expect(result.newNodeNotifications == false)
+		#expect(result.autoDisabledForEvent == false)
+	}
 
-		// Should not re-enable since it wasn't auto-disabled
-		#expect(UserDefaults.newNodeNotifications == false)
-		#expect(UserDefaults.nodeNotificationsAutoDisabledForEvent == false)
+	@Test func explicitUserChoiceSupersedesAutomaticEventPreference() {
+		let automatic = EventFirmwareNotificationPolicy.updatedSettings(
+			for: .defcon,
+			current: .init(
+				newNodeNotifications: true,
+				autoDisabledForEvent: false,
+				userOverrideForEvent: false
+			)
+		)
+		let userChoice = EventFirmwareNotificationPolicy.userUpdatedSettings(
+			newNodeNotifications: false,
+			isEventFirmware: true
+		)
+		let afterVanilla = EventFirmwareNotificationPolicy.updatedSettings(
+			for: .vanilla,
+			current: userChoice
+		)
+
+		#expect(automatic == .init(
+			newNodeNotifications: false,
+			autoDisabledForEvent: true,
+			userOverrideForEvent: false
+		))
+		#expect(userChoice == .init(
+			newNodeNotifications: false,
+			autoDisabledForEvent: false,
+			userOverrideForEvent: true
+		))
+		#expect(afterVanilla == .init(
+			newNodeNotifications: false,
+			autoDisabledForEvent: false,
+			userOverrideForEvent: false
+		))
+	}
+
+	@Test func explicitUserReEnableIsPreservedAcrossEventMetadataUpdates() {
+		let automatic = EventFirmwareNotificationPolicy.updatedSettings(
+			for: .defcon,
+			current: .init(
+				newNodeNotifications: true,
+				autoDisabledForEvent: false,
+				userOverrideForEvent: false
+			)
+		)
+		let userChoice = EventFirmwareNotificationPolicy.userUpdatedSettings(
+			newNodeNotifications: true,
+			isEventFirmware: true
+		)
+		let repeatedEventUpdate = EventFirmwareNotificationPolicy.updatedSettings(
+			for: .defcon,
+			current: userChoice
+		)
+		let afterVanilla = EventFirmwareNotificationPolicy.updatedSettings(
+			for: .vanilla,
+			current: repeatedEventUpdate
+		)
+
+		#expect(automatic.newNodeNotifications == false)
+		#expect(repeatedEventUpdate == userChoice)
+		#expect(afterVanilla == .init(
+			newNodeNotifications: true,
+			autoDisabledForEvent: false,
+			userOverrideForEvent: false
+		))
+	}
+
+	@Test func unknownNonVanillaEditionDisablesNotifications() {
+		let result = EventFirmwareNotificationPolicy.updatedSettings(
+			for: .UNRECOGNIZED(126),
+			current: .init(
+				newNodeNotifications: true,
+				autoDisabledForEvent: false,
+				userOverrideForEvent: false
+			)
+		)
+
+		#expect(result.newNodeNotifications == false)
+		#expect(result.autoDisabledForEvent == true)
 	}
 
 	@Test func allEventEditionsAreDetected() {
-		let eventEditions: [FirmwareEdition] = [.defcon, .burningMan, .openSauce, .hamvention, .diyEdition, .smartCitizen]
+		let eventEditions: [FirmwareEdition] = [
+			.defcon,
+			.burningMan,
+			.openSauce,
+			.hamvention,
+			.UNRECOGNIZED(20),
+			.diyEdition,
+			.smartCitizen
+		]
 		for edition in eventEditions {
 			#expect(edition != .vanilla, "Expected \(edition) to not be vanilla")
 		}

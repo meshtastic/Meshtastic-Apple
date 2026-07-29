@@ -38,7 +38,6 @@ struct StoreForwardConfig: View {
 					Label("Enabled", systemImage: "envelope.arrow.triangle.branch")
 					Text("Enables the store and forward module.")
 				}
-				.tint(.accentColor)
 			}
 			
 			if enabled {
@@ -78,7 +77,6 @@ struct StoreForwardConfig: View {
 						Label("Server", systemImage: "server.rack")
 						Text("Enable this device as a Store and Forward server. Requires an ESP32 device with PSRAM.")
 					}
-					.tint(.accentColor)
 					if isServer {
 						Text("Store and forward servers require an ESP32 device with PSRAM or Linux Native.")
 							.foregroundColor(.gray)
