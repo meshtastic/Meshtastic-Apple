@@ -31,7 +31,7 @@ struct SettingsView: View {
 					Text("Hybrid").tag(Int(MKMapType.hybrid.rawValue))
 					Text("Satellite").tag(Int(MKMapType.satellite.rawValue))
 				}
-				.pickerStyle(.segmented)
+				.pickerStyle(.inline)
 			} header: {
 				Text("Map")
 			}
