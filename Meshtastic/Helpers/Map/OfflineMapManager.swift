@@ -214,7 +214,10 @@ final class OfflineMapManager: ObservableObject {
 				try await extractor.extract(plan: plan, to: archive.url) { [weak self] written, total in
 					Task { @MainActor in self?.updateProgress(id: regionID, written: written, total: total) }
 				}
-				guard PMTilesArchive(url: archive.url) != nil else { throw PMTilesExtractorError.badHeader }
+				let hasValidHeader = await Task.detached(priority: .utility) {
+					PMTilesArchive.header(url: archive.url) != nil
+				}.value
+				guard hasValidHeader else { throw PMTilesExtractorError.badHeader }
 				let region = OfflineMapRegion(
 					id: regionID, name: finalName, fileName: archive.fileName,
 					bounds: plan.bounds, minZoom: plan.minZoom, maxZoom: plan.maxZoom,

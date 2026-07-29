@@ -132,7 +132,7 @@ The map has one additional filter of its own — **Precise Locations Only**, whi
 
 ## Offline Map Detail
 
-Downloaded offline maps include the local road network. Pedestrian streets render as minor roads, so walkable streets remain visible offline. The automatically managed Burning Man 2026 map pack uses full zoom-level 15 detail for the Black Rock City street grid.
+Downloaded offline maps include the local road network. Pedestrian streets render as minor roads, so walkable streets remain visible offline. On nodes reporting the Burning Man firmware edition, the downloadable Burning Man 2026 map pack uses full zoom-level 15 detail for the Black Rock City street grid and remains available until you remove it.
 
 ## Additional Icons
 
