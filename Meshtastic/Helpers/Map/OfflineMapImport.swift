@@ -11,6 +11,8 @@ extension UTType {
 	static let meshtasticPMTiles = UTType(importedAs: "gvh.MeshtasticApple.pmtiles")
 }
 
+// MARK: - Errors
+
 enum OfflineMapImportError: LocalizedError {
 	case unreadableFile
 	case invalidHeader
@@ -49,11 +51,15 @@ enum OfflineMapImportError: LocalizedError {
 	}
 }
 
+// MARK: - Metadata
+
 struct OfflineMapImportMetadata: Equatable, Sendable {
 	let bounds: GeoBounds
 	let minZoom: Int
 	let maxZoom: Int
 }
+
+// MARK: - Validation
 
 enum OfflineMapImportValidator {
 	static func validate(fileURL: URL) throws -> OfflineMapImportMetadata {
@@ -97,6 +103,8 @@ enum OfflineMapImportValidator {
 	}
 }
 
+// MARK: - Import Results
+
 struct OfflineMapImportSource: Sendable {
 	let fileName: String
 	let fileSize: Int64
@@ -108,6 +116,8 @@ struct OfflineMapImportedArchive: Sendable {
 	let fileSize: Int64
 	let digest: Data
 }
+
+// MARK: - Worker
 
 enum OfflineMapImportWorker {
 	static func inspectSource(at sourceURL: URL) throws -> OfflineMapImportSource {
