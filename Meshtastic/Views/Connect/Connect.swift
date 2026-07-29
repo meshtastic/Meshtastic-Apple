@@ -551,9 +551,12 @@ struct Connect: View {
 	/// automatically as the bundled seed / background API refresh populates rows and as the
 	/// connected edition changes.
 	private var eventFirmware: EventFirmwareEntity? {
-		guard accessoryManager.firmwareEdition.isEvent else { return nil }
-		let key = accessoryManager.firmwareEdition.editionKey
-		return eventFirmwareEditions.first { $0.edition == key }
+		EventFirmwarePresentation.resolve(
+			isConnected: accessoryManager.isConnected,
+			edition: accessoryManager.firmwareEdition,
+			metadata: eventFirmwareEditions,
+			deviceFirmwareVersion: accessoryManager.connectedVersion
+		)?.info
 	}
 
 	/// Fetch only the latest device metrics battery level without faulting all telemetries.

@@ -11,50 +11,6 @@ import CocoaMQTT
 import OSLog
 @preconcurrency import SwiftData
 
-struct EventFirmwareNotificationSettings: Equatable {
-	let newNodeNotifications: Bool
-	let autoDisabledForEvent: Bool
-	let userOverrideForEvent: Bool
-}
-
-enum EventFirmwareNotificationPolicy {
-
-	static func userUpdatedSettings(
-		newNodeNotifications: Bool,
-		isEventFirmware: Bool
-	) -> EventFirmwareNotificationSettings {
-		EventFirmwareNotificationSettings(
-			newNodeNotifications: newNodeNotifications,
-			autoDisabledForEvent: false,
-			userOverrideForEvent: isEventFirmware
-		)
-	}
-
-	static func updatedSettings(
-		for edition: FirmwareEdition,
-		current: EventFirmwareNotificationSettings
-	) -> EventFirmwareNotificationSettings {
-		if edition == .vanilla {
-			return EventFirmwareNotificationSettings(
-				newNodeNotifications: current.autoDisabledForEvent ? true : current.newNodeNotifications,
-				autoDisabledForEvent: false,
-				userOverrideForEvent: false
-			)
-		}
-
-		guard !current.userOverrideForEvent,
-			  current.newNodeNotifications,
-			  !current.autoDisabledForEvent else {
-			return current
-		}
-		return EventFirmwareNotificationSettings(
-			newNodeNotifications: false,
-			autoDisabledForEvent: true,
-			userOverrideForEvent: false
-		)
-	}
-}
-
 extension AccessoryManager {
 
 	func handleMqttClientProxyMessage(_ mqttClientProxyMessage: MqttClientProxyMessage) {

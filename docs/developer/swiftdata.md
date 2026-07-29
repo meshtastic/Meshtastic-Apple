@@ -115,8 +115,15 @@ seeds the cache from the bundled `event_firmware.json` at launch (offline-first)
 refreshes it from the live endpoint in the background. The `edition` proto-enum name (e.g.
 `"DEFCON"`) is the unique join key against the connected device's reported edition. Because it
 is a rebuildable cache, a failed/empty refresh is a **no-op** that leaves existing rows intact
-(it never wipes the cache), and the row lives in the unreleased **V1** schema — adding it
-required no new `VersionedSchema`/`MigrationStage` (see below).
+(it never wipes the cache). Device-switch clears preserve these global rows, while a full
+app-data reset removes them so the bundled seed can rebuild the cache.
+
+Theme colors are stored individually as `themePrimaryColor`, `themeSecondaryColor`, and
+`themeAccentColor`, with the authored palette in `themePalette`. Executable firmware URLs are
+not stored in this display cache; event OTA uses a separate signed artifact contract. The model
+previously had an experimental `firmwareZipUrl` field before V1 shipped; it was removed while
+the schema was still unreleased. The row remains in the unreleased **V1** schema, so these
+changes required no new `VersionedSchema`/`MigrationStage` (see below).
 
 ## Schema Migrations
 
