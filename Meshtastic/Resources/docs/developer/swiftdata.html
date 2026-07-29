@@ -136,8 +136,14 @@ seeds the cache from the bundled <code>event_firmware.json</code> at launch (off
 refreshes it from the live endpoint in the background. The <code>edition</code> proto-enum name (e.g.
 <code>&quot;DEFCON&quot;</code>) is the unique join key against the connected device's reported edition. Because it
 is a rebuildable cache, a failed/empty refresh is a <strong>no-op</strong> that leaves existing rows intact
-(it never wipes the cache), and the row lives in the unreleased <strong>V1</strong> schema — adding it
-required no new <code>VersionedSchema</code>/<code>MigrationStage</code> (see below).</p>
+(it never wipes the cache). Device-switch clears preserve these global rows, while a full
+app-data reset removes them so the bundled seed can rebuild the cache.</p>
+<p>Theme colors are stored individually as <code>themePrimaryColor</code>, <code>themeSecondaryColor</code>, and
+<code>themeAccentColor</code>, with the authored palette in <code>themePalette</code>. Executable firmware URLs are
+not stored in this display cache; event OTA uses a separate signed artifact contract. The model
+previously had an experimental <code>firmwareZipUrl</code> field before V1 shipped; it was removed while
+the schema was still unreleased. The row remains in the unreleased <strong>V1</strong> schema, so these
+changes required no new <code>VersionedSchema</code>/<code>MigrationStage</code> (see below).</p>
 <h2>Schema Migrations</h2>
 <p>When you add, rename, or remove properties on a <code>@Model</code> type, you must provide a migration. Schema files live in <code>Meshtastic/Model/Schema/</code>.</p>
 <div class="tips-callout"><strong>Note — V1 is unreleased.</strong> While <code>MeshtasticSchemaV1</code> remains the initial, unshipped version, additive <code>@Model</code> changes go <strong>directly into V1</strong> rather than a new versioned schema + stage (see the comment in <code>MeshtasticMigrationPlan.swift</code>). For example, the air-quality particulate-matter fields on <code>TelemetryEntity</code> (<code>pm10/25/100Standard</code>, <code>pm10/25/100Environmental</code>) were added in place. Start adding <code>VersionedSchema</code> versions and migration stages only once V1 has shipped.</div>

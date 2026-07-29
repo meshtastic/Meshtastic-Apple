@@ -462,6 +462,10 @@ struct EventFirmwareMetadataTests {
 			lastAttempt: now.addingTimeInterval(-7 * 60 * 60),
 			now: now
 		))
+		#expect(EventFirmwareRefreshPolicy.shouldRefresh(
+			lastAttempt: now.addingTimeInterval(60),
+			now: now
+		))
 	}
 
 	@Test func formattedDateRangeProducesRange() {
@@ -535,7 +539,8 @@ struct EventFirmwareCacheMergeTests {
 		    "edition":"DEFCON",
 		    "displayName":"DEF CON 34",
 		    "welcomeMessage":"Welcome",
-		    "theme":{"tagline":"Old tagline"}
+		    "links":[{"label":"Event","url":"https://defcon.org"}],
+		    "theme":{"tagline":"Old tagline","palette":["#0D294A","#E0004E"]}
 		  },
 		  {"edition":"FAB","displayName":"FAB26 Boston"}
 		]}
@@ -543,7 +548,8 @@ struct EventFirmwareCacheMergeTests {
 		let partial = try payloads(from: """
 		{"version":2,"editions":[{
 		  "edition":"DEFCON",
-		  "theme":{"tagline":"Updated tagline"}
+		  "links":[{"label":"Unsafe","url":"javascript:alert(1)"}],
+		  "theme":{"tagline":"Updated tagline","palette":["not-a-color"]}
 		}]}
 		""")
 
@@ -555,6 +561,8 @@ struct EventFirmwareCacheMergeTests {
 		#expect(defcon.displayName == "DEF CON 34")
 		#expect(defcon.welcomeMessage == "Welcome")
 		#expect(defcon.themeTagline == "Updated tagline")
+		#expect(defcon.links == [EventFirmwareEntity.Link(label: "Event", url: "https://defcon.org")])
+		#expect(defcon.themePalette == ["#0D294A", "#E0004E"])
 		#expect(rows.contains { $0.edition == "FAB" && $0.displayName == "FAB26 Boston" })
 	}
 }

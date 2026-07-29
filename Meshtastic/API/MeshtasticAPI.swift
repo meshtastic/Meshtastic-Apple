@@ -927,7 +927,8 @@ enum EventFirmwareRefreshPolicy {
 	static let minimumAttemptInterval: TimeInterval = 6 * 60 * 60
 
 	static func shouldRefresh(lastAttempt: Date, now: Date = Date()) -> Bool {
-		now.timeIntervalSince(lastAttempt) >= minimumAttemptInterval
+		let elapsed = now.timeIntervalSince(lastAttempt)
+		return elapsed < 0 || elapsed >= minimumAttemptInterval
 	}
 }
 
@@ -1039,9 +1040,14 @@ extension MeshtasticAPI {
 				}
 				if let value = payload.domain { entity.domain = value }
 				if let links = payload.links {
-					entity.setLinks(links.map {
+					let safeLinks = links.map {
 						EventFirmwareEntity.Link(label: $0.label, url: $0.url)
-					})
+					}.filter {
+						EventFirmwareURLPolicy.httpsURL(from: $0.url) != nil
+					}
+					if !safeLinks.isEmpty {
+						entity.setLinks(safeLinks)
+					}
 				}
 				if let value = payload.theme?.name { entity.themeName = value }
 				if let value = payload.theme?.tagline { entity.themeTagline = value }
@@ -1058,8 +1064,11 @@ extension MeshtasticAPI {
 					entity.themeAccentColor = value
 				}
 				if let palette = payload.theme?.palette {
-					entity.themePalette = palette.filter {
+					let validPalette = palette.filter {
 						EventFirmwareEntity.color(fromHex: $0) != nil
+					}
+					if !validPalette.isEmpty {
+						entity.themePalette = validPalette
 					}
 				}
 				if let value = payload.theme?.fonts?.heading { entity.themeFontHeading = value }

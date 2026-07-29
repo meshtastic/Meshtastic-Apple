@@ -2,8 +2,7 @@
   "images" : [
     {
       "filename" : "defcon34.png",
-      "idiom" : "universal",
-      "scale" : "1x"
+      "idiom" : "universal"
     }
   ],
   "info" : {
