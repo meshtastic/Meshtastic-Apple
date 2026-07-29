@@ -133,7 +133,7 @@ struct MeshtasticChannelURL: Sendable {
 	}
 
 	static func payloadString(for channelSet: ChannelSet) throws -> String {
-		try channelSet.serializedData().base64EncodedString().base64ToBase64url()
+		urlSafeBase64(try channelSet.serializedData().base64EncodedString())
 	}
 
 	// MARK: - Parsing Helpers
@@ -209,7 +209,7 @@ struct MeshtasticChannelURL: Sendable {
 	// MARK: - Decoding Helpers
 
 	private static func decodeChannelSet(payload: String) throws -> ChannelSet {
-		let decodedString = payload.base64urlToBase64()
+		let decodedString = paddedBase64(payload)
 		guard let decodedData = Data(base64Encoded: decodedString) else {
 			throw ParseError.invalidBase64
 		}
@@ -219,5 +219,22 @@ struct MeshtasticChannelURL: Sendable {
 		} catch {
 			throw ParseError.invalidChannelSet
 		}
+	}
+
+	private static func urlSafeBase64(_ value: String) -> String {
+		value
+			.replacingOccurrences(of: "+", with: "-")
+			.replacingOccurrences(of: "/", with: "_")
+			.replacingOccurrences(of: "=", with: "")
+	}
+
+	private static func paddedBase64(_ value: String) -> String {
+		var result = value
+			.replacingOccurrences(of: "-", with: "+")
+			.replacingOccurrences(of: "_", with: "/")
+		if result.count % 4 != 0 {
+			result.append(String(repeating: "=", count: 4 - result.count % 4))
+		}
+		return result
 	}
 }
