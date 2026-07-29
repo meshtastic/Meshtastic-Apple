@@ -11,6 +11,50 @@ import CocoaMQTT
 import OSLog
 @preconcurrency import SwiftData
 
+struct EventFirmwareNotificationSettings: Equatable {
+	let newNodeNotifications: Bool
+	let autoDisabledForEvent: Bool
+	let userOverrideForEvent: Bool
+}
+
+enum EventFirmwareNotificationPolicy {
+
+	static func userUpdatedSettings(
+		newNodeNotifications: Bool,
+		isEventFirmware: Bool
+	) -> EventFirmwareNotificationSettings {
+		EventFirmwareNotificationSettings(
+			newNodeNotifications: newNodeNotifications,
+			autoDisabledForEvent: false,
+			userOverrideForEvent: isEventFirmware
+		)
+	}
+
+	static func updatedSettings(
+		for edition: FirmwareEdition,
+		current: EventFirmwareNotificationSettings
+	) -> EventFirmwareNotificationSettings {
+		if edition == .vanilla {
+			return EventFirmwareNotificationSettings(
+				newNodeNotifications: current.autoDisabledForEvent ? true : current.newNodeNotifications,
+				autoDisabledForEvent: false,
+				userOverrideForEvent: false
+			)
+		}
+
+		guard !current.userOverrideForEvent,
+			  current.newNodeNotifications,
+			  !current.autoDisabledForEvent else {
+			return current
+		}
+		return EventFirmwareNotificationSettings(
+			newNodeNotifications: false,
+			autoDisabledForEvent: true,
+			userOverrideForEvent: false
+		)
+	}
+}
+
 extension AccessoryManager {
 
 	func handleMqttClientProxyMessage(_ mqttClientProxyMessage: MqttClientProxyMessage) {
@@ -181,21 +225,24 @@ extension AccessoryManager {
 	}
 
 	/// When event firmware is detected (DEFCON, BURNING_MAN, OPEN_SAUCE, etc.),
-	/// auto-disable new-node notifications on first connection.
-	/// Reconnecting to vanilla firmware re-enables and resets the flag.
+	/// auto-disable new-node notifications on first connection when the user has them enabled.
+	/// Reconnecting to vanilla firmware restores only a preference that the app changed.
 	private func applyEventFirmwareNotificationDefaults(_ edition: FirmwareEdition) {
-		if edition != .vanilla {
-			if !UserDefaults.nodeNotificationsAutoDisabledForEvent {
-				UserDefaults.newNodeNotifications = false
-				UserDefaults.nodeNotificationsAutoDisabledForEvent = true
-				Logger.services.info("Event firmware detected (\(String(describing: edition))), auto-disabled new node notifications")
-			}
+		let current = EventFirmwareNotificationSettings(
+			newNodeNotifications: UserDefaults.newNodeNotifications,
+			autoDisabledForEvent: UserDefaults.nodeNotificationsAutoDisabledForEvent,
+			userOverrideForEvent: UserDefaults.nodeNotificationsUserOverrideForEvent
+		)
+		let updated = EventFirmwareNotificationPolicy.updatedSettings(for: edition, current: current)
+		guard updated != current else { return }
+
+		UserDefaults.newNodeNotifications = updated.newNodeNotifications
+		UserDefaults.nodeNotificationsAutoDisabledForEvent = updated.autoDisabledForEvent
+		UserDefaults.nodeNotificationsUserOverrideForEvent = updated.userOverrideForEvent
+		if edition == .vanilla {
+			Logger.services.info("Vanilla firmware detected, re-enabled new node notifications")
 		} else {
-			if UserDefaults.nodeNotificationsAutoDisabledForEvent {
-				UserDefaults.newNodeNotifications = true
-				UserDefaults.nodeNotificationsAutoDisabledForEvent = false
-				Logger.services.info("Vanilla firmware detected, re-enabled new node notifications")
-			}
+			Logger.services.info("Event firmware detected (\(String(describing: edition))), auto-disabled new node notifications")
 		}
 	}
 

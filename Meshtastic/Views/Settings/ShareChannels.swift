@@ -100,7 +100,6 @@ struct ShareChannels: View {
 								Toggle(isOn: $replaceChannels) {
 									Label(replaceChannels ? "Replace Channels" : "Add Channels", systemImage: replaceChannels ? "arrow.triangle.2.circlepath.circle" : "plus.app")
 								}
-								.tint(.accentColor)
 								.toggleStyle(.button)
 								.buttonStyle(.bordered)
 								.buttonBorderShape(.capsule)

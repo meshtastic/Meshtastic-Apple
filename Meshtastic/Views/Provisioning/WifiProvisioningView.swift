@@ -135,7 +135,6 @@ private struct CredentialRow: View {
 				Image(systemName: "doc.on.doc")
 					.font(.body)
 			}
-			.tint(.accentColor)
 			.buttonStyle(.borderless)
 			.accessibilityLabel(String(localized: "Copy \(label)", comment: "VoiceOver label for a credential copy button; %@ is the field name being copied, e.g. Username or Password"))
 		}
@@ -353,7 +352,6 @@ struct WifiProvisioningView: View {
 								Image(systemName: "doc.on.doc")
 									.font(.title3)
 							}
-							.tint(.accentColor)
 							.buttonStyle(.borderless)
 							.accessibilityLabel(String(localized: "Copy IP address", comment: "VoiceOver label for the copy IP address button"))
 						}
@@ -401,7 +399,6 @@ struct WifiProvisioningView: View {
 									Image(systemName: "doc.on.doc")
 										.font(.body)
 								}
-								.tint(.accentColor)
 								.buttonStyle(.borderless)
 								.accessibilityLabel(String(localized: "Copy SSH command", comment: "VoiceOver label for the copy SSH command button"))
 							}

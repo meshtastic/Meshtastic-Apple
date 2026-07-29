@@ -69,6 +69,7 @@ extension UserDefaults {
 		case enableSmartPosition
 		case newNodeNotifications
 		case nodeNotificationsAutoDisabledForEvent
+		case nodeNotificationsUserOverrideForEvent
 		case lowBatteryNotifications
 		case channelMessageNotifications
 		case modemPreset
@@ -90,6 +91,7 @@ extension UserDefaults {
 		case lastFirmwareAPIUpdate
 		case firmwareUpdateNotificationKeys
 		case lastEventFirmwareAPIUpdate
+		case lastEventFirmwareAPIAttempt
 		case useEventTheme
 		case pairedPeripheralIds
 		case migratedPreferredPeripheralPairing
@@ -158,6 +160,9 @@ extension UserDefaults {
 
 	@UserDefault(.nodeNotificationsAutoDisabledForEvent, defaultValue: false)
 	static var nodeNotificationsAutoDisabledForEvent: Bool
+
+	@UserDefault(.nodeNotificationsUserOverrideForEvent, defaultValue: false)
+	static var nodeNotificationsUserOverrideForEvent: Bool
 
 	@UserDefault(.lowBatteryNotifications, defaultValue: true)
 	static var lowBatteryNotifications: Bool
@@ -291,9 +296,13 @@ extension UserDefaults {
 	@UserDefault(.lastEventFirmwareAPIUpdate, defaultValue: .distantPast)
 	static var lastEventFirmwareAPIUpdate: Date
 
-	/// Whether the ambient event theme (accent wash + edition fonts) is applied. Defaults to on;
-	/// the user can opt out from the event info sheet. Opting out keeps the branding *visible*
-	/// (badge/info surface) so it can be re-enabled — it only suppresses the ambient wash/fonts.
+	/// Last live-manifest refresh attempt, successful or not. This prevents an offline launch
+	/// loop from retrying the same first-party endpoint on every metadata lookup.
+	@UserDefault(.lastEventFirmwareAPIAttempt, defaultValue: .distantPast)
+	static var lastEventFirmwareAPIAttempt: Date
+
+	/// Whether event highlight colors are used across the app and edition fonts are used in the
+	/// event info sheet. Standard navigation backgrounds remain unchanged.
 	@UserDefault(.useEventTheme, defaultValue: true)
 	static var useEventTheme: Bool
 }
