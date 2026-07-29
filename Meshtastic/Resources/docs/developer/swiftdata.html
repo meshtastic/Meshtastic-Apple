@@ -142,7 +142,7 @@ app-data reset removes them so the bundled seed can rebuild the cache.</p>
 <code>themeAccentColor</code>, with the authored palette in <code>themePalette</code>. Executable firmware URLs are
 not stored in this display cache; event OTA uses a separate signed artifact contract. The model
 previously had an experimental <code>firmwareZipUrl</code> field before V1 shipped; it was removed while
-the schema was still unreleased. The row remains in the unreleased <strong>V1</strong> schema, so these
+the schema was still unreleased. The model remains in the unreleased <strong>V1</strong> schema, so these
 changes required no new <code>VersionedSchema</code>/<code>MigrationStage</code> (see below).</p>
 <h2>Schema Migrations</h2>
 <p>When you add, rename, or remove properties on a <code>@Model</code> type, you must provide a migration. Schema files live in <code>Meshtastic/Model/Schema/</code>.</p>
