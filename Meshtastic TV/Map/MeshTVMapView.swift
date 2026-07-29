@@ -159,6 +159,122 @@ final class ClusterCircleAnnotationView: MKAnnotationView {
 	override var canBecomeFocused: Bool { false }
 }
 
+/// Marker annotation for the currently selected node. A standalone annotation —
+/// NOT a decoration of the node's own pin — because MapKit freely hides node pins
+/// when it absorbs them into clusters (view.hidden + collapse transform), which
+/// made a ring drawn on the pin itself invisible in dense meshes. This annotation
+/// never clusters, so the halo survives any cluster reshuffle.
+/// `coordinate` is `@objc dynamic` so in-place moves are KVO-observed by MapKit
+/// and animate the existing view.
+final class SelectionHaloAnnotation: NSObject, MKAnnotation {
+	@objc dynamic var coordinate: CLLocationCoordinate2D
+	var num: UInt32
+	var shortName: String
+	init(coordinate: CLLocationCoordinate2D, num: UInt32, shortName: String) {
+		self.coordinate = coordinate
+		self.num = num
+		self.shortName = shortName
+	}
+}
+
+/// The selected-node marker: the node's own colored circle + short name at the
+/// center of a pulsing halo ring. Self-contained on purpose — in a dense mesh
+/// the node's regular pin is usually absorbed into a cluster badge (drawn at the
+/// cluster centroid, not the node's position), so the halo must carry its own
+/// marker rather than rely on the real pin showing underneath. Sits above
+/// everything (`zPriority = .max`), never collides away (`displayPriority =
+/// .required`), never clusters, and is inert to focus and hit-testing.
+final class SelectionHaloView: MKAnnotationView {
+	static let reuseID = "selectionHalo"
+	private static let diameter: CGFloat = 116
+	/// Same size as NodeCircleAnnotationView so the marker matches the other pins.
+	private static let pinDiameter: CGFloat = 64
+
+	private let ring = UIView()
+	private let pin = UIView()
+	private let label = UILabel()
+
+	override init(annotation: MKAnnotation?, reuseIdentifier: String?) {
+		super.init(annotation: annotation, reuseIdentifier: reuseIdentifier)
+		let d = Self.diameter
+		frame = CGRect(x: 0, y: 0, width: d, height: d)
+		isEnabled = false                 // not selectable / hit-testable
+		displayPriority = .required
+		zPriority = .max
+
+		ring.frame = bounds
+		ring.layer.cornerRadius = d / 2
+		ring.layer.borderWidth = 5
+		ring.layer.borderColor = UIColor.white.cgColor
+		ring.backgroundColor = UIColor.white.withAlphaComponent(0.15)
+		ring.isUserInteractionEnabled = false
+		addSubview(ring)
+
+		// The node's own circle marker, centered in the ring — styled to match
+		// NodeCircleAnnotationView so the selection reads as "that pin, haloed".
+		let p = Self.pinDiameter
+		pin.frame = CGRect(x: (d - p) / 2, y: (d - p) / 2, width: p, height: p)
+		pin.layer.cornerRadius = p / 2
+		pin.layer.borderWidth = 3
+		pin.layer.borderColor = UIColor.white.withAlphaComponent(0.9).cgColor
+		pin.isUserInteractionEnabled = false
+		addSubview(pin)
+
+		label.frame = pin.bounds.insetBy(dx: 6, dy: 6)
+		label.textAlignment = .center
+		label.font = .systemFont(ofSize: 20, weight: .bold)
+		label.adjustsFontSizeToFitWidth = true
+		label.minimumScaleFactor = 0.4
+		label.baselineAdjustment = .alignCenters
+		pin.addSubview(label)
+	}
+
+	required init?(coder aDecoder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+
+	override var annotation: MKAnnotation? {
+		didSet {
+			// Re-assert on every reconfiguration — the node pins' didSet resets these
+			// the same way, and that reset is exactly what broke the ring-on-pin design.
+			clusteringIdentifier = nil
+			displayPriority = .required
+			zPriority = .max
+			updateContent()
+		}
+	}
+
+	/// Refresh the center marker from the annotation. Idempotent; called on
+	/// (re)assignment and whenever the selection moves to a different node.
+	func updateContent() {
+		guard let halo = annotation as? SelectionHaloAnnotation else { return }
+		let color = UIColor(hex: halo.num)
+		let text = halo.shortName.isEmpty ? String(format: "%04x", halo.num & 0xffff) : halo.shortName
+		if pin.backgroundColor != color { pin.backgroundColor = color }
+		if label.text != text {
+			label.text = text
+			label.textColor = color.isLight() ? .black : .white
+		}
+	}
+
+	/// Layer animations are stripped whenever the view leaves the window, so the
+	/// pulse must be (re)attached on every return — not in init.
+	override func didMoveToWindow() {
+		super.didMoveToWindow()
+		guard window != nil else { return }
+		guard !UIAccessibility.isReduceMotionEnabled else { return }
+		guard ring.layer.animation(forKey: "haloPulse") == nil else { return }
+		let pulse = CABasicAnimation(keyPath: "transform.scale")
+		pulse.fromValue = 1.0
+		pulse.toValue = 1.12
+		pulse.duration = 1.0
+		pulse.autoreverses = true
+		pulse.repeatCount = .infinity
+		pulse.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+		ring.layer.add(pulse, forKey: "haloPulse")
+	}
+
+	override var canBecomeFocused: Bool { false }
+}
+
 struct MeshTVMapView: UIViewRepresentable {
 	let nodes: [MeshNode]
 	@Binding var selectedNodeNum: UInt32?
@@ -196,6 +312,10 @@ struct MeshTVMapView: UIViewRepresentable {
 		mapView.register(
 			ClusterCircleAnnotationView.self,
 			forAnnotationViewWithReuseIdentifier: ClusterCircleAnnotationView.reuseID
+		)
+		mapView.register(
+			SelectionHaloView.self,
+			forAnnotationViewWithReuseIdentifier: SelectionHaloView.reuseID
 		)
 		context.coordinator.applyInitialRegion(mapView, nodes: nodes)
 		return mapView
@@ -258,12 +378,19 @@ struct MeshTVMapView: UIViewRepresentable {
 					if existing.coordinate.latitude != coordinate.latitude ||
 						existing.coordinate.longitude != coordinate.longitude {
 						existing.coordinate = coordinate
+						// Keep the selection halo glued to a moving selected node.
+						if node.num == selectedNum { haloAnnotation?.coordinate = coordinate }
 					}
 					if existing.title != node.displayName { existing.title = node.displayName }
 					if existing.shortName != node.shortName {
 						existing.subtitle = node.shortName
 						existing.shortName = node.shortName
 						(mapView.view(for: existing) as? NodeCircleAnnotationView)?.updateContent()
+						// The halo carries its own copy of the marker — refresh it too.
+						if node.num == selectedNum, let halo = haloAnnotation {
+							halo.shortName = node.shortName
+							(mapView.view(for: halo) as? SelectionHaloView)?.updateContent()
+						}
 					}
 				} else {
 					let annotation = NodeAnnotation(node: node, coordinate: coordinate)
@@ -364,53 +491,79 @@ struct MeshTVMapView: UIViewRepresentable {
 			return true
 		}
 
-		/// Center on the node chosen from the side list. Center-only, and only when
-		/// the selection actually changed: tvOS `List(selection:)` follows *focus*,
-		/// so this fires for every row the user glides across — animated
-		/// `selectAnnotation` here popped a callout (with its selection sound) per
-		/// row, which read as bursts of static while browsing the list.
+		/// The node number currently selected from the side list, or nil. `sync`
+		/// reads it to keep the halo tracking a moving selected node.
+		private(set) var selectedNum: UInt32?
+		/// The single halo annotation marking the selection (nil = none shown).
+		private var haloAnnotation: SelectionHaloAnnotation?
+
+		/// Show the halo on `node`, moving the existing one when present so MapKit
+		/// animates it instead of blinking remove/add. Exactly one halo ever exists
+		/// (rapid re-selection reuses it); the center marker re-renders for the new
+		/// node's color + short name.
+		private func showHalo(on node: NodeAnnotation, mapView: MKMapView) {
+			if let halo = haloAnnotation {
+				halo.num = node.num
+				halo.shortName = node.shortName
+				if halo.coordinate.latitude != node.coordinate.latitude ||
+					halo.coordinate.longitude != node.coordinate.longitude {
+					halo.coordinate = node.coordinate   // @objc dynamic → KVO → animated move
+				}
+				(mapView.view(for: halo) as? SelectionHaloView)?.updateContent()
+			} else {
+				let halo = SelectionHaloAnnotation(
+					coordinate: node.coordinate, num: node.num, shortName: node.shortName
+				)
+				haloAnnotation = halo
+				mapView.addAnnotation(halo)
+			}
+		}
+
+		private func removeHalo(from mapView: MKMapView) {
+			guard let halo = haloAnnotation else { return }
+			mapView.removeAnnotation(halo)
+			haloAnnotation = nil
+		}
+
 		func applySelection(_ mapView: MKMapView, selectedNodeNum: UInt32?) {
 			guard let num = selectedNodeNum else {
-				lastAppliedSelection = nil   // re-selecting the same node later must still center
-				pendingSelectionNum = nil
+				selectedNum = nil
+				lastAppliedSelection = nil
 				pendingSelectionFly?.cancel()
+				pendingSelectionNum = nil
+				removeHalo(from: mapView)
 				return
 			}
-			// Skip if we already centered this node, or a fly for it is already pending.
 			guard num != lastAppliedSelection, num != pendingSelectionNum else { return }
 
-			// Focus moved to a different node: cancel any pending fly for the previously focused node
-			// so a stale debounced center can't fire and yank the map away from the new selection —
-			// this must happen even when the new node has no annotation yet.
 			pendingSelectionFly?.cancel()
 			pendingSelectionNum = nil
 
-			// Only schedule a center once the node actually has an annotation. The list can select a
-			// node with no location yet; return WITHOUT marking it applied so the center still happens
-			// once its location arrives (updateUIView re-runs applySelection after sync creates it).
-			guard annotationsByNum[num] != nil else { return }
+			// Selected a node with no annotation yet (no location). Remember the
+			// selection but hide any stale halo; when the node's position arrives,
+			// updateUIView re-runs applySelection (lastAppliedSelection is unset) and
+			// the halo appears then.
+			guard let annotation = annotationsByNum[num] else {
+				selectedNum = num
+				removeHalo(from: mapView)
+				return
+			}
 
-			// Debounce: tvOS list selection follows focus, so gliding across rows
-			// fires this per row. Launching an animated cross-country fly for each
-			// one overlaps animations and churns clustering the whole way. Only fly
-			// once focus has settled on a row for a beat.
+			selectedNum = num
+			// The halo is its own never-clustering annotation carrying its own copy of
+			// the node marker — the node's real pin is usually hidden inside a cluster
+			// badge in a dense mesh, so the halo renders the marker itself.
+			showHalo(on: annotation, mapView: mapView)
+
+			// Debounce the camera fly so gliding across rows doesn't launch
+			// overlapping cross-country animations.
 			pendingSelectionNum = num
 			let fly = DispatchWorkItem { [weak self, weak mapView] in
 				guard let self, let mapView else { return }
-				// The annotation can vanish during the debounce (node lost its location or was
-				// evicted). Clear the pending marker so a later re-selection can retry, and leave
-				// lastAppliedSelection unset since we never centered.
 				guard let annotation = self.annotationsByNum[num] else {
 					self.pendingSelectionNum = nil
 					return
 				}
-				// Zoom in tight enough to break the node out of its cluster so the user
-				// can actually see it: at mesh-wide — and even city — zoom, a dense mesh
-				// (e.g. the 900-node sim) leaves the selection swallowed by a cluster
-				// badge. Animate the descent so it reads as zooming *down* onto the node
-				// (the flicker that motivated cutting big jumps is simulator-only; the
-				// device renders the fly smoothly). Only ever zoom IN — if the user is
-				// already tighter than the target, keep their zoom and just recenter.
 				let tight = MKCoordinateRegion(
 					center: annotation.coordinate,
 					latitudinalMeters: Self.selectionZoomMeters,
@@ -419,17 +572,20 @@ struct MeshTVMapView: UIViewRepresentable {
 				let target = mapView.region.span.latitudeDelta > tight.span.latitudeDelta
 					? tight
 					: MKCoordinateRegion(center: annotation.coordinate, span: mapView.region.span)
+				// Cut (no animation) if another selection is already queued — the user
+				// is scrolling fast and an animated fly would just get cancelled.
 				mapView.setRegion(target, animated: true)
-				// Centered — only now mark it applied so gliding back over this row doesn't re-fly.
 				self.lastAppliedSelection = num
 				self.pendingSelectionNum = nil
 			}
 			pendingSelectionFly = fly
-			DispatchQueue.main.asyncAfter(deadline: .now() + 0.4, execute: fly)
+			DispatchQueue.main.asyncAfter(deadline: .now() + 0.25, execute: fly)
 		}
-		/// How tight to zoom when a node is selected from the list — small enough to
-		/// break the node out of a dense cluster so it's individually visible. Tunable.
-		private static let selectionZoomMeters: CLLocationDistance = 800
+
+		/// Tight enough to split the coincident-stack fan ring (~45-65 m radius)
+		/// into individual pins in the dense sim, so the selected node is visible
+		/// as its own pin — not swallowed by a cluster badge — after the fly lands.
+		private static let selectionZoomMeters: CLLocationDistance = 400
 		private var lastAppliedSelection: UInt32?
 		private var pendingSelectionNum: UInt32?
 		private var pendingSelectionFly: DispatchWorkItem?
@@ -437,6 +593,13 @@ struct MeshTVMapView: UIViewRepresentable {
 		// MARK: MKMapViewDelegate
 
 		func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
+			// Halo first — it must never fall into the node/cluster branches.
+			if annotation is SelectionHaloAnnotation {
+				return mapView.dequeueReusableAnnotationView(
+					withIdentifier: SelectionHaloView.reuseID,
+					for: annotation
+				)
+			}
 			if annotation is MKClusterAnnotation {
 				return mapView.dequeueReusableAnnotationView(
 					withIdentifier: ClusterCircleAnnotationView.reuseID,
