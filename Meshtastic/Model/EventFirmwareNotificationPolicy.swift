@@ -1,7 +1,4 @@
-//
-//  EventFirmwareNotificationPolicy.swift
-//  Meshtastic
-//
+// MARK: EventFirmwareNotificationPolicy.swift
 
 import MeshtasticProtobufs
 

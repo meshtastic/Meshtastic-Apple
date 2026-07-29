@@ -122,7 +122,7 @@ Theme colors are stored individually as `themePrimaryColor`, `themeSecondaryColo
 `themeAccentColor`, with the authored palette in `themePalette`. Executable firmware URLs are
 not stored in this display cache; event OTA uses a separate signed artifact contract. The model
 previously had an experimental `firmwareZipUrl` field before V1 shipped; it was removed while
-the schema was still unreleased. The row remains in the unreleased **V1** schema, so these
+the schema was still unreleased. The model remains in the unreleased **V1** schema, so these
 changes required no new `VersionedSchema`/`MigrationStage` (see below).
 
 ## Schema Migrations
