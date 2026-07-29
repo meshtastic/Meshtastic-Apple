@@ -845,7 +845,7 @@ struct EventFirmwareFile {
 	let editions: [EventFirmwarePayload]
 }
 
-struct EventFirmwarePayload: Codable {
+struct EventFirmwarePayload: Decodable {
 	let edition: String
 	let displayName: String?
 	let welcomeMessage: String?
@@ -860,14 +860,60 @@ struct EventFirmwarePayload: Codable {
 	let links: [EventFirmwareLinkPayload]?
 	let theme: EventFirmwareThemePayload?
 	let firmware: EventFirmwareBuildPayload?
+
+	private enum CodingKeys: String, CodingKey {
+		case edition
+		case displayName
+		case welcomeMessage
+		case tag
+		case eventStart
+		case eventEnd
+		case timeZone
+		case location
+		case iconUrl
+		case accentColor
+		case domain
+		case links
+		case theme
+		case firmware
+	}
+
+	init(from decoder: Decoder) throws {
+		let container = try decoder.container(keyedBy: CodingKeys.self)
+		edition = try container.decode(String.self, forKey: .edition)
+		displayName = try? container.decodeIfPresent(String.self, forKey: .displayName)
+		welcomeMessage = try? container.decodeIfPresent(String.self, forKey: .welcomeMessage)
+		tag = try? container.decodeIfPresent(String.self, forKey: .tag)
+		eventStart = try? container.decodeIfPresent(String.self, forKey: .eventStart)
+		eventEnd = try? container.decodeIfPresent(String.self, forKey: .eventEnd)
+		timeZone = try? container.decodeIfPresent(String.self, forKey: .timeZone)
+		location = try? container.decodeIfPresent(String.self, forKey: .location)
+		iconUrl = try? container.decodeIfPresent(String.self, forKey: .iconUrl)
+		accentColor = try? container.decodeIfPresent(String.self, forKey: .accentColor)
+		domain = try? container.decodeIfPresent(String.self, forKey: .domain)
+		links = (try? container.decodeIfPresent(
+			[LossyEventFirmwareLink].self,
+			forKey: .links
+		))?.compactMap(\.value)
+		theme = try? container.decodeIfPresent(EventFirmwareThemePayload.self, forKey: .theme)
+		firmware = try? container.decodeIfPresent(EventFirmwareBuildPayload.self, forKey: .firmware)
+	}
 }
 
-struct EventFirmwareLinkPayload: Codable {
+struct EventFirmwareLinkPayload: Decodable {
 	let label: String
 	let url: String
 }
 
-struct EventFirmwareThemePayload: Codable {
+private struct LossyEventFirmwareLink: Decodable {
+	let value: EventFirmwareLinkPayload?
+
+	init(from decoder: Decoder) throws {
+		value = try? EventFirmwareLinkPayload(from: decoder)
+	}
+}
+
+struct EventFirmwareThemePayload: Decodable {
 	let name: String?
 	let tagline: String?
 	let colors: EventFirmwareColorsPayload?
@@ -875,18 +921,18 @@ struct EventFirmwareThemePayload: Codable {
 	let fonts: EventFirmwareFontsPayload?
 }
 
-struct EventFirmwareColorsPayload: Codable {
+struct EventFirmwareColorsPayload: Decodable {
 	let primary: String?
 	let secondary: String?
 	let accent: String?
 }
 
-struct EventFirmwareFontsPayload: Codable {
+struct EventFirmwareFontsPayload: Decodable {
 	let heading: String?
 	let body: String?
 }
 
-struct EventFirmwareBuildPayload: Codable {
+struct EventFirmwareBuildPayload: Decodable {
 	let slug: String?
 	let version: String?
 	let id: String?

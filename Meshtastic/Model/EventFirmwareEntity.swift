@@ -141,19 +141,14 @@ extension EventFirmwareEntity {
 	/// Parse a strict `#RRGGBB` string into a `Color`. Returns nil on a missing or malformed
 	/// value so callers can drop untrusted manifest colors instead of misrepresenting the brand.
 	static func color(fromHex hex: String?) -> Color? {
-		guard let rawValue = hex?.trimmingCharacters(in: .whitespacesAndNewlines),
-			  rawValue.count == 7,
-			  rawValue.first == "#" else {
-			return nil
-		}
-		let value = String(rawValue.dropFirst())
-		guard let int = UInt64(value, radix: 16) else {
-			return nil
-		}
-		let r = Double((int & 0xFF0000) >> 16) / 255
-		let g = Double((int & 0x00FF00) >> 8) / 255
-		let b = Double(int & 0x0000FF) / 255
-		return Color(.sRGB, red: r, green: g, blue: b, opacity: 1)
+		guard let components = rgbComponents(fromHex: hex) else { return nil }
+		return Color(
+			.sRGB,
+			red: components.red,
+			green: components.green,
+			blue: components.blue,
+			opacity: 1
+		)
 	}
 
 	/// The end date parsed at the *end* of the calendar day, in the edition's IANA time zone
@@ -363,13 +358,8 @@ extension EventFirmwareEntity {
 	}
 
 	private static func relativeLuminance(fromHex hex: String) -> Double? {
-		guard hex.count == 7, hex.first == "#", let value = UInt64(hex.dropFirst(), radix: 16) else {
-			return nil
-		}
-		let red = Double((value & 0xFF0000) >> 16) / 255
-		let green = Double((value & 0x00FF00) >> 8) / 255
-		let blue = Double(value & 0x0000FF) / 255
-		let components = [red, green, blue].map { component in
+		guard let rgb = rgbComponents(fromHex: hex) else { return nil }
+		let components = [rgb.red, rgb.green, rgb.blue].map { component in
 			component <= 0.04045
 				? component / 12.92
 				: pow((component + 0.055) / 1.055, 2.4)
@@ -381,16 +371,8 @@ extension EventFirmwareEntity {
 		_ hex: String,
 		for colorScheme: ColorScheme
 	) -> String? {
-		guard hex.count == 7,
-			  hex.first == "#",
-			  let value = UInt64(hex.dropFirst(), radix: 16) else {
-			return nil
-		}
-		let components = [
-			Double((value & 0xFF0000) >> 16) / 255,
-			Double((value & 0x00FF00) >> 8) / 255,
-			Double(value & 0x0000FF) / 255
-		]
+		guard let rgb = rgbComponents(fromHex: hex) else { return nil }
+		let components = [rgb.red, rgb.green, rgb.blue]
 		guard let maximum = components.max(),
 			  let minimum = components.min(),
 			  maximum - minimum >= 0.15 else {
@@ -419,6 +401,26 @@ extension EventFirmwareEntity {
 			}
 		}
 		return nil
+	}
+
+	private struct RGBComponents {
+		let red: Double
+		let green: Double
+		let blue: Double
+	}
+
+	private static func rgbComponents(fromHex hex: String?) -> RGBComponents? {
+		guard let rawValue = hex?.trimmingCharacters(in: .whitespacesAndNewlines),
+			  rawValue.count == 7,
+			  rawValue.first == "#",
+			  let value = UInt64(rawValue.dropFirst(), radix: 16) else {
+			return nil
+		}
+		return RGBComponents(
+			red: Double((value & 0xFF0000) >> 16) / 255,
+			green: Double((value & 0x00FF00) >> 8) / 255,
+			blue: Double(value & 0x0000FF) / 255
+		)
 	}
 
 	private static func canonicalPalette(_ values: [String]) -> [String] {

@@ -29,7 +29,8 @@ struct EventFirmwareMetadataTests {
 		#expect(FirmwareEditions.openSauce.editionKey == "OPEN_SAUCE")
 		#expect(FirmwareEditions.burningMan.editionKey == "BURNING_MAN")
 		#expect(FirmwareEditions.hamvention.editionKey == "HAMVENTION")
-		#expect(FirmwareEditions(rawValue: 20)?.editionKey == "FAB")
+		#expect(FirmwareEditions.fab.rawValue == 20)
+		#expect(FirmwareEditions.fab.editionKey == "FAB")
 		#expect(FirmwareEditions.vanilla.editionKey == "VANILLA")
 	}
 
@@ -138,16 +139,27 @@ struct EventFirmwareMetadataTests {
 		  "editions": [
 		    {"displayName": "Missing edition"},
 		    {"edition": "DEFCON", "displayName": "DEF CON 34", "unknownFutureField": true},
-		    {"edition": "BURNING_MAN", "links": [{"label": 42, "url": "https://example.com"}]}
+		    {
+		      "edition": "BURNING_MAN",
+		      "displayName": "Burning Man",
+		      "links": [
+		        {"label": 42, "url": "https://example.com"},
+		        {"label": "Event", "url": "https://burningman.org"}
+		      ]
+		    }
 		  ]
 		}
 		""".data(using: .utf8))
 
 		let manifest = try EventFirmwareManifestDecoder.decode(data)
 
-		#expect(manifest.editions.count == 1)
+		#expect(manifest.editions.count == 2)
 		#expect(manifest.editions.first?.edition == "DEFCON")
 		#expect(manifest.editions.first?.displayName == "DEF CON 34")
+		#expect(manifest.editions.last?.edition == "BURNING_MAN")
+		#expect(manifest.editions.last?.displayName == "Burning Man")
+		#expect(manifest.editions.last?.links?.count == 1)
+		#expect(manifest.editions.last?.links?.first?.label == "Event")
 	}
 
 	@Test func emptyEditionIsDiscarded() throws {
@@ -254,7 +266,7 @@ struct EventFirmwareMetadataTests {
 
 		let presentation = try #require(EventFirmwarePresentation.resolve(
 			isConnected: true,
-			edition: FirmwareEditions(rawValue: 20) ?? .vanilla,
+			edition: .fab,
 			metadata: [fab],
 			deviceFirmwareVersion: "2.7.27.d250d89"
 		))
@@ -289,7 +301,7 @@ struct EventFirmwareMetadataTests {
 
 	@Test func bundledArtworkExistsOnlyForShippedEditionIcons() {
 		#expect(FirmwareEditions.hamvention.bundledIconAssetName == "EventFirmwareHAMVENTION")
-		#expect(FirmwareEditions(rawValue: 20)?.bundledIconAssetName == "EventFirmwareFAB")
+		#expect(FirmwareEditions.fab.bundledIconAssetName == "EventFirmwareFAB")
 		#expect(FirmwareEditions.defcon.bundledIconAssetName == "EventFirmwareDEFCON")
 		#expect(FirmwareEditions.openSauce.bundledIconAssetName == nil)
 		#expect(FirmwareEditions.burningMan.bundledIconAssetName == nil)

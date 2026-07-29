@@ -6,6 +6,8 @@
 import SwiftData
 import SwiftUI
 
+// MARK: - Presentation
+
 /// The event identity currently allowed to affect app presentation.
 ///
 /// Keeping this context in one environment value makes the trust boundary explicit: views only
@@ -34,6 +36,8 @@ struct EventFirmwarePresentation {
 	}
 }
 
+// MARK: - Environment
+
 private struct EventFirmwarePresentationKey: EnvironmentKey {
 	static let defaultValue: EventFirmwarePresentation? = nil
 }
@@ -54,6 +58,8 @@ extension EnvironmentValues {
 	}
 }
 
+// MARK: - Tint
+
 /// Applies the event's contrast-safe tint above the root presentation modifiers so tabs,
 /// navigation actions, and app-level sheets all inherit the same highlight color.
 struct EventFirmwareTintScope<Content: View>: View {
@@ -61,6 +67,7 @@ struct EventFirmwareTintScope<Content: View>: View {
 	@Environment(\.colorScheme) private var colorScheme
 	@AppStorage("useEventTheme") private var useEventTheme: Bool = true
 	@Query private var eventFirmwareEditions: [EventFirmwareEntity]
+	@State private var cachedTint: Color = .accentColor
 
 	private let content: Content
 
@@ -68,7 +75,37 @@ struct EventFirmwareTintScope<Content: View>: View {
 		self.content = content()
 	}
 
-	private var tint: Color {
+	private struct TintInputs: Equatable {
+		let isConnected: Bool
+		let editionRawValue: Int
+		let connectedVersion: String?
+		let usesDarkAppearance: Bool
+		let useEventTheme: Bool
+		let themeAccentColor: String?
+		let themeSecondaryColor: String?
+		let palette: [String]
+	}
+
+	private var matchingInfo: EventFirmwareEntity? {
+		eventFirmwareEditions.first {
+			$0.edition == accessoryManager.firmwareEdition.editionKey
+		}
+	}
+
+	private var tintInputs: TintInputs {
+		TintInputs(
+			isConnected: accessoryManager.isConnected,
+			editionRawValue: accessoryManager.firmwareEdition.rawValue,
+			connectedVersion: accessoryManager.connectedVersion,
+			usesDarkAppearance: colorScheme == .dark,
+			useEventTheme: useEventTheme,
+			themeAccentColor: matchingInfo?.themeAccentColor,
+			themeSecondaryColor: matchingInfo?.themeSecondaryColor,
+			palette: matchingInfo?.brandPaletteHexes ?? []
+		)
+	}
+
+	private func resolvedTint() -> Color {
 		guard useEventTheme,
 			  let presentation = EventFirmwarePresentation.resolve(
 				isConnected: accessoryManager.isConnected,
@@ -83,10 +120,21 @@ struct EventFirmwareTintScope<Content: View>: View {
 		return tint
 	}
 
+	private func updateTint() {
+		cachedTint = resolvedTint()
+	}
+
 	var body: some View {
-		content.tint(tint)
+		content
+			.tint(cachedTint)
+			.onAppear(perform: updateTint)
+			.onChange(of: tintInputs) {
+				updateTint()
+			}
 	}
 }
+
+// MARK: - Palette
 
 struct EventFirmwarePaletteRule: View {
 	let colors: [Color]
