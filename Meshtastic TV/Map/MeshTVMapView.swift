@@ -216,6 +216,8 @@ struct MeshTVMapView: UIViewRepresentable {
 		var parent: MeshTVMapView
 		private var didSetInitialRegion = false
 		private var annotationsByNum: [UInt32: NodeAnnotation] = [:]
+		private var lastSyncedNodeCount = 0
+		private var cachedOverrides: [UInt32: CLLocationCoordinate2D] = [:]
 
 		init(_ parent: MeshTVMapView) {
 			self.parent = parent
@@ -229,7 +231,12 @@ struct MeshTVMapView: UIViewRepresentable {
 		/// keyed by node number so we don't churn the whole map each update.
 		func sync(_ mapView: MKMapView, nodes: [MeshNode]) {
 			let located = nodes.filter { $0.hasLocation }
-			let overrides = spreadOverrides(located)
+			// Only recompute the spread ring when the located set size changes.
+			if located.count != lastSyncedNodeCount {
+				cachedOverrides = spreadOverrides(located)
+				lastSyncedNodeCount = located.count
+			}
+			let overrides = cachedOverrides
 			let incoming = Set(located.map { $0.num })
 
 			// Remove annotations for nodes that are gone.

@@ -26,19 +26,9 @@ struct MapScreen: View {
 	/// The persisted node store — the map and list read from here, not the client.
 	@Query private var allNodes: [MeshNode]
 
-	/// All nodes for the side list: located first, then alphabetically.
-	private var sortedNodes: [MeshNode] {
-		allNodes.sorted {
-			if $0.hasLocation != $1.hasLocation { return $0.hasLocation }
-			return $0.displayName.localizedCaseInsensitiveCompare($1.displayName) == .orderedAscending
-		}
-	}
-
-	/// Located nodes, most-recently-heard first — the map's data source.
-	private var locatedNodes: [MeshNode] {
-		allNodes.filter(\.hasLocation)
-			.sorted { ($0.lastHeard ?? .distantPast) > ($1.lastHeard ?? .distantPast) }
-	}
+	// Cached sort/filter results so we don't re-sort 1000+ nodes on every body eval.
+	@State private var sortedNodes: [MeshNode] = []
+	@State private var locatedNodes: [MeshNode] = []
 
 	var body: some View {
 		HStack(spacing: 0) {
@@ -53,6 +43,28 @@ struct MapScreen: View {
 			)
 			.ignoresSafeArea()
 		}
+		.onChange(of: allNodes) { _, newNodes in
+			recomputeNodeLists(from: newNodes)
+		}
+		// onChange(of: allNodes) only fires on membership changes — SwiftData models
+		// compare by identity, so in-place mutations (a node gaining a position, or
+		// lastHeard updating) never trigger it once inserts stop. Poll on a gentle
+		// cadence like the iOS mesh map does, so the cached lists can't go stale.
+		.task {
+			while !Task.isCancelled {
+				recomputeNodeLists(from: allNodes)
+				try? await Task.sleep(for: .seconds(2))
+			}
+		}
+	}
+
+	private func recomputeNodeLists(from nodes: [MeshNode]) {
+		sortedNodes = nodes.sorted {
+			if $0.hasLocation != $1.hasLocation { return $0.hasLocation }
+			return $0.displayName.localizedCaseInsensitiveCompare($1.displayName) == .orderedAscending
+		}
+		locatedNodes = nodes.filter(\.hasLocation)
+			.sorted { ($0.lastHeard ?? .distantPast) > ($1.lastHeard ?? .distantPast) }
 	}
 
 	/// Menu pressed while the map held focus: pop any open node detail and hand
