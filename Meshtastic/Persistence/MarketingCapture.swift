@@ -55,8 +55,27 @@ enum MarketingCapture {
 			return
 		}
 		simulateConnectedNode(accessoryManager)
+		configureEventFirmwarePreviewNode(accessoryManager, edition: edition)
 		accessoryManager.firmwareEdition = edition
 		accessoryManager.activeConnection?.device.firmwareVersion = previewFirmwareVersion(for: edition)
+	}
+
+	private static func configureEventFirmwarePreviewNode(
+		_ accessoryManager: AccessoryManager,
+		edition: FirmwareEditions
+	) {
+		let nodeNum: Int64 = 0x0A00_0000
+		guard let node = getNodeInfo(id: nodeNum, context: accessoryManager.context) else {
+			return
+		}
+
+		node.myInfo?.pioEnv = "tbeam-s3-core"
+		node.metadata?.hwModel = "LILYGO_TBEAM_S3_CORE"
+		node.metadata?.firmwareVersion = previewFirmwareVersion(for: edition)
+		node.user?.hwModel = "LILYGO_TBEAM_S3_CORE"
+		node.user?.hwModelId = 12
+		node.user?.hwDisplayName = "LILYGO T-Beam Supreme"
+		try? accessoryManager.context.save()
 	}
 
 	/// Entry point, called once from `ContentView.task`. No-op unless `--marketing-capture` is set.
