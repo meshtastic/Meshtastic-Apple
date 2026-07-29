@@ -24,6 +24,13 @@ enum EventFirmwareInstallerPolicy {
 	) -> Bool {
 		activeNodeNum == expectedNodeNum
 	}
+
+	static func isPreparedSelectionCurrent(
+		_ preparedSelection: EventFirmwareOTASelection,
+		availability: EventFirmwareOTAAvailability
+	) -> Bool {
+		availability == .available(preparedSelection)
+	}
 }
 
 struct EventFirmwareInstallerView: View {
@@ -275,6 +282,10 @@ struct EventFirmwareInstallerView: View {
 					guard EventFirmwareInstallerPolicy.isExpectedDeviceActive(
 						expectedNodeNum: expectedNodeNum,
 						activeNodeNum: accessoryManager.activeDeviceNum
+					),
+					EventFirmwareInstallerPolicy.isPreparedSelectionCurrent(
+						selection,
+						availability: availability
 					) else {
 						preparationState = .failed(
 							"The connected device changed. Select the event again for the current device."

@@ -43,6 +43,20 @@ struct EventFirmwareInstallerViewTests {
 		))
 	}
 
+	@Test func installHandoffRequiresSameExactSelection() throws {
+		let contract = try EventFirmwareOTADebugFixture.verifiedContract()
+		let prepared = try #require(contract.artifacts.first).selection
+
+		#expect(EventFirmwareInstallerPolicy.isPreparedSelectionCurrent(
+			prepared,
+			availability: .available(prepared)
+		))
+		#expect(!EventFirmwareInstallerPolicy.isPreparedSelectionCurrent(
+			prepared,
+			availability: .unavailable(.noCompatibleArtifact)
+		))
+	}
+
 	private func target() -> EventFirmwareOTATarget {
 		EventFirmwareOTATarget(
 			pioEnv: "tbeam-s3-core",
@@ -53,5 +67,11 @@ struct EventFirmwareInstallerViewTests {
 			partitionScheme: "8MB",
 			bootloaderVersion: nil
 		)
+	}
+}
+
+private extension EventFirmwareOTAArtifact {
+	var selection: EventFirmwareOTASelection {
+		EventFirmwareOTASelection(artifact: self, purpose: .event)
 	}
 }

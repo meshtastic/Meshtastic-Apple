@@ -150,7 +150,7 @@ struct EventFirmwareOTASelector {
 			.trimmingCharacters(in: .whitespacesAndNewlines)
 			.trimmingPrefix("v")
 		let components = normalized.split(separator: ".", omittingEmptySubsequences: false)
-		guard components.count >= 3 else { return nil }
+		guard components.count == 3 || components.count == 4 else { return nil }
 		let core = components.prefix(3)
 		guard core.allSatisfy({
 			!$0.isEmpty && $0.allSatisfy { $0.isASCII && $0.isNumber }

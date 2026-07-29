@@ -166,6 +166,18 @@ struct EventFirmwareOTASelectorTests {
 		}
 	}
 
+	@Test func rejectsArtifactVersionWithExtraSuffixComponents() throws {
+		let malformed = try artifact(version: "2.8.0.b00d76f.extra")
+
+		#expect(throws: EventFirmwareOTASelectionError.incompatibleArtifact) {
+			try EventFirmwareOTASelector().select(
+				from: contract(artifacts: [malformed]),
+				for: target(),
+				purpose: .event
+			)
+		}
+	}
+
 	@Test func validatesNRFProtocolAndBootloaderMinimum() throws {
 		let nrfArtifact = try artifact(
 			pioEnv: "t-echo",
