@@ -143,6 +143,7 @@ enum EventFirmwareOTADebugFixture {
 			pioEnv: "tbeam-s3-core",
 			hwModel: 12,
 			architecture: Architecture.esp32S3.rawValue,
+			version: "2.8.0.b00d76f",
 			format: .bin,
 			url: url,
 			sha256: SHA256.hash(data: payload).map { String(format: "%02x", $0) }.joined(),

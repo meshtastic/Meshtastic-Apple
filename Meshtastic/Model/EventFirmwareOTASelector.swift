@@ -66,6 +66,7 @@ struct EventFirmwareOTASelector {
 			throw EventFirmwareOTASelectionError.unapprovedArtifactURL
 		}
 		guard artifact.byteCount > 0,
+			  numericVersion(artifact.version) != nil,
 			  artifact.sha256.count == 64,
 			  artifact.sha256.allSatisfy(\.isHexDigit) else {
 			throw EventFirmwareOTASelectionError.incompatibleArtifact

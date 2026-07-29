@@ -154,6 +154,18 @@ struct EventFirmwareOTASelectorTests {
 		}
 	}
 
+	@Test func rejectsMalformedArtifactVersion() throws {
+		let malformed = try artifact(version: "latest")
+
+		#expect(throws: EventFirmwareOTASelectionError.incompatibleArtifact) {
+			try EventFirmwareOTASelector().select(
+				from: contract(artifacts: [malformed]),
+				for: target(),
+				purpose: .event
+			)
+		}
+	}
+
 	@Test func validatesNRFProtocolAndBootloaderMinimum() throws {
 		let nrfArtifact = try artifact(
 			pioEnv: "t-echo",
@@ -264,6 +276,7 @@ struct EventFirmwareOTASelectorTests {
 		pioEnv: String = "tbeam-s3-core",
 		hwModel: Int = 12,
 		architecture: String = Architecture.esp32S3.rawValue,
+		version: String = "2.8.0.b00d76f",
 		format: EventFirmwareOTAArtifact.Format = .bin,
 		urlString: String =
 			"https://raw.githubusercontent.com/meshtastic/meshtastic.github.io/" +
@@ -279,6 +292,7 @@ struct EventFirmwareOTASelectorTests {
 			pioEnv: pioEnv,
 			hwModel: hwModel,
 			architecture: architecture,
+			version: version,
 			format: format,
 			url: try #require(URL(string: urlString)),
 			sha256: String(repeating: "a", count: 64),

@@ -104,6 +104,8 @@ struct EventFirmwareInstallerView: View {
 
 				switch availability {
 				case let .available(selection):
+					LabeledContent("Install version", value: selection.artifact.version)
+						.accessibilityElement(children: .combine)
 					Label(
 						selection.purpose == .event
 							? "Signed event firmware is available for this exact device target."

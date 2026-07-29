@@ -27,6 +27,7 @@ struct EventFirmwareOTAArtifact: Codable, Equatable, Sendable {
 	let pioEnv: String
 	let hwModel: Int
 	let architecture: String
+	let version: String
 	let format: Format
 	let url: URL
 	let sha256: String
