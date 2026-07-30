@@ -374,10 +374,12 @@ struct ImportDeviceProfileView: View {
 		guard importTask == nil else { return }   // no re-entrant / double apply
 		canForceDismiss = false
 		importTask = Task { await runImport() }
-		// Liveness backstop: if the run is still going after a grace period (e.g. a single send stalled on
-		// the transport), let the user out. The apply keeps running harmlessly in the background.
+		// Liveness backstop: transport sends are now cancellation-aware, so a cancel normally
+		// resolves in <1s. This backstop covers the residual race window between the onCancel
+		// handler's actor hop and the CoreBluetooth/NWConnection callback, which should be
+		// momentary but is not bounded by the OS.
 		Task {
-			try? await Task.sleep(nanoseconds: 90 * 1_000_000_000)
+			try? await Task.sleep(nanoseconds: 15 * 1_000_000_000)
 			if isApplying { canForceDismiss = true }
 		}
 	}

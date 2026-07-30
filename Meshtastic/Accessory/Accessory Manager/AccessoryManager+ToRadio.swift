@@ -585,6 +585,12 @@ extension AccessoryManager {
 
 		var deliveredChannels: [Channel] = []
 		for cs in channelSet.settings {
+			// Stop sending channels if the calling Task was cancelled. The channels already
+			// sent are fine inside a transaction (commit will persist them); skipping the rest
+			// lets the import engine exit promptly. The local-state upserts below are safe to
+			// skip: they mirror to Core Data and are rebuilt on the next connect/drain.
+			try Task.checkCancellation()
+
 			var chan = Channel()
 			chan.role = (i == 0) ? .primary : .secondary
 			chan.settings = cs
