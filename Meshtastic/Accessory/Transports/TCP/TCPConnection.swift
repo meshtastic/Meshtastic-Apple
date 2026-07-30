@@ -36,6 +36,11 @@ actor TCPConnection: Connection {
 	private let nwPort: NWEndpoint.Port
 	
 	private var connectionStreamContinuation: AsyncStream<ConnectionEvent>.Continuation?
+
+	/// The in-flight send continuation, if any. Only one send can be in-flight at a time
+	/// (actor serialization). The cancel handler and the NWConnection completion handler
+	/// race for this slot; whoever claims it first wins, the other no-ops.
+	private var pendingSendContinuation: CheckedContinuation<Void, Error>?
 	
 	var isConnected: Bool {
 		connection?.state == .ready
@@ -189,36 +194,58 @@ actor TCPConnection: Connection {
 		withUnsafeBytes(of: &len) { buffer.append(contentsOf: $0) }
 		buffer.append(serialized)
 
-		try await withCheckedThrowingContinuation { (cont: CheckedContinuation<Void, Error>) in
-			// `connection` is nil after disconnect(). Optional-chaining the send call there made the
-			// whole statement a no-op: the continuation was created but never handed to a completion
-			// handler and never resumed, so the caller suspended forever with no cancellation handler
-			// to free it. The two heartbeat connect steps are built with `timeout: nil`, so that
-			// parked the whole connect sequence with nothing to time it out.
-			//
-			// Known remaining gap: this only covers the no-socket case. A live-but-stalled
-			// `NWConnection` (`.waiting`/`.preparing`) still queues the send without completing, and
-			// this continuation has no `withTaskCancellationHandler` (unlike `receiveData` above), so
-			// that variant is still uncancellable.
-			guard let connection else {
-				cont.resume(throwing: AccessoryError.disconnected("Not connected"))
-				return
-			}
-			connection.send(content: buffer, completion: .contentProcessed { error in
-				if let error = error {
-					cont.resume(throwing: error)
-				} else {
-					cont.resume()
+		try await withTaskCancellationHandler {
+			try await withCheckedThrowingContinuation { (cont: CheckedContinuation<Void, Error>) in
+				// `connection` is nil after disconnect(). Optional-chaining the send call there made
+				// the whole statement a no-op: the continuation was created but never handed to a
+				// completion handler and never resumed, so the caller suspended forever. Fail fast.
+				guard let connection else {
+					cont.resume(throwing: AccessoryError.disconnected("Not connected"))
+					return
 				}
-			})
+				self.pendingSendContinuation = cont
+				connection.send(content: buffer, completion: .contentProcessed { error in
+					Task { await self.completeSend(error: error) }
+				})
+			}
+		} onCancel: {
+			// Resume the continuation with CancellationError instead of killing the NWConnection.
+			// The connection must stay alive for the commit that follows a cancelled import.
+			Task { await self.cancelPendingSend() }
 		}
 	}
-	
+
+	/// Called by the NWConnection send completion handler. Claims the pending continuation
+	/// and resumes it; no-ops if the cancel handler already consumed it.
+	private func completeSend(error: Error?) {
+		guard let cont = pendingSendContinuation else { return }
+		pendingSendContinuation = nil
+		if let error {
+			cont.resume(throwing: error)
+		} else {
+			cont.resume()
+		}
+	}
+
+	/// Called from onCancel (via actor hop). Claims the pending continuation and resumes it
+	/// with CancellationError; no-ops if the completion handler already consumed it.
+	private func cancelPendingSend() {
+		guard let cont = pendingSendContinuation else { return }
+		pendingSendContinuation = nil
+		cont.resume(throwing: CancellationError())
+	}
+
 	func disconnect(withError error: Error? = nil, shouldReconnect: Bool) throws {
 		Logger.transport.debug("🌐 [TCP] Disconnecting from TCP connection")
 		readerTask?.cancel()
 		readerTask = nil
-		
+
+		// Drain any in-flight send continuation before tearing down the connection.
+		if let cont = pendingSendContinuation {
+			pendingSendContinuation = nil
+			cont.resume(throwing: AccessoryError.disconnected("Disconnected"))
+		}
+
 		connection?.cancel()
 		connection = nil
 		
