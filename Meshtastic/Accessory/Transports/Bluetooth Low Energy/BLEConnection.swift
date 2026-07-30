@@ -51,7 +51,7 @@ actor BLEConnection: Connection {
 	private var connectionStreamContinuation: AsyncStream<ConnectionEvent>.Continuation?
 	
 	private var connectContinuation: CheckedContinuation<Void, Error>?
-	private var writeContinuations: [CheckedContinuation<Void, Error>]
+	private var writeContinuations: WriteContinuationStore
 	private var readContinuations: [CheckedContinuation<Data, Error>]
 
 	/// Notify characteristics whose subscription must confirm before the connect
@@ -72,7 +72,7 @@ actor BLEConnection: Connection {
 		self.central = central
 		self.transport = transport
 		self.delegate = BLEConnectionDelegate(peripheral: peripheral)
-		self.writeContinuations = []
+		self.writeContinuations = WriteContinuationStore()
 		self.readContinuations = []
 		self.delegate.setConnection(self)
 	}
@@ -114,10 +114,7 @@ actor BLEConnection: Connection {
 		central.cancelPeripheralConnection(peripheral)
 		peripheral.delegate = nil
 				
-		while !writeContinuations.isEmpty {
-			let writeContinuation = writeContinuations.removeFirst()
-			writeContinuation.resume(throwing: AccessoryError.disconnected("Unknown error"))
-		}
+		writeContinuations.drainAll(throwing: AccessoryError.disconnected("Unknown error"))
 
 		while !readContinuations.isEmpty {
 			let readContinuation = readContinuations.removeFirst()
@@ -476,23 +473,23 @@ extension BLEConnection {
 			Logger.transport.error("🛜 [BLE] didWriteValueFor a characteristic other than TORADIO_UUID.  Should not happen!")
 			return
 		}
-		guard !writeContinuations.isEmpty else {
-			Logger.transport.error("🛜 [BLE] didWriteValueFor with no waiting continuations.  Should not happen!")
+		guard let (_, continuation) = writeContinuations.removeFirst() else {
+			// The cancel handler already consumed this continuation. The CoreBluetooth
+			// callback arrived after cancel — harmless, just nothing left to resume.
+			Logger.transport.debug("🛜 [BLE] didWriteValueFor with no waiting continuations (cancel handler may have consumed it)")
 			return
 		}
 		
-		let writeContinuation = writeContinuations.removeFirst()
-		
 		if let error = error {
 			Logger.transport.error("🛜 [BLE] Did write for \(characteristic.meshtasticCharacteristicName, privacy: .public) with error \(error, privacy: .public)")
-			writeContinuation.resume(throwing: error)
+			continuation.resume(throwing: error)
 			Task { try await self.handlePeripheralError(error: error) }
 		} else {
 			#if DEBUG
 			// Too much logging to report every write.
 			Logger.transport.error("🛜 [BLE] Did write for \(characteristic.meshtasticCharacteristicName, privacy: .public)")
 			#endif
-			writeContinuation.resume()
+			continuation.resume()
 		}
 	}
 	
@@ -517,15 +514,31 @@ extension BLEConnection {
 		}
 		
 		let writeType: CBCharacteristicWriteType = characteristic.properties.contains(.writeWithoutResponse) ? .withoutResponse : .withResponse
-		try await withCheckedThrowingContinuation { newWriteContinuation in
-			if writeType == .withoutResponse {
-				peripheral.writeValue(binaryData, for: characteristic, type: writeType)
-				newWriteContinuation.resume()
-			} else {
-				writeContinuations.append(newWriteContinuation)
+		if writeType == .withoutResponse {
+			// Fire-and-forget: no continuation needed, no cancel hazard.
+			peripheral.writeValue(binaryData, for: characteristic, type: writeType)
+			return
+		}
+
+		// Write-with-response: the continuation lives in a keyed store so the cancel
+		// handler and didWriteValueFor cannot double-resume. The cancel handler hops to
+		// the actor and no-ops if didWriteValueFor already consumed the continuation.
+		let writeID = UUID()
+		try await withTaskCancellationHandler {
+			try await withCheckedThrowingContinuation { (cont: CheckedContinuation<Void, Error>) in
+				writeContinuations.insert(id: writeID, continuation: cont)
 				peripheral.writeValue(binaryData, for: characteristic, type: writeType)
 			}
+		} onCancel: {
+			Task { await self.cancelWrite(id: writeID) }
 		}
+	}
+
+	/// Resume and remove a single pending write continuation on cancellation.
+	/// No-ops if didWriteValueFor already consumed it — that is the expected race.
+	private func cancelWrite(id: UUID) {
+		guard let continuation = writeContinuations.remove(id: id) else { return }
+		continuation.resume(throwing: CancellationError())
 	}
 	
 	func read() async throws -> Data {
