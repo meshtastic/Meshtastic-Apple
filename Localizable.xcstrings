@@ -1,6 +1,13 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Import finished" : {},
+    "Applying configuration" : {},
+    "Sending %1$d of %2$d" : {},
+    "Sending %1$d of %2$d, %3$@" : {},
+    "sending" : {},
+    "sent" : {},
+    "waiting" : {},
     "" : {
       "localizations" : {
         "da" : {

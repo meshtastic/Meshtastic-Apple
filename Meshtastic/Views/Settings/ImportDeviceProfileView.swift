@@ -22,7 +22,7 @@ struct ImportDeviceProfileView: View {
 
 	@State private var selection: Set<ImportSection>
 	@State private var phase: Phase = .review
-	@State private var progress: ProgressState?
+	@State private var applyProgress: ImportApplyProgress?
 	@State private var isPresentingConfirm = false
 	@State private var importTask: Task<Void, Never>?
 	/// Liveness backstop: set true if the apply is still running after a grace period so the user can
@@ -46,12 +46,6 @@ struct ImportDeviceProfileView: View {
 			default: return false
 			}
 		}
-	}
-
-	private struct ProgressState {
-		let title: String
-		let index: Int
-		let total: Int
 	}
 
 	init(plan: DeviceProfileImportPlan) {
@@ -112,11 +106,28 @@ struct ImportDeviceProfileView: View {
 			}
 		}
 		.interactiveDismissDisabled(isApplying && !canForceDismiss)
+		// VoiceOver: state transitions inside the list don't move focus, so announce them explicitly.
+		// The row/bar accessibilityValues update silently otherwise.
+		.onChange(of: isApplying) { _, applying in
+			if applying {
+				AccessibilityNotification.Announcement("Applying configuration".localized).post()
+			}
+		}
+		.onChange(of: isDone) { _, done in
+			if done {
+				AccessibilityNotification.Announcement("Import finished".localized).post()
+			}
+		}
 	}
 
 	private var isReviewing: Bool {
 		if case .done = phase { return false }
 		return true
+	}
+
+	private var isDone: Bool {
+		if case .done = phase { return true }
+		return false
 	}
 
 	// MARK: Review
@@ -188,6 +199,31 @@ struct ImportDeviceProfileView: View {
 				}
 			}
 		}
+		.safeAreaInset(edge: .top) {
+			if let applyProgress, isApplying {
+				VStack(spacing: 4) {
+					ProgressView(value: applyProgress.fractionCompleted) {
+						Text(applyProgress.currentItemTitle)
+							.font(.caption.bold())
+					} currentValueLabel: {
+						Text(String(format: "Sending %1$d of %2$d".localized,
+									 applyProgress.currentIndexOneBased,
+									 applyProgress.total))
+							.font(.caption2)
+							.foregroundColor(.secondary)
+					}
+				}
+				.padding(.horizontal)
+				.padding(.vertical, 8)
+				.background(.bar)
+				.accessibilityElement(children: .combine)
+				.accessibilityLabel("Applying configuration".localized)
+				.accessibilityValue(String(format: "Sending %1$d of %2$d, %3$@".localized,
+											  applyProgress.currentIndexOneBased,
+											  applyProgress.total,
+											  applyProgress.currentItemTitle))
+			}
+		}
 	}
 
 	@ViewBuilder
@@ -199,37 +235,54 @@ struct ImportDeviceProfileView: View {
 				if newValue { selection.insert(section) } else { selection.remove(section) }
 			}
 		)
-		Toggle(isOn: isOn) {
-			VStack(alignment: .leading, spacing: 2) {
-				HStack(spacing: 6) {
-					Text(section.title)
-					if sectionItems.contains(where: \.isSensitive) {
-						Image(systemName: "key.fill").font(.caption2).foregroundColor(.orange)
-					}
-				}
-				Text(sectionItems.map(\.summary).joined(separator: ", "))
-					.font(.caption)
-					.foregroundColor(.secondary)
-				if section == .security {
-					Text("Changes this node's identity (private/public key) and admin keys — can break existing direct messages and lock local administration.")
-						.font(.caption2)
-						.foregroundColor(.orange)
+		let labelContent = VStack(alignment: .leading, spacing: 2) {
+			HStack(spacing: 6) {
+				Text(section.title)
+				if sectionItems.contains(where: \.isSensitive) {
+					Image(systemName: "key.fill").font(.caption2).foregroundColor(.orange)
 				}
 			}
+			Text(sectionItems.map(\.summary).joined(separator: ", "))
+				.font(.caption)
+				.foregroundColor(.secondary)
+			if section == .security {
+				Text("Changes this node's identity (private/public key) and admin keys — can break existing direct messages and lock local administration.")
+					.font(.caption2)
+					.foregroundColor(.orange)
+			}
 		}
-		.disabled(isApplying)
-		.overlay(alignment: .trailing) {
-			if let progress, isApplying, currentSection == section {
-				ProgressView().padding(.trailing, 44)
+		if isApplying {
+			let status = applyProgress?.sectionStatus(section) ?? .pending
+			HStack {
+				labelContent
+				Spacer()
+				switch status {
+				case .sending:
+					ProgressView()
+						.accessibilityHidden(true)
+				case .sent:
+					Image(systemName: "checkmark.circle.fill")
+						.foregroundColor(.green)
+						.accessibilityHidden(true)
+				case .pending:
+					EmptyView()
+				}
+			}
+			.accessibilityElement(children: .combine)
+			.accessibilityValue(sectionAccessibilityValue(status))
+		} else {
+			Toggle(isOn: isOn) {
+				labelContent
 			}
 		}
 	}
 
-	private var currentSection: ImportSection? {
-		guard let progress else { return nil }
-		let items = plan.items(for: selection)
-		guard progress.index < items.count else { return nil }
-		return items[progress.index].section
+	private func sectionAccessibilityValue(_ status: ImportApplyProgress.SectionStatus) -> String {
+		switch status {
+		case .sending: return "sending".localized
+		case .sent: return "sent".localized
+		case .pending: return "waiting".localized
+		}
 	}
 
 	@ViewBuilder
@@ -402,15 +455,22 @@ struct ImportDeviceProfileView: View {
 			}
 		)
 		let gateway = AccessoryProfileApplyGateway(accessoryManager: accessoryManager, node: user)
+		// Build the progress model from the per-section item counts of the active selection.
+		let selectedItems = plan.items(for: selection)
+		var sectionCounts: [ImportSection: Int] = [:]
+		for item in selectedItems {
+			sectionCounts[item.section, default: 0] += 1
+		}
+		applyProgress = ImportApplyProgress(sectionItemCounts: sectionCounts)
 		let result = await DeviceProfileImporter.apply(
 			plan: plan,
 			selection: selection,
 			gateway: gateway,
 			progress: { item, index, total in
-				progress = ProgressState(title: item.kind.displayName, index: index, total: total)
+				applyProgress?.announce(item: item, index: index, total: total)
 			}
 		)
-		progress = nil
+		applyProgress = nil
 		importTask = nil
 		canForceDismiss = false
 		importFinishedAt = Date()
