@@ -24,7 +24,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Select Xcode
-        run: sudo xcode-select -s /Applications/Xcode_16.4.app/Contents/Developer
+        run: sudo xcode-select -s /Applications/Xcode_26.3.app/Contents/Developer
 
       - name: Regenerate doc snapshots
         run: |
@@ -53,9 +53,21 @@ jobs:
           xcodebuild test \
             -workspace Meshtastic.xcworkspace \
             -scheme Meshtastic \
-            -destination 'platform=iOS Simulator,name=iPhone 16' \
+            -destination 'platform=iOS Simulator,name=iPhone 16,OS=18.5' \
             "${snapshot_tests[@]}" \
             2>&1 | tail -20
+        env:
+          TEST_RUNNER_SNAPSHOT_RECORD: "1"
+        continue-on-error: true
+
+      - name: Upload recorded snapshot references
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: recorded-snapshot-references
+          path: |
+            MeshtasticTests/__Snapshots__/SwiftUIViewSnapshotTests/
+            docs/assets/screenshots/
 
       - name: Verify snapshot tests leave references unchanged
         run: |
