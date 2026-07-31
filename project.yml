@@ -194,6 +194,8 @@ targets:
         type: syncedFolder
       - path: "Meshtastic/Helpers"
         type: syncedFolder
+      - path: "Meshtastic/Import"
+        type: syncedFolder
       - path: "Meshtastic/Intents"
         type: syncedFolder
       - path: "Meshtastic/Measurement"
