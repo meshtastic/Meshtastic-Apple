@@ -138,6 +138,7 @@ private func assertViewSnapshot<V: View>(
 			if shouldRecord {
 				do {
 					try pngData.write(to: snapshotFile)
+					return
 				} catch {
 					Issue.record("Failed to write snapshot: \(error)", sourceLocation: sourceLocation)
 					return
