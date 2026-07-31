@@ -1,10 +1,14 @@
 name: Deploy Docs
 
-# Builds and validates the docs on every push to main, but does NOT publish to
-# GitHub Pages. Only tagged releases publish (see docs-release.yml, on v*.*.*),
-# so changes merged to main never overwrite the released docs site between
-# releases. The live site reflects the most recent vX.Y.Z tag.
+# Builds and validates the docs on pull requests and every push to main, but
+# does NOT publish to GitHub Pages. Only tagged releases publish (see
+# docs-release.yml, on v*.*.*), so changes merged to main never overwrite the
+# released docs site between releases. The live site reflects the most recent
+# vX.Y.Z tag.
 on:
+  pull_request:
+    branches:
+      - main
   push:
     branches:
       - main
@@ -24,13 +28,43 @@ jobs:
 
       - name: Regenerate doc snapshots
         run: |
+          set -o pipefail
+          # Each @Suite in this file needs its own Swift Testing selector.
+          snapshot_tests=()
+          while IFS= read -r suite; do
+            snapshot_tests+=("-only-testing:MeshtasticTests/$suite")
+          done < <(
+            python3 - <<'PY'
+          import pathlib
+          import re
+
+          source = pathlib.Path("MeshtasticTests/SwiftUIViewSnapshotTests.swift").read_text()
+          suites = re.findall(r"@Suite\([^\n]+\)\s*\n(?:@MainActor\s*\n)?struct\s+(\w+SnapshotTests)\b", source)
+          print(*suites, sep="\n")
+          PY
+          )
+
+          expected_snapshot_suite_count=38
+          if (( ${#snapshot_tests[@]} != expected_snapshot_suite_count )); then
+            echo "Expected $expected_snapshot_suite_count snapshot test suites, found ${#snapshot_tests[@]}" >&2
+            exit 1
+          fi
+
           xcodebuild test \
             -workspace Meshtastic.xcworkspace \
             -scheme Meshtastic \
             -destination 'platform=iOS Simulator,name=iPhone 16' \
-            -only-testing:MeshtasticTests/SwiftUIViewSnapshotTests \
+            "${snapshot_tests[@]}" \
             2>&1 | tail -20
-        continue-on-error: false
+
+      - name: Verify snapshot tests leave references unchanged
+        run: |
+          changes="$(git status --porcelain -- MeshtasticTests/__Snapshots__ docs/assets/screenshots)"
+          if [[ -n "$changes" ]]; then
+            echo "Snapshot tests changed reference files:" >&2
+            echo "$changes" >&2
+            exit 1
+          fi
 
       - name: Copy snapshots to docs
         run: bash scripts/copy-snapshots.sh --output Meshtastic/Resources/docs/assets/screenshots

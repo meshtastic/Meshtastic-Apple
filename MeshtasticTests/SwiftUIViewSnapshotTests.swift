@@ -77,8 +77,9 @@ private func renderImage<V: View>(_ view: V, width: CGFloat, height: CGFloat? = 
 	}
 }
 
-/// Saves a snapshot image to disk. On first run, records the reference.
-/// On subsequent runs, compares against the reference and fails if different.
+/// Compares a rendered view against its reference snapshot.
+/// Set `SNAPSHOT_RECORD=1` in the test process to record a missing reference.
+/// With `xcodebuild`, pass it as `TEST_RUNNER_SNAPSHOT_RECORD=1`.
 /// When height is nil the view determines its own height via sizeThatFits.
 /// When `forDocs` is true, the PNG is saved to `docs/assets/screenshots/` so
 /// it is shared directly with the documentation site. When false, it is saved
@@ -121,13 +122,8 @@ private func assertViewSnapshot<V: View>(
 	let snapshotFile = snapshotDir.appendingPathComponent("\(name).png")
 
 	let fm = FileManager.default
-	do {
-		try fm.createDirectory(at: snapshotDir, withIntermediateDirectories: true)
-	} catch {
-		Issue.record("Failed to create snapshot directory: \(error)", sourceLocation: sourceLocation)
-		return
-	}
-
+	let shouldRecord = ProcessInfo.processInfo.environment["SNAPSHOT_RECORD"] == "1"
+	let recordInstruction = "Set SNAPSHOT_RECORD=1 in the test environment (TEST_RUNNER_SNAPSHOT_RECORD=1 with xcodebuild)."
 	if fm.fileExists(atPath: snapshotFile.path) {
 		// Compare against reference
 		guard let referenceData = try? Data(contentsOf: snapshotFile),
@@ -139,21 +135,33 @@ private func assertViewSnapshot<V: View>(
 		}
 		// Compare pixel dimensions (not point sizes, which depend on scale factor)
 		guard refCG.width == newCG.width, refCG.height == newCG.height else {
-			// Dimensions changed — re-record
-			try? pngData.write(to: snapshotFile)
+			if shouldRecord {
+				do {
+					try pngData.write(to: snapshotFile)
+				} catch {
+					Issue.record("Failed to write snapshot: \(error)", sourceLocation: sourceLocation)
+					return
+				}
+			}
+			let instruction = shouldRecord ? "Reference re-recorded." : recordInstruction
 			Issue.record(
-				"Snapshot dimensions changed from \(refCG.width)×\(refCG.height) to \(newCG.width)×\(newCG.height). Re-recorded.",
+				"Snapshot dimensions changed from \(refCG.width)×\(refCG.height) to \(newCG.width)×\(newCG.height). \(instruction)",
 				sourceLocation: sourceLocation
 			)
 			return
 		}
-	} else {
-		// First run - record reference silently (test passes; verify visually)
+	} else if shouldRecord {
 		do {
+			try fm.createDirectory(at: snapshotDir, withIntermediateDirectories: true)
 			try pngData.write(to: snapshotFile)
 		} catch {
 			Issue.record("Failed to write snapshot: \(error)", sourceLocation: sourceLocation)
 		}
+	} else {
+		Issue.record(
+			"Missing reference snapshot \(snapshotFile.lastPathComponent). \(recordInstruction)",
+			sourceLocation: sourceLocation
+		)
 	}
 }
 
@@ -737,6 +745,7 @@ struct DiscoveryHistoryViewSnapshotTests {
 // MARK: - NodeListItemCompact Snapshot Tests
 
 @Suite("NodeListItemCompact Snapshots")
+@MainActor
 struct NodeListItemCompactSnapshotTests {
 
 	// MARK: Helpers
@@ -791,6 +800,7 @@ struct NodeListItemCompactSnapshotTests {
 		if let ch = channelIndex {
 			node.channel = ch
 		}
+		sharedModelContainer.mainContext.insert(node)
 		return node
 	}
 
@@ -892,6 +902,7 @@ struct NodeListItemCompactSnapshotTests {
 		let node = NodeInfoEntity()
 		node.hopsAway = 2
 		node.lastHeard = Date(timeIntervalSinceNow: -120)
+		sharedModelContainer.mainContext.insert(node)
 		await assertViewSnapshot(
 			of: NodeListItemCompact(node: node, isDirectlyConnected: false, connectedNode: 1).padding(.horizontal, 16),
 			width: 390,
@@ -1040,6 +1051,7 @@ struct NodeListItemCompactSnapshotTests {
 // MARK: - NodeListItem Snapshot Tests
 
 @Suite("NodeListItem Snapshots")
+@MainActor
 struct NodeListItemSnapshotTests {
 
 	// MARK: Helpers
@@ -1088,6 +1100,7 @@ struct NodeListItemSnapshotTests {
 			position.longitudeI = lon
 			node.positions = [position]
 		}
+		sharedModelContainer.mainContext.insert(node)
 		return node
 	}
 
@@ -1729,7 +1742,7 @@ struct MessagePreviewSnapshotTests {
 					.foregroundStyle(.primary)
 			}
 		}
-		await assertViewSnapshot(of: view, width: 250, height: 44, named: "formattingToolbar", forDocs: true)
+		await assertViewSnapshot(of: view, width: 250, height: 44, named: "formattingToolbar")
 	}
 
 	@Test("Preview with bold text")

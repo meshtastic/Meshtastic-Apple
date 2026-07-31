@@ -125,20 +125,17 @@ is no workflow-level dependency to establish.
 
 ---
 
-## R-005: copy-snapshots.sh calls cleanup-screenshots.sh — release impact
+## R-005: copy-snapshots.sh and screenshot cleanup
 
-**Decision**: The `cleanup-screenshots.sh` call at the end of `copy-snapshots.sh`
-is safe to run during a release cut. It only removes orphaned PNGs from the source
-`docs/assets/screenshots/` directory (files not referenced by any `.md`). It does
-not touch `Meshtastic/Resources/docs/assets/screenshots/`.
+**Decision**: `copy-snapshots.sh` only copies referenced screenshots. Cleanup is a
+separate, explicit maintenance action through `cleanup-screenshots.sh`.
 
-**Rationale**: Reviewed `copy-snapshots.sh` lines 44-47 — `cleanup-screenshots.sh`
-receives no arguments and operates on `docs/assets/screenshots/` (the source
-directory), not the output directory. Any files it removes would be orphaned
-screenshots that are already not referenced. No risk to release content.
+**Rationale**: Copying snapshots must not delete source files as a side effect.
+Keeping cleanup separate also prevents generated but not yet referenced screenshots
+from disappearing during a release build.
 
-**Alternatives considered**: Skipping `copy-snapshots.sh` for release — rejected
-because FR-004 requires it; screenshots must be current in the release bundle.
+**Alternatives considered**: Keeping cleanup inside `copy-snapshots.sh` was rejected
+because it coupled a destructive source-tree operation to an output-copy command.
 
 ---
 
