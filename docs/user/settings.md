@@ -34,6 +34,7 @@ LoRa settings control how your radio communicates on the mesh:
 |---------|-------------|
 | Region | Your geographical region. **Must be set correctly** — using the wrong region is illegal and prevents communication with local nodes. The standard regions are always available; the amateur (ham) 2m / 70cm / 1.25m bands and the EU 866 / narrow bands require firmware **2.8.0 or later** and only appear when your connected radio supports them. |
 | Modem Preset | Speed/range trade-off. Most users should use Long Fast or Long Slow. On firmware 2.8+, the preset list is filtered to those that are legal for the selected region (see below). |
+| Bandwidth | Available under **Advanced** when **Use Preset** is off. Choices are filtered for the selected region and connected radio. If a stored bandwidth is unsupported, the app shows a warning and prevents saving until you select a supported value. |
 | Hop Limit | The number of times a message is repeated by other nodes. Higher values increase range but also mesh traffic. |
 | Frequency Slot | Fine-tune the exact frequency within your region. |
 

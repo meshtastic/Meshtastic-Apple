@@ -182,6 +182,12 @@ struct BandwidthsTests {
 		#expect(options.map(\.pickerValue) == [31, 62, 125, 0, 500])
 	}
 
+	@Test func unknownRegion_fallsBackToSubGHzOptions() {
+		let options = Bandwidths.selectable(region: nil, pioEnv: nil)
+
+		#expect(options.map(\.pickerValue) == [31, 62, 125, 0, 500])
+	}
+
 	@Test func sx128xOptions_includeAllCanonicalHighBandValues() {
 		let options = Bandwidths.selectable(region: .lora24, pioEnv: "tlora-v2-1-1_8")
 

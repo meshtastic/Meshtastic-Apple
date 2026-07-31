@@ -538,7 +538,7 @@ private struct CustomBandwidthPicker: View {
 			}
 			if !isValid {
 				Label {
-					Text("This bandwidth is not supported by the connected radio in the selected region. Choose a supported value before saving.")
+					Text("This bandwidth is not supported by the connected radio in the selected region. Choose a supported value before saving.".localized)
 				} icon: {
 					Image(systemName: "exclamationmark.triangle.fill")
 				}
