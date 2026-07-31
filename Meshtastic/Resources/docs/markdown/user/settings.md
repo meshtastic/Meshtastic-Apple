@@ -194,7 +194,7 @@ All present sections are selected by default **except Security & Identity**, whi
 > **Warning — Import overwrites your radio's settings**
 > Importing writes the selected settings — including any secrets in the file — onto the connected node. Only import files from a source you trust.
 
-Applying **Channels & LoRa** reboots the radio, so it briefly disconnects; the app reports this so you can reconnect to verify. Settings are applied in order and the import stops at the first failure, telling you exactly what was and wasn't applied. Re-running an import is safe.
+Applying **Channels & LoRa** reboots the radio, so it briefly disconnects; the app reports this so you can reconnect. Settings are applied in order and the import stops at the first failure, telling you exactly what was and wasn't sent. Because the radio can silently discard settings it accepts, the result screen also offers **Verify Against the Radio**: once the radio reconnects and sends its configuration back, it compares each imported section against what the radio actually holds. Re-running an import is safe.
 
 ## Automatic Documentation Translation
 

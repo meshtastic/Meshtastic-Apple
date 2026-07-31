@@ -408,8 +408,8 @@
             "connected",
             "region",
             "mesh",
-            "language",
             "configuration",
+            "language",
             "only",
             "nodes",
             "contact",
@@ -426,7 +426,7 @@
             "display",
             "configure"
         ],
-        "charCount": 13325
+        "charCount": 13561
     },
     {
         "id": "signal-meter",
