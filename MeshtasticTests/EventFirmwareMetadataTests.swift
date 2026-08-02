@@ -49,22 +49,26 @@ struct EventFirmwareMetadataTests {
 
 			// `editionKey` is the join key against the off-device event-firmware metadata, so it has
 			// to match the proto enum's wire name exactly. Round-trip through proto3 JSON, which
-			// serializes enums by name, rather than restating the names by hand.
+			// serializes enums by name, rather than restating the names by hand. Read the field out
+			// of the parsed object instead of substring-matching, so the assertion cannot pass on
+			// the name appearing somewhere else in the payload.
 			var info = MyNodeInfo()
 			info.firmwareEdition = proto
 			let json = try info.jsonString()
+			let decoded = try JSONSerialization.jsonObject(with: Data(json.utf8)) as? [String: Any]
+			let encodedEdition = decoded?["firmwareEdition"] as? String
 
 			if proto == .vanilla {
 				// Zero-valued proto3 fields are omitted from JSON, so `.vanilla` cannot be asserted
 				// by name. Assert the omission itself rather than skipping the case: if SwiftProtobuf
 				// ever starts emitting defaults, this fails and the name assertion below takes over.
 				#expect(
-					!json.contains("firmwareEdition"),
+					encodedEdition == nil,
 					"expected the default firmwareEdition to be omitted from \(json)"
 				)
 			} else {
 				#expect(
-					json.contains("\"\(mapped.editionKey)\""),
+					encodedEdition == mapped.editionKey,
 					"editionKey \(mapped.editionKey) does not match the proto name in \(json)"
 				)
 			}
