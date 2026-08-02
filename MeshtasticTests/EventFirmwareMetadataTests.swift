@@ -11,6 +11,7 @@ import Testing
 import SwiftUI
 import UIKit
 @testable import Meshtastic
+import MeshtasticProtobufs
 
 @Suite("Event firmware metadata")
 struct EventFirmwareMetadataTests {
@@ -33,6 +34,30 @@ struct EventFirmwareMetadataTests {
 
 	@Test func unknownEditionKeyReturnsNil() {
 		#expect(FirmwareEditions(editionKey: "NOT_A_REAL_EVENT") == nil)
+	}
+
+	/// Drift guard for protobuf bumps. `FirmwareEditions(from:)` maps by raw value and falls back
+	/// to `.vanilla`, so a new firmware edition added upstream compiles fine and silently loses its
+	/// event badge, name and description until it is mirrored here.
+	@Test func everyProtoEditionIsMirrored() throws {
+		for proto in FirmwareEdition.allCases {
+			let mapped = FirmwareEditions(from: proto)
+			#expect(
+				mapped.rawValue == proto.rawValue,
+				"FirmwareEdition \(proto) (\(proto.rawValue)) has no FirmwareEditions case and falls back to .vanilla"
+			)
+
+			// `editionKey` is the join key against the off-device event-firmware metadata, so it has
+			// to match the proto enum's wire name exactly. Round-trip through proto3 JSON, which
+			// serializes enums by name, rather than restating the names by hand.
+			var info = MyNodeInfo()
+			info.firmwareEdition = proto
+			let json = try info.jsonString()
+			#expect(
+				json.contains("\"\(mapped.editionKey)\"") || proto == .vanilla,
+				"editionKey \(mapped.editionKey) does not match the proto name in \(json)"
+			)
+		}
 	}
 
 	// MARK: - Color parsing
