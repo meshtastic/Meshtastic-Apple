@@ -53,10 +53,21 @@ struct EventFirmwareMetadataTests {
 			var info = MyNodeInfo()
 			info.firmwareEdition = proto
 			let json = try info.jsonString()
-			#expect(
-				json.contains("\"\(mapped.editionKey)\"") || proto == .vanilla,
-				"editionKey \(mapped.editionKey) does not match the proto name in \(json)"
-			)
+
+			if proto == .vanilla {
+				// Zero-valued proto3 fields are omitted from JSON, so `.vanilla` cannot be asserted
+				// by name. Assert the omission itself rather than skipping the case: if SwiftProtobuf
+				// ever starts emitting defaults, this fails and the name assertion below takes over.
+				#expect(
+					!json.contains("firmwareEdition"),
+					"expected the default firmwareEdition to be omitted from \(json)"
+				)
+			} else {
+				#expect(
+					json.contains("\"\(mapped.editionKey)\""),
+					"editionKey \(mapped.editionKey) does not match the proto name in \(json)"
+				)
+			}
 		}
 	}
 
