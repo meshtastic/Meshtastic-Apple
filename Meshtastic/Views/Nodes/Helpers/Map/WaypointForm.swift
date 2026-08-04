@@ -142,10 +142,17 @@ struct WaypointForm: View {
 							.datePickerStyle(.compact)
 							.font(.callout)
 					}
-					Toggle(isOn: $local) {
-						Label("Local Only", systemImage: "iphone")
+					// "Local Only" is offered only for a new waypoint or one that is already local.
+					// An existing shared waypoint is already mesh-known; demoting it to local would
+					// shadow its mesh id — MeshPackets.waypointPacket() drops incoming updates for any
+					// id whose local copy is isLocal — so future shared edits/expirations would be
+					// silently missed. To stop sharing a mesh waypoint, use "Delete for everyone".
+					if waypoint.id == 0 || waypoint.isLocal {
+						Toggle(isOn: $local) {
+							Label("Local Only", systemImage: "iphone")
+						}
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					if local {
 						Text("Saved only on this device — not shared over the mesh. It can't be edited by other nodes, and you can always delete it.")
 							.font(.caption)
@@ -608,8 +615,8 @@ struct WaypointForm: View {
 	/// Expire the waypoint mesh-wide, then remove it locally. Only offered for shared
 	/// waypoints you can edit (connected, not local, not locked to another node).
 	private func deleteForEveryone() {
-		guard let deviceNum = accessoryManager.activeDeviceNum else {
-			Logger.mesh.error("Unable to delete waypoint: No Device num")
+		guard accessoryManager.activeDeviceNum != nil else {
+			Logger.mesh.error("Unable to delete waypoint: not connected to a device")
 			return
 		}
 		var newWaypoint = Waypoint()
@@ -619,9 +626,8 @@ struct WaypointForm: View {
 		newWaypoint.latitudeI = waypoint.latitudeI
 		newWaypoint.longitudeI = waypoint.longitudeI
 		newWaypoint.icon = icon.unicodeScalars.first?.value ?? 128205
-		if locked {
-			newWaypoint.lockedTo = lockedTo == 0 ? UInt32(deviceNum) : UInt32(lockedTo)
-		}
+		// Expire it mesh-wide. The receiver's expiration branch keys purely on `expire`
+		// (see MeshPackets.waypointPacket), so lockedTo is intentionally not set here.
 		newWaypoint.expire = UInt32(1)
 		applyGeofence(to: &newWaypoint)
 		Task {
@@ -629,7 +635,7 @@ struct WaypointForm: View {
 				try await accessoryManager.sendWaypoint(waypoint: newWaypoint)
 				await MainActor.run {
 					context.delete(waypoint)
-					do { try context.save() } catch { }
+					do { try context.save() } catch { Logger.mesh.error("Failed to delete waypoint after mesh expire: \(error)") }
 					dismiss()
 				}
 			} catch {
