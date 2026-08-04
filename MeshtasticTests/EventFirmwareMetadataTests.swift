@@ -11,6 +11,7 @@ import Testing
 import SwiftUI
 import UIKit
 @testable import Meshtastic
+import MeshtasticProtobufs
 
 @Suite("Event firmware metadata")
 struct EventFirmwareMetadataTests {
@@ -33,6 +34,45 @@ struct EventFirmwareMetadataTests {
 
 	@Test func unknownEditionKeyReturnsNil() {
 		#expect(FirmwareEditions(editionKey: "NOT_A_REAL_EVENT") == nil)
+	}
+
+	/// Drift guard for protobuf bumps. `FirmwareEditions(from:)` maps by raw value and falls back
+	/// to `.vanilla`, so a new firmware edition added upstream compiles fine and silently loses its
+	/// event badge, name and description until it is mirrored here.
+	@Test func everyProtoEditionIsMirrored() throws {
+		for proto in FirmwareEdition.allCases {
+			let mapped = FirmwareEditions(from: proto)
+			#expect(
+				mapped.rawValue == proto.rawValue,
+				"FirmwareEdition \(proto) (\(proto.rawValue)) has no FirmwareEditions case and falls back to .vanilla"
+			)
+
+			// `editionKey` is the join key against the off-device event-firmware metadata, so it has
+			// to match the proto enum's wire name exactly. Round-trip through proto3 JSON, which
+			// serializes enums by name, rather than restating the names by hand. Read the field out
+			// of the parsed object instead of substring-matching, so the assertion cannot pass on
+			// the name appearing somewhere else in the payload.
+			var info = MyNodeInfo()
+			info.firmwareEdition = proto
+			let json = try info.jsonString()
+			let decoded = try JSONSerialization.jsonObject(with: Data(json.utf8)) as? [String: Any]
+			let encodedEdition = decoded?["firmwareEdition"] as? String
+
+			if proto == .vanilla {
+				// Zero-valued proto3 fields are omitted from JSON, so `.vanilla` cannot be asserted
+				// by name. Assert the omission itself rather than skipping the case: if SwiftProtobuf
+				// ever starts emitting defaults, this fails and the name assertion below takes over.
+				#expect(
+					encodedEdition == nil,
+					"expected the default firmwareEdition to be omitted from \(json)"
+				)
+			} else {
+				#expect(
+					encodedEdition == mapped.editionKey,
+					"editionKey \(mapped.editionKey) does not match the proto name in \(json)"
+				)
+			}
+		}
 	}
 
 	// MARK: - Color parsing
