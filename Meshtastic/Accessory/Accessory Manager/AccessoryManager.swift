@@ -124,7 +124,12 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	// Chicken/Egg problem.  Set in the App object immediately after
 	// AppState and AccessoryManager are created
 	var appState: AppState!
-	lazy var context = PersistenceController.shared.context
+	lazy var modelContainer = PersistenceController.shared.container
+	lazy var context = modelContainer.mainContext
+	lazy var writeAccess = PersistenceController.shared.currentWriteAccess
+	lazy var radioStoreCoordinator = RadioStoreCoordinator(
+		persistenceController: PersistenceController.shared
+	)
 	let mqttManager = MqttClientProxyManager.shared
 
 	// MARK: - Database reset
@@ -133,10 +138,47 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	/// SwiftData container fresh and repoints the MeshPackets actor and this manager's cached
 	/// `context` at it, so no long-lived context keeps stale objects that would trap
 	/// ("destroyed by ModelContext.reset") when a reconnect reuses freed SQLite rowids.
-	func repointToFreshContainer() {
-		PersistenceController.shared.recreateContainer()
+	@discardableResult
+	func repointToFreshContainer() async -> Bool {
+		guard await PersistenceController.shared.recreateContainer() else { return false }
+		bindToCurrentContainer()
+		return true
+	}
+
+	func bindToCurrentContainer() {
 		MeshPackets.recreateShared()
-		context = PersistenceController.shared.context
+		modelContainer = PersistenceController.shared.container
+		context = modelContainer.mainContext
+		writeAccess = PersistenceController.shared.currentWriteAccess
+	}
+
+	func prepareUIForRadioStoreChange() async {
+		guard let appState else { return }
+		appState.router.popToRoot(tab: .messages)
+		appState.router.popToRoot(tab: .nodes)
+		appState.router.popToRoot(tab: .map)
+		appState.router.popToRoot(tab: .settings)
+		await Task.yield()
+	}
+
+	func bindAfterRadioStoreSelection() {
+		bindToCurrentContainer()
+		appState?.databaseResetID = UUID()
+		NotificationCenter.default.post(name: .radioStoreDidChange, object: nil)
+	}
+
+	func commitContextChanges() throws {
+		let permit: ContainerWritePermit
+		do {
+			permit = try writeAccess.beginWrite()
+		} catch {
+			if error as? ContainerLeaseError == .transitioning {
+				context.rollback()
+			}
+			throw error
+		}
+		defer { permit.finish() }
+		try context.save() // coordinated-save-allow: write permit is held above
 	}
 
 	/// `repointToFreshContainer()` plus a UI refresh: bumps `databaseResetID` so @Query-backed
@@ -149,7 +191,8 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	/// instance was destroyed by calling ModelContext.reset". Popping + yielding lets SwiftUI
 	/// unmount those views first. Mirrors the node-switch flow in `backupCurrentAndRestoreDatabase`
 	/// (Views/Connect/Connect.swift).
-	func resetDatabaseAfterClear() async {
+	@discardableResult
+	func resetDatabaseAfterClear() async -> Bool {
 		// `appState` (and its `router`) are wired up at launch and are required for the safety
 		// guarantee here. Bail loudly rather than recreating the container without first popping the
 		// detail views: a half-done reset (container torn down, views still mounted) would
@@ -158,7 +201,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		// safe degradation.
 		guard let appState else {
 			Logger.data.error("💾 [Database] resetDatabaseAfterClear skipped: appState is nil — cannot pop views before recreating the container")
-			return
+			return false
 		}
 		let router = appState.router
 		router.popToRoot(tab: .messages)
@@ -166,8 +209,12 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		router.popToRoot(tab: .map)
 		router.popToRoot(tab: .settings)
 		await Task.yield()
-		repointToFreshContainer()
+		let didRepoint = await repointToFreshContainer()
+		if !didRepoint {
+			Logger.data.error("💾 [Database] Timed out waiting for active writers; kept the current container")
+		}
 		appState.databaseResetID = UUID()
+		return didRepoint
 	}
 
 	// Published Stuff
@@ -228,6 +275,9 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 
 	// Conncetion process
 	var connectionSteps: SequentialSteps?
+	var identityConfirmedForConnection = false
+	var packetsPendingIdentity: [FromRadio] = []
+	static let maxPacketsPendingIdentity = 512
 	
 	// Public due to file separation
 	var otaInProgress: Bool = false
@@ -306,7 +356,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		if ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil {
 			NotificationCenter.default.addObserver(forName: UIApplication.didReceiveMemoryWarningNotification, object: nil, queue: .main) { [weak self] _ in
 				guard let self else { return }
-				try? self.context.save()
+				try? self.commitContextChanges()
 				Logger.data.warning("⚠️ [AccessoryManager] Memory warning — saved context")
 			}
 		}
@@ -451,6 +501,8 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			self.activeConnection = nil
 		}
 		self.activeDeviceNum = nil
+		identityConfirmedForConnection = false
+		packetsPendingIdentity.removeAll(keepingCapacity: true)
 
 		// Lockdown: clear per-connection state. If a Lock Now was in flight, the
 		// disconnect resolves the coordinator to `.lockNowAcknowledged`.
@@ -496,7 +548,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		mqttManager.mqttClientProxy?.disconnect()
 
 		// Save any pending changes and let SwiftData manage object lifecycle on disconnect.
-		try? context.save()
+		try? commitContextChanges()
 		Logger.data.info("💾 [AccessoryManager] Saved context on disconnect")
 		
 		// Turn off the disconnect buttons
@@ -749,6 +801,29 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	}
 
 	private func processFromRadio(_ decodedInfo: FromRadio) async {
+		// No radio-owned packet may reach SwiftData until canonical MyInfo has selected the
+		// physical radio's store. The connection event loop awaits this method, but buffering
+		// also covers firmware that sends another payload before MyInfo.
+		if !identityConfirmedForConnection {
+			if case .myInfo(let myNodeInfo) = decodedInfo.payloadVariant {
+				guard await handleMyInfo(myNodeInfo) else { return }
+				identityConfirmedForConnection = true
+				let pending = packetsPendingIdentity
+				packetsPendingIdentity.removeAll(keepingCapacity: true)
+				for packet in pending {
+					await processFromRadio(packet)
+				}
+				return
+			}
+			guard packetsPendingIdentity.count < Self.maxPacketsPendingIdentity else {
+				lastConnectionError = AccessoryError.appError("Radio sent too much data before identifying itself")
+				Logger.data.error("💾 [Database] Dropping pre-identity packet after buffer limit")
+				return
+			}
+			packetsPendingIdentity.append(decodedInfo)
+			return
+		}
+
 		// Logger.transport.info("📻 [processFromRadio] Processing: \(String(describing: decodedInfo.payloadVariant), privacy: .public)")
 		switch decodedInfo.payloadVariant {
 		case .mqttClientProxyMessage(let mqttClientProxyMessage):
@@ -758,7 +833,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			handleClientNotification(clientNotification)
 
 		case .myInfo(let myNodeInfo):
-			await handleMyInfo(myNodeInfo)
+			_ = await handleMyInfo(myNodeInfo)
 
 		case .packet(let packet):
 			// Feed the traffic-rate estimator one tick per inbound mesh packet — this is the busy path
@@ -1027,7 +1102,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 					// now rather than waiting on the debounce timer.
 					await MeshPackets.shared.flushDebouncedSaves()
 					do {
-						try context.save()
+						try commitContextChanges()
 						Logger.data.info("💾 [Database] Batch saved all node info after database retrieval")
 
 						// Push updated node data to the companion Watch app
@@ -1262,7 +1337,7 @@ extension AccessoryManager {
 
 		context.insert(entity)
 		do {
-			try context.save()
+			try commitContextChanges()
 			Logger.mesh.info("📡 [Beacon] Passively captured beacon from \(packet.from.toHex(), privacy: .public) — customChannel \(hasCustomChannel, privacy: .public)")
 		} catch {
 			Logger.data.error("🚫 Failed to persist passive beacon: \(error.localizedDescription, privacy: .public)")

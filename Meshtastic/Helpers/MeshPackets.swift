@@ -81,9 +81,16 @@ actor MeshPackets {
 		MainActor.assumeIsolated { PersistenceController.shared.container }
 	}
 
+	private static var _writeAccess: ContainerWriteAccess {
+		MainActor.assumeIsolated { PersistenceController.shared.currentWriteAccess }
+	}
+
 	/// The current shared instance. Access via `MeshPackets.shared`.
 	/// Periodically recreated to release accumulated ModelContext memory.
-	nonisolated(unsafe) private static var _shared: MeshPackets = MeshPackets(modelContainer: _container)
+	nonisolated(unsafe) private static var _shared: MeshPackets = MeshPackets(
+		modelContainer: _container,
+		writeAccess: _writeAccess
+	)
 	private static let _lock = NSLock()
 
 	static var shared: MeshPackets {
@@ -92,12 +99,21 @@ actor MeshPackets {
 		return _shared
 	}
 
+	private var writeAccess: ContainerWriteAccess?
+
+	init(modelContainer: ModelContainer, writeAccess: ContainerWriteAccess) {
+		let context = ModelContext(modelContainer)
+		modelExecutor = DefaultSerialModelExecutor(modelContext: context)
+		self.modelContainer = modelContainer
+		self.writeAccess = writeAccess
+	}
+
 	/// Discards the current actor and creates a fresh one with a new ModelContext.
 	/// Call after DB retrieval completes or periodically to release accumulated memory.
 	static func recreateShared() {
 		_lock.lock()
 		let previous = _shared
-		_shared = MeshPackets(modelContainer: _container)
+		_shared = MeshPackets(modelContainer: _container, writeAccess: _writeAccess)
 		_lock.unlock()
 		// Invalidate the retired instance. In-flight tasks that captured `MeshPackets.shared`
 		// before the swap (a debounced save, a late packet for the previous radio) still hold
@@ -123,11 +139,31 @@ actor MeshPackets {
 
 	/// Saves any pending changes in the model context. Call once at the end of each
 	/// top-level packet handler to batch all mutations from a single packet into one write.
-	func savePendingChanges(caller: String = #function) {
+	func commitModelContextChanges() throws {
 		guard !invalidated else {
-			Logger.data.warning("💾 [\(caller, privacy: .public)] Dropped save on retired MeshPackets instance")
-			return
+			modelContext.rollback()
+			throw ContainerLeaseError.stale
 		}
+
+		let writePermit: ContainerWritePermit?
+		do {
+			writePermit = try writeAccess?.beginWrite()
+		} catch {
+			modelContext.rollback()
+			throw error
+		}
+		defer { writePermit?.finish() }
+		try modelContext.save() // coordinated-save-allow: write permit is held above
+	}
+
+	@discardableResult
+	func savePendingChanges(caller: String = #function) -> Bool {
+		guard !invalidated else {
+			modelContext.rollback()
+			Logger.data.warning("💾 [\(caller, privacy: .public)] Dropped save on retired MeshPackets instance")
+			return false
+		}
+
 		// Periodically enforce the global node/waypoint caps before committing, so evictions ride
 		// along in this same save. Every save path funnels through here, so this one hook covers
 		// nodes/waypoints created by any handler.
@@ -136,12 +172,17 @@ actor MeshPackets {
 			savesSinceEntityCapCheck = 0
 			enforceEntityCaps()
 		}
-		guard modelContext.hasChanges else { return }
+		guard modelContext.hasChanges else { return true }
 		do {
-			try modelContext.save()
+			try commitModelContextChanges()
 			Logger.data.debug("💾 [\(caller, privacy: .public)] Saved pending changes")
+			return true
+		} catch is ContainerLeaseError {
+			Logger.data.warning("💾 [\(caller, privacy: .public)] Dropped save for a retired or transitioning container")
+			return false
 		} catch {
 			Logger.data.error("💥 [\(caller, privacy: .public)] Error saving: \(error.localizedDescription, privacy: .public)")
+			return false
 		}
 	}
 
@@ -205,7 +246,14 @@ actor MeshPackets {
 	func createNodeThenEvict(num: Int64, cap: Int) {
 		_ = findOrCreateNode(num: num, context: modelContext)
 		evictNodesIfOverCap(cap)
-		try? modelContext.save()
+		try? commitModelContextChanges()
+	}
+
+	func insertNodeAndSaveForLeaseTest(num: Int64) -> Bool {
+		let node = NodeInfoEntity()
+		node.num = num
+		modelContext.insert(node)
+		return savePendingChanges(caller: "insertNodeAndSaveForLeaseTest")
 	}
 #endif
 
@@ -413,6 +461,7 @@ actor MeshPackets {
 				fetchedMyInfo[0].peripheralId = peripheralId
 				fetchedMyInfo[0].myNodeNum = Int64(myInfo.myNodeNum)
 				fetchedMyInfo[0].rebootCount = Int32(truncatingIfNeeded: myInfo.rebootCount)
+				fetchedMyInfo[0].deviceId = myInfo.deviceID
 				if !myInfo.pioEnv.isEmpty {
 					fetchedMyInfo[0].pioEnv = myInfo.pioEnv
 				}
@@ -1452,13 +1501,9 @@ actor MeshPackets {
 					if packet.to != Constants.maximumNodeNum && newMessage.fromUser != nil {
 						newMessage.fromUser?.lastMessage = Date()
 					}
-					var messageSaved = false
-					do {
-						if modelContext.hasChanges {
-							try modelContext.save()
-						}
+					let messageSaved = savePendingChanges(caller: "textMessage")
+					if messageSaved {
 						Logger.data.debug("💾 Saved a new message for \(newMessage.messageId, privacy: .public)")
-						messageSaved = true
 
 						// Keep message storage bounded without scanning the whole table
 						// after every incoming text.
@@ -1474,13 +1519,12 @@ actor MeshPackets {
 									for old in oldMessages {
 										modelContext.delete(old)
 									}
-									try modelContext.save()
-									Logger.data.info("🗑️ Pruned \(oldMessages.count) old messages (cap: \(MeshPackets.maxTotalMessages))")
+									if savePendingChanges(caller: "textMessagePrune") {
+										Logger.data.info("🗑️ Pruned \(oldMessages.count) old messages (cap: \(MeshPackets.maxTotalMessages))")
+									}
 								}
 							}
 						}
-					} catch {
-						Logger.data.error("💥 Failed to save new MessageEntity: \(error.localizedDescription, privacy: .public)")
 					}
 					// Send notifications if the message saved properly to core data
 					if messageSaved {

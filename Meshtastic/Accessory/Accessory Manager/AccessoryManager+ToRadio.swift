@@ -346,7 +346,7 @@ extension AccessoryManager {
 								do {
 									let contactString = try contact.serializedData().base64EncodedString()
 									try? await am.addContactFromURL(base64UrlString: contactString)
-									try context.save()
+									try commitContextChanges()
 								} catch {
 									Logger.services.error("Error inserting new contact and resending encrypted send failed message: \(error)")
 								}
@@ -381,7 +381,7 @@ extension AccessoryManager {
 						Logger.mesh.info("💬 \(logString, privacy: .public)")
 					}
 					do {
-						try context.save()
+						try commitContextChanges()
 						Logger.data.info("💾 Saved a new sent message from \(self.activeDeviceNum?.toHex() ?? "0", privacy: .public) to \(toUserNum.toHex(), privacy: .public)")
 						// Donate outgoing message to SiriKit for CarPlay
 						// (CarPlay is iPhone-only, so skip on Mac Catalyst).
@@ -884,7 +884,7 @@ extension AccessoryManager {
 				wayPointEntity.lastUpdated = Date()
 			}
 			do {
-				try context.save()
+				try commitContextChanges()
 				Logger.data.info("💾 Updated Waypoint from Waypoint App Packet From: \(fromNodeNum.toHex(), privacy: .public)")
 			} catch {
 				let nsError = error as NSError
@@ -933,7 +933,7 @@ extension AccessoryManager {
 				traceRoute.time = Date()
 				traceRoute.node = receivingNode
 				do {
-					try context.save()
+					try commitContextChanges()
 					Logger.data.info("💾 Saved TraceRoute sent to node: \(String(receivingNode?.user?.longName ?? "Unknown".localized), privacy: .public)")
 				} catch {
 					let nsError = error as NSError
@@ -1054,7 +1054,7 @@ extension AccessoryManager {
 					context.delete(user)
 				}
 				context.delete(node)
-				try context.save()
+				try commitContextChanges()
 			} catch {
 				let nsError = error as NSError
 				Logger.data.error("🚫 Error deleting node: \(nsError, privacy: .public)")

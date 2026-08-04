@@ -102,7 +102,7 @@ struct Routes: View {
 								}
 								newRoute.locations = newLocations
 								do {
-									try context.save()
+									try context.coordinatedSave()
 								} catch let error as NSError {
 									Logger.services.error("\(error.localizedDescription, privacy: .public)")
 									isShowingBadFileAlert = true
@@ -159,7 +159,7 @@ struct Routes: View {
 						Button(role: .destructive) {
 							context.delete(route)
 							do {
-								try context.save()
+								try context.coordinatedSave()
 							} catch let error as NSError {
 								Logger.data.error("\(error.localizedDescription, privacy: .public)")
 							}
@@ -231,7 +231,7 @@ struct Routes: View {
 								selectedRoute?.enabled = enabled
 								selectedRoute?.color = Int64(UIColor(color).hex)
 								do {
-									try context.save()
+									try context.coordinatedSave()
 									selectedRoute = nil
 									Logger.data.info("💾 Saved a route")
 								} catch {

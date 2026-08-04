@@ -15,7 +15,7 @@ struct NodeAlertsButton: View {
 		Button {
 			user.mute = !user.mute
 			do {
-				try context.save()
+				try context.coordinatedSave()
 			} catch {
 				Logger.data.error("Save User Mute Error")
 			}

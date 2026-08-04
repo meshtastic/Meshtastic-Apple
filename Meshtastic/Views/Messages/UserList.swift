@@ -344,7 +344,7 @@ private struct DirectMessageUserRow: View {
 					}
 				}
 				do {
-					try context.save()
+					try context.coordinatedSave()
 				} catch {
 					Logger.data.error("Save Node Favorite Error")
 				}
@@ -354,7 +354,7 @@ private struct DirectMessageUserRow: View {
 			Button {
 				user.mute = !user.mute
 				do {
-					try context.save()
+					try context.coordinatedSave()
 				} catch {
 					Logger.data.error("Save User Mute Error")
 				}

@@ -98,7 +98,7 @@ struct StoreForwardConfig: View {
 				   connectedNode.num == node?.num ?? -1 {
 					connectedNode.storeForwardConfig?.isRouter = isServer
 					do {
-						try context.save()
+						try context.coordinatedSave()
 					} catch {
 						Logger.mesh.error("Failed to save isServer: \(error.localizedDescription, privacy: .public)")
 					}

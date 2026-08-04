@@ -269,7 +269,7 @@ struct WaypointForm: View {
 						Button("For me", action: {
 							context.delete(waypoint)
 							do {
-								try context.save()
+								try context.coordinatedSave()
 							} catch {
 							}
 							dismiss() })
@@ -304,7 +304,7 @@ struct WaypointForm: View {
 									Task { @MainActor in
 										context.delete(waypoint)
 										do {
-											try context.save()
+											try context.coordinatedSave()
 										} catch {
 										}
 										dismiss()
@@ -481,7 +481,7 @@ struct WaypointForm: View {
 					Button("OK", role: .cancel) {
 						context.delete(waypoint)
 						do {
-							try context.save()
+							try context.coordinatedSave()
 						} catch {
 						}
 						dismiss()
@@ -492,7 +492,7 @@ struct WaypointForm: View {
 					// New, unsent waypoint created by the user: delete it
 					context.delete(waypoint)
 					do {
-						try context.save()
+						try context.coordinatedSave()
 					} catch {
 						Logger.mesh.error("Failed to save context on waypoint deletion: \(error)")
 					}

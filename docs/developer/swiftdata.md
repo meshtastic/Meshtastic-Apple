@@ -10,9 +10,9 @@ The app uses SwiftData exclusively for persistence. Do not introduce SQLite, Rea
 
 ## ModelContainer Setup
 
-`PersistenceController.shared` (in `Meshtastic/Persistence/PersistenceController.swift`) creates and owns the `ModelContainer`. It is initialised once at app launch in `MeshtasticApp.swift` and injected via `.modelContainer(PersistenceController.shared.container)`.
+`PersistenceController.shared` (in `Meshtastic/Persistence/Persistence.swift`) creates and owns the active `ModelContainer`. Production opens one combined container with two explicit configurations: 49 radio-owned models use the selected file under `RadioStores/`, while phone-recorded routes and the radio registry use `RadioRegistry.store`. `MeshtasticApp` injects the current container through `.modelContainer(...)` and rebuilds its query tree after a store change.
 
-Autosave is **disabled** in production (`container.mainContext.autosaveEnabled = false`). All persistence is driven by explicit `modelContext.save()` calls so the app controls exactly when SQLite writes occur.
+Autosave is **disabled** in production (`container.mainContext.autosaveEnabled = false`). Runtime writers call `ModelContext.coordinatedSave()` or a writer-specific helper. Raw `ModelContext.save()` calls are limited to bootstrap code and code that already holds a `ContainerWritePermit`.
 
 ## Save Strategy
 
@@ -20,7 +20,7 @@ The app uses two save patterns depending on packet frequency:
 
 ### Immediate Saves
 
-Config changes, messages, waypoints, and other low-frequency mutations call `savePendingChanges()` directly after updating the model graph. This helper is a thin wrapper around `modelContext.save()` with error logging.
+Config changes, messages, waypoints, and other low-frequency mutations call `savePendingChanges()` directly after updating the model graph. The helper acquires a container write permit, saves, and releases the permit. A stale or transitioning container rolls back pending changes instead of writing into a retired radio store.
 
 ### Debounced Saves
 
@@ -37,6 +37,34 @@ No packets for 2s → save() fires
 ```
 
 Debounced saves are flushed explicitly on disconnect so no data is lost.
+
+## Container Coordination
+
+`ContainerAccessCoordinator` serializes saves against container replacement. A writer captures `ContainerWriteAccess` with its context, acquires a permit through the save, and releases it synchronously. A container transition rejects new permits and waits up to five seconds for active writers to finish before replacing the container.
+
+`ModelContext.coordinatedSave()` looks up the authority registered for the context's exact `ModelContainer`. Current containers acquire permits. Retired containers roll back and throw `ContainerLeaseError.stale`. Independent test and preview containers that are not managed by `PersistenceController` save normally.
+
+Do not add a raw runtime `context.save()` call. `CoordinatedSaveGuardTests` scans app Swift sources and fails unless an exceptional raw save has a `coordinated-save-allow` annotation explaining which permit or bootstrap phase makes it safe.
+
+## Global Radio Registry
+
+`RadioRegistrySchemaV1` defines a separately versioned global schema for phone-recorded routes, immutable radio profiles, transport aliases, registry metadata, and quarantine state. `RadioRegistryController` opens this schema independently of the active radio container, so replacing or deleting a radio store cannot erase identity records.
+
+`RadioIdentityRegistry` contains the conservative claim-resolution rules. Valid firmware device IDs take precedence over node-number fallback claims. A fallback profile is promoted only when the same BLE alias corroborates it. TCP endpoints and serial paths can be reassigned, so they cannot prove continuity. Conflicting claims are quarantined rather than merged. Store keys are random UUIDs and never derive from a device ID, node number, BLE UUID, TCP endpoint, or serial path.
+
+`RadioStoreCoordinator` is the production selection boundary. Every connection first resolves its transport alias. A known alias opens its persistent radio store; an unknown alias opens an empty in-memory bootstrap store. Incoming radio-owned packets remain in a bounded memory buffer until `MyInfo` supplies a usable canonical claim. Identity confirmation then opens the matching persistent store, rebinds long-lived contexts, stores the selected profile, writes `MyInfo`, and replays the buffered packets. Conflicting or unusable claims remain in the bootstrap store and do not reach SwiftData.
+
+Hardware checks confirmed that firmware device ID remains stable across serial, BLE, TCP, reboot, both factory-reset modes, and full erase/reflash. Full erase changed the node number until the previous security keys were restored, confirming that node number is only a fallback claim. A physical-iPhone uninstall/reinstall preserved the observed BLE peripheral UUID for one radio, and the app successfully attached a new BLE alias to the other radio's stable firmware identity after bond loss.
+
+### Legacy store migration
+
+`MultiRadioStoreBootstrap` runs before the production container opens. If `Meshtastic.store` exists, `LegacyRadioStoreMigrator` copies radio-owned rows into a new immutable radio store and routes/locations into `RadioRegistry.store`, preserving relationships. It records migration start and completion in registry metadata, refuses ambiguous identity, existing destination data, and orphaned sidecars, and archives the source as `Meshtastic.store-legacy-backup` only after both destinations commit. A launch after interruption resumes from the recorded profile and store key.
+
+Migration and selection tests cover relationship preservation, idempotency, interrupted recovery, rollback behavior, stale-writer rejection, two-radio isolation, backup restore targeting, and conflict quarantine. A normal simulator launch migrated an existing 144-node store, retained its `MyInfo`, created one selected profile, preserved the legacy backup, and passed SQLite integrity checks on all three files. A clean TCP replay launch also exercised the production unknown-alias path: canonical `MyInfo` created a profile and persistent store before six radio-owned node rows were committed; the global store contained only registry rows.
+
+Node backups copy the active UUID-named radio store and its matching WAL/SHM sidecars. New backup-index entries include the canonical firmware device ID. Restore requires that identity to match the target profile before the store is cleared. Version-1 indexes still decode, but their identity-less backups must be recreated after connecting to the radio before they can be restored.
+
+An in-place update on a physical iPhone exercised production migration and switching with two Heltec V4 radios. The app archived the intact 35-node legacy store, created the global registry and FA99 radio store, reconnected FA99 under its existing BLE alias, then switched FA99 → FA98 → FA99. FA98 remained isolated at 149 node rows while FA99 advanced independently from 40 to 41 rows after reconnect. Each store retained only its own canonical firmware device ID and node number. The registry selected the correct profile after each switch, and the registry, both radio stores, and archived legacy store passed SQLite integrity checks.
 
 ## Indexes
 
@@ -62,7 +90,7 @@ struct MyView: View {
 }
 ```
 
-Use `@Query` for data that drives the view. Use `context.insert(_:)` / `context.delete(_:)` for mutations. Mutations on the main context are safe on the main actor.
+Use `@Query` for data that drives the view. Use `context.insert(_:)` / `context.delete(_:)` for mutations, then call `try context.coordinatedSave()`. Main-actor isolation alone does not protect a context that outlives a radio-store transition.
 
 ### Snapshot liveness
 
@@ -70,14 +98,11 @@ Views that intentionally keep a throttled `@State` snapshot instead of a live `@
 
 ## Background Writes
 
-For writes triggered by incoming radio packets (off the main thread), use the `MeshPackets` `@ModelActor`:
+Writes triggered by incoming radio packets run through the `MeshPackets` `@ModelActor`.
 
-```swift
-let actor = MeshPackets(modelContainer: PersistenceController.shared.container)
-await actor.savePacket(packet)
-```
+The shared `MeshPackets` actor is created with the active container and its matching `ContainerWriteAccess`. Its save helpers drop and roll back work after that container retires.
 
-Never write to the main `ModelContext` from a background thread.
+Never write to the main `ModelContext` from a background thread. A new background writer must capture write access with its context and hold a permit through save.
 
 ## Model Types
 

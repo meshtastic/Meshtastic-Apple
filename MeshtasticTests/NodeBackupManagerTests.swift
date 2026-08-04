@@ -69,6 +69,41 @@ struct NodeBackupManagerTests {
 		try indexData.write(to: backupDir.appendingPathComponent("backup-index.json"))
 	}
 
+	@Test("legacy backup indexes decode without canonical identity")
+	func legacyBackupIndexDecodes() throws {
+		struct LegacyEntry: Codable {
+			let nodeNum: Int64
+			let nodeName: String?
+			let createdAt: Date
+			let fileSize: Int64
+			let checksum: String
+			let backupPath: String
+		}
+		struct LegacyIndex: Codable {
+			let version: Int
+			let entries: [Int64: LegacyEntry]
+			let lastModified: Date
+		}
+		let legacy = LegacyIndex(
+			version: 1,
+			entries: [
+				1: LegacyEntry(
+					nodeNum: 1,
+					nodeName: "Legacy",
+					createdAt: .distantPast,
+					fileSize: 10,
+					checksum: "abc",
+					backupPath: "1"
+				)
+			],
+			lastModified: .distantPast
+		)
+
+		let index = try JSONDecoder().decode(BackupIndex.self, from: JSONEncoder().encode(legacy))
+		#expect(index.version == 1)
+		#expect(index.entries[1]?.deviceID == nil)
+	}
+
 	// MARK: - T010: createBackup Success Case
 
 	@Test("createBackup creates file copy and updates index")
@@ -79,11 +114,20 @@ struct NodeBackupManagerTests {
 
 		// Setup: Create a fake active database
 		let dbDir = tempDir.appendingPathComponent("ActiveDB", isDirectory: true)
-		_ = try createFakeDatabase(at: dbDir)
+		try FileManager.default.createDirectory(at: dbDir, withIntermediateDirectories: true)
+		let sourceURL = dbDir.appendingPathComponent("radio-uuid.store")
+		try Data("fake-sqlite-data".utf8).write(to: sourceURL)
+		try Data("wal".utf8).write(to: URL(fileURLWithPath: sourceURL.path + "-wal"))
+		try Data("shm".utf8).write(to: URL(fileURLWithPath: sourceURL.path + "-shm"))
 
 		// Create manager with custom base
 		let backupDir = tempDir.appendingPathComponent("Backups", isDirectory: true)
-		let manager = NodeBackupManager(baseURL: backupDir)
+		let manager = NodeBackupManager(
+			baseURL: backupDir,
+			activeDatabaseURL: sourceURL,
+			canonicalDeviceID: "0011223344556677",
+			compactsBackups: false
+		)
 
 		// Act
 		let result = await manager.createBackup(forNode: 12345, nodeName: "TestNode")
@@ -93,13 +137,17 @@ struct NodeBackupManagerTests {
 		case .success(let entry):
 			#expect(entry.nodeNum == 12345)
 			#expect(entry.nodeName == "TestNode")
+			#expect(entry.deviceID == "0011223344556677")
 			#expect(entry.fileSize > 0)
 			#expect(entry.checksum.count == 64) // SHA-256 hex digest
 			#expect(manager.hasBackup(forNode: 12345))
-		case .skipped, .noBackupFound:
-			// In test environment, database file may not exist at expected path
-			// This verifies the retry logic works (skipped after retry)
-			break
+			let snapshotDirectory = backupDir.appendingPathComponent(entry.backupPath)
+			#expect(FileManager.default.fileExists(atPath: snapshotDirectory.appendingPathComponent("Meshtastic.store-wal").path))
+			#expect(FileManager.default.fileExists(atPath: snapshotDirectory.appendingPathComponent("Meshtastic.store-shm").path))
+		case .skipped(let reason):
+			Issue.record("Expected backup success, got: \(reason)")
+		case .noBackupFound:
+			Issue.record("createBackup should not return noBackupFound")
 		}
 	}
 

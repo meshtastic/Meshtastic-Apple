@@ -284,7 +284,7 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 				}
 			}
 
-			try? context.save()
+			try? context.coordinatedSave()
 		}
 		
 		// Save the last update date for the firmware
@@ -354,7 +354,7 @@ deviceEntity.architecture = device.architecture
 			Self.deleteOrphanedTags(context: context)
 
 			// 3. Save Device Metadata
-			try context.save()
+			try context.coordinatedSave()
 		}
 
 		// PHASE 3: Images and msh.to links. This is the single image/link pass, driven by the
@@ -433,7 +433,7 @@ deviceEntity.architecture = device.architecture
 			}
 
 			Logger.services.info("Device links import: \(importedCount, privacy: .public) short codes imported")
-			try? context.save()
+			try? context.coordinatedSave()
 		}
 	}
 
@@ -595,7 +595,7 @@ deviceEntity.architecture = device.architecture
 				deviceEntity.images.append(imageEntity)
 			}
 
-			try? context.save()
+			try? context.coordinatedSave()
 			Logger.services.info("Saving \(imageName) in database. eTag=\(finalETag)")
 		}
 	}
@@ -690,7 +690,7 @@ extension MeshtasticAPI {
 				deviceEntity.tags = tags
 			}
 			Self.deleteOrphanedTags(context: context)
-			try context.save()
+			try context.coordinatedSave()
 		}
 	}
 
@@ -816,7 +816,7 @@ extension MeshtasticAPI {
 		await MainActor.run {
 			let context = container.mainContext
 			Self.deleteOrphanedImages(context: context)
-			try? context.save()
+			try? context.coordinatedSave()
 		}
 		await importDeviceLinks()
 		// Mark the pass complete so the next reconnect within the window skips the network. Recorded
@@ -1009,7 +1009,7 @@ extension MeshtasticAPI {
 				}
 			}
 
-			try? context.save()
+			try? context.coordinatedSave()
 		}
 	}
 }

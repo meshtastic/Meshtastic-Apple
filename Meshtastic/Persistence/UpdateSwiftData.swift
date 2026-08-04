@@ -48,7 +48,7 @@ extension MeshPackets {
 			for node in staleNodes {
 				modelContext.delete(node)
 			}
-			try modelContext.save()
+			try commitModelContextChanges()
 			Logger.data.info("💾 [NodeInfoEntity] Cleared \(deletedNodes) stale nodes")
 			return true
 		} catch {
@@ -66,7 +66,7 @@ extension MeshPackets {
 		do {
 			if let node = try modelContext.fetch(descriptor).first {
 				node.pax = []
-				try modelContext.save()
+				try commitModelContextChanges()
 				return true
 			}
 		} catch {
@@ -84,7 +84,7 @@ extension MeshPackets {
 		do {
 			if let node = try modelContext.fetch(descriptor).first {
 				node.positions = []
-				try modelContext.save()
+				try commitModelContextChanges()
 				return true
 			}
 		} catch {
@@ -105,7 +105,7 @@ extension MeshPackets {
 				for entity in toDelete {
 					modelContext.delete(entity)
 				}
-				try modelContext.save()
+				try commitModelContextChanges()
 				return true
 			}
 		} catch {
@@ -126,7 +126,7 @@ extension MeshPackets {
 			for object in objects where object.toUser == nil {
 				modelContext.delete(object)
 			}
-			try modelContext.save()
+			try commitModelContextChanges()
 		} catch {
 			Logger.data.error("💥 [MessageEntity] Error deleting channel messages: \(error.localizedDescription, privacy: .public)")
 		}
@@ -154,7 +154,7 @@ extension MeshPackets {
 			for object in objects {
 				modelContext.delete(object)
 			}
-			try modelContext.save()
+			try commitModelContextChanges()
 		} catch {
 			Logger.data.error("💥 [MessageEntity] Error deleting user messages: \(error.localizedDescription, privacy: .public)")
 		}
@@ -177,7 +177,7 @@ extension MeshPackets {
 		// and re-create the very multi-type batch this avoids. Mirrors PersistenceController.clearDatabase.
 		func commit() throws {
 			guard modelContext.hasChanges else { return }
-			try modelContext.save()
+			try commitModelContextChanges()
 		}
 
 		do {

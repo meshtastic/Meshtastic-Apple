@@ -107,7 +107,7 @@ struct DiscoveryBeaconsView: View {
 			context.delete(passiveBeacons[index])
 		}
 		do {
-			try context.save()
+			try context.coordinatedSave()
 		} catch {
 			Logger.data.error("🚫 Failed to delete passive beacon: \(error.localizedDescription, privacy: .public)")
 		}

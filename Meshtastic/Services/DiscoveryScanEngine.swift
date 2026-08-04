@@ -113,7 +113,9 @@ final class DiscoveryScanEngine {
 	private var reconnectTimeoutTask: Task<Void, Never>?
 	private var connectionObserver: AnyCancellable?
 	private var configCompleteObserver: AnyCancellable?
+	private var modelContainer: ModelContainer?
 	private var modelContext: ModelContext?
+	private var writeAccess: ContainerWriteAccess?
 	private weak var accessoryManager: AccessoryManager?
 
 	/// Tracks whether we're waiting for a disconnect after sending a config change.
@@ -164,10 +166,37 @@ final class DiscoveryScanEngine {
 
 	// MARK: - Init
 
-	func configure(accessoryManager: AccessoryManager, modelContext: ModelContext) {
+	func configure(
+		accessoryManager: AccessoryManager,
+		modelContext: ModelContext,
+		writeAccess: ContainerWriteAccess? = nil
+	) {
 		self.accessoryManager = accessoryManager
+		modelContainer = modelContext.container
 		self.modelContext = modelContext
+		self.writeAccess = writeAccess
 		Logger.discovery.info("📡 [Discovery] Engine configured")
+	}
+
+	@discardableResult
+	private func commitContextChanges(_ context: ModelContext) -> Bool {
+		let permit: ContainerWritePermit?
+		do {
+			permit = try writeAccess?.beginWrite()
+		} catch {
+			context.rollback()
+			Logger.discovery.warning("📡 [Discovery] Dropped save for a retired or transitioning container")
+			return false
+		}
+		defer { permit?.finish() }
+
+		do {
+			try context.save() // coordinated-save-allow: write permit is held above
+			return true
+		} catch {
+			Logger.discovery.error("📡 [Discovery] Failed to save context: \(error.localizedDescription, privacy: .public)")
+			return false
+		}
 	}
 
 	// MARK: - Start Scan (T014)
@@ -978,7 +1007,9 @@ extension DiscoveryScanEngine {
 
 		session.completionStatus = "complete"
 
-		try? modelContext?.save()
+		if let modelContext {
+			commitContextChanges(modelContext)
+		}
 
 		Logger.discovery.info("📡 [Discovery] Session finalized: \(session.totalUniqueNodes) unique nodes across \(session.presetResults.count) presets")
 
@@ -996,7 +1027,7 @@ extension DiscoveryScanEngine {
 				session.completionStatus = "interrupted"
 				Logger.discovery.warning("📡 [Discovery] Marked interrupted session from \(session.timestamp)")
 			}
-			try? context.save()
+			commitContextChanges(context)
 		}
 	}
 

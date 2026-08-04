@@ -149,7 +149,7 @@ struct ChannelList: View {
 							_ = try await accessoryManager.saveChannel(channel: channel.protoBuf, fromUser: node.user!, toUser: node.user!)
 							Task { @MainActor in
 								do {
-									try context.save()
+									try context.coordinatedSave()
 								} catch {
 									Logger.data.error("💥 Save Channel Mute Error")
 								}

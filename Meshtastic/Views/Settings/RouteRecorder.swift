@@ -194,7 +194,7 @@ struct RouteRecorder: View {
 										color = Color(UIColor(hex: UInt32(newRoute.color)))
 										self.recording = newRoute
 										do {
-											try context.save()
+											try context.coordinatedSave()
 											Logger.data.info("💾 Saved a new route")
 										} catch {
 											let nsError = error as NSError
@@ -250,7 +250,7 @@ struct RouteRecorder: View {
 										locationsHandler.locationsArray.removeAll()
 										locationsHandler.recordingStarted = nil
 										do {
-											try context.save()
+											try context.coordinatedSave()
 											Logger.data.info("💾 Saved a route finish")
 										} catch {
 											let nsError = error as NSError
@@ -310,7 +310,7 @@ struct RouteRecorder: View {
 								locationEntity.latitudeI = Int32(loc.coordinate.latitude * 1e7)
 								locationEntity.longitudeI = Int32(loc.coordinate.longitude * 1e7)
 								do {
-									try context.save()
+									try context.coordinatedSave()
 									Logger.data.info("💾 Saved a new route location")
 								} catch {
 									let nsError = error as NSError

@@ -140,7 +140,7 @@ enum PerformanceSeedData {
 		} else if existingNodeCount(context: context) >= configuration.nodeCount {
 			if requestedMessageCount > 0 && existingMessageCount(context: context) < requestedMessageCount {
 				seedMessageHistory(baseNodeNum: 0x0A00_0000, now: Date(), configuration: configuration, context: context)
-				try? context.save()
+				try? context.coordinatedSave()
 			}
 			router.selectedTab = configuration.initialTab
 			if configuration.opensLocalStatsLog {
@@ -158,14 +158,14 @@ enum PerformanceSeedData {
 			insertNode(index: index, baseNodeNum: baseNodeNum, now: now, configuration: configuration, context: context)
 
 			if index > 0 && index.isMultiple(of: 500) {
-				try? context.save()
+				try? context.coordinatedSave()
 				Logger.data.debug("📈 [PerfSeed] Seeded \(index, privacy: .public) nodes")
 			}
 		}
 		seedMessageHistory(baseNodeNum: baseNodeNum, now: now, configuration: configuration, context: context)
 
 		do {
-			try context.save()
+			try context.coordinatedSave()
 			router.selectedTab = configuration.initialTab
 			if configuration.opensLocalStatsLog {
 				router.selectedNodeNum = baseNodeNum
@@ -845,7 +845,7 @@ extension PerformanceSeedData {
 		}
 
 		do {
-			try context.save()
+			try context.coordinatedSave()
 			Logger.data.info("📡 [BeaconSeed] Seeded 1 discovery session with \(beaconCount, privacy: .public) beacons across \(presets.count, privacy: .public) presets")
 		} catch {
 			Logger.data.error("📡 [BeaconSeed] Failed to seed beacons: \(error.localizedDescription, privacy: .public)")

@@ -33,13 +33,8 @@ extension AccessoryManager {
 			throw AccessoryError.connectionFailed("No transport for type")
 		}
 		
-		// Clear any errors and stale state from last connection
-		lastConnectionError = nil
-		self.activeDeviceNum = nil
-		packetsSent = 0
-		packetsReceived = 0
-		packetsAtLastIngestRecycle = 0
-		expectedNodeDBSize = nil
+		resetStateForConnectionAttempt()
+		try await prepareRadioStoreForConnection(to: device)
 
 		self.allowDisconnect = true
 		self.userRequestedConnectionCancellation = false
@@ -97,14 +92,14 @@ extension AccessoryManager {
 					}
 					let eventStream = try await connection.connect()
 					self.updateState(.communicating)
+					self.activeConnection = (device: device, connection: connection)
+					self.activeDeviceNum = device.num
 					self.connectionEventTask = Task {
 						for await event in eventStream {
 							await self.didReceive(event)
 						}
 						Logger.transport.info("[Accessory] Event stream closed")
 					}
-					self.activeConnection = (device: device, connection: connection)
-					self.activeDeviceNum = device.num
 					// Start sampling inbound mesh-traffic rate for this connection (map flyover gate).
 					// Started here — not once at the top of connect() — because a retry runs Step 0's
 					// closeConnection() which stops the monitor; restarting it on every successful
@@ -327,6 +322,32 @@ extension AccessoryManager {
 		
 		// All done, one way or another, clean up
 		self.connectionStepper = nil
+	}
+
+	private func resetStateForConnectionAttempt() {
+		lastConnectionError = nil
+		activeDeviceNum = nil
+		packetsSent = 0
+		packetsReceived = 0
+		packetsAtLastIngestRecycle = 0
+		expectedNodeDBSize = nil
+		identityConfirmedForConnection = false
+		packetsPendingIdentity.removeAll(keepingCapacity: true)
+	}
+
+	private func prepareRadioStoreForConnection(to device: Device) async throws {
+		do {
+			let preparation = try await radioStoreCoordinator.prepareForConnection(
+				to: device,
+				beforeStoreChange: {
+					await self.prepareUIForRadioStoreChange()
+				}
+			)
+			bindAfterRadioStoreSelection()
+			Logger.data.info("💾 Prepared radio store for connection: \(String(describing: preparation), privacy: .public)")
+		} catch {
+			throw AccessoryError.connectionFailed("Could not prepare radio data store: \(error.localizedDescription)")
+		}
 	}
 }
 

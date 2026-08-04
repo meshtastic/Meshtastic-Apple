@@ -287,7 +287,7 @@ struct SecurityConfig: View {
 								// *remote* contacts' keys, so they are intentionally left untouched here.
 								node?.user?.publicKey = Data(base64Encoded: publicKey) ?? Data()
 								do {
-									try context.save()
+									try context.coordinatedSave()
 									Logger.data.info("💾 Saved UserEntity Public Key to Core Data for \(node?.num ?? 0, privacy: .public)")
 								} catch {
 									let nsError = error as NSError

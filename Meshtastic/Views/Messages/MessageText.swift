@@ -237,7 +237,7 @@ struct MessageText: View {
 	private func deleteMessage() {
 		context.delete(message)
 		do {
-			try context.save()
+			try context.coordinatedSave()
 		} catch {
 			Logger.data.error("Failed to delete message \(message.messageId, privacy: .public): \(error.localizedDescription, privacy: .public)")
 		}
@@ -249,7 +249,7 @@ struct MessageText: View {
 		message.showTranslatedMessage = true
 
 		do {
-			try context.save()
+			try context.coordinatedSave()
 		} catch {
 			Logger.data.error("Failed to save translated message \(message.messageId, privacy: .public): \(error.localizedDescription, privacy: .public)")
 		}
@@ -260,7 +260,7 @@ struct MessageText: View {
 		message.showTranslatedMessage.toggle()
 
 		do {
-			try context.save()
+			try context.coordinatedSave()
 		} catch {
 			Logger.data.error("Failed to toggle translated message \(message.messageId, privacy: .public): \(error.localizedDescription, privacy: .public)")
 		}
@@ -272,7 +272,7 @@ struct MessageText: View {
 		message.showTranslatedMessage = false
 
 		do {
-			try context.save()
+			try context.coordinatedSave()
 		} catch {
 			Logger.data.error("Failed to clear translated message \(message.messageId, privacy: .public): \(error.localizedDescription, privacy: .public)")
 		}

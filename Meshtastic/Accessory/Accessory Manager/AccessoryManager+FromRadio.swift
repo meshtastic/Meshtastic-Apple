@@ -49,7 +49,7 @@ extension AccessoryManager {
 				let traceRoute = getTraceRoute(id: Int64(clientNotification.replyID), context: context)
 				traceRoute?.sent = false
 				do {
-					try context.save()
+					try commitContextChanges()
 					Logger.data.info("💾 [TraceRouteEntity] Trace Route Rate Limited")
 				} catch {
 					let nsError = error as NSError
@@ -82,30 +82,54 @@ extension AccessoryManager {
 		Logger.services.error("⚠️ Client Notification: \(clientNotification.message, privacy: .public)")
 	}
 
-	func handleMyInfo(_ myNodeInfo: MyNodeInfo) async {
-		// TODO: this works for connections like BLE that have a uniqueId, but what about ones like serial?
-		guard let connectedDeviceId = activeConnection?.device.id.uuidString else {
-			Logger.services.error("⚠️ Failed to decode MyInfo, no connected device ID")
-			return
+	func handleMyInfo(_ myNodeInfo: MyNodeInfo) async -> Bool {
+		guard let connectedDevice = activeConnection?.device else {
+			Logger.services.error("⚠️ Failed to decode MyInfo, no connected device")
+			return false
 		}
 		Logger.services.info("handleMyInfo: \(myNodeInfo.debugDescription)")
 
+		let previousStoreKey = PersistenceController.shared.activeRadioStoreKey
+		let observation = RadioIdentityObservation(
+			transport: connectedDevice.transportType,
+			transportDeviceID: connectedDevice.id,
+			identifier: connectedDevice.identifier,
+			deviceID: RadioIdentityObservation.normalizedDeviceID(myNodeInfo.deviceID) ?? "unknown",
+			nodeNum: Int64(myNodeInfo.myNodeNum)
+		)
+		do {
+			let confirmation = try await radioStoreCoordinator.confirmIdentity(
+				observation,
+				beforeStoreChange: {
+					await self.prepareUIForRadioStoreChange()
+				}
+			)
+			if previousStoreKey != PersistenceController.shared.activeRadioStoreKey {
+				bindAfterRadioStoreSelection()
+			}
+			switch confirmation {
+			case .selected:
+				break
+			case .quarantined:
+				lastConnectionError = AccessoryError.appError("Radio identity claims conflict; data was not imported")
+				Logger.data.error("💾 [Database] Aborting MyInfo ingest because radio identity was quarantined")
+				return false
+			case .ignored:
+				lastConnectionError = AccessoryError.appError("Radio did not provide a usable identity")
+				Logger.data.error("💾 [Database] Aborting MyInfo ingest because radio identity was unusable")
+				return false
+			}
+		} catch {
+			lastConnectionError = error
+			Logger.data.error("💾 [Database] Aborting MyInfo ingest because store selection failed: \(error.localizedDescription, privacy: .public)")
+			return false
+		}
+
 		updateDevice(key: \.num, value: Int64(myNodeInfo.myNodeNum))
-
-		// Defensive cross-device guard: if this connect landed on another radio's database
-		// without going through the switch flow's clear+restore, reset before ingesting
-		// anything for the new radio. Nodes carry no owner column — the store is global — so
-		// any path that reaches here with a different radio's data (switch to a never-seen
-		// radio, interrupted switch + auto-reconnect, BLE restore) would otherwise merge the
-		// two node sets ("nodes bleeding across databases").
-		//
-		// Trigger only when the store has a MyInfoEntity for a DIFFERENT node and NONE for the
-		// connecting one. A backup restored for this radio always contains its own MyInfo row,
-		// so a legitimate switch+restore never trips this — including legacy backups that may
-		// carry extra foreign rows from the pre-fix bleed era.
-		await defensiveResetIfForeignDatabase(incomingNodeNum: Int64(myNodeInfo.myNodeNum))
-
-		let myInfoId = await MeshPackets.shared.myInfoPacket(myInfo: myNodeInfo, peripheralId: connectedDeviceId)
+		let myInfoId = await MeshPackets.shared.myInfoPacket(
+			myInfo: myNodeInfo,
+			peripheralId: connectedDevice.id.uuidString
+		)
 
 		// Resolve on a throwaway context, NOT the long-lived main context. After a database clear
 		// (manual reset, or the clear inside a device switch) the main context can still hold an
@@ -140,44 +164,7 @@ extension AccessoryManager {
 
 		// Initialize TAK bridge for TAK integration
 		initializeTAKBridge()
-	}
-
-	/// Detects a connect that landed on a different radio's database (no MyInfo row for the
-	/// connecting node, but rows for other nodes) and resets: back up the foreign radio's data
-	/// so nothing is lost, clear the store, repoint the container, and refresh the UI. See the
-	/// call site in `handleMyInfo` for when this can happen. No-ops for a fresh install (no
-	/// MyInfo rows) and for reconnects/restores (a MyInfo row for the incoming node exists).
-	private func defensiveResetIfForeignDatabase(incomingNodeNum: Int64) async {
-		// Fresh throwaway context: no stale registrations, and this runs before any ingest for
-		// the new radio, so what it sees is exactly what the previous session left behind.
-		let checkContext = ModelContext(context.container)
-		guard let myInfos = try? checkContext.fetch(FetchDescriptor<MyInfoEntity>()), !myInfos.isEmpty else {
-			return // Fresh/empty store — nothing to protect.
-		}
-		let nums = myInfos.map(\.myNodeNum)
-		guard !nums.contains(incomingNodeNum) else {
-			return // The store already belongs to (or was restored for) this radio.
-		}
-
-		Logger.data.warning("💾 [Database] Connected to node \(incomingNodeNum.toHex(), privacy: .public) but the store belongs to \(nums.map { $0.toHex() }.joined(separator: ", "), privacy: .public) — backing up and resetting to prevent cross-device node bleed")
-
-		// Preserve the previous radio's data exactly like the switch flow would have.
-		if let previousNum = nums.first {
-			let previousName = devices.first(where: { $0.num == previousNum })?.longName
-			_ = await NodeBackupManager.shared.createBackup(forNode: previousNum, nodeName: previousName)
-		}
-
-		await MeshPackets.shared.flushDebouncedSaves()
-		let cleared = await MeshPackets.shared.clearDatabase(includeRoutes: false)
-		if !cleared {
-			// A half-cleared store must not receive this radio's dump (that IS the bleed).
-			// Escalate to a guaranteed-empty store; the foreign radio's data was backed up above.
-			Logger.data.error("💾 [Database] clearDatabase failed during cross-device reset — escalating to store destruction")
-			PersistenceController.shared.destroyStoreAndRecreateContainer()
-		}
-		// Pops views, repoints the container (recreating the MeshPackets actor), and bumps
-		// databaseResetID so @Query views rebind before the new radio's data starts landing.
-		await resetDatabaseAfterClear()
+		return true
 	}
 
 	/// When event firmware is detected (DEFCON, BURNING_MAN, OPEN_SAUCE, etc.),
@@ -345,7 +332,7 @@ extension AccessoryManager {
 					context.delete(channel)
 				}
 				do {
-					try context.save()
+					try commitContextChanges()
 				} catch {
 					Logger.data.error("Failed to clear existing channels from local app database: \(error.localizedDescription, privacy: .public)")
 				}
@@ -401,7 +388,7 @@ extension AccessoryManager {
 					}
 
 					do {
-						try context.save()
+						try commitContextChanges()
 					} catch {
 						Logger.data.error("Save Store and Forward Router Error")
 					}
@@ -428,7 +415,7 @@ extension AccessoryManager {
 				}
 
 				do {
-					try context.save()
+					try commitContextChanges()
 				} catch {
 					Logger.data.error("Save Store and Forward Router Error")
 				}
@@ -649,7 +636,7 @@ extension AccessoryManager {
 			}
 
 			do {
-				try context.save()
+				try commitContextChanges()
 				Logger.data.info("💾 Saved Trace Route")
 			} catch {
 				let nsError = error as NSError

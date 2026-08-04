@@ -28,8 +28,13 @@ protocol NodeBackupManaging: Sendable {
 	/// - Parameters:
 	///   - nodeNum: The node number whose backup to restore
 	///   - container: The live ModelContainer to import into
+	///   - writeAccess: Write authority captured with `container`; held through the detached import
 	/// - Returns: Result indicating success, skip, or no backup found
-	func restoreFromBackup(forNode nodeNum: Int64, into container: ModelContainer) async -> NodeBackupResult
+	func restoreFromBackup(
+		forNode nodeNum: Int64,
+		into container: ModelContainer,
+		writeAccess: ContainerWriteAccess?
+	) async -> NodeBackupResult
 
 	/// Checks whether a backup exists for the specified node.
 	///

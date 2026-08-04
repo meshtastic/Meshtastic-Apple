@@ -18,8 +18,13 @@ final class TAKMeshtasticBridge {
 	weak var accessoryManager: AccessoryManager?
 	weak var takServerManager: TAKServerManager?
 
-	/// SwiftData context for node lookups
-	var context: ModelContext?
+	/// SwiftData context for node lookups. Retain its container too; ModelContext does not.
+	private var modelContainer: ModelContainer?
+	var context: ModelContext? {
+		didSet {
+			modelContainer = context?.container
+		}
+	}
 
 	/// Lookup table mapping callsigns to device UIDs
 	/// Populated when receiving PLI packets from other TAK users

@@ -517,7 +517,7 @@ struct PositionConfig: View {
 		}
 		node?.positionConfig?.fixedPosition = true
 		do {
-			try context.save()
+			try context.coordinatedSave()
 			Logger.data.info("💾 Updated Position Config with Fixed Position = true")
 		} catch {
 			let nsError = error as NSError
@@ -543,7 +543,7 @@ struct PositionConfig: View {
 		node?.positions = []
 		node?.positionConfig?.fixedPosition = false
 		do {
-			try context.save()
+			try context.coordinatedSave()
 			Logger.data.info("💾 Updated Position Config with Fixed Position = false")
 		} catch {
 			let nsError = error as NSError

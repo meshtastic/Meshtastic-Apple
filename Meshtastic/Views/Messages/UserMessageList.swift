@@ -88,7 +88,7 @@ struct UserMessageList: View {
 			}
 			notificationManager.cancelNotificationsForMessageIds(readMessageIDs)
 			if context.hasChanges {
-				try context.save()
+				try context.coordinatedSave()
 			}
 			Logger.data.info("📖 [App] All unread direct messages marked as read for user \(user.num, privacy: .public).")
 

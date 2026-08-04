@@ -103,7 +103,11 @@ struct DiscoveryScanView: View {
 				if engine == nil {
 					engine = accessoryManager.discoveryEngine
 				}
-				engine?.configure(accessoryManager: accessoryManager, modelContext: context)
+				engine?.configure(
+					accessoryManager: accessoryManager,
+					modelContext: context,
+					writeAccess: accessoryManager.writeAccess
+				)
 				engine?.checkForInterruptedSessions(context: context)
 				// Auto-select presets we've heard beacons for plus the most-popular public-mesh
 				// presets, once, so a fresh scan covers any mesh a beacon advertised and the presets

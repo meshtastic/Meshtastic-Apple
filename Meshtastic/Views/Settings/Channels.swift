@@ -99,7 +99,7 @@ struct Channels: View {
 		guard deduped.count != channels.count else { return }
 		node.myInfo?.channels = deduped
 		do {
-			try context.save()
+			try context.coordinatedSave()
 			Logger.data.info("💾 Normalized duplicate channels for node \(self.node.num, privacy: .public)")
 		} catch {
 			Logger.data.error("Failed normalizing duplicate channels: \(error.localizedDescription, privacy: .public)")
@@ -269,7 +269,7 @@ struct Channels: View {
 								context.insert(selected)
 							}
 							do {
-								try context.save()
+								try context.coordinatedSave()
 								Logger.data.info("💾 Saved Channel: \(channel.settings.name, privacy: .public)")
 							} catch {
 								let nsError = error as NSError
@@ -292,7 +292,7 @@ struct Channels: View {
 							}
 							context.delete(selectedChannel!)
 							do {
-								try context.save()
+								try context.coordinatedSave()
 								Logger.data.info("💾 Deleted Channel: \(channel.settings.name, privacy: .public)")
 							} catch {
 								let nsError = error as NSError

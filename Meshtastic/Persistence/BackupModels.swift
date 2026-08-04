@@ -13,6 +13,8 @@ struct BackupEntry: Codable, Sendable {
 	let nodeNum: Int64
 	/// Human-readable node display name at time of backup
 	var nodeName: String?
+	/// Canonical firmware identity observed when the backup was created.
+	var deviceID: String?
 	/// Timestamp when backup was created
 	var createdAt: Date
 	/// Total size of backup files in bytes
@@ -21,12 +23,32 @@ struct BackupEntry: Codable, Sendable {
 	var checksum: String
 	/// Relative path from `NodeBackups/` to backup directory
 	var backupPath: String
+
+	init(
+		nodeNum: Int64,
+		nodeName: String?,
+		deviceID: String? = nil,
+		createdAt: Date,
+		fileSize: Int64,
+		checksum: String,
+		backupPath: String
+	) {
+		self.nodeNum = nodeNum
+		self.nodeName = nodeName
+		self.deviceID = deviceID
+		self.createdAt = createdAt
+		self.fileSize = fileSize
+		self.checksum = checksum
+		self.backupPath = backupPath
+	}
 }
 
 /// Top-level container for all backup metadata, stored as JSON.
 struct BackupIndex: Codable, Sendable {
+	static let currentVersion = 2
+
 	/// Schema version of the index format
-	var version: Int = 1
+	var version: Int = currentVersion
 	/// Map of node number to backup metadata
 	var entries: [Int64: BackupEntry] = [:]
 	/// Timestamp of last index modification

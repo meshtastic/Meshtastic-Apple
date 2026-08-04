@@ -9,12 +9,31 @@ import SwiftData
 import OSLog
 import Foundation
 
+extension Foundation.Notification.Name {
+	static let radioStoreDidChange = Foundation.Notification.Name("radioStoreDidChange")
+}
+
 @MainActor
 class PersistenceController {
 
 	static let shared: PersistenceController = {
-		let isTestEnvironment = NSClassFromString("XCTestCase") != nil || ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
-		return PersistenceController(inMemory: isTestEnvironment)
+		let isTestEnvironment = NSClassFromString("XCTestCase") != nil
+			|| ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
+		guard !isTestEnvironment else {
+			return PersistenceController(inMemory: true)
+		}
+
+		do {
+			let paths = try RadioStorePaths.production()
+			let bootstrap = try MultiRadioStoreBootstrap.prepare(paths: paths)
+			return try PersistenceController(
+				multiRadioPaths: paths,
+				selectedStoreKey: bootstrap.selectedStoreKey
+			)
+		} catch {
+			Logger.data.critical("💾 Multi-radio bootstrap failed; using in-memory recovery stores: \(error.localizedDescription, privacy: .public)")
+			return PersistenceController(combinedRecovery: ())
+		}
 	}()
 
 	static var preview: PersistenceController = {
@@ -29,23 +48,87 @@ class PersistenceController {
 	}()
 
 	private(set) var container: ModelContainer
+	private lazy var containerAccessCoordinator: ContainerAccessCoordinator = {
+		let coordinator = ContainerAccessCoordinator(containerID: ObjectIdentifier(container))
+		let access = ContainerWriteAccess(
+			coordinator: coordinator,
+			lease: coordinator.currentLease,
+			containerID: ObjectIdentifier(container)
+		)
+		ContainerWriteAccessDirectory.shared.register(container, access: access)
+		return coordinator
+	}()
+
+	var currentContainerLease: ContainerLease {
+		containerAccessCoordinator.currentLease
+	}
+
+	var currentWriteAccess: ContainerWriteAccess {
+		ContainerWriteAccess(
+			coordinator: containerAccessCoordinator,
+			lease: currentContainerLease,
+			containerID: ObjectIdentifier(container)
+		)
+	}
+
+	func requireCurrent(_ lease: ContainerLease) throws {
+		try containerAccessCoordinator.requireCurrent(lease)
+	}
 
 	/// Remembered so the store can be reopened in a fresh container — see `recreateContainer()`.
 	private let storeName: String
 	private let inMemory: Bool
+	private let usesCombinedLayout: Bool
+	private let multiRadioPaths: RadioStorePaths?
+	private(set) var activeRadioStoreKey: UUID?
+
+	var activeRadioStoreURL: URL? {
+		guard let multiRadioPaths, let activeRadioStoreKey else { return nil }
+		return multiRadioPaths.radioStoreURL(for: activeRadioStoreKey)
+	}
 
 	var context: ModelContext {
 		container.mainContext
 	}
 
 	/// Reopen the (already-migrated) store in a brand-new `ModelContainer`, replacing `container`.
-	///
-	/// Used after a full data clear so every context — the main context and any actor contexts
-	/// built from the container — starts with no stale object registrations. Without this, a
-	/// long-lived context keeps the pre-clear objects registered; on reconnect SQLite reuses the
-	/// freed rowids, so a fetch/relationship access returns a dead instance and SwiftData traps
-	/// with "This model instance was destroyed by calling ModelContext.reset".
-	func recreateContainer() {
+	/// Active write permits drain before replacement, and new writes are rejected during the
+	/// transition. Returns false when draining or opening fails and the old container remains live.
+	@discardableResult
+	func recreateContainer() async -> Bool {
+		await replaceContainer(destroyStore: false)
+	}
+
+	/// Delete the on-disk store after active writers drain, then open a guaranteed-empty container.
+	/// If the new disk store cannot open, an in-memory container becomes the active generation so
+	/// no valid lease can continue targeting deleted files.
+	@discardableResult
+	func destroyStoreAndRecreateContainer() async -> Bool {
+		await replaceContainer(destroyStore: !inMemory)
+	}
+
+	@discardableResult
+	func selectRadioStore(_ storeKey: UUID?) async -> Bool {
+		guard usesCombinedLayout else { return false }
+		guard activeRadioStoreKey != storeKey else { return true }
+		return await replaceCombinedContainer(destroyStore: false, targetStoreKey: storeKey)
+	}
+
+	private func replaceContainer(destroyStore: Bool) async -> Bool {
+		if usesCombinedLayout {
+			return await replaceCombinedContainer(
+				destroyStore: destroyStore,
+				targetStoreKey: activeRadioStoreKey
+			)
+		}
+		let transition: ContainerTransition
+		do {
+			transition = try await containerAccessCoordinator.beginTransition(timeout: .seconds(5))
+		} catch {
+			Logger.data.error("💾 Container transition could not drain active writers: \(error.localizedDescription, privacy: .public)")
+			return false
+		}
+
 		let schema = Schema(versionedSchema: MeshtasticSchema.current)
 		let config = ModelConfiguration(
 			storeName,
@@ -53,40 +136,98 @@ class PersistenceController {
 			isStoredInMemoryOnly: inMemory,
 			allowsSave: true
 		)
+
+		if destroyStore {
+			Self.removeStoreFiles(at: config.url)
+		}
+
+		let fresh: ModelContainer
 		do {
-			// Mirror init()'s open logic: on-disk stores go through the migration plan so a
-			// reopen behaves identically to launch if a schema migration ever applies here.
-			let fresh: ModelContainer
 			if inMemory {
 				fresh = try ModelContainer(for: schema, configurations: config)
 			} else {
-				fresh = try ModelContainer(for: schema, migrationPlan: MeshtasticMigrationPlan.self, configurations: config)
+				fresh = try ModelContainer(
+					for: schema,
+					migrationPlan: MeshtasticMigrationPlan.self,
+					configurations: config
+				)
 			}
-			fresh.mainContext.autosaveEnabled = false
-			container = fresh
-			Logger.data.info("💾 SwiftData container recreated after data clear")
 		} catch {
-			Logger.data.error("💾 Failed to recreate SwiftData container: \(error.localizedDescription, privacy: .public)")
+			guard destroyStore else {
+				try? containerAccessCoordinator.cancelTransition(transition)
+				Logger.data.error("💾 Failed to recreate SwiftData container: \(error.localizedDescription, privacy: .public)")
+				return false
+			}
+
+			let memoryConfig = ModelConfiguration(
+				"\(storeName)-Recovery",
+				schema: schema,
+				isStoredInMemoryOnly: true,
+				allowsSave: true
+			)
+			do {
+				fresh = try ModelContainer(for: schema, configurations: memoryConfig)
+				Logger.data.critical("💾 Destroyed store could not reopen; using an in-memory recovery container: \(error.localizedDescription, privacy: .public)")
+			} catch let recoveryError {
+				fatalError("💾 In-memory recovery container failed: \(recoveryError.localizedDescription)")
+			}
 		}
+
+		fresh.mainContext.autosaveEnabled = false
+		let retiredContainer = container
+		container = fresh
+		do {
+			try containerAccessCoordinator.commitTransition(
+				transition,
+				newContainerID: ObjectIdentifier(fresh)
+			)
+		} catch {
+			fatalError("💾 Container transition invariant failed: \(error.localizedDescription)")
+		}
+		ContainerWriteAccessDirectory.shared.register(fresh, access: currentWriteAccess)
+		ContainerWriteAccessDirectory.shared.retire(retiredContainer)
+
+		if destroyStore {
+			Logger.data.warning("💾 Store files destroyed and container recreated (escalated database reset)")
+		} else {
+			Logger.data.info("💾 SwiftData container recreated after data clear")
+		}
+		return true
 	}
 
-	/// Nuclear reset: delete the on-disk store files and reopen a brand-new, guaranteed-empty
-	/// container. Used by the device-switch / cross-device reset paths as an escalation when the
-	/// per-model `clearDatabase` fails part-way (e.g. a relationship constraint aborts the batch
-	/// deletes) — proceeding on a half-cleared store is how one radio's nodes leak into another's
-	/// session. POSIX unlink semantics make this safe with stragglers: any old context still
-	/// holding the previous container writes to the unlinked inode, never into the new store.
-	/// Not usable when data must be preserved (routes, favorites) — everything is erased.
-	func destroyStoreAndRecreateContainer() {
-		guard !inMemory else {
-			recreateContainer()
-			return
+	init(
+		multiRadioPaths: RadioStorePaths,
+		selectedStoreKey: UUID?
+	) throws {
+		storeName = "ActiveRadio"
+		inMemory = false
+		usesCombinedLayout = true
+		self.multiRadioPaths = multiRadioPaths
+		activeRadioStoreKey = selectedStoreKey
+#if DEBUG
+		if let selectedStoreKey, PerformanceSeedData.configuration?.resetStore == true {
+			Self.removeStoreFiles(at: multiRadioPaths.radioStoreURL(for: selectedStoreKey))
 		}
-		let schema = Schema(versionedSchema: MeshtasticSchema.current)
-		let config = ModelConfiguration(storeName, schema: schema, isStoredInMemoryOnly: false, allowsSave: true)
-		Self.removeStoreFiles(at: config.url)
-		recreateContainer()
-		Logger.data.warning("💾 Store files destroyed and container recreated (escalated database reset)")
+#endif
+		container = try Self.makeCombinedContainer(
+			paths: multiRadioPaths,
+			storeKey: selectedStoreKey
+		)
+		_ = containerAccessCoordinator
+	}
+
+	private init(combinedRecovery: Void) {
+		storeName = "RadioRecovery"
+		inMemory = true
+		usesCombinedLayout = true
+		multiRadioPaths = nil
+		activeRadioStoreKey = nil
+		do {
+			container = try Self.makeCombinedContainer(paths: nil, storeKey: nil)
+		} catch {
+			fatalError("💾 In-memory combined container failed: \(error.localizedDescription)")
+		}
+		_ = containerAccessCoordinator
 	}
 
 	private static func removeStoreFiles(at storeURL: URL) {
@@ -109,6 +250,9 @@ class PersistenceController {
 	init(inMemory: Bool = false, storeName: String = "Meshtastic") {
 		self.storeName = storeName
 		self.inMemory = inMemory
+		usesCombinedLayout = false
+		multiRadioPaths = nil
+		activeRadioStoreKey = nil
 		let isTestEnvironment = NSClassFromString("XCTestCase") != nil || ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
 		let schema = Schema(versionedSchema: MeshtasticSchema.current)
 
@@ -205,6 +349,9 @@ class PersistenceController {
 			}
 		}
 
+		// Register the bootstrap container before any runtime writer can receive its context.
+		_ = containerAccessCoordinator
+
 		// ── Step 2: one-time Core Data → SwiftData migration ─────────────────
 		// Runs only when upgrading from 2.7.12 (or earlier) which used Core Data.
 		guard !inMemory, !isTestEnvironment else { return }
@@ -221,6 +368,15 @@ class PersistenceController {
 
 	@MainActor
 	public func clearDatabase(includeRoutes: Bool = true) {
+		let writePermit: ContainerWritePermit
+		do {
+			writePermit = try currentWriteAccess.beginWrite()
+		} catch {
+			Logger.data.error("Failed to clear SwiftData database: container is transitioning")
+			return
+		}
+		defer { writePermit.finish() }
+
 		// Delete + SAVE one model type at a time. A batch `delete(model:)` enqueues a deletion that is
 		// committed on the next save and nullifies inverse relationships; reconciling MANY types'
 		// deletions in a SINGLE trailing save tears down objects whose inverse targets were also
@@ -238,15 +394,15 @@ class PersistenceController {
 				device.images.removeAll()
 			}
 			if container.mainContext.hasChanges {
-				try container.mainContext.save()
+				try container.mainContext.coordinatedSave()
 			}
 
 			// Delete entities that are on the inverse side of many-to-many
 			// relationships first to avoid constraint trigger violations.
 			try container.mainContext.delete(model: DeviceHardwareTagEntity.self)
-			try container.mainContext.save()
+			try container.mainContext.coordinatedSave()
 			try container.mainContext.delete(model: DeviceHardwareImageEntity.self)
-			try container.mainContext.save()
+			try container.mainContext.coordinatedSave()
 			// Clearing the image/link rows must also reset their refresh throttle so the next pass
 			// restores them rather than skipping as "refreshed recently" (see MeshtasticAPI). Goes
 			// through the throttle rather than writing the timestamp directly so an image/link pass
@@ -261,11 +417,119 @@ class PersistenceController {
 					continue // already deleted above
 				}
 				try container.mainContext.delete(model: modelType)
-				try container.mainContext.save()
+				try container.mainContext.coordinatedSave()
 			}
 			Logger.data.error("SwiftData database truncated. All app data has been erased.")
 		} catch {
 			Logger.data.error("Failed to clear SwiftData database: \(error.localizedDescription, privacy: .public)")
 		}
+	}
+}
+
+private extension PersistenceController {
+	func replaceCombinedContainer(
+		destroyStore: Bool,
+		targetStoreKey: UUID?
+	) async -> Bool {
+		let transition: ContainerTransition
+		do {
+			transition = try await containerAccessCoordinator.beginTransition(timeout: .seconds(5))
+		} catch {
+			Logger.data.error("💾 Radio-store transition could not drain active writers: \(error.localizedDescription, privacy: .public)")
+			return false
+		}
+
+		let replacementStoreKey = destroyStore ? nil : targetStoreKey
+		let fresh: ModelContainer
+		let activatedStoreKey: UUID?
+		do {
+			fresh = try Self.makeCombinedContainer(
+				paths: multiRadioPaths,
+				storeKey: replacementStoreKey
+			)
+			activatedStoreKey = replacementStoreKey
+		} catch {
+			guard destroyStore else {
+				try? containerAccessCoordinator.cancelTransition(transition)
+				Logger.data.error("💾 Failed to open selected radio store: \(error.localizedDescription, privacy: .public)")
+				return false
+			}
+			do {
+				fresh = try Self.makeCombinedContainer(paths: nil, storeKey: nil)
+				activatedStoreKey = nil
+				Logger.data.critical("💾 Destroyed radio store could not reopen; using in-memory recovery stores: \(error.localizedDescription, privacy: .public)")
+			} catch let recoveryError {
+				fatalError("💾 In-memory combined recovery container failed: \(recoveryError.localizedDescription)")
+			}
+		}
+
+		let retiredContainer = container
+		container = fresh
+		activeRadioStoreKey = activatedStoreKey
+		do {
+			try containerAccessCoordinator.commitTransition(
+				transition,
+				newContainerID: ObjectIdentifier(fresh)
+			)
+		} catch {
+			fatalError("💾 Radio-store transition invariant failed: \(error.localizedDescription)")
+		}
+		ContainerWriteAccessDirectory.shared.register(fresh, access: currentWriteAccess)
+		ContainerWriteAccessDirectory.shared.retire(retiredContainer)
+		if destroyStore {
+			Logger.data.critical("💾 Retired the selected radio store without unlinking its live SQLite files; using an empty in-memory radio store")
+		}
+		return true
+	}
+
+	static func makeCombinedContainer(
+		paths: RadioStorePaths?,
+		storeKey: UUID?
+	) throws -> ModelContainer {
+		let radioConfiguration: ModelConfiguration
+		if let paths, let storeKey {
+			try FileManager.default.createDirectory(
+				at: paths.radioStoreDirectory,
+				withIntermediateDirectories: true
+			)
+			radioConfiguration = ModelConfiguration(
+				"ActiveRadio",
+				schema: MultiRadioStoreSchema.radioSchema,
+				url: paths.radioStoreURL(for: storeKey),
+				allowsSave: true
+			)
+		} else {
+			radioConfiguration = ModelConfiguration(
+				"UnassignedRadio",
+				schema: MultiRadioStoreSchema.radioSchema,
+				isStoredInMemoryOnly: true,
+				allowsSave: true
+			)
+		}
+
+		let globalConfiguration: ModelConfiguration
+		if let paths {
+			globalConfiguration = ModelConfiguration(
+				"RadioRegistry",
+				schema: MultiRadioStoreSchema.globalSchema,
+				url: paths.registryStoreURL,
+				allowsSave: true
+			)
+		} else {
+			globalConfiguration = ModelConfiguration(
+				"RadioRegistryRecovery",
+				schema: MultiRadioStoreSchema.globalSchema,
+				isStoredInMemoryOnly: true,
+				allowsSave: true
+			)
+		}
+
+		let container = try ModelContainer(
+			for: MultiRadioStoreSchema.combinedSchema,
+			configurations: radioConfiguration,
+			globalConfiguration
+		)
+		container.mainContext.autosaveEnabled = false
+		return container
 	}
 }

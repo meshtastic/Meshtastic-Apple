@@ -56,7 +56,7 @@ struct RetryButton: View {
 		let replyID = message.replyID
 		context.delete(message)
 		do {
-			try context.save()
+			try context.coordinatedSave()
 		} catch {
 			Logger.data.error("Failed to delete message \(messageID, privacy: .public): \(error.localizedDescription, privacy: .public)")
 		}

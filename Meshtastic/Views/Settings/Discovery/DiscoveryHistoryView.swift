@@ -45,7 +45,7 @@ struct DiscoveryHistoryView: View {
 					.contextMenu {
 						Button(role: .destructive) {
 							context.delete(session)
-							try? context.save()
+							try? context.coordinatedSave()
 						} label: {
 							Label("Delete", systemImage: "trash")
 						}
@@ -123,7 +123,7 @@ struct DiscoveryHistoryView: View {
 		for index in offsets {
 			context.delete(sessions[index])
 		}
-		try? context.save()
+		try? context.coordinatedSave()
 	}
 
 	// MARK: - Helpers

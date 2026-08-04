@@ -774,7 +774,7 @@ final class TAKServerManager: ObservableObject {
 				myInfo.channels.insert(primaryChannel, at: 0)
 			}
 
-			try context.save()
+			try context.coordinatedSave()
 
 			var channel = Channel()
 			channel.index = 0

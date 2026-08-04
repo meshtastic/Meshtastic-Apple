@@ -130,7 +130,7 @@ struct AllTraceRoutesLog: View {
 		}
 		context.delete(route)
 		do {
-			try context.save()
+			try context.coordinatedSave()
 		} catch let error as NSError {
 			Logger.data.error("\(error.localizedDescription, privacy: .public)")
 		}

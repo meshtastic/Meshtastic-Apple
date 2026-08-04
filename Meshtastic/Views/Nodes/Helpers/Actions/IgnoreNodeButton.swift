@@ -29,7 +29,7 @@ struct IgnoreNodeButton: View {
 						// CoreData Stuff
 						node.ignored = !node.ignored
 						do {
-							try context.save()
+							try context.coordinatedSave()
 						} catch {
 							Logger.data.error("Save Ignored Node Error")
 						}

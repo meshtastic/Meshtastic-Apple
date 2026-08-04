@@ -24,18 +24,21 @@ final class NodeBackupManager: NodeBackupManaging {
 
 	// MARK: - Constants
 
-	private static let indexFileName = "backup-index.json"
-	private static let storeFileName = "Meshtastic.store"
-	private static let walFileName = "Meshtastic.store-wal"
-	private static let shmFileName = "Meshtastic.store-shm"
-	private static let maximumBackupCount = 50
+	nonisolated private static let indexFileName = "backup-index.json"
+	nonisolated private static let storeFileName = "Meshtastic.store"
+	nonisolated private static let walFileName = "Meshtastic.store-wal"
+	nonisolated private static let shmFileName = "Meshtastic.store-shm"
+	nonisolated private static let maximumBackupCount = 50
 	/// Minimum free disk space required for backup (50 MB)
-	private static let minimumFreeDiskSpace: Int64 = 50 * 1024 * 1024
+	nonisolated private static let minimumFreeDiskSpace: Int64 = 50 * 1024 * 1024
 
 	// MARK: - Properties
 
 	private var backupIndex: BackupIndex
 	private let backupBaseURL: URL
+	private let activeDatabaseURLOverride: URL?
+	private let canonicalDeviceIDOverride: String?
+	private let compactsBackups: Bool
 	private let fileManager = FileManager.default
 
 	// MARK: - Initialization
@@ -43,6 +46,9 @@ final class NodeBackupManager: NodeBackupManaging {
 	private init() {
 		let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
 		backupBaseURL = appSupport.appendingPathComponent("NodeBackups", isDirectory: true)
+		activeDatabaseURLOverride = nil
+		canonicalDeviceIDOverride = nil
+		compactsBackups = true
 
 		// Ensure backup directory exists
 		try? FileManager.default.createDirectory(at: backupBaseURL, withIntermediateDirectories: true)
@@ -55,8 +61,16 @@ final class NodeBackupManager: NodeBackupManaging {
 	}
 
 	/// Initializer for testing with a custom base URL.
-	init(baseURL: URL) {
+	init(
+		baseURL: URL,
+		activeDatabaseURL: URL? = nil,
+		canonicalDeviceID: String? = nil,
+		compactsBackups: Bool = true
+	) {
 		backupBaseURL = baseURL
+		activeDatabaseURLOverride = activeDatabaseURL
+		canonicalDeviceIDOverride = canonicalDeviceID
+		self.compactsBackups = compactsBackups
 		try? FileManager.default.createDirectory(at: backupBaseURL, withIntermediateDirectories: true)
 		backupIndex = Self.loadIndex(from: backupBaseURL)
 		validateIndexConsistency()
@@ -67,9 +81,10 @@ final class NodeBackupManager: NodeBackupManaging {
 	private static func loadIndex(from baseURL: URL) -> BackupIndex {
 		let indexURL = baseURL.appendingPathComponent(indexFileName)
 		guard let data = try? Data(contentsOf: indexURL),
-			  let index = try? JSONDecoder().decode(BackupIndex.self, from: data) else {
+			  var index = try? JSONDecoder().decode(BackupIndex.self, from: data) else {
 			return BackupIndex()
 		}
+		index.version = BackupIndex.currentVersion
 		return index
 	}
 
@@ -190,7 +205,10 @@ final class NodeBackupManager: NodeBackupManaging {
 		try fileManager.createDirectory(at: nodeBackupDir, withIntermediateDirectories: true)
 
 		// Get source database path
-		let sourceURL = self.activeDatabaseURL()
+		guard let sourceURL = self.activeDatabaseURL() else {
+			throw CocoaError(.fileNoSuchFile)
+		}
+		let canonicalDeviceID = canonicalDeviceID(forNode: nodeNum)
 
 		// Copy files on background thread
 		let fileSize = try await Task.detached(priority: .userInitiated) { [fileManager] in
@@ -205,8 +223,8 @@ final class NodeBackupManager: NodeBackupManaging {
 				totalSize += (attrs[.size] as? Int64) ?? 0
 			}
 
-			// Copy .sqlite-wal if present
-			let walSrc = sourceURL.deletingLastPathComponent().appendingPathComponent(Self.walFileName)
+			// Copy the active store's WAL if present.
+			let walSrc = URL(fileURLWithPath: sourceURL.path + "-wal")
 			let walDst = nodeBackupDir.appendingPathComponent(Self.walFileName)
 			if fileManager.fileExists(atPath: walSrc.path) {
 				try fileManager.copyItem(at: walSrc, to: walDst)
@@ -214,8 +232,8 @@ final class NodeBackupManager: NodeBackupManaging {
 				totalSize += (attrs[.size] as? Int64) ?? 0
 			}
 
-			// Copy .sqlite-shm if present
-			let shmSrc = sourceURL.deletingLastPathComponent().appendingPathComponent(Self.shmFileName)
+			// Copy the active store's shared-memory sidecar if present.
+			let shmSrc = URL(fileURLWithPath: sourceURL.path + "-shm")
 			let shmDst = nodeBackupDir.appendingPathComponent(Self.shmFileName)
 			if fileManager.fileExists(atPath: shmSrc.path) {
 				try fileManager.copyItem(at: shmSrc, to: shmDst)
@@ -234,6 +252,7 @@ final class NodeBackupManager: NodeBackupManaging {
 		let entry = BackupEntry(
 			nodeNum: nodeNum,
 			nodeName: nodeName,
+			deviceID: canonicalDeviceID,
 			createdAt: .now,
 			fileSize: fileSize,
 			checksum: checksum,
@@ -242,7 +261,9 @@ final class NodeBackupManager: NodeBackupManaging {
 		backupIndex.entries[nodeNum] = entry
 		enforceBackupLimit(keeping: nodeNum)
 		saveIndex()
-		scheduleBackupCompaction(for: entry)
+		if compactsBackups {
+			scheduleBackupCompaction(for: entry)
+		}
 
 		return entry
 	}
@@ -412,14 +433,6 @@ final class NodeBackupManager: NodeBackupManaging {
 		backupIndex.entries.values.reduce(0) { $0 + $1.fileSize }
 	}
 
-	// MARK: - Helpers
-
-	/// Returns the URL to the active SQLite database file.
-	private func activeDatabaseURL() -> URL {
-		let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
-		return appSupport.appendingPathComponent("Meshtastic.store")
-	}
-
 	// MARK: - Full Database Restore via Import
 
 	/// Restores a full backup by importing all entities from the backup SQLite into the live container.
@@ -436,6 +449,23 @@ final class NodeBackupManager: NodeBackupManaging {
 	///   - container: The live ModelContainer to import into
 	/// - Returns: Result indicating success, skip, or no backup found
 	func restoreFromBackup(forNode nodeNum: Int64, into container: ModelContainer) async -> NodeBackupResult {
+		let writeAccess: ContainerWriteAccess?
+		switch ContainerWriteAccessDirectory.shared.registration(for: container) {
+		case .active(let access):
+			writeAccess = access
+		case .retired:
+			return .skipped(reason: "Destination database is retired")
+		case .unmanaged:
+			writeAccess = nil
+		}
+		return await restoreFromBackup(forNode: nodeNum, into: container, writeAccess: writeAccess)
+	}
+
+	func restoreFromBackup(
+		forNode nodeNum: Int64,
+		into container: ModelContainer,
+		writeAccess: ContainerWriteAccess?
+	) async -> NodeBackupResult {
 		Logger.backup.info("💾 Restoring full backup for node \(nodeNum)")
 
 		guard let entry = backupIndex.entries[nodeNum] else {
@@ -457,6 +487,15 @@ final class NodeBackupManager: NodeBackupManaging {
 			Logger.backup.error("💾 Backup integrity check failed for node \(nodeNum): \(error.localizedDescription, privacy: .public)")
 			return .skipped(reason: "Restore failed: \(error.localizedDescription)")
 		}
+
+		let writePermit: ContainerWritePermit?
+		do {
+			writePermit = try writeAccess?.beginWrite()
+		} catch {
+			Logger.backup.error("💾 Restore rejected because its destination container retired")
+			return .skipped(reason: "Destination database changed during restore")
+		}
+		defer { writePermit?.finish() }
 
 		do {
 			try await Task.detached(priority: .userInitiated) {
@@ -482,7 +521,7 @@ final class NodeBackupManager: NodeBackupManaging {
 				try Self.importTraceRoutes(from: backupContext, into: liveContext, nodesByNum: nodesByNum)
 				try Self.importPaxCounters(from: backupContext, into: liveContext, nodesByNum: nodesByNum)
 
-				try liveContext.save()
+				try liveContext.save() // coordinated-save-allow: restore holds its write permit
 				Logger.backup.info("💾 Full restore complete for node \(nodeNum)")
 			}.value
 
@@ -500,6 +539,27 @@ final class NodeBackupManager: NodeBackupManaging {
 			deleteBackup(forNode: entry.nodeNum)
 			throw BackupError.checksumMismatch
 		}
+	}
+}
+
+private extension NodeBackupManager {
+	/// Returns the URL to the currently selected radio's SQLite database file.
+	func activeDatabaseURL() -> URL? {
+		activeDatabaseURLOverride ?? PersistenceController.shared.activeRadioStoreURL
+	}
+
+	func canonicalDeviceID(forNode nodeNum: Int64) -> String? {
+		if let canonicalDeviceIDOverride {
+			return RadioIdentityObservation.normalizedDeviceID(canonicalDeviceIDOverride)
+		}
+		let descriptor = FetchDescriptor<MyInfoEntity>(
+			predicate: #Predicate { $0.myNodeNum == nodeNum }
+		)
+		guard let myInfo = try? PersistenceController.shared.context.fetch(descriptor).first,
+		      let deviceID = myInfo.deviceId else {
+			return nil
+		}
+		return RadioIdentityObservation.normalizedDeviceID(deviceID)
 	}
 }
 

@@ -42,7 +42,8 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 	// message, so a newer unread message re-donates and stays readable by Siri.
 	private var donatedReadKeys = Set<String>()
 
-	private lazy var context: ModelContext = PersistenceController.shared.context
+	private var modelContainer = PersistenceController.shared.container
+	private lazy var context: ModelContext = modelContainer.mainContext
 
 	/// Returns a human-readable "last heard" string.
 	/// `now` is passed in so all rows in a single render share one `Date()` allocation.
@@ -67,6 +68,16 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 
 		buildAndSetRootTemplate(animated: false)
 		donateUnreadMessages()
+
+		NotificationCenter.default.publisher(for: .radioStoreDidChange)
+			.receive(on: RunLoop.main)
+			.sink { [weak self] _ in
+				guard let self else { return }
+				self.modelContainer = PersistenceController.shared.container
+				self.context = self.modelContainer.mainContext
+				self.refreshSections()
+			}
+			.store(in: &cancellables)
 
 		// Observe connection state changes and refresh sections (not the whole template tree).
 		// Debounce absorbs reconnect spikes that would otherwise fire multiple expensive refreshes.

@@ -113,7 +113,7 @@ enum CoreDataMigrationService {
 		try migrateMessages(cdContext: cdContext, sdContext: sdContext, userMap: userMap)
 
 		// ── Persist ──────────────────────────────────────────────────────────
-		try sdContext.save()
+		try sdContext.save() // coordinated-save-allow: bootstrap runs before runtime writers
 		Logger.data.info("⬆️ CoreDataMigrationService: SwiftData save complete")
 
 		// ── Rename old store so this migration never runs again ──────────────

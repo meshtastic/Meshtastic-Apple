@@ -95,7 +95,7 @@ class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificat
 				}
 			}
 			if context.hasChanges {
-				try context.save()
+				try context.coordinatedSave()
 				Logger.services.info("🚗 [CarPlay] Marked messages as read for \(conversationId, privacy: .public)")
 				// Match the in-app mark-read paths: clear delivered notifications for
 				// the read messages and tell unread surfaces (app badge via

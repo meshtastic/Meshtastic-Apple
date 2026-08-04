@@ -325,7 +325,7 @@ struct MeshtasticAppleApp: App {
 				Logger.services.info("🎬 [App] Scene is in the background")
 				accessoryManager.appDidEnterBackground()
 				do {
-					try persistenceController.container.mainContext.save()
+					try persistenceController.container.mainContext.coordinatedSave()
 					Logger.services.info("💾 [App] Saved SwiftData context when the app went to the background.")
 
 				} catch {

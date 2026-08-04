@@ -372,7 +372,7 @@ struct PowerMetricsLog: View {
 	private func saveChannelLabels() {
 		node.powerChannelLabels = channelLabels
 		do {
-			try context.save()
+			try context.coordinatedSave()
 		} catch let error as NSError {
 			Logger.data.error("\(error.localizedDescription, privacy: .public)")
 		}

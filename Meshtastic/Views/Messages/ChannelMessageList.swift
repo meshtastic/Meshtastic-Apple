@@ -96,7 +96,7 @@ struct ChannelMessageList: View {
 			}
 			notificationManager.cancelNotificationsForMessageIds(readMessageIDs)
 			if context.hasChanges {
-				try context.save()
+				try context.coordinatedSave()
 			}
 			Logger.data.info("📖 [App] All unread messages marked as read.")
 			appState.unreadChannelMessages = myInfo.unreadMessages

@@ -69,7 +69,7 @@ final class SetMessageAttributeIntentHandler: NSObject, INSetMessageAttributeInt
 				}
 
 				if context.hasChanges {
-					try context.save()
+					try context.coordinatedSave()
 				}
 				Logger.services.info("CarPlay/Siri: Updated \(messages.count) message(s) to \(String(describing: attribute))")
 				return true
