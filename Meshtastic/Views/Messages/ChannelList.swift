@@ -143,6 +143,7 @@ struct ChannelList: View {
 					}
 				}
 				Button {
+					let originalMute = channel.mute
 					channel.mute.toggle()
 					do {
 						try context.coordinatedSave()
@@ -150,11 +151,20 @@ struct ChannelList: View {
 						Logger.data.error("💥 Save Channel Mute Error")
 						return
 					}
-					Task {
+					Task { @MainActor in
 						do {
 							_ = try await accessoryManager.saveChannel(channel: channel.protoBuf, fromUser: node.user!, toUser: node.user!)
 						} catch {
 							Logger.mesh.error("Unable to save channel")
+							guard case .active = ContainerWriteAccessDirectory.shared.registration(for: context.container) else {
+								return
+							}
+							channel.mute = originalMute
+							do {
+								try context.coordinatedSave()
+							} catch {
+								Logger.data.error("Failed to restore channel mute after radio save error")
+							}
 						}
 					}
 				} label: {

@@ -271,6 +271,9 @@ struct SecurityConfig: View {
 					config.debugLogApiEnabled = debugLogApiEnabled
 					
 					let keyUpdated = node?.securityConfig?.privateKey?.base64EncodedString() ?? "" != privateKey
+					let selectedStoreKey = PersistenceController.shared.activeRadioStoreKey
+					let targetNodeNum = node?.num
+					let updatedPublicKey = Data(base64Encoded: publicKey) ?? Data()
 					Task { @MainActor in
 						do {
 							_ = try await accessoryManager.saveSecurityConfig(
@@ -282,13 +285,23 @@ struct SecurityConfig: View {
 							Logger.mesh.error("Security config save failed: \(error.localizedDescription, privacy: .public)")
 							return
 						}
+						do {
+							try Task.checkCancellation()
+						} catch {
+							return
+						}
+						guard selectedStoreKey == PersistenceController.shared.activeRadioStoreKey else { return }
 
 						if keyUpdated {
+							let activeContext = accessoryManager.context
+							guard let targetNodeNum,
+							      let activeNode = getNodeInfo(id: targetNodeNum, context: activeContext),
+							      let activeUser = activeNode.user else { return }
 							// This is the local node's own keypair being changed deliberately by the user.
-							node?.user?.publicKey = Data(base64Encoded: publicKey) ?? Data()
+							activeUser.publicKey = updatedPublicKey
 							do {
-								try context.coordinatedSave()
-								Logger.data.info("💾 Saved UserEntity Public Key to Core Data for \(node?.num ?? 0, privacy: .public)")
+								try activeContext.coordinatedSave()
+								Logger.data.info("💾 Saved UserEntity Public Key to Core Data for \(targetNodeNum, privacy: .public)")
 							} catch {
 								let nsError = error as NSError
 								Logger.data.error("Error Updating UserEntity: \(nsError, privacy: .public)")

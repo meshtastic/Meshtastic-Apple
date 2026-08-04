@@ -251,7 +251,7 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 	func refreshFirmwareAPIData() async throws {
 		// No container in seed/test mode — the DB-backed API is intentionally disabled there
 		// (see the singleton init), so skip rather than force-unwrap a nil container.
-		guard let container = await currentContainer else { return }
+		guard await currentContainer != nil else { return }
 		await MainActor.run {
 			self.isLoadingFirmwareList = true
 		}
@@ -271,8 +271,9 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 		let stableVersions = Set(decodedFirmware.releases.stable.map { $0.id })
 		let alphaVersions = Set(decodedFirmware.releases.alpha.map { $0.id })
 
-		// All DB work on mainContext so @Query observers see changes
-		await MainActor.run {
+		// Resolve after the network fetch so a radio switch cannot retire the context we save.
+		try await MainActor.run {
+			guard let container = self.currentContainer else { return }
 			let context = container.mainContext
 
 			for stableRelease in decodedFirmware.releases.stable {
@@ -301,7 +302,7 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 				}
 			}
 
-			try? context.coordinatedSave()
+			try context.coordinatedSave()
 		}
 		
 		// Save the last update date for the firmware
@@ -309,7 +310,7 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 	}
 
 	func refreshDevicesAPIData() async throws {
-		guard let container = await currentContainer else { return }
+		guard await currentContainer != nil else { return }
 		// No spinner bookkeeping here: this function raises no loading flag of its own, and the
 		// image/link pass it delegates to in PHASE 3 manages the flag around its own lifetime.
 		// Clearing it here would lower a flag a concurrent seed still needs raised.
@@ -319,8 +320,9 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 		// Decode Swift Structs (Safe to do off the DB thread)
 		let decodedDevices = try decoder.decode([DeviceHardware].self, from: finalData)
 
-		// PHASE 2: Database on mainContext so @Query observers see changes
+		// PHASE 2: Resolve after the network fetch so the save uses the selected store.
 		try await MainActor.run {
+			guard let container = self.currentContainer else { return }
 			let context = container.mainContext
 
 			// 1. Update Devices and Tags
@@ -384,13 +386,14 @@ deviceEntity.architecture = device.architecture
 
 	/// Import the msh.to URL catalog into `DeviceLinkEntity` records.
 	private func importDeviceLinks() async {
-		guard let container = await currentContainer else { return }
+		guard await currentContainer != nil else { return }
 		guard let decoded = await loadMshToUrls() else {
 			Logger.services.warning("Unable to load msh.to urls (API and bundled fallback both failed)")
 			return
 		}
 
 		await MainActor.run {
+			guard let container = self.currentContainer else { return }
 			let context = container.mainContext
 			var importedCount = 0
 			let importedShortCodes = Set(decoded.routes.map { $0.shortCode })
@@ -450,7 +453,11 @@ deviceEntity.architecture = device.architecture
 			}
 
 			Logger.services.info("Device links import: \(importedCount, privacy: .public) short codes imported")
-			try? context.coordinatedSave()
+			do {
+				try context.coordinatedSave()
+			} catch {
+				Logger.services.error("Device links import save failed: \(error.localizedDescription, privacy: .public)")
+			}
 		}
 	}
 
@@ -513,7 +520,7 @@ deviceEntity.architecture = device.architecture
 	
 	/// Handles the logic of checking ETag -> Checking DB -> Downloading -> Bundle Fallback -> Saving
 	private func processImage(imageName: String, platform: String ) async {
-		guard let container = await currentContainer else { return }
+		guard await currentContainer != nil else { return }
 		// Skip if the pass was cancelled (connection teardown) — don't even do the bundle fallback.
 		if Task.isCancelled { return }
 		let url = Self.imageURLPrefix.appendingPathComponent(imageName)
@@ -523,6 +530,7 @@ deviceEntity.architecture = device.architecture
 
 		// 2. DB: Check if we already have this version or a usable cached version
 		let isUpToDate: Bool = await MainActor.run {
+			guard let container = self.currentContainer else { return false }
 			let context = container.mainContext
 			var imageDescriptor = FetchDescriptor<DeviceHardwareImageEntity>(
 				predicate: #Predicate { $0.fileName == imageName }
@@ -578,6 +586,7 @@ deviceEntity.architecture = device.architecture
 		}
 
 		await MainActor.run {
+			guard let container = self.currentContainer else { return }
 			let context = container.mainContext
 
 			// Find the Device
@@ -612,8 +621,12 @@ deviceEntity.architecture = device.architecture
 				deviceEntity.images.append(imageEntity)
 			}
 
-			try? context.coordinatedSave()
-			Logger.services.info("Saving \(imageName) in database. eTag=\(finalETag)")
+			do {
+				try context.coordinatedSave()
+				Logger.services.info("Saving \(imageName) in database. eTag=\(finalETag)")
+			} catch {
+				Logger.services.error("Image save failed for \(imageName): \(error.localizedDescription, privacy: .public)")
+			}
 		}
 	}
 
@@ -662,7 +675,7 @@ extension MeshtasticAPI {
 	/// restarts the whole connect when it is exceeded. Device images and the msh.to link catalog
 	/// are network-backed and live in `refreshDeviceImagesAndLinks()`; keep them out of here.
 	func refreshBundledDevicesData() async throws {
-		guard let container = await currentContainer else { return }
+		guard await currentContainer != nil else { return }
 		await beginDeviceListLoad()
 		// Clear on every exit, not just the happy path: a failed bundle read, decode, or save
 		// would otherwise leave the hardware views pinned in their loading state for good.
@@ -670,6 +683,7 @@ extension MeshtasticAPI {
 		let bundledData = try Self.bundledDeviceHardwareData()
 		let decodedDevices = try decoder.decode([DeviceHardware].self, from: bundledData)
 		try await MainActor.run {
+			guard let container = self.currentContainer else { return }
 			let context = container.mainContext
 			for device in decodedDevices {
 				let target = device.platformioTarget
@@ -767,7 +781,7 @@ extension MeshtasticAPI {
 	/// a fetch per platform racing to claim the row; now it is one fetch attached to the first
 	/// device in catalog order.
 	private func refreshDeviceImagesAndLinks(apiDevices: [DeviceHardware]?) async {
-		guard let container = await currentContainer else { return }
+		guard await currentContainer != nil else { return }
 
 		// Bail before claiming a throttle token if the connection already tore down. closeConnection
 		// cancels the Step 3b task that runs this pass; returning here leaves the throttle un-armed so
@@ -831,9 +845,14 @@ extension MeshtasticAPI {
 			return
 		}
 		await MainActor.run {
+			guard let container = self.currentContainer else { return }
 			let context = container.mainContext
 			Self.deleteOrphanedImages(context: context)
-			try? context.coordinatedSave()
+			do {
+				try context.coordinatedSave()
+			} catch {
+				Logger.services.error("Orphaned image cleanup failed: \(error.localizedDescription, privacy: .public)")
+			}
 		}
 		await importDeviceLinks()
 		// Mark the pass complete so the next reconnect within the window skips the network. Recorded
@@ -970,8 +989,9 @@ extension MeshtasticAPI {
 	/// deletes an edition cached from a prior successful API refresh. Called with a non-empty
 	/// list from both paths; the caller guarantees an empty/failed fetch never reaches here.
 	private func importEventEditions(_ editions: [EventFirmwarePayload], pruneMissing: Bool) async {
-		guard let container = await currentContainer else { return }
+		guard await currentContainer != nil else { return }
 		await MainActor.run {
+			guard let container = self.currentContainer else { return }
 			let context = container.mainContext
 			let importedKeys = Set(editions.map { $0.edition })
 
@@ -1026,7 +1046,11 @@ extension MeshtasticAPI {
 				}
 			}
 
-			try? context.coordinatedSave()
+			do {
+				try context.coordinatedSave()
+			} catch {
+				Logger.services.error("Event firmware save failed: \(error.localizedDescription, privacy: .public)")
+			}
 		}
 	}
 }

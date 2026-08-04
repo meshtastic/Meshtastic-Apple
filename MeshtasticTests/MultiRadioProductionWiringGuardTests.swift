@@ -62,6 +62,27 @@ struct MultiRadioProductionWiringGuardTests {
 		#expect(tak.contains("modelContainer = context?.container"))
 	}
 
+	@Test("suspended writers resolve the active store before mutation")
+	func suspendedWritersRevalidatePersistence() throws {
+		let api = try source("Meshtastic/API/MeshtasticAPI.swift")
+		#expect(!api.contains("guard let container = await currentContainer"))
+		let databasePhaseGuard = "guard let container = self.currentContainer else"
+		#expect(
+			api.components(separatedBy: databasePhaseGuard).count - 1 == 8,
+			"Every API database phase must resolve the selected container after suspension"
+		)
+		#expect(!api.contains("try? context.coordinatedSave()"))
+
+		let security = try source("Meshtastic/Views/Settings/Config/SecurityConfig.swift")
+		#expect(security.contains("try Task.checkCancellation()"))
+		#expect(security.contains("selectedStoreKey == PersistenceController.shared.activeRadioStoreKey"))
+		#expect(security.contains("let activeContext = accessoryManager.context"))
+
+		let channels = try source("Meshtastic/Views/Messages/ChannelList.swift")
+		#expect(channels.contains("channel.mute = originalMute"))
+		#expect(channels.contains("ContainerWriteAccessDirectory.shared.registration(for: context.container)"))
+	}
+
 	@Test("stored contexts do not capture the persistence singleton directly")
 	func storedContextsAvoidDirectSingletonCapture() throws {
 		let repositoryRoot = URL(fileURLWithPath: #filePath)
