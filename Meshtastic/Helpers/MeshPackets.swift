@@ -141,7 +141,6 @@ actor MeshPackets {
 	/// top-level packet handler to batch all mutations from a single packet into one write.
 	func commitModelContextChanges() throws {
 		guard !invalidated else {
-			modelContext.rollback()
 			throw ContainerLeaseError.stale
 		}
 
@@ -149,7 +148,9 @@ actor MeshPackets {
 		do {
 			writePermit = try writeAccess?.beginWrite()
 		} catch {
-			modelContext.rollback()
+			if error as? ContainerLeaseError == .transitioning {
+				modelContext.rollback()
+			}
 			throw error
 		}
 		defer { writePermit?.finish() }
@@ -159,7 +160,6 @@ actor MeshPackets {
 	@discardableResult
 	func savePendingChanges(caller: String = #function) -> Bool {
 		guard !invalidated else {
-			modelContext.rollback()
 			Logger.data.warning("💾 [\(caller, privacy: .public)] Dropped save on retired MeshPackets instance")
 			return false
 		}

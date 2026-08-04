@@ -132,7 +132,17 @@ struct RadioStoreCoordinatorTests {
 	func backupRestoreRejectsWrongIdentity() async throws {
 		let fixture = try makeFixture()
 		let device = bleDevice("AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA")
-		_ = try await confirm(device, deviceID: deviceA, nodeNum: 100, coordinator: fixture.coordinator)
+		let profileID = try await confirm(
+			device,
+			deviceID: deviceA,
+			nodeNum: 100,
+			coordinator: fixture.coordinator
+		)
+		let selectedStoreKey = fixture.controller.activeRadioStoreKey
+		let existingNode = NodeInfoEntity()
+		existingNode.num = 777
+		fixture.controller.context.insert(existingNode)
+		try fixture.controller.context.coordinatedSave()
 
 		await #expect(throws: RadioStoreCoordinator.CoordinationError.backupIdentityMissing) {
 			_ = try await fixture.coordinator.prepareForBackupRestore(
@@ -146,6 +156,13 @@ struct RadioStoreCoordinatorTests {
 				expectedDeviceID: deviceB
 			)
 		}
+
+		#expect(fixture.controller.activeRadioStoreKey == selectedStoreKey)
+		#expect(try fixture.controller.context.fetch(FetchDescriptor<NodeInfoEntity>()).map(\.num) == [777])
+		let metadata = try #require(
+			try fixture.controller.context.fetch(FetchDescriptor<RadioRegistryMetadataEntity>()).first
+		)
+		#expect(metadata.selectedProfileID == profileID)
 	}
 
 	@Test("reassigned TCP alias is quarantined before radio data is written")

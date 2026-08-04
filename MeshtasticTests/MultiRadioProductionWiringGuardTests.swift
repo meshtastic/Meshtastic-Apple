@@ -28,7 +28,16 @@ struct MultiRadioProductionWiringGuardTests {
 		let managerSource = try source(
 			"Meshtastic/Accessory/Accessory Manager/AccessoryManager.swift"
 		)
-		#expect(managerSource.contains("guard await handleMyInfo(myNodeInfo) else { return }"))
+		#expect(managerSource.contains("guard await handleMyInfo(myNodeInfo) else {"))
+		#expect(managerSource.contains("Task { try? await self.closeConnection() }"))
+		#expect(ingestSource.contains("if previousStoreKey != PersistenceController.shared.activeRadioStoreKey"))
+
+		let switchSource = try source("Meshtastic/Views/Connect/Connect.swift")
+		let switchStart = try #require(switchSource.range(of: "func switchToDevice("))
+		let switchFlow = switchSource[switchStart.lowerBound...]
+		let connect = try #require(switchFlow.range(of: "try await accessoryManager.connect(to: device"))
+		let completion = try #require(switchFlow.range(of: "onRestoreComplete?()"))
+		#expect(connect.lowerBound < completion.lowerBound)
 	}
 
 	@Test("long-lived contexts retain containers and rebind after selection")
@@ -46,6 +55,9 @@ struct MultiRadioProductionWiringGuardTests {
 
 		let discovery = try source("Meshtastic/Services/DiscoveryScanEngine.swift")
 		#expect(discovery.contains("modelContainer = modelContext.container"))
+		let api = try source("Meshtastic/API/MeshtasticAPI.swift")
+		#expect(api.contains("private let containerProvider: @MainActor () -> ModelContainer?"))
+		#expect(api.contains("MeshtasticAPI(containerProvider: { PersistenceController.shared.container })"))
 		let tak = try source("Meshtastic/Helpers/TAK/TAKMeshtasticBridge.swift")
 		#expect(tak.contains("modelContainer = context?.container"))
 	}
@@ -59,19 +71,22 @@ struct MultiRadioProductionWiringGuardTests {
 		let pattern = #"(?:private(?:\(set\))?\s+var|(?:private\s+)?lazy\s+var)\s+\w+(?:\s*:\s*ModelContext)?\s*=\s*PersistenceController\.shared(?:\.context|\.container\.mainContext)"#
 		let expression = try NSRegularExpression(pattern: pattern)
 		var violations: [String] = []
-		let enumerator = FileManager.default.enumerator(
+		var scannedFileCount = 0
+		let enumerator = try #require(FileManager.default.enumerator(
 			at: sourceRoot,
 			includingPropertiesForKeys: [.isRegularFileKey],
 			options: [.skipsHiddenFiles]
-		)
-		while let fileURL = enumerator?.nextObject() as? URL {
+		))
+		while let fileURL = enumerator.nextObject() as? URL {
 			guard fileURL.pathExtension == "swift" else { continue }
+			scannedFileCount += 1
 			let contents = try String(contentsOf: fileURL, encoding: .utf8)
 			let range = NSRange(contents.startIndex..<contents.endIndex, in: contents)
 			if expression.firstMatch(in: contents, range: range) != nil {
 				violations.append(fileURL.lastPathComponent)
 			}
 		}
+		#expect(scannedFileCount > 0, "No runtime Swift files were scanned")
 		#expect(violations.isEmpty, "Stored contexts captured PersistenceController.shared directly: \(violations)")
 	}
 

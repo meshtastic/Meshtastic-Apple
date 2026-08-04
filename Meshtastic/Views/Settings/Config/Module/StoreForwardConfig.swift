@@ -101,6 +101,7 @@ struct StoreForwardConfig: View {
 						try context.coordinatedSave()
 					} catch {
 						Logger.mesh.error("Failed to save isServer: \(error.localizedDescription, privacy: .public)")
+						return
 					}
 				}
 				performConfigSave(

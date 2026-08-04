@@ -806,7 +806,11 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		// also covers firmware that sends another payload before MyInfo.
 		if !identityConfirmedForConnection {
 			if case .myInfo(let myNodeInfo) = decodedInfo.payloadVariant {
-				guard await handleMyInfo(myNodeInfo) else { return }
+				guard await handleMyInfo(myNodeInfo) else {
+					packetsPendingIdentity.removeAll(keepingCapacity: true)
+					Task { try? await self.closeConnection() }
+					return
+				}
 				identityConfirmedForConnection = true
 				let pending = packetsPendingIdentity
 				packetsPendingIdentity.removeAll(keepingCapacity: true)

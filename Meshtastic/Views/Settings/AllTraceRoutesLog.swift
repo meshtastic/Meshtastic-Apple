@@ -125,12 +125,13 @@ struct AllTraceRoutesLog: View {
 	}
 
 	private func delete(_ route: TraceRouteEntity) {
-		if selectedRouteID == route.persistentModelID {
-			selectedRouteID = nil
-		}
+		let deletedSelection = selectedRouteID == route.persistentModelID
 		context.delete(route)
 		do {
 			try context.coordinatedSave()
+			if deletedSelection {
+				selectedRouteID = nil
+			}
 		} catch let error as NSError {
 			Logger.data.error("\(error.localizedDescription, privacy: .public)")
 		}

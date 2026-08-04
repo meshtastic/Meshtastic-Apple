@@ -6,6 +6,7 @@
 //  Copyright(c) Garth Vander Houwen 2026.
 //
 
+import OSLog
 import SwiftData
 import SwiftUI
 
@@ -45,7 +46,11 @@ struct DiscoveryHistoryView: View {
 					.contextMenu {
 						Button(role: .destructive) {
 							context.delete(session)
-							try? context.coordinatedSave()
+							do {
+								try context.coordinatedSave()
+							} catch {
+								Logger.data.error("Failed to delete discovery session: \(error.localizedDescription, privacy: .public)")
+							}
 						} label: {
 							Label("Delete", systemImage: "trash")
 						}
@@ -123,7 +128,11 @@ struct DiscoveryHistoryView: View {
 		for index in offsets {
 			context.delete(sessions[index])
 		}
-		try? context.coordinatedSave()
+		do {
+			try context.coordinatedSave()
+		} catch {
+			Logger.data.error("Failed to delete discovery sessions: \(error.localizedDescription, privacy: .public)")
+		}
 	}
 
 	// MARK: - Helpers

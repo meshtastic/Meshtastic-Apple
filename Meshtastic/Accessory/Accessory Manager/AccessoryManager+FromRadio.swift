@@ -120,6 +120,11 @@ extension AccessoryManager {
 				return false
 			}
 		} catch {
+			// Selection installs the new container before persisting registry metadata. If that
+			// final write fails, the manager must still release its retired context.
+			if previousStoreKey != PersistenceController.shared.activeRadioStoreKey {
+				bindAfterRadioStoreSelection()
+			}
 			lastConnectionError = error
 			Logger.data.error("💾 [Database] Aborting MyInfo ingest because store selection failed: \(error.localizedDescription, privacy: .public)")
 			return false

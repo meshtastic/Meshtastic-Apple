@@ -144,16 +144,15 @@ struct ChannelList: View {
 				}
 				Button {
 					channel.mute.toggle()
+					do {
+						try context.coordinatedSave()
+					} catch {
+						Logger.data.error("💥 Save Channel Mute Error")
+						return
+					}
 					Task {
 						do {
 							_ = try await accessoryManager.saveChannel(channel: channel.protoBuf, fromUser: node.user!, toUser: node.user!)
-							Task { @MainActor in
-								do {
-									try context.coordinatedSave()
-								} catch {
-									Logger.data.error("💥 Save Channel Mute Error")
-								}
-							}
 						} catch {
 							Logger.mesh.error("Unable to save channel")
 						}

@@ -104,6 +104,43 @@ struct NodeBackupManagerTests {
 		#expect(index.entries[1]?.deviceID == nil)
 	}
 
+	@Test("legacy index stays version 1 while identity-less entries remain")
+	@MainActor
+	func legacyBackupIndexPreservesVersionOnSave() throws {
+		let tempDir = try makeTempDir()
+		defer { cleanup(tempDir) }
+		let backupDir = tempDir.appendingPathComponent("Backups", isDirectory: true)
+		try FileManager.default.createDirectory(at: backupDir, withIntermediateDirectories: true)
+
+		var index = BackupIndex(version: 1)
+		for nodeNum: Int64 in [1, 2] {
+			let path = "\(nodeNum)"
+			let directory = backupDir.appendingPathComponent(path, isDirectory: true)
+			try createFakeDatabase(at: directory)
+			index.entries[nodeNum] = BackupEntry(
+				nodeNum: nodeNum,
+				nodeName: "Legacy",
+				createdAt: .distantPast,
+				fileSize: 10,
+				checksum: "abc",
+				backupPath: path
+			)
+		}
+		try JSONEncoder().encode(index).write(
+			to: backupDir.appendingPathComponent("backup-index.json")
+		)
+
+		let manager = NodeBackupManager(baseURL: backupDir)
+		#expect(manager.deleteBackup(forNode: 2))
+
+		let saved = try JSONDecoder().decode(
+			BackupIndex.self,
+			from: Data(contentsOf: backupDir.appendingPathComponent("backup-index.json"))
+		)
+		#expect(saved.version == 1)
+		#expect(saved.entries[1]?.deviceID == nil)
+	}
+
 	// MARK: - T010: createBackup Success Case
 
 	@Test("createBackup creates file copy and updates index")
@@ -149,6 +186,44 @@ struct NodeBackupManagerTests {
 		case .noBackupFound:
 			Issue.record("createBackup should not return noBackupFound")
 		}
+	}
+
+	@Test("createBackup without canonical identity preserves an existing backup")
+	@MainActor
+	func backupWithoutIdentityFailsBeforeReplacement() async throws {
+		let tempDir = try makeTempDir()
+		defer { cleanup(tempDir) }
+
+		let sourceURL = try createFakeDatabase(
+			at: tempDir.appendingPathComponent("ActiveDB", isDirectory: true)
+		)
+		let backupDir = tempDir.appendingPathComponent("Backups", isDirectory: true)
+		let existingDirectory = backupDir.appendingPathComponent("12345", isDirectory: true)
+		let existingStore = try createFakeDatabase(at: existingDirectory, content: "existing-backup")
+		let entry = BackupEntry(
+			nodeNum: 12345,
+			nodeName: "Existing",
+			createdAt: .distantPast,
+			fileSize: 15,
+			checksum: "abc",
+			backupPath: "12345"
+		)
+		try writeIndex(entry: entry, to: backupDir)
+		let manager = NodeBackupManager(
+			baseURL: backupDir,
+			activeDatabaseURL: sourceURL,
+			canonicalDeviceID: "unknown",
+			compactsBackups: false
+		)
+
+		let result = await manager.createBackup(forNode: 12345, nodeName: "No Identity")
+
+		guard case .skipped(let reason) = result else {
+			Issue.record("Backup without canonical identity should fail")
+			return
+		}
+		#expect(reason.contains("Connect to this radio"))
+		#expect(try String(contentsOf: existingStore, encoding: .utf8) == "existing-backup")
 	}
 
 	// MARK: - T011: createBackup Overwrite Case

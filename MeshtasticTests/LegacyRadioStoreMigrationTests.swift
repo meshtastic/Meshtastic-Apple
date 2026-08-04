@@ -58,6 +58,11 @@ struct LegacyRadioStoreMigrationTests {
 		#expect(routes.first?.locations.map(\.latitudeI) == [123456789])
 	}
 
+	@Test("store publication writes the main database after its sidecars")
+	func publishesMainStoreLast() {
+		#expect(LegacyRadioStoreMigrator.publicationSuffixes == ["-wal", "-shm", ""])
+	}
+
 	@Test("completed migration is idempotent")
 	func completedMigrationIsIdempotent() throws {
 		let directory = try makeTemporaryDirectory()
@@ -84,6 +89,119 @@ struct LegacyRadioStoreMigrationTests {
 		#expect(second == first)
 		#expect(try registryContainer.mainContext.fetch(FetchDescriptor<RouteEntity>()).count == 1)
 		#expect(try registryContainer.mainContext.fetch(FetchDescriptor<RadioProfileEntity>()).count == 1)
+	}
+
+	@Test("completed migration remains tied to the migrated profile after radio selection changes")
+	func completedMigrationUsesStableProfile() throws {
+		let directory = try makeTemporaryDirectory()
+		defer { try? FileManager.default.removeItem(at: directory) }
+
+		let legacyStoreURL = directory.appendingPathComponent("Meshtastic.store")
+		let radioStoreDirectory = directory.appendingPathComponent("RadioStores", isDirectory: true)
+		try makeLegacyFixture(at: legacyStoreURL)
+		let registryContainer = try RadioRegistryController.makeContainer(
+			url: directory.appendingPathComponent("RadioRegistry.store")
+		)
+		let first = try LegacyRadioStoreMigrator.migrate(
+			legacyStoreURL: legacyStoreURL,
+			radioStoreDirectory: radioStoreDirectory,
+			registryContainer: registryContainer
+		)
+		let otherProfile = RadioProfileEntity(
+			deviceID: "ffeeddccbbaa99887766554433221100",
+			nodeNum: 99
+		)
+		registryContainer.mainContext.insert(otherProfile)
+		let metadata = try #require(
+			try registryContainer.mainContext.fetch(FetchDescriptor<RadioRegistryMetadataEntity>()).first
+		)
+		metadata.selectedProfileID = otherProfile.id
+		try registryContainer.mainContext.save()
+
+		let resumed = try LegacyRadioStoreMigrator.migrate(
+			legacyStoreURL: legacyStoreURL,
+			radioStoreDirectory: radioStoreDirectory,
+			registryContainer: registryContainer
+		)
+
+		#expect(resumed == first)
+		#expect(metadata.selectedProfileID == otherProfile.id)
+	}
+
+	@Test("started migration without a peripheral reuses its profile on retry")
+	func noPeripheralMigrationRetryReusesProfile() throws {
+		let directory = try makeTemporaryDirectory()
+		defer { try? FileManager.default.removeItem(at: directory) }
+
+		let legacyStoreURL = directory.appendingPathComponent("Meshtastic.store")
+		let radioStoreDirectory = directory.appendingPathComponent("RadioStores", isDirectory: true)
+		try makeLegacyFixture(at: legacyStoreURL)
+		var legacyContainer: ModelContainer? = try makeLegacyContainer(at: legacyStoreURL)
+		let myInfo = try #require(
+			try legacyContainer?.mainContext.fetch(FetchDescriptor<MyInfoEntity>()).first
+		)
+		myInfo.peripheralId = nil
+		try legacyContainer?.mainContext.save()
+		legacyContainer = nil
+
+		let registryContainer = try RadioRegistryController.makeContainer(
+			url: directory.appendingPathComponent("RadioRegistry.store")
+		)
+		let profile = RadioProfileEntity(
+			deviceID: "00112233445566778899aabbccddeeff",
+			nodeNum: 42
+		)
+		let metadata = RadioRegistryMetadataEntity()
+		metadata.legacyMigrationProfileID = profile.id
+		metadata.legacyMigrationStartedAt = .distantPast
+		registryContainer.mainContext.insert(profile)
+		registryContainer.mainContext.insert(metadata)
+		try registryContainer.mainContext.save()
+
+		let result = try LegacyRadioStoreMigrator.migrate(
+			legacyStoreURL: legacyStoreURL,
+			radioStoreDirectory: radioStoreDirectory,
+			registryContainer: registryContainer
+		)
+
+		#expect(result.profileID == profile.id)
+		#expect(try registryContainer.mainContext.fetch(FetchDescriptor<RadioProfileEntity>()).count == 1)
+	}
+
+	@Test("legacy migration rejects a quarantined matching profile")
+	func quarantinedProfileIsNotMigrationTarget() throws {
+		let directory = try makeTemporaryDirectory()
+		defer { try? FileManager.default.removeItem(at: directory) }
+
+		let legacyStoreURL = directory.appendingPathComponent("Meshtastic.store")
+		try makeLegacyFixture(at: legacyStoreURL)
+		var legacyContainer: ModelContainer? = try makeLegacyContainer(at: legacyStoreURL)
+		let myInfo = try #require(
+			try legacyContainer?.mainContext.fetch(FetchDescriptor<MyInfoEntity>()).first
+		)
+		myInfo.peripheralId = nil
+		try legacyContainer?.mainContext.save()
+		legacyContainer = nil
+
+		let registryContainer = try RadioRegistryController.makeContainer(
+			url: directory.appendingPathComponent("RadioRegistry.store")
+		)
+		let profile = RadioProfileEntity(
+			deviceID: "00112233445566778899aabbccddeeff",
+			nodeNum: 42
+		)
+		profile.quarantineReason = "Conflicting identity"
+		registryContainer.mainContext.insert(profile)
+		try registryContainer.mainContext.save()
+
+		#expect(throws: (any Error).self) {
+			_ = try LegacyRadioStoreMigrator.migrate(
+				legacyStoreURL: legacyStoreURL,
+				radioStoreDirectory: directory.appendingPathComponent("RadioStores", isDirectory: true),
+				registryContainer: registryContainer
+			)
+		}
+		#expect(FileManager.default.fileExists(atPath: legacyStoreURL.path))
 	}
 
 	@Test("preexisting backup is never overwritten")

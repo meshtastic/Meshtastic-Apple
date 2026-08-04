@@ -508,13 +508,6 @@ struct PositionConfig: View {
 			Logger.mesh.error("Set Position Failed — no live user for connected node")
 			return
 		}
-		Task {
-			do {
-				try await accessoryManager.setFixedPosition(fromUser: user, channel: 0)
-			} catch {
-				Logger.mesh.error("Set Position Failed")
-			}
-		}
 		node?.positionConfig?.fixedPosition = true
 		do {
 			try context.coordinatedSave()
@@ -522,6 +515,14 @@ struct PositionConfig: View {
 		} catch {
 			let nsError = error as NSError
 			Logger.data.error("Error Saving Position Config Entity \(nsError, privacy: .public)")
+			return
+		}
+		Task {
+			do {
+				try await accessoryManager.setFixedPosition(fromUser: user, channel: 0)
+			} catch {
+				Logger.mesh.error("Set Position Failed")
+			}
 		}
 	}
 	
@@ -533,13 +534,6 @@ struct PositionConfig: View {
 			Logger.mesh.error("Remove Fixed Position Failed — no live user for connected node")
 			return
 		}
-		Task {
-			do {
-				try await accessoryManager.removeFixedPosition(fromUser: user, channel: 0)
-			} catch {
-				Logger.mesh.error("Remove Fixed Position Failed")
-			}
-		}
 		node?.positions = []
 		node?.positionConfig?.fixedPosition = false
 		do {
@@ -548,6 +542,14 @@ struct PositionConfig: View {
 		} catch {
 			let nsError = error as NSError
 			Logger.data.error("Error Saving Position Config Entity \(nsError, privacy: .public)")
+			return
+		}
+		Task {
+			do {
+				try await accessoryManager.removeFixedPosition(fromUser: user, channel: 0)
+			} catch {
+				Logger.mesh.error("Remove Fixed Position Failed")
+			}
 		}
 	}
 }

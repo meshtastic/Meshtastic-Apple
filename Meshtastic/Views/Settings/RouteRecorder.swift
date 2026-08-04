@@ -197,6 +197,8 @@ struct RouteRecorder: View {
 											try context.coordinatedSave()
 											Logger.data.info("💾 Saved a new route")
 										} catch {
+											locationsHandler.isRecording = false
+											self.recording = nil
 											let nsError = error as NSError
 											Logger.data.error("Error Saving RouteEntity from the Route Recorder \(nsError, privacy: .public)")
 										}

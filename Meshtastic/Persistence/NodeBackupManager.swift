@@ -81,15 +81,17 @@ final class NodeBackupManager: NodeBackupManaging {
 	private static func loadIndex(from baseURL: URL) -> BackupIndex {
 		let indexURL = baseURL.appendingPathComponent(indexFileName)
 		guard let data = try? Data(contentsOf: indexURL),
-			  var index = try? JSONDecoder().decode(BackupIndex.self, from: data) else {
+			  let index = try? JSONDecoder().decode(BackupIndex.self, from: data) else {
 			return BackupIndex()
 		}
-		index.version = BackupIndex.currentVersion
 		return index
 	}
 
 	private func saveIndex() {
 		let indexURL = backupBaseURL.appendingPathComponent(Self.indexFileName)
+		if backupIndex.entries.values.allSatisfy({ $0.deviceID != nil }) {
+			backupIndex.version = BackupIndex.currentVersion
+		}
 		backupIndex.lastModified = .now
 		guard let data = try? JSONEncoder().encode(backupIndex) else {
 			Logger.backup.error("Failed to encode backup index")
@@ -195,20 +197,21 @@ final class NodeBackupManager: NodeBackupManaging {
 	}
 
 	private func performBackup(forNode nodeNum: Int64, nodeName: String?) async throws -> BackupEntry {
+		guard let sourceURL = self.activeDatabaseURL() else {
+			throw CocoaError(.fileNoSuchFile)
+		}
+		guard let canonicalDeviceID = canonicalDeviceID(forNode: nodeNum) else {
+			throw BackupError.identityMissing
+		}
+
 		let nodeDirName = "\(nodeNum)"
 		let nodeBackupDir = backupBaseURL.appendingPathComponent(nodeDirName, isDirectory: true)
 
-		// Create or clean destination directory
+		// Resolve the source and canonical identity before replacing an older good backup.
 		if fileManager.fileExists(atPath: nodeBackupDir.path) {
 			try fileManager.removeItem(at: nodeBackupDir)
 		}
 		try fileManager.createDirectory(at: nodeBackupDir, withIntermediateDirectories: true)
-
-		// Get source database path
-		guard let sourceURL = self.activeDatabaseURL() else {
-			throw CocoaError(.fileNoSuchFile)
-		}
-		let canonicalDeviceID = canonicalDeviceID(forNode: nodeNum)
 
 		// Copy files on background thread
 		let fileSize = try await Task.detached(priority: .userInitiated) { [fileManager] in
@@ -568,6 +571,7 @@ private extension NodeBackupManager {
 enum BackupError: Error, LocalizedError {
 	case checksumMismatch
 	case fileNotFound
+	case identityMissing
 	case insufficientStorage
 
 	var errorDescription: String? {
@@ -576,6 +580,8 @@ enum BackupError: Error, LocalizedError {
 			return "Backup file integrity check failed"
 		case .fileNotFound:
 			return "Backup file not found"
+		case .identityMissing:
+			return "Connect to this radio before creating a backup"
 		case .insufficientStorage:
 			return "Insufficient storage for backup"
 		}

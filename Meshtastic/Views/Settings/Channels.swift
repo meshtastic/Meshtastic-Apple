@@ -274,6 +274,7 @@ struct Channels: View {
 							} catch {
 								let nsError = error as NSError
 								Logger.data.error("Unresolved Core Data error in the channel editor. Error: \(nsError, privacy: .public)")
+								return
 							}
 						} else {
 							let objects = selectedChannel?.allPrivateMessages ?? []
@@ -297,6 +298,7 @@ struct Channels: View {
 							} catch {
 								let nsError = error as NSError
 								Logger.data.error("Unresolved Core Data error in the channel editor. Error: \(nsError, privacy: .public)")
+								return
 							}
 						}
 						Task {

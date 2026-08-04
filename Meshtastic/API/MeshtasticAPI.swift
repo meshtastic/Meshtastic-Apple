@@ -163,7 +163,7 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 			return MeshtasticAPI(container: nil)
 		}
 #endif
-		return MeshtasticAPI(container: MainActor.assumeIsolated { PersistenceController.shared.container })
+		return MeshtasticAPI(containerProvider: { PersistenceController.shared.container })
 	}()
 	
 	// MARK: - Constants
@@ -182,7 +182,11 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 	// MARK: - Private properties
 	private let fileManager = FileManager.default
 	private let decoder = JSONDecoder()
-	private let container: ModelContainer?
+	private let containerProvider: @MainActor () -> ModelContainer?
+
+	@MainActor private var currentContainer: ModelContainer? {
+		containerProvider()
+	}
 	
 	@Published var isLoadingDeviceList: Bool = false
 	@Published var isLoadingFirmwareList: Bool = false
@@ -211,8 +215,21 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 	// `startupRefresh: false` suppresses the launch refresh cascade below so a test can call a
 	// single refresh function in isolation without the detached startup work racing it.
 	init(container: ModelContainer?, startupRefresh: Bool = true) {
-		self.container = container
+		containerProvider = { container }
 		guard container != nil, startupRefresh else { return }
+		startRefresh()
+	}
+
+	init(
+		containerProvider: @escaping @MainActor () -> ModelContainer?,
+		startupRefresh: Bool = true
+	) {
+		self.containerProvider = containerProvider
+		guard startupRefresh else { return }
+		startRefresh()
+	}
+
+	private func startRefresh() {
 		Task.detached {
 			// Load bundled catalog first — instant display, no network needed.
 			try? await self.refreshBundledDevicesData()
@@ -234,7 +251,7 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 	func refreshFirmwareAPIData() async throws {
 		// No container in seed/test mode — the DB-backed API is intentionally disabled there
 		// (see the singleton init), so skip rather than force-unwrap a nil container.
-		guard let container else { return }
+		guard let container = await currentContainer else { return }
 		await MainActor.run {
 			self.isLoadingFirmwareList = true
 		}
@@ -292,7 +309,7 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 	}
 
 	func refreshDevicesAPIData() async throws {
-		guard let container else { return }
+		guard let container = await currentContainer else { return }
 		// No spinner bookkeeping here: this function raises no loading flag of its own, and the
 		// image/link pass it delegates to in PHASE 3 manages the flag around its own lifetime.
 		// Clearing it here would lower a flag a concurrent seed still needs raised.
@@ -367,7 +384,7 @@ deviceEntity.architecture = device.architecture
 
 	/// Import the msh.to URL catalog into `DeviceLinkEntity` records.
 	private func importDeviceLinks() async {
-		guard let container else { return }
+		guard let container = await currentContainer else { return }
 		guard let decoded = await loadMshToUrls() else {
 			Logger.services.warning("Unable to load msh.to urls (API and bundled fallback both failed)")
 			return
@@ -496,7 +513,7 @@ deviceEntity.architecture = device.architecture
 	
 	/// Handles the logic of checking ETag -> Checking DB -> Downloading -> Bundle Fallback -> Saving
 	private func processImage(imageName: String, platform: String ) async {
-		guard let container else { return }
+		guard let container = await currentContainer else { return }
 		// Skip if the pass was cancelled (connection teardown) — don't even do the bundle fallback.
 		if Task.isCancelled { return }
 		let url = Self.imageURLPrefix.appendingPathComponent(imageName)
@@ -645,7 +662,7 @@ extension MeshtasticAPI {
 	/// restarts the whole connect when it is exceeded. Device images and the msh.to link catalog
 	/// are network-backed and live in `refreshDeviceImagesAndLinks()`; keep them out of here.
 	func refreshBundledDevicesData() async throws {
-		guard let container else { return }
+		guard let container = await currentContainer else { return }
 		await beginDeviceListLoad()
 		// Clear on every exit, not just the happy path: a failed bundle read, decode, or save
 		// would otherwise leave the hardware views pinned in their loading state for good.
@@ -750,7 +767,7 @@ extension MeshtasticAPI {
 	/// a fetch per platform racing to claim the row; now it is one fetch attached to the first
 	/// device in catalog order.
 	private func refreshDeviceImagesAndLinks(apiDevices: [DeviceHardware]?) async {
-		guard let container else { return }
+		guard let container = await currentContainer else { return }
 
 		// Bail before claiming a throttle token if the connection already tore down. closeConnection
 		// cancels the Step 3b task that runs this pass; returning here leaves the throttle un-armed so
@@ -895,7 +912,7 @@ extension MeshtasticAPI {
 	/// updates it in the background). Never throws — a missing/corrupt bundle is logged and
 	/// leaves any existing cache intact.
 	func refreshBundledEventFirmwareData() async {
-		guard container != nil else { return }
+		guard await currentContainer != nil else { return }
 		guard let bundledURL = Bundle.main.url(forResource: "event_firmware", withExtension: "json"),
 			  let data = try? Data(contentsOf: bundledURL),
 			  let decoded = try? decoder.decode(EventFirmwareFile.self, from: data) else {
@@ -919,7 +936,7 @@ extension MeshtasticAPI {
 	/// plus stale-while-revalidate. An empty or failed response is a **no-op** — it must leave
 	/// the existing cache intact, never wipe it.
 	func refreshEventFirmwareAPIData() async {
-		guard container != nil else { return }
+		guard await currentContainer != nil else { return }
 
 		var request = URLRequest(url: Self.eventFirmwareURLEndpoint)
 		// No short local timeout — see the doc comment above. Revalidate against the server
@@ -953,7 +970,7 @@ extension MeshtasticAPI {
 	/// deletes an edition cached from a prior successful API refresh. Called with a non-empty
 	/// list from both paths; the caller guarantees an empty/failed fetch never reaches here.
 	private func importEventEditions(_ editions: [EventFirmwarePayload], pruneMissing: Bool) async {
-		guard let container else { return }
+		guard let container = await currentContainer else { return }
 		await MainActor.run {
 			let context = container.mainContext
 			let importedKeys = Set(editions.map { $0.edition })

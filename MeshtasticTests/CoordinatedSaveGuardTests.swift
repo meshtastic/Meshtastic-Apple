@@ -36,15 +36,17 @@ struct CoordinatedSaveGuardTests {
 		let sourceRoot = repositoryRoot.appendingPathComponent("Meshtastic", isDirectory: true)
 		let expression = try NSRegularExpression(pattern: rawModelContextSavePattern)
 		var violations: [String] = []
+		var scannedFileCount = 0
 
-		let enumerator = FileManager.default.enumerator(
+		let enumerator = try #require(FileManager.default.enumerator(
 			at: sourceRoot,
 			includingPropertiesForKeys: [.isRegularFileKey],
 			options: [.skipsHiddenFiles]
-		)
-		while let fileURL = enumerator?.nextObject() as? URL {
+		))
+		while let fileURL = enumerator.nextObject() as? URL {
 			guard fileURL.pathExtension == "swift",
 			      !fileURL.pathComponents.contains("Resources") else { continue }
+			scannedFileCount += 1
 			let contents = try String(contentsOf: fileURL, encoding: .utf8)
 			for (index, line) in contents.split(separator: "\n", omittingEmptySubsequences: false).enumerated() {
 				let text = String(line)
@@ -62,6 +64,7 @@ struct CoordinatedSaveGuardTests {
 			}
 		}
 
+		#expect(scannedFileCount > 0, "No runtime Swift files were scanned")
 		#expect(
 			violations.isEmpty,
 			"Raw ModelContext saves bypass the container coordinator: \(violations.joined(separator: ", "))"

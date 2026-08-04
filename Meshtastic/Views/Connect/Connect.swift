@@ -1241,7 +1241,6 @@ func switchToDevice(
 	}
 
 	appState.router.selectedTab = .connect
-	onRestoreComplete?()
 
 	// 8. Clear notifications and connect to new device
 	clearNotifications()
@@ -1251,6 +1250,7 @@ func switchToDevice(
 	} catch {
 		Logger.backup.error("💾 Failed to connect to target: \(error.localizedDescription, privacy: .public)")
 	}
+	onRestoreComplete?()
 }
 
 // MARK: - Nymea (mPWRD-OS) discovery row

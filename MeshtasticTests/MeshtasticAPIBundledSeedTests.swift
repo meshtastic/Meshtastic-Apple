@@ -184,6 +184,24 @@ final class MeshtasticAPIBundledSeedTests {
 		#expect(links.isEmpty, "the bundled seed must not import msh.to links — that is the network pass's job")
 	}
 
+	@Test @MainActor func bundledSeedResolvesLatestProvidedContainer() async throws {
+		let retiredContainer = try makeContainer()
+		let activeContainer = try makeContainer()
+		var providedContainer = retiredContainer
+		let api = MeshtasticAPI(
+			containerProvider: { providedContainer },
+			startupRefresh: false
+		)
+		providedContainer = activeContainer
+
+		try await api.refreshBundledDevicesData()
+
+		let retiredDevices = try retiredContainer.mainContext.fetch(FetchDescriptor<DeviceHardwareEntity>())
+		let activeDevices = try activeContainer.mainContext.fetch(FetchDescriptor<DeviceHardwareEntity>())
+		#expect(retiredDevices.isEmpty)
+		#expect(!activeDevices.isEmpty)
+	}
+
 	private func imageRequests(from urls: [URL]) -> [String] {
 		urls.map(\.absoluteString).filter { $0.contains("/img/devices/") }
 	}

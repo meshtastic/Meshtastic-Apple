@@ -271,43 +271,39 @@ struct SecurityConfig: View {
 					config.debugLogApiEnabled = debugLogApiEnabled
 					
 					let keyUpdated = node?.securityConfig?.privateKey?.base64EncodedString() ?? "" != privateKey
-					Task {
-						_ = try await accessoryManager.saveSecurityConfig(
-							config: config,
-							fromUser: fromUser,
-							toUser: toUser
-						)
-						Task { @MainActor in
-							// Should show a saved successfully alert once I know that to be true
-							// for now just disable the button after a successful save
-							if keyUpdated {
-								// This is the *local* node's own keypair being changed deliberately by the user in the
-								// Security config screen (gated behind `keyUpdated` + an explicit save), not an inbound
-								// mesh key — so the first-wins protection doesn't apply. `keyMatch`/`newPublicKey` track
-								// *remote* contacts' keys, so they are intentionally left untouched here.
-								node?.user?.publicKey = Data(base64Encoded: publicKey) ?? Data()
-								do {
-									try context.coordinatedSave()
-									Logger.data.info("💾 Saved UserEntity Public Key to Core Data for \(node?.num ?? 0, privacy: .public)")
-								} catch {
-									let nsError = error as NSError
-									Logger.data.error("Error Updating UserEntity: \(nsError, privacy: .public)")
-								}
+					Task { @MainActor in
+						do {
+							_ = try await accessoryManager.saveSecurityConfig(
+								config: config,
+								fromUser: fromUser,
+								toUser: toUser
+							)
+						} catch {
+							Logger.mesh.error("Security config save failed: \(error.localizedDescription, privacy: .public)")
+							return
+						}
+
+						if keyUpdated {
+							// This is the local node's own keypair being changed deliberately by the user.
+							node?.user?.publicKey = Data(base64Encoded: publicKey) ?? Data()
+							do {
+								try context.coordinatedSave()
+								Logger.data.info("💾 Saved UserEntity Public Key to Core Data for \(node?.num ?? 0, privacy: .public)")
+							} catch {
+								let nsError = error as NSError
+								Logger.data.error("Error Updating UserEntity: \(nsError, privacy: .public)")
+								return
+							}
+							do {
+								try await accessoryManager.sendReboot(
+									fromUser: fromUser,
+									toUser: toUser
+								)
+							} catch {
+								Logger.mesh.warning("Reboot Failed")
 							}
 						}
 						hasChanges = false
-						if keyUpdated {
-							Task {
-								do {
-									try await accessoryManager.sendReboot(
-										fromUser: fromUser,
-										toUser: toUser
-									)
-								} catch {
-									Logger.mesh.warning("Reboot Failed")
-								}
-							}
-						}
 						goBack()
 					}
 				}

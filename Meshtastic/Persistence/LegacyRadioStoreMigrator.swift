@@ -13,6 +13,8 @@ struct LegacyRadioStoreMigrationResult: Equatable {
 
 @MainActor
 enum LegacyRadioStoreMigrator {
+	static let publicationSuffixes = ["-wal", "-shm", ""]
+
 	static func migrate(
 		legacyStoreURL: URL,
 		radioStoreDirectory: URL,
@@ -155,9 +157,9 @@ private extension LegacyRadioStoreMigrator {
 		let context = registryContainer.mainContext
 		guard let metadata = try context.fetch(FetchDescriptor<RadioRegistryMetadataEntity>()).first,
 		      metadata.legacyMigrationCompletedAt != nil,
-		      let selectedProfileID = metadata.selectedProfileID,
+		      let migratedProfileID = metadata.legacyMigrationProfileID,
 		      let profile = try context.fetch(FetchDescriptor<RadioProfileEntity>())
-		            .first(where: { $0.id == selectedProfileID }) else {
+		            .first(where: { $0.id == migratedProfileID }) else {
 			return nil
 		}
 		let radioStoreURL = radioStoreDirectory
@@ -269,12 +271,34 @@ private extension LegacyRadioStoreMigrator {
 				guard let profile = try registry.profiles().first(where: { $0.id == profileID }) else {
 					throw MigrationError.identityIgnored
 				}
+				guard profile.quarantineReason == nil else {
+					throw MigrationError.identityQuarantined
+				}
 				return profile
 			case .quarantined:
 				throw MigrationError.identityQuarantined
 			case .ignored:
 				throw MigrationError.identityIgnored
 			}
+		}
+
+		let existingProfiles = try registry.profiles()
+		let matchingProfiles: [RadioProfileEntity]
+		if let deviceID = identity.deviceID {
+			matchingProfiles = existingProfiles.filter { $0.deviceID == deviceID }
+		} else {
+			matchingProfiles = existingProfiles.filter {
+				$0.deviceID == nil && $0.nodeNum == identity.nodeNum
+			}
+		}
+		guard matchingProfiles.count <= 1 else {
+			throw MigrationError.identityQuarantined
+		}
+		if let profile = matchingProfiles.first {
+			guard profile.quarantineReason == nil else {
+				throw MigrationError.identityQuarantined
+			}
+			return profile
 		}
 
 		let profile = RadioProfileEntity(
@@ -295,10 +319,16 @@ private extension LegacyRadioStoreMigrator {
 			guard ownsExistingTarget else {
 				throw MigrationError.radioStoreAlreadyExists
 			}
-			do {
-				try validateRadioStore(at: destination)
-				return
-			} catch {
+			if FileManager.default.fileExists(atPath: destination.path) {
+				do {
+					try validateRadioStore(at: destination)
+					return
+				} catch {
+					removeStoreFiles(at: destination)
+				}
+			} else {
+				// A prior sidecar-first move stopped before publishing the main file. The
+				// legacy source is still intact, so discard the incomplete destination.
 				removeStoreFiles(at: destination)
 			}
 		}
@@ -419,7 +449,7 @@ private extension LegacyRadioStoreMigrator {
 	}
 
 	static func copyStoreFiles(from source: URL, to destination: URL) throws {
-		for suffix in ["", "-shm", "-wal"] {
+		for suffix in publicationSuffixes {
 			let sourceFile = URL(fileURLWithPath: source.path + suffix)
 			guard FileManager.default.fileExists(atPath: sourceFile.path) else { continue }
 			let destinationFile = URL(fileURLWithPath: destination.path + suffix)
@@ -428,7 +458,7 @@ private extension LegacyRadioStoreMigrator {
 	}
 
 	static func moveStoreFiles(from source: URL, to destination: URL) throws {
-		for suffix in ["", "-shm", "-wal"] {
+		for suffix in publicationSuffixes {
 			let sourceFile = URL(fileURLWithPath: source.path + suffix)
 			guard FileManager.default.fileExists(atPath: sourceFile.path) else { continue }
 			let destinationFile = URL(fileURLWithPath: destination.path + suffix)

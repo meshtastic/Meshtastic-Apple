@@ -182,9 +182,13 @@ final class DiscoveryScanEngine {
 	private func commitContextChanges(_ context: ModelContext) -> Bool {
 		let permit: ContainerWritePermit?
 		do {
-			permit = try writeAccess?.beginWrite()
+			permit = try writeAccess?.beginWrite(
+				containerID: ObjectIdentifier(context.container)
+			)
 		} catch {
-			context.rollback()
+			if error as? ContainerLeaseError == .transitioning {
+				context.rollback()
+			}
 			Logger.discovery.warning("📡 [Discovery] Dropped save for a retired or transitioning container")
 			return false
 		}

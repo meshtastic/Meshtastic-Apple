@@ -327,8 +327,9 @@ struct PowerMetricsLog: View {
 					}
 					ToolbarItem(placement: .confirmationAction) {
 						Button("Save") {
-							saveChannelLabels()
-							isEditingLabels = false
+							if saveChannelLabels() {
+								isEditingLabels = false
+							}
 						}
 					}
 				}
@@ -369,12 +370,14 @@ struct PowerMetricsLog: View {
 		return (0..<3).map { index in index < stored.count ? stored[index] : "" }
 	}
 
-	private func saveChannelLabels() {
+	private func saveChannelLabels() -> Bool {
 		node.powerChannelLabels = channelLabels
 		do {
 			try context.coordinatedSave()
+			return true
 		} catch let error as NSError {
 			Logger.data.error("\(error.localizedDescription, privacy: .public)")
+			return false
 		}
 	}
 
