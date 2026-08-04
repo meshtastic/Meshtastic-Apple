@@ -33,11 +33,12 @@ struct MessageDeliveryStatus {
 
 	/// Shown for an outgoing message that has gone unacknowledged past `MessageEntity.sendAckTimeout`
 	/// — the radio's ack/nak never reached the app, so the message is stuck. Retryable, rather than an
-	/// indefinite "Sending…". Reuses the max-retransmit detail wording: to the user the outcome is the
-	/// same — the mesh never confirmed it.
+	/// indefinite "Sending…". Reuses `RoutingError.maxRetransmit.description` (the same detail `.failed`
+	/// shows) so the copy and its localization can't drift: to the user the outcome is the same — the
+	/// mesh never confirmed it.
 	static let notDelivered = MessageDeliveryStatus(
 		text: "Not delivered".localized,
-		detail: "No node confirmed this message. Try again when you have better signal or more mesh coverage.".localized,
+		detail: RoutingError.maxRetransmit.description,
 		systemImage: "exclamationmark.circle.fill",
 		color: Color(uiColor: .systemOrange),
 		canRetry: true
