@@ -1570,6 +1570,8 @@ public struct Config: Sendable {
 
       ///
       /// Ukraine 868mhz
+      ///
+      /// NOTE: This enum value was marked as deprecated in the .proto file
       case ua868 // = 15
 
       ///
@@ -2135,7 +2137,63 @@ public struct Config: Sendable {
     /// Allow incoming device control over the insecure legacy admin channel.
     public var adminChannelEnabled: Bool = false
 
+    ///
+    /// Determines the packet signature policy applied to remotely received mesh packets.
+    public var packetSignaturePolicy: Config.SecurityConfig.PacketSignaturePolicy = .compatible
+
     public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    ///
+    /// Controls how the device authenticates remotely received mesh packets.
+    public enum PacketSignaturePolicy: SwiftProtobuf.Enum, Swift.CaseIterable {
+      public typealias RawValue = Int
+
+      ///
+      /// Accept unsigned packets for maximum compatibility while still rejecting malformed or invalid signatures.
+      /// This is the default to avoid legacy nodes dropping signed packets during rebroadcast.
+      case compatible // = 0
+
+      ///
+      /// Prefer authenticated packets while retaining compatibility with unsigned packets from nodes not known to sign.
+      /// Rejects unsigned, signable broadcasts from nodes that have previously signed.
+      case balanced // = 1
+
+      ///
+      /// Accept only packets authenticated by a verified XEdDSA signature or successful PKI decryption.
+      /// Unsigned, malformed, invalid, or unverifiable packets are ignored.
+      case strict // = 2
+      case UNRECOGNIZED(Int)
+
+      public init() {
+        self = .compatible
+      }
+
+      public init?(rawValue: Int) {
+        switch rawValue {
+        case 0: self = .compatible
+        case 1: self = .balanced
+        case 2: self = .strict
+        default: self = .UNRECOGNIZED(rawValue)
+        }
+      }
+
+      public var rawValue: Int {
+        switch self {
+        case .compatible: return 0
+        case .balanced: return 1
+        case .strict: return 2
+        case .UNRECOGNIZED(let i): return i
+        }
+      }
+
+      // The compiler won't synthesize support with the UNRECOGNIZED case.
+      public static let allCases: [Config.SecurityConfig.PacketSignaturePolicy] = [
+        .compatible,
+        .balanced,
+        .strict,
+      ]
+
+    }
 
     public init() {}
   }
@@ -3131,7 +3189,7 @@ extension Config.BluetoothConfig.PairingMode: SwiftProtobuf._ProtoNameProviding 
 
 extension Config.SecurityConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Config.protoMessageName + ".SecurityConfig"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}public_key\0\u{3}private_key\0\u{3}admin_key\0\u{3}is_managed\0\u{3}serial_enabled\0\u{3}debug_log_api_enabled\0\u{4}\u{2}admin_channel_enabled\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}public_key\0\u{3}private_key\0\u{3}admin_key\0\u{3}is_managed\0\u{3}serial_enabled\0\u{3}debug_log_api_enabled\0\u{4}\u{2}admin_channel_enabled\0\u{3}packet_signature_policy\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -3146,6 +3204,7 @@ extension Config.SecurityConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
       case 5: try { try decoder.decodeSingularBoolField(value: &self.serialEnabled) }()
       case 6: try { try decoder.decodeSingularBoolField(value: &self.debugLogApiEnabled) }()
       case 8: try { try decoder.decodeSingularBoolField(value: &self.adminChannelEnabled) }()
+      case 9: try { try decoder.decodeSingularEnumField(value: &self.packetSignaturePolicy) }()
       default: break
       }
     }
@@ -3173,6 +3232,9 @@ extension Config.SecurityConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
     if self.adminChannelEnabled != false {
       try visitor.visitSingularBoolField(value: self.adminChannelEnabled, fieldNumber: 8)
     }
+    if self.packetSignaturePolicy != .compatible {
+      try visitor.visitSingularEnumField(value: self.packetSignaturePolicy, fieldNumber: 9)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -3184,9 +3246,14 @@ extension Config.SecurityConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
     if lhs.serialEnabled != rhs.serialEnabled {return false}
     if lhs.debugLogApiEnabled != rhs.debugLogApiEnabled {return false}
     if lhs.adminChannelEnabled != rhs.adminChannelEnabled {return false}
+    if lhs.packetSignaturePolicy != rhs.packetSignaturePolicy {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
+}
+
+extension Config.SecurityConfig.PacketSignaturePolicy: SwiftProtobuf._ProtoNameProviding {
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0PACKET_SIGNATURE_POLICY_COMPATIBLE\0\u{1}PACKET_SIGNATURE_POLICY_BALANCED\0\u{1}PACKET_SIGNATURE_POLICY_STRICT\0")
 }
 
 extension Config.SessionkeyConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
