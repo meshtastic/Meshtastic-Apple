@@ -46,18 +46,15 @@ struct OfflineMapPolyline: Identifiable {
 struct OfflineVectorSourceBinding: Equatable {
 	let url: URL
 	let regionID: UUID
-	let systemPackID: String?
 
 	init(regionFile: OfflineMapRegionFile) {
 		url = regionFile.url
 		regionID = regionFile.region.id
-		systemPackID = regionFile.region.systemPackID
 	}
 
-	init(url: URL, regionID: UUID = UUID(), systemPackID: String?) {
+	init(url: URL, regionID: UUID = UUID()) {
 		self.url = url
 		self.regionID = regionID
-		self.systemPackID = systemPackID
 	}
 }
 
@@ -112,7 +109,6 @@ final class OfflineVectorTileProvider: ObservableObject {
 		let url: URL
 		let source: OfflineTileSource
 		let bounds: GeoBounds
-		let systemPackID: String?
 	}
 	private var vectorSources: [VectorSource] = []
 	/// Region identities the provider is currently bound to, so metadata changes reload even when URLs match.
@@ -150,7 +146,7 @@ final class OfflineVectorTileProvider: ObservableObject {
 		for binding in bindings {
 			let url = binding.url
 			if let src = OfflineTileSourceFactory.source(for: url), src.isVectorTiles, let bounds = src.geographicBounds {
-				result.append(VectorSource(url: url, source: src, bounds: bounds, systemPackID: binding.systemPackID))
+				result.append(VectorSource(url: url, source: src, bounds: bounds))
 			}
 		}
 		vectorSources = result
@@ -210,7 +206,6 @@ final class OfflineVectorTileProvider: ObservableObject {
 					bounds: entry.bounds,
 					minZoom: Int(entry.source.tileMinZoom),
 					maxZoom: Int(entry.source.tileMaxZoom),
-					systemPackID: entry.systemPackID,
 					maxTiles: cap
 				)
 				guard !tiles.isEmpty else { continue }
@@ -315,7 +310,6 @@ final class OfflineVectorTileProvider: ObservableObject {
 			bounds: bounds,
 			minZoom: Int(source.tileMinZoom),
 			maxZoom: Int(source.tileMaxZoom),
-			systemPackID: nil,
 			maxTiles: maxTiles
 		)
 		guard !tiles.isEmpty else { return nil }
@@ -414,26 +408,21 @@ extension OfflineVectorTileProvider {
 
 	// MARK: Tile math
 
-	/// All tiles covering the archive's coverage box. Generic sources use the highest zoom whose
-	/// tile count fits the cap; the identified Burning Man system pack decodes its full z15 coverage.
+	/// All tiles covering the archive's coverage box at the highest zoom whose tile count fits the cap.
 	/// Decoded once; vectors scale to any map zoom.
 	nonisolated static func tiles(
 		bounds: GeoBounds,
 		minZoom: Int,
 		maxZoom: Int,
-		systemPackID: String?,
 		maxTiles: Int = 48
 	) -> [TileID] {
 		var zoom = maxZoom
-		let isBurningManSystemPack = systemPackID == BurningManOfflinePack.packID && maxZoom == OfflineMapDetailLevel.high.maxZoom
-		if !isBurningManSystemPack {
-			while zoom > minZoom {
-				let topLeft = tileXY(lon: bounds.minLon, lat: bounds.maxLat, zoom: zoom)
-				let bottomRight = tileXY(lon: bounds.maxLon, lat: bounds.minLat, zoom: zoom)
-				let count = (abs(bottomRight.x - topLeft.x) + 1) * (abs(bottomRight.y - topLeft.y) + 1)
-				if count <= maxTiles { break }
-				zoom -= 1
-			}
+		while zoom > minZoom {
+			let topLeft = tileXY(lon: bounds.minLon, lat: bounds.maxLat, zoom: zoom)
+			let bottomRight = tileXY(lon: bounds.maxLon, lat: bounds.minLat, zoom: zoom)
+			let count = (abs(bottomRight.x - topLeft.x) + 1) * (abs(bottomRight.y - topLeft.y) + 1)
+			if count <= maxTiles { break }
+			zoom -= 1
 		}
 
 		let topLeft = tileXY(lon: bounds.minLon, lat: bounds.maxLat, zoom: zoom)

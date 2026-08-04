@@ -51,6 +51,8 @@ final class MBTilesArchive: OfflineTileSource {
 	let tileMaxZoom: UInt8
 	let geographicBounds: GeoBounds?
 	let isVectorTiles: Bool
+	/// Whether the archive exposes at least one non-empty tile row.
+	let hasTileData: Bool
 
 	init?(url: URL) {
 		var handle: OpaquePointer?
@@ -84,6 +86,15 @@ final class MBTilesArchive: OfflineTileSource {
 
 		let format = metadata("format")?.lowercased() ?? "png"
 		isVectorTiles = (format == "pbf" || format == "mvt")
+
+		var tileStatement: OpaquePointer?
+		let tileQuery = "SELECT 1 FROM tiles WHERE tile_data IS NOT NULL AND length(tile_data) > 0 LIMIT 1"
+		if sqlite3_prepare_v2(handle, tileQuery, -1, &tileStatement, nil) == SQLITE_OK {
+			defer { sqlite3_finalize(tileStatement) }
+			hasTileData = sqlite3_step(tileStatement) == SQLITE_ROW
+		} else {
+			hasTileData = false
+		}
 	}
 
 	deinit { if let db { sqlite3_close(db) } }

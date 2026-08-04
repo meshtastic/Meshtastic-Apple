@@ -5,6 +5,10 @@ import Testing
 import Foundation
 @testable import Meshtastic
 
+private enum OfflineMapTestFixtures {
+	static let bounds = GeoBounds(minLon: -119.3, minLat: 40.7, maxLon: -119.1, maxLat: 40.9)
+}
+
 // MARK: - MapDataMetadata Tests
 
 @Suite("MapDataMetadata")
@@ -295,62 +299,50 @@ struct OfflineVectorRoadClassificationTests {
 @Suite("Offline vector tile selection")
 struct OfflineVectorTileSelectionTests {
 
-	@Test func burningManSystemPackDecodesAllZ15TilesWhileGenericSourcesStayCapped() {
-		let systemTiles = OfflineVectorTileProvider.tiles(
-			bounds: BurningManOfflinePack.bounds,
+	@Test func genericSourcesStayWithinTileDecodeCap() {
+		let tiles = OfflineVectorTileProvider.tiles(
+			bounds: OfflineMapTestFixtures.bounds,
 			minZoom: 0,
-			maxZoom: OfflineMapDetailLevel.high.maxZoom,
-			systemPackID: BurningManOfflinePack.packID
-		)
-		let genericTiles = OfflineVectorTileProvider.tiles(
-			bounds: BurningManOfflinePack.bounds,
-			minZoom: 0,
-			maxZoom: OfflineMapDetailLevel.high.maxZoom,
-			systemPackID: nil
+			maxZoom: OfflineMapDetailLevel.high.maxZoom
 		)
 
-		#expect(systemTiles.count == 225)
-		#expect(systemTiles.allSatisfy { $0.z == 15 })
-		#expect(genericTiles.count <= 48)
-		#expect(genericTiles.allSatisfy { $0.z < 15 })
+		#expect(tiles.count <= 48)
+		#expect(tiles.allSatisfy { $0.z < OfflineMapDetailLevel.high.maxZoom })
 	}
 }
 
 @Suite("Offline vector source bindings")
 struct OfflineVectorSourceBindingTests {
 
-	@Test func persistedBurningManSourceCarriesSystemIdentityAtColdLaunch() {
+	@Test func persistedSourceCarriesRegionIdentityAtColdLaunch() {
 		let region = OfflineMapRegion(
-			name: "Burning Man 2026",
-			fileName: "burning-man.pmtiles",
-			bounds: BurningManOfflinePack.bounds,
+			name: "Trailhead",
+			fileName: "trailhead.pmtiles",
+			bounds: OfflineMapTestFixtures.bounds,
 			minZoom: 0,
 			maxZoom: OfflineMapDetailLevel.high.maxZoom,
 			fileSize: 1,
-			sourceBuild: "20260720",
-			systemPackID: BurningManOfflinePack.packID
+			sourceBuild: "20260720"
 		)
 		let persistedFile = OfflineMapRegionFile(
 			region: region,
-			url: URL(fileURLWithPath: "/tmp/burning-man.pmtiles")
+			url: URL(fileURLWithPath: "/tmp/trailhead.pmtiles")
 		)
 
 		let bindings = OfflineVectorTileProvider.sourceBindings(for: [persistedFile])
 
 		#expect(bindings == [OfflineVectorSourceBinding(
 			url: persistedFile.url,
-			regionID: region.id,
-			systemPackID: BurningManOfflinePack.packID
+			regionID: region.id
 		)])
 	}
 
 	@Test func identityChangeForSameURLRequiresReload() {
-		let url = URL(fileURLWithPath: "/tmp/burning-man.pmtiles")
-		let regionID = UUID()
-		let generic = OfflineVectorSourceBinding(url: url, regionID: regionID, systemPackID: nil)
-		let system = OfflineVectorSourceBinding(url: url, regionID: regionID, systemPackID: BurningManOfflinePack.packID)
+		let url = URL(fileURLWithPath: "/tmp/trailhead.pmtiles")
+		let first = OfflineVectorSourceBinding(url: url, regionID: UUID())
+		let second = OfflineVectorSourceBinding(url: url, regionID: UUID())
 
-		#expect(OfflineVectorTileProvider.requiresReload(from: [generic], to: [system]))
-		#expect(!OfflineVectorTileProvider.requiresReload(from: [system], to: [system]))
+		#expect(OfflineVectorTileProvider.requiresReload(from: [first], to: [second]))
+		#expect(!OfflineVectorTileProvider.requiresReload(from: [first], to: [first]))
 	}
 }

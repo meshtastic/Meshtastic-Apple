@@ -238,7 +238,7 @@ class Router: ObservableObject {
 	/// in-app file picker. Called from `onOpenURL` for file URLs, which is a distinct path from
 	/// `route(url:)` (that only handles `meshtastic://` scheme URLs).
 	func importMapFile(url: URL) {
-		if url.pathExtension.caseInsensitiveCompare("pmtiles") == .orderedSame {
+		if OfflineMapImportValidator.format(for: url) != nil {
 			importOfflineMap(url: url)
 			return
 		}
@@ -254,7 +254,7 @@ class Router: ObservableObject {
 		}
 	}
 
-	/// Imports a raster PMTiles basemap handed to the app through Files, AirDrop, or Open In.
+	/// Imports an offline basemap handed to the app through Files, AirDrop, or Open In.
 	func importOfflineMap(url: URL) {
 		selectedTab = .map
 		let hasAccess = url.startAccessingSecurityScopedResource()
@@ -263,10 +263,10 @@ class Router: ObservableObject {
 				if hasAccess { url.stopAccessingSecurityScopedResource() }
 			}
 			do {
-				let region = try await OfflineMapManager.shared.importPMTiles(from: url)
+				let region = try await OfflineMapManager.shared.importOfflineMap(from: url)
 				Logger.services.info("🗺️ [Offline] Imported '\(region.name, privacy: .private)' via Open In.")
 			} catch {
-				Logger.services.error("🗺️ [Offline] PMTiles import failed: \(error.localizedDescription, privacy: .private)")
+				Logger.services.error("🗺️ [Offline] Map archive import failed: \(error.localizedDescription, privacy: .private)")
 			}
 		}
 	}

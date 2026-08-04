@@ -10,54 +10,18 @@ import UniformTypeIdentifiers
 
 struct OfflineMapsList: View {
 	@ObservedObject private var manager = OfflineMapManager.shared
-	@EnvironmentObject private var accessoryManager: AccessoryManager
-	@AppStorage("burning-man-2026-offline-map-prompt-dismissed") private var didDismissBurningManPrompt = false
-	@State private var showingBurningManPrompt = false
 	@State private var showingImporter = false
 	@State private var importError: String?
-	@State private var hadBurningManMap = false
-
-	private var burningManRegion: OfflineMapRegion? {
-		BurningManOfflinePack.existingRegion(in: manager.regions)
-	}
-
-	private var canOfferBurningManMap: Bool {
-		BurningManOfflinePack.isEligible(firmwareEdition: accessoryManager.firmwareEdition)
-	}
 
 	var body: some View {
 		List {
-			if canOfferBurningManMap {
-				Section {
-					if let burningManRegion {
-						NavigationLink {
-							OfflineMapDetailView(region: burningManRegion)
-						} label: {
-							Label("Burning Man offline map downloaded", systemImage: "checkmark.circle.fill")
-								.foregroundStyle(.green)
-						}
-					} else {
-						Button {
-							showingBurningManPrompt = true
-						} label: {
-							Label("Download Burning Man offline map", systemImage: "map.circle.fill")
-						}
-						.disabled(manager.isBusy)
-					}
-				} header: {
-					Text("Burning Man")
-				} footer: {
-					Text("Available because your connected node runs Burning Man firmware.")
-				}
-			}
-
 			if let download = manager.activeDownload {
 				Section {
 					OfflineMapDownloadRow(download: download)
 				}
 			}
 
-			Section {
+			Section("Download") {
 				NavigationLink {
 					DownloadNewMapView()
 				} label: {
@@ -67,7 +31,7 @@ struct OfflineMapsList: View {
 			}
 
 			if manager.regions.isEmpty {
-				Section {
+				Section("Downloaded Maps") {
 					Text("No offline maps yet. Download an area to use the map without a connection.")
 						.font(.callout)
 						.foregroundStyle(.secondary)
@@ -103,27 +67,8 @@ struct OfflineMapsList: View {
 		}
 		.onAppear {
 			manager.loadIfNeeded()
-			hadBurningManMap = burningManRegion != nil
-			showBurningManPromptIfNeeded()
 		}
-		.onChange(of: accessoryManager.firmwareEdition) {
-			showBurningManPromptIfNeeded()
-		}
-		.onChange(of: burningManRegion?.id) {
-			if hadBurningManMap, burningManRegion == nil {
-				didDismissBurningManPrompt = false
-			}
-			hadBurningManMap = burningManRegion != nil
-			showBurningManPromptIfNeeded()
-		}
-		.sheet(isPresented: $showingBurningManPrompt, onDismiss: {
-			didDismissBurningManPrompt = true
-		}) {
-			BurningManOfflineMapPrompt {
-				manager.startBurningManDownload()
-			}
-		}
-		.fileImporter(isPresented: $showingImporter, allowedContentTypes: [.meshtasticPMTiles]) { result in
+		.fileImporter(isPresented: $showingImporter, allowedContentTypes: [.meshtasticPMTiles, .meshtasticMBTiles]) { result in
 			switch result {
 			case .success(let url):
 				Task {
@@ -132,7 +77,7 @@ struct OfflineMapsList: View {
 						if hasAccess { url.stopAccessingSecurityScopedResource() }
 					}
 					do {
-						_ = try await manager.importPMTiles(from: url)
+						_ = try await manager.importOfflineMap(from: url)
 					} catch {
 						importError = error.localizedDescription
 					}
@@ -151,48 +96,6 @@ struct OfflineMapsList: View {
 		}
 	}
 
-	private func showBurningManPromptIfNeeded() {
-		guard canOfferBurningManMap,
-			burningManRegion == nil,
-			!didDismissBurningManPrompt,
-			!manager.isBusy
-		else { return }
-		showingBurningManPrompt = true
-	}
-}
-
-private struct BurningManOfflineMapPrompt: View {
-	let onDownload: () -> Void
-	@Environment(\.dismiss) private var dismiss
-
-	var body: some View {
-		NavigationStack {
-			VStack(alignment: .leading, spacing: 20) {
-				Image(systemName: "map.circle.fill")
-					.font(.system(size: 56))
-					.foregroundStyle(.orange)
-				Text("Download Burning Man offline map")
-					.font(.title2.bold())
-				Text("Save the Black Rock City basemap before you lose service. It stays on this device until you remove it.")
-					.foregroundStyle(.secondary)
-				Text("Map data © OpenStreetMap, Protomaps")
-					.font(.caption)
-					.foregroundStyle(.secondary)
-				Spacer()
-				Button("Download Offline Map") {
-					onDownload()
-					dismiss()
-				}
-					.buttonStyle(.borderedProminent)
-					.frame(maxWidth: .infinity)
-				Button("Not Now", role: .cancel) { dismiss() }
-					.frame(maxWidth: .infinity)
-			}
-			.padding()
-			.navigationTitle("Burning Man")
-			.navigationBarTitleDisplayMode(.inline)
-		}
-	}
 }
 
 /// One downloaded region in the list.

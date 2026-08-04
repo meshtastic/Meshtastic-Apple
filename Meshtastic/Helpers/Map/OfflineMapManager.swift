@@ -167,24 +167,20 @@ final class OfflineMapManager: ObservableObject {
 		bounds: GeoBounds,
 		detail: OfflineMapDetailLevel,
 		replacing: OfflineMapRegion? = nil,
-		systemPackID: String? = nil,
 		onCompletion: ((OfflineMapRegion?) -> Void)? = nil
 	) {
 		guard !isBusy, let archive = newArchiveURL() else {
 			onCompletion?(nil)
 			return
 		}
-		if systemPackID == nil {
-			// Don't allow user regions to overlap (excluding the one being replaced) — avoids duplicate coverage.
-			guard overlappingRegion(with: bounds, excluding: replacing) == nil else {
-				onCompletion?(nil)
-				return
-			}
-			// Backstop the user-map count limit (the UI also disables Download); per-map size is enforced below.
-			guard regions.count - (replacing != nil ? 1 : 0) < Self.maxRegions else {
-				onCompletion?(nil)
-				return
-			}
+		// Avoid duplicate coverage and preserve the storage ceiling even if the caller bypasses the UI.
+		guard overlappingRegion(with: bounds, excluding: replacing) == nil else {
+			onCompletion?(nil)
+			return
+		}
+		guard regions.count - (replacing != nil ? 1 : 0) < Self.maxRegions else {
+			onCompletion?(nil)
+			return
 		}
 		let regionID = UUID()
 		guard downloadLifecycle.begin(id: regionID) else {
@@ -206,8 +202,7 @@ final class OfflineMapManager: ObservableObject {
 					bounds: bounds, minZoom: detail.minZoom, maxZoom: detail.maxZoom
 				)
 				guard plan.payloadBytes <= Self.maxRegionBytes else { throw OfflineMapError.exceedsPerMapLimit(Self.maxRegionBytes) }
-				if systemPackID == nil,
-					let reason = self.downloadBlockReason(estimatedBytes: plan.payloadBytes, replacing: replacing) {
+				if let reason = self.downloadBlockReason(estimatedBytes: plan.payloadBytes, replacing: replacing) {
 					throw OfflineMapError.storageLimit(reason)
 				}
 				await self.markDownloading(id: regionID, estimatedBytes: plan.payloadBytes)
@@ -221,7 +216,7 @@ final class OfflineMapManager: ObservableObject {
 				let region = OfflineMapRegion(
 					id: regionID, name: finalName, fileName: archive.fileName,
 					bounds: plan.bounds, minZoom: plan.minZoom, maxZoom: plan.maxZoom,
-					fileSize: 0, sourceBuild: build.build, systemPackID: systemPackID
+					fileSize: 0, sourceBuild: build.build
 				)
 				await self.finishDownload(id: regionID, region: region, removing: replacing)
 			} catch is CancellationError {
@@ -242,25 +237,9 @@ final class OfflineMapManager: ObservableObject {
 		clearDownload(id: id)
 	}
 
-	/// Starts the Burning Man map only after an explicit user action from Offline Maps.
-	func startBurningManDownload(completion: ((OfflineMapRegion?) -> Void)? = nil) {
-		loadIfNeeded()
-		guard BurningManOfflinePack.existingRegion(in: regions) == nil else {
-			completion?(nil)
-			return
-		}
-		startDownload(
-			name: "Burning Man 2026",
-			bounds: BurningManOfflinePack.bounds,
-			detail: .high,
-			systemPackID: BurningManOfflinePack.packID,
-			onCompletion: completion
-		)
-	}
-
-	/// Validates and copies an externally supplied raster PMTiles archive into the managed store.
+	/// Validates and copies an externally supplied PMTiles or MBTiles archive into the managed store.
 	/// The caller owns security-scoped access to `sourceURL` when it came from Files or Open In.
-	func importPMTiles(from sourceURL: URL) async throws -> OfflineMapRegion {
+	func importOfflineMap(from sourceURL: URL) async throws -> OfflineMapRegion {
 		loadIfNeeded()
 		guard !isBusy else { throw OfflineMapImportError.operationInProgress }
 		isImporting = true
@@ -283,7 +262,9 @@ final class OfflineMapManager: ObservableObject {
 			throw OfflineMapImportError.exceedsTotalStorageLimit
 		}
 
-		guard let destination = newArchiveURL() else { throw OfflineMapImportError.unreadableFile }
+		guard let destination = newArchiveURL(fileExtension: source.format.fileExtension) else {
+			throw OfflineMapImportError.unreadableFile
+		}
 		do {
 			let imported = try await Task.detached(priority: .userInitiated) {
 				try OfflineMapImportWorker.copyAndValidate(from: sourceURL, to: destination.url)
@@ -387,9 +368,9 @@ final class OfflineMapManager: ObservableObject {
 	}
 
 	/// A fresh, unused archive file URL plus its file name component.
-	func newArchiveURL() -> (url: URL, fileName: String)? {
+	func newArchiveURL(fileExtension: String = OfflineMapArchiveFormat.pmtiles.fileExtension) -> (url: URL, fileName: String)? {
 		guard let dir = directoryURL() else { return nil }
-		let name = "\(UUID().uuidString).pmtiles"
+		let name = "\(UUID().uuidString).\(fileExtension)"
 		return (dir.appendingPathComponent(name), name)
 	}
 

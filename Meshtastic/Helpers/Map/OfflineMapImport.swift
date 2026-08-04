@@ -9,6 +9,14 @@ import UniformTypeIdentifiers
 
 extension UTType {
 	static let meshtasticPMTiles = UTType(importedAs: "gvh.MeshtasticApple.pmtiles")
+	static let meshtasticMBTiles = UTType(importedAs: "gvh.MeshtasticApple.mbtiles")
+}
+
+enum OfflineMapArchiveFormat: String, Sendable {
+	case pmtiles
+	case mbtiles
+
+	var fileExtension: String { rawValue }
 }
 
 // MARK: - Errors
@@ -30,13 +38,13 @@ enum OfflineMapImportError: LocalizedError {
 		case .unreadableFile:
 			return String(localized: "The offline map file could not be read.")
 		case .invalidHeader:
-			return String(localized: "This file is not a valid PMTiles map.")
+			return String(localized: "This file is not a valid PMTiles or MBTiles map.")
 		case .unsupportedTileType:
-			return String(localized: "This PMTiles map uses a tile format that Meshtastic cannot display.")
+			return String(localized: "This map uses a tile format that Meshtastic cannot display.")
 		case .invalidBounds:
-			return String(localized: "This PMTiles map has invalid geographic bounds.")
+			return String(localized: "This map has invalid geographic bounds.")
 		case .invalidZoomRange:
-			return String(localized: "This PMTiles map has an invalid zoom range.")
+			return String(localized: "This map has an invalid zoom range.")
 		case .exceedsPerMapLimit:
 			return String(localized: "This map is larger than the offline-map size limit.")
 		case .exceedsTotalStorageLimit:
@@ -66,24 +74,60 @@ enum OfflineMapImportValidator {
 		guard let fileSize = try? fileURL.resourceValues(forKeys: [.fileSizeKey]).fileSize else {
 			throw OfflineMapImportError.unreadableFile
 		}
-		guard let header = PMTilesArchive.header(url: fileURL) else {
+		guard let format = format(for: fileURL) else {
 			throw OfflineMapImportError.invalidHeader
 		}
-		return try validate(header: header, fileSize: Int64(fileSize))
+		switch format {
+		case .pmtiles:
+			guard let header = PMTilesArchive.header(url: fileURL) else {
+				throw OfflineMapImportError.invalidHeader
+			}
+			return try validate(header: header, fileSize: Int64(fileSize))
+		case .mbtiles:
+			guard let archive = MBTilesArchive(url: fileURL),
+				archive.hasTileData,
+				let bounds = archive.geographicBounds
+			else {
+				throw OfflineMapImportError.invalidHeader
+			}
+			return try validate(
+				bounds: bounds,
+				minZoom: Int(archive.tileMinZoom),
+				maxZoom: Int(archive.tileMaxZoom),
+				fileSize: Int64(fileSize)
+			)
+		}
 	}
 
 	static func validate(header: PMTilesHeader, fileSize: Int64) throws -> OfflineMapImportMetadata {
+		guard header.tileType == .png || header.tileType == .jpeg || header.tileType == .webp || header.tileType == .mvt else {
+			throw OfflineMapImportError.unsupportedTileType
+		}
+		return try validate(
+			bounds: header.bounds,
+			minZoom: Int(header.minZoom),
+			maxZoom: Int(header.maxZoom),
+			fileSize: fileSize
+		)
+	}
+
+	static func format(for fileURL: URL) -> OfflineMapArchiveFormat? {
+		OfflineMapArchiveFormat(rawValue: fileURL.pathExtension.lowercased())
+	}
+
+	private static func validate(
+		bounds: GeoBounds,
+		minZoom: Int,
+		maxZoom: Int,
+		fileSize: Int64
+	) throws -> OfflineMapImportMetadata {
 		guard fileSize > 0 else { throw OfflineMapImportError.unreadableFile }
 		guard fileSize <= OfflineMapStorageLimits.maxRegionBytes else {
 			throw OfflineMapImportError.exceedsPerMapLimit
 		}
-		guard header.tileType == .png || header.tileType == .jpeg || header.tileType == .webp else {
-			throw OfflineMapImportError.unsupportedTileType
-		}
-		guard header.minZoom <= header.maxZoom else {
+		guard minZoom <= maxZoom else {
 			throw OfflineMapImportError.invalidZoomRange
 		}
-		let bounds = header.bounds
 		guard bounds.minLon.isFinite,
 			bounds.maxLon.isFinite,
 			bounds.minLat.isFinite,
@@ -97,8 +141,8 @@ enum OfflineMapImportValidator {
 		else { throw OfflineMapImportError.invalidBounds }
 		return OfflineMapImportMetadata(
 			bounds: bounds,
-			minZoom: Int(header.minZoom),
-			maxZoom: Int(header.maxZoom)
+			minZoom: minZoom,
+			maxZoom: maxZoom
 		)
 	}
 }
@@ -109,6 +153,7 @@ struct OfflineMapImportSource: Sendable {
 	let fileName: String
 	let fileSize: Int64
 	let digest: Data
+	let format: OfflineMapArchiveFormat
 }
 
 struct OfflineMapImportedArchive: Sendable {
@@ -125,10 +170,14 @@ enum OfflineMapImportWorker {
 		guard let fileSize = try? sourceURL.resourceValues(forKeys: [.fileSizeKey]).fileSize else {
 			throw OfflineMapImportError.unreadableFile
 		}
+		guard let format = OfflineMapImportValidator.format(for: sourceURL) else {
+			throw OfflineMapImportError.invalidHeader
+		}
 		return OfflineMapImportSource(
 			fileName: sourceURL.deletingPathExtension().lastPathComponent,
 			fileSize: Int64(fileSize),
-			digest: try digest(of: sourceURL)
+			digest: try digest(of: sourceURL),
+			format: format
 		)
 	}
 
