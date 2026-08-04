@@ -1639,6 +1639,9 @@ actor MeshPackets {
 				let fetchWaypointDescriptor = FetchDescriptor<WaypointEntity>(predicate: #Predicate { $0.id == waypointId })
 
 				let fetchedWaypoint = try modelContext.fetch(fetchWaypointDescriptor)
+				// A local-only waypoint must never be overwritten by a mesh packet that happens to
+				// share its id — ignore the incoming waypoint entirely for that id.
+				if fetchedWaypoint.first?.isLocal == true { return }
 				// Fetch the node info to get the short name
 				var nodeShortName: String = "?"
 				let packetFrom = Int64(packet.from)
