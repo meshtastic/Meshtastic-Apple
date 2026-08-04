@@ -6,9 +6,12 @@
 //
 
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct OfflineMapsList: View {
 	@ObservedObject private var manager = OfflineMapManager.shared
+	@State private var showingImporter = false
+	@State private var importError: String?
 
 	var body: some View {
 		List {
@@ -18,17 +21,17 @@ struct OfflineMapsList: View {
 				}
 			}
 
-			Section {
+			Section("Download") {
 				NavigationLink {
 					DownloadNewMapView()
 				} label: {
 					Label("Download New Map", systemImage: "plus.circle")
 				}
-				.disabled(manager.isDownloading)
+				.disabled(manager.isBusy)
 			}
 
 			if manager.regions.isEmpty {
-				Section {
+				Section("Downloaded Maps") {
 					Text("No offline maps yet. Download an area to use the map without a connection.")
 						.font(.callout)
 						.foregroundStyle(.secondary)
@@ -53,8 +56,46 @@ struct OfflineMapsList: View {
 		}
 		.navigationTitle("Offline Maps")
 		.navigationBarTitleDisplayMode(.inline)
-		.onAppear { manager.loadIfNeeded() }
+		.toolbar {
+			ToolbarItem(placement: .topBarTrailing) {
+				Button {
+					showingImporter = true
+				} label: {
+					Label("Import offline map", systemImage: "square.and.arrow.down")
+				}
+			}
+		}
+		.onAppear {
+			manager.loadIfNeeded()
+		}
+		.fileImporter(isPresented: $showingImporter, allowedContentTypes: [.meshtasticPMTiles, .meshtasticMBTiles]) { result in
+			switch result {
+			case .success(let url):
+				Task {
+					let hasAccess = url.startAccessingSecurityScopedResource()
+					defer {
+						if hasAccess { url.stopAccessingSecurityScopedResource() }
+					}
+					do {
+						_ = try await manager.importOfflineMap(from: url)
+					} catch {
+						importError = error.localizedDescription
+					}
+				}
+			case .failure(let error):
+				importError = error.localizedDescription
+			}
+		}
+		.alert("Couldn’t Import Offline Map", isPresented: Binding(
+			get: { importError != nil },
+			set: { if !$0 { importError = nil } }
+		)) {
+			Button("OK", role: .cancel) { importError = nil }
+		} message: {
+			Text(importError ?? "")
+		}
 	}
+
 }
 
 /// One downloaded region in the list.

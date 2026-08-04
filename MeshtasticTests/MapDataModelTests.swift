@@ -5,6 +5,10 @@ import Testing
 import Foundation
 @testable import Meshtastic
 
+private enum OfflineMapTestFixtures {
+	static let bounds = GeoBounds(minLon: -119.3, minLat: 40.7, maxLon: -119.1, maxLat: 40.9)
+}
+
 // MARK: - MapDataMetadata Tests
 
 @Suite("MapDataMetadata")
@@ -279,3 +283,66 @@ struct OfflineVectorPerfTests {
 }
 
 // swiftlint:enable disable_print
+
+@Suite("Offline vector road classification")
+struct OfflineVectorRoadClassificationTests {
+
+	@Test func protomapsPedestrianStreetRemainsVisibleWhileNonStreetPathsAreExcluded() {
+		#expect(OfflineVectorTileProvider.roadRole(kind: "path", kindDetail: "pedestrian") == .minorRoad)
+		#expect(OfflineVectorTileProvider.roadRole(kind: "path", kindDetail: "footway") == .path)
+		#expect(OfflineVectorTileProvider.roadRole(kind: "footway", kindDetail: nil) == .path)
+		#expect(OfflineVectorTileProvider.roadRole(kind: "cycleway", kindDetail: nil) == .path)
+		#expect(OfflineVectorTileProvider.roadRole(kind: "track", kindDetail: nil) == .path)
+	}
+}
+
+@Suite("Offline vector tile selection")
+struct OfflineVectorTileSelectionTests {
+
+	@Test func genericSourcesStayWithinTileDecodeCap() {
+		let tiles = OfflineVectorTileProvider.tiles(
+			bounds: OfflineMapTestFixtures.bounds,
+			minZoom: 0,
+			maxZoom: OfflineMapDetailLevel.high.maxZoom
+		)
+
+		#expect(tiles.count <= 48)
+		#expect(tiles.allSatisfy { $0.z < OfflineMapDetailLevel.high.maxZoom })
+	}
+}
+
+@Suite("Offline vector source bindings")
+struct OfflineVectorSourceBindingTests {
+
+	@Test func persistedSourceCarriesRegionIdentityAtColdLaunch() {
+		let region = OfflineMapRegion(
+			name: "Trailhead",
+			fileName: "trailhead.pmtiles",
+			bounds: OfflineMapTestFixtures.bounds,
+			minZoom: 0,
+			maxZoom: OfflineMapDetailLevel.high.maxZoom,
+			fileSize: 1,
+			sourceBuild: "20260720"
+		)
+		let persistedFile = OfflineMapRegionFile(
+			region: region,
+			url: URL(fileURLWithPath: "/tmp/trailhead.pmtiles")
+		)
+
+		let bindings = OfflineVectorTileProvider.sourceBindings(for: [persistedFile])
+
+		#expect(bindings == [OfflineVectorSourceBinding(
+			url: persistedFile.url,
+			regionID: region.id
+		)])
+	}
+
+	@Test func identityChangeForSameURLRequiresReload() {
+		let url = URL(fileURLWithPath: "/tmp/trailhead.pmtiles")
+		let first = OfflineVectorSourceBinding(url: url, regionID: UUID())
+		let second = OfflineVectorSourceBinding(url: url, regionID: UUID())
+
+		#expect(OfflineVectorTileProvider.requiresReload(from: [first], to: [second]))
+		#expect(!OfflineVectorTileProvider.requiresReload(from: [first], to: [first]))
+	}
+}

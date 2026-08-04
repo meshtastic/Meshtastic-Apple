@@ -78,3 +78,9 @@ struct OfflineMapRegion: Identifiable, Codable, Hashable {
 		ByteCountFormatter.string(fromByteCount: fileSize, countStyle: .file)
 	}
 }
+
+/// An on-disk archive paired with the region metadata that describes it.
+struct OfflineMapRegionFile: Equatable {
+	let region: OfflineMapRegion
+	let url: URL
+}
