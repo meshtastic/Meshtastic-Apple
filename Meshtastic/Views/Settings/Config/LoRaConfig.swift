@@ -143,6 +143,33 @@ struct LoRaConfig: View {
 		return presets
 	}
 
+	private var availableBandwidths: [Bandwidths] {
+		Bandwidths.selectable(
+			region: RegionCodes(rawValue: region),
+			pioEnv: node?.myInfo?.pioEnv
+		)
+	}
+
+	private var customBandwidthIsValid: Bool {
+		usePreset || Bandwidths.isValid(
+			bandwidth,
+			region: RegionCodes(rawValue: region),
+			pioEnv: node?.myInfo?.pioEnv
+		)
+	}
+
+	private var bandwidthSelection: Binding<Int> {
+		Binding(
+			get: {
+				Bandwidths.pickerValue(
+					forStoredValue: bandwidth,
+					region: RegionCodes(rawValue: region)
+				)
+			},
+			set: { bandwidth = $0 }
+		)
+	}
+
 	var body: some View {
 		Form {
 			ConfigHeader(title: "LoRa", config: \.loRaConfig, node: node, onAppear: setLoRaValues)
@@ -221,23 +248,20 @@ struct LoRaConfig: View {
 				}
 				.tint(.accentColor)
 
-				 if !usePreset {
-					 HStack {
-						 Picker("Bandwidth", selection: $bandwidth) {
-							 ForEach(Bandwidths.allCases) { bw in
-								 Text(bw.description)
-									 .tag(bw.rawValue == 250 ? 0 : bw.rawValue)
-							 }
-						 }
-					 }
-					 HStack {
-						 Picker("Spread Factor", selection: $spreadFactor) {
-							 ForEach(7..<13) {
-								 Text("\($0)")
-									 .tag($0 == 12 ? 0 : $0)
-							 }
-						 }
-					 }
+				if !usePreset {
+					CustomBandwidthPicker(
+						selection: bandwidthSelection,
+						options: availableBandwidths,
+						isValid: customBandwidthIsValid
+					)
+					HStack {
+						Picker("Spread Factor", selection: $spreadFactor) {
+							ForEach(7..<13) {
+								Text("\($0)")
+									.tag($0 == 12 ? 0 : $0)
+							}
+						}
+					}
 				}
 
 				VStack(alignment: .leading, spacing: 8) {
@@ -345,37 +369,39 @@ struct LoRaConfig: View {
 		.disabled(!accessoryManager.isConnected || node?.loRaConfig == nil)
 		.safeAreaInset(edge: .bottom, alignment: .center) {
 			HStack(spacing: 0) {
-			SaveConfigButton(node: node, hasChanges: $hasChanges) {
-				performConfigSave(
-					node: node,
-					context: context,
-					accessoryManager: accessoryManager,
-					hasChanges: $hasChanges,
-					dismiss: goBack
-				) { fromUser, toUser in
-					var lc = Config.LoRaConfig()
-					lc.hopLimit = UInt32(hopLimit)
-					lc.region = RegionCodes(rawValue: region)!.protoEnumValue()
-					lc.modemPreset = ModemPresets(rawValue: modemPreset)!.protoEnumValue()
-					lc.usePreset = usePreset
-					lc.txEnabled = txEnabled
-					lc.txPower = Int32(txPower)
-					lc.channelNum = UInt32(channelNum)
-					lc.bandwidth = UInt32(bandwidth)
-					lc.codingRate = UInt32(normalizedCodingRate)
-					lc.spreadFactor = UInt32(spreadFactor)
-					lc.sx126XRxBoostedGain = rxBoostedGain
-					lc.overrideFrequency = overrideFrequency
-					lc.ignoreMqtt = ignoreMqtt
-					lc.configOkToMqtt = okToMqtt
-					if let deviceNum = accessoryManager.activeDeviceNum,
-					   let connectedNode = getNodeInfo(id: deviceNum, context: context),
-					   connectedNode.num == node?.user?.num ?? 0 {
-						UserDefaults.modemPreset = modemPreset
+				SaveConfigButton(node: node, hasChanges: $hasChanges) {
+					guard customBandwidthIsValid else { return }
+					performConfigSave(
+						node: node,
+						context: context,
+						accessoryManager: accessoryManager,
+						hasChanges: $hasChanges,
+						dismiss: goBack
+					) { fromUser, toUser in
+						var lc = Config.LoRaConfig()
+						lc.hopLimit = UInt32(hopLimit)
+						lc.region = RegionCodes(rawValue: region)!.protoEnumValue()
+						lc.modemPreset = ModemPresets(rawValue: modemPreset)!.protoEnumValue()
+						lc.usePreset = usePreset
+						lc.txEnabled = txEnabled
+						lc.txPower = Int32(txPower)
+						lc.channelNum = UInt32(channelNum)
+						lc.bandwidth = UInt32(bandwidth)
+						lc.codingRate = UInt32(normalizedCodingRate)
+						lc.spreadFactor = UInt32(spreadFactor)
+						lc.sx126XRxBoostedGain = rxBoostedGain
+						lc.overrideFrequency = overrideFrequency
+						lc.ignoreMqtt = ignoreMqtt
+						lc.configOkToMqtt = okToMqtt
+						if let deviceNum = accessoryManager.activeDeviceNum,
+						   let connectedNode = getNodeInfo(id: deviceNum, context: context),
+						   connectedNode.num == node?.user?.num ?? 0 {
+							UserDefaults.modemPreset = modemPreset
+						}
+						_ = try await accessoryManager.saveLoRaConfig(config: lc, fromUser: fromUser, toUser: toUser)
 					}
-					_ = try await accessoryManager.saveLoRaConfig(config: lc, fromUser: fromUser, toUser: toUser)
 				}
-			}
+				.disabled(!customBandwidthIsValid)
 			}
 		}
 		.navigationTitle("LoRa Config")
@@ -490,6 +516,36 @@ struct LoRaConfig: View {
 		self.ignoreMqtt = node?.loRaConfig?.ignoreMqtt ?? false
 		self.okToMqtt = node?.loRaConfig?.okToMqtt ?? false
 		self.hasChanges = false
+	}
+}
+
+private struct CustomBandwidthPicker: View {
+	@Binding var selection: Int
+	let options: [Bandwidths]
+	let isValid: Bool
+
+	var body: some View {
+		VStack(alignment: .leading, spacing: 8) {
+			Picker("Bandwidth", selection: $selection) {
+				if !isValid {
+					Text("Unsupported (\(Bandwidths.description(forPickerValue: selection)))")
+						.tag(selection)
+				}
+				ForEach(options) { bandwidth in
+					Text(bandwidth.description)
+						.tag(bandwidth.pickerValue)
+				}
+			}
+			if !isValid {
+				Label {
+					Text("This bandwidth is not supported by the connected radio in the selected region. Choose a supported value before saving.".localized)
+				} icon: {
+					Image(systemName: "exclamationmark.triangle.fill")
+				}
+				.foregroundStyle(.orange)
+				.font(.callout)
+			}
+		}
 	}
 }
 
