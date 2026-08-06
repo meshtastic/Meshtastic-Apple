@@ -40,6 +40,7 @@ struct SecurityConfig: View {
 	@State var packetAuthenticitySelection = PacketAuthenticitySelectionState()
 	@State private var backupStatus: KeyBackupStatus?
 	@State private var saveError: String?
+	@State private var isSaving = false
 	@State private var privateKeyDisclosure = IdentityKeyDisclosureState()
 
 	private var hasValidDeviceIdentity: Bool {
@@ -104,11 +105,11 @@ struct SecurityConfig: View {
 				Text("Managed devices cannot be configured locally. A primary admin key is required.")
 			}
 		}
-		.disabled(!accessoryManager.isConnected || node?.securityConfig == nil)
+		.disabled(!accessoryManager.isConnected || node?.securityConfig == nil || isSaving)
 		.safeAreaInset(edge: .bottom, alignment: .center) {
 			HStack(spacing: 0) {
 				SaveConfigButton(node: node, hasChanges: $hasChanges) {
-					if !hasValidDeviceIdentity || !hasValidAdminKey || !hasValidAdminKey2 || !hasValidAdminKey3 {
+					if isSaving || !hasValidDeviceIdentity || !hasValidAdminKey || !hasValidAdminKey2 || !hasValidAdminKey3 {
 						return
 					}
 
@@ -130,7 +131,9 @@ struct SecurityConfig: View {
 					config.packetSignaturePolicy = packetAuthenticitySelection.selected
 
 					saveError = nil
+					isSaving = true
 					Task { @MainActor in
+						defer { isSaving = false }
 						do {
 							_ = try await accessoryManager.saveSecurityConfig(
 								config: config,
@@ -144,7 +147,7 @@ struct SecurityConfig: View {
 						}
 					}
 				}
-				.disabled(!hasValidDeviceIdentity)
+				.disabled(!hasValidDeviceIdentity || isSaving)
 			}
 		}
 		.scrollDismissesKeyboard(.immediately)
