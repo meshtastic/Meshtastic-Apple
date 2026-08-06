@@ -142,6 +142,8 @@ struct SecurityConfig: View {
 							)
 							hasChanges = false
 							goBack()
+						} catch is CancellationError {
+							return
 						} catch {
 							saveError = error.localizedDescription
 						}
@@ -158,6 +160,12 @@ struct SecurityConfig: View {
 			}
 		}
 		.onChange(of: node) { _, _ in
+			setSecurityValues()
+		}
+		.onChange(of: node?.securityConfig?.publicKey) { _, _ in
+			setSecurityValues()
+		}
+		.onChange(of: node?.securityConfig?.privateKey) { _, _ in
 			setSecurityValues()
 		}
 		.onChange(of: scenePhase) { _, newPhase in
@@ -300,7 +308,7 @@ struct SecurityConfig: View {
 					.font(.system(.footnote, design: .monospaced))
 					.foregroundStyle(.secondary)
 					.privacySensitive()
-					.textSelection(.enabled)
+					.textSelection(.disabled)
 			} else {
 				Text(String(repeating: "*", count: 16))
 					.font(.system(.footnote, design: .monospaced))
