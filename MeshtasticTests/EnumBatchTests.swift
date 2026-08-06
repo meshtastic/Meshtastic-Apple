@@ -303,6 +303,24 @@ struct IdentityKeyPairBackupTests {
 		#expect(!IdentityKeyPairBackup.isValid(privateKey: Data(repeating: 0x03, count: 31), publicKey: publicKey))
 		#expect(!IdentityKeyPairBackup.isValid(privateKey: privateKey, publicKey: Data(repeating: 0xFF, count: 32)))
 	}
+
+	@Test func disclosureRequiresAKeyAndResetsToMasked() {
+		var disclosure = IdentityKeyDisclosureState()
+
+		#expect(!disclosure.isRevealed)
+		#expect(!disclosure.canCopy(privateKey: Data()))
+
+		disclosure.toggle(privateKey: Data(repeating: 0x04, count: 32))
+		#expect(disclosure.isRevealed)
+		#expect(disclosure.canCopy(privateKey: Data(repeating: 0x04, count: 32)))
+
+		disclosure.hide()
+		#expect(!disclosure.isRevealed)
+		#expect(!disclosure.canCopy(privateKey: Data(repeating: 0x04, count: 32)))
+
+		disclosure.toggle(privateKey: Data())
+		#expect(!disclosure.isRevealed)
+	}
 }
 
 @Suite("KeyBackupStatus")

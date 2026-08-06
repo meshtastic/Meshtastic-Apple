@@ -8,6 +8,7 @@
 import Foundation
 import SwiftUI
 import SwiftData
+import UniformTypeIdentifiers
 import MeshtasticProtobufs
 
 struct SecurityConfig: View {
@@ -16,6 +17,7 @@ struct SecurityConfig: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@EnvironmentObject var lockdown: LockdownCoordinator
 	@Environment(\.dismiss) private var goBack
+	@Environment(\.scenePhase) private var scenePhase
 
 	@State private var showLockNowAlert: Bool = false
 
@@ -38,7 +40,7 @@ struct SecurityConfig: View {
 	@State var packetAuthenticitySelection = PacketAuthenticitySelectionState()
 	@State private var backupStatus: KeyBackupStatus?
 	@State private var saveError: String?
-	@State private var isPrivateKeyRevealed = false
+	@State private var privateKeyDisclosure = IdentityKeyDisclosureState()
 
 	private var hasValidDeviceIdentity: Bool {
 		guard let storedPublicKey = node?.securityConfig?.publicKey else {
@@ -151,6 +153,11 @@ struct SecurityConfig: View {
 		.onChange(of: node) { _, _ in
 			setSecurityValues()
 		}
+		.onChange(of: scenePhase) { _, newPhase in
+			if newPhase != .active {
+				privateKeyDisclosure.hide()
+			}
+		}
 		.onChange(of: isManaged) { _, newIsManaged in
 			if newIsManaged != node?.securityConfig?.isManaged { hasChanges = true }
 		}
@@ -217,7 +224,7 @@ struct SecurityConfig: View {
 		self.packetAuthenticitySelection = storedPacketAuthenticitySelection
 		self.backupStatus = nil
 		self.saveError = nil
-		self.isPrivateKeyRevealed = false
+		self.privateKeyDisclosure.hide()
 		self.hasChanges = false
 	}
 
@@ -257,19 +264,19 @@ struct SecurityConfig: View {
 				Label("Private Key", systemImage: "key.fill")
 				Spacer()
 				Button {
-					isPrivateKeyRevealed.toggle()
+					privateKeyDisclosure.toggle(privateKey: preservedPrivateKey)
 				} label: {
 					Label(
-						isPrivateKeyRevealed ? "Hide" : "Show",
-						systemImage: isPrivateKeyRevealed ? "eye.slash" : "eye"
+						privateKeyDisclosure.isRevealed ? "Hide" : "Show",
+						systemImage: privateKeyDisclosure.isRevealed ? "eye.slash" : "eye"
 					)
 				}
 				.buttonStyle(.bordered)
 				.controlSize(.small)
 				.disabled(privateKey.isEmpty)
-				if isPrivateKeyRevealed {
+				if privateKeyDisclosure.canCopy(privateKey: preservedPrivateKey) {
 					Button {
-						UIPasteboard.general.string = privateKey
+						copyPrivateKey()
 					} label: {
 						Label("Copy", systemImage: "doc.on.doc")
 					}
@@ -281,7 +288,7 @@ struct SecurityConfig: View {
 				Label("This device has not reported a private key.", systemImage: "exclamationmark.triangle.fill")
 					.font(.footnote)
 					.foregroundStyle(.orange)
-			} else if isPrivateKeyRevealed {
+			} else if privateKeyDisclosure.isRevealed {
 				Text(privateKey)
 					.font(.system(.footnote, design: .monospaced))
 					.foregroundStyle(.secondary)
@@ -297,6 +304,16 @@ struct SecurityConfig: View {
 				.font(.footnote)
 				.foregroundStyle(.secondary)
 		}
+	}
+
+	private func copyPrivateKey() {
+		UIPasteboard.general.setItems(
+			[[UTType.utf8PlainText.identifier: privateKey]],
+			options: [
+				.localOnly: true,
+				.expirationDate: Date().addingTimeInterval(60)
+			]
+		)
 	}
 
 	private var adminAccessSection: some View {
@@ -354,6 +371,26 @@ struct SecurityConfig: View {
 			value: backupValue
 		)
 		backupStatus = status == errSecSuccess ? .saved : .saveFailed
+	}
+}
+
+struct IdentityKeyDisclosureState: Equatable {
+	private(set) var isRevealed = false
+
+	mutating func toggle(privateKey: Data) {
+		guard !privateKey.isEmpty else {
+			isRevealed = false
+			return
+		}
+		isRevealed.toggle()
+	}
+
+	mutating func hide() {
+		isRevealed = false
+	}
+
+	func canCopy(privateKey: Data) -> Bool {
+		isRevealed && !privateKey.isEmpty
 	}
 }
 
