@@ -26,23 +26,22 @@ class KeychainHelper {
 			kSecClass as String: kSecClassGenericPassword,
 			kSecAttrService as String: service,
 			kSecAttrAccount as String: key,
+			kSecAttrSynchronizable as String: synchronizable ? kCFBooleanTrue! : kCFBooleanFalse!
+		]
+
+		let attributes: [String: Any] = [
 			kSecValueData as String: data,
-			kSecAttrSynchronizable as String: synchronizable ? kCFBooleanTrue! : kCFBooleanFalse!,
 			kSecAttrAccessible as String: accessibility
 		]
 
-		// Match the deletion scope to the write scope so save-with-synchronizable=false
-		// doesn't leave a stale synchronizable=true item behind.
-		let deleteQuery: [String: Any] = [
-			kSecClass as String: kSecClassGenericPassword,
-			kSecAttrService as String: service,
-			kSecAttrAccount as String: key,
-			kSecAttrSynchronizable as String: synchronizable ? kCFBooleanTrue! : kCFBooleanFalse!
-		]
-		SecItemDelete(deleteQuery as CFDictionary)
+		let updateStatus = SecItemUpdate(query as CFDictionary, attributes as CFDictionary)
+		if updateStatus != errSecItemNotFound {
+			return updateStatus
+		}
 
-		let status = SecItemAdd(query as CFDictionary, nil)
-		return status
+		var addQuery = query
+		addQuery.merge(attributes) { _, new in new }
+		return SecItemAdd(addQuery as CFDictionary, nil)
 	}
 
 	func read(

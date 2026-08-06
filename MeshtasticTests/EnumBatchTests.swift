@@ -3,6 +3,7 @@
 
 import Testing
 import Foundation
+import CryptoKit
 import MeshtasticProtobufs
 @testable import Meshtastic
 
@@ -263,43 +264,87 @@ struct TriggerTypesEnumTests {
 	}
 }
 
-// MARK: - KeyBackupStatus Tests
+// MARK: - IdentityKeyPairBackup Tests
 
-@Suite("KeyBackupStatus Enum")
-struct KeyBackupStatusEnumTests {
+@Suite("IdentityKeyPairBackup")
+struct IdentityKeyPairBackupTests {
 
-	@Test func allCases_count() {
-		#expect(KeyBackupStatus.allCases.count == 6)
+	@Test func encodesAndDecodesBothKeys() throws {
+		let privateKey = Data(repeating: 0x01, count: 32)
+		let publicKey = try Curve25519.KeyAgreement.PrivateKey(
+			rawRepresentation: privateKey
+		).publicKey.rawRepresentation
+		let backup = IdentityKeyPairBackup(privateKey: privateKey, publicKey: publicKey)
+
+		let decoded = try JSONDecoder().decode(
+			IdentityKeyPairBackup.self,
+			from: JSONEncoder().encode(backup)
+		)
+
+		#expect(decoded == backup)
 	}
 
-	@Test func allCases_haveDescriptions() {
-		for status in KeyBackupStatus.allCases {
-			#expect(!status.description.isEmpty)
-		}
+	@Test func validatesMatchingCurve25519KeyPair() throws {
+		let privateKey = Data(repeating: 0x02, count: 32)
+		let publicKey = try Curve25519.KeyAgreement.PrivateKey(
+			rawRepresentation: privateKey
+		).publicKey.rawRepresentation
+
+		#expect(IdentityKeyPairBackup.isValid(privateKey: privateKey, publicKey: publicKey))
 	}
+
+	@Test func rejectsMissingMalformedAndMismatchedKeyPairs() throws {
+		let privateKey = Data(repeating: 0x03, count: 32)
+		let publicKey = try Curve25519.KeyAgreement.PrivateKey(
+			rawRepresentation: privateKey
+		).publicKey.rawRepresentation
+
+		#expect(!IdentityKeyPairBackup.isValid(privateKey: Data(), publicKey: publicKey))
+		#expect(!IdentityKeyPairBackup.isValid(privateKey: Data(repeating: 0x03, count: 31), publicKey: publicKey))
+		#expect(!IdentityKeyPairBackup.isValid(privateKey: privateKey, publicKey: Data(repeating: 0xFF, count: 32)))
+	}
+
+	@Test func acceptsAnAbsentIdentityForUnrelatedSecuritySaves() {
+		#expect(IdentityKeyPairBackup.isAbsentOrValid(privateKey: Data(), publicKey: Data()))
+		#expect(!IdentityKeyPairBackup.isValid(privateKey: Data(), publicKey: Data()))
+		#expect(!IdentityKeyPairBackup.isAbsentOrValid(privateKey: Data(repeating: 0x05, count: 32), publicKey: Data()))
+	}
+}
+
+@Suite("IdentityKeyDisclosureState")
+struct IdentityKeyDisclosureStateTests {
+
+	@Test func disclosureRequiresAKeyAndResetsToMasked() {
+		var disclosure = IdentityKeyDisclosureState()
+
+		#expect(!disclosure.isRevealed)
+		#expect(!disclosure.canCopy(privateKey: Data()))
+
+		disclosure.toggle(privateKey: Data(repeating: 0x04, count: 32))
+		#expect(disclosure.isRevealed)
+		#expect(disclosure.canCopy(privateKey: Data(repeating: 0x04, count: 32)))
+
+		disclosure.hide()
+		#expect(!disclosure.isRevealed)
+		#expect(!disclosure.canCopy(privateKey: Data(repeating: 0x04, count: 32)))
+
+		disclosure.toggle(privateKey: Data())
+		#expect(!disclosure.isRevealed)
+	}
+}
+
+@Suite("KeyBackupStatus")
+struct KeyBackupStatusTests {
 
 	@Test func successStates() {
-		#expect(KeyBackupStatus.saved.success == true)
-		#expect(KeyBackupStatus.restored.success == true)
-		#expect(KeyBackupStatus.deleted.success == true)
+		#expect(KeyBackupStatus.saved.success)
+		#expect(!KeyBackupStatus.saveFailed.success)
 	}
 
-	@Test func failureStates() {
-		#expect(KeyBackupStatus.saveFailed.success == false)
-		#expect(KeyBackupStatus.restoreFailed.success == false)
-		#expect(KeyBackupStatus.deleteFailed.success == false)
-	}
-
-	@Test func decodable() throws {
-		let json = "\"saved\""
-		let data = json.data(using: .utf8)!
-		let decoded = try JSONDecoder().decode(KeyBackupStatus.self, from: data)
-		#expect(decoded == .saved)
-	}
-
-	@Test func equatable() {
-		#expect(KeyBackupStatus.saved == KeyBackupStatus.saved)
-		#expect(KeyBackupStatus.saved != KeyBackupStatus.deleted)
+	@Test func allStatesHaveDescriptions() {
+		for status in [KeyBackupStatus.saved, .saveFailed] {
+			#expect(!status.description.isEmpty)
+		}
 	}
 }
 

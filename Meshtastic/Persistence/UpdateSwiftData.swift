@@ -1163,8 +1163,12 @@ extension MeshPackets {
 					newSecurityConfig.packetSignaturePolicy = Int32(config.packetSignaturePolicy.rawValue)
 					fetchedNode[0].securityConfig = newSecurityConfig
 				} else {
-					fetchedNode[0].securityConfig?.publicKey = config.publicKey
-					fetchedNode[0].securityConfig?.privateKey = config.privateKey
+					if !config.publicKey.isEmpty {
+						fetchedNode[0].securityConfig?.publicKey = config.publicKey
+					}
+					if !config.privateKey.isEmpty {
+						fetchedNode[0].securityConfig?.privateKey = config.privateKey
+					}
 					if config.adminKey.count > 0 {
 						fetchedNode[0].securityConfig?.adminKey = config.adminKey[0]
 						if config.adminKey.count > 1 {

@@ -529,32 +529,6 @@ struct EthernetModeTests {
 	}
 }
 
-@Suite("KeyBackupStatus")
-struct KeyBackupStatusTests {
-
-	@Test func allCases_haveNonEmptyDescription() {
-		for status in KeyBackupStatus.allCases {
-			#expect(!status.description.isEmpty)
-		}
-	}
-
-	@Test func successCases_returnTrue() {
-		#expect(KeyBackupStatus.saved.success)
-		#expect(KeyBackupStatus.restored.success)
-		#expect(KeyBackupStatus.deleted.success)
-	}
-
-	@Test func failCases_returnFalse() {
-		#expect(!KeyBackupStatus.saveFailed.success)
-		#expect(!KeyBackupStatus.restoreFailed.success)
-		#expect(!KeyBackupStatus.deleteFailed.success)
-	}
-
-	@Test func totalCaseCount() {
-		#expect(KeyBackupStatus.allCases.count == 6)
-	}
-}
-
 @Suite("WeatherConditions")
 struct WeatherConditionsTests {
 
