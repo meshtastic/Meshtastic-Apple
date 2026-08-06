@@ -41,6 +41,22 @@ private struct ChirpyWebSnippet: Hashable {
 	let content: String
 }
 
+enum AIDocSearchURLBuilder {
+	static func url(for query: String) -> URL? {
+		let trimmedQuery = query.trimmingCharacters(in: .whitespacesAndNewlines)
+		guard !trimmedQuery.isEmpty else { return nil }
+
+		var components = URLComponents()
+		components.scheme = "https"
+		components.host = "meshtastic.org"
+		components.path = "/search/"
+		components.queryItems = [URLQueryItem(name: "q", value: trimmedQuery)]
+		// URLQueryItem leaves "+" unescaped, but search backends commonly decode it as a space.
+		components.percentEncodedQuery = components.percentEncodedQuery?.replacingOccurrences(of: "+", with: "%2B")
+		return components.url
+	}
+}
+
 // MARK: - AIDocAssistantView (iOS 26+ only)
 
 @available(iOS 26, *)
@@ -552,13 +568,8 @@ struct AIDocAssistantView: View {
 	}
 
 	private func fetchWebFallbackSnippets(for query: String) async -> [ChirpyWebSnippet] {
-		guard let encodedQuery = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
-			let searchURL = URL(string: "https://meshtastic.org/search/?q=\(encodedQuery)")
-		else {
-			return []
-		}
-
-		guard let host = searchURL.host?.lowercased(), host.hasSuffix("meshtastic.org") else { return [] }
+		guard let searchURL = AIDocSearchURLBuilder.url(for: query) else { return [] }
+		guard searchURL.host?.lowercased() == "meshtastic.org" else { return [] }
 
 		let intentURLs = directIntentURLs(for: query)
 		let shouldSkipSearchSnippet = !intentURLs.isEmpty
