@@ -263,6 +263,41 @@ struct TriggerTypesEnumTests {
 	}
 }
 
+// MARK: - IdentityKeyPairBackup Tests
+
+@Suite("IdentityKeyPairBackup")
+struct IdentityKeyPairBackupTests {
+
+	@Test func encodesAndDecodesBothKeys() throws {
+		let backup = IdentityKeyPairBackup(
+			privateKey: Data(repeating: 0x01, count: 32),
+			publicKey: Data(repeating: 0x02, count: 32)
+		)
+
+		let decoded = try JSONDecoder().decode(
+			IdentityKeyPairBackup.self,
+			from: JSONEncoder().encode(backup)
+		)
+
+		#expect(decoded == backup)
+	}
+}
+
+@Suite("KeyBackupStatus")
+struct KeyBackupStatusTests {
+
+	@Test func successStates() {
+		#expect(KeyBackupStatus.saved.success)
+		#expect(!KeyBackupStatus.saveFailed.success)
+	}
+
+	@Test func allStatesHaveDescriptions() {
+		for status in [KeyBackupStatus.saved, .saveFailed] {
+			#expect(!status.description.isEmpty)
+		}
+	}
+}
+
 // MARK: - WeatherConditions Tests
 
 @Suite("WeatherConditions Enum")

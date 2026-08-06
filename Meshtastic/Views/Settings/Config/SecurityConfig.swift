@@ -36,11 +36,13 @@ struct SecurityConfig: View {
 	@State private var serialEnabled = false
 	@State private var debugLogApiEnabled = false
 	@State var packetAuthenticitySelection = PacketAuthenticitySelectionState()
+	@State private var backupStatus: KeyBackupStatus?
 
 	var body: some View {
 		Form {
 			ConfigHeader(title: "Security", config: \.securityConfig, node: node, onAppear: setSecurityValues)
 			deviceIdentitySection
+			identityBackupSection
 			packetAuthenticitySection
 			adminAccessSection
 			LockdownSection(lockdown: lockdown, showLockNowAlert: $showLockNowAlert)
@@ -184,6 +186,7 @@ struct SecurityConfig: View {
 		self.serialEnabled = node?.securityConfig?.serialEnabled ?? false
 		self.debugLogApiEnabled = node?.securityConfig?.debugLogApiEnabled ?? false
 		self.packetAuthenticitySelection = storedPacketAuthenticitySelection
+		self.backupStatus = nil
 		self.hasChanges = false
 	}
 
@@ -227,6 +230,49 @@ struct SecurityConfig: View {
 		} footer: {
 			Text("These public keys authorize administration of this device.")
 		}
+	}
+
+	private var identityBackupSection: some View {
+		Section("Identity Backup") {
+			HStack(alignment: .firstTextBaseline) {
+				Label("Key Pair Backup", systemImage: "icloud")
+				Spacer()
+				Button(action: backupIdentityKeyPair) {
+					Label("Back Up", systemImage: "icloud.and.arrow.up")
+				}
+				.buttonStyle(.bordered)
+				.controlSize(.small)
+				.disabled(preservedPrivateKey.isEmpty || publicKey.isEmpty)
+			}
+			if let backupStatus {
+				Label(backupStatus.description, systemImage: backupStatus.success ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
+					.font(.footnote)
+					.foregroundStyle(backupStatus.success ? .green : .orange)
+			}
+			Text("Stores this device's public and private identity keys in your iCloud Keychain. Backing up does not change the device identity.")
+				.font(.footnote)
+				.foregroundStyle(.secondary)
+		}
+	}
+
+	private func backupIdentityKeyPair() {
+		guard let node,
+			  let publicKey = node.securityConfig?.publicKey,
+			  !preservedPrivateKey.isEmpty,
+			  !publicKey.isEmpty,
+			  let encodedBackup = try? JSONEncoder().encode(
+				IdentityKeyPairBackup(privateKey: preservedPrivateKey, publicKey: publicKey)
+			  ),
+			  let backupValue = String(data: encodedBackup, encoding: .utf8) else {
+			backupStatus = .saveFailed
+			return
+		}
+
+		let status = KeychainHelper.standard.save(
+			key: "IdentityKeyPairNode\(node.num)",
+			value: backupValue
+		)
+		backupStatus = status == errSecSuccess ? .saved : .saveFailed
 	}
 }
 
