@@ -29,6 +29,9 @@ class PersistenceController {
 	}()
 
 	private(set) var container: ModelContainer
+	/// Advances synchronously with each container replacement. Long-lived view tasks capture the
+	/// generation they were mounted against and stop before touching a stale `ModelContext`.
+	private(set) var containerGeneration = 0
 
 	/// Remembered so the store can be reopened in a fresh container — see `recreateContainer()`.
 	private let storeName: String
@@ -63,6 +66,7 @@ class PersistenceController {
 				fresh = try ModelContainer(for: schema, migrationPlan: MeshtasticMigrationPlan.self, configurations: config)
 			}
 			fresh.mainContext.autosaveEnabled = false
+			containerGeneration &+= 1
 			container = fresh
 			Logger.data.info("💾 SwiftData container recreated after data clear")
 		} catch {
