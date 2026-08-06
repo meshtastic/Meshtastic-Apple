@@ -144,7 +144,7 @@ struct SecurityConfig: View {
 						}
 					}
 				}
-				.disabled(!canBackUpDeviceIdentity)
+				.disabled(!hasValidDeviceIdentity)
 			}
 		}
 		.scrollDismissesKeyboard(.immediately)
@@ -342,7 +342,7 @@ struct SecurityConfig: View {
 				}
 				.buttonStyle(.bordered)
 				.controlSize(.small)
-				.disabled(!hasValidDeviceIdentity)
+				.disabled(!canBackUpDeviceIdentity)
 			}
 			if let backupStatus {
 				Label(backupStatus.description, systemImage: backupStatus.success ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
