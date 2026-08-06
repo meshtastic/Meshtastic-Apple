@@ -24,7 +24,7 @@ struct SecurityConfig: View {
 	@State var hasChanges = false
 	@State private var publicKey = ""
 	// Security config saves contain the complete keypair. Keep the device-provided
-	// private key unchanged when writing other settings, without exposing it to the UI.
+	// private key unchanged when writing other settings; it is presented read-only below.
 	@State private var preservedPrivateKey = Data()
 	@State private var adminKey: String = ""
 	@State private var adminKey2: String = ""
@@ -37,6 +37,22 @@ struct SecurityConfig: View {
 	@State private var debugLogApiEnabled = false
 	@State var packetAuthenticitySelection = PacketAuthenticitySelectionState()
 	@State private var backupStatus: KeyBackupStatus?
+	@State private var saveError: String?
+	@State private var isPrivateKeyRevealed = false
+
+	private var hasValidDeviceIdentity: Bool {
+		guard let storedPublicKey = node?.securityConfig?.publicKey else {
+			return false
+		}
+		return IdentityKeyPairBackup.isValid(
+			privateKey: preservedPrivateKey,
+			publicKey: storedPublicKey
+		)
+	}
+
+	private var privateKey: String {
+		preservedPrivateKey.base64EncodedString()
+	}
 
 	var body: some View {
 		Form {
@@ -46,6 +62,13 @@ struct SecurityConfig: View {
 			packetAuthenticitySection
 			adminAccessSection
 			LockdownSection(lockdown: lockdown, showLockNowAlert: $showLockNowAlert)
+			if let saveError {
+				Section {
+					Label(saveError, systemImage: "exclamationmark.triangle.fill")
+						.font(.footnote)
+						.foregroundStyle(.orange)
+				}
+			}
 			Section("Diagnostics") {
 				Toggle(isOn: $serialEnabled) {
 					Label("Serial Console", systemImage: "terminal")
@@ -79,7 +102,7 @@ struct SecurityConfig: View {
 		.safeAreaInset(edge: .bottom, alignment: .center) {
 			HStack(spacing: 0) {
 				SaveConfigButton(node: node, hasChanges: $hasChanges) {
-					if !hasValidAdminKey || !hasValidAdminKey2 || !hasValidAdminKey3 {
+					if !hasValidDeviceIdentity || !hasValidAdminKey || !hasValidAdminKey2 || !hasValidAdminKey3 {
 						return
 					}
 
@@ -100,16 +123,22 @@ struct SecurityConfig: View {
 					// the radio already holds round-trips untouched instead of being reset to Compatible.
 					config.packetSignaturePolicy = packetAuthenticitySelection.selected
 
-					Task {
-						_ = try await accessoryManager.saveSecurityConfig(
-							config: config,
-							fromUser: fromUser,
-							toUser: toUser
-						)
-						hasChanges = false
-						goBack()
+					saveError = nil
+					Task { @MainActor in
+						do {
+							_ = try await accessoryManager.saveSecurityConfig(
+								config: config,
+								fromUser: fromUser,
+								toUser: toUser
+							)
+							hasChanges = false
+							goBack()
+						} catch {
+							saveError = error.localizedDescription
+						}
 					}
 				}
+				.disabled(!hasValidDeviceIdentity)
 			}
 		}
 		.scrollDismissesKeyboard(.immediately)
@@ -187,6 +216,8 @@ struct SecurityConfig: View {
 		self.debugLogApiEnabled = node?.securityConfig?.debugLogApiEnabled ?? false
 		self.packetAuthenticitySelection = storedPacketAuthenticitySelection
 		self.backupStatus = nil
+		self.saveError = nil
+		self.isPrivateKeyRevealed = false
 		self.hasChanges = false
 	}
 
@@ -214,7 +245,55 @@ struct SecurityConfig: View {
 					.foregroundStyle(.secondary)
 					.textSelection(.enabled)
 			}
+			if !hasValidDeviceIdentity {
+				Label("Security settings cannot be saved until this device reports a valid identity key pair.", systemImage: "exclamationmark.triangle.fill")
+					.font(.footnote)
+					.foregroundStyle(.orange)
+			}
 			Text("This public key identifies your device to other nodes. The device manages its identity, so it cannot be changed from the app.")
+				.font(.footnote)
+				.foregroundStyle(.secondary)
+			HStack(alignment: .firstTextBaseline) {
+				Label("Private Key", systemImage: "key.fill")
+				Spacer()
+				Button {
+					isPrivateKeyRevealed.toggle()
+				} label: {
+					Label(
+						isPrivateKeyRevealed ? "Hide" : "Show",
+						systemImage: isPrivateKeyRevealed ? "eye.slash" : "eye"
+					)
+				}
+				.buttonStyle(.bordered)
+				.controlSize(.small)
+				.disabled(privateKey.isEmpty)
+				if isPrivateKeyRevealed {
+					Button {
+						UIPasteboard.general.string = privateKey
+					} label: {
+						Label("Copy", systemImage: "doc.on.doc")
+					}
+					.buttonStyle(.bordered)
+					.controlSize(.small)
+				}
+			}
+			if privateKey.isEmpty {
+				Label("This device has not reported a private key.", systemImage: "exclamationmark.triangle.fill")
+					.font(.footnote)
+					.foregroundStyle(.orange)
+			} else if isPrivateKeyRevealed {
+				Text(privateKey)
+					.font(.system(.footnote, design: .monospaced))
+					.foregroundStyle(.secondary)
+					.privacySensitive()
+					.textSelection(.enabled)
+			} else {
+				Text(String(repeating: "*", count: 16))
+					.font(.system(.footnote, design: .monospaced))
+					.foregroundStyle(.secondary)
+					.privacySensitive()
+			}
+			Text("This private key is hidden until you choose Show. It is read-only and cannot be changed from the app.")
 				.font(.footnote)
 				.foregroundStyle(.secondary)
 		}
@@ -242,7 +321,7 @@ struct SecurityConfig: View {
 				}
 				.buttonStyle(.bordered)
 				.controlSize(.small)
-				.disabled(preservedPrivateKey.isEmpty || publicKey.isEmpty)
+				.disabled(!hasValidDeviceIdentity)
 			}
 			if let backupStatus {
 				Label(backupStatus.description, systemImage: backupStatus.success ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
@@ -258,8 +337,10 @@ struct SecurityConfig: View {
 	private func backupIdentityKeyPair() {
 		guard let node,
 			  let publicKey = node.securityConfig?.publicKey,
-			  !preservedPrivateKey.isEmpty,
-			  !publicKey.isEmpty,
+			  IdentityKeyPairBackup.isValid(
+				privateKey: preservedPrivateKey,
+				publicKey: publicKey
+			  ),
 			  let encodedBackup = try? JSONEncoder().encode(
 				IdentityKeyPairBackup(privateKey: preservedPrivateKey, publicKey: publicKey)
 			  ),

@@ -3,6 +3,7 @@
 
 import Testing
 import Foundation
+import CryptoKit
 import MeshtasticProtobufs
 @testable import Meshtastic
 
@@ -269,10 +270,11 @@ struct TriggerTypesEnumTests {
 struct IdentityKeyPairBackupTests {
 
 	@Test func encodesAndDecodesBothKeys() throws {
-		let backup = IdentityKeyPairBackup(
-			privateKey: Data(repeating: 0x01, count: 32),
-			publicKey: Data(repeating: 0x02, count: 32)
-		)
+		let privateKey = Data(repeating: 0x01, count: 32)
+		let publicKey = try Curve25519.KeyAgreement.PrivateKey(
+			rawRepresentation: privateKey
+		).publicKey.rawRepresentation
+		let backup = IdentityKeyPairBackup(privateKey: privateKey, publicKey: publicKey)
 
 		let decoded = try JSONDecoder().decode(
 			IdentityKeyPairBackup.self,
@@ -280,6 +282,26 @@ struct IdentityKeyPairBackupTests {
 		)
 
 		#expect(decoded == backup)
+	}
+
+	@Test func validatesMatchingCurve25519KeyPair() throws {
+		let privateKey = Data(repeating: 0x02, count: 32)
+		let publicKey = try Curve25519.KeyAgreement.PrivateKey(
+			rawRepresentation: privateKey
+		).publicKey.rawRepresentation
+
+		#expect(IdentityKeyPairBackup.isValid(privateKey: privateKey, publicKey: publicKey))
+	}
+
+	@Test func rejectsMissingMalformedAndMismatchedKeyPairs() throws {
+		let privateKey = Data(repeating: 0x03, count: 32)
+		let publicKey = try Curve25519.KeyAgreement.PrivateKey(
+			rawRepresentation: privateKey
+		).publicKey.rawRepresentation
+
+		#expect(!IdentityKeyPairBackup.isValid(privateKey: Data(), publicKey: publicKey))
+		#expect(!IdentityKeyPairBackup.isValid(privateKey: Data(repeating: 0x03, count: 31), publicKey: publicKey))
+		#expect(!IdentityKeyPairBackup.isValid(privateKey: privateKey, publicKey: Data(repeating: 0xFF, count: 32)))
 	}
 }
 
