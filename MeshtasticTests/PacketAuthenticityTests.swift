@@ -191,6 +191,14 @@ struct PacketAuthenticityIngestionTests {
 		return try context.fetch(descriptor).first?.securityConfig?.storedPacketSignaturePolicy
 	}
 
+	@MainActor
+	private func storedIdentityKeys(_ nodeNum: Int64) throws -> (publicKey: Data?, privateKey: Data?) {
+		let context = ModelContext(PersistenceController.shared.container)
+		let descriptor = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == nodeNum })
+		let securityConfig = try context.fetch(descriptor).first?.securityConfig
+		return (securityConfig?.publicKey, securityConfig?.privateKey)
+	}
+
 	@Test @MainActor func upsertPersistsThePolicyWhenInsertingTheConfig() async throws {
 		let nodeNum: Int64 = 0x00E0_0301
 		try seedNode(nodeNum)
@@ -217,6 +225,26 @@ struct PacketAuthenticityIngestionTests {
 		config.packetSignaturePolicy = .compatible
 		await MeshPackets.shared.upsertSecurityConfigPacket(config: config, nodeNum: nodeNum)
 		#expect(try storedPolicy(nodeNum) == .compatible)
+	}
+
+	@Test @MainActor func upsertPreservesIdentityKeysWhenAnUnrelatedSaveOmitsThem() async throws {
+		let nodeNum: Int64 = 0x00E0_0303
+		try seedNode(nodeNum)
+
+		let publicKey = Data([0xA1, 0xB2, 0xC3])
+		let privateKey = Data([0x01, 0x02, 0x03])
+		var identityConfig = Config.SecurityConfig()
+		identityConfig.publicKey = publicKey
+		identityConfig.privateKey = privateKey
+		await MeshPackets.shared.upsertSecurityConfigPacket(config: identityConfig, nodeNum: nodeNum)
+
+		var unrelatedConfig = Config.SecurityConfig()
+		unrelatedConfig.serialEnabled = true
+		await MeshPackets.shared.upsertSecurityConfigPacket(config: unrelatedConfig, nodeNum: nodeNum)
+
+		let storedKeys = try storedIdentityKeys(nodeNum)
+		#expect(storedKeys.publicKey == publicKey)
+		#expect(storedKeys.privateKey == privateKey)
 	}
 }
 

@@ -121,6 +121,7 @@ struct SecurityConfig: View {
 					}
 
 					var config = Config.SecurityConfig()
+					config.publicKey = node?.securityConfig?.publicKey ?? Data()
 					config.privateKey = preservedPrivateKey
 					config.adminKey = [Data(base64Encoded: adminKey) ?? Data(), Data(base64Encoded: adminKey2) ?? Data(), Data(base64Encoded: adminKey3) ?? Data()]
 					config.isManaged = isManaged
