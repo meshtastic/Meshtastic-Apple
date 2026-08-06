@@ -263,46 +263,6 @@ struct TriggerTypesEnumTests {
 	}
 }
 
-// MARK: - KeyBackupStatus Tests
-
-@Suite("KeyBackupStatus Enum")
-struct KeyBackupStatusEnumTests {
-
-	@Test func allCases_count() {
-		#expect(KeyBackupStatus.allCases.count == 6)
-	}
-
-	@Test func allCases_haveDescriptions() {
-		for status in KeyBackupStatus.allCases {
-			#expect(!status.description.isEmpty)
-		}
-	}
-
-	@Test func successStates() {
-		#expect(KeyBackupStatus.saved.success == true)
-		#expect(KeyBackupStatus.restored.success == true)
-		#expect(KeyBackupStatus.deleted.success == true)
-	}
-
-	@Test func failureStates() {
-		#expect(KeyBackupStatus.saveFailed.success == false)
-		#expect(KeyBackupStatus.restoreFailed.success == false)
-		#expect(KeyBackupStatus.deleteFailed.success == false)
-	}
-
-	@Test func decodable() throws {
-		let json = "\"saved\""
-		let data = json.data(using: .utf8)!
-		let decoded = try JSONDecoder().decode(KeyBackupStatus.self, from: data)
-		#expect(decoded == .saved)
-	}
-
-	@Test func equatable() {
-		#expect(KeyBackupStatus.saved == KeyBackupStatus.saved)
-		#expect(KeyBackupStatus.saved != KeyBackupStatus.deleted)
-	}
-}
-
 // MARK: - WeatherConditions Tests
 
 @Suite("WeatherConditions Enum")
