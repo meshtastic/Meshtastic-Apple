@@ -49,6 +49,13 @@ struct SecurityConfig: View {
 		)
 	}
 
+	private var canBackUpDeviceIdentity: Bool {
+		IdentityKeyPairBackup.isValid(
+			privateKey: preservedPrivateKey,
+			publicKey: node?.securityConfig?.publicKey ?? Data()
+		)
+	}
+
 	private var privateKey: String {
 		preservedPrivateKey.base64EncodedString()
 	}
@@ -137,7 +144,7 @@ struct SecurityConfig: View {
 						}
 					}
 				}
-				.disabled(!hasValidDeviceIdentity)
+				.disabled(!canBackUpDeviceIdentity)
 			}
 		}
 		.scrollDismissesKeyboard(.immediately)

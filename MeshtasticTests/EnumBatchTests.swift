@@ -306,6 +306,7 @@ struct IdentityKeyPairBackupTests {
 
 	@Test func acceptsAnAbsentIdentityForUnrelatedSecuritySaves() {
 		#expect(IdentityKeyPairBackup.isAbsentOrValid(privateKey: Data(), publicKey: Data()))
+		#expect(!IdentityKeyPairBackup.isValid(privateKey: Data(), publicKey: Data()))
 		#expect(!IdentityKeyPairBackup.isAbsentOrValid(privateKey: Data(repeating: 0x05, count: 32), publicKey: Data()))
 	}
 }
