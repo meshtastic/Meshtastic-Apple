@@ -302,7 +302,7 @@ struct Routes: View {
 					isPresented: $isExporting,
 					document: CsvDocument(emptyCsv: exportString),
 					contentType: .commaSeparatedText,
-					defaultFilename: String("\(selectedRoute?.name ?? "Route") Log"),
+					defaultFilename: CsvDocument.exportFilename("\(selectedRoute?.name ?? "Route") Log"),
 					onCompletion: { result in
 						switch result {
 						case .success:
