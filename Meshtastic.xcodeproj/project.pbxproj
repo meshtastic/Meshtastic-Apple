@@ -29,7 +29,6 @@
 		78B74168A96E756F203F9D13 /* AppIcon_Chirpy.icon in Resources */ = {isa = PBXBuildFile; fileRef = DD8FE67D6F2C7F041F8E3C8C /* AppIcon_Chirpy.icon */; };
 		987BD8AFF176A9670F175E5C /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 26351F51CD01C94D8D82486A /* Localizable.xcstrings */; };
 		9B61C796B61232F1226AAA28 /* DatadogLogs in Frameworks */ = {isa = PBXBuildFile; productRef = 7F3F27310C566077475C7105 /* DatadogLogs */; };
-		A518007AF83AA6E15BE848FD /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = 7F0CA2B608168551C6F95FEB /* SnapshotTesting */; };
 		B80DB8962DBDE2284BC9664A /* urls.json in Resources */ = {isa = PBXBuildFile; fileRef = B079D165838E646EE754DC6E /* urls.json */; };
 		B97B830773C8597258C1A96F /* MeshtasticProtobufs in Frameworks */ = {isa = PBXBuildFile; productRef = 838679D32875D367B9FC8FBF /* MeshtasticProtobufs */; };
 		BB73AFBEB76A7B00550C8F2F /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = A7443D3C9E82A023A4388EFC /* InfoPlist.strings */; };
@@ -512,14 +511,6 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		0CDEAEFB74FD23D58C244A58 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				A518007AF83AA6E15BE848FD /* SnapshotTesting in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		507ACF225D7B4D1C1D2D9340 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -654,7 +645,6 @@
 			buildPhases = (
 				1873C2316C2E9226EA6AE7C8 /* Sources */,
 				10D31ADC03EA77B8648E37AA /* Resources */,
-				0CDEAEFB74FD23D58C244A58 /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -666,7 +656,6 @@
 			);
 			name = MeshtasticTests;
 			packageProductDependencies = (
-				7F0CA2B608168551C6F95FEB /* SnapshotTesting */,
 			);
 			productName = MeshtasticTests;
 			productReference = 53E4E3191A93EDE5C8C08E1C /* MeshtasticTests.xctest */;
@@ -836,7 +825,6 @@
 				B9243D356FA56FD1728AC3D3 /* XCRemoteSwiftPackageReference "mvt-tools" */,
 				4EFE4EEC5E27B5E40276A67C /* XCRemoteSwiftPackageReference "swift-markdown" */,
 				981964D4D54F32AEF37E646A /* XCRemoteSwiftPackageReference "swift-protobuf" */,
-				179A6527140B3A37DDA2482A /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */,
 				71B6C19C2660F20C79DC8366 /* XCLocalSwiftPackageReference "MeshtasticProtobufs" */,
 			);
 			preferredProjectObjectVersion = 77;
@@ -1492,14 +1480,6 @@
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		179A6527140B3A37DDA2482A /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/pointfreeco/swift-snapshot-testing";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.17.0;
-			};
-		};
 		4E46BE4D3A1C5CF53B7D7592 /* XCRemoteSwiftPackageReference "SwiftDraw" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/swhitty/SwiftDraw";
@@ -1596,11 +1576,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = D4D6B3C078FD6A403FA6BA8D /* XCRemoteSwiftPackageReference "dd-sdk-ios" */;
 			productName = DatadogCore;
-		};
-		7F0CA2B608168551C6F95FEB /* SnapshotTesting */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 179A6527140B3A37DDA2482A /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */;
-			productName = SnapshotTesting;
 		};
 		7F3F27310C566077475C7105 /* DatadogLogs */ = {
 			isa = XCSwiftPackageProductDependency;

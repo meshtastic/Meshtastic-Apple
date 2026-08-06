@@ -28,9 +28,6 @@ packages:
   CocoaMQTT:
     url: https://github.com/emqx/CocoaMQTT
     majorVersion: 2.0.0
-  swift-snapshot-testing:
-    url: https://github.com/pointfreeco/swift-snapshot-testing
-    majorVersion: 1.17.0
   mvt-tools:
     url: https://github.com/Outdooractive/mvt-tools.git
     majorVersion: 1.2.1
@@ -534,8 +531,6 @@ targets:
         type: syncedFolder
     dependencies:
       - target: Meshtastic
-      - package: swift-snapshot-testing
-        product: SnapshotTesting
     settings:
       configs:
         Debug:
