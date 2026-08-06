@@ -47,7 +47,17 @@ When sharing channels, the share screen shows a QR code and link, and — on iPh
 
 ### Security
 
-Configure PKI (Public Key Infrastructure) encryption for direct messages. Requires firmware 2.5+.
+Security settings cover device identity, direct-message encryption, packet authenticity, administrative access, and diagnostics.
+
+#### Device Identity
+
+The **Device Identity** section shows the key pair the radio uses to identify itself to other nodes. The public key is read-only and can be copied. The private key is read-only and hidden by default; choose **Show** to view it. A copy action is available only while it is shown.
+
+The app cannot regenerate, replace, import, or restore this identity. Saving other Security settings preserves the device-provided private key unchanged.
+
+#### Identity Backup
+
+**Key Pair Backup** stores the current public and private identity keys together in iCloud Keychain for that device. It does not change the identity on the radio. The action is available only when the radio has reported a complete, matching key pair.
 
 #### Packet Authenticity
 

@@ -43,12 +43,9 @@ struct SecurityConfig: View {
 	@State private var privateKeyDisclosure = IdentityKeyDisclosureState()
 
 	private var hasValidDeviceIdentity: Bool {
-		guard let storedPublicKey = node?.securityConfig?.publicKey else {
-			return false
-		}
-		return IdentityKeyPairBackup.isValid(
+		IdentityKeyPairBackup.isAbsentOrValid(
 			privateKey: preservedPrivateKey,
-			publicKey: storedPublicKey
+			publicKey: node?.securityConfig?.publicKey ?? Data()
 		)
 	}
 
@@ -88,7 +85,7 @@ struct SecurityConfig: View {
 					Label("Managed Device", systemImage: "gearshape.arrow.triangle.2.circlepath")
 				}
 				.tint(.accentColor)
-				.disabled(adminKey.isEmpty)
+				.disabled(adminKey.isEmpty && !isManaged)
 				if adminKey.isEmpty {
 					Label("An admin key must be set before enabling managed mode.", systemImage: "exclamationmark.triangle.fill")
 						.font(.caption)

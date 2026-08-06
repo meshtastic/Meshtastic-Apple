@@ -304,6 +304,15 @@ struct IdentityKeyPairBackupTests {
 		#expect(!IdentityKeyPairBackup.isValid(privateKey: privateKey, publicKey: Data(repeating: 0xFF, count: 32)))
 	}
 
+	@Test func acceptsAnAbsentIdentityForUnrelatedSecuritySaves() {
+		#expect(IdentityKeyPairBackup.isAbsentOrValid(privateKey: Data(), publicKey: Data()))
+		#expect(!IdentityKeyPairBackup.isAbsentOrValid(privateKey: Data(repeating: 0x05, count: 32), publicKey: Data()))
+	}
+}
+
+@Suite("IdentityKeyDisclosureState")
+struct IdentityKeyDisclosureStateTests {
+
 	@Test func disclosureRequiresAKeyAndResetsToMasked() {
 		var disclosure = IdentityKeyDisclosureState()
 

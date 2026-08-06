@@ -54,7 +54,12 @@
 <p>Manage up to 8 channels (0–7). Channel 0 is the primary broadcast channel. Additional channels create isolated messaging groups with their own encryption keys.</p>
 <p>When sharing channels, the share screen shows a QR code and link, and — on iPhones with NFC hardware (iOS 18 or later) — a <strong>Write to NFC Tag</strong> button. Hold a writable NFC tag near the top of your iPhone to save the channel link to it, replacing any content the tag already held; tapping that tag on another phone opens the same add-or-replace channels flow the QR code does.</p>
 <h3>Security</h3>
-<p>Configure PKI (Public Key Infrastructure) encryption for direct messages. Requires firmware 2.5+.</p>
+<p>Security settings cover device identity, direct-message encryption, packet authenticity, administrative access, and diagnostics.</p>
+<h4>Device Identity</h4>
+<p>The <strong>Device Identity</strong> section shows the key pair the radio uses to identify itself to other nodes. The public key is read-only and can be copied. The private key is read-only and hidden by default; choose <strong>Show</strong> to view it. A copy action is available only while it is shown.</p>
+<p>The app cannot regenerate, replace, import, or restore this identity. Saving other Security settings preserves the device-provided private key unchanged.</p>
+<h4>Identity Backup</h4>
+<p><strong>Key Pair Backup</strong> stores the current public and private identity keys together in iCloud Keychain for that device. It does not change the identity on the radio. The action is available only when the radio has reported a complete, matching key pair.</p>
 <h4>Packet Authenticity</h4>
 <p>Firmware that reports XEdDSA support can authenticate the sender of a mesh packet. <strong>Protection Level</strong> controls what the radio does with traffic it cannot authenticate:</p>
 <table>
