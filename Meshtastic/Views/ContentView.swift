@@ -109,24 +109,37 @@ struct ContentView: View {
 					)
 				}
 				.badge(appState.totalUnreadMessages)
+				// Intended as stable, non-localized identifiers for MeshtasticUITests/
+				// AccessibilityDriver (NavigationStep.tab) to select a tab bar button without
+				// depending on locale. As of Xcode 26.6 / iOS 18+, SwiftUI's value-based
+				// Tab(value:) API does NOT propagate this identifier down to the underlying
+				// UITabBarButton (verified against the live accessibility hierarchy — no
+				// identifier: field reaches the button either way), so the driver currently
+				// falls back to matching on the visible title instead. Left in place: harmless
+				// today, and picked up automatically if a future SwiftUI version fixes the gap.
+				.accessibilityIdentifier("tab-messages")
 
 				Tab("Nodes", image: "custom.mesh.radio", value: NavigationState.Tab.nodes) {
 					NodeList()
 				}
+				.accessibilityIdentifier("tab-nodes")
 
 				Tab("Map", systemImage: "map", value: NavigationState.Tab.map) {
 					MeshMapMK(router: appState.router)
 				}
+				.accessibilityIdentifier("tab-map")
 
 				Tab("Settings", systemImage: "gear", value: NavigationState.Tab.settings) {
 					Settings()
 				}
+				.accessibilityIdentifier("tab-settings")
 
 				Tab("Connect", systemImage: "link", value: NavigationState.Tab.connect) {
 					Connect(
 						router: appState.router
 					)
 				}
+				.accessibilityIdentifier("tab-connect")
 			}
 		} else {
 			TabView(selection: tabSelection) {
@@ -140,24 +153,28 @@ struct ContentView: View {
 				}
 				.tag(NavigationState.Tab.messages)
 				.badge(appState.totalUnreadMessages)
+				.accessibilityIdentifier("tab-messages")
 
 				NodeList()
 				.tabItem {
 					Label("Nodes", image: "custom.mesh.radio")
 				}
 				.tag(NavigationState.Tab.nodes)
+				.accessibilityIdentifier("tab-nodes")
 
 				MeshMapMK(router: appState.router)
 				.tabItem {
 					Label("Map", systemImage: "map")
 				}
 				.tag(NavigationState.Tab.map)
+				.accessibilityIdentifier("tab-map")
 
 				Settings()
 				.tabItem {
 					Label("Settings", systemImage: "gear")
 				}
 				.tag(NavigationState.Tab.settings)
+				.accessibilityIdentifier("tab-settings")
 
 				Connect(
 					router: appState.router
@@ -166,6 +183,7 @@ struct ContentView: View {
 					Label("Connect", systemImage: "link")
 				}
 				.tag(NavigationState.Tab.connect)
+				.accessibilityIdentifier("tab-connect")
 			}
 		}
 	}

@@ -54,6 +54,13 @@
 			remoteGlobalIDString = A2F1595BC848E48B138C58E1;
 			remoteInfo = WidgetsExtension;
 		};
+		16EA78A3ED2490812413C1D3 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B1FDE49A580C939ADB9E00CE /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = FEF4168AE260CFE34C972EBB;
+			remoteInfo = Meshtastic;
+		};
 		7641B817BB20E264D0A5E4E5 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = B1FDE49A580C939ADB9E00CE /* Project object */;
@@ -96,6 +103,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		09F893619C1C48BB1EAA0F4E /* MeshtasticUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = MeshtasticUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		0AEAC3FF0190C3F8166D22E3 /* MeshtasticDataModelV 52.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 52.xcdatamodel"; sourceTree = "<group>"; };
 		0CC33262B2EA2E8463E8BE95 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		0D3292ABF1A342707957A3F6 /* MeshtasticDataModelV4.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV4.xcdatamodel; sourceTree = "<group>"; };
@@ -327,6 +335,15 @@
 			);
 			name = Extensions;
 			path = Extensions;
+			sourceTree = "<group>";
+		};
+		133005B6E255406DEFC95D44 /* MeshtasticUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			path = MeshtasticUITests;
 			sourceTree = "<group>";
 		};
 		1B104A61866EBBAB39A96CD6 /* API */ = {
@@ -564,6 +581,7 @@
 				ADF6BAC3992D05079F77B35C /* Meshtastic Watch App.app */,
 				1A740EACFF7FA4000F22EF4E /* Meshtastic.app */,
 				53E4E3191A93EDE5C8C08E1C /* MeshtasticTests.xctest */,
+				09F893619C1C48BB1EAA0F4E /* MeshtasticUITests.xctest */,
 				E4053FDE501FD7E0A02CEA8D /* WidgetsExtension.appex */,
 			);
 			name = Products;
@@ -618,6 +636,7 @@
 				68569A5CFCF946568B4E32C5 /* Meshtastic */,
 				F0E2A06151AF30290D808624 /* Meshtastic Watch App */,
 				867FD80926C4A4286D635BAD /* MeshtasticTests */,
+				133005B6E255406DEFC95D44 /* MeshtasticUITests */,
 				8F644F7974EA8B14E77ED53A /* Packages */,
 				F15A1577564640951AD3EA40 /* Settings.bundle */,
 				456E28D41A9B7B1788FEE0CD /* Shared */,
@@ -648,6 +667,28 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		28B0B51E3AE1F3623280EB90 /* MeshtasticUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3355725D1130C11F4E9A6903 /* Build configuration list for PBXNativeTarget "MeshtasticUITests" */;
+			buildPhases = (
+				53E16A3FD2E9B9DB9FD89638 /* Sources */,
+				8CEAB9779266146CC72E804D /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				6A374F1598142E4209F81DAA /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				133005B6E255406DEFC95D44 /* MeshtasticUITests */,
+			);
+			name = MeshtasticUITests;
+			packageProductDependencies = (
+			);
+			productName = MeshtasticUITests;
+			productReference = 09F893619C1C48BB1EAA0F4E /* MeshtasticUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 		55AF3400F316106F54C5485F /* MeshtasticTests */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 29E5C755B9F9C20FFDD3DB73 /* Build configuration list for PBXNativeTarget "MeshtasticTests" */;
@@ -784,6 +825,11 @@
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
+					28B0B51E3AE1F3623280EB90 = {
+						DevelopmentTeam = GCH7VS5Y9R;
+						ProvisioningStyle = Automatic;
+						TestTargetID = FEF4168AE260CFE34C972EBB;
+					};
 					55AF3400F316106F54C5485F = {
 						DevelopmentTeam = GCH7VS5Y9R;
 						ProvisioningStyle = Automatic;
@@ -847,6 +893,7 @@
 			targets = (
 				FEF4168AE260CFE34C972EBB /* Meshtastic */,
 				A2F1595BC848E48B138C58E1 /* WidgetsExtension */,
+				28B0B51E3AE1F3623280EB90 /* MeshtasticUITests */,
 				55AF3400F316106F54C5485F /* MeshtasticTests */,
 				C4BC64E061C609D15F5DFAF5 /* Meshtastic Watch App */,
 			);
@@ -855,6 +902,13 @@
 
 /* Begin PBXResourcesBuildPhase section */
 		10D31ADC03EA77B8648E37AA /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8CEAB9779266146CC72E804D /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -951,6 +1005,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		53E16A3FD2E9B9DB9FD89638 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		5E955A559EEB811D0823F8D4 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -982,6 +1043,11 @@
 			isa = PBXTargetDependency;
 			target = FEF4168AE260CFE34C972EBB /* Meshtastic */;
 			targetProxy = D28FD0EC2A7A271CF7A6C3A5 /* PBXContainerItemProxy */;
+		};
+		6A374F1598142E4209F81DAA /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = FEF4168AE260CFE34C972EBB /* Meshtastic */;
+			targetProxy = 16EA78A3ED2490812413C1D3 /* PBXContainerItemProxy */;
 		};
 		9F8D08FE8C3920E29BC0C051 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -1026,6 +1092,29 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		249887A9B149E96083FFC2BD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.MeshtasticUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = YES;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Meshtastic;
+			};
+			name = Release;
+		};
 		5554BC660DC627BF91EFBD63 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -1245,6 +1334,31 @@
 			};
 			name = Release;
 		};
+		B46369D92F48C640E6A18B46 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.MeshtasticUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = YES;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Meshtastic;
+			};
+			name = Debug;
+		};
 		C5CD95E6488D0FB0F90E2021 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -1455,6 +1569,15 @@
 			buildConfigurations = (
 				5BA3D57F33296B59D6A97D56 /* Debug */,
 				5554BC660DC627BF91EFBD63 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		3355725D1130C11F4E9A6903 /* Build configuration list for PBXNativeTarget "MeshtasticUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B46369D92F48C640E6A18B46 /* Debug */,
+				249887A9B149E96083FFC2BD /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
