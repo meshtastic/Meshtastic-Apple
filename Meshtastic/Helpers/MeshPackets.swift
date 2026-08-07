@@ -238,6 +238,21 @@ actor MeshPackets {
 	private var messageInsertsSincePrune = 0
 	private var savesSinceEntityCapCheck = 0
 
+	/// Test seam for text-message notifications. Called instead of constructing a
+	/// LocalNotificationManager inline. Defaults to the real scheduling path;
+	/// tests replace it to capture what would have been scheduled.
+	private var notificationScheduler: @MainActor @Sendable ([Notification]) -> Void = { notifications in
+		let manager = LocalNotificationManager()
+		manager.notifications = notifications
+		manager.schedule()
+	}
+
+	/// Replace the notification scheduler (test seam). Actor-isolated so callers
+	/// can `await` the mutation from outside the actor.
+	func replaceNotificationScheduler(_ scheduler: @escaping @MainActor @Sendable ([Notification]) -> Void) {
+		notificationScheduler = scheduler
+	}
+
 	/// Schedules a debounced save. Each call resets the 2-second timer. If packets
 	/// keep arriving continuously, a save is forced every 5 seconds.
 	/// Use for high-frequency packet types (position, telemetry) instead of `savePendingChanges`.
@@ -1340,6 +1355,26 @@ actor MeshPackets {
 				let fetchDescriptor = FetchDescriptor<UserEntity>(predicate: #Predicate { $0.num == toNum || $0.num == fromNum })
 				do {
 					let fetchedUsers = try modelContext.fetch(fetchDescriptor)
+
+					// Dedupe: if we already have a row with this messageId, skip re-ingestion.
+					// messageId is @Attribute(.unique), so without this guard the radio echo
+					// upserts onto the row sendMessage() wrote, resetting read/ACK state and
+					// triggering a phantom notification. Mirrors Android's
+					// findPacketsWithId(dataPacket.id) guard in rememberDataPacket.
+					let packetId = Int64(packet.id)
+					let existingDescriptor = FetchDescriptor<MessageEntity>(predicate: #Predicate { $0.messageId == packetId })
+					if let existing = try? modelContext.fetch(existingDescriptor), !existing.isEmpty {
+						Logger.data.debug("Skipping duplicate text message, messageId \(packetId, privacy: .public) already stored")
+						return
+					}
+
+					// Self-originated: the radio echoes our own transmissions back to the phone.
+					// Android marks these read = fromLocal; we go further and also suppress the
+					// notification (Android's handlePacketNotification has no fromLocal guard and
+					// relies on dedupe alone, but that still fires for S&F replays of our own
+					// messages that were never locally stored).
+					let isFromSelf = Int64(packet.from) == connectedNode
+
 					let newMessage = MessageEntity()
 					modelContext.insert(newMessage)
 					newMessage.messageId = Int64(packet.id)
@@ -1363,6 +1398,12 @@ actor MeshPackets {
 					/// (computed above) also covers store-and-forward router broadcasts, which are addressed
 					/// to the local node yet treated as channel broadcasts (toUser == nil).
 					newMessage.xeddsaSigned = packet.xeddsaSigned && isBroadcastMessage
+					// Mark read when: (a) it's our own message (self-echo or S&F replay), OR
+					// (b) it's a detection-sensor with notifications disabled. These conditions
+					// are OR'd so neither path can accidentally clear the other.
+					if isFromSelf {
+						newMessage.read = true
+					}
 					if packet.decoded.portnum == PortNum.detectionSensorApp {
 						if !UserDefaults.enableDetectionNotifications {
 							newMessage.read = true
@@ -1494,6 +1535,11 @@ actor MeshPackets {
 						// Observers debounce, so posting per saved message is cheap.
 						NotificationCenter.default.post(name: .meshMessagesDidChange, object: nil)
 
+						// Self-originated messages and muted detection-sensor packets skip
+						// all notification work (no badge recount, no local notification).
+						if isFromSelf {
+							return
+						}
 						if packet.decoded.portnum == PortNum.detectionSensorApp && !UserDefaults.enableDetectionNotifications {
 							return
 						}
@@ -1537,10 +1583,9 @@ actor MeshPackets {
 									)
 								}
 								if let notification = dmNotification {
+									let scheduler = notificationScheduler
 									Task {@MainActor in
-										let manager = LocalNotificationManager()
-										manager.notifications = [notification]
-										manager.schedule()
+										scheduler([notification])
 										Logger.services.debug("iOS Notification Scheduled for direct message from \(senderName, privacy: .public)")
 									}
 								}
@@ -1590,6 +1635,7 @@ actor MeshPackets {
 										}
 									}
 									let notification = channelNotification
+									let scheduler = notificationScheduler
 									Task {@MainActor in
 										if recountUnread {
 											// Recompute the badge against a freshly re-fetched, live main-context
@@ -1602,9 +1648,7 @@ actor MeshPackets {
 											}
 										}
 										if let notification {
-											let manager = LocalNotificationManager()
-											manager.notifications = [notification]
-											manager.schedule()
+											scheduler([notification])
 											Logger.services.debug("iOS Notification Scheduled for channel text message")
 										}
 									}
