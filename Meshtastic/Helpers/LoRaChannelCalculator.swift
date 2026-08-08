@@ -329,12 +329,7 @@ struct RegionInfo {
 
 extension ModemPresets {
 	var androidChannelName: String {
-		switch self {
-		case .longModerate:
-			return "LongMod"
-		default:
-			return name
-		}
+		protoEnumValue().firmwareChannelName ?? "Invalid"
 	}
 
 	var bandwidthMHz: Double {
