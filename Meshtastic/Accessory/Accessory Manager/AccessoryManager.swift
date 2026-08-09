@@ -1107,10 +1107,24 @@ extension AccessoryManager {
 	/// ATAK_PLUGIN port (72) with the original `TAKPacket` schema, which only
 	/// supports PLI and GeoChat (no shapes, markers, routes, etc.).
 	///
-	/// Returns `true` when the firmware version is unknown (radio not yet
-	/// handshook) since v2 is now the predominant firmware in the field.
 	var supportsTAKv2: Bool {
-		checkIsVersionSupported(forVersion: "2.8.0")
+		Self.isTAKv2Supported(firmwareVersion: connectedVersion)
+	}
+
+	static func isTAKv2Supported(firmwareVersion: String?) -> Bool {
+		guard let firmwareVersion else {
+			return false
+		}
+
+		let components = firmwareVersion.split(separator: ".", omittingEmptySubsequences: false)
+		guard components.count >= 3,
+			  let major = Int(components[0]),
+			  let minor = Int(components[1]),
+			  let patch = Int(components[2]) else {
+			return false
+		}
+
+		return major > 2 || (major == 2 && (minor > 8 || (minor == 8 && patch >= 0)))
 	}
 
 	/// The Status Message module (`ModuleConfig.StatusMessageConfig` + the
