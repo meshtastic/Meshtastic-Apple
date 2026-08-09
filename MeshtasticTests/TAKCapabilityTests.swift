@@ -13,6 +13,8 @@ struct TAKCapabilityTests {
 	@Test func malformedFirmwareUsesLegacyTAKProtocol() {
 		#expect(AccessoryManager.isTAKv2Supported(firmwareVersion: "unknown") == false)
 		#expect(AccessoryManager.isTAKv2Supported(firmwareVersion: "2.8.0-alpha") == false)
+		#expect(AccessoryManager.isTAKv2Supported(firmwareVersion: "2.8.0.") == false)
+		#expect(AccessoryManager.isTAKv2Supported(firmwareVersion: "2.8.0.x") == false)
 	}
 
 	@Test func legacyFirmwareUsesLegacyTAKProtocol() {

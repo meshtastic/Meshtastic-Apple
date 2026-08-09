@@ -1117,11 +1117,18 @@ extension AccessoryManager {
 		}
 
 		let components = firmwareVersion.split(separator: ".", omittingEmptySubsequences: false)
-		guard components.count >= 3,
+		guard (3...4).contains(components.count),
 			  let major = Int(components[0]),
 			  let minor = Int(components[1]),
 			  let patch = Int(components[2]) else {
 			return false
+		}
+		if components.count == 4 {
+			let hexDigits = CharacterSet(charactersIn: "0123456789abcdefABCDEF")
+			guard !components[3].isEmpty,
+				  components[3].unicodeScalars.allSatisfy(hexDigits.contains) else {
+				return false
+			}
 		}
 
 		return major > 2 || (major == 2 && (minor > 8 || (minor == 8 && patch >= 0)))
