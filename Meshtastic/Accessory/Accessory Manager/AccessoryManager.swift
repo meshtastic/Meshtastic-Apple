@@ -1117,7 +1117,11 @@ extension AccessoryManager {
 		}
 
 		let components = firmwareVersion.split(separator: ".", omittingEmptySubsequences: false)
+		let decimalDigits = CharacterSet(charactersIn: "0123456789")
 		guard (3...4).contains(components.count),
+			  components.prefix(3).allSatisfy({
+				  !$0.isEmpty && $0.unicodeScalars.allSatisfy { decimalDigits.contains($0) }
+			  }),
 			  let major = Int(components[0]),
 			  let minor = Int(components[1]),
 			  let patch = Int(components[2]) else {
