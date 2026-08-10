@@ -1625,7 +1625,7 @@ struct NodeDetailSnapshotTests {
 		node.telemetries = [deviceTelemetry, envTelemetry]
 		context.insert(node)
 
-		let view = NodeDetail(node: node)
+		let view = NodeDetail(node: node, nodeNum: node.num)
 			.environmentObject(AccessoryManager.shared)
 			.environmentObject(MeshtasticAPI.shared)
 			.environmentObject(Router())

@@ -11,6 +11,28 @@ import OSLog
 import TipKit
 import MeshtasticProtobufs
 
+/// Managed-state data captured while the corresponding node is still live.
+///
+/// Settings retains its node list between periodic fetches. Keeping this value separate stops
+/// `body` from reading a config relationship from a node invalidated by a store reset.
+struct SettingsNodeManagementSnapshot: Equatable {
+	let num: Int64
+	let isManaged: Bool
+
+	@MainActor init?(node: NodeInfoEntity) {
+		guard node.modelContext != nil, !node.isDeleted else { return nil }
+		num = node.num
+		guard let deviceConfig = node.deviceConfig,
+			deviceConfig.modelContext != nil,
+			!deviceConfig.isDeleted
+		else {
+			isManaged = false
+			return
+		}
+		isManaged = deviceConfig.isManaged
+	}
+}
+
 struct Settings: View {
 	@Environment(\.modelContext) private var context
 	@Environment(\.colorScheme) private var colorScheme
@@ -20,10 +42,17 @@ struct Settings: View {
 	/// `body` on every node write — and TabView keeps Settings alive on other tabs, so under heavy
 	/// ingestion (large mesh, TCP replay) it burned main-thread CPU while completely off-screen.
 	@State private var nodes: [NodeInfoEntity] = []
+	@State private var nodeManagement: [Int64: SettingsNodeManagementSnapshot] = [:]
 
 	private func refreshNodes() {
 		let descriptor = FetchDescriptor<NodeInfoEntity>(sortBy: [SortDescriptor(\NodeInfoEntity.lastHeard, order: .reverse)])
-		nodes = (try? context.fetch(descriptor)) ?? []
+		let fetchedNodes = (try? context.fetch(descriptor)) ?? []
+		let managementSnapshots = fetchedNodes.compactMap(SettingsNodeManagementSnapshot.init)
+		nodes = fetchedNodes
+		nodeManagement = Dictionary(
+			managementSnapshots.map { ($0.num, $0) },
+			uniquingKeysWith: { latest, _ in latest }
+		)
 	}
 
 	/// Nodes for the admin / configuration picker, ordered favorites-first while
@@ -34,6 +63,10 @@ struct Settings: View {
 	/// See `NodeInfoEntity.adminPickerOrder`.
 	private var sortedNodes: [NodeInfoEntity] {
 		NodeInfoEntity.adminPickerOrder(nodes)
+	}
+
+	private var preferredNodeIsManaged: Bool {
+		nodeManagement[Int64(preferredNodeNum)]?.isManaged ?? false
 	}
 
 	@State private var selectedNode: Int = 0
@@ -571,7 +604,7 @@ struct Settings: View {
 				}
 				.disabled(selectedNode > 0 && selectedNode != preferredNodeNum)
 
-				if !(node?.deviceConfig?.isManaged ?? false) {
+				if !preferredNodeIsManaged {
 					if accessoryManager.isConnected {
 						Section("Configure") {
 							if node?.canRemoteAdmin ?? false {
