@@ -149,6 +149,51 @@ extension WaypointEntity {
 		return createdBy != activeDeviceNum
 	}
 
+	/// Whether the connected device is this waypoint's author: a brand-new waypoint
+	/// (`waypointId == 0`, about to be created here) or one created by the connected node.
+	/// Without a connected device authorship cannot be established, so an existing
+	/// waypoint is treated as someone else's.
+	static func isAuthoredLocally(
+		waypointId: Int64,
+		createdBy: Int64,
+		activeDeviceNum: Int64?
+	) -> Bool {
+		if waypointId == 0 { return true }
+		guard let activeDeviceNum else { return false }
+		return createdBy == activeDeviceNum
+	}
+
+	/// The notify flag values to serialize onto an outgoing `Waypoint` proto.
+	struct OutgoingNotifyFlags {
+		let notifyOnEnter: Bool
+		let notifyOnExit: Bool
+		let notifyFavoritesOnly: Bool
+	}
+
+	/// Computes the notify flag values to serialize onto an outgoing `Waypoint` proto.
+	///
+	/// The wire notify fields carry the *author's own* preference only (design#114 —
+	/// each receiver decides locally, and this app ignores the fields on receipt). When
+	/// this device is not the waypoint's author (`isAuthor`, see `isAuthoredLocally`),
+	/// all three serialize as false so that re-sending someone else's waypoint can never
+	/// leak this receiver's local opt-in. Also normalizes: no geofence means no notify
+	/// flags, and favorites-only is only meaningful when actually notifying.
+	static func outgoingNotifyFlags(
+		isAuthor: Bool,
+		hasGeofence: Bool,
+		notifyOnEnter: Bool,
+		notifyOnExit: Bool,
+		notifyFavoritesOnly: Bool
+	) -> OutgoingNotifyFlags {
+		let onEnter = isAuthor && hasGeofence && notifyOnEnter
+		let onExit = isAuthor && hasGeofence && notifyOnExit
+		return OutgoingNotifyFlags(
+			notifyOnEnter: onEnter,
+			notifyOnExit: onExit,
+			notifyFavoritesOnly: (onEnter || onExit) && notifyFavoritesOnly
+		)
+	}
+
 	/// The bounding-box corners as a closed rectangle (SW, SE, NE, NW) suitable for an
 	/// `MKPolygon`, or `nil` when no bounding box is set.
 	var boundingBoxCoordinates: [CLLocationCoordinate2D]? {
