@@ -79,6 +79,8 @@ BLE radio settings including PIN mode and power saving. Changes apply on next ra
 
 Device role, serial output, debug log streaming, and node info broadcast interval.
 
+The **Repeater** role is deprecated and can no longer be selected for new configurations. If a node is still set to Repeater it is shown as "Repeater (Deprecated)" with a reminder to switch it to a Router-based role (Router or Router Late).
+
 ### Display
 
 Screen timeout, auto-carousel of screens, flip screen for alternate mounting orientations, and OLED contrast.

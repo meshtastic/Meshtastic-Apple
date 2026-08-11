@@ -13,7 +13,18 @@ import MapKit
 struct DeviceRolesEnumTests {
 
 	@Test func allCases_count() {
-		#expect(DeviceRoles.allCases.count == 11)
+		#expect(DeviceRoles.allCases.count == 12)
+	}
+
+	@Test func repeater_isDeprecated() {
+		#expect(DeviceRoles.repeater.rawValue == 4)
+		#expect(DeviceRoles.repeater.isDeprecated)
+		#expect(DeviceRoles(rawValue: 4) == .repeater)
+	}
+
+	@Test func onlyRepeaterIsDeprecated() {
+		let deprecated = DeviceRoles.allCases.filter { $0.isDeprecated }
+		#expect(deprecated == [.repeater])
 	}
 
 	@Test func allCases_haveNames() {

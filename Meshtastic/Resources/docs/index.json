@@ -396,8 +396,8 @@
         "navOrder": 7,
         "keywords": [
             "app",
-            "radio",
             "node",
+            "radio",
             "from",
             "firmware",
             "device",
@@ -414,6 +414,7 @@
             "connected",
             "configure",
             "translation",
+            "set",
             "rate",
             "packets",
             "packet",
@@ -422,11 +423,10 @@
             "channel",
             "translated",
             "setting",
-            "set",
             "messages",
             "management"
         ],
-        "charCount": 12440
+        "charCount": 12687
     },
     {
         "id": "signal-meter",
