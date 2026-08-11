@@ -171,7 +171,7 @@
 		BD1780B27CE8A3FF56E1C632 /* zh-Hant */ = {isa = PBXFileReference; lastKnownFileType = text.plist; name = "zh-Hant"; path = "zh-Hant.lproj/AppIntentVocabulary.plist"; sourceTree = "<group>"; };
 		BDE4E12D1CA4D31DF54808B6 /* MeshtasticDataModelV 28.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 28.xcdatamodel"; sourceTree = "<group>"; };
 		BF2A0F6C2F79E131B73DE4D4 /* MeshtasticDataModelV 41.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 41.xcdatamodel"; sourceTree = "<group>"; };
-		BF325A6359A74DDECD015FA1 /* MeshtasticProtobufs */ = {isa = PBXFileReference; lastKnownFileType = folder; name = MeshtasticProtobufs; path = MeshtasticProtobufs; sourceTree = SOURCE_ROOT; };
+		BF325A6359A74DDECD015FA1 /* MeshtasticProtobufs */ = {isa = PBXFileReference; lastKnownFileType = folder; path = MeshtasticProtobufs; sourceTree = SOURCE_ROOT; };
 		BFF8C95A2DA86E1690F165CE /* MeshtasticDataModelV15.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV15.xcdatamodel; sourceTree = "<group>"; };
 		C0810161F73BC57A90E60D0C /* event_firmware.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = event_firmware.json; sourceTree = "<group>"; };
 		C6BCC32505771F08628D70D7 /* DeviceHardware.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = DeviceHardware.json; sourceTree = "<group>"; };
@@ -200,7 +200,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		60FB5122E93A45D014918572 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+		60FB5122E93A45D014918572 /* Exceptions for "images" folder in "Meshtastic" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				crowpanel_2_8.svg,
@@ -208,6 +208,8 @@
 				crowpanel_5_0.svg,
 				crowpanel_7_0.svg,
 				diy.svg,
+				heltec_mesh_pocket.svg,
+				heltec_v4.svg,
 				"heltec-ht62-esp32c3-sx1262.svg",
 				"heltec-mesh-node-t114-case.svg",
 				"heltec-mesh-node-t114.svg",
@@ -220,8 +222,6 @@
 				"heltec-wireless-paper.svg",
 				"heltec-wireless-tracker.svg",
 				"heltec-wsl-v3.svg",
-				heltec_mesh_pocket.svg,
-				heltec_v4.svg,
 				image_manifest.json,
 				"lilygo-tlora-pager.svg",
 				m5_c6l.svg,
@@ -230,20 +230,20 @@
 				"nano-g2-ultra.svg",
 				pico.svg,
 				promicro.svg,
-				"rak-wismesh-tap-v2.svg",
-				"rak-wismeshtap.svg",
-				rak11200.svg,
-				rak11310.svg,
-				rak2560.svg,
-				rak4631.svg,
-				rak4631_case.svg,
 				rak_3312.svg,
 				rak_wismesh_tag.svg,
+				"rak-wismesh-tap-v2.svg",
+				"rak-wismeshtap.svg",
+				rak2560.svg,
+				rak4631_case.svg,
+				rak4631.svg,
+				rak11200.svg,
+				rak11310.svg,
 				rpipicow.svg,
-				"seeed-sensecap-indicator.svg",
-				"seeed-xiao-s3.svg",
 				seeed_solar.svg,
 				seeed_xiao_nrf52_kit.svg,
+				"seeed-sensecap-indicator.svg",
+				"seeed-xiao-s3.svg",
 				"station-g2.svg",
 				"t-deck.svg",
 				"t-echo.svg",
@@ -259,25 +259,23 @@
 				"tlora-v2-1-1_6.svg",
 				"tlora-v2-1-1_8.svg",
 				"tracker-t1000-e.svg",
-				"wio-tracker-wm1110.svg",
 				wio_tracker_l1_case.svg,
 				wio_tracker_l1_eink.svg,
+				"wio-tracker-wm1110.svg",
 			);
 			target = FEF4168AE260CFE34C972EBB /* Meshtastic */;
 		};
-		8924DE954AC79FD140612404 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+		8924DE954AC79FD140612404 /* Exceptions for "Widgets" folder in "WidgetsExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
-				WidgetsExtension.entitlements,
 			);
 			target = A2F1595BC848E48B138C58E1 /* WidgetsExtension */;
 		};
-		DB19C69A7D6E83F95BB67635 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+		DB19C69A7D6E83F95BB67635 /* Exceptions for "Meshtastic Watch App" folder in "Meshtastic Watch App" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
-				"Meshtastic Watch App.entitlements",
 			);
 			target = C4BC64E061C609D15F5DFAF5 /* Meshtastic Watch App */;
 		};
@@ -287,225 +285,119 @@
 		0846840A4300FE311DCFDA44 /* images */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				60FB5122E93A45D014918572 /* PBXFileSystemSynchronizedBuildFileExceptionSet */,
+				60FB5122E93A45D014918572 /* Exceptions for "images" folder in "Meshtastic" target */,
 			);
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			name = images;
 			path = images;
 			sourceTree = "<group>";
 		};
 		0B1C4E352D6981242B97EF9C /* Widgets */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				8924DE954AC79FD140612404 /* PBXFileSystemSynchronizedBuildFileExceptionSet */,
-			);
-			explicitFileTypes = {
-			};
-			explicitFolders = (
+				8924DE954AC79FD140612404 /* Exceptions for "Widgets" folder in "WidgetsExtension" target */,
 			);
 			path = Widgets;
 			sourceTree = "<group>";
 		};
 		0B574D8559FE5799ADB5A517 /* Services */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			name = Services;
 			path = Services;
 			sourceTree = "<group>";
 		};
 		11D3172B1FEF230630B7A990 /* Extensions */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			name = Extensions;
 			path = Extensions;
 			sourceTree = "<group>";
 		};
 		1B104A61866EBBAB39A96CD6 /* API */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			name = API;
 			path = API;
 			sourceTree = "<group>";
 		};
 		22FDA4B8722F2CC1F4B5A929 /* Helpers */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			name = Helpers;
 			path = Helpers;
 			sourceTree = "<group>";
 		};
 		25C42CF0517289648017F9AA /* Intents */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			name = Intents;
 			path = Intents;
 			sourceTree = "<group>";
 		};
 		306AEE0BD7EDAF65F6E3B376 /* Measurement */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			name = Measurement;
 			path = Measurement;
 			sourceTree = "<group>";
 		};
 		456E28D41A9B7B1788FEE0CD /* Shared */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
 			path = Shared;
 			sourceTree = "<group>";
 		};
 		46D9EC9A9870D40B64CBD339 /* Accessory */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			name = Accessory;
 			path = Accessory;
 			sourceTree = "<group>";
 		};
 		4E52FFD5347832FDB8575177 /* Persistence */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			name = Persistence;
 			path = Persistence;
 			sourceTree = "<group>";
 		};
 		811D897CDBB8285F81701314 /* Enums */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			name = Enums;
 			path = Enums;
 			sourceTree = "<group>";
 		};
 		867FD80926C4A4286D635BAD /* MeshtasticTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
 			path = MeshtasticTests;
 			sourceTree = "<group>";
 		};
 		91DE2B8079DF4453A2B7A512 /* AppIntents */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			name = AppIntents;
 			path = AppIntents;
 			sourceTree = "<group>";
 		};
 		9F6D2EC582CAA968D897F796 /* Router */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			name = Router;
 			path = Router;
 			sourceTree = "<group>";
 		};
 		B47C68738DD365F2A873DF1E /* CarPlay */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			name = CarPlay;
 			path = CarPlay;
 			sourceTree = "<group>";
 		};
 		C21C46F8F2BCFF68F31B12C0 /* Export */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			name = Export;
 			path = Export;
 			sourceTree = "<group>";
 		};
 		C95A60ECD93D37F4971EC685 /* Tips */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			name = Tips;
 			path = Tips;
 			sourceTree = "<group>";
 		};
 		D983771846F46D151DDE372B /* Views */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			name = Views;
 			path = Views;
 			sourceTree = "<group>";
 		};
 		F0E2A06151AF30290D808624 /* Meshtastic Watch App */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				DB19C69A7D6E83F95BB67635 /* PBXFileSystemSynchronizedBuildFileExceptionSet */,
-			);
-			explicitFileTypes = {
-			};
-			explicitFolders = (
+				DB19C69A7D6E83F95BB67635 /* Exceptions for "Meshtastic Watch App" folder in "Meshtastic Watch App" target */,
 			);
 			path = "Meshtastic Watch App";
 			sourceTree = "<group>";
 		};
 		F7C2596BDB5FBBD06602EAAF /* Model */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			name = Model;
 			path = Model;
 			sourceTree = "<group>";
 		};
 		FFE592D22DEA437B6844BD5F /* Provisioning */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			name = Provisioning;
 			path = Provisioning;
 			sourceTree = "<group>";
 		};
@@ -685,8 +577,8 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				456E28D41A9B7B1788FEE0CD /* Shared */,
 				0B1C4E352D6981242B97EF9C /* Widgets */,
+				456E28D41A9B7B1788FEE0CD /* Shared */,
 			);
 			name = WidgetsExtension;
 			packageProductDependencies = (
@@ -736,25 +628,25 @@
 				9F8D08FE8C3920E29BC0C051 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				1B104A61866EBBAB39A96CD6 /* API */,
-				46D9EC9A9870D40B64CBD339 /* Accessory */,
-				91DE2B8079DF4453A2B7A512 /* AppIntents */,
-				B47C68738DD365F2A873DF1E /* CarPlay */,
-				811D897CDBB8285F81701314 /* Enums */,
-				C21C46F8F2BCFF68F31B12C0 /* Export */,
+				0846840A4300FE311DCFDA44 /* images */,
+				0B574D8559FE5799ADB5A517 /* Services */,
 				11D3172B1FEF230630B7A990 /* Extensions */,
+				1B104A61866EBBAB39A96CD6 /* API */,
 				22FDA4B8722F2CC1F4B5A929 /* Helpers */,
 				25C42CF0517289648017F9AA /* Intents */,
 				306AEE0BD7EDAF65F6E3B376 /* Measurement */,
-				F7C2596BDB5FBBD06602EAAF /* Model */,
-				4E52FFD5347832FDB8575177 /* Persistence */,
-				FFE592D22DEA437B6844BD5F /* Provisioning */,
-				9F6D2EC582CAA968D897F796 /* Router */,
-				0B574D8559FE5799ADB5A517 /* Services */,
 				456E28D41A9B7B1788FEE0CD /* Shared */,
+				46D9EC9A9870D40B64CBD339 /* Accessory */,
+				4E52FFD5347832FDB8575177 /* Persistence */,
+				811D897CDBB8285F81701314 /* Enums */,
+				91DE2B8079DF4453A2B7A512 /* AppIntents */,
+				9F6D2EC582CAA968D897F796 /* Router */,
+				B47C68738DD365F2A873DF1E /* CarPlay */,
+				C21C46F8F2BCFF68F31B12C0 /* Export */,
 				C95A60ECD93D37F4971EC685 /* Tips */,
 				D983771846F46D151DDE372B /* Views */,
-				0846840A4300FE311DCFDA44 /* images */,
+				F7C2596BDB5FBBD06602EAAF /* Model */,
+				FFE592D22DEA437B6844BD5F /* Provisioning */,
 			);
 			name = Meshtastic;
 			packageProductDependencies = (
@@ -1231,7 +1123,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.6;
-				MARKETING_VERSION = 2.7.18;
+				MARKETING_VERSION = 2.7.19;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.Widgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1266,7 +1158,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.6;
-				MARKETING_VERSION = 2.7.18;
+				MARKETING_VERSION = 2.7.19;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.Widgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1301,7 +1193,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.7.18;
+				MARKETING_VERSION = 2.7.19;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
@@ -1335,7 +1227,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.7.18;
+				MARKETING_VERSION = 2.7.19;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
@@ -1382,7 +1274,7 @@
 					"@executable_path/Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.6;
-				MARKETING_VERSION = 2.7.18;
+				MARKETING_VERSION = 2.7.19;
 				OTHER_LDFLAGS = (
 					"-weak_framework",
 					SwiftUI,
@@ -1432,7 +1324,7 @@
 					"@executable_path/Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.6;
-				MARKETING_VERSION = 2.7.18;
+				MARKETING_VERSION = 2.7.19;
 				OTHER_LDFLAGS = (
 					"-weak_framework",
 					SwiftUI,
