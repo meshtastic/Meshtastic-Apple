@@ -1581,6 +1581,7 @@ struct NodeDetailSnapshotTests {
 		node.favorite = true
 
 		let user = UserEntity()
+		user.num = node.num
 		user.longName = "Hopscotch Base"
 		user.shortName = "HB"
 		user.role = 0 // Client

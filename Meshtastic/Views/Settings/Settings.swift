@@ -11,25 +11,93 @@ import OSLog
 import TipKit
 import MeshtasticProtobufs
 
-/// Managed-state data captured while the corresponding node is still live.
+// MARK: - SettingsNodeSnapshot
+
+/// Settings data captured while the corresponding node is still live.
 ///
-/// Settings retains its node list between periodic fetches. Keeping this value separate stops
-/// `body` from reading a config relationship from a node invalidated by a store reset.
-struct SettingsNodeManagementSnapshot: Equatable {
+/// Settings retains its node list between periodic fetches. Keeping only value data here stops
+/// `body` from reading a node or relationship invalidated by a store reset.
+struct SettingsNodeSnapshot: Identifiable, Equatable {
 	let num: Int64
+	let favorite: Bool
+	let canRemoteAdmin: Bool
+	let hasSessionPasskey: Bool
+	let hasMetadata: Bool
+	let hasTAKConfig: Bool
+	let userLongName: String?
+	let userIsLicensed: Bool
+	let userIsPkiEncrypted: Bool
+	let role: Int32?
+	let regionCode: Int?
+	let excludedModules: Int
 	let isManaged: Bool
+
+	var id: Int64 { num }
 
 	@MainActor init?(node: NodeInfoEntity) {
 		guard node.modelContext != nil, !node.isDeleted else { return nil }
+
 		num = node.num
-		guard let deviceConfig = node.deviceConfig,
-			deviceConfig.modelContext != nil,
-			!deviceConfig.isDeleted
-		else {
-			isManaged = false
-			return
+		favorite = node.favorite
+		canRemoteAdmin = node.canRemoteAdmin
+		hasSessionPasskey = node.sessionPasskey != nil
+
+		if let user = node.user,
+			user.modelContext != nil,
+			!user.isDeleted {
+			userLongName = user.longName
+			userIsLicensed = user.isLicensed
+			userIsPkiEncrypted = user.pkiEncrypted
+			let userRole = user.role
+			if let deviceConfig = node.deviceConfig,
+				deviceConfig.modelContext != nil,
+				!deviceConfig.isDeleted {
+				isManaged = deviceConfig.isManaged
+				role = deviceConfig.role
+			} else {
+				isManaged = false
+				role = userRole
+			}
+		} else {
+			userLongName = nil
+			userIsLicensed = false
+			userIsPkiEncrypted = false
+			if let deviceConfig = node.deviceConfig,
+				deviceConfig.modelContext != nil,
+				!deviceConfig.isDeleted {
+				isManaged = deviceConfig.isManaged
+				role = deviceConfig.role
+			} else {
+				isManaged = false
+				role = nil
+			}
 		}
-		isManaged = deviceConfig.isManaged
+
+		if let loRaConfig = node.loRaConfig,
+			loRaConfig.modelContext != nil,
+			!loRaConfig.isDeleted {
+			regionCode = Int(loRaConfig.regionCode)
+		} else {
+			regionCode = nil
+		}
+
+		if let metadata = node.metadata,
+			metadata.modelContext != nil,
+			!metadata.isDeleted {
+			hasMetadata = true
+			excludedModules = Int(metadata.excludedModules)
+		} else {
+			hasMetadata = false
+			excludedModules = 0
+		}
+
+		if let takConfig = node.takConfig,
+			takConfig.modelContext != nil,
+			!takConfig.isDeleted {
+			hasTAKConfig = true
+		} else {
+			hasTAKConfig = false
+		}
 	}
 }
 
@@ -37,36 +105,37 @@ struct Settings: View {
 	@Environment(\.modelContext) private var context
 	@Environment(\.colorScheme) private var colorScheme
 	@EnvironmentObject var accessoryManager: AccessoryManager
-	/// Node list for the admin picker / config gating, refreshed on a throttled cadence (see the
+	/// Node snapshots for the admin picker / config gating, refreshed on a throttled cadence (see the
 	/// `.task` in `body`) instead of a live `@Query`. A live query re-evaluated this whole view's
 	/// `body` on every node write — and TabView keeps Settings alive on other tabs, so under heavy
 	/// ingestion (large mesh, TCP replay) it burned main-thread CPU while completely off-screen.
-	@State private var nodes: [NodeInfoEntity] = []
-	@State private var nodeManagement: [Int64: SettingsNodeManagementSnapshot] = [:]
+	@State private var nodes: [SettingsNodeSnapshot] = []
 
 	private func refreshNodes() {
 		let descriptor = FetchDescriptor<NodeInfoEntity>(sortBy: [SortDescriptor(\NodeInfoEntity.lastHeard, order: .reverse)])
-		let fetchedNodes = (try? context.fetch(descriptor)) ?? []
-		let managementSnapshots = fetchedNodes.compactMap(SettingsNodeManagementSnapshot.init)
-		nodes = fetchedNodes
-		nodeManagement = Dictionary(
-			managementSnapshots.map { ($0.num, $0) },
-			uniquingKeysWith: { latest, _ in latest }
-		)
+		nodes = ((try? context.fetch(descriptor)) ?? []).compactMap(SettingsNodeSnapshot.init)
 	}
 
 	/// Nodes for the admin / configuration picker, ordered favorites-first while
-	/// preserving the `@Query`'s `lastHeard`-descending order within each group. The
+	/// preserving the snapshot fetch's `lastHeard`-descending order within each group. The
 	/// favorite-on-top behavior can't be expressed as a SwiftData `@Query` sort
 	/// because `favorite` is a `Bool` and `Bool` isn't `Comparable` (so it's not a
-	/// valid `SortDescriptor` key); it's applied here as a cheap stable partition.
-	/// See `NodeInfoEntity.adminPickerOrder`.
-	private var sortedNodes: [NodeInfoEntity] {
-		NodeInfoEntity.adminPickerOrder(nodes)
+	/// valid `SortDescriptor` key); it's applied here as a cheap stable partition over value data.
+	private var sortedNodes: [SettingsNodeSnapshot] {
+		nodes.filter(\.favorite) + nodes.filter { !$0.favorite }
 	}
 
-	private var preferredNodeIsManaged: Bool {
-		nodeManagement[Int64(preferredNodeNum)]?.isManaged ?? false
+	private func nodeSnapshot(for nodeNum: Int) -> SettingsNodeSnapshot? {
+		sortedNodes.first(where: { $0.num == Int64(nodeNum) })
+	}
+
+	private func liveNode(for nodeNum: Int) -> NodeInfoEntity? {
+		guard nodeNum > 0,
+			let node = getNodeInfo(id: Int64(nodeNum), context: context),
+			node.modelContext != nil,
+			!node.isDeleted
+		else { return nil }
+		return node
 	}
 
 	@State private var selectedNode: Int = 0
@@ -77,17 +146,17 @@ struct Settings: View {
 
 	// MARK: Helper
 
-	private var moduleConfigurationNode: NodeInfoEntity? {
+	private var moduleConfigurationNode: SettingsNodeSnapshot? {
 		let nodeNum = selectedNode > 0 ? selectedNode : preferredNodeNum
-		return sortedNodes.first(where: { $0.num == nodeNum })
+		return nodeSnapshot(for: nodeNum)
 	}
 
-	// The module-support helpers take a pre-resolved node + excluded-modules bitmask so
+	// The module-support helpers take a pre-resolved node snapshot + excluded-modules bitmask so
 	// `moduleConfigurationSection` can compute them ONCE per render. They used to read the
-	// `moduleConfigurationNode` computed property (a linear scan over the full node @Query
+	// `moduleConfigurationNode` computed property (a linear scan over the full node snapshot
 	// plus a `.metadata` relationship fault) on every call, and the section calls them ~28×
 	// per render — which, under live ingestion re-rendering, pegged the main thread.
-	private func showsAnyModuleConfiguration(node: NodeInfoEntity?, excludedModules: Int) -> Bool {
+	private func showsAnyModuleConfiguration(node: SettingsNodeSnapshot?, excludedModules: Int) -> Bool {
 		isAnySupported([
 			.ambientlightingConfig,
 			.audioConfig,
@@ -108,7 +177,7 @@ struct Settings: View {
 			|| accessoryManager.supportsStatusMessage
 	}
 
-	private func isMeshBeaconModuleSupported(_ node: NodeInfoEntity?) -> Bool {
+	private func isMeshBeaconModuleSupported(_ node: SettingsNodeSnapshot?) -> Bool {
 		guard node != nil else { return false }
 		return accessoryManager.checkIsVersionSupported(forVersion: "2.8.0")
 	}
@@ -121,13 +190,13 @@ struct Settings: View {
 		return modules.contains { isModuleSupported($0, excludedModules: excludedModules) }
 	}
 
-	private func isTAKModuleSupported(_ node: NodeInfoEntity?) -> Bool {
+	private func isTAKModuleSupported(_ node: SettingsNodeSnapshot?) -> Bool {
 		guard let node else { return false }
-		if node.takConfig != nil {
+		if node.hasTAKConfig {
 			return true
 		}
 
-		guard let roleValue = node.deviceConfig?.role ?? node.user?.role,
+		guard let roleValue = node.role,
 			  let deviceRole = DeviceRoles(rawValue: Int(roleValue)) else {
 			return false
 		}
@@ -135,7 +204,7 @@ struct Settings: View {
 		return deviceRole == .tak || deviceRole == .takTracker
 	}
 
-	private func isTrafficManagementModuleSupported(_ node: NodeInfoEntity?) -> Bool {
+	private func isTrafficManagementModuleSupported(_ node: SettingsNodeSnapshot?) -> Bool {
 		guard node != nil else { return false }
 		return accessoryManager.checkIsVersionSupported(forVersion: "2.8.0")
 	}
@@ -148,12 +217,11 @@ struct Settings: View {
 
 	var radioConfigurationSection: some View {
 		Section("Radio Configuration") {
-			let node = sortedNodes.first(where: { $0.num == preferredNodeNum })
+			let node = nodeSnapshot(for: preferredNodeNum)
 			if let node,
-				let loRaConfig = node.loRaConfig,
-				let rc = RegionCodes(rawValue: Int(loRaConfig.regionCode)),
-				let user = node.user,
-				!user.isLicensed,
+				let regionCode = node.regionCode,
+				let rc = RegionCodes(rawValue: regionCode),
+				!node.userIsLicensed,
 				rc.dutyCycle > 0 && rc.dutyCycle < 100 {
 				Label {
 					Text("Hourly Duty Cycle")
@@ -272,7 +340,7 @@ struct Settings: View {
 		// them to the cheap per-module checks below (formerly each re-scanned the node @Query
 		// and re-faulted metadata — ~28× per render).
 		let node = moduleConfigurationNode
-		let excludedModules = Int(node?.metadata?.excludedModules ?? Int32.zero)
+		let excludedModules = node?.excludedModules ?? 0
 		return Section {
 			if isModuleSupported(.ambientlightingConfig, excludedModules: excludedModules) {
 				NavigationLink(value: SettingsNavigationState.ambientLighting) {
@@ -547,7 +615,7 @@ struct Settings: View {
 		NavigationStack(
 			path: $router.settingsPath
 		) {
-			let node = sortedNodes.first(where: { $0.num == preferredNodeNum })
+			let node = nodeSnapshot(for: preferredNodeNum)
 			List {
 				NavigationLink(value: SettingsNavigationState.about) {
 					Label {
@@ -604,10 +672,10 @@ struct Settings: View {
 				}
 				.disabled(selectedNode > 0 && selectedNode != preferredNodeNum)
 
-				if !preferredNodeIsManaged {
+				if let node, !node.isManaged {
 					if accessoryManager.isConnected {
 						Section("Configure") {
-							if node?.canRemoteAdmin ?? false {
+							if node.canRemoteAdmin {
 								Picker("Node", selection: $selectedNode) {
 									if selectedNode == 0 {
 										Text("Connect to a Node").tag(0)
@@ -616,41 +684,40 @@ struct Settings: View {
 										/// Connected Node
 										if node.num == accessoryManager.activeDeviceNum ?? 0 {
 											Label {
-												Text("Connected") + Text(verbatim: ": \(node.user?.longName?.addingVariationSelectors ?? "Unknown".localized)")
+												Text("Connected") + Text(verbatim: ": \(node.userLongName?.addingVariationSelectors ?? "Unknown".localized)")
 											} icon: {
 												accessoryManager.activeConnection?.device.transportType.icon ?? Image("questionmark.circle")
 											}
 											.tag(Int(node.num))
-										} else if node.canRemoteAdmin && UserDefaults.enableAdministration && node.sessionPasskey != nil { /// Nodes using the new PKI system
+										} else if node.canRemoteAdmin && UserDefaults.enableAdministration && node.hasSessionPasskey { /// Nodes using the new PKI system
 											Label {
-												Text("Remote PKI Admin: \(node.user?.longName ?? "Unknown".localized)")
+												Text("Remote PKI Admin: \(node.userLongName ?? "Unknown".localized)")
 											} icon: {
 												Image(systemName: "av.remote")
 											}
 											.font(.caption2)
 											.tag(Int(node.num))
-										} else if  !UserDefaults.enableAdministration && node.metadata != nil { /// Nodes using the old admin system
+										} else if !UserDefaults.enableAdministration && node.hasMetadata { /// Nodes using the old admin system
 											Label {
-												Text("Remote Legacy Admin: \(node.user?.longName ?? "Unknown".localized)")
+												Text("Remote Legacy Admin: \(node.userLongName ?? "Unknown".localized)")
 											} icon: {
 												Image(systemName: "av.remote")
 											}
 											.tag(Int(node.num))
-										} else if UserDefaults.enableAdministration && node.user?.pkiEncrypted ?? false {
+										} else if UserDefaults.enableAdministration && node.userIsPkiEncrypted {
 											Label {
-												Text("Request PKI Admin: \(node.user?.longName?.addingVariationSelectors ?? "Unknown".localized)")
+												Text("Request PKI Admin: \(node.userLongName?.addingVariationSelectors ?? "Unknown".localized)")
 											} icon: {
 												Image(systemName: "rectangle.and.hand.point.up.left")
 											}
 											.tag(Int(node.num))
 										} else if !UserDefaults.enableAdministration {
 											Label {
-												Text("Request Legacy Admin: \(node.user?.longName?.addingVariationSelectors ?? "Unknown".localized)")
+												Text("Request Legacy Admin: \(node.userLongName?.addingVariationSelectors ?? "Unknown".localized)")
 											} icon: {
 												Image(systemName: "rectangle.and.hand.point.up.left")
 											}
 											.tag(Int(node.num))
-										}
 									}
 								}
 								.pickerStyle(.navigationLink)
@@ -658,12 +725,12 @@ struct Settings: View {
 									handleSelectedNodeChange(newValue)
 								}
 								TipView(AdminChannelTip(), arrowEdge: .top)
-											.tipViewStyle(PersistentTipStyle())
+									.tipViewStyle(PersistentTipStyle())
 									.tipBackground(colorScheme == .dark ? Color(.systemBackground) : Color(.secondarySystemBackground))
 									.listRowSeparator(.hidden)
 							} else {
 								if accessoryManager.isConnected {
-									Text("Connected Node \(node?.user?.longName?.addingVariationSelectors ?? "Unknown".localized)")
+									Text("Connected Node \(node.userLongName?.addingVariationSelectors ?? "Unknown".localized)")
 								}
 							}
 						}
@@ -678,8 +745,8 @@ struct Settings: View {
 				}
 			}
 			.navigationDestination(for: SettingsNavigationState.self) { destination in
-				let node = sortedNodes.first(where: { $0.num == preferredNodeNum })
-				let configNode = sortedNodes.first(where: { $0.num == selectedNode })
+				let node = liveNode(for: preferredNodeNum)
+				let configNode = liveNode(for: selectedNode)
 				switch destination {
 				case .about:
 					AboutMeshtastic()
@@ -837,7 +904,7 @@ struct Settings: View {
 	}
 
 	func setSelectedNode(to nodeNum: Int) {
-		guard sortedNodes.contains(where: { $0.num == nodeNum }) else {
+		guard nodeSnapshot(for: nodeNum) != nil else {
 			selectedNode = 0
 			return
 		}
@@ -853,8 +920,8 @@ struct Settings: View {
 
 	private func handleSelectedNodeChange(_ newValue: Int) {
 		guard selectedNode > 0,
-			let destinationNode = sortedNodes.first(where: { $0.num == newValue }),
-			let connectedNode = sortedNodes.first(where: { $0.num == preferredNodeNum }),
+			let destinationNode = liveNode(for: newValue),
+			let connectedNode = liveNode(for: preferredNodeNum),
 			let fromUser = connectedNode.user,
 			connectedNode.myInfo != nil,
 			let toUser = destinationNode.user else { return }

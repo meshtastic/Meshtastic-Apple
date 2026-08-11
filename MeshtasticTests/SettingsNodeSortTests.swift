@@ -142,12 +142,34 @@ struct SettingsNodeSortTests {
 		node.deviceConfig = deviceConfig
 		try context.save()
 
-		let snapshot = try #require(SettingsNodeManagementSnapshot(node: node))
+		let snapshot = try #require(SettingsNodeSnapshot(node: node))
 		context.delete(deviceConfig)
 		try context.save()
 
 		#expect(snapshot.num == node.num)
 		#expect(snapshot.isManaged)
-		#expect(SettingsNodeManagementSnapshot(node: node)?.isManaged == false)
+		#expect(SettingsNodeSnapshot(node: node)?.isManaged == false)
+	}
+
+	@Test("Node snapshot remains readable after its context resets")
+	func nodeSnapshotSurvivesContextReset() throws {
+		let container = try ModelContainer(
+			for: Schema(MeshtasticSchema.allModels),
+			configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+		)
+		let context = container.mainContext
+		let node = NodeInfoEntity()
+		node.num = 7_790_001
+		let deviceConfig = DeviceConfigEntity()
+		deviceConfig.isManaged = true
+		node.deviceConfig = deviceConfig
+		context.insert(node)
+		try context.save()
+
+		let snapshot = try #require(SettingsNodeSnapshot(node: node))
+		context.reset()
+
+		#expect(snapshot.num == 7_790_001)
+		#expect(snapshot.isManaged)
 	}
 }
