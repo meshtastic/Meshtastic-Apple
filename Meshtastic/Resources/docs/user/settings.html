@@ -55,6 +55,33 @@
 <p>When sharing channels, the share screen shows a QR code and link, and — on iPhones with NFC hardware (iOS 18 or later) — a <strong>Write to NFC Tag</strong> button. Hold a writable NFC tag near the top of your iPhone to save the channel link to it, replacing any content the tag already held; tapping that tag on another phone opens the same add-or-replace channels flow the QR code does.</p>
 <h3>Security</h3>
 <p>Configure PKI (Public Key Infrastructure) encryption for direct messages. Requires firmware 2.5+.</p>
+<h4>Packet Authenticity</h4>
+<p>Firmware that reports XEdDSA support can authenticate the sender of a mesh packet. <strong>Protection Level</strong> controls what the radio does with traffic it cannot authenticate:</p>
+<table>
+<thead>
+<tr>
+<th>Level</th>
+<th>Behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Compatible — Accept unsigned</td>
+<td>Authenticates packets when possible, but accepts unsigned traffic for maximum compatibility. This is the default.</td>
+</tr>
+<tr>
+<td>Balanced — Prefer authenticated</td>
+<td>Recommended. Rejects unsigned broadcasts from nodes already known to sign, while still accepting traffic from nodes that never sign.</td>
+</tr>
+<tr>
+<td>Strict — Require authentication</td>
+<td>Accepts a remote packet only when it carries a verified XEdDSA signature or was successfully authenticated through PKI decryption.</td>
+</tr>
+</tbody>
+</table>
+<p>Strict applies to every remote mesh packet, including positions, messages, telemetry, node info, and routing traffic. Traffic from older firmware, from licensed (ham) nodes without PKI keys, and packets too large to carry a signature will disappear. PKI-authenticated direct messages remain available. The app asks you to confirm before enabling Strict.</p>
+<p>The selector is disabled when the connected radio does not report XEdDSA support, or has not reported its capability yet — update that radio's firmware to configure the policy. Note that a verified signature proves which key sent a packet; it does not prove that a reported position or sensor reading is true or current.</p>
+<p>This setting matches the Meshtastic app for Android, and the policy is enforced by the radio rather than the app.</p>
 <p>On hardened lockdown-firmware radios, this page also shows a <strong>Lockdown</strong> section with the session status, a <strong>Lock Now</strong> button, and a <strong>Forget Stored Passphrase</strong> button. See <a href="lockdown.html">Lockdown Mode</a>.</p>
 <h3>User</h3>
 <p>Set your Long Name (display name) and Short Name (4-character/emoji identifier shown in the node circle).</p>
