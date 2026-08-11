@@ -339,6 +339,9 @@ final class SecurityConfigEntity {
 	var bluetoothLoggingEnabled: Bool = false
 	var debugLogApiEnabled: Bool = false
 	var isManaged: Bool = false
+	/// Raw value of `Config.SecurityConfig.PacketSignaturePolicy`. 0 (Compatible) is the
+	/// protobuf default, so an absent field and an unconfigured entity agree.
+	var packetSignaturePolicy: Int32 = 0
 	var privateKey: Data?
 	var publicKey: Data?
 	var serialEnabled: Bool = false

@@ -175,13 +175,13 @@ struct ChannelForm: View {
 				}
 				Section(header: Text("MQTT")) {
 					Toggle(isOn: $uplink) {
-						Label("Uplink Enabled", systemImage: "arrowshape.up")
+						Label("MQTT Uplink Enabled", systemImage: "arrowshape.up")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					.listRowSeparator(.visible)
 
 					Toggle(isOn: $downlink) {
-						Label("Downlink Enabled", systemImage: "arrowshape.down")
+						Label("MQTT Downlink Enabled", systemImage: "arrowshape.down")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				}

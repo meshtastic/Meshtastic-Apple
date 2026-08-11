@@ -105,11 +105,9 @@ extension AccessoryManager {
 					}
 					self.activeConnection = (device: device, connection: connection)
 					self.activeDeviceNum = device.num
-					// Start sampling inbound mesh-traffic rate for this connection (map flyover gate).
-					// Started here — not once at the top of connect() — because a retry runs Step 0's
-					// closeConnection() which stops the monitor; restarting it on every successful
-					// connection setup keeps the flyover gate alive across retries. Idempotent.
-					self.meshTrafficMonitor.start()
+					// The mesh-traffic monitor (map flyover gate) self-starts its decay timer on the
+					// first inbound packet and is cleared by Step 0's closeConnection() reset(), so
+					// there's no explicit start to make here — it stays correct across connect retries.
 				} catch let error as CBError where error.code == .peerRemovedPairingInformation {
 					await self.connectionStepper?.cancelCurrentlyExecutingStep(withError: AccessoryError.coreBluetoothError(error), cancelFullProcess: true)
 				}

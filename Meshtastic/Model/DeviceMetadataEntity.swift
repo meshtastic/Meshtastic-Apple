@@ -18,6 +18,9 @@ final class DeviceMetadataEntity {
 	var hasBluetooth: Bool = false
 	var hasEthernet: Bool = false
 	var hasWifi: Bool = false
+	/// Whether this firmware build includes XEdDSA packet signature verification.
+	/// Read-only capability: gates the Packet Authenticity policy selector in Security config.
+	var hasXeddsa: Bool = false
 	var hwModel: String?
 	var positionFlags: Int32 = 0
 	var role: Int32 = 0
@@ -34,6 +37,7 @@ final class DeviceMetadataEntity {
 		hasWifi = metadata.hasWifi_p
 		hasBluetooth = metadata.hasBluetooth_p
 		hasEthernet = metadata.hasEthernet_p
+		hasXeddsa = metadata.hasXeddsa_p
 		role = Int32(metadata.role.rawValue)
 		positionFlags = Int32(truncatingIfNeeded: metadata.positionFlags)
 		excludedModules = Int32(truncatingIfNeeded: metadata.excludedModules)

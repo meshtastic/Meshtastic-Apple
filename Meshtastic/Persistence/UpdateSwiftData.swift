@@ -1162,8 +1162,9 @@ extension MeshPackets {
 					newSecurityConfig.serialEnabled = config.serialEnabled
 					newSecurityConfig.debugLogApiEnabled = config.debugLogApiEnabled
 					newSecurityConfig.adminChannelEnabled = config.adminChannelEnabled
+					newSecurityConfig.packetSignaturePolicy = Int32(config.packetSignaturePolicy.rawValue)
 					fetchedNode[0].securityConfig = newSecurityConfig
-				} else if let securityConfig = fetchedNode[0].securityConfig {
+} else if let securityConfig = fetchedNode[0].securityConfig {
 					securityConfig.publicKey = config.publicKey
 					securityConfig.privateKey = config.privateKey
 					applyAdminKeys(config.adminKey, to: securityConfig)
@@ -1171,6 +1172,7 @@ extension MeshPackets {
 					securityConfig.serialEnabled = config.serialEnabled
 					securityConfig.debugLogApiEnabled = config.debugLogApiEnabled
 					securityConfig.adminChannelEnabled = config.adminChannelEnabled
+					securityConfig.packetSignaturePolicy = Int32(config.packetSignaturePolicy.rawValue)
 				}
 				if sessionPasskey?.count != 0 {
 					fetchedNode[0].sessionPasskey = sessionPasskey

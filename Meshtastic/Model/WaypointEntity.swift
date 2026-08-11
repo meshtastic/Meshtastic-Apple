@@ -19,6 +19,9 @@ final class WaypointEntity {
 	var lastUpdatedBy: Int64 = 0
 	var latitudeI: Int32 = 0
 	var locked: Bool = false
+	/// A local-only waypoint the user created on this device: it is never broadcast
+	/// over the mesh, and the mesh ingest never overwrites it (see MeshPackets.waypointPacket).
+	var isLocal: Bool = false
 	var longDescription: String?
 	var longitudeI: Int32 = 0
 	var name: String?

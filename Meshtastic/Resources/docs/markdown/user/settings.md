@@ -49,6 +49,22 @@ When sharing channels, the share screen shows a QR code and link, and — on iPh
 
 Configure PKI (Public Key Infrastructure) encryption for direct messages. Requires firmware 2.5+.
 
+#### Packet Authenticity
+
+Firmware that reports XEdDSA support can authenticate the sender of a mesh packet. **Protection Level** controls what the radio does with traffic it cannot authenticate:
+
+| Level | Behavior |
+|-------|----------|
+| Compatible — Accept unsigned | Authenticates packets when possible, but accepts unsigned traffic for maximum compatibility. This is the default. |
+| Balanced — Prefer authenticated | Recommended. Rejects unsigned broadcasts from nodes already known to sign, while still accepting traffic from nodes that never sign. |
+| Strict — Require authentication | Accepts a remote packet only when it carries a verified XEdDSA signature or was successfully authenticated through PKI decryption. |
+
+Strict applies to every remote mesh packet, including positions, messages, telemetry, node info, and routing traffic. Traffic from older firmware, from licensed (ham) nodes without PKI keys, and packets too large to carry a signature will disappear. PKI-authenticated direct messages remain available. The app asks you to confirm before enabling Strict.
+
+The selector is disabled when the connected radio does not report XEdDSA support, or has not reported its capability yet — update that radio's firmware to configure the policy. Note that a verified signature proves which key sent a packet; it does not prove that a reported position or sensor reading is true or current.
+
+This setting matches the Meshtastic app for Android, and the policy is enforced by the radio rather than the app.
+
 On hardened lockdown-firmware radios, this page also shows a **Lockdown** section with the session status, a **Lock Now** button, and a **Forget Stored Passphrase** button. See [Lockdown Mode](lockdown.md).
 
 ### User
@@ -62,6 +78,8 @@ BLE radio settings including PIN mode and power saving. Changes apply on next ra
 ### Device
 
 Device role, serial output, debug log streaming, and node info broadcast interval.
+
+The **Repeater** role is deprecated and can no longer be selected for new configurations. If a node is still set to Repeater it is shown as "Repeater (Deprecated)" with a reminder to switch it to a Router-based role (Router or Router Late).
 
 ### Display
 

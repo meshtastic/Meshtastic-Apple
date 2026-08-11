@@ -39,6 +39,18 @@ struct TapbackResponses: View {
 		return min(contentWidth, Self.maxWidth)
 	}
 
+	/// Exact content height, arithmetic like `pillWidth`: the grid rows are `.fixed(38)` with 4pt
+	/// spacing plus the grid padding. Fixing the `ScrollView`'s height matters beyond cosmetics —
+	/// a `ScrollView`'s ideal height isn't content-driven, so left flexible it competes with the
+	/// message bubble's `Text` for the row's vertical space, and the loser is the bubble: a long
+	/// wrapping message above a reaction pill tail-truncates with "…" (seen in the field on ~6-line
+	/// messages). Sized exactly, the pill stops bidding for height it doesn't need.
+	private var pillHeight: CGFloat {
+		CGFloat(rowCount) * 38
+			+ CGFloat(max(0, rowCount - 1)) * 4
+			+ 2 * Self.gridPadding
+	}
+
 	@ViewBuilder
 	var body: some View {
 		if !tapbacks.isEmpty {
@@ -64,7 +76,7 @@ struct TapbackResponses: View {
 					}
 					.padding(Self.gridPadding)
 				}
-				.frame(width: pillWidth, alignment: .trailing)
+				.frame(width: pillWidth, height: pillHeight, alignment: .trailing)
 				.overlay(
 					RoundedRectangle(cornerRadius: 18)
 						.stroke(Color.gray, lineWidth: 1)
