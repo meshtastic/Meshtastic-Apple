@@ -686,7 +686,7 @@ struct Settings: View {
 											Label {
 												Text("Connected") + Text(verbatim: ": \(node.userLongName?.addingVariationSelectors ?? "Unknown".localized)")
 											} icon: {
-												accessoryManager.activeConnection?.device.transportType.icon ?? Image("questionmark.circle")
+												accessoryManager.activeConnection?.device.transportType.icon ?? Image(systemName: "questionmark.circle")
 											}
 											.tag(Int(node.num))
 										} else if node.canRemoteAdmin && UserDefaults.enableAdministration && node.hasSessionPasskey { /// Nodes using the new PKI system
@@ -719,6 +719,7 @@ struct Settings: View {
 											}
 											.tag(Int(node.num))
 									}
+								}
 								}
 								.pickerStyle(.navigationLink)
 								.onChange(of: selectedNode) { _, newValue in
