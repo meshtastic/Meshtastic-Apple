@@ -100,12 +100,16 @@ struct WaypointCoordinate: Identifiable {
 
 extension WaypointEntity {
 
-	/// Copies the geofence fields from a received `Waypoint` protobuf into this entity.
-	func applyGeofence(from waypoint: Waypoint) {
+	/// Copies the geofence *geometry* (circular radius + bounding box) from a `Waypoint`
+	/// protobuf into this entity — and nothing else.
+	///
+	/// The notify flags (`notifyOnEnter` / `notifyOnExit` / `notifyFavoritesOnly`) are
+	/// deliberately NOT taken from the wire: under the design#114 notification-scope model
+	/// each receiver decides locally whether a geofence notifies it. A received waypoint
+	/// therefore never notifies until this user opts in (creator-only default), and a mesh
+	/// update can never overwrite a local opt-in.
+	func applyGeofenceGeometry(from waypoint: Waypoint) {
 		geofenceRadius = Int(waypoint.geofenceRadius)
-		notifyOnEnter = waypoint.notifyOnEnter
-		notifyOnExit = waypoint.notifyOnExit
-		notifyFavoritesOnly = waypoint.notifyFavoritesOnly
 		hasBoundingBox = waypoint.hasBoundingBox
 		if waypoint.hasBoundingBox {
 			boundingBoxLatitudeNorthI = waypoint.boundingBox.latitudeNorthI
@@ -123,6 +127,26 @@ extension WaypointEntity {
 	/// True when the waypoint defines any geofence (circular radius and/or bounding box).
 	var hasGeofence: Bool {
 		geofenceRadius > 0 || hasBoundingBox
+	}
+
+	/// Whether the geofence notification preferences may be edited in place, without any
+	/// mesh send (design#114 notification-scope model).
+	///
+	/// True for a *received* waypoint that carries a geofence: one this device did not
+	/// author (including waypoints locked to another node) and that is not a local-only
+	/// waypoint. The notify flags are receiver-local and never travel back to the mesh,
+	/// so flipping them must not require re-broadcasting someone else's waypoint.
+	/// When no device is connected (`activeDeviceNum == nil`) authorship cannot be
+	/// checked, but the preference is still purely local — editing stays allowed.
+	static func canEditNotifyPreferencesLocally(
+		isLocalWaypoint: Bool,
+		createdBy: Int64,
+		activeDeviceNum: Int64?,
+		hasGeofence: Bool
+	) -> Bool {
+		guard hasGeofence, !isLocalWaypoint else { return false }
+		guard let activeDeviceNum else { return true }
+		return createdBy != activeDeviceNum
 	}
 
 	/// The bounding-box corners as a closed rectangle (SW, SE, NE, NW) suitable for an

@@ -398,6 +398,35 @@ struct WaypointForm: View {
 					Text("Location")
 				}
 
+				// Local notification opt-in for a received geofence (design#114): editable in
+				// place — even for locked waypoints — and persisted only on this device. The
+				// mesh Send path is never involved; the flags never travel over the wire.
+				if canEditNotifyPreferencesLocally {
+					Section {
+						Toggle(isOn: $notifyOnEnter) {
+							Label("Notify on Enter", systemImage: "bell")
+						}
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						.onChange(of: notifyOnEnter) { commitNotifyPreferences() }
+						Toggle(isOn: $notifyOnExit) {
+							Label("Notify on Exit", systemImage: "bell.slash")
+						}
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						.onChange(of: notifyOnExit) { commitNotifyPreferences() }
+						if notifyOnEnter || notifyOnExit {
+							Toggle(isOn: $notifyFavoritesOnly) {
+								Label("Favorites Only", systemImage: "star")
+							}
+							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+							.onChange(of: notifyFavoritesOnly) { commitNotifyPreferences() }
+						}
+					} header: {
+						Text("Geofence Notifications")
+					} footer: {
+						Text("Saved only on this device — nothing is sent over the mesh.")
+					}
+				}
+
 				Section {
 					Label {
 						Text(waypoint.created?.formatted(date: .numeric, time: .shortened) ?? "?")
@@ -571,6 +600,32 @@ struct WaypointForm: View {
 		#endif
 	}
 	
+	/// Whether the geofence notification toggles are offered as an in-place, local-only
+	/// setting in the read-only view: a received waypoint (not authored by the connected
+	/// node — including ones locked to another node — and not local-only) with a geofence.
+	private var canEditNotifyPreferencesLocally: Bool {
+		WaypointEntity.canEditNotifyPreferencesLocally(
+			isLocalWaypoint: waypoint.isLocal,
+			createdBy: waypoint.createdBy,
+			activeDeviceNum: accessoryManager.activeDeviceNum,
+			hasGeofence: waypoint.hasGeofence
+		)
+	}
+
+	/// Persist the geofence notification opt-in for a received waypoint. Local-only by
+	/// design (design#114): writes exactly the three receiver-local preference flags and
+	/// saves the context — nothing is ever sent to the mesh from this path.
+	private func commitNotifyPreferences() {
+		// Favorites-only is meaningless (and its toggle hidden) unless notifying.
+		if !notifyOnEnter && !notifyOnExit {
+			notifyFavoritesOnly = false
+		}
+		waypoint.notifyOnEnter = notifyOnEnter
+		waypoint.notifyOnExit = notifyOnExit
+		waypoint.notifyFavoritesOnly = notifyFavoritesOnly
+		do { try context.save() } catch { Logger.mesh.error("Failed to save notification preferences: \(error)") }
+	}
+
 	private func commitLocal() {
 		if waypoint.id == 0 {
 			waypoint.id = Int64(UInt32.random(in: UInt32(UInt8.max)..<UInt32.max))

@@ -878,6 +878,13 @@ extension AccessoryManager {
 			} else {
 				wayPointEntity.locked = false
 			}
+			// Persist the author's geofence here: the mesh ingest applies geometry only and
+			// never touches the notify flags (design#114 — those are receiver-local), so the
+			// sending device is the one place its own preferences are recorded.
+			wayPointEntity.applyGeofenceGeometry(from: waypoint)
+			wayPointEntity.notifyOnEnter = waypoint.notifyOnEnter
+			wayPointEntity.notifyOnExit = waypoint.notifyOnExit
+			wayPointEntity.notifyFavoritesOnly = waypoint.notifyFavoritesOnly
 			if wayPointEntity.created == nil {
 				wayPointEntity.created = Date()
 			} else {
