@@ -312,6 +312,62 @@
 <p>Tags written by the Meshtastic app for Android are interchangeable with these — both platforms write the same contact and channel links.</p>
 <h2>Firmware Updates</h2>
 <p>Check for and apply OTA firmware updates to your connected radio directly from the app. See <a href="firmware.html">Firmware Updates</a> for full details.</p>
+<h2>Tools</h2>
+<p>The <strong>Tools</strong> screen (Settings → Tools) provides utilities for backing up, restoring, and sharing your connected radio's configuration.</p>
+<h3>Create Node Contact NFC Tag</h3>
+<p>Write your node's contact card to an NFC tag so others can add you by tapping it. Requires a connected node and NFC-capable hardware.</p>
+<h3>Export Device Configuration</h3>
+<p>Save the connected node's full configuration — radio, module, and channel settings — to a <code>.cfg</code> file you can back up or import onto another device. The format matches the Android app and the <code>meshtastic</code> CLI.</p>
+<div class="warning-callout"><strong>Warning — Backups contain secrets</strong>
+The exported file includes your node's private key, admin keys, channel keys (PSKs), and Wi-Fi/MQTT passwords. Anyone with the file can join and administer your mesh, so store and share it only with people you trust.</div>
+<h3>Import Device Configuration</h3>
+<p>Apply a saved <code>.cfg</code> configuration file to the connected node. After you pick a file, a review sheet shows what it contains, grouped into sections you can turn on or off before applying:</p>
+<table>
+<thead>
+<tr>
+<th>Section</th>
+<th>What it restores</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Owner Name</td>
+<td>Long and short name</td>
+</tr>
+<tr>
+<td>Radio &amp; Device</td>
+<td>Device, display, position, power, and Bluetooth settings</td>
+</tr>
+<tr>
+<td>Network</td>
+<td>Wi-Fi / Ethernet settings</td>
+</tr>
+<tr>
+<td>Modules</td>
+<td>All module settings (MQTT, Telemetry, Canned Messages, and so on)</td>
+</tr>
+<tr>
+<td>Ringtone &amp; Canned Messages</td>
+<td>Notification melody and canned-message text</td>
+</tr>
+<tr>
+<td>Fixed Position</td>
+<td>A saved fixed GPS position</td>
+</tr>
+<tr>
+<td>Security &amp; Identity</td>
+<td>Private key, admin keys, and admin access</td>
+</tr>
+<tr>
+<td>Channels &amp; LoRa</td>
+<td>Channels and LoRa/region settings</td>
+</tr>
+</tbody>
+</table>
+<p>All present sections are selected by default <strong>except Security &amp; Identity</strong>, which is off by default: importing it replaces this node's cryptographic identity (its private/public key) and admin keys, which can break existing direct messages and lock you out of local administration. Leave it off when cloning a configuration onto a second radio that should keep its own identity.</p>
+<div class="warning-callout"><strong>Warning — Import replaces settings</strong>
+Importing writes the selected settings — including any secrets in the file — onto the connected node. Only import files from a source you trust.</div>
+<p>Applying <strong>Channels &amp; LoRa</strong> reboots the radio, so it briefly disconnects; the app reports this so you can reconnect. Settings are applied in order and the import stops at the first failure, telling you exactly what was and wasn't sent. Because the radio can silently discard settings it accepts, the result screen also offers <strong>Verify Against the Radio</strong>: once the radio reconnects and sends its configuration back, it compares each imported section against what the radio actually holds. Re-running an import is safe.</p>
 <h2>Automatic Documentation Translation</h2>
 <p>On devices running iOS 26 or later, the in-app documentation is automatically translated to your device language when it differs from English.</p>
 <h3>How It Works</h3>
