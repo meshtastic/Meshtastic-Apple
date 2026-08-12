@@ -122,7 +122,12 @@ required no new `VersionedSchema`/`MigrationStage` (see below).
 
 When you add, rename, or remove properties on a `@Model` type, you must provide a migration. Schema files live in `Meshtastic/Model/Schema/`.
 
-> **Note — V1 is unreleased.** While `MeshtasticSchemaV1` remains the initial, unshipped version, additive `@Model` changes go **directly into V1** rather than a new versioned schema + stage (see the comment in `MeshtasticMigrationPlan.swift`). For example, the air-quality particulate-matter fields on `TelemetryEntity` (`pm10/25/100Standard`, `pm10/25/100Environmental`) were added in place. Start adding `VersionedSchema` versions and migration stages only once V1 has shipped.
+> **Note — V1 is unreleased.** While `MeshtasticSchemaV1` remains the initial, unshipped version, additive `@Model` changes go **directly into V1** rather than a new versioned schema + stage (see the comment in `MeshtasticMigrationPlan.swift`). For example, the air-quality particulate-matter fields on `TelemetryEntity` (`pm10/25/100Standard`, `pm10/25/100Environmental`) were added in place, as were `SecurityConfigEntity.packetSignaturePolicy` and `DeviceMetadataEntity.hasXeddsa` for the packet authenticity policy. Start adding `VersionedSchema` versions and migration stages only once V1 has shipped.
+
+Give an added property a default that matches what an absent value means on the wire, so a row
+written before the property existed and a device that never reported it agree. `packetSignaturePolicy`
+defaults to `0` because `PACKET_SIGNATURE_POLICY_COMPATIBLE` is the protobuf zero value, so an
+unconfigured row is not silently treated as running a stricter receive policy than the radio is.
 
 ### Adding a New Schema Version
 

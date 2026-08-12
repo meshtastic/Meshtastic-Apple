@@ -207,6 +207,25 @@
 				<string>public.data</string>
 			</array>
 			<key>UTTypeDescription</key>
+			<string>Meshtastic Device Profile</string>
+			<key>UTTypeIconFiles</key>
+			<array/>
+			<key>UTTypeIdentifier</key>
+			<string>com.meshtastic.device-profile</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>cfg</string>
+				</array>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.data</string>
+			</array>
+			<key>UTTypeDescription</key>
 			<string>UF2 Firmware</string>
 			<key>UTTypeIconFiles</key>
 			<array/>
