@@ -51,6 +51,8 @@ final class MBTilesArchive: OfflineTileSource {
 	let tileMaxZoom: UInt8
 	let geographicBounds: GeoBounds?
 	let isVectorTiles: Bool
+	/// Whether the archive exposes at least one non-empty tile row.
+	let hasTileData: Bool
 
 	init?(url: URL) {
 		var handle: OpaquePointer?
@@ -59,6 +61,14 @@ final class MBTilesArchive: OfflineTileSource {
 			if let handle { sqlite3_close(handle) }
 			return nil
 		}
+		// Imported archives are untrusted input, and SELECTing from a crafted schema can
+		// execute SQL the file itself defines (e.g. `tiles` redefined as a view). Apply
+		// SQLite's untrusted-database mitigations before the first query: trusted_schema=OFF
+		// refuses schema-embedded functions/virtual tables, and cell_size_check=ON hardens
+		// the b-tree layer against hand-corrupted pages. Both are no-ops for honest archives.
+		// (sqlite3_db_config's DEFENSIVE flag would be stronger still, but it is a variadic C
+		// call Swift cannot make without a shim; these PRAGMAs cover the schema-attack class.)
+		sqlite3_exec(handle, "PRAGMA trusted_schema=OFF; PRAGMA cell_size_check=ON;", nil, nil, nil)
 		self.db = handle
 
 		func metadata(_ name: String) -> String? {
@@ -84,6 +94,15 @@ final class MBTilesArchive: OfflineTileSource {
 
 		let format = metadata("format")?.lowercased() ?? "png"
 		isVectorTiles = (format == "pbf" || format == "mvt")
+
+		var tileStatement: OpaquePointer?
+		let tileQuery = "SELECT 1 FROM tiles WHERE tile_data IS NOT NULL AND length(tile_data) > 0 LIMIT 1"
+		if sqlite3_prepare_v2(handle, tileQuery, -1, &tileStatement, nil) == SQLITE_OK {
+			defer { sqlite3_finalize(tileStatement) }
+			hasTileData = sqlite3_step(tileStatement) == SQLITE_ROW
+		} else {
+			hasTileData = false
+		}
 	}
 
 	deinit { if let db { sqlite3_close(db) } }

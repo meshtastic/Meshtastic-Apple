@@ -357,8 +357,8 @@
         "navOrder": 4,
         "keywords": [
             "node",
-            "device",
             "nodes",
+            "device",
             "from",
             "contact",
             "name",
@@ -369,13 +369,15 @@
             "packets",
             "messages",
             "list",
+            "firmware",
             "radio",
             "link",
             "hardware",
-            "firmware",
+            "detail",
             "tag",
             "share",
             "public",
+            "map",
             "broadcasts",
             "tap",
             "show",
@@ -383,11 +385,9 @@
             "row",
             "long",
             "location",
-            "direct",
-            "detail",
-            "connected"
+            "local"
         ],
-        "charCount": 10932
+        "charCount": 11299
     },
     {
         "id": "settings",
