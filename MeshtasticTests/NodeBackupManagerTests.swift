@@ -415,4 +415,60 @@ struct NodeBackupManagerTests {
 		let manager = NodeBackupManager(baseURL: backupDir)
 		#expect(manager.totalBackupSize == 3000)
 	}
+
+	// MARK: - Backup location resolution / migration (Documents visibility)
+
+	@Test("Fresh install resolves to the Documents NodeBackups folder")
+	func resolveLocationFreshInstall() throws {
+		let tempDir = try makeTempDir()
+		defer { cleanup(tempDir) }
+		let documents = tempDir.appendingPathComponent("Documents", isDirectory: true)
+		let appSupport = tempDir.appendingPathComponent("AppSupport", isDirectory: true)
+
+		let resolved = NodeBackupManager.resolveBackupBaseURL(documents: documents, appSupport: appSupport)
+
+		#expect(resolved == documents.appendingPathComponent("NodeBackups", isDirectory: true))
+	}
+
+	@Test("Legacy Application Support backups migrate wholesale into Documents")
+	func resolveLocationMigratesLegacy() throws {
+		let tempDir = try makeTempDir()
+		defer { cleanup(tempDir) }
+		let documents = tempDir.appendingPathComponent("Documents", isDirectory: true)
+		let appSupport = tempDir.appendingPathComponent("AppSupport", isDirectory: true)
+		try FileManager.default.createDirectory(at: documents, withIntermediateDirectories: true)
+		// Seed a legacy backup folder with a node backup + index, as an old install would have.
+		let legacy = appSupport.appendingPathComponent("NodeBackups", isDirectory: true)
+		let nodeDir = legacy.appendingPathComponent("1234", isDirectory: true)
+		try FileManager.default.createDirectory(at: nodeDir, withIntermediateDirectories: true)
+		try Data("legacy-backup".utf8).write(to: nodeDir.appendingPathComponent("Meshtastic.store"))
+
+		let resolved = NodeBackupManager.resolveBackupBaseURL(documents: documents, appSupport: appSupport)
+
+		let expected = documents.appendingPathComponent("NodeBackups", isDirectory: true)
+		#expect(resolved == expected)
+		// The whole folder moved: content readable at the new location, legacy gone.
+		let moved = expected.appendingPathComponent("1234/Meshtastic.store")
+		#expect(FileManager.default.fileExists(atPath: moved.path))
+		#expect(!FileManager.default.fileExists(atPath: legacy.path))
+	}
+
+	@Test("Both locations existing prefers Documents and leaves the legacy folder untouched")
+	func resolveLocationPrefersNewWhenBothExist() throws {
+		let tempDir = try makeTempDir()
+		defer { cleanup(tempDir) }
+		let documents = tempDir.appendingPathComponent("Documents", isDirectory: true)
+		let appSupport = tempDir.appendingPathComponent("AppSupport", isDirectory: true)
+		let newDir = documents.appendingPathComponent("NodeBackups", isDirectory: true)
+		let legacy = appSupport.appendingPathComponent("NodeBackups", isDirectory: true)
+		try FileManager.default.createDirectory(at: newDir, withIntermediateDirectories: true)
+		try FileManager.default.createDirectory(at: legacy, withIntermediateDirectories: true)
+		try Data("keep-me".utf8).write(to: legacy.appendingPathComponent("orphan.store"))
+
+		let resolved = NodeBackupManager.resolveBackupBaseURL(documents: documents, appSupport: appSupport)
+
+		#expect(resolved == newDir)
+		// Legacy content is preserved for manual recovery, never merged or deleted.
+		#expect(FileManager.default.fileExists(atPath: legacy.appendingPathComponent("orphan.store").path))
+	}
 }
