@@ -534,9 +534,21 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		// Flush any debounced position/telemetry saves before disconnecting
 		await MeshPackets.shared.flushDebouncedSaves()
 
-		// Close out the connection
-		if let activeConnection = activeConnection {
-			try await activeConnection.connection.disconnect(withError: nil, shouldReconnect: false)
+		// Close out the transport, then finish manager teardown before returning. Connection
+		// events are asynchronous, so awaiting the transport alone can leave activeConnection set.
+		var disconnectError: Error?
+		if let activeConnection {
+			do {
+				try await activeConnection.connection.disconnect(withError: nil, shouldReconnect: false)
+			} catch {
+				disconnectError = error
+			}
+		}
+		try await closeConnection()
+		updateState(.discovering)
+
+		if let disconnectError {
+			throw disconnectError
 		}
 	}
 
@@ -697,8 +709,12 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			}
 			
 		case .disconnected:
+			guard !shouldIgnoreTransientEvent else {
+				Logger.transport.info("[Accessory] Ignoring disconnect event during teardown.")
+				return
+			}
 			Task {
-				// This is user-initatied, so don't reconnect
+				// This is user-initiated, so don't reconnect
 				shouldAutomaticallyConnectToPreferredPeripheralAfterError = false
 				try? await self.closeConnection()
 				updateState(.discovering)
