@@ -47,6 +47,11 @@ struct OfflineMapDetailView: View {
 				}
 				LabeledContent("Size", value: current.formattedSize)
 				LabeledContent("Detail", value: "Zoom \(current.minZoom)–\(current.maxZoom)")
+				if let warning = current.zoomCoverage.warningLabel {
+					Label(warning, systemImage: "exclamationmark.triangle")
+						.font(.callout)
+						.foregroundStyle(.orange)
+				}
 				LabeledContent("Map updated", value: current.updatedDate.formatted(.relative(presentation: .named)))
 				LabeledContent("Source", value: current.sourceBuild == "Imported" ? "Imported PMTiles" : "Protomaps \(current.sourceBuild)")
 			}

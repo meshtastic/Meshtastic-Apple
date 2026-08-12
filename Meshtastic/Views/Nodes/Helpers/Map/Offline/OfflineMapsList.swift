@@ -111,6 +111,11 @@ struct OfflineMapRow: View {
 				Text("\(region.formattedSize) · Updated \(region.updatedDate.formatted(.relative(presentation: .named)))")
 					.font(.caption)
 					.foregroundStyle(.secondary)
+				if let warning = region.zoomCoverage.warningLabel {
+					Label(warning, systemImage: "exclamationmark.triangle")
+						.font(.caption2)
+						.foregroundStyle(.orange)
+				}
 			}
 		}
 	}
