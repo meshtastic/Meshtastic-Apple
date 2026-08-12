@@ -471,4 +471,42 @@ struct NodeBackupManagerTests {
 		// Legacy content is preserved for manual recovery, never merged or deleted.
 		#expect(FileManager.default.fileExists(atPath: legacy.appendingPathComponent("orphan.store").path))
 	}
+
+	@Test("A user file named NodeBackups in Documents falls back to the legacy location untouched")
+	func resolveLocationFileCollisionFallsBackToLegacy() throws {
+		let tempDir = try makeTempDir()
+		defer { cleanup(tempDir) }
+		let documents = tempDir.appendingPathComponent("Documents", isDirectory: true)
+		let appSupport = tempDir.appendingPathComponent("AppSupport", isDirectory: true)
+		try FileManager.default.createDirectory(at: documents, withIntermediateDirectories: true)
+		// Documents is user-writable: someone saved a FILE with the folder's name.
+		let squatter = documents.appendingPathComponent("NodeBackups")
+		try Data("not a folder".utf8).write(to: squatter)
+
+		let resolved = NodeBackupManager.resolveBackupBaseURL(documents: documents, appSupport: appSupport)
+
+		#expect(resolved == appSupport.appendingPathComponent("NodeBackups", isDirectory: true))
+		// The user's file is never touched, moved, or overwritten.
+		#expect(try Data(contentsOf: squatter) == Data("not a folder".utf8))
+	}
+
+	@Test("A file collision with existing legacy backups keeps the legacy folder active and unmodified")
+	func resolveLocationFileCollisionPreservesLegacyBackups() throws {
+		let tempDir = try makeTempDir()
+		defer { cleanup(tempDir) }
+		let documents = tempDir.appendingPathComponent("Documents", isDirectory: true)
+		let appSupport = tempDir.appendingPathComponent("AppSupport", isDirectory: true)
+		try FileManager.default.createDirectory(at: documents, withIntermediateDirectories: true)
+		try Data("squatter".utf8).write(to: documents.appendingPathComponent("NodeBackups"))
+		let legacy = appSupport.appendingPathComponent("NodeBackups", isDirectory: true)
+		let nodeDir = legacy.appendingPathComponent("5678", isDirectory: true)
+		try FileManager.default.createDirectory(at: nodeDir, withIntermediateDirectories: true)
+		try Data("precious-backup".utf8).write(to: nodeDir.appendingPathComponent("Meshtastic.store"))
+
+		let resolved = NodeBackupManager.resolveBackupBaseURL(documents: documents, appSupport: appSupport)
+
+		#expect(resolved == legacy)
+		// No migration was attempted into the blocked location; the backup is intact where it was.
+		#expect(FileManager.default.fileExists(atPath: nodeDir.appendingPathComponent("Meshtastic.store").path))
+	}
 }

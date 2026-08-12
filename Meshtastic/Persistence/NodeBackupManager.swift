@@ -74,8 +74,22 @@ final class NodeBackupManager: NodeBackupManaging {
 		let newURL = documents.appendingPathComponent("NodeBackups", isDirectory: true)
 		let legacyURL = appSupport.appendingPathComponent("NodeBackups", isDirectory: true)
 
-		let newExists = fm.fileExists(atPath: newURL.path)
-		let legacyExists = fm.fileExists(atPath: legacyURL.path)
+		// Documents is user-writable through the Files app, so "something exists at the path"
+		// is not "our folder exists": a stray *file* named NodeBackups would make a bare
+		// fileExists check return true, the initializer's directory creation silently fail,
+		// and every subsequent backup write fail. Distinguish directories from files and
+		// never overwrite anything the user put there.
+		var newIsDir: ObjCBool = false
+		let newExists = fm.fileExists(atPath: newURL.path, isDirectory: &newIsDir)
+		var legacyIsDir: ObjCBool = false
+		let legacyExists = fm.fileExists(atPath: legacyURL.path, isDirectory: &legacyIsDir) && legacyIsDir.boolValue
+
+		if newExists && !newIsDir.boolValue {
+			// A user-created file is squatting on the folder name. Leave it untouched and keep
+			// backups working in the app-controlled legacy location until the user removes it.
+			Logger.data.error("💾 [Backup] A file named NodeBackups is blocking the Files-visible backup folder in Documents; keeping backups in Application Support until it is removed")
+			return legacyURL
+		}
 
 		if legacyExists && !newExists {
 			do {
