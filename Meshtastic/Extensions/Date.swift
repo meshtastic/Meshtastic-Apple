@@ -38,11 +38,25 @@ extension Date {
 		}
 	}
 
+	/// Builds a cached, POSIX-locale `DateFormatter` for filename stamps. Reused so the formatter
+	/// boilerplate isn't repeated (and re-allocated) at each call site.
+	private static func exportFormatter(_ format: String) -> DateFormatter {
+		let formatter = DateFormatter()
+		formatter.dateFormat = format
+		formatter.locale = Locale(identifier: "en_US_POSIX")
+		return formatter
+	}
+
+	private static let exportTimestampFormatter = exportFormatter("yyyy-MM-dd_HHmmss")
+	private static let exportDateStampFormatter = exportFormatter("yyyyMMdd")
+
 	/// Filename-safe timestamp: `2026-05-04_101521`
 	var exportTimestamp: String {
-		let formatter = DateFormatter()
-		formatter.dateFormat = "yyyy-MM-dd_HHmmss"
-		formatter.locale = Locale(identifier: "en_US_POSIX")
-		return formatter.string(from: self)
+		Date.exportTimestampFormatter.string(from: self)
+	}
+
+	/// Android-style filename date stamp: `20260504` (matches the `.cfg` export naming used by the Android app).
+	var exportDateStamp: String {
+		Date.exportDateStampFormatter.string(from: self)
 	}
 }

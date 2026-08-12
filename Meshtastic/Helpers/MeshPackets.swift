@@ -1639,6 +1639,9 @@ actor MeshPackets {
 				let fetchWaypointDescriptor = FetchDescriptor<WaypointEntity>(predicate: #Predicate { $0.id == waypointId })
 
 				let fetchedWaypoint = try modelContext.fetch(fetchWaypointDescriptor)
+				// A local-only waypoint must never be overwritten by a mesh packet that happens to
+				// share its id — ignore the incoming waypoint entirely for that id.
+				if fetchedWaypoint.first?.isLocal == true { return }
 				// Fetch the node info to get the short name
 				var nodeShortName: String = "?"
 				let packetFrom = Int64(packet.from)
@@ -1663,7 +1666,9 @@ actor MeshPackets {
 					waypoint.icon = Int64(waypointMessage.icon)
 					waypoint.locked = waypointMessage.lockedTo != 0
 					waypoint.createdBy = Int64(packet.from)
-					waypoint.applyGeofence(from: waypointMessage)
+					// Geometry only: the notify flags are receiver-local (design#114), so a
+					// received waypoint never notifies unless this user opts in via WaypointForm.
+					waypoint.applyGeofenceGeometry(from: waypointMessage)
 					if waypointMessage.expire >= 1 {
 						waypoint.expire = Date(timeIntervalSince1970: TimeInterval(Int64(waypointMessage.expire)))
 					} else {
@@ -1708,7 +1713,9 @@ actor MeshPackets {
 							existingWaypoint.icon = Int64(waypointMessage.icon)
 							existingWaypoint.locked = waypointMessage.lockedTo != 0
 							existingWaypoint.lastUpdatedBy = Int64(packet.from)
-							existingWaypoint.applyGeofence(from: waypointMessage)
+							// Geometry only — a mesh update must never overwrite this user's
+							// local notification opt-in/opt-out (design#114).
+							existingWaypoint.applyGeofenceGeometry(from: waypointMessage)
 							if waypointMessage.expire >= 1 {
 								existingWaypoint.expire = Date(timeIntervalSince1970: TimeInterval(Int64(waypointMessage.expire)))
 							} else {

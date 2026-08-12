@@ -1300,6 +1300,10 @@ public enum FirmwareEdition: SwiftProtobuf.Enum, Swift.CaseIterable {
   case hamvention // = 19
 
   ///
+  /// FAB, the international Fab Lab digital fabrication conference
+  case fab // = 20
+
+  ///
   /// Placeholder for DIY and unofficial events
   case diyEdition // = 127
   case UNRECOGNIZED(Int)
@@ -1316,6 +1320,7 @@ public enum FirmwareEdition: SwiftProtobuf.Enum, Swift.CaseIterable {
     case 17: self = .defcon
     case 18: self = .burningMan
     case 19: self = .hamvention
+    case 20: self = .fab
     case 127: self = .diyEdition
     default: self = .UNRECOGNIZED(rawValue)
     }
@@ -1329,6 +1334,7 @@ public enum FirmwareEdition: SwiftProtobuf.Enum, Swift.CaseIterable {
     case .defcon: return 17
     case .burningMan: return 18
     case .hamvention: return 19
+    case .fab: return 20
     case .diyEdition: return 127
     case .UNRECOGNIZED(let i): return i
     }
@@ -1342,6 +1348,7 @@ public enum FirmwareEdition: SwiftProtobuf.Enum, Swift.CaseIterable {
     .defcon,
     .burningMan,
     .hamvention,
+    .fab,
     .diyEdition,
   ]
 
@@ -4399,6 +4406,11 @@ public struct DeviceMetadata: Sendable {
   /// (bitwise OR of ExcludedModules)
   public var excludedModules: UInt32 = 0
 
+  ///
+  /// Indicates whether this firmware build includes XEdDSA packet signature verification.
+  /// This is a read-only capability and must be false when XEdDSA is not compiled in.
+  public var hasXeddsa_p: Bool = false
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
@@ -4650,7 +4662,7 @@ extension CriticalErrorCode: SwiftProtobuf._ProtoNameProviding {
 }
 
 extension FirmwareEdition: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0VANILLA\0\u{1}SMART_CITIZEN\0\u{2}\u{f}OPEN_SAUCE\0\u{1}DEFCON\0\u{1}BURNING_MAN\0\u{1}HAMVENTION\0\u{2}l\u{1}DIY_EDITION\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0VANILLA\0\u{1}SMART_CITIZEN\0\u{2}\u{f}OPEN_SAUCE\0\u{1}DEFCON\0\u{1}BURNING_MAN\0\u{1}HAMVENTION\0\u{1}FAB\0\u{2}k\u{1}DIY_EDITION\0")
 }
 
 extension ExcludedModules: SwiftProtobuf._ProtoNameProviding {
@@ -7140,7 +7152,7 @@ extension Neighbor: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
 
 extension DeviceMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".DeviceMetadata"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}firmware_version\0\u{3}device_state_version\0\u{1}canShutdown\0\u{1}hasWifi\0\u{1}hasBluetooth\0\u{1}hasEthernet\0\u{1}role\0\u{3}position_flags\0\u{3}hw_model\0\u{1}hasRemoteHardware\0\u{1}hasPKC\0\u{3}excluded_modules\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}firmware_version\0\u{3}device_state_version\0\u{1}canShutdown\0\u{1}hasWifi\0\u{1}hasBluetooth\0\u{1}hasEthernet\0\u{1}role\0\u{3}position_flags\0\u{3}hw_model\0\u{1}hasRemoteHardware\0\u{1}hasPKC\0\u{3}excluded_modules\0\u{4}\u{2}has_xeddsa\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -7160,6 +7172,7 @@ extension DeviceMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
       case 10: try { try decoder.decodeSingularBoolField(value: &self.hasRemoteHardware_p) }()
       case 11: try { try decoder.decodeSingularBoolField(value: &self.hasPkc_p) }()
       case 12: try { try decoder.decodeSingularUInt32Field(value: &self.excludedModules) }()
+      case 14: try { try decoder.decodeSingularBoolField(value: &self.hasXeddsa_p) }()
       default: break
       }
     }
@@ -7202,6 +7215,9 @@ extension DeviceMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
     if self.excludedModules != 0 {
       try visitor.visitSingularUInt32Field(value: self.excludedModules, fieldNumber: 12)
     }
+    if self.hasXeddsa_p != false {
+      try visitor.visitSingularBoolField(value: self.hasXeddsa_p, fieldNumber: 14)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -7218,6 +7234,7 @@ extension DeviceMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
     if lhs.hasRemoteHardware_p != rhs.hasRemoteHardware_p {return false}
     if lhs.hasPkc_p != rhs.hasPkc_p {return false}
     if lhs.excludedModules != rhs.excludedModules {return false}
+    if lhs.hasXeddsa_p != rhs.hasXeddsa_p {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
