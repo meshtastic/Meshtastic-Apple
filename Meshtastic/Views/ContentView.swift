@@ -3,6 +3,7 @@
  */
 
 import SwiftUI
+import UIKit
 
 struct ContentView: View {
 	@ObservedObject var appState: AppState
@@ -54,7 +55,13 @@ struct ContentView: View {
 				LockdownSheet()
 			}
 			.onAppear {
-				if UserDefaults.firstLaunch {
+				// Trust the first-launch flag only when this process can actually read it. Launched
+				// in the background before the phone's first unlock (Bluetooth state restoration
+				// after a reboot), UserDefaults is still encrypted and `firstLaunch` returns its
+				// default `true` — which re-ran the whole setup wizard on an installed app (#2243).
+				// A pre-unlock launch can never be a genuine first launch: a fresh install has no
+				// restoration session to be relaunched for.
+				if UserDefaults.firstLaunch && UIApplication.shared.isProtectedDataAvailable {
 					isShowingDeviceOnboardingFlow = true
 				}
 				// Present the gate if the device is already in a blocking state when

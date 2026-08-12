@@ -179,6 +179,12 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	@Published var allowDisconnect = false
 	@Published var lastConnectionError: Error?
 	@Published var isConnected: Bool = false
+	/// When the radio last finished sending its configuration.
+	///
+	/// Used to tell a fresh readback from a stale cache. Post-import verification is meaningless
+	/// against entities that still hold pre-import values: every item would look dropped. See
+	/// `DeviceProfileVerifier`.
+	@Published var lastConfigRefresh: Date?
 	@Published var isConnecting: Bool = false
 	@Published var isInBackground: Bool = false
 	@Published var firmwareEdition: FirmwareEditions = .vanilla
@@ -250,8 +256,9 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 
 	/// Rolling estimate of inbound mesh-packet rate. Drives `isHighMeshTraffic`, which the map reads
 	/// to pause the trace-route 3D flyover when live traffic would make the flythrough janky. Fed one
-	/// `record()` per inbound mesh packet in `processFromRadio`; sampled while a connection is active.
-	let meshTrafficMonitor = MeshTrafficMonitor()
+	/// `recordInboundPacket()` per inbound mesh packet in `processFromRadio`; the monitor self-starts
+	/// its decay timer on the first packet and is cleared via `reset()` on disconnect.
+	let meshTrafficMonitor = MeshTrafficMonitor.shared
 
 	/// Mirrors `meshTrafficMonitor.isHighTraffic` onto this ObservableObject so views already
 	/// observing AccessoryManager (e.g. the map) react to it without having to observe the nested
@@ -458,7 +465,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 
 		// Stop sampling and clear the traffic gate so a stale "high traffic" flag can't linger and
 		// keep the map flyover paused after the mesh goes quiet on disconnect.
-		meshTrafficMonitor.stop()
+		meshTrafficMonitor.reset()
 
 		connectionEventTask?.cancel()
 		connectionEventTask = nil
@@ -763,7 +770,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		case .packet(let packet):
 			// Feed the traffic-rate estimator one tick per inbound mesh packet — this is the busy path
 			// whose re-renders make the map flyover stutter, so it's exactly what we want to measure.
-			meshTrafficMonitor.record()
+			meshTrafficMonitor.recordInboundPacket()
 			// All received packets get passed through updateAnyPacketFrom to update lastHeard, rxSnr, etc. (like firmware's NodeDB::updateFrom).
 			if let connectedNodeNum = self.activeDeviceNum {
 				await MeshPackets.shared.updateAnyPacketFrom(packet: packet, activeDeviceNum: connectedNodeNum)
@@ -999,6 +1006,9 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			// break:
 			// Logger.mesh.error("✅ [Accessory] Unknown UNHANDLED confligCompleteID: \(configCompleteID)")
 			// }
+
+			// Stamp the arrival so callers can tell a post-reboot refresh from a stale cache.
+			lastConfigRefresh = Date()
 
 			Logger.transport.info("✅ [Accessory] Notifying completions that have completed for configCompleteID: \(configCompleteID)")
 			switch configCompleteID {
