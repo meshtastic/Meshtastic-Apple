@@ -179,6 +179,12 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	@Published var allowDisconnect = false
 	@Published var lastConnectionError: Error?
 	@Published var isConnected: Bool = false
+	/// When the radio last finished sending its configuration.
+	///
+	/// Used to tell a fresh readback from a stale cache. Post-import verification is meaningless
+	/// against entities that still hold pre-import values: every item would look dropped. See
+	/// `DeviceProfileVerifier`.
+	@Published var lastConfigRefresh: Date?
 	@Published var isConnecting: Bool = false
 	@Published var isInBackground: Bool = false
 	@Published var firmwareEdition: FirmwareEditions = .vanilla
@@ -1000,6 +1006,9 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			// break:
 			// Logger.mesh.error("✅ [Accessory] Unknown UNHANDLED confligCompleteID: \(configCompleteID)")
 			// }
+
+			// Stamp the arrival so callers can tell a post-reboot refresh from a stale cache.
+			lastConfigRefresh = Date()
 
 			Logger.transport.info("✅ [Accessory] Notifying completions that have completed for configCompleteID: \(configCompleteID)")
 			switch configCompleteID {

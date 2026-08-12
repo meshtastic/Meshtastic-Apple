@@ -109,6 +109,10 @@ struct MessageText: View {
 				Text(LocalizedStringKey(payload))
 			}
 		}
+			// Never yield vertical space to row siblings: without this, a flexible sibling in the
+			// message row (the tapback pill's ScrollView) could win the height auction and the
+			// bubble text tail-truncated with "…" on long wrapping messages.
+			.fixedSize(horizontal: false, vertical: true)
 			.tint(Color("Colors/MeshtasticLink"))
 			.padding(.vertical, 10)
 			.padding(.horizontal, 8)

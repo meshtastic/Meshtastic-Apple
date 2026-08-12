@@ -398,6 +398,35 @@ struct WaypointForm: View {
 					Text("Location")
 				}
 
+				// Local notification opt-in for a received geofence (design#114): editable in
+				// place — even for locked waypoints — and persisted only on this device. The
+				// mesh Send path is never involved; the flags never travel over the wire.
+				if canEditNotifyPreferencesLocally {
+					Section {
+						Toggle(isOn: $notifyOnEnter) {
+							Label("Notify on Enter", systemImage: "bell")
+						}
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						.onChange(of: notifyOnEnter) { commitNotifyPreferences() }
+						Toggle(isOn: $notifyOnExit) {
+							Label("Notify on Exit", systemImage: "bell.slash")
+						}
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						.onChange(of: notifyOnExit) { commitNotifyPreferences() }
+						if notifyOnEnter || notifyOnExit {
+							Toggle(isOn: $notifyFavoritesOnly) {
+								Label("Favorites Only", systemImage: "star")
+							}
+							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+							.onChange(of: notifyFavoritesOnly) { commitNotifyPreferences() }
+						}
+					} header: {
+						Text("Geofence Notifications")
+					} footer: {
+						Text("Saved only on this device — nothing is sent over the mesh.")
+					}
+				}
+
 				Section {
 					Label {
 						Text(waypoint.created?.formatted(date: .numeric, time: .shortened) ?? "?")
@@ -571,6 +600,32 @@ struct WaypointForm: View {
 		#endif
 	}
 	
+	/// Whether the geofence notification toggles are offered as an in-place, local-only
+	/// setting in the read-only view: a received waypoint (not authored by the connected
+	/// node — including ones locked to another node — and not local-only) with a geofence.
+	private var canEditNotifyPreferencesLocally: Bool {
+		WaypointEntity.canEditNotifyPreferencesLocally(
+			isLocalWaypoint: waypoint.isLocal,
+			createdBy: waypoint.createdBy,
+			activeDeviceNum: accessoryManager.activeDeviceNum,
+			hasGeofence: waypoint.hasGeofence
+		)
+	}
+
+	/// Persist the geofence notification opt-in for a received waypoint. Local-only by
+	/// design (design#114): writes exactly the three receiver-local preference flags and
+	/// saves the context — nothing is ever sent to the mesh from this path.
+	private func commitNotifyPreferences() {
+		// Favorites-only is meaningless (and its toggle hidden) unless notifying.
+		if !notifyOnEnter && !notifyOnExit {
+			notifyFavoritesOnly = false
+		}
+		waypoint.notifyOnEnter = notifyOnEnter
+		waypoint.notifyOnExit = notifyOnExit
+		waypoint.notifyFavoritesOnly = notifyFavoritesOnly
+		do { try context.save() } catch { Logger.mesh.error("Failed to save notification preferences: \(error)") }
+	}
+
 	private func commitLocal() {
 		if waypoint.id == 0 {
 			waypoint.id = Int64(UInt32.random(in: UInt32(UInt8.max)..<UInt32.max))
@@ -647,15 +702,25 @@ struct WaypointForm: View {
 
 	private func applyGeofence(to waypointProto: inout Waypoint) {
 		waypointProto.geofenceRadius = UInt32(max(0, geofenceRadius).rounded())
-		// The notification toggles are hidden in the UI when no geofence exists, but their
-		// @State values persist. Normalize before serializing so turning a geofence off can't
-		// leak stale `true` flags onto the mesh; favorites-only only applies when notifying.
-		let hasGeofence = geofenceRadius > 0 || geofenceBounds != nil
-		let serializedNotifyOnEnter = hasGeofence && notifyOnEnter
-		let serializedNotifyOnExit = hasGeofence && notifyOnExit
-		waypointProto.notifyOnEnter = serializedNotifyOnEnter
-		waypointProto.notifyOnExit = serializedNotifyOnExit
-		waypointProto.notifyFavoritesOnly = (serializedNotifyOnEnter || serializedNotifyOnExit) && notifyFavoritesOnly
+		// The wire notify fields carry the author's own preference only (design#114):
+		// re-sending someone else's waypoint serializes them as false so this receiver's
+		// local opt-in never leaks onto the mesh. Also normalizes stale @State — the
+		// toggles are hidden when no geofence exists but their values persist, and
+		// favorites-only only applies when notifying.
+		let flags = WaypointEntity.outgoingNotifyFlags(
+			isAuthor: WaypointEntity.isAuthoredLocally(
+				waypointId: waypoint.id,
+				createdBy: waypoint.createdBy,
+				activeDeviceNum: accessoryManager.activeDeviceNum
+			),
+			hasGeofence: geofenceRadius > 0 || geofenceBounds != nil,
+			notifyOnEnter: notifyOnEnter,
+			notifyOnExit: notifyOnExit,
+			notifyFavoritesOnly: notifyFavoritesOnly
+		)
+		waypointProto.notifyOnEnter = flags.notifyOnEnter
+		waypointProto.notifyOnExit = flags.notifyOnExit
+		waypointProto.notifyFavoritesOnly = flags.notifyFavoritesOnly
 		if let b = geofenceBounds {
 			var box = BoundingBox()
 			box.longitudeWestI = Int32((b.minLon * 1e7).rounded())
