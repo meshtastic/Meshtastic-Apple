@@ -13,6 +13,7 @@ import MapKit
 import MVTTools
 import OSLog
 import SwiftUI
+import Combine
 
 // MARK: - Native vector rendering of offline MVT tiles (drawn IN a SwiftUI Map)
 //
@@ -39,6 +40,22 @@ struct OfflineMapPolyline: Identifiable {
 	let id: String
 	let role: OfflineFeatureRole
 	let coordinates: [CLLocationCoordinate2D]
+}
+
+/// Region identity required to bind an archive consistently before and after the manager loads.
+struct OfflineVectorSourceBinding: Equatable {
+	let url: URL
+	let regionID: UUID
+
+	init(regionFile: OfflineMapRegionFile) {
+		url = regionFile.url
+		regionID = regionFile.region.id
+	}
+
+	init(url: URL, regionID: UUID = UUID()) {
+		self.url = url
+		self.regionID = regionID
+	}
 }
 
 /// Render-ready offline content plus measurement stats (returned by `OfflineVectorTileProvider.build`).
@@ -88,14 +105,19 @@ final class OfflineVectorTileProvider: ObservableObject {
 	/// Coverage box for each loaded archive (for the base fills + coverage rectangles). One per region.
 	private(set) var coverageAreas: [GeoBounds] = []
 	/// One opened vector archive + its coverage box.
-	private struct VectorSource { let url: URL; let source: OfflineTileSource; let bounds: GeoBounds }
+	private struct VectorSource {
+		let url: URL
+		let source: OfflineTileSource
+		let bounds: GeoBounds
+	}
 	private var vectorSources: [VectorSource] = []
-	/// URLs the provider is currently bound to, so reload(urls:) can no-op when unchanged.
-	private var loadedURLs: [URL] = []
+	/// Region identities the provider is currently bound to, so metadata changes reload even when URLs match.
+	private var loadedBindings: [OfflineVectorSourceBinding] = []
 	private let queue = DispatchQueue(label: "offline.vector.decode", qos: .userInitiated)
 	private var didLoad = false
+	private var regionObserver: AnyCancellable?
 
-	/// `boundsTiles` picks the highest fixed zoom whose tile count fits this cap. Residential
+	/// `tiles(...)` picks the highest fixed zoom whose tile count fits this cap. Residential
 	/// streets only exist in Protomaps tiles at z13+, so ~48 lands on z14 (full street grid).
 	private let maxTiles = 48
 
@@ -104,14 +126,25 @@ final class OfflineVectorTileProvider: ObservableObject {
 		var key: String { "\(z)/\(x)/\(y)" }
 	}
 
-	init(urls: [URL] = OfflineVectorTileProvider.defaultURLs) {
-		applySources(urls: urls)
+	init(bindings: [OfflineVectorSourceBinding] = OfflineVectorTileProvider.defaultBindings) {
+		applySources(bindings: bindings)
+		regionObserver = OfflineMapManager.shared.$regions
+			.dropFirst()
+			.receive(on: RunLoop.main)
+			.sink { [weak self] regions in
+				self?.reloadDownloadedRegions(regions)
+			}
+	}
+
+	private func reloadDownloadedRegions(_ regions: [OfflineMapRegion]) {
+		reload(regions: regions)
 	}
 
 	/// (Re)bind to the set of downloaded street archives, opening each vector source.
-	private func applySources(urls: [URL]) {
+	private func applySources(bindings: [OfflineVectorSourceBinding]) {
 		var result: [VectorSource] = []
-		for url in urls {
+		for binding in bindings {
+			let url = binding.url
 			if let src = OfflineTileSourceFactory.source(for: url), src.isVectorTiles, let bounds = src.geographicBounds {
 				result.append(VectorSource(url: url, source: src, bounds: bounds))
 			}
@@ -119,14 +152,22 @@ final class OfflineVectorTileProvider: ObservableObject {
 		vectorSources = result
 		isAvailable = !result.isEmpty
 		coverageAreas = result.map { $0.bounds }
-		loadedURLs = urls
+		loadedBindings = bindings
 	}
 
-	/// Switch to a different set of archives (e.g. after a new download) and re-decode. No-op when the
-	/// URL set is unchanged; clears the old overlays + re-decodes when it changes.
-	func reload(urls: [URL]) {
-		guard urls != loadedURLs else { return }
-		applySources(urls: urls)
+	/// Switch to a different set of archives (e.g. after a new download) and re-decode. Both URL and
+	/// persisted region identity participate in the no-op check, so a cold-start metadata correction reloads.
+	func reload(regions: [OfflineMapRegion]) {
+		let files = regions.compactMap { region -> OfflineMapRegionFile? in
+			guard let url = OfflineMapManager.shared.fileURL(for: region) else { return nil }
+			return OfflineMapRegionFile(region: region, url: url)
+		}
+		reload(bindings: Self.sourceBindings(for: files))
+	}
+
+	private func reload(bindings: [OfflineVectorSourceBinding]) {
+		guard Self.requiresReload(from: loadedBindings, to: bindings) else { return }
+		applySources(bindings: bindings)
 		didLoad = false
 		polygons = []
 		roads = []
@@ -134,9 +175,19 @@ final class OfflineVectorTileProvider: ObservableObject {
 		// NOTE: does NOT decode here — the caller decodes lazily (only when a region is on screen).
 	}
 
-	nonisolated static var defaultURLs: [URL] {
-		// All user-downloaded regions (the provider keeps only the vector ones).
-		OfflineMapManager.allRegionFileURLs()
+	nonisolated static var defaultBindings: [OfflineVectorSourceBinding] {
+		sourceBindings(for: OfflineMapManager.persistedRegionFiles())
+	}
+
+	nonisolated static func sourceBindings(for regionFiles: [OfflineMapRegionFile]) -> [OfflineVectorSourceBinding] {
+		regionFiles.map(OfflineVectorSourceBinding.init(regionFile:))
+	}
+
+	nonisolated static func requiresReload(
+		from current: [OfflineVectorSourceBinding],
+		to incoming: [OfflineVectorSourceBinding]
+	) -> Bool {
+		current != incoming
 	}
 
 	/// Decode the whole coverage box ONCE at a fixed detail zoom, stitch road segments per role, and
@@ -151,7 +202,12 @@ final class OfflineVectorTileProvider: ObservableObject {
 			var allPolygons: [OfflineMapPolygon] = []
 			var allRoads: [OfflineMapPolyline] = []
 			for (index, entry) in snapshot.enumerated() {
-				let tiles = Self.boundsTiles(source: entry.source, bounds: entry.bounds, maxTiles: cap)
+				let tiles = Self.tiles(
+					bounds: entry.bounds,
+					minZoom: Int(entry.source.tileMinZoom),
+					maxZoom: Int(entry.source.tileMaxZoom),
+					maxTiles: cap
+				)
 				guard !tiles.isEmpty else { continue }
 				let result = Self.build(source: entry.source, bounds: entry.bounds, tiles: tiles)
 				Logger.services.info("📦 [Offline] region \(index): \(result.stats.description)")
@@ -250,7 +306,12 @@ final class OfflineVectorTileProvider: ObservableObject {
 	) -> OfflineDecodeStats? {
 		guard let source = OfflineTileSourceFactory.source(for: url), source.isVectorTiles,
 			  let bounds = source.geographicBounds else { return nil }
-		let tiles = boundsTiles(source: source, bounds: bounds, maxTiles: maxTiles)
+		let tiles = tiles(
+			bounds: bounds,
+			minZoom: Int(source.tileMinZoom),
+			maxZoom: Int(source.tileMaxZoom),
+			maxTiles: maxTiles
+		)
 		guard !tiles.isEmpty else { return nil }
 		return build(source: source, bounds: bounds, tiles: tiles, minFillMeters: minFillMeters, minRoadMeters: minRoadMeters).stats
 	}
@@ -347,11 +408,14 @@ extension OfflineVectorTileProvider {
 
 	// MARK: Tile math
 
-	/// All tiles covering the archive's coverage box, at the highest zoom whose tile count fits
-	/// the cap. Decoded once; vectors scale to any map zoom.
-	nonisolated private static func boundsTiles(source: OfflineTileSource, bounds: GeoBounds, maxTiles: Int) -> [TileID] {
-		let minZoom = Int(source.tileMinZoom)
-		let maxZoom = Int(source.tileMaxZoom)
+	/// All tiles covering the archive's coverage box at the highest zoom whose tile count fits the cap.
+	/// Decoded once; vectors scale to any map zoom.
+	nonisolated static func tiles(
+		bounds: GeoBounds,
+		minZoom: Int,
+		maxZoom: Int,
+		maxTiles: Int = 48
+	) -> [TileID] {
 		var zoom = maxZoom
 		while zoom > minZoom {
 			let topLeft = tileXY(lon: bounds.minLon, lat: bounds.maxLat, zoom: zoom)
@@ -417,7 +481,8 @@ extension OfflineVectorTileProvider {
 		// All roads (incl. the residential/neighborhood street grid); footpaths are still skipped.
 		for feature in vector.features(for: "roads") {
 			let kind = (feature.properties["kind"] as? String) ?? (feature.properties["pmap:kind"] as? String)
-			let role = roadRole(kind)
+			let kindDetail = (feature.properties["kind_detail"] as? String) ?? (feature.properties["pmap:kind_detail"] as? String)
+			let role = roadRole(kind: kind, kindDetail: kindDetail)
 			if role == .path { continue } // footways/cycleways: high count, low basemap value
 			appendPolylines(feature.geometry, role: role, bounds: bounds, into: &lines, id: nextID)
 		}
@@ -425,7 +490,8 @@ extension OfflineVectorTileProvider {
 		return (polys, lines)
 	}
 
-	nonisolated private static func roadRole(_ kind: String?) -> OfflineFeatureRole {
+	nonisolated static func roadRole(kind: String?, kindDetail: String?) -> OfflineFeatureRole {
+		if kind == "path", kindDetail == "pedestrian" { return .minorRoad }
 		switch kind {
 		case "highway", "motorway", "freeway", "major_road", "trunk", "primary": return .majorRoad
 		case "medium_road", "secondary", "tertiary": return .mediumRoad
@@ -634,4 +700,3 @@ extension OfflineVectorTileProvider {
 		return CLLocationCoordinate2D(latitude: lat, longitude: start.longitude + t * (end.longitude - start.longitude))
 	}
 }
-
