@@ -232,13 +232,6 @@
 			);
 			target = 2E65E76AD018C0989DFAD699 /* Meshtastic Vision */;
 		};
-		585D5DD1A1B0250218AA526A /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				MeshtasticTVApp.swift,
-			);
-			target = 2E65E76AD018C0989DFAD699 /* Meshtastic Vision */;
-		};
 		60FB5122E93A45D014918572 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -320,9 +313,34 @@
 			);
 			target = C4BC64E061C609D15F5DFAF5 /* Meshtastic Watch App */;
 		};
+		E09388DF8D17C9F8068A51B9 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				MeshtasticTVApp.swift,
+			);
+			target = 2E65E76AD018C0989DFAD699 /* Meshtastic Vision */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		049E2F3C92A710A68606BA11 /* Meshtastic TV/Map */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			path = "Meshtastic TV/Map";
+			sourceTree = "<group>";
+		};
+		07405908E0F6380270C47234 /* Meshtastic TV/Client */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			path = "Meshtastic TV/Client";
+			sourceTree = "<group>";
+		};
 		0846840A4300FE311DCFDA44 /* images */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
@@ -418,19 +436,6 @@
 			path = Measurement;
 			sourceTree = "<group>";
 		};
-		3202898A807FE04D4DC066D4 /* App */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				585D5DD1A1B0250218AA526A /* PBXFileSystemSynchronizedBuildFileExceptionSet */,
-			);
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			name = App;
-			path = App;
-			sourceTree = "<group>";
-		};
 		456E28D41A9B7B1788FEE0CD /* Shared */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			explicitFileTypes = {
@@ -460,24 +465,13 @@
 			path = Persistence;
 			sourceTree = "<group>";
 		};
-		6FBFD4D647263AFDB189E4B8 /* Views */ = {
+		646FBF74A2DAAE565F0EE867 /* Meshtastic TV/Models */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			explicitFileTypes = {
 			};
 			explicitFolders = (
 			);
-			name = Views;
-			path = Views;
-			sourceTree = "<group>";
-		};
-		75D19723569FE55F26C70E36 /* Map */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			name = Map;
-			path = Map;
+			path = "Meshtastic TV/Models";
 			sourceTree = "<group>";
 		};
 		7CECEBBD0650101FDB559A1A /* Meshtastic Vision */ = {
@@ -541,14 +535,13 @@
 			path = CarPlay;
 			sourceTree = "<group>";
 		};
-		BEC568E86239A706FBF36EE2 /* Models */ = {
+		C09F18412A78598E89352DC6 /* Meshtastic TV/Views */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			explicitFileTypes = {
 			};
 			explicitFolders = (
 			);
-			name = Models;
-			path = Models;
+			path = "Meshtastic TV/Views";
 			sourceTree = "<group>";
 		};
 		C21C46F8F2BCFF68F31B12C0 /* Export */ = {
@@ -571,6 +564,18 @@
 			path = Tips;
 			sourceTree = "<group>";
 		};
+		D728DD222FDDB3BF2AF65147 /* Meshtastic TV/App */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				E09388DF8D17C9F8068A51B9 /* PBXFileSystemSynchronizedBuildFileExceptionSet */,
+			);
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			path = "Meshtastic TV/App";
+			sourceTree = "<group>";
+		};
 		D983771846F46D151DDE372B /* Views */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			explicitFileTypes = {
@@ -579,16 +584,6 @@
 			);
 			name = Views;
 			path = Views;
-			sourceTree = "<group>";
-		};
-		E1CAF819F3BF329C9C924DF2 /* Client */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			name = Client;
-			path = Client;
 			sourceTree = "<group>";
 		};
 		EA229AC7C87CBBD64EC61AA1 /* Meshtastic TV */ = {
@@ -722,18 +717,6 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		615D439CBFAC4AA6EE6F0E34 /* Meshtastic TV */ = {
-			isa = PBXGroup;
-			children = (
-				3202898A807FE04D4DC066D4 /* App */,
-				E1CAF819F3BF329C9C924DF2 /* Client */,
-				75D19723569FE55F26C70E36 /* Map */,
-				BEC568E86239A706FBF36EE2 /* Models */,
-				6FBFD4D647263AFDB189E4B8 /* Views */,
-			);
-			path = "Meshtastic TV";
-			sourceTree = "<group>";
-		};
 		68569A5CFCF946568B4E32C5 /* Meshtastic */ = {
 			isa = PBXGroup;
 			children = (
@@ -788,6 +771,18 @@
 			path = Views;
 			sourceTree = "<group>";
 		};
+		A89D0EE7C6D97A70711116F4 /* Meshtastic TV (Vision shared) */ = {
+			isa = PBXGroup;
+			children = (
+				D728DD222FDDB3BF2AF65147 /* Meshtastic TV/App */,
+				07405908E0F6380270C47234 /* Meshtastic TV/Client */,
+				049E2F3C92A710A68606BA11 /* Meshtastic TV/Map */,
+				646FBF74A2DAAE565F0EE867 /* Meshtastic TV/Models */,
+				C09F18412A78598E89352DC6 /* Meshtastic TV/Views */,
+			);
+			name = "Meshtastic TV (Vision shared)";
+			sourceTree = "<group>";
+		};
 		BE994A834A388206BCD4EBE6 /* Helpers */ = {
 			isa = PBXGroup;
 			children = (
@@ -801,8 +796,8 @@
 			children = (
 				26351F51CD01C94D8D82486A /* Localizable.xcstrings */,
 				68569A5CFCF946568B4E32C5 /* Meshtastic */,
-				615D439CBFAC4AA6EE6F0E34 /* Meshtastic TV */,
 				EA229AC7C87CBBD64EC61AA1 /* Meshtastic TV */,
+				A89D0EE7C6D97A70711116F4 /* Meshtastic TV (Vision shared) */,
 				7CECEBBD0650101FDB559A1A /* Meshtastic Vision */,
 				F0E2A06151AF30290D808624 /* Meshtastic Watch App */,
 				867FD80926C4A4286D635BAD /* MeshtasticTests */,
@@ -874,12 +869,12 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				3202898A807FE04D4DC066D4 /* App */,
-				E1CAF819F3BF329C9C924DF2 /* Client */,
-				75D19723569FE55F26C70E36 /* Map */,
+				D728DD222FDDB3BF2AF65147 /* Meshtastic TV/App */,
+				07405908E0F6380270C47234 /* Meshtastic TV/Client */,
+				049E2F3C92A710A68606BA11 /* Meshtastic TV/Map */,
 				7CECEBBD0650101FDB559A1A /* Meshtastic Vision */,
-				BEC568E86239A706FBF36EE2 /* Models */,
-				6FBFD4D647263AFDB189E4B8 /* Views */,
+				646FBF74A2DAAE565F0EE867 /* Meshtastic TV/Models */,
+				C09F18412A78598E89352DC6 /* Meshtastic TV/Views */,
 			);
 			name = "Meshtastic Vision";
 			packageProductDependencies = (
