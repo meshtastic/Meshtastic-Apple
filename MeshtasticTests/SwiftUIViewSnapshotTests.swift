@@ -705,6 +705,7 @@ struct DiscoveryHistoryViewSnapshotTests {
 // MARK: - NodeListItemCompact Snapshot Tests
 
 @Suite("NodeListItemCompact Snapshots")
+@MainActor
 struct NodeListItemCompactSnapshotTests {
 
 	// MARK: Helpers
@@ -759,6 +760,7 @@ struct NodeListItemCompactSnapshotTests {
 		if let ch = channelIndex {
 			node.channel = ch
 		}
+		sharedModelContainer.mainContext.insert(node)
 		return node
 	}
 
@@ -860,6 +862,7 @@ struct NodeListItemCompactSnapshotTests {
 		let node = NodeInfoEntity()
 		node.hopsAway = 2
 		node.lastHeard = Date(timeIntervalSinceNow: -120)
+		sharedModelContainer.mainContext.insert(node)
 		await assertViewSnapshot(
 			of: NodeListItemCompact(node: node, isDirectlyConnected: false, connectedNode: 1).padding(.horizontal, 16),
 			width: 390,
@@ -1008,6 +1011,7 @@ struct NodeListItemCompactSnapshotTests {
 // MARK: - NodeListItem Snapshot Tests
 
 @Suite("NodeListItem Snapshots")
+@MainActor
 struct NodeListItemSnapshotTests {
 
 	// MARK: Helpers
@@ -1056,6 +1060,7 @@ struct NodeListItemSnapshotTests {
 			position.longitudeI = lon
 			node.positions = [position]
 		}
+		sharedModelContainer.mainContext.insert(node)
 		return node
 	}
 
@@ -1697,7 +1702,7 @@ struct MessagePreviewSnapshotTests {
 					.foregroundStyle(.primary)
 			}
 		}
-		await assertViewSnapshot(of: view, width: 250, height: 44, named: "formattingToolbar", forDocs: true)
+		await assertViewSnapshot(of: view, width: 250, height: 44, named: "formattingToolbar")
 	}
 
 	@Test("Preview with bold text")
