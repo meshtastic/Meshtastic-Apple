@@ -40,7 +40,7 @@ extension AccessoryManager {
 		packetsReceived = 0
 		packetsAtLastIngestRecycle = 0
 		expectedNodeDBSize = nil
-	
+
 		self.allowDisconnect = true
 		self.userRequestedConnectionCancellation = false
 
@@ -79,20 +79,6 @@ extension AccessoryManager {
 				} else {
 					self.updateState(.connecting)
 				}
-				// Stop discovery/scanning before Step 1 attempts to connect. On a first-ever BLE
-				// bond, Step 1 subscribes to an encrypted characteristic, which is what makes iOS
-				// present the pairing PIN sheet — and CoreBluetooth scanning concurrently with that
-				// bonding handshake is a documented source of `CBATTErrorInsufficientEncryption`,
-				// with the pairing sheet appearing and disappearing almost immediately before the
-				// user can respond. `closeConnection()` above re-arms discovery on a retry, so this
-				// must run after it (last discovery-related call in this step) to guarantee
-				// scanning is off for every attempt, not just the first. `stopDiscovery()` also
-				// clears `discoveredDeviceContinuation`, so a `.poweredOn` state change mid-pairing
-				// (see `handleCentralState`) can't restart the scan out from under Step 1 either.
-				// Awaited: stopDiscovery() awaits the transport's actual scan-stop, not just a
-				// cancellation request, so Step 1 genuinely never starts pairing while still
-				// scanning (#2183 review).
-				await self.stopDiscovery()
 				self.updateDevice(deviceId: device.id, key: \.connectionState, value: .connecting)
 				// Lockdown: reset per-connection state. Firmware requires re-auth on every
 				// new BLE connection even if storage is already unlocked.
@@ -119,6 +105,9 @@ extension AccessoryManager {
 					}
 					self.activeConnection = (device: device, connection: connection)
 					self.activeDeviceNum = device.num
+					// The mesh-traffic monitor (map flyover gate) self-starts its decay timer on the
+					// first inbound packet and is cleared by Step 0's closeConnection() reset(), so
+					// there's no explicit start to make here — it stays correct across connect retries.
 				} catch let error as CBError where error.code == .peerRemovedPairingInformation {
 					await self.connectionStepper?.cancelCurrentlyExecutingStep(withError: AccessoryError.coreBluetoothError(error), cancelFullProcess: true)
 				}
@@ -142,8 +131,11 @@ extension AccessoryManager {
 				}
 				Logger.transport.info("🔗👟 [Connect] Step 3: Send wantConfig (config)")
 				try await self.sendWantConfig()
-				// Always refresh bundled device catalog so hardware info and "I want one" links
-				// are present after any database clear, regardless of who initiated the connect.
+				// Always refresh the bundled device catalog so hardware metadata is present after any
+				// database clear, regardless of who initiated the connect. Metadata only: this call is
+				// awaited inside a 30s Step budget, so it must stay local (issue #2196). Device images
+				// and the "I want one" msh.to links are network-backed and are restored by the detached
+				// pass below instead.
 				do {
 					Logger.transport.info("🔗👟 [Connect] Step 3a: Refresh bundled Meshtastic device hardware data")
 					try await MeshtasticAPI.shared.refreshBundledDevicesData()
@@ -152,15 +144,24 @@ extension AccessoryManager {
 					Logger.services.warning("Failed to refresh bundled device hardware data after config completion: \(error.localizedDescription, privacy: .public)")
 				}
 
-				if refreshDeviceHardwareFromAPI {
-					Logger.transport.info("🔗👟 [Connect] Step 3b: Refresh Meshtastic device hardware API data")
-					Task.detached(priority: .utility) {
-						do {
-							try await MeshtasticAPI.shared.refreshDevicesAPIData()
-							Logger.services.info("✅ [MeshtasticAPI] Refreshed device hardware data after config completion")
-						} catch {
-							Logger.services.warning("Failed to refresh device hardware data after config completion: \(error.localizedDescription, privacy: .public)")
-						}
+				// Step 3b: images and msh.to links. `clearDatabase` batch-deletes
+				// DeviceHardwareImageEntity and DeviceLinkEntity, and a NodeDB/factory reset or a
+				// device switch clears mid-session and then reconnects — so launch-time population is
+				// already gone by the time we get here and something on the connect path has to
+				// restore them. Detached on purpose: both halves hit the network and must never be
+				// awaited inside this Step's 30s budget. `refreshDeviceHardwareFromAPI` defaults to
+				// false, so the bundle-only pass is what runs on a normal reconnect; it resolves
+				// images from the app bundle and msh.to links from the bundled urls.json.
+				Logger.transport.info("🔗👟 [Connect] Step 3b: Refresh device images and msh.to links")
+				// Held on the manager so closeConnection can cancel it: on a captive portal the pass's
+				// image HEADs would otherwise hang ~60s past a disconnect. A prior pass from a rapid
+				// reconnect is cancelled before the new one replaces the handle.
+				self.deviceRefreshTask?.cancel()
+				self.deviceRefreshTask = Task.detached(priority: .utility) {
+					if refreshDeviceHardwareFromAPI {
+						await MeshtasticAPI.shared.refreshDevicesPreferringAPI()
+					} else {
+						await MeshtasticAPI.shared.refreshDeviceImagesAndLinks()
 					}
 				}
 			}
@@ -200,7 +201,11 @@ extension AccessoryManager {
 			}
 			
 			// Step 5a: Wait for end of WantConfig (database)
-			Step { @MainActor _ in
+			// Bounded like its sibling steps: without a timeout, a malicious/misbehaving radio
+			// that completes config but never sends the database-complete nonce would wedge the
+			// connect flow in .retrievingDatabase forever (no watchdog until Step 8). 120s is
+			// generous for a large legitimate node-DB dump.
+			Step(timeout: .seconds(120)) { @MainActor _ in
 				guard wantDatabase else {
 					Logger.transport.info("👟 [Connect] Step 4: wantDatabase = false, skipping waitForWantDatabase")
 					return
@@ -271,7 +276,7 @@ extension AccessoryManager {
 			// Step 8: Update UI and status to connected
 			Step { @MainActor _ in
 				Logger.transport.debug("🔗👟 [Connect] Step 8: Initialize MQTT and Location Provider")
-				await self.stopDiscovery()
+				self.stopDiscovery()
 				// Prune stale nodes now that the dump is in, instead of at the head of
 				// sendWantConfig where the fetch+delete+save serialized ahead of the whole
 				// handshake on the ingestion actor. Post-dump lastHeard values also make the

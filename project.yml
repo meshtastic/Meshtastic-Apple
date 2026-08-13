@@ -28,9 +28,6 @@ packages:
   CocoaMQTT:
     url: https://github.com/emqx/CocoaMQTT
     majorVersion: 2.0.0
-  swift-snapshot-testing:
-    url: https://github.com/pointfreeco/swift-snapshot-testing
-    majorVersion: 1.17.0
   mvt-tools:
     url: https://github.com/Outdooractive/mvt-tools.git
     majorVersion: 1.2.1
@@ -194,6 +191,8 @@ targets:
         type: syncedFolder
       - path: "Meshtastic/Helpers"
         type: syncedFolder
+      - path: "Meshtastic/Import"
+        type: syncedFolder
       - path: "Meshtastic/Intents"
         type: syncedFolder
       - path: "Meshtastic/Measurement"
@@ -342,21 +341,6 @@ targets:
         product: MVTTools
     preBuildScripts:
       - script: |
-          MARKER="${TARGET_TEMP_DIR}/first-build.marker"
-          
-          if [ ! -f "$MARKER" ]; then
-           # Treating as CLEAN build (or first build in this DerivedData)
-           # Force update all the note board images
-           "$SRCROOT/scripts/download_images.py" --output-dir "$SRCROOT/Meshtastic/Resources/images" --output-json "$SRCROOT/Meshtastic/Resources/DeviceHardware.json" --force
-           touch "$MARKER"
-          else
-           # Incremental build
-           # update only if there was a change in the devices json
-           "$SRCROOT/scripts/download_images.py" --output-dir "$SRCROOT/Meshtastic/Resources/images" --output-json "$SRCROOT/Meshtastic/Resources/DeviceHardware.json"
-          fi
-        name: "Download Node SVG Images"
-        basedOnDependencyAnalysis: false
-      - script: |
           if [[ "$(uname -m)" == arm64 ]]
           then
               export PATH="/opt/homebrew/bin:$PATH"
@@ -364,11 +348,19 @@ targets:
           
           if command -v swiftlint >/dev/null 2>&1
           then
-              swiftlint
+              swiftlint lint --cache-path "$DERIVED_FILE_DIR/swiftlint-cache"
           else
               echo "warning: `swiftlint` command not found - See https://github.com/realm/SwiftLint#installation for installation instructions."
           fi
         name: "Run Script"
+        inputFiles:
+          - "$(SRCROOT)/.swiftlint.yml"
+          - "$(SRCROOT)/Meshtastic"
+          - "$(SRCROOT)/Meshtastic Watch App"
+          - "$(SRCROOT)/MeshtasticTests"
+          - "$(SRCROOT)/MeshtasticUITests"
+          - "$(SRCROOT)/Shared"
+          - "$(SRCROOT)/Widgets"
         basedOnDependencyAnalysis: false
     settings:
       configs:
@@ -403,7 +395,7 @@ targets:
             - "$(inherited)"
             - "@executable_path/Frameworks"
           MACOSX_DEPLOYMENT_TARGET: "14.6"
-          MARKETING_VERSION: "2.7.17"
+          MARKETING_VERSION: "2.7.19"
           OTHER_LDFLAGS:
             - "-weak_framework"
             - "SwiftUI"
@@ -446,7 +438,7 @@ targets:
             - "$(inherited)"
             - "@executable_path/Frameworks"
           MACOSX_DEPLOYMENT_TARGET: "14.6"
-          MARKETING_VERSION: "2.7.17"
+          MARKETING_VERSION: "2.7.19"
           OTHER_LDFLAGS:
             - "-weak_framework"
             - "SwiftUI"
@@ -492,7 +484,7 @@ targets:
             - "@executable_path/Frameworks"
             - "@executable_path/../../Frameworks"
           MACOSX_DEPLOYMENT_TARGET: "14.6"
-          MARKETING_VERSION: "2.7.17"
+          MARKETING_VERSION: "2.7.19"
           PRODUCT_BUNDLE_IDENTIFIER: "gvh.MeshtasticClient.Widgets"
           PRODUCT_NAME: "$(TARGET_NAME)"
           PROVISIONING_PROFILE_SPECIFIER: ""
@@ -521,7 +513,7 @@ targets:
             - "@executable_path/Frameworks"
             - "@executable_path/../../Frameworks"
           MACOSX_DEPLOYMENT_TARGET: "14.6"
-          MARKETING_VERSION: "2.7.17"
+          MARKETING_VERSION: "2.7.19"
           PRODUCT_BUNDLE_IDENTIFIER: "gvh.MeshtasticClient.Widgets"
           PRODUCT_NAME: "$(TARGET_NAME)"
           PROVISIONING_PROFILE_SPECIFIER: ""
@@ -541,8 +533,6 @@ targets:
         type: syncedFolder
     dependencies:
       - target: Meshtastic
-      - package: swift-snapshot-testing
-        product: SnapshotTesting
     settings:
       configs:
         Debug:
@@ -615,7 +605,7 @@ targets:
           LD_RUNPATH_SEARCH_PATHS:
             - "$(inherited)"
             - "@executable_path/Frameworks"
-          MARKETING_VERSION: "2.7.17"
+          MARKETING_VERSION: "2.7.19"
           PRODUCT_BUNDLE_IDENTIFIER: "gvh.MeshtasticClient.watchkitapp"
           PRODUCT_NAME: "$(TARGET_NAME)"
           SDKROOT: "watchos"
@@ -643,7 +633,7 @@ targets:
           LD_RUNPATH_SEARCH_PATHS:
             - "$(inherited)"
             - "@executable_path/Frameworks"
-          MARKETING_VERSION: "2.7.17"
+          MARKETING_VERSION: "2.7.19"
           PRODUCT_BUNDLE_IDENTIFIER: "gvh.MeshtasticClient.watchkitapp"
           PRODUCT_NAME: "$(TARGET_NAME)"
           SDKROOT: "watchos"
@@ -688,7 +678,7 @@ targets:
           LD_RUNPATH_SEARCH_PATHS:
             - "$(inherited)"
             - "@executable_path/Frameworks"
-          MARKETING_VERSION: "2.7.17"
+          MARKETING_VERSION: "2.7.19"
           PRODUCT_BUNDLE_IDENTIFIER: "gvh.MeshtasticClient.tv"
           PRODUCT_NAME: "$(TARGET_NAME)"
           SDKROOT: "appletvos"
@@ -707,7 +697,7 @@ targets:
           LD_RUNPATH_SEARCH_PATHS:
             - "$(inherited)"
             - "@executable_path/Frameworks"
-          MARKETING_VERSION: "2.7.17"
+          MARKETING_VERSION: "2.7.19"
           PRODUCT_BUNDLE_IDENTIFIER: "gvh.MeshtasticClient.tv"
           PRODUCT_NAME: "$(TARGET_NAME)"
           SDKROOT: "appletvos"
@@ -716,6 +706,82 @@ targets:
           SWIFT_VERSION: "5.0"
           TARGETED_DEVICE_FAMILY: "3"
           TVOS_DEPLOYMENT_TARGET: "17.0"
+
+  "Meshtastic Vision":
+    type: application
+    platform: visionOS
+    sources:
+      # visionOS shell (entry point + Info.plist + its own asset catalog).
+      - path: "Meshtastic Vision"
+        type: syncedFolder
+        excludes:
+          - "Info.plist"
+      # The entire TV client is shared: pure SwiftUI + Network.framework + MapKit with
+      # zero tvOS conditionals. Shared as SUBFOLDERS (not the TV root) so the TV
+      # target's Info.plist and Assets.xcassets never enter this target — an
+      # .xcassets inside a synced folder is compiled as a unit, and per-child
+      # membership exceptions do not remove it from actool's inputs.
+      - path: "Meshtastic TV/App"
+        type: syncedFolder
+        excludes:
+          - "MeshtasticTVApp.swift"
+      - path: "Meshtastic TV/Client"
+        type: syncedFolder
+      - path: "Meshtastic TV/Models"
+        type: syncedFolder
+      - path: "Meshtastic TV/Map"
+        type: syncedFolder
+      - path: "Meshtastic TV/Views"
+        type: syncedFolder
+      # Same portable primitives the TV target reuses (no UIKit/BLE/CoreLocation).
+      - path: "Meshtastic/Accessory/Transports/TCP/TCPConnection.swift"
+      - path: "Meshtastic/Accessory/Protocols/Connection.swift"
+      - path: "Meshtastic/Extensions/Logger.swift"
+      - path: "Meshtastic/Views/Helpers/CircleText.swift"
+      - path: "Meshtastic/Extensions/Color.swift"
+    dependencies:
+      - package: MeshtasticProtobufs
+        product: MeshtasticProtobufs
+    settings:
+      configs:
+        Debug:
+          ASSETCATALOG_COMPILER_APPICON_NAME: "AppIcon"
+          ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: "AccentColor"
+          CODE_SIGN_STYLE: "Automatic"
+          CURRENT_PROJECT_VERSION: "1"
+          DEVELOPMENT_TEAM: "GCH7VS5Y9R"
+          INFOPLIST_FILE: "Meshtastic Vision/Info.plist"
+          LD_RUNPATH_SEARCH_PATHS:
+            - "$(inherited)"
+            - "@executable_path/Frameworks"
+          MARKETING_VERSION: "2.7.19"
+          PRODUCT_BUNDLE_IDENTIFIER: "gvh.MeshtasticClient.vision"
+          PRODUCT_NAME: "$(TARGET_NAME)"
+          SDKROOT: "xros"
+          SUPPORTED_PLATFORMS: "xros xrsimulator"
+          SWIFT_EMIT_LOC_STRINGS: "YES"
+          SWIFT_VERSION: "5.0"
+          TARGETED_DEVICE_FAMILY: "7"
+          XROS_DEPLOYMENT_TARGET: "2.0"
+        Release:
+          ASSETCATALOG_COMPILER_APPICON_NAME: "AppIcon"
+          ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: "AccentColor"
+          CODE_SIGN_STYLE: "Automatic"
+          CURRENT_PROJECT_VERSION: "1"
+          DEVELOPMENT_TEAM: "GCH7VS5Y9R"
+          INFOPLIST_FILE: "Meshtastic Vision/Info.plist"
+          LD_RUNPATH_SEARCH_PATHS:
+            - "$(inherited)"
+            - "@executable_path/Frameworks"
+          MARKETING_VERSION: "2.7.19"
+          PRODUCT_BUNDLE_IDENTIFIER: "gvh.MeshtasticClient.vision"
+          PRODUCT_NAME: "$(TARGET_NAME)"
+          SDKROOT: "xros"
+          SUPPORTED_PLATFORMS: "xros xrsimulator"
+          SWIFT_EMIT_LOC_STRINGS: "YES"
+          SWIFT_VERSION: "5.0"
+          TARGETED_DEVICE_FAMILY: "7"
+          XROS_DEPLOYMENT_TARGET: "2.0"
 
 schemes:
   Meshtastic:
@@ -771,6 +837,20 @@ schemes:
     build:
       targets:
         "Meshtastic TV": all
+    run:
+      config: Debug
+    test:
+      config: Debug
+    profile:
+      config: Release
+    analyze:
+      config: Debug
+    archive:
+      config: Release
+  "Meshtastic Vision":
+    build:
+      targets:
+        "Meshtastic Vision": all
     run:
       config: Debug
     test:

@@ -38,13 +38,11 @@ struct SerialConfig: View {
 					Toggle(isOn: $enabled) {
 						Label("Enabled", systemImage: "terminal")
 					}
-					.tint(.accentColor)
 					
 					Toggle(isOn: $echo) {
 						Label("Echo", systemImage: "repeat")
 						Text("If set, any packets you send will be echoed back to your device.")
 					}
-					.tint(.accentColor)
 					
 					Picker("Baud", selection: $baudRate ) {
 						ForEach(SerialBaudRates.allCases) { sbr in

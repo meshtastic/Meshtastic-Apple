@@ -69,6 +69,7 @@ extension UserDefaults {
 		case enableSmartPosition
 		case newNodeNotifications
 		case nodeNotificationsAutoDisabledForEvent
+		case nodeNotificationsUserOverrideForEvent
 		case lowBatteryNotifications
 		case channelMessageNotifications
 		case modemPreset
@@ -86,9 +87,11 @@ extension UserDefaults {
 		case testIntEnum
 		case testDoubleValue
 		case lastDeviceAPIUpdate
+		case lastDeviceImageAndLinkUpdate
 		case lastFirmwareAPIUpdate
 		case firmwareUpdateNotificationKeys
 		case lastEventFirmwareAPIUpdate
+		case lastEventFirmwareAPIAttempt
 		case useEventTheme
 		case pairedPeripheralIds
 		case migratedPreferredPeripheralPairing
@@ -157,6 +160,9 @@ extension UserDefaults {
 
 	@UserDefault(.nodeNotificationsAutoDisabledForEvent, defaultValue: false)
 	static var nodeNotificationsAutoDisabledForEvent: Bool
+
+	@UserDefault(.nodeNotificationsUserOverrideForEvent, defaultValue: false)
+	static var nodeNotificationsUserOverrideForEvent: Bool
 
 	@UserDefault(.lowBatteryNotifications, defaultValue: true)
 	static var lowBatteryNotifications: Bool
@@ -274,15 +280,29 @@ extension UserDefaults {
 	@UserDefault(.lastDeviceAPIUpdate, defaultValue: .distantPast)
 	static var lastDeviceAPIUpdate: Date
 
+	/// When the device image + msh.to link network pass last completed. Throttles that pass (see
+	/// `MeshtasticAPI.staleDeviceImageLinkInterval`); reset to `.distantPast` by `clearDatabase`
+	/// so a database clear still forces a restore regardless of the throttle window.
+	///
+	/// Write through `DeviceImageLinkThrottle`, not directly: the refresh pass runs detached and a
+	/// clear can land mid-pass, so the two writers need the throttle's generation check to stop a
+	/// superseded pass from overwriting the clear's reset.
+	@UserDefault(.lastDeviceImageAndLinkUpdate, defaultValue: .distantPast)
+	static var lastDeviceImageAndLinkUpdate: Date
+
 	@UserDefault(.lastFirmwareAPIUpdate, defaultValue: .distantPast)
 	static var lastFirmwareAPIUpdate: Date
 
 	@UserDefault(.lastEventFirmwareAPIUpdate, defaultValue: .distantPast)
 	static var lastEventFirmwareAPIUpdate: Date
 
-	/// Whether the ambient event theme (accent wash + edition fonts) is applied. Defaults to on;
-	/// the user can opt out from the event info sheet. Opting out keeps the branding *visible*
-	/// (badge/info surface) so it can be re-enabled — it only suppresses the ambient wash/fonts.
+	/// Last live-manifest refresh attempt, successful or not. This prevents an offline launch
+	/// loop from retrying the same first-party endpoint on every metadata lookup.
+	@UserDefault(.lastEventFirmwareAPIAttempt, defaultValue: .distantPast)
+	static var lastEventFirmwareAPIAttempt: Date
+
+	/// Whether event highlight colors are used across the app and edition fonts are used in the
+	/// event info sheet. Standard navigation backgrounds remain unchanged.
 	@UserDefault(.useEventTheme, defaultValue: true)
 	static var useEventTheme: Bool
 }

@@ -47,8 +47,21 @@ struct OfflineMapDetailView: View {
 				}
 				LabeledContent("Size", value: current.formattedSize)
 				LabeledContent("Detail", value: "Zoom \(current.minZoom)–\(current.maxZoom)")
+				if let warning = current.zoomCoverage.warningLabel {
+					Label(warning, systemImage: "exclamationmark.triangle")
+						.font(.callout)
+						.foregroundStyle(.orange)
+				}
 				LabeledContent("Map updated", value: current.updatedDate.formatted(.relative(presentation: .named)))
-				LabeledContent("Source", value: "Protomaps \(current.sourceBuild)")
+				LabeledContent("Source", value: current.sourceBuild == "Imported" ? "Imported PMTiles" : "Protomaps \(current.sourceBuild)")
+			}
+
+			if let fileURL = manager.fileURL(for: current), FileManager.default.fileExists(atPath: fileURL.path) {
+				Section {
+					ShareLink(item: fileURL) {
+						Label("Share Offline Map", systemImage: "square.and.arrow.up")
+					}
+				}
 			}
 
 			Section {

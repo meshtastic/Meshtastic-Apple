@@ -9,6 +9,8 @@ import WeatherKit
 import MapKit
 import CoreLocation
 import OSLog
+@preconcurrency import SwiftData
+import MeshtasticProtobufs
 
 extension NSNotification.Name {
 	static let nodeLogAvailabilityDidChange = NSNotification.Name("nodeLogAvailabilityDidChange")
@@ -42,7 +44,9 @@ struct NodeDetail: View {
 	@State private var showingRebootConfirm: Bool = false
 	@State private var dateFormatRelative: Bool = true
 	@Bindable	var node: NodeInfoEntity
-	var showMapLink: Bool = true
+	private let nodeNum: Int64
+	@Query private var users: [UserEntity]
+	private let showMapLink: Bool
 	@State private var latestPosition: PositionEntity?
 	@State private var latestDeviceMetrics: TelemetryEntity?
 	@State private var latestEnvironmentMetrics: TelemetryEntity?
@@ -52,15 +56,49 @@ struct NodeDetail: View {
 	@State private var logAvailability = NodeDetailLogAvailability()
 	@State private var showingShareContactQR = false
 
+	init(node: NodeInfoEntity, nodeNum: Int64, showMapLink: Bool = true) {
+		self.node = node
+		self.nodeNum = nodeNum
+		self.showMapLink = showMapLink
+		_users = Query(filter: #Predicate<UserEntity> { $0.num == nodeNum })
+	}
+
 	/// The currently BLE-connected (or remotely administered) node, derived reactively
 	/// from accessoryManager.activeDeviceNum so it stays current if the connection changes.
 	private var connectedNode: NodeInfoEntity? {
 		guard let num = accessoryManager.activeDeviceNum else { return nil }
 		return getNodeInfo(id: num, context: context)
 	}
+	/// Resolve the current user independently of `node.user`. A node detail can remain in a
+	/// navigation stack after a store reset, where that relationship can retain faulted backing
+	/// data even though the user query has already removed the deleted row.
+	private var currentUser: UserEntity? {
+		guard let user = users.first,
+			user.modelContext != nil,
+			!user.isDeleted
+		else { return nil }
+		return user
+	}
+	private var connectedUser: UserEntity? {
+		guard let num = accessoryManager.activeDeviceNum else { return nil }
+		let descriptor = FetchDescriptor<UserEntity>(predicate: #Predicate { $0.num == num })
+		guard let user = try? context.fetch(descriptor).first,
+			user.modelContext != nil,
+			!user.isDeleted
+		else { return nil }
+		return user
+	}
+	private var shareContactNode: NodeInfo {
+		var shareNode = NodeInfo()
+		shareNode.num = UInt32(nodeNum)
+		if let currentUser {
+			shareNode.user = currentUser.toProto()
+		}
+		return shareNode
+	}
 	private var administrationUserPair: (fromUser: UserEntity, toUser: UserEntity)? {
-		guard let fromUser = connectedNode?.user,
-			  let toUser = node.user else {
+		guard let fromUser = connectedUser,
+			  let toUser = currentUser else {
 			return nil
 		}
 		return (fromUser, toUser)
@@ -73,19 +111,19 @@ struct NodeDetail: View {
 	@State private var displayNameRefresh = 0
 
 	var body: some View {
-		if node.modelContext != nil {
+		if node.modelContext != nil, !node.isDeleted {
 			ScrollViewReader { scrollView in
 				Color.clear
 					.frame(height: 0) // Ensure it has no height
 					.id("topOfList")
 					nodeDetailList
 						.sheet(isPresented: $showingCompassSheet) {
-							CompassView(waypointLocation: latestPosition?.nodeCoordinate ?? nil, waypointLongName: node.user?.displayLongName, waypointShortName: node.user?.shortName, color: Color(UIColor(hex: UInt32(node.num))))
+							CompassView(waypointLocation: latestPosition?.nodeCoordinate ?? nil, waypointLongName: currentUser?.displayLongName, waypointShortName: currentUser?.shortName, color: Color(UIColor(hex: UInt32(nodeNum))))
 						}
 						.sheet(isPresented: $showingShareContactQR) {
 							ShareContactQRDialog(
-								manuallyVerified: node.num == accessoryManager.activeDeviceNum,
-								node: node.toProto()
+								manuallyVerified: nodeNum == accessoryManager.activeDeviceNum,
+								node: shareContactNode
 							)
 						}
 						.displayNameAlert(node: $nodeForDisplayNameEdit)
@@ -94,7 +132,7 @@ struct NodeDetail: View {
 						// otherwise, and `displayNameRefresh` drives `.id()` below (which recreates
 						// the list and re-triggers its scroll-to-top onAppear) -- renaming an
 						// unrelated node elsewhere must not yank this detail view back to the top.
-						guard notification.object as? Int64 == node.num else { return }
+						guard notification.object as? Int64 == nodeNum else { return }
 						displayNameRefresh += 1
 					}
 					.onAppear {
@@ -105,11 +143,11 @@ struct NodeDetail: View {
 							refreshNodeSummary()
 						}
 						.onReceive(NotificationCenter.default.publisher(for: .nodeLogAvailabilityDidChange)) { notification in
-							guard notification.object as? Int64 == node.num else { return }
+							guard notification.object as? Int64 == nodeNum else { return }
 							refreshNodeSummary()
 						}
 						.contentMargins(.top, 0, for: .scrollContent)
-					.navigationTitle(String((node.user?.displayLongName ?? "Unknown".localized).addingVariationSelectors))
+					.navigationTitle(String((currentUser?.displayLongName ?? "Unknown".localized).addingVariationSelectors))
 					.navigationBarTitleDisplayMode(.inline)
 					.id(displayNameRefresh)
 			}
@@ -124,7 +162,8 @@ struct NodeDetail: View {
 	@ViewBuilder
 	private var nodeDetailList: some View {
 		List {
-			NodeInfoItem(node: node)
+			NodeInfoItem(nodeNum: nodeNum)
+				.id(nodeNum)
 			nodeSection
 			environmentSection
 			airQualitySection
@@ -144,8 +183,8 @@ struct NodeDetail: View {
 			HStack(alignment: .center) {
 				Spacer()
 				CircleText(
-					text: node.user?.shortName ?? "?",
-					color: Color(UIColor(hex: UInt32(node.num))),
+					text: currentUser?.shortName ?? "?",
+					color: Color(UIColor(hex: UInt32(nodeNum))),
 					circleSize: 75
 				)
 				if node.snr != 0 && !node.viaMqtt && node.hopsAway == 0 {
@@ -171,7 +210,7 @@ struct NodeDetail: View {
 			}
 			.accessibilityElement(children: .combine)
 			.listRowSeparator(.hidden)
-			if let user = node.user {
+			if let user = currentUser {
 				if !user.keyMatch {
 					Label {
 						VStack(alignment: .leading) {
@@ -203,7 +242,7 @@ struct NodeDetail: View {
 							.symbolRenderingMode(.hierarchical)
 					}
 					Spacer()
-					Text(node.user?.displayLongName ?? "—")
+					Text(currentUser?.displayLongName ?? "—")
 						.foregroundStyle(.secondary)
 						.lineLimit(1)
 				}
@@ -217,7 +256,7 @@ struct NodeDetail: View {
 						.symbolRenderingMode(.hierarchical)
 				}
 				Spacer()
-				Text(String(node.num))
+				Text(String(nodeNum))
 					.textSelection(.enabled)
 			}
 			.accessibilityElement(children: .combine)
@@ -229,7 +268,7 @@ struct NodeDetail: View {
 						.symbolRenderingMode(.multicolor)
 				}
 				Spacer()
-				Text(node.num.toHex())
+				Text(nodeNum.toHex())
 					.textSelection(.enabled)
 			}
 			.accessibilityElement(children: .combine)
@@ -250,8 +289,8 @@ struct NodeDetail: View {
 				}
 				.accessibilityElement(children: .combine)
 			}
-			if let user = node.user, user.keyMatch {
-				let publicKey = node.num == connectedNode?.num
+			if let user = currentUser, user.keyMatch {
+				let publicKey = nodeNum == accessoryManager.activeDeviceNum
 				? node.securityConfig?.publicKey?.base64EncodedString() ?? ""
 				: user.publicKey?.base64EncodedString() ?? ""
 				HStack {
@@ -286,7 +325,7 @@ struct NodeDetail: View {
 				}
 				.accessibilityElement(children: .combine)
 			}
-			if let role = node.user?.role, let deviceRole = DeviceRoles(rawValue: Int(role)) {
+			if let role = currentUser?.role, let deviceRole = DeviceRoles(rawValue: Int(role)) {
 				HStack {
 					Label {
 						Text("Role")
@@ -322,7 +361,7 @@ struct NodeDetail: View {
 				}
 				.accessibilityElement(children: .combine)
 			}
-			if node.user?.unmessagable ?? false {
+			if currentUser?.unmessagable ?? false {
 				HStack {
 					Label {
 						Text("Messaging")
@@ -580,7 +619,7 @@ struct NodeDetail: View {
 			.disabled(!hasDeviceMetrics)
 			if showMapLink {
 				NavigationLink {
-					NodeMapSwiftUI(node: node, showUserLocation: connectedNode?.num ?? 0 == node.num)
+					NodeMapSwiftUI(node: node, showUserLocation: accessoryManager.activeDeviceNum == nodeNum)
 				} label: {
 					Label {
 						Text("Node Map")
@@ -593,7 +632,7 @@ struct NodeDetail: View {
 				if hasPositions {
 					Button {
 						router.selectedTab = .map
-						router.mapState = .coverageEstimate(node.num)
+						router.mapState = .coverageEstimate(nodeNum)
 					} label: {
 						Label {
 							Text("Estimate Coverage")
@@ -701,13 +740,13 @@ struct NodeDetail: View {
 	@ViewBuilder
 	private var actionsSection: some View {
 		Section("Actions") {
-			if let user = node.user {
+			if let user = currentUser {
 				NodeAlertsButton(
 					context: context,
 					node: node,
 					user: user
 				)
-				if ShareContactQR.canShareContact(for: node) {
+				if ShareContactQR.canShareContact(for: shareContactNode) {
 					Button {
 						showingShareContactQR = true
 					} label: {
@@ -719,10 +758,10 @@ struct NodeDetail: View {
 				FavoriteNodeButton(
 					node: node
 				)
-				if connectedNode.num != node.num {
-					if !(node.user?.unmessagable ?? true) {
+				if accessoryManager.activeDeviceNum != nodeNum {
+					if !(currentUser?.unmessagable ?? true) {
 						Button(action: {
-							if let url = URL(string: "meshtastic:///messages?userNum=\(node.num)") {
+							if let url = URL(string: "meshtastic:///messages?userNum=\(nodeNum)") {
 								UIApplication.shared.open(url)
 							}
 						}) {
@@ -769,7 +808,7 @@ struct NodeDetail: View {
 					#if !targetEnvironment(macCatalyst)
 					if WatchSessionManager.shared.isWatchAvailable {
 						Button {
-							WatchSessionManager.shared.sendNodeForFoxhunt(node.num)
+							WatchSessionManager.shared.sendNodeForFoxhunt(nodeNum)
 						} label: {
 							Label {
 								Text("Foxhunt on your watch")
