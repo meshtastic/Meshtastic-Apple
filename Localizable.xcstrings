@@ -98129,6 +98129,12 @@
         }
       }
     },
+    "Default (812.5 kHz)": {
+      "comment": "Label for the protobuf-default bandwidth in the 2.4 GHz LoRa region."
+    },
+    "This bandwidth is not supported by the connected radio in the selected region. Choose a supported value before saving.": {
+      "comment": "Validation message shown when the configured LoRa bandwidth is incompatible with the selected region or radio."
+    },
     "This connected device does not support packet signature verification.": {
       "comment": "Summary shown when the connected radio lacks XEdDSA packet signature verification."
     },

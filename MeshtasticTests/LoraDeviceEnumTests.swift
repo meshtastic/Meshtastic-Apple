@@ -210,7 +210,64 @@ struct BandwidthsTests {
 	}
 
 	@Test func totalCaseCount() {
-		#expect(Bandwidths.allCases.count == 5)
+		#expect(Bandwidths.allCases.count == 9)
+	}
+
+	@Test func subGHzOptions_preserveExistingWireValues() {
+		let options = Bandwidths.selectable(region: .us, pioEnv: nil)
+
+		#expect(options.map(\.pickerValue) == [31, 62, 125, 0, 500])
+	}
+
+	@Test func unknownRegion_fallsBackToSubGHzOptions() {
+		let options = Bandwidths.selectable(region: nil, pioEnv: nil)
+
+		#expect(options.map(\.pickerValue) == [31, 62, 125, 0, 500])
+	}
+
+	@Test func sx128xOptions_includeAllCanonicalHighBandValues() {
+		let options = Bandwidths.selectable(region: .lora24, pioEnv: "tlora-v2-1-1_8")
+
+		#expect(options.map(\.pickerValue) == [200, 400, 800, 1600])
+		#expect(options.map(\.description) == ["203.125 kHz", "406.25 kHz", "812.5 kHz", "1625 kHz"])
+	}
+
+	@Test(arguments: ["my-esp32s3-diy-oled", "my-esp32s3-diy-eink"])
+	func diySX128xOptions_include1625kHzBandwidth(pioEnv: String) {
+		let options = Bandwidths.selectable(region: .lora24, pioEnv: pioEnv)
+
+		#expect(options.map(\.pickerValue) == [200, 400, 800, 1600])
+	}
+
+	@Test func lr1121Options_excludeUnsupported1625kHzBandwidth() {
+		let options = Bandwidths.selectable(region: .lora24, pioEnv: "muzi-base")
+
+		#expect(options.map(\.pickerValue) == [200, 400, 800])
+	}
+
+	@Test func mixedSX128xLR1121Target_usesConservativeOptions() {
+		let options = Bandwidths.selectable(region: .lora24, pioEnv: "tlora-t3s3-v1")
+
+		#expect(options.map(\.pickerValue) == [200, 400, 800])
+	}
+
+	@Test func invalidStoredBandwidth_mustBeReplacedBeforeSaving() {
+		#expect(!Bandwidths.isValid(125, region: .lora24, pioEnv: "tlora-v2-1-1_8"))
+		#expect(!Bandwidths.isValid(1600, region: .lora24, pioEnv: "muzi-base"))
+		#expect(Bandwidths.isValid(800, region: .lora24, pioEnv: "muzi-base"))
+		#expect(Bandwidths.isValid(0, region: .us, pioEnv: nil))
+	}
+
+	@Test func zeroBandwidthInLora24_usesFirmwareDefault() {
+		#expect(Bandwidths.validationIssue(for: 0, region: .lora24, pioEnv: "tlora-t3s3-v1") == nil)
+		#expect(Bandwidths.isValid(0, region: .lora24, pioEnv: "tlora-t3s3-v1"))
+		#expect(Bandwidths.description(forPickerValue: 0, region: .lora24) == "Default (812.5 kHz)")
+	}
+
+	@Test func explicit250kHzStoredValue_remainsValidAndDisplaysAsDefaultOption() {
+		#expect(Bandwidths.isValid(250, region: .us, pioEnv: nil))
+		#expect(Bandwidths.pickerValue(forStoredValue: 250, region: .us) == 0)
+		#expect(Bandwidths.pickerValue(forStoredValue: 250, region: .lora24) == 250)
 	}
 }
 
