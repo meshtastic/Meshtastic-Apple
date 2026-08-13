@@ -151,8 +151,8 @@ struct SettingsNodeSortTests {
 		#expect(SettingsNodeSnapshot(node: node)?.isManaged == false)
 	}
 
-	@Test("Node snapshot remains readable after its context resets")
-	func nodeSnapshotSurvivesContextReset() throws {
+	@Test("Node snapshot remains readable after its source entity is destroyed")
+	func nodeSnapshotSurvivesSourceEntityLoss() throws {
 		let container = try ModelContainer(
 			for: Schema(MeshtasticSchema.allModels),
 			configurations: ModelConfiguration(isStoredInMemoryOnly: true)
@@ -167,7 +167,12 @@ struct SettingsNodeSortTests {
 		try context.save()
 
 		let snapshot = try #require(SettingsNodeSnapshot(node: node))
-		context.reset()
+		// `ModelContext.reset()` is not public API on every supported SDK (this test
+		// failed to compile on the Xcode 26.x toolchain). Deleting the source entity
+		// invalidates it the same way for this test's purpose — reading a deleted
+		// model is precisely the trap the snapshot exists to avoid.
+		context.delete(node)
+		try context.save()
 
 		#expect(snapshot.num == 7_790_001)
 		#expect(snapshot.isManaged)
