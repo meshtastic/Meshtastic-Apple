@@ -96,10 +96,26 @@ struct MeshContactURL: Sendable {
 		isContactURL(url) && !(url.fragment?.isEmpty ?? true)
 	}
 
+	static func withoutExchangeRequest(_ url: URL) -> URL {
+		guard var components = URLComponents(url: url, resolvingAgainstBaseURL: false) else {
+			return url
+		}
+		components.queryItems = components.queryItems?.filter {
+			$0.name.caseInsensitiveCompare("exchange") != .orderedSame
+		}
+		if components.queryItems?.isEmpty == true {
+			components.queryItems = nil
+		}
+		return components.url ?? url
+	}
+
 	private static func isContactURL(_ url: URL) -> Bool {
 		let pathSegments = url.pathComponents
 			.filter { $0 != "/" }
 			.map { $0.lowercased() }
+		guard url.user == nil, url.password == nil, url.port == nil else {
+			return false
+		}
 
 		if url.scheme?.lowercased() == appScheme {
 			if url.host == nil {
@@ -108,7 +124,8 @@ struct MeshContactURL: Sendable {
 			return url.host?.lowercased() == contactPathSegment && pathSegments.isEmpty
 		}
 
-		guard let urlHost = url.host?.lowercased(),
+		guard url.scheme?.lowercased() == "https",
+			  let urlHost = url.host?.lowercased(),
 			  urlHost == host || urlHost == "www.\(host)" else {
 			return false
 		}

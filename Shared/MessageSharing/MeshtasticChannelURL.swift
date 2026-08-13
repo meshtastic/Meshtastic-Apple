@@ -162,6 +162,9 @@ struct MeshtasticChannelURL: Sendable {
 	}
 
 	private static func isChannelURL(_ url: URL) -> Bool {
+		guard url.user == nil, url.password == nil, url.port == nil else {
+			return false
+		}
 		if url.scheme?.lowercased() == appScheme {
 			let pathSegments = pathSegments(for: url)
 			if url.host == nil {
@@ -171,7 +174,9 @@ struct MeshtasticChannelURL: Sendable {
 		}
 
 		let supportedHosts = [Self.host, "www.\(Self.host)"]
-		guard let host = url.host?.lowercased(), supportedHosts.contains(host) else { return false }
+		guard url.scheme?.lowercased() == "https",
+			  let host = url.host?.lowercased(),
+			  supportedHosts.contains(host) else { return false }
 		return pathSegments(for: url) == [channelPathSegment]
 	}
 

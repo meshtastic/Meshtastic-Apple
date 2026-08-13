@@ -38,6 +38,31 @@ struct MeshContactURLTests {
 		}
 	}
 
+	@Test func rejectsInsecureCredentialedAndCustomPortWebForms() throws {
+		let payload = try MeshContactURL.payloadString(for: makeContact())
+		for value in [
+			"http://meshtastic.org/v/#\(payload)",
+			"ftp://meshtastic.org/v/#\(payload)",
+			"https://user@meshtastic.org/v/#\(payload)",
+			"https://meshtastic.org:8443/v/#\(payload)",
+			"meshtastic://user@v#\(payload)",
+			"meshtastic://v:8443#\(payload)"
+		] {
+			#expect(throws: MeshContactURL.ParseError.notContactURL, "\(value) must be rejected") {
+				_ = try MeshContactURL.parse(value)
+			}
+		}
+	}
+
+	@Test func removingExchangeRequestPreventsASecondReplyPrompt() throws {
+		let original = try #require(URL(string: try MeshContactURL.urlString(for: makeContact(), exchangeRequested: true)))
+
+		let sanitized = MeshContactURL.withoutExchangeRequest(original)
+
+		#expect(try !MeshContactURL.parse(sanitized.absoluteString).exchangeRequested)
+		#expect(sanitized.fragment == original.fragment)
+	}
+
 	@Test func rejectsEmptyAndOversizedPayloads() throws {
 		#expect(throws: MeshContactURL.ParseError.missingPayload) {
 			_ = try MeshContactURL.parse("https://meshtastic.org/v/#")
