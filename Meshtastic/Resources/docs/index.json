@@ -403,18 +403,18 @@
             "from",
             "firmware",
             "position",
-            "traffic",
-            "mesh",
             "connected",
+            "traffic",
+            "region",
+            "mesh",
             "tag",
             "nodes",
             "nfc",
-            "region",
             "configuration",
             "only",
             "language",
-            "messages",
             "default",
+            "messages",
             "contact",
             "channels",
             "channel",
@@ -426,7 +426,7 @@
             "packets",
             "packet"
         ],
-        "charCount": 15276
+        "charCount": 15719
     },
     {
         "id": "signal-meter",
