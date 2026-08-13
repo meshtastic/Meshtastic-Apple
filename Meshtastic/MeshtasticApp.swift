@@ -227,10 +227,11 @@ struct MeshtasticAppleApp: App {
 			} else if Self.isChirpyOTADemo {
 				FirmwareUpdateGameDemoHost()
 			} else {
-				ContentView(
-					appState: appState,
-					router: appState.router
-				)
+				EventFirmwareTintScope {
+					ContentView(
+						appState: appState,
+						router: appState.router
+					)
 				// Rebuild the whole view tree (and re-run every @Query) after a node-switch
 				// restore so views drop the previous node's cached objects. See AppState.databaseResetID.
 				.id(appState.databaseResetID)
@@ -274,6 +275,17 @@ struct MeshtasticAppleApp: App {
 
 						dispatchIncomingURL(url, fromActivity: false)
 					})
+					// Keep the badge in sync with read-state changes that happen outside
+					// the message lists (Siri/CarPlay read-aloud, background ingest) —
+					// previously those only reconciled on the next scene-active pass.
+					.onReceive(
+						NotificationCenter.default.publisher(for: .meshMessagesDidChange)
+							.debounce(for: .seconds(1), scheduler: DispatchQueue.main)
+					) { _ in
+						guard let persistenceController else { return }
+						appState.refreshBadgeCount(context: persistenceController.container.mainContext)
+					}
+				}
 				.task {
 					// Skip TipKit entirely during marketing screenshot capture so tip popovers never
 					// appear in the shots (unconfigured TipKit displays nothing).
@@ -338,20 +350,22 @@ struct MeshtasticAppleApp: App {
 		.environmentObject(appState.router)
 		.environmentObject(MeshtasticAPI.shared)
 
-		WindowGroup("Mesh Map", id: "meshmap-window") {
-			// Gated on shouldInitializeAppServices (not just tests): in Chirpy OTA demo mode
-			// persistenceController is nil, so building this scene would force-unwrap-crash.
-			if Self.shouldInitializeAppServices, let persistenceController {
-				MapWindow()
-					.id(appState.databaseResetID)
+			WindowGroup("Mesh Map", id: "meshmap-window") {
+				// Gated on shouldInitializeAppServices (not just tests): in Chirpy OTA demo mode
+				// persistenceController is nil, so building this scene would force-unwrap-crash.
+				if Self.shouldInitializeAppServices, let persistenceController {
+					EventFirmwareTintScope {
+						MapWindow()
+							.id(appState.databaseResetID)
+					}
 					.modelContainer(persistenceController.container)
 					.environmentObject(appState)
 					.environmentObject(accessoryManager)
 					.environmentObject(lockdownCoordinator)
 					.environmentObject(appState.router)
 					.environmentObject(MeshtasticAPI.shared)
+				}
 			}
-		}
 		.handlesExternalEvents(matching: [])
 		.windowResizability(.contentMinSize)
 		#if os(visionOS)

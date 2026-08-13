@@ -132,4 +132,49 @@ struct SettingsNodeSortTests {
 		#expect(detachedNode.modelContext == nil)
 		#expect(orderedNums([liveNode, detachedNode]) == [7_770_001])
 	}
+
+	@Test("Managed state is captured before Settings renders its retained node list")
+	func managedStateSnapshot() throws {
+		let context = sharedModelContainer.mainContext
+		let node = makeNode(num: 7_780_001, favorite: false)
+		let deviceConfig = DeviceConfigEntity()
+		deviceConfig.isManaged = true
+		node.deviceConfig = deviceConfig
+		try context.save()
+
+		let snapshot = try #require(SettingsNodeSnapshot(node: node))
+		context.delete(deviceConfig)
+		try context.save()
+
+		#expect(snapshot.num == node.num)
+		#expect(snapshot.isManaged)
+		#expect(SettingsNodeSnapshot(node: node)?.isManaged == false)
+	}
+
+	@Test("Node snapshot remains readable after its source entity is destroyed")
+	func nodeSnapshotSurvivesSourceEntityLoss() throws {
+		let container = try ModelContainer(
+			for: Schema(MeshtasticSchema.allModels),
+			configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+		)
+		let context = container.mainContext
+		let node = NodeInfoEntity()
+		node.num = 7_790_001
+		let deviceConfig = DeviceConfigEntity()
+		deviceConfig.isManaged = true
+		node.deviceConfig = deviceConfig
+		context.insert(node)
+		try context.save()
+
+		let snapshot = try #require(SettingsNodeSnapshot(node: node))
+		// `ModelContext.reset()` is not public API on every supported SDK (this test
+		// failed to compile on the Xcode 26.x toolchain). Deleting the source entity
+		// invalidates it the same way for this test's purpose — reading a deleted
+		// model is precisely the trap the snapshot exists to avoid.
+		context.delete(node)
+		try context.save()
+
+		#expect(snapshot.num == 7_790_001)
+		#expect(snapshot.isManaged)
+	}
 }

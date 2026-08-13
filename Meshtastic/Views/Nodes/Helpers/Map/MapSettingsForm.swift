@@ -62,7 +62,6 @@ struct MapSettingsForm: View {
 									.symbolRenderingMode(.multicolor)
 							}
 						}
-						.tint(.accentColor)
 						Toggle(isOn: $preciseLocationsOnly) {
 							Label {
 								VStack(alignment: .leading) {
@@ -75,7 +74,6 @@ struct MapSettingsForm: View {
 								Image(systemName: "scope")
 							}
 						}
-						.tint(.accentColor)
 						Toggle(isOn: $enableMapClustering) {
 							Label {
 								VStack(alignment: .leading) {
@@ -88,7 +86,6 @@ struct MapSettingsForm: View {
 								Image(systemName: "circle.grid.3x3.fill")
 							}
 						}
-						.tint(.accentColor)
 						Toggle(isOn: $enableMapUserLocation) {
 							Label {
 								Text("My Location")
@@ -97,23 +94,21 @@ struct MapSettingsForm: View {
 									.symbolRenderingMode(.multicolor)
 							}
 						}
-						.tint(.accentColor)
 					}
 					if !meshMap {
 						Toggle(isOn: $nodeHistory) {
 							Label("Node History", systemImage: "building.columns.fill")
 						}
-						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						.toggleStyle(.switch)
 						Toggle(isOn: $enableMapRouteLines) {
 							Label("Route Lines", systemImage: "road.lanes")
 						}
-						.tint(.accentColor)
 
 					}
 					Toggle(isOn: $convexHull) {
 						Label("Convex Hull", systemImage: "button.angledbottom.horizontal.right")
 					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.toggleStyle(.switch)
 					.onTapGesture {
 						self.convexHull.toggle()
 						UserDefaults.enableMapConvexHull = self.convexHull
@@ -121,7 +116,7 @@ struct MapSettingsForm: View {
 					Toggle(isOn: $traffic) {
 						Label("Traffic", systemImage: "car")
 					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.toggleStyle(.switch)
 					.onTapGesture {
 						self.traffic.toggle()
 						UserDefaults.enableMapTraffic = self.traffic
@@ -134,7 +129,6 @@ struct MapSettingsForm: View {
 								.symbolRenderingMode(.multicolor)
 						}
 					}
-					.tint(.accentColor)
 					.onTapGesture {
 						self.pointsOfInterest.toggle()
 						UserDefaults.enableMapPointsOfInterest = self.pointsOfInterest
@@ -167,7 +161,7 @@ struct MapSettingsForm: View {
 							Label {
 								VStack(alignment: .leading) {
 									Text("Offline Tiles")
-									Text("Shows a saved offline map over the covered area, so it still works without an internet connection.")
+									Text("Shows saved maps over covered areas. They also appear automatically when iOS has no network route.")
 										.font(.caption)
 										.foregroundColor(.secondary)
 								}
@@ -175,7 +169,6 @@ struct MapSettingsForm: View {
 								Image(systemName: "square.dashed")
 							}
 						}
-						.tint(.accentColor)
 					}
 				}
 
@@ -195,7 +188,6 @@ struct MapSettingsForm: View {
 								.symbolRenderingMode(.multicolor)
 						}
 					}
-					.tint(.accentColor)
 					.disabled(!hasUserData && !mapOverlaysEnabled)
 
 					// Show individual file rows when overlays are enabled
@@ -258,7 +250,6 @@ struct MapSettingsForm: View {
 											.foregroundColor(isEnabled ? .accentColor : .secondary)
 									}
 								}
-								.tint(.accentColor)
 								.swipeActions(edge: .trailing) {
 									Button(role: .destructive) {
 										deleteOverlayFile(file)

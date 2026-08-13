@@ -166,7 +166,7 @@ struct EnvironmentMetricsLog: View {
 			isPresented: $isExporting,
 			document: CsvDocument(emptyCsv: exportString),
 			contentType: .commaSeparatedText,
-			defaultFilename: String("\(node.user?.longName ?? "Node") Environment Metrics Log \(Date.now.exportTimestamp)"),
+			defaultFilename: CsvDocument.exportFilename("\(node.user?.longName ?? "Node") Environment Metrics Log \(Date.now.exportTimestamp)"),
 			onCompletion: { result in
 				switch result {
 				case .success:

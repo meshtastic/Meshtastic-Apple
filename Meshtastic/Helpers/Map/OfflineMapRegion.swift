@@ -77,4 +77,66 @@ struct OfflineMapRegion: Identifiable, Codable, Hashable {
 	var formattedSize: String {
 		ByteCountFormatter.string(fromByteCount: fileSize, countStyle: .file)
 	}
+
+	/// Whether this archive's zoom range covers what the map actually needs, or leaves a gap the
+	/// user will see as blank/blurry basemap. Imported archives (unlike the app's own z0-based
+	/// downloads) can carry any range, so this is advisory only — a narrow range is a legitimate
+	/// regional export, not a corrupt file, and is never rejected on import.
+	var zoomCoverage: OfflineMapZoomCoverage {
+		OfflineMapZoomCoverage(minZoom: minZoom, maxZoom: maxZoom)
+	}
+}
+
+/// Advisory assessment of an offline map's zoom range against the levels the app renders at.
+enum OfflineMapZoomCoverage: Equatable {
+	/// Covers overview through detail — no warning.
+	case full
+	/// Tops out below street-level detail; zooming in to a node shows no basemap detail.
+	case limitedDetail(maxZoom: Int)
+	/// Starts above the overview levels; zooming out shows blank basemap.
+	case limitedOverview(minZoom: Int)
+	/// Both ends are missing.
+	case limited(minZoom: Int, maxZoom: Int)
+
+	/// Highest zoom at or below which street-level detail is expected. The app's own "standard"
+	/// download reaches z13; z10 is roughly metro/arterial-road level and the point below which an
+	/// imported basemap stops being useful for locating a node.
+	static let detailFloor = 10
+	/// Lowest zoom the archive must include to have zoomed-out context; the app always downloads
+	/// from z0, so anything starting above z6 (sub-continental) loses the pan-out view.
+	static let overviewCeiling = 6
+
+	init(minZoom: Int, maxZoom: Int) {
+		let missingDetail = maxZoom < Self.detailFloor
+		let missingOverview = minZoom > Self.overviewCeiling
+		switch (missingOverview, missingDetail) {
+		case (false, false): self = .full
+		case (false, true): self = .limitedDetail(maxZoom: maxZoom)
+		case (true, false): self = .limitedOverview(minZoom: minZoom)
+		case (true, true): self = .limited(minZoom: minZoom, maxZoom: maxZoom)
+		}
+	}
+
+	/// True when the user should be warned; `.full` is the only silent case.
+	var isLimited: Bool { self != .full }
+
+	/// A short, human caption for the map row/detail, or nil when coverage is full.
+	var warningLabel: String? {
+		switch self {
+		case .full:
+			return nil
+		case .limitedDetail:
+			return String(localized: "Limited detail — no close-up basemap", comment: "Offline map warning: archive lacks high zoom levels")
+		case .limitedOverview:
+			return String(localized: "Limited overview — no zoomed-out basemap", comment: "Offline map warning: archive lacks low zoom levels")
+		case .limited:
+			return String(localized: "Limited zoom coverage", comment: "Offline map warning: archive lacks both low and high zoom levels")
+		}
+	}
+}
+
+/// An on-disk archive paired with the region metadata that describes it.
+struct OfflineMapRegionFile: Equatable {
+	let region: OfflineMapRegion
+	let url: URL
 }

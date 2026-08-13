@@ -143,6 +143,34 @@ struct LoRaConfig: View {
 		return presets
 	}
 
+	private var availableBandwidths: [Bandwidths] {
+		Bandwidths.selectable(
+			region: RegionCodes(rawValue: region),
+			pioEnv: node?.myInfo?.pioEnv
+		)
+	}
+
+	private var customBandwidthValidationIssue: Bandwidths.ValidationIssue? {
+		guard !usePreset else { return nil }
+		return Bandwidths.validationIssue(
+			for: bandwidth,
+			region: RegionCodes(rawValue: region),
+			pioEnv: node?.myInfo?.pioEnv
+		)
+	}
+
+	private var bandwidthSelection: Binding<Int> {
+		Binding(
+			get: {
+				Bandwidths.pickerValue(
+					forStoredValue: bandwidth,
+					region: RegionCodes(rawValue: region)
+				)
+			},
+			set: { bandwidth = $0 }
+		)
+	}
+
 	var body: some View {
 		Form {
 			ConfigHeader(title: "LoRa", config: \.loRaConfig, node: node, onAppear: setLoRaValues)
@@ -186,7 +214,6 @@ struct LoRaConfig: View {
 				Toggle(isOn: $usePreset) {
 					Label("Use Preset", systemImage: "list.bullet.rectangle")
 				}
-				.tint(.accentColor)
 
 				if usePreset {
 					VStack(alignment: .leading) {
@@ -210,34 +237,29 @@ struct LoRaConfig: View {
 				Toggle(isOn: $ignoreMqtt) {
 					Label("Ignore MQTT", systemImage: "server.rack")
 				}
-				.tint(.accentColor)
 				Toggle(isOn: $okToMqtt) {
 					Label("Ok to MQTT", systemImage: "network")
 				}
-				.tint(.accentColor)
 
 				Toggle(isOn: $txEnabled) {
 					Label("Transmit Enabled", systemImage: "waveform.path")
 				}
-				.tint(.accentColor)
 
-				 if !usePreset {
-					 HStack {
-						 Picker("Bandwidth", selection: $bandwidth) {
-							 ForEach(Bandwidths.allCases) { bw in
-								 Text(bw.description)
-									 .tag(bw.rawValue == 250 ? 0 : bw.rawValue)
-							 }
-						 }
-					 }
-					 HStack {
-						 Picker("Spread Factor", selection: $spreadFactor) {
-							 ForEach(7..<13) {
-								 Text("\($0)")
-									 .tag($0 == 12 ? 0 : $0)
-							 }
-						 }
-					 }
+				if !usePreset {
+					CustomBandwidthPicker(
+						selection: bandwidthSelection,
+						options: availableBandwidths,
+						region: RegionCodes(rawValue: region),
+						validationIssue: customBandwidthValidationIssue
+					)
+					HStack {
+						Picker("Spread Factor", selection: $spreadFactor) {
+							ForEach(7..<13) {
+								Text("\($0)")
+									.tag($0 == 12 ? 0 : $0)
+							}
+						}
+					}
 				}
 
 				VStack(alignment: .leading, spacing: 8) {
@@ -249,7 +271,6 @@ struct LoRaConfig: View {
 					}
 					if usePreset {
 						Toggle("Follow Preset Coding Rate", isOn: usePresetCodingRate)
-							.tint(.accentColor)
 						if !canOverridePresetCodingRate {
 							Text("This preset already uses 4/\(defaultCodingRate), the highest redundancy available.")
 								.foregroundColor(.gray)
@@ -321,7 +342,6 @@ struct LoRaConfig: View {
 				Toggle(isOn: $rxBoostedGain) {
 					Label("RX Boosted Gain", systemImage: "waveform.badge.plus")
 				}
-				.tint(.accentColor)
 
 				HStack {
 					Label("Frequency Override", systemImage: "waveform.path.ecg")
@@ -345,37 +365,39 @@ struct LoRaConfig: View {
 		.disabled(!accessoryManager.isConnected || node?.loRaConfig == nil)
 		.safeAreaInset(edge: .bottom, alignment: .center) {
 			HStack(spacing: 0) {
-			SaveConfigButton(node: node, hasChanges: $hasChanges) {
-				performConfigSave(
-					node: node,
-					context: context,
-					accessoryManager: accessoryManager,
-					hasChanges: $hasChanges,
-					dismiss: goBack
-				) { fromUser, toUser in
-					var lc = Config.LoRaConfig()
-					lc.hopLimit = UInt32(hopLimit)
-					lc.region = RegionCodes(rawValue: region)!.protoEnumValue()
-					lc.modemPreset = ModemPresets(rawValue: modemPreset)!.protoEnumValue()
-					lc.usePreset = usePreset
-					lc.txEnabled = txEnabled
-					lc.txPower = Int32(txPower)
-					lc.channelNum = UInt32(channelNum)
-					lc.bandwidth = UInt32(bandwidth)
-					lc.codingRate = UInt32(normalizedCodingRate)
-					lc.spreadFactor = UInt32(spreadFactor)
-					lc.sx126XRxBoostedGain = rxBoostedGain
-					lc.overrideFrequency = overrideFrequency
-					lc.ignoreMqtt = ignoreMqtt
-					lc.configOkToMqtt = okToMqtt
-					if let deviceNum = accessoryManager.activeDeviceNum,
-					   let connectedNode = getNodeInfo(id: deviceNum, context: context),
-					   connectedNode.num == node?.user?.num ?? 0 {
-						UserDefaults.modemPreset = modemPreset
+				SaveConfigButton(node: node, hasChanges: $hasChanges) {
+					guard customBandwidthValidationIssue == nil else { return }
+					performConfigSave(
+						node: node,
+						context: context,
+						accessoryManager: accessoryManager,
+						hasChanges: $hasChanges,
+						dismiss: goBack
+					) { fromUser, toUser in
+						var lc = Config.LoRaConfig()
+						lc.hopLimit = UInt32(hopLimit)
+						lc.region = RegionCodes(rawValue: region)!.protoEnumValue()
+						lc.modemPreset = ModemPresets(rawValue: modemPreset)!.protoEnumValue()
+						lc.usePreset = usePreset
+						lc.txEnabled = txEnabled
+						lc.txPower = Int32(txPower)
+						lc.channelNum = UInt32(channelNum)
+						lc.bandwidth = UInt32(bandwidth)
+						lc.codingRate = UInt32(normalizedCodingRate)
+						lc.spreadFactor = UInt32(spreadFactor)
+						lc.sx126XRxBoostedGain = rxBoostedGain
+						lc.overrideFrequency = overrideFrequency
+						lc.ignoreMqtt = ignoreMqtt
+						lc.configOkToMqtt = okToMqtt
+						if let deviceNum = accessoryManager.activeDeviceNum,
+						   let connectedNode = getNodeInfo(id: deviceNum, context: context),
+						   connectedNode.num == node?.user?.num ?? 0 {
+							UserDefaults.modemPreset = modemPreset
+						}
+						_ = try await accessoryManager.saveLoRaConfig(config: lc, fromUser: fromUser, toUser: toUser)
 					}
-					_ = try await accessoryManager.saveLoRaConfig(config: lc, fromUser: fromUser, toUser: toUser)
 				}
-			}
+				.disabled(customBandwidthValidationIssue != nil)
 			}
 		}
 		.navigationTitle("LoRa Config")
@@ -490,6 +512,43 @@ struct LoRaConfig: View {
 		self.ignoreMqtt = node?.loRaConfig?.ignoreMqtt ?? false
 		self.okToMqtt = node?.loRaConfig?.okToMqtt ?? false
 		self.hasChanges = false
+	}
+}
+
+private struct CustomBandwidthPicker: View {
+	@Binding var selection: Int
+	let options: [Bandwidths]
+	let region: RegionCodes?
+	let validationIssue: Bandwidths.ValidationIssue?
+
+	var body: some View {
+		VStack(alignment: .leading, spacing: 8) {
+			Picker("Bandwidth", selection: $selection) {
+				if validationIssue == .unsupported {
+					Text("Unsupported (\(Bandwidths.description(forPickerValue: selection, region: region)))")
+						.tag(selection)
+				}
+				if region == .lora24 {
+					Text(Bandwidths.description(forPickerValue: 0, region: region).localized)
+						.tag(0)
+				}
+				ForEach(options) { bandwidth in
+					Text(bandwidth.description)
+						.tag(bandwidth.pickerValue)
+				}
+			}
+			if let validationIssue {
+				Label {
+					if validationIssue == .unsupported {
+						Text("This bandwidth is not supported by the connected radio in the selected region. Choose a supported value before saving.".localized)
+					}
+				} icon: {
+					Image(systemName: "exclamationmark.triangle.fill")
+				}
+				.foregroundStyle(.orange)
+				.font(.callout)
+			}
+		}
 	}
 }
 

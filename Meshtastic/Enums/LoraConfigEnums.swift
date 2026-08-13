@@ -739,6 +739,51 @@ enum ModemPresets: Int, CaseIterable, Identifiable {
 	}
 }
 
+// These strings are protocol values, not UI labels. They must match the
+// firmware's DisplayFormatters::getModemPresetDisplayName(..., false, ...).
+extension Config.LoRaConfig.ModemPreset {
+	var firmwareChannelName: String? {
+		switch self {
+		case .longFast:
+			return "LongFast"
+		case .longSlow:
+			return "LongSlow"
+		case .veryLongSlow:
+			return "VLongSlow"
+		case .mediumSlow:
+			return "MediumSlow"
+		case .mediumFast:
+			return "MediumFast"
+		case .shortSlow:
+			return "ShortSlow"
+		case .shortFast:
+			return "ShortFast"
+		case .longModerate:
+			return "LongMod"
+		case .shortTurbo:
+			return "ShortTurbo"
+		case .longTurbo:
+			return "LongTurbo"
+		case .liteFast:
+			return "LiteFast"
+		case .liteSlow:
+			return "LiteSlow"
+		case .narrowFast:
+			return "NarrowFast"
+		case .narrowSlow:
+			return "NarrowSlow"
+		case .tinyFast:
+			return "TinyFast"
+		case .tinySlow:
+			return "TinySlow"
+		case .mediumTurbo:
+			return "MediumTurbo"
+		case .UNRECOGNIZED:
+			return nil
+		}
+	}
+}
+
 enum CodingRates {
 	static let validRange = 5...8
 
@@ -771,14 +816,46 @@ enum CodingRates {
 }
 
 enum Bandwidths: Int, CaseIterable, Identifiable {
+	enum ValidationIssue: Equatable {
+		case unsupported
+	}
 
 	case thirtyOne = 31
 	case sixtyTwo = 62
 	case oneHundredTwentyFive = 125
+	case twoHundred = 200
 	case twoHundredFifty = 250
+	case fourHundred = 400
 	case fiveHundred = 500
+	case eightHundred = 800
+	case sixteenHundred = 1600
+
+	private static let subGHzCases: [Bandwidths] = [
+		.thirtyOne, .sixtyTwo, .oneHundredTwentyFive, .twoHundredFifty, .fiveHundred
+	]
+
+	private static let highBandCases: [Bandwidths] = [
+		.twoHundred, .fourHundred, .eightHundred
+	]
+
+	/// Targets whose firmware definitions select SX128x exclusively. Targets that can be built
+	/// with more than one radio, plus unknown future targets, use the conservative high-band set.
+	private static let sx128xTargets: Set<String> = [
+		"betafpv_2400_tx_micro",
+		"makerpython_nrf52840_sx1280_eink",
+		"makerpython_nrf52840_sx1280_oled",
+		"my-esp32s3-diy-eink",
+		"my-esp32s3-diy-oled",
+		"tlora-v2-1-1_8"
+	]
 
 	var id: Int { self.rawValue }
+
+	/// The protobuf uses zero for the firmware-selected regional default.
+	var pickerValue: Int {
+		self == .twoHundredFifty ? 0 : rawValue
+	}
+
 	var description: String {
 		switch self {
 		case .thirtyOne:
@@ -787,11 +864,55 @@ enum Bandwidths: Int, CaseIterable, Identifiable {
 			return "62 kHz"
 		case .oneHundredTwentyFive:
 			return "125 kHz"
+		case .twoHundred:
+			return "203.125 kHz"
 		case .twoHundredFifty:
 			return "250 kHz"
+		case .fourHundred:
+			return "406.25 kHz"
 		case .fiveHundred:
 			return "500 kHz"
+		case .eightHundred:
+			return "812.5 kHz"
+		case .sixteenHundred:
+			return "1625 kHz"
 		}
+	}
+
+	static func selectable(region: RegionCodes?, pioEnv: String?) -> [Bandwidths] {
+		guard region == .lora24 else { return subGHzCases }
+
+		var options = highBandCases
+		if let pioEnv, sx128xTargets.contains(pioEnv.lowercased()) {
+			options.append(.sixteenHundred)
+		}
+		return options
+	}
+
+	static func isValid(_ value: Int, region: RegionCodes?, pioEnv: String?) -> Bool {
+		validationIssue(for: value, region: region, pioEnv: pioEnv) == nil
+	}
+
+	static func validationIssue(for value: Int, region: RegionCodes?, pioEnv: String?) -> ValidationIssue? {
+		if value == 0 { return nil }
+		let normalizedValue = pickerValue(forStoredValue: value, region: region)
+		return selectable(region: region, pioEnv: pioEnv).contains { $0.pickerValue == normalizedValue }
+			? nil
+			: .unsupported
+	}
+
+	static func pickerValue(forStoredValue value: Int, region: RegionCodes?) -> Int {
+		if region != .lora24, value == Bandwidths.twoHundredFifty.rawValue {
+			return Bandwidths.twoHundredFifty.pickerValue
+		}
+		return value
+	}
+
+	static func description(forPickerValue value: Int, region: RegionCodes?) -> String {
+		if value == 0 {
+			return region == .lora24 ? "Default (812.5 kHz)" : Bandwidths.twoHundredFifty.description
+		}
+		return Bandwidths(rawValue: value)?.description ?? "\(value) kHz"
 	}
 }
 

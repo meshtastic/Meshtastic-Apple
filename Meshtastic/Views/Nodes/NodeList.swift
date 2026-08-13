@@ -46,7 +46,7 @@ struct NodeList: View {
 					if opensSeededLocalStatsLog {
 						LocalStatsLog(node: node)
 					} else {
-						NodeDetail(node: node)
+						NodeDetail(node: node, nodeNum: selectedNum)
 					}
 				} else {
 					ContentUnavailableView("Select a Node", systemImage: "flipphone")
@@ -234,6 +234,9 @@ private struct FilteredNodeList: View {
 	/// cadence (see `.task`) instead of in `body`, so the full-node-set scan in `displayNodes`
 	/// doesn't run on every SwiftData write — which pegged the CPU on reconnect with a large DB.
 	@State private var displayedNodes: [NodeListEntry] = []
+	/// Kept in view state so a controller swap invalidates this task until SwiftUI remounts the
+	/// list against the new root `.modelContainer` and `databaseResetID`.
+	@State private var boundContainerGeneration = PersistenceController.shared.containerGeneration
 
 	var connectedNode: NodeInfoEntity?
 	@Binding var isPresentingDeleteNodeAlert: Bool
@@ -404,6 +407,8 @@ private struct FilteredNodeList: View {
 	}
 
 	private func refreshDisplayedNodes() {
+		// Accessing any property on a ModelContext whose container was replaced can trap in SwiftData.
+		guard boundContainerGeneration == PersistenceController.shared.containerGeneration else { return }
 		let allNodes = (try? context.fetch(makeNodeFetchDescriptor())) ?? []
 		replaceDisplayedNodesIfNeeded(with: displayNodes(from: allNodes, activeNodeNum: accessoryManager.activeDeviceNum))
 		router.updateNodeIndex(from: allNodes)

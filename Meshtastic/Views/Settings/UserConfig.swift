@@ -105,7 +105,7 @@ struct UserConfig: View {
 						Text("Used to identify unmonitored or infrastructure nodes so that messaging is not avaliable to nodes that will never respond.")
 							.font(.caption2)
 					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.toggleStyle(.switch)
 					.disabled(!supportedVersion)
 				}
 				// Only manage ham mode for the locally connected node
@@ -113,7 +113,7 @@ struct UserConfig: View {
 					Toggle(isOn: $isLicensed) {
 						Label("Licensed Operator", systemImage: "person.text.rectangle")
 					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.toggleStyle(.switch)
 					if isLicensed {
 						
 						Text("Onboarding for licensed operators requires firmware 2.0.20 or greater. Make sure to refer to your local regulations and contact the local amateur frequency coordinators with questions.")

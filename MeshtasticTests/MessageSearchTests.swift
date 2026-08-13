@@ -135,4 +135,38 @@ struct MessageSearchTests {
 		let target = try #require(matches.first)
 		#expect(try MessageSearch.directNewerCount(in: context, userNum: 9102, than: target) == 2)
 	}
+
+	// MARK: Displayed-text matching (translations)
+
+	@Test("Channel search matches the translated text a user is looking at")
+	func channelSearchMatchesTranslatedText() throws {
+		let context = makeContext()
+		let ch: Int32 = 71
+		// Original text has no "hola"; the translation the user sees does. Searching the visible
+		// (translated) word must find it — this is the field bug where the text is on screen but
+		// search returned nothing.
+		let m = addChannelMessage(context, id: 7101, channel: ch, ts: 100, text: "hello everyone")
+		m.messagePayloadTranslated = "hola a todos"
+		m.showTranslatedMessage = true
+		try context.save()
+
+		#expect(try MessageSearch.channelMatches(in: context, channelIndex: ch, query: "hola").map(\.messageId) == [7101])
+		// The original is still findable too (search covers both original and translation).
+		#expect(try MessageSearch.channelMatches(in: context, channelIndex: ch, query: "everyone").map(\.messageId) == [7101])
+	}
+
+	@Test("Direct search matches translated text regardless of the show-translation toggle")
+	func directSearchMatchesTranslatedText() throws {
+		let context = makeContext()
+		let me = makeUser(context, num: 9201)
+		let them = makeUser(context, num: 9202)
+		// Translation present but the per-message toggle is OFF — the user may still search the
+		// translated wording, and should find it.
+		let m = addDirectMessage(context, id: 8201, between: (them, me), ts: 100, text: "good morning")
+		m.messagePayloadTranslated = "buenos días"
+		m.showTranslatedMessage = false
+		try context.save()
+
+		#expect(try MessageSearch.directMatches(in: context, userNum: 9202, query: "días").map(\.messageId) == [8201])
+	}
 }

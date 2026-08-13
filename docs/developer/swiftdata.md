@@ -115,14 +115,26 @@ seeds the cache from the bundled `event_firmware.json` at launch (offline-first)
 refreshes it from the live endpoint in the background. The `edition` proto-enum name (e.g.
 `"DEFCON"`) is the unique join key against the connected device's reported edition. Because it
 is a rebuildable cache, a failed/empty refresh is a **no-op** that leaves existing rows intact
-(it never wipes the cache), and the row lives in the unreleased **V1** schema — adding it
-required no new `VersionedSchema`/`MigrationStage` (see below).
+(it never wipes the cache). Device-switch clears preserve these global rows, while a full
+app-data reset removes them so the bundled seed can rebuild the cache.
+
+Theme colors are stored individually as `themePrimaryColor`, `themeSecondaryColor`, and
+`themeAccentColor`, with the authored palette in `themePalette`. Executable firmware URLs are
+not stored in this display cache; event OTA uses a separate signed artifact contract. The model
+previously had an experimental `firmwareZipUrl` field before V1 shipped; it was removed while
+the schema was still unreleased. The model remains in the unreleased **V1** schema, so these
+changes required no new `VersionedSchema`/`MigrationStage` (see below).
 
 ## Schema Migrations
 
 When you add, rename, or remove properties on a `@Model` type, you must provide a migration. Schema files live in `Meshtastic/Model/Schema/`.
 
-> **Note — V1 is unreleased.** While `MeshtasticSchemaV1` remains the initial, unshipped version, additive `@Model` changes go **directly into V1** rather than a new versioned schema + stage (see the comment in `MeshtasticMigrationPlan.swift`). For example, the air-quality particulate-matter fields on `TelemetryEntity` (`pm10/25/100Standard`, `pm10/25/100Environmental`) were added in place. Start adding `VersionedSchema` versions and migration stages only once V1 has shipped.
+> **Note — V1 is unreleased.** While `MeshtasticSchemaV1` remains the initial, unshipped version, additive `@Model` changes go **directly into V1** rather than a new versioned schema + stage (see the comment in `MeshtasticMigrationPlan.swift`). For example, the air-quality particulate-matter fields on `TelemetryEntity` (`pm10/25/100Standard`, `pm10/25/100Environmental`) were added in place, as were `SecurityConfigEntity.packetSignaturePolicy` and `DeviceMetadataEntity.hasXeddsa` for the packet authenticity policy. Start adding `VersionedSchema` versions and migration stages only once V1 has shipped.
+
+Give an added property a default that matches what an absent value means on the wire, so a row
+written before the property existed and a device that never reported it agree. `packetSignaturePolicy`
+defaults to `0` because `PACKET_SIGNATURE_POLICY_COMPATIBLE` is the protobuf zero value, so an
+unconfigured row is not silently treated as running a stricter receive policy than the radio is.
 
 ### Adding a New Schema Version
 

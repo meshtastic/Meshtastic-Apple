@@ -274,10 +274,15 @@ final class PMTilesExtractor {
 			}
 			guard let entry = PMTilesArchive.find(tileID, in: entries) else { return nil }
 			if entry.runLength == 0 {
-				dirOffset = header.leafDirOffset + entry.offset
+				// Overflow-safe offset math, matching the #2192 hardening of PMTilesArchive.
+				let (leaf, overflow) = header.leafDirOffset.addingReportingOverflow(entry.offset)
+				guard !overflow else { return nil }
+				dirOffset = leaf
 				dirLength = UInt64(entry.length)
 			} else {
-				return (header.tileDataOffset + entry.offset, entry.length)
+				let (tileOffset, overflow) = header.tileDataOffset.addingReportingOverflow(entry.offset)
+				guard !overflow else { return nil }
+				return (tileOffset, entry.length)
 			}
 		}
 		return nil
@@ -286,10 +291,16 @@ final class PMTilesExtractor {
 	private func directory(at offset: UInt64, length: UInt64, compression: PMTilesCompression, sourceURL: URL, prefetched: Data?) async throws -> [PMTilesArchive.Entry] {
 		if let cached = leafCache[offset] { return cached }
 		let raw: Data
-		if let prefetched, offset + length <= UInt64(prefetched.count) {
-			raw = prefetched.subdata(in: Int(offset)..<Int(offset + length))
+		// Overflow-safe range math (matches #2192): guard the add and the Int conversions so a
+		// crafted header/directory offset can't trap while planning an extraction.
+		let (end, addOverflow) = offset.addingReportingOverflow(length)
+		if let prefetched, !addOverflow, end <= UInt64(prefetched.count),
+		   let start = Int(exactly: offset), let stop = Int(exactly: end) {
+			raw = prefetched.subdata(in: start..<stop)
+		} else if length > 0, !addOverflow {
+			raw = try await fetchRange(sourceURL, start: offset, end: end - 1)
 		} else {
-			raw = try await fetchRange(sourceURL, start: offset, end: offset + length - 1)
+			return []
 		}
 		let decompressed = compression == .gzip ? (PMTilesArchive.gunzip(raw) ?? raw) : raw
 		let entries = PMTilesArchive.deserializeDirectory(decompressed)

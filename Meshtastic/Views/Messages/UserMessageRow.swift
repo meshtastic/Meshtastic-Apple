@@ -205,7 +205,7 @@ struct UserMessageRow: View {
 		.id(message.messageId)
 		.background(
 			RoundedRectangle(cornerRadius: 8)
-				.fill(Color.yellow.opacity(messageToHighlight == message.messageId ? 0.18 : 0))
+				.fill(Color.messageHighlight.opacity(messageToHighlight == message.messageId ? 1 : 0))
 				.padding(.horizontal, 4)
 		)
 		.animation(.easeInOut(duration: 0.3), value: messageToHighlight)

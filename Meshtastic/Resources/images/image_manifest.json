@@ -1,5 +1,5 @@
 {
-  "api_hash": "c837281fd1813530d99d24a97ce527247ff13dd22a5dd82c817db37840f91bb2",
+  "api_hash": "78ad1f4fc5c37bfe064aa0a5a5dc6bd0aece879e75480baeddf35c958d3d768b",
   "files": {
     "crowpanel_2_4.svg": {
       "etag": "\"29194e5a415e5aee034b2d4a3ba2e398\""
@@ -30,6 +30,9 @@
     },
     "heltec-mesh-solar.svg": {
       "etag": "\"80ee3e192cc4aeb6f6ec4bf54deebbce\""
+    },
+    "heltec-meshnode-t1.svg": {
+      "etag": "\"7c4b97ab2fb7db113e337417c8006701\""
     },
     "heltec-t096.svg": {
       "etag": "\"686fe6ac17fea4e6ff34aca78ca610f9\""
@@ -121,6 +124,9 @@
     "rak4631_case.svg": {
       "etag": "\"fdb5ee0ba5fb97d3f2c45ebec1629af2\""
     },
+    "rak6421.svg": {
+      "etag": "\"f73707c874353c1f0e0bb632f16f8106\""
+    },
     "rak_3312.svg": {
       "etag": "\"8db94664189df83d099b726cd21045b4\""
     },
@@ -135,6 +141,9 @@
     },
     "seeed-xiao-s3.svg": {
       "etag": "\"6475faad5c2459af8d133bf4956e8ba4\""
+    },
+    "seeed_mesh_tracker_x1.svg": {
+      "etag": "\"7c2c6d6f3c10fe0bd4f91ef693440b81\""
     },
     "seeed_solar.svg": {
       "etag": "\"1b517a452f66e0e5b1b7323dfce89fbc\""
@@ -162,6 +171,9 @@
     },
     "tbeam-1w.svg": {
       "etag": "\"ffb9d18fb8c98f231a610c58a1d1e865\""
+    },
+    "tbeam-bpf.svg": {
+      "etag": "\"389c39ebc1c82f57f17391b8e7e69d0f\""
     },
     "tbeam-s3-core.svg": {
       "etag": "\"d233dcce52944ab5fb01410c5d58a4ae\""

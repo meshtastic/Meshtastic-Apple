@@ -162,13 +162,11 @@ struct MeshBeaconConfig: View {
 				Label("Listen for Beacons", systemImage: "antenna.radiowaves.left.and.right")
 				Text("Receive and act on MESH_BEACON_APP packets from other nodes so beaconed meshes appear in Nearby Meshes and the scan setup.")
 			}
-			.tint(.accentColor)
 
 			Toggle(isOn: flagBinding(MeshBeaconFlags.broadcastEnabled)) {
 				Label("Broadcast a Beacon", systemImage: "dot.radiowaves.right")
 				Text("Periodically advertise this node's mesh so other people's discovery scans can find and join it.")
 			}
-			.tint(.accentColor)
 		}
 	}
 

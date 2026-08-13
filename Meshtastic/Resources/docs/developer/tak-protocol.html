@@ -127,10 +127,10 @@
 <li><code>AccessoryManager+TAK.handleATAKPluginV2Packet(_:)</code> posts a <code>Notification</code> titled <strong>Route Received</strong> with the route callsign as subtitle and body <strong>Saved to Files → Meshtastic → TAK Routes. Open in iTAK to import.</strong></li>
 </ol>
 <h2>Capabilities</h2>
-<p><code>AccessoryManager.supportsTAKv2</code> is the canonical gate:</p>
-<pre><code class="language-swift">var supportsTAKv2: Bool { checkIsVersionSupported(forVersion: &quot;2.8.0&quot;) }
+<p><code>AccessoryManager.supportsTAKv2</code> is the canonical gate. It enables V2 only when the active radio reports a supported, well-formed version; an unavailable, malformed, or older version uses V1.</p>
+<pre><code class="language-swift">var supportsTAKv2: Bool { Self.isTAKv2Supported(firmwareVersion: connectedVersion) }
 </code></pre>
-<p>Use this property (rather than parsing the firmware version inline) anywhere a V1/V2 decision is needed. Future TAK SDK features that require a higher firmware version should add a sibling property with a clear cut-off so the bridge stays declarative.</p>
+<p>The capability parser accepts numeric <code>major.minor.patch</code> versions and an optional hexadecimal build suffix, such as <code>2.8.0.3a0c08b</code>. Use this property (rather than parsing the firmware version inline) anywhere a V1/V2 decision is needed. Future TAK SDK features that require a higher firmware version should add a sibling property with a clear cut-off so the bridge stays declarative.</p>
 <h2>Related Files</h2>
 <ul>
 <li><code>Meshtastic/Helpers/TAK/TAKMeshtasticBridge.swift</code> — V1/V2 fork in <code>sendToMesh</code>.</li>
