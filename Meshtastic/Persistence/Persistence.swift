@@ -30,6 +30,9 @@ class PersistenceController {
 	}()
 
 	private(set) var container: ModelContainer
+	/// Advances synchronously with each container replacement. Long-lived view tasks capture the
+	/// generation they were mounted against and stop before touching a stale `ModelContext`.
+	private(set) var containerGeneration = 0
 
 	/// Remembered so the store can be reopened in a fresh container — see `recreateContainer()`.
 	private let storeName: String
@@ -88,6 +91,13 @@ class PersistenceController {
 	/// long-lived context keeps the pre-clear objects registered; on reconnect SQLite reuses the
 	/// freed rowids, so a fetch/relationship access returns a dead instance and SwiftData traps
 	/// with "This model instance was destroyed by calling ModelContext.reset".
+	///
+	/// Invariant: any caller that can run while the UI is in the FOREGROUND must also bump
+	/// `AppState.databaseResetID` after this returns. The swap advances `containerGeneration`,
+	/// which makes guarded view tasks (e.g. the Nodes refresh loop) stop fetching; only the
+	/// `.id(databaseResetID)` remount re-binds them to the new container. A foreground caller
+	/// that forgets the bump gets a silently frozen list, not a crash. Background-only callers
+	/// (the first-unlock store reopen) are exempt because their views mount after the swap.
 	func recreateContainer() {
 		let schema = Schema(versionedSchema: MeshtasticSchema.current)
 		let config = ModelConfiguration(
@@ -106,6 +116,7 @@ class PersistenceController {
 				fresh = try ModelContainer(for: schema, migrationPlan: MeshtasticMigrationPlan.self, configurations: config)
 			}
 			fresh.mainContext.autosaveEnabled = false
+			containerGeneration &+= 1
 			container = fresh
 			Logger.data.info("💾 SwiftData container recreated after data clear")
 		} catch {
