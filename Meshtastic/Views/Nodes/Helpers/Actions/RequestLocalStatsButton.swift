@@ -80,7 +80,6 @@ struct RequestLocalStatsButton: View {
 	}
 
 	private func sendLocalStats(transport: LocalStatsRequestTransport) {
-		rateLimitStorage.actionOccured(forKey: "localstats", rateLimit: 30.0)
 		Task { @MainActor in
 			do {
 				try await accessoryManager.sendLocalStatsRequest(
@@ -89,6 +88,7 @@ struct RequestLocalStatsButton: View {
 					transport: transport,
 					destinationPublicKey: node.user?.publicKey
 				)
+				rateLimitStorage.actionOccured(forKey: "localstats", rateLimit: 30.0)
 				isPresentingLocalStatsSentAlert = true
 			} catch {
 				Logger.mesh.warning("Failed to send local stats request: \(error)")
