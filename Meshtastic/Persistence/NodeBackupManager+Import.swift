@@ -127,6 +127,7 @@ extension NodeBackupManager {
 			dst.hasBluetooth = src.hasBluetooth
 			dst.hasEthernet = src.hasEthernet
 			dst.hasWifi = src.hasWifi
+			dst.hasXeddsa = src.hasXeddsa
 			dst.hwModel = src.hwModel
 			dst.positionFlags = src.positionFlags
 			dst.role = src.role

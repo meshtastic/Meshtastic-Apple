@@ -33,7 +33,7 @@ struct BluetoothConfig: View {
 				Toggle(isOn: $enabled) {
 					Label("Enabled", systemImage: "antenna.radiowaves.left.and.right")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.toggleStyle(.switch)
 				Picker("Pairing Mode", selection: $mode ) {
 					ForEach(BluetoothModes.allCases) { bm in
 						Text(bm.description)

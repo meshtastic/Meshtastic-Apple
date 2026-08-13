@@ -8,6 +8,11 @@
 // For information on using the generated types, please see the documentation:
 //   https://github.com/apple/swift-protobuf/
 
+#if canImport(FoundationEssentials)
+import FoundationEssentials
+#else
+import Foundation
+#endif
 import SwiftProtobuf
 
 // If the compiler emits an error on this type, it is because this file
@@ -20,129 +25,515 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
   typealias Version = _2
 }
 
-public enum MessageType: SwiftProtobuf.Enum, Swift.CaseIterable {
+/// Version of the interdevice protocol spoken on the link. Both sides send
+/// theirs in the ping/pong handshake; a peer reporting a different one runs
+/// firmware that does not match and is not talked to.
+///
+/// On a change that breaks the other side (renumbered fields, changed
+/// semantics, removed messages), raise the value of CURRENT. Do not add
+/// another entry: this enum carries a single constant, not a history.
+public enum InterdeviceVersion: SwiftProtobuf.Enum, Swift.CaseIterable {
   public typealias RawValue = Int
-  case ack // = 0
+  case unspecified // = 0
 
-  /// in ms
-  case collectInterval // = 160
-
-  /// duration ms
-  case beepOn // = 161
-
-  /// cancel prematurely
-  case beepOff // = 162
-  case shutdown // = 163
-  case powerOn // = 164
-  case scd41Temp // = 176
-  case scd41Humidity // = 177
-  case scd41Co2 // = 178
-  case aht20Temp // = 179
-  case aht20Humidity // = 180
-  case tvocIndex // = 181
+  /// Never use 1: ping/pong were bools before the handshake existed, and a
+  /// bool true is the same varint on the wire as the number 1, so firmware
+  /// predating the handshake would pass it.
+  case current // = 2
   case UNRECOGNIZED(Int)
 
   public init() {
-    self = .ack
+    self = .unspecified
   }
 
   public init?(rawValue: Int) {
     switch rawValue {
-    case 0: self = .ack
-    case 160: self = .collectInterval
-    case 161: self = .beepOn
-    case 162: self = .beepOff
-    case 163: self = .shutdown
-    case 164: self = .powerOn
-    case 176: self = .scd41Temp
-    case 177: self = .scd41Humidity
-    case 178: self = .scd41Co2
-    case 179: self = .aht20Temp
-    case 180: self = .aht20Humidity
-    case 181: self = .tvocIndex
+    case 0: self = .unspecified
+    case 2: self = .current
     default: self = .UNRECOGNIZED(rawValue)
     }
   }
 
   public var rawValue: Int {
     switch self {
-    case .ack: return 0
-    case .collectInterval: return 160
-    case .beepOn: return 161
-    case .beepOff: return 162
-    case .shutdown: return 163
-    case .powerOn: return 164
-    case .scd41Temp: return 176
-    case .scd41Humidity: return 177
-    case .scd41Co2: return 178
-    case .aht20Temp: return 179
-    case .aht20Humidity: return 180
-    case .tvocIndex: return 181
+    case .unspecified: return 0
+    case .current: return 2
     case .UNRECOGNIZED(let i): return i
     }
   }
 
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  public static let allCases: [MessageType] = [
-    .ack,
-    .collectInterval,
-    .beepOn,
-    .beepOff,
-    .shutdown,
-    .powerOn,
-    .scd41Temp,
-    .scd41Humidity,
-    .scd41Co2,
-    .aht20Temp,
-    .aht20Humidity,
-    .tvocIndex,
+  public static let allCases: [InterdeviceVersion] = [
+    .unspecified,
+    .current,
   ]
 
 }
 
-public struct SensorData: Sendable {
+/// Defines the supported file operations
+public enum FileOperation: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public typealias RawValue = Int
+  case get // = 0
+  case post // = 1
+  case put // = 2
+  case delete // = 3
+  case UNRECOGNIZED(Int)
+
+  public init() {
+    self = .get
+  }
+
+  public init?(rawValue: Int) {
+    switch rawValue {
+    case 0: self = .get
+    case 1: self = .post
+    case 2: self = .put
+    case 3: self = .delete
+    default: self = .UNRECOGNIZED(rawValue)
+    }
+  }
+
+  public var rawValue: Int {
+    switch self {
+    case .get: return 0
+    case .post: return 1
+    case .put: return 2
+    case .delete: return 3
+    case .UNRECOGNIZED(let i): return i
+    }
+  }
+
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  public static let allCases: [FileOperation] = [
+    .get,
+    .post,
+    .put,
+    .delete,
+  ]
+
+}
+
+/// Outcome of a file or directory operation. The requester must be able to
+/// tell a transient condition from a definitive one: BUSY is worth another
+/// try, NOT_FOUND is not.
+public enum FileStatus: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public typealias RawValue = Int
+  case fileUnspecified // = 0
+  case fileOk // = 1
+
+  /// Retry later: the co-processor is doing card maintenance (mount,
+  /// free space scan) and cannot serve the request right now
+  case fileBusy // = 2
+  case fileNoCard // = 3
+  case fileNotFound // = 4
+
+  /// PUT only: offset did not match the current end of the file. file_size
+  /// carries the size the file actually has, so the writer can resync (or
+  /// recognize its own chunk as already written after a lost response).
+  case fileOffsetConflict // = 5
+  case fileIoError // = 6
+
+  /// path is a directory (GET) or not one (listing)
+  case fileNotAFile // = 7
+  case UNRECOGNIZED(Int)
+
+  public init() {
+    self = .fileUnspecified
+  }
+
+  public init?(rawValue: Int) {
+    switch rawValue {
+    case 0: self = .fileUnspecified
+    case 1: self = .fileOk
+    case 2: self = .fileBusy
+    case 3: self = .fileNoCard
+    case 4: self = .fileNotFound
+    case 5: self = .fileOffsetConflict
+    case 6: self = .fileIoError
+    case 7: self = .fileNotAFile
+    default: self = .UNRECOGNIZED(rawValue)
+    }
+  }
+
+  public var rawValue: Int {
+    switch self {
+    case .fileUnspecified: return 0
+    case .fileOk: return 1
+    case .fileBusy: return 2
+    case .fileNoCard: return 3
+    case .fileNotFound: return 4
+    case .fileOffsetConflict: return 5
+    case .fileIoError: return 6
+    case .fileNotAFile: return 7
+    case .UNRECOGNIZED(let i): return i
+    }
+  }
+
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  public static let allCases: [FileStatus] = [
+    .fileUnspecified,
+    .fileOk,
+    .fileBusy,
+    .fileNoCard,
+    .fileNotFound,
+    .fileOffsetConflict,
+    .fileIoError,
+    .fileNotAFile,
+  ]
+
+}
+
+/// What to do with the SD card of the co-processor
+public enum SdCommand: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public typealias RawValue = Int
+  case unspecified // = 0
+
+  /// mount a card that is in the slot, also after an eject
+  case sdMount // = 1
+
+  /// flush and release the card so it can be pulled safely
+  case sdEject // = 2
+
+  /// wipe the card and put a fresh FAT on it, then mount it
+  case sdFormat // = 3
+  case UNRECOGNIZED(Int)
+
+  public init() {
+    self = .unspecified
+  }
+
+  public init?(rawValue: Int) {
+    switch rawValue {
+    case 0: self = .unspecified
+    case 1: self = .sdMount
+    case 2: self = .sdEject
+    case 3: self = .sdFormat
+    default: self = .UNRECOGNIZED(rawValue)
+    }
+  }
+
+  public var rawValue: Int {
+    switch self {
+    case .unspecified: return 0
+    case .sdMount: return 1
+    case .sdEject: return 2
+    case .sdFormat: return 3
+    case .UNRECOGNIZED(let i): return i
+    }
+  }
+
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  public static let allCases: [SdCommand] = [
+    .unspecified,
+    .sdMount,
+    .sdEject,
+    .sdFormat,
+  ]
+
+}
+
+/// Message for file operations
+public struct FileTransfer: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  /// The message type
-  public var type: MessageType = .ack
+  /// File operation (GET, POST, PUT, DELETE)
+  public var operation: FileOperation = .get
 
-  /// The sensor data, either as a float or an uint32
-  public var data: SensorData.OneOf_Data? = nil
+  /// Path of the file on the SD card
+  public var filepath: String = String()
 
-  public var floatValue: Float {
-    get {
-      if case .floatValue(let v)? = data {return v}
-      return 0
-    }
-    set {data = .floatValue(newValue)}
-  }
+  /// Chunk content (POST/PUT request, GET response)
+  public var filedata: Data = Data()
 
-  public var uint32Value: UInt32 {
-    get {
-      if case .uint32Value(let v)? = data {return v}
-      return 0
-    }
-    set {data = .uint32Value(newValue)}
-  }
+  /// Response: outcome of the operation
+  public var status: FileStatus = .fileUnspecified
+
+  /// Response: human readable detail, may be empty
+  public var message: String = String()
+
+  /// Byte offset of this chunk within the file (ranged GET/PUT)
+  public var offset: UInt64 = 0
+
+  /// GET request: number of bytes to read, 0 = max chunk size. A response
+  /// carries at most the filedata max_size (see interdevice.options) per
+  /// chunk; larger requests are truncated, visible in the filedata length.
+  public var length: UInt32 = 0
+
+  /// GET response: total size of the file
+  public var fileSize: UInt64 = 0
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  /// The sensor data, either as a float or an uint32
-  public enum OneOf_Data: Equatable, Sendable {
-    case floatValue(Float)
-    case uint32Value(UInt32)
+  public init() {}
+}
+
+/// Message for structured directory listing
+public struct DirectoryListing: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  /// Path of the directory
+  public var directory: String = String()
+
+  /// One page of entry names, full FAT LFN length. Subdirectories carry a
+  /// trailing slash. Note that a name whose directory prefix pushes the
+  /// combined path past the FileTransfer.filepath limit cannot round-trip.
+  /// Page size is the max_count in interdevice.options; page through with
+  /// offset and total_count.
+  public var filenames: [String] = []
+
+  /// Response: outcome of the operation
+  public var status: FileStatus = .fileUnspecified
+
+  /// Response: human readable detail, may be empty
+  public var message: String = String()
+
+  /// Request: skip this many entries (paging)
+  public var offset: UInt32 = 0
+
+  /// Response: total number of entries in the directory
+  public var totalCount: UInt32 = 0
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+/// A single I2C transaction: an optional write followed by an optional
+/// read with repeated start, matching the TwoWire usage of sensor drivers
+/// (beginTransmission/write.../endTransmission(false)/requestFrom)
+public struct I2CTransaction: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  /// 7-bit device address
+  public var address: UInt32 = 0
+
+  /// Bytes to write, may be empty
+  public var writeData: Data = Data()
+
+  /// Number of bytes to read after the write, 0 = write-only. Bounded by
+  /// the read_data max_size of I2CResult (see interdevice.options); larger
+  /// requests are truncated, visible in the returned byte count.
+  public var readLen: UInt32 = 0
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+/// SD card statistics
+public struct SdCardInfo: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  /// Card initialized and usable. False while `busy` is set does not mean
+  /// there is no card: the co-processor does not know yet.
+  public var present: Bool = false
+
+  public var cardType: SdCardInfo.CardType = .none
+
+  public var fatType: SdCardInfo.FatType = .unknownFat
+
+  /// Filesystem size in bytes
+  public var cardSize: UInt64 = 0
+
+  /// Used bytes (may be expensive to compute on FAT32)
+  public var usedBytes: UInt64 = 0
+
+  /// Free bytes
+  public var freeBytes: UInt64 = 0
+
+  /// used_bytes/free_bytes are only meaningful when true: the scan behind
+  /// them runs in the background after mount and can take a while, and a
+  /// full card is otherwise indistinguishable from a scan in progress
+  public var statsValid: Bool = false
+
+  /// The co-processor is mounting a card right now, so whether one is
+  /// present is not decided yet. Ask again rather than concluding the slot
+  /// is empty.
+  public var busy: Bool = false
+
+  /// A card answers in the slot but carries no filesystem that could be
+  /// mounted (present is false then). Formatting it makes it usable.
+  public var unformatted: Bool = false
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public enum CardType: SwiftProtobuf.Enum, Swift.CaseIterable {
+    public typealias RawValue = Int
+    case none // = 0
+    case mmc // = 1
+    case sd // = 2
+    case sdhc // = 3
+    case sdxc // = 4
+    case unknownCard // = 5
+    case UNRECOGNIZED(Int)
+
+    public init() {
+      self = .none
+    }
+
+    public init?(rawValue: Int) {
+      switch rawValue {
+      case 0: self = .none
+      case 1: self = .mmc
+      case 2: self = .sd
+      case 3: self = .sdhc
+      case 4: self = .sdxc
+      case 5: self = .unknownCard
+      default: self = .UNRECOGNIZED(rawValue)
+      }
+    }
+
+    public var rawValue: Int {
+      switch self {
+      case .none: return 0
+      case .mmc: return 1
+      case .sd: return 2
+      case .sdhc: return 3
+      case .sdxc: return 4
+      case .unknownCard: return 5
+      case .UNRECOGNIZED(let i): return i
+      }
+    }
+
+    // The compiler won't synthesize support with the UNRECOGNIZED case.
+    public static let allCases: [SdCardInfo.CardType] = [
+      .none,
+      .mmc,
+      .sd,
+      .sdhc,
+      .sdxc,
+      .unknownCard,
+    ]
+
+  }
+
+  public enum FatType: SwiftProtobuf.Enum, Swift.CaseIterable {
+    public typealias RawValue = Int
+    case unknownFat // = 0
+    case fat16 // = 1
+    case fat32 // = 2
+    case exfat // = 3
+    case UNRECOGNIZED(Int)
+
+    public init() {
+      self = .unknownFat
+    }
+
+    public init?(rawValue: Int) {
+      switch rawValue {
+      case 0: self = .unknownFat
+      case 1: self = .fat16
+      case 2: self = .fat32
+      case 3: self = .exfat
+      default: self = .UNRECOGNIZED(rawValue)
+      }
+    }
+
+    public var rawValue: Int {
+      switch self {
+      case .unknownFat: return 0
+      case .fat16: return 1
+      case .fat32: return 2
+      case .exfat: return 3
+      case .UNRECOGNIZED(let i): return i
+      }
+    }
+
+    // The compiler won't synthesize support with the UNRECOGNIZED case.
+    public static let allCases: [SdCardInfo.FatType] = [
+      .unknownFat,
+      .fat16,
+      .fat32,
+      .exfat,
+    ]
 
   }
 
   public init() {}
 }
 
+/// Result of an I2CTransaction
+public struct I2CResult: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var status: I2CResult.Status = .unspecified
+
+  /// Data read from the device, empty for write-only transactions
+  public var readData: Data = Data()
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public enum Status: SwiftProtobuf.Enum, Swift.CaseIterable {
+    public typealias RawValue = Int
+
+    /// Never sent: an all-defaults (e.g. accidentally empty) message must
+    /// not decode as a successful transaction
+    case unspecified // = 0
+    case ok // = 1
+    case nackAddress // = 2
+    case nackData // = 3
+    case error // = 4
+    case UNRECOGNIZED(Int)
+
+    public init() {
+      self = .unspecified
+    }
+
+    public init?(rawValue: Int) {
+      switch rawValue {
+      case 0: self = .unspecified
+      case 1: self = .ok
+      case 2: self = .nackAddress
+      case 3: self = .nackData
+      case 4: self = .error
+      default: self = .UNRECOGNIZED(rawValue)
+      }
+    }
+
+    public var rawValue: Int {
+      switch self {
+      case .unspecified: return 0
+      case .ok: return 1
+      case .nackAddress: return 2
+      case .nackData: return 3
+      case .error: return 4
+      case .UNRECOGNIZED(let i): return i
+      }
+    }
+
+    // The compiler won't synthesize support with the UNRECOGNIZED case.
+    public static let allCases: [I2CResult.Status] = [
+      .unspecified,
+      .ok,
+      .nackAddress,
+      .nackData,
+      .error,
+    ]
+
+  }
+
+  public init() {}
+}
+
+/// Main message for interdevice communication
 public struct InterdeviceMessage: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
+
+  /// Correlates a response with its request: responses echo the id of the
+  /// request they answer. 0 for unsolicited messages (e.g. the nmea stream).
+  public var id: UInt32 = 0
 
   /// The message data
   public var data: InterdeviceMessage.OneOf_Data? = nil
@@ -155,12 +546,125 @@ public struct InterdeviceMessage: Sendable {
     set {data = .nmea(newValue)}
   }
 
-  public var sensor: SensorData {
+  public var beep: UInt32 {
     get {
-      if case .sensor(let v)? = data {return v}
-      return SensorData()
+      if case .beep(let v)? = data {return v}
+      return 0
     }
-    set {data = .sensor(newValue)}
+    set {data = .beep(newValue)}
+  }
+
+  public var i2CTransaction: I2CTransaction {
+    get {
+      if case .i2CTransaction(let v)? = data {return v}
+      return I2CTransaction()
+    }
+    set {data = .i2CTransaction(newValue)}
+  }
+
+  public var i2CResult: I2CResult {
+    get {
+      if case .i2CResult(let v)? = data {return v}
+      return I2CResult()
+    }
+    set {data = .i2CResult(newValue)}
+  }
+
+  /// Request: scan the secondary I2C bus
+  public var i2CScan: Bool {
+    get {
+      if case .i2CScan(let v)? = data {return v}
+      return false
+    }
+    set {data = .i2CScan(newValue)}
+  }
+
+  /// Response: 7-bit addresses of discovered devices
+  public var i2CScanResult: Data {
+    get {
+      if case .i2CScanResult(let v)? = data {return v}
+      return Data()
+    }
+    set {data = .i2CScanResult(newValue)}
+  }
+
+  public var fileTransfer: FileTransfer {
+    get {
+      if case .fileTransfer(let v)? = data {return v}
+      return FileTransfer()
+    }
+    set {data = .fileTransfer(newValue)}
+  }
+
+  public var directoryListing: DirectoryListing {
+    get {
+      if case .directoryListing(let v)? = data {return v}
+      return DirectoryListing()
+    }
+    set {data = .directoryListing(newValue)}
+  }
+
+  /// Request: SD card statistics
+  public var getSdInfo: Bool {
+    get {
+      if case .getSdInfo(let v)? = data {return v}
+      return false
+    }
+    set {data = .getSdInfo(newValue)}
+  }
+
+  /// Response
+  public var sdInfo: SdCardInfo {
+    get {
+      if case .sdInfo(let v)? = data {return v}
+      return SdCardInfo()
+    }
+    set {data = .sdInfo(newValue)}
+  }
+
+  /// Link liveness probe and version handshake. The receiver answers ping
+  /// with pong, echoing the id. Touches no peripherals, so it works with
+  /// nothing attached. Both carry the version the sender speaks; a peer
+  /// that answers with a different one speaks another protocol and must
+  /// not be used.
+  public var ping: InterdeviceVersion {
+    get {
+      if case .ping(let v)? = data {return v}
+      return .unspecified
+    }
+    set {data = .ping(newValue)}
+  }
+
+  public var pong: InterdeviceVersion {
+    get {
+      if case .pong(let v)? = data {return v}
+      return .unspecified
+    }
+    set {data = .pong(newValue)}
+  }
+
+  /// Response: the request could not be decoded or is of an unhandled
+  /// type, so the requester fails fast instead of burning its timeout.
+  /// Echoes the id when known, 0 when the frame was undecodable. Never
+  /// sent in reaction to a nack.
+  public var nack: Bool {
+    get {
+      if case .nack(let v)? = data {return v}
+      return false
+    }
+    set {data = .nack(newValue)}
+  }
+
+  /// Request: mount the card, or release it so it can be pulled safely. The
+  /// co-processor answers with sd_info. Without an eject the card is mounted
+  /// on its own and kept mounted; after one it stays released until a mount
+  /// is asked for.
+  public var sdCommand: SdCommand {
+    get {
+      if case .sdCommand(let v)? = data {return v}
+      return .unspecified
+    }
+    set {data = .sdCommand(newValue)}
   }
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
@@ -168,7 +672,36 @@ public struct InterdeviceMessage: Sendable {
   /// The message data
   public enum OneOf_Data: Equatable, Sendable {
     case nmea(String)
-    case sensor(SensorData)
+    case beep(UInt32)
+    case i2CTransaction(I2CTransaction)
+    case i2CResult(I2CResult)
+    /// Request: scan the secondary I2C bus
+    case i2CScan(Bool)
+    /// Response: 7-bit addresses of discovered devices
+    case i2CScanResult(Data)
+    case fileTransfer(FileTransfer)
+    case directoryListing(DirectoryListing)
+    /// Request: SD card statistics
+    case getSdInfo(Bool)
+    /// Response
+    case sdInfo(SdCardInfo)
+    /// Link liveness probe and version handshake. The receiver answers ping
+    /// with pong, echoing the id. Touches no peripherals, so it works with
+    /// nothing attached. Both carry the version the sender speaks; a peer
+    /// that answers with a different one speaks another protocol and must
+    /// not be used.
+    case ping(InterdeviceVersion)
+    case pong(InterdeviceVersion)
+    /// Response: the request could not be decoded or is of an unhandled
+    /// type, so the requester fails fast instead of burning its timeout.
+    /// Echoes the id when known, 0 when the frame was undecodable. Never
+    /// sent in reaction to a nack.
+    case nack(Bool)
+    /// Request: mount the card, or release it so it can be pulled safely. The
+    /// co-processor answers with sd_info. Without an eject the card is mounted
+    /// on its own and kept mounted; after one it stays released until a mount
+    /// is asked for.
+    case sdCommand(SdCommand)
 
   }
 
@@ -179,13 +712,25 @@ public struct InterdeviceMessage: Sendable {
 
 fileprivate let _protobuf_package = "meshtastic"
 
-extension MessageType: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0ACK\0\u{2}`\u{2}COLLECT_INTERVAL\0\u{1}BEEP_ON\0\u{1}BEEP_OFF\0\u{1}SHUTDOWN\0\u{1}POWER_ON\0\u{2}\u{c}SCD41_TEMP\0\u{1}SCD41_HUMIDITY\0\u{1}SCD41_CO2\0\u{1}AHT20_TEMP\0\u{1}AHT20_HUMIDITY\0\u{1}TVOC_INDEX\0")
+extension InterdeviceVersion: SwiftProtobuf._ProtoNameProviding {
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0INTERDEVICE_VERSION_UNSPECIFIED\0\u{2}\u{2}INTERDEVICE_VERSION_CURRENT\0")
 }
 
-extension SensorData: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  public static let protoMessageName: String = _protobuf_package + ".SensorData"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}type\0\u{3}float_value\0\u{3}uint32_value\0")
+extension FileOperation: SwiftProtobuf._ProtoNameProviding {
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0GET\0\u{1}POST\0\u{1}PUT\0\u{1}DELETE\0")
+}
+
+extension FileStatus: SwiftProtobuf._ProtoNameProviding {
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0FILE_UNSPECIFIED\0\u{1}FILE_OK\0\u{1}FILE_BUSY\0\u{1}FILE_NO_CARD\0\u{1}FILE_NOT_FOUND\0\u{1}FILE_OFFSET_CONFLICT\0\u{1}FILE_IO_ERROR\0\u{1}FILE_NOT_A_FILE\0")
+}
+
+extension SdCommand: SwiftProtobuf._ProtoNameProviding {
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0SD_COMMAND_UNSPECIFIED\0\u{1}SD_MOUNT\0\u{1}SD_EJECT\0\u{1}SD_FORMAT\0")
+}
+
+extension FileTransfer: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".FileTransfer"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}operation\0\u{1}filepath\0\u{1}filedata\0\u{1}status\0\u{1}message\0\u{1}offset\0\u{1}length\0\u{3}file_size\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -193,61 +738,276 @@ extension SensorData: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
       // allocates stack space for every case branch when no optimizations are
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
-      case 1: try { try decoder.decodeSingularEnumField(value: &self.type) }()
-      case 2: try {
-        var v: Float?
-        try decoder.decodeSingularFloatField(value: &v)
-        if let v = v {
-          if self.data != nil {try decoder.handleConflictingOneOf()}
-          self.data = .floatValue(v)
-        }
-      }()
-      case 3: try {
-        var v: UInt32?
-        try decoder.decodeSingularUInt32Field(value: &v)
-        if let v = v {
-          if self.data != nil {try decoder.handleConflictingOneOf()}
-          self.data = .uint32Value(v)
-        }
-      }()
+      case 1: try { try decoder.decodeSingularEnumField(value: &self.operation) }()
+      case 2: try { try decoder.decodeSingularStringField(value: &self.filepath) }()
+      case 3: try { try decoder.decodeSingularBytesField(value: &self.filedata) }()
+      case 4: try { try decoder.decodeSingularEnumField(value: &self.status) }()
+      case 5: try { try decoder.decodeSingularStringField(value: &self.message) }()
+      case 6: try { try decoder.decodeSingularUInt64Field(value: &self.offset) }()
+      case 7: try { try decoder.decodeSingularUInt32Field(value: &self.length) }()
+      case 8: try { try decoder.decodeSingularUInt64Field(value: &self.fileSize) }()
       default: break
       }
     }
   }
 
   public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    // The use of inline closures is to circumvent an issue where the compiler
-    // allocates stack space for every if/case branch local when no optimizations
-    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
-    // https://github.com/apple/swift-protobuf/issues/1182
-    if self.type != .ack {
-      try visitor.visitSingularEnumField(value: self.type, fieldNumber: 1)
+    if self.operation != .get {
+      try visitor.visitSingularEnumField(value: self.operation, fieldNumber: 1)
     }
-    switch self.data {
-    case .floatValue?: try {
-      guard case .floatValue(let v)? = self.data else { preconditionFailure() }
-      try visitor.visitSingularFloatField(value: v, fieldNumber: 2)
-    }()
-    case .uint32Value?: try {
-      guard case .uint32Value(let v)? = self.data else { preconditionFailure() }
-      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 3)
-    }()
-    case nil: break
+    if !self.filepath.isEmpty {
+      try visitor.visitSingularStringField(value: self.filepath, fieldNumber: 2)
+    }
+    if !self.filedata.isEmpty {
+      try visitor.visitSingularBytesField(value: self.filedata, fieldNumber: 3)
+    }
+    if self.status != .fileUnspecified {
+      try visitor.visitSingularEnumField(value: self.status, fieldNumber: 4)
+    }
+    if !self.message.isEmpty {
+      try visitor.visitSingularStringField(value: self.message, fieldNumber: 5)
+    }
+    if self.offset != 0 {
+      try visitor.visitSingularUInt64Field(value: self.offset, fieldNumber: 6)
+    }
+    if self.length != 0 {
+      try visitor.visitSingularUInt32Field(value: self.length, fieldNumber: 7)
+    }
+    if self.fileSize != 0 {
+      try visitor.visitSingularUInt64Field(value: self.fileSize, fieldNumber: 8)
     }
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  public static func ==(lhs: SensorData, rhs: SensorData) -> Bool {
-    if lhs.type != rhs.type {return false}
-    if lhs.data != rhs.data {return false}
+  public static func ==(lhs: FileTransfer, rhs: FileTransfer) -> Bool {
+    if lhs.operation != rhs.operation {return false}
+    if lhs.filepath != rhs.filepath {return false}
+    if lhs.filedata != rhs.filedata {return false}
+    if lhs.status != rhs.status {return false}
+    if lhs.message != rhs.message {return false}
+    if lhs.offset != rhs.offset {return false}
+    if lhs.length != rhs.length {return false}
+    if lhs.fileSize != rhs.fileSize {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
 }
 
+extension DirectoryListing: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".DirectoryListing"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}directory\0\u{1}filenames\0\u{1}status\0\u{1}message\0\u{1}offset\0\u{3}total_count\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.directory) }()
+      case 2: try { try decoder.decodeRepeatedStringField(value: &self.filenames) }()
+      case 3: try { try decoder.decodeSingularEnumField(value: &self.status) }()
+      case 4: try { try decoder.decodeSingularStringField(value: &self.message) }()
+      case 5: try { try decoder.decodeSingularUInt32Field(value: &self.offset) }()
+      case 6: try { try decoder.decodeSingularUInt32Field(value: &self.totalCount) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.directory.isEmpty {
+      try visitor.visitSingularStringField(value: self.directory, fieldNumber: 1)
+    }
+    if !self.filenames.isEmpty {
+      try visitor.visitRepeatedStringField(value: self.filenames, fieldNumber: 2)
+    }
+    if self.status != .fileUnspecified {
+      try visitor.visitSingularEnumField(value: self.status, fieldNumber: 3)
+    }
+    if !self.message.isEmpty {
+      try visitor.visitSingularStringField(value: self.message, fieldNumber: 4)
+    }
+    if self.offset != 0 {
+      try visitor.visitSingularUInt32Field(value: self.offset, fieldNumber: 5)
+    }
+    if self.totalCount != 0 {
+      try visitor.visitSingularUInt32Field(value: self.totalCount, fieldNumber: 6)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: DirectoryListing, rhs: DirectoryListing) -> Bool {
+    if lhs.directory != rhs.directory {return false}
+    if lhs.filenames != rhs.filenames {return false}
+    if lhs.status != rhs.status {return false}
+    if lhs.message != rhs.message {return false}
+    if lhs.offset != rhs.offset {return false}
+    if lhs.totalCount != rhs.totalCount {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension I2CTransaction: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".I2CTransaction"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}address\0\u{3}write_data\0\u{3}read_len\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularUInt32Field(value: &self.address) }()
+      case 2: try { try decoder.decodeSingularBytesField(value: &self.writeData) }()
+      case 3: try { try decoder.decodeSingularUInt32Field(value: &self.readLen) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.address != 0 {
+      try visitor.visitSingularUInt32Field(value: self.address, fieldNumber: 1)
+    }
+    if !self.writeData.isEmpty {
+      try visitor.visitSingularBytesField(value: self.writeData, fieldNumber: 2)
+    }
+    if self.readLen != 0 {
+      try visitor.visitSingularUInt32Field(value: self.readLen, fieldNumber: 3)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: I2CTransaction, rhs: I2CTransaction) -> Bool {
+    if lhs.address != rhs.address {return false}
+    if lhs.writeData != rhs.writeData {return false}
+    if lhs.readLen != rhs.readLen {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension SdCardInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".SdCardInfo"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}present\0\u{3}card_type\0\u{3}fat_type\0\u{3}card_size\0\u{3}used_bytes\0\u{3}free_bytes\0\u{3}stats_valid\0\u{1}busy\0\u{1}unformatted\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularBoolField(value: &self.present) }()
+      case 2: try { try decoder.decodeSingularEnumField(value: &self.cardType) }()
+      case 3: try { try decoder.decodeSingularEnumField(value: &self.fatType) }()
+      case 4: try { try decoder.decodeSingularUInt64Field(value: &self.cardSize) }()
+      case 5: try { try decoder.decodeSingularUInt64Field(value: &self.usedBytes) }()
+      case 6: try { try decoder.decodeSingularUInt64Field(value: &self.freeBytes) }()
+      case 7: try { try decoder.decodeSingularBoolField(value: &self.statsValid) }()
+      case 8: try { try decoder.decodeSingularBoolField(value: &self.busy) }()
+      case 9: try { try decoder.decodeSingularBoolField(value: &self.unformatted) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.present != false {
+      try visitor.visitSingularBoolField(value: self.present, fieldNumber: 1)
+    }
+    if self.cardType != .none {
+      try visitor.visitSingularEnumField(value: self.cardType, fieldNumber: 2)
+    }
+    if self.fatType != .unknownFat {
+      try visitor.visitSingularEnumField(value: self.fatType, fieldNumber: 3)
+    }
+    if self.cardSize != 0 {
+      try visitor.visitSingularUInt64Field(value: self.cardSize, fieldNumber: 4)
+    }
+    if self.usedBytes != 0 {
+      try visitor.visitSingularUInt64Field(value: self.usedBytes, fieldNumber: 5)
+    }
+    if self.freeBytes != 0 {
+      try visitor.visitSingularUInt64Field(value: self.freeBytes, fieldNumber: 6)
+    }
+    if self.statsValid != false {
+      try visitor.visitSingularBoolField(value: self.statsValid, fieldNumber: 7)
+    }
+    if self.busy != false {
+      try visitor.visitSingularBoolField(value: self.busy, fieldNumber: 8)
+    }
+    if self.unformatted != false {
+      try visitor.visitSingularBoolField(value: self.unformatted, fieldNumber: 9)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: SdCardInfo, rhs: SdCardInfo) -> Bool {
+    if lhs.present != rhs.present {return false}
+    if lhs.cardType != rhs.cardType {return false}
+    if lhs.fatType != rhs.fatType {return false}
+    if lhs.cardSize != rhs.cardSize {return false}
+    if lhs.usedBytes != rhs.usedBytes {return false}
+    if lhs.freeBytes != rhs.freeBytes {return false}
+    if lhs.statsValid != rhs.statsValid {return false}
+    if lhs.busy != rhs.busy {return false}
+    if lhs.unformatted != rhs.unformatted {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension SdCardInfo.CardType: SwiftProtobuf._ProtoNameProviding {
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0NONE\0\u{1}MMC\0\u{1}SD\0\u{1}SDHC\0\u{1}SDXC\0\u{1}UNKNOWN_CARD\0")
+}
+
+extension SdCardInfo.FatType: SwiftProtobuf._ProtoNameProviding {
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0UNKNOWN_FAT\0\u{1}FAT16\0\u{1}FAT32\0\u{1}EXFAT\0")
+}
+
+extension I2CResult: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".I2CResult"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}status\0\u{3}read_data\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularEnumField(value: &self.status) }()
+      case 2: try { try decoder.decodeSingularBytesField(value: &self.readData) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.status != .unspecified {
+      try visitor.visitSingularEnumField(value: self.status, fieldNumber: 1)
+    }
+    if !self.readData.isEmpty {
+      try visitor.visitSingularBytesField(value: self.readData, fieldNumber: 2)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: I2CResult, rhs: I2CResult) -> Bool {
+    if lhs.status != rhs.status {return false}
+    if lhs.readData != rhs.readData {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension I2CResult.Status: SwiftProtobuf._ProtoNameProviding {
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0UNSPECIFIED\0\u{1}OK\0\u{1}NACK_ADDRESS\0\u{1}NACK_DATA\0\u{1}ERROR\0")
+}
+
 extension InterdeviceMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".InterdeviceMessage"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}nmea\0\u{1}sensor\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}nmea\0\u{1}beep\0\u{3}i2c_transaction\0\u{3}i2c_result\0\u{3}i2c_scan\0\u{3}i2c_scan_result\0\u{3}file_transfer\0\u{3}directory_listing\0\u{3}get_sd_info\0\u{3}sd_info\0\u{1}ping\0\u{1}pong\0\u{1}nack\0\u{3}sd_command\0\u{1}id\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -264,18 +1024,135 @@ extension InterdeviceMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
         }
       }()
       case 2: try {
-        var v: SensorData?
+        var v: UInt32?
+        try decoder.decodeSingularUInt32Field(value: &v)
+        if let v = v {
+          if self.data != nil {try decoder.handleConflictingOneOf()}
+          self.data = .beep(v)
+        }
+      }()
+      case 3: try {
+        var v: I2CTransaction?
         var hadOneofValue = false
         if let current = self.data {
           hadOneofValue = true
-          if case .sensor(let m) = current {v = m}
+          if case .i2CTransaction(let m) = current {v = m}
         }
         try decoder.decodeSingularMessageField(value: &v)
         if let v = v {
           if hadOneofValue {try decoder.handleConflictingOneOf()}
-          self.data = .sensor(v)
+          self.data = .i2CTransaction(v)
         }
       }()
+      case 4: try {
+        var v: I2CResult?
+        var hadOneofValue = false
+        if let current = self.data {
+          hadOneofValue = true
+          if case .i2CResult(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.data = .i2CResult(v)
+        }
+      }()
+      case 5: try {
+        var v: Bool?
+        try decoder.decodeSingularBoolField(value: &v)
+        if let v = v {
+          if self.data != nil {try decoder.handleConflictingOneOf()}
+          self.data = .i2CScan(v)
+        }
+      }()
+      case 6: try {
+        var v: Data?
+        try decoder.decodeSingularBytesField(value: &v)
+        if let v = v {
+          if self.data != nil {try decoder.handleConflictingOneOf()}
+          self.data = .i2CScanResult(v)
+        }
+      }()
+      case 7: try {
+        var v: FileTransfer?
+        var hadOneofValue = false
+        if let current = self.data {
+          hadOneofValue = true
+          if case .fileTransfer(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.data = .fileTransfer(v)
+        }
+      }()
+      case 8: try {
+        var v: DirectoryListing?
+        var hadOneofValue = false
+        if let current = self.data {
+          hadOneofValue = true
+          if case .directoryListing(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.data = .directoryListing(v)
+        }
+      }()
+      case 9: try {
+        var v: Bool?
+        try decoder.decodeSingularBoolField(value: &v)
+        if let v = v {
+          if self.data != nil {try decoder.handleConflictingOneOf()}
+          self.data = .getSdInfo(v)
+        }
+      }()
+      case 10: try {
+        var v: SdCardInfo?
+        var hadOneofValue = false
+        if let current = self.data {
+          hadOneofValue = true
+          if case .sdInfo(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.data = .sdInfo(v)
+        }
+      }()
+      case 11: try {
+        var v: InterdeviceVersion?
+        try decoder.decodeSingularEnumField(value: &v)
+        if let v = v {
+          if self.data != nil {try decoder.handleConflictingOneOf()}
+          self.data = .ping(v)
+        }
+      }()
+      case 12: try {
+        var v: InterdeviceVersion?
+        try decoder.decodeSingularEnumField(value: &v)
+        if let v = v {
+          if self.data != nil {try decoder.handleConflictingOneOf()}
+          self.data = .pong(v)
+        }
+      }()
+      case 13: try {
+        var v: Bool?
+        try decoder.decodeSingularBoolField(value: &v)
+        if let v = v {
+          if self.data != nil {try decoder.handleConflictingOneOf()}
+          self.data = .nack(v)
+        }
+      }()
+      case 14: try {
+        var v: SdCommand?
+        try decoder.decodeSingularEnumField(value: &v)
+        if let v = v {
+          if self.data != nil {try decoder.handleConflictingOneOf()}
+          self.data = .sdCommand(v)
+        }
+      }()
+      case 15: try { try decoder.decodeSingularUInt32Field(value: &self.id) }()
       default: break
       }
     }
@@ -291,16 +1168,68 @@ extension InterdeviceMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
       guard case .nmea(let v)? = self.data else { preconditionFailure() }
       try visitor.visitSingularStringField(value: v, fieldNumber: 1)
     }()
-    case .sensor?: try {
-      guard case .sensor(let v)? = self.data else { preconditionFailure() }
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+    case .beep?: try {
+      guard case .beep(let v)? = self.data else { preconditionFailure() }
+      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 2)
+    }()
+    case .i2CTransaction?: try {
+      guard case .i2CTransaction(let v)? = self.data else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
+    }()
+    case .i2CResult?: try {
+      guard case .i2CResult(let v)? = self.data else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 4)
+    }()
+    case .i2CScan?: try {
+      guard case .i2CScan(let v)? = self.data else { preconditionFailure() }
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 5)
+    }()
+    case .i2CScanResult?: try {
+      guard case .i2CScanResult(let v)? = self.data else { preconditionFailure() }
+      try visitor.visitSingularBytesField(value: v, fieldNumber: 6)
+    }()
+    case .fileTransfer?: try {
+      guard case .fileTransfer(let v)? = self.data else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 7)
+    }()
+    case .directoryListing?: try {
+      guard case .directoryListing(let v)? = self.data else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 8)
+    }()
+    case .getSdInfo?: try {
+      guard case .getSdInfo(let v)? = self.data else { preconditionFailure() }
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 9)
+    }()
+    case .sdInfo?: try {
+      guard case .sdInfo(let v)? = self.data else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 10)
+    }()
+    case .ping?: try {
+      guard case .ping(let v)? = self.data else { preconditionFailure() }
+      try visitor.visitSingularEnumField(value: v, fieldNumber: 11)
+    }()
+    case .pong?: try {
+      guard case .pong(let v)? = self.data else { preconditionFailure() }
+      try visitor.visitSingularEnumField(value: v, fieldNumber: 12)
+    }()
+    case .nack?: try {
+      guard case .nack(let v)? = self.data else { preconditionFailure() }
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 13)
+    }()
+    case .sdCommand?: try {
+      guard case .sdCommand(let v)? = self.data else { preconditionFailure() }
+      try visitor.visitSingularEnumField(value: v, fieldNumber: 14)
     }()
     case nil: break
+    }
+    if self.id != 0 {
+      try visitor.visitSingularUInt32Field(value: self.id, fieldNumber: 15)
     }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: InterdeviceMessage, rhs: InterdeviceMessage) -> Bool {
+    if lhs.id != rhs.id {return false}
     if lhs.data != rhs.data {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true

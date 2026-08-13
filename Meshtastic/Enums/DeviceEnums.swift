@@ -22,8 +22,23 @@ enum DeviceRoles: Int, CaseIterable, Identifiable {
 	case router = 2
 	case routerLate = 11
 	case clientBase = 12
+	/// Deprecated (firmware v2.7.15). Retained only so existing nodes still
+	/// reporting REPEATER (rawValue 4) can be displayed and reconfigured.
+	/// Not offered as a newly selectable role — see `isDeprecated`.
+	case repeater = 4
 
 	var id: Int { self.rawValue }
+
+	/// Roles that are retired upstream and must not be offered for new selection,
+	/// but may still appear on existing nodes that need migrating to a supported role.
+	var isDeprecated: Bool {
+		switch self {
+		case .repeater:
+			return true
+		default:
+			return false
+		}
+	}
 	var name: String {
 		switch self {
 		case .client:
@@ -48,6 +63,8 @@ enum DeviceRoles: Int, CaseIterable, Identifiable {
 			return "Router Late".localized
 		case .clientBase:
 			return "Client Base".localized
+		case .repeater:
+			return "Repeater (Deprecated)".localized
 		}
 
 	}
@@ -75,6 +92,8 @@ enum DeviceRoles: Int, CaseIterable, Identifiable {
 			return "Infrastructure node that always rebroadcasts packets once but only after all other modes. Visible in Nodes list. Not a good choice for rooftop nodes.".localized
 		case .clientBase:
 			return "Used for rooftop nodes to distribute messages more widely from multiple nearby client mute nodes.".localized
+		case .repeater:
+			return "Deprecated infrastructure role that creates gaps in the mesh rebroadcast chain. Switch this node to a Router-based role (Router or Router Late).".localized
 		}
 	}
 
@@ -100,6 +119,8 @@ enum DeviceRoles: Int, CaseIterable, Identifiable {
 			return "map"
 		case .clientBase:
 			return "house"
+		case .repeater:
+			return "wifi.router"
 		}
 	}
 	func protoEnumValue() -> Config.DeviceConfig.Role {
@@ -127,6 +148,8 @@ enum DeviceRoles: Int, CaseIterable, Identifiable {
 			return Config.DeviceConfig.Role.routerLate
 		case .clientBase:
 			return Config.DeviceConfig.Role.clientBase
+		case .repeater:
+			return Config.DeviceConfig.Role.repeater
 		}
 	}
 }

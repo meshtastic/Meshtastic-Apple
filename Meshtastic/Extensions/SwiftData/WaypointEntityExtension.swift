@@ -100,12 +100,16 @@ struct WaypointCoordinate: Identifiable {
 
 extension WaypointEntity {
 
-	/// Copies the geofence fields from a received `Waypoint` protobuf into this entity.
-	func applyGeofence(from waypoint: Waypoint) {
+	/// Copies the geofence *geometry* (circular radius + bounding box) from a `Waypoint`
+	/// protobuf into this entity — and nothing else.
+	///
+	/// The notify flags (`notifyOnEnter` / `notifyOnExit` / `notifyFavoritesOnly`) are
+	/// deliberately NOT taken from the wire: under the design#114 notification-scope model
+	/// each receiver decides locally whether a geofence notifies it. A received waypoint
+	/// therefore never notifies until this user opts in (creator-only default), and a mesh
+	/// update can never overwrite a local opt-in.
+	func applyGeofenceGeometry(from waypoint: Waypoint) {
 		geofenceRadius = Int(waypoint.geofenceRadius)
-		notifyOnEnter = waypoint.notifyOnEnter
-		notifyOnExit = waypoint.notifyOnExit
-		notifyFavoritesOnly = waypoint.notifyFavoritesOnly
 		hasBoundingBox = waypoint.hasBoundingBox
 		if waypoint.hasBoundingBox {
 			boundingBoxLatitudeNorthI = waypoint.boundingBox.latitudeNorthI
@@ -123,6 +127,71 @@ extension WaypointEntity {
 	/// True when the waypoint defines any geofence (circular radius and/or bounding box).
 	var hasGeofence: Bool {
 		geofenceRadius > 0 || hasBoundingBox
+	}
+
+	/// Whether the geofence notification preferences may be edited in place, without any
+	/// mesh send (design#114 notification-scope model).
+	///
+	/// True for a *received* waypoint that carries a geofence: one this device did not
+	/// author (including waypoints locked to another node) and that is not a local-only
+	/// waypoint. The notify flags are receiver-local and never travel back to the mesh,
+	/// so flipping them must not require re-broadcasting someone else's waypoint.
+	/// When no device is connected (`activeDeviceNum == nil`) authorship cannot be
+	/// checked, but the preference is still purely local — editing stays allowed.
+	static func canEditNotifyPreferencesLocally(
+		isLocalWaypoint: Bool,
+		createdBy: Int64,
+		activeDeviceNum: Int64?,
+		hasGeofence: Bool
+	) -> Bool {
+		guard hasGeofence, !isLocalWaypoint else { return false }
+		guard let activeDeviceNum else { return true }
+		return createdBy != activeDeviceNum
+	}
+
+	/// Whether the connected device is this waypoint's author: a brand-new waypoint
+	/// (`waypointId == 0`, about to be created here) or one created by the connected node.
+	/// Without a connected device authorship cannot be established, so an existing
+	/// waypoint is treated as someone else's.
+	static func isAuthoredLocally(
+		waypointId: Int64,
+		createdBy: Int64,
+		activeDeviceNum: Int64?
+	) -> Bool {
+		if waypointId == 0 { return true }
+		guard let activeDeviceNum else { return false }
+		return createdBy == activeDeviceNum
+	}
+
+	/// The notify flag values to serialize onto an outgoing `Waypoint` proto.
+	struct OutgoingNotifyFlags {
+		let notifyOnEnter: Bool
+		let notifyOnExit: Bool
+		let notifyFavoritesOnly: Bool
+	}
+
+	/// Computes the notify flag values to serialize onto an outgoing `Waypoint` proto.
+	///
+	/// The wire notify fields carry the *author's own* preference only (design#114 —
+	/// each receiver decides locally, and this app ignores the fields on receipt). When
+	/// this device is not the waypoint's author (`isAuthor`, see `isAuthoredLocally`),
+	/// all three serialize as false so that re-sending someone else's waypoint can never
+	/// leak this receiver's local opt-in. Also normalizes: no geofence means no notify
+	/// flags, and favorites-only is only meaningful when actually notifying.
+	static func outgoingNotifyFlags(
+		isAuthor: Bool,
+		hasGeofence: Bool,
+		notifyOnEnter: Bool,
+		notifyOnExit: Bool,
+		notifyFavoritesOnly: Bool
+	) -> OutgoingNotifyFlags {
+		let onEnter = isAuthor && hasGeofence && notifyOnEnter
+		let onExit = isAuthor && hasGeofence && notifyOnExit
+		return OutgoingNotifyFlags(
+			notifyOnEnter: onEnter,
+			notifyOnExit: onExit,
+			notifyFavoritesOnly: (onEnter || onExit) && notifyFavoritesOnly
+		)
 	}
 
 	/// The bounding-box corners as a closed rectangle (SW, SE, NE, NW) suitable for an

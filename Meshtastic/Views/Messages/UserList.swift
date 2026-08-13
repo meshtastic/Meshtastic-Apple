@@ -315,7 +315,7 @@ private struct DirectMessageUserRow: View {
 
 				if let summary {
 					HStack(alignment: .top) {
-						Text(LocalizedStringKey(summary.payload))
+						MessagePreviewText(summary.payload)
 							.font(.footnote)
 							.foregroundColor(.onSurfaceVariant)
 					}

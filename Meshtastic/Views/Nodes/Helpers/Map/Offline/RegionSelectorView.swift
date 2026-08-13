@@ -350,6 +350,19 @@ struct RegionSelectorView: View {
 				.foregroundStyle(.secondary)
 				.multilineTextAlignment(.center)
 
+			HStack(alignment: .top, spacing: 10) {
+				Image(systemName: "figure.hiking")
+					.foregroundStyle(.tint)
+				VStack(alignment: .leading, spacing: 2) {
+					Text("Protomaps Outdoors")
+						.font(.subheadline.weight(.semibold))
+					Text("Includes trails, roads, terrain, and points of interest.")
+						.font(.caption)
+						.foregroundStyle(.secondary)
+				}
+				Spacer()
+			}
+
 			Picker("Detail", selection: $detail) {
 				ForEach(OfflineMapDetailLevel.allCases) { level in
 					Text(level.label).tag(level)
@@ -405,7 +418,7 @@ struct RegionSelectorView: View {
 	}
 
 	private var canDownload: Bool {
-		bounds != nil && !manager.isDownloading && overlap == nil && warning == nil
+		bounds != nil && !manager.isBusy && overlap == nil && warning == nil
 	}
 
 	// MARK: - Size estimate

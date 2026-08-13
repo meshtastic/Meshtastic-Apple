@@ -234,7 +234,6 @@ struct DiscoveryScanView: View {
 						.font(.caption)
 						.foregroundStyle(.secondary)
 						ProgressView(value: 1.0 - (engine.dwellTimeRemaining / engine.dwellDuration))
-							.tint(.accentColor)
 					}
 					.accessibilityElement(children: .combine)
 					.accessibilityValue(
@@ -353,7 +352,6 @@ struct DiscoveryScanView: View {
 						.foregroundStyle(.secondary)
 				}
 				ProgressView(value: 1.0 - (engine.dwellTimeRemaining / engine.dwellDuration))
-					.tint(.accentColor)
 			}
 
 			if let session = engine.session {

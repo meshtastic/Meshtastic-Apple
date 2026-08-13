@@ -253,7 +253,6 @@ struct AppData: View {
 		} label: {
 			Label("Download", systemImage: "square.and.arrow.down")
 		}
-		.tint(.accentColor)
 	}
 
 	@ViewBuilder

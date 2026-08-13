@@ -238,6 +238,10 @@ class Router: ObservableObject {
 	/// in-app file picker. Called from `onOpenURL` for file URLs, which is a distinct path from
 	/// `route(url:)` (that only handles `meshtastic://` scheme URLs).
 	func importMapFile(url: URL) {
+		if OfflineMapImportValidator.format(for: url) != nil {
+			importOfflineMap(url: url)
+			return
+		}
 		selectedTab = .map
 
 		Task {
@@ -246,6 +250,23 @@ class Router: ObservableObject {
 				Logger.services.info("🗺️ [App] Imported '\(metadata.originalName, privacy: .public)' (\(metadata.overlayCount, privacy: .public) overlays) via Open In.")
 			} catch {
 				Logger.services.error("🗺️ [App] Open In GeoJSON import failed: \(error.localizedDescription, privacy: .public)")
+			}
+		}
+	}
+
+	/// Imports an offline basemap handed to the app through Files, AirDrop, or Open In.
+	func importOfflineMap(url: URL) {
+		selectedTab = .map
+		let hasAccess = url.startAccessingSecurityScopedResource()
+		Task { @MainActor in
+			defer {
+				if hasAccess { url.stopAccessingSecurityScopedResource() }
+			}
+			do {
+				let region = try await OfflineMapManager.shared.importOfflineMap(from: url)
+				Logger.services.info("🗺️ [Offline] Imported '\(region.name, privacy: .private)' via Open In.")
+			} catch {
+				Logger.services.error("🗺️ [Offline] Map archive import failed: \(error.localizedDescription, privacy: .private)")
 			}
 		}
 	}

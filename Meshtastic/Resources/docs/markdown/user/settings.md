@@ -49,6 +49,22 @@ When sharing channels, the share screen shows a QR code and link, and — on iPh
 
 Configure PKI (Public Key Infrastructure) encryption for direct messages. Requires firmware 2.5+.
 
+#### Packet Authenticity
+
+Firmware that reports XEdDSA support can authenticate the sender of a mesh packet. **Protection Level** controls what the radio does with traffic it cannot authenticate:
+
+| Level | Behavior |
+|-------|----------|
+| Compatible — Accept unsigned | Authenticates packets when possible, but accepts unsigned traffic for maximum compatibility. This is the default. |
+| Balanced — Prefer authenticated | Recommended. Rejects unsigned broadcasts from nodes already known to sign, while still accepting traffic from nodes that never sign. |
+| Strict — Require authentication | Accepts a remote packet only when it carries a verified XEdDSA signature or was successfully authenticated through PKI decryption. |
+
+Strict applies to every remote mesh packet, including positions, messages, telemetry, node info, and routing traffic. Traffic from older firmware, from licensed (ham) nodes without PKI keys, and packets too large to carry a signature will disappear. PKI-authenticated direct messages remain available. The app asks you to confirm before enabling Strict.
+
+The selector is disabled when the connected radio does not report XEdDSA support, or has not reported its capability yet — update that radio's firmware to configure the policy. Note that a verified signature proves which key sent a packet; it does not prove that a reported position or sensor reading is true or current.
+
+This setting matches the Meshtastic app for Android, and the policy is enforced by the radio rather than the app.
+
 On hardened lockdown-firmware radios, this page also shows a **Lockdown** section with the session status, a **Lock Now** button, and a **Forget Stored Passphrase** button. See [Lockdown Mode](lockdown.md).
 
 ### User
@@ -62,6 +78,8 @@ BLE radio settings including PIN mode and power saving. Changes apply on next ra
 ### Device
 
 Device role, serial output, debug log streaming, and node info broadcast interval.
+
+The **Repeater** role is deprecated and can no longer be selected for new configurations. If a node is still set to Repeater it is shown as "Repeater (Deprecated)" with a reminder to switch it to a Router-based role (Router or Router Late).
 
 ### Display
 
@@ -158,6 +176,43 @@ Tags written by the Meshtastic app for Android are interchangeable with these �
 ## Firmware Updates
 
 Check for and apply OTA firmware updates to your connected radio directly from the app. See [Firmware Updates](firmware.md) for full details.
+
+## Tools
+
+The **Tools** screen (Settings → Tools) provides utilities for backing up, restoring, and sharing your connected radio's configuration.
+
+### Create Node Contact NFC Tag
+
+Write your node's contact card to an NFC tag so others can add you by tapping it. Requires a connected node and NFC-capable hardware.
+
+### Export Device Configuration
+
+Save the connected node's full configuration — radio, module, and channel settings — to a `.cfg` file you can back up or import onto another device. The format matches the Android app and the `meshtastic` CLI.
+
+> **Warning — Backups contain secrets**
+> The exported file includes your node's private key, admin keys, channel keys (PSKs), and Wi-Fi/MQTT passwords. Anyone with the file can join and administer your mesh, so store and share it only with people you trust.
+
+### Import Device Configuration
+
+Apply a saved `.cfg` configuration file to the connected node. After you pick a file, a review sheet shows what it contains, grouped into sections you can turn on or off before applying:
+
+| Section | What it restores |
+|---------|------------------|
+| Owner Name | Long and short name |
+| Radio & Device | Device, display, position, power, and Bluetooth settings |
+| Network | Wi-Fi / Ethernet settings |
+| Modules | All module settings (MQTT, Telemetry, Canned Messages, and so on) |
+| Ringtone & Canned Messages | Notification melody and canned-message text |
+| Fixed Position | A saved fixed GPS position |
+| Security & Identity | Private key, admin keys, and admin access |
+| Channels & LoRa | Channels and LoRa/region settings |
+
+All present sections are selected by default **except Security & Identity**, which is off by default: importing it replaces this node's cryptographic identity (its private/public key) and admin keys, which can break existing direct messages and lock you out of local administration. Leave it off when cloning a configuration onto a second radio that should keep its own identity.
+
+> **Warning — Import replaces settings**
+> Importing writes the selected settings — including any secrets in the file — onto the connected node. Only import files from a source you trust.
+
+Applying **Channels & LoRa** reboots the radio, so it briefly disconnects; the app reports this so you can reconnect. Settings are applied in order and the import stops at the first failure, telling you exactly what was and wasn't sent. Because the radio can silently discard settings it accepts, the result screen also offers **Verify Against the Radio**: once the radio reconnects and sends its configuration back, it compares each imported section against what the radio actually holds. Re-running an import is safe.
 
 ## Automatic Documentation Translation
 

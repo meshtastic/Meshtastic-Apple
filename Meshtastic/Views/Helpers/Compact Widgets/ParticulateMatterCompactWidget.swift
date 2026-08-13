@@ -20,7 +20,6 @@ struct ParticulateMatterCompactWidget: View {
 			HStack(alignment: .firstTextBaseline) {
 				Image(systemName: "aqi.medium")
 					.font(.system(size: 30))
-					.tint(.accentColor)
 				Text(verbatim: label)
 					.textCase(.uppercase)
 					.font(.callout)
