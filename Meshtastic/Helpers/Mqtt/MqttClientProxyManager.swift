@@ -7,6 +7,7 @@
 
 import Foundation
 import CocoaMQTT
+import MeshtasticProtobufs
 import OSLog
 import Security
 
@@ -55,8 +56,8 @@ class MqttClientProxyManager {
 		// - PKI channel is always subscribed regardless of downlink settings
 		//
 		// The primary channel (role == 1) has an empty name in the protobuf when using
-		// the factory default configuration. In that case, the firmware derives the MQTT
-		// channel name from the LoRa modem preset (e.g. "LongFast" for LONG_FAST).
+		// the factory default configuration. In that case, mirror the firmware's derived
+		// channel name: the modem preset name, or "Custom" when presets are disabled.
 		var newTopics: [String] = []
 		let allChannels = node.myInfo?.channels ?? []
 		Logger.mqtt.info("📲 [MQTT] Building topics from \(allChannels.count, privacy: .public) channel(s)")
@@ -73,8 +74,15 @@ class MqttClientProxyManager {
 			if !nameRaw.isEmpty {
 				channelName = nameRaw
 			} else if role == 1 {
-				// Primary channel with empty name — use modem preset's MQTT name.
-				channelName = mqttChannelName(forModemPreset: node.loRaConfig?.modemPreset ?? 0)
+				// Primary channel with empty name — mirror the firmware's derived name.
+				guard let derivedName = mqttChannelName(
+					forModemPreset: node.loRaConfig?.modemPreset ?? 0,
+					usePreset: node.loRaConfig?.usePreset ?? true
+				) else {
+					Logger.mqtt.warning("📲 [MQTT]   ch[\(idx, privacy: .public)] role=primary name='' — skip (unknown modem preset)")
+					continue
+				}
+				channelName = derivedName
 				Logger.mqtt.info("📲 [MQTT]   ch[\(idx, privacy: .public)] role=primary name='' → derived '\(channelName, privacy: .public)' from modem preset \(node.loRaConfig?.modemPreset ?? 0, privacy: .public)")
 			} else {
 				Logger.mqtt.info("📲 [MQTT]   ch[\(idx, privacy: .public)] role=\(role, privacy: .public) name='' — skip (no name, not primary)")
@@ -162,27 +170,9 @@ class MqttClientProxyManager {
 		}
 	}
 
-	// Maps a LoRa modem preset raw value to the channel name the firmware uses when
-	// publishing MQTT topics for an unnamed primary channel. Values match the firmware's
-	// MeshService::channelName() function.
-	private func mqttChannelName(forModemPreset preset: Int32) -> String {
-		switch preset {
-		case 0:  return "LongFast"
-		case 1:  return "LongSlow"
-		case 2:  return "VLongSlow"
-		case 3:  return "MedSlow"
-		case 4:  return "MedFast"
-		case 5:  return "ShortSlow"
-		case 6:  return "ShortFast"
-		case 7:  return "LongMod"
-		case 8:  return "ShortTurbo"
-		case 9:  return "LongTurbo"
-		case 10: return "LiteFast"
-		case 11: return "LiteSlow"
-		case 12: return "NarrowFast"
-		case 13: return "NarrowSlow"
-		default: return "LongFast"
-		}
+	private func mqttChannelName(forModemPreset rawValue: Int32, usePreset: Bool) -> String? {
+		guard usePreset else { return "Custom" }
+		return Config.LoRaConfig.ModemPreset(rawValue: Int(rawValue))?.firmwareChannelName
 	}
 }
 

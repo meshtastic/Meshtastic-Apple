@@ -739,6 +739,51 @@ enum ModemPresets: Int, CaseIterable, Identifiable {
 	}
 }
 
+// These strings are protocol values, not UI labels. They must match the
+// firmware's DisplayFormatters::getModemPresetDisplayName(..., false, ...).
+extension Config.LoRaConfig.ModemPreset {
+	var firmwareChannelName: String? {
+		switch self {
+		case .longFast:
+			return "LongFast"
+		case .longSlow:
+			return "LongSlow"
+		case .veryLongSlow:
+			return "VLongSlow"
+		case .mediumSlow:
+			return "MediumSlow"
+		case .mediumFast:
+			return "MediumFast"
+		case .shortSlow:
+			return "ShortSlow"
+		case .shortFast:
+			return "ShortFast"
+		case .longModerate:
+			return "LongMod"
+		case .shortTurbo:
+			return "ShortTurbo"
+		case .longTurbo:
+			return "LongTurbo"
+		case .liteFast:
+			return "LiteFast"
+		case .liteSlow:
+			return "LiteSlow"
+		case .narrowFast:
+			return "NarrowFast"
+		case .narrowSlow:
+			return "NarrowSlow"
+		case .tinyFast:
+			return "TinyFast"
+		case .tinySlow:
+			return "TinySlow"
+		case .mediumTurbo:
+			return "MediumTurbo"
+		case .UNRECOGNIZED:
+			return nil
+		}
+	}
+}
+
 enum CodingRates {
 	static let validRange = 5...8
 

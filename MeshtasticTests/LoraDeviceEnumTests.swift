@@ -124,6 +124,43 @@ struct ModemPresetsTests {
 		#expect(ModemPresets.mediumTurbo.snrLimit() == -12.5)
 		#expect(ModemPresets.mediumTurbo.bandwidthMHz == 0.5)
 	}
+
+	@Test func firmwareChannelNames_matchEveryProtoPreset() {
+		let expected: [(Config.LoRaConfig.ModemPreset, String)] = [
+			(.longFast, "LongFast"),
+			(.longSlow, "LongSlow"),
+			(.veryLongSlow, "VLongSlow"),
+			(.mediumSlow, "MediumSlow"),
+			(.mediumFast, "MediumFast"),
+			(.shortSlow, "ShortSlow"),
+			(.shortFast, "ShortFast"),
+			(.longModerate, "LongMod"),
+			(.shortTurbo, "ShortTurbo"),
+			(.longTurbo, "LongTurbo"),
+			(.liteFast, "LiteFast"),
+			(.liteSlow, "LiteSlow"),
+			(.narrowFast, "NarrowFast"),
+			(.narrowSlow, "NarrowSlow"),
+			(.tinyFast, "TinyFast"),
+			(.tinySlow, "TinySlow"),
+			(.mediumTurbo, "MediumTurbo"),
+		]
+
+		#expect(expected.count == Config.LoRaConfig.ModemPreset.allCases.count)
+		for (preset, name) in expected {
+			#expect(preset.firmwareChannelName == name)
+		}
+	}
+
+	@Test func unknownFirmwarePreset_hasNoChannelName() {
+		#expect(Config.LoRaConfig.ModemPreset(rawValue: 99)?.firmwareChannelName == nil)
+	}
+
+	@Test func defaultChannelNames_useFirmwareSpelling() {
+		#expect(ModemPresets.medSlow.androidChannelName == "MediumSlow")
+		#expect(ModemPresets.medFast.androidChannelName == "MediumFast")
+		#expect(ModemPresets.longModerate.androidChannelName == "LongMod")
+	}
 }
 
 // MARK: - CodingRates
