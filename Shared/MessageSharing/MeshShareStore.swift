@@ -9,15 +9,19 @@ import Security
 enum MeshShareStore {
 	static let service = "org.meshtastic.apple.message-sharing"
 	static let snapshotAccount = "recent-radio-snapshot"
+	static let accessGroupInfoKey = "MeshtasticMessageSharingAccessGroup"
 
 	enum StoreError: LocalizedError {
 		case encodingFailed
+		case missingAccessGroup
 		case keychain(OSStatus)
 
 		var errorDescription: String? {
 			switch self {
 			case .encodingFailed:
 				return "The recent radio snapshot could not be encoded."
+			case .missingAccessGroup:
+				return "The Messages sharing Keychain group is not configured."
 			case .keychain(let status):
 				return "The recent radio snapshot could not be saved (\(status))."
 			}
@@ -34,7 +38,10 @@ enum MeshShareStore {
 			throw StoreError.encodingFailed
 		}
 
-		let lookup = query
+		guard let accessGroup else {
+			throw StoreError.missingAccessGroup
+		}
+		let lookup = query(accessGroup: accessGroup)
 		let updateStatus = SecItemUpdate(
 			lookup as CFDictionary,
 			[kSecValueData: data] as CFDictionary
@@ -56,7 +63,10 @@ enum MeshShareStore {
 	}
 
 	static func load() -> MeshShareSnapshot? {
-		var lookup = query
+		guard let accessGroup else {
+			return nil
+		}
+		var lookup = query(accessGroup: accessGroup)
 		lookup[kSecReturnData as String] = true
 		lookup[kSecMatchLimit as String] = kSecMatchLimitOne
 		var item: CFTypeRef?
@@ -74,18 +84,31 @@ enum MeshShareStore {
 	}
 
 	static func delete() throws {
-		let status = SecItemDelete(query as CFDictionary)
+		guard let accessGroup else {
+			throw StoreError.missingAccessGroup
+		}
+		let status = SecItemDelete(query(accessGroup: accessGroup) as CFDictionary)
 		guard status == errSecSuccess || status == errSecItemNotFound else {
 			throw StoreError.keychain(status)
 		}
 	}
 
-	private static var query: [String: Any] {
-		[
+	static func query(accessGroup: String) -> [String: Any] {
+		return [
 			kSecClass as String: kSecClassGenericPassword,
 			kSecAttrService as String: service,
 			kSecAttrAccount as String: snapshotAccount,
+			kSecAttrAccessGroup as String: accessGroup,
 			kSecAttrSynchronizable as String: false
 		]
+	}
+
+	private static var accessGroup: String? {
+		guard let value = Bundle.main.object(forInfoDictionaryKey: accessGroupInfoKey) as? String,
+			  !value.isEmpty,
+			  !value.contains("$(") else {
+			return nil
+		}
+		return value
 	}
 }

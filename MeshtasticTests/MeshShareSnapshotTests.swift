@@ -1,5 +1,6 @@
 import Foundation
 import MeshtasticProtobufs
+import Security
 import Testing
 
 @testable import Meshtastic
@@ -37,6 +38,16 @@ struct MeshShareSnapshotTests {
 		#expect(MeshShareSnapshotBuilder.shouldClearExistingSnapshot(existingNodeNum: 1, attemptedNodeNum: 2))
 		#expect(!MeshShareSnapshotBuilder.shouldClearExistingSnapshot(existingNodeNum: 2, attemptedNodeNum: 2))
 		#expect(!MeshShareSnapshotBuilder.shouldClearExistingSnapshot(existingNodeNum: nil, attemptedNodeNum: 2))
+	}
+
+	@Test func keychainQueryAlwaysUsesDedicatedAccessGroup() {
+		let group = "TEAM.gvh.MeshtasticClient.MessagesSharing"
+
+		let query = MeshShareStore.query(accessGroup: group)
+
+		#expect(query[kSecAttrAccessGroup as String] as? String == group)
+		#expect(query[kSecAttrService as String] as? String == MeshShareStore.service)
+		#expect(query[kSecAttrSynchronizable as String] as? Bool == false)
 	}
 
 	@Test func snapshotRoundTripsAndBecomesStaleAfterThirtyDays() throws {
