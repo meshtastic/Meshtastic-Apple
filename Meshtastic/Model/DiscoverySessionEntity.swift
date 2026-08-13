@@ -30,5 +30,8 @@ final class DiscoverySessionEntity {
 	@Relationship(deleteRule: .cascade, inverse: \DiscoveredNodeEntity.session)
 	var discoveredNodes: [DiscoveredNodeEntity] = []
 
+	@Relationship(deleteRule: .cascade, inverse: \DiscoveredBeaconEntity.session)
+	var beacons: [DiscoveredBeaconEntity] = []
+
 	init() {}
 }

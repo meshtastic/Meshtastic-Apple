@@ -22,50 +22,50 @@ struct NodeListFilter: View {
 						Label("Via Lora", systemImage: "dot.radiowaves.left.and.right")
 					}
 					.labelStyle(.titleAndIcon)
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.toggleStyle(.switch)
 
 					Toggle(isOn: $filters.viaMqtt) {
 						Label("Via Mqtt", systemImage: "dot.radiowaves.up.forward")
 					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.toggleStyle(.switch)
 					.listRowSeparator(.visible)
 
 					Toggle(isOn: $filters.isOnline) {
 						Label("Online", systemImage: "checkmark.circle.fill")
 					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.toggleStyle(.switch)
 					.listRowSeparator(.visible)
 
 					Toggle(isOn: $filters.isPkiEncrypted) {
 						Label("Encrypted", systemImage: "lock.fill")
 					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.toggleStyle(.switch)
 					.listRowSeparator(.visible)
 
 					Toggle(isOn: $filters.isFavorite) {
 						Label("Favorites", systemImage: "star.fill")
 					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.toggleStyle(.switch)
 					.listRowSeparator(.visible)
 
 					if filterTitle == "Node Filters" {
 						Toggle(isOn: $filters.isIgnored) {
 							Label("Ignored", systemImage: "minus.circle.fill")
 						}
-						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						.toggleStyle(.switch)
 						.listRowSeparator(.visible)
 
 						Toggle(isOn: $filters.isEnvironment) {
 							Label("Environment", systemImage: "cloud.sun")
 						}
-						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						.toggleStyle(.switch)
 						.listRowSeparator(.visible)
 					}
 
 					Toggle(isOn: $filters.distanceFilter) {
 						Label("Distance", systemImage: "map")
 					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.toggleStyle(.switch)
 					.disabled(LocationsHandler.currentLocation == nil && filters.fallbackLocation == nil)
 					.listRowSeparator(filters.distanceFilter ? .hidden : .visible)
 
@@ -100,12 +100,21 @@ struct NodeListFilter: View {
 							in: -1...7,
 							step: 1
 						) {
-							Text("Speed")
+							Text("Hops Away")
 						} minimumValueLabel: {
 							Text("All")
 						} maximumValueLabel: {
 							Text("7")
 						}
+						.accessibilityValue(
+							filters.hopsAway < 0
+								? String(localized: "All", comment: "VoiceOver: hops-away filter set to no limit")
+								: filters.hopsAway == 0
+									? String(localized: "Direct", comment: "VoiceOver: hops-away filter set to direct connections only")
+									: filters.hopsAway == 1
+										? String(localized: "1 hop away", comment: "VoiceOver: hops-away filter set to 1 hop")
+										: String(localized: "\(Int(filters.hopsAway)) hops away", comment: "VoiceOver: hops-away filter value")
+						)
 
 						if filters.hopsAway >= 0 {
 							if filters.hopsAway == 0 {
@@ -121,7 +130,7 @@ struct NodeListFilter: View {
 					Toggle(isOn: $filters.roleFilter) {
 						Label("Roles", systemImage: "apps.iphone")
 					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.toggleStyle(.switch)
 
 					if filters.roleFilter {
 						VStack {
@@ -153,6 +162,7 @@ struct NodeListFilter: View {
 					.symbolRenderingMode(.palette)
 					.foregroundStyle(.white, Color(.systemGray3))
 			}
+			.accessibilityLabel(String(localized: "Close", comment: "VoiceOver: dismiss this sheet"))
 			.buttonStyle(.plain)
 			.padding(.top, 12)
 			.padding(.leading, 14)

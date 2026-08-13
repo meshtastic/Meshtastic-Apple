@@ -19,6 +19,7 @@ extension MetricsSeriesList {
 				keyPath: \.temperature,
 				name: "Temperature",
 				abbreviatedName: "Temp",
+				unit: "°",
 				minumumYAxisSpan: 50.0,
 				conversion: { t in t.map { Float($0.localeTemperature()) } },
 				foregroundStyle: { chartRange in
@@ -61,6 +62,7 @@ extension MetricsSeriesList {
 				keyPath: \.relativeHumidity,
 				name: "Relative Humidity",
 				abbreviatedName: "Hum",
+				unit: "%",
 				initialYAxisRange: 0.0...100.0,
 				foregroundStyle: { _ in
 						.linearGradient(
@@ -86,6 +88,7 @@ extension MetricsSeriesList {
 				keyPath: \.dewPoint,
 				name: "Dew Point",
 				abbreviatedName: "Dew",
+				unit: "°",
 				minumumYAxisSpan: 50.0,
 				conversion: { t in t.map { Float($0.localeTemperature()) } },
 				strokeStyle: StrokeStyle(lineWidth: 4, dash: [2, 2]),
@@ -118,6 +121,12 @@ extension MetricsSeriesList {
 				keyPath: \.barometricPressure,
 				name: "Barometric Pressure",
 				abbreviatedName: "Bar",
+				unit: "hPa",
+				// Anchor the axis to the typical sea-level range (~950–1050 hPa) instead of
+				// autoscaling tightly with the other environment series, so the absolute level is
+				// readable and small real changes stay visible. Expands if readings fall outside
+				// (e.g. high-altitude stations). Per meshtastic/design#53 / Meshtastic-Apple#2046.
+				initialYAxisRange: 950.0...1050.0,
 				visible: false,
 				foregroundStyle: { _ in
 						.linearGradient(
@@ -172,6 +181,7 @@ extension MetricsSeriesList {
 				keyPath: \.lux,
 				name: "Lux",
 				abbreviatedName: "Lux",
+				unit: "lx",
 				visible: false,
 				foregroundStyle: { _ in
 						.linearGradient(
@@ -198,6 +208,7 @@ extension MetricsSeriesList {
 				keyPath: \.whiteLux,
 				name: "White Lux",
 				abbreviatedName: "White",
+				unit: "lx",
 				visible: false,
 				foregroundStyle: { _ in
 						.linearGradient(
@@ -224,6 +235,7 @@ extension MetricsSeriesList {
 				keyPath: \.uvLux,
 				name: "UV Lux",
 				abbreviatedName: "UV",
+				unit: "lx",
 				visible: false,
 				foregroundStyle: { _ in
 						.linearGradient(
@@ -250,6 +262,7 @@ extension MetricsSeriesList {
 				keyPath: \.irLux,
 				name: "IR Lux",
 				abbreviatedName: "IR",
+				unit: "lx",
 				visible: false,
 				foregroundStyle: { _ in
 						.linearGradient(
@@ -276,6 +289,7 @@ extension MetricsSeriesList {
 				keyPath: \.radiation,
 				name: "Radiation",
 				abbreviatedName: "☢️",
+				unit: "µR/h",
 				minumumYAxisSpan: 20.0,
 				visible: false,
 				foregroundStyle: { _ in
@@ -303,6 +317,7 @@ extension MetricsSeriesList {
 				keyPath: \.windSpeedAndDirection,
 				name: "Wind Speed/Direction",
 				abbreviatedName: "Speed/Dir",
+				unit: "m/s",
 				visible: false,
 				foregroundStyle: { _ in
 						.linearGradient(
@@ -343,6 +358,7 @@ extension MetricsSeriesList {
 				keyPath: \.rainfall1H,
 				name: "Rainfall 1H",
 				abbreviatedName: "Rain 1H",
+				unit: "mm",
 				visible: false,
 				foregroundStyle: { _ in
 						.linearGradient(
@@ -369,6 +385,7 @@ extension MetricsSeriesList {
 				keyPath: \.rainfall24H,
 				name: "Rainfall 24H",
 				abbreviatedName: "Rain 24H",
+				unit: "mm",
 				visible: false,
 				foregroundStyle: { _ in
 						.linearGradient(
@@ -395,6 +412,7 @@ extension MetricsSeriesList {
 				keyPath: \.weight,
 				name: "Weight",
 				abbreviatedName: "kg",
+				unit: "kg",
 				visible: false,
 				foregroundStyle: { _ in
 						.linearGradient(
@@ -421,6 +439,7 @@ extension MetricsSeriesList {
 				keyPath: \.distance,
 				name: "Distance",
 				abbreviatedName: "Dist",
+				unit: "mm",
 				visible: false,
 				foregroundStyle: { _ in
 						.linearGradient(
@@ -447,6 +466,7 @@ extension MetricsSeriesList {
 				keyPath: \.soilTemperature,
 				name: "Soil Temperature",
 				abbreviatedName: "Soil Temp",
+				unit: "°",
 				visible: false,
 				foregroundStyle: { _ in
 						.linearGradient(
@@ -473,6 +493,7 @@ extension MetricsSeriesList {
 				keyPath: \.soilMoisture,
 				name: "Soil Moisture",
 				abbreviatedName: "Moist",
+				unit: "%",
 				visible: false,
 				foregroundStyle: { _ in
 						.linearGradient(

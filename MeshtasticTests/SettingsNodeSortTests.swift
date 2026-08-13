@@ -18,6 +18,7 @@
 //
 
 import Foundation
+import SwiftData
 import Testing
 
 @testable import Meshtastic
@@ -34,6 +35,7 @@ struct SettingsNodeSortTests {
 		node.id = num
 		node.favorite = favorite
 		node.lastHeard = lastHeard
+		sharedModelContainer.mainContext.insert(node)
 		return node
 	}
 
@@ -106,5 +108,28 @@ struct SettingsNodeSortTests {
 	@Test("Empty input yields empty output")
 	func emptyInput() {
 		#expect(orderedNums([]) == [])
+	}
+
+	@Test("Deleted nodes are excluded before picker properties are read")
+	func deletedNodesAreExcluded() throws {
+		let context = sharedModelContainer.mainContext
+		let liveNode = makeNode(num: 7_760_001, favorite: false)
+		let deletedNode = makeNode(num: 7_760_002, favorite: true)
+		try context.save()
+		context.delete(deletedNode)
+		try context.save()
+
+		#expect(orderedNums([liveNode, deletedNode]) == [7_760_001])
+	}
+
+	@Test("Detached nodes are excluded before picker properties are read")
+	func detachedNodesAreExcluded() {
+		let liveNode = makeNode(num: 7_770_001, favorite: false)
+		let detachedNode = NodeInfoEntity()
+		detachedNode.num = 7_770_002
+		detachedNode.favorite = true
+
+		#expect(detachedNode.modelContext == nil)
+		#expect(orderedNums([liveNode, detachedNode]) == [7_770_001])
 	}
 }

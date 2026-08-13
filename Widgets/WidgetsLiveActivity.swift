@@ -5,6 +5,7 @@
 //  Created by Garth Vander Houwen on 2/28/23.
 //
 #if os(iOS)
+#if !targetEnvironment(macCatalyst)
 #if canImport(ActivityKit)
 import ActivityKit
 import WidgetKit
@@ -70,6 +71,8 @@ struct WidgetsLiveActivity: Widget {
 								.foregroundStyle(.primary)
 						}
 						.fixedSize()
+						.accessibilityElement(children: .ignore)
+						.accessibilityLabel(String(localized: "\(context.state.nodesOnline) of \(context.state.totalNodes) nodes online", comment: "VoiceOver: online/total node count in the Dynamic Island expanded trailing region"))
 					}
 					Text("Bad: \(context.state.badReceivedPackets)")
 						.font(.caption2)
@@ -125,6 +128,8 @@ struct WidgetsLiveActivity: Widget {
 					}
 				}
 				.fixedSize()
+				.accessibilityElement(children: .ignore)
+				.accessibilityLabel(String(localized: "\(context.state.nodesOnline) nodes online", comment: "VoiceOver: online node count in the Dynamic Island compact-leading region"))
             } compactTrailing: {
 				Text("\(context.state.channelUtilization?.formatted(.number.precision(.fractionLength(1))) ?? "--")%")
 					.font(.caption2)
@@ -143,6 +148,8 @@ struct WidgetsLiveActivity: Widget {
 							.offset(y: 6)
 					}
 				}
+				.accessibilityElement(children: .ignore)
+				.accessibilityLabel(String(localized: "\(context.state.nodesOnline) nodes online", comment: "VoiceOver: online node count in the Dynamic Island minimal presentation"))
             }
 			.contentMargins(.leading, 16, for: .expanded)
 			.contentMargins(.trailing, 16, for: .expanded)
@@ -221,6 +228,8 @@ struct LiveActivityView: View {
 							.foregroundStyle(.secondary)
 					}
 					.fixedSize()
+					.accessibilityElement(children: .ignore)
+					.accessibilityLabel(String(localized: "\(nodesOnline) of \(totalNodes) nodes online", comment: "VoiceOver: online/total node count in the Live Activity header row"))
 				}
 			}
 
@@ -308,6 +317,8 @@ struct StatRow: View {
 				.foregroundStyle(.primary)
 		}
 		.fixedSize()
+		.accessibilityElement(children: .ignore)
+		.accessibilityLabel(String(localized: "\(label): \(value)", comment: "VoiceOver: combined label:value announcement for a Live Activity stat row"))
 	}
 }
 
@@ -338,6 +349,9 @@ struct TimerView: View {
 				.frame(width: 20, height: 20)
 				.opacity(isLuminanceReduced ? 0.5 : 1.0)
 		}
+		.accessibilityElement(children: .ignore)
+		.accessibilityLabel(String(localized: "Update in", comment: "VoiceOver: label for the Live Activity countdown timer showing time until the next update"))
+		.accessibilityValue(Text(timerInterval: timerRange, countsDown: true))
 	}
 }
 
@@ -357,5 +371,6 @@ struct ExpandedTrailingView: View {
 		.tint(Color("LightIndigo"))
 	}
 }
+#endif
 #endif
 #endif

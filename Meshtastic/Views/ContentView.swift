@@ -3,12 +3,49 @@
  */
 
 import SwiftUI
+import SwiftData
+import UIKit
 
 struct ContentView: View {
 	@ObservedObject var appState: AppState
 	@EnvironmentObject var accessoryManager: AccessoryManager
-	@State var router: Router
+	@EnvironmentObject var lockdown: LockdownCoordinator
+	@Query private var eventFirmwareEditions: [EventFirmwareEntity]
+	// Observe (not just hold) the router so a *programmatic* `selectedTab` change re-renders
+	// ContentView and the TabView re-reads its selection binding immediately. As plain @State this
+	// view never subscribed to the router's objectWillChange, so a programmatic tab switch only took
+	// effect on the next incidental re-render (e.g. an unread-count change) — instant on a busy live
+	// mesh, but a 20–60s stall in a quiet/seeded session.
+	@ObservedObject var router: Router
 	@State var isShowingDeviceOnboardingFlow: Bool = false
+	@State private var isShowingEventFirmwareInfo: Bool = false
+
+	/// True when the connected device's lockdown state requires the user to act
+	/// (provision a passphrase, unlock, or wait out a backoff). The sheet is
+	/// non-dismissable; it only closes when the coordinator transitions to a
+	/// non-blocking state (.none, .unlocked, .lockNowAcknowledged).
+	private var isLockdownGateActive: Bool { lockdown.isBlockingSession }
+
+	/// Plain view-state mirror of `isLockdownGateActive`, kept in sync from the
+	/// coordinator via `.onChange`. Presenting the lockdown `fullScreenCover`
+	/// through a *computed* `Binding` — getter reading the `lockdown`
+	/// `@EnvironmentObject`, setter a no-op — produced a presentation binding that
+	/// could never converge, which iOS 17's SwiftUI resolved by re-entering the
+	/// attribute graph until it tripped `_assertionFailure` at first layout (a
+	/// launch crash unique to iOS 17; iOS 18+ tolerated it). Driving the cover
+	/// from real `@State` breaks that cycle. `LockdownSheet` has no dismiss
+	/// affordance, so this stays non-dismissable — only the coordinator leaving a
+	/// blocking state clears it.
+	@State private var isShowingLockdownGate: Bool = false
+
+	private var eventPresentation: EventFirmwarePresentation? {
+		EventFirmwarePresentation.resolve(
+			isConnected: accessoryManager.isConnected,
+			edition: accessoryManager.firmwareEdition,
+			metadata: eventFirmwareEditions,
+			deviceFirmwareVersion: accessoryManager.connectedVersion
+		)
+	}
 
 	init(appState: AppState, router: Router) {
 		self.appState = appState
@@ -17,6 +54,19 @@ struct ContentView: View {
 
 	var body: some View {
 		tabContent
+			.environment(\.eventFirmwarePresentation, eventPresentation)
+			.environment(\.openEventFirmwareInfo) {
+				isShowingEventFirmwareInfo = true
+			}
+			.sheet(isPresented: $isShowingEventFirmwareInfo) {
+				if let eventPresentation {
+					EventFirmwareInfoView(
+						edition: eventPresentation.edition,
+						info: eventPresentation.info,
+						deviceFirmwareVersion: eventPresentation.deviceFirmwareVersion
+					)
+				}
+			}
 			.sheet(
 				isPresented: $isShowingDeviceOnboardingFlow,
 				onDismiss: {
@@ -26,13 +76,44 @@ struct ContentView: View {
 					DeviceOnboarding()
 				}
 			)
+			.fullScreenCover(isPresented: $isShowingLockdownGate) {
+				LockdownSheet()
+			}
 			.onAppear {
-				if UserDefaults.firstLaunch {
+				// Trust the first-launch flag only when this process can actually read it. Launched
+				// in the background before the phone's first unlock (Bluetooth state restoration
+				// after a reboot), UserDefaults is still encrypted and `firstLaunch` returns its
+				// default `true` — which re-ran the whole setup wizard on an installed app (#2243).
+				// A pre-unlock launch can never be a genuine first launch: a fresh install has no
+				// restoration session to be relaunched for.
+				if UserDefaults.firstLaunch && UIApplication.shared.isProtectedDataAvailable {
 					isShowingDeviceOnboardingFlow = true
 				}
+				// Present the gate if the device is already in a blocking state when
+				// this view appears.
+				isShowingLockdownGate = isLockdownGateActive
+			}
+			.onChange(of: isLockdownGateActive) { _, active in
+				// Follow the coordinator's blocking state. The gate never closes from
+				// user interaction (fullScreenCover has no interactive dismiss and
+				// LockdownSheet exposes no dismiss control), so this is the only path
+				// that shows or hides it.
+				isShowingLockdownGate = active
 			}
 			.onChange(of: UserDefaults.showDeviceOnboarding) {_, newValue in
 				isShowingDeviceOnboardingFlow = newValue
+			}
+			.onChange(of: eventPresentation?.edition) { _, edition in
+				if edition == nil {
+					isShowingEventFirmwareInfo = false
+				}
+			}
+			.task {
+#if DEBUG
+				MarketingCapture.simulateEventFirmwareIfNeeded(accessoryManager)
+				// No-op unless launched with --marketing-capture (see MarketingCapture / PerformanceSeedData).
+				await MarketingCapture.runIfNeeded(router: router, accessoryManager: accessoryManager)
+#endif
 			}
 	}
 
@@ -67,12 +148,12 @@ struct ContentView: View {
 				}
 				.badge(appState.totalUnreadMessages)
 
-				Tab("Nodes", systemImage: "flipphone", value: NavigationState.Tab.nodes) {
+				Tab("Nodes", image: "custom.mesh.radio", value: NavigationState.Tab.nodes) {
 					NodeList()
 				}
 
 				Tab("Map", systemImage: "map", value: NavigationState.Tab.map) {
-					MeshMap(router: appState.router)
+					MeshMapMK(router: appState.router)
 				}
 
 				Tab("Settings", systemImage: "gear", value: NavigationState.Tab.settings) {
@@ -100,11 +181,11 @@ struct ContentView: View {
 
 				NodeList()
 				.tabItem {
-					Label("Nodes", systemImage: "flipphone")
+					Label("Nodes", image: "custom.mesh.radio")
 				}
 				.tag(NavigationState.Tab.nodes)
 
-				MeshMap(router: appState.router)
+				MeshMapMK(router: appState.router)
 				.tabItem {
 					Label("Map", systemImage: "map")
 				}

@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LoRa Region → Preset Compatibility</title>
+  <link rel="stylesheet" href="../assets/docs.css">
+</head>
+<body data-page="lora-region-presets">
+<h1>LoRa Region → Preset Compatibility</h1>
+<p>For 2.8 the firmware reworked LoRa regions and modem presets so that <strong>not every
+preset is legal in every region</strong> — the EU SRD / narrow bands, the amateur (ham)
+bands, and the 2.4 GHz band each accept only a subset. The firmware enforces this
+internally, but a client had no way to <em>know</em> the rules, so a user could pick an
+illegal region+preset pair and only discover it after the radio silently corrected
+it.</p>
+<p>The radio now <strong>declares the legal region→preset combinations</strong> to the client during
+the <code>want_config</code> handshake, so the LoRa config screen can constrain the preset
+picker to the valid set for the selected region (and warn about licensed-only bands).
+It is advisory metadata — the firmware remains the source of truth and still
+validates/clamps on its own.</p>
+<h2>Protocol</h2>
+<p>Three messages in <code>mesh.proto</code> plus one new <code>FromRadio</code> oneof variant (field 19),
+generated into <code>MeshtasticProtobufs</code>:</p>
+<pre><code class="language-proto">message LoRaPresetGroup {
+  repeated Config.LoRaConfig.ModemPreset presets = 1;       // legal presets for this group
+  Config.LoRaConfig.ModemPreset         default_preset = 2; // always one of `presets`
+  bool                                  licensed_only = 3;  // ham/amateur band → warn/gate
+}
+message LoRaRegionPresets {
+  Config.LoRaConfig.RegionCode region = 1;
+  uint32                       group_index = 2; // index into LoRaRegionPresetMap.groups
+}
+message LoRaRegionPresetMap {
+  repeated LoRaPresetGroup    groups = 1;        // each distinct preset list, once
+  repeated LoRaRegionPresets  region_groups = 2; // every known region → a group index
+}
+</code></pre>
+<p>The map is delivered <strong>grouped</strong> (each distinct preset list appears once in <code>groups</code>;
+<code>region_groups</code> maps every region to a group by index) so it fits in a single 512-byte
+<code>FromRadio</code> packet. It arrives once, immediately after <code>metadata</code> and before the first
+<code>channel</code>, on a full or config-only <code>want_config</code>. It is <strong>omitted</strong> by the nodes-only
+nonce and by firmware older than 2.8.</p>
+<h2>Decode and storage</h2>
+<p>The grouped wire form is flattened into a per-region lookup by
+<code>LoRaRegionPresetMap.decoded()</code> in
+<a href="https://github.com/meshtastic/Meshtastic-Apple/blob/main/Meshtastic/Enums/LoraConfigEnums.swift"><code>LoraConfigEnums.swift</code></a>:</p>
+<pre><code class="language-swift">struct RegionPresetInfo: Equatable {
+    let presets: Set&lt;Config.LoRaConfig.ModemPreset&gt;
+    let defaultPreset: Config.LoRaConfig.ModemPreset
+    let licensedOnly: Bool
+}
+
+extension LoRaRegionPresetMap {
+    func decoded() -&gt; [Config.LoRaConfig.RegionCode: RegionPresetInfo]
+}
+</code></pre>
+<p>A <code>region_groups</code> entry whose <code>group_index</code> is out of range is skipped defensively,
+which tolerates malformed or forward-compatible data.</p>
+<p><code>AccessoryManager.processFromRadio(_:)</code> dispatches the new <code>.regionPresets</code> variant to
+<code>handleRegionPresets(_:)</code> (in <code>AccessoryManager+FromRadio.swift</code>), which stores the
+decoded lookup on the connection model:</p>
+<pre><code class="language-swift">@Published var loRaRegionPresets: [Config.LoRaConfig.RegionCode: RegionPresetInfo] = [:]
+</code></pre>
+<p>It is <strong>reset to empty on disconnect</strong> (<code>updateState</code> → <code>.idle</code>/<code>.discovering</code>), so the
+map always reflects the currently connected radio. There is no SwiftData persistence —
+the radio re-sends it every handshake, and the LoRa screen only edits a connected node.</p>
+<h2>Firmware gating</h2>
+<p>The new 2.8 regions and presets must <strong>not</strong> be settable on radios running 2.7.x or
+earlier, which have no band table for them and would silently clamp the selection.
+<code>RegionCodes</code> and <code>ModemPresets</code> (in <code>LoraConfigEnums.swift</code>) mark the 2.8 additions and
+expose firmware-aware selection helpers:</p>
+<pre><code class="language-swift">RegionCodes.selectable(supports2_8: Bool) -&gt; [RegionCodes]
+ModemPresets.selectable(supports2_8: Bool) -&gt; [ModemPresets]
+</code></pre>
+<p>When <code>supports2_8</code> is <code>false</code>, the amateur/ham regions (<code>itu*</code>), the EU 866 / narrow
+regions, and the Lite / Narrow / Tiny presets are dropped from the pickers. The flag is
+derived from the connected radio via the existing
+<code>AccessoryManager.checkIsVersionSupported(forVersion: &quot;2.8.0&quot;)</code>. The legacy
+<code>userSelectable</code> accessors are retained for callers with no firmware context (e.g. the
+discovery scan) and are equivalent to <code>selectable(supports2_8: false)</code>.</p>
+<h2>UI integration</h2>
+<p><a href="https://github.com/meshtastic/Meshtastic-Apple/blob/main/Meshtastic/Views/Settings/Config/LoRaConfig.swift"><code>LoRaConfig.swift</code></a>
+reads <code>accessoryManager.loRaRegionPresets</code> and applies these rules:</p>
+<ul>
+<li><strong>Filter</strong> — when <em>Use Preset</em> is on, the preset picker (<code>availablePresets</code>) is the
+firmware-gated list intersected with the selected region's legal set. It never renders
+empty: an absent region or absent message falls back to the full gated list.</li>
+<li><strong>Default preset</strong> — switching region runs <code>applyRegionPresetDefault(forRegion:)</code>,
+which delegates to the pure, unit-tested <code>ModemPresets.presetToSelect(…)</code>. A
+factory-flashed node (region still unset) defaults to <strong>Long Turbo</strong> when <strong>US</strong> is
+selected; otherwise, if the current preset is not legal in the new region, it selects
+that region's <code>default_preset</code>.</li>
+<li><strong>Licensed bands</strong> — when the region's <code>licensed_only</code> is set, a warning row is shown,
+coordinated with the operator's <code>is_licensed</code> flag in User Config.</li>
+<li><strong>EU auto-swap</strong> — the firmware may swap the EU sibling regions
+(<code>EU_868</code> / <code>EU_866</code> / <code>EU_N_868</code>) on a preset change. The screen dismisses on save and
+re-reads the persisted (possibly swapped) region on reopen, so the picker stays
+consistent.</li>
+</ul>
+<h2>Semantics (the load-bearing rules)</h2>
+<table>
+<thead>
+<tr>
+<th>Rule</th>
+<th>Behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Region absent from map</td>
+<td>No constraint — show the full (firmware-gated) preset list.</td>
+</tr>
+<tr>
+<td>Whole message absent (pre-2.8)</td>
+<td>No constraint — keep unconstrained behavior; never block the screen waiting for it.</td>
+</tr>
+<tr>
+<td><code>default_preset</code></td>
+<td>Always a member of the group's <code>presets</code>; used to re-select when the current preset becomes illegal.</td>
+</tr>
+<tr>
+<td><code>licensed_only</code></td>
+<td>Ham/amateur band — warn/gate and coordinate with <code>is_licensed</code>.</td>
+</tr>
+<tr>
+<td>Source of truth</td>
+<td>The firmware still validates/clamps; the map is a UI guard, not a correctness boundary.</td>
+</tr>
+</tbody>
+</table>
+<p>Regions with no firmware band table (<code>EU_874</code>, <code>EU_917</code>, <code>ITU*_70CM</code>) are simply absent
+from the map and carry no constraint.</p>
+<h2>Files</h2>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Meshtastic/Enums/LoraConfigEnums.swift</code></td>
+<td><code>RegionCodes</code>/<code>ModemPresets</code> cases, gating helpers, <code>RegionPresetInfo</code>, <code>LoRaRegionPresetMap.decoded()</code></td>
+</tr>
+<tr>
+<td><code>Meshtastic/Accessory/Accessory Manager/AccessoryManager.swift</code></td>
+<td><code>loRaRegionPresets</code> storage, <code>.regionPresets</code> dispatch, disconnect reset</td>
+</tr>
+<tr>
+<td><code>Meshtastic/Accessory/Accessory Manager/AccessoryManager+FromRadio.swift</code></td>
+<td><code>handleRegionPresets(_:)</code></td>
+</tr>
+<tr>
+<td><code>Meshtastic/Views/Settings/Config/LoRaConfig.swift</code></td>
+<td>Region/preset pickers, filtering, default-preset switch, licensed warning</td>
+</tr>
+<tr>
+<td><code>MeshtasticTests/LoraDeviceEnumTests.swift</code></td>
+<td><code>LoRaRegionPresetMapTests</code>, <code>LoRaFirmwareGatingTests</code></td>
+</tr>
+</tbody>
+</table>
+<h2>Testing</h2>
+<p><code>LoRaRegionPresetMapTests</code> decodes the firmware's reference table (spec §9 — six preset
+groups) and asserts the per-region presets, defaults, and licensing — including that two
+groups sharing the same preset list keep distinct licensing, that an out-of-range
+<code>group_index</code> is skipped, and that absent regions carry no entry.
+<code>LoRaFirmwareGatingTests</code> covers the <code>selectable(supports2_8:)</code> gating for both enums.</p>
+</body>
+</html>

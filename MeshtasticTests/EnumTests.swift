@@ -15,8 +15,12 @@ struct RoutingErrorTests {
 		}
 	}
 
-	@Test func none_displayIsAcknowledged() {
-		#expect(RoutingError.none.display == "Acknowledged")
+	@Test func none_displayIsDeliveredToRecipient() {
+		#expect(RoutingError.none.display == "Delivered to recipient")
+	}
+
+	@Test func noChannel_displayUsesSourceBackedMeaning() {
+		#expect(RoutingError.noChannel.display == "Channel/key mismatch")
 	}
 
 	@Test func none_canRetryIsFalse() {

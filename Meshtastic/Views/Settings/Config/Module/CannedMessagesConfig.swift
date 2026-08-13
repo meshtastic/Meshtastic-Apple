@@ -17,7 +17,6 @@ struct CannedMessagesConfig: View {
 	@State var hasChanges = false
 	@State var hasMessagesChanges = false
 	@State var configPreset = 0
-	@State var enabled = false
 	/// CannedMessageModule will sends a bell character with the messages.
 	@State var sendBell: Bool = false
 	/// Enable the rotary encoder #1. This is a 'dumb' encoder sending pulses on both A and B pins while rotating.
@@ -43,17 +42,10 @@ struct CannedMessagesConfig: View {
 			
 			Section(header: Text("Options")) {
 				
-				Toggle(isOn: $enabled) {
-					
-					Label("Enabled", systemImage: "list.bullet.rectangle.fill")
-				}
-				.tint(.accentColor)
-				
 				Toggle(isOn: $sendBell) {
 					
 					Label("Send Bell", systemImage: "bell")
 				}
-				.tint(.accentColor)
 				
 				Picker("Configuration Presets", selection: $configPreset ) {
 					ForEach(ConfigPresets.allCases) { cp in
@@ -89,13 +81,11 @@ struct CannedMessagesConfig: View {
 					
 					Label("Rotary 1", systemImage: "dial.min")
 				}
-				.tint(.accentColor)
 				.disabled(updown1Enabled)
 				Toggle(isOn: $updown1Enabled) {
 					
 					Label("Up Down 1", systemImage: "arrow.up.arrow.down")
 				}
-				.tint(.accentColor)
 				.disabled(rotary1Enabled)
 			}
 			.disabled(configPreset > 0)
@@ -184,17 +174,15 @@ struct CannedMessagesConfig: View {
 						dismiss: goBack
 					) { fromUser, toUser in
 						var cmc = ModuleConfig.CannedMessageConfig()
-						cmc.enabled = enabled
+						// enabled is deprecated with no successor and removed from active
+						// use — intentionally not written. (#2021)
 						cmc.sendBell = sendBell
 						cmc.rotary1Enabled = rotary1Enabled
 						cmc.updown1Enabled = updown1Enabled
-						if rotary1Enabled {
-							cmc.allowInputSource = "rotEnc1"
-						} else if updown1Enabled {
-							cmc.allowInputSource = "upDown1"
-						} else {
-							cmc.allowInputSource = "_any"
-						}
+						// allow_input_source is deprecated with no successor — the input
+						// source is governed by the rotary1Enabled / updown1Enabled flags
+						// above. Intentionally not written; inbound values from older
+						// firmware are ignored (never persisted). (#2022)
 						cmc.inputbrokerPinA = UInt32(inputbrokerPinA)
 						cmc.inputbrokerPinB = UInt32(inputbrokerPinB)
 						cmc.inputbrokerPinPress = UInt32(inputbrokerPinPress)
@@ -265,9 +253,6 @@ struct CannedMessagesConfig: View {
 			
 			hasChanges = true
 		}
-		.onChange(of: enabled) { _, newEnabled in
-			if newEnabled != node?.cannedMessageConfig?.enabled { hasChanges = true }
-		}
 		.onChange(of: sendBell) { _, newSendBell in
 			if newSendBell != node?.cannedMessageConfig?.sendBell { hasChanges = true }
 		}
@@ -297,7 +282,6 @@ struct CannedMessagesConfig: View {
 		}
 	}
 	func setCannedMessagesValues() {
-		self.enabled = node?.cannedMessageConfig?.enabled ?? false
 		self.sendBell = node?.cannedMessageConfig?.sendBell ?? false
 		self.rotary1Enabled = node?.cannedMessageConfig?.rotary1Enabled ?? false
 		self.updown1Enabled = node?.cannedMessageConfig?.updown1Enabled ?? false

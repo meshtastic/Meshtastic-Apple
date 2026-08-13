@@ -54,7 +54,7 @@ struct NodeMapContent: MapContent {
 		ForEach(positionArray, id: \.id) { position in
 			let headingDegrees = Angle.degrees(Double(position.heading))
 			/// Reduced Precision Map Circle
-			if position.latest && 12...15 ~= position.precisionBits {
+			if position.latest && position.isReducedPrecision {
 				let pp = PositionPrecision(rawValue: Int(position.precisionBits))
 				let radius: CLLocationDistance = pp?.precisionMeters ?? 0
 				if radius > 0.0 {

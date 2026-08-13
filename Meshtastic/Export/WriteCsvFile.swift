@@ -63,6 +63,25 @@ func telemetryToCsvFile<S: Sequence>(telemetry: S, metricsType: Int) -> String w
 			csvString += ", "
 			csvString += dm.time?.formatted(date: .numeric, time: .shortened).replacing(",", with: "") ?? ""
 		}
+	} else if metricsType == 3 {
+		// Create Air Quality Metrics Header (particulate matter, µg/m³)
+		csvString = "PM1.0 Std, PM2.5 Std, PM10 Std, PM1.0 Env, PM2.5 Env, PM10 Env, \("Timestamp".localized)"
+		for dm in telemetry where dm.metricsType == 3 {
+			csvString += "\n"
+			csvString += dm.pm10Standard?.formatted(.number.grouping(.never)) ?? ""
+			csvString += ", "
+			csvString += dm.pm25Standard?.formatted(.number.grouping(.never)) ?? ""
+			csvString += ", "
+			csvString += dm.pm100Standard?.formatted(.number.grouping(.never)) ?? ""
+			csvString += ", "
+			csvString += dm.pm10Environmental?.formatted(.number.grouping(.never)) ?? ""
+			csvString += ", "
+			csvString += dm.pm25Environmental?.formatted(.number.grouping(.never)) ?? ""
+			csvString += ", "
+			csvString += dm.pm100Environmental?.formatted(.number.grouping(.never)) ?? ""
+			csvString += ", "
+			csvString += dm.time?.formatted(date: .numeric, time: .shortened).replacing(",", with: "") ?? ""
+		}
 	} else if metricsType == 4 {
 		// Create Local Stats Header
 		csvString = "Noise Floor, Uptime, Relayed, Canceled, Dupes, Packets Tx, Packets Rx, Bad Rx, Nodes Online, Total Nodes, \("Timestamp".localized)"

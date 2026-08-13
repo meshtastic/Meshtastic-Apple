@@ -46,4 +46,10 @@ extension Color {
 	/// Branded blue — shadows SwiftUI `Color.blue`
 	/// Info #5C6BC0 both modes
 	static let blue = Color("Colors/MeshtasticInfo")
+
+	/// Message search/jump highlight wash — warning amber #E8A33E with baked
+	/// per-mode alpha (0.20 light / 0.32 dark) so it composites to a warm cream
+	/// on light lists and a readable gold on dark, instead of the muddy olive
+	/// that translucent system yellow produced over black.
+	static let messageHighlight = Color("Colors/MeshtasticHighlight")
 }

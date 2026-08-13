@@ -59,6 +59,36 @@ struct Channels: View {
 		return byIndex.values.sorted { $0.index < $1.index }
 	}
 
+	private var locationSharingChannelIndex: Int32? {
+		if accessoryManager.checkIsVersionSupported(forVersion: "2.6.10") {
+			return displayChannels.first { $0.positionPrecision > 0 }?.index
+		}
+		guard let primary = displayChannels.first(where: { $0.index == 0 || $0.role == 1 }),
+			  primary.positionPrecision > 0 else {
+			return nil
+		}
+		return primary.index
+	}
+
+	private var primaryChannelName: String {
+		if let primary = displayChannels.first(where: { $0.index == 0 || $0.role == 1 }),
+		   let name = primary.name,
+		   !name.isEmpty {
+			return name
+		}
+		if node.loRaConfig?.usePreset == false {
+			return "Custom"
+		}
+		guard let preset = ModemPresets(rawValue: Int(node.loRaConfig?.modemPreset ?? 0)) else {
+			return "LongFast"
+		}
+		return preset.androidChannelName
+	}
+
+	private var channelFrequencySummary: ChannelFrequencySummary? {
+		ChannelFrequencySummary(loRaConfig: node.loRaConfig, primaryChannelName: primaryChannelName)
+	}
+
 	private func normalizeDuplicateChannelsIfNeeded() {
 		guard let channels = node.myInfo?.channels else { return }
 		var uniqueChannels: [Int32: ChannelEntity] = [:]
@@ -84,6 +114,9 @@ struct Channels: View {
 					.tipBackground(colorScheme == .dark ? Color(.systemBackground) : Color(.secondarySystemBackground))
 					.listRowSeparator(.hidden)
 				if node.myInfo != nil {
+					if let channelFrequencySummary {
+						ChannelConfigSummaryRow(summary: channelFrequencySummary)
+					}
 					ForEach(displayChannels, id: \.self) { (channel: ChannelEntity) in
 						Button(action: {
 							channelIndex = channel.index
@@ -139,28 +172,9 @@ struct Channels: View {
 							hasChanges = false
 							selectedChannel = channel
 						}) {
-							VStack(alignment: .leading) {
-								HStack {
-									CircleText(text: String(channel.index), color: .accentColor, circleSize: 45)
-										.padding(.trailing, 5)
-										.brightness(0.1)
-									VStack {
-										HStack {
-											ChannelLock(channel: channel)
-											if channel.name?.isEmpty ?? false {
-												if channel.role == 1 {
-													Text(String("PrimaryChannel").camelCaseToWords()).font(.headline)
-												} else {
-													Text(String("Channel \(channel.index)").camelCaseToWords()).font(.headline)
-												}
-											} else {
-												Text(String(channel.name ?? "Channel \(channel.index)").camelCaseToWords()).font(.headline)
-											}
-										}
-									}
-								}
-							}
+							ChannelRow(channel: channel, sharesLocation: channel.index == locationSharingChannelIndex)
 						}
+						.buttonStyle(.plain)
 					}
 				}
 				if (node.myInfo?.channels.count ?? 0) < 8 {
@@ -338,6 +352,7 @@ struct Channels: View {
 				.foregroundColor(.accentColor)
 				.buttonStyle(.borderedProminent)
 				.buttonBorderShape(.circle)
+				.accessibilityLabel(showingHelp ? String(localized: "Hide help", comment: "VoiceOver label for the help toggle button when help is showing") : String(localized: "Show help", comment: "VoiceOver label for the help toggle button when help is hidden"))
 			}
 			.controlSize(.regular)
 			.padding(5)
@@ -450,3 +465,95 @@ enum PositionPrecision: Int, CaseIterable, Identifiable {
 		return String.localizedStringWithFormat("Within %@".localized, String(distanceFormatter.string(fromDistance: precisionMeters)))
 	}
 }
+
+private struct ChannelConfigSummaryRow: View {
+	let summary: ChannelFrequencySummary
+
+	var body: some View {
+		HStack(spacing: 8) {
+			Image(systemName: "antenna.radiowaves.left.and.right")
+				.foregroundStyle(.secondary)
+			Text(summary.regionName)
+			Spacer(minLength: 8)
+			Text("\(summary.frequencyText) · Slot \(summary.slotText)")
+				.monospacedDigit()
+		}
+		.font(.caption)
+		.foregroundStyle(.secondary)
+		.listRowSeparator(.hidden)
+		.accessibilityElement(children: .combine)
+	}
+}
+
+private struct ChannelRow: View {
+	let channel: ChannelEntity
+	let sharesLocation: Bool
+
+	private var title: String {
+		if let name = channel.name, !name.isEmpty {
+			return name
+		}
+		if channel.role == 1 {
+			return "Primary Channel"
+		}
+		return "Channel \(channel.index)"
+	}
+
+	private var subtitle: String {
+		if channel.role == 1 {
+			return "Primary channel"
+		}
+		return "Channel \(channel.index)"
+	}
+
+	var body: some View {
+		HStack(alignment: .center, spacing: 10) {
+			CircleText(text: String(channel.index), color: .accentColor, circleSize: 45)
+				.padding(.trailing, 5)
+				.brightness(0.1)
+			VStack(alignment: .leading, spacing: 3) {
+				HStack(spacing: 6) {
+					ChannelLock(channel: channel)
+					Text(title)
+						.font(.headline)
+						.foregroundStyle(.primary)
+				}
+				Text(subtitle)
+					.font(.caption)
+					.foregroundStyle(.secondary)
+			}
+			Spacer(minLength: 0)
+			// MQTT uplink/downlink cloud icons used to render here too, but downlink is
+			// commonly enabled by default, so nearly every channel row carried a cloud
+			// that read as a download button rather than status — removed. The uplink/
+			// downlink toggles remain visible in the channel editor itself.
+			if sharesLocation {
+				ChannelStatusIcon(
+					systemImage: "location.fill",
+					color: .green,
+					accessibilityLabel: String(localized: "Position sharing", comment: "VoiceOver: this channel shares location")
+				)
+			}
+		}
+		.padding(.vertical, 4)
+		.accessibilityElement(children: .combine)
+	}
+}
+
+private struct ChannelStatusIcon: View {
+	let systemImage: String
+	let color: Color
+	let accessibilityLabel: String
+
+	var body: some View {
+		Image(systemName: systemImage)
+			.font(.caption)
+			.foregroundStyle(color)
+			.accessibilityLabel(accessibilityLabel)
+	}
+}
+
+// `ChannelFrequencySummary`, `LoRaChannelCalculator`, `RegionInfo`, and the
+// `ModemPresets` bandwidth/name helpers moved to
+// `Meshtastic/Helpers/LoRaChannelCalculator.swift` so the Mesh Beacons join
+// enhancement can reuse the firmware-accurate slot math.

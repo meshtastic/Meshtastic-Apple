@@ -33,9 +33,12 @@ struct TapbackInputView: View {
 			.navigationBarTitleDisplayMode(.inline)
 			.toolbar {
 				ToolbarItem(placement: .navigationBarTrailing) {
-					Button("Cancel") {
+					Button {
 						isPresented = false
+					} label: {
+						Image(systemName: "xmark")
 					}
+					.accessibilityLabel(String(localized: "Cancel", comment: "VoiceOver: dismiss the tapback emoji picker"))
 				}
 			}
 		}

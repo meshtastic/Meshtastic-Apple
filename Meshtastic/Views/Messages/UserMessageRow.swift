@@ -28,7 +28,30 @@ struct UserMessageRow: View {
 	private var isCurrentUser: Bool {
 		Int64(preferredPeripheralNum) == message.fromUser?.num
 	}
-	
+
+	/// A single, natural-language description of the message bubble so VoiceOver reads one element
+	/// (sender + text + timestamp + security state) instead of separate fragments. Delivery/read
+	/// status stays its own labeled element (MessageDeliveryStatusLabel) directly after.
+	///
+	/// The badge portion is built from `MessageEntity.activeStatusBadges`, the same source of truth
+	/// MessageText's per-badge overlays read from, so this combined label can't silently drop a
+	/// badge (encrypted, verified, store-and-forward, detection sensor, translated) that the bubble
+	/// itself is showing (issue #016 T003).
+	private var messageAccessibilityLabel: String {
+		let text = message.displayedPayload
+		let time = message.timestamp.formatted(date: .abbreviated, time: .shortened)
+		var parts: [String]
+		if isCurrentUser {
+			parts = [String(localized: "You sent: \(text)", comment: "VoiceOver: label for a message you sent. %@ is the message text")]
+		} else {
+			let sender = message.fromUser?.longName ?? "Unknown".localized
+			parts = [String(localized: "Message from \(sender): \(text)", comment: "VoiceOver: label for a received message. First value is the sender, second is the message text")]
+		}
+		parts.append(time)
+		parts.append(contentsOf: message.activeStatusBadges(destination: .user(user), isCurrentUser: isCurrentUser).map(\.label))
+		return parts.joined(separator: ", ")
+	}
+
 	init(
 		message: MessageEntity,
 		replyMessage: MessageEntity?,
@@ -57,6 +80,20 @@ struct UserMessageRow: View {
 	}
 	
 	var body: some View {
+		// A retained message row can re-evaluate its body after the underlying MessageEntity has been
+		// deleted/invalidated (messages are pruned underneath the list). Reading any persisted property
+		// of a deleted @Model — directly, via the `fromUser` relationship, or through the MessageEntity
+		// computed-property extensions — fatally traps in SwiftData (SIGTRAP). Bail to an empty row when
+		// the message is no longer live; the List drops it on its next rebuild. Mirrors the NodeListItem
+		// guard.
+		if message.modelContext != nil && !message.isDeleted {
+			rowContent
+		} else {
+			EmptyView()
+		}
+	}
+
+	@ViewBuilder private var rowContent: some View {
 		VStack(alignment: .leading, spacing: 0) {
 			
 			// Timestamp Header
@@ -81,8 +118,12 @@ struct UserMessageRow: View {
 							scrollView.scrollTo(messageNum, anchor: .center)
 							Task {
 								DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-									withAnimation(.easeInOut(duration: 0.5)) {
-										messageToHighlight = -1
+									// Only clear if this jump's highlight is still the active one — a search
+									// (or later jump) may have moved the highlight elsewhere in the meantime.
+									if messageToHighlight == messageNum {
+										withAnimation(.easeInOut(duration: 0.5)) {
+											messageToHighlight = -1
+										}
 									}
 								}
 							}
@@ -97,6 +138,7 @@ struct UserMessageRow: View {
 						.padding(10)
 						.overlay(RoundedRectangle(cornerRadius: 18).stroke(Color.blue, lineWidth: 0.5))
 					}
+					.accessibilityLabel(String(localized: "Replying to: \(replyMessage?.displayedPayload ?? "EMPTY MESSAGE")", comment: "VoiceOver: button that jumps to the quoted message being replied to. %@ is the quoted text"))
 					if !isCurrentUser { Spacer(minLength: 50) }
 				}
 			}
@@ -114,11 +156,13 @@ struct UserMessageRow: View {
 				}
 				
 				VStack(alignment: isCurrentUser ? .trailing : .leading) {
+					let deliveryStatus = isCurrentUser ? message.deliveryStatus(isDirectMessage: true) : nil
 					
 					// Sender Name Header
 					if !isCurrentUser && message.fromUser != nil {
 						Text("\(message.fromUser?.longName ?? "Unknown".localized ) (\(message.fromUser?.userId ?? "?"))")
 							.font(.caption).foregroundColor(.gray).offset(y: 8)
+							.accessibilityHidden(true) // Folded into the message bubble's combined label
 					}
 					
 					// Message Bubble
@@ -129,11 +173,15 @@ struct UserMessageRow: View {
 							isCurrentUser: isCurrentUser
 						) {
 							self.replyMessageId = message.messageId
-							self.messageFieldFocused = true						} onTapback: {
-							onTapback(message)						}
+							self.messageFieldFocused = true
+						} onTapback: {
+							onTapback(message)
+						}
+						.accessibilityElement(children: .combine)
+						.accessibilityLabel(messageAccessibilityLabel)
 						
-						if isCurrentUser && message.canRetry || (isCurrentUser && message.receivedACK && !message.realACK) {
-							RetryButton(message: message, destination: .user(user))
+						if let deliveryStatus, deliveryStatus.canRetry {
+							RetryButton(message: message, destination: .user(user), status: deliveryStatus)
 						}
 					}
 					
@@ -141,23 +189,8 @@ struct UserMessageRow: View {
 					
 					// ACK Error
 					HStack {
-						let ackErrorVal = RoutingError(rawValue: Int(message.ackError))
-						if isCurrentUser && message.receivedACK {
-							// Ack Received
-							if message.realACK {
-								Text("\(ackErrorVal?.display ?? "Empty Ack Error")")
-									.font(.caption2)
-									.foregroundStyle(ackErrorVal?.color ?? Color.secondary)
-							} else {
-								Text("Acknowledged by another node").font(.caption2).foregroundColor(.orange)
-							}
-						} else if isCurrentUser && message.ackError == 0 {
-							// Empty Error
-							Text("Waiting to be acknowledged. . .").font(.caption2).foregroundColor(.yellow)
-						} else if isCurrentUser && message.ackError > 0 {
-							Text("\(ackErrorVal?.display ?? "Empty Ack Error")").fixedSize(horizontal: false, vertical: true)
-								.foregroundStyle(ackErrorVal?.color ?? Color.red)
-								.font(.caption2)
+						if let deliveryStatus {
+							MessageDeliveryStatusLabel(status: deliveryStatus)
 						}
 					}
 				}
@@ -170,5 +203,11 @@ struct UserMessageRow: View {
 			
 		}
 		.id(message.messageId)
+		.background(
+			RoundedRectangle(cornerRadius: 8)
+				.fill(Color.messageHighlight.opacity(messageToHighlight == message.messageId ? 1 : 0))
+				.padding(.horizontal, 4)
+		)
+		.animation(.easeInOut(duration: 0.3), value: messageToHighlight)
 	}
 }

@@ -208,6 +208,7 @@ struct NodeMapSwiftUI: View {
 			}) {
 				Image(systemName: isEditingSettings ? "info.circle.fill" : "info.circle")
 			}
+			.accessibilityLabel(isEditingSettings ? Text("Hide map settings") : Text("Show map settings"))
 			.glassButtonStyle()
 
 			if scene != nil {
@@ -219,6 +220,7 @@ struct NodeMapSwiftUI: View {
 				}) {
 					Image(systemName: isLookingAround ? "binoculars.fill" : "binoculars")
 				}
+				.accessibilityLabel(isLookingAround ? Text("Exit look around") : Text("Look around"))
 				.glassButtonStyle()
 			}
 
@@ -231,6 +233,7 @@ struct NodeMapSwiftUI: View {
 				}) {
 					Image(systemName: isShowingAltitude ? "mountain.2.fill" : "mountain.2")
 				}
+				.accessibilityLabel(isShowingAltitude ? Text("Hide altitude chart") : Text("Show altitude chart"))
 				.glassButtonStyle()
 			}
 		}

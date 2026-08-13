@@ -39,38 +39,42 @@ struct NodeListItemCompact: View {
 		return f
 	}()
 
-	private func accessibilityDescription(cachedMetrics: TelemetryEntity?, cachedLocationData: (PositionEntity, CLLocation)?) -> String {
+	private func accessibilityDescription(_ summary: NodeListRowSummary, cachedLocationData: (nodeLocation: CLLocation, myLocation: CLLocation)?) -> String {
 		var desc = ""
-		if let shortName = node.user?.shortName {
+		// The device shortName is never overridden by a local display name, so it's safe to branch
+		// on it directly here; only the longName fallback needs the display-name-aware variant.
+		if let shortName = summary.shortName, !shortName.isEmpty {
 			desc = shortName.formatNodeNameForVoiceOver()
-		} else if let longName = node.user?.longName {
-			desc = longName
+		} else if !summary.displayLongName.isEmpty {
+			desc = summary.displayLongName
 		} else {
 			desc = "Unknown".localized + " " + "Node".localized
 		}
 		if isDirectlyConnected {
 			desc += ", currently connected"
 		}
-		if node.favorite {
+		if summary.favorite {
 			desc += ", favorite"
 		}
-		if let lastHeard = node.lastHeard {
+		if let status = summary.statusMessage {
+			desc += ", status: " + status
+		}
+		if let lastHeard = summary.lastHeard {
 			let relative = Self.relativeDateFormatter.localizedString(for: lastHeard, relativeTo: Date())
 			desc += ", last heard " + relative
 		}
-		if node.isOnline {
+		if summary.isOnline {
 			desc += ", online"
 		} else {
 			desc += ", offline"
 		}
-		let role = DeviceRoles(rawValue: Int(node.user?.role ?? 0))
-		if let roleName = role?.name {
+		if let roleName = summary.role?.name {
 			desc += ", role: \(roleName)"
 		}
-		if node.hopsAway > 0 {
-			desc += ", \(node.hopsAway) hops away"
+		if summary.hopsAway > 0 {
+			desc += ", \(summary.hopsAway) hops away"
 		}
-		if let battery = cachedMetrics?.batteryLevel {
+		if let battery = summary.batteryLevel {
 			if battery > 100 {
 				desc += ", " + "Plugged in".localized
 			} else if battery == 100 {
@@ -79,8 +83,7 @@ struct NodeListItemCompact: View {
 				desc += ", battery \(battery)%"
 			}
 		}
-		if !isDirectlyConnected, let (lastPosition, myCoord) = cachedLocationData {
-			let nodeCoord = CLLocation(latitude: lastPosition.nodeCoordinate!.latitude, longitude: lastPosition.nodeCoordinate!.longitude)
+		if !isDirectlyConnected, let (nodeCoord, myCoord) = cachedLocationData {
 			let metersAway = nodeCoord.distance(from: myCoord)
 			let formattedDistance = Self.distanceFormatter.string(fromMeters: metersAway)
 			desc += ", " + String(format: "%@: %@", "Distance".localized, formattedDistance)
@@ -89,11 +92,11 @@ struct NodeListItemCompact: View {
 			let formattedHeading = heading.formatted(.measurement(width: .narrow, numberFormatStyle: .number.precision(.fractionLength(0))))
 			desc += ", " + "Heading".localized + " " + formattedHeading
 		}
-		if node.snr != 0 && !node.viaMqtt {
+		if summary.snr != 0 && !summary.viaMqtt {
 			let signalStrength: BLESignalStrength
-			if node.snr < -10 {
+			if summary.snr < -10 {
 				signalStrength = .weak
-			} else if node.snr < 5 {
+			} else if summary.snr < 5 {
 				signalStrength = .normal
 			} else {
 				signalStrength = .strong
@@ -109,70 +112,94 @@ struct NodeListItemCompact: View {
 			}
 			desc += ", " + signalString
 		}
+		// Mirror the visual "Signed node" shield (rendered below) so VoiceOver announces it in the
+		// compact list too — affirmative only, never for unsigned nodes.
+		if summary.hasXeddsaSigned {
+			desc += ", " + "Signed node".localized
+		}
 		return desc
 	}
 
 		@Bindable var node: NodeInfoEntity
+		// Memoized value-type snapshot; rendered from instead of re-reading the live @Model on every
+		// body re-evaluation, so a retained row can't fault on a deleted/zombie node. See NodeListItem.
 		@State private var rowSummary: NodeListRowSummary?
 		var isDirectlyConnected: Bool
 		var connectedNode: Int64
 	var modemPreset: ModemPresets = ModemPresets(rawValue: UserDefaults.modemPreset) ?? ModemPresets.longFast
-	
-	var userKeyStatus: (String, Color) {
-		var image = "lock.open.fill"
-		var color = Color.yellow
-		if node.user?.pkiEncrypted ?? false {
-			if !(node.user?.keyMatch ?? false) {
-				image = "key.slash"
-				color = .red
-			} else {
-				image = "lock.fill"
-				color = .green
-			}
-		}
-		return (image, color)
-	}
-	
-	func locationData(for lastPosition: PositionEntity?) -> (PositionEntity, CLLocation)? {
-		guard let lastPosition else {
+
+	func locationData(for nodeCoordinate: CLLocationCoordinate2D?) -> (nodeLocation: CLLocation, myLocation: CLLocation)? {
+		guard let nodeCoordinate else {
 			return nil
 		}
 		guard let currentLocation = LocationsHandler.shared.locationsArray.last else {
 			return nil
 		}
-		
+
 		let myCoord = CLLocation(latitude: currentLocation.coordinate.latitude, longitude: currentLocation.coordinate.longitude)
-		
-		if lastPosition.nodeCoordinate != nil && myCoord.coordinate.longitude != LocationsHandler.DefaultLocation.longitude && myCoord.coordinate.latitude != LocationsHandler.DefaultLocation.latitude {
-			return (lastPosition, myCoord)
+
+		if myCoord.coordinate.longitude != LocationsHandler.DefaultLocation.longitude && myCoord.coordinate.latitude != LocationsHandler.DefaultLocation.latitude {
+			return (CLLocation(latitude: nodeCoordinate.latitude, longitude: nodeCoordinate.longitude), myCoord)
 		}
 		return nil
 	}
 	
-	var lineNums: Int {
+	private func lineNums(hasXeddsaSigned: Bool) -> Int {
 		var lines = 1
 		if shouldShowRole || shouldShowLocation || shouldShowTelemetry || shouldShowChannel || shouldShowHops || shouldShowSignal {
 			lines += 1
 		}
-		
+
 		if shouldShowLastHeard {
 			lines += 1
 		}
-		
+
+		// The signed-node ("Signed node") row renders on its own line whenever the node is signed,
+		// so reserve space for it too — otherwise the avatar circle is sized too short for signed
+		// nodes, most visibly when last-heard / telemetry rows are disabled.
+		if hasXeddsaSigned {
+			lines += 1
+		}
+
+		// Note: the status row's contribution is added by the caller via the resolved
+		// `statusMessage` value, so `node.statusMessageDisplay` is evaluated only once.
 		return lines
 	}
-	
+
 	var body: some View {
-		let circleSize = max(minCircle, min(maxCircle, baseUnit * CGFloat(lineNums)))
-		let cachedMetrics = (shouldShowPower || shouldShowTelemetry) ? rowSummary?.latestDeviceMetrics : nil
-		let needsLatestPosition = shouldShowTelemetry || (shouldShowLocation && connectedNode != node.num)
-		let cachedLatestPosition = needsLatestPosition ? rowSummary?.latestPosition : nil
-		let cachedLocationData = (shouldShowLocation && connectedNode != node.num) ? locationData(for: cachedLatestPosition) : nil
-		let cachedHasPositions = shouldShowTelemetry ? cachedLatestPosition != nil : false
-		let cachedHasDeviceMetrics = shouldShowTelemetry && cachedMetrics != nil
-		let cachedHasEnvironmentMetrics = shouldShowTelemetry ? rowSummary?.hasEnvironmentMetrics ?? false : false
-		let cachedHasDetectionSensorMetrics = shouldShowTelemetry ? rowSummary?.hasDetectionSensorMetrics ?? false : false
-		let cachedHasTraceRoutes = shouldShowTelemetry ? rowSummary?.hasTraceRoutes ?? false : false
+		// Render from the cached value-type snapshot whenever we have one — that path never touches
+		// the live @Model, so a row retained past the node's deletion (bulk deletes leave zombies
+		// that `isDeleted` doesn't flag) can't fault. Only the first appearance reads the live node,
+		// and only while it's still valid. See NodeListItem for the full explanation.
+		if let rowSummary {
+			rowContent(rowSummary)
+		} else if node.modelContext != nil && !node.isDeleted {
+			let summary = NodeListRowSummary(
+				node: node,
+				includeDeviceMetrics: shouldShowPower || shouldShowTelemetry,
+				includePosition: shouldShowTelemetry || (shouldShowLocation && connectedNode != node.num),
+				includeLogAvailability: shouldShowTelemetry
+			)
+			rowContent(summary)
+				.onAppear { rowSummary = summary }
+		} else {
+			EmptyView()
+		}
+	}
+
+	@ViewBuilder private func rowContent(_ summary: NodeListRowSummary) -> some View {
+		// Resolve the status once per render; reused for the row, circle sizing, and a11y.
+		let statusMessage = summary.statusMessage
+		let circleSize = max(minCircle, min(maxCircle, baseUnit * CGFloat(lineNums(hasXeddsaSigned: summary.hasXeddsaSigned) + (statusMessage != nil ? 1 : 0))))
+		let cachedBatteryLevel = (shouldShowPower || shouldShowTelemetry) ? summary.batteryLevel : nil
+		let needsLatestPosition = shouldShowTelemetry || (shouldShowLocation && connectedNode != summary.num)
+		let cachedLatestNodeCoordinate = needsLatestPosition ? summary.latestNodeCoordinate : nil
+		let cachedLocationData = (shouldShowLocation && connectedNode != summary.num) ? locationData(for: cachedLatestNodeCoordinate) : nil
+		let cachedHasPositions = shouldShowTelemetry ? summary.hasPosition : false
+		let cachedHasDeviceMetrics = shouldShowTelemetry && summary.hasDeviceMetrics
+		let cachedHasEnvironmentMetrics = shouldShowTelemetry ? summary.hasEnvironmentMetrics : false
+		let cachedHasDetectionSensorMetrics = shouldShowTelemetry ? summary.hasDetectionSensorMetrics : false
+		let cachedHasTraceRoutes = shouldShowTelemetry ? summary.hasTraceRoutes : false
 		// Plain VStack, not LazyVStack: a LazyVStack inside a List cell returns inconsistent
 		// self-sized heights and trips UICollectionViewCompositionalLayout's recursive
 		// layout-loop trap on iOS 18+/26. See NodeListItem for the full explanation.
@@ -180,9 +207,9 @@ struct NodeListItemCompact: View {
 			HStack {
 				// First Column
 				VStack(alignment: .center) {
-					CircleText(text: node.user?.shortName ?? "?", color: Color(UIColor(hex: UInt32(node.num))), circleSize: circleSize)
+					CircleText(text: summary.shortName ?? "?", color: Color(UIColor(hex: UInt32(summary.num))), circleSize: circleSize)
 						.padding(.trailing, 5)
-					if shouldShowPower, let batteryLevel = cachedMetrics?.batteryLevel {
+					if shouldShowPower, let batteryLevel = cachedBatteryLevel {
 						BatteryCompact(batteryLevel: batteryLevel, font: .caption2, iconFont: .caption, color: .accentColor)
 							.padding(.trailing, 5)
 					}
@@ -191,34 +218,53 @@ struct NodeListItemCompact: View {
 				// Second Column
 				VStack(alignment: .leading, spacing: rowSpacing) {
 					HStack(alignment: .firstTextBaseline) {
-						let (image, color) = userKeyStatus
+						let (image, color) = summary.keyStatus
 						IconAndText(systemName: image,
 									imageColor: color,
-									text: node.user?.longName?.addingVariationSelectors ?? "Unknown".localized,
+									text: summary.displayLongName.addingVariationSelectors,
 									textColor: .primary)
-						if node.favorite {
+						if summary.favorite {
 							Spacer()
 							Image(systemName: "star.fill")
 								.symbolRenderingMode(.multicolor)
 						}
 					}
-					if shouldShowLastHeard && node.lastHeard?.timeIntervalSince1970 ?? 0 > 0 && node.lastHeard! < Calendar.current.date(byAdding: .year, value: 1, to: Date())! {
-						
+					// Signed node = XEdDSA-signed NodeInfo broadcast → identity verified by the radio.
+					// Affirmative only; never shown for unsigned nodes. Mirrors the Node Detail row.
+					if summary.hasXeddsaSigned {
+						IconAndText(systemName: "checkmark.shield.fill",
+									imageColor: .green,
+									text: "Signed node".localized)
+					}
+					// User-authored status broadcast by the node, directly beneath the name.
+					// Single-line clamp keeps the compact row dense; omitted when empty.
+					// Untrusted free text: rendered verbatim as plain text only.
+					if let statusMessage {
+						NodeCardStatusRow(
+							status: statusMessage,
+							iconWidth: nil,
+							iconFont: .caption,
+							textFont: .caption,
+							lineLimit: 1
+						)
+						.padding(EdgeInsets(top: 0, leading: 6, bottom: 0, trailing: 0))
+					}
+					if shouldShowLastHeard && summary.lastHeard?.timeIntervalSince1970 ?? 0 > 0 && summary.lastHeard! < Calendar.current.date(byAdding: .year, value: 1, to: Date())! {
+
 						let lastHeardText = lastHeardIsRelative ?
-						node.lastHeard?.formatted(Date.RelativeFormatStyle()) :
-						node.lastHeard?.formatted()
-						
+						summary.lastHeard?.formatted(Date.RelativeFormatStyle()) :
+						summary.lastHeard?.formatted()
+
 						IconAndText(
-							systemName: node.isOnline ? "checkmark.circle.fill" : "moon.circle.fill",
-							imageColor: node.isOnline ? .green : .orange,
+							systemName: summary.isOnline ? "checkmark.circle.fill" : "moon.circle.fill",
+							imageColor: summary.isOnline ? .green : .orange,
 							text: lastHeardText ?? "Unknown Age".localized
 						)
 					}
 					// Distance, bearing, hops, signal, role, telemetry row
 					HStack(alignment: .center, spacing: 6) {
-						if shouldShowLocation && connectedNode != node.num {
-							if let (lastPostion, myCoord) = cachedLocationData {
-								let nodeCoord = CLLocation(latitude: lastPostion.nodeCoordinate!.latitude, longitude: lastPostion.nodeCoordinate!.longitude)
+						if shouldShowLocation && connectedNode != summary.num {
+							if let (nodeCoord, myCoord) = cachedLocationData {
 								let metersAway = nodeCoord.distance(from: myCoord)
 								DistanceText(meters: metersAway, isCompact: true)
 									.font(.callout)
@@ -232,31 +278,40 @@ struct NodeListItemCompact: View {
 									.rotationEffect(Angle(degrees: headingDegrees.value))
 							}
 						}
-						if shouldShowHops && node.hopsAway > 0 {
+						if shouldShowHops && summary.hopsAway > 0 {
 							Divider().frame(height: 15)
-							DefaultIconCompact(systemName: "\(node.hopsAway).square")
+							DefaultIconCompact(systemName: "\(summary.hopsAway).square")
 						}
-						if shouldShowSignal && node.hopsAway == 0 && node.snr != 0 && !node.viaMqtt {
+						if shouldShowSignal && summary.hopsAway == 0 && summary.snr != 0 && !summary.viaMqtt {
 							Divider().frame(height: 15)
-							DefaultIconCompact(systemName: "dot.radiowaves.left.and.right")
-								.foregroundColor(getSnrColor(snr: node.snr, preset: modemPreset))
+							// rssi: 0 forces the SNR-only branch so this tier can never disagree with
+							// getSnrColor below, which is also SNR-only (matches TraceRouteLog.swift /
+							// MeshMapMK.swift, the other two call sites in this file's PR).
+							let signalTier = getLoRaSignalStrength(snr: summary.snr, rssi: 0, preset: modemPreset)
+							DefaultIconCompact(
+								systemName: signalTier == .none ? "antenna.radiowaves.left.and.right.slash" : "antenna.radiowaves.left.and.right",
+								variableValue: signalTier == .none ? nil : Double(signalTier.rawValue) / Double(LoRaSignalStrength.good.rawValue)
+							)
+								.foregroundColor(getSnrColor(snr: summary.snr, preset: modemPreset))
+								.accessibilityLabel(
+									String(localized: "Signal \(signalTier.description)", comment: "VoiceOver: LoRa signal quality of this directly-heard node")
+								)
 						}
-						if shouldShowChannel && node.channel > 0 {
+						if shouldShowChannel && summary.channel > 0 {
 							Divider().frame(height: 15)
-							DefaultIconCompact(systemName: "\(node.channel).circle.fill")
+							DefaultIconCompact(systemName: "\(summary.channel).circle.fill")
 						}
 						// Device Role
 						if shouldShowRole {
 							Divider().frame(height: 15)
-							let role = DeviceRoles(rawValue: Int(node.user?.role ?? 0))
-							DefaultIconCompact(systemName: role?.systemName ?? "figure")
-							if node.user?.unmessagable ?? false {
+							DefaultIconCompact(systemName: summary.role?.systemName ?? "figure")
+							if summary.unmessagable {
 								DefaultIconCompact(systemName: "iphone.slash")
 							}
-							if node.isStoreForwardRouter {
+							if summary.isStoreForwardRouter {
 								DefaultIconCompact(systemName: "envelope.arrow.triangle.branch")
 							}
-							if node.viaMqtt && connectedNode != node.num {
+							if summary.viaMqtt && connectedNode != summary.num {
 								DefaultIconCompact(systemName: "dot.radiowaves.up.forward")
 							}
 						}
@@ -288,26 +343,31 @@ struct NodeListItemCompact: View {
 		}
 			.padding(.top, 2)
 			.padding(.bottom, 2)
-			.task(id: node.lastHeard) {
-				rowSummary = await MainActor.run {
-					NodeListRowSummary(
-						node: node,
-						includeDeviceMetrics: shouldShowPower || shouldShowTelemetry,
-						includePosition: needsLatestPosition,
-						includeLogAvailability: shouldShowTelemetry
-					)
-				}
+			// Gate the identity on liveness too: `.task(id:)` reads `node.lastHeard` during body
+			// construction, which would fault on an invalidated model before the body's guard runs.
+			.task(id: (node.modelContext != nil && !node.isDeleted) ? node.lastHeard : nil) {
+				// Refresh the snapshot when the node changes, but only while it is still live.
+				guard node.modelContext != nil && !node.isDeleted else { return }
+				rowSummary = NodeListRowSummary(
+					node: node,
+					includeDeviceMetrics: shouldShowPower || shouldShowTelemetry,
+					includePosition: needsLatestPosition,
+					includeLogAvailability: shouldShowTelemetry
+				)
 			}
 			.accessibilityElement(children: .ignore)
-			.accessibilityLabel(accessibilityDescription(cachedMetrics: cachedMetrics, cachedLocationData: cachedLocationData))
+			.accessibilityLabel(accessibilityDescription(summary, cachedLocationData: cachedLocationData))
 	}
 }
 
 struct DefaultIconCompact: View {
 	let systemName: String
-	
+	/// Optional 0...1 fill for symbols that support SF Symbols variable color (e.g. the
+	/// radiowaves signal icon), so tiers are distinguishable by rendered shape, not color alone.
+	var variableValue: Double?
+
 	var body: some View {
-		Image(systemName: systemName)
+		Image(systemName: systemName, variableValue: variableValue)
 			.symbolRenderingMode(.hierarchical)
 			.padding(.top, 2)
 			.font(.callout)

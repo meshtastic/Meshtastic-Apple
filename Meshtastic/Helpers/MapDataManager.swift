@@ -6,7 +6,7 @@ import Combine
 /// Manager for handling user-uploaded map data files
 class MapDataManager: ObservableObject {
 	static let shared = MapDataManager()
-	private init() {}
+	init() {}
 
 	// MARK: - Constants
 	private let maxFileSize: Int64 = 10 * 1024 * 1024 // 10MB
@@ -100,6 +100,36 @@ class MapDataManager: ObservableObject {
 		try saveMetadata()
 
 		return metadata
+	}
+
+	/// Imports an in-memory GeoJSON string (e.g. the coverage `FeatureCollection` handed back by
+	/// the Site Planner's native bridge) through the same pipeline as `processUploadedFile`, so it
+	/// reuses the exact validation + render + styling path with no round-trip to the share sheet.
+	/// `name` becomes the on-disk file / layer name; a `.geojson` extension is enforced.
+	func importFromString(_ geoJSON: String, name: String) async throws -> MapDataMetadata {
+		guard let data = geoJSON.data(using: .utf8) else {
+			throw MapDataError.invalidContent
+		}
+		guard data.count <= maxFileSize else {
+			throw MapDataError.fileTooLarge
+		}
+
+		// Sanitise the caller-supplied name into a safe single path component and enforce `.geojson`.
+		let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+		let base = trimmed.isEmpty ? "coverage" : trimmed
+		let safeBase = base
+			.components(separatedBy: CharacterSet(charactersIn: "/\\:\n\r\t"))
+			.joined(separator: "-")
+		let fileName = safeBase.lowercased().hasSuffix(".geojson") ? safeBase : "\(safeBase).geojson"
+
+		let tempURL = FileManager.default.temporaryDirectory
+			.appendingPathComponent(UUID().uuidString)
+			.appendingPathComponent(fileName)
+		try FileManager.default.createDirectory(at: tempURL.deletingLastPathComponent(), withIntermediateDirectories: true)
+		try data.write(to: tempURL)
+		defer { try? FileManager.default.removeItem(at: tempURL) }
+
+		return try await processUploadedFile(from: tempURL)
 	}
 
 	/// Validate uploaded file

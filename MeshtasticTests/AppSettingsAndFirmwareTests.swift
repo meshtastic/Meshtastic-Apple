@@ -361,7 +361,7 @@ struct UserDefaultPropertyWrapperTests {
 
 	@Test func readDefaultValue() {
 		// Create a UserDefault with a known-unused key pattern
-		let wrapper = UserDefault(.meshMapDistance, defaultValue: 8046.72)
+		let wrapper = UserDefault(.testDoubleValue, defaultValue: 8046.72)
 		// Should return defaultValue or whatever is stored
 		let value = wrapper.wrappedValue
 		#expect(value > 0)

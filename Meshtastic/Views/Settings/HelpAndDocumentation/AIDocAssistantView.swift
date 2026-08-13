@@ -41,6 +41,22 @@ private struct ChirpyWebSnippet: Hashable {
 	let content: String
 }
 
+enum AIDocSearchURLBuilder {
+	static func url(for query: String) -> URL? {
+		let trimmedQuery = query.trimmingCharacters(in: .whitespacesAndNewlines)
+		guard !trimmedQuery.isEmpty else { return nil }
+
+		var components = URLComponents()
+		components.scheme = "https"
+		components.host = "meshtastic.org"
+		components.path = "/search/"
+		components.queryItems = [URLQueryItem(name: "q", value: trimmedQuery)]
+		// URLQueryItem leaves "+" unescaped, but search backends commonly decode it as a space.
+		components.percentEncodedQuery = components.percentEncodedQuery?.replacingOccurrences(of: "+", with: "%2B")
+		return components.url
+	}
+}
+
 // MARK: - AIDocAssistantView (iOS 26+ only)
 
 @available(iOS 26, *)
@@ -108,7 +124,12 @@ struct AIDocAssistantView: View {
 			.navigationBarTitleDisplayMode(.inline)
 			.toolbar {
 				ToolbarItem(placement: .cancellationAction) {
-					Button("Done") { dismiss() }
+					Button {
+						dismiss()
+					} label: {
+						Image(systemName: "xmark")
+					}
+					.accessibilityLabel(String(localized: "Done", comment: "VoiceOver: dismiss the Ask Chirpy assistant sheet"))
 				}
 			}
 		}
@@ -211,7 +232,7 @@ struct AIDocAssistantView: View {
 							.font(sourceLinkFont)
 							.foregroundStyle(Color.accentColor)
 						}
-						.accessibilityLabel("Open \(page.title) documentation")
+						.accessibilityLabel(String(localized: "Open \(page.title) documentation", comment: "VoiceOver label for a documentation source link"))
 					}
 					ForEach(message.sourceWebLinks) { webLink in
 						Link(destination: webLink.url) {
@@ -223,7 +244,7 @@ struct AIDocAssistantView: View {
 							.font(sourceLinkFont)
 							.foregroundStyle(Color.accentColor)
 						}
-						.accessibilityLabel("Open \(webLink.title) on meshtastic.org")
+						.accessibilityLabel(String(localized: "Open \(webLink.title) on meshtastic.org", comment: "VoiceOver label for a meshtastic.org web link"))
 					}
 				}
 				.padding(.leading, avatarWidth)
@@ -352,7 +373,7 @@ struct AIDocAssistantView: View {
 				.focused($isInputFocused)
 				.submitLabel(.send)
 				.onSubmit { Task { await sendQuery() } }
-				.accessibilityLabel("Question input")
+				.accessibilityLabel(String(localized: "Question input", comment: "VoiceOver label for the AI assistant question text field"))
 			Button {
 				Task { await sendQuery() }
 			} label: {
@@ -365,7 +386,7 @@ struct AIDocAssistantView: View {
 					)
 			}
 			.disabled(query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isLoading)
-			.accessibilityLabel(isLoading ? "Chirpy is loading an answer" : "Send question to Chirpy")
+			.accessibilityLabel(isLoading ? String(localized: "Chirpy is loading an answer", comment: "VoiceOver label for the send button while Chirpy is loading") : String(localized: "Send question to Chirpy", comment: "VoiceOver label for the send-question button"))
 		}
 		.padding(.horizontal, 12)
 		.padding(.vertical, 10)
@@ -547,13 +568,8 @@ struct AIDocAssistantView: View {
 	}
 
 	private func fetchWebFallbackSnippets(for query: String) async -> [ChirpyWebSnippet] {
-		guard let encodedQuery = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
-			let searchURL = URL(string: "https://meshtastic.org/search/?q=\(encodedQuery)")
-		else {
-			return []
-		}
-
-		guard let host = searchURL.host?.lowercased(), host.hasSuffix("meshtastic.org") else { return [] }
+		guard let searchURL = AIDocSearchURLBuilder.url(for: query) else { return [] }
+		guard searchURL.host?.lowercased() == "meshtastic.org" else { return [] }
 
 		let intentURLs = directIntentURLs(for: query)
 		let shouldSkipSearchSnippet = !intentURLs.isEmpty

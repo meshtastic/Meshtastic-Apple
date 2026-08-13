@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "1640"
+   LastUpgradeVersion = "1430"
    version = "1.7">
    <BuildAction
       parallelizeBuildables = "YES"
-      buildImplicitDependencies = "YES">
+      buildImplicitDependencies = "YES"
+      runPostActionsOnFailure = "NO">
       <BuildActionEntries>
          <BuildActionEntry
             buildForTesting = "YES"
@@ -14,7 +15,7 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "DDC2E15326CE248E0042C5E4"
+               BlueprintIdentifier = "FEF4168AE260CFE34C972EBB"
                BuildableName = "Meshtastic.app"
                BlueprintName = "Meshtastic"
                ReferencedContainer = "container:Meshtastic.xcodeproj">
@@ -27,19 +28,31 @@
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES"
-      shouldAutocreateTestPlan = "YES">
+      onlyGenerateCoverageForSpecifiedTargets = "NO">
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "FEF4168AE260CFE34C972EBB"
+            BuildableName = "Meshtastic.app"
+            BlueprintName = "Meshtastic"
+            ReferencedContainer = "container:Meshtastic.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
       <Testables>
          <TestableReference
-            skipped = "NO">
+            skipped = "NO"
+            parallelizable = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "25F5D5C62C4375A8008036E3"
+               BlueprintIdentifier = "55AF3400F316106F54C5485F"
                BuildableName = "MeshtasticTests.xctest"
                BlueprintName = "MeshtasticTests"
                ReferencedContainer = "container:Meshtastic.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
+      <CommandLineArguments>
+      </CommandLineArguments>
    </TestAction>
    <LaunchAction
       buildConfiguration = "Debug"
@@ -55,12 +68,14 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "DDC2E15326CE248E0042C5E4"
+            BlueprintIdentifier = "FEF4168AE260CFE34C972EBB"
             BuildableName = "Meshtastic.app"
             BlueprintName = "Meshtastic"
             ReferencedContainer = "container:Meshtastic.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
+      <CommandLineArguments>
+      </CommandLineArguments>
       <EnvironmentVariables>
          <EnvironmentVariable
             key = "IDELogRedirectionPolicy"
@@ -94,12 +109,14 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "DDC2E15326CE248E0042C5E4"
+            BlueprintIdentifier = "FEF4168AE260CFE34C972EBB"
             BuildableName = "Meshtastic.app"
             BlueprintName = "Meshtastic"
             ReferencedContainer = "container:Meshtastic.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
+      <CommandLineArguments>
+      </CommandLineArguments>
    </ProfileAction>
    <AnalyzeAction
       buildConfiguration = "Debug">

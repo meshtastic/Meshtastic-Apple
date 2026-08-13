@@ -8,7 +8,11 @@
 // For information on using the generated types, please see the documentation:
 //   https://github.com/apple/swift-protobuf/
 
+#if canImport(FoundationEssentials)
+import FoundationEssentials
+#else
 import Foundation
+#endif
 import SwiftProtobuf
 
 // If the compiler emits an error on this type, it is because this file
@@ -97,11 +101,11 @@ public struct ChannelSettings: Sendable {
   ///
   /// Per-channel module settings.
   public var moduleSettings: ModuleSettings {
-    get {return _moduleSettings ?? ModuleSettings()}
+    get {_moduleSettings ?? ModuleSettings()}
     set {_moduleSettings = newValue}
   }
   /// Returns true if `moduleSettings` has been explicitly set.
-  public var hasModuleSettings: Bool {return self._moduleSettings != nil}
+  public var hasModuleSettings: Bool {self._moduleSettings != nil}
   /// Clears the value of `moduleSettings`. Subsequent reads from it will return its default value.
   public mutating func clearModuleSettings() {self._moduleSettings = nil}
 
@@ -149,11 +153,11 @@ public struct Channel: Sendable {
   ///
   /// The new settings, or NULL to disable that channel
   public var settings: ChannelSettings {
-    get {return _settings ?? ChannelSettings()}
+    get {_settings ?? ChannelSettings()}
     set {_settings = newValue}
   }
   /// Returns true if `settings` has been explicitly set.
-  public var hasSettings: Bool {return self._settings != nil}
+  public var hasSettings: Bool {self._settings != nil}
   /// Clears the value of `settings`. Subsequent reads from it will return its default value.
   public mutating func clearSettings() {self._settings = nil}
 

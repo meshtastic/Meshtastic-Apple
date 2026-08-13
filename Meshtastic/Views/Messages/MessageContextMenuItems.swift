@@ -25,15 +25,19 @@ struct MessageContextMenuItems: View {
 			if message.pkiEncrypted {
 				Label("Encrypted", systemImage: "lock")
 			}
+			if message.xeddsaSigned {
+				Label("Signed · verified", systemImage: "checkmark.shield.fill")
+			}
 			Text("Channel") + Text(": \(message.channel)")
 		}
 		.onAppear {
-			DispatchQueue.global(qos: .userInitiated).async {
-				let result = message.relayDisplay()
-				DispatchQueue.main.async {
-					relayDisplay = result
-				}
-			}
+			// relayDisplay() is @MainActor and reads the shared main ModelContext plus
+			// SwiftData @Model relationships, none of which are thread-safe. The previous
+			// DispatchQueue.global hop ran it on background threads — concurrently across
+			// every visible message's context menu — which corrupted the SwiftData object
+			// graph and aborted with a double-free (SIGABRT in libmalloc). onAppear already
+			// runs on the main actor, so call it directly on the right queue.
+			relayDisplay = message.relayDisplay()
 		}
 
 		Button("Tapback") {
@@ -87,6 +91,10 @@ struct MessageContextMenuItems: View {
 					.foregroundColor(.gray)
 			}
 
+			if message.xeddsaSigned {
+				Text("Verified with the sender's key.")
+			}
+
 			if let relayDisplay {
 				let prefix = message.realACK ? "Ack Relay: " : "Relay: "
 				Text(prefix + relayDisplay)
@@ -107,16 +115,11 @@ struct MessageContextMenuItems: View {
 			if message.relays != 0 && message.realACK == false {
 				Text("Relayed by \(message.relays) \(message.relays == 1 ? "node" : "nodes")")
 			}
-			if isCurrentUser && message.receivedACK {
-				VStack {
-					Text("Received Ack: \(message.receivedACK ? "✔️" : "")")
-					Text("Recipient Ack: \(message.realACK ? "✔️" : "")")
-				}
-			} else if isCurrentUser && message.ackError == 0 {
-				Text("Waiting")
-			} else if isCurrentUser && message.ackError > 0 {
-				let ackErrorVal = RoutingError(rawValue: Int(message.ackError))
-				Text("\(ackErrorVal?.display ?? "Empty Ack Error")")
+			if isCurrentUser {
+				let status = message.deliveryStatus(isDirectMessage: tapBackDestination.isDirectMessage)
+				Text(status.text)
+					.fixedSize(horizontal: false, vertical: true)
+				Text(status.detail)
 					.fixedSize(horizontal: false, vertical: true)
 			}
 
@@ -148,6 +151,11 @@ struct MessageContextMenuItems: View {
 }
 
 private extension MessageDestination {
+	var isDirectMessage: Bool {
+		if case .user = self { return true }
+		return false
+	}
+
 	var persistentModel: any PersistentModel {
 		switch self {
 		case let .user(user): return user

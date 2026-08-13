@@ -10,11 +10,12 @@ import SwiftUI
 
 @main
 struct WidgetsBundle: WidgetBundle {
-    var body: some Widget {
-        // Widgets()
+	var body: some Widget {
+		// Widgets()
+		#if !targetEnvironment(macCatalyst)
 		#if canImport(ActivityKit)
 		WidgetsLiveActivity()
 		#endif
-
-    }
+		#endif
+	}
 }

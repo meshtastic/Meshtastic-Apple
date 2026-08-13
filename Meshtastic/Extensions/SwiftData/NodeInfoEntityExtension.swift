@@ -10,16 +10,32 @@ import Foundation
 
 extension NodeInfoEntity {
 
+	/// Returns this node's user only while both sides of the relationship are still backed by
+	/// SwiftData. A node detail view can outlive `clearDatabase`, which removes users before it
+	/// removes nodes; reading a persisted property from that deleted user traps in SwiftData.
+	var liveUser: UserEntity? {
+		guard modelContext != nil, !isDeleted,
+			let user,
+			user.modelContext != nil, !user.isDeleted
+		else { return nil }
+		return user
+	}
+
 	// MARK: - Targeted Fetch Helpers
 	// These use FetchDescriptor with fetchLimit to avoid loading entire relationship arrays.
 
 	var latestPosition: PositionEntity? {
-		// Fast path: the ingest layer keeps this populated, so reads are O(1).
-		if let cached = latestPositionCache {
+		// Fast path: the ingest layer keeps this populated, so reads are O(1). Screen the cached
+		// handle's liveness first — a row the ingest context deleted can linger here until this
+		// context processes the merge, and touching a persisted property on it traps in SwiftData.
+		// (The ingest side now reuses the latest row for near-duplicate fixes, so stale caches are
+		// rare; this is the reader-side backstop.)
+		if let cached = latestPositionCache, cached.modelContext != nil, !cached.isDeleted {
 			return cached
 		}
-		// Fallback for data created without the cache (migrated / restored / seeded): a sorted
-		// limit-1 query. Runs at most once per node until the cache warms on the next position.
+		// Fallback for data created without the cache (migrated / restored / seeded), or when the
+		// cached row is stale: a sorted limit-1 query. Runs at most once per node until the cache
+		// warms on the next position.
 		guard let ctx = modelContext else { return nil }
 		let nodeNum = self.num
 		var descriptor = FetchDescriptor<PositionEntity>(
@@ -105,6 +121,41 @@ extension NodeInfoEntity {
 		)
 		descriptor.fetchLimit = 1
 		return try? ctx.fetch(descriptor).first
+	}
+
+	var latestAirQualityMetrics: TelemetryEntity? {
+		guard let ctx = modelContext else { return nil }
+		let nodeNum = self.num
+		let metricsType: Int32 = 3
+		var descriptor = FetchDescriptor<TelemetryEntity>(
+			predicate: #Predicate<TelemetryEntity> { $0.nodeTelemetry?.num == nodeNum && $0.metricsType == metricsType },
+			sortBy: [SortDescriptor(\TelemetryEntity.time, order: .reverse)]
+		)
+		descriptor.fetchLimit = 1
+		return try? ctx.fetch(descriptor).first
+	}
+
+	/// NowCast-derived AQI (0–500) computed from the last 12 hours of PM2.5 telemetry, or `nil`
+	/// when there isn't enough recent history to compute a NowCast. Per design#54, callers should
+	/// fall back to showing the raw PM2.5 reading rather than a misleading instantaneous AQI.
+	var airQualityNowCastAQI: Int? {
+		let twelveHoursAgo = Calendar.current.date(byAdding: .hour, value: -12, to: Date()) ?? .distantPast
+		let readings = safeTelemetries(ofType: 3).compactMap { telemetry -> (date: Date, pm25: Double)? in
+			guard let time = telemetry.time, time >= twelveHoursAgo, let pm25 = telemetry.pm25Standard else { return nil }
+			return (date: time, pm25: Double(pm25))
+		}
+		return EPAAirQuality.nowCastAQI(from: readings)
+	}
+
+	var hasAirQualityMetrics: Bool {
+		guard let ctx = modelContext else { return false }
+		let nodeNum = self.num
+		let metricsType: Int32 = 3
+		var descriptor = FetchDescriptor<TelemetryEntity>(
+			predicate: #Predicate<TelemetryEntity> { $0.nodeTelemetry?.num == nodeNum && $0.metricsType == metricsType }
+		)
+		descriptor.fetchLimit = 1
+		return ((try? ctx.fetch(descriptor)) ?? []).isEmpty == false
 	}
 
 	var latestPowerMetrics: TelemetryEntity? {
@@ -201,6 +252,21 @@ extension NodeInfoEntity {
 		)
 		descriptor.fetchLimit = 1
 		return try? ctx.fetch(descriptor).first
+	}
+
+	/// The receiving radio's most recent noise floor (dBm) from Local Stats telemetry
+	/// (`DeviceMetrics.noise_floor`), or nil when it's absent, zero, or older than the
+	/// online threshold (2 h). Used to compute a real link margin (`rssi - noiseFloor`)
+	/// for signal-quality rating instead of guessed fixed RSSI thresholds.
+	var recentNoiseFloor: Int32? {
+		guard let stats = latestLocalStats,
+			  let time = stats.time,
+			  let noiseFloor = stats.noiseFloor,
+			  noiseFloor != 0,
+			  let twoHoursAgo = Calendar.current.date(byAdding: .minute, value: -120, to: Date()),
+			  time.compare(twoHoursAgo) == .orderedDescending
+		else { return nil }
+		return noiseFloor
 	}
 
 	var hasLocalStats: Bool {

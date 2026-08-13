@@ -9,9 +9,12 @@
 <body data-page="map">
 <h1>Map &amp; Waypoints</h1>
 <p>The Map tab shows all nodes that have shared a position, overlaid on an Apple Maps base layer.</p>
+<p>The map <strong>reopens where you last left it</strong> — your last-viewed area and zoom are remembered between launches, so you don't have to pan back after every relaunch. On a fresh install (before you've moved the map) it frames your current location, then your connected radio, then the center of your nodes.</p>
 <h2>Node Pins</h2>
-<p>Each node that has reported a GPS position appears as a coloured circle pin on the map. The <strong>green solid line</strong> shows a directly connected node; <strong>orange dashed lines</strong> show nodes reached via the mesh. A purple star marks a waypoint. Tap a pin to see the node name, last heard time, signal info, and a shortcut to send a direct message.</p>
+<p>Each node that has reported a GPS position appears as a colored circle pin on the map. The <strong>green solid line</strong> shows a directly connected node; <strong>orange dashed lines</strong> show nodes reached via the mesh. A purple star marks a waypoint. Tap a pin to see the node name, last heard time, signal info, and a shortcut to send a direct message.</p>
 <p>Pins update automatically when a new position packet is received from the mesh.</p>
+<h3>Overlapping nodes at the same spot</h3>
+<p>When several nodes report the <em>same</em> (or nearly the same) location — for example radios sitting on one desk, or nodes broadcasting a reduced-precision position — their pins stack on top of each other and can't be pulled apart by zooming. Tapping the stack (or the numbered count badge, when node clustering is on) opens a <strong>Select a Node</strong> list of every node at that spot. Pick one to open its detail view. This works whether or not clustering is enabled, so an occluded node is always reachable.</p>
 <h2>Filtering Nodes on the Map</h2>
 <p>Tap the <strong>filter button</strong> (funnel icon, <code>line.3.horizontal.decrease.circle</code>) in the bottom-right toolbar to open the Map Filters sheet. When any filter is active, the icon appears <strong>filled</strong> to indicate filtering is in effect.</p>
 <table>
@@ -40,7 +43,7 @@
 </tr>
 <tr>
 <td>Favorites</td>
-<td>Show only nodes you have starred as favourites</td>
+<td>Show only nodes you have starred as favorites</td>
 </tr>
 <tr>
 <td>Distance</td>
@@ -82,6 +85,91 @@ Enable the <strong>Via LoRa</strong> filter and disable <strong>Via MQTT</strong
 </tr>
 </tbody>
 </table>
+<h2>Map Options</h2>
+<p>Tap the <strong>info button</strong> (<code>info.circle</code>) in the bottom-right toolbar to open the Map Options sheet. Alongside the base layer picker it offers:</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Waypoints</td>
+<td>Show or hide waypoint markers on the map</td>
+</tr>
+<tr>
+<td>Precise Locations Only</td>
+<td>Hide nodes that broadcast an approximate (reduced-precision) location. Imprecise nodes are normally drawn with a translucent circle showing how large the possible area is; turn this on to show only nodes reporting an exact position. Both the imprecise pins and their precision circles are hidden.</td>
+</tr>
+<tr>
+<td>Cluster Nodes</td>
+<td>Group nearby nodes into one numbered pin; tap it to zoom in. Turn off to always show every node individually.</td>
+</tr>
+<tr>
+<td>My Location</td>
+<td>Show or hide your own position (the blue dot) on the map</td>
+</tr>
+<tr>
+<td>Convex Hull</td>
+<td>Draw an outline around the outermost LoRa nodes to visualize mesh coverage</td>
+</tr>
+<tr>
+<td>Traffic</td>
+<td>Show Apple Maps live traffic</td>
+</tr>
+<tr>
+<td>Points of Interest</td>
+<td>Show Apple Maps points of interest</td>
+</tr>
+</tbody>
+</table>
+<h3>Offline Maps</h3>
+<p>A dedicated section of the sheet for working without a connection: a link opens the list of downloaded map regions to manage them or download new ones, and the <strong>Offline Tiles</strong> toggle overlays a downloaded region on the base map so it keeps rendering with no internet connection.</p>
+<h3>Map Overlays</h3>
+<p>Custom GeoJSON overlays you've uploaded are listed here, each with its own toggle and file details (format, feature count, size, upload date). Swipe a file left to delete it, or tap <strong>Upload Map Data</strong> to add another. The section's master toggle turns uploaded overlays on the map on or off as a group.</p>
+<h2>Coverage Estimate (Site Planner)</h2>
+<p>Estimate the radio coverage of a transmitter site without leaving the app. The app drives the hosted <a href="https://site.meshtastic.org">Meshtastic Site Planner</a> — a SPLAT!/ITM propagation simulator — and imports the resulting coverage map as a styled GeoJSON overlay.</p>
+<h3>Starting an estimate</h3>
+<p>You can open the estimate form two ways:</p>
+<ul>
+<li><strong>From the map</strong> — tap the coverage button (<code>cellularbars</code>) in the bottom-right toolbar. The form is prefilled from the connected radio and located at the current map centre.</li>
+<li><strong>From a node</strong> — open a node with a known position, scroll to the <strong>Logs</strong> section, and tap <strong>Estimate Coverage</strong>. The map recenters on that node and opens the form prefilled from it.</li>
+</ul>
+<h3>The estimate form</h3>
+<p>The form mirrors the Site Planner's own panels. The <strong>Transmitter</strong> and <strong>Display</strong> sections are open by default; <strong>Receiver</strong> and <strong>Simulation Options</strong> are collapsed.</p>
+<table>
+<thead>
+<tr>
+<th>Section</th>
+<th>Fields</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Site / Transmitter</td>
+<td>Site name, latitude/longitude, transmit power (W), frequency (MHz), antenna height (m), antenna gain (dBi). Location shortcuts fill the coordinates from <strong>My Location</strong>, the selected <strong>Node</strong>, or the <strong>Map Center</strong>.</td>
+</tr>
+<tr>
+<td>Receiver</td>
+<td>Receiver sensitivity (dBm) — the coverage threshold.</td>
+</tr>
+<tr>
+<td>Simulation Options</td>
+<td>Maximum range (km) and a high-resolution terrain toggle (which caps the range at 70 km).</td>
+</tr>
+<tr>
+<td>Display</td>
+<td>Colour palette for the coverage map (Plasma, Viridis, CMRmap, Cool, Turbo, Jet).</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Prefill from the connected radio:</strong> frequency is computed from the radio's region, modem preset, and channel; transmit power is converted from the device's dBm setting; and receiver sensitivity is mapped from the modem preset (for example LongFast → −139 dBm). Antenna gain and height aren't part of the device config, so they keep the planner's defaults. You can edit any value before running.</p>
+<h3>Running it</h3>
+<p>Tap <strong>Estimate</strong>. A progress indicator appears while the planner computes the coverage; you can <strong>Cancel</strong> at any time. When it finishes, the styled coverage map is added as a map overlay (in its dBm colours), the GeoJSON overlays layer is enabled, and the map recenters on the transmitter. The imported layer is managed like any other GeoJSON overlay in <strong>Map Options</strong>.</p>
+<div class="tips-callout"><strong>Note — Requires a network connection</strong>
+The coverage simulation runs in the hosted Site Planner, so an internet connection is needed. Estimates time out after 45 seconds; on failure the flow ends cleanly without leaving a stuck spinner.</div>
 <h2>Waypoints</h2>
 <p>Waypoints are named points of interest you can share across the mesh.</p>
 <h3>Creating a Waypoint</h3>
@@ -94,6 +182,64 @@ Enable the <strong>Via LoRa</strong> filter and disable <strong>Via MQTT</strong
 <p>Tap an existing waypoint pin, then tap <strong>Edit</strong>. Changes broadcast to the mesh immediately.</p>
 <h3>Deleting a Waypoint</h3>
 <p>Tap the waypoint, then tap <strong>Delete</strong>. The deletion broadcasts to all nodes.</p>
+<h3>Geofences</h3>
+<p>A geofence turns a waypoint into a watched area: when a node's reported position crosses into or out of it, your device raises a local notification. Open a waypoint, tap <strong>Edit</strong>, and use the <strong>Geofence</strong> section.</p>
+<table>
+<thead>
+<tr>
+<th>Control</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Radius</td>
+<td>A circular geofence centered on the waypoint, from 0.1 to 10 miles. Choose <strong>Off</strong> for no circle.</td>
+</tr>
+<tr>
+<td>Bounding Box</td>
+<td>A rectangular geofence. Tap <strong>Set Bounding Box</strong> to draw one on the map, <strong>Edit Bounding Box</strong> to adjust it, or <strong>Remove Bounding Box</strong> to clear it.</td>
+</tr>
+</tbody>
+</table>
+<p>You can use a radius, a bounding box, or both — a node counts as inside if it falls within <em>either</em> shape.</p>
+<p>Once a radius or bounding box is set, notification options appear:</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Notify on Enter</td>
+<td>Alert when a node moves into the geofence.</td>
+</tr>
+<tr>
+<td>Notify on Exit</td>
+<td>Alert when a node leaves the geofence.</td>
+</tr>
+<tr>
+<td>Favorites Only</td>
+<td>Shown when Enter or Exit is on. Limits alerts to nodes you have starred as favorites.</td>
+</tr>
+</tbody>
+</table>
+<div class="tips-callout"><strong>Note</strong>
+Geofences are evaluated on your own device as position packets arrive from the mesh, so alerts reflect what your radio has heard rather than live tracking. Tapping an alert opens the waypoint on the map. <strong>Favorites Only</strong> uses the favorite status set on <em>this</em> device, so each receiver decides which nodes are worth an alert.</div>
+<h2>Trace Routes on the Map</h2>
+<p>A trace route can be drawn on the map to show the path a packet took through the mesh. Open <strong>Settings → Logging → Trace Routes</strong> (or a node's Trace Route log), select a route, and tap <strong>Show on Map</strong>.</p>
+<h3>Reading the Route</h3>
+<ul>
+<li><strong>Colored legs</strong> — each hop is colored by its signal quality (SNR), using the same scale as the LoRa signal meter: <strong>green</strong> (good), <strong>yellow</strong> (fair), <strong>orange</strong> (bad), <strong>red</strong> (none). Signal quality is also shown by line weight and dash pattern — legs get progressively thinner and more dashed as quality drops from good to none — so the tier doesn't rely on color alone.</li>
+<li><strong>Solid vs. dashed</strong> — the <strong>solid</strong> line is the outbound path toward the target; the <strong>dashed</strong> line is the return path back to the originator.</li>
+<li><strong>Arrows</strong> — chevrons along each line point in the direction of travel.</li>
+<li><strong>Endpoints</strong> — a <strong>green</strong> marker is the originator; a <strong>red</strong> marker is the target.</li>
+</ul>
+<h3>3D Flyover</h3>
+<p>Tap <strong>▶</strong> in the route banner for a guided 3D flythrough over satellite imagery: it flies the outbound path, lands at the target, then flies the return path and eases back to the map. Tap the <strong>speed control</strong> to cycle the pace from 1× up to 5× (1×, 1.5×, 2×, 2.5×, 3×, 4×, 5×) — adjustable mid-flight — and <strong>■</strong> to stop.</p>
+<p>Tap the <strong>legend</strong> button (map icon, bottom-right) for a key to the colors and markers.</p>
 <h2>Node Trail</h2>
 <p>When a node has reported multiple positions over time, a trail line connects the historical positions on the map, showing the node's path.</p>
 <h2>Your Location</h2>

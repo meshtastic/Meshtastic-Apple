@@ -60,13 +60,6 @@ extension String {
 		return image
 	}
 
-	func camelCaseToWords() -> String {
-		return self
-			.replacingOccurrences(of: "([a-z])([A-Z](?=[A-Z])[a-z]*)", with: "$1 $2", options: .regularExpression)
-			.replacingOccurrences(of: "([A-Z])([A-Z][a-z])", with: "$1 $2", options: .regularExpression)
-			.replacingOccurrences(of: "([a-z])([A-Z][a-z])", with: "$1 $2", options: .regularExpression)
-	}
-
 	var length: Int {
 		return count
 	}

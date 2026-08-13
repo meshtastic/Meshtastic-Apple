@@ -1,5 +1,5 @@
 {
-  "originHash" : "e56f9e53692970c9c44ca80438169dfa525899032e6a99947858195a6d4896a7",
+  "originHash" : "c82849dea0e71e77d04682254b421273e10405a99e663ab519af2a54313d87f5",
   "pins" : [
     {
       "identity" : "cocoamqtt",
@@ -20,6 +20,24 @@
       }
     },
     {
+      "identity" : "gis-tools",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Outdooractive/gis-tools",
+      "state" : {
+        "revision" : "777aaa8ac64de78c3a3662a031f4f3a54098ae53",
+        "version" : "1.13.6"
+      }
+    },
+    {
+      "identity" : "gzipswift",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/1024jp/GzipSwift.git",
+      "state" : {
+        "revision" : "41d37421fe2cbbfae4a5593dc29d12999fb73cd7",
+        "version" : "7.0.0"
+      }
+    },
+    {
       "identity" : "ios-dfu-library",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/NordicSemiconductor/IOS-DFU-Library",
@@ -35,6 +53,15 @@
       "state" : {
         "revision" : "ce3e18607fd01079495f86ff6195d8a3ca469f73",
         "version" : "1.0.8"
+      }
+    },
+    {
+      "identity" : "mvt-tools",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Outdooractive/mvt-tools.git",
+      "state" : {
+        "revision" : "01d54cd8ef0169c739f7e674d8698551f9df1ea1",
+        "version" : "1.10.4"
       }
     },
     {
@@ -65,6 +92,15 @@
       }
     },
     {
+      "identity" : "swift-argument-parser",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-argument-parser",
+      "state" : {
+        "revision" : "6a52f3251125d74daf04fcbd5e6f08a75d074382",
+        "version" : "1.8.2"
+      }
+    },
+    {
       "identity" : "swift-cmark",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/swiftlang/swift-cmark.git",
@@ -74,12 +110,12 @@
       }
     },
     {
-      "identity" : "swift-custom-dump",
+      "identity" : "swift-log",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/pointfreeco/swift-custom-dump",
+      "location" : "https://github.com/apple/swift-log.git",
       "state" : {
-        "revision" : "06c57924455064182d6b217f06ebc05d00cb2990",
-        "version" : "1.5.0"
+        "revision" : "92448c359f00ebe36ae97d3bd9086f13c7692b5a",
+        "version" : "1.13.2"
       }
     },
     {
@@ -101,24 +137,6 @@
       }
     },
     {
-      "identity" : "swift-snapshot-testing",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/pointfreeco/swift-snapshot-testing",
-      "state" : {
-        "revision" : "ad5e3190cc63dc288f28546f9c6827efc1e9d495",
-        "version" : "1.19.2"
-      }
-    },
-    {
-      "identity" : "swift-syntax",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/swiftlang/swift-syntax",
-      "state" : {
-        "revision" : "9de99a78f099e59caf2b2beec65a4c45d54b2081",
-        "version" : "603.0.1"
-      }
-    },
-    {
       "identity" : "swiftdraw",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/swhitty/SwiftDraw",
@@ -134,15 +152,6 @@
       "state" : {
         "revision" : "25658b6b16b20500f8561c7acbf86349e77e5db8",
         "version" : "0.5.1"
-      }
-    },
-    {
-      "identity" : "xctest-dynamic-overlay",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/pointfreeco/xctest-dynamic-overlay",
-      "state" : {
-        "revision" : "dfd70507def84cb5fb821278448a262c6ff2bbad",
-        "version" : "1.9.0"
       }
     },
     {

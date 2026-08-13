@@ -13,6 +13,9 @@ struct WatchCircleText: View {
 	var text: String
 	var color: Color
 	var circleSize: CGFloat = 28
+	/// Optional full node name used as the VoiceOver label. Falls back to the
+	/// short monogram `text` when not provided.
+	var nodeName: String?
 
 	var body: some View {
 		ZStack {
@@ -25,6 +28,8 @@ struct WatchCircleText: View {
 				.minimumScaleFactor(0.001)
 				.font(.system(size: 1300))
 		}
+		.accessibilityElement(children: .ignore)
+		.accessibilityLabel(nodeName.map { String(localized: "Node \($0)", comment: "VoiceOver: node monogram circle labeled with the node name") } ?? text)
 	}
 
 	/// Derives a `Color` from a Meshtastic node number, matching the iOS

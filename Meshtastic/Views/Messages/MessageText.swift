@@ -8,7 +8,7 @@ import Translation
 struct MessageText: View {
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
-	
+
 	let message: MessageEntity
 	let tapBackDestination: MessageDestination
 	let isCurrentUser: Bool
@@ -18,7 +18,7 @@ struct MessageText: View {
 	@State private var saveChannelLink: SaveChannelLinkData?
 	@State private var isShowingDeleteConfirmation = false
 	@State private var isShowingTranslationPresentation = false
-	
+
 	var body: some View {
 		messageContent
 			.environment(\.openURL, OpenURLAction { url in
@@ -46,7 +46,7 @@ struct MessageText: View {
 				Button("Cancel", role: .cancel) {}
 			}
 	}
-	
+
 	private var sourceMessageText: String {
 		message.messagePayload ?? "EMPTY MESSAGE"
 	}
@@ -54,7 +54,7 @@ struct MessageText: View {
 	private var hasTranslatedText: Bool { message.hasTranslatedPayload }
 
 	private var isShowingTranslatedText: Bool {
-		message.showTranslatedMessage && hasTranslatedText
+		message.isShowingTranslatedText
 	}
 
 	private var canTranslate: Bool {
@@ -109,6 +109,10 @@ struct MessageText: View {
 				Text(LocalizedStringKey(payload))
 			}
 		}
+			// Never yield vertical space to row siblings: without this, a flexible sibling in the
+			// message row (the tapback pill's ScrollView) could win the height auction and the
+			// bubble text tail-truncated with "…" on long wrapping messages.
+			.fixedSize(horizontal: false, vertical: true)
 			.tint(Color("Colors/MeshtasticLink"))
 			.padding(.vertical, 10)
 			.padding(.horizontal, 8)
@@ -134,35 +138,63 @@ struct MessageText: View {
 			}
 	}
 	
+	/// A bottom-trailing status badge (encryption lock, signing shield, store-forward envelope) with
+	/// its symbol, tint, and localized VoiceOver label.
+	private struct CornerBadge: Identifiable {
+		/// Symbols are distinct within a single message's badge set, so this is a stable identity.
+		var id: String { symbol }
+		let symbol: String
+		let tint: Color
+		let label: String
+	}
+
+	/// Bottom-trailing status badges (encryption lock, signing shield, store-forward envelope), laid out
+	/// in a single row so they sit side by side instead of stacking on the same corner pixel when a
+	/// message qualifies for more than one (e.g. a signed store-and-forward broadcast).
+	///
+	/// Symbols/tints are drawn per badge here; the underlying flags and labels come from
+	/// `MessageEntity.activeStatusBadges`, the single source of truth shared with the message rows'
+	/// combined `accessibilityLabel` (issue #016 T003).
+	private var cornerBadges: [CornerBadge] {
+		message.activeStatusBadges(destination: tapBackDestination, isCurrentUser: isCurrentUser).compactMap { badge in
+			switch badge {
+			// Lock = private: a PKI-encrypted DM.
+			case .encrypted:
+				return CornerBadge(symbol: "lock.circle.fill", tint: .green, label: badge.label)
+			// Shield = authentic: a radio-verified, XEdDSA-signed broadcast. Affirmative only —
+			// unsigned traffic shows nothing, and the ingest path only sets the flag on broadcasts,
+			// never DMs.
+			case .verified:
+				return CornerBadge(symbol: "checkmark.shield.fill", tint: .green, label: badge.label)
+			case .storeForward:
+				return CornerBadge(symbol: "envelope.circle.fill", tint: .gray, label: badge.label)
+			case .detectionSensor, .translated:
+				// Rendered as their own overlays below, not as corner badges.
+				return nil
+			}
+		}
+	}
+
 	@ViewBuilder
 	private var messageOverlays: some View {
-		if message.pkiEncrypted && message.realACK || !isCurrentUser && message.pkiEncrypted {
+		let badges = cornerBadges
+		if !badges.isEmpty {
 			VStack(alignment: .trailing) {
 				Spacer()
-				HStack {
+				HStack(spacing: 2) {
 					Spacer()
-					Image(systemName: "lock.circle.fill")
-						.symbolRenderingMode(.palette)
-						.foregroundStyle(.white, .green)
-						.font(.system(size: 20))
-						.offset(x: 8, y: 8)
+					ForEach(badges) { badge in
+						Image(systemName: badge.symbol)
+							.symbolRenderingMode(.palette)
+							.foregroundStyle(.white, badge.tint)
+							.font(.system(size: 20))
+							.accessibilityLabel(badge.label)
+					}
 				}
+				.offset(x: 8, y: 8)
 			}
 		}
-		if message.portNum == Int32(PortNum.storeForwardApp.rawValue) {
-			VStack(alignment: .trailing) {
-				Spacer()
-				HStack {
-					Spacer()
-					Image(systemName: "envelope.circle.fill")
-						.symbolRenderingMode(.palette)
-						.foregroundStyle(.white, .gray)
-						.font(.system(size: 20))
-						.offset(x: 8, y: 8)
-				}
-			}
-		}
-		if tapBackDestination.overlaySensorMessage && message.portNum == Int32(PortNum.detectionSensorApp.rawValue) {
+		if message.isDetectionSensorMessage(destination: tapBackDestination) {
 			Image(systemName: "sensor.fill")
 				.padding()
 				.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
@@ -170,6 +202,7 @@ struct MessageText: View {
 				.symbolRenderingMode(.multicolor)
 				.symbolEffect(.variableColor.reversing.cumulative, options: .repeat(20).speed(3))
 				.offset(x: 20, y: -20)
+				.accessibilityLabel(MessageEntity.StatusBadge.detectionSensor.label)
 		}
 		if isShowingTranslatedText {
 			Image(systemName: "translate")
@@ -178,38 +211,33 @@ struct MessageText: View {
 				.foregroundStyle(Color.blue)
 				.symbolRenderingMode(.hierarchical)
 				.offset(x: 38, y: 8)
+				.accessibilityLabel(MessageEntity.StatusBadge.translated.label)
 		}
 	}
-	
+
 	private func handleURL(_ url: URL) -> OpenURLAction.Result {
 		saveChannelLink = nil
 		var addChannels = false
-		if url.absoluteString.lowercased().contains("meshtastic.org/v/#") {
+		if ContactURLHandler.canHandle(url) {
 			// Handle contact URL
 			ContactURLHandler.handleContactUrl(url: url, accessoryManager: AccessoryManager.shared)
 			return .handled // Prevent default browser opening
-		} else if url.absoluteString.lowercased().contains("meshtastic.org/e/") {
-			// Handle channel URL
-			let components = url.absoluteString.components(separatedBy: "#")
-			guard !components.isEmpty, let lastComponent = components.last else {
-				Logger.services.error("No valid components found in channel URL: \(url.absoluteString, privacy: .public)")
+		} else if MeshtasticChannelURL.canHandle(url) {
+			do {
+				let channelLink = try MeshtasticChannelURL.parse(url.absoluteString)
+				addChannels = channelLink.addChannels
+				self.saveChannelLink = SaveChannelLinkData(data: channelLink.payload, add: addChannels)
+				Logger.services.debug("Add Channel: \(addChannels, privacy: .public)")
+				Logger.mesh.debug("Opening Channel Settings URL")
+				return .handled // Prevent default browser opening
+			} catch {
+				Logger.services.error("Invalid channel URL: \(error.localizedDescription, privacy: .public)")
 				return .discarded
 			}
-			addChannels = Bool(url.query?.contains("add=true") ?? false)
-			guard let lastComponent = components.last else {
-				Logger.services.error("Channel URL missing fragment component: \(url.absoluteString, privacy: .public)")
-				self.saveChannelLink = nil
-				return .discarded
-			}
-			let cs = lastComponent.components(separatedBy: "?").first ?? ""
-			self.saveChannelLink = SaveChannelLinkData(data: cs, add: addChannels)
-			Logger.services.debug("Add Channel: \(addChannels, privacy: .public)")
-			Logger.mesh.debug("Opening Channel Settings URL: \(url.absoluteString, privacy: .public)")
-			return .handled // Prevent default browser opening
 		}
 		return .systemAction // Open other URLs in browser
 	}
-	
+
 	private func deleteMessage() {
 		context.delete(message)
 		do {
@@ -251,15 +279,6 @@ struct MessageText: View {
 			try context.save()
 		} catch {
 			Logger.data.error("Failed to clear translated message \(message.messageId, privacy: .public): \(error.localizedDescription, privacy: .public)")
-		}
-	}
-}
-
-private extension MessageDestination {
-	var overlaySensorMessage: Bool {
-		switch self {
-		case .user: return false
-		case .channel: return true
 		}
 	}
 }

@@ -13,20 +13,50 @@ struct AckErrors: View {
 		Section {
 			HelpItem(
 				symbol: AnyView(
-					RoundedRectangle(cornerRadius: 5)
-						.fill(.orange)
-						.frame(width: 20, height: 12)
+					Image(systemName: MessageDeliveryStatus.sending.systemImage)
+						.foregroundStyle(MessageDeliveryStatus.sending.color)
+						.frame(width: 20)
 				),
-				title: String(localized: "Acknowledged by another node"),
-				subtitle: String(localized: "Message was relayed but not confirmed by the final recipient."),
+				title: MessageDeliveryStatus.sending.text,
+				subtitle: MessageDeliveryStatus.sending.detail,
 				compact: true
 			)
-			ForEach(RoutingError.allCases) { re in
+			HelpItem(
+				symbol: AnyView(
+					Image(systemName: MessageDeliveryStatus.deliveredToMesh.systemImage)
+						.foregroundStyle(MessageDeliveryStatus.deliveredToMesh.color)
+						.frame(width: 20)
+				),
+				title: MessageDeliveryStatus.deliveredToMesh.text,
+				subtitle: MessageDeliveryStatus.deliveredToMesh.detail,
+				compact: true
+			)
+			HelpItem(
+				symbol: AnyView(
+					Image(systemName: MessageDeliveryStatus.relayedNotConfirmed.systemImage)
+						.foregroundStyle(MessageDeliveryStatus.relayedNotConfirmed.color)
+						.frame(width: 20)
+				),
+				title: MessageDeliveryStatus.relayedNotConfirmed.text,
+				subtitle: MessageDeliveryStatus.relayedNotConfirmed.detail,
+				compact: true
+			)
+			HelpItem(
+				symbol: AnyView(
+					Image(systemName: MessageDeliveryStatus.deliveredToRecipient.systemImage)
+						.foregroundStyle(MessageDeliveryStatus.deliveredToRecipient.color)
+						.frame(width: 20)
+				),
+				title: MessageDeliveryStatus.deliveredToRecipient.text,
+				subtitle: MessageDeliveryStatus.deliveredToRecipient.detail,
+				compact: true
+			)
+			ForEach(RoutingError.allCases.filter { $0 != .none }) { re in
 				HelpItem(
 					symbol: AnyView(
-						RoundedRectangle(cornerRadius: 5)
-							.fill(re.color)
-							.frame(width: 20, height: 12)
+						Image(systemName: re.canRetry ? "exclamationmark.circle.fill" : "xmark.circle.fill")
+							.foregroundStyle(re.color)
+							.frame(width: 20)
 					),
 					title: re.display,
 					subtitle: re.description,
@@ -36,7 +66,7 @@ struct AckErrors: View {
 		} header: {
 			Text("Message Status")
 		} footer: {
-			Text("Grey indicates successful delivery. Orange indicates a retryable error. Red indicates a permanent failure that will not succeed on retry.")
+			Text("Text is shown with icon and color. Gray indicates delivery, orange indicates sending or a retryable warning, and red indicates a permanent failure that will not succeed on retry.")
 		}
 	}
 }

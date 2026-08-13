@@ -38,6 +38,9 @@
 </tbody>
 </table>
 <p>Each transport conforms to a <code>MeshTransport</code> protocol that exposes <code>connect()</code>, <code>disconnect()</code>, <code>send(data:)</code>, and a <code>received</code> publisher.</p>
+<h3>BLETransport Status on Bluetooth State Changes</h3>
+<p><code>BLETransport.status</code> mirrors <code>CBManagerState</code> via <code>handleCentralState(_:central:)</code>. <code>.poweredOn</code> settles on <code>.discovering</code>, not <code>.ready</code> — <code>.ready</code> is only assigned later, by <code>stopScanning()</code>, and only while Bluetooth is still powered on. Every other state — including <code>.poweredOff</code> — settles on <code>.error(...)</code>. Concretely, when Bluetooth powers off, <code>status</code> becomes <code>.error(BLETransport.poweredOffStatusMessage)</code> (&quot;Bluetooth is powered off&quot;) and stays there. This matches <code>.unauthorized</code>, <code>.unsupported</code>, <code>.resetting</code>, and <code>.unknown</code>, which all settle on <code>.error(...)</code> too.</p>
+<p><code>status</code> is actor-isolated state, so nothing outside <code>BLETransport</code> could observe it changing until <code>statusUpdates() -&gt; AsyncStream&lt;TransportStatus&gt;</code> was added: it replays the current status to a new subscriber, then yields again on every subsequent change (a <code>didSet</code> on <code>status</code> drives the broadcast, guarded so an unchanged value never yields a duplicate). <code>AccessoryManager.observeBLETransportStatus()</code> is the sole subscriber — it consumes the stream for the app's lifetime and mirrors every value onto <code>@Published var bleTransportStatus</code>, from which the computed <code>isBluetoothPoweredOff</code> derives. The Connect tab reads <code>isBluetoothPoweredOff</code> to show an inline &quot;Bluetooth is off&quot; row in Available Radios, since the system &quot;Bluetooth is turned off&quot; alert is intentionally suppressed (<code>CBCentralManagerOptionShowPowerAlertKey: false</code>, see above) and would otherwise be the only in-app signal a BLE user gets.</p>
 <h2>AccessoryManager Extension Map</h2>
 <table>
 <thead>
@@ -91,6 +94,35 @@
   → Write to SwiftData via MeshPackets @ModelActor
   → Publish changes via @Published properties (UI updates)
 </code></pre>
+<h2>Frame Decoding &amp; Encoding Validation</h2>
+<p>Every transport turns raw inbound bytes into a <code>FromRadio</code> frame through one shared funnel, <code>FromRadioDecoder.classify(_:)</code> in <code>Accessory/Protocols/Connection.swift</code>, so BLE, TCP, and Serial handle a malformed frame identically instead of each rolling its own <code>try? FromRadio(serializedBytes:)</code>. It returns a <code>FromRadioDecodeOutcome</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Outcome</th>
+<th>Meaning</th>
+<th>Transport action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>.decoded(FromRadio)</code></td>
+<td>Frame decoded cleanly</td>
+<td>Yield <code>.data(_)</code> to <code>AccessoryManager</code></td>
+</tr>
+<tr>
+<td><code>.skipInvalidUTF8(Error)</code></td>
+<td>A string field (e.g. a node's <code>long_name</code>) failed SwiftProtobuf's UTF-8 validation</td>
+<td>Log and <strong>skip the frame</strong>; the connection stays alive and keeps reading</td>
+</tr>
+<tr>
+<td><code>.failed(Error)</code></td>
+<td>Genuine framing / wire corruption</td>
+<td>BLE &amp; TCP call <code>disconnect(withError:shouldReconnect:)</code> and reconnect; Serial logs and skips</td>
+</tr>
+</tbody>
+</table>
+<p>An invalid encoding in a single string field is a per-field content problem, not a transport failure, so it must not tear down an otherwise healthy stream. SwiftProtobuf validates UTF-8 during decode and throws <code>BinaryDecodingError.invalidUTF8</code>; <code>FromRadioDecoder</code> isolates that case so only genuine framing errors trigger a reconnect.</p>
 <h2>Packet Flow (Outbound)</h2>
 <pre><code>View / Service
   → AccessoryManager+ToRadio.sendPacket(_:)
@@ -98,10 +130,36 @@
   → Transport.send(data:)
   → Radio
 </code></pre>
+<h3>BLE Writes When the Radio Is Out of Buffers</h3>
+<p>All of this applies only to <code>.withResponse</code> writes. <code>send</code> picks the write type from the characteristic's properties, preferring <code>.withoutResponse</code> when the radio advertises it, and CoreBluetooth does not call <code>didWriteValueFor</code> for that type — <code>performWrite</code> resumes its continuation as soon as the value is handed to CoreBluetooth, so no ATT error can come back and there is nothing to retry. Radios that refuse writes this way advertise plain <code>write</code>, which is how the path below is reachable at all. A <code>.withoutResponse</code> radio running out of buffers is invisible to the app; that backpressure is not handled.</p>
+<p><code>CBATTError.insufficientResources</code> on a <code>.withResponse</code> <code>TORADIO</code> write means the peripheral could not allocate for <em>that one write</em>. The link is healthy and the next write usually succeeds, so it is handled like an invalid UTF-8 field above — a per-item failure that must not tear down the stream — rather than like genuine wire corruption. It shows up on larger admin messages (<code>set_owner</code>, config sets) while 8-33 byte writes on the same connection go through; it was observed on a Heltec V4 (ESP32-S3/NimBLE) refusing a 104 byte write with an ATT MTU of 255 negotiated, so it is buffer exhaustion, not the size limit.</p>
+<p>Two places cooperate on that:</p>
+<ul>
+<li><strong><code>didWriteValueFor</code> does not escalate it.</strong> Every other write error is passed to <code>handlePeripheralError</code>, which ends the session. For this one code the delegate resumes the waiting continuation with the error and returns, leaving the link up so <code>send</code> can retry. Escalating there would abort whatever operation was in flight — a single refused write used to end an entire config import.</li>
+<li><strong><code>send</code> retries it, then escalates.</strong> <code>BLEConnection.send</code> makes up to <code>writeAttemptLimit</code> (4) attempts — the initial write plus three retries, backing off 120/240/360ms. Once those are spent the failure is no longer momentary, so <code>send</code> calls <code>handlePeripheralError</code> itself (whose <code>.insufficientResources</code> case marks the connection <strong>reconnecting</strong>, not dead) and then propagates the original error to the caller. That call is the only path to that branch, since the delegate deliberately bypasses it.</li>
+</ul>
+<p>The retry loop is cancellation-correct: it calls <code>Task.checkCancellation()</code> before each attempt and lets <code>Task.sleep(for:)</code> throw during the backoff, so a cancelled send cannot put another write on the wire.</p>
+<p>Every <code>ToRadio</code> write also logs its payload size against <code>maximumWriteValueLength(for:)</code>. An over-limit payload and an out-of-buffers radio both surface at the peripheral as the same opaque &quot;resources are insufficient&quot;, and nothing recorded which one it was. These lines are <code>.error</code>, not <code>.debug</code>/<code>.info</code>, deliberately: only notice-and-above are persisted to <code>OSLogStore</code>, which is what the in-app log viewer reads, so a <code>.debug</code> line here would be invisible in the field.</p>
 <h2>Connection Sequencing</h2>
 <p><code>AccessoryManager+Connect</code> runs connection setup as a sequenced series of steps: transport connect, heartbeat, <code>wantConfig</code>, optional database retrieval, and version checks.</p>
 <p>During an explicit radio switch from the Connect view, the app uses the same connect pipeline but enables an extra post-config refresh. Once <code>sendWantConfig()</code> completes for the newly selected device, the app first applies the bundled <code>DeviceHardware.json</code> catalog and bundled device images to SwiftData, then schedules <code>MeshtasticAPI.shared.refreshDevicesAPIData()</code> in the background. That network refresh updates the same locally cached hardware catalog from <code>https://api.meshtastic.org/resource/deviceHardware</code> without blocking the rest of the connection sequence.</p>
 <p>This refresh is only enabled for the switch-radio flow. Automatic reconnects and ordinary connects continue using the standard transport handshake without forcing a hardware catalog refresh.</p>
+<h3>BLE Pairing PIN Handshake</h3>
+<p>A first-ever connection to an encrypted radio makes iOS present a 6-digit pairing PIN sheet. <code>BLEConnection</code> gates connect-completion on that bond so the sheet is not torn down before the user can respond:</p>
+<ul>
+<li><strong>Notification-gated handshake.</strong> After the required characteristics are discovered, <code>BLEConnection</code> does <em>not</em> resolve the connect step immediately. It subscribes to the <code>FROMNUM</code> notify characteristic (always notify-capable and encrypted) and holds the connect continuation open until <code>didUpdateNotificationState</code> confirms the subscription. On a first-ever connection that CoreBluetooth callback does not fire until the user dismisses the pairing sheet, so the connection stays alive while the PIN is entered.</li>
+<li><strong>Pairing timeout.</strong> <code>AccessoryManager+Connect</code> selects the Step 1 timeout based on whether the peripheral is already bonded: a first-time BLE bond gets a long window (90s) so there is time to read and type the PIN, while already-bonded peripherals and non-BLE transports keep the fast reconnect timeout (5s) so a dead/out-of-range radio still fails quickly.</li>
+<li><strong>Pairing-failure classification.</strong> A wrong or cancelled PIN surfaces as a <code>CBATTError</code> (insufficient authentication/encryption/authorization) or a <code>CBError</code> (<code>encryptionTimedOut</code>, <code>peerRemovedPairingInformation</code>). <code>BLEConnection.isPairingFailure(_:)</code> distinguishes these bond failures from benign per-characteristic errors (e.g. &quot;notify not supported&quot;) so only real failures fail the connect. Cancelling the sheet often arrives as a plain peripheral disconnect, so <code>disconnect</code> also resumes any suspended connect continuation to fail Step 1 fast instead of waiting out the full window.</li>
+<li><strong>Paired-hint lifecycle.</strong> The set of bonded peripheral UUIDs is persisted in <code>UserDefaults.pairedPeripheralIds</code>. A confirmed subscription calls <code>rememberPairedPeripheral</code>; a bond failure or a teardown while still awaiting confirmation calls <code>forgetPairedPeripheral</code>, so a bond the user removes in iOS Settings self-heals back to the long pairing window on the next attempt. The legacy <code>preferredPeripheralId</code> is migrated into this list exactly once (guarded by <code>migratedPreferredPeripheralPairing</code>) so upgrading users skip the long window on their first reconnect without permanently pinning the fast timeout.</li>
+</ul>
+<h3>TCP Connect and Send Continuation Safety</h3>
+<p><code>TCPConnection</code> bridges <code>NWConnection</code>'s callback API to <code>async</code>/<code>await</code> with checked continuations, and callbacks fire on the private <code>tcp.connection</code> queue while the continuation resumes on the actor. Two rules follow from that split:</p>
+<ul>
+<li><strong>The connect-time <code>stateUpdateHandler</code> must be one-shot.</strong> It resumes the connect continuation from <code>.ready</code>, <code>.failed</code>, and <code>.cancelled</code>, and it stays installed until the awaiting task resumes on the actor and reaches the replacement handler. A second terminal state arriving inside that window would resume the same continuation twice, which is an uncatchable <code>SWIFT TASK CONTINUATION MISUSE</code> trap rather than a throwable error. Two paths reach it in practice: <code>.ready</code> followed by the Step 1 timeout or a user disconnect cancelling the step (<code>onCancel</code> calls <code>cancel()</code>, producing <code>.cancelled</code>), and <code>.ready</code> followed by the radio resetting the socket (<code>.failed</code>), which is what a radio that already has a TCP client does. A latch claimed inside the handler guarantees exactly one resume; because the handler only ever runs on the serial <code>tcp.connection</code> queue, a plain flag is sufficient synchronization.</li>
+<li><strong>The one-shot handler must not detach itself.</strong> Nil-ing <code>stateUpdateHandler</code> from inside the handler after resuming looks like tidy cleanup but races the replacement handler: the nil store runs on <code>tcp.connection</code> while the task that resume just woke is concurrently installing the replacement on the actor, and nothing orders the two. If the nil lands last it erases the replacement, silently disabling the post-ready <code>.failed</code> teardown and its auto-reconnect, and it is an unsynchronized write to the same ARC-managed property from two threads. Installing the replacement <em>is</em> the detach; the latch alone carries the single-resume guarantee, including on the throw path where <code>connect()</code> rethrows and never installs a replacement.</li>
+<li><strong><code>send</code> and <code>receiveData</code> must fail when there is no socket.</strong> <code>disconnect()</code> sets <code>connection = nil</code>. Optional-chaining the <code>NWConnection</code> call inside a continuation body turns the whole statement into a no-op there: the continuation is created, never handed to a completion handler, and never resumed, so the caller suspends permanently. Both continuation bodies therefore <code>guard let</code> the connection and resume with <code>AccessoryError.disconnected</code> when it is gone. This matters because <code>AccessoryManager.send</code> checks <code>isConnected</code> and then calls <code>connection.send</code> across two separate suspension points, so a teardown can land between the check and the call, and the two heartbeat connect steps that call <code>send</code> (Steps 2 and 4) are constructed with <code>timeout: nil</code>, so nothing times the parked step out. Steps 3 and 5 (<code>sendWantConfig</code>, <code>sendWantDatabase</code>) do carry explicit timeouts, but the ~25 <code>send</code> call sites outside the connect sequence have no timeout wrapper at all.</li>
+<li><strong>Known remaining gap: an in-flight <code>send</code> is still uncancellable.</strong> The guard above only covers the no-socket case. A live but stalled <code>NWConnection</code> (<code>.waiting</code>/<code>.preparing</code>, e.g. path loss mid-send) queues the send without ever calling <code>.contentProcessed</code>, and unlike <code>receiveData</code> — which wraps its continuation in <code>withTaskCancellationHandler</code> and cancels the <code>NWConnection</code> in <code>onCancel</code> — the <code>send</code> continuation has no cancellation handler, so cancelling the caller does not free it. Closing this means mirroring <code>receiveData</code>'s pattern, which also changes what a cancelled send does to the socket, so it is deliberately left alone rather than folded into the no-socket fix.</li>
+</ul>
 <h2>Adding a New Packet Type</h2>
 <ol>
 <li>Add the protobuf definition in the <code>protobufs/</code> submodule.</li>

@@ -57,14 +57,12 @@ struct MQTTConfig: View {
 					Toggle(isOn: $enabled) {
 						Label("Enabled", systemImage: "dot.radiowaves.up.forward")
 					}
-					.tint(.accentColor)
 					
 					Toggle(isOn: $proxyToClientEnabled) {
 						
 						Label("MQTT Client Proxy", systemImage: "iphone.radiowaves.left.and.right")
 						Text("Utilizes the network connection on your phone to connect to MQTT.")
 					}
-					.tint(.accentColor)
 					
 					if enabled && proxyToClientEnabled && node?.mqttConfig?.proxyToClientEnabled ?? false == true {
 						Toggle(isOn: $mqttConnected) {
@@ -76,13 +74,11 @@ struct MQTTConfig: View {
 							}
 							
 						}
-						.tint(.accentColor)
 					}
 					
 					Toggle(isOn: $encryptionEnabled) {
 						Label("Encryption Enabled", systemImage: "lock.icloud")
 					}
-					.tint(.accentColor)
 				}
 				
 				Section(header: Text("Map Report")) {
@@ -92,7 +88,6 @@ struct MQTTConfig: View {
 							.foregroundColor(.gray)
 							.font(.caption)
 					}
-					.tint(.accentColor)
 					if mapReportingEnabled {
 						Text("Consent to Share Unencrypted Node Data via MQTT")
 						Text("By enabling this feature, you acknowledge and expressly consent to the transmission of your device’s real-time geographic location over the MQTT protocol without encryption. This location data may be used for purposes such as live map reporting, device tracking, and related telemetry functions.")
@@ -106,7 +101,6 @@ struct MQTTConfig: View {
 								.foregroundColor(.gray)
 								.font(.callout)
 						}
-						.tint(.accentColor)
 					}
 					if mapReportingEnabled && mapReportingOptIn {
 						UpdateIntervalPicker(
@@ -122,9 +116,13 @@ struct MQTTConfig: View {
 							Slider(value: $mapPositionPrecision, in: 12...15, step: 1) {
 							} minimumValueLabel: {
 								Image(systemName: "plus")
+									.accessibilityHidden(true)
 							} maximumValueLabel: {
 								Image(systemName: "minus")
+									.accessibilityHidden(true)
 							}
+							.accessibilityLabel(String(localized: "Approximate location precision", comment: "VoiceOver label for the approximate location precision slider"))
+							.accessibilityValue(PositionPrecision(rawValue: Int(mapPositionPrecision))?.description ?? "")
 							Text(PositionPrecision(rawValue: Int(mapPositionPrecision))?.description ?? "")
 								.foregroundColor(.gray)
 								.font(.callout)
@@ -229,7 +227,7 @@ struct MQTTConfig: View {
 									.foregroundColor(.secondary)
 							}
 							.buttonStyle(.plain)
-							.accessibilityLabel(showPassword ? "Hide password" : "Show password")
+							.accessibilityLabel(showPassword ? String(localized: "Hide password", comment: "VoiceOver label for the hide password button") : String(localized: "Show password", comment: "VoiceOver label for the show password button"))
 						}
 						.keyboardType(.default)
 						.listRowSeparator(/*@START_MENU_TOKEN@*/.visible/*@END_MENU_TOKEN@*/)
@@ -240,7 +238,6 @@ struct MQTTConfig: View {
 								Label("TLS Enabled", systemImage: "checkmark.shield.fill")
 								Text("TLS is required for the public Meshtastic MQTT server.")
 							}
-							.tint(.accentColor)
 							.disabled(true)
 						}
 					} else {
@@ -248,7 +245,6 @@ struct MQTTConfig: View {
 							Label("TLS Enabled", systemImage: "checkmark.shield.fill")
 							Text("Your MQTT Server must support TLS.")
 						}
-						.tint(.accentColor)
 					}
 				}
 				Text("For all Mqtt functionality other than the map report you must also set uplink and downlink for each channel you want to bridge over Mqtt.")

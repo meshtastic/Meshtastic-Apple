@@ -25,36 +25,34 @@ struct SaveChannelSettingsIntent: AppIntent {
 			throw AppIntentErrors.AppIntentError.notConnected
 		}
 
-		// Ensure the URL contains the expected "meshtastic.org/e/#" structure
-		if channelUrl.absoluteString.lowercased().contains("meshtastic.org/e/#") {
-			// Split the URL to get the portion after "#"
-			let components = channelUrl.absoluteString.components(separatedBy: "#")
-			// Add channels flag based on the URL query parameter (if present)
-			let addChannels = Bool(channelUrl["add"] ?? "false") ?? false
-			var channelSettings: String?
-			// Extract the Base64 encoded channel settings (after "#")
-			if let lastComponent = components.last {
-				channelSettings = lastComponent.components(separatedBy: "?").first // Ignore any query parameters
-			}
-
-			// If valid channel settings are extracted, attempt to save them
-			if let channelSettings = channelSettings {
-				Task {
-					do {
-						// Call the AcessoryManager to save the channel settings
-						try await AccessoryManager.shared.saveChannelSet(base64UrlString: channelSettings, addChannels: addChannels)
-					} catch {
-						throw AppIntentErrors.AppIntentError.message("Failed to save the channel settings.")
-					}
-				}
-			} else {
-				throw AppIntentErrors.AppIntentError.message("Invalid Channel URL: Unable to extract settings.")
-			}
-
-			// Return a success result
-			return .result()
-		} else {
-			throw AppIntentErrors.AppIntentError.message("The URL is not a valid Meshtastic channel link.")
+		let channelLink: MeshtasticChannelURL
+		do {
+			channelLink = try MeshtasticChannelURL.parse(channelUrl.absoluteString)
+		} catch let error as MeshtasticChannelURL.ParseError {
+			throw AppIntentErrors.AppIntentError.message(error.localizedDescription)
 		}
+		// Require explicit confirmation before mutating radio state, mirroring the in-app
+		// QR/URL flow (SaveChannelQRCode) and the destructive intents (ShutDownNodeIntent /
+		// FactoryResetNodeIntent). Without this, an untrusted Shortcut could silently replace
+		// the radio's channel list, PSKs, and LoRa config in the background.
+		// requestConfirmation throws if the user declines; let that cancellation propagate
+		// unchanged rather than mislabeling it as a save failure.
+		// The add path only sends channels; the replace path also rewrites LoRa config and
+		// reboots the radio. Describe each case accurately so the prompt matches the mutation.
+		// Annotate the type so the ternary's branches coerce to IntentDialog (a bare ternary
+		// of String literals would otherwise infer String, which IntentDialog can't accept).
+		let dialog: IntentDialog = channelLink.addChannels
+			? "This will add channels to your connected Meshtastic radio. Your LoRa settings will not change. Continue?"
+			: "This will REPLACE the channels and LoRa settings on your connected Meshtastic radio. Continue?"
+		try await requestConfirmation(result: .result(dialog: dialog))
+		do {
+			try await AccessoryManager.shared.saveChannelSet(
+				channelSet: channelLink.channelSet,
+				addChannels: channelLink.addChannels
+			)
+		} catch {
+			throw AppIntentErrors.AppIntentError.message("Failed to save the channel settings.")
+		}
+		return .result()
 	}
 }

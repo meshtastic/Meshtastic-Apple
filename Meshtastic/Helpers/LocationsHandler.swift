@@ -16,6 +16,7 @@ import OSLog
 	static let shared = LocationsHandler()  // Create a single, shared instance of the object.
 	public var manager = CLLocationManager()
 	private var background: CLBackgroundActivitySession?
+	private var locationDeliveryStarted = false
 	var enableSmartPosition: Bool = UserDefaults.enableSmartPosition
 
 	@Published var locationsArray: [CLLocation] = [CLLocation]()
@@ -147,57 +148,29 @@ import OSLog
 			Logger.services.warning("📍 [App] Cannot start location updates: insufficient authorization status: \(status.rawValue)")
 			return
 		}
+		guard !locationDeliveryStarted else { return }
 		Logger.services.info("📍 [App] Starting location updates")
-		// Using a Task for asynchronous operations. The @MainActor isolation of the class
-		// ensures that all state changes within this Task (accessing @Published properties)
-		// will be performed on the main actor.
-		Task { @MainActor in
-			do {
-				self.updatesStarted = true
-				// `liveUpdates()` provides a stream of location updates.
-				let updates = CLLocationUpdate.liveUpdates()
-				for try await update in updates {
-					// Check for task cancellation to allow graceful stopping.
-					try Task.checkCancellation()
-					// If `updatesStarted` is set to false (e.g., by `stopLocationUpdates`),
-					// break out of the loop to stop processing updates.
-					if !self.updatesStarted {
-						Logger.services.info("🛑 [App] Location updates loop stopped due to updatesStarted being false.")
-						break
-					}
-					if let loc = update.location {
-						self.isStationary = update.isStationary
-						let locationAdded = addLocation(loc, smartPostion: enableSmartPosition)
-						if !isRecording && locationAdded {
-							self.count = 1
-						} else if locationAdded && isRecording {
-							self.count += 1
-						}
-					}
-				}
-			} catch is CancellationError {
-				// Handle explicit task cancellation gracefully.
-				Logger.services.info("📍 [App] Location updates task was cancelled.")
-			} catch {
-				// Catch any other errors during location updates.
-				Logger.services.error("💥 [App] Could not start location updates: \(error.localizedDescription, privacy: .public)")
-			}
-			// The Task completes implicitly here.
-		}
+		updatesStarted = true
+		beginLocationDelivery()
 	}
-	
+
+	func beginLocationDelivery() {
+		locationDeliveryStarted = true
+		manager.startUpdatingLocation()
+	}
+
 	// New method to start heading updates
 	func startHeadingUpdates() {
 		guard CLLocationManager.headingAvailable() else {
 			Logger.services.warning("📍 [App] Heading updates not available on this device.")
 			return
 		}
-		
+
 		guard manager.authorizationStatus == .authorizedAlways || manager.authorizationStatus == .authorizedWhenInUse else {
 			Logger.services.warning("📍 [App] Cannot start heading updates: insufficient authorization status.")
 			return
 		}
-		
+
 		Logger.services.info("📍 [App] Starting heading updates")
 		manager.startUpdatingHeading()
 		headingUpdatesStarted = true
@@ -217,12 +190,32 @@ import OSLog
 			self.heading = newHeading.trueHeading >= 0 ? newHeading.trueHeading : newHeading.magneticHeading
 		}
 	}
-	
+
+	func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+		Task { @MainActor in
+			guard self.updatesStarted else { return }
+			for location in locations {
+				self.recordLocation(location, isStationary: false)
+			}
+		}
+	}
+
 	/// Stops receiving live location updates.
 	func stopLocationUpdates() {
 		Logger.services.info("🛑 [App] Stopping location updates")
-		// Setting `updatesStarted` to false will cause the `liveUpdates()` loop to break.
 		self.updatesStarted = false
+		self.locationDeliveryStarted = false
+		self.manager.stopUpdatingLocation()
+	}
+
+	private func recordLocation(_ location: CLLocation, isStationary: Bool) {
+		self.isStationary = isStationary
+		let locationAdded = addLocation(location, smartPostion: enableSmartPosition)
+		if !isRecording && locationAdded {
+			self.count = 1
+		} else if locationAdded && isRecording {
+			self.count += 1
+		}
 	}
 
 	/// Escalates to best accuracy during route recording; reverts to battery-friendly defaults otherwise.

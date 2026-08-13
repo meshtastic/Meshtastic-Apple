@@ -54,6 +54,7 @@ struct NodeWeatherForecastView: View {
 					xEnd: .value("Hour", range.upperBound)
 				)
 				.opacity(0.5)
+				.accessibilityHidden(true)
 				.mask {
 					areaMarks(seriesKey: "Mask", value: range.lowerBound.timeIntervalSince1970)
 				}
@@ -68,6 +69,7 @@ struct NodeWeatherForecastView: View {
 					)
 					.foregroundStyle(.indigo.shadow(.drop(color: .white.opacity(0.25), radius: 0, x: 1)))
 					.cornerRadius(2)
+					.accessibilityHidden(true)
 					.annotation(position: .top, alignment: .bottom, spacing: 5) {
 						Image(systemName: "moon.circle.fill")
 							.imageScale(.large)
@@ -86,6 +88,7 @@ struct NodeWeatherForecastView: View {
 					)
 					.foregroundStyle(.indigo.shadow(.drop(color: .white.opacity(0.25), radius: 0, x: -1)))
 					.cornerRadius(2)
+					.accessibilityHidden(true)
 					.annotation(position: .top, alignment: .bottom, spacing: 5) {
 						Image(systemName: "sun.max.circle.fill")
 							.imageScale(.large)
@@ -122,6 +125,8 @@ struct NodeWeatherForecastView: View {
 				series: .value(seriesKey, value)
 			)
 			.interpolationMethod(.catmullRom)
+			.accessibilityLabel(String(localized: "Temperature at \(entry.date.formatted(date: .omitted, time: .shortened))", comment: "VoiceOver label for a temperature point on the weather forecast chart. %@ is the time of day."))
+			.accessibilityValue(String(localized: "\(entry.degrees.formatted(.number.precision(.fractionLength(0)))) degrees", comment: "VoiceOver value spoken as a temperature reading in degrees. %@ is the number."))
 		}
 	}
 

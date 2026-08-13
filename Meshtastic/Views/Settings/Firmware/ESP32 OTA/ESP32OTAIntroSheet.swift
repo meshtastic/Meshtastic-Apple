@@ -188,9 +188,12 @@ struct ESP32OTAIntroSheet: View {
 				.navigationBarTitleDisplayMode(.inline)
 				.toolbar {
 					ToolbarItem(placement: .cancellationAction) { // Standard placement for "Done" or "Close"
-						Button("Done") {
+						Button {
 							dismiss()
+						} label: {
+							Image(systemName: "xmark")
 						}
+						.accessibilityLabel(String(localized: "Done", comment: "VoiceOver: dismiss the ESP32 update sheet"))
 					}
 				}
 		}.textCase(nil)

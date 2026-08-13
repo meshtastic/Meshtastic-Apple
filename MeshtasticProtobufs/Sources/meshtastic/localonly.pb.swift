@@ -28,77 +28,77 @@ public struct LocalConfig: @unchecked Sendable {
   ///
   /// The part of the config that is specific to the Device
   public var device: Config.DeviceConfig {
-    get {return _storage._device ?? Config.DeviceConfig()}
+    get {_storage._device ?? Config.DeviceConfig()}
     set {_uniqueStorage()._device = newValue}
   }
   /// Returns true if `device` has been explicitly set.
-  public var hasDevice: Bool {return _storage._device != nil}
+  public var hasDevice: Bool {_storage._device != nil}
   /// Clears the value of `device`. Subsequent reads from it will return its default value.
   public mutating func clearDevice() {_uniqueStorage()._device = nil}
 
   ///
   /// The part of the config that is specific to the GPS Position
   public var position: Config.PositionConfig {
-    get {return _storage._position ?? Config.PositionConfig()}
+    get {_storage._position ?? Config.PositionConfig()}
     set {_uniqueStorage()._position = newValue}
   }
   /// Returns true if `position` has been explicitly set.
-  public var hasPosition: Bool {return _storage._position != nil}
+  public var hasPosition: Bool {_storage._position != nil}
   /// Clears the value of `position`. Subsequent reads from it will return its default value.
   public mutating func clearPosition() {_uniqueStorage()._position = nil}
 
   ///
   /// The part of the config that is specific to the Power settings
   public var power: Config.PowerConfig {
-    get {return _storage._power ?? Config.PowerConfig()}
+    get {_storage._power ?? Config.PowerConfig()}
     set {_uniqueStorage()._power = newValue}
   }
   /// Returns true if `power` has been explicitly set.
-  public var hasPower: Bool {return _storage._power != nil}
+  public var hasPower: Bool {_storage._power != nil}
   /// Clears the value of `power`. Subsequent reads from it will return its default value.
   public mutating func clearPower() {_uniqueStorage()._power = nil}
 
   ///
   /// The part of the config that is specific to the Wifi Settings
   public var network: Config.NetworkConfig {
-    get {return _storage._network ?? Config.NetworkConfig()}
+    get {_storage._network ?? Config.NetworkConfig()}
     set {_uniqueStorage()._network = newValue}
   }
   /// Returns true if `network` has been explicitly set.
-  public var hasNetwork: Bool {return _storage._network != nil}
+  public var hasNetwork: Bool {_storage._network != nil}
   /// Clears the value of `network`. Subsequent reads from it will return its default value.
   public mutating func clearNetwork() {_uniqueStorage()._network = nil}
 
   ///
   /// The part of the config that is specific to the Display
   public var display: Config.DisplayConfig {
-    get {return _storage._display ?? Config.DisplayConfig()}
+    get {_storage._display ?? Config.DisplayConfig()}
     set {_uniqueStorage()._display = newValue}
   }
   /// Returns true if `display` has been explicitly set.
-  public var hasDisplay: Bool {return _storage._display != nil}
+  public var hasDisplay: Bool {_storage._display != nil}
   /// Clears the value of `display`. Subsequent reads from it will return its default value.
   public mutating func clearDisplay() {_uniqueStorage()._display = nil}
 
   ///
   /// The part of the config that is specific to the Lora Radio
   public var lora: Config.LoRaConfig {
-    get {return _storage._lora ?? Config.LoRaConfig()}
+    get {_storage._lora ?? Config.LoRaConfig()}
     set {_uniqueStorage()._lora = newValue}
   }
   /// Returns true if `lora` has been explicitly set.
-  public var hasLora: Bool {return _storage._lora != nil}
+  public var hasLora: Bool {_storage._lora != nil}
   /// Clears the value of `lora`. Subsequent reads from it will return its default value.
   public mutating func clearLora() {_uniqueStorage()._lora = nil}
 
   ///
   /// The part of the config that is specific to the Bluetooth settings
   public var bluetooth: Config.BluetoothConfig {
-    get {return _storage._bluetooth ?? Config.BluetoothConfig()}
+    get {_storage._bluetooth ?? Config.BluetoothConfig()}
     set {_uniqueStorage()._bluetooth = newValue}
   }
   /// Returns true if `bluetooth` has been explicitly set.
-  public var hasBluetooth: Bool {return _storage._bluetooth != nil}
+  public var hasBluetooth: Bool {_storage._bluetooth != nil}
   /// Clears the value of `bluetooth`. Subsequent reads from it will return its default value.
   public mutating func clearBluetooth() {_uniqueStorage()._bluetooth = nil}
 
@@ -107,18 +107,18 @@ public struct LocalConfig: @unchecked Sendable {
   /// incompatible changes This integer is set at build time and is private to
   /// NodeDB.cpp in the device code.
   public var version: UInt32 {
-    get {return _storage._version}
+    get {_storage._version}
     set {_uniqueStorage()._version = newValue}
   }
 
   ///
   /// The part of the config that is specific to Security settings
   public var security: Config.SecurityConfig {
-    get {return _storage._security ?? Config.SecurityConfig()}
+    get {_storage._security ?? Config.SecurityConfig()}
     set {_uniqueStorage()._security = newValue}
   }
   /// Returns true if `security` has been explicitly set.
-  public var hasSecurity: Bool {return _storage._security != nil}
+  public var hasSecurity: Bool {_storage._security != nil}
   /// Clears the value of `security`. Subsequent reads from it will return its default value.
   public mutating func clearSecurity() {_uniqueStorage()._security = nil}
 
@@ -137,185 +137,196 @@ public struct LocalModuleConfig: @unchecked Sendable {
   ///
   /// The part of the config that is specific to the MQTT module
   public var mqtt: ModuleConfig.MQTTConfig {
-    get {return _storage._mqtt ?? ModuleConfig.MQTTConfig()}
+    get {_storage._mqtt ?? ModuleConfig.MQTTConfig()}
     set {_uniqueStorage()._mqtt = newValue}
   }
   /// Returns true if `mqtt` has been explicitly set.
-  public var hasMqtt: Bool {return _storage._mqtt != nil}
+  public var hasMqtt: Bool {_storage._mqtt != nil}
   /// Clears the value of `mqtt`. Subsequent reads from it will return its default value.
   public mutating func clearMqtt() {_uniqueStorage()._mqtt = nil}
 
   ///
   /// The part of the config that is specific to the Serial module
   public var serial: ModuleConfig.SerialConfig {
-    get {return _storage._serial ?? ModuleConfig.SerialConfig()}
+    get {_storage._serial ?? ModuleConfig.SerialConfig()}
     set {_uniqueStorage()._serial = newValue}
   }
   /// Returns true if `serial` has been explicitly set.
-  public var hasSerial: Bool {return _storage._serial != nil}
+  public var hasSerial: Bool {_storage._serial != nil}
   /// Clears the value of `serial`. Subsequent reads from it will return its default value.
   public mutating func clearSerial() {_uniqueStorage()._serial = nil}
 
   ///
   /// The part of the config that is specific to the ExternalNotification module
   public var externalNotification: ModuleConfig.ExternalNotificationConfig {
-    get {return _storage._externalNotification ?? ModuleConfig.ExternalNotificationConfig()}
+    get {_storage._externalNotification ?? ModuleConfig.ExternalNotificationConfig()}
     set {_uniqueStorage()._externalNotification = newValue}
   }
   /// Returns true if `externalNotification` has been explicitly set.
-  public var hasExternalNotification: Bool {return _storage._externalNotification != nil}
+  public var hasExternalNotification: Bool {_storage._externalNotification != nil}
   /// Clears the value of `externalNotification`. Subsequent reads from it will return its default value.
   public mutating func clearExternalNotification() {_uniqueStorage()._externalNotification = nil}
 
   ///
   /// The part of the config that is specific to the Store & Forward module
   public var storeForward: ModuleConfig.StoreForwardConfig {
-    get {return _storage._storeForward ?? ModuleConfig.StoreForwardConfig()}
+    get {_storage._storeForward ?? ModuleConfig.StoreForwardConfig()}
     set {_uniqueStorage()._storeForward = newValue}
   }
   /// Returns true if `storeForward` has been explicitly set.
-  public var hasStoreForward: Bool {return _storage._storeForward != nil}
+  public var hasStoreForward: Bool {_storage._storeForward != nil}
   /// Clears the value of `storeForward`. Subsequent reads from it will return its default value.
   public mutating func clearStoreForward() {_uniqueStorage()._storeForward = nil}
 
   ///
   /// The part of the config that is specific to the RangeTest module
   public var rangeTest: ModuleConfig.RangeTestConfig {
-    get {return _storage._rangeTest ?? ModuleConfig.RangeTestConfig()}
+    get {_storage._rangeTest ?? ModuleConfig.RangeTestConfig()}
     set {_uniqueStorage()._rangeTest = newValue}
   }
   /// Returns true if `rangeTest` has been explicitly set.
-  public var hasRangeTest: Bool {return _storage._rangeTest != nil}
+  public var hasRangeTest: Bool {_storage._rangeTest != nil}
   /// Clears the value of `rangeTest`. Subsequent reads from it will return its default value.
   public mutating func clearRangeTest() {_uniqueStorage()._rangeTest = nil}
 
   ///
   /// The part of the config that is specific to the Telemetry module
   public var telemetry: ModuleConfig.TelemetryConfig {
-    get {return _storage._telemetry ?? ModuleConfig.TelemetryConfig()}
+    get {_storage._telemetry ?? ModuleConfig.TelemetryConfig()}
     set {_uniqueStorage()._telemetry = newValue}
   }
   /// Returns true if `telemetry` has been explicitly set.
-  public var hasTelemetry: Bool {return _storage._telemetry != nil}
+  public var hasTelemetry: Bool {_storage._telemetry != nil}
   /// Clears the value of `telemetry`. Subsequent reads from it will return its default value.
   public mutating func clearTelemetry() {_uniqueStorage()._telemetry = nil}
 
   ///
   /// The part of the config that is specific to the Canned Message module
   public var cannedMessage: ModuleConfig.CannedMessageConfig {
-    get {return _storage._cannedMessage ?? ModuleConfig.CannedMessageConfig()}
+    get {_storage._cannedMessage ?? ModuleConfig.CannedMessageConfig()}
     set {_uniqueStorage()._cannedMessage = newValue}
   }
   /// Returns true if `cannedMessage` has been explicitly set.
-  public var hasCannedMessage: Bool {return _storage._cannedMessage != nil}
+  public var hasCannedMessage: Bool {_storage._cannedMessage != nil}
   /// Clears the value of `cannedMessage`. Subsequent reads from it will return its default value.
   public mutating func clearCannedMessage() {_uniqueStorage()._cannedMessage = nil}
 
   ///
   /// The part of the config that is specific to the Audio module
   public var audio: ModuleConfig.AudioConfig {
-    get {return _storage._audio ?? ModuleConfig.AudioConfig()}
+    get {_storage._audio ?? ModuleConfig.AudioConfig()}
     set {_uniqueStorage()._audio = newValue}
   }
   /// Returns true if `audio` has been explicitly set.
-  public var hasAudio: Bool {return _storage._audio != nil}
+  public var hasAudio: Bool {_storage._audio != nil}
   /// Clears the value of `audio`. Subsequent reads from it will return its default value.
   public mutating func clearAudio() {_uniqueStorage()._audio = nil}
 
   ///
   /// The part of the config that is specific to the Remote Hardware module
   public var remoteHardware: ModuleConfig.RemoteHardwareConfig {
-    get {return _storage._remoteHardware ?? ModuleConfig.RemoteHardwareConfig()}
+    get {_storage._remoteHardware ?? ModuleConfig.RemoteHardwareConfig()}
     set {_uniqueStorage()._remoteHardware = newValue}
   }
   /// Returns true if `remoteHardware` has been explicitly set.
-  public var hasRemoteHardware: Bool {return _storage._remoteHardware != nil}
+  public var hasRemoteHardware: Bool {_storage._remoteHardware != nil}
   /// Clears the value of `remoteHardware`. Subsequent reads from it will return its default value.
   public mutating func clearRemoteHardware() {_uniqueStorage()._remoteHardware = nil}
 
   ///
   /// The part of the config that is specific to the Neighbor Info module
   public var neighborInfo: ModuleConfig.NeighborInfoConfig {
-    get {return _storage._neighborInfo ?? ModuleConfig.NeighborInfoConfig()}
+    get {_storage._neighborInfo ?? ModuleConfig.NeighborInfoConfig()}
     set {_uniqueStorage()._neighborInfo = newValue}
   }
   /// Returns true if `neighborInfo` has been explicitly set.
-  public var hasNeighborInfo: Bool {return _storage._neighborInfo != nil}
+  public var hasNeighborInfo: Bool {_storage._neighborInfo != nil}
   /// Clears the value of `neighborInfo`. Subsequent reads from it will return its default value.
   public mutating func clearNeighborInfo() {_uniqueStorage()._neighborInfo = nil}
 
   ///
   /// The part of the config that is specific to the Ambient Lighting module
   public var ambientLighting: ModuleConfig.AmbientLightingConfig {
-    get {return _storage._ambientLighting ?? ModuleConfig.AmbientLightingConfig()}
+    get {_storage._ambientLighting ?? ModuleConfig.AmbientLightingConfig()}
     set {_uniqueStorage()._ambientLighting = newValue}
   }
   /// Returns true if `ambientLighting` has been explicitly set.
-  public var hasAmbientLighting: Bool {return _storage._ambientLighting != nil}
+  public var hasAmbientLighting: Bool {_storage._ambientLighting != nil}
   /// Clears the value of `ambientLighting`. Subsequent reads from it will return its default value.
   public mutating func clearAmbientLighting() {_uniqueStorage()._ambientLighting = nil}
 
   ///
   /// The part of the config that is specific to the Detection Sensor module
   public var detectionSensor: ModuleConfig.DetectionSensorConfig {
-    get {return _storage._detectionSensor ?? ModuleConfig.DetectionSensorConfig()}
+    get {_storage._detectionSensor ?? ModuleConfig.DetectionSensorConfig()}
     set {_uniqueStorage()._detectionSensor = newValue}
   }
   /// Returns true if `detectionSensor` has been explicitly set.
-  public var hasDetectionSensor: Bool {return _storage._detectionSensor != nil}
+  public var hasDetectionSensor: Bool {_storage._detectionSensor != nil}
   /// Clears the value of `detectionSensor`. Subsequent reads from it will return its default value.
   public mutating func clearDetectionSensor() {_uniqueStorage()._detectionSensor = nil}
 
   ///
   /// Paxcounter Config
   public var paxcounter: ModuleConfig.PaxcounterConfig {
-    get {return _storage._paxcounter ?? ModuleConfig.PaxcounterConfig()}
+    get {_storage._paxcounter ?? ModuleConfig.PaxcounterConfig()}
     set {_uniqueStorage()._paxcounter = newValue}
   }
   /// Returns true if `paxcounter` has been explicitly set.
-  public var hasPaxcounter: Bool {return _storage._paxcounter != nil}
+  public var hasPaxcounter: Bool {_storage._paxcounter != nil}
   /// Clears the value of `paxcounter`. Subsequent reads from it will return its default value.
   public mutating func clearPaxcounter() {_uniqueStorage()._paxcounter = nil}
 
   ///
   /// StatusMessage Config
   public var statusmessage: ModuleConfig.StatusMessageConfig {
-    get {return _storage._statusmessage ?? ModuleConfig.StatusMessageConfig()}
+    get {_storage._statusmessage ?? ModuleConfig.StatusMessageConfig()}
     set {_uniqueStorage()._statusmessage = newValue}
   }
   /// Returns true if `statusmessage` has been explicitly set.
-  public var hasStatusmessage: Bool {return _storage._statusmessage != nil}
+  public var hasStatusmessage: Bool {_storage._statusmessage != nil}
   /// Clears the value of `statusmessage`. Subsequent reads from it will return its default value.
   public mutating func clearStatusmessage() {_uniqueStorage()._statusmessage = nil}
 
   ///
   /// The part of the config that is specific to the Traffic Management module
   public var trafficManagement: ModuleConfig.TrafficManagementConfig {
-    get {return _storage._trafficManagement ?? ModuleConfig.TrafficManagementConfig()}
+    get {_storage._trafficManagement ?? ModuleConfig.TrafficManagementConfig()}
     set {_uniqueStorage()._trafficManagement = newValue}
   }
   /// Returns true if `trafficManagement` has been explicitly set.
-  public var hasTrafficManagement: Bool {return _storage._trafficManagement != nil}
+  public var hasTrafficManagement: Bool {_storage._trafficManagement != nil}
   /// Clears the value of `trafficManagement`. Subsequent reads from it will return its default value.
   public mutating func clearTrafficManagement() {_uniqueStorage()._trafficManagement = nil}
 
   ///
   /// TAK Config
   public var tak: ModuleConfig.TAKConfig {
-    get {return _storage._tak ?? ModuleConfig.TAKConfig()}
+    get {_storage._tak ?? ModuleConfig.TAKConfig()}
     set {_uniqueStorage()._tak = newValue}
   }
   /// Returns true if `tak` has been explicitly set.
-  public var hasTak: Bool {return _storage._tak != nil}
+  public var hasTak: Bool {_storage._tak != nil}
   /// Clears the value of `tak`. Subsequent reads from it will return its default value.
   public mutating func clearTak() {_uniqueStorage()._tak = nil}
+
+  ///
+  /// MeshBeacon Config
+  public var meshBeacon: ModuleConfig.MeshBeaconConfig {
+    get {_storage._meshBeacon ?? ModuleConfig.MeshBeaconConfig()}
+    set {_uniqueStorage()._meshBeacon = newValue}
+  }
+  /// Returns true if `meshBeacon` has been explicitly set.
+  public var hasMeshBeacon: Bool {_storage._meshBeacon != nil}
+  /// Clears the value of `meshBeacon`. Subsequent reads from it will return its default value.
+  public mutating func clearMeshBeacon() {_uniqueStorage()._meshBeacon = nil}
 
   ///
   /// A version integer used to invalidate old save files when we make
   /// incompatible changes This integer is set at build time and is private to
   /// NodeDB.cpp in the device code.
   public var version: UInt32 {
-    get {return _storage._version}
+    get {_storage._version}
     set {_uniqueStorage()._version = newValue}
   }
 
@@ -458,7 +469,7 @@ extension LocalConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
 
 extension LocalModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".LocalModuleConfig"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}mqtt\0\u{1}serial\0\u{3}external_notification\0\u{3}store_forward\0\u{3}range_test\0\u{1}telemetry\0\u{3}canned_message\0\u{1}version\0\u{1}audio\0\u{3}remote_hardware\0\u{3}neighbor_info\0\u{3}ambient_lighting\0\u{3}detection_sensor\0\u{1}paxcounter\0\u{1}statusmessage\0\u{3}traffic_management\0\u{1}tak\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}mqtt\0\u{1}serial\0\u{3}external_notification\0\u{3}store_forward\0\u{3}range_test\0\u{1}telemetry\0\u{3}canned_message\0\u{1}version\0\u{1}audio\0\u{3}remote_hardware\0\u{3}neighbor_info\0\u{3}ambient_lighting\0\u{3}detection_sensor\0\u{1}paxcounter\0\u{1}statusmessage\0\u{3}traffic_management\0\u{1}tak\0\u{3}mesh_beacon\0")
 
   fileprivate class _StorageClass {
     var _mqtt: ModuleConfig.MQTTConfig? = nil
@@ -477,6 +488,7 @@ extension LocalModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     var _statusmessage: ModuleConfig.StatusMessageConfig? = nil
     var _trafficManagement: ModuleConfig.TrafficManagementConfig? = nil
     var _tak: ModuleConfig.TAKConfig? = nil
+    var _meshBeacon: ModuleConfig.MeshBeaconConfig? = nil
     var _version: UInt32 = 0
 
       // This property is used as the initial default value for new instances of the type.
@@ -504,6 +516,7 @@ extension LocalModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
       _statusmessage = source._statusmessage
       _trafficManagement = source._trafficManagement
       _tak = source._tak
+      _meshBeacon = source._meshBeacon
       _version = source._version
     }
   }
@@ -540,6 +553,7 @@ extension LocalModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
         case 15: try { try decoder.decodeSingularMessageField(value: &_storage._statusmessage) }()
         case 16: try { try decoder.decodeSingularMessageField(value: &_storage._trafficManagement) }()
         case 17: try { try decoder.decodeSingularMessageField(value: &_storage._tak) }()
+        case 18: try { try decoder.decodeSingularMessageField(value: &_storage._meshBeacon) }()
         default: break
         }
       }
@@ -603,6 +617,9 @@ extension LocalModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
       try { if let v = _storage._tak {
         try visitor.visitSingularMessageField(value: v, fieldNumber: 17)
       } }()
+      try { if let v = _storage._meshBeacon {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 18)
+      } }()
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -628,6 +645,7 @@ extension LocalModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
         if _storage._statusmessage != rhs_storage._statusmessage {return false}
         if _storage._trafficManagement != rhs_storage._trafficManagement {return false}
         if _storage._tak != rhs_storage._tak {return false}
+        if _storage._meshBeacon != rhs_storage._meshBeacon {return false}
         if _storage._version != rhs_storage._version {return false}
         return true
       }

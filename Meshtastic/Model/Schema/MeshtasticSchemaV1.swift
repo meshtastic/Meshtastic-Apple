@@ -26,6 +26,7 @@ enum MeshtasticSchemaV1: VersionedSchema {
 			PaxCounterEntity.self,
 			TraceRouteEntity.self,
 			TraceRouteHopEntity.self,
+			TraceRouteNodePositionEntity.self,
 			RouteEntity.self,
 			LocationEntity.self,
 			// Device hardware & firmware entities
@@ -34,6 +35,7 @@ enum MeshtasticSchemaV1: VersionedSchema {
 			DeviceHardwareTagEntity.self,
 			DeviceLinkEntity.self,
 			FirmwareReleaseEntity.self,
+			EventFirmwareEntity.self,
 			// Config entities
 			AmbientLightingConfigEntity.self,
 			AudioConfigEntity.self,
@@ -44,6 +46,8 @@ enum MeshtasticSchemaV1: VersionedSchema {
 			DisplayConfigEntity.self,
 			ExternalNotificationConfigEntity.self,
 			LoRaConfigEntity.self,
+			MeshBeaconConfigEntity.self,
+			BroadcastTargetEntity.self,
 			MQTTConfigEntity.self,
 			NeighborInfoConfigEntity.self,
 			NetworkConfigEntity.self,
@@ -62,7 +66,8 @@ enum MeshtasticSchemaV1: VersionedSchema {
 			// Discovery entities
 			DiscoverySessionEntity.self,
 			DiscoveryPresetResultEntity.self,
-			DiscoveredNodeEntity.self
+			DiscoveredNodeEntity.self,
+			DiscoveredBeaconEntity.self
 		]
 	}
 }
