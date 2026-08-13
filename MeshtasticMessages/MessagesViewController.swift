@@ -6,6 +6,7 @@
 import Messages
 import SwiftUI
 
+@MainActor
 final class MessagesViewController: MSMessagesAppViewController {
 	private var viewModel: MessagesViewModel?
 
@@ -79,7 +80,9 @@ final class MessagesViewController: MSMessagesAppViewController {
 			imageName: "chirpy"
 		)
 		conversation.insert(message) { [weak self] error in
-			self?.show(error)
+			Task { @MainActor [weak self] in
+				self?.show(error)
+			}
 		}
 	}
 
@@ -104,7 +107,9 @@ final class MessagesViewController: MSMessagesAppViewController {
 				imageName: "mesh-logo"
 			)
 			conversation.insert(message) { [weak self] error in
-				self?.show(error)
+				Task { @MainActor [weak self] in
+					self?.show(error)
+				}
 			}
 		} catch {
 			show(error)
@@ -126,10 +131,12 @@ final class MessagesViewController: MSMessagesAppViewController {
 			imageName: "chirpy"
 		)
 		conversation.insert(reply) { [weak self] error in
-			if let error {
-				self?.show(error)
-			} else {
-				self?.openInContainerApp(MeshContactURL.withoutExchangeRequest(incomingURL))
+			Task { @MainActor [weak self] in
+				if let error {
+					self?.show(error)
+				} else {
+					self?.openInContainerApp(MeshContactURL.withoutExchangeRequest(incomingURL))
+				}
 			}
 		}
 	}
@@ -167,11 +174,13 @@ final class MessagesViewController: MSMessagesAppViewController {
 			viewModel?.errorMessage = "That sticker is missing from this build."
 			return
 		}
-		do {
-			let sticker = try MSSticker(contentsOfFileURL: fileURL, localizedDescription: description)
-			conversation.insert(sticker) { [weak self] error in
-				self?.show(error)
-			}
+			do {
+				let sticker = try MSSticker(contentsOfFileURL: fileURL, localizedDescription: description)
+				conversation.insert(sticker) { [weak self] error in
+					Task { @MainActor [weak self] in
+						self?.show(error)
+					}
+				}
 		} catch {
 			show(error)
 		}
