@@ -1300,6 +1300,10 @@ public enum FirmwareEdition: SwiftProtobuf.Enum, Swift.CaseIterable {
   case hamvention // = 19
 
   ///
+  /// FAB, the international Fab Lab digital fabrication conference
+  case fab // = 20
+
+  ///
   /// Placeholder for DIY and unofficial events
   case diyEdition // = 127
   case UNRECOGNIZED(Int)
@@ -1316,6 +1320,7 @@ public enum FirmwareEdition: SwiftProtobuf.Enum, Swift.CaseIterable {
     case 17: self = .defcon
     case 18: self = .burningMan
     case 19: self = .hamvention
+    case 20: self = .fab
     case 127: self = .diyEdition
     default: self = .UNRECOGNIZED(rawValue)
     }
@@ -1329,6 +1334,7 @@ public enum FirmwareEdition: SwiftProtobuf.Enum, Swift.CaseIterable {
     case .defcon: return 17
     case .burningMan: return 18
     case .hamvention: return 19
+    case .fab: return 20
     case .diyEdition: return 127
     case .UNRECOGNIZED(let i): return i
     }
@@ -1342,6 +1348,7 @@ public enum FirmwareEdition: SwiftProtobuf.Enum, Swift.CaseIterable {
     .defcon,
     .burningMan,
     .hamvention,
+    .fab,
     .diyEdition,
   ]
 
@@ -2812,10 +2819,20 @@ public struct MeshPacket: @unchecked Sendable {
   /// Note: this field is _never_ sent on the radio link itself (to save space) Times
   /// are typically not sent over the mesh, but they will be added to any Packet
   /// (chain of SubPacket) sent to the phone (so the phone can know exact time of reception)
+  /// Explicit presence: firmware cannot always attach a trustworthy wall-clock timestamp at the
+  /// moment of reception - a node with no GPS and no phone connected yet has no time source at
+  /// all. has_rx_time disambiguates that state from a genuine (if coincidental) 1970-01-01
+  /// reading. A packet delivered with this field absent may still be re-timestamped once a valid
+  /// clock becomes available, before the phone ever sees it - "absent" is not guaranteed
+  /// permanent, only "not yet known at last observation".
   public var rxTime: UInt32 {
-    get {_storage._rxTime}
+    get {_storage._rxTime ?? 0}
     set {_uniqueStorage()._rxTime = newValue}
   }
+  /// Returns true if `rxTime` has been explicitly set.
+  public var hasRxTime: Bool {_storage._rxTime != nil}
+  /// Clears the value of `rxTime`. Subsequent reads from it will return its default value.
+  public mutating func clearRxTime() {_uniqueStorage()._rxTime = nil}
 
   ///
   /// *Never* sent over the radio links.
@@ -2861,10 +2878,17 @@ public struct MeshPacket: @unchecked Sendable {
 
   ///
   /// rssi of received packet. Only sent to phone for dispay purposes.
+  /// Explicit presence: rssi 0 is a legitimate reading on some radios (SX126x can report exactly
+  /// 0 dBm; SX127x's formula can even go positive). has_rx_rssi disambiguates; a replayed packet
+  /// built from history should leave this field absent rather than emitting 0.
   public var rxRssi: Int32 {
-    get {_storage._rxRssi}
+    get {_storage._rxRssi ?? 0}
     set {_uniqueStorage()._rxRssi = newValue}
   }
+  /// Returns true if `rxRssi` has been explicitly set.
+  public var hasRxRssi: Bool {_storage._rxRssi != nil}
+  /// Clears the value of `rxRssi`. Subsequent reads from it will return its default value.
+  public mutating func clearRxRssi() {_uniqueStorage()._rxRssi = nil}
 
   ///
   /// Describe if this message is delayed
@@ -2885,6 +2909,10 @@ public struct MeshPacket: @unchecked Sendable {
   ///
   /// Hop limit with which the original packet started. Sent via LoRa using three bits in the unencrypted header.
   /// When receiving a packet, the difference between hop_start and hop_limit gives how many hops it traveled.
+  /// hop_start == 0 does not necessarily mean a direct (0-hop) neighbor: firmware prior to 2.3.0
+  /// never populated this field, so a receiver can only trust hop_start == 0 as genuine once it has
+  /// decoded the packet and confirmed the sender's bitfield is present (added in 2.5.0). Until then,
+  /// or for a sender that never sets that bitfield, treat hop_start == 0 as unknown, not direct.
   public var hopStart: UInt32 {
     get {_storage._hopStart}
     set {_uniqueStorage()._hopStart = newValue}
@@ -4399,6 +4427,11 @@ public struct DeviceMetadata: Sendable {
   /// (bitwise OR of ExcludedModules)
   public var excludedModules: UInt32 = 0
 
+  ///
+  /// Indicates whether this firmware build includes XEdDSA packet signature verification.
+  /// This is a read-only capability and must be false when XEdDSA is not compiled in.
+  public var hasXeddsa_p: Bool = false
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
@@ -4650,7 +4683,7 @@ extension CriticalErrorCode: SwiftProtobuf._ProtoNameProviding {
 }
 
 extension FirmwareEdition: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0VANILLA\0\u{1}SMART_CITIZEN\0\u{2}\u{f}OPEN_SAUCE\0\u{1}DEFCON\0\u{1}BURNING_MAN\0\u{1}HAMVENTION\0\u{2}l\u{1}DIY_EDITION\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0VANILLA\0\u{1}SMART_CITIZEN\0\u{2}\u{f}OPEN_SAUCE\0\u{1}DEFCON\0\u{1}BURNING_MAN\0\u{1}HAMVENTION\0\u{1}FAB\0\u{2}k\u{1}DIY_EDITION\0")
 }
 
 extension ExcludedModules: SwiftProtobuf._ProtoNameProviding {
@@ -5614,12 +5647,12 @@ extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
     var _channel: UInt32 = 0
     var _payloadVariant: MeshPacket.OneOf_PayloadVariant?
     var _id: UInt32 = 0
-    var _rxTime: UInt32 = 0
+    var _rxTime: UInt32? = nil
     var _rxSnr: Float = 0
     var _hopLimit: UInt32 = 0
     var _wantAck: Bool = false
     var _priority: MeshPacket.Priority = .unset
-    var _rxRssi: Int32 = 0
+    var _rxRssi: Int32? = nil
     var _delayed: MeshPacket.Delayed = .noDelay
     var _viaMqtt: Bool = false
     var _hopStart: UInt32 = 0
@@ -5755,9 +5788,9 @@ extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
       if _storage._id != 0 {
         try visitor.visitSingularFixed32Field(value: _storage._id, fieldNumber: 6)
       }
-      if _storage._rxTime != 0 {
-        try visitor.visitSingularFixed32Field(value: _storage._rxTime, fieldNumber: 7)
-      }
+      try { if let v = _storage._rxTime {
+        try visitor.visitSingularFixed32Field(value: v, fieldNumber: 7)
+      } }()
       if _storage._rxSnr.bitPattern != 0 {
         try visitor.visitSingularFloatField(value: _storage._rxSnr, fieldNumber: 8)
       }
@@ -5770,9 +5803,9 @@ extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
       if _storage._priority != .unset {
         try visitor.visitSingularEnumField(value: _storage._priority, fieldNumber: 11)
       }
-      if _storage._rxRssi != 0 {
-        try visitor.visitSingularInt32Field(value: _storage._rxRssi, fieldNumber: 12)
-      }
+      try { if let v = _storage._rxRssi {
+        try visitor.visitSingularInt32Field(value: v, fieldNumber: 12)
+      } }()
       if _storage._delayed != .noDelay {
         try visitor.visitSingularEnumField(value: _storage._delayed, fieldNumber: 13)
       }
@@ -7140,7 +7173,7 @@ extension Neighbor: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
 
 extension DeviceMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".DeviceMetadata"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}firmware_version\0\u{3}device_state_version\0\u{1}canShutdown\0\u{1}hasWifi\0\u{1}hasBluetooth\0\u{1}hasEthernet\0\u{1}role\0\u{3}position_flags\0\u{3}hw_model\0\u{1}hasRemoteHardware\0\u{1}hasPKC\0\u{3}excluded_modules\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}firmware_version\0\u{3}device_state_version\0\u{1}canShutdown\0\u{1}hasWifi\0\u{1}hasBluetooth\0\u{1}hasEthernet\0\u{1}role\0\u{3}position_flags\0\u{3}hw_model\0\u{1}hasRemoteHardware\0\u{1}hasPKC\0\u{3}excluded_modules\0\u{4}\u{2}has_xeddsa\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -7160,6 +7193,7 @@ extension DeviceMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
       case 10: try { try decoder.decodeSingularBoolField(value: &self.hasRemoteHardware_p) }()
       case 11: try { try decoder.decodeSingularBoolField(value: &self.hasPkc_p) }()
       case 12: try { try decoder.decodeSingularUInt32Field(value: &self.excludedModules) }()
+      case 14: try { try decoder.decodeSingularBoolField(value: &self.hasXeddsa_p) }()
       default: break
       }
     }
@@ -7202,6 +7236,9 @@ extension DeviceMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
     if self.excludedModules != 0 {
       try visitor.visitSingularUInt32Field(value: self.excludedModules, fieldNumber: 12)
     }
+    if self.hasXeddsa_p != false {
+      try visitor.visitSingularBoolField(value: self.hasXeddsa_p, fieldNumber: 14)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -7218,6 +7255,7 @@ extension DeviceMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
     if lhs.hasRemoteHardware_p != rhs.hasRemoteHardware_p {return false}
     if lhs.hasPkc_p != rhs.hasPkc_p {return false}
     if lhs.excludedModules != rhs.excludedModules {return false}
+    if lhs.hasXeddsa_p != rhs.hasXeddsa_p {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

@@ -110,7 +110,7 @@ struct AppLog: View {
 			isPresented: $isExporting,
 			document: CsvDocument(emptyCsv: exportString),
 			contentType: .commaSeparatedText,
-			defaultFilename: String("Meshtastic Application Logs \(Date.now.exportTimestamp)"),
+			defaultFilename: CsvDocument.exportFilename("Meshtastic Application Logs \(Date.now.exportTimestamp)"),
 			onCompletion: { result in
 				switch result {
 				case .success:

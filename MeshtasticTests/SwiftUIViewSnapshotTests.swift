@@ -77,12 +77,13 @@ private func renderImage<V: View>(_ view: V, width: CGFloat, height: CGFloat? = 
 	}
 }
 
-/// Saves a snapshot image to disk. On first run, records the reference.
-/// On subsequent runs, compares against the reference and fails if different.
+/// Checks a rendered image against its reference dimensions without modifying
+/// the reference. Set `MESHTASTIC_RECORD_SNAPSHOTS=1` in the test process to
+/// create or replace references explicitly. Mac Catalyst references use their
+/// own subdirectory so they cannot replace the checked-in iOS references.
 /// When height is nil the view determines its own height via sizeThatFits.
-/// When `forDocs` is true, the PNG is saved to `docs/assets/screenshots/` so
-/// it is shared directly with the documentation site. When false, it is saved
-/// to `__Snapshots__/` next to the test file (test-only, not bundled in the app).
+/// When `forDocs` is true, the PNG is stored under `docs/assets/screenshots/`.
+/// Otherwise it is stored in `__Snapshots__/` next to the test file.
 @MainActor
 private func assertViewSnapshot<V: View>(
 	of view: V,
@@ -101,59 +102,26 @@ private func assertViewSnapshot<V: View>(
 		return
 	}
 
-	let fileUrl = URL(fileURLWithPath: filePath, isDirectory: false)
-	let snapshotDir: URL
-	if forDocs {
-		// Write to docs/assets/screenshots/ — shared with the documentation site.
-		let repoRoot = fileUrl
-			.deletingLastPathComponent()  // MeshtasticTests/
-			.deletingLastPathComponent()  // repo root
-		snapshotDir = repoRoot
-			.appendingPathComponent("docs")
-			.appendingPathComponent("assets")
-			.appendingPathComponent("screenshots")
-	} else {
-		// Write to __Snapshots__/ next to the test file (test-only).
-		snapshotDir = fileUrl.deletingLastPathComponent()
-			.appendingPathComponent("__Snapshots__")
-			.appendingPathComponent(fileUrl.deletingPathExtension().lastPathComponent)
-	}
-	let snapshotFile = snapshotDir.appendingPathComponent("\(name).png")
-
-	let fm = FileManager.default
-	do {
-		try fm.createDirectory(at: snapshotDir, withIntermediateDirectories: true)
-	} catch {
-		Issue.record("Failed to create snapshot directory: \(error)", sourceLocation: sourceLocation)
+	guard let cgImage = image.cgImage else {
+		Issue.record("Failed to read rendered image dimensions", sourceLocation: sourceLocation)
 		return
 	}
+	let snapshotFile = SnapshotReferencePath.referenceURL(
+		testFileURL: URL(fileURLWithPath: filePath, isDirectory: false),
+		snapshotName: name,
+		forDocs: forDocs,
+		platform: .current
+	)
 
-	if fm.fileExists(atPath: snapshotFile.path) {
-		// Compare against reference
-		guard let referenceData = try? Data(contentsOf: snapshotFile),
-			  let referenceImage = UIImage(data: referenceData),
-			  let refCG = referenceImage.cgImage,
-			  let newCG = image.cgImage else {
-			Issue.record("Failed to read reference snapshot: \(snapshotFile.lastPathComponent)", sourceLocation: sourceLocation)
-			return
-		}
-		// Compare pixel dimensions (not point sizes, which depend on scale factor)
-		guard refCG.width == newCG.width, refCG.height == newCG.height else {
-			// Dimensions changed — re-record
-			try? pngData.write(to: snapshotFile)
-			Issue.record(
-				"Snapshot dimensions changed from \(refCG.width)×\(refCG.height) to \(newCG.width)×\(newCG.height). Re-recorded.",
-				sourceLocation: sourceLocation
-			)
-			return
-		}
-	} else {
-		// First run - record reference silently (test passes; verify visually)
-		do {
-			try pngData.write(to: snapshotFile)
-		} catch {
-			Issue.record("Failed to write snapshot: \(error)", sourceLocation: sourceLocation)
-		}
+	do {
+		try SnapshotReferenceStore().check(
+			pngData: pngData,
+			pixelDimensions: SnapshotPixelDimensions(width: cgImage.width, height: cgImage.height),
+			referenceURL: snapshotFile,
+			mode: .current()
+		)
+	} catch {
+		Issue.record("\(error)", sourceLocation: sourceLocation)
 	}
 }
 
@@ -737,6 +705,7 @@ struct DiscoveryHistoryViewSnapshotTests {
 // MARK: - NodeListItemCompact Snapshot Tests
 
 @Suite("NodeListItemCompact Snapshots")
+@MainActor
 struct NodeListItemCompactSnapshotTests {
 
 	// MARK: Helpers
@@ -791,6 +760,7 @@ struct NodeListItemCompactSnapshotTests {
 		if let ch = channelIndex {
 			node.channel = ch
 		}
+		sharedModelContainer.mainContext.insert(node)
 		return node
 	}
 
@@ -892,6 +862,7 @@ struct NodeListItemCompactSnapshotTests {
 		let node = NodeInfoEntity()
 		node.hopsAway = 2
 		node.lastHeard = Date(timeIntervalSinceNow: -120)
+		sharedModelContainer.mainContext.insert(node)
 		await assertViewSnapshot(
 			of: NodeListItemCompact(node: node, isDirectlyConnected: false, connectedNode: 1).padding(.horizontal, 16),
 			width: 390,
@@ -1040,6 +1011,7 @@ struct NodeListItemCompactSnapshotTests {
 // MARK: - NodeListItem Snapshot Tests
 
 @Suite("NodeListItem Snapshots")
+@MainActor
 struct NodeListItemSnapshotTests {
 
 	// MARK: Helpers
@@ -1088,6 +1060,7 @@ struct NodeListItemSnapshotTests {
 			position.longitudeI = lon
 			node.positions = [position]
 		}
+		sharedModelContainer.mainContext.insert(node)
 		return node
 	}
 
@@ -1581,6 +1554,7 @@ struct NodeDetailSnapshotTests {
 		node.favorite = true
 
 		let user = UserEntity()
+		user.num = node.num
 		user.longName = "Hopscotch Base"
 		user.shortName = "HB"
 		user.role = 0 // Client
@@ -1625,7 +1599,7 @@ struct NodeDetailSnapshotTests {
 		node.telemetries = [deviceTelemetry, envTelemetry]
 		context.insert(node)
 
-		let view = NodeDetail(node: node)
+		let view = NodeDetail(node: node, nodeNum: node.num)
 			.environmentObject(AccessoryManager.shared)
 			.environmentObject(MeshtasticAPI.shared)
 			.environmentObject(Router())
@@ -1729,7 +1703,7 @@ struct MessagePreviewSnapshotTests {
 					.foregroundStyle(.primary)
 			}
 		}
-		await assertViewSnapshot(of: view, width: 250, height: 44, named: "formattingToolbar", forDocs: true)
+		await assertViewSnapshot(of: view, width: 250, height: 44, named: "formattingToolbar")
 	}
 
 	@Test("Preview with bold text")
@@ -2052,5 +2026,92 @@ struct DeviceOnboardingSnapshotTests {
 	@Test("Siri & Shortcuts screen")
 	func siriScreen() async {
 		await assertViewSnapshot(of: screen(DeviceOnboarding().siriView), width: 390, height: 844, named: "onboarding_siri", forDocs: true)
+	}
+}
+
+// MARK: - PacketAuthenticity Snapshot Tests
+
+/// Visual coverage for the Packet Authenticity policy selector, mirroring the Android
+/// screenshot-test matrix in `SettingsScreenshotTests.kt` (Meshtastic-Android#6178): each policy
+/// plus the states where the control is unavailable, in light and dark.
+///
+/// The Strict confirmation is an `.alert`, which a windowless host does not render, so it is
+/// covered by the state-machine tests in `PacketAuthenticityTests` rather than here.
+@Suite("PacketAuthenticity Snapshots")
+struct PacketAuthenticitySnapshotTests {
+
+	@MainActor
+	private func section(
+		_ policy: Config.SecurityConfig.PacketSignaturePolicy,
+		capability: PacketAuthenticityCapability = .supported,
+		isConnected: Bool = true
+	) -> some View {
+		Form {
+			PacketAuthenticitySection(
+				capability: capability,
+				isConnected: isConnected,
+				selection: .constant(PacketAuthenticitySelectionState(selected: policy))
+			)
+		}
+	}
+
+	@Test("Compatible (default) policy, light")
+	@MainActor
+	func compatibleLight() async {
+		await assertViewSnapshot(of: section(.compatible), width: 390, height: 260, colorScheme: .light, named: "packetAuthenticity_compatible_light")
+	}
+
+	@Test("Compatible (default) policy, dark")
+	@MainActor
+	func compatibleDark() async {
+		await assertViewSnapshot(of: section(.compatible), width: 390, height: 260, colorScheme: .dark, named: "packetAuthenticity_compatible_dark")
+	}
+
+	@Test("Balanced policy, light")
+	@MainActor
+	func balancedLight() async {
+		await assertViewSnapshot(of: section(.balanced), width: 390, height: 260, colorScheme: .light, named: "packetAuthenticity_balanced_light")
+	}
+
+	@Test("Balanced policy, dark")
+	@MainActor
+	func balancedDark() async {
+		await assertViewSnapshot(of: section(.balanced), width: 390, height: 260, colorScheme: .dark, named: "packetAuthenticity_balanced_dark")
+	}
+
+	@Test("Strict policy, light")
+	@MainActor
+	func strictLight() async {
+		await assertViewSnapshot(of: section(.strict), width: 390, height: 260, colorScheme: .light, named: "packetAuthenticity_strict_light")
+	}
+
+	@Test("Strict policy, dark")
+	@MainActor
+	func strictDark() async {
+		await assertViewSnapshot(of: section(.strict), width: 390, height: 260, colorScheme: .dark, named: "packetAuthenticity_strict_dark")
+	}
+
+	@Test("Firmware without XEdDSA support, light")
+	@MainActor
+	func unsupportedLight() async {
+		await assertViewSnapshot(of: section(.compatible, capability: .unsupported), width: 390, height: 260, colorScheme: .light, named: "packetAuthenticity_unsupported_light")
+	}
+
+	@Test("Firmware without XEdDSA support, dark")
+	@MainActor
+	func unsupportedDark() async {
+		await assertViewSnapshot(of: section(.compatible, capability: .unsupported), width: 390, height: 260, colorScheme: .dark, named: "packetAuthenticity_unsupported_dark")
+	}
+
+	@Test("Capability not yet reported, light")
+	@MainActor
+	func unknownCapabilityLight() async {
+		await assertViewSnapshot(of: section(.compatible, capability: .unknown), width: 390, height: 300, colorScheme: .light, named: "packetAuthenticity_unknown_light")
+	}
+
+	@Test("Capability not yet reported, dark")
+	@MainActor
+	func unknownCapabilityDark() async {
+		await assertViewSnapshot(of: section(.compatible, capability: .unknown), width: 390, height: 300, colorScheme: .dark, named: "packetAuthenticity_unknown_dark")
 	}
 }

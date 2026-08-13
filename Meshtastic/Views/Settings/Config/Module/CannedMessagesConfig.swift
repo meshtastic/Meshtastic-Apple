@@ -46,7 +46,6 @@ struct CannedMessagesConfig: View {
 					
 					Label("Send Bell", systemImage: "bell")
 				}
-				.tint(.accentColor)
 				
 				Picker("Configuration Presets", selection: $configPreset ) {
 					ForEach(ConfigPresets.allCases) { cp in
@@ -82,13 +81,11 @@ struct CannedMessagesConfig: View {
 					
 					Label("Rotary 1", systemImage: "dial.min")
 				}
-				.tint(.accentColor)
 				.disabled(updown1Enabled)
 				Toggle(isOn: $updown1Enabled) {
 					
 					Label("Up Down 1", systemImage: "arrow.up.arrow.down")
 				}
-				.tint(.accentColor)
 				.disabled(rotary1Enabled)
 			}
 			.disabled(configPreset > 0)

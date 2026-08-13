@@ -40,6 +40,10 @@
 <td>Speed/range trade-off. Most users should use Long Fast or Long Slow. On firmware 2.8+, the preset list is filtered to those that are legal for the selected region (see below).</td>
 </tr>
 <tr>
+<td>Bandwidth</td>
+<td>Available under <strong>Advanced</strong> when <strong>Use Preset</strong> is off. The protobuf default value of 0 is shown as its effective firmware value: 250 kHz in sub-GHz regions and 812.5 kHz in the 2.4 GHz region. Choices are filtered for the selected region and connected radio. If a stored nonzero bandwidth is unsupported, the app shows a warning and prevents saving until you select a supported value.</td>
+</tr>
+<tr>
 <td>Hop Limit</td>
 <td>The number of times a message is repeated by other nodes. Higher values increase range but also mesh traffic.</td>
 </tr>
@@ -55,6 +59,33 @@
 <p>When sharing channels, the share screen shows a QR code and link, and — on iPhones with NFC hardware (iOS 18 or later) — a <strong>Write to NFC Tag</strong> button. Hold a writable NFC tag near the top of your iPhone to save the channel link to it, replacing any content the tag already held; tapping that tag on another phone opens the same add-or-replace channels flow the QR code does.</p>
 <h3>Security</h3>
 <p>Configure PKI (Public Key Infrastructure) encryption for direct messages. Requires firmware 2.5+.</p>
+<h4>Packet Authenticity</h4>
+<p>Firmware that reports XEdDSA support can authenticate the sender of a mesh packet. <strong>Protection Level</strong> controls what the radio does with traffic it cannot authenticate:</p>
+<table>
+<thead>
+<tr>
+<th>Level</th>
+<th>Behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Compatible — Accept unsigned</td>
+<td>Authenticates packets when possible, but accepts unsigned traffic for maximum compatibility. This is the default.</td>
+</tr>
+<tr>
+<td>Balanced — Prefer authenticated</td>
+<td>Recommended. Rejects unsigned broadcasts from nodes already known to sign, while still accepting traffic from nodes that never sign.</td>
+</tr>
+<tr>
+<td>Strict — Require authentication</td>
+<td>Accepts a remote packet only when it carries a verified XEdDSA signature or was successfully authenticated through PKI decryption.</td>
+</tr>
+</tbody>
+</table>
+<p>Strict applies to every remote mesh packet, including positions, messages, telemetry, node info, and routing traffic. Traffic from older firmware, from licensed (ham) nodes without PKI keys, and packets too large to carry a signature will disappear. PKI-authenticated direct messages remain available. The app asks you to confirm before enabling Strict.</p>
+<p>The selector is disabled when the connected radio does not report XEdDSA support, or has not reported its capability yet — update that radio's firmware to configure the policy. Note that a verified signature proves which key sent a packet; it does not prove that a reported position or sensor reading is true or current.</p>
+<p>This setting matches the Meshtastic app for Android, and the policy is enforced by the radio rather than the app.</p>
 <p>On hardened lockdown-firmware radios, this page also shows a <strong>Lockdown</strong> section with the session status, a <strong>Lock Now</strong> button, and a <strong>Forget Stored Passphrase</strong> button. See <a href="lockdown.html">Lockdown Mode</a>.</p>
 <h3>User</h3>
 <p>Set your Long Name (display name) and Short Name (4-character/emoji identifier shown in the node circle).</p>
@@ -62,6 +93,7 @@
 <p>BLE radio settings including PIN mode and power saving. Changes apply on next radio restart.</p>
 <h3>Device</h3>
 <p>Device role, serial output, debug log streaming, and node info broadcast interval.</p>
+<p>The <strong>Repeater</strong> role is deprecated and can no longer be selected for new configurations. If a node is still set to Repeater it is shown as &quot;Repeater (Deprecated)&quot; with a reminder to switch it to a Router-based role (Router or Router Late).</p>
 <h3>Display</h3>
 <p>Screen timeout, auto-carousel of screens, flip screen for alternate mounting orientations, and OLED contrast.</p>
 <h4>Compass Orientation</h4>
@@ -337,9 +369,9 @@ The exported file includes your node's private key, admin keys, channel keys (PS
 </tbody>
 </table>
 <p>All present sections are selected by default <strong>except Security &amp; Identity</strong>, which is off by default: importing it replaces this node's cryptographic identity (its private/public key) and admin keys, which can break existing direct messages and lock you out of local administration. Leave it off when cloning a configuration onto a second radio that should keep its own identity.</p>
-<div class="warning-callout"><strong>Warning — Import overwrites your radio's settings</strong>
+<div class="warning-callout"><strong>Warning — Import replaces settings</strong>
 Importing writes the selected settings — including any secrets in the file — onto the connected node. Only import files from a source you trust.</div>
-<p>Applying <strong>Channels &amp; LoRa</strong> reboots the radio, so it briefly disconnects; the app reports this so you can reconnect to verify. Settings are applied in order and the import stops at the first failure, telling you exactly what was and wasn't applied. Re-running an import is safe.</p>
+<p>Applying <strong>Channels &amp; LoRa</strong> reboots the radio, so it briefly disconnects; the app reports this so you can reconnect. Settings are applied in order and the import stops at the first failure, telling you exactly what was and wasn't sent. Because the radio can silently discard settings it accepts, the result screen also offers <strong>Verify Against the Radio</strong>: once the radio reconnects and sends its configuration back, it compares each imported section against what the radio actually holds. Re-running an import is safe.</p>
 <h2>Automatic Documentation Translation</h2>
 <p>On devices running iOS 26 or later, the in-app documentation is automatically translated to your device language when it differs from English.</p>
 <h3>How It Works</h3>

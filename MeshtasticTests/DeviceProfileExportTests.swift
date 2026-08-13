@@ -96,6 +96,30 @@ struct DeviceProfileExportTests {
 		#expect(proto.adminKey == [Data([0x01])])
 	}
 
+	@Test("SecurityConfig round-trips the packet signature policy")
+	func securityConfigPacketSignaturePolicy() {
+		// Omitting this field exported every profile as Compatible (the proto zero
+		// value) and importing that back silently downgraded a Balanced/Strict radio.
+		let entity = SecurityConfigEntity()
+		entity.packetSignaturePolicy = Int32(Config.SecurityConfig.PacketSignaturePolicy.strict.rawValue)
+		#expect(entity.protoConfig.packetSignaturePolicy == .strict)
+
+		entity.packetSignaturePolicy = Int32(Config.SecurityConfig.PacketSignaturePolicy.balanced.rawValue)
+		#expect(entity.protoConfig.packetSignaturePolicy == .balanced)
+
+		// Default entity exports the proto default, matching an unconfigured radio.
+		#expect(SecurityConfigEntity().protoConfig.packetSignaturePolicy == .compatible)
+	}
+
+	@Test("SecurityConfig preserves an unrecognized future policy value")
+	func securityConfigUnknownPolicyRoundTrips() {
+		// A policy set by newer firmware must survive export untouched rather than
+		// being coerced to Compatible — same contract as the Security settings UI.
+		let entity = SecurityConfigEntity()
+		entity.packetSignaturePolicy = 42
+		#expect(entity.protoConfig.packetSignaturePolicy == .UNRECOGNIZED(42))
+	}
+
 	@Test("NetworkConfig restores the packed IPv4 values via bit pattern")
 	func networkConfig() {
 		let entity = NetworkConfigEntity()

@@ -34,6 +34,7 @@ LoRa settings control how your radio communicates on the mesh:
 |---------|-------------|
 | Region | Your geographical region. **Must be set correctly** — using the wrong region is illegal and prevents communication with local nodes. The standard regions are always available; the amateur (ham) 2m / 70cm / 1.25m bands and the EU 866 / narrow bands require firmware **2.8.0 or later** and only appear when your connected radio supports them. |
 | Modem Preset | Speed/range trade-off. Most users should use Long Fast or Long Slow. On firmware 2.8+, the preset list is filtered to those that are legal for the selected region (see below). |
+| Bandwidth | Available under **Advanced** when **Use Preset** is off. The protobuf default value of 0 is shown as its effective firmware value: 250 kHz in sub-GHz regions and 812.5 kHz in the 2.4 GHz region. Choices are filtered for the selected region and connected radio. If a stored nonzero bandwidth is unsupported, the app shows a warning and prevents saving until you select a supported value. |
 | Hop Limit | The number of times a message is repeated by other nodes. Higher values increase range but also mesh traffic. |
 | Frequency Slot | Fine-tune the exact frequency within your region. |
 
@@ -49,6 +50,22 @@ When sharing channels, the share screen shows a QR code and link, and — on iPh
 
 Configure PKI (Public Key Infrastructure) encryption for direct messages. Requires firmware 2.5+.
 
+#### Packet Authenticity
+
+Firmware that reports XEdDSA support can authenticate the sender of a mesh packet. **Protection Level** controls what the radio does with traffic it cannot authenticate:
+
+| Level | Behavior |
+|-------|----------|
+| Compatible — Accept unsigned | Authenticates packets when possible, but accepts unsigned traffic for maximum compatibility. This is the default. |
+| Balanced — Prefer authenticated | Recommended. Rejects unsigned broadcasts from nodes already known to sign, while still accepting traffic from nodes that never sign. |
+| Strict — Require authentication | Accepts a remote packet only when it carries a verified XEdDSA signature or was successfully authenticated through PKI decryption. |
+
+Strict applies to every remote mesh packet, including positions, messages, telemetry, node info, and routing traffic. Traffic from older firmware, from licensed (ham) nodes without PKI keys, and packets too large to carry a signature will disappear. PKI-authenticated direct messages remain available. The app asks you to confirm before enabling Strict.
+
+The selector is disabled when the connected radio does not report XEdDSA support, or has not reported its capability yet — update that radio's firmware to configure the policy. Note that a verified signature proves which key sent a packet; it does not prove that a reported position or sensor reading is true or current.
+
+This setting matches the Meshtastic app for Android, and the policy is enforced by the radio rather than the app.
+
 On hardened lockdown-firmware radios, this page also shows a **Lockdown** section with the session status, a **Lock Now** button, and a **Forget Stored Passphrase** button. See [Lockdown Mode](lockdown.md).
 
 ### User
@@ -62,6 +79,8 @@ BLE radio settings including PIN mode and power saving. Changes apply on next ra
 ### Device
 
 Device role, serial output, debug log streaming, and node info broadcast interval.
+
+The **Repeater** role is deprecated and can no longer be selected for new configurations. If a node is still set to Repeater it is shown as "Repeater (Deprecated)" with a reminder to switch it to a Router-based role (Router or Router Late).
 
 ### Display
 
@@ -191,10 +210,10 @@ Apply a saved `.cfg` configuration file to the connected node. After you pick a 
 
 All present sections are selected by default **except Security & Identity**, which is off by default: importing it replaces this node's cryptographic identity (its private/public key) and admin keys, which can break existing direct messages and lock you out of local administration. Leave it off when cloning a configuration onto a second radio that should keep its own identity.
 
-> **Warning — Import overwrites your radio's settings**
+> **Warning — Import replaces settings**
 > Importing writes the selected settings — including any secrets in the file — onto the connected node. Only import files from a source you trust.
 
-Applying **Channels & LoRa** reboots the radio, so it briefly disconnects; the app reports this so you can reconnect to verify. Settings are applied in order and the import stops at the first failure, telling you exactly what was and wasn't applied. Re-running an import is safe.
+Applying **Channels & LoRa** reboots the radio, so it briefly disconnects; the app reports this so you can reconnect. Settings are applied in order and the import stops at the first failure, telling you exactly what was and wasn't sent. Because the radio can silently discard settings it accepts, the result screen also offers **Verify Against the Radio**: once the radio reconnects and sends its configuration back, it compares each imported section against what the radio actually holds. Re-running an import is safe.
 
 ## Automatic Documentation Translation
 

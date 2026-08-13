@@ -223,6 +223,9 @@ extension MeshPackets {
 				if modelType == DeviceHardwareTagEntity.self || modelType == DeviceHardwareImageEntity.self {
 					continue // already deleted above
 				}
+				if modelType == EventFirmwareEntity.self {
+					continue // global display cache, not data owned by the connected radio
+				}
 				if preserveFavorites && modelType == NodeInfoEntity.self {
 					// Keep favorited nodes so the device and app stay in sync when the
 					// firmware is told to preserve favorites (nodedbReset = true).
@@ -1162,8 +1165,9 @@ extension MeshPackets {
 					newSecurityConfig.serialEnabled = config.serialEnabled
 					newSecurityConfig.debugLogApiEnabled = config.debugLogApiEnabled
 					newSecurityConfig.adminChannelEnabled = config.adminChannelEnabled
+					newSecurityConfig.packetSignaturePolicy = Int32(config.packetSignaturePolicy.rawValue)
 					fetchedNode[0].securityConfig = newSecurityConfig
-				} else if let securityConfig = fetchedNode[0].securityConfig {
+} else if let securityConfig = fetchedNode[0].securityConfig {
 					securityConfig.publicKey = config.publicKey
 					securityConfig.privateKey = config.privateKey
 					applyAdminKeys(config.adminKey, to: securityConfig)
@@ -1171,6 +1175,7 @@ extension MeshPackets {
 					securityConfig.serialEnabled = config.serialEnabled
 					securityConfig.debugLogApiEnabled = config.debugLogApiEnabled
 					securityConfig.adminChannelEnabled = config.adminChannelEnabled
+					securityConfig.packetSignaturePolicy = Int32(config.packetSignaturePolicy.rawValue)
 				}
 				if sessionPasskey?.count != 0 {
 					fetchedNode[0].sessionPasskey = sessionPasskey

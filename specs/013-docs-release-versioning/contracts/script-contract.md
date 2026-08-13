@@ -102,7 +102,6 @@ error: <reason>
 | Screenshots copied to `Meshtastic/Resources/docs/assets/screenshots/` | Yes | `copy-snapshots.sh` copies from `docs/assets/screenshots/` |
 | Git commit created on current branch | Yes — `git reset HEAD~1` | Message: `docs: rebuild for v<version> release` |
 | Annotated git tag created | Yes — `git tag -d v<version>` | Tag is local until explicitly pushed |
-| `cleanup-screenshots.sh` may delete orphaned PNGs from `docs/assets/screenshots/` | Recoverable via git | Called internally by `copy-snapshots.sh` |
 
 ---
 

@@ -1,0 +1,201 @@
+//
+//  MapScreen.swift
+//  Meshtastic TV
+//
+//  Copyright(c) Garth Vander Houwen 7/24/26.
+//
+//  Live mesh map with a focusable node side-list for Siri Remote operation.
+//  The list is the primary, reliable selection path on tvOS; clicking a pin on
+//  the map (focus engine) selects too and keeps the list in sync. Rows carry the
+//  same node-color circle badges as the map pins (CircleText, shared with iOS).
+//
+
+import SwiftUI
+import SwiftData
+
+struct MapScreen: View {
+	@Bindable var client: MeshClient
+	@State private var selectedNodeNum: UInt32?
+	@State private var recenterToken = 0
+	// Row focus is the browse signal on tvOS: List(selection:) does not follow
+	// focus for NavigationLink rows, so track it explicitly and mirror it into
+	// the map selection (debounced map-side).
+	@FocusState private var focusedNodeNum: UInt32?
+	@State private var navPath: [UInt32] = []
+
+	/// The persisted node store — the map and list read from here, not the client.
+	@Query private var allNodes: [MeshNode]
+
+	/// All nodes for the side list: located first, then alphabetically.
+	private var sortedNodes: [MeshNode] {
+		allNodes.sorted {
+			if $0.hasLocation != $1.hasLocation { return $0.hasLocation }
+			return $0.displayName.localizedCaseInsensitiveCompare($1.displayName) == .orderedAscending
+		}
+	}
+
+	/// Located nodes, most-recently-heard first — the map's data source.
+	private var locatedNodes: [MeshNode] {
+		allNodes.filter(\.hasLocation)
+			.sorted { ($0.lastHeard ?? .distantPast) > ($1.lastHeard ?? .distantPast) }
+	}
+
+	var body: some View {
+		HStack(spacing: 0) {
+			nodeList
+				.frame(width: TVTheme.sideListWidth)
+
+			MeshTVMapView(
+				nodes: locatedNodes,
+				selectedNodeNum: $selectedNodeNum,
+				recenterToken: recenterToken,
+				onMenuExit: escapeMap
+			)
+			.ignoresSafeArea()
+		}
+	}
+
+	/// Menu pressed while the map held focus: pop any open node detail and hand
+	/// focus back to the node list — without this, MKMapView is a focus trap.
+	private func escapeMap() {
+		navPath = []
+		focusedNodeNum = selectedNodeNum ?? sortedNodes.first?.num
+	}
+
+	private var nodeList: some View {
+		NavigationStack(path: $navPath) {
+			List {
+				// Map controls live in the list column — the overlay buttons were
+				// unreachable by remote once the map started capturing focus.
+				Section {
+					Button {
+						selectedNodeNum = nil
+						recenterToken += 1
+					} label: {
+						Label("Re-center Map", systemImage: "scope")
+					}
+					NavigationLink {
+						SettingsView()
+					} label: {
+						Label("Settings", systemImage: "gearshape")
+					}
+					Button(role: .destructive) {
+						client.disconnect()
+					} label: {
+						Label("Disconnect", systemImage: "xmark.circle.fill")
+					}
+				}
+
+				Section {
+					ForEach(sortedNodes) { node in
+						NavigationLink(value: node.num) {
+							NodeRow(node: node)
+						}
+						.focused($focusedNodeNum, equals: node.num)
+					}
+				} header: {
+					Text("\(allNodes.count) nodes · \(locatedNodes.count) on map")
+				}
+			}
+			.onChange(of: focusedNodeNum) { _, newValue in
+				if let newValue { selectedNodeNum = newValue }
+			}
+			.navigationDestination(for: UInt32.self) { num in
+				if let node = allNodes.first(where: { $0.num == num }) {
+					NodeDetailView(node: node)
+				}
+			}
+			.safeAreaInset(edge: .top) {
+				header
+			}
+		}
+	}
+
+	private var header: some View {
+		HStack(spacing: 20) {
+			VStack(alignment: .leading, spacing: 6) {
+				Image("meshtastic-wordmark-white")
+					.resizable()
+					.scaledToFit()
+					.frame(height: TVTheme.wordmarkHeight)
+				Text(client.host)
+					.font(.caption)
+					.foregroundStyle(.secondary)
+			}
+			Spacer()
+		}
+		.padding(.horizontal, 32)
+		.padding(.vertical, 16)
+		.background {
+			// Frost the list rows that scroll up behind the wordmark, fading to clear at
+			// the header's bottom edge so the logo/host never collides with moving data.
+			Rectangle()
+				.fill(.ultraThinMaterial)
+				.mask(
+					LinearGradient(
+						stops: [
+							.init(color: .black, location: 0.0),
+							.init(color: .black, location: 0.7),
+							.init(color: .clear, location: 1.0)
+						],
+						startPoint: .top,
+						endPoint: .bottom
+					)
+				)
+				.ignoresSafeArea(edges: .top)
+		}
+	}
+
+	private var disconnectButton: some View {
+		Button(role: .destructive) {
+			client.disconnect()
+		} label: {
+			Label("Disconnect", systemImage: "xmark.circle.fill")
+		}
+		.buttonStyle(.bordered)
+	}
+}
+
+/// Compact node row, modelled on the iOS `NodeListItemCompact`: node-color circle,
+/// name, then a secondary line of last-heard (green when online) and role.
+private struct NodeRow: View {
+	let node: MeshNode
+
+	var body: some View {
+		HStack(spacing: 16) {
+			// Same circle badge as the map pin (node color + short name).
+			CircleText(
+				text: node.shortName.isEmpty ? "?" : node.shortName,
+				color: Color(UIColor(hex: node.num)),
+				circleSize: TVTheme.listAvatarSize
+			)
+			.opacity(node.hasLocation ? 1 : 0.55)
+
+			VStack(alignment: .leading, spacing: 6) {
+				Text(node.displayName)
+					.lineLimit(1)
+
+				HStack(spacing: 14) {
+					if let lastHeard = node.lastHeard {
+						Label {
+							Text(lastHeard.formatted(.relative(presentation: .named)))
+						} icon: {
+							Image(systemName: node.isOnline ? "checkmark.circle.fill" : "moon.circle.fill")
+								.foregroundStyle(node.isOnline ? Color("MeshtasticSuccess") : Color("MeshtasticWarning"))
+						}
+					}
+					if let role = node.nodeRole {
+						Label(role.name, systemImage: role.systemName)
+					}
+					if !node.hasLocation {
+						Label("No position", systemImage: "location.slash")
+					}
+				}
+				.font(.caption)
+				.foregroundStyle(.secondary)
+				.lineLimit(1)
+			}
+			Spacer()
+		}
+	}
+}

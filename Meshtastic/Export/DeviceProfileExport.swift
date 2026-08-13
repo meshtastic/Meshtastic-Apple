@@ -147,6 +147,12 @@ extension SecurityConfigEntity {
 		config.serialEnabled = serialEnabled
 		config.debugLogApiEnabled = debugLogApiEnabled
 		config.adminChannelEnabled = adminChannelEnabled
+		// Via storedPacketSignaturePolicy so an unknown future value round-trips as
+		// .UNRECOGNIZED instead of being coerced; omitting this field exported every
+		// profile as Compatible and silently downgraded Balanced/Strict radios on
+		// import (and made post-import verification report a false mismatch, since
+		// the verifier compares through this same converter).
+		config.packetSignaturePolicy = storedPacketSignaturePolicy
 		return config
 	}
 }
