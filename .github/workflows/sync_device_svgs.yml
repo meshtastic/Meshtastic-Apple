@@ -27,11 +27,10 @@ jobs:
         python-version: '3.11'
 
     - name: Sync device images and hardware catalog
-      # Reuse the exact script the Xcode "Download Node SVG Images" build phase runs,
-      # writing to the bundled resource location the app actually loads at runtime
-      # (the Bundle "images" subdirectory + DeviceHardware.json — see MeshtasticAPI).
+      # Write to the bundled resource location the app loads at runtime
+      # (the Bundle "images" subdirectory + DeviceHardware.json; see MeshtasticAPI).
       # --force ignores the cached API hash so the committed snapshot always matches
-      # the upstream device hardware API instead of drifting until someone clean-builds.
+      # the upstream device hardware API.
       run: |
         python3 scripts/download_images.py \
           --output-dir "Meshtastic/Resources/images" \

@@ -344,21 +344,6 @@ targets:
         product: MVTTools
     preBuildScripts:
       - script: |
-          MARKER="${TARGET_TEMP_DIR}/first-build.marker"
-          
-          if [ ! -f "$MARKER" ]; then
-           # Treating as CLEAN build (or first build in this DerivedData)
-           # Force update all the note board images
-           "$SRCROOT/scripts/download_images.py" --output-dir "$SRCROOT/Meshtastic/Resources/images" --output-json "$SRCROOT/Meshtastic/Resources/DeviceHardware.json" --force
-           touch "$MARKER"
-          else
-           # Incremental build
-           # update only if there was a change in the devices json
-           "$SRCROOT/scripts/download_images.py" --output-dir "$SRCROOT/Meshtastic/Resources/images" --output-json "$SRCROOT/Meshtastic/Resources/DeviceHardware.json"
-          fi
-        name: "Download Node SVG Images"
-        basedOnDependencyAnalysis: false
-      - script: |
           if [[ "$(uname -m)" == arm64 ]]
           then
               export PATH="/opt/homebrew/bin:$PATH"
@@ -366,11 +351,19 @@ targets:
           
           if command -v swiftlint >/dev/null 2>&1
           then
-              swiftlint
+              swiftlint lint --cache-path "$DERIVED_FILE_DIR/swiftlint-cache"
           else
               echo "warning: `swiftlint` command not found - See https://github.com/realm/SwiftLint#installation for installation instructions."
           fi
         name: "Run Script"
+        inputFiles:
+          - "$(SRCROOT)/.swiftlint.yml"
+          - "$(SRCROOT)/Meshtastic"
+          - "$(SRCROOT)/Meshtastic Watch App"
+          - "$(SRCROOT)/MeshtasticTests"
+          - "$(SRCROOT)/MeshtasticUITests"
+          - "$(SRCROOT)/Shared"
+          - "$(SRCROOT)/Widgets"
         basedOnDependencyAnalysis: false
     settings:
       configs:

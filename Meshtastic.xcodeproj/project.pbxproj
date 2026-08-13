@@ -732,7 +732,6 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 63A955A9CB6FB8A135DC7D7B /* Build configuration list for PBXNativeTarget "Meshtastic" */;
 			buildPhases = (
-				046C462A3DE4D6A7A8A92162 /* Download Node SVG Images */,
 				412B37A25FF4D323EACB012B /* Run Script */,
 				D73F2A1F89670B5FAD74DC99 /* Sources */,
 				D531C94E5F672895C0FCE3B4 /* Resources */,
@@ -915,25 +914,6 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		046C462A3DE4D6A7A8A92162 /* Download Node SVG Images */ = {
-			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			name = "Download Node SVG Images";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "MARKER=\"${TARGET_TEMP_DIR}/first-build.marker\"\n\nif [ ! -f \"$MARKER\" ]; then\n # Treating as CLEAN build (or first build in this DerivedData)\n # Force update all the note board images\n \"$SRCROOT/scripts/download_images.py\" --output-dir \"$SRCROOT/Meshtastic/Resources/images\" --output-json \"$SRCROOT/Meshtastic/Resources/DeviceHardware.json\" --force\n touch \"$MARKER\"\nelse\n # Incremental build\n # update only if there was a change in the devices json\n \"$SRCROOT/scripts/download_images.py\" --output-dir \"$SRCROOT/Meshtastic/Resources/images\" --output-json \"$SRCROOT/Meshtastic/Resources/DeviceHardware.json\"\nfi\n";
-		};
 		412B37A25FF4D323EACB012B /* Run Script */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
@@ -943,6 +923,13 @@
 			inputFileListPaths = (
 			);
 			inputPaths = (
+				"$(SRCROOT)/.swiftlint.yml",
+				"$(SRCROOT)/Meshtastic",
+				"$(SRCROOT)/Meshtastic Watch App",
+				"$(SRCROOT)/MeshtasticTests",
+				"$(SRCROOT)/MeshtasticUITests",
+				"$(SRCROOT)/Shared",
+				"$(SRCROOT)/Widgets",
 			);
 			name = "Run Script";
 			outputFileListPaths = (
@@ -951,7 +938,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "if [[ \"$(uname -m)\" == arm64 ]]\nthen\n    export PATH=\"/opt/homebrew/bin:$PATH\"\nfi\n\nif command -v swiftlint >/dev/null 2>&1\nthen\n    swiftlint\nelse\n    echo \"warning: `swiftlint` command not found - See https://github.com/realm/SwiftLint#installation for installation instructions.\"\nfi\n";
+			shellScript = "if [[ \"$(uname -m)\" == arm64 ]]\nthen\n    export PATH=\"/opt/homebrew/bin:$PATH\"\nfi\n\nif command -v swiftlint >/dev/null 2>&1\nthen\n    swiftlint lint --cache-path \"$DERIVED_FILE_DIR/swiftlint-cache\"\nelse\n    echo \"warning: `swiftlint` command not found - See https://github.com/realm/SwiftLint#installation for installation instructions.\"\nfi\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
