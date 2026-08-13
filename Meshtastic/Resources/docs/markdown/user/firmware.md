@@ -51,18 +51,15 @@ Select the update channel in **Settings → App Settings → Firmware Channel**.
 
 ## Event Firmware
 
-Some radios ship with special **event firmware** for gatherings like DEF CON, Open Sauce, Hamvention, or Burning Man. When you connect to a device running event firmware, the **Connect** screen shows an event badge with the event's name and a welcome message, tinted in the event's accent color.
+Some radios ship with special **event firmware** for gatherings like DEF CON, FAB, Open Sauce, Hamvention, or Burning Man. When you connect to a device running event firmware, the Meshtastic logo in the navigation bar changes to the event artwork. The Connect screen also shows the event's human-readable name in the firmware section.
 
-Tap the badge to open the **event info sheet**, which shows the event's location, dates, useful links, and the event firmware build. From there you can:
+Tap the event artwork to open the **event info sheet**, which shows the event's location, dates, useful links, and event firmware version. **Use Event Theme** applies event highlight colors to interactive controls and event fonts inside this dedicated surface. Standard navigation backgrounds remain unchanged.
 
-- Start a **firmware update** for the connected radio.
-- Toggle **Use Event Theme** to turn the ambient accent wash (and event fonts, where available) on or off. Turning it off keeps the event badge visible so you can re-enable it later.
+If new-node notifications are enabled, the app temporarily mutes them while you're connected to event firmware (events are busy — many nodes appear at once). It restores them when you return to standard firmware. A notification preference you had already turned off stays off.
 
-New-node notifications are automatically muted while you're connected to event firmware (events are busy — many nodes appear at once) and restored when you return to standard firmware.
+Event details are fetched from Meshtastic's servers with a persistent offline fallback, so a newly announced event can appear without an app update. Hosted artwork and links are restricted to HTTPS, and invalid content falls back to bundled artwork or the standard Meshtastic logo.
 
-**After the event:** once an event's end date has passed, the Connect screen shows a reminder to return to standard Meshtastic firmware. Tap it to open the firmware update flow. The reminder clears automatically once the device is back on standard firmware.
-
-Event details are fetched from Meshtastic's servers with an offline fallback, so a newly announced event can appear without an app update.
+The metadata feed is informational. The app does not download or install firmware packages from event metadata; updates continue to use the app's verified firmware workflow.
 
 ## Troubleshooting
 

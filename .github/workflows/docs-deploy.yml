@@ -44,7 +44,7 @@ jobs:
           PY
           )
 
-          expected_snapshot_suite_count=38
+          expected_snapshot_suite_count=39
           if (( ${#snapshot_tests[@]} != expected_snapshot_suite_count )); then
             echo "Expected $expected_snapshot_suite_count snapshot test suites, found ${#snapshot_tests[@]}" >&2
             exit 1

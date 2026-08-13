@@ -77,13 +77,13 @@ private func renderImage<V: View>(_ view: V, width: CGFloat, height: CGFloat? = 
 	}
 }
 
-/// Compares a rendered view against its reference snapshot.
-/// Set `SNAPSHOT_RECORD=1` in the test process to record a missing reference.
-/// With `xcodebuild`, pass it as `TEST_RUNNER_SNAPSHOT_RECORD=1`.
+/// Checks a rendered image against its reference dimensions without modifying
+/// the reference. Set `MESHTASTIC_RECORD_SNAPSHOTS=1` in the test process to
+/// create or replace references explicitly. Mac Catalyst references use their
+/// own subdirectory so they cannot replace the checked-in iOS references.
 /// When height is nil the view determines its own height via sizeThatFits.
-/// When `forDocs` is true, the PNG is saved to `docs/assets/screenshots/` so
-/// it is shared directly with the documentation site. When false, it is saved
-/// to `__Snapshots__/` next to the test file (test-only, not bundled in the app).
+/// When `forDocs` is true, the PNG is stored under `docs/assets/screenshots/`.
+/// Otherwise it is stored in `__Snapshots__/` next to the test file.
 @MainActor
 private func assertViewSnapshot<V: View>(
 	of view: V,
@@ -102,67 +102,26 @@ private func assertViewSnapshot<V: View>(
 		return
 	}
 
-	let fileUrl = URL(fileURLWithPath: filePath, isDirectory: false)
-	let snapshotDir: URL
-	if forDocs {
-		// Write to docs/assets/screenshots/ — shared with the documentation site.
-		let repoRoot = fileUrl
-			.deletingLastPathComponent()  // MeshtasticTests/
-			.deletingLastPathComponent()  // repo root
-		snapshotDir = repoRoot
-			.appendingPathComponent("docs")
-			.appendingPathComponent("assets")
-			.appendingPathComponent("screenshots")
-	} else {
-		// Write to __Snapshots__/ next to the test file (test-only).
-		snapshotDir = fileUrl.deletingLastPathComponent()
-			.appendingPathComponent("__Snapshots__")
-			.appendingPathComponent(fileUrl.deletingPathExtension().lastPathComponent)
+	guard let cgImage = image.cgImage else {
+		Issue.record("Failed to read rendered image dimensions", sourceLocation: sourceLocation)
+		return
 	}
-	let snapshotFile = snapshotDir.appendingPathComponent("\(name).png")
+	let snapshotFile = SnapshotReferencePath.referenceURL(
+		testFileURL: URL(fileURLWithPath: filePath, isDirectory: false),
+		snapshotName: name,
+		forDocs: forDocs,
+		platform: .current
+	)
 
-	let fm = FileManager.default
-	let shouldRecord = ProcessInfo.processInfo.environment["SNAPSHOT_RECORD"] == "1"
-	let recordInstruction = "Set SNAPSHOT_RECORD=1 in the test environment (TEST_RUNNER_SNAPSHOT_RECORD=1 with xcodebuild)."
-	if fm.fileExists(atPath: snapshotFile.path) {
-		// Compare against reference
-		guard let referenceData = try? Data(contentsOf: snapshotFile),
-			  let referenceImage = UIImage(data: referenceData),
-			  let refCG = referenceImage.cgImage,
-			  let newCG = image.cgImage else {
-			Issue.record("Failed to read reference snapshot: \(snapshotFile.lastPathComponent)", sourceLocation: sourceLocation)
-			return
-		}
-		// Compare pixel dimensions (not point sizes, which depend on scale factor)
-		guard refCG.width == newCG.width, refCG.height == newCG.height else {
-			if shouldRecord {
-				do {
-					try pngData.write(to: snapshotFile)
-					return
-				} catch {
-					Issue.record("Failed to write snapshot: \(error)", sourceLocation: sourceLocation)
-					return
-				}
-			}
-			let instruction = shouldRecord ? "Reference re-recorded." : recordInstruction
-			Issue.record(
-				"Snapshot dimensions changed from \(refCG.width)×\(refCG.height) to \(newCG.width)×\(newCG.height). \(instruction)",
-				sourceLocation: sourceLocation
-			)
-			return
-		}
-	} else if shouldRecord {
-		do {
-			try fm.createDirectory(at: snapshotDir, withIntermediateDirectories: true)
-			try pngData.write(to: snapshotFile)
-		} catch {
-			Issue.record("Failed to write snapshot: \(error)", sourceLocation: sourceLocation)
-		}
-	} else {
-		Issue.record(
-			"Missing reference snapshot \(snapshotFile.lastPathComponent). \(recordInstruction)",
-			sourceLocation: sourceLocation
+	do {
+		try SnapshotReferenceStore().check(
+			pngData: pngData,
+			pixelDimensions: SnapshotPixelDimensions(width: cgImage.width, height: cgImage.height),
+			referenceURL: snapshotFile,
+			mode: .current()
 		)
+	} catch {
+		Issue.record("\(error)", sourceLocation: sourceLocation)
 	}
 }
 
