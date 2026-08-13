@@ -221,11 +221,10 @@ struct BandwidthsTests {
 		#expect(Bandwidths.isValid(0, region: .us, pioEnv: nil))
 	}
 
-	@Test func zeroBandwidthInLora24CustomMode_requiresConcreteSelection() {
-		#expect(
-			Bandwidths.validationIssue(for: 0, region: .lora24, pioEnv: "tlora-t3s3-v1") == .selectionRequired
-		)
-		#expect(!Bandwidths.isValid(0, region: .lora24, pioEnv: "tlora-t3s3-v1"))
+	@Test func zeroBandwidthInLora24_usesFirmwareDefault() {
+		#expect(Bandwidths.validationIssue(for: 0, region: .lora24, pioEnv: "tlora-t3s3-v1") == nil)
+		#expect(Bandwidths.isValid(0, region: .lora24, pioEnv: "tlora-t3s3-v1"))
+		#expect(Bandwidths.description(forPickerValue: 0, region: .lora24) == "Default (812.5 kHz)")
 	}
 
 	@Test func explicit250kHzStoredValue_remainsValidAndDisplaysAsDefaultOption() {

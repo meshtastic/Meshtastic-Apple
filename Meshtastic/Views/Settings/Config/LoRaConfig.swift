@@ -249,6 +249,7 @@ struct LoRaConfig: View {
 					CustomBandwidthPicker(
 						selection: bandwidthSelection,
 						options: availableBandwidths,
+						region: RegionCodes(rawValue: region),
 						validationIssue: customBandwidthValidationIssue
 					)
 					HStack {
@@ -517,17 +518,19 @@ struct LoRaConfig: View {
 private struct CustomBandwidthPicker: View {
 	@Binding var selection: Int
 	let options: [Bandwidths]
+	let region: RegionCodes?
 	let validationIssue: Bandwidths.ValidationIssue?
 
 	var body: some View {
 		VStack(alignment: .leading, spacing: 8) {
 			Picker("Bandwidth", selection: $selection) {
-				if validationIssue == .selectionRequired {
-					Text("Choose a bandwidth")
+				if validationIssue == .unsupported {
+					Text("Unsupported (\(Bandwidths.description(forPickerValue: selection, region: region)))")
 						.tag(selection)
-				} else if validationIssue == .unsupported {
-					Text("Unsupported (\(Bandwidths.description(forPickerValue: selection)))")
-						.tag(selection)
+				}
+				if region == .lora24 {
+					Text(Bandwidths.description(forPickerValue: 0, region: region).localized)
+						.tag(0)
 				}
 				ForEach(options) { bandwidth in
 					Text(bandwidth.description)
@@ -536,10 +539,7 @@ private struct CustomBandwidthPicker: View {
 			}
 			if let validationIssue {
 				Label {
-					switch validationIssue {
-					case .selectionRequired:
-						Text("Custom mode requires a specific bandwidth. Choose one before saving.".localized)
-					case .unsupported:
+					if validationIssue == .unsupported {
 						Text("This bandwidth is not supported by the connected radio in the selected region. Choose a supported value before saving.".localized)
 					}
 				} icon: {

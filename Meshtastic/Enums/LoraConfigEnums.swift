@@ -772,7 +772,6 @@ enum CodingRates {
 
 enum Bandwidths: Int, CaseIterable, Identifiable {
 	enum ValidationIssue: Equatable {
-		case selectionRequired
 		case unsupported
 	}
 
@@ -807,7 +806,7 @@ enum Bandwidths: Int, CaseIterable, Identifiable {
 
 	var id: Int { self.rawValue }
 
-	/// The protobuf uses zero as the default 250 kHz sub-GHz value.
+	/// The protobuf uses zero for the firmware-selected regional default.
 	var pickerValue: Int {
 		self == .twoHundredFifty ? 0 : rawValue
 	}
@@ -850,9 +849,7 @@ enum Bandwidths: Int, CaseIterable, Identifiable {
 	}
 
 	static func validationIssue(for value: Int, region: RegionCodes?, pioEnv: String?) -> ValidationIssue? {
-		if region == .lora24, value == 0 {
-			return .selectionRequired
-		}
+		if value == 0 { return nil }
 		let normalizedValue = pickerValue(forStoredValue: value, region: region)
 		return selectable(region: region, pioEnv: pioEnv).contains { $0.pickerValue == normalizedValue }
 			? nil
@@ -866,8 +863,10 @@ enum Bandwidths: Int, CaseIterable, Identifiable {
 		return value
 	}
 
-	static func description(forPickerValue value: Int) -> String {
-		if value == 0 { return Bandwidths.twoHundredFifty.description }
+	static func description(forPickerValue value: Int, region: RegionCodes?) -> String {
+		if value == 0 {
+			return region == .lora24 ? "Default (812.5 kHz)" : Bandwidths.twoHundredFifty.description
+		}
 		return Bandwidths(rawValue: value)?.description ?? "\(value) kHz"
 	}
 }
