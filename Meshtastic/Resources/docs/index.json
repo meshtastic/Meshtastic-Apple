@@ -292,24 +292,24 @@
             "orange",
             "markdown",
             "delimiters",
+            "conversation",
+            "tap",
             "retry",
             "exclamationmark",
-            "tap",
             "recipient",
             "node",
             "meshtastic",
-            "conversation",
             "after",
             "selection",
+            "links",
             "bold",
             "radio",
             "public",
-            "links",
             "field",
             "button",
             "symbol"
         ],
-        "charCount": 11883
+        "charCount": 12005
     },
     {
         "id": "mqtt",
