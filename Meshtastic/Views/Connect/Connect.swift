@@ -38,6 +38,8 @@ struct Connect: View {
 	@ObservedObject var manualConnections = ManualConnectionList.shared
 	@ObservedObject private var nymeaProvisioning = NymeaProvisioningManager.shared
 	@Environment(\.scenePhase) private var scenePhase
+	@Environment(\.eventFirmwarePresentation) private var eventPresentation
+	@Environment(\.openEventFirmwareInfo) private var openEventFirmwareInfo
 	@State private var pendingNymeaDevice: NymeaDiscoveredDevice?
 	@State private var isSwitchingRadio = false
 	@State private var showingShutdownConfirm = false
@@ -145,10 +147,41 @@ struct Connect: View {
 												.font(.callout).foregroundColor(Color.gray)
 										}
 										if accessoryManager.firmwareEdition.isEvent {
-											Text("Firmware Edition").font(.callout)
-												+ Text(": \(eventFirmware?.displayName ?? accessoryManager.firmwareEdition.name)")
-												.font(.callout)
-												.foregroundColor(Color.gray)
+											// Event branding lives here, in the Connect device box — never in the
+											// top-left nav logo. When event metadata is available the edition row
+											// becomes the tappable entry to the event info sheet, with the event icon.
+											if let eventPresentation {
+												Button {
+													openEventFirmwareInfo()
+												} label: {
+													HStack(spacing: 6) {
+														EventFirmwareIcon(
+															edition: eventPresentation.edition,
+															iconURL: eventPresentation.info.iconURL,
+															size: 22
+														)
+														Text("Firmware Edition").font(.callout)
+															+ Text(": \(eventPresentation.info.displayName ?? accessoryManager.firmwareEdition.name)")
+															.font(.callout)
+															.foregroundColor(Color.gray)
+														Image(systemName: "chevron.right")
+															.font(.caption2)
+															.foregroundColor(.gray)
+													}
+												}
+												.buttonStyle(.plain)
+												.accessibilityLabel(
+													String(
+														localized: "\(eventPresentation.info.displayName ?? eventPresentation.edition.name) event information",
+														comment: "VoiceOver label for the event firmware info entry in the connect box"
+													)
+												)
+											} else {
+												Text("Firmware Edition").font(.callout)
+													+ Text(": \(eventFirmware?.displayName ?? accessoryManager.firmwareEdition.name)")
+													.font(.callout)
+													.foregroundColor(Color.gray)
+											}
 										}
 										switch accessoryManager.state {
 										case .subscribed:

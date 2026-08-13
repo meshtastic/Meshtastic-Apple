@@ -57,7 +57,7 @@ enum FirmwareEditions: Int, CaseIterable, Identifiable {
 		case .hamvention:
 			return "Event firmware for Hamvention, the Dayton amateur radio convention.".localized
 		case .fab:
-			return "Event firmware for the international Fab Lab digital fabrication conference.".localized
+			return "Event firmware for FAB, the international Fab Lab digital fabrication conference.".localized
 		case .diyEdition:
 			return "Firmware for DIY and unofficial community events.".localized
 		}

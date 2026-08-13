@@ -29,7 +29,6 @@
 		78B74168A96E756F203F9D13 /* AppIcon_Chirpy.icon in Resources */ = {isa = PBXBuildFile; fileRef = DD8FE67D6F2C7F041F8E3C8C /* AppIcon_Chirpy.icon */; };
 		987BD8AFF176A9670F175E5C /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 26351F51CD01C94D8D82486A /* Localizable.xcstrings */; };
 		9B61C796B61232F1226AAA28 /* DatadogLogs in Frameworks */ = {isa = PBXBuildFile; productRef = 7F3F27310C566077475C7105 /* DatadogLogs */; };
-		A518007AF83AA6E15BE848FD /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = 7F0CA2B608168551C6F95FEB /* SnapshotTesting */; };
 		B80DB8962DBDE2284BC9664A /* urls.json in Resources */ = {isa = PBXBuildFile; fileRef = B079D165838E646EE754DC6E /* urls.json */; };
 		B97B830773C8597258C1A96F /* MeshtasticProtobufs in Frameworks */ = {isa = PBXBuildFile; productRef = 838679D32875D367B9FC8FBF /* MeshtasticProtobufs */; };
 		BB73AFBEB76A7B00550C8F2F /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = A7443D3C9E82A023A4388EFC /* InfoPlist.strings */; };
@@ -329,6 +328,16 @@
 			path = Extensions;
 			sourceTree = "<group>";
 		};
+		1A7C0874097266C63EDD8A18 /* Import */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			name = Import;
+			path = Import;
+			sourceTree = "<group>";
+		};
 		1B104A61866EBBAB39A96CD6 /* API */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			explicitFileTypes = {
@@ -512,14 +521,6 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		0CDEAEFB74FD23D58C244A58 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				A518007AF83AA6E15BE848FD /* SnapshotTesting in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		507ACF225D7B4D1C1D2D9340 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -583,6 +584,7 @@
 				C21C46F8F2BCFF68F31B12C0 /* Export */,
 				11D3172B1FEF230630B7A990 /* Extensions */,
 				22FDA4B8722F2CC1F4B5A929 /* Helpers */,
+				1A7C0874097266C63EDD8A18 /* Import */,
 				A7443D3C9E82A023A4388EFC /* InfoPlist.strings */,
 				985D21086E966D40C875F3CD /* InfoPlist.strings */,
 				25C42CF0517289648017F9AA /* Intents */,
@@ -654,7 +656,6 @@
 			buildPhases = (
 				1873C2316C2E9226EA6AE7C8 /* Sources */,
 				10D31ADC03EA77B8648E37AA /* Resources */,
-				0CDEAEFB74FD23D58C244A58 /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -666,7 +667,6 @@
 			);
 			name = MeshtasticTests;
 			packageProductDependencies = (
-				7F0CA2B608168551C6F95FEB /* SnapshotTesting */,
 			);
 			productName = MeshtasticTests;
 			productReference = 53E4E3191A93EDE5C8C08E1C /* MeshtasticTests.xctest */;
@@ -721,7 +721,6 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 63A955A9CB6FB8A135DC7D7B /* Build configuration list for PBXNativeTarget "Meshtastic" */;
 			buildPhases = (
-				046C462A3DE4D6A7A8A92162 /* Download Node SVG Images */,
 				412B37A25FF4D323EACB012B /* Run Script */,
 				D73F2A1F89670B5FAD74DC99 /* Sources */,
 				D531C94E5F672895C0FCE3B4 /* Resources */,
@@ -744,6 +743,7 @@
 				C21C46F8F2BCFF68F31B12C0 /* Export */,
 				11D3172B1FEF230630B7A990 /* Extensions */,
 				22FDA4B8722F2CC1F4B5A929 /* Helpers */,
+				1A7C0874097266C63EDD8A18 /* Import */,
 				25C42CF0517289648017F9AA /* Intents */,
 				306AEE0BD7EDAF65F6E3B376 /* Measurement */,
 				F7C2596BDB5FBBD06602EAAF /* Model */,
@@ -837,7 +837,6 @@
 				B9243D356FA56FD1728AC3D3 /* XCRemoteSwiftPackageReference "mvt-tools" */,
 				4EFE4EEC5E27B5E40276A67C /* XCRemoteSwiftPackageReference "swift-markdown" */,
 				981964D4D54F32AEF37E646A /* XCRemoteSwiftPackageReference "swift-protobuf" */,
-				179A6527140B3A37DDA2482A /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */,
 				71B6C19C2660F20C79DC8366 /* XCLocalSwiftPackageReference "MeshtasticProtobufs" */,
 			);
 			preferredProjectObjectVersion = 77;
@@ -903,25 +902,6 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		046C462A3DE4D6A7A8A92162 /* Download Node SVG Images */ = {
-			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			name = "Download Node SVG Images";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "MARKER=\"${TARGET_TEMP_DIR}/first-build.marker\"\n\nif [ ! -f \"$MARKER\" ]; then\n # Treating as CLEAN build (or first build in this DerivedData)\n # Force update all the note board images\n \"$SRCROOT/scripts/download_images.py\" --output-dir \"$SRCROOT/Meshtastic/Resources/images\" --output-json \"$SRCROOT/Meshtastic/Resources/DeviceHardware.json\" --force\n touch \"$MARKER\"\nelse\n # Incremental build\n # update only if there was a change in the devices json\n \"$SRCROOT/scripts/download_images.py\" --output-dir \"$SRCROOT/Meshtastic/Resources/images\" --output-json \"$SRCROOT/Meshtastic/Resources/DeviceHardware.json\"\nfi\n";
-		};
 		412B37A25FF4D323EACB012B /* Run Script */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
@@ -931,6 +911,13 @@
 			inputFileListPaths = (
 			);
 			inputPaths = (
+				"$(SRCROOT)/.swiftlint.yml",
+				"$(SRCROOT)/Meshtastic",
+				"$(SRCROOT)/Meshtastic Watch App",
+				"$(SRCROOT)/MeshtasticTests",
+				"$(SRCROOT)/MeshtasticUITests",
+				"$(SRCROOT)/Shared",
+				"$(SRCROOT)/Widgets",
 			);
 			name = "Run Script";
 			outputFileListPaths = (
@@ -939,7 +926,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "if [[ \"$(uname -m)\" == arm64 ]]\nthen\n    export PATH=\"/opt/homebrew/bin:$PATH\"\nfi\n\nif command -v swiftlint >/dev/null 2>&1\nthen\n    swiftlint\nelse\n    echo \"warning: `swiftlint` command not found - See https://github.com/realm/SwiftLint#installation for installation instructions.\"\nfi\n";
+			shellScript = "if [[ \"$(uname -m)\" == arm64 ]]\nthen\n    export PATH=\"/opt/homebrew/bin:$PATH\"\nfi\n\nif command -v swiftlint >/dev/null 2>&1\nthen\n    swiftlint lint --cache-path \"$DERIVED_FILE_DIR/swiftlint-cache\"\nelse\n    echo \"warning: `swiftlint` command not found - See https://github.com/realm/SwiftLint#installation for installation instructions.\"\nfi\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -1231,7 +1218,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.6;
-				MARKETING_VERSION = 2.7.17;
+				MARKETING_VERSION = 2.7.19;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.Widgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1266,7 +1253,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.6;
-				MARKETING_VERSION = 2.7.17;
+				MARKETING_VERSION = 2.7.19;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.Widgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1301,7 +1288,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.7.17;
+				MARKETING_VERSION = 2.7.19;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
@@ -1335,7 +1322,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.7.17;
+				MARKETING_VERSION = 2.7.19;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
@@ -1382,7 +1369,7 @@
 					"@executable_path/Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.6;
-				MARKETING_VERSION = 2.7.17;
+				MARKETING_VERSION = 2.7.19;
 				OTHER_LDFLAGS = (
 					"-weak_framework",
 					SwiftUI,
@@ -1432,7 +1419,7 @@
 					"@executable_path/Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.6;
-				MARKETING_VERSION = 2.7.17;
+				MARKETING_VERSION = 2.7.19;
 				OTHER_LDFLAGS = (
 					"-weak_framework",
 					SwiftUI,
@@ -1505,14 +1492,6 @@
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		179A6527140B3A37DDA2482A /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/pointfreeco/swift-snapshot-testing";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.17.0;
-			};
-		};
 		4E46BE4D3A1C5CF53B7D7592 /* XCRemoteSwiftPackageReference "SwiftDraw" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/swhitty/SwiftDraw";
@@ -1609,11 +1588,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = D4D6B3C078FD6A403FA6BA8D /* XCRemoteSwiftPackageReference "dd-sdk-ios" */;
 			productName = DatadogCore;
-		};
-		7F0CA2B608168551C6F95FEB /* SnapshotTesting */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 179A6527140B3A37DDA2482A /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */;
-			productName = SnapshotTesting;
 		};
 		7F3F27310C566077475C7105 /* DatadogLogs */ = {
 			isa = XCSwiftPackageProductDependency;

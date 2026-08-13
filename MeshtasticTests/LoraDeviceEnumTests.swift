@@ -217,7 +217,7 @@ struct DeviceRolesTests {
 	}
 
 	@Test func totalCaseCount() {
-		#expect(DeviceRoles.allCases.count == 11)
+		#expect(DeviceRoles.allCases.count == 12)
 	}
 }
 
