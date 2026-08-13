@@ -44,7 +44,7 @@ struct RequestLocalStatsButton: View {
 						.foregroundStyle(.secondary)
 						.lineLimit(1)
 				} icon: {
-					Image("progress.ring.dashed", variableValue: completion)
+					Image(systemName: "progress.ring.dashed", variableValue: completion)
 						.foregroundStyle(.secondary)
 				}.disabled(true)
 			} else {
