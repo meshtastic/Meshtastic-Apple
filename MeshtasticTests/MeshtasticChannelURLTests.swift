@@ -140,6 +140,22 @@ struct MeshtasticChannelURLTests {
 		}
 	}
 
+	@Test func rejectsInsecureCredentialedAndCustomPortWebForms() throws {
+		let payload = try MeshtasticChannelURL.payloadString(for: makeChannelSet())
+		for value in [
+			"http://meshtastic.org/e/#\(payload)",
+			"ftp://meshtastic.org/e/#\(payload)",
+			"https://user@meshtastic.org/e/#\(payload)",
+			"https://meshtastic.org:8443/e/#\(payload)",
+			"meshtastic://user@e#\(payload)",
+			"meshtastic://e:8443#\(payload)"
+		] {
+			#expect(throws: MeshtasticChannelURL.ParseError.notChannelURL, "\(value) must be rejected") {
+				_ = try MeshtasticChannelURL.parse(value)
+			}
+		}
+	}
+
 	@Test func rejectsContactURLPath() throws {
 		let payload = try MeshtasticChannelURL.payloadString(for: makeChannelSet())
 

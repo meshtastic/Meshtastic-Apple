@@ -129,7 +129,7 @@ final class MessagesViewController: MSMessagesAppViewController {
 			if let error {
 				self?.show(error)
 			} else {
-				self?.openInContainerApp(incomingURL)
+				self?.openInContainerApp(MeshContactURL.withoutExchangeRequest(incomingURL))
 			}
 		}
 	}

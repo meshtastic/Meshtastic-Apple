@@ -42,16 +42,10 @@ struct MeshShareSnapshot: Codable, Equatable, Sendable {
 	}
 
 	var contactReplyURL: String {
-		guard var components = URLComponents(string: contactURL) else {
+		guard let url = URL(string: contactURL) else {
 			return contactURL
 		}
-		components.queryItems = components.queryItems?.filter {
-			$0.name.caseInsensitiveCompare("exchange") != .orderedSame
-		}
-		if components.queryItems?.isEmpty == true {
-			components.queryItems = nil
-		}
-		return components.string ?? contactURL
+		return MeshContactURL.withoutExchangeRequest(url).absoluteString
 	}
 }
 
