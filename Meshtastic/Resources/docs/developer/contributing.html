@@ -132,11 +132,26 @@ Update protobufs to v2.7
 <li>Guard version availability: <code>if #available(iOS 26, *) { ... }</code></li>
 </ul>
 <h2>Updating Protobufs</h2>
+<p><code>./scripts/gen_protos.sh</code> bumps the <code>protobufs/</code> submodule and regenerates
+<code>MeshtasticProtobufs/Sources/</code> in one step — no separate <code>git submodule update</code>:</p>
+<pre><code class="language-sh">./scripts/gen_protos.sh             # pull protobufs origin/master, then regenerate
+./scripts/gen_protos.sh develop     # pull a different branch, tag or commit
+./scripts/gen_protos.sh --no-pull   # regenerate against the currently pinned protos
+</code></pre>
+<p>Only <code>protoc</code> needs to be installed (<code>brew install protobuf</code>). The script builds
+<code>protoc-gen-swift</code> itself, from the swift-protobuf version pinned in
+<code>MeshtasticProtobufs/Package.resolved</code> — <strong>never</strong> generate with a Homebrew
+<code>protoc-gen-swift</code>. Brew's plugin drifts older than what the project links and
+silently downgrades every generated file, dropping <code>Sendable</code>,
+<code>Swift.CaseIterable</code>/<code>allCases</code> and the <code>// swiftlint:disable all</code> header, which
+removes concurrency conformance and makes SwiftLint lint generated code.</p>
+<p>After regenerating:</p>
 <ol>
-<li><code>git submodule update --remote protobufs/</code></li>
-<li><code>./scripts/gen_protos.sh</code></li>
 <li>Build and verify tests pass.</li>
-<li>Commit generated changes together with the submodule pointer update.</li>
+<li>Mirror any new proto enum cases into the app-side enums that shadow them —
+<code>FirmwareEditions</code>, <code>RegionCodes</code>, and friends map by raw value, so an
+unmapped case silently falls back to a default instead of failing to compile.</li>
+<li>Commit the generated changes together with the submodule pointer update.</li>
 </ol>
 <h2>Release Process</h2>
 <p>See <code>RELEASING.md</code> in the repository root for the full release checklist and App Store submission process.</p>
