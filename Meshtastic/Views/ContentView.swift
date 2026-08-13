@@ -3,11 +3,14 @@
  */
 
 import SwiftUI
+import SwiftData
+import UIKit
 
 struct ContentView: View {
 	@ObservedObject var appState: AppState
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@EnvironmentObject var lockdown: LockdownCoordinator
+	@Query private var eventFirmwareEditions: [EventFirmwareEntity]
 	// Observe (not just hold) the router so a *programmatic* `selectedTab` change re-renders
 	// ContentView and the TabView re-reads its selection binding immediately. As plain @State this
 	// view never subscribed to the router's objectWillChange, so a programmatic tab switch only took
@@ -15,6 +18,7 @@ struct ContentView: View {
 	// mesh, but a 20–60s stall in a quiet/seeded session.
 	@ObservedObject var router: Router
 	@State var isShowingDeviceOnboardingFlow: Bool = false
+	@State private var isShowingEventFirmwareInfo: Bool = false
 
 	/// True when the connected device's lockdown state requires the user to act
 	/// (provision a passphrase, unlock, or wait out a backoff). The sheet is
@@ -34,6 +38,15 @@ struct ContentView: View {
 	/// blocking state clears it.
 	@State private var isShowingLockdownGate: Bool = false
 
+	private var eventPresentation: EventFirmwarePresentation? {
+		EventFirmwarePresentation.resolve(
+			isConnected: accessoryManager.isConnected,
+			edition: accessoryManager.firmwareEdition,
+			metadata: eventFirmwareEditions,
+			deviceFirmwareVersion: accessoryManager.connectedVersion
+		)
+	}
+
 	init(appState: AppState, router: Router) {
 		self.appState = appState
 		self.router = router
@@ -41,6 +54,19 @@ struct ContentView: View {
 
 	var body: some View {
 		tabContent
+			.environment(\.eventFirmwarePresentation, eventPresentation)
+			.environment(\.openEventFirmwareInfo) {
+				isShowingEventFirmwareInfo = true
+			}
+			.sheet(isPresented: $isShowingEventFirmwareInfo) {
+				if let eventPresentation {
+					EventFirmwareInfoView(
+						edition: eventPresentation.edition,
+						info: eventPresentation.info,
+						deviceFirmwareVersion: eventPresentation.deviceFirmwareVersion
+					)
+				}
+			}
 			.sheet(
 				isPresented: $isShowingDeviceOnboardingFlow,
 				onDismiss: {
@@ -54,7 +80,13 @@ struct ContentView: View {
 				LockdownSheet()
 			}
 			.onAppear {
-				if UserDefaults.firstLaunch {
+				// Trust the first-launch flag only when this process can actually read it. Launched
+				// in the background before the phone's first unlock (Bluetooth state restoration
+				// after a reboot), UserDefaults is still encrypted and `firstLaunch` returns its
+				// default `true` — which re-ran the whole setup wizard on an installed app (#2243).
+				// A pre-unlock launch can never be a genuine first launch: a fresh install has no
+				// restoration session to be relaunched for.
+				if UserDefaults.firstLaunch && UIApplication.shared.isProtectedDataAvailable {
 					isShowingDeviceOnboardingFlow = true
 				}
 				// Present the gate if the device is already in a blocking state when
@@ -71,8 +103,14 @@ struct ContentView: View {
 			.onChange(of: UserDefaults.showDeviceOnboarding) {_, newValue in
 				isShowingDeviceOnboardingFlow = newValue
 			}
+			.onChange(of: eventPresentation?.edition) { _, edition in
+				if edition == nil {
+					isShowingEventFirmwareInfo = false
+				}
+			}
 			.task {
 #if DEBUG
+				MarketingCapture.simulateEventFirmwareIfNeeded(accessoryManager)
 				// No-op unless launched with --marketing-capture (see MarketingCapture / PerformanceSeedData).
 				await MarketingCapture.runIfNeeded(router: router, accessoryManager: accessoryManager)
 #endif

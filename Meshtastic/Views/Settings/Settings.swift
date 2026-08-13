@@ -574,12 +574,13 @@ struct Settings: View {
 					Image(systemName: "folder")
 				}
 			}
-			// Tools currently hosts only NFC actions, so hide the entry point
-			// entirely on devices without NFC hardware (iPads, Mac Catalyst)
-			// per Design Standards §3 conditional visibility.
+			// Tools hosts NFC actions AND device-configuration import/export. Gating the whole entry
+			// point on NFC hardware made sense while it was NFC-only, but it now hides import/export
+			// completely on iPad, Mac Catalyst, and the Simulator, with no other way to reach them.
+			// Show it when either capability is usable; Tools itself hides the sections that are not.
 			#if !targetEnvironment(macCatalyst)
 			if #available(iOS 18, *) {
-				if NFCReader.isAvailable {
+				if NFCReader.isAvailable || accessoryManager.isConnected {
 					NavigationLink(value: SettingsNavigationState.tools) {
 						Label {
 							Text("Tools")

@@ -1,25 +1,36 @@
 import SwiftUI
 
-struct AppIconPicker: View {
-	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
-	@Environment(\.modelContext) private var context
-	@Binding var isPresenting: Bool
-	@State private var didError = false
-	@State private var errorDetails: String?
-	var iconNames: [String?: String] = [nil: "Default", "AppIcon_MPowered": "Meshtastic Powered", "AppIcon_Chirpy": "Chirpy", "AppIcon_Ham": "Ham"]
+struct AppIconOption: Identifiable, Equatable {
+	let id: String
+	let iconName: String?
+	let description: String
+}
 
-	// MARK: View
+struct AppIconPicker: View {
+	@Binding var isPresenting: Bool
+
+	static let iconOptions = [
+		AppIconOption(id: "default", iconName: nil, description: "Default"),
+		AppIconOption(id: "mpowered", iconName: "AppIcon_MPowered", description: "Meshtastic Powered"),
+		AppIconOption(id: "chirpy", iconName: "AppIcon_Chirpy", description: "Chirpy"),
+		AppIconOption(id: "ham", iconName: "AppIcon_Ham", description: "Ham")
+	]
+
 	var body: some View {
 		List {
 			Section(header: Text("Icons")) {
-				ForEach(Array(iconNames.enumerated()), id: \.offset) { _, icon in
-					AppIconButton(iconDescription: .constant(icon.value), iconName: .constant(icon.key), isPresenting: $isPresenting)
+				ForEach(Self.iconOptions) { icon in
+					AppIconButton(
+						iconDescription: .constant(icon.description),
+						iconName: .constant(icon.iconName),
+						isPresenting: $isPresenting
+					)
 				}
 			}
 		}
 	}
 }
 
-#Preview{
+#Preview {
 	AppIconPicker(isPresenting: .constant(true))
 }

@@ -41,8 +41,7 @@ final class NodeBackupManager: NodeBackupManaging {
 	// MARK: - Initialization
 
 	private init() {
-		let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
-		backupBaseURL = appSupport.appendingPathComponent("NodeBackups", isDirectory: true)
+		backupBaseURL = Self.resolveBackupBaseURL()
 
 		// Ensure backup directory exists
 		try? FileManager.default.createDirectory(at: backupBaseURL, withIntermediateDirectories: true)
@@ -52,6 +51,60 @@ final class NodeBackupManager: NodeBackupManaging {
 
 		// Validate index consistency on launch (T029)
 		validateIndexConsistency()
+	}
+
+	/// Backups live in Documents — the user-visible "Meshtastic" folder in the Files app —
+	/// alongside OfflineMaps, downloaded firmware, and imported GeoJSON, so users can copy a
+	/// backup off the phone (or drop one in) without any in-app export flow. Earlier releases
+	/// kept them in Application Support; the first launch after updating moves that folder here
+	/// wholesale (the backup index stores paths relative to the folder, so the move preserves
+	/// every entry). If the move fails (e.g. a partial earlier attempt left both folders), the
+	/// legacy location keeps working so existing backups are never orphaned.
+	private nonisolated static func resolveBackupBaseURL() -> URL {
+		let fm = FileManager.default
+		return resolveBackupBaseURL(
+			documents: fm.urls(for: .documentDirectory, in: .userDomainMask).first!,
+			appSupport: fm.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+		)
+	}
+
+	/// Testable core of the location resolution/migration — see `resolveBackupBaseURL()`.
+	nonisolated static func resolveBackupBaseURL(documents: URL, appSupport: URL) -> URL {
+		let fm = FileManager.default
+		let newURL = documents.appendingPathComponent("NodeBackups", isDirectory: true)
+		let legacyURL = appSupport.appendingPathComponent("NodeBackups", isDirectory: true)
+
+		// Documents is user-writable through the Files app, so "something exists at the path"
+		// is not "our folder exists": a stray *file* named NodeBackups would make a bare
+		// fileExists check return true, the initializer's directory creation silently fail,
+		// and every subsequent backup write fail. Distinguish directories from files and
+		// never overwrite anything the user put there.
+		var newIsDir: ObjCBool = false
+		let newExists = fm.fileExists(atPath: newURL.path, isDirectory: &newIsDir)
+		var legacyIsDir: ObjCBool = false
+		let legacyExists = fm.fileExists(atPath: legacyURL.path, isDirectory: &legacyIsDir) && legacyIsDir.boolValue
+
+		if newExists && !newIsDir.boolValue {
+			// A user-created file is squatting on the folder name. Leave it untouched and keep
+			// backups working in the app-controlled legacy location until the user removes it.
+			Logger.data.error("💾 [Backup] A file named NodeBackups is blocking the Files-visible backup folder in Documents; keeping backups in Application Support until it is removed")
+			return legacyURL
+		}
+
+		if legacyExists && !newExists {
+			do {
+				try fm.moveItem(at: legacyURL, to: newURL)
+				Logger.data.info("💾 [Backup] Migrated node backups from Application Support to the Files-visible Documents folder")
+			} catch {
+				Logger.data.error("💾 [Backup] Failed to migrate node backups to Documents, continuing with the legacy location: \(error.localizedDescription, privacy: .public)")
+				return legacyURL
+			}
+		} else if legacyExists && newExists {
+			// Both exist (an interrupted earlier migration). Prefer the new location, but keep
+			// the legacy folder on disk untouched for manual recovery rather than merging blindly.
+			Logger.data.warning("💾 [Backup] Both legacy and Documents backup folders exist; using Documents. Legacy folder left in place at Application Support/NodeBackups")
+		}
+		return newURL
 	}
 
 	/// Initializer for testing with a custom base URL.

@@ -38,6 +38,28 @@ actor MessageSearchActor {
 
 enum MessageSearch {
 
+	/// Substring test used for every content match, run in Swift on the fetched rows rather than
+	/// inside the SwiftData `#Predicate`. Two reasons this is deliberately NOT a predicate term:
+	///
+	/// 1. `localizedStandardContains` inside a `#Predicate` is translated to a SQL query, and that
+	///    translation does not reliably reproduce the in-memory `String` semantics across every
+	///    iOS version — a message whose text is plainly on screen could return no search hit
+	///    (reported in the field). Running the same `String` API the UI uses guarantees search
+	///    matches exactly what the user sees, on every OS version.
+	/// 2. It lets search cover the *displayed* text: when a message is showing its translation, the
+	///    bubble renders `messagePayloadTranslated`, so searching only the original `messagePayload`
+	///    would miss the very words on screen. Matching against original OR translation finds the
+	///    message whichever the user is viewing.
+	static func contentMatches(_ message: MessageEntity, query trimmed: String) -> Bool {
+		if let original = message.messagePayload, original.localizedStandardContains(trimmed) {
+			return true
+		}
+		if let translated = message.messagePayloadTranslated, translated.localizedStandardContains(trimmed) {
+			return true
+		}
+		return false
+	}
+
 	// MARK: Channel conversations
 
 	/// Matches within a channel conversation, oldest → newest.
@@ -49,19 +71,22 @@ enum MessageSearch {
 	static func channelMatches(in context: ModelContext, channelIndex: Int32, query: String) throws -> [MessageSearchMatch] {
 		let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
 		guard !trimmed.isEmpty else { return [] }
-		var descriptor = FetchDescriptor<MessageEntity>(
+		// Fetch the conversation with the SAME scope the message list displays (no payload term),
+		// then filter the text in memory. This mirrors ChannelMessageList's own predicate exactly,
+		// so any message the user can see is a search candidate — the content test is the only
+		// difference, and it runs via `contentMatches` (see its note for why not in the predicate).
+		let descriptor = FetchDescriptor<MessageEntity>(
 			predicate: #Predicate<MessageEntity> {
 				$0.channel == channelIndex && $0.toUser == nil && $0.isEmoji == false
-					&& ($0.messagePayload?.localizedStandardContains(trimmed) ?? false)
 			},
 			sortBy: [
 				SortDescriptor(\MessageEntity.messageTimestamp, order: .forward),
 				SortDescriptor(\MessageEntity.messageId, order: .forward)
 			]
 		)
-		// Only the id/timestamp are needed to build matches — avoid hydrating message text + relationships.
-		descriptor.propertiesToFetch = [\.messageId, \.messageTimestamp]
-		return try context.fetch(descriptor).map { MessageSearchMatch(messageId: $0.messageId, timestamp: $0.messageTimestamp) }
+		return try context.fetch(descriptor)
+			.filter { contentMatches($0, query: trimmed) }
+			.map { MessageSearchMatch(messageId: $0.messageId, timestamp: $0.messageTimestamp) }
 	}
 
 	/// Number of channel messages strictly newer than `match` in the timeline. Used to expand a
@@ -93,26 +118,23 @@ enum MessageSearch {
 		let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
 		guard !trimmed.isEmpty else { return [] }
 		let detectionSensorPortNum: Int32 = 10
+		// Same scope UserMessageList displays (no payload term), filtered in memory via `contentMatches`.
 		// `toUser != nil` is safe for the same reason as the channel search: a concrete scalar term
 		// (`fromUser?.num == userNum`) leads the predicate, mirroring fetchIncomingMessages' shipping shape.
-		var incoming = FetchDescriptor<MessageEntity>(
+		let incoming = FetchDescriptor<MessageEntity>(
 			predicate: #Predicate<MessageEntity> {
 				$0.fromUser?.num == userNum && $0.toUser != nil
 					&& $0.isEmoji == false && $0.admin == false && $0.portNum != detectionSensorPortNum
-					&& ($0.messagePayload?.localizedStandardContains(trimmed) ?? false)
 			}
 		)
-		var outgoing = FetchDescriptor<MessageEntity>(
+		let outgoing = FetchDescriptor<MessageEntity>(
 			predicate: #Predicate<MessageEntity> {
 				$0.toUser?.num == userNum
 					&& $0.isEmoji == false && $0.admin == false && $0.portNum != detectionSensorPortNum
-					&& ($0.messagePayload?.localizedStandardContains(trimmed) ?? false)
 			}
 		)
-		// Only the id/timestamp are needed to build matches — avoid hydrating message text + relationships.
-		incoming.propertiesToFetch = [\.messageId, \.messageTimestamp]
-		outgoing.propertiesToFetch = [\.messageId, \.messageTimestamp]
-		let matches = try context.fetch(incoming) + context.fetch(outgoing)
+		let matches = try (context.fetch(incoming) + context.fetch(outgoing))
+			.filter { contentMatches($0, query: trimmed) }
 		return matches
 			.sorted {
 				if $0.messageTimestamp == $1.messageTimestamp { return $0.messageId < $1.messageId }

@@ -29,7 +29,6 @@ struct NeighborInfoConfig: View {
 					Label("Enabled", systemImage: "network")
 					Text("Enable neighbor info broadcasting. Periodically sends information about directly-heard neighbors to help visualize mesh topology.")
 				}
-				.tint(.accentColor)
 			}
 
 			if enabled {
@@ -48,7 +47,6 @@ struct NeighborInfoConfig: View {
 						Label("Transmit over LoRa", systemImage: "antenna.radiowaves.left.and.right")
 						Text("Whether to transmit neighbor info over LoRa in addition to MQTT and PhoneAPI. Not available on channels with default key and name.")
 					}
-					.tint(.accentColor)
 				}
 			}
 		}

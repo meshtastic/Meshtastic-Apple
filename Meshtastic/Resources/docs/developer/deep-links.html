@@ -96,7 +96,9 @@
 </tbody>
 </table>
 <h2>Settings</h2>
-<p>No parameters are supported for settings URLs.</p>
+<p>Settings URLs take no query parameters. The only path variant is
+<code>localMeshDiscovery/history</code>, which opens Local Mesh Discovery directly to its
+history view.</p>
 <table>
 <thead>
 <tr>
@@ -116,6 +118,14 @@
 <tr>
 <td><a href="meshtastic:///settings/helpDocs"><code>meshtastic:///settings/helpDocs</code></a></td>
 <td>Help &amp; Documentation</td>
+</tr>
+<tr>
+<td><a href="meshtastic:///settings/localMeshDiscovery"><code>meshtastic:///settings/localMeshDiscovery</code></a></td>
+<td>Local Mesh Discovery</td>
+</tr>
+<tr>
+<td><a href="meshtastic:///settings/localMeshDiscovery/history"><code>meshtastic:///settings/localMeshDiscovery/history</code></a></td>
+<td>Local Mesh Discovery (history view)</td>
 </tr>
 <tr>
 <td><a href="meshtastic:///settings/routes"><code>meshtastic:///settings/routes</code></a></td>
@@ -238,12 +248,20 @@
 <td>Telemetry</td>
 </tr>
 <tr>
+<td><a href="meshtastic:///settings/trafficManagement"><code>meshtastic:///settings/trafficManagement</code></a></td>
+<td>Traffic Management</td>
+</tr>
+<tr>
 <td><strong>TAK</strong></td>
 <td></td>
 </tr>
 <tr>
 <td><a href="meshtastic:///settings/tak"><code>meshtastic:///settings/tak</code></a></td>
-<td>TAK Config</td>
+<td>TAK Server</td>
+</tr>
+<tr>
+<td><a href="meshtastic:///settings/takConfig"><code>meshtastic:///settings/takConfig</code></a></td>
+<td>TAK Module Config</td>
 </tr>
 <tr>
 <td><strong>Logging</strong></td>
@@ -258,16 +276,24 @@
 <td></td>
 </tr>
 <tr>
+<td><a href="meshtastic:///settings/backupManagement"><code>meshtastic:///settings/backupManagement</code></a></td>
+<td>Backup Management</td>
+</tr>
+<tr>
+<td><a href="meshtastic:///settings/coreDataBrowser"><code>meshtastic:///settings/coreDataBrowser</code></a></td>
+<td>Data Browser (DEBUG only)</td>
+</tr>
+<tr>
+<td><a href="meshtastic:///settings/deviceLinks"><code>meshtastic:///settings/deviceLinks</code></a></td>
+<td>Device Links</td>
+</tr>
+<tr>
 <td><a href="meshtastic:///settings/appFiles"><code>meshtastic:///settings/appFiles</code></a></td>
 <td>App Files</td>
 </tr>
 <tr>
 <td><a href="meshtastic:///settings/tools"><code>meshtastic:///settings/tools</code></a></td>
 <td>Tools (iOS 18+)</td>
-</tr>
-<tr>
-<td><a href="meshtastic:///settings/coreDataBrowser"><code>meshtastic:///settings/coreDataBrowser</code></a></td>
-<td>Data Browser (DEBUG only)</td>
 </tr>
 <tr>
 <td><a href="meshtastic:///settings/firmwareUpdates"><code>meshtastic:///settings/firmwareUpdates</code></a></td>

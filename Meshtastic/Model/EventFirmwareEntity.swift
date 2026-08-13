@@ -13,9 +13,11 @@
 //
 
 import Foundation
+import ImageIO
 import SwiftData
 import SwiftUI
 import UIKit
+import UniformTypeIdentifiers
 
 @Model
 final class EventFirmwareEntity {
@@ -45,8 +47,8 @@ final class EventFirmwareEntity {
 
 	// MARK: - Branding
 
-	/// Hex accent color, e.g. `"#0D294A"`. Layered on top of the app chrome instead of a
-	/// hardcoded `.orange`. Optional — a missing/invalid value falls back to `.accentColor`.
+	/// Hex accent color, e.g. `"#0D294A"`. Used inside the dedicated event information
+	/// surface. Optional — a missing/invalid value falls back to `.accentColor`.
 	var accentColor: String?
 	/// Hosted event icon URL (may be nil — not every edition ships one).
 	var iconUrl: String?
@@ -55,6 +57,12 @@ final class EventFirmwareEntity {
 
 	var themeName: String?
 	var themeTagline: String?
+	/// Named brand colors used when a manifest does not provide an authored palette.
+	var themePrimaryColor: String?
+	var themeSecondaryColor: String?
+	/// The theme's high-energy accent candidate. It is used for small marks only after
+	/// satisfying the 3:1 graphical-object contrast requirement against the current surface.
+	var themeAccentColor: String?
 	/// Ordered palette of hex colors. Non-optional array (SwiftData cannot materialize an
 	/// optional value-type array — see `DeviceLinkEntity.regions`, issue #1949).
 	var themePalette: [String] = []
@@ -75,7 +83,6 @@ final class EventFirmwareEntity {
 	var firmwareVersion: String?
 	var firmwareId: String?
 	var firmwareTitle: String?
-	var firmwareZipUrl: String?
 	var firmwareReleaseNotes: String?
 
 	init() {}
@@ -107,12 +114,13 @@ extension EventFirmwareEntity {
 			  let decoded = try? JSONDecoder().decode([Link].self, from: data) else {
 			return []
 		}
-		return decoded
+		return decoded.filter { EventFirmwareURLPolicy.httpsURL(from: $0.url) != nil }
 	}
 
 	/// Persist `links` back into `linksJSON`.
 	func setLinks(_ links: [Link]) {
-		guard !links.isEmpty, let data = try? JSONEncoder().encode(links),
+		let safeLinks = links.filter { EventFirmwareURLPolicy.httpsURL(from: $0.url) != nil }
+		guard !safeLinks.isEmpty, let data = try? JSONEncoder().encode(safeLinks),
 			  let string = String(data: data, encoding: .utf8) else {
 			linksJSON = nil
 			return
@@ -125,29 +133,22 @@ extension EventFirmwareEntity {
 		Self.color(fromHex: accentColor)
 	}
 
-	/// Parse a `#RRGGBB` / `#AARRGGBB` (or bare-hex) string into a `Color`. Returns nil on
-	/// a missing or malformed value so callers can fall back to `.accentColor`.
+	/// The hosted icon URL after applying the manifest's HTTPS-only navigation policy.
+	var iconURL: URL? {
+		EventFirmwareURLPolicy.httpsURL(from: iconUrl)
+	}
+
+	/// Parse a strict `#RRGGBB` string into a `Color`. Returns nil on a missing or malformed
+	/// value so callers can drop untrusted manifest colors instead of misrepresenting the brand.
 	static func color(fromHex hex: String?) -> Color? {
-		guard var value = hex?.trimmingCharacters(in: .whitespacesAndNewlines), !value.isEmpty else {
-			return nil
-		}
-		if value.hasPrefix("#") { value.removeFirst() }
-		guard value.count == 6 || value.count == 8, let int = UInt64(value, radix: 16) else {
-			return nil
-		}
-		let r, g, b, a: Double
-		if value.count == 8 {
-			a = Double((int & 0xFF00_0000) >> 24) / 255
-			r = Double((int & 0x00FF_0000) >> 16) / 255
-			g = Double((int & 0x0000_FF00) >> 8) / 255
-			b = Double(int & 0x0000_00FF) / 255
-		} else {
-			a = 1
-			r = Double((int & 0xFF0000) >> 16) / 255
-			g = Double((int & 0x00FF00) >> 8) / 255
-			b = Double(int & 0x0000FF) / 255
-		}
-		return Color(.sRGB, red: r, green: g, blue: b, opacity: a)
+		guard let components = rgbComponents(fromHex: hex) else { return nil }
+		return Color(
+			.sRGB,
+			red: components.red,
+			green: components.green,
+			blue: components.blue,
+			opacity: 1
+		)
 	}
 
 	/// The end date parsed at the *end* of the calendar day, in the edition's IANA time zone
@@ -168,8 +169,10 @@ extension EventFirmwareEntity {
 	/// in the past. A missing or unparseable `eventEnd` returns `false` — an event must never
 	/// be counted as ended without a valid end date (mirrors Android `hasEnded()`).
 	func hasEnded(now: Date = Date()) -> Bool {
-		guard let end = eventEndDate else { return false }
-		return end < now
+		guard let components = Self.dateComponents(from: eventEnd) else { return false }
+		let calendar = Self.calendar(for: timeZone)
+		guard let end = calendar.date(from: components) else { return false }
+		return calendar.compare(now, to: end, toGranularity: .day) == .orderedDescending
 	}
 
 	private static func calendar(for timeZoneIdentifier: String?) -> Calendar {
@@ -196,10 +199,8 @@ extension EventFirmwareEntity {
 
 	/// Parse a `"YYYY-MM-DD"` string into date components, or nil when malformed.
 	private static func dateComponents(from dateString: String?) -> DateComponents? {
-		guard let dateString, !dateString.isEmpty else { return nil }
-		// Accept a leading date even if a time portion is present (e.g. "2026-08-06T00:00:00Z").
-		let datePart = dateString.split(separator: "T").first.map(String.init) ?? dateString
-		let parts = datePart.split(separator: "-")
+		guard let dateString, dateString.count == 10 else { return nil }
+		let parts = dateString.split(separator: "-", omittingEmptySubsequences: false)
 		guard parts.count == 3,
 			  let year = Int(parts[0]), let month = Int(parts[1]), let day = Int(parts[2]),
 			  (1...12).contains(month), (1...31).contains(day) else {
@@ -209,6 +210,13 @@ extension EventFirmwareEntity {
 		components.year = year
 		components.month = month
 		components.day = day
+		var validationCalendar = Calendar(identifier: .gregorian)
+		validationCalendar.timeZone = TimeZone(secondsFromGMT: 0) ?? .current
+		guard let date = validationCalendar.date(from: components) else { return nil }
+		let validated = validationCalendar.dateComponents([.year, .month, .day], from: date)
+		guard validated.year == year, validated.month == month, validated.day == day else {
+			return nil
+		}
 		return components
 	}
 
@@ -233,6 +241,26 @@ extension EventFirmwareEntity {
 		default:
 			return nil
 		}
+	}
+}
+
+// MARK: - Manifest URL policy
+
+enum EventFirmwareURLPolicy {
+
+	/// Event metadata may only navigate to or fetch from an absolute HTTPS URL.
+	static func httpsURL(from value: String?) -> URL? {
+		guard let value = value?.trimmingCharacters(in: .whitespacesAndNewlines),
+			  !value.isEmpty,
+			  let components = URLComponents(string: value),
+			  components.scheme?.lowercased() == "https",
+			  components.host?.isEmpty == false,
+			  components.user == nil,
+			  components.password == nil,
+			  let url = components.url else {
+			return nil
+		}
+		return url
 	}
 }
 
@@ -274,9 +302,167 @@ extension EventFirmwareEntity {
 		return .updateAvailable
 	}
 
+	/// The event's authored palette, or its named brand colors when no palette was supplied.
+	/// Invalid colors are dropped and duplicates are removed while preserving author order.
+	var brandPaletteHexes: [String] {
+		let authored = Self.canonicalPalette(themePalette)
+		if !authored.isEmpty {
+			return authored
+		}
+		return Self.canonicalPalette([
+			themePrimaryColor,
+			themeSecondaryColor,
+			themeAccentColor,
+			accentColor
+		].compactMap { $0 })
+	}
+
 	/// The palette colors as SwiftUI `Color`s, skipping any malformed hex entries.
 	var paletteColors: [Color] {
-		themePalette.compactMap { Self.color(fromHex: $0) }
+		brandPaletteHexes.compactMap { Self.color(fromHex: $0) }
+	}
+
+	/// Select the first theme accent/palette candidate that clears the WCAG 3:1 contrast
+	/// requirement for graphical objects against a light or dark system surface.
+	func accessibleTintHex(for colorScheme: ColorScheme) -> String? {
+		let backgroundLuminance = colorScheme == .dark ? 0.0 : 1.0
+		let preferredHighlight = [themeAccentColor, themeSecondaryColor]
+			.compactMap { $0 }
+			.first { Self.color(fromHex: $0) != nil }
+		let candidates = Self.canonicalPalette(
+			[preferredHighlight].compactMap { $0 } + brandPaletteHexes
+		)
+		if let candidate = candidates.first(where: { candidate in
+			guard let foreground = Self.relativeLuminance(fromHex: candidate) else { return false }
+			let lighter = max(foreground, backgroundLuminance)
+			let darker = min(foreground, backgroundLuminance)
+			return (lighter + 0.05) / (darker + 0.05) >= 3
+		}) {
+			return candidate
+		}
+
+		// Some event colors are vivid but slightly too light for controls on the light system
+		// background (Burning Man orange is one example). Preserve the hue by moving the first
+		// saturated brand candidate toward the opposite system extreme until it clears 3:1.
+		return candidates.lazy.compactMap {
+			Self.contrastAdjustedTintHex($0, for: colorScheme)
+		}.first
+	}
+
+	/// Whether black content has better contrast than white content over a manifest color.
+	static func prefersDarkForeground(forHex hex: String?) -> Bool? {
+		guard let hex, let luminance = relativeLuminance(fromHex: hex) else { return nil }
+		let blackContrast = (luminance + 0.05) / 0.05
+		let whiteContrast = 1.05 / (luminance + 0.05)
+		return blackContrast >= whiteContrast
+	}
+
+	private static func relativeLuminance(fromHex hex: String) -> Double? {
+		guard let rgb = rgbComponents(fromHex: hex) else { return nil }
+		let components = [rgb.red, rgb.green, rgb.blue].map { component in
+			component <= 0.04045
+				? component / 12.92
+				: pow((component + 0.055) / 1.055, 2.4)
+		}
+		return 0.2126 * components[0] + 0.7152 * components[1] + 0.0722 * components[2]
+	}
+
+	private static func contrastAdjustedTintHex(
+		_ hex: String,
+		for colorScheme: ColorScheme
+	) -> String? {
+		guard let rgb = rgbComponents(fromHex: hex) else { return nil }
+		let components = [rgb.red, rgb.green, rgb.blue]
+		guard let maximum = components.max(),
+			  let minimum = components.min(),
+			  maximum - minimum >= 0.15 else {
+			return nil
+		}
+
+		let backgroundLuminance = colorScheme == .dark ? 0.0 : 1.0
+		for step in 1...100 {
+			let fraction = Double(step) / 100
+			let adjusted = components.map { component in
+				colorScheme == .dark
+					? component + ((1 - component) * fraction)
+					: component * (1 - fraction)
+			}
+			let adjustedHex = String(
+				format: "#%02X%02X%02X",
+				Int((adjusted[0] * 255).rounded()),
+				Int((adjusted[1] * 255).rounded()),
+				Int((adjusted[2] * 255).rounded())
+			)
+			guard let foreground = relativeLuminance(fromHex: adjustedHex) else { continue }
+			let lighter = max(foreground, backgroundLuminance)
+			let darker = min(foreground, backgroundLuminance)
+			if (lighter + 0.05) / (darker + 0.05) >= 3 {
+				return adjustedHex
+			}
+		}
+		return nil
+	}
+
+	private struct RGBComponents {
+		let red: Double
+		let green: Double
+		let blue: Double
+	}
+
+	private static func rgbComponents(fromHex hex: String?) -> RGBComponents? {
+		guard let rawValue = hex?.trimmingCharacters(in: .whitespacesAndNewlines),
+			  rawValue.count == 7,
+			  rawValue.first == "#",
+			  let value = UInt64(rawValue.dropFirst(), radix: 16) else {
+			return nil
+		}
+		return RGBComponents(
+			red: Double((value & 0xFF0000) >> 16) / 255,
+			green: Double((value & 0x00FF00) >> 8) / 255,
+			blue: Double(value & 0x0000FF) / 255
+		)
+	}
+
+	private static func canonicalPalette(_ values: [String]) -> [String] {
+		var seen = Set<String>()
+		return values.compactMap { value in
+			let canonical = value.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
+			guard color(fromHex: canonical) != nil, seen.insert(canonical).inserted else {
+				return nil
+			}
+			return canonical
+		}
+	}
+}
+
+// MARK: - Event image validation
+
+enum EventFirmwareImageValidator {
+
+	static let maximumEncodedBytes = 2 * 1_024 * 1_024
+	static let maximumDecodedPixelCount = 4_000_000
+
+	static func isDecodedSizeAllowed(width: Int, height: Int) -> Bool {
+		guard width > 0, height > 0 else { return false }
+		let (pixelCount, overflow) = width.multipliedReportingOverflow(by: height)
+		return !overflow && pixelCount <= maximumDecodedPixelCount
+	}
+
+	/// Decode only bounded PNG/JPEG artwork. Other formats and malformed image data fall back
+	/// to the bundled edition artwork or standard Meshtastic logo.
+	static func image(from data: Data) -> UIImage? {
+		guard data.count <= maximumEncodedBytes,
+			  let source = CGImageSourceCreateWithData(data as CFData, nil),
+			  let typeIdentifier = CGImageSourceGetType(source) as String?,
+			  typeIdentifier == UTType.png.identifier || typeIdentifier == UTType.jpeg.identifier,
+			  let properties = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any],
+			  let width = properties[kCGImagePropertyPixelWidth] as? Int,
+			  let height = properties[kCGImagePropertyPixelHeight] as? Int,
+			  isDecodedSizeAllowed(width: width, height: height),
+			  let cgImage = CGImageSourceCreateImageAtIndex(source, 0, nil) else {
+			return nil
+		}
+		return UIImage(cgImage: cgImage)
 	}
 }
 

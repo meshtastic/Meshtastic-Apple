@@ -197,7 +197,7 @@ struct Routes: View {
 								Label("Enabled", systemImage: "point.topleft.filled.down.to.point.bottomright.curvepath")
 								Text("Show on the mesh map.")
 							}
-							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+							.toggleStyle(.switch)
 
 							ColorPicker("Color", selection: $color, supportsOpacity: false)
 
@@ -302,7 +302,7 @@ struct Routes: View {
 					isPresented: $isExporting,
 					document: CsvDocument(emptyCsv: exportString),
 					contentType: .commaSeparatedText,
-					defaultFilename: String("\(selectedRoute?.name ?? "Route") Log"),
+					defaultFilename: CsvDocument.exportFilename("\(selectedRoute?.name ?? "Route") Log"),
 					onCompletion: { result in
 						switch result {
 						case .success:

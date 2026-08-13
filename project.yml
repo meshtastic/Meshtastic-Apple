@@ -28,9 +28,6 @@ packages:
   CocoaMQTT:
     url: https://github.com/emqx/CocoaMQTT
     majorVersion: 2.0.0
-  swift-snapshot-testing:
-    url: https://github.com/pointfreeco/swift-snapshot-testing
-    majorVersion: 1.17.0
   mvt-tools:
     url: https://github.com/Outdooractive/mvt-tools.git
     majorVersion: 1.2.1
@@ -194,6 +191,8 @@ targets:
         type: syncedFolder
       - path: "Meshtastic/Helpers"
         type: syncedFolder
+      - path: "Meshtastic/Import"
+        type: syncedFolder
       - path: "Meshtastic/Intents"
         type: syncedFolder
       - path: "Meshtastic/Measurement"
@@ -342,21 +341,6 @@ targets:
         product: MVTTools
     preBuildScripts:
       - script: |
-          MARKER="${TARGET_TEMP_DIR}/first-build.marker"
-          
-          if [ ! -f "$MARKER" ]; then
-           # Treating as CLEAN build (or first build in this DerivedData)
-           # Force update all the note board images
-           "$SRCROOT/scripts/download_images.py" --output-dir "$SRCROOT/Meshtastic/Resources/images" --output-json "$SRCROOT/Meshtastic/Resources/DeviceHardware.json" --force
-           touch "$MARKER"
-          else
-           # Incremental build
-           # update only if there was a change in the devices json
-           "$SRCROOT/scripts/download_images.py" --output-dir "$SRCROOT/Meshtastic/Resources/images" --output-json "$SRCROOT/Meshtastic/Resources/DeviceHardware.json"
-          fi
-        name: "Download Node SVG Images"
-        basedOnDependencyAnalysis: false
-      - script: |
           if [[ "$(uname -m)" == arm64 ]]
           then
               export PATH="/opt/homebrew/bin:$PATH"
@@ -364,11 +348,19 @@ targets:
           
           if command -v swiftlint >/dev/null 2>&1
           then
-              swiftlint
+              swiftlint lint --cache-path "$DERIVED_FILE_DIR/swiftlint-cache"
           else
               echo "warning: `swiftlint` command not found - See https://github.com/realm/SwiftLint#installation for installation instructions."
           fi
         name: "Run Script"
+        inputFiles:
+          - "$(SRCROOT)/.swiftlint.yml"
+          - "$(SRCROOT)/Meshtastic"
+          - "$(SRCROOT)/Meshtastic Watch App"
+          - "$(SRCROOT)/MeshtasticTests"
+          - "$(SRCROOT)/MeshtasticUITests"
+          - "$(SRCROOT)/Shared"
+          - "$(SRCROOT)/Widgets"
         basedOnDependencyAnalysis: false
     settings:
       configs:
@@ -403,7 +395,7 @@ targets:
             - "$(inherited)"
             - "@executable_path/Frameworks"
           MACOSX_DEPLOYMENT_TARGET: "14.6"
-          MARKETING_VERSION: "2.7.18"
+          MARKETING_VERSION: "2.7.19"
           OTHER_LDFLAGS:
             - "-weak_framework"
             - "SwiftUI"
@@ -446,7 +438,7 @@ targets:
             - "$(inherited)"
             - "@executable_path/Frameworks"
           MACOSX_DEPLOYMENT_TARGET: "14.6"
-          MARKETING_VERSION: "2.7.18"
+          MARKETING_VERSION: "2.7.19"
           OTHER_LDFLAGS:
             - "-weak_framework"
             - "SwiftUI"
@@ -492,7 +484,7 @@ targets:
             - "@executable_path/Frameworks"
             - "@executable_path/../../Frameworks"
           MACOSX_DEPLOYMENT_TARGET: "14.6"
-          MARKETING_VERSION: "2.7.18"
+          MARKETING_VERSION: "2.7.19"
           PRODUCT_BUNDLE_IDENTIFIER: "gvh.MeshtasticClient.Widgets"
           PRODUCT_NAME: "$(TARGET_NAME)"
           PROVISIONING_PROFILE_SPECIFIER: ""
@@ -521,7 +513,7 @@ targets:
             - "@executable_path/Frameworks"
             - "@executable_path/../../Frameworks"
           MACOSX_DEPLOYMENT_TARGET: "14.6"
-          MARKETING_VERSION: "2.7.18"
+          MARKETING_VERSION: "2.7.19"
           PRODUCT_BUNDLE_IDENTIFIER: "gvh.MeshtasticClient.Widgets"
           PRODUCT_NAME: "$(TARGET_NAME)"
           PROVISIONING_PROFILE_SPECIFIER: ""
@@ -541,8 +533,6 @@ targets:
         type: syncedFolder
     dependencies:
       - target: Meshtastic
-      - package: swift-snapshot-testing
-        product: SnapshotTesting
     settings:
       configs:
         Debug:
@@ -615,7 +605,7 @@ targets:
           LD_RUNPATH_SEARCH_PATHS:
             - "$(inherited)"
             - "@executable_path/Frameworks"
-          MARKETING_VERSION: "2.7.18"
+          MARKETING_VERSION: "2.7.19"
           PRODUCT_BUNDLE_IDENTIFIER: "gvh.MeshtasticClient.watchkitapp"
           PRODUCT_NAME: "$(TARGET_NAME)"
           SDKROOT: "watchos"
@@ -643,7 +633,7 @@ targets:
           LD_RUNPATH_SEARCH_PATHS:
             - "$(inherited)"
             - "@executable_path/Frameworks"
-          MARKETING_VERSION: "2.7.18"
+          MARKETING_VERSION: "2.7.19"
           PRODUCT_BUNDLE_IDENTIFIER: "gvh.MeshtasticClient.watchkitapp"
           PRODUCT_NAME: "$(TARGET_NAME)"
           SDKROOT: "watchos"

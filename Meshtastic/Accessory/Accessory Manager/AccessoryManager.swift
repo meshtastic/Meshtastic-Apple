@@ -179,6 +179,12 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	@Published var allowDisconnect = false
 	@Published var lastConnectionError: Error?
 	@Published var isConnected: Bool = false
+	/// When the radio last finished sending its configuration.
+	///
+	/// Used to tell a fresh readback from a stale cache. Post-import verification is meaningless
+	/// against entities that still hold pre-import values: every item would look dropped. See
+	/// `DeviceProfileVerifier`.
+	@Published var lastConfigRefresh: Date?
 	@Published var isConnecting: Bool = false
 	@Published var isInBackground: Bool = false
 	@Published var firmwareEdition: FirmwareEditions = .vanilla
@@ -1001,6 +1007,9 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			// Logger.mesh.error("✅ [Accessory] Unknown UNHANDLED confligCompleteID: \(configCompleteID)")
 			// }
 
+			// Stamp the arrival so callers can tell a post-reboot refresh from a stale cache.
+			lastConfigRefresh = Date()
+
 			Logger.transport.info("✅ [Accessory] Notifying completions that have completed for configCompleteID: \(configCompleteID)")
 			switch configCompleteID {
 			case UInt32(NONCE_ONLY_CONFIG):
@@ -1107,10 +1116,35 @@ extension AccessoryManager {
 	/// ATAK_PLUGIN port (72) with the original `TAKPacket` schema, which only
 	/// supports PLI and GeoChat (no shapes, markers, routes, etc.).
 	///
-	/// Returns `true` when the firmware version is unknown (radio not yet
-	/// handshook) since v2 is now the predominant firmware in the field.
 	var supportsTAKv2: Bool {
-		checkIsVersionSupported(forVersion: "2.8.0")
+		Self.isTAKv2Supported(firmwareVersion: connectedVersion)
+	}
+
+	static func isTAKv2Supported(firmwareVersion: String?) -> Bool {
+		guard let firmwareVersion else {
+			return false
+		}
+
+		let components = firmwareVersion.split(separator: ".", omittingEmptySubsequences: false)
+		let decimalDigits = CharacterSet(charactersIn: "0123456789")
+		guard (3...4).contains(components.count),
+			  components.prefix(3).allSatisfy({
+				  !$0.isEmpty && $0.unicodeScalars.allSatisfy { decimalDigits.contains($0) }
+			  }),
+			  let major = Int(components[0]),
+			  let minor = Int(components[1]),
+			  let patch = Int(components[2]) else {
+			return false
+		}
+		if components.count == 4 {
+			let hexDigits = CharacterSet(charactersIn: "0123456789abcdefABCDEF")
+			guard !components[3].isEmpty,
+				  components[3].unicodeScalars.allSatisfy(hexDigits.contains) else {
+				return false
+			}
+		}
+
+		return major > 2 || (major == 2 && (minor > 8 || (minor == 8 && patch >= 0)))
 	}
 
 	/// The Status Message module (`ModuleConfig.StatusMessageConfig` + the

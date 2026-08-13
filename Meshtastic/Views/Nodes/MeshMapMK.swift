@@ -78,6 +78,7 @@ struct MeshMapMK: View {
 	@StateObject private var offlineVectors = OfflineVectorTileProvider()
 	/// Downloaded offline regions; observed so a new download re-points offlineVectors.
 	@ObservedObject private var offlineMapManager = OfflineMapManager.shared
+	@ObservedObject private var offlineMapConnectivity = OfflineMapConnectivityMonitor.shared
 	@State private var offlineVectorOverlays: [ClusterMapOverlay] = []
 	/// Route polylines + start/finish markers, rebuilt only when the route set changes.
 	@State private var routeOverlays: [ClusterMapOverlay] = []
@@ -291,12 +292,17 @@ struct MeshMapMK: View {
 	/// All downloaded regions to render when offline tiles are enabled (pruned to on-disk regions at
 	/// load). Empty when offline tiles are off or nothing is downloaded.
 	private var offlineRegions: [OfflineMapRegion] {
-		enableOfflineTiles ? offlineMapManager.regions : []
+		shouldRenderOfflineMaps ? offlineMapManager.regions : []
 	}
 
-	/// Archive URLs for every downloaded region — decoded + merged by `offlineVectors`.
-	private var offlineRegionURLs: [URL] {
-		offlineRegions.compactMap { offlineMapManager.fileURL(for: $0) }
+	/// A saved map is shown whenever the user enabled it, or temporarily when iOS reports that no
+	/// network route is usable. The temporary fallback never writes the user's saved preference.
+	private var shouldRenderOfflineMaps: Bool {
+		OfflineMapFallbackPolicy.shouldRenderOfflineMaps(
+			userEnabled: enableOfflineTiles,
+			hasSavedMaps: !offlineMapManager.regions.isEmpty,
+			networkAvailable: offlineMapConnectivity.isNetworkAvailable
+		)
 	}
 
 	/// Coverage box for each downloaded region (accent borders + capsules), shown once vectors load.
@@ -672,6 +678,9 @@ struct MeshMapMK: View {
 			}
 			.onChange(of: offlineMapManager.regions) {
 				reloadOfflineSource()
+			}
+			.onChange(of: offlineMapConnectivity.isNetworkAvailable) {
+				rebuildAllMapContent()
 			}
 			.onChange(of: overlayInputsKey) {
 				rebuildAllMapContent()
@@ -1118,7 +1127,7 @@ struct MeshMapMK: View {
 									parts.append(showWaypoints ? "w1" : "w0")
 									parts.append(showConvexHull ? "h1" : "h0")
 									parts.append(mapOverlaysEnabled ? "o1" : "o0")
-									parts.append(enableOfflineTiles ? "t1" : "t0")
+									parts.append(shouldRenderOfflineMaps ? "t1" : "t0")
 									parts.append(colorScheme == .dark ? "d1" : "d0")
 									parts.append(String(enabledOverlayConfigs.hashValue))
 									parts.append(String(offlineVectors.revision))
@@ -1129,7 +1138,7 @@ struct MeshMapMK: View {
 								/// Re-bind the offline vector provider to the active archive (newest downloaded region, else the
 								/// bundled demo) and decode it. Cheap no-op when the archive hasn't changed.
 								private func reloadOfflineSource() {
-									offlineVectors.reload(urls: offlineRegionURLs)
+									offlineVectors.reload(regions: offlineRegions)
 									decodeOfflineIfVisible()
 								}
 
@@ -1141,7 +1150,7 @@ struct MeshMapMK: View {
 
 								/// Whether ANY offline vector coverage box intersects the current (padded) viewport.
 								private func offlineRegionOnScreen() -> Bool {
-									guard enableOfflineTiles, let region = visibleRegion, !offlineVectors.coverageAreas.isEmpty else { return false }
+									guard shouldRenderOfflineMaps, let region = visibleRegion, !offlineVectors.coverageAreas.isEmpty else { return false }
 									let latPad = region.span.latitudeDelta * 0.75, lonPad = region.span.longitudeDelta * 0.75
 									let vMinLat = region.center.latitude - latPad, vMaxLat = region.center.latitude + latPad
 									let vMinLon = region.center.longitude - lonPad, vMaxLon = region.center.longitude + lonPad
@@ -1496,10 +1505,10 @@ struct MeshMapMK: View {
 	/// from the decoded vector tiles, using the same slate/cream palette as the old SwiftUI map. Stable
 	/// objects, rebuilt only on toggle/appearance/decode so the overlay diff is a no-op between renders.
 	private func rebuildOfflineVectorOverlays() {
-		let key = "\(enableOfflineTiles)|\(offlineVectors.isAvailable)|\(offlineVectors.revision)|\(colorScheme == .dark)"
+		let key = "\(shouldRenderOfflineMaps)|\(offlineVectors.isAvailable)|\(offlineVectors.revision)|\(colorScheme == .dark)"
 		guard key != lastOfflineOverlaysKey else { return }
 		lastOfflineOverlaysKey = key
-		guard enableOfflineTiles, offlineVectors.isAvailable, !offlineVectors.coverageAreas.isEmpty else {
+		guard shouldRenderOfflineMaps, offlineVectors.isAvailable, !offlineVectors.coverageAreas.isEmpty else {
 			if !offlineVectorOverlays.isEmpty { offlineVectorOverlays = [] }
 			return
 		}

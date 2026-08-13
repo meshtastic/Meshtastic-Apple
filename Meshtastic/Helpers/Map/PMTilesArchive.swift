@@ -35,7 +35,7 @@ enum PMTilesCompression: UInt8 {
 }
 
 /// Geographic bounds in degrees.
-struct GeoBounds: Equatable {
+struct GeoBounds: Equatable, Sendable {
 	let minLon: Double
 	let minLat: Double
 	let maxLon: Double
@@ -95,6 +95,14 @@ final class PMTilesArchive {
 		if header.tileType == .mvt {
 			Logger.services.warning("📦 [PMTiles] Archive is VECTOR (MVT) — MapKit cannot render it; use a raster PMTiles.")
 		}
+	}
+
+	/// Parses only the fixed PMTiles v3 header without memory-mapping the map payload.
+	static func header(url: URL) -> PMTilesHeader? {
+		guard let handle = try? FileHandle(forReadingFrom: url) else { return nil }
+		defer { try? handle.close() }
+		guard let data = try? handle.read(upToCount: 127), data.count == 127 else { return nil }
+		return parseHeader(data)
 	}
 
 	// MARK: - Header

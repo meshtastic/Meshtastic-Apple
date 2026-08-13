@@ -41,7 +41,6 @@ struct TrafficManagementConfig: View {
 					Label("Enabled", systemImage: "arrow.triangle.branch")
 					Text("Master enable for the traffic management module.")
 				}
-				.tint(.accentColor)
 			}
 
 			if enabled {
@@ -50,7 +49,6 @@ struct TrafficManagementConfig: View {
 						Label("Position Dedup", systemImage: "location.slash")
 						Text("Drop redundant position broadcasts from the same node.")
 					}
-					.tint(.accentColor)
 
 					if positionDedupEnabled {
 						HStack {
@@ -72,7 +70,6 @@ struct TrafficManagementConfig: View {
 						Label("Direct Response", systemImage: "arrow.turn.down.right")
 						Text("Respond to NodeInfo requests directly from local cache.")
 					}
-					.tint(.accentColor)
 
 					if nodeinfoDirectResponse {
 						HStack {
@@ -94,7 +91,6 @@ struct TrafficManagementConfig: View {
 						Label("Rate Limiting", systemImage: "speedometer")
 						Text("Enable per-node rate limiting to throttle chatty nodes.")
 					}
-					.tint(.accentColor)
 
 					if rateLimitEnabled {
 						HStack {
@@ -128,7 +124,6 @@ struct TrafficManagementConfig: View {
 						Label("Drop Unknown", systemImage: "xmark.shield")
 						Text("Enable dropping of unknown/undecryptable packets.")
 					}
-					.tint(.accentColor)
 
 					if dropUnknownEnabled {
 						HStack {
