@@ -1,4 +1,9 @@
-// MARK: MessagePreviewText
+//
+//  MessagePreviewText.swift
+//  Meshtastic
+//
+//  Copyright(c) Garth Vander Houwen 8/12/26.
+//
 
 import SwiftUI
 
