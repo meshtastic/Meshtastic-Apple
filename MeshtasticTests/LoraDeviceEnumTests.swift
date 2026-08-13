@@ -195,6 +195,13 @@ struct BandwidthsTests {
 		#expect(options.map(\.description) == ["203.125 kHz", "406.25 kHz", "812.5 kHz", "1625 kHz"])
 	}
 
+	@Test(arguments: ["my-esp32s3-diy-oled", "my-esp32s3-diy-eink"])
+	func diySX128xOptions_include1625kHzBandwidth(pioEnv: String) {
+		let options = Bandwidths.selectable(region: .lora24, pioEnv: pioEnv)
+
+		#expect(options.map(\.pickerValue) == [200, 400, 800, 1600])
+	}
+
 	@Test func lr1121Options_excludeUnsupported1625kHzBandwidth() {
 		let options = Bandwidths.selectable(region: .lora24, pioEnv: "muzi-base")
 
@@ -212,6 +219,13 @@ struct BandwidthsTests {
 		#expect(!Bandwidths.isValid(1600, region: .lora24, pioEnv: "muzi-base"))
 		#expect(Bandwidths.isValid(800, region: .lora24, pioEnv: "muzi-base"))
 		#expect(Bandwidths.isValid(0, region: .us, pioEnv: nil))
+	}
+
+	@Test func zeroBandwidthInLora24CustomMode_requiresConcreteSelection() {
+		#expect(
+			Bandwidths.validationIssue(for: 0, region: .lora24, pioEnv: "tlora-t3s3-v1") == .selectionRequired
+		)
+		#expect(!Bandwidths.isValid(0, region: .lora24, pioEnv: "tlora-t3s3-v1"))
 	}
 
 	@Test func explicit250kHzStoredValue_remainsValidAndDisplaysAsDefaultOption() {

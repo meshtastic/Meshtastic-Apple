@@ -69,6 +69,44 @@ struct GenerateMessageMarkdownTests {
 	}
 }
 
+// MARK: - MyInfo ingestion
+
+@Suite("MyInfo ingestion", .serialized)
+@MainActor
+struct MyInfoIngestionTests {
+	@Test func sameNodeReflash_updatesPioEnvAndBandwidthCapability() async throws {
+		let container = try ModelContainer(
+			for: Schema(MeshtasticSchema.allModels),
+			configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+		)
+		let mesh = MeshPackets(modelContainer: container)
+		let nodeNum: UInt32 = 0x1234_5678
+
+		var beforeReflash = MyNodeInfo()
+		beforeReflash.myNodeNum = nodeNum
+		beforeReflash.pioEnv = "muzi-base"
+		let originalID = await mesh.myInfoPacket(myInfo: beforeReflash, peripheralId: "test-peripheral")
+
+		var afterReflash = MyNodeInfo()
+		afterReflash.myNodeNum = nodeNum
+		afterReflash.pioEnv = "my-esp32s3-diy-oled"
+		let updatedID = await mesh.myInfoPacket(myInfo: afterReflash, peripheralId: "test-peripheral")
+
+		let context = ModelContext(container)
+		let persistedNodeNum = Int64(nodeNum)
+		let rows = try context.fetch(
+			FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == persistedNodeNum })
+		)
+		let myInfo = try #require(rows.first)
+
+		#expect(rows.count == 1)
+		#expect(originalID == updatedID)
+		#expect(myInfo.myNodeNum == persistedNodeNum)
+		#expect(myInfo.pioEnv == "my-esp32s3-diy-oled")
+		#expect(Bandwidths.selectable(region: .lora24, pioEnv: myInfo.pioEnv).contains(.sixteenHundred))
+	}
+}
+
 // MARK: - Local Message Notification Cleanup
 
 @Suite("Local message notification cleanup")

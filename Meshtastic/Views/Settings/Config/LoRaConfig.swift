@@ -150,9 +150,10 @@ struct LoRaConfig: View {
 		)
 	}
 
-	private var customBandwidthIsValid: Bool {
-		usePreset || Bandwidths.isValid(
-			bandwidth,
+	private var customBandwidthValidationIssue: Bandwidths.ValidationIssue? {
+		guard !usePreset else { return nil }
+		return Bandwidths.validationIssue(
+			for: bandwidth,
 			region: RegionCodes(rawValue: region),
 			pioEnv: node?.myInfo?.pioEnv
 		)
@@ -248,7 +249,7 @@ struct LoRaConfig: View {
 					CustomBandwidthPicker(
 						selection: bandwidthSelection,
 						options: availableBandwidths,
-						isValid: customBandwidthIsValid
+						validationIssue: customBandwidthValidationIssue
 					)
 					HStack {
 						Picker("Spread Factor", selection: $spreadFactor) {
@@ -364,7 +365,7 @@ struct LoRaConfig: View {
 		.safeAreaInset(edge: .bottom, alignment: .center) {
 			HStack(spacing: 0) {
 				SaveConfigButton(node: node, hasChanges: $hasChanges) {
-					guard customBandwidthIsValid else { return }
+					guard customBandwidthValidationIssue == nil else { return }
 					performConfigSave(
 						node: node,
 						context: context,
@@ -395,7 +396,7 @@ struct LoRaConfig: View {
 						_ = try await accessoryManager.saveLoRaConfig(config: lc, fromUser: fromUser, toUser: toUser)
 					}
 				}
-				.disabled(!customBandwidthIsValid)
+				.disabled(customBandwidthValidationIssue != nil)
 			}
 		}
 		.navigationTitle("LoRa Config")
@@ -516,12 +517,15 @@ struct LoRaConfig: View {
 private struct CustomBandwidthPicker: View {
 	@Binding var selection: Int
 	let options: [Bandwidths]
-	let isValid: Bool
+	let validationIssue: Bandwidths.ValidationIssue?
 
 	var body: some View {
 		VStack(alignment: .leading, spacing: 8) {
 			Picker("Bandwidth", selection: $selection) {
-				if !isValid {
+				if validationIssue == .selectionRequired {
+					Text("Choose a bandwidth")
+						.tag(selection)
+				} else if validationIssue == .unsupported {
 					Text("Unsupported (\(Bandwidths.description(forPickerValue: selection)))")
 						.tag(selection)
 				}
@@ -530,9 +534,14 @@ private struct CustomBandwidthPicker: View {
 						.tag(bandwidth.pickerValue)
 				}
 			}
-			if !isValid {
+			if let validationIssue {
 				Label {
-					Text("This bandwidth is not supported by the connected radio in the selected region. Choose a supported value before saving.".localized)
+					switch validationIssue {
+					case .selectionRequired:
+						Text("Custom mode requires a specific bandwidth. Choose one before saving.".localized)
+					case .unsupported:
+						Text("This bandwidth is not supported by the connected radio in the selected region. Choose a supported value before saving.".localized)
+					}
 				} icon: {
 					Image(systemName: "exclamationmark.triangle.fill")
 				}

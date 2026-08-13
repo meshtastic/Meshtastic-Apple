@@ -771,6 +771,10 @@ enum CodingRates {
 }
 
 enum Bandwidths: Int, CaseIterable, Identifiable {
+	enum ValidationIssue: Equatable {
+		case selectionRequired
+		case unsupported
+	}
 
 	case thirtyOne = 31
 	case sixtyTwo = 62
@@ -796,6 +800,8 @@ enum Bandwidths: Int, CaseIterable, Identifiable {
 		"betafpv_2400_tx_micro",
 		"makerpython_nrf52840_sx1280_eink",
 		"makerpython_nrf52840_sx1280_oled",
+		"my-esp32s3-diy-eink",
+		"my-esp32s3-diy-oled",
 		"tlora-v2-1-1_8"
 	]
 
@@ -840,8 +846,17 @@ enum Bandwidths: Int, CaseIterable, Identifiable {
 	}
 
 	static func isValid(_ value: Int, region: RegionCodes?, pioEnv: String?) -> Bool {
+		validationIssue(for: value, region: region, pioEnv: pioEnv) == nil
+	}
+
+	static func validationIssue(for value: Int, region: RegionCodes?, pioEnv: String?) -> ValidationIssue? {
+		if region == .lora24, value == 0 {
+			return .selectionRequired
+		}
 		let normalizedValue = pickerValue(forStoredValue: value, region: region)
 		return selectable(region: region, pioEnv: pioEnv).contains { $0.pickerValue == normalizedValue }
+			? nil
+			: .unsupported
 	}
 
 	static func pickerValue(forStoredValue value: Int, region: RegionCodes?) -> Int {
