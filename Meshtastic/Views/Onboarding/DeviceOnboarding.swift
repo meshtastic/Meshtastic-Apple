@@ -24,6 +24,22 @@ struct DeviceOnboarding: View {
 	@AppStorage("newNodeNotifications") private var newNodeNotifications: Bool = false
 	@AppStorage("lowBatteryNotifications") private var lowBatteryNotifications: Bool = false
 	@Environment(\.dismiss) var dismiss
+
+	private var newNodeNotificationsBinding: Binding<Bool> {
+		Binding(
+			get: { newNodeNotifications },
+			set: { value in
+				let updated = EventFirmwareNotificationPolicy.userUpdatedSettings(
+					newNodeNotifications: value,
+					isEventFirmware: accessoryManager.firmwareEdition.isEvent
+				)
+				newNodeNotifications = updated.newNodeNotifications
+				UserDefaults.nodeNotificationsAutoDisabledForEvent = updated.autoDisabledForEvent
+				UserDefaults.nodeNotificationsUserOverrideForEvent = updated.userOverrideForEvent
+			}
+		)
+	}
+
 	var notificationView: some View {
 		VStack {
 			ScrollView(.vertical) {
@@ -54,7 +70,7 @@ struct DeviceOnboarding: View {
 						color: .green,
 						title: String(localized: "New Nodes"),
 						subtitle: String(localized: "Notifications for newly discovered nodes."),
-						isOn: $newNodeNotifications
+						isOn: newNodeNotificationsBinding
 					)
 					makeRow(
 						icon: "battery.25percent",
@@ -420,7 +436,6 @@ struct DeviceOnboarding: View {
 				Toggle("", isOn: binding)
 					.labelsHidden()
 					.fixedSize()
-					.tint(.accentColor)
 			}
 		}.accessibilityElement(children: .combine)
 	}

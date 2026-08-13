@@ -105,19 +105,19 @@ struct DeviceConfig: View {
 					Label("Double Tap as Button", systemImage: "hand.tap")
 					Text("Treat double tap on supported accelerometers as a user button press.")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.toggleStyle(.switch)
 				
 				Toggle(isOn: $tripleClickAsAdHocPing) {
 					Label("Triple Click Ad Hoc Ping", systemImage: "mappin")
 					Text("Send a position on the primary channel when the user button is triple clicked.")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.toggleStyle(.switch)
 				
 				Toggle(isOn: $ledHeartbeatEnabled) {
 					Label("LED Heartbeat", systemImage: "waveform.path.ecg")
 					Text("Controls the blinking LED on the device.  For most devices this will control one of the up to 4 LEDS, the charger and GPS LEDs are not controllable.")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.toggleStyle(.switch)
 			}
 			Section(header: Text("Debug")) {
 				VStack(alignment: .leading) {

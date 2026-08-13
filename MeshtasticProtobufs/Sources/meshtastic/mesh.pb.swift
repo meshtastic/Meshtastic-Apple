@@ -2819,10 +2819,20 @@ public struct MeshPacket: @unchecked Sendable {
   /// Note: this field is _never_ sent on the radio link itself (to save space) Times
   /// are typically not sent over the mesh, but they will be added to any Packet
   /// (chain of SubPacket) sent to the phone (so the phone can know exact time of reception)
+  /// Explicit presence: firmware cannot always attach a trustworthy wall-clock timestamp at the
+  /// moment of reception - a node with no GPS and no phone connected yet has no time source at
+  /// all. has_rx_time disambiguates that state from a genuine (if coincidental) 1970-01-01
+  /// reading. A packet delivered with this field absent may still be re-timestamped once a valid
+  /// clock becomes available, before the phone ever sees it - "absent" is not guaranteed
+  /// permanent, only "not yet known at last observation".
   public var rxTime: UInt32 {
-    get {_storage._rxTime}
+    get {_storage._rxTime ?? 0}
     set {_uniqueStorage()._rxTime = newValue}
   }
+  /// Returns true if `rxTime` has been explicitly set.
+  public var hasRxTime: Bool {_storage._rxTime != nil}
+  /// Clears the value of `rxTime`. Subsequent reads from it will return its default value.
+  public mutating func clearRxTime() {_uniqueStorage()._rxTime = nil}
 
   ///
   /// *Never* sent over the radio links.
@@ -2868,10 +2878,17 @@ public struct MeshPacket: @unchecked Sendable {
 
   ///
   /// rssi of received packet. Only sent to phone for dispay purposes.
+  /// Explicit presence: rssi 0 is a legitimate reading on some radios (SX126x can report exactly
+  /// 0 dBm; SX127x's formula can even go positive). has_rx_rssi disambiguates; a replayed packet
+  /// built from history should leave this field absent rather than emitting 0.
   public var rxRssi: Int32 {
-    get {_storage._rxRssi}
+    get {_storage._rxRssi ?? 0}
     set {_uniqueStorage()._rxRssi = newValue}
   }
+  /// Returns true if `rxRssi` has been explicitly set.
+  public var hasRxRssi: Bool {_storage._rxRssi != nil}
+  /// Clears the value of `rxRssi`. Subsequent reads from it will return its default value.
+  public mutating func clearRxRssi() {_uniqueStorage()._rxRssi = nil}
 
   ///
   /// Describe if this message is delayed
@@ -2892,6 +2909,10 @@ public struct MeshPacket: @unchecked Sendable {
   ///
   /// Hop limit with which the original packet started. Sent via LoRa using three bits in the unencrypted header.
   /// When receiving a packet, the difference between hop_start and hop_limit gives how many hops it traveled.
+  /// hop_start == 0 does not necessarily mean a direct (0-hop) neighbor: firmware prior to 2.3.0
+  /// never populated this field, so a receiver can only trust hop_start == 0 as genuine once it has
+  /// decoded the packet and confirmed the sender's bitfield is present (added in 2.5.0). Until then,
+  /// or for a sender that never sets that bitfield, treat hop_start == 0 as unknown, not direct.
   public var hopStart: UInt32 {
     get {_storage._hopStart}
     set {_uniqueStorage()._hopStart = newValue}
@@ -5626,12 +5647,12 @@ extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
     var _channel: UInt32 = 0
     var _payloadVariant: MeshPacket.OneOf_PayloadVariant?
     var _id: UInt32 = 0
-    var _rxTime: UInt32 = 0
+    var _rxTime: UInt32? = nil
     var _rxSnr: Float = 0
     var _hopLimit: UInt32 = 0
     var _wantAck: Bool = false
     var _priority: MeshPacket.Priority = .unset
-    var _rxRssi: Int32 = 0
+    var _rxRssi: Int32? = nil
     var _delayed: MeshPacket.Delayed = .noDelay
     var _viaMqtt: Bool = false
     var _hopStart: UInt32 = 0
@@ -5767,9 +5788,9 @@ extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
       if _storage._id != 0 {
         try visitor.visitSingularFixed32Field(value: _storage._id, fieldNumber: 6)
       }
-      if _storage._rxTime != 0 {
-        try visitor.visitSingularFixed32Field(value: _storage._rxTime, fieldNumber: 7)
-      }
+      try { if let v = _storage._rxTime {
+        try visitor.visitSingularFixed32Field(value: v, fieldNumber: 7)
+      } }()
       if _storage._rxSnr.bitPattern != 0 {
         try visitor.visitSingularFloatField(value: _storage._rxSnr, fieldNumber: 8)
       }
@@ -5782,9 +5803,9 @@ extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
       if _storage._priority != .unset {
         try visitor.visitSingularEnumField(value: _storage._priority, fieldNumber: 11)
       }
-      if _storage._rxRssi != 0 {
-        try visitor.visitSingularInt32Field(value: _storage._rxRssi, fieldNumber: 12)
-      }
+      try { if let v = _storage._rxRssi {
+        try visitor.visitSingularInt32Field(value: v, fieldNumber: 12)
+      } }()
       if _storage._delayed != .noDelay {
         try visitor.visitSingularEnumField(value: _storage._delayed, fieldNumber: 13)
       }

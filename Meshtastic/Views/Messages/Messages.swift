@@ -147,7 +147,7 @@ struct Messages: View {
 				}
 				.navigationDestination(for: Int64.self) { nodeNum in
 					if let node = getNodeInfo(id: nodeNum, context: context) {
-						NodeDetail(node: node)
+						NodeDetail(node: node, nodeNum: nodeNum)
 					}
 				}
 			}

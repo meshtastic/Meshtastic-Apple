@@ -130,6 +130,10 @@ Filters are **remembered between launches** — the app reopens with the same fi
 
 The map has one additional filter of its own — **Precise Locations Only**, which hides nodes reporting an approximate (reduced-precision) location. See [Map & Waypoints](map.md) for details.
 
+## Offline Map Detail
+
+Downloaded offline maps include the local road network. Pedestrian streets render as minor roads, so walkable streets remain visible offline. On nodes reporting the Burning Man firmware edition, the downloadable Burning Man 2026 map pack uses full zoom-level 15 detail for the Black Rock City street grid and remains available until you remove it.
+
 ## Additional Icons
 
 Tap a node and scroll to the Logs section for detailed metrics:

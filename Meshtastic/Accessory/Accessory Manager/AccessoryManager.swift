@@ -534,9 +534,21 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		// Flush any debounced position/telemetry saves before disconnecting
 		await MeshPackets.shared.flushDebouncedSaves()
 
-		// Close out the connection
-		if let activeConnection = activeConnection {
-			try await activeConnection.connection.disconnect(withError: nil, shouldReconnect: false)
+		// Close out the transport, then finish manager teardown before returning. Connection
+		// events are asynchronous, so awaiting the transport alone can leave activeConnection set.
+		var disconnectError: Error?
+		if let activeConnection {
+			do {
+				try await activeConnection.connection.disconnect(withError: nil, shouldReconnect: false)
+			} catch {
+				disconnectError = error
+			}
+		}
+		try await closeConnection()
+		updateState(.discovering)
+
+		if let disconnectError {
+			throw disconnectError
 		}
 	}
 
@@ -697,8 +709,12 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			}
 			
 		case .disconnected:
+			guard !shouldIgnoreTransientEvent else {
+				Logger.transport.info("[Accessory] Ignoring disconnect event during teardown.")
+				return
+			}
 			Task {
-				// This is user-initatied, so don't reconnect
+				// This is user-initiated, so don't reconnect
 				shouldAutomaticallyConnectToPreferredPeripheralAfterError = false
 				try? await self.closeConnection()
 				updateState(.discovering)
@@ -1116,10 +1132,35 @@ extension AccessoryManager {
 	/// ATAK_PLUGIN port (72) with the original `TAKPacket` schema, which only
 	/// supports PLI and GeoChat (no shapes, markers, routes, etc.).
 	///
-	/// Returns `true` when the firmware version is unknown (radio not yet
-	/// handshook) since v2 is now the predominant firmware in the field.
 	var supportsTAKv2: Bool {
-		checkIsVersionSupported(forVersion: "2.8.0")
+		Self.isTAKv2Supported(firmwareVersion: connectedVersion)
+	}
+
+	static func isTAKv2Supported(firmwareVersion: String?) -> Bool {
+		guard let firmwareVersion else {
+			return false
+		}
+
+		let components = firmwareVersion.split(separator: ".", omittingEmptySubsequences: false)
+		let decimalDigits = CharacterSet(charactersIn: "0123456789")
+		guard (3...4).contains(components.count),
+			  components.prefix(3).allSatisfy({
+				  !$0.isEmpty && $0.unicodeScalars.allSatisfy { decimalDigits.contains($0) }
+			  }),
+			  let major = Int(components[0]),
+			  let minor = Int(components[1]),
+			  let patch = Int(components[2]) else {
+			return false
+		}
+		if components.count == 4 {
+			let hexDigits = CharacterSet(charactersIn: "0123456789abcdefABCDEF")
+			guard !components[3].isEmpty,
+				  components[3].unicodeScalars.allSatisfy(hexDigits.contains) else {
+				return false
+			}
+		}
+
+		return major > 2 || (major == 2 && (minor > 8 || (minor == 8 && patch >= 0)))
 	}
 
 	/// The Status Message module (`ModuleConfig.StatusMessageConfig` + the

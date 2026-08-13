@@ -52,7 +52,6 @@ struct DetectionSensorConfig: View {
 					Label("Enabled", systemImage: "dot.radiowaves.right")
 					Text("Enables the detection sensor module, it needs to be enabled on both the node with the sensor, and any nodes that you want to receive detection sensor text messages or view the detection sensor log and chart.")
 				}
-				.tint(.accentColor)
 				
 				if enabled {
 					HStack {
@@ -82,7 +81,6 @@ struct DetectionSensorConfig: View {
 						Label("Send Bell", systemImage: "bell")
 						Text("Send ASCII bell with alert message. Useful for triggering external notification on bell.")
 					}
-					.tint(.accentColor)
 					
 					HStack {
 						Label("Name", systemImage: "signature")
@@ -125,7 +123,6 @@ struct DetectionSensorConfig: View {
 						Label("Uses pullup resistor", systemImage: "arrow.up.to.line")
 						Text("Whether or not use INPUT_PULLUP mode for GPIO pin. Only applicable if the board uses pull-up resistors on the pin")
 					}
-					.tint(.accentColor)
 				}
 				Section(header: Text("Update Interval")) {
 					UpdateIntervalPicker(

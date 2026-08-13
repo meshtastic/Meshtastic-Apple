@@ -40,7 +40,6 @@ struct TelemetryConfig: View {
 						Label("Broadcast Device Metrics", systemImage: "wifi")
 						Text("Enable broadcasting device metrics to the mesh network. When disabled, metrics are only sent to connected clients.")
 					}
-					.tint(.accentColor)
 					
 					if deviceTelemetryEnabled {
 						UpdateIntervalPicker(
@@ -76,7 +75,6 @@ struct TelemetryConfig: View {
 				Toggle(isOn: $environmentMeasurementEnabled) {
 					Label("Environment Metrics Enabled", systemImage: "chart.xyaxis.line")
 				}
-				.tint(.accentColor)
 				
 				if environmentMeasurementEnabled {
 					UpdateIntervalPicker(
@@ -93,19 +91,16 @@ struct TelemetryConfig: View {
 					Toggle(isOn: $environmentScreenEnabled) {
 						Label("Show on device screen", systemImage: "display")
 					}
-					.tint(.accentColor)
 					
 					Toggle(isOn: $environmentDisplayFahrenheit) {
 						Label("Display Fahrenheit", systemImage: "thermometer")
 					}
-					.tint(.accentColor)
 				}
 			}
 			Section(header: Text("Air Quality Sensor Options")) {
 				Toggle(isOn: $airQualityEnabled) {
 					Label("Air Quality Metrics Enabled", systemImage: "aqi.medium")
 				}
-				.tint(.accentColor)
 
 				if airQualityEnabled {
 					UpdateIntervalPicker(
@@ -124,7 +119,6 @@ struct TelemetryConfig: View {
 				Toggle(isOn: $powerMeasurementEnabled) {
 					Label("Enabled", systemImage: "bolt")
 				}
-				.tint(.accentColor)
 				
 				if powerMeasurementEnabled {
 					UpdateIntervalPicker(
@@ -140,7 +134,6 @@ struct TelemetryConfig: View {
 					Toggle(isOn: $powerScreenEnabled) {
 						Label("Power Screen", systemImage: "tv")
 					}
-					.tint(.accentColor)
 				}
 			}
 		}

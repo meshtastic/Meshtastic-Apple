@@ -47,6 +47,18 @@ enum MarketingCapture {
 		argValue("--marketing-appearance")?.lowercased() == "dark" ? "dark" : "light"
 	}
 
+	/// DEBUG-only event presentation fixture. Launch with
+	/// `--event-firmware-preview FAB` to inspect the real connected UI without a radio.
+	static func simulateEventFirmwareIfNeeded(_ accessoryManager: AccessoryManager) {
+		guard let key = argValue("--event-firmware-preview"),
+			  let edition = FirmwareEditions(editionKey: key.uppercased()) else {
+			return
+		}
+		simulateConnectedNode(accessoryManager)
+		accessoryManager.firmwareEdition = edition
+		accessoryManager.activeConnection?.device.firmwareVersion = previewFirmwareVersion(for: edition)
+	}
+
 	/// Entry point, called once from `ContentView.task`. No-op unless `--marketing-capture` is set.
 	/// Assumes the marketing data seed has already run in `MeshtasticAppleApp.init`.
 	static func runIfNeeded(router: Router, accessoryManager: AccessoryManager) async {
@@ -146,6 +158,17 @@ enum MarketingCapture {
 		accessoryManager.activeConnection = (device, MarketingStubConnection())
 		accessoryManager.activeDeviceNum = baseNodeNum
 		accessoryManager.isConnected = true
+	}
+
+	private static func previewFirmwareVersion(for edition: FirmwareEditions) -> String {
+		switch edition {
+		case .fab:
+			return "2.7.27.d250d89"
+		case .defcon:
+			return "2.8.0.b00d76f"
+		default:
+			return "2.7.26.preview"
+		}
 	}
 
 	// MARK: Window snapshot + output

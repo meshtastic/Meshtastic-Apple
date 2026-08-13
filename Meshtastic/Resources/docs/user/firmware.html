@@ -80,15 +80,11 @@
 </table>
 <p>Select the update channel in <strong>Settings → App Settings → Firmware Channel</strong>.</p>
 <h2>Event Firmware</h2>
-<p>Some radios ship with special <strong>event firmware</strong> for gatherings like DEF CON, Open Sauce, Hamvention, or Burning Man. When you connect to a device running event firmware, the <strong>Connect</strong> screen shows an event badge with the event's name and a welcome message, tinted in the event's accent color.</p>
-<p>Tap the badge to open the <strong>event info sheet</strong>, which shows the event's location, dates, useful links, and the event firmware build. From there you can:</p>
-<ul>
-<li>Start a <strong>firmware update</strong> for the connected radio.</li>
-<li>Toggle <strong>Use Event Theme</strong> to turn the ambient accent wash (and event fonts, where available) on or off. Turning it off keeps the event badge visible so you can re-enable it later.</li>
-</ul>
-<p>New-node notifications are automatically muted while you're connected to event firmware (events are busy — many nodes appear at once) and restored when you return to standard firmware.</p>
-<p><strong>After the event:</strong> once an event's end date has passed, the Connect screen shows a reminder to return to standard Meshtastic firmware. Tap it to open the firmware update flow. The reminder clears automatically once the device is back on standard firmware.</p>
-<p>Event details are fetched from Meshtastic's servers with an offline fallback, so a newly announced event can appear without an app update.</p>
+<p>Some radios ship with special <strong>event firmware</strong> for gatherings like DEF CON, FAB, Open Sauce, Hamvention, or Burning Man. When you connect to a device running event firmware, the Meshtastic logo in the navigation bar changes to the event artwork. The Connect screen also shows the event's human-readable name in the firmware section.</p>
+<p>Tap the event artwork to open the <strong>event info sheet</strong>, which shows the event's location, dates, useful links, and event firmware version. <strong>Use Event Theme</strong> applies event highlight colors to interactive controls and event fonts inside this dedicated surface. Standard navigation backgrounds remain unchanged.</p>
+<p>If new-node notifications are enabled, the app temporarily mutes them while you're connected to event firmware (events are busy — many nodes appear at once). It restores them when you return to standard firmware. A notification preference you had already turned off stays off.</p>
+<p>Event details are fetched from Meshtastic's servers with a persistent offline fallback, so a newly announced event can appear without an app update. Hosted artwork and links are restricted to HTTPS, and invalid content falls back to bundled artwork or the standard Meshtastic logo.</p>
+<p>The metadata feed is informational. The app does not download or install firmware packages from event metadata; updates continue to use the app's verified firmware workflow.</p>
 <h2>Troubleshooting</h2>
 <p><strong>Update fails mid-way</strong></p>
 <ul>
