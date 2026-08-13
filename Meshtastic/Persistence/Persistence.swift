@@ -330,6 +330,8 @@ class PersistenceController {
 				if modelType == DeviceHardwareTagEntity.self || modelType == DeviceHardwareImageEntity.self {
 					continue // already deleted above
 				}
+				// This is the full app-data reset, so global rebuildable caches such as
+				// EventFirmwareEntity are intentionally removed. Per-device clears preserve them.
 				try container.mainContext.delete(model: modelType)
 				try container.mainContext.save()
 			}

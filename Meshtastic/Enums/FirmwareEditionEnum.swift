@@ -90,6 +90,21 @@ enum FirmwareEditions: Int, CaseIterable, Identifiable {
 		}
 	}
 
+	/// Edition artwork shipped in the asset catalog for offline fallback. Editions without
+	/// bundled artwork fall back to the standard Meshtastic logo.
+	var bundledIconAssetName: String? {
+		switch self {
+		case .hamvention:
+			return "EventFirmwareHAMVENTION"
+		case .defcon:
+			return "EventFirmwareDEFCON"
+		case .fab:
+			return "EventFirmwareFAB"
+		default:
+			return nil
+		}
+	}
+
 	/// Initialize from the protobuf FirmwareEdition enum
 	init(from protoEdition: FirmwareEdition) {
 		self = FirmwareEditions(rawValue: protoEdition.rawValue) ?? .vanilla
