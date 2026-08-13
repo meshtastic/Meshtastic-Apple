@@ -70,6 +70,7 @@ enum MeshShareSnapshotBuilder {
 	static func refresh(nodeNum: Int64, context: ModelContext) {
 		guard let node = getNodeInfo(id: nodeNum, context: context) else {
 			Logger.services.error("Could not refresh Messages sharing snapshot: recent radio was not found.")
+			clearPreviousSnapshotIfNeeded(attemptedNodeNum: nodeNum)
 			return
 		}
 		do {
@@ -77,6 +78,31 @@ enum MeshShareSnapshotBuilder {
 			Logger.services.info("Updated Messages sharing snapshot for the recently connected radio.")
 		} catch {
 			Logger.services.error("Could not refresh Messages sharing snapshot: \(error.localizedDescription, privacy: .public)")
+			clearPreviousSnapshotIfNeeded(attemptedNodeNum: nodeNum)
+		}
+	}
+
+	static func shouldClearExistingSnapshot(existingNodeNum: UInt32?, attemptedNodeNum: Int64) -> Bool {
+		guard let existingNodeNum else {
+			return false
+		}
+		return Int64(existingNodeNum) != attemptedNodeNum
+	}
+
+	@MainActor
+	private static func clearPreviousSnapshotIfNeeded(attemptedNodeNum: Int64) {
+		let existingNodeNum = MeshShareStore.load()?.radioNodeNum
+		guard shouldClearExistingSnapshot(
+			existingNodeNum: existingNodeNum,
+			attemptedNodeNum: attemptedNodeNum
+		) else {
+			return
+		}
+		do {
+			try MeshShareStore.delete()
+			Logger.services.info("Cleared a Messages sharing snapshot from a different radio.")
+		} catch {
+			Logger.services.error("Could not clear the previous Messages sharing snapshot: \(error.localizedDescription, privacy: .public)")
 		}
 	}
 

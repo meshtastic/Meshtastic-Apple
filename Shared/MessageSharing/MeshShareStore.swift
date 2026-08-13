@@ -73,6 +73,13 @@ enum MeshShareStore {
 		return snapshot
 	}
 
+	static func delete() throws {
+		let status = SecItemDelete(query as CFDictionary)
+		guard status == errSecSuccess || status == errSecItemNotFound else {
+			throw StoreError.keychain(status)
+		}
+	}
+
 	private static var query: [String: Any] {
 		[
 			kSecClass as String: kSecClassGenericPassword,
