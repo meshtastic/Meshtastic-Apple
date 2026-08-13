@@ -70,6 +70,8 @@ No packets for 2s → save() fires
 }
 </code></pre>
 <p>Use <code>@Query</code> for data that drives the view. Use <code>context.insert(_:)</code> / <code>context.delete(_:)</code> for mutations. Mutations on the main context are safe on the main actor.</p>
+<h3>Snapshot liveness</h3>
+<p>Views that intentionally keep a throttled <code>@State</code> snapshot instead of a live <code>@Query</code> must treat the snapshot as invalid after a node-database reset or a context teardown. Before reading persisted properties from a <code>NodeInfoEntity</code> held in such a snapshot, require both <code>modelContext != nil</code> and <code>!isDeleted</code>. <code>NodeInfoEntity.adminPickerOrder(_:)</code> applies this rule for the Settings node picker, so deleted or detached nodes cannot be selected or rendered from a stale snapshot.</p>
 <h2>Background Writes</h2>
 <p>For writes triggered by incoming radio packets (off the main thread), use the <code>MeshPackets</code> <code>@ModelActor</code>:</p>
 <pre><code class="language-swift">let actor = MeshPackets(modelContainer: PersistenceController.shared.container)
@@ -108,7 +110,7 @@ final class NodeInfoEntity {
 </tr>
 <tr>
 <td><code>TelemetryEntity</code></td>
-<td>Device/environment sensor data</td>
+<td>Device, environment, power, air-quality (PM), and local-stats sensor data, discriminated by <code>metricsType</code></td>
 </tr>
 <tr>
 <td><code>TraceRouteEntity</code></td>
@@ -118,10 +120,37 @@ final class NodeInfoEntity {
 <td><code>WaypointEntity</code></td>
 <td>A shared map waypoint</td>
 </tr>
+<tr>
+<td><code>EventFirmwareEntity</code></td>
+<td>Cached off-device event-firmware branding/lifecycle metadata</td>
+</tr>
 </tbody>
 </table>
+<h3><code>EventFirmwareEntity</code> — off-device event branding cache</h3>
+<p><code>EventFirmwareEntity</code> is a <strong>runtime cache</strong>, not user data. A device only reports <em>which</em>
+event edition it runs via the <code>MyNodeInfo.firmwareEdition</code> proto enum (mapped to the
+<code>FirmwareEditions</code> Swift enum); the display data for each edition — name, welcome message,
+dates, IANA time zone, accent color, links, theme, and the event's own firmware build — lives
+off-device at <code>https://api.meshtastic.org/resource/eventFirmware</code> (version 2). <code>MeshtasticAPI</code>
+seeds the cache from the bundled <code>event_firmware.json</code> at launch (offline-first) and then
+refreshes it from the live endpoint in the background. The <code>edition</code> proto-enum name (e.g.
+<code>&quot;DEFCON&quot;</code>) is the unique join key against the connected device's reported edition. Because it
+is a rebuildable cache, a failed/empty refresh is a <strong>no-op</strong> that leaves existing rows intact
+(it never wipes the cache). Device-switch clears preserve these global rows, while a full
+app-data reset removes them so the bundled seed can rebuild the cache.</p>
+<p>Theme colors are stored individually as <code>themePrimaryColor</code>, <code>themeSecondaryColor</code>, and
+<code>themeAccentColor</code>, with the authored palette in <code>themePalette</code>. Executable firmware URLs are
+not stored in this display cache; event OTA uses a separate signed artifact contract. The model
+previously had an experimental <code>firmwareZipUrl</code> field before V1 shipped; it was removed while
+the schema was still unreleased. The model remains in the unreleased <strong>V1</strong> schema, so these
+changes required no new <code>VersionedSchema</code>/<code>MigrationStage</code> (see below).</p>
 <h2>Schema Migrations</h2>
 <p>When you add, rename, or remove properties on a <code>@Model</code> type, you must provide a migration. Schema files live in <code>Meshtastic/Model/Schema/</code>.</p>
+<div class="tips-callout"><strong>Note — V1 is unreleased.</strong> While <code>MeshtasticSchemaV1</code> remains the initial, unshipped version, additive <code>@Model</code> changes go <strong>directly into V1</strong> rather than a new versioned schema + stage (see the comment in <code>MeshtasticMigrationPlan.swift</code>). For example, the air-quality particulate-matter fields on <code>TelemetryEntity</code> (<code>pm10/25/100Standard</code>, <code>pm10/25/100Environmental</code>) were added in place, as were <code>SecurityConfigEntity.packetSignaturePolicy</code> and <code>DeviceMetadataEntity.hasXeddsa</code> for the packet authenticity policy. Start adding <code>VersionedSchema</code> versions and migration stages only once V1 has shipped.</div>
+<p>Give an added property a default that matches what an absent value means on the wire, so a row
+written before the property existed and a device that never reported it agree. <code>packetSignaturePolicy</code>
+defaults to <code>0</code> because <code>PACKET_SIGNATURE_POLICY_COMPATIBLE</code> is the protobuf zero value, so an
+unconfigured row is not silently treated as running a stricter receive policy than the radio is.</p>
 <h3>Adding a New Schema Version</h3>
 <ol>
 <li>Create <code>Meshtastic/Model/Schema/MeshtasticSchemaV2.swift</code> with the updated models:</li>
@@ -156,6 +185,29 @@ static let migrateV1toV2 = MigrationStage.custom(
 <li>Update <code>MeshtasticSchema.current</code> to point to the new version.</li>
 </ol>
 <div class="warning-callout"><strong>Warning — Never delete a <code>VersionedSchema</code>.</strong> Migration history must be preserved or the migration plan will fail on devices that skipped intermediate versions.</div>
+<h3>Deprecated Properties</h3>
+<p>When a proto field is deprecated upstream and the app stops using it, <strong>do not remove the corresponding <code>@Model</code> property</strong> — deleting a stored property is a schema change that would require a migration, and while V1 is unreleased there is nowhere to migrate from. Instead, retain the property as-is so:</p>
+<ul>
+<li>the SwiftData schema is unchanged, and</li>
+<li>any values already persisted on-device remain readable.</li>
+</ul>
+<p>The field simply stops being surfaced in the UI, read, or actively written by app code. Mark it with a doc comment noting the deprecation and the tracking issue. Current examples:</p>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Property</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CannedMessageConfigEntity</code></td>
+<td><code>enabled</code></td>
+<td>#2021 — no successor; retained for schema/value compatibility, no longer read or written</td>
+</tr>
+</tbody>
+</table>
 <h2>Query Helpers</h2>
 <p><code>QuerySwiftData.swift</code> contains helper functions for common fetches:</p>
 <pre><code class="language-swift">let node = getNodeInfo(id: nodeNum, context: context)
@@ -171,7 +223,7 @@ static let migrateV1toV2 = MigrationStage.custom(
 <tr>
 <th>Relationship</th>
 <th>Cap</th>
-<th>Behaviour</th>
+<th>Behavior</th>
 </tr>
 </thead>
 <tbody>

@@ -1,7 +1,28 @@
 import Combine
+import MeshtasticProtobufs
 import OSLog
 @preconcurrency import SwiftData
 import SwiftUI
+
+/// A contact parsed from a shared contact URL, waiting for the user to
+/// confirm the import. The original base64url payload is kept so the
+/// encoded `manually_verified` bit reaches the radio untouched.
+struct PendingContact: Identifiable {
+	let id = UUID()
+	let contact: SharedContact
+	let base64UrlString: String
+}
+
+extension NSNotification.Name {
+	/// Posted whenever message read-state changes anywhere (new message saved,
+	/// messages marked read in a list, Siri/CarPlay read-aloud). Observers that
+	/// display unread state (badge counts, the CarPlay list templates) refresh on
+	/// it — before this existed the CarPlay templates only refreshed on
+	/// connect/disconnect and went stale for the whole drive.
+	/// (NSNotification.Name, not Notification.Name — the app defines its own
+	/// `Notification` model type which shadows Foundation's in some files.)
+	static let meshMessagesDidChange = NSNotification.Name("MeshMessagesDidChange")
+}
 
 class AppState: ObservableObject {
 
@@ -12,6 +33,10 @@ class AppState: ObservableObject {
 	/// refetch, so they drop objects cached from the previous node's database. Applied
 	/// as `.id(appState.databaseResetID)` on the root content view.
 	@Published var databaseResetID = UUID()
+	/// A contact parsed from a meshtastic.org/v/# URL (QR code, link, or NFC tag)
+	/// awaiting user confirmation. Presented as a sheet from MeshtasticApp, the
+	/// same pattern the channel-link import uses.
+	@Published var pendingContactToAdd: PendingContact?
 
 	var totalUnreadMessages: Int {
 		unreadChannelMessages + unreadDirectMessages

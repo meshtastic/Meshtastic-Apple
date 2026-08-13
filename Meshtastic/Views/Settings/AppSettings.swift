@@ -51,14 +51,12 @@ struct AppSettings: View {
 					Toggle(isOn: $enableAdministration) {
 						Label("Administration", systemImage: "gearshape.2")
 					}
-					.tint(.accentColor)
 					Text("PKI based node administration, requires firmware version 2.5+")
 						.foregroundStyle(.secondary)
 						.font(.caption)
 					Toggle(isOn: $usageDataAndCrashReporting) {
 						Label("Usage and Crash Data", systemImage: "pencil.and.list.clipboard")
 					}
-					.tint(.accentColor)
 					Text("Provide anonymous usage statistics and crash reports.")
 						.foregroundStyle(.secondary)
 						.font(.caption)
@@ -66,7 +64,6 @@ struct AppSettings: View {
 						Toggle(isOn: autoconnectBinding) {
 							Label("Automatically Connect", systemImage: "app.connected.to.app.below.fill")
 						}
-						.tint(.accentColor)
 					}
 #if targetEnvironment(macCatalyst)
 					// App Icon Picker is disabled on macOS Catalyst
@@ -133,7 +130,6 @@ struct AppSettings: View {
 						Toggle(isOn: $environmentEnableWeatherKit) {
 							Label("Weather Conditions", systemImage: "cloud.sun")
 						}
-						.tint(.accentColor)
 					}
 				}
 				Section(header: Text("App Data")) {
@@ -165,7 +161,6 @@ struct AppSettings: View {
 						purgeStaleNodeDays = newValue ? purgeStaleNodeDays : 0
 						Logger.services.info("ℹ️ Purge Stale Nodes changed to \(purgeStaleNodeDays)")
 					}
-					.tint(.accentColor)
 
 					.listRowSeparator(purgeStaleNodes ? .hidden : .visible)
 					if purgeStaleNodes {
@@ -177,6 +172,8 @@ struct AppSettings: View {
 							} maximumValueLabel: {
 								Text("180")
 							}
+							.accessibilityLabel(String(localized: "Days before purging stale nodes", comment: "VoiceOver label for the purge stale nodes days slider"))
+							.accessibilityValue(String(localized: "\(Int(purgeStaleNodeDays)) days", comment: "VoiceOver value announcing the number of days before purging stale nodes"))
 						}
 						Text("Favorited and ignored nodes are always retained. Other nodes are cleared from the app database on the schedule set by the user. (Nodes with PKC keys are always retained for at least 7 days.) This feature only purges nodes from the app that are not stored in the device node database.")
 							.foregroundStyle(.secondary)
@@ -211,8 +208,12 @@ struct AppSettings: View {
 								clearNotifications()
 								// Repopulate device catalog immediately — no reconnect happens after a full reset.
 								try? await MeshtasticAPI.shared.refreshBundledDevicesData()
-								Task.detached(priority: .utility) {
-									try? await MeshtasticAPI.shared.refreshDevicesAPIData()
+								// Images and msh.to links are network-backed, so they run in their own task
+								// rather than blocking the reset from completing. `Task` rather than
+								// `Task.detached` per the repo concurrency guideline; the pass handles its
+								// own cancellation.
+								Task(priority: .utility) {
+									await MeshtasticAPI.shared.refreshDevicesPreferringAPI()
 								}
 							}
 						}
@@ -228,7 +229,6 @@ struct AppSettings: View {
 					Toggle(isOn: $participateInDistributedTranslations) {
 						Label("Participate in Distributed Translations", systemImage: "globe")
 					}
-					.tint(.accentColor)
 					Text("Upload on-device translated documentation to help improve translations for the community. Translated docs are shared anonymously so other users get instant translations without needing on-device models.")
 						.foregroundStyle(.secondary)
 						.font(idiom == .phone ? .caption : .callout)

@@ -25,6 +25,20 @@ private struct UserMessageTimelineCursor: Comparable {
 private struct UserMessageListChangeToken: Equatable {
 	let latest: UserMessageTimelineCursor?
 	let count: Int
+	// Tallies of outgoing messages whose ACK has resolved, kept as separate delivered/errored
+	// counts rather than a single sum: an errored→delivered transition leaves the sum unchanged
+	// (delivered +1, errored −1) but moves both tallies, so the token still changes and the list
+	// reloads. Together with `latest`/`count` these cover every ACK transition the app produces:
+	// in-place mutations only ever move a message *into* delivered/errored (a tally changes), and
+	// the sole route back to "waiting" is RetryButton, which deletes the message and inserts a
+	// fresh one — moving `latest`/`count`. (There is deliberately no `max(ackTimestamp)` signal:
+	// `ackTimestamp` is stamped from the remote `packet.rxTime`, so it isn't reliably monotonic
+	// and would add an unindexed sort to the 5s poll for a net-zero case that can't occur.) An
+	// incoming ACK changes neither `latest` nor `count`, so without these tallies the poll-based
+	// refresh would never reload and the row would stay on "Waiting to be acknowledged" until the
+	// view is rebuilt.
+	let deliveredAckCount: Int
+	let erroredAckCount: Int
 }
 
 struct UserMessageList: View {
@@ -39,6 +53,10 @@ struct UserMessageList: View {
 	@AppStorage("preferredPeripheralNum") private var preferredPeripheralNum = -1
 	@State private var messageLimit: Int = 100
 	@State private var messages: [MessageEntity] = []
+	@State private var searchQuery = ""
+	@State private var searchMatches: [MessageSearchMatch] = []
+	@State private var currentMatchIndex = -1
+	@State private var searchActor: MessageSearchActor?
 	@State private var previousByID: [Int64: MessageEntity] = [:]
 	@State private var repliesByID: [Int64: MessageEntity] = [:]
 	@State private var tapbacksByReplyID: [Int64: [MessageEntity]] = [:]
@@ -79,6 +97,8 @@ struct UserMessageList: View {
 			   let connectedUser = connectedNode.user {
 				appState.unreadDirectMessages = connectedUser.unreadMessages(context: context, skipLastMessageCheck: true) // skipLastMessageCheck=true because we don't update lastMessage on our own connected node
 			}
+			// Refresh other unread surfaces (CarPlay templates) too.
+			NotificationCenter.default.post(name: .meshMessagesDidChange, object: nil)
 		} catch {
 			Logger.data.error("Failed to read direct messages: \(error.localizedDescription, privacy: .public)")
 		}
@@ -128,10 +148,43 @@ struct UserMessageList: View {
 
 	private func fetchMessageChangeToken(latestMessage: MessageEntity? = nil) throws -> UserMessageListChangeToken {
 		let latest = try latestMessage ?? fetchMessages(limit: 1).first
+		let acks = try Self.resolvedAckCounts(in: context, toUserNum: user.num)
 		return UserMessageListChangeToken(
 			latest: latest.map(cursor(for:)),
-			count: try fetchIncomingMessageCount() + fetchOutgoingMessageCount()
+			count: try fetchIncomingMessageCount() + fetchOutgoingMessageCount(),
+			deliveredAckCount: acks.delivered,
+			erroredAckCount: acks.errored
 		)
+	}
+
+	/// Resolved-ACK tallies for this conversation's outgoing messages: delivered (`receivedACK`)
+	/// and failed (`ackError != 0`) counted separately. A message is shown as "Waiting to be
+	/// acknowledged" until it resolves; folding both tallies into the change token makes the poll
+	/// reload on any ACK state change. Keeping them distinct means errored→delivered (which keeps
+	/// the sum constant) still moves a tally. Only outgoing messages carry ACK state, so the
+	/// incoming side is excluded. Exposed `static` so the regression tests exercise these exact
+	/// predicates.
+	///
+	/// Two single-term `fetchCount`s rather than one `||` predicate: a compound `||` (and an extra
+	/// `&&` term such as an `isEmoji` filter) exceeds the `#Predicate` macro's type-check budget.
+	/// Not filtering `isEmoji` only means an acked tapback triggers one extra benign reload.
+	static func resolvedAckCounts(in context: ModelContext, toUserNum userNum: Int64) throws -> (delivered: Int, errored: Int) {
+		let detectionSensorPortNum: Int32 = 10
+		let deliveredDescriptor = FetchDescriptor<MessageEntity>(
+			predicate: #Predicate<MessageEntity> {
+				$0.toUser?.num == userNum
+				&& $0.admin == false && $0.portNum != detectionSensorPortNum
+				&& $0.receivedACK
+			}
+		)
+		let erroredDescriptor = FetchDescriptor<MessageEntity>(
+			predicate: #Predicate<MessageEntity> {
+				$0.toUser?.num == userNum
+				&& $0.admin == false && $0.portNum != detectionSensorPortNum
+				&& $0.ackError != 0
+			}
+		)
+		return (try context.fetchCount(deliveredDescriptor), try context.fetchCount(erroredDescriptor))
 	}
 
 	private func fetchIncomingMessageCount() throws -> Int {
@@ -359,6 +412,7 @@ struct UserMessageList: View {
 
 	var body: some View {
 		VStack {
+			if !searchQuery.isEmpty { searchBar }
 			ScrollViewReader { scrollView in
 				ScrollView {
 					LazyVStack {
@@ -440,6 +494,7 @@ struct UserMessageList: View {
 				.onChange(of: appState.unreadDirectMessages) {
 					refreshIfNeeded()
 				}
+				.onChange(of: messageToHighlight) { scrollToHighlighted(scrollView) }
 				.onChange(of: messageFieldFocused) {
 					if messageFieldFocused {
 						DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
@@ -477,6 +532,9 @@ struct UserMessageList: View {
 			.fixedSize(horizontal: false, vertical: true)
 		}
 		.navigationBarTitleDisplayMode(.inline)
+		.searchable(text: $searchQuery, placement: .navigationBarDrawer(displayMode: .always), prompt: "Find in conversation")
+		.autocorrectionDisabled()
+		.task(id: searchQuery) { await debouncedSearch() }
 		.toolbar {
 			if !user.keyMatch {
 				ToolbarItem(placement: .bottomBar) {
@@ -513,5 +571,106 @@ struct UserMessageList: View {
 				}
 			}
 		}
+	}
+}
+
+// MARK: - Find in conversation
+// Kept in an extension so the search/navigation helpers don't inflate the primary
+// struct body (SwiftLint type_body_length).
+private extension UserMessageList {
+	@ViewBuilder var searchBar: some View {
+		MessageSearchBar(
+			matchCount: searchMatches.count,
+			currentIndex: currentMatchIndex,
+			onPrevious: goToPreviousMatch,
+			onNext: goToNextMatch
+		)
+	}
+
+	/// Centers the currently-highlighted message once the list has had a moment to render
+	/// any newly-loaded rows (e.g. after the search window expanded).
+	func scrollToHighlighted(_ proxy: ScrollViewProxy) {
+		guard messageToHighlight > 0 else { return }
+		DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+			withAnimation { proxy.scrollTo(messageToHighlight, anchor: .center) }
+		}
+	}
+
+	/// Debounces search so a full-store scan doesn't run on every keystroke. Cancelled and
+	/// restarted by `.task(id: searchQuery)` whenever the query changes.
+	@MainActor
+	func debouncedSearch() async {
+		// Clearing the field should empty the results immediately, not after the debounce.
+		guard !searchQuery.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+			await runSearch()
+			return
+		}
+		try? await Task.sleep(for: .milliseconds(250))
+		guard !Task.isCancelled else { return }
+		await runSearch()
+	}
+
+	@MainActor
+	func runSearch() async {
+		let query = searchQuery
+		guard !query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+			searchMatches = []
+			currentMatchIndex = -1
+			messageToHighlight = -1
+			return
+		}
+		let actor = searchActor ?? MessageSearchActor(modelContainer: context.container)
+		searchActor = actor
+		do {
+			let matches = try await actor.directMatches(userNum: user.num, query: query)
+			// Drop stale results if the query moved on while the background fetch ran.
+			guard query == searchQuery else { return }
+			searchMatches = matches
+			if matches.isEmpty {
+				currentMatchIndex = -1
+				messageToHighlight = -1
+			} else {
+				// Focus the most recent match first.
+				focusMatch(at: matches.count - 1)
+			}
+		} catch {
+			Logger.data.error("Failed to search direct messages: \(error.localizedDescription, privacy: .public)")
+		}
+	}
+
+	@MainActor
+	func focusMatch(at index: Int) {
+		guard searchMatches.indices.contains(index) else { return }
+		currentMatchIndex = index
+		let match = searchMatches[index]
+		ensureLoaded(match: match)
+		withAnimation { messageToHighlight = match.messageId }
+	}
+
+	/// Expand the (newest-first) window until the match is loaded, so it can be scrolled to.
+	@MainActor
+	func ensureLoaded(match: MessageSearchMatch) {
+		if messages.contains(where: { $0.messageId == match.messageId }) { return }
+		do {
+			let needed = try MessageSearch.directNewerCount(in: context, userNum: user.num, than: match) + 1
+			if needed > messageLimit {
+				messageLimit = ((needed / 100) + 1) * 100
+			}
+			// The match isn't in the current window; reload so it's present to scroll to,
+			// whether or not the window needed expanding.
+			loadMessages(markReadAfterLoad: false)
+		} catch {
+			Logger.data.error("Failed to expand direct-message window for search: \(error.localizedDescription, privacy: .public)")
+		}
+	}
+
+	func goToNextMatch() {
+		guard !searchMatches.isEmpty else { return }
+		focusMatch(at: currentMatchIndex + 1 >= searchMatches.count ? 0 : currentMatchIndex + 1)
+	}
+
+	func goToPreviousMatch() {
+		guard !searchMatches.isEmpty else { return }
+		focusMatch(at: currentMatchIndex - 1 < 0 ? searchMatches.count - 1 : currentMatchIndex - 1)
 	}
 }

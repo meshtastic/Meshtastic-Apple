@@ -36,7 +36,7 @@ struct CreateChannelsTip: Tip {
 	   Text("Manage Channels")
    }
    var message: Text? {
-	   Text("The primary channel handles broadcast traffic. Add secondary channels for separate messaging groups, each secured by their own key. [Learn more](https://meshtastic.org/docs/configuration/tips/)")
+	   Text("The primary channel handles broadcast traffic. The location icon marks which channel sends your position; cloud icons show MQTT uplink and downlink. Add secondary channels for separate messaging groups. [Learn more](https://meshtastic.org/docs/configuration/tips/)")
    }
    var image: Image? {
 	   Image(systemName: "lock.shield")

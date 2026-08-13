@@ -17,6 +17,18 @@ struct DiscoveryHistoryView: View {
 
 	var body: some View {
 		List {
+			Section {
+				NavigationLink {
+					DiscoveryBeaconsView()
+				} label: {
+					VStack(alignment: .leading, spacing: 2) {
+						Label("Nearby Meshes", systemImage: "dot.radiowaves.left.and.right")
+						Text("Meshes heard advertising themselves via beacons.")
+							.font(.caption)
+							.foregroundStyle(.secondary)
+					}
+				}
+			}
 			if sessions.isEmpty {
 				ContentUnavailableView(
 					"No Discovery Sessions",

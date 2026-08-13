@@ -14,6 +14,9 @@ final class NodeInfoEntity {
 	var channel: Int32 = 0
 	var favorite: Bool = false
 	var firstHeard: Date?
+	/// True when this node signs its broadcast packets via XEdDSA and the radio has verified at least one
+	/// (NodeInfo.has_xeddsa_signed, field 14). Observed automatic trust — not a configurable setting.
+	var hasXeddsaSigned: Bool = false
 	var hopsAway: Int32 = 0
 	var id: Int64 = 0
 	var ignored: Bool = false
@@ -23,6 +26,9 @@ final class NodeInfoEntity {
 	var nodeStatus: String?
 	@Attribute(.unique) var num: Int64 = 0
 	var peripheralId: String?
+	/// User-editable per-channel power labels (e.g. "Solar", "Battery", "Load"), indexed 0-2.
+	/// A missing/empty entry falls back to the generic "Channel N" in the UI. Per meshtastic/design#53.
+	var powerChannelLabels: [String] = []
 	var rssi: Int32 = 0
 	var sessionExpiration: Date?
 	var sessionPasskey: Data?
@@ -56,6 +62,9 @@ final class NodeInfoEntity {
 
 	@Relationship(deleteRule: .nullify, inverse: \LoRaConfigEntity.loRaConfigNode)
 	var loRaConfig: LoRaConfigEntity?
+
+	@Relationship(deleteRule: .cascade, inverse: \MeshBeaconConfigEntity.meshBeaconConfigNode)
+	var meshBeaconConfig: MeshBeaconConfigEntity?
 
 	@Relationship(deleteRule: .nullify, inverse: \DeviceMetadataEntity.metadataNode)
 	var metadata: DeviceMetadataEntity?
@@ -142,8 +151,10 @@ extension NodeInfoEntity {
 	/// (PR #1668).
 	///
 	/// `nodes` is expected to already be sorted by `lastHeard` descending — as the
-	/// Settings `@Query` provides — so the partition yields favorites (most-recent
-	/// first) ahead of non-favorites (most-recent first). It's a `Bool`-keyed
+	/// Settings snapshot fetch provides — so the partition yields favorites (most-recent
+	/// first) ahead of non-favorites (most-recent first). Deleted or detached models are
+	/// screened out before their persisted properties are read because a snapshot can
+	/// outlive a node-database reset. It's a `Bool`-keyed
 	/// partition rather than a SwiftData `@Query` sort because `favorite` is a
 	/// `Bool`, and `Bool` is not `Comparable`, so it cannot be a `SortDescriptor`
 	/// key on a non-`NSObject` `@Model`.
@@ -152,6 +163,66 @@ extension NodeInfoEntity {
 	/// it is cheap to call per render, and deterministic across re-renders as long as
 	/// the input order is stable.
 	static func adminPickerOrder(_ nodes: [NodeInfoEntity]) -> [NodeInfoEntity] {
-		nodes.filter(\.favorite) + nodes.filter { !$0.favorite }
+		let liveNodes = nodes.filter { $0.modelContext != nil && !$0.isDeleted }
+		return liveNodes.filter(\.favorite) + liveNodes.filter { !$0.favorite }
+	}
+
+	/// The status message to render on read-only surfaces (node list card and node
+	/// details). Prefers the live broadcast value (`nodeStatus`, NODE_STATUS_APP) and
+	/// falls back to the admin-configured value (`statusMessageConfig`) so the local
+	/// node — which knows its config before it re-broadcasts — still shows its own status.
+	///
+	/// Each candidate is whitespace-trimmed *before* the emptiness test so a whitespace-only
+	/// broadcast doesn't suppress an otherwise-configured value. Returns `nil` when both are
+	/// empty/unset/whitespace-only so callers omit the row entirely (no icon, no label, no
+	/// placeholder — per the design spec). The value is untrusted free text from the mesh:
+	/// surface it verbatim and never as markup.
+	///
+	/// Safe to read directly in the hot list-row path: `StatusMessageConfigEntity` is only
+	/// ever inserted/updated and (via `.nullify`) is never deleted independently of its node,
+	/// so it can't fault underneath the row the way pruned `PositionEntity` rows can — i.e. it
+	/// does not belong in the `NodeListRowSummary` value-snapshot, and keeping it inline lets
+	/// the row re-render reactively when `nodeStatus` changes.
+	var statusMessageDisplay: String? {
+		NodeInfoEntity.displayableStatus(nodeStatus) ?? NodeInfoEntity.displayableStatus(statusMessageConfig?.nodeStatus)
+	}
+
+	/// Trims a candidate status and returns `nil` unless it contains at least one *visible*
+	/// character. Plain `whitespacesAndNewlines` trimming isn't enough: an untrusted broadcast
+	/// can be composed entirely of zero-width / format / control characters (U+200B, U+FEFF,
+	/// U+2060, the bidi marks, …) that pass an `isEmpty` test yet render as a blank row with
+	/// just the Notes icon. Treat such all-invisible strings as empty.
+	private static func displayableStatus(_ raw: String?) -> String? {
+		guard let trimmed = raw?.trimmingCharacters(in: .whitespacesAndNewlines), !trimmed.isEmpty else {
+			return nil
+		}
+		let hasVisible = trimmed.unicodeScalars.contains { scalar in
+			switch scalar.properties.generalCategory {
+			case .control, .format, .spaceSeparator, .lineSeparator, .paragraphSeparator,
+				 .nonspacingMark, .enclosingMark:
+				return false
+			default:
+				return true
+			}
+		}
+		return hasVisible ? trimmed : nil
+	}
+
+	/// The value the status-message editor should prefill. Prefer the configured status, but when
+	/// it has no *displayable* content (blank, whitespace-only, or invisible-only — the same cases
+	/// `displayableStatus` rejects) fall back to the node's live broadcast if that one is
+	/// displayable. Without this the cards/detail can show the live broadcast while the editor
+	/// prefills an apparently-blank configured value — a user-visible mismatch. A non-displayable
+	/// configured value with no displayable live fallback normalizes to "" rather than echoing the
+	/// whitespace/invisible characters back into the field (which would show a non-zero byte count
+	/// for an apparently-empty editor). Pure + static so it can be unit-tested directly.
+	static func statusMessagePrefill(configured: String?, live: String?) -> String {
+		if let configured, displayableStatus(configured) != nil {
+			return configured
+		}
+		if let live, displayableStatus(live) != nil {
+			return live
+		}
+		return ""
 	}
 }

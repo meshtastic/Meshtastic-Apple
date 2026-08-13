@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "ios-marketing-capture": {
+      "source": "ParthJadhav/ios-marketing-capture",
+      "sourceType": "github",
+      "skillPath": "SKILL.md",
+      "computedHash": "de97c90ce514c5f730915e042aea0c0990e203dacc5a980e605458f0b48daeb6"
+    }
+  }
+}

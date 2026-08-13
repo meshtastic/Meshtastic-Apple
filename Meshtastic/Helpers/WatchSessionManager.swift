@@ -133,55 +133,7 @@ final class WatchSessionManager: NSObject, ObservableObject {
 		do {
 			let results = try context.fetch(descriptor)
 			return results.compactMap { nodeInfo -> WatchNode? in
-				guard let user = nodeInfo.user else { return nil }
-
-				let num = nodeInfo.num
-				let longName = user.longName ?? "Unknown"
-				let shortName = user.shortName ?? "?"
-				let snr: Float? = nodeInfo.snr != 0 ? nodeInfo.snr : nil
-				let lastHeard = nodeInfo.lastHeard
-
-				// Find the latest position using a targeted fetch instead of faulting the entire relationship
-				let nodeNum = nodeInfo.num
-				var posDescriptor = FetchDescriptor<PositionEntity>(
-					predicate: #Predicate<PositionEntity> { $0.nodePosition?.num == nodeNum && $0.latest == true }
-				)
-				posDescriptor.fetchLimit = 1
-				let latestPosition = try? context.fetch(posDescriptor).first
-
-				var latitude: Double?
-				var longitude: Double?
-				var altitude: Int32?
-				var lastPositionTime: Date?
-
-				if let pos = latestPosition {
-					let latI = pos.latitudeI
-					let lonI = pos.longitudeI
-					if latI != 0, lonI != 0 {
-						latitude = Double(latI) / 1e7
-						longitude = Double(lonI) / 1e7
-						altitude = pos.altitude
-						lastPositionTime = pos.time
-					}
-				}
-
-				// Only include nodes within 0.5 miles
-				guard let lat = latitude, let lon = longitude else { return nil }
-				let nodeLocation = CLLocation(latitude: lat, longitude: lon)
-				let distance = userLocation.distance(from: nodeLocation)
-				guard distance <= Self.maxDistanceMeters else { return nil }
-
-				return WatchNode(
-					num: UInt32(num),
-					longName: longName,
-					shortName: shortName,
-					latitude: latitude,
-					longitude: longitude,
-					altitude: altitude,
-					lastPositionTime: lastPositionTime,
-					lastHeard: lastHeard,
-					snr: snr
-				)
+				WatchNode.make(from: nodeInfo, userLocation: userLocation, maxDistanceMeters: Self.maxDistanceMeters)
 			}
 		} catch {
 			logger.error("Failed to fetch nodes for Watch: \(error.localizedDescription, privacy: .public)")
@@ -229,4 +181,35 @@ struct WatchNode: Codable {
 	let lastPositionTime: Date?
 	let lastHeard: Date?
 	let snr: Float?
+
+	static func make(from nodeInfo: NodeInfoEntity, userLocation: CLLocation, maxDistanceMeters: Double) -> WatchNode? {
+		// Liveness screens: this walk runs over every node with a user, often while the app is
+		// backgrounded with ingestion still churning — an entity whose row another context
+		// deleted traps in SwiftData's persisted-property accessor the moment it's read
+		// (the 2.7.17 `58e0e820` background crash). Skip anything not verifiably live.
+		guard nodeInfo.modelContext != nil, !nodeInfo.isDeleted else { return nil }
+		guard let user = nodeInfo.user, user.modelContext != nil, !user.isDeleted else { return nil }
+		guard let pos = nodeInfo.latestPosition, pos.modelContext != nil, !pos.isDeleted else { return nil }
+
+		let latI = pos.latitudeI
+		let lonI = pos.longitudeI
+		guard latI != 0, lonI != 0 else { return nil }
+
+		let latitude = Double(latI) / 1e7
+		let longitude = Double(lonI) / 1e7
+		let nodeLocation = CLLocation(latitude: latitude, longitude: longitude)
+		guard userLocation.distance(from: nodeLocation) <= maxDistanceMeters else { return nil }
+
+		return WatchNode(
+			num: UInt32(nodeInfo.num),
+			longName: user.longName ?? "Unknown",
+			shortName: user.shortName ?? "?",
+			latitude: latitude,
+			longitude: longitude,
+			altitude: pos.altitude,
+			lastPositionTime: pos.time,
+			lastHeard: nodeInfo.lastHeard,
+			snr: nodeInfo.snr != 0 ? nodeInfo.snr : nil
+		)
+	}
 }

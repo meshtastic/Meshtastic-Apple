@@ -67,6 +67,7 @@ class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificat
 	private func markCarPlayMessagesAsRead(conversationId: String) {
 		let context = PersistenceController.shared.context
 		do {
+			var readMessageIDs = [Int64]()
 			if conversationId.hasPrefix("dm-"), let nodeNum = Int64(conversationId.replacingOccurrences(of: "dm-", with: "")) {
 				let descriptor = FetchDescriptor<MessageEntity>(
 					predicate: #Predicate { message in
@@ -74,8 +75,12 @@ class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificat
 					}
 				)
 				let messages = try context.fetch(descriptor)
-				for message in messages {
+				// toUser != nil: this is a DM conversation — without the filter,
+				// reading a DM aloud also silently marked the sender's unread
+				// CHANNEL messages as read.
+				for message in messages where message.toUser != nil {
 					message.read = true
+					readMessageIDs.append(message.messageId)
 				}
 			} else if conversationId.hasPrefix("channel-"), let channelIndex = Int32(conversationId.replacingOccurrences(of: "channel-", with: "")) {
 				let descriptor = FetchDescriptor<MessageEntity>(
@@ -86,11 +91,19 @@ class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificat
 				let messages = try context.fetch(descriptor)
 				for message in messages where message.toUser == nil {
 					message.read = true
+					readMessageIDs.append(message.messageId)
 				}
 			}
 			if context.hasChanges {
 				try context.save()
 				Logger.services.info("🚗 [CarPlay] Marked messages as read for \(conversationId, privacy: .public)")
+				// Match the in-app mark-read paths: clear delivered notifications for
+				// the read messages and tell unread surfaces (app badge via
+				// MeshtasticApp's observer, CarPlay templates) to refresh — this
+				// previously left the badge and CarPlay rows stale until the app
+				// next became active.
+				LocalNotificationManager().cancelNotificationsForMessageIds(readMessageIDs)
+				NotificationCenter.default.post(name: .meshMessagesDidChange, object: nil)
 			}
 		} catch {
 			Logger.services.error("🚗 [CarPlay] Failed to mark messages as read: \(error.localizedDescription, privacy: .public)")
@@ -124,7 +137,7 @@ class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificat
 			}
 		case "messageNotification.thumbsUpAction":
 			if let channel = userInfo["channel"] as? Int32,
-			   let replyID = userInfo["messageId"] as? Int64 {
+			   let replyID = userInfo["replyMessageId"] as? Int64 ?? userInfo["messageId"] as? Int64 {
 				Task {
 					do {
 						try await AccessoryManager.shared.sendMessage(
@@ -142,7 +155,7 @@ class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificat
 			}
 		case "messageNotification.thumbsDownAction":
 			if let channel = userInfo["channel"] as? Int32,
-			   let replyID = userInfo["messageId"] as? Int64 {
+			   let replyID = userInfo["replyMessageId"] as? Int64 ?? userInfo["messageId"] as? Int64 {
 				Task {
 					do {
 						try await AccessoryManager.shared.sendMessage(
@@ -161,7 +174,7 @@ class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificat
 		case "messageNotification.replyInputAction":
 			if let userInput = (response as? UNTextInputNotificationResponse)?.userText,
 			   let channel = userInfo["channel"] as? Int32,
-			   let replyID = userInfo["messageId"] as? Int64 {
+			   let replyID = userInfo["replyMessageId"] as? Int64 ?? userInfo["messageId"] as? Int64 {
 				Task {
 					do {
 						try await AccessoryManager.shared.sendMessage(
@@ -186,7 +199,13 @@ class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificat
 		   let deepLink = userInfo["path"] as? String,
 		   let url = URL(string: deepLink) {
 			Logger.services.info("userNotificationCenter didReceiveResponse handling deeplink: \(targetValue, privacy: .public) \(deepLink, privacy: .public)")
-			router?.route(url: url)
+			if url.scheme == "meshtastic" {
+				router?.route(url: url)
+			} else if targetValue == FirmwareUpdateNotifier.flasherTarget && url.absoluteString == FirmwareUpdateNotifier.flasherPath {
+				UIApplication.shared.open(url)
+			} else {
+				Logger.services.error("Unsupported notification response URL: \(deepLink, privacy: .public)")
+			}
 		} else {
 			Logger.services.error("Failed to handle notification response: \(userInfo, privacy: .public)")
 		}

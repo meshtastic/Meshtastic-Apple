@@ -3,8 +3,46 @@
 import Foundation
 import Testing
 import MeshtasticProtobufs
+import SwiftData
 
 @testable import Meshtastic
+
+@Suite("ScanTarget")
+struct ScanTargetTests {
+
+	@Test func publicTargetIsNotCustomAndLabelsByPreset() {
+		let target = ScanTarget(preset: .longFast)
+		#expect(target.isCustomChannel == false)
+		#expect(target.label == ModemPresets.longFast.name)
+	}
+
+	@Test func emptyChannelNameIsNotCustom() {
+		let target = ScanTarget(preset: .longFast, channelName: "", channelPSK: Data())
+		#expect(target.isCustomChannel == false)
+		#expect(target.label == ModemPresets.longFast.name)
+	}
+
+	@Test func customChannelTargetLabelsWithChannel() {
+		let target = ScanTarget(preset: .shortFast, channelName: "SecretMesh", channelPSK: Data([1, 2, 3]))
+		#expect(target.isCustomChannel)
+		#expect(target.label == "\(ModemPresets.shortFast.name) · SecretMesh")
+	}
+
+	// Two beacon targets on the same preset but different channels must be distinct so their results
+	// and discovered nodes don't collide (labels differ, and Equatable sees the channel difference).
+	@Test func samePresetDifferentChannelAreDistinct() {
+		let a = ScanTarget(preset: .longFast, channelName: "MeshA", channelPSK: Data([1]))
+		let b = ScanTarget(preset: .longFast, channelName: "MeshB", channelPSK: Data([2]))
+		#expect(a != b)
+		#expect(a.label != b.label)
+	}
+
+	@Test func equalTargetsMatch() {
+		let a = ScanTarget(preset: .longFast, regionRaw: 1, channelName: "M", channelPSK: Data([9]))
+		let b = ScanTarget(preset: .longFast, regionRaw: 1, channelName: "M", channelPSK: Data([9]))
+		#expect(a == b)
+	}
+}
 
 @Suite("DiscoveryScanEngine")
 struct DiscoveryScanEngineTests {
@@ -46,6 +84,42 @@ struct DiscoveryScanEngineTests {
 		await engine.startScan()
 		let state = await engine.currentState
 		#expect(state == .idle)
+	}
+
+	/// A normal multi-preset scan changes the radio's preset, so it must stay gated on a live
+	/// connection even when the engine is fully configured with a model context.
+	@MainActor
+	@Test func normalScanStillRequiresConnectionWhenConfigured() async {
+		let engine = DiscoveryScanEngine()
+		let manager = AccessoryManager(transports: [])
+		engine.configure(accessoryManager: manager, modelContext: sharedModelContainer.mainContext)
+		#expect(!manager.isConnected)
+		engine.selectedPresets = [.longFast]
+		await engine.startScan()
+		#expect(engine.currentState == .idle, "A normal multi-preset scan must not start without a connection")
+		withExtendedLifetime(manager) {}
+	}
+
+	/// "Analyze Current Preset" (FR-028) is seeded entirely from local SwiftData and sends nothing
+	/// to the radio, so it MUST run with no radio connected. A fresh AccessoryManager reports
+	/// isConnected == false, standing in for the offline case.
+	@MainActor
+	@Test func analyzeCurrentPresetStartsAndEndsCleanlyWithoutConnection() async {
+		let engine = DiscoveryScanEngine()
+		let manager = AccessoryManager(transports: [])
+		engine.configure(accessoryManager: manager, modelContext: sharedModelContainer.mainContext)
+		#expect(!manager.isConnected)
+
+		await engine.startCurrentPresetScan()
+		// Seeded pass begins dwelling immediately — no connection required, no config change.
+		#expect(engine.currentState == .dwell)
+		#expect(engine.activePreset != nil)
+		#expect(engine.session != nil)
+
+		await engine.stopScan()
+		// Tears down cleanly back to idle without any radio calls (nothing was snapshotted).
+		#expect(engine.currentState == .idle)
+		withExtendedLifetime(manager) {}
 	}
 
 	// MARK: - State Enumeration

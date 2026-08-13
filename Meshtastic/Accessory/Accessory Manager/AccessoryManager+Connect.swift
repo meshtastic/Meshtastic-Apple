@@ -38,11 +38,34 @@ extension AccessoryManager {
 		self.activeDeviceNum = nil
 		packetsSent = 0
 		packetsReceived = 0
+		packetsAtLastIngestRecycle = 0
 		expectedNodeDBSize = nil
-	
+
 		self.allowDisconnect = true
 		self.userRequestedConnectionCancellation = false
-		
+
+		// On a first-ever BLE connection, iOS presents the pairing PIN sheet during
+		// characteristic subscription (Step 1). The user needs time to read and type a
+		// 6-digit PIN, so give the connect step a long window in that case. Already-bonded
+		// peripherals (and non-BLE transports) keep the fast timeout so a dead/out-of-range
+		// radio still fails quickly on reconnect.
+		// One-time migration: seed pairedPeripheralIds from the legacy preferredPeripheralId so
+		// users upgrading to this build (empty pairedPeripheralIds) don't pay the long pairing
+		// window on the first reconnect to a radio they already paired before. After this runs
+		// once, the preferred-peripheral fallback is never consulted again — the remember/forget
+		// lifecycle in BLEConnection becomes the sole source of truth. That way a bond the user
+		// later removes (e.g. via iOS Settings > Bluetooth) self-heals back to the long pairing
+		// window instead of being pinned to the fast reconnect timeout forever.
+		if !UserDefaults.migratedPreferredPeripheralPairing {
+			UserDefaults.migratedPreferredPeripheralPairing = true
+			if let preferredUUID = UUID(uuidString: UserDefaults.preferredPeripheralId) {
+				UserDefaults.rememberPairedPeripheral(preferredUUID)
+			}
+		}
+		let knownBonded = UserDefaults.isPairedPeripheral(device.id)
+		let isFirstTimeBLEBond = device.transportType == .ble && !knownBonded
+		let connectStepTimeout: Duration = isFirstTimeBLEBond ? .seconds(90) : .seconds(5)
+
 		// Prepare to connect
 		self.connectionStepper = SequentialSteps(maxRetries: retries ?? maxRetries, retryDelay: retryDelay) {
 			
@@ -57,10 +80,13 @@ extension AccessoryManager {
 					self.updateState(.connecting)
 				}
 				self.updateDevice(deviceId: device.id, key: \.connectionState, value: .connecting)
+				// Lockdown: reset per-connection state. Firmware requires re-auth on every
+				// new BLE connection even if storage is already unlocked.
+				self.lockdownCoordinator?.onConnect(peripheralID: device.id)
 			}
 			
 			// Step 1: Setup the connection
-			Step(timeout: .seconds(5)) { @MainActor _ in
+			Step(timeout: connectStepTimeout) { @MainActor _ in
 				Logger.transport.info("🔗👟[Connect] Step 1: connection to \(device.id, privacy: .public)")
 				do {
 					let connection: Connection
@@ -79,6 +105,9 @@ extension AccessoryManager {
 					}
 					self.activeConnection = (device: device, connection: connection)
 					self.activeDeviceNum = device.num
+					// The mesh-traffic monitor (map flyover gate) self-starts its decay timer on the
+					// first inbound packet and is cleared by Step 0's closeConnection() reset(), so
+					// there's no explicit start to make here — it stays correct across connect retries.
 				} catch let error as CBError where error.code == .peerRemovedPairingInformation {
 					await self.connectionStepper?.cancelCurrentlyExecutingStep(withError: AccessoryError.coreBluetoothError(error), cancelFullProcess: true)
 				}
@@ -102,8 +131,11 @@ extension AccessoryManager {
 				}
 				Logger.transport.info("🔗👟 [Connect] Step 3: Send wantConfig (config)")
 				try await self.sendWantConfig()
-				// Always refresh bundled device catalog so hardware info and "I want one" links
-				// are present after any database clear, regardless of who initiated the connect.
+				// Always refresh the bundled device catalog so hardware metadata is present after any
+				// database clear, regardless of who initiated the connect. Metadata only: this call is
+				// awaited inside a 30s Step budget, so it must stay local (issue #2196). Device images
+				// and the "I want one" msh.to links are network-backed and are restored by the detached
+				// pass below instead.
 				do {
 					Logger.transport.info("🔗👟 [Connect] Step 3a: Refresh bundled Meshtastic device hardware data")
 					try await MeshtasticAPI.shared.refreshBundledDevicesData()
@@ -112,15 +144,24 @@ extension AccessoryManager {
 					Logger.services.warning("Failed to refresh bundled device hardware data after config completion: \(error.localizedDescription, privacy: .public)")
 				}
 
-				if refreshDeviceHardwareFromAPI {
-					Logger.transport.info("🔗👟 [Connect] Step 3b: Refresh Meshtastic device hardware API data")
-					Task.detached(priority: .utility) {
-						do {
-							try await MeshtasticAPI.shared.refreshDevicesAPIData()
-							Logger.services.info("✅ [MeshtasticAPI] Refreshed device hardware data after config completion")
-						} catch {
-							Logger.services.warning("Failed to refresh device hardware data after config completion: \(error.localizedDescription, privacy: .public)")
-						}
+				// Step 3b: images and msh.to links. `clearDatabase` batch-deletes
+				// DeviceHardwareImageEntity and DeviceLinkEntity, and a NodeDB/factory reset or a
+				// device switch clears mid-session and then reconnects — so launch-time population is
+				// already gone by the time we get here and something on the connect path has to
+				// restore them. Detached on purpose: both halves hit the network and must never be
+				// awaited inside this Step's 30s budget. `refreshDeviceHardwareFromAPI` defaults to
+				// false, so the bundle-only pass is what runs on a normal reconnect; it resolves
+				// images from the app bundle and msh.to links from the bundled urls.json.
+				Logger.transport.info("🔗👟 [Connect] Step 3b: Refresh device images and msh.to links")
+				// Held on the manager so closeConnection can cancel it: on a captive portal the pass's
+				// image HEADs would otherwise hang ~60s past a disconnect. A prior pass from a rapid
+				// reconnect is cancelled before the new one replaces the handle.
+				self.deviceRefreshTask?.cancel()
+				self.deviceRefreshTask = Task.detached(priority: .utility) {
+					if refreshDeviceHardwareFromAPI {
+						await MeshtasticAPI.shared.refreshDevicesPreferringAPI()
+					} else {
+						await MeshtasticAPI.shared.refreshDeviceImagesAndLinks()
 					}
 				}
 			}
@@ -136,23 +177,35 @@ extension AccessoryManager {
 			}
 			
 			// Step 5: Send WantConfig (database)
-			Step(timeout: .seconds(3.0), onFailure: .retryStep(attempts: 3)) { @MainActor _ in
+			Step(timeout: .seconds(10.0), onFailure: .retryStep(attempts: 3)) { @MainActor _ in
 				guard wantDatabase else {
 					Logger.transport.info("👟 [Connect] Step 5: wantDatabase = false, skipping wantDatabase")
+					return
+				}
+				// A retry of this step must never re-request the dump while one is already
+				// streaming: the radio would restart the node DB from the top and the two dumps
+				// would interleave (slow connects, duplicate processing). If nodes are already
+				// arriving, treat the request as delivered and let Step 5a's gate do the waiting.
+				if case .retrievingDatabase(let nodeCount) = self.state, nodeCount > 0 {
+					Logger.transport.info("🔗👟 [Connect] Step 5: node dump already streaming (\(nodeCount) nodes) — not re-requesting")
 					return
 				}
 				Logger.transport.info("🔗👟 [Connect] Step 5: Send wantConfig (database)")
 				self.updateState(.retrievingDatabase(nodeCount: 0))
 				self.allowDisconnect = true
-				
+
 				Logger.transport.info("🔗 Saving preferredPeripheralId: \(device.id.uuidString)")
 				UserDefaults.preferredPeripheralId = device.id.uuidString
-				
+
 				try await self.sendWantDatabase()
 			}
 			
 			// Step 5a: Wait for end of WantConfig (database)
-			Step { @MainActor _ in
+			// Bounded like its sibling steps: without a timeout, a malicious/misbehaving radio
+			// that completes config but never sends the database-complete nonce would wedge the
+			// connect flow in .retrievingDatabase forever (no watchdog until Step 8). 120s is
+			// generous for a large legitimate node-DB dump.
+			Step(timeout: .seconds(120)) { @MainActor _ in
 				guard wantDatabase else {
 					Logger.transport.info("👟 [Connect] Step 4: wantDatabase = false, skipping waitForWantDatabase")
 					return
@@ -215,12 +268,20 @@ extension AccessoryManager {
 				if let activeDevice = self.activeConnection?.device, activeDevice.isManualConnection {
 					ManualConnectionList.shared.insert(device: activeDevice)
 				}
+
+				// Best-effort: the notifier bounds stale API refresh and cannot roll back a completed connect.
+				await FirmwareUpdateNotifier.notifyIfNeeded(accessoryManager: self)
 			}
 			
 			// Step 8: Update UI and status to connected
 			Step { @MainActor _ in
 				Logger.transport.debug("🔗👟 [Connect] Step 8: Initialize MQTT and Location Provider")
 				self.stopDiscovery()
+				// Prune stale nodes now that the dump is in, instead of at the head of
+				// sendWantConfig where the fetch+delete+save serialized ahead of the whole
+				// handshake on the ingestion actor. Post-dump lastHeard values also make the
+				// pruning decisions more accurate.
+				_ = await MeshPackets.shared.clearStaleNodes(nodeExpireDays: Int(UserDefaults.purgeStaleNodeDays))
 				await self.initializeMqtt()
 				self.initializeLocationProvider()
 				if transport.requiresPeriodicHeartbeat {

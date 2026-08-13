@@ -15,8 +15,16 @@ struct Settings: View {
 	@Environment(\.modelContext) private var context
 	@Environment(\.colorScheme) private var colorScheme
 	@EnvironmentObject var accessoryManager: AccessoryManager
-	@Query(sort: \NodeInfoEntity.lastHeard, order: .reverse)
-	private var nodes: [NodeInfoEntity]
+	/// Node list for the admin picker / config gating, refreshed on a throttled cadence (see the
+	/// `.task` in `body`) instead of a live `@Query`. A live query re-evaluated this whole view's
+	/// `body` on every node write — and TabView keeps Settings alive on other tabs, so under heavy
+	/// ingestion (large mesh, TCP replay) it burned main-thread CPU while completely off-screen.
+	@State private var nodes: [NodeInfoEntity] = []
+
+	private func refreshNodes() {
+		let descriptor = FetchDescriptor<NodeInfoEntity>(sortBy: [SortDescriptor(\NodeInfoEntity.lastHeard, order: .reverse)])
+		nodes = (try? context.fetch(descriptor)) ?? []
+	}
 
 	/// Nodes for the admin / configuration picker, ordered favorites-first while
 	/// preserving the `@Query`'s `lastHeard`-descending order within each group. The
@@ -38,7 +46,7 @@ struct Settings: View {
 
 	private var moduleConfigurationNode: NodeInfoEntity? {
 		let nodeNum = selectedNode > 0 ? selectedNode : preferredNodeNum
-		return nodes.first(where: { $0.num == nodeNum })
+		return sortedNodes.first(where: { $0.num == nodeNum })
 	}
 
 	// The module-support helpers take a pre-resolved node + excluded-modules bitmask so
@@ -63,7 +71,13 @@ struct Settings: View {
 		], excludedModules: excludedModules)
 			|| isTAKModuleSupported(node)
 			|| isTrafficManagementModuleSupported(node)
+			|| isMeshBeaconModuleSupported(node)
 			|| accessoryManager.supportsStatusMessage
+	}
+
+	private func isMeshBeaconModuleSupported(_ node: NodeInfoEntity?) -> Bool {
+		guard node != nil else { return false }
+		return accessoryManager.checkIsVersionSupported(forVersion: "2.8.0")
 	}
 
 	private func isModuleSupported(_ module: ExcludedModules, excludedModules: Int) -> Bool {
@@ -101,7 +115,7 @@ struct Settings: View {
 
 	var radioConfigurationSection: some View {
 		Section("Radio Configuration") {
-			let node = nodes.first(where: { $0.num == preferredNodeNum })
+			let node = sortedNodes.first(where: { $0.num == preferredNodeNum })
 			if let node,
 				let loRaConfig = node.loRaConfig,
 				let rc = RegionCodes(rawValue: Int(loRaConfig.regionCode)),
@@ -267,6 +281,16 @@ struct Settings: View {
 				}
 			}
 
+			if isMeshBeaconModuleSupported(node) {
+				NavigationLink(value: SettingsNavigationState.meshBeacon) {
+					Label {
+						Text("Mesh Beacon")
+					} icon: {
+						Image(systemName: "dot.radiowaves.left.and.right")
+					}
+				}
+			}
+
 			if isModuleSupported(.extnotifConfig, excludedModules: excludedModules) {
 				NavigationLink(value: SettingsNavigationState.externalNotification) {
 					Label {
@@ -409,6 +433,13 @@ struct Settings: View {
 					Image(systemName: "scroll")
 				}
 			}
+			NavigationLink(value: SettingsNavigationState.traceRoutes) {
+				Label {
+					Text("Trace Routes")
+				} icon: {
+					Image(systemName: "point.3.connected.trianglepath.dotted")
+				}
+			}
 		}
 	}
 
@@ -442,15 +473,23 @@ struct Settings: View {
 					Image(systemName: "folder")
 				}
 			}
+			// Tools hosts NFC actions AND device-configuration import/export. Gating the whole entry
+			// point on NFC hardware made sense while it was NFC-only, but it now hides import/export
+			// completely on iPad, Mac Catalyst, and the Simulator, with no other way to reach them.
+			// Show it when either capability is usable; Tools itself hides the sections that are not.
+			#if !targetEnvironment(macCatalyst)
 			if #available(iOS 18, *) {
-				NavigationLink(value: SettingsNavigationState.tools) {
-					Label {
-						Text("Tools")
-					} icon: {
-						Image(systemName: "hammer")
+				if NFCReader.isAvailable || accessoryManager.isConnected {
+					NavigationLink(value: SettingsNavigationState.tools) {
+						Label {
+							Text("Tools")
+						} icon: {
+							Image(systemName: "hammer")
+						}
 					}
 				}
 			}
+			#endif
 		}
 	}
 
@@ -476,7 +515,7 @@ struct Settings: View {
 		NavigationStack(
 			path: $router.settingsPath
 		) {
-			let node = nodes.first(where: { $0.num == preferredNodeNum })
+			let node = sortedNodes.first(where: { $0.num == preferredNodeNum })
 			List {
 				NavigationLink(value: SettingsNavigationState.about) {
 					Label {
@@ -607,8 +646,8 @@ struct Settings: View {
 				}
 			}
 			.navigationDestination(for: SettingsNavigationState.self) { destination in
-				let node = nodes.first(where: { $0.num == preferredNodeNum })
-				let configNode = nodes.first(where: { $0.num == selectedNode })
+				let node = sortedNodes.first(where: { $0.num == preferredNodeNum })
+				let configNode = sortedNodes.first(where: { $0.num == selectedNode })
 				switch destination {
 				case .about:
 					AboutMeshtastic()
@@ -650,6 +689,8 @@ struct Settings: View {
 					CannedMessagesConfig(node: configNode)
 				case .detectionSensor:
 					DetectionSensorConfig(node: configNode)
+				case .meshBeacon:
+					MeshBeaconConfig(node: configNode)
 				case .externalNotification:
 					ExternalNotificationConfig(node: configNode)
 				case .mqtt:
@@ -676,6 +717,8 @@ struct Settings: View {
 					TrafficManagementConfig(node: configNode)
 				case .debugLogs:
 					AppLog()
+				case .traceRoutes:
+					AllTraceRoutesLog()
 				case .appFiles:
 					AppData()
 				case .firmwareUpdates:
@@ -728,9 +771,27 @@ struct Settings: View {
 				// If the selection hasn't be initialized yet, try to initalize it.
 				// If we are not fully connected yet, then setSelectedNode will
 				// not select the node and it will remain 0
+				refreshNodes()
 				if self.preferredNodeNum <= 0 {
 					self.preferredNodeNum = UserDefaults.preferredPeripheralNum
 					setSelectedNode(to: UserDefaults.preferredPeripheralNum)
+				}
+			}
+			.task(id: router.selectedTab) {
+				// Refresh the node snapshot on a gentle cadence, and only while Settings is
+				// the frontmost tab — the stale snapshot is invisible from other tabs, this
+				// task re-fires on every tab switch (so the guard comes first), and switching
+				// here restarts it for an immediate refresh.
+				guard router.selectedTab == .settings else { return }
+				refreshNodes()
+				while !Task.isCancelled {
+					do {
+						try await Task.sleep(for: .seconds(2))
+					} catch {
+						break
+					}
+					guard !Task.isCancelled else { break }
+					refreshNodes()
 				}
 			}
 			.navigationTitle("Settings")
@@ -742,9 +803,14 @@ struct Settings: View {
 			}
 		}
 	}
-	
+
 	func setSelectedNode(to nodeNum: Int) {
-		if nodes.count > 1 {
+		guard sortedNodes.contains(where: { $0.num == nodeNum }) else {
+			selectedNode = 0
+			return
+		}
+
+		if sortedNodes.count > 1 {
 			if selectedNode == 0 {
 				self.selectedNode = Int(accessoryManager.isConnected ? nodeNum : 0)
 			}
@@ -755,8 +821,8 @@ struct Settings: View {
 
 	private func handleSelectedNodeChange(_ newValue: Int) {
 		guard selectedNode > 0,
-			let destinationNode = nodes.first(where: { $0.num == newValue }),
-			let connectedNode = nodes.first(where: { $0.num == preferredNodeNum }),
+			let destinationNode = sortedNodes.first(where: { $0.num == newValue }),
+			let connectedNode = sortedNodes.first(where: { $0.num == preferredNodeNum }),
 			let fromUser = connectedNode.user,
 			connectedNode.myInfo != nil,
 			let toUser = destinationNode.user else { return }

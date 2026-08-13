@@ -8,7 +8,11 @@
 // For information on using the generated types, please see the documentation:
 //   https://github.com/apple/swift-protobuf/
 
+#if canImport(FoundationEssentials)
+import FoundationEssentials
+#else
 import Foundation
+#endif
 import SwiftProtobuf
 
 // If the compiler emits an error on this type, it is because this file
@@ -1257,33 +1261,33 @@ public struct TAKPacket: Sendable {
   ///
   /// The contact / callsign for ATAK user
   public var contact: Contact {
-    get {return _contact ?? Contact()}
+    get {_contact ?? Contact()}
     set {_contact = newValue}
   }
   /// Returns true if `contact` has been explicitly set.
-  public var hasContact: Bool {return self._contact != nil}
+  public var hasContact: Bool {self._contact != nil}
   /// Clears the value of `contact`. Subsequent reads from it will return its default value.
   public mutating func clearContact() {self._contact = nil}
 
   ///
   /// The group for ATAK user
   public var group: Group {
-    get {return _group ?? Group()}
+    get {_group ?? Group()}
     set {_group = newValue}
   }
   /// Returns true if `group` has been explicitly set.
-  public var hasGroup: Bool {return self._group != nil}
+  public var hasGroup: Bool {self._group != nil}
   /// Clears the value of `group`. Subsequent reads from it will return its default value.
   public mutating func clearGroup() {self._group = nil}
 
   ///
   /// The status of the ATAK EUD
   public var status: Status {
-    get {return _status ?? Status()}
+    get {_status ?? Status()}
     set {_status = newValue}
   }
   /// Returns true if `status` has been explicitly set.
-  public var hasStatus: Bool {return self._status != nil}
+  public var hasStatus: Bool {self._status != nil}
   /// Clears the value of `status`. Subsequent reads from it will return its default value.
   public mutating func clearStatus() {self._status = nil}
 
@@ -1361,22 +1365,22 @@ public struct GeoChat: Sendable {
   ///
   /// Uid recipient of the message
   public var to: String {
-    get {return _to ?? String()}
+    get {_to ?? String()}
     set {_to = newValue}
   }
   /// Returns true if `to` has been explicitly set.
-  public var hasTo: Bool {return self._to != nil}
+  public var hasTo: Bool {self._to != nil}
   /// Clears the value of `to`. Subsequent reads from it will return its default value.
   public mutating func clearTo() {self._to = nil}
 
   ///
   /// Callsign of the recipient for the message
   public var toCallsign: String {
-    get {return _toCallsign ?? String()}
+    get {_toCallsign ?? String()}
     set {_toCallsign = newValue}
   }
   /// Returns true if `toCallsign` has been explicitly set.
-  public var hasToCallsign: Bool {return self._toCallsign != nil}
+  public var hasToCallsign: Bool {self._toCallsign != nil}
   /// Clears the value of `toCallsign`. Subsequent reads from it will return its default value.
   public mutating func clearToCallsign() {self._toCallsign = nil}
 
@@ -1396,11 +1400,11 @@ public struct GeoChat: Sendable {
   /// BCP-47-ish language tag or human-readable name (e.g. "en", "English")
   /// that the originator's TAKTALK plugin recorded for the message.
   public var lang: String {
-    get {return _lang ?? String()}
+    get {_lang ?? String()}
     set {_lang = newValue}
   }
   /// Returns true if `lang` has been explicitly set.
-  public var hasLang: Bool {return self._lang != nil}
+  public var hasLang: Bool {self._lang != nil}
   /// Clears the value of `lang`. Subsequent reads from it will return its default value.
   public mutating func clearLang() {self._lang = nil}
 
@@ -1409,11 +1413,11 @@ public struct GeoChat: Sendable {
   /// the receiver's TAKTALK plugin uses to thread the message under the
   /// right room. Resolved to a friendly name via TakTalkRoomData broadcasts.
   public var roomID: String {
-    get {return _roomID ?? String()}
+    get {_roomID ?? String()}
     set {_roomID = newValue}
   }
   /// Returns true if `roomID` has been explicitly set.
-  public var hasRoomID: Bool {return self._roomID != nil}
+  public var hasRoomID: Bool {self._roomID != nil}
   /// Clears the value of `roomID`. Subsequent reads from it will return its default value.
   public mutating func clearRoomID() {self._roomID = nil}
 
@@ -1423,11 +1427,11 @@ public struct GeoChat: Sendable {
   /// receivers should treat empty-but-present as the equivalent of the
   /// marker rather than a missing field.
   public var voiceProfileID: String {
-    get {return _voiceProfileID ?? String()}
+    get {_voiceProfileID ?? String()}
     set {_voiceProfileID = newValue}
   }
   /// Returns true if `voiceProfileID` has been explicitly set.
-  public var hasVoiceProfileID: Bool {return self._voiceProfileID != nil}
+  public var hasVoiceProfileID: Bool {self._voiceProfileID != nil}
   /// Clears the value of `voiceProfileID`. Subsequent reads from it will return its default value.
   public mutating func clearVoiceProfileID() {self._voiceProfileID = nil}
 
@@ -1694,28 +1698,28 @@ public struct DrawnShape: @unchecked Sendable {
   ///
   /// Shape kind (circle, rectangle, freeform, etc.)
   public var kind: DrawnShape.Kind {
-    get {return _storage._kind}
+    get {_storage._kind}
     set {_uniqueStorage()._kind = newValue}
   }
 
   ///
   /// Explicit stroke/fill/both discriminator. See StyleMode doc.
   public var style: DrawnShape.StyleMode {
-    get {return _storage._style}
+    get {_storage._style}
     set {_uniqueStorage()._style = newValue}
   }
 
   ///
   /// Ellipse major radius in centimeters. 0 for non-ellipse kinds.
   public var majorCm: UInt32 {
-    get {return _storage._majorCm}
+    get {_storage._majorCm}
     set {_uniqueStorage()._majorCm = newValue}
   }
 
   ///
   /// Ellipse minor radius in centimeters. 0 for non-ellipse kinds.
   public var minorCm: UInt32 {
-    get {return _storage._minorCm}
+    get {_storage._minorCm}
     set {_uniqueStorage()._minorCm = newValue}
   }
 
@@ -1724,7 +1728,7 @@ public struct DrawnShape: @unchecked Sendable {
   /// 0 and 360 are equivalent rotations. In proto3, an unset uint32 reads
   /// as 0, so senders should emit 0 when the angle is unspecified.
   public var angleDeg: UInt32 {
-    get {return _storage._angleDeg}
+    get {_storage._angleDeg}
     set {_uniqueStorage()._angleDeg = newValue}
   }
 
@@ -1733,7 +1737,7 @@ public struct DrawnShape: @unchecked Sendable {
   /// Unspecifed_Color, the exact ARGB is carried in stroke_argb.
   /// Valid only when style is StrokeOnly or StrokeAndFill.
   public var strokeColor: Team {
-    get {return _storage._strokeColor}
+    get {_storage._strokeColor}
     set {_uniqueStorage()._strokeColor = newValue}
   }
 
@@ -1743,7 +1747,7 @@ public struct DrawnShape: @unchecked Sendable {
   /// Unspecifed_Color and MAY use it to recover the exact original bytes
   /// even when a palette entry is set.
   public var strokeArgb: UInt32 {
-    get {return _storage._strokeArgb}
+    get {_storage._strokeArgb}
     set {_uniqueStorage()._strokeArgb = newValue}
   }
 
@@ -1751,7 +1755,7 @@ public struct DrawnShape: @unchecked Sendable {
   /// Stroke weight in tenths of a unit (e.g. 30 = 3.0). Typical ATAK
   /// range 10..60.
   public var strokeWeightX10: UInt32 {
-    get {return _storage._strokeWeightX10}
+    get {_storage._strokeWeightX10}
     set {_uniqueStorage()._strokeWeightX10 = newValue}
   }
 
@@ -1759,52 +1763,52 @@ public struct DrawnShape: @unchecked Sendable {
   /// Fill color as a named palette entry. See stroke_color docs.
   /// Valid only when style is FillOnly or StrokeAndFill.
   public var fillColor: Team {
-    get {return _storage._fillColor}
+    get {_storage._fillColor}
     set {_uniqueStorage()._fillColor = newValue}
   }
 
   ///
   /// Fill color exact ARGB fallback. See stroke_argb docs.
   public var fillArgb: UInt32 {
-    get {return _storage._fillArgb}
+    get {_storage._fillArgb}
     set {_uniqueStorage()._fillArgb = newValue}
   }
 
   ///
   /// Whether labels are rendered on this shape.
   public var labelsOn: Bool {
-    get {return _storage._labelsOn}
+    get {_storage._labelsOn}
     set {_uniqueStorage()._labelsOn = newValue}
   }
 
   public var vertexLatDeltas: [Int32] {
-    get {return _storage._vertexLatDeltas}
+    get {_storage._vertexLatDeltas}
     set {_uniqueStorage()._vertexLatDeltas = newValue}
   }
 
   public var vertexLonDeltas: [Int32] {
-    get {return _storage._vertexLonDeltas}
+    get {_storage._vertexLonDeltas}
     set {_uniqueStorage()._vertexLonDeltas = newValue}
   }
 
   ///
   /// True if the sender truncated the vertex columns to fit the pool.
   public var truncated: Bool {
-    get {return _storage._truncated}
+    get {_storage._truncated}
     set {_uniqueStorage()._truncated = newValue}
   }
 
   ///
   /// Bullseye distance in meters * 10 (e.g. 3285 = 328.5 m). 0 = unset.
   public var bullseyeDistanceDm: UInt32 {
-    get {return _storage._bullseyeDistanceDm}
+    get {_storage._bullseyeDistanceDm}
     set {_uniqueStorage()._bullseyeDistanceDm = newValue}
   }
 
   ///
   /// Bullseye bearing reference: 0 unset, 1 Magnetic, 2 True, 3 Grid.
   public var bullseyeBearingRef: UInt32 {
-    get {return _storage._bullseyeBearingRef}
+    get {_storage._bullseyeBearingRef}
     set {_uniqueStorage()._bullseyeBearingRef = newValue}
   }
 
@@ -1815,14 +1819,14 @@ public struct DrawnShape: @unchecked Sendable {
   ///   bit 2: edgeToCenter
   ///   bit 3: mils
   public var bullseyeFlags: UInt32 {
-    get {return _storage._bullseyeFlags}
+    get {_storage._bullseyeFlags}
     set {_uniqueStorage()._bullseyeFlags = newValue}
   }
 
   ///
   /// Bullseye reference UID (anchor marker). Empty = anchor is self.
   public var bullseyeUidRef: String {
-    get {return _storage._bullseyeUidRef}
+    get {_storage._bullseyeUidRef}
     set {_uniqueStorage()._bullseyeUidRef = newValue}
   }
 
@@ -2205,11 +2209,11 @@ public struct RangeAndBearing: Sendable {
   ///
   /// Target/anchor endpoint (delta-encoded from TAKPacketV2.latitude_i/longitude_i).
   public var anchor: CotGeoPoint {
-    get {return _anchor ?? CotGeoPoint()}
+    get {_anchor ?? CotGeoPoint()}
     set {_anchor = newValue}
   }
   /// Returns true if `anchor` has been explicitly set.
-  public var hasAnchor: Bool {return self._anchor != nil}
+  public var hasAnchor: Bool {self._anchor != nil}
   /// Clears the value of `anchor`. Subsequent reads from it will return its default value.
   public mutating func clearAnchor() {self._anchor = nil}
 
@@ -2412,11 +2416,11 @@ public struct Route: Sendable {
     ///
     /// Waypoint position (delta-encoded from TAKPacketV2.latitude_i/longitude_i).
     public var point: CotGeoPoint {
-      get {return _point ?? CotGeoPoint()}
+      get {_point ?? CotGeoPoint()}
       set {_point = newValue}
     }
     /// Returns true if `point` has been explicitly set.
-    public var hasPoint: Bool {return self._point != nil}
+    public var hasPoint: Bool {self._point != nil}
     /// Clears the value of `point`. Subsequent reads from it will return its default value.
     public mutating func clearPoint() {self._point = nil}
 
@@ -2460,7 +2464,7 @@ public struct CasevacReport: @unchecked Sendable {
   ///
   /// Line 3: precedence / urgency.
   public var precedence: CasevacReport.Precedence {
-    get {return _storage._precedence}
+    get {_storage._precedence}
     set {_uniqueStorage()._precedence = newValue}
   }
 
@@ -2472,35 +2476,35 @@ public struct CasevacReport: @unchecked Sendable {
   ///   bit 3: ventilator
   ///   bit 4: blood
   public var equipmentFlags: UInt32 {
-    get {return _storage._equipmentFlags}
+    get {_storage._equipmentFlags}
     set {_uniqueStorage()._equipmentFlags = newValue}
   }
 
   ///
   /// Line 5: number of litter (stretcher-bound) patients.
   public var litterPatients: UInt32 {
-    get {return _storage._litterPatients}
+    get {_storage._litterPatients}
     set {_uniqueStorage()._litterPatients = newValue}
   }
 
   ///
   /// Line 5: number of ambulatory (walking-wounded) patients.
   public var ambulatoryPatients: UInt32 {
-    get {return _storage._ambulatoryPatients}
+    get {_storage._ambulatoryPatients}
     set {_uniqueStorage()._ambulatoryPatients = newValue}
   }
 
   ///
   /// Line 6: security situation at the PZ.
   public var security: CasevacReport.Security {
-    get {return _storage._security}
+    get {_storage._security}
     set {_uniqueStorage()._security = newValue}
   }
 
   ///
   /// Line 7: HLZ marking method.
   public var hlzMarking: CasevacReport.HlzMarking {
-    get {return _storage._hlzMarking}
+    get {_storage._hlzMarking}
     set {_uniqueStorage()._hlzMarking = newValue}
   }
 
@@ -2508,39 +2512,39 @@ public struct CasevacReport: @unchecked Sendable {
   /// Line 7 supplementary: short free-text describing the zone marker
   /// (e.g. "Green smoke", "VS-17 panel west"). Capped tight in options.
   public var zoneMarker: String {
-    get {return _storage._zoneMarker}
+    get {_storage._zoneMarker}
     set {_uniqueStorage()._zoneMarker = newValue}
   }
 
   /// --- Line 8: patient nationality counts ---
   public var usMilitary: UInt32 {
-    get {return _storage._usMilitary}
+    get {_storage._usMilitary}
     set {_uniqueStorage()._usMilitary = newValue}
   }
 
   public var usCivilian: UInt32 {
-    get {return _storage._usCivilian}
+    get {_storage._usCivilian}
     set {_uniqueStorage()._usCivilian = newValue}
   }
 
   public var nonUsMilitary: UInt32 {
-    get {return _storage._nonUsMilitary}
+    get {_storage._nonUsMilitary}
     set {_uniqueStorage()._nonUsMilitary = newValue}
   }
 
   public var nonUsCivilian: UInt32 {
-    get {return _storage._nonUsCivilian}
+    get {_storage._nonUsCivilian}
     set {_uniqueStorage()._nonUsCivilian = newValue}
   }
 
   /// enemy prisoner of war
   public var epw: UInt32 {
-    get {return _storage._epw}
+    get {_storage._epw}
     set {_uniqueStorage()._epw = newValue}
   }
 
   public var child: UInt32 {
-    get {return _storage._child}
+    get {_storage._child}
     set {_uniqueStorage()._child = newValue}
   }
 
@@ -2553,7 +2557,7 @@ public struct CasevacReport: @unchecked Sendable {
   ///   bit 4: wires
   ///   bit 5: other
   public var terrainFlags: UInt32 {
-    get {return _storage._terrainFlags}
+    get {_storage._terrainFlags}
     set {_uniqueStorage()._terrainFlags = newValue}
   }
 
@@ -2561,7 +2565,7 @@ public struct CasevacReport: @unchecked Sendable {
   /// Line 2: radio frequency / callsign metadata (e.g. "38.90 Mhz" or
   /// "Victor 6"). Capped tight in options.
   public var frequency: String {
-    get {return _storage._frequency}
+    get {_storage._frequency}
     set {_uniqueStorage()._frequency = newValue}
   }
 
@@ -2570,7 +2574,7 @@ public struct CasevacReport: @unchecked Sendable {
   /// same as the envelope callsign but ATAK sometimes carries a distinct
   /// ops-number here.
   public var title: String {
-    get {return _storage._title}
+    get {_storage._title}
     set {_uniqueStorage()._title = newValue}
   }
 
@@ -2579,7 +2583,7 @@ public struct CasevacReport: @unchecked Sendable {
   /// on a MEDLINE form (e.g. "2 urgent litter patients, smoke on approach").
   /// MUST be preserved under MTU pressure as long as any casevac is sent.
   public var medlineRemarks: String {
-    get {return _storage._medlineRemarks}
+    get {_storage._medlineRemarks}
     set {_uniqueStorage()._medlineRemarks = newValue}
   }
 
@@ -2590,27 +2594,27 @@ public struct CasevacReport: @unchecked Sendable {
   /// set simultaneously. Senders populate whichever style(s) the source
   /// XML had; receivers prefer counts when non-zero.
   public var urgentCount: UInt32 {
-    get {return _storage._urgentCount}
+    get {_storage._urgentCount}
     set {_uniqueStorage()._urgentCount = newValue}
   }
 
   public var urgentSurgicalCount: UInt32 {
-    get {return _storage._urgentSurgicalCount}
+    get {_storage._urgentSurgicalCount}
     set {_uniqueStorage()._urgentSurgicalCount = newValue}
   }
 
   public var priorityCount: UInt32 {
-    get {return _storage._priorityCount}
+    get {_storage._priorityCount}
     set {_uniqueStorage()._priorityCount = newValue}
   }
 
   public var routineCount: UInt32 {
-    get {return _storage._routineCount}
+    get {_storage._routineCount}
     set {_uniqueStorage()._routineCount = newValue}
   }
 
   public var convenienceCount: UInt32 {
-    get {return _storage._convenienceCount}
+    get {_storage._convenienceCount}
     set {_uniqueStorage()._convenienceCount = newValue}
   }
 
@@ -2618,7 +2622,7 @@ public struct CasevacReport: @unchecked Sendable {
   /// Line 4 supplementary: free-text description of non-standard equipment
   /// (e.g. "Blood warmer"). Pairs with the `equipment_flags` bitfield.
   public var equipmentDetail: String {
-    get {return _storage._equipmentDetail}
+    get {_storage._equipmentDetail}
     set {_uniqueStorage()._equipmentDetail = newValue}
   }
 
@@ -2628,7 +2632,7 @@ public struct CasevacReport: @unchecked Sendable {
   /// numeric location; this field preserves the exact MGRS string the
   /// medic entered.
   public var zoneProtectedCoord: String {
-    get {return _storage._zoneProtectedCoord}
+    get {_storage._zoneProtectedCoord}
     set {_uniqueStorage()._zoneProtectedCoord = newValue}
   }
 
@@ -2636,7 +2640,7 @@ public struct CasevacReport: @unchecked Sendable {
   /// Line 9 supplementary: slope direction (e.g. "N", "NE", "SSW") when
   /// `terrain_flags` bit 0 (slope) is set.
   public var terrainSlopeDir: String {
-    get {return _storage._terrainSlopeDir}
+    get {_storage._terrainSlopeDir}
     set {_uniqueStorage()._terrainSlopeDir = newValue}
   }
 
@@ -2645,7 +2649,7 @@ public struct CasevacReport: @unchecked Sendable {
   /// (e.g. "Loose debris on west edge") when `terrain_flags` bit 5 (other)
   /// is set. Tier-2 strippable under MTU pressure.
   public var terrainOtherDetail: String {
-    get {return _storage._terrainOtherDetail}
+    get {_storage._terrainOtherDetail}
     set {_uniqueStorage()._terrainOtherDetail = newValue}
   }
 
@@ -2654,21 +2658,21 @@ public struct CasevacReport: @unchecked Sendable {
   /// (e.g. "Orange smoke", "VS-17 panel"). Complements the structured
   /// `hlz_marking` enum with a specific human-readable description.
   public var markedBy: String {
-    get {return _storage._markedBy}
+    get {_storage._markedBy}
     set {_uniqueStorage()._markedBy = newValue}
   }
 
   ///
   /// Nearby obstacles on the approach (e.g. "Power lines north of HLZ").
   public var obstacles: String {
-    get {return _storage._obstacles}
+    get {_storage._obstacles}
     set {_uniqueStorage()._obstacles = newValue}
   }
 
   ///
   /// Wind direction and speed (e.g. "270 at 12 kts").
   public var windsAreFrom: String {
-    get {return _storage._windsAreFrom}
+    get {_storage._windsAreFrom}
     set {_uniqueStorage()._windsAreFrom = newValue}
   }
 
@@ -2676,7 +2680,7 @@ public struct CasevacReport: @unchecked Sendable {
   /// Friendly forces posture near the pickup zone
   /// (e.g. "Squad east of HLZ").
   public var friendlies: String {
-    get {return _storage._friendlies}
+    get {_storage._friendlies}
     set {_uniqueStorage()._friendlies = newValue}
   }
 
@@ -2684,7 +2688,7 @@ public struct CasevacReport: @unchecked Sendable {
   /// Known or suspected enemy positions near the pickup zone
   /// (e.g. "Possible enemy on south ridge").
   public var enemy: String {
-    get {return _storage._enemy}
+    get {_storage._enemy}
     set {_uniqueStorage()._enemy = newValue}
   }
 
@@ -2692,7 +2696,7 @@ public struct CasevacReport: @unchecked Sendable {
   /// Free-text description of the HLZ itself
   /// (e.g. "Primary HLZ is soccer field").
   public var hlzRemarks: String {
-    get {return _storage._hlzRemarks}
+    get {_storage._hlzRemarks}
     set {_uniqueStorage()._hlzRemarks = newValue}
   }
 
@@ -2702,7 +2706,7 @@ public struct CasevacReport: @unchecked Sendable {
   /// a mass-casualty event can carry 1-6 entries in practice, limited by
   /// the 237 B LoRa MTU.
   public var zmist: [ZMistEntry] {
-    get {return _storage._zmist}
+    get {_storage._zmist}
     set {_uniqueStorage()._zmist = newValue}
   }
 
@@ -3245,11 +3249,11 @@ public struct SensorFov: Sendable {
   /// Maximum range of the cone in meters.
   /// Optional — if unset, receivers should use the ATAK-CIV default of 100m.
   public var rangeM: UInt32 {
-    get {return _rangeM ?? 0}
+    get {_rangeM ?? 0}
     set {_rangeM = newValue}
   }
   /// Returns true if `rangeM` has been explicitly set.
-  public var hasRangeM: Bool {return self._rangeM != nil}
+  public var hasRangeM: Bool {self._rangeM != nil}
   /// Clears the value of `rangeM`. Subsequent reads from it will return its default value.
   public mutating func clearRangeM() {self._rangeM = nil}
 
@@ -3492,49 +3496,49 @@ public struct TAKPacketV2: @unchecked Sendable {
   /// Well-known CoT event type enum.
   /// Use CotType_Other with cot_type_str for unknown types.
   public var cotTypeID: CotType {
-    get {return _storage._cotTypeID}
+    get {_storage._cotTypeID}
     set {_uniqueStorage()._cotTypeID = newValue}
   }
 
   ///
   /// How the coordinates were generated
   public var how: CotHow {
-    get {return _storage._how}
+    get {_storage._how}
     set {_uniqueStorage()._how = newValue}
   }
 
   ///
   /// Callsign
   public var callsign: String {
-    get {return _storage._callsign}
+    get {_storage._callsign}
     set {_uniqueStorage()._callsign = newValue}
   }
 
   ///
   /// Team color assignment
   public var team: Team {
-    get {return _storage._team}
+    get {_storage._team}
     set {_uniqueStorage()._team = newValue}
   }
 
   ///
   /// Role of the group member
   public var role: MemberRole {
-    get {return _storage._role}
+    get {_storage._role}
     set {_uniqueStorage()._role = newValue}
   }
 
   ///
   /// Latitude, multiply by 1e-7 to get degrees in floating point
   public var latitudeI: Int32 {
-    get {return _storage._latitudeI}
+    get {_storage._latitudeI}
     set {_uniqueStorage()._latitudeI = newValue}
   }
 
   ///
   /// Longitude, multiply by 1e-7 to get degrees in floating point
   public var longitudeI: Int32 {
-    get {return _storage._longitudeI}
+    get {_storage._longitudeI}
     set {_uniqueStorage()._longitudeI = newValue}
   }
 
@@ -3548,112 +3552,112 @@ public struct TAKPacketV2: @unchecked Sendable {
   /// carry hae="0.0" or omit hae → parsed as 0) to encode explicitly (+2 bytes),
   /// which REGRESSED the worst-case route fixture. Kept as a plain field.
   public var altitude: Int32 {
-    get {return _storage._altitude}
+    get {_storage._altitude}
     set {_uniqueStorage()._altitude = newValue}
   }
 
   ///
   /// Speed in cm/s
   public var speed: UInt32 {
-    get {return _storage._speed}
+    get {_storage._speed}
     set {_uniqueStorage()._speed = newValue}
   }
 
   ///
   /// Course in degrees * 100 (0-36000)
   public var course: UInt32 {
-    get {return _storage._course}
+    get {_storage._course}
     set {_uniqueStorage()._course = newValue}
   }
 
   ///
   /// Battery level 0-100
   public var battery: UInt32 {
-    get {return _storage._battery}
+    get {_storage._battery}
     set {_uniqueStorage()._battery = newValue}
   }
 
   ///
   /// Geopoint source
   public var geoSrc: GeoPointSource {
-    get {return _storage._geoSrc}
+    get {_storage._geoSrc}
     set {_uniqueStorage()._geoSrc = newValue}
   }
 
   ///
   /// Altitude source
   public var altSrc: GeoPointSource {
-    get {return _storage._altSrc}
+    get {_storage._altSrc}
     set {_uniqueStorage()._altSrc = newValue}
   }
 
   ///
   /// Device UID (UUID string or device ID like "ANDROID-xxxx")
   public var uid: String {
-    get {return _storage._uid}
+    get {_storage._uid}
     set {_uniqueStorage()._uid = newValue}
   }
 
   ///
   /// Device callsign
   public var deviceCallsign: String {
-    get {return _storage._deviceCallsign}
+    get {_storage._deviceCallsign}
     set {_uniqueStorage()._deviceCallsign = newValue}
   }
 
   ///
   /// Stale time as seconds offset from event time
   public var staleSeconds: UInt32 {
-    get {return _storage._staleSeconds}
+    get {_storage._staleSeconds}
     set {_uniqueStorage()._staleSeconds = newValue}
   }
 
   ///
   /// TAK client version string
   public var takVersion: String {
-    get {return _storage._takVersion}
+    get {_storage._takVersion}
     set {_uniqueStorage()._takVersion = newValue}
   }
 
   ///
   /// TAK device model
   public var takDevice: String {
-    get {return _storage._takDevice}
+    get {_storage._takDevice}
     set {_uniqueStorage()._takDevice = newValue}
   }
 
   ///
   /// TAK platform (ATAK-CIV, WebTAK, etc.)
   public var takPlatform: String {
-    get {return _storage._takPlatform}
+    get {_storage._takPlatform}
     set {_uniqueStorage()._takPlatform = newValue}
   }
 
   ///
   /// TAK OS version
   public var takOs: String {
-    get {return _storage._takOs}
+    get {_storage._takOs}
     set {_uniqueStorage()._takOs = newValue}
   }
 
   ///
   /// Connection endpoint
   public var endpoint: String {
-    get {return _storage._endpoint}
+    get {_storage._endpoint}
     set {_uniqueStorage()._endpoint = newValue}
   }
 
   ///
   /// Phone number
   public var phone: String {
-    get {return _storage._phone}
+    get {_storage._phone}
     set {_uniqueStorage()._phone = newValue}
   }
 
   ///
   /// CoT event type string, only populated when cot_type_id is CotType_Other
   public var cotTypeStr: String {
-    get {return _storage._cotTypeStr}
+    get {_storage._cotTypeStr}
     set {_uniqueStorage()._cotTypeStr = newValue}
   }
 
@@ -3664,7 +3668,7 @@ public struct TAKPacketV2: @unchecked Sendable {
   /// GeoChat messages carry their text in GeoChat.message instead.
   /// Empty string (proto3 default) means no remarks were present.
   public var remarks: String {
-    get {return _storage._remarks}
+    get {_storage._remarks}
     set {_uniqueStorage()._remarks = newValue}
   }
 
@@ -3673,22 +3677,22 @@ public struct TAKPacketV2: @unchecked Sendable {
   /// Type is `TAKEnvironment`, not `Environment`, to avoid colliding with
   /// SwiftUI's `@Environment` property wrapper in iOS consumers.
   public var environment: TAKEnvironment {
-    get {return _storage._environment ?? TAKEnvironment()}
+    get {_storage._environment ?? TAKEnvironment()}
     set {_uniqueStorage()._environment = newValue}
   }
   /// Returns true if `environment` has been explicitly set.
-  public var hasEnvironment: Bool {return _storage._environment != nil}
+  public var hasEnvironment: Bool {_storage._environment != nil}
   /// Clears the value of `environment`. Subsequent reads from it will return its default value.
   public mutating func clearEnvironment() {_uniqueStorage()._environment = nil}
 
   ///
   /// Sensor field-of-view cone (camera, FLIR, laser, etc.). From <sensor>.
   public var sensorFov: SensorFov {
-    get {return _storage._sensorFov ?? SensorFov()}
+    get {_storage._sensorFov ?? SensorFov()}
     set {_uniqueStorage()._sensorFov = newValue}
   }
   /// Returns true if `sensorFov` has been explicitly set.
-  public var hasSensorFov: Bool {return _storage._sensorFov != nil}
+  public var hasSensorFov: Bool {_storage._sensorFov != nil}
   /// Clears the value of `sensorFov`. Subsequent reads from it will return its default value.
   public mutating func clearSensorFov() {_uniqueStorage()._sensorFov = nil}
 
@@ -3702,11 +3706,11 @@ public struct TAKPacketV2: @unchecked Sendable {
   ///
   /// See Marti.
   public var marti: Marti {
-    get {return _storage._marti ?? Marti()}
+    get {_storage._marti ?? Marti()}
     set {_uniqueStorage()._marti = newValue}
   }
   /// Returns true if `marti` has been explicitly set.
-  public var hasMarti: Bool {return _storage._marti != nil}
+  public var hasMarti: Bool {_storage._marti != nil}
   /// Clears the value of `marti`. Subsequent reads from it will return its default value.
   public mutating func clearMarti() {_uniqueStorage()._marti = nil}
 

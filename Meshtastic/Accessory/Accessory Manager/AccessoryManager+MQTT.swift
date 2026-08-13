@@ -12,10 +12,12 @@ import OSLog
 import MeshtasticProtobufs
 
 // Serialises MQTT-sourced BLE writes by allowing at most one forwarded packet
-// in-flight over BLE at any time. CocoaMQTT calls its delegate on a background
-// thread; this actor gates entry and drops packets that arrive while a write is
-// already in progress rather than queuing them, preventing the device firmware
-// from being overwhelmed by global broker traffic.
+// in-flight over BLE at any time. CocoaMQTT delivers its delegate callbacks on
+// its default `delegateQueue` (DispatchQueue.main) and we never override it, so
+// the receive handler runs on the main actor; each forward still kicks off an
+// async BLE write, and this actor gates entry and drops packets that arrive
+// while a write is already in progress rather than queuing them, preventing the
+// device firmware from being overwhelmed by global broker traffic.
 actor MqttForwardGate {
 	private var busy = false
 
@@ -98,13 +100,31 @@ extension AccessoryManager {
 			return
 		}
 
+		let rawData = Data(message.payload)
+
+		// Parse the ServiceEnvelope once. Fail open: unparseable bytes are
+		// forwarded unchanged (nil `parsed`), exactly as before this filter existed.
+		let parsed = try? ServiceEnvelope(serializedData: rawData)
+
+		// Drop provably-undeliverable packets before spending any BLE bandwidth on
+		// them. In client-proxy mode the public broker floods payload-less stubs the
+		// node can only decrypt-fail and discard; stopping them here saves BLE
+		// airtime, a decrypt attempt, and a node-side WARN per packet.
+		if let envelope = parsed {
+			let myHex = myNodeNum == 0 ? "" : myNodeNum.toHex()
+			if MqttForwardFilter.decide(envelope: envelope, myNodeHex: myHex) == .dropNoPayload {
+				mqttProxyDroppedNoPayload += 1
+				Logger.services.debug("📲 [MQTT] drop (no payload) topic=\(message.topic, privacy: .public) count=\(self.mqttProxyDroppedNoPayload, privacy: .public)")
+				return
+			}
+		}
+
 		// Clamp hop_limit to 0 on downlink ServiceEnvelopes before forwarding to
 		// the device. Packets with hop_limit > 0 would be re-broadcast over RF,
 		// flooding the mesh with traffic that arrived via MQTT. hop_start is
 		// preserved so receivers can still compute how far the packet travelled.
-		let rawData = Data(message.payload)
 		let forwardData: Data
-		if var envelope = try? ServiceEnvelope(serializedData: rawData),
+		if var envelope = parsed,
 		   envelope.hasPacket, envelope.packet.hopLimit > 0 {
 			let original = envelope.packet.hopLimit
 			envelope.packet.hopLimit = 0

@@ -1,0 +1,23 @@
+/* Settings.bundle localization - Ukrainian */
+
+"Will share your phone GPS location with your node." = "Ділитиметься GPS-розташуванням телефона з вашим вузлом.";
+"Share Location" = "Ділитися геопозицією";
+"Interval" = "Інтервал";
+"Ten Seconds" = "10 секунд";
+"Fifteen Seconds" = "15 секунд";
+"Thirty Seconds" = "30 секунд";
+"Forty Five Seconds" = "45 секунд";
+"One Minute" = "1 хвилина";
+"Five Minutes" = "5 хвилин";
+"Ten Minutes" = "10 хвилин";
+"Fifteen Minutes" = "15 хвилин";
+"Accurate Locations Only" = "Лише точні геопозиції";
+"Notifications" = "Сповіщення";
+"Channel Messages" = "Повідомлення каналів";
+"New Nodes" = "Нові вузли";
+"Low Battery" = "Низький заряд";
+"Acknowledgments" = "Подяки";
+"Group" = "Група";
+"Name" = "Назва";
+"none given" = "не вказано";
+"Enabled" = "Увімкнено";

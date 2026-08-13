@@ -18,6 +18,7 @@ private struct NodeDetailLogAvailability {
 	var hasDeviceMetrics = false
 	var hasPositions = false
 	var hasEnvironmentMetrics = false
+	var hasAirQualityMetrics = false
 	var hasTraceRoutes = false
 	var hasPowerMetrics = false
 	var hasDetectionSensorMetrics = false
@@ -36,6 +37,7 @@ struct NodeDetail: View {
 	) ?? ModemPresets.longFast
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
+	@EnvironmentObject var router: Router
 	@State private var showingShutdownConfirm: Bool = false
 	@State private var showingRebootConfirm: Bool = false
 	@State private var dateFormatRelative: Bool = true
@@ -44,8 +46,11 @@ struct NodeDetail: View {
 	@State private var latestPosition: PositionEntity?
 	@State private var latestDeviceMetrics: TelemetryEntity?
 	@State private var latestEnvironmentMetrics: TelemetryEntity?
+	@State private var latestAirQualityMetrics: TelemetryEntity?
+	@State private var airQualityNowCastAQI: Int?
 	@State private var latestPowerMetrics: TelemetryEntity?
 	@State private var logAvailability = NodeDetailLogAvailability()
+	@State private var showingShareContactQR = false
 
 	/// The currently BLE-connected (or remotely administered) node, derived reactively
 	/// from accessoryManager.activeDeviceNum so it stays current if the connection changes.
@@ -61,7 +66,12 @@ struct NodeDetail: View {
 		return (fromUser, toUser)
 	}
 	@State var showingCompassSheet = false
-	
+	@State private var nodeForDisplayNameEdit: NodeInfoEntity?
+	/// Bumped whenever a local display name is set/cleared to force this view to re-render —
+	/// NodeDisplayNameStore is plain UserDefaults, not a SwiftData/@Bindable property, so nothing
+	/// else here would pick up the change.
+	@State private var displayNameRefresh = 0
+
 	var body: some View {
 		if node.modelContext != nil {
 			ScrollViewReader { scrollView in
@@ -69,9 +79,24 @@ struct NodeDetail: View {
 					.frame(height: 0) // Ensure it has no height
 					.id("topOfList")
 					nodeDetailList
-					.sheet(isPresented: $showingCompassSheet) {
-						CompassView(waypointLocation: latestPosition?.nodeCoordinate ?? nil, waypointLongName: node.user?.longName ?? nil, waypointShortName: node.user?.shortName ?? nil, color: Color(UIColor(hex: UInt32(node.num))))
-							}
+						.sheet(isPresented: $showingCompassSheet) {
+							CompassView(waypointLocation: latestPosition?.nodeCoordinate ?? nil, waypointLongName: node.user?.displayLongName, waypointShortName: node.user?.shortName, color: Color(UIColor(hex: UInt32(node.num))))
+						}
+						.sheet(isPresented: $showingShareContactQR) {
+							ShareContactQRDialog(
+								manuallyVerified: node.num == accessoryManager.activeDeviceNum,
+								node: node.toProto()
+							)
+						}
+						.displayNameAlert(node: $nodeForDisplayNameEdit)
+					.onReceive(NotificationCenter.default.publisher(for: NodeDisplayNameStore.didChangeNotification)) { notification in
+						// Scoped to this node: the notification's object is unconditionally `nil`
+						// otherwise, and `displayNameRefresh` drives `.id()` below (which recreates
+						// the list and re-triggers its scroll-to-top onAppear) -- renaming an
+						// unrelated node elsewhere must not yank this detail view back to the top.
+						guard notification.object as? Int64 == node.num else { return }
+						displayNameRefresh += 1
+					}
 					.onAppear {
 						refreshNodeSummary()
 						scrollView.scrollTo("topOfList", anchor: .top)
@@ -84,8 +109,9 @@ struct NodeDetail: View {
 							refreshNodeSummary()
 						}
 						.contentMargins(.top, 0, for: .scrollContent)
-					.navigationTitle(String(node.user?.longName?.addingVariationSelectors ?? "Unknown".localized))
+					.navigationTitle(String((node.user?.displayLongName ?? "Unknown".localized).addingVariationSelectors))
 					.navigationBarTitleDisplayMode(.inline)
+					.id(displayNameRefresh)
 			}
 		} else {
 			// Node was deleted or detached (e.g. after a database reset / node switch).
@@ -101,6 +127,7 @@ struct NodeDetail: View {
 			NodeInfoItem(node: node)
 			nodeSection
 			environmentSection
+			airQualitySection
 			powerSection
 			logsSection
 			actionsSection
@@ -124,11 +151,11 @@ struct NodeDetail: View {
 				if node.snr != 0 && !node.viaMqtt && node.hopsAway == 0 {
 					Spacer()
 					VStack {
-						let signalStrength = getLoRaSignalStrength(snr: node.snr, rssi: node.rssi, preset: modemPreset)
+						let signalStrength = getLoRaSignalStrength(snr: node.snr, rssi: node.rssi, preset: modemPreset, noiseFloor: connectedNode?.recentNoiseFloor)
 						LoRaSignalStrengthIndicator(signalStrength: signalStrength)
 						Text("Signal \(signalStrength.description)").font(.footnote)
 						Text("SNR \(String(format: "%.2f", node.snr))dB")
-							.foregroundColor(getSnrColor(snr: node.snr, preset: modemPreset))
+							.foregroundColor(signalStrength.color)
 							.font(.caption)
 						Text("RSSI \(node.rssi)dB")
 							.foregroundColor(getRssiColor(rssi: node.rssi))
@@ -163,6 +190,25 @@ struct NodeDetail: View {
 					}
 				}
 			}
+			// Local-only display name shown instead of the device long name. Never leaves this
+			// device (not sent over the mesh, not exported/shared) — see NodeDisplayNameStore.
+			Button {
+				nodeForDisplayNameEdit = node
+			} label: {
+				HStack {
+					Label {
+						Text("Name")
+					} icon: {
+						Image(systemName: "person.crop.circle")
+							.symbolRenderingMode(.hierarchical)
+					}
+					Spacer()
+					Text(node.user?.displayLongName ?? "—")
+						.foregroundStyle(.secondary)
+						.lineLimit(1)
+				}
+			}
+			.accessibilityElement(children: .combine)
 			HStack {
 				Label {
 					Text("Node Number")
@@ -187,6 +233,23 @@ struct NodeDetail: View {
 					.textSelection(.enabled)
 			}
 			.accessibilityElement(children: .combine)
+			// Signed node = automatic trust, observed from the radio. Because NodeInfo is itself a signed
+			// broadcast, the node's identity is verified by extension. Ordered above the public-key (has-key)
+			// row so the section reads most-trusted-first. Affirmative only — never shown for unsigned nodes.
+			if node.hasXeddsaSigned {
+				HStack {
+					Label {
+						Text("Signed node")
+					} icon: {
+						Image(systemName: "checkmark.shield.fill")
+							.foregroundColor(.green)
+					}
+					Spacer()
+					Text("Verified automatically")
+						.foregroundStyle(.secondary)
+				}
+				.accessibilityElement(children: .combine)
+			}
 			if let user = node.user, user.keyMatch {
 				let publicKey = node.num == connectedNode?.num
 				? node.securityConfig?.publicKey?.base64EncodedString() ?? ""
@@ -233,6 +296,29 @@ struct NodeDetail: View {
 					}
 					Spacer()
 					Text(deviceRole.name)
+				}
+				.accessibilityElement(children: .combine)
+			}
+			// User-authored status broadcast by the node. Omitted entirely when empty
+			// (no placeholder / em-dash). Untrusted free text — rendered verbatim as
+			// plain text, never markup. `Text(_: String)` does not parse markdown.
+			// Detail has more room than the cards (design#115), so it shows the full
+			// status rather than the 2-line card clamp — but still capped so a remote
+			// node broadcasting newline-laden text (the 80-byte cap is only enforced on
+			// the local save path) can't grow the row without bound.
+			if let status = node.statusMessageDisplay {
+				HStack(alignment: .top) {
+					Label {
+						Text("Status Message")
+					} icon: {
+						Image(systemName: NodeStatusStyle.glyph)
+							.symbolRenderingMode(.hierarchical)
+					}
+					Spacer()
+					Text(status)
+						.multilineTextAlignment(.trailing)
+						.lineLimit(6)
+						.textSelection(.enabled)
 				}
 				.accessibilityElement(children: .combine)
 			}
@@ -288,6 +374,10 @@ struct NodeDetail: View {
 				.onTapGesture {
 					dateFormatRelative.toggle()
 				}
+				.accessibilityAddTraits(.isButton)
+				.accessibilityAction {
+					dateFormatRelative.toggle()
+				}
 			}
 			if let lastHeard = node.lastHeard, lastHeard.timeIntervalSince1970 > 0 && lastHeard < Calendar.current.date(byAdding: .year, value: 1, to: Date())! {
 				HStack {
@@ -310,6 +400,10 @@ struct NodeDetail: View {
 				}
 				.accessibilityElement(children: .combine)
 				.onTapGesture {
+					dateFormatRelative.toggle()
+				}
+				.accessibilityAddTraits(.isButton)
+				.accessibilityAction {
 					dateFormatRelative.toggle()
 				}
 			}
@@ -412,6 +506,39 @@ struct NodeDetail: View {
 		}
 	}
 
+	// MARK: - Air Quality Section
+
+	@ViewBuilder
+	private var airQualitySection: some View {
+		if let metrics = latestAirQualityMetrics,
+		   metrics.pm25Standard != nil || metrics.pm10Standard != nil || metrics.pm100Standard != nil {
+			Section("Air Quality") {
+				VStack {
+					// design#54: once ~12h of PM2.5 history exists, headline the NowCast-derived EPA AQI
+					// gauge above the raw particulate-matter readings (µg/m³). Without enough history the
+					// gauge is omitted and only the raw readings show — never a misleading instantaneous AQI.
+					if let aqi = airQualityNowCastAQI {
+						AirQualityIndex(aqi: aqi, displayMode: .gradient)
+							.padding(.vertical)
+					}
+					LazyVGrid(columns: gridItemLayout) {
+						if let pm25 = metrics.pm25Standard {
+							ParticulateMatterCompactWidget(label: "PM2.5", value: pm25)
+						}
+						if let pm10 = metrics.pm10Standard {
+							ParticulateMatterCompactWidget(label: "PM1.0", value: pm10)
+						}
+						if let pm100 = metrics.pm100Standard {
+							ParticulateMatterCompactWidget(label: "PM10", value: pm100)
+						}
+					}
+					.padding(.bottom)
+				}
+			}
+			.accessibilityElement(children: .combine)
+		}
+	}
+
 	// MARK: - Power Section
 
 	@ViewBuilder
@@ -433,6 +560,7 @@ struct NodeDetail: View {
 		let hasDeviceMetrics = logAvailability.hasDeviceMetrics
 		let hasPositions = logAvailability.hasPositions
 		let hasEnvironmentMetrics = logAvailability.hasEnvironmentMetrics
+		let hasAirQualityMetrics = logAvailability.hasAirQualityMetrics
 		let hasTraceRoutes = logAvailability.hasTraceRoutes
 		let hasPowerMetrics = logAvailability.hasPowerMetrics
 		let hasDetectionSensorMetrics = logAvailability.hasDetectionSensorMetrics
@@ -462,6 +590,18 @@ struct NodeDetail: View {
 					}
 				}
 				.disabled(!hasPositions)
+				if hasPositions {
+					Button {
+						router.selectedTab = .map
+						router.mapState = .coverageEstimate(node.num)
+					} label: {
+						Label {
+							Text("Estimate Coverage")
+						} icon: {
+							Image("custom.radio.tower")
+						}
+					}
+				}
 			}
 			NavigationLink {
 				PositionLog(node: node)
@@ -485,6 +625,17 @@ struct NodeDetail: View {
 				}
 			}
 			.disabled(!hasEnvironmentMetrics)
+			NavigationLink {
+				AirQualityMetricsLog(node: node)
+			} label: {
+				Label {
+					Text("Air Quality Metrics Log")
+				} icon: {
+					Image(systemName: "aqi.medium")
+						.symbolRenderingMode(.multicolor)
+				}
+			}
+			.disabled(!hasAirQualityMetrics)
 			NavigationLink {
 				TraceRouteLog(node: node)
 			} label: {
@@ -556,6 +707,13 @@ struct NodeDetail: View {
 					node: node,
 					user: user
 				)
+				if ShareContactQR.canShareContact(for: node) {
+					Button {
+						showingShareContactQR = true
+					} label: {
+						Label("Share Contact QR", systemImage: "qrcode")
+					}
+				}
 			}
 			if let connectedNode {
 				FavoriteNodeButton(
@@ -589,7 +747,10 @@ struct NodeDetail: View {
 							node: node
 						)
 					}
-					if let latestPosition {
+					// Liveness screen: `latestPosition` is a @State handle refreshed on a cadence;
+					// if ingestion deleted the row since the last refresh, reading a persisted
+					// property on it traps in SwiftData. Skip rendering until the next refresh.
+					if let latestPosition, latestPosition.modelContext != nil, !latestPosition.isDeleted {
 					#if !targetEnvironment(macCatalyst)
 						if latestPosition.isPreciseLocation {
 							Button {
@@ -720,16 +881,21 @@ struct NodeDetail: View {
 	private func refreshNodeSummary() {
 		let deviceMetrics = node.latestDeviceMetrics
 		let environmentMetrics = node.latestEnvironmentMetrics
+		let airQualityMetrics = node.latestAirQualityMetrics
+		let airQualityAQI = node.airQualityNowCastAQI
 		let powerMetrics = node.latestPowerMetrics
 		let position = node.latestPosition
 		latestDeviceMetrics = deviceMetrics
 		latestEnvironmentMetrics = environmentMetrics
+		latestAirQualityMetrics = airQualityMetrics
+		airQualityNowCastAQI = airQualityAQI
 		latestPowerMetrics = powerMetrics
 		latestPosition = position
 		logAvailability = NodeDetailLogAvailability(
 			hasDeviceMetrics: deviceMetrics != nil,
 			hasPositions: position != nil,
 			hasEnvironmentMetrics: environmentMetrics != nil,
+			hasAirQualityMetrics: airQualityMetrics != nil,
 			hasTraceRoutes: node.hasTraceRoutes,
 			hasPowerMetrics: powerMetrics != nil,
 			hasDetectionSensorMetrics: node.hasDetectionSensorMetrics,

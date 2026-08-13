@@ -46,6 +46,7 @@ struct BackupRowView: View {
 					Image(systemName: "arrow.counterclockwise")
 				}
 				.buttonStyle(.borderless)
+				.accessibilityLabel(String(localized: "Restore backup", comment: "VoiceOver label for the restore backup button"))
 			}
 
 			if showDeleteButton, let onDelete {

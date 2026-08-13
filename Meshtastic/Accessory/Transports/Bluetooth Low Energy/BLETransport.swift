@@ -32,7 +32,26 @@ actor BLETransport: Transport {
 	private var restoredConnectContinuation: CheckedContinuation<Void, Error>?
 	private var setupCompleteGate: AsyncGate
 	private var restoreInProgress: Bool = false
-	var status: TransportStatus = .uninitialized
+	var status: TransportStatus = .uninitialized {
+		didSet {
+			guard status != oldValue else { return }
+			statusContinuation?.yield(status)
+		}
+	}
+	/// Broadcasts every `status` change so `AccessoryManager` can mirror it onto a `@Published`
+	/// property for the UI (see `statusUpdates()`, #2175). Actor-isolated state otherwise has no
+	/// way to reach a SwiftUI view: `status` was already being corrected on `.poweredOff`
+	/// (#2161/#2163), but nothing outside this actor could observe it.
+	private var statusContinuation: AsyncStream<TransportStatus>.Continuation?
+	/// Identifies which `statusUpdates()` call installed the current `statusContinuation`, so its
+	/// `onTermination` only clears the continuation if a later subscriber hasn't already replaced
+	/// it (`AsyncStream.Continuation` isn't `Equatable`, so identity can't be compared directly).
+	private var statusSubscriptionGeneration = 0
+
+	/// The exact message `status` settles on when CoreBluetooth reports `.poweredOff`. Kept as a
+	/// shared constant so callers matching on it (`AccessoryManager.isBluetoothPoweredOff`) don't
+	/// duplicate the string.
+	static let poweredOffStatusMessage = "Bluetooth is powered off"
 
 	private var cleanupTask: Task<Void, Never>?
 	
@@ -51,7 +70,7 @@ actor BLETransport: Transport {
 		if CBCentralManager.authorization != .notDetermined {
 			centralManager = CBCentralManager(delegate: delegate,
 											  queue: centralQueue,
-											  options: [CBCentralManagerOptionRestoreIdentifierKey: kCentralRestoreID]
+											  options: Self.centralManagerOptions(restoreIdentifier: kCentralRestoreID)
 			)
 		}
 		self.delegate.setTransport(self)
@@ -64,8 +83,53 @@ actor BLETransport: Transport {
 	private func createCentralManager() {
 		centralManager = CBCentralManager(delegate: delegate,
 										  queue: centralQueue,
-										  options: [CBCentralManagerOptionRestoreIdentifierKey: kCentralRestoreID]
+										  options: Self.centralManagerOptions(restoreIdentifier: kCentralRestoreID)
 		)
+	}
+
+	/// The options CBCentralManager is created with, factored out so the contents are testable
+	/// without standing up a real CoreBluetooth stack (static + value-out, same pattern as
+	/// `Connect.liveNode`).
+	///
+	/// `CBCentralManagerOptionShowPowerAlertKey` is explicitly `false`. BLE is one of several
+	/// transports — discovery starts unconditionally on all of them at launch
+	/// (`AccessoryManager.startDiscovery()`) regardless of which transport the user actually
+	/// connects with — so leaving the (default-`true`) system "Bluetooth is turned off" alert
+	/// enabled meant a TCP/WiFi-only user saw it on every launch. Worse, presenting that alert
+	/// blips `scenePhase` (inactive/background then active), and `appDidBecomeActive()` restarts
+	/// BLE discovery whenever there's no active connection yet — which re-triggers the alert,
+	/// producing the dismiss/reappear loop reported in #2139. Suppressing the system alert here
+	/// doesn't change BLE functionality: `BLETransport` already reacts to `.poweredOff` in
+	/// `handleCentralState` and surfaces it as transport status, and the explicit onboarding
+	/// "enable Bluetooth" flow (`BluetoothAuthorizationHelper`) uses its own default-options
+	/// manager, so that user-initiated prompt still appears where it belongs.
+	static func centralManagerOptions(restoreIdentifier: String) -> [String: Any] {
+		[
+			CBCentralManagerOptionRestoreIdentifierKey: restoreIdentifier,
+			CBCentralManagerOptionShowPowerAlertKey: false
+		]
+	}
+
+	/// Broadcasts `status` (starting with the current value) so `AccessoryManager` can mirror it
+	/// onto a `@Published` property for the UI. Only one subscriber is expected — `AccessoryManager`
+	/// is the sole owner — so a second call replaces the first's continuation.
+	func statusUpdates() -> AsyncStream<TransportStatus> {
+		statusSubscriptionGeneration += 1
+		let generation = statusSubscriptionGeneration
+		return AsyncStream { continuation in
+			continuation.yield(status)
+			self.statusContinuation = continuation
+			continuation.onTermination = { [weak self] _ in
+				Task { await self?.clearStatusContinuation(generation: generation) }
+			}
+		}
+	}
+
+	/// Only clears `statusContinuation` if no later `statusUpdates()` call has already replaced it
+	/// — otherwise a slow-to-terminate old subscriber could null out a newer, still-live one.
+	private func clearStatusContinuation(generation: Int) {
+		guard generation == statusSubscriptionGeneration else { return }
+		statusContinuation = nil
 	}
 
 	func discoverDevices() -> AsyncStream<DiscoveryEvent> {
@@ -166,7 +230,13 @@ actor BLETransport: Transport {
 			}
 
 		case .poweredOff:
-			status = .error("Bluetooth is powered off")
+			// Leave status settled on .error rather than immediately overwriting it — this used
+			// to be clobbered by a trailing `status = .ready` a few lines below, so BLE-off was
+			// never actually observable via `status` (issue #2161). `.ready` elsewhere in this
+			// file (see `stopScanning()`) means "poweredOn and available", which powered-off is
+			// the opposite of, so `.error` here also matches this file's own convention for
+			// every other non-powered-on state (.unauthorized, .unsupported, .resetting, etc.).
+			status = .error(Self.poweredOffStatusMessage)
 			if let connection = activeConnection {
 				Task {
 					Logger.transport.error("🛜 [BLE] Bluetooth has powered off during active connection. Cleaning up.")
@@ -174,8 +244,7 @@ actor BLETransport: Transport {
 					await self.connectionDidDisconnect(fromPeripheral: connection.peripheral)
 				}
 			}
-			status = .ready
-			
+
 			// Close the gate to make people wait
 			Task { await setupCompleteGate.reset() }
 

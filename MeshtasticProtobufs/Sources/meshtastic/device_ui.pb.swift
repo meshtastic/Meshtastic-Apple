@@ -8,7 +8,11 @@
 // For information on using the generated types, please see the documentation:
 //   https://github.com/apple/swift-protobuf/
 
+#if canImport(FoundationEssentials)
+import FoundationEssentials
+#else
 import Foundation
+#endif
 import SwiftProtobuf
 
 // If the compiler emits an error on this type, it is because this file
@@ -305,116 +309,116 @@ public struct DeviceUIConfig: @unchecked Sendable {
   ///
   /// A version integer used to invalidate saved files when we make incompatible changes.
   public var version: UInt32 {
-    get {return _storage._version}
+    get {_storage._version}
     set {_uniqueStorage()._version = newValue}
   }
 
   ///
   /// TFT display brightness 1..255
   public var screenBrightness: UInt32 {
-    get {return _storage._screenBrightness}
+    get {_storage._screenBrightness}
     set {_uniqueStorage()._screenBrightness = newValue}
   }
 
   ///
   /// Screen timeout 0..900
   public var screenTimeout: UInt32 {
-    get {return _storage._screenTimeout}
+    get {_storage._screenTimeout}
     set {_uniqueStorage()._screenTimeout = newValue}
   }
 
   ///
   /// Screen/Settings lock enabled
   public var screenLock: Bool {
-    get {return _storage._screenLock}
+    get {_storage._screenLock}
     set {_uniqueStorage()._screenLock = newValue}
   }
 
   public var settingsLock: Bool {
-    get {return _storage._settingsLock}
+    get {_storage._settingsLock}
     set {_uniqueStorage()._settingsLock = newValue}
   }
 
   public var pinCode: UInt32 {
-    get {return _storage._pinCode}
+    get {_storage._pinCode}
     set {_uniqueStorage()._pinCode = newValue}
   }
 
   ///
   /// Color theme
   public var theme: Theme {
-    get {return _storage._theme}
+    get {_storage._theme}
     set {_uniqueStorage()._theme = newValue}
   }
 
   ///
   /// Audible message, banner and ring tone
   public var alertEnabled: Bool {
-    get {return _storage._alertEnabled}
+    get {_storage._alertEnabled}
     set {_uniqueStorage()._alertEnabled = newValue}
   }
 
   public var bannerEnabled: Bool {
-    get {return _storage._bannerEnabled}
+    get {_storage._bannerEnabled}
     set {_uniqueStorage()._bannerEnabled = newValue}
   }
 
   public var ringToneID: UInt32 {
-    get {return _storage._ringToneID}
+    get {_storage._ringToneID}
     set {_uniqueStorage()._ringToneID = newValue}
   }
 
   ///
   /// Localization
   public var language: Language {
-    get {return _storage._language}
+    get {_storage._language}
     set {_uniqueStorage()._language = newValue}
   }
 
   ///
   /// Node list filter
   public var nodeFilter: NodeFilter {
-    get {return _storage._nodeFilter ?? NodeFilter()}
+    get {_storage._nodeFilter ?? NodeFilter()}
     set {_uniqueStorage()._nodeFilter = newValue}
   }
   /// Returns true if `nodeFilter` has been explicitly set.
-  public var hasNodeFilter: Bool {return _storage._nodeFilter != nil}
+  public var hasNodeFilter: Bool {_storage._nodeFilter != nil}
   /// Clears the value of `nodeFilter`. Subsequent reads from it will return its default value.
   public mutating func clearNodeFilter() {_uniqueStorage()._nodeFilter = nil}
 
   ///
   /// Node list highlightening
   public var nodeHighlight: NodeHighlight {
-    get {return _storage._nodeHighlight ?? NodeHighlight()}
+    get {_storage._nodeHighlight ?? NodeHighlight()}
     set {_uniqueStorage()._nodeHighlight = newValue}
   }
   /// Returns true if `nodeHighlight` has been explicitly set.
-  public var hasNodeHighlight: Bool {return _storage._nodeHighlight != nil}
+  public var hasNodeHighlight: Bool {_storage._nodeHighlight != nil}
   /// Clears the value of `nodeHighlight`. Subsequent reads from it will return its default value.
   public mutating func clearNodeHighlight() {_uniqueStorage()._nodeHighlight = nil}
 
   ///
   /// 8 integers for screen calibration data
   public var calibrationData: Data {
-    get {return _storage._calibrationData}
+    get {_storage._calibrationData}
     set {_uniqueStorage()._calibrationData = newValue}
   }
 
   ///
   /// Map related data
   public var mapData: Map {
-    get {return _storage._mapData ?? Map()}
+    get {_storage._mapData ?? Map()}
     set {_uniqueStorage()._mapData = newValue}
   }
   /// Returns true if `mapData` has been explicitly set.
-  public var hasMapData: Bool {return _storage._mapData != nil}
+  public var hasMapData: Bool {_storage._mapData != nil}
   /// Clears the value of `mapData`. Subsequent reads from it will return its default value.
   public mutating func clearMapData() {_uniqueStorage()._mapData = nil}
 
   ///
   /// Compass mode
   public var compassMode: CompassMode {
-    get {return _storage._compassMode}
+    get {_storage._compassMode}
     set {_uniqueStorage()._compassMode = newValue}
   }
 
@@ -422,7 +426,7 @@ public struct DeviceUIConfig: @unchecked Sendable {
   /// RGB color for BaseUI
   /// 0xRRGGBB format, e.g. 0xFF0000 for red
   public var screenRgbColor: UInt32 {
-    get {return _storage._screenRgbColor}
+    get {_storage._screenRgbColor}
     set {_uniqueStorage()._screenRgbColor = newValue}
   }
 
@@ -430,14 +434,14 @@ public struct DeviceUIConfig: @unchecked Sendable {
   /// Clockface analog style
   /// true for analog clockface, false for digital clockface
   public var isClockfaceAnalog: Bool {
-    get {return _storage._isClockfaceAnalog}
+    get {_storage._isClockfaceAnalog}
     set {_uniqueStorage()._isClockfaceAnalog = newValue}
   }
 
   ///
   /// How the GPS coordinates are formatted on the OLED screen.
   public var gpsFormat: DeviceUIConfig.GpsCoordinateFormat {
-    get {return _storage._gpsFormat}
+    get {_storage._gpsFormat}
     set {_uniqueStorage()._gpsFormat = newValue}
   }
 
@@ -631,11 +635,11 @@ public struct Map: Sendable {
   ///
   /// Home coordinates
   public var home: GeoPoint {
-    get {return _home ?? GeoPoint()}
+    get {_home ?? GeoPoint()}
     set {_home = newValue}
   }
   /// Returns true if `home` has been explicitly set.
-  public var hasHome: Bool {return self._home != nil}
+  public var hasHome: Bool {self._home != nil}
   /// Clears the value of `home`. Subsequent reads from it will return its default value.
   public mutating func clearHome() {self._home = nil}
 

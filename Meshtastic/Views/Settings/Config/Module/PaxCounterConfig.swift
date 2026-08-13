@@ -31,7 +31,7 @@ struct PaxCounterConfig: View {
 					Label("Enabled", systemImage: "figure.walk.motion")
 					Text("When enabled the PAX Counter module counts the number of people passing by using WiFi and Bluetooth. Both WiFI and Bluetooth must be disabled for PAX counter to work.")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.toggleStyle(.switch)
 				.listRowSeparator(.visible)
 				if enabled {
 					UpdateIntervalPicker(

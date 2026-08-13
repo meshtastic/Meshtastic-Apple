@@ -81,7 +81,10 @@ struct DiscoveryMapView: View {
 					let coord = CLLocationCoordinate2D(latitude: node.latitude, longitude: node.longitude)
 					let nodeColor = Color(UIColor(hex: UInt32(node.nodeNum)))
 
-					Annotation("", coordinate: coord) {
+					// `Annotation`'s title argument drives MapKit-internal behavior (clustering/collision
+					// text) — it is NOT surfaced as the hosted content's VoiceOver accessibility label.
+					// The explicit modifiers below are what actually make this pin announce node.displayName.
+					Annotation(node.displayName, coordinate: coord) {
 						VStack(spacing: 2) {
 							CircleText(
 								text: node.shortName.isEmpty ? String(node.nodeNum.toHex().suffix(4)) : node.shortName,
@@ -92,6 +95,8 @@ struct DiscoveryMapView: View {
 								.font(.caption2)
 								.foregroundStyle(nodeColor)
 						}
+						.accessibilityElement(children: .combine)
+						.accessibilityLabel(node.displayName)
 					}
 				}
 

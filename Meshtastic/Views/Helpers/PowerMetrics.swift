@@ -89,7 +89,7 @@ struct PowerMetricCompactWidget: View {
 						Text("\(value, specifier: type == .current ? "%.1f" : "%.2f") \(type == .current ? "mA" : "V")")
 								.font(type == .current ? .system(size: 35) : .system(size: 30))
 				}
-				.frame(minWidth: 100, idealWidth: 125, maxWidth: 150, minHeight: 120, idealHeight: 130, maxHeight: 140)
+				.frame(minWidth: 100, idealWidth: 125, maxWidth: 150, minHeight: 120)
 				.padding()
 				.background(.tertiary, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
 		}

@@ -14,6 +14,7 @@ struct TraceRouteLog: View {
 	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
 	@ObservedObject var locationsHandler = LocationsHandler.shared
 	@Environment(\.modelContext) private var context
+	@EnvironmentObject var router: Router
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@State private var isPresentingClearLogConfirm: Bool = false
 	@State var isExporting = false
@@ -87,20 +88,48 @@ struct TraceRouteLog: View {
 				ScrollView {
 					if selectedRoute != nil {
 						if selectedRoute?.response ?? false && selectedRoute?.hopsTowards ?? 0 >= 0 {
+							let routeValue = selectedRoute?.routeText ?? "Unknown".localized
+							let routeBackValue = selectedRoute?.routeBackText ?? "Unknown".localized
 							Label {
-								Text("Route: \(selectedRoute?.routeText ?? "Unknown".localized)")
+								Text("Route: \(routeValue)")
+									.textSelection(.enabled)
 							} icon: {
 								Image(systemName: "signpost.right")
 									.symbolRenderingMode(.hierarchical)
 							}
 							.font(.title3)
+							.contextMenu {
+								Button {
+									UIPasteboard.general.string = String(localized: "Route: \(routeValue)")
+								} label: {
+									Label("Copy", systemImage: "doc.on.doc")
+								}
+							}
 							Label {
-								Text("Route Back: \(selectedRoute?.routeBackText ?? "Unknown".localized)")
+								Text("Route Back: \(routeBackValue)")
+									.textSelection(.enabled)
 							} icon: {
 								Image(systemName: "signpost.left")
 									.symbolRenderingMode(.hierarchical)
 							}
 							.font(.title3)
+							.contextMenu {
+								Button {
+									UIPasteboard.general.string = String(localized: "Route Back: \(routeBackValue)")
+								} label: {
+									Label("Copy", systemImage: "doc.on.doc")
+								}
+							}
+							if selectedRoute?.hasPositions ?? false, let routeID = selectedRoute?.id {
+								Button {
+									router.selectedTab = .map
+									router.mapState = .traceRoute(routeID)
+								} label: {
+									Label("Show on Map", systemImage: "map")
+								}
+								.buttonStyle(.bordered)
+								.padding(.top, 4)
+							}
 						} else if !(selectedRoute?.sent ?? true) {
 								Label {
 									VStack {
@@ -265,10 +294,17 @@ struct TraceRouteLog: View {
 				} else {
 					let i = (idx - 1) / 2
 					let snrColor = getSnrColor(snr: hops[i].snr, preset: modemPreset)
+					let signalTier = getLoRaSignalStrength(snr: hops[i].snr, rssi: 0, preset: modemPreset)
 					Image(systemName: "arrowshape.right.fill")
 						.resizable()
 						.frame(width: idiom == .phone ? 25 : 60, height: idiom == .phone ? 25 : 60)
 						.foregroundColor(snrColor.opacity(0.7))
+						.accessibilityLabel(
+							String(
+								localized: "Signal \(signalTier.description)",
+								comment: "VoiceOver: signal quality of this trace route hop"
+							)
+						)
 				}
 			}
 		}

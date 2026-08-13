@@ -40,6 +40,11 @@ extension NodeBackupManager {
 		let backupUsers = try backupContext.fetch(FetchDescriptor<UserEntity>())
 		var usersByNum: [Int64: UserEntity] = [:]
 		for src in backupUsers {
+			// Each `dst` is a freshly-created entity that we insert into the live context — this copy never
+			// overwrites the public key of an already-populated *live* record, so the inbound-mesh
+			// first-wins key protection (UpdateSwiftData / MeshPackets) doesn't apply here. This is a
+			// user-initiated restore of the user's own trusted backup, carrying `keyMatch`/`newPublicKey`
+			// forward verbatim.
 			let dst = UserEntity()
 			dst.hwDisplayName = src.hwDisplayName
 			dst.hwModel = src.hwModel
@@ -122,6 +127,7 @@ extension NodeBackupManager {
 			dst.hasBluetooth = src.hasBluetooth
 			dst.hasEthernet = src.hasEthernet
 			dst.hasWifi = src.hasWifi
+			dst.hasXeddsa = src.hasXeddsa
 			dst.hwModel = src.hwModel
 			dst.positionFlags = src.positionFlags
 			dst.role = src.role
@@ -286,22 +292,38 @@ extension NodeBackupManager {
 			dst.sent = src.sent
 			dst.snr = src.snr
 			dst.time = src.time
+			dst.fromNum = src.fromNum
+			dst.toNum = src.toNum
 			if let srcNode = src.node, let liveNode = nodesByNum[srcNode.num] {
 				dst.node = liveNode
 			}
 			liveContext.insert(dst)
 			for srcHop in src.hops {
 				let dstHop = TraceRouteHopEntity()
-				dstHop.altitude = srcHop.altitude
 				dstHop.back = srcHop.back
-				dstHop.latitudeI = srcHop.latitudeI
-				dstHop.longitudeI = srcHop.longitudeI
+				dstHop.index = srcHop.index
 				dstHop.name = srcHop.name
 				dstHop.num = srcHop.num
 				dstHop.snr = srcHop.snr
 				dstHop.time = srcHop.time
 				dstHop.traceRoute = dst
 				liveContext.insert(dstHop)
+			}
+			for srcPosition in src.nodePositions {
+				let dstPosition = TraceRouteNodePositionEntity()
+				dstPosition.num = srcPosition.num
+				dstPosition.altitude = srcPosition.altitude
+				dstPosition.heading = srcPosition.heading
+				dstPosition.latitudeI = srcPosition.latitudeI
+				dstPosition.longitudeI = srcPosition.longitudeI
+				dstPosition.precisionBits = srcPosition.precisionBits
+				dstPosition.satsInView = srcPosition.satsInView
+				dstPosition.seqNo = srcPosition.seqNo
+				dstPosition.snr = srcPosition.snr
+				dstPosition.speed = srcPosition.speed
+				dstPosition.time = srcPosition.time
+				dstPosition.traceRoute = dst
+				liveContext.insert(dstPosition)
 			}
 		}
 	}

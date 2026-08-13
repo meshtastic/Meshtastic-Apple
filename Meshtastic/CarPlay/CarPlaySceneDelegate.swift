@@ -27,9 +27,20 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 	// Retained template references so we can call updateSections rather than replacing the whole tree.
 	private var channelsTemplate: CPListTemplate?
 	private var directMessagesTemplate: CPListTemplate?
-	// Tracks which conversation identifiers have already had a contact intent donated
-	// during this CarPlay session so we don't re-donate on every refresh.
-	private var donatedConversationIds = Set<String>()
+	// Tracks which conversation identifiers have already had a compose-contact
+	// intent donated during this CarPlay session so we don't re-donate on every
+	// refresh.
+	//
+	// NOTE: this set is intentionally separate from `donatedReadKeys`. They were
+	// once a single set, which meant whichever donation happened first (compose
+	// intent for a read conversation vs. communication notification for an unread
+	// one) permanently blocked the other — a channel that started read and later
+	// received a message could never get its read-back notification, so tapping it
+	// composed instead of reading.
+	private var donatedComposeIds = Set<String>()
+	// Tracks communication-notification donations keyed by conversation AND
+	// message, so a newer unread message re-donates and stays readable by Siri.
+	private var donatedReadKeys = Set<String>()
 
 	private lazy var context: ModelContext = PersistenceController.shared.context
 
@@ -72,6 +83,17 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 			}
 			.store(in: &cancellables)
 
+		// Refresh rows whenever read-state changes anywhere — messages arriving,
+		// being read in the phone app, or Siri read-aloud completing. Without this
+		// the templates were frozen between connection changes and unread counts
+		// went stale for the whole drive.
+		NotificationCenter.default.publisher(for: .meshMessagesDidChange)
+			.debounce(for: .milliseconds(500), scheduler: DispatchQueue.main)
+			.sink { [weak self] _ in
+				self?.refreshSections()
+			}
+			.store(in: &cancellables)
+
 		// Start Live Activity immediately if already connected
 		if AccessoryManager.shared.isConnected {
 			startLiveActivityIfNeeded()
@@ -85,7 +107,8 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 		Logger.services.info("🚗 [CarPlay] Disconnected")
 		endLiveActivity()
 		cancellables.removeAll()
-		donatedConversationIds.removeAll()
+		donatedComposeIds.removeAll()
+		donatedReadKeys.removeAll()
 		channelsTemplate = nil
 		directMessagesTemplate = nil
 		self.interfaceController = nil
@@ -404,7 +427,12 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 		)
 		let results = (try? context.fetch(descriptor)) ?? []
 		var counts = [Int64: Int]()
-		for message in results {
+		// toUser != nil: only direct messages count toward a DM row. Without the
+		// filter, unread CHANNEL messages from the same sender inflated that
+		// sender's DM badge — diverging from the in-app DM counts, which have
+		// always excluded channel traffic. (Checked in Swift, not the predicate:
+		// optional-relationship nil compares in #Predicate crash on iOS 26.)
+		for message in results where message.toUser != nil {
 			if let num = message.fromUser?.num, nodeNumSet.contains(num) {
 				counts[num, default: 0] += 1
 			}
@@ -436,7 +464,7 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 	/// Donates a contact intent for a DM conversation the first time it is seen this session.
 	/// Subsequent renders are no-ops, avoiding repeated IPC calls to the intents daemon.
 	private func donateMessageIntentIfNeeded(conversationId: String, toNodeNum: Int64, name: String) {
-		guard donatedConversationIds.insert(conversationId).inserted else { return }
+		guard donatedComposeIds.insert(conversationId).inserted else { return }
 
 		let handleValue = "\(toNodeNum)@meshtastic.local"
 		let person = INPerson(
@@ -468,7 +496,7 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 
 	/// Donates a contact intent for a channel conversation the first time it is seen this session.
 	private func donateChannelIntentIfNeeded(conversationId: String, channelIndex: Int, channelName: String) {
-		guard donatedConversationIds.insert(conversationId).inserted else { return }
+		guard donatedComposeIds.insert(conversationId).inserted else { return }
 
 		let channelHandle = "channel-\(channelIndex)@meshtastic.local"
 		let recipient = INPerson(
@@ -504,8 +532,6 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 	/// Posts a Communication Notification for the most recent unread channel message.
 	/// This is required for CarPlay to offer read-back instead of compose when tapped.
 	private func donateLatestIncomingChannelMessage(channelIndex: Int32, conversationId: String, channelName: String) {
-		guard donatedConversationIds.insert(conversationId).inserted else { return }
-
 		var descriptor = FetchDescriptor<MessageEntity>(
 			predicate: #Predicate { message in
 				message.read == false &&
@@ -521,6 +547,9 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 
 		guard let message = (try? context.fetch(descriptor))?.first(where: { $0.toUser == nil }),
 			  let fromUser = message.fromUser else { return }
+		// Dedup AFTER resolving the message, keyed by conversation + message, so a
+		// newer unread message re-donates and stays readable by Siri.
+		guard donatedReadKeys.insert("\(conversationId)#\(message.messageId)").inserted else { return }
 
 		postCommunicationNotification(
 			message: message,
@@ -532,8 +561,6 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 
 	/// Posts a Communication Notification for the most recent unread DM.
 	private func donateLatestIncomingDM(nodeNum: Int64, conversationId: String, name: String) {
-		guard donatedConversationIds.insert(conversationId).inserted else { return }
-
 		var descriptor = FetchDescriptor<MessageEntity>(
 			predicate: #Predicate { message in
 				message.read == false &&
@@ -543,10 +570,16 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 			},
 			sortBy: [SortDescriptor(\MessageEntity.messageTimestamp, order: .reverse)]
 		)
-		descriptor.fetchLimit = 1
+		// Small batch + toUser filter in Swift (see channel variant): this donation
+		// must read back a DIRECT message — the sender's unread channel messages
+		// don't belong to this conversation.
+		descriptor.fetchLimit = 5
 
-		guard let message = (try? context.fetch(descriptor))?.first,
+		guard let message = (try? context.fetch(descriptor))?.first(where: { $0.toUser != nil }),
 			  let fromUser = message.fromUser else { return }
+		// Dedup AFTER resolving the message, keyed by conversation + message, so a
+		// newer unread message re-donates and stays readable by Siri.
+		guard donatedReadKeys.insert("\(conversationId)#\(message.messageId)").inserted else { return }
 
 		postCommunicationNotification(
 			message: message,
@@ -675,6 +708,10 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 						attachments: nil
 					)
 				}
+
+				// Shared dedup with the per-row donations: skip if this exact
+				// message has already been donated this session (e.g. a reconnect).
+				guard donatedReadKeys.insert("\(conversationId)#\(message.messageId)").inserted else { continue }
 
 				// Donate the interaction
 				let interaction = INInteraction(intent: intent, response: nil)

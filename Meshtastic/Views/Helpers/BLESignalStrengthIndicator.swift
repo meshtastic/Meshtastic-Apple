@@ -59,7 +59,7 @@ struct SignalStrengthIndicator: View {
             }
         }
         .accessibilityElement(children: .ignore)
-		.accessibilityLabel("Signal strength".localized)
+		.accessibilityLabel(String(localized: "Signal strength", comment: "VoiceOver label for the signal strength indicator"))
         .accessibilityValue(accessibilityDescription)
     }
 

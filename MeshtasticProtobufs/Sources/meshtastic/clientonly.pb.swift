@@ -31,90 +31,112 @@ public struct DeviceProfile: Sendable {
   ///
   /// Long name for the node
   public var longName: String {
-    get {return _longName ?? String()}
+    get {_longName ?? String()}
     set {_longName = newValue}
   }
   /// Returns true if `longName` has been explicitly set.
-  public var hasLongName: Bool {return self._longName != nil}
+  public var hasLongName: Bool {self._longName != nil}
   /// Clears the value of `longName`. Subsequent reads from it will return its default value.
   public mutating func clearLongName() {self._longName = nil}
 
   ///
   /// Short name of the node
   public var shortName: String {
-    get {return _shortName ?? String()}
+    get {_shortName ?? String()}
     set {_shortName = newValue}
   }
   /// Returns true if `shortName` has been explicitly set.
-  public var hasShortName: Bool {return self._shortName != nil}
+  public var hasShortName: Bool {self._shortName != nil}
   /// Clears the value of `shortName`. Subsequent reads from it will return its default value.
   public mutating func clearShortName() {self._shortName = nil}
 
   ///
   /// The url of the channels from our node
   public var channelURL: String {
-    get {return _channelURL ?? String()}
+    get {_channelURL ?? String()}
     set {_channelURL = newValue}
   }
   /// Returns true if `channelURL` has been explicitly set.
-  public var hasChannelURL: Bool {return self._channelURL != nil}
+  public var hasChannelURL: Bool {self._channelURL != nil}
   /// Clears the value of `channelURL`. Subsequent reads from it will return its default value.
   public mutating func clearChannelURL() {self._channelURL = nil}
 
   ///
   /// The Config of the node
   public var config: LocalConfig {
-    get {return _config ?? LocalConfig()}
+    get {_config ?? LocalConfig()}
     set {_config = newValue}
   }
   /// Returns true if `config` has been explicitly set.
-  public var hasConfig: Bool {return self._config != nil}
+  public var hasConfig: Bool {self._config != nil}
   /// Clears the value of `config`. Subsequent reads from it will return its default value.
   public mutating func clearConfig() {self._config = nil}
 
   ///
   /// The ModuleConfig of the node
   public var moduleConfig: LocalModuleConfig {
-    get {return _moduleConfig ?? LocalModuleConfig()}
+    get {_moduleConfig ?? LocalModuleConfig()}
     set {_moduleConfig = newValue}
   }
   /// Returns true if `moduleConfig` has been explicitly set.
-  public var hasModuleConfig: Bool {return self._moduleConfig != nil}
+  public var hasModuleConfig: Bool {self._moduleConfig != nil}
   /// Clears the value of `moduleConfig`. Subsequent reads from it will return its default value.
   public mutating func clearModuleConfig() {self._moduleConfig = nil}
 
   ///
   /// Fixed position data
   public var fixedPosition: Position {
-    get {return _fixedPosition ?? Position()}
+    get {_fixedPosition ?? Position()}
     set {_fixedPosition = newValue}
   }
   /// Returns true if `fixedPosition` has been explicitly set.
-  public var hasFixedPosition: Bool {return self._fixedPosition != nil}
+  public var hasFixedPosition: Bool {self._fixedPosition != nil}
   /// Clears the value of `fixedPosition`. Subsequent reads from it will return its default value.
   public mutating func clearFixedPosition() {self._fixedPosition = nil}
 
   ///
   /// Ringtone for ExternalNotification
   public var ringtone: String {
-    get {return _ringtone ?? String()}
+    get {_ringtone ?? String()}
     set {_ringtone = newValue}
   }
   /// Returns true if `ringtone` has been explicitly set.
-  public var hasRingtone: Bool {return self._ringtone != nil}
+  public var hasRingtone: Bool {self._ringtone != nil}
   /// Clears the value of `ringtone`. Subsequent reads from it will return its default value.
   public mutating func clearRingtone() {self._ringtone = nil}
 
   ///
   /// Predefined messages for CannedMessage
   public var cannedMessages: String {
-    get {return _cannedMessages ?? String()}
+    get {_cannedMessages ?? String()}
     set {_cannedMessages = newValue}
   }
   /// Returns true if `cannedMessages` has been explicitly set.
-  public var hasCannedMessages: Bool {return self._cannedMessages != nil}
+  public var hasCannedMessages: Bool {self._cannedMessages != nil}
   /// Clears the value of `cannedMessages`. Subsequent reads from it will return its default value.
   public mutating func clearCannedMessages() {self._cannedMessages = nil}
+
+  ///
+  /// Is the node unmessagable
+  public var isUnmessagable: Bool {
+    get {_isUnmessagable ?? false}
+    set {_isUnmessagable = newValue}
+  }
+  /// Returns true if `isUnmessagable` has been explicitly set.
+  public var hasIsUnmessagable: Bool {self._isUnmessagable != nil}
+  /// Clears the value of `isUnmessagable`. Subsequent reads from it will return its default value.
+  public mutating func clearIsUnmessagable() {self._isUnmessagable = nil}
+
+  ///
+  /// Is this node in licensed user mode
+  public var isLicensed: Bool {
+    get {_isLicensed ?? false}
+    set {_isLicensed = newValue}
+  }
+  /// Returns true if `isLicensed` has been explicitly set.
+  public var hasIsLicensed: Bool {self._isLicensed != nil}
+  /// Clears the value of `isLicensed`. Subsequent reads from it will return its default value.
+  public mutating func clearIsLicensed() {self._isLicensed = nil}
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -128,6 +150,8 @@ public struct DeviceProfile: Sendable {
   fileprivate var _fixedPosition: Position? = nil
   fileprivate var _ringtone: String? = nil
   fileprivate var _cannedMessages: String? = nil
+  fileprivate var _isUnmessagable: Bool? = nil
+  fileprivate var _isLicensed: Bool? = nil
 }
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
@@ -136,7 +160,7 @@ fileprivate let _protobuf_package = "meshtastic"
 
 extension DeviceProfile: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".DeviceProfile"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}long_name\0\u{3}short_name\0\u{3}channel_url\0\u{1}config\0\u{3}module_config\0\u{3}fixed_position\0\u{1}ringtone\0\u{3}canned_messages\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}long_name\0\u{3}short_name\0\u{3}channel_url\0\u{1}config\0\u{3}module_config\0\u{3}fixed_position\0\u{1}ringtone\0\u{3}canned_messages\0\u{3}is_unmessagable\0\u{3}is_licensed\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -152,6 +176,8 @@ extension DeviceProfile: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
       case 6: try { try decoder.decodeSingularMessageField(value: &self._fixedPosition) }()
       case 7: try { try decoder.decodeSingularStringField(value: &self._ringtone) }()
       case 8: try { try decoder.decodeSingularStringField(value: &self._cannedMessages) }()
+      case 9: try { try decoder.decodeSingularBoolField(value: &self._isUnmessagable) }()
+      case 10: try { try decoder.decodeSingularBoolField(value: &self._isLicensed) }()
       default: break
       }
     }
@@ -186,6 +212,12 @@ extension DeviceProfile: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
     try { if let v = self._cannedMessages {
       try visitor.visitSingularStringField(value: v, fieldNumber: 8)
     } }()
+    try { if let v = self._isUnmessagable {
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 9)
+    } }()
+    try { if let v = self._isLicensed {
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 10)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -198,6 +230,8 @@ extension DeviceProfile: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
     if lhs._fixedPosition != rhs._fixedPosition {return false}
     if lhs._ringtone != rhs._ringtone {return false}
     if lhs._cannedMessages != rhs._cannedMessages {return false}
+    if lhs._isUnmessagable != rhs._isUnmessagable {return false}
+    if lhs._isLicensed != rhs._isLicensed {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

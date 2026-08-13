@@ -100,7 +100,10 @@ struct PasswordEntrySheet: View {
 			.navigationBarTitleDisplayMode(.inline)
 			.toolbar {
 				ToolbarItem(placement: .cancellationAction) {
-					Button("Cancel", action: onCancel)
+					Button(action: onCancel) {
+						Image(systemName: "xmark")
+					}
+					.accessibilityLabel(String(localized: "Cancel", comment: "VoiceOver: dismiss the Wi-Fi password entry sheet"))
 				}
 				ToolbarItem(placement: .confirmationAction) {
 					Button("Join") {
@@ -204,7 +207,10 @@ private struct HiddenNetworkSheet: View {
 			.navigationBarTitleDisplayMode(.inline)
 			.toolbar {
 				ToolbarItem(placement: .cancellationAction) {
-					Button("Cancel", action: onCancel)
+					Button(action: onCancel) {
+						Image(systemName: "xmark")
+					}
+					.accessibilityLabel(String(localized: "Cancel", comment: "VoiceOver: dismiss the hidden Wi-Fi network entry sheet"))
 				}
 				ToolbarItem(placement: .confirmationAction) {
 					Button("Join") {

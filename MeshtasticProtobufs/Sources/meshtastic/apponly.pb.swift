@@ -38,11 +38,11 @@ public struct ChannelSet: Sendable {
   ///
   /// LoRa config
   public var loraConfig: Config.LoRaConfig {
-    get {return _loraConfig ?? Config.LoRaConfig()}
+    get {_loraConfig ?? Config.LoRaConfig()}
     set {_loraConfig = newValue}
   }
   /// Returns true if `loraConfig` has been explicitly set.
-  public var hasLoraConfig: Bool {return self._loraConfig != nil}
+  public var hasLoraConfig: Bool {self._loraConfig != nil}
   /// Clears the value of `loraConfig`. Subsequent reads from it will return its default value.
   public mutating func clearLoraConfig() {self._loraConfig = nil}
 
