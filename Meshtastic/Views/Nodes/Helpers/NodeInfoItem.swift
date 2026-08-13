@@ -10,20 +10,58 @@ import CoreLocation
 import MapKit
 @preconcurrency import SwiftData
 
+/// Value-type hardware data captured while a user row is live.
+///
+/// Rendering the hardware section from this summary avoids retaining SwiftData user data in its
+/// view hierarchy while still allowing the parent query to observe later user updates.
+struct NodeInfoItemSummary: Equatable {
+	let hwModel: String?
+	let hwModelId: Int64
+
+	@MainActor init?(user: UserEntity) {
+		guard user.modelContext != nil, !user.isDeleted else { return nil }
+
+		hwModel = user.hwModel
+		hwModelId = Int64(user.hwModelId)
+	}
+}
+
 struct NodeInfoItem: View {
 
-	@Bindable var node: NodeInfoEntity
-	@Query var hardware: [DeviceHardwareEntity]
-	@EnvironmentObject var meshtasticAPI: MeshtasticAPI
-	private let hardwareModel: Int64
+	@Query private var users: [UserEntity]
 
-	init(node: NodeInfoEntity) {
-		self.node = node
-		let hwModel = Int64(node.liveUser?.hwModelId ?? 0)
-		hardwareModel = hwModel
-		_hardware = Query(filter: #Predicate<DeviceHardwareEntity> { hw in
-			hw.hwModel == hwModel
-		}, sort: [SortDescriptor(\.hwModelSlug)])
+	init(nodeNum: Int64) {
+		_users = Query(filter: #Predicate<UserEntity> { $0.num == nodeNum })
+	}
+
+	var body: some View {
+		// Query the current user by node number instead of dereferencing `NodeInfoEntity.user`.
+		// The relationship can retain an invalid backing object after a store reset, whereas this
+		// query drops deleted users and re-renders when live hardware metadata changes.
+		if let user = users.first,
+			let summary = NodeInfoItemSummary(user: user) {
+			NodeInfoHardwareSection(summary: summary)
+				.id(summary.hwModelId)
+		} else {
+			EmptyView()
+		}
+	}
+}
+
+/// The hardware query is initialized from the summary's value data rather than a live node
+/// relationship, so the detail can continue rendering safely after the node is detached.
+private struct NodeInfoHardwareSection: View {
+	let summary: NodeInfoItemSummary
+	@Query private var hardware: [DeviceHardwareEntity]
+	@EnvironmentObject private var meshtasticAPI: MeshtasticAPI
+
+	init(summary: NodeInfoItemSummary) {
+		self.summary = summary
+		let hardwareModel = summary.hwModelId
+		_hardware = Query(
+			filter: #Predicate<DeviceHardwareEntity> { $0.hwModel == hardwareModel },
+			sort: [SortDescriptor(\.hwModelSlug)]
+		)
 	}
 
 	private var hasDevice: Bool {
@@ -35,7 +73,7 @@ struct NodeInfoItem: View {
 	}
 
 	private var hardwarePresentation: HardwareCatalogPresentation? {
-		HardwareCatalogResolver.presentation(for: hardwareModel, in: hardware)
+		HardwareCatalogResolver.presentation(for: summary.hwModelId, in: hardware)
 	}
 
 	private var supportRosette: some View {
@@ -43,12 +81,12 @@ struct NodeInfoItem: View {
 			.foregroundStyle(isActivelySupported ? .green : .secondary)
 	}
 
-	private func modelName(for user: UserEntity) -> String {
-		hardwarePresentation?.displayName ?? user.hwModel ?? "Unknown"
+	private var modelName: String {
+		hardwarePresentation?.displayName ?? summary.hwModel ?? "Unknown"
 	}
 
-	private func isPortduino(_ user: UserEntity) -> Bool {
-		user.hwModel == "PORTDUINO"
+	private var isPortduino: Bool {
+		summary.hwModel == "PORTDUINO"
 	}
 
 	private var supportLevel: SupportLevel? {
@@ -64,9 +102,9 @@ struct NodeInfoItem: View {
 			: "Hardware model information is unavailable."
 	}
 
-	private func sectionTitle(for user: UserEntity) -> String {
-		if user.hwModel == "UNSET" { return "Hardware" }
-		if isPortduino(user) { return "Community Hardware" }
+	private var sectionTitle: String {
+		if summary.hwModel == "UNSET" { return "Hardware" }
+		if isPortduino { return "Community Hardware" }
 		guard let supportLevel else { return "Hardware" }
 		switch supportLevel {
 		case .flagship:
@@ -81,108 +119,106 @@ struct NodeInfoItem: View {
 	}
 
 	var body: some View {
-		if let user = node.liveUser {
-			Section(sectionTitle(for: user)) {
-				if user.hwModel == "UNSET" {
-					// MARK: - Unset / Incomplete
-					HStack {
-						Image(systemName: "flipphone")
-							.symbolRenderingMode(.hierarchical)
-							.font(.title2)
-							.foregroundStyle(.secondary)
-						Text("Incomplete")
-							.foregroundStyle(.secondary)
-					}
-				} else if meshtasticAPI.isLoadingDeviceList && !hasDevice {
-					// MARK: - Loading
-					HStack {
-						ProgressView()
-						Text("Loading hardware info…")
-							.font(.subheadline)
-							.foregroundStyle(.secondary)
-					}
-					.listRowSeparator(.hidden)
-				} else if hasDevice && supportLevel == .flagship {
-					// MARK: - Flagship Device (Hero Layout)
-					VStack(spacing: 12) {
-						ZStack(alignment: .bottomTrailing) {
-							DeviceHardwareImage(hwId: user.hwModelId)
-								.frame(maxWidth: .infinity)
-								.frame(height: 200)
-								.cornerRadius(12)
-							supportRosette
-								.font(.title2)
-								.padding(8)
-						}
-						Text(modelName(for: user))
-							.font(.headline)
-							.frame(maxWidth: .infinity, alignment: .center)
-					}
-					.listRowSeparator(.hidden)
-				} else if hasDevice && (supportLevel == .niche || supportLevel == .legacy) {
-					// MARK: - Niche / Legacy Device
-					HStack(spacing: 16) {
-						DeviceHardwareImage(hwId: user.hwModelId)
-							.frame(width: 60, height: 60)
-							.cornerRadius(8)
-							.opacity(0.6)
-						Text(modelName(for: user))
-							.font(.subheadline)
-							.foregroundStyle(.secondary)
-						Spacer()
-						supportRosette
-							.font(.title2)
-					}
-					.listRowSeparator(.hidden)
-				} else if isPortduino(user) {
-					// MARK: - Portduino / Linux (community-supported, no firmware)
-					HStack(spacing: 16) {
-						DeviceHardwareImage(platformioTarget: "native")
-							.frame(width: 60, height: 60)
-							.cornerRadius(8)
-						VStack(alignment: .leading, spacing: 4) {
-							Text(modelName(for: user))
-								.font(.subheadline)
-								.foregroundStyle(.secondary)
-							Text("Community supported Linux device.")
-								.font(.caption)
-								.foregroundStyle(.tertiary)
-						}
-						Spacer()
-						supportRosette
-							.font(.title2)
-					}
-					.listRowSeparator(.hidden)
-				} else {
-					// MARK: - Discontinued / Unknown Device
-					HStack(spacing: 16) {
-						if hardwarePresentation?.activelySupported == nil {
-							Image(systemName: "questionmark.circle.fill")
-								.font(.system(size: 40))
-								.foregroundStyle(.secondary)
-						} else {
-							supportRosette
-								.font(.system(size: 40))
-						}
-						VStack(alignment: .leading, spacing: 4) {
-							Text(modelName(for: user))
-								.font(.subheadline)
-								.foregroundStyle(.secondary)
-							Text(hardwareDescription)
-								.font(.caption)
-								.foregroundStyle(.tertiary)
-						}
-						Spacer()
-					}
-					.listRowSeparator(.hidden)
+		Section(sectionTitle) {
+			if summary.hwModel == "UNSET" {
+				// MARK: - Unset / Incomplete
+				HStack {
+					Image(systemName: "flipphone")
+						.symbolRenderingMode(.hierarchical)
+						.font(.title2)
+						.foregroundStyle(.secondary)
+					Text("Incomplete")
+						.foregroundStyle(.secondary)
 				}
+			} else if meshtasticAPI.isLoadingDeviceList && !hasDevice {
+				// MARK: - Loading
+				HStack {
+					ProgressView()
+					Text("Loading hardware info…")
+						.font(.subheadline)
+						.foregroundStyle(.secondary)
+				}
+				.listRowSeparator(.hidden)
+			} else if hasDevice && supportLevel == .flagship {
+				// MARK: - Flagship Device (Hero Layout)
+				VStack(spacing: 12) {
+					ZStack(alignment: .bottomTrailing) {
+						DeviceHardwareImage(hwId: Int32(summary.hwModelId))
+							.frame(maxWidth: .infinity)
+							.frame(height: 200)
+							.cornerRadius(12)
+						supportRosette
+							.font(.title2)
+							.padding(8)
+					}
+					Text(modelName)
+						.font(.headline)
+						.frame(maxWidth: .infinity, alignment: .center)
+				}
+				.listRowSeparator(.hidden)
+			} else if hasDevice && (supportLevel == .niche || supportLevel == .legacy) {
+				// MARK: - Niche / Legacy Device
+				HStack(spacing: 16) {
+					DeviceHardwareImage(hwId: Int32(summary.hwModelId))
+						.frame(width: 60, height: 60)
+						.cornerRadius(8)
+						.opacity(0.6)
+					Text(modelName)
+						.font(.subheadline)
+						.foregroundStyle(.secondary)
+					Spacer()
+					supportRosette
+						.font(.title2)
+				}
+				.listRowSeparator(.hidden)
+			} else if isPortduino {
+				// MARK: - Portduino / Linux (community-supported, no firmware)
+				HStack(spacing: 16) {
+					DeviceHardwareImage(platformioTarget: "native")
+						.frame(width: 60, height: 60)
+						.cornerRadius(8)
+					VStack(alignment: .leading, spacing: 4) {
+						Text(modelName)
+							.font(.subheadline)
+							.foregroundStyle(.secondary)
+						Text("Community supported Linux device.")
+							.font(.caption)
+							.foregroundStyle(.tertiary)
+					}
+					Spacer()
+					supportRosette
+						.font(.title2)
+				}
+				.listRowSeparator(.hidden)
+			} else {
+				// MARK: - Discontinued / Unknown Device
+				HStack(spacing: 16) {
+					if hardwarePresentation?.activelySupported == nil {
+						Image(systemName: "questionmark.circle.fill")
+							.font(.system(size: 40))
+							.foregroundStyle(.secondary)
+					} else {
+						supportRosette
+							.font(.system(size: 40))
+					}
+					VStack(alignment: .leading, spacing: 4) {
+						Text(modelName)
+							.font(.subheadline)
+							.foregroundStyle(.secondary)
+						Text(hardwareDescription)
+							.font(.caption)
+							.foregroundStyle(.tertiary)
+					}
+					Spacer()
+				}
+				.listRowSeparator(.hidden)
 			}
-			.accessibilityElement(children: .combine)
+		}
+		.accessibilityElement(children: .combine)
 
-			// Device links section (shown only when device has a platformioTarget)
-			if let target = hardwarePresentation?.platformioTarget {
-				DeviceLinksSection(platformioTarget: target)
-			}
+		// Device links section (shown only when device has a platformioTarget)
+		if let target = hardwarePresentation?.platformioTarget {
+			DeviceLinksSection(platformioTarget: target)
 		}
 	}
 }

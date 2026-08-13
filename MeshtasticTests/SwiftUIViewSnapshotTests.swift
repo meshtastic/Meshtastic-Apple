@@ -1554,6 +1554,7 @@ struct NodeDetailSnapshotTests {
 		node.favorite = true
 
 		let user = UserEntity()
+		user.num = node.num
 		user.longName = "Hopscotch Base"
 		user.shortName = "HB"
 		user.role = 0 // Client
@@ -1598,7 +1599,7 @@ struct NodeDetailSnapshotTests {
 		node.telemetries = [deviceTelemetry, envTelemetry]
 		context.insert(node)
 
-		let view = NodeDetail(node: node)
+		let view = NodeDetail(node: node, nodeNum: node.num)
 			.environmentObject(AccessoryManager.shared)
 			.environmentObject(MeshtasticAPI.shared)
 			.environmentObject(Router())

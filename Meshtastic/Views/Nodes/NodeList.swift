@@ -46,7 +46,7 @@ struct NodeList: View {
 					if opensSeededLocalStatsLog {
 						LocalStatsLog(node: node)
 					} else {
-						NodeDetail(node: node)
+						NodeDetail(node: node, nodeNum: selectedNum)
 					}
 				} else {
 					ContentUnavailableView("Select a Node", systemImage: "flipphone")

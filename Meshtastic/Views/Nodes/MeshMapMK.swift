@@ -466,7 +466,7 @@ struct MeshMapMK: View {
 				.sheet(item: $selectedNode) { selection in
 					if let node = getNodeInfo(id: selection.id, context: context) {
 						NavigationStack {
-							NodeDetail(node: node, showMapLink: false)
+							NodeDetail(node: node, nodeNum: selection.id, showMapLink: false)
 						}
 						#if targetEnvironment(macCatalyst)
 							.overlay(alignment: .topLeading) {
@@ -529,6 +529,7 @@ struct MeshMapMK: View {
 				}
 				.sheet(item: $selectedWaypoint) { selection in
 					WaypointForm(waypoint: selection)
+						.environmentObject(accessoryManager)
 						.presentationDetents([.large]) // full screen
 						#if !targetEnvironment(macCatalyst)
 						.presentationDragIndicator(.visible)
@@ -536,6 +537,7 @@ struct MeshMapMK: View {
 				}
 				.sheet(item: $editingWaypoint) { selection in
 					WaypointForm(waypoint: selection, editMode: true)
+						.environmentObject(accessoryManager)
 						.presentationDetents([.large])
 						#if !targetEnvironment(macCatalyst)
 						.presentationDragIndicator(.visible)
