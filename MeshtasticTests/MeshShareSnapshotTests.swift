@@ -33,6 +33,12 @@ struct MeshShareSnapshotTests {
 		#expect(output.moduleSettings.isMuted)
 	}
 
+	@Test func failedRefreshClearsOnlyADifferentRadiosSnapshot() {
+		#expect(MeshShareSnapshotBuilder.shouldClearExistingSnapshot(existingNodeNum: 1, attemptedNodeNum: 2))
+		#expect(!MeshShareSnapshotBuilder.shouldClearExistingSnapshot(existingNodeNum: 2, attemptedNodeNum: 2))
+		#expect(!MeshShareSnapshotBuilder.shouldClearExistingSnapshot(existingNodeNum: nil, attemptedNodeNum: 2))
+	}
+
 	@Test func snapshotRoundTripsAndBecomesStaleAfterThirtyDays() throws {
 		let now = Date(timeIntervalSince1970: 2_000_000)
 		let snapshot = MeshShareSnapshot(
