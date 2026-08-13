@@ -47,7 +47,7 @@ struct DeviceConfig: View {
 			Section(header: Text("Options")) {
 				VStack(alignment: .leading) {
 					Picker("Device Role", selection: $deviceRole ) {
-						ForEach(DeviceRoles.allCases) { dr in
+						ForEach(availableDeviceRoles) { dr in
 							Text(dr.name).tag(dr.rawValue as Int)
 						}
 					}
@@ -75,6 +75,11 @@ struct DeviceConfig: View {
 					Text(DeviceRoles(rawValue: deviceRole)?.description ?? "")
 						.foregroundColor(.gray)
 						.font(.callout)
+					if DeviceRoles(rawValue: deviceRole)?.isDeprecated ?? false {
+						Label("This role is deprecated. Select a Router-based role to keep this node on a supported configuration.", systemImage: "exclamationmark.triangle")
+							.foregroundColor(.orange)
+							.font(.callout)
+					}
 				}
 				.pickerStyle(DefaultPickerStyle())
 				
@@ -396,6 +401,13 @@ struct DeviceConfig: View {
 		self.ledHeartbeatEnabled = node?.deviceConfig?.ledHeartbeatEnabled ?? true
 		self.tzdef = node?.deviceConfig?.tzdef ?? ""
 		hasChanges = false
+	}
+
+	/// Roles offered in the picker. Deprecated roles (e.g. Repeater) are hidden
+	/// from new selection, but the node's current role stays visible so an
+	/// existing deprecated node can be seen and reconfigured to a supported role.
+	private var availableDeviceRoles: [DeviceRoles] {
+		DeviceRoles.allCases.filter { !$0.isDeprecated || $0.rawValue == deviceRole }
 	}
 
 	private func specialRoleWarningMessage(newRole: Int) -> String {

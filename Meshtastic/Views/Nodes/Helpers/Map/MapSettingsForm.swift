@@ -161,7 +161,7 @@ struct MapSettingsForm: View {
 							Label {
 								VStack(alignment: .leading) {
 									Text("Offline Tiles")
-									Text("Shows a saved offline map over the covered area, so it still works without an internet connection.")
+									Text("Shows saved maps over covered areas. They also appear automatically when iOS has no network route.")
 										.font(.caption)
 										.foregroundColor(.secondary)
 								}

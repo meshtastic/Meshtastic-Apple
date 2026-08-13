@@ -113,7 +113,7 @@ struct ChannelList: View {
 
 				if hasMessages {
 					HStack(alignment: .top) {
-						Text(LocalizedStringKey(mostRecent?.messagePayload ?? " "))
+						MessagePreviewText(mostRecent?.messagePayload ?? " ")
 							.font(.footnote)
 							.foregroundColor(.onSurfaceVariant)
 					}

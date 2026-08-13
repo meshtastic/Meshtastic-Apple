@@ -348,6 +348,11 @@ extension BLEConnection {
 			case TORADIO_UUID:
 				Logger.transport.info("🛜 [BLE] did discover TORADIO characteristic for Meshtastic by \(self.peripheral.name ?? "Unknown", privacy: .public)")
 				TORADIO_characteristic = characteristic
+				// Record the MTU-derived write ceiling once, at discovery. If this is ~20B the MTU
+				// negotiation did not take, and every admin message larger than a trivial one will fail.
+				Logger.transport.error(
+					"🛜 [BLE] ToRadio write limits — withResponse: \(self.peripheral.maximumWriteValueLength(for: .withResponse), privacy: .public)B, withoutResponse: \(self.peripheral.maximumWriteValueLength(for: .withoutResponse), privacy: .public)B"
+				)
 				
 			case FROMRADIO_UUID:
 				Logger.transport.info("🛜 [BLE] did discover FROMRADIO characteristic for Meshtastic by \(self.peripheral.name ?? "Unknown", privacy: .public)")
@@ -486,6 +491,12 @@ extension BLEConnection {
 		if let error = error {
 			Logger.transport.error("🛜 [BLE] Did write for \(characteristic.meshtasticCharacteristicName, privacy: .public) with error \(error, privacy: .public)")
 			writeContinuation.resume(throwing: error)
+			// A radio momentarily out of buffers is not a broken link: `send` retries it. Escalating here
+			// would tear the session down first and abort whatever operation was in flight, which is how a
+			// single refused write used to end an entire config import.
+			if (error as? CBATTError)?.code == .insufficientResources {
+				return
+			}
 			Task { try await self.handlePeripheralError(error: error) }
 		} else {
 			#if DEBUG
@@ -517,6 +528,69 @@ extension BLEConnection {
 		}
 		
 		let writeType: CBCharacteristicWriteType = characteristic.properties.contains(.writeWithoutResponse) ? .withoutResponse : .withResponse
+		// Retry a radio that is momentarily out of buffers. CBATTError.insufficientResources is the
+		// peripheral failing to allocate for this one write, not a broken link, and it shows up on larger
+		// admin messages (set_owner, config sets) while small ones go through. Without this a single
+		// transient failure aborts whatever operation was in flight.
+		for attempt in 0..<Self.writeAttemptLimit {
+			// A cancelled send must not put another write on the wire.
+			try Task.checkCancellation()
+			do {
+				try await performWrite(binaryData, to: characteristic, type: writeType)
+				return
+			} catch let attError as CBATTError where attError.code == .insufficientResources {
+				guard attempt + 1 < Self.writeAttemptLimit else {
+					Logger.transport.error("🛜 [BLE] write of \(binaryData.count, privacy: .public)B still refused after \(Self.writeAttemptLimit, privacy: .public) attempts")
+					// Every attempt was refused, so this is no longer a momentary allocation miss.
+					// `didWriteValueFor` deliberately skips the shared error handler for this code so a
+					// transient failure does not tear the link down, which also means nothing else can
+					// reach the reconnect branch in `handlePeripheralError`. Escalate here now that the
+					// attempts are spent, then propagate the original error to the caller.
+					//
+					// Cancellation arriving during that last write lands here, past the check at the
+					// top of the loop. A cancelled send is usually the app tearing the link down on
+					// purpose, so escalating would start a reconnect that fights it.
+					try Task.checkCancellation()
+					do {
+						try await handlePeripheralError(error: attError)
+					} catch {
+						Logger.transport.error("🛜 [BLE] failed to escalate an exhausted write: \(error, privacy: .public)")
+					}
+					throw attError
+				}
+				let backoff = Duration.milliseconds(120 * (attempt + 1))
+				Logger.transport.error("🛜 [BLE] radio out of buffers for a \(binaryData.count, privacy: .public)B write; retry \(attempt + 1, privacy: .public)")
+				// Not `try?`: a cancellation during the backoff must propagate rather than fall
+				// through into another write.
+				try await Task.sleep(for: backoff)
+			}
+		}
+	}
+
+	/// Total number of times a single write is attempted when the radio reports it is out of
+	/// buffers: the initial write plus three retries, backing off 120/240/360ms between them.
+	private static let writeAttemptLimit = 4
+
+	private func performWrite(
+		_ binaryData: Data,
+		to characteristic: CBCharacteristic,
+		type writeType: CBCharacteristicWriteType
+	) async throws {
+		// Log the payload size against the negotiated write limit so an over-limit write is
+		// distinguishable from the radio simply being out of buffers — both surface as an opaque
+		// "resources are insufficient" at the peripheral.
+		let limit = peripheral.maximumWriteValueLength(for: writeType)
+		if binaryData.count > limit {
+			Logger.transport.error(
+				"🛜 [BLE] ToRadio write \(binaryData.count, privacy: .public)B EXCEEDS negotiated limit \(limit, privacy: .public)B for \(writeType == .withResponse ? "withResponse" : "withoutResponse", privacy: .public) — expect an ATT failure"
+			)
+		} else {
+			// .error, not .debug/.info: only notice-and-above are persisted to OSLogStore, which is what
+			// the in-app log viewer reads. A .debug line here is invisible in the field.
+			Logger.transport.error(
+				"🛜 [BLE] ToRadio write \(binaryData.count, privacy: .public)B (limit \(limit, privacy: .public)B) type=\(writeType == .withResponse ? "withResponse" : "withoutResponse", privacy: .public)"
+			)
+		}
 		try await withCheckedThrowingContinuation { newWriteContinuation in
 			if writeType == .withoutResponse {
 				peripheral.writeValue(binaryData, for: characteristic, type: writeType)
@@ -548,8 +622,15 @@ extension BLEConnection {
 		switch error {
 		case let attError as CBATTError:
 			 switch attError.code {
+			 case .insufficientResources:
+				 // The radio could not allocate a buffer for THIS write. The link is fine and the next
+				 // write usually succeeds, so reconnect rather than dropping the session. Observed on a
+				 // Heltec V4 (ESP32-S3/NimBLE): writes of 8-33B succeed while a 104B set_owner is rejected,
+				 // with an ATT MTU of 255 negotiated — so it is buffer exhaustion, not a size limit.
+				 Logger.transport.error("🛜 [BLEConnection] Radio out of buffers for this write (CBATTError \(attError.code.rawValue)); reconnecting rather than ending the session")
+				 shouldReconnect = true
 			 default:
-				 // All CBATTErrors should not try and reconnect
+				 // All other CBATTErrors should not try and reconnect
 				 Logger.transport.error("🛜 [BLEConnection] Disconnected with CBATTError code: \(attError.code.rawValue) - \(attError.localizedDescription)")
 			 }
 		case let cbError as CBError:

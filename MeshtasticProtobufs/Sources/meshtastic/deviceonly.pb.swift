@@ -190,8 +190,11 @@ public struct NodeInfoLite: Sendable {
 
   ///
   /// Q4-encoded SNR: dB × 4, sint32 zigzag. Matches RouteDiscovery convention.
-  /// Encode: snr_q4 = (int32_t)(snr * 4.0f). Decode: snr = snr_q4 / 4.0f.
+  /// Encode: snr_q4 = (int32_t)lroundf(snr * 4.0f). Decode: snr = snr_q4 / 4.0f.
   /// float snr is always zeroed on disk; this field carries all persisted SNR.
+  /// A stored 0 does not by itself mean "unknown" here - see NODEINFO_BITFIELD_HAS_SNR in
+  /// src/mesh/NodeDB.h for the presence bit that disambiguates a genuine 0 dB reading from
+  /// "never measured".
   public var snrQ4: Int32 = 0
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()

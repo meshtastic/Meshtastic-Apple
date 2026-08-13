@@ -77,6 +77,21 @@ View / Service
   → Radio
 ```
 
+### BLE Writes When the Radio Is Out of Buffers
+
+All of this applies only to `.withResponse` writes. `send` picks the write type from the characteristic's properties, preferring `.withoutResponse` when the radio advertises it, and CoreBluetooth does not call `didWriteValueFor` for that type — `performWrite` resumes its continuation as soon as the value is handed to CoreBluetooth, so no ATT error can come back and there is nothing to retry. Radios that refuse writes this way advertise plain `write`, which is how the path below is reachable at all. A `.withoutResponse` radio running out of buffers is invisible to the app; that backpressure is not handled.
+
+`CBATTError.insufficientResources` on a `.withResponse` `TORADIO` write means the peripheral could not allocate for *that one write*. The link is healthy and the next write usually succeeds, so it is handled like an invalid UTF-8 field above — a per-item failure that must not tear down the stream — rather than like genuine wire corruption. It shows up on larger admin messages (`set_owner`, config sets) while 8-33 byte writes on the same connection go through; it was observed on a Heltec V4 (ESP32-S3/NimBLE) refusing a 104 byte write with an ATT MTU of 255 negotiated, so it is buffer exhaustion, not the size limit.
+
+Two places cooperate on that:
+
+- **`didWriteValueFor` does not escalate it.** Every other write error is passed to `handlePeripheralError`, which ends the session. For this one code the delegate resumes the waiting continuation with the error and returns, leaving the link up so `send` can retry. Escalating there would abort whatever operation was in flight — a single refused write used to end an entire config import.
+- **`send` retries it, then escalates.** `BLEConnection.send` makes up to `writeAttemptLimit` (4) attempts — the initial write plus three retries, backing off 120/240/360ms. Once those are spent the failure is no longer momentary, so `send` calls `handlePeripheralError` itself (whose `.insufficientResources` case marks the connection **reconnecting**, not dead) and then propagates the original error to the caller. That call is the only path to that branch, since the delegate deliberately bypasses it.
+
+The retry loop is cancellation-correct: it calls `Task.checkCancellation()` before each attempt and lets `Task.sleep(for:)` throw during the backoff, so a cancelled send cannot put another write on the wire.
+
+Every `ToRadio` write also logs its payload size against `maximumWriteValueLength(for:)`. An over-limit payload and an out-of-buffers radio both surface at the peripheral as the same opaque "resources are insufficient", and nothing recorded which one it was. These lines are `.error`, not `.debug`/`.info`, deliberately: only notice-and-above are persisted to `OSLogStore`, which is what the in-app log viewer reads, so a `.debug` line here would be invisible in the field.
+
 ## Connection Sequencing
 
 `AccessoryManager+Connect` runs connection setup as a sequenced series of steps: transport connect, heartbeat, `wantConfig`, optional database retrieval, and version checks.

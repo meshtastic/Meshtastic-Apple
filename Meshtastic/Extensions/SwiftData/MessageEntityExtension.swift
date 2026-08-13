@@ -41,6 +41,13 @@ extension MessageEntity {
 		return re?.canRetry ?? false
 	}
 
+	/// Grace period after which an unacknowledged outgoing message is treated as failed
+	/// (retryable) rather than an endless "Sending…". The radio ack/naks a `wantAck` message
+	/// within its retransmit window (well under a minute); well past that with no response, the
+	/// ack/nak never reached the app — typically we were disconnected when it arrived — and the
+	/// message is orphaned. Kept generous so a slow, multi-hop mesh doesn't trip a false timeout.
+	static let sendAckTimeout: TimeInterval = 5 * 60
+
 	func deliveryStatus(isDirectMessage: Bool) -> MessageDeliveryStatus {
 		if receivedACK {
 			if isDirectMessage {
@@ -49,7 +56,18 @@ extension MessageEntity {
 			return .deliveredToMesh
 		}
 
-		guard ackError != 0 else { return .sending }
+		guard ackError != 0 else {
+			// No ACK and no routing error yet. The radio ack/naks a wantAck message within its
+			// retransmit window; once the grace period passes with no response, the ack/nak never
+			// reached us (usually we were disconnected when it arrived) and the message is orphaned
+			// — surface it as retryable rather than an endless "Sending…". Purely derived from the
+			// send time, so the row flips the next time it renders (e.g. on opening the conversation).
+			if messageTimestamp > 0,
+			   Date().timeIntervalSince1970 - Double(messageTimestamp) > Self.sendAckTimeout {
+				return .notDelivered
+			}
+			return .sending
+		}
 
 		if let routingError = RoutingError(rawValue: Int(ackError)) {
 			return .failed(routingError)

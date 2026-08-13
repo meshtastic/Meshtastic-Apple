@@ -182,7 +182,7 @@ On iOS 18 and later, formatting buttons appear in the compact toolbar below the 
 
 When the compose field contains markdown syntax, a preview bubble appears above the compose field showing how the message will look when sent. The preview updates in real time as you type. When no markdown is present, the preview is hidden.
 
-Markdown formatting is also rendered in the channel and user message list previews, so you can see formatted text at a glance.
+Markdown formatting is also rendered in the channel and user message list previews, so you can see formatted text at a glance. Links in these conversation-list previews are not interactive; open the conversation to tap a link in its message bubble.
 
 | Example | Description |
 |---------|-------------|

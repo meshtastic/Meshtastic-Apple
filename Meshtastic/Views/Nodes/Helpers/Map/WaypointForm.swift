@@ -30,6 +30,8 @@ struct WaypointForm: View {
 	@State private var expire: Date = Date.now.addingTimeInterval(60 * 480) // 1 minute * 480 = 8 Hours
 	@State private var locked: Bool = false
 	@State private var lockedTo: Int64 = 0
+	/// Local-only waypoint: saved on this device, never broadcast over the mesh.
+	@State private var local: Bool = false
 	@State private var geofenceRadius: Double = 0 // meters; 0 = no circular geofence
 	@State private var notifyOnEnter: Bool = false
 	@State private var notifyOnExit: Bool = false
@@ -140,10 +142,27 @@ struct WaypointForm: View {
 							.datePickerStyle(.compact)
 							.font(.callout)
 					}
-					Toggle(isOn: $locked) {
-						Label("Locked", systemImage: "lock")
+					// "Local Only" is offered only for a new waypoint or one that is already local.
+					// An existing shared waypoint is already mesh-known; demoting it to local would
+					// shadow its mesh id — MeshPackets.waypointPacket() drops incoming updates for any
+					// id whose local copy is isLocal — so future shared edits/expirations would be
+					// silently missed. To stop sharing a mesh waypoint, use "Delete for everyone".
+					if waypoint.id == 0 || waypoint.isLocal {
+						Toggle(isOn: $local) {
+							Label("Local Only", systemImage: "iphone")
+						}
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					}
-					.toggleStyle(.switch)
+					if local {
+						Text("Saved only on this device — not shared over the mesh. It can't be edited by other nodes, and you can always delete it.")
+							.font(.caption)
+							.foregroundStyle(.secondary)
+					} else {
+						Toggle(isOn: $locked) {
+							Label("Locked", systemImage: "lock")
+						}
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					}
 				}
 				Section(header: Text("Geofence")) {
 					Picker(selection: $geofenceRadius) {
@@ -194,6 +213,11 @@ struct WaypointForm: View {
 			.scrollDismissesKeyboard(.immediately)
 			HStack {
 				Button {
+					if local {
+						// Local-only: persist on this device, never touch the mesh (works offline).
+						commitLocal()
+						return
+					}
 					guard let deviceNum = accessoryManager.activeDeviceNum else {
 						Logger.mesh.warning("Send waypoint failed: No deviceNum")
 						return
@@ -201,6 +225,10 @@ struct WaypointForm: View {
 					if accessoryManager.isConnected {
 						/// Send a new or exiting waypoint
 						var newWaypoint = Waypoint()
+						// Sending publishes it to the mesh, so it is no longer local-only. Clear the
+						// flag — even if it started as a local waypoint — so it "promotes" to a shared
+						// waypoint and the mesh ingest is allowed to update it again.
+						waypoint.isLocal = false
 						if waypoint.id  ==  0 {
 							newWaypoint.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 							waypoint.createdBy = Int64(deviceNum)
@@ -245,12 +273,12 @@ struct WaypointForm: View {
 						Logger.mesh.warning("Send waypoint failed, node not connected")
 					}
 				} label: {
-					Label("Send", systemImage: "arrow.up")
+					Label(local ? "Save" : "Send", systemImage: local ? "square.and.arrow.down" : "arrow.up")
 				}
 				.buttonStyle(.bordered)
 				.buttonBorderShape(.capsule)
 				.controlSize(.regular)
-				.disabled(!accessoryManager.isConnected)
+				.disabled(!local && !accessoryManager.isConnected)
 				.padding(.bottom)
 				
 				Button(role: .cancel) {
@@ -263,62 +291,17 @@ struct WaypointForm: View {
 				.controlSize(.regular)
 				.padding(.bottom)
 				
-				if waypoint.id > 0 && accessoryManager.isConnected {
-					
+				if waypoint.id != 0 || local {
 					Menu {
-						Button("For me", action: {
-							context.delete(waypoint)
-							do {
-								try context.save()
-							} catch {
+						Button(role: .destructive, action: deleteForMe) {
+							Label("Remove from this device", systemImage: "trash")
+						}
+						if accessoryManager.isConnected && !local && !waypoint.locked {
+							Button(role: .destructive, action: deleteForEveryone) {
+								Label("Delete for everyone", systemImage: "trash.slash")
 							}
-							dismiss() })
-						Button("For everyone", action: {
-							guard let deviceNum = accessoryManager.activeDeviceNum else {
-								Logger.mesh.error("Unable to set waypoint: No Device num")
-								return
-							}
-							var newWaypoint = Waypoint()
-							newWaypoint.id = UInt32(waypoint.id)
-							newWaypoint.name = name.count > 0 ? name : "Dropped Pin"
-							newWaypoint.description_p = description
-							newWaypoint.latitudeI = waypoint.latitudeI
-							newWaypoint.longitudeI = waypoint.longitudeI
-							// Unicode scalar value for the icon emoji string
-							let unicodeScalers = icon.unicodeScalars
-							// First element as an UInt32
-							let unicode = unicodeScalers[unicodeScalers.startIndex].value
-							newWaypoint.icon = unicode
-							if locked {
-								if lockedTo == 0 {
-									newWaypoint.lockedTo = UInt32(deviceNum)
-								} else {
-									newWaypoint.lockedTo = UInt32(lockedTo)
-								}
-							}
-							newWaypoint.expire = UInt32(1)
-							applyGeofence(to: &newWaypoint)
-							Task {
-								do {
-									try await accessoryManager.sendWaypoint(waypoint: newWaypoint)
-									Task { @MainActor in
-										context.delete(waypoint)
-										do {
-											try context.save()
-										} catch {
-										}
-										dismiss()
-									}
-								} catch {
-									Logger.mesh.warning("Send waypoint failed")
-									Task {@MainActor in
-										waypointFailedAlert = true
-									}
-								}
-							}
-						})
-					}
-					label: {
+						}
+					} label: {
 						Label("Delete", systemImage: "trash")
 							.foregroundColor(.red)
 					}
@@ -415,6 +398,35 @@ struct WaypointForm: View {
 					Text("Location")
 				}
 
+				// Local notification opt-in for a received geofence (design#114): editable in
+				// place — even for locked waypoints — and persisted only on this device. The
+				// mesh Send path is never involved; the flags never travel over the wire.
+				if canEditNotifyPreferencesLocally {
+					Section {
+						Toggle(isOn: $notifyOnEnter) {
+							Label("Notify on Enter", systemImage: "bell")
+						}
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						.onChange(of: notifyOnEnter) { commitNotifyPreferences() }
+						Toggle(isOn: $notifyOnExit) {
+							Label("Notify on Exit", systemImage: "bell.slash")
+						}
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						.onChange(of: notifyOnExit) { commitNotifyPreferences() }
+						if notifyOnEnter || notifyOnExit {
+							Toggle(isOn: $notifyFavoritesOnly) {
+								Label("Favorites Only", systemImage: "star")
+							}
+							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+							.onChange(of: notifyFavoritesOnly) { commitNotifyPreferences() }
+						}
+					} header: {
+						Text("Geofence Notifications")
+					} footer: {
+						Text("Saved only on this device — nothing is sent over the mesh.")
+					}
+				}
+
 				Section {
 					Label {
 						Text(waypoint.created?.formatted(date: .numeric, time: .shortened) ?? "?")
@@ -459,6 +471,23 @@ struct WaypointForm: View {
 							Image(systemName: "square.and.pencil")
 						}
 						.accessibilityLabel(String(localized: "Edit waypoint", comment: "VoiceOver label for the edit waypoint button"))
+					}
+				}
+				if waypoint.id != 0 || waypoint.isLocal {
+					ToolbarItem(placement: .topBarTrailing) {
+						Menu {
+							Button(role: .destructive, action: deleteForMe) {
+								Label("Remove from this device", systemImage: "trash")
+							}
+							if accessoryManager.isConnected && !waypoint.isLocal && !waypoint.locked {
+								Button(role: .destructive, action: deleteForEveryone) {
+									Label("Delete for everyone", systemImage: "trash.slash")
+								}
+							}
+						} label: {
+							Image(systemName: "trash")
+						}
+						.accessibilityLabel(String(localized: "Delete waypoint", comment: "VoiceOver label for the delete waypoint menu"))
 					}
 				}
 			}
@@ -518,6 +547,7 @@ struct WaypointForm: View {
 				if waypoint.locked {
 					locked = true
 				}
+				local = waypoint.isLocal
 				geofenceRadius = Double(waypoint.geofenceRadius)
 				notifyOnEnter = waypoint.notifyOnEnter
 				notifyOnExit = waypoint.notifyOnExit
@@ -534,6 +564,7 @@ struct WaypointForm: View {
 				name = ""
 				description = ""
 				locked = false
+				local = false
 				geofenceRadius = 0
 				notifyOnEnter = false
 				notifyOnExit = false
@@ -569,17 +600,127 @@ struct WaypointForm: View {
 		#endif
 	}
 	
+	/// Whether the geofence notification toggles are offered as an in-place, local-only
+	/// setting in the read-only view: a received waypoint (not authored by the connected
+	/// node — including ones locked to another node — and not local-only) with a geofence.
+	private var canEditNotifyPreferencesLocally: Bool {
+		WaypointEntity.canEditNotifyPreferencesLocally(
+			isLocalWaypoint: waypoint.isLocal,
+			createdBy: waypoint.createdBy,
+			activeDeviceNum: accessoryManager.activeDeviceNum,
+			hasGeofence: waypoint.hasGeofence
+		)
+	}
+
+	/// Persist the geofence notification opt-in for a received waypoint. Local-only by
+	/// design (design#114): writes exactly the three receiver-local preference flags and
+	/// saves the context — nothing is ever sent to the mesh from this path.
+	private func commitNotifyPreferences() {
+		// Favorites-only is meaningless (and its toggle hidden) unless notifying.
+		if !notifyOnEnter && !notifyOnExit {
+			notifyFavoritesOnly = false
+		}
+		waypoint.notifyOnEnter = notifyOnEnter
+		waypoint.notifyOnExit = notifyOnExit
+		waypoint.notifyFavoritesOnly = notifyFavoritesOnly
+		do { try context.save() } catch { Logger.mesh.error("Failed to save notification preferences: \(error)") }
+	}
+
+	private func commitLocal() {
+		if waypoint.id == 0 {
+			waypoint.id = Int64(UInt32.random(in: UInt32(UInt8.max)..<UInt32.max))
+			waypoint.created = Date()
+			waypoint.createdBy = Int64(accessoryManager.activeDeviceNum ?? 0)
+		} else {
+			waypoint.lastUpdated = Date()
+			waypoint.lastUpdatedBy = Int64(accessoryManager.activeDeviceNum ?? 0)
+		}
+		waypoint.isLocal = true
+		waypoint.locked = false
+		waypoint.name = name.count > 0 ? name : "Dropped Pin"
+		waypoint.longDescription = description
+		waypoint.icon = Int64(icon.unicodeScalars.first?.value ?? 128205)
+		waypoint.expire = expires ? expire : nil
+		waypoint.geofenceRadius = Int(max(0, geofenceRadius).rounded())
+		let hasGeofence = geofenceRadius > 0 || geofenceBounds != nil
+		waypoint.notifyOnEnter = hasGeofence && notifyOnEnter
+		waypoint.notifyOnExit = hasGeofence && notifyOnExit
+		waypoint.notifyFavoritesOnly = (waypoint.notifyOnEnter || waypoint.notifyOnExit) && notifyFavoritesOnly
+		if let b = geofenceBounds {
+			waypoint.hasBoundingBox = true
+			waypoint.boundingBoxLongitudeWestI = Int32((b.minLon * 1e7).rounded())
+			waypoint.boundingBoxLatitudeSouthI = Int32((b.minLat * 1e7).rounded())
+			waypoint.boundingBoxLongitudeEastI = Int32((b.maxLon * 1e7).rounded())
+			waypoint.boundingBoxLatitudeNorthI = Int32((b.maxLat * 1e7).rounded())
+		} else {
+			waypoint.hasBoundingBox = false
+		}
+		do { try context.save() } catch { Logger.mesh.error("Failed to save local waypoint: \(error)") }
+		dismiss()
+	}
+
+	/// Remove the waypoint from THIS device only — always available, even for waypoints
+	/// locked by (and so not editable from) another node.
+	private func deleteForMe() {
+		context.delete(waypoint)
+		do { try context.save() } catch { Logger.mesh.error("Failed to delete waypoint: \(error)") }
+		dismiss()
+	}
+
+	/// Expire the waypoint mesh-wide, then remove it locally. Only offered for shared
+	/// waypoints you can edit (connected, not local, not locked to another node).
+	private func deleteForEveryone() {
+		guard accessoryManager.activeDeviceNum != nil else {
+			Logger.mesh.error("Unable to delete waypoint: not connected to a device")
+			return
+		}
+		var newWaypoint = Waypoint()
+		newWaypoint.id = UInt32(waypoint.id)
+		newWaypoint.name = name.count > 0 ? name : "Dropped Pin"
+		newWaypoint.description_p = description
+		newWaypoint.latitudeI = waypoint.latitudeI
+		newWaypoint.longitudeI = waypoint.longitudeI
+		newWaypoint.icon = icon.unicodeScalars.first?.value ?? 128205
+		// Expire it mesh-wide. The receiver's expiration branch keys purely on `expire`
+		// (see MeshPackets.waypointPacket), so lockedTo is intentionally not set here.
+		newWaypoint.expire = UInt32(1)
+		applyGeofence(to: &newWaypoint)
+		Task {
+			do {
+				try await accessoryManager.sendWaypoint(waypoint: newWaypoint)
+				await MainActor.run {
+					context.delete(waypoint)
+					do { try context.save() } catch { Logger.mesh.error("Failed to delete waypoint after mesh expire: \(error)") }
+					dismiss()
+				}
+			} catch {
+				Logger.mesh.warning("Send waypoint failed")
+				await MainActor.run { waypointFailedAlert = true }
+			}
+		}
+	}
+
 	private func applyGeofence(to waypointProto: inout Waypoint) {
 		waypointProto.geofenceRadius = UInt32(max(0, geofenceRadius).rounded())
-		// The notification toggles are hidden in the UI when no geofence exists, but their
-		// @State values persist. Normalize before serializing so turning a geofence off can't
-		// leak stale `true` flags onto the mesh; favorites-only only applies when notifying.
-		let hasGeofence = geofenceRadius > 0 || geofenceBounds != nil
-		let serializedNotifyOnEnter = hasGeofence && notifyOnEnter
-		let serializedNotifyOnExit = hasGeofence && notifyOnExit
-		waypointProto.notifyOnEnter = serializedNotifyOnEnter
-		waypointProto.notifyOnExit = serializedNotifyOnExit
-		waypointProto.notifyFavoritesOnly = (serializedNotifyOnEnter || serializedNotifyOnExit) && notifyFavoritesOnly
+		// The wire notify fields carry the author's own preference only (design#114):
+		// re-sending someone else's waypoint serializes them as false so this receiver's
+		// local opt-in never leaks onto the mesh. Also normalizes stale @State — the
+		// toggles are hidden when no geofence exists but their values persist, and
+		// favorites-only only applies when notifying.
+		let flags = WaypointEntity.outgoingNotifyFlags(
+			isAuthor: WaypointEntity.isAuthoredLocally(
+				waypointId: waypoint.id,
+				createdBy: waypoint.createdBy,
+				activeDeviceNum: accessoryManager.activeDeviceNum
+			),
+			hasGeofence: geofenceRadius > 0 || geofenceBounds != nil,
+			notifyOnEnter: notifyOnEnter,
+			notifyOnExit: notifyOnExit,
+			notifyFavoritesOnly: notifyFavoritesOnly
+		)
+		waypointProto.notifyOnEnter = flags.notifyOnEnter
+		waypointProto.notifyOnExit = flags.notifyOnExit
+		waypointProto.notifyFavoritesOnly = flags.notifyFavoritesOnly
 		if let b = geofenceBounds {
 			var box = BoundingBox()
 			box.longitudeWestI = Int32((b.minLon * 1e7).rounded())

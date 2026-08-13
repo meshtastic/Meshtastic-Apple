@@ -9,33 +9,13 @@ import SwiftUI
 struct MeshtasticLogo: View {
 
 	@Environment(\.colorScheme) private var colorScheme
-	@Environment(\.eventFirmwarePresentation) private var eventPresentation
-	@Environment(\.openEventFirmwareInfo) private var openEventFirmwareInfo
 
+	// The Meshtastic mark is the app's brand and is never swapped for event/edition artwork —
+	// not on Connect, not anywhere. Event branding lives in the Connect screen's device box
+	// (see Connect.swift), never in this top-left nav logo.
 	var body: some View {
-		Group {
-			if let eventPresentation {
-				Button {
-					openEventFirmwareInfo()
-				} label: {
-					EventFirmwareIcon(
-						edition: eventPresentation.edition,
-						iconURL: eventPresentation.info.iconURL,
-						size: 34
-					)
-				}
-				.buttonStyle(.plain)
-				.accessibilityLabel(
-					String(
-						localized: "\(eventPresentation.info.displayName ?? eventPresentation.edition.name) event information",
-						comment: "VoiceOver label for the connected event firmware navigation logo"
-					)
-				)
-			} else {
-				Link(destination: URL(string: "meshtastic:///settings/about")!) {
-					standardLogo
-				}
-			}
+		Link(destination: URL(string: "meshtastic:///settings/about")!) {
+			standardLogo
 		}
 	}
 

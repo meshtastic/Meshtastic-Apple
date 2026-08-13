@@ -405,7 +405,12 @@ extension AppLog {
 			/// Create an array of predicates to hold our AND predicates
 			var predicates: [NSPredicate] = []
 			/// Subsystem Predicate
-			let subsystemPredicate = NSPredicate(format: "subsystem IN %@", ["com.apple.SwiftUI", "com.apple.coredata", "gvh.MeshtasticClient"])
+			/// Take the app's subsystem from the bundle rather than hard-coding it: `Logger` builds every
+			/// category with `Bundle.main.bundleIdentifier`, so a hard-coded value silently filters out all
+			/// of the app's own entries in any build whose bundle id differs (a contributor signing with
+			/// their own team, for instance).
+			let appSubsystem = Bundle.main.bundleIdentifier ?? "gvh.MeshtasticClient"
+			let subsystemPredicate = NSPredicate(format: "subsystem IN %@", ["com.apple.SwiftUI", "com.apple.coredata", appSubsystem])
 			predicates.append(subsystemPredicate)
 			/// Categories
 			if categories.count > 0 {

@@ -283,12 +283,27 @@ struct MessageAckStatusRefreshTests {
 	// MARK: - Message delivery status wording
 
 	@Test func deliveryStatus_sendingUsesCanonicalText() throws {
-		let msg = try insertChannelMessage(channelIndex: 7_707, messageId: 970_700_001)
+		// A just-sent, still-unacknowledged message is "Sending…" — the send timeout hasn't elapsed.
+		let msg = try insertChannelMessage(channelIndex: 7_707, messageId: 970_700_001,
+										   timestamp: Int32(Date().timeIntervalSince1970))
 
 		let status = msg.deliveryStatus(isDirectMessage: false)
 
 		#expect(status.text == "Sending...")
 		#expect(status.canRetry == false)
+	}
+
+	@Test func deliveryStatus_orphanedSendTimesOutToNotDelivered() throws {
+		// A message left unacknowledged (no ACK, no routing error) well past the send timeout is
+		// surfaced as failed/retryable rather than an indefinite "Sending…" — the ack/nak never
+		// reached the app and the message is orphaned.
+		let stale = Int32(Date().timeIntervalSince1970 - MessageEntity.sendAckTimeout - 60)
+		let msg = try insertChannelMessage(channelIndex: 7_709, messageId: 970_900_001, timestamp: stale)
+
+		let status = msg.deliveryStatus(isDirectMessage: false)
+
+		#expect(status.text == "Not delivered")
+		#expect(status.canRetry == true)
 	}
 
 	@Test func deliveryStatus_channelImplicitAckIsDeliveredToMesh() throws {
