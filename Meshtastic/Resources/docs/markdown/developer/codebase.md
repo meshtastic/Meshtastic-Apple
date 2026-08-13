@@ -53,6 +53,8 @@ xcodegen generate
 
 The `xcodegen-drift.yml` CI check regenerates the project on every PR that touches `project.yml`, `.xcodegen-version`, `Meshtastic.xcodeproj/**`, or any `.swift` file, and fails if the committed project doesn't exactly match — this is what keeps the generated project honest as the source of truth stays in `project.yml`. XcodeGen's output is version-sensitive, so `.xcodegen-version` pins an exact release; install that exact version (not whatever Homebrew currently carries) before regenerating locally.
 
+Keep sibling group names unique. XcodeGen 2.46.0 does not produce a stable order when two root groups have the same display name, which makes the drift check intermittent. Shared tvOS sources used by the visionOS target therefore live under the distinct virtual group `Meshtastic TV (Vision shared)` rather than a second root group named `Meshtastic TV`.
+
 ## Key Files
 
 | File | Purpose |
