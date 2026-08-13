@@ -50,6 +50,24 @@ struct MeshShareSnapshotTests {
 		#expect(query[kSecAttrSynchronizable as String] as? Bool == false)
 	}
 
+	@Test func snapshotRoundTripsThroughTheDedicatedKeychainGroup() throws {
+		let snapshot = MeshShareSnapshot(
+			radioNodeNum: 0x12345678,
+			radioLongName: "Keychain Test",
+			radioShortName: "KEY",
+			contactURL: "https://meshtastic.org/v/#abc",
+			loraConfigData: Data([1, 2, 3]),
+			channels: [],
+			refreshedAt: Date(timeIntervalSince1970: 2_000_000)
+		)
+		try MeshShareStore.delete()
+		defer { try? MeshShareStore.delete() }
+
+		try MeshShareStore.save(snapshot)
+
+		#expect(MeshShareStore.load() == snapshot)
+	}
+
 	@Test func snapshotRoundTripsAndBecomesStaleAfterThirtyDays() throws {
 		let now = Date(timeIntervalSince1970: 2_000_000)
 		let snapshot = MeshShareSnapshot(
