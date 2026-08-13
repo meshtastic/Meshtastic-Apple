@@ -1071,12 +1071,13 @@
             "takpacket",
             "send",
             "sdk",
+            "radio",
             "payload",
             "path",
             "into",
             "firmware",
             "channel",
-            "radio",
+            "version",
             "pli",
             "meshtastictak",
             "let",
@@ -1086,10 +1087,9 @@
             "zstd",
             "via",
             "supportstakv2",
-            "routes",
-            "protobuf"
+            "routes"
         ],
-        "charCount": 7653
+        "charCount": 7921
     },
     {
         "id": "testing",
