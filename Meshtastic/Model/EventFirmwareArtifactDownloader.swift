@@ -1,3 +1,5 @@
+// MARK: EventFirmwareArtifactDownloader.swift
+
 import CryptoKit
 import Foundation
 
@@ -120,7 +122,8 @@ actor EventFirmwareArtifactDownloader {
 	}
 }
 
-private final class EventFirmwareBoundedDownloadDelegate: NSObject,
+/// Cancels a URL session download task as soon as its streamed byte count exceeds a trusted limit.
+final class EventFirmwareBoundedDownloadDelegate: NSObject,
 	URLSessionDownloadDelegate,
 	@unchecked Sendable {
 

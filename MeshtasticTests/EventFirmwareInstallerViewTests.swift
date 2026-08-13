@@ -1,3 +1,5 @@
+// MARK: EventFirmwareInstallerViewTests.swift
+
 import Testing
 
 @testable import Meshtastic
@@ -40,6 +42,21 @@ struct EventFirmwareInstallerViewTests {
 		#expect(!EventFirmwareInstallerPolicy.isExpectedDeviceActive(
 			expectedNodeNum: 123,
 			activeNodeNum: nil
+		))
+	}
+
+	@Test func optionalDevicePolicyRequiresAnyConnectionOnlyWhenTargetIsUnspecified() {
+		#expect(EventFirmwareInstallerPolicy.isExpectedDeviceActive(
+			expectedNodeNum: nil,
+			activeNodeNum: 123
+		))
+		#expect(!EventFirmwareInstallerPolicy.isExpectedDeviceActive(
+			expectedNodeNum: nil,
+			activeNodeNum: nil
+		))
+		#expect(!EventFirmwareInstallerPolicy.isExpectedDeviceActive(
+			expectedNodeNum: 123,
+			activeNodeNum: 456
 		))
 	}
 

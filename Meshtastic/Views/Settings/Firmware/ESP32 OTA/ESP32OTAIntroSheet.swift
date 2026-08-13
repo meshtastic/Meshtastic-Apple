@@ -36,9 +36,6 @@ struct ESP32OTAIntroSheet: View {
 	}
 
 	private var isExpectedDeviceActive: Bool {
-		guard let expectedNodeNum else {
-			return accessoryManager.activeDeviceNum != nil
-		}
 		return EventFirmwareInstallerPolicy.isExpectedDeviceActive(
 			expectedNodeNum: expectedNodeNum,
 			activeNodeNum: accessoryManager.activeDeviceNum

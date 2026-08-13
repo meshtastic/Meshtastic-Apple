@@ -1,5 +1,10 @@
+// MARK: EventFirmwareInstallerView.swift
+
 import Foundation
+import OSLog
 import SwiftUI
+
+// MARK: - Policy
 
 enum EventFirmwareInstallerPrimaryAction: Equatable {
 	case install
@@ -25,6 +30,17 @@ enum EventFirmwareInstallerPolicy {
 		activeNodeNum == expectedNodeNum
 	}
 
+	static func isExpectedDeviceActive(
+		expectedNodeNum: Int64?,
+		activeNodeNum: Int64?
+	) -> Bool {
+		guard let expectedNodeNum else { return activeNodeNum != nil }
+		return isExpectedDeviceActive(
+			expectedNodeNum: expectedNodeNum,
+			activeNodeNum: activeNodeNum
+		)
+	}
+
 	static func isPreparedSelectionCurrent(
 		_ preparedSelection: EventFirmwareOTASelection,
 		availability: EventFirmwareOTAAvailability
@@ -32,6 +48,8 @@ enum EventFirmwareInstallerPolicy {
 		availability == .available(preparedSelection)
 	}
 }
+
+// MARK: - Installer View
 
 struct EventFirmwareInstallerView: View {
 	typealias Install = (FirmwareFile.FirmwareType, URL) -> Void
@@ -209,7 +227,9 @@ struct EventFirmwareInstallerView: View {
 	}
 
 	private var actionTitle: String {
-		installPurpose == .event ? "Install Event Firmware" : "Return to Standard Firmware"
+		installPurpose == .event
+			? String(localized: "Install Event Firmware")
+			: String(localized: "Return to Standard Firmware")
 	}
 
 	private var actionIcon: String {
@@ -219,9 +239,9 @@ struct EventFirmwareInstallerView: View {
 	private var actionFooter: String {
 		switch availability {
 		case .available:
-			return "The download is verified before the existing firmware installer is opened. Keep the app open and your device nearby during installation."
+			return String(localized: "The download is verified before the existing firmware installer is opened. Keep the app open and your device nearby during installation.")
 		case .unavailable:
-			return "This app cannot verify a compatible in-app package for this exact device. The web flasher provides the supported installation path."
+			return String(localized: "This app cannot verify a compatible in-app package for this exact device. The web flasher provides the supported installation path.")
 		}
 	}
 
@@ -243,19 +263,19 @@ struct EventFirmwareInstallerView: View {
 	) -> String {
 		switch reason {
 		case .contractUnavailable:
-			return "No trusted installation contract is currently published for this event."
+			return String(localized: "No trusted installation contract is currently published for this event.")
 		case .contractEditionMismatch:
-			return "The published installation contract is for a different event."
+			return String(localized: "The published installation contract is for a different event.")
 		case .noCompatibleArtifact:
-			return "No package is published for this exact device target."
+			return String(localized: "No package is published for this exact device target.")
 		case let .sourceFirmwareTooOld(minimum):
-			return "In-app installation requires device firmware \(minimum) or newer."
+			return String(localized: "In-app installation requires device firmware \(minimum) or newer.")
 		case let .bootloaderTooOld(minimum):
-			return "In-app installation requires bootloader \(minimum) or newer."
+			return String(localized: "In-app installation requires bootloader \(minimum) or newer.")
 		case .unsupportedOTAPath:
-			return "This device does not have an app-supported event firmware OTA path."
+			return String(localized: "This device does not have an app-supported event firmware OTA path.")
 		case .untrustedArtifact:
-			return "The available package does not meet the app's download trust policy."
+			return String(localized: "The available package does not meet the app's download trust policy.")
 		}
 	}
 
@@ -267,7 +287,7 @@ struct EventFirmwareInstallerView: View {
 			activeNodeNum: accessoryManager.activeDeviceNum
 		) else {
 			preparationState = .failed(
-				"Reconnect to this device before preparing its firmware package."
+				String(localized: "Reconnect to this device before preparing its firmware package.")
 			)
 			return
 		}
@@ -288,7 +308,7 @@ struct EventFirmwareInstallerView: View {
 						availability: availability
 					) else {
 						preparationState = .failed(
-							"The connected device changed. Select the event again for the current device."
+							String(localized: "The connected device changed. Select the event again for the current device.")
 						)
 						preparationTask = nil
 						return
@@ -311,9 +331,12 @@ struct EventFirmwareInstallerView: View {
 					preparationTask = nil
 				}
 			} catch {
+				Logger.services.error(
+					"Event firmware artifact preparation failed: \(error.localizedDescription, privacy: .public)"
+				)
 				await MainActor.run {
 					preparationState = .failed(
-						"The firmware package could not be downloaded and verified."
+						String(localized: "The firmware package could not be downloaded and verified.")
 					)
 					preparationTask = nil
 				}
@@ -321,6 +344,8 @@ struct EventFirmwareInstallerView: View {
 		}
 	}
 }
+
+// MARK: - Dependencies
 
 private enum EventFirmwareInstallerDependencies {
 	static func downloader() -> EventFirmwareArtifactDownloader {
@@ -352,6 +377,8 @@ private enum EventFirmwareInstallerDependencies {
 	}
 }
 
+// MARK: - Artifact Format
+
 private extension EventFirmwareOTAArtifact.Format {
 	var firmwareType: FirmwareFile.FirmwareType {
 		switch self {
@@ -362,6 +389,8 @@ private extension EventFirmwareOTAArtifact.Format {
 		}
 	}
 }
+
+// MARK: - Simulator Preview
 
 private struct SimulatorFirmwarePreview: Identifiable {
 	let id = UUID()

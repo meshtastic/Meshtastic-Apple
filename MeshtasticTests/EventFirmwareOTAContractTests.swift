@@ -1,3 +1,5 @@
+// MARK: EventFirmwareOTAContractTests.swift
+
 import CryptoKit
 import Foundation
 import Testing

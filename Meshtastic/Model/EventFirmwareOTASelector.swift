@@ -1,3 +1,5 @@
+// MARK: EventFirmwareOTASelector.swift
+
 import Foundation
 
 struct EventFirmwareOTATarget: Equatable, Sendable {

@@ -412,11 +412,17 @@ private struct FirmwareContentView: View {
 				if let locallyChosenFirmwareFile = self.locallyChosenFirmwareFile {
 					switch type {
 					case .otaZip:
-						NRFDFUSheet(firmwareToFlash: locallyChosenFirmwareFile)
+						NRFDFUSheet(
+							firmwareToFlash: locallyChosenFirmwareFile,
+							expectedNodeNum: node.num
+						)
 					case .uf2:
 						UF2MassStorageView(fileURL: locallyChosenFirmwareFile)
 					case .bin:
-						ESP32OTAIntroSheet(binFileURL: locallyChosenFirmwareFile)
+						ESP32OTAIntroSheet(
+							binFileURL: locallyChosenFirmwareFile,
+							expectedNodeNum: node.num
+						)
 					}
 				}
 			}

@@ -617,4 +617,82 @@ struct EventFirmwareCacheMergeTests {
 		#expect(defcon.themePalette == ["#0D294A", "#E0004E"])
 		#expect(rows.contains { $0.edition == "FAB" && $0.displayName == "FAB26 Boston" })
 	}
+
+	@Test func emptyLiveStringsPreserveCachedMetadata() async throws {
+		let container = try makeContainer()
+		let api = MeshtasticAPI(container: container, startupRefresh: false)
+		let complete = try payloads(from: """
+		{"version":2,"editions":[{
+		  "edition":"DEFCON",
+		  "displayName":"DEF CON 34",
+		  "welcomeMessage":"Welcome",
+		  "tag":"dc34",
+		  "eventStart":"2026-08-06",
+		  "eventEnd":"2026-08-09",
+		  "timeZone":"America/Los_Angeles",
+		  "location":"Las Vegas",
+		  "domain":"defcon.org",
+		  "theme":{
+		    "name":"DEF CON",
+		    "tagline":"Hack the planet",
+		    "fonts":{"heading":"DIN","body":"Inter"}
+		  },
+		  "firmware":{
+		    "slug":"defcon34",
+		    "version":"2.8.0.b00d76f",
+		    "id":"release-34",
+		    "title":"DEF CON 34 Firmware",
+		    "releaseNotes":"Initial release"
+		  }
+		}]}
+		""")
+		let empty = try payloads(from: """
+		{"version":2,"editions":[{
+		  "edition":"DEFCON",
+		  "displayName":"",
+		  "welcomeMessage":"",
+		  "tag":"",
+		  "eventStart":"",
+		  "eventEnd":"",
+		  "timeZone":"",
+		  "location":"",
+		  "domain":"",
+		  "theme":{
+		    "name":"",
+		    "tagline":"",
+		    "fonts":{"heading":"","body":""}
+		  },
+		  "firmware":{
+		    "slug":"",
+		    "version":"",
+		    "id":"",
+		    "title":"",
+		    "releaseNotes":""
+		  }
+		}]}
+		""")
+
+		await api.importEventEditions(complete, overwriteExisting: true)
+		await api.importEventEditions(empty, overwriteExisting: true)
+
+		let rows = try container.mainContext.fetch(FetchDescriptor<EventFirmwareEntity>())
+		let defcon = try #require(rows.first { $0.edition == "DEFCON" })
+		#expect(defcon.displayName == "DEF CON 34")
+		#expect(defcon.welcomeMessage == "Welcome")
+		#expect(defcon.tag == "dc34")
+		#expect(defcon.eventStart == "2026-08-06")
+		#expect(defcon.eventEnd == "2026-08-09")
+		#expect(defcon.timeZone == "America/Los_Angeles")
+		#expect(defcon.location == "Las Vegas")
+		#expect(defcon.domain == "defcon.org")
+		#expect(defcon.themeName == "DEF CON")
+		#expect(defcon.themeTagline == "Hack the planet")
+		#expect(defcon.themeFontHeading == "DIN")
+		#expect(defcon.themeFontBody == "Inter")
+		#expect(defcon.firmwareSlug == "defcon34")
+		#expect(defcon.firmwareVersion == "2.8.0.b00d76f")
+		#expect(defcon.firmwareId == "release-34")
+		#expect(defcon.firmwareTitle == "DEF CON 34 Firmware")
+		#expect(defcon.firmwareReleaseNotes == "Initial release")
+	}
 }
