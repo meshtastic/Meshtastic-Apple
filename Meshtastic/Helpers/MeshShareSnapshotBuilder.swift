@@ -46,12 +46,7 @@ enum MeshShareSnapshotBuilder {
 			.filter { $0.role > 0 }
 			.sorted { $0.index < $1.index }
 			.map { channel in
-				var settings = ChannelSettings()
-				settings.name = channel.name ?? ""
-				settings.psk = channel.psk ?? Data()
-				settings.id = UInt32(channel.id)
-				settings.moduleSettings.positionPrecision = UInt32(channel.positionPrecision)
-				settings.moduleSettings.isMuted = channel.mute
+				let settings = channel.settingsProto
 				return MeshShareChannel(
 					index: channel.index,
 					name: displayName(for: channel),

@@ -6,6 +6,32 @@ import Testing
 
 @Suite("iMessage share snapshots")
 struct MeshShareSnapshotTests {
+	@Test @MainActor func channelEntityPreservesEveryShareableSetting() {
+		var incoming = Channel()
+		incoming.index = 3
+		incoming.role = .secondary
+		incoming.settings.id = 0xF1234567
+		incoming.settings.name = "Private"
+		incoming.settings.psk = Data(repeating: 4, count: 16)
+		incoming.settings.uplinkEnabled = true
+		incoming.settings.downlinkEnabled = true
+		incoming.settings.moduleSettings.positionPrecision = 11
+		incoming.settings.moduleSettings.isMuted = true
+		let entity = ChannelEntity()
+
+		entity.update(from: incoming)
+		let output = entity.settingsProto
+
+		#expect(entity.index == 3)
+		#expect(entity.role == Int32(Channel.Role.secondary.rawValue))
+		#expect(output.id == 0xF1234567)
+		#expect(output.name == "Private")
+		#expect(output.psk == Data(repeating: 4, count: 16))
+		#expect(output.uplinkEnabled)
+		#expect(output.downlinkEnabled)
+		#expect(output.moduleSettings.positionPrecision == 11)
+		#expect(output.moduleSettings.isMuted)
+	}
 
 	@Test func snapshotRoundTripsAndBecomesStaleAfterThirtyDays() throws {
 		let now = Date(timeIntervalSince1970: 2_000_000)
