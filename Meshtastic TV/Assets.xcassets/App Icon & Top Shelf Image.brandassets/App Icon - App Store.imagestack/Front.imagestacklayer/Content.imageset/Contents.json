@@ -1,14 +1,8 @@
 {
   "images": [
     {
-      "idiom": "tv-marketing",
       "filename": "front_1x.png",
-      "scale": "1x"
-    },
-    {
-      "filename": "front_2x.png",
-      "idiom": "tv-marketing",
-      "scale": "2x"
+      "idiom": "tv"
     }
   ],
   "info": {
