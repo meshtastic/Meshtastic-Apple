@@ -1332,7 +1332,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 2.7.19;
-				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.vision;
+				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = xros;
 				SUPPORTED_PLATFORMS = "xros xrsimulator";
@@ -1357,7 +1357,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 2.7.19;
-				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.vision;
+				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = xros;
 				SUPPORTED_PLATFORMS = "xros xrsimulator";
@@ -1601,7 +1601,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 2.7.19;
-				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.tvos;
+				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = appletvos;
 				SUPPORTED_PLATFORMS = "appletvos appletvsimulator";
@@ -1626,7 +1626,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 2.7.19;
-				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.tvos;
+				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = appletvos;
 				SUPPORTED_PLATFORMS = "appletvos appletvsimulator";
