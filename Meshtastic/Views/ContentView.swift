@@ -139,6 +139,10 @@ struct ContentView: View {
 		@EnvironmentObject var accessoryManager: AccessoryManager
 		@Query private var eventFirmwareEditions: [EventFirmwareEntity]
 		@State private var isShowingEventFirmwareInfo: Bool = false
+		/// The post-event upgrade sheet auto-presents once per connect. ActiveContent is
+		/// remounted for every node switch (databaseResetID), so plain @State is exactly
+		/// "once per connected session".
+		@State private var hasAutoPresentedEventEnded: Bool = false
 		private let content: Content
 
 		init(appState: AppState, router: Router, @ViewBuilder content: () -> Content) {
@@ -167,13 +171,30 @@ struct ContentView: View {
 						EventFirmwareInfoView(
 							edition: eventPresentation.edition,
 							info: eventPresentation.info,
-							deviceFirmwareVersion: eventPresentation.deviceFirmwareVersion
+							deviceFirmwareVersion: eventPresentation.deviceFirmwareVersion,
+							onUpdateFirmware: {
+								// Route to the verified firmware-update flow (Settings →
+								// Firmware Updates); the sheet dismissed itself first.
+								router.selectedTab = .settings
+								router.settingsPath = [.firmwareUpdates]
+							}
 						)
 					}
 				}
 				.onChange(of: eventPresentation?.edition) { _, edition in
-					if edition == nil {
+					guard edition != nil else {
 						isShowingEventFirmwareInfo = false
+						return
+					}
+					// Once the event's end date has passed, surface the info sheet (with its
+					// post-event update call to action) automatically on connect — parity with
+					// Android's post-event upgrade prompt; hasEnded() is false without a valid
+					// end date, so live/undated editions never nag.
+					if let presentation = eventPresentation,
+					   presentation.info.hasEnded(),
+					   !hasAutoPresentedEventEnded {
+						hasAutoPresentedEventEnded = true
+						isShowingEventFirmwareInfo = true
 					}
 				}
 		}
