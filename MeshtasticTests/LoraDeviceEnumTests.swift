@@ -934,47 +934,47 @@ struct LoRaPresetSelectionTests {
 	// A factory-flashed (region unset) node on 2.8 firmware defaults to Long Turbo
 	// when the US region is selected.
 	@Test func factoryUS_on28_defaultsToLongTurbo() {
-		let result = ModemPresets.presetToSelect(forRegion: .us, factoryFresh: true, supports2_8: true, usePreset: true, regionInfo: usInfo, currentPreset: .longFast)
+		let result = ModemPresets.presetToSelect(forRegion: .us, recommendFactoryDefault: true, persistedPreset: .longFast, supports2_8: true, usePreset: true, regionInfo: usInfo, currentPreset: .longFast)
 		#expect(result == .longTurbo)
 	}
 
 	// US allows Long Turbo even before the region map has been received.
 	@Test func factoryUS_withoutMap_stillDefaultsToLongTurbo() {
-		let result = ModemPresets.presetToSelect(forRegion: .us, factoryFresh: true, supports2_8: true, usePreset: true, regionInfo: nil, currentPreset: .longFast)
+		let result = ModemPresets.presetToSelect(forRegion: .us, recommendFactoryDefault: true, persistedPreset: .longFast, supports2_8: true, usePreset: true, regionInfo: nil, currentPreset: .longFast)
 		#expect(result == .longTurbo)
 	}
 
 	// An already-configured US node keeps its (legal) preset.
 	@Test func configuredUS_keepsLegalPreset() {
-		let result = ModemPresets.presetToSelect(forRegion: .us, factoryFresh: false, supports2_8: true, usePreset: true, regionInfo: usInfo, currentPreset: .longFast)
+		let result = ModemPresets.presetToSelect(forRegion: .us, recommendFactoryDefault: false, persistedPreset: .longFast, supports2_8: true, usePreset: true, regionInfo: usInfo, currentPreset: .longFast)
 		#expect(result == nil)
 	}
 
 	// The Long Turbo default is 2.8-only.
 	@Test func factoryUS_onOldFirmware_noOverride() {
-		let result = ModemPresets.presetToSelect(forRegion: .us, factoryFresh: true, supports2_8: false, usePreset: true, regionInfo: nil, currentPreset: .longFast)
+		let result = ModemPresets.presetToSelect(forRegion: .us, recommendFactoryDefault: true, persistedPreset: .longFast, supports2_8: false, usePreset: true, regionInfo: nil, currentPreset: .longFast)
 		#expect(result == nil)
 	}
 
 	// The factory Long Turbo default applies only to US; other regions fall back to
 	// their advertised default when the current preset is illegal there.
 	@Test func factoryNonUS_doesNotForceLongTurbo() {
-		let result = ModemPresets.presetToSelect(forRegion: .euN868, factoryFresh: true, supports2_8: true, usePreset: true, regionInfo: euNarrowInfo, currentPreset: .longFast)
+		let result = ModemPresets.presetToSelect(forRegion: .euN868, recommendFactoryDefault: true, persistedPreset: .longFast, supports2_8: true, usePreset: true, regionInfo: euNarrowInfo, currentPreset: .longFast)
 		#expect(result == .narrowSlow)
 	}
 
 	@Test func illegalPreset_fallsBackToRegionDefault() {
-		let result = ModemPresets.presetToSelect(forRegion: .euN868, factoryFresh: false, supports2_8: true, usePreset: true, regionInfo: euNarrowInfo, currentPreset: .longFast)
+		let result = ModemPresets.presetToSelect(forRegion: .euN868, recommendFactoryDefault: false, persistedPreset: .longFast, supports2_8: true, usePreset: true, regionInfo: euNarrowInfo, currentPreset: .longFast)
 		#expect(result == .narrowSlow)
 	}
 
 	@Test func legalPreset_isKept() {
-		let result = ModemPresets.presetToSelect(forRegion: .euN868, factoryFresh: false, supports2_8: true, usePreset: true, regionInfo: euNarrowInfo, currentPreset: .narrowFast)
+		let result = ModemPresets.presetToSelect(forRegion: .euN868, recommendFactoryDefault: false, persistedPreset: .narrowFast, supports2_8: true, usePreset: true, regionInfo: euNarrowInfo, currentPreset: .narrowFast)
 		#expect(result == nil)
 	}
 
 	@Test func usePresetOff_noChange() {
-		let result = ModemPresets.presetToSelect(forRegion: .us, factoryFresh: true, supports2_8: true, usePreset: false, regionInfo: usInfo, currentPreset: .longFast)
+		let result = ModemPresets.presetToSelect(forRegion: .us, recommendFactoryDefault: true, persistedPreset: .longFast, supports2_8: true, usePreset: false, regionInfo: usInfo, currentPreset: .longFast)
 		#expect(result == nil)
 	}
 
@@ -982,8 +982,28 @@ struct LoRaPresetSelectionTests {
 	// legal current preset.
 	@Test func factoryUS_longTurboIllegal_keepsLegalCurrent() {
 		let usNoTurbo = RegionPresetInfo(presets: Set<Preset>([.longFast, .longSlow]), defaultPreset: .longFast, licensedOnly: false)
-		let result = ModemPresets.presetToSelect(forRegion: .us, factoryFresh: true, supports2_8: true, usePreset: true, regionInfo: usNoTurbo, currentPreset: .longFast)
+		let result = ModemPresets.presetToSelect(forRegion: .us, recommendFactoryDefault: true, persistedPreset: .longFast, supports2_8: true, usePreset: true, regionInfo: usNoTurbo, currentPreset: .longFast)
 		#expect(result == nil)
+	}
+
+	@Test func factoryUS_preservesFirmwareProvidedLegalPreset() {
+		let result = ModemPresets.presetToSelect(forRegion: .us, recommendFactoryDefault: true, persistedPreset: .shortTurbo, supports2_8: true, usePreset: true, regionInfo: usInfo, currentPreset: .shortTurbo)
+		#expect(result == nil)
+	}
+
+	@Test func factoryUS_preservesUnsavedLegalSelection() {
+		let result = ModemPresets.presetToSelect(forRegion: .us, recommendFactoryDefault: true, persistedPreset: .longFast, supports2_8: true, usePreset: true, regionInfo: usInfo, currentPreset: .shortTurbo)
+		#expect(result == nil)
+	}
+
+	@Test func mapRefresh_doesNotRecommendLongTurbo() {
+		let result = ModemPresets.presetToSelect(forRegion: .us, recommendFactoryDefault: false, persistedPreset: .longFast, supports2_8: true, usePreset: true, regionInfo: usInfo, currentPreset: .longFast)
+		#expect(result == nil)
+	}
+
+	@Test func mapRefresh_repairsIllegalPreset() {
+		let result = ModemPresets.presetToSelect(forRegion: .euN868, recommendFactoryDefault: false, persistedPreset: .longFast, supports2_8: true, usePreset: true, regionInfo: euNarrowInfo, currentPreset: .longFast)
+		#expect(result == .narrowSlow)
 	}
 }
 
