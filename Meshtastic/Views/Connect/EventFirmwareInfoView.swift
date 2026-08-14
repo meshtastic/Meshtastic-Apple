@@ -11,6 +11,9 @@ struct EventFirmwareInfoView: View {
 	let edition: FirmwareEditions
 	let info: EventFirmwareEntity
 	let deviceFirmwareVersion: String?
+	/// Invoked from the post-event section's update button (the sheet's presenter routes
+	/// to the firmware-update flow). Optional so preview/simple presentations stay valid.
+	var onUpdateFirmware: (() -> Void)?
 
 	@Environment(\.colorScheme) private var colorScheme
 	@Environment(\.dismiss) private var dismiss
@@ -52,6 +55,7 @@ struct EventFirmwareInfoView: View {
 					EventFirmwarePaletteRule(colors: info.paletteColors, height: 6)
 				}
 				List {
+					eventEndedSection
 					if let welcome = info.welcomeMessage, !welcome.isEmpty {
 						Section {
 							Text(welcome)
@@ -115,6 +119,34 @@ struct EventFirmwareInfoView: View {
 		.padding(.vertical, 18)
 		.frame(maxWidth: .infinity, alignment: .leading)
 		.background(accent)
+	}
+
+	/// Post-event call to action, first in the list. `hasEnded()` mirrors Android's
+	/// day-granular check (an edition without a valid end date never counts as ended).
+	@ViewBuilder
+	private var eventEndedSection: some View {
+		if info.hasEnded() {
+			Section {
+				Label {
+					Text("\(displayName) has ended. Update your node to the latest stable firmware.")
+						.font(bodyFont(16, .callout))
+				} icon: {
+					Image(systemName: "flag.checkered")
+						.foregroundColor(highlight)
+				}
+				if onUpdateFirmware != nil {
+					Button {
+						dismiss()
+						onUpdateFirmware?()
+					} label: {
+						Label("Update Firmware", systemImage: "arrow.up.circle.fill")
+							.font(bodyFont(17, .body).weight(.semibold))
+					}
+				}
+			} footer: {
+				Text("Updates use the app's verified firmware workflow.")
+			}
+		}
 	}
 
 	@ViewBuilder

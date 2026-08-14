@@ -728,7 +728,7 @@ targets:
             - "$(inherited)"
             - "@executable_path/Frameworks"
           MARKETING_VERSION: "2.7.19"
-          PRODUCT_BUNDLE_IDENTIFIER: "gvh.MeshtasticClient.tv"
+          PRODUCT_BUNDLE_IDENTIFIER: "gvh.MeshtasticClient.tvos"
           PRODUCT_NAME: "$(TARGET_NAME)"
           SDKROOT: "appletvos"
           SUPPORTED_PLATFORMS: "appletvos appletvsimulator"
@@ -747,7 +747,7 @@ targets:
             - "$(inherited)"
             - "@executable_path/Frameworks"
           MARKETING_VERSION: "2.7.19"
-          PRODUCT_BUNDLE_IDENTIFIER: "gvh.MeshtasticClient.tv"
+          PRODUCT_BUNDLE_IDENTIFIER: "gvh.MeshtasticClient.tvos"
           PRODUCT_NAME: "$(TARGET_NAME)"
           SDKROOT: "appletvos"
           SUPPORTED_PLATFORMS: "appletvos appletvsimulator"
@@ -771,16 +771,21 @@ targets:
       # .xcassets inside a synced folder is compiled as a unit, and per-child
       # membership exceptions do not remove it from actool's inputs.
       - path: "Meshtastic TV/App"
+        group: "Shared TV Client"
         type: syncedFolder
         excludes:
           - "MeshtasticTVApp.swift"
       - path: "Meshtastic TV/Client"
+        group: "Shared TV Client"
         type: syncedFolder
       - path: "Meshtastic TV/Models"
+        group: "Shared TV Client"
         type: syncedFolder
       - path: "Meshtastic TV/Map"
+        group: "Shared TV Client"
         type: syncedFolder
       - path: "Meshtastic TV/Views"
+        group: "Shared TV Client"
         type: syncedFolder
       # Same portable primitives the TV target reuses (no UIKit/BLE/CoreLocation).
       - path: "Meshtastic/Accessory/Transports/TCP/TCPConnection.swift"
