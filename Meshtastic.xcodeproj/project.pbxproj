@@ -801,8 +801,8 @@
 			children = (
 				26351F51CD01C94D8D82486A /* Localizable.xcstrings */,
 				68569A5CFCF946568B4E32C5 /* Meshtastic */,
-				EA229AC7C87CBBD64EC61AA1 /* Meshtastic TV */,
 				615D439CBFAC4AA6EE6F0E34 /* Meshtastic TV */,
+				EA229AC7C87CBBD64EC61AA1 /* Meshtastic TV */,
 				7CECEBBD0650101FDB559A1A /* Meshtastic Vision */,
 				F0E2A06151AF30290D808624 /* Meshtastic Watch App */,
 				867FD80926C4A4286D635BAD /* MeshtasticTests */,
