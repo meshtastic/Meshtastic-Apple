@@ -138,9 +138,58 @@ class PersistenceController {
 		}
 		let schema = Schema(versionedSchema: MeshtasticSchema.current)
 		let config = ModelConfiguration(storeName, schema: schema, isStoredInMemoryOnly: false, allowsSave: true)
-		Self.removeStoreFiles(at: config.url)
+		// Park, don't unlink — a leaked previous container may still hold the store open
+		// (see restoreStoreFromBackup); unlinking it live invalidates its fds and the broken
+		// container traps on the next save notification in the process.
+		Self.parkStoreFiles(at: config.url)
 		recreateContainer()
 		Logger.data.warning("💾 Store files destroyed and container recreated (escalated database reset)")
+	}
+
+	/// File-swap restore: replace the on-disk store with a copy of a backup and reopen the
+	/// container on top of it. The switch path must not run SwiftData saves at all —
+	/// observer bridges from previous containers survive any amount of view unmounting
+	/// (registration lives until dealloc and the graph retains them), and a bulk restore
+	/// save's synchronous NotificationCenter callout traps inside the stale bridge
+	/// regardless of thread or of what is mounted (caught live in lldb at the restore's
+	/// `save()`; the no-crash-report flavor of Datadog 324bff02). Replacing the store file
+	/// and reopening posts nothing. POSIX unlink semantics keep stragglers safe, as with
+	/// the destroy path above; `recreateContainer()` runs the migration plan in place on
+	/// the writable copy, which also covers backups written by older schemas.
+	/// Rename the store files out of the way instead of deleting them — unlinking a store a
+	/// leaked container still has open trips SQLite's vnode watch, which invalidates the open
+	/// fds ("database integrity compromised by API violation: vnode unlinked while in use")
+	/// and breaks that container and everything observing through it. (SQLite alarms on a
+	/// rename too, but the destroy path is an already-broken escalation; parking at least
+	/// preserves the bytes.) Parked files are orphans from this or previous sessions;
+	/// `sweepParkedStoreFiles()` removes last session's on launch.
+	private static func parkStoreFiles(at storeURL: URL) {
+		let fm = FileManager.default
+		let tag = ".parked-\(UUID().uuidString.prefix(8))"
+		for suffix in ["", "-wal", "-shm"] {
+			let src = URL(fileURLWithPath: storeURL.path + suffix)
+			guard fm.fileExists(atPath: src.path) else { continue }
+			let dst = URL(fileURLWithPath: storeURL.path + tag + suffix)
+			do {
+				try fm.moveItem(at: src, to: dst)
+			} catch {
+				Logger.data.error("💾 Failed to park store file \(src.lastPathComponent, privacy: .public): \(error.localizedDescription, privacy: .public)")
+				// Fall back to unlink rather than restoring on top of a stale file.
+				try? fm.removeItem(at: src)
+			}
+		}
+	}
+
+	/// Remove parked store files left by previous sessions' node switches. Called once at
+	/// launch, when nothing can still hold them open.
+	private static func sweepParkedStoreFiles(near storeURL: URL) {
+		let fm = FileManager.default
+		let dir = storeURL.deletingLastPathComponent()
+		let prefix = storeURL.lastPathComponent + ".parked-"
+		guard let names = try? fm.contentsOfDirectory(atPath: dir.path) else { return }
+		for name in names where name.hasPrefix(prefix) {
+			try? fm.removeItem(at: dir.appendingPathComponent(name))
+		}
 	}
 
 	private static func removeStoreFiles(at storeURL: URL) {
@@ -178,6 +227,15 @@ class PersistenceController {
 			Self.removeStoreFiles(at: config.url)
 		}
 #endif
+
+		// Clean up store files parked by previous sessions' node switches (renamed aside
+		// instead of unlinked — see parkStoreFiles) and staged backup copies (never removed
+		// while their container object lives — see stagedBackupContainer). Nothing can hold
+		// either open at launch.
+		if !inMemory {
+			Self.sweepParkedStoreFiles(near: config.url)
+			NodeBackupManager.sweepStagedBackupDirectories()
+		}
 
 		// ── Step 0: guard Core Data store from being clobbered ───────────────
 		// Both the App Store (Core Data) build and this (SwiftData) build use

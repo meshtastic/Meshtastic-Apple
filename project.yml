@@ -679,7 +679,7 @@ targets:
             - "$(inherited)"
             - "@executable_path/Frameworks"
           MARKETING_VERSION: "2.7.19"
-          PRODUCT_BUNDLE_IDENTIFIER: "gvh.MeshtasticClient.tv"
+          PRODUCT_BUNDLE_IDENTIFIER: "gvh.MeshtasticClient.tvos"
           PRODUCT_NAME: "$(TARGET_NAME)"
           SDKROOT: "appletvos"
           SUPPORTED_PLATFORMS: "appletvos appletvsimulator"
@@ -698,7 +698,7 @@ targets:
             - "$(inherited)"
             - "@executable_path/Frameworks"
           MARKETING_VERSION: "2.7.19"
-          PRODUCT_BUNDLE_IDENTIFIER: "gvh.MeshtasticClient.tv"
+          PRODUCT_BUNDLE_IDENTIFIER: "gvh.MeshtasticClient.tvos"
           PRODUCT_NAME: "$(TARGET_NAME)"
           SDKROOT: "appletvos"
           SUPPORTED_PLATFORMS: "appletvos appletvsimulator"
@@ -724,20 +724,25 @@ targets:
       # Keep this group name distinct from the tvOS root group: equal sibling names make
       # XcodeGen's generated group order nondeterministic and fail the drift check.
       - path: "Meshtastic TV/App"
+        group: "Shared TV Client"
         type: syncedFolder
         group: "Meshtastic TV (Vision shared)"
         excludes:
           - "MeshtasticTVApp.swift"
       - path: "Meshtastic TV/Client"
+        group: "Shared TV Client"
         type: syncedFolder
         group: "Meshtastic TV (Vision shared)"
       - path: "Meshtastic TV/Models"
+        group: "Shared TV Client"
         type: syncedFolder
         group: "Meshtastic TV (Vision shared)"
       - path: "Meshtastic TV/Map"
+        group: "Shared TV Client"
         type: syncedFolder
         group: "Meshtastic TV (Vision shared)"
       - path: "Meshtastic TV/Views"
+        group: "Shared TV Client"
         type: syncedFolder
         group: "Meshtastic TV (Vision shared)"
       # Same portable primitives the TV target reuses (no UIKit/BLE/CoreLocation).
