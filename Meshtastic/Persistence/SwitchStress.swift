@@ -33,7 +33,8 @@ enum SwitchStress {
 		guard let idx = CommandLine.arguments.firstIndex(of: "-switch-stress"),
 			  idx + 1 < CommandLine.arguments.count,
 			  let n = Int(CommandLine.arguments[idx + 1]) else { return 6 }
-		return n
+		// The cycle loop iterates `1...cycles`, which traps on a non-positive bound.
+		return max(1, n)
 	}
 
 	static func runIfNeeded(accessoryManager: AccessoryManager, appState: AppState) async {

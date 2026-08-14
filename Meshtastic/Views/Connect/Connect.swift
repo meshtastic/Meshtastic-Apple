@@ -1087,7 +1087,10 @@ func backupCurrentAndRestoreDatabase(
 		// a half-cleared store is how one radio's nodes bleed into another's session.
 		Logger.backup.error("💾 clearDatabase failed — escalating to store destruction before the switch")
 		PersistenceController.shared.destroyStoreAndRecreateContainer()
-		accessoryManager.repointToFreshContainer()
+		// destroy… already recreated the container; rebind rather than repoint so the
+		// escalation recreates exactly once (every recreation mints a potential stale
+		// observer bridge).
+		accessoryManager.rebindToCurrentContainer()
 	}
 
 	// The restore imports the backup's object graph into the SAME live container. With no
@@ -1148,8 +1151,10 @@ func switchToDevice(
 	// preferred in place, so the error-path auto-reconnect bounced back to the previous
 	// radio instead of retrying the node the user asked for — and worse, that reconnect
 	// (a plain connect, no clear) dumped the previous radio's nodes on top of the target's
-	// freshly restored database.
+	// freshly restored database. The node num moves with it (0 = unknown for a never-seen
+	// radio) so nothing keyed on the num keeps pointing at the abandoned node.
 	UserDefaults.preferredPeripheralId = device.id.uuidString
+	UserDefaults.preferredPeripheralNum = Int(targetNodeNum ?? 0)
 
 	// Mark the switch in flight so the disconnect's teardown doesn't re-arm discovery and
 	// auto-connect can't launch a second connect + node dump while the store is mid-reset.

@@ -135,6 +135,14 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	/// ("destroyed by ModelContext.reset") when a reconnect reuses freed SQLite rowids.
 	func repointToFreshContainer() {
 		PersistenceController.shared.recreateContainer()
+		rebindToCurrentContainer()
+	}
+
+	/// The repoint minus the container recreation: rebuilds the MeshPackets actor and this
+	/// manager's cached context on whatever container PersistenceController currently holds.
+	/// Used when the caller already recreated the container (the store-destroy escalation) —
+	/// every recreation mints a potential stale observer bridge, so never recreate twice.
+	func rebindToCurrentContainer() {
 		MeshPackets.recreateShared()
 		context = PersistenceController.shared.context
 		// Re-deliver the new container to the SwiftUI environment immediately: the scene body
