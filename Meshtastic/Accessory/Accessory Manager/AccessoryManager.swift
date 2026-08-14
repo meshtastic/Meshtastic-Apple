@@ -137,6 +137,12 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		PersistenceController.shared.recreateContainer()
 		MeshPackets.recreateShared()
 		context = PersistenceController.shared.context
+		// Re-deliver the new container to the SwiftUI environment immediately: the scene body
+		// re-evaluates on this bump and .modelContainer(...) reads the recreated container, so
+		// @Query subscriptions re-bind in place instead of staying attached to the old store
+		// (whose notifications they would otherwise process — the switch-nodes SIGTRAP,
+		// Datadog 324bff02). Deliberately NOT databaseResetID: no identity change, no teardown.
+		appState?.containerStamp = UUID()
 	}
 
 	/// `repointToFreshContainer()` plus a UI refresh: bumps `databaseResetID` so @Query-backed

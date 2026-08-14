@@ -1038,7 +1038,31 @@ func backupCurrentAndRestoreDatabase(
 	appState.router.popToRoot(tab: .map)
 	appState.router.popToRoot(tab: .settings)
 	appState.router.selectedTab = selectedTab
+
+	// Unmount every @Query holder (the gate replaces the tree AND the query-owning wrappers —
+	// see ContentView.gatedContent / EventFirmwareTintScope) before touching the store. Stale
+	// subscriptions process store-change notifications from ANY SwiftData save in the process
+	// (TipKit's internal store saves on background queues) against the swapped-out container —
+	// the switch-nodes SIGTRAP, Datadog 324bff02-6b22-11f1.
+	//
+	// Sequencing is load-bearing, learned from on-device crash reports:
+	// 1. Settle FIRST with the tree intact, so the confirmation dialog's dismissal animation
+	//    finishes — flipping mid-dismissal produced dead-view SIGTRAPs in UIKit/CA commits.
+	// 2. Flip WITHOUT animation: animated List removal goes through UICollectionView batch
+	//    updates, which assert ("attempt to delete item…") when the data churns mid-flight;
+	//    non-animated replacement reloads instead.
+	// 3. Settle again so the unmount commits before the store work begins.
+	try? await Task.sleep(for: .milliseconds(350))
+	var gateTransaction = Transaction()
+	gateTransaction.disablesAnimations = true
+	withTransaction(gateTransaction) { appState.isDatabaseResetting = true }
+	defer {
+		var dropTransaction = Transaction()
+		dropTransaction.disablesAnimations = true
+		withTransaction(dropTransaction) { appState.isDatabaseResetting = false }
+	}
 	await Task.yield()
+	try? await Task.sleep(for: .milliseconds(300))
 
 	await MeshPackets.shared.flushDebouncedSaves()
 	let cleared = await MeshPackets.shared.clearDatabase(includeRoutes: false)

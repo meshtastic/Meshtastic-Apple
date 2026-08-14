@@ -115,6 +115,7 @@ final class NodeBackupManager: NodeBackupManaging {
 		validateIndexConsistency()
 	}
 
+
 	// MARK: - Index Management
 
 	private static func loadIndex(from baseURL: URL) -> BackupIndex {
@@ -427,8 +428,10 @@ final class NodeBackupManager: NodeBackupManaging {
 					let backupStoreURL = nodeBackupDir.appendingPathComponent(Self.storeFileName)
 					guard fileManager.fileExists(atPath: backupStoreURL.path) else { continue }
 
-					let backupConfig = ModelConfiguration(url: backupStoreURL, allowsSave: false)
-					let backupContainer = try ModelContainer(for: schema, configurations: backupConfig)
+					// Staged copy: a pending schema migration cannot run on a read-only store,
+					// and the backup itself must never be mutated. See stagedBackupContainer.
+					let (backupContainer, cleanup) = try Self.stagedBackupContainer(for: backupStoreURL, schema: schema)
+					defer { cleanup() }
 					let backupContext = ModelContext(backupContainer)
 					backupContext.autosaveEnabled = false
 
@@ -514,8 +517,12 @@ final class NodeBackupManager: NodeBackupManaging {
 		do {
 			try await Task.detached(priority: .userInitiated) {
 				let schema = Schema(versionedSchema: MeshtasticSchema.current)
-				let backupConfig = ModelConfiguration(url: backupStoreURL, allowsSave: false)
-				let backupContainer = try ModelContainer(for: schema, configurations: backupConfig)
+				// Staged copy: a pending schema migration cannot run on a read-only store —
+				// that failure aborted the restore and bounced a node switch back to the
+				// previous device. The migration runs on the disposable copy; the real
+				// backup file is never touched. See stagedBackupContainer.
+				let (backupContainer, cleanup) = try Self.stagedBackupContainer(for: backupStoreURL, schema: schema)
+				defer { cleanup() }
 				let backupContext = ModelContext(backupContainer)
 				backupContext.autosaveEnabled = false
 
@@ -571,6 +578,46 @@ enum BackupError: Error, LocalizedError {
 			return "Backup file not found"
 		case .insufficientStorage:
 			return "Insufficient storage for backup"
+		}
+	}
+}
+
+// MARK: - Staged backup opening
+
+extension NodeBackupManager {
+
+	/// Opens a backup store for reading through a disposable staged copy.
+	///
+	/// Backups must never be mutated — but SwiftData cannot open a store read-only when a
+	/// schema migration is pending ("Cannot migrate store in-place: … attempt to write a
+	/// readonly database"), which is exactly what aborted node-switch restores after a schema
+	/// advance and bounced the switch back to the previous device. Copying the store (plus
+	/// WAL/SHM sidecars) into a temp directory and opening the copy writable lets the
+	/// migration run against the disposable copy while the real backup stays byte-identical.
+	/// The caller must invoke `cleanup()` when finished with the container.
+	nonisolated static func stagedBackupContainer(
+		for backupStoreURL: URL,
+		schema: Schema
+	) throws -> (container: ModelContainer, cleanup: () -> Void) {
+		let fm = FileManager.default
+		let stageDir = fm.temporaryDirectory
+			.appendingPathComponent("staged-backup-\(UUID().uuidString)", isDirectory: true)
+		try fm.createDirectory(at: stageDir, withIntermediateDirectories: true)
+		let stagedStoreURL = stageDir.appendingPathComponent(backupStoreURL.lastPathComponent)
+		for sidecar in ["", "-wal", "-shm"] {
+			let from = URL(fileURLWithPath: backupStoreURL.path + sidecar)
+			guard fm.fileExists(atPath: from.path) else { continue }
+			try fm.copyItem(at: from, to: URL(fileURLWithPath: stagedStoreURL.path + sidecar))
+		}
+		let cleanup: () -> Void = { try? fm.removeItem(at: stageDir) }
+		do {
+			// Writable so a pending lightweight migration can run — against the copy only.
+			let config = ModelConfiguration(url: stagedStoreURL, allowsSave: true)
+			let container = try ModelContainer(for: schema, configurations: config)
+			return (container, cleanup)
+		} catch {
+			cleanup()
+			throw error
 		}
 	}
 }
