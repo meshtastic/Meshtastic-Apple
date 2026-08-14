@@ -25,6 +25,7 @@ struct ImportDeviceProfileView: View {
 	@State private var applyProgress: ImportApplyProgress?
 	@State private var isPresentingConfirm = false
 	@State private var importTask: Task<Void, Never>?
+	@State private var forceDismissTask: Task<Void, Never>?
 	/// Liveness backstop: set true if the apply is still running after a grace period so the user can
 	/// always leave even if a single send stalls on the transport.
 	@State private var canForceDismiss = false
@@ -431,13 +432,18 @@ struct ImportDeviceProfileView: View {
 		// resolves in <1s. This backstop covers the residual race window between the onCancel
 		// handler's actor hop and the CoreBluetooth/NWConnection callback, which should be
 		// momentary but is not bounded by the OS.
-		Task {
-			try? await Task.sleep(nanoseconds: 15 * 1_000_000_000)
+		forceDismissTask?.cancel()
+		forceDismissTask = Task {
+			try? await Task.sleep(for: .seconds(15))
 			if isApplying { canForceDismiss = true }
 		}
 	}
 
 	private func runImport() async {
+		defer {
+			forceDismissTask?.cancel()
+			forceDismissTask = nil
+		}
 		// Re-resolve the connected node at apply time so a device that dropped while the sheet was open
 		// can't leave us acting on a stale/faulted entity.
 		guard let node = connectedNode, let user = node.user else {

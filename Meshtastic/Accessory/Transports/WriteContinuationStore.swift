@@ -17,7 +17,7 @@ struct WriteContinuationStore {
 	/// FIFO-ordered entries. An array of tuples preserves insertion order so didWriteValueFor
 	/// can consume the oldest entry (CoreBluetooth delivers callbacks in write order), while
 	/// the cancel handler targets a specific UUID.
-	private var entries: [(id: UUID, continuation: CheckedContinuation<Void, Error>)] = []
+	private var entries: [(id: UUID, continuation: CheckedContinuation<Void, Error>?)] = []
 
 	var isEmpty: Bool { entries.isEmpty }
 
@@ -33,9 +33,18 @@ struct WriteContinuationStore {
 		return entries.remove(at: index).continuation
 	}
 
+	/// Remove the continuation for cancellation but retain an ordered tombstone until
+	/// CoreBluetooth delivers the callback for the canceled write.
+	mutating func cancel(id: UUID) -> CheckedContinuation<Void, Error>? {
+		guard let index = entries.firstIndex(where: { $0.id == id }) else { return nil }
+		let continuation = entries[index].continuation
+		entries[index].continuation = nil
+		return continuation
+	}
+
 	/// Remove and return the oldest entry (didWriteValueFor path — CoreBluetooth delivers
 	/// callbacks in write order). Returns nil if the cancel handler already consumed it.
-	mutating func removeFirst() -> (id: UUID, continuation: CheckedContinuation<Void, Error>)? {
+	mutating func removeFirst() -> (id: UUID, continuation: CheckedContinuation<Void, Error>?)? {
 		guard !entries.isEmpty else { return nil }
 		return entries.removeFirst()
 	}
@@ -44,7 +53,7 @@ struct WriteContinuationStore {
 	/// Used during disconnect teardown.
 	mutating func drainAll(throwing error: Error) {
 		for entry in entries {
-			entry.continuation.resume(throwing: error)
+			entry.continuation?.resume(throwing: error)
 		}
 		entries.removeAll()
 	}

@@ -53,6 +53,7 @@ actor BLEConnection: Connection {
 	private var connectContinuation: CheckedContinuation<Void, Error>?
 	private var writeContinuations: WriteContinuationStore
 	private var readContinuations: [CheckedContinuation<Data, Error>]
+	private var writeReadinessContinuations: [CheckedContinuation<Void, Never>] = []
 
 	/// Notify characteristics whose subscription must confirm before the connect
 	/// process is considered complete. Subscribing to an encrypted characteristic is
@@ -115,6 +116,8 @@ actor BLEConnection: Connection {
 		peripheral.delegate = nil
 				
 		writeContinuations.drainAll(throwing: AccessoryError.disconnected("Unknown error"))
+		writeReadinessContinuations.forEach { $0.resume() }
+		writeReadinessContinuations.removeAll()
 
 		while !readContinuations.isEmpty {
 			let readContinuation = readContinuations.removeFirst()
@@ -478,10 +481,13 @@ extension BLEConnection {
 			Logger.transport.error("🛜 [BLE] didWriteValueFor a characteristic other than TORADIO_UUID.  Should not happen!")
 			return
 		}
-		guard let (_, continuation) = writeContinuations.removeFirst() else {
-			// The cancel handler already consumed this continuation. The CoreBluetooth
-			// callback arrived after cancel — harmless, just nothing left to resume.
-			Logger.transport.debug("🛜 [BLE] didWriteValueFor with no waiting continuations (cancel handler may have consumed it)")
+		guard let entry = writeContinuations.removeFirst() else {
+			Logger.transport.debug("🛜 [BLE] didWriteValueFor with no waiting continuations")
+			return
+		}
+		guard let continuation = entry.continuation else {
+			// This is the callback for a canceled write. The tombstone preserves FIFO
+			// ordering so it cannot consume the next write's continuation.
 			return
 		}
 		
@@ -590,7 +596,10 @@ extension BLEConnection {
 		}
 
 		if writeType == .withoutResponse {
-			// Fire-and-forget: no continuation needed, no cancel hazard.
+			if !peripheral.canSendWriteWithoutResponse {
+				await waitForWriteReadiness()
+			}
+			try Task.checkCancellation()
 			peripheral.writeValue(binaryData, for: characteristic, type: writeType)
 			return
 		}
@@ -612,8 +621,20 @@ extension BLEConnection {
 	/// Resume and remove a single pending write continuation on cancellation.
 	/// No-ops if didWriteValueFor already consumed it — that is the expected race.
 	private func cancelWrite(id: UUID) {
-		guard let continuation = writeContinuations.remove(id: id) else { return }
+		guard let continuation = writeContinuations.cancel(id: id) else { return }
 		continuation.resume(throwing: CancellationError())
+	}
+
+	private func waitForWriteReadiness() async {
+		await withCheckedContinuation { continuation in
+			writeReadinessContinuations.append(continuation)
+		}
+	}
+
+	func peripheralIsReadyToSendWriteWithoutResponse() {
+		let continuations = writeReadinessContinuations
+		writeReadinessContinuations.removeAll()
+		continuations.forEach { $0.resume() }
 	}
 	
 	func read() async throws -> Data {
@@ -719,6 +740,10 @@ class BLEConnectionDelegate: NSObject, CBPeripheralDelegate {
 	
 	func peripheral(_ peripheral: CBPeripheral, didWriteValueFor characteristic: CBCharacteristic, error: Error?) {
 		Task { await connection?.didWriteValueFor(characteristic: characteristic, error: error) }
+	}
+
+	func peripheralIsReady(toSendWriteWithoutResponse peripheral: CBPeripheral) {
+		Task { await connection?.peripheralIsReadyToSendWriteWithoutResponse() }
 	}
 	
 	func peripheral(_ peripheral: CBPeripheral, didReadRSSI RSSI: NSNumber, error: Error?) {

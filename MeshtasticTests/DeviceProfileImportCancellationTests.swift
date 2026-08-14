@@ -38,7 +38,7 @@ struct DeviceProfileImportCancellationTests {
 		/// If set, the surrounding Task is cancelled when this item is applied (simulates
 		/// a user tapping Cancel mid-send).
 		var cancelTaskOn: ImportItemKind?
-		private var taskToCancelBox: (any Sendable)?
+		private var cancelTask: (() -> Void)?
 		/// Set true to make commitEditSettings throw.
 		var failOnCommit = false
 		/// Fired as the commit is sent.
@@ -47,14 +47,11 @@ struct DeviceProfileImportCancellationTests {
 		var commitSawCancellation: Bool?
 
 		func setTaskToCancel<T>(_ task: Task<T, Never>) {
-			taskToCancelBox = task
+			cancelTask = { task.cancel() }
 		}
 
 		private func cancelStoredTask() {
-			// The Task type is generic, so we erase it through the protocol.
-			if let task = taskToCancelBox as? Task<DeviceProfileImportResult, Never> {
-				task.cancel()
-			}
+			cancelTask?()
 		}
 
 		func beginEditSettings() async throws {
@@ -199,11 +196,11 @@ struct DeviceProfileImportCancellationTests {
 								// Now test removeFirst returns oldest
 								if let first = store.removeFirst() {
 									retrieved1 = first.id
-									first.continuation.resume()
+									first.continuation?.resume()
 								}
 								if let second = store.removeFirst() {
 									retrieved2 = second.id
-									second.continuation.resume()
+									second.continuation?.resume()
 								}
 								#expect(store.isEmpty)
 								outerCont.resume()
@@ -246,7 +243,7 @@ struct DeviceProfileImportCancellationTests {
 								// Clean up the first.
 								if let first = store.removeFirst() {
 									#expect(first.id == id1)
-									first.continuation.resume()
+									first.continuation?.resume()
 								}
 								#expect(store.isEmpty)
 								outerCont.resume()

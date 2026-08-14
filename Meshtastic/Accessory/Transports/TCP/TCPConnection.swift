@@ -37,10 +37,9 @@ actor TCPConnection: Connection {
 	
 	private var connectionStreamContinuation: AsyncStream<ConnectionEvent>.Continuation?
 
-	/// The in-flight send continuation, if any. Only one send can be in-flight at a time
-	/// (actor serialization). The cancel handler and the NWConnection completion handler
-	/// race for this slot; whoever claims it first wins, the other no-ops.
-	private var pendingSendContinuation: CheckedContinuation<Void, Error>?
+	/// Keyed continuations let concurrent sends and their completion/cancellation races
+	/// resolve only the matching send.
+	private var sendContinuations = WriteContinuationStore()
 	
 	var isConnected: Bool {
 		connection?.state == .ready
@@ -194,6 +193,7 @@ actor TCPConnection: Connection {
 		withUnsafeBytes(of: &len) { buffer.append(contentsOf: $0) }
 		buffer.append(serialized)
 
+		let sendID = UUID()
 		try await withTaskCancellationHandler {
 			try await withCheckedThrowingContinuation { (cont: CheckedContinuation<Void, Error>) in
 				// `connection` is nil after disconnect(). Optional-chaining the send call there made
@@ -203,23 +203,21 @@ actor TCPConnection: Connection {
 					cont.resume(throwing: AccessoryError.disconnected("Not connected"))
 					return
 				}
-				self.pendingSendContinuation = cont
+				self.sendContinuations.insert(id: sendID, continuation: cont)
 				connection.send(content: buffer, completion: .contentProcessed { error in
-					Task { await self.completeSend(error: error) }
+					Task { await self.completeSend(id: sendID, error: error) }
 				})
 			}
 		} onCancel: {
 			// Resume the continuation with CancellationError instead of killing the NWConnection.
 			// The connection must stay alive for the commit that follows a cancelled import.
-			Task { await self.cancelPendingSend() }
+			Task { await self.cancelPendingSend(id: sendID) }
 		}
 	}
 
-	/// Called by the NWConnection send completion handler. Claims the pending continuation
-	/// and resumes it; no-ops if the cancel handler already consumed it.
-	private func completeSend(error: Error?) {
-		guard let cont = pendingSendContinuation else { return }
-		pendingSendContinuation = nil
+	/// Called by the NWConnection send completion handler for one specific send.
+	private func completeSend(id: UUID, error: Error?) {
+		guard let cont = sendContinuations.remove(id: id) else { return }
 		if let error {
 			cont.resume(throwing: error)
 		} else {
@@ -227,11 +225,9 @@ actor TCPConnection: Connection {
 		}
 	}
 
-	/// Called from onCancel (via actor hop). Claims the pending continuation and resumes it
-	/// with CancellationError; no-ops if the completion handler already consumed it.
-	private func cancelPendingSend() {
-		guard let cont = pendingSendContinuation else { return }
-		pendingSendContinuation = nil
+	/// Called from onCancel (via actor hop) for one specific send.
+	private func cancelPendingSend(id: UUID) {
+		guard let cont = sendContinuations.remove(id: id) else { return }
 		cont.resume(throwing: CancellationError())
 	}
 
@@ -241,10 +237,7 @@ actor TCPConnection: Connection {
 		readerTask = nil
 
 		// Drain any in-flight send continuation before tearing down the connection.
-		if let cont = pendingSendContinuation {
-			pendingSendContinuation = nil
-			cont.resume(throwing: AccessoryError.disconnected("Disconnected"))
-		}
+		sendContinuations.drainAll(throwing: AccessoryError.disconnected("Disconnected"))
 
 		connection?.cancel()
 		connection = nil
