@@ -106,11 +106,13 @@ reads `accessoryManager.loRaRegionPresets` and applies these rules:
 - **Filter** — when *Use Preset* is on, the preset picker (`availablePresets`) is the
   firmware-gated list intersected with the selected region's legal set. It never renders
   empty: an absent region or absent message falls back to the full gated list.
-- **Default preset** — switching region runs `applyRegionPresetDefault(forRegion:)`,
+- **Default preset** — switching region runs `applyRegionPresetDefault(forRegion:recommendFactoryDefault:)`,
   which delegates to the pure, unit-tested `ModemPresets.presetToSelect(…)`. A
-  factory-flashed node (region still unset) defaults to **Long Turbo** when **US** is
-  selected; otherwise, if the current preset is not legal in the new region, it selects
-  that region's `default_preset`.
+  factory-flashed node (region still unset) defaults from stock **Long Fast** to
+  **Long Turbo** when **US** is selected. An existing legal firmware-provided or unsaved
+  preset is preserved. Compatibility-map refreshes only repair illegal selections and do
+  not replay the factory recommendation. An illegal preset falls back to the region's
+  `default_preset`.
 - **Licensed bands** — when the region's `licensed_only` is set, a warning row is shown,
   coordinated with the operator's `is_licensed` flag in User Config.
 - **EU auto-swap** — the firmware may swap the EU sibling regions
