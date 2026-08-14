@@ -62,7 +62,28 @@ extension EnvironmentValues {
 
 /// Applies the event's contrast-safe tint above the root presentation modifiers so tabs,
 /// navigation actions, and app-level sheets all inherit the same highlight color.
+/// Gate around the tinting core: during a database reset the core (which holds a @Query on
+/// the event editions) is unmounted entirely, so no SwiftData subscription survives the
+/// container swap (see AppState.isDatabaseResetting; Datadog 324bff02-6b22-11f1). Content
+/// renders with the standard accent tint for the second or two the gate is up.
 struct EventFirmwareTintScope<Content: View>: View {
+	@EnvironmentObject private var appState: AppState
+	private let content: Content
+
+	init(@ViewBuilder content: () -> Content) {
+		self.content = content()
+	}
+
+	var body: some View {
+		if appState.isDatabaseResetting {
+			content
+		} else {
+			EventFirmwareTintScopeCore { content }
+		}
+	}
+}
+
+private struct EventFirmwareTintScopeCore<Content: View>: View {
 	@EnvironmentObject private var accessoryManager: AccessoryManager
 	@Environment(\.colorScheme) private var colorScheme
 	@AppStorage("useEventTheme") private var useEventTheme: Bool = true

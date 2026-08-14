@@ -10,7 +10,6 @@ struct ContentView: View {
 	@ObservedObject var appState: AppState
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@EnvironmentObject var lockdown: LockdownCoordinator
-	@Query private var eventFirmwareEditions: [EventFirmwareEntity]
 	// Observe (not just hold) the router so a *programmatic* `selectedTab` change re-renders
 	// ContentView and the TabView re-reads its selection binding immediately. As plain @State this
 	// view never subscribed to the router's objectWillChange, so a programmatic tab switch only took
@@ -38,35 +37,13 @@ struct ContentView: View {
 	/// blocking state clears it.
 	@State private var isShowingLockdownGate: Bool = false
 
-	private var eventPresentation: EventFirmwarePresentation? {
-		EventFirmwarePresentation.resolve(
-			isConnected: accessoryManager.isConnected,
-			edition: accessoryManager.firmwareEdition,
-			metadata: eventFirmwareEditions,
-			deviceFirmwareVersion: accessoryManager.connectedVersion
-		)
-	}
-
 	init(appState: AppState, router: Router) {
 		self.appState = appState
 		self.router = router
 	}
 
 	var body: some View {
-		tabContent
-			.environment(\.eventFirmwarePresentation, eventPresentation)
-			.environment(\.openEventFirmwareInfo) {
-				isShowingEventFirmwareInfo = true
-			}
-			.sheet(isPresented: $isShowingEventFirmwareInfo) {
-				if let eventPresentation {
-					EventFirmwareInfoView(
-						edition: eventPresentation.edition,
-						info: eventPresentation.info,
-						deviceFirmwareVersion: eventPresentation.deviceFirmwareVersion
-					)
-				}
-			}
+		gatedContent
 			.sheet(
 				isPresented: $isShowingDeviceOnboardingFlow,
 				onDismiss: {
@@ -103,16 +80,13 @@ struct ContentView: View {
 			.onChange(of: UserDefaults.showDeviceOnboarding) {_, newValue in
 				isShowingDeviceOnboardingFlow = newValue
 			}
-			.onChange(of: eventPresentation?.edition) { _, edition in
-				if edition == nil {
-					isShowingEventFirmwareInfo = false
-				}
-			}
 			.task {
 #if DEBUG
 				MarketingCapture.simulateEventFirmwareIfNeeded(accessoryManager)
 				// No-op unless launched with --marketing-capture (see MarketingCapture / PerformanceSeedData).
 				await MarketingCapture.runIfNeeded(router: router, accessoryManager: accessoryManager)
+				// No-op unless launched with `-switch-stress N` (node-switch crash harness).
+				await SwitchStress.runIfNeeded(accessoryManager: accessoryManager, appState: appState)
 #endif
 			}
 	}
@@ -134,6 +108,97 @@ struct ContentView: View {
 	}
 
 	// MARK: - Tab Content
+
+	/// While a node switch is clearing/swapping the SwiftData container, the tab tree AND every
+	/// @Query holder above it (the event-editions query lived on ContentView itself) are replaced
+	/// by this SwiftData-free placeholder, so zero @Query subscriptions exist during the swap.
+	/// Stale subscriptions process store-change notifications posted by ANY SwiftData save in the
+	/// process (TipKit runs its own store, saving on background queues) against the swapped-out
+	/// container — the switch-nodes SIGTRAP, Datadog 324bff02-6b22-11f1. The flag is flipped
+	/// inside a no-animation transaction after presented dialogs settle (see the switch flow):
+	/// animated List removal goes through UICollectionView batch updates, which assert when the
+	/// data churns mid-flight (the SIGABRT half of the switch crashes); non-animated replacement
+	/// reloads instead.
+	@ViewBuilder
+	private var gatedContent: some View {
+		if appState.isDatabaseResetting {
+			DatabaseResettingPlaceholder()
+		} else {
+			ActiveContent(appState: appState, router: router) {
+				tabContent
+			}
+		}
+	}
+
+	/// Owns every SwiftData dependency of the main UI (the event-editions @Query and the
+	/// presentation environment built from it) so that unmounting it during a database reset
+	/// removes ALL query subscriptions, not just the ones inside the tabs.
+	private struct ActiveContent<Content: View>: View {
+		@ObservedObject var appState: AppState
+		@ObservedObject var router: Router
+		@EnvironmentObject var accessoryManager: AccessoryManager
+		@Query private var eventFirmwareEditions: [EventFirmwareEntity]
+		@State private var isShowingEventFirmwareInfo: Bool = false
+		/// The post-event upgrade sheet auto-presents once per connect. ActiveContent is
+		/// remounted for every node switch (databaseResetID), so plain @State is exactly
+		/// "once per connected session".
+		@State private var hasAutoPresentedEventEnded: Bool = false
+		private let content: Content
+
+		init(appState: AppState, router: Router, @ViewBuilder content: () -> Content) {
+			self.appState = appState
+			self.router = router
+			self.content = content()
+		}
+
+		private var eventPresentation: EventFirmwarePresentation? {
+			EventFirmwarePresentation.resolve(
+				isConnected: accessoryManager.isConnected,
+				edition: accessoryManager.firmwareEdition,
+				metadata: eventFirmwareEditions,
+				deviceFirmwareVersion: accessoryManager.connectedVersion
+			)
+		}
+
+		var body: some View {
+			content
+				.environment(\.eventFirmwarePresentation, eventPresentation)
+				.environment(\.openEventFirmwareInfo) {
+					isShowingEventFirmwareInfo = true
+				}
+				.sheet(isPresented: $isShowingEventFirmwareInfo) {
+					if let eventPresentation {
+						EventFirmwareInfoView(
+							edition: eventPresentation.edition,
+							info: eventPresentation.info,
+							deviceFirmwareVersion: eventPresentation.deviceFirmwareVersion,
+							onUpdateFirmware: {
+								// Route to the verified firmware-update flow (Settings →
+								// Firmware Updates); the sheet dismissed itself first.
+								router.selectedTab = .settings
+								router.settingsPath = [.firmwareUpdates]
+							}
+						)
+					}
+				}
+				.onChange(of: eventPresentation?.edition) { _, edition in
+					guard edition != nil else {
+						isShowingEventFirmwareInfo = false
+						return
+					}
+					// Once the event's end date has passed, surface the info sheet (with its
+					// post-event update call to action) automatically on connect — parity with
+					// Android's post-event upgrade prompt; hasEnded() is false without a valid
+					// end date, so live/undated editions never nag.
+					if let presentation = eventPresentation,
+					   presentation.info.hasEnded(),
+					   !hasAutoPresentedEventEnded {
+						hasAutoPresentedEventEnded = true
+						isShowingEventFirmwareInfo = true
+					}
+				}
+		}
+	}
 
 	@ViewBuilder
 	private var tabContent: some View {
@@ -206,5 +271,28 @@ struct ContentView: View {
 				.tag(NavigationState.Tab.connect)
 			}
 		}
+	}
+}
+
+// MARK: - Reset Placeholder
+
+/// SwiftData-free stand-in shown while a node switch clears/swaps the container. Shared by
+/// the WindowGroup-root gate in MeshtasticAppleApp (which unmounts the `.modelContainer`
+/// modifier itself — its SwiftData↔SwiftUI bridge observes save notifications process-wide
+/// and does NOT rebind when the container underneath it is swapped; a restore-time save then
+/// traps in the stale bridge, the "silent" half of Datadog 324bff02) and by ContentView's
+/// inner gate (defense in depth).
+struct DatabaseResettingPlaceholder: View {
+	var body: some View {
+		VStack(spacing: 16) {
+			ProgressView()
+				.controlSize(.large)
+			Text("Switching Radios")
+				.font(.title3)
+			Text("Backing up and restoring the node database…")
+				.font(.callout)
+				.foregroundColor(.gray)
+		}
+		.frame(maxWidth: .infinity, maxHeight: .infinity)
 	}
 }

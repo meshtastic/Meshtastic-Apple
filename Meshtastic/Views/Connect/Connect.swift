@@ -1038,33 +1038,64 @@ func backupCurrentAndRestoreDatabase(
 	appState.router.popToRoot(tab: .map)
 	appState.router.popToRoot(tab: .settings)
 	appState.router.selectedTab = selectedTab
+
+	// Unmount every @Query holder (the gate replaces the tree AND the query-owning wrappers —
+	// see ContentView.gatedContent / EventFirmwareTintScope) before touching the store. Stale
+	// subscriptions process store-change notifications from ANY SwiftData save in the process
+	// (TipKit's internal store saves on background queues) against the swapped-out container —
+	// the switch-nodes SIGTRAP, Datadog 324bff02-6b22-11f1.
+	//
+	// Sequencing is load-bearing, learned from on-device crash reports:
+	// 1. Settle FIRST with the tree intact, so the confirmation dialog's dismissal animation
+	//    finishes — flipping mid-dismissal produced dead-view SIGTRAPs in UIKit/CA commits.
+	// 2. Flip WITHOUT animation: animated List removal goes through UICollectionView batch
+	//    updates, which assert ("attempt to delete item…") when the data churns mid-flight;
+	//    non-animated replacement reloads instead.
+	// 3. Settle again so the unmount commits before the store work begins.
+	try? await Task.sleep(for: .milliseconds(350))
+	var gateTransaction = Transaction()
+	gateTransaction.disablesAnimations = true
+	withTransaction(gateTransaction) { appState.isDatabaseResetting = true }
+	defer {
+		var dropTransaction = Transaction()
+		dropTransaction.disablesAnimations = true
+		withTransaction(dropTransaction) { appState.isDatabaseResetting = false }
+	}
 	await Task.yield()
+	try? await Task.sleep(for: .milliseconds(300))
 
 	await MeshPackets.shared.flushDebouncedSaves()
+
+	// The clear is unconditional and IN PLACE, on the one process-lifetime container — a
+	// switch must NEVER dump the new radio's nodes on top of the old radio's (nodes have no
+	// owner column; the store is global). Deliberately NO repointToFreshContainer here:
+	// replacing the container mints an immortal stale observer bridge — SwiftUI's
+	// _SwiftData_SwiftUI bridges unregister from NotificationCenter only on dealloc and stay
+	// retained after any amount of unmounting, so the next save's synchronous callout traps
+	// in SwiftData (caught live in lldb: restore saves, and post-swap dump saves, on any
+	// thread, gate up or down — every container-replacement variant died there). Keeping the
+	// container's identity means every observer processes every save against the store it
+	// actually belongs to. The mounted-view hazard that container recreation was introduced
+	// for (#1922's "destroyed by ModelContext.reset") is covered by the reset gate above —
+	// nothing is mounted during the clear — plus the databaseResetID remount below.
 	let cleared = await MeshPackets.shared.clearDatabase(includeRoutes: false)
-	if cleared {
-		// Repoint at a fresh container so the restore below (and the post-restore UI refresh)
-		// operate on a context with no stale registrations. The databaseResetID bump stays after
-		// the restore.
-		accessoryManager.repointToFreshContainer()
-		Logger.backup.info("💾 Database cleared and container recreated")
-	} else {
+	if !cleared {
 		// The per-model clear aborted part-way (e.g. a relationship constraint failed a batch
-		// delete). A half-cleared store MUST NOT receive the next radio's dump — that is exactly
-		// how nodes bleed between radios — so escalate: destroy the store files and reopen a
-		// guaranteed-empty container. The current radio's data was backed up above; routes are
-		// lost in this (already-broken) path, which beats merging two radios' databases.
+		// delete). A half-cleared store MUST NOT receive the next radio's dump, so escalate:
+		// destroy the store files and reopen a guaranteed-empty container. This rare path
+		// does replace the container (accepting the stale-bridge risk) because proceeding on
+		// a half-cleared store is how one radio's nodes bleed into another's session.
 		Logger.backup.error("💾 clearDatabase failed — escalating to store destruction before the switch")
 		PersistenceController.shared.destroyStoreAndRecreateContainer()
-		// Repoint re-creates once more on the fresh (now empty) store and rebuilds the
-		// MeshPackets actor + cached context; the double recreate is harmless.
-		accessoryManager.repointToFreshContainer()
+		// destroy… already recreated the container; rebind rather than repoint so the
+		// escalation recreates exactly once (every recreation mints a potential stale
+		// observer bridge).
+		accessoryManager.rebindToCurrentContainer()
 	}
 
-	// The clear above is unconditional — a switch must NEVER dump the new radio's nodes on top
-	// of the old radio's (nodes have no owner column; the store is global). The restore is the
-	// only optional part: with no resolvable target node (first connect to a never-seen radio)
-	// there is simply no backup to import, and the radio populates the now-empty store fresh.
+	// The restore imports the backup's object graph into the SAME live container. With no
+	// resolvable target node (first connect to a never-seen radio) there is no backup, and
+	// the radio populates the now-empty store fresh.
 	let restoreResult: NodeBackupResult
 	if let targetNodeNum {
 		restoreResult = await NodeBackupManager.shared.restoreFromBackup(
@@ -1113,6 +1144,17 @@ func switchToDevice(
 		return num > 0 ? num : nil
 	}()
 	Logger.backup.info("💾 Node switch — current: \(currentNodeNum.map { String($0) } ?? "nil", privacy: .public), target: \(targetNodeNum.map { String($0) } ?? "unknown", privacy: .public)")
+
+	// The user's explicit choice IS the new preferred radio — record it at switch
+	// initiation, not only deep in the connect flow (Step 5 writes it again on success).
+	// When it moved only on a fully-successful connect, any failed switch left the OLD
+	// preferred in place, so the error-path auto-reconnect bounced back to the previous
+	// radio instead of retrying the node the user asked for — and worse, that reconnect
+	// (a plain connect, no clear) dumped the previous radio's nodes on top of the target's
+	// freshly restored database. The node num moves with it (0 = unknown for a never-seen
+	// radio) so nothing keyed on the num keeps pointing at the abandoned node.
+	UserDefaults.preferredPeripheralId = device.id.uuidString
+	UserDefaults.preferredPeripheralNum = Int(targetNodeNum ?? 0)
 
 	// Mark the switch in flight so the disconnect's teardown doesn't re-arm discovery and
 	// auto-connect can't launch a second connect + node dump while the store is mid-reset.
