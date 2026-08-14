@@ -4,6 +4,11 @@
       "idiom": "tv-marketing",
       "filename": "back_1x.png",
       "scale": "1x"
+    },
+    {
+      "filename": "back_2x.png",
+      "idiom": "tv-marketing",
+      "scale": "2x"
     }
   ],
   "info": {
