@@ -37,6 +37,9 @@ struct MeshtasticAppleApp: App {
 	private static var shouldInitializeAppServices: Bool {
 		!isRunningTests && !isChirpyOTADemo
 	}
+	/// TipKit configuration must run once per process; the owning `.task` re-runs whenever the
+	/// database-reset gate remounts the main tree after a node switch.
+	@MainActor private static var hasConfiguredTips = false
 
 	init() {
 
@@ -226,6 +229,17 @@ struct MeshtasticAppleApp: App {
 				Color.clear
 			} else if Self.isChirpyOTADemo {
 				FirmwareUpdateGameDemoHost()
+			} else if appState.isDatabaseResetting {
+				// Unmount the WHOLE SwiftData-bound tree — including the `.modelContainer`
+				// modifier below — while a node switch clears/swaps the container. The modifier's
+				// SwiftData↔SwiftUI bridge observes save notifications process-wide and never
+				// rebinds to a swapped container (its attachment point here is structurally
+				// stable, so `.id(databaseResetID)` deeper down can't recreate it); the restore's
+				// background save then traps inside the stale bridge (the "silent exit" flavor of
+				// Datadog 324bff02 — no crash report, EXC_BREAKPOINT in _SwiftData_SwiftUI caught
+				// live in lldb at NodeBackupManager.restoreFromBackup's save). Recreating this
+				// branch on gate-drop rebuilds the bridge against the fresh container.
+				DatabaseResettingPlaceholder()
 			} else {
 				EventFirmwareTintScope {
 					ContentView(
@@ -288,8 +302,11 @@ struct MeshtasticAppleApp: App {
 				}
 				.task {
 					// Skip TipKit entirely during marketing screenshot capture so tip popovers never
-					// appear in the shots (unconfigured TipKit displays nothing).
-					if !CommandLine.arguments.contains("--marketing-capture") {
+					// appear in the shots (unconfigured TipKit displays nothing). The once-guard
+					// matters now that this branch remounts after every node switch (the database
+					// reset gate above) — Tips.configure must not re-run per switch.
+					if !Self.hasConfiguredTips, !CommandLine.arguments.contains("--marketing-capture") {
+						Self.hasConfiguredTips = true
 						try? Tips.configure(
 							[
 								// Reset which tips have been shown and what parameters have been tracked, useful during testing and for this sample project
@@ -353,7 +370,9 @@ struct MeshtasticAppleApp: App {
 			WindowGroup("Mesh Map", id: "meshmap-window") {
 				// Gated on shouldInitializeAppServices (not just tests): in Chirpy OTA demo mode
 				// persistenceController is nil, so building this scene would force-unwrap-crash.
-				if Self.shouldInitializeAppServices, let persistenceController {
+				// Also gated on the database reset, for the same stale-bridge reason as the main
+				// window: this scene's .modelContainer must unmount during a container swap.
+				if Self.shouldInitializeAppServices, let persistenceController, !appState.isDatabaseResetting {
 					EventFirmwareTintScope {
 						MapWindow()
 							.id(appState.databaseResetID)

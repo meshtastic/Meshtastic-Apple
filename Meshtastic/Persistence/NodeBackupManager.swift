@@ -115,7 +115,6 @@ final class NodeBackupManager: NodeBackupManaging {
 		validateIndexConsistency()
 	}
 
-
 	// MARK: - Index Management
 
 	private static func loadIndex(from baseURL: URL) -> BackupIndex {
@@ -429,9 +428,9 @@ final class NodeBackupManager: NodeBackupManaging {
 					guard fileManager.fileExists(atPath: backupStoreURL.path) else { continue }
 
 					// Staged copy: a pending schema migration cannot run on a read-only store,
-					// and the backup itself must never be mutated. See stagedBackupContainer.
-					let (backupContainer, cleanup) = try Self.stagedBackupContainer(for: backupStoreURL, schema: schema)
-					defer { cleanup() }
+					// and the backup itself must never be mutated. See stagedBackupContainer
+					// (staging dirs are swept at launch, never removed while live).
+					let backupContainer = try Self.stagedBackupContainer(for: backupStoreURL, schema: schema)
 					let backupContext = ModelContext(backupContainer)
 					backupContext.autosaveEnabled = false
 
@@ -515,19 +514,24 @@ final class NodeBackupManager: NodeBackupManaging {
 		}
 
 		do {
-			try await Task.detached(priority: .userInitiated) {
+			// The import runs on the MainActor through the LIVE container's mainContext. Two
+			// invariants, both learned from live lldb catches of the switch-crash cluster:
+			// 1. `container` must be the same object the UI has always been bound to — a save
+			//    into a replaced container is processed by the previous container's immortal
+			//    observer bridge (they unregister on dealloc, never on unmount) and traps.
+			// 2. The backup opens through a staged temp copy — a pending schema migration
+			//    cannot run on a read-only store, and that failure used to abort the restore
+			//    and bounce the switch back to the previous device.
+			try await MainActor.run {
 				let schema = Schema(versionedSchema: MeshtasticSchema.current)
-				// Staged copy: a pending schema migration cannot run on a read-only store —
-				// that failure aborted the restore and bounced a node switch back to the
-				// previous device. The migration runs on the disposable copy; the real
-				// backup file is never touched. See stagedBackupContainer.
-				let (backupContainer, cleanup) = try Self.stagedBackupContainer(for: backupStoreURL, schema: schema)
-				defer { cleanup() }
+				let backupContainer = try Self.stagedBackupContainer(for: backupStoreURL, schema: schema)
 				let backupContext = ModelContext(backupContainer)
 				backupContext.autosaveEnabled = false
 
-				let liveContext = ModelContext(container)
+				let liveContext = container.mainContext
+				let hadAutosave = liveContext.autosaveEnabled
 				liveContext.autosaveEnabled = false
+				defer { liveContext.autosaveEnabled = hadAutosave }
 
 				// Import in dependency order
 				let nodesByNum = try Self.importNodes(from: backupContext, into: liveContext)
@@ -544,7 +548,7 @@ final class NodeBackupManager: NodeBackupManaging {
 
 				try liveContext.save()
 				Logger.backup.info("💾 Full restore complete for node \(nodeNum)")
-			}.value
+			}
 
 			return .success(entry)
 		} catch {
@@ -594,11 +598,17 @@ extension NodeBackupManager {
 	/// advance and bounced the switch back to the previous device. Copying the store (plus
 	/// WAL/SHM sidecars) into a temp directory and opening the copy writable lets the
 	/// migration run against the disposable copy while the real backup stays byte-identical.
-	/// The caller must invoke `cleanup()` when finished with the container.
+	///
+	/// The staged directory is deliberately NOT removed when the caller finishes: the
+	/// `ModelContainer` object outlives the call (SwiftData keeps internal observers alive
+	/// until dealloc), and unlinking a live container's store trips SQLite's vnode watch —
+	/// it invalidates the open fds ("vnode unlinked while in use") and the broken container
+	/// can then trap on a later notification callout. Temp staging dirs are swept at next
+	/// launch (`sweepStagedBackupDirectories`), and the OS purges tmp/ anyway.
 	nonisolated static func stagedBackupContainer(
 		for backupStoreURL: URL,
 		schema: Schema
-	) throws -> (container: ModelContainer, cleanup: () -> Void) {
+	) throws -> ModelContainer {
 		let fm = FileManager.default
 		let stageDir = fm.temporaryDirectory
 			.appendingPathComponent("staged-backup-\(UUID().uuidString)", isDirectory: true)
@@ -609,15 +619,25 @@ extension NodeBackupManager {
 			guard fm.fileExists(atPath: from.path) else { continue }
 			try fm.copyItem(at: from, to: URL(fileURLWithPath: stagedStoreURL.path + sidecar))
 		}
-		let cleanup: () -> Void = { try? fm.removeItem(at: stageDir) }
 		do {
 			// Writable so a pending lightweight migration can run — against the copy only.
 			let config = ModelConfiguration(url: stagedStoreURL, allowsSave: true)
-			let container = try ModelContainer(for: schema, configurations: config)
-			return (container, cleanup)
+			return try ModelContainer(for: schema, configurations: config)
 		} catch {
-			cleanup()
+			// Nothing holds the copy open when the container failed to construct.
+			try? fm.removeItem(at: stageDir)
 			throw error
+		}
+	}
+
+	/// Remove staging directories left by previous sessions (never removed live — see
+	/// `stagedBackupContainer`). Called once at launch, when nothing can hold them open.
+	nonisolated static func sweepStagedBackupDirectories() {
+		let fm = FileManager.default
+		let tmp = fm.temporaryDirectory
+		guard let names = try? fm.contentsOfDirectory(atPath: tmp.path) else { return }
+		for name in names where name.hasPrefix("staged-backup-") {
+			try? fm.removeItem(at: tmp.appendingPathComponent(name))
 		}
 	}
 }

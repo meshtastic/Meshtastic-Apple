@@ -122,16 +122,7 @@ struct ContentView: View {
 	@ViewBuilder
 	private var gatedContent: some View {
 		if appState.isDatabaseResetting {
-			VStack(spacing: 16) {
-				ProgressView()
-					.controlSize(.large)
-				Text("Switching Radios")
-					.font(.title3)
-				Text("Backing up and restoring the node database…")
-					.font(.callout)
-					.foregroundColor(.gray)
-			}
-			.frame(maxWidth: .infinity, maxHeight: .infinity)
+			DatabaseResettingPlaceholder()
 		} else {
 			ActiveContent(appState: appState, router: router) {
 				tabContent
@@ -259,5 +250,28 @@ struct ContentView: View {
 				.tag(NavigationState.Tab.connect)
 			}
 		}
+	}
+}
+
+// MARK: - Reset Placeholder
+
+/// SwiftData-free stand-in shown while a node switch clears/swaps the container. Shared by
+/// the WindowGroup-root gate in MeshtasticAppleApp (which unmounts the `.modelContainer`
+/// modifier itself — its SwiftData↔SwiftUI bridge observes save notifications process-wide
+/// and does NOT rebind when the container underneath it is swapped; a restore-time save then
+/// traps in the stale bridge, the "silent" half of Datadog 324bff02) and by ContentView's
+/// inner gate (defense in depth).
+struct DatabaseResettingPlaceholder: View {
+	var body: some View {
+		VStack(spacing: 16) {
+			ProgressView()
+				.controlSize(.large)
+			Text("Switching Radios")
+				.font(.title3)
+			Text("Backing up and restoring the node database…")
+				.font(.callout)
+				.foregroundColor(.gray)
+		}
+		.frame(maxWidth: .infinity, maxHeight: .infinity)
 	}
 }

@@ -1065,30 +1065,34 @@ func backupCurrentAndRestoreDatabase(
 	try? await Task.sleep(for: .milliseconds(300))
 
 	await MeshPackets.shared.flushDebouncedSaves()
+
+	// The clear is unconditional and IN PLACE, on the one process-lifetime container — a
+	// switch must NEVER dump the new radio's nodes on top of the old radio's (nodes have no
+	// owner column; the store is global). Deliberately NO repointToFreshContainer here:
+	// replacing the container mints an immortal stale observer bridge — SwiftUI's
+	// _SwiftData_SwiftUI bridges unregister from NotificationCenter only on dealloc and stay
+	// retained after any amount of unmounting, so the next save's synchronous callout traps
+	// in SwiftData (caught live in lldb: restore saves, and post-swap dump saves, on any
+	// thread, gate up or down — every container-replacement variant died there). Keeping the
+	// container's identity means every observer processes every save against the store it
+	// actually belongs to. The mounted-view hazard that container recreation was introduced
+	// for (#1922's "destroyed by ModelContext.reset") is covered by the reset gate above —
+	// nothing is mounted during the clear — plus the databaseResetID remount below.
 	let cleared = await MeshPackets.shared.clearDatabase(includeRoutes: false)
-	if cleared {
-		// Repoint at a fresh container so the restore below (and the post-restore UI refresh)
-		// operate on a context with no stale registrations. The databaseResetID bump stays after
-		// the restore.
-		accessoryManager.repointToFreshContainer()
-		Logger.backup.info("💾 Database cleared and container recreated")
-	} else {
+	if !cleared {
 		// The per-model clear aborted part-way (e.g. a relationship constraint failed a batch
-		// delete). A half-cleared store MUST NOT receive the next radio's dump — that is exactly
-		// how nodes bleed between radios — so escalate: destroy the store files and reopen a
-		// guaranteed-empty container. The current radio's data was backed up above; routes are
-		// lost in this (already-broken) path, which beats merging two radios' databases.
+		// delete). A half-cleared store MUST NOT receive the next radio's dump, so escalate:
+		// destroy the store files and reopen a guaranteed-empty container. This rare path
+		// does replace the container (accepting the stale-bridge risk) because proceeding on
+		// a half-cleared store is how one radio's nodes bleed into another's session.
 		Logger.backup.error("💾 clearDatabase failed — escalating to store destruction before the switch")
 		PersistenceController.shared.destroyStoreAndRecreateContainer()
-		// Repoint re-creates once more on the fresh (now empty) store and rebuilds the
-		// MeshPackets actor + cached context; the double recreate is harmless.
 		accessoryManager.repointToFreshContainer()
 	}
 
-	// The clear above is unconditional — a switch must NEVER dump the new radio's nodes on top
-	// of the old radio's (nodes have no owner column; the store is global). The restore is the
-	// only optional part: with no resolvable target node (first connect to a never-seen radio)
-	// there is simply no backup to import, and the radio populates the now-empty store fresh.
+	// The restore imports the backup's object graph into the SAME live container. With no
+	// resolvable target node (first connect to a never-seen radio) there is no backup, and
+	// the radio populates the now-empty store fresh.
 	let restoreResult: NodeBackupResult
 	if let targetNodeNum {
 		restoreResult = await NodeBackupManager.shared.restoreFromBackup(
