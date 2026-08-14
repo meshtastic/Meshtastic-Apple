@@ -417,10 +417,10 @@ struct LoRaConfig: View {
 		}
 		.onChange(of: region) { _, newRegion in
 			if newRegion != node?.loRaConfig?.regionCode ?? -1 { hasChanges = true }
-			applyRegionPresetDefault(forRegion: newRegion)
+			applyRegionPresetDefault(forRegion: newRegion, recommendFactoryDefault: true)
 		}
 		.onChange(of: accessoryManager.loRaRegionPresets) { _, _ in
-			applyRegionPresetDefault(forRegion: region)
+			applyRegionPresetDefault(forRegion: region, recommendFactoryDefault: false)
 		}
 		.onChange(of: usePreset) { _, newPreset in
 			codingRate = CodingRates.normalized(codingRate, usePreset: newPreset, modemPreset: selectedModemPreset)
@@ -469,16 +469,20 @@ struct LoRaConfig: View {
 		}
 	}
 	/// When the user switches region, pre-select the appropriate preset: a
-	/// factory-flashed node defaults to Long Turbo for US on 2.8 firmware, and
+	/// factory-flashed node still using Long Fast defaults to Long Turbo for US
+	/// on 2.8 firmware, and
 	/// otherwise an illegal current preset falls back to the region's advertised
 	/// default (spec §5.3 / §6). See `ModemPresets.presetToSelect` for the rules.
 	/// A nil result keeps the current selection.
-	private func applyRegionPresetDefault(forRegion newRegion: Int) {
+	private func applyRegionPresetDefault(forRegion newRegion: Int, recommendFactoryDefault: Bool) {
 		guard let code = RegionCodes(rawValue: newRegion)?.protoEnumValue() else { return }
-		let factoryFresh = (node?.loRaConfig?.regionCode ?? 0) == RegionCodes.unset.rawValue
+		let persistedRegion = Int(node?.loRaConfig?.regionCode ?? 0)
+		let persistedPreset = ModemPresets(rawValue: Int(node?.loRaConfig?.modemPreset ?? -1))
+		let shouldRecommendFactoryDefault = recommendFactoryDefault && persistedRegion == RegionCodes.unset.rawValue
 		if let preset = ModemPresets.presetToSelect(
 			forRegion: code,
-			factoryFresh: factoryFresh,
+			recommendFactoryDefault: shouldRecommendFactoryDefault,
+			persistedPreset: persistedPreset,
 			supports2_8: supports2_8,
 			usePreset: usePreset,
 			regionInfo: accessoryManager.loRaRegionPresets[code],
