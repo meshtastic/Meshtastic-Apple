@@ -9,6 +9,27 @@ import MeshtasticProtobufs
 import OSLog
 import SwiftUI
 
+enum MQTTMapPositionPrecision {
+	// Firmware MQTT map reports accept 12...15 and otherwise use 14.
+	static let defaultValue = 14.0
+	static let validRange = 12.0...15.0
+
+	static func normalized(_ value: Double) -> Double {
+		validRange.contains(value) ? value : defaultValue
+	}
+
+	static func hasChanged(from oldValue: Double, to newValue: Double, storedValue: Double) -> Bool {
+		oldValue != newValue && normalized(newValue) != normalized(storedValue)
+	}
+
+	static func valueForSave(displayedValue: Double, storedValue: Int32?, wasEdited: Bool) -> UInt32 {
+		if !wasEdited, let storedValue {
+			return UInt32(truncatingIfNeeded: storedValue)
+		}
+		return UInt32(normalized(displayedValue))
+	}
+}
+
 struct MQTTConfig: View {
 	
 	@Environment(\.modelContext) private var context
@@ -35,6 +56,7 @@ struct MQTTConfig: View {
 	@AppStorage("mapReportingOptIn") private var mapReportingOptIn: Bool = false
 	@State private var mapPublishIntervalSecs: UpdateInterval = UpdateInterval(from: 3600)
 	@State var mapPositionPrecision: Double = 14.0
+	@State private var mapPositionPrecisionWasEdited = false
 	
 	let locale = Locale.current
 	
@@ -113,7 +135,7 @@ struct MQTTConfig: View {
 							Text("To comply with privacy laws like CCPA and GDPR, we avoid sharing exact location data. Instead, we use anonymized or approximate (imprecise) location information to protect your privacy.")
 								.foregroundColor(.gray)
 								.font(.callout)
-							Slider(value: $mapPositionPrecision, in: 12...15, step: 1) {
+							Slider(value: $mapPositionPrecision, in: MQTTMapPositionPrecision.validRange, step: 1) {
 							} minimumValueLabel: {
 								Image(systemName: "plus")
 									.accessibilityHidden(true)
@@ -273,7 +295,11 @@ struct MQTTConfig: View {
 						mqtt.tlsEnabled = self.tlsEnabled
 						mqtt.mapReportingEnabled = self.mapReportingEnabled
 						mqtt.mapReportSettings.shouldReportLocation = UserDefaults.mapReportingOptIn
-						mqtt.mapReportSettings.positionPrecision = UInt32(self.mapPositionPrecision)
+						mqtt.mapReportSettings.positionPrecision = MQTTMapPositionPrecision.valueForSave(
+							displayedValue: self.mapPositionPrecision,
+							storedValue: node?.mqttConfig?.mapPositionPrecision,
+							wasEdited: self.mapPositionPrecisionWasEdited
+						)
 						mqtt.mapReportSettings.publishIntervalSecs = UInt32(self.mapPublishIntervalSecs.intValue)
 						_ = try await accessoryManager.saveMQTTConfig(config: mqtt, fromUser: fromUser, toUser: toUser)
 					}
@@ -333,6 +359,16 @@ struct MQTTConfig: View {
 			}
 			.onChange(of: mapReportingEnabled) { oldMapReporting, newMapReportingEnabled in
 				if oldMapReporting != newMapReportingEnabled && newMapReportingEnabled != node?.mqttConfig?.mapReportingEnabled { hasChanges = true }
+			}
+			.onChange(of: mapPositionPrecision) { oldPrecision, newPrecision in
+				if MQTTMapPositionPrecision.hasChanged(
+					from: oldPrecision,
+					to: newPrecision,
+					storedValue: Double(node?.mqttConfig?.mapPositionPrecision ?? 14)
+				) {
+					hasChanges = true
+					mapPositionPrecisionWasEdited = true
+				}
 			}
 			.onChange(of: mapPublishIntervalSecs.intValue) { oldMapInterval, newMapPublishIntervalSecs in
 				if oldMapInterval != newMapPublishIntervalSecs && newMapPublishIntervalSecs != node?.mqttConfig?.mapPublishIntervalSecs ?? -1 { hasChanges = true }
@@ -407,9 +443,9 @@ private extension MQTTConfig {
 		self.mqttConnected = accessoryManager.mqttProxyConnected
 		self.mapReportingEnabled = node?.mqttConfig?.mapReportingEnabled ?? false
 		self.mapPublishIntervalSecs = UpdateInterval(from: max(3600, Int(node?.mqttConfig?.mapPublishIntervalSecs ?? 3600)))
-		self.mapPositionPrecision = Double(node?.mqttConfig?.mapPositionPrecision ?? 14)
+		self.mapPositionPrecision = MQTTMapPositionPrecision.normalized(Double(node?.mqttConfig?.mapPositionPrecision ?? 14))
+		self.mapPositionPrecisionWasEdited = false
 		self.mapReportingOptIn = UserDefaults.mapReportingOptIn
-		if mapPositionPrecision < 11 || mapPositionPrecision > 14 { self.mapPositionPrecision = 14 }
 		self.hasChanges = false
 	}
 }
