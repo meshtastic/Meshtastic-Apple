@@ -231,17 +231,93 @@ struct MeshtasticAppleApp: App {
 				FirmwareUpdateGameDemoHost()
 			} else if appState.isDatabaseResetting {
 				// Unmount the WHOLE SwiftData-bound tree — including the `.modelContainer`
-				// modifier below — while a node switch clears/swaps the container. The modifier's
-				// SwiftData↔SwiftUI bridge observes save notifications process-wide and never
-				// rebinds to a swapped container (its attachment point here is structurally
-				// stable, so `.id(databaseResetID)` deeper down can't recreate it); the restore's
-				// background save then traps inside the stale bridge (the "silent exit" flavor of
-				// Datadog 324bff02 — no crash report, EXC_BREAKPOINT in _SwiftData_SwiftUI caught
-				// live in lldb at NodeBackupManager.restoreFromBackup's save). Recreating this
-				// branch on gate-drop rebuilds the bridge against the fresh container.
+				// modifier in mainAppContent — while a node switch clears the store. The
+				// modifier's SwiftData↔SwiftUI bridge observes save notifications process-wide
+				// and never rebinds (its attachment point is structurally stable, so
+				// `.id(databaseResetID)` deeper down can't recreate it); stale bridges from any
+				// container the app has moved off of trap on the next save callout (the "silent
+				// exit" flavor of Datadog 324bff02 — no crash report, EXC_BREAKPOINT in
+				// _SwiftData_SwiftUI, caught live in lldb). This gate plus the process-lifetime
+				// container (see backupCurrentAndRestoreDatabase) is the pair that ended it.
 				DatabaseResettingPlaceholder()
 			} else {
-				EventFirmwareTintScope {
+				mainAppContent
+			}
+			}
+			.onChange(of: lockdownCoordinator.state) { _, newState in
+				// US-3: when the coordinator resolves to .lockNowAcknowledged
+				// (either via inbound LOCKED status or a BLE disconnect race),
+				// tear down the connection so the next reconnect re-auths.
+				if case .lockNowAcknowledged = newState {
+					Task { try? await accessoryManager.closeConnection() }
+				}
+			}
+		}
+		.onChange(of: scenePhase) { (_, newScenePhase) in
+			// Also skipped in Chirpy OTA demo mode, where persistenceController is nil —
+			// backgrounding the demo must not touch (or force-unwrap) SwiftData.
+			guard Self.shouldInitializeAppServices, let persistenceController else { return }
+			accessoryManager.isInBackground = (newScenePhase == .background)
+			switch newScenePhase {
+			case .background:
+				Logger.services.info("🎬 [App] Scene is in the background")
+				accessoryManager.appDidEnterBackground()
+				do {
+					try persistenceController.container.mainContext.save()
+					Logger.services.info("💾 [App] Saved SwiftData context when the app went to the background.")
+
+				} catch {
+
+					Logger.services.error("💥 [App] Failed to save context when the app goes to the background.")
+				}
+			case .inactive:
+				Logger.services.info("🎬 [App] Scene is inactive")
+			case .active:
+				Logger.services.info("🎬 [App] Scene is active")
+				accessoryManager.appDidBecomeActive()
+				appState.refreshBadgeCount(context: persistenceController.container.mainContext)
+			@unknown default:
+				Logger.services.error("🍎 [App] Apple must have changed something")
+			}
+		}
+		.environmentObject(appState)
+		.environmentObject(accessoryManager)
+		.environmentObject(lockdownCoordinator)
+		.environmentObject(appState.router)
+		.environmentObject(MeshtasticAPI.shared)
+
+			WindowGroup("Mesh Map", id: "meshmap-window") {
+				// Gated on shouldInitializeAppServices (not just tests): in Chirpy OTA demo mode
+				// persistenceController is nil, so building this scene would force-unwrap-crash.
+				// Also gated on the database reset, for the same stale-bridge reason as the main
+				// window: this scene's .modelContainer must unmount during a container swap.
+				if Self.shouldInitializeAppServices, let persistenceController, !appState.isDatabaseResetting {
+					EventFirmwareTintScope {
+						MapWindow()
+							.id(appState.databaseResetID)
+					}
+					.modelContainer(persistenceController.container)
+					.environmentObject(appState)
+					.environmentObject(accessoryManager)
+					.environmentObject(lockdownCoordinator)
+					.environmentObject(appState.router)
+					.environmentObject(MeshtasticAPI.shared)
+				}
+			}
+		.handlesExternalEvents(matching: [])
+		.windowResizability(.contentMinSize)
+		#if os(visionOS)
+		.windowStyle(.plain)
+		#endif
+	}
+
+	/// The full SwiftData-bound app tree, extracted from the WindowGroup builder both to keep
+	/// the scene-level expression type-checkable in reasonable time (the four-branch builder
+	/// with this chain inlined blew Swift's type-check budget on CI) and so the database-reset
+	/// gate can unmount it — `.modelContainer` included — as one unit.
+	@ViewBuilder
+	private var mainAppContent: some View {
+		EventFirmwareTintScope {
 					ContentView(
 						appState: appState,
 						router: appState.router
@@ -323,72 +399,5 @@ struct MeshtasticAppleApp: App {
 				.environmentObject(accessoryManager)
 				.environmentObject(appState.router)
 				.environmentObject(MeshtasticAPI.shared)
-			}
-			}
-			.onChange(of: lockdownCoordinator.state) { _, newState in
-				// US-3: when the coordinator resolves to .lockNowAcknowledged
-				// (either via inbound LOCKED status or a BLE disconnect race),
-				// tear down the connection so the next reconnect re-auths.
-				if case .lockNowAcknowledged = newState {
-					Task { try? await accessoryManager.closeConnection() }
-				}
-			}
-		}
-		.onChange(of: scenePhase) { (_, newScenePhase) in
-			// Also skipped in Chirpy OTA demo mode, where persistenceController is nil —
-			// backgrounding the demo must not touch (or force-unwrap) SwiftData.
-			guard Self.shouldInitializeAppServices, let persistenceController else { return }
-			accessoryManager.isInBackground = (newScenePhase == .background)
-			switch newScenePhase {
-			case .background:
-				Logger.services.info("🎬 [App] Scene is in the background")
-				accessoryManager.appDidEnterBackground()
-				do {
-					try persistenceController.container.mainContext.save()
-					Logger.services.info("💾 [App] Saved SwiftData context when the app went to the background.")
-
-				} catch {
-
-					Logger.services.error("💥 [App] Failed to save context when the app goes to the background.")
-				}
-			case .inactive:
-				Logger.services.info("🎬 [App] Scene is inactive")
-			case .active:
-				Logger.services.info("🎬 [App] Scene is active")
-				accessoryManager.appDidBecomeActive()
-				appState.refreshBadgeCount(context: persistenceController.container.mainContext)
-			@unknown default:
-				Logger.services.error("🍎 [App] Apple must have changed something")
-			}
-		}
-		.environmentObject(appState)
-		.environmentObject(accessoryManager)
-		.environmentObject(lockdownCoordinator)
-		.environmentObject(appState.router)
-		.environmentObject(MeshtasticAPI.shared)
-
-			WindowGroup("Mesh Map", id: "meshmap-window") {
-				// Gated on shouldInitializeAppServices (not just tests): in Chirpy OTA demo mode
-				// persistenceController is nil, so building this scene would force-unwrap-crash.
-				// Also gated on the database reset, for the same stale-bridge reason as the main
-				// window: this scene's .modelContainer must unmount during a container swap.
-				if Self.shouldInitializeAppServices, let persistenceController, !appState.isDatabaseResetting {
-					EventFirmwareTintScope {
-						MapWindow()
-							.id(appState.databaseResetID)
-					}
-					.modelContainer(persistenceController.container)
-					.environmentObject(appState)
-					.environmentObject(accessoryManager)
-					.environmentObject(lockdownCoordinator)
-					.environmentObject(appState.router)
-					.environmentObject(MeshtasticAPI.shared)
-				}
-			}
-		.handlesExternalEvents(matching: [])
-		.windowResizability(.contentMinSize)
-		#if os(visionOS)
-		.windowStyle(.plain)
-		#endif
 	}
 }
