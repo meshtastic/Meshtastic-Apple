@@ -50,12 +50,19 @@ jobs:
             exit 1
           fi
 
-          xcodebuild test \
+          # tee the full log so a failure can surface the actual error lines — a bare
+          # `tail -20` swallowed the file/line of compile failures (e.g. the
+          # "unable to type-check this expression in reasonable time" incidents).
+          if ! xcodebuild test \
             -workspace Meshtastic.xcworkspace \
             -scheme Meshtastic \
             -destination 'platform=iOS Simulator,name=iPhone 16,OS=18.5' \
             "${snapshot_tests[@]}" \
-            2>&1 | tail -20
+            2>&1 | tee /tmp/xcodebuild-snapshots.log | tail -20; then
+            echo "── error lines from full log ──" >&2
+            grep -E "error:|: Fatal error|failed \(" /tmp/xcodebuild-snapshots.log | head -40 >&2
+            exit 1
+          fi
 
       - name: Verify snapshot tests leave references unchanged
         run: |

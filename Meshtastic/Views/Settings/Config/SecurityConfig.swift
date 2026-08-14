@@ -52,106 +52,9 @@ struct SecurityConfig: View {
 	}
 
 	var body: some View {
-		Form {
-			ConfigHeader(title: "Security", config: \.securityConfig, node: node, onAppear: setSecurityValues)
-			Text("Security Config Settings require a firmware version 2.5+")
-				.font(.title3)
-			packetAuthenticitySection
-			directMessageKeySection
-			adminKeysSection
-			LockdownSection(lockdown: lockdown, showLockNowAlert: $showLockNowAlert)
-			logsSection
-			administrationSection
-		}
-		.disabled(!accessoryManager.isConnected || node?.securityConfig == nil)
-		.safeAreaInset(edge: .bottom, alignment: .center) {
-			HStack(spacing: 0) {
-				SaveConfigButton(node: node, hasChanges: $hasChanges) {
-
-					if !hasValidPrivateKey || !hasValidAdminKey || !hasValidAdminKey2 || !hasValidAdminKey3 {
-						return
-					}
-
-					guard let deviceNum = accessoryManager.activeDeviceNum,
-						  let connectedNode = getNodeInfo(id: deviceNum, context: context),
-						  let fromUser = connectedNode.user,
-						  let toUser = node?.user else {
-						return
-					}
-
-					var config = Config.SecurityConfig()
-					config.privateKey = Data(base64Encoded: privateKey) ?? Data()
-					config.adminKey = [Data(base64Encoded: adminKey) ?? Data(), Data(base64Encoded: adminKey2) ?? Data(), Data(base64Encoded: adminKey3) ?? Data()]
-					config.isManaged = isManaged
-					config.serialEnabled = serialEnabled
-					config.debugLogApiEnabled = debugLogApiEnabled
-					// Always written back, even when the capability gate hid the control, so a policy
-					// the radio already holds round-trips untouched instead of being reset to Compatible.
-					config.packetSignaturePolicy = packetAuthenticitySelection.selected
-
-					let keyUpdated = node?.securityConfig?.privateKey?.base64EncodedString() ?? "" != privateKey
-					Task {
-						_ = try await accessoryManager.saveSecurityConfig(
-							config: config,
-							fromUser: fromUser,
-							toUser: toUser
-						)
-						Task { @MainActor in
-							// Should show a saved successfully alert once I know that to be true
-							// for now just disable the button after a successful save
-							if keyUpdated {
-								// This is the *local* node's own keypair being changed deliberately by the user in the
-								// Security config screen (gated behind `keyUpdated` + an explicit save), not an inbound
-								// mesh key — so the first-wins protection doesn't apply. `keyMatch`/`newPublicKey` track
-								// *remote* contacts' keys, so they are intentionally left untouched here.
-								node?.user?.publicKey = Data(base64Encoded: publicKey) ?? Data()
-								do {
-									try context.save()
-									Logger.data.info("💾 Saved UserEntity Public Key to Core Data for \(node?.num ?? 0, privacy: .public)")
-								} catch {
-									let nsError = error as NSError
-									Logger.data.error("Error Updating UserEntity: \(nsError, privacy: .public)")
-								}
-							}
-						}
-						hasChanges = false
-						if keyUpdated {
-							Task {
-								do {
-									try await accessoryManager.sendReboot(
-										fromUser: fromUser,
-										toUser: toUser
-									)
-								} catch {
-									Logger.mesh.warning("Reboot Failed")
-								}
-							}
-						}
-						goBack()
-					}
-				}
-			}
-		}
-		.scrollDismissesKeyboard(.immediately)
-		.navigationTitle("Security Config")
-		.toolbar {
-	ToolbarItem(placement: .topBarTrailing) {
-		ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
-	}
-}
-		.onChange(of: node) { _, _ in
-			setSecurityValues()
-		}
-		.onChange(of: isManaged) { _, newIsManaged in
-			if newIsManaged != node?.securityConfig?.isManaged { hasChanges = true }
-		}
-		.onChange(of: serialEnabled) { _, newSerialEnabled in
-			if newSerialEnabled != node?.securityConfig?.serialEnabled { hasChanges = true }
-		}
-		.onChange(of: debugLogApiEnabled) { _, newDebugLogApiEnabled in
-			if newDebugLogApiEnabled != node?.securityConfig?.debugLogApiEnabled { hasChanges = true }
-		}
-		.onChange(of: packetAuthenticitySelection.selected) { _, policy in packetAuthenticityDidChange(to: policy) }
+		// Chain rooted at an opaque property for type-check time — same treatment as
+		// LoRaConfig; this file was the one build-snapshots' compiler actually timed out on.
+		trackedSecurityForm
 		.onChange(of: privateKey) { _, key in
 			let tempKey = Data(base64Encoded: privateKey) ?? Data()
 			if tempKey.count == 32 {
@@ -206,6 +109,123 @@ struct SecurityConfig: View {
 				configIsNil: { $0.securityConfig == nil },
 				request: accessoryManager.requestSecurityConfig
 			)
+		}
+	}
+
+	/// First half of the change-tracking chain — halved like LoRaConfig so no single
+	/// expression carries the whole overloaded .onChange stack.
+	private var trackedSecurityForm: some View {
+		securityForm
+		.onChange(of: node) { _, _ in
+			setSecurityValues()
+		}
+		.onChange(of: isManaged) { _, newIsManaged in
+			if newIsManaged != node?.securityConfig?.isManaged { hasChanges = true }
+		}
+		.onChange(of: serialEnabled) { _, newSerialEnabled in
+			if newSerialEnabled != node?.securityConfig?.serialEnabled { hasChanges = true }
+		}
+		.onChange(of: debugLogApiEnabled) { _, newDebugLogApiEnabled in
+			if newDebugLogApiEnabled != node?.securityConfig?.debugLogApiEnabled { hasChanges = true }
+		}
+		.onChange(of: packetAuthenticitySelection.selected) { _, policy in packetAuthenticityDidChange(to: policy) }
+	}
+
+	/// See `body` — the Form and its chrome, split out for type-check time.
+	private var securityForm: some View {
+		Form {
+			ConfigHeader(title: "Security", config: \.securityConfig, node: node, onAppear: setSecurityValues)
+			Text("Security Config Settings require a firmware version 2.5+")
+				.font(.title3)
+			packetAuthenticitySection
+			directMessageKeySection
+			adminKeysSection
+			LockdownSection(lockdown: lockdown, showLockNowAlert: $showLockNowAlert)
+			logsSection
+			administrationSection
+		}
+		.disabled(!accessoryManager.isConnected || node?.securityConfig == nil)
+		.safeAreaInset(edge: .bottom, alignment: .center) {
+			HStack(spacing: 0) {
+				SaveConfigButton(node: node, hasChanges: $hasChanges) {
+					saveSecurityConfig()
+				}
+			}
+		}
+		.scrollDismissesKeyboard(.immediately)
+		.navigationTitle("Security Config")
+		.toolbar {
+	ToolbarItem(placement: .topBarTrailing) {
+		ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
+	}
+}
+	}
+
+	/// The save routine, extracted from the `SaveConfigButton` trailing closure: inference
+	/// for the inlined closure inside body's modifier chain was a type-check hot spot
+	/// (the build-snapshots "unable to type-check in reasonable time" failures on CI).
+	private func saveSecurityConfig() {
+
+		if !hasValidPrivateKey || !hasValidAdminKey || !hasValidAdminKey2 || !hasValidAdminKey3 {
+			return
+		}
+
+		guard let deviceNum = accessoryManager.activeDeviceNum,
+			  let connectedNode = getNodeInfo(id: deviceNum, context: context),
+			  let fromUser = connectedNode.user,
+			  let toUser = node?.user else {
+			return
+		}
+
+		var config = Config.SecurityConfig()
+		config.privateKey = Data(base64Encoded: privateKey) ?? Data()
+		config.adminKey = [Data(base64Encoded: adminKey) ?? Data(), Data(base64Encoded: adminKey2) ?? Data(), Data(base64Encoded: adminKey3) ?? Data()]
+		config.isManaged = isManaged
+		config.serialEnabled = serialEnabled
+		config.debugLogApiEnabled = debugLogApiEnabled
+		// Always written back, even when the capability gate hid the control, so a policy
+		// the radio already holds round-trips untouched instead of being reset to Compatible.
+		config.packetSignaturePolicy = packetAuthenticitySelection.selected
+
+		let keyUpdated = node?.securityConfig?.privateKey?.base64EncodedString() ?? "" != privateKey
+		Task {
+			_ = try await accessoryManager.saveSecurityConfig(
+				config: config,
+				fromUser: fromUser,
+				toUser: toUser
+			)
+			Task { @MainActor in
+				// Should show a saved successfully alert once I know that to be true
+				// for now just disable the button after a successful save
+				if keyUpdated {
+					// This is the *local* node's own keypair being changed deliberately by the user in the
+					// Security config screen (gated behind `keyUpdated` + an explicit save), not an inbound
+					// mesh key — so the first-wins protection doesn't apply. `keyMatch`/`newPublicKey` track
+					// *remote* contacts' keys, so they are intentionally left untouched here.
+					node?.user?.publicKey = Data(base64Encoded: publicKey) ?? Data()
+					do {
+						try context.save()
+						Logger.data.info("💾 Saved UserEntity Public Key to Core Data for \(node?.num ?? 0, privacy: .public)")
+					} catch {
+						let nsError = error as NSError
+						Logger.data.error("Error Updating UserEntity: \(nsError, privacy: .public)")
+					}
+				}
+			}
+			hasChanges = false
+			if keyUpdated {
+				Task {
+					do {
+						try await accessoryManager.sendReboot(
+							fromUser: fromUser,
+							toUser: toUser
+						)
+					} catch {
+						Logger.mesh.warning("Reboot Failed")
+					}
+				}
+			}
+			goBack()
 		}
 	}
 
