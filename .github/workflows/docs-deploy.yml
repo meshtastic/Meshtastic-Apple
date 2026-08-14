@@ -54,20 +54,8 @@ jobs:
             -workspace Meshtastic.xcworkspace \
             -scheme Meshtastic \
             -destination 'platform=iOS Simulator,name=iPhone 16,OS=18.5' \
-            -resultBundlePath build-snapshots.xcresult \
             "${snapshot_tests[@]}" \
-            2>&1 | tee build-snapshots.log
-
-      - name: Upload failed build diagnostics
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-snapshots-diagnostics
-          path: |
-            build-snapshots.log
-            build-snapshots.xcresult
-          if-no-files-found: warn
-          retention-days: 7
+            2>&1 | tail -20
 
       - name: Verify snapshot tests leave references unchanged
         run: |
