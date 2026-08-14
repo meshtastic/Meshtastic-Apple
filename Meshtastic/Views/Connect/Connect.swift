@@ -1142,6 +1142,15 @@ func switchToDevice(
 	}()
 	Logger.backup.info("💾 Node switch — current: \(currentNodeNum.map { String($0) } ?? "nil", privacy: .public), target: \(targetNodeNum.map { String($0) } ?? "unknown", privacy: .public)")
 
+	// The user's explicit choice IS the new preferred radio — record it at switch
+	// initiation, not only deep in the connect flow (Step 5 writes it again on success).
+	// When it moved only on a fully-successful connect, any failed switch left the OLD
+	// preferred in place, so the error-path auto-reconnect bounced back to the previous
+	// radio instead of retrying the node the user asked for — and worse, that reconnect
+	// (a plain connect, no clear) dumped the previous radio's nodes on top of the target's
+	// freshly restored database.
+	UserDefaults.preferredPeripheralId = device.id.uuidString
+
 	// Mark the switch in flight so the disconnect's teardown doesn't re-arm discovery and
 	// auto-connect can't launch a second connect + node dump while the store is mid-reset.
 	accessoryManager.isSwitchingDevices = true
