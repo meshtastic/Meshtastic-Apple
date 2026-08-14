@@ -722,16 +722,21 @@ targets:
       # .xcassets inside a synced folder is compiled as a unit, and per-child
       # membership exceptions do not remove it from actool's inputs.
       - path: "Meshtastic TV/App"
+        group: "Shared TV Client"
         type: syncedFolder
         excludes:
           - "MeshtasticTVApp.swift"
       - path: "Meshtastic TV/Client"
+        group: "Shared TV Client"
         type: syncedFolder
       - path: "Meshtastic TV/Models"
+        group: "Shared TV Client"
         type: syncedFolder
       - path: "Meshtastic TV/Map"
+        group: "Shared TV Client"
         type: syncedFolder
       - path: "Meshtastic TV/Views"
+        group: "Shared TV Client"
         type: syncedFolder
       # Same portable primitives the TV target reuses (no UIKit/BLE/CoreLocation).
       - path: "Meshtastic/Accessory/Transports/TCP/TCPConnection.swift"

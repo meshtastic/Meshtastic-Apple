@@ -33,6 +33,22 @@ class AppState: ObservableObject {
 	/// refetch, so they drop objects cached from the previous node's database. Applied
 	/// as `.id(appState.databaseResetID)` on the root content view.
 	@Published var databaseResetID = UUID()
+	/// True while a node switch is clearing/swapping the SwiftData container. ContentView
+	/// replaces the whole tab tree with a lightweight non-SwiftData placeholder for the
+	/// duration, so no @Query subscription exists while the store underneath it is cleared,
+	/// destroyed, or repointed. Without this, the _SwiftData_SwiftUI bridge can process a
+	/// store-change notification against the swapped-out context and trap (SIGTRAP,
+	/// Datadog issue 324bff02-6b22-11f1, first seen 2.7.13 — the "repeatable crash when
+	/// switching nodes"). The databaseResetID bump alone runs AFTER the swap, which is
+	/// too late for subscriptions that are live during it.
+	@Published var isDatabaseResetting = false
+	/// Bumped immediately after the SwiftData container is recreated (repointToFreshContainer)
+	/// so the scene body re-evaluates and `.modelContainer(...)` hands the NEW container to the
+	/// environment. @Query subscriptions then re-bind in place — no view teardown. This is the
+	/// counterpart to `databaseResetID`, which changes root identity and unmounts the whole
+	/// tree: identity churn mid-switch is what produced the UIKit/CoreAnimation dead-view
+	/// SIGTRAPs on device, so container delivery must never ride on it.
+	@Published var containerStamp = UUID()
 	/// A contact parsed from a meshtastic.org/v/# URL (QR code, link, or NFC tag)
 	/// awaiting user confirmation. Presented as a sheet from MeshtasticApp, the
 	/// same pattern the channel-link import uses.
