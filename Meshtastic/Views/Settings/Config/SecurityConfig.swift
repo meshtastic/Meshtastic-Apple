@@ -51,7 +51,8 @@ struct SecurityConfig: View {
 		return calculatedPublicKey == decodedPublicKey
 	}
 
-	var body: some View {
+	// Keep the Form behind an opaque type boundary so Xcode 26.3 can type-check this view.
+	private var securityForm: some View {
 		Form {
 			ConfigHeader(title: "Security", config: \.securityConfig, node: node, onAppear: setSecurityValues)
 			Text("Security Config Settings require a firmware version 2.5+")
@@ -246,6 +247,10 @@ struct SecurityConfig: View {
 				}
 			}
 		}
+	}
+
+	var body: some View {
+		securityForm
 		.disabled(!accessoryManager.isConnected || node?.securityConfig == nil)
 		.safeAreaInset(edge: .bottom, alignment: .center) {
 			HStack(spacing: 0) {
