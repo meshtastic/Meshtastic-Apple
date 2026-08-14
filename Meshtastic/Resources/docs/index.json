@@ -426,7 +426,7 @@
             "packets",
             "packet"
         ],
-        "charCount": 15667
+        "charCount": 15721
     },
     {
         "id": "signal-meter",
@@ -945,14 +945,15 @@
             "preset",
             "firmware",
             "config",
+            "only",
             "swift",
             "presets",
-            "only",
             "loraconfig",
             "licensed",
             "groups",
             "regions",
             "group",
+            "map",
             "list",
             "index",
             "accessorymanager",
@@ -961,18 +962,17 @@
             "radio",
             "modempresets",
             "message",
-            "map",
             "loraregionpresets",
             "loraregionpresetmap",
             "lora",
             "legal",
+            "from",
             "every",
             "default",
             "band",
-            "set",
-            "selectable"
+            "set"
         ],
-        "charCount": 6795
+        "charCount": 6968
     },
     {
         "id": "measurement",
