@@ -248,11 +248,11 @@ final class SelectionHaloView: MKAnnotationView {
 		guard let halo = annotation as? SelectionHaloAnnotation else { return }
 		let color = UIColor(hex: halo.num)
 		let text = halo.shortName.isEmpty ? String(format: "%04x", halo.num & 0xffff) : halo.shortName
-		if pin.backgroundColor != color { pin.backgroundColor = color }
-		if label.text != text {
-			label.text = text
+		if pin.backgroundColor != color {
+			pin.backgroundColor = color
 			label.textColor = color.isLight() ? .black : .white
 		}
+		if label.text != text { label.text = text }
 	}
 
 	/// Layer animations are stripped whenever the view leaves the window, so the
@@ -336,7 +336,7 @@ struct MeshTVMapView: UIViewRepresentable {
 		var parent: MeshTVMapView
 		private var didSetInitialRegion = false
 		private var annotationsByNum: [UInt32: NodeAnnotation] = [:]
-		private var lastSyncedNodeCount = 0
+		private var lastSpreadKey: [Int64] = []
 		private var cachedOverrides: [UInt32: CLLocationCoordinate2D] = [:]
 
 		init(_ parent: MeshTVMapView) {
@@ -351,10 +351,11 @@ struct MeshTVMapView: UIViewRepresentable {
 		/// keyed by node number so we don't churn the whole map each update.
 		func sync(_ mapView: MKMapView, nodes: [MeshNode]) {
 			let located = nodes.filter { $0.hasLocation }
-			// Only recompute the spread ring when the located set size changes.
-			if located.count != lastSyncedNodeCount {
+			// Recompute when a node identity or quantized position changes.
+			let spreadKey = Self.spreadKey(located)
+			if spreadKey != lastSpreadKey {
 				cachedOverrides = spreadOverrides(located)
-				lastSyncedNodeCount = located.count
+				lastSpreadKey = spreadKey
 			}
 			let overrides = cachedOverrides
 			let incoming = Set(located.map { $0.num })
@@ -363,6 +364,10 @@ struct MeshTVMapView: UIViewRepresentable {
 			for (num, annotation) in annotationsByNum where !incoming.contains(num) {
 				mapView.removeAnnotation(annotation)
 				annotationsByNum[num] = nil
+				if num == selectedNum {
+					removeHalo(from: mapView)
+					lastAppliedSelection = nil
+				}
 			}
 
 			// Add or update the rest. Updates must be no-ops when nothing changed —
@@ -398,6 +403,20 @@ struct MeshTVMapView: UIViewRepresentable {
 					mapView.addAnnotation(annotation)
 				}
 			}
+		}
+
+		/// Identity and ~1 m position of every located node in stable order.
+		private static func spreadKey(_ nodes: [MeshNode]) -> [Int64] {
+			nodes.compactMap { node -> (UInt32, Int64, Int64)? in
+				guard let coordinate = node.coordinate else { return nil }
+				return (
+					node.num,
+					Int64((coordinate.latitude * 1e5).rounded()),
+					Int64((coordinate.longitude * 1e5).rounded())
+				)
+			}
+			.sorted { $0.0 < $1.0 }
+			.flatMap { [Int64($0.0), $0.1, $0.2] }
 		}
 
 		/// Fan out nodes on (nearly) the same coordinate into a small ring, so a stacked
@@ -572,8 +591,6 @@ struct MeshTVMapView: UIViewRepresentable {
 				let target = mapView.region.span.latitudeDelta > tight.span.latitudeDelta
 					? tight
 					: MKCoordinateRegion(center: annotation.coordinate, span: mapView.region.span)
-				// Cut (no animation) if another selection is already queued — the user
-				// is scrolling fast and an animated fly would just get cancelled.
 				mapView.setRegion(target, animated: true)
 				self.lastAppliedSelection = num
 				self.pendingSelectionNum = nil
