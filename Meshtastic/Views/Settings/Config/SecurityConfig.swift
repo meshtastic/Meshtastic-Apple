@@ -322,7 +322,7 @@ struct SecurityConfig: View {
 		}
 	}
 
-	var body: some View {
+	private var formWithNavigation: some View {
 		formWithSaveControls
 		.scrollDismissesKeyboard(.immediately)
 		.navigationTitle("Security Config")
@@ -331,78 +331,96 @@ struct SecurityConfig: View {
 		ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
 	}
 }
-		.onChange(of: node) { _, _ in
-			setSecurityValues()
-		}
-		.onChange(of: isManaged) { _, newIsManaged in
-			if newIsManaged != node?.securityConfig?.isManaged { hasChanges = true }
-		}
-		.onChange(of: serialEnabled) { _, newSerialEnabled in
-			if newSerialEnabled != node?.securityConfig?.serialEnabled { hasChanges = true }
-		}
-		.onChange(of: debugLogApiEnabled) { _, newDebugLogApiEnabled in
-			if newDebugLogApiEnabled != node?.securityConfig?.debugLogApiEnabled { hasChanges = true }
-		}
+	}
+
+	var body: some View {
+		formWithNavigation
+		.onChange(of: node) { _, _ in setSecurityValues() }
+		.onChange(of: isManaged) { _, value in isManagedDidChange(to: value) }
+		.onChange(of: serialEnabled) { _, value in serialEnabledDidChange(to: value) }
+		.onChange(of: debugLogApiEnabled) { _, value in debugLogApiEnabledDidChange(to: value) }
 		.onChange(of: packetAuthenticitySelection.selected) { _, policy in packetAuthenticityDidChange(to: policy) }
-		.onChange(of: privateKey) { _, key in
-			let tempKey = Data(base64Encoded: privateKey) ?? Data()
-			if tempKey.count == 32 {
-				hasValidPrivateKey = true
-				if let privateKeyBytes = Data(base64Encoded: privateKey), privateKeyBytes.count == 32 {
-					// Valid private key -- generate the public key
-					publicKey = generatePublicKeyDisplay(from: privateKeyBytes)?.base64EncodedString() ?? ""
-				}
-			} else {
-				hasValidPrivateKey = false
-			}
-			if key != node?.securityConfig?.privateKey?.base64EncodedString() ?? "" && hasValidPrivateKey { hasChanges = true }
-		}
-		.onChange(of: adminKey) { _, key in
-			let tempKey = Data(base64Encoded: key) ?? Data()
-			if key.isEmpty {
-				hasValidAdminKey = true
-			} else if tempKey.count == 32 {
-				hasValidAdminKey = true
-			} else {
-				hasValidAdminKey = false
-			}
-			if key != node?.securityConfig?.adminKey?.base64EncodedString() ?? "" && hasValidAdminKey { hasChanges = true }
-		}
-		.onChange(of: adminKey2) { _, key in
-			let tempKey = Data(base64Encoded: key) ?? Data()
-			if key.isEmpty {
-				hasValidAdminKey2 = true
-			} else if tempKey.count == 32 {
-				hasValidAdminKey2 = true
-			} else {
-				hasValidAdminKey2 = false
-			}
-			if key != node?.securityConfig?.adminKey2?.base64EncodedString() ?? "" && hasValidAdminKey2 { hasChanges = true }
-		}
-		.onChange(of: adminKey3) { _, key in
-			let tempKey = Data(base64Encoded: key) ?? Data()
-			if key.isEmpty {
-				hasValidAdminKey3 = true
-			} else if tempKey.count == 32 {
-				hasValidAdminKey3 = true
-			} else {
-				hasValidAdminKey3 = false
-			}
-			if key != node?.securityConfig?.adminKey3?.base64EncodedString() ?? "" && hasValidAdminKey3 { hasChanges = true }
-		}
-		.onFirstAppear {
-			requestRemoteConfig(
-				node: node,
-				context: context,
-				accessoryManager: accessoryManager,
-				configIsNil: { $0.securityConfig == nil },
-				request: accessoryManager.requestSecurityConfig
-			)
-		}
+		.onChange(of: privateKey) { _, key in privateKeyDidChange(to: key) }
+		.onChange(of: adminKey) { _, key in adminKeyDidChange(to: key) }
+		.onChange(of: adminKey2) { _, key in adminKey2DidChange(to: key) }
+		.onChange(of: adminKey3) { _, key in adminKey3DidChange(to: key) }
+		.onFirstAppear { requestSecurityConfigOnFirstAppear() }
 	}
 }
 
 extension SecurityConfig {
+	private func isManagedDidChange(to value: Bool) {
+		if value != node?.securityConfig?.isManaged { hasChanges = true }
+	}
+
+	private func serialEnabledDidChange(to value: Bool) {
+		if value != node?.securityConfig?.serialEnabled { hasChanges = true }
+	}
+
+	private func debugLogApiEnabledDidChange(to value: Bool) {
+		if value != node?.securityConfig?.debugLogApiEnabled { hasChanges = true }
+	}
+
+	private func privateKeyDidChange(to key: String) {
+		let tempKey = Data(base64Encoded: privateKey) ?? Data()
+		if tempKey.count == 32 {
+			hasValidPrivateKey = true
+			if let privateKeyBytes = Data(base64Encoded: privateKey), privateKeyBytes.count == 32 {
+				// Valid private key -- generate the public key
+				publicKey = generatePublicKeyDisplay(from: privateKeyBytes)?.base64EncodedString() ?? ""
+			}
+		} else {
+			hasValidPrivateKey = false
+		}
+		if key != node?.securityConfig?.privateKey?.base64EncodedString() ?? "" && hasValidPrivateKey { hasChanges = true }
+	}
+
+	private func adminKeyDidChange(to key: String) {
+		let tempKey = Data(base64Encoded: key) ?? Data()
+		if key.isEmpty {
+			hasValidAdminKey = true
+		} else if tempKey.count == 32 {
+			hasValidAdminKey = true
+		} else {
+			hasValidAdminKey = false
+		}
+		if key != node?.securityConfig?.adminKey?.base64EncodedString() ?? "" && hasValidAdminKey { hasChanges = true }
+	}
+
+	private func adminKey2DidChange(to key: String) {
+		let tempKey = Data(base64Encoded: key) ?? Data()
+		if key.isEmpty {
+			hasValidAdminKey2 = true
+		} else if tempKey.count == 32 {
+			hasValidAdminKey2 = true
+		} else {
+			hasValidAdminKey2 = false
+		}
+		if key != node?.securityConfig?.adminKey2?.base64EncodedString() ?? "" && hasValidAdminKey2 { hasChanges = true }
+	}
+
+	private func adminKey3DidChange(to key: String) {
+		let tempKey = Data(base64Encoded: key) ?? Data()
+		if key.isEmpty {
+			hasValidAdminKey3 = true
+		} else if tempKey.count == 32 {
+			hasValidAdminKey3 = true
+		} else {
+			hasValidAdminKey3 = false
+		}
+		if key != node?.securityConfig?.adminKey3?.base64EncodedString() ?? "" && hasValidAdminKey3 { hasChanges = true }
+	}
+
+	private func requestSecurityConfigOnFirstAppear() {
+		requestRemoteConfig(
+			node: node,
+			context: context,
+			accessoryManager: accessoryManager,
+			configIsNil: { $0.securityConfig == nil },
+			request: accessoryManager.requestSecurityConfig
+		)
+	}
+
 	func setSecurityValues() {
 		self.publicKey = node?.securityConfig?.publicKey?.base64EncodedString() ?? ""
 		self.privateKey = node?.securityConfig?.privateKey?.base64EncodedString() ?? ""
