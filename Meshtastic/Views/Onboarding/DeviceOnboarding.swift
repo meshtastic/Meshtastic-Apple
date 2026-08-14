@@ -590,7 +590,10 @@ struct DeviceOnboarding: View {
 			return
 		}
 
-		#if targetEnvironment(macCatalyst)
+		#if targetEnvironment(simulator)
+		// Siri authorization prompt is not available in the simulator
+		Logger.services.info("Skipping Siri permission request in simulator")
+		#elseif targetEnvironment(macCatalyst)
 		// Siri authorization prompt is not available on Mac Catalyst
 		Logger.services.info("Siri permissions not available on Mac Catalyst")
 		#else
