@@ -22,6 +22,8 @@ struct SettingsView: View {
 	@FocusState private var clearFocused: Bool
 	/// MKMapType raw value, shared with MeshTVMapView via the same key.
 	@AppStorage("tv.mapType") private var mapTypeRaw: Int = Int(MKMapType.standard.rawValue)
+	@StateObject private var offlineBasemap = TVOfflineBasemap()
+	@State private var estimate: (tiles: Int, bytes: Int64)?
 
 	var body: some View {
 		List {
@@ -35,6 +37,8 @@ struct SettingsView: View {
 			} header: {
 				Text("Map")
 			}
+
+			offlineMapSection
 
 			Section {
 				Button(role: .destructive) {
@@ -57,6 +61,70 @@ struct SettingsView: View {
 		} message: {
 			Text("This permanently removes all \(nodes.count) saved nodes from this device.")
 		}
+	}
+
+	/// Offline basemap for use without internet. The region is derived from the mesh's own
+	/// node positions rather than a map selector — there is no sane way to drag a bounding
+	/// box with a Siri Remote. See TVOfflineBasemap.
+	@ViewBuilder
+	private var offlineMapSection: some View {
+		Section {
+			switch offlineBasemap.state {
+			case .preparing:
+				Label("Preparing…", systemImage: "clock")
+			case .downloading(let fraction):
+				VStack(alignment: .leading, spacing: 8) {
+					Label("Downloading map…", systemImage: "arrow.down.circle")
+					ProgressView(value: fraction)
+				}
+			default:
+				Button {
+					Task { await offlineBasemap.download(for: nodes) }
+				} label: {
+					Label(
+						offlineBasemap.needsDownload ? "Download Map for This Mesh" : "Update Downloaded Map",
+						systemImage: "map"
+					)
+				}
+				.disabled(locatedNodeCount == 0)
+
+				if !offlineBasemap.needsDownload {
+					Button(role: .destructive) {
+						offlineBasemap.removeDownloadedRegion()
+					} label: {
+						Label("Remove Downloaded Map", systemImage: "trash")
+					}
+				}
+			}
+		} header: {
+			Text("Offline Map")
+		} footer: {
+			offlineMapFooter
+		}
+		.task {
+			estimate = await offlineBasemap.estimate(for: nodes)
+		}
+	}
+
+	@ViewBuilder
+	private var offlineMapFooter: some View {
+		if case .failed(let message) = offlineBasemap.state {
+			Text(message)
+		} else if locatedNodeCount == 0 {
+			Text("No node has reported a position yet. Once one does, the map covering your mesh can be downloaded.")
+		} else if let region = offlineBasemap.region {
+			Text("Covering \(locatedNodeCount) located nodes, \(byteText(region.fileSize)) from the \(region.sourceBuild) map build. Drawn instead of Apple's map when the Map Type is Standard.")
+		} else if let estimate {
+			Text("Downloads roughly \(byteText(estimate.bytes)) covering the area around your \(locatedNodeCount) located nodes, so the map still draws without internet.")
+		} else {
+			Text("Downloads the map around your mesh so it still draws without internet.")
+		}
+	}
+
+	private var locatedNodeCount: Int { nodes.filter(\.hasLocation).count }
+
+	private func byteText(_ bytes: Int64) -> String {
+		ByteCountFormatter.string(fromByteCount: bytes, countStyle: .file)
 	}
 
 	private func clearDatabase() {

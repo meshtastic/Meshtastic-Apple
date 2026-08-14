@@ -26,6 +26,10 @@ struct MapScreen: View {
 	/// The persisted node store — the map and list read from here, not the client.
 	@Query private var allNodes: [MeshNode]
 
+	/// Decoded offline basemap. Held here (not in MeshTVMapView) so the decode survives
+	/// the representable's updates; it publishes nothing until a region is downloaded.
+	@StateObject private var offlineVectors = OfflineVectorTileProvider()
+
 	/// All nodes for the side list: located first, then alphabetically.
 	private var sortedNodes: [MeshNode] {
 		allNodes.sorted {
@@ -49,7 +53,8 @@ struct MapScreen: View {
 				nodes: locatedNodes,
 				selectedNodeNum: $selectedNodeNum,
 				recenterToken: recenterToken,
-				onMenuExit: escapeMap
+				onMenuExit: escapeMap,
+				offlineVectors: offlineVectors
 			)
 			.ignoresSafeArea()
 		}

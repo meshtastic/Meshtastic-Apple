@@ -8,8 +8,11 @@
 
 /* Begin PBXBuildFile section */
 		00C009E3665BFC69C7101C09 /* event_firmware.json in Resources */ = {isa = PBXBuildFile; fileRef = C0810161F73BC57A90E60D0C /* event_firmware.json */; };
+		066F0545C2EDA31CC6E95E4E /* PMTilesArchive.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62C4205D1043768766C64E87 /* PMTilesArchive.swift */; };
 		073B94B7F2F232C198151489 /* alpha.png in Resources */ = {isa = PBXBuildFile; fileRef = E8849D542B45F20F349E004D /* alpha.png */; };
 		073D5EF20134D41DF2AC5993 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8C15787882CA30C9787154D /* Logger.swift */; };
+		0D14B1F2EE824455A78690F8 /* MVTTools in Frameworks */ = {isa = PBXBuildFile; productRef = 99BACD26F50E4FBA1E2FC365 /* MVTTools */; };
+		13FAC446423FF3C9AC737EA0 /* PMTilesMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB006125B378C5233BD0B731 /* PMTilesMapView.swift */; };
 		1A042BDE2702C7388CE867EF /* NordicDFU in Frameworks */ = {isa = PBXBuildFile; productRef = D83D0451F77A9D92FFC852CA /* NordicDFU */; };
 		1F6C54C9333DB13E75830B91 /* CocoaMQTT in Frameworks */ = {isa = PBXBuildFile; productRef = 5F878D11CC8A8E494A4A51B5 /* CocoaMQTT */; };
 		252DC3E6757A4880B3F749E5 /* MeshtasticApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 736C4EF819FC0D5D1A41F29F /* MeshtasticApp.swift */; };
@@ -19,8 +22,11 @@
 		3233E2EC4CCC91360E23F283 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = F17AFA19C2AAB3C3ADFB1E33 /* AppState.swift */; };
 		3F091ECD7900D90169754B93 /* DatadogTrace in Frameworks */ = {isa = PBXBuildFile; productRef = 3E5E35695D4334FDDA3BE8F2 /* DatadogTrace */; };
 		40510578B699E4E44B9F1A70 /* WidgetsExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = E4053FDE501FD7E0A02CEA8D /* WidgetsExtension.appex */; platformFilter = ios; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		4584CB8BEA4226A1154EB385 /* OfflineMapManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E531C14ABE7F1491959BBE3 /* OfflineMapManager.swift */; };
 		4701C2F3A8A60ADE516D7FA0 /* MeshtasticTAK in Frameworks */ = {isa = PBXBuildFile; productRef = F98E8431879FC7025B658B08 /* MeshtasticTAK */; };
 		4748BFF7E7AEF9C8EDA23D91 /* AppIntentVocabulary.plist in Resources */ = {isa = PBXBuildFile; fileRef = E2CAB95992E03077B24E30B5 /* AppIntentVocabulary.plist */; };
+		4B4240E283A5080CF7D246B1 /* OfflineMapRegion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D675F15EFB753FBC7DA78C1 /* OfflineMapRegion.swift */; };
+		4E0EA928F0EBE41EDA6FC93B /* OfflineMapImport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C7307ED073D77037E45EE89 /* OfflineMapImport.swift */; };
 		507A9C886BD3A8F135F15762 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A80E1960A69051EE698AAE97 /* Preview Assets.xcassets */; };
 		54D8BBD62304C5917AEE0C2B /* DatadogRUM in Frameworks */ = {isa = PBXBuildFile; productRef = E96998AD4B79F29AF1E2A6D2 /* DatadogRUM */; };
 		5631740093D563F017DA31D7 /* MeshtasticProtobufs in Frameworks */ = {isa = PBXBuildFile; productRef = 52CBDF2188BAF9E2FB8B10A1 /* MeshtasticProtobufs */; };
@@ -33,6 +39,7 @@
 		6CABB3DA5BDD75359320B657 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 985D21086E966D40C875F3CD /* InfoPlist.strings */; };
 		7443E9D2180568F2E62EDAB6 /* AppIcon_Ham.icon in Resources */ = {isa = PBXBuildFile; fileRef = DD9ED0AFED536B2EE5F32F23 /* AppIcon_Ham.icon */; };
 		78B74168A96E756F203F9D13 /* AppIcon_Chirpy.icon in Resources */ = {isa = PBXBuildFile; fileRef = DD8FE67D6F2C7F041F8E3C8C /* AppIcon_Chirpy.icon */; };
+		8DFCC830624F2D4607E87938 /* MBTilesArchive.swift in Sources */ = {isa = PBXBuildFile; fileRef = A82B439BEF9740A80E66097A /* MBTilesArchive.swift */; };
 		94F9F3199DB5429EBF21F9E9 /* Connection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0875C7B0694DBE671437CC1A /* Connection.swift */; };
 		977E69BC7382DA7EF386402F /* TCPConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3FA5EE6E2E5628082C9CF53F /* TCPConnection.swift */; };
 		987BD8AFF176A9670F175E5C /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 26351F51CD01C94D8D82486A /* Localizable.xcstrings */; };
@@ -44,6 +51,7 @@
 		BB73AFBEB76A7B00550C8F2F /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = A7443D3C9E82A023A4388EFC /* InfoPlist.strings */; };
 		C435B3FDDC80FBF45F9D6CDB /* Certificates in Resources */ = {isa = PBXBuildFile; fileRef = 25BA43A8304E6CC120811070 /* Certificates */; };
 		C5B1D5B4B38940E115D61856 /* DatadogCore in Frameworks */ = {isa = PBXBuildFile; productRef = 680CA066D5A5ECD529461B91 /* DatadogCore */; };
+		C6148418734B3ADB2741CB8E /* PMTilesExtractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9297A8F3E4AAC1F74C05844 /* PMTilesExtractor.swift */; };
 		E8FB4ED7F7A2130D43A6AD99 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8C15787882CA30C9787154D /* Logger.swift */; };
 		ECF8A4938BAD87D6CD830F7A /* MeshtasticAppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69F2AD74F4ECBF91E5BE6275 /* MeshtasticAppDelegate.swift */; };
 		EDCFD0C1C551CC55DB34287B /* TCPConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3FA5EE6E2E5628082C9CF53F /* TCPConnection.swift */; };
@@ -112,6 +120,7 @@
 		0AEAC3FF0190C3F8166D22E3 /* MeshtasticDataModelV 52.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 52.xcdatamodel"; sourceTree = "<group>"; };
 		0CC33262B2EA2E8463E8BE95 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		0D3292ABF1A342707957A3F6 /* MeshtasticDataModelV4.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV4.xcdatamodel; sourceTree = "<group>"; };
+		0E531C14ABE7F1491959BBE3 /* OfflineMapManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineMapManager.swift; sourceTree = "<group>"; };
 		1A740EACFF7FA4000F22EF4E /* Meshtastic.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Meshtastic.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		25A13454C9C85CEBBBC2DD1F /* he */ = {isa = PBXFileReference; lastKnownFileType = text.plist; name = he; path = he.lproj/AppIntentVocabulary.plist; sourceTree = "<group>"; };
 		25BA43A8304E6CC120811070 /* Certificates */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Certificates; path = Meshtastic/Resources/Certificates; sourceTree = SOURCE_ROOT; };
@@ -121,6 +130,7 @@
 		2A155512081310861FE23F13 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist; name = fr; path = fr.lproj/AppIntentVocabulary.plist; sourceTree = "<group>"; };
 		2AA9E468E8D0E86380F20A6A /* MeshtasticDataModelV 39.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 39.xcdatamodel"; sourceTree = "<group>"; };
 		2C5E7F54370D8339E31FB9B2 /* ko */ = {isa = PBXFileReference; lastKnownFileType = text.plist; name = ko; path = ko.lproj/AppIntentVocabulary.plist; sourceTree = "<group>"; };
+		2D675F15EFB753FBC7DA78C1 /* OfflineMapRegion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineMapRegion.swift; sourceTree = "<group>"; };
 		2DB746426A829F22BD20E07C /* MeshtasticDataModelV14.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV14.xcdatamodel; sourceTree = "<group>"; };
 		2FF177FE5C8FCBDA2FA8099C /* MeshtasticDataModelV33.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV33.xcdatamodel; sourceTree = "<group>"; };
 		2FFB527D0E181BCC550DB9CF /* MeshtasticDataModelV 27.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 27.xcdatamodel"; sourceTree = "<group>"; };
@@ -138,6 +148,7 @@
 		5927E5660D36A603597524F8 /* pt-BR */ = {isa = PBXFileReference; lastKnownFileType = text.plist; name = "pt-BR"; path = "pt-BR.lproj/AppIntentVocabulary.plist"; sourceTree = "<group>"; };
 		5BA3CC672324E58EF9DE407D /* MeshtasticDataModelV3.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV3.xcdatamodel; sourceTree = "<group>"; };
 		5C2FBD422C4F7971B03CD973 /* MeshtasticDataModelV 35.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 35.xcdatamodel"; sourceTree = "<group>"; };
+		62C4205D1043768766C64E87 /* PMTilesArchive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PMTilesArchive.swift; sourceTree = "<group>"; };
 		6425CF180A063AAD20CB4FB2 /* it */ = {isa = PBXFileReference; lastKnownFileType = text.plist; name = it; path = it.lproj/AppIntentVocabulary.plist; sourceTree = "<group>"; };
 		649976FAB784BC6B013C0EEE /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist; name = ja; path = ja.lproj/AppIntentVocabulary.plist; sourceTree = "<group>"; };
 		6776764BA24154B603C76018 /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = wrapper.icon; path = AppIcon.icon; sourceTree = "<group>"; };
@@ -161,6 +172,7 @@
 		86DF1A38BB3D864D1C8E2218 /* da */ = {isa = PBXFileReference; lastKnownFileType = text.plist; name = da; path = da.lproj/AppIntentVocabulary.plist; sourceTree = "<group>"; };
 		8A65FC7EC53BA21A8445C493 /* MeshtasticDataModelV20.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV20.xcdatamodel; sourceTree = "<group>"; };
 		8C2B65919B1D40CF68FFA183 /* MeshtasticDataModelV21.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV21.xcdatamodel; sourceTree = "<group>"; };
+		8C7307ED073D77037E45EE89 /* OfflineMapImport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineMapImport.swift; sourceTree = "<group>"; };
 		8CECCEFF195A62DB523CAA7C /* MeshtasticDataModelV 49.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 49.xcdatamodel"; sourceTree = "<group>"; };
 		8D435BAD41909B80CB994A89 /* zh-Hant-TW */ = {isa = PBXFileReference; lastKnownFileType = text.plist; name = "zh-Hant-TW"; path = "zh-Hant-TW.lproj/AppIntentVocabulary.plist"; sourceTree = "<group>"; };
 		8FE3A1CD77F5784FDD51E1DE /* MeshtasticDataModelV 29.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 29.xcdatamodel"; sourceTree = "<group>"; };
@@ -176,6 +188,8 @@
 		A2B4D8B84124EC1D98F4065A /* se */ = {isa = PBXFileReference; lastKnownFileType = text.plist; name = se; path = se.lproj/AppIntentVocabulary.plist; sourceTree = "<group>"; };
 		A7443D3C9E82A023A4388EFC /* InfoPlist.strings */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = InfoPlist.strings; path = uk.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		A80E1960A69051EE698AAE97 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		A82B439BEF9740A80E66097A /* MBTilesArchive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MBTilesArchive.swift; sourceTree = "<group>"; };
+		A9297A8F3E4AAC1F74C05844 /* PMTilesExtractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PMTilesExtractor.swift; sourceTree = "<group>"; };
 		AD4AD147789715D94CB21B30 /* MeshtasticDataModelV18.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV18.xcdatamodel; sourceTree = "<group>"; };
 		ADF6BAC3992D05079F77B35C /* Meshtastic Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Meshtastic Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		AF7F16652B88E118C5CE9B57 /* MeshtasticDataModelV 46.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 46.xcdatamodel"; sourceTree = "<group>"; };
@@ -207,6 +221,7 @@
 		E81B359C631E51C6461AAE00 /* MeshtasticDataModelV12.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV12.xcdatamodel; sourceTree = "<group>"; };
 		E8849D542B45F20F349E004D /* alpha.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = alpha.png; sourceTree = "<group>"; };
 		E94055F00D3E29383E92FF74 /* Color.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Color.swift; sourceTree = "<group>"; };
+		EB006125B378C5233BD0B731 /* PMTilesMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PMTilesMapView.swift; sourceTree = "<group>"; };
 		EE69A594BA2FA1D1F536BC93 /* MeshtasticDataModelV 47.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 47.xcdatamodel"; sourceTree = "<group>"; };
 		EFF3AE2F57E58725578E0F1C /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist; name = en; path = en.lproj/AppIntentVocabulary.plist; sourceTree = "<group>"; };
 		F15A1577564640951AD3EA40 /* Settings.bundle */ = {isa = PBXFileReference; lastKnownFileType = wrapper.cfbundle; path = Settings.bundle; sourceTree = "<group>"; };
@@ -638,6 +653,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				5631740093D563F017DA31D7 /* MeshtasticProtobufs in Frameworks */,
+				0D14B1F2EE824455A78690F8 /* MVTTools in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -744,6 +760,7 @@
 				C21C46F8F2BCFF68F31B12C0 /* Export */,
 				10FE857786F2AD24047BFDED /* Extensions */,
 				11D3172B1FEF230630B7A990 /* Extensions */,
+				D5FFA7BDD46767B209390E97 /* Helpers */,
 				22FDA4B8722F2CC1F4B5A929 /* Helpers */,
 				1A7C0874097266C63EDD8A18 /* Import */,
 				A7443D3C9E82A023A4388EFC /* InfoPlist.strings */,
@@ -767,6 +784,14 @@
 			path = Meshtastic;
 			sourceTree = "<group>";
 		};
+		6F95C3402FDAFD342C18DE60 /* Map */ = {
+			isa = PBXGroup;
+			children = (
+				EB006125B378C5233BD0B731 /* PMTilesMapView.swift */,
+			);
+			path = Map;
+			sourceTree = "<group>";
+		};
 		8F644F7974EA8B14E77ED53A /* Packages */ = {
 			isa = PBXGroup;
 			children = (
@@ -779,8 +804,25 @@
 			isa = PBXGroup;
 			children = (
 				BE994A834A388206BCD4EBE6 /* Helpers */,
+				B7D1F8CBD77A8C561E303582 /* Nodes */,
 			);
 			path = Views;
+			sourceTree = "<group>";
+		};
+		A9D21164B1CCA45A498E9AA9 /* Helpers */ = {
+			isa = PBXGroup;
+			children = (
+				6F95C3402FDAFD342C18DE60 /* Map */,
+			);
+			path = Helpers;
+			sourceTree = "<group>";
+		};
+		B7D1F8CBD77A8C561E303582 /* Nodes */ = {
+			isa = PBXGroup;
+			children = (
+				A9D21164B1CCA45A498E9AA9 /* Helpers */,
+			);
+			path = Nodes;
 			sourceTree = "<group>";
 		};
 		BE994A834A388206BCD4EBE6 /* Helpers */ = {
@@ -826,6 +868,27 @@
 				B079D165838E646EE754DC6E /* urls.json */,
 			);
 			path = Resources;
+			sourceTree = "<group>";
+		};
+		D5FFA7BDD46767B209390E97 /* Helpers */ = {
+			isa = PBXGroup;
+			children = (
+				E23070A9CFE0B356E43BEAE8 /* Map */,
+			);
+			path = Helpers;
+			sourceTree = "<group>";
+		};
+		E23070A9CFE0B356E43BEAE8 /* Map */ = {
+			isa = PBXGroup;
+			children = (
+				A82B439BEF9740A80E66097A /* MBTilesArchive.swift */,
+				8C7307ED073D77037E45EE89 /* OfflineMapImport.swift */,
+				0E531C14ABE7F1491959BBE3 /* OfflineMapManager.swift */,
+				2D675F15EFB753FBC7DA78C1 /* OfflineMapRegion.swift */,
+				62C4205D1043768766C64E87 /* PMTilesArchive.swift */,
+				A9297A8F3E4AAC1F74C05844 /* PMTilesExtractor.swift */,
+			);
+			path = Map;
 			sourceTree = "<group>";
 		};
 		F7C5E67022CD718D1F3D0A94 /* TCP */ = {
@@ -924,6 +987,7 @@
 			name = "Meshtastic TV";
 			packageProductDependencies = (
 				52CBDF2188BAF9E2FB8B10A1 /* MeshtasticProtobufs */,
+				99BACD26F50E4FBA1E2FC365 /* MVTTools */,
 			);
 			productName = "Meshtastic TV";
 			productReference = A127CADA4845100E1C10B022 /* Meshtastic TV.app */;
@@ -1246,6 +1310,13 @@
 				563422694131128F504A5E05 /* Color.swift in Sources */,
 				94F9F3199DB5429EBF21F9E9 /* Connection.swift in Sources */,
 				073D5EF20134D41DF2AC5993 /* Logger.swift in Sources */,
+				8DFCC830624F2D4607E87938 /* MBTilesArchive.swift in Sources */,
+				4E0EA928F0EBE41EDA6FC93B /* OfflineMapImport.swift in Sources */,
+				4584CB8BEA4226A1154EB385 /* OfflineMapManager.swift in Sources */,
+				4B4240E283A5080CF7D246B1 /* OfflineMapRegion.swift in Sources */,
+				066F0545C2EDA31CC6E95E4E /* PMTilesArchive.swift in Sources */,
+				C6148418734B3ADB2741CB8E /* PMTilesExtractor.swift in Sources */,
+				13FAC446423FF3C9AC737EA0 /* PMTilesMapView.swift in Sources */,
 				977E69BC7382DA7EF386402F /* TCPConnection.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2024,6 +2095,11 @@
 		838679D32875D367B9FC8FBF /* MeshtasticProtobufs */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = MeshtasticProtobufs;
+		};
+		99BACD26F50E4FBA1E2FC365 /* MVTTools */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B9243D356FA56FD1728AC3D3 /* XCRemoteSwiftPackageReference "mvt-tools" */;
+			productName = MVTTools;
 		};
 		9D120B166CA191FC578A9978 /* SwiftDraw */ = {
 			isa = XCSwiftPackageProductDependency;

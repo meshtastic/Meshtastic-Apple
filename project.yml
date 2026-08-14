@@ -663,9 +663,23 @@ targets:
       # Node-pin styling parity with the iOS map (CircleText + Color(hex:)/isLight).
       - path: "Meshtastic/Views/Helpers/CircleText.swift"
       - path: "Meshtastic/Extensions/Color.swift"
+      # Offline Protomaps basemap, shared verbatim with iOS. These files are pure
+      # Foundation/MapKit/CoreLocation — no UIKit, SwiftData or BLE — so the tvOS app
+      # reads the same .pmtiles archives and decodes them with the same code path.
+      - path: "Meshtastic/Helpers/Map/PMTilesArchive.swift"
+      - path: "Meshtastic/Helpers/Map/PMTilesExtractor.swift"
+      - path: "Meshtastic/Helpers/Map/MBTilesArchive.swift"
+      - path: "Meshtastic/Helpers/Map/OfflineMapRegion.swift"
+      - path: "Meshtastic/Helpers/Map/OfflineMapImport.swift"
+      - path: "Meshtastic/Helpers/Map/OfflineMapManager.swift"
+      # The MVT decoder that turns archive tiles into MapKit shapes. Despite the file
+      # name it holds no views — MeshTVMapView draws its output as MKOverlays.
+      - path: "Meshtastic/Views/Nodes/Helpers/Map/PMTilesMapView.swift"
     dependencies:
       - package: MeshtasticProtobufs
         product: MeshtasticProtobufs
+      - package: mvt-tools
+        product: MVTTools
     settings:
       configs:
         Debug:

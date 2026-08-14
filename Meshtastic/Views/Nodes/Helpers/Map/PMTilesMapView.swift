@@ -13,6 +13,7 @@ import MapKit
 import MVTTools
 import OSLog
 import SwiftUI
+import UIKit
 import Combine
 
 // MARK: - Native vector rendering of offline MVT tiles (drawn IN a SwiftUI Map)
@@ -698,5 +699,68 @@ extension OfflineVectorTileProvider {
 		let denominator = end.latitude - start.latitude
 		let t = denominator == 0 ? 0 : (lat - start.latitude) / denominator
 		return CLLocationCoordinate2D(latitude: lat, longitude: start.longitude + t * (end.longitude - start.longitude))
+	}
+}
+
+// MARK: - Offline basemap palette
+
+/// Colors and stroke widths for the decoded offline features, approximating Apple Maps
+/// Standard in light and dark. Shared so the iOS map and the tvOS map render identically.
+enum OfflineMapPalette {
+
+	static func earth(dark: Bool) -> UIColor {
+		dark ? UIColor(red: 0.137, green: 0.137, blue: 0.145, alpha: 1)
+			 : UIColor(red: 0.953, green: 0.945, blue: 0.929, alpha: 1)
+	}
+
+	static func fill(_ role: OfflineFeatureRole, dark: Bool) -> UIColor? {
+		switch role {
+		case .water: return dark ? UIColor(red: 0.094, green: 0.169, blue: 0.267, alpha: 1) : UIColor(red: 0.667, green: 0.831, blue: 0.953, alpha: 1)
+		case .park, .green: return dark ? UIColor(red: 0.122, green: 0.176, blue: 0.133, alpha: 1) : UIColor(red: 0.776, green: 0.882, blue: 0.706, alpha: 1)
+		case .land: return earth(dark: dark)
+		default: return nil
+		}
+	}
+
+	/// Road fill: white centerline (light) or a lighter-than-land gray (dark).
+	static func roadFill(_ role: OfflineFeatureRole, dark: Bool) -> UIColor? {
+		switch role {
+		case .majorRoad: return dark ? UIColor(red: 0.46, green: 0.46, blue: 0.49, alpha: 1) : .white
+		case .mediumRoad: return dark ? UIColor(red: 0.38, green: 0.38, blue: 0.41, alpha: 1) : .white
+		case .minorRoad: return dark ? UIColor(red: 0.31, green: 0.31, blue: 0.34, alpha: 1) : .white
+		default: return nil
+		}
+	}
+
+	/// Road casing (light mode only): a warm-gray outline that makes the white roads read on pale land.
+	static func roadCasing(_ role: OfflineFeatureRole, dark: Bool) -> UIColor? {
+		guard !dark else { return nil }
+		switch role {
+		case .majorRoad, .mediumRoad, .minorRoad: return UIColor(red: 0.835, green: 0.824, blue: 0.800, alpha: 1)
+		default: return nil
+		}
+	}
+
+	static func roadWidth(_ role: OfflineFeatureRole) -> CGFloat {
+		switch role {
+		case .majorRoad: return 3.0
+		case .mediumRoad: return 2.2
+		case .minorRoad: return 1.3
+		default: return 1.0
+		}
+	}
+
+	/// Casing is ~1.4 pt wider than the fill (about 0.7 pt of outline each side).
+	static func roadCasingWidth(_ role: OfflineFeatureRole) -> CGFloat {
+		roadWidth(role) + 1.4
+	}
+
+	/// Rail / admin-boundary stroke color (single dashed line, both modes).
+	static func line(_ role: OfflineFeatureRole, dark: Bool) -> UIColor? {
+		switch role {
+		case .rail: return dark ? UIColor(red: 0.45, green: 0.46, blue: 0.49, alpha: 1) : UIColor(red: 0.62, green: 0.62, blue: 0.64, alpha: 1)
+		case .boundary: return dark ? UIColor(red: 0.50, green: 0.46, blue: 0.56, alpha: 1) : UIColor(red: 0.66, green: 0.62, blue: 0.70, alpha: 1)
+		default: return nil
+		}
 	}
 }

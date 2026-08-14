@@ -176,6 +176,13 @@ struct MeshTVMapView: UIViewRepresentable {
 	@AppStorage("tv.mapType") private var mapTypeRaw: Int = Int(MKMapType.standard.rawValue)
 	private var mkMapType: MKMapType { MKMapType(rawValue: UInt(mapTypeRaw)) ?? .standard }
 
+	/// Decoded offline basemap, or nil when no region has been downloaded. Owned by
+	/// MapScreen so the decode survives view updates.
+	var offlineVectors: OfflineVectorTileProvider?
+
+	/// Drawn only over Standard — Hybrid and Satellite are imagery the vector basemap would hide.
+	private var offlineBasemapVisible: Bool { mkMapType == .standard && offlineVectors != nil }
+
 	func makeCoordinator() -> Coordinator { Coordinator(self) }
 
 	func makeUIView(context: Context) -> MKMapView {
@@ -208,6 +215,13 @@ struct MeshTVMapView: UIViewRepresentable {
 		context.coordinator.applyInitialRegion(mapView, nodes: nodes)
 		context.coordinator.applyRecenter(mapView, token: recenterToken, nodes: nodes)
 		context.coordinator.applySelection(mapView, selectedNodeNum: selectedNodeNum)
+		if let offlineVectors, offlineBasemapVisible {
+			offlineVectors.updateIfNeeded()
+			// tvOS renders against a dark interface, matching the iOS map's dark palette.
+			context.coordinator.applyOfflineBasemap(mapView, provider: offlineVectors, dark: true)
+		} else {
+			context.coordinator.clearOfflineBasemap(mapView)
+		}
 	}
 
 	// MARK: - Coordinator
@@ -443,6 +457,131 @@ struct MeshTVMapView: UIViewRepresentable {
 			)
 			(view as? NodeCircleAnnotationView)?.updateContent()
 			return view
+		}
+
+		func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
+			guard let style = offlineStyles[ObjectIdentifier(overlay)] else {
+				return MKOverlayRenderer(overlay: overlay)
+			}
+			switch overlay {
+			case let polygon as MKPolygon:
+				let renderer = MKPolygonRenderer(polygon: polygon)
+				renderer.fillColor = style.fill
+				renderer.lineWidth = 0
+				return renderer
+			case let multi as MKMultiPolygon:
+				let renderer = MKMultiPolygonRenderer(multiPolygon: multi)
+				renderer.fillColor = style.fill
+				renderer.lineWidth = 0
+				return renderer
+			case let multi as MKMultiPolyline:
+				let renderer = MKMultiPolylineRenderer(multiPolyline: multi)
+				renderer.strokeColor = style.stroke
+				renderer.lineWidth = style.lineWidth
+				renderer.lineCap = .round
+				renderer.lineJoin = .round
+				return renderer
+			default:
+				return MKOverlayRenderer(overlay: overlay)
+			}
+		}
+
+		// MARK: Offline basemap
+
+		/// Style for each offline overlay, keyed by object identity — MapKit hands the renderer
+		/// callback an overlay, not our model, so this is the lookup back to how it should draw.
+		struct OfflineOverlayStyle {
+			var fill: UIColor?
+			var stroke: UIColor?
+			var lineWidth: CGFloat
+		}
+
+		private var offlineStyles: [ObjectIdentifier: OfflineOverlayStyle] = [:]
+		private var offlineOverlays: [MKOverlay] = []
+		private var lastOfflineRevision = -1
+
+		/// Rebuilds the offline basemap overlays from the provider's latest decode. Mirrors the
+		/// iOS map's layering: an earth fill per coverage box, then parks/water, then roads drawn
+		/// casing-first so the centrelines read as outlined roads.
+		func applyOfflineBasemap(_ mapView: MKMapView, provider: OfflineVectorTileProvider, dark: Bool) {
+			guard provider.revision != lastOfflineRevision else { return }
+			lastOfflineRevision = provider.revision
+
+			if !offlineOverlays.isEmpty {
+				mapView.removeOverlays(offlineOverlays)
+				offlineOverlays = []
+				offlineStyles = [:]
+			}
+			guard provider.isAvailable, !provider.coverageAreas.isEmpty else { return }
+
+			var added: [MKOverlay] = []
+			func add(_ overlay: MKOverlay, _ style: OfflineOverlayStyle) {
+				offlineStyles[ObjectIdentifier(overlay)] = style
+				added.append(overlay)
+			}
+
+			// Earth fill per coverage box, so uncovered gaps read as land rather than Apple's basemap.
+			for bounds in provider.coverageAreas {
+				var corners = [
+					CLLocationCoordinate2D(latitude: bounds.minLat, longitude: bounds.minLon),
+					CLLocationCoordinate2D(latitude: bounds.minLat, longitude: bounds.maxLon),
+					CLLocationCoordinate2D(latitude: bounds.maxLat, longitude: bounds.maxLon),
+					CLLocationCoordinate2D(latitude: bounds.maxLat, longitude: bounds.minLon)
+				]
+				add(MKPolygon(coordinates: &corners, count: corners.count),
+					OfflineOverlayStyle(fill: OfflineMapPalette.earth(dark: dark), stroke: nil, lineWidth: 0))
+			}
+
+			// Fills, batched per role (parks under water).
+			let fillsByRole = Dictionary(grouping: provider.polygons, by: { $0.role })
+			for role in [OfflineFeatureRole.park, .green, .water] {
+				guard let polys = fillsByRole[role], let fill = OfflineMapPalette.fill(role, dark: dark) else { continue }
+				let shapes = polys.compactMap { poly -> MKPolygon? in
+					guard poly.coordinates.count >= 3 else { return nil }
+					var coords = poly.coordinates
+					return MKPolygon(coordinates: &coords, count: coords.count)
+				}
+				guard !shapes.isEmpty else { continue }
+				add(MKMultiPolygon(shapes), OfflineOverlayStyle(fill: fill, stroke: nil, lineWidth: 0))
+			}
+
+			// Roads, batched per role so the whole grid is a handful of overlays.
+			let roadsByRole = Dictionary(grouping: provider.roads, by: { $0.role })
+			func multiPolyline(_ role: OfflineFeatureRole) -> MKMultiPolyline? {
+				guard let lines = roadsByRole[role] else { return nil }
+				let shapes = lines.compactMap { line -> MKPolyline? in
+					guard line.coordinates.count >= 2 else { return nil }
+					var coords = line.coordinates
+					return MKPolyline(coordinates: &coords, count: coords.count)
+				}
+				return shapes.isEmpty ? nil : MKMultiPolyline(shapes)
+			}
+			let roadClasses: [OfflineFeatureRole] = [.minorRoad, .mediumRoad, .majorRoad]
+			for role in roadClasses {
+				guard let casing = OfflineMapPalette.roadCasing(role, dark: dark), let multi = multiPolyline(role) else { continue }
+				add(multi, OfflineOverlayStyle(fill: nil, stroke: casing, lineWidth: OfflineMapPalette.roadCasingWidth(role)))
+			}
+			for role in roadClasses {
+				guard let fill = OfflineMapPalette.roadFill(role, dark: dark), let multi = multiPolyline(role) else { continue }
+				add(multi, OfflineOverlayStyle(fill: nil, stroke: fill, lineWidth: OfflineMapPalette.roadWidth(role)))
+			}
+			for role in [OfflineFeatureRole.rail, .boundary] {
+				guard let color = OfflineMapPalette.line(role, dark: dark), let multi = multiPolyline(role) else { continue }
+				add(multi, OfflineOverlayStyle(fill: nil, stroke: color, lineWidth: 1))
+			}
+
+			guard !added.isEmpty else { return }
+			mapView.addOverlays(added, level: .aboveRoads)
+			offlineOverlays = added
+		}
+
+		/// Drops the offline overlays (region deleted, or the user switched to Hybrid/Satellite).
+		func clearOfflineBasemap(_ mapView: MKMapView) {
+			guard !offlineOverlays.isEmpty else { return }
+			mapView.removeOverlays(offlineOverlays)
+			offlineOverlays = []
+			offlineStyles = [:]
+			lastOfflineRevision = -1
 		}
 
 	}
