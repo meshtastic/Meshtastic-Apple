@@ -51,7 +51,7 @@ struct SecurityConfig: View {
 		return calculatedPublicKey == decodedPublicKey
 	}
 
-	// Keep the Form behind an opaque type boundary so Xcode 26.3 can type-check this view.
+	// Keep large view pieces behind opaque type boundaries so Xcode 26.3 can type-check this screen.
 	private var securityForm: some View {
 		Form {
 			ConfigHeader(title: "Security", config: \.securityConfig, node: node, onAppear: setSecurityValues)
@@ -249,7 +249,7 @@ struct SecurityConfig: View {
 		}
 	}
 
-	var body: some View {
+	private var formWithSaveControls: some View {
 		securityForm
 		.disabled(!accessoryManager.isConnected || node?.securityConfig == nil)
 		.safeAreaInset(edge: .bottom, alignment: .center) {
@@ -320,6 +320,10 @@ struct SecurityConfig: View {
 				}
 			}
 		}
+	}
+
+	var body: some View {
+		formWithSaveControls
 		.scrollDismissesKeyboard(.immediately)
 		.navigationTitle("Security Config")
 		.toolbar {
@@ -396,7 +400,9 @@ struct SecurityConfig: View {
 			)
 		}
 	}
+}
 
+extension SecurityConfig {
 	func setSecurityValues() {
 		self.publicKey = node?.securityConfig?.publicKey?.base64EncodedString() ?? ""
 		self.privateKey = node?.securityConfig?.privateKey?.base64EncodedString() ?? ""
