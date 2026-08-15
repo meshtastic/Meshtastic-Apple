@@ -439,7 +439,6 @@ struct Connect: View {
 						.textCase(nil)
 					}
 				}
-				.scrollContentBackground(.hidden)
 				HStack(alignment: .center) {
 					Spacer()
 #if targetEnvironment(macCatalyst)
