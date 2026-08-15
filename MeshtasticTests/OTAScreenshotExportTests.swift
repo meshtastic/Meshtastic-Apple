@@ -76,76 +76,56 @@ final class OTAScreenshotExportTests: XCTestCase {
 			}
 		}
 
-		// 1. Before Fix (Old UI: Cluttered with top metadata section, squished circular ring, and crowded layout)
-		let beforeView = NavigationStack {
-			List {
-				Section {
-					VStack(alignment: .leading, spacing: 2) {
-						Text("Firmware File")
-							.foregroundStyle(.secondary)
-							.font(.caption)
-						Text("firmware-esp32s3-tbeam-2.5.18.bin")
-							.font(.caption)
-					}
-					VStack(alignment: .leading, spacing: 2) {
-						Text("BLE Device")
-							.foregroundStyle(.secondary)
-							.font(.caption)
-						Text("Meshtastic-B012\n9F82A02C-6194-4B02-B792-F1242398C29E")
-							.font(.caption)
-					}
-				} header: {
-					Text("Please do not leave this screen until this process is complete.")
-				} footer: {
-					Text("Please be sure this is correct before proceeding.")
-				}
+		// 1. Before Fix (Exact Upstream Bug: Text truncated to "proc...", bloated minHeight spacer pushing Chirpy button to bottom)
+		let beforeView = VStack(spacing: 20.0) {
+			VStack(spacing: 4) {
+				Text("Nordic DFU Update")
+					.font(.title2.bold())
 
-				Section {
-					HStack {
-						Spacer()
-						CircularProgressView(
-							progress: 0.45,
-							isIndeterminate: false,
-							isError: false,
-							size: 225.0,
-							subtitleText: "transferring"
-						)
-						.frame(minHeight: 250.0)
-						Spacer()
-					}
-					.listRowBackground(Color.clear)
-
-					VStack(spacing: 12) {
-						Text("Uploading firmware (45%)...")
-							.frame(maxWidth: .infinity)
-							.font(.headline)
-					}
-					.listRowBackground(Color.clear)
-				}
-				.listRowSeparator(.hidden)
-
-				Section {
-					Button {} label: {
-						Label("Play Chirpy Hop", systemImage: "gamecontroller.fill")
-							.frame(maxWidth: .infinity)
-					}
-					.buttonStyle(.borderedProminent)
-					.controlSize(.large)
-				}
+				Text("DFU Firmware Update")
+					.font(.headline)
 			}
-			.navigationTitle("ESP32 BLE Updater")
-			.navigationBarTitleDisplayMode(.inline)
-			.toolbar {
-				ToolbarItem(placement: .cancellationAction) {
-					Button {} label: {
-						Image(systemName: "xmark")
-					}
-				}
+			.padding(.top, 12)
+
+			Text("Please do not leave this screen until this process is complete.")
+				.lineLimit(1)
+				.truncationMode(.tail)
+				.multilineTextAlignment(.center)
+				.padding(.horizontal, 30)
+
+			CircularProgressView(
+				progress: 0.35,
+				isIndeterminate: true,
+				size: 225.0,
+				subtitleText: "Enabling DFU Mode"
+			)
+
+			VStack {
+				Text("This can take a while. Please be patient.")
+					.multilineTextAlignment(.center)
+					.padding(.horizontal)
 			}
+			.frame(minHeight: 180.0)
+
+			Button {} label: {
+				Label("Play Chirpy Hop", systemImage: "gamecontroller.fill")
+					.frame(maxWidth: .infinity)
+			}
+			.buttonStyle(.borderedProminent)
+			.controlSize(.large)
+			.padding(.horizontal)
+			.padding(.bottom, 8)
+		}
+		.overlay(alignment: .topLeading) {
+			Image(systemName: "xmark.circle.fill")
+				.font(.title)
+				.symbolRenderingMode(.palette)
+				.foregroundStyle(.white, Color(.systemGray3))
+				.padding()
 		}
 		saveScreenshot(beforeView, filename: "ota_ui_before_fix.png")
 
-		// 2. After Fix (New UI: Unified, clean centered layout, no truncation, Chirpy Hop safe notice)
+		// 2. After Fix (New UI: Unified, centered layout, no truncation, Chirpy Hop safe copy)
 		let afterView = FirmwareOTAUpdateSheet(
 			title: "ESP32 BLE Updater",
 			progress: 0.45,
@@ -160,7 +140,7 @@ final class OTAScreenshotExportTests: XCTestCase {
 		)
 		saveScreenshot(afterView, filename: "ota_ui_after_fix.png")
 
-		// 3. Nordic DFU Sheet
+		// 3. Nordic DFU Sheet Fixed
 		let nrfDFUView = NRFDFUSheet(showWarningAlert: false, firmwareToFlash: URL(fileURLWithPath: "/tmp/firmware-nrf52840.zip"))
 			.environmentObject(AccessoryManager.shared)
 		saveScreenshot(nrfDFUView, filename: "ota_06_nordic_nrf_dfu.png")
