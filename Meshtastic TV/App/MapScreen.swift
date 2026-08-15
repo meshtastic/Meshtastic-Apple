@@ -181,7 +181,7 @@ struct MapScreen: View {
 						endPoint: .bottom
 					)
 				)
-				.ignoresSafeArea(edges: .top)
+				.ignoresSafeArea(edges: [.top, .leading])
 		}
 	}
 
