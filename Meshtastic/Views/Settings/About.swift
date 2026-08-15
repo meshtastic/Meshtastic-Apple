@@ -92,8 +92,10 @@ private struct RotatingHardwareImage: View {
 			}
 		}
 		.task {
+			// The device SVGs are copied flat into the bundle root, not into
+			// an images/ subdirectory.
 			svgs = Self.imageNames.compactMap { name in
-				guard let url = Bundle.main.url(forResource: name, withExtension: nil, subdirectory: "images"),
+				guard let url = Bundle.main.url(forResource: name, withExtension: nil),
 					  let data = try? Data(contentsOf: url) else { return nil }
 				return SVG(data: data)
 			}
