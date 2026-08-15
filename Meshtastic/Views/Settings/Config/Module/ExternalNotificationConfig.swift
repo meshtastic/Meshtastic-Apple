@@ -107,7 +107,7 @@ struct ExternalNotificationConfig: View {
 				Toggle(isOn: $alertMessageBuzzer) {
 					Label("Alert GPIO buzzer when receiving a message", systemImage: "message")
 				}
-				Toggle(isOn: $alertMessageBuzzer) {
+				Toggle(isOn: $alertMessageVibra) {
 					Label("Alert GPIO vibra motor when receiving a message", systemImage: "message")
 				}
 				Picker("Output pin buzzer GPIO ", selection: $outputBuzzer) {
@@ -204,10 +204,10 @@ struct ExternalNotificationConfig: View {
 		.onChange(of: output) { _, newOutput in
 			if newOutput != node?.externalNotificationConfig?.output ?? -1 { hasChanges = true }
 		}
-		.onChange(of: output) { _, newOutputBuzzer in
+		.onChange(of: outputBuzzer) { _, newOutputBuzzer in
 			if newOutputBuzzer != node?.externalNotificationConfig?.outputBuzzer ?? -1 { hasChanges = true }
 		}
-		.onChange(of: output) { _, newOutputVibra in
+		.onChange(of: outputVibra) { _, newOutputVibra in
 			if newOutputVibra != node?.externalNotificationConfig?.outputVibra ?? -1 { hasChanges = true }
 		}
 		.onChange(of: outputMilliseconds) { _, newOutputMs in
