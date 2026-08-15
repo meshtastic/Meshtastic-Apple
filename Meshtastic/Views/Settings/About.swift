@@ -24,7 +24,7 @@ struct AboutMeshtastic: View {
 
 					if locale.region?.identifier ?? "US" == "US" {
 						HStack {
-							Image("EventFirmwareDEFCON")
+							Image("THINKNODEM1")
 								.resizable()
 								.aspectRatio(contentMode: .fit)
 								.frame(width: 75)
