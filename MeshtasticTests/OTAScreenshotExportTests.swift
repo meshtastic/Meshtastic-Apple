@@ -8,6 +8,38 @@ import SwiftUI
 import UIKit
 @testable import Meshtastic
 
+private struct RealisticSheetModalView<Content: View>: View {
+	let content: Content
+
+	init(@ViewBuilder content: () -> Content) {
+		self.content = content()
+	}
+
+	var body: some View {
+		ZStack(alignment: .bottom) {
+			// Dimmed app screen behind the modal sheet
+			Color(red: 0.06, green: 0.06, blue: 0.07)
+				.ignoresSafeArea()
+
+			VStack(spacing: 0) {
+				// iOS sheet grabber handle
+				Capsule()
+					.fill(Color(white: 0.45))
+					.frame(width: 36, height: 5)
+					.padding(.top, 10)
+					.padding(.bottom, 6)
+
+				content
+			}
+			.background(Color(red: 0.11, green: 0.11, blue: 0.12))
+			.clipShape(UnevenRoundedRectangle(topLeadingRadius: 28, topTrailingRadius: 28))
+			.frame(maxHeight: 745)
+		}
+		.preferredColorScheme(.dark)
+		.environment(\.colorScheme, .dark)
+	}
+}
+
 final class OTAScreenshotExportTests: XCTestCase {
 	@MainActor
 	func testExportOTAScreenshots() throws {
@@ -16,11 +48,16 @@ final class OTAScreenshotExportTests: XCTestCase {
 		let height: CGFloat = 852
 
 		func saveScreenshot(_ view: some View, filename: String) {
-			let hostingController = UIHostingController(rootView: AnyView(view.frame(width: width, height: height)))
+			let modalView = RealisticSheetModalView {
+				view
+			}
+			let hostingController = UIHostingController(rootView: AnyView(modalView.frame(width: width, height: height)))
+			hostingController.overrideUserInterfaceStyle = .dark
 			hostingController.view.bounds = CGRect(x: 0, y: 0, width: width, height: height)
-			hostingController.view.backgroundColor = .systemBackground
+			hostingController.view.backgroundColor = .black
 
 			let window = UIWindow(frame: CGRect(x: 0, y: 0, width: width, height: height))
+			window.overrideUserInterfaceStyle = .dark
 			window.rootViewController = hostingController
 			window.makeKeyAndVisible()
 			hostingController.view.setNeedsLayout()
@@ -123,14 +160,9 @@ final class OTAScreenshotExportTests: XCTestCase {
 		)
 		saveScreenshot(afterView, filename: "ota_ui_after_fix.png")
 
-		// 3. Mini-Game Gameplay (Full Screen Chirpy Hop)
-		let gameStatus = FirmwareUpdateGameStatus(
-			title: "ESP32 BLE OTA",
-			message: "Uploading firmware (45%)...",
-			progress: 0.45,
-			phase: .uploading
-		)
-		let gameView = FirmwareUpdateGameScreen(status: gameStatus, onClose: {})
-		saveScreenshot(gameView, filename: "ota_chirpy_hop_gameplay.png")
+		// 3. Nordic DFU Sheet
+		let nrfDFUView = NRFDFUSheet(showWarningAlert: false, firmwareToFlash: URL(fileURLWithPath: "/tmp/firmware-nrf52840.zip"))
+			.environmentObject(AccessoryManager.shared)
+		saveScreenshot(nrfDFUView, filename: "ota_06_nordic_nrf_dfu.png")
 	}
 }
