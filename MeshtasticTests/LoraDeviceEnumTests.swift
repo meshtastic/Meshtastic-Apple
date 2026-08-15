@@ -92,9 +92,9 @@ struct ModemPresetsTests {
 		}
 	}
 
-	@Test func allCases_haveProtoEnumValue() {
+	@Test func allCases_haveMatchingProtoRawValue() {
 		for preset in ModemPresets.allCases {
-			_ = preset.protoEnumValue()
+			#expect(preset.protoEnumValue().rawValue == preset.rawValue)
 		}
 	}
 
