@@ -992,6 +992,12 @@ struct LoRaPresetSelectionTests {
 		let result = ModemPresets.presetToSelect(forRegion: .us, factoryFresh: true, supports2_8: true, usePreset: true, regionInfo: usNoTurbo, currentPreset: .longFast)
 		#expect(result == nil)
 	}
+
+	@Test func factoryUS_longTurboIllegal_withoutCurrentPreset_usesRegionDefault() {
+		let usNoTurbo = RegionPresetInfo(presets: Set<Preset>([.longFast, .longSlow]), defaultPreset: .longFast, licensedOnly: false)
+		let result = ModemPresets.presetToSelect(forRegion: .us, factoryFresh: true, supports2_8: true, usePreset: true, regionInfo: usNoTurbo, currentPreset: nil)
+		#expect(result == .longFast)
+	}
 }
 
 @Suite("LoRa channel frequency calculation")

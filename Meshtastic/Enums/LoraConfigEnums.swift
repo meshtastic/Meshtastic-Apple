@@ -575,8 +575,7 @@ enum ModemPresets: Int, CaseIterable, Identifiable {
 			return .longTurbo
 		}
 
-		guard let info = regionInfo, !info.presets.isEmpty,
-			  currentPreset != nil else { return nil }
+		guard let info = regionInfo, !info.presets.isEmpty else { return nil }
 		return ModemPresets(rawValue: info.defaultPreset.rawValue)
 	}
 
