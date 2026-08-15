@@ -24,17 +24,17 @@ struct OTAMetadataItem: Identifiable, Hashable {
 /// Curated rotating tips and educational insights displayed during firmware updates.
 enum FirmwareUpdateTips {
 	static let messages: [String] = [
-		"LoRa spread-spectrum modulation allows Meshtastic to successfully decode signals even when they are up to 20 dB below the ambient noise floor.",
-		"Aim to keep overall Channel Utilization (ChUtil) below 25% and your local AirUtilTX low to avoid packet collisions on busy meshes.",
-		"CAD (Channel Activity Detection) performs power-efficient 'listen-before-talk' preamble checks before transmitting, preventing packet collisions.",
-		"Antenna height and clear line-of-sight (Fresnel zone clearance) improve link SNR significantly more than increasing raw TX power.",
-		"Designated Store-and-Forward server nodes can cache offline traffic and deliver missed direct messages when your node reconnects.",
-		"Firmware 2.5+ uses Curve25519 public key cryptography to provide authenticated, end-to-end encrypted direct messaging.",
-		"Download and cache offline vector map tiles in the Map tab for high-resolution topological navigation completely off-grid.",
-		"Integrated MeshtasticTAK bridges Cursor-on-Target (CoT) tactical markers and team emergency beacons over LoRa without cell service.",
-		"Beacon presets allow nearby Meshtastic radios to discover and sync pre-configured channels with a single tap.",
-		"Advanced power profiling and dynamic GPS sleep modes significantly extend battery life for remote solar repeater nodes.",
-		"Keep your device close to your phone during the update process."
+		"Keep your device close to your phone during the update.",
+		"Firmware 2.7 features BaseUI, bringing unified navigation to OLED, E-Ink, and TFT screens.",
+		"Next-Hop Routing optimizes packet paths to reduce channel congestion across large meshes.",
+		"Public Key Cryptography (PKC) enables authenticated, tamper-proof private direct messages.",
+		"Download offline vector maps in the Map tab to track node locations without cell service.",
+		"MeshtasticTAK bridges ATAK and Cursor-on-Target markers over LoRa completely off-grid.",
+		"Beacon presets allow nearby radios to discover and sync shared channel settings in one tap.",
+		"You can run up to 8 distinct channels simultaneously with individual encryption keys (PSKs).",
+		"Back up your node's identity, channels, and admin keys in Settings > Export Configuration.",
+		"Tap 'Play Chirpy Hop' to play a quick runner game while your update finishes in the background!",
+		"Visit meshtastic.org/docs for setup guides, hardware recommendations, and community tips."
 	]
 }
 
