@@ -31,4 +31,9 @@ enum TVTheme {
 
 	/// Wordmark logo height in the map header.
 	static let wordmarkHeight: CGFloat = 30
+
+	/// Vertical margin for the mesh stats strip. The map is full-bleed
+	/// (.ignoresSafeArea), so the strip supplies its own title-safe distance
+	/// from the screen edge (tvOS HIG: 60pt top/bottom).
+	static let statsStripMargin: CGFloat = 60
 }

@@ -37,6 +37,23 @@ final class MeshClient {
 	private(set) var myNodeNum: UInt32?
 	private(set) var host: String = ""
 
+	/// Latest health numbers for the CONNECTED node — the mesh stats strip's data.
+	/// In-memory only: session data, and adding fields to `MeshNode` would be a schema
+	/// change whose failure path wipes the store (see MeshtasticTVApp.makeContainer).
+	struct ConnectedNodeStats: Equatable {
+		var channelUtilization: Float
+		var airUtilTx: Float
+		/// Nil until the first LocalStats packet arrives — the DeviceMetrics
+		/// fallback and the NodeInfo seed only carry the two load fields above.
+		var packetsTx: UInt32?
+		var packetsRx: UInt32?
+		var packetsRxDupe: UInt32?
+		var onlineNodes: UInt32?
+		var totalNodes: UInt32?
+		var receivedAt: Date
+	}
+	private(set) var stats: ConnectedNodeStats?
+
 	/// The tvOS-local SwiftData store the map and list read via `@Query`. Every
 	/// upsert lands here; nothing is kept in memory, so the map survives relaunch.
 	private let context: ModelContext
@@ -59,6 +76,8 @@ final class MeshClient {
 		self.host = host
 		state = .connecting
 		myNodeNum = nil
+		// Stats describe one radio's session — they must not survive a switch.
+		stats = nil
 		// Note: the persisted node store is intentionally NOT cleared here — keeping
 		// it is what leaves the map populated across relaunches until the radio's
 		// fresh node-DB dump updates it.
@@ -195,6 +214,12 @@ final class MeshClient {
 		if info.hasDeviceMetrics {
 			let battery = Int(info.deviceMetrics.batteryLevel)
 			if node.batteryLevel != battery { node.batteryLevel = battery }
+			// The config dump includes the connected node's own entry; seeding here puts
+			// numbers in the stats strip at connect time instead of waiting out the first
+			// telemetry broadcast interval.
+			if info.num == myNodeNum {
+				applyDeviceMetrics(info.deviceMetrics)
+			}
 		}
 		if info.lastHeard > 0 {
 			let heard = Date(timeIntervalSince1970: TimeInterval(info.lastHeard))
@@ -205,8 +230,18 @@ final class MeshClient {
 
 	private func ingestPacket(_ packet: MeshPacket) {
 		guard case .decoded(let data) = packet.payloadVariant else { return }
-		guard data.portnum == .positionApp,
-		      let position = try? Position(serializedBytes: data.payload),
+		switch data.portnum {
+		case .positionApp:
+			ingestPosition(packet, data)
+		case .telemetryApp:
+			ingestTelemetry(packet, data)
+		default:
+			break
+		}
+	}
+
+	private func ingestPosition(_ packet: MeshPacket, _ data: DataMessage) {
+		guard let position = try? Position(serializedBytes: data.payload),
 		      position.hasLatitudeI, position.hasLongitudeI else { return }
 
 		let latitude = Double(position.latitudeI) * 1e-7
@@ -221,5 +256,45 @@ final class MeshClient {
 		node.latitude = latitude
 		node.longitude = longitude
 		node.lastHeard = Date()
+	}
+
+	/// Telemetry from the CONNECTED node feeds the stats strip. Other nodes' telemetry is
+	/// dropped: their LocalStats describe *their* node DB and radio load, not this mesh
+	/// session's, and this client keeps no per-node telemetry history.
+	private func ingestTelemetry(_ packet: MeshPacket, _ data: DataMessage) {
+		guard let myNodeNum, packet.from == myNodeNum,
+		      let telemetry = try? Telemetry(serializedBytes: data.payload) else { return }
+		switch telemetry.variant {
+		case .localStats(let localStats):
+			// No no-op guard, unlike the store writes above: `receivedAt` drives the
+			// strip's age text, so every arrival is a real update by definition.
+			stats = ConnectedNodeStats(
+				channelUtilization: localStats.channelUtilization,
+				airUtilTx: localStats.airUtilTx,
+				packetsTx: localStats.numPacketsTx,
+				packetsRx: localStats.numPacketsRx,
+				packetsRxDupe: localStats.numRxDupe,
+				onlineNodes: localStats.numOnlineNodes,
+				totalNodes: localStats.numTotalNodes,
+				receivedAt: Date()
+			)
+			Logger.transport.info("📺 [MeshClient] LocalStats: ch \(localStats.channelUtilization, privacy: .public)% air \(localStats.airUtilTx, privacy: .public)% tx \(localStats.numPacketsTx, privacy: .public) rx \(localStats.numPacketsRx, privacy: .public) nodes \(localStats.numOnlineNodes, privacy: .public)/\(localStats.numTotalNodes, privacy: .public)")
+		case .deviceMetrics(let deviceMetrics):
+			applyDeviceMetrics(deviceMetrics)
+		default:
+			break
+		}
+	}
+
+	/// Partial stats update from DeviceMetrics — the load fields only, keeping any
+	/// LocalStats counters already held. Also the seed path from the connected node's
+	/// NodeInfo, so the strip has numbers at connect time.
+	private func applyDeviceMetrics(_ metrics: DeviceMetrics) {
+		guard metrics.hasChannelUtilization || metrics.hasAirUtilTx else { return }
+		var updated = stats ?? ConnectedNodeStats(channelUtilization: 0, airUtilTx: 0, receivedAt: Date())
+		if metrics.hasChannelUtilization { updated.channelUtilization = metrics.channelUtilization }
+		if metrics.hasAirUtilTx { updated.airUtilTx = metrics.airUtilTx }
+		updated.receivedAt = Date()
+		stats = updated
 	}
 }

@@ -24,6 +24,9 @@ struct SettingsView: View {
 	@AppStorage("tv.mapType") private var mapTypeRaw: Int = Int(MKMapType.standard.rawValue)
 	@StateObject private var offlineBasemap = TVOfflineBasemap()
 	@State private var estimate: (tiles: Int, bytes: Int64)?
+	/// Mesh stats strip, shared with MapScreen via the same keys.
+	@AppStorage("tv.statsBar.enabled") private var statsBarEnabled = true
+	@AppStorage("tv.statsBar.edge") private var statsBarEdge: StatsStripEdge = .top
 
 	var body: some View {
 		List {
@@ -34,8 +37,18 @@ struct SettingsView: View {
 					Text("Satellite").tag(Int(MKMapType.satellite.rawValue))
 				}
 				.pickerStyle(.segmented)
+
+				Toggle("Mesh Stats", isOn: $statsBarEnabled)
+				Picker("Stats Position", selection: $statsBarEdge) {
+					Text("Top").tag(StatsStripEdge.top)
+					Text("Bottom").tag(StatsStripEdge.bottom)
+				}
+				.pickerStyle(.segmented)
+				.disabled(!statsBarEnabled)
 			} header: {
 				Text("Map")
+			} footer: {
+				Text("Mesh Stats shows the connected node's mesh totals, radio load and packet counters over the map.")
 			}
 
 			offlineMapSection
