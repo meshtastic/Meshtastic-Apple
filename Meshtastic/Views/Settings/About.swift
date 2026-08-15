@@ -9,8 +9,6 @@ import StoreKit
 
 struct AboutMeshtastic: View {
 
-	let locale = Locale.current
-
 	var body: some View {
 
 		VStack {
@@ -22,20 +20,18 @@ struct AboutMeshtastic: View {
 				}
 				Section(header: Text("Apple Apps")) {
 
-					if locale.region?.identifier ?? "US" == "US" {
-						HStack {
-							Image("THINKNODEM1")
-								.resizable()
-								.aspectRatio(contentMode: .fit)
-								.frame(width: 75)
-								.cornerRadius(5)
-								.padding()
-							VStack(alignment: .leading) {
-								Link("Need Hardware?", destination: URL(string: "https://meshtastic.org/#hardware")!)
-									.font(.title2)
-								Text("Get custom waterproof solar and detection sensor router nodes, aluminium desktop nodes and rugged handsets.")
-									.font(.callout)
-							}
+					HStack {
+						Image("THINKNODEM1")
+							.resizable()
+							.aspectRatio(contentMode: .fit)
+							.frame(width: 75)
+							.cornerRadius(5)
+							.padding()
+						VStack(alignment: .leading) {
+							Link("Need Hardware?", destination: URL(string: "https://meshtastic.org/#hardware")!)
+								.font(.title2)
+							Text("Meshtastic requires a compatible device. Our backers and partners offer ready-to-use hardware. Here are some of the most popular options.")
+								.font(.callout)
 						}
 					}
 					Link("Sponsor App Development", destination: URL(string: "https://github.com/sponsors/garthvh")!)
