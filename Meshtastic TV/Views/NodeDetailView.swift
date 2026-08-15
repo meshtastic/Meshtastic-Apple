@@ -25,7 +25,6 @@ struct NodeDetailView: View {
 				header
 
 				section("Identity") {
-					DetailRow("Name", node.displayName)
 					if !node.shortName.isEmpty {
 						DetailRow("Short", node.shortName)
 					}
@@ -60,7 +59,6 @@ struct NodeDetailView: View {
 			.padding(TVTheme.screenPadding)
 			.frame(maxWidth: .infinity, alignment: .leading)
 		}
-		.navigationTitle(node.displayName)
 	}
 
 	private var header: some View {
