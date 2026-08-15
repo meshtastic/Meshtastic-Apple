@@ -154,22 +154,19 @@ struct Connect: View {
 												Button {
 													openEventFirmwareInfo()
 												} label: {
-													HStack(spacing: 12) {
+													VStack(alignment: .leading, spacing: 6) {
+														HStack(spacing: 4) {
+															Text(eventPresentation.info.displayName ?? accessoryManager.firmwareEdition.name)
+																.font(.headline)
+															Image(systemName: "chevron.right")
+																.font(.caption2)
+																.foregroundColor(.gray)
+														}
 														EventFirmwareIcon(
 															edition: eventPresentation.edition,
 															iconURL: eventPresentation.info.iconURL,
 															size: 88
 														)
-														VStack(alignment: .leading, spacing: 2) {
-															Text(eventPresentation.info.displayName ?? accessoryManager.firmwareEdition.name)
-																.font(.headline)
-															Text("Firmware Edition")
-																.font(.callout)
-																.foregroundColor(Color.gray)
-														}
-														Image(systemName: "chevron.right")
-															.font(.caption2)
-															.foregroundColor(.gray)
 													}
 												}
 												.buttonStyle(.plain)
