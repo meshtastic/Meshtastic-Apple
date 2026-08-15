@@ -57,6 +57,10 @@ struct ShareChannels: View {
 			.sorted { $0.index < $1.index }
 	}
 
+	private var channelQRMode: ChannelQRMode {
+		ChannelQRMode(addChannels: !replaceChannels)
+	}
+
 	var body: some View {
 
 		VStack {
@@ -98,7 +102,7 @@ struct ShareChannels: View {
 							let qrImage = qrCodeImage.generateQRCode(from: channelsUrl)
 							VStack {
 								Toggle(isOn: $replaceChannels) {
-									Label(replaceChannels ? "Replace Channels" : "Add Channels", systemImage: replaceChannels ? "arrow.triangle.2.circlepath.circle" : "plus.app")
+									Label(channelQRMode.title, systemImage: channelQRMode.symbolName)
 								}
 								.toggleStyle(.button)
 								.buttonStyle(.bordered)
@@ -106,6 +110,12 @@ struct ShareChannels: View {
 								.controlSize(.large)
 								.padding(.top)
 								.padding(.bottom)
+
+								Text(channelQRMode.consequence)
+									.font(.callout)
+									.foregroundStyle(.secondary)
+									.multilineTextAlignment(.center)
+									.padding(.horizontal)
 
 								ShareLink("Share QR Code & Link",
 											item: Image(uiImage: qrImage),
