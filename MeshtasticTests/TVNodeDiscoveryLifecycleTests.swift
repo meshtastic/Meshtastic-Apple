@@ -25,6 +25,21 @@ private final class ServiceBrowserSpy: ServiceBrowsing {
 	}
 }
 
+private final class ResolvingServiceSpy: NetService {
+	private(set) var resolveCallCount = 0
+	private(set) var stopCallCount = 0
+
+	override var hostName: String? { "node.local." }
+
+	override func resolve(withTimeout timeout: TimeInterval) {
+		resolveCallCount += 1
+	}
+
+	override func stop() {
+		stopCallCount += 1
+	}
+}
+
 @MainActor
 @Suite("tvOS node discovery lifecycle")
 struct TVNodeDiscoveryLifecycleTests {
@@ -132,8 +147,70 @@ struct TVNodeDiscoveryLifecycleTests {
 		#expect(discovery.discovered.isEmpty)
 	}
 
-	@Test func failedBrowseStopsSpinnerAndOffersRetryState() {
+	@Test func removalDuringResolutionCancelsPendingServiceAndIgnoresLateCallback() {
 		let discovery = NodeDiscovery { ServiceBrowserSpy() }
+		let pending = ResolvingServiceSpy(
+			domain: "local.",
+			type: "_meshtastic._tcp.",
+			name: "bonjour-service",
+			port: 4403
+		)
+		let removed = NetService(
+			domain: "local.",
+			type: "_meshtastic._tcp.",
+			name: "bonjour-service"
+		)
+
+		discovery.netServiceBrowser(NetServiceBrowser(), didFind: pending, moreComing: false)
+		#expect(pending.resolveCallCount == 1)
+
+		discovery.netServiceBrowser(NetServiceBrowser(), didRemove: removed, moreComing: false)
+		#expect(pending.stopCallCount == 1)
+		#expect(pending.delegate == nil)
+
+		discovery.netServiceDidResolveAddress(pending)
+		#expect(discovery.discovered.isEmpty)
+	}
+
+	@Test func rediscoverySupersedesOnlyThePreviousPendingService() {
+		let discovery = NodeDiscovery { ServiceBrowserSpy() }
+		let first = ResolvingServiceSpy(
+			domain: "local.",
+			type: "_meshtastic._tcp.",
+			name: "bonjour-service",
+			port: 4403
+		)
+		let replacement = ResolvingServiceSpy(
+			domain: "local.",
+			type: "_meshtastic._tcp.",
+			name: "bonjour-service",
+			port: 4403
+		)
+
+		discovery.netServiceBrowser(NetServiceBrowser(), didFind: first, moreComing: false)
+		discovery.netServiceBrowser(NetServiceBrowser(), didFind: replacement, moreComing: false)
+
+		#expect(first.stopCallCount == 1)
+		#expect(first.delegate == nil)
+		#expect(replacement.stopCallCount == 0)
+		#expect(replacement.resolveCallCount == 1)
+		#expect(replacement.delegate != nil)
+
+		discovery.netServiceDidResolveAddress(first)
+		#expect(discovery.discovered.isEmpty)
+
+		discovery.netServiceDidResolveAddress(replacement)
+		#expect(discovery.discovered.count == 1)
+		#expect(discovery.discovered.first?.serviceName == "bonjour-service")
+	}
+
+	@Test func failedBrowseStopsSpinnerAndRetryStartsFreshBrowse() {
+		var browsers: [ServiceBrowserSpy] = []
+		let discovery = NodeDiscovery {
+			let browser = ServiceBrowserSpy()
+			browsers.append(browser)
+			return browser
+		}
 		discovery.start()
 
 		discovery.netServiceBrowser(
@@ -143,5 +220,16 @@ struct TVNodeDiscoveryLifecycleTests {
 
 		#expect(!discovery.isBrowsing)
 		#expect(discovery.errorMessage != nil)
+
+		discovery.retry()
+
+		#expect(browsers.count == 2)
+		guard browsers.count == 2 else { return }
+		#expect(browsers[1].searches.count == 1)
+		guard browsers[1].searches.count == 1 else { return }
+		#expect(browsers[1].searches[0].type == "_meshtastic._tcp.")
+		#expect(browsers[1].searches[0].domain == "local.")
+		#expect(discovery.isBrowsing)
+		#expect(discovery.errorMessage == nil)
 	}
 }

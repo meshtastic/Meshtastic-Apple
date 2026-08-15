@@ -30,6 +30,18 @@ struct DiscoveredNode: Identifiable, Hashable {
 	let port: Int
 }
 
+private struct BonjourServiceKey: Hashable {
+	let domain: String
+	let type: String
+	let name: String
+
+	init(_ service: NetService) {
+		self.domain = service.domain
+		self.type = service.type
+		self.name = service.name
+	}
+}
+
 protocol ServiceBrowsing: AnyObject {
 	func setDelegate(_ delegate: NetServiceBrowserDelegate?)
 	func searchForServices(ofType type: String, inDomain domainString: String)
@@ -51,7 +63,7 @@ final class NodeDiscovery: NSObject, ObservableObject, @preconcurrency NetServic
 
 	private let makeBrowser: @MainActor () -> any ServiceBrowsing
 	private var browser: (any ServiceBrowsing)?
-	private var resolving: Set<NetService> = []   // retain services while they resolve
+	private var resolving: [BonjourServiceKey: NetService] = [:]
 	private var shouldRestartWhenActive = false
 
 	init(makeBrowser: @escaping @MainActor () -> any ServiceBrowsing = { NetServiceBrowser() }) {
@@ -79,7 +91,7 @@ final class NodeDiscovery: NSObject, ObservableObject, @preconcurrency NetServic
 		browser?.stop()
 		browser?.setDelegate(nil)
 		browser = nil
-		for service in resolving {
+		for service in resolving.values {
 			service.stop()
 			service.delegate = nil
 		}
@@ -116,14 +128,29 @@ final class NodeDiscovery: NSObject, ObservableObject, @preconcurrency NetServic
 	// MARK: - NetServiceBrowserDelegate
 
 	func netServiceBrowser(_ browser: NetServiceBrowser, didFind service: NetService, moreComing: Bool) {
-		discoveryLogger.info("📺 [Discovery] Found Bonjour service \(service.name, privacy: .public)")
+		discoveryLogger.info("📺 [Discovery] Found Bonjour service \(service.name, privacy: .private(mask: .hash))")
 		service.delegate = self
-		resolving.insert(service)
+		let key = BonjourServiceKey(service)
+		if let previous = resolving.updateValue(service, forKey: key), previous !== service {
+			previous.stop()
+			previous.delegate = nil
+		}
 		service.resolve(withTimeout: 5)
 	}
 
 	func netServiceBrowser(_ browser: NetServiceBrowser, didRemove service: NetService, moreComing: Bool) {
-		discoveryLogger.info("📺 [Discovery] Removed Bonjour service \(service.name, privacy: .public)")
+		discoveryLogger.info("📺 [Discovery] Removed Bonjour service \(service.name, privacy: .private(mask: .hash))")
+		if let pending = resolving.removeValue(forKey: BonjourServiceKey(service)) {
+			pending.stop()
+			pending.delegate = nil
+			if pending !== service {
+				service.stop()
+				service.delegate = nil
+			}
+		} else {
+			service.stop()
+			service.delegate = nil
+		}
 		discovered.removeAll { $0.serviceName == service.name }
 	}
 
@@ -138,9 +165,17 @@ final class NodeDiscovery: NSObject, ObservableObject, @preconcurrency NetServic
 	// MARK: - NetServiceDelegate
 
 	func netServiceDidResolveAddress(_ service: NetService) {
-		defer { resolving.remove(service) }
+		let key = BonjourServiceKey(service)
+		guard resolving[key] === service else {
+			service.delegate = nil
+			return
+		}
+		defer {
+			resolving.removeValue(forKey: key)
+			service.delegate = nil
+		}
 		guard let host = service.hostName, service.port > 0 else { return }
-		discoveryLogger.info("📺 [Discovery] Resolved Bonjour service \(service.name, privacy: .public)")
+		discoveryLogger.info("📺 [Discovery] Resolved Bonjour service \(service.name, privacy: .private(mask: .hash))")
 
 		let txt = service.txtRecordData().map(NetService.dictionary(fromTXTRecord:)) ?? [:]
 		let shortname = txt["shortname"].flatMap { String(data: $0, encoding: .utf8) }
@@ -167,7 +202,11 @@ final class NodeDiscovery: NSObject, ObservableObject, @preconcurrency NetServic
 	}
 
 	func netService(_ service: NetService, didNotResolve errorDict: [String: NSNumber]) {
-		discoveryLogger.error("📺 [Discovery] Failed to resolve \(service.name, privacy: .public): \(String(describing: errorDict), privacy: .public)")
-		resolving.remove(service)
+		discoveryLogger.error("📺 [Discovery] Failed to resolve \(service.name, privacy: .private(mask: .hash)): \(String(describing: errorDict), privacy: .public)")
+		let key = BonjourServiceKey(service)
+		if resolving[key] === service {
+			resolving.removeValue(forKey: key)
+		}
+		service.delegate = nil
 	}
 }
