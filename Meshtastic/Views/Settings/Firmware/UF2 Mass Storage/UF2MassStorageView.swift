@@ -18,7 +18,7 @@ struct UF2MassStorageView: View {
 	
 	let fileURL: URL
 	var body: some View {
-		NavigationView { // Use a NavigationView for a title bar
+		NavigationStack {
 			ScrollView {
 				VStack(spacing: 20) {
 					
@@ -32,7 +32,7 @@ struct UF2MassStorageView: View {
 					}
 					.padding()
 					.background(Color.secondary.opacity(0.1))
-					.cornerRadius(12)
+					.clipShape(RoundedRectangle(cornerRadius: 12))
 					
 					Divider()
 					
@@ -47,7 +47,7 @@ struct UF2MassStorageView: View {
 							.font(.caption)
 							.foregroundStyle(.secondary)
 						
-						resetIntoOTAButton() // Ensure this button has suitable padding/styling
+						resetIntoOTAButton()
 					}
 					
 					Divider()
@@ -63,7 +63,7 @@ struct UF2MassStorageView: View {
 						}
 						.font(.callout)
 						
-						exportFirmwareButton() // Ensure this button is prominent
+						exportFirmwareButton()
 					}
 					
 					Divider()
@@ -78,12 +78,13 @@ struct UF2MassStorageView: View {
 					}
 					.font(.caption)
 					.foregroundStyle(.secondary)
-				}.padding()
-			}.navigationTitle("UF2 Firmware Update")
+				}
+				.padding()
+			}
+			.navigationTitle("UF2 Firmware Update")
 			.navigationBarTitleDisplayMode(.inline)
 			.toolbar {
-				ToolbarItem(placement: .navigationBarLeading) {
-					// 2. Create a button that calls dismiss()
+				ToolbarItem(placement: .cancellationAction) {
 					Button {
 						dismiss()
 					} label: {
@@ -92,11 +93,12 @@ struct UF2MassStorageView: View {
 					.accessibilityLabel(String(localized: "Done", comment: "VoiceOver: dismiss the UF2 firmware update sheet"))
 				}
 			}
-		}.fileExporter(
+		}
+		.fileExporter(
 			isPresented: $isExporting,
 			document: document,
-			contentType: .UF2Firmware, // Use your custom type here
-			defaultFilename: UUID().uuidString // No extension needed here, UTType handles it
+			contentType: .UF2Firmware,
+			defaultFilename: UUID().uuidString
 		) { result in
 			switch result {
 			case .success(let url):
@@ -121,31 +123,36 @@ struct UF2MassStorageView: View {
 				}
 			}
 		} label: {
-			Label(" Send Reboot into DFU", systemImage: "square.and.arrow.down")
-		}.buttonStyle(.borderedProminent)
-			.controlSize(.large)
-			.frame(maxWidth: .infinity)
-			.cornerRadius(10).disabled(accessoryManager.activeDeviceNum == nil)
+			Label("Send Reboot into DFU", systemImage: "square.and.arrow.down")
+		}
+		.buttonStyle(.borderedProminent)
+		.controlSize(.large)
+		.frame(maxWidth: .infinity)
+		.clipShape(RoundedRectangle(cornerRadius: 10))
+		.disabled(accessoryManager.activeDeviceNum == nil)
 	}
 	
 	@ViewBuilder
 	func exportFirmwareButton() -> some View {
-		Button(action: {
+		Button {
 			prepareFirmwareForExport()
-		}) {
+		} label: {
 			Label("Save Firmware to USB", systemImage: "externaldrive.fill")
-		}.buttonStyle(.borderedProminent)
-			.controlSize(.large)
-			.frame(maxWidth: .infinity)
+		}
+		.buttonStyle(.borderedProminent)
+		.controlSize(.large)
+		.frame(maxWidth: .infinity)
 	}
 	
 	func prepareFirmwareForExport() {
 		if let data = try? Data(contentsOf: fileURL) {
-			// 2. Initialize the document
 			self.document = FirmwareDocument(data: data)
-			
-			// 3. Trigger the sheet
 			self.isExporting = true
 		}
 	}
+}
+
+#Preview {
+	UF2MassStorageView(fileURL: URL(fileURLWithPath: "/tmp/firmware-rak4631.uf2"))
+		.environmentObject(AccessoryManager.shared)
 }

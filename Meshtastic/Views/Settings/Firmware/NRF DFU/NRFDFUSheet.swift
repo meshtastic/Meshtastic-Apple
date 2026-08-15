@@ -24,49 +24,71 @@ struct NRFDFUSheet: View {
 					onAccept: { showWarningAlert = false }
 				)
 			} else {
-				VStack(spacing: 20.0) {
-					Text("Nordic DFU Update")
-						.font(.title2.bold())
+				ScrollView {
+					VStack(spacing: 20.0) {
+						VStack(spacing: 4) {
+							Text("Nordic DFU Update")
+								.font(.title2.bold())
 
-					Text("DFU Firmware Update")
-						.font(.headline)
+							Text("DFU Firmware Update")
+								.font(.subheadline)
+								.foregroundStyle(.secondary)
+						}
+						.padding(.top, 8)
 
-					Text("Please do not leave this screen until this process is complete.")
-						.multilineTextAlignment(.center)
-						.padding()
+						Text("Please do not leave this screen until the update is complete. You can safely play Chirpy Hop while waiting!")
+							.font(.caption)
+							.foregroundStyle(.secondary)
+							.multilineTextAlignment(.center)
+							.padding(.horizontal)
 
-					CircularProgressView(progress: dfuViewModel.progress, isIndeterminate: (self.dfuViewModel.state == .starting), size: 225.0, subtitleText: dfuViewModel.statusMessage)
+						CircularProgressView(
+							progress: dfuViewModel.progress,
+							isIndeterminate: (self.dfuViewModel.state == .starting),
+							size: 210.0,
+							subtitleText: dfuViewModel.statusMessage
+						)
+						.frame(minHeight: 230.0)
 
-					Group {
-						switch dfuViewModel.state {
-						case .idle:
-							Button("Begin Update") {
-								Task {
-									if let connection = accessoryManager.activeConnection?.connection as? BLEConnection {
-										let peripheral = await connection.peripheral
-										dfuViewModel.startDFU(peripheral: peripheral, zipFileUrl: firmwareToFlash)
+						VStack(spacing: 12) {
+							switch dfuViewModel.state {
+							case .idle:
+								Button("Begin Update") {
+									Task {
+										if let connection = accessoryManager.activeConnection?.connection as? BLEConnection {
+											let peripheral = await connection.peripheral
+											dfuViewModel.startDFU(peripheral: peripheral, zipFileUrl: firmwareToFlash)
+										}
 									}
 								}
+								.controlSize(.large)
+								.frame(maxWidth: .infinity)
+								.clipShape(RoundedRectangle(cornerRadius: 10))
+								.buttonStyle(.borderedProminent)
+
+							case .uploading, .starting, .success:
+								Text(dfuViewModel.rotatingMessage)
+									.font(.headline)
+									.multilineTextAlignment(.center)
+									.padding(.horizontal)
+							case .error(let message):
+								Text("Error: \(message)")
+									.font(.headline)
+									.foregroundStyle(.red)
+									.multilineTextAlignment(.center)
+									.padding(.horizontal)
 							}
-							.controlSize(.large)
-							.frame(maxWidth: .infinity)
-							.cornerRadius(10)
-							.buttonStyle(.borderedProminent)
-
-						case .uploading, .starting, .success:
-							Text(dfuViewModel.rotatingMessage)
-								.multilineTextAlignment(.center)
-								.padding(.horizontal)
-						case .error(let message):
-							Text("Error: \(message)")
 						}
-					}.frame(minHeight: 250.0)
+						.frame(maxWidth: .infinity)
+						.padding(.horizontal)
 
-					if dfuViewModel.state.gamePhase.isActive {
-						FirmwareUpdateGameButton(isPresented: $showChirpyGame, status: gameStatus)
-							.padding(.horizontal)
-							.padding(.bottom)
+						if dfuViewModel.state.gamePhase.isActive {
+							FirmwareUpdateGameButton(isPresented: $showChirpyGame, status: gameStatus)
+								.padding(.horizontal)
+								.padding(.top, 4)
+						}
 					}
+					.padding(.bottom, 24)
 				}
 			}
 		}
@@ -162,4 +184,9 @@ private struct UpdateWarningSheet: View {
 		}
 		.padding(.top)
 	}
+}
+
+#Preview {
+	NRFDFUSheet(firmwareToFlash: URL(fileURLWithPath: "/tmp/firmware-nrf52840.zip"))
+		.environmentObject(AccessoryManager.shared)
 }

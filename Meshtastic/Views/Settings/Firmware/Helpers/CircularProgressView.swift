@@ -162,6 +162,10 @@ struct CircularProgressView: View {
 				Text(isIndeterminate && text == "Loading..." ? "Please wait" : text)
 					.font(.callout)
 					.foregroundColor(.secondary)
+					.multilineTextAlignment(.center)
+					.lineLimit(2)
+					.minimumScaleFactor(0.8)
+					.padding(.horizontal, 12)
 			}
 		}
 		.transition(.opacity)

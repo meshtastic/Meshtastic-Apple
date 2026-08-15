@@ -47,8 +47,11 @@ final class ESP32BLEOTAViewModel: ObservableObject {
 	}
 	
 	func startOTA(binURL: URL, desiredPeripheral: UUID?) async {
-		// Prevent screen sleep during update
+		// Prevent screen sleep during update; guaranteed cleanup on any exit
 		UIApplication.shared.isIdleTimerDisabled = true
+		defer {
+			UIApplication.shared.isIdleTimerDisabled = false
+		}
 		
 		do {
 			// --- 1. Connection Phase ---
@@ -97,10 +100,12 @@ final class ESP32BLEOTAViewModel: ObservableObject {
 			var iterator = stream.makeAsyncIterator()
 			
 			// --- 3. Prepare Firmware & Command ---
-			let data = try Data(contentsOf: binURL)
-			let sha256Digest = SHA256.hash(data: data)
-			let fileHash = sha256Digest.map { String(format: "%02hhx", $0) }.joined()
-			let fileSize = data.count
+			let (data, fileHash, fileSize) = try await Task.detached(priority: .userInitiated) {
+				let fileData = try Data(contentsOf: binURL, options: .mappedIfSafe)
+				let digest = SHA256.hash(data: fileData)
+				let hashString = digest.map { String(format: "%02hhx", $0) }.joined()
+				return (fileData, hashString, fileData.count)
+			}.value
 			
 			Logger.services.info("Firmware Size: \(fileSize), Hash: \(fileHash)")
 			
@@ -239,7 +244,7 @@ final class ESP32BLEOTAViewModel: ObservableObject {
 	///   - operation: The async closure to execute.
 	/// - Returns: The result of the operation.
 	/// - Throws: `BLEOTAFailure.timeout` if time expires, or rethrows errors from the operation.
-	private func withTimeout<T>(seconds: TimeInterval, operation: @escaping @Sendable () async throws -> T) async throws -> T {
+	private func withTimeout<T: Sendable>(seconds: TimeInterval, operation: @escaping @Sendable () async throws -> T) async throws -> T {
 		return try await withThrowingTaskGroup(of: T.self) { group in
 			// Task 1: The actual operation
 			group.addTask {
