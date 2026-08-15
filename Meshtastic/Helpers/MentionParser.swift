@@ -22,7 +22,9 @@ import SwiftData
 enum MentionParser {
 
 	/// Pattern matching a mention token: `@!` followed by exactly 8 lowercase hex digits.
-	private static let mentionRegex = try! NSRegularExpression(pattern: "@!([0-9a-f]{8})")
+	/// The trailing lookahead rejects longer runs (`@!deadbeef00` is not a mention of
+	/// `@!deadbeef` — the wire format is exactly 8 digits).
+	private static let mentionRegex = try! NSRegularExpression(pattern: "@!([0-9a-f]{8})(?![0-9a-f])")
 
 	/// Returns all mention ranges found in `text`, paired with the 8-char hex node ID.
 	static func mentionRanges(in text: String) -> [(range: Range<String.Index>, hexId: String)] {
@@ -82,9 +84,10 @@ enum MentionParser {
 	/// Returns `true` when `text` contains a mention of the node identified by `nodeNum`.
 	///
 	/// Used by the notification layer to detect self-mentions in channel broadcasts.
+	/// Goes through the bounded token parse rather than a substring search so a longer
+	/// hex run (`@!deadbeef00`) can't register as a mention of `@!deadbeef`.
 	static func containsMention(of nodeNum: Int64, in text: String) -> Bool {
-		// "@" + toHex() gives "@!deadbeef" — the exact wire format
-		return text.contains("@" + nodeNum.toHex())
+		mentionRanges(in: text).contains { self.nodeNum(from: $0.hexId) == nodeNum }
 	}
 
 	/// Replaces all `@!<hex>` mention tokens in `text` with markdown links of the form
@@ -102,7 +105,7 @@ enum MentionParser {
 		var result = text
 		for (range, hexId) in ranges.reversed() {
 			guard let num = nodeNum(from: hexId) else { continue }
-			let displayName = resolveDisplayName(nodeNum: num, context: context)
+			let displayName = escapeMarkdown(resolveDisplayName(nodeNum: num, context: context))
 			let link = "[@\(displayName)](meshtastic:///nodes?nodenum=\(num))"
 			result.replaceSubrange(range, with: link)
 		}
@@ -110,6 +113,24 @@ enum MentionParser {
 	}
 
 	// MARK: - Private helpers
+
+	/// Display names come from mesh data and can contain markdown control characters
+	/// (`]`, `(`, `*`, `\`, …) that would break or restructure the generated link when the
+	/// message is parsed as markdown. Backslash-escape every ASCII punctuation character —
+	/// all of them are valid CommonMark escapes and render as the literal character.
+	private static func escapeMarkdown(_ name: String) -> String {
+		var escaped = ""
+		escaped.reserveCapacity(name.count)
+		for character in name {
+			if let ascii = character.asciiValue,
+			   (33...47).contains(ascii) || (58...64).contains(ascii)
+				|| (91...96).contains(ascii) || (123...126).contains(ascii) {
+				escaped.append("\\")
+			}
+			escaped.append(character)
+		}
+		return escaped
+	}
 
 	private static func resolveDisplayName(nodeNum: Int64, context: ModelContext) -> String {
 		var descriptor = FetchDescriptor<UserEntity>(

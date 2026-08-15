@@ -3,6 +3,7 @@
 
 import Testing
 import Foundation
+import SwiftData
 @testable import Meshtastic
 
 // MARK: - MentionParser.mentionRanges
@@ -39,11 +40,17 @@ struct MentionRangesTests {
 		#expect(ranges.isEmpty)
 	}
 
-	@Test func tooLongHex_matchesFirst8() {
-		// Pattern matches first 8 hex chars — the rest are plain text
+	@Test func tooLongHex_notMatched() {
+		// The wire format is exactly 8 hex digits — a longer run is not a mention,
+		// and must not be misread as a mention of its first 8 digits.
 		let ranges = MentionParser.mentionRanges(in: "@!deadbeef00")
-		#expect(ranges.count == 1)
-		#expect(ranges.first?.hexId == "deadbeef")
+		#expect(ranges.isEmpty)
+	}
+
+	@Test func eightHexFollowedByNonHex_matched() {
+		// Non-hex characters end the token, so punctuation and words can follow.
+		let ranges = MentionParser.mentionRanges(in: "@!deadbeefg and @!12345678, hi")
+		#expect(ranges.map(\.hexId) == ["deadbeef", "12345678"])
 	}
 
 	@Test func mentionMidSentence_matched() {
@@ -190,5 +197,65 @@ struct ContainsMentionTests {
 	@Test func zeroNodeNum_detected() {
 		let text = "Msg @!00000000 test"
 		#expect(MentionParser.containsMention(of: 0, in: text))
+	}
+
+	@Test func longerHexRun_isNotSelfMention() {
+		// A malformed longer token must not notify the node matching its first 8 digits.
+		let text = "Hello @!deadbeef00"
+		#expect(!MentionParser.containsMention(of: Int64(UInt32(0xDEADBEEF)), in: text))
+	}
+}
+
+// MARK: - MentionParser.resolveMentions
+
+@Suite("MentionParser.resolveMentions", .serialized)
+@MainActor
+struct ResolveMentionsTests {
+
+	/// Returns the container (not just its context) — the context traps if the
+	/// container deallocates underneath it, so tests must keep it alive.
+	private func makeContainer(userName: String?, num: Int64) throws -> ModelContainer {
+		// Unique config name per test: SwiftData treats two containers sharing a name and
+		// schema as the same store, and that collision resets other live contexts (see
+		// the SharedTestContainer notes in MeshtasticAPIBundledSeedTests).
+		let schema = Schema(versionedSchema: MeshtasticSchema.current)
+		let container = try ModelContainer(
+			for: schema,
+			configurations: ModelConfiguration(
+				"MentionResolveTest-\(UUID().uuidString)",
+				schema: schema,
+				isStoredInMemoryOnly: true,
+				allowsSave: true
+			)
+		)
+		let user = UserEntity()
+		user.num = num
+		user.longName = userName
+		container.mainContext.insert(user)
+		try container.mainContext.save()
+		return container
+	}
+
+	@Test func resolvesTokenToMarkdownLink() throws {
+		let container = try makeContainer(userName: "Alice", num: Int64(UInt32(0xDEADBEEF)))
+		let resolved = MentionParser.resolveMentions(in: "Hi @!deadbeef", context: container.mainContext)
+		#expect(resolved == "Hi [@Alice](meshtastic:///nodes?nodenum=3735928559)")
+	}
+
+	@Test func escapesMarkdownControlCharactersInDisplayName() throws {
+		// Names come from mesh data — brackets/parens/backslashes must not be able to
+		// break or restructure the generated markdown link.
+		let container = try makeContainer(userName: #"Ali]ce (the \best*"#, num: Int64(UInt32(0xDEADBEEF)))
+		let resolved = MentionParser.resolveMentions(in: "Hi @!deadbeef", context: container.mainContext)
+		#expect(resolved == #"Hi [@Ali\]ce \(the \\best\*](meshtastic:///nodes?nodenum=3735928559)"#)
+		// The whole message must still parse as markdown with the name intact.
+		let attributed = try AttributedString(markdown: resolved)
+		#expect(String(attributed.characters).contains(#"@Ali]ce (the \best*"#))
+	}
+
+	@Test func unknownNodeFallsBackToHexId() throws {
+		let container = try makeContainer(userName: "Alice", num: 1)
+		let resolved = MentionParser.resolveMentions(in: "Hi @!deadbeef", context: container.mainContext)
+		#expect(resolved == #"Hi [@\!deadbeef](meshtastic:///nodes?nodenum=3735928559)"#)
 	}
 }
