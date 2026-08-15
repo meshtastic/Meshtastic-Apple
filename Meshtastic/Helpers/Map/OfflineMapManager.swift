@@ -345,13 +345,22 @@ final class OfflineMapManager: ObservableObject {
 
 	// MARK: - Locations
 
-	/// `Documents/OfflineMaps`, created on first use. `nil` only if Documents is unavailable.
+	/// `Documents/OfflineMaps`, created on first use. `nil` only if the container is unavailable.
+	///
+	/// tvOS uses Caches instead: Apple TV apps get no durable Documents storage, and anything
+	/// large has to be re-downloadable because the system may purge it under storage pressure.
+	/// The TV app re-extracts the region around the mesh when that happens.
 	func directoryURL() -> URL? {
-		guard let documents = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
-			Logger.services.error("🗺️ [Offline] Could not access documents directory")
+		#if os(tvOS)
+		let searchPath = FileManager.SearchPathDirectory.cachesDirectory
+		#else
+		let searchPath = FileManager.SearchPathDirectory.documentDirectory
+		#endif
+		guard let container = FileManager.default.urls(for: searchPath, in: .userDomainMask).first else {
+			Logger.services.error("🗺️ [Offline] Could not access the offline maps container")
 			return nil
 		}
-		let dir = documents.appendingPathComponent(Self.directoryName, isDirectory: true)
+		let dir = container.appendingPathComponent(Self.directoryName, isDirectory: true)
 		if !FileManager.default.fileExists(atPath: dir.path) {
 			do {
 				try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
