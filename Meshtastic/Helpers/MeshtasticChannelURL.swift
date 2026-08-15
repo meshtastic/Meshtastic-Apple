@@ -19,18 +19,18 @@ enum ChannelQRMode: Sendable {
 	var title: String {
 		switch self {
 		case .replace:
-			return "Replace Channels"
+			return String(localized: "Replace Channels")
 		case .add:
-			return "Add Channels"
+			return String(localized: "Add Channels")
 		}
 	}
 
 	var pickerTitle: String {
 		switch self {
 		case .replace:
-			return "Replace"
+			return String(localized: "Replace")
 		case .add:
-			return "Add"
+			return String(localized: "Add")
 		}
 	}
 
@@ -46,9 +46,9 @@ enum ChannelQRMode: Sendable {
 	var consequence: String {
 		switch self {
 		case .replace:
-			return "Selected channels will replace the connected radio's channel list. LoRa settings from the QR code will be applied."
+			return String(localized: "Selected channels will replace the connected radio's channel list. LoRa settings from the QR code will be applied.")
 		case .add:
-			return "Selected channels will be appended to the connected radio. Existing channels and LoRa settings are preserved."
+			return String(localized: "Selected channels will be appended to the connected radio. Existing channels and LoRa settings are preserved.")
 		}
 	}
 }

@@ -38,6 +38,8 @@ struct MeshtasticChannelURLTests {
 	@Test func channelQRModeUsesContractConsequenceCopy() {
 		#expect(ChannelQRMode.replace.consequence == "Selected channels will replace the connected radio's channel list. LoRa settings from the QR code will be applied.")
 		#expect(ChannelQRMode.add.consequence == "Selected channels will be appended to the connected radio. Existing channels and LoRa settings are preserved.")
+	}
+
 	// The channel URL written to NFC tags (ShareChannels -> NFCWriteButton) is the
 	// same MeshtasticChannelURL.urlString(for:addChannels:) output, so it must
 	// round-trip through parse in both replace and add modes.
