@@ -45,17 +45,23 @@ class FirmwareViewModel: ObservableObject {
 	/// remote artifact candidates so the right on-device fonts ship. `.unset`
 	/// keeps the previous generic-only behavior.
 	let preferredRegion: RegionCodes
+	private let localFirmwareStorageURL: URL
 
 	init(
 		forHardware: DeviceHardwareEntity,
 		platformioTarget: String? = nil,
-		preferredRegion: RegionCodes = .unset
+		preferredRegion: RegionCodes = .unset,
+		localFirmwareStorageURL: URL = FirmwareFile.localFirmwareStorageURL,
+		automaticallyRefresh: Bool = true
 	) {
 		self.hardware = forHardware
 		self.platformioTarget = platformioTarget ?? forHardware.platformioTarget
 		self.preferredRegion = preferredRegion
-		Task {
-			refresh()
+		self.localFirmwareStorageURL = localFirmwareStorageURL
+		if automaticallyRefresh {
+			Task {
+				refresh()
+			}
 		}
 	}
 	
@@ -104,17 +110,20 @@ class FirmwareViewModel: ObservableObject {
 		var isDirectory: ObjCBool = false
 		
 		// 1. Check if directory exists
-		if !fileManager.fileExists(atPath: FirmwareFile.localFirmwareStorageURL.path, isDirectory: &isDirectory) {
+		if !fileManager.fileExists(atPath: localFirmwareStorageURL.path, isDirectory: &isDirectory) {
 			return
 		}
 		
 		// 2. Iterate the files in the folder
 		do {
-			let fileURLs = try fileManager.contentsOfDirectory(at: FirmwareFile.localFirmwareStorageURL, includingPropertiesForKeys: nil)
+			let fileURLs = try fileManager.contentsOfDirectory(at: localFirmwareStorageURL, includingPropertiesForKeys: nil)
 			
 			for url in fileURLs {
 				do {
-					let firmwareFile = try FirmwareFile(localFile: url)
+					let firmwareFile = try FirmwareFile(
+						localFile: url,
+						fallbackArchitecture: hardwareArchitecture
+					)
 					if firmwareFile.platformioTarget != hardwarePlatformioTarget {
 						// Skip if this is not for the current hardware we are dealing with
 						continue
@@ -133,15 +142,13 @@ class FirmwareViewModel: ObservableObject {
 			Logger.services.error("Error loading firmware files: \(error)")
 		}
 		
-		Task { @MainActor in
-			// Keep the list sorted by version, with deterministic ordering of the firmware type
-			self.firmwareFiles = newFirmwareList.values.sorted {
-				if ($0.versionMajor, $0.versionMinor, $0.versionPatch) == ($1.versionMajor, $1.versionMinor, $1.versionPatch) {
-					// If versions are equal, sort by firmwareType (assuming it's String or Comparable)
-					return String(describing: $0.firmwareType) < String(describing: $1.firmwareType)
-				}
-				return ($0.versionMajor, $0.versionMinor, $0.versionPatch) > ($1.versionMajor, $1.versionMinor, $1.versionPatch)
+		// Keep the list sorted by version, with deterministic ordering of the firmware type
+		firmwareFiles = newFirmwareList.values.sorted {
+			if ($0.versionMajor, $0.versionMinor, $0.versionPatch) == ($1.versionMajor, $1.versionMinor, $1.versionPatch) {
+				// If versions are equal, sort by firmwareType (assuming it's String or Comparable)
+				return String(describing: $0.firmwareType) < String(describing: $1.firmwareType)
 			}
+			return ($0.versionMajor, $0.versionMinor, $0.versionPatch) > ($1.versionMajor, $1.versionMinor, $1.versionPatch)
 		}
 	}
 

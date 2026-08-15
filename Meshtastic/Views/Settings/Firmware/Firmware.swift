@@ -22,8 +22,7 @@ struct Firmware: View {
 	@Query private var hardwareResults: [DeviceHardwareEntity]
 	@State private var cachedHardware: DeviceHardwareEntity?
 	@State private var cachedNode: NodeInfoEntity?
-	@State private var cachedNodeNum: Int64?
-	@State private var cachedFirmwareTarget: String?
+	@State private var hardwareState = FirmwareHardwareViewState()
 
 	init(node: NodeInfoEntity?) {
 		self.node = node
@@ -33,7 +32,7 @@ struct Firmware: View {
 		Group {
 			if let resolvedNode = cachedNode,
 			   let resolvedHardware = cachedHardware,
-			   let firmwareTarget = cachedFirmwareTarget {
+			   let firmwareTarget = hardwareState.resolution?.firmwareTarget {
 				FirmwareContentView(
 					node: resolvedNode,
 					hardware: resolvedHardware,
@@ -59,12 +58,7 @@ struct Firmware: View {
 			resolveHardware()
 		}
 		.onChange(of: node?.myInfo?.pioEnv) { _, newValue in
-			if let newTarget = newValue?.trimmingCharacters(in: .whitespacesAndNewlines),
-			   !newTarget.isEmpty,
-			   newTarget != cachedFirmwareTarget {
-				resetHardwareCache()
-			}
-			resolveHardware()
+			handlePlatformIOTargetChange(to: newValue)
 		}
 		.onChange(of: node?.user?.hwModelId) {
 			resolveHardware()
@@ -76,32 +70,54 @@ struct Firmware: View {
 			resetHardwareCache()
 			return
 		}
-		if let cachedNodeNum, cachedNodeNum != node.num {
-			resetHardwareCache()
-		}
 		let records = hardwareResults.map(HardwareCatalogRecord.init)
 		let hwModel = node.user.map { Int64($0.hwModelId) }
-		guard let resolution = FirmwareHardwareResolver.resolve(
+		hardwareState.resolve(
+			nodeNum: node.num,
 			pioEnv: node.myInfo?.pioEnv,
 			hwModel: hwModel,
 			in: records
-		), let hardware = hardwareResults.first(where: {
-			$0.platformioTarget == resolution.metadataTarget
-		}) else { return }
+		)
+		cacheResolvedHardware(for: node)
+	}
+
+	private func handlePlatformIOTargetChange(to pioEnv: String?) {
+		guard let node else {
+			resetHardwareCache()
+			return
+		}
+		let records = hardwareResults.map(HardwareCatalogRecord.init)
+		let hwModel = node.user.map { Int64($0.hwModelId) }
+		let didReset = hardwareState.handlePlatformIOTargetChange(
+			to: pioEnv,
+			nodeNum: node.num,
+			hwModel: hwModel,
+			in: records
+		)
+		if didReset, hardwareState.resolution == nil {
+			cachedNode = nil
+			cachedHardware = nil
+			return
+		}
+		cacheResolvedHardware(for: node)
+	}
+
+	private func cacheResolvedHardware(for node: NodeInfoEntity) {
+		guard let resolution = hardwareState.resolution,
+		      let hardware = hardwareResults.first(where: {
+			      $0.platformioTarget == resolution.metadataTarget
+		      }) else { return }
 
 		// Only update the cache when all data is valid. Relationship faults can momentarily make
 		// MyInfo or User nil, but should not replace working firmware content with the empty state.
 		cachedNode = node
-		cachedNodeNum = node.num
 		cachedHardware = hardware
-		cachedFirmwareTarget = resolution.firmwareTarget
 	}
 
 	private func resetHardwareCache() {
 		cachedNode = nil
-		cachedNodeNum = nil
 		cachedHardware = nil
-		cachedFirmwareTarget = nil
+		hardwareState.reset()
 	}
 }
 

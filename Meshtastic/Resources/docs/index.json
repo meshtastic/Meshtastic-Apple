@@ -129,10 +129,11 @@
             "radio",
             "updates",
             "meshtastic",
-            "version",
             "hardware",
+            "version",
             "ble",
             "transfer",
+            "target",
             "stable",
             "progress",
             "notification",
@@ -141,19 +142,18 @@
             "artwork",
             "tap",
             "standard",
+            "some",
             "shows",
             "settings",
+            "screen",
             "running",
+            "radios",
             "ota",
             "node",
             "keep",
-            "from",
-            "failed",
-            "channel",
-            "without",
-            "while"
+            "from"
         ],
-        "charCount": 4287
+        "charCount": 4720
     },
     {
         "id": "getting-started",

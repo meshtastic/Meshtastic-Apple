@@ -191,3 +191,47 @@ enum FirmwareHardwareResolver {
 		)
 	}
 }
+
+struct FirmwareHardwareViewState {
+	private(set) var nodeNum: Int64?
+	private(set) var resolution: FirmwareHardwareResolution?
+
+	mutating func resolve(
+		nodeNum: Int64,
+		pioEnv: String?,
+		hwModel: Int64?,
+		in records: [HardwareCatalogRecord]
+	) {
+		if let cachedNodeNum = self.nodeNum, cachedNodeNum != nodeNum {
+			reset()
+		}
+		guard let resolution = FirmwareHardwareResolver.resolve(
+			pioEnv: pioEnv,
+			hwModel: hwModel,
+			in: records
+		) else { return }
+		self.nodeNum = nodeNum
+		self.resolution = resolution
+	}
+
+	@discardableResult
+	mutating func handlePlatformIOTargetChange(
+		to pioEnv: String?,
+		nodeNum: Int64,
+		hwModel: Int64?,
+		in records: [HardwareCatalogRecord]
+	) -> Bool {
+		let target = pioEnv?.trimmingCharacters(in: .whitespacesAndNewlines)
+		let didReset = target?.isEmpty == false && target != resolution?.firmwareTarget
+		if didReset {
+			reset()
+		}
+		resolve(nodeNum: nodeNum, pioEnv: pioEnv, hwModel: hwModel, in: records)
+		return didReset
+	}
+
+	mutating func reset() {
+		nodeNum = nil
+		resolution = nil
+	}
+}

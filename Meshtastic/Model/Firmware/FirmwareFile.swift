@@ -149,7 +149,7 @@ class FirmwareFile: ObservableObject, Hashable, Equatable {
 	}
 	
 	@MainActor
-	init(localFile url: URL) throws {
+	init(localFile url: URL, fallbackArchitecture: Architecture? = nil) throws {
 		self.localUrl = url
 		
 		let fileName = url.lastPathComponent
@@ -230,7 +230,8 @@ class FirmwareFile: ObservableObject, Hashable, Equatable {
 			throw FirmwareFileError.unknownArchitecture
 		}
 		let architecture = hardwareResult?.architecture.flatMap { Architecture(rawValue: $0) }
-		
+			?? fallbackArchitecture
+
 		guard let architecture else { throw FirmwareFileError.unknownArchitecture }
 		self.architecture = architecture
 		
