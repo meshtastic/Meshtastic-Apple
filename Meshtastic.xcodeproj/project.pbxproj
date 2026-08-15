@@ -11,7 +11,6 @@
 		066F0545C2EDA31CC6E95E4E /* PMTilesArchive.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62C4205D1043768766C64E87 /* PMTilesArchive.swift */; };
 		073B94B7F2F232C198151489 /* alpha.png in Resources */ = {isa = PBXBuildFile; fileRef = E8849D542B45F20F349E004D /* alpha.png */; };
 		073D5EF20134D41DF2AC5993 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8C15787882CA30C9787154D /* Logger.swift */; };
-		0B38990DF67A6FEDEE6AAAB3 /* NodeDiscovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = F979D64D67F36D37B008E5E7 /* NodeDiscovery.swift */; };
 		0D14B1F2EE824455A78690F8 /* MVTTools in Frameworks */ = {isa = PBXBuildFile; productRef = 99BACD26F50E4FBA1E2FC365 /* MVTTools */; };
 		13FAC446423FF3C9AC737EA0 /* PMTilesMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB006125B378C5233BD0B731 /* PMTilesMapView.swift */; };
 		1A042BDE2702C7388CE867EF /* NordicDFU in Frameworks */ = {isa = PBXBuildFile; productRef = D83D0451F77A9D92FFC852CA /* NordicDFU */; };
@@ -54,6 +53,7 @@
 		EFEED2F4EF7D9B1BB657458A /* SwiftDraw in Frameworks */ = {isa = PBXBuildFile; productRef = 9D120B166CA191FC578A9978 /* SwiftDraw */; };
 		F05DFDBFD6588DFEB6AD621F /* MVTTools in Frameworks */ = {isa = PBXBuildFile; productRef = 4FB45004C563B59043C53EAA /* MVTTools */; };
 		F0F15E85A1D7193379E705C4 /* AppIcon_MPowered.icon in Resources */ = {isa = PBXBuildFile; fileRef = D744131C1600FC47CB596573 /* AppIcon_MPowered.icon */; };
+		F11D4AB6E3A799DEB883AC14 /* NodeDiscovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = 074A4F4A084E3897FDDE16FB /* NodeDiscovery.swift */; };
 		F494AA4C9783F0E204B12D62 /* DatadogCrashReporting in Frameworks */ = {isa = PBXBuildFile; productRef = 43547F7F6DDB3842969DA369 /* DatadogCrashReporting */; };
 		F8D2F62028A2A100CDB80F82 /* MeshtasticProtobufs in Frameworks */ = {isa = PBXBuildFile; productRef = 4AF5AACBB64F141EF02FC7DC /* MeshtasticProtobufs */; };
 		F8E5A8CEE6E96D5D53F6F851 /* Markdown in Frameworks */ = {isa = PBXBuildFile; productRef = C853ED2A7F391E6F315F93B3 /* Markdown */; };
@@ -111,6 +111,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		074A4F4A084E3897FDDE16FB /* NodeDiscovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = NodeDiscovery.swift; path = "Meshtastic TV/Client/NodeDiscovery.swift"; sourceTree = "<group>"; };
 		0875C7B0694DBE671437CC1A /* Connection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Connection.swift; sourceTree = "<group>"; };
 		0AEAC3FF0190C3F8166D22E3 /* MeshtasticDataModelV 52.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 52.xcdatamodel"; sourceTree = "<group>"; };
 		0CC33262B2EA2E8463E8BE95 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -224,7 +225,6 @@
 		F17AFA19C2AAB3C3ADFB1E33 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
 		F19CCBB8245B82E769413099 /* MeshtasticDataModelV19.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV19.xcdatamodel; sourceTree = "<group>"; };
 		F6D4ACC3C6BD92C9A04ED41D /* MeshtasticDataModelV10.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV10.xcdatamodel; sourceTree = "<group>"; };
-		F979D64D67F36D37B008E5E7 /* NodeDiscovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeDiscovery.swift; sourceTree = "<group>"; };
 		FAE5E6259410D2A524285D8F /* MeshtasticDataModelV 57.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 57.xcdatamodel"; sourceTree = "<group>"; };
 		FD9D5D4A334ED0C02B7F908F /* MeshtasticDataModelV 45.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 45.xcdatamodel"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -629,14 +629,6 @@
 			path = Transports;
 			sourceTree = "<group>";
 		};
-		55186F037915EF6BCEED2925 /* Client */ = {
-			isa = PBXGroup;
-			children = (
-				F979D64D67F36D37B008E5E7 /* NodeDiscovery.swift */,
-			);
-			path = Client;
-			sourceTree = "<group>";
-		};
 		5D4AFA4225AF7D85EE343B80 /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -647,14 +639,6 @@
 				E4053FDE501FD7E0A02CEA8D /* WidgetsExtension.appex */,
 			);
 			name = Products;
-			sourceTree = "<group>";
-		};
-		615D439CBFAC4AA6EE6F0E34 /* Meshtastic TV */ = {
-			isa = PBXGroup;
-			children = (
-				55186F037915EF6BCEED2925 /* Client */,
-			);
-			path = "Meshtastic TV";
 			sourceTree = "<group>";
 		};
 		68569A5CFCF946568B4E32C5 /* Meshtastic */ = {
@@ -704,6 +688,14 @@
 			path = Map;
 			sourceTree = "<group>";
 		};
+		7CF5820C55D8305FCC1F8A13 /* TV Test Support */ = {
+			isa = PBXGroup;
+			children = (
+				074A4F4A084E3897FDDE16FB /* NodeDiscovery.swift */,
+			);
+			name = "TV Test Support";
+			sourceTree = "<group>";
+		};
 		8F644F7974EA8B14E77ED53A /* Packages */ = {
 			isa = PBXGroup;
 			children = (
@@ -750,13 +742,13 @@
 			children = (
 				26351F51CD01C94D8D82486A /* Localizable.xcstrings */,
 				68569A5CFCF946568B4E32C5 /* Meshtastic */,
-				615D439CBFAC4AA6EE6F0E34 /* Meshtastic TV */,
 				EA229AC7C87CBBD64EC61AA1 /* Meshtastic TV */,
 				F0E2A06151AF30290D808624 /* Meshtastic Watch App */,
 				867FD80926C4A4286D635BAD /* MeshtasticTests */,
 				8F644F7974EA8B14E77ED53A /* Packages */,
 				F15A1577564640951AD3EA40 /* Settings.bundle */,
 				456E28D41A9B7B1788FEE0CD /* Shared */,
+				7CF5820C55D8305FCC1F8A13 /* TV Test Support */,
 				0B1C4E352D6981242B97EF9C /* Widgets */,
 				5D4AFA4225AF7D85EE343B80 /* Products */,
 			);
@@ -1151,7 +1143,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0B38990DF67A6FEDEE6AAAB3 /* NodeDiscovery.swift in Sources */,
+				F11D4AB6E3A799DEB883AC14 /* NodeDiscovery.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
