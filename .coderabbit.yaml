@@ -155,26 +155,26 @@ reviews:
         Entitlements are split per platform. The Mac Catalyst build must not carry the CarPlay
         communication entitlement (App Store rejection); flag any change that gives the Catalyst
         target CarPlay or otherwise merges platform-specific entitlements.
-    - path: "Meshtastic/Accessory/"
+    - path: "Meshtastic/Accessory/**"
       instructions: >-
         Transport boundary (BLE/TCP/serial). Review focus: every packet from the radio is untrusted
         input — validate before use; every connect path needs a matching teardown on all exit paths,
         including error and cancellation; no blocking work on the main actor.
-    - path: "Meshtastic/Model/"
+    - path: "Meshtastic/Model/**"
       instructions: >-
         SwiftData schema. Schema changes must go through VersionedSchema and the SchemaMigrationPlan
         in MeshtasticSchema.swift and stay additive; rows written by an older build must survive.
         Never replace the ModelContainer at runtime. Background writes go through the @ModelActor,
         not ad-hoc contexts.
-    - path: "Widgets/"
+    - path: "Widgets/**"
       instructions: >
         Widget extension. No BLE or long-running work here; timeline providers must stay light.
         Types shared with the app (Live Activity attributes) live in Shared/.
-    - path: "ci_scripts/"
+    - path: "ci_scripts/**"
       instructions: >
         Xcode Cloud build hooks. Flag a removed `set -e`-style guard, secrets echoed to the build log,
         and path assumptions that only hold on a developer machine.
-    - path: ".github/workflows/"
+    - path: ".github/workflows/**"
       instructions: >-
         Review focus: unintended side effects. Flag a change that widens a trigger (especially
         `pull_request_target` and anything granting write scopes to fork-authored code), a secret exposed
