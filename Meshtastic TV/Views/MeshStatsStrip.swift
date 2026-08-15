@@ -27,11 +27,11 @@ struct MeshStatsStrip: View {
 	let storeOnlineCount: Int
 	let storeTotalCount: Int
 
-	@ScaledMetric(relativeTo: .caption) private var labelSize: CGFloat = 18
-	@ScaledMetric(relativeTo: .body) private var valueSize: CGFloat = 26
+	@ScaledMetric(relativeTo: .caption) private var labelSize: CGFloat = 24
+	@ScaledMetric(relativeTo: .title) private var valueSize: CGFloat = 46
 
 	var body: some View {
-		HStack(spacing: 28) {
+		HStack(spacing: 44) {
 			cell(label: "Nodes", value: nodesText)
 
 			divider
@@ -50,35 +50,42 @@ struct MeshStatsStrip: View {
 
 			if let receivedAt = stats?.receivedAt {
 				divider
-				VStack(alignment: .leading, spacing: 2) {
+				VStack(alignment: .leading, spacing: 6) {
 					Text("Updated")
-						.font(.system(size: labelSize))
+						.font(.system(size: labelSize, weight: .medium))
+						.tracking(1.2)
 						.textCase(.uppercase)
 						.foregroundStyle(.secondary)
 					Text(receivedAt, style: .relative)
-						.font(.system(size: valueSize).monospacedDigit())
+						.font(.system(size: valueSize, weight: .semibold, design: .rounded).monospacedDigit())
 				}
 			}
 		}
-		.padding(.horizontal, 32)
-		.padding(.vertical, 16)
+		.padding(.horizontal, 52)
+		.padding(.vertical, 28)
 		.background(
-			RoundedRectangle(cornerRadius: TVTheme.rowCornerRadius, style: .continuous)
-				.fill(.ultraThinMaterial)
+			RoundedRectangle(cornerRadius: 24, style: .continuous)
+				.fill(.regularMaterial)
 		)
+		.overlay(
+			RoundedRectangle(cornerRadius: 24, style: .continuous)
+				.stroke(.white.opacity(0.15), lineWidth: 1)
+		)
+		.shadow(color: .black.opacity(0.4), radius: 18, y: 8)
 		.fixedSize()
 	}
 
 	// MARK: Cells
 
 	private func cell(label: String, value: String, color: Color = .primary) -> some View {
-		VStack(alignment: .leading, spacing: 2) {
+		VStack(alignment: .leading, spacing: 6) {
 			Text(label)
-				.font(.system(size: labelSize))
+				.font(.system(size: labelSize, weight: .medium))
+				.tracking(1.2)
 				.textCase(.uppercase)
 				.foregroundStyle(.secondary)
 			Text(value)
-				.font(.system(size: valueSize).monospacedDigit())
+				.font(.system(size: valueSize, weight: .semibold, design: .rounded).monospacedDigit())
 				.foregroundStyle(color)
 		}
 	}
@@ -86,7 +93,7 @@ struct MeshStatsStrip: View {
 	private var divider: some View {
 		Rectangle()
 			.fill(.secondary.opacity(0.4))
-			.frame(width: 1, height: 44)
+			.frame(width: 1, height: 76)
 	}
 
 	// MARK: Values
