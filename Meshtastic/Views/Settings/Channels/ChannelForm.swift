@@ -48,6 +48,15 @@ struct ChannelForm: View {
 							hasChanges = true
 						}
 					}
+					if ChannelEntity.isReservedModuleName(channelName) {
+						Label {
+							Text("\"\(channelName)\" is a reserved module channel name and will not appear in the Messages channel list. Pick a different name for a messaging channel.")
+								.font(.callout)
+						} icon: {
+							Image(systemName: "exclamationmark.triangle.fill")
+						}
+						.foregroundColor(.orange)
+					}
 					HStack {
 						Picker("Key Size", selection: $channelKeySize) {
 							Text("Empty").tag(0)
