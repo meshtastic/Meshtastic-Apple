@@ -524,6 +524,8 @@ targets:
     sources:
       - path: "MeshtasticTests"
         type: syncedFolder
+      # Compile the pure Bonjour lifecycle into the existing test bundle; keep this file iOS-compatible.
+      - path: "Meshtastic TV/Client/NodeDiscovery.swift"
     dependencies:
       - target: Meshtastic
     settings:
