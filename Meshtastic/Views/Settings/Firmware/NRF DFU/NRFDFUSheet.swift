@@ -48,8 +48,9 @@ struct NRFDFUSheet: View {
 							CircularProgressView(
 								progress: dfuViewModel.progress,
 								isIndeterminate: (self.dfuViewModel.state == .starting),
+								isError: dfuViewModel.state.isError,
 								size: 210.0,
-								subtitleText: dfuViewModel.statusMessage
+								subtitleText: dfuViewModel.state.isError ? nil : dfuViewModel.statusMessage
 							)
 							.frame(minHeight: 230.0)
 

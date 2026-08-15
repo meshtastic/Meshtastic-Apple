@@ -18,6 +18,11 @@ enum DFUUpdateState: Equatable {
     case uploading
     case success
     case error(String)
+
+	var isError: Bool {
+		if case .error = self { return true }
+		return false
+	}
 }
 
 class DFUViewModel: NSObject, ObservableObject {

@@ -24,17 +24,17 @@ struct OTAMetadataItem: Identifiable, Hashable {
 /// Curated rotating tips and educational insights displayed during firmware updates.
 enum FirmwareUpdateTips {
 	static let messages: [String] = [
-		"Keep your device close to your phone during the update.",
-		"Firmware 2.7 features BaseUI, bringing unified navigation to OLED, E-Ink, and TFT screens.",
-		"Next-Hop Routing optimizes packet paths to reduce channel congestion across large meshes.",
-		"Public Key Cryptography (PKC) enables authenticated, tamper-proof private direct messages.",
-		"Download offline vector maps in the Map tab to track node locations without cell service.",
-		"MeshtasticTAK bridges ATAK and Cursor-on-Target markers over LoRa completely off-grid.",
-		"Beacon presets allow nearby radios to discover and sync shared channel settings in one tap.",
-		"You can run up to 8 distinct channels simultaneously with individual encryption keys (PSKs).",
-		"Back up your node's identity, channels, and admin keys in Settings > Export Configuration.",
-		"Tap 'Play Chirpy Hop' to play a quick runner game while your update finishes in the background!",
-		"Visit meshtastic.org/docs for setup guides, hardware recommendations, and community tips."
+		String(localized: "Keep your device close to your phone during the update.", comment: "OTA update tip: keep device close"),
+		String(localized: "Firmware 2.7 features BaseUI, bringing unified navigation to OLED, E-Ink, and TFT screens.", comment: "OTA update tip: BaseUI"),
+		String(localized: "Next-Hop Routing optimizes packet paths to reduce channel congestion across large meshes.", comment: "OTA update tip: Next-hop routing"),
+		String(localized: "Public Key Cryptography (PKC) enables authenticated, tamper-proof private direct messages.", comment: "OTA update tip: PKC direct messages"),
+		String(localized: "Download offline vector maps in the Map tab to track node locations without cell service.", comment: "OTA update tip: offline maps"),
+		String(localized: "MeshtasticTAK bridges ATAK and Cursor-on-Target markers over LoRa completely off-grid.", comment: "OTA update tip: ATAK integration"),
+		String(localized: "Beacon presets allow nearby radios to discover and sync shared channel settings in one tap.", comment: "OTA update tip: beacon presets"),
+		String(localized: "You can run up to 8 distinct channels simultaneously with individual encryption keys (PSKs).", comment: "OTA update tip: multi-channel"),
+		String(localized: "Back up your node's identity, channels, and admin keys in Settings > Export Configuration.", comment: "OTA update tip: config backup"),
+		String(localized: "Tap 'Play Chirpy Hop' to play a quick runner game while your update finishes in the background!", comment: "OTA update tip: chirpy hop game"),
+		String(localized: "Visit meshtastic.org/docs for setup guides, hardware recommendations, and community tips.", comment: "OTA update tip: docs website")
 	]
 }
 
@@ -42,7 +42,7 @@ enum FirmwareUpdateTips {
 struct FirmwareOTAUpdateSheet: View {
 	let title: String
 	var metadata: [OTAMetadataItem] = []
-	var headerNote: String = "Please do not leave this screen until the update is complete. You can safely play Chirpy Hop while waiting!"
+	var headerNote: String = String(localized: "Please do not leave this screen until the update is complete. You can safely play Chirpy Hop while waiting!", comment: "Notice displayed during OTA firmware update")
 
 	let progress: Double
 	let statusState: LocalOTAStatusCode
@@ -222,6 +222,7 @@ struct FirmwareOTAUpdateSheet: View {
 
 // MARK: - OTA Simulator & Previews
 
+#if DEBUG
 /// Transport mode preset for the OTA Simulator.
 enum OTASimulatorPreset: String, CaseIterable, Identifiable {
 	case ble = "ESP32 BLE"
@@ -459,3 +460,5 @@ struct FirmwareOTASimulatorView: View {
 		gameTitle: "ESP32 Wi-Fi OTA"
 	)
 }
+#endif
+
