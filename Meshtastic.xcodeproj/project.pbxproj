@@ -25,6 +25,7 @@
 		4701C2F3A8A60ADE516D7FA0 /* MeshtasticTAK in Frameworks */ = {isa = PBXBuildFile; productRef = F98E8431879FC7025B658B08 /* MeshtasticTAK */; };
 		4748BFF7E7AEF9C8EDA23D91 /* AppIntentVocabulary.plist in Resources */ = {isa = PBXBuildFile; fileRef = E2CAB95992E03077B24E30B5 /* AppIntentVocabulary.plist */; };
 		4B4240E283A5080CF7D246B1 /* OfflineMapRegion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D675F15EFB753FBC7DA78C1 /* OfflineMapRegion.swift */; };
+		4C7B7A10656B89865C999052 /* WriteContinuationStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 122531D8C1D7CC809C6EF3B7 /* WriteContinuationStore.swift */; };
 		4E0EA928F0EBE41EDA6FC93B /* OfflineMapImport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C7307ED073D77037E45EE89 /* OfflineMapImport.swift */; };
 		507A9C886BD3A8F135F15762 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A80E1960A69051EE698AAE97 /* Preview Assets.xcassets */; };
 		54D8BBD62304C5917AEE0C2B /* DatadogRUM in Frameworks */ = {isa = PBXBuildFile; productRef = E96998AD4B79F29AF1E2A6D2 /* DatadogRUM */; };
@@ -114,6 +115,7 @@
 		0CC33262B2EA2E8463E8BE95 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		0D3292ABF1A342707957A3F6 /* MeshtasticDataModelV4.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV4.xcdatamodel; sourceTree = "<group>"; };
 		0E531C14ABE7F1491959BBE3 /* OfflineMapManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineMapManager.swift; sourceTree = "<group>"; };
+		122531D8C1D7CC809C6EF3B7 /* WriteContinuationStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WriteContinuationStore.swift; sourceTree = "<group>"; };
 		1A740EACFF7FA4000F22EF4E /* Meshtastic.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Meshtastic.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		25A13454C9C85CEBBBC2DD1F /* he */ = {isa = PBXFileReference; lastKnownFileType = text.plist; name = he; path = he.lproj/AppIntentVocabulary.plist; sourceTree = "<group>"; };
 		25BA43A8304E6CC120811070 /* Certificates */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Certificates; path = Meshtastic/Resources/Certificates; sourceTree = SOURCE_ROOT; };
@@ -627,6 +629,7 @@
 			isa = PBXGroup;
 			children = (
 				F7C5E67022CD718D1F3D0A94 /* TCP */,
+				122531D8C1D7CC809C6EF3B7 /* WriteContinuationStore.swift */,
 			);
 			path = Transports;
 			sourceTree = "<group>";
@@ -1162,6 +1165,7 @@
 				C6148418734B3ADB2741CB8E /* PMTilesExtractor.swift in Sources */,
 				13FAC446423FF3C9AC737EA0 /* PMTilesMapView.swift in Sources */,
 				977E69BC7382DA7EF386402F /* TCPConnection.swift in Sources */,
+				4C7B7A10656B89865C999052 /* WriteContinuationStore.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
