@@ -36,6 +36,7 @@ struct LocalStatsLog: View {
 	@State private var chartYDomain: ClosedRange<Int> = -130 ... -60
 	@State private var chartDataDuration: TimeInterval = LocalStatsChartRange.minimumVisibleDuration
 	@State private var didLoad = false
+	@State private var refreshScheduled = false
 
 	private var chartVisibleDuration: TimeInterval {
 		chartVisibleDuration(for: selectedChartRange)
@@ -121,14 +122,19 @@ struct LocalStatsLog: View {
 				}
 			}
 		)
-		.onAppear {
+		.task {
+			// Load after the first frame instead of in onAppear: the fetch takes
+			// hundreds of ms on a long-lived store, and running it before the push
+			// animation made opening this view lock up the app.
 			refreshData()
 			resetChartViewToLatest()
 		}
 		.onChange(of: node.lastHeard) {
 			// New packets (including local-stats telemetry) update lastHeard; refetch then.
 			// Scrolling the chart does not touch lastHeard, so it never triggers a refetch.
-			refreshData()
+			// Coalesced: lastHeard bumps at packet rate for the connected node, and an
+			// unthrottled fetch-per-packet saturated the main thread on busy meshes.
+			scheduleRefresh()
 		}
 	}
 
@@ -442,6 +448,21 @@ struct LocalStatsLog: View {
 }
 
 private extension LocalStatsLog {
+	/// Coalesces refetches: the connected node's lastHeard changes with every packet,
+	/// and one fetch per packet on the main thread hung the app on busy meshes.
+	/// At most one refresh runs per two-second window, trailing, so the last packet
+	/// in a burst is always picked up.
+	@MainActor
+	func scheduleRefresh() {
+		guard !refreshScheduled else { return }
+		refreshScheduled = true
+		Task { @MainActor in
+			try? await Task.sleep(for: .seconds(2))
+			refreshScheduled = false
+			refreshData()
+		}
+	}
+
 	/// Single source of the view's derived data. Runs one SwiftData fetch and recomputes
 	/// the cached chart inputs. Called on appear, when the node hears new packets, and
 	/// after a clear — never from `body`, so chart scrolling does no fetching or sorting.

@@ -98,6 +98,10 @@ struct MeshtasticAppleApp: App {
 			// Disable expensive continuous monitoring to reduce idle CPU (~15% savings)
 			rumConfig.longTaskThreshold = nil  // Disables LongTaskObserver CFRunLoop hook
 			rumConfig.vitalsUpdateFrequency = nil    // Disables VitalRefreshRateReader display link
+			// Report main-thread hangs over 2s as RUM errors with stacks. Unlike the long-task
+			// observer this is a lightweight watchdog thread, and without it hang reports are
+			// invisible — users report them by word of mouth and Datadog shows nothing.
+			rumConfig.appHangThreshold = 2
 			RUM.enable(with: rumConfig)
 
 		}
