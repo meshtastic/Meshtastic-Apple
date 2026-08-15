@@ -90,11 +90,10 @@ struct MessageText: View {
 		return AnyView(baseMessageContent)
 	}
 
-	private func underlineLinks(in source: AttributedString) -> AttributedString {
+	private func colorLinks(in source: AttributedString) -> AttributedString {
 		var result = source
 		let linkColor = Color("Colors/MeshtasticLink")
 		for run in result.runs where run.link != nil {
-			result[run.range].underlineStyle = .single
 			result[run.range].foregroundColor = linkColor
 		}
 		return result
@@ -104,7 +103,7 @@ struct MessageText: View {
 		let payload = message.displayedMarkdownPayload
 		return Group {
 			if let attributed = try? AttributedString(markdown: payload, options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace)) {
-				Text(underlineLinks(in: attributed))
+				Text(colorLinks(in: attributed))
 			} else {
 				Text(LocalizedStringKey(payload))
 			}
