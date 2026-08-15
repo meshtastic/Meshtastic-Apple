@@ -35,24 +35,6 @@ struct ChannelsHelp: View {
 						title: String(localized: "Location Sharing"),
 						subtitle: String(localized: "Marks the channel currently used for position broadcasts.")
 					)
-					HelpItem(
-						symbol: AnyView(
-							Image(systemName: "icloud.and.arrow.up")
-								.font(.title3)
-								.foregroundColor(.blue)
-						),
-						title: String(localized: "MQTT Uplink"),
-						subtitle: String(localized: "Packets from this channel can be forwarded to MQTT when MQTT is configured.")
-					)
-					HelpItem(
-						symbol: AnyView(
-							Image(systemName: "icloud.and.arrow.down")
-								.font(.title3)
-								.foregroundColor(.blue)
-						),
-						title: String(localized: "MQTT Downlink"),
-						subtitle: String(localized: "MQTT packets for this channel can be sent back over LoRa when MQTT is configured.")
-					)
 				} header: {
 					Text("Channel Icons")
 				}
@@ -112,6 +94,7 @@ struct ChannelsHelp: View {
 					.symbolRenderingMode(.palette)
 					.foregroundStyle(.white, Color(.systemGray3))
 			}
+			.accessibilityLabel(String(localized: "Close", comment: "VoiceOver: dismiss this sheet"))
 			.buttonStyle(.plain)
 			.padding(.top, 12)
 			.padding(.leading, 14)

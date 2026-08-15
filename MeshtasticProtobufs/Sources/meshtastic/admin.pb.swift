@@ -1071,6 +1071,10 @@ public struct AdminMessage: @unchecked Sendable {
     ///
     /// TAK module config
     case takConfig // = 15
+
+    ///
+    /// Mesh Beacon module config
+    case meshbeaconConfig // = 16
     case UNRECOGNIZED(Int)
 
     public init() {
@@ -1095,6 +1099,7 @@ public struct AdminMessage: @unchecked Sendable {
       case 13: self = .statusmessageConfig
       case 14: self = .trafficmanagementConfig
       case 15: self = .takConfig
+      case 16: self = .meshbeaconConfig
       default: self = .UNRECOGNIZED(rawValue)
       }
     }
@@ -1117,6 +1122,7 @@ public struct AdminMessage: @unchecked Sendable {
       case .statusmessageConfig: return 13
       case .trafficmanagementConfig: return 14
       case .takConfig: return 15
+      case .meshbeaconConfig: return 16
       case .UNRECOGNIZED(let i): return i
       }
     }
@@ -1139,6 +1145,7 @@ public struct AdminMessage: @unchecked Sendable {
       .statusmessageConfig,
       .trafficmanagementConfig,
       .takConfig,
+      .meshbeaconConfig,
     ]
 
   }
@@ -2715,7 +2722,7 @@ extension AdminMessage.ConfigType: SwiftProtobuf._ProtoNameProviding {
 }
 
 extension AdminMessage.ModuleConfigType: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0MQTT_CONFIG\0\u{1}SERIAL_CONFIG\0\u{1}EXTNOTIF_CONFIG\0\u{1}STOREFORWARD_CONFIG\0\u{1}RANGETEST_CONFIG\0\u{1}TELEMETRY_CONFIG\0\u{1}CANNEDMSG_CONFIG\0\u{1}AUDIO_CONFIG\0\u{1}REMOTEHARDWARE_CONFIG\0\u{1}NEIGHBORINFO_CONFIG\0\u{1}AMBIENTLIGHTING_CONFIG\0\u{1}DETECTIONSENSOR_CONFIG\0\u{1}PAXCOUNTER_CONFIG\0\u{1}STATUSMESSAGE_CONFIG\0\u{1}TRAFFICMANAGEMENT_CONFIG\0\u{1}TAK_CONFIG\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0MQTT_CONFIG\0\u{1}SERIAL_CONFIG\0\u{1}EXTNOTIF_CONFIG\0\u{1}STOREFORWARD_CONFIG\0\u{1}RANGETEST_CONFIG\0\u{1}TELEMETRY_CONFIG\0\u{1}CANNEDMSG_CONFIG\0\u{1}AUDIO_CONFIG\0\u{1}REMOTEHARDWARE_CONFIG\0\u{1}NEIGHBORINFO_CONFIG\0\u{1}AMBIENTLIGHTING_CONFIG\0\u{1}DETECTIONSENSOR_CONFIG\0\u{1}PAXCOUNTER_CONFIG\0\u{1}STATUSMESSAGE_CONFIG\0\u{1}TRAFFICMANAGEMENT_CONFIG\0\u{1}TAK_CONFIG\0\u{1}MESHBEACON_CONFIG\0")
 }
 
 extension AdminMessage.BackupLocation: SwiftProtobuf._ProtoNameProviding {

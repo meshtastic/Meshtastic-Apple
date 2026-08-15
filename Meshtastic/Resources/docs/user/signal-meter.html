@@ -28,14 +28,14 @@
 <p>Depending on which Meshtastic preset you are using (e.g., <code>LongFast</code> vs. <code>ShortFast</code>), the radio has a specific <strong>SNR Limit</strong>—the absolute maximum amount of noise it can tolerate before the message is completely lost to the static.</p>
 <hr />
 <h2>3. How the Signal Meter Calculates Quality</h2>
-<p>The Meshtastic apps take both RSSI and SNR and run them through a specific formula to assign your signal a quality rating (None, Bad, Fair, or Good). It specifically scales these values based on the physical limits of the radio preset you are using.</p>
+<p>The quality rating (None, Bad, Fair, or Good) is based on <strong>SNR relative to your preset's SNR Limit</strong> — how much clarity headroom you have above the point where the radio can no longer decode. This is measured against the physical limit of the radio preset you are using, so the same SNR can mean different things on <code>LongFast</code> versus <code>ShortFast</code>.</p>
 <p>Here is exactly how the app decides how many bars (or what color) to show you:</p>
 <table>
 <thead>
 <tr>
 <th>Level</th>
 <th>Bars</th>
-<th>Criteria</th>
+<th>Criteria (SNR relative to your preset's limit)</th>
 <th>Meaning</th>
 </tr>
 </thead>
@@ -43,33 +43,37 @@
 <tr>
 <td>Good</td>
 <td>3</td>
-<td>RSSI better than <code>-115 dBm</code> <strong>AND</strong> SNR above the baseline limit for your preset</td>
-<td>Signal is both loud and clear — healthy connection.</td>
+<td>SNR <strong>above</strong> the limit</td>
+<td>Clear headroom — healthy connection.</td>
 </tr>
 <tr>
 <td>Fair</td>
 <td>2</td>
-<td>Falls between Good and Bad</td>
-<td>Signal getting quieter or noisier, but the radio understands the message fine.</td>
+<td>SNR at the limit, up to <code>5.5 dB</code> below it</td>
+<td>Getting quieter or noisier, but the radio still understands the message fine.</td>
 </tr>
 <tr>
 <td>Bad</td>
 <td>1</td>
-<td>RSSI drops to <code>-120 dBm</code> or worse, <strong>OR</strong> SNR within <code>5.5 dB</code> of your preset's absolute breaking point</td>
+<td>SNR between <code>5.5 dB</code> and <code>7.5 dB</code> below the limit</td>
 <td>Barely hanging on — at the edge of range or heavy interference.</td>
 </tr>
 <tr>
 <td>None</td>
 <td>0</td>
-<td>RSSI worse than <code>-126 dBm</code> <strong>AND</strong> SNR has fallen <code>7.5 dB</code> below the ideal limit</td>
+<td>SNR more than <code>7.5 dB</code> below the limit</td>
 <td>Transmission completely buried in static.</td>
 </tr>
 </tbody>
 </table>
+<p><strong>Using the real noise floor.</strong> When your receiving radio has recently reported its own <strong>noise floor</strong> (part of its Local Stats telemetry), the app computes your true link margin as <code>RSSI − noise floor</code> and checks that against the same preset limit too, then shows the <strong>more conservative</strong> of the two ratings. This catches the case where the reported SNR looks fine but local interference is quietly eating your margin.</p>
+<p><strong>Without a recent noise floor</strong>, the app falls back to RSSI thresholds (better than <code>-115 dBm</code>, <code>-120 dBm</code>, and <code>-126 dBm</code>) alongside the SNR check above, taking the worse of the two — RSSI alone can't tell you how much of that power is signal versus noise, but it's still a useful sanity check when there's no noise floor available to compute a real margin from.</p>
 <hr />
 <h2>4. What This Means for You</h2>
 <p>Because Meshtastic's meter acts as a <strong>&quot;Clarity Meter&quot;</strong>, it behaves differently than what most people expect:</p>
-<div class="tips-callout"><strong>Tip — Don't panic over low RSSI:</strong> You might see a seemingly terrible RSSI value like <code>-118 dBm</code>. On a cell phone, you would have zero bars. But if you have an SNR of <code>+2 dB</code>, Meshtastic will still show a strong signal! <em>The library is quiet, so the whisper is heard perfectly.</em></div>
-<div class="warning-callout"><strong>Warning — Watch out for local noise:</strong> If you hook up a massive antenna and see a great RSSI (e.g., <code>-90 dBm</code>) but your signal meter is only showing <strong>1 Bar (Bad)</strong>, you have a problem. It means you have local interference—perhaps a cheap power supply, a noisy computer, or a nearby radio tower—creating so much static that it is drowning out your mesh.</div>
+<div class="tips-callout"><strong>Tip — Don't panic over low RSSI</strong>
+You might see a seemingly terrible RSSI value like <code>-118 dBm</code>. On a cell phone, you would have zero bars. But if you have an SNR of <code>+2 dB</code>, Meshtastic will still show a strong signal! <em>The library is quiet, so the whisper is heard perfectly.</em></div>
+<div class="warning-callout"><strong>Warning — Watch out for local noise</strong>
+If you hook up a massive antenna and see a great RSSI (e.g., <code>-90 dBm</code>) but your signal meter is only showing <strong>1 Bar (Bad)</strong>, you have a problem. It means you have local interference—perhaps a cheap power supply, a noisy computer, or a nearby radio tower—creating so much static that it is drowning out your mesh. When your radio knows its own noise floor, the meter accounts for exactly this by measuring your real margin above the noise.</div>
 </body>
 </html>

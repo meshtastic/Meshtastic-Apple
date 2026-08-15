@@ -568,9 +568,9 @@ public enum HardwareModel: SwiftProtobuf.Enum, Swift.CaseIterable {
   case heltecMeshNodeT096 // = 127
 
   ///
-  /// Seeed studio T1000-E Pro tracker card. NRF52840 w/ LR2021 radio,
+  /// Seeed studio Mesh Tracker X1card. NRF52840 w/ LR2021 radio,
   /// GPS, button, buzzer, and sensors.
-  case trackerT1000EPro // = 128
+  case meshTrackerX1 // = 128
 
   ///
   /// Elecrow ThinkNode M7, M8 and M9
@@ -613,6 +613,18 @@ public enum HardwareModel: SwiftProtobuf.Enum, Swift.CaseIterable {
   ///
   /// Meshnology W10
   case meshnologyW10 // = 140
+
+  ///
+  /// Heltec ESP32S3 + SX1262
+  case heltecRc32 // = 141
+
+  ///
+  /// Heltec NRF52840 + SX1262
+  case heltecRc52 // = 142
+
+  ///
+  /// Heltec ESP32C6 + SX1262
+  case heltecRcc6 // = 143
 
   ///
   /// ------------------------------------------------------------------------------------------------------------------------------------------
@@ -755,7 +767,7 @@ public enum HardwareModel: SwiftProtobuf.Enum, Swift.CaseIterable {
     case 125: self = .miniEpaperS3
     case 126: self = .tdisplayS3Pro
     case 127: self = .heltecMeshNodeT096
-    case 128: self = .trackerT1000EPro
+    case 128: self = .meshTrackerX1
     case 129: self = .thinknodeM7
     case 130: self = .thinknodeM8
     case 131: self = .thinknodeM9
@@ -768,6 +780,9 @@ public enum HardwareModel: SwiftProtobuf.Enum, Swift.CaseIterable {
     case 138: self = .crowpanelP4
     case 139: self = .heltecMeshTowerV2
     case 140: self = .meshnologyW10
+    case 141: self = .heltecRc32
+    case 142: self = .heltecRc52
+    case 143: self = .heltecRcc6
     case 255: self = .privateHw
     default: self = .UNRECOGNIZED(rawValue)
     }
@@ -903,7 +918,7 @@ public enum HardwareModel: SwiftProtobuf.Enum, Swift.CaseIterable {
     case .miniEpaperS3: return 125
     case .tdisplayS3Pro: return 126
     case .heltecMeshNodeT096: return 127
-    case .trackerT1000EPro: return 128
+    case .meshTrackerX1: return 128
     case .thinknodeM7: return 129
     case .thinknodeM8: return 130
     case .thinknodeM9: return 131
@@ -916,6 +931,9 @@ public enum HardwareModel: SwiftProtobuf.Enum, Swift.CaseIterable {
     case .crowpanelP4: return 138
     case .heltecMeshTowerV2: return 139
     case .meshnologyW10: return 140
+    case .heltecRc32: return 141
+    case .heltecRc52: return 142
+    case .heltecRcc6: return 143
     case .privateHw: return 255
     case .UNRECOGNIZED(let i): return i
     }
@@ -1051,7 +1069,7 @@ public enum HardwareModel: SwiftProtobuf.Enum, Swift.CaseIterable {
     .miniEpaperS3,
     .tdisplayS3Pro,
     .heltecMeshNodeT096,
-    .trackerT1000EPro,
+    .meshTrackerX1,
     .thinknodeM7,
     .thinknodeM8,
     .thinknodeM9,
@@ -1064,6 +1082,9 @@ public enum HardwareModel: SwiftProtobuf.Enum, Swift.CaseIterable {
     .crowpanelP4,
     .heltecMeshTowerV2,
     .meshnologyW10,
+    .heltecRc32,
+    .heltecRc52,
+    .heltecRcc6,
     .privateHw,
   ]
 
@@ -1279,6 +1300,10 @@ public enum FirmwareEdition: SwiftProtobuf.Enum, Swift.CaseIterable {
   case hamvention // = 19
 
   ///
+  /// FAB, the international Fab Lab digital fabrication conference
+  case fab // = 20
+
+  ///
   /// Placeholder for DIY and unofficial events
   case diyEdition // = 127
   case UNRECOGNIZED(Int)
@@ -1295,6 +1320,7 @@ public enum FirmwareEdition: SwiftProtobuf.Enum, Swift.CaseIterable {
     case 17: self = .defcon
     case 18: self = .burningMan
     case 19: self = .hamvention
+    case 20: self = .fab
     case 127: self = .diyEdition
     default: self = .UNRECOGNIZED(rawValue)
     }
@@ -1308,6 +1334,7 @@ public enum FirmwareEdition: SwiftProtobuf.Enum, Swift.CaseIterable {
     case .defcon: return 17
     case .burningMan: return 18
     case .hamvention: return 19
+    case .fab: return 20
     case .diyEdition: return 127
     case .UNRECOGNIZED(let i): return i
     }
@@ -1321,6 +1348,7 @@ public enum FirmwareEdition: SwiftProtobuf.Enum, Swift.CaseIterable {
     .defcon,
     .burningMan,
     .hamvention,
+    .fab,
     .diyEdition,
   ]
 
@@ -2791,10 +2819,20 @@ public struct MeshPacket: @unchecked Sendable {
   /// Note: this field is _never_ sent on the radio link itself (to save space) Times
   /// are typically not sent over the mesh, but they will be added to any Packet
   /// (chain of SubPacket) sent to the phone (so the phone can know exact time of reception)
+  /// Explicit presence: firmware cannot always attach a trustworthy wall-clock timestamp at the
+  /// moment of reception - a node with no GPS and no phone connected yet has no time source at
+  /// all. has_rx_time disambiguates that state from a genuine (if coincidental) 1970-01-01
+  /// reading. A packet delivered with this field absent may still be re-timestamped once a valid
+  /// clock becomes available, before the phone ever sees it - "absent" is not guaranteed
+  /// permanent, only "not yet known at last observation".
   public var rxTime: UInt32 {
-    get {_storage._rxTime}
+    get {_storage._rxTime ?? 0}
     set {_uniqueStorage()._rxTime = newValue}
   }
+  /// Returns true if `rxTime` has been explicitly set.
+  public var hasRxTime: Bool {_storage._rxTime != nil}
+  /// Clears the value of `rxTime`. Subsequent reads from it will return its default value.
+  public mutating func clearRxTime() {_uniqueStorage()._rxTime = nil}
 
   ///
   /// *Never* sent over the radio links.
@@ -2840,10 +2878,17 @@ public struct MeshPacket: @unchecked Sendable {
 
   ///
   /// rssi of received packet. Only sent to phone for dispay purposes.
+  /// Explicit presence: rssi 0 is a legitimate reading on some radios (SX126x can report exactly
+  /// 0 dBm; SX127x's formula can even go positive). has_rx_rssi disambiguates; a replayed packet
+  /// built from history should leave this field absent rather than emitting 0.
   public var rxRssi: Int32 {
-    get {_storage._rxRssi}
+    get {_storage._rxRssi ?? 0}
     set {_uniqueStorage()._rxRssi = newValue}
   }
+  /// Returns true if `rxRssi` has been explicitly set.
+  public var hasRxRssi: Bool {_storage._rxRssi != nil}
+  /// Clears the value of `rxRssi`. Subsequent reads from it will return its default value.
+  public mutating func clearRxRssi() {_uniqueStorage()._rxRssi = nil}
 
   ///
   /// Describe if this message is delayed
@@ -2864,6 +2909,10 @@ public struct MeshPacket: @unchecked Sendable {
   ///
   /// Hop limit with which the original packet started. Sent via LoRa using three bits in the unencrypted header.
   /// When receiving a packet, the difference between hop_start and hop_limit gives how many hops it traveled.
+  /// hop_start == 0 does not necessarily mean a direct (0-hop) neighbor: firmware prior to 2.3.0
+  /// never populated this field, so a receiver can only trust hop_start == 0 as genuine once it has
+  /// decoded the packet and confirmed the sender's bitfield is present (added in 2.5.0). Until then,
+  /// or for a sender that never sets that bitfield, treat hop_start == 0 as unknown, not direct.
   public var hopStart: UInt32 {
     get {_storage._hopStart}
     set {_uniqueStorage()._hopStart = newValue}
@@ -4378,6 +4427,11 @@ public struct DeviceMetadata: Sendable {
   /// (bitwise OR of ExcludedModules)
   public var excludedModules: UInt32 = 0
 
+  ///
+  /// Indicates whether this firmware build includes XEdDSA packet signature verification.
+  /// This is a read-only capability and must be false when XEdDSA is not compiled in.
+  public var hasXeddsa_p: Bool = false
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
@@ -4617,7 +4671,7 @@ public struct ChunkedPayloadResponse: Sendable {
 fileprivate let _protobuf_package = "meshtastic"
 
 extension HardwareModel: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0UNSET\0\u{1}TLORA_V2\0\u{1}TLORA_V1\0\u{1}TLORA_V2_1_1P6\0\u{1}TBEAM\0\u{1}HELTEC_V2_0\0\u{1}TBEAM_V0P7\0\u{1}T_ECHO\0\u{1}TLORA_V1_1P3\0\u{1}RAK4631\0\u{1}HELTEC_V2_1\0\u{1}HELTEC_V1\0\u{1}LILYGO_TBEAM_S3_CORE\0\u{1}RAK11200\0\u{1}NANO_G1\0\u{1}TLORA_V2_1_1P8\0\u{1}TLORA_T3_S3\0\u{1}NANO_G1_EXPLORER\0\u{1}NANO_G2_ULTRA\0\u{1}LORA_TYPE\0\u{1}WIPHONE\0\u{1}WIO_WM1110\0\u{1}RAK2560\0\u{1}HELTEC_HRU_3601\0\u{1}HELTEC_WIRELESS_BRIDGE\0\u{1}STATION_G1\0\u{1}RAK11310\0\u{1}MAKERFABS_TRACKER\0\u{1}MAKERFABS_RESERVED\0\u{1}CANARYONE\0\u{1}RP2040_LORA\0\u{1}STATION_G2\0\u{1}LORA_RELAY_V1\0\u{1}T_ECHO_PLUS\0\u{1}PPR\0\u{1}GENIEBLOCKS\0\u{1}NRF52_UNKNOWN\0\u{1}PORTDUINO\0\u{1}ANDROID_SIM\0\u{1}DIY_V1\0\u{1}NRF52840_PCA10059\0\u{1}DR_DEV\0\u{1}M5STACK\0\u{1}HELTEC_V3\0\u{1}HELTEC_WSL_V3\0\u{1}BETAFPV_2400_TX\0\u{1}BETAFPV_900_NANO_TX\0\u{1}RPI_PICO\0\u{1}HELTEC_WIRELESS_TRACKER\0\u{1}HELTEC_WIRELESS_PAPER\0\u{1}T_DECK\0\u{1}T_WATCH_S3\0\u{1}PICOMPUTER_S3\0\u{1}HELTEC_HT62\0\u{1}EBYTE_ESP32_S3\0\u{1}ESP32_S3_PICO\0\u{1}CHATTER_2\0\u{1}HELTEC_WIRELESS_PAPER_V1_0\0\u{1}HELTEC_WIRELESS_TRACKER_V1_0\0\u{1}UNPHONE\0\u{1}TD_LORAC\0\u{1}CDEBYTE_EORA_S3\0\u{1}TWC_MESH_V4\0\u{1}NRF52_PROMICRO_DIY\0\u{1}RADIOMASTER_900_BANDIT_NANO\0\u{1}HELTEC_CAPSULE_SENSOR_V3\0\u{1}HELTEC_VISION_MASTER_T190\0\u{1}HELTEC_VISION_MASTER_E213\0\u{1}HELTEC_VISION_MASTER_E290\0\u{1}HELTEC_MESH_NODE_T114\0\u{1}SENSECAP_INDICATOR\0\u{1}TRACKER_T1000_E\0\u{1}RAK3172\0\u{1}WIO_E5\0\u{1}RADIOMASTER_900_BANDIT\0\u{1}ME25LS01_4Y10TD\0\u{1}RP2040_FEATHER_RFM95\0\u{1}M5STACK_COREBASIC\0\u{1}M5STACK_CORE2\0\u{1}RPI_PICO2\0\u{1}M5STACK_CORES3\0\u{1}SEEED_XIAO_S3\0\u{1}MS24SF1\0\u{1}TLORA_C6\0\u{1}WISMESH_TAP\0\u{1}ROUTASTIC\0\u{1}MESH_TAB\0\u{1}MESHLINK\0\u{1}XIAO_NRF52_KIT\0\u{1}THINKNODE_M1\0\u{1}THINKNODE_M2\0\u{1}T_ETH_ELITE\0\u{1}HELTEC_SENSOR_HUB\0\u{1}MUZI_BASE\0\u{1}HELTEC_MESH_POCKET\0\u{1}SEEED_SOLAR_NODE\0\u{1}NOMADSTAR_METEOR_PRO\0\u{1}CROWPANEL\0\u{1}LINK_32\0\u{1}SEEED_WIO_TRACKER_L1\0\u{1}SEEED_WIO_TRACKER_L1_EINK\0\u{1}MUZI_R1_NEO\0\u{1}T_DECK_PRO\0\u{1}T_LORA_PAGER\0\u{1}M5STACK_RESERVED\0\u{1}WISMESH_TAG\0\u{1}RAK3312\0\u{1}THINKNODE_M5\0\u{1}HELTEC_MESH_SOLAR\0\u{1}T_ECHO_LITE\0\u{1}HELTEC_V4\0\u{1}M5STACK_C6L\0\u{1}M5STACK_CARDPUTER_ADV\0\u{1}HELTEC_WIRELESS_TRACKER_V2\0\u{1}T_WATCH_ULTRA\0\u{1}THINKNODE_M3\0\u{1}WISMESH_TAP_V2\0\u{1}RAK3401\0\u{1}RAK6421\0\u{1}THINKNODE_M4\0\u{1}THINKNODE_M6\0\u{1}MESHSTICK_1262\0\u{1}TBEAM_1_WATT\0\u{1}T5_S3_EPAPER_PRO\0\u{1}TBEAM_BPF\0\u{1}MINI_EPAPER_S3\0\u{1}TDISPLAY_S3_PRO\0\u{1}HELTEC_MESH_NODE_T096\0\u{1}TRACKER_T1000_E_PRO\0\u{1}THINKNODE_M7\0\u{1}THINKNODE_M8\0\u{1}THINKNODE_M9\0\u{1}HELTEC_V4_R8\0\u{1}HELTEC_MESH_NODE_T1\0\u{1}STATION_G3\0\u{1}T_IMPULSE_PLUS\0\u{1}T_ECHO_CARD\0\u{1}SEEED_WIO_TRACKER_L2\0\u{1}CROWPANEL_P4\0\u{1}HELTEC_MESH_TOWER_V2\0\u{1}MESHNOLOGY_W10\0\u{2}s\u{1}PRIVATE_HW\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0UNSET\0\u{1}TLORA_V2\0\u{1}TLORA_V1\0\u{1}TLORA_V2_1_1P6\0\u{1}TBEAM\0\u{1}HELTEC_V2_0\0\u{1}TBEAM_V0P7\0\u{1}T_ECHO\0\u{1}TLORA_V1_1P3\0\u{1}RAK4631\0\u{1}HELTEC_V2_1\0\u{1}HELTEC_V1\0\u{1}LILYGO_TBEAM_S3_CORE\0\u{1}RAK11200\0\u{1}NANO_G1\0\u{1}TLORA_V2_1_1P8\0\u{1}TLORA_T3_S3\0\u{1}NANO_G1_EXPLORER\0\u{1}NANO_G2_ULTRA\0\u{1}LORA_TYPE\0\u{1}WIPHONE\0\u{1}WIO_WM1110\0\u{1}RAK2560\0\u{1}HELTEC_HRU_3601\0\u{1}HELTEC_WIRELESS_BRIDGE\0\u{1}STATION_G1\0\u{1}RAK11310\0\u{1}MAKERFABS_TRACKER\0\u{1}MAKERFABS_RESERVED\0\u{1}CANARYONE\0\u{1}RP2040_LORA\0\u{1}STATION_G2\0\u{1}LORA_RELAY_V1\0\u{1}T_ECHO_PLUS\0\u{1}PPR\0\u{1}GENIEBLOCKS\0\u{1}NRF52_UNKNOWN\0\u{1}PORTDUINO\0\u{1}ANDROID_SIM\0\u{1}DIY_V1\0\u{1}NRF52840_PCA10059\0\u{1}DR_DEV\0\u{1}M5STACK\0\u{1}HELTEC_V3\0\u{1}HELTEC_WSL_V3\0\u{1}BETAFPV_2400_TX\0\u{1}BETAFPV_900_NANO_TX\0\u{1}RPI_PICO\0\u{1}HELTEC_WIRELESS_TRACKER\0\u{1}HELTEC_WIRELESS_PAPER\0\u{1}T_DECK\0\u{1}T_WATCH_S3\0\u{1}PICOMPUTER_S3\0\u{1}HELTEC_HT62\0\u{1}EBYTE_ESP32_S3\0\u{1}ESP32_S3_PICO\0\u{1}CHATTER_2\0\u{1}HELTEC_WIRELESS_PAPER_V1_0\0\u{1}HELTEC_WIRELESS_TRACKER_V1_0\0\u{1}UNPHONE\0\u{1}TD_LORAC\0\u{1}CDEBYTE_EORA_S3\0\u{1}TWC_MESH_V4\0\u{1}NRF52_PROMICRO_DIY\0\u{1}RADIOMASTER_900_BANDIT_NANO\0\u{1}HELTEC_CAPSULE_SENSOR_V3\0\u{1}HELTEC_VISION_MASTER_T190\0\u{1}HELTEC_VISION_MASTER_E213\0\u{1}HELTEC_VISION_MASTER_E290\0\u{1}HELTEC_MESH_NODE_T114\0\u{1}SENSECAP_INDICATOR\0\u{1}TRACKER_T1000_E\0\u{1}RAK3172\0\u{1}WIO_E5\0\u{1}RADIOMASTER_900_BANDIT\0\u{1}ME25LS01_4Y10TD\0\u{1}RP2040_FEATHER_RFM95\0\u{1}M5STACK_COREBASIC\0\u{1}M5STACK_CORE2\0\u{1}RPI_PICO2\0\u{1}M5STACK_CORES3\0\u{1}SEEED_XIAO_S3\0\u{1}MS24SF1\0\u{1}TLORA_C6\0\u{1}WISMESH_TAP\0\u{1}ROUTASTIC\0\u{1}MESH_TAB\0\u{1}MESHLINK\0\u{1}XIAO_NRF52_KIT\0\u{1}THINKNODE_M1\0\u{1}THINKNODE_M2\0\u{1}T_ETH_ELITE\0\u{1}HELTEC_SENSOR_HUB\0\u{1}MUZI_BASE\0\u{1}HELTEC_MESH_POCKET\0\u{1}SEEED_SOLAR_NODE\0\u{1}NOMADSTAR_METEOR_PRO\0\u{1}CROWPANEL\0\u{1}LINK_32\0\u{1}SEEED_WIO_TRACKER_L1\0\u{1}SEEED_WIO_TRACKER_L1_EINK\0\u{1}MUZI_R1_NEO\0\u{1}T_DECK_PRO\0\u{1}T_LORA_PAGER\0\u{1}M5STACK_RESERVED\0\u{1}WISMESH_TAG\0\u{1}RAK3312\0\u{1}THINKNODE_M5\0\u{1}HELTEC_MESH_SOLAR\0\u{1}T_ECHO_LITE\0\u{1}HELTEC_V4\0\u{1}M5STACK_C6L\0\u{1}M5STACK_CARDPUTER_ADV\0\u{1}HELTEC_WIRELESS_TRACKER_V2\0\u{1}T_WATCH_ULTRA\0\u{1}THINKNODE_M3\0\u{1}WISMESH_TAP_V2\0\u{1}RAK3401\0\u{1}RAK6421\0\u{1}THINKNODE_M4\0\u{1}THINKNODE_M6\0\u{1}MESHSTICK_1262\0\u{1}TBEAM_1_WATT\0\u{1}T5_S3_EPAPER_PRO\0\u{1}TBEAM_BPF\0\u{1}MINI_EPAPER_S3\0\u{1}TDISPLAY_S3_PRO\0\u{1}HELTEC_MESH_NODE_T096\0\u{1}MESH_TRACKER_X1\0\u{1}THINKNODE_M7\0\u{1}THINKNODE_M8\0\u{1}THINKNODE_M9\0\u{1}HELTEC_V4_R8\0\u{1}HELTEC_MESH_NODE_T1\0\u{1}STATION_G3\0\u{1}T_IMPULSE_PLUS\0\u{1}T_ECHO_CARD\0\u{1}SEEED_WIO_TRACKER_L2\0\u{1}CROWPANEL_P4\0\u{1}HELTEC_MESH_TOWER_V2\0\u{1}MESHNOLOGY_W10\0\u{1}HELTEC_RC32\0\u{1}HELTEC_RC52\0\u{1}HELTEC_RCC6\0\u{2}p\u{1}PRIVATE_HW\0")
 }
 
 extension Constants: SwiftProtobuf._ProtoNameProviding {
@@ -4629,7 +4683,7 @@ extension CriticalErrorCode: SwiftProtobuf._ProtoNameProviding {
 }
 
 extension FirmwareEdition: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0VANILLA\0\u{1}SMART_CITIZEN\0\u{2}\u{f}OPEN_SAUCE\0\u{1}DEFCON\0\u{1}BURNING_MAN\0\u{1}HAMVENTION\0\u{2}l\u{1}DIY_EDITION\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0VANILLA\0\u{1}SMART_CITIZEN\0\u{2}\u{f}OPEN_SAUCE\0\u{1}DEFCON\0\u{1}BURNING_MAN\0\u{1}HAMVENTION\0\u{1}FAB\0\u{2}k\u{1}DIY_EDITION\0")
 }
 
 extension ExcludedModules: SwiftProtobuf._ProtoNameProviding {
@@ -5593,12 +5647,12 @@ extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
     var _channel: UInt32 = 0
     var _payloadVariant: MeshPacket.OneOf_PayloadVariant?
     var _id: UInt32 = 0
-    var _rxTime: UInt32 = 0
+    var _rxTime: UInt32? = nil
     var _rxSnr: Float = 0
     var _hopLimit: UInt32 = 0
     var _wantAck: Bool = false
     var _priority: MeshPacket.Priority = .unset
-    var _rxRssi: Int32 = 0
+    var _rxRssi: Int32? = nil
     var _delayed: MeshPacket.Delayed = .noDelay
     var _viaMqtt: Bool = false
     var _hopStart: UInt32 = 0
@@ -5734,9 +5788,9 @@ extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
       if _storage._id != 0 {
         try visitor.visitSingularFixed32Field(value: _storage._id, fieldNumber: 6)
       }
-      if _storage._rxTime != 0 {
-        try visitor.visitSingularFixed32Field(value: _storage._rxTime, fieldNumber: 7)
-      }
+      try { if let v = _storage._rxTime {
+        try visitor.visitSingularFixed32Field(value: v, fieldNumber: 7)
+      } }()
       if _storage._rxSnr.bitPattern != 0 {
         try visitor.visitSingularFloatField(value: _storage._rxSnr, fieldNumber: 8)
       }
@@ -5749,9 +5803,9 @@ extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
       if _storage._priority != .unset {
         try visitor.visitSingularEnumField(value: _storage._priority, fieldNumber: 11)
       }
-      if _storage._rxRssi != 0 {
-        try visitor.visitSingularInt32Field(value: _storage._rxRssi, fieldNumber: 12)
-      }
+      try { if let v = _storage._rxRssi {
+        try visitor.visitSingularInt32Field(value: v, fieldNumber: 12)
+      } }()
       if _storage._delayed != .noDelay {
         try visitor.visitSingularEnumField(value: _storage._delayed, fieldNumber: 13)
       }
@@ -7119,7 +7173,7 @@ extension Neighbor: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
 
 extension DeviceMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".DeviceMetadata"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}firmware_version\0\u{3}device_state_version\0\u{1}canShutdown\0\u{1}hasWifi\0\u{1}hasBluetooth\0\u{1}hasEthernet\0\u{1}role\0\u{3}position_flags\0\u{3}hw_model\0\u{1}hasRemoteHardware\0\u{1}hasPKC\0\u{3}excluded_modules\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}firmware_version\0\u{3}device_state_version\0\u{1}canShutdown\0\u{1}hasWifi\0\u{1}hasBluetooth\0\u{1}hasEthernet\0\u{1}role\0\u{3}position_flags\0\u{3}hw_model\0\u{1}hasRemoteHardware\0\u{1}hasPKC\0\u{3}excluded_modules\0\u{4}\u{2}has_xeddsa\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -7139,6 +7193,7 @@ extension DeviceMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
       case 10: try { try decoder.decodeSingularBoolField(value: &self.hasRemoteHardware_p) }()
       case 11: try { try decoder.decodeSingularBoolField(value: &self.hasPkc_p) }()
       case 12: try { try decoder.decodeSingularUInt32Field(value: &self.excludedModules) }()
+      case 14: try { try decoder.decodeSingularBoolField(value: &self.hasXeddsa_p) }()
       default: break
       }
     }
@@ -7181,6 +7236,9 @@ extension DeviceMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
     if self.excludedModules != 0 {
       try visitor.visitSingularUInt32Field(value: self.excludedModules, fieldNumber: 12)
     }
+    if self.hasXeddsa_p != false {
+      try visitor.visitSingularBoolField(value: self.hasXeddsa_p, fieldNumber: 14)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -7197,6 +7255,7 @@ extension DeviceMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
     if lhs.hasRemoteHardware_p != rhs.hasRemoteHardware_p {return false}
     if lhs.hasPkc_p != rhs.hasPkc_p {return false}
     if lhs.excludedModules != rhs.excludedModules {return false}
+    if lhs.hasXeddsa_p != rhs.hasXeddsa_p {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

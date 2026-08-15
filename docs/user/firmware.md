@@ -14,12 +14,18 @@ The app can check for and install Meshtastic firmware updates directly on your c
 2. Go to **Settings → Firmware Updates**.
 3. The app shows the firmware version currently running on your radio and the latest stable release available from GitHub.
 
+When you connect to a node running firmware older than the latest stable release, the app can send a firmware update notification. For hardware the app can update directly, tapping the notification opens **Firmware Updates** so you can review and start the OTA update. For hardware that needs an external updater, the notification tells you to use **Meshtastic Flasher** instead.
+
+The app remembers each node, hardware target, and stable version it has already notified you about, so it will not keep sending the same reminder.
+
 ## Installing an Update
 
 1. Tap **Update Firmware** when a newer version is available.
 2. The app downloads the correct firmware binary for your hardware.
 3. The radio enters update mode (DFU) and the new firmware is transferred over BLE.
 4. The radio reboots automatically when the update completes.
+
+For ESP32 BLE updates, the app waits for the radio's final verification response before showing success. If the radio reports an error or does not send the final success response, the app keeps the update in a failed state instead of treating the upload as complete.
 
 | Icon | Progress | Description |
 |------|----------|-------------|
@@ -30,6 +36,10 @@ The app can check for and install Meshtastic firmware updates directly on your c
 
 **Do not close the app or move out of Bluetooth range during a firmware update.**
 
+## During the Transfer
+
+While a supported OTA transfer is active, tap **Play Chirpy Hop** to play without leaving the updater. Firmware progress remains visible above the game, and the back button returns to the normal update screen at any time. Keep the Meshtastic app in the foreground until the update finishes.
+
 ## Update Channels
 
 | Channel | Description |
@@ -38,6 +48,18 @@ The app can check for and install Meshtastic firmware updates directly on your c
 | Alpha | Early access — may contain bugs. Use on secondary/test devices only. |
 
 Select the update channel in **Settings → App Settings → Firmware Channel**.
+
+## Event Firmware
+
+Some radios ship with special **event firmware** for gatherings like DEF CON, FAB, Open Sauce, Hamvention, or Burning Man. When you connect to a device running event firmware, the Meshtastic logo in the navigation bar changes to the event artwork. The Connect screen also shows the event's human-readable name in the firmware section.
+
+Tap the event artwork to open the **event info sheet**, which shows the event's location, dates, useful links, and event firmware version. **Use Event Theme** applies event highlight colors to interactive controls and event fonts inside this dedicated surface. Standard navigation backgrounds remain unchanged.
+
+If new-node notifications are enabled, the app temporarily mutes them while you're connected to event firmware (events are busy — many nodes appear at once). It restores them when you return to standard firmware. A notification preference you had already turned off stays off.
+
+Event details are fetched from Meshtastic's servers with a persistent offline fallback, so a newly announced event can appear without an app update. Hosted artwork and links are restricted to HTTPS, and invalid content falls back to bundled artwork or the standard Meshtastic logo.
+
+The metadata feed is informational. The app does not download or install firmware packages from event metadata; updates continue to use the app's verified firmware workflow.
 
 ## Troubleshooting
 

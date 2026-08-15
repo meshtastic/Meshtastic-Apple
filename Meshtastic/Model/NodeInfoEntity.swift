@@ -26,6 +26,9 @@ final class NodeInfoEntity {
 	var nodeStatus: String?
 	@Attribute(.unique) var num: Int64 = 0
 	var peripheralId: String?
+	/// User-editable per-channel power labels (e.g. "Solar", "Battery", "Load"), indexed 0-2.
+	/// A missing/empty entry falls back to the generic "Channel N" in the UI. Per meshtastic/design#53.
+	var powerChannelLabels: [String] = []
 	var rssi: Int32 = 0
 	var sessionExpiration: Date?
 	var sessionPasskey: Data?
@@ -59,6 +62,9 @@ final class NodeInfoEntity {
 
 	@Relationship(deleteRule: .nullify, inverse: \LoRaConfigEntity.loRaConfigNode)
 	var loRaConfig: LoRaConfigEntity?
+
+	@Relationship(deleteRule: .cascade, inverse: \MeshBeaconConfigEntity.meshBeaconConfigNode)
+	var meshBeaconConfig: MeshBeaconConfigEntity?
 
 	@Relationship(deleteRule: .nullify, inverse: \DeviceMetadataEntity.metadataNode)
 	var metadata: DeviceMetadataEntity?
@@ -145,8 +151,10 @@ extension NodeInfoEntity {
 	/// (PR #1668).
 	///
 	/// `nodes` is expected to already be sorted by `lastHeard` descending — as the
-	/// Settings `@Query` provides — so the partition yields favorites (most-recent
-	/// first) ahead of non-favorites (most-recent first). It's a `Bool`-keyed
+	/// Settings snapshot fetch provides — so the partition yields favorites (most-recent
+	/// first) ahead of non-favorites (most-recent first). Deleted or detached models are
+	/// screened out before their persisted properties are read because a snapshot can
+	/// outlive a node-database reset. It's a `Bool`-keyed
 	/// partition rather than a SwiftData `@Query` sort because `favorite` is a
 	/// `Bool`, and `Bool` is not `Comparable`, so it cannot be a `SortDescriptor`
 	/// key on a non-`NSObject` `@Model`.
@@ -155,7 +163,8 @@ extension NodeInfoEntity {
 	/// it is cheap to call per render, and deterministic across re-renders as long as
 	/// the input order is stable.
 	static func adminPickerOrder(_ nodes: [NodeInfoEntity]) -> [NodeInfoEntity] {
-		nodes.filter(\.favorite) + nodes.filter { !$0.favorite }
+		let liveNodes = nodes.filter { $0.modelContext != nil && !$0.isDeleted }
+		return liveNodes.filter(\.favorite) + liveNodes.filter { !$0.favorite }
 	}
 
 	/// The status message to render on read-only surfaces (node list card and node

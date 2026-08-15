@@ -7,6 +7,43 @@ import SwiftData
 
 @testable import Meshtastic
 
+@Suite("ScanTarget")
+struct ScanTargetTests {
+
+	@Test func publicTargetIsNotCustomAndLabelsByPreset() {
+		let target = ScanTarget(preset: .longFast)
+		#expect(target.isCustomChannel == false)
+		#expect(target.label == ModemPresets.longFast.name)
+	}
+
+	@Test func emptyChannelNameIsNotCustom() {
+		let target = ScanTarget(preset: .longFast, channelName: "", channelPSK: Data())
+		#expect(target.isCustomChannel == false)
+		#expect(target.label == ModemPresets.longFast.name)
+	}
+
+	@Test func customChannelTargetLabelsWithChannel() {
+		let target = ScanTarget(preset: .shortFast, channelName: "SecretMesh", channelPSK: Data([1, 2, 3]))
+		#expect(target.isCustomChannel)
+		#expect(target.label == "\(ModemPresets.shortFast.name) · SecretMesh")
+	}
+
+	// Two beacon targets on the same preset but different channels must be distinct so their results
+	// and discovered nodes don't collide (labels differ, and Equatable sees the channel difference).
+	@Test func samePresetDifferentChannelAreDistinct() {
+		let a = ScanTarget(preset: .longFast, channelName: "MeshA", channelPSK: Data([1]))
+		let b = ScanTarget(preset: .longFast, channelName: "MeshB", channelPSK: Data([2]))
+		#expect(a != b)
+		#expect(a.label != b.label)
+	}
+
+	@Test func equalTargetsMatch() {
+		let a = ScanTarget(preset: .longFast, regionRaw: 1, channelName: "M", channelPSK: Data([9]))
+		let b = ScanTarget(preset: .longFast, regionRaw: 1, channelName: "M", channelPSK: Data([9]))
+		#expect(a == b)
+	}
+}
+
 @Suite("DiscoveryScanEngine")
 struct DiscoveryScanEngineTests {
 

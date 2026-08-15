@@ -39,6 +39,30 @@ Thank you for considering contributing to Meshtastic! We appreciate your time an
    open Meshtastic.xcworkspace
    ```
 
+### Changing the project structure
+
+`Meshtastic.xcodeproj` is generated from `project.yml` and committed to the
+repository, so cloning and opening the workspace requires no extra tooling.
+Source files are picked up from disk by their folder, so adding, moving or
+deleting one never touches the project file.
+
+If you change **targets, build settings, dependencies or schemes**, edit
+`project.yml` instead of the project, then regenerate and commit.
+
+XcodeGen's output is version-dependent, so the version is pinned exactly in
+`.xcodegen-version` — regenerate with that version or CI will report drift:
+
+```sh
+version=$(cat .xcodegen-version)
+curl -fsSL -o /tmp/xcodegen.zip \
+  "https://github.com/yonaskolb/XcodeGen/releases/download/${version}/xcodegen.zip"
+unzip -q /tmp/xcodegen.zip -d /tmp/xcodegen-dist
+/tmp/xcodegen-dist/xcodegen/bin/xcodegen generate
+```
+
+CI regenerates the project on every pull request with the pinned version and
+fails if the committed project does not match `project.yml`.
+
 ## Development Workflow
 
 ### Targeting `main`

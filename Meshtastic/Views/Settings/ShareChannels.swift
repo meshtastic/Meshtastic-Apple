@@ -100,7 +100,6 @@ struct ShareChannels: View {
 								Toggle(isOn: $replaceChannels) {
 									Label(replaceChannels ? "Replace Channels" : "Add Channels", systemImage: replaceChannels ? "arrow.triangle.2.circlepath.circle" : "plus.app")
 								}
-								.tint(.accentColor)
 								.toggleStyle(.button)
 								.buttonStyle(.bordered)
 								.buttonBorderShape(.capsule)
@@ -119,6 +118,17 @@ struct ShareChannels: View {
 									.buttonBorderShape(.capsule)
 									.controlSize(.large)
 									.padding(.bottom)
+
+								#if !targetEnvironment(macCatalyst)
+								if #available(iOS 18, *) {
+									NFCWriteButton(
+										payload: channelsUrl,
+										caption: "Hold a writable NFC tag near the top of your iPhone to save these channel settings to it."
+									)
+									.padding(.bottom)
+									.padding(.horizontal)
+								}
+								#endif
 
 								Image(uiImage: qrImage)
 									.resizable()
@@ -155,6 +165,7 @@ struct ShareChannels: View {
 					.tint(Color(UIColor.secondarySystemBackground))
 					.foregroundColor(.accentColor)
 					.buttonStyle(.borderedProminent)
+					.accessibilityLabel(showingHelp ? String(localized: "Hide help", comment: "VoiceOver label for the help toggle button when help is showing") : String(localized: "Show help", comment: "VoiceOver label for the help toggle button when help is hidden"))
 				}
 				.controlSize(.regular)
 				.padding(5)

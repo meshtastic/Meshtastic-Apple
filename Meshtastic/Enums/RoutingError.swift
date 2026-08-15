@@ -27,83 +27,88 @@ enum RoutingError: Int, CaseIterable, Identifiable {
 	case adminBadSessionKey = 36
 	case adminPublicKeyUnauthorized = 37
 	case rateLimitExceeded = 38
+	case pkiSendFailPublicKey = 39
 
 	var id: Int { self.rawValue }
 	var display: String {
 		switch self {
 
 		case .none:
-			return "Acknowledged".localized
+			return "Delivered to recipient".localized
 		case .noRoute:
-			return "No Route".localized
+			return "Failed to deliver to mesh".localized
 		case .gotNak:
-			return "Received a negative acknowledgment".localized
+			return "Failed to deliver to mesh".localized
 		case .timeout:
-			return "Timeout".localized
+			return "Failed to deliver to mesh".localized
 		case .noInterface:
-			return "No Interface".localized
+			return "No radio interface".localized
 		case .maxRetransmit:
-			return "Max Retransmission Reached".localized
+			return "Failed to deliver to mesh".localized
 		case .noChannel:
-			return "No Channel".localized
+			return "Channel/key mismatch".localized
 		case .tooLarge:
-			return "The packet is too large".localized
+			return "Message is too large to send".localized
 		case .noResponse:
-			return "No Response".localized
+			return "No app response".localized
 		case .dutyCycleLimit:
-			return "Regional Duty Cycle Limit Reached".localized
+			return "Duty cycle limit".localized
 		case .badRequest:
-			return "Bad Request".localized
+			return "Invalid request".localized
 		case .notAuthorized:
-			return "Not Authorized".localized
+			return "Not authorized".localized
 		case .pkiFailed:
-			return "Encrypted Send Failed".localized
+			return "Could not send encrypted message".localized
 		case .pkiUnknownPubkey:
-			return "Unknown public key".localized
+			return "Recipient needs your key".localized
 		case .adminBadSessionKey:
-			return "Bad admin session key".localized
+			return "Admin session expired".localized
 		case .adminPublicKeyUnauthorized:
-			return "Unauthorized admin public key".localized
+			return "Admin key not authorized".localized
 		case .rateLimitExceeded:
-			return "Rate Limit Exceeded".localized
+			return "Rate limited".localized
+		case .pkiSendFailPublicKey:
+			return "Recipient key unavailable".localized
 		}
 	}
 	var description: String {
 		switch self {
 		case .none:
-			return "Message was successfully delivered to the recipient.".localized
+			return "The recipient confirmed this message.".localized
 		case .noRoute:
-			return "No route to the destination node was found in the mesh.".localized
+			return "No route to the destination node was found in the mesh. Try again when more nodes are reachable.".localized
 		case .gotNak:
-			return "A node in the path explicitly rejected the packet.".localized
+			return "A node rejected this message. Try again when the route changes.".localized
 		case .timeout:
-			return "No acknowledgment was received within the expected time window.".localized
+			return "No acknowledgment was received in time. Try again when you have better signal or more mesh coverage.".localized
 		case .noInterface:
-			return "The radio interface needed to send the packet is unavailable.".localized
+			return "The sender has no usable radio interface for this message.".localized
 		case .maxRetransmit:
-			return "The packet was retransmitted the maximum number of times without acknowledgment.".localized
+			return "No node confirmed this message. Try again when you have better signal or more mesh coverage.".localized
 		case .noChannel:
-			return "The channel required for this message is not configured on the device.".localized
+			return "The sender or recipient could not use a matching channel/key for this message.".localized
 		case .tooLarge:
-			return "The message exceeds the maximum packet size and cannot be sent.".localized
+			return "Shorten the message and send it again.".localized
 		case .noResponse:
-			return "The destination node did not respond to the request.".localized
+			return "The destination received the request, but no app or module responded. Try again when the recipient is reachable.".localized
 		case .dutyCycleLimit:
-			return "The regional duty cycle limit has been reached; transmissions are temporarily paused.".localized
+			return "Local airtime limits are temporarily blocking sends. Wait before trying again.".localized
 		case .badRequest:
-			return "The request was malformed or contained invalid parameters.".localized
+			return "The destination rejected this request as invalid.".localized
 		case .notAuthorized:
-			return "The requesting node is not authorized to perform this action.".localized
+			return "The destination refused this request because it is not authorized.".localized
 		case .pkiFailed:
-			return "Public key encryption failed; the message could not be encrypted for the recipient.".localized
+			return "The encrypted send path could not be used. Wait for node info or keys to sync, then try again.".localized
 		case .pkiUnknownPubkey:
-			return "The recipient's public key is not known; direct message encryption is not possible.".localized
+			return "The recipient does not know your public key yet. Your node may share its info automatically; try again after it syncs.".localized
 		case .adminBadSessionKey:
-			return "The admin session key is invalid or has expired.".localized
+			return "The admin session key is missing, expired, or invalid. Request a new session before trying again.".localized
 		case .adminPublicKeyUnauthorized:
-			return "The admin public key is not in the authorized list on the remote node.".localized
+			return "The remote node does not authorize your admin key.".localized
 		case .rateLimitExceeded:
-			return "Too many requests were sent in a short period; wait before retrying.".localized
+			return "Messages are being sent too quickly. Wait before trying again.".localized
+		case .pkiSendFailPublicKey:
+			return "Your node does not have the recipient's public key yet. Wait for node info to sync, then try again.".localized
 		}
 	}
 	var color: Color {
@@ -130,7 +135,7 @@ enum RoutingError: Int, CaseIterable, Identifiable {
 		case .maxRetransmit:
 			return true
 		case .noChannel:
-			return true
+			return false
 		case .tooLarge:
 			return false
 		case .noResponse:
@@ -138,9 +143,9 @@ enum RoutingError: Int, CaseIterable, Identifiable {
 		case .dutyCycleLimit:
 			return true
 		case .badRequest:
-			return true
+			return false
 		case .notAuthorized:
-			return true
+			return false
 		case .pkiFailed:
 			return true
 		case .pkiUnknownPubkey:
@@ -148,8 +153,10 @@ enum RoutingError: Int, CaseIterable, Identifiable {
 		case .adminBadSessionKey:
 			return true
 		case .adminPublicKeyUnauthorized:
-			return true
+			return false
 		case .rateLimitExceeded:
+			return true
+		case .pkiSendFailPublicKey:
 			return true
 		}
 	}
@@ -191,6 +198,8 @@ enum RoutingError: Int, CaseIterable, Identifiable {
 			return Routing.Error.adminPublicKeyUnauthorized
 		case .rateLimitExceeded:
 			return Routing.Error.rateLimitExceeded
+		case .pkiSendFailPublicKey:
+			return Routing.Error.pkiSendFailPublicKey
 		}
 	}
 }

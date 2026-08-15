@@ -121,7 +121,8 @@ struct MeshtasticChannelURL: Sendable {
 			return url.host?.lowercased() == channelPathSegment && pathSegments.isEmpty
 		}
 
-		guard url.host?.lowercased() == Self.host else { return false }
+		let supportedHosts = [Self.host, "www.\(Self.host)"]
+		guard let host = url.host?.lowercased(), supportedHosts.contains(host) else { return false }
 		return pathSegments(for: url) == [channelPathSegment]
 	}
 

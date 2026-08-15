@@ -12,6 +12,13 @@ struct CsvDocument: FileDocument {
 
 	static let readableContentTypes =  [UTType.commaSeparatedText]
 
+	static func exportFilename(_ baseName: String) -> String {
+		let sanitizedName = baseName
+			.replacingOccurrences(of: "/", with: "-")
+			.replacingOccurrences(of: ":", with: "-")
+		return sanitizedName.lowercased().hasSuffix(".csv") ? sanitizedName : "\(sanitizedName).csv"
+	}
+
 	@State var csvData: String
 
 	init(emptyCsv: String = "" ) {

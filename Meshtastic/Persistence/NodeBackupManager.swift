@@ -41,8 +41,7 @@ final class NodeBackupManager: NodeBackupManaging {
 	// MARK: - Initialization
 
 	private init() {
-		let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
-		backupBaseURL = appSupport.appendingPathComponent("NodeBackups", isDirectory: true)
+		backupBaseURL = Self.resolveBackupBaseURL()
 
 		// Ensure backup directory exists
 		try? FileManager.default.createDirectory(at: backupBaseURL, withIntermediateDirectories: true)
@@ -52,6 +51,60 @@ final class NodeBackupManager: NodeBackupManaging {
 
 		// Validate index consistency on launch (T029)
 		validateIndexConsistency()
+	}
+
+	/// Backups live in Documents — the user-visible "Meshtastic" folder in the Files app —
+	/// alongside OfflineMaps, downloaded firmware, and imported GeoJSON, so users can copy a
+	/// backup off the phone (or drop one in) without any in-app export flow. Earlier releases
+	/// kept them in Application Support; the first launch after updating moves that folder here
+	/// wholesale (the backup index stores paths relative to the folder, so the move preserves
+	/// every entry). If the move fails (e.g. a partial earlier attempt left both folders), the
+	/// legacy location keeps working so existing backups are never orphaned.
+	private nonisolated static func resolveBackupBaseURL() -> URL {
+		let fm = FileManager.default
+		return resolveBackupBaseURL(
+			documents: fm.urls(for: .documentDirectory, in: .userDomainMask).first!,
+			appSupport: fm.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+		)
+	}
+
+	/// Testable core of the location resolution/migration — see `resolveBackupBaseURL()`.
+	nonisolated static func resolveBackupBaseURL(documents: URL, appSupport: URL) -> URL {
+		let fm = FileManager.default
+		let newURL = documents.appendingPathComponent("NodeBackups", isDirectory: true)
+		let legacyURL = appSupport.appendingPathComponent("NodeBackups", isDirectory: true)
+
+		// Documents is user-writable through the Files app, so "something exists at the path"
+		// is not "our folder exists": a stray *file* named NodeBackups would make a bare
+		// fileExists check return true, the initializer's directory creation silently fail,
+		// and every subsequent backup write fail. Distinguish directories from files and
+		// never overwrite anything the user put there.
+		var newIsDir: ObjCBool = false
+		let newExists = fm.fileExists(atPath: newURL.path, isDirectory: &newIsDir)
+		var legacyIsDir: ObjCBool = false
+		let legacyExists = fm.fileExists(atPath: legacyURL.path, isDirectory: &legacyIsDir) && legacyIsDir.boolValue
+
+		if newExists && !newIsDir.boolValue {
+			// A user-created file is squatting on the folder name. Leave it untouched and keep
+			// backups working in the app-controlled legacy location until the user removes it.
+			Logger.data.error("💾 [Backup] A file named NodeBackups is blocking the Files-visible backup folder in Documents; keeping backups in Application Support until it is removed")
+			return legacyURL
+		}
+
+		if legacyExists && !newExists {
+			do {
+				try fm.moveItem(at: legacyURL, to: newURL)
+				Logger.data.info("💾 [Backup] Migrated node backups from Application Support to the Files-visible Documents folder")
+			} catch {
+				Logger.data.error("💾 [Backup] Failed to migrate node backups to Documents, continuing with the legacy location: \(error.localizedDescription, privacy: .public)")
+				return legacyURL
+			}
+		} else if legacyExists && newExists {
+			// Both exist (an interrupted earlier migration). Prefer the new location, but keep
+			// the legacy folder on disk untouched for manual recovery rather than merging blindly.
+			Logger.data.warning("💾 [Backup] Both legacy and Documents backup folders exist; using Documents. Legacy folder left in place at Application Support/NodeBackups")
+		}
+		return newURL
 	}
 
 	/// Initializer for testing with a custom base URL.
@@ -374,8 +427,10 @@ final class NodeBackupManager: NodeBackupManaging {
 					let backupStoreURL = nodeBackupDir.appendingPathComponent(Self.storeFileName)
 					guard fileManager.fileExists(atPath: backupStoreURL.path) else { continue }
 
-					let backupConfig = ModelConfiguration(url: backupStoreURL, allowsSave: false)
-					let backupContainer = try ModelContainer(for: schema, configurations: backupConfig)
+					// Staged copy: a pending schema migration cannot run on a read-only store,
+					// and the backup itself must never be mutated. See stagedBackupContainer
+					// (staging dirs are swept at launch, never removed while live).
+					let backupContainer = try Self.stagedBackupContainer(for: backupStoreURL, schema: schema)
 					let backupContext = ModelContext(backupContainer)
 					backupContext.autosaveEnabled = false
 
@@ -459,15 +514,24 @@ final class NodeBackupManager: NodeBackupManaging {
 		}
 
 		do {
-			try await Task.detached(priority: .userInitiated) {
+			// The import runs on the MainActor through the LIVE container's mainContext. Two
+			// invariants, both learned from live lldb catches of the switch-crash cluster:
+			// 1. `container` must be the same object the UI has always been bound to — a save
+			//    into a replaced container is processed by the previous container's immortal
+			//    observer bridge (they unregister on dealloc, never on unmount) and traps.
+			// 2. The backup opens through a staged temp copy — a pending schema migration
+			//    cannot run on a read-only store, and that failure used to abort the restore
+			//    and bounce the switch back to the previous device.
+			try await MainActor.run {
 				let schema = Schema(versionedSchema: MeshtasticSchema.current)
-				let backupConfig = ModelConfiguration(url: backupStoreURL, allowsSave: false)
-				let backupContainer = try ModelContainer(for: schema, configurations: backupConfig)
+				let backupContainer = try Self.stagedBackupContainer(for: backupStoreURL, schema: schema)
 				let backupContext = ModelContext(backupContainer)
 				backupContext.autosaveEnabled = false
 
-				let liveContext = ModelContext(container)
+				let liveContext = container.mainContext
+				let hadAutosave = liveContext.autosaveEnabled
 				liveContext.autosaveEnabled = false
+				defer { liveContext.autosaveEnabled = hadAutosave }
 
 				// Import in dependency order
 				let nodesByNum = try Self.importNodes(from: backupContext, into: liveContext)
@@ -484,7 +548,7 @@ final class NodeBackupManager: NodeBackupManaging {
 
 				try liveContext.save()
 				Logger.backup.info("💾 Full restore complete for node \(nodeNum)")
-			}.value
+			}
 
 			return .success(entry)
 		} catch {
@@ -518,6 +582,62 @@ enum BackupError: Error, LocalizedError {
 			return "Backup file not found"
 		case .insufficientStorage:
 			return "Insufficient storage for backup"
+		}
+	}
+}
+
+// MARK: - Staged backup opening
+
+extension NodeBackupManager {
+
+	/// Opens a backup store for reading through a disposable staged copy.
+	///
+	/// Backups must never be mutated — but SwiftData cannot open a store read-only when a
+	/// schema migration is pending ("Cannot migrate store in-place: … attempt to write a
+	/// readonly database"), which is exactly what aborted node-switch restores after a schema
+	/// advance and bounced the switch back to the previous device. Copying the store (plus
+	/// WAL/SHM sidecars) into a temp directory and opening the copy writable lets the
+	/// migration run against the disposable copy while the real backup stays byte-identical.
+	///
+	/// The staged directory is deliberately NOT removed when the caller finishes: the
+	/// `ModelContainer` object outlives the call (SwiftData keeps internal observers alive
+	/// until dealloc), and unlinking a live container's store trips SQLite's vnode watch —
+	/// it invalidates the open fds ("vnode unlinked while in use") and the broken container
+	/// can then trap on a later notification callout. Temp staging dirs are swept at next
+	/// launch (`sweepStagedBackupDirectories`), and the OS purges tmp/ anyway.
+	nonisolated static func stagedBackupContainer(
+		for backupStoreURL: URL,
+		schema: Schema
+	) throws -> ModelContainer {
+		let fm = FileManager.default
+		let stageDir = fm.temporaryDirectory
+			.appendingPathComponent("staged-backup-\(UUID().uuidString)", isDirectory: true)
+		try fm.createDirectory(at: stageDir, withIntermediateDirectories: true)
+		let stagedStoreURL = stageDir.appendingPathComponent(backupStoreURL.lastPathComponent)
+		for sidecar in ["", "-wal", "-shm"] {
+			let from = URL(fileURLWithPath: backupStoreURL.path + sidecar)
+			guard fm.fileExists(atPath: from.path) else { continue }
+			try fm.copyItem(at: from, to: URL(fileURLWithPath: stagedStoreURL.path + sidecar))
+		}
+		do {
+			// Writable so a pending lightweight migration can run — against the copy only.
+			let config = ModelConfiguration(url: stagedStoreURL, allowsSave: true)
+			return try ModelContainer(for: schema, configurations: config)
+		} catch {
+			// Nothing holds the copy open when the container failed to construct.
+			try? fm.removeItem(at: stageDir)
+			throw error
+		}
+	}
+
+	/// Remove staging directories left by previous sessions (never removed live — see
+	/// `stagedBackupContainer`). Called once at launch, when nothing can hold them open.
+	nonisolated static func sweepStagedBackupDirectories() {
+		let fm = FileManager.default
+		let tmp = fm.temporaryDirectory
+		guard let names = try? fm.contentsOfDirectory(atPath: tmp.path) else { return }
+		for name in names where name.hasPrefix("staged-backup-") {
+			try? fm.removeItem(at: tmp.appendingPathComponent(name))
 		}
 	}
 }

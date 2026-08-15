@@ -20,8 +20,6 @@ struct ChannelList: View {
 	@State private var isPresentingTraceRouteSentAlert = false
 	@State private var showingHelp = false
 
-	var restrictedChannels = ["gpio", "mqtt", "serial", "admin"]
-
 	private var visibleChannels: [ChannelEntity] {
 		guard let myInfo = node?.myInfo else { return [] }
 
@@ -30,9 +28,12 @@ struct ChannelList: View {
 			channelsByIndex[channel.index] = channel
 		}
 
+		// Module channels (reserved names) carry protocol traffic, not messages.
+		// ChannelForm warns when one of these names is entered, since a hidden
+		// channel with no explanation reads as data loss (#2275).
 		return channelsByIndex
 			.values
-			.filter { !restrictedChannels.contains($0.name?.lowercased() ?? "") }
+			.filter { !ChannelEntity.isReservedModuleName($0.name ?? "") }
 			.sorted { $0.index < $1.index }
 	}
 
@@ -47,7 +48,10 @@ struct ChannelList: View {
 		NavigationLink(value: channel) {
 			let mostRecent = channel.mostRecentPrivateMessage
 			let hasMessages = mostRecent != nil
-			let hasUnreadMessages = hasMessages && (channel.unreadMessages > 0)
+			// `channel.unreadMessages` runs a FetchRequest; fetch once and reuse for both the
+			// indicator and its VoiceOver label instead of hitting Core Data twice per row.
+			let unreadCount = channel.unreadMessages
+			let hasUnreadMessages = hasMessages && (unreadCount > 0)
 			let lastMessageTime = Date(timeIntervalSince1970: TimeInterval(Int64((mostRecent?.messageTimestamp ?? 0 ))))
 			let lastMessageDay = Calendar.current.dateComponents([.day], from: lastMessageTime).day ?? 0
 			let currentDay = Calendar.current.dateComponents([.day], from: Date()).day ?? 0
@@ -59,6 +63,8 @@ struct ChannelList: View {
 					.foregroundColor(.accentColor)
 					.brightness(0.2)
 			}
+			.accessibilityHidden(!hasUnreadMessages)
+			.accessibilityLabel(String(localized: "\(unreadCount) unread", comment: "VoiceOver: number of unread messages in a channel"))
 			CircleText(text: String(channel.index), color: .accentColor)
 				.brightness(0.2)
 
@@ -102,12 +108,13 @@ struct ChannelList: View {
 					}
 					if channel.mute {
 						Image(systemName: "bell.slash")
+							.accessibilityLabel(String(localized: "Muted", comment: "VoiceOver: channel notifications are muted"))
 					}
 				}
 
 				if hasMessages {
 					HStack(alignment: .top) {
-						Text(LocalizedStringKey(mostRecent?.messagePayload ?? " "))
+						MessagePreviewText(mostRecent?.messagePayload ?? " ")
 							.font(.footnote)
 							.foregroundColor(.onSurfaceVariant)
 					}
@@ -126,7 +133,7 @@ struct ChannelList: View {
 			.alignmentGuide(.listRowSeparatorLeading) {
 				$0[.leading]
 			}
-			.frame(height: 62)
+			.frame(minHeight: 62)
 			.contextMenu {
 				if hasMessages {
 					Button(role: .destructive) {
@@ -208,6 +215,7 @@ struct ChannelList: View {
 				.tint(Color(UIColor.secondarySystemBackground))
 				.foregroundColor(.accentColor)
 				.buttonStyle(.borderedProminent)
+				.accessibilityLabel(showingHelp ? String(localized: "Hide help", comment: "VoiceOver label for the help toggle button when help is showing") : String(localized: "Show help", comment: "VoiceOver label for the help toggle button when help is hidden"))
 			}
 			.controlSize(.regular)
 			.padding(5)

@@ -279,4 +279,101 @@ struct MessageAckStatusRefreshTests {
 
 		#expect(try resolvedDirectCount(userNum: user.num) == 0)
 	}
+
+	// MARK: - Message delivery status wording
+
+	@Test func deliveryStatus_sendingUsesCanonicalText() throws {
+		// A just-sent, still-unacknowledged message is "Sending…" — the send timeout hasn't elapsed.
+		let msg = try insertChannelMessage(channelIndex: 7_707, messageId: 970_700_001,
+										   timestamp: Int32(Date().timeIntervalSince1970))
+
+		let status = msg.deliveryStatus(isDirectMessage: false)
+
+		#expect(status.text == "Sending...")
+		#expect(status.canRetry == false)
+	}
+
+	@Test func deliveryStatus_orphanedSendTimesOutToNotDelivered() throws {
+		// A message left unacknowledged (no ACK, no routing error) well past the send timeout is
+		// surfaced as failed/retryable rather than an indefinite "Sending…" — the ack/nak never
+		// reached the app and the message is orphaned.
+		let stale = Int32(Date().timeIntervalSince1970 - MessageEntity.sendAckTimeout - 60)
+		let msg = try insertChannelMessage(channelIndex: 7_709, messageId: 970_900_001, timestamp: stale)
+
+		let status = msg.deliveryStatus(isDirectMessage: false)
+
+		#expect(status.text == "Not delivered")
+		#expect(status.canRetry == true)
+	}
+
+	@Test func deliveryStatus_channelImplicitAckIsDeliveredToMesh() throws {
+		let msg = try insertChannelMessage(channelIndex: 7_708, messageId: 970_800_001)
+		msg.receivedACK = true
+		try context.save()
+
+		let status = msg.deliveryStatus(isDirectMessage: false)
+
+		#expect(status.text == "Delivered to mesh")
+		#expect(status.canRetry == false)
+	}
+
+	@Test func deliveryStatus_directImplicitAckWarnsAndCanRetry() throws {
+		let user = try makeUser(num: 0x2017_0005)
+		let msg = try insertOutgoingDirectMessage(to: user, messageId: 971_000_005)
+		msg.receivedACK = true
+		msg.realACK = false
+		try context.save()
+
+		let status = msg.deliveryStatus(isDirectMessage: true)
+
+		#expect(status.text == "Relayed, not confirmed by recipient")
+		#expect(status.detail == "A node relayed this message, but the recipient has not confirmed it.")
+		#expect(status.canRetry == true)
+	}
+
+	@Test func deliveryStatus_directExplicitAckIsDeliveredToRecipient() throws {
+		let user = try makeUser(num: 0x2017_0006)
+		let msg = try insertOutgoingDirectMessage(to: user, messageId: 971_000_006)
+		msg.receivedACK = true
+		msg.realACK = true
+		try context.save()
+
+		let status = msg.deliveryStatus(isDirectMessage: true)
+
+		#expect(status.text == "Delivered to recipient")
+		#expect(status.canRetry == false)
+	}
+
+	@Test func deliveryStatus_maxRetransmitUsesMeshFailureText() throws {
+		let msg = try insertChannelMessage(channelIndex: 7_709, messageId: 970_900_001)
+		msg.ackError = Int32(RoutingError.maxRetransmit.rawValue)
+		try context.save()
+
+		let status = msg.deliveryStatus(isDirectMessage: false)
+
+		#expect(status.text == "Failed to deliver to mesh")
+		#expect(status.canRetry == true)
+	}
+
+	@Test func deliveryStatus_permanentFailuresDoNotOfferRetry() throws {
+		let noChannel = MessageEntity()
+		noChannel.ackError = Int32(RoutingError.noChannel.rawValue)
+		let tooLarge = MessageEntity()
+		tooLarge.ackError = Int32(RoutingError.tooLarge.rawValue)
+
+		#expect(noChannel.deliveryStatus(isDirectMessage: false).text == "Channel/key mismatch")
+		#expect(noChannel.deliveryStatus(isDirectMessage: false).canRetry == false)
+		#expect(tooLarge.deliveryStatus(isDirectMessage: false).text == "Message is too large to send")
+		#expect(tooLarge.deliveryStatus(isDirectMessage: false).canRetry == false)
+	}
+
+	@Test func deliveryStatus_pkiFailuresUseActionableKeyText() {
+		let senderMissingRecipientKey = MessageEntity()
+		senderMissingRecipientKey.ackError = Int32(RoutingError.pkiSendFailPublicKey.rawValue)
+		let recipientMissingSenderKey = MessageEntity()
+		recipientMissingSenderKey.ackError = Int32(RoutingError.pkiUnknownPubkey.rawValue)
+
+		#expect(senderMissingRecipientKey.deliveryStatus(isDirectMessage: true).text == "Recipient key unavailable")
+		#expect(recipientMissingSenderKey.deliveryStatus(isDirectMessage: true).text == "Recipient needs your key")
+	}
 }

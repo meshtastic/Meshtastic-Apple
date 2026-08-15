@@ -22,6 +22,7 @@ A Meshtastic user wants to discover what nodes and activity exist in their local
 3. **Given** a preset's dwell window completes, **When** the timer expires, **Then** the app advances to the next preset in the queue and repeats the process.
 4. **Given** all presets have completed, **When** the scan finishes, **Then** the app transitions to the Analysis state and stores the session.
 5. **Given** a scan is in progress, **When** the user taps "Stop Scan," **Then** the scan halts gracefully, partial results are saved, and the user's original ("home") preset is restored.
+6. **Given** the user opens the scan setup for the first time, **When** it appears, **Then** the presets are shown as a compact chip grid with the most-popular presets (LongFast, MediumFast) and any beacon-advertised presets pre-selected and flagged, and — when node history exists — the data-collection span is shown so they know how much history "Analyze Current Preset" will draw on.
 
 ---
 
@@ -93,6 +94,8 @@ A user whose hardware does not support the SX1280/SX1281 2.4 GHz radio should no
 
 ---
 
+> **Beacons:** Discovering, displaying, and joining meshes via `MESH_BEACON_APP` beacons — and configuring the user's own node to broadcast beacons — are specified in **[spec 014 — Mesh Beacons](../014-mesh-beacons/spec.md)**. That feature plugs into this scan engine: during a dwell it captures beacons and lets them enqueue scan targets into this engine's queue.
+
 ### Edge Cases
 
 - **Radio disconnects mid-dwell (not reboot)**: If the BLE connection is lost and does not recover within 60 seconds, the scan pauses and alerts the user. Partial data for the current preset is retained.
@@ -146,7 +149,11 @@ flowchart TD
     L --> M[On-Device AI Recommendation]
 ```
 
+> The Packet Router also routes `MESH_BEACON_APP` packets. Their handling — the beacon store, the Beacons UI, **Switch to this channel**, and how heard beacons enqueue scan targets into this engine's queue — is specified in [spec 014 — Mesh Beacons](../014-mesh-beacons/spec.md).
+
 ## Requirements *(mandatory)*
+
+> Beacon discovery, display, join, and broadcast requirements live in **[spec 014 — Mesh Beacons](../014-mesh-beacons/spec.md)**; the requirements below cover only the scan engine.
 
 ### Functional Requirements
 
@@ -179,11 +186,21 @@ flowchart TD
 - **FR-027**: When the connected radio reports `LocalStats` telemetry carrying a noise-floor value, the system MUST capture the **noise floor** (dBm) per preset (averaged over the preset's dwell window) on `DiscoveryPresetResultEntity`, surface it in the summary (per-preset card and an RF Health card that calls out the quietest channel), include it in the on-device AI analysis, and include it in the PDF export. A lower (more negative) noise floor indicates a cleaner channel.
 - **FR-028**: The system MUST provide an **Analyze Current Preset** action that runs a single, short (~60s) pass on the current modem preset, seeded from everything already in the database (every known node with per-node message/sensor counts and RF health), revealing the seeded nodes onto the map progressively (accelerated playback) and folding in any live packets during the dwell. Because it never changes the radio's preset, no config change or reboot occurs. Since the pass is built entirely from local data and sends nothing to the radio, it MUST run even with **no radio connected** (reviewing the mesh offline): the connection requirement and all connection-only setup/teardown (home LoRa-config snapshot, default-public-channel switch, preset/channel restore, reboot-wait) are skipped when there is no connected node. The "current preset" is taken from the connected node's LoRa config when connected, otherwise from the last preset persisted in `UserDefaults` (defaulting to LongFast). The full multi-preset scan still requires a connection because it changes the radio's preset. The user may stop at any time to view the summary.
 
+### Functional Requirements — Scan Setup Experience
+
+- **FR-029**: The scan setup MUST present the selectable modem presets as a **fixed three-column grid** of uniformly-sized chips (rather than one full-width row per preset), so the picker stays compact on iPhone and reads as three columns on iPad/Mac. Each chip's label MUST fit on at most two lines — auto-scaling the font down as needed so long names don't wrap to a third line — and every chip MUST be the same height regardless of label length or which markers it shows. Each chip MUST show its selection state (accent-filled with a checkmark when selected, an unobtrusive outline when not), a **beacon** indicator when a beacon advertised that preset, and a **star** indicator when the preset is a most-common public-mesh preset (FR-030). A footer legend MUST explain the star and beacon markers (each line shown only when that marker is present). Tapping a chip toggles its selection.
+- **FR-030**: On the scan setup's first appearance the system MUST pre-select (once per appearance, union-only so the user's own choices are never cleared) the most-common public-mesh modem presets — currently **LongFast** (by far the most used) and **MediumFast** (a distant second), as observed from public MQTT telemetry — intersected with the presets selectable on the connected hardware. This popular-preset seed is combined with the beacon-advertised preset and custom-channel pre-selection specified in [spec 014 — Mesh Beacons](../014-mesh-beacons/spec.md), so a first-time scan covers both the presets most meshes actually use and any mesh a beacon told us about. The popular-preset list is a curated default the app maintains; it is not fetched at runtime.
+- **FR-031**: The **Analyze Current Preset** flow (FR-028) MUST surface the **data-collection span** it draws on — the earliest `firstHeard` to the latest `lastHeard` across the node database — so the user understands the report reflects their full accumulated history. The span (a human, locale-aware length such as "3 weeks", plus the start date) MUST appear in the setup (a highlighted card and a line by the Analyze action) and, while a seeded pass is dwelling, alongside the dwell timer as "Analyzing _X_ of collected data". When there is no node history the span UI MUST hide gracefully. The Analyze section's explanatory copy MUST stay concise and accurate — current preset, seeded from stored data, no preset change or reboot, works offline — without over-stating the short live dwell.
+- **FR-032**: On iPad and Mac Catalyst the idle scan-setup content MUST be width-capped and centered (an intentional panel rather than stretching edge-to-edge); the scanning/complete state MUST use the map-filling layout (compact status header + map taking the remaining height). iPhone MUST keep the scrolling list. None of this may regress the iPhone layout.
+- **FR-033**: The Discovery experience MUST use a cohesive, native visual design: a hero header introducing the feature, section headers with SF Symbols and an accent tint, the data-span presented as a material/rounded card, and accent-tinted selection chips and progress indicators. All styling MUST use semantic colors so it holds in both light and dark mode and MUST respect Dynamic Type.
+- **FR-034**: The scan setup's selectable preset list MUST mirror the LoRa Config screen's 2.8-aware, region-constrained logic — beacons are a 2.8-only feature, so the picker must not offer presets the radio can't legally run. When connected to a 2.8+ radio that advertised a region→preset map for its region, the picker MUST show exactly that region's legal presets; this is the only case in which the 2.8-only Lite/Narrow/Tiny presets may appear, and only where the region permits them. Otherwise (offline, older firmware, or no advertised map) it MUST fall back to the widely-supported standard preset set and MUST NOT show the 2.8-only niche presets, which would otherwise render as unselectable clutter.
+
 ### Key Entities
 
 - **DiscoverySession**: A single scan run. Attributes: timestamp, presets scanned (list), total unique nodes found (deduplicated by node number across all presets), average channel utilization, total text messages counted, total sensor packets counted, furthest node distance, completion status (complete / stopped / interrupted), AI summary text, home preset (original preset to restore), user latitude, user longitude.
 - **DiscoveryPresetResult**: Per-preset data within a session. Attributes: preset name, dwell duration (seconds), unique nodes found, direct neighbor count, mesh neighbor count, infrastructure node count, message count, sensor packet count, average channel utilization, average airtime rate, packet success rate, packet failure rate, average noise floor (dBm) and noise-floor sample count (FR-027), AI summary text, raw LocalStats fields (numPacketsTx, numPacketsRx, numPacketsRxBad, numRxDupe, numTxRelay, numTxRelayCanceled, numOnlineNodes, numTotalNodes, uptimeSeconds).
-- **DiscoveredNode**: A node observed during a session. Attributes: node number, short name, long name, neighbor type (direct / mesh), latitude, longitude, distance from user, hop count, SNR, RSSI, message count, sensor packet count, preset on which discovered.
+- **DiscoveredNode**: A node observed during a session. Attributes: node number, short name, long name, neighbor type (direct / mesh), latitude, longitude, distance from user, hop count, SNR, RSSI, message count, sensor packet count, and the scan target on which discovered (the target label — preset name, or `Preset · ChannelName` for a custom-channel target).
+- **ScanTarget** (in-memory, not persisted): a single dwell target — a modem preset, an optional region override, and an optional custom channel (name + PSK). A target without a channel runs on the default public channel; a target carrying a custom channel tunes the radio to that channel (name + PSK) during its dwell and reverts afterward. Its label keys the per-target results. Custom-channel targets are populated by beacon discovery — see [spec 014 — Mesh Beacons](../014-mesh-beacons/spec.md).
 
 ## Success Criteria *(mandatory)*
 
@@ -221,7 +238,7 @@ flowchart TD
 - NeighborInfo packets are broadcast by at least some nodes in the mesh. If no NeighborInfo is received, the "Mesh Neighbors" layer will be empty and the summary will reflect this.
 - The on-device AI model (Apple Foundation Model) is available on the user's hardware. If the model is unavailable (e.g., older devices), the summary section falls back to a structured table without natural-language narrative.
 - Position data for the user's own node is available via GPS or manual pin. If no position is available, topology polylines and distance calculations are omitted.
-- The existing `saveLoRaConfig` method in `AccessoryManager+ToRadio.swift` is used to send preset changes (and to restore the home config). The existing `saveChannel` method is used to switch the primary channel to the default public channel for the scan and restore it afterward (FR-026). No new protobuf message types are required.
+- The existing `saveLoRaConfig` method in `AccessoryManager+ToRadio.swift` is used to send preset changes (and to restore the home config). The existing `saveChannel` method is used to switch the primary channel to the default public channel for a scan (FR-026) and restore it afterward. (Beacon-driven channel tuning and joins, which reuse these same methods, are specified in [spec 014 — Mesh Beacons](../014-mesh-beacons/spec.md).)
 - `saveChannel` (a `setChannel` admin message) does not reboot the radio, whereas `saveLoRaConfig` does. The restore order therefore matters: the primary channel is restored first (while connected), then the LoRa config (which reboots).
 - NeighborInfo packet processing (currently logged but unhandled at port 71) will need to be implemented as part of this feature.
 - The "2-Packet Rule" for airtime rate requires that the dwell window is long enough (≥15 min) for most nodes to send at least two DeviceMetrics packets at their default telemetry interval.

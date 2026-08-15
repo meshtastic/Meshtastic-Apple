@@ -108,6 +108,76 @@ extension AccessoryManager {
 		return Int64(meshPacket.id)
 	}
 
+	// MARK: - Edit transactions
+
+	/// Opens a firmware edit transaction (`begin_edit_settings`).
+	///
+	/// While a transaction is open the firmware sets `hasOpenEditTransaction` and defers every config
+	/// save, reboot, and Bluetooth teardown until the matching commit (AdminModule.cpp:468). Without the
+	/// bracket, each `set_config` / `set_module_config` is treated as a standalone write that saves to
+	/// flash, schedules a reboot, and disables Bluetooth, which drops the link partway through a
+	/// multi-item profile restore.
+	///
+	/// Callers MUST guarantee a matching `commitEditSettings`, including on the error path: the firmware
+	/// exposes no abort or rollback message, so an abandoned transaction leaves the radio deferring every
+	/// subsequent write from any client.
+	@discardableResult
+	public func beginEditSettings(fromUser: UserEntity, toUser: UserEntity, channel: Int32 = 0) async throws -> Int64 {
+		var adminPacket = AdminMessage()
+		adminPacket.beginEditSettings = true
+		return try await sendEditTransactionMessage(
+			adminPacket, fromUser: fromUser, toUser: toUser, channel: channel,
+			description: "🔧 Sent Begin Edit Settings Admin Message to: \(toUser.longName ?? "Unknown".localized)"
+		)
+	}
+
+	/// Closes a firmware edit transaction (`commit_edit_settings`).
+	///
+	/// The firmware clears `hasOpenEditTransaction`, performs one save across every segment, and reboots
+	/// (AdminModule.cpp:473-479). It also disables Bluetooth as the first step of the commit, so the
+	/// trailing ack routinely never arrives over BLE. Callers should treat a throw here as success when
+	/// the link has already dropped, and as a real failure only while still connected.
+	@discardableResult
+	public func commitEditSettings(fromUser: UserEntity, toUser: UserEntity, channel: Int32 = 0) async throws -> Int64 {
+		var adminPacket = AdminMessage()
+		adminPacket.commitEditSettings = true
+		return try await sendEditTransactionMessage(
+			adminPacket, fromUser: fromUser, toUser: toUser, channel: channel,
+			description: "🔧 Sent Commit Edit Settings Admin Message to: \(toUser.longName ?? "Unknown".localized)"
+		)
+	}
+
+	/// Shared envelope for the two transaction-control admin messages. Mirrors the packet shape the
+	/// `save*Config` calls use, including the session passkey when targeting a remote node.
+	private func sendEditTransactionMessage(
+		_ adminPacket: AdminMessage,
+		fromUser: UserEntity,
+		toUser: UserEntity,
+		channel: Int32,
+		description: String
+	) async throws -> Int64 {
+		var adminPacket = adminPacket
+		if fromUser != toUser {
+			adminPacket.sessionPasskey = toUser.userNode?.sessionPasskey ?? Data()
+		}
+		var meshPacket = MeshPacket()
+		meshPacket.to = UInt32(toUser.num)
+		meshPacket.from = UInt32(fromUser.num)
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.priority = MeshPacket.Priority.reliable
+		meshPacket.wantAck = true
+		meshPacket.channel = UInt32(channel)
+		var dataMessage = DataMessage()
+		guard let serializedData: Data = try? adminPacket.serializedData() else {
+			throw AccessoryError.ioFailed("Unable to serialize edit-transaction admin packet")
+		}
+		dataMessage.payload = serializedData
+		dataMessage.portnum = PortNum.adminApp
+		meshPacket.decoded = dataMessage
+		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: description)
+		return Int64(meshPacket.id)
+	}
+
 	// Send an admin message to a radio, save a message to core data for logging
 	private func sendAdminMessageToRadio(meshPacket: MeshPacket, adminDescription: String?) async throws {
 
@@ -174,6 +244,11 @@ extension AccessoryManager {
 				Logger.data.error("Failed to decode contact data: \(error.localizedDescription, privacy: .public)")
 				throw AccessoryError.appError("Unable to decode contact data from QR code.")
 			}
+		} else {
+			// Without this the method returned normally on undecodable input, so
+			// callers treated a failed import as a success.
+			Logger.data.error("Contact payload is not valid base64url data.")
+			throw AccessoryError.appError("Unable to decode contact data from QR code.")
 		}
 	}
 	
@@ -379,8 +454,9 @@ extension AccessoryManager {
 						try context.save()
 						Logger.data.info("💾 Saved a new sent message from \(self.activeDeviceNum?.toHex() ?? "0", privacy: .public) to \(toUserNum.toHex(), privacy: .public)")
 						// Donate outgoing message to SiriKit for CarPlay
+						// (CarPlay is iPhone-only, so skip on Mac Catalyst).
 						if !isEmoji {
-							#if os(iOS)
+							#if os(iOS) && !targetEnvironment(macCatalyst)
 							CarPlayIntentDonation.donateOutgoingMessage(content: message, toUserNum: toUserNum, channel: channel)
 							#endif
 						}
@@ -509,6 +585,12 @@ extension AccessoryManager {
 
 		var deliveredChannels: [Channel] = []
 		for cs in channelSet.settings {
+			// Stop sending channels if the calling Task was cancelled. The channels already
+			// sent are fine inside a transaction (commit will persist them); skipping the rest
+			// lets the import engine exit promptly. The local-state upserts below are safe to
+			// skip: they mirror to Core Data and are rebuilt on the next connect/drain.
+			try Task.checkCancellation()
+
 			var chan = Channel()
 			chan.role = (i == 0) ? .primary : .secondary
 			chan.settings = cs
@@ -637,6 +719,192 @@ extension AccessoryManager {
 		return Int64(meshPacket.id)
 	}
 
+	/// Join a mesh advertised by a beacon: set the primary channel to the offered channel (name +
+	/// PSK), then apply the offered region/preset. The channel change lands first (no reboot); the
+	/// LoRa config change reboots the radio onto the advertised mesh. `region`/`preset` fall back to
+	/// the radio's current values when the beacon didn't advertise them. `channelNum` is forced to 0
+	/// so the firmware derives the frequency from the new channel name + preset + region.
+	@MainActor
+	public func joinBeaconMesh(channelName: String, channelPSK: Data, region: RegionCodes?, preset: ModemPresets?) async throws {
+		guard let deviceNum = self.activeConnection?.device.num else {
+			throw AccessoryError.ioFailed("No active device")
+		}
+		guard let node = getNodeInfo(id: Int64(deviceNum), context: context), let user = node.user else {
+			throw AccessoryError.appError("Connected node not found")
+		}
+
+		// Snapshot the current primary channel so a partial failure (channel write succeeds but the
+		// LoRa apply fails) can be rolled back — otherwise the radio is stranded on a new channel with
+		// the old preset/region on an undecodable frequency (research D3 / contract C4).
+		let primarySnapshot = beaconPrimaryChannelSnapshot(for: node)
+
+		// D5: an offered channel with an empty PSK is an "open channel" — use the well-known default
+		// public key rather than sending an empty (no-encryption) key.
+		let effectivePSK = channelPSK.isEmpty ? Data([1]) : channelPSK
+
+		// 1. Set the primary channel to the beacon's offered channel (no reboot).
+		var channel = Channel()
+		channel.index = 0
+		channel.role = .primary
+		channel.settings.name = channelName
+		channel.settings.psk = effectivePSK
+		// Default to no position sharing on a foreign/beacon-advertised mesh (privacy). Otherwise the
+		// firmware defaults moduleSettings to full precision (32), leaking exact GPS coordinates —
+		// mirrors addBeaconChannel's handling for the same "join someone else's mesh" scenario.
+		channel.settings.moduleSettings.positionPrecision = 0
+		_ = try await saveChannel(channel: channel, fromUser: user, toUser: user)
+
+		// 2. Apply region/preset (reboots). Carry the full existing LoRa config so unrelated fields
+		//    (bandwidth, coding rate, overrides, MQTT flags…) aren't wiped.
+		var lora = Config.LoRaConfig()
+		if let existing = node.loRaConfig, !existing.isDeleted {
+			lora.usePreset = existing.usePreset
+			lora.hopLimit = UInt32(existing.hopLimit)
+			lora.txEnabled = existing.txEnabled
+			lora.txPower = existing.txPower
+			lora.bandwidth = UInt32(existing.bandwidth)
+			lora.codingRate = UInt32(existing.codingRate)
+			lora.spreadFactor = UInt32(existing.spreadFactor)
+			lora.frequencyOffset = existing.frequencyOffset
+			lora.overrideFrequency = existing.overrideFrequency
+			lora.overrideDutyCycle = existing.overrideDutyCycle
+			lora.sx126XRxBoostedGain = existing.sx126xRxBoostedGain
+			lora.ignoreMqtt = existing.ignoreMqtt
+			lora.configOkToMqtt = existing.okToMqtt
+			lora.region = Config.LoRaConfig.RegionCode(rawValue: Int(existing.regionCode)) ?? .unset
+			lora.modemPreset = ModemPresets(rawValue: Int(existing.modemPreset))?.protoEnumValue() ?? .longFast
+		}
+		if let region { lora.region = region.protoEnumValue() }
+		if let preset { lora.modemPreset = preset.protoEnumValue() }
+		lora.usePreset = true
+		// Derive the frequency from the new channel + preset + region rather than a stale slot.
+		lora.channelNum = 0
+		do {
+			_ = try await saveLoRaConfig(config: lora, fromUser: user, toUser: user)
+		} catch {
+			// Roll the primary channel back so we don't strand the radio between meshes. The channel
+			// write doesn't reboot, so this restore is safe.
+			Logger.admin.error("🔀 [Beacon] LoRa apply failed after channel write; rolling back primary channel: \(error.localizedDescription, privacy: .public)")
+			if let primarySnapshot {
+				do {
+					_ = try await saveChannel(channel: primarySnapshot, fromUser: user, toUser: user)
+					Logger.admin.info("🔀 [Beacon] Rolled back primary channel after failed switch")
+				} catch {
+					Logger.admin.error("🔀 [Beacon] Primary channel rollback also failed: \(error.localizedDescription, privacy: .public)")
+				}
+			}
+			throw error
+		}
+		Logger.mesh.info("🔀 [Beacon] Switched to advertised channel '\(channelName, privacy: .private)' and applied preset/region")
+	}
+
+	/// Reconstruct a `Channel` proto for the connected node's current primary channel (index 0),
+	/// used to roll back a failed Switch. Returns `nil` when there's no stored primary to restore.
+	@MainActor
+	private func beaconPrimaryChannelSnapshot(for node: NodeInfoEntity) -> Channel? {
+		guard let primary = node.myInfo?.channels.first(where: { $0.index == 0 || $0.role == 1 }) else {
+			return nil
+		}
+		var channel = Channel()
+		channel.index = 0
+		channel.role = .primary
+		channel.settings.name = primary.name ?? ""
+		channel.settings.psk = primary.psk ?? Data()
+		channel.settings.uplinkEnabled = primary.uplinkEnabled
+		channel.settings.downlinkEnabled = primary.downlinkEnabled
+		channel.settings.moduleSettings.positionPrecision = UInt32(primary.positionPrecision)
+		return channel
+	}
+
+	/// A secondary channel slot a beacon channel could replace (research D2).
+	public struct BeaconSecondaryChannel: Identifiable, Sendable {
+		public let index: Int32
+		public let name: String
+		public var id: Int32 { index }
+	}
+
+	/// The connected node's secondary channels (index 1–7) that a beacon channel could replace when
+	/// no free slot is available (research D2). Never returns the primary (index 0); falls back to
+	/// "Channel N" for an unnamed slot.
+	@MainActor
+	public func beaconReplaceableSecondaryChannels() -> [BeaconSecondaryChannel] {
+		guard let deviceNum = self.activeConnection?.device.num,
+			  let node = getNodeInfo(id: Int64(deviceNum), context: context) else {
+			return []
+		}
+		return (node.myInfo?.channels ?? [])
+			.filter { $0.index >= 1 && $0.index <= 7 }
+			.sorted { $0.index < $1.index }
+			.map { channel in
+				let name = channel.name?.isEmpty == false ? channel.name! : "Channel \(channel.index)"
+				return BeaconSecondaryChannel(index: channel.index, name: name)
+			}
+	}
+
+	/// Whether at least one secondary slot (1–7) is free on the connected node.
+	@MainActor
+	public func beaconHasFreeSecondarySlot() -> Bool {
+		guard let deviceNum = self.activeConnection?.device.num,
+			  let node = getNodeInfo(id: Int64(deviceNum), context: context) else {
+			return false
+		}
+		let usedIndexes = Set(node.myInfo?.channels.map { $0.index } ?? [])
+		return (Int32(1)...Int32(7)).contains { !usedIndexes.contains($0) }
+	}
+
+	/// Add a beacon's advertised channel to a secondary slot without touching the primary channel or
+	/// LoRa config — so **no reboot** (contract C3 / FR-016, research D2). Used by the Add channel
+	/// action, which is only offered when the offered mesh already runs on the radio's current
+	/// preset/region/frequency slot.
+	///
+	/// When `replacingIndex` is nil, picks the lowest free secondary index (1–7); when all secondary
+	/// slots are taken, throws so the UI can offer the replace-a-secondary picker (D2). When
+	/// `replacingIndex` is provided, writes into that (secondary) slot, overwriting the channel there —
+	/// never the primary (index 0).
+	@MainActor
+	public func addBeaconChannel(channelName: String, channelPSK: Data, replacingIndex: Int32? = nil) async throws {
+		guard let deviceNum = self.activeConnection?.device.num else {
+			throw AccessoryError.ioFailed("No active device")
+		}
+		guard let node = getNodeInfo(id: Int64(deviceNum), context: context), let user = node.user else {
+			throw AccessoryError.appError("Connected node not found")
+		}
+
+		let targetIndex: Int32
+		if let replacingIndex {
+			// Protect the primary channel — only secondary slots may be replaced (D2).
+			guard (Int32(1)...Int32(7)).contains(replacingIndex) else {
+				throw AccessoryError.appError("Cannot replace the primary channel")
+			}
+			targetIndex = replacingIndex
+		} else {
+			let usedIndexes = Set(node.myInfo?.channels.map { $0.index } ?? [])
+			// Secondary slots are 1...7 (0 is reserved for the primary channel).
+			guard let freeIndex = (Int32(1)...Int32(7)).first(where: { !usedIndexes.contains($0) }) else {
+				throw AccessoryError.appError("No free channel slot — remove a secondary channel first")
+			}
+			targetIndex = freeIndex
+		}
+
+		// D5: an offered channel with an empty PSK is an "open channel" — use the default public key.
+		let effectivePSK = channelPSK.isEmpty ? Data([1]) : channelPSK
+
+		var channel = Channel()
+		channel.index = targetIndex
+		channel.role = .secondary
+		channel.settings.name = channelName
+		channel.settings.psk = effectivePSK
+		// Default to no position sharing on an added foreign channel.
+		channel.settings.moduleSettings.positionPrecision = 0
+
+		_ = try await saveChannel(channel: channel, fromUser: user, toUser: user)
+
+		// Mirror the added channel into local state so it appears immediately (no reboot / re-sync).
+		await MeshPackets.shared.channelPacket(channel: channel, fromNum: deviceNum)
+
+		Logger.mesh.info("➕ [Beacon] Added advertised channel '\(channelName, privacy: .private)' to secondary slot \(targetIndex, privacy: .public) — no reboot")
+	}
+
 	public func sendWaypoint(waypoint: Waypoint) async throws {
 		guard let deviceNum = self.activeConnection?.device.num else {
 			Logger.services.error("Error while sending sendWaypoint request.  No active device.")
@@ -685,6 +953,22 @@ extension AccessoryManager {
 				wayPointEntity.locked = true
 			} else {
 				wayPointEntity.locked = false
+			}
+			// Persist the author's geofence here: the mesh ingest applies geometry only and
+			// never touches the notify flags (design#114 — those are receiver-local), so the
+			// sending device is the one place its own preferences are recorded. When
+			// re-sending someone else's waypoint the outgoing flags are forced false
+			// (see WaypointEntity.outgoingNotifyFlags), so only mirror them back into the
+			// entity for the author — otherwise this device's local opt-in would be wiped.
+			wayPointEntity.applyGeofenceGeometry(from: waypoint)
+			if WaypointEntity.isAuthoredLocally(
+				waypointId: wayPointEntity.id,
+				createdBy: wayPointEntity.createdBy,
+				activeDeviceNum: Int64(deviceNum)
+			) {
+				wayPointEntity.notifyOnEnter = waypoint.notifyOnEnter
+				wayPointEntity.notifyOnExit = waypoint.notifyOnExit
+				wayPointEntity.notifyFavoritesOnly = waypoint.notifyFavoritesOnly
 			}
 			if wayPointEntity.created == nil {
 				wayPointEntity.created = Date()
@@ -1067,6 +1351,36 @@ extension AccessoryManager {
 		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
 
 		await MeshPackets.shared.upsertDetectionSensorModuleConfigPacket(config: config, nodeNum: toUser.num)
+
+		return Int64(meshPacket.id)
+	}
+
+	public func saveMeshBeaconModuleConfig(config: ModuleConfig.MeshBeaconConfig, fromUser: UserEntity, toUser: UserEntity) async throws -> Int64 {
+
+		var adminPacket = AdminMessage()
+		adminPacket.setModuleConfig.meshBeacon = config
+		if fromUser != toUser {
+			adminPacket.sessionPasskey = toUser.userNode?.sessionPasskey ?? Data()
+		}
+		var meshPacket: MeshPacket = MeshPacket()
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.to = UInt32(toUser.num)
+		meshPacket.from	= UInt32(fromUser.num)
+		meshPacket.priority =  MeshPacket.Priority.reliable
+		meshPacket.wantAck = true
+
+		var dataMessage = DataMessage()
+		guard let adminData: Data = try? adminPacket.serializedData() else {
+			throw AccessoryError.ioFailed("saveMeshBeaconModuleConfig: Unable to serialize admin packet")
+		}
+		dataMessage.payload = adminData
+		dataMessage.portnum = PortNum.adminApp
+		meshPacket.decoded = dataMessage
+
+		let messageDescription = "🛟 Saved Mesh Beacon Module Config for \(toUser.longName ?? "Unknown".localized)"
+		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
+
+		await MeshPackets.shared.upsertMeshBeaconModuleConfigPacket(config: config, nodeNum: toUser.num)
 
 		return Int64(meshPacket.id)
 	}
@@ -1809,6 +2123,36 @@ extension AccessoryManager {
 		}
 		let messageDescription = "🚀 Sent Set Fixed Postion Admin Message to: \(fromUser.longName ?? "Unknown".localized) from: \(fromUser.longName ?? "Unknown".localized)"
 		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
+	}
+
+	/// Sets an explicit fixed position from supplied coordinates (e.g. restored from an imported device
+	/// profile), rather than the phone's current GPS fix. The companion `setFixedPosition(fromUser:channel:)`
+	/// pulls coordinates from `getPositionFromPhoneGPS` and can't set arbitrary coordinates; this overload
+	/// fills that gap. The position config's `fixedPosition` flag (sent separately) is what tells the
+	/// firmware to actually use these coordinates.
+	public func setFixedPosition(_ position: Position, fromUser: UserEntity, toUser: UserEntity, channel: Int32 = 0) async throws -> Int64 {
+		var adminPacket = AdminMessage()
+		adminPacket.setFixedPosition = position
+		if fromUser != toUser {
+			adminPacket.sessionPasskey = toUser.userNode?.sessionPasskey ?? Data()
+		}
+		var meshPacket = MeshPacket()
+		meshPacket.to = UInt32(toUser.num)
+		meshPacket.from = UInt32(fromUser.num)
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.priority = MeshPacket.Priority.reliable
+		meshPacket.wantAck = true
+		meshPacket.channel = UInt32(channel)
+		var dataMessage = DataMessage()
+		guard let serializedData: Data = try? adminPacket.serializedData() else {
+			throw AccessoryError.ioFailed("setFixedPosition: Unable to serialize admin packet")
+		}
+		dataMessage.payload = serializedData
+		dataMessage.portnum = PortNum.adminApp
+		meshPacket.decoded = dataMessage
+		let messageDescription = "🚀 Sent Set Fixed Position (imported) Admin Message to: \(toUser.longName ?? "Unknown".localized)"
+		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
+		return Int64(meshPacket.id)
 	}
 
 	public func removeFixedPosition(fromUser: UserEntity, channel: Int32) async throws {

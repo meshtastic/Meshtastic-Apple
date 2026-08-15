@@ -40,6 +40,36 @@ enum DiscoveryScanState: Equatable, CustomStringConvertible {
 	}
 }
 
+// MARK: - Scan Target
+
+/// A single dwell target for the scan. Manual selections and public-channel beacons leave
+/// `channelName` nil and run on the scan's default public channel; a custom-channel beacon carries
+/// the advertised channel (name + PSK) so the scan tunes the radio to that mesh's frequency and can
+/// decode it. An optional region override lets a beacon steer the scan to the region it runs in.
+struct ScanTarget: Equatable {
+	let preset: ModemPresets
+	let regionRaw: Int?
+	let channelName: String?
+	let channelPSK: Data?
+
+	init(preset: ModemPresets, regionRaw: Int? = nil, channelName: String? = nil, channelPSK: Data? = nil) {
+		self.preset = preset
+		self.regionRaw = regionRaw
+		self.channelName = channelName
+		self.channelPSK = channelPSK
+	}
+
+	/// True when the target names a specific (non-public) channel the scan must tune to.
+	var isCustomChannel: Bool { (channelName?.isEmpty == false) }
+
+	/// The name shown in results and used to key discovered nodes. Custom-channel targets append the
+	/// channel so two targets on the same preset (public vs. a beacon's channel) don't collide.
+	var label: String {
+		if let name = channelName, !name.isEmpty { return "\(preset.name) · \(name)" }
+		return preset.name
+	}
+}
+
 // MARK: - DiscoveryScanEngine
 
 @MainActor @Observable
@@ -49,8 +79,19 @@ final class DiscoveryScanEngine {
 
 	var currentState: DiscoveryScanState = .idle
 	var activePreset: ModemPresets?
+	/// The full target currently dwelling (preset + optional region + custom channel). `activePreset`
+	/// mirrors `activeTarget?.preset` for display; `activeTargetLabel` keys results/nodes.
+	var activeTarget: ScanTarget?
+	private var activeTargetLabel: String = ""
+	/// True while the scan has the radio tuned to a beacon's custom channel, so the next
+	/// public/manual target knows to switch back to the default public channel first.
+	private var scanChannelIsCustom = false
 	var dwellTimeRemaining: TimeInterval = 0
 	var selectedPresets: [ModemPresets] = []
+	/// Custom-channel targets the user pre-selected in the scan setup (from beacons that advertised
+	/// a channel). Queued alongside `selectedPresets` when the scan starts, so a beacon's private
+	/// mesh can be included up front instead of only being auto-queued if its beacon is heard again.
+	var selectedBeaconTargets: [ScanTarget] = []
 	var dwellDuration: TimeInterval = 900 // 15 minutes default
 	var session: DiscoverySessionEntity?
 	var errorMessage: String?
@@ -66,7 +107,7 @@ final class DiscoveryScanEngine {
 	/// finishes. Channel changes don't reboot the radio, so this is applied before — and restored
 	/// after — the LoRa preset changes, while the connection is still up.
 	private var homePrimaryChannel: Channel?
-	private var presetQueue: [ModemPresets] = []
+	private var presetQueue: [ScanTarget] = []
 	private var currentPresetResult: DiscoveryPresetResultEntity?
 	private var dwellTask: Task<Void, Never>?
 	private var reconnectTimeoutTask: Task<Void, Never>?
@@ -136,8 +177,8 @@ final class DiscoveryScanEngine {
 			Logger.discovery.warning("📡 [Discovery] Cannot start scan — not idle (state: \(self.currentState))")
 			return
 		}
-		guard !selectedPresets.isEmpty else {
-			Logger.discovery.warning("📡 [Discovery] Cannot start scan — no presets selected")
+		guard !selectedPresets.isEmpty || !selectedBeaconTargets.isEmpty else {
+			Logger.discovery.warning("📡 [Discovery] Cannot start scan — no presets or beacon channels selected")
 			return
 		}
 		// A normal multi-preset scan drives the radio through each preset, so it requires a live
@@ -184,7 +225,7 @@ final class DiscoveryScanEngine {
 
 		// Create session
 		let newSession = DiscoverySessionEntity()
-		newSession.presetsScanned = selectedPresets.map(\.name).joined(separator: ",")
+		newSession.presetsScanned = (selectedPresets.map(\.name) + selectedBeaconTargets.map(\.label)).joined(separator: ",")
 		newSession.homePreset = homePreset?.name ?? ""
 		newSession.completionStatus = "inProgress"
 
@@ -197,8 +238,13 @@ final class DiscoveryScanEngine {
 		context.insert(newSession)
 		session = newSession
 
-		// Build preset queue
-		presetQueue = selectedPresets
+		// Build preset queue — manual selections run on the default public channel. Custom-channel
+		// targets the user pre-selected (from beacons) are queued next; further beacon targets are
+		// still appended dynamically as beacons arrive during dwells.
+		presetQueue = selectedPresets.map { ScanTarget(preset: $0) }
+		for target in selectedBeaconTargets where !presetQueue.contains(target) {
+			presetQueue.append(target)
+		}
 		deviceMetricsHistory = [:]
 
 		Logger.discovery.info("📡 [Discovery] Scan started with \(self.selectedPresets.count) presets, dwell: \(self.dwellDuration)s")
@@ -230,13 +276,16 @@ final class DiscoveryScanEngine {
 			return
 		}
 
-		let nextPreset = presetQueue.removeFirst()
+		let target = presetQueue.removeFirst()
+		let nextPreset = target.preset
+		activeTarget = target
+		activeTargetLabel = target.label
 		activePreset = nextPreset
 		transitionTo(.shifting)
 
 		// Create preset result
 		let presetResult = DiscoveryPresetResultEntity()
-		presetResult.presetName = nextPreset.name
+		presetResult.presetName = target.label
 		presetResult.dwellDurationSeconds = Int(dwellDuration)
 		presetResult.session = session
 		session?.presetResults.append(presetResult)
@@ -267,10 +316,16 @@ final class DiscoveryScanEngine {
 			return
 		}
 
-		Logger.discovery.info("📡 [Discovery] Shifting to preset: \(nextPreset.name)")
+		Logger.discovery.info("📡 [Discovery] Shifting to target: \(target.label)")
 
-		// Check if already on this preset (skip config change)
-		if accessoryManager != nil, let context = modelContext {
+		// Tune the primary channel for this target before the (rebooting) preset change: a
+		// custom-channel beacon target switches to its channel; a public/manual target switches
+		// back to the default public channel only if a previous custom target left us tuned away.
+		await applyChannel(for: target)
+
+		// Skip the config change only for a plain public target we're already sitting on (no region
+		// override, no custom channel). Custom-channel / region-override targets always re-send.
+		if !target.isCustomChannel, target.regionRaw == nil, accessoryManager != nil, let context = modelContext {
 			let connectedNodeNum = Int64(UserDefaults.preferredPeripheralNum)
 			let node = getNodeInfo(id: connectedNodeNum, context: context)
 			if let currentModemPreset = node?.loRaConfig?.modemPreset,
@@ -283,7 +338,7 @@ final class DiscoveryScanEngine {
 		}
 
 		// Send config change
-		await sendPresetChange(nextPreset)
+		await sendPresetChange(for: target)
 	}
 
 	// MARK: - LoRa Config Helper
@@ -323,7 +378,8 @@ final class DiscoveryScanEngine {
 
 	// MARK: - Send Preset Change
 
-	private func sendPresetChange(_ preset: ModemPresets) async {
+	private func sendPresetChange(for target: ScanTarget) async {
+		let preset = target.preset
 		guard let accessoryManager, let context = modelContext else { return }
 
 		let connectedNodeNum = Int64(UserDefaults.preferredPeripheralNum)
@@ -348,10 +404,18 @@ final class DiscoveryScanEngine {
 		if let existingConfig = connectedNode.loRaConfig, !existingConfig.isDeleted {
 			var scanConfig = loRaConfigProto(from: existingConfig, presetOverride: preset)
 			scanConfig.channelNum = 0
+			// A beacon may advertise the region its mesh runs in; apply it so the derived frequency
+			// matches. Manual/public targets carry no override and keep the user's current region.
+			if let regionRaw = target.regionRaw, let region = RegionCodes(rawValue: regionRaw) {
+				scanConfig.region = region.protoEnumValue()
+			}
 			loraConfig = scanConfig
 		} else {
 			var minimal = Config.LoRaConfig()
 			minimal.modemPreset = preset.protoEnumValue()
+			if let regionRaw = target.regionRaw, let region = RegionCodes(rawValue: regionRaw) {
+				minimal.region = region.protoEnumValue()
+			}
 			loraConfig = minimal
 			Logger.discovery.warning("📡 [Discovery] No existing LoRa config to copy — sending preset-only config")
 		}
@@ -574,14 +638,14 @@ final class DiscoveryScanEngine {
 			let nodeNum = Int64(neighbor.nodeID)
 			// Skip the scanning node itself
 			guard nodeNum != connectedNodeNum else { continue }
-			let existingNode = session?.discoveredNodes.first(where: { $0.nodeNum == nodeNum && $0.presetName == activePreset?.name ?? "" })
+			let existingNode = session?.discoveredNodes.first(where: { $0.nodeNum == nodeNum && $0.presetName == activeTargetLabel })
 
 			if existingNode == nil {
 				let discoveredNode = DiscoveredNodeEntity()
 				discoveredNode.nodeNum = nodeNum
 				discoveredNode.neighborType = "mesh"
 				discoveredNode.snr = neighbor.snr
-				discoveredNode.presetName = activePreset?.name ?? ""
+				discoveredNode.presetName = activeTargetLabel
 				discoveredNode.session = session
 				discoveredNode.presetResult = currentPresetResult
 				context.insert(discoveredNode)
@@ -601,6 +665,76 @@ final class DiscoveryScanEngine {
 		}
 	}
 
+	/// Store a MESH_BEACON_APP beacon heard during a dwell and auto-add the mesh it advertises to
+	/// the scan so this run also dwells on it. A public-channel beacon adds its modem preset (the
+	/// scan already listens on the default public channel); a custom-channel beacon adds a target
+	/// carrying the offered channel (name + PSK) so the scan tunes to that mesh's frequency and can
+	/// decode it — scanning the bare preset on the public channel would be the wrong frequency.
+	func handleBeacon(_ beacon: MeshBeacon, packet: MeshPacket) {
+		guard currentState == .dwell, let context = modelContext else { return }
+
+		let fromNodeNum = Int64(packet.from)
+		// Skip beacons from the scanning node itself.
+		let connectedNodeNum = Int64(UserDefaults.preferredPeripheralNum)
+		guard fromNodeNum != connectedNodeNum else { return }
+
+		let hasCustomChannel = beacon.hasOfferChannel && !beacon.offerChannel.name.isEmpty
+
+		let entity = DiscoveredBeaconEntity()
+		entity.nodeNum = fromNodeNum
+		entity.message = beacon.message
+		entity.offerRegion = beacon.offerRegion != .unset ? beacon.offerRegion.rawValue : 0
+		entity.offerPreset = beacon.hasOfferPreset ? beacon.offerPreset.rawValue : -1
+		entity.hasOfferChannel = hasCustomChannel
+		entity.offerChannelName = hasCustomChannel ? beacon.offerChannel.name : ""
+		entity.offerChannelPSK = hasCustomChannel ? beacon.offerChannel.psk : Data()
+		entity.snr = packet.rxSnr
+		entity.rssi = Int(packet.rxRssi)
+		entity.timestamp = Date()
+		entity.heardOnPresetName = activeTargetLabel
+		entity.session = session
+		entity.presetResult = currentPresetResult
+
+		if let knownNode = getNodeInfo(id: fromNodeNum, context: context) {
+			entity.shortName = knownNode.user?.shortName ?? ""
+			entity.longName = knownNode.user?.longName ?? ""
+		}
+
+		context.insert(entity)
+		session?.beacons.append(entity)
+		currentPresetResult?.beacons.append(entity)
+
+		Logger.discovery.info("📡 [Discovery] Beacon from \(fromNodeNum, privacy: .private) — offerPreset \(entity.offerPreset), offerRegion \(entity.offerRegion), customChannel \(hasCustomChannel)")
+
+		autoQueueBeacon(beacon)
+	}
+
+	/// Append the mesh a beacon advertises to the scan queue when it isn't the active target,
+	/// already queued, or already dwelled this session. `shiftToNextPreset()` consumes the queue
+	/// with `removeFirst()`, so appending only extends future dwells and never disrupts the current
+	/// one. Custom-channel targets carry the offered channel so the dwell tunes to that mesh.
+	private func autoQueueBeacon(_ beacon: MeshBeacon) {
+		guard beacon.hasOfferPreset, let preset = ModemPresets(rawValue: beacon.offerPreset.rawValue) else { return }
+		let regionRaw = beacon.offerRegion != .unset ? beacon.offerRegion.rawValue : nil
+		let hasCustomChannel = beacon.hasOfferChannel && !beacon.offerChannel.name.isEmpty
+		let target = ScanTarget(
+			preset: preset,
+			regionRaw: regionRaw,
+			channelName: hasCustomChannel ? beacon.offerChannel.name : nil,
+			channelPSK: hasCustomChannel ? beacon.offerChannel.psk : nil
+		)
+
+		if activeTarget == target { return }
+		if presetQueue.contains(target) { return }
+		if session?.presetResults.contains(where: { $0.presetName == target.label }) == true { return }
+
+		presetQueue.append(target)
+		// Reflect public-preset targets in the user-visible selection; custom-channel targets are a
+		// (preset + channel) pair that the ModemPresets-only selection can't represent.
+		if !target.isCustomChannel, !selectedPresets.contains(preset) { selectedPresets.append(preset) }
+		Logger.discovery.info("📡 [Discovery] Auto-queued beacon target: \(target.label)")
+	}
+
 	func handleMeshPacket(_ packet: MeshPacket, portNum: PortNum) {
 		guard currentState == .dwell, let context = modelContext else { return }
 
@@ -615,7 +749,7 @@ final class DiscoveryScanEngine {
 		let hopsAway = hopStart > 0 ? hopStart - hopLimit : 0
 
 		// Find or create discovered node for this preset
-		var discoveredNode = session?.discoveredNodes.first(where: { $0.nodeNum == fromNodeNum && $0.presetName == activePreset?.name ?? "" })
+		var discoveredNode = session?.discoveredNodes.first(where: { $0.nodeNum == fromNodeNum && $0.presetName == activeTargetLabel })
 
 		if discoveredNode == nil {
 			let newNode = DiscoveredNodeEntity()
@@ -624,7 +758,7 @@ final class DiscoveryScanEngine {
 			newNode.hopCount = hopsAway
 			newNode.snr = packet.rxSnr
 			newNode.rssi = Int(packet.rxRssi)
-			newNode.presetName = activePreset?.name ?? ""
+			newNode.presetName = activeTargetLabel
 			newNode.session = session
 			newNode.presetResult = currentPresetResult
 			context.insert(newNode)
@@ -891,6 +1025,9 @@ extension DiscoveryScanEngine {
 		homePreset = nil
 		homeLoRaConfig = nil
 		homePrimaryChannel = nil
+		activeTarget = nil
+		activeTargetLabel = ""
+		scanChannelIsCustom = false
 		transitionTo(.idle)
 	}
 
@@ -972,6 +1109,12 @@ extension DiscoveryScanEngine {
 
 extension DiscoveryScanEngine {
 
+	/// True while the active run is a seeded "Analyze Current Preset" pass — built from the full
+	/// local history rather than a live multi-preset scan. Read-only mirror of the private
+	/// `seedFromExistingData` flag so the setup/progress UI can show the collected-data span
+	/// alongside the short (~60s) dwell timer.
+	var isSeededRun: Bool { seedFromExistingData }
+
 	/// Starts a discovery scan limited to the radio's CURRENT modem preset, seeded with everything
 	/// already in SwiftData. The radio is already on this preset, so there's no config change or
 	/// reboot — the dwell begins immediately and `seedDiscoveredNodesFromDatabase()` folds in all
@@ -1033,42 +1176,77 @@ extension DiscoveryScanEngine {
 		let userLat = session.userLatitude
 		let userLon = session.userLongitude
 
+		// Snapshot every value the reveal needs in one synchronous pass, BEFORE the timed loop.
+		// The loop below awaits between batches for most of the dwell; live ingestion keeps
+		// mutating the store the whole time, and touching a `NodeInfoEntity`/`PositionEntity`
+		// whose row was pruned mid-reveal traps in SwiftData's persisted-property accessor
+		// (reproduced under a 100 pkt/s TCP stress replay). Plain values can't be invalidated.
+		struct SeededNodeSnapshot {
+			let nodeNum: Int64
+			let shortName: String
+			let longName: String
+			let hopCount: Int
+			let snr: Float
+			let rssi: Int
+			let isInfrastructure: Bool
+			let latitude: Double
+			let longitude: Double
+			let messageCount: Int
+			let sensorPacketCount: Int
+		}
+		let snapshots: [SeededNodeSnapshot] = candidates.map { node in
+			SeededNodeSnapshot(
+				nodeNum: node.num,
+				shortName: node.user?.shortName ?? "",
+				longName: node.user?.longName ?? "",
+				hopCount: Int(node.hopsAway),
+				snr: node.snr,
+				rssi: Int(node.rssi),
+				// Infrastructure roles: Router (2), Router Late (11), Client Base (12)
+				isInfrastructure: [2, 11, 12].contains(Int(node.user?.role ?? 0)),
+				latitude: node.latestPosition?.latitude ?? 0.0,
+				longitude: node.latestPosition?.longitude ?? 0.0,
+				messageCount: messageCounts[node.num] ?? 0,
+				// Sensor packets ≈ environment (1) + air-quality (3) telemetry the node has reported,
+				// matching the live scan's sensorPacketCount (.environmentMetrics + .airQualityMetrics).
+				sensorPacketCount: node.telemetries.filter { $0.metricsType == 1 || $0.metricsType == 3 }.count
+			)
+		}
+
 		// Spread the reveal across ~85% of the dwell (so it finishes before finalize), in batches
 		// over ~120 ticks for a smooth, accelerated fill regardless of mesh size.
 		let revealWindow = max(2.0, dwellDuration * 0.85)
 		let ticks = 120.0
 		let tick = max(0.08, revealWindow / ticks)
-		let batchSize = max(1, Int((Double(candidates.count) / ticks).rounded(.up)))
+		let batchSize = max(1, Int((Double(snapshots.count) / ticks).rounded(.up)))
 
 		var index = 0
 		var seeded = 0
-		while index < candidates.count {
+		while index < snapshots.count {
 			if Task.isCancelled { break }
-			let end = min(index + batchSize, candidates.count)
-			for node in candidates[index..<end] {
+			// A device switch can reset the container mid-scan; the session/result entities die
+			// with it. Stop revealing rather than trap on the next relationship write.
+			guard session.modelContext != nil, result.modelContext != nil else { break }
+			let end = min(index + batchSize, snapshots.count)
+			for snapshot in snapshots[index..<end] {
 				let dn = DiscoveredNodeEntity()
-				dn.nodeNum = node.num
-				dn.shortName = node.user?.shortName ?? ""
-				dn.longName = node.user?.longName ?? ""
-				let hops = Int(node.hopsAway)
-				dn.hopCount = hops
-				dn.neighborType = hops <= 1 ? "direct" : "mesh"
-				dn.snr = node.snr
-				dn.rssi = Int(node.rssi)
-				// Infrastructure roles: Router (2), Router Late (11), Client Base (12)
-				dn.isInfrastructure = [2, 11, 12].contains(Int(node.user?.role ?? 0))
-				if let pos = node.positions.last {
-					dn.latitude = pos.latitude ?? 0.0
-					dn.longitude = pos.longitude ?? 0.0
-					if userLat != 0.0 || userLon != 0.0, dn.latitude != 0.0 || dn.longitude != 0.0 {
-						let userLocation = CLLocation(latitude: userLat, longitude: userLon)
-						let nodeLocation = CLLocation(latitude: dn.latitude, longitude: dn.longitude)
-						dn.distanceFromUser = userLocation.distance(from: nodeLocation)
-					}
+				dn.nodeNum = snapshot.nodeNum
+				dn.shortName = snapshot.shortName
+				dn.longName = snapshot.longName
+				dn.hopCount = snapshot.hopCount
+				dn.neighborType = snapshot.hopCount <= 1 ? "direct" : "mesh"
+				dn.snr = snapshot.snr
+				dn.rssi = snapshot.rssi
+				dn.isInfrastructure = snapshot.isInfrastructure
+				dn.latitude = snapshot.latitude
+				dn.longitude = snapshot.longitude
+				if userLat != 0.0 || userLon != 0.0, snapshot.latitude != 0.0 || snapshot.longitude != 0.0 {
+					let userLocation = CLLocation(latitude: userLat, longitude: userLon)
+					let nodeLocation = CLLocation(latitude: snapshot.latitude, longitude: snapshot.longitude)
+					dn.distanceFromUser = userLocation.distance(from: nodeLocation)
 				}
-				dn.messageCount = messageCounts[node.num] ?? 0
-				// Sensor packets ≈ environment (1) + air-quality (2) telemetry the node has reported.
-				dn.sensorPacketCount = node.telemetries.filter { $0.metricsType == 1 || $0.metricsType == 2 }.count
+				dn.messageCount = snapshot.messageCount
+				dn.sensorPacketCount = snapshot.sensorPacketCount
 				dn.presetName = presetName
 				dn.session = session
 				dn.presetResult = result
@@ -1078,7 +1256,7 @@ extension DiscoveryScanEngine {
 				seeded += 1
 			}
 			index = end
-			if index < candidates.count {
+			if index < snapshots.count {
 				try? await Task.sleep(for: .seconds(tick))
 			}
 		}
@@ -1143,6 +1321,49 @@ extension DiscoveryScanEngine {
 		} catch {
 			// Leave the snapshot in place so restore still runs; surface the failure.
 			Logger.discovery.error("📡 [Discovery] Failed to set default public channel: \(error.localizedDescription)")
+		}
+	}
+
+	/// Tunes the primary channel for a scan target. Custom-channel beacon targets switch the radio
+	/// to the offered channel (name + PSK) so the dwell lands on that mesh's frequency and can
+	/// decode it; public/manual targets switch back to the default public channel only when a
+	/// previous custom target left the radio tuned away. Channel changes don't reboot, so this runs
+	/// while the link is up, ahead of the (rebooting) preset change. The user's real channel is
+	/// snapshotted the first time we tune away and restored verbatim in `restorePrimaryChannel()`.
+	private func applyChannel(for target: ScanTarget) async {
+		guard let accessoryManager, let context = modelContext else { return }
+		let connectedNodeNum = Int64(UserDefaults.preferredPeripheralNum)
+		guard let connectedNode = getNodeInfo(id: connectedNodeNum, context: context),
+			  let fromUser = connectedNode.user,
+			  let primary = connectedNode.myInfo?.channels.first(where: { $0.role == 1 }) else { return }
+
+		if target.isCustomChannel, let name = target.channelName, let psk = target.channelPSK {
+			// Snapshot the real primary once so restore returns to it, even if we began the scan on
+			// the default public channel (where prepareDefaultPublicChannel took no snapshot).
+			if homePrimaryChannel == nil { homePrimaryChannel = channelProto(from: primary) }
+			var channel = channelProto(from: primary)
+			channel.settings.name = name
+			channel.settings.psk = psk
+			do {
+				_ = try await accessoryManager.saveChannel(channel: channel, fromUser: fromUser, toUser: fromUser)
+				scanChannelIsCustom = true
+				Logger.discovery.info("📡 [Discovery] Tuned primary channel to beacon channel for the scan")
+			} catch {
+				Logger.discovery.error("📡 [Discovery] Failed to set beacon channel: \(error.localizedDescription)")
+			}
+		} else if scanChannelIsCustom {
+			// Public/manual target following a custom one: revert to the default public channel so the
+			// dwell hears the public mesh again.
+			var channel = channelProto(from: primary)
+			channel.settings.name = ""
+			channel.settings.psk = Self.defaultChannelKey
+			do {
+				_ = try await accessoryManager.saveChannel(channel: channel, fromUser: fromUser, toUser: fromUser)
+				scanChannelIsCustom = false
+				Logger.discovery.info("📡 [Discovery] Reverted primary channel to the default public channel")
+			} catch {
+				Logger.discovery.error("📡 [Discovery] Failed to revert to public channel: \(error.localizedDescription)")
+			}
 		}
 	}
 

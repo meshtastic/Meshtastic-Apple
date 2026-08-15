@@ -45,7 +45,6 @@ struct NetworkConfig: View {
 							Label("Enabled", systemImage: "wifi")
 							Text("Enabling WiFi will disable the bluetooth connection to the app.")
 						}
-						.tint(.accentColor)
 						
 						HStack {
 							Label("SSID", systemImage: "network")
@@ -88,9 +87,7 @@ struct NetworkConfig: View {
 								Label("Enabled", systemImage: "network")
 								Text("Enabling Ethernet will disable the bluetooth connection to the app.")
 							}
-							.tint(.accentColor)
 						}
-						.tint(.accentColor)
 					}
 				}
 				
@@ -176,7 +173,6 @@ struct NetworkConfig: View {
 							Label("Enabled", systemImage: "point.3.connected.trianglepath.dotted")
 							Text("Enable broadcasting packets via UDP over the local network.")
 						}
-						.tint(.accentColor)
 					}
 				}
 			}

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IntentPhrases</key>
+	<array>
+		<dict>
+			<key>IntentExamples</key>
+			<array>
+				<string>Надіслати повідомлення в Meshtastic</string>
+				<string>Надіслати повідомлення Meshtastic Івану</string>
+			</array>
+			<key>IntentName</key>
+			<string>INSendMessageIntent</string>
+		</dict>
+		<dict>
+			<key>IntentExamples</key>
+			<array>
+				<string>Шукати повідомлення Meshtastic</string>
+				<string>Знайти повідомлення в Meshtastic</string>
+			</array>
+			<key>IntentName</key>
+			<string>INSearchForMessagesIntent</string>
+		</dict>
+		<dict>
+			<key>IntentExamples</key>
+			<array>
+				<string>Позначити повідомлення Meshtastic як прочитане</string>
+				<string>Позначити повідомлення Meshtastic як прочитані</string>
+			</array>
+			<key>IntentName</key>
+			<string>INSetMessageAttributeIntent</string>
+		</dict>
+	</array>
+</dict>
+</plist>

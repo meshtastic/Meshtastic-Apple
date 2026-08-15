@@ -128,6 +128,26 @@ final class SendMessageIntentHandler: NSObject, INSendMessageIntentHandling {
 					let context = PersistenceController.shared.context
 					return IntentMessageConverters.channelIndex(for: groupName.spokenPhrase, in: context)
 				}
+				// A group name that matches no channel is a failure — the old
+				// fallback to index 0 silently sent the reply to Primary instead.
+				guard let channelIndex else {
+					Logger.services.error("CarPlay/Siri: No channel matches group name \(groupName.spokenPhrase, privacy: .public)")
+					return INSendMessageIntentResponse(code: .failure, userActivity: nil)
+				}
+				try await AccessoryManager.shared.sendMessage(
+					message: content,
+					toUserNum: 0,
+					channel: Int32(channelIndex),
+					isEmoji: false,
+					replyID: 0
+				)
+			} else if let conversationId = intent.conversationIdentifier,
+					  let channelIndex = IntentMessageConverters.channelIndex(fromHandleOrName: conversationId) {
+				// Channel reply where Siri dropped the speakable group name (seen on
+				// notification replies): the conversation identifier still carries
+				// "channel-<N>". Route by it — before this, the reply fell through to
+				// the recipient handle below, which is the message's SENDER, and the
+				// channel reply went out as a DM to that person.
 				try await AccessoryManager.shared.sendMessage(
 					message: content,
 					toUserNum: 0,

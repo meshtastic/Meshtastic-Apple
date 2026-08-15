@@ -19,7 +19,7 @@ struct ConnectionTip: Tip {
 		Text("Swipe left to disconnect. Long press to start the live activity.")
 	}
 	var image: Image? {
-		Image(systemName: "antenna.radiowaves.left.and.right")
+		Image("custom.mesh.radio")
 	}
 	var options: [TipOption] {
 		Tips.IgnoresDisplayFrequency(true)

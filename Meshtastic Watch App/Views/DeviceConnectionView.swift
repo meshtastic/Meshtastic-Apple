@@ -29,14 +29,20 @@ struct DeviceConnectionView: View {
 
 	@ViewBuilder
 	private var reachableView: some View {
-		Image(systemName: "iphone.radiowaves.left.and.right")
-			.font(.title2)
-			.foregroundStyle(.green)
-		Text("Phone Connected")
-			.font(.headline)
-		Text("\(phoneManager.nodes.count) nodes")
-			.font(.caption2)
-			.foregroundStyle(.secondary)
+		VStack(spacing: 12) {
+			Image(systemName: "iphone.radiowaves.left.and.right")
+				.font(.title2)
+				.foregroundStyle(.green)
+				.accessibilityHidden(true)
+			Text("Phone Connected")
+				.font(.headline)
+			Text("\(phoneManager.nodes.count) nodes")
+				.font(.caption2)
+				.foregroundStyle(.secondary)
+		}
+		.accessibilityElement(children: .combine)
+		.accessibilityLabel(String(localized: "Phone connected", comment: "VoiceOver: the watch is connected to the companion iPhone"))
+		.accessibilityValue(String(localized: "\(phoneManager.nodes.count) nodes synced", comment: "VoiceOver: number of mesh nodes synced from the phone"))
 
 		Button {
 			phoneManager.requestRefresh()
@@ -44,27 +50,33 @@ struct DeviceConnectionView: View {
 			Label("Refresh", systemImage: "arrow.clockwise")
 		}
 		.buttonStyle(.bordered)
+		.accessibilityLabel(String(localized: "Refresh node data", comment: "VoiceOver: label for the button that refreshes node data"))
+		.accessibilityHint(String(localized: "Requests the latest node data from your iPhone.", comment: "VoiceOver hint: what the refresh button does"))
 	}
 
 	// MARK: - Phone Unreachable
 
 	@ViewBuilder
 	private var unreachableView: some View {
-		Image(systemName: "iphone.slash")
-			.font(.title2)
-			.foregroundStyle(.secondary)
-		Text("Phone Not Reachable")
-			.font(.headline)
+		VStack(spacing: 12) {
+			Image(systemName: "iphone.slash")
+				.font(.title2)
+				.foregroundStyle(.secondary)
+				.accessibilityHidden(true)
+			Text("Phone Not Reachable")
+				.font(.headline)
 
-		if phoneManager.hasReceivedData {
-			Text("\(phoneManager.nodes.count) cached nodes")
-				.font(.caption2)
-				.foregroundStyle(.secondary)
-		} else {
-			Text("Open Meshtastic on your iPhone to sync node data.")
-				.font(.caption2)
-				.foregroundStyle(.secondary)
-				.multilineTextAlignment(.center)
+			if phoneManager.hasReceivedData {
+				Text("\(phoneManager.nodes.count) cached nodes")
+					.font(.caption2)
+					.foregroundStyle(.secondary)
+			} else {
+				Text("Open Meshtastic on your iPhone to sync node data.")
+					.font(.caption2)
+					.foregroundStyle(.secondary)
+					.multilineTextAlignment(.center)
+			}
 		}
+		.accessibilityElement(children: .combine)
 	}
 }

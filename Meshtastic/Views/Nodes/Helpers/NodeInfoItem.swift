@@ -10,26 +10,70 @@ import CoreLocation
 import MapKit
 @preconcurrency import SwiftData
 
+/// Value-type hardware data captured while a user row is live.
+///
+/// Rendering the hardware section from this summary avoids retaining SwiftData user data in its
+/// view hierarchy while still allowing the parent query to observe later user updates.
+struct NodeInfoItemSummary: Equatable {
+	let hwModel: String?
+	let hwModelId: Int64
+
+	@MainActor init?(user: UserEntity) {
+		guard user.modelContext != nil, !user.isDeleted else { return nil }
+
+		hwModel = user.hwModel
+		hwModelId = Int64(user.hwModelId)
+	}
+}
+
 struct NodeInfoItem: View {
 
-	@Bindable var node: NodeInfoEntity
-	@Query var hardware: [DeviceHardwareEntity]
-	@EnvironmentObject var meshtasticAPI: MeshtasticAPI
+	@Query private var users: [UserEntity]
 
-	init(node: NodeInfoEntity) {
-		self.node = node
-		let hwModel = Int64(node.user?.hwModelId ?? 0)
-		_hardware = Query(filter: #Predicate<DeviceHardwareEntity> { hw in
-			hw.hwModel == hwModel
-		}, sort: [SortDescriptor(\.hwModelSlug)])
+	init(nodeNum: Int64) {
+		_users = Query(filter: #Predicate<UserEntity> { $0.num == nodeNum })
+	}
+
+	var body: some View {
+		// Query the current user by node number instead of dereferencing `NodeInfoEntity.user`.
+		// The relationship can retain an invalid backing object after a store reset, whereas this
+		// query drops deleted users and re-renders when live hardware metadata changes.
+		if let user = users.first,
+			let summary = NodeInfoItemSummary(user: user) {
+			NodeInfoHardwareSection(summary: summary)
+				.id(summary.hwModelId)
+		} else {
+			EmptyView()
+		}
+	}
+}
+
+/// The hardware query is initialized from the summary's value data rather than a live node
+/// relationship, so the detail can continue rendering safely after the node is detached.
+private struct NodeInfoHardwareSection: View {
+	let summary: NodeInfoItemSummary
+	@Query private var hardware: [DeviceHardwareEntity]
+	@EnvironmentObject private var meshtasticAPI: MeshtasticAPI
+
+	init(summary: NodeInfoItemSummary) {
+		self.summary = summary
+		let hardwareModel = summary.hwModelId
+		_hardware = Query(
+			filter: #Predicate<DeviceHardwareEntity> { $0.hwModel == hardwareModel },
+			sort: [SortDescriptor(\.hwModelSlug)]
+		)
 	}
 
 	private var hasDevice: Bool {
-		hardware.first != nil
+		hardwarePresentation != nil
 	}
 
 	private var isActivelySupported: Bool {
-		hardware.first?.activelySupported ?? false
+		hardwarePresentation?.activelySupported ?? false
+	}
+
+	private var hardwarePresentation: HardwareCatalogPresentation? {
+		HardwareCatalogResolver.presentation(for: summary.hwModelId, in: hardware)
 	}
 
 	private var supportRosette: some View {
@@ -38,21 +82,30 @@ struct NodeInfoItem: View {
 	}
 
 	private var modelName: String {
-		node.user?.hwDisplayName ?? node.user?.hwModel ?? "Unknown"
+		hardwarePresentation?.displayName ?? summary.hwModel ?? "Unknown"
 	}
 
 	private var isPortduino: Bool {
-		node.user?.hwModel == "PORTDUINO"
+		summary.hwModel == "PORTDUINO"
 	}
 
-	private var supportLevel: SupportLevel {
-		guard let device = hardware.first else { return .discontinued }
-		return SupportLevel(rawValue: device.supportLevel) ?? .discontinued
+	private var supportLevel: SupportLevel? {
+		hardwarePresentation?.supportLevel
+	}
+
+	private var hardwareDescription: String {
+		if let supportLevel {
+			return supportLevel.description
+		}
+		return hasDevice
+			? "This hardware model has multiple indistinguishable variants."
+			: "Hardware model information is unavailable."
 	}
 
 	private var sectionTitle: String {
-		if node.user?.hwModel == "UNSET" { return "Hardware" }
+		if summary.hwModel == "UNSET" { return "Hardware" }
 		if isPortduino { return "Community Hardware" }
+		guard let supportLevel else { return "Hardware" }
 		switch supportLevel {
 		case .flagship:
 			return "Supported Hardware"
@@ -67,8 +120,7 @@ struct NodeInfoItem: View {
 
 	var body: some View {
 		Section(sectionTitle) {
-		if let user = node.user {
-			if user.hwModel == "UNSET" {
+			if summary.hwModel == "UNSET" {
 				// MARK: - Unset / Incomplete
 				HStack {
 					Image(systemName: "flipphone")
@@ -91,7 +143,7 @@ struct NodeInfoItem: View {
 				// MARK: - Flagship Device (Hero Layout)
 				VStack(spacing: 12) {
 					ZStack(alignment: .bottomTrailing) {
-						DeviceHardwareImage(hwId: user.hwModelId)
+						DeviceHardwareImage(hwId: Int32(summary.hwModelId))
 							.frame(maxWidth: .infinity)
 							.frame(height: 200)
 							.cornerRadius(12)
@@ -107,7 +159,7 @@ struct NodeInfoItem: View {
 			} else if hasDevice && (supportLevel == .niche || supportLevel == .legacy) {
 				// MARK: - Niche / Legacy Device
 				HStack(spacing: 16) {
-					DeviceHardwareImage(hwId: user.hwModelId)
+					DeviceHardwareImage(hwId: Int32(summary.hwModelId))
 						.frame(width: 60, height: 60)
 						.cornerRadius(8)
 						.opacity(0.6)
@@ -141,13 +193,19 @@ struct NodeInfoItem: View {
 			} else {
 				// MARK: - Discontinued / Unknown Device
 				HStack(spacing: 16) {
-					supportRosette
-						.font(.system(size: 40))
+					if hardwarePresentation?.activelySupported == nil {
+						Image(systemName: "questionmark.circle.fill")
+							.font(.system(size: 40))
+							.foregroundStyle(.secondary)
+					} else {
+						supportRosette
+							.font(.system(size: 40))
+					}
 					VStack(alignment: .leading, spacing: 4) {
 						Text(modelName)
 							.font(.subheadline)
 							.foregroundStyle(.secondary)
-						Text(supportLevel.description)
+						Text(hardwareDescription)
 							.font(.caption)
 							.foregroundStyle(.tertiary)
 					}
@@ -156,11 +214,10 @@ struct NodeInfoItem: View {
 				.listRowSeparator(.hidden)
 			}
 		}
-		}
 		.accessibilityElement(children: .combine)
 
 		// Device links section (shown only when device has a platformioTarget)
-		if let target = hardware.first?.platformioTarget {
+		if let target = hardwarePresentation?.platformioTarget {
 			DeviceLinksSection(platformioTarget: target)
 		}
 	}

@@ -47,6 +47,21 @@ If you only want a report for the preset your radio is already using, tap **Anal
 
 The **RF Health** card summarises the noise floor across the scan and calls out the quietest channel. Noise floor (and the rest of the report) is also included when you export the scan as a PDF.
 
+## Beacons
+
+Some radios run in *beacon mode* and periodically broadcast a short message advertising their mesh — optionally the channel, region, and modem preset it runs on. When a scan hears a beacon, it appears in the **Beacons** section of the results, showing the message, who sent it, and any advertised channel/region/preset.
+
+Beacons also steer the scan for you:
+
+- If a beacon advertises a modem preset on the **public channel**, that preset is **added to the scan automatically**, so the run dwells on it too. The next time you set up a scan, any preset you've previously heard a beacon for is **pre-selected** in the Modem Presets list and marked with a beacon icon.
+- If a beacon advertises a **custom channel** (its own name and PSK), the scan tunes the radio to that exact channel — name, key, region, and preset — during a dwell. A custom channel uses a different frequency and encryption than the public mesh, so scanning the bare preset wouldn't find it; discovery uses the key the beacon broadcast to tune in and measure that mesh directly. These targets appear in the results labeled as **Preset · ChannelName**.
+
+This means a single beacon is enough for discovery to find and measure the mesh it points to — even a private one — without you having to know its settings in advance.
+
+### Switch to a beaconed channel
+
+When a beacon advertises a channel, its entry in the **Beacons** section has a **Switch to this channel** button. Tapping it (and confirming) sets your radio's primary channel to the advertised channel and applies the advertised region and preset. Your radio reboots and reconnects on that mesh, replacing your previous channel settings — so use it when you actually want to join the mesh the beacon is advertising.
+
 ## Applying a Setting
 
 Tap a result row and then **Apply Setting** to configure your connected radio to match the most active setting in your area. This updates the LoRa configuration on the radio directly.

@@ -5,6 +5,10 @@ import Testing
 import Foundation
 @testable import Meshtastic
 
+private enum OfflineMapTestFixtures {
+	static let bounds = GeoBounds(minLon: -119.3, minLat: 40.7, maxLon: -119.1, maxLat: 40.9)
+}
+
 // MARK: - MapDataMetadata Tests
 
 @Suite("MapDataMetadata")
@@ -279,3 +283,124 @@ struct OfflineVectorPerfTests {
 }
 
 // swiftlint:enable disable_print
+
+@Suite("Offline vector road classification")
+struct OfflineVectorRoadClassificationTests {
+
+	@Test func protomapsPedestrianStreetRemainsVisibleWhileNonStreetPathsAreExcluded() {
+		#expect(OfflineVectorTileProvider.roadRole(kind: "path", kindDetail: "pedestrian") == .minorRoad)
+		#expect(OfflineVectorTileProvider.roadRole(kind: "path", kindDetail: "footway") == .path)
+		#expect(OfflineVectorTileProvider.roadRole(kind: "footway", kindDetail: nil) == .path)
+		#expect(OfflineVectorTileProvider.roadRole(kind: "cycleway", kindDetail: nil) == .path)
+		#expect(OfflineVectorTileProvider.roadRole(kind: "track", kindDetail: nil) == .path)
+	}
+}
+
+@Suite("Offline vector tile selection")
+struct OfflineVectorTileSelectionTests {
+
+	@Test func genericSourcesStayWithinTileDecodeCap() {
+		let tiles = OfflineVectorTileProvider.tiles(
+			bounds: OfflineMapTestFixtures.bounds,
+			minZoom: 0,
+			maxZoom: OfflineMapDetailLevel.high.maxZoom
+		)
+
+		#expect(tiles.count <= 48)
+		#expect(tiles.allSatisfy { $0.z < OfflineMapDetailLevel.high.maxZoom })
+	}
+}
+
+@Suite("Offline vector source bindings")
+struct OfflineVectorSourceBindingTests {
+
+	@Test func persistedSourceCarriesRegionIdentityAtColdLaunch() {
+		let region = OfflineMapRegion(
+			name: "Trailhead",
+			fileName: "trailhead.pmtiles",
+			bounds: OfflineMapTestFixtures.bounds,
+			minZoom: 0,
+			maxZoom: OfflineMapDetailLevel.high.maxZoom,
+			fileSize: 1,
+			sourceBuild: "20260720"
+		)
+		let persistedFile = OfflineMapRegionFile(
+			region: region,
+			url: URL(fileURLWithPath: "/tmp/trailhead.pmtiles")
+		)
+
+		let bindings = OfflineVectorTileProvider.sourceBindings(for: [persistedFile])
+
+		#expect(bindings == [OfflineVectorSourceBinding(
+			url: persistedFile.url,
+			regionID: region.id
+		)])
+	}
+
+	@Test func identityChangeForSameURLRequiresReload() {
+		let url = URL(fileURLWithPath: "/tmp/trailhead.pmtiles")
+		let first = OfflineVectorSourceBinding(url: url, regionID: UUID())
+		let second = OfflineVectorSourceBinding(url: url, regionID: UUID())
+
+		#expect(OfflineVectorTileProvider.requiresReload(from: [first], to: [second]))
+		#expect(!OfflineVectorTileProvider.requiresReload(from: [first], to: [first]))
+	}
+}
+
+// MARK: - Offline map zoom-coverage advisory
+
+@Suite("OfflineMapZoomCoverage")
+struct OfflineMapZoomCoverageTests {
+
+	@Test("A full-range archive (z0–z14) is not flagged")
+	func fullRange() {
+		let coverage = OfflineMapZoomCoverage(minZoom: 0, maxZoom: 14)
+		#expect(coverage == .full)
+		#expect(!coverage.isLimited)
+		#expect(coverage.warningLabel == nil)
+	}
+
+	@Test("A world-context-only archive (z0–z6) warns about missing detail")
+	func missingDetail() {
+		let coverage = OfflineMapZoomCoverage(minZoom: 0, maxZoom: 6)
+		#expect(coverage == .limitedDetail(maxZoom: 6))
+		#expect(coverage.isLimited)
+		#expect(coverage.warningLabel != nil)
+	}
+
+	@Test("A detail-only regional export (z11–z16) warns about missing overview")
+	func missingOverview() {
+		let coverage = OfflineMapZoomCoverage(minZoom: 11, maxZoom: 16)
+		#expect(coverage == .limitedOverview(minZoom: 11))
+		#expect(coverage.isLimited)
+	}
+
+	@Test("A narrow mid-band archive (z11–z9 impossible; use z11–z9→ z8) warns on both ends")
+	func missingBoth() {
+		let coverage = OfflineMapZoomCoverage(minZoom: 8, maxZoom: 9)
+		#expect(coverage == .limited(minZoom: 8, maxZoom: 9))
+		#expect(coverage.isLimited)
+	}
+
+	@Test("The thresholds are inclusive at the boundary (z6 min / z10 max are still full)")
+	func boundaryInclusive() {
+		#expect(OfflineMapZoomCoverage(minZoom: 6, maxZoom: 10) == .full)
+		#expect(OfflineMapZoomCoverage(minZoom: 7, maxZoom: 10) == .limitedOverview(minZoom: 7))
+		#expect(OfflineMapZoomCoverage(minZoom: 6, maxZoom: 9) == .limitedDetail(maxZoom: 9))
+	}
+
+	@Test("The region model surfaces the same assessment")
+	func regionComputedProperty() {
+		let region = OfflineMapRegion(
+			name: "Overview only",
+			fileName: "overview.pmtiles",
+			bounds: OfflineMapTestFixtures.bounds,
+			minZoom: 0,
+			maxZoom: 5,
+			fileSize: 1_000,
+			sourceBuild: "Imported"
+		)
+		#expect(region.zoomCoverage == .limitedDetail(maxZoom: 5))
+		#expect(region.zoomCoverage.warningLabel != nil)
+	}
+}

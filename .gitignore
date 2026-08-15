@@ -92,3 +92,9 @@ fastlane/test_output
 iOSInjectionProject/
 **/secrets.json
 .mcp.json
+
+# Marketing screenshot capture output (scripts/capture-marketing.sh)
+marketing/
+
+# Stray xcodebuild output logs (never commit build logs)
+/build*.log

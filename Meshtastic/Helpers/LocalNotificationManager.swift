@@ -9,9 +9,16 @@ import OSLog
 class LocalNotificationManager {
 
     var notifications = [Notification]()
+	private let removeDeliveredNotifications: ([String]) -> Void
 	let thumbsUpAction = UNNotificationAction(identifier: "messageNotification.thumbsUpAction", title: "👍 \(Tapbacks.thumbsUp.description)", options: [])
 	let thumbsDownAction = UNNotificationAction(identifier: "messageNotification.thumbsDownAction", title: "👎  \(Tapbacks.thumbsDown.description)", options: [])
 	let replyInputAction =  UNTextInputNotificationAction(identifier: "messageNotification.replyInputAction", title: "Reply".localized, options: [])
+
+	init(removeDeliveredNotifications: @escaping ([String]) -> Void = { identifiers in
+		UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: identifiers)
+	}) {
+		self.removeDeliveredNotifications = removeDeliveredNotifications
+	}
 
     // Step 1 Request Permissions for notifications
     private func requestAuthorization() async {
@@ -67,6 +74,10 @@ class LocalNotificationManager {
 			if notification.messageId != nil {
 				content.categoryIdentifier = "messageNotificationCategory"
 				content.userInfo["messageId"] = notification.messageId
+				// `messageId` identifies this notification for cancellation (keyed on the packet's
+				// own id). Tapback/reply actions must instead target the message being replied to,
+				// which differs for reactions — carry it separately, defaulting to `messageId`.
+				content.userInfo["replyMessageId"] = notification.replyMessageId ?? notification.messageId
 			}
 			if notification.channel != nil {
 				content.userInfo["channel"] = notification.channel
@@ -120,6 +131,12 @@ class LocalNotificationManager {
 	func cancelNotificationsForMessageIds(_ messageIds: [Int64]) {
 		let messageIDSet = Set(messageIds)
 		guard !messageIDSet.isEmpty else { return }
+		let deliveredNotificationIdentifiers = messageIds.map { "notification.id.\($0)" }
+
+		// Pending requests have not surfaced to the user yet; delivered notifications may
+		// still be visible on the Lock Screen or in Notification Center. Remove both when
+		// their messages have been read in the app.
+		removeDeliveredNotifications(deliveredNotificationIdentifiers)
 
 		UNUserNotificationCenter.current().getPendingNotificationRequests { notifications in
 			let identifiers = notifications.compactMap { notification -> String? in
@@ -146,6 +163,10 @@ struct Notification {
 	var target: String?
 	var path: String?
 	var messageId: Int64?
+	/// Target message id for tapback/reply actions. For a reaction notification this is the
+	/// original (reacted-to) message rather than the reaction packet in `messageId`. `nil` means
+	/// "same as `messageId`" (regular messages).
+	var replyMessageId: Int64?
 	var channel: Int32?
 	var userNum: Int64?
 	var critical: Bool = false

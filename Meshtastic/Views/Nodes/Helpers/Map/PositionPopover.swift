@@ -111,19 +111,6 @@ struct PositionPopover: View {
 						}
 						.padding(.bottom, 5)
 						let pf = PositionFlags(rawValue: Int(position.nodePosition?.metadata?.positionFlags ?? 3))
-						/// Sats in view
-						if pf.contains(.Satsinview) {
-							Label {
-								Text("Sats in view: \(String(position.satsInView))")
-									.foregroundColor(.primary)
-									.font(idiom == .phone ? .callout : .body)
-							} icon: {
-								Image(systemName: "sparkles")
-									.symbolRenderingMode(.hierarchical)
-									.frame(width: 35)
-							}
-							.padding(.bottom, 5)
-						}
 						/// Sequence Number
 						if pf.contains(.SeqNo) {
 							Label {
