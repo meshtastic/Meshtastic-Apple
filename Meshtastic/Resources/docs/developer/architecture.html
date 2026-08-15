@@ -74,6 +74,11 @@
 <h2>Persistence</h2>
 <p>SwiftData is the sole persistence layer. <code>PersistenceController.shared</code> owns the <code>ModelContainer</code>. Views use <code>@Environment(\.modelContext)</code> or <code>@Query</code>. Background writes use the <code>MeshPackets</code> <code>@ModelActor</code>.</p>
 <p>Model types are defined with <code>@Model</code> in <code>Meshtastic/Model/</code>. Schema evolution uses <code>VersionedSchema</code> and <code>SchemaMigrationPlan</code> in <code>MeshtasticSchema.swift</code>.</p>
+<p><code>EventFirmwareEntity</code> is a global, rebuildable display cache seeded from the app bundle and
+refreshed from the event-firmware API. It persists event identity, lifecycle text, links, and
+theme values, including primary, secondary, and accent colors. Per-device database clears
+preserve it; a full app-data reset removes it. Executable OTA artifact URLs are deliberately
+outside this model and require the separate signed event OTA contract.</p>
 <h2>Services</h2>
 <p>Application services that are not tied to radio connectivity live in <code>Meshtastic/Services/</code>.</p>
 <table>

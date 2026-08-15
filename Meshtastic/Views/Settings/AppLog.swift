@@ -110,7 +110,7 @@ struct AppLog: View {
 			isPresented: $isExporting,
 			document: CsvDocument(emptyCsv: exportString),
 			contentType: .commaSeparatedText,
-			defaultFilename: String("Meshtastic Application Logs \(Date.now.exportTimestamp)"),
+			defaultFilename: CsvDocument.exportFilename("Meshtastic Application Logs \(Date.now.exportTimestamp)"),
 			onCompletion: { result in
 				switch result {
 				case .success:
@@ -135,6 +135,7 @@ struct AppLog: View {
 					}) {
 						Image(systemName: "arrow.clockwise.circle")
 					}
+					.accessibilityLabel(String(localized: "Refresh logs", comment: "VoiceOver label for the refresh application logs button"))
 				}
 			}
 #endif
@@ -154,6 +155,7 @@ struct AppLog: View {
 					}) {
 						Image(systemName: "square.and.arrow.down")
 					}
+					.accessibilityLabel(String(localized: "Export logs as CSV", comment: "VoiceOver label for the export application logs to CSV button"))
 				}
 			}
 		}
@@ -324,6 +326,13 @@ struct AppLog: View {
 						streamRow(value)
 							.contentShape(Rectangle())
 							.onTapGesture { selectedLog = value }
+							.accessibilityElement(children: .combine)
+							.accessibilityLabel(value.composedMessage)
+							.accessibilityValue(Self.logDateFormatter.string(from: value.date))
+							.accessibilityAddTraits(.isButton)
+							.accessibilityAction {
+								selectedLog = value
+							}
 					}
 					Color.clear
 						.frame(height: 1)
@@ -396,7 +405,12 @@ extension AppLog {
 			/// Create an array of predicates to hold our AND predicates
 			var predicates: [NSPredicate] = []
 			/// Subsystem Predicate
-			let subsystemPredicate = NSPredicate(format: "subsystem IN %@", ["com.apple.SwiftUI", "com.apple.coredata", "gvh.MeshtasticClient"])
+			/// Take the app's subsystem from the bundle rather than hard-coding it: `Logger` builds every
+			/// category with `Bundle.main.bundleIdentifier`, so a hard-coded value silently filters out all
+			/// of the app's own entries in any build whose bundle id differs (a contributor signing with
+			/// their own team, for instance).
+			let appSubsystem = Bundle.main.bundleIdentifier ?? "gvh.MeshtasticClient"
+			let subsystemPredicate = NSPredicate(format: "subsystem IN %@", ["com.apple.SwiftUI", "com.apple.coredata", appSubsystem])
 			predicates.append(subsystemPredicate)
 			/// Categories
 			if categories.count > 0 {

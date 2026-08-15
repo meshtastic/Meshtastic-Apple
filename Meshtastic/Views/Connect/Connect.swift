@@ -38,24 +38,18 @@ struct Connect: View {
 	@ObservedObject var manualConnections = ManualConnectionList.shared
 	@ObservedObject private var nymeaProvisioning = NymeaProvisioningManager.shared
 	@Environment(\.scenePhase) private var scenePhase
+	@Environment(\.eventFirmwarePresentation) private var eventPresentation
+	@Environment(\.openEventFirmwareInfo) private var openEventFirmwareInfo
 	@State private var pendingNymeaDevice: NymeaDiscoveredDevice?
 	@State private var isSwitchingRadio = false
 	@State private var showingShutdownConfirm = false
 	/// Stable identity of the node whose context menu opened the shutdown dialog, captured at tap
 	/// time so the confirmation can't drift to a different node if the connection changes first.
 	@State private var pendingShutdownNodeNum: Int64?
-	/// All cached event-firmware editions, kept live via `@Query` so branding/lifecycle data
+	/// All cached event-firmware editions, kept live via `@Query` so branding data
 	/// refreshes automatically once the bundled seed or a later background API refresh populates
-	/// or updates a row — no manual re-fetch wiring on connect / appear. This avoids a nil-cache
-	/// race where, if the edition was already known before the async cache load finished, the
-	/// post-event nudge (and branding) could otherwise never appear for the session.
+	/// or updates a row, with no manual re-fetch wiring on connect or appear.
 	@Query private var eventFirmwareEditions: [EventFirmwareEntity]
-	/// Presents the firmware-update flow from the post-event "return to standard firmware" nudge.
-	@State private var showFirmwareUpdate = false
-	/// Presents the tappable event info sheet (welcome, location, dates, links, firmware, theme).
-	@State private var showEventInfo = false
-	/// Ambient event theme opt-out, shared with the info sheet's "Use Event Theme" toggle.
-	@AppStorage("useEventTheme") private var useEventTheme: Bool = true
 
 	private var sortedAvailableDevices: [Device] {
 		accessoryManager.devices.sorted { lhs, rhs in
@@ -153,8 +147,40 @@ struct Connect: View {
 												.font(.callout).foregroundColor(Color.gray)
 										}
 										if accessoryManager.firmwareEdition.isEvent {
-											EventFirmwareBadge(edition: accessoryManager.firmwareEdition, info: eventFirmware) {
-												showEventInfo = true
+											// Event branding lives here, in the Connect device box — never in the
+											// top-left nav logo. When event metadata is available the edition row
+											// becomes the tappable entry to the event info sheet, with the event icon.
+											if let eventPresentation {
+												Button {
+													openEventFirmwareInfo()
+												} label: {
+													VStack(alignment: .leading, spacing: 6) {
+														HStack(spacing: 4) {
+															Text(eventPresentation.info.displayName ?? accessoryManager.firmwareEdition.name)
+																.font(.headline)
+															Image(systemName: "chevron.right")
+																.font(.caption2)
+																.foregroundColor(.gray)
+														}
+														EventFirmwareIcon(
+															edition: eventPresentation.edition,
+															iconURL: eventPresentation.info.iconURL,
+															size: 88
+														)
+													}
+												}
+												.buttonStyle(.plain)
+												.accessibilityLabel(
+													String(
+														localized: "\(eventPresentation.info.displayName ?? eventPresentation.edition.name) event information",
+														comment: "VoiceOver label for the event firmware info entry in the connect box"
+													)
+												)
+											} else {
+												Text("Firmware Edition").font(.callout)
+													+ Text(": \(eventFirmware?.displayName ?? accessoryManager.firmwareEdition.name)")
+													.font(.callout)
+													.foregroundColor(Color.gray)
 											}
 										}
 										switch accessoryManager.state {
@@ -197,6 +223,7 @@ struct Connect: View {
 												Text("Communicating").font(.callout)
 													.foregroundColor(.orange)
 											}
+											.accessibilityElement(children: .combine)
 										case .retrying(let attempt):
 											HStack {
 												Image(systemName: "square.stack.3d.down.forward")
@@ -206,6 +233,7 @@ struct Connect: View {
 												Text("Retrying (attempt \(attempt))").font(.callout)
 													.foregroundColor(.orange)
 											}
+											.accessibilityElement(children: .combine)
 										default:
 											EmptyView()
 										}
@@ -288,15 +316,6 @@ struct Connect: View {
 									}
 								}
 							}
-							// Post-event nudge: the connected device is on an event edition whose
-							// eventEnd (in its IANA zone) is in the past — prompt a return to standard
-							// firmware. A missing/unparseable eventEnd never counts as ended, and the
-							// banner clears automatically on return to .vanilla (isEvent == false).
-							if accessoryManager.firmwareEdition.isEvent, eventFirmware?.hasEnded() == true {
-								EventFirmwareEndedBanner(info: eventFirmware) {
-									showFirmwareUpdate = true
-								}
-							}
 						} else {
 							if accessoryManager.isConnecting {
 								HStack {
@@ -373,6 +392,13 @@ struct Connect: View {
 								Spacer()
 								ManualConnectionMenu(isSwitchingRadio: $isSwitchingRadio)
 							}) {
+									// #2175: the system "Bluetooth is turned off" alert is intentionally suppressed
+									// (#2162), so this is the only in-app signal telling a BLE user why no devices
+									// are appearing here. Shown alongside — not instead of — any devices already
+									// found over other transports (TCP/manual).
+									if accessoryManager.isBluetoothPoweredOff {
+										BluetoothPoweredOffRow()
+									}
 									ForEach(sortedAvailableDevices) { device in
 										DeviceConnectRow(device: device, isSwitchingRadio: $isSwitchingRadio)
 								}
@@ -413,7 +439,6 @@ struct Connect: View {
 						.textCase(nil)
 					}
 				}
-				.scrollContentBackground(.hidden)
 				HStack(alignment: .center) {
 					Spacer()
 #if targetEnvironment(macCatalyst)
@@ -439,17 +464,7 @@ struct Connect: View {
 				.padding(.bottom, 10)
 			}
 			.background {
-				// Ambient event branding (design#120, gap #3): a *subtle* accent wash over the
-				// standard grouped background — not a full recolor — gated on the connected event
-				// edition and the user's "Use Event Theme" opt-in. The List sets
-				// scrollContentBackground(.hidden) so this shows through behind its content.
-				ZStack {
-					Color(.systemGroupedBackground)
-					if let wash = eventAccentWash {
-						LinearGradient(colors: [wash.opacity(0.18), .clear], startPoint: .top, endPoint: .center)
-							.ignoresSafeArea()
-					}
-				}
+				Color(.systemGroupedBackground)
 			}
 			.disabled(isSwitchingRadio)
 			.overlay {
@@ -532,21 +547,6 @@ struct Connect: View {
 				.presentationDetents([.large])
 				.presentationDragIndicator(.automatic)
 		}
-		.sheet(isPresented: $showFirmwareUpdate) {
-			NavigationStack {
-				Firmware(node: safeNode)
-			}
-		}
-		.sheet(isPresented: $showEventInfo) {
-			if let info = eventFirmware {
-				EventFirmwareInfoView(
-					edition: accessoryManager.firmwareEdition,
-					info: info,
-					node: safeNode,
-					deviceFirmwareVersion: safeNode?.metadata?.firmwareVersion
-				)
-			}
-		}
 		.onChange(of: self.accessoryManager.state) { _, state in
 			if state != .subscribed {
 				node = nil
@@ -581,18 +581,14 @@ struct Connect: View {
 	/// The cached branding for the currently connected event edition, or nil when on vanilla
 	/// firmware or the edition isn't cached yet. Reads from the `@Query` results, so it updates
 	/// automatically as the bundled seed / background API refresh populates rows and as the
-	/// connected edition changes — branding and the post-event nudge appear/clear on their own.
+	/// connected edition changes.
 	private var eventFirmware: EventFirmwareEntity? {
-		guard accessoryManager.firmwareEdition.isEvent else { return nil }
-		let key = accessoryManager.firmwareEdition.editionKey
-		return eventFirmwareEditions.first { $0.edition == key }
-	}
-
-	/// The accent color for the ambient event wash, or nil when there's nothing to tint:
-	/// not on an event edition, the user opted out, or no cached accent color yet.
-	private var eventAccentWash: Color? {
-		guard accessoryManager.firmwareEdition.isEvent, useEventTheme else { return nil }
-		return eventFirmware?.accentColorValue
+		EventFirmwarePresentation.resolve(
+			isConnected: accessoryManager.isConnected,
+			edition: accessoryManager.firmwareEdition,
+			metadata: eventFirmwareEditions,
+			deviceFirmwareVersion: accessoryManager.connectedVersion
+		)?.info
 	}
 
 	/// Fetch only the latest device metrics battery level without faulting all telemetries.
@@ -735,80 +731,49 @@ struct Connect: View {
 	}
 }
 
-/// Compact, tappable event-firmware branding for the connected device. Uses the fetched
-/// display name, icon, and accent color, falling back to the enum name / a placeholder icon /
-/// `.accentColor` when the off-device metadata hasn't been cached yet (so a brand-new event
-/// still shows *something*). Tapping opens the full event info sheet.
-struct EventFirmwareBadge: View {
-	let edition: FirmwareEditions
-	let info: EventFirmwareEntity?
-	var onTap: (() -> Void)?
-
-	private var title: String { info?.displayName ?? edition.name }
-	private var tint: Color { info?.accentColorValue ?? .accentColor }
+/// Inline "Bluetooth is off" row shown in Available Radios when `AccessoryManager
+/// .isBluetoothPoweredOff` is true — i.e. the BLE transport's status has settled on
+/// `.error(BLETransport.poweredOffStatusMessage)` (see #2161/#2163). The system "Bluetooth is
+/// turned off" alert is intentionally suppressed (#2162), so this row is the only in-app
+/// signal telling a BLE user why no devices are appearing. Tapping it opens Settings (#2175).
+/// Not `private`: `SwiftUIViewSnapshotTests` renders it standalone for `docs/user/bluetooth.md`.
+struct BluetoothPoweredOffRow: View {
+	@Environment(\.openURL) private var openURL
 
 	var body: some View {
 		Button {
-			onTap?()
-		} label: {
-			HStack(spacing: 8) {
-				EventFirmwareIcon(iconUrl: info?.iconUrl, accent: tint, size: 28)
-				VStack(alignment: .leading, spacing: 2) {
-					HStack(spacing: 4) {
-						Text(title)
-							.font(.callout.weight(.semibold))
-						if info != nil {
-							Image(systemName: "info.circle")
-								.font(.caption2)
-						}
-					}
-					.foregroundColor(tint)
-					if let welcome = info?.welcomeMessage, !welcome.isEmpty {
-						Text(welcome)
-							.font(.caption)
-							.foregroundColor(.secondary)
-							.lineLimit(2)
-							.multilineTextAlignment(.leading)
-					}
-				}
+			if let url = URL(string: UIApplication.openSettingsURLString) {
+				openURL(url)
 			}
-		}
-		.buttonStyle(.plain)
-		// Nothing to open until the off-device metadata is cached.
-		.disabled(onTap == nil || info == nil)
-	}
-}
-
-/// Persistent "the event is over — return to standard firmware" nudge, shown on the Connect
-/// screen when the connected device runs an event edition whose `eventEnd` has passed. Tapping
-/// it opens the firmware-update flow. Non-dismissible by design (mirrors Android): it clears
-/// only when the device returns to vanilla firmware.
-struct EventFirmwareEndedBanner: View {
-	let info: EventFirmwareEntity?
-	let onUpdate: () -> Void
-
-	var body: some View {
-		Button(action: onUpdate) {
+		} label: {
 			HStack(alignment: .top, spacing: 10) {
 				Image(systemName: "exclamationmark.triangle.fill")
 					.foregroundColor(.orange)
+					.accessibilityHidden(true)
 				VStack(alignment: .leading, spacing: 2) {
-					Text("Event has ended")
+					Text("Bluetooth is off")
 						.font(.callout.weight(.semibold))
 						.foregroundColor(.primary)
-					Text("This device is running \(info?.displayName ?? "event") firmware. Update to standard Meshtastic firmware.")
+					Text("Turn on Bluetooth in Settings to see nearby radios.")
 						.font(.caption)
 						.foregroundColor(.secondary)
 						.multilineTextAlignment(.leading)
+						// Without this, the subtitle competes for space with the icon + Spacer inside
+						// the HStack and can get compressed/truncated at larger Dynamic Type sizes
+						// instead of wrapping and growing the row — matches FirmwareUpdateConnectNotice.
+						.fixedSize(horizontal: false, vertical: true)
 				}
 				Spacer()
 				Image(systemName: "chevron.right")
 					.font(.caption)
 					.foregroundColor(.secondary)
+					.accessibilityHidden(true)
 			}
 			.padding(.vertical, 6)
 		}
 		.buttonStyle(.plain)
+		.accessibilityElement(children: .combine)
+		.accessibilityHint("Opens Settings")
 	}
 }
 
@@ -1072,33 +1037,64 @@ func backupCurrentAndRestoreDatabase(
 	appState.router.popToRoot(tab: .map)
 	appState.router.popToRoot(tab: .settings)
 	appState.router.selectedTab = selectedTab
+
+	// Unmount every @Query holder (the gate replaces the tree AND the query-owning wrappers —
+	// see ContentView.gatedContent / EventFirmwareTintScope) before touching the store. Stale
+	// subscriptions process store-change notifications from ANY SwiftData save in the process
+	// (TipKit's internal store saves on background queues) against the swapped-out container —
+	// the switch-nodes SIGTRAP, Datadog 324bff02-6b22-11f1.
+	//
+	// Sequencing is load-bearing, learned from on-device crash reports:
+	// 1. Settle FIRST with the tree intact, so the confirmation dialog's dismissal animation
+	//    finishes — flipping mid-dismissal produced dead-view SIGTRAPs in UIKit/CA commits.
+	// 2. Flip WITHOUT animation: animated List removal goes through UICollectionView batch
+	//    updates, which assert ("attempt to delete item…") when the data churns mid-flight;
+	//    non-animated replacement reloads instead.
+	// 3. Settle again so the unmount commits before the store work begins.
+	try? await Task.sleep(for: .milliseconds(350))
+	var gateTransaction = Transaction()
+	gateTransaction.disablesAnimations = true
+	withTransaction(gateTransaction) { appState.isDatabaseResetting = true }
+	defer {
+		var dropTransaction = Transaction()
+		dropTransaction.disablesAnimations = true
+		withTransaction(dropTransaction) { appState.isDatabaseResetting = false }
+	}
 	await Task.yield()
+	try? await Task.sleep(for: .milliseconds(300))
 
 	await MeshPackets.shared.flushDebouncedSaves()
+
+	// The clear is unconditional and IN PLACE, on the one process-lifetime container — a
+	// switch must NEVER dump the new radio's nodes on top of the old radio's (nodes have no
+	// owner column; the store is global). Deliberately NO repointToFreshContainer here:
+	// replacing the container mints an immortal stale observer bridge — SwiftUI's
+	// _SwiftData_SwiftUI bridges unregister from NotificationCenter only on dealloc and stay
+	// retained after any amount of unmounting, so the next save's synchronous callout traps
+	// in SwiftData (caught live in lldb: restore saves, and post-swap dump saves, on any
+	// thread, gate up or down — every container-replacement variant died there). Keeping the
+	// container's identity means every observer processes every save against the store it
+	// actually belongs to. The mounted-view hazard that container recreation was introduced
+	// for (#1922's "destroyed by ModelContext.reset") is covered by the reset gate above —
+	// nothing is mounted during the clear — plus the databaseResetID remount below.
 	let cleared = await MeshPackets.shared.clearDatabase(includeRoutes: false)
-	if cleared {
-		// Repoint at a fresh container so the restore below (and the post-restore UI refresh)
-		// operate on a context with no stale registrations. The databaseResetID bump stays after
-		// the restore.
-		accessoryManager.repointToFreshContainer()
-		Logger.backup.info("💾 Database cleared and container recreated")
-	} else {
+	if !cleared {
 		// The per-model clear aborted part-way (e.g. a relationship constraint failed a batch
-		// delete). A half-cleared store MUST NOT receive the next radio's dump — that is exactly
-		// how nodes bleed between radios — so escalate: destroy the store files and reopen a
-		// guaranteed-empty container. The current radio's data was backed up above; routes are
-		// lost in this (already-broken) path, which beats merging two radios' databases.
+		// delete). A half-cleared store MUST NOT receive the next radio's dump, so escalate:
+		// destroy the store files and reopen a guaranteed-empty container. This rare path
+		// does replace the container (accepting the stale-bridge risk) because proceeding on
+		// a half-cleared store is how one radio's nodes bleed into another's session.
 		Logger.backup.error("💾 clearDatabase failed — escalating to store destruction before the switch")
 		PersistenceController.shared.destroyStoreAndRecreateContainer()
-		// Repoint re-creates once more on the fresh (now empty) store and rebuilds the
-		// MeshPackets actor + cached context; the double recreate is harmless.
-		accessoryManager.repointToFreshContainer()
+		// destroy… already recreated the container; rebind rather than repoint so the
+		// escalation recreates exactly once (every recreation mints a potential stale
+		// observer bridge).
+		accessoryManager.rebindToCurrentContainer()
 	}
 
-	// The clear above is unconditional — a switch must NEVER dump the new radio's nodes on top
-	// of the old radio's (nodes have no owner column; the store is global). The restore is the
-	// only optional part: with no resolvable target node (first connect to a never-seen radio)
-	// there is simply no backup to import, and the radio populates the now-empty store fresh.
+	// The restore imports the backup's object graph into the SAME live container. With no
+	// resolvable target node (first connect to a never-seen radio) there is no backup, and
+	// the radio populates the now-empty store fresh.
 	let restoreResult: NodeBackupResult
 	if let targetNodeNum {
 		restoreResult = await NodeBackupManager.shared.restoreFromBackup(
@@ -1147,6 +1143,17 @@ func switchToDevice(
 		return num > 0 ? num : nil
 	}()
 	Logger.backup.info("💾 Node switch — current: \(currentNodeNum.map { String($0) } ?? "nil", privacy: .public), target: \(targetNodeNum.map { String($0) } ?? "unknown", privacy: .public)")
+
+	// The user's explicit choice IS the new preferred radio — record it at switch
+	// initiation, not only deep in the connect flow (Step 5 writes it again on success).
+	// When it moved only on a fully-successful connect, any failed switch left the OLD
+	// preferred in place, so the error-path auto-reconnect bounced back to the previous
+	// radio instead of retrying the node the user asked for — and worse, that reconnect
+	// (a plain connect, no clear) dumped the previous radio's nodes on top of the target's
+	// freshly restored database. The node num moves with it (0 = unknown for a never-seen
+	// radio) so nothing keyed on the num keeps pointing at the abandoned node.
+	UserDefaults.preferredPeripheralId = device.id.uuidString
+	UserDefaults.preferredPeripheralNum = Int(targetNodeNum ?? 0)
 
 	// Mark the switch in flight so the disconnect's teardown doesn't re-arm discovery and
 	// auto-connect can't launch a second connect + node dump while the store is mid-reset.
@@ -1223,6 +1230,13 @@ struct NymeaDeviceConnectRow: View {
 		.padding([.bottom, .top])
 		.contentShape(Rectangle())
 		.onTapGesture { onSelect() }
+		.accessibilityElement(children: .combine)
+		.accessibilityLabel(device.name)
+		.accessibilityValue("\(String(localized: "Wi-Fi Setup")), \(signalStrengthAccessibilityDescription)")
+		.accessibilityAddTraits(.isButton)
+		.accessibilityAction {
+			onSelect()
+		}
 	}
 
 	private func rssiToSignalStrength(_ rssi: Int) -> BLESignalStrength {
@@ -1230,6 +1244,18 @@ struct NymeaDeviceConnectRow: View {
 		case ..<(-80): return .weak
 		case -80 ..< -65: return .normal
 		default: return .strong
+		}
+	}
+
+	/// Mirrors `SignalStrengthIndicator.accessibilityDescription`. Combining this row into a
+	/// single accessibility element (for the tap-gesture trait fix) replaces, rather than
+	/// appends to, the indicator's own `.accessibilityValue` — so its "Signal strength
+	/// weak/normal/strong" announcement has to be folded in here or VoiceOver users lose it.
+	private var signalStrengthAccessibilityDescription: String {
+		switch rssiToSignalStrength(device.rssi) {
+		case .weak: return String(localized: "Signal strength weak")
+		case .normal: return String(localized: "Signal strength normal")
+		case .strong: return String(localized: "Signal strength strong")
 		}
 	}
 }

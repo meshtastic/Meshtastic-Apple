@@ -25,7 +25,6 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 	case nz865 = 11
 	case th = 12
 	case ua433 = 14
-	case ua868 = 15
 	case my433 = 16
 	case my919 = 17
 	case sg923 = 18
@@ -122,8 +121,6 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 			"TH"
 		case .ua433:
 			"UA_433"
-		case .ua868:
-			"UA_868"
 		case .my433:
 			"MY_433"
 		case .my919:
@@ -202,8 +199,6 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 			return "Thailand".localized
 		case .ua433:
 			return "Ukraine 433MHz".localized
-		case .ua868:
-			return "Ukraine 868MHz".localized
 		case .my433:
 			return "Malaysia 433MHz".localized
 		case .my919:
@@ -279,8 +274,6 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 		case .th:
 			return 100
 		case .ua433:
-			return 10
-		case .ua868:
 			return 10
 		case .lora24:
 			return 100
@@ -359,8 +352,6 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 		case .th:
 			return true
 		case .ua433:
-			return true
-		case .ua868:
 			return true
 		case .lora24:
 			return false
@@ -441,8 +432,6 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 			return Config.LoRaConfig.RegionCode.th
 		case .ua433:
 			return Config.LoRaConfig.RegionCode.ua433
-		case .ua868:
-			return Config.LoRaConfig.RegionCode.ua868
 		case .lora24:
 			return Config.LoRaConfig.RegionCode.lora24
 		case .my433:
@@ -528,12 +517,24 @@ enum ModemPresets: Int, CaseIterable, Identifiable {
 		}
 	}
 
+	/// Presets deprecated upstream that must no longer be offered for new selection,
+	/// mirroring how Android filters them out. They remain as cases so a radio already
+	/// configured on one round-trips through protobuf and renders the correct label.
+	var isDeprecated: Bool {
+		switch self {
+		case .longSlow:
+			return true
+		default:
+			return false
+		}
+	}
+
 	/// Presets selectable for a connected device, given whether its firmware
 	/// implements the 2.8 rework. On older firmware the 2.8-only presets are
 	/// dropped. Callers should additionally constrain this to the selected
 	/// region's legal set via `RegionPresetInfo` when the firmware provides one.
 	static func selectable(supports2_8: Bool) -> [ModemPresets] {
-		allCases.filter { supports2_8 || !$0.requiresFirmware2_8 }
+		allCases.filter { !$0.isDeprecated && (supports2_8 || !$0.requiresFirmware2_8) }
 	}
 
 	/// The conservative (pre-2.8) selectable set. Retained for callers that have
@@ -646,6 +647,16 @@ enum ModemPresets: Int, CaseIterable, Identifiable {
 			return "MediumTurbo"
 		}
 	}
+	var defaultCodingRate: Int {
+		switch self {
+		case .longTurbo, .longModerate, .longSlow:
+			return 8
+		case .narrowFast, .narrowSlow:
+			return 6
+		default:
+			return 5
+		}
+	}
 	func snrLimit() -> Float {
 		switch self {
 		case .longFast:
@@ -728,15 +739,123 @@ enum ModemPresets: Int, CaseIterable, Identifiable {
 	}
 }
 
+// These strings are protocol values, not UI labels. They must match the
+// firmware's DisplayFormatters::getModemPresetDisplayName(..., false, ...).
+extension Config.LoRaConfig.ModemPreset {
+	var firmwareChannelName: String? {
+		switch self {
+		case .longFast:
+			return "LongFast"
+		case .longSlow:
+			return "LongSlow"
+		case .veryLongSlow:
+			return "VLongSlow"
+		case .mediumSlow:
+			return "MediumSlow"
+		case .mediumFast:
+			return "MediumFast"
+		case .shortSlow:
+			return "ShortSlow"
+		case .shortFast:
+			return "ShortFast"
+		case .longModerate:
+			return "LongMod"
+		case .shortTurbo:
+			return "ShortTurbo"
+		case .longTurbo:
+			return "LongTurbo"
+		case .liteFast:
+			return "LiteFast"
+		case .liteSlow:
+			return "LiteSlow"
+		case .narrowFast:
+			return "NarrowFast"
+		case .narrowSlow:
+			return "NarrowSlow"
+		case .tinyFast:
+			return "TinyFast"
+		case .tinySlow:
+			return "TinySlow"
+		case .mediumTurbo:
+			return "MediumTurbo"
+		case .UNRECOGNIZED:
+			return nil
+		}
+	}
+}
+
+enum CodingRates {
+	static let validRange = 5...8
+
+	static func options(usePreset: Bool, modemPreset: ModemPresets?) -> [Int] {
+		guard usePreset else {
+			return Array(validRange)
+		}
+		let defaultCodingRate = modemPreset?.defaultCodingRate ?? ModemPresets.longFast.defaultCodingRate
+		return [0] + validRange.filter { $0 > defaultCodingRate }
+	}
+
+	static func normalized(_ codingRate: Int, usePreset: Bool, modemPreset: ModemPresets?) -> Int {
+		let options = options(usePreset: usePreset, modemPreset: modemPreset)
+		if options.contains(codingRate) {
+			return codingRate
+		}
+		if usePreset {
+			return 0
+		}
+		return validRange.lowerBound
+	}
+
+	static func description(for codingRate: Int, modemPreset: ModemPresets?) -> String {
+		if codingRate == 0 {
+			let defaultCodingRate = modemPreset?.defaultCodingRate ?? ModemPresets.longFast.defaultCodingRate
+			return String.localizedStringWithFormat("Preset Default (4/%d)".localized, defaultCodingRate)
+		}
+		return "4/\(codingRate)"
+	}
+}
+
 enum Bandwidths: Int, CaseIterable, Identifiable {
+	enum ValidationIssue: Equatable {
+		case unsupported
+	}
 
 	case thirtyOne = 31
 	case sixtyTwo = 62
 	case oneHundredTwentyFive = 125
+	case twoHundred = 200
 	case twoHundredFifty = 250
+	case fourHundred = 400
 	case fiveHundred = 500
+	case eightHundred = 800
+	case sixteenHundred = 1600
+
+	private static let subGHzCases: [Bandwidths] = [
+		.thirtyOne, .sixtyTwo, .oneHundredTwentyFive, .twoHundredFifty, .fiveHundred
+	]
+
+	private static let highBandCases: [Bandwidths] = [
+		.twoHundred, .fourHundred, .eightHundred
+	]
+
+	/// Targets whose firmware definitions select SX128x exclusively. Targets that can be built
+	/// with more than one radio, plus unknown future targets, use the conservative high-band set.
+	private static let sx128xTargets: Set<String> = [
+		"betafpv_2400_tx_micro",
+		"makerpython_nrf52840_sx1280_eink",
+		"makerpython_nrf52840_sx1280_oled",
+		"my-esp32s3-diy-eink",
+		"my-esp32s3-diy-oled",
+		"tlora-v2-1-1_8"
+	]
 
 	var id: Int { self.rawValue }
+
+	/// The protobuf uses zero for the firmware-selected regional default.
+	var pickerValue: Int {
+		self == .twoHundredFifty ? 0 : rawValue
+	}
+
 	var description: String {
 		switch self {
 		case .thirtyOne:
@@ -745,11 +864,55 @@ enum Bandwidths: Int, CaseIterable, Identifiable {
 			return "62 kHz"
 		case .oneHundredTwentyFive:
 			return "125 kHz"
+		case .twoHundred:
+			return "203.125 kHz"
 		case .twoHundredFifty:
 			return "250 kHz"
+		case .fourHundred:
+			return "406.25 kHz"
 		case .fiveHundred:
 			return "500 kHz"
+		case .eightHundred:
+			return "812.5 kHz"
+		case .sixteenHundred:
+			return "1625 kHz"
 		}
+	}
+
+	static func selectable(region: RegionCodes?, pioEnv: String?) -> [Bandwidths] {
+		guard region == .lora24 else { return subGHzCases }
+
+		var options = highBandCases
+		if let pioEnv, sx128xTargets.contains(pioEnv.lowercased()) {
+			options.append(.sixteenHundred)
+		}
+		return options
+	}
+
+	static func isValid(_ value: Int, region: RegionCodes?, pioEnv: String?) -> Bool {
+		validationIssue(for: value, region: region, pioEnv: pioEnv) == nil
+	}
+
+	static func validationIssue(for value: Int, region: RegionCodes?, pioEnv: String?) -> ValidationIssue? {
+		if value == 0 { return nil }
+		let normalizedValue = pickerValue(forStoredValue: value, region: region)
+		return selectable(region: region, pioEnv: pioEnv).contains { $0.pickerValue == normalizedValue }
+			? nil
+			: .unsupported
+	}
+
+	static func pickerValue(forStoredValue value: Int, region: RegionCodes?) -> Int {
+		if region != .lora24, value == Bandwidths.twoHundredFifty.rawValue {
+			return Bandwidths.twoHundredFifty.pickerValue
+		}
+		return value
+	}
+
+	static func description(forPickerValue value: Int, region: RegionCodes?) -> String {
+		if value == 0 {
+			return region == .lora24 ? "Default (812.5 kHz)" : Bandwidths.twoHundredFifty.description
+		}
+		return Bandwidths(rawValue: value)?.description ?? "\(value) kHz"
 	}
 }
 

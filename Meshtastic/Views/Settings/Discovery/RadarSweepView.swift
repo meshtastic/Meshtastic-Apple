@@ -11,6 +11,7 @@ import SwiftUI
 struct RadarSweepView: View {
 	var isActive: Bool
 
+	@Environment(\.accessibilityReduceMotion) private var reduceMotion
 	@State private var startDate = Date()
 
 	/// Seconds for one full 360° rotation
@@ -24,7 +25,8 @@ struct RadarSweepView: View {
 
 	var body: some View {
 		if isActive {
-			TimelineView(.animation(minimumInterval: 1.0 / 30.0)) { timeline in
+			// Freeze the sweep on a single static frame when Reduce Motion is enabled.
+			TimelineView(.animation(minimumInterval: 1.0 / 30.0, paused: reduceMotion)) { timeline in
 				let elapsed = timeline.date.timeIntervalSince(startDate)
 				let rotation = (elapsed / rotationDuration).truncatingRemainder(dividingBy: 1.0) * 360.0
 

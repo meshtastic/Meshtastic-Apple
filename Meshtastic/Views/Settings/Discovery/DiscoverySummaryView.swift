@@ -61,6 +61,7 @@ struct DiscoverySummaryView: View {
 					} label: {
 						Image(systemName: "square.and.arrow.up")
 					}
+					.accessibilityLabel(String(localized: "Export scan summary as PDF", comment: "VoiceOver label for the export scan summary to PDF button"))
 				}
 			}
 		}

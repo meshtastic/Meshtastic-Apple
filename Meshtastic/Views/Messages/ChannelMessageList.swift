@@ -100,6 +100,8 @@ struct ChannelMessageList: View {
 			}
 			Logger.data.info("📖 [App] All unread messages marked as read.")
 			appState.unreadChannelMessages = myInfo.unreadMessages
+			// Refresh other unread surfaces (CarPlay templates) too.
+			NotificationCenter.default.post(name: .meshMessagesDidChange, object: nil)
 		} catch {
 			Logger.data.error("Failed to read messages: \(error.localizedDescription, privacy: .public)")
 		}

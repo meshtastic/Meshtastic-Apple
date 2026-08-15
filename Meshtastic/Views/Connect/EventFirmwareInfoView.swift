@@ -2,111 +2,156 @@
 //  EventFirmwareInfoView.swift
 //  Meshtastic
 //
-//  The tappable event info surface (design#120, gap #3): welcome message, location,
-//  dates, palette, links, and the event's firmware build — plus the "Use event theme"
-//  opt-out toggle. Presented from the event branding badge on the Connect screen.
-//
 
+import Foundation
 import SwiftUI
-import SwiftData
 
 struct EventFirmwareInfoView: View {
 
 	let edition: FirmwareEditions
 	let info: EventFirmwareEntity
-	/// The connected node, used by the firmware-update flow reached from this sheet.
-	let node: NodeInfoEntity?
-	/// The connected device's reported firmware version, for the build comparison.
 	let deviceFirmwareVersion: String?
+	/// Invoked from the post-event section's update button (the sheet's presenter routes
+	/// to the firmware-update flow). Optional so preview/simple presentations stay valid.
+	var onUpdateFirmware: (() -> Void)?
 
+	@Environment(\.colorScheme) private var colorScheme
 	@Environment(\.dismiss) private var dismiss
-	/// Shared with the Connect screen's ambient wash — toggling here updates both.
 	@AppStorage("useEventTheme") private var useEventTheme: Bool = true
 
 	private var accent: Color { info.accentColorValue ?? .accentColor }
 	private var displayName: String { info.displayName ?? edition.name }
-
-	/// Heading font from the edition's `theme.fonts` when the family is available and the theme
-	/// is enabled; otherwise the system font. (Google font families aren't bundled today, so
-	/// this resolves to system until a font provider ships — the resolver is future-proof.)
+	private var highlight: Color {
+		info.accessibleTintHex(for: colorScheme)
+			.flatMap { EventFirmwareEntity.color(fromHex: $0) }
+			?? .secondary
+	}
+	private var headerForeground: Color {
+		EventFirmwareEntity.prefersDarkForeground(forHex: info.accentColor) == true ? .black : .white
+	}
 	private func headingFont(_ size: CGFloat, _ style: Font.TextStyle) -> Font {
 		guard useEventTheme else { return .system(style) }
-		return EventFirmwareFontResolver.font(family: info.themeFontHeading, size: size, relativeTo: style)
+		return EventFirmwareFontResolver.font(
+			family: info.themeFontHeading,
+			size: size,
+			relativeTo: style
+		)
 	}
 
 	private func bodyFont(_ size: CGFloat, _ style: Font.TextStyle) -> Font {
 		guard useEventTheme else { return .system(style) }
-		return EventFirmwareFontResolver.font(family: info.themeFontBody, size: size, relativeTo: style)
+		return EventFirmwareFontResolver.font(
+			family: info.themeFontBody,
+			size: size,
+			relativeTo: style
+		)
 	}
 
 	var body: some View {
 		NavigationStack {
-			List {
+			VStack(spacing: 0) {
 				header
-				if let welcome = info.welcomeMessage, !welcome.isEmpty {
-					Section {
-						Text(welcome)
-							.font(bodyFont(17, .body))
+				if useEventTheme {
+					EventFirmwarePaletteRule(colors: info.paletteColors, height: 6)
+				}
+				List {
+					eventEndedSection
+					if let welcome = info.welcomeMessage, !welcome.isEmpty {
+						Section {
+							Text(welcome)
+								.font(bodyFont(17, .body))
+						}
 					}
-				}
-				detailsSection
-				if info.paletteColors.count > 1 {
-					paletteSection
-				}
-				firmwareSection
-				linksSection
-				themeToggleSection
-			}
-			.scrollContentBackground(.hidden)
-			.background {
-				ZStack {
-					Color(.systemGroupedBackground)
-					if useEventTheme {
-						LinearGradient(
-							colors: [accent.opacity(0.20), .clear],
-							startPoint: .top,
-							endPoint: .center
-						)
-						.ignoresSafeArea()
+					if let tagline = info.themeTagline, !tagline.isEmpty {
+						Section {
+							Text(tagline)
+								.font(bodyFont(16, .callout).italic())
+						}
 					}
+					detailsSection
+					linksSection
+					themeToggleSection
+					firmwareSection
 				}
+				.scrollContentBackground(.hidden)
+				.background(Color(.systemGroupedBackground))
 			}
+			.tint(useEventTheme ? highlight : .accentColor)
+			// The accent-colored header extends behind the navigation bar, but the bar's
+			// title and close button follow the SYSTEM scheme — black over DEF CON's navy
+			// in light mode, well under the 4.5:1 text contrast minimum. Force the bar's
+			// content scheme to match the header foreground instead.
+			.toolbarColorScheme(headerForeground == .black ? .light : .dark, for: .navigationBar)
 			.navigationTitle(Text("Event"))
 			.navigationBarTitleDisplayMode(.inline)
 			.toolbar {
 				ToolbarItem(placement: .confirmationAction) {
-					Button("Done") { dismiss() }
+					Button {
+						dismiss()
+					} label: {
+						Image(systemName: "xmark")
+					}
+					.accessibilityLabel(
+						String(localized: "Done", comment: "VoiceOver: dismiss the event info sheet")
+					)
 				}
 			}
 		}
 	}
 
-	// MARK: - Sections
-
-	@ViewBuilder
 	private var header: some View {
-		Section {
+		VStack(alignment: .leading, spacing: 12) {
 			HStack(spacing: 14) {
-				EventFirmwareIcon(iconUrl: info.iconUrl, accent: accent, size: 56)
+				EventFirmwareIcon(
+					edition: edition,
+					iconURL: info.iconURL,
+					size: 48
+				)
 				VStack(alignment: .leading, spacing: 3) {
 					Text(displayName)
 						.font(headingFont(22, .title2).weight(.bold))
-						.foregroundColor(accent)
 					if let themeName = info.themeName, !themeName.isEmpty {
 						Text(themeName)
 							.font(bodyFont(13, .subheadline))
-							.foregroundColor(.secondary)
+							.opacity(0.88)
 					}
 				}
-			}
-			.padding(.vertical, 4)
-			if let tagline = info.themeTagline, !tagline.isEmpty {
-				Text(tagline)
-					.font(bodyFont(14, .callout).italic())
-					.foregroundColor(.secondary)
+				Spacer(minLength: 0)
 			}
 		}
-		.listRowBackground(Color.clear)
+		.foregroundStyle(headerForeground)
+		.padding(.horizontal, 20)
+		.padding(.vertical, 18)
+		.frame(maxWidth: .infinity, alignment: .leading)
+		.background(accent)
+	}
+
+	/// Post-event call to action, first in the list. `hasEnded()` mirrors Android's
+	/// day-granular check (an edition without a valid end date never counts as ended).
+	@ViewBuilder
+	private var eventEndedSection: some View {
+		if info.hasEnded() {
+			Section {
+				Label {
+					Text("\(displayName) has ended. Update your node to the latest stable firmware.")
+						.font(bodyFont(16, .callout))
+				} icon: {
+					Image(systemName: "flag.checkered")
+						.foregroundColor(highlight)
+				}
+				if onUpdateFirmware != nil {
+					Button {
+						dismiss()
+						onUpdateFirmware?()
+					} label: {
+						Label("Update Firmware", systemImage: "arrow.up.circle.fill")
+							.font(bodyFont(17, .body).weight(.semibold))
+					}
+				}
+			} footer: {
+				Text("Updates use the app's verified firmware workflow.")
+			}
+		}
 	}
 
 	@ViewBuilder
@@ -125,27 +170,9 @@ struct EventFirmwareInfoView: View {
 	}
 
 	@ViewBuilder
-	private var paletteSection: some View {
-		Section("Theme") {
-			HStack(spacing: 8) {
-				ForEach(Array(info.paletteColors.enumerated()), id: \.offset) { _, color in
-					RoundedRectangle(cornerRadius: 6, style: .continuous)
-						.fill(color)
-						.frame(height: 28)
-						.overlay(
-							RoundedRectangle(cornerRadius: 6, style: .continuous)
-								.strokeBorder(Color.primary.opacity(0.1))
-						)
-				}
-			}
-			.padding(.vertical, 2)
-		}
-	}
-
-	@ViewBuilder
 	private var firmwareSection: some View {
-		if info.firmwareVersion != nil || info.firmwareZipUrl != nil {
-			Section("Event Firmware") {
+		if info.firmwareVersion != nil || info.firmwareReleaseNotes != nil {
+			Section {
 				if let version = info.firmwareVersion {
 					HStack {
 						Label("Version", systemImage: "cpu")
@@ -158,18 +185,19 @@ struct EventFirmwareInfoView: View {
 				}
 				firmwareComparisonRow
 				if let notes = info.firmwareReleaseNotes, !notes.isEmpty {
-					DisclosureGroup("Release Notes") {
-						Text(notes)
-							.font(.footnote)
-							.foregroundColor(.secondary)
-							.padding(.vertical, 2)
+					// Same markdown rendering as the firmware updates screen, instead of the
+					// raw markdown source this used to dump as plain text.
+					NavigationLink("Release Notes") {
+						FirmwareReleaseNotesView(
+							markdown: notes,
+							versionId: info.firmwareVersion ?? displayName
+						)
 					}
 				}
-				NavigationLink {
-					Firmware(node: node)
-				} label: {
-					Label("Firmware Update", systemImage: "arrow.down.circle")
-				}
+			} header: {
+				Text("Event Firmware")
+			} footer: {
+				Text("Firmware packages are not installed from the event metadata feed. Updates use the app's verified firmware workflow.")
 			}
 		}
 	}
@@ -182,9 +210,9 @@ struct EventFirmwareInfoView: View {
 				.font(.callout)
 				.foregroundColor(.green)
 		case .updateAvailable:
-			Label("A different build is available", systemImage: "arrow.up.circle")
+			Label("Event metadata lists a different build", systemImage: "info.circle")
 				.font(.callout)
-				.foregroundColor(accent)
+				.foregroundColor(.secondary)
 		case .unknown:
 			EmptyView()
 		}
@@ -195,7 +223,7 @@ struct EventFirmwareInfoView: View {
 		if !info.links.isEmpty {
 			Section("Links") {
 				ForEach(info.links) { link in
-					if let url = URL(string: link.url) {
+					if let url = EventFirmwareURLPolicy.httpsURL(from: link.url) {
 						Link(destination: url) {
 							HStack {
 								Label(link.label, systemImage: "link")
@@ -212,24 +240,21 @@ struct EventFirmwareInfoView: View {
 		}
 	}
 
-	@ViewBuilder
 	private var themeToggleSection: some View {
 		Section {
 			Toggle(isOn: $useEventTheme) {
 				Label("Use Event Theme", systemImage: "paintpalette")
 			}
-			.tint(accent)
+			.tint(highlight)
 		} footer: {
-			Text("Applies a subtle accent wash and the event's fonts across the app. The event branding stays visible either way.")
+			Text("Applies event highlight colors across the app and available fonts inside this sheet. Standard navigation backgrounds remain unchanged.")
 		}
 	}
-
-	// MARK: - Helpers
 
 	private func detailRow(icon: String, text: String) -> some View {
 		HStack(spacing: 10) {
 			Image(systemName: icon)
-				.foregroundColor(accent)
+				.foregroundColor(highlight)
 				.frame(width: 22)
 			Text(text)
 				.font(bodyFont(15, .callout))
@@ -238,36 +263,70 @@ struct EventFirmwareInfoView: View {
 	}
 }
 
-/// The hosted event icon (`iconUrl`), or an accent-tinted sparkles placeholder while loading /
-/// when no icon is published for the edition.
 struct EventFirmwareIcon: View {
-	let iconUrl: String?
-	let accent: Color
+	let edition: FirmwareEditions
+	let iconURL: URL?
 	var size: CGFloat = 40
+
+	@Environment(\.colorScheme) private var colorScheme
+	@State private var hostedImage: UIImage?
 
 	var body: some View {
 		Group {
-			if let iconUrl, let url = URL(string: iconUrl) {
-				AsyncImage(url: url) { phase in
-					switch phase {
-					case .success(let image):
-						image.resizable().scaledToFit()
-					default:
-						placeholder
-					}
-				}
+			if let hostedImage {
+				Image(uiImage: hostedImage)
+					.resizable()
+					.scaledToFit()
+			} else if let assetName = edition.bundledIconAssetName {
+				Image(assetName)
+					.resizable()
+					.scaledToFit()
 			} else {
-				placeholder
+				Image(colorScheme == .dark ? "logo-white" : "logo-black")
+					.resizable()
+					.scaledToFit()
+					.padding(size * 0.18)
 			}
 		}
 		.frame(width: size, height: size)
-		.background(accent.opacity(0.12))
-		.clipShape(RoundedRectangle(cornerRadius: size * 0.22, style: .continuous))
+		.background(Color(.systemBackground))
+		.clipShape(Circle())
+		.overlay {
+			Circle()
+				.strokeBorder(Color.primary.opacity(0.16), lineWidth: 1)
+		}
+		.task(id: iconURL) {
+			hostedImage = await EventFirmwareIconLoader.load(iconURL)
+		}
 	}
+}
 
-	private var placeholder: some View {
-		Image(systemName: "sparkles")
-			.font(.system(size: size * 0.5))
-			.foregroundColor(accent)
+private enum EventFirmwareIconLoader {
+	nonisolated static func load(_ url: URL?) async -> UIImage? {
+		guard let url, url.scheme?.lowercased() == "https" else { return nil }
+		var request = URLRequest(url: url)
+		request.timeoutInterval = 15
+		do {
+			let (bytes, response) = try await URLSession.shared.bytes(for: request)
+			guard let response = response as? HTTPURLResponse,
+				  (200..<300).contains(response.statusCode),
+				  response.expectedContentLength <= Int64(EventFirmwareImageValidator.maximumEncodedBytes),
+				  response.mimeType == "image/png" || response.mimeType == "image/jpeg" else {
+				return nil
+			}
+			var data = Data()
+			if response.expectedContentLength > 0 {
+				data.reserveCapacity(Int(response.expectedContentLength))
+			}
+			for try await byte in bytes {
+				guard data.count < EventFirmwareImageValidator.maximumEncodedBytes else {
+					return nil
+				}
+				data.append(byte)
+			}
+			return EventFirmwareImageValidator.image(from: data)
+		} catch {
+			return nil
+		}
 	}
 }

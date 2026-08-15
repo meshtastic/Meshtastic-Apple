@@ -20,7 +20,6 @@ struct ParticulateMatterCompactWidget: View {
 			HStack(alignment: .firstTextBaseline) {
 				Image(systemName: "aqi.medium")
 					.font(.system(size: 30))
-					.tint(.accentColor)
 				Text(verbatim: label)
 					.textCase(.uppercase)
 					.font(.callout)
@@ -32,7 +31,7 @@ struct ParticulateMatterCompactWidget: View {
 					.font(.system(size: 14))
 			}
 		}
-		.frame(minWidth: 100, idealWidth: 125, maxWidth: 150, minHeight: 120, idealHeight: 130, maxHeight: 140)
+		.frame(minWidth: 100, idealWidth: 125, maxWidth: 150, minHeight: 120)
 		.padding()
 		.background(Color("Colors/MeshtasticTile"), in: RoundedRectangle(cornerRadius: 20, style: .continuous))
 	}

@@ -225,7 +225,7 @@ struct DocBrowserView: View {
 				pageLabel(page)
 			}
 			.accessibilityLabel(translatedPageTitle(page))
-			.accessibilityHint("Opens \(translatedPageTitle(page)) documentation")
+			.accessibilityHint(String(localized: "Opens \(translatedPageTitle(page)) documentation", comment: "VoiceOver hint for a documentation page link"))
 		}
 	}
 
@@ -253,8 +253,8 @@ struct DocBrowserView: View {
 		.disabled(!searchText.isEmpty)
 		.textCase(nil)
 		.accessibilityLabel(translatedSectionName(section))
-		.accessibilityValue(expansion.wrappedValue ? "Expanded" : "Collapsed")
-		.accessibilityHint(expansion.wrappedValue ? "Double tap to collapse" : "Double tap to expand")
+		.accessibilityValue(expansion.wrappedValue ? String(localized: "Expanded", comment: "VoiceOver value for an expanded section") : String(localized: "Collapsed", comment: "VoiceOver value for a collapsed section"))
+		.accessibilityHint(expansion.wrappedValue ? String(localized: "Double tap to collapse", comment: "VoiceOver hint to collapse a section") : String(localized: "Double tap to expand", comment: "VoiceOver hint to expand a section"))
 	}
 
 	@ViewBuilder

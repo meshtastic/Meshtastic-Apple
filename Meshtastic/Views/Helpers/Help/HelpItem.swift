@@ -36,5 +36,6 @@ struct HelpItem: View {
 			}
 			Spacer()
 		}
+		.accessibilityElement(children: .combine)
 	}
 }

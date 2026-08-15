@@ -12,16 +12,19 @@ struct LoRaSignalStrengthMeter: View {
 	var rssi: Int32
 	var preset: ModemPresets
 	var compact: Bool
+	/// The receiving radio's noise floor (dBm), when known, so the rating can use the
+	/// real link margin instead of SNR alone. See `getLoRaSignalStrength`.
+	var noiseFloor: Int32?
 	var body: some View {
 
-		let signalStrength = getLoRaSignalStrength(snr: snr, rssi: rssi, preset: preset)
+		let signalStrength = getLoRaSignalStrength(snr: snr, rssi: rssi, preset: preset, noiseFloor: noiseFloor)
 		let gradient = Gradient(colors: [.red, .orange, .yellow, .green])
 		if !compact {
 			VStack {
 				LoRaSignalStrengthIndicator(signalStrength: signalStrength)
 				Text("Signal \(signalStrength.description)").font(.footnote)
 				Text("SNR \(String(format: "%.2f", snr))dB")
-					.foregroundColor(getSnrColor(snr: snr, preset: preset))
+					.foregroundColor(signalStrength.color)
 					.font(.caption2)
 				Text("RSSI \(rssi)dB")
 					.foregroundColor(getRssiColor(rssi: rssi))
@@ -42,6 +45,8 @@ struct LoRaSignalStrengthMeter: View {
 				.gaugeStyle(.accessoryLinear)
 				.tint(gradient)
 				.font(.caption)
+				.accessibilityLabel(String(localized: "Signal strength", comment: "VoiceOver: label for the LoRa signal strength gauge"))
+				.accessibilityValue(Text("Signal \(signalStrength.description)"))
 			}
 		}
 	}

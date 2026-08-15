@@ -124,7 +124,7 @@ struct BackupManagement: View {
 						.symbolEffect(.pulse, isActive: isBackingUp)
 				}
 				.disabled(isBackingUp || isRestoringBackup)
-				.accessibilityLabel("Backup Now")
+				.accessibilityLabel(String(localized: "Backup Now", comment: "VoiceOver label for the backup now button"))
 			}
 		}
 		.onAppear {

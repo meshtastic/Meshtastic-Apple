@@ -4,8 +4,9 @@
 //
 //  Tests for the waypoint-geofence alert engine (MeshPackets+Geofence):
 //  the crossing-state store (baseline / transition / geometry-key rotation /
-//  thread-safety), the WaypointEntity.contains(location:) geometry, and
-//  applyGeofence(from:) proto→entity mapping.
+//  thread-safety), the WaypointEntity.contains(location:) geometry, the
+//  applyGeofenceGeometry(from:) proto→entity mapping, and the local
+//  notify opt-in policy (design#114).
 //
 
 import Testing
@@ -199,27 +200,52 @@ struct WaypointGeofenceGeometryTests {
 	}
 }
 
-// MARK: - WaypointEntity.applyGeofence(from:)
+// MARK: - WaypointEntity.applyGeofenceGeometry(from:)
 
-@Suite("Waypoint applyGeofence(from:)")
+@Suite("Waypoint applyGeofenceGeometry(from:)")
 struct WaypointApplyGeofenceTests {
 
-	@Test("Copies circular geofence + notification flags from the proto")
-	func copiesCircleAndFlags() {
+	@Test("Copies the circular geofence but never the wire notify flags (creator-only default)")
+	func copiesCircleButNotFlags() {
 		let wp = WaypointEntity()
 		var proto = Waypoint()
 		proto.geofenceRadius = 250
 		proto.notifyOnEnter = true
-		proto.notifyOnExit = false
+		proto.notifyOnExit = true
 		proto.notifyFavoritesOnly = true
 
-		wp.applyGeofence(from: proto)
+		wp.applyGeofenceGeometry(from: proto)
 
 		#expect(wp.geofenceRadius == 250)
+		// design#114: notification scope is receiver-local — a received waypoint must not
+		// notify just because the sender's flags rode along on the wire.
+		#expect(wp.notifyOnEnter == false)
+		#expect(wp.notifyOnExit == false)
+		#expect(wp.notifyFavoritesOnly == false)
+		#expect(wp.hasBoundingBox == false)
+	}
+
+	@Test("A mesh update preserves this receiver's local notification opt-in")
+	func updatePreservesLocalOptIn() {
+		let wp = WaypointEntity()
+		wp.geofenceRadius = 100
+		// The user opted in locally on this device.
+		wp.notifyOnEnter = true
+		wp.notifyFavoritesOnly = true
+
+		// The author re-broadcasts the waypoint with different geometry and flags off.
+		var proto = Waypoint()
+		proto.geofenceRadius = 500
+		proto.notifyOnEnter = false
+		proto.notifyOnExit = false
+		proto.notifyFavoritesOnly = false
+
+		wp.applyGeofenceGeometry(from: proto)
+
+		#expect(wp.geofenceRadius == 500)
 		#expect(wp.notifyOnEnter == true)
 		#expect(wp.notifyOnExit == false)
 		#expect(wp.notifyFavoritesOnly == true)
-		#expect(wp.hasBoundingBox == false)
 	}
 
 	@Test("Copies the bounding box when the proto has one")
@@ -233,7 +259,7 @@ struct WaypointApplyGeofenceTests {
 		proto.boundingBox.longitudeWestI = -1220010000
 		#expect(proto.hasBoundingBox == true)
 
-		wp.applyGeofence(from: proto)
+		wp.applyGeofenceGeometry(from: proto)
 
 		#expect(wp.hasBoundingBox == true)
 		#expect(wp.boundingBoxLatitudeNorthI == 370010000)
@@ -254,12 +280,155 @@ struct WaypointApplyGeofenceTests {
 
 		var proto = Waypoint()
 		proto.geofenceRadius = 100   // circle only, no bounding box
-		wp.applyGeofence(from: proto)
+		wp.applyGeofenceGeometry(from: proto)
 
 		#expect(wp.hasBoundingBox == false)
 		#expect(wp.boundingBoxLatitudeNorthI == 0)
 		#expect(wp.boundingBoxLatitudeSouthI == 0)
 		#expect(wp.boundingBoxLongitudeEastI == 0)
 		#expect(wp.boundingBoxLongitudeWestI == 0)
+	}
+}
+
+// MARK: - Local notify opt-in policy (design#114)
+
+@Suite("Waypoint local notify opt-in policy")
+struct WaypointNotifyPolicyTests {
+
+	@Test("A received waypoint with a geofence is locally editable")
+	func receivedWaypointIsEditable() {
+		#expect(WaypointEntity.canEditNotifyPreferencesLocally(
+			isLocalWaypoint: false, createdBy: 111, activeDeviceNum: 222, hasGeofence: true
+		) == true)
+	}
+
+	@Test("A waypoint authored by the connected node keeps the send-based edit flow")
+	func authoredWaypointIsNotLocallyEditable() {
+		#expect(WaypointEntity.canEditNotifyPreferencesLocally(
+			isLocalWaypoint: false, createdBy: 222, activeDeviceNum: 222, hasGeofence: true
+		) == false)
+	}
+
+	@Test("No connected device: still editable — the preference is purely local")
+	func nilDeviceNumStillEditable() {
+		#expect(WaypointEntity.canEditNotifyPreferencesLocally(
+			isLocalWaypoint: false, createdBy: 111, activeDeviceNum: nil, hasGeofence: true
+		) == true)
+	}
+
+	@Test("A local-only waypoint uses the regular edit form, not the in-place toggles")
+	func localWaypointIsExcluded() {
+		#expect(WaypointEntity.canEditNotifyPreferencesLocally(
+			isLocalWaypoint: true, createdBy: 111, activeDeviceNum: 222, hasGeofence: true
+		) == false)
+		// Even without a connected device.
+		#expect(WaypointEntity.canEditNotifyPreferencesLocally(
+			isLocalWaypoint: true, createdBy: 111, activeDeviceNum: nil, hasGeofence: true
+		) == false)
+	}
+
+	@Test("Without a geofence there is nothing to notify about")
+	func noGeofenceIsExcluded() {
+		#expect(WaypointEntity.canEditNotifyPreferencesLocally(
+			isLocalWaypoint: false, createdBy: 111, activeDeviceNum: 222, hasGeofence: false
+		) == false)
+		#expect(WaypointEntity.canEditNotifyPreferencesLocally(
+			isLocalWaypoint: false, createdBy: 111, activeDeviceNum: nil, hasGeofence: false
+		) == false)
+	}
+
+	@Test("Unknown author (createdBy == 0) counts as received, not authored")
+	func unknownAuthorCountsAsReceived() {
+		#expect(WaypointEntity.canEditNotifyPreferencesLocally(
+			isLocalWaypoint: false, createdBy: 0, activeDeviceNum: 222, hasGeofence: true
+		) == true)
+	}
+}
+
+// MARK: - Outgoing wire notify flags (design#114)
+
+@Suite("Outgoing notify flag serialization")
+struct WaypointOutgoingNotifyFlagsTests {
+
+	/// Mirrors WaypointForm.applyGeofence(to:): authorship resolved via
+	/// isAuthoredLocally, then fed into outgoingNotifyFlags.
+	private func serialize(
+		waypointId: Int64, createdBy: Int64, activeDeviceNum: Int64? = 222,
+		hasGeofence: Bool = true, notifyOnEnter: Bool = false, notifyOnExit: Bool = false,
+		notifyFavoritesOnly: Bool = false
+	) -> WaypointEntity.OutgoingNotifyFlags {
+		WaypointEntity.outgoingNotifyFlags(
+			isAuthor: WaypointEntity.isAuthoredLocally(
+				waypointId: waypointId, createdBy: createdBy, activeDeviceNum: activeDeviceNum
+			),
+			hasGeofence: hasGeofence,
+			notifyOnEnter: notifyOnEnter,
+			notifyOnExit: notifyOnExit,
+			notifyFavoritesOnly: notifyFavoritesOnly
+		)
+	}
+
+	@Test("Re-sending someone else's waypoint never leaks this receiver's local opt-in")
+	func resendOfReceivedWaypointSerializesFalse() {
+		// A received waypoint (created by node 111, we are node 222) the user locally
+		// opted in to, then edited and re-sent from the edit form.
+		let flags = serialize(
+			waypointId: 42, createdBy: 111, activeDeviceNum: 222,
+			hasGeofence: true, notifyOnEnter: true, notifyOnExit: true, notifyFavoritesOnly: true
+		)
+		#expect(flags.notifyOnEnter == false)
+		#expect(flags.notifyOnExit == false)
+		#expect(flags.notifyFavoritesOnly == false)
+	}
+
+	@Test("The author's own preferences serialize as set")
+	func authoredWaypointSerializesAsSet() {
+		let flags = serialize(
+			waypointId: 42, createdBy: 222, activeDeviceNum: 222,
+			hasGeofence: true, notifyOnEnter: true, notifyOnExit: false, notifyFavoritesOnly: true
+		)
+		#expect(flags.notifyOnEnter == true)
+		#expect(flags.notifyOnExit == false)
+		#expect(flags.notifyFavoritesOnly == true)
+	}
+
+	@Test("A brand-new waypoint (id == 0) counts as authored here")
+	func newWaypointSerializesAsSet() {
+		let flags = serialize(
+			waypointId: 0, createdBy: 0, activeDeviceNum: 222,
+			hasGeofence: true, notifyOnEnter: false, notifyOnExit: true, notifyFavoritesOnly: false
+		)
+		#expect(flags.notifyOnEnter == false)
+		#expect(flags.notifyOnExit == true)
+		#expect(flags.notifyFavoritesOnly == false)
+	}
+
+	@Test("Removing the geofence clears stale flags even for the author")
+	func noGeofenceNormalizesFlagsOff() {
+		let flags = serialize(
+			waypointId: 42, createdBy: 222, activeDeviceNum: 222,
+			hasGeofence: false, notifyOnEnter: true, notifyOnExit: true, notifyFavoritesOnly: true
+		)
+		#expect(flags.notifyOnEnter == false)
+		#expect(flags.notifyOnExit == false)
+		#expect(flags.notifyFavoritesOnly == false)
+	}
+
+	@Test("Favorites-only requires actually notifying")
+	func favoritesOnlyRequiresNotifying() {
+		let flags = serialize(
+			waypointId: 42, createdBy: 222, activeDeviceNum: 222,
+			hasGeofence: true, notifyOnEnter: false, notifyOnExit: false, notifyFavoritesOnly: true
+		)
+		#expect(flags.notifyFavoritesOnly == false)
+	}
+
+	@Test("isAuthoredLocally: new is authored; existing needs a matching connected node")
+	func authorshipPolicy() {
+		#expect(WaypointEntity.isAuthoredLocally(waypointId: 0, createdBy: 0, activeDeviceNum: nil) == true)
+		#expect(WaypointEntity.isAuthoredLocally(waypointId: 42, createdBy: 222, activeDeviceNum: 222) == true)
+		#expect(WaypointEntity.isAuthoredLocally(waypointId: 42, createdBy: 111, activeDeviceNum: 222) == false)
+		// Disconnected: authorship of an existing waypoint cannot be established.
+		#expect(WaypointEntity.isAuthoredLocally(waypointId: 42, createdBy: 222, activeDeviceNum: nil) == false)
 	}
 }

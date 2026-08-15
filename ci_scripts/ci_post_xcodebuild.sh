@@ -12,6 +12,29 @@ if [ -z "$CI_ARCHIVE_PATH" ]; then
 	exit 0
 fi
 
+# TestFlight "What to Test": generated from the PR titles merged recently, so every
+# TestFlight build carries notes without anyone writing them. Xcode Cloud picks up
+# TestFlight/WhatToTest.<locale>.txt from the repository root during an archive action.
+# Best effort — never fail the build over release notes.
+TESTFLIGHT_DIR="$CI_PRIMARY_REPOSITORY_PATH/TestFlight"
+mkdir -p "$TESTFLIGHT_DIR"
+# Xcode Cloud clones are shallow; deepen so the merge history is visible.
+git -C "$CI_PRIMARY_REPOSITORY_PATH" fetch --deepen 50 --quiet 2>/dev/null || true
+# GitHub merge commits carry the PR title in the body. Take the last 10 merges,
+# first line of each body, drop empties/trailers, de-duplicate.
+NOTES=$(git -C "$CI_PRIMARY_REPOSITORY_PATH" log --merges -10 --pretty=format:"%b%n---" 2>/dev/null \
+	| awk '/^---$/{first=0; next} !first++ && NF && !/^Co-authored|^Signed-off/ {print "• " $0}' \
+	| awk '!seen[$0]++' | head -12)
+if [ -z "$NOTES" ]; then
+	NOTES=$(git -C "$CI_PRIMARY_REPOSITORY_PATH" log -10 --no-merges --pretty=format:"• %s" 2>/dev/null)
+fi
+if [ -n "$NOTES" ]; then
+	printf "Recent changes in this build:\n\n%s\n" "$NOTES" > "$TESTFLIGHT_DIR/WhatToTest.en-US.txt"
+	echo "WhatToTest generated with $(printf '%s\n' "$NOTES" | wc -l | tr -d ' ') entries."
+else
+	echo "No commit history available — skipping WhatToTest generation."
+fi
+
 DSYM_DIR="$CI_ARCHIVE_PATH/dSYMs"
 
 if [ ! -d "$DSYM_DIR" ]; then

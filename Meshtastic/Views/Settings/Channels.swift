@@ -352,6 +352,7 @@ struct Channels: View {
 				.foregroundColor(.accentColor)
 				.buttonStyle(.borderedProminent)
 				.buttonBorderShape(.circle)
+				.accessibilityLabel(showingHelp ? String(localized: "Hide help", comment: "VoiceOver label for the help toggle button when help is showing") : String(localized: "Show help", comment: "VoiceOver label for the help toggle button when help is hidden"))
 			}
 			.controlSize(.regular)
 			.padding(5)
@@ -522,16 +523,16 @@ private struct ChannelRow: View {
 					.foregroundStyle(.secondary)
 			}
 			Spacer(minLength: 0)
-			HStack(spacing: 8) {
-				if sharesLocation {
-					ChannelStatusIcon(systemImage: "location.fill", color: .green, accessibilityLabel: "Position sharing")
-				}
-				if channel.uplinkEnabled {
-					ChannelStatusIcon(systemImage: "icloud.and.arrow.up", color: .blue, accessibilityLabel: "MQTT uplink enabled")
-				}
-				if channel.downlinkEnabled {
-					ChannelStatusIcon(systemImage: "icloud.and.arrow.down", color: .blue, accessibilityLabel: "MQTT downlink enabled")
-				}
+			// MQTT uplink/downlink cloud icons used to render here too, but downlink is
+			// commonly enabled by default, so nearly every channel row carried a cloud
+			// that read as a download button rather than status — removed. The uplink/
+			// downlink toggles remain visible in the channel editor itself.
+			if sharesLocation {
+				ChannelStatusIcon(
+					systemImage: "location.fill",
+					color: .green,
+					accessibilityLabel: String(localized: "Position sharing", comment: "VoiceOver: this channel shares location")
+				)
 			}
 		}
 		.padding(.vertical, 4)

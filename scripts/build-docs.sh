@@ -40,6 +40,29 @@ if ! command -v cmark-gfm &>/dev/null; then
     exit 1
 fi
 
+# ── Referenced-image guard ────────────────────────────────────────────────────
+# Every screenshot a docs page references must exist in docs/assets/screenshots.
+# Test snapshot references have doubled as docs sources before, and a deletion that
+# looks "test-only" can silently break doc pages — fail the build instead.
+# Fenced code blocks are stripped first so documentation *examples* (e.g. the
+# foo_light/foo_dark <picture> pattern in developer/testing.md) don't count as
+# real references.
+missing_images=()
+while IFS= read -r ref; do
+    [[ -f "$REPO_ROOT/docs/assets/screenshots/$ref" ]] || missing_images+=("$ref")
+done < <(
+    find "$REPO_ROOT/docs" -name '*.md' -print0 | xargs -0 awk '
+        /^[[:space:]]*```/ { in_fence = !in_fence; next }
+        !in_fence { print }
+    ' | grep -oh 'screenshots/[^")* ]*\.png' | sed 's|screenshots/||' | sort -u
+)
+if (( ${#missing_images[@]} > 0 )); then
+    echo "error: docs pages reference screenshots that do not exist in docs/assets/screenshots:" >&2
+    printf '  - %s\n' "${missing_images[@]}" >&2
+    echo "Restore the image(s) or update the referencing page — never delete images the docs use." >&2
+    exit 1
+fi
+
 # ── Setup output directories ──────────────────────────────────────────────────
 mkdir -p "$OUTPUT_DIR/user" "$OUTPUT_DIR/developer" "$OUTPUT_DIR/assets"
 mkdir -p "$OUTPUT_DIR/markdown/user" "$OUTPUT_DIR/markdown/developer"
@@ -143,6 +166,7 @@ extract_keywords() {
     local stop_words="the a an and or but in on at to for of with is are was were be been being have has had do does did will would could should may might shall can this that these those it its we you they he she what when where how which who i me my our your not over usually during use"
     cat "$html_file" \
         | sed 's/<[^>]*>//g' \
+        | sed 's/&[a-zA-Z0-9#]\{1,\};/ /g' \
         | tr '[:upper:]' '[:lower:]' \
         | tr -cs 'a-z0-9' '\n' \
         | grep -v '^[0-9]*$' \

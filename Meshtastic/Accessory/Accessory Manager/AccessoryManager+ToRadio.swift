@@ -108,6 +108,76 @@ extension AccessoryManager {
 		return Int64(meshPacket.id)
 	}
 
+	// MARK: - Edit transactions
+
+	/// Opens a firmware edit transaction (`begin_edit_settings`).
+	///
+	/// While a transaction is open the firmware sets `hasOpenEditTransaction` and defers every config
+	/// save, reboot, and Bluetooth teardown until the matching commit (AdminModule.cpp:468). Without the
+	/// bracket, each `set_config` / `set_module_config` is treated as a standalone write that saves to
+	/// flash, schedules a reboot, and disables Bluetooth, which drops the link partway through a
+	/// multi-item profile restore.
+	///
+	/// Callers MUST guarantee a matching `commitEditSettings`, including on the error path: the firmware
+	/// exposes no abort or rollback message, so an abandoned transaction leaves the radio deferring every
+	/// subsequent write from any client.
+	@discardableResult
+	public func beginEditSettings(fromUser: UserEntity, toUser: UserEntity, channel: Int32 = 0) async throws -> Int64 {
+		var adminPacket = AdminMessage()
+		adminPacket.beginEditSettings = true
+		return try await sendEditTransactionMessage(
+			adminPacket, fromUser: fromUser, toUser: toUser, channel: channel,
+			description: "🔧 Sent Begin Edit Settings Admin Message to: \(toUser.longName ?? "Unknown".localized)"
+		)
+	}
+
+	/// Closes a firmware edit transaction (`commit_edit_settings`).
+	///
+	/// The firmware clears `hasOpenEditTransaction`, performs one save across every segment, and reboots
+	/// (AdminModule.cpp:473-479). It also disables Bluetooth as the first step of the commit, so the
+	/// trailing ack routinely never arrives over BLE. Callers should treat a throw here as success when
+	/// the link has already dropped, and as a real failure only while still connected.
+	@discardableResult
+	public func commitEditSettings(fromUser: UserEntity, toUser: UserEntity, channel: Int32 = 0) async throws -> Int64 {
+		var adminPacket = AdminMessage()
+		adminPacket.commitEditSettings = true
+		return try await sendEditTransactionMessage(
+			adminPacket, fromUser: fromUser, toUser: toUser, channel: channel,
+			description: "🔧 Sent Commit Edit Settings Admin Message to: \(toUser.longName ?? "Unknown".localized)"
+		)
+	}
+
+	/// Shared envelope for the two transaction-control admin messages. Mirrors the packet shape the
+	/// `save*Config` calls use, including the session passkey when targeting a remote node.
+	private func sendEditTransactionMessage(
+		_ adminPacket: AdminMessage,
+		fromUser: UserEntity,
+		toUser: UserEntity,
+		channel: Int32,
+		description: String
+	) async throws -> Int64 {
+		var adminPacket = adminPacket
+		if fromUser != toUser {
+			adminPacket.sessionPasskey = toUser.userNode?.sessionPasskey ?? Data()
+		}
+		var meshPacket = MeshPacket()
+		meshPacket.to = UInt32(toUser.num)
+		meshPacket.from = UInt32(fromUser.num)
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.priority = MeshPacket.Priority.reliable
+		meshPacket.wantAck = true
+		meshPacket.channel = UInt32(channel)
+		var dataMessage = DataMessage()
+		guard let serializedData: Data = try? adminPacket.serializedData() else {
+			throw AccessoryError.ioFailed("Unable to serialize edit-transaction admin packet")
+		}
+		dataMessage.payload = serializedData
+		dataMessage.portnum = PortNum.adminApp
+		meshPacket.decoded = dataMessage
+		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: description)
+		return Int64(meshPacket.id)
+	}
+
 	// Send an admin message to a radio, save a message to core data for logging
 	private func sendAdminMessageToRadio(meshPacket: MeshPacket, adminDescription: String?) async throws {
 
@@ -174,6 +244,11 @@ extension AccessoryManager {
 				Logger.data.error("Failed to decode contact data: \(error.localizedDescription, privacy: .public)")
 				throw AccessoryError.appError("Unable to decode contact data from QR code.")
 			}
+		} else {
+			// Without this the method returned normally on undecodable input, so
+			// callers treated a failed import as a success.
+			Logger.data.error("Contact payload is not valid base64url data.")
+			throw AccessoryError.appError("Unable to decode contact data from QR code.")
 		}
 	}
 	
@@ -510,6 +585,12 @@ extension AccessoryManager {
 
 		var deliveredChannels: [Channel] = []
 		for cs in channelSet.settings {
+			// Stop sending channels if the calling Task was cancelled. The channels already
+			// sent are fine inside a transaction (commit will persist them); skipping the rest
+			// lets the import engine exit promptly. The local-state upserts below are safe to
+			// skip: they mirror to Core Data and are rebuilt on the next connect/drain.
+			try Task.checkCancellation()
+
 			var chan = Channel()
 			chan.role = (i == 0) ? .primary : .secondary
 			chan.settings = cs
@@ -857,6 +938,22 @@ extension AccessoryManager {
 				wayPointEntity.locked = true
 			} else {
 				wayPointEntity.locked = false
+			}
+			// Persist the author's geofence here: the mesh ingest applies geometry only and
+			// never touches the notify flags (design#114 — those are receiver-local), so the
+			// sending device is the one place its own preferences are recorded. When
+			// re-sending someone else's waypoint the outgoing flags are forced false
+			// (see WaypointEntity.outgoingNotifyFlags), so only mirror them back into the
+			// entity for the author — otherwise this device's local opt-in would be wiped.
+			wayPointEntity.applyGeofenceGeometry(from: waypoint)
+			if WaypointEntity.isAuthoredLocally(
+				waypointId: wayPointEntity.id,
+				createdBy: wayPointEntity.createdBy,
+				activeDeviceNum: Int64(deviceNum)
+			) {
+				wayPointEntity.notifyOnEnter = waypoint.notifyOnEnter
+				wayPointEntity.notifyOnExit = waypoint.notifyOnExit
+				wayPointEntity.notifyFavoritesOnly = waypoint.notifyFavoritesOnly
 			}
 			if wayPointEntity.created == nil {
 				wayPointEntity.created = Date()
@@ -2011,6 +2108,36 @@ extension AccessoryManager {
 		}
 		let messageDescription = "🚀 Sent Set Fixed Postion Admin Message to: \(fromUser.longName ?? "Unknown".localized) from: \(fromUser.longName ?? "Unknown".localized)"
 		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
+	}
+
+	/// Sets an explicit fixed position from supplied coordinates (e.g. restored from an imported device
+	/// profile), rather than the phone's current GPS fix. The companion `setFixedPosition(fromUser:channel:)`
+	/// pulls coordinates from `getPositionFromPhoneGPS` and can't set arbitrary coordinates; this overload
+	/// fills that gap. The position config's `fixedPosition` flag (sent separately) is what tells the
+	/// firmware to actually use these coordinates.
+	public func setFixedPosition(_ position: Position, fromUser: UserEntity, toUser: UserEntity, channel: Int32 = 0) async throws -> Int64 {
+		var adminPacket = AdminMessage()
+		adminPacket.setFixedPosition = position
+		if fromUser != toUser {
+			adminPacket.sessionPasskey = toUser.userNode?.sessionPasskey ?? Data()
+		}
+		var meshPacket = MeshPacket()
+		meshPacket.to = UInt32(toUser.num)
+		meshPacket.from = UInt32(fromUser.num)
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.priority = MeshPacket.Priority.reliable
+		meshPacket.wantAck = true
+		meshPacket.channel = UInt32(channel)
+		var dataMessage = DataMessage()
+		guard let serializedData: Data = try? adminPacket.serializedData() else {
+			throw AccessoryError.ioFailed("setFixedPosition: Unable to serialize admin packet")
+		}
+		dataMessage.payload = serializedData
+		dataMessage.portnum = PortNum.adminApp
+		meshPacket.decoded = dataMessage
+		let messageDescription = "🚀 Sent Set Fixed Position (imported) Admin Message to: \(toUser.longName ?? "Unknown".localized)"
+		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
+		return Int64(meshPacket.id)
 	}
 
 	public func removeFixedPosition(fromUser: UserEntity, channel: Int32) async throws {

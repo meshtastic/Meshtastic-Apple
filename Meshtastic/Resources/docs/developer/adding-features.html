@@ -33,6 +33,7 @@ struct MyNewFeatureView: View {
 }
 </code></pre>
 <p>Keep view files focused. If the view grows beyond ~400 lines (SwiftLint warning), split into subviews or extension files.</p>
+<p>No Xcode project changes are needed — <code>Meshtastic/Views/</code> is a synchronized folder, so the new file is picked up automatically. See <a href="codebase.md#project-generation">Project Generation</a> if you're touching <code>project.yml</code> itself (e.g. adding a new target).</p>
 <h2>3. Wire up Settings Navigation</h2>
 <p>Open <code>Meshtastic/Views/Settings/Settings.swift</code> and find the <code>navigationDestination(for:)</code> switch. Add your case:</p>
 <pre><code class="language-swift">.navigationDestination(for: SettingsNavigationState.self) { state in

@@ -79,6 +79,7 @@ struct NRFDFUSheet: View {
 					.symbolRenderingMode(.palette)
 					.foregroundStyle(.white, Color(.systemGray3))
 			}
+			.accessibilityLabel(String(localized: "Close", comment: "VoiceOver: dismiss this sheet"))
 			.buttonStyle(.plain)
 			.padding()
 			.disabled([.starting, .uploading].contains(dfuViewModel.state))

@@ -69,6 +69,61 @@ struct GenerateMessageMarkdownTests {
 	}
 }
 
+// MARK: - MyInfo ingestion
+
+@Suite("MyInfo ingestion", .serialized)
+@MainActor
+struct MyInfoIngestionTests {
+	@Test func sameNodeReflash_updatesPioEnvAndBandwidthCapability() async throws {
+		let container = try ModelContainer(
+			for: Schema(MeshtasticSchema.allModels),
+			configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+		)
+		let mesh = MeshPackets(modelContainer: container)
+		let nodeNum: UInt32 = 0x1234_5678
+
+		var beforeReflash = MyNodeInfo()
+		beforeReflash.myNodeNum = nodeNum
+		beforeReflash.pioEnv = "muzi-base"
+		let originalID = await mesh.myInfoPacket(myInfo: beforeReflash, peripheralId: "test-peripheral")
+
+		var afterReflash = MyNodeInfo()
+		afterReflash.myNodeNum = nodeNum
+		afterReflash.pioEnv = "my-esp32s3-diy-oled"
+		let updatedID = await mesh.myInfoPacket(myInfo: afterReflash, peripheralId: "test-peripheral")
+
+		let context = ModelContext(container)
+		let persistedNodeNum = Int64(nodeNum)
+		let rows = try context.fetch(
+			FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == persistedNodeNum })
+		)
+		let myInfo = try #require(rows.first)
+
+		#expect(rows.count == 1)
+		#expect(originalID == updatedID)
+		#expect(myInfo.myNodeNum == persistedNodeNum)
+		#expect(myInfo.pioEnv == "my-esp32s3-diy-oled")
+		#expect(Bandwidths.selectable(region: .lora24, pioEnv: myInfo.pioEnv).contains(.sixteenHundred))
+	}
+}
+
+// MARK: - Local Message Notification Cleanup
+
+@Suite("Local message notification cleanup")
+@MainActor
+struct LocalMessageNotificationCleanupTests {
+	@Test func readingMessages_removesTheirDeliveredNotifications() {
+		var removedIdentifiers = [String]()
+		let manager = LocalNotificationManager { identifiers in
+			removedIdentifiers = identifiers
+		}
+
+		manager.cancelNotificationsForMessageIds([123, 456])
+
+		#expect(removedIdentifiers == ["notification.id.123", "notification.id.456"])
+	}
+}
+
 // MARK: - TelemetryEnums Aqi
 
 @Suite("Local stats telemetry export")
@@ -888,5 +943,341 @@ struct TelemetryPacketIngestTests {
 		#expect(latest?.pm25Environmental == nil)
 		#expect(latest?.pm100Environmental == nil)
 		#expect(latest?.nodeTelemetry?.num == Int64(nodeNum))
+	}
+}
+
+// MARK: - PAX counter ingestion
+
+// MARK: - Position ingestion — malformed-packet hardening (DEF CON)
+
+@Suite("Position packet ingestion hardening", .serialized)
+@MainActor
+struct PositionPacketIngestHardeningTests {
+	private func makePositionPacket(from nodeNum: UInt32, mutate: (inout Position) -> Void) throws -> MeshPacket {
+		var position = Position()
+		// Real coordinates so the packet passes hasValidCoordinates and reaches the conversions.
+		position.latitudeI = Int32(47.6062 * 1e7)
+		position.longitudeI = Int32(-122.3321 * 1e7)
+		mutate(&position)
+
+		var dataMessage = DataMessage()
+		dataMessage.payload = try position.serializedData()
+		dataMessage.portnum = .positionApp
+
+		var packet = MeshPacket()
+		packet.from = nodeNum
+		packet.decoded = dataMessage
+		return packet
+	}
+
+	/// A single unauthenticated POSITION_APP packet whose UInt32 fields exceed Int32.max must
+	/// no longer SIGTRAP the app (the old `Int32(UInt32)` conversions trapped). The values must
+	/// land truncated rather than crash the process.
+	@Test func oversizedUInt32Fields_doNotCrashAndTruncate() async throws {
+		let nodeNum: UInt32 = 0x20DE_FC10
+		let persistedNodeNum = Int64(nodeNum)
+		let packet = try makePositionPacket(from: nodeNum) { p in
+			p.satsInView = 0xFFFF_FFFF   // > Int32.max — trapped before the fix
+			p.seqNumber = 0xFFFF_FFFF
+			p.groundSpeed = 0x8000_0000
+			p.groundTrack = 0xFFFF_FFFF  // also exercises the pre-conversion range check
+			p.precisionBits = 0xFFFF_FFFF
+		}
+
+		let mesh = MeshPackets(modelContainer: sharedModelContainer)
+		// Reaching this line at all (no fatalError / SIGTRAP) is the core assertion — the old
+		// code trapped here on the first oversized Int32(UInt32) conversion.
+		await mesh.upsertPositionPacket(packet: packet)
+		await mesh.flushDebouncedSaves()
+
+		// Truncated, not crashed: 0xFFFFFFFF as Int32(truncatingIfNeeded:) == -1. upsertPositionPacket
+		// links the position to the (find-or-created) node, so scope the query to THIS packet's node
+		// instead of the bare sentinel — a pre-existing row could otherwise satisfy it.
+		let context = ModelContext(sharedModelContainer)
+		let truncated = try context.fetch(FetchDescriptor<PositionEntity>(
+			predicate: #Predicate { $0.nodePosition?.num == persistedNodeNum && $0.satsInView == -1 }
+		))
+		#expect(!truncated.isEmpty, "position was persisted with the truncated value, proving no crash")
+	}
+}
+
+// MARK: - Global entity caps (node / waypoint eviction)
+
+@Suite("Entity cap eviction", .serialized)
+@MainActor
+struct EntityCapEvictionTests {
+	private func freshMesh() throws -> (MeshPackets, ModelContainer) {
+		let container = try ModelContainer(
+			for: Schema(MeshtasticSchema.allModels),
+			configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+		)
+		return (MeshPackets(modelContainer: container), container)
+	}
+
+	@Test func nodes_evictLeastRecentlyHeard_keepingFavorites() async throws {
+		let (mesh, container) = try freshMesh()
+		let context = ModelContext(container)
+		let base = Date(timeIntervalSince1970: 1_700_000_000)
+		func makeNode(_ num: Int64, heard: TimeInterval, favorite: Bool) -> NodeInfoEntity {
+			let node = NodeInfoEntity()
+			node.num = num
+			node.id = num
+			node.lastHeard = base.addingTimeInterval(heard)
+			node.favorite = favorite
+			return node
+		}
+		// Node 1 is the OLDEST but a favorite (must be protected); 2 and 3 are the oldest
+		// non-favorites (must be evicted); 4 is newest (must survive).
+		[makeNode(1, heard: 0, favorite: true),
+		 makeNode(2, heard: 10, favorite: false),
+		 makeNode(3, heard: 20, favorite: false),
+		 makeNode(4, heard: 30, favorite: false)].forEach { context.insert($0) }
+		try context.save()
+
+		await mesh.evictNodesIfOverCap(2)
+		await mesh.flushDebouncedSaves()
+
+		let remaining = try ModelContext(container)
+			.fetch(FetchDescriptor<NodeInfoEntity>()).map { $0.num }.sorted()
+		// Favorite (1, despite being oldest) + newest (4) survive; oldest non-favorites (2,3) evicted.
+		#expect(remaining == [1, 4])
+	}
+
+	@Test func waypoints_evictOldestLastUpdated() async throws {
+		let (mesh, container) = try freshMesh()
+		let context = ModelContext(container)
+		let base = Date(timeIntervalSince1970: 1_700_000_000)
+		func makeWaypoint(_ id: Int64, updated: TimeInterval) -> WaypointEntity {
+			let waypoint = WaypointEntity()
+			waypoint.id = id
+			waypoint.lastUpdated = base.addingTimeInterval(updated)
+			return waypoint
+		}
+		[makeWaypoint(1, updated: 0),   // oldest
+		 makeWaypoint(2, updated: 10),
+		 makeWaypoint(3, updated: 20)].forEach { context.insert($0) }  // newest
+		try context.save()
+
+		await mesh.evictWaypointsIfOverCap(1)
+		await mesh.flushDebouncedSaves()
+
+		let remaining = try ModelContext(container)
+			.fetch(FetchDescriptor<WaypointEntity>()).map { $0.id }.sorted()
+		#expect(remaining == [3])   // only the most-recently-updated survives
+	}
+
+	@Test func underCap_noEviction() async throws {
+		let (mesh, container) = try freshMesh()
+		let context = ModelContext(container)
+		let node = NodeInfoEntity(); node.num = 7; node.id = 7; node.lastHeard = Date()
+		context.insert(node)
+		try context.save()
+
+		await mesh.evictNodesIfOverCap(10_000)
+		await mesh.flushDebouncedSaves()
+
+		#expect(try ModelContext(container).fetchCount(FetchDescriptor<NodeInfoEntity>()) == 1)
+	}
+
+	/// Eviction runs inside `savePendingChanges` before the commit, so a node just created this
+	/// transaction is still a pending insert with a nil `lastHeard` — which sorts stalest. It must
+	/// NOT be evicted before it is saved; older persisted rows are freed to make room instead.
+	@Test func newNodeInTransaction_survivesEviction() async throws {
+		let (mesh, container) = try freshMesh()
+		let context = ModelContext(container)
+		let base = Date(timeIntervalSince1970: 1_700_000_000)
+		func makeNode(_ num: Int64, heard: TimeInterval) -> NodeInfoEntity {
+			let node = NodeInfoEntity()
+			node.num = num
+			node.id = num
+			node.lastHeard = base.addingTimeInterval(heard)
+			node.favorite = false
+			return node
+		}
+		// Three persisted non-favorites, all older than "now". With cap = 2, creating one more node
+		// pushes the count to 4, so eviction must delete 2 rows.
+		[makeNode(1, heard: 0), makeNode(2, heard: 10), makeNode(3, heard: 20)].forEach { context.insert($0) }
+		try context.save()
+
+		// Creates pending node 99 (nil lastHeard), enforces cap 2, commits — all one transaction.
+		await mesh.createNodeThenEvict(num: 99, cap: 2)
+
+		let remaining = try ModelContext(container)
+			.fetch(FetchDescriptor<NodeInfoEntity>()).map { $0.num }.sorted()
+		// Total lands at cap (2). The brand-new node (99) is kept — it was excluded from the
+		// deletion candidates — and the two stalest persisted rows (1, 2) are evicted instead.
+		#expect(remaining == [3, 99])
+	}
+}
+
+// MARK: - "Signed node" shield authenticity (forgeable-shield fix)
+
+@Suite("Signed-node shield authenticity", .serialized)
+@MainActor
+struct SignedShieldAuthenticityTests {
+	private func freshMesh() throws -> (MeshPackets, ModelContainer) {
+		let container = try ModelContainer(
+			for: Schema(MeshtasticSchema.allModels),
+			configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+		)
+		return (MeshPackets(modelContainer: container), container)
+	}
+
+	private func makeNodeInfoPacket(from num: UInt32, payloadClaimsSigned: Bool, transportVerified: Bool) throws -> MeshPacket {
+		var nodeInfo = NodeInfo()
+		nodeInfo.num = num
+		nodeInfo.hasXeddsaSigned_p = payloadClaimsSigned
+		var dataMessage = DataMessage()
+		dataMessage.payload = try nodeInfo.serializedData()
+		dataMessage.portnum = .nodeinfoApp
+		var packet = MeshPacket()
+		packet.from = num
+		packet.decoded = dataMessage
+		packet.xeddsaSigned = transportVerified
+		return packet
+	}
+
+	private func fetchNode(_ num: UInt32, in container: ModelContainer) throws -> NodeInfoEntity? {
+		let persisted = Int64(num)
+		return try ModelContext(container)
+			.fetch(FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == persisted })).first
+	}
+
+	@Test func spoofedPayloadBit_doesNotForgeShield() async throws {
+		let (mesh, container) = try freshMesh()
+		let num: UInt32 = 0x20DE_FC50
+		// Attacker claims signed IN THE PAYLOAD, but the radio did NOT verify a signature.
+		let packet = try makeNodeInfoPacket(from: num, payloadClaimsSigned: true, transportVerified: false)
+		await mesh.upsertNodeInfoPacket(packet: packet)
+		await mesh.flushDebouncedSaves()
+
+		let node = try fetchNode(num, in: container)
+		#expect(node != nil)
+		#expect(node?.hasXeddsaSigned == false)   // forge blocked — payload bit is not trusted
+	}
+
+	@Test func radioVerifiedBit_marksSigned() async throws {
+		let (mesh, container) = try freshMesh()
+		let num: UInt32 = 0x20DE_FC51
+		// Payload omits the claim, but the radio VERIFIED the packet's signature — any node we hear
+		// signing (not just the connected one) should legitimately show the shield.
+		let packet = try makeNodeInfoPacket(from: num, payloadClaimsSigned: false, transportVerified: true)
+		await mesh.upsertNodeInfoPacket(packet: packet)
+		await mesh.flushDebouncedSaves()
+
+		#expect(try fetchNode(num, in: container)?.hasXeddsaSigned == true)
+	}
+
+	@Test func latch_survivesLaterUnverifiedPacket() async throws {
+		let (mesh, container) = try freshMesh()
+		let num: UInt32 = 0x20DE_FC52
+		// First a radio-verified signed packet marks the node, then a spoofed/unverified one must
+		// neither downgrade it (latch) nor be able to forge it in the first place.
+		await mesh.upsertNodeInfoPacket(packet: try makeNodeInfoPacket(from: num, payloadClaimsSigned: false, transportVerified: true))
+		await mesh.flushDebouncedSaves()
+		await mesh.upsertNodeInfoPacket(packet: try makeNodeInfoPacket(from: num, payloadClaimsSigned: false, transportVerified: false))
+		await mesh.flushDebouncedSaves()
+
+		#expect(try fetchNode(num, in: container)?.hasXeddsaSigned == true)   // latched, not downgraded
+	}
+}
+
+@Suite("PAX counter ingestion", .serialized)
+@MainActor
+struct PaxCounterPacketIngestTests {
+	private func makePaxPacket(from nodeNum: UInt32) throws -> MeshPacket {
+		var paxCounter = Paxcount()
+		paxCounter.wifi = 4
+		paxCounter.ble = 7
+		paxCounter.uptime = 60
+
+		var dataMessage = DataMessage()
+		dataMessage.payload = try paxCounter.serializedData()
+		dataMessage.portnum = .paxcounterApp
+
+		var packet = MeshPacket()
+		packet.from = nodeNum
+		packet.decoded = dataMessage
+		return packet
+	}
+
+	@Test func unknownSender_createsNodeAndLinksReading() async throws {
+		let nodeNum: UInt32 = 0x20DE_FC03
+		let persistedNodeNum = Int64(nodeNum)
+		let context = ModelContext(sharedModelContainer)
+		let orphansBefore = try context.fetchCount(FetchDescriptor<PaxCounterEntity>(
+			predicate: #Predicate { $0.paxNode == nil }
+		))
+
+		let mesh = MeshPackets(modelContainer: sharedModelContainer)
+		await mesh.paxCounterPacket(packet: try makePaxPacket(from: nodeNum))
+		await mesh.flushDebouncedSaves()
+
+		// Hearing the packet created the sender, and the reading is linked to it.
+		#expect(try context.fetchCount(FetchDescriptor<NodeInfoEntity>(
+			predicate: #Predicate { $0.num == persistedNodeNum }
+		)) == 1)
+		let readings = try context.fetch(FetchDescriptor<PaxCounterEntity>(
+			predicate: #Predicate { $0.paxNode?.num == persistedNodeNum }
+		))
+		#expect(readings.count == 1)
+		#expect(readings.first?.wifi == 4)
+		#expect(readings.first?.ble == 7)
+		// The original bug: an unlinked row swept in by the next debounced save.
+		#expect(try context.fetchCount(FetchDescriptor<PaxCounterEntity>(
+			predicate: #Predicate { $0.paxNode == nil }
+		)) == orphansBefore)
+	}
+
+	@Test func knownSender_persistsLinkedReading() async throws {
+		let nodeNum: UInt32 = 0x20DE_FC02
+		let persistedNodeNum = Int64(nodeNum)
+		let context = ModelContext(sharedModelContainer)
+		let node = NodeInfoEntity()
+		node.num = persistedNodeNum
+		context.insert(node)
+		try context.save()
+
+		let mesh = MeshPackets(modelContainer: sharedModelContainer)
+		await mesh.paxCounterPacket(packet: try makePaxPacket(from: nodeNum))
+		await mesh.flushDebouncedSaves()
+
+		let readings = try context.fetch(FetchDescriptor<PaxCounterEntity>(
+			predicate: #Predicate { $0.paxNode?.num == persistedNodeNum }
+		))
+		#expect(readings.count == 1)
+		#expect(readings.first?.wifi == 4)
+		#expect(readings.first?.ble == 7)
+	}
+}
+
+@Suite("device metadata ingestion")
+@MainActor
+struct DeviceMetadataIngestTests {
+	private func makeMetadata(version: String) -> DeviceMetadata {
+		var metadata = DeviceMetadata()
+		metadata.firmwareVersion = version
+		metadata.deviceStateVersion = 1
+		return metadata
+	}
+
+	@Test func repeatedMetadataForNode_reusesExistingEntity() async throws {
+		let nodeNum: Int64 = 0x2004_AA05
+		let mesh = MeshPackets(modelContainer: sharedModelContainer)
+
+		await mesh.deviceMetadataPacket(metadata: makeMetadata(version: "2.7.17.abcdef"), fromNum: nodeNum)
+		let context = ModelContext(sharedModelContainer)
+		let node = try #require(
+			context.fetch(FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == nodeNum })).first
+		)
+		let firstMetadataID = try #require(node.metadata).persistentModelID
+
+		await mesh.deviceMetadataPacket(metadata: makeMetadata(version: "2.7.18.abcdef"), fromNum: nodeNum)
+
+		let refreshedNode = try #require(
+			context.fetch(FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == nodeNum })).first
+		)
+		#expect(refreshedNode.metadata?.persistentModelID == firstMetadataID)
+		#expect(refreshedNode.metadata?.firmwareVersion == "2.7.18")
 	}
 }

@@ -46,7 +46,6 @@ extension UserDefaults {
 		case provideLocation
 		case provideLocationInterval
 		case mapLayer
-		case meshMapDistance
 		case enableMapWaypoints
 		case meshMapRecentering
 		case meshMapShowNodeHistory
@@ -70,6 +69,7 @@ extension UserDefaults {
 		case enableSmartPosition
 		case newNodeNotifications
 		case nodeNotificationsAutoDisabledForEvent
+		case nodeNotificationsUserOverrideForEvent
 		case lowBatteryNotifications
 		case channelMessageNotifications
 		case modemPreset
@@ -85,11 +85,16 @@ extension UserDefaults {
 		case purgeStaleNodeDays
 		case manualConnections
 		case testIntEnum
+		case testDoubleValue
 		case lastDeviceAPIUpdate
+		case lastDeviceImageAndLinkUpdate
 		case lastFirmwareAPIUpdate
 		case firmwareUpdateNotificationKeys
 		case lastEventFirmwareAPIUpdate
+		case lastEventFirmwareAPIAttempt
 		case useEventTheme
+		case pairedPeripheralIds
+		case migratedPreferredPeripheralPairing
 	}
 
 	func reset() {
@@ -110,9 +115,6 @@ extension UserDefaults {
 
 	@UserDefault(.mapLayer, defaultValue: .standard)
 	static var mapLayer: MapLayer
-
-	@UserDefault(.meshMapDistance, defaultValue: 800000)
-	static var meshMapDistance: Double
 
 	@UserDefault(.enableMapWaypoints, defaultValue: true)
 	static var enableMapWaypoints: Bool
@@ -158,6 +160,9 @@ extension UserDefaults {
 
 	@UserDefault(.nodeNotificationsAutoDisabledForEvent, defaultValue: false)
 	static var nodeNotificationsAutoDisabledForEvent: Bool
+
+	@UserDefault(.nodeNotificationsUserOverrideForEvent, defaultValue: false)
+	static var nodeNotificationsUserOverrideForEvent: Bool
 
 	@UserDefault(.lowBatteryNotifications, defaultValue: true)
 	static var lowBatteryNotifications: Bool
@@ -210,6 +215,38 @@ extension UserDefaults {
 		keys.insert(key)
 		firmwareUpdateNotificationKeys = keys.sorted()
 	}
+
+	/// UUIDs of BLE peripherals we have successfully bonded with (subscription to an
+	/// encrypted characteristic confirmed). Used only as a *hint*: on a first-ever
+	/// connection we allow a long window for the user to enter the pairing PIN, while
+	/// already-bonded peripherals keep the fast reconnect timeouts. Ground truth is
+	/// still the CoreBluetooth callbacks — a stale hint only affects the timeout length,
+	/// never correctness.
+	@UserDefault(.pairedPeripheralIds, defaultValue: [])
+	static var pairedPeripheralIds: [String]
+
+	static func isPairedPeripheral(_ id: UUID) -> Bool {
+		pairedPeripheralIds.contains(id.uuidString)
+	}
+
+	static func rememberPairedPeripheral(_ id: UUID) {
+		var ids = Set(pairedPeripheralIds)
+		guard ids.insert(id.uuidString).inserted else { return }
+		pairedPeripheralIds = ids.sorted()
+	}
+
+	static func forgetPairedPeripheral(_ id: UUID) {
+		var ids = Set(pairedPeripheralIds)
+		guard ids.remove(id.uuidString) != nil else { return }
+		pairedPeripheralIds = ids.sorted()
+	}
+
+	/// One-time flag: whether the legacy `preferredPeripheralId` has been migrated into
+	/// `pairedPeripheralIds`. Once set, the preferred-peripheral fallback is never consulted for
+	/// bonding decisions again, so a bond the user later removes can self-heal back to the long
+	/// pairing window instead of being pinned to the fast reconnect timeout.
+	@UserDefault(.migratedPreferredPeripheralPairing, defaultValue: false)
+	static var migratedPreferredPeripheralPairing: Bool
 	
 	static var manualConnections: [Device] {
 		get {
@@ -243,15 +280,29 @@ extension UserDefaults {
 	@UserDefault(.lastDeviceAPIUpdate, defaultValue: .distantPast)
 	static var lastDeviceAPIUpdate: Date
 
+	/// When the device image + msh.to link network pass last completed. Throttles that pass (see
+	/// `MeshtasticAPI.staleDeviceImageLinkInterval`); reset to `.distantPast` by `clearDatabase`
+	/// so a database clear still forces a restore regardless of the throttle window.
+	///
+	/// Write through `DeviceImageLinkThrottle`, not directly: the refresh pass runs detached and a
+	/// clear can land mid-pass, so the two writers need the throttle's generation check to stop a
+	/// superseded pass from overwriting the clear's reset.
+	@UserDefault(.lastDeviceImageAndLinkUpdate, defaultValue: .distantPast)
+	static var lastDeviceImageAndLinkUpdate: Date
+
 	@UserDefault(.lastFirmwareAPIUpdate, defaultValue: .distantPast)
 	static var lastFirmwareAPIUpdate: Date
 
 	@UserDefault(.lastEventFirmwareAPIUpdate, defaultValue: .distantPast)
 	static var lastEventFirmwareAPIUpdate: Date
 
-	/// Whether the ambient event theme (accent wash + edition fonts) is applied. Defaults to on;
-	/// the user can opt out from the event info sheet. Opting out keeps the branding *visible*
-	/// (badge/info surface) so it can be re-enabled — it only suppresses the ambient wash/fonts.
+	/// Last live-manifest refresh attempt, successful or not. This prevents an offline launch
+	/// loop from retrying the same first-party endpoint on every metadata lookup.
+	@UserDefault(.lastEventFirmwareAPIAttempt, defaultValue: .distantPast)
+	static var lastEventFirmwareAPIAttempt: Date
+
+	/// Whether event highlight colors are used across the app and edition fonts are used in the
+	/// event info sheet. Standard navigation backgrounds remain unchanged.
 	@UserDefault(.useEventTheme, defaultValue: true)
 	static var useEventTheme: Bool
 }

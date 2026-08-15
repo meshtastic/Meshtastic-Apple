@@ -210,6 +210,19 @@ struct CsvDocumentTests {
 	@Test func readableContentTypes_csv() {
 		#expect(CsvDocument.readableContentTypes.count == 1)
 	}
+
+	@Test func exportFilename_appendsCsvExtension() {
+		#expect(CsvDocument.exportFilename("Meshtastic Logs") == "Meshtastic Logs.csv")
+	}
+
+	@Test(arguments: ["Meshtastic Logs.csv", "Meshtastic Logs.CSV"])
+	func exportFilename_preservesExistingCsvExtension(filename: String) {
+		#expect(CsvDocument.exportFilename(filename) == filename)
+	}
+
+	@Test func exportFilename_replacesFilesystemSeparators() {
+		#expect(CsvDocument.exportFilename("Base/Roof: West") == "Base-Roof- West.csv")
+	}
 }
 
 // MARK: - LogDocument

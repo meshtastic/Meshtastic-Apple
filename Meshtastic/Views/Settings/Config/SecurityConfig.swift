@@ -21,9 +21,9 @@ struct SecurityConfig: View {
 	@Environment(\.dismiss) private var goBack
 
 	@State private var showLockNowAlert: Bool = false
-	
+
 	let node: NodeInfoEntity?
-	
+
 	@State var hasChanges = false
 	@State var publicKey = ""
 	@State var privateKey = ""
@@ -37,10 +37,11 @@ struct SecurityConfig: View {
 	@State var isManaged = false
 	@State var serialEnabled = false
 	@State var debugLogApiEnabled = false
+	@State var packetAuthenticitySelection = PacketAuthenticitySelectionState()
 	@State var privateKeyIsSecure = true
 	@State var backupStatus: KeyBackupStatus?
 	@State var backupStatusError: OSStatus?
-	
+
 	private var isValidKeyPair: Bool {
 		guard let privateKeyBytes = Data(base64Encoded: privateKey),
 			  let calculatedPublicKey = generatePublicKeyDisplay(from: privateKeyBytes),
@@ -49,283 +50,11 @@ struct SecurityConfig: View {
 		}
 		return calculatedPublicKey == decodedPublicKey
 	}
-	
-	var body: some View {
-		Form {
-			ConfigHeader(title: "Security", config: \.securityConfig, node: node, onAppear: setSecurityValues)
-			Text("Security Config Settings require a firmware version 2.5+")
-				.font(.title3)
-			Section(header: Text("Direct Message Key")) {
-				VStack(alignment: .leading) {
-					HStack(alignment: .firstTextBaseline) {
-						Label("Public Key", systemImage: "key")
-						Spacer()
-						// Explicit copy action. On Mac Catalyst `.textSelection(.enabled)` on a
-						// Text inside a Form does not reliably offer a right-click "Copy", so the
-						// selection-only approach left macOS users unable to copy their key (#1943).
-						Button {
-							UIPasteboard.general.string = publicKey
-						} label: {
-							Image(systemName: "doc.on.doc")
-							Text("Copy")
-						}
-						.buttonStyle(.bordered)
-						.buttonBorderShape(.capsule)
-						.controlSize(.small)
-						.disabled(publicKey.isEmpty)
-					}
-					Text(publicKey)
-						.font(idiom == .phone ? .caption : .callout)
-						.allowsTightening(true)
-						.monospaced()
-						.keyboardType(.alphabet)
-						.foregroundStyle(.tertiary)
-						.disableAutocorrection(true)
-						// Retained as the iOS copy path (long-press to select); the Copy button
-						// above is the reliable path on Mac Catalyst, where this doesn't offer
-						// a right-click "Copy" inside a Form (#1943).
-						.textSelection(.enabled)
-						.background(
-							RoundedRectangle(cornerRadius: 10.0)
-								.stroke(isValidKeyPair ? Color.clear : Color.red, lineWidth: 2.0)
-						)
-					Text("Your public key is generated from your private key and sent to other nodes on the mesh so they can compute a shared secret key with you.")
-						.foregroundStyle(.secondary)
-						.font(idiom == .phone ? .caption : .callout)
-					Divider()
-					Label("Private Key", systemImage: "key.fill")
-					SecureInput("Private Key", text: $privateKey, isValid: $hasValidPrivateKey, isSecure: $privateKeyIsSecure)
-						.background(
-							RoundedRectangle(cornerRadius: 10.0)
-								.stroke(hasValidPrivateKey ? Color.clear : Color.red, lineWidth: 2.0)
-						)
-					Text("Used to create a shared key with a remote device.")
-						.foregroundStyle(.secondary)
-						.font(idiom == .phone ? .caption : .callout)
-					if let currentNode = node {
-						Divider()
-						Label("Key Backup", systemImage: "icloud")
-						HStack(alignment: .firstTextBaseline) {
-							let keychainKey = "PrivateKeyNode\(currentNode.num)"
-							Button {
-								let status = KeychainHelper.standard.save(key: keychainKey, value: privateKey)
-								if status == errSecSuccess {
-									backupStatus = KeyBackupStatus.saved
-								} else {
-									backupStatus = KeyBackupStatus.saveFailed
-									backupStatusError = status
-								}
-							}
-							label: {
-								Image(systemName: "icloud.and.arrow.up")
-								Text("Backup")
-							}
-							.buttonStyle(.bordered)
-							.buttonBorderShape(.capsule)
-							.controlSize(.small)
-							Spacer()
-							Button {
-								if let value = KeychainHelper.standard.read(key: keychainKey) {
-									self.privateKey = value
-									self.privateKeyIsSecure = false
-									backupStatus = KeyBackupStatus.restored
-								} else {
-									backupStatus = KeyBackupStatus.restoreFailed
-								}
-							}
-							label: {
-								Image(systemName: "key.icloud")
-								Text("Restore")
-							}
-							.buttonStyle(.bordered)
-							.buttonBorderShape(.capsule)
-							.controlSize(.small)
-							Spacer()
-							Button {
-								let status = KeychainHelper.standard.delete(key: keychainKey)
-								if status == errSecSuccess {
-									backupStatus = KeyBackupStatus.deleted
-								} else {
-									backupStatus = KeyBackupStatus.deleteFailed
-								}
-							}
-							label: {
-								Image(systemName: "trash")
-							}
-							.buttonStyle(.bordered)
-							.buttonBorderShape(.capsule)
-							.controlSize(.small)
-						}
-						if let status = backupStatus {
-							let state = status.success
-							Text("\(status.description)")
-								.font(.caption)
-								.foregroundColor(state ? .green : .red)
-						}
-						Text("Backup your private key to your iCloud keychain.")
-							.foregroundStyle(.secondary)
-							.font(idiom == .phone ? .caption : .callout)
-					}
-					Divider()
-					HStack(alignment: .firstTextBaseline) {
-						Label("Regenerate Private Key", systemImage: "arrow.clockwise.circle")
-						Spacer()
-						Button {
-							if let keyBytes = generatePrivateKey(count: 32) {
-								privateKey = keyBytes.base64EncodedString()
-								self.privateKeyIsSecure = false
-							}
-						} label: {
-							Image(systemName: "lock.rotation")
-								.font(.title)
-						}
-						.buttonStyle(.bordered)
-						.buttonBorderShape(.capsule)
-						.controlSize(.small)
-					}
-					Text("Generate a new private key to replace the one currently in use. The public key will automatically be regenerated from your private key.")
-						.foregroundStyle(.secondary)
-						.font(idiom == .phone ? .caption : .callout)
-				}
-			}
-			Section(header: Text("Admin Keys")) {
-				Label("Primary Admin Key", systemImage: "key.viewfinder")
-				SecureInput("Primary Admin Key", text: $adminKey, isValid: $hasValidAdminKey)
-					.background(
-						RoundedRectangle(cornerRadius: 10.0)
-							.stroke(hasValidAdminKey ? Color.clear : Color.red, lineWidth: 2.0)
-					)
-				Text("The primary public key authorized to send admin messages to this node.")
-					.foregroundStyle(.secondary)
-					.font(idiom == .phone ? .caption : .callout)
-				Label("Secondary Admin Key", systemImage: "key.viewfinder")
-				SecureInput("Secondary Admin Key", text: $adminKey2, isValid: $hasValidAdminKey2)
-					.background(
-						RoundedRectangle(cornerRadius: 10.0)
-							.stroke(hasValidAdminKey2 ? Color.clear : Color.red, lineWidth: 2.0)
-					)
-				Text("The secondary public key authorized to send admin messages to this node.")
-					.foregroundStyle(.secondary)
-					.font(idiom == .phone ? .caption : .callout)
-				Label("Tertiary Admin Key", systemImage: "key.viewfinder")
-				SecureInput("Tertiary Admin Key", text: $adminKey3, isValid: $hasValidAdminKey3)
-					.background(
-						RoundedRectangle(cornerRadius: 10.0)
-							.stroke(hasValidAdminKey3 ? Color.clear : Color.red, lineWidth: 2.0)
-					)
-				Text("The tertiary public key authorized to send admin messages to this node.")
-					.foregroundStyle(.secondary)
-					.font(idiom == .phone ? .caption : .callout)
-			}
-			LockdownSection(lockdown: lockdown, showLockNowAlert: $showLockNowAlert)
 
-			Section(header: Text("Logs")) {
-				Toggle(isOn: $serialEnabled) {
-					Label("Serial Console", systemImage: "terminal")
-					Text("Serial Console over the Stream API.")
-				}
-				.tint(.accentColor)
-				Toggle(isOn: $debugLogApiEnabled) {
-					Label("Debug Logs", systemImage: "ant.fill")
-					Text("Output live debug logging over serial, view and export position-redacted device logs over Bluetooth.")
-				}
-				.tint(.accentColor)
-			}
-			Section(header: Text("Administration")) {
-				Toggle(isOn: $isManaged) {
-					Label("Managed Device", systemImage: "gearshape.arrow.triangle.2.circlepath")
-					Text("Device is managed by a mesh administrator, the user is unable to access any of the device settings.")
-				}
-				.tint(.accentColor)
-				.disabled(adminKey.length == 0)
-				if adminKey.length == 0 {
-					Label("An admin key must be set before enabling managed mode.", systemImage: "exclamationmark.triangle.fill")
-						.font(.caption)
-						.foregroundStyle(.orange)
-				}
-			}
-		}
-		.disabled(!accessoryManager.isConnected || node?.securityConfig == nil)
-		.safeAreaInset(edge: .bottom, alignment: .center) {
-			HStack(spacing: 0) {
-				SaveConfigButton(node: node, hasChanges: $hasChanges) {
-					
-					if !hasValidPrivateKey || !hasValidAdminKey || !hasValidAdminKey2 || !hasValidAdminKey3 {
-						return
-					}
-					
-					guard let deviceNum = accessoryManager.activeDeviceNum,
-						  let connectedNode = getNodeInfo(id: deviceNum, context: context),
-						  let fromUser = connectedNode.user,
-						  let toUser = node?.user else {
-						return
-					}
-					
-					var config = Config.SecurityConfig()
-					config.privateKey = Data(base64Encoded: privateKey) ?? Data()
-					config.adminKey = [Data(base64Encoded: adminKey) ?? Data(), Data(base64Encoded: adminKey2) ?? Data(), Data(base64Encoded: adminKey3) ?? Data()]
-					config.isManaged = isManaged
-					config.serialEnabled = serialEnabled
-					config.debugLogApiEnabled = debugLogApiEnabled
-					
-					let keyUpdated = node?.securityConfig?.privateKey?.base64EncodedString() ?? "" != privateKey
-					Task {
-						_ = try await accessoryManager.saveSecurityConfig(
-							config: config,
-							fromUser: fromUser,
-							toUser: toUser
-						)
-						Task { @MainActor in
-							// Should show a saved successfully alert once I know that to be true
-							// for now just disable the button after a successful save
-							if keyUpdated {
-								node?.user?.publicKey = Data(base64Encoded: publicKey) ?? Data()
-								do {
-									try context.save()
-									Logger.data.info("💾 Saved UserEntity Public Key to Core Data for \(node?.num ?? 0, privacy: .public)")
-								} catch {
-									let nsError = error as NSError
-									Logger.data.error("Error Updating UserEntity: \(nsError, privacy: .public)")
-								}
-							}
-						}
-						hasChanges = false
-						if keyUpdated {
-							Task {
-								do {
-									try await accessoryManager.sendReboot(
-										fromUser: fromUser,
-										toUser: toUser
-									)
-								} catch {
-									Logger.mesh.warning("Reboot Failed")
-								}
-							}
-						}
-						goBack()
-					}
-				}
-			}
-		}
-		.scrollDismissesKeyboard(.immediately)
-		.navigationTitle("Security Config")
-		.toolbar {
-	ToolbarItem(placement: .topBarTrailing) {
-		ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
-	}
-}
-		.onChange(of: node) { _, _ in
-			setSecurityValues()
-		}
-		.onChange(of: isManaged) { _, newIsManaged in
-			if newIsManaged != node?.securityConfig?.isManaged { hasChanges = true }
-		}
-		.onChange(of: serialEnabled) { _, newSerialEnabled in
-			if newSerialEnabled != node?.securityConfig?.serialEnabled { hasChanges = true }
-		}
-		.onChange(of: debugLogApiEnabled) { _, newDebugLogApiEnabled in
-			if newDebugLogApiEnabled != node?.securityConfig?.debugLogApiEnabled { hasChanges = true }
-		}
+	var body: some View {
+		// Chain rooted at an opaque property for type-check time — same treatment as
+		// LoRaConfig; this file was the one build-snapshots' compiler actually timed out on.
+		trackedSecurityForm
 		.onChange(of: privateKey) { _, key in
 			let tempKey = Data(base64Encoded: privateKey) ?? Data()
 			if tempKey.count == 32 {
@@ -382,7 +111,326 @@ struct SecurityConfig: View {
 			)
 		}
 	}
-	
+
+	/// First half of the change-tracking chain — halved like LoRaConfig so no single
+	/// expression carries the whole overloaded .onChange stack.
+	private var trackedSecurityForm: some View {
+		securityForm
+		.onChange(of: node) { _, _ in
+			setSecurityValues()
+		}
+		.onChange(of: isManaged) { _, newIsManaged in
+			if newIsManaged != node?.securityConfig?.isManaged { hasChanges = true }
+		}
+		.onChange(of: serialEnabled) { _, newSerialEnabled in
+			if newSerialEnabled != node?.securityConfig?.serialEnabled { hasChanges = true }
+		}
+		.onChange(of: debugLogApiEnabled) { _, newDebugLogApiEnabled in
+			if newDebugLogApiEnabled != node?.securityConfig?.debugLogApiEnabled { hasChanges = true }
+		}
+		.onChange(of: packetAuthenticitySelection.selected) { _, policy in packetAuthenticityDidChange(to: policy) }
+	}
+
+	/// See `body` — the Form and its chrome, split out for type-check time.
+	private var securityForm: some View {
+		Form {
+			ConfigHeader(title: "Security", config: \.securityConfig, node: node, onAppear: setSecurityValues)
+			Text("Security Config Settings require a firmware version 2.5+")
+				.font(.title3)
+			packetAuthenticitySection
+			directMessageKeySection
+			adminKeysSection
+			LockdownSection(lockdown: lockdown, showLockNowAlert: $showLockNowAlert)
+			logsSection
+			administrationSection
+		}
+		.disabled(!accessoryManager.isConnected || node?.securityConfig == nil)
+		.safeAreaInset(edge: .bottom, alignment: .center) {
+			HStack(spacing: 0) {
+				SaveConfigButton(node: node, hasChanges: $hasChanges) {
+					saveSecurityConfig()
+				}
+			}
+		}
+		.scrollDismissesKeyboard(.immediately)
+		.navigationTitle("Security Config")
+		.toolbar {
+	ToolbarItem(placement: .topBarTrailing) {
+		ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
+	}
+}
+	}
+
+	/// The save routine, extracted from the `SaveConfigButton` trailing closure: inference
+	/// for the inlined closure inside body's modifier chain was a type-check hot spot
+	/// (the build-snapshots "unable to type-check in reasonable time" failures on CI).
+	private func saveSecurityConfig() {
+
+		if !hasValidPrivateKey || !hasValidAdminKey || !hasValidAdminKey2 || !hasValidAdminKey3 {
+			return
+		}
+
+		guard let deviceNum = accessoryManager.activeDeviceNum,
+			  let connectedNode = getNodeInfo(id: deviceNum, context: context),
+			  let fromUser = connectedNode.user,
+			  let toUser = node?.user else {
+			return
+		}
+
+		var config = Config.SecurityConfig()
+		config.privateKey = Data(base64Encoded: privateKey) ?? Data()
+		config.adminKey = [Data(base64Encoded: adminKey) ?? Data(), Data(base64Encoded: adminKey2) ?? Data(), Data(base64Encoded: adminKey3) ?? Data()]
+		config.isManaged = isManaged
+		config.serialEnabled = serialEnabled
+		config.debugLogApiEnabled = debugLogApiEnabled
+		// Always written back, even when the capability gate hid the control, so a policy
+		// the radio already holds round-trips untouched instead of being reset to Compatible.
+		config.packetSignaturePolicy = packetAuthenticitySelection.selected
+
+		let keyUpdated = node?.securityConfig?.privateKey?.base64EncodedString() ?? "" != privateKey
+		Task {
+			_ = try await accessoryManager.saveSecurityConfig(
+				config: config,
+				fromUser: fromUser,
+				toUser: toUser
+			)
+			Task { @MainActor in
+				// Should show a saved successfully alert once I know that to be true
+				// for now just disable the button after a successful save
+				if keyUpdated {
+					// This is the *local* node's own keypair being changed deliberately by the user in the
+					// Security config screen (gated behind `keyUpdated` + an explicit save), not an inbound
+					// mesh key — so the first-wins protection doesn't apply. `keyMatch`/`newPublicKey` track
+					// *remote* contacts' keys, so they are intentionally left untouched here.
+					node?.user?.publicKey = Data(base64Encoded: publicKey) ?? Data()
+					do {
+						try context.save()
+						Logger.data.info("💾 Saved UserEntity Public Key to Core Data for \(node?.num ?? 0, privacy: .public)")
+					} catch {
+						let nsError = error as NSError
+						Logger.data.error("Error Updating UserEntity: \(nsError, privacy: .public)")
+					}
+				}
+			}
+			hasChanges = false
+			if keyUpdated {
+				Task {
+					do {
+						try await accessoryManager.sendReboot(
+							fromUser: fromUser,
+							toUser: toUser
+						)
+					} catch {
+						Logger.mesh.warning("Reboot Failed")
+					}
+				}
+			}
+			goBack()
+		}
+	}
+
+	/// Extracted from `body`: the inlined Form expression blew Swift's type-check budget on the CI runners (build-snapshots: "unable to type-check this expression in reasonable time").
+	private var directMessageKeySection: some View {
+		Section(header: Text("Direct Message Key")) {
+			VStack(alignment: .leading) {
+				HStack(alignment: .firstTextBaseline) {
+					Label("Public Key", systemImage: "key")
+					Spacer()
+					// Explicit copy action. On Mac Catalyst `.textSelection(.enabled)` on a
+					// Text inside a Form does not reliably offer a right-click "Copy", so the
+					// selection-only approach left macOS users unable to copy their key (#1943).
+					Button {
+						UIPasteboard.general.string = publicKey
+					} label: {
+						Image(systemName: "doc.on.doc")
+						Text("Copy")
+					}
+					.buttonStyle(.bordered)
+					.buttonBorderShape(.capsule)
+					.controlSize(.small)
+					.disabled(publicKey.isEmpty)
+				}
+				Text(publicKey)
+					.font(idiom == .phone ? .caption : .callout)
+					.allowsTightening(true)
+					.monospaced()
+					.keyboardType(.alphabet)
+					.foregroundStyle(.tertiary)
+					.disableAutocorrection(true)
+					// Retained as the iOS copy path (long-press to select); the Copy button
+					// above is the reliable path on Mac Catalyst, where this doesn't offer
+					// a right-click "Copy" inside a Form (#1943).
+					.textSelection(.enabled)
+					.background(
+						RoundedRectangle(cornerRadius: 10.0)
+							.stroke(isValidKeyPair ? Color.clear : Color.red, lineWidth: 2.0)
+					)
+				Text("Your public key is generated from your private key and sent to other nodes on the mesh so they can compute a shared secret key with you.")
+					.foregroundStyle(.secondary)
+					.font(idiom == .phone ? .caption : .callout)
+				Divider()
+				Label("Private Key", systemImage: "key.fill")
+				SecureInput("Private Key", text: $privateKey, isValid: $hasValidPrivateKey, isSecure: $privateKeyIsSecure)
+					.background(
+						RoundedRectangle(cornerRadius: 10.0)
+							.stroke(hasValidPrivateKey ? Color.clear : Color.red, lineWidth: 2.0)
+					)
+				Text("Used to create a shared key with a remote device.")
+					.foregroundStyle(.secondary)
+					.font(idiom == .phone ? .caption : .callout)
+				if let currentNode = node {
+					Divider()
+					Label("Key Backup", systemImage: "icloud")
+					HStack(alignment: .firstTextBaseline) {
+						let keychainKey = "PrivateKeyNode\(currentNode.num)"
+						Button {
+							let status = KeychainHelper.standard.save(key: keychainKey, value: privateKey)
+							if status == errSecSuccess {
+								backupStatus = KeyBackupStatus.saved
+							} else {
+								backupStatus = KeyBackupStatus.saveFailed
+								backupStatusError = status
+							}
+						}
+						label: {
+							Image(systemName: "icloud.and.arrow.up")
+							Text("Backup")
+						}
+						.buttonStyle(.bordered)
+						.buttonBorderShape(.capsule)
+						.controlSize(.small)
+						Spacer()
+						Button {
+							if let value = KeychainHelper.standard.read(key: keychainKey) {
+								self.privateKey = value
+								self.privateKeyIsSecure = false
+								backupStatus = KeyBackupStatus.restored
+							} else {
+								backupStatus = KeyBackupStatus.restoreFailed
+							}
+						}
+						label: {
+							Image(systemName: "key.icloud")
+							Text("Restore")
+						}
+						.buttonStyle(.bordered)
+						.buttonBorderShape(.capsule)
+						.controlSize(.small)
+						Spacer()
+						Button {
+							let status = KeychainHelper.standard.delete(key: keychainKey)
+							if status == errSecSuccess {
+								backupStatus = KeyBackupStatus.deleted
+							} else {
+								backupStatus = KeyBackupStatus.deleteFailed
+							}
+						}
+						label: {
+							Image(systemName: "trash")
+						}
+						.buttonStyle(.bordered)
+						.buttonBorderShape(.capsule)
+						.controlSize(.small)
+						.accessibilityLabel(String(localized: "Delete key backup", comment: "VoiceOver label for the delete key backup button"))
+					}
+					if let status = backupStatus {
+						let state = status.success
+						Text("\(status.description)")
+							.font(.caption)
+							.foregroundColor(state ? .green : .red)
+					}
+					Text("Backup your private key to your iCloud keychain.")
+						.foregroundStyle(.secondary)
+						.font(idiom == .phone ? .caption : .callout)
+				}
+				Divider()
+				HStack(alignment: .firstTextBaseline) {
+					Label("Regenerate Private Key", systemImage: "arrow.clockwise.circle")
+					Spacer()
+					Button {
+						if let keyBytes = generatePrivateKey(count: 32) {
+							privateKey = keyBytes.base64EncodedString()
+							self.privateKeyIsSecure = false
+						}
+					} label: {
+						Image(systemName: "lock.rotation")
+							.font(.title)
+					}
+					.buttonStyle(.bordered)
+					.buttonBorderShape(.capsule)
+					.controlSize(.small)
+					.accessibilityLabel(String(localized: "Regenerate private key", comment: "VoiceOver label for the regenerate private key button"))
+				}
+				Text("Generate a new private key to replace the one currently in use. The public key will automatically be regenerated from your private key.")
+					.foregroundStyle(.secondary)
+					.font(idiom == .phone ? .caption : .callout)
+			}
+		}
+	}
+
+	/// See `directMessageKeySection` — split out of `body` for type-check time.
+	private var adminKeysSection: some View {
+		Section(header: Text("Admin Keys")) {
+			Label("Primary Admin Key", systemImage: "key.viewfinder")
+			SecureInput("Primary Admin Key", text: $adminKey, isValid: $hasValidAdminKey)
+				.background(
+					RoundedRectangle(cornerRadius: 10.0)
+						.stroke(hasValidAdminKey ? Color.clear : Color.red, lineWidth: 2.0)
+				)
+			Text("The primary public key authorized to send admin messages to this node.")
+				.foregroundStyle(.secondary)
+				.font(idiom == .phone ? .caption : .callout)
+			Label("Secondary Admin Key", systemImage: "key.viewfinder")
+			SecureInput("Secondary Admin Key", text: $adminKey2, isValid: $hasValidAdminKey2)
+				.background(
+					RoundedRectangle(cornerRadius: 10.0)
+						.stroke(hasValidAdminKey2 ? Color.clear : Color.red, lineWidth: 2.0)
+				)
+			Text("The secondary public key authorized to send admin messages to this node.")
+				.foregroundStyle(.secondary)
+				.font(idiom == .phone ? .caption : .callout)
+			Label("Tertiary Admin Key", systemImage: "key.viewfinder")
+			SecureInput("Tertiary Admin Key", text: $adminKey3, isValid: $hasValidAdminKey3)
+				.background(
+					RoundedRectangle(cornerRadius: 10.0)
+						.stroke(hasValidAdminKey3 ? Color.clear : Color.red, lineWidth: 2.0)
+				)
+			Text("The tertiary public key authorized to send admin messages to this node.")
+				.foregroundStyle(.secondary)
+				.font(idiom == .phone ? .caption : .callout)
+		}
+	}
+
+	/// See `directMessageKeySection` — split out of `body` for type-check time.
+	private var logsSection: some View {
+		Section(header: Text("Logs")) {
+			Toggle(isOn: $serialEnabled) {
+				Label("Serial Console", systemImage: "terminal")
+				Text("Serial Console over the Stream API.")
+			}
+			Toggle(isOn: $debugLogApiEnabled) {
+				Label("Debug Logs", systemImage: "ant.fill")
+				Text("Output live debug logging over serial, view and export position-redacted device logs over Bluetooth.")
+			}
+		}
+	}
+
+	/// See `directMessageKeySection` — split out of `body` for type-check time.
+	private var administrationSection: some View {
+		Section(header: Text("Administration")) {
+			Toggle(isOn: $isManaged) {
+				Label("Managed Device", systemImage: "gearshape.arrow.triangle.2.circlepath")
+				Text("Device is managed by a mesh administrator, the user is unable to access any of the device settings.")
+			}
+			.disabled(adminKey.length == 0)
+			if adminKey.length == 0 {
+				Label("An admin key must be set before enabling managed mode.", systemImage: "exclamationmark.triangle.fill")
+					.font(.caption)
+					.foregroundStyle(.orange)
+			}
+		}
+	}
+
 	func setSecurityValues() {
 		self.publicKey = node?.securityConfig?.publicKey?.base64EncodedString() ?? ""
 		self.privateKey = node?.securityConfig?.privateKey?.base64EncodedString() ?? ""
@@ -392,9 +440,10 @@ struct SecurityConfig: View {
 		self.isManaged = node?.securityConfig?.isManaged ?? false
 		self.serialEnabled = node?.securityConfig?.serialEnabled ?? false
 		self.debugLogApiEnabled = node?.securityConfig?.debugLogApiEnabled ?? false
+		self.packetAuthenticitySelection = storedPacketAuthenticitySelection
 		self.hasChanges = false
 	}
-	
+
 	func generatePrivateKey(count: Int) -> Data? {
 		var randomBytes = Data(count: count)
 		let status = randomBytes.withUnsafeMutableBytes { (mutableBytes: UnsafeMutableRawBufferPointer) -> Int32 in
@@ -403,7 +452,7 @@ struct SecurityConfig: View {
 			}
 			return SecRandomCopyBytes(kSecRandomDefault, count, pointer)
 		}
-		
+
 		if status == errSecSuccess {
 			// Generate a random "f" value and then adjust the value to make
 			// it valid as an "s" value for eval().  According to the specification
@@ -419,14 +468,14 @@ struct SecurityConfig: View {
 			return nil
 		}
 	}
-	
+
 	// Generate a new public key for display purposes to show the user what will be changed after the new private key is saved to the device
 	func generatePublicKeyDisplay(from privateKeyData: Data) -> Data? {
 		guard privateKeyData.count == 32 else {
 			Logger.mesh.debug("Invalid private key length. Must be 32 bytes for Curve25519.")
 			return nil
 		}
-		
+
 		do {
 			// Create a Curve25519 private key from raw representation
 			let privateKey = try Curve25519.KeyAgreement.PrivateKey(rawRepresentation: privateKeyData)

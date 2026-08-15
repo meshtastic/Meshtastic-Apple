@@ -47,6 +47,9 @@ final class BluetoothConfigEntity {
 
 @Model
 final class CannedMessageConfigEntity {
+	/// Deprecated (no successor, removed from active use — #2021). Retained as a stored
+	/// SwiftData property to preserve the schema and keep existing persisted values readable;
+	/// it is no longer surfaced in the UI, read, or actively written by app code.
 	var enabled: Bool = false
 	var inputbrokerEventCcw: Int32 = 0
 	var inputbrokerEventCw: Int32 = 0
@@ -336,6 +339,9 @@ final class SecurityConfigEntity {
 	var bluetoothLoggingEnabled: Bool = false
 	var debugLogApiEnabled: Bool = false
 	var isManaged: Bool = false
+	/// Raw value of `Config.SecurityConfig.PacketSignaturePolicy`. 0 (Compatible) is the
+	/// protobuf default, so an absent field and an unconfigured entity agree.
+	var packetSignaturePolicy: Int32 = 0
 	var privateKey: Data?
 	var publicKey: Data?
 	var serialEnabled: Bool = false

@@ -32,7 +32,7 @@ private struct DocWebView: UIViewRepresentable {
 		webView.isOpaque = false
 		webView.backgroundColor = .clear
 		webView.scrollView.backgroundColor = .clear
-		webView.accessibilityLabel = "Documentation page"
+		webView.accessibilityLabel = String(localized: "Documentation page", comment: "VoiceOver label for the documentation web view")
 		webView.navigationDelegate = context.coordinator
 		return webView
 	}
@@ -139,8 +139,8 @@ struct DocPageView: View {
 		.navigationTitle(translatedTitle ?? page.title)
 		.navigationBarTitleDisplayMode(.inline)
 		.askChirpyToolbar()
-		.accessibilityLabel("\(page.title) documentation page")
-		.accessibilityHint("Web view showing the \(page.title) documentation")
+		.accessibilityLabel(String(localized: "\(translatedTitle ?? page.title) documentation page", comment: "VoiceOver label for a documentation page"))
+		.accessibilityHint(String(localized: "Web view showing the \(translatedTitle ?? page.title) documentation", comment: "VoiceOver hint for the documentation web view"))
 		.onAppear {
 			startTranslation()
 		}
@@ -253,7 +253,7 @@ struct AskChirpyToolbar: ViewModifier {
 						} label: {
 							Label("Ask Chirpy", systemImage: "sparkles")
 						}
-						.accessibilityLabel("Ask Chirpy AI assistant")
+						.accessibilityLabel(String(localized: "Ask Chirpy AI assistant", comment: "VoiceOver label for the Ask Chirpy toolbar button"))
 					}
 				}
 			}

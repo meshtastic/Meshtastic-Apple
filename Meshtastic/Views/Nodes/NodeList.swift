@@ -46,7 +46,7 @@ struct NodeList: View {
 					if opensSeededLocalStatsLog {
 						LocalStatsLog(node: node)
 					} else {
-						NodeDetail(node: node)
+						NodeDetail(node: node, nodeNum: selectedNum)
 					}
 				} else {
 					ContentUnavailableView("Select a Node", systemImage: "flipphone")
@@ -105,6 +105,7 @@ struct NodeList: View {
 				.tint(Color(UIColor.secondarySystemBackground))
 				.foregroundColor(.accentColor)
 				.buttonStyle(.borderedProminent)
+				.accessibilityLabel(showingHelp ? String(localized: "Hide help", comment: "VoiceOver label for the help toggle button when help is showing") : String(localized: "Show help", comment: "VoiceOver label for the help toggle button when help is hidden"))
 				Spacer()
 				if filters.isFiltering {
 					Button(action: {
@@ -118,8 +119,8 @@ struct NodeList: View {
 					.tint(Color(UIColor.secondarySystemBackground))
 					.foregroundColor(.accentColor)
 					.buttonStyle(.borderedProminent)
-					.accessibilityLabel("Reset node filters")
-					.accessibilityHint("Clears all active node filters.")
+					.accessibilityLabel(String(localized: "Reset node filters", comment: "VoiceOver label for the reset node filters button"))
+					.accessibilityHint(String(localized: "Clears all active node filters.", comment: "VoiceOver hint for the reset node filters button"))
 				}
 				Button(action: {
 					withAnimation {
@@ -132,6 +133,7 @@ struct NodeList: View {
 				.tint(Color(UIColor.secondarySystemBackground))
 				.foregroundColor(.accentColor)
 				.buttonStyle(.borderedProminent)
+				.accessibilityLabel(isEditingFilters ? String(localized: "Hide node filters", comment: "VoiceOver label for the node filter toggle button when filters are showing") : String(localized: "Show node filters", comment: "VoiceOver label for the node filter toggle button when filters are hidden"))
 			}
 			.controlSize(.regular)
 			.padding(5)
@@ -159,13 +161,27 @@ struct NodeList: View {
 			deleteNodeButton
 		}
 		.sheet(item: $shareContactNode) { selectedNode in
-			ShareContactQRDialog(manuallyVerified: false, node: selectedNode.toProto())
+			// Mirror NodeDetail's rule: only your own (connected) node is marked
+			// manually verified when shared.
+			ShareContactQRDialog(
+				manuallyVerified: selectedNode.num == accessoryManager.activeDeviceNum,
+				node: selectedNode.toProto()
+			)
 		}
 		.displayNameAlert(node: $nodeForDisplayNameEdit)
 		.navigationSplitViewColumnWidth(min: 100, ideal: 300, max: .infinity)
 		.toolbar {
 			ToolbarItem(placement: .topBarLeading) {
 				MeshtasticLogo()
+			}
+			if let connectedNode, ShareContactQR.canShareContact(for: connectedNode) {
+				ToolbarItem(placement: .topBarTrailing) {
+					Button {
+						shareContactNode = connectedNode
+					} label: {
+						Label("Share Connected Node", systemImage: "person.crop.circle.badge.plus")
+					}
+				}
 			}
 			ToolbarItem(placement: .topBarTrailing) {
 				ConnectedDevice(
@@ -218,6 +234,9 @@ private struct FilteredNodeList: View {
 	/// cadence (see `.task`) instead of in `body`, so the full-node-set scan in `displayNodes`
 	/// doesn't run on every SwiftData write — which pegged the CPU on reconnect with a large DB.
 	@State private var displayedNodes: [NodeListEntry] = []
+	/// Kept in view state so a controller swap invalidates this task until SwiftUI remounts the
+	/// list against the new root `.modelContainer` and `databaseResetID`.
+	@State private var boundContainerGeneration = PersistenceController.shared.containerGeneration
 
 	var connectedNode: NodeInfoEntity?
 	@Binding var isPresentingDeleteNodeAlert: Bool
@@ -388,6 +407,8 @@ private struct FilteredNodeList: View {
 	}
 
 	private func refreshDisplayedNodes() {
+		// Accessing any property on a ModelContext whose container was replaced can trap in SwiftData.
+		guard boundContainerGeneration == PersistenceController.shared.containerGeneration else { return }
 		let allNodes = (try? context.fetch(makeNodeFetchDescriptor())) ?? []
 		replaceDisplayedNodesIfNeeded(with: displayNodes(from: allNodes, activeNodeNum: accessoryManager.activeDeviceNum))
 		router.updateNodeIndex(from: allNodes)

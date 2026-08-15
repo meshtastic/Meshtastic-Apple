@@ -31,8 +31,8 @@ struct PositionAltitudeChart: View {
 					x: .value("Time", $0.time),
 					y: .value("Altitude", PlottableMeasurement(measurement: $0.altitude))
 				)
-				.accessibilityLabel($0.time.formatted(date: .abbreviated, time: .shortened))
-				.accessibilityValue("\($0.altitude)")
+				.accessibilityLabel(String(localized: "Altitude at \($0.time.formatted(date: .abbreviated, time: .shortened))", comment: "VoiceOver label for an altitude point on the position altitude chart. %@ is the timestamp."))
+				.accessibilityValue($0.altitude.converted(to: Locale.current.measurementSystem == .metric ? .meters : .feet).formatted(.measurement(width: .abbreviated, numberFormatStyle: .number.precision(.fractionLength(0)))))
 				.lineStyle(StrokeStyle(lineWidth: lineWidth))
 				.interpolationMethod(.linear)
 				.symbol(Circle().strokeBorder(lineWidth: lineWidth))

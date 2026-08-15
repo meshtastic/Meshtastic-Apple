@@ -259,8 +259,6 @@ struct RegionInfo {
 			self.init(freqStart: 920.0, freqEnd: 925.0)
 		case .ua433:
 			self.init(freqStart: 433.0, freqEnd: 434.7)
-		case .ua868:
-			self.init(freqStart: 868.0, freqEnd: 868.6)
 		case .my433:
 			self.init(freqStart: 433.0, freqEnd: 435.0)
 		case .my919:
@@ -331,12 +329,7 @@ struct RegionInfo {
 
 extension ModemPresets {
 	var androidChannelName: String {
-		switch self {
-		case .longModerate:
-			return "LongMod"
-		default:
-			return name
-		}
+		protoEnumValue().firmwareChannelName ?? "Invalid"
 	}
 
 	var bandwidthMHz: Double {

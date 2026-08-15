@@ -95,9 +95,12 @@ struct LocalStatsLog: View {
 					.navigationBarTitleDisplayMode(.inline)
 					.toolbar {
 						ToolbarItem(placement: .confirmationAction) {
-							Button("Done") {
+							Button {
 								isPresentingNoiseFloorInfo = false
+							} label: {
+								Image(systemName: "xmark")
 							}
+							.accessibilityLabel(String(localized: "Done", comment: "VoiceOver: dismiss the noise floor info sheet"))
 						}
 					}
 			}
@@ -107,7 +110,7 @@ struct LocalStatsLog: View {
 			isPresented: $isExporting,
 			document: CsvDocument(emptyCsv: exportString),
 			contentType: .commaSeparatedText,
-			defaultFilename: String("\(node.user?.longName ?? "Node") \("Local Stats Log".localized) \(Date.now.exportTimestamp)"),
+			defaultFilename: CsvDocument.exportFilename("\(node.user?.longName ?? "Node") \("Local Stats Log".localized) \(Date.now.exportTimestamp)"),
 			onCompletion: { result in
 				switch result {
 				case .success:
@@ -198,7 +201,7 @@ struct LocalStatsLog: View {
 			.buttonStyle(.bordered)
 			.buttonBorderShape(.capsule)
 			.controlSize(.small)
-			.accessibilityHint("Scrolls the chart to the newest reading")
+			.accessibilityHint(String(localized: "Scrolls the chart to the newest reading", comment: "VoiceOver hint for the scroll-to-latest chart button"))
 		}
 	}
 

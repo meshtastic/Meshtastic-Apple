@@ -9,9 +9,16 @@ import OSLog
 class LocalNotificationManager {
 
     var notifications = [Notification]()
+	private let removeDeliveredNotifications: ([String]) -> Void
 	let thumbsUpAction = UNNotificationAction(identifier: "messageNotification.thumbsUpAction", title: "👍 \(Tapbacks.thumbsUp.description)", options: [])
 	let thumbsDownAction = UNNotificationAction(identifier: "messageNotification.thumbsDownAction", title: "👎  \(Tapbacks.thumbsDown.description)", options: [])
 	let replyInputAction =  UNTextInputNotificationAction(identifier: "messageNotification.replyInputAction", title: "Reply".localized, options: [])
+
+	init(removeDeliveredNotifications: @escaping ([String]) -> Void = { identifiers in
+		UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: identifiers)
+	}) {
+		self.removeDeliveredNotifications = removeDeliveredNotifications
+	}
 
     // Step 1 Request Permissions for notifications
     private func requestAuthorization() async {
@@ -124,6 +131,12 @@ class LocalNotificationManager {
 	func cancelNotificationsForMessageIds(_ messageIds: [Int64]) {
 		let messageIDSet = Set(messageIds)
 		guard !messageIDSet.isEmpty else { return }
+		let deliveredNotificationIdentifiers = messageIds.map { "notification.id.\($0)" }
+
+		// Pending requests have not surfaced to the user yet; delivered notifications may
+		// still be visible on the Lock Screen or in Notification Center. Remove both when
+		// their messages have been read in the app.
+		removeDeliveredNotifications(deliveredNotificationIdentifiers)
 
 		UNUserNotificationCenter.current().getPendingNotificationRequests { notifications in
 			let identifiers = notifications.compactMap { notification -> String? in

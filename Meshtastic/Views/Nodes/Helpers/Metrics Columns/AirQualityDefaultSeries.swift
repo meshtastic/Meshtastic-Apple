@@ -17,6 +17,8 @@ private func pmSeries(id: String, keyPath: KeyPath<TelemetryEntity, UInt32?>, na
 		keyPath: keyPath,
 		name: name,
 		abbreviatedName: abbreviatedName,
+		// PM concentrations are reported in micrograms per cubic meter.
+		unit: "µg/m³",
 		visible: visible,
 		foregroundStyle: { _ in
 			.linearGradient(colors: colors, startPoint: .bottom, endPoint: .top)

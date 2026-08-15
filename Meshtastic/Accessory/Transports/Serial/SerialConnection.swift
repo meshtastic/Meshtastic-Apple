@@ -253,7 +253,9 @@ actor SerialConnection: Connection {
 
 	// MARK: - Stream Management
 	private func getPacketStream() -> AsyncStream<ConnectionEvent> {
-		AsyncStream<ConnectionEvent> { continuation in
+		// Bounded like TCPConnection's stream: drop the oldest events under sustained overload
+		// instead of queueing them without limit.
+		AsyncStream<ConnectionEvent>(bufferingPolicy: .bufferingNewest(4096)) { continuation in
 			self.eventStreamContinuation = continuation
 			continuation.onTermination = { _ in
 				Task {

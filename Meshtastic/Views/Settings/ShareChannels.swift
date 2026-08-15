@@ -99,26 +99,25 @@ struct ShareChannels: View {
 							)
 							.padding(.vertical, 24)
 						} else {
-								let qrImage = qrCodeImage.generateQRCode(from: channelsUrl)
-								VStack {
-									Toggle(isOn: $replaceChannels) {
-										Label(channelQRMode.title, systemImage: channelQRMode.symbolName)
-									}
-									.tint(.accentColor)
-									.toggleStyle(.button)
-									.buttonStyle(.bordered)
-									.buttonBorderShape(.capsule)
-									.controlSize(.large)
-									.padding(.top)
-									.padding(.bottom)
+							let qrImage = qrCodeImage.generateQRCode(from: channelsUrl)
+							VStack {
+								Toggle(isOn: $replaceChannels) {
+									Label(channelQRMode.title, systemImage: channelQRMode.symbolName)
+								}
+								.toggleStyle(.button)
+								.buttonStyle(.bordered)
+								.buttonBorderShape(.capsule)
+								.controlSize(.large)
+								.padding(.top)
+								.padding(.bottom)
 
-									Text(channelQRMode.consequence)
-										.font(.callout)
-										.foregroundStyle(.secondary)
-										.multilineTextAlignment(.center)
-										.padding(.horizontal)
+								Text(channelQRMode.consequence)
+									.font(.callout)
+									.foregroundStyle(.secondary)
+									.multilineTextAlignment(.center)
+									.padding(.horizontal)
 
-									ShareLink("Share QR Code & Link",
+								ShareLink("Share QR Code & Link",
 											item: Image(uiImage: qrImage),
 											subject: Text("Meshtastic Node \(node?.user?.shortName ?? "????") has shared channels with you"),
 											message: Text(channelsUrl),
@@ -129,6 +128,17 @@ struct ShareChannels: View {
 									.buttonBorderShape(.capsule)
 									.controlSize(.large)
 									.padding(.bottom)
+
+								#if !targetEnvironment(macCatalyst)
+								if #available(iOS 18, *) {
+									NFCWriteButton(
+										payload: channelsUrl,
+										caption: "Hold a writable NFC tag near the top of your iPhone to save these channel settings to it."
+									)
+									.padding(.bottom)
+									.padding(.horizontal)
+								}
+								#endif
 
 								Image(uiImage: qrImage)
 									.resizable()
@@ -165,6 +175,7 @@ struct ShareChannels: View {
 					.tint(Color(UIColor.secondarySystemBackground))
 					.foregroundColor(.accentColor)
 					.buttonStyle(.borderedProminent)
+					.accessibilityLabel(showingHelp ? String(localized: "Hide help", comment: "VoiceOver label for the help toggle button when help is showing") : String(localized: "Show help", comment: "VoiceOver label for the help toggle button when help is hidden"))
 				}
 				.controlSize(.regular)
 				.padding(5)

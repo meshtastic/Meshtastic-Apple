@@ -9,6 +9,7 @@
 import CoreLocation
 import Foundation
 import MapKit
+import MeshtasticProtobufs
 import SwiftUI
 
 extension MessageEntity {
@@ -40,6 +41,13 @@ extension MessageEntity {
 		return re?.canRetry ?? false
 	}
 
+	/// Grace period after which an unacknowledged outgoing message is treated as failed
+	/// (retryable) rather than an endless "Sending…". The radio ack/naks a `wantAck` message
+	/// within its retransmit window (well under a minute); well past that with no response, the
+	/// ack/nak never reached the app — typically we were disconnected when it arrived — and the
+	/// message is orphaned. Kept generous so a slow, multi-hop mesh doesn't trip a false timeout.
+	static let sendAckTimeout: TimeInterval = 5 * 60
+
 	func deliveryStatus(isDirectMessage: Bool) -> MessageDeliveryStatus {
 		if receivedACK {
 			if isDirectMessage {
@@ -48,7 +56,18 @@ extension MessageEntity {
 			return .deliveredToMesh
 		}
 
-		guard ackError != 0 else { return .sending }
+		guard ackError != 0 else {
+			// No ACK and no routing error yet. The radio ack/naks a wantAck message within its
+			// retransmit window; once the grace period passes with no response, the ack/nak never
+			// reached us (usually we were disconnected when it arrived) and the message is orphaned
+			// — surface it as retryable rather than an endless "Sending…". Purely derived from the
+			// send time, so the row flips the next time it renders (e.g. on opening the conversation).
+			if messageTimestamp > 0,
+			   Date().timeIntervalSince1970 - Double(messageTimestamp) > Self.sendAckTimeout {
+				return .notDelivered
+			}
+			return .sending
+		}
 
 		if let routingError = RoutingError(rawValue: Int(ackError)) {
 			return .failed(routingError)
@@ -127,6 +146,71 @@ extension MessageEntity {
 
 		// Fallback to hex node number if no matches
 		return hexFallback
+	}
+
+	/// Whether this message is a PKI-encrypted direct message. The same test MessageText's
+	/// `cornerBadges` uses for the lock badge.
+	func isEncryptedMessage(isCurrentUser: Bool) -> Bool {
+		(pkiEncrypted && realACK) || (!isCurrentUser && pkiEncrypted)
+	}
+
+	/// Whether this is a store-and-forward broadcast. The same test MessageText's `cornerBadges`
+	/// uses for the envelope badge.
+	var isStoreForwardMessage: Bool {
+		portNum == Int32(PortNum.storeForwardApp.rawValue)
+	}
+
+	/// Whether this message shows the detection-sensor overlay for the given destination. The same
+	/// test MessageText's `messageOverlays` uses for the sensor badge.
+	func isDetectionSensorMessage(destination: MessageDestination) -> Bool {
+		destination.showsDetectionSensorBadge && portNum == Int32(PortNum.detectionSensorApp.rawValue)
+	}
+
+	/// Whether the translated body is currently displayed in place of the original. The same test
+	/// MessageText's `messageOverlays` uses for the translate badge.
+	var isShowingTranslatedText: Bool {
+		showTranslatedMessage && hasTranslatedPayload
+	}
+
+	/// A status badge shown on a message bubble: an encryption lock, a signing shield, a
+	/// store-and-forward envelope, a detection-sensor icon, or a translation indicator. Each case
+	/// owns its own localized VoiceOver label so MessageText's individual badge overlays and the
+	/// message rows' combined `accessibilityLabel` always read the same text for the same badge.
+	enum StatusBadge {
+		case encrypted
+		case verified
+		case storeForward
+		case detectionSensor
+		case translated
+
+		var label: String {
+			switch self {
+			case .encrypted:
+				return String(localized: "Encrypted message", comment: "VoiceOver label for the PKI-encrypted direct message badge")
+			case .verified:
+				return String(localized: "Verified sender", comment: "VoiceOver label for the signed and verified broadcast badge")
+			case .storeForward:
+				return String(localized: "Store and forward message", comment: "VoiceOver label for the store-and-forward badge")
+			case .detectionSensor:
+				return String(localized: "Detection sensor", comment: "VoiceOver label for the detection sensor message badge")
+			case .translated:
+				return String(localized: "Showing translated text", comment: "VoiceOver label for the translated message badge")
+			}
+		}
+	}
+
+	/// The status badges currently active on this message for the given destination and sender
+	/// context. This is the single source of truth both MessageText's per-badge overlays and the
+	/// message rows' combined `accessibilityLabel` read from, so the combined label can never
+	/// silently drop a badge the overlay is showing (issue #016 T003).
+	func activeStatusBadges(destination: MessageDestination, isCurrentUser: Bool) -> [StatusBadge] {
+		var badges: [StatusBadge] = []
+		if isEncryptedMessage(isCurrentUser: isCurrentUser) { badges.append(.encrypted) }
+		if xeddsaSigned { badges.append(.verified) }
+		if isStoreForwardMessage { badges.append(.storeForward) }
+		if isDetectionSensorMessage(destination: destination) { badges.append(.detectionSensor) }
+		if isShowingTranslatedText { badges.append(.translated) }
+		return badges
 	}
 }
 

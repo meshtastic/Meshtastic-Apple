@@ -66,4 +66,13 @@ extension ChannelEntity {
 		channel.settings.moduleSettings.isMuted = self.mute
 		return channel
 	}
+
+	/// Channel names reserved for module traffic (legacy remote admin, GPIO, serial, MQTT).
+	/// Channels with these names carry module protocol data, so the Messages channel list
+	/// hides them and the channel editor warns when one is entered.
+	static let reservedModuleNames = ["admin", "gpio", "serial", "mqtt"]
+
+	static func isReservedModuleName(_ name: String) -> Bool {
+		reservedModuleNames.contains(name.lowercased())
+	}
 }

@@ -48,7 +48,7 @@ struct RegionCodesTests {
 	}
 
 	@Test func totalCaseCount() {
-		#expect(RegionCodes.allCases.count == 38)
+		#expect(RegionCodes.allCases.count == 37)
 	}
 
 	@Test func eu433_hasDutyCycle10() {
@@ -106,6 +106,15 @@ struct ModemPresetsTests {
 		#expect(ModemPresets.shortTurbo.snrLimit() == -7.5)
 	}
 
+	@Test func defaultCodingRate_matchesPresetParams() {
+		#expect(ModemPresets.longFast.defaultCodingRate == 5)
+		#expect(ModemPresets.longSlow.defaultCodingRate == 8)
+		#expect(ModemPresets.longModerate.defaultCodingRate == 8)
+		#expect(ModemPresets.longTurbo.defaultCodingRate == 8)
+		#expect(ModemPresets.narrowFast.defaultCodingRate == 6)
+		#expect(ModemPresets.narrowSlow.defaultCodingRate == 6)
+	}
+
 	@Test func totalCaseCount() {
 		#expect(ModemPresets.allCases.count == 16)
 	}
@@ -114,6 +123,72 @@ struct ModemPresetsTests {
 		#expect(ModemPresets.mediumTurbo.protoEnumValue() == .mediumTurbo)
 		#expect(ModemPresets.mediumTurbo.snrLimit() == -12.5)
 		#expect(ModemPresets.mediumTurbo.bandwidthMHz == 0.5)
+	}
+
+	@Test func firmwareChannelNames_matchEveryProtoPreset() {
+		let expected: [(Config.LoRaConfig.ModemPreset, String)] = [
+			(.longFast, "LongFast"),
+			(.longSlow, "LongSlow"),
+			(.veryLongSlow, "VLongSlow"),
+			(.mediumSlow, "MediumSlow"),
+			(.mediumFast, "MediumFast"),
+			(.shortSlow, "ShortSlow"),
+			(.shortFast, "ShortFast"),
+			(.longModerate, "LongMod"),
+			(.shortTurbo, "ShortTurbo"),
+			(.longTurbo, "LongTurbo"),
+			(.liteFast, "LiteFast"),
+			(.liteSlow, "LiteSlow"),
+			(.narrowFast, "NarrowFast"),
+			(.narrowSlow, "NarrowSlow"),
+			(.tinyFast, "TinyFast"),
+			(.tinySlow, "TinySlow"),
+			(.mediumTurbo, "MediumTurbo"),
+		]
+
+		#expect(expected.count == Config.LoRaConfig.ModemPreset.allCases.count)
+		for (preset, name) in expected {
+			#expect(preset.firmwareChannelName == name)
+		}
+	}
+
+	@Test func unknownFirmwarePreset_hasNoChannelName() {
+		#expect(Config.LoRaConfig.ModemPreset(rawValue: 99)?.firmwareChannelName == nil)
+	}
+
+	@Test func defaultChannelNames_useFirmwareSpelling() {
+		#expect(ModemPresets.medSlow.androidChannelName == "MediumSlow")
+		#expect(ModemPresets.medFast.androidChannelName == "MediumFast")
+		#expect(ModemPresets.longModerate.androidChannelName == "LongMod")
+	}
+}
+
+// MARK: - CodingRates
+
+@Suite("CodingRates")
+struct CodingRatesTests {
+
+	@Test func customMode_allowsExplicitCodingRatesOnly() {
+		#expect(CodingRates.options(usePreset: false, modemPreset: .longFast) == [5, 6, 7, 8])
+	}
+
+	@Test func presetMode_allowsAutoAndHigherRedundancyOnly() {
+		#expect(CodingRates.options(usePreset: true, modemPreset: .longFast) == [0, 6, 7, 8])
+		#expect(CodingRates.options(usePreset: true, modemPreset: .narrowFast) == [0, 7, 8])
+		#expect(CodingRates.options(usePreset: true, modemPreset: .longSlow) == [0])
+	}
+
+	@Test func presetMode_normalizesInvalidValuesToAuto() {
+		#expect(CodingRates.normalized(0, usePreset: true, modemPreset: .longFast) == 0)
+		#expect(CodingRates.normalized(5, usePreset: true, modemPreset: .longFast) == 0)
+		#expect(CodingRates.normalized(5, usePreset: true, modemPreset: .longSlow) == 0)
+		#expect(CodingRates.normalized(8, usePreset: true, modemPreset: .longSlow) == 0)
+		#expect(CodingRates.normalized(9, usePreset: true, modemPreset: .longFast) == 0)
+	}
+
+	@Test func customMode_normalizesInvalidValuesToLowestCodingRate() {
+		#expect(CodingRates.normalized(0, usePreset: false, modemPreset: .longFast) == 5)
+		#expect(CodingRates.normalized(9, usePreset: false, modemPreset: .longFast) == 5)
 	}
 }
 
@@ -135,7 +210,64 @@ struct BandwidthsTests {
 	}
 
 	@Test func totalCaseCount() {
-		#expect(Bandwidths.allCases.count == 5)
+		#expect(Bandwidths.allCases.count == 9)
+	}
+
+	@Test func subGHzOptions_preserveExistingWireValues() {
+		let options = Bandwidths.selectable(region: .us, pioEnv: nil)
+
+		#expect(options.map(\.pickerValue) == [31, 62, 125, 0, 500])
+	}
+
+	@Test func unknownRegion_fallsBackToSubGHzOptions() {
+		let options = Bandwidths.selectable(region: nil, pioEnv: nil)
+
+		#expect(options.map(\.pickerValue) == [31, 62, 125, 0, 500])
+	}
+
+	@Test func sx128xOptions_includeAllCanonicalHighBandValues() {
+		let options = Bandwidths.selectable(region: .lora24, pioEnv: "tlora-v2-1-1_8")
+
+		#expect(options.map(\.pickerValue) == [200, 400, 800, 1600])
+		#expect(options.map(\.description) == ["203.125 kHz", "406.25 kHz", "812.5 kHz", "1625 kHz"])
+	}
+
+	@Test(arguments: ["my-esp32s3-diy-oled", "my-esp32s3-diy-eink"])
+	func diySX128xOptions_include1625kHzBandwidth(pioEnv: String) {
+		let options = Bandwidths.selectable(region: .lora24, pioEnv: pioEnv)
+
+		#expect(options.map(\.pickerValue) == [200, 400, 800, 1600])
+	}
+
+	@Test func lr1121Options_excludeUnsupported1625kHzBandwidth() {
+		let options = Bandwidths.selectable(region: .lora24, pioEnv: "muzi-base")
+
+		#expect(options.map(\.pickerValue) == [200, 400, 800])
+	}
+
+	@Test func mixedSX128xLR1121Target_usesConservativeOptions() {
+		let options = Bandwidths.selectable(region: .lora24, pioEnv: "tlora-t3s3-v1")
+
+		#expect(options.map(\.pickerValue) == [200, 400, 800])
+	}
+
+	@Test func invalidStoredBandwidth_mustBeReplacedBeforeSaving() {
+		#expect(!Bandwidths.isValid(125, region: .lora24, pioEnv: "tlora-v2-1-1_8"))
+		#expect(!Bandwidths.isValid(1600, region: .lora24, pioEnv: "muzi-base"))
+		#expect(Bandwidths.isValid(800, region: .lora24, pioEnv: "muzi-base"))
+		#expect(Bandwidths.isValid(0, region: .us, pioEnv: nil))
+	}
+
+	@Test func zeroBandwidthInLora24_usesFirmwareDefault() {
+		#expect(Bandwidths.validationIssue(for: 0, region: .lora24, pioEnv: "tlora-t3s3-v1") == nil)
+		#expect(Bandwidths.isValid(0, region: .lora24, pioEnv: "tlora-t3s3-v1"))
+		#expect(Bandwidths.description(forPickerValue: 0, region: .lora24) == "Default (812.5 kHz)")
+	}
+
+	@Test func explicit250kHzStoredValue_remainsValidAndDisplaysAsDefaultOption() {
+		#expect(Bandwidths.isValid(250, region: .us, pioEnv: nil))
+		#expect(Bandwidths.pickerValue(forStoredValue: 250, region: .us) == 0)
+		#expect(Bandwidths.pickerValue(forStoredValue: 250, region: .lora24) == 250)
 	}
 }
 
@@ -179,7 +311,7 @@ struct DeviceRolesTests {
 	}
 
 	@Test func totalCaseCount() {
-		#expect(DeviceRoles.allCases.count == 11)
+		#expect(DeviceRoles.allCases.count == 12)
 	}
 }
 
@@ -642,6 +774,20 @@ struct LoRaFirmwareGatingTests {
 		#expect(selectable.contains(.tinyFast))
 		#expect(selectable.contains(.liteSlow))
 	}
+
+	@Test func deprecatedPreset_excludedFromSelectable() {
+		#expect(ModemPresets.longSlow.isDeprecated)
+		#expect(!ModemPresets.selectable(supports2_8: false).contains(.longSlow))
+		#expect(!ModemPresets.selectable(supports2_8: true).contains(.longSlow))
+		#expect(!ModemPresets.userSelectable.contains(.longSlow))
+	}
+
+	@Test func deprecatedPreset_stillExistsForDisplay() {
+		// longSlow remains a case so an existing radio's value round-trips and renders its label.
+		let preset = ModemPresets(rawValue: 1)
+		#expect(preset == .longSlow)
+		#expect(preset?.name == "LongSlow")
+	}
 }
 
 // MARK: - LoRaRegionPresetMap decoding (2.8 region→preset compatibility)
@@ -677,7 +823,7 @@ struct LoRaRegionPresetMapTests {
 			group([.tinyFast, .tinySlow], .tinyFast, true),
 			group([.narrowFast, .narrowSlow], .narrowSlow, true)
 		]
-		let group0Regions: [Region] = [.us, .eu433, .cn, .jp, .anz, .anz433, .ru, .kr, .tw, .in, .nz865, .th, .ua433, .ua868, .my433, .my919, .sg923, .ph433, .ph868, .ph915, .kz433, .kz863, .np865, .br902, .lora24]
+		let group0Regions: [Region] = [.us, .eu433, .cn, .jp, .anz, .anz433, .ru, .kr, .tw, .in, .nz865, .th, .ua433, .my433, .my919, .sg923, .ph433, .ph868, .ph915, .kz433, .kz863, .np865, .br902, .lora24]
 		map.regionGroups = group0Regions.map { entry($0, 0) }
 		map.regionGroups.append(entry(.eu868, 1))
 		map.regionGroups.append(entry(.eu866, 2))
@@ -735,7 +881,7 @@ struct LoRaRegionPresetMapTests {
 	}
 
 	@Test func decode_allRegionsPresent() {
-		#expect(referenceMap().decoded().count == 32)
+		#expect(referenceMap().decoded().count == 31)
 	}
 
 	@Test func absentRegion_hasNoConstraint() {
@@ -753,7 +899,7 @@ struct LoRaRegionPresetMapTests {
 		map.regionGroups.append(bad)
 		let decoded = map.decoded()
 		#expect(decoded[.eu874] == nil)   // skipped defensively (spec §4)
-		#expect(decoded.count == 32)      // unchanged
+		#expect(decoded.count == 31)      // unchanged
 	}
 
 	@Test func emptyMap_decodesEmpty() {
