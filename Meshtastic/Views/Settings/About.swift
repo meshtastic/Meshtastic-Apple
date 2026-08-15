@@ -24,7 +24,7 @@ struct AboutMeshtastic: View {
 
 					if locale.region?.identifier ?? "US" == "US" {
 						HStack {
-							Image("SOLAR_NODE")
+							Image("EventFirmwareDEFCON")
 								.resizable()
 								.aspectRatio(contentMode: .fit)
 								.frame(width: 75)
