@@ -213,7 +213,13 @@ All present sections are selected by default **except Security & Identity**, whi
 > **Warning — Import replaces settings**
 > Importing writes the selected settings — including any secrets in the file — onto the connected node. Only import files from a source you trust.
 
-Applying **Channels & LoRa** reboots the radio, so it briefly disconnects; the app reports this so you can reconnect. Settings are applied in order and the import stops at the first failure, telling you exactly what was and wasn't sent. Because the radio can silently discard settings it accepts, the result screen also offers **Verify Against the Radio**: once the radio reconnects and sends its configuration back, it compares each imported section against what the radio actually holds. Re-running an import is safe.
+Every non-empty import commits the selected settings and reboots the radio, so it briefly disconnects; the app reports this so you can reconnect. Settings are applied in order and the import stops at the first failure, telling you exactly what was and wasn't sent. Settings unsupported by the connected radio appear under **Not Supported by This Radio** instead of being sent.
+
+MQTT and Serial settings are applied after the main transaction because either can drop the Bluetooth link before the transaction is committed. If that disconnect interrupts them, the result shows **Needs a Second Pass** so you can reconnect and apply those sections separately. If the radio disconnects before acknowledging the commit, the result warns that saving was not confirmed.
+
+You can cancel while a setting is being sent over Bluetooth or TCP; cancellation typically completes quickly. The app stops sending additional sections, then commits the sections already applied so the radio does not remain in an unfinished edit transaction. If the transport callback does not settle, the sheet allows dismissal after 15 seconds. A write already handed to the operating system may still reach the radio, so review the result before retrying.
+
+Because the radio can silently discard settings it accepts, the result screen also offers **Verify Against the Radio**: once the radio reconnects and sends its configuration back, it compares each imported section against what the radio actually holds. Re-running an import is safe.
 
 ## Automatic Documentation Translation
 

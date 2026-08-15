@@ -51,8 +51,9 @@ actor BLEConnection: Connection {
 	private var connectionStreamContinuation: AsyncStream<ConnectionEvent>.Continuation?
 	
 	private var connectContinuation: CheckedContinuation<Void, Error>?
-	private var writeContinuations: [CheckedContinuation<Void, Error>]
+	private var writeContinuations: WriteContinuationStore
 	private var readContinuations: [CheckedContinuation<Data, Error>]
+	private var writeReadinessContinuations: [CheckedContinuation<Void, Never>] = []
 
 	/// Notify characteristics whose subscription must confirm before the connect
 	/// process is considered complete. Subscribing to an encrypted characteristic is
@@ -72,7 +73,7 @@ actor BLEConnection: Connection {
 		self.central = central
 		self.transport = transport
 		self.delegate = BLEConnectionDelegate(peripheral: peripheral)
-		self.writeContinuations = []
+		self.writeContinuations = WriteContinuationStore()
 		self.readContinuations = []
 		self.delegate.setConnection(self)
 	}
@@ -114,10 +115,9 @@ actor BLEConnection: Connection {
 		central.cancelPeripheralConnection(peripheral)
 		peripheral.delegate = nil
 				
-		while !writeContinuations.isEmpty {
-			let writeContinuation = writeContinuations.removeFirst()
-			writeContinuation.resume(throwing: AccessoryError.disconnected("Unknown error"))
-		}
+		writeContinuations.drainAll(throwing: AccessoryError.disconnected("Unknown error"))
+		writeReadinessContinuations.forEach { $0.resume() }
+		writeReadinessContinuations.removeAll()
 
 		while !readContinuations.isEmpty {
 			let readContinuation = readContinuations.removeFirst()
@@ -481,16 +481,19 @@ extension BLEConnection {
 			Logger.transport.error("🛜 [BLE] didWriteValueFor a characteristic other than TORADIO_UUID.  Should not happen!")
 			return
 		}
-		guard !writeContinuations.isEmpty else {
-			Logger.transport.error("🛜 [BLE] didWriteValueFor with no waiting continuations.  Should not happen!")
+		guard let entry = writeContinuations.removeFirst() else {
+			Logger.transport.debug("🛜 [BLE] didWriteValueFor with no waiting continuations")
+			return
+		}
+		guard let continuation = entry.continuation else {
+			// This is the callback for a canceled write. The tombstone preserves FIFO
+			// ordering so it cannot consume the next write's continuation.
 			return
 		}
 		
-		let writeContinuation = writeContinuations.removeFirst()
-		
 		if let error = error {
 			Logger.transport.error("🛜 [BLE] Did write for \(characteristic.meshtasticCharacteristicName, privacy: .public) with error \(error, privacy: .public)")
-			writeContinuation.resume(throwing: error)
+			continuation.resume(throwing: error)
 			// A radio momentarily out of buffers is not a broken link: `send` retries it. Escalating here
 			// would tear the session down first and abort whatever operation was in flight, which is how a
 			// single refused write used to end an entire config import.
@@ -503,7 +506,7 @@ extension BLEConnection {
 			// Too much logging to report every write.
 			Logger.transport.error("🛜 [BLE] Did write for \(characteristic.meshtasticCharacteristicName, privacy: .public)")
 			#endif
-			writeContinuation.resume()
+			continuation.resume()
 		}
 	}
 	
@@ -591,15 +594,47 @@ extension BLEConnection {
 				"🛜 [BLE] ToRadio write \(binaryData.count, privacy: .public)B (limit \(limit, privacy: .public)B) type=\(writeType == .withResponse ? "withResponse" : "withoutResponse", privacy: .public)"
 			)
 		}
-		try await withCheckedThrowingContinuation { newWriteContinuation in
-			if writeType == .withoutResponse {
-				peripheral.writeValue(binaryData, for: characteristic, type: writeType)
-				newWriteContinuation.resume()
-			} else {
-				writeContinuations.append(newWriteContinuation)
+
+		if writeType == .withoutResponse {
+			if !peripheral.canSendWriteWithoutResponse {
+				await waitForWriteReadiness()
+			}
+			try Task.checkCancellation()
+			peripheral.writeValue(binaryData, for: characteristic, type: writeType)
+			return
+		}
+
+		// Write-with-response: the continuation lives in a keyed store so the cancel
+		// handler and didWriteValueFor cannot double-resume. The cancel handler hops to
+		// the actor and no-ops if didWriteValueFor already consumed the continuation.
+		let writeID = UUID()
+		try await withTaskCancellationHandler {
+			try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+				writeContinuations.insert(id: writeID, continuation: continuation)
 				peripheral.writeValue(binaryData, for: characteristic, type: writeType)
 			}
+		} onCancel: {
+			Task { await self.cancelWrite(id: writeID) }
 		}
+	}
+
+	/// Resume and remove a single pending write continuation on cancellation.
+	/// No-ops if didWriteValueFor already consumed it — that is the expected race.
+	private func cancelWrite(id: UUID) {
+		guard let continuation = writeContinuations.cancel(id: id) else { return }
+		continuation.resume(throwing: CancellationError())
+	}
+
+	private func waitForWriteReadiness() async {
+		await withCheckedContinuation { continuation in
+			writeReadinessContinuations.append(continuation)
+		}
+	}
+
+	func peripheralIsReadyToSendWriteWithoutResponse() {
+		let continuations = writeReadinessContinuations
+		writeReadinessContinuations.removeAll()
+		continuations.forEach { $0.resume() }
 	}
 	
 	func read() async throws -> Data {
@@ -705,6 +740,10 @@ class BLEConnectionDelegate: NSObject, CBPeripheralDelegate {
 	
 	func peripheral(_ peripheral: CBPeripheral, didWriteValueFor characteristic: CBCharacteristic, error: Error?) {
 		Task { await connection?.didWriteValueFor(characteristic: characteristic, error: error) }
+	}
+
+	func peripheralIsReady(toSendWriteWithoutResponse peripheral: CBPeripheral) {
+		Task { await connection?.peripheralIsReadyToSendWriteWithoutResponse() }
 	}
 	
 	func peripheral(_ peripheral: CBPeripheral, didReadRSSI RSSI: NSNumber, error: Error?) {
