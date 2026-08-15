@@ -21,6 +21,23 @@ struct OTAMetadataItem: Identifiable, Hashable {
 	}
 }
 
+/// Curated rotating tips and educational insights displayed during firmware updates.
+enum FirmwareUpdateTips {
+	static let messages: [String] = [
+		"LoRa spread-spectrum modulation allows Meshtastic to successfully decode signals even when they are up to 20 dB below the ambient noise floor.",
+		"Aim to keep overall Channel Utilization (ChUtil) below 25% and your local AirUtilTX low to avoid packet collisions on busy meshes.",
+		"CAD (Channel Activity Detection) performs power-efficient 'listen-before-talk' preamble checks before transmitting, preventing packet collisions.",
+		"Antenna height and clear line-of-sight (Fresnel zone clearance) improve link SNR significantly more than increasing raw TX power.",
+		"Designated Store-and-Forward server nodes can cache offline traffic and deliver missed direct messages when your node reconnects.",
+		"Firmware 2.5+ uses Curve25519 public key cryptography to provide authenticated, end-to-end encrypted direct messaging.",
+		"Download and cache offline vector map tiles in the Map tab for high-resolution topological navigation completely off-grid.",
+		"Integrated MeshtasticTAK bridges Cursor-on-Target (CoT) tactical markers and team emergency beacons over LoRa without cell service.",
+		"Beacon presets allow nearby Meshtastic radios to discover and sync pre-configured channels with a single tap.",
+		"Advanced power profiling and dynamic GPS sleep modes significantly extend battery life for remote solar repeater nodes.",
+		"Keep your device close to your phone during the update process."
+	]
+}
+
 /// Unified, reusable OTA Firmware Update Sheet for BLE, Wi-Fi, and simulated updates.
 struct FirmwareOTAUpdateSheet: View {
 	let title: String
@@ -42,6 +59,8 @@ struct FirmwareOTAUpdateSheet: View {
 	var gameTitle: String?
 
 	@State private var showChirpyGame = false
+	@State private var tipIndex: Int = 0
+	private let tipTimer = Timer.publish(every: 8.0, on: .main, in: .common).autoconnect()
 
 	var body: some View {
 		NavigationStack {
@@ -142,6 +161,18 @@ struct FirmwareOTAUpdateSheet: View {
 							FirmwareUpdateGameButton(isPresented: $showChirpyGame, status: gameStatus)
 								.padding(.horizontal, 24)
 						}
+
+						if statusState == .transferring || statusState == .preparing || statusState == .waitingForConnection || statusState == .connected {
+							Text(FirmwareUpdateTips.messages[tipIndex % FirmwareUpdateTips.messages.count])
+								.font(.footnote)
+								.foregroundStyle(.secondary)
+								.multilineTextAlignment(.center)
+								.fixedSize(horizontal: false, vertical: true)
+								.padding(.horizontal, 28)
+								.padding(.top, 4)
+								.transition(.opacity)
+								.id(tipIndex)
+						}
 					}
 					.frame(maxWidth: .infinity)
 
@@ -168,6 +199,11 @@ struct FirmwareOTAUpdateSheet: View {
 		}
 		.interactiveDismissDisabled(true)
 		.firmwareUpdateGame(isPresented: $showChirpyGame, status: gameStatus)
+		.onReceive(tipTimer) { _ in
+			withAnimation(.easeInOut(duration: 0.35)) {
+				tipIndex = (tipIndex + 1) % FirmwareUpdateTips.messages.count
+			}
+		}
 	}
 
 	private var isDismissAllowed: Bool {
