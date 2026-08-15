@@ -38,7 +38,7 @@ struct RootView: View {
 			guard let index = CommandLine.arguments.firstIndex(of: "-tv-connect"),
 			      index + 1 < CommandLine.arguments.count else { return }
 			let parts = CommandLine.arguments[index + 1].split(separator: ":")
-			guard parts.count == 2, let port = Int(parts[1]) else { return }
+			guard parts.count == 2, let port = Int(parts[1]), (1...65535).contains(port) else { return }
 			client.connect(host: String(parts[0]), port: port)
 		}
 #endif

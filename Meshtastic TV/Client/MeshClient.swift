@@ -41,10 +41,12 @@ final class MeshClient {
 	/// In-memory only: session data, and adding fields to `MeshNode` would be a schema
 	/// change whose failure path wipes the store (see MeshtasticTVApp.makeContainer).
 	struct ConnectedNodeStats: Equatable {
-		var channelUtilization: Float
-		var airUtilTx: Float
-		/// Nil until the first LocalStats packet arrives — the DeviceMetrics
-		/// fallback and the NodeInfo seed only carry the two load fields above.
+		/// Every field is nil until its telemetry actually arrives, so the strip
+		/// renders a dash rather than a fabricated zero. LocalStats fills them all;
+		/// the DeviceMetrics fallback and NodeInfo seed fill only the load fields
+		/// they carry.
+		var channelUtilization: Float?
+		var airUtilTx: Float?
 		var packetsTx: UInt32?
 		var packetsRx: UInt32?
 		var packetsRxDupe: UInt32?
@@ -291,7 +293,7 @@ final class MeshClient {
 	/// NodeInfo, so the strip has numbers at connect time.
 	private func applyDeviceMetrics(_ metrics: DeviceMetrics) {
 		guard metrics.hasChannelUtilization || metrics.hasAirUtilTx else { return }
-		var updated = stats ?? ConnectedNodeStats(channelUtilization: 0, airUtilTx: 0, receivedAt: Date())
+		var updated = stats ?? ConnectedNodeStats(receivedAt: Date())
 		if metrics.hasChannelUtilization { updated.channelUtilization = metrics.channelUtilization }
 		if metrics.hasAirUtilTx { updated.airUtilTx = metrics.airUtilTx }
 		updated.receivedAt = Date()
