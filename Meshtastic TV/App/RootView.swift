@@ -31,6 +31,17 @@ struct RootView: View {
 		// Re-asserted on every active transition because the system can reset the
 		// flag when the app returns to the foreground.
 		.onAppear { UIApplication.shared.isIdleTimerDisabled = true }
+#if DEBUG
+		.task {
+			// Headless-testing hook (MarketingCapture / SwitchStress pattern): launch with
+			// `-tv-connect host:port` to connect without driving the remote. Debug only.
+			guard let index = CommandLine.arguments.firstIndex(of: "-tv-connect"),
+			      index + 1 < CommandLine.arguments.count else { return }
+			let parts = CommandLine.arguments[index + 1].split(separator: ":")
+			guard parts.count == 2, let port = Int(parts[1]), (1...65535).contains(port) else { return }
+			client.connect(host: String(parts[0]), port: port)
+		}
+#endif
 		.onChange(of: scenePhase) { _, phase in
 			UIApplication.shared.isIdleTimerDisabled = (phase == .active)
 		}

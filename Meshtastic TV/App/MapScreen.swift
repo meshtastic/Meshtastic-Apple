@@ -27,6 +27,14 @@ struct MapScreen: View {
 	/// The persisted node store — the map and list read from here, not the client.
 	@Query private var allNodes: [MeshNode]
 
+	/// Decoded offline basemap. Held here (not in MeshTVMapView) so the decode survives
+	/// the representable's updates; it publishes nothing until a region is downloaded.
+	@StateObject private var offlineVectors = OfflineVectorTileProvider()
+
+	/// Mesh stats strip visibility + position, shared with SettingsView via the same keys.
+	@AppStorage("tv.statsBar.enabled") private var statsBarEnabled = true
+	@AppStorage("tv.statsBar.edge") private var statsBarEdge: StatsStripEdge = .top
+
 	// Cached sort/filter results so we don't re-sort 1000+ nodes on every body eval.
 	@State private var sortedNodes: [MeshNode] = []
 	@State private var locatedNodes: [MeshNode] = []
@@ -40,9 +48,22 @@ struct MapScreen: View {
 				nodes: locatedNodes,
 				selectedNodeNum: $selectedNodeNum,
 				recenterToken: recenterToken,
-				onMenuExit: escapeMap
+				onMenuExit: escapeMap,
+				offlineVectors: offlineVectors
 			)
 			.ignoresSafeArea()
+			// Overlay, not safeAreaInset: an inset resizes the MKMapView and re-triggers
+			// the representable's region framing every time the strip toggles or moves.
+			.overlay(alignment: statsBarEdge == .top ? .top : .bottom) {
+				if statsBarEnabled {
+					MeshStatsStrip(
+						stats: client.stats,
+						storeOnlineCount: allNodes.filter(\.isOnline).count,
+						storeTotalCount: allNodes.count
+					)
+					.padding(.vertical, TVTheme.statsStripMargin)
+				}
+			}
 		}
 		.onChange(of: allNodes) { _, newNodes in
 			recomputeNodeLists(from: newNodes)

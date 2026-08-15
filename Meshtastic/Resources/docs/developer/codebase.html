@@ -45,6 +45,7 @@ specs/                          # Feature specs (speckit workflow)
 <pre><code class="language-bash">xcodegen generate
 </code></pre>
 <p>The <code>xcodegen-drift.yml</code> CI check regenerates the project on every PR that touches <code>project.yml</code>, <code>.xcodegen-version</code>, <code>Meshtastic.xcodeproj/**</code>, or any <code>.swift</code> file, and fails if the committed project doesn't exactly match — this is what keeps the generated project honest as the source of truth stays in <code>project.yml</code>. XcodeGen's output is version-sensitive, so <code>.xcodegen-version</code> pins an exact release; install that exact version (not whatever Homebrew currently carries) before regenerating locally.</p>
+<p>Keep sibling group names unique. XcodeGen 2.46.0 does not produce a stable order when two root groups have the same display name, which makes the drift check intermittent. Shared tvOS sources used by the visionOS target therefore live under the distinct virtual group <code>Meshtastic TV (Vision shared)</code> rather than a second root group named <code>Meshtastic TV</code>.</p>
 <h2>Key Files</h2>
 <table>
 <thead>
