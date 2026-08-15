@@ -27,11 +27,11 @@ struct MeshStatsStrip: View {
 	let storeOnlineCount: Int
 	let storeTotalCount: Int
 
-	@ScaledMetric(relativeTo: .caption) private var labelSize: CGFloat = 24
-	@ScaledMetric(relativeTo: .title) private var valueSize: CGFloat = 46
+	@ScaledMetric(relativeTo: .caption) private var labelSize: CGFloat = 30
+	@ScaledMetric(relativeTo: .title) private var valueSize: CGFloat = 64
 
 	var body: some View {
-		HStack(spacing: 44) {
+		HStack(spacing: 56) {
 			cell(label: "Nodes", value: nodesText)
 
 			divider
@@ -55,14 +55,14 @@ struct MeshStatsStrip: View {
 						.font(.system(size: labelSize, weight: .medium))
 						.tracking(1.2)
 						.textCase(.uppercase)
-						.foregroundStyle(.secondary)
+						.foregroundStyle(Color.gray)
 					Text(receivedAt, style: .relative)
 						.font(.system(size: valueSize, weight: .semibold, design: .rounded).monospacedDigit())
 				}
 			}
 		}
-		.padding(.horizontal, 52)
-		.padding(.vertical, 28)
+		.padding(.horizontal, 64)
+		.padding(.vertical, 36)
 		.background(
 			RoundedRectangle(cornerRadius: 24, style: .continuous)
 				.fill(.regularMaterial)
@@ -83,7 +83,7 @@ struct MeshStatsStrip: View {
 				.font(.system(size: labelSize, weight: .medium))
 				.tracking(1.2)
 				.textCase(.uppercase)
-				.foregroundStyle(.secondary)
+				.foregroundStyle(Color.gray)
 			Text(value)
 				.font(.system(size: valueSize, weight: .semibold, design: .rounded).monospacedDigit())
 				.foregroundStyle(color)
@@ -93,7 +93,7 @@ struct MeshStatsStrip: View {
 	private var divider: some View {
 		Rectangle()
 			.fill(.secondary.opacity(0.4))
-			.frame(width: 1, height: 76)
+			.frame(width: 1, height: 104)
 	}
 
 	// MARK: Values
