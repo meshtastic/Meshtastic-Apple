@@ -31,7 +31,7 @@ struct AboutMeshtastic: View {
 								.cornerRadius(5)
 								.padding()
 							VStack(alignment: .leading) {
-								Link("Buy Complete Radios", destination: URL(string: "http://garthvh.com")!)
+								Link("Buy Complete Radios", destination: URL(string: "https://meshtastic.org/#hardware")!)
 									.font(.title2)
 								Text("Get custom waterproof solar and detection sensor router nodes, aluminium desktop nodes and rugged handsets.")
 									.font(.callout)
