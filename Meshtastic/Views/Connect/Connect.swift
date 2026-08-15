@@ -154,19 +154,19 @@ struct Connect: View {
 												Button {
 													openEventFirmwareInfo()
 												} label: {
-													HStack(spacing: 6) {
+													VStack(alignment: .leading, spacing: 6) {
+														HStack(spacing: 4) {
+															Text(eventPresentation.info.displayName ?? accessoryManager.firmwareEdition.name)
+																.font(.headline)
+															Image(systemName: "chevron.right")
+																.font(.caption2)
+																.foregroundColor(.gray)
+														}
 														EventFirmwareIcon(
 															edition: eventPresentation.edition,
 															iconURL: eventPresentation.info.iconURL,
-															size: 22
+															size: 88
 														)
-														Text("Firmware Edition").font(.callout)
-															+ Text(": \(eventPresentation.info.displayName ?? accessoryManager.firmwareEdition.name)")
-															.font(.callout)
-															.foregroundColor(Color.gray)
-														Image(systemName: "chevron.right")
-															.font(.caption2)
-															.foregroundColor(.gray)
 													}
 												}
 												.buttonStyle(.plain)
@@ -439,7 +439,6 @@ struct Connect: View {
 						.textCase(nil)
 					}
 				}
-				.scrollContentBackground(.hidden)
 				HStack(alignment: .center) {
 					Spacer()
 #if targetEnvironment(macCatalyst)

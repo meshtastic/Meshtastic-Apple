@@ -1526,14 +1526,14 @@ struct MeshMapMK: View {
 			result.append(ClusterMapOverlay(
 				id: "offline-earth-\(index)",
 				overlay: MKPolygon(coordinates: &earth, count: earth.count),
-				style: ClusterMapOverlayStyle(strokeUIColor: nil, fillUIColor: Self.offlineEarthColor(dark: dark), lineWidth: 0, level: .aboveRoads)
+				style: ClusterMapOverlayStyle(strokeUIColor: nil, fillUIColor: OfflineMapPalette.earth(dark: dark), lineWidth: 0, level: .aboveRoads)
 			))
 		}
 
 		// 2) Water / park fills, batched per role (parks under water).
 		let fillsByRole = Dictionary(grouping: offlineVectors.polygons, by: { $0.role })
 		for role in [OfflineFeatureRole.park, .green, .water] {
-			guard let polys = fillsByRole[role], let fill = Self.offlineFillColor(role, dark: dark) else { continue }
+			guard let polys = fillsByRole[role], let fill = OfflineMapPalette.fill(role, dark: dark) else { continue }
 			let shapes = polys.compactMap { poly -> MKPolygon? in
 				guard poly.coordinates.count >= 3 else { return nil }
 				var coords = poly.coordinates
@@ -1561,25 +1561,25 @@ struct MeshMapMK: View {
 		let roadClasses: [OfflineFeatureRole] = [.minorRoad, .mediumRoad, .majorRoad]
 		// Casing pass (light mode only) gives the Apple white-road-with-outline look.
 		for role in roadClasses {
-			guard let casing = Self.offlineRoadCasingColor(role, dark: dark), let multi = roadMultiPolyline(role) else { continue }
+			guard let casing = OfflineMapPalette.roadCasing(role, dark: dark), let multi = roadMultiPolyline(role) else { continue }
 			result.append(ClusterMapOverlay(
 				id: "offline-road-casing-\(role)",
 				overlay: multi,
-				style: ClusterMapOverlayStyle(strokeUIColor: casing, fillUIColor: nil, lineWidth: Self.offlineRoadCasingWidth(role), lineCap: .round, level: .aboveRoads)
+				style: ClusterMapOverlayStyle(strokeUIColor: casing, fillUIColor: nil, lineWidth: OfflineMapPalette.roadCasingWidth(role), lineCap: .round, level: .aboveRoads)
 			))
 		}
 		// Fill pass — white centerlines (light) / lighter-than-land gray (dark).
 		for role in roadClasses {
-			guard let fill = Self.offlineRoadFillColor(role, dark: dark), let multi = roadMultiPolyline(role) else { continue }
+			guard let fill = OfflineMapPalette.roadFill(role, dark: dark), let multi = roadMultiPolyline(role) else { continue }
 			result.append(ClusterMapOverlay(
 				id: "offline-road-fill-\(role)",
 				overlay: multi,
-				style: ClusterMapOverlayStyle(strokeUIColor: fill, fillUIColor: nil, lineWidth: Self.offlineRoadWidth(role), lineCap: .round, level: .aboveRoads)
+				style: ClusterMapOverlayStyle(strokeUIColor: fill, fillUIColor: nil, lineWidth: OfflineMapPalette.roadWidth(role), lineCap: .round, level: .aboveRoads)
 			))
 		}
 		// Rail + admin boundaries (single dashed stroke, both modes).
 		for role in [OfflineFeatureRole.rail, .boundary] {
-			guard let color = Self.offlineLineColor(role, dark: dark), let multi = roadMultiPolyline(role) else { continue }
+			guard let color = OfflineMapPalette.line(role, dark: dark), let multi = roadMultiPolyline(role) else { continue }
 			result.append(ClusterMapOverlay(
 				id: "offline-line-\(role)",
 				overlay: multi,
@@ -1590,65 +1590,7 @@ struct MeshMapMK: View {
 		offlineVectorOverlays = result
 	}
 
-	// MARK: Offline basemap palette (approximates Apple Maps Standard, light + dark)
-
-	private static func offlineEarthColor(dark: Bool) -> UIColor {
-		dark ? UIColor(red: 0.137, green: 0.137, blue: 0.145, alpha: 1)
-			 : UIColor(red: 0.953, green: 0.945, blue: 0.929, alpha: 1)
-	}
-
-	private static func offlineFillColor(_ role: OfflineFeatureRole, dark: Bool) -> UIColor? {
-		switch role {
-		case .water: return dark ? UIColor(red: 0.094, green: 0.169, blue: 0.267, alpha: 1) : UIColor(red: 0.667, green: 0.831, blue: 0.953, alpha: 1)
-		case .park, .green: return dark ? UIColor(red: 0.122, green: 0.176, blue: 0.133, alpha: 1) : UIColor(red: 0.776, green: 0.882, blue: 0.706, alpha: 1)
-		case .land: return offlineEarthColor(dark: dark)
-		default: return nil
-		}
-	}
-
-	/// Road fill: white centerline (light) or a lighter-than-land gray (dark).
-	private static func offlineRoadFillColor(_ role: OfflineFeatureRole, dark: Bool) -> UIColor? {
-		switch role {
-		case .majorRoad: return dark ? UIColor(red: 0.46, green: 0.46, blue: 0.49, alpha: 1) : .white
-		case .mediumRoad: return dark ? UIColor(red: 0.38, green: 0.38, blue: 0.41, alpha: 1) : .white
-		case .minorRoad: return dark ? UIColor(red: 0.31, green: 0.31, blue: 0.34, alpha: 1) : .white
-		default: return nil
-		}
-	}
-
-	/// Road casing (light mode only): a warm-gray outline that makes the white roads read on pale land.
-	private static func offlineRoadCasingColor(_ role: OfflineFeatureRole, dark: Bool) -> UIColor? {
-		guard !dark else { return nil }
-		switch role {
-		case .majorRoad, .mediumRoad, .minorRoad: return UIColor(red: 0.835, green: 0.824, blue: 0.800, alpha: 1)
-		default: return nil
-		}
-	}
-
-	private static func offlineRoadWidth(_ role: OfflineFeatureRole) -> CGFloat {
-		switch role {
-		case .majorRoad: return 3.0
-		case .mediumRoad: return 2.2
-		case .minorRoad: return 1.3
-		default: return 1.0
-		}
-	}
-
-	/// Casing is ~1.4 pt wider than the fill (about 0.7 pt of outline each side).
-	private static func offlineRoadCasingWidth(_ role: OfflineFeatureRole) -> CGFloat {
-		offlineRoadWidth(role) + 1.4
-	}
-
-	/// Rail / admin-boundary stroke color (single dashed line, both modes).
-	private static func offlineLineColor(_ role: OfflineFeatureRole, dark: Bool) -> UIColor? {
-		switch role {
-		case .rail: return dark ? UIColor(red: 0.45, green: 0.46, blue: 0.49, alpha: 1) : UIColor(red: 0.62, green: 0.62, blue: 0.64, alpha: 1)
-		case .boundary: return dark ? UIColor(red: 0.50, green: 0.46, blue: 0.56, alpha: 1) : UIColor(red: 0.66, green: 0.62, blue: 0.70, alpha: 1)
-		default: return nil
-		}
-	}
-
-/// Rebuild the vector overlays (accuracy circles + convex hull) from the current snapshots.
+	/// Rebuild the vector overlays (accuracy circles + convex hull) from the current snapshots.
 	/// Called on data change so the overlay objects are stable between renders. Ports the styling
 	/// from MeshMapContent's reducedPrecisionMapCircles + convex hull.
 	private func rebuildOverlays() {

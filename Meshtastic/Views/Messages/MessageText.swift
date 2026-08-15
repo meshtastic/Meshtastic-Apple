@@ -8,6 +8,7 @@ import Translation
 struct MessageText: View {
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
+	@EnvironmentObject var appState: AppState
 
 	let message: MessageEntity
 	let tapBackDestination: MessageDestination
@@ -90,21 +91,23 @@ struct MessageText: View {
 		return AnyView(baseMessageContent)
 	}
 
-	private func underlineLinks(in source: AttributedString) -> AttributedString {
+	private func colorLinks(in source: AttributedString) -> AttributedString {
 		var result = source
 		let linkColor = Color("Colors/MeshtasticLink")
 		for run in result.runs where run.link != nil {
-			result[run.range].underlineStyle = .single
 			result[run.range].foregroundColor = linkColor
 		}
 		return result
 	}
 
 	private var baseMessageContent: some View {
-		let payload = message.displayedMarkdownPayload
+		let payload = MentionParser.resolveMentions(
+			in: message.displayedMarkdownPayload,
+			context: context
+		)
 		return Group {
 			if let attributed = try? AttributedString(markdown: payload, options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace)) {
-				Text(underlineLinks(in: attributed))
+				Text(colorLinks(in: attributed))
 			} else {
 				Text(LocalizedStringKey(payload))
 			}
@@ -217,6 +220,15 @@ struct MessageText: View {
 
 	private func handleURL(_ url: URL) -> OpenURLAction.Result {
 		saveChannelLink = nil
+		// Handle meshtastic:/// deep links — node navigation from @mention taps
+		if url.scheme == "meshtastic",
+		   let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
+		   components.path == "/nodes",
+		   let nodeNumStr = components.queryItems?.first(where: { $0.name == "nodenum" })?.value,
+		   let nodeNum = Int64(nodeNumStr) {
+			appState.router.navigateToNodeDetail(nodeNum: nodeNum)
+			return .handled
+		}
 		var addChannels = false
 		if ContactURLHandler.canHandle(url) {
 			// Handle contact URL

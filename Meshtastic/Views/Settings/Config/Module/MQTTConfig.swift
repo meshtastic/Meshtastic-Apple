@@ -337,6 +337,9 @@ struct MQTTConfig: View {
 			.onChange(of: mapPublishIntervalSecs.intValue) { oldMapInterval, newMapPublishIntervalSecs in
 				if oldMapInterval != newMapPublishIntervalSecs && newMapPublishIntervalSecs != node?.mqttConfig?.mapPublishIntervalSecs ?? -1 { hasChanges = true }
 			}
+			.onChange(of: mapPositionPrecision) { oldPrecision, newPrecision in
+				if oldPrecision != newPrecision && Int32(newPrecision) != node?.mqttConfig?.mapPositionPrecision ?? -1 { hasChanges = true }
+			}
 		}
 		.navigationTitle("MQTT Config")
 		.toolbar {
@@ -409,7 +412,10 @@ private extension MQTTConfig {
 		self.mapPublishIntervalSecs = UpdateInterval(from: max(3600, Int(node?.mqttConfig?.mapPublishIntervalSecs ?? 3600)))
 		self.mapPositionPrecision = Double(node?.mqttConfig?.mapPositionPrecision ?? 14)
 		self.mapReportingOptIn = UserDefaults.mapReportingOptIn
-		if mapPositionPrecision < 11 || mapPositionPrecision > 14 { self.mapPositionPrecision = 14 }
+		// Firmware accepts 12...15 for MQTT map reports (matches the slider); anything
+		// else falls back to 14. The old 11...14 clamp here converted a saved 15 back
+		// to 14 on every load (#2259).
+		if mapPositionPrecision < 12 || mapPositionPrecision > 15 { self.mapPositionPrecision = 14 }
 		self.hasChanges = false
 	}
 }

@@ -77,6 +77,11 @@ struct EventFirmwareInfoView: View {
 				.background(Color(.systemGroupedBackground))
 			}
 			.tint(useEventTheme ? highlight : .accentColor)
+			// The accent-colored header extends behind the navigation bar, but the bar's
+			// title and close button follow the SYSTEM scheme — black over DEF CON's navy
+			// in light mode, well under the 4.5:1 text contrast minimum. Force the bar's
+			// content scheme to match the header foreground instead.
+			.toolbarColorScheme(headerForeground == .black ? .light : .dark, for: .navigationBar)
 			.navigationTitle(Text("Event"))
 			.navigationBarTitleDisplayMode(.inline)
 			.toolbar {
@@ -180,11 +185,13 @@ struct EventFirmwareInfoView: View {
 				}
 				firmwareComparisonRow
 				if let notes = info.firmwareReleaseNotes, !notes.isEmpty {
-					DisclosureGroup("Release Notes") {
-						Text(notes)
-							.font(.footnote)
-							.foregroundColor(.secondary)
-							.padding(.vertical, 2)
+					// Same markdown rendering as the firmware updates screen, instead of the
+					// raw markdown source this used to dump as plain text.
+					NavigationLink("Release Notes") {
+						FirmwareReleaseNotesView(
+							markdown: notes,
+							versionId: info.firmwareVersion ?? displayName
+						)
 					}
 				}
 			} header: {

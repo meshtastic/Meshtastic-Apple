@@ -18,6 +18,28 @@ struct MeshtasticChannelURLTests {
 		#expect(parsed.channelSet.loraConfig.hopLimit == 5)
 	}
 
+	@Test func generatedAddURLDoesNotSerializeLoraConfig() throws {
+		let url = try MeshtasticChannelURL.urlString(for: makeChannelSet(), addChannels: true)
+		let payload = try #require(URL(string: url)?.fragment)
+		let decoded = try ChannelSet(serializedBytes: #require(Data(base64Encoded: payload.base64urlToBase64())))
+
+		#expect(!decoded.hasLoraConfig)
+	}
+
+	@Test func generatedReplaceURLPreservesLoraConfig() throws {
+		let url = try MeshtasticChannelURL.urlString(for: makeChannelSet())
+		let payload = try #require(URL(string: url)?.fragment)
+		let decoded = try ChannelSet(serializedBytes: #require(Data(base64Encoded: payload.base64urlToBase64())))
+
+		#expect(decoded.hasLoraConfig)
+		#expect(decoded.loraConfig.hopLimit == 5)
+	}
+
+	@Test func channelQRModeUsesContractConsequenceCopy() {
+		#expect(ChannelQRMode.replace.consequence == "Selected channels will replace the connected radio's channel list. LoRa settings from the QR code will be applied.")
+		#expect(ChannelQRMode.add.consequence == "Selected channels will be appended to the connected radio. Existing channels and LoRa settings are preserved.")
+	}
+
 	// The channel URL written to NFC tags (ShareChannels -> NFCWriteButton) is the
 	// same MeshtasticChannelURL.urlString(for:addChannels:) output, so it must
 	// round-trip through parse in both replace and add modes.

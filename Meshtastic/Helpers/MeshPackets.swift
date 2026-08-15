@@ -1608,10 +1608,14 @@ actor MeshPackets {
 									let channelNotificationsEnabled = UserDefaults.channelMessageNotifications
 										&& !(newMessage.fromUser?.mute ?? false)
 										&& myInfo.channels.contains(where: { $0.index == newMessage.channel && !$0.mute })
+									// A message that @mentions the local node notifies even when channel
+									// notifications are off or the channel is muted; a muted sender still wins.
+									let isSelfMentioned = !(newMessage.fromUser?.mute ?? false)
+										&& MentionParser.containsMention(of: connectedNode, in: messageText ?? "")
 									let senderName = newMessage.fromUser?.longName ?? "Unknown".localized
 									let channelUserNum = Int64(newMessage.fromUser?.userId ?? "0")
 									var channelNotification: Notification?
-									if channelNotificationsEnabled {
+									if channelNotificationsEnabled || isSelfMentioned {
 										if newMessage.isEmoji == false {
 											channelNotification = makeMessageNotification(
 												message: newMessage,

@@ -13,6 +13,14 @@ protocol Connection: Actor {
 	var type: TransportType { get }
 	
 	var isConnected: Bool { get }
+
+	/// Send a serialized `ToRadio` to the device.
+	///
+	/// Implementations must be cancellation-aware: when the calling Task is cancelled, the
+	/// send should throw `CancellationError` promptly rather than blocking until the
+	/// transport completes. The underlying write may still reach the device (abandon-and-
+	/// move-on, not a true cancel); callers that need the write to land regardless (e.g. a
+	/// transaction commit) must run it in an un-cancelled context.
 	func send(_ data: ToRadio) async throws
 	func connect() async throws -> AsyncStream<ConnectionEvent>
 	func disconnect(withError: Error?, shouldReconnect: Bool) async throws

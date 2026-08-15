@@ -129,6 +129,10 @@ enum DeviceProfileImporter {
 			// dropped begin is undetectable from here and silently downgrades the whole run to untransacted:
 			// every write then saves to flash, tears down Bluetooth, and schedules its own reboot. That was
 			// observed on hardware. A second copy costs one packet and removes a single point of failure.
+			//
+			// If the Task is cancelled between these two sends, the second begin throws CancellationError.
+			// That is harmless: begin is idempotent, and the first copy almost certainly landed. The catch
+			// below treats it as a clean cancellation of the import rather than a transaction failure.
 			try await gateway.beginEditSettings()
 			try? await sleep(sendInterval)
 			try await gateway.beginEditSettings()
@@ -155,12 +159,22 @@ enum DeviceProfileImporter {
 		//    rollback message, so an uncommitted transaction strands the radio in deferred-save mode where
 		//    nothing any client writes afterwards is persisted. Committing a partial profile matches the
 		//    pre-transaction behaviour of aborting on the first failure.
+		//
+		//    The commit MUST run in a fresh, un-cancelled Task. If the import was cancelled, the
+		//    surrounding Task's cancellation flag is still set. Transport sends are cancellation-aware,
+		//    so the commit's own send would throw CancellationError immediately if we let it inherit
+		//    the cancelled state. An uncommitted edit transaction is not recoverable without a reboot:
+		//    the radio silently discards config from every client until power-cycled.
 		// Whether the link was alive going in decides how to read a throw below.
 		let connectedBeforeCommit = gateway.isConnected
 		do {
 			// Let the radio drain the last write before the commit lands on top of it.
-			try? await sleep(sendInterval)
-			try await gateway.commitEditSettings()
+			// Both the sleep and the commit run inside withoutCancellation so the pacing
+			// delay isn't skipped when the import Task is already cancelled.
+			try await withoutCancellation {
+				try? await sleep(sendInterval)
+				try await gateway.commitEditSettings()
+			}
 			result.transactionCommitted = true
 		} catch {
 			if connectedBeforeCommit && !gateway.isConnected {
@@ -361,4 +375,19 @@ struct AccessoryProfileApplyGateway: ProfileApplyGateway {
 			}
 		}
 	}
+}
+
+// MARK: - Cancellation shielding
+
+/// Runs `body` in a fresh Task so it is not affected by the caller's cancellation state.
+/// The result (or error) is bridged back to the calling async context.
+///
+/// Used by the import engine to shield the `commit_edit_settings` send from inherited
+/// cancellation. An uncommitted firmware edit transaction strands the radio in deferred-save
+/// mode where it silently discards config from every client until rebooted.
+@MainActor
+private func withoutCancellation<T: Sendable>(_ body: @MainActor @Sendable @escaping () async throws -> T) async throws -> T {
+	try await Task { @MainActor in
+		try await body()
+	}.value
 }
