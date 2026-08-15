@@ -56,6 +56,8 @@ struct ConnectView: View {
 						}
 					}
 				}
+				// Focused tvOS controls grow beyond their rows; keep them inside the Form's clip.
+				.contentMargins(.horizontal, 16, for: .scrollContent)
 			}
 			.padding(.top, TVTheme.screenPadding)
 		}
