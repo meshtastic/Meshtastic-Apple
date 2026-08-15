@@ -20,8 +20,6 @@ struct ChannelList: View {
 	@State private var isPresentingTraceRouteSentAlert = false
 	@State private var showingHelp = false
 
-	var restrictedChannels = ["gpio", "mqtt", "serial", "admin"]
-
 	private var visibleChannels: [ChannelEntity] {
 		guard let myInfo = node?.myInfo else { return [] }
 
@@ -30,9 +28,12 @@ struct ChannelList: View {
 			channelsByIndex[channel.index] = channel
 		}
 
+		// Module channels (reserved names) carry protocol traffic, not messages.
+		// ChannelForm warns when one of these names is entered, since a hidden
+		// channel with no explanation reads as data loss (#2275).
 		return channelsByIndex
 			.values
-			.filter { !restrictedChannels.contains($0.name?.lowercased() ?? "") }
+			.filter { !ChannelEntity.isReservedModuleName($0.name ?? "") }
 			.sorted { $0.index < $1.index }
 	}
 
