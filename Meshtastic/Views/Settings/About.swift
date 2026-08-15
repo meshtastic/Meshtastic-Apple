@@ -6,6 +6,7 @@
 //
 import SwiftUI
 import StoreKit
+import SwiftDraw
 
 struct AboutMeshtastic: View {
 
@@ -21,11 +22,8 @@ struct AboutMeshtastic: View {
 				Section(header: Text("Apple Apps")) {
 
 					HStack {
-						Image("THINKNODEM1")
-							.resizable()
-							.aspectRatio(contentMode: .fit)
-							.frame(width: 75)
-							.cornerRadius(5)
+						RotatingHardwareImage()
+							.frame(width: 75, height: 75)
 							.padding()
 						VStack(alignment: .leading) {
 							Link("Need Hardware?", destination: URL(string: "https://meshtastic.org/#hardware")!)
@@ -61,6 +59,51 @@ struct AboutMeshtastic: View {
 		}
 		.navigationTitle("About")
 		.navigationBarTitleDisplayMode(.inline)
+	}
+}
+
+/// Cycles through the devices featured in the Need Hardware? section on
+/// meshtastic.org, using the device SVGs already bundled in the app.
+private struct RotatingHardwareImage: View {
+
+	private static let imageNames = [
+		"t-deck.svg",
+		"muzi_r1_neo.svg",
+		"tracker-t1000-e.svg",
+		"station-g2.svg",
+		"rak_wismesh_tag.svg",
+		"heltec_mesh_pocket.svg",
+		"thinknode_m1.svg"
+	]
+
+	@State private var svgs: [SVG] = []
+	@State private var index = 0
+
+	private let timer = Timer.publish(every: 3, on: .main, in: .common).autoconnect()
+
+	var body: some View {
+		ZStack {
+			if !svgs.isEmpty {
+				SVGView(svg: svgs[index % svgs.count])
+					.resizable()
+					.aspectRatio(contentMode: .fit)
+					.id(index)
+					.transition(.opacity)
+			}
+		}
+		.task {
+			svgs = Self.imageNames.compactMap { name in
+				guard let url = Bundle.main.url(forResource: name, withExtension: nil, subdirectory: "images"),
+					  let data = try? Data(contentsOf: url) else { return nil }
+				return SVG(data: data)
+			}
+		}
+		.onReceive(timer) { _ in
+			guard svgs.count > 1 else { return }
+			withAnimation(.easeInOut(duration: 0.5)) {
+				index += 1
+			}
+		}
 	}
 }
 
