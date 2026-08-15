@@ -22,7 +22,8 @@ final class OTAScreenshotExportTests: XCTestCase {
 
 			let window = UIWindow(frame: CGRect(x: 0, y: 0, width: width, height: height))
 			window.rootViewController = hostingController
-			window.isHidden = false
+			window.makeKeyAndVisible()
+			hostingController.view.setNeedsLayout()
 			hostingController.view.layoutIfNeeded()
 
 			let format = UIGraphicsImageRendererFormat()
@@ -97,6 +98,13 @@ final class OTAScreenshotExportTests: XCTestCase {
 			}
 			.navigationTitle("ESP32 BLE Updater")
 			.navigationBarTitleDisplayMode(.inline)
+			.toolbar {
+				ToolbarItem(placement: .cancellationAction) {
+					Button {} label: {
+						Image(systemName: "xmark")
+					}
+				}
+			}
 		}
 		saveScreenshot(beforeView, filename: "ota_ui_before_fix.png")
 

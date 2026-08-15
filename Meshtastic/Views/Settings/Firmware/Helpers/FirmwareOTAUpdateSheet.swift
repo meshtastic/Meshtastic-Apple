@@ -45,9 +45,10 @@ struct FirmwareOTAUpdateSheet: View {
 
 	var body: some View {
 		NavigationStack {
-			ScrollView {
-				VStack(spacing: 20) {
-					Spacer(minLength: 8)
+			GeometryReader { geometry in
+				ScrollView {
+					VStack(spacing: 20) {
+						Spacer()
 
 					if !headerNote.isEmpty {
 						Text(headerNote)
@@ -144,12 +145,14 @@ struct FirmwareOTAUpdateSheet: View {
 					}
 					.frame(maxWidth: .infinity)
 
-					Spacer(minLength: 16)
+					Spacer()
 				}
+				.frame(minHeight: geometry.size.height)
 				.frame(maxWidth: .infinity)
 				.padding(.vertical, 12)
 			}
-			.navigationTitle(title)
+		}
+		.navigationTitle(title)
 			.navigationBarTitleDisplayMode(.inline)
 			.toolbar {
 				ToolbarItem(placement: .cancellationAction) {
