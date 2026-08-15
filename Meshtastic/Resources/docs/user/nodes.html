@@ -269,6 +269,11 @@
 <p>When a node has a known position, the Logs section also offers <strong>Estimate Coverage</strong> (<code>cellularbars</code>). It switches to the Map tab and opens the Site Planner coverage-estimate form prefilled from that node. See <a href="map.html">Coverage Estimate (Site Planner)</a> on the Map page for the full flow.</p>
 <h2>Local Stats and Noise Floor</h2>
 <p>Local Stats show radio diagnostics reported by a node, including packets received, packets transmitted, duplicate packets, relayed packets, bad receives, canceled packets, online node count, total node count, and noise floor.</p>
+<p>When requesting Local Stats from another node, choose how to protect the request:</p>
+<ul>
+<li><strong>Shared channel</strong> encrypts the request with the selected mesh channel and is suitable for ordinary requests between channel members.</li>
+<li><strong>Remote admin</strong> uses PKI encryption and is unavailable until the destination has advertised a public key.</li>
+</ul>
 <p>Noise floor is displayed in dBm when the node reports it. Treat it as a directional diagnostic instead of an absolute site score: readings can vary quickly, and external filters can lower or skew the displayed value because of insertion loss or in-band interference.</p>
 <h2>Node Detail View</h2>
 <p>Tap any node to see the full detail view with hardware info, signal metrics, environment sensors, and log navigation:</p>
