@@ -38,13 +38,21 @@ extension FirmwareViewModel {
 class FirmwareViewModel: ObservableObject {
 	@Published var firmwareFiles: [FirmwareFile] = []
 	let hardware: DeviceHardwareEntity
+	/// The exact target reported by the connected node. This may be a firmware flavor that is not
+	/// represented by its own hardware-catalog row, such as `thinknode_m1-inkhud`.
+	let platformioTarget: String?
 	/// The connected node's LoRa region; non-Latin regions get locale-tagged
 	/// remote artifact candidates so the right on-device fonts ship. `.unset`
 	/// keeps the previous generic-only behavior.
 	let preferredRegion: RegionCodes
 
-	init(forHardware: DeviceHardwareEntity, preferredRegion: RegionCodes = .unset) {
+	init(
+		forHardware: DeviceHardwareEntity,
+		platformioTarget: String? = nil,
+		preferredRegion: RegionCodes = .unset
+	) {
 		self.hardware = forHardware
+		self.platformioTarget = platformioTarget ?? forHardware.platformioTarget
 		self.preferredRegion = preferredRegion
 		Task {
 			refresh()
@@ -55,7 +63,7 @@ class FirmwareViewModel: ObservableObject {
 		var newFirmwareList = [String: FirmwareFile]()
 
 		// Snapshot hardware properties safely
-		let hardwarePlatformioTarget = hardware.platformioTarget
+		let hardwarePlatformioTarget = platformioTarget
 		let hardwareArchitecture = hardware.architecture.flatMap { Architecture(rawValue: $0) }
 
 		// First, loop through all firmware entities and create an entry for those
@@ -67,12 +75,23 @@ class FirmwareViewModel: ObservableObject {
 			for release in firmwareReleases {
 				if let architecture = hardwareArchitecture {
 					for firmwareType in FirmwareFile.validFilenameSuffixes(forArchitecture: architecture) {
-						let firmwareFile = try FirmwareFile(firmware: release, hardware: hardware, type: firmwareType, localeTags: localeTags)
+						let firmwareFile = try FirmwareFile(
+							firmware: release,
+							hardware: hardware,
+							platformioTarget: hardwarePlatformioTarget,
+							type: firmwareType,
+							localeTags: localeTags
+						)
 						newFirmwareList[firmwareFile.localUrl.lastPathComponent] = firmwareFile
 					}
 				} else {
 					// Just the default
-					let firmwareFile = try FirmwareFile(firmware: release, hardware: hardware, localeTags: localeTags)
+					let firmwareFile = try FirmwareFile(
+						firmware: release,
+						hardware: hardware,
+						platformioTarget: hardwarePlatformioTarget,
+						localeTags: localeTags
+					)
 					newFirmwareList[firmwareFile.localUrl.lastPathComponent] = firmwareFile
 				}
 			}

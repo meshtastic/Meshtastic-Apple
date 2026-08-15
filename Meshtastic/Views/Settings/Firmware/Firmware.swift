@@ -19,27 +19,27 @@ import WebKit
 struct Firmware: View {
 	let node: NodeInfoEntity?
 
-	@Query var hardwareResults: [DeviceHardwareEntity]
+	@Query private var hardwareResults: [DeviceHardwareEntity]
 	@State private var cachedHardware: DeviceHardwareEntity?
 	@State private var cachedNode: NodeInfoEntity?
+	@State private var cachedNodeNum: Int64?
+	@State private var cachedFirmwareTarget: String?
 
 	init(node: NodeInfoEntity?) {
 		self.node = node
-
-		if let pioEnv = node?.myInfo?.pioEnv {
-			_hardwareResults = Query(filter: #Predicate<DeviceHardwareEntity> { hw in
-				hw.platformioTarget == pioEnv
-			})
-		} else {
-			_hardwareResults = Query(filter: #Predicate<DeviceHardwareEntity> { _ in false })
-		}
 	}
 
 	var body: some View {
 		Group {
-			if let resolvedNode = cachedNode, let resolvedHardware = cachedHardware {
-				FirmwareContentView(node: resolvedNode, hardware: resolvedHardware)
-					.id(resolvedNode.num)
+			if let resolvedNode = cachedNode,
+			   let resolvedHardware = cachedHardware,
+			   let firmwareTarget = cachedFirmwareTarget {
+				FirmwareContentView(
+					node: resolvedNode,
+					hardware: resolvedHardware,
+					firmwareTarget: firmwareTarget
+				)
+				.id("\(resolvedNode.num)-\(firmwareTarget)")
 			} else {
 				List {
 					ContentUnavailableView("Firmware Updates",
@@ -54,14 +54,54 @@ struct Firmware: View {
 		.onChange(of: hardwareResults) {
 			resolveHardware()
 		}
+		.onChange(of: node?.num) {
+			resetHardwareCache()
+			resolveHardware()
+		}
+		.onChange(of: node?.myInfo?.pioEnv) { _, newValue in
+			if let newTarget = newValue?.trimmingCharacters(in: .whitespacesAndNewlines),
+			   !newTarget.isEmpty,
+			   newTarget != cachedFirmwareTarget {
+				resetHardwareCache()
+			}
+			resolveHardware()
+		}
+		.onChange(of: node?.user?.hwModelId) {
+			resolveHardware()
+		}
 	}
 
 	private func resolveHardware() {
-		// Only update cache when we have valid data — never clear it
-		if let node, node.myInfo?.pioEnv != nil, let hardware = hardwareResults.first {
-			cachedNode = node
-			cachedHardware = hardware
+		guard let node else {
+			resetHardwareCache()
+			return
 		}
+		if let cachedNodeNum, cachedNodeNum != node.num {
+			resetHardwareCache()
+		}
+		let records = hardwareResults.map(HardwareCatalogRecord.init)
+		let hwModel = node.user.map { Int64($0.hwModelId) }
+		guard let resolution = FirmwareHardwareResolver.resolve(
+			pioEnv: node.myInfo?.pioEnv,
+			hwModel: hwModel,
+			in: records
+		), let hardware = hardwareResults.first(where: {
+			$0.platformioTarget == resolution.metadataTarget
+		}) else { return }
+
+		// Only update the cache when all data is valid. Relationship faults can momentarily make
+		// MyInfo or User nil, but should not replace working firmware content with the empty state.
+		cachedNode = node
+		cachedNodeNum = node.num
+		cachedHardware = hardware
+		cachedFirmwareTarget = resolution.firmwareTarget
+	}
+
+	private func resetHardwareCache() {
+		cachedNode = nil
+		cachedNodeNum = nil
+		cachedHardware = nil
+		cachedFirmwareTarget = nil
 	}
 }
 
@@ -78,6 +118,7 @@ private struct FirmwareContentView: View {
 	
 	let node: NodeInfoEntity
 	let hardware: DeviceHardwareEntity
+	let firmwareTarget: String
 	/// The node's LoRa region at the time this view was created; drives
 	/// region-aware artifact selection and the locale-variant guidance rows.
 	let nodeRegion: RegionCodes
@@ -99,12 +140,17 @@ private struct FirmwareContentView: View {
 		var id: String { "\(type.rawValue)-\(url.absoluteString)" }
 	}
 	
-	init(node: NodeInfoEntity, hardware: DeviceHardwareEntity) {
+	init(node: NodeInfoEntity, hardware: DeviceHardwareEntity, firmwareTarget: String) {
 		self.node = node
 		self.hardware = hardware
+		self.firmwareTarget = firmwareTarget
 		let region = node.loRaConfig.flatMap { RegionCodes(rawValue: Int($0.regionCode)) } ?? .unset
 		self.nodeRegion = region
-		_firmwareList = StateObject(wrappedValue: FirmwareViewModel(forHardware: hardware, preferredRegion: region))
+		_firmwareList = StateObject(wrappedValue: FirmwareViewModel(
+			forHardware: hardware,
+			platformioTarget: firmwareTarget,
+			preferredRegion: region
+		))
 	}
 	
 	var body: some View {
@@ -274,10 +320,8 @@ private struct FirmwareContentView: View {
 	/// tag shown for regions that ship localized-font variants. Selectable so
 	/// users hunting for a file on meshtastic.github.io can copy it.
 	var suggestedFileNameHint: String? {
-		guard let platformioTarget = hardware.platformioTarget?.trimmingCharacters(in: .whitespacesAndNewlines),
-			  !platformioTarget.isEmpty else {
-			return nil
-		}
+		let platformioTarget = firmwareTarget.trimmingCharacters(in: .whitespacesAndNewlines)
+		guard !platformioTarget.isEmpty else { return nil }
 		if nodeRegion.prefersLocalizedFontFirmware {
 			return "firmware-\(platformioTarget)-<version>[-\(nodeRegion.topic)]"
 		}
