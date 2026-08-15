@@ -549,10 +549,12 @@ enum ModemPresets: Int, CaseIterable, Identifiable {
 	///
 	/// Rules, in order:
 	/// 1. Only acts on 2.8 firmware with `usePreset` on; otherwise keep current.
-	/// 2. A factory-flashed node (region not yet configured) defaults to
+	/// 2. Keep the current preset when the firmware advertises it as legal in the
+	///    selected region.
+	/// 3. A factory-flashed node (region not yet configured) defaults to
 	///    `longTurbo` when **US** is selected, provided Long Turbo is legal there.
-	/// 3. Otherwise, if the current preset is not legal in the region, fall back to
-	///    that region's advertised default. A legal current preset is kept.
+	/// 4. Otherwise, if the current preset is not legal in the region, fall back to
+	///    that region's advertised default.
 	static func presetToSelect(
 		forRegion region: Config.LoRaConfig.RegionCode,
 		factoryFresh: Bool,
@@ -563,14 +565,18 @@ enum ModemPresets: Int, CaseIterable, Identifiable {
 	) -> ModemPresets? {
 		guard supports2_8, usePreset else { return nil }
 
+		if let info = regionInfo, let current = currentPreset,
+		   info.presets.contains(current.protoEnumValue()) {
+			return nil
+		}
+
 		if factoryFresh, region == .us,
 		   regionInfo == nil || regionInfo?.presets.contains(.longTurbo) == true {
 			return .longTurbo
 		}
 
 		guard let info = regionInfo, !info.presets.isEmpty,
-			  let current = currentPreset else { return nil }
-		if info.presets.contains(current.protoEnumValue()) { return nil }
+			  currentPreset != nil else { return nil }
 		return ModemPresets(rawValue: info.defaultPreset.rawValue)
 	}
 

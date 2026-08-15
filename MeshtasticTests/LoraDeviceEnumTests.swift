@@ -932,10 +932,17 @@ struct LoRaPresetSelectionTests {
 		licensedOnly: false)
 
 	// A factory-flashed (region unset) node on 2.8 firmware defaults to Long Turbo
-	// when the US region is selected.
-	@Test func factoryUS_on28_defaultsToLongTurbo() {
-		let result = ModemPresets.presetToSelect(forRegion: .us, factoryFresh: true, supports2_8: true, usePreset: true, regionInfo: usInfo, currentPreset: .longFast)
+	// when the US region is selected and there is no current preset to preserve.
+	@Test func factoryUS_on28_withoutCurrentPreset_defaultsToLongTurbo() {
+		let result = ModemPresets.presetToSelect(forRegion: .us, factoryFresh: true, supports2_8: true, usePreset: true, regionInfo: usInfo, currentPreset: nil)
 		#expect(result == .longTurbo)
+	}
+
+	// A deliberate preset from a community firmware build must survive the first
+	// region selection when that preset is legal in the selected region.
+	@Test func factoryUS_on28_keepsLegalShortTurbo() {
+		let result = ModemPresets.presetToSelect(forRegion: .us, factoryFresh: true, supports2_8: true, usePreset: true, regionInfo: usInfo, currentPreset: .shortTurbo)
+		#expect(result == nil)
 	}
 
 	// US allows Long Turbo even before the region map has been received.
