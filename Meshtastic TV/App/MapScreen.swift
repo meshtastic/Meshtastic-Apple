@@ -30,6 +30,10 @@ struct MapScreen: View {
 	/// the representable's updates; it publishes nothing until a region is downloaded.
 	@StateObject private var offlineVectors = OfflineVectorTileProvider()
 
+	/// Mesh stats strip visibility + position, shared with SettingsView via the same keys.
+	@AppStorage("tv.statsBar.enabled") private var statsBarEnabled = true
+	@AppStorage("tv.statsBar.edge") private var statsBarEdge: StatsStripEdge = .top
+
 	/// All nodes for the side list: located first, then alphabetically.
 	private var sortedNodes: [MeshNode] {
 		allNodes.sorted {
@@ -57,6 +61,18 @@ struct MapScreen: View {
 				offlineVectors: offlineVectors
 			)
 			.ignoresSafeArea()
+			// Overlay, not safeAreaInset: an inset resizes the MKMapView and re-triggers
+			// the representable's region framing every time the strip toggles or moves.
+			.overlay(alignment: statsBarEdge == .top ? .top : .bottom) {
+				if statsBarEnabled {
+					MeshStatsStrip(
+						stats: client.stats,
+						storeOnlineCount: allNodes.filter(\.isOnline).count,
+						storeTotalCount: allNodes.count
+					)
+					.padding(.vertical, TVTheme.statsStripMargin)
+				}
+			}
 		}
 	}
 
