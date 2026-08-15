@@ -1070,13 +1070,13 @@ extension MeshtasticAPI {
 					context.insert(entity)
 				}
 
-				if let value = payload.displayName { entity.displayName = value }
-				if let value = payload.welcomeMessage { entity.welcomeMessage = value }
-				if let value = payload.tag { entity.tag = value }
-				if let value = payload.eventStart { entity.eventStart = value }
-				if let value = payload.eventEnd { entity.eventEnd = value }
-				if let value = payload.timeZone { entity.timeZone = value }
-				if let value = payload.location { entity.location = value }
+				if let value = payload.displayName, !value.isEmpty { entity.displayName = value }
+				if let value = payload.welcomeMessage, !value.isEmpty { entity.welcomeMessage = value }
+				if let value = payload.tag, !value.isEmpty { entity.tag = value }
+				if let value = payload.eventStart, !value.isEmpty { entity.eventStart = value }
+				if let value = payload.eventEnd, !value.isEmpty { entity.eventEnd = value }
+				if let value = payload.timeZone, !value.isEmpty { entity.timeZone = value }
+				if let value = payload.location, !value.isEmpty { entity.location = value }
 				if let value = EventFirmwareURLPolicy.httpsURL(from: payload.iconUrl)?.absoluteString {
 					entity.iconUrl = value
 				}
@@ -1084,7 +1084,7 @@ extension MeshtasticAPI {
 				   EventFirmwareEntity.color(fromHex: value) != nil {
 					entity.accentColor = value
 				}
-				if let value = payload.domain { entity.domain = value }
+				if let value = payload.domain, !value.isEmpty { entity.domain = value }
 				if let links = payload.links {
 					let safeLinks = links.map {
 						EventFirmwareEntity.Link(label: $0.label, url: $0.url)
@@ -1095,8 +1095,8 @@ extension MeshtasticAPI {
 						entity.setLinks(safeLinks)
 					}
 				}
-				if let value = payload.theme?.name { entity.themeName = value }
-				if let value = payload.theme?.tagline { entity.themeTagline = value }
+				if let value = payload.theme?.name, !value.isEmpty { entity.themeName = value }
+				if let value = payload.theme?.tagline, !value.isEmpty { entity.themeTagline = value }
 				if let value = payload.theme?.colors?.primary,
 				   EventFirmwareEntity.color(fromHex: value) != nil {
 					entity.themePrimaryColor = value
@@ -1117,13 +1117,15 @@ extension MeshtasticAPI {
 						entity.themePalette = validPalette
 					}
 				}
-				if let value = payload.theme?.fonts?.heading { entity.themeFontHeading = value }
-				if let value = payload.theme?.fonts?.body { entity.themeFontBody = value }
-				if let value = payload.firmware?.slug { entity.firmwareSlug = value }
-				if let value = payload.firmware?.version { entity.firmwareVersion = value }
-				if let value = payload.firmware?.id { entity.firmwareId = value }
-				if let value = payload.firmware?.title { entity.firmwareTitle = value }
-				if let value = payload.firmware?.releaseNotes { entity.firmwareReleaseNotes = value }
+				if let value = payload.theme?.fonts?.heading, !value.isEmpty { entity.themeFontHeading = value }
+				if let value = payload.theme?.fonts?.body, !value.isEmpty { entity.themeFontBody = value }
+				if let value = payload.firmware?.slug, !value.isEmpty { entity.firmwareSlug = value }
+				if let value = payload.firmware?.version, !value.isEmpty { entity.firmwareVersion = value }
+				if let value = payload.firmware?.id, !value.isEmpty { entity.firmwareId = value }
+				if let value = payload.firmware?.title, !value.isEmpty { entity.firmwareTitle = value }
+				if let value = payload.firmware?.releaseNotes, !value.isEmpty {
+					entity.firmwareReleaseNotes = value
+				}
 			}
 
 			try? context.save()

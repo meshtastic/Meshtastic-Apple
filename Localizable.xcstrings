@@ -113616,7 +113616,49 @@
     "Your radio is rebooting to save the imported settings — reconnect to verify.": {},
     "channel keys (PSKs)": {},
     "sensitive credentials": {},
-    "your node's private key & admin keys": {}
+    "your node's private key & admin keys": {},
+    "In-app installation requires bootloader %@ or newer.": {
+      "comment": "Event firmware installer requirement. The argument is the minimum bootloader version."
+    },
+    "In-app installation requires device firmware %@ or newer.": {
+      "comment": "Event firmware installer requirement. The argument is the minimum source firmware version."
+    },
+    "Install Event Firmware": {
+      "comment": "Primary action for installing an event firmware edition."
+    },
+    "No package is published for this exact device target.": {
+      "comment": "Event firmware installer unavailable reason."
+    },
+    "No trusted installation contract is currently published for this event.": {
+      "comment": "Event firmware installer unavailable reason."
+    },
+    "Reconnect to this device before preparing its firmware package.": {
+      "comment": "Event firmware installer error shown when its target device is disconnected."
+    },
+    "Return to Standard Firmware": {
+      "comment": "Primary action for replacing an event firmware edition with standard firmware."
+    },
+    "The available package does not meet the app's download trust policy.": {
+      "comment": "Event firmware installer unavailable reason."
+    },
+    "The connected device changed. Select the event again for the current device.": {
+      "comment": "Event firmware installer error shown when the connected target changes during preparation."
+    },
+    "The download is verified before the existing firmware installer is opened. Keep the app open and your device nearby during installation.": {
+      "comment": "Footer explaining the verified event firmware installation flow."
+    },
+    "The firmware package could not be downloaded and verified.": {
+      "comment": "Generic event firmware package preparation error."
+    },
+    "The published installation contract is for a different event.": {
+      "comment": "Event firmware installer unavailable reason."
+    },
+    "This app cannot verify a compatible in-app package for this exact device. The web flasher provides the supported installation path.": {
+      "comment": "Footer explaining why the event firmware installer falls back to the web flasher."
+    },
+    "This device does not have an app-supported event firmware OTA path.": {
+      "comment": "Event firmware installer unavailable reason."
+    }
   },
   "version": "1.1"
 }

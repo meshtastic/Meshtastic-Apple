@@ -15,6 +15,14 @@ struct NRFDFUSheet: View {
 	@State private var showChirpyGame = false
 	
 	let firmwareToFlash: URL
+	var expectedNodeNum: Int64?
+
+	private var isExpectedDeviceActive: Bool {
+		return EventFirmwareInstallerPolicy.isExpectedDeviceActive(
+			expectedNodeNum: expectedNodeNum,
+			activeNodeNum: accessoryManager.activeDeviceNum
+		)
+	}
 	
 	var body: some View {
 		VStack {
@@ -42,6 +50,7 @@ struct NRFDFUSheet: View {
 						case .idle:
 							Button("Begin Update") {
 								Task {
+									guard isExpectedDeviceActive else { return }
 									if let connection = accessoryManager.activeConnection?.connection as? BLEConnection {
 										let peripheral = await connection.peripheral
 										dfuViewModel.startDFU(peripheral: peripheral, zipFileUrl: firmwareToFlash)
@@ -52,6 +61,7 @@ struct NRFDFUSheet: View {
 							.frame(maxWidth: .infinity)
 							.cornerRadius(10)
 							.buttonStyle(.borderedProminent)
+							.disabled(!isExpectedDeviceActive)
 
 						case .uploading, .starting, .success:
 							Text(dfuViewModel.rotatingMessage)

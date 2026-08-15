@@ -307,23 +307,23 @@ private enum EventFirmwareIconLoader {
 		var request = URLRequest(url: url)
 		request.timeoutInterval = 15
 		do {
-			let (bytes, response) = try await URLSession.shared.bytes(for: request)
+			let maximumBytes = Int64(EventFirmwareImageValidator.maximumEncodedBytes)
+			let delegate = EventFirmwareBoundedDownloadDelegate(maximumByteCount: maximumBytes)
+			let (fileURL, response) = try await URLSession.shared.download(
+				for: request,
+				delegate: delegate
+			)
 			guard let response = response as? HTTPURLResponse,
 				  (200..<300).contains(response.statusCode),
-				  response.expectedContentLength <= Int64(EventFirmwareImageValidator.maximumEncodedBytes),
+				  response.expectedContentLength <= maximumBytes,
+				  !delegate.exceededMaximumByteCount,
+				  EventFirmwareURLPolicy.httpsURL(from: response.url?.absoluteString) != nil,
 				  response.mimeType == "image/png" || response.mimeType == "image/jpeg" else {
 				return nil
 			}
-			var data = Data()
-			if response.expectedContentLength > 0 {
-				data.reserveCapacity(Int(response.expectedContentLength))
-			}
-			for try await byte in bytes {
-				guard data.count < EventFirmwareImageValidator.maximumEncodedBytes else {
-					return nil
-				}
-				data.append(byte)
-			}
+			let fileSize = try fileURL.resourceValues(forKeys: [.fileSizeKey]).fileSize
+			guard let fileSize, fileSize <= EventFirmwareImageValidator.maximumEncodedBytes else { return nil }
+			let data = try Data(contentsOf: fileURL, options: .mappedIfSafe)
 			return EventFirmwareImageValidator.image(from: data)
 		} catch {
 			return nil

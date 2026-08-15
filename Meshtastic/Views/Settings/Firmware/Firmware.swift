@@ -75,6 +75,7 @@ private struct FirmwareContentView: View {
 	
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@EnvironmentObject var meshtasticAPI: MeshtasticAPI
+	@Query(sort: \EventFirmwareEntity.edition) private var eventFirmwareEditions: [EventFirmwareEntity]
 	
 	let node: NodeInfoEntity
 	let hardware: DeviceHardwareEntity
@@ -96,6 +97,7 @@ private struct FirmwareContentView: View {
 	struct RowInstallation: Identifiable {
 		let type: FirmwareFile.FirmwareType
 		let url: URL
+		let expectedNodeNum: Int64
 		var id: String { "\(type.rawValue)-\(url.absoluteString)" }
 	}
 	
@@ -177,6 +179,35 @@ private struct FirmwareContentView: View {
 				// Extracted switch logic to keep body clean
 				firmwareRows
 			}
+
+			if !relevantEventFirmwareEditions.isEmpty {
+				Section {
+					ForEach(relevantEventFirmwareEditions, id: \.edition) { event in
+						NavigationLink {
+							EventFirmwareInstallerView(
+								event: event,
+								node: node,
+								hardware: hardware
+							) { type, url in
+								rowInstallation = RowInstallation(
+									type: type,
+									url: url,
+									expectedNodeNum: node.num
+								)
+							}
+						} label: {
+							EventFirmwareInstallerRow(
+								event: event,
+								isInstalled: accessoryManager.firmwareEdition.editionKey == event.edition
+							)
+						}
+					}
+				} header: {
+					Text("Going to an event?")
+				} footer: {
+					Text("Review event firmware for this connected device, or return an event device to standard Meshtastic firmware.")
+				}
+			}
 		}
 		.navigationTitle("Firmware Updates")
 		.navigationBarTitleDisplayMode(.inline)
@@ -188,13 +219,39 @@ private struct FirmwareContentView: View {
 		.sheet(item: $rowInstallation) { installation in
 			switch installation.type {
 			case .otaZip:
-				NRFDFUSheet(firmwareToFlash: installation.url)
+				NRFDFUSheet(
+					firmwareToFlash: installation.url,
+					expectedNodeNum: installation.expectedNodeNum
+				)
 			case .uf2:
 				UF2MassStorageView(fileURL: installation.url)
 			case .bin:
-				ESP32OTAIntroSheet(binFileURL: installation.url)
+				ESP32OTAIntroSheet(
+					binFileURL: installation.url,
+					expectedNodeNum: installation.expectedNodeNum
+				)
 			}
 		}
+	}
+
+	private var relevantEventFirmwareEditions: [EventFirmwareEntity] {
+		eventFirmwareEditions
+			.filter {
+				!$0.hasEnded() || accessoryManager.firmwareEdition.editionKey == $0.edition
+			}
+			.sorted {
+				switch ($0.eventStartDate, $1.eventStartDate) {
+				case let (lhs?, rhs?):
+					if lhs != rhs { return lhs < rhs }
+				case (.some, nil):
+					return true
+				case (nil, .some):
+					return false
+				case (nil, nil):
+					break
+				}
+				return ($0.displayName ?? $0.edition) < ($1.displayName ?? $1.edition)
+			}
 	}
 	
 	// MARK: - Subviews
@@ -206,7 +263,11 @@ private struct FirmwareContentView: View {
 			let stables = firmwareList.mostRecentFirmware(forReleaseType: .stable)
 			ForEach(stables, id: \.localUrl) { release in
 				FirmwareRow(firmwareFile: release) { type, url in
-					self.rowInstallation = RowInstallation(type: type, url: url)
+					self.rowInstallation = RowInstallation(
+						type: type,
+						url: url,
+						expectedNodeNum: node.num
+					)
 				}
 			}
 			if let last = stables.last, let notes = last.releaseNotes {
@@ -218,7 +279,11 @@ private struct FirmwareContentView: View {
 			let alphas = firmwareList.mostRecentFirmware(forReleaseType: .alpha)
 			ForEach(alphas, id: \.localUrl) { release in
 				FirmwareRow(firmwareFile: release) { type, url in
-					self.rowInstallation = RowInstallation(type: type, url: url)
+					self.rowInstallation = RowInstallation(
+						type: type,
+						url: url,
+						expectedNodeNum: node.num
+					)
 				}
 			}
 			if let last = alphas.last, let notes = last.releaseNotes {
@@ -233,7 +298,11 @@ private struct FirmwareContentView: View {
 			} else {
 				ForEach(downloads, id: \.localUrl) { file in
 					FirmwareRow(firmwareFile: file) { type, url in
-						self.rowInstallation = RowInstallation(type: type, url: url)
+						self.rowInstallation = RowInstallation(
+							type: type,
+							url: url,
+							expectedNodeNum: node.num
+						)
 					}
 				}
 				.onDelete { offsets in
@@ -285,7 +354,7 @@ private struct FirmwareContentView: View {
 	}
 
 	var allowedTypes: [UTType] {
-		switch hardware.architecture.flatMap( {Architecture(rawValue: $0) }) {
+		switch hardware.architecture.flatMap({ Architecture(rawValue: $0) }) {
 		case .esp32, .esp32C3, .esp32S3, .esp32C6:
 			return [.BINFirmware]
 		case .nrf52840:
@@ -315,7 +384,7 @@ private struct FirmwareContentView: View {
 					guard let selectedFile: URL = try result.get().first else { return }
 					self.locallyChosenFirmwareFile = selectedFile
 
-					switch hardware.architecture.flatMap( {Architecture(rawValue: $0) }) {
+					switch hardware.architecture.flatMap({ Architecture(rawValue: $0) }) {
 					case .esp32, .esp32C3, .esp32S3, .esp32C6:
 						if selectedFile.pathExtension.lowercased() == "bin" {
 							self.showInstallationSheet = .bin
@@ -343,11 +412,17 @@ private struct FirmwareContentView: View {
 				if let locallyChosenFirmwareFile = self.locallyChosenFirmwareFile {
 					switch type {
 					case .otaZip:
-						NRFDFUSheet(firmwareToFlash: locallyChosenFirmwareFile)
+						NRFDFUSheet(
+							firmwareToFlash: locallyChosenFirmwareFile,
+							expectedNodeNum: node.num
+						)
 					case .uf2:
 						UF2MassStorageView(fileURL: locallyChosenFirmwareFile)
 					case .bin:
-						ESP32OTAIntroSheet(binFileURL: locallyChosenFirmwareFile)
+						ESP32OTAIntroSheet(
+							binFileURL: locallyChosenFirmwareFile,
+							expectedNodeNum: node.num
+						)
 					}
 				}
 			}
@@ -383,6 +458,37 @@ private struct FirmwareContentView: View {
 			}
 		}.textCase(nil)
 		#endif
+	}
+}
+
+private struct EventFirmwareInstallerRow: View {
+	let event: EventFirmwareEntity
+	let isInstalled: Bool
+
+	var body: some View {
+		HStack(spacing: 12) {
+			EventFirmwareIcon(
+				edition: event.firmwareEdition ?? .vanilla,
+				iconURL: event.iconURL,
+				size: 36
+			)
+
+			VStack(alignment: .leading, spacing: 3) {
+				Text(event.displayName ?? event.firmwareEdition?.name ?? event.edition)
+					.font(.body)
+
+				if isInstalled {
+					Text("Return to standard firmware")
+						.font(.caption)
+						.foregroundStyle(.secondary)
+				} else if let dateRange = event.formattedDateRange {
+					Text(dateRange)
+						.font(.caption)
+						.foregroundStyle(.secondary)
+				}
+			}
+		}
+		.padding(.vertical, 2)
 	}
 }
 

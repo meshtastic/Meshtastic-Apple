@@ -24,6 +24,7 @@ struct ESP32OTAIntroSheet: View {
 	@Environment(\.modelContext) var context
 
 	let binFileURL: URL
+	var expectedNodeNum: Int64?
 
 	@State var showWifiUpdater = false
 	@State var debugHost: String = ""
@@ -32,6 +33,13 @@ struct ESP32OTAIntroSheet: View {
 	/// True when the connected device's firmware supports the OTAEvent protocol.
 	private var firmwareSupportsOTA: Bool {
 		accessoryManager.checkIsVersionSupported(forVersion: minimumOTAVersion)
+	}
+
+	private var isExpectedDeviceActive: Bool {
+		return EventFirmwareInstallerPolicy.isExpectedDeviceActive(
+			expectedNodeNum: expectedNodeNum,
+			activeNodeNum: accessoryManager.activeDeviceNum
+		)
 	}
 
 	var body: some View {
@@ -103,6 +111,7 @@ struct ESP32OTAIntroSheet: View {
 								.foregroundStyle(.secondary)
 
 							Button(role: .destructive) {
+								guard isExpectedDeviceActive else { return }
 								self.showWifiUpdater = true
 							} label: {
 								Text("I Know What I'm Doing")
@@ -111,7 +120,7 @@ struct ESP32OTAIntroSheet: View {
 							.controlSize(.large)
 							.frame(maxWidth: .infinity)
 							.cornerRadius(10)
-							.disabled(accessoryManager.activeDeviceNum == nil || !firmwareSupportsOTA)
+							.disabled(!isExpectedDeviceActive || !firmwareSupportsOTA)
 						}
 						.padding()
 						.listRowBackground(Color(UIColor.tertiarySystemBackground))
@@ -139,6 +148,7 @@ struct ESP32OTAIntroSheet: View {
 							.foregroundStyle(.secondary)
 
 						Button(role: .destructive) {
+							guard isExpectedDeviceActive else { return }
 							self.showBLEUpdater = true
 						} label: {
 							Text("I Know What I'm Doing")
@@ -147,7 +157,7 @@ struct ESP32OTAIntroSheet: View {
 						.controlSize(.large)
 						.frame(maxWidth: .infinity)
 						.cornerRadius(10)
-						.disabled(accessoryManager.activeDeviceNum == nil || !firmwareSupportsOTA)
+						.disabled(!isExpectedDeviceActive || !firmwareSupportsOTA)
 					}
 					.padding()
 					.listRowBackground(Color(UIColor.tertiarySystemBackground))
@@ -158,14 +168,18 @@ struct ESP32OTAIntroSheet: View {
 				#if DEBUG
 				Section("Debug BLE") {
 					Button("Manually Start BLE OTA") {
+						guard isExpectedDeviceActive else { return }
 						self.showBLEUpdater = true
 					}
+					.disabled(!isExpectedDeviceActive)
 				}
 				Section("Debug Wifi") {
 					TextField("Device IP", text: $debugHost)
 					Button("Manually Start WIFI OTA") {
+						guard isExpectedDeviceActive else { return }
 						self.showWifiUpdater = true
 					}
+					.disabled(!isExpectedDeviceActive)
 				}
 				#endif
 				
