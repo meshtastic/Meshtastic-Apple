@@ -23,8 +23,8 @@ struct AboutMeshtastic: View {
 
 					HStack {
 						RotatingHardwareImage()
-							.frame(width: 75, height: 75)
-							.padding()
+							.frame(width: 110, height: 130)
+							.padding(.trailing, 8)
 						VStack(alignment: .leading) {
 							Link("Need Hardware?", destination: URL(string: "https://meshtastic.org/#hardware")!)
 								.font(.title2)
