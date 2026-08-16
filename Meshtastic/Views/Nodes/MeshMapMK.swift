@@ -1537,7 +1537,13 @@ struct MeshMapMK: View {
 			let shapes = polys.compactMap { poly -> MKPolygon? in
 				guard poly.coordinates.count >= 3 else { return nil }
 				var coords = poly.coordinates
-				return MKPolygon(coordinates: &coords, count: coords.count)
+				// Interior rings punch holes (islands in water, clearings in parks).
+				let holes = poly.interiorRings.compactMap { ring -> MKPolygon? in
+					guard ring.count >= 3 else { return nil }
+					var holeCoords = ring
+					return MKPolygon(coordinates: &holeCoords, count: holeCoords.count)
+				}
+				return MKPolygon(coordinates: &coords, count: coords.count, interiorPolygons: holes.isEmpty ? nil : holes)
 			}
 			guard !shapes.isEmpty else { continue }
 			result.append(ClusterMapOverlay(
@@ -1547,8 +1553,25 @@ struct MeshMapMK: View {
 			))
 		}
 
+		// 2b) Rivers/streams as centerlines, under the road network.
+		let linesByRole = Dictionary(grouping: offlineVectors.roads, by: { $0.role })
+		if let rivers = linesByRole[.river] {
+			let shapes = rivers.compactMap { line -> MKPolyline? in
+				guard line.coordinates.count >= 2 else { return nil }
+				var coords = line.coordinates
+				return MKPolyline(coordinates: &coords, count: coords.count)
+			}
+			if !shapes.isEmpty {
+				result.append(ClusterMapOverlay(
+					id: "offline-rivers",
+					overlay: MKMultiPolyline(shapes),
+					style: ClusterMapOverlayStyle(strokeUIColor: OfflineMapPalette.riverStroke(dark: dark), fillUIColor: nil, lineWidth: 1.4, level: .aboveRoads)
+				))
+			}
+		}
+
 		// 3) Roads, batched per role into MKMultiPolylines (keeps the dense grid to a few overlays).
-		let roadsByRole = Dictionary(grouping: offlineVectors.roads, by: { $0.role })
+		let roadsByRole = linesByRole
 		func roadMultiPolyline(_ role: OfflineFeatureRole) -> MKMultiPolyline? {
 			guard let lines = roadsByRole[role] else { return nil }
 			let shapes = lines.compactMap { line -> MKPolyline? in

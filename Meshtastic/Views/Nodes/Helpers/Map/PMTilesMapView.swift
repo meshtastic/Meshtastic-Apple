@@ -27,7 +27,7 @@ import Combine
 /// Semantic role for an offline vector feature, mapped to a color/width at render time so a single
 /// decode serves both light and dark appearance.
 enum OfflineFeatureRole {
-	case water, park, green, land
+	case water, park, green, land, river
 	case majorRoad, mediumRoad, minorRoad, path, rail, boundary
 }
 
@@ -35,6 +35,9 @@ struct OfflineMapPolygon: Identifiable {
 	let id: String
 	let role: OfflineFeatureRole
 	let coordinates: [CLLocationCoordinate2D]
+	/// Interior rings (holes) — islands in a lake, clearings in a park. Rendered
+	/// via MKPolygon(interiorPolygons:); dropping them floods islands solid.
+	var interiorRings: [[CLLocationCoordinate2D]] = []
 }
 
 struct OfflineMapPolyline: Identifiable {
@@ -231,7 +234,7 @@ final class OfflineVectorTileProvider: ObservableObject {
 	}
 
 	/// Painter's order for stitched road layers (earlier = underneath).
-	nonisolated private static let roadDrawOrder: [OfflineFeatureRole] = [.path, .minorRoad, .mediumRoad, .majorRoad, .rail, .boundary]
+	nonisolated private static let roadDrawOrder: [OfflineFeatureRole] = [.river, .path, .minorRoad, .mediumRoad, .majorRoad, .rail, .boundary]
 
 	/// Drop fills whose bounding box is smaller than this (meters) — invisible slivers/clutter.
 	nonisolated static let defaultMinFillMeters: Double = 40
@@ -479,6 +482,13 @@ extension OfflineVectorTileProvider {
 		for feature in vector.features(for: "water") {
 			appendPolygons(feature.geometry, role: .water, bounds: bounds, into: &polys, id: nextID)
 		}
+		// Rivers and streams as centerlines — narrower waterways have no polygon
+		// in the water layer and vanished entirely without these.
+		for feature in vector.features(for: "physical_line") {
+			let kind = (feature.properties["kind"] as? String) ?? (feature.properties["pmap:kind"] as? String)
+			guard kind == "river" || kind == "stream" || kind == "canal" else { continue }
+			appendPolylines(feature.geometry, role: .river, bounds: bounds, into: &lines, id: nextID)
+		}
 		// All roads (incl. the residential/neighborhood street grid); footpaths are still skipped.
 		for feature in vector.features(for: "roads") {
 			let kind = (feature.properties["kind"] as? String) ?? (feature.properties["pmap:kind"] as? String)
@@ -512,19 +522,25 @@ extension OfflineVectorTileProvider {
 	nonisolated private static let simplifyEpsilon = 0.00008
 
 	nonisolated private static func appendPolygons(_ geometry: GISTools.GeoJsonGeometry, role: OfflineFeatureRole, bounds: GeoBounds?, into polys: inout [OfflineMapPolygon], id: () -> String) {
-		func add(_ ring: [GISTools.Coordinate3D]) {
+		func prepared(_ ring: [GISTools.Coordinate3D]) -> [CLLocationCoordinate2D]? {
 			var coords = ring.map(coord)
 			if let bounds { coords = clipPolygon(coords, to: bounds) }
 			coords = simplify(coords, epsilon: simplifyEpsilon)
-			guard coords.count >= 3 else { return }
-			polys.append(OfflineMapPolygon(id: id(), role: role, coordinates: coords))
+			return coords.count >= 3 ? coords : nil
+		}
+		func add(_ rings: [[GISTools.Coordinate3D]]) {
+			guard let outerRing = rings.first, let outer = prepared(outerRing) else { return }
+			// Interior rings are holes (islands in water, clearings in parks) —
+			// dropping them painted islands solid blue.
+			let interiors = rings.dropFirst().compactMap(prepared)
+			polys.append(OfflineMapPolygon(id: id(), role: role, coordinates: outer, interiorRings: interiors))
 		}
 		switch geometry {
 		case let polygon as GISTools.Polygon:
-			if let outer = polygon.rings.first?.coordinates { add(outer) }
+			add(polygon.rings.map(\.coordinates))
 		case let multi as GISTools.MultiPolygon:
 			for polygon in multi.polygons {
-				if let outer = polygon.rings.first?.coordinates { add(outer) }
+				add(polygon.rings.map(\.coordinates))
 			}
 		default:
 			break
@@ -720,6 +736,11 @@ enum OfflineMapPalette {
 		case .land: return earth(dark: dark)
 		default: return nil
 		}
+	}
+
+	/// River/stream centerline stroke — the water fill color, fully opaque.
+	static func riverStroke(dark: Bool) -> UIColor {
+		fill(.water, dark: dark) ?? .systemBlue
 	}
 
 	/// Road fill: white centerline (light) or a lighter-than-land gray (dark).
