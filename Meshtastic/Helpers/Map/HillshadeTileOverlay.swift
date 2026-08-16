@@ -23,14 +23,18 @@ final class HillshadeTileOverlay: MKTileOverlay {
 	/// Shadow strength cap. Dark appearance uses a lighter hand so the shading
 	/// deepens rather than grays the dark basemap.
 	private let maxShadowAlpha: CGFloat
+	/// Rendered tiles persist here (z/x/y.png) so shading computes once per
+	/// terrain download instead of on every map session. Nil disables the cache.
+	private let cacheDirectory: URL?
 
 	/// Sun position for Horn shading: standard cartographic northwest light.
 	private static let azimuthRadians = 315.0 * Double.pi / 180
 	private static let altitudeRadians = 45.0 * Double.pi / 180
 
-	init(store: TerrainStore, darkAppearance: Bool) {
+	init(store: TerrainStore, darkAppearance: Bool, cacheDirectory: URL? = nil) {
 		self.store = store
 		self.maxShadowAlpha = darkAppearance ? 0.42 : 0.32
+		self.cacheDirectory = cacheDirectory
 		super.init(urlTemplate: nil)
 		tileSize = CGSize(width: 256, height: 256)
 		canReplaceMapContent = false
@@ -41,15 +45,25 @@ final class HillshadeTileOverlay: MKTileOverlay {
 	override func loadTile(at path: MKTileOverlayPath, result: @escaping (Data?, Error?) -> Void) {
 		let store = store
 		let alphaCap = maxShadowAlpha
+		let cacheURL = cacheDirectory?
+			.appendingPathComponent("\(path.z)-\(path.x)-\(path.y).png")
 		Task.detached(priority: .utility) {
+			if let cacheURL, let cached = try? Data(contentsOf: cacheURL), !cached.isEmpty {
+				result(cached, nil)
+				return
+			}
 			guard let tile = await store.elevationTile(z: path.z, x: path.x, y: path.y, margin: 1) else {
 				// Outside coverage: an empty (fully transparent) tile, not an error —
-				// MapKit treats errors as retryable and would hammer loadTile.
+				// MapKit treats errors as retryable and would hammer loadTile. Not
+				// cached: coverage can appear later via Add Terrain.
 				result(Self.emptyTile, nil)
 				return
 			}
 			let metersPerSample = TerrainStore.metersPerSample(z: path.z, y: path.y, size: tile.size)
 			let png = Self.renderShadow(tile: tile, metersPerSample: metersPerSample, maxAlpha: alphaCap)
+			if let png, let cacheURL {
+				try? png.write(to: cacheURL, options: .atomic)
+			}
 			result(png ?? Self.emptyTile, nil)
 		}
 	}

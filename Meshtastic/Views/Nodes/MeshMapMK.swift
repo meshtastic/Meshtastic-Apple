@@ -1224,7 +1224,11 @@ struct MeshMapMK: View {
 										hillshadeOverlay = nil
 										return
 									}
-									hillshadeOverlay = HillshadeTileOverlay(store: terrainContours.store, darkAppearance: colorScheme == .dark)
+									hillshadeOverlay = HillshadeTileOverlay(
+										store: terrainContours.store,
+										darkAppearance: colorScheme == .dark,
+										cacheDirectory: offlineMapManager.terrainHillshadeCacheDirectory(dark: colorScheme == .dark)
+									)
 								}
 
 								private func updateContoursIfNeeded() {
@@ -1251,7 +1255,33 @@ struct MeshMapMK: View {
 									var result = routeDecorations
 									result += tracerouteDecorations
 									result += geoJSONDecorations
+									result += terrainLabelDecorations
 									return result
+								}
+
+								/// Elevation labels for the index contours (display-only).
+								private var terrainLabelDecorations: [ClusterMapDecoration] {
+									guard showContours, let geometry = terrainContours.geometry else { return [] }
+									let imagery = selectedMapLayer == .hybrid || selectedMapLayer == .satellite
+									let text: Color = imagery ? .white : Color(UIColor.brown)
+									return geometry.labels.map { label in
+										ClusterMapDecoration(
+											id: "terrain-label-\(label.id)",
+											coordinate: label.coordinate,
+											content: AnyView(
+												Text(label.text)
+													.font(.caption2.weight(.semibold))
+													.monospacedDigit()
+													.foregroundColor(text)
+													.padding(.horizontal, 4)
+													.padding(.vertical, 1)
+													.background(
+														Capsule().fill(imagery ? Color.black.opacity(0.35) : Color(UIColor.systemBackground).opacity(0.75))
+													)
+													.allowsHitTesting(false)
+											)
+										)
+									}
 								}
 
 								private func rebuildGeoJSONOverlays() {

@@ -694,6 +694,27 @@ extension OfflineMapManager {
 	#if !os(tvOS)
 	/// A `TerrainSource` for every region with downloaded terrain, resolving file
 	/// URLs — the hook map rendering uses to feed `TerrainStore`.
+	/// Directory for locally rendered hillshade tiles, wiped whenever the terrain
+	/// generation (the set of terrain downloadedAt stamps) changes — a re-download
+	/// or region delete invalidates every cached tile. One subdirectory per
+	/// appearance so light and dark shading never mix.
+	func terrainHillshadeCacheDirectory(dark: Bool) -> URL? {
+		guard let root = directoryURL()?.appendingPathComponent("terrain-cache", isDirectory: true) else { return nil }
+		let generation = regions
+			.compactMap { $0.terrain.map { String(Int($0.downloadedAt.timeIntervalSince1970)) } }
+			.sorted()
+			.joined(separator: ",")
+		let marker = root.appendingPathComponent("generation.txt")
+		if (try? String(contentsOf: marker, encoding: .utf8)) != generation {
+			try? FileManager.default.removeItem(at: root)
+			try? FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+			try? generation.write(to: marker, atomically: true, encoding: .utf8)
+		}
+		let sub = root.appendingPathComponent(dark ? "dark" : "light", isDirectory: true)
+		try? FileManager.default.createDirectory(at: sub, withIntermediateDirectories: true)
+		return sub
+	}
+
 	func terrainSources() -> [TerrainSource] {
 		loadIfNeeded()
 		guard let dir = directoryURL() else { return [] }

@@ -20,8 +20,19 @@ import OSLog
 struct TerrainContourGeometry {
 	let minorLines: MKMultiPolyline
 	let indexLines: MKMultiPolyline
+	/// Elevation labels for the index contours (bounded count per generation).
+	let labels: [TerrainContourLabel]
 	/// Cache key of the tile set + intervals this geometry was built for.
 	let key: String
+}
+
+/// One elevation label anchored to an index contour.
+struct TerrainContourLabel: Identifiable, Equatable {
+	let id: String
+	let coordinate: CLLocationCoordinate2D
+	let text: String
+
+	static func == (lhs: TerrainContourLabel, rhs: TerrainContourLabel) -> Bool { lhs.id == rhs.id }
 }
 
 @MainActor
@@ -88,23 +99,44 @@ final class TerrainContourProvider: ObservableObject {
 			// Convert tile-unit points to map coordinates and batch by class.
 			var minor: [MKPolyline] = []
 			var index: [MKPolyline] = []
+			// One label candidate per index line, placed at the line's midpoint;
+			// the longest lines win the bounded label budget.
+			var labelCandidates: [(pointCount: Int, label: TerrainContourLabel)] = []
 			for entry in perTile {
 				let n = Double(1 << entry.tile.z)
-				for line in entry.lines where line.points.count >= 2 {
-					let coordinates = line.points.map { point -> CLLocationCoordinate2D in
-						let wx = (Double(entry.tile.x) + point.x) / n
-						let wy = (Double(entry.tile.y) + point.y) / n
-						let lon = wx * 360 - 180
-						let lat = atan(sinh(.pi * (1 - 2 * wy))) * 180 / .pi
-						return CLLocationCoordinate2D(latitude: lat, longitude: lon)
-					}
+				func coordinate(_ point: CGPoint) -> CLLocationCoordinate2D {
+					let wx = (Double(entry.tile.x) + point.x) / n
+					let wy = (Double(entry.tile.y) + point.y) / n
+					let lon = wx * 360 - 180
+					let lat = atan(sinh(.pi * (1 - 2 * wy))) * 180 / .pi
+					return CLLocationCoordinate2D(latitude: lat, longitude: lon)
+				}
+				for (lineIndex, line) in entry.lines.enumerated() where line.points.count >= 2 {
+					let coordinates = line.points.map(coordinate)
 					let polyline = MKPolyline(coordinates: coordinates, count: coordinates.count)
-					if line.isIndex { index.append(polyline) } else { minor.append(polyline) }
+					if line.isIndex {
+						index.append(polyline)
+						if line.points.count >= 12 {
+							let mid = coordinate(line.points[line.points.count / 2])
+							labelCandidates.append((line.points.count, TerrainContourLabel(
+								id: "\(entry.tile.z)/\(entry.tile.x)/\(entry.tile.y)-\(Int(line.elevation))-\(lineIndex)",
+								coordinate: mid,
+								text: Self.labelText(elevationMeters: line.elevation, metric: metric)
+							)))
+						}
+					} else {
+						minor.append(polyline)
+					}
 				}
 			}
+			let labels = labelCandidates
+				.sorted { $0.pointCount > $1.pointCount }
+				.prefix(24)
+				.map(\.label)
 			let built = TerrainContourGeometry(
 				minorLines: MKMultiPolyline(minor),
 				indexLines: MKMultiPolyline(index),
+				labels: Array(labels),
 				key: key
 			)
 
@@ -124,6 +156,14 @@ final class TerrainContourProvider: ObservableObject {
 				self.revision += 1
 			}
 		}
+	}
+
+	/// "1250 m" / "4000 ft" per the user's measurement system.
+	nonisolated static func labelText(elevationMeters: Double, metric: Bool) -> String {
+		if metric {
+			return "\(Int(elevationMeters.rounded())) m"
+		}
+		return "\(Int((elevationMeters / 0.3048).rounded())) ft"
 	}
 
 	// MARK: - Tiling helpers
