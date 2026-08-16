@@ -36,7 +36,7 @@ struct SettingsView: View {
 					Text("Hybrid").tag(Int(MKMapType.hybrid.rawValue))
 					Text("Satellite").tag(Int(MKMapType.satellite.rawValue))
 				}
-				.pickerStyle(.inline)
+				.pickerStyle(.segmented)
 
 				Toggle("Mesh Stats", isOn: $statsBarEnabled)
 				Picker("Stats Position", selection: $statsBarEdge) {
