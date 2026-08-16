@@ -37,7 +37,14 @@ Deleting the region directory removes every terrain artifact (FR-008). Cache dir
 - **`TerrainStore`** (actor): opens the region's archives, serves `ElevationTile`s with the neighbor margin stitched in, owns decode caching.
 - **`HillshadeTileOverlay`** (`MKTileOverlay` subclass): resolves tiles from `hillshade-cache/`, generating misses via `TerrainStore` off the main actor; keyed by appearance (light/dark).
 - **`ContourSet`**: generated polylines for one tile — interval metadata, index-contour flags, label anchor points; serialized into `contour-cache/`.
-- **`ContourIntervalTable`**: zoom → (minor, index) interval mapping, unit-aware (m/ft by locale).
+- **`ContourIntervalTable`**: zoom → (minor, index) interval mapping, unit-aware (m/ft by locale). Starting values (tunable during implementation, index = every 5th minor):
+
+| Zoom | Minor interval | Index interval |
+|---|---|---|
+| ≤ 10 | 500 m / 2000 ft | 2500 m / 10000 ft |
+| 11–12 | 100 m / 500 ft | 500 m / 2500 ft |
+| 13–14 | 50 m / 200 ft | 250 m / 1000 ft |
+| ≥ 15 | 20 m / 100 ft | 100 m / 500 ft |
 
 ## Settings
 
@@ -45,7 +52,7 @@ Deleting the region directory removes every terrain artifact (FR-008). Cache dir
 
 | Key | Type | Default |
 |---|---|---|
-| `map.terrain.hillshade` | Bool | false |
-| `map.terrain.contours` | Bool | false |
+| `meshMapShowHillshade` | Bool | false |
+| `meshMapShowContours` | Bool | false |
 
 Map-type gating (hillshade suppressed on hybrid/satellite) is derived at render time from the existing map-type setting, not stored.

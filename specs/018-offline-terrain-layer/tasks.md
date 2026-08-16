@@ -33,7 +33,7 @@
 
 - [ ] T201 Create `Meshtastic/Helpers/Map/HillshadeTileOverlay.swift` — `MKTileOverlay` subclass: Horn 3×3 shading (azimuth 315°, altitude 45°) from `TerrainStore`, disk cache per appearance under `hillshade-cache/`, generation off the main actor
 - [ ] T202 Wire the overlay into `MeshMapMK`/`ClusterMapView` above basemap fill, below labels/annotations; suppress on hybrid/satellite map types
-- [ ] T203 Map settings: Terrain section with Hillshade toggle (`map.terrain.hillshade`, default off); dark-appearance blend curve
+- [ ] T203 Map settings: Terrain section with Hillshade toggle (`meshMapShowHillshade`, default off, disabled until a region has terrain); dark-appearance blend curve
 - [ ] T204 Attribution: add Mapterhorn to the map attribution surface when terrain renders
 - [ ] T205 Verify quickstart US2 flow including airplane mode, region boundary, dark mode, and frame-rate check
 
@@ -41,7 +41,7 @@
 
 - [ ] T301 Create `Meshtastic/Helpers/Map/ContourGenerator.swift` — marching squares over margin-stitched tiles, `ContourIntervalTable` (zoom → minor/index interval, locale unit), serialized `ContourSet` cache under `contour-cache/`
 - [ ] T302 Render `ContourSet`s as `MKMultiPolyline` overlays with index-contour emphasis and elevation labels; imagery-legible color on hybrid/satellite
-- [ ] T303 Map settings: Contours toggle (`map.terrain.contours`, default off)
+- [ ] T303 Map settings: Contours toggle (`meshMapShowContours`, default off, disabled until a region has terrain)
 - [ ] T304 [P] `MeshtasticTests/ContourGeneratorTests.swift` — synthetic DEMs (cone, saddle, flat sea level), edge continuity across tiles, interval selection, cache invalidation on re-download
 - [ ] T305 Verify quickstart US3 flow: intervals refine with zoom, hybrid shows contours only, global-only areas degrade gracefully
 

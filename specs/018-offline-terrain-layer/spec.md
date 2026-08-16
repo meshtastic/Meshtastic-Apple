@@ -79,12 +79,12 @@ With terrain downloaded, the map can show elevation contour lines with labeled i
 
 ### Functional Requirements
 
-- **FR-001**: Offline region downloads MUST optionally include an elevation extract of the same bounding box from the Mapterhorn PMTiles archives (global z0–12 archive, plus the intersecting regional z13+ archive when available), stored with the region.
+- **FR-001**: Offline region downloads MUST optionally include a terrain extract of the same bounding box from the Mapterhorn PMTiles archives (global z0–12 archive, plus the intersecting regional z13+ archive when available), stored with the region.
 - **FR-002**: The app MUST decode Terrarium terrain-RGB tiles to elevation grids on device (`elevation = R×256 + G + B/256 − 32768`).
 - **FR-003**: Hillshade MUST render as a locally computed raster tile overlay on the standard map and the offline vector basemap only, beneath labels and annotations, with light/dark-appearance handling. No network access at render time.
 - **FR-004**: Contours MUST render as vector polylines on all map types; on hybrid and satellite they render without hillshade and in a color chosen for legibility over imagery.
 - **FR-005**: Contour intervals MUST adapt to zoom, with emphasized and labeled index contours; labels follow the user's locale elevation unit.
-- **FR-006**: Map settings MUST gain independent Hillshade and Contours toggles, off by default until terrain data exists for at least one region.
+- **FR-006**: Map settings MUST gain independent Hillshade and Contours toggles, defaulting to off. Both toggles are disabled until at least one region has terrain data downloaded.
 - **FR-007**: All terrain rendering MUST work fully offline once the extract is downloaded.
 - **FR-008**: Generated hillshade tiles and contour geometry MUST be cached on disk, scoped to the region, and deleted with it.
 - **FR-009**: The Offline Maps UI MUST show the terrain component's size per region and support adding terrain to a previously downloaded region.
@@ -111,6 +111,7 @@ With terrain downloaded, the map can show elevation contour lines with labeled i
 - Mapterhorn's license permits app use with attribution (open source project; attribution page lists upstream DEM requirements — verify exact license text during implementation).
 - Contour generation ports the marching-squares approach used by maplibre-contour (client-side generation from elevation tiles); no server-side contour data exists or is wanted.
 - 3D terrain is permanently out of scope for this feature; the map remains MKMapView.
+- tvOS terrain is an explicit follow-on: the TV app already reads the shared offline map files, so it can adopt the terrain layer once the iOS implementation lands.
 
 ## iOS Implementation Reference
 
