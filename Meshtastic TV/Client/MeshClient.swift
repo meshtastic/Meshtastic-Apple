@@ -111,14 +111,9 @@ final class MeshClient {
 			} catch {
 				guard self.isCurrent(generation), !Task.isCancelled else { return }
 				self.logConnectionFailure(error)
-				self.clearConfigWait(generation: generation)
 				self.connectionGeneration += 1
-				self.consumeTask?.cancel()
-				self.consumeTask = nil
-				let failedConnection = self.connection
-				self.connection = nil
+				self.teardownConnection()
 				self.state = .failed(self.userFacingMessage(for: error))
-				try? await failedConnection?.disconnect(withError: nil, shouldReconnect: false)
 			}
 		}
 	}
@@ -132,13 +127,17 @@ final class MeshClient {
 #endif
 		connectTask?.cancel()
 		connectTask = nil
+		teardownConnection()
+		state = .disconnected
+	}
+
+	private func teardownConnection() {
 		consumeTask?.cancel()
 		consumeTask = nil
 		clearConfigWait()
 		let conn = connection
 		connection = nil
 		Task { try? await conn?.disconnect(withError: nil, shouldReconnect: false) }
-		state = .disconnected
 	}
 
 	private func establishConnectionWithTimeout(host: String, port: Int, generation: Int) async throws {
@@ -207,6 +206,7 @@ final class MeshClient {
 	private func beginReconnect(after error: Error?) {
 		guard sessionWasConnected else {
 			connectionGeneration += 1
+			teardownConnection()
 			state = .failed(error.map(userFacingMessage(for:)) ?? "Connection closed. Try again.")
 			return
 		}
@@ -248,6 +248,8 @@ final class MeshClient {
 
 			guard self.isCurrent(generation), !Task.isCancelled else { return }
 			self.sessionWasConnected = false
+			self.connectionGeneration += 1
+			self.teardownConnection()
 			self.state = .failed(lastError.map(self.userFacingMessage(for:)) ?? "Connection closed. Try again.")
 		}
 	}
@@ -347,18 +349,18 @@ final class MeshClient {
 				if failConfigWait(error, generation: generation) { return }
 				beginReconnect(after: nil)
 			} else {
-				clearConfigWait(generation: generation)
 				connectionGeneration += 1
 				sessionWasConnected = false
+				teardownConnection()
 				state = .disconnected
 			}
 		case .error(let error):
 			if failConfigWait(error, generation: generation) { return }
 			beginReconnect(after: error)
 		case .errorWithoutReconnect(let error):
-			clearConfigWait(generation: generation)
 			connectionGeneration += 1
 			sessionWasConnected = false
+			teardownConnection()
 			logConnectionFailure(error)
 			state = .failed(userFacingMessage(for: error))
 		case .logMessage, .rssiUpdate:
