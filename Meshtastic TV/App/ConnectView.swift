@@ -57,8 +57,8 @@ struct ConnectView: View {
 						}
 					}
 				}
-				// Focused tvOS controls grow beyond their rows; keep them inside the Form's clip.
-				.contentMargins(.horizontal, 16, for: .scrollContent)
+				// Inset focused controls without hiding native Form section headers.
+				.safeAreaPadding(.horizontal, 16)
 			}
 			.padding(.top, TVTheme.screenPadding)
 		}
