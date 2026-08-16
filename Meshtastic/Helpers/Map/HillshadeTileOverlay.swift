@@ -52,7 +52,7 @@ final class HillshadeTileOverlay: MKTileOverlay {
 				result(cached, nil)
 				return
 			}
-			guard let tile = await store.elevationTile(z: path.z, x: path.x, y: path.y, margin: 1),
+			guard let tile = await store.elevationTile(z: path.z, x: path.x, y: path.y, margin: 2),
 				  let coverage = await store.coverage(z: path.z, x: path.x, y: path.y) else {
 				// Outside coverage: an empty (fully transparent) tile, not an error —
 				// MapKit treats errors as retryable and would hammer loadTile. Not
@@ -127,19 +127,46 @@ final class HillshadeTileOverlay: MKTileOverlay {
 
 		let clipRange = clip ?? PixelRect(minX: 0, minY: 0, maxX: size - 1, maxY: size - 1)
 		guard clipRange.minX <= clipRange.maxX, clipRange.minY <= clipRange.maxY else { return nil }
+
+		// Despike + sea clamp: median-of-9 kills the isolated positive spikes the
+		// source data carries on water (measured to 12 m on Puget Sound) while
+		// preserving real terrain edges; the clamp flattens bathymetry. Built over
+		// the clip range plus the ring the Horn kernel reads (tile margin is 2).
+		let filteredMinX = clipRange.minX - 1, filteredMinY = clipRange.minY - 1
+		let filteredWidth = clipRange.maxX - clipRange.minX + 3
+		let filteredHeight = clipRange.maxY - clipRange.minY + 3
+		var filtered = [Float](repeating: 0, count: filteredWidth * filteredHeight)
+		var window = [Float](repeating: 0, count: 9)
+		for fy in 0..<filteredHeight {
+			let py = filteredMinY + fy
+			for fx in 0..<filteredWidth {
+				let px = filteredMinX + fx
+				var count = 0
+				for dy in -1...1 {
+					for dx in -1...1 {
+						window[count] = max(0, tile.gridElevation(x: px + dx, y: py + dy))
+						count += 1
+					}
+				}
+				window.sort()
+				filtered[fy * filteredWidth + fx] = window[4]
+			}
+		}
+		func sample(_ px: Int, _ py: Int) -> Float {
+			filtered[(py - filteredMinY) * filteredWidth + (px - filteredMinX)]
+		}
+
 		for py in clipRange.minY...clipRange.maxY {
 			for px in clipRange.minX...clipRange.maxX {
-				// Horn kernel: weighted differences of the 8 neighbors. Elevations
-				// clamp at sea level — the data carries ocean bathymetry, and without
-				// the clamp the shading renders seafloor relief onto open water.
-				let a = max(0, tile.gridElevation(x: px - 1, y: py - 1))
-				let b = max(0, tile.gridElevation(x: px, y: py - 1))
-				let c = max(0, tile.gridElevation(x: px + 1, y: py - 1))
-				let d = max(0, tile.gridElevation(x: px - 1, y: py))
-				let f = max(0, tile.gridElevation(x: px + 1, y: py))
-				let g = max(0, tile.gridElevation(x: px - 1, y: py + 1))
-				let h = max(0, tile.gridElevation(x: px, y: py + 1))
-				let i = max(0, tile.gridElevation(x: px + 1, y: py + 1))
+				// Horn kernel: weighted differences of the 8 neighbors.
+				let a = sample(px - 1, py - 1)
+				let b = sample(px, py - 1)
+				let c = sample(px + 1, py - 1)
+				let d = sample(px - 1, py)
+				let f = sample(px + 1, py)
+				let g = sample(px - 1, py + 1)
+				let h = sample(px, py + 1)
+				let i = sample(px + 1, py + 1)
 
 				let dzdx = ((c + 2 * f + i) - (a + 2 * d + g)) / (8 * cellSize)
 				let dzdy = ((g + 2 * h + i) - (a + 2 * b + c)) / (8 * cellSize)
@@ -157,8 +184,14 @@ final class HillshadeTileOverlay: MKTileOverlay {
 				// sea-surface noise (measured ~1 m stdev with spikes on open water),
 				// which the ≤0 m clamp can't remove. No shading below 0.5 m, full
 				// above 3 m — real land that low is flat and barely shaded anyway.
-				let center = max(0, tile.gridElevation(x: px, y: py))
+				let center = sample(px, py)
 				shadow *= min(max((center - 0.5) / 2.5, 0), 1)
+				// Local-relief fade: on a water surface every pixel sits within noise
+				// of its neighborhood minimum, at any lake elevation; a real hillside
+				// pixel stands well above its local minimum. Valley bottoms fade too,
+				// which is fine — they're flat.
+				let localMin = min(min(min(a, b), min(c, d)), min(min(f, g), min(h, i)))
+				shadow *= min(max((center - localMin - 0.3) / 1.2, 0), 1)
 				alphas[py * size + px] = UInt8(min(255, shadow * cap * 255))
 			}
 		}

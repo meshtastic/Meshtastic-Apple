@@ -713,7 +713,7 @@ extension OfflineMapManager {
 		guard let root = directoryURL()?.appendingPathComponent("terrain-cache", isDirectory: true) else { return nil }
 		// The renderer version participates in the generation so a rendering change
 		// (clipping, shading tweaks) invalidates tiles cached by an older build.
-		let rendererVersion = "v3"
+		let rendererVersion = "v4"
 		let generation = rendererVersion + "|" + regions
 			.compactMap { $0.terrain.map { String(Int($0.downloadedAt.timeIntervalSince1970)) } }
 			.sorted()
