@@ -53,6 +53,7 @@
 		EFEED2F4EF7D9B1BB657458A /* SwiftDraw in Frameworks */ = {isa = PBXBuildFile; productRef = 9D120B166CA191FC578A9978 /* SwiftDraw */; };
 		F05DFDBFD6588DFEB6AD621F /* MVTTools in Frameworks */ = {isa = PBXBuildFile; productRef = 4FB45004C563B59043C53EAA /* MVTTools */; };
 		F0F15E85A1D7193379E705C4 /* AppIcon_MPowered.icon in Resources */ = {isa = PBXBuildFile; fileRef = D744131C1600FC47CB596573 /* AppIcon_MPowered.icon */; };
+		F11D4AB6E3A799DEB883AC14 /* NodeDiscovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = 074A4F4A084E3897FDDE16FB /* NodeDiscovery.swift */; };
 		F494AA4C9783F0E204B12D62 /* DatadogCrashReporting in Frameworks */ = {isa = PBXBuildFile; productRef = 43547F7F6DDB3842969DA369 /* DatadogCrashReporting */; };
 		F8D2F62028A2A100CDB80F82 /* MeshtasticProtobufs in Frameworks */ = {isa = PBXBuildFile; productRef = 4AF5AACBB64F141EF02FC7DC /* MeshtasticProtobufs */; };
 		F8E5A8CEE6E96D5D53F6F851 /* Markdown in Frameworks */ = {isa = PBXBuildFile; productRef = C853ED2A7F391E6F315F93B3 /* Markdown */; };
@@ -110,6 +111,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		074A4F4A084E3897FDDE16FB /* NodeDiscovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = NodeDiscovery.swift; path = "Meshtastic TV/Client/NodeDiscovery.swift"; sourceTree = "<group>"; };
 		0875C7B0694DBE671437CC1A /* Connection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Connection.swift; sourceTree = "<group>"; };
 		0AEAC3FF0190C3F8166D22E3 /* MeshtasticDataModelV 52.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 52.xcdatamodel"; sourceTree = "<group>"; };
 		0CC33262B2EA2E8463E8BE95 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -686,6 +688,14 @@
 			path = Map;
 			sourceTree = "<group>";
 		};
+		7CF5820C55D8305FCC1F8A13 /* TV Test Support */ = {
+			isa = PBXGroup;
+			children = (
+				074A4F4A084E3897FDDE16FB /* NodeDiscovery.swift */,
+			);
+			name = "TV Test Support";
+			sourceTree = "<group>";
+		};
 		8F644F7974EA8B14E77ED53A /* Packages */ = {
 			isa = PBXGroup;
 			children = (
@@ -738,6 +748,7 @@
 				8F644F7974EA8B14E77ED53A /* Packages */,
 				F15A1577564640951AD3EA40 /* Settings.bundle */,
 				456E28D41A9B7B1788FEE0CD /* Shared */,
+				7CF5820C55D8305FCC1F8A13 /* TV Test Support */,
 				0B1C4E352D6981242B97EF9C /* Widgets */,
 				5D4AFA4225AF7D85EE343B80 /* Products */,
 			);
@@ -1132,6 +1143,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F11D4AB6E3A799DEB883AC14 /* NodeDiscovery.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -154,6 +154,11 @@ When a node has a known position, the Logs section also offers **Estimate Covera
 
 Local Stats show radio diagnostics reported by a node, including packets received, packets transmitted, duplicate packets, relayed packets, bad receives, canceled packets, online node count, total node count, and noise floor.
 
+When requesting Local Stats from another node, choose how to protect the request:
+
+- **Shared channel** encrypts the request with the selected mesh channel and is suitable for ordinary requests between channel members.
+- **Remote admin** uses PKI encryption and is unavailable until the destination has advertised a public key.
+
 Noise floor is displayed in dBm when the node reports it. Treat it as a directional diagnostic instead of an absolute site score: readings can vary quickly, and external filters can lower or skew the displayed value because of insertion loss or in-band interference.
 
 ## Node Detail View

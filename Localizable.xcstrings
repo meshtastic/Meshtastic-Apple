@@ -1,6 +1,21 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "Do not close the app or turn off Bluetooth while the update is in progress.": {
+      "comment": "OTA update tip: do not close app"
+    },
+    "Keep your device close to your phone during the update.": {
+      "comment": "OTA update tip: keep device close"
+    },
+    "Please do not leave this screen until the update is complete. You can safely play Chirpy Hop while waiting!": {
+      "comment": "Notice displayed during OTA firmware update"
+    },
+    "Visit meshtastic.org/docs for guides, hardware information, and community tips.": {
+      "comment": "OTA update tip: docs website"
+    },
+    "You can safely play Chirpy Hop while waiting for the update to complete.": {
+      "comment": "OTA update tip: safe to play game"
+    },
     "": {
       "localizations": {
         "da": {

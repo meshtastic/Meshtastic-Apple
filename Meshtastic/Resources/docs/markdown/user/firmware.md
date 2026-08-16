@@ -40,7 +40,7 @@ For ESP32 BLE updates, the app waits for the radio's final verification response
 
 ## During the Transfer
 
-While a supported OTA transfer is active, tap **Play Chirpy Hop** to play without leaving the updater. Firmware progress remains visible above the game, and the back button returns to the normal update screen at any time. Keep the Meshtastic app in the foreground until the update finishes.
+While a supported OTA transfer is active, the update screen rotates short tips, and you can tap **Play Chirpy Hop** to play without leaving the updater. Firmware progress remains visible above the game, and the back button returns to the normal update screen at any time. Keep the Meshtastic app in the foreground until the update finishes.
 
 ## Update Channels
 

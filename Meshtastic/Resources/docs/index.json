@@ -135,6 +135,7 @@
             "transfer",
             "target",
             "stable",
+            "screen",
             "progress",
             "notification",
             "connected",
@@ -145,7 +146,6 @@
             "some",
             "shows",
             "settings",
-            "screen",
             "running",
             "radios",
             "ota",
@@ -153,7 +153,7 @@
             "keep",
             "from"
         ],
-        "charCount": 4720
+        "charCount": 4770
     },
     {
         "id": "getting-started",
@@ -282,34 +282,34 @@
             "channel",
             "key",
             "messages",
+            "node",
             "circle",
             "text",
             "fill",
             "channels",
             "direct",
             "formatting",
+            "conversation",
             "available",
+            "tap",
             "orange",
             "markdown",
             "delimiters",
-            "conversation",
-            "tap",
             "retry",
             "exclamationmark",
             "recipient",
-            "node",
             "meshtastic",
+            "links",
             "after",
             "selection",
-            "links",
+            "name",
+            "mention",
             "bold",
             "radio",
             "public",
-            "field",
-            "button",
-            "symbol"
+            "from"
         ],
-        "charCount": 12005
+        "charCount": 13277
     },
     {
         "id": "mqtt",
@@ -363,31 +363,31 @@
             "contact",
             "name",
             "only",
-            "shown",
             "key",
+            "shown",
             "shows",
             "packets",
             "messages",
             "list",
             "firmware",
             "radio",
+            "public",
             "link",
             "hardware",
             "detail",
+            "channel",
             "tag",
             "share",
-            "public",
             "map",
+            "local",
             "broadcasts",
             "tap",
             "show",
+            "shared",
             "section",
-            "row",
-            "long",
-            "location",
-            "local"
+            "row"
         ],
-        "charCount": 11299
+        "charCount": 11616
     },
     {
         "id": "settings",
@@ -426,7 +426,7 @@
             "selected",
             "rate"
         ],
-        "charCount": 16643
+        "charCount": 16773
     },
     {
         "id": "signal-meter",
