@@ -18,6 +18,8 @@ When you connect to a node running firmware older than the latest stable release
 
 The app remembers each node, hardware target, and stable version it has already notified you about, so it will not keep sending the same reminder.
 
+Some radios report a specialized firmware target that is not a separate entry in the hardware catalog. In that case, the app uses the base hardware entry for details such as the device name and processor architecture, but it keeps the radio's exact target when choosing downloads and local files. The suggested filename on the Firmware Updates screen uses that exact target, such as `firmware-thinknode_m1-inkhud-<version>.uf2`.
+
 ## Installing an Update
 
 1. Tap **Update Firmware** when a newer version is available.
