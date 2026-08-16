@@ -57,6 +57,8 @@ struct RegionSelectorView: View {
 	@State private var includeTerrain = true
 	/// One-shot: when resizing, the selection seeds from the region's saved bounds.
 	@State private var didSeedFromReplacing = false
+	/// One-shot camera zoom-out so the saved bounds fit inside the selectable area.
+	@State private var didFrameForSeed = false
 	@State private var name: String
 
 	/// The selection rectangle in the picker's local coordinate space (drag/resize target).
@@ -282,15 +284,49 @@ struct RegionSelectorView: View {
 	}
 
 	/// When resizing an existing region, the selection starts as that region's
-	/// saved boundary instead of the default centered rectangle. Runs once, as
-	/// soon as the map proxy can convert coordinates.
+	/// saved boundary instead of the default centered rectangle.
+	///
+	/// Two phases: the initial camera shows the region edge-to-edge, where its
+	/// corners sit outside the selectable area (top/side insets + the control
+	/// panel), and the clamp would squash the seeded rectangle away from the true
+	/// boundary. Phase one zooms the camera out just enough that the saved bounds
+	/// project INSIDE the usable area, centered in it; phase two (a later camera
+	/// tick) converts the corners and places the selection exactly on them.
 	private func seedFromReplacingIfNeeded(proxy: MapProxy, size: CGSize) {
-		guard !didSeedFromReplacing, let replacing else { return }
+		guard !didSeedFromReplacing, let replacing, size.height > 0 else { return }
+		let usable = usableRect(in: size)
+		guard usable.width > minRectSize, usable.height > minRectSize else { return }
+
+		if !didFrameForSeed {
+			didFrameForSeed = true
+			// Zoom factor: the region must fit the usable area with a small margin.
+			let fitFactor = max(size.width / (usable.width - 24), size.height / (usable.height - 24))
+			let latSpan = (replacing.maxLatitude - replacing.minLatitude) * fitFactor
+			let lonSpan = (replacing.maxLongitude - replacing.minLongitude) * fitFactor
+			// Shift the camera center so the region lands centered in the USABLE
+			// strip (above the panel), not in the full view.
+			let usableMidY = usable.midY / size.height          // 0..1 from top
+			let centerShift = (0.5 - usableMidY) * latSpan      // + moves region up on screen
+			let center = CLLocationCoordinate2D(
+				latitude: (replacing.minLatitude + replacing.maxLatitude) / 2 - centerShift,
+				longitude: (replacing.minLongitude + replacing.maxLongitude) / 2
+			)
+			camera = .region(MKCoordinateRegion(
+				center: center,
+				span: MKCoordinateSpan(latitudeDelta: latSpan, longitudeDelta: lonSpan)
+			))
+			return
+		}
+
 		let northWest = CLLocationCoordinate2D(latitude: replacing.maxLatitude, longitude: replacing.minLongitude)
 		let southEast = CLLocationCoordinate2D(latitude: replacing.minLatitude, longitude: replacing.maxLongitude)
 		guard let topLeft = proxy.convert(northWest, to: .local),
 			  let bottomRight = proxy.convert(southEast, to: .local),
 			  bottomRight.x - topLeft.x > 8, bottomRight.y - topLeft.y > 8 else { return }
+		// Only accept the conversion once the bounds actually landed inside the
+		// usable area (the zoom-out animation may still be settling).
+		guard topLeft.x >= usable.minX - 2, topLeft.y >= usable.minY - 2,
+			  bottomRight.x <= usable.maxX + 2, bottomRight.y <= usable.maxY + 2 else { return }
 		selectionRect = normalizedClamped(topLeft.x, topLeft.y, bottomRight.x, bottomRight.y, in: size)
 		didSeedFromReplacing = true
 	}
