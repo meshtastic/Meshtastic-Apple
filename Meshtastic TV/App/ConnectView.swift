@@ -57,6 +57,8 @@ struct ConnectView: View {
 						}
 					}
 				}
+				// Focused tvOS controls grow beyond their rows; keep them inside the Form's clip.
+				.contentMargins(.horizontal, 16, for: .scrollContent)
 			}
 			.padding(.top, TVTheme.screenPadding)
 		}
@@ -102,15 +104,14 @@ struct ConnectView: View {
 					} label: {
 						HStack(spacing: 16) {
 							Image(systemName: "antenna.radiowaves.left.and.right")
-								.foregroundStyle(Color("AccentColor"))
 							VStack(alignment: .leading, spacing: 4) {
 								Text(node.name)
 								Text(verbatim: "\(node.host):\(String(node.port))")
 									.font(.caption)
-									.foregroundStyle(.secondary)
 							}
 						}
 					}
+					.tint(.primary)
 				}
 			}
 		} header: {
