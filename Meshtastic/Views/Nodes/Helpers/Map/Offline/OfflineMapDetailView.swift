@@ -22,10 +22,19 @@ struct OfflineMapDetailView: View {
 		manager.regions.first { $0.id == region.id } ?? region
 	}
 
+	/// Preview sized to the region's real on-screen aspect (longitude span shrinks
+	/// by cos(latitude) on a Mercator map), clamped so extremes stay usable.
+	private var previewSize: CGSize {
+		let width: CGFloat = 340
+		let mkRegion = current.region
+		let aspect = (mkRegion.span.longitudeDelta * cos(mkRegion.center.latitude * .pi / 180)) / max(mkRegion.span.latitudeDelta, 0.0001)
+		return CGSize(width: width, height: (width / min(max(aspect, 0.8), 2.2)).rounded())
+	}
+
 	var body: some View {
 		List {
 			Section {
-				OfflineMapThumbnail(region: current, size: CGSize(width: 320, height: 170), cornerRadius: 12)
+				OfflineMapThumbnail(region: current, size: previewSize, cornerRadius: 12)
 					.frame(maxWidth: .infinity)
 					.listRowInsets(EdgeInsets())
 					.listRowBackground(Color.clear)

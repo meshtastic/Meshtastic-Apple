@@ -99,8 +99,12 @@ struct RegionSelectorView: View {
 						.mapStyle(.standard(elevation: .flat, pointsOfInterest: .excludingAll))
 						.onMapCameraChange(frequency: .continuous) { context in
 							currentRegion = context.region
-							seedFromReplacingIfNeeded(proxy: proxy, size: geo.size)
+							frameCameraForSeedIfNeeded(size: geo.size)
+							placeSeededSelection(proxy: proxy, size: geo.size, requireSettled: true)
 							recompute(proxy: proxy, size: geo.size)
+						}
+						.onMapCameraChange(frequency: .onEnd) { _ in
+							placeSeededSelection(proxy: proxy, size: geo.size, requireSettled: false)
 						}
 
 					selectionLayer(proxy: proxy, size: geo.size)
@@ -122,6 +126,8 @@ struct RegionSelectorView: View {
 				}
 				.onChange(of: controlPanelHeight) {
 					clampRect(to: geo.size)
+					// The panel height is what the seed framing was waiting on.
+					frameCameraForSeedIfNeeded(size: geo.size)
 					recompute(proxy: proxy, size: geo.size)
 				}
 			}
@@ -283,56 +289,100 @@ struct RegionSelectorView: View {
 		return CGRect(x: minX, y: minY, width: maxX - minX, height: maxY - minY)
 	}
 
-	/// When resizing an existing region, the selection starts as that region's
-	/// saved boundary instead of the default centered rectangle.
-	///
-	/// Two phases: the initial camera shows the region edge-to-edge, where its
-	/// corners sit outside the selectable area (top/side insets + the control
-	/// panel), and the clamp would squash the seeded rectangle away from the true
-	/// boundary. Phase one zooms the camera out just enough that the saved bounds
-	/// project INSIDE the usable area, centered in it; phase two (a later camera
-	/// tick) converts the corners and places the selection exactly on them.
-	private func seedFromReplacingIfNeeded(proxy: MapProxy, size: CGSize) {
-		guard !didSeedFromReplacing, let replacing, size.height > 0 else { return }
-		let usable = usableRect(in: size)
-		guard usable.width > minRectSize, usable.height > minRectSize else { return }
+	// MARK: - Resize seeding
+	//
+	// When resizing an existing region, the selection starts as that region's saved
+	// boundary instead of the default centered rectangle. The initial camera shows
+	// the region edge-to-edge, where its corners sit outside the selectable area
+	// (top/side insets + the control panel), so the camera is first re-framed to fit
+	// the saved bounds inside the usable area — using the MEASURED panel height and
+	// exact Web-Mercator math — and the selection is placed on the projected corners
+	// once the camera settles. Until then no rectangle shows, so the picker opens
+	// straight onto the true boundary.
 
-		if !didFrameForSeed {
-			didFrameForSeed = true
-			// Zoom factor: the region must fit the usable area with a small margin.
-			let fitFactor = max(size.width / (usable.width - 24), size.height / (usable.height - 24))
-			let latSpan = (replacing.maxLatitude - replacing.minLatitude) * fitFactor
-			let lonSpan = (replacing.maxLongitude - replacing.minLongitude) * fitFactor
-			// Shift the camera center so the region lands centered in the USABLE
-			// strip (above the panel), not in the full view.
-			let usableMidY = usable.midY / size.height          // 0..1 from top
-			let centerShift = (0.5 - usableMidY) * latSpan      // + moves region up on screen
-			let center = CLLocationCoordinate2D(
-				latitude: (replacing.minLatitude + replacing.maxLatitude) / 2 - centerShift,
-				longitude: (replacing.minLongitude + replacing.maxLongitude) / 2
+	/// Gap between the seeded selection and the usable area's edges.
+	private let seedMargin: CGFloat = 12
+
+	/// Phase one: re-frame the camera so the saved bounds project inside the usable
+	/// area, centered in it. Waits for the control panel's measured height — the
+	/// earlier fallback-height guess left the bounds' bottom edge under the panel.
+	private func frameCameraForSeedIfNeeded(size: CGSize) {
+		guard !didFrameForSeed, !didSeedFromReplacing, let replacing,
+			  size.width > 0, size.height > 0, controlPanelHeight > 0 else { return }
+		let aim = usableRect(in: size).insetBy(dx: seedMargin, dy: seedMargin)
+		guard aim.width > minRectSize, aim.height > minRectSize else { return }
+		didFrameForSeed = true
+
+		// Fit in Web-Mercator space: world units per screen point so the bounds
+		// fill the aim rect, then place the screen center so the bounds center
+		// lands on the aim rect's center (above the panel, inside the margins).
+		let west = (replacing.minLongitude + 180) / 360
+		let east = (replacing.maxLongitude + 180) / 360
+		let top = Self.mercatorY(replacing.maxLatitude)
+		let bottom = Self.mercatorY(replacing.minLatitude)
+		let worldPerPoint = max((east - west) / aim.width, (bottom - top) / aim.height)
+		guard worldPerPoint > 0 else { return }
+		let centerX = (west + east) / 2 + (size.width / 2 - aim.midX) * worldPerPoint
+		let centerY = (top + bottom) / 2 + (size.height / 2 - aim.midY) * worldPerPoint
+		let visibleTopLat = Self.mercatorLat(centerY - size.height / 2 * worldPerPoint)
+		let visibleBottomLat = Self.mercatorLat(centerY + size.height / 2 * worldPerPoint)
+		camera = .region(MKCoordinateRegion(
+			center: CLLocationCoordinate2D(latitude: Self.mercatorLat(centerY), longitude: centerX * 360 - 180),
+			span: MKCoordinateSpan(
+				latitudeDelta: visibleTopLat - visibleBottomLat,
+				longitudeDelta: size.width * worldPerPoint * 360
 			)
-			camera = .region(MKCoordinateRegion(
-				center: center,
-				span: MKCoordinateSpan(latitudeDelta: latSpan, longitudeDelta: lonSpan)
-			))
-			return
-		}
+		))
+	}
 
+	/// Phase two: place the selection exactly on the saved bounds' projected corners.
+	/// Camera-settle (`requireSettled == false`, from the `.onEnd` camera callback)
+	/// takes the conversion as-is; continuous ticks only accept a frame that has
+	/// (nearly) landed on the aim rect, since mid-animation frames overshoot.
+	private func placeSeededSelection(proxy: MapProxy, size: CGSize, requireSettled: Bool) {
+		guard !didSeedFromReplacing, didFrameForSeed, let replacing, gestureStartRect == nil else { return }
 		let northWest = CLLocationCoordinate2D(latitude: replacing.maxLatitude, longitude: replacing.minLongitude)
 		let southEast = CLLocationCoordinate2D(latitude: replacing.minLatitude, longitude: replacing.maxLongitude)
 		guard let topLeft = proxy.convert(northWest, to: .local),
 			  let bottomRight = proxy.convert(southEast, to: .local),
 			  bottomRight.x - topLeft.x > 8, bottomRight.y - topLeft.y > 8 else { return }
-		// Only accept the conversion once the bounds actually landed inside the
-		// usable area (the zoom-out animation may still be settling).
-		guard topLeft.x >= usable.minX - 2, topLeft.y >= usable.minY - 2,
-			  bottomRight.x <= usable.maxX + 2, bottomRight.y <= usable.maxY + 2 else { return }
-		selectionRect = normalizedClamped(topLeft.x, topLeft.y, bottomRight.x, bottomRight.y, in: size)
+		let rect = CGRect(
+			x: topLeft.x, y: topLeft.y,
+			width: bottomRight.x - topLeft.x, height: bottomRight.y - topLeft.y
+		)
+		if requireSettled {
+			let aim = usableRect(in: size).insetBy(dx: seedMargin, dy: seedMargin)
+			guard aim.insetBy(dx: -3, dy: -3).contains(rect),
+				  max(rect.width / aim.width, rect.height / aim.height) > 0.95 else { return }
+		}
+		// The projected boundary, unclamped, so it matches the map exactly. Only a
+		// camera the user disturbed mid-flight can land it outside the usable area;
+		// clamp just that case so the handles stay reachable.
+		if CGRect(origin: .zero, size: size).contains(rect) {
+			selectionRect = rect
+		} else {
+			selectionRect = normalizedClamped(rect.minX, rect.minY, rect.maxX, rect.maxY, in: size)
+		}
 		didSeedFromReplacing = true
+		recompute(proxy: proxy, size: size)
+	}
+
+	/// Web-Mercator Y in [0, 1] for a latitude.
+	private static func mercatorY(_ latitude: Double) -> Double {
+		let lat = min(max(latitude, -85.05112878), 85.05112878) * .pi / 180
+		return (1 - log(tan(lat) + 1 / cos(lat)) / .pi) / 2
+	}
+
+	/// Latitude for a Web-Mercator Y in [0, 1].
+	private static func mercatorLat(_ y: Double) -> Double {
+		atan(sinh(.pi * (1 - 2 * y))) * 180 / .pi
 	}
 
 	private func initRect(size: CGSize) {
 		guard selectionRect == .zero, size.width > 0, size.height > 0 else { return }
+		// Resizing: the selection seeds from the saved bounds once the camera frames
+		// them — don't flash the default rectangle in the meantime.
+		guard replacing == nil || didSeedFromReplacing else { return }
 		let area = usableRect(in: size)
 		selectionRect = (area.width > 120 && area.height > 120) ? area.insetBy(dx: 20, dy: 20) : area
 	}
