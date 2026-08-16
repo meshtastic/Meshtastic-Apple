@@ -711,7 +711,10 @@ extension OfflineMapManager {
 	/// appearance so light and dark shading never mix.
 	func terrainHillshadeCacheDirectory(dark: Bool) -> URL? {
 		guard let root = directoryURL()?.appendingPathComponent("terrain-cache", isDirectory: true) else { return nil }
-		let generation = regions
+		// The renderer version participates in the generation so a rendering change
+		// (clipping, shading tweaks) invalidates tiles cached by an older build.
+		let rendererVersion = "v2"
+		let generation = rendererVersion + "|" + regions
 			.compactMap { $0.terrain.map { String(Int($0.downloadedAt.timeIntervalSince1970)) } }
 			.sorted()
 			.joined(separator: ",")
