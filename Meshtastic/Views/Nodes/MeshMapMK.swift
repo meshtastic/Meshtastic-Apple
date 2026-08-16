@@ -876,7 +876,10 @@ struct MeshMapMK: View {
 	private func presentCoverageEstimate(forNode nodeNum: Int64) {
 		defer { router.mapState = nil }
 		guard let node = getNodeInfo(id: nodeNum, context: context) else { return }
-		let coordinate = node.latestPosition?.nodeCoordinate
+		let position = node.latestPosition
+		let coordinate = position?.nodeCoordinate
+		// 0 is the firmware's "no altitude" sentinel.
+		let altitude = position.flatMap { $0.altitude != 0 ? Double($0.altitude) : nil }
 		let name = node.user?.displayLongName ?? node.user?.shortName ?? ""
 		let params = SitePlannerParameters.prefilled(
 			name: name,
@@ -884,7 +887,7 @@ struct MeshMapMK: View {
 			loRaConfig: connectedLoRaConfig,
 			primaryChannelName: connectedPrimaryChannelName
 		)
-		coverageSeed = CoverageEstimateSeed(parameters: params, nodeCoordinate: coordinate, mapCenter: visibleRegion?.center)
+		coverageSeed = CoverageEstimateSeed(parameters: params, nodeCoordinate: coordinate, nodeAltitude: altitude, mapCenter: visibleRegion?.center)
 		if let coordinate {
 			cameraCommand = ClusterMapCameraCommand(
 				id: UUID(),
