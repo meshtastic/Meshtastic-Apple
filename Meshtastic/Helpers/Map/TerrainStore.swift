@@ -71,6 +71,22 @@ actor TerrainStore {
 		source(covering: z, x: x, y: y) != nil
 	}
 
+	/// The coverage box of the region covering this tile, for consumers that
+	/// clip rendering to the downloaded boundary.
+	func coverage(z: Int, x: Int, y: Int) -> GeoBounds? {
+		source(covering: z, x: x, y: y)?.bounds
+	}
+
+	/// Lon/lat box of a Web-Mercator tile.
+	static func tileBounds(z: Int, x: Int, y: Int) -> GeoBounds {
+		let n = Double(1 << z)
+		let minLon = Double(x) / n * 360 - 180
+		let maxLon = Double(x + 1) / n * 360 - 180
+		let maxLat = atan(sinh(.pi * (1 - 2 * Double(y) / n))) * 180 / .pi
+		let minLat = atan(sinh(.pi * (1 - 2 * Double(y + 1) / n))) * 180 / .pi
+		return GeoBounds(minLon: minLon, minLat: minLat, maxLon: maxLon, maxLat: maxLat)
+	}
+
 	/// The elevation grid for a map tile at any zoom, with `margin` edge pixels
 	/// sampled from neighbors (edge-clamped at coverage boundaries). Nil when no
 	/// configured region covers the tile or nothing decodes.
@@ -185,14 +201,14 @@ actor TerrainStore {
 		return decoded
 	}
 
-	/// The configured source whose bounds contain the tile's center.
+	/// The configured source whose bounds INTERSECT the tile. A center test left
+	/// border tiles either spilling past the region boundary or gapped inside it;
+	/// intersection + consumer-side clipping renders exactly to the boundary.
 	private func source(covering z: Int, x: Int, y: Int) -> OpenSource? {
-		let n = Double(1 << z)
-		let lon = (Double(x) + 0.5) / n * 360 - 180
-		let lat = atan(sinh(.pi * (1 - 2 * (Double(y) + 0.5) / n))) * 180 / .pi
+		let tile = Self.tileBounds(z: z, x: x, y: y)
 		return sources.first { source in
-			lon >= source.bounds.minLon && lon <= source.bounds.maxLon &&
-			lat >= source.bounds.minLat && lat <= source.bounds.maxLat
+			tile.minLon <= source.bounds.maxLon && tile.maxLon >= source.bounds.minLon &&
+			tile.minLat <= source.bounds.maxLat && tile.maxLat >= source.bounds.minLat
 		}
 	}
 }

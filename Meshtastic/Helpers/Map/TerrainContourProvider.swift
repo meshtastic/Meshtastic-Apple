@@ -92,9 +92,12 @@ final class TerrainContourProvider: ObservableObject {
 		generationTask?.cancel()
 		generationTask = Task.detached(priority: .userInitiated) { [weak self] in
 			var perTile: [(tile: (z: Int, x: Int, y: Int), lines: [ContourLine])] = []
+			var coverageByTile: [String: GeoBounds] = [:]
 			for tile in tiles {
 				if Task.isCancelled { return }
 				let tileKey = "\(genZoom)/\(tile.x)/\(tile.y)|\(intervals.minor)"
+				guard let coverage = await store.coverage(z: genZoom, x: tile.x, y: tile.y) else { continue }
+				coverageByTile["\(genZoom)/\(tile.x)/\(tile.y)"] = coverage
 				if let lines = cached[tileKey] {
 					perTile.append(((genZoom, tile.x, tile.y), lines))
 					continue
@@ -119,21 +122,42 @@ final class TerrainContourProvider: ObservableObject {
 					let lat = atan(sinh(.pi * (1 - 2 * wy))) * 180 / .pi
 					return CLLocationCoordinate2D(latitude: lat, longitude: lon)
 				}
+				let coverage = coverageByTile["\(entry.tile.z)/\(entry.tile.x)/\(entry.tile.y)"]
+				func insideCoverage(_ c: CLLocationCoordinate2D) -> Bool {
+					guard let coverage else { return true }
+					return c.longitude >= coverage.minLon && c.longitude <= coverage.maxLon &&
+						c.latitude >= coverage.minLat && c.latitude <= coverage.maxLat
+				}
 				for (lineIndex, line) in entry.lines.enumerated() where line.points.count >= 2 {
 					let coordinates = line.points.map(coordinate)
-					let polyline = MKPolyline(coordinates: coordinates, count: coordinates.count)
-					if line.isIndex {
-						index.append(polyline)
-						if line.points.count >= 12 {
-							let mid = coordinate(line.points[line.points.count / 2])
-							labelCandidates.append((line.points.count, TerrainContourLabel(
-								id: "\(entry.tile.z)/\(entry.tile.x)/\(entry.tile.y)-\(Int(line.elevation))-\(lineIndex)",
-								coordinate: mid,
-								text: Self.labelText(elevationMeters: line.elevation, metric: metric)
-							)))
+					// Clip to the downloaded boundary: split into in-bounds runs so
+					// contours end at the region edge instead of spilling past it.
+					var runs: [[CLLocationCoordinate2D]] = []
+					var current: [CLLocationCoordinate2D] = []
+					for c in coordinates {
+						if insideCoverage(c) {
+							current.append(c)
+						} else if !current.isEmpty {
+							runs.append(current)
+							current = []
 						}
-					} else {
-						minor.append(polyline)
+					}
+					if !current.isEmpty { runs.append(current) }
+					for (runIndex, run) in runs.enumerated() where run.count >= 2 {
+						let polyline = MKPolyline(coordinates: run, count: run.count)
+						if line.isIndex {
+							index.append(polyline)
+							if run.count >= 12 {
+								let mid = run[run.count / 2]
+								labelCandidates.append((run.count, TerrainContourLabel(
+									id: "\(entry.tile.z)/\(entry.tile.x)/\(entry.tile.y)-\(Int(line.elevation))-\(lineIndex)-\(runIndex)",
+									coordinate: mid,
+									text: Self.labelText(elevationMeters: line.elevation, metric: metric)
+								)))
+							}
+						} else {
+							minor.append(polyline)
+						}
 					}
 				}
 			}
