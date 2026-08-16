@@ -479,15 +479,16 @@ extension OfflineVectorTileProvider {
 			guard let kind, parkKinds.contains(kind) else { continue } // parks only, skip generic land
 			appendPolygons(feature.geometry, role: .park, bounds: bounds, into: &polys, id: nextID)
 		}
+		// The water layer carries every polygonal water body (ocean, lake, dock,
+		// reef, basin…) plus river/stream/canal CENTERLINES as LineStrings — in
+		// current basemap builds there is no separate physical_line layer, so
+		// waterway lines must come from here too or narrow rivers render as land.
 		for feature in vector.features(for: "water") {
 			appendPolygons(feature.geometry, role: .water, bounds: bounds, into: &polys, id: nextID)
-		}
-		// Rivers and streams as centerlines — narrower waterways have no polygon
-		// in the water layer and vanished entirely without these.
-		for feature in vector.features(for: "physical_line") {
 			let kind = (feature.properties["kind"] as? String) ?? (feature.properties["pmap:kind"] as? String)
-			guard kind == "river" || kind == "stream" || kind == "canal" else { continue }
-			appendPolylines(feature.geometry, role: .river, bounds: bounds, into: &lines, id: nextID)
+			if kind == "river" || kind == "stream" || kind == "canal" {
+				appendPolylines(feature.geometry, role: .river, bounds: bounds, into: &lines, id: nextID)
+			}
 		}
 		// All roads (incl. the residential/neighborhood street grid); footpaths are still skipped.
 		for feature in vector.features(for: "roads") {
