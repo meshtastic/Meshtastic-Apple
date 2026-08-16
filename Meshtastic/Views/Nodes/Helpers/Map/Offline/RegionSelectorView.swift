@@ -497,10 +497,21 @@ struct RegionSelectorView: View {
 		isEstimating = false
 	}
 
-	/// Network-accurate size (the exact plan the download uses), or nil when planning
-	/// fails — the caller keeps showing the rough estimate, marked approximate.
-	private static func computeEstimate(bounds: GeoBounds, detail: OfflineMapDetailLevel) async -> Int64? {
-		(try? await PMTilesExtractor().estimate(bounds: bounds, minZoom: detail.minZoom, maxZoom: detail.maxZoom))?.bytes
+	/// Network-accurate size (the exact plans the download uses), or nil when
+	/// basemap planning fails — the caller keeps showing the rough estimate,
+	/// marked approximate. Terrain planning failure degrades to basemap-only
+	/// rather than losing the whole estimate.
+	private static func computeEstimate(bounds: GeoBounds, detail: OfflineMapDetailLevel, includeTerrain: Bool) async -> Int64? {
+		let extractor = PMTilesExtractor()
+		guard let basemap = (try? await extractor.estimate(bounds: bounds, minZoom: detail.minZoom, maxZoom: detail.maxZoom))?.bytes else {
+			return nil
+		}
+		guard includeTerrain, let terrainURL = URL(string: OfflineMapManager.terrainGlobalArchive) else { return basemap }
+		let terrain = (try? await extractor.makePlan(
+			sourceURL: terrainURL, sourceBuild: "Mapterhorn",
+			bounds: bounds, minZoom: 0, maxZoom: OfflineMapManager.terrainGlobalMaxZoom
+		))?.payloadBytes ?? 0
+		return basemap + terrain
 	}
 
 	private func startDownload() {
