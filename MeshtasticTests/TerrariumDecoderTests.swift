@@ -29,12 +29,13 @@ struct TerrariumDecoderTests {
 				rgba[base + 2] = b
 			}
 		}
-		let context = try #require(CGContext(
-			data: &rgba, width: size, height: size, bitsPerComponent: 8, bytesPerRow: size * 4,
-			space: CGColorSpaceCreateDeviceRGB(),
-			bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue | CGBitmapInfo.byteOrder32Big.rawValue
-		))
-		let image = try #require(context.makeImage())
+		let image: CGImage = try #require(rgba.withUnsafeMutableBytes { buffer in
+			CGContext(
+				data: buffer.baseAddress, width: size, height: size, bitsPerComponent: 8, bytesPerRow: size * 4,
+				space: CGColorSpaceCreateDeviceRGB(),
+				bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue | CGBitmapInfo.byteOrder32Big.rawValue
+			)?.makeImage()
+		})
 		let data = NSMutableData()
 		let destination = try #require(CGImageDestinationCreateWithData(data, "public.png" as CFString, 1, nil))
 		CGImageDestinationAddImage(destination, image, nil)

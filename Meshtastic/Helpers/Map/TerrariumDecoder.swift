@@ -39,8 +39,12 @@ struct ElevationTile: Sendable {
 	}
 
 	/// Elevation at grid coordinates including the margin (-margin..<size+margin).
+	/// Coordinates are clamped to the grid so a caller with a smaller margin than
+	/// it assumed reads the edge instead of trapping.
 	func gridElevation(x gx: Int, y gy: Int) -> Float {
-		elevations[(gy + margin) * gridSize + (gx + margin)]
+		let cx = min(max(gx + margin, 0), gridSize - 1)
+		let cy = min(max(gy + margin, 0), gridSize - 1)
+		return elevations[cy * gridSize + cx]
 	}
 }
 
@@ -66,17 +70,24 @@ enum TerrariumDecoder {
 
 		var rgba = [UInt8](repeating: 0, count: width * height * 4)
 		let colorSpace = CGColorSpaceCreateDeviceRGB()
-		guard let context = CGContext(
-			data: &rgba,
-			width: width,
-			height: height,
-			bitsPerComponent: 8,
-			bytesPerRow: width * 4,
-			space: colorSpace,
-			bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue | CGBitmapInfo.byteOrder32Big.rawValue
-		) else { return nil }
-		context.interpolationQuality = .none
-		context.draw(image, in: CGRect(x: 0, y: 0, width: width, height: height))
+		// noneSkipLast: elevation lives in R/G/B — premultiplying by a source alpha
+		// channel would corrupt the decoded heights. The pointer handed to CGContext
+		// must stay valid for the draw, hence withUnsafeMutableBytes around all use.
+		let drawn: Bool = rgba.withUnsafeMutableBytes { buffer in
+			guard let context = CGContext(
+				data: buffer.baseAddress,
+				width: width,
+				height: height,
+				bitsPerComponent: 8,
+				bytesPerRow: width * 4,
+				space: colorSpace,
+				bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue | CGBitmapInfo.byteOrder32Big.rawValue
+			) else { return false }
+			context.interpolationQuality = .none
+			context.draw(image, in: CGRect(x: 0, y: 0, width: width, height: height))
+			return true
+		}
+		guard drawn else { return nil }
 
 		var elevations = [Float](repeating: 0, count: width * height)
 		for index in 0..<(width * height) {

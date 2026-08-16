@@ -73,12 +73,14 @@ final class HillshadeTileOverlay: MKTileOverlay {
 	/// 1×1 transparent PNG for out-of-coverage tiles.
 	private static let emptyTile: Data = {
 		var pixel: [UInt8] = [0, 0, 0, 0]
-		let context = CGContext(
-			data: &pixel, width: 1, height: 1, bitsPerComponent: 8, bytesPerRow: 4,
-			space: CGColorSpaceCreateDeviceRGB(),
-			bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue | CGBitmapInfo.byteOrder32Big.rawValue
-		)
-		guard let image = context?.makeImage(), let data = pngData(from: image) else { return Data() }
+		let image: CGImage? = pixel.withUnsafeMutableBytes { buffer in
+			CGContext(
+				data: buffer.baseAddress, width: 1, height: 1, bitsPerComponent: 8, bytesPerRow: 4,
+				space: CGColorSpaceCreateDeviceRGB(),
+				bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue | CGBitmapInfo.byteOrder32Big.rawValue
+			)?.makeImage()
+		}
+		guard let image, let data = pngData(from: image) else { return Data() }
 		return data
 	}()
 
@@ -95,15 +97,17 @@ final class HillshadeTileOverlay: MKTileOverlay {
 
 		for py in 0..<size {
 			for px in 0..<size {
-				// Horn kernel: weighted differences of the 8 neighbors.
-				let a = tile.gridElevation(x: px - 1, y: py - 1)
-				let b = tile.gridElevation(x: px, y: py - 1)
-				let c = tile.gridElevation(x: px + 1, y: py - 1)
-				let d = tile.gridElevation(x: px - 1, y: py)
-				let f = tile.gridElevation(x: px + 1, y: py)
-				let g = tile.gridElevation(x: px - 1, y: py + 1)
-				let h = tile.gridElevation(x: px, y: py + 1)
-				let i = tile.gridElevation(x: px + 1, y: py + 1)
+				// Horn kernel: weighted differences of the 8 neighbors. Elevations
+				// clamp at sea level — the data carries ocean bathymetry, and without
+				// the clamp the shading renders seafloor relief onto open water.
+				let a = max(0, tile.gridElevation(x: px - 1, y: py - 1))
+				let b = max(0, tile.gridElevation(x: px, y: py - 1))
+				let c = max(0, tile.gridElevation(x: px + 1, y: py - 1))
+				let d = max(0, tile.gridElevation(x: px - 1, y: py))
+				let f = max(0, tile.gridElevation(x: px + 1, y: py))
+				let g = max(0, tile.gridElevation(x: px - 1, y: py + 1))
+				let h = max(0, tile.gridElevation(x: px, y: py + 1))
+				let i = max(0, tile.gridElevation(x: px + 1, y: py + 1))
 
 				let dzdx = ((c + 2 * f + i) - (a + 2 * d + g)) / (8 * cellSize)
 				let dzdy = ((g + 2 * h + i) - (a + 2 * b + c)) / (8 * cellSize)
@@ -126,11 +130,14 @@ final class HillshadeTileOverlay: MKTileOverlay {
 		for index in 0..<(size * size) {
 			rgba[index * 4 + 3] = alphas[index]
 		}
-		guard let context = CGContext(
-			data: &rgba, width: size, height: size, bitsPerComponent: 8, bytesPerRow: size * 4,
-			space: CGColorSpaceCreateDeviceRGB(),
-			bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue | CGBitmapInfo.byteOrder32Big.rawValue
-		), let image = context.makeImage() else { return nil }
+		let image: CGImage? = rgba.withUnsafeMutableBytes { buffer in
+			CGContext(
+				data: buffer.baseAddress, width: size, height: size, bitsPerComponent: 8, bytesPerRow: size * 4,
+				space: CGColorSpaceCreateDeviceRGB(),
+				bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue | CGBitmapInfo.byteOrder32Big.rawValue
+			)?.makeImage()
+		}
+		guard let image else { return nil }
 		return pngData(from: image)
 	}
 

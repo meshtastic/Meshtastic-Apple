@@ -44,6 +44,9 @@ final class TerrainContourProvider: ObservableObject {
 
 	let store: TerrainStore
 	private var generation = 0
+	/// The in-flight generation task; superseded or invalidated generations are
+	/// cancelled so their decode work stops instead of running to a discarded end.
+	private var generationTask: Task<Void, Never>?
 	/// Generated ContourLine sets per tile key, so panning re-uses tiles already computed.
 	private var tileCache: [String: [ContourLine]] = [:]
 	private var tileCacheOrder: [String] = []
@@ -60,6 +63,9 @@ final class TerrainContourProvider: ObservableObject {
 
 	/// Clears cached geometry (call when the underlying terrain data changes).
 	func invalidate() {
+		generation += 1          // an in-flight task must not publish stale geometry
+		generationTask?.cancel()
+		generationTask = nil
 		tileCache.removeAll()
 		tileCacheOrder.removeAll()
 		geometry = nil
@@ -83,9 +89,11 @@ final class TerrainContourProvider: ObservableObject {
 		let store = store
 		let cached = tileCache
 
-		Task.detached(priority: .userInitiated) { [weak self] in
+		generationTask?.cancel()
+		generationTask = Task.detached(priority: .userInitiated) { [weak self] in
 			var perTile: [(tile: (z: Int, x: Int, y: Int), lines: [ContourLine])] = []
 			for tile in tiles {
+				if Task.isCancelled { return }
 				let tileKey = "\(genZoom)/\(tile.x)/\(tile.y)|\(intervals.minor)"
 				if let lines = cached[tileKey] {
 					perTile.append(((genZoom, tile.x, tile.y), lines))

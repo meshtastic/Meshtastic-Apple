@@ -61,7 +61,7 @@ struct ContourIntervals: Sendable {
 /// Extracts contour polylines from an `ElevationTile` with marching squares.
 /// The march covers the margin ring so segments continue across tile edges,
 /// and levels are every multiple of `intervals.minor` inside the tile's
-/// elevation range (levels below -100 m are skipped to avoid sea-noise
+/// elevation range (positive levels only — the data includes bathymetry
 /// banding). Saddle cells are disambiguated by the cell-center average.
 enum ContourGenerator {
 
@@ -101,8 +101,10 @@ enum ContourGenerator {
 		guard maxElevation > minElevation else { return [] }
 
 		let minor = intervals.minor
-		// Every multiple of `minor` in range, skipping levels below -100 m.
-		let firstLevelIndex = Int((max(minElevation, -100) / minor).rounded(.up))
+		// Every multiple of `minor` in range. Positive levels only: the elevation
+		// data carries ocean bathymetry, and sub-sea-level contours would draw
+		// rings on open water.
+		let firstLevelIndex = max(Int((max(minElevation, 0) / minor).rounded(.up)), 1)
 		let lastLevelIndex = Int((maxElevation / minor).rounded(.down))
 		guard firstLevelIndex <= lastLevelIndex else { return [] }
 		let levelCount = lastLevelIndex - firstLevelIndex + 1

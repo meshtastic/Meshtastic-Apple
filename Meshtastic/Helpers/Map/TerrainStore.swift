@@ -38,9 +38,14 @@ actor TerrainStore {
 
 	private var sources: [OpenSource] = []
 	private var configuredSources: [TerrainSource] = []
-	/// Decoded raw Mapterhorn grids keyed by "z/x/y"; small LRU by insertion order.
-	private var decodeCache: [String: (size: Int, elevations: [Float])] = [:]
-	private var decodeOrder: [String] = []
+	/// Decoded raw Mapterhorn grids, LRU-evicted.
+	private struct TileKey: Hashable {
+		let z: Int
+		let x: Int
+		let y: Int
+	}
+	private var decodeCache: [TileKey: (size: Int, elevations: [Float])] = [:]
+	private var decodeOrder: [TileKey] = []
 	private let decodeCacheLimit = 24
 
 	/// (Re)points the store at the given terrain sources. Cheap when unchanged.
@@ -88,18 +93,57 @@ actor TerrainStore {
 
 		// Sample positions span the tile plus margin, expressed in data-tile pixel
 		// space (may fall outside [0, tilePx) — the sampler walks into neighbors).
-		guard let probe = rawGrid(open: open, z: dataZoom, x: dataX, y: dataY) else { return nil }
-		let tilePx = Double(probe.size)
-		let span = tilePx / Double(scale)   // data pixels covered by one output tile edge
-		let originX = fracX * tilePx
-		let originY = fracY * tilePx
+		guard let baseGrid = rawGrid(open: open, z: dataZoom, x: dataX, y: dataY) else { return nil }
+		let tilePx = baseGrid.size
+		let span = Double(tilePx) / Double(scale)   // data pixels covered by one output tile edge
+		let originX = fracX * Double(tilePx)
+		let originY = fracY * Double(tilePx)
 		let step = span / Double(size)
+		let maxIndex = (1 << dataZoom) - 1
+
+		// Grids memoized per neighbor offset for this call — the hot path never
+		// hashes strings or re-enters the cache per sample. `nil` marks a missing
+		// neighbor (decode failure or world edge).
+		var neighborGrids: [TileKey: [Float]?] = [TileKey(z: dataZoom, x: dataX, y: dataY): baseGrid.elevations]
+		func gridFor(tileX: Int, tileY: Int) -> [Float]? {
+			let key = TileKey(z: dataZoom, x: min(max(tileX, 0), maxIndex), y: min(max(tileY, 0), maxIndex))
+			if let cached = neighborGrids[key] { return cached }
+			let fetched = rawGrid(open: open, z: key.z, x: key.x, y: key.y)?.elevations
+			neighborGrids[key] = fetched
+			return fetched
+		}
+		// Integer point sample: walks into the neighbor tile when the coordinate
+		// leaves this one. When the neighbor is missing, clamps to THIS tile's
+		// nearest edge (never the wrapped opposite edge).
+		func point(_ ix: Int, _ iy: Int) -> Float {
+			var tileX = dataX, tileY = dataY, lx = ix, ly = iy
+			if lx < 0 { tileX -= 1; lx += tilePx } else if lx >= tilePx { tileX += 1; lx -= tilePx }
+			if ly < 0 { tileY -= 1; ly += tilePx } else if ly >= tilePx { tileY += 1; ly -= tilePx }
+			if tileX != dataX || tileY != dataY {
+				if let neighbor = gridFor(tileX: tileX, tileY: tileY) {
+					return neighbor[ly * tilePx + lx]
+				}
+				// Missing neighbor: clamp the ORIGINAL coordinate into the base tile.
+				let cx = min(max(ix, 0), tilePx - 1)
+				let cy = min(max(iy, 0), tilePx - 1)
+				return baseGrid.elevations[cy * tilePx + cx]
+			}
+			return baseGrid.elevations[ly * tilePx + lx]
+		}
 
 		for gy in 0..<grid {
-			let sy = originY + (Double(gy - margin) + 0.5) * step
+			let sy = originY + (Double(gy - margin) + 0.5) * step - 0.5
+			let y0 = Int(sy.rounded(.down))
+			let ty = Float(sy - Double(y0))
 			for gx in 0..<grid {
-				let sx = originX + (Double(gx - margin) + 0.5) * step
-				elevations[gy * grid + gx] = sample(open: open, z: dataZoom, x: dataX, y: dataY, px: sx, py: sy)
+				let sx = originX + (Double(gx - margin) + 0.5) * step - 0.5
+				let x0 = Int(sx.rounded(.down))
+				let tx = Float(sx - Double(x0))
+				let p00 = point(x0, y0), p10 = point(x0 + 1, y0)
+				let p01 = point(x0, y0 + 1), p11 = point(x0 + 1, y0 + 1)
+				let top = p00 + (p10 - p00) * tx
+				let bottom = p01 + (p11 - p01) * tx
+				elevations[gy * grid + gx] = top + (bottom - top) * ty
 			}
 		}
 		return ElevationTile(z: z, x: x, y: y, size: size, margin: margin, elevations: elevations)
@@ -114,42 +158,17 @@ actor TerrainStore {
 		return metersPerTile / Double(size)
 	}
 
-	// MARK: - Sampling
-
-	/// Bilinear sample at data-tile pixel coordinates; walks into neighbor tiles
-	/// when the position (or its +1 interpolation partner) leaves this tile.
-	private func sample(open: OpenSource, z: Int, x: Int, y: Int, px: Double, py: Double) -> Float {
-		func point(_ ix: Int, _ iy: Int) -> Float {
-			var tileX = x, tileY = y, lx = ix, ly = iy
-			guard let baseGrid = rawGrid(open: open, z: z, x: x, y: y) else { return 0 }
-			let tilePx = baseGrid.size
-			while lx < 0 { lx += tilePx; tileX -= 1 }
-			while lx >= tilePx { lx -= tilePx; tileX += 1 }
-			while ly < 0 { ly += tilePx; tileY -= 1 }
-			while ly >= tilePx { ly -= tilePx; tileY += 1 }
-			let maxIndex = (1 << z) - 1
-			tileX = min(max(tileX, 0), maxIndex)
-			tileY = min(max(tileY, 0), maxIndex)
-			guard let grid = rawGrid(open: open, z: z, x: tileX, y: tileY) ?? baseGrid as (size: Int, elevations: [Float])? else { return 0 }
-			let cx = min(max(lx, 0), grid.size - 1)
-			let cy = min(max(ly, 0), grid.size - 1)
-			return grid.elevations[cy * grid.size + cx]
-		}
-		let fx = px - 0.5, fy = py - 0.5
-		let x0 = Int(floor(fx)), y0 = Int(floor(fy))
-		let tx = Float(fx - Double(x0)), ty = Float(fy - Double(y0))
-		let p00 = point(x0, y0), p10 = point(x0 + 1, y0)
-		let p01 = point(x0, y0 + 1), p11 = point(x0 + 1, y0 + 1)
-		let top = p00 + (p10 - p00) * tx
-		let bottom = p01 + (p11 - p01) * tx
-		return top + (bottom - top) * ty
-	}
-
 	/// Raw decoded Mapterhorn grid for a data tile, preferring the regional
-	/// archive when it has the tile. LRU-cached.
+	/// archive when it has the tile. LRU-cached (hits move to the back).
 	private func rawGrid(open: OpenSource, z: Int, x: Int, y: Int) -> (size: Int, elevations: [Float])? {
-		let key = "\(z)/\(x)/\(y)"
-		if let cached = decodeCache[key] { return cached }
+		let key = TileKey(z: z, x: x, y: y)
+		if let cached = decodeCache[key] {
+			if let position = decodeOrder.firstIndex(of: key), position != decodeOrder.count - 1 {
+				decodeOrder.remove(at: position)
+				decodeOrder.append(key)
+			}
+			return cached
+		}
 		var data: Data?
 		if let regional = open.regional, z >= Int(regional.header.minZoom), z <= Int(regional.header.maxZoom) {
 			data = regional.tileData(z: UInt8(z), x: UInt32(x), y: UInt32(y))

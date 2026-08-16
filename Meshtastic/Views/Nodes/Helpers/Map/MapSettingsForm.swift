@@ -27,8 +27,16 @@ struct MapSettingsForm: View {
 	@AppStorage("meshMapShowHillshade") private var showHillshade = false
 	@AppStorage("meshMapShowContours") private var showContours = false
 	/// Terrain toggles are disabled until at least one region has terrain data.
+	/// When the last terrain region disappears, the stored values reset so a
+	/// disabled toggle is never stuck in the on position.
 	private var hasTerrainData: Bool {
 		offlineMapManager.regions.contains { $0.terrain != nil }
+	}
+
+	private func resetTerraintogglesIfOrphaned() {
+		guard !hasTerrainData else { return }
+		if showHillshade { showHillshade = false }
+		if showContours { showContours = false }
 	}
 	@AppStorage("enableMapClustering") private var enableMapClustering = true
 	@AppStorage("enableMapPreciseLocationsOnly") private var preciseLocationsOnly = false
@@ -354,7 +362,11 @@ struct MapSettingsForm: View {
 		.presentationDragIndicator(.visible)
 		#endif
 		.presentationBackgroundInteraction(.enabled(upThrough: .medium))
+		.onChange(of: offlineMapManager.regions) {
+			resetTerraintogglesIfOrphaned()
+		}
 		.onAppear {
+			resetTerraintogglesIfOrphaned()
 			// Initialize map data manager
 			mapDataManager.initialize()
 			offlineMapManager.loadIfNeeded()

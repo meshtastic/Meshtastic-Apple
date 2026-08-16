@@ -585,6 +585,13 @@ extension OfflineMapManager {
 					sourceURL: source, sourceBuild: "Mapterhorn",
 					bounds: current.bounds, minZoom: 0, maxZoom: Self.terrainGlobalMaxZoom
 				)
+				// The basemap limit check ran before terrain existed — re-check the
+				// total ceiling with the terrain plan included so terrain can't push
+				// storage past the configured maximum.
+				let projected = await MainActor.run { self.totalSize } + plan.payloadBytes
+				guard projected <= Self.maxTotalBytes else {
+					throw OfflineMapError.storageLimit(String(localized: "Terrain would exceed the offline map storage limit."))
+				}
 				await self.markDownloading(id: current.id, estimatedBytes: plan.payloadBytes)
 				try await extractor.extract(plan: plan, to: globalURL) { [weak self] written, total in
 					Task { @MainActor in self?.updateProgress(id: current.id, written: written, total: total) }
@@ -631,6 +638,10 @@ extension OfflineMapManager {
 				sourceURL: source, sourceBuild: "Mapterhorn",
 				bounds: bounds, minZoom: Self.terrainRegionalMinZoom, maxZoom: Self.terrainRegionalMaxZoom
 			)
+			// Same storage ceiling as the global extract (the global file is on
+			// disk by now, so totalSize already includes it).
+			let projected = await MainActor.run { self.totalSize } + plan.payloadBytes
+			guard projected <= Self.maxTotalBytes else { return nil }
 			try await extractor.extract(plan: plan, to: destination)
 			let hasValidHeader = await Task.detached(priority: .utility) {
 				PMTilesArchive.header(url: destination) != nil

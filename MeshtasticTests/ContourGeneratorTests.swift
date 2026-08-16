@@ -43,6 +43,29 @@ struct ContourGeneratorTests {
 	/// Cone: 500 m peak at the tile center dropping 20 m per sample, resting on
 	/// a 50 m plateau. Crossing levels are 100/200/300/400 with ring radii
 	/// 20/15/10/5 samples — all inside the tile.
+	// Pins the saddle disambiguation rule: high corners NW+SE with a low cell
+	// center must isolate each high corner (top edge pairs with left, bottom with
+	// right). Swapping the rule's branches pairs the opposite edges and fails.
+	@Test func saddleRule_lowCenterIsolatesHighCorners() {
+		let tile = makeTile(size: 2, margin: 0) { x, y in
+			(x == 0 && y == 0) || (x == 1 && y == 1) ? 10 : 2
+		}
+		let lines = ContourGenerator.contours(tile: tile, intervals: ContourIntervals(minor: 6, index: 30))
+		#expect(lines.count == 2)
+		for line in lines {
+			let touchesTop = line.points.contains { $0.y <= 0.01 }
+			let touchesLeft = line.points.contains { $0.x <= 0.01 }
+			let touchesBottom = line.points.contains { $0.y >= 0.49 }
+			let touchesRight = line.points.contains { $0.x >= 0.49 }
+			if touchesTop {
+				#expect(touchesLeft && !touchesRight)
+			}
+			if touchesBottom {
+				#expect(touchesRight && !touchesLeft)
+			}
+		}
+	}
+
 	private func coneTile() -> ElevationTile {
 		makeTile { gridX, gridY in
 			let dx = Double(gridX) - 32
@@ -83,11 +106,12 @@ struct ContourGeneratorTests {
 	// MARK: - Inclined plane
 
 	@Test func inclinedPlane_producesParallelLinesSpanningTheTile() {
-		// 10 m per sample along x: levels 0...600 cross inside the grid.
+		// 10 m per sample along x: positive levels 100...600 cross inside the grid
+		// (level 0 is excluded — sea level never draws a contour).
 		let tile = makeTile { gridX, _ in Float(10 * gridX) }
 		let lines = ContourGenerator.contours(tile: tile, intervals: intervals)
-		#expect(lines.count == 7)
-		#expect(lines.map(\.elevation).sorted() == [0, 100, 200, 300, 400, 500, 600])
+		#expect(lines.count == 6)
+		#expect(lines.map(\.elevation).sorted() == [100, 200, 300, 400, 500, 600])
 		for line in lines {
 			let xValues = line.points.map(\.x)
 			let yValues = line.points.map(\.y)
@@ -103,14 +127,15 @@ struct ContourGeneratorTests {
 	// MARK: - Saddle
 
 	@Test func saddle_producesSanePolylines() {
-		// z = x·y about the cell-centered saddle point (31.5, 31.5); the level-0
-		// contour crosses saddle cells and exercises the midpoint-average rule.
+		// z = x·y + 300 about the cell-centered saddle point (31.5, 31.5); the
+		// 300 m contour crosses saddle cells and exercises the midpoint-average
+		// rule (offset keeps the saddle level positive — sea level never draws).
 		let tile = makeTile { gridX, gridY in
-			Float((Double(gridX) - 31.5) * (Double(gridY) - 31.5))
+			Float((Double(gridX) - 31.5) * (Double(gridY) - 31.5) + 300)
 		}
 		let lines = ContourGenerator.contours(tile: tile, intervals: intervals)
 		#expect(!lines.isEmpty)
-		#expect(lines.contains { $0.elevation == 0 })
+		#expect(lines.contains { $0.elevation == 300 })
 		for line in lines {
 			#expect(line.points.count >= 2)
 			#expect(line.points.allSatisfy { $0.x.isFinite && $0.y.isFinite })
