@@ -164,8 +164,9 @@ struct EventFirmwareInfoView: View {
 				detailRow(icon: "calendar", text: dates)
 			}
 			// The event domain (e.g. the custom web flasher) is a destination, not
-			// metadata — render it like the rows in the Links section.
-			if let domain = info.domain, !domain.isEmpty,
+			// metadata — render it like the rows in the Links section. Trimmed before
+			// interpolation: whitespace after the scheme would fail URL validation.
+			if let domain = info.domain?.trimmingCharacters(in: .whitespacesAndNewlines), !domain.isEmpty,
 			   let url = EventFirmwareURLPolicy.httpsURL(from: "https://\(domain)") {
 				Link(destination: url) {
 					HStack {
@@ -176,6 +177,7 @@ struct EventFirmwareInfoView: View {
 							.font(.caption)
 							.foregroundColor(.secondary)
 					}
+					.frame(minHeight: 48)
 				}
 			}
 		}
