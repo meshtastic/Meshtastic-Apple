@@ -152,7 +152,13 @@ final class HillshadeTileOverlay: MKTileOverlay {
 				// Flat ground computes to sin(altitude) ≈ 0.707; treat that as "no
 				// shadow" and scale darkness by the shortfall below it.
 				let flat = sinAlt
-				let shadow = max(0, (flat - illumination) / flat)
+				var shadow = max(0, (flat - illumination) / flat)
+				// Fade shading out near sea level: the source data carries positive
+				// sea-surface noise (measured ~1 m stdev with spikes on open water),
+				// which the ≤0 m clamp can't remove. No shading below 0.5 m, full
+				// above 3 m — real land that low is flat and barely shaded anyway.
+				let center = max(0, tile.gridElevation(x: px, y: py))
+				shadow *= min(max((center - 0.5) / 2.5, 0), 1)
 				alphas[py * size + px] = UInt8(min(255, shadow * cap * 255))
 			}
 		}
