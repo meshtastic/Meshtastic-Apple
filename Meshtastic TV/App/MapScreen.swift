@@ -13,6 +13,11 @@
 import SwiftUI
 import SwiftData
 
+private enum MapNavigationDestination: Hashable {
+	case settings
+	case node(UInt32)
+}
+
 struct MapScreen: View {
 	@Bindable var client: MeshClient
 	@State private var selectedNodeNum: UInt32?
@@ -22,7 +27,8 @@ struct MapScreen: View {
 	// focus for NavigationLink rows, so track it explicitly and mirror it into
 	// the map selection (debounced map-side).
 	@FocusState private var focusedNodeNum: UInt32?
-	@State private var navPath: [UInt32] = []
+	@State private var navPath: [MapNavigationDestination] = []
+	@State private var showingDisconnectConfirmation = false
 
 	/// The persisted node store — the map and list read from here, not the client.
 	@Query private var allNodes: [MeshNode]
@@ -81,6 +87,21 @@ struct MapScreen: View {
 				pollTick += 1
 			}
 		}
+		.onExitCommand {
+			if navPath.isEmpty {
+				showingDisconnectConfirmation = true
+			} else {
+				navPath.removeLast()
+			}
+		}
+		.alert("Disconnect from this node?", isPresented: $showingDisconnectConfirmation) {
+			Button("Disconnect", role: .destructive) {
+				client.disconnect()
+			}
+			Button("Cancel", role: .cancel) {}
+		} message: {
+			Text("You will return to the connection screen.")
+		}
 	}
 
 	private func recomputeNodeLists(from nodes: [MeshNode]) {
@@ -113,21 +134,14 @@ struct MapScreen: View {
 					} label: {
 						Label("Re-center Map", systemImage: "scope")
 					}
-					NavigationLink {
-						SettingsView()
-					} label: {
+					NavigationLink(value: MapNavigationDestination.settings) {
 						Label("Settings", systemImage: "gearshape")
-					}
-					Button(role: .destructive) {
-						client.disconnect()
-					} label: {
-						Label("Disconnect", systemImage: "xmark.circle.fill")
 					}
 				}
 
 				Section {
 					ForEach(sortedNodes) { node in
-						NavigationLink(value: node.num) {
+						NavigationLink(value: MapNavigationDestination.node(node.num)) {
 							NodeRow(node: node)
 						}
 						.focused($focusedNodeNum, equals: node.num)
@@ -139,9 +153,14 @@ struct MapScreen: View {
 			.onChange(of: focusedNodeNum) { _, newValue in
 				if let newValue { selectedNodeNum = newValue }
 			}
-			.navigationDestination(for: UInt32.self) { num in
-				if let node = allNodes.first(where: { $0.num == num }) {
-					NodeDetailView(node: node)
+			.navigationDestination(for: MapNavigationDestination.self) { destination in
+				switch destination {
+				case .settings:
+					SettingsView()
+				case .node(let num):
+					if let node = allNodes.first(where: { $0.num == num }) {
+						NodeDetailView(node: node)
+					}
 				}
 			}
 			.safeAreaInset(edge: .top) {
@@ -183,15 +202,6 @@ struct MapScreen: View {
 				)
 				.ignoresSafeArea(edges: [.top, .leading])
 		}
-	}
-
-	private var disconnectButton: some View {
-		Button(role: .destructive) {
-			client.disconnect()
-		} label: {
-			Label("Disconnect", systemImage: "xmark.circle.fill")
-		}
-		.buttonStyle(.bordered)
 	}
 }
 
