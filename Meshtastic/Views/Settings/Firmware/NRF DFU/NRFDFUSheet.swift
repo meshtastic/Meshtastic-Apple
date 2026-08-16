@@ -66,7 +66,7 @@ struct NRFDFUSheet: View {
 										}
 									}
 									.controlSize(.large)
-									.frame(maxWidth: .infinity)
+									.frame(maxWidth: .infinity, minHeight: 48)
 									.clipShape(RoundedRectangle(cornerRadius: 10))
 									.buttonStyle(.borderedProminent)
 
