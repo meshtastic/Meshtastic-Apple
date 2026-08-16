@@ -44,11 +44,25 @@ struct OfflineMapsList: View {
 						} label: {
 							OfflineMapRow(region: region)
 						}
+						.swipeActions(edge: .leading, allowsFullSwipe: false) {
+							if region.terrain == nil {
+								Button {
+									manager.downloadTerrain(for: region)
+								} label: {
+									Label("Add Terrain", systemImage: "mountain.2")
+								}
+								.tint(.indigo)
+								.disabled(manager.isBusy)
+							}
+						}
 					}
 				} footer: {
 					VStack(alignment: .leading, spacing: 2) {
 						Text("\(manager.formattedTotalSize) used on this device")
 						Text("Map data © OpenStreetMap, Protomaps")
+						if manager.regions.contains(where: { $0.terrain != nil }) {
+							Text("Terrain data © Mapterhorn")
+						}
 					}
 					.font(.caption)
 				}
@@ -111,6 +125,11 @@ struct OfflineMapRow: View {
 				Text("\(region.formattedSize) · Updated \(region.updatedDate.formatted(.relative(presentation: .named)))")
 					.font(.caption)
 					.foregroundStyle(.secondary)
+				if let terrainSize = region.formattedTerrainSize {
+					Text("Terrain: \(terrainSize)")
+						.font(.caption)
+						.foregroundStyle(.secondary)
+				}
 				if let warning = region.zoomCoverage.warningLabel {
 					Label(warning, systemImage: "exclamationmark.triangle")
 						.font(.caption2)
