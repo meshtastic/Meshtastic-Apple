@@ -36,4 +36,18 @@ enum TVTheme {
 	/// (.ignoresSafeArea), so the strip supplies its own distance from the
 	/// screen edge — kept tight so the strip hugs the edge it's pinned to.
 	static let statsStripMargin: CGFloat = 24
+
+	/// Mesh stats strip layout.
+	static let statsStripColumnSpacing: CGFloat = 24
+	static let statsStripMetricSpacing: CGFloat = 6
+	static let statsStripPacketSpacing: CGFloat = 10
+	static let statsStripNodesWidth: CGFloat = 230
+	static let statsStripUtilizationWidth: CGFloat = 180
+	static let statsStripPacketsWidth: CGFloat = 439
+	static let statsStripHorizontalPadding: CGFloat = 48
+	static let statsStripVerticalPadding: CGFloat = 28
+	static let statsStripCornerRadius: CGFloat = 24
+	static let statsStripDividerWidth: CGFloat = 1
+	static let statsStripDividerHeight: CGFloat = 104
+	static let statsStripMetadataHeight: CGFloat = 27.5
 }

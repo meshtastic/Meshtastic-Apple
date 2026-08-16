@@ -9941,6 +9941,9 @@
         }
       }
     },
+    "Air TX": {
+      "comment": "Metric label for airtime used to transmit packets."
+    },
     "Air Quality": {
       "comment": "Node detail section header for particulate-matter air quality readings."
     },

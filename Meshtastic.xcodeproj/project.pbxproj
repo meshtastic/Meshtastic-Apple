@@ -37,6 +37,7 @@
 		6CABB3DA5BDD75359320B657 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 985D21086E966D40C875F3CD /* InfoPlist.strings */; };
 		7443E9D2180568F2E62EDAB6 /* AppIcon_Ham.icon in Resources */ = {isa = PBXBuildFile; fileRef = DD9ED0AFED536B2EE5F32F23 /* AppIcon_Ham.icon */; };
 		78B74168A96E756F203F9D13 /* AppIcon_Chirpy.icon in Resources */ = {isa = PBXBuildFile; fileRef = DD8FE67D6F2C7F041F8E3C8C /* AppIcon_Chirpy.icon */; };
+		824834E7CD284E868BB3DDFF /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 26351F51CD01C94D8D82486A /* Localizable.xcstrings */; };
 		8DFCC830624F2D4607E87938 /* MBTilesArchive.swift in Sources */ = {isa = PBXBuildFile; fileRef = A82B439BEF9740A80E66097A /* MBTilesArchive.swift */; };
 		94F9F3199DB5429EBF21F9E9 /* Connection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0875C7B0694DBE671437CC1A /* Connection.swift */; };
 		977E69BC7382DA7EF386402F /* TCPConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3FA5EE6E2E5628082C9CF53F /* TCPConnection.swift */; };
@@ -1104,6 +1105,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				824834E7CD284E868BB3DDFF /* Localizable.xcstrings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

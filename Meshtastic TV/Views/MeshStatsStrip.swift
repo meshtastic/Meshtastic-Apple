@@ -27,37 +27,36 @@ struct MeshStatsStrip: View {
 	let storeOnlineCount: Int
 	let storeTotalCount: Int
 
-	@ScaledMetric(relativeTo: .caption) private var labelSize: CGFloat = 30
-	@ScaledMetric(relativeTo: .title) private var valueSize: CGFloat = 64
-	@ScaledMetric(relativeTo: .caption2) private var metadataSize: CGFloat = 22
+	@ScaledMetric(relativeTo: .caption2)
+	private var metadataHeight: CGFloat = TVTheme.statsStripMetadataHeight
 
 	var body: some View {
-		HStack(spacing: 24) {
+		HStack(spacing: TVTheme.statsStripColumnSpacing) {
 			cell(label: "Nodes", value: nodesText)
-				.frame(idealWidth: 230, maxWidth: 230)
+				.frame(idealWidth: TVTheme.statsStripNodesWidth, maxWidth: TVTheme.statsStripNodesWidth)
 
 			divider
 			cell(label: "Ch Util", value: percentText(stats?.channelUtilization), color: channelUtilColor)
-				.frame(idealWidth: 180, maxWidth: 180)
+				.frame(idealWidth: TVTheme.statsStripUtilizationWidth, maxWidth: TVTheme.statsStripUtilizationWidth)
 
 			divider
 			cell(label: "Air TX", value: percentText(stats?.airUtilTx), color: airTxColor)
-				.frame(idealWidth: 180, maxWidth: 180)
+				.frame(idealWidth: TVTheme.statsStripUtilizationWidth, maxWidth: TVTheme.statsStripUtilizationWidth)
 
 			divider
 			packetsCell
-				.frame(idealWidth: 439, maxWidth: .infinity)
+				.frame(idealWidth: TVTheme.statsStripPacketsWidth, maxWidth: .infinity)
 		}
-		.padding(.horizontal, 48)
-		.padding(.vertical, 28)
+		.padding(.horizontal, TVTheme.statsStripHorizontalPadding)
+		.padding(.vertical, TVTheme.statsStripVerticalPadding)
 		.frame(maxWidth: .infinity)
 		.background(
-			RoundedRectangle(cornerRadius: 24, style: .continuous)
+			RoundedRectangle(cornerRadius: TVTheme.statsStripCornerRadius, style: .continuous)
 				.fill(.regularMaterial)
 		)
-		.clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+		.clipShape(RoundedRectangle(cornerRadius: TVTheme.statsStripCornerRadius, style: .continuous))
 		.overlay(
-			RoundedRectangle(cornerRadius: 24, style: .continuous)
+			RoundedRectangle(cornerRadius: TVTheme.statsStripCornerRadius, style: .continuous)
 				.stroke(.white.opacity(0.15), lineWidth: 1)
 		)
 		.shadow(color: .black.opacity(0.4), radius: 18, y: 8)
@@ -65,8 +64,8 @@ struct MeshStatsStrip: View {
 
 	// MARK: Cells
 
-	private func cell(label: String, value: String, color: Color = .primary) -> some View {
-		VStack(alignment: .leading, spacing: 6) {
+	private func cell(label: LocalizedStringKey, value: String, color: Color = .primary) -> some View {
+		VStack(alignment: .leading, spacing: TVTheme.statsStripMetricSpacing) {
 			metricLabel(label)
 			metricValue(value, color: color)
 		}
@@ -74,16 +73,15 @@ struct MeshStatsStrip: View {
 	}
 
 	private var packetsCell: some View {
-		VStack(alignment: .leading, spacing: 6) {
+		VStack(alignment: .leading, spacing: TVTheme.statsStripMetricSpacing) {
 			metricLabel("Packets")
 			packetCounts
 			packetMetadata
-				.font(.system(size: metadataSize, weight: .medium, design: .rounded))
-				.monospacedDigit()
+				.font(.caption2.weight(.medium).monospacedDigit())
 				.foregroundStyle(.secondary)
 				.lineLimit(1)
 				.minimumScaleFactor(0.75)
-				.frame(height: metadataSize * 1.25)
+				.frame(height: metadataHeight)
 		}
 		.frame(maxWidth: .infinity, alignment: .leading)
 	}
@@ -91,18 +89,18 @@ struct MeshStatsStrip: View {
 	@ViewBuilder
 	private var packetCounts: some View {
 		if let tx = stats?.packetsTx, let rx = stats?.packetsRx {
-			HStack(spacing: 10) {
+			HStack(spacing: TVTheme.statsStripPacketSpacing) {
 				packetCount(tx, arrow: "↑")
 				packetCount(rx, arrow: "↓")
 			}
 		} else {
-			metricValue("—", scale: 0.8)
+			metricValue("—", font: .title2)
 		}
 	}
 
 	private func packetCount(_ value: UInt32, arrow: String) -> some View {
 		Text("\(value.formatted()) \(arrow)")
-			.font(.system(size: valueSize * 0.8, weight: .semibold, design: .rounded).monospacedDigit())
+			.font(.title2.weight(.semibold).monospacedDigit())
 			.lineLimit(1)
 			.minimumScaleFactor(0.3)
 			.frame(maxWidth: .infinity, alignment: .leading)
@@ -111,7 +109,7 @@ struct MeshStatsStrip: View {
 	@ViewBuilder
 	private var packetMetadata: some View {
 		if let stats {
-			HStack(spacing: 10) {
+			HStack(spacing: TVTheme.statsStripPacketSpacing) {
 				if let dupes = stats.packetsRxDupe {
 					Text("\(dupes.formatted()) dupes")
 					Text("·")
@@ -125,9 +123,9 @@ struct MeshStatsStrip: View {
 		}
 	}
 
-	private func metricLabel(_ text: String) -> some View {
+	private func metricLabel(_ text: LocalizedStringKey) -> some View {
 		Text(text)
-			.font(.system(size: labelSize, weight: .medium))
+			.font(.caption.weight(.medium))
 			.tracking(1.2)
 			.textCase(.uppercase)
 			.foregroundStyle(Color.gray)
@@ -135,9 +133,9 @@ struct MeshStatsStrip: View {
 			.minimumScaleFactor(0.8)
 	}
 
-	private func metricValue(_ text: String, color: Color = .primary, scale: CGFloat = 1) -> some View {
+	private func metricValue(_ text: String, color: Color = .primary, font: Font = .title) -> some View {
 		Text(text)
-			.font(.system(size: valueSize * scale, weight: .semibold, design: .rounded).monospacedDigit())
+			.font(font.weight(.semibold).monospacedDigit())
 			.foregroundStyle(color)
 			.lineLimit(1)
 			.minimumScaleFactor(0.5)
@@ -146,7 +144,7 @@ struct MeshStatsStrip: View {
 	private var divider: some View {
 		Rectangle()
 			.fill(.secondary.opacity(0.4))
-			.frame(width: 1, height: 104)
+			.frame(width: TVTheme.statsStripDividerWidth, height: TVTheme.statsStripDividerHeight)
 	}
 
 	// MARK: Values
