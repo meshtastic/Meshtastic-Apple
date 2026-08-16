@@ -11,6 +11,21 @@
 import Foundation
 import MapKit
 
+/// Elevation data downloaded alongside a region: Mapterhorn terrain extracts of
+/// the same bounding box. Absent for regions downloaded before terrain support.
+struct OfflineMapTerrain: Codable, Hashable {
+	/// File name of the global (z0–12) terrain extract, e.g. `"<uuid>-terrain.pmtiles"`.
+	var fileName: String
+	/// File name of the optional high-resolution regional extract, e.g. `"<uuid>-terrain-hi.pmtiles"`.
+	var regionalFileName: String?
+	/// Combined size of the terrain archives on disk.
+	var byteCount: Int64
+	/// When the terrain extract finished; drives cache invalidation.
+	var downloadedAt: Date
+	/// Highest zoom level with terrain data: 12 when global-only, higher with a regional extract.
+	var maxZoom: Int
+}
+
 /// Metadata describing one downloaded offline map region. The geometry is stored
 /// as four doubles (Codable-friendly); `bounds`/`region` expose the map types.
 struct OfflineMapRegion: Identifiable, Codable, Hashable {
@@ -29,6 +44,9 @@ struct OfflineMapRegion: Identifiable, Codable, Hashable {
 	var updatedDate: Date
 	/// Protomaps daily build the tiles were extracted from, e.g. `"20260623"`.
 	var sourceBuild: String
+	/// Terrain elevation extracts for the same bounds, when downloaded.
+	/// Optional and additive: manifests written before terrain support decode with `nil`.
+	var terrain: OfflineMapTerrain?
 
 	init(
 		id: UUID = UUID(),
@@ -40,7 +58,8 @@ struct OfflineMapRegion: Identifiable, Codable, Hashable {
 		fileSize: Int64,
 		createdDate: Date = .now,
 		updatedDate: Date = .now,
-		sourceBuild: String
+		sourceBuild: String,
+		terrain: OfflineMapTerrain? = nil
 	) {
 		self.id = id
 		self.name = name
@@ -55,6 +74,7 @@ struct OfflineMapRegion: Identifiable, Codable, Hashable {
 		self.createdDate = createdDate
 		self.updatedDate = updatedDate
 		self.sourceBuild = sourceBuild
+		self.terrain = terrain
 	}
 
 	var bounds: GeoBounds {
@@ -76,6 +96,11 @@ struct OfflineMapRegion: Identifiable, Codable, Hashable {
 
 	var formattedSize: String {
 		ByteCountFormatter.string(fromByteCount: fileSize, countStyle: .file)
+	}
+
+	/// The terrain component's size for display, or nil when no terrain is downloaded.
+	var formattedTerrainSize: String? {
+		terrain.map { ByteCountFormatter.string(fromByteCount: $0.byteCount, countStyle: .file) }
 	}
 
 	/// Whether this archive's zoom range covers what the map actually needs, or leaves a gap the

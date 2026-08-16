@@ -56,6 +56,24 @@ struct OfflineMapDetailView: View {
 				LabeledContent("Source", value: current.sourceBuild == "Imported" ? "Imported PMTiles" : "Protomaps \(current.sourceBuild)")
 			}
 
+			Section("Terrain") {
+				if let terrain = current.terrain {
+					LabeledContent("Size", value: current.formattedTerrainSize ?? "")
+					LabeledContent("Detail", value: "Zoom 0–\(terrain.maxZoom)")
+					LabeledContent("Source", value: "Mapterhorn")
+				} else {
+					Button {
+						manager.downloadTerrain(for: current)
+					} label: {
+						Label("Add Terrain", systemImage: "mountain.2")
+					}
+					.disabled(manager.isBusy)
+					Text("Elevation data for hillshade and contour lines, downloaded for this area.")
+						.font(.caption)
+						.foregroundStyle(.secondary)
+				}
+			}
+
 			if let fileURL = manager.fileURL(for: current), FileManager.default.fileExists(atPath: fileURL.path) {
 				Section {
 					ShareLink(item: fileURL) {
