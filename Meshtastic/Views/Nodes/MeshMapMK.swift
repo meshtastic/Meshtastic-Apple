@@ -311,9 +311,19 @@ struct MeshMapMK: View {
 		)
 	}
 
-	/// Coverage box for each downloaded region (accent borders + capsules), shown once vectors load.
+	/// Coverage box for each downloaded region (accent borders + capsules). Basemap
+	/// boxes show once vectors load; regions with terrain also show whenever a
+	/// terrain layer is on — hillshade and contours draw over Apple maps even with
+	/// the offline tiles toggle off, and the box must match what actually renders.
 	private var offlineCoverageAreas: [GeoBounds] {
-		offlineVectors.isAvailable ? offlineRegions.map { $0.bounds } : []
+		var boxed = offlineVectors.isAvailable ? offlineRegions : []
+		if showHillshade || showContours {
+			for region in offlineMapManager.regions
+			where region.terrain != nil && !boxed.contains(where: { $0.id == region.id }) {
+				boxed.append(region)
+			}
+		}
+		return boxed.map { $0.bounds }
 	}
 	/// Cheap change-detector for the route set (drives rebuildRouteContent via onChange).
 	/// Change-detector for the waypoint set (rebuild markers on add/remove/move/icon change).
@@ -709,6 +719,10 @@ struct MeshMapMK: View {
 				// Pan/zoom settled: re-filter to the new region now; the state key dedupes
 				// the rebuild when the visible set is unchanged.
 				refreshPositionState()
+				// Contours track the CAMERA, not the node set — regenerate here directly,
+				// or panning with an unchanged visible node set never updates them
+				// (refreshPositionState early-returns before its contour call).
+				updateContoursIfNeeded()
 				// Remember where the user is looking so the map reopens here next launch.
 				persistVisibleRegion()
 			}
