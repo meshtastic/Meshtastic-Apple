@@ -54,15 +54,19 @@ struct OfflineMapDetailView: View {
 				} label: {
 					Label("Rename", systemImage: "pencil")
 				}
-				LabeledContent("Size", value: current.formattedSize)
-				LabeledContent("Detail", value: "Zoom \(current.minZoom)–\(current.maxZoom)")
-				if let warning = current.zoomCoverage.warningLabel {
-					Label(warning, systemImage: "exclamationmark.triangle")
-						.font(.callout)
-						.foregroundStyle(.orange)
+				// Basemap facts don't apply to terrain-only regions — the Terrain
+				// section below carries their size and source.
+				if current.hasBasemap {
+					LabeledContent("Size", value: current.formattedSize)
+					LabeledContent("Detail", value: "Zoom \(current.minZoom)–\(current.maxZoom)")
+					if let warning = current.zoomCoverage.warningLabel {
+						Label(warning, systemImage: "exclamationmark.triangle")
+							.font(.callout)
+							.foregroundStyle(.orange)
+					}
+					LabeledContent("Map updated", value: current.updatedDate.formatted(.relative(presentation: .named)))
+					LabeledContent("Source", value: current.sourceBuild == "Imported" ? "Imported PMTiles" : "Protomaps \(current.sourceBuild)")
 				}
-				LabeledContent("Map updated", value: current.updatedDate.formatted(.relative(presentation: .named)))
-				LabeledContent("Source", value: current.sourceBuild == "Imported" ? "Imported PMTiles" : "Protomaps \(current.sourceBuild)")
 			}
 
 			Section("Terrain") {
@@ -113,7 +117,7 @@ struct OfflineMapDetailView: View {
 			}
 			Button("Cancel", role: .cancel) { }
 		} message: {
-			Text("\(current.formattedSize) will be freed on this device.")
+			Text("\(current.formattedTotalSize) will be freed on this device.")
 		}
 	}
 }

@@ -122,15 +122,19 @@ struct OfflineMapRow: View {
 			VStack(alignment: .leading, spacing: 2) {
 				Text(region.name)
 					.font(.headline)
-				Text("\(region.formattedSize) · Updated \(region.updatedDate.formatted(.relative(presentation: .named)))")
+				Text("\(region.formattedTotalSize) · Updated \(region.updatedDate.formatted(.relative(presentation: .named)))")
 					.font(.caption)
 					.foregroundStyle(.secondary)
-				if let terrainSize = region.formattedTerrainSize {
+				if !region.hasBasemap {
+					Text("Terrain only — hillshade and contours")
+						.font(.caption)
+						.foregroundStyle(.secondary)
+				} else if let terrainSize = region.formattedTerrainSize {
 					Text("Terrain: \(terrainSize)")
 						.font(.caption)
 						.foregroundStyle(.secondary)
 				}
-				if let warning = region.zoomCoverage.warningLabel {
+				if region.hasBasemap, let warning = region.zoomCoverage.warningLabel {
 					Label(warning, systemImage: "exclamationmark.triangle")
 						.font(.caption2)
 						.foregroundStyle(.orange)

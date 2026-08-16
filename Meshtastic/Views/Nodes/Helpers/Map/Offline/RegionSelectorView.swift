@@ -43,6 +43,27 @@ private struct PanelHeightKey: PreferenceKey {
 	static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) { value = max(value, nextValue()) }
 }
 
+/// What a download includes: the Protomaps basemap, Mapterhorn terrain, or both.
+/// Terrain-only regions draw hillshade and contours over Apple maps.
+enum OfflineDownloadContent: String, CaseIterable, Identifiable {
+	case mapAndTerrain
+	case mapOnly
+	case terrainOnly
+
+	var id: String { rawValue }
+
+	var label: String {
+		switch self {
+		case .mapAndTerrain: return String(localized: "Map + Terrain")
+		case .mapOnly: return String(localized: "Map Only")
+		case .terrainOnly: return String(localized: "Terrain Only")
+		}
+	}
+
+	var includesBasemap: Bool { self != .terrainOnly }
+	var includesTerrain: Bool { self != .mapOnly }
+}
+
 struct RegionSelectorView: View {
 	let target: OfflineRegionTarget
 	/// When resizing, the existing region this download replaces on success.
@@ -53,8 +74,8 @@ struct RegionSelectorView: View {
 	@State private var camera: MapCameraPosition
 	@State private var bounds: GeoBounds?
 	@State private var detail: OfflineMapDetailLevel = .standard
-	/// Download elevation data (hillshade + contours) with the region.
-	@State private var includeTerrain = true
+	/// What the download includes (basemap, terrain, or both).
+	@State private var content: OfflineDownloadContent = .mapAndTerrain
 	/// One-shot: when resizing, the selection seeds from the region's saved bounds.
 	@State private var didSeedFromReplacing = false
 	/// One-shot camera zoom-out so the saved bounds fit inside the selectable area.
@@ -85,6 +106,13 @@ struct RegionSelectorView: View {
 		self.replacing = replacing
 		_camera = State(initialValue: .region(target.region))
 		_name = State(initialValue: target.name)
+		// Resizing keeps what the region already has.
+		if let replacing {
+			let initial: OfflineDownloadContent = replacing.hasBasemap
+				? (replacing.terrain != nil ? .mapAndTerrain : .mapOnly)
+				: .terrainOnly
+			_content = State(initialValue: initial)
+		}
 	}
 
 	private let minRectSize: CGFloat = 64
@@ -457,29 +485,48 @@ struct RegionSelectorView: View {
 				.foregroundStyle(.secondary)
 				.multilineTextAlignment(.center)
 
-			HStack(alignment: .top, spacing: 10) {
-				Image(systemName: "figure.hiking")
-					.foregroundStyle(.tint)
-				VStack(alignment: .leading, spacing: 2) {
-					Text("Protomaps Outdoors")
-						.font(.subheadline.weight(.semibold))
-					Text("Includes trails, roads, terrain, and points of interest.")
-						.font(.caption)
-						.foregroundStyle(.secondary)
-				}
-				Spacer()
-			}
-
-			Picker("Detail", selection: $detail) {
-				ForEach(OfflineMapDetailLevel.allCases) { level in
-					Text(level.label).tag(level)
+			Picker("Download", selection: $content) {
+				ForEach(OfflineDownloadContent.allCases) { option in
+					Text(option.label).tag(option)
 				}
 			}
 			.pickerStyle(.segmented)
 
-			Toggle(isOn: $includeTerrain) {
-				Text("Include terrain (hillshade and contour data)")
-					.font(.caption)
+			if content.includesBasemap {
+				HStack(alignment: .top, spacing: 10) {
+					Image(systemName: "figure.hiking")
+						.foregroundStyle(.tint)
+					VStack(alignment: .leading, spacing: 2) {
+						Text("Protomaps Outdoors")
+							.font(.subheadline.weight(.semibold))
+						Text(content.includesTerrain
+							? "Includes trails, roads, points of interest, and terrain data for hillshade and contour lines."
+							: "Includes trails, roads, and points of interest.")
+							.font(.caption)
+							.foregroundStyle(.secondary)
+					}
+					Spacer()
+				}
+
+				Picker("Detail", selection: $detail) {
+					ForEach(OfflineMapDetailLevel.allCases) { level in
+						Text(level.label).tag(level)
+					}
+				}
+				.pickerStyle(.segmented)
+			} else {
+				HStack(alignment: .top, spacing: 10) {
+					Image(systemName: "mountain.2")
+						.foregroundStyle(.tint)
+					VStack(alignment: .leading, spacing: 2) {
+						Text("Mapterhorn Terrain")
+							.font(.subheadline.weight(.semibold))
+						Text("Elevation data for hillshade and contour lines, drawn over Apple and offline maps.")
+							.font(.caption)
+							.foregroundStyle(.secondary)
+					}
+					Spacer()
+				}
 			}
 
 			Text("Size of selected map: \(sizeText)")
@@ -525,7 +572,7 @@ struct RegionSelectorView: View {
 		}
 		// Surface the extractor's tile cap here instead of letting the download fail
 		// after it starts. High detail multiplies the tile count ~20x over Standard.
-		if let bounds,
+		if content.includesBasemap, let bounds,
 		   PMTilesExtractor.tileCount(in: bounds, minZoom: detail.minZoom, maxZoom: detail.maxZoom) > PMTilesExtractor.maxTiles {
 			return String(localized: "Area is too large for \(detail.label). Shrink the area or choose a lower detail level.")
 		}
@@ -542,8 +589,9 @@ struct RegionSelectorView: View {
 	// MARK: - Size estimate
 
 	/// Synchronous, network-free rough estimate (shown immediately while framing).
+	/// Terrain-only has no local heuristic — the size shows once the plan returns.
 	private var roughBytes: Int64? {
-		guard let bounds else { return nil }
+		guard content.includesBasemap, let bounds else { return nil }
 		return PMTilesExtractor.roughByteEstimate(in: bounds, minZoom: detail.minZoom, maxZoom: detail.maxZoom)
 	}
 
@@ -563,7 +611,7 @@ struct RegionSelectorView: View {
 	private var estimateKey: String {
 		guard let bounds else { return "none" }
 		func round4(_ value: Double) -> Double { (value * 10_000).rounded() / 10_000 }
-		return "\(detail.rawValue)|\(includeTerrain ? "t" : "b")|\(round4(bounds.minLon)),\(round4(bounds.minLat)),\(round4(bounds.maxLon)),\(round4(bounds.maxLat))"
+		return "\(detail.rawValue)|\(content.rawValue)|\(round4(bounds.minLon)),\(round4(bounds.minLat)),\(round4(bounds.maxLon)),\(round4(bounds.maxLat))"
 	}
 
 	private func runEstimate() async {
@@ -574,7 +622,7 @@ struct RegionSelectorView: View {
 		// Debounce: cancelled (and restarted) by `.task(id:)` if the area keeps changing.
 		do { try await Task.sleep(for: .milliseconds(500)) } catch { return }
 		if Task.isCancelled { return }
-		let bytes = await Self.computeEstimate(bounds: bounds, detail: detail, includeTerrain: includeTerrain)
+		let bytes = await Self.computeEstimate(bounds: bounds, detail: detail, content: content)
 		if Task.isCancelled { return }
 		if let bytes {
 			estimatedBytes = bytes
@@ -584,25 +632,35 @@ struct RegionSelectorView: View {
 	}
 
 	/// Network-accurate size (the exact plans the download uses), or nil when
-	/// basemap planning fails — the caller keeps showing the rough estimate,
-	/// marked approximate. Terrain planning failure degrades to basemap-only
-	/// rather than losing the whole estimate.
-	private static func computeEstimate(bounds: GeoBounds, detail: OfflineMapDetailLevel, includeTerrain: Bool) async -> Int64? {
+	/// planning the primary content fails — the caller keeps showing the rough
+	/// estimate, marked approximate. When both are included, terrain planning
+	/// failure degrades to basemap-only rather than losing the whole estimate.
+	private static func computeEstimate(bounds: GeoBounds, detail: OfflineMapDetailLevel, content: OfflineDownloadContent) async -> Int64? {
 		let extractor = PMTilesExtractor()
-		guard let basemap = (try? await extractor.estimate(bounds: bounds, minZoom: detail.minZoom, maxZoom: detail.maxZoom))?.bytes else {
-			return nil
+		var total: Int64 = 0
+		if content.includesBasemap {
+			guard let basemap = (try? await extractor.estimate(bounds: bounds, minZoom: detail.minZoom, maxZoom: detail.maxZoom))?.bytes else {
+				return nil
+			}
+			total += basemap
 		}
-		guard includeTerrain, let terrainURL = URL(string: OfflineMapManager.terrainGlobalArchive) else { return basemap }
-		let terrain = (try? await extractor.makePlan(
-			sourceURL: terrainURL, sourceBuild: "Mapterhorn",
-			bounds: bounds, minZoom: 0, maxZoom: OfflineMapManager.terrainGlobalMaxZoom
-		))?.payloadBytes ?? 0
-		return basemap + terrain
+		if content.includesTerrain, let terrainURL = URL(string: OfflineMapManager.terrainGlobalArchive) {
+			let terrain = (try? await extractor.makePlan(
+				sourceURL: terrainURL, sourceBuild: "Mapterhorn",
+				bounds: bounds, minZoom: 0, maxZoom: OfflineMapManager.terrainGlobalMaxZoom
+			))?.payloadBytes
+			if terrain == nil, !content.includesBasemap { return nil }
+			total += terrain ?? 0
+		}
+		return total
 	}
 
 	private func startDownload() {
 		guard let bounds else { return }
-		manager.startDownload(name: name, bounds: bounds, detail: detail, replacing: replacing, includeTerrain: includeTerrain)
+		manager.startDownload(
+			name: name, bounds: bounds, detail: detail, replacing: replacing,
+			includeBasemap: content.includesBasemap, includeTerrain: content.includesTerrain
+		)
 		dismiss()
 	}
 }

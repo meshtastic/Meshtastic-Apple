@@ -167,10 +167,11 @@ final class OfflineMapManager: ObservableObject {
 		bounds: GeoBounds,
 		detail: OfflineMapDetailLevel,
 		replacing: OfflineMapRegion? = nil,
+		includeBasemap: Bool = true,
 		includeTerrain: Bool = true,
 		onCompletion: ((OfflineMapRegion?) -> Void)? = nil
 	) {
-		guard !isBusy, let archive = newArchiveURL() else {
+		guard !isBusy, includeBasemap || includeTerrain, let archive = newArchiveURL() else {
 			onCompletion?(nil)
 			return
 		}
@@ -184,12 +185,36 @@ final class OfflineMapManager: ObservableObject {
 			return
 		}
 		let regionID = UUID()
+
+		// Terrain-only: record the region with no basemap archive (drawn over Apple
+		// maps), then run the ordinary terrain download against it. The replaced
+		// region is only removed on success, and a failed or cancelled download
+		// removes the new empty region, so no path loses data.
+		#if !os(tvOS)
+		if !includeBasemap {
+			let region = OfflineMapRegion(
+				id: regionID, name: displayName(from: name), fileName: archive.fileName,
+				bounds: bounds, minZoom: 0, maxZoom: 0,
+				fileSize: 0, sourceBuild: "Mapterhorn", includesBasemap: false
+			)
+			add(region)
+			downloadTerrain(for: region) { [weak self] success in
+				if success {
+					if let replacing { self?.remove(replacing) }
+				} else {
+					self?.remove(region)
+				}
+				onCompletion?(success ? region : nil)
+			}
+			return
+		}
+		#endif
+
 		guard downloadLifecycle.begin(id: regionID) else {
 			onCompletion?(nil)
 			return
 		}
-		let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
-		let finalName = trimmedName.isEmpty ? String(localized: "Offline Map") : trimmedName
+		let finalName = displayName(from: name)
 		activeDownload = OfflineMapDownloadProgress(id: regionID, name: finalName, state: .preparing, fractionCompleted: nil)
 		downloadCompletion = onCompletion
 
@@ -349,7 +374,16 @@ final class OfflineMapManager: ObservableObject {
 		guard activeDownload?.id == id, downloadLifecycle.end(id: id) else { return }
 		downloadTask = nil
 		activeDownload = nil
+		// A cancelled download produced no region; callers waiting on one (e.g. the
+		// terrain-only flow's cleanup) must still hear back.
+		let completion = downloadCompletion
 		downloadCompletion = nil
+		completion?(nil)
+	}
+
+	private func displayName(from name: String) -> String {
+		let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+		return trimmed.isEmpty ? String(localized: "Offline Map") : trimmed
 	}
 
 	// MARK: - Locations
@@ -381,8 +415,11 @@ final class OfflineMapManager: ObservableObject {
 		return dir
 	}
 
+	/// The basemap archive URL, or nil for terrain-only regions (no basemap file
+	/// exists — this nil is what keeps them out of the offline tile pipeline).
 	func fileURL(for region: OfflineMapRegion) -> URL? {
-		directoryURL()?.appendingPathComponent(region.fileName)
+		guard region.hasBasemap else { return nil }
+		return directoryURL()?.appendingPathComponent(region.fileName)
 	}
 
 	/// A fresh, unused archive file URL plus its file name component.
@@ -440,8 +477,14 @@ final class OfflineMapManager: ObservableObject {
 			let data = try Data(contentsOf: url)
 			let decoded = try JSONDecoder().decode([OfflineMapRegion].self, from: data)
 			let existing = decoded.filter { region in
-				guard let fileURL = fileURL(for: region) else { return false }
-				return FileManager.default.fileExists(atPath: fileURL.path)
+				guard let dir = directoryURL() else { return false }
+				if region.hasBasemap {
+					return FileManager.default.fileExists(atPath: dir.appendingPathComponent(region.fileName).path)
+				}
+				// Terrain-only: alive while its terrain archive exists. A region whose
+				// terrain download never finished has no files and is pruned here.
+				guard let terrain = region.terrain else { return false }
+				return FileManager.default.fileExists(atPath: dir.appendingPathComponent(terrain.fileName).path)
 			}
 			regions = existing.sorted { $0.createdDate > $1.createdDate }
 			if existing.count != decoded.count { save() }

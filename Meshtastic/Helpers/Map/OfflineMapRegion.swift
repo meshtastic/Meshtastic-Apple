@@ -44,9 +44,15 @@ struct OfflineMapRegion: Identifiable, Codable, Hashable {
 	var updatedDate: Date
 	/// Protomaps daily build the tiles were extracted from, e.g. `"20260623"`.
 	var sourceBuild: String
+	/// False for terrain-only downloads: no basemap archive exists, only the
+	/// terrain extracts (drawn over Apple maps). Optional and additive — manifests
+	/// written before terrain-only support decode with `nil`, meaning true.
+	var includesBasemap: Bool?
 	/// Terrain elevation extracts for the same bounds, when downloaded.
 	/// Optional and additive: manifests written before terrain support decode with `nil`.
 	var terrain: OfflineMapTerrain?
+
+	var hasBasemap: Bool { includesBasemap ?? true }
 
 	init(
 		id: UUID = UUID(),
@@ -59,6 +65,7 @@ struct OfflineMapRegion: Identifiable, Codable, Hashable {
 		createdDate: Date = .now,
 		updatedDate: Date = .now,
 		sourceBuild: String,
+		includesBasemap: Bool = true,
 		terrain: OfflineMapTerrain? = nil
 	) {
 		self.id = id
@@ -74,6 +81,7 @@ struct OfflineMapRegion: Identifiable, Codable, Hashable {
 		self.createdDate = createdDate
 		self.updatedDate = updatedDate
 		self.sourceBuild = sourceBuild
+		self.includesBasemap = includesBasemap
 		self.terrain = terrain
 	}
 
@@ -96,6 +104,13 @@ struct OfflineMapRegion: Identifiable, Codable, Hashable {
 
 	var formattedSize: String {
 		ByteCountFormatter.string(fromByteCount: fileSize, countStyle: .file)
+	}
+
+	/// Combined basemap + terrain size on disk, for rows and the delete confirmation.
+	var totalByteCount: Int64 { fileSize + (terrain?.byteCount ?? 0) }
+
+	var formattedTotalSize: String {
+		ByteCountFormatter.string(fromByteCount: totalByteCount, countStyle: .file)
 	}
 
 	/// The terrain component's size for display, or nil when no terrain is downloaded.
