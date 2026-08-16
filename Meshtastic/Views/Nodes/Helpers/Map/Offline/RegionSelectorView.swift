@@ -67,6 +67,8 @@ struct RegionSelectorView: View {
 
 	/// Network-accurate size (exact for street, sampled for topo); nil until computed.
 	@State private var estimatedBytes: Int64?
+	/// Whether estimatedBytes came from the exact plan (vs the rough heuristic).
+	@State private var estimateIsExact = false
 	/// True while the accurate estimate is being (re)computed.
 	@State private var isEstimating = false
 
@@ -406,10 +408,16 @@ struct RegionSelectorView: View {
 		bounds.flatMap { manager.overlappingRegion(with: $0, excluding: replacing) }
 	}
 
-	/// The single most relevant warning to show (overlap → limit), or nil.
+	/// The single most relevant warning to show (overlap → tile cap → limit), or nil.
 	private var warning: String? {
 		if let overlap {
 			return String(localized: "Overlaps \u{201C}\(overlap.name)\u{201D}. Move or resize so it doesn\u{2019}t overlap an existing map.")
+		}
+		// Surface the extractor's tile cap here instead of letting the download fail
+		// after it starts. High detail multiplies the tile count ~20x over Standard.
+		if let bounds,
+		   PMTilesExtractor.tileCount(in: bounds, minZoom: detail.minZoom, maxZoom: detail.maxZoom) > PMTilesExtractor.maxTiles {
+			return String(localized: "Area is too large for \(detail.label). Shrink the area or choose a lower detail level.")
 		}
 		if let bytes = displayedBytes {
 			return manager.downloadBlockReason(estimatedBytes: bytes, replacing: replacing)
@@ -435,7 +443,10 @@ struct RegionSelectorView: View {
 	private var sizeText: String {
 		guard let bytes = displayedBytes else { return "—" }
 		let formatted = ByteCountFormatter.string(fromByteCount: bytes, countStyle: .file)
-		return isEstimating ? "\u{2248} \(formatted)" : formatted
+		// "≈" whenever the shown value is the rough heuristic — while the exact plan
+		// is still computing AND when it failed (previously a failed plan displayed
+		// the heuristic with no marker, as if it were exact).
+		return estimateIsExact ? formatted : "\u{2248} \(formatted)"
 	}
 
 	/// Re-runs whenever the framed area / detail settle (debounced via `.task(id:)`).
@@ -447,6 +458,7 @@ struct RegionSelectorView: View {
 
 	private func runEstimate() async {
 		estimatedBytes = nil
+		estimateIsExact = false
 		guard let bounds else { isEstimating = false; return }
 		isEstimating = true
 		// Debounce: cancelled (and restarted) by `.task(id:)` if the area keeps changing.
@@ -454,16 +466,17 @@ struct RegionSelectorView: View {
 		if Task.isCancelled { return }
 		let bytes = await Self.computeEstimate(bounds: bounds, detail: detail)
 		if Task.isCancelled { return }
-		estimatedBytes = bytes
+		if let bytes {
+			estimatedBytes = bytes
+			estimateIsExact = true
+		}
 		isEstimating = false
 	}
 
-	/// Network-accurate size (the exact plan the download uses), falling back to the rough estimate.
-	private static func computeEstimate(bounds: GeoBounds, detail: OfflineMapDetailLevel) async -> Int64 {
-		if let result = try? await PMTilesExtractor().estimate(bounds: bounds, minZoom: detail.minZoom, maxZoom: detail.maxZoom) {
-			return result.bytes
-		}
-		return PMTilesExtractor.roughByteEstimate(in: bounds, minZoom: detail.minZoom, maxZoom: detail.maxZoom)
+	/// Network-accurate size (the exact plan the download uses), or nil when planning
+	/// fails — the caller keeps showing the rough estimate, marked approximate.
+	private static func computeEstimate(bounds: GeoBounds, detail: OfflineMapDetailLevel) async -> Int64? {
+		(try? await PMTilesExtractor().estimate(bounds: bounds, minZoom: detail.minZoom, maxZoom: detail.maxZoom))?.bytes
 	}
 
 	private func startDownload() {

@@ -28,6 +28,18 @@ struct PMTilesExtractorTileMathTests {
 		#expect(y == 0) // clamped to the Web-Mercator limit, top row
 	}
 
+	@Test func roughByteEstimate_weightsHighZoomTilesLighter() {
+		let bounds = GeoBounds(minLon: -122.5, minLat: 47.4, maxLon: -122.2, maxLat: 47.8)
+		let standard = PMTilesExtractor.roughByteEstimate(in: bounds, minZoom: 0, maxZoom: 13)
+		let high = PMTilesExtractor.roughByteEstimate(in: bounds, minZoom: 0, maxZoom: 15)
+		#expect(high > standard)
+		// z14/z15 tiles average far smaller than mid-zoom tiles; the high-detail
+		// increment must reflect that rather than a flat per-tile constant.
+		let addedTiles = PMTilesExtractor.tileCount(in: bounds, minZoom: 14, maxZoom: 15)
+		let flatIncrement = Int64(addedTiles) * 34_816
+		#expect(high - standard < flatIncrement)
+	}
+
 	@Test func tileCount_matchesEnumeratedIDs() {
 		let bounds = GeoBounds(minLon: -122.3, minLat: 47.4, maxLon: -122.0, maxLat: 47.7)
 		let count = PMTilesExtractor.tileCount(in: bounds, minZoom: 0, maxZoom: 12)
