@@ -938,6 +938,14 @@ struct LoRaPresetSelectionTests {
 		#expect(result == .longTurbo)
 	}
 
+	// Stock Long Fast must migrate to Long Turbo on a factory-fresh US node even
+	// though the region map lists Long Fast: its bandwidth is not US-compliant,
+	// and 2.8 moves US users off it.
+	@Test func factoryUS_on28_stockLongFast_movesToLongTurbo() {
+		let result = ModemPresets.presetToSelect(forRegion: .us, factoryFresh: true, supports2_8: true, usePreset: true, regionInfo: usInfo, currentPreset: .longFast)
+		#expect(result == .longTurbo)
+	}
+
 	// A deliberate preset from a community firmware build must survive the first
 	// region selection when that preset is legal in the selected region.
 	@Test func factoryUS_on28_keepsLegalShortTurbo() {
