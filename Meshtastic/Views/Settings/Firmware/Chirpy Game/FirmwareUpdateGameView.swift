@@ -33,7 +33,7 @@ struct FirmwareUpdateGameScreen: View {
 				SpriteView(scene: scene)
 					.allowsHitTesting(false)
 
-				Color.black.opacity(0.001)
+				Color.clear
 					.contentShape(Rectangle())
 					.gesture(gameGesture)
 					.accessibilityLabel(String(localized: "Chirpy Hop", comment: "VoiceOver label for the Chirpy game play surface"))
@@ -62,7 +62,8 @@ struct FirmwareUpdateGameScreen: View {
 			.font(.headline)
 			.foregroundStyle(.secondary)
 			.frame(maxWidth: .infinity)
-			.frame(height: 48)
+			.frame(minHeight: 48)
+			.padding(.vertical, 8)
 			.background(Color(uiColor: .secondarySystemBackground))
 		}
 		.background(Color(uiColor: .systemBackground))
@@ -125,6 +126,7 @@ private struct FirmwareUpdateStatusBand: View {
 					Label(status.title, systemImage: "arrow.triangle.2.circlepath")
 						.font(.headline)
 						.lineLimit(1)
+						.minimumScaleFactor(0.8)
 					Spacer(minLength: 8)
 					Text(status.percentText)
 						.font(.headline.monospacedDigit())

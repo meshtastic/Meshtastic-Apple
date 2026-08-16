@@ -143,6 +143,7 @@
             "standard",
             "shows",
             "settings",
+            "screen",
             "running",
             "ota",
             "node",
@@ -150,10 +151,9 @@
             "from",
             "failed",
             "channel",
-            "without",
-            "while"
+            "without"
         ],
-        "charCount": 4287
+        "charCount": 4337
     },
     {
         "id": "getting-started",
