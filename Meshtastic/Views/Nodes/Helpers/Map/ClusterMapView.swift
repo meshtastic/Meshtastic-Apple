@@ -869,6 +869,10 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 				renderer.lineJoin = .round
 				return renderer
 			}
+			// Raster tile overlays (hillshade) — MapKit's tile renderer, no styling.
+			if let tileOverlay = overlay as? MKTileOverlay {
+				return MKTileOverlayRenderer(tileOverlay: tileOverlay)
+			}
 			// Styled caller overlay (circle / polyline / polygon), style looked up by object identity.
 			let style = styleByOverlay[ObjectIdentifier(overlay)] ?? ClusterMapOverlayStyle()
 			let renderer: MKOverlayPathRenderer
