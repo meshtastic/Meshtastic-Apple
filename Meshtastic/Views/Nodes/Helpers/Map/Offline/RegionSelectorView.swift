@@ -479,11 +479,11 @@ struct RegionSelectorView: View {
 
 			Toggle(isOn: $includeTerrain) {
 				Text("Include terrain (hillshade and contour data)")
-					.font(.subheadline)
+					.font(.caption)
 			}
 
 			Text("Size of selected map: \(sizeText)")
-				.font(.subheadline)
+				.font(.caption)
 
 			if let warning {
 				Label(warning, systemImage: "exclamationmark.triangle.fill")
