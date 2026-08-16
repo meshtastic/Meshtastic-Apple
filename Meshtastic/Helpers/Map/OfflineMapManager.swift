@@ -167,6 +167,7 @@ final class OfflineMapManager: ObservableObject {
 		bounds: GeoBounds,
 		detail: OfflineMapDetailLevel,
 		replacing: OfflineMapRegion? = nil,
+		includeTerrain: Bool = true,
 		onCompletion: ((OfflineMapRegion?) -> Void)? = nil
 	) {
 		guard !isBusy, let archive = newArchiveURL() else {
@@ -223,7 +224,9 @@ final class OfflineMapManager: ObservableObject {
 				// is already saved, and a terrain failure just surfaces as retryable.
 				// tvOS skips it — nothing renders terrain there yet, and its cache storage is purgeable.
 				#if !os(tvOS)
-				await self.downloadTerrain(for: region)
+				if includeTerrain {
+					await self.downloadTerrain(for: region)
+				}
 				#endif
 			} catch is CancellationError {
 				try? FileManager.default.removeItem(at: archive.url)

@@ -53,6 +53,10 @@ struct RegionSelectorView: View {
 	@State private var camera: MapCameraPosition
 	@State private var bounds: GeoBounds?
 	@State private var detail: OfflineMapDetailLevel = .standard
+	/// Download elevation data (hillshade + contours) with the region.
+	@State private var includeTerrain = true
+	/// One-shot: when resizing, the selection seeds from the region's saved bounds.
+	@State private var didSeedFromReplacing = false
 	@State private var name: String
 
 	/// The selection rectangle in the picker's local coordinate space (drag/resize target).
@@ -91,6 +95,7 @@ struct RegionSelectorView: View {
 						.mapStyle(.standard(elevation: .flat, pointsOfInterest: .excludingAll))
 						.onMapCameraChange(frequency: .continuous) { context in
 							currentRegion = context.region
+							seedFromReplacingIfNeeded(proxy: proxy, size: geo.size)
 							recompute(proxy: proxy, size: geo.size)
 						}
 
@@ -274,6 +279,20 @@ struct RegionSelectorView: View {
 		return CGRect(x: minX, y: minY, width: maxX - minX, height: maxY - minY)
 	}
 
+	/// When resizing an existing region, the selection starts as that region's
+	/// saved boundary instead of the default centered rectangle. Runs once, as
+	/// soon as the map proxy can convert coordinates.
+	private func seedFromReplacingIfNeeded(proxy: MapProxy, size: CGSize) {
+		guard !didSeedFromReplacing, let replacing else { return }
+		let northWest = CLLocationCoordinate2D(latitude: replacing.maxLatitude, longitude: replacing.minLongitude)
+		let southEast = CLLocationCoordinate2D(latitude: replacing.minLatitude, longitude: replacing.maxLongitude)
+		guard let topLeft = proxy.convert(northWest, to: .local),
+			  let bottomRight = proxy.convert(southEast, to: .local),
+			  bottomRight.x - topLeft.x > 8, bottomRight.y - topLeft.y > 8 else { return }
+		selectionRect = normalizedClamped(topLeft.x, topLeft.y, bottomRight.x, bottomRight.y, in: size)
+		didSeedFromReplacing = true
+	}
+
 	private func initRect(size: CGSize) {
 		guard selectionRect == .zero, size.width > 0, size.height > 0 else { return }
 		let area = usableRect(in: size)
@@ -370,6 +389,11 @@ struct RegionSelectorView: View {
 			}
 			.pickerStyle(.segmented)
 
+			Toggle(isOn: $includeTerrain) {
+				Text("Include terrain (hillshade and contour data)")
+					.font(.subheadline)
+			}
+
 			Text("Size of selected map: \(sizeText)")
 				.font(.subheadline)
 
@@ -442,7 +466,7 @@ struct RegionSelectorView: View {
 	private var estimateKey: String {
 		guard let bounds else { return "none" }
 		func round4(_ value: Double) -> Double { (value * 10_000).rounded() / 10_000 }
-		return "\(detail.rawValue)|\(round4(bounds.minLon)),\(round4(bounds.minLat)),\(round4(bounds.maxLon)),\(round4(bounds.maxLat))"
+		return "\(detail.rawValue)|\(includeTerrain ? "t" : "b")|\(round4(bounds.minLon)),\(round4(bounds.minLat)),\(round4(bounds.maxLon)),\(round4(bounds.maxLat))"
 	}
 
 	private func runEstimate() async {
@@ -452,7 +476,7 @@ struct RegionSelectorView: View {
 		// Debounce: cancelled (and restarted) by `.task(id:)` if the area keeps changing.
 		do { try await Task.sleep(for: .milliseconds(500)) } catch { return }
 		if Task.isCancelled { return }
-		let bytes = await Self.computeEstimate(bounds: bounds, detail: detail)
+		let bytes = await Self.computeEstimate(bounds: bounds, detail: detail, includeTerrain: includeTerrain)
 		if Task.isCancelled { return }
 		estimatedBytes = bytes
 		isEstimating = false
@@ -468,7 +492,7 @@ struct RegionSelectorView: View {
 
 	private func startDownload() {
 		guard let bounds else { return }
-		manager.startDownload(name: name, bounds: bounds, detail: detail, replacing: replacing)
+		manager.startDownload(name: name, bounds: bounds, detail: detail, replacing: replacing, includeTerrain: includeTerrain)
 		dismiss()
 	}
 }
