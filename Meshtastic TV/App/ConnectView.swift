@@ -58,7 +58,7 @@ struct ConnectView: View {
 					}
 				}
 				// Inset focused controls without hiding native Form section headers.
-				.safeAreaPadding(.horizontal, 16)
+				.safeAreaPadding(.horizontal, TVTheme.connectHorizontalInset)
 			}
 			.padding(.top, TVTheme.screenPadding)
 		}

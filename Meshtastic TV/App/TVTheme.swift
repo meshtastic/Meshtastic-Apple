@@ -23,6 +23,9 @@ enum TVTheme {
 	/// Outer padding for a full detail panel.
 	static let screenPadding: CGFloat = 40
 
+	/// Horizontal inset for controls on the connect screen.
+	static let connectHorizontalInset: CGFloat = 16
+
 	/// Gap between sections in the node detail panel.
 	static let sectionSpacing: CGFloat = 32
 
