@@ -137,7 +137,7 @@ struct MapScreen: View {
 				}
 			}
 			// Focused tvOS controls grow beyond their rows; keep them inside the List's clip.
-			.contentMargins(.horizontal, 16, for: .scrollContent)
+			.contentMargins(.horizontal, TVTheme.nodeListContentMargin, for: .scrollContent)
 			.onChange(of: focusedNodeNum) { _, newValue in
 				if let newValue { selectedNodeNum = newValue }
 			}

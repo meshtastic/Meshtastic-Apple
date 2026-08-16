@@ -16,6 +16,9 @@ enum TVTheme {
 	/// Node side-list column width on the map screen.
 	static let sideListWidth: CGFloat = 520
 
+	/// Horizontal inset that keeps focused node-list controls inside the List clip.
+	static let nodeListContentMargin: CGFloat = 16
+
 	/// Node avatar (circle) diameters.
 	static let listAvatarSize: CGFloat = 56
 	static let detailAvatarSize: CGFloat = 68
