@@ -37,6 +37,9 @@ struct MeshStatsStrip: View {
 			if let edition {
 				eventBadge(edition)
 					.frame(idealWidth: TVTheme.statsStripEventWidth, maxWidth: TVTheme.statsStripEventWidth)
+					// Claim the column before the flexible packets cell does; without
+					// this the badge is what gets compressed, clipping the name.
+					.layoutPriority(1)
 				divider
 			}
 
@@ -84,12 +87,11 @@ struct MeshStatsStrip: View {
 			VStack(alignment: .leading, spacing: TVTheme.statsStripMetricSpacing) {
 				metricLabel("Event")
 				Text(edition.name)
-					.font(.title2.weight(.semibold))
+					.font(.title3.weight(.semibold))
 					.lineLimit(1)
-					.minimumScaleFactor(0.5)
+					.minimumScaleFactor(0.6)
 			}
 		}
-		.frame(maxWidth: .infinity, alignment: .leading)
 		.accessibilityElement(children: .combine)
 		.accessibilityLabel(Text("Event firmware: \(edition.name)"))
 	}
@@ -124,13 +126,13 @@ struct MeshStatsStrip: View {
 				packetCount(rx, arrow: "↓")
 			}
 		} else {
-			metricValue("—", font: .title2)
+			metricValue("—", font: packetFont)
 		}
 	}
 
 	private func packetCount(_ value: UInt32, arrow: String) -> some View {
 		Text("\(value.formatted()) \(arrow)")
-			.font(.title2.weight(.semibold).monospacedDigit())
+			.font(packetFont.weight(.semibold).monospacedDigit())
 			.lineLimit(1)
 			.minimumScaleFactor(0.3)
 			.frame(maxWidth: .infinity, alignment: .leading)
@@ -163,9 +165,15 @@ struct MeshStatsStrip: View {
 			.minimumScaleFactor(0.8)
 	}
 
-	private func metricValue(_ text: String, color: Color = .primary, font: Font = .title) -> some View {
+	/// Value type steps down when the event badge is present — the badge takes a
+	/// column's worth of width, and at `.title` the remaining metrics hit their
+	/// scale floor and truncate ("761 /…") instead of shrinking.
+	private var valueFont: Font { edition == nil ? .title : .title2 }
+	private var packetFont: Font { edition == nil ? .title2 : .title3 }
+
+	private func metricValue(_ text: String, color: Color = .primary, font: Font? = nil) -> some View {
 		Text(text)
-			.font(font.weight(.semibold).monospacedDigit())
+			.font((font ?? valueFont).weight(.semibold).monospacedDigit())
 			.foregroundStyle(color)
 			.lineLimit(1)
 			.minimumScaleFactor(0.5)
