@@ -12,6 +12,7 @@
 //  overzoom), so terrain keeps rendering at street-level zooms.
 //
 
+import CoreLocation
 import Foundation
 import OSLog
 
@@ -163,6 +164,71 @@ actor TerrainStore {
 			}
 		}
 		return ElevationTile(z: z, x: x, y: y, size: size, margin: margin, elevations: elevations)
+	}
+
+	// MARK: - Point queries
+
+	/// Zoom used for single-coordinate elevation lookups: the finest zoom the
+	/// global archive always carries (~30 m data), plenty for a site elevation.
+	static let pointQueryZoom = 12
+
+	/// A coordinate located within a tile grid: the tile indices plus the
+	/// fractional (sample-centered) pixel position inside it.
+	struct TilePixel {
+		let x: Int
+		let y: Int
+		let px: Double
+		let py: Double
+	}
+
+	/// Ground elevation in meters at a coordinate, or nil when no downloaded
+	/// terrain region covers it.
+	func elevation(at coordinate: CLLocationCoordinate2D) -> Double? {
+		let z = Self.pointQueryZoom
+		let pixel = Self.tilePixel(latitude: coordinate.latitude, longitude: coordinate.longitude, z: z, size: Self.tileSize)
+		// Edge tiles are edge-clamped, so also require the coordinate itself to
+		// sit inside the covering region's box — never report a clamped border
+		// value for a point outside the download.
+		guard let box = coverage(z: z, x: pixel.x, y: pixel.y),
+			  coordinate.latitude >= box.minLat, coordinate.latitude <= box.maxLat,
+			  coordinate.longitude >= box.minLon, coordinate.longitude <= box.maxLon,
+			  let tile = elevationTile(z: z, x: pixel.x, y: pixel.y, margin: 1) else { return nil }
+		return Double(Self.sample(tile, px: pixel.px, py: pixel.py))
+	}
+
+	/// The Web-Mercator tile containing a coordinate at zoom `z`, plus the
+	/// coordinate's fractional pixel position (sample-centered) within a
+	/// `size`-sample grid for that tile.
+	static func tilePixel(latitude: Double, longitude: Double, z: Int, size: Int) -> TilePixel {
+		let n = Double(1 << z)
+		// Clamp to the Web-Mercator latitude limit so the y math stays finite.
+		let lat = min(max(latitude, -85.05112878), 85.05112878)
+		let lon = min(max(longitude, -180), 180)
+		let xt = (lon + 180) / 360 * n
+		let latRad = lat * .pi / 180
+		let yt = (1 - log(tan(latRad) + 1 / cos(latRad)) / .pi) / 2 * n
+		let maxIndex = (1 << z) - 1
+		let x = min(max(Int(xt.rounded(.down)), 0), maxIndex)
+		let y = min(max(Int(yt.rounded(.down)), 0), maxIndex)
+		let px = (xt - Double(x)) * Double(size) - 0.5
+		let py = (yt - Double(y)) * Double(size) - 0.5
+		return TilePixel(x: x, y: y, px: px, py: py)
+	}
+
+	/// Bilinear sample of a tile's elevation grid at a fractional pixel position
+	/// (grid coordinates clamp at the margin, matching `gridElevation`).
+	static func sample(_ tile: ElevationTile, px: Double, py: Double) -> Float {
+		let x0 = Int(px.rounded(.down))
+		let y0 = Int(py.rounded(.down))
+		let tx = Float(px - Double(x0))
+		let ty = Float(py - Double(y0))
+		let p00 = tile.gridElevation(x: x0, y: y0)
+		let p10 = tile.gridElevation(x: x0 + 1, y: y0)
+		let p01 = tile.gridElevation(x: x0, y: y0 + 1)
+		let p11 = tile.gridElevation(x: x0 + 1, y: y0 + 1)
+		let top = p00 + (p10 - p00) * tx
+		let bottom = p01 + (p11 - p01) * tx
+		return top + (bottom - top) * ty
 	}
 
 	/// Meters-per-sample for an `ElevationTile` at the given zoom/latitude — the
