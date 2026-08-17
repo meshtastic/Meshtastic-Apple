@@ -56,7 +56,7 @@ struct MeshStatsStrip: View {
 
 			divider
 			packetsCell
-				.frame(idealWidth: TVTheme.statsStripPacketsWidth, maxWidth: .infinity)
+				.frame(maxWidth: .infinity, alignment: .leading)
 		}
 		.padding(.horizontal, TVTheme.statsStripHorizontalPadding)
 		.padding(.vertical, TVTheme.statsStripVerticalPadding)
@@ -112,7 +112,7 @@ struct MeshStatsStrip: View {
 				.font(.caption2.weight(.medium).monospacedDigit())
 				.foregroundStyle(.secondary)
 				.lineLimit(1)
-				.minimumScaleFactor(0.75)
+				.minimumScaleFactor(0.6)
 				.frame(height: metadataHeight)
 		}
 		.frame(maxWidth: .infinity, alignment: .leading)
@@ -130,29 +130,38 @@ struct MeshStatsStrip: View {
 		}
 	}
 
+	/// Grouped digits normally; compact ("457K", "1.2M") past six figures, where
+	/// the counters outgrow the column no matter how much they are scaled down.
+	private func packetText(_ value: UInt32, fractionDigits: Int = 1) -> String {
+		value >= 100_000
+			? value.formatted(.number.notation(.compactName).precision(.fractionLength(fractionDigits)))
+			: value.formatted()
+	}
+
 	private func packetCount(_ value: UInt32, arrow: String) -> some View {
-		Text("\(value.formatted()) \(arrow)")
+		Text("\(packetText(value)) \(arrow)")
 			.font(packetFont.weight(.semibold).monospacedDigit())
 			.lineLimit(1)
-			.minimumScaleFactor(0.3)
+			.minimumScaleFactor(0.6)
 			.frame(maxWidth: .infinity, alignment: .leading)
 	}
 
+	/// One concatenated Text, not an HStack of several: separate Texts each get
+	/// their own width and the longest clips, so the scale factor never applies to
+	/// the line as a whole ("457K dup…").
 	@ViewBuilder
 	private var packetMetadata: some View {
 		if let stats {
-			HStack(spacing: TVTheme.statsStripPacketSpacing) {
-				if let dupes = stats.packetsRxDupe {
-					Text("\(dupes.formatted()) dupes")
-					Text("·")
-				}
-				Text("Updated")
-				Text(stats.receivedAt, style: .relative)
-			}
+			dupesText(stats) + Text("Updated ") + Text(stats.receivedAt, style: .relative)
 		} else {
 			Text("Updated —")
 				.hidden()
 		}
+	}
+
+	private func dupesText(_ stats: MeshClient.ConnectedNodeStats) -> Text {
+		guard let dupes = stats.packetsRxDupe else { return Text(verbatim: "") }
+		return Text("\(packetText(dupes, fractionDigits: 0)) dupes") + Text(verbatim: " · ")
 	}
 
 	private func metricLabel(_ text: LocalizedStringKey) -> some View {
