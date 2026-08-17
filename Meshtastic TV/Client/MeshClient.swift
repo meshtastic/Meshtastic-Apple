@@ -36,6 +36,9 @@ final class MeshClient {
 	private(set) var state: State = .disconnected
 	private(set) var myNodeNum: UInt32?
 	private(set) var host: String = ""
+	/// Firmware edition of the connected radio, from MyNodeInfo. Drives the event
+	/// badge on the stats strip; `.vanilla` for a stock radio.
+	private(set) var firmwareEdition: FirmwareEdition = .vanilla
 
 	/// Latest health numbers for the CONNECTED node — the mesh stats strip's data.
 	/// In-memory only: session data, and adding fields to `MeshNode` would be a schema
@@ -78,8 +81,9 @@ final class MeshClient {
 		self.host = host
 		state = .connecting
 		myNodeNum = nil
-		// Stats describe one radio's session — they must not survive a switch.
+		// Stats and the edition describe one radio's session — they must not survive a switch.
 		stats = nil
+		firmwareEdition = .vanilla
 		// Note: the persisted node store is intentionally NOT cleared here — keeping
 		// it is what leaves the map populated across relaunches until the radio's
 		// fresh node-DB dump updates it.
@@ -156,6 +160,7 @@ final class MeshClient {
 		switch fromRadio.payloadVariant {
 		case .myInfo(let myInfo):
 			myNodeNum = myInfo.myNodeNum
+			firmwareEdition = myInfo.firmwareEdition
 
 		case .nodeInfo(let info):
 			upsertNodeInfo(info)

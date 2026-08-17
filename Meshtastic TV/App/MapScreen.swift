@@ -59,7 +59,8 @@ struct MapScreen: View {
 					MeshStatsStrip(
 						stats: client.stats,
 						storeOnlineCount: allNodes.filter(\.isOnline).count,
-						storeTotalCount: allNodes.count
+						storeTotalCount: allNodes.count,
+						edition: EventEdition(client.firmwareEdition)
 					)
 					.padding(TVTheme.statsStripMargin)
 				}

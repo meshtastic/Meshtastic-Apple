@@ -26,12 +26,20 @@ struct MeshStatsStrip: View {
 	/// Store-derived fallbacks so the node count renders before any telemetry.
 	let storeOnlineCount: Int
 	let storeTotalCount: Int
+	/// Event firmware on the connected radio, or nil for a stock radio.
+	var edition: EventEdition?
 
 	@ScaledMetric(relativeTo: .caption2)
 	private var metadataHeight: CGFloat = TVTheme.statsStripMetadataHeight
 
 	var body: some View {
 		HStack(spacing: TVTheme.statsStripColumnSpacing) {
+			if let edition {
+				eventBadge(edition)
+					.frame(idealWidth: TVTheme.statsStripEventWidth, maxWidth: TVTheme.statsStripEventWidth)
+				divider
+			}
+
 			cell(label: "Nodes", value: nodesText)
 				.frame(idealWidth: TVTheme.statsStripNodesWidth, maxWidth: TVTheme.statsStripNodesWidth)
 
@@ -63,6 +71,28 @@ struct MeshStatsStrip: View {
 	}
 
 	// MARK: Cells
+
+	/// Event firmware badge: edition artwork beside the edition name. Editions with
+	/// no bundled artwork fall back to the Meshtastic mark — the mark is supplemented,
+	/// never replaced. Display-only, like the rest of the strip.
+	private func eventBadge(_ edition: EventEdition) -> some View {
+		HStack(spacing: TVTheme.statsStripPacketSpacing) {
+			Image(edition.assetName ?? "m-logo-white")
+				.resizable()
+				.scaledToFit()
+				.frame(width: TVTheme.statsStripEventLogoSize, height: TVTheme.statsStripEventLogoSize)
+			VStack(alignment: .leading, spacing: TVTheme.statsStripMetricSpacing) {
+				metricLabel("Event")
+				Text(edition.name)
+					.font(.title2.weight(.semibold))
+					.lineLimit(1)
+					.minimumScaleFactor(0.5)
+			}
+		}
+		.frame(maxWidth: .infinity, alignment: .leading)
+		.accessibilityElement(children: .combine)
+		.accessibilityLabel(Text("Event firmware: \(edition.name)"))
+	}
 
 	private func cell(label: LocalizedStringKey, value: String, color: Color = .primary) -> some View {
 		VStack(alignment: .leading, spacing: TVTheme.statsStripMetricSpacing) {
@@ -175,6 +205,27 @@ struct MeshStatsStrip: View {
 	private var airTxColor: Color {
 		guard let value = stats?.airUtilTx, value >= 10 else { return .primary }
 		return Color("MeshtasticWarning")
+	}
+}
+
+#Preview("Event firmware", traits: .fixedLayout(width: 1560, height: 300)) {
+	ZStack {
+		Color.gray
+		MeshStatsStrip(
+			stats: MeshClient.ConnectedNodeStats(
+				channelUtilization: 12.5,
+				airUtilTx: 3.1,
+				packetsTx: 8_402,
+				packetsRx: 30_115,
+				packetsRxDupe: nil,
+				onlineNodes: 64,
+				totalNodes: 210,
+				receivedAt: Date().addingTimeInterval(-20)
+			),
+			storeOnlineCount: 60,
+			storeTotalCount: 200,
+			edition: EventEdition(.defcon)
+		)
 	}
 }
 
