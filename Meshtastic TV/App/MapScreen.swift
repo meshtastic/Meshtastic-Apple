@@ -218,7 +218,9 @@ private struct NodeRow: View {
 				HStack(spacing: 14) {
 					if let lastHeard = node.lastHeard {
 						Label {
-							Text(lastHeard.formatted(.relative(presentation: .named)))
+								// Abbreviated: the full "10 minutes ago" crowds out the role
+							// and position labels beside it on a 520pt list.
+							Text(lastHeard.formatted(.relative(presentation: .numeric, unitsStyle: .abbreviated)))
 						} icon: {
 							Image(systemName: node.isOnline ? "checkmark.circle.fill" : "moon.circle.fill")
 								.foregroundStyle(node.isOnline ? Color("MeshtasticSuccess") : Color("MeshtasticWarning"))
@@ -234,8 +236,12 @@ private struct NodeRow: View {
 				.font(.caption)
 				.foregroundStyle(.secondary)
 				.lineLimit(1)
+				.minimumScaleFactor(0.75)
 			}
-			Spacer()
+			// Take the row's remaining width outright. A trailing Spacer() competes
+			// with the text for it, and Text yields by truncating — which is why the
+			// metadata line clipped while the row still had space to its right.
+			.frame(maxWidth: .infinity, alignment: .leading)
 		}
 	}
 }
