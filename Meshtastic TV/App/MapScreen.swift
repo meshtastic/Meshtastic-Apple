@@ -64,6 +64,10 @@ struct MapScreen: View {
 						edition: EventEdition(client.firmwareEdition)
 					)
 					.padding(TVTheme.statsStripMargin)
+					// The map is full-bleed but the overlay lands inside the safe
+					// area, so the bar stopped ~80pt short of the screen edge while
+					// its columns were squeezed. Reclaim that width.
+					.ignoresSafeArea(edges: .horizontal)
 				}
 			}
 		}

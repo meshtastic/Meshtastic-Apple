@@ -46,8 +46,8 @@ enum TVTheme {
 	static let statsStripPacketSpacing: CGFloat = 10
 	static let statsStripEventWidth: CGFloat = 230
 	static let statsStripEventLogoSize: CGFloat = 56
-	static let statsStripNodesWidth: CGFloat = 200
-	static let statsStripUtilizationWidth: CGFloat = 140
+	static let statsStripNodesWidth: CGFloat = 250
+	static let statsStripUtilizationWidth: CGFloat = 160
 	static let statsStripHorizontalPadding: CGFloat = 36
 	static let statsStripVerticalPadding: CGFloat = 28
 	static let statsStripCornerRadius: CGFloat = 24
