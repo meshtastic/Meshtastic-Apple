@@ -43,15 +43,32 @@ struct MeshStatsStrip: View {
 				divider
 			}
 
-			cell(label: "Nodes", value: nodesText)
+			cell(
+				label: "Nodes",
+				value: nodesText,
+				accessibilityLabel: "Nodes online",
+				accessibilityValue: nodesAccessibilityValue
+			)
 				.frame(idealWidth: TVTheme.statsStripNodesWidth, maxWidth: TVTheme.statsStripNodesWidth)
 
 			divider
-			cell(label: "Ch Util", value: percentText(stats?.channelUtilization), color: channelUtilColor)
+			cell(
+				label: "Ch Util",
+				value: percentText(stats?.channelUtilization),
+				color: channelUtilColor,
+				severity: channelUtilSeverity,
+				accessibilityLabel: "Channel utilization"
+			)
 				.frame(idealWidth: TVTheme.statsStripUtilizationWidth, maxWidth: TVTheme.statsStripUtilizationWidth)
 
 			divider
-			cell(label: "Air TX", value: percentText(stats?.airUtilTx), color: airTxColor)
+			cell(
+				label: "Air TX",
+				value: percentText(stats?.airUtilTx),
+				color: airTxColor,
+				severity: airTxSeverity,
+				accessibilityLabel: "Airtime transmit"
+			)
 				.frame(idealWidth: TVTheme.statsStripUtilizationWidth, maxWidth: TVTheme.statsStripUtilizationWidth)
 
 			divider
@@ -96,12 +113,40 @@ struct MeshStatsStrip: View {
 		.accessibilityLabel(Text("Event firmware: \(edition.name)"))
 	}
 
-	private func cell(label: LocalizedStringKey, value: String, color: Color = .primary) -> some View {
+	/// `severity` conveys a warning without relying on colour alone: the glyph rides
+	/// beside the LABEL, where the column has slack, rather than beside the value,
+	/// where it would push these fixed-width columns back into truncation. VoiceOver
+	/// reads it from the accessibility value instead of the glyph.
+	private func cell(
+		label: LocalizedStringKey,
+		value: String,
+		color: Color = .primary,
+		severity: LocalizedStringKey? = nil,
+		accessibilityLabel: LocalizedStringKey? = nil,
+		accessibilityValue: Text? = nil
+	) -> some View {
 		VStack(alignment: .leading, spacing: TVTheme.statsStripMetricSpacing) {
-			metricLabel(label)
+			HStack(spacing: 8) {
+				metricLabel(label)
+				if severity != nil {
+					Image(systemName: "exclamationmark.triangle.fill")
+						.font(.caption.weight(.semibold))
+						.foregroundStyle(color)
+						.accessibilityHidden(true)
+				}
+			}
 			metricValue(value, color: color)
 		}
 		.frame(maxWidth: .infinity, alignment: .leading)
+		.accessibilityElement(children: .ignore)
+		.accessibilityLabel(accessibilityLabel ?? label)
+		.accessibilityValue(accessibilityValue ?? severityValue(value, severity))
+	}
+
+	/// "7.5%" on its own, or "7.5%, Congested" when a severity applies.
+	private func severityValue(_ value: String, _ severity: LocalizedStringKey?) -> Text {
+		guard let severity else { return Text(verbatim: value) }
+		return Text(verbatim: value) + Text(verbatim: ", ") + Text(severity)
 	}
 
 	private var packetsCell: some View {
@@ -116,6 +161,9 @@ struct MeshStatsStrip: View {
 				.frame(height: metadataHeight)
 		}
 		.frame(maxWidth: .infinity, alignment: .leading)
+		.accessibilityElement(children: .ignore)
+		.accessibilityLabel("Packets")
+		.accessibilityValue(packetsAccessibilityValue)
 	}
 
 	@ViewBuilder
@@ -172,6 +220,7 @@ struct MeshStatsStrip: View {
 			.foregroundStyle(Color.gray)
 			.lineLimit(1)
 			.minimumScaleFactor(0.8)
+			.accessibilityHidden(true)
 	}
 
 	/// Value type steps down when the event badge is present — the badge takes a
@@ -208,6 +257,35 @@ struct MeshStatsStrip: View {
 	private func percentText(_ value: Float?) -> String {
 		guard let value else { return "—" }
 		return String(format: "%.1f%%", value)
+	}
+
+	private var nodesAccessibilityValue: Text {
+		if let online = stats?.onlineNodes, let total = stats?.totalNodes {
+			return Text("\(Int(online)) of \(Int(total)) online")
+		}
+		return Text("\(storeOnlineCount) of \(storeTotalCount) online")
+	}
+
+	private var packetsAccessibilityValue: Text {
+		guard let tx = stats?.packetsTx, let rx = stats?.packetsRx else { return Text("No data") }
+		var value = Text("\(tx.formatted()) transmitted, \(rx.formatted()) received")
+		if let dupes = stats?.packetsRxDupe {
+			value = value + Text(verbatim: ", ") + Text("\(dupes.formatted()) duplicates")
+		}
+		return value
+	}
+
+	private var channelUtilSeverity: LocalizedStringKey? {
+		guard let value = stats?.channelUtilization else { return nil }
+		if value >= 50 { return "Severely congested" }
+		if value >= 25 { return "Congested" }
+		return nil
+	}
+
+	/// 10% is the duty-cycle ceiling in most regions.
+	private var airTxSeverity: LocalizedStringKey? {
+		guard let value = stats?.airUtilTx, value >= 10 else { return nil }
+		return "At duty-cycle limit"
 	}
 
 	/// Firmware treats sustained channel utilization above 25% as a congested mesh.

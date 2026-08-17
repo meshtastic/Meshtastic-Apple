@@ -19,7 +19,7 @@ struct SettingsView: View {
 	@Environment(\.modelContext) private var context
 	@Query private var nodes: [MeshNode]
 	@State private var confirmClear = false
-	@FocusState private var clearFocused: Bool
+	@FocusState private var mapTypeFocused: Bool
 	/// MKMapType raw value, shared with MeshTVMapView via the same key.
 	@AppStorage("tv.mapType") private var mapTypeRaw: Int = Int(MKMapType.standard.rawValue)
 	@StateObject private var offlineBasemap = TVOfflineBasemap()
@@ -37,6 +37,8 @@ struct SettingsView: View {
 					Text("Satellite").tag(Int(MKMapType.satellite.rawValue))
 				}
 				.pickerStyle(.segmented)
+				.focused($mapTypeFocused)
+				.accessibilityIdentifier("settings.mapType")
 
 				Toggle("Mesh Stats", isOn: $statsBarEnabled)
 				Picker("Stats Position", selection: $statsBarEdge) {
@@ -59,14 +61,14 @@ struct SettingsView: View {
 				} label: {
 					Label("Clear Node Database", systemImage: "trash")
 				}
-				.focused($clearFocused)
+				.accessibilityIdentifier("settings.clearNodeDatabase")
 			} header: {
 				Text("Data")
 			} footer: {
 				Text("Removes all \(nodes.count) saved nodes from this Apple TV. They repopulate from the radio's database on the next connection.")
 			}
 		}
-		.defaultFocus($clearFocused, true)
+		.defaultFocus($mapTypeFocused, true)
 		.navigationTitle("Settings")
 		.alert("Clear Node Database?", isPresented: $confirmClear) {
 			Button("Clear", role: .destructive, action: clearDatabase)

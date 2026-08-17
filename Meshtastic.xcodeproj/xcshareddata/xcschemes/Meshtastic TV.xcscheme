@@ -21,6 +21,20 @@
                ReferencedContainer = "container:Meshtastic.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "NO"
+            buildForProfiling = "NO"
+            buildForArchiving = "NO"
+            buildForAnalyzing = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "BD5F76AD88798DAA8768A6E5"
+               BuildableName = "Meshtastic TVUITests.xctest"
+               BlueprintName = "Meshtastic TVUITests"
+               ReferencedContainer = "container:Meshtastic.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
    <TestAction
@@ -39,6 +53,17 @@
          </BuildableReference>
       </MacroExpansion>
       <Testables>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "BD5F76AD88798DAA8768A6E5"
+               BuildableName = "Meshtastic TVUITests.xctest"
+               BlueprintName = "Meshtastic TVUITests"
+               ReferencedContainer = "container:Meshtastic.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
       <CommandLineArguments>
       </CommandLineArguments>
