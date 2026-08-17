@@ -42,6 +42,11 @@ struct MeshMapMK: View {
 	/// base layer -- so the styled offline box + coverage border work over Standard/Hybrid/Satellite.
 	@AppStorage("enableOfflineTiles") private var enableOfflineTiles = false
 	@AppStorage("enableMapClustering") private var enableMapClustering = true
+	@AppStorage("meshMapShowHillshade") private var showHillshade = false
+	@AppStorage("meshMapShowContours") private var showContours = false
+	/// Contour generation + the shared TerrainStore behind hillshade and contours (spec 018).
+	@StateObject private var terrainContours = TerrainContourProvider()
+	@State private var hillshadeOverlay: HillshadeTileOverlay?
 	/// Hide nodes whose latest position is reduced-precision (the ones drawn with a precision circle).
 	@AppStorage("enableMapPreciseLocationsOnly") private var preciseLocationsOnly = false
 	/// Map overlay configs
@@ -187,6 +192,7 @@ struct MeshMapMK: View {
 		refreshVisiblePositionSnapshots(from: state.positions)
 		syncFallbackLocation()
 		decodeOfflineIfVisible()
+		updateContoursIfNeeded()
 	}
 
 	/// Enabled saved routes drawn as polylines + start/finish markers (parity with the old map).
@@ -305,9 +311,19 @@ struct MeshMapMK: View {
 		)
 	}
 
-	/// Coverage box for each downloaded region (accent borders + capsules), shown once vectors load.
+	/// Coverage box for each downloaded region (accent borders + capsules). Basemap
+	/// boxes show once vectors load; regions with terrain also show whenever a
+	/// terrain layer is on — hillshade and contours draw over Apple maps even with
+	/// the offline tiles toggle off, and the box must match what actually renders.
 	private var offlineCoverageAreas: [GeoBounds] {
-		offlineVectors.isAvailable ? offlineRegions.map { $0.bounds } : []
+		var boxed = offlineVectors.isAvailable ? offlineRegions : []
+		if showHillshade || showContours {
+			for region in offlineMapManager.regions
+			where region.terrain != nil && !boxed.contains(where: { $0.id == region.id }) {
+				boxed.append(region)
+			}
+		}
+		return boxed.map { $0.bounds }
 	}
 	/// Cheap change-detector for the route set (drives rebuildRouteContent via onChange).
 	/// Change-detector for the waypoint set (rebuild markers on add/remove/move/icon change).
@@ -678,6 +694,16 @@ struct MeshMapMK: View {
 			}
 			.onChange(of: offlineMapManager.regions) {
 				reloadOfflineSource()
+				refreshTerrainSources()
+			}
+			.onChange(of: showHillshade) {
+				rebuildHillshadeOverlay()
+			}
+			.onChange(of: showContours) {
+				updateContoursIfNeeded()
+			}
+			.onChange(of: colorScheme) {
+				rebuildHillshadeOverlay()
 			}
 			.onChange(of: offlineMapConnectivity.isNetworkAvailable) {
 				rebuildAllMapContent()
@@ -693,6 +719,10 @@ struct MeshMapMK: View {
 				// Pan/zoom settled: re-filter to the new region now; the state key dedupes
 				// the rebuild when the visible set is unchanged.
 				refreshPositionState()
+				// Contours track the CAMERA, not the node set — regenerate here directly,
+				// or panning with an unchanged visible node set never updates them
+				// (refreshPositionState early-returns before its contour call).
+				updateContoursIfNeeded()
 				// Remember where the user is looking so the map reopens here next launch.
 				persistVisibleRegion()
 			}
@@ -727,6 +757,7 @@ struct MeshMapMK: View {
 			applyTraceRouteSelection()
 			offlineMapManager.loadIfNeeded()
 			reloadOfflineSource()
+			refreshTerrainSources()
 			rebuildOfflineVectorOverlays()
 
 			switch selectedMapLayer {
@@ -1168,6 +1199,57 @@ struct MeshMapMK: View {
 									rebuildOverlays()
 								}
 
+								/// Terrain layer (spec 018): hillshade on standard/offline only; contours on
+								/// every map type, imagery-legible color over hybrid/satellite.
+								private var terrainOverlays: [ClusterMapOverlay] {
+									var result: [ClusterMapOverlay] = []
+									if showHillshade, selectedMapLayer == .standard || selectedMapLayer == .offline, let hillshadeOverlay {
+										result.append(ClusterMapOverlay(id: "terrain-hillshade", overlay: hillshadeOverlay, style: ClusterMapOverlayStyle(level: .aboveRoads)))
+									}
+									if showContours, let geometry = terrainContours.geometry {
+										let imagery = selectedMapLayer == .hybrid || selectedMapLayer == .satellite
+										let minorColor = imagery ? UIColor.white.withAlphaComponent(0.55) : UIColor.brown.withAlphaComponent(0.45)
+										let indexColor = imagery ? UIColor.white.withAlphaComponent(0.9) : UIColor.brown.withAlphaComponent(0.8)
+										var minorStyle = ClusterMapOverlayStyle(strokeUIColor: minorColor, lineWidth: 1)
+										minorStyle.level = .aboveRoads
+										var indexStyle = ClusterMapOverlayStyle(strokeUIColor: indexColor, lineWidth: 1.8)
+										indexStyle.level = .aboveRoads
+										result.append(ClusterMapOverlay(id: "terrain-contours-minor-\(geometry.key.hashValue)", overlay: geometry.minorLines, style: minorStyle))
+										result.append(ClusterMapOverlay(id: "terrain-contours-index-\(geometry.key.hashValue)", overlay: geometry.indexLines, style: indexStyle))
+									}
+									return result
+								}
+
+								/// Re-point the terrain store at downloaded terrain, then refresh dependents.
+								private func refreshTerrainSources() {
+									let sources = offlineMapManager.terrainSources()
+									Task {
+										await terrainContours.store.configure(sources: sources)
+										await MainActor.run {
+											terrainContours.invalidate()
+											rebuildHillshadeOverlay()
+											updateContoursIfNeeded()
+										}
+									}
+								}
+
+								private func rebuildHillshadeOverlay() {
+									guard showHillshade else {
+										hillshadeOverlay = nil
+										return
+									}
+									hillshadeOverlay = HillshadeTileOverlay(
+										store: terrainContours.store,
+										darkAppearance: colorScheme == .dark,
+										cacheDirectory: offlineMapManager.terrainHillshadeCacheDirectory(dark: colorScheme == .dark)
+									)
+								}
+
+								private func updateContoursIfNeeded() {
+									guard showContours, isMapVisible, let region = visibleRegion else { return }
+									terrainContours.update(region: region, metric: Locale.current.measurementSystem == .metric)
+								}
+
 								private func combinedMapOverlays() -> [ClusterMapOverlay] {
 									guard isMapVisible else { return [] }
 									// Hide the offline vector basemap while a trace route is shown (jump + flyover) so
@@ -1178,6 +1260,7 @@ struct MeshMapMK: View {
 									result += mapOverlays
 									result += geoJSONOverlays
 									result += geofenceOverlays
+									result += terrainOverlays
 									return result
 								}
 
@@ -1186,7 +1269,33 @@ struct MeshMapMK: View {
 									var result = routeDecorations
 									result += tracerouteDecorations
 									result += geoJSONDecorations
+									result += terrainLabelDecorations
 									return result
+								}
+
+								/// Elevation labels for the index contours (display-only).
+								private var terrainLabelDecorations: [ClusterMapDecoration] {
+									guard showContours, let geometry = terrainContours.geometry else { return [] }
+									let imagery = selectedMapLayer == .hybrid || selectedMapLayer == .satellite
+									let text: Color = imagery ? .white : Color(UIColor.brown)
+									return geometry.labels.map { label in
+										ClusterMapDecoration(
+											id: "terrain-label-\(label.id)",
+											coordinate: label.coordinate,
+											content: AnyView(
+												Text(label.text)
+													.font(.caption2.weight(.semibold))
+													.monospacedDigit()
+													.foregroundColor(text)
+													.padding(.horizontal, 4)
+													.padding(.vertical, 1)
+													.background(
+														Capsule().fill(imagery ? Color.black.opacity(0.35) : Color(UIColor.systemBackground).opacity(0.75))
+													)
+													.allowsHitTesting(false)
+											)
+										)
+									}
 								}
 
 								private func rebuildGeoJSONOverlays() {

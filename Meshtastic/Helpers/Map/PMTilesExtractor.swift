@@ -103,7 +103,7 @@ final class PMTilesExtractor {
 			guard let day = calendar.date(byAdding: .day, value: -offset, to: today) else { continue }
 			let build = formatter.string(from: day)
 			guard let url = URL(string: "https://build.protomaps.com/\(build).pmtiles") else { continue }
-			if await buildExists(url) {
+			if await archiveExists(url) {
 				Logger.services.info("🗺️ [Offline] Using Protomaps build \(build, privacy: .public)")
 				return (url, build)
 			}
@@ -111,7 +111,8 @@ final class PMTilesExtractor {
 		return nil
 	}
 
-	private func buildExists(_ url: URL) async -> Bool {
+	/// Whether a PMTiles archive exists at `url`, probing the 7-byte magic with a range request.
+	func archiveExists(_ url: URL) async -> Bool {
 		do {
 			let data = try await fetchRange(url, start: 0, end: 6)
 			return data.count == 7 && data == Data("PMTiles".utf8)
