@@ -49,7 +49,6 @@ struct MapScreen: View {
 				nodes: locatedNodes,
 				selectedNodeNum: $selectedNodeNum,
 				recenterToken: recenterToken,
-				onMenuExit: escapeMap,
 				offlineVectors: offlineVectors
 			)
 			.ignoresSafeArea()
@@ -94,20 +93,6 @@ struct MapScreen: View {
 			.sorted { ($0.lastHeard ?? .distantPast) > ($1.lastHeard ?? .distantPast) }
 		if newSorted.map(\.num) != sortedNodes.map(\.num) { sortedNodes = newSorted }
 		if newLocated.map(\.num) != locatedNodes.map(\.num) { locatedNodes = newLocated }
-	}
-
-	/// Menu pressed while the map held focus: pop any open node detail and hand
-	/// focus back to the node list — without this, MKMapView is a focus trap.
-	private func escapeMap() {
-		navPath = []
-		if let selectedNodeNum, sortedNodes.contains(where: { $0.num == selectedNodeNum }) {
-			focusedNodeNum = selectedNodeNum
-		} else if let firstNodeNum = sortedNodes.first?.num {
-			focusedNodeNum = firstNodeNum
-		} else {
-			focusedNodeNum = nil
-			recenterFocused = true
-		}
 	}
 
 	private var nodeList: some View {
@@ -195,15 +180,6 @@ struct MapScreen: View {
 				)
 				.ignoresSafeArea(edges: [.top, .leading])
 		}
-	}
-
-	private var disconnectButton: some View {
-		Button(role: .destructive) {
-			client.disconnect()
-		} label: {
-			Label("Disconnect", systemImage: "xmark.circle.fill")
-		}
-		.buttonStyle(.bordered)
 	}
 }
 
