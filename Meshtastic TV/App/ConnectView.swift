@@ -11,9 +11,15 @@
 import SwiftUI
 
 struct ConnectView: View {
+	private enum ErrorFocus: Hashable {
+		case connection
+		case discovery
+	}
+
 	@Bindable var client: MeshClient
 	@Environment(\.scenePhase) private var scenePhase
 	@StateObject private var discovery = NodeDiscovery()
+	@AccessibilityFocusState private var errorFocus: ErrorFocus?
 
 	@AppStorage("tv.lastHost") private var host: String = ""
 	@AppStorage("tv.lastPort") private var portText: String = "4403"
@@ -46,6 +52,9 @@ struct ConnectView: View {
 						Section {
 							Label(message, systemImage: "exclamationmark.triangle.fill")
 								.foregroundStyle(Color("MeshtasticError"))
+								.accessibilityLabel("Connection error: \(message)")
+								.accessibilityFocused($errorFocus, equals: .connection)
+								.onAppear { errorFocus = .connection }
 						}
 					}
 
@@ -69,7 +78,7 @@ struct ConnectView: View {
 
 	private var hero: some View {
 		VStack(alignment: .leading, spacing: 28) {
-			Image("meshtastic-wordmark-white")
+			Image(decorative: "meshtastic-wordmark-white")
 				.resizable()
 				.scaledToFit()
 				.frame(width: 620)
@@ -90,6 +99,9 @@ struct ConnectView: View {
 			if let errorMessage = discovery.errorMessage {
 				Label(errorMessage, systemImage: "exclamationmark.triangle.fill")
 					.foregroundStyle(Color("MeshtasticError"))
+					.accessibilityLabel("Discovery error: \(errorMessage)")
+					.accessibilityFocused($errorFocus, equals: .discovery)
+					.onAppear { errorFocus = .discovery }
 				Button("Try Again") { discovery.retry() }
 			} else if discovery.discovered.isEmpty {
 				HStack(spacing: 16) {

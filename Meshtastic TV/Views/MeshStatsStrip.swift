@@ -35,17 +35,38 @@ struct MeshStatsStrip: View {
 			cell(label: "Nodes", value: nodesText)
 
 			divider
-			cell(label: "Ch Util", value: percentText(stats?.channelUtilization), color: channelUtilColor)
+			cell(
+				label: "Ch Util",
+				value: percentText(stats?.channelUtilization),
+				color: channelUtilColor,
+				status: channelUtilStatus,
+				accessibilityLabel: "Channel utilization",
+				accessibilityValue: percentAccessibilityValue(
+					stats?.channelUtilization,
+					status: channelUtilStatus
+				)
+			)
 
 			divider
-			cell(label: "Air TX", value: percentText(stats?.airUtilTx), color: airTxColor)
+			cell(
+				label: "Air TX",
+				value: percentText(stats?.airUtilTx),
+				color: airTxColor,
+				status: airTxStatus,
+				accessibilityLabel: "Airtime transmit",
+				accessibilityValue: percentAccessibilityValue(stats?.airUtilTx, status: airTxStatus)
+			)
 
 			divider
-			cell(label: "Packets", value: packetsText)
+			cell(label: "Packets", value: packetsText, accessibilityValue: packetsAccessibilityValue)
 
 			if let dupes = stats?.packetsRxDupe {
 				divider
-				cell(label: "Dupes", value: dupes.formatted())
+				cell(
+					label: "Dupes",
+					value: dupes.formatted(),
+					accessibilityLabel: "Duplicate packets"
+				)
 			}
 
 			if let receivedAt = stats?.receivedAt {
@@ -59,6 +80,9 @@ struct MeshStatsStrip: View {
 					Text(receivedAt, style: .relative)
 						.font(.system(size: valueSize, weight: .semibold, design: .rounded).monospacedDigit())
 				}
+				.accessibilityElement(children: .ignore)
+				.accessibilityLabel("Updated")
+				.accessibilityValue(receivedAt.formatted(.relative(presentation: .named)))
 			}
 		}
 		.padding(.horizontal, 64)
@@ -77,23 +101,41 @@ struct MeshStatsStrip: View {
 
 	// MARK: Cells
 
-	private func cell(label: String, value: String, color: Color = .primary) -> some View {
+	private func cell(
+		label: String,
+		value: String,
+		color: Color = .primary,
+		status: String? = nil,
+		accessibilityLabel: String? = nil,
+		accessibilityValue: String? = nil
+	) -> some View {
 		VStack(alignment: .leading, spacing: 6) {
 			Text(label)
 				.font(.system(size: labelSize, weight: .medium))
 				.tracking(1.2)
 				.textCase(.uppercase)
 				.foregroundStyle(Color.gray)
-			Text(value)
-				.font(.system(size: valueSize, weight: .semibold, design: .rounded).monospacedDigit())
-				.foregroundStyle(color)
+			HStack(spacing: 12) {
+				Text(value)
+				if status != nil {
+					Image(systemName: "exclamationmark.triangle.fill")
+						.font(.system(size: labelSize, weight: .semibold))
+						.accessibilityHidden(true)
+				}
+			}
+			.font(.system(size: valueSize, weight: .semibold, design: .rounded).monospacedDigit())
+			.foregroundStyle(color)
 		}
+		.accessibilityElement(children: .ignore)
+		.accessibilityLabel(accessibilityLabel ?? label)
+		.accessibilityValue(accessibilityValue ?? [value, status].compactMap { $0 }.joined(separator: ", "))
 	}
 
 	private var divider: some View {
 		Rectangle()
 			.fill(.secondary.opacity(0.4))
 			.frame(width: 1, height: 104)
+			.accessibilityHidden(true)
 	}
 
 	// MARK: Values
@@ -112,12 +154,29 @@ struct MeshStatsStrip: View {
 		return "\(tx.formatted()) ↑ · \(rx.formatted()) ↓"
 	}
 
+	private var packetsAccessibilityValue: String {
+		guard let tx = stats?.packetsTx, let rx = stats?.packetsRx else { return "No data" }
+		return "\(tx.formatted()) transmitted, \(rx.formatted()) received"
+	}
+
 	private func percentText(_ value: Float?) -> String {
 		guard let value else { return "—" }
 		return String(format: "%.1f%%", value)
 	}
 
+	private func percentAccessibilityValue(_ value: Float?, status: String?) -> String {
+		guard value != nil else { return "No data" }
+		return [percentText(value), status].compactMap { $0 }.joined(separator: ", ")
+	}
+
 	/// Firmware treats sustained channel utilization above 25% as a congested mesh.
+	private var channelUtilStatus: String? {
+		guard let value = stats?.channelUtilization else { return nil }
+		if value >= 50 { return "Severely congested" }
+		if value >= 25 { return "Congested" }
+		return nil
+	}
+
 	private var channelUtilColor: Color {
 		guard let value = stats?.channelUtilization else { return .primary }
 		if value >= 50 { return Color("MeshtasticError") }
@@ -126,6 +185,11 @@ struct MeshStatsStrip: View {
 	}
 
 	/// 10% is the duty-cycle ceiling in most regions.
+	private var airTxStatus: String? {
+		guard let value = stats?.airUtilTx, value >= 10 else { return nil }
+		return "At duty-cycle limit"
+	}
+
 	private var airTxColor: Color {
 		guard let value = stats?.airUtilTx, value >= 10 else { return .primary }
 		return Color("MeshtasticWarning")
