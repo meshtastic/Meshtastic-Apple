@@ -654,67 +654,12 @@ struct MeshMapMK: View {
 				}
 	}
 
+	/// Split across several properties on purpose: as one expression this chain of
+	/// 13 modifiers sat at the type-checker's time limit, so CI flipped between
+	/// passing and "unable to type-check this expression in reasonable time" on
+	/// identical code. Each piece now infers on its own and stays well clear.
 	var body: some View {
-		NavigationStack {
-			ZStack {
-			mapWithSheets
-			}
-			.toolbar {
-				ToolbarItem(placement: .topBarLeading) {
-					MeshtasticLogo()
-				}
-				ToolbarItem(placement: .topBarTrailing) {
-					HStack {
-						if supportsMultipleWindows && showOpenWindowButton && !isMapWindowOpen {
-							Button {
-								if router.selectedTab == .map {
-									router.selectedTab = .nodes
-								}
-								openWindow(id: "meshmap-window")
-								isMapWindowOpen = true
-							} label: {
-								Image(systemName: "macwindow.badge.plus")
-							}
-							.accessibilityLabel(String(localized: "Open map in new window", comment: "VoiceOver label for the open map in a new window button"))
-						}
-						ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
-					}
-				}
-			}
-			.toolbarBackground(.hidden, for: .navigationBar)
-		}
-			.task(id: isMapVisible) {
-				// Throttled position refresh: re-derive the visible positions on a gentle
-				// cadence instead of on every SwiftData write (see `allLatestPositions`).
-				guard isMapVisible else { return }
-				while !Task.isCancelled {
-					refreshPositionState()
-					try? await Task.sleep(for: .seconds(2))
-				}
-			}
-			.onChange(of: offlineMapManager.regions) {
-				reloadOfflineSource()
-				refreshTerrainSources()
-			}
-			.onChange(of: showHillshade) {
-				rebuildHillshadeOverlay()
-			}
-			.onChange(of: showContours) {
-				updateContoursIfNeeded()
-			}
-			.onChange(of: colorScheme) {
-				rebuildHillshadeOverlay()
-			}
-			.onChange(of: offlineMapConnectivity.isNetworkAvailable) {
-				rebuildAllMapContent()
-			}
-			.onChange(of: overlayInputsKey) {
-				rebuildAllMapContent()
-			}
-			.onChange(of: filterRefreshKey) {
-				// Filter/search edits should reflect immediately, not on the next tick.
-				refreshPositionState(force: true)
-			}
+		mapWithStateHooks
 			.onChange(of: regionRefreshKey) {
 				// Pan/zoom settled: re-filter to the new region now; the state key dedupes
 				// the rebuild when the visible set is unchanged.
@@ -802,6 +747,77 @@ struct MeshMapMK: View {
 		}
 		.onReceive(NotificationCenter.default.publisher(for: UIScene.didDisconnectNotification)) { _ in
 			refreshMapWindowOpenState()
+		}
+	}
+
+	private var mapWithStateHooks: some View {
+		mapWithDataHooks
+			.onChange(of: colorScheme) {
+				rebuildHillshadeOverlay()
+			}
+			.onChange(of: offlineMapConnectivity.isNetworkAvailable) {
+				rebuildAllMapContent()
+			}
+			.onChange(of: overlayInputsKey) {
+				rebuildAllMapContent()
+			}
+			.onChange(of: filterRefreshKey) {
+				// Filter/search edits should reflect immediately, not on the next tick.
+				refreshPositionState(force: true)
+			}
+	}
+
+	private var mapWithDataHooks: some View {
+		mapNavigation
+			.task(id: isMapVisible) {
+				// Throttled position refresh: re-derive the visible positions on a gentle
+				// cadence instead of on every SwiftData write (see `allLatestPositions`).
+				guard isMapVisible else { return }
+				while !Task.isCancelled {
+					refreshPositionState()
+					try? await Task.sleep(for: .seconds(2))
+				}
+			}
+			.onChange(of: offlineMapManager.regions) {
+				reloadOfflineSource()
+				refreshTerrainSources()
+			}
+			.onChange(of: showHillshade) {
+				rebuildHillshadeOverlay()
+			}
+			.onChange(of: showContours) {
+				updateContoursIfNeeded()
+			}
+	}
+
+	private var mapNavigation: some View {
+		NavigationStack {
+			ZStack {
+			mapWithSheets
+			}
+			.toolbar {
+				ToolbarItem(placement: .topBarLeading) {
+					MeshtasticLogo()
+				}
+				ToolbarItem(placement: .topBarTrailing) {
+					HStack {
+						if supportsMultipleWindows && showOpenWindowButton && !isMapWindowOpen {
+							Button {
+								if router.selectedTab == .map {
+									router.selectedTab = .nodes
+								}
+								openWindow(id: "meshmap-window")
+								isMapWindowOpen = true
+							} label: {
+								Image(systemName: "macwindow.badge.plus")
+							}
+							.accessibilityLabel(String(localized: "Open map in new window", comment: "VoiceOver label for the open map in a new window button"))
+						}
+						ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
+					}
+				}
+			}
+			.toolbarBackground(.hidden, for: .navigationBar)
 		}
 	}
 
