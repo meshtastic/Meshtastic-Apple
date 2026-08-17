@@ -649,6 +649,7 @@ targets:
         type: syncedFolder
         excludes:
           - "Info.plist"
+      - path: "Localizable.xcstrings"
       # Reused portable transport primitives (Network.framework only, no UIKit/BLE/CoreLocation).
       # Explicit files rather than the whole Accessory folder so we do NOT pull in the
       # BLE/AccessoryManager/persistence stack. AccessoryError + NONCE_* are shimmed locally

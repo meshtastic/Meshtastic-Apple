@@ -61,7 +61,7 @@ struct MapScreen: View {
 						storeOnlineCount: allNodes.filter(\.isOnline).count,
 						storeTotalCount: allNodes.count
 					)
-					.padding(.vertical, TVTheme.statsStripMargin)
+					.padding(TVTheme.statsStripMargin)
 				}
 			}
 		}

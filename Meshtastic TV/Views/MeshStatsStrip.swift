@@ -27,73 +27,124 @@ struct MeshStatsStrip: View {
 	let storeOnlineCount: Int
 	let storeTotalCount: Int
 
-	@ScaledMetric(relativeTo: .caption) private var labelSize: CGFloat = 30
-	@ScaledMetric(relativeTo: .title) private var valueSize: CGFloat = 64
+	@ScaledMetric(relativeTo: .caption2)
+	private var metadataHeight: CGFloat = TVTheme.statsStripMetadataHeight
 
 	var body: some View {
-		HStack(spacing: 56) {
+		HStack(spacing: TVTheme.statsStripColumnSpacing) {
 			cell(label: "Nodes", value: nodesText)
+				.frame(idealWidth: TVTheme.statsStripNodesWidth, maxWidth: TVTheme.statsStripNodesWidth)
 
 			divider
 			cell(label: "Ch Util", value: percentText(stats?.channelUtilization), color: channelUtilColor)
+				.frame(idealWidth: TVTheme.statsStripUtilizationWidth, maxWidth: TVTheme.statsStripUtilizationWidth)
 
 			divider
 			cell(label: "Air TX", value: percentText(stats?.airUtilTx), color: airTxColor)
+				.frame(idealWidth: TVTheme.statsStripUtilizationWidth, maxWidth: TVTheme.statsStripUtilizationWidth)
 
 			divider
-			cell(label: "Packets", value: packetsText)
-
-			if let dupes = stats?.packetsRxDupe {
-				divider
-				cell(label: "Dupes", value: dupes.formatted())
-			}
-
-			if let receivedAt = stats?.receivedAt {
-				divider
-				VStack(alignment: .leading, spacing: 6) {
-					Text("Updated")
-						.font(.system(size: labelSize, weight: .medium))
-						.tracking(1.2)
-						.textCase(.uppercase)
-						.foregroundStyle(Color.gray)
-					Text(receivedAt, style: .relative)
-						.font(.system(size: valueSize, weight: .semibold, design: .rounded).monospacedDigit())
-				}
-			}
+			packetsCell
+				.frame(idealWidth: TVTheme.statsStripPacketsWidth, maxWidth: .infinity)
 		}
-		.padding(.horizontal, 64)
-		.padding(.vertical, 36)
+		.padding(.horizontal, TVTheme.statsStripHorizontalPadding)
+		.padding(.vertical, TVTheme.statsStripVerticalPadding)
+		.frame(maxWidth: .infinity)
 		.background(
-			RoundedRectangle(cornerRadius: 24, style: .continuous)
+			RoundedRectangle(cornerRadius: TVTheme.statsStripCornerRadius, style: .continuous)
 				.fill(.regularMaterial)
 		)
+		.clipShape(RoundedRectangle(cornerRadius: TVTheme.statsStripCornerRadius, style: .continuous))
 		.overlay(
-			RoundedRectangle(cornerRadius: 24, style: .continuous)
+			RoundedRectangle(cornerRadius: TVTheme.statsStripCornerRadius, style: .continuous)
 				.stroke(.white.opacity(0.15), lineWidth: 1)
 		)
 		.shadow(color: .black.opacity(0.4), radius: 18, y: 8)
-		.fixedSize()
 	}
 
 	// MARK: Cells
 
-	private func cell(label: String, value: String, color: Color = .primary) -> some View {
-		VStack(alignment: .leading, spacing: 6) {
-			Text(label)
-				.font(.system(size: labelSize, weight: .medium))
-				.tracking(1.2)
-				.textCase(.uppercase)
-				.foregroundStyle(Color.gray)
-			Text(value)
-				.font(.system(size: valueSize, weight: .semibold, design: .rounded).monospacedDigit())
-				.foregroundStyle(color)
+	private func cell(label: LocalizedStringKey, value: String, color: Color = .primary) -> some View {
+		VStack(alignment: .leading, spacing: TVTheme.statsStripMetricSpacing) {
+			metricLabel(label)
+			metricValue(value, color: color)
 		}
+		.frame(maxWidth: .infinity, alignment: .leading)
+	}
+
+	private var packetsCell: some View {
+		VStack(alignment: .leading, spacing: TVTheme.statsStripMetricSpacing) {
+			metricLabel("Packets")
+			packetCounts
+			packetMetadata
+				.font(.caption2.weight(.medium).monospacedDigit())
+				.foregroundStyle(.secondary)
+				.lineLimit(1)
+				.minimumScaleFactor(0.75)
+				.frame(height: metadataHeight)
+		}
+		.frame(maxWidth: .infinity, alignment: .leading)
+	}
+
+	@ViewBuilder
+	private var packetCounts: some View {
+		if let tx = stats?.packetsTx, let rx = stats?.packetsRx {
+			HStack(spacing: TVTheme.statsStripPacketSpacing) {
+				packetCount(tx, arrow: "↑")
+				packetCount(rx, arrow: "↓")
+			}
+		} else {
+			metricValue("—", font: .title2)
+		}
+	}
+
+	private func packetCount(_ value: UInt32, arrow: String) -> some View {
+		Text("\(value.formatted()) \(arrow)")
+			.font(.title2.weight(.semibold).monospacedDigit())
+			.lineLimit(1)
+			.minimumScaleFactor(0.3)
+			.frame(maxWidth: .infinity, alignment: .leading)
+	}
+
+	@ViewBuilder
+	private var packetMetadata: some View {
+		if let stats {
+			HStack(spacing: TVTheme.statsStripPacketSpacing) {
+				if let dupes = stats.packetsRxDupe {
+					Text("\(dupes.formatted()) dupes")
+					Text("·")
+				}
+				Text("Updated")
+				Text(stats.receivedAt, style: .relative)
+			}
+		} else {
+			Text("Updated —")
+				.hidden()
+		}
+	}
+
+	private func metricLabel(_ text: LocalizedStringKey) -> some View {
+		Text(text)
+			.font(.caption.weight(.medium))
+			.tracking(1.2)
+			.textCase(.uppercase)
+			.foregroundStyle(Color.gray)
+			.lineLimit(1)
+			.minimumScaleFactor(0.8)
+	}
+
+	private func metricValue(_ text: String, color: Color = .primary, font: Font = .title) -> some View {
+		Text(text)
+			.font(font.weight(.semibold).monospacedDigit())
+			.foregroundStyle(color)
+			.lineLimit(1)
+			.minimumScaleFactor(0.5)
 	}
 
 	private var divider: some View {
 		Rectangle()
 			.fill(.secondary.opacity(0.4))
-			.frame(width: 1, height: 104)
+			.frame(width: TVTheme.statsStripDividerWidth, height: TVTheme.statsStripDividerHeight)
 	}
 
 	// MARK: Values
@@ -105,11 +156,6 @@ struct MeshStatsStrip: View {
 			return "\(online) / \(total)"
 		}
 		return "\(storeOnlineCount) / \(storeTotalCount)"
-	}
-
-	private var packetsText: String {
-		guard let tx = stats?.packetsTx, let rx = stats?.packetsRx else { return "—" }
-		return "\(tx.formatted()) ↑ · \(rx.formatted()) ↓"
 	}
 
 	private func percentText(_ value: Float?) -> String {
@@ -132,7 +178,7 @@ struct MeshStatsStrip: View {
 	}
 }
 
-#Preview("All cells", traits: .fixedLayout(width: 1400, height: 300)) {
+#Preview("All cells", traits: .fixedLayout(width: 1240, height: 300)) {
 	ZStack {
 		Color.gray
 		MeshStatsStrip(
@@ -152,9 +198,29 @@ struct MeshStatsStrip: View {
 	}
 }
 
-#Preview("No telemetry yet", traits: .fixedLayout(width: 1400, height: 300)) {
+#Preview("No telemetry yet", traits: .fixedLayout(width: 1240, height: 300)) {
 	ZStack {
 		Color.gray
 		MeshStatsStrip(stats: nil, storeOnlineCount: 12, storeTotalCount: 40)
+	}
+}
+
+#Preview("Maximum packet counters", traits: .fixedLayout(width: 1240, height: 300)) {
+	ZStack {
+		Color.gray
+		MeshStatsStrip(
+			stats: MeshClient.ConnectedNodeStats(
+				channelUtilization: 99.9,
+				airUtilTx: 10,
+				packetsTx: .max,
+				packetsRx: .max,
+				packetsRxDupe: .max,
+				onlineNodes: 9_999,
+				totalNodes: 9_999,
+				receivedAt: Date()
+			),
+			storeOnlineCount: 9_999,
+			storeTotalCount: 9_999
+		)
 	}
 }
