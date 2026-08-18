@@ -83,7 +83,16 @@ final class NodeCircleAnnotationView: MKAnnotationView {
 			// `clusteringIdentifier` on every data tick makes MapKit tear down and
 			// rebuild annotation views under the focus engine, which machine-guns
 			// the tvOS focus/selection sounds ("static") while packets stream in.
-			clusteringIdentifier = "meshNode"
+			//
+			// Clustering is off: every node gets its own pin. MapKit clusters on a
+			// minimum on-screen separation of its own, not just on whether the views
+			// overlap, so shrinking the view's frame only thinned the badges out — it
+			// still merged nodes tens of metres apart, which on a wall display hides
+			// exactly what you want to see. `displayPriority = .required` is what keeps
+			// MapKit from decluttering the pins away now that it cannot merge them.
+			// `ClusterCircleAnnotationView` is intentionally left in place so this is a
+			// one-line revert if a dense mesh ever needs the badges back.
+			clusteringIdentifier = nil
 			displayPriority = .required
 			updateContent()
 		}
