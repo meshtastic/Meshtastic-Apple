@@ -125,6 +125,15 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	// AppState and AccessoryManager are created
 	var appState: AppState!
 	lazy var context = PersistenceController.shared.context
+
+	/// Alert history for firmware `ClientNotification`s, keyed by notice identity, used to
+	/// back off repeats (see `shouldSurfaceFirmwareNotice`). In memory on purpose: after a
+	/// relaunch a standing notice alerts once more, which is the useful behaviour.
+	var firmwareNoticeHistory: [String: (count: Int, lastShown: Date)] = [:]
+	/// Delay before the Nth repeat of the same notice may alert again.
+	static let firmwareNoticeBackoff: [TimeInterval] = [0, 300, 1_800, 7_200, 43_200]
+	/// A notice unseen for this long is forgotten, so it alerts immediately if it returns.
+	static let firmwareNoticeForgetAfter: TimeInterval = 86_400
 	let mqttManager = MqttClientProxyManager.shared
 
 	// MARK: - Database reset
