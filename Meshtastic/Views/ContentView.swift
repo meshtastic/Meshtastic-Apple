@@ -95,6 +95,15 @@ struct ContentView: View {
 
 	/// A custom binding that intercepts tab selection so that tapping the
 	/// already-active tab pops its navigation stack back to root.
+	///
+	/// **iOS 18+ only.** Its setter writes back into the `Router` its getter reads,
+	/// which the modern `Tab(value:)` API handles but iOS 17's legacy `TabView`
+	/// does not: during first layout iOS 17 re-drives the selection, the write
+	/// republishes, the body invalidates, and SwiftUI re-enters the attribute graph
+	/// until it trips `_assertionFailure` — a launch crash seen only on iOS 17
+	/// (Datadog issue bb11da86, 100% iOS 17, all at ApplicationLaunch). Same family
+	/// as the lockdown-gate binding fixed above. iOS 17 binds `Router.selectedTab`
+	/// directly instead and forgoes tap-to-pop.
 	private var tabSelection: Binding<NavigationState.Tab> {
 		Binding(
 			get: { appState.router.selectedTab },
@@ -232,46 +241,72 @@ struct ContentView: View {
 				}
 			}
 		} else {
-			TabView(selection: tabSelection) {
-				Messages(
-					router: appState.router,
-					unreadChannelMessages: $appState.unreadChannelMessages,
-					unreadDirectMessages: $appState.unreadDirectMessages
-				)
-				.tabItem {
-					Label("Messages", systemImage: "message")
+			// iOS 17 gets the legacy TabView, which differs from iOS 18's `Tab` in two
+			// ways that matter here. Its selection is bound straight to the stored
+			// @Published value rather than the side-effecting `tabSelection` (so no
+			// tap-to-pop on 17), and each tab's content is built lazily instead of all
+			// five roots — and their @Query subscriptions — being constructed during
+			// first layout. `Tab`'s @ViewBuilder closure gives iOS 18+ that laziness
+			// for free. Datadog issue bb11da86 is an attribute-graph trap at first
+			// layout seen only on iOS 17; shrinking what that pass has to build is the
+			// mitigation, and it also cuts the tab-switch cost on 17.
+			TabView(selection: $router.selectedTab) {
+				ForEach(LegacyTab.allCases) { tab in
+					LegacyTabContent(tab: tab, isActive: router.selectedTab == tab.value) {
+						legacyContent(for: tab)
+					}
+					.tabItem { tab.label }
+					.tag(tab.value)
+					.badge(tab == .messages ? appState.totalUnreadMessages : 0)
 				}
-				.tag(NavigationState.Tab.messages)
-				.badge(appState.totalUnreadMessages)
-
-				NodeList()
-				.tabItem {
-					Label("Nodes", image: "custom.mesh.radio")
-				}
-				.tag(NavigationState.Tab.nodes)
-
-				MeshMapMK(router: appState.router)
-				.tabItem {
-					Label("Map", systemImage: "map")
-				}
-				.tag(NavigationState.Tab.map)
-
-				Settings()
-				.tabItem {
-					Label("Settings", systemImage: "gear")
-				}
-				.tag(NavigationState.Tab.settings)
-
-				Connect(
-					router: appState.router
-				)
-				.tabItem {
-					Label("Connect", systemImage: "link")
-				}
-				.tag(NavigationState.Tab.connect)
 			}
 		}
 	}
+
+	/// Tabs for the iOS 17 legacy `TabView`, mirroring the iOS 18 `Tab` list.
+	private enum LegacyTab: String, CaseIterable, Identifiable {
+		case messages, nodes, map, settings, connect
+
+		var id: String { rawValue }
+
+		var value: NavigationState.Tab {
+			switch self {
+			case .messages: return .messages
+			case .nodes: return .nodes
+			case .map: return .map
+			case .settings: return .settings
+			case .connect: return .connect
+			}
+		}
+
+		@ViewBuilder
+		var label: some View {
+			switch self {
+			case .messages: Label("Messages", systemImage: "message")
+			case .nodes: Label("Nodes", image: "custom.mesh.radio")
+			case .map: Label("Map", systemImage: "map")
+			case .settings: Label("Settings", systemImage: "gear")
+			case .connect: Label("Connect", systemImage: "link")
+			}
+		}
+	}
+
+	@ViewBuilder
+	private func legacyContent(for tab: LegacyTab) -> some View {
+		switch tab {
+		case .messages:
+			Messages(
+				router: appState.router,
+				unreadChannelMessages: $appState.unreadChannelMessages,
+				unreadDirectMessages: $appState.unreadDirectMessages
+			)
+		case .nodes: NodeList()
+		case .map: MeshMapMK(router: appState.router)
+		case .settings: Settings()
+		case .connect: Connect(router: appState.router)
+		}
+	}
+
 }
 
 // MARK: - Reset Placeholder
@@ -294,5 +329,35 @@ struct DatabaseResettingPlaceholder: View {
 				.foregroundColor(.gray)
 		}
 		.frame(maxWidth: .infinity, maxHeight: .infinity)
+	}
+}
+
+/// Defers a legacy-`TabView` tab's content until the tab is first selected, then
+/// keeps it alive so its state survives further tab switches.
+///
+/// The iOS 17 `TabView { A; B; C }` form constructs every tab's root immediately,
+/// which on this app means five view trees and their `@Query` subscriptions all
+/// come up during first layout. iOS 18's `Tab(value:) { }` takes a closure and is
+/// lazy already, so this exists only for the iOS 17 path.
+private struct LegacyTabContent<Content: View>: View {
+	let tab: AnyHashable
+	let isActive: Bool
+	@ViewBuilder let content: () -> Content
+	/// Latched on first activation — never reset, so a tab keeps its navigation
+	/// state once visited, matching the eager behaviour from the second visit on.
+	@State private var hasActivated = false
+
+	var body: some View {
+		Group {
+			if hasActivated {
+				content()
+			} else {
+				Color(.systemBackground)
+			}
+		}
+		.onAppear { if isActive { hasActivated = true } }
+		.onChange(of: isActive) { _, active in
+			if active { hasActivated = true }
+		}
 	}
 }
