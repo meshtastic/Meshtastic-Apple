@@ -33,11 +33,7 @@ struct UserConfig: View {
 	@FocusState var focusedField: Field?
 	
 	public var minimumVersion = "2.6.9"
-	let floatFormatter: NumberFormatter = {
-		let formatter = NumberFormatter()
-		formatter.numberStyle = .decimal
-		return formatter
-	}()
+	let floatFormatter = frequencyOverrideFormatter
 	
 	var body: some View {
 		
