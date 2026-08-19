@@ -209,9 +209,9 @@ private struct NodeRow: View {
 				HStack(spacing: 14) {
 					if let lastHeard = node.lastHeard {
 						Label {
-								// Abbreviated: the full "10 minutes ago" crowds out the role
-							// and position labels beside it on a 520pt list.
-							Text(lastHeard.formatted(.relative(presentation: .numeric, unitsStyle: .abbreviated)))
+								// Compact so the role and position labels fit beside it on a
+							// 520pt list, and never future-tense for a just-heard node.
+							Text(RelativeAge.text(since: lastHeard))
 						} icon: {
 							Image(systemName: node.isOnline ? "checkmark.circle.fill" : "moon.circle.fill")
 								.foregroundStyle(node.isOnline ? Color("MeshtasticSuccess") : Color("MeshtasticWarning"))
