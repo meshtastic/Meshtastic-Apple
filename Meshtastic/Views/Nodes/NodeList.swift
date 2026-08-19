@@ -364,7 +364,11 @@ private struct FilteredNodeList: View {
 	// The body of the view
 	var body: some View {
 		List(displayedNodes, selection: $selectedNodeNum) { entry in
-			if entry.node.modelContext != nil {
+			// `!isDeleted` matters as much as the context check: `context.delete()` marks
+			// isDeleted while modelContext stays non-nil until the save completes, and row
+			// bodies re-evaluate mid-save via SwiftData's change notification — reading a
+			// persisted property in that window traps (the NodeListItem SIGTRAP family).
+			if entry.node.modelContext != nil && !entry.node.isDeleted {
 				NavigationLink(value: entry.id) {
 					switch nodeListDensity {
 					case .compact:
@@ -386,6 +390,15 @@ private struct FilteredNodeList: View {
 						connectedNode: connectedNode
 					)
 				}
+			} else {
+				// Keep a row for an entry whose node died since the last snapshot tick (cap
+				// eviction, user delete). A conditional row that silently produces nothing
+				// desyncs the List's item counts from its data and crashes in UICollectionView
+				// batch updates ("attempt to delete item N from section 0..."). The purge pass
+				// in the cadence task removes the entry through a real, consistent diff.
+				Color.clear
+					.frame(height: 1)
+					.accessibilityHidden(true)
 			}
 		}
 		.navigationTitle(String.localizedStringWithFormat("Nodes (%@)".localized, String(displayedNodes.count)))
@@ -393,15 +406,21 @@ private struct FilteredNodeList: View {
 			// Recompute the displayed list on a gentle cadence instead of inside `body`.
 			// During live ingestion every packet writes to SwiftData; running displayNodes
 			// (a scan over the whole node set) per write pegged the main thread on reconnect
-			// with a large DB. ~3/sec is imperceptible and keeps CPU sane. The scan only runs
-			// while the Nodes tab is frontmost — TabView keeps this view alive on other tabs
-			// (and this task re-fires on every tab switch), so the guard comes first; entering
-			// the tab re-fires the task and refreshes immediately.
-			guard router.selectedTab == .nodes else { return }
+			// with a large DB. ~3/sec is imperceptible and keeps CPU sane. The full scan only
+			// runs while the Nodes tab is frontmost — TabView keeps this view alive on other
+			// tabs (and this task re-fires on every tab switch), so entering the tab refreshes
+			// immediately. While parked on another tab the loop still ticks, but only to drop
+			// entries whose nodes have been deleted (cap evictions keep running during
+			// ingestion): the stale snapshot otherwise holds dead nodes for as long as the
+			// user stays away, and any row re-evaluation in that window hits them.
 			refreshDisplayedNodes()
 			while !Task.isCancelled {
 				try? await Task.sleep(for: .milliseconds(350))
-				refreshDisplayedNodes()
+				if router.selectedTab == .nodes {
+					refreshDisplayedNodes()
+				} else {
+					purgeDeadDisplayedNodes()
+				}
 			}
 		}
 	}
@@ -409,9 +428,21 @@ private struct FilteredNodeList: View {
 	private func refreshDisplayedNodes() {
 		// Accessing any property on a ModelContext whose container was replaced can trap in SwiftData.
 		guard boundContainerGeneration == PersistenceController.shared.containerGeneration else { return }
+		guard router.selectedTab == .nodes else { return }
 		let allNodes = (try? context.fetch(makeNodeFetchDescriptor())) ?? []
 		replaceDisplayedNodesIfNeeded(with: displayNodes(from: allNodes, activeNodeNum: accessoryManager.activeDeviceNum))
 		router.updateNodeIndex(from: allNodes)
+	}
+
+	/// Drops entries whose backing node has been deleted, without the full fetch/sort of a
+	/// real refresh — cheap enough to run while the tab is parked in the background.
+	/// `modelContext`/`isDeleted` are safe to read on a dead object; persisted properties are not.
+	private func purgeDeadDisplayedNodes() {
+		guard boundContainerGeneration == PersistenceController.shared.containerGeneration else { return }
+		let live = displayedNodes.filter { $0.node.modelContext != nil && !$0.node.isDeleted }
+		if live.count != displayedNodes.count {
+			displayedNodes = live
+		}
 	}
 
 	@ViewBuilder
