@@ -29,17 +29,13 @@ struct AccessoryManagerBLEStatusTests {
 	/// `BLETransport.init()` creates a *real* `CBCentralManager` on its own delegate whenever
 	/// `CBCentralManager.authorization` is already determined — true on the simulator, where
 	/// there's no permission prompt to wait on. That manager asynchronously reports genuine
-	/// (simulator) hardware state exactly once, shortly after construction (typically
-	/// `.unsupported`, since simulators have no real radio), completely independently of
-	/// anything a test scripts. If that incidental transition lands *after* a test has already
-	/// driven and observed its own scripted state, it silently clobbers `bleTransportStatus`
-	/// and flakes the very next assertion. Giving it a moment to settle — before constructing the
-	/// `AccessoryManager` under test and before scripting anything — makes the one-time incidental
-	/// transition land (and be reflected in `bleTransport.status`) ahead of
-	/// `observeBLETransportStatus()`'s subscription, so its replay already carries the settled
-	/// value and no further incidental transition remains to race a later scripted one.
-	private func settleIncidentalHardwareStatus(for transport: BLETransport, timeout: Duration = .milliseconds(500)) async {
-		try? await Task.sleep(for: timeout)
+	/// (simulator) hardware state, completely independently of anything a test scripts, and if
+	/// that incidental transition lands after a test has driven its own state it clobbers
+	/// `bleTransportStatus` and flakes the next assertion. These tests script every transition
+	/// through `handleCentralState`, so they opt out of owning a real manager entirely rather
+	/// than sleeping and hoping the incidental value has already landed.
+	private func scriptedTransport() -> BLETransport {
+		BLETransport(createCentralManagerImmediately: false)
 	}
 
 	/// `observeBLETransportStatus()` mirrors status via a background `Task` consuming an
@@ -54,16 +50,14 @@ struct AccessoryManagerBLEStatusTests {
 	}
 
 	@Test func startsFalseBeforeAnyTransition() async {
-		let bleTransport = BLETransport()
-		await settleIncidentalHardwareStatus(for: bleTransport)
+		let bleTransport = scriptedTransport()
 
 		let manager = AccessoryManager(transports: [bleTransport])
 		#expect(manager.isBluetoothPoweredOff == false)
 	}
 
 	@Test func becomesTrueWhenBLEPowersOff() async {
-		let bleTransport = BLETransport()
-		await settleIncidentalHardwareStatus(for: bleTransport)
+		let bleTransport = scriptedTransport()
 
 		let manager = AccessoryManager(transports: [bleTransport])
 		await bleTransport.handleCentralState(.poweredOff, central: unusedCentralManager())
@@ -74,8 +68,7 @@ struct AccessoryManagerBLEStatusTests {
 	}
 
 	@Test func clearsWhenBLEPowersBackOn() async {
-		let bleTransport = BLETransport()
-		await settleIncidentalHardwareStatus(for: bleTransport)
+		let bleTransport = scriptedTransport()
 
 		let manager = AccessoryManager(transports: [bleTransport])
 		let central = unusedCentralManager()
