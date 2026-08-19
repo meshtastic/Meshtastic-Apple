@@ -103,7 +103,7 @@ final class PMTilesExtractor {
 			guard let day = calendar.date(byAdding: .day, value: -offset, to: today) else { continue }
 			let build = formatter.string(from: day)
 			guard let url = URL(string: "https://build.protomaps.com/\(build).pmtiles") else { continue }
-			if await buildExists(url) {
+			if await archiveExists(url) {
 				Logger.services.info("🗺️ [Offline] Using Protomaps build \(build, privacy: .public)")
 				return (url, build)
 			}
@@ -111,7 +111,8 @@ final class PMTilesExtractor {
 		return nil
 	}
 
-	private func buildExists(_ url: URL) async -> Bool {
+	/// Whether a PMTiles archive exists at `url`, probing the 7-byte magic with a range request.
+	func archiveExists(_ url: URL) async -> Bool {
 		do {
 			let data = try await fetchRange(url, start: 0, end: 6)
 			return data.count == 7 && data == Data("PMTiles".utf8)
@@ -360,11 +361,27 @@ final class PMTilesExtractor {
 		return count
 	}
 
-	/// A network-free size estimate for the UI. Real size is known only after planning,
-	/// but this tracks it closely enough to show while choosing an area. ~28 KB/tile is a
-	/// rough average for gzipped Protomaps MVT tiles across zooms.
+	/// A network-free size estimate for the UI. Real size is known only after planning —
+	/// this only needs to be in the ballpark while the exact plan computes. Per-tile
+	/// averages were measured against a real build for an urban region: high-zoom tiles
+	/// are much smaller than mid-zoom ones (a flat constant overstated High detail by
+	/// ~70%). Rural areas run far below these numbers, which is why the UI marks this
+	/// value as approximate until the exact plan replaces it.
 	static func roughByteEstimate(in bounds: GeoBounds, minZoom: Int, maxZoom: Int) -> Int64 {
-		Int64(tileCount(in: bounds, minZoom: minZoom, maxZoom: maxZoom)) * 28_672
+		guard minZoom <= maxZoom else { return 0 }
+		func perTileBytes(_ z: Int) -> Int64 {
+			switch z {
+			case ..<13: return 40_960
+			case 13: return 34_816
+			case 14: return 20_480
+			default: return 13_824
+			}
+		}
+		var total: Int64 = 0
+		for z in minZoom...maxZoom {
+			total += Int64(tileCount(in: bounds, minZoom: z, maxZoom: z)) * perTileBytes(z)
+		}
+		return total
 	}
 
 	/// Web-Mercator slippy tile coordinate for a lon/lat at zoom `z` (clamped to valid range).

@@ -43,6 +43,27 @@ private struct PanelHeightKey: PreferenceKey {
 	static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) { value = max(value, nextValue()) }
 }
 
+/// What a download includes: the Protomaps basemap, Mapterhorn terrain, or both.
+/// Terrain-only regions draw hillshade and contours over Apple maps.
+enum OfflineDownloadContent: String, CaseIterable, Identifiable {
+	case mapAndTerrain
+	case mapOnly
+	case terrainOnly
+
+	var id: String { rawValue }
+
+	var label: String {
+		switch self {
+		case .mapAndTerrain: return String(localized: "Map + Terrain")
+		case .mapOnly: return String(localized: "Map Only")
+		case .terrainOnly: return String(localized: "Terrain Only")
+		}
+	}
+
+	var includesBasemap: Bool { self != .terrainOnly }
+	var includesTerrain: Bool { self != .mapOnly }
+}
+
 struct RegionSelectorView: View {
 	let target: OfflineRegionTarget
 	/// When resizing, the existing region this download replaces on success.
@@ -53,6 +74,12 @@ struct RegionSelectorView: View {
 	@State private var camera: MapCameraPosition
 	@State private var bounds: GeoBounds?
 	@State private var detail: OfflineMapDetailLevel = .standard
+	/// What the download includes (basemap, terrain, or both).
+	@State private var content: OfflineDownloadContent = .mapAndTerrain
+	/// One-shot: when resizing, the selection seeds from the region's saved bounds.
+	@State private var didSeedFromReplacing = false
+	/// One-shot camera zoom-out so the saved bounds fit inside the selectable area.
+	@State private var didFrameForSeed = false
 	@State private var name: String
 
 	/// The selection rectangle in the picker's local coordinate space (drag/resize target).
@@ -67,6 +94,8 @@ struct RegionSelectorView: View {
 
 	/// Network-accurate size (exact for street, sampled for topo); nil until computed.
 	@State private var estimatedBytes: Int64?
+	/// Whether estimatedBytes came from the exact plan (vs the rough heuristic).
+	@State private var estimateIsExact = false
 	/// True while the accurate estimate is being (re)computed.
 	@State private var isEstimating = false
 
@@ -77,6 +106,13 @@ struct RegionSelectorView: View {
 		self.replacing = replacing
 		_camera = State(initialValue: .region(target.region))
 		_name = State(initialValue: target.name)
+		// Resizing keeps what the region already has.
+		if let replacing {
+			let initial: OfflineDownloadContent = replacing.hasBasemap
+				? (replacing.terrain != nil ? .mapAndTerrain : .mapOnly)
+				: .terrainOnly
+			_content = State(initialValue: initial)
+		}
 	}
 
 	private let minRectSize: CGFloat = 64
@@ -91,7 +127,12 @@ struct RegionSelectorView: View {
 						.mapStyle(.standard(elevation: .flat, pointsOfInterest: .excludingAll))
 						.onMapCameraChange(frequency: .continuous) { context in
 							currentRegion = context.region
+							frameCameraForSeedIfNeeded(size: geo.size)
+							placeSeededSelection(proxy: proxy, size: geo.size, requireSettled: true)
 							recompute(proxy: proxy, size: geo.size)
+						}
+						.onMapCameraChange(frequency: .onEnd) { _ in
+							placeSeededSelection(proxy: proxy, size: geo.size, requireSettled: false)
 						}
 
 					selectionLayer(proxy: proxy, size: geo.size)
@@ -113,6 +154,8 @@ struct RegionSelectorView: View {
 				}
 				.onChange(of: controlPanelHeight) {
 					clampRect(to: geo.size)
+					// The panel height is what the seed framing was waiting on.
+					frameCameraForSeedIfNeeded(size: geo.size)
 					recompute(proxy: proxy, size: geo.size)
 				}
 			}
@@ -274,8 +317,100 @@ struct RegionSelectorView: View {
 		return CGRect(x: minX, y: minY, width: maxX - minX, height: maxY - minY)
 	}
 
+	// MARK: - Resize seeding
+	//
+	// When resizing an existing region, the selection starts as that region's saved
+	// boundary instead of the default centered rectangle. The initial camera shows
+	// the region edge-to-edge, where its corners sit outside the selectable area
+	// (top/side insets + the control panel), so the camera is first re-framed to fit
+	// the saved bounds inside the usable area — using the MEASURED panel height and
+	// exact Web-Mercator math — and the selection is placed on the projected corners
+	// once the camera settles. Until then no rectangle shows, so the picker opens
+	// straight onto the true boundary.
+
+	/// Gap between the seeded selection and the usable area's edges.
+	private let seedMargin: CGFloat = 12
+
+	/// Phase one: re-frame the camera so the saved bounds project inside the usable
+	/// area, centered in it. Waits for the control panel's measured height — the
+	/// earlier fallback-height guess left the bounds' bottom edge under the panel.
+	private func frameCameraForSeedIfNeeded(size: CGSize) {
+		guard !didFrameForSeed, !didSeedFromReplacing, let replacing,
+			  size.width > 0, size.height > 0, controlPanelHeight > 0 else { return }
+		let aim = usableRect(in: size).insetBy(dx: seedMargin, dy: seedMargin)
+		guard aim.width > minRectSize, aim.height > minRectSize else { return }
+		didFrameForSeed = true
+
+		// Fit in Web-Mercator space: world units per screen point so the bounds
+		// fill the aim rect, then place the screen center so the bounds center
+		// lands on the aim rect's center (above the panel, inside the margins).
+		let west = (replacing.minLongitude + 180) / 360
+		let east = (replacing.maxLongitude + 180) / 360
+		let top = Self.mercatorY(replacing.maxLatitude)
+		let bottom = Self.mercatorY(replacing.minLatitude)
+		let worldPerPoint = max((east - west) / aim.width, (bottom - top) / aim.height)
+		guard worldPerPoint > 0 else { return }
+		let centerX = (west + east) / 2 + (size.width / 2 - aim.midX) * worldPerPoint
+		let centerY = (top + bottom) / 2 + (size.height / 2 - aim.midY) * worldPerPoint
+		let visibleTopLat = Self.mercatorLat(centerY - size.height / 2 * worldPerPoint)
+		let visibleBottomLat = Self.mercatorLat(centerY + size.height / 2 * worldPerPoint)
+		camera = .region(MKCoordinateRegion(
+			center: CLLocationCoordinate2D(latitude: Self.mercatorLat(centerY), longitude: centerX * 360 - 180),
+			span: MKCoordinateSpan(
+				latitudeDelta: visibleTopLat - visibleBottomLat,
+				longitudeDelta: size.width * worldPerPoint * 360
+			)
+		))
+	}
+
+	/// Phase two: place the selection exactly on the saved bounds' projected corners.
+	/// Camera-settle (`requireSettled == false`, from the `.onEnd` camera callback)
+	/// takes the conversion as-is; continuous ticks only accept a frame that has
+	/// (nearly) landed on the aim rect, since mid-animation frames overshoot.
+	private func placeSeededSelection(proxy: MapProxy, size: CGSize, requireSettled: Bool) {
+		guard !didSeedFromReplacing, didFrameForSeed, let replacing, gestureStartRect == nil else { return }
+		let northWest = CLLocationCoordinate2D(latitude: replacing.maxLatitude, longitude: replacing.minLongitude)
+		let southEast = CLLocationCoordinate2D(latitude: replacing.minLatitude, longitude: replacing.maxLongitude)
+		guard let topLeft = proxy.convert(northWest, to: .local),
+			  let bottomRight = proxy.convert(southEast, to: .local),
+			  bottomRight.x - topLeft.x > 8, bottomRight.y - topLeft.y > 8 else { return }
+		let rect = CGRect(
+			x: topLeft.x, y: topLeft.y,
+			width: bottomRight.x - topLeft.x, height: bottomRight.y - topLeft.y
+		)
+		if requireSettled {
+			let aim = usableRect(in: size).insetBy(dx: seedMargin, dy: seedMargin)
+			guard aim.insetBy(dx: -3, dy: -3).contains(rect),
+				  max(rect.width / aim.width, rect.height / aim.height) > 0.95 else { return }
+		}
+		// The projected boundary, unclamped, so it matches the map exactly. Only a
+		// camera the user disturbed mid-flight can land it outside the usable area;
+		// clamp just that case so the handles stay reachable.
+		if CGRect(origin: .zero, size: size).contains(rect) {
+			selectionRect = rect
+		} else {
+			selectionRect = normalizedClamped(rect.minX, rect.minY, rect.maxX, rect.maxY, in: size)
+		}
+		didSeedFromReplacing = true
+		recompute(proxy: proxy, size: size)
+	}
+
+	/// Web-Mercator Y in [0, 1] for a latitude.
+	private static func mercatorY(_ latitude: Double) -> Double {
+		let lat = min(max(latitude, -85.05112878), 85.05112878) * .pi / 180
+		return (1 - log(tan(lat) + 1 / cos(lat)) / .pi) / 2
+	}
+
+	/// Latitude for a Web-Mercator Y in [0, 1].
+	private static func mercatorLat(_ y: Double) -> Double {
+		atan(sinh(.pi * (1 - 2 * y))) * 180 / .pi
+	}
+
 	private func initRect(size: CGSize) {
 		guard selectionRect == .zero, size.width > 0, size.height > 0 else { return }
+		// Resizing: the selection seeds from the saved bounds once the camera frames
+		// them — don't flash the default rectangle in the meantime.
+		guard replacing == nil || didSeedFromReplacing else { return }
 		let area = usableRect(in: size)
 		selectionRect = (area.width > 120 && area.height > 120) ? area.insetBy(dx: 20, dy: 20) : area
 	}
@@ -350,28 +485,52 @@ struct RegionSelectorView: View {
 				.foregroundStyle(.secondary)
 				.multilineTextAlignment(.center)
 
-			HStack(alignment: .top, spacing: 10) {
-				Image(systemName: "figure.hiking")
-					.foregroundStyle(.tint)
-				VStack(alignment: .leading, spacing: 2) {
-					Text("Protomaps Outdoors")
-						.font(.subheadline.weight(.semibold))
-					Text("Includes trails, roads, terrain, and points of interest.")
-						.font(.caption)
-						.foregroundStyle(.secondary)
-				}
-				Spacer()
-			}
-
-			Picker("Detail", selection: $detail) {
-				ForEach(OfflineMapDetailLevel.allCases) { level in
-					Text(level.label).tag(level)
+			Picker("Download", selection: $content) {
+				ForEach(OfflineDownloadContent.allCases) { option in
+					Text(option.label).tag(option)
 				}
 			}
 			.pickerStyle(.segmented)
 
+			if content.includesBasemap {
+				HStack(alignment: .top, spacing: 10) {
+					Image(systemName: "figure.hiking")
+						.foregroundStyle(.tint)
+					VStack(alignment: .leading, spacing: 2) {
+						Text("Protomaps Outdoors")
+							.font(.subheadline.weight(.semibold))
+						Text(content.includesTerrain
+							? "Includes trails, roads, points of interest, and terrain data for hillshade and contour lines."
+							: "Includes trails, roads, and points of interest.")
+							.font(.caption)
+							.foregroundStyle(.secondary)
+					}
+					Spacer()
+				}
+
+				Picker("Detail", selection: $detail) {
+					ForEach(OfflineMapDetailLevel.allCases) { level in
+						Text(level.label).tag(level)
+					}
+				}
+				.pickerStyle(.segmented)
+			} else {
+				HStack(alignment: .top, spacing: 10) {
+					Image(systemName: "mountain.2")
+						.foregroundStyle(.tint)
+					VStack(alignment: .leading, spacing: 2) {
+						Text("Mapterhorn Terrain")
+							.font(.subheadline.weight(.semibold))
+						Text("Elevation data for hillshade and contour lines, drawn over Apple and offline maps.")
+							.font(.caption)
+							.foregroundStyle(.secondary)
+					}
+					Spacer()
+				}
+			}
+
 			Text("Size of selected map: \(sizeText)")
-				.font(.subheadline)
+				.font(.caption)
 
 			if let warning {
 				Label(warning, systemImage: "exclamationmark.triangle.fill")
@@ -406,10 +565,16 @@ struct RegionSelectorView: View {
 		bounds.flatMap { manager.overlappingRegion(with: $0, excluding: replacing) }
 	}
 
-	/// The single most relevant warning to show (overlap → limit), or nil.
+	/// The single most relevant warning to show (overlap → tile cap → limit), or nil.
 	private var warning: String? {
 		if let overlap {
 			return String(localized: "Overlaps \u{201C}\(overlap.name)\u{201D}. Move or resize so it doesn\u{2019}t overlap an existing map.")
+		}
+		// Surface the extractor's tile cap here instead of letting the download fail
+		// after it starts. High detail multiplies the tile count ~20x over Standard.
+		if content.includesBasemap, let bounds,
+		   PMTilesExtractor.tileCount(in: bounds, minZoom: detail.minZoom, maxZoom: detail.maxZoom) > PMTilesExtractor.maxTiles {
+			return String(localized: "Area is too large for \(detail.label). Shrink the area or choose a lower detail level.")
 		}
 		if let bytes = displayedBytes {
 			return manager.downloadBlockReason(estimatedBytes: bytes, replacing: replacing)
@@ -424,8 +589,9 @@ struct RegionSelectorView: View {
 	// MARK: - Size estimate
 
 	/// Synchronous, network-free rough estimate (shown immediately while framing).
+	/// Terrain-only has no local heuristic — the size shows once the plan returns.
 	private var roughBytes: Int64? {
-		guard let bounds else { return nil }
+		guard content.includesBasemap, let bounds else { return nil }
 		return PMTilesExtractor.roughByteEstimate(in: bounds, minZoom: detail.minZoom, maxZoom: detail.maxZoom)
 	}
 
@@ -435,40 +601,66 @@ struct RegionSelectorView: View {
 	private var sizeText: String {
 		guard let bytes = displayedBytes else { return "—" }
 		let formatted = ByteCountFormatter.string(fromByteCount: bytes, countStyle: .file)
-		return isEstimating ? "\u{2248} \(formatted)" : formatted
+		// "≈" whenever the shown value is the rough heuristic — while the exact plan
+		// is still computing AND when it failed (previously a failed plan displayed
+		// the heuristic with no marker, as if it were exact).
+		return estimateIsExact ? formatted : "\u{2248} \(formatted)"
 	}
 
 	/// Re-runs whenever the framed area / detail settle (debounced via `.task(id:)`).
 	private var estimateKey: String {
 		guard let bounds else { return "none" }
 		func round4(_ value: Double) -> Double { (value * 10_000).rounded() / 10_000 }
-		return "\(detail.rawValue)|\(round4(bounds.minLon)),\(round4(bounds.minLat)),\(round4(bounds.maxLon)),\(round4(bounds.maxLat))"
+		return "\(detail.rawValue)|\(content.rawValue)|\(round4(bounds.minLon)),\(round4(bounds.minLat)),\(round4(bounds.maxLon)),\(round4(bounds.maxLat))"
 	}
 
 	private func runEstimate() async {
 		estimatedBytes = nil
+		estimateIsExact = false
 		guard let bounds else { isEstimating = false; return }
 		isEstimating = true
 		// Debounce: cancelled (and restarted) by `.task(id:)` if the area keeps changing.
 		do { try await Task.sleep(for: .milliseconds(500)) } catch { return }
 		if Task.isCancelled { return }
-		let bytes = await Self.computeEstimate(bounds: bounds, detail: detail)
+		let bytes = await Self.computeEstimate(bounds: bounds, detail: detail, content: content)
 		if Task.isCancelled { return }
-		estimatedBytes = bytes
+		if let bytes {
+			estimatedBytes = bytes
+			estimateIsExact = true
+		}
 		isEstimating = false
 	}
 
-	/// Network-accurate size (the exact plan the download uses), falling back to the rough estimate.
-	private static func computeEstimate(bounds: GeoBounds, detail: OfflineMapDetailLevel) async -> Int64 {
-		if let result = try? await PMTilesExtractor().estimate(bounds: bounds, minZoom: detail.minZoom, maxZoom: detail.maxZoom) {
-			return result.bytes
+	/// Network-accurate size (the exact plans the download uses), or nil when
+	/// planning the primary content fails — the caller keeps showing the rough
+	/// estimate, marked approximate. When both are included, terrain planning
+	/// failure degrades to basemap-only rather than losing the whole estimate.
+	private static func computeEstimate(bounds: GeoBounds, detail: OfflineMapDetailLevel, content: OfflineDownloadContent) async -> Int64? {
+		let extractor = PMTilesExtractor()
+		var total: Int64 = 0
+		if content.includesBasemap {
+			guard let basemap = (try? await extractor.estimate(bounds: bounds, minZoom: detail.minZoom, maxZoom: detail.maxZoom))?.bytes else {
+				return nil
+			}
+			total += basemap
 		}
-		return PMTilesExtractor.roughByteEstimate(in: bounds, minZoom: detail.minZoom, maxZoom: detail.maxZoom)
+		if content.includesTerrain, let terrainURL = URL(string: OfflineMapManager.terrainGlobalArchive) {
+			let terrain = (try? await extractor.makePlan(
+				sourceURL: terrainURL, sourceBuild: "Mapterhorn",
+				bounds: bounds, minZoom: 0, maxZoom: OfflineMapManager.terrainGlobalMaxZoom
+			))?.payloadBytes
+			if terrain == nil, !content.includesBasemap { return nil }
+			total += terrain ?? 0
+		}
+		return total
 	}
 
 	private func startDownload() {
 		guard let bounds else { return }
-		manager.startDownload(name: name, bounds: bounds, detail: detail, replacing: replacing)
+		manager.startDownload(
+			name: name, bounds: bounds, detail: detail, replacing: replacing,
+			includeBasemap: content.includesBasemap, includeTerrain: content.includesTerrain
+		)
 		dismiss()
 	}
 }

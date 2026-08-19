@@ -129,11 +129,13 @@
             "radio",
             "updates",
             "meshtastic",
-            "version",
             "hardware",
+            "version",
             "ble",
             "transfer",
+            "target",
             "stable",
+            "screen",
             "progress",
             "notification",
             "connected",
@@ -141,19 +143,17 @@
             "artwork",
             "tap",
             "standard",
+            "some",
             "shows",
             "settings",
             "running",
+            "radios",
             "ota",
             "node",
             "keep",
-            "from",
-            "failed",
-            "channel",
-            "without",
-            "while"
+            "from"
         ],
-        "charCount": 4287
+        "charCount": 4770
     },
     {
         "id": "getting-started",
@@ -363,31 +363,31 @@
             "contact",
             "name",
             "only",
-            "shown",
             "key",
+            "shown",
             "shows",
             "packets",
             "messages",
             "list",
             "firmware",
             "radio",
+            "public",
             "link",
             "hardware",
             "detail",
+            "channel",
             "tag",
             "share",
-            "public",
             "map",
+            "local",
             "broadcasts",
             "tap",
             "show",
+            "shared",
             "section",
-            "row",
-            "long",
-            "location",
-            "local"
+            "row"
         ],
-        "charCount": 11299
+        "charCount": 11616
     },
     {
         "id": "settings",
@@ -417,16 +417,16 @@
             "messages",
             "contact",
             "channel",
+            "lora",
             "configure",
             "channels",
             "translation",
             "shows",
             "setting",
             "set",
-            "selected",
-            "rate"
+            "selected"
         ],
-        "charCount": 16643
+        "charCount": 16945
     },
     {
         "id": "signal-meter",

@@ -19,8 +19,7 @@ struct AboutMeshtastic: View {
 						.font(.title3)
 
 				}
-				Section(header: Text("Apple Apps")) {
-
+				Section(header: Text("Hardware")) {
 					HStack {
 						RotatingHardwareImage()
 							.frame(width: 110, height: 130)
@@ -32,6 +31,8 @@ struct AboutMeshtastic: View {
 								.font(.callout)
 						}
 					}
+				}
+				Section(header: Text("Apple Apps")) {
 					Link("Sponsor App Development", destination: URL(string: "https://github.com/sponsors/garthvh")!)
 						.font(.title2)
 					Link("GitHub Repository", destination: URL(string: "https://github.com/meshtastic/Meshtastic-Apple")!)

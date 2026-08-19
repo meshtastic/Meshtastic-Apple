@@ -17,6 +17,7 @@
 </ol>
 <p>When you connect to a node running firmware older than the latest stable release, the app can send a firmware update notification. For hardware the app can update directly, tapping the notification opens <strong>Firmware Updates</strong> so you can review and start the OTA update. For hardware that needs an external updater, the notification tells you to use <strong>Meshtastic Flasher</strong> instead.</p>
 <p>The app remembers each node, hardware target, and stable version it has already notified you about, so it will not keep sending the same reminder.</p>
+<p>Some radios report a specialized firmware target that is not a separate entry in the hardware catalog. In that case, the app uses the base hardware entry for details such as the device name and processor architecture, but it keeps the radio's exact target when choosing downloads and local files. The suggested filename on the Firmware Updates screen uses that exact target, such as <code>firmware-thinknode_m1-inkhud-&lt;version&gt;.uf2</code>.</p>
 <h2>Installing an Update</h2>
 <ol>
 <li>Tap <strong>Update Firmware</strong> when a newer version is available.</li>
@@ -58,7 +59,7 @@
 </table>
 <p><strong>Do not close the app or move out of Bluetooth range during a firmware update.</strong></p>
 <h2>During the Transfer</h2>
-<p>While a supported OTA transfer is active, tap <strong>Play Chirpy Hop</strong> to play without leaving the updater. Firmware progress remains visible above the game, and the back button returns to the normal update screen at any time. Keep the Meshtastic app in the foreground until the update finishes.</p>
+<p>While a supported OTA transfer is active, the update screen rotates short tips, and you can tap <strong>Play Chirpy Hop</strong> to play without leaving the updater. Firmware progress remains visible above the game, and the back button returns to the normal update screen at any time. Keep the Meshtastic app in the foreground until the update finishes.</p>
 <h2>Update Channels</h2>
 <table>
 <thead>

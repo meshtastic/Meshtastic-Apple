@@ -11,8 +11,15 @@
 import SwiftUI
 
 struct ConnectView: View {
+	private enum ErrorFocus: Hashable {
+		case connection
+		case discovery
+	}
+
 	@Bindable var client: MeshClient
+	@Environment(\.scenePhase) private var scenePhase
 	@StateObject private var discovery = NodeDiscovery()
+	@AccessibilityFocusState private var errorFocus: ErrorFocus?
 
 	@AppStorage("tv.lastHost") private var host: String = ""
 	@AppStorage("tv.lastPort") private var portText: String = "4403"
@@ -45,6 +52,9 @@ struct ConnectView: View {
 						Section {
 							Label(message, systemImage: "exclamationmark.triangle.fill")
 								.foregroundStyle(Color("MeshtasticError"))
+								.accessibilityLabel("Connection error: \(message)")
+								.accessibilityFocused($errorFocus, equals: .connection)
+								.onAppear { errorFocus = .connection }
 						}
 					}
 
@@ -56,14 +66,19 @@ struct ConnectView: View {
 						}
 					}
 				}
+				// Inset focused controls without hiding native Form section headers.
+				.safeAreaPadding(.horizontal, TVTheme.connectHorizontalInset)
 			}
 			.padding(.top, TVTheme.screenPadding)
+		}
+		.onChange(of: scenePhase) { _, phase in
+			discovery.handle(scenePhase: phase)
 		}
 	}
 
 	private var hero: some View {
 		VStack(alignment: .leading, spacing: 28) {
-			Image("meshtastic-wordmark-white")
+			Image(decorative: "meshtastic-wordmark-white")
 				.resizable()
 				.scaledToFit()
 				.frame(width: 620)
@@ -81,7 +96,14 @@ struct ConnectView: View {
 	@ViewBuilder
 	private var discoveredSection: some View {
 		Section {
-			if discovery.discovered.isEmpty {
+			if let errorMessage = discovery.errorMessage {
+				Label(errorMessage, systemImage: "exclamationmark.triangle.fill")
+					.foregroundStyle(Color("MeshtasticError"))
+					.accessibilityLabel("Discovery error: \(errorMessage)")
+					.accessibilityFocused($errorFocus, equals: .discovery)
+					.onAppear { errorFocus = .discovery }
+				Button("Try Again") { discovery.retry() }
+			} else if discovery.discovered.isEmpty {
 				HStack(spacing: 16) {
 					ProgressView()
 					Text("Searching the local network…")
@@ -94,15 +116,14 @@ struct ConnectView: View {
 					} label: {
 						HStack(spacing: 16) {
 							Image(systemName: "antenna.radiowaves.left.and.right")
-								.foregroundStyle(Color("AccentColor"))
 							VStack(alignment: .leading, spacing: 4) {
 								Text(node.name)
 								Text(verbatim: "\(node.host):\(String(node.port))")
 									.font(.caption)
-									.foregroundStyle(.secondary)
 							}
 						}
 					}
+					.tint(.primary)
 				}
 			}
 		} header: {

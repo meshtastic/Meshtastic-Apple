@@ -24,6 +24,20 @@ struct MapSettingsForm: View {
 	@AppStorage("enableMapUserLocation") private var enableMapUserLocation = true
 	@AppStorage("mapOverlaysEnabled") private var mapOverlaysEnabled = false
 	@AppStorage("enableOfflineTiles") private var enableOfflineTiles = false
+	@AppStorage("meshMapShowHillshade") private var showHillshade = false
+	@AppStorage("meshMapShowContours") private var showContours = false
+	/// Terrain toggles are disabled until at least one region has terrain data.
+	/// When the last terrain region disappears, the stored values reset so a
+	/// disabled toggle is never stuck in the on position.
+	private var hasTerrainData: Bool {
+		offlineMapManager.regions.contains { $0.terrain != nil }
+	}
+
+	private func resetTerraintogglesIfOrphaned() {
+		guard !hasTerrainData else { return }
+		if showHillshade { showHillshade = false }
+		if showContours { showContours = false }
+	}
 	@AppStorage("enableMapClustering") private var enableMapClustering = true
 	@AppStorage("enableMapPreciseLocationsOnly") private var preciseLocationsOnly = false
 	@ObservedObject private var mapDataManager = MapDataManager.shared
@@ -169,6 +183,32 @@ struct MapSettingsForm: View {
 								Image(systemName: "square.dashed")
 							}
 						}
+						Toggle(isOn: $showHillshade) {
+							Label {
+								VStack(alignment: .leading) {
+									Text("Hillshade")
+									Text("Shaded terrain relief over areas with downloaded terrain. Standard and offline maps only.")
+										.font(.caption)
+										.foregroundColor(.secondary)
+								}
+							} icon: {
+								Image(systemName: "mountain.2")
+							}
+						}
+						.disabled(!hasTerrainData)
+						Toggle(isOn: $showContours) {
+							Label {
+								VStack(alignment: .leading) {
+									Text("Contour Lines")
+									Text("Elevation contours over areas with downloaded terrain, on every map type.")
+										.font(.caption)
+										.foregroundColor(.secondary)
+								}
+							} icon: {
+								Image(systemName: "point.topleft.down.to.point.bottomright.curvepath")
+							}
+						}
+						.disabled(!hasTerrainData)
 					}
 				}
 
@@ -322,7 +362,11 @@ struct MapSettingsForm: View {
 		.presentationDragIndicator(.visible)
 		#endif
 		.presentationBackgroundInteraction(.enabled(upThrough: .medium))
+		.onChange(of: offlineMapManager.regions) {
+			resetTerraintogglesIfOrphaned()
+		}
 		.onAppear {
+			resetTerraintogglesIfOrphaned()
 			// Initialize map data manager
 			mapDataManager.initialize()
 			offlineMapManager.loadIfNeeded()

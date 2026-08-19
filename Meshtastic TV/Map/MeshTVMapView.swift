@@ -280,12 +280,6 @@ struct MeshTVMapView: UIViewRepresentable {
 	@Binding var selectedNodeNum: UInt32?
 	/// Increment to re-frame the camera on the whole mesh (see MapScreen's button).
 	var recenterToken: Int = 0
-	/// Called on a Menu press while the map has focus. MKMapView captures the
-	/// directional input for panning and never releases focus on its own, so
-	/// without this the map is a focus trap (and an unhandled Menu press can
-	/// suspend the app instead of going back). MapScreen uses it to hand focus
-	/// back to the node list.
-	var onMenuExit: (() -> Void)?
 
 	/// Standard / Hybrid / Satellite, chosen in Settings. Shared via the same
 	/// @AppStorage key so changing it there updates the map live.
@@ -355,10 +349,6 @@ struct MeshTVMapView: UIViewRepresentable {
 
 		init(_ parent: MeshTVMapView) {
 			self.parent = parent
-		}
-
-		@objc func menuPressed() {
-			parent.onMenuExit?()
 		}
 
 		/// Diff the annotation set against `nodes` (add / update coordinate / remove),
@@ -497,31 +487,83 @@ struct MeshTVMapView: UIViewRepresentable {
 			mapView.setRegion(target, animated: !bigJump)
 		}
 
-		/// Fit the camera to every located node's reported position.
+		/// Fit the camera to every located node's reported position, inside the part
+		/// of the map the user can actually see.
+		///
+		/// The map is full-bleed, so the side list covers its left edge. Fitting the
+		/// mesh to the whole view therefore parked a slice of it behind the list and
+		/// zoomed out further than needed to compensate. `setVisibleMapRect` with edge
+		/// padding fits the visible area instead, and does the padding job the old
+		/// 1.4x span multiplier was doing by hand.
 		@discardableResult
 		private func frameAllNodes(_ mapView: MKMapView, nodes: [MeshNode], animated: Bool) -> Bool {
 			let coords = nodes.compactMap { $0.coordinate }
 			guard !coords.isEmpty else { return false }
 
-			let lats = coords.map(\.latitude)
-			let lons = coords.map(\.longitude)
-			let minLat = lats.min()!, maxLat = lats.max()!
-			let minLon = lons.min()!, maxLon = lons.max()!
-			let center = CLLocationCoordinate2D(
-				latitude: (minLat + maxLat) / 2,
-				longitude: (minLon + maxLon) / 2
+			// Fit where the mesh actually IS, not its extremes. A handful of nodes
+			// parked across town — someone who drove home, a stale position — stretched
+			// the bounding box far past the event and forced the camera way out. Trim to
+			// the middle 90% on each axis so stragglers don't dominate the framing; they
+			// stay on the map, just outside the initial frame.
+			let rect = boundingRect(of: coords, trimming: 0.05)
+			guard !rect.isNull else { return false }
+
+			// A single node (or several on one spot) gives a zero-size rect, which
+			// setVisibleMapRect cannot fit. Give it a small neighbourhood instead.
+			if rect.size.width < 1, rect.size.height < 1 {
+				let region = MKCoordinateRegion(
+					center: coords[0],
+					span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
+				)
+				mapView.setRegion(region, animated: animated)
+				return true
+			}
+
+			// How much of the map's left edge the side list hides. Measured rather than
+			// assumed, so it stays right if the layout changes.
+			let originInWindow = mapView.convert(CGPoint.zero, to: nil).x
+			let hiddenLeft = max(0, TVTheme.sideListWidth - originInWindow)
+			let margin: CGFloat = 40
+			let padding = UIEdgeInsets(
+				top: margin,
+				left: hiddenLeft + margin,
+				bottom: margin,
+				right: margin
 			)
-			let span = MKCoordinateSpan(
-				latitudeDelta: max((maxLat - minLat) * 1.4, 0.05),
-				longitudeDelta: max((maxLon - minLon) * 1.4, 0.05)
-			)
-			let region = MKCoordinateRegion(center: center, span: span)
-			if animated {
-				setRegionSmart(mapView, target: region)   // cuts when the jump is big
+
+			if animated, isBigJump(mapView, target: rect) {
+				// Long flights re-evaluate clustering every frame while tiles stream in,
+				// which reads as visual static — cut instead (same rule as setRegionSmart).
+				mapView.setVisibleMapRect(rect, edgePadding: padding, animated: false)
 			} else {
-				mapView.setRegion(region, animated: false)
+				mapView.setVisibleMapRect(rect, edgePadding: padding, animated: animated)
 			}
 			return true
+		}
+
+
+		/// Bounding rect of `coords` after dropping the outermost `fraction` of values
+		/// on each axis (per axis independently, so one distant node cannot widen both).
+		/// `fraction` of 0 gives the full extent.
+		private func boundingRect(of coords: [CLLocationCoordinate2D], trimming fraction: Double) -> MKMapRect {
+			guard !coords.isEmpty else { return .null }
+			let points = coords.map(MKMapPoint.init)
+			let xs = points.map(\.x).sorted()
+			let ys = points.map(\.y).sorted()
+			// Keep at least a handful of points so a small mesh is never trimmed away.
+			let drop = min(Int(Double(points.count) * fraction), max(0, (points.count - 4) / 2))
+			let loX = xs[drop], hiX = xs[xs.count - 1 - drop]
+			let loY = ys[drop], hiY = ys[ys.count - 1 - drop]
+			return MKMapRect(x: loX, y: loY, width: hiX - loX, height: hiY - loY)
+		}
+
+		/// Distance/scale test shared with `setRegionSmart`, in map-rect terms.
+		private func isBigJump(_ mapView: MKMapView, target rect: MKMapRect) -> Bool {
+			let targetCenter = MKMapPoint(x: rect.midX, y: rect.midY)
+			let meters = MKMapPoint(mapView.centerCoordinate).distance(to: targetCenter)
+			let currentWidth = mapView.visibleMapRect.size.width
+			let ratio = currentWidth / max(rect.size.width, 1)
+			return meters > 80_000 || ratio > 4 || ratio < 0.25
 		}
 
 		/// The node number currently selected from the side list, or nil. `sync`

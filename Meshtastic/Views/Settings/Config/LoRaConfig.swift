@@ -101,13 +101,7 @@ struct LoRaConfig: View {
 	@State var ignoreMqtt = false
 	@State var okToMqtt = false
 
-	let floatFormatter: NumberFormatter = {
-		let formatter = NumberFormatter()
-		formatter.numberStyle = .decimal
-		formatter.allowsFloats = true
-		formatter.maximumFractionDigits = 4
-		return formatter
-	}()
+	let floatFormatter = frequencyOverrideFormatter
 
 	/// Whether the connected radio runs firmware new enough for the 2.8 LoRa
 	/// region/preset rework. Gates the new ham regions and narrow/tiny presets so
@@ -368,6 +362,18 @@ struct LoRaConfig: View {
 					Text("Available modem presets, default is Long Fast.")
 						.foregroundColor(.gray)
 						.font(.callout)
+					// Long Fast stays selectable in the US, but its bandwidth is not
+					// US-compliant on 2.8 — warn instead of blocking.
+					if supports2_8, region == RegionCodes.us.rawValue, modemPreset == ModemPresets.longFast.rawValue {
+						Label {
+							Text("Long Fast's bandwidth is not compliant in the US. Long Turbo is the recommended preset.")
+								.foregroundColor(.gray)
+								.font(.caption)
+						} icon: {
+							Image(systemName: "exclamationmark.triangle.fill")
+								.foregroundColor(.orange)
+						}
+					}
 				}
 			}
 		}

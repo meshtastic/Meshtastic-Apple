@@ -288,8 +288,13 @@ targets:
         type: folder
       - path: "Localizable.xcstrings"
       - path: "Settings.bundle"
+      # Must be compiled into Meshtastic.momd and land in the bundle: the Core Data ->
+      # SwiftData migration loads it from Bundle.main at launch for anyone upgrading
+      # (CoreDataMigrationService, called from Persistence). buildPhase: none left it in
+      # the project tree but in no build phase, so no momd shipped and the migration
+      # bailed out. Guarded by CoreDataMigrationServiceTests.
       - path: "Meshtastic/Meshtastic.xcdatamodeld"
-        buildPhase: none
+        buildPhase: sources
       - path: "Meshtastic"
         type: group
         includes:
@@ -573,6 +578,9 @@ targets:
     sources:
       - path: "MeshtasticTests"
         type: syncedFolder
+      # Compile the pure Bonjour lifecycle into the existing test bundle; keep this file iOS-compatible.
+      - path: "Meshtastic TV/Client/NodeDiscovery.swift"
+        group: "TV Test Support"
     dependencies:
       - target: Meshtastic
     settings:
@@ -695,6 +703,7 @@ targets:
         type: syncedFolder
         excludes:
           - "Info.plist"
+      - path: "Localizable.xcstrings"
       # Reused portable transport primitives (Network.framework only, no UIKit/BLE/CoreLocation).
       # Explicit files rather than the whole Accessory folder so we do NOT pull in the
       # BLE/AccessoryManager/persistence stack. AccessoryError + NONCE_* are shimmed locally
@@ -764,6 +773,43 @@ targets:
           TARGETED_DEVICE_FAMILY: "3"
           TVOS_DEPLOYMENT_TARGET: "17.0"
 
+  "Meshtastic TVUITests":
+    type: bundle.ui-testing
+    platform: tvOS
+    sources:
+      - path: "MeshtasticTVUITests"
+        type: syncedFolder
+    dependencies:
+      - target: "Meshtastic TV"
+    settings:
+      configs:
+        Debug:
+          CODE_SIGN_STYLE: "Automatic"
+          CURRENT_PROJECT_VERSION: "1"
+          DEVELOPMENT_TEAM: "GCH7VS5Y9R"
+          GENERATE_INFOPLIST_FILE: "YES"
+          MARKETING_VERSION: "1.0"
+          PRODUCT_BUNDLE_IDENTIFIER: "gvh.MeshtasticClient.TVUITests"
+          PRODUCT_NAME: "$(TARGET_NAME)"
+          SDKROOT: "appletvos"
+          SUPPORTED_PLATFORMS: "appletvos appletvsimulator"
+          SWIFT_VERSION: "5.0"
+          TARGETED_DEVICE_FAMILY: "3"
+          TVOS_DEPLOYMENT_TARGET: "17.0"
+        Release:
+          CODE_SIGN_STYLE: "Automatic"
+          CURRENT_PROJECT_VERSION: "1"
+          DEVELOPMENT_TEAM: "GCH7VS5Y9R"
+          GENERATE_INFOPLIST_FILE: "YES"
+          MARKETING_VERSION: "1.0"
+          PRODUCT_BUNDLE_IDENTIFIER: "gvh.MeshtasticClient.TVUITests"
+          PRODUCT_NAME: "$(TARGET_NAME)"
+          SDKROOT: "appletvos"
+          SUPPORTED_PLATFORMS: "appletvos appletvsimulator"
+          SWIFT_VERSION: "5.0"
+          TARGETED_DEVICE_FAMILY: "3"
+          TVOS_DEPLOYMENT_TARGET: "17.0"
+
 schemes:
   Meshtastic:
     build:
@@ -819,10 +865,13 @@ schemes:
     build:
       targets:
         "Meshtastic TV": all
+        "Meshtastic TVUITests": [test]
     run:
       config: Debug
     test:
       config: Debug
+      targets:
+        - "Meshtastic TVUITests"
     profile:
       config: Release
     analyze:

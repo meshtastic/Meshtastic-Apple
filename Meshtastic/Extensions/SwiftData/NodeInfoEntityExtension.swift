@@ -385,8 +385,11 @@ func findOrCreateUser(num: Int64, context: ModelContext) -> UserEntity {
 	}
 	let newUser = UserEntity()
 	newUser.num = Int64(num)
+	// toHex() already prefixes "!", so interpolating another one produced "!!deadbeef"
+	// for any node heard before its NodeInfo arrived — visible in message rows, used for
+	// search matching, and exported as `userProto.id` onto the mesh.
 	let userId = num.toHex()
-	newUser.userId = "!\(userId)"
+	newUser.userId = userId
 	let last4 = String(userId.suffix(4))
 	newUser.longName = "Meshtastic \(last4)"
 	newUser.shortName = last4

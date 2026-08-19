@@ -209,8 +209,16 @@ enum FirmwareUpdateNotifier {
 	private static func candidate(accessoryManager: AccessoryManager) -> FirmwareUpdateNotificationCandidate? {
 		guard let nodeNum = accessoryManager.activeDeviceNum,
 		      let node = getNodeInfo(id: nodeNum, context: accessoryManager.context),
-		      let platformioTarget = node.myInfo?.pioEnv,
-		      let hardware = hardware(platformioTarget: platformioTarget, context: accessoryManager.context) else {
+		      let rawPlatformioTarget = node.myInfo?.pioEnv else {
+			return nil
+		}
+		let platformioTarget = rawPlatformioTarget.trimmingCharacters(in: .whitespacesAndNewlines)
+		guard !platformioTarget.isEmpty,
+		      let hardware = hardware(
+				platformioTarget: platformioTarget,
+				hwModel: node.user.map { Int64($0.hwModelId) },
+				context: accessoryManager.context
+		      ) else {
 			return nil
 		}
 
@@ -226,13 +234,20 @@ enum FirmwareUpdateNotifier {
 	}
 
 	@MainActor
-	private static func hardware(platformioTarget: String, context: ModelContext) -> DeviceHardwareEntity? {
-		var descriptor = FetchDescriptor<DeviceHardwareEntity>(
-			predicate: #Predicate { $0.platformioTarget == platformioTarget }
-		)
-		descriptor.fetchLimit = 1
+	private static func hardware(
+		platformioTarget: String,
+		hwModel: Int64?,
+		context: ModelContext
+	) -> DeviceHardwareEntity? {
 		do {
-			return try context.fetch(descriptor).first
+			let hardware = try context.fetch(FetchDescriptor<DeviceHardwareEntity>())
+			let records = hardware.map(HardwareCatalogRecord.init)
+			guard let resolution = FirmwareHardwareResolver.resolve(
+				pioEnv: platformioTarget,
+				hwModel: hwModel,
+				in: records
+			) else { return nil }
+			return hardware.first { $0.platformioTarget == resolution.metadataTarget }
 		} catch {
 			Logger.services.warning("Failed to fetch hardware for firmware update notification target \(platformioTarget, privacy: .public): \(error.localizedDescription, privacy: .public)")
 			return nil
