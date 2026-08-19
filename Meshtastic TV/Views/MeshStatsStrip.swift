@@ -210,13 +210,7 @@ struct MeshStatsStrip: View {
 	}
 
 	private func metadataText(_ stats: MeshClient.ConnectedNodeStats) -> String {
-		// Narrow units ("4m ago") keep the line short. Sub-minute is formatted by hand
-		// because .relative renders a just-arrived sample as "in 0 sec." — it rounds to
-		// zero and then picks future tense, which reads like a countdown.
-		let elapsed = max(0, Date().timeIntervalSince(stats.receivedAt))
-		let updated = elapsed < 60
-			? "\(Int(elapsed))s ago"
-			: stats.receivedAt.formatted(.relative(presentation: .numeric, unitsStyle: .narrow))
+		let updated = RelativeAge.text(since: stats.receivedAt)
 		guard let dupes = stats.packetsRxDupe else { return "Updated \(updated)" }
 		return "\(packetText(dupes, fractionDigits: 0)) dupes · Updated \(updated)"
 	}
