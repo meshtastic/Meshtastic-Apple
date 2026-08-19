@@ -27,8 +27,8 @@ final class NodeAnnotation: NSObject, MKAnnotation {
 	var title: String?
 	var subtitle: String?
 	var shortName: String
-	/// How many nodes report this exact coordinate. 1 for an ordinary pin; above
-	/// that the view draws a count badge instead of the node marker.
+	/// How many nodes this pin stands for at the current zoom. 1 for an ordinary
+	/// pin; above that the view draws a count badge instead of the node marker.
 	var memberCount: Int = 1
 
 	init(node: MeshNode, coordinate: CLLocationCoordinate2D, memberCount: Int = 1) {
@@ -46,7 +46,9 @@ final class NodeAnnotation: NSObject, MKAnnotation {
 /// stays cheap and the view is focus-engine selectable.
 final class NodeCircleAnnotationView: MKAnnotationView {
 	static let reuseID = "nodeCircle"
-	private static let diameter: CGFloat = 64   // 10-foot UI: larger than iOS's 40
+	/// 10-foot UI: larger than iOS's 40. Also the screen-space bucket size the
+	/// Coordinator groups by — pins merge when they'd overlap by about this much.
+	static let diameter: CGFloat = 64
 
 	private let circle = UIView()
 	private let label = UILabel()
@@ -107,9 +109,9 @@ final class NodeCircleAnnotationView: MKAnnotationView {
 	/// Cheap, idempotent refresh of the visual content. Safe to call on live updates.
 	func updateContent() {
 		guard let node = annotation as? NodeAnnotation else { return }
-		// Several nodes on one coordinate: show the count, in the accent colour, the
-		// way the old cluster badge did. This is the only case that still groups —
-		// MapKit's own clustering is off, so nothing merges by proximity.
+		// Several nodes within one pin footprint at this zoom: show the count, in the
+		// accent color, the way the old cluster badge did. Grouping is our own
+		// screen-space bucketing — MapKit's clustering stays off.
 		let color: UIColor
 		let text: String
 		if node.memberCount > 1 {
@@ -376,8 +378,8 @@ struct MeshTVMapView: UIViewRepresentable {
 		private var didSetInitialRegion = false
 		/// Every located node number mapped to the pin that represents it.
 		private var annotationsByNum: [UInt32: NodeAnnotation] = [:]
-		/// One pin per distinct coordinate.
-		private var annotationsByCoord: [CoordKey: NodeAnnotation] = [:]
+		/// One pin per occupied screen-space bucket at the current zoom band.
+		private var annotationsByBucket: [BucketKey: NodeAnnotation] = [:]
 
 		init(_ parent: MeshTVMapView) {
 			self.parent = parent
@@ -388,25 +390,31 @@ struct MeshTVMapView: UIViewRepresentable {
 		}
 
 		/// Diff the annotation set against `nodes` (add / update coordinate / remove),
-		/// keyed by node number so we don't churn the whole map each update.
+		/// keyed by screen-space bucket so we don't churn the whole map each update.
 		func sync(_ mapView: MKMapView, nodes: [MeshNode]) {
 			let located = nodes.filter { $0.hasLocation }
 
-			// One pin per DISTINCT coordinate. Nodes reporting the exact same position
-			// share a pin that shows their count; nothing else is ever merged, because
-			// MapKit's own clustering is off (see `clusteringIdentifier`). This replaced
-			// a ring-fan that pushed coincident nodes apart by 45m+ per member — with
-			// clustering disabled that scattered a stacked group across whole blocks.
-			var groups: [CoordKey: [MeshNode]] = [:]
+			// One pin per occupied screen-space bucket: nodes merge only when their pins
+			// would sit within ~one pin footprint of each other AT THE CURRENT ZOOM.
+			// MapKit's own clustering is off (see `clusteringIdentifier`) because its
+			// separation floor merges pins that aren't close to touching; exact-coordinate
+			// grouping alone went the other way — a conference mesh drew dozens of pins on
+			// top of each other in one unreadable pile. Bucketing by pin footprint keeps
+			// both properties: zoomed in, everything separates down to identical reported
+			// positions (identical coordinates share a map point, hence a bucket, at every
+			// zoom); zoomed out, a dense site collapses into a few counted badges.
+			let bucket = bucketSize(for: mapView)
+			var groups: [BucketKey: [MeshNode]] = [:]
 			for node in located {
 				guard let coordinate = node.coordinate else { continue }
-				groups[CoordKey(coordinate), default: []].append(node)
+				groups[BucketKey(coordinate, bucket: bucket), default: []].append(node)
 			}
 
-			// Drop pins whose coordinate no longer has anyone on it.
-			for (key, annotation) in annotationsByCoord where groups[key] == nil {
+			// Drop pins whose bucket no longer has anyone in it (including every pin of
+			// the previous zoom band after a zoom step — the band is part of the key).
+			for (key, annotation) in annotationsByBucket where groups[key] == nil {
 				mapView.removeAnnotation(annotation)
-				annotationsByCoord[key] = nil
+				annotationsByBucket[key] = nil
 				if let selectedNum, annotation.num == selectedNum || annotationOwner(of: selectedNum) === annotation {
 					removeHalo(from: mapView)
 					lastAppliedSelection = nil
@@ -420,12 +428,22 @@ struct MeshTVMapView: UIViewRepresentable {
 			numToAnnotation.reserveCapacity(located.count)
 			for (key, members) in groups {
 				let sorted = members.sorted { $0.num < $1.num }
-				guard let lead = sorted.first, let coordinate = lead.coordinate else { continue }
+				guard let lead = sorted.first else { continue }
 				let count = sorted.count
+				// A multi-node pin sits at the members' centroid rather than the lead's
+				// position — with a footprint-sized bucket the difference is at most a
+				// pin width, and the badge reads as "here, collectively".
+				guard let coordinate = groupCoordinate(of: sorted) else { continue }
 
 				let annotation: NodeAnnotation
-				if let existing = annotationsByCoord[key] {
+				if let existing = annotationsByBucket[key] {
 					annotation = existing
+					// Nodes drift within their bucket as fresh positions arrive; follow
+					// them (coordinate is `dynamic`, MapKit animates the move).
+					if abs(existing.coordinate.latitude - coordinate.latitude) > 1e-7 ||
+						abs(existing.coordinate.longitude - coordinate.longitude) > 1e-7 {
+						existing.coordinate = coordinate
+					}
 					if existing.num != lead.num {
 						existing.num = lead.num
 						existing.shortName = lead.shortName
@@ -448,7 +466,7 @@ struct MeshTVMapView: UIViewRepresentable {
 				} else {
 					annotation = NodeAnnotation(node: lead, coordinate: coordinate, memberCount: count)
 					if count > 1 { annotation.title = String(localized: "\(count) nodes here") }
-					annotationsByCoord[key] = annotation
+					annotationsByBucket[key] = annotation
 					mapView.addAnnotation(annotation)
 				}
 				// Every member resolves to this pin, so selecting any of them from the
@@ -467,16 +485,52 @@ struct MeshTVMapView: UIViewRepresentable {
 			}
 		}
 
-		/// Exact-coordinate key. Nodes group only when both components match to the
-		/// full 1e-7 degree precision the mesh reports (about 1 cm), i.e. genuinely the
-		/// same reported position rather than merely nearby.
-		struct CoordKey: Hashable {
-			let lat: Int64
-			let lon: Int64
-			init(_ coordinate: CLLocationCoordinate2D) {
-				lat = Int64((coordinate.latitude * 1e7).rounded())
-				lon = Int64((coordinate.longitude * 1e7).rounded())
+		/// Re-group when the zoom band changes: pins that started overlapping merge, and a
+		/// badge splits back apart two clicks in. Region settle is the only trigger needed —
+		/// tvOS zooms in discrete animated steps, so this fires once per step, and panning
+		/// never reshuffles groups (buckets are absolute in map-point space).
+		func mapView(_ mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
+			sync(mapView, nodes: parent.nodes)
+		}
+
+		/// One pin footprint in map points at the current zoom, quantized to the
+		/// power-of-two ladder. Quantizing pins the grid to a stable zoom band: within a
+		/// band the grid never moves, and `floor` picks the finer band, so pins may
+		/// slightly overlap before they merge — under-merging is the better failure here.
+		private func bucketSize(for mapView: MKMapView) -> Double {
+			guard mapView.bounds.width > 0 else { return 1 }
+			let mapPointsPerScreenPoint = mapView.visibleMapRect.size.width / Double(mapView.bounds.width)
+			let footprint = mapPointsPerScreenPoint * Double(NodeCircleAnnotationView.diameter)
+			guard footprint.isFinite, footprint > 1 else { return 1 }
+			return pow(2.0, floor(log2(footprint)))
+		}
+
+		/// Screen-space bucket key: the map-point grid cell a coordinate lands in at the
+		/// current zoom band. The band (bucket size) is part of the key, so every zoom
+		/// step regroups from scratch. At extreme zoom the cell shrinks below the mesh's
+		/// 1e-7-degree reporting precision, so identical reported positions — which share
+		/// an exact `MKMapPoint` — always stay merged, preserving the stacked-node badge.
+		struct BucketKey: Hashable {
+			let bucket: Double
+			let x: Int64
+			let y: Int64
+			init(_ coordinate: CLLocationCoordinate2D, bucket: Double) {
+				let point = MKMapPoint(coordinate)
+				self.bucket = bucket
+				self.x = Int64((point.x / bucket).rounded(.down))
+				self.y = Int64((point.y / bucket).rounded(.down))
 			}
+		}
+
+		/// Centroid of the members' reported positions (single member: its position).
+		private func groupCoordinate(of members: [MeshNode]) -> CLLocationCoordinate2D? {
+			var lat = 0.0, lon = 0.0, count = 0.0
+			for member in members {
+				guard let c = member.coordinate else { continue }
+				lat += c.latitude; lon += c.longitude; count += 1
+			}
+			guard count > 0 else { return nil }
+			return CLLocationCoordinate2D(latitude: lat / count, longitude: lon / count)
 		}
 
 		/// The pin currently standing in for `num`, if any.
