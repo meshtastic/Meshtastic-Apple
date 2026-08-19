@@ -22,6 +22,7 @@ struct MapScreen: View {
 	// focus for NavigationLink rows, so track it explicitly and mirror it into
 	// the map selection (debounced map-side).
 	@FocusState private var focusedNodeNum: UInt32?
+	@FocusState private var recenterFocused: Bool
 	@State private var navPath: [UInt32] = []
 
 	/// The persisted node store — the map and list read from here, not the client.
@@ -48,7 +49,6 @@ struct MapScreen: View {
 				nodes: locatedNodes,
 				selectedNodeNum: $selectedNodeNum,
 				recenterToken: recenterToken,
-				onMenuExit: escapeMap,
 				offlineVectors: offlineVectors
 			)
 			.ignoresSafeArea()
@@ -59,9 +59,14 @@ struct MapScreen: View {
 					MeshStatsStrip(
 						stats: client.stats,
 						storeOnlineCount: allNodes.filter(\.isOnline).count,
-						storeTotalCount: allNodes.count
+						storeTotalCount: allNodes.count,
+						edition: EventEdition(client.firmwareEdition)
 					)
-					.padding(.vertical, TVTheme.statsStripMargin)
+					.padding(TVTheme.statsStripMargin)
+					// The map is full-bleed but the overlay lands inside the safe
+					// area, so the bar stopped ~80pt short of the screen edge while
+					// its columns were squeezed. Reclaim that width.
+					.ignoresSafeArea(edges: .horizontal)
 				}
 			}
 		}
@@ -94,13 +99,6 @@ struct MapScreen: View {
 		if newLocated.map(\.num) != locatedNodes.map(\.num) { locatedNodes = newLocated }
 	}
 
-	/// Menu pressed while the map held focus: pop any open node detail and hand
-	/// focus back to the node list — without this, MKMapView is a focus trap.
-	private func escapeMap() {
-		navPath = []
-		focusedNodeNum = selectedNodeNum ?? sortedNodes.first?.num
-	}
-
 	private var nodeList: some View {
 		NavigationStack(path: $navPath) {
 			List {
@@ -113,6 +111,7 @@ struct MapScreen: View {
 					} label: {
 						Label("Re-center Map", systemImage: "scope")
 					}
+					.focused($recenterFocused)
 					NavigationLink {
 						SettingsView()
 					} label: {
@@ -136,6 +135,8 @@ struct MapScreen: View {
 					Text("\(allNodes.count) nodes · \(locatedNodes.count) on map")
 				}
 			}
+			// Focused tvOS controls grow beyond their rows; keep them inside the List's clip.
+			.contentMargins(.horizontal, TVTheme.nodeListContentMargin, for: .scrollContent)
 			.onChange(of: focusedNodeNum) { _, newValue in
 				if let newValue { selectedNodeNum = newValue }
 			}
@@ -153,7 +154,7 @@ struct MapScreen: View {
 	private var header: some View {
 		HStack(spacing: 20) {
 			VStack(alignment: .leading, spacing: 6) {
-				Image("meshtastic-wordmark-white")
+				Image(decorative: "meshtastic-wordmark-white")
 					.resizable()
 					.scaledToFit()
 					.frame(height: TVTheme.wordmarkHeight)
@@ -184,15 +185,6 @@ struct MapScreen: View {
 				.ignoresSafeArea(edges: [.top, .leading])
 		}
 	}
-
-	private var disconnectButton: some View {
-		Button(role: .destructive) {
-			client.disconnect()
-		} label: {
-			Label("Disconnect", systemImage: "xmark.circle.fill")
-		}
-		.buttonStyle(.bordered)
-	}
 }
 
 /// Compact node row, modelled on the iOS `NodeListItemCompact`: node-color circle,
@@ -217,7 +209,9 @@ private struct NodeRow: View {
 				HStack(spacing: 14) {
 					if let lastHeard = node.lastHeard {
 						Label {
-							Text(lastHeard.formatted(.relative(presentation: .named)))
+								// Compact so the role and position labels fit beside it on a
+							// 520pt list, and never future-tense for a just-heard node.
+							Text(RelativeAge.text(since: lastHeard))
 						} icon: {
 							Image(systemName: node.isOnline ? "checkmark.circle.fill" : "moon.circle.fill")
 								.foregroundStyle(node.isOnline ? Color("MeshtasticSuccess") : Color("MeshtasticWarning"))
@@ -233,8 +227,29 @@ private struct NodeRow: View {
 				.font(.caption)
 				.foregroundStyle(.secondary)
 				.lineLimit(1)
+				.minimumScaleFactor(0.75)
 			}
-			Spacer()
+			// Take the row's remaining width outright. A trailing Spacer() competes
+			// with the text for it, and Text yields by truncating — which is why the
+			// metadata line clipped while the row still had space to its right.
+			.frame(maxWidth: .infinity, alignment: .leading)
 		}
+		.accessibilityElement(children: .ignore)
+		.accessibilityLabel(node.displayName)
+		.accessibilityValue(accessibilityValue)
+	}
+
+	private var accessibilityValue: String {
+		var parts = [node.isOnline ? "Online" : "Offline"]
+		if let lastHeard = node.lastHeard {
+			parts.append("Last heard \(lastHeard.formatted(.relative(presentation: .named)))")
+		}
+		if let role = node.nodeRole {
+			parts.append("Role: \(role.name)")
+		}
+		if !node.hasLocation {
+			parts.append("No position")
+		}
+		return parts.joined(separator: ", ")
 	}
 }

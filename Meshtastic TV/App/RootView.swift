@@ -14,18 +14,15 @@ struct RootView: View {
 
 	var body: some View {
 		Group {
-			switch client.state {
-			case .connected:
-				MapScreen(client: client)
-			case .connecting:
-				ConnectingView(host: client.host, mode: .connecting) { client.disconnect() }
-			case .reconnecting(let attempt, let maxAttempts):
-				ConnectingView(host: client.host, mode: .reconnecting(attempt: attempt, maxAttempts: maxAttempts)) {
-					client.disconnect()
-				}
-			case .disconnected, .failed:
-				ConnectView(client: client)
+#if DEBUG
+			if CommandLine.arguments.contains("-tv-show-settings") {
+				NavigationStack { SettingsView() }
+			} else {
+				content
 			}
+#else
+			content
+#endif
 		}
 		// Buttons and icons follow the app AccentColor (Blue 700, matching the iOS
 		// app). The brand green fails WCAG contrast for interactive elements, so it's
@@ -52,6 +49,22 @@ struct RootView: View {
 			UIApplication.shared.isIdleTimerDisabled = (phase == .active)
 		}
 	}
+
+	@ViewBuilder
+	private var content: some View {
+		switch client.state {
+		case .connected:
+			MapScreen(client: client)
+		case .connecting:
+			ConnectingView(host: client.host, mode: .connecting) { client.disconnect() }
+		case .reconnecting(let attempt, let maxAttempts):
+			ConnectingView(host: client.host, mode: .reconnecting(attempt: attempt, maxAttempts: maxAttempts)) {
+				client.disconnect()
+			}
+		case .disconnected, .failed:
+			ConnectView(client: client)
+		}
+	}
 }
 
 private struct ConnectingView: View {
@@ -66,7 +79,7 @@ private struct ConnectingView: View {
 
 	var body: some View {
 		VStack(spacing: 48) {
-			Image("m-logo-white")
+			Image(decorative: "m-logo-white")
 				.resizable()
 				.scaledToFit()
 				.frame(width: 280)

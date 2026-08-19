@@ -101,13 +101,7 @@ struct LoRaConfig: View {
 	@State var ignoreMqtt = false
 	@State var okToMqtt = false
 
-	let floatFormatter: NumberFormatter = {
-		let formatter = NumberFormatter()
-		formatter.numberStyle = .decimal
-		formatter.allowsFloats = true
-		formatter.maximumFractionDigits = 4
-		return formatter
-	}()
+	let floatFormatter = frequencyOverrideFormatter
 
 	/// Whether the connected radio runs firmware new enough for the 2.8 LoRa
 	/// region/preset rework. Gates the new ham regions and narrow/tiny presets so
