@@ -81,6 +81,13 @@ struct UF2MassStorageView: View {
 				}
 				.padding()
 			}
+			// The Mac sheet can still end up shorter than this content — Catalyst clamps the
+			// height requested below to the app window, and translated text is taller again.
+			// Keep the scroll bar showing there so the cut-off edge reads as scrollable rather
+			// than stuck; on iOS the indicator stays out of the way until it's needed.
+			#if targetEnvironment(macCatalyst)
+			.scrollIndicators(.visible)
+			#endif
 			.navigationTitle("UF2 Firmware Update")
 			.navigationBarTitleDisplayMode(.inline)
 			.toolbar {
@@ -95,10 +102,10 @@ struct UF2MassStorageView: View {
 			}
 		}
 		#if targetEnvironment(macCatalyst)
-		// Mac Catalyst gives a sheet a fixed 620x680 window, about 20pt shorter than this
-		// content needs, so the Important Notes section sits below the bottom edge. Ask for a
-		// taller sheet; Catalyst clamps the request to the app window, and the ScrollView
-		// still handles whatever is left over.
+		// Mac Catalyst sizes a sheet from the window, not its content — measured at 620x680,
+		// which is shorter than this content needs, leaving Important Notes below the bottom
+		// edge. Ask for a taller sheet. Catalyst clamps the request to the app window, and
+		// `idealHeight` is ignored here, so this has to be a hard minimum.
 		.frame(minHeight: 740)
 		#endif
 		.fileExporter(
