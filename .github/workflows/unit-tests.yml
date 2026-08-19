@@ -1,0 +1,75 @@
+name: Unit Tests
+
+# The snapshot job in docs-deploy.yml runs `xcodebuild test` with -only-testing for
+# the 39 SwiftUI snapshot suites, so every other suite in MeshtasticTests compiled and
+# was then skipped -- 465 suites and ~2,900 tests that had never run on CI. This job
+# runs those, skipping the snapshot suites the other job already covers.
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  unit-tests:
+    runs-on: macos-15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_26.3.app/Contents/Developer
+
+      - name: Run unit tests
+        run: |
+          set -o pipefail
+          # Skip the snapshot suites (docs-deploy runs those and they rewrite reference
+          # images). Selectors are derived from the source, the same way that job does,
+          # so adding a suite there needs no change here.
+          skip_tests=()
+          while IFS= read -r suite; do
+            skip_tests+=("-skip-testing:MeshtasticTests/$suite")
+          done < <(
+            python3 - <<'PY'
+          import pathlib
+          import re
+
+          source = pathlib.Path("MeshtasticTests/SwiftUIViewSnapshotTests.swift").read_text()
+          suites = re.findall(r"@Suite\([^\n]+\)\s*\n(?:@MainActor\s*\n)?struct\s+(\w+SnapshotTests)\b", source)
+          print(*suites, sep="\n")
+          PY
+          )
+
+          if (( ${#skip_tests[@]} == 0 )); then
+            echo "Found no snapshot suites to skip — the extraction regex probably broke." >&2
+            exit 1
+          fi
+
+          if ! xcodebuild test \
+            -workspace Meshtastic.xcworkspace \
+            -scheme Meshtastic \
+            -destination 'platform=iOS Simulator,name=iPhone 16,OS=18.5' \
+            -only-testing:MeshtasticTests \
+            "${skip_tests[@]}" \
+            2>&1 | tee /tmp/xcodebuild-unit.log | tail -30; then
+            echo "── failures from the full log ──" >&2
+            grep -E "error:|✘|: Fatal error|failed \(" /tmp/xcodebuild-unit.log | head -40 >&2
+            exit 1
+          fi
+
+          # A selector typo yields a green run that executed nothing; fail loudly instead.
+          if ! grep -qE "Test run with [0-9]+ tests" /tmp/xcodebuild-unit.log; then
+            echo "No Swift Testing summary found — did anything actually run?" >&2
+            exit 1
+          fi
+          executed=$(grep -oE "Test run with [0-9]+ tests" /tmp/xcodebuild-unit.log | tail -1 | grep -oE "[0-9]+")
+          echo "Executed $executed tests"
+          if (( executed < 2000 )); then
+            echo "Expected the full unit suite (~2,900 tests), only $executed ran." >&2
+            exit 1
+          fi

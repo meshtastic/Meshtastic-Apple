@@ -192,7 +192,8 @@ struct BundleExtensionDetailedTests {
 struct IntervalConfigurationDetailedTests {
 
 	@Test func allCases_count() {
-		#expect(IntervalConfiguration.allCases.count == 10)
+		// Bump when a case is added — this is the guard that it was considered.
+		#expect(IntervalConfiguration.allCases.count == 11)
 	}
 
 	@Test func all_returnsAllFixedCases() {
