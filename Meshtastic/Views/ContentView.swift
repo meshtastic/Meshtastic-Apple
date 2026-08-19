@@ -124,7 +124,7 @@ struct ContentView: View {
 		if appState.isDatabaseResetting {
 			DatabaseResettingPlaceholder()
 		} else {
-			ActiveContent(appState: appState, router: router) {
+			ActiveContent(appState: appState, router: router, isOnboarding: isShowingDeviceOnboardingFlow) {
 				tabContent
 			}
 		}
@@ -137,6 +137,10 @@ struct ContentView: View {
 		@ObservedObject var appState: AppState
 		@ObservedObject var router: Router
 		@EnvironmentObject var accessoryManager: AccessoryManager
+		/// True while the first-launch device-onboarding sheet is up. The event sheet
+		/// must not auto-present over it — two sheets presented from different levels
+		/// of the tree fight, and the event sheet ends up covering onboarding.
+		let isOnboarding: Bool
 		@Query private var eventFirmwareEditions: [EventFirmwareEntity]
 		@State private var isShowingEventFirmwareInfo: Bool = false
 		/// The post-event upgrade sheet auto-presents once per connect. ActiveContent is
@@ -145,10 +149,29 @@ struct ContentView: View {
 		@State private var hasAutoPresentedEventEnded: Bool = false
 		private let content: Content
 
-		init(appState: AppState, router: Router, @ViewBuilder content: () -> Content) {
+		init(
+			appState: AppState,
+			router: Router,
+			isOnboarding: Bool,
+			@ViewBuilder content: () -> Content
+		) {
 			self.appState = appState
 			self.router = router
+			self.isOnboarding = isOnboarding
 			self.content = content()
+		}
+
+		/// Once the event's end date has passed, surface the info sheet (with its
+		/// post-event update call to action) automatically on connect — parity with
+		/// Android's post-event upgrade prompt; hasEnded() is false without a valid
+		/// end date, so live/undated editions never nag. Held back while the
+		/// onboarding sheet is up, and retried when it closes.
+		private func autoPresentEndedEventIfNeeded() {
+			guard !isOnboarding, !hasAutoPresentedEventEnded,
+				  let presentation = eventPresentation,
+				  presentation.info.hasEnded() else { return }
+			hasAutoPresentedEventEnded = true
+			isShowingEventFirmwareInfo = true
 		}
 
 		private var eventPresentation: EventFirmwarePresentation? {
@@ -186,16 +209,12 @@ struct ContentView: View {
 						isShowingEventFirmwareInfo = false
 						return
 					}
-					// Once the event's end date has passed, surface the info sheet (with its
-					// post-event update call to action) automatically on connect — parity with
-					// Android's post-event upgrade prompt; hasEnded() is false without a valid
-					// end date, so live/undated editions never nag.
-					if let presentation = eventPresentation,
-					   presentation.info.hasEnded(),
-					   !hasAutoPresentedEventEnded {
-						hasAutoPresentedEventEnded = true
-						isShowingEventFirmwareInfo = true
-					}
+					autoPresentEndedEventIfNeeded()
+				}
+				.onChange(of: isOnboarding) { _, onboarding in
+					// Onboarding just finished — show the sheet we held back. Without this
+					// a first launch that connects during setup never gets the prompt.
+					if !onboarding { autoPresentEndedEventIfNeeded() }
 				}
 		}
 	}
