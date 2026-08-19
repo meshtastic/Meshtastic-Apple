@@ -94,6 +94,13 @@ struct UF2MassStorageView: View {
 				}
 			}
 		}
+		#if targetEnvironment(macCatalyst)
+		// Mac Catalyst gives a sheet a fixed 620x680 window, about 20pt shorter than this
+		// content needs, so the Important Notes section sits below the bottom edge. Ask for a
+		// taller sheet; Catalyst clamps the request to the app window, and the ScrollView
+		// still handles whatever is left over.
+		.frame(minHeight: 740)
+		#endif
 		.fileExporter(
 			isPresented: $isExporting,
 			document: document,
