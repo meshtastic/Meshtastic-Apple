@@ -59,7 +59,12 @@ actor BLETransport: Transport {
 	let supportsManualConnection: Bool = false
 	let requiresPeriodicHeartbeat = false
 			
-	init() {
+	/// - Parameter createCentralManagerImmediately: Pass `false` to skip creating the real
+	///   `CBCentralManager` here, leaving it to `discoverDevices()` exactly as a `.notDetermined`
+	///   authorization already does. Tests that drive `handleCentralState` directly need this: a
+	///   real manager reports the host's actual Bluetooth state on its own schedule, and that
+	///   incidental value lands in `status` at an unpredictable point mid-test.
+	init(createCentralManagerImmediately: Bool = true) {
 		self.discoveredPeripherals = [:]
 		self.discoveredDeviceContinuation = nil
 		self.delegate = BLEDelegate()
@@ -67,7 +72,7 @@ actor BLETransport: Transport {
 		// Only create CBCentralManager immediately if Bluetooth authorization is already
 		// determined. This avoids showing the system permission prompt before the
 		// onboarding Bluetooth screen has a chance to present it in context.
-		if CBCentralManager.authorization != .notDetermined {
+		if createCentralManagerImmediately, CBCentralManager.authorization != .notDetermined {
 			centralManager = CBCentralManager(delegate: delegate,
 											  queue: centralQueue,
 											  options: Self.centralManagerOptions(restoreIdentifier: kCentralRestoreID)
