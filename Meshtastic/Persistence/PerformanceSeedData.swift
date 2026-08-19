@@ -226,7 +226,7 @@ enum PerformanceSeedData {
 		let user = UserEntity()
 		user.num = nodeNum
 		user.numString = String(nodeNum)
-		user.userId = "!\(nodeNum.toHex())"
+		user.userId = nodeNum.toHex()   // toHex() already prefixes "!"
 		user.longName = "Perf Node \(index)"
 		user.shortName = shortName(for: index)
 		user.hwModel = hardwareModel(for: index)

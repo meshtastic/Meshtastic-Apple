@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="21754" systemVersion="22E261" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
-    <entity name="BluetoothConfigEntity" representedClassName="BluetoothConfigEntity" syncable="YES" codeGenerationType="class">
+    <entity name="BluetoothConfigEntity" representedClassName="BluetoothConfigEntity" syncable="YES" codeGenerationType="none">
         <attribute name="enabled" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="fixedPin" optional="YES" attributeType="Integer 32" defaultValueString="123456" usesScalarValueType="YES"/>
         <attribute name="mode" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <relationship name="bluetoothConfigNode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeInfoEntity" inverseName="bluetoothConfig" inverseEntity="NodeInfoEntity"/>
     </entity>
-    <entity name="CannedMessageConfigEntity" representedClassName="CannedMessageConfigEntity" syncable="YES" codeGenerationType="class">
+    <entity name="CannedMessageConfigEntity" representedClassName="CannedMessageConfigEntity" syncable="YES" codeGenerationType="none">
         <attribute name="enabled" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="inputbrokerEventCcw" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="inputbrokerEventCw" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
@@ -20,7 +20,7 @@
         <attribute name="updown1Enabled" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <relationship name="cannedMessagesConfigNode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeInfoEntity" inverseName="cannedMessageConfig" inverseEntity="NodeInfoEntity"/>
     </entity>
-    <entity name="ChannelEntity" representedClassName="ChannelEntity" syncable="YES" codeGenerationType="class">
+    <entity name="ChannelEntity" representedClassName="ChannelEntity" syncable="YES" codeGenerationType="none">
         <attribute name="downlinkEnabled" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="id" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="index" attributeType="Integer 32" minValueString="0" maxValueString="13" defaultValueString="0" usesScalarValueType="YES"/>
@@ -39,7 +39,7 @@
             </uniquenessConstraint>
         </uniquenessConstraints>
     </entity>
-    <entity name="DeviceConfigEntity" representedClassName="DeviceConfigEntity" syncable="YES" codeGenerationType="class">
+    <entity name="DeviceConfigEntity" representedClassName="DeviceConfigEntity" syncable="YES" codeGenerationType="none">
         <attribute name="buttonGpio" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="buzzerGpio" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="debugLogEnabled" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
@@ -50,7 +50,7 @@
         <attribute name="serialEnabled" optional="YES" attributeType="Boolean" defaultValueString="0" usesScalarValueType="YES"/>
         <relationship name="deviceConfigNode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeInfoEntity" inverseName="deviceConfig" inverseEntity="NodeInfoEntity"/>
     </entity>
-    <entity name="DeviceMetadataEntity" representedClassName="DeviceMetadataEntity" syncable="YES" codeGenerationType="class">
+    <entity name="DeviceMetadataEntity" representedClassName="DeviceMetadataEntity" syncable="YES" codeGenerationType="none">
         <attribute name="canShutdown" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="deviceStateVersion" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="firmwareVersion" optional="YES" attributeType="String"/>
@@ -62,7 +62,7 @@
         <attribute name="role" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <relationship name="metadataNode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeInfoEntity" inverseName="metadata" inverseEntity="NodeInfoEntity"/>
     </entity>
-    <entity name="DisplayConfigEntity" representedClassName="DisplayConfigEntity" syncable="YES" codeGenerationType="class">
+    <entity name="DisplayConfigEntity" representedClassName="DisplayConfigEntity" syncable="YES" codeGenerationType="none">
         <attribute name="compassNorthTop" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="displayMode" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="flipScreen" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
@@ -74,7 +74,7 @@
         <attribute name="wakeOnTapOrMotion" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <relationship name="displayConfigNode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeInfoEntity" inverseName="displayConfig" inverseEntity="NodeInfoEntity"/>
     </entity>
-    <entity name="ExternalNotificationConfigEntity" representedClassName="ExternalNotificationConfigEntity" syncable="YES" codeGenerationType="class">
+    <entity name="ExternalNotificationConfigEntity" representedClassName="ExternalNotificationConfigEntity" syncable="YES" codeGenerationType="none">
         <attribute name="active" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="alertBell" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="alertBellBuzzer" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
@@ -91,7 +91,7 @@
         <attribute name="usePWM" optional="YES" attributeType="Boolean" defaultValueString="YES" usesScalarValueType="YES"/>
         <relationship name="externalNotificationConfigNode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeInfoEntity" inverseName="externalNotificationConfig" inverseEntity="NodeInfoEntity"/>
     </entity>
-    <entity name="LocationEntity" representedClassName="LocationEntity" syncable="YES" codeGenerationType="class">
+    <entity name="LocationEntity" representedClassName="LocationEntity" syncable="YES" codeGenerationType="none">
         <attribute name="altitude" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="heading" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="id" attributeType="Integer 32" usesScalarValueType="YES"/>
@@ -100,7 +100,7 @@
         <attribute name="speed" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <relationship name="routeLocation" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="RouteEntity" inverseName="locations" inverseEntity="RouteEntity"/>
     </entity>
-    <entity name="LoRaConfigEntity" representedClassName="LoRaConfigEntity" syncable="YES" codeGenerationType="class">
+    <entity name="LoRaConfigEntity" representedClassName="LoRaConfigEntity" syncable="YES" codeGenerationType="none">
         <attribute name="bandwidth" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="channelNum" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="codingRate" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
@@ -117,7 +117,7 @@
         <attribute name="usePreset" attributeType="Boolean" defaultValueString="YES" usesScalarValueType="YES"/>
         <relationship name="loRaConfigNode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeInfoEntity" inverseName="loRaConfig" inverseEntity="NodeInfoEntity"/>
     </entity>
-    <entity name="MessageEntity" representedClassName="MessageEntity" syncable="YES" codeGenerationType="class">
+    <entity name="MessageEntity" representedClassName="MessageEntity" syncable="YES" codeGenerationType="none">
         <attribute name="ackError" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="ackSNR" optional="YES" attributeType="Float" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="ackTimestamp" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
@@ -145,7 +145,7 @@
             </uniquenessConstraint>
         </uniquenessConstraints>
     </entity>
-    <entity name="MQTTConfigEntity" representedClassName="MQTTConfigEntity" syncable="YES" codeGenerationType="class">
+    <entity name="MQTTConfigEntity" representedClassName="MQTTConfigEntity" syncable="YES" codeGenerationType="none">
         <attribute name="address" optional="YES" attributeType="String" maxValueString="30"/>
         <attribute name="enabled" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="encryptionEnabled" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
@@ -156,7 +156,7 @@
         <attribute name="username" optional="YES" attributeType="String" maxValueString="30"/>
         <relationship name="mqttConfigNode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeInfoEntity" inverseName="mqttConfig" inverseEntity="NodeInfoEntity"/>
     </entity>
-    <entity name="MyInfoEntity" representedClassName="MyInfoEntity" syncable="YES" codeGenerationType="class">
+    <entity name="MyInfoEntity" representedClassName="MyInfoEntity" syncable="YES" codeGenerationType="none">
         <attribute name="adminIndex" optional="YES" attributeType="Integer 32" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="bitrate" optional="YES" attributeType="Float" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="bleName" optional="YES" attributeType="String"/>
@@ -178,7 +178,7 @@
             </uniquenessConstraint>
         </uniquenessConstraints>
     </entity>
-    <entity name="NetworkConfigEntity" representedClassName="NetworkConfigEntity" syncable="YES" codeGenerationType="class">
+    <entity name="NetworkConfigEntity" representedClassName="NetworkConfigEntity" syncable="YES" codeGenerationType="none">
         <attribute name="dns" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="ethEnabled" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="gateway" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
@@ -191,7 +191,7 @@
         <attribute name="wifiSsid" optional="YES" attributeType="String" minValueString="0" maxValueString="30"/>
         <relationship name="networkConfigNode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeInfoEntity" inverseName="networkConfig" inverseEntity="NodeInfoEntity"/>
     </entity>
-    <entity name="NodeInfoEntity" representedClassName="NodeInfoEntity" syncable="YES" codeGenerationType="class">
+    <entity name="NodeInfoEntity" representedClassName="NodeInfoEntity" syncable="YES" codeGenerationType="none">
         <attribute name="bleName" optional="YES" attributeType="String"/>
         <attribute name="channel" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="id" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
@@ -224,7 +224,7 @@
             </uniquenessConstraint>
         </uniquenessConstraints>
     </entity>
-    <entity name="PositionConfigEntity" representedClassName="PositionConfigEntity" syncable="YES" codeGenerationType="class">
+    <entity name="PositionConfigEntity" representedClassName="PositionConfigEntity" syncable="YES" codeGenerationType="none">
         <attribute name="broadcastSmartMinimumDistance" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="broadcastSmartMinimumIntervalSecs" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="deviceGpsEnabled" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
@@ -238,7 +238,7 @@
         <attribute name="txGpio" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <relationship name="positionConfigNode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeInfoEntity" inverseName="positionConfig" inverseEntity="NodeInfoEntity"/>
     </entity>
-    <entity name="PositionEntity" representedClassName="PositionEntity" syncable="YES" codeGenerationType="class">
+    <entity name="PositionEntity" representedClassName="PositionEntity" syncable="YES" codeGenerationType="none">
         <attribute name="altitude" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="heading" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="latest" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
@@ -252,13 +252,13 @@
         <attribute name="time" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <relationship name="nodePosition" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeInfoEntity" inverseName="positions" inverseEntity="NodeInfoEntity"/>
     </entity>
-    <entity name="RangeTestConfigEntity" representedClassName="RangeTestConfigEntity" syncable="YES" codeGenerationType="class">
+    <entity name="RangeTestConfigEntity" representedClassName="RangeTestConfigEntity" syncable="YES" codeGenerationType="none">
         <attribute name="enabled" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="save" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="sender" optional="YES" attributeType="Integer 32" usesScalarValueType="YES"/>
         <relationship name="rangeTestConfigNode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeInfoEntity" inverseName="rangeTestConfig" inverseEntity="NodeInfoEntity"/>
     </entity>
-    <entity name="RouteEntity" representedClassName="RouteEntity" syncable="YES" codeGenerationType="class">
+    <entity name="RouteEntity" representedClassName="RouteEntity" syncable="YES" codeGenerationType="none">
         <attribute name="color" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="date" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="id" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
@@ -266,11 +266,11 @@
         <attribute name="notes" optional="YES" attributeType="String"/>
         <relationship name="locations" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="LocationEntity" inverseName="routeLocation" inverseEntity="LocationEntity"/>
     </entity>
-    <entity name="RTTTLConfigEntity" representedClassName="RTTTLConfigEntity" syncable="YES" codeGenerationType="class">
+    <entity name="RTTTLConfigEntity" representedClassName="RTTTLConfigEntity" syncable="YES" codeGenerationType="none">
         <attribute name="ringtone" optional="YES" attributeType="String" maxValueString="228" defaultValueString=""/>
         <relationship name="rtttlConfigNode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeInfoEntity" inverseName="rtttlConfig" inverseEntity="NodeInfoEntity"/>
     </entity>
-    <entity name="SerialConfigEntity" representedClassName="SerialConfigEntity" syncable="YES" codeGenerationType="class">
+    <entity name="SerialConfigEntity" representedClassName="SerialConfigEntity" syncable="YES" codeGenerationType="none">
         <attribute name="baudRate" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="echo" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="enabled" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
@@ -280,7 +280,7 @@
         <attribute name="txd" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <relationship name="serialConfigNode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeInfoEntity" inverseName="serialConfig" inverseEntity="NodeInfoEntity"/>
     </entity>
-    <entity name="TelemetryConfigEntity" representedClassName="TelemetryConfigEntity" syncable="YES" codeGenerationType="class">
+    <entity name="TelemetryConfigEntity" representedClassName="TelemetryConfigEntity" syncable="YES" codeGenerationType="none">
         <attribute name="deviceUpdateInterval" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="environmentDisplayFahrenheit" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="environmentMeasurementEnabled" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
@@ -288,7 +288,7 @@
         <attribute name="environmentUpdateInterval" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <relationship name="telemetryConfigNode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeInfoEntity" inverseName="telemetryConfig" inverseEntity="NodeInfoEntity"/>
     </entity>
-    <entity name="TelemetryEntity" representedClassName="TelemetryEntity" syncable="YES" codeGenerationType="class">
+    <entity name="TelemetryEntity" representedClassName="TelemetryEntity" syncable="YES" codeGenerationType="none">
         <attribute name="airUtilTx" optional="YES" attributeType="Float" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="barometricPressure" optional="YES" attributeType="Float" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="batteryLevel" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
@@ -304,7 +304,7 @@
         <attribute name="voltage" optional="YES" attributeType="Float" defaultValueString="0.0" usesScalarValueType="YES"/>
         <relationship name="nodeTelemetry" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeInfoEntity" inverseName="telemetries" inverseEntity="NodeInfoEntity"/>
     </entity>
-    <entity name="UserEntity" representedClassName="UserEntity" syncable="YES" codeGenerationType="class">
+    <entity name="UserEntity" representedClassName="UserEntity" syncable="YES" codeGenerationType="none">
         <attribute name="hwModel" attributeType="String"/>
         <attribute name="isLicensed" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="longName" attributeType="String"/>
@@ -323,7 +323,7 @@
             <fetchRequest name="fetchedPropertyFetchRequest" entity="MessageEntity" predicateString="((toUser.num == $FETCH_SOURCE.num) OR (fromUser.num == $FETCH_SOURCE.num)) AND toUser != nil AND fromUser != nil AND isEmoji == false AND admin = false"/>
         </fetchedProperty>
     </entity>
-    <entity name="WaypointEntity" representedClassName="WaypointEntity" syncable="YES" codeGenerationType="class">
+    <entity name="WaypointEntity" representedClassName="WaypointEntity" syncable="YES" codeGenerationType="none">
         <attribute name="created" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="expire" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="icon" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
