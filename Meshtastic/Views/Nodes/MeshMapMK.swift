@@ -91,6 +91,7 @@ struct MeshMapMK: View {
 	/// One explicitly selected node track. The main map never renders all node histories.
 	@State private var focusedTrackNodeNum: Int64?
 	@State private var focusedTrackOverlays: [ClusterMapOverlay] = []
+	@State private var appliedFocusedTrackHistoryKey: Int?
 	/// A single trace route drawn on the map (forward solid + return dashed polyline + endpoint
 	/// markers), set when arriving via a `meshtastic:///map?tracerouteId=` deep link.
 	@State private var selectedTraceRoute: TraceRouteEntity?
@@ -190,7 +191,13 @@ struct MeshMapMK: View {
 	private func refreshPositionState(force: Bool = false) {
 		allLatestPositions = fetchLatestPositions()
 		let state = visiblePositionState
-		guard force || state.key != appliedPositionStateKey else { return }
+		let focusedTrackHistoryChanged = focusedTrackHistoryKey() != appliedFocusedTrackHistoryKey
+		guard force || state.key != appliedPositionStateKey else {
+			if focusedTrackHistoryChanged {
+				rebuildFocusedTrackOverlays()
+			}
+			return
+		}
 		appliedPositionStateKey = state.key
 		refreshVisiblePositionSnapshots(from: state.positions)
 		syncFallbackLocation()
@@ -470,7 +477,7 @@ struct MeshMapMK: View {
 	@ViewBuilder private var focusedTrackBanner: some View {
 		if let nodeNum = focusedTrackNodeNum {
 			let name = getNodeInfo(id: nodeNum, context: context)?.user?.shortName ?? nodeNum.toHex()
-			HStack(spacing: 8) {
+			HStack(spacing: NodeTrackAppearance.bannerSpacing) {
 				Image(systemName: "point.3.connected.trianglepath.dotted")
 				Text("Track: \(name)")
 					.font(.callout.weight(.medium))
@@ -480,10 +487,12 @@ struct MeshMapMK: View {
 					Image(systemName: "xmark.circle.fill")
 						.foregroundStyle(.secondary)
 				}
+				.frame(minWidth: NodeTrackAppearance.minimumTapTarget, minHeight: NodeTrackAppearance.minimumTapTarget)
+				.contentShape(Rectangle())
 				.accessibilityLabel("Hide track")
 			}
-			.padding(.horizontal, 14)
-			.padding(.vertical, 8)
+			.padding(.horizontal, NodeTrackAppearance.bannerHorizontalPadding)
+			.padding(.vertical, NodeTrackAppearance.bannerVerticalPadding)
 			.background(.thinMaterial, in: Capsule())
 			.padding(.top, 8)
 		}
@@ -1839,14 +1848,17 @@ struct MeshMapMK: View {
 	private func clearFocusedTrack() {
 		focusedTrackNodeNum = nil
 		focusedTrackOverlays = []
+		appliedFocusedTrackHistoryKey = nil
 	}
 
 	private func rebuildFocusedTrackOverlays() {
 		guard let nodeNum = focusedTrackNodeNum,
 			  let node = getNodeInfo(id: nodeNum, context: context) else {
 			focusedTrackOverlays = []
+			appliedFocusedTrackHistoryKey = nil
 			return
 		}
+		appliedFocusedTrackHistoryKey = focusedTrackHistoryKey(for: node)
 		let coordinates = fullPrecisionTrackCoordinates(for: node)
 		let coordinateIndexes = NodeTrackAppearance.sampledCoordinateIndexes(forCoordinateCount: coordinates.count)
 		let indexes = NodeTrackAppearance.segmentIndexes(forCoordinateCount: coordinateIndexes.count)
@@ -1873,6 +1885,23 @@ struct MeshMapMK: View {
 		node.positionsSortedByTime(context: context, ascending: true, limit: 1_000)
 			.filter(\.isPreciseLocation)
 			.compactMap(\.nodeCoordinate)
+	}
+
+	private func focusedTrackHistoryKey() -> Int? {
+		guard let nodeNum = focusedTrackNodeNum,
+			  let node = getNodeInfo(id: nodeNum, context: context) else { return nil }
+		return focusedTrackHistoryKey(for: node)
+	}
+
+	private func focusedTrackHistoryKey(for node: NodeInfoEntity) -> Int {
+		var hasher = Hasher()
+		for position in node.positionsSortedByTime(context: context, ascending: true, limit: 1_000) where position.isPreciseLocation {
+			hasher.combine(position.time)
+			hasher.combine(position.latitudeI)
+			hasher.combine(position.longitudeI)
+			hasher.combine(position.precisionBits)
+		}
+		return hasher.finalize()
 	}
 
 	private func makePositionSnapshots(from positions: [PositionEntity]) -> [MeshMapPositionSnapshot] {

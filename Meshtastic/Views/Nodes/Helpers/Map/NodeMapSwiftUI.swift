@@ -16,6 +16,8 @@ struct NodeMapContentSignature: Equatable {
 	let nodeNum: Int64
 	let positionCount: Int
 	let lastPositionTime: Date?
+	let trackPositionCount: Int
+	let lastTrackPositionTime: Date?
 	let showNodeHistory: Bool
 	let showRouteLines: Bool
 	let showConvexHull: Bool
@@ -39,6 +41,7 @@ struct NodeMapSwiftUI: View {
 	@Bindable var node: NodeInfoEntity
 	@State var showUserLocation: Bool = false
 	@State private var positions: [PositionEntity] = []
+	@State private var trackPositions: [PositionEntity] = []
 	@State private var totalPositionCount = 0
 	@State private var mostRecentPosition: PositionEntity?
 	/// Map State User Defaults
@@ -145,13 +148,23 @@ struct NodeMapSwiftUI: View {
 	private var mapContentSignature: NodeMapContentSignature {
 		let positionCount = positions.count
 		let lastPositionTime = positions.first?.time
-		return NodeMapContentSignature(nodeNum: node.num, positionCount: positionCount, lastPositionTime: lastPositionTime, showNodeHistory: showNodeHistory, showRouteLines: showRouteLines, showConvexHull: showConvexHull, favorite: node.favorite)
+		return NodeMapContentSignature(
+			nodeNum: node.num,
+			positionCount: positionCount,
+			lastPositionTime: lastPositionTime,
+			trackPositionCount: trackPositions.count,
+			lastTrackPositionTime: trackPositions.first?.time,
+			showNodeHistory: showNodeHistory,
+			showRouteLines: showRouteLines,
+			showConvexHull: showConvexHull,
+			favorite: node.favorite
+		)
 	}
 
 	private var baseMap: some View {
 		NodeMapContentEquatableWrapper(signature: mapContentSignature) {
 			Map(position: $position, bounds: MapCameraBounds(minimumDistance: 0, maximumDistance: .infinity), scope: mapScope) {
-				NodeMapContent(node: node, positions: positions)
+				NodeMapContent(node: node, positions: positions, trackPositions: trackPositions)
 			}
 		}
 		.mapScope(mapScope)
@@ -331,12 +344,15 @@ struct NodeMapSwiftUI: View {
 		let limit = (showNodeHistory || showRouteLines || showConvexHull) ? visiblePositionLimit : 1
 		let latestPositions = node.positionsSortedByTime(context: context, ascending: false, limit: limit)
 		mostRecentPosition = latestPositions.first
-		// Time range affects trail geometry only; the current node pin must always remain visible.
+		// Keep the current pin separate from range-filtered track geometry.
 		let visiblePositions: [PositionEntity]
 		if showNodeHistory || showRouteLines {
-			visiblePositions = latestPositions.filter { $0.latest || selectedTrackTimeRange.includes($0.time, relativeTo: .now) }
+			let now = Date.now
+			trackPositions = selectedTrackTimeRange.filtered(latestPositions, timestamp: \.time, relativeTo: now)
+			visiblePositions = latestPositions.filter { $0.latest || trackPositions.contains($0) }
 		} else {
 			visiblePositions = latestPositions
+			trackPositions = latestPositions
 		}
 		positions = limit == 1 ? visiblePositions : Array(visiblePositions.reversed())
 	}

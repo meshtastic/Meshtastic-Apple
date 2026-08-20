@@ -39,4 +39,8 @@ enum NodeTrackTimeRange: String, CaseIterable, Identifiable {
 		guard let duration else { return true }
 		return date >= now.addingTimeInterval(-duration)
 	}
+
+	func filtered<T>(_ values: [T], timestamp: (T) -> Date?, relativeTo now: Date) -> [T] {
+		values.filter { includes(timestamp($0), relativeTo: now) }
+	}
 }

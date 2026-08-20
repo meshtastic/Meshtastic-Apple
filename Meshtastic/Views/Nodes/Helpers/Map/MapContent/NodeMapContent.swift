@@ -12,6 +12,7 @@ struct NodeMapContent: MapContent {
 
 	@Bindable var node: NodeInfoEntity
 	let positions: [PositionEntity]
+	let trackPositions: [PositionEntity]
 	/// Map State User Defaults
 	@AppStorage("meshMapShowNodeHistory") private var showNodeHistory = false
 	@AppStorage("meshMapShowRouteLines") private var showRouteLines = false
@@ -122,14 +123,14 @@ struct NodeMapContent: MapContent {
 									.renderingMode(.original)
 									.interpolation(.none)
 									.rotationEffect(headingDegrees)
-									.frame(width: 16, height: 16)
+									.frame(width: NodeTrackAppearance.historyArrowMarkerSize, height: NodeTrackAppearance.historyArrowMarkerSize)
 									.allowsHitTesting(false)
 									.accessibilityHidden(true)
 							} else {
 								Image(uiImage: prerenderedHistoryPointCircleImage)
 									.renderingMode(.original)
 									.interpolation(.none)
-									.frame(width: 12, height: 12)
+									.frame(width: NodeTrackAppearance.historyCircleMarkerSize, height: NodeTrackAppearance.historyCircleMarkerSize)
 									.allowsHitTesting(false)
 									.accessibilityHidden(true)
 							}
@@ -144,7 +145,7 @@ struct NodeMapContent: MapContent {
 
 		// Shared coordinate list for Route Lines and Convex Hull
 		let allCoords: [CLLocationCoordinate2D] = (showRouteLines || showConvexHull)
-			? positionArray.filter(\.isPreciseLocation).compactMap(\.nodeCoordinate)
+			? trackPositions.filter(\.isPreciseLocation).compactMap(\.nodeCoordinate)
 			: []
 
 		/// Android-style chronological trail: a solid, age-fading sequence rather than one dashed line.

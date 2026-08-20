@@ -48,6 +48,24 @@ struct NodeTrackTimeRangeTests {
 		#expect(!NodeTrackTimeRange.oneHour.includes(Date(timeIntervalSince1970: 6_399), relativeTo: now))
 	}
 
+	@Test("An out-of-range latest report does not contribute to track geometry")
+	func outOfRangeLatestReportIsExcludedFromTrack() {
+		struct TrackSample {
+			let isLatest: Bool
+			let time: Date
+		}
+		let now = Date(timeIntervalSince1970: 10_000)
+		let samples = [
+			TrackSample(isLatest: false, time: now.addingTimeInterval(-1_800)),
+			TrackSample(isLatest: true, time: now.addingTimeInterval(-3_601))
+		]
+
+		let trackSamples = NodeTrackTimeRange.oneHour.filtered(samples, timestamp: \.time, relativeTo: now)
+
+		#expect(trackSamples.count == 1)
+		#expect(!trackSamples[0].isLatest)
+	}
+
 	@Test("Two-day range includes a report at its boundary")
 	func twoDaysIncludesBoundaryReport() {
 		let now = Date(timeIntervalSince1970: 200_000)

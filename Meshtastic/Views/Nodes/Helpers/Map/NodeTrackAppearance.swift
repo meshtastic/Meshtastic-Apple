@@ -9,6 +9,12 @@ import Foundation
 /// without competing with the current position, while the newest segment reads most strongly.
 enum NodeTrackAppearance {
 	static let maximumRenderedSegments = 100
+	static let historyArrowMarkerSize: CGFloat = 16
+	static let historyCircleMarkerSize: CGFloat = 12
+	static let bannerSpacing: CGFloat = 8
+	static let bannerHorizontalPadding: CGFloat = 14
+	static let bannerVerticalPadding: CGFloat = 8
+	static let minimumTapTarget: CGFloat = 48
 
 	static func sampledCoordinateIndexes(forCoordinateCount coordinateCount: Int) -> [Int] {
 		guard coordinateCount > 1 else { return [] }
