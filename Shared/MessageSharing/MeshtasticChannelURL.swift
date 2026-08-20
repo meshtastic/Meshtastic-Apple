@@ -63,6 +63,7 @@ struct MeshtasticChannelURL: Sendable {
 	static let appScheme = "meshtastic"
 	static let channelPathSegment = "e"
 	static let canonicalPrefix = "https://meshtastic.org/e/"
+	static let maximumPayloadCharacters = 16 * 1_024
 
 	// MARK: - Properties
 
@@ -76,6 +77,7 @@ struct MeshtasticChannelURL: Sendable {
 		case empty
 		case notChannelURL
 		case missingPayload
+		case payloadTooLarge
 		case invalidBase64
 		case invalidChannelSet
 
@@ -87,6 +89,8 @@ struct MeshtasticChannelURL: Sendable {
 				return "This is not a Meshtastic channel link."
 			case .missingPayload:
 				return "Channel link is missing channel data."
+			case .payloadTooLarge:
+				return "Channel link is too large."
 			case .invalidBase64:
 				return "Channel link contains invalid channel data."
 			case .invalidChannelSet:
@@ -214,6 +218,9 @@ struct MeshtasticChannelURL: Sendable {
 	// MARK: - Decoding Helpers
 
 	private static func decodeChannelSet(payload: String) throws -> ChannelSet {
+		guard payload.utf8.count <= maximumPayloadCharacters else {
+			throw ParseError.payloadTooLarge
+		}
 		let decodedString = paddedBase64(payload)
 		guard let decodedData = Data(base64Encoded: decodedString) else {
 			throw ParseError.invalidBase64
