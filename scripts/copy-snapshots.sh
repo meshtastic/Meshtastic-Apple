@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # scripts/copy-snapshots.sh
-# Copies only doc-referenced snapshot PNGs into the bundled docs output directory.
+# Copies only doc-referenced screenshots into the bundled docs output directory.
 # Usage: bash scripts/copy-snapshots.sh --output Meshtastic/Resources/docs/assets/screenshots
 # See specs/003-app-docs-markdown/contracts/ci-workflow-contract.md for full interface.
 
@@ -26,7 +26,7 @@ SOURCE_DIR="$DOCS_DIR/assets/screenshots"
 mkdir -p "$OUTPUT_DIR"
 
 # Scan markdown files for referenced screenshot filenames
-referenced=$(grep -roh 'screenshots/[^")*]*\.png' "$DOCS_DIR" --include='*.md' \
+referenced=$(grep -rohE 'screenshots/[^")*]*\.(png|jpe?g)' "$DOCS_DIR" --include='*.md' \
 	| sed 's|screenshots/||' \
 	| sort -u)
 
