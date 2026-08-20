@@ -135,6 +135,10 @@ struct Channels: View {
 							} else if channelKey.count == 44 {
 								channelKeySize = 32
 							}
+							if node.user?.isLicensed == true {
+								channelKeySize = 0
+								channelKey = ""
+							}
 							channelName = channel.name ?? ""
 							uplink = channel.uplinkEnabled
 							downlink = channel.downlinkEnabled
@@ -153,8 +157,9 @@ struct Channels: View {
 								positionsEnabled = false
 							} else {
 								if channelKey == "AQ==" {
-									preciseLocation = false
-									if (positionPrecision > 0 && positionPrecision < 11) || positionPrecision > 14 {
+									let retainsHamPreciseLocation = node.user?.isLicensed == true && positionPrecision == 32
+									preciseLocation = retainsHamPreciseLocation
+									if !retainsHamPreciseLocation && ((positionPrecision > 0 && positionPrecision < 11) || positionPrecision > 14) {
 										positionPrecision = 14
 									}
 								} else if positionPrecision == 32 {
@@ -183,7 +188,7 @@ struct Channels: View {
 							return Int(ch.index)
 						})
 						let firstChannelIndex = firstMissingChannelIndex(channelIndexes ?? [])
-						channelKeySize = 16
+						channelKeySize = node.user?.isLicensed == true ? 0 : 16
 						let key = generateChannelKey(size: channelKeySize)
 						channelName = ""
 						channelIndex = Int32(firstChannelIndex)
@@ -223,7 +228,22 @@ struct Channels: View {
 					.font(.largeTitle)
 					.padding()
 				#endif
-				ChannelForm(channelIndex: $channelIndex, channelName: $channelName, channelKeySize: $channelKeySize, channelKey: $channelKey, channelRole: $channelRole, uplink: $uplink, downlink: $downlink, positionPrecision: $positionPrecision, preciseLocation: $preciseLocation, positionsEnabled: $positionsEnabled, hasChanges: $hasChanges, hasValidKey: $hasValidKey, supportedVersion: $supportedVersion)
+				ChannelForm(
+					channelIndex: $channelIndex,
+					channelName: $channelName,
+					channelKeySize: $channelKeySize,
+					channelKey: $channelKey,
+					channelRole: $channelRole,
+					uplink: $uplink,
+					downlink: $downlink,
+					positionPrecision: $positionPrecision,
+					preciseLocation: $preciseLocation,
+					positionsEnabled: $positionsEnabled,
+					hasChanges: $hasChanges,
+					hasValidKey: $hasValidKey,
+					supportedVersion: $supportedVersion,
+					isHamMode: node.user?.isLicensed ?? false
+				)
 					.presentationDetents([.large])
 					#if !targetEnvironment(macCatalyst)
 					.presentationDragIndicator(.visible)
@@ -238,14 +258,15 @@ struct Channels: View {
 						channel.role = ChannelRoles(rawValue: channelRole)?.protoEnumValue() ?? .secondary
 							channel.index = channelIndex
 							channel.settings.name = channelName
-							channel.settings.psk = Data(base64Encoded: channelKey) ?? Data()
+							let channelPSK = node.user?.isLicensed == true ? Data() : (Data(base64Encoded: channelKey) ?? Data())
+							channel.settings.psk = channelPSK
 							channel.settings.uplinkEnabled = uplink
 							channel.settings.downlinkEnabled = downlink
 							channel.settings.moduleSettings.positionPrecision = UInt32(positionPrecision)
 							selectedChannel!.role = Int32(channelRole)
 							selectedChannel!.index = channelIndex
 							selectedChannel!.name = channelName
-							selectedChannel!.psk = Data(base64Encoded: channelKey) ?? Data()
+							selectedChannel!.psk = channelPSK
 							selectedChannel!.uplinkEnabled = uplink
 							selectedChannel!.downlinkEnabled = downlink
 							selectedChannel!.positionPrecision = Int32(positionPrecision)

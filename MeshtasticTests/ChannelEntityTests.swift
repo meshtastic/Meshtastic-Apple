@@ -45,4 +45,63 @@ final class ChannelEntityTests: XCTestCase {
         XCTAssertEqual(fetched.first?.name, "Test Channel")
         XCTAssertTrue(fetched.first?.uplinkEnabled ?? false)
     }
+
+	func testUnencryptedChannelAllowsPreciseLocationOnlyInHamMode() {
+		XCTAssertFalse(ChannelPreciseLocationPolicy.canEnablePreciseLocation(
+			channelKeySize: 0,
+			channelRole: 1,
+			isHamMode: false
+		))
+		XCTAssertTrue(ChannelPreciseLocationPolicy.canEnablePreciseLocation(
+			channelKeySize: 0,
+			channelRole: 1,
+			isHamMode: true
+		))
+	}
+
+	func testDefaultKeyChannelCannotEnablePreciseLocationInHamMode() {
+		XCTAssertFalse(ChannelPreciseLocationPolicy.canEnablePreciseLocation(
+			channelKeySize: -1,
+			channelRole: 1,
+			isHamMode: true
+		))
+	}
+
+	func testDisabledChannelCannotEnablePreciseLocation() {
+		XCTAssertFalse(ChannelPreciseLocationPolicy.canEnablePreciseLocation(
+			channelKeySize: 16,
+			channelRole: 0,
+			isHamMode: true
+		))
+	}
+
+	func testHamModeForcesAnEmptyChannelKey() {
+		XCTAssertEqual(ChannelPreciseLocationPolicy.requiredChannelKeySize(
+			currentKeySize: 16,
+			isHamMode: true
+		), 0)
+		XCTAssertEqual(ChannelPreciseLocationPolicy.requiredChannelKeySize(
+			currentKeySize: 16,
+			isHamMode: false
+		), 16)
+	}
+
+	func testEncryptedChannelAllowsPreciseLocationWithoutHamMode() {
+		XCTAssertTrue(ChannelPreciseLocationPolicy.canEnablePreciseLocation(
+			channelKeySize: 16,
+			channelRole: 1,
+			isHamMode: false
+		))
+	}
+
+	func testUnencryptedHamChannelRequiresAcknowledgementBeforePreciseLocation() {
+		XCTAssertTrue(ChannelPreciseLocationPolicy.requiresPrivacyAcknowledgement(
+			channelKeySize: 0,
+			isHamMode: true
+		))
+		XCTAssertFalse(ChannelPreciseLocationPolicy.requiresPrivacyAcknowledgement(
+			channelKeySize: 0,
+			isHamMode: false
+		))
+	}
 }

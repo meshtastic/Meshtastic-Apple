@@ -1509,7 +1509,8 @@ struct ChannelFormSnapshotTests {
 			positionsEnabled: .constant(true),
 			hasChanges: .constant(false),
 			hasValidKey: .constant(true),
-			supportedVersion: .constant(true)
+			supportedVersion: .constant(true),
+			isHamMode: false
 		)
 		await assertViewSnapshot(of: view, width: 390, height: 700, named: "channelForm_primary", forDocs: true)
 	}
