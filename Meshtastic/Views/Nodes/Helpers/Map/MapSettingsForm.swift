@@ -19,6 +19,7 @@ struct MapSettingsForm: View {
 	@State private var uploadErrorMessage = ""
 	@AppStorage("meshMapShowNodeHistory") private var nodeHistory = false
 	@AppStorage("meshMapShowRouteLines") private var enableMapRouteLines = false
+	@AppStorage("nodeMapTrackTimeRange") private var trackTimeRangeRawValue = NodeTrackTimeRange.all.rawValue
 	@AppStorage("enableMapConvexHull") private var convexHull = false
 	@AppStorage("enableMapWaypoints") private var enableMapWaypoints = true
 	@AppStorage("enableMapUserLocation") private var enableMapUserLocation = true
@@ -97,11 +98,16 @@ struct MapSettingsForm: View {
 					}
 					if !meshMap {
 						Toggle(isOn: $nodeHistory) {
-							Label("Node History", systemImage: "building.columns.fill")
+							Label("Track Points", systemImage: "point.3.connected.trianglepath.dotted")
 						}
 						.toggleStyle(.switch)
 						Toggle(isOn: $enableMapRouteLines) {
-							Label("Route Lines", systemImage: "road.lanes")
+							Label("Track Line", systemImage: "road.lanes")
+						}
+						Picker("Track Range", selection: $trackTimeRangeRawValue) {
+							ForEach(NodeTrackTimeRange.allCases) { range in
+								Text(range.title).tag(range.rawValue)
+							}
 						}
 
 					}
