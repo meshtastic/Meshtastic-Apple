@@ -40,11 +40,12 @@ PY
   pio run -e s140_nrf52_611_softdevice -e s140_nrf52_730_softdevice
 )
 
-mkdir -p "$output_dir"
+staged_output_dir="$work_dir/output"
+mkdir -p "$staged_output_dir"
 cp "$work_dir/source/.pio/build/s140_nrf52_611_softdevice/firmware.uf2" \
-  "$output_dir/nrf52-factory-erase-s140-6.1.1-ios.uf2"
+  "$staged_output_dir/nrf52-factory-erase-s140-6.1.1-ios.uf2"
 cp "$work_dir/source/.pio/build/s140_nrf52_730_softdevice/firmware.uf2" \
-  "$output_dir/nrf52-factory-erase-s140-7.3.0-ios.uf2"
+  "$staged_output_dir/nrf52-factory-erase-s140-7.3.0-ios.uf2"
 
 verify_hash() {
   local expected="$1"
@@ -60,8 +61,14 @@ verify_hash() {
 }
 
 verify_hash "$EXPECTED_S140_611_SHA256" \
-  "$output_dir/nrf52-factory-erase-s140-6.1.1-ios.uf2"
+  "$staged_output_dir/nrf52-factory-erase-s140-6.1.1-ios.uf2"
 verify_hash "$EXPECTED_S140_730_SHA256" \
+  "$staged_output_dir/nrf52-factory-erase-s140-7.3.0-ios.uf2"
+
+mkdir -p "$output_dir"
+cp "$staged_output_dir/nrf52-factory-erase-s140-6.1.1-ios.uf2" \
+  "$output_dir/nrf52-factory-erase-s140-6.1.1-ios.uf2"
+cp "$staged_output_dir/nrf52-factory-erase-s140-7.3.0-ios.uf2" \
   "$output_dir/nrf52-factory-erase-s140-7.3.0-ios.uf2"
 
 echo "Rebuilt and verified iOS-compatible nRF52 factory-erase UF2 images."

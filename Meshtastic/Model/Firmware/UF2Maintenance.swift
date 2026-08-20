@@ -1,3 +1,5 @@
+// MARK: UF2Maintenance.swift
+
 import CryptoKit
 import Foundation
 
@@ -179,7 +181,7 @@ enum UF2MaintenanceCatalog {
 	static let expectedOTAFIXVersion = "0.9.2-OTAFIX2.2-BP1.4"
 	private static let otafixRelease = expectedOTAFIXVersion
 	private static let otafixBase = URL(
-		string: "https://github.com/meshtastic/Adafruit_nRF52_Bootloader_OTAFIX/releases/download/0.9.2-OTAFIX2.2-BP1.4"
+		string: "https://github.com/meshtastic/Adafruit_nRF52_Bootloader_OTAFIX/releases/download/\(expectedOTAFIXVersion)"
 	)!
 	private static let nRF52840FamilyID: UInt32 = 0xADA5_2840
 
@@ -235,7 +237,7 @@ enum UF2MaintenanceCatalog {
 	) throws -> UF2MaintenanceArtifact {
 		switch request {
 		case .bootloaderUpgrade:
-			guard let artifact = otafixByBoardID[volume.boardID.trimmingCharacters(in: .whitespacesAndNewlines)] else {
+			guard let artifact = otafixByBoardID[volume.boardID] else {
 				throw UF2MaintenanceError.unknownBoardID(volume.boardID)
 			}
 			return artifact
@@ -289,11 +291,12 @@ enum UF2MaintenanceArtifactLoader {
 				var request = URLRequest(url: url)
 				request.timeoutInterval = 60
 				let (temporaryURL, response) = try await session.download(for: request)
+				defer { try? FileManager.default.removeItem(at: temporaryURL) }
 				guard let http = response as? HTTPURLResponse, (200...299).contains(http.statusCode) else {
 					throw URLError(.badServerResponse)
 				}
-				let byteCount = try temporaryURL.resourceValues(forKeys: [.fileSizeKey]).fileSize ?? 0
-				guard byteCount <= UF2MaintenanceArtifactInspector.maximumByteCount else {
+				guard let byteCount = try temporaryURL.resourceValues(forKeys: [.fileSizeKey]).fileSize,
+					byteCount <= UF2MaintenanceArtifactInspector.maximumByteCount else {
 					throw UF2FirmwareValidationError.malformedUF2(
 						String(localized: "The maintenance image is larger than 32 MB.")
 					)

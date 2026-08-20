@@ -1,3 +1,5 @@
+// MARK: UF2MaintenanceIO.swift
+
 import CryptoKit
 import Foundation
 
@@ -30,13 +32,6 @@ enum UF2MaintenanceApplicationInspector {
 		fileURL: URL,
 		descriptor: UF2MaintenanceApplicationDescriptor
 	) throws -> (Data, UF2FirmwareArtifactIdentity) {
-		let data: Data
-		do {
-			data = try Data(contentsOf: fileURL, options: .mappedIfSafe)
-		} catch {
-			throw UF2FirmwareValidationError.unreadableFirmware(error.localizedDescription)
-		}
-		let identity = try UF2MaintenanceArtifactInspector.inspect(data: data)
 		guard descriptor.architecture == Architecture.nrf52840.rawValue else {
 			throw UF2FirmwareValidationError.unsupportedArchitecture(descriptor.architecture)
 		}
@@ -45,6 +40,13 @@ enum UF2MaintenanceApplicationInspector {
 				String(localized: "The filename does not match the selected firmware target.")
 			)
 		}
+		let data: Data
+		do {
+			data = try Data(contentsOf: fileURL, options: .mappedIfSafe)
+		} catch {
+			throw UF2FirmwareValidationError.unreadableFirmware(error.localizedDescription)
+		}
+		let identity = try UF2MaintenanceArtifactInspector.inspect(data: data)
 		guard identity.familyID == nRF52840FamilyID else {
 			throw UF2FirmwareValidationError.malformedUF2(
 				String(localized: "The application has the wrong UF2 family ID.")
@@ -154,7 +156,7 @@ enum UF2MaintenanceVolumeIO {
 		}
 		return UF2VolumeIdentity(
 			bootloaderVersion: String(firstLine).trimmingCharacters(in: .whitespacesAndNewlines),
-			boardID: boardID,
+			boardID: boardID.trimmingCharacters(in: .whitespacesAndNewlines),
 			softDevice: value(for: "SoftDevice", in: infoText)
 		)
 	}

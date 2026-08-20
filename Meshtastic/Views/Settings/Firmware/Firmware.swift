@@ -150,6 +150,7 @@ private struct FirmwareContentView: View {
 	// For row-level install sheet
 	@State var rowInstallation: RowInstallation?
 	@State private var maintenanceInstallation: MaintenanceInstallation?
+	@State private var didAutoPresentRecovery = false
 	@State private var pendingMaintenanceConfirmation: (FirmwareFile, UF2MaintenanceRequest)?
 	@State private var showMaintenanceConfirmation = false
 	@State private var pendingMaintenanceRecovery = UF2MaintenanceRecoveryStore.pendingRecord
@@ -316,7 +317,10 @@ private struct FirmwareContentView: View {
 		}
 		.onAppear {
 			pendingMaintenanceRecovery = UF2MaintenanceRecoveryStore.pendingRecord
-			guard maintenanceInstallation == nil, let pendingMaintenanceRecovery else { return }
+			guard !didAutoPresentRecovery,
+				maintenanceInstallation == nil,
+				let pendingMaintenanceRecovery else { return }
+			didAutoPresentRecovery = true
 			maintenanceInstallation = MaintenanceInstallation(record: pendingMaintenanceRecovery)
 		}
 		.onReceive(NotificationCenter.default.publisher(for: .uf2MaintenanceRecoveryChanged)) { _ in
@@ -692,6 +696,8 @@ private struct FirmwareRow: View {
 							}
 						} label: {
 							Image(systemName: "ellipsis.circle")
+								.frame(minWidth: 48, minHeight: 48)
+								.contentShape(Rectangle())
 						}
 						.accessibilityLabel("Firmware maintenance")
 					}

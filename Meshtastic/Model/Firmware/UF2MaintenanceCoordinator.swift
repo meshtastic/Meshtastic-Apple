@@ -1,4 +1,5 @@
 import Foundation
+import OSLog
 
 struct UF2MaintenanceRecoveryRecord: Codable, Equatable {
 	enum Phase: String, Codable {
@@ -45,7 +46,13 @@ final class UF2MaintenanceRecoveryStore: UF2MaintenanceRecoveryStoring {
 
 	func load() -> UF2MaintenanceRecoveryRecord? {
 		guard let data = defaults.data(forKey: key) else { return nil }
-		return try? JSONDecoder().decode(UF2MaintenanceRecoveryRecord.self, from: data)
+		do {
+			return try JSONDecoder().decode(UF2MaintenanceRecoveryRecord.self, from: data)
+		} catch {
+			Logger.services.error("Discarding unreadable UF2 maintenance recovery record: \(error.localizedDescription, privacy: .public)")
+			defaults.removeObject(forKey: key)
+			return nil
+		}
 	}
 
 	func save(_ record: UF2MaintenanceRecoveryRecord) throws {
@@ -115,7 +122,9 @@ final class UF2MaintenanceCoordinator: ObservableObject {
 	var blocksDismissal: Bool {
 		state == .loadingMaintenance || state == .writing || state == .awaitingApplicationWrite
 	}
-	var canStopTracking: Bool { record?.phase == .awaitingReconnect && state != .writing }
+	var canStopTracking: Bool {
+		recordMatchesInitialTarget && record?.phase == .awaitingReconnect && state != .writing
+	}
 
 	func prepare() async {
 		guard record == nil else { return }
@@ -214,10 +223,14 @@ final class UF2MaintenanceCoordinator: ObservableObject {
 	}
 
 	func cancelBeforeWrite() {
-		guard record?.phase == .prepared else { return }
+		guard recordMatchesInitialTarget, record?.phase == .prepared else { return }
 		store.clear()
 		record = nil
 		state = .idle
+	}
+
+	private var recordMatchesInitialTarget: Bool {
+		record?.descriptor.platformioTarget == initialDescriptor.platformioTarget
 	}
 
 	private func writeMaintenance(

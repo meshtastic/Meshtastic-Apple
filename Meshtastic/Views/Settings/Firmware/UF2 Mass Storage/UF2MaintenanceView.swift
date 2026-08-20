@@ -18,14 +18,6 @@ struct UF2MaintenanceView: View {
 	@State private var isSelectingVolume = false
 	@State private var showStopTrackingConfirmation = false
 
-	init(firmwareFile: FirmwareFile, node: NodeInfoEntity, request: UF2MaintenanceRequest) {
-		self.init(
-			descriptor: UF2MaintenanceApplicationDescriptor(firmwareFile: firmwareFile),
-			node: node,
-			request: request
-		)
-	}
-
 	init(
 		descriptor: UF2MaintenanceApplicationDescriptor,
 		node: NodeInfoEntity,
@@ -75,6 +67,8 @@ struct UF2MaintenanceView: View {
 			allowsMultipleSelection: false
 		) { result in
 			handleFolderSelection(result)
+		} onCancellation: {
+			coordinator.volumeSelectionCancelled()
 		}
 		.task {
 			setIdleTimerDisabled(true)
@@ -237,7 +231,9 @@ struct UF2MaintenanceView: View {
 	}
 
 	private func liveNode() -> NodeInfoEntity? {
-		getNodeInfo(id: accessoryManager.activeDeviceNum ?? 0, context: context)
+		guard let activeDeviceNum = accessoryManager.activeDeviceNum,
+			activeDeviceNum == node.num else { return nil }
+		return getNodeInfo(id: activeDeviceNum, context: context)
 	}
 
 	private func setIdleTimerDisabled(_ disabled: Bool) {

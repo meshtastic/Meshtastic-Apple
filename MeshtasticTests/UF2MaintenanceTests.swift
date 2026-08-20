@@ -173,6 +173,7 @@ struct UF2MaintenanceTests {
 		await coordinator.write(to: folder)
 		#expect(coordinator.state == .awaitingApplicationWrite)
 		#expect(store.record?.phase == .awaitingApplicationWrite)
+		#expect(try uf2Files(in: folder) == [maintenanceData])
 		#expect(coordinator.blocksDismissal)
 
 		try writeVolumeInfo(
@@ -183,6 +184,7 @@ struct UF2MaintenanceTests {
 		await coordinator.write(to: folder)
 		#expect(coordinator.state == .awaitingReconnect)
 		#expect(store.record?.phase == .awaitingReconnect)
+		#expect(Set(try uf2Files(in: folder)) == Set([maintenanceData, applicationData]))
 		#expect(store.record?.maintenanceVerified == true)
 
 		coordinator.verify(reportedFirmwareVersion: "2.8.0.597f676")
@@ -222,11 +224,13 @@ extension UF2MaintenanceTests {
 		await coordinator.write(to: folder)
 		#expect(coordinator.state == .awaitingApplicationWrite)
 		#expect(store.record?.phase == .awaitingApplicationWrite)
+		#expect(try uf2Files(in: folder) == [maintenanceData])
 
 		coordinator.selectVolume()
 		await coordinator.write(to: folder)
 		#expect(coordinator.state == .awaitingReconnect)
 		#expect(store.record?.phase == .awaitingReconnect)
+		#expect(Set(try uf2Files(in: folder)) == Set([maintenanceData, applicationData]))
 
 		coordinator.verify(reportedFirmwareVersion: "2.8.0.597f676")
 		guard case .completed(let warnings) = coordinator.state else {
@@ -436,6 +440,54 @@ extension UF2MaintenanceTests {
 		#expect(store.load() == record)
 		store.clear()
 		#expect(store.load() == nil)
+
+		defaults.set(Data("invalid".utf8), forKey: "pendingUF2MaintenanceRecovery")
+		#expect(store.load() == nil)
+		#expect(defaults.data(forKey: "pendingUF2MaintenanceRecovery") == nil)
+	}
+
+	@MainActor
+	@Test("Foreign maintenance recovery cannot be cleared")
+	func foreignRecoveryCannotBeCleared() throws {
+		let identity = try UF2MaintenanceArtifactInspector.inspect(
+			data: makeUF2(blockCount: 1, firstTargetAddress: 0x0002_7000)
+		)
+		let foreignDescriptor = UF2MaintenanceApplicationDescriptor(
+			localURL: descriptor.localURL,
+			fileName: "firmware-rak4631-2.8.0.uf2",
+			version: descriptor.version,
+			platformioTarget: "rak4631",
+			architecture: descriptor.architecture
+		)
+		let foreignRecord = UF2MaintenanceRecoveryRecord(
+			id: UUID(),
+			createdAt: Date(),
+			request: .bootloaderUpgrade,
+			descriptor: foreignDescriptor,
+			applicationArtifact: identity,
+			phase: .prepared,
+			volume: nil,
+			maintenanceArtifact: nil,
+			maintenanceCopyError: nil,
+			applicationCopyError: nil,
+			maintenanceVerified: nil
+		)
+		let store = MemoryStore(record: foreignRecord)
+		let coordinator = UF2MaintenanceCoordinator(
+			descriptor: descriptor,
+			request: .bootloaderUpgrade,
+			store: store
+		)
+
+		coordinator.cancelBeforeWrite()
+		#expect(store.record == foreignRecord)
+		#expect(!coordinator.canStopTracking)
+	}
+
+	private func uf2Files(in folder: URL) throws -> [Data] {
+		try FileManager.default.contentsOfDirectory(at: folder, includingPropertiesForKeys: nil)
+			.filter { $0.pathExtension.lowercased() == "uf2" }
+			.map { try Data(contentsOf: $0) }
 	}
 
 	private func makeVolume() -> UF2VolumeIdentity {
