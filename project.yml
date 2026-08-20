@@ -538,6 +538,7 @@ targets:
         excludes:
           - "Info.plist"
           - "MeshtasticMessages.entitlements"
+      - path: "Localizable.xcstrings"
     dependencies:
       - package: MeshtasticProtobufs
         product: MeshtasticProtobufs

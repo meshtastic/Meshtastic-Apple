@@ -57,6 +57,7 @@ struct AddContactConfirmationView: View {
 					Label("Add & Share Mine", systemImage: "arrow.left.arrow.right.circle.fill")
 				}
 				.buttonStyle(.borderedProminent)
+				.frame(minWidth: 48, minHeight: 48)
 				.disabled(isAdding || MeshShareStore.load() == nil)
 				Button {
 					addContact()
@@ -64,6 +65,7 @@ struct AddContactConfirmationView: View {
 					Label("Just Add Contact", systemImage: "person.crop.circle.badge.plus")
 				}
 				.buttonStyle(.bordered)
+				.frame(minWidth: 48, minHeight: 48)
 				.disabled(isAdding)
 			} else {
 				Button {
@@ -72,9 +74,11 @@ struct AddContactConfirmationView: View {
 					Label("Add Contact", systemImage: "person.crop.circle.badge.plus")
 				}
 				.buttonStyle(.borderedProminent)
+				.frame(minWidth: 48, minHeight: 48)
 				.disabled(isAdding)
 			}
 			Button("Cancel") { dismiss() }
+				.frame(minWidth: 48, minHeight: 48)
 				.padding(.bottom)
 		}
 		.padding()
@@ -126,7 +130,7 @@ private struct ContactReplyActivityView: UIViewControllerRepresentable {
 	func makeUIViewController(context: Context) -> UIActivityViewController {
 		UIActivityViewController(
 			activityItems: [
-				"Here's my Meshtastic contact — let's stay connected on the mesh.",
+				String(localized: "Here's my Meshtastic contact — let's stay connected on the mesh."),
 				url
 			],
 			applicationActivities: nil

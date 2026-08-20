@@ -32,6 +32,7 @@
 		54D8BBD62304C5917AEE0C2B /* DatadogRUM in Frameworks */ = {isa = PBXBuildFile; productRef = E96998AD4B79F29AF1E2A6D2 /* DatadogRUM */; };
 		5631740093D563F017DA31D7 /* MeshtasticProtobufs in Frameworks */ = {isa = PBXBuildFile; productRef = 52CBDF2188BAF9E2FB8B10A1 /* MeshtasticProtobufs */; };
 		563422694131128F504A5E05 /* Color.swift in Sources */ = {isa = PBXBuildFile; fileRef = E94055F00D3E29383E92FF74 /* Color.swift */; };
+		597DA0CDA9930BC262A72FCA /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 26351F51CD01C94D8D82486A /* Localizable.xcstrings */; };
 		5C31297EDE4B7294ECE538F4 /* AppIconDebug.icon in Resources */ = {isa = PBXBuildFile; fileRef = 6D159B66B1877A7506D1AB20 /* AppIconDebug.icon */; };
 		62C11A4D1644062EAD31615F /* Settings.bundle in Resources */ = {isa = PBXBuildFile; fileRef = F15A1577564640951AD3EA40 /* Settings.bundle */; };
 		66EFBB4E473C796ACAFF58C2 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = 6776764BA24154B603C76018 /* AppIcon.icon */; };
@@ -1185,6 +1186,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				597DA0CDA9930BC262A72FCA /* Localizable.xcstrings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
