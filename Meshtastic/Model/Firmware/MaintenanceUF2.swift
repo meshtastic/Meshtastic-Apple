@@ -52,7 +52,11 @@ extension Data {
 /// undeclared key is simply ignored by `JSONDecoder` rather than needing an optional placeholder.
 private struct MaintenanceUf2ManifestPayload: Decodable {
 	struct Asset: Decodable {
-		let board: String
+		// OTAFIX's own release-asset board slug (e.g. "wiscore_rak4631_board") — deliberately NOT
+		// named the same as Meshtastic's platformioTarget (e.g. "rak4631", in
+		// otafixSupportedTargets below): the two vocabularies differ per board, and a shared name
+		// here would invite exactly the confusion this file's own doc comments already spell out.
+		let otafixBoardSlug: String
 		let sha256: String
 	}
 
@@ -67,7 +71,7 @@ private struct MaintenanceUf2ManifestPayload: Decodable {
 	func imagesByBoardID() -> [String: MaintenanceUF2] {
 		var result: [String: MaintenanceUF2] = [:]
 		for (boardID, asset) in otafixByBoardId {
-			let name = "update-\(asset.board)_bootloader-\(otafixReleaseTag)_nosd.uf2"
+			let name = "update-\(asset.otafixBoardSlug)_bootloader-\(otafixReleaseTag)_nosd.uf2"
 			guard let url = URL(string: "\(otafixBase)/\(name)") else { continue }
 			result[boardID] = MaintenanceUF2(url: url, fileName: name, sha256: asset.sha256)
 		}
@@ -165,7 +169,7 @@ enum OTAFIXBootloader {
 	/// matching `MaintenanceUf2ManifestSeed.rawJSON`'s digest exactly (asserted by
 	/// `MaintenanceUf2ManifestSeedTests`). A fetch whose bytes don't hash to this is rejected by
 	/// `OTAFIXManifestStore.apply` — bump this alongside a bundled-seed update, never separately.
-	static let expectedManifestSHA256 = "cbd50ab3fb076af3adf2ccbd5fb06936eb005b612225fa71aec9ca7dd14a3cf9"
+	static let expectedManifestSHA256 = "73315bced19dc4ed31029a6c734b24420c96673f1666b9d046f96b55f629dc10"
 
 	/// Release the currently-active pinned images were audited against.
 	static var releaseTag: String { OTAFIXManifestStore.shared.releaseTag }
