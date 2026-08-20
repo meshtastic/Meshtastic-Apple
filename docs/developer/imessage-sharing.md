@@ -11,6 +11,13 @@ All bundled sticker and Messages icon artwork comes directly from the official
 [`meshtastic/design`](https://github.com/meshtastic/design) repository. The
 extension does not use AI-generated or redrawn brand artwork.
 
+## Screenshots
+
+| Contact and channel cards in Messages | Contact exchange composer |
+| --- | --- |
+| ![Received Meshtastic contact card and stickers in Messages](../assets/screenshots/imessage-contact-card.jpg) | ![Contact exchange composer](../assets/screenshots/imessage-contact-exchange.png) |
+| ![Received selected-channel card and contact card in Messages](../assets/screenshots/imessage-channel-card.jpg) | ![Channel-sharing composer with Replace selected](../assets/screenshots/imessage-channel-sharing.png) |
+
 ## Recent radio snapshot
 
 After configuration or node-database synchronization completes, the main app
