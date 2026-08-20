@@ -51,7 +51,7 @@ struct NodeMapContent: MapContent {
 		let pf = PositionFlags(rawValue: Int(node.metadata?.positionFlags ?? 771))
 
 		/// Node Annotations
-		ForEach(positionArray, id: \.id) { position in
+		ForEach(Array(positionArray.enumerated()), id: \.element.id) { index, position in
 			let headingDegrees = Angle.degrees(Double(position.heading))
 			/// Reduced Precision Map Circle
 			if position.latest && position.isReducedPrecision {
@@ -110,28 +110,31 @@ struct NodeMapContent: MapContent {
 					.annotationTitles(.automatic)
 					.annotationSubtitles(.automatic)
 			}
-			/// Node History
+			/// Track points
 			if showNodeHistory {
 				// Having showNodeHistory enabled can be quite slow if there are thousands of history points.
-				if position.latest == false && node.favorite {
+				if position.latest == false && position.isPreciseLocation {
 					let headingDegrees = Angle.degrees(Double(position.heading))
 					Annotation("", coordinate: position.nodeCoordinate ?? LocationsHandler.DefaultLocation) {
-						if pf.contains(.Heading) {
-							Image(uiImage: prerenderedHistoryPointArrowImage)
-								.renderingMode(.original)
-								.interpolation(.none)
-								.rotationEffect(headingDegrees)
-								.frame(width: 16, height: 16)
-								.allowsHitTesting(false)
-								.accessibilityHidden(true)
-						} else {
-							Image(uiImage: prerenderedHistoryPointCircleImage)
-								.renderingMode(.original)
-								.interpolation(.none)
-								.frame(width: 12, height: 12)
-								.allowsHitTesting(false)
-								.accessibilityHidden(true)
+						Group {
+							if pf.contains(.Heading) {
+								Image(uiImage: prerenderedHistoryPointArrowImage)
+									.renderingMode(.original)
+									.interpolation(.none)
+									.rotationEffect(headingDegrees)
+									.frame(width: 16, height: 16)
+									.allowsHitTesting(false)
+									.accessibilityHidden(true)
+							} else {
+								Image(uiImage: prerenderedHistoryPointCircleImage)
+									.renderingMode(.original)
+									.interpolation(.none)
+									.frame(width: 12, height: 12)
+									.allowsHitTesting(false)
+									.accessibilityHidden(true)
+							}
 						}
+						.opacity(NodeTrackAppearance.opacity(forSegmentAt: index, totalSegments: positionArray.count))
 					}
 					.annotationTitles(.hidden)
 					.annotationSubtitles(.hidden)
@@ -140,20 +143,21 @@ struct NodeMapContent: MapContent {
 		}
 
 		// Shared coordinate list for Route Lines and Convex Hull
-		let allCoords: [CLLocationCoordinate2D] = (showRouteLines || showConvexHull) ? positionArray.compactMap(\.nodeCoordinate) : []
+		let allCoords: [CLLocationCoordinate2D] = (showRouteLines || showConvexHull)
+			? positionArray.filter(\.isPreciseLocation).compactMap(\.nodeCoordinate)
+			: []
 
-		/// Route Lines
+		/// Android-style chronological trail: a solid, age-fading sequence rather than one dashed line.
 		if showRouteLines {
-			let gradient = LinearGradient(
-				colors: [Color(nodeColor.lighter().lighter().lighter()), Color(nodeColor.lighter()), Color(nodeColor)],
-				startPoint: .leading, endPoint: .trailing
-			)
-			let dashed = StrokeStyle(
-				lineWidth: 3,
-				lineCap: .round, lineJoin: .round, dash: [10, 10]
-			)
-			MapPolyline(coordinates: allCoords)
-				.stroke(gradient, style: dashed)
+			let sampledIndexes = NodeTrackAppearance.sampledCoordinateIndexes(forCoordinateCount: allCoords.count)
+			let segmentCount = max(sampledIndexes.count - 1, 0)
+			ForEach(0..<segmentCount, id: \.self) { index in
+				MapPolyline(coordinates: [allCoords[sampledIndexes[index]], allCoords[sampledIndexes[index + 1]]])
+					.stroke(
+						Color(nodeColor).opacity(NodeTrackAppearance.opacity(forSegmentAt: index, totalSegments: segmentCount)),
+						style: StrokeStyle(lineWidth: 4, lineCap: .round, lineJoin: .round)
+					)
+			}
 		}
 
 		/// Convex Hull

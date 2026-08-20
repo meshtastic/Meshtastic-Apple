@@ -45,6 +45,7 @@ struct NodeMapSwiftUI: View {
 	@AppStorage("meshMapShowNodeHistory") private var showNodeHistory = false
 	@AppStorage("meshMapShowRouteLines") private var showRouteLines = false
 	@AppStorage("enableMapConvexHull") private var showConvexHull = false
+	@AppStorage("nodeMapTrackTimeRange") private var trackTimeRangeRawValue = NodeTrackTimeRange.all.rawValue
 	@AppStorage("enableMapTraffic") private var showTraffic: Bool = false
 	@AppStorage("enableMapPointsOfInterest") private var showPointsOfInterest: Bool = false
 	@AppStorage("mapLayer") private var selectedMapLayer: MapLayer = .hybrid
@@ -130,6 +131,9 @@ struct NodeMapSwiftUI: View {
 			.onChange(of: showConvexHull) {
 				refreshPositions()
 			}
+			.onChange(of: trackTimeRangeRawValue) {
+				refreshPositions()
+			}
 			.safeAreaInset(edge: .bottom, alignment: .trailing) {
 				controlButtons
 			}
@@ -211,6 +215,19 @@ struct NodeMapSwiftUI: View {
 				Image(systemName: isEditingSettings ? "info.circle.fill" : "info.circle")
 			}
 			.accessibilityLabel(isEditingSettings ? Text("Hide map settings") : Text("Show map settings"))
+			.glassButtonStyle()
+
+			Menu {
+				Picker("Track Range", selection: $trackTimeRangeRawValue) {
+					ForEach(NodeTrackTimeRange.allCases) { range in
+						Text(range.title).tag(range.rawValue)
+					}
+				}
+			} label: {
+				Image(systemName: "point.3.connected.trianglepath.dotted")
+			}
+			.accessibilityLabel("Track range")
+			.accessibilityValue(selectedTrackTimeRange.title)
 			.glassButtonStyle()
 
 			if scene != nil {
@@ -314,7 +331,18 @@ struct NodeMapSwiftUI: View {
 		let limit = (showNodeHistory || showRouteLines || showConvexHull) ? visiblePositionLimit : 1
 		let latestPositions = node.positionsSortedByTime(context: context, ascending: false, limit: limit)
 		mostRecentPosition = latestPositions.first
-		positions = limit == 1 ? latestPositions : Array(latestPositions.reversed())
+		// Time range affects trail geometry only; the current node pin must always remain visible.
+		let visiblePositions: [PositionEntity]
+		if showNodeHistory || showRouteLines {
+			visiblePositions = latestPositions.filter { $0.latest || selectedTrackTimeRange.includes($0.time, relativeTo: .now) }
+		} else {
+			visiblePositions = latestPositions
+		}
+		positions = limit == 1 ? visiblePositions : Array(visiblePositions.reversed())
+	}
+
+	private var selectedTrackTimeRange: NodeTrackTimeRange {
+		NodeTrackTimeRange(rawValue: trackTimeRangeRawValue) ?? .all
 	}
 
 	/// Get the look around scene
