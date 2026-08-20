@@ -31,6 +31,7 @@
 		54D8BBD62304C5917AEE0C2B /* DatadogRUM in Frameworks */ = {isa = PBXBuildFile; productRef = E96998AD4B79F29AF1E2A6D2 /* DatadogRUM */; };
 		5631740093D563F017DA31D7 /* MeshtasticProtobufs in Frameworks */ = {isa = PBXBuildFile; productRef = 52CBDF2188BAF9E2FB8B10A1 /* MeshtasticProtobufs */; };
 		563422694131128F504A5E05 /* Color.swift in Sources */ = {isa = PBXBuildFile; fileRef = E94055F00D3E29383E92FF74 /* Color.swift */; };
+		57E53712BC523A97DC12B9B6 /* nrf52-factory-erase-s140-7.3.0-ios.uf2 in Resources */ = {isa = PBXBuildFile; fileRef = B819E5F9A486C9199E3A3C11 /* nrf52-factory-erase-s140-7.3.0-ios.uf2 */; };
 		5C31297EDE4B7294ECE538F4 /* AppIconDebug.icon in Resources */ = {isa = PBXBuildFile; fileRef = 6D159B66B1877A7506D1AB20 /* AppIconDebug.icon */; };
 		62C11A4D1644062EAD31615F /* Settings.bundle in Resources */ = {isa = PBXBuildFile; fileRef = F15A1577564640951AD3EA40 /* Settings.bundle */; };
 		66EFBB4E473C796ACAFF58C2 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = 6776764BA24154B603C76018 /* AppIcon.icon */; };
@@ -44,6 +45,7 @@
 		977E69BC7382DA7EF386402F /* TCPConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3FA5EE6E2E5628082C9CF53F /* TCPConnection.swift */; };
 		987BD8AFF176A9670F175E5C /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 26351F51CD01C94D8D82486A /* Localizable.xcstrings */; };
 		9B61C796B61232F1226AAA28 /* DatadogLogs in Frameworks */ = {isa = PBXBuildFile; productRef = 7F3F27310C566077475C7105 /* DatadogLogs */; };
+		A98B24D85AA61BB5613ECAE0 /* nrf52-factory-erase-s140-6.1.1-ios.uf2 in Resources */ = {isa = PBXBuildFile; fileRef = 24A7FF87D7FB4B281563BE16 /* nrf52-factory-erase-s140-6.1.1-ios.uf2 */; };
 		A98F34F7728746DA306D0C1A /* CircleText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D05DC325F033D282A72589F /* CircleText.swift */; };
 		B80DB8962DBDE2284BC9664A /* urls.json in Resources */ = {isa = PBXBuildFile; fileRef = B079D165838E646EE754DC6E /* urls.json */; };
 		B97B830773C8597258C1A96F /* MeshtasticProtobufs in Frameworks */ = {isa = PBXBuildFile; productRef = 838679D32875D367B9FC8FBF /* MeshtasticProtobufs */; };
@@ -128,6 +130,7 @@
 		0E531C14ABE7F1491959BBE3 /* OfflineMapManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineMapManager.swift; sourceTree = "<group>"; };
 		122531D8C1D7CC809C6EF3B7 /* WriteContinuationStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WriteContinuationStore.swift; sourceTree = "<group>"; };
 		1A740EACFF7FA4000F22EF4E /* Meshtastic.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Meshtastic.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		24A7FF87D7FB4B281563BE16 /* nrf52-factory-erase-s140-6.1.1-ios.uf2 */ = {isa = PBXFileReference; path = "nrf52-factory-erase-s140-6.1.1-ios.uf2"; sourceTree = "<group>"; };
 		25A13454C9C85CEBBBC2DD1F /* he */ = {isa = PBXFileReference; lastKnownFileType = text.plist; name = he; path = he.lproj/AppIntentVocabulary.plist; sourceTree = "<group>"; };
 		25BA43A8304E6CC120811070 /* Certificates */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Certificates; path = Meshtastic/Resources/Certificates; sourceTree = SOURCE_ROOT; };
 		2625B7E87368ACBC51E821F5 /* MeshtasticDataModelV 38.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 38.xcdatamodel"; sourceTree = "<group>"; };
@@ -203,6 +206,7 @@
 		B131E575DB7543BA64BF290C /* MeshtasticDataModelV 54.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 54.xcdatamodel"; sourceTree = "<group>"; };
 		B392CBC9201C0D5D78DEADEF /* MeshtasticDataModelV6.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV6.xcdatamodel; sourceTree = "<group>"; };
 		B4FDBE952986D711B234AEC4 /* MeshtasticDataModelV 30.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 30.xcdatamodel"; sourceTree = "<group>"; };
+		B819E5F9A486C9199E3A3C11 /* nrf52-factory-erase-s140-7.3.0-ios.uf2 */ = {isa = PBXFileReference; path = "nrf52-factory-erase-s140-7.3.0-ios.uf2"; sourceTree = "<group>"; };
 		B8C15787882CA30C9787154D /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
 		BC6E547B77D9EA8FF3CE7491 /* MeshtasticDataModelV 51.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 51.xcdatamodel"; sourceTree = "<group>"; };
 		BD1780B27CE8A3FF56E1C632 /* zh-Hant */ = {isa = PBXFileReference; lastKnownFileType = text.plist; name = "zh-Hant"; path = "zh-Hant.lproj/AppIntentVocabulary.plist"; sourceTree = "<group>"; };
@@ -648,6 +652,15 @@
 			path = Transports;
 			sourceTree = "<group>";
 		};
+		4C16308C2B3D61B593562B07 /* FirmwareMaintenance */ = {
+			isa = PBXGroup;
+			children = (
+				24A7FF87D7FB4B281563BE16 /* nrf52-factory-erase-s140-6.1.1-ios.uf2 */,
+				B819E5F9A486C9199E3A3C11 /* nrf52-factory-erase-s140-7.3.0-ios.uf2 */,
+			);
+			path = FirmwareMaintenance;
+			sourceTree = "<group>";
+		};
 		5D4AFA4225AF7D85EE343B80 /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -788,6 +801,7 @@
 				C6BCC32505771F08628D70D7 /* DeviceHardware.json */,
 				6B3F64B089C3A398FEBE6C9C /* docs */,
 				C0810161F73BC57A90E60D0C /* event_firmware.json */,
+				4C16308C2B3D61B593562B07 /* FirmwareMaintenance */,
 				0846840A4300FE311DCFDA44 /* images */,
 				B079D165838E646EE754DC6E /* urls.json */,
 			);
@@ -1138,6 +1152,8 @@
 				073B94B7F2F232C198151489 /* alpha.png in Resources */,
 				31188367797815C745AA63C5 /* docs in Resources */,
 				00C009E3665BFC69C7101C09 /* event_firmware.json in Resources */,
+				A98B24D85AA61BB5613ECAE0 /* nrf52-factory-erase-s140-6.1.1-ios.uf2 in Resources */,
+				57E53712BC523A97DC12B9B6 /* nrf52-factory-erase-s140-7.3.0-ios.uf2 in Resources */,
 				B80DB8962DBDE2284BC9664A /* urls.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
