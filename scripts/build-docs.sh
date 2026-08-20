@@ -54,7 +54,7 @@ done < <(
     find "$REPO_ROOT/docs" -name '*.md' -print0 | xargs -0 awk '
         /^[[:space:]]*```/ { in_fence = !in_fence; next }
         !in_fence { print }
-    ' | grep -oh 'screenshots/[^")* ]*\.png' | sed 's|screenshots/||' | sort -u
+    ' | grep -ohE 'screenshots/[^")* ]*\.(png|jpe?g)' | sed 's|screenshots/||' | sort -u
 )
 if (( ${#missing_images[@]} > 0 )); then
     echo "error: docs pages reference screenshots that do not exist in docs/assets/screenshots:" >&2
