@@ -1,5 +1,5 @@
 {
-  "api_hash": "e3517b1a092c5f87ed8f5d62563d35f6b7cc5df34633bf1d7636068d14e602c1",
+  "api_hash": "62b617737b7538a5151652c06c5f8abc552051ceecf96fb206feb6acf78aeed0",
   "files": {
     "crowpanel_2_4.svg": {
       "etag": "\"29194e5a415e5aee034b2d4a3ba2e398\""
@@ -204,6 +204,9 @@
     },
     "thinknode_m7.svg": {
       "etag": "\"c0d6a733ef0c24c6c4323e76d41d913d\""
+    },
+    "thinknode_m9.svg": {
+      "etag": "\"e8f60f5e6e868ce060bdb1d28c38051a\""
     },
     "tlora-c6.svg": {
       "etag": "\"750e3861d8271eba9bcbab24f1699708\""
