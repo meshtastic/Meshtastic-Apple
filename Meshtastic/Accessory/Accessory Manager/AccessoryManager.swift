@@ -1043,6 +1043,12 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			Logger.transport.info("✅ [Accessory] Notifying completions that have completed for configCompleteID: \(configCompleteID)")
 			switch configCompleteID {
 			case UInt32(NONCE_ONLY_CONFIG):
+				if let activeDeviceNum {
+					MeshShareSnapshotBuilder.refresh(
+						nodeNum: activeDeviceNum,
+						context: context
+					)
+				}
 				if let continuation = wantConfigContinuation {
 					wantConfigContinuation = nil
 					continuation.resume()
@@ -1069,6 +1075,12 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 					do {
 						try context.save()
 						Logger.data.info("💾 [Database] Batch saved all node info after database retrieval")
+						if let activeDeviceNum {
+							MeshShareSnapshotBuilder.refresh(
+								nodeNum: activeDeviceNum,
+								context: context
+							)
+						}
 
 						// Push updated node data to the companion Watch app
 						WatchSessionManager.shared.sendNodesToWatch()

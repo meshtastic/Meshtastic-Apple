@@ -306,6 +306,9 @@ targets:
       - target: WidgetsExtension
         embed: true
         platformFilter: iOS
+      - target: MeshtasticMessages
+        embed: true
+        platformFilter: iOS
       - target: "Meshtastic Watch App"
         embed: true
         platformFilter: iOS
@@ -357,6 +360,7 @@ targets:
           - "$(SRCROOT)/Meshtastic Watch App"
           - "$(SRCROOT)/MeshtasticTests"
           - "$(SRCROOT)/MeshtasticUITests"
+          - "$(SRCROOT)/MeshtasticMessages"
           - "$(SRCROOT)/Shared"
           - "$(SRCROOT)/Widgets"
         basedOnDependencyAnalysis: false
@@ -518,6 +522,79 @@ targets:
           SKIP_INSTALL: "YES"
           SUPPORTED_PLATFORMS: "iphoneos iphonesimulator"
           SUPPORTS_MACCATALYST: "YES"
+          SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD: "NO"
+          SWIFT_EMIT_LOC_STRINGS: "YES"
+          SWIFT_VERSION: "5.0"
+          TARGETED_DEVICE_FAMILY: "1,2"
+
+  MeshtasticMessages:
+    type: app-extension.messages
+    platform: iOS
+    sources:
+      - path: "Shared"
+        type: syncedFolder
+      - path: "MeshtasticMessages"
+        type: syncedFolder
+        excludes:
+          - "Info.plist"
+          - "MeshtasticMessages.entitlements"
+      - path: "Localizable.xcstrings"
+    dependencies:
+      - package: MeshtasticProtobufs
+        product: MeshtasticProtobufs
+    settings:
+      configs:
+        Debug:
+          APPLICATION_EXTENSION_API_ONLY: "YES"
+          ASSETCATALOG_COMPILER_APPICON_NAME: "iMessage App Icon"
+          CLANG_CXX_LANGUAGE_STANDARD: "gnu++20"
+          CODE_SIGN_ENTITLEMENTS: "MeshtasticMessages/MeshtasticMessages.entitlements"
+          CODE_SIGN_IDENTITY: "Apple Development"
+          CODE_SIGN_STYLE: "Automatic"
+          CURRENT_PROJECT_VERSION: "1"
+          DEVELOPMENT_TEAM: "GCH7VS5Y9R"
+          GENERATE_INFOPLIST_FILE: "YES"
+          INFOPLIST_FILE: "MeshtasticMessages/Info.plist"
+          INFOPLIST_KEY_CFBundleDisplayName: "Meshtastic"
+          IPHONEOS_DEPLOYMENT_TARGET: "17.5"
+          LD_RUNPATH_SEARCH_PATHS:
+            - "$(inherited)"
+            - "@executable_path/Frameworks"
+            - "@executable_path/../../Frameworks"
+          MARKETING_VERSION: "2.7.19"
+          PRODUCT_BUNDLE_IDENTIFIER: "gvh.MeshtasticClient.Messages"
+          PRODUCT_NAME: "$(TARGET_NAME)"
+          SKIP_INSTALL: "YES"
+          SUPPORTED_PLATFORMS: "iphoneos iphonesimulator"
+          SUPPORTS_MACCATALYST: "NO"
+          SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD: "NO"
+          SWIFT_EMIT_LOC_STRINGS: "YES"
+          SWIFT_OPTIMIZATION_LEVEL: "-Onone"
+          SWIFT_VERSION: "5.0"
+          TARGETED_DEVICE_FAMILY: "1,2"
+        Release:
+          APPLICATION_EXTENSION_API_ONLY: "YES"
+          ASSETCATALOG_COMPILER_APPICON_NAME: "iMessage App Icon"
+          CLANG_CXX_LANGUAGE_STANDARD: "gnu++20"
+          CODE_SIGN_ENTITLEMENTS: "MeshtasticMessages/MeshtasticMessages.entitlements"
+          CODE_SIGN_IDENTITY: "Apple Development"
+          CODE_SIGN_STYLE: "Automatic"
+          CURRENT_PROJECT_VERSION: "1"
+          DEVELOPMENT_TEAM: "GCH7VS5Y9R"
+          GENERATE_INFOPLIST_FILE: "YES"
+          INFOPLIST_FILE: "MeshtasticMessages/Info.plist"
+          INFOPLIST_KEY_CFBundleDisplayName: "Meshtastic"
+          IPHONEOS_DEPLOYMENT_TARGET: "17.5"
+          LD_RUNPATH_SEARCH_PATHS:
+            - "$(inherited)"
+            - "@executable_path/Frameworks"
+            - "@executable_path/../../Frameworks"
+          MARKETING_VERSION: "2.7.19"
+          PRODUCT_BUNDLE_IDENTIFIER: "gvh.MeshtasticClient.Messages"
+          PRODUCT_NAME: "$(TARGET_NAME)"
+          SKIP_INSTALL: "YES"
+          SUPPORTED_PLATFORMS: "iphoneos iphonesimulator"
+          SUPPORTS_MACCATALYST: "NO"
           SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD: "NO"
           SWIFT_EMIT_LOC_STRINGS: "YES"
           SWIFT_VERSION: "5.0"
@@ -854,4 +931,3 @@ schemes:
       config: Debug
     archive:
       config: Release
-
