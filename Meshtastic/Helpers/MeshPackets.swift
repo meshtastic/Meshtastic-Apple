@@ -1738,10 +1738,11 @@ actor MeshPackets {
 						let latitude = Double(waypoint.latitudeI) / 1e7
 						let longitude = Double(waypoint.longitudeI) / 1e7
 						let waypointId = waypoint.id
+						let waypointName = waypoint.name ?? "Dropped Pin".localized
 						let notification = Notification(
 							id: ("notification.id.\(waypointId)"),
-							title: "New Waypoint From \(nodeShortName)",
-							subtitle: "\(icon) \(waypoint.name ?? "Dropped Pin")",
+							title: String.localizedStringWithFormat("New Waypoint From %@".localized, nodeShortName),
+							subtitle: "\(icon) \(waypointName)",
 							content: "\(waypoint.longDescription ?? "\(latitude), \(longitude)")",
 							target: "map",
 							path: "meshtastic:///map?waypointid=\(waypointId)"
