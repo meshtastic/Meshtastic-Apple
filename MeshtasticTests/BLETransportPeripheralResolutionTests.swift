@@ -13,6 +13,24 @@ import Testing
 
 @testable import Meshtastic
 
+private actor DiscoverySetupSignal {
+	private var reached = false
+	private var continuation: CheckedContinuation<Void, Never>?
+
+	func markReached() {
+		reached = true
+		continuation?.resume()
+		continuation = nil
+	}
+
+	func wait() async {
+		guard !reached else { return }
+		await withCheckedContinuation { continuation in
+			self.continuation = continuation
+		}
+	}
+}
+
 private final class RecordingCentralManager: CBCentralManager, @unchecked Sendable {
 	enum Call: Equatable {
 		case stopScan
@@ -49,10 +67,6 @@ private final class RecordingCentralManager: CBCentralManager, @unchecked Sendab
 
 @Suite("BLETransport peripheral resolution", .timeLimit(.minutes(1)))
 struct BLETransportPeripheralResolutionTests {
-	private func letActorTasksRun() async throws {
-		try await Task.sleep(for: .milliseconds(50))
-	}
-
 	@Test func pairingPausePreservesResolutionWithoutRestartingAbsentDiscovery() async {
 		let centralManager = RecordingCentralManager()
 		let transport = BLETransport(
@@ -85,19 +99,20 @@ struct BLETransportPeripheralResolutionTests {
 		)
 	}
 
-	@Test func discoveryStartedDuringConnectionPauseWaitsUntilFailure() async throws {
+	@Test func discoveryStartedDuringConnectionPauseWaitsUntilFailure() async {
 		let centralManager = RecordingCentralManager(scanning: false)
+		let discoverySetupSignal = DiscoverySetupSignal()
 		let transport = BLETransport(
 			createCentralManagerImmediately: false,
-			centralManager: centralManager
+			centralManager: centralManager,
+			discoverySetupHandler: { await discoverySetupSignal.markReached() }
 		)
 
 		await transport.handleCentralState(.poweredOn, central: centralManager)
-		try await letActorTasksRun()
 		await transport.pauseScanningForConnection()
 
 		let discovery = await transport.discoverDevices()
-		try await letActorTasksRun()
+		await discoverySetupSignal.wait()
 
 		#expect(
 			centralManager.calls.isEmpty,

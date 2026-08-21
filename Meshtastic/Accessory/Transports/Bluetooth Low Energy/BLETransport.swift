@@ -55,6 +55,7 @@ actor BLETransport: Transport {
 
 	private var cleanupTask: Task<Void, Never>?
 	private var scanningPausedForConnection = false
+	private let discoverySetupHandler: (@Sendable () async -> Void)?
 	
 	// Transport properties
 	let supportsManualConnection: Bool = false
@@ -67,9 +68,11 @@ actor BLETransport: Transport {
 	///   incidental value lands in `status` at an unpredictable point mid-test.
 	init(
 		createCentralManagerImmediately: Bool = true,
-		centralManager: CBCentralManager? = nil
+		centralManager: CBCentralManager? = nil,
+		discoverySetupHandler: (@Sendable () async -> Void)? = nil
 	) {
 		self.centralManager = centralManager
+		self.discoverySetupHandler = discoverySetupHandler
 		self.discoveredPeripherals = [:]
 		self.discoveredDeviceContinuation = nil
 		self.delegate = BLEDelegate()
@@ -157,6 +160,7 @@ actor BLETransport: Transport {
 				// This gate is opened when the CBCentralManager is in poweredOn state.
 				// Its probably open already, but just to be sure in case we get here too quickly.
 				try await self.setupCompleteGate.wait()
+				await self.discoverySetupHandler?()
 				
 				if await !self.restoreInProgress && !self.scanningPausedForConnection {
 					centralManager.scanForPeripherals(withServices: [meshtasticServiceCBUUID], options: [CBCentralManagerScanOptionAllowDuplicatesKey: true])
@@ -256,7 +260,6 @@ actor BLETransport: Transport {
 			if let continuation = connectContinuation {
 				connectContinuation = nil
 				continuation.resume(throwing: AccessoryError.disconnected("Bluetooth powered off"))
-				connectionDidDisconnect(fromPeripheral: connectingPeripheral)
 			}
 			if let connection = activeConnection {
 				Task {
@@ -315,9 +318,10 @@ actor BLETransport: Transport {
 	}
 
 	private func cancelConnectContinuation(for peripheral: CBPeripheral) {
-		self.connectContinuation?.resume(throwing: CancellationError())
+		guard connectingPeripheral?.identifier == peripheral.identifier,
+			  let connectContinuation else { return }
+		connectContinuation.resume(throwing: CancellationError())
 		self.connectContinuation = nil
-		self.connectionDidDisconnect(fromPeripheral: peripheral)
 	}
 
 	/// Stops duplicate-advertisement scanning before CoreBluetooth starts a connection. Keeping the
