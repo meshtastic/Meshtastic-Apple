@@ -11,13 +11,11 @@
 //  resource files are individually registered in project.yml + project.pbxproj (regenerated via
 //  `xcodegen generate`), which isn't available in every environment that touches this branch —
 //  whereas `Meshtastic/Model` is an Xcode "synced folder" group, so a new .swift file here needs
-//  no project-file regeneration at all. Base64 (not a Swift string literal of the raw JSON) avoids
-//  any ambiguity from multiline-string-literal newline trimming corrupting the exact bytes a
-//  digest is computed over — see MaintenanceUf2ManifestSeedTests for the byte-fidelity assertion.
+//  no project-file regeneration at all.
 //
 //  Do not hand-edit the encoded payload. Regenerate it by base64-encoding
 //  api/data/maintenanceUf2.json (e.g. `base64 -i api/data/maintenanceUf2.json`), re-wrapping at
-//  76 chars/line, then update MaintenanceUF2.expectedManifestSHA256 to match.
+//  76 chars/line.
 //
 
 import Foundation

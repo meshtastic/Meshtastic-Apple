@@ -1161,11 +1161,9 @@ extension MeshtasticAPI {
 	/// never touches the container itself, so `MeshtasticAPIBundledSeedTests`' "no network in seed
 	/// mode" assertion still holds for this resource too.
 	///
-	/// This gates an irreversible write (see MaintenanceUF2.swift's header), so unlike the other
-	/// resources here, a successful HTTP fetch is not enough to trust the response — only bytes
-	/// that hash to `OTAFIXBootloader.expectedManifestSHA256` are applied. Any other outcome
-	/// (network failure, non-2xx, digest mismatch, decode failure) is a no-op that leaves the
-	/// store exactly as it was.
+	/// Same fail-safe shape as the other refreshes: a network failure, non-2xx, or decode failure
+	/// is a no-op that leaves the store exactly as it was, never destroying an already-loaded
+	/// manifest over a bad response.
 	func refreshMaintenanceUf2APIData() async {
 		guard container != nil else { return }
 		let attemptDate = Date()
@@ -1184,9 +1182,8 @@ extension MeshtasticAPI {
 			return
 		}
 
-		guard OTAFIXManifestStore.shared.apply(rawBytes: data, expectedSHA256: OTAFIXBootloader.expectedManifestSHA256) else {
-			// OTAFIXManifestStore.apply already logs the specific reason (digest mismatch vs.
-			// decode failure).
+		guard OTAFIXManifestStore.shared.apply(rawBytes: data) else {
+			// OTAFIXManifestStore.apply already logs the decode failure.
 			return
 		}
 		UserDefaults.lastMaintenanceUf2APIUpdate = attemptDate

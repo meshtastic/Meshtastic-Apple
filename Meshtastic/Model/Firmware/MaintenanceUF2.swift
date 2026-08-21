@@ -14,11 +14,9 @@
 //  The pairings themselves no longer live here or in Android's Kotlin — both now
 //  read `GET https://api.meshtastic.org/resource/maintenanceUf2`, seeded from
 //  MaintenanceUf2ManifestSeed's bundled copy so a new OTAFIX release is one JSON
-//  edit in `meshtastic/api`, not a hand-edit in every client. This still gates an
-//  irreversible write, so a fetched response is trusted only when its raw bytes
-//  hash to `OTAFIXBootloader.expectedManifestSHA256` — a mismatch (stale pin,
-//  compromised/misconfigured server) keeps whatever was already trusted and never
-//  adopts the new bytes. See OTAFIXManifestStore below.
+//  edit in `meshtastic/api`, not a hand-edit in every client. A fetch that fails
+//  or doesn't decode is a no-op that keeps whatever manifest was already loaded.
+//  See OTAFIXManifestStore below.
 //
 
 import CryptoKit
@@ -40,8 +38,7 @@ struct MaintenanceUF2: Sendable, Equatable {
 }
 
 extension Data {
-	/// Lowercase hex SHA-256. The one hashing implementation every digest check in this file
-	/// (per-image and per-manifest) goes through.
+	/// Lowercase hex SHA-256. What `MaintenanceUF2.matches(_:)` checks a downloaded image against.
 	var sha256Hex: String {
 		SHA256.hash(data: self).map { String(format: "%02x", $0) }.joined()
 	}
@@ -111,17 +108,13 @@ final class OTAFIXManifestStore: @unchecked Sendable {
 		}
 	}
 
-	/// Verifies `rawBytes` against `expectedSHA256` and, only on a match, replaces the live
-	/// manifest. Returns whether it was applied. A mismatch or decode failure is a no-op — the
-	/// store keeps whatever it already trusted (the bundled seed, or an earlier successful fetch).
+	/// Decodes `rawBytes` and, only on success, replaces the live manifest. Returns whether it was
+	/// applied. A decode failure is a no-op — the store keeps whatever it already had (the bundled
+	/// seed, or an earlier successful fetch).
 	@discardableResult
-	func apply(rawBytes: Data, expectedSHA256: String) -> Bool {
-		guard rawBytes.sha256Hex == expectedSHA256 else {
-			Logger.services.warning("maintenanceUf2 manifest digest mismatch — ignoring fetched response")
-			return false
-		}
+	func apply(rawBytes: Data) -> Bool {
 		guard let decoded = try? JSONDecoder().decode(MaintenanceUf2ManifestPayload.self, from: rawBytes) else {
-			Logger.services.warning("maintenanceUf2 manifest digest matched but decode failed — ignoring")
+			Logger.services.warning("maintenanceUf2 manifest decode failed — ignoring")
 			return false
 		}
 		lock.lock()
@@ -165,18 +158,12 @@ final class OTAFIXManifestStore: @unchecked Sendable {
 /// the upgrade is offered, never which image is written.
 enum OTAFIXBootloader {
 
-	/// Pinned SHA-256 of `api.meshtastic.org/resource/maintenanceUf2`'s raw response bytes,
-	/// matching `MaintenanceUf2ManifestSeed.rawJSON`'s digest exactly (asserted by
-	/// `MaintenanceUf2ManifestSeedTests`). A fetch whose bytes don't hash to this is rejected by
-	/// `OTAFIXManifestStore.apply` — bump this alongside a bundled-seed update, never separately.
-	static let expectedManifestSHA256 = "73315bced19dc4ed31029a6c734b24420c96673f1666b9d046f96b55f629dc10"
-
 	/// Release the currently-active pinned images were audited against.
 	static var releaseTag: String { OTAFIXManifestStore.shared.releaseTag }
 
 	/// Self-update images keyed by the Board-ID the device reports. Backed by
-	/// `OTAFIXManifestStore`, seeded from the bundled manifest and updatable by a verified fetch
-	/// from `resource/maintenanceUf2` — see `MeshtasticAPI.refreshMaintenanceUf2APIData()`.
+	/// `OTAFIXManifestStore`, seeded from the bundled manifest and updatable by a fetch from
+	/// `resource/maintenanceUf2` — see `MeshtasticAPI.refreshMaintenanceUf2APIData()`.
 	static var imagesByBoardID: [String: MaintenanceUF2] { OTAFIXManifestStore.shared.imagesByBoardID }
 
 	/// Meshtastic platformio targets whose products OTAFIX lists as supported.
