@@ -415,18 +415,18 @@
             "messages",
             "language",
             "default",
-            "saved",
             "contact",
             "channel",
             "lora",
             "configure",
             "channels",
-            "after",
             "translation",
             "shows",
-            "setting"
+            "setting",
+            "set",
+            "selected"
         ],
-        "charCount": 17690
+        "charCount": 17515
     },
     {
         "id": "signal-meter",

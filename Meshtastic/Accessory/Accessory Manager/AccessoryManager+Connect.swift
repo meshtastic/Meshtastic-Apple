@@ -111,7 +111,7 @@ extension AccessoryManager {
 				} catch {
 					// A stale saved UUID can be rediscovered after its iOS bond was removed while the
 					// app was closed. Stop this attempt before retryAll can present another PIN sheet.
-					guard BLEConnection.isPairingFailure(error) else { throw error }
+					guard BLEConnection.isTerminalSavedRadioPairingFailure(error) else { throw error }
 					UserDefaults.invalidateSavedPeripheral(device.id)
 					let surfacedError: Error = if let error = error as? CBError {
 						AccessoryError.coreBluetoothError(error)

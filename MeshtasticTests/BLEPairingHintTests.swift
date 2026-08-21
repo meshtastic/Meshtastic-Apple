@@ -202,7 +202,10 @@ final class PairedPeripheralHintTests {
 
 	@Test(arguments: [
 		PairingFailureTestConnection.Failure.timeout,
-		.peripheralDisconnected
+		.peripheralDisconnected,
+		.encryptionTimedOut,
+		.insufficientEncryption,
+		.insufficientAuthorization
 	])
 	func ambiguousFailureKeepsSavedRadioButSuppressesSameSessionRediscoveryAfterRetries(
 		_ failure: PairingFailureTestConnection.Failure
@@ -266,6 +269,17 @@ struct BLEPairingFailureTests {
 		#expect(BLEConnection.isPairingFailure(CBError(.peerRemovedPairingInformation)))
 	}
 
+	@Test func staleBondFailuresAreTerminalForSavedRadioInvalidation() {
+		#expect(BLEConnection.isTerminalSavedRadioPairingFailure(CBATTError(.insufficientAuthentication)))
+		#expect(BLEConnection.isTerminalSavedRadioPairingFailure(CBError(.peerRemovedPairingInformation)))
+	}
+
+	@Test func ambiguousPairingFailuresPreserveSavedRadio() {
+		#expect(BLEConnection.isTerminalSavedRadioPairingFailure(CBATTError(.insufficientEncryption)) == false)
+		#expect(BLEConnection.isTerminalSavedRadioPairingFailure(CBATTError(.insufficientAuthorization)) == false)
+		#expect(BLEConnection.isTerminalSavedRadioPairingFailure(CBError(.encryptionTimedOut)) == false)
+	}
+
 	@Test func unrelatedCbErrorsAreNotPairingFailures() {
 		#expect(BLEConnection.isPairingFailure(CBError(.connectionTimeout)) == false)
 		#expect(BLEConnection.isPairingFailure(CBError(.peripheralDisconnected)) == false)
@@ -300,6 +314,9 @@ actor PairingFailureTestConnection: Connection {
 		case terminalPairing
 		case timeout
 		case peripheralDisconnected
+		case encryptionTimedOut
+		case insufficientEncryption
+		case insufficientAuthorization
 	}
 
 	let type: TransportType = .ble
@@ -322,6 +339,12 @@ actor PairingFailureTestConnection: Connection {
 			throw CBError(.connectionTimeout)
 		case .peripheralDisconnected:
 			throw CBError(.peripheralDisconnected)
+		case .encryptionTimedOut:
+			throw CBError(.encryptionTimedOut)
+		case .insufficientEncryption:
+			throw CBATTError(.insufficientEncryption)
+		case .insufficientAuthorization:
+			throw CBATTError(.insufficientAuthorization)
 		}
 	}
 

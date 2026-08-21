@@ -72,6 +72,7 @@ struct AppSettings: View {
 						} label: {
 							Label("Forget Saved Radio", systemImage: "antenna.radiowaves.left.and.right.slash")
 						}
+						.disabled(accessoryManager.isConnecting)
 						Text("Removes only the saved Bluetooth radio. Messages and app data are kept.")
 							.foregroundStyle(.secondary)
 							.font(.caption)

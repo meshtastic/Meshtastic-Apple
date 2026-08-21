@@ -475,6 +475,17 @@ extension BLEConnection {
 		return false
 	}
 
+	/// Whether a pairing failure conclusively proves the saved iOS bond is stale.
+	static func isTerminalSavedRadioPairingFailure(_ error: Error) -> Bool {
+		if let attError = error as? CBATTError {
+			return attError.code == .insufficientAuthentication
+		}
+		if let cbError = error as? CBError {
+			return cbError.code == .peerRemovedPairingInformation
+		}
+		return false
+	}
+
 	func didWriteValueFor(characteristic: CBCharacteristic, error: Error?) {
 		guard characteristic.uuid == TORADIO_UUID else {
 			Logger.transport.error("🛜 [BLE] didWriteValueFor a characteristic other than TORADIO_UUID.  Should not happen!")
