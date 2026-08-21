@@ -317,7 +317,7 @@ actor BLETransport: Transport {
 		}
 	}
 
-	private func cancelConnectContinuation(for peripheral: CBPeripheral) {
+	func cancelConnectContinuation(for peripheral: CBPeripheral) {
 		guard connectingPeripheral?.identifier == peripheral.identifier,
 			  let connectContinuation else { return }
 		connectContinuation.resume(throwing: CancellationError())

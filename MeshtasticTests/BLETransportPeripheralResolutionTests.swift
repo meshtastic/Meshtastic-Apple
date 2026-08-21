@@ -9,11 +9,12 @@
 
 @preconcurrency import CoreBluetooth
 import Foundation
+import ObjectiveC.runtime
 import Testing
 
 @testable import Meshtastic
 
-private actor DiscoverySetupSignal {
+private actor Signal {
 	private var reached = false
 	private var continuation: CheckedContinuation<Void, Never>?
 
@@ -31,18 +32,40 @@ private actor DiscoverySetupSignal {
 	}
 }
 
+private final class TestPeripheral: CBPeripheral, @unchecked Sendable {
+	static let testIdentifier = UUID()
+
+	override var identifier: UUID { Self.testIdentifier }
+
+	static func make() -> TestPeripheral {
+		// CBPeripheral has no public initializer, so this test-only double has no CoreBluetooth state.
+		guard let peripheral = class_createInstance(TestPeripheral.self, 0) else {
+			fatalError("Unable to allocate test peripheral")
+		}
+		guard let testPeripheral = peripheral as? TestPeripheral else {
+			fatalError("Test peripheral has an unexpected type")
+		}
+		return testPeripheral
+	}
+}
+
 private final class RecordingCentralManager: CBCentralManager, @unchecked Sendable {
 	enum Call: Equatable {
 		case stopScan
 		case retrievePeripherals([UUID])
 		case startScan
+		case connect(UUID)
 	}
 
 	private(set) var calls: [Call] = []
 	private var scanning: Bool
+	private let peripheral: CBPeripheral?
+	private let connectSignal: Signal?
 
-	init(scanning: Bool = true) {
+	init(scanning: Bool = true, peripheral: CBPeripheral? = nil, connectSignal: Signal? = nil) {
 		self.scanning = scanning
+		self.peripheral = peripheral
+		self.connectSignal = connectSignal
 		super.init(delegate: nil, queue: nil, options: nil)
 	}
 
@@ -56,7 +79,13 @@ private final class RecordingCentralManager: CBCentralManager, @unchecked Sendab
 
 	override func retrievePeripherals(withIdentifiers identifiers: [UUID]) -> [CBPeripheral] {
 		calls.append(.retrievePeripherals(identifiers))
-		return []
+		guard let peripheral, identifiers.contains(peripheral.identifier) else { return [] }
+		return [peripheral]
+	}
+
+	override func connect(_ peripheral: CBPeripheral, options: [String: Any]? = nil) {
+		calls.append(.connect(peripheral.identifier))
+		Task { await connectSignal?.markReached() }
 	}
 
 	override func scanForPeripherals(withServices serviceUUIDs: [CBUUID]?, options: [String: Any]? = nil) {
@@ -101,7 +130,7 @@ struct BLETransportPeripheralResolutionTests {
 
 	@Test func discoveryStartedDuringConnectionPauseWaitsUntilFailure() async {
 		let centralManager = RecordingCentralManager(scanning: false)
-		let discoverySetupSignal = DiscoverySetupSignal()
+		let discoverySetupSignal = Signal()
 		let transport = BLETransport(
 			createCentralManagerImmediately: false,
 			centralManager: centralManager,
@@ -126,5 +155,35 @@ struct BLETransportPeripheralResolutionTests {
 			"A failed connection must resume the waiting discovery subscriber exactly once"
 		)
 		withExtendedLifetime(discovery) {}
+	}
+
+	@Test func lateCancellationCleanupAfterConnectKeepsTransportBusy() async throws {
+		let peripheral = TestPeripheral.make()
+		let connectSignal = Signal()
+		let centralManager = RecordingCentralManager(peripheral: peripheral, connectSignal: connectSignal)
+		let transport = BLETransport(
+			createCentralManagerImmediately: false,
+			centralManager: centralManager
+		)
+		let device = Device(
+			id: UUID(),
+			name: "Test Radio",
+			transportType: .ble,
+			identifier: peripheral.identifier.uuidString
+		)
+
+		let connection = Task { try await transport.connect(to: device) }
+		await connectSignal.wait()
+		await transport.handleDidConnect(peripheral: peripheral, central: centralManager)
+		_ = try await connection.value
+
+		await transport.cancelConnectContinuation(for: peripheral)
+
+		do {
+			_ = try await transport.connect(to: device)
+			Issue.record("A late cancellation cleanup must not clear the active connection")
+		} catch AccessoryError.connectionFailed(let message) {
+			#expect(message == "BLE transport is busy: already connecting or connected")
+		}
 	}
 }
