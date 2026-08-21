@@ -475,7 +475,8 @@ extension BLEConnection {
 		return false
 	}
 
-	/// Whether a pairing failure conclusively proves the saved iOS bond is stale.
+	/// Whether a pairing failure should end automatic retries and invalidate a matching saved radio.
+	/// iOS reported insufficient authentication for the physically reproduced stale-bond case.
 	static func isTerminalSavedRadioPairingFailure(_ error: Error) -> Bool {
 		if let attError = error as? CBATTError {
 			return attError.code == .insufficientAuthentication
