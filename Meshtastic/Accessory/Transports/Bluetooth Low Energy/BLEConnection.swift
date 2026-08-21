@@ -437,7 +437,6 @@ extension BLEConnection {
 				&& (pendingNotifyConfirmations.contains(characteristic.uuid) || Self.isPairingFailure(error)) {
 				isAwaitingNotifyConfirmation = false
 				pendingNotifyConfirmations.removeAll()
-				UserDefaults.forgetPairedPeripheral(peripheral.identifier)
 				self.continueConnectionProcess(throwing: error)
 			}
 			return

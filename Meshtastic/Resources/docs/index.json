@@ -396,8 +396,8 @@
         "navOrder": 7,
         "keywords": [
             "radio",
-            "node",
             "app",
+            "node",
             "settings",
             "device",
             "from",
@@ -410,23 +410,23 @@
             "tag",
             "nodes",
             "nfc",
-            "configuration",
             "only",
+            "configuration",
+            "messages",
             "language",
             "default",
-            "messages",
+            "saved",
             "contact",
             "channel",
             "lora",
             "configure",
             "channels",
+            "after",
             "translation",
             "shows",
-            "setting",
-            "set",
-            "selected"
+            "setting"
         ],
-        "charCount": 16929
+        "charCount": 17690
     },
     {
         "id": "signal-meter",

@@ -108,8 +108,19 @@ extension AccessoryManager {
 					// The mesh-traffic monitor (map flyover gate) self-starts its decay timer on the
 					// first inbound packet and is cleared by Step 0's closeConnection() reset(), so
 					// there's no explicit start to make here — it stays correct across connect retries.
-				} catch let error as CBError where error.code == .peerRemovedPairingInformation {
-					await self.connectionStepper?.cancelCurrentlyExecutingStep(withError: AccessoryError.coreBluetoothError(error), cancelFullProcess: true)
+				} catch {
+					// A stale saved UUID can be rediscovered after its iOS bond was removed while the
+					// app was closed. Stop this attempt before retryAll can present another PIN sheet.
+					guard BLEConnection.isPairingFailure(error) else { throw error }
+					UserDefaults.invalidateSavedPeripheral(device.id)
+					let surfacedError: Error = if let error = error as? CBError {
+						AccessoryError.coreBluetoothError(error)
+					} else if let error = error as? CBATTError {
+						AccessoryError.coreBluetoothATTError(error)
+					} else {
+						error
+					}
+					await self.connectionStepper?.cancelCurrentlyExecutingStep(withError: surfacedError, cancelFullProcess: true)
 				}
 			}
 			
@@ -313,6 +324,9 @@ extension AccessoryManager {
 			try await connectionStepper?.run()
 			Logger.transport.debug("🔗 [Connect] ConnectionStepper completed.")
 		} catch AccessoryError.tooManyRetries {
+			// Keep transient timeout/disconnect state, but stop discovery from immediately
+			// starting another two-attempt cycle in this app session.
+			self.shouldAutomaticallyConnectToPreferredPeripheralAfterError = false
 			self.lastConnectionError = AccessoryError.tooManyRetries
 			try await self.closeConnection()
 			updateState(.discovering)

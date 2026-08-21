@@ -5,6 +5,7 @@
 
 // MARK: AccessoryManagerDisconnectTests
 
+import CoreBluetooth
 import Foundation
 import Testing
 
@@ -119,5 +120,15 @@ struct AccessoryManagerDisconnectTests {
 		await expectTornDown(manager, connection: connection)
 		#expect(manager.packetsReceived == 1)
 		#expect(manager.shouldAutomaticallyConnectToPreferredPeripheralAfterError)
+	}
+
+	@Test func lateErrorWithoutActiveConnectionDoesNotReopenAutoconnectGate() async throws {
+		let manager = AccessoryManager(transports: [])
+		manager.shouldAutomaticallyConnectToPreferredPeripheralAfterError = false
+
+		await manager.didReceive(.error(CBError(.peripheralDisconnected)))
+		try await Task.sleep(for: .milliseconds(10))
+
+		#expect(manager.shouldAutomaticallyConnectToPreferredPeripheralAfterError == false)
 	}
 }

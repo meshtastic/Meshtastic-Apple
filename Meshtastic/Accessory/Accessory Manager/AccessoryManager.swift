@@ -373,6 +373,14 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		}
 	}
 	
+	func shouldAutomaticallyConnect(to device: Device) -> Bool {
+		shouldAutomaticallyConnectToPreferredPeripheralAfterError
+			&& !userRequestedConnectionCancellation
+			&& !isSwitchingDevices
+			&& UserDefaults.autoconnectOnDiscovery
+			&& UserDefaults.preferredPeripheralId == device.id.uuidString
+	}
+
 	func connectToPreferredDevice(device: Device? = nil) {
 		if !self.isConnected && !self.isConnecting,
 		   let preferredDevice = device ?? self.devices.first(where: { $0.id.uuidString == UserDefaults.preferredPeripheralId }) {
@@ -694,6 +702,10 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			updateDevice(deviceId: deviceId, key: \.rssi, value: rssi)
 			
 		case .error(let error), .errorWithoutReconnect(let error):
+			guard !shouldIgnoreTransientEvent else {
+				Logger.transport.info("[Accessory] Ignoring error event during disconnect teardown.")
+				return
+			}
 			Task {
 				// Figure out if we'll reconnect
 				if case .errorWithoutReconnect = event {
