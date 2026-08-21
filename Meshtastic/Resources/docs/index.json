@@ -420,13 +420,13 @@
             "lora",
             "configure",
             "channels",
+            "after",
             "translation",
             "shows",
             "setting",
-            "set",
-            "selected"
+            "set"
         ],
-        "charCount": 17515
+        "charCount": 17585
     },
     {
         "id": "signal-meter",

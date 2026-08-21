@@ -15,7 +15,7 @@ General app preferences including map style, notification behavior, and theme. T
 ### Bluetooth connection
 
 - **Automatically Connect**: reconnects to the saved preferred radio when the app discovers it. After a connection uses its retry budget, automatic retries pause for the rest of that app session; you can still select a radio manually.
-- **Forget Saved Radio**: appears whenever the app has a saved Bluetooth radio, even if that radio is unavailable. It removes only the saved preferred radio and pairing hint. Messages and other app data are kept. It is disabled while a connection attempt is running. A failed attempt does not start another automatic cycle.
+- **Forget Saved Radio**: appears whenever the app has a saved Bluetooth radio, even if that radio is unavailable. It removes only the saved preferred radio and pairing hint. Messages and other app data are kept. It is disabled while connecting or connected so the active connection process cannot save the radio again after the action. A failed attempt does not start another automatic cycle.
 
 ### Data Management
 
