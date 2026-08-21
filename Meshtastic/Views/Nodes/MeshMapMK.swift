@@ -88,6 +88,10 @@ struct MeshMapMK: View {
 	/// Route polylines + start/finish markers, rebuilt only when the route set changes.
 	@State private var routeOverlays: [ClusterMapOverlay] = []
 	@State private var routeDecorations: [ClusterMapDecoration] = []
+	/// One explicitly selected node track. The main map never renders all node histories.
+	@State private var focusedTrackNodeNum: Int64?
+	@State private var focusedTrackOverlays: [ClusterMapOverlay] = []
+	@State private var appliedFocusedTrackHistoryKey: Int?
 	/// A single trace route drawn on the map (forward solid + return dashed polyline + endpoint
 	/// markers), set when arriving via a `meshtastic:///map?tracerouteId=` deep link.
 	@State private var selectedTraceRoute: TraceRouteEntity?
@@ -187,7 +191,13 @@ struct MeshMapMK: View {
 	private func refreshPositionState(force: Bool = false) {
 		allLatestPositions = fetchLatestPositions()
 		let state = visiblePositionState
-		guard force || state.key != appliedPositionStateKey else { return }
+		let focusedTrackHistoryChanged = focusedTrackHistoryKey() != appliedFocusedTrackHistoryKey
+		guard force || state.key != appliedPositionStateKey else {
+			if focusedTrackHistoryChanged {
+				rebuildFocusedTrackOverlays()
+			}
+			return
+		}
 		appliedPositionStateKey = state.key
 		refreshVisiblePositionSnapshots(from: state.positions)
 		syncFallbackLocation()
@@ -464,12 +474,41 @@ struct MeshMapMK: View {
 		}
 	}
 
+	@ViewBuilder private var focusedTrackBanner: some View {
+		if let nodeNum = focusedTrackNodeNum {
+			let name = getNodeInfo(id: nodeNum, context: context)?.user?.shortName ?? nodeNum.toHex()
+			HStack(spacing: NodeTrackAppearance.bannerSpacing) {
+				Image(systemName: "point.3.connected.trianglepath.dotted")
+				Text("Track: \(name)")
+					.font(.callout.weight(.medium))
+				Button {
+					clearFocusedTrack()
+				} label: {
+					Image(systemName: "xmark.circle.fill")
+						.foregroundStyle(.secondary)
+				}
+				.frame(minWidth: NodeTrackAppearance.minimumTapTarget, minHeight: NodeTrackAppearance.minimumTapTarget)
+				.contentShape(Rectangle())
+				.accessibilityLabel("Hide track")
+			}
+			.padding(.horizontal, NodeTrackAppearance.bannerHorizontalPadding)
+			.padding(.vertical, NodeTrackAppearance.bannerVerticalPadding)
+			.background(.thinMaterial, in: Capsule())
+			.padding(.top, 8)
+		}
+	}
+
 	/// The map + its sheets + the bottom button bar, split out of `body` so the long modifier
 	/// chain type-checks in pieces (the whole thing in one `body` exceeded the solver budget).
 	@ViewBuilder private var mapWithSheets: some View {
 		meshClusterMapView
 			.ignoresSafeArea()
-			.overlay(alignment: .top) { traceRouteBanner }
+			.overlay(alignment: .top) {
+				VStack(spacing: 6) {
+					traceRouteBanner
+					focusedTrackBanner
+				}
+			}
 			.onChange(of: accessoryManager.isHighMeshTraffic) { _, isHigh in
 				// Traffic has been high for a sustained window (the monitor debounces this) — stop an
 				// in-flight flyover so it doesn't grind. The play button's disable + start guard keep it
@@ -483,6 +522,16 @@ struct MeshMapMK: View {
 					if let node = getNodeInfo(id: selection.id, context: context) {
 						NavigationStack {
 							NodeDetail(node: node, nodeNum: selection.id, showMapLink: false)
+								.toolbar {
+									ToolbarItem(placement: .topBarTrailing) {
+										if hasFullPrecisionTrack(for: node) {
+											Button("Show Track", systemImage: "point.3.connected.trianglepath.dotted") {
+												focusTrack(for: selection.id)
+												selectedNode = nil
+											}
+										}
+									}
+								}
 						}
 						#if targetEnvironment(macCatalyst)
 							.overlay(alignment: .topLeading) {
@@ -1276,6 +1325,7 @@ struct MeshMapMK: View {
 									var result = selectedTraceRoute != nil ? [] : offlineVectorOverlays
 									result += routeOverlays
 									result += tracerouteOverlays
+									result += focusedTrackOverlays
 									result += mapOverlays
 									result += geoJSONOverlays
 									result += geofenceOverlays
@@ -1787,6 +1837,71 @@ struct MeshMapMK: View {
 		}
 
 		mapOverlays = result
+		rebuildFocusedTrackOverlays()
+	}
+
+	private func focusTrack(for nodeNum: Int64) {
+		focusedTrackNodeNum = nodeNum
+		rebuildFocusedTrackOverlays()
+	}
+
+	private func clearFocusedTrack() {
+		focusedTrackNodeNum = nil
+		focusedTrackOverlays = []
+		appliedFocusedTrackHistoryKey = nil
+	}
+
+	private func rebuildFocusedTrackOverlays() {
+		guard let nodeNum = focusedTrackNodeNum,
+			  let node = getNodeInfo(id: nodeNum, context: context) else {
+			focusedTrackOverlays = []
+			appliedFocusedTrackHistoryKey = nil
+			return
+		}
+		appliedFocusedTrackHistoryKey = focusedTrackHistoryKey(for: node)
+		let coordinates = fullPrecisionTrackCoordinates(for: node)
+		let coordinateIndexes = NodeTrackAppearance.sampledCoordinateIndexes(forCoordinateCount: coordinates.count)
+		let indexes = NodeTrackAppearance.segmentIndexes(forCoordinateCount: coordinateIndexes.count)
+		let color = UIColor(hex: UInt32(nodeNum))
+		focusedTrackOverlays = indexes.map { index in
+			var segment = [coordinates[coordinateIndexes[index]], coordinates[coordinateIndexes[index + 1]]]
+			return ClusterMapOverlay(
+				id: "focused-track-\(nodeNum)-\(index)",
+				overlay: MKPolyline(coordinates: &segment, count: segment.count),
+				style: ClusterMapOverlayStyle(
+					strokeUIColor: color.withAlphaComponent(NodeTrackAppearance.opacity(forSegmentAt: index, totalSegments: indexes.count)),
+					lineWidth: 4,
+					lineCap: .round
+				)
+			)
+		}
+	}
+
+	private func hasFullPrecisionTrack(for node: NodeInfoEntity) -> Bool {
+		NodeTrackAppearance.hasTrack(forCoordinateCount: fullPrecisionTrackCoordinates(for: node).count)
+	}
+
+	private func fullPrecisionTrackCoordinates(for node: NodeInfoEntity) -> [CLLocationCoordinate2D] {
+		node.positionsSortedByTime(context: context, ascending: true, limit: 1_000)
+			.filter(\.isPreciseLocation)
+			.compactMap(\.nodeCoordinate)
+	}
+
+	private func focusedTrackHistoryKey() -> Int? {
+		guard let nodeNum = focusedTrackNodeNum,
+			  let node = getNodeInfo(id: nodeNum, context: context) else { return nil }
+		return focusedTrackHistoryKey(for: node)
+	}
+
+	private func focusedTrackHistoryKey(for node: NodeInfoEntity) -> Int {
+		var hasher = Hasher()
+		for position in node.positionsSortedByTime(context: context, ascending: true, limit: 1_000) where position.isPreciseLocation {
+			hasher.combine(position.time)
+			hasher.combine(position.latitudeI)
+			hasher.combine(position.longitudeI)
+			hasher.combine(position.precisionBits)
+		}
+		return hasher.finalize()
 	}
 
 	private func makePositionSnapshots(from positions: [PositionEntity]) -> [MeshMapPositionSnapshot] {

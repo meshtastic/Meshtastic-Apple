@@ -160,7 +160,25 @@ Tap the **legend** button (map icon, bottom-right) for a key to the colors and m
 
 ## Node Trail
 
-When a node has reported multiple positions over time, a trail line connects the historical positions on the map, showing the node's path.
+Node tracks make recent movement easier to read while navigating, hiking, or using the mesh away from roads. Older reports use a lighter treatment and the newest part of the route is most prominent, so direction is visible without obscuring the map.
+
+### Focus a track on the main map
+
+1. Tap a node pin on the **Map** tab.
+2. In the node detail sheet, tap **Show Track**.
+3. The map shows that node's track and a **Track: _node_** banner. Tap the banner's close button to hide it.
+
+The main map shows only the one track you choose; it does not draw history for every node. A node needs at least two full-precision position reports before **Show Track** is available. The track refreshes as additional full-precision position history arrives.
+
+![Focused node track on the main map](../assets/screenshots/focused-node-track.jpg)
+
+### Review a node's position history
+
+Open a node's map from its detail screen to review its own history. Use the Map Options sheet to turn on **Track Points** and/or **Track Line**. The track-range control (`point.3.connected.trianglepath.dotted`) selects **All**, **1h**, **8h**, **1d**, or **2d** of history.
+
+The node's latest pin remains visible even when it is outside the selected range; the selected range affects only the track points and route geometry. For privacy, only full-precision reports appear in a track. Approximate or reduced-precision reports are not connected or shown as history points.
+
+![Node Map position history with Track Points and Track Line](../assets/screenshots/node-map-history.jpg)
 
 ## Your Location
 
