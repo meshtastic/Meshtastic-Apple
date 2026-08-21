@@ -92,6 +92,8 @@ extension UserDefaults {
 		case firmwareUpdateNotificationKeys
 		case lastEventFirmwareAPIUpdate
 		case lastEventFirmwareAPIAttempt
+		case lastMaintenanceUf2APIUpdate
+		case lastMaintenanceUf2APIAttempt
 		case useEventTheme
 		case pairedPeripheralIds
 		case migratedPreferredPeripheralPairing
@@ -300,6 +302,14 @@ extension UserDefaults {
 	/// loop from retrying the same first-party endpoint on every metadata lookup.
 	@UserDefault(.lastEventFirmwareAPIAttempt, defaultValue: .distantPast)
 	static var lastEventFirmwareAPIAttempt: Date
+
+	@UserDefault(.lastMaintenanceUf2APIUpdate, defaultValue: .distantPast)
+	static var lastMaintenanceUf2APIUpdate: Date
+
+	/// Last maintenanceUf2 manifest refresh attempt, successful or not — same throttle-attempt
+	/// shape as `lastEventFirmwareAPIAttempt`, for the same reason.
+	@UserDefault(.lastMaintenanceUf2APIAttempt, defaultValue: .distantPast)
+	static var lastMaintenanceUf2APIAttempt: Date
 
 	/// Whether event highlight colors are used across the app and edition fonts are used in the
 	/// event info sheet. Standard navigation backgrounds remain unchanged.
