@@ -14,6 +14,8 @@ Recent user-facing changes from roughly the last 12 months. Newest at the top.
 Show roughly the last 12 months of changes; archive entries older than a year by removing them.
 -->
 
+**Aug 2026** — [Settings](settings.md) — Per-type notification settings for Tapbacks and New Waypoints: reaction alerts and received-waypoint alerts can each be switched off on their own, instead of having to silence the whole app.
+
 **Jul 2026** — [Settings](settings.md) — Packet Authenticity: on firmware that reports XEdDSA support, Security settings gains a Protection Level of Compatible, Balanced, or Strict, controlling whether your radio accepts mesh packets it cannot cryptographically authenticate; Strict asks for confirmation first, and the setting matches the Meshtastic app for Android.
 
 **Jul 2026** — [Bluetooth Device Connection](bluetooth.md) — Connect now shows an inline "Bluetooth is off" row in Available Radios when Bluetooth is disabled, with a tap-to-open-Settings shortcut — previously there was no in-app signal once the system Bluetooth power alert was suppressed.
