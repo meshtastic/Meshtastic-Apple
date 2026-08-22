@@ -24,7 +24,7 @@ packages:
     majorVersion: 4.16.0
   TAKPacket-SDK:
     url: https://github.com/meshtastic/TAKPacket-SDK.git
-    minorVersion: 0.5.1
+    minorVersion: 0.9.1
   CocoaMQTT:
     url: https://github.com/emqx/CocoaMQTT
     majorVersion: 2.0.0
