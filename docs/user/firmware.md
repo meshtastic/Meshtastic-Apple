@@ -38,6 +38,15 @@ For ESP32 BLE updates, the app waits for the radio's final verification response
 
 **Do not close the app or move out of Bluetooth range during a firmware update.**
 
+## nRF52 Firmware Maintenance
+
+Supported nRF52 UF2 releases have a **Firmware Maintenance** menu in **Settings → Firmware Updates**.
+
+- **Upgrade Bootloader** installs the OTAFIX bootloader for the mounted radio, then requires a second UF2 pass to reinstall the selected application firmware.
+- **Erase and Reinstall** performs a flash-level factory erase, then requires the same application reinstall. It permanently removes the radio's owner, channels, identity keys, settings, and node database.
+
+Both actions use the mounted bootloader volume in Files. Enter DFU mode, choose the volume for the maintenance pass, then enter DFU again and choose the freshly mounted volume for the application reinstall. Do not repeat a pass if Files reports that it could not save the UF2 file or the volume ejects. Reconnect the radio and verify the firmware before completing recovery.
+
 ## During the Transfer
 
 While a supported OTA transfer is active, the update screen rotates short tips, and you can tap **Play Chirpy Hop** to play without leaving the updater. Firmware progress remains visible above the game, and the back button returns to the normal update screen at any time. Keep the Meshtastic app in the foreground until the update finishes.

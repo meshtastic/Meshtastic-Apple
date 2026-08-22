@@ -149,11 +149,32 @@ private struct FirmwareContentView: View {
 	@State var locallyChosenFirmwareFile: URL?
 	// For row-level install sheet
 	@State var rowInstallation: RowInstallation?
+	@State private var maintenanceInstallation: MaintenanceInstallation?
+	@State private var didAutoPresentRecovery = false
+	@State private var pendingMaintenanceConfirmation: (FirmwareFile, UF2MaintenanceRequest)?
+	@State private var showMaintenanceConfirmation = false
+	@State private var pendingMaintenanceRecovery = UF2MaintenanceRecoveryStore.pendingRecord
 
 	struct RowInstallation: Identifiable {
 		let type: FirmwareFile.FirmwareType
 		let url: URL
 		var id: String { "\(type.rawValue)-\(url.absoluteString)" }
+	}
+
+	struct MaintenanceInstallation: Identifiable {
+		let descriptor: UF2MaintenanceApplicationDescriptor
+		let request: UF2MaintenanceRequest
+		var id: String { "\(request.rawValue)-\(descriptor.localURL.absoluteString)" }
+
+		init(file: FirmwareFile, request: UF2MaintenanceRequest) {
+			descriptor = UF2MaintenanceApplicationDescriptor(firmwareFile: file)
+			self.request = request
+		}
+
+		init(record: UF2MaintenanceRecoveryRecord) {
+			descriptor = record.descriptor
+			request = record.request
+		}
 	}
 	
 	init(node: NodeInfoEntity, hardware: DeviceHardwareEntity, firmwareTarget: String) {
@@ -171,6 +192,20 @@ private struct FirmwareContentView: View {
 	
 	var body: some View {
 		List {
+			if let pendingMaintenanceRecovery {
+				Section("Pending Firmware Recovery") {
+					Button {
+						maintenanceInstallation = MaintenanceInstallation(record: pendingMaintenanceRecovery)
+					} label: {
+						Label(
+							"Resume \(pendingMaintenanceRecovery.request.displayName) for \(pendingMaintenanceRecovery.descriptor.platformioTarget)",
+							systemImage: "exclamationmark.triangle.fill"
+						)
+						.foregroundStyle(.orange)
+					}
+				}
+			}
+
 			// SECTION 1: HERO
 			Section {
 				Text(hardware.displayName ?? "Unknown")
@@ -257,8 +292,78 @@ private struct FirmwareContentView: View {
 				ESP32OTAIntroSheet(binFileURL: installation.url)
 			}
 		}
+		.sheet(item: $maintenanceInstallation) { installation in
+			UF2MaintenanceView(
+				descriptor: installation.descriptor,
+				node: node,
+				request: installation.request
+			)
+		}
+		.confirmationDialog(
+			maintenanceConfirmationTitle,
+			isPresented: $showMaintenanceConfirmation,
+			titleVisibility: .visible
+		) {
+			Button(maintenanceConfirmationButton, role: maintenanceConfirmationRole) {
+				guard let pendingMaintenanceConfirmation else { return }
+				maintenanceInstallation = MaintenanceInstallation(
+					file: pendingMaintenanceConfirmation.0,
+					request: pendingMaintenanceConfirmation.1
+				)
+			}
+			Button("Cancel", role: .cancel) {}
+		} message: {
+			Text(maintenanceConfirmationMessage)
+		}
+		.onAppear {
+			pendingMaintenanceRecovery = UF2MaintenanceRecoveryStore.pendingRecord
+			guard !didAutoPresentRecovery,
+				maintenanceInstallation == nil,
+				let pendingMaintenanceRecovery else { return }
+			didAutoPresentRecovery = true
+			maintenanceInstallation = MaintenanceInstallation(record: pendingMaintenanceRecovery)
+		}
+		.onReceive(NotificationCenter.default.publisher(for: .uf2MaintenanceRecoveryChanged)) { _ in
+			pendingMaintenanceRecovery = UF2MaintenanceRecoveryStore.pendingRecord
+		}
 	}
 	
+	private var maintenanceConfirmationTitle: String {
+		switch pendingMaintenanceConfirmation?.1 {
+		case .bootloaderUpgrade: String(localized: "Upgrade bootloader and reinstall firmware?")
+		case .factoryErase: String(localized: "Erase the radio and reinstall firmware?")
+		case nil: String(localized: "Start firmware maintenance?")
+		}
+	}
+
+	private var maintenanceConfirmationButton: String {
+		switch pendingMaintenanceConfirmation?.1 {
+		case .bootloaderUpgrade: String(localized: "Upgrade Bootloader")
+		case .factoryErase: String(localized: "Erase and Reinstall")
+		case nil: String(localized: "Continue")
+		}
+	}
+
+	private var maintenanceConfirmationRole: ButtonRole? {
+		pendingMaintenanceConfirmation?.1 == .factoryErase ? .destructive : nil
+	}
+
+	private var maintenanceConfirmationMessage: String {
+		switch pendingMaintenanceConfirmation?.1 {
+		case .bootloaderUpgrade:
+			String(localized: "The app will write a pinned OTAFIX image, then require a second UF2 pass to reinstall this firmware.")
+		case .factoryErase:
+			String(localized: "This permanently erases the radio's filesystem, owner, channels, keys, and settings, then requires a second UF2 pass to reinstall firmware.")
+		case nil:
+			String(localized: "The operation requires two UF2 passes.")
+		}
+	}
+
+	private func confirmMaintenance(_ file: FirmwareFile, request: UF2MaintenanceRequest) {
+		pendingMaintenanceConfirmation = (file, request)
+		showMaintenanceConfirmation = true
+	}
+
 	// MARK: - Subviews
 	
 	@ViewBuilder
@@ -267,9 +372,13 @@ private struct FirmwareContentView: View {
 		case .stable:
 			let stables = firmwareList.mostRecentFirmware(forReleaseType: .stable)
 			ForEach(stables, id: \.localUrl) { release in
-				FirmwareRow(firmwareFile: release) { type, url in
-					self.rowInstallation = RowInstallation(type: type, url: url)
-				}
+				FirmwareRow(
+					firmwareFile: release,
+					onInstall: { type, url in
+						self.rowInstallation = RowInstallation(type: type, url: url)
+					},
+					onMaintenance: { file, request in confirmMaintenance(file, request: request) }
+				)
 			}
 			if let last = stables.last, let notes = last.releaseNotes {
 				NavigationLink("Release Notes") {
@@ -279,9 +388,13 @@ private struct FirmwareContentView: View {
 		case .alpha:
 			let alphas = firmwareList.mostRecentFirmware(forReleaseType: .alpha)
 			ForEach(alphas, id: \.localUrl) { release in
-				FirmwareRow(firmwareFile: release) { type, url in
-					self.rowInstallation = RowInstallation(type: type, url: url)
-				}
+				FirmwareRow(
+					firmwareFile: release,
+					onInstall: { type, url in
+						self.rowInstallation = RowInstallation(type: type, url: url)
+					},
+					onMaintenance: { file, request in confirmMaintenance(file, request: request) }
+				)
 			}
 			if let last = alphas.last, let notes = last.releaseNotes {
 				NavigationLink("Release Notes") {
@@ -294,9 +407,15 @@ private struct FirmwareContentView: View {
 				Text("No firmware has been downloaded for this device.")
 			} else {
 				ForEach(downloads, id: \.localUrl) { file in
-					FirmwareRow(firmwareFile: file) { type, url in
-						self.rowInstallation = RowInstallation(type: type, url: url)
-					}
+					FirmwareRow(
+						firmwareFile: file,
+						onInstall: { type, url in
+							self.rowInstallation = RowInstallation(type: type, url: url)
+						},
+						onMaintenance: { selected, request in
+							confirmMaintenance(selected, request: request)
+						}
+					)
 				}
 				.onDelete { offsets in
 					let files = offsets.map { downloads[$0] }
@@ -511,6 +630,7 @@ private struct FirmwareRow: View {
 	@ObservedObject var firmwareFile: FirmwareFile
 
 	var onInstall: (FirmwareFile.FirmwareType, URL) -> Void
+	var onMaintenance: (FirmwareFile, UF2MaintenanceRequest) -> Void
 
 	/// ESP32 OTA (BLE/WiFi) requires the AdminMessage.OTAEvent protocol with otaHash,
 	/// which was added to Meshtastic firmware in 2.7.18.
@@ -552,18 +672,36 @@ private struct FirmwareRow: View {
 				ProgressView()
 
 			case .downloaded:
-				Button {
-					onInstall(firmwareFile.firmwareType, firmwareFile.localUrl)
-				} label: {
-					HStack(alignment: .firstTextBaseline, spacing: 2.0) {
-						Text("Install")
-						self.installIcon
+				HStack {
+					Button {
+						onInstall(firmwareFile.firmwareType, firmwareFile.localUrl)
+					} label: {
+						HStack(alignment: .firstTextBaseline, spacing: 2.0) {
+							Text("Install")
+							self.installIcon
+						}
+					}
+					.buttonStyle(.bordered)
+					.buttonBorderShape(.capsule)
+					.controlSize(.small)
+					.disabled(firmwareFile.firmwareType == .bin && !accessoryManager.checkIsVersionSupported(forVersion: minimumESP32OTAVersion))
+
+					if canPerformMaintenance {
+						Menu {
+							Button("Upgrade Bootloader") {
+								onMaintenance(firmwareFile, .bootloaderUpgrade)
+							}
+							Button("Erase and Reinstall", role: .destructive) {
+								onMaintenance(firmwareFile, .factoryErase)
+							}
+						} label: {
+							Image(systemName: "ellipsis.circle")
+								.frame(minWidth: 48, minHeight: 48)
+								.contentShape(Rectangle())
+						}
+						.accessibilityLabel("Firmware maintenance")
 					}
 				}
-				.buttonStyle(.bordered)
-				.buttonBorderShape(.capsule)
-				.controlSize(.small)
-				.disabled(firmwareFile.firmwareType == .bin && !accessoryManager.checkIsVersionSupported(forVersion: minimumESP32OTAVersion))
 
 			case .notDownloaded:
 				Button {
@@ -582,6 +720,12 @@ private struct FirmwareRow: View {
 		}
 	}
 	
+	private var canPerformMaintenance: Bool {
+		firmwareFile.firmwareType == .uf2
+			&& firmwareFile.architecture == .nrf52840
+			&& UF2MaintenanceCatalog.supports(target: firmwareFile.platformioTarget)
+	}
+
 	private var installIcon: Image? {
 		switch firmwareFile.firmwareType {
 		case .uf2:

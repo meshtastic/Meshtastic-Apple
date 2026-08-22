@@ -1,0 +1,28 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index a72a6b4..114bf42 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -25,21 +25,9 @@ void enterDfuMode()
+ // the setup function runs once when you press reset or power the board
+ void setup()
+ {
+-  Serial.begin(115200);
+-  while ( !Serial ) delay(10);   // for nrf52840 with native usb
+-  Serial.println("Meshtastic nRF52 Factory Erase firmware for the Meshtastic project.");
+-  Serial.println();
+-
+-  // Initialize Internal File System
++  // Run without waiting for a USB CDC host so iOS can use this image.
+   InternalFS.begin();
+-
+-  Serial.print("Formating ... ");
+-  delay(1); // for message appear on monitor
+-
+-  // Format
+   InternalFS.format();
+-
+-  Serial.println("Done, rebooting device into DFU mode");
+-  delay(1); // for message appear on monitor
++  delay(10);
+   enterDfuMode();
+ }
