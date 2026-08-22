@@ -426,7 +426,7 @@
             "set",
             "selected"
         ],
-        "charCount": 16929
+        "charCount": 16945
     },
     {
         "id": "signal-meter",
@@ -1099,36 +1099,36 @@
         "keywords": [
             "test",
             "tests",
-            "snapshots",
+            "app",
+            "testing",
+            "tab",
             "run",
             "let",
+            "snapshots",
+            "func",
+            "swift",
+            "router",
             "reference",
             "png",
+            "meshtastictests",
+            "meshtastic",
+            "mainactor",
             "expect",
             "cgimage",
             "await",
-            "testing",
-            "router",
-            "mainactor",
-            "func",
             "throws",
-            "snapshot",
-            "result",
-            "require",
+            "target",
             "new",
-            "foo",
-            "dark",
+            "meshtasticuitests",
             "both",
-            "async",
-            "width",
-            "using",
-            "try",
-            "suite",
+            "accessibility",
+            "value",
+            "through",
+            "snapshot",
             "screenshots",
-            "scale",
-            "saved"
+            "scheme"
         ],
-        "charCount": 3697
+        "charCount": 6924
     },
     {
         "id": "transport",
