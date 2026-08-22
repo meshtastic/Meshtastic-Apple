@@ -149,6 +149,7 @@ private struct FirmwareContentView: View {
 	@State var locallyChosenFirmwareFile: URL?
 	// For row-level install sheet
 	@State var rowInstallation: RowInstallation?
+	@State var showBootloaderUpgrade = false
 
 	struct RowInstallation: Identifiable {
 		let type: FirmwareFile.FirmwareType
@@ -239,6 +240,23 @@ private struct FirmwareContentView: View {
 				// Extracted switch logic to keep body clean
 				firmwareRows
 			}
+
+			// SECTION 3: BOOTLOADER — nRF52 boards OTAFIX ships a bootloader for.
+			// UX gate only; the sheet identifies the board from the drive's own
+			// INFO_UF2.TXT before anything is offered for writing.
+			if showsBootloaderSection {
+				Section {
+					Button {
+						showBootloaderUpgrade = true
+					} label: {
+						Label("Upgrade Bootloader", systemImage: "memorychip")
+					}
+				} header: {
+					Text("Bootloader")
+				} footer: {
+					Text("OTAFIX is Meshtastic's improved nRF52 bootloader with faster, more reliable Bluetooth firmware updates.")
+				}
+			}
 		}
 		.navigationTitle("Firmware Updates")
 		.navigationBarTitleDisplayMode(.inline)
@@ -246,6 +264,9 @@ private struct FirmwareContentView: View {
 			if !isLoading {
 				firmwareList.refresh()
 			}
+		}
+		.sheet(isPresented: $showBootloaderUpgrade) {
+			BootloaderUpgradeView()
 		}
 		.sheet(item: $rowInstallation) { installation in
 			switch installation.type {
@@ -342,6 +363,14 @@ private struct FirmwareContentView: View {
 			return "firmware-\(platformioTarget)-<version>[-\(nodeRegion.topic)]"
 		}
 		return "firmware-\(platformioTarget)-<version>"
+	}
+
+	/// Whether to offer the OTAFIX bootloader upgrade: nRF52 hardware whose
+	/// product OTAFIX lists as supported. Deciding which image to write happens
+	/// in the sheet, from the Board-ID on the device's own drive.
+	var showsBootloaderSection: Bool {
+		hardware.architecture.flatMap { Architecture(rawValue: $0) } == .nrf52840
+			&& OTAFIXBootloader.supportsTarget(firmwareTarget)
 	}
 
 	var allowedTypes: [UTType] {
