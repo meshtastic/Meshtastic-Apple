@@ -11,6 +11,11 @@
 <p>The Settings tab lets you configure the app and your connected Meshtastic radio.</p>
 <h2>App Settings</h2>
 <p>General app preferences including map style, notification behavior, and theme. These affect only the app — not the radio.</p>
+<h3>Bluetooth connection</h3>
+<ul>
+<li><strong>Automatically Connect</strong>: reconnects to the saved preferred radio when the app discovers it. After a connection uses its retry budget, automatic retries pause for the rest of that app session; you can still select a radio manually.</li>
+<li><strong>Forget Saved Radio</strong>: appears whenever the app has a saved Bluetooth radio, even if that radio is unavailable. It removes only the saved preferred radio and pairing hint. Messages and other app data are kept. It is disabled while connecting or connected so the active connection process cannot save the radio again after the action. A failed attempt does not start another automatic cycle.</li>
+</ul>
 <h3>Data Management</h3>
 <ul>
 <li><strong>Erase All App Data</strong> — clears the local database, translation cache, and all stored settings, then immediately reloads the bundled device hardware catalog. Use this as a last resort.</li>

@@ -241,6 +241,26 @@ extension UserDefaults {
 		pairedPeripheralIds = ids.sorted()
 	}
 
+	/// Handles the stale-record sequence where iOS forgot a bond while the app was closed, then
+	/// discovery found the saved UUID and the encrypted subscription confirmed pairing loss.
+	/// The preferred radio is cleared only when it still identifies the failed peripheral.
+	@MainActor
+	static func invalidateSavedPeripheral(_ id: UUID) {
+		forgetPairedPeripheral(id)
+		guard preferredPeripheralId == id.uuidString else { return }
+		preferredPeripheralId = ""
+	}
+
+	/// User-initiated recovery for a saved radio that is no longer discoverable.
+	@MainActor
+	static func forgetSavedRadio() {
+		guard let id = UUID(uuidString: preferredPeripheralId) else {
+			preferredPeripheralId = ""
+			return
+		}
+		invalidateSavedPeripheral(id)
+	}
+
 	/// One-time flag: whether the legacy `preferredPeripheralId` has been migrated into
 	/// `pairedPeripheralIds`. Once set, the preferred-peripheral fallback is never consulted for
 	/// bonding decisions again, so a bond the user later removes can self-heal back to the long

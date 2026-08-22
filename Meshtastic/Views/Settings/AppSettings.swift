@@ -32,6 +32,7 @@ struct AppSettings: View {
 	@AppStorage(NodeListPreferences.shouldShowHops.rawValue) private var shouldShowHops = true
 	@AppStorage(NodeListPreferences.shouldShowSignal.rawValue) private var shouldShowSignal = true
 	@AppStorage("participateInDistributedTranslations") private var participateInDistributedTranslations = true
+	@AppStorage(UserDefaults.Keys.preferredPeripheralId.rawValue) private var savedPeripheralID = ""
 
 	let autoconnectBinding = Binding<Bool>(get: {
 		return UserDefaults.autoconnectOnDiscovery
@@ -64,6 +65,17 @@ struct AppSettings: View {
 						Toggle(isOn: autoconnectBinding) {
 							Label("Automatically Connect", systemImage: "app.connected.to.app.below.fill")
 						}
+					}
+					if !savedPeripheralID.isEmpty {
+						Button(role: .destructive) {
+							UserDefaults.forgetSavedRadio()
+						} label: {
+							Label("Forget Saved Radio", systemImage: "antenna.radiowaves.left.and.right.slash")
+						}
+						.disabled(accessoryManager.isConnecting || accessoryManager.isConnected)
+						Text("Removes only the saved Bluetooth radio. Messages and app data are kept.")
+							.foregroundStyle(.secondary)
+							.font(.caption)
 					}
 #if targetEnvironment(macCatalyst)
 					// App Icon Picker is disabled on macOS Catalyst
