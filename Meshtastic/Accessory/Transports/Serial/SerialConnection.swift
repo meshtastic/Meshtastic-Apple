@@ -42,7 +42,7 @@ actor SerialConnection: Connection {
 	// For DispatchSourceRead implementation
 	private var readSource: DispatchSourceRead?
 	private let readQueue = DispatchQueue(label: "com.meshtastic.serial.read")
-	private var readBuffer = Data()
+	private var framer = StreamFramer()
 
 	private var eventStreamContinuation: AsyncStream<ConnectionEvent>.Continuation?
 	
@@ -53,45 +53,6 @@ actor SerialConnection: Connection {
 	}
 
 	// MARK: - Reading Logic (DispatchSourceRead Implementation)
-
-	/// Processes the internal buffer to find and yield complete packets.
-	/// This method is always called on the actor's context.
-	private func processBuffer() {
-		let startOfFrame: [UInt8] = [0x94, 0xc3]
-
-		while !readBuffer.isEmpty {
-			guard let startIndex = readBuffer.firstRange(of: startOfFrame)?.lowerBound else {
-				readBuffer.removeAll()
-				return
-			}
-
-			if startIndex > readBuffer.startIndex {
-				readBuffer.removeSubrange(readBuffer.startIndex..<startIndex)
-			}
-
-			guard readBuffer.count >= 4 else { return }
-
-			let lengthBytes = readBuffer.subdata(in: 2..<4)
-			let length = lengthBytes.withUnsafeBytes { $0.load(as: UInt16.self).bigEndian }
-
-			let totalPacketLength = 4 + Int(length)
-
-			guard readBuffer.count >= totalPacketLength else { return }
-
-			let payload = readBuffer.subdata(in: 4..<totalPacketLength)
-
-			switch FromRadioDecoder.classify(payload) {
-			case .decoded(let fromRadio):
-				eventStreamContinuation?.yield(.data(fromRadio))
-			case .skipInvalidUTF8(let error):
-				Logger.transport.error("🔱 [Serial] Skipping FromRadio frame with invalid UTF-8 (\(payload.count) bytes): \(error, privacy: .public)")
-			case .failed(let error):
-				Logger.transport.error("🔱 [Serial] Failed to deserialize payload, skipping packet: \(error, privacy: .public)")
-			}
-
-			readBuffer.removeSubrange(0..<totalPacketLength)
-		}
-	}
 
 	/// The main reader setup, using a DispatchSourceRead for non-blocking I/O.
 	private func startReader() {
@@ -149,8 +110,16 @@ actor SerialConnection: Connection {
 
 	// Actor-isolated methods to be called from other actor-isolated methods.
 	private func appendAndProcess(data: Data) {
-		readBuffer.append(data)
-		processBuffer()
+		for payload in framer.append(data) {
+			switch FromRadioDecoder.classify(payload) {
+			case .decoded(let fromRadio):
+				eventStreamContinuation?.yield(.data(fromRadio))
+			case .skipInvalidUTF8(let error):
+				Logger.transport.error("🔱 [Serial] Skipping FromRadio frame with invalid UTF-8 (\(payload.count) bytes): \(error, privacy: .public)")
+			case .failed(let error):
+				Logger.transport.error("🔱 [Serial] Failed to deserialize payload, skipping packet: \(error, privacy: .public)")
+			}
+		}
 	}
 
 	private func handleReaderEOF() {
@@ -239,10 +208,7 @@ actor SerialConnection: Connection {
 			throw SerialError.notConnected
 		}
 		let serialized = try data.serializedData()
-		var buffer = Data([0x94, 0xc3])
-		var len: UInt16 = UInt16(serialized.count).bigEndian
-		buffer.append(Data(bytes: &len, count: 2))
-		buffer.append(serialized)
+		let buffer = StreamFramer.encode(serialized)
 
 		do {
 			try fileHandle.write(contentsOf: buffer)
