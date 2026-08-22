@@ -35,7 +35,9 @@ struct RootView: View {
 #if DEBUG
 		.task {
 			// Headless-testing hook (MarketingCapture / SwitchStress pattern): launch with
-			// `-tv-connect host:port` to connect without driving the remote. Debug only.
+			// `-tv-connect host:port` to connect without driving the remote. MeshClient
+			// consumes `-tv-simulate-abort-after seconds` after config completes and accepts
+			// `-tv-reconnect-port port` for deterministic failure injection. Debug only.
 			guard let index = CommandLine.arguments.firstIndex(of: "-tv-connect"),
 			      index + 1 < CommandLine.arguments.count else { return }
 			let parts = CommandLine.arguments[index + 1].split(separator: ":")
@@ -54,7 +56,11 @@ struct RootView: View {
 		case .connected:
 			MapScreen(client: client)
 		case .connecting:
-			ConnectingView(host: client.host) { client.disconnect() }
+			ConnectingView(host: client.host, mode: .connecting) { client.disconnect() }
+		case .reconnecting(let attempt, let maxAttempts):
+			ConnectingView(host: client.host, mode: .reconnecting(attempt: attempt, maxAttempts: maxAttempts)) {
+				client.disconnect()
+			}
 		case .disconnected, .failed:
 			ConnectView(client: client)
 		}
@@ -62,7 +68,13 @@ struct RootView: View {
 }
 
 private struct ConnectingView: View {
+	enum Mode {
+		case connecting
+		case reconnecting(attempt: Int, maxAttempts: Int)
+	}
+
 	let host: String
+	let mode: Mode
 	let onCancel: () -> Void
 
 	var body: some View {
@@ -73,9 +85,19 @@ private struct ConnectingView: View {
 				.frame(width: 280)
 			ProgressView()
 				.scaleEffect(1.6)
-			Text("Connecting to \(host)…")
-				.font(.title2)
-				.foregroundStyle(.secondary)
+			switch mode {
+			case .connecting:
+				Text("Connecting to \(host)…")
+					.font(.title2)
+					.foregroundStyle(.secondary)
+			case .reconnecting(let attempt, let maxAttempts):
+				Text("Connection interrupted. Reconnecting…")
+					.font(.title2)
+					.foregroundStyle(.secondary)
+				Text("Attempt \(attempt) of \(maxAttempts)")
+					.font(.callout)
+					.foregroundStyle(.tertiary)
+			}
 			Button("Cancel", action: onCancel)
 		}
 	}

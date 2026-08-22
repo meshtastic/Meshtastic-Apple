@@ -64,7 +64,9 @@ struct NodeMapSwiftUI: View {
 	@State private var mapRegion = MKCoordinateRegion.init()
 
 	var body: some View {
-		if node.modelContext != nil {
+		// isDeleted too: a deleted-but-unsaved node keeps its modelContext until the save
+		// completes, and reading its persisted properties in that window traps.
+		if node.modelContext != nil && !node.isDeleted {
 			Group {
 				if totalPositionCount > 0 {
 					mapWithNavigation

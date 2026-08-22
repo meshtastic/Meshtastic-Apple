@@ -2074,7 +2074,7 @@
 			repositoryURL = "https://github.com/meshtastic/TAKPacket-SDK.git";
 			requirement = {
 				kind = upToNextMinorVersion;
-				minimumVersion = 0.5.1;
+				minimumVersion = 0.9.1;
 			};
 		};
 		EF8B64957FF0A454C2EE0FBB /* XCRemoteSwiftPackageReference "CocoaMQTT" */ = {
