@@ -498,11 +498,18 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		refresh.nodeNum = nodeNum
 		activeAutomaticConfigRefresh = refresh
 		let stageLease = MeshPackets.acquireSharedChannelRefreshStageLease()
-		_ = await stageLease.begin(
+		let owner = refresh.owner
+		let didBegin = await stageLease.begin(
 			for: nodeNum,
-			owner: refresh.owner,
+			owner: owner,
 			baseline: refresh.channelRefreshBaselineByNode[nodeNum] ?? []
 		)
+		guard didBegin, activeAutomaticConfigRefresh?.owner == owner else {
+			if didBegin {
+				await stageLease.packets.discardChannelRefreshStage(for: nodeNum, owner: owner)
+			}
+			return
+		}
 	}
 
 	func sendWantDatabase() async throws {

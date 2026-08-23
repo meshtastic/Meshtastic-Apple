@@ -605,6 +605,46 @@ extension AccessoryManagerChannelRefreshLifecycleTests {
 		#expect(try channelNames(nodeNum: nodeNum) == ["Leased Primary"])
 	}
 
+	@Test("Disconnect before delayed stage activation releases the late refresh lease")
+	func disconnectBeforeDelayedStageActivationReleasesLateRefreshLease() async throws {
+		resetSharedStore()
+		let nodeNum: UInt32 = 0x00D1_A17E
+		try seedMyInfo(nodeNum: nodeNum, channelName: "Original Primary")
+		let connection = ChannelRefreshLifecycleConnection()
+		let manager = makeManager(nodeNum: nodeNum, connection: connection)
+		let refresh = await startAutomaticConfigRefresh(manager, connection: connection)
+		let stageBeginReached = AsyncGate()
+		let allowStageBegin = AsyncGate()
+		let capturedMesh = MeshPackets.shared
+
+		MeshPackets.channelRefreshStageBeginHook = {
+			await stageBeginReached.open()
+			try? await allowStageBegin.wait()
+		}
+		defer { MeshPackets.channelRefreshStageBeginHook = nil }
+
+		let delayedStageBegin = Task {
+			await manager.beginAutomaticChannelRefreshStageIfNeeded(for: Int64(nodeNum))
+		}
+		try await stageBeginReached.wait()
+
+		try await manager.closeConnection()
+		await #expect(throws: CancellationError.self) {
+			try await refresh.value
+		}
+		MeshPackets.recreateShared()
+		#expect(MeshPackets.shared === capturedMesh)
+
+		await allowStageBegin.open()
+		await delayedStageBegin.value
+		for _ in 0..<100 where MeshPackets.shared === capturedMesh {
+			await Task.yield()
+		}
+
+		let didRecreateSharedMesh = MeshPackets.shared !== capturedMesh
+		#expect(didRecreateSharedMesh)
+	}
+
 	@Test("A rejected refresh releases its stage so later radio packets use direct handling")
 	func rejectedRefreshStageReturnsToDirectChannelHandling() async throws {
 		resetSharedStore()

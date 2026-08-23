@@ -105,6 +105,11 @@ actor MeshPackets {
 			baseline: [ChannelRefreshSnapshot]? = nil
 		) async -> Bool {
 			guard claimBegin() else { return false }
+			#if DEBUG
+			if let hook = await MeshPackets.channelRefreshStageBeginHook {
+				await hook()
+			}
+			#endif
 			let didBegin = await packets.beginLeasedChannelRefreshStage(
 				for: nodeNum,
 				owner: owner,
@@ -179,6 +184,8 @@ actor MeshPackets {
 	/// Deterministic concurrency checkpoint used by the refresh boundary regression test. Production
 	/// callers leave this nil, so validation and replacement execute without suspension.
 	@MainActor static var channelRefreshCommitValidationHook: (@MainActor @Sendable () async -> Void)?
+	/// Deterministic concurrency checkpoint used by the late stage activation regression test.
+	@MainActor static var channelRefreshStageBeginHook: (@MainActor @Sendable () async -> Void)?
 	#endif
 
 	static var shared: MeshPackets {
