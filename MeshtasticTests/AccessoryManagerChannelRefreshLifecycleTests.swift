@@ -14,10 +14,27 @@ private actor ChannelRefreshLifecycleConnection: Connection {
 	let type: TransportType = .ble
 	var isConnected = true
 	private(set) var sentWantConfigIDs: [UInt32] = []
+	private var pauseNextConfigSend = false
+	private var pausedConfigSendContinuation: CheckedContinuation<Void, Never>?
+
+	func pauseNextWantConfigSend() {
+		pauseNextConfigSend = true
+	}
+
+	func resumePausedWantConfigSend() {
+		pausedConfigSendContinuation?.resume()
+		pausedConfigSendContinuation = nil
+	}
 
 	func send(_ data: ToRadio) async throws {
 		if case let .wantConfigID(id) = data.payloadVariant {
 			sentWantConfigIDs.append(id)
+			if pauseNextConfigSend {
+				pauseNextConfigSend = false
+				await withCheckedContinuation { continuation in
+					pausedConfigSendContinuation = continuation
+				}
+			}
 		}
 	}
 	func connect() async throws -> AsyncStream<ConnectionEvent> { AsyncStream { $0.finish() } }
@@ -104,6 +121,26 @@ struct AccessoryManagerChannelRefreshLifecycleTests {
 		await manager.didReceive(.data(fromRadio))
 	}
 
+	private func stageDisabledSlots(_ manager: AccessoryManager, excluding: Set<Int32> = []) async {
+		for index in Int32(1)...Int32(7) where !excluding.contains(index) {
+			var disabled = Channel()
+			disabled.index = index
+			disabled.role = .disabled
+			await manager.handleChannel(disabled)
+		}
+	}
+
+	private func startAutomaticConfigRefresh(
+		_ manager: AccessoryManager,
+		connection: ChannelRefreshLifecycleConnection
+	) async -> Task<Void, Error> {
+		let refresh = Task { try await manager.sendWantConfig() }
+		while await connection.sentWantConfigIDs.isEmpty {
+			await Task.yield()
+		}
+		return refresh
+	}
+
 	private func channelNames(nodeNum: UInt32) throws -> [String] {
 		let persistedNodeNum = Int64(nodeNum)
 		let context = ModelContext(PersistenceController.shared.container)
@@ -118,15 +155,19 @@ struct AccessoryManagerChannelRefreshLifecycleTests {
 		resetSharedStore()
 		let nodeNum: UInt32 = 0x00C0_FFEE
 		try seedMyInfo(nodeNum: nodeNum, channelName: "Old Primary")
-		let manager = makeManager()
+		let connection = ChannelRefreshLifecycleConnection()
+		let manager = makeManager(nodeNum: nodeNum, connection: connection)
+		let refresh = await startAutomaticConfigRefresh(manager, connection: connection)
 
 		await manager.handleMyInfo(myInfo(nodeNum: nodeNum))
 		await manager.handleChannel(channel(index: 0, name: "New Primary"))
 		await manager.handleChannel(channel(index: 1, name: "New Secondary", role: .secondary))
+		await stageDisabledSlots(manager, excluding: [1])
 
 		#expect(try channelNames(nodeNum: nodeNum) == ["Old Primary"])
 
 		await completeConfig(manager)
+		try await refresh.value
 
 		#expect(try channelNames(nodeNum: nodeNum) == ["New Primary", "New Secondary"])
 	}
@@ -136,51 +177,20 @@ struct AccessoryManagerChannelRefreshLifecycleTests {
 		resetSharedStore()
 		let nodeNum: UInt32 = 0x00D1_5C0
 		try seedMyInfo(nodeNum: nodeNum, channelName: "Kept Primary")
-		let manager = makeManager()
+		let connection = ChannelRefreshLifecycleConnection()
+		let manager = makeManager(nodeNum: nodeNum, connection: connection)
+		let refresh = await startAutomaticConfigRefresh(manager, connection: connection)
 
 		await manager.handleMyInfo(myInfo(nodeNum: nodeNum))
 		await manager.handleChannel(channel(index: 0, name: "Discarded Primary"))
 
 		try await manager.closeConnection()
+		await #expect(throws: CancellationError.self) {
+			try await refresh.value
+		}
 		await MeshPackets.shared.commitChannelRefreshStage(for: Int64(nodeNum))
 
 		#expect(try channelNames(nodeNum: nodeNum) == ["Kept Primary"])
-	}
-
-	@Test("Late completion from an older automatic refresh cannot commit a newer stage")
-	func lateOlderConfigCompletionCannotCommitNewerStage() async throws {
-		resetSharedStore()
-		let nodeNum: UInt32 = 0x00A1_10CC
-		try seedMyInfo(nodeNum: nodeNum, channelName: "Original Primary")
-		let connection = ChannelRefreshLifecycleConnection()
-		let manager = makeManager(nodeNum: nodeNum, connection: connection)
-
-		let firstRefresh = Task { try await manager.sendWantConfig() }
-		while await connection.sentWantConfigIDs.count < 1 {
-			await Task.yield()
-		}
-		let firstID = await connection.sentWantConfigIDs[0]
-		await manager.handleMyInfo(myInfo(nodeNum: nodeNum))
-		await manager.handleChannel(channel(index: 0, name: "First Primary"))
-
-		let secondRefresh = Task { try await manager.sendWantConfig() }
-		await #expect(throws: CancellationError.self) {
-			try await firstRefresh.value
-		}
-		while await connection.sentWantConfigIDs.count < 2 {
-			await Task.yield()
-		}
-		let secondID = await connection.sentWantConfigIDs[1]
-		#expect(firstID != secondID)
-		await manager.handleMyInfo(myInfo(nodeNum: nodeNum))
-		await manager.handleChannel(channel(index: 0, name: "Second Primary"))
-
-		await completeConfig(manager, id: firstID)
-		#expect(try channelNames(nodeNum: nodeNum) == ["Original Primary"])
-
-		await completeConfig(manager, id: secondID)
-		try await secondRefresh.value
-		#expect(try channelNames(nodeNum: nodeNum) == ["Second Primary"])
 	}
 
 	@Test("A user deletion during automatic refresh is not resurrected by staged packets")
@@ -194,11 +204,14 @@ struct AccessoryManagerChannelRefreshLifecycleTests {
 				(1, "User Deleted", .secondary)
 			]
 		)
-		let manager = makeManager(nodeNum: nodeNum)
+		let connection = ChannelRefreshLifecycleConnection()
+		let manager = makeManager(nodeNum: nodeNum, connection: connection)
+		let refresh = await startAutomaticConfigRefresh(manager, connection: connection)
 
 		await manager.handleMyInfo(myInfo(nodeNum: nodeNum))
 		await manager.handleChannel(channel(index: 0, name: "Primary"))
 		await manager.handleChannel(channel(index: 1, name: "User Deleted", role: .secondary))
+		await stageDisabledSlots(manager, excluding: [1])
 
 		let context = PersistenceController.shared.context
 		let persistedNodeNum = Int64(nodeNum)
@@ -209,6 +222,7 @@ struct AccessoryManagerChannelRefreshLifecycleTests {
 		try context.save()
 
 		await completeConfig(manager)
+		try await refresh.value
 
 		#expect(try channelNames(nodeNum: nodeNum) == ["Primary"])
 	}
@@ -224,11 +238,14 @@ struct AccessoryManagerChannelRefreshLifecycleTests {
 				(1, "Kept Secondary", .secondary)
 			]
 		)
-		let manager = makeManager(nodeNum: nodeNum)
+		let connection = ChannelRefreshLifecycleConnection()
+		let manager = makeManager(nodeNum: nodeNum, connection: connection)
+		let refresh = await startAutomaticConfigRefresh(manager, connection: connection)
 
 		await manager.handleMyInfo(myInfo(nodeNum: nodeNum))
 		await manager.handleChannel(channel(index: 1, name: "Lone Secondary", role: .secondary))
 		await completeConfig(manager)
+		try await refresh.value
 
 		#expect(try channelNames(nodeNum: nodeNum) == ["Kept Primary", "Kept Secondary"])
 	}
@@ -244,7 +261,9 @@ struct AccessoryManagerChannelRefreshLifecycleTests {
 				(1, "Old Secondary", .secondary)
 			]
 		)
-		let manager = makeManager(nodeNum: nodeNum)
+		let connection = ChannelRefreshLifecycleConnection()
+		let manager = makeManager(nodeNum: nodeNum, connection: connection)
+		let refresh = await startAutomaticConfigRefresh(manager, connection: connection)
 		var disabled = Channel()
 		disabled.index = 1
 		disabled.role = .disabled
@@ -252,8 +271,171 @@ struct AccessoryManagerChannelRefreshLifecycleTests {
 		await manager.handleMyInfo(myInfo(nodeNum: nodeNum))
 		await manager.handleChannel(channel(index: 0, name: "New Primary"))
 		await manager.handleChannel(disabled)
+		await stageDisabledSlots(manager)
 		await completeConfig(manager)
+		try await refresh.value
 
 		#expect(try channelNames(nodeNum: nodeNum) == ["New Primary"])
+	}
+
+	@Test("Automatic refresh uses the reserved config nonce and coalesces before its waiter is installed")
+	func automaticRefreshUsesReservedNonceAndCoalescesBeforeWaiterInstallation() async throws {
+		resetSharedStore()
+		let nodeNum: UInt32 = 0x00AC_CE55
+		try seedMyInfo(nodeNum: nodeNum, channelName: "Original")
+		let connection = ChannelRefreshLifecycleConnection()
+		let manager = makeManager(nodeNum: nodeNum, connection: connection)
+		await connection.pauseNextWantConfigSend()
+
+		let firstRefresh = Task { try await manager.sendWantConfig() }
+		while await connection.sentWantConfigIDs.count < 1 {
+			await Task.yield()
+		}
+		let secondRefresh = Task { try await manager.sendWantConfig() }
+		for _ in 0..<100 {
+			if await connection.sentWantConfigIDs.count >= 2 { break }
+			await Task.yield()
+		}
+
+		let sentIDs = await connection.sentWantConfigIDs
+		#expect(sentIDs == [UInt32(manager.NONCE_ONLY_CONFIG)])
+
+		if sentIDs == [UInt32(manager.NONCE_ONLY_CONFIG)] {
+			secondRefresh.cancel()
+			await #expect(throws: CancellationError.self) {
+				try await secondRefresh.value
+			}
+			await connection.resumePausedWantConfigSend()
+			await completeConfig(manager)
+			try await firstRefresh.value
+		} else {
+			firstRefresh.cancel()
+			secondRefresh.cancel()
+			await connection.resumePausedWantConfigSend()
+		}
+	}
+
+	@Test("Duplicate MyInfo retains channels already staged for the active refresh")
+	func duplicateMyInfoRetainsAccumulatedChannelsForActiveRefresh() async throws {
+		resetSharedStore()
+		let nodeNum: UInt32 = 0x00D0_0D00
+		try seedMyInfo(nodeNum: nodeNum, channelName: "Old Primary")
+		let connection = ChannelRefreshLifecycleConnection()
+		let manager = makeManager(nodeNum: nodeNum, connection: connection)
+		let refresh = await startAutomaticConfigRefresh(manager, connection: connection)
+
+		await manager.handleMyInfo(myInfo(nodeNum: nodeNum))
+		await manager.handleChannel(channel(index: 0, name: "New Primary"))
+		await manager.handleMyInfo(myInfo(nodeNum: nodeNum))
+		await manager.handleChannel(channel(index: 1, name: "New Secondary", role: .secondary))
+		await stageDisabledSlots(manager, excluding: [1])
+		await completeConfig(manager)
+		try await refresh.value
+
+		#expect(try channelNames(nodeNum: nodeNum) == ["New Primary", "New Secondary"])
+	}
+
+	@Test("A missing newly configured secondary slot rejects the complete-looking staged dump")
+	func missingNewSecondarySlotDoesNotReplacePersistedChannels() async throws {
+		resetSharedStore()
+		let nodeNum: UInt32 = 0x00B1_0C00
+		try seedMyInfo(nodeNum: nodeNum, channelName: "Kept Primary")
+		let connection = ChannelRefreshLifecycleConnection()
+		let manager = makeManager(nodeNum: nodeNum, connection: connection)
+		let refresh = await startAutomaticConfigRefresh(manager, connection: connection)
+
+		await manager.handleMyInfo(myInfo(nodeNum: nodeNum))
+		await manager.handleChannel(channel(index: 0, name: "Replacement Primary"))
+		await stageDisabledSlots(manager, excluding: [1])
+		await completeConfig(manager)
+		try await refresh.value
+
+		#expect(try channelNames(nodeNum: nodeNum) == ["Kept Primary"])
+	}
+
+	@Test("An incomplete refresh stage is discarded so later channel packets update the cache")
+	func incompleteRefreshStageIsDiscardedAfterCompletion() async throws {
+		resetSharedStore()
+		let nodeNum: UInt32 = 0x00C1_EA00
+		try seedMyInfo(nodeNum: nodeNum, channelName: "Kept Primary")
+		let connection = ChannelRefreshLifecycleConnection()
+		let manager = makeManager(nodeNum: nodeNum, connection: connection)
+		let refresh = await startAutomaticConfigRefresh(manager, connection: connection)
+
+		await manager.handleMyInfo(myInfo(nodeNum: nodeNum))
+		await manager.handleChannel(channel(index: 1, name: "Incomplete Secondary", role: .secondary))
+		await completeConfig(manager)
+		try await refresh.value
+		await manager.handleChannel(channel(index: 0, name: "Later Packet"))
+
+		#expect(try channelNames(nodeNum: nodeNum) == ["Later Packet"])
+	}
+
+	@Test("Recycling during an active refresh keeps later channel packets in that stage")
+	func recycleDuringActiveRefreshDoesNotBypassStaging() async throws {
+		resetSharedStore()
+		let nodeNum: UInt32 = 0x00EC_1E00
+		try seedMyInfo(nodeNum: nodeNum, channelName: "Old Primary")
+		let connection = ChannelRefreshLifecycleConnection()
+		let manager = makeManager(nodeNum: nodeNum, connection: connection)
+		let refresh = await startAutomaticConfigRefresh(manager, connection: connection)
+
+		await manager.handleMyInfo(myInfo(nodeNum: nodeNum))
+		await manager.handleChannel(channel(index: 0, name: "New Primary"))
+		MeshPackets.recreateShared()
+		MeshPackets.recreateShared()
+		await manager.handleChannel(channel(index: 1, name: "New Secondary", role: .secondary))
+		#expect(try channelNames(nodeNum: nodeNum) == ["Old Primary"])
+		await stageDisabledSlots(manager, excluding: [1])
+		await completeConfig(manager)
+		try await refresh.value
+
+		#expect(try channelNames(nodeNum: nodeNum) == ["New Primary", "New Secondary"])
+	}
+
+	@Test("Direct user rename deletion and reorder survive an automatic refresh")
+	func directUserChannelChangesAreNotOverwrittenByAutomaticRefresh() async throws {
+		resetSharedStore()
+		let nodeNum: UInt32 = 0x00D1_DEC7
+		try seedMyInfo(
+			nodeNum: nodeNum,
+			channels: [
+				(0, "Original Primary", .primary),
+				(1, "Delete Me", .secondary),
+				(2, "Move Me", .secondary)
+			]
+		)
+		let connection = ChannelRefreshLifecycleConnection()
+		let manager = makeManager(nodeNum: nodeNum, connection: connection)
+		let refresh = await startAutomaticConfigRefresh(manager, connection: connection)
+
+		await manager.handleMyInfo(myInfo(nodeNum: nodeNum))
+		await manager.handleChannel(channel(index: 0, name: "Remote Primary"))
+		await manager.handleChannel(channel(index: 1, name: "Remote Secondary", role: .secondary))
+		await manager.handleChannel(channel(index: 2, name: "Remote Moved", role: .secondary))
+		await stageDisabledSlots(manager, excluding: [1, 2])
+
+		await MeshPackets.shared.channelPacket(
+			channel: channel(index: 0, name: "User Renamed Primary"),
+			fromNum: Int64(nodeNum),
+			stageIfRefreshing: false
+		)
+		var deleted = Channel()
+		deleted.index = 1
+		deleted.role = .disabled
+		await MeshPackets.shared.channelPacket(channel: deleted, fromNum: Int64(nodeNum), stageIfRefreshing: false)
+		let context = PersistenceController.shared.context
+		let persistedNodeNum = Int64(nodeNum)
+		let descriptor = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == persistedNodeNum })
+		let myInfo = try #require(context.fetch(descriptor).first)
+		let moved = try #require(myInfo.channels.first { $0.index == 2 })
+		moved.index = 1
+		moved.id = 1
+		try context.save()
+
+		await completeConfig(manager)
+		try await refresh.value
+
+		#expect(try channelNames(nodeNum: nodeNum) == ["User Renamed Primary", "Move Me"])
 	}
 }

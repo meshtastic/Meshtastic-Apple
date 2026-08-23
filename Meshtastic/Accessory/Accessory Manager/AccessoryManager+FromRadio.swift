@@ -132,10 +132,7 @@ extension AccessoryManager {
 				// Onboard a new device connection here
 			}
 		}
-		await MeshPackets.shared.beginChannelRefreshStage(
-			for: Int64(myNodeInfo.myNodeNum),
-			requestID: activeConfigRefreshID ?? UInt32(NONCE_ONLY_CONFIG)
-		)
+		await beginAutomaticChannelRefreshStageIfNeeded(for: Int64(myNodeInfo.myNodeNum))
 
 		// Auto-disable new-node notifications for event firmware editions
 		applyEventFirmwareNotificationDefaults(myNodeInfo.firmwareEdition)

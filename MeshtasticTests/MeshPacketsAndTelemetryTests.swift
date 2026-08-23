@@ -179,6 +179,12 @@ struct AutomaticChannelRefreshStagingTests {
 		disabled.index = 2
 		disabled.role = .disabled
 		await mesh.channelPacket(channel: disabled, fromNum: Int64(nodeNum))
+		for index in Int32(3)...Int32(7) {
+			var disabled = Channel()
+			disabled.index = index
+			disabled.role = .disabled
+			await mesh.channelPacket(channel: disabled, fromNum: Int64(nodeNum))
+		}
 		await mesh.commitChannelRefreshStage(for: Int64(nodeNum))
 
 		let persisted = try persistedChannels(in: container, nodeNum: nodeNum)
