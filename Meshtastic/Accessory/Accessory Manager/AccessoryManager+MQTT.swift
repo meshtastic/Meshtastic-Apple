@@ -33,6 +33,45 @@ actor MqttForwardGate {
 	}
 }
 
+enum MqttForwardAdmissionResult<Work> {
+	case rejected
+	case admitted(Work)
+}
+
+enum MqttForwardAdmission {
+	@MainActor
+	static func admit<Work>(
+		gate: MqttForwardGate,
+		build: () -> Work
+	) async -> MqttForwardAdmissionResult<Work> {
+		guard await gate.tryAcquire() else {
+			return .rejected
+		}
+		return .admitted(build())
+	}
+
+	static func complete<Work>(
+		_ admission: MqttForwardAdmissionResult<Work?>,
+		gate: MqttForwardGate,
+		perform: (Work) async throws -> Void
+	) async throws {
+		switch admission {
+		case .rejected:
+			return
+		case .admitted(nil):
+			await gate.release()
+		case .admitted(let work?):
+			do {
+				try await perform(work)
+				await gate.release()
+			} catch {
+				await gate.release()
+				throw error
+			}
+		}
+	}
+}
+
 extension AccessoryManager {
 
 	// One shared gate — drops concurrent MQTT→BLE writes instead of queuing them.
@@ -94,12 +133,7 @@ extension AccessoryManager {
 		Logger.services.info("📲 MQTT Disconnected")
 	}
 
-	func onMqttMessageReceived(message: CocoaMQTTMessage) {
-		if message.topic.contains("/stat/") {
-			Logger.services.debug("📲 [MQTT] dropping /stat/ message on \(message.topic, privacy: .public)")
-			return
-		}
-
+	private func makeMqttProxyToRadio(message: CocoaMQTTMessage) -> ToRadio? {
 		let rawData = Data(message.payload)
 
 		// Parse the ServiceEnvelope once. Fail open: unparseable bytes are
@@ -115,7 +149,7 @@ extension AccessoryManager {
 			if MqttForwardFilter.decide(envelope: envelope, myNodeHex: myHex) == .dropNoPayload {
 				mqttProxyDroppedNoPayload += 1
 				Logger.services.debug("📲 [MQTT] drop (no payload) topic=\(message.topic, privacy: .public) count=\(self.mqttProxyDroppedNoPayload, privacy: .public)")
-				return
+				return nil
 			}
 		}
 
@@ -142,19 +176,32 @@ extension AccessoryManager {
 
 		var toRadio = ToRadio()
 		toRadio.mqttClientProxyMessage = proxyMessage
+		return toRadio
+	}
+
+	func onMqttMessageReceived(message: CocoaMQTTMessage) {
+		if message.topic.contains("/stat/") {
+			Logger.services.debug("📲 [MQTT] dropping /stat/ message on \(message.topic, privacy: .public)")
+			return
+		}
 
 		// Gate: drop this packet if a previous MQTT→BLE write is still in-flight.
 		// The public broker can deliver global LongFast traffic faster than BLE can
 		// drain it. Queuing every packet would overwhelm the device's radio stack;
 		// dropping excess is preferable to building an unbounded BLE write backlog.
-		Task {
+		Task { @MainActor in
 			let gate = AccessoryManager.mqttForwardGate
-			guard await gate.tryAcquire() else {
-				Logger.services.debug("📲 [MQTT] drop (BLE write in-flight): \(message.topic, privacy: .public)")
-				return
+			let admission = await MqttForwardAdmission.admit(gate: gate) {
+				self.makeMqttProxyToRadio(message: message)
 			}
-			defer { Task { await gate.release() } }
-			try? await self.send(toRadio)
+
+			if case .rejected = admission {
+				Logger.services.debug("📲 [MQTT] drop (BLE write in-flight): \(message.topic, privacy: .public)")
+			}
+
+			try? await MqttForwardAdmission.complete(admission, gate: gate) { toRadio in
+				try await self.send(toRadio)
+			}
 		}
 	}
 
