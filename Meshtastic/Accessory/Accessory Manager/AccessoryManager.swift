@@ -303,6 +303,8 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	
 	// Continuations
 	var wantConfigContinuation: CheckedContinuation<Void, Error>?
+	var activeConfigRefreshID: UInt32?
+	var nextConfigRefreshID: UInt32 = 69422
 	var firstDatabaseNodeInfoContinuation: CheckedContinuation<Void, Error>?
 	var wantDatabaseGate: AsyncGate = AsyncGate()
 
@@ -398,32 +400,50 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		// connects). It now runs after the connection completes — see connect() Step 8 — where it
 		// also prunes against post-dump lastHeard values instead of pre-dump ones.
 		let configRefreshNodeNum = activeConnection?.device.num ?? activeDeviceNum
+		let configRefreshID = nextAutomaticConfigRefreshID()
+		activeConfigRefreshID = configRefreshID
 
 		do {
 			try await withTaskCancellationHandler {
 				var toRadio: ToRadio = ToRadio()
-				toRadio.wantConfigID = UInt32(NONCE_ONLY_CONFIG)
+				toRadio.wantConfigID = configRefreshID
 				try await self.send(toRadio)
 				try await connection.startDrainPendingPackets()
 				try await withCheckedThrowingContinuation { cont in
 					self.wantConfigContinuation = cont
 				}
 				self.wantConfigContinuation = nil
+				if self.activeConfigRefreshID == configRefreshID {
+					self.activeConfigRefreshID = nil
+				}
 				Logger.transport.info("✅ [Accessory] NONCE_ONLY_CONFIG Done")
 			} onCancel: {
 				Task { @MainActor in
-					if let continuation = wantConfigContinuation {
+					if activeConfigRefreshID == configRefreshID, let continuation = wantConfigContinuation {
 						wantConfigContinuation = nil
+						activeConfigRefreshID = nil
 						continuation.resume(throwing: CancellationError())
 					}
 				}
 			}
 		} catch {
-			if let configRefreshNodeNum {
-				await MeshPackets.shared.discardChannelRefreshStage(for: configRefreshNodeNum)
+			if activeConfigRefreshID == configRefreshID {
+				activeConfigRefreshID = nil
+				if let configRefreshNodeNum {
+					await MeshPackets.shared.discardChannelRefreshStage(for: configRefreshNodeNum, requestID: configRefreshID)
+				}
 			}
 			throw error
 		}
+	}
+
+	private func nextAutomaticConfigRefreshID() -> UInt32 {
+		defer {
+			repeat {
+				nextConfigRefreshID = nextConfigRefreshID == UInt32.max ? 1 : nextConfigRefreshID + 1
+			} while nextConfigRefreshID == UInt32(NONCE_ONLY_CONFIG) || nextConfigRefreshID == UInt32(NONCE_ONLY_DB)
+		}
+		return nextConfigRefreshID
 	}
 
 	func sendWantDatabase() async throws {
@@ -485,6 +505,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		if let closingNodeNum {
 			await MeshPackets.shared.discardChannelRefreshStage(for: closingNodeNum)
 		}
+		activeConfigRefreshID = nil
 
 		// Lockdown: clear per-connection state. If a Lock Now was in flight, the
 		// disconnect resolves the coordinator to `.lockNowAcknowledged`.
@@ -514,6 +535,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		// Clean up continuations — nil before resume to prevent double-resume races
 		if let continuation = wantConfigContinuation {
 			wantConfigContinuation = nil
+			activeConfigRefreshID = nil
 			continuation.resume(throwing: CancellationError())
 		}
 		if let continuation = firstDatabaseNodeInfoContinuation {
@@ -1055,12 +1077,13 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 
 			Logger.transport.info("✅ [Accessory] Notifying completions that have completed for configCompleteID: \(configCompleteID)")
 			switch configCompleteID {
-			case UInt32(NONCE_ONLY_CONFIG):
+			case let id where id == activeConfigRefreshID || id == UInt32(NONCE_ONLY_CONFIG):
 				if let completedNodeNum = activeConnection?.device.num ?? activeDeviceNum {
-					await MeshPackets.shared.commitChannelRefreshStage(for: completedNodeNum)
+					await MeshPackets.shared.commitChannelRefreshStage(for: completedNodeNum, requestID: configCompleteID)
 				}
-				if let continuation = wantConfigContinuation {
+				if activeConfigRefreshID == configCompleteID, let continuation = wantConfigContinuation {
 					wantConfigContinuation = nil
+					activeConfigRefreshID = nil
 					continuation.resume()
 				}
 				

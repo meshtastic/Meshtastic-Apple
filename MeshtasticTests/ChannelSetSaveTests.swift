@@ -265,4 +265,18 @@ struct ChannelSetSaveTests {
 		#expect(try channelNames(for: connectedDeviceNum) == ["Imported"])
 		#expect(try channelNames(for: staleDeviceNum) == ["Stale"])
 	}
+
+	@Test("Local channel-set save is not diverted into an automatic refresh stage")
+	func testLocalChannelSetSaveIsNotDivertedIntoAutomaticRefreshStage() async throws {
+		let deviceNum: Int64 = 123_456_793
+		try seedMyInfo(deviceNum: deviceNum, channelName: "Existing")
+		await MeshPackets.shared.beginChannelRefreshStage(for: deviceNum)
+		let connection = MockChannelSetConnection()
+		let manager = makeManager(connection: connection, deviceNum: deviceNum)
+		let channelSet = makeChannelSet(channelNames: ["Imported"])
+
+		try await manager.saveChannelSet(channelSet: channelSet, addChannels: false, okToMQTT: false)
+
+		#expect(try channelNames(for: deviceNum) == ["Imported"])
+	}
 }

@@ -682,7 +682,7 @@ extension AccessoryManager {
 			tryClearExistingChannels()
 		}
 		for chan in deliveredChannels {
-			await MeshPackets.shared.channelPacket(channel: chan, fromNum: deviceNum)
+			await MeshPackets.shared.channelPacket(channel: chan, fromNum: deviceNum, stageIfRefreshing: false)
 		}
 
 		// Re-sync after the change. When we sent a LoRa config the device reboots
@@ -915,7 +915,7 @@ extension AccessoryManager {
 		_ = try await saveChannel(channel: channel, fromUser: user, toUser: user)
 
 		// Mirror the added channel into local state so it appears immediately (no reboot / re-sync).
-		await MeshPackets.shared.channelPacket(channel: channel, fromNum: deviceNum)
+		await MeshPackets.shared.channelPacket(channel: channel, fromNum: deviceNum, stageIfRefreshing: false)
 
 		Logger.mesh.info("➕ [Beacon] Added advertised channel '\(channelName, privacy: .private)' to secondary slot \(targetIndex, privacy: .public) — no reboot")
 	}

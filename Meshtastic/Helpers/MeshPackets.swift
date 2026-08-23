@@ -80,6 +80,23 @@ actor MeshPackets {
 		let mute: Bool
 	}
 
+	private struct ChannelSnapshot: Equatable {
+		let index: Int32
+		let uplinkEnabled: Bool
+		let downlinkEnabled: Bool
+		let name: String
+		let role: Int32
+		let psk: Data
+		let positionPrecision: Int32
+		let mute: Bool
+	}
+
+	private struct ChannelRefreshStage {
+		let requestID: UInt32?
+		let baseline: [Int32: ChannelSnapshot]
+		var channels: [Int32: StagedChannel] = [:]
+	}
+
 	private struct TelemetryPruneKey: Hashable {
 		let nodeNum: Int64
 		let metricsType: Int32
@@ -109,7 +126,8 @@ actor MeshPackets {
 	static func recreateShared() {
 		_lock.lock()
 		let previous = _shared
-		_shared = MeshPackets(modelContainer: _container)
+		let replacement = MeshPackets(modelContainer: _container)
+		_shared = replacement
 		_lock.unlock()
 		// Invalidate the retired instance. In-flight tasks that captured `MeshPackets.shared`
 		// before the swap (a debounced save, a late packet for the previous radio) still hold
@@ -117,7 +135,11 @@ actor MeshPackets {
 		// on-disk store as the new one. Letting those writes land after a device-switch
 		// clearDatabase resurrects the previous radio's rows (nodes bleeding across devices)
 		// and can trip reused-rowid "destroyed by ModelContext.reset" traps.
-		Task { await previous.invalidate() }
+		Task {
+			let stages = await previous.drainChannelRefreshStagesForRecreation()
+			await replacement.restoreChannelRefreshStages(stages)
+			await previous.invalidate()
+		}
 		Logger.data.info("♻️ [MeshPackets] Recreated shared instance to release ModelContext memory")
 	}
 
@@ -126,25 +148,41 @@ actor MeshPackets {
 	/// Set when this instance has been replaced by `recreateShared()`. A retired instance must
 	/// never persist again — see `recreateShared()`.
 	private var invalidated = false
-	private var channelRefreshStages: [Int64: [Int32: StagedChannel]] = [:]
+	private var channelRefreshStages: [Int64: ChannelRefreshStage] = [:]
 
 	func invalidate() {
 		invalidated = true
 		debounceSaveTask?.cancel()
 		debounceSaveTask = nil
+	}
+
+	private func drainChannelRefreshStagesForRecreation() -> [Int64: ChannelRefreshStage] {
+		let stages = channelRefreshStages
 		channelRefreshStages.removeAll()
+		return stages
 	}
 
-	func beginChannelRefreshStage(for nodeNum: Int64) {
-		channelRefreshStages[nodeNum] = [:]
+	private func restoreChannelRefreshStages(_ stages: [Int64: ChannelRefreshStage]) {
+		for (nodeNum, stage) in stages where channelRefreshStages[nodeNum] == nil {
+			channelRefreshStages[nodeNum] = stage
+		}
 	}
 
-	func discardChannelRefreshStage(for nodeNum: Int64) {
+	func beginChannelRefreshStage(for nodeNum: Int64, requestID: UInt32? = nil) {
+		channelRefreshStages[nodeNum] = ChannelRefreshStage(
+			requestID: requestID,
+			baseline: currentChannelSnapshot(for: nodeNum)
+		)
+	}
+
+	func discardChannelRefreshStage(for nodeNum: Int64, requestID: UInt32? = nil) {
+		guard stageMatches(nodeNum: nodeNum, requestID: requestID) else { return }
 		channelRefreshStages[nodeNum] = nil
 	}
 
-	func commitChannelRefreshStage(for nodeNum: Int64) {
-		guard let stagedChannels = channelRefreshStages.removeValue(forKey: nodeNum) else { return }
+	func commitChannelRefreshStage(for nodeNum: Int64, requestID: UInt32? = nil) {
+		guard stageMatches(nodeNum: nodeNum, requestID: requestID),
+			  let stage = channelRefreshStages[nodeNum] else { return }
 		let fetchDescriptor = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == nodeNum })
 		do {
 			let fetchedMyInfo = try modelContext.fetch(fetchDescriptor)
@@ -153,19 +191,33 @@ actor MeshPackets {
 				return
 			}
 			let myInfo = fetchedMyInfo[0]
+			guard isCompleteChannelRefresh(stage.channels, baseline: stage.baseline) else {
+				Logger.data.error("💥 Refusing incomplete staged channel refresh for: \(nodeNum.toHex(), privacy: .public)")
+				return
+			}
+			guard currentChannelSnapshot(from: myInfo) == stage.baseline else {
+				channelRefreshStages[nodeNum] = nil
+				Logger.data.info("💾 Discarded staged channel refresh after local channel changes for: \(nodeNum.toHex(), privacy: .public)")
+				return
+			}
 			for channel in myInfo.channels {
 				modelContext.delete(channel)
 			}
 			myInfo.channels.removeAll()
-			for staged in stagedChannels.values.sorted(by: { $0.index < $1.index }) {
+			let enabledChannels = stage.channels.values
+				.filter { $0.role != Int32(Channel.Role.disabled.rawValue) }
+				.sorted(by: { $0.index < $1.index })
+			for staged in enabledChannels {
 				let channel = ChannelEntity()
 				modelContext.insert(channel)
 				apply(stagedChannel: staged, to: channel)
 				myInfo.channels.append(channel)
 			}
-			savePendingChanges()
-			Logger.data.info("💾 Committed \(stagedChannels.count, privacy: .public) staged channel(s) for: \(nodeNum, privacy: .public)")
+			try modelContext.save()
+			channelRefreshStages[nodeNum] = nil
+			Logger.data.info("💾 Committed \(enabledChannels.count, privacy: .public) staged channel(s) for: \(nodeNum, privacy: .public)")
 		} catch {
+			modelContext.rollback()
 			let nsError = error as NSError
 			Logger.data.error("💥 Error committing staged channels from ADMIN_APP \(nsError, privacy: .public)")
 		}
@@ -492,13 +544,51 @@ actor MeshPackets {
 		return nil
 	}
 
-	func channelPacket (channel: Channel, fromNum: Int64) {
-		if channel.isInitialized && channel.hasSettings && channel.role != Channel.Role.disabled {
+	private func stageMatches(nodeNum: Int64, requestID: UInt32?) -> Bool {
+		guard let stage = channelRefreshStages[nodeNum] else { return false }
+		return requestID == nil || stage.requestID == requestID
+	}
+
+	private func currentChannelSnapshot(for nodeNum: Int64) -> [Int32: ChannelSnapshot] {
+		let fetchDescriptor = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == nodeNum })
+		guard let myInfo = try? modelContext.fetch(fetchDescriptor).first else { return [:] }
+		return currentChannelSnapshot(from: myInfo)
+	}
+
+	private func currentChannelSnapshot(from myInfo: MyInfoEntity) -> [Int32: ChannelSnapshot] {
+		myInfo.channels.reduce(into: [:]) { snapshot, channel in
+			snapshot[channel.index] = ChannelSnapshot(
+				index: channel.index,
+				uplinkEnabled: channel.uplinkEnabled,
+				downlinkEnabled: channel.downlinkEnabled,
+				name: channel.name ?? "",
+				role: channel.role,
+				psk: channel.psk ?? Data(),
+				positionPrecision: channel.positionPrecision,
+				mute: channel.mute
+			)
+		}
+	}
+
+	private func isCompleteChannelRefresh(_ stagedChannels: [Int32: StagedChannel], baseline: [Int32: ChannelSnapshot]) -> Bool {
+		guard let primary = stagedChannels[0],
+			  primary.role == Int32(Channel.Role.primary.rawValue) else { return false }
+		for index in baseline.keys where stagedChannels[index] == nil {
+			return false
+		}
+		return stagedChannels.values.allSatisfy { staged in
+			staged.index >= 0 && staged.index < 8 &&
+			(staged.index == 0 || staged.role != Int32(Channel.Role.primary.rawValue))
+		}
+	}
+
+	func channelPacket(channel: Channel, fromNum: Int64, stageIfRefreshing: Bool = true) {
+		if channel.isInitialized && (channel.hasSettings || channel.role == Channel.Role.disabled) {
 			let logString = String.localizedStringWithFormat("Channel received: %d %@".localized, channel.index, String(fromNum))
 			Logger.admin.info("🎛️ \(logString, privacy: .public)")
 
-			if channelRefreshStages[fromNum] != nil {
-				channelRefreshStages[fromNum]?[Int32(truncatingIfNeeded: channel.index)] = stagedChannel(from: channel)
+			if stageIfRefreshing, channelRefreshStages[fromNum] != nil {
+				channelRefreshStages[fromNum]?.channels[Int32(truncatingIfNeeded: channel.index)] = stagedChannel(from: channel)
 				return
 			}
 
@@ -508,6 +598,14 @@ actor MeshPackets {
 				let fetchedMyInfo = try modelContext.fetch(fetchDescriptor)
 				if fetchedMyInfo.count == 1 {
 					let existing = fetchedMyInfo[0].channels.first(where: { $0.index == Int32(truncatingIfNeeded: channel.index) })
+					if channel.role == Channel.Role.disabled {
+						if let existing {
+							modelContext.delete(existing)
+							savePendingChanges()
+							Logger.data.info("💾 Deleted MyInfo channel \(channel.index, privacy: .public) from Channel App Packet For: \(fetchedMyInfo[0].myNodeNum, privacy: .public)")
+						}
+						return
+					}
 					let newChannel: ChannelEntity
 					if let existing {
 						newChannel = existing
@@ -530,6 +628,19 @@ actor MeshPackets {
 	}
 
 	private func stagedChannel(from channel: Channel) -> StagedChannel {
+		if channel.role == Channel.Role.disabled {
+			return StagedChannel(
+				id: Int32(truncatingIfNeeded: channel.index),
+				index: Int32(truncatingIfNeeded: channel.index),
+				uplinkEnabled: false,
+				downlinkEnabled: false,
+				name: "",
+				role: Int32(Channel.Role.disabled.rawValue),
+				psk: Data(),
+				positionPrecision: 0,
+				mute: false
+			)
+		}
 		let positionPrecision: Int32
 		let mute: Bool
 		if channel.settings.hasModuleSettings {
