@@ -10,6 +10,7 @@
 
 import Testing
 import Foundation
+import CocoaMQTT
 @testable import Meshtastic
 import MeshtasticProtobufs
 
@@ -18,6 +19,43 @@ struct MqttForwardFilterTests {
 
 	private enum MqttForwardAdmissionTestError: Error {
 		case disconnected
+	}
+
+	private actor MqttForwardTestConnection: Connection {
+		let type: TransportType = .ble
+		var isConnected = true
+		private(set) var sentPackets: [ToRadio] = []
+
+		func send(_ data: ToRadio) async throws {
+			sentPackets.append(data)
+		}
+
+		func connect() async throws -> AsyncStream<ConnectionEvent> {
+			AsyncStream { $0.finish() }
+		}
+
+		func disconnect(withError: Error?, shouldReconnect: Bool) async throws {}
+		func drainPendingPackets() async throws {}
+		func startDrainPendingPackets() throws {}
+		func appDidEnterBackground() {}
+		func appDidBecomeActive() {}
+	}
+
+	@MainActor
+	private func makeManager(connection: MqttForwardTestConnection) -> AccessoryManager {
+		let manager = AccessoryManager(transports: [])
+		let device = Device(
+			id: UUID(),
+			name: "MQTT Test Radio",
+			transportType: .ble,
+			identifier: "mqtt-test-radio",
+			connectionState: .connected,
+			num: 0x433e2700
+		)
+		manager.activeConnection = (device: device, connection: connection)
+		manager.activeDeviceNum = device.num
+		manager.updateState(.subscribed)
+		return manager
 	}
 
 	/// Builds a ServiceEnvelope for the filter under test.
@@ -122,6 +160,30 @@ struct MqttForwardFilterTests {
 			Issue.record("Busy MQTT forward gate admitted queued work")
 		}
 		#expect(buildCount == 0)
+
+		await gate.release()
+	}
+
+	@MainActor
+	@Test("Busy production handler does not send over BLE")
+	func busyProductionHandlerDoesNotSendOverBLE() async throws {
+		let connection = MqttForwardTestConnection()
+		let manager = makeManager(connection: connection)
+		let gate = AccessoryManager.mqttForwardGate
+		#expect(await gate.tryAcquire())
+
+		let payload = try makeEnvelope(gatewayID: "!deadbeef", payload: nil).serializedData()
+		let message = CocoaMQTTMessage(
+			topic: "msh/US/2/e/LongFast/!deadbeef",
+			payload: Array(payload),
+			qos: .qos1,
+			retained: false
+		)
+		manager.onMqttMessageReceived(message: message)
+		await Task.yield()
+
+		#expect(manager.mqttProxyDroppedNoPayload == 0)
+		#expect(await connection.sentPackets.isEmpty)
 
 		await gate.release()
 	}

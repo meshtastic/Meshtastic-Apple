@@ -199,8 +199,12 @@ extension AccessoryManager {
 				Logger.services.debug("📲 [MQTT] drop (BLE write in-flight): \(message.topic, privacy: .public)")
 			}
 
-			try? await MqttForwardAdmission.complete(admission, gate: gate) { toRadio in
-				try await self.send(toRadio)
+			do {
+				try await MqttForwardAdmission.complete(admission, gate: gate) { toRadio in
+					try await self.send(toRadio)
+				}
+			} catch {
+				Logger.services.error("📲 [MQTT] failed to forward packet to BLE topic=\(message.topic, privacy: .public): \(error.localizedDescription, privacy: .public)")
 			}
 		}
 	}
