@@ -20,6 +20,14 @@ func generateChannelKey(size: Int) -> String {
 	return keyData.base64EncodedString()
 }
 
+func projectedDisplayChannels(from channels: [ChannelEntity]) -> [ChannelEntity] {
+	var byIndex: [Int32: ChannelEntity] = [:]
+	for channel in channels {
+		byIndex[channel.index] = channel
+	}
+	return byIndex.values.sorted { $0.index < $1.index }
+}
+
 struct Channels: View {
 
 	@Environment(\.modelContext) private var context
@@ -52,11 +60,7 @@ struct Channels: View {
 
 	private var displayChannels: [ChannelEntity] {
 		guard let channels = node.myInfo?.channels else { return [] }
-		var byIndex: [Int32: ChannelEntity] = [:]
-		for channel in channels {
-			byIndex[channel.index] = channel
-		}
-		return byIndex.values.sorted { $0.index < $1.index }
+		return projectedDisplayChannels(from: channels)
 	}
 
 	private var locationSharingChannelIndex: Int32? {
@@ -87,23 +91,6 @@ struct Channels: View {
 
 	private var channelFrequencySummary: ChannelFrequencySummary? {
 		ChannelFrequencySummary(loRaConfig: node.loRaConfig, primaryChannelName: primaryChannelName)
-	}
-
-	private func normalizeDuplicateChannelsIfNeeded() {
-		guard let channels = node.myInfo?.channels else { return }
-		var uniqueChannels: [Int32: ChannelEntity] = [:]
-		for channel in channels {
-			uniqueChannels[channel.index] = channel
-		}
-		let deduped = uniqueChannels.values.sorted { $0.index < $1.index }
-		guard deduped.count != channels.count else { return }
-		node.myInfo?.channels = deduped
-		do {
-			try context.save()
-			Logger.data.info("💾 Normalized duplicate channels for node \(self.node.num, privacy: .public)")
-		} catch {
-			Logger.data.error("Failed normalizing duplicate channels: \(error.localizedDescription, privacy: .public)")
-		}
 	}
 
 	var body: some View {
@@ -359,9 +346,6 @@ struct Channels: View {
 		}
 		.padding(.bottom, 5)
 		.navigationTitle("Channels")
-		.onAppear {
-			normalizeDuplicateChannelsIfNeeded()
-		}
 		.toolbar {
 			ToolbarItem(placement: .topBarTrailing) {
 				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
