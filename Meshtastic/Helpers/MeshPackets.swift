@@ -73,6 +73,18 @@ struct AutomaticChannelRefreshOwner: Equatable, Sendable {
 	let generation: UInt64
 }
 
+struct ChannelRefreshSnapshot: Equatable, Sendable {
+	let id: Int32
+	let index: Int32
+	let uplinkEnabled: Bool
+	let downlinkEnabled: Bool
+	let name: String
+	let role: Int32
+	let psk: Data
+	let positionPrecision: Int32
+	let mute: Bool
+}
+
 @ModelActor
 actor MeshPackets {
 	/// Holds the shared-actor recreation guard from the instant the actor is captured until the
@@ -87,9 +99,17 @@ actor MeshPackets {
 			self.packets = packets
 		}
 
-		func begin(for nodeNum: Int64, owner: AutomaticChannelRefreshOwner? = nil) async -> Bool {
+		func begin(
+			for nodeNum: Int64,
+			owner: AutomaticChannelRefreshOwner? = nil,
+			baseline: [ChannelRefreshSnapshot]? = nil
+		) async -> Bool {
 			guard claimBegin() else { return false }
-			let didBegin = await packets.beginLeasedChannelRefreshStage(for: nodeNum, owner: owner)
+			let didBegin = await packets.beginLeasedChannelRefreshStage(
+				for: nodeNum,
+				owner: owner,
+				baseline: baseline
+			)
 			if !didBegin {
 				MeshPackets.releaseSharedChannelRefreshStageLease()
 			}
@@ -129,20 +149,9 @@ actor MeshPackets {
 		let mute: Bool
 	}
 
-	private struct ChannelSnapshot: Equatable, Sendable {
-		let index: Int32
-		let uplinkEnabled: Bool
-		let downlinkEnabled: Bool
-		let name: String
-		let role: Int32
-		let psk: Data
-		let positionPrecision: Int32
-		let mute: Bool
-	}
-
 	private struct ChannelRefreshStage {
 		let owner: AutomaticChannelRefreshOwner?
-		let baseline: [Int32: ChannelSnapshot]
+		let baseline: [ChannelRefreshSnapshot]
 		let holdsSharedRecreationLease: Bool
 		var channels: [Int32: StagedChannel] = [:]
 	}
@@ -254,12 +263,13 @@ actor MeshPackets {
 
 	private func beginLeasedChannelRefreshStage(
 		for nodeNum: Int64,
-		owner: AutomaticChannelRefreshOwner?
+		owner: AutomaticChannelRefreshOwner?,
+		baseline: [ChannelRefreshSnapshot]?
 	) -> Bool {
 		guard channelRefreshStages[nodeNum] == nil else { return false }
 		channelRefreshStages[nodeNum] = ChannelRefreshStage(
 			owner: owner,
-			baseline: currentChannelSnapshot(for: nodeNum),
+			baseline: baseline ?? currentChannelSnapshot(for: nodeNum),
 			holdsSharedRecreationLease: true
 		)
 		return true
@@ -292,7 +302,7 @@ actor MeshPackets {
 	@MainActor
 	private static func commitChannelRefreshStageOnMainActor(
 		for nodeNum: Int64,
-		baseline: [Int32: ChannelSnapshot],
+		baseline: [ChannelRefreshSnapshot],
 		stagedChannels: [Int32: StagedChannel],
 		container: ModelContainer
 	) async {
@@ -341,9 +351,10 @@ actor MeshPackets {
 	}
 
 	@MainActor
-	private static func channelSnapshot(from myInfo: MyInfoEntity) -> [Int32: ChannelSnapshot] {
-		myInfo.channels.reduce(into: [:]) { snapshot, channel in
-			snapshot[channel.index] = ChannelSnapshot(
+	private static func channelSnapshot(from myInfo: MyInfoEntity) -> [ChannelRefreshSnapshot] {
+		myInfo.channels.map { channel in
+			ChannelRefreshSnapshot(
+				id: channel.id,
 				index: channel.index,
 				uplinkEnabled: channel.uplinkEnabled,
 				downlinkEnabled: channel.downlinkEnabled,
@@ -353,7 +364,30 @@ actor MeshPackets {
 				positionPrecision: channel.positionPrecision,
 				mute: channel.mute
 			)
+		}.sorted(by: channelSnapshotIsOrderedBefore)
+	}
+
+	@MainActor
+	static func captureChannelRefreshBaselines(in context: ModelContext) -> [Int64: [ChannelRefreshSnapshot]] {
+		let myInfos = (try? context.fetch(FetchDescriptor<MyInfoEntity>())) ?? []
+		return myInfos.reduce(into: [:]) { baselines, myInfo in
+			baselines[myInfo.myNodeNum] = channelSnapshot(from: myInfo)
 		}
+	}
+
+	private static func channelSnapshotIsOrderedBefore(
+		_ lhs: ChannelRefreshSnapshot,
+		_ rhs: ChannelRefreshSnapshot
+	) -> Bool {
+		if lhs.index != rhs.index { return lhs.index < rhs.index }
+		if lhs.id != rhs.id { return lhs.id < rhs.id }
+		if lhs.role != rhs.role { return lhs.role < rhs.role }
+		if lhs.name != rhs.name { return lhs.name < rhs.name }
+		if lhs.psk != rhs.psk { return lhs.psk.lexicographicallyPrecedes(rhs.psk) }
+		if lhs.uplinkEnabled != rhs.uplinkEnabled { return !lhs.uplinkEnabled }
+		if lhs.downlinkEnabled != rhs.downlinkEnabled { return !lhs.downlinkEnabled }
+		if lhs.positionPrecision != rhs.positionPrecision { return lhs.positionPrecision < rhs.positionPrecision }
+		return !lhs.mute && rhs.mute
 	}
 
 	@MainActor
@@ -702,15 +736,16 @@ actor MeshPackets {
 		return owner == nil || stage.owner == owner
 	}
 
-	private func currentChannelSnapshot(for nodeNum: Int64) -> [Int32: ChannelSnapshot] {
+	private func currentChannelSnapshot(for nodeNum: Int64) -> [ChannelRefreshSnapshot] {
 		let fetchDescriptor = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == nodeNum })
-		guard let myInfo = try? modelContext.fetch(fetchDescriptor).first else { return [:] }
+		guard let myInfo = try? modelContext.fetch(fetchDescriptor).first else { return [] }
 		return currentChannelSnapshot(from: myInfo)
 	}
 
-	private func currentChannelSnapshot(from myInfo: MyInfoEntity) -> [Int32: ChannelSnapshot] {
-		myInfo.channels.reduce(into: [:]) { snapshot, channel in
-			snapshot[channel.index] = ChannelSnapshot(
+	private func currentChannelSnapshot(from myInfo: MyInfoEntity) -> [ChannelRefreshSnapshot] {
+		myInfo.channels.map { channel in
+			ChannelRefreshSnapshot(
+				id: channel.id,
 				index: channel.index,
 				uplinkEnabled: channel.uplinkEnabled,
 				downlinkEnabled: channel.downlinkEnabled,
@@ -720,7 +755,7 @@ actor MeshPackets {
 				positionPrecision: channel.positionPrecision,
 				mute: channel.mute
 			)
-		}
+		}.sorted(by: Self.channelSnapshotIsOrderedBefore)
 	}
 
 	private func isCompleteChannelRefresh(_ stagedChannels: [Int32: StagedChannel]) -> Bool {

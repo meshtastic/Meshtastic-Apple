@@ -108,6 +108,7 @@ enum AccessoryManagerState: Equatable {
 private struct AutomaticConfigRefresh {
 	let owner: AutomaticChannelRefreshOwner
 	let sessionID: UUID
+	let channelRefreshBaselineByNode: [Int64: [ChannelRefreshSnapshot]]
 	var nodeNum: Int64?
 	var waiters: [UUID: CheckedContinuation<Void, Error>] = [:]
 }
@@ -409,9 +410,11 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			sessionID: activeConnection?.device.id ?? UUID(),
 			generation: nextAutomaticConfigRefreshGeneration
 		)
+		let channelRefreshBaselineByNode = MeshPackets.captureChannelRefreshBaselines(in: context)
 		activeAutomaticConfigRefresh = AutomaticConfigRefresh(
 			owner: owner,
 			sessionID: owner.sessionID,
+			channelRefreshBaselineByNode: channelRefreshBaselineByNode,
 			nodeNum: activeConnection?.device.num ?? activeDeviceNum
 		)
 		automaticConfigRefreshTask = Task { @MainActor [weak self] in
@@ -421,12 +424,15 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	}
 
 	private func runAutomaticConfigRefresh(owner: AutomaticChannelRefreshOwner, connection: Connection) async {
-		guard activeAutomaticConfigRefresh?.owner == owner else { return }
+		guard !Task.isCancelled, activeAutomaticConfigRefresh?.owner == owner else { return }
 		do {
+			try Task.checkCancellation()
 			var toRadio: ToRadio = ToRadio()
 			toRadio.wantConfigID = UInt32(NONCE_ONLY_CONFIG)
 			try await send(toRadio)
+			try Task.checkCancellation()
 			try await connection.startDrainPendingPackets()
+			try Task.checkCancellation()
 		} catch {
 			await finishAutomaticConfigRefresh(owner: owner, error: error)
 		}
@@ -492,7 +498,11 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		refresh.nodeNum = nodeNum
 		activeAutomaticConfigRefresh = refresh
 		let stageLease = MeshPackets.acquireSharedChannelRefreshStageLease()
-		_ = await stageLease.begin(for: nodeNum, owner: refresh.owner)
+		_ = await stageLease.begin(
+			for: nodeNum,
+			owner: refresh.owner,
+			baseline: refresh.channelRefreshBaselineByNode[nodeNum] ?? []
+		)
 	}
 
 	func sendWantDatabase() async throws {
@@ -552,6 +562,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		}
 		self.activeDeviceNum = nil
 		if let refresh = activeAutomaticConfigRefresh {
+			automaticConfigRefreshTask?.cancel()
 			await finishAutomaticConfigRefresh(owner: refresh.owner, error: CancellationError())
 		} else if let closingNodeNum {
 			await MeshPackets.shared.discardChannelRefreshStage(for: closingNodeNum)

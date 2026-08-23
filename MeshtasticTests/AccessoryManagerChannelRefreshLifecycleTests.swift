@@ -14,6 +14,7 @@ private actor ChannelRefreshLifecycleConnection: Connection {
 	let type: TransportType = .ble
 	var isConnected = true
 	private(set) var sentWantConfigIDs: [UInt32] = []
+	private(set) var pendingPacketDrainStartCount = 0
 	private var pauseNextConfigSend = false
 	private var pausedConfigSendContinuation: CheckedContinuation<Void, Never>?
 	private var failNextDrain = false
@@ -46,6 +47,7 @@ private actor ChannelRefreshLifecycleConnection: Connection {
 	func disconnect(withError: Error?, shouldReconnect: Bool) async throws { isConnected = false }
 	func drainPendingPackets() async throws {}
 	func startDrainPendingPackets() throws {
+		pendingPacketDrainStartCount += 1
 		if failNextDrain {
 			failNextDrain = false
 			throw AccessoryError.ioFailed("Simulated pending-packet drain failure")
@@ -235,6 +237,31 @@ struct AccessoryManagerChannelRefreshLifecycleTests {
 		try await refresh.value
 
 		#expect(try channelNames(nodeNum: nodeNum) == ["Primary"])
+	}
+
+	@Test("A user edit after wantConfig and before MyInfo discards the staged dump")
+	func userEditBeforeMyInfoIsNotOverwrittenByAutomaticRefresh() async throws {
+		resetSharedStore()
+		let nodeNum: UInt32 = 0x00B4_5E11
+		try seedMyInfo(nodeNum: nodeNum, channelName: "Original Primary")
+		let connection = ChannelRefreshLifecycleConnection()
+		let manager = makeManager(nodeNum: nodeNum, connection: connection)
+		let refresh = await startAutomaticConfigRefresh(manager, connection: connection)
+
+		let context = PersistenceController.shared.context
+		let persistedNodeNum = Int64(nodeNum)
+		let descriptor = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == persistedNodeNum })
+		let storedMyInfo = try #require(context.fetch(descriptor).first)
+		storedMyInfo.channels[0].name = "User Edited Before MyInfo"
+		try context.save()
+
+		await manager.handleMyInfo(myInfo(nodeNum: nodeNum))
+		await manager.handleChannel(channel(index: 0, name: "Remote Primary"))
+		await stageDisabledSlots(manager)
+		await completeConfig(manager)
+		try await refresh.value
+
+		#expect(try channelNames(nodeNum: nodeNum) == ["User Edited Before MyInfo"])
 	}
 
 	@Test("Incomplete automatic refresh snapshot does not replace existing channels")
@@ -451,6 +478,32 @@ struct AccessoryManagerChannelRefreshLifecycleTests {
 }
 
 extension AccessoryManagerChannelRefreshLifecycleTests {
+	@Test("Disconnect cancels a paused automatic refresh runner before it drains packets")
+	func disconnectCancelsPausedAutomaticRefreshRunner() async throws {
+		resetSharedStore()
+		let nodeNum: UInt32 = 0x00C1_05E0
+		try seedMyInfo(nodeNum: nodeNum, channelName: "Original Primary")
+		let connection = ChannelRefreshLifecycleConnection()
+		let manager = makeManager(nodeNum: nodeNum, connection: connection)
+		await connection.pauseNextWantConfigSend()
+
+		let refresh = Task { try await manager.sendWantConfig() }
+		while await connection.sentWantConfigIDs.isEmpty {
+			await Task.yield()
+		}
+
+		try await manager.closeConnection()
+		await connection.resumePausedWantConfigSend()
+		await #expect(throws: CancellationError.self) {
+			try await refresh.value
+		}
+		for _ in 0..<100 {
+			await Task.yield()
+		}
+
+		#expect(await connection.pendingPacketDrainStartCount == 0)
+	}
+
 	@Test("A main-context edit at the validated refresh boundary survives")
 	func userEditAfterBaselineValidationCausesRefreshDiscard() async throws {
 		resetSharedStore()

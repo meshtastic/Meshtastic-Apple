@@ -1,5 +1,6 @@
 import Testing
 @testable import Meshtastic
+import MeshtasticProtobufs
 
 @Suite("Channel display projection")
 struct ChannelDisplayProjectionTests {
@@ -33,6 +34,34 @@ struct ChannelDisplayProjectionTests {
 		#expect(channels.count == 8)
 		#expect(validUniqueChannelIndexes(from: channels) == [0, 1, 2, 3, 4, 5, 6])
 		#expect(nextAvailableSecondaryChannelIndex(from: channels) == 7)
+	}
+
+	@Test("Sharing legacy duplicate rows serializes one ordered channel per valid index")
+	@MainActor
+	func sharingDuplicateIndexesSerializesOnlyOnePrimaryAndSevenChannels() throws {
+		let stalePrimary = channel(index: 0, name: "Stale Primary")
+		stalePrimary.role = 1
+		let freshPrimary = channel(index: 0, name: "Fresh Primary")
+		freshPrimary.role = 1
+		let secondaries = (1...6).map { index -> ChannelEntity in
+			let channel = channel(index: Int32(index), name: "Secondary \(index)")
+			channel.role = 2
+			return channel
+		}
+		var channelSet = ChannelSet()
+		channelSet.settings = channelSettingsForSharing(
+			from: [stalePrimary, freshPrimary] + secondaries,
+			includedIndexes: Set(Int32(0)...Int32(7))
+		)
+		let serialized = try channelSet.serializedData()
+		let decoded = try ChannelSet(serializedBytes: serialized)
+
+		#expect(decoded.settings.map(\.name) == [
+			"Fresh Primary", "Secondary 1", "Secondary 2", "Secondary 3",
+			"Secondary 4", "Secondary 5", "Secondary 6"
+		])
+		#expect(decoded.settings.count <= 8)
+		#expect(decoded.settings.filter { $0.name == "Fresh Primary" }.count == 1)
 	}
 
 	private func channel(index: Int32, name: String) -> ChannelEntity {

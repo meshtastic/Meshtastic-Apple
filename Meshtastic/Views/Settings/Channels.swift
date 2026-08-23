@@ -21,15 +21,19 @@ func generateChannelKey(size: Int) -> String {
 }
 
 func projectedDisplayChannels(from channels: [ChannelEntity]) -> [ChannelEntity] {
+	canonicalValidUniqueChannels(from: channels)
+}
+
+func canonicalValidUniqueChannels(from channels: [ChannelEntity]) -> [ChannelEntity] {
 	var byIndex: [Int32: ChannelEntity] = [:]
-	for channel in channels {
+	for channel in channels where (Int32(0)...Int32(7)).contains(channel.index) {
 		byIndex[channel.index] = channel
 	}
 	return byIndex.values.sorted { $0.index < $1.index }
 }
 
 func validUniqueChannelIndexes(from channels: [ChannelEntity]) -> [Int32] {
-	Set(channels.map(\.index).filter { (Int32(0)...Int32(7)).contains($0) }).sorted()
+	canonicalValidUniqueChannels(from: channels).map(\.index)
 }
 
 func availableChannelIndexes(from channels: [ChannelEntity]) -> [Int32] {
@@ -39,6 +43,22 @@ func availableChannelIndexes(from channels: [ChannelEntity]) -> [Int32] {
 
 func nextAvailableSecondaryChannelIndex(from channels: [ChannelEntity]) -> Int32? {
 	availableChannelIndexes(from: channels).first { $0 > 0 }
+}
+
+func channelSettingsForSharing(
+	from channels: [ChannelEntity],
+	includedIndexes: Set<Int32>
+) -> [ChannelSettings] {
+	canonicalValidUniqueChannels(from: channels).compactMap { channel in
+		guard channel.role > 0, includedIndexes.contains(channel.index) else { return nil }
+		var settings = ChannelSettings()
+		settings.name = channel.name ?? ""
+		settings.psk = channel.psk ?? Data()
+		settings.id = UInt32(truncatingIfNeeded: channel.id)
+		settings.moduleSettings.positionPrecision = UInt32(truncatingIfNeeded: channel.positionPrecision)
+		settings.moduleSettings.isMuted = channel.mute
+		return settings
+	}
 }
 
 struct Channels: View {
