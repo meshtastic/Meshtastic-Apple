@@ -101,14 +101,29 @@ extension FirmwareViewModel {
 
 	struct RefreshGeneration {
 		private var current = 0
+		private var activeCatalogMutations = 0
 
 		mutating func begin() -> Int {
 			current += 1
 			return current
 		}
 
+		mutating func beginCatalogMutation() {
+			activeCatalogMutations += 1
+			invalidateForCatalogMutation()
+		}
+
+		mutating func endCatalogMutation() {
+			activeCatalogMutations = max(activeCatalogMutations - 1, 0)
+			invalidateForCatalogMutation()
+		}
+
+		mutating func invalidateForCatalogMutation() {
+			current += 1
+		}
+
 		func isCurrent(_ generation: Int) -> Bool {
-			generation == current
+			activeCatalogMutations == 0 && generation == current
 		}
 	}
 
@@ -413,8 +428,22 @@ class FirmwareViewModel: ObservableObject {
 	var hasDownloadedFirmware: Bool {
 		return !downloadedFirmware(includeInProgressDownloads: false).isEmpty
 	}
+
+	func download(_ file: FirmwareFile) async throws {
+		refreshGeneration.beginCatalogMutation()
+		do {
+			try await file.download()
+			refreshGeneration.endCatalogMutation()
+			refresh()
+		} catch {
+			refreshGeneration.endCatalogMutation()
+			throw error
+		}
+	}
 	
 	func delete(_ filesToDelete: [FirmwareFile]) {
+		refreshGeneration.invalidateForCatalogMutation()
+
 		// 1. Create a bucket for files that were actually deleted
 		var deletedFiles = Set<FirmwareFile>()
 

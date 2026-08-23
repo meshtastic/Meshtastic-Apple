@@ -116,6 +116,41 @@ struct FirmwareViewModelErrorTests {
 		#expect(!generation.isCurrent(first))
 		#expect(generation.isCurrent(second))
 	}
+
+	@Test func refreshGenerationInvalidatesSnapshotBegunBeforeCatalogMutation() {
+		var generation = FirmwareViewModel.RefreshGeneration()
+
+		let inFlightSnapshot = generation.begin()
+		generation.invalidateForCatalogMutation()
+
+		#expect(!generation.isCurrent(inFlightSnapshot))
+	}
+
+	@Test func refreshGenerationAllowsSnapshotBegunAfterCatalogMutationToPublish() {
+		var generation = FirmwareViewModel.RefreshGeneration()
+
+		let staleSnapshot = generation.begin()
+		generation.invalidateForCatalogMutation()
+		let freshSnapshot = generation.begin()
+
+		#expect(!generation.isCurrent(staleSnapshot))
+		#expect(generation.isCurrent(freshSnapshot))
+	}
+
+	@Test func refreshGenerationRejectsSnapshotBegunDuringActiveCatalogMutation() {
+		var generation = FirmwareViewModel.RefreshGeneration()
+
+		generation.beginCatalogMutation()
+		let refreshDuringDownload = generation.begin()
+
+		#expect(!generation.isCurrent(refreshDuringDownload))
+
+		generation.endCatalogMutation()
+		#expect(!generation.isCurrent(refreshDuringDownload))
+
+		let refreshAfterDownloadTerminalState = generation.begin()
+		#expect(generation.isCurrent(refreshAfterDownloadTerminalState))
+	}
 }
 
 // MARK: - Additional Plottable Extension Tests

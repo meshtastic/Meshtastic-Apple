@@ -205,7 +205,9 @@ private struct FirmwareContentView: View {
 		case .stable:
 			let stables = firmwareList.mostRecentFirmware(forReleaseType: .stable)
 			ForEach(stables, id: \.localUrl) { release in
-				FirmwareRow(firmwareFile: release) { type, url in
+				FirmwareRow(firmwareFile: release, onDownload: {
+					try await firmwareList.download(release)
+				}) { type, url in
 					self.rowInstallation = RowInstallation(type: type, url: url)
 				}
 			}
@@ -217,7 +219,9 @@ private struct FirmwareContentView: View {
 		case .alpha:
 			let alphas = firmwareList.mostRecentFirmware(forReleaseType: .alpha)
 			ForEach(alphas, id: \.localUrl) { release in
-				FirmwareRow(firmwareFile: release) { type, url in
+				FirmwareRow(firmwareFile: release, onDownload: {
+					try await firmwareList.download(release)
+				}) { type, url in
 					self.rowInstallation = RowInstallation(type: type, url: url)
 				}
 			}
@@ -232,7 +236,9 @@ private struct FirmwareContentView: View {
 				Text("No firmware has been downloaded for this device.")
 			} else {
 				ForEach(downloads, id: \.localUrl) { file in
-					FirmwareRow(firmwareFile: file) { type, url in
+					FirmwareRow(firmwareFile: file, onDownload: {
+						try await firmwareList.download(file)
+					}) { type, url in
 						self.rowInstallation = RowInstallation(type: type, url: url)
 					}
 				}
@@ -450,6 +456,8 @@ private struct FirmwareRow: View {
 
 	@ObservedObject var firmwareFile: FirmwareFile
 
+	let onDownload: () async throws -> Void
+
 	var onInstall: (FirmwareFile.FirmwareType, URL) -> Void
 
 	/// ESP32 OTA (BLE/WiFi) requires the AdminMessage.OTAEvent protocol with otaHash,
@@ -508,7 +516,7 @@ private struct FirmwareRow: View {
 			case .notDownloaded:
 				Button {
 					Task {
-						try? await firmwareFile.download()
+						try? await onDownload()
 					}
 				} label: {
 					Text("Download")
