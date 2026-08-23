@@ -142,6 +142,15 @@ struct AccessoryManagerChannelRefreshLifecycleTests {
 		}
 	}
 
+	private func stageDisabledSlotsOnMesh(_ mesh: MeshPackets, nodeNum: Int64) async {
+		for index in Int32(1)...Int32(7) {
+			var disabled = Channel()
+			disabled.index = index
+			disabled.role = .disabled
+			await mesh.channelPacket(channel: disabled, fromNum: nodeNum)
+		}
+	}
+
 	private func startAutomaticConfigRefresh(
 		_ manager: AccessoryManager,
 		connection: ChannelRefreshLifecycleConnection
@@ -540,6 +549,52 @@ extension AccessoryManagerChannelRefreshLifecycleTests {
 		try await refresh.value
 
 		#expect(try channelNames(nodeNum: nodeNum) == ["User Primary"])
+	}
+
+	@Test("A successor staged refresh survives an older paused commit's cleanup")
+	func successorStageSurvivesPausedOlderCommitCleanup() async throws {
+		resetSharedStore()
+		let nodeNum: UInt32 = 0x00B0_A4D2
+		try seedMyInfo(nodeNum: nodeNum, channelName: "Original Primary")
+		let sessionID = UUID()
+		let staleOwner = AutomaticChannelRefreshOwner(sessionID: sessionID, generation: 1)
+		let successorOwner = AutomaticChannelRefreshOwner(sessionID: sessionID, generation: 2)
+		let staleLease = MeshPackets.acquireSharedChannelRefreshStageLease()
+		#expect(await staleLease.begin(for: Int64(nodeNum), owner: staleOwner))
+
+		await staleLease.packets.channelPacket(
+			channel: channel(index: 0, name: "Stale Primary"),
+			fromNum: Int64(nodeNum)
+		)
+		await stageDisabledSlotsOnMesh(staleLease.packets, nodeNum: Int64(nodeNum))
+
+		let validationReached = AsyncGate()
+		let allowCommitToContinue = AsyncGate()
+		MeshPackets.channelRefreshCommitValidationHook = {
+			await validationReached.open()
+			try? await allowCommitToContinue.wait()
+		}
+		defer { MeshPackets.channelRefreshCommitValidationHook = nil }
+
+		let staleCommit = Task {
+			await staleLease.packets.commitChannelRefreshStage(for: Int64(nodeNum), owner: staleOwner)
+		}
+		try await validationReached.wait()
+
+		let successorLease = MeshPackets.acquireSharedChannelRefreshStageLease()
+		#expect(await successorLease.begin(for: Int64(nodeNum), owner: successorOwner))
+		await allowCommitToContinue.open()
+		await staleCommit.value
+
+		// An incomplete successor must remain staged. If stale cleanup removed it, this packet
+		// is handled directly and changes the persisted primary channel instead.
+		await successorLease.packets.channelPacket(
+			channel: channel(index: 0, name: "Successor Primary"),
+			fromNum: Int64(nodeNum)
+		)
+		await successorLease.packets.commitChannelRefreshStage(for: Int64(nodeNum), owner: successorOwner)
+
+		#expect(try channelNames(nodeNum: nodeNum) == ["Stale Primary"])
 	}
 
 	@Test("Cancelling the sole waiter keeps the in-flight fixed-nonce refresh alive for a later caller")

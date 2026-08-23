@@ -155,6 +155,7 @@ actor MeshPackets {
 	}
 
 	private struct ChannelRefreshStage {
+		let id = UUID()
 		let owner: AutomaticChannelRefreshOwner?
 		let baseline: [ChannelRefreshSnapshot]
 		let holdsSharedRecreationLease: Bool
@@ -306,7 +307,7 @@ actor MeshPackets {
 	func commitChannelRefreshStage(for nodeNum: Int64, owner: AutomaticChannelRefreshOwner? = nil) async {
 		guard stageMatches(nodeNum: nodeNum, owner: owner),
 			  let stage = channelRefreshStages[nodeNum] else { return }
-		defer { endChannelRefreshStage(for: nodeNum) }
+		defer { endChannelRefreshStage(for: nodeNum, stageID: stage.id) }
 		guard isCompleteChannelRefresh(stage.channels) else {
 			Logger.data.error("💥 Refusing incomplete staged channel refresh for: \(nodeNum.toHex(), privacy: .public)")
 			return
@@ -747,8 +748,10 @@ actor MeshPackets {
 		return nil
 	}
 
-	private func endChannelRefreshStage(for nodeNum: Int64) {
-		guard let stage = channelRefreshStages.removeValue(forKey: nodeNum) else { return }
+	private func endChannelRefreshStage(for nodeNum: Int64, stageID: UUID? = nil) {
+		guard let stage = channelRefreshStages[nodeNum],
+			  stageID == nil || stage.id == stageID else { return }
+		channelRefreshStages.removeValue(forKey: nodeNum)
 		if stage.holdsSharedRecreationLease {
 			MeshPackets.releaseSharedChannelRefreshStageLease()
 		}
