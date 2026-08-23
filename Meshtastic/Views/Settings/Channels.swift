@@ -28,6 +28,19 @@ func projectedDisplayChannels(from channels: [ChannelEntity]) -> [ChannelEntity]
 	return byIndex.values.sorted { $0.index < $1.index }
 }
 
+func validUniqueChannelIndexes(from channels: [ChannelEntity]) -> [Int32] {
+	Set(channels.map(\.index).filter { (Int32(0)...Int32(7)).contains($0) }).sorted()
+}
+
+func availableChannelIndexes(from channels: [ChannelEntity]) -> [Int32] {
+	let occupied = Set(validUniqueChannelIndexes(from: channels))
+	return (Int32(0)...Int32(7)).filter { !occupied.contains($0) }
+}
+
+func nextAvailableSecondaryChannelIndex(from channels: [ChannelEntity]) -> Int32? {
+	availableChannelIndexes(from: channels).first { $0 > 0 }
+}
+
 struct Channels: View {
 
 	@Environment(\.modelContext) private var context
@@ -164,16 +177,12 @@ struct Channels: View {
 						.buttonStyle(.plain)
 					}
 				}
-				if (node.myInfo?.channels.count ?? 0) < 8 {
+				if let nextChannelIndex = nextAvailableSecondaryChannelIndex(from: node.myInfo?.channels ?? []) {
 					Button {
-						let channelIndexes = node.myInfo?.channels.compactMap({ ch -> Int in
-							return Int(ch.index)
-						})
-						let firstChannelIndex = firstMissingChannelIndex(channelIndexes ?? [])
 						channelKeySize = 16
 						let key = generateChannelKey(size: channelKeySize)
 						channelName = ""
-						channelIndex = Int32(firstChannelIndex)
+						channelIndex = nextChannelIndex
 						channelRole = 2
 						channelKey = key
 						positionsEnabled = false
@@ -352,17 +361,6 @@ struct Channels: View {
 			}
 		}
 	}
-}
-
-func firstMissingChannelIndex(_ indexes: [Int]) -> Int {
-	let smallestIndex = 1
-	if indexes.isEmpty { return smallestIndex }
-	if smallestIndex <= indexes.count {
-		for element in smallestIndex...indexes.count where !indexes.contains(element) {
-			return element
-		}
-	}
-	return indexes.count + 1
 }
 
 enum PositionPrecision: Int, CaseIterable, Identifiable {

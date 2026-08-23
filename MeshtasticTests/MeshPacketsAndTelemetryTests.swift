@@ -163,6 +163,7 @@ struct AutomaticChannelRefreshStagingTests {
 		let persisted = try persistedChannels(in: container, nodeNum: nodeNum)
 		#expect(persisted.map(\.index) == [0])
 		#expect(persisted.first?.name == "Existing")
+		await mesh.discardChannelRefreshStage(for: Int64(nodeNum))
 	}
 
 	@Test func committingRefreshStageReplacesPersistedChannelsAtomically() async throws {

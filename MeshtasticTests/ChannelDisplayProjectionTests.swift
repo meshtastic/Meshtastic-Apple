@@ -17,6 +17,24 @@ struct ChannelDisplayProjectionTests {
 		#expect(myInfo.channels.map(\.name) == ["Stale Primary", "Fresh Primary", "Secondary"])
 	}
 
+	@Test("Eight raw rows with a duplicate index still offer the missing secondary slot")
+	func duplicateRawRowsUseValidUniqueIndexesForAddCapacity() {
+		let channels = [
+			channel(index: 0, name: "Legacy Primary"),
+			channel(index: 0, name: "Current Primary"),
+			channel(index: 1, name: "One"),
+			channel(index: 2, name: "Two"),
+			channel(index: 3, name: "Three"),
+			channel(index: 4, name: "Four"),
+			channel(index: 5, name: "Five"),
+			channel(index: 6, name: "Six")
+		]
+
+		#expect(channels.count == 8)
+		#expect(validUniqueChannelIndexes(from: channels) == [0, 1, 2, 3, 4, 5, 6])
+		#expect(nextAvailableSecondaryChannelIndex(from: channels) == 7)
+	}
+
 	private func channel(index: Int32, name: String) -> ChannelEntity {
 		let channel = ChannelEntity()
 		channel.index = index

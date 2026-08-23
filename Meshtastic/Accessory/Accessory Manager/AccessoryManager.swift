@@ -440,7 +440,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			}
 		} onCancel: {
 			Task { @MainActor in
-				await self.cancelAutomaticConfigRefreshWaiter(id: waiterID, owner: owner)
+				self.cancelAutomaticConfigRefreshWaiter(id: waiterID, owner: owner)
 			}
 		}
 	}
@@ -460,15 +460,12 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		activeAutomaticConfigRefresh = refresh
 	}
 
-	private func cancelAutomaticConfigRefreshWaiter(id: UUID, owner: AutomaticChannelRefreshOwner) async {
+	private func cancelAutomaticConfigRefreshWaiter(id: UUID, owner: AutomaticChannelRefreshOwner) {
 		guard var refresh = activeAutomaticConfigRefresh,
 			  refresh.owner == owner,
 			  let continuation = refresh.waiters.removeValue(forKey: id) else { return }
 		activeAutomaticConfigRefresh = refresh
 		continuation.resume(throwing: CancellationError())
-		if refresh.waiters.isEmpty {
-			await finishAutomaticConfigRefresh(owner: owner, error: CancellationError())
-		}
 	}
 
 	private func finishAutomaticConfigRefresh(owner: AutomaticChannelRefreshOwner, error: Error?) async {
@@ -494,7 +491,8 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			  refresh.sessionID == activeConnection?.device.id else { return }
 		refresh.nodeNum = nodeNum
 		activeAutomaticConfigRefresh = refresh
-		await MeshPackets.shared.beginChannelRefreshStage(for: nodeNum, owner: refresh.owner)
+		let stageLease = MeshPackets.acquireSharedChannelRefreshStageLease()
+		_ = await stageLease.begin(for: nodeNum, owner: refresh.owner)
 	}
 
 	func sendWantDatabase() async throws {

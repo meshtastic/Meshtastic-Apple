@@ -51,6 +51,16 @@ actor MockChannelSetConnection: Connection {
 		}
 	}
 
+	var sentChannelIndexes: [Int32] {
+		sentPackets.compactMap { toRadio in
+			guard case let .packet(meshPacket) = toRadio.payloadVariant,
+				  case let .decoded(dataMessage) = meshPacket.payloadVariant,
+				  let admin = try? AdminMessage(serializedBytes: dataMessage.payload),
+				  case let .setChannel(channel) = admin.payloadVariant else { return nil }
+			return Int32(truncatingIfNeeded: channel.index)
+		}
+	}
+
 	func send(_ data: ToRadio) async throws {
 		sentPackets.append(data)
 		if failureMode == .firstPacket, case .packet = data.payloadVariant {
@@ -128,6 +138,10 @@ struct ChannelSetSaveTests {
 	}
 
 	private func seedMyInfo(deviceNum: Int64, channelName: String) throws {
+		try seedMyInfo(deviceNum: deviceNum, channels: [(0, channelName)])
+	}
+
+	private func seedMyInfo(deviceNum: Int64, channels: [(index: Int32, name: String)]) throws {
 		let context = PersistenceController.shared.context
 		let descriptor = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == deviceNum })
 		for existing in try context.fetch(descriptor) {
@@ -137,14 +151,18 @@ struct ChannelSetSaveTests {
 
 		let myInfo = MyInfoEntity()
 		myInfo.myNodeNum = deviceNum
-		let channel = ChannelEntity()
-		channel.id = 0
-		channel.index = 0
-		channel.name = channelName
-		channel.role = Int32(Channel.Role.primary.rawValue)
 		context.insert(myInfo)
-		context.insert(channel)
-		myInfo.channels.append(channel)
+		for seeded in channels {
+			let channel = ChannelEntity()
+			channel.id = seeded.index
+			channel.index = seeded.index
+			channel.name = seeded.name
+			channel.role = seeded.index == 0
+				? Int32(Channel.Role.primary.rawValue)
+				: Int32(Channel.Role.secondary.rawValue)
+			context.insert(channel)
+			myInfo.channels.append(channel)
+		}
 		try context.save()
 		MeshPackets.recreateShared()
 	}
@@ -278,5 +296,39 @@ struct ChannelSetSaveTests {
 		try await manager.saveChannelSet(channelSet: channelSet, addChannels: false, okToMQTT: false)
 
 		#expect(try channelNames(for: deviceNum) == ["Imported"])
+		await MeshPackets.shared.discardChannelRefreshStage(for: deviceNum)
+	}
+
+	@Test("QR add uses the free valid index when eight raw rows contain a duplicate")
+	func testAddWithDuplicateRawIndexUsesAvailableSlotWithoutDeletingLegacyRows() async throws {
+		let deviceNum: Int64 = 123_456_794
+		try seedMyInfo(
+			deviceNum: deviceNum,
+			channels: [
+				(0, "Legacy Primary"),
+				(0, "Current Primary"),
+				(1, "One"),
+				(2, "Two"),
+				(3, "Three"),
+				(4, "Four"),
+				(5, "Five"),
+				(6, "Six")
+			]
+		)
+		let connection = MockChannelSetConnection(failureMode: .wantConfig)
+		let manager = makeManager(connection: connection, deviceNum: deviceNum)
+		let channelSet = makeChannelSet(channelNames: ["Imported Seven"])
+
+		await #expect(throws: (any Error).self) {
+			try await manager.saveChannelSet(channelSet: channelSet, addChannels: true, okToMQTT: false)
+		}
+
+		#expect(await connection.sentChannelIndexes == [7])
+		let persistedNodeNum = deviceNum
+		let context = ModelContext(PersistenceController.shared.container)
+		let descriptor = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == persistedNodeNum })
+		let indexes = try #require(context.fetch(descriptor).first).channels.map(\.index)
+		#expect(indexes.filter { $0 == 0 }.count == 2)
+		#expect(indexes.contains(7))
 	}
 }

@@ -16,6 +16,7 @@ private actor ChannelRefreshLifecycleConnection: Connection {
 	private(set) var sentWantConfigIDs: [UInt32] = []
 	private var pauseNextConfigSend = false
 	private var pausedConfigSendContinuation: CheckedContinuation<Void, Never>?
+	private var failNextDrain = false
 
 	func pauseNextWantConfigSend() {
 		pauseNextConfigSend = true
@@ -24,6 +25,10 @@ private actor ChannelRefreshLifecycleConnection: Connection {
 	func resumePausedWantConfigSend() {
 		pausedConfigSendContinuation?.resume()
 		pausedConfigSendContinuation = nil
+	}
+
+	func failNextPendingPacketDrain() {
+		failNextDrain = true
 	}
 
 	func send(_ data: ToRadio) async throws {
@@ -40,7 +45,12 @@ private actor ChannelRefreshLifecycleConnection: Connection {
 	func connect() async throws -> AsyncStream<ConnectionEvent> { AsyncStream { $0.finish() } }
 	func disconnect(withError: Error?, shouldReconnect: Bool) async throws { isConnected = false }
 	func drainPendingPackets() async throws {}
-	func startDrainPendingPackets() throws {}
+	func startDrainPendingPackets() throws {
+		if failNextDrain {
+			failNextDrain = false
+			throw AccessoryError.ioFailed("Simulated pending-packet drain failure")
+		}
+	}
 	func appDidEnterBackground() {}
 	func appDidBecomeActive() {}
 }
@@ -415,15 +425,14 @@ struct AccessoryManagerChannelRefreshLifecycleTests {
 		await manager.handleChannel(channel(index: 2, name: "Remote Moved", role: .secondary))
 		await stageDisabledSlots(manager, excluding: [1, 2])
 
-		await MeshPackets.shared.channelPacket(
-			channel: channel(index: 0, name: "User Renamed Primary"),
-			fromNum: Int64(nodeNum),
-			stageIfRefreshing: false
+		try manager.applyLocalChannelMutation(
+			channel(index: 0, name: "User Renamed Primary"),
+			fromNum: Int64(nodeNum)
 		)
 		var deleted = Channel()
 		deleted.index = 1
 		deleted.role = .disabled
-		await MeshPackets.shared.channelPacket(channel: deleted, fromNum: Int64(nodeNum), stageIfRefreshing: false)
+		try manager.applyLocalChannelMutation(deleted, fromNum: Int64(nodeNum))
 		let context = PersistenceController.shared.context
 		let persistedNodeNum = Int64(nodeNum)
 		let descriptor = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == persistedNodeNum })
@@ -437,5 +446,164 @@ struct AccessoryManagerChannelRefreshLifecycleTests {
 		try await refresh.value
 
 		#expect(try channelNames(nodeNum: nodeNum) == ["User Renamed Primary", "Move Me"])
+	}
+
+}
+
+extension AccessoryManagerChannelRefreshLifecycleTests {
+	@Test("A main-context edit at the validated refresh boundary survives")
+	func userEditAfterBaselineValidationCausesRefreshDiscard() async throws {
+		resetSharedStore()
+		let nodeNum: UInt32 = 0x00B0_A4D1
+		try seedMyInfo(nodeNum: nodeNum, channelName: "Original Primary")
+		let connection = ChannelRefreshLifecycleConnection()
+		let manager = makeManager(nodeNum: nodeNum, connection: connection)
+		let refresh = await startAutomaticConfigRefresh(manager, connection: connection)
+		let validationReached = AsyncGate()
+		let allowCommitToContinue = AsyncGate()
+
+		await manager.handleMyInfo(myInfo(nodeNum: nodeNum))
+		await manager.handleChannel(channel(index: 0, name: "Remote Primary"))
+		await stageDisabledSlots(manager)
+
+		MeshPackets.channelRefreshCommitValidationHook = {
+			await validationReached.open()
+			try? await allowCommitToContinue.wait()
+		}
+		defer { MeshPackets.channelRefreshCommitValidationHook = nil }
+
+		let completion = Task { await completeConfig(manager) }
+		try await validationReached.wait()
+
+		let context = PersistenceController.shared.context
+		let persistedNodeNum = Int64(nodeNum)
+		let descriptor = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == persistedNodeNum })
+		let myInfo = try #require(context.fetch(descriptor).first)
+		myInfo.channels[0].name = "User Primary"
+		try context.save()
+
+		await allowCommitToContinue.open()
+		await completion.value
+		try await refresh.value
+
+		#expect(try channelNames(nodeNum: nodeNum) == ["User Primary"])
+	}
+
+	@Test("Cancelling the sole waiter keeps the in-flight fixed-nonce refresh alive for a later caller")
+	func cancellingSoleWaiterDoesNotRetireInFlightRefresh() async throws {
+		resetSharedStore()
+		let nodeNum: UInt32 = 0x00CA_11ED
+		try seedMyInfo(nodeNum: nodeNum, channelName: "Original Primary")
+		let connection = ChannelRefreshLifecycleConnection()
+		let manager = makeManager(nodeNum: nodeNum, connection: connection)
+		await connection.pauseNextWantConfigSend()
+
+		let cancelledWaiter = Task { try await manager.sendWantConfig() }
+		while await connection.sentWantConfigIDs.count < 1 {
+			await Task.yield()
+		}
+		cancelledWaiter.cancel()
+		await #expect(throws: CancellationError.self) {
+			try await cancelledWaiter.value
+		}
+
+		let joinedWaiter = Task { try await manager.sendWantConfig() }
+		await Task.yield()
+		await manager.handleMyInfo(myInfo(nodeNum: nodeNum))
+		await manager.handleChannel(channel(index: 0, name: "Refreshed Primary"))
+		await stageDisabledSlots(manager)
+
+		await connection.resumePausedWantConfigSend()
+		await completeConfig(manager)
+		try await joinedWaiter.value
+
+		#expect(await connection.sentWantConfigIDs == [UInt32(manager.NONCE_ONLY_CONFIG)])
+		#expect(try channelNames(nodeNum: nodeNum) == ["Refreshed Primary"])
+	}
+
+	@Test("A refresh lease prevents recycling after shared capture but before stage activation")
+	func refreshLeaseMakesSharedCaptureAndRecycleGuardAtomic() async throws {
+		resetSharedStore()
+		let nodeNum: UInt32 = 0x001E_A5ED
+		try seedMyInfo(nodeNum: nodeNum, channelName: "Old Primary")
+		let owner = AutomaticChannelRefreshOwner(sessionID: UUID(), generation: 1)
+		let lease = MeshPackets.acquireSharedChannelRefreshStageLease()
+		let capturedMesh = lease.packets
+
+		MeshPackets.recreateShared()
+		#expect(MeshPackets.shared === capturedMesh)
+		#expect(await lease.begin(for: Int64(nodeNum), owner: owner))
+
+		await MeshPackets.shared.channelPacket(
+			channel: channel(index: 0, name: "Leased Primary"),
+			fromNum: Int64(nodeNum)
+		)
+		for index in Int32(1)...Int32(7) {
+			var disabled = Channel()
+			disabled.index = index
+			disabled.role = .disabled
+			await MeshPackets.shared.channelPacket(channel: disabled, fromNum: Int64(nodeNum))
+		}
+		#expect(try channelNames(nodeNum: nodeNum) == ["Old Primary"])
+
+		await MeshPackets.shared.commitChannelRefreshStage(for: Int64(nodeNum), owner: owner)
+		await Task.yield()
+
+		#expect(try channelNames(nodeNum: nodeNum) == ["Leased Primary"])
+	}
+
+	@Test("A rejected refresh releases its stage so later radio packets use direct handling")
+	func rejectedRefreshStageReturnsToDirectChannelHandling() async throws {
+		resetSharedStore()
+		let nodeNum: UInt32 = 0x00AE_1EC7
+		try seedMyInfo(nodeNum: nodeNum, channelName: "Original Primary")
+		let connection = ChannelRefreshLifecycleConnection()
+		let manager = makeManager(nodeNum: nodeNum, connection: connection)
+		let refresh = await startAutomaticConfigRefresh(manager, connection: connection)
+
+		await manager.handleMyInfo(myInfo(nodeNum: nodeNum))
+		await manager.handleChannel(channel(index: 0, name: "Remote Primary"))
+		await stageDisabledSlots(manager)
+
+		let context = PersistenceController.shared.context
+		let persistedNodeNum = Int64(nodeNum)
+		let descriptor = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == persistedNodeNum })
+		let myInfo = try #require(context.fetch(descriptor).first)
+		myInfo.channels[0].name = "User Primary"
+		try context.save()
+
+		await completeConfig(manager)
+		try await refresh.value
+		await manager.handleChannel(channel(index: 0, name: "Later Radio Primary"))
+
+		#expect(try channelNames(nodeNum: nodeNum) == ["Later Radio Primary"])
+	}
+
+	@Test("A drain failure releases its lease and returns later packets to direct handling")
+	func failedRefreshReturnsToDirectChannelHandling() async throws {
+		resetSharedStore()
+		let nodeNum: UInt32 = 0x00FA_11ED
+		try seedMyInfo(nodeNum: nodeNum, channelName: "Original Primary")
+		let connection = ChannelRefreshLifecycleConnection()
+		let manager = makeManager(nodeNum: nodeNum, connection: connection)
+		await connection.pauseNextWantConfigSend()
+		await connection.failNextPendingPacketDrain()
+		let refresh = await startAutomaticConfigRefresh(manager, connection: connection)
+
+		await manager.handleMyInfo(myInfo(nodeNum: nodeNum))
+		await manager.handleChannel(channel(index: 0, name: "Failed Refresh Primary"))
+		let stagedMesh = MeshPackets.shared
+		MeshPackets.recreateShared()
+		#expect(MeshPackets.shared === stagedMesh)
+
+		await connection.resumePausedWantConfigSend()
+		await #expect(throws: AccessoryError.self) {
+			try await refresh.value
+		}
+		await Task.yield()
+		#expect(MeshPackets.shared !== stagedMesh)
+
+		await manager.handleChannel(channel(index: 0, name: "Later Radio Primary"))
+		#expect(try channelNames(nodeNum: nodeNum) == ["Later Radio Primary"])
 	}
 }
