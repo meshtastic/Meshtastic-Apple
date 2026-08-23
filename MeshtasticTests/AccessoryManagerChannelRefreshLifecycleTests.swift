@@ -486,6 +486,64 @@ struct AccessoryManagerChannelRefreshLifecycleTests {
 
 }
 
+private struct ChannelProjectionNames {
+	let displayed: [String]
+	let shared: [String]
+	let exported: [String]
+}
+
+extension AccessoryManagerChannelRefreshLifecycleTests {
+	private func canonicalChannelProjectionNames(nodeNum: UInt32) throws -> ChannelProjectionNames {
+		let persistedNodeNum = Int64(nodeNum)
+		let context = ModelContext(PersistenceController.shared.container)
+		let descriptor = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == persistedNodeNum })
+		let channels = try context.fetch(descriptor).first?.channels ?? []
+		return ChannelProjectionNames(
+			displayed: projectedDisplayChannels(from: channels).map { $0.name ?? "" },
+			shared: channelSettingsForSharing(from: channels, includedIndexes: Set(Int32(0)...Int32(7))).map(\.name),
+			exported: canonicalValidUniqueChannels(from: channels).filter { $0.role > 0 }.map { $0.name ?? "" }
+		)
+	}
+
+	@Test("Local channel mutation targets the canonical duplicate row")
+	func localChannelMutationTargetsCanonicalDuplicateRow() throws {
+		resetSharedStore()
+		let nodeNum: UInt32 = 0x00CA_D001
+		try seedMyInfo(
+			nodeNum: nodeNum,
+			channels: [
+				(0, "Stale Duplicate", .primary),
+				(0, "Displayed Duplicate", .primary),
+				(1, "Secondary", .secondary)
+			]
+		)
+		let manager = makeManager(nodeNum: nodeNum)
+		let initialProjection = try canonicalChannelProjectionNames(nodeNum: nodeNum)
+		let initialCanonicalPrimary = try #require(initialProjection.displayed.first)
+		let fallbackPrimary = initialCanonicalPrimary == "Stale Duplicate" ? "Displayed Duplicate" : "Stale Duplicate"
+
+		try manager.applyLocalChannelMutation(
+			channel(index: 0, name: "User Renamed Primary"),
+			fromNum: Int64(nodeNum)
+		)
+
+		let updatedProjection = try canonicalChannelProjectionNames(nodeNum: nodeNum)
+		#expect(updatedProjection.displayed == ["User Renamed Primary", "Secondary"])
+		#expect(updatedProjection.shared == ["User Renamed Primary", "Secondary"])
+		#expect(updatedProjection.exported == ["User Renamed Primary", "Secondary"])
+
+		var deleted = Channel()
+		deleted.index = 0
+		deleted.role = .disabled
+		try manager.applyLocalChannelMutation(deleted, fromNum: Int64(nodeNum))
+
+		let deletedProjection = try canonicalChannelProjectionNames(nodeNum: nodeNum)
+		#expect(deletedProjection.displayed == [fallbackPrimary, "Secondary"])
+		#expect(deletedProjection.shared == [fallbackPrimary, "Secondary"])
+		#expect(deletedProjection.exported == [fallbackPrimary, "Secondary"])
+	}
+}
+
 extension AccessoryManagerChannelRefreshLifecycleTests {
 	@Test("Disconnect cancels a paused automatic refresh runner before it drains packets")
 	func disconnectCancelsPausedAutomaticRefreshRunner() async throws {

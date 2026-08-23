@@ -179,8 +179,8 @@ actor MeshPackets {
 	/// Periodically recreated to release accumulated ModelContext memory.
 	nonisolated(unsafe) private static var _shared: MeshPackets = MeshPackets(modelContainer: _container)
 	private static let _lock = NSLock()
-	private static var activeChannelRefreshStageCount = 0
-	private static var sharedRecreationDeferredForChannelRefresh = false
+	nonisolated(unsafe) private static var activeChannelRefreshStageCount = 0
+	nonisolated(unsafe) private static var sharedRecreationDeferredForChannelRefresh = false
 	#if DEBUG
 	/// Deterministic concurrency checkpoint used by the refresh boundary regression test. Production
 	/// callers leave this nil, so validation and replacement execute without suspension.
@@ -376,19 +376,7 @@ actor MeshPackets {
 
 	@MainActor
 	private static func channelSnapshot(from myInfo: MyInfoEntity) -> [ChannelRefreshSnapshot] {
-		myInfo.channels.map { channel in
-			ChannelRefreshSnapshot(
-				id: channel.id,
-				index: channel.index,
-				uplinkEnabled: channel.uplinkEnabled,
-				downlinkEnabled: channel.downlinkEnabled,
-				name: channel.name ?? "",
-				role: channel.role,
-				psk: channel.psk ?? Data(),
-				positionPrecision: channel.positionPrecision,
-				mute: channel.mute
-			)
-		}.sorted(by: channelSnapshotIsOrderedBefore)
+		myInfo.channels.map(Self.channelRefreshSnapshot).sorted(by: channelSnapshotIsOrderedBefore)
 	}
 
 	@MainActor
@@ -416,6 +404,24 @@ actor MeshPackets {
 
 	@MainActor
 	private static func apply(stagedChannel: StagedChannel, to channel: ChannelEntity) {
+		applyChannelRefresh(stagedChannel, to: channel)
+	}
+
+	nonisolated private static func channelRefreshSnapshot(from channel: ChannelEntity) -> ChannelRefreshSnapshot {
+		ChannelRefreshSnapshot(
+			id: channel.id,
+			index: channel.index,
+			uplinkEnabled: channel.uplinkEnabled,
+			downlinkEnabled: channel.downlinkEnabled,
+			name: channel.name ?? "",
+			role: channel.role,
+			psk: channel.psk ?? Data(),
+			positionPrecision: channel.positionPrecision,
+			mute: channel.mute
+		)
+	}
+
+	nonisolated private static func applyChannelRefresh(_ stagedChannel: StagedChannel, to channel: ChannelEntity) {
 		channel.id = stagedChannel.id
 		channel.index = stagedChannel.index
 		channel.uplinkEnabled = stagedChannel.uplinkEnabled
@@ -769,19 +775,7 @@ actor MeshPackets {
 	}
 
 	private func currentChannelSnapshot(from myInfo: MyInfoEntity) -> [ChannelRefreshSnapshot] {
-		myInfo.channels.map { channel in
-			ChannelRefreshSnapshot(
-				id: channel.id,
-				index: channel.index,
-				uplinkEnabled: channel.uplinkEnabled,
-				downlinkEnabled: channel.downlinkEnabled,
-				name: channel.name ?? "",
-				role: channel.role,
-				psk: channel.psk ?? Data(),
-				positionPrecision: channel.positionPrecision,
-				mute: channel.mute
-			)
-		}.sorted(by: Self.channelSnapshotIsOrderedBefore)
+		myInfo.channels.map(Self.channelRefreshSnapshot).sorted(by: Self.channelSnapshotIsOrderedBefore)
 	}
 
 	private func isCompleteChannelRefresh(_ stagedChannels: [Int32: StagedChannel]) -> Bool {
@@ -879,15 +873,7 @@ actor MeshPackets {
 	}
 
 	private func apply(stagedChannel: StagedChannel, to channel: ChannelEntity) {
-		channel.id = stagedChannel.id
-		channel.index = stagedChannel.index
-		channel.uplinkEnabled = stagedChannel.uplinkEnabled
-		channel.downlinkEnabled = stagedChannel.downlinkEnabled
-		channel.name = stagedChannel.name
-		channel.role = stagedChannel.role
-		channel.psk = stagedChannel.psk
-		channel.positionPrecision = stagedChannel.positionPrecision
-		channel.mute = stagedChannel.mute
+		Self.applyChannelRefresh(stagedChannel, to: channel)
 	}
 
 	func deviceMetadataPacket (metadata: DeviceMetadata, fromNum: Int64, sessionPasskey: Data? = Data()) {

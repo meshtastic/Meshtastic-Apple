@@ -715,7 +715,7 @@ extension AccessoryManager {
 		}
 
 		let channelIndex = Int32(truncatingIfNeeded: channel.index)
-		let existing = myInfo.channels.first { $0.index == channelIndex }
+		let existing = canonicalValidUniqueChannels(from: myInfo.channels).first { $0.index == channelIndex }
 		if channel.role == .disabled {
 			if let existing {
 				context.delete(existing)
