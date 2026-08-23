@@ -397,24 +397,32 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		// ingestion actor ahead of the config handshake and node-DB dump (one cause of slow/hung
 		// connects). It now runs after the connection completes — see connect() Step 8 — where it
 		// also prunes against post-dump lastHeard values instead of pre-dump ones.
+		let configRefreshNodeNum = activeConnection?.device.num ?? activeDeviceNum
 
-		try await withTaskCancellationHandler {
-			var toRadio: ToRadio = ToRadio()
-			toRadio.wantConfigID = UInt32(NONCE_ONLY_CONFIG)
-			try await self.send(toRadio)
-			try await connection.startDrainPendingPackets()
-			try await withCheckedThrowingContinuation { cont in
-				self.wantConfigContinuation = cont
-			}
-			self.wantConfigContinuation = nil
-			Logger.transport.info("✅ [Accessory] NONCE_ONLY_CONFIG Done")
-		} onCancel: {
-			Task { @MainActor in
-				if let continuation = wantConfigContinuation {
-					wantConfigContinuation = nil
-					continuation.resume(throwing: CancellationError())
+		do {
+			try await withTaskCancellationHandler {
+				var toRadio: ToRadio = ToRadio()
+				toRadio.wantConfigID = UInt32(NONCE_ONLY_CONFIG)
+				try await self.send(toRadio)
+				try await connection.startDrainPendingPackets()
+				try await withCheckedThrowingContinuation { cont in
+					self.wantConfigContinuation = cont
+				}
+				self.wantConfigContinuation = nil
+				Logger.transport.info("✅ [Accessory] NONCE_ONLY_CONFIG Done")
+			} onCancel: {
+				Task { @MainActor in
+					if let continuation = wantConfigContinuation {
+						wantConfigContinuation = nil
+						continuation.resume(throwing: CancellationError())
+					}
 				}
 			}
+		} catch {
+			if let configRefreshNodeNum {
+				await MeshPackets.shared.discardChannelRefreshStage(for: configRefreshNodeNum)
+			}
+			throw error
 		}
 	}
 
@@ -467,11 +475,16 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 
 		Logger.transport.debug("[AccessoryManager] received disconnect request")
 
+		let closingNodeNum = activeConnection?.device.num ?? activeDeviceNum
+
 		if let activeConnection {
 			updateDevice(deviceId: activeConnection.device.id, key: \.connectionState, value: .disconnected)
 			self.activeConnection = nil
 		}
 		self.activeDeviceNum = nil
+		if let closingNodeNum {
+			await MeshPackets.shared.discardChannelRefreshStage(for: closingNodeNum)
+		}
 
 		// Lockdown: clear per-connection state. If a Lock Now was in flight, the
 		// disconnect resolves the coordinator to `.lockNowAcknowledged`.
@@ -1043,6 +1056,9 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			Logger.transport.info("✅ [Accessory] Notifying completions that have completed for configCompleteID: \(configCompleteID)")
 			switch configCompleteID {
 			case UInt32(NONCE_ONLY_CONFIG):
+				if let completedNodeNum = activeConnection?.device.num ?? activeDeviceNum {
+					await MeshPackets.shared.commitChannelRefreshStage(for: completedNodeNum)
+				}
 				if let continuation = wantConfigContinuation {
 					wantConfigContinuation = nil
 					continuation.resume()
