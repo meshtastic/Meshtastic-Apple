@@ -66,6 +66,9 @@ extension FirmwareFile {
 	static let remoteFirmwareURLPrefix = URL(string: "https://raw.githubusercontent.com/meshtastic/meshtastic.github.io/master/")!
 }
 
+extension FirmwareFile.DownloadStatus: Sendable {}
+extension FirmwareFile.FirmwareType: Sendable {}
+
 class FirmwareFile: ObservableObject, Hashable, Equatable {
 	let localUrl: URL
 	let remoteUrl: URL?
@@ -137,6 +140,35 @@ class FirmwareFile: ObservableObject, Hashable, Equatable {
 		} else {
 			self.status = .notDownloaded
 		}
+	}
+
+	init(
+		localUrl: URL,
+		remoteUrlCandidates: [URL],
+		versionId: String,
+		platformioTarget: String,
+		releaseType: ReleaseType,
+		status: DownloadStatus,
+		firmwareType: FirmwareType,
+		architecture: Architecture,
+		releaseNotes: String?,
+		versionMajor: Int,
+		versionMinor: Int,
+		versionPatch: Int
+	) {
+		self.localUrl = localUrl
+		self.remoteUrlCandidates = remoteUrlCandidates
+		self.remoteUrl = remoteUrlCandidates.first
+		self.versionId = versionId
+		self.platformioTarget = platformioTarget
+		self.releaseType = releaseType
+		self.status = status
+		self.firmwareType = firmwareType
+		self.architecture = architecture
+		self.releaseNotes = releaseNotes
+		self.versionMajor = versionMajor
+		self.versionMinor = versionMinor
+		self.versionPatch = versionPatch
 	}
 	
 	@MainActor
@@ -319,7 +351,7 @@ class FirmwareFile: ObservableObject, Hashable, Equatable {
 		hasher.combine(architecture)
 	}
 
-	private static func makeRemoteURLCandidates(
+	static func makeRemoteURLCandidates(
 		target: String,
 		version: String,
 		firmwareType: FirmwareType,

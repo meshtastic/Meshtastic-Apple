@@ -10,6 +10,9 @@ import SwiftUI
 @preconcurrency import SwiftData
 import OSLog
 
+extension ReleaseType: Sendable {}
+extension Architecture: Sendable {}
+
 extension FirmwareViewModel {
 	enum FirmwareViewModelError: Error, LocalizedError {
 		case timedOut(TimeInterval)
@@ -34,10 +37,272 @@ extension FirmwareViewModel {
 	}
 }
 
+extension FirmwareViewModel {
+	struct FirmwareHardwareSnapshot: Sendable {
+		let platformioTarget: String?
+		let architecture: Architecture?
+
+		init(platformioTarget: String?, architecture: Architecture?) {
+			self.platformioTarget = platformioTarget
+			self.architecture = architecture
+		}
+	}
+
+	struct FirmwareReleaseSnapshot: Sendable {
+		let versionId: String
+		let releaseType: ReleaseType
+		let releaseNotes: String?
+
+		init(versionId: String, releaseType: ReleaseType, releaseNotes: String?) {
+			self.versionId = versionId
+			self.releaseType = releaseType
+			self.releaseNotes = releaseNotes
+		}
+
+		init(_ release: FirmwareReleaseEntity) throws {
+			guard let releaseType = release.releaseType.flatMap({ ReleaseType(rawValue: $0) }) else {
+				throw FirmwareFile.FirmwareFileError.unknownReleaseType
+			}
+			guard FirmwareViewModel.parsedVersion(release.versionId) != nil else {
+				throw FirmwareFile.FirmwareFileError.parseError
+			}
+			self.init(
+				versionId: release.versionId,
+				releaseType: releaseType,
+				releaseNotes: release.releaseNotes
+			)
+		}
+	}
+
+	struct FirmwareFileSnapshot: Sendable {
+		let localUrl: URL
+		let remoteUrlCandidates: [URL]
+		let versionId: String
+		let platformioTarget: String
+		let releaseType: ReleaseType
+		let status: FirmwareFile.DownloadStatus
+		let firmwareType: FirmwareFile.FirmwareType
+		let architecture: Architecture
+		let releaseNotes: String?
+		let versionMajor: Int
+		let versionMinor: Int
+		let versionPatch: Int
+	}
+
+	struct FirmwareCatalogSnapshotError: Sendable {
+		let localFileURL: URL
+		let message: String
+	}
+
+	struct FirmwareCatalogSnapshot: Sendable {
+		let files: [FirmwareFileSnapshot]
+		let localFileErrors: [FirmwareCatalogSnapshotError]
+	}
+
+	struct RefreshGeneration {
+		private var current = 0
+
+		mutating func begin() -> Int {
+			current += 1
+			return current
+		}
+
+		func isCurrent(_ generation: Int) -> Bool {
+			generation == current
+		}
+	}
+
+	nonisolated static func makeFirmwareCatalogSnapshot(
+		releases: [FirmwareReleaseSnapshot],
+		localFileURLs: [URL],
+		hardware: FirmwareHardwareSnapshot,
+		localeTags: [String]
+	) -> FirmwareCatalogSnapshot {
+		let localFileNames = Set(localFileURLs.map(\.lastPathComponent))
+		var releasesByVersion = [String: FirmwareReleaseSnapshot]()
+		for release in releases where releasesByVersion[release.versionId] == nil {
+			releasesByVersion[release.versionId] = release
+			if let normalizedVersionId = Self.parsedVersion(release.versionId)?.versionId {
+				releasesByVersion[normalizedVersionId] = release
+			}
+		}
+		var filesByName = [String: FirmwareFileSnapshot]()
+		var localFileErrors = [FirmwareCatalogSnapshotError]()
+
+		if let target = hardware.platformioTarget, let architecture = hardware.architecture {
+			for release in releases {
+				guard let version = Self.parsedVersion(release.versionId) else { continue }
+				for firmwareType in FirmwareFile.validFilenameSuffixes(forArchitecture: architecture) {
+					let fileName = Self.firmwareFileName(target: target, version: version.fileNameVersion, firmwareType: firmwareType)
+					filesByName[fileName] = FirmwareFileSnapshot(
+						localUrl: FirmwareFile.localFirmwareStorageURL.appendingPathComponent(fileName),
+						remoteUrlCandidates: FirmwareFile.makeRemoteURLCandidates(
+							target: target,
+							version: version.fileNameVersion,
+							firmwareType: firmwareType,
+							localeTags: localeTags
+						),
+						versionId: release.versionId,
+						platformioTarget: target,
+						releaseType: release.releaseType,
+						status: localFileNames.contains(fileName) ? .downloaded : .notDownloaded,
+						firmwareType: firmwareType,
+						architecture: architecture,
+						releaseNotes: release.releaseNotes,
+						versionMajor: version.major,
+						versionMinor: version.minor,
+						versionPatch: version.patch
+					)
+				}
+			}
+		}
+
+		for localFileURL in localFileURLs {
+			do {
+				let localFile = try Self.parseLocalFirmwareFile(localFileURL)
+				guard localFile.platformioTarget == hardware.platformioTarget else { continue }
+				guard filesByName[localFileURL.lastPathComponent] == nil else { continue }
+				guard let architecture = hardware.architecture else {
+					throw FirmwareFile.FirmwareFileError.unknownArchitecture
+				}
+				let release = releasesByVersion[localFile.version.versionId]
+				filesByName[localFileURL.lastPathComponent] = FirmwareFileSnapshot(
+					localUrl: localFileURL,
+					remoteUrlCandidates: FirmwareFile.makeRemoteURLCandidates(
+						target: localFile.platformioTarget,
+						version: localFile.version.fileNameVersion,
+						firmwareType: localFile.firmwareType,
+						localeTags: []
+					),
+					versionId: localFile.version.versionId,
+					platformioTarget: localFile.platformioTarget,
+					releaseType: release?.releaseType ?? .unlisted,
+					status: .downloaded,
+					firmwareType: localFile.firmwareType,
+					architecture: architecture,
+					releaseNotes: release?.releaseNotes,
+					versionMajor: localFile.version.major,
+					versionMinor: localFile.version.minor,
+					versionPatch: localFile.version.patch
+				)
+			} catch {
+				localFileErrors.append(FirmwareCatalogSnapshotError(
+					localFileURL: localFileURL,
+					message: String(describing: error)
+				))
+			}
+		}
+
+		return FirmwareCatalogSnapshot(
+			files: filesByName.values.sorted(by: Self.isFirmwareFileOrderedBefore(_:_:)),
+			localFileErrors: localFileErrors
+		)
+	}
+
+	nonisolated private static func firmwareFileName(
+		target: String,
+		version: String,
+		firmwareType: FirmwareFile.FirmwareType
+	) -> String {
+		"firmware-\(target)-\(version)\(firmwareType.rawValue)"
+	}
+
+	nonisolated private struct ParsedFirmwareVersion {
+		let versionId: String
+		let fileNameVersion: String
+		let major: Int
+		let minor: Int
+		let patch: Int
+	}
+
+	nonisolated private struct ParsedLocalFirmwareFile {
+		let platformioTarget: String
+		let version: ParsedFirmwareVersion
+		let firmwareType: FirmwareFile.FirmwareType
+	}
+
+	nonisolated private static func parsedVersion(_ versionId: String) -> ParsedFirmwareVersion? {
+		guard !versionId.isEmpty else { return nil }
+		let cleanString = versionId.hasPrefix("v") ? versionId.dropFirst() : Substring(versionId)
+		let parts = cleanString.split(separator: ".")
+		guard parts.count >= 3 else { return nil }
+		return ParsedFirmwareVersion(
+			versionId: versionId.hasPrefix("v") ? versionId : "v\(versionId)",
+			fileNameVersion: String(cleanString),
+			major: Int(parts[0]) ?? 0,
+			minor: Int(parts[1]) ?? 0,
+			patch: Int(parts[2]) ?? 0
+		)
+	}
+
+	nonisolated private static func parseLocalFirmwareFile(_ url: URL) throws -> ParsedLocalFirmwareFile {
+		let fileName = url.lastPathComponent
+		guard fileName.hasPrefix("firmware-") else {
+			throw FirmwareFile.FirmwareFileError.invalidFilenamePrefix
+		}
+
+		let firmwareType: FirmwareFile.FirmwareType
+		var coreName = String(fileName.dropFirst("firmware-".count))
+		if fileName.hasSuffix("-ota.zip") {
+			coreName = String(coreName.dropLast("-ota.zip".count))
+			firmwareType = .otaZip
+		} else if fileName.hasSuffix(".uf2") {
+			coreName = String(coreName.dropLast(".uf2".count))
+			firmwareType = .uf2
+		} else if fileName.hasSuffix(".bin") {
+			coreName = String(coreName.dropLast(".bin".count))
+			firmwareType = .bin
+		} else {
+			throw FirmwareFile.FirmwareFileError.unknownFileType
+		}
+
+		guard let lastHyphenIndex = coreName.lastIndex(of: "-") else {
+			throw FirmwareFile.FirmwareFileError.parseError
+		}
+		let target = String(coreName[..<lastHyphenIndex])
+		let versionId = String(coreName[coreName.index(after: lastHyphenIndex)...])
+		guard !target.isEmpty, let version = parsedVersion(versionId) else {
+			throw FirmwareFile.FirmwareFileError.parseError
+		}
+
+		return ParsedLocalFirmwareFile(
+			platformioTarget: target,
+			version: version,
+			firmwareType: firmwareType
+		)
+	}
+
+	nonisolated private static func isFirmwareFileOrderedBefore(
+		_ lhs: FirmwareFileSnapshot,
+		_ rhs: FirmwareFileSnapshot
+	) -> Bool {
+		if (lhs.versionMajor, lhs.versionMinor, lhs.versionPatch) == (rhs.versionMajor, rhs.versionMinor, rhs.versionPatch) {
+			return String(describing: lhs.firmwareType) < String(describing: rhs.firmwareType)
+		}
+		return (lhs.versionMajor, lhs.versionMinor, lhs.versionPatch) > (rhs.versionMajor, rhs.versionMinor, rhs.versionPatch)
+	}
+
+	nonisolated private static func loadLocalFirmwareFileURLs() -> [URL]? {
+		let fileManager = FileManager.default
+		var isDirectory: ObjCBool = false
+		if !fileManager.fileExists(atPath: FirmwareFile.localFirmwareStorageURL.path, isDirectory: &isDirectory) {
+			return nil
+		}
+
+		do {
+			return try fileManager.contentsOfDirectory(at: FirmwareFile.localFirmwareStorageURL, includingPropertiesForKeys: nil)
+		} catch {
+			Logger.services.error("Error loading firmware files: \(error)")
+			return []
+		}
+	}
+}
+
 @MainActor
 class FirmwareViewModel: ObservableObject {
 	@Published var firmwareFiles: [FirmwareFile] = []
 	let hardware: DeviceHardwareEntity
+	private var refreshGeneration = RefreshGeneration()
 	/// The connected node's LoRa region; non-Latin regions get locale-tagged
 	/// remote artifact candidates so the right on-device fonts ship. `.unset`
 	/// keeps the previous generic-only behavior.
@@ -52,76 +317,55 @@ class FirmwareViewModel: ObservableObject {
 	}
 	
 	func refresh() {
-		var newFirmwareList = [String: FirmwareFile]()
-
-		// Snapshot hardware properties safely
-		let hardwarePlatformioTarget = hardware.platformioTarget
-		let hardwareArchitecture = hardware.architecture.flatMap { Architecture(rawValue: $0) }
-
-		// First, loop through all firmware entities and create an entry for those
+		let generation = refreshGeneration.begin()
+		let hardwareSnapshot = FirmwareHardwareSnapshot(
+			platformioTarget: hardware.platformioTarget,
+			architecture: hardware.architecture.flatMap { Architecture(rawValue: $0) }
+		)
+		let localeTags = preferredRegion.prefersLocalizedFontFirmware ? preferredRegion.firmwareLocaleTagCandidates : []
+		var releaseSnapshots = [FirmwareReleaseSnapshot]()
 		let context = PersistenceController.shared.container.mainContext
 		let descriptor = FetchDescriptor<FirmwareReleaseEntity>()
 		do {
 			let firmwareReleases = try context.fetch(descriptor)
-			let localeTags = preferredRegion.prefersLocalizedFontFirmware ? preferredRegion.firmwareLocaleTagCandidates : []
 			for release in firmwareReleases {
-				if let architecture = hardwareArchitecture {
-					for firmwareType in FirmwareFile.validFilenameSuffixes(forArchitecture: architecture) {
-						let firmwareFile = try FirmwareFile(firmware: release, hardware: hardware, type: firmwareType, localeTags: localeTags)
-						newFirmwareList[firmwareFile.localUrl.lastPathComponent] = firmwareFile
-					}
-				} else {
-					// Just the default
-					let firmwareFile = try FirmwareFile(firmware: release, hardware: hardware, localeTags: localeTags)
-					newFirmwareList[firmwareFile.localUrl.lastPathComponent] = firmwareFile
-				}
+				releaseSnapshots.append(try FirmwareReleaseSnapshot(release))
 			}
 		} catch {
 			Logger.services.error("Error fetching firmware releases: \(error)")
 		}
-		
-		// Now look for unlisted files on the filesystem
-		let fileManager = FileManager.default
-		var isDirectory: ObjCBool = false
-		
-		// 1. Check if directory exists
-		if !fileManager.fileExists(atPath: FirmwareFile.localFirmwareStorageURL.path, isDirectory: &isDirectory) {
-			return
-		}
-		
-		// 2. Iterate the files in the folder
-		do {
-			let fileURLs = try fileManager.contentsOfDirectory(at: FirmwareFile.localFirmwareStorageURL, includingPropertiesForKeys: nil)
-			
-			for url in fileURLs {
-				do {
-					let firmwareFile = try FirmwareFile(localFile: url)
-					if firmwareFile.platformioTarget != hardwarePlatformioTarget {
-						// Skip if this is not for the current hardware we are dealing with
-						continue
-					}
-					
-					if newFirmwareList[firmwareFile.localUrl.lastPathComponent] != nil {
-						// Already have this one from the Core Data entries
-						continue
-					}
-					newFirmwareList[firmwareFile.localUrl.lastPathComponent] = firmwareFile
-				} catch {
-					Logger.services.error("Error parsing local firmware file at \(url.path): \(error)")
-				}
+
+		Task {
+			let snapshot = await Task.detached(priority: .userInitiated) {
+				guard let localFileURLs = Self.loadLocalFirmwareFileURLs() else { return nil as FirmwareCatalogSnapshot? }
+				return Self.makeFirmwareCatalogSnapshot(
+					releases: releaseSnapshots,
+					localFileURLs: localFileURLs,
+					hardware: hardwareSnapshot,
+					localeTags: localeTags
+				)
+			}.value
+
+			guard let snapshot else { return }
+			guard self.refreshGeneration.isCurrent(generation) else { return }
+			for localFileError in snapshot.localFileErrors {
+				Logger.services.error("Error parsing local firmware file at \(localFileError.localFileURL.path): \(localFileError.message)")
 			}
-		} catch {
-			Logger.services.error("Error loading firmware files: \(error)")
-		}
-		
-		Task { @MainActor in
-			// Keep the list sorted by version, with deterministic ordering of the firmware type
-			self.firmwareFiles = newFirmwareList.values.sorted {
-				if ($0.versionMajor, $0.versionMinor, $0.versionPatch) == ($1.versionMajor, $1.versionMinor, $1.versionPatch) {
-					// If versions are equal, sort by firmwareType (assuming it's String or Comparable)
-					return String(describing: $0.firmwareType) < String(describing: $1.firmwareType)
-				}
-				return ($0.versionMajor, $0.versionMinor, $0.versionPatch) > ($1.versionMajor, $1.versionMinor, $1.versionPatch)
+			self.firmwareFiles = snapshot.files.map { snapshot in
+				FirmwareFile(
+					localUrl: snapshot.localUrl,
+					remoteUrlCandidates: snapshot.remoteUrlCandidates,
+					versionId: snapshot.versionId,
+					platformioTarget: snapshot.platformioTarget,
+					releaseType: snapshot.releaseType,
+					status: snapshot.status,
+					firmwareType: snapshot.firmwareType,
+					architecture: snapshot.architecture,
+					releaseNotes: snapshot.releaseNotes,
+					versionMajor: snapshot.versionMajor,
+					versionMinor: snapshot.versionMinor,
+					versionPatch: snapshot.versionPatch
+				)
 			}
 		}
 	}

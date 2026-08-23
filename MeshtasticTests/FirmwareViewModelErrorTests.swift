@@ -38,6 +38,84 @@ struct FirmwareViewModelErrorTests {
 		#expect(err.errorDescription != nil)
 		#expect(!err.errorDescription!.isEmpty)
 	}
+
+	@Test func catalogSnapshotDeduplicatesLocalFilesAndSortsVersionsDeterministically() throws {
+		let releases = [
+			FirmwareViewModel.FirmwareReleaseSnapshot(
+				versionId: "v2.5.0",
+				releaseType: .stable,
+				releaseNotes: "stable notes"
+			),
+			FirmwareViewModel.FirmwareReleaseSnapshot(
+				versionId: "v2.4.1",
+				releaseType: .alpha,
+				releaseNotes: "alpha notes"
+			)
+		]
+		let localFiles = [
+			URL(fileURLWithPath: "/tmp/firmware-other-9.0.0.uf2"),
+			URL(fileURLWithPath: "/tmp/firmware-t-echo-2.6.0.uf2"),
+			URL(fileURLWithPath: "/tmp/firmware-t-echo-2.5.0.uf2")
+		]
+
+		let snapshot = FirmwareViewModel.makeFirmwareCatalogSnapshot(
+			releases: releases,
+			localFileURLs: localFiles,
+			hardware: FirmwareViewModel.FirmwareHardwareSnapshot(
+				platformioTarget: "t-echo",
+				architecture: .nrf52840
+			),
+			localeTags: []
+		)
+
+		#expect(snapshot.files.map(\.localUrl.lastPathComponent) == [
+			"firmware-t-echo-2.6.0.uf2",
+			"firmware-t-echo-2.5.0-ota.zip",
+			"firmware-t-echo-2.5.0.uf2",
+			"firmware-t-echo-2.4.1-ota.zip",
+			"firmware-t-echo-2.4.1.uf2"
+		])
+		#expect(snapshot.files.map(\.releaseType) == [
+			.unlisted,
+			.stable,
+			.stable,
+			.alpha,
+			.alpha
+		])
+		#expect(snapshot.files.first?.status == .downloaded)
+	}
+
+	@Test func catalogSnapshotPreservesUnprefixedReleaseVersionId() throws {
+		let snapshot = FirmwareViewModel.makeFirmwareCatalogSnapshot(
+			releases: [
+				FirmwareViewModel.FirmwareReleaseSnapshot(
+					versionId: "2.5.0",
+					releaseType: .stable,
+					releaseNotes: nil
+				)
+			],
+			localFileURLs: [],
+			hardware: FirmwareViewModel.FirmwareHardwareSnapshot(
+				platformioTarget: "t-echo",
+				architecture: .nrf52840
+			),
+			localeTags: []
+		)
+
+		let uf2File = try #require(snapshot.files.first { $0.localUrl.lastPathComponent == "firmware-t-echo-2.5.0.uf2" })
+		#expect(uf2File.versionId == "2.5.0")
+	}
+
+	@Test func refreshGenerationAllowsOnlyLatestTokenToPublish() {
+		var generation = FirmwareViewModel.RefreshGeneration()
+
+		let first = generation.begin()
+		#expect(generation.isCurrent(first))
+
+		let second = generation.begin()
+		#expect(!generation.isCurrent(first))
+		#expect(generation.isCurrent(second))
+	}
 }
 
 // MARK: - Additional Plottable Extension Tests
