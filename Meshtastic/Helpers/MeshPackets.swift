@@ -68,6 +68,18 @@ func generateMessageMarkdown(message: String) -> String {
 
 @ModelActor
 actor MeshPackets {
+	private struct StagedChannel {
+		let id: Int32
+		let index: Int32
+		let uplinkEnabled: Bool
+		let downlinkEnabled: Bool
+		let name: String
+		let role: Int32
+		let psk: Data
+		let positionPrecision: Int32
+		let mute: Bool
+	}
+
 	private struct TelemetryPruneKey: Hashable {
 		let nodeNum: Int64
 		let metricsType: Int32
@@ -114,11 +126,49 @@ actor MeshPackets {
 	/// Set when this instance has been replaced by `recreateShared()`. A retired instance must
 	/// never persist again — see `recreateShared()`.
 	private var invalidated = false
+	private var channelRefreshStages: [Int64: [Int32: StagedChannel]] = [:]
 
 	func invalidate() {
 		invalidated = true
 		debounceSaveTask?.cancel()
 		debounceSaveTask = nil
+		channelRefreshStages.removeAll()
+	}
+
+	func beginChannelRefreshStage(for nodeNum: Int64) {
+		channelRefreshStages[nodeNum] = [:]
+	}
+
+	func discardChannelRefreshStage(for nodeNum: Int64) {
+		channelRefreshStages[nodeNum] = nil
+	}
+
+	func commitChannelRefreshStage(for nodeNum: Int64) {
+		guard let stagedChannels = channelRefreshStages.removeValue(forKey: nodeNum) else { return }
+		let fetchDescriptor = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == nodeNum })
+		do {
+			let fetchedMyInfo = try modelContext.fetch(fetchDescriptor)
+			guard fetchedMyInfo.count == 1 else {
+				Logger.data.error("💥Trying to commit staged channels to a MyInfo that does not exist: \(nodeNum.toHex(), privacy: .public)")
+				return
+			}
+			let myInfo = fetchedMyInfo[0]
+			for channel in myInfo.channels {
+				modelContext.delete(channel)
+			}
+			myInfo.channels.removeAll()
+			for staged in stagedChannels.values.sorted(by: { $0.index < $1.index }) {
+				let channel = ChannelEntity()
+				modelContext.insert(channel)
+				apply(stagedChannel: staged, to: channel)
+				myInfo.channels.append(channel)
+			}
+			savePendingChanges()
+			Logger.data.info("💾 Committed \(stagedChannels.count, privacy: .public) staged channel(s) for: \(nodeNum, privacy: .public)")
+		} catch {
+			let nsError = error as NSError
+			Logger.data.error("💥 Error committing staged channels from ADMIN_APP \(nsError, privacy: .public)")
+		}
 	}
 
 	/// Saves any pending changes in the model context. Call once at the end of each
@@ -447,6 +497,11 @@ actor MeshPackets {
 			let logString = String.localizedStringWithFormat("Channel received: %d %@".localized, channel.index, String(fromNum))
 			Logger.admin.info("🎛️ \(logString, privacy: .public)")
 
+			if channelRefreshStages[fromNum] != nil {
+				channelRefreshStages[fromNum]?[Int32(truncatingIfNeeded: channel.index)] = stagedChannel(from: channel)
+				return
+			}
+
 			let fetchDescriptor = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == fromNum })
 
 			do {
@@ -461,23 +516,7 @@ actor MeshPackets {
 						modelContext.insert(newChannel)
 						fetchedMyInfo[0].channels.append(newChannel)
 					}
-					newChannel.id = Int32(truncatingIfNeeded: channel.index)
-					newChannel.index = Int32(truncatingIfNeeded: channel.index)
-					newChannel.uplinkEnabled = channel.settings.uplinkEnabled
-					newChannel.downlinkEnabled = channel.settings.downlinkEnabled
-					newChannel.name = channel.settings.name
-					newChannel.role = Int32(channel.role.rawValue)
-					newChannel.psk = channel.settings.psk
-					if channel.settings.hasModuleSettings {
-						newChannel.positionPrecision = Int32(truncatingIfNeeded: channel.settings.moduleSettings.positionPrecision)
-						newChannel.mute = channel.settings.moduleSettings.isMuted
-					} else {
-						// When moduleSettings is absent, use proto3 defaults (0/false)
-						// rather than the entity default of 32, which would incorrectly
-						// enable full-precision position sharing.
-						newChannel.positionPrecision = 0
-						newChannel.mute = false
-					}
+					apply(stagedChannel: stagedChannel(from: channel), to: newChannel)
 					savePendingChanges()
 					Logger.data.info("💾 Updated MyInfo channel \(channel.index, privacy: .public) from Channel App Packet For: \(fetchedMyInfo[0].myNodeNum, privacy: .public)")
 				} else if channel.role.rawValue > 0 {
@@ -488,6 +527,44 @@ actor MeshPackets {
 				Logger.data.error("💥 Error Saving MyInfo Channel from ADMIN_APP \(nsError, privacy: .public)")
 			}
 		}
+	}
+
+	private func stagedChannel(from channel: Channel) -> StagedChannel {
+		let positionPrecision: Int32
+		let mute: Bool
+		if channel.settings.hasModuleSettings {
+			positionPrecision = Int32(truncatingIfNeeded: channel.settings.moduleSettings.positionPrecision)
+			mute = channel.settings.moduleSettings.isMuted
+		} else {
+			// When moduleSettings is absent, use proto3 defaults (0/false)
+			// rather than the entity default of 32, which would incorrectly
+			// enable full-precision position sharing.
+			positionPrecision = 0
+			mute = false
+		}
+		return StagedChannel(
+			id: Int32(truncatingIfNeeded: channel.index),
+			index: Int32(truncatingIfNeeded: channel.index),
+			uplinkEnabled: channel.settings.uplinkEnabled,
+			downlinkEnabled: channel.settings.downlinkEnabled,
+			name: channel.settings.name,
+			role: Int32(channel.role.rawValue),
+			psk: channel.settings.psk,
+			positionPrecision: positionPrecision,
+			mute: mute
+		)
+	}
+
+	private func apply(stagedChannel: StagedChannel, to channel: ChannelEntity) {
+		channel.id = stagedChannel.id
+		channel.index = stagedChannel.index
+		channel.uplinkEnabled = stagedChannel.uplinkEnabled
+		channel.downlinkEnabled = stagedChannel.downlinkEnabled
+		channel.name = stagedChannel.name
+		channel.role = stagedChannel.role
+		channel.psk = stagedChannel.psk
+		channel.positionPrecision = stagedChannel.positionPrecision
+		channel.mute = stagedChannel.mute
 	}
 
 	func deviceMetadataPacket (metadata: DeviceMetadata, fromNum: Int64, sessionPasskey: Data? = Data()) {
