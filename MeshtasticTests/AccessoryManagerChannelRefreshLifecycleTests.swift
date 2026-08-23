@@ -605,6 +605,36 @@ extension AccessoryManagerChannelRefreshLifecycleTests {
 		#expect(try channelNames(nodeNum: nodeNum) == ["Leased Primary"])
 	}
 
+	@Test("A successor refresh stage survives stale owner cleanup")
+	func successorRefreshStageSurvivesStaleOwnerCleanup() async throws {
+		resetSharedStore()
+		let nodeNum: UInt32 = 0x001E_A5EE
+		try seedMyInfo(nodeNum: nodeNum, channelName: "Old Primary")
+		let sessionID = UUID()
+		let staleOwner = AutomaticChannelRefreshOwner(sessionID: sessionID, generation: 1)
+		let successorOwner = AutomaticChannelRefreshOwner(sessionID: sessionID, generation: 2)
+		let staleLease = MeshPackets.acquireSharedChannelRefreshStageLease()
+		#expect(await staleLease.begin(for: Int64(nodeNum), owner: staleOwner))
+
+		let successorLease = MeshPackets.acquireSharedChannelRefreshStageLease()
+		#expect(await successorLease.begin(for: Int64(nodeNum), owner: successorOwner))
+		await staleLease.packets.discardChannelRefreshStage(for: Int64(nodeNum), owner: staleOwner)
+
+		await successorLease.packets.channelPacket(
+			channel: channel(index: 0, name: "Successor Primary"),
+			fromNum: Int64(nodeNum)
+		)
+		for index in Int32(1)...Int32(7) {
+			var disabled = Channel()
+			disabled.index = index
+			disabled.role = .disabled
+			await successorLease.packets.channelPacket(channel: disabled, fromNum: Int64(nodeNum))
+		}
+		await successorLease.packets.commitChannelRefreshStage(for: Int64(nodeNum), owner: successorOwner)
+
+		#expect(try channelNames(nodeNum: nodeNum) == ["Successor Primary"])
+	}
+
 	@Test("Disconnect before delayed stage activation releases the late refresh lease")
 	func disconnectBeforeDelayedStageActivationReleasesLateRefreshLease() async throws {
 		resetSharedStore()

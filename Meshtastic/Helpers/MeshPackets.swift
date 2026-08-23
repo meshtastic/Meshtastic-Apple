@@ -273,13 +273,29 @@ actor MeshPackets {
 		owner: AutomaticChannelRefreshOwner?,
 		baseline: [ChannelRefreshSnapshot]?
 	) -> Bool {
-		guard channelRefreshStages[nodeNum] == nil else { return false }
+		if let existingStage = channelRefreshStages[nodeNum] {
+			guard canReplaceLeasedChannelRefreshStage(existingStage, with: owner) else { return false }
+			endChannelRefreshStage(for: nodeNum)
+		}
 		channelRefreshStages[nodeNum] = ChannelRefreshStage(
 			owner: owner,
 			baseline: baseline ?? currentChannelSnapshot(for: nodeNum),
 			holdsSharedRecreationLease: true
 		)
 		return true
+	}
+
+	/// A later automatic refresh for the same connection supersedes an older stage atomically.
+	/// The replacement keeps stale-owner cleanup owner-scoped, so it cannot discard the successor.
+	private func canReplaceLeasedChannelRefreshStage(
+		_ existingStage: ChannelRefreshStage,
+		with owner: AutomaticChannelRefreshOwner?
+	) -> Bool {
+		guard existingStage.holdsSharedRecreationLease,
+			  let existingOwner = existingStage.owner,
+			  let owner,
+			  existingOwner.sessionID == owner.sessionID else { return false }
+		return existingOwner.generation < owner.generation
 	}
 
 	func discardChannelRefreshStage(for nodeNum: Int64, owner: AutomaticChannelRefreshOwner? = nil) {
