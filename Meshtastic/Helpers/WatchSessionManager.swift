@@ -85,7 +85,7 @@ final class WatchSessionManager: NSObject, ObservableObject {
 						try? await Task.sleep(for: .seconds(delay))
 					}
 					guard !Task.isCancelled else { return }
-					self.performSendNodesToWatch()
+					await self.performSendNodesToWatch()
 					self.watchUpdateTask = nil
 				}
 			}
@@ -93,15 +93,30 @@ final class WatchSessionManager: NSObject, ObservableObject {
 		}
 
 		Task { @MainActor in
-			self.performSendNodesToWatch()
+			await self.performSendNodesToWatch()
 		}
 	}
 
 	@MainActor
-	private func performSendNodesToWatch() {
+	private func performSendNodesToWatch() async {
 		lastWatchSendTime = Date()
 
-		let nodes = fetchNodesForWatch()
+		guard let userLocation = LocationsHandler.shared.locationsArray.last else {
+			logger.info("No user location available, skipping Watch update")
+			return
+		}
+
+		// Snapshot on the MeshPackets actor, which owns every node/position delete
+		// (cap eviction, near-duplicate position pruning). Walking main-context
+		// entities here raced those deletes: an instance whose row the actor had
+		// deleted passed the liveness guards until its next persisted-property read
+		// trapped in SwiftData's backing-data lookup. Serializing the read against
+		// the deletes removes the race instead of narrowing it.
+		let nodes = await MeshPackets.shared.watchNodeSnapshot(
+			userLatitude: userLocation.coordinate.latitude,
+			userLongitude: userLocation.coordinate.longitude,
+			maxDistanceMeters: Self.maxDistanceMeters
+		)
 		guard !nodes.isEmpty else { return }
 
 		do {
@@ -113,33 +128,8 @@ final class WatchSessionManager: NSObject, ObservableObject {
 		}
 	}
 
-	// MARK: - SwiftData → Watch Node Serialization
-
 	/// Maximum distance in meters to include a node (0.5 miles).
 	private static let maxDistanceMeters: Double = 804.672
-
-	@MainActor
-	private func fetchNodesForWatch() -> [WatchNode] {
-		let context = PersistenceController.shared.context
-		let descriptor = FetchDescriptor<NodeInfoEntity>(
-			predicate: #Predicate<NodeInfoEntity> { $0.user != nil }
-		)
-
-		guard let userLocation = LocationsHandler.shared.locationsArray.last else {
-			logger.info("No user location available, skipping Watch update")
-			return []
-		}
-
-		do {
-			let results = try context.fetch(descriptor)
-			return results.compactMap { nodeInfo -> WatchNode? in
-				WatchNode.make(from: nodeInfo, userLocation: userLocation, maxDistanceMeters: Self.maxDistanceMeters)
-			}
-		} catch {
-			logger.error("Failed to fetch nodes for Watch: \(error.localizedDescription, privacy: .public)")
-			return []
-		}
-	}
 }
 
 // MARK: - WCSessionDelegate
@@ -171,7 +161,7 @@ extension WatchSessionManager: WCSessionDelegate {
 }
 
 // MARK: - WatchNode (mirrors the Watch app's MeshNode, Codable for transfer)
-struct WatchNode: Codable {
+struct WatchNode: Codable, Sendable {
 	let num: UInt32
 	let longName: String
 	let shortName: String
@@ -183,10 +173,13 @@ struct WatchNode: Codable {
 	let snr: Float?
 
 	static func make(from nodeInfo: NodeInfoEntity, userLocation: CLLocation, maxDistanceMeters: Double) -> WatchNode? {
-		// Liveness screens: this walk runs over every node with a user, often while the app is
-		// backgrounded with ingestion still churning — an entity whose row another context
-		// deleted traps in SwiftData's persisted-property accessor the moment it's read
-		// (the 2.7.17 `58e0e820` background crash). Skip anything not verifiably live.
+		// Liveness screens. These are a cheap backstop, not the fix: they only see
+		// deletions made through the entity's own context, which is why the walk kept
+		// crashing (`58e0e820`) when run on the main context against the ingest
+		// actor's deletes. The real protection is that this now runs ON the
+		// MeshPackets actor (see watchNodeSnapshot), serialized with those deletes;
+		// the screens still catch rows removed by main-context writers (admin node
+		// removal, database clear).
 		guard nodeInfo.modelContext != nil, !nodeInfo.isDeleted else { return nil }
 		guard let user = nodeInfo.user, user.modelContext != nil, !user.isDeleted else { return nil }
 		guard let pos = nodeInfo.latestPosition, pos.modelContext != nil, !pos.isDeleted else { return nil }
