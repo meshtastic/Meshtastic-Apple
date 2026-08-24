@@ -63,6 +63,7 @@ struct AccessoryManagerChannelRefreshLifecycleTests {
 	private func resetSharedStore() {
 		PersistenceController.shared.recreateContainer()
 		MeshPackets.recreateShared()
+		MeshPackets.resetChannelRefreshStagesForTesting()
 	}
 
 	private func makeManager(
@@ -617,14 +618,13 @@ extension AccessoryManagerChannelRefreshLifecycleTests {
 		let sessionID = UUID()
 		let staleOwner = AutomaticChannelRefreshOwner(sessionID: sessionID, generation: 1)
 		let successorOwner = AutomaticChannelRefreshOwner(sessionID: sessionID, generation: 2)
-		let staleLease = MeshPackets.acquireSharedChannelRefreshStageLease()
-		#expect(await staleLease.begin(for: Int64(nodeNum), owner: staleOwner))
+		#expect(await MeshPackets.shared.beginChannelRefreshStage(for: Int64(nodeNum), owner: staleOwner))
 
-		await staleLease.packets.channelPacket(
+		await MeshPackets.shared.channelPacket(
 			channel: channel(index: 0, name: "Stale Primary"),
 			fromNum: Int64(nodeNum)
 		)
-		await stageDisabledSlotsOnMesh(staleLease.packets, nodeNum: Int64(nodeNum))
+		await stageDisabledSlotsOnMesh(MeshPackets.shared, nodeNum: Int64(nodeNum))
 
 		let validationReached = AsyncGate()
 		let allowCommitToContinue = AsyncGate()
@@ -635,22 +635,21 @@ extension AccessoryManagerChannelRefreshLifecycleTests {
 		defer { MeshPackets.channelRefreshCommitValidationHook = nil }
 
 		let staleCommit = Task {
-			await staleLease.packets.commitChannelRefreshStage(for: Int64(nodeNum), owner: staleOwner)
+			await MeshPackets.shared.commitChannelRefreshStage(for: Int64(nodeNum), owner: staleOwner)
 		}
 		try await validationReached.wait()
 
-		let successorLease = MeshPackets.acquireSharedChannelRefreshStageLease()
-		#expect(await successorLease.begin(for: Int64(nodeNum), owner: successorOwner))
+		#expect(await MeshPackets.shared.beginChannelRefreshStage(for: Int64(nodeNum), owner: successorOwner))
 		await allowCommitToContinue.open()
 		await staleCommit.value
 
 		// An incomplete successor must remain staged. If stale cleanup removed it, this packet
 		// is handled directly and changes the persisted primary channel instead.
-		await successorLease.packets.channelPacket(
+		await MeshPackets.shared.channelPacket(
 			channel: channel(index: 0, name: "Successor Primary"),
 			fromNum: Int64(nodeNum)
 		)
-		await successorLease.packets.commitChannelRefreshStage(for: Int64(nodeNum), owner: successorOwner)
+		await MeshPackets.shared.commitChannelRefreshStage(for: Int64(nodeNum), owner: successorOwner)
 
 		#expect(try channelNames(nodeNum: nodeNum) == ["Stale Primary"])
 	}
@@ -687,21 +686,21 @@ extension AccessoryManagerChannelRefreshLifecycleTests {
 		#expect(try channelNames(nodeNum: nodeNum) == ["Refreshed Primary"])
 	}
 
-	@Test("A refresh lease prevents recycling after shared capture but before stage activation")
-	func refreshLeaseMakesSharedCaptureAndRecycleGuardAtomic() async throws {
+	@Test("A staged refresh survives shared actor recreation mid-refresh")
+	func stageSurvivesSharedActorRecreationMidRefresh() async throws {
 		resetSharedStore()
 		let nodeNum: UInt32 = 0x001E_A5ED
 		try seedMyInfo(nodeNum: nodeNum, channelName: "Old Primary")
 		let owner = AutomaticChannelRefreshOwner(sessionID: UUID(), generation: 1)
-		let lease = MeshPackets.acquireSharedChannelRefreshStageLease()
-		let capturedMesh = lease.packets
+		#expect(await MeshPackets.shared.beginChannelRefreshStage(for: Int64(nodeNum), owner: owner))
 
+		// The stage is static state, so recycling the shared actor between begin and the
+		// incoming channel frames must not orphan the refresh — the successor instance
+		// continues staging into and committing from the same storage.
 		MeshPackets.recreateShared()
-		#expect(MeshPackets.shared === capturedMesh)
-		#expect(await lease.begin(for: Int64(nodeNum), owner: owner))
 
 		await MeshPackets.shared.channelPacket(
-			channel: channel(index: 0, name: "Leased Primary"),
+			channel: channel(index: 0, name: "Recreated Primary"),
 			fromNum: Int64(nodeNum)
 		)
 		for index in Int32(1)...Int32(7) {
@@ -715,7 +714,7 @@ extension AccessoryManagerChannelRefreshLifecycleTests {
 		await MeshPackets.shared.commitChannelRefreshStage(for: Int64(nodeNum), owner: owner)
 		await Task.yield()
 
-		#expect(try channelNames(nodeNum: nodeNum) == ["Leased Primary"])
+		#expect(try channelNames(nodeNum: nodeNum) == ["Recreated Primary"])
 	}
 
 	@Test("A successor refresh stage survives stale owner cleanup")
@@ -726,14 +725,12 @@ extension AccessoryManagerChannelRefreshLifecycleTests {
 		let sessionID = UUID()
 		let staleOwner = AutomaticChannelRefreshOwner(sessionID: sessionID, generation: 1)
 		let successorOwner = AutomaticChannelRefreshOwner(sessionID: sessionID, generation: 2)
-		let staleLease = MeshPackets.acquireSharedChannelRefreshStageLease()
-		#expect(await staleLease.begin(for: Int64(nodeNum), owner: staleOwner))
+		#expect(await MeshPackets.shared.beginChannelRefreshStage(for: Int64(nodeNum), owner: staleOwner))
 
-		let successorLease = MeshPackets.acquireSharedChannelRefreshStageLease()
-		#expect(await successorLease.begin(for: Int64(nodeNum), owner: successorOwner))
-		await staleLease.packets.discardChannelRefreshStage(for: Int64(nodeNum), owner: staleOwner)
+		#expect(await MeshPackets.shared.beginChannelRefreshStage(for: Int64(nodeNum), owner: successorOwner))
+		await MeshPackets.shared.discardChannelRefreshStage(for: Int64(nodeNum), owner: staleOwner)
 
-		await successorLease.packets.channelPacket(
+		await MeshPackets.shared.channelPacket(
 			channel: channel(index: 0, name: "Successor Primary"),
 			fromNum: Int64(nodeNum)
 		)
@@ -741,51 +738,11 @@ extension AccessoryManagerChannelRefreshLifecycleTests {
 			var disabled = Channel()
 			disabled.index = index
 			disabled.role = .disabled
-			await successorLease.packets.channelPacket(channel: disabled, fromNum: Int64(nodeNum))
+			await MeshPackets.shared.channelPacket(channel: disabled, fromNum: Int64(nodeNum))
 		}
-		await successorLease.packets.commitChannelRefreshStage(for: Int64(nodeNum), owner: successorOwner)
+		await MeshPackets.shared.commitChannelRefreshStage(for: Int64(nodeNum), owner: successorOwner)
 
 		#expect(try channelNames(nodeNum: nodeNum) == ["Successor Primary"])
-	}
-
-	@Test("Disconnect before delayed stage activation releases the late refresh lease")
-	func disconnectBeforeDelayedStageActivationReleasesLateRefreshLease() async throws {
-		resetSharedStore()
-		let nodeNum: UInt32 = 0x00D1_A17E
-		try seedMyInfo(nodeNum: nodeNum, channelName: "Original Primary")
-		let connection = ChannelRefreshLifecycleConnection()
-		let manager = makeManager(nodeNum: nodeNum, connection: connection)
-		let refresh = await startAutomaticConfigRefresh(manager, connection: connection)
-		let stageBeginReached = AsyncGate()
-		let allowStageBegin = AsyncGate()
-		let capturedMesh = MeshPackets.shared
-
-		MeshPackets.channelRefreshStageBeginHook = {
-			await stageBeginReached.open()
-			try? await allowStageBegin.wait()
-		}
-		defer { MeshPackets.channelRefreshStageBeginHook = nil }
-
-		let delayedStageBegin = Task {
-			await manager.beginAutomaticChannelRefreshStageIfNeeded(for: Int64(nodeNum))
-		}
-		try await stageBeginReached.wait()
-
-		try await manager.closeConnection()
-		await #expect(throws: CancellationError.self) {
-			try await refresh.value
-		}
-		MeshPackets.recreateShared()
-		#expect(MeshPackets.shared === capturedMesh)
-
-		await allowStageBegin.open()
-		await delayedStageBegin.value
-		for _ in 0..<100 where MeshPackets.shared === capturedMesh {
-			await Task.yield()
-		}
-
-		let didRecreateSharedMesh = MeshPackets.shared !== capturedMesh
-		#expect(didRecreateSharedMesh)
 	}
 
 	@Test("A rejected refresh releases its stage so later radio packets use direct handling")
@@ -815,7 +772,7 @@ extension AccessoryManagerChannelRefreshLifecycleTests {
 		#expect(try channelNames(nodeNum: nodeNum) == ["Later Radio Primary"])
 	}
 
-	@Test("A drain failure releases its lease and returns later packets to direct handling")
+	@Test("A drain failure discards its stage and returns later packets to direct handling")
 	func failedRefreshReturnsToDirectChannelHandling() async throws {
 		resetSharedStore()
 		let nodeNum: UInt32 = 0x00FA_11ED
@@ -828,17 +785,18 @@ extension AccessoryManagerChannelRefreshLifecycleTests {
 
 		await manager.handleMyInfo(myInfo(nodeNum: nodeNum))
 		await manager.handleChannel(channel(index: 0, name: "Failed Refresh Primary"))
-		let stagedMesh = MeshPackets.shared
+		// Stage state is static, so recycling the shared actor mid-refresh is allowed and
+		// must not disturb the in-flight stage: the staged packet stays unpersisted.
 		MeshPackets.recreateShared()
-		#expect(MeshPackets.shared === stagedMesh)
+		#expect(try channelNames(nodeNum: nodeNum) == ["Original Primary"])
 
 		await connection.resumePausedWantConfigSend()
 		await #expect(throws: AccessoryError.self) {
 			try await refresh.value
 		}
-		await Task.yield()
-		#expect(MeshPackets.shared !== stagedMesh)
 
+		// The failed refresh discarded its stage, so a later radio packet is handled
+		// directly instead of accumulating into an orphaned stage.
 		await manager.handleChannel(channel(index: 0, name: "Later Radio Primary"))
 		#expect(try channelNames(nodeNum: nodeNum) == ["Later Radio Primary"])
 	}

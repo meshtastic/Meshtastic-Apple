@@ -87,61 +87,6 @@ struct ChannelRefreshSnapshot: Equatable, Sendable {
 
 @ModelActor
 actor MeshPackets {
-	/// Holds the shared-actor recreation guard from the instant the actor is captured until the
-	/// refresh stage accepts ownership of that guard. This closes the capture/actor-hop window where
-	/// a periodic recycle could previously retire the actor before its stage became visible.
-	final class SharedChannelRefreshStageLease: @unchecked Sendable {
-		let packets: MeshPackets
-		private let resolutionLock = NSLock()
-		private var beginWasClaimed = false
-
-		init(packets: MeshPackets) {
-			self.packets = packets
-		}
-
-		func begin(
-			for nodeNum: Int64,
-			owner: AutomaticChannelRefreshOwner? = nil,
-			baseline: [ChannelRefreshSnapshot]? = nil
-		) async -> Bool {
-			guard claimBegin() else { return false }
-			#if DEBUG
-			if let hook = await MeshPackets.channelRefreshStageBeginHook {
-				await hook()
-			}
-			#endif
-			let didBegin = await packets.beginLeasedChannelRefreshStage(
-				for: nodeNum,
-				owner: owner,
-				baseline: baseline
-			)
-			if !didBegin {
-				MeshPackets.releaseSharedChannelRefreshStageLease()
-			}
-			return didBegin
-		}
-
-		deinit {
-			if releaseNeededOnDeinit() {
-				MeshPackets.releaseSharedChannelRefreshStageLease()
-			}
-		}
-
-		private func claimBegin() -> Bool {
-			resolutionLock.lock()
-			defer { resolutionLock.unlock() }
-			guard !beginWasClaimed else { return false }
-			beginWasClaimed = true
-			return true
-		}
-
-		private func releaseNeededOnDeinit() -> Bool {
-			resolutionLock.lock()
-			defer { resolutionLock.unlock() }
-			return !beginWasClaimed
-		}
-	}
-
 	private struct StagedChannel: Sendable {
 		let id: Int32
 		let index: Int32
@@ -158,7 +103,6 @@ actor MeshPackets {
 		let id = UUID()
 		let owner: AutomaticChannelRefreshOwner?
 		let baseline: [ChannelRefreshSnapshot]
-		let holdsSharedRecreationLease: Bool
 		var channels: [Int32: StagedChannel] = [:]
 	}
 
@@ -179,14 +123,27 @@ actor MeshPackets {
 	/// Periodically recreated to release accumulated ModelContext memory.
 	nonisolated(unsafe) private static var _shared: MeshPackets = MeshPackets(modelContainer: _container)
 	private static let _lock = NSLock()
-	nonisolated(unsafe) private static var activeChannelRefreshStageCount = 0
-	nonisolated(unsafe) private static var sharedRecreationDeferredForChannelRefresh = false
+
+	/// Staged automatic channel refreshes, keyed by node number. Deliberately static rather
+	/// than actor state: `recreateShared()` swaps the shared instance to release memory, and a
+	/// stage tied to the retired instance would silently orphan an in-flight refresh. Static
+	/// storage makes recreation orthogonal — the successor actor stages into and commits from
+	/// the same map. The lock covers the two executors that touch it: this actor (staging
+	/// incoming channel frames) and the main actor (begin/commit/discard from AccessoryManager).
+	nonisolated(unsafe) private static var channelRefreshStages: [Int64: ChannelRefreshStage] = [:]
+	private static let channelRefreshStagesLock = NSLock()
 	#if DEBUG
 	/// Deterministic concurrency checkpoint used by the refresh boundary regression test. Production
 	/// callers leave this nil, so validation and replacement execute without suspension.
 	@MainActor static var channelRefreshCommitValidationHook: (@MainActor @Sendable () async -> Void)?
-	/// Deterministic concurrency checkpoint used by the late stage activation regression test.
-	@MainActor static var channelRefreshStageBeginHook: (@MainActor @Sendable () async -> Void)?
+
+	/// Test-only: the static stage storage outlives any per-test actor, so suites reset it
+	/// alongside `recreateShared()`.
+	static func resetChannelRefreshStagesForTesting() {
+		channelRefreshStagesLock.lock()
+		defer { channelRefreshStagesLock.unlock() }
+		channelRefreshStages.removeAll()
+	}
 	#endif
 
 	static var shared: MeshPackets {
@@ -195,26 +152,10 @@ actor MeshPackets {
 		return _shared
 	}
 
-	/// Captures the current shared actor and activates its no-recycle guarantee under the same
-	/// lock. The returned lease transfers that guarantee to a successfully created stage.
-	static func acquireSharedChannelRefreshStageLease() -> SharedChannelRefreshStageLease {
-		_lock.lock()
-		activeChannelRefreshStageCount += 1
-		let packets = _shared
-		_lock.unlock()
-		return SharedChannelRefreshStageLease(packets: packets)
-	}
-
 	/// Discards the current actor and creates a fresh one with a new ModelContext.
 	/// Call after DB retrieval completes or periodically to release accumulated memory.
 	static func recreateShared() {
 		_lock.lock()
-		guard activeChannelRefreshStageCount == 0 else {
-			sharedRecreationDeferredForChannelRefresh = true
-			_lock.unlock()
-			Logger.data.info("♻️ [MeshPackets] Deferred actor recreation until channel refresh finishes")
-			return
-		}
 		let previous = _shared
 		_shared = MeshPackets(modelContainer: _container)
 		_lock.unlock()
@@ -228,31 +169,11 @@ actor MeshPackets {
 		Logger.data.info("♻️ [MeshPackets] Recreated shared instance to release ModelContext memory")
 	}
 
-	private static func releaseSharedChannelRefreshStageLease() {
-		_lock.lock()
-		guard activeChannelRefreshStageCount > 0 else {
-			_lock.unlock()
-			return
-		}
-		activeChannelRefreshStageCount -= 1
-		let shouldRecreate = activeChannelRefreshStageCount == 0 && sharedRecreationDeferredForChannelRefresh
-		if shouldRecreate {
-			sharedRecreationDeferredForChannelRefresh = false
-		}
-		_lock.unlock()
-		if shouldRecreate {
-			Task { @MainActor in
-				MeshPackets.recreateShared()
-			}
-		}
-	}
-
 	// MARK: - Save Helpers
 
 	/// Set when this instance has been replaced by `recreateShared()`. A retired instance must
 	/// never persist again — see `recreateShared()`.
 	private var invalidated = false
-	private var channelRefreshStages: [Int64: ChannelRefreshStage] = [:]
 
 	func invalidate() {
 		invalidated = true
@@ -260,54 +181,53 @@ actor MeshPackets {
 		debounceSaveTask = nil
 	}
 
-	func beginChannelRefreshStage(for nodeNum: Int64, owner: AutomaticChannelRefreshOwner? = nil) {
-		guard channelRefreshStages[nodeNum] == nil else { return }
-		channelRefreshStages[nodeNum] = ChannelRefreshStage(
-			owner: owner,
-			baseline: currentChannelSnapshot(for: nodeNum),
-			holdsSharedRecreationLease: false
-		)
-	}
-
-	private func beginLeasedChannelRefreshStage(
+	/// Begins a staged refresh for `nodeNum`, capturing the baseline the commit will later
+	/// validate against. Returns false when a stage already exists — unless `owner` is a newer
+	/// generation of the same refresh session, which supersedes the older stage atomically
+	/// (stale-owner cleanup stays owner-scoped, so it cannot discard the successor).
+	@discardableResult
+	func beginChannelRefreshStage(
 		for nodeNum: Int64,
-		owner: AutomaticChannelRefreshOwner?,
-		baseline: [ChannelRefreshSnapshot]?
+		owner: AutomaticChannelRefreshOwner? = nil,
+		baseline: [ChannelRefreshSnapshot]? = nil
 	) -> Bool {
-		if let existingStage = channelRefreshStages[nodeNum] {
-			guard canReplaceLeasedChannelRefreshStage(existingStage, with: owner) else { return false }
-			endChannelRefreshStage(for: nodeNum)
+		let resolvedBaseline = baseline ?? currentChannelSnapshot(for: nodeNum)
+		Self.channelRefreshStagesLock.lock()
+		defer { Self.channelRefreshStagesLock.unlock() }
+		if let existingStage = Self.channelRefreshStages[nodeNum] {
+			guard Self.canReplaceChannelRefreshStage(existingStage, with: owner) else { return false }
 		}
-		channelRefreshStages[nodeNum] = ChannelRefreshStage(
-			owner: owner,
-			baseline: baseline ?? currentChannelSnapshot(for: nodeNum),
-			holdsSharedRecreationLease: true
-		)
+		Self.channelRefreshStages[nodeNum] = ChannelRefreshStage(owner: owner, baseline: resolvedBaseline)
 		return true
 	}
 
-	/// A later automatic refresh for the same connection supersedes an older stage atomically.
-	/// The replacement keeps stale-owner cleanup owner-scoped, so it cannot discard the successor.
-	private func canReplaceLeasedChannelRefreshStage(
+	private static func canReplaceChannelRefreshStage(
 		_ existingStage: ChannelRefreshStage,
 		with owner: AutomaticChannelRefreshOwner?
 	) -> Bool {
-		guard existingStage.holdsSharedRecreationLease,
-			  let existingOwner = existingStage.owner,
+		guard let existingOwner = existingStage.owner,
 			  let owner,
 			  existingOwner.sessionID == owner.sessionID else { return false }
 		return existingOwner.generation < owner.generation
 	}
 
 	func discardChannelRefreshStage(for nodeNum: Int64, owner: AutomaticChannelRefreshOwner? = nil) {
-		guard stageMatches(nodeNum: nodeNum, owner: owner) else { return }
-		endChannelRefreshStage(for: nodeNum)
+		Self.channelRefreshStagesLock.lock()
+		defer { Self.channelRefreshStagesLock.unlock() }
+		guard let stage = Self.channelRefreshStages[nodeNum],
+			  owner == nil || stage.owner == owner else { return }
+		Self.channelRefreshStages.removeValue(forKey: nodeNum)
 	}
 
 	func commitChannelRefreshStage(for nodeNum: Int64, owner: AutomaticChannelRefreshOwner? = nil) async {
-		guard stageMatches(nodeNum: nodeNum, owner: owner),
-			  let stage = channelRefreshStages[nodeNum] else { return }
-		defer { endChannelRefreshStage(for: nodeNum, stageID: stage.id) }
+		Self.channelRefreshStagesLock.lock()
+		guard let stage = Self.channelRefreshStages[nodeNum],
+			  owner == nil || stage.owner == owner else {
+			Self.channelRefreshStagesLock.unlock()
+			return
+		}
+		Self.channelRefreshStagesLock.unlock()
+		defer { Self.endChannelRefreshStage(for: nodeNum, stageID: stage.id) }
 		guard isCompleteChannelRefresh(stage.channels) else {
 			Logger.data.error("💥 Refusing incomplete staged channel refresh for: \(nodeNum.toHex(), privacy: .public)")
 			return
@@ -754,18 +674,13 @@ actor MeshPackets {
 		return nil
 	}
 
-	private func endChannelRefreshStage(for nodeNum: Int64, stageID: UUID? = nil) {
-		guard let stage = channelRefreshStages[nodeNum],
-			  stageID == nil || stage.id == stageID else { return }
+	/// Removes the stage only when it is still the one the caller worked with — stale async
+	/// work ending late cannot remove a successor's stage.
+	private static func endChannelRefreshStage(for nodeNum: Int64, stageID: UUID) {
+		channelRefreshStagesLock.lock()
+		defer { channelRefreshStagesLock.unlock() }
+		guard let stage = channelRefreshStages[nodeNum], stage.id == stageID else { return }
 		channelRefreshStages.removeValue(forKey: nodeNum)
-		if stage.holdsSharedRecreationLease {
-			MeshPackets.releaseSharedChannelRefreshStageLease()
-		}
-	}
-
-	private func stageMatches(nodeNum: Int64, owner: AutomaticChannelRefreshOwner?) -> Bool {
-		guard let stage = channelRefreshStages[nodeNum] else { return false }
-		return owner == nil || stage.owner == owner
 	}
 
 	private func currentChannelSnapshot(for nodeNum: Int64) -> [ChannelRefreshSnapshot] {
@@ -793,9 +708,14 @@ actor MeshPackets {
 			let logString = String.localizedStringWithFormat("Channel received: %d %@".localized, channel.index, String(fromNum))
 			Logger.admin.info("🎛️ \(logString, privacy: .public)")
 
-			if stageIfRefreshing, channelRefreshStages[fromNum] != nil {
-				channelRefreshStages[fromNum]?.channels[Int32(truncatingIfNeeded: channel.index)] = stagedChannel(from: channel)
-				return
+			if stageIfRefreshing {
+				Self.channelRefreshStagesLock.lock()
+				let isStaging = Self.channelRefreshStages[fromNum] != nil
+				if isStaging {
+					Self.channelRefreshStages[fromNum]?.channels[Int32(truncatingIfNeeded: channel.index)] = stagedChannel(from: channel)
+				}
+				Self.channelRefreshStagesLock.unlock()
+				if isStaging { return }
 			}
 
 			let fetchDescriptor = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == fromNum })

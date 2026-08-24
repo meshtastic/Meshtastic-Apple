@@ -497,16 +497,15 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			  refresh.sessionID == activeConnection?.device.id else { return }
 		refresh.nodeNum = nodeNum
 		activeAutomaticConfigRefresh = refresh
-		let stageLease = MeshPackets.acquireSharedChannelRefreshStageLease()
 		let owner = refresh.owner
-		let didBegin = await stageLease.begin(
+		let didBegin = await MeshPackets.shared.beginChannelRefreshStage(
 			for: nodeNum,
 			owner: owner,
 			baseline: refresh.channelRefreshBaselineByNode[nodeNum] ?? []
 		)
 		guard didBegin, activeAutomaticConfigRefresh?.owner == owner else {
 			if didBegin {
-				await stageLease.packets.discardChannelRefreshStage(for: nodeNum, owner: owner)
+				await MeshPackets.shared.discardChannelRefreshStage(for: nodeNum, owner: owner)
 			}
 			return
 		}
