@@ -177,7 +177,13 @@ actor MeshPackets {
 		let descriptor = FetchDescriptor<NodeInfoEntity>(
 			predicate: #Predicate<NodeInfoEntity> { $0.user != nil }
 		)
-		guard let results = try? modelContext.fetch(descriptor) else { return [] }
+		let results: [NodeInfoEntity]
+		do {
+			results = try modelContext.fetch(descriptor)
+		} catch {
+			Logger.data.error("⌚ Watch snapshot fetch failed: \(error.localizedDescription, privacy: .public)")
+			return []
+		}
 		let userLocation = CLLocation(latitude: userLatitude, longitude: userLongitude)
 		return results.compactMap {
 			WatchNode.make(from: $0, userLocation: userLocation, maxDistanceMeters: maxDistanceMeters)

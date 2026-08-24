@@ -40,11 +40,12 @@ struct WatchNodeSnapshotTests {
 		name: String,
 		hasUser: Bool = true,
 		latitude: Double? = nil,
-		longitude: Double? = nil
+		longitude: Double? = nil,
+		lastHeard: Date = Date()
 	) -> NodeInfoEntity {
 		let node = NodeInfoEntity()
 		node.num = num
-		node.lastHeard = Date()
+		node.lastHeard = lastHeard
 		node.snr = 7.5
 		if hasUser {
 			let user = UserEntity()
@@ -135,8 +136,15 @@ struct WatchNodeSnapshotTests {
 	@Test func snapshotAfterActorEvictionSeesOnlySurvivors() async throws {
 		let container = try makeContainer()
 		let context = ModelContext(container)
+		// Distinct lastHeard values make the eviction order deterministic:
+		// least-recently-heard first, so nodes 1-3 go and 4-5 survive.
+		let base = Date(timeIntervalSince1970: 1_700_000_000)
 		for i in 1...5 {
-			seedNode(context, num: Int64(i), name: "Node \(i)", latitude: Self.userLat, longitude: Self.userLon)
+			seedNode(
+				context, num: Int64(i), name: "Node \(i)",
+				latitude: Self.userLat, longitude: Self.userLon,
+				lastHeard: base.addingTimeInterval(Double(i) * 60)
+			)
 		}
 		try context.save()
 
@@ -147,6 +155,6 @@ struct WatchNodeSnapshotTests {
 			userLongitude: Self.userLon,
 			maxDistanceMeters: Self.halfMile
 		)
-		#expect(nodes.count == 2)
+		#expect(Set(nodes.map(\.num)) == [4, 5], "eviction keeps the most recently heard nodes")
 	}
 }
