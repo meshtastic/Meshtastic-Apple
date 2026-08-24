@@ -450,7 +450,7 @@ extension NodeInfoEntity {
 		var channelSet = ChannelSet()
 		channelSet.loraConfig = loRaConfig.protoConfig
 
-		for channel in channels.sorted(by: { $0.index < $1.index }) where channel.role > 0 {
+		for channel in canonicalValidUniqueChannels(from: channels) where channel.role > 0 {
 			var settings = ChannelSettings()
 			settings.name = channel.name ?? ""
 			settings.psk = channel.psk ?? Data()
