@@ -489,6 +489,10 @@ extension AccessoryManager {
 				}
 			} catch {
 				Logger.data.error("💥 Send message failure \(self.activeDeviceNum?.toHex() ?? "0", privacy: .public) to \(toUserNum.toHex(), privacy: .public)")
+				// A failed save means nothing was stored and nothing will transmit —
+				// the caller must see the failure (keep the draft, show the error),
+				// not a silent success.
+				throw error
 			}
 
 	}
