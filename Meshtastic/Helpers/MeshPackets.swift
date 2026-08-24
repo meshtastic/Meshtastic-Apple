@@ -5,6 +5,7 @@
 //  Created by Garth Vander Houwen on 5/27/22.
 //
 
+import CoreLocation
 import Foundation
 @preconcurrency import SwiftData
 import MeshtasticProtobufs
@@ -153,6 +154,40 @@ actor MeshPackets {
 	func enforceEntityCaps() {
 		evictNodesIfOverCap(Self.maxTotalNodes)
 		evictWaypointsIfOverCap(Self.maxTotalWaypoints)
+	}
+
+	// MARK: - Watch Snapshot
+
+	/// Value-copies every node the Watch cares about, on this actor.
+	///
+	/// The Watch update used to walk main-context entities while this actor's cap
+	/// eviction (`evictNodesIfOverCap`) and near-duplicate position pruning deleted
+	/// rows underneath them. An instance whose row another context deleted keeps
+	/// passing `modelContext != nil` / `isDeleted == false` until the merge lands,
+	/// and the next persisted-property read traps in SwiftData's backing-data
+	/// lookup — the app's largest crash. Running the snapshot here serializes it
+	/// against every delete this actor performs, and only value types cross back.
+	func watchNodeSnapshot(
+		userLatitude: Double,
+		userLongitude: Double,
+		maxDistanceMeters: Double
+	) -> [WatchNode] {
+		// A retired instance's container may already be torn down (see recreateShared()).
+		guard !invalidated else { return [] }
+		let descriptor = FetchDescriptor<NodeInfoEntity>(
+			predicate: #Predicate<NodeInfoEntity> { $0.user != nil }
+		)
+		let results: [NodeInfoEntity]
+		do {
+			results = try modelContext.fetch(descriptor)
+		} catch {
+			Logger.data.error("⌚ Watch snapshot fetch failed: \(error.localizedDescription, privacy: .public)")
+			return []
+		}
+		let userLocation = CLLocation(latitude: userLatitude, longitude: userLongitude)
+		return results.compactMap {
+			WatchNode.make(from: $0, userLocation: userLocation, maxDistanceMeters: maxDistanceMeters)
+		}
 	}
 
 	/// Nodes: cap the total, evicting least-recently-heard first. Never evict favorites — the user
