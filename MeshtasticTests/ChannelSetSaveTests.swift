@@ -331,4 +331,27 @@ struct ChannelSetSaveTests {
 		#expect(indexes.filter { $0 == 0 }.count == 2)
 		#expect(indexes.contains(7))
 	}
+
+	@Test("Append mode never hands an imported channel the primary slot")
+	func appendModeNeverTargetsIndexZero() async throws {
+		// A partial local cache (the #1893 scenario) can leave slot 0 unoccupied.
+		// An appended QR channel must still land on a secondary index — the role
+		// assignment keys on index 0, so targeting it would promote the import
+		// to primary and overwrite the radio's primary channel.
+		let deviceNum: Int64 = 123_456_795
+		try seedMyInfo(deviceNum: deviceNum, channels: [(1, "Only Secondary")])
+		let connection = MockChannelSetConnection()
+		let manager = makeManager(connection: connection, deviceNum: deviceNum)
+		let link = try makeChannelSetLink(includeLoRaConfig: false, channelNames: ["Appended"])
+
+		// Append mode sends no LoRa config, so the mock's simulated post-wantConfig
+		// disconnect surfaces as an error — after the channel packet and local mirror.
+		await #expect(throws: (any Error).self) {
+			try await manager.saveChannelSet(base64UrlString: link, addChannels: true, okToMQTT: false)
+		}
+
+		let sentIndexes = await connection.sentChannelIndexes
+		#expect(sentIndexes == [2], "the appended channel must take the first free secondary slot, never index 0")
+		#expect(try channelNames(for: deviceNum) == ["Only Secondary", "Appended"])
+	}
 }

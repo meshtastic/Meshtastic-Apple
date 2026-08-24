@@ -575,7 +575,10 @@ extension AccessoryManager {
 				throw AccessoryError.appError("MyInfo not found")
 			}
 
-			let freeIndexes = availableChannelIndexes(from: fetched.channels)
+			// Appended channels are always secondaries. An unoccupied index 0 here means
+			// the local cache is empty or partial — never a license to hand an imported
+			// channel the primary slot (the role assignment below keys on index 0).
+			let freeIndexes = availableChannelIndexes(from: fetched.channels).filter { $0 > 0 }
 			guard !freeIndexes.isEmpty else {
 				throw AccessoryError.appError("No free channel slots available")
 			}
@@ -681,7 +684,14 @@ extension AccessoryManager {
 			tryClearExistingChannels()
 		}
 		for chan in deliveredChannels {
-			try applyLocalChannelMutation(chan, fromNum: deviceNum)
+			do {
+				try applyLocalChannelMutation(chan, fromNum: deviceNum)
+			} catch {
+				// The radio already accepted this channel; the wantConfig re-sync below is
+				// the recovery path for local state. Failing the import here would report
+				// an error for a change the device applied.
+				Logger.data.error("💥 Failed to mirror channel \(chan.index, privacy: .public) locally: \(error.localizedDescription, privacy: .public)")
+			}
 		}
 
 		// Re-sync after the change. When we sent a LoRa config the device reboots
