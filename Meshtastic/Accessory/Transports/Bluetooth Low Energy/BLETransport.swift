@@ -111,7 +111,7 @@ actor BLETransport: Transport {
 	/// transports — discovery starts unconditionally on all of them at launch
 	/// (`AccessoryManager.startDiscovery()`) regardless of which transport the user actually
 	/// connects with — so leaving the (default-`true`) system "Bluetooth is turned off" alert
-	/// enabled meant a TCP/WiFi-only user saw it on every launch. Worse, presenting that alert
+	/// enabled meant a TCP/WiFi-only user saw it on every launch. Presenting that alert also
 	/// blips `scenePhase` (inactive/background then active), and `appDidBecomeActive()` restarts
 	/// BLE discovery whenever there's no active connection yet — which re-triggers the alert,
 	/// producing the dismiss/reappear loop reported in #2139. Suppressing the system alert here

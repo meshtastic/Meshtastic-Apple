@@ -460,14 +460,20 @@ extension AccessoryManager {
 					var toRadio: ToRadio!
 					toRadio = ToRadio()
 					toRadio.packet = meshPacket
-					Task {
-						let logString = String.localizedStringWithFormat("Sent message %@ from %@ to %@".localized, String(newMessage.messageId), fromUserNum.toHex(), toUserNum.toHex())
-						try await send(toRadio, debugDescription: logString)
-						Logger.mesh.info("💬 \(logString, privacy: .public)")
-					}
 					do {
+						// Save BEFORE the transmit task can start: the mesh echoes this packet
+						// back within seconds, and the ingest actor's duplicate guard fetches
+						// the store — it cannot see this context's unsaved row. A transmit that
+						// beats the save re-inserts the echo under the same messageId, and the
+						// message list briefly renders duplicate ForEach ids, which corrupts
+						// the List's collection-view diff (the 2.7.19 SIGABRT batch-update crash).
 						try context.save()
 						Logger.data.info("💾 Saved a new sent message from \(self.activeDeviceNum?.toHex() ?? "0", privacy: .public) to \(toUserNum.toHex(), privacy: .public)")
+						Task {
+							let logString = String.localizedStringWithFormat("Sent message %@ from %@ to %@".localized, String(newMessage.messageId), fromUserNum.toHex(), toUserNum.toHex())
+							try await send(toRadio, debugDescription: logString)
+							Logger.mesh.info("💬 \(logString, privacy: .public)")
+						}
 						// Donate outgoing message to SiriKit for CarPlay
 						// (CarPlay is iPhone-only, so skip on Mac Catalyst).
 						if !isEmoji {
@@ -483,6 +489,10 @@ extension AccessoryManager {
 				}
 			} catch {
 				Logger.data.error("💥 Send message failure \(self.activeDeviceNum?.toHex() ?? "0", privacy: .public) to \(toUserNum.toHex(), privacy: .public)")
+				// A failed save means nothing was stored and nothing will transmit —
+				// the caller must see the failure (keep the draft, show the error),
+				// not a silent success.
+				throw error
 			}
 
 	}
@@ -565,7 +575,7 @@ extension AccessoryManager {
 		guard Set(incomingChannelNames).count == incomingChannelNames.count else {
 			throw AccessoryError.appError("Channel names must be unique")
 		}
-		var i: Int32 = 0
+		let targetChannelIndexes: [Int32]
 
 		if addChannels {
 			let fetchMyInfoRequest = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == deviceNum })
@@ -575,15 +585,18 @@ extension AccessoryManager {
 				throw AccessoryError.appError("MyInfo not found")
 			}
 
-			i = Int32(fetched.channels.count)
-
-			guard i >= 0 && i < 8 else {
+			// Appended channels are always secondaries. An unoccupied index 0 here means
+			// the local cache is empty or partial — never a license to hand an imported
+			// channel the primary slot (the role assignment below keys on index 0).
+			let freeIndexes = availableChannelIndexes(from: fetched.channels).filter { $0 > 0 }
+			guard !freeIndexes.isEmpty else {
 				throw AccessoryError.appError("No free channel slots available")
 			}
 
-			guard fetched.channels.count + channelSet.settings.count <= 8 else {
+			guard channelSet.settings.count <= freeIndexes.count else {
 				throw AccessoryError.appError("Not enough free channel slots")
 			}
+			targetChannelIndexes = Array(freeIndexes.prefix(channelSet.settings.count))
 
 			for cs in channelSet.settings {
 				if fetched.channels.contains(where: { $0.name == cs.name }) {
@@ -596,10 +609,11 @@ extension AccessoryManager {
 			if let txPower = currentLoRaConfig?.txPower {
 				channelSet.loraConfig.txPower = txPower
 			}
+			targetChannelIndexes = channelSet.settings.indices.map { Int32($0) }
 		}
 
 		var deliveredChannels: [Channel] = []
-		for cs in channelSet.settings {
+		for (cs, targetIndex) in zip(channelSet.settings, targetChannelIndexes) {
 			// Stop sending channels if the calling Task was cancelled. The channels already
 			// sent are fine inside a transaction (commit will persist them); skipping the rest
 			// lets the import engine exit promptly. The local-state upserts below are safe to
@@ -607,9 +621,9 @@ extension AccessoryManager {
 			try Task.checkCancellation()
 
 			var chan = Channel()
-			chan.role = (i == 0) ? .primary : .secondary
+			chan.role = (targetIndex == 0) ? .primary : .secondary
 			chan.settings = cs
-			chan.index = i
+			chan.index = targetIndex
 			// Ensure moduleSettings is always explicitly set so the device
 			// stores a defined position_precision value. QR codes typically
 			// omit moduleSettings which causes the firmware to default to 32
@@ -618,8 +632,6 @@ extension AccessoryManager {
 				chan.settings.moduleSettings.positionPrecision = 0
 				chan.settings.moduleSettings.isMuted = false
 			}
-			i += 1
-
 			var adminPacket = AdminMessage()
 			adminPacket.setChannel = chan
 
@@ -682,7 +694,14 @@ extension AccessoryManager {
 			tryClearExistingChannels()
 		}
 		for chan in deliveredChannels {
-			await MeshPackets.shared.channelPacket(channel: chan, fromNum: deviceNum)
+			do {
+				try applyLocalChannelMutation(chan, fromNum: deviceNum)
+			} catch {
+				// The radio already accepted this channel; the wantConfig re-sync below is
+				// the recovery path for local state. Failing the import here would report
+				// an error for a change the device applied.
+				Logger.data.error("💥 Failed to mirror channel \(chan.index, privacy: .public) locally: \(error.localizedDescription, privacy: .public)")
+			}
 		}
 
 		// Re-sync after the change. When we sent a LoRa config the device reboots
@@ -700,6 +719,54 @@ extension AccessoryManager {
 			Logger.transport.debug("[AccessoryManager] sending wantConfig for saveChannelSet")
 			try await sendWantConfig()
 		}
+	}
+
+	/// Mirrors a user-initiated channel write on the main context. Automatic refresh replacement
+	/// uses this same executor, so a QR/UI mutation cannot land between its baseline check and save.
+	func applyLocalChannelMutation(_ channel: Channel, fromNum: Int64) throws {
+		guard channel.isInitialized && (channel.hasSettings || channel.role == .disabled) else { return }
+		let descriptor = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == fromNum })
+		let fetchedMyInfo = try context.fetch(descriptor)
+		guard fetchedMyInfo.count == 1, let myInfo = fetchedMyInfo.first else {
+			if channel.role.rawValue > 0 {
+				Logger.data.error("💥Trying to save a local channel mutation to a MyInfo that does not exist: \(fromNum.toHex(), privacy: .public)")
+			}
+			return
+		}
+
+		let channelIndex = Int32(truncatingIfNeeded: channel.index)
+		let existing = canonicalValidUniqueChannels(from: myInfo.channels).first { $0.index == channelIndex }
+		if channel.role == .disabled {
+			if let existing {
+				context.delete(existing)
+				try context.save()
+			}
+			return
+		}
+
+		let entity: ChannelEntity
+		if let existing {
+			entity = existing
+		} else {
+			entity = ChannelEntity()
+			context.insert(entity)
+			myInfo.channels.append(entity)
+		}
+		entity.id = channelIndex
+		entity.index = channelIndex
+		entity.uplinkEnabled = channel.settings.uplinkEnabled
+		entity.downlinkEnabled = channel.settings.downlinkEnabled
+		entity.name = channel.settings.name
+		entity.role = Int32(channel.role.rawValue)
+		entity.psk = channel.settings.psk
+		if channel.settings.hasModuleSettings {
+			entity.positionPrecision = Int32(truncatingIfNeeded: channel.settings.moduleSettings.positionPrecision)
+			entity.mute = channel.settings.moduleSettings.isMuted
+		} else {
+			entity.positionPrecision = 0
+			entity.mute = false
+		}
+		try context.save()
 	}
 
 	private func currentLoRaConfig(for deviceNum: Int64) -> Config.LoRaConfig? {
@@ -915,7 +982,7 @@ extension AccessoryManager {
 		_ = try await saveChannel(channel: channel, fromUser: user, toUser: user)
 
 		// Mirror the added channel into local state so it appears immediately (no reboot / re-sync).
-		await MeshPackets.shared.channelPacket(channel: channel, fromNum: deviceNum)
+		try applyLocalChannelMutation(channel, fromNum: deviceNum)
 
 		Logger.mesh.info("➕ [Beacon] Added advertised channel '\(channelName, privacy: .private)' to secondary slot \(targetIndex, privacy: .public) — no reboot")
 	}

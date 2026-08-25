@@ -110,7 +110,14 @@ struct UserMessageList: View {
 			let fetchedMessages = try fetchMessages(limit: messageLimit + 1)
 			hasEarlierMessages = fetchedMessages.count > messageLimit
 
-			let visibleMessages = Array(fetchedMessages.prefix(messageLimit).reversed())
+			// The ForEach below keys on messageId. The store can transiently hold two
+			// rows with the same messageId (a sent message and its mesh echo, racing
+			// across contexts before the unique constraint merges them) — duplicate
+			// ForEach ids corrupt the List's collection-view diff and crash. Keep the
+			// first occurrence; the merge collapses the rows moments later.
+			let visibleMessages = MessageEntity.deduplicatedByMessageId(
+				Array(fetchedMessages.prefix(messageLimit).reversed())
+			)
 			let previousMessage = hasEarlierMessages ? fetchedMessages[messageLimit] : nil
 
 			messages = visibleMessages

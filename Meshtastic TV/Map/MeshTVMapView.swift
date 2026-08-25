@@ -4,8 +4,8 @@
 //
 //  Copyright(c) Garth Vander Houwen 7/24/26.
 //
-//  Fresh, minimal MKMapView wrapper for tvOS. Deliberately does NOT port the iOS
-//  `ClusterMapView` (welded to touch gestures, MKUserTrackingButton and SwiftData).
+//  Minimal MKMapView wrapper for tvOS. Deliberately does NOT port the iOS
+//  `ClusterMapView` (tied to touch gestures, MKUserTrackingButton and SwiftData).
 //  No device GPS on tvOS, so `showsUserLocation` is off and we only plot the
 //  reported positions of other nodes. Selection is driven by the focus engine
 //  (clicking a pin) and by the side list via `selectedNodeNum`.
@@ -89,14 +89,14 @@ final class NodeCircleAnnotationView: MKAnnotationView {
 		didSet {
 			// Only on (re)assignment — never on live updates. Reassigning
 			// `clusteringIdentifier` on every data tick makes MapKit tear down and
-			// rebuild annotation views under the focus engine, which machine-guns
-			// the tvOS focus/selection sounds ("static") while packets stream in.
+			// rebuild annotation views under the focus engine, which plays the tvOS
+			// focus/selection sound over and over while packets stream in.
 			//
 			// Clustering is off: every node gets its own pin. MapKit clusters on a
 			// minimum on-screen separation of its own, not just on whether the views
 			// overlap, so shrinking the view's frame only thinned the badges out — it
-			// still merged nodes tens of metres apart, which on a wall display hides
-			// exactly what you want to see. `displayPriority = .required` is what keeps
+			// still merged nodes tens of meters apart, hiding pins a wall display
+			// should keep distinct. `displayPriority = .required` is what keeps
 			// MapKit from decluttering the pins away now that it cannot merge them.
 			// `ClusterCircleAnnotationView` is intentionally left in place so this is a
 			// one-line revert if a dense mesh ever needs the badges back.

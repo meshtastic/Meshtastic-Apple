@@ -2,25 +2,16 @@
 //  ClusterMapView.swift
 //  Meshtastic
 //
-//  SELF-CONTAINED PROOF OF CONCEPT — a declarative, data-driven SwiftUI wrapper over UIKit's
-//  `MKMapView`. It gives a `Map`-like call site (pass `items` + a `@ViewBuilder` per annotation)
-//  while keeping the three things SwiftUI's own `Map` can't do:
+//  A declarative, data-driven SwiftUI wrapper over UIKit's `MKMapView`. It gives a `Map`-like
+//  call site (pass `items` + a `@ViewBuilder` per annotation) plus the two things SwiftUI's own
+//  `Map` can't do: native MapKit clustering (`clusteringIdentifier`) with a SwiftUI cluster
+//  badge, and precise annotation-view reuse with Identifiable-id diffing (no flicker on update).
 //
-//    2. Native MapKit CLUSTERING (`clusteringIdentifier`) with a SwiftUI cluster badge.
-//    3. Precise annotation-view REUSE + Identifiable-id DIFFING (no flicker on update).
-//
-//  This file is standalone and does NOT touch the production `MeshMap`. It only REUSES symbols
-//  that already ship in the app target:
-//
-//    • OfflineTileSource / OfflineTileSourceFactory.source(for:)  (Helpers/Map/MBTilesArchive.swift)
-//    • GeoBounds                                                    (Helpers/Map/PMTilesArchive.swift)
-//    • AnimatedNodePin / CircleText / UIColor(hex: UInt32)          (node pin styling — demo only)
-//
-//  HOSTING APPROACH: SwiftUI annotation (and cluster) views are hosted inside `MKAnnotationView`
-//  via `UIHostingConfiguration` (iOS 16+). `MKAnnotationView` is a plain `UIView` and does NOT adopt
+//  Hosting approach: SwiftUI annotation (and cluster) views are hosted inside `MKAnnotationView`
+//  via `UIHostingConfiguration` (iOS 16+). `MKAnnotationView` is a plain `UIView` and does not adopt
 //  `UIContentConfiguration`, so we cannot assign `view.contentConfiguration = …` directly (that is a
 //  cell-only API). Instead we call the public `UIHostingConfiguration().makeContentView()`, which
-//  returns a self-sizing `UIView & UIContentView`, embed it ONCE, and only swap its `.configuration`
+//  returns a self-sizing `UIView & UIContentView`, embed it once, and only swap its `.configuration`
 //  on reuse — so the SwiftUI host (and any running animation, e.g. the pulse) survives recycling.
 //
 //  Target: iOS 17+. `PulsingCircle` inside `AnimatedNodePin` self-gates to iOS 18.
