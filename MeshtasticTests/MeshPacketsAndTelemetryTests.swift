@@ -107,6 +107,109 @@ struct MyInfoIngestionTests {
 	}
 }
 
+// MARK: - Automatic channel refresh staging
+
+@Suite("Automatic channel refresh staging", .serialized)
+@MainActor
+struct AutomaticChannelRefreshStagingTests {
+	private func freshMesh() throws -> (MeshPackets, ModelContainer) {
+		let container = try ModelContainer(
+			for: Schema(MeshtasticSchema.allModels),
+			configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+		)
+		return (MeshPackets(modelContainer: container), container)
+	}
+
+	private func seedMyInfo(_ mesh: MeshPackets, nodeNum: UInt32) async {
+		var myInfo = MyNodeInfo()
+		myInfo.myNodeNum = nodeNum
+		_ = await mesh.myInfoPacket(myInfo: myInfo, peripheralId: "test-peripheral")
+	}
+
+	private func channel(index: Int32, name: String, role: Channel.Role = .secondary) -> Channel {
+		var channel = Channel()
+		channel.index = index
+		channel.role = role
+		channel.settings.name = name
+		channel.settings.psk = Data([UInt8(truncatingIfNeeded: index), 0xCA, 0xFE])
+		channel.settings.uplinkEnabled = true
+		channel.settings.downlinkEnabled = false
+		channel.settings.moduleSettings.positionPrecision = 11
+		channel.settings.moduleSettings.isMuted = true
+		return channel
+	}
+
+	private func persistedChannels(in container: ModelContainer, nodeNum: UInt32) throws -> [(index: Int32, name: String?, psk: Data?)] {
+		let persistedNodeNum = Int64(nodeNum)
+		let context = ModelContext(container)
+		let myInfo = try #require(context.fetch(
+			FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == persistedNodeNum })
+		).first)
+		return myInfo.channels
+			.sorted { $0.index < $1.index }
+			.map { ($0.index, $0.name, $0.psk) }
+	}
+
+	@Test func activeRefreshStagePreservesPersistedChannelsBeforeCompletion() async throws {
+		let (mesh, container) = try freshMesh()
+		let nodeNum: UInt32 = 0x0A0B_0C0D
+		await seedMyInfo(mesh, nodeNum: nodeNum)
+		await mesh.channelPacket(channel: channel(index: 0, name: "Existing", role: .primary), fromNum: Int64(nodeNum))
+
+		await mesh.beginChannelRefreshStage(for: Int64(nodeNum))
+		await mesh.channelPacket(channel: channel(index: 0, name: "Staged Replacement", role: .primary), fromNum: Int64(nodeNum))
+		await mesh.channelPacket(channel: channel(index: 1, name: "Staged Secondary"), fromNum: Int64(nodeNum))
+
+		let persisted = try persistedChannels(in: container, nodeNum: nodeNum)
+		#expect(persisted.map(\.index) == [0])
+		#expect(persisted.first?.name == "Existing")
+		await mesh.discardChannelRefreshStage(for: Int64(nodeNum))
+	}
+
+	@Test func committingRefreshStageReplacesPersistedChannelsAtomically() async throws {
+		let (mesh, container) = try freshMesh()
+		let nodeNum: UInt32 = 0x0102_0304
+		await seedMyInfo(mesh, nodeNum: nodeNum)
+		await mesh.channelPacket(channel: channel(index: 0, name: "Old Primary", role: .primary), fromNum: Int64(nodeNum))
+		await mesh.channelPacket(channel: channel(index: 2, name: "Old Secondary"), fromNum: Int64(nodeNum))
+
+		await mesh.beginChannelRefreshStage(for: Int64(nodeNum))
+		await mesh.channelPacket(channel: channel(index: 1, name: "New Secondary"), fromNum: Int64(nodeNum))
+		await mesh.channelPacket(channel: channel(index: 0, name: "New Primary", role: .primary), fromNum: Int64(nodeNum))
+		var disabled = Channel()
+		disabled.index = 2
+		disabled.role = .disabled
+		await mesh.channelPacket(channel: disabled, fromNum: Int64(nodeNum))
+		for index in Int32(3)...Int32(7) {
+			var disabled = Channel()
+			disabled.index = index
+			disabled.role = .disabled
+			await mesh.channelPacket(channel: disabled, fromNum: Int64(nodeNum))
+		}
+		await mesh.commitChannelRefreshStage(for: Int64(nodeNum))
+
+		let persisted = try persistedChannels(in: container, nodeNum: nodeNum)
+		#expect(persisted.map(\.index) == [0, 1])
+		#expect(persisted.map(\.name) == ["New Primary", "New Secondary"])
+		#expect(persisted.map(\.psk) == [Data([0, 0xCA, 0xFE]), Data([1, 0xCA, 0xFE])])
+	}
+
+	@Test func discardingRefreshStagePreservesPersistedChannels() async throws {
+		let (mesh, container) = try freshMesh()
+		let nodeNum: UInt32 = 0x0D15_CAFE
+		await seedMyInfo(mesh, nodeNum: nodeNum)
+		await mesh.channelPacket(channel: channel(index: 0, name: "Kept Primary", role: .primary), fromNum: Int64(nodeNum))
+
+		await mesh.beginChannelRefreshStage(for: Int64(nodeNum))
+		await mesh.channelPacket(channel: channel(index: 0, name: "Discarded Primary", role: .primary), fromNum: Int64(nodeNum))
+		await mesh.discardChannelRefreshStage(for: Int64(nodeNum))
+
+		let persisted = try persistedChannels(in: container, nodeNum: nodeNum)
+		#expect(persisted.map(\.index) == [0])
+		#expect(persisted.first?.name == "Kept Primary")
+	}
+}
+
 // MARK: - Local Message Notification Cleanup
 
 @Suite("Local message notification cleanup")

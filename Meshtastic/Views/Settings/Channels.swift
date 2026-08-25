@@ -20,6 +20,47 @@ func generateChannelKey(size: Int) -> String {
 	return keyData.base64EncodedString()
 }
 
+func projectedDisplayChannels(from channels: [ChannelEntity]) -> [ChannelEntity] {
+	canonicalValidUniqueChannels(from: channels)
+}
+
+func canonicalValidUniqueChannels(from channels: [ChannelEntity]) -> [ChannelEntity] {
+	var byIndex: [Int32: ChannelEntity] = [:]
+	for channel in channels where (Int32(0)...Int32(7)).contains(channel.index) {
+		byIndex[channel.index] = channel
+	}
+	return byIndex.values.sorted { $0.index < $1.index }
+}
+
+func validUniqueChannelIndexes(from channels: [ChannelEntity]) -> [Int32] {
+	canonicalValidUniqueChannels(from: channels).map(\.index)
+}
+
+func availableChannelIndexes(from channels: [ChannelEntity]) -> [Int32] {
+	let occupied = Set(validUniqueChannelIndexes(from: channels))
+	return (Int32(0)...Int32(7)).filter { !occupied.contains($0) }
+}
+
+func nextAvailableSecondaryChannelIndex(from channels: [ChannelEntity]) -> Int32? {
+	availableChannelIndexes(from: channels).first { $0 > 0 }
+}
+
+func channelSettingsForSharing(
+	from channels: [ChannelEntity],
+	includedIndexes: Set<Int32>
+) -> [ChannelSettings] {
+	canonicalValidUniqueChannels(from: channels).compactMap { channel in
+		guard channel.role > 0, includedIndexes.contains(channel.index) else { return nil }
+		var settings = ChannelSettings()
+		settings.name = channel.name ?? ""
+		settings.psk = channel.psk ?? Data()
+		settings.id = UInt32(truncatingIfNeeded: channel.id)
+		settings.moduleSettings.positionPrecision = UInt32(truncatingIfNeeded: channel.positionPrecision)
+		settings.moduleSettings.isMuted = channel.mute
+		return settings
+	}
+}
+
 struct Channels: View {
 
 	@Environment(\.modelContext) private var context
@@ -52,11 +93,7 @@ struct Channels: View {
 
 	private var displayChannels: [ChannelEntity] {
 		guard let channels = node.myInfo?.channels else { return [] }
-		var byIndex: [Int32: ChannelEntity] = [:]
-		for channel in channels {
-			byIndex[channel.index] = channel
-		}
-		return byIndex.values.sorted { $0.index < $1.index }
+		return projectedDisplayChannels(from: channels)
 	}
 
 	private var locationSharingChannelIndex: Int32? {
@@ -87,23 +124,6 @@ struct Channels: View {
 
 	private var channelFrequencySummary: ChannelFrequencySummary? {
 		ChannelFrequencySummary(loRaConfig: node.loRaConfig, primaryChannelName: primaryChannelName)
-	}
-
-	private func normalizeDuplicateChannelsIfNeeded() {
-		guard let channels = node.myInfo?.channels else { return }
-		var uniqueChannels: [Int32: ChannelEntity] = [:]
-		for channel in channels {
-			uniqueChannels[channel.index] = channel
-		}
-		let deduped = uniqueChannels.values.sorted { $0.index < $1.index }
-		guard deduped.count != channels.count else { return }
-		node.myInfo?.channels = deduped
-		do {
-			try context.save()
-			Logger.data.info("💾 Normalized duplicate channels for node \(self.node.num, privacy: .public)")
-		} catch {
-			Logger.data.error("Failed normalizing duplicate channels: \(error.localizedDescription, privacy: .public)")
-		}
 	}
 
 	var body: some View {
@@ -177,16 +197,12 @@ struct Channels: View {
 						.buttonStyle(.plain)
 					}
 				}
-				if (node.myInfo?.channels.count ?? 0) < 8 {
+				if let nextChannelIndex = nextAvailableSecondaryChannelIndex(from: node.myInfo?.channels ?? []) {
 					Button {
-						let channelIndexes = node.myInfo?.channels.compactMap({ ch -> Int in
-							return Int(ch.index)
-						})
-						let firstChannelIndex = firstMissingChannelIndex(channelIndexes ?? [])
 						channelKeySize = 16
 						let key = generateChannelKey(size: channelKeySize)
 						channelName = ""
-						channelIndex = Int32(firstChannelIndex)
+						channelIndex = nextChannelIndex
 						channelRole = 2
 						channelKey = key
 						positionsEnabled = false
@@ -359,26 +375,12 @@ struct Channels: View {
 		}
 		.padding(.bottom, 5)
 		.navigationTitle("Channels")
-		.onAppear {
-			normalizeDuplicateChannelsIfNeeded()
-		}
 		.toolbar {
 			ToolbarItem(placement: .topBarTrailing) {
 				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
 			}
 		}
 	}
-}
-
-func firstMissingChannelIndex(_ indexes: [Int]) -> Int {
-	let smallestIndex = 1
-	if indexes.isEmpty { return smallestIndex }
-	if smallestIndex <= indexes.count {
-		for element in smallestIndex...indexes.count where !indexes.contains(element) {
-			return element
-		}
-	}
-	return indexes.count + 1
 }
 
 enum PositionPrecision: Int, CaseIterable, Identifiable {

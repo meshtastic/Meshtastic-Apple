@@ -19,7 +19,6 @@ struct CircularProgressView: View {
 	var errorColor: Color = .red
 	var percentageFontSize: CGFloat = 48.0
 	
-	// Changed to Optional, removed showSubtitle
 	var subtitleText: String?
 	
 	@State private var rotation: Double = 0
