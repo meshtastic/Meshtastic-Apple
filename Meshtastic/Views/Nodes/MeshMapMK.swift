@@ -283,8 +283,7 @@ struct MeshMapMK: View {
 		return MeshMapVisiblePositionState(positions: positions, key: key)
 	}
 
-	/// Draw the heavy offline detail only while the coverage box is actually on screen (and not at
-	/// Apple basemap type + controls fed to ClusterMapView (Phase 2).
+	/// Apple basemap type + controls fed to ClusterMapView.
 	private var clusterConfiguration: ClusterMapConfiguration {
 		ClusterMapConfiguration(
 			layer: selectedMapLayer == .offline ? .standard : selectedMapLayer,
@@ -402,7 +401,7 @@ struct MeshMapMK: View {
 						.fontWeight(.medium)
 						.lineLimit(1)
 					if hasFlyover {
-						// Speed toggle: cycle 1× (base/slow) → 1.5× → 2× → 2.5× → 3× → 4× → 5× (400% faster). Live-adjustable.
+						// Speed toggle: cycle 1× → 1.5× → 2× → 2.5× → 3× → 4× → 5×. Live-adjustable.
 						Button {
 							let steps: [Double] = [1, 1.5, 2, 2.5, 3, 4, 5]
 							let next = (steps.firstIndex(of: flyover.speedMultiplier) ?? 0) + 1

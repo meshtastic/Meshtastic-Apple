@@ -22,7 +22,8 @@ import Combine
 // mvt-tools straight into native MapKit shapes (MapPolygon/MapPolyline). SwiftUI's `Map` can't host
 // raster tiles, but it renders vector `MapContent` natively — so the offline basemap composites
 // directly with the map's own annotations (nodes), with Apple Maps as the surrounding basemap.
-// No second map, no rasterization, no occlusion, no camera-swim.
+// This avoids a second map, rasterization, occlusion, and the two layers drifting apart during
+// camera moves.
 
 /// Semantic role for an offline vector feature, mapped to a color/width at render time so a single
 /// decode serves both light and dark appearance.

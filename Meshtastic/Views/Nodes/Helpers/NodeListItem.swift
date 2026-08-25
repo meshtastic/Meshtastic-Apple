@@ -17,7 +17,7 @@ import Foundation
 /// backing row has been removed. Bulk deletes (`clearStaleNodes`, `clearDatabase`'s
 /// `delete(model:)`) invalidate in-memory instances *without* flipping `isDeleted`, so a retained
 /// List row that re-evaluates its body before the List drops it reads a zombie and crashes — the
-/// top crash on 2.7.15 (NodeListItem/NodeListItemCompact, ~48% of crashes).
+/// top crash on 2.7.15 (NodeListItem/NodeListItemCompact).
 ///
 /// The row memoizes one of these snapshots in `@State` (see `NodeListItem.body`) and renders from
 /// it, so a re-evaluation after the model dies never touches the live object. Value types can't
