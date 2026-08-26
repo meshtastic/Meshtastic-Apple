@@ -149,4 +149,10 @@ class GeoJSONOverlayManager {
 		// Clear cache to force reload with new file states
 		clearCache()
 	}
+
+	/// Set the active state of an uploaded file explicitly (persisted).
+	func setFileActive(_ fileId: UUID, _ isActive: Bool) {
+		MapDataManager.shared.setFileActive(fileId, isActive)
+		clearCache()
+	}
 }
