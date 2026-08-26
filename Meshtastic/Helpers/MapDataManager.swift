@@ -338,11 +338,15 @@ class MapDataManager: ObservableObject {
 	func setFileActive(_ fileId: UUID, _ isActive: Bool) {
 		guard let index = uploadedFiles.firstIndex(where: { $0.id == fileId }),
 			  uploadedFiles[index].isActive != isActive else { return }
+		let previous = uploadedFiles[index].isActive
 		uploadedFiles[index].isActive = isActive
 		do {
 			try saveMetadata()
 			activeFeatureCollection = nil
 		} catch {
+			// Revert so the session never shows a visibility the manifest does not
+			// hold — otherwise a relaunch would silently flip it back.
+			uploadedFiles[index].isActive = previous
 			Logger.services.error("🚨 MapDataManager: FAILED to save metadata after setting file active: \(error.localizedDescription)")
 		}
 	}

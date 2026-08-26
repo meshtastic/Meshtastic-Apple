@@ -437,10 +437,13 @@ struct MapSettingsForm: View {
 
 			Task {
 				do {
-					_ = try await mapDataManager.processUploadedFile(from: selectedFile)
+					let metadata = try await mapDataManager.processUploadedFile(from: selectedFile)
 					await MainActor.run {
 						isProcessingUpload = false
 						mapOverlaysEnabled = true
+						// The upload arrives active in the store; mirror it into the
+						// transient render set so the row and overlay show immediately.
+						enabledOverlayConfigs.insert(metadata.id)
 					}
 				} catch {
 					await MainActor.run {
