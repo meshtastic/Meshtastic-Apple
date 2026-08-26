@@ -57,7 +57,7 @@ class MapDataManager: ObservableObject {
 	// MARK: - File Upload & Processing
 
 	/// Process and store an uploaded file
-	func processUploadedFile(from sourceURL: URL) async throws -> MapDataMetadata {
+	func processUploadedFile(from sourceURL: URL, source: MapDataSource = .manualUpload) async throws -> MapDataMetadata {
 
 		// 1. Start accessing security-scoped resource
 		let isAccessing = sourceURL.startAccessingSecurityScopedResource()
@@ -89,11 +89,20 @@ class MapDataManager: ObservableObject {
 		try FileManager.default.copyItem(at: sourceURL, to: destURL)
 
 		// 5. Process and validate content
-		let metadata = try await processFileContent(at: destURL, originalName: originalName)
+		let metadata = try await processFileContent(at: destURL, originalName: originalName, source: source)
 
 		// 6. Save metadata and update UI on main thread
 		await MainActor.run {
 			uploadedFiles.append(metadata)
+			// A new Site Planner run replaces the previous one on the map: only the
+			// newest planner file stays active. Manual uploads are never touched —
+			// their visibility belongs to the user.
+			if metadata.source == .sitePlanner {
+				for index in uploadedFiles.indices
+				where uploadedFiles[index].source == .sitePlanner && uploadedFiles[index].id != metadata.id {
+					uploadedFiles[index].isActive = false
+				}
+			}
 			// Clear cached configuration to force reload
 			activeFeatureCollection = nil
 		}
@@ -106,7 +115,7 @@ class MapDataManager: ObservableObject {
 	/// the Site Planner's native bridge) through the same pipeline as `processUploadedFile`, so it
 	/// reuses the exact validation + render + styling path with no round-trip to the share sheet.
 	/// `name` becomes the on-disk file / layer name; a `.geojson` extension is enforced.
-	func importFromString(_ geoJSON: String, name: String) async throws -> MapDataMetadata {
+	func importFromString(_ geoJSON: String, name: String, source: MapDataSource = .manualUpload) async throws -> MapDataMetadata {
 		guard let data = geoJSON.data(using: .utf8) else {
 			throw MapDataError.invalidContent
 		}
@@ -129,7 +138,7 @@ class MapDataManager: ObservableObject {
 		try data.write(to: tempURL)
 		defer { try? FileManager.default.removeItem(at: tempURL) }
 
-		return try await processUploadedFile(from: tempURL)
+		return try await processUploadedFile(from: tempURL, source: source)
 	}
 
 	/// Validate uploaded file
@@ -155,7 +164,7 @@ class MapDataManager: ObservableObject {
 	}
 
 	/// Process file content and extract metadata
-	private func processFileContent(at url: URL, originalName: String) async throws -> MapDataMetadata {
+	private func processFileContent(at url: URL, originalName: String, source: MapDataSource) async throws -> MapDataMetadata {
 		let fileAttributes = try url.resourceValues(forKeys: [.fileSizeKey, .creationDateKey])
 		let fileSize = fileAttributes.fileSize ?? 0
 		let uploadDate = fileAttributes.creationDate ?? Date()
@@ -194,9 +203,6 @@ class MapDataManager: ObservableObject {
 			}
 		}
 
-		// If this is the first file uploaded, make it active by default
-		let isFirstFile = uploadedFiles.isEmpty
-
 		return MapDataMetadata(
 			filename: url.lastPathComponent,
 			originalName: originalName,
@@ -206,7 +212,11 @@ class MapDataManager: ObservableObject {
 			license: nil, // Will be extracted from content if available
 			attribution: nil, // Will be extracted from content if available
 			overlayCount: overlayCount,
-			isActive: isFirstFile
+			// New files start visible: a coverage run replaces the previous one
+			// (older planner files are deactivated by the caller), and a manual
+			// upload shows immediately with its visibility toggle in the user's hands.
+			isActive: true,
+			source: source
 		)
 	}
 
@@ -323,6 +333,20 @@ class MapDataManager: ObservableObject {
 		return uploadedFiles
 	}
 
+	/// Set the active state of an uploaded file explicitly (the settings toggles
+	/// persist through this, so visibility survives relaunch).
+	func setFileActive(_ fileId: UUID, _ isActive: Bool) {
+		guard let index = uploadedFiles.firstIndex(where: { $0.id == fileId }),
+			  uploadedFiles[index].isActive != isActive else { return }
+		uploadedFiles[index].isActive = isActive
+		do {
+			try saveMetadata()
+			activeFeatureCollection = nil
+		} catch {
+			Logger.services.error("🚨 MapDataManager: FAILED to save metadata after setting file active: \(error.localizedDescription)")
+		}
+	}
+
 	/// Toggle the active state of an uploaded file
 	func toggleFileActive(_ fileId: UUID) {
 		if let index = uploadedFiles.firstIndex(where: { $0.id == fileId }) {
@@ -426,6 +450,14 @@ class MapDataManager: ObservableObject {
 
 // MARK: - Supporting Types
 
+/// Where a map data file came from. Site Planner coverage runs are managed
+/// automatically (only the newest stays active); manual uploads keep whatever
+/// visibility the user set.
+enum MapDataSource: String, Codable, Sendable {
+	case manualUpload
+	case sitePlanner
+}
+
 /// Metadata for uploaded map data files
 struct MapDataMetadata: Codable, Identifiable {
 	let id: UUID
@@ -438,8 +470,9 @@ struct MapDataMetadata: Codable, Identifiable {
 	let attribution: String?
 	let overlayCount: Int
 	var isActive: Bool
+	var source: MapDataSource
 
-	init(filename: String, originalName: String, uploadDate: Date, fileSize: Int64, format: String, license: String?, attribution: String?, overlayCount: Int, isActive: Bool) {
+	init(filename: String, originalName: String, uploadDate: Date, fileSize: Int64, format: String, license: String?, attribution: String?, overlayCount: Int, isActive: Bool, source: MapDataSource = .manualUpload) {
 		self.id = UUID()
 		self.filename = filename
 		self.originalName = originalName
@@ -450,6 +483,24 @@ struct MapDataMetadata: Codable, Identifiable {
 		self.attribution = attribution
 		self.overlayCount = overlayCount
 		self.isActive = isActive
+		self.source = source
+	}
+
+	/// Manifests written before `source` existed decode as manual uploads — every
+	/// file back then came from the file picker.
+	init(from decoder: Decoder) throws {
+		let container = try decoder.container(keyedBy: CodingKeys.self)
+		id = try container.decode(UUID.self, forKey: .id)
+		filename = try container.decode(String.self, forKey: .filename)
+		originalName = try container.decode(String.self, forKey: .originalName)
+		uploadDate = try container.decode(Date.self, forKey: .uploadDate)
+		fileSize = try container.decode(Int64.self, forKey: .fileSize)
+		format = try container.decode(String.self, forKey: .format)
+		license = try container.decodeIfPresent(String.self, forKey: .license)
+		attribution = try container.decodeIfPresent(String.self, forKey: .attribution)
+		overlayCount = try container.decode(Int.self, forKey: .overlayCount)
+		isActive = try container.decode(Bool.self, forKey: .isActive)
+		source = try container.decodeIfPresent(MapDataSource.self, forKey: .source) ?? .manualUpload
 	}
 
 	var fileSizeString: String {
