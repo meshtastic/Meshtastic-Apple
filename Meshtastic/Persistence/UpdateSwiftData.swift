@@ -1791,7 +1791,16 @@ extension MeshPackets {
 			var fetchNodeInfoRequest = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate<NodeInfoEntity> { $0.num == fetchNum })
 			fetchNodeInfoRequest.fetchLimit = 1
 		do {
-			let fetchedNode = try modelContext.fetch(fetchNodeInfoRequest)
+			var fetchedNode = try modelContext.fetch(fetchNodeInfoRequest)
+			// Create a stub node if one doesn't exist yet rather than dropping the config.
+			// This config arrives once per connect, and the editor form disables itself
+			// while statusMessageConfig is nil — dropping it here greyed the screen out
+			// for the whole session.
+			if fetchedNode.isEmpty {
+				let newNode = findOrCreateNode(num: fetchNum, context: modelContext)
+				fetchedNode = [newNode]
+				Logger.data.debug("📬 [StatusMessageConfigEntity] created stub node for: \(fetchNum.toHex(), privacy: .public)")
+			}
 			if !fetchedNode.isEmpty {
 				if fetchedNode[0].statusMessageConfig == nil {
 					let newConfig = StatusMessageConfigEntity()
@@ -1807,8 +1816,6 @@ extension MeshPackets {
 				}
 				savePendingChanges()
 					Logger.data.info("💾 [StatusMessageConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
-			} else {
-				Logger.data.error("💥 [StatusMessageConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Status Message Module Config")
 			}
 		} catch {
 			let nsError = error as NSError

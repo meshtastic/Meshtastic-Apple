@@ -98,6 +98,25 @@ struct NodeStatusIngestTests {
 		#expect(node.lastHeard != nil, "the stub is stamped lastHeard so cap eviction ranks it correctly")
 	}
 
+	@Test func moduleConfigForUnknownNodeMintsAStubAndKeepsTheConfig() async throws {
+		let container = try makeContainer()
+		let mesh = MeshPackets(modelContainer: container)
+		var config = ModuleConfig.StatusMessageConfig()
+		config.nodeStatus = "Early config"
+		// No node row exists. The config arrives once per connect, and the editor
+		// form is disabled while statusMessageConfig is nil — dropping it greys the
+		// screen out for the whole session.
+		await mesh.upsertStatusMessageModuleConfigPacket(config: config, nodeNum: 0x0BEE_F005)
+		await mesh.flushDebouncedSaves()
+
+		let context = ModelContext(container)
+		let num: Int64 = 0x0BEE_F005
+		let node = try #require(try context.fetch(
+			FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == num })
+		).first)
+		#expect(node.statusMessageConfig?.nodeStatus == "Early config")
+	}
+
 	@Test func moduleConfigPacketCreatesTheEntityTheFormNeeds() async throws {
 		let container = try makeContainer()
 		let context = ModelContext(container)
