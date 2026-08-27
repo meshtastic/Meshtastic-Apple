@@ -7,9 +7,9 @@
 //  Pins the status message receive chain end to end at the app boundary: a
 //  NODE_STATUS_APP packet updates the node's live status, and a StatusMessage
 //  module config packet creates the config entity the editor form requires
-//  (the form disables itself while statusMessageConfig is nil). Written while
-//  running down a "status message not working" report, to prove which links
-//  the app owns and that they hold.
+//  (the form disables itself while statusMessageConfig is nil). A status from
+//  an unknown node mints a stub node like the position and telemetry handlers
+//  do, so a node DB clear does not lose statuses until the next broadcast.
 //
 
 import Foundation
@@ -80,15 +80,22 @@ struct NodeStatusIngestTests {
 		#expect(node.nodeStatus == nil, "an empty broadcast clears the status, matching Android")
 	}
 
-	@Test func statusFromUnknownNodeIsDroppedWithoutCrashing() async throws {
+	@Test func statusFromUnknownNodeMintsAStubNode() async throws {
 		let container = try makeContainer()
 		let mesh = MeshPackets(modelContainer: container)
-		// No node row exists — the handler must log and drop, not trap.
+		// No node row exists — the handler creates a stub like the position and
+		// telemetry handlers, so a status arriving after a node DB clear is kept
+		// instead of dropped until the next infrequent broadcast.
 		await mesh.upsertNodeStatusPacket(packet: statusPacket(from: 0x0BEE_F003, status: "Ghost"))
 		await mesh.flushDebouncedSaves()
+
 		let context = ModelContext(container)
-		let count = try context.fetchCount(FetchDescriptor<NodeInfoEntity>())
-		#expect(count == 0)
+		let num: Int64 = 0x0BEE_F003
+		let node = try #require(try context.fetch(
+			FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == num })
+		).first)
+		#expect(node.nodeStatus == "Ghost")
+		#expect(node.lastHeard != nil, "the stub is stamped lastHeard so cap eviction ranks it correctly")
 	}
 
 	@Test func moduleConfigPacketCreatesTheEntityTheFormNeeds() async throws {

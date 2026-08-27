@@ -1833,10 +1833,16 @@ extension MeshPackets {
 		var fetchNodeInfoRequest = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate<NodeInfoEntity> { $0.num == fetchNum })
 		fetchNodeInfoRequest.fetchLimit = 1
 		do {
-			let fetchedNode = try modelContext.fetch(fetchNodeInfoRequest)
-			guard !fetchedNode.isEmpty else {
-				Logger.data.error("💥 [NodeStatus] No node found matching \(fetchNum.toHex(), privacy: .public) unable to save node status")
-				return
+			var fetchedNode = try modelContext.fetch(fetchNodeInfoRequest)
+			// Create a stub node if one doesn't exist yet, like the position and telemetry
+			// handlers do — it fills in when the NodeInfo packet arrives. Dropping the status
+			// here left it missing after a node DB clear until the next broadcast, which can
+			// be a long wait.
+			if fetchedNode.isEmpty {
+				let newNode = findOrCreateNode(num: fetchNum, context: modelContext)
+				newNode.lastHeard = Date()
+				fetchedNode = [newNode]
+				Logger.data.debug("📬 [NodeStatus] created stub node for: \(fetchNum.toHex(), privacy: .public)")
 			}
 			fetchedNode[0].nodeStatus = statusMessage.status.isEmpty ? nil : statusMessage.status
 			savePendingChanges()
