@@ -33,21 +33,17 @@ struct MeshBeaconConfig: View {
 	@State private var broadcastMessage = ""
 	@State private var offerChannelName = ""
 	@State private var offerChannelPSK = Data()
-	@State private var offerRegion: Int32 = 0
 	@State private var offerPreset: Int32 = -1
 	@State private var onChannelName = ""
 	@State private var onChannelPSK = Data()
-	@State private var onRegion: Int32 = 0
 	@State private var onPreset: Int32 = -1
-	@State private var intervalText = "3600"
-	@State private var sendAsNodeText = "0"
+	@State private var intervalSecs: Int32 = 3_600
 	@State private var targets: [BroadcastTargetDraft] = []
 
 	/// In-memory draft for one `broadcast_targets` row.
 	struct BroadcastTargetDraft: Identifiable, Equatable {
 		let id = UUID()
 		var preset: Int32 = -1   // -1 = falls back to running config
-		var region: Int32 = 0    // 0 = unset (running config)
 		var channelIndex: Int32 = -1 // -1 = unset (default channel)
 	}
 
@@ -55,18 +51,21 @@ struct MeshBeaconConfig: View {
 		accessoryManager.checkIsVersionSupported(forVersion: "2.8.0")
 	}
 
-	// Blocking validation (FR-011 / FR-013) — never truncate or clamp; block save with inline errors.
-	private var intervalValue: Int32 { Int32(intervalText) ?? 0 }
-	private var isMessageValid: Bool { MeshBeaconValidation.isMessageValid(broadcastMessage) }
-	private var isIntervalValid: Bool { MeshBeaconValidation.isIntervalValid(intervalValue) }
-	// A node number is a UInt32. Empty = 0 = "this node". Reject non-digits or values that overflow
-	// UInt32 so we never silently wrap a bad value (e.g. a pasted "-1") into a bogus node number.
-	private var isSendAsNodeValid: Bool {
-		if sendAsNodeText.isEmpty { return true }
-		guard let value = UInt64(sendAsNodeText) else { return false }
-		return value <= UInt64(UInt32.max)
+	/// The radio's configured LoRa region. Every part of the beacon — the offered
+	/// channel, the transmit settings, and each broadcast target — uses this region;
+	/// a beacon is a tuning invitation, and inviting listeners onto a region the
+	/// radio is not legally configured for is never right.
+	private var nodeRegion: Int32 { Int32(node?.loRaConfig?.regionCode ?? 0) }
+
+	private var hasConfiguredRegion: Bool { nodeRegion != RegionCodes.unset.rawValue }
+
+	private var nodeRegionName: String {
+		RegionCodes(rawValue: Int(nodeRegion))?.description ?? "Unset"
 	}
-	private var canSave: Bool { isMessageValid && isIntervalValid && isSendAsNodeValid }
+
+	// Blocking validation (FR-011 / FR-013) — never truncate or clamp; block save with inline errors.
+	private var isMessageValid: Bool { MeshBeaconValidation.isMessageValid(broadcastMessage) }
+	private var canSave: Bool { isMessageValid && hasConfiguredRegion }
 
 	var body: some View {
 		Group {
@@ -99,8 +98,15 @@ struct MeshBeaconConfig: View {
 	private var editorForm: some View {
 		Form {
 			ConfigHeader(title: "Mesh Beacon", config: \.meshBeaconConfig, node: node, onAppear: setMeshBeaconValues)
+			if !hasConfiguredRegion {
+				Section {
+					Label("Set a LoRa region before configuring a mesh beacon.", systemImage: "exclamationmark.triangle.fill")
+						.foregroundStyle(.orange)
+						.font(.callout)
+				}
+			}
 			optionsSection
-			if MeshBeaconFlags.has(flags, MeshBeaconFlags.broadcastEnabled) {
+			if hasConfiguredRegion, MeshBeaconFlags.has(flags, MeshBeaconFlags.broadcastEnabled) {
 				messageSection
 				offeredSection
 				intervalSection
@@ -108,7 +114,6 @@ struct MeshBeaconConfig: View {
 				if targets.isEmpty {
 					singleTargetSection
 				}
-				advancedSection
 			}
 		}
 		.scrollDismissesKeyboard(.interactively)
@@ -130,14 +135,11 @@ struct MeshBeaconConfig: View {
 		.onChange(of: broadcastMessage) { if broadcastMessage != (node?.meshBeaconConfig?.broadcastMessage ?? "") { hasChanges = true } }
 		.onChange(of: offerChannelName) { if offerChannelName != (node?.meshBeaconConfig?.broadcastOfferChannelName ?? "") { hasChanges = true } }
 		.onChange(of: offerChannelPSK) { if offerChannelPSK != (node?.meshBeaconConfig?.broadcastOfferChannelPSK ?? Data()) { hasChanges = true } }
-		.onChange(of: offerRegion) { if offerRegion != (node?.meshBeaconConfig?.broadcastOfferRegion ?? 0) { hasChanges = true } }
 		.onChange(of: offerPreset) { if offerPreset != (node?.meshBeaconConfig?.broadcastOfferPreset ?? -1) { hasChanges = true } }
 		.onChange(of: onChannelName) { if onChannelName != (node?.meshBeaconConfig?.broadcastOnChannelName ?? "") { hasChanges = true } }
 		.onChange(of: onChannelPSK) { if onChannelPSK != (node?.meshBeaconConfig?.broadcastOnChannelPSK ?? Data()) { hasChanges = true } }
-		.onChange(of: onRegion) { if onRegion != (node?.meshBeaconConfig?.broadcastOnRegion ?? 0) { hasChanges = true } }
 		.onChange(of: onPreset) { if onPreset != (node?.meshBeaconConfig?.broadcastOnPreset ?? -1) { hasChanges = true } }
-		.onChange(of: intervalText) { if intervalText != String(node?.meshBeaconConfig?.broadcastIntervalSecs ?? 3600) { hasChanges = true } }
-		.onChange(of: sendAsNodeText) { if sendAsNodeText != String(node?.meshBeaconConfig?.broadcastSendAsNode ?? 0) { hasChanges = true } }
+		.onChange(of: intervalSecs) { if intervalSecs != Int32(node?.meshBeaconConfig?.broadcastIntervalSecs ?? 3600) { hasChanges = true } }
 		.onChange(of: targets) { if !targetsMatchEntity() { hasChanges = true } }
 	}
 
@@ -149,9 +151,9 @@ struct MeshBeaconConfig: View {
 		// `broadcastTargets` is a SwiftData to-many relationship whose order isn't guaranteed, so
 		// compare content-sorted key tuples rather than zipping positionally (which would falsely
 		// flag hasChanges when the same targets are returned in a different order).
-		let draftKeys = targets.map { [$0.preset, $0.region, $0.channelIndex] }
+		let draftKeys = targets.map { [$0.preset, $0.channelIndex] }
 			.sorted { $0.lexicographicallyPrecedes($1) }
-		let entityKeys = entityTargets.map { [$0.preset, $0.region, $0.channelIndex] }
+		let entityKeys = entityTargets.map { [$0.preset, $0.channelIndex] }
 			.sorted { $0.lexicographicallyPrecedes($1) }
 		return draftKeys == entityKeys
 	}
@@ -160,7 +162,7 @@ struct MeshBeaconConfig: View {
 		Section(header: Text("Options")) {
 			Toggle(isOn: flagBinding(MeshBeaconFlags.listenEnabled)) {
 				Label("Listen for Beacons", systemImage: "antenna.radiowaves.left.and.right")
-				Text("Receive and act on MESH_BEACON_APP packets from other nodes so beaconed meshes appear in Nearby Meshes and the scan setup.")
+				Text("Receive and act on beacon packets from other nodes so beaconed meshes appear in Nearby Meshes and the scan setup.")
 			}
 
 			Toggle(isOn: flagBinding(MeshBeaconFlags.broadcastEnabled)) {
@@ -197,27 +199,37 @@ struct MeshBeaconConfig: View {
 					.autocorrectionDisabled()
 			}
 			pskField("Offered key", psk: $offerChannelPSK)
-			regionPicker("Region", selection: $offerRegion)
+			regionRow
 			presetPicker("Preset", selection: $offerPreset)
 		}
 	}
 
+	/// The intervals offered, hours expressed in seconds. The firmware minimum
+	/// (3600) is the floor of the list, so the picker cannot produce an invalid value.
+	static let intervalChoices: [(label: String, seconds: Int32)] = [
+		("1 hour", 3_600),
+		("2 hours", 7_200),
+		("3 hours", 10_800),
+		("4 hours", 14_400),
+		("6 hours", 21_600),
+		("8 hours", 28_800),
+		("12 hours", 43_200),
+		("24 hours", 86_400)
+	]
+
 	private var intervalSection: some View {
-		Section(header: Text("Broadcast Interval")) {
-			HStack {
-				Label("Interval (seconds)", systemImage: "timer")
-				TextField("Seconds", text: $intervalText)
-					.keyboardType(.numberPad)
-					.multilineTextAlignment(.trailing)
-			}
-			if !isIntervalValid {
-				Text("Interval must be at least \(MeshBeaconValidation.minIntervalSecs) seconds (1 hour). Increase it before saving.")
-					.font(.caption)
-					.foregroundStyle(.red)
-			} else {
-				Text("How often to transmit a beacon. Firmware minimum is \(MeshBeaconValidation.minIntervalSecs) seconds.")
-					.font(.caption)
-					.foregroundStyle(.secondary)
+		Section(header: Text("Broadcast Interval"), footer: Text("How often to transmit a beacon.")) {
+			Picker(selection: $intervalSecs) {
+				// A value set outside this editor (CLI, another client) stays visible
+				// rather than rendering a blank selection; picking a listed value replaces it.
+				if !Self.intervalChoices.contains(where: { $0.seconds == intervalSecs }) {
+					Text("\(intervalSecs) seconds").tag(intervalSecs)
+				}
+				ForEach(Self.intervalChoices, id: \.seconds) { choice in
+					Text(choice.label).tag(choice.seconds)
+				}
+			} label: {
+				Label("Interval", systemImage: "timer")
 			}
 		}
 	}
@@ -231,7 +243,7 @@ struct MeshBeaconConfig: View {
 					.autocorrectionDisabled()
 			}
 			pskField("Transmit key", psk: $onChannelPSK)
-			regionPicker("Region", selection: $onRegion)
+			regionRow
 			presetPicker("Preset", selection: $onPreset)
 		}
 	}
@@ -241,7 +253,6 @@ struct MeshBeaconConfig: View {
 			ForEach($targets) { $target in
 				VStack(alignment: .leading, spacing: 6) {
 					presetPicker("Preset", selection: $target.preset)
-					regionPicker("Region", selection: $target.region)
 					HStack {
 						Label("Channel Index", systemImage: "number")
 						Spacer()
@@ -264,26 +275,6 @@ struct MeshBeaconConfig: View {
 				hasChanges = true
 			} label: {
 				Label("Add Target", systemImage: "plus.circle")
-			}
-		}
-	}
-
-	private var advancedSection: some View {
-		Section(header: Text("Advanced")) {
-			HStack {
-				Label("Send As Node", systemImage: "person.crop.circle")
-				TextField("Node number (0 = this node)", text: $sendAsNodeText)
-					.keyboardType(.numberPad)
-					.multilineTextAlignment(.trailing)
-			}
-			if !isSendAsNodeValid {
-				Text("Enter a node number between 0 and \(UInt32.max). 0 uses this node.")
-					.font(.caption)
-					.foregroundStyle(.red)
-			} else {
-				Text("Spoof the sender of outgoing beacons. 0 uses this node. Remote admin may only set its own node number.")
-					.font(.caption)
-					.foregroundStyle(.secondary)
 			}
 		}
 	}
@@ -311,12 +302,13 @@ struct MeshBeaconConfig: View {
 		}
 	}
 
-	@ViewBuilder
-	private func regionPicker(_ label: String, selection: Binding<Int32>) -> some View {
-		Picker(label, selection: selection) {
-			ForEach(RegionCodes.allCases.filter { !$0.isHiddenFromPicker }) { region in
-				Text(region.description).tag(Int32(region.rawValue))
-			}
+	/// The beacon always uses the radio's configured region — shown, not chosen.
+	private var regionRow: some View {
+		HStack {
+			Label("Region", systemImage: "globe")
+			Spacer()
+			Text(nodeRegionName)
+				.foregroundStyle(.secondary)
 		}
 	}
 
@@ -324,10 +316,33 @@ struct MeshBeaconConfig: View {
 	private func presetPicker(_ label: String, selection: Binding<Int32>) -> some View {
 		Picker(label, selection: selection) {
 			Text("None").tag(Int32(-1))
-			ForEach(ModemPresets.allCases) { preset in
+			ForEach(availablePresets(currentSelection: selection.wrappedValue)) { preset in
 				Text(preset.description).tag(Int32(preset.rawValue))
 			}
 		}
+	}
+
+	/// Presets legal for the radio's own region, mirroring LoRa config's filtering:
+	/// the firmware-gated set, constrained to the region's legal list when the
+	/// connected 2.8+ radio advertised one. The currently-selected preset stays
+	/// visible even when filtered out, so an existing config never renders a blank
+	/// row, and the list is never empty.
+	private func availablePresets(currentSelection: Int32) -> [ModemPresets] {
+		let base = ModemPresets.selectable(supports2_8: supports2_8)
+		var presets = base
+		if supports2_8,
+		   let code = RegionCodes(rawValue: Int(nodeRegion))?.protoEnumValue(),
+		   let info = accessoryManager.loRaRegionPresets[code],
+		   !info.presets.isEmpty {
+			let constrained = base.filter { info.presets.contains($0.protoEnumValue()) }
+			if !constrained.isEmpty { presets = constrained }
+		}
+		if currentSelection >= 0,
+		   let current = ModemPresets(rawValue: Int(currentSelection)),
+		   !presets.contains(current) {
+			presets.append(current)
+		}
+		return presets
 	}
 
 	/// A binding that toggles a single flag bit while preserving every other bit (D4).
@@ -349,16 +364,13 @@ struct MeshBeaconConfig: View {
 		broadcastMessage = config?.broadcastMessage ?? ""
 		offerChannelName = config?.broadcastOfferChannelName ?? ""
 		offerChannelPSK = config?.broadcastOfferChannelPSK ?? Data()
-		offerRegion = config?.broadcastOfferRegion ?? 0
 		offerPreset = config?.broadcastOfferPreset ?? -1
 		onChannelName = config?.broadcastOnChannelName ?? ""
 		onChannelPSK = config?.broadcastOnChannelPSK ?? Data()
-		onRegion = config?.broadcastOnRegion ?? 0
 		onPreset = config?.broadcastOnPreset ?? -1
-		intervalText = String(config?.broadcastIntervalSecs ?? 3600)
-		sendAsNodeText = String(config?.broadcastSendAsNode ?? 0)
+		intervalSecs = Int32(truncatingIfNeeded: config?.broadcastIntervalSecs ?? 3_600)
 		targets = (config?.broadcastTargets ?? []).map {
-			BroadcastTargetDraft(preset: $0.preset, region: $0.region, channelIndex: $0.channelIndex)
+			BroadcastTargetDraft(preset: $0.preset, channelIndex: $0.channelIndex)
 		}
 		hasChanges = false
 	}
@@ -376,7 +388,7 @@ struct MeshBeaconConfig: View {
 			settings.psk = offerChannelPSK
 			config.broadcastOfferChannel = settings
 		}
-		if let region = Config.LoRaConfig.RegionCode(rawValue: Int(offerRegion)) {
+		if let region = Config.LoRaConfig.RegionCode(rawValue: Int(nodeRegion)) {
 			config.broadcastOfferRegion = region
 		}
 		if offerPreset >= 0, let preset = Config.LoRaConfig.ModemPreset(rawValue: Int(offerPreset)) {
@@ -389,24 +401,24 @@ struct MeshBeaconConfig: View {
 			settings.psk = onChannelPSK
 			config.broadcastOnChannel = settings
 		}
-		if let region = Config.LoRaConfig.RegionCode(rawValue: Int(onRegion)) {
+		if let region = Config.LoRaConfig.RegionCode(rawValue: Int(nodeRegion)) {
 			config.broadcastOnRegion = region
 		}
 		if onPreset >= 0, let preset = Config.LoRaConfig.ModemPreset(rawValue: Int(onPreset)) {
 			config.broadcastOnPreset = preset
 		}
 
-		config.broadcastIntervalSecs = UInt32(truncatingIfNeeded: intervalValue)
-		// Validated by isSendAsNodeValid before save; parse directly (no truncating wrap) and fall
-		// back to 0 ("this node") for an empty field.
-		config.broadcastSendAsNode = UInt32(sendAsNodeText) ?? 0
+		config.broadcastIntervalSecs = UInt32(truncatingIfNeeded: intervalSecs)
+		// No longer exposed in this editor; ride the stored value along unchanged (D4) so
+		// saving other fields cannot clear a value set from the CLI or another client.
+		config.broadcastSendAsNode = UInt32(truncatingIfNeeded: node?.meshBeaconConfig?.broadcastSendAsNode ?? 0)
 
 		config.broadcastTargets = targets.map { draft in
 			var target = ModuleConfig.MeshBeaconConfig.BroadcastTarget()
 			if draft.preset >= 0, let preset = Config.LoRaConfig.ModemPreset(rawValue: Int(draft.preset)) {
 				target.preset = preset
 			}
-			if let region = Config.LoRaConfig.RegionCode(rawValue: Int(draft.region)) {
+			if let region = Config.LoRaConfig.RegionCode(rawValue: Int(nodeRegion)) {
 				target.region = region
 			}
 			if draft.channelIndex >= 0 {
