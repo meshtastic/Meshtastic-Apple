@@ -312,6 +312,12 @@ extension AccessoryManager {
 		do {
 			try await connectionStepper?.run()
 			Logger.transport.debug("🔗 [Connect] ConnectionStepper completed.")
+			// The scan pause covers the whole handshake — pairing happens during the
+			// notify subscription, after the link comes up — so resume only now that
+			// every step finished. Failed attempts resume via connectionDidDisconnect.
+			if let bleTransport = transportForType(.ble) as? BLETransport {
+				await bleTransport.resumeScanningAfterConnectionEstablished()
+			}
 		} catch AccessoryError.tooManyRetries {
 			self.lastConnectionError = AccessoryError.tooManyRetries
 			try await self.closeConnection()

@@ -54,6 +54,8 @@ actor BLETransport: Transport {
 	static let poweredOffStatusMessage = "Bluetooth is powered off"
 
 	private var cleanupTask: Task<Void, Never>?
+	private var scanningPausedForConnection = false
+	private let discoverySetupHandler: (@Sendable () async -> Void)?
 	
 	// Transport properties
 	let supportsManualConnection: Bool = false
@@ -64,7 +66,13 @@ actor BLETransport: Transport {
 	///   authorization already does. Tests that drive `handleCentralState` directly need this: a
 	///   real manager reports the host's actual Bluetooth state on its own schedule, and that
 	///   incidental value lands in `status` at an unpredictable point mid-test.
-	init(createCentralManagerImmediately: Bool = true) {
+	init(
+		createCentralManagerImmediately: Bool = true,
+		centralManager: CBCentralManager? = nil,
+		discoverySetupHandler: (@Sendable () async -> Void)? = nil
+	) {
+		self.centralManager = centralManager
+		self.discoverySetupHandler = discoverySetupHandler
 		self.discoveredPeripherals = [:]
 		self.discoveredDeviceContinuation = nil
 		self.delegate = BLEDelegate()
@@ -72,10 +80,13 @@ actor BLETransport: Transport {
 		// Only create CBCentralManager immediately if Bluetooth authorization is already
 		// determined. This avoids showing the system permission prompt before the
 		// onboarding Bluetooth screen has a chance to present it in context.
-		if createCentralManagerImmediately, CBCentralManager.authorization != .notDetermined {
-			centralManager = CBCentralManager(delegate: delegate,
-											  queue: centralQueue,
-											  options: Self.centralManagerOptions(restoreIdentifier: kCentralRestoreID)
+		if centralManager == nil,
+		   createCentralManagerImmediately,
+		   CBCentralManager.authorization != .notDetermined {
+			self.centralManager = CBCentralManager(
+				delegate: delegate,
+				queue: centralQueue,
+				options: Self.centralManagerOptions(restoreIdentifier: kCentralRestoreID)
 			)
 		}
 		self.delegate.setTransport(self)
@@ -100,7 +111,7 @@ actor BLETransport: Transport {
 	/// transports — discovery starts unconditionally on all of them at launch
 	/// (`AccessoryManager.startDiscovery()`) regardless of which transport the user actually
 	/// connects with — so leaving the (default-`true`) system "Bluetooth is turned off" alert
-	/// enabled meant a TCP/WiFi-only user saw it on every launch. Worse, presenting that alert
+	/// enabled meant a TCP/WiFi-only user saw it on every launch. Presenting that alert also
 	/// blips `scenePhase` (inactive/background then active), and `appDidBecomeActive()` restarts
 	/// BLE discovery whenever there's no active connection yet — which re-triggers the alert,
 	/// producing the dismiss/reappear loop reported in #2139. Suppressing the system alert here
@@ -149,8 +160,9 @@ actor BLETransport: Transport {
 				// This gate is opened when the CBCentralManager is in poweredOn state.
 				// Its probably open already, but just to be sure in case we get here too quickly.
 				try await self.setupCompleteGate.wait()
+				await self.discoverySetupHandler?()
 				
-				if await !self.restoreInProgress {
+				if await !self.restoreInProgress && !self.scanningPausedForConnection {
 					centralManager.scanForPeripherals(withServices: [meshtasticServiceCBUUID], options: [CBCentralManagerScanOptionAllowDuplicatesKey: true])
 					
 					let peripherals = await self.discoveredPeripherals.values.map({$0.peripheral})
@@ -197,6 +209,7 @@ actor BLETransport: Transport {
 
 	private func stopScanning() {
 		Logger.transport.debug("🛜 [BLE] Stop Scanning: BLE Discovery has been stopped.")
+		scanningPausedForConnection = false
 		guard centralManager != nil else {
 			discoveredPeripherals.removeAll()
 			discoveredDeviceContinuation = nil
@@ -228,7 +241,9 @@ actor BLETransport: Transport {
 			// Open the gate, so anyone who was waiitng for poweredOn can continue
 			Task { await self.setupCompleteGate.open() }
 			
-			if self.discoveredDeviceContinuation != nil && !restoreInProgress {
+			if self.discoveredDeviceContinuation != nil,
+			   !restoreInProgress,
+			   !scanningPausedForConnection {
 				// We have someone already subscribed to our discovery event stream.
 				// Likely a powerOff event occcurred and need to now restore scanning.
 				central.scanForPeripherals(withServices: [meshtasticServiceCBUUID], options: [CBCentralManagerScanOptionAllowDuplicatesKey: true])
@@ -242,6 +257,10 @@ actor BLETransport: Transport {
 			// the opposite of, so `.error` here also matches this file's own convention for
 			// every other non-powered-on state (.unauthorized, .unsupported, .resetting, etc.).
 			status = .error(Self.poweredOffStatusMessage)
+			if let continuation = connectContinuation {
+				connectContinuation = nil
+				continuation.resume(throwing: AccessoryError.disconnected("Bluetooth powered off"))
+			}
 			if let connection = activeConnection {
 				Task {
 					Logger.transport.error("🛜 [BLE] Bluetooth has powered off during active connection. Cleaning up.")
@@ -298,23 +317,71 @@ actor BLETransport: Transport {
 		}
 	}
 
-	private func cancelConnectContinuation(for peripheral: CBPeripheral) {
-		self.connectContinuation?.resume(throwing: CancellationError())
+	func cancelConnectContinuation(for peripheral: CBPeripheral) {
+		guard connectingPeripheral?.identifier == peripheral.identifier,
+			  let connectContinuation else { return }
+		connectContinuation.resume(throwing: CancellationError())
 		self.connectContinuation = nil
-		self.connectionDidDisconnect(fromPeripheral: peripheral)
+	}
+
+	/// Stops duplicate-advertisement scanning before CoreBluetooth starts a connection. Keeping the
+	/// discovery stream and cache alive preserves the selected peripheral while the pairing sheet is
+	/// active. A failed attempt restarts the scan so normal discovery and retries can continue.
+	func pauseScanningForConnection() {
+		scanningPausedForConnection = true
+		guard centralManager?.isScanning == true else { return }
+		centralManager.stopScan()
+	}
+
+	/// The pause exists to keep duplicate-advertisement traffic away from the pairing
+	/// window, which runs through the notify subscription — after the link itself comes
+	/// up. Once the handshake is fully established, resume so the Available Radios list
+	/// stays live for device switching while connected.
+	func resumeScanningAfterConnectionEstablished() {
+		resumeScanningIfPaused()
+	}
+
+	private func resumeScanningAfterFailedConnection() {
+		resumeScanningIfPaused()
+	}
+
+	private func resumeScanningIfPaused() {
+		guard scanningPausedForConnection else { return }
+		scanningPausedForConnection = false
+		guard discoveredDeviceContinuation != nil,
+			  centralManager?.state == .poweredOn,
+			  !restoreInProgress else { return }
+		centralManager.scanForPeripherals(
+			withServices: [meshtasticServiceCBUUID],
+			options: [CBCentralManagerScanOptionAllowDuplicatesKey: true]
+		)
+	}
+
+	/// Resolves a peripheral from the live discovery cache or CoreBluetooth's registry. The latter
+	/// keeps connect(to:) valid if discovery teardown cleared the cache before the connect request.
+	private func resolvePeripheral(for device: Device) -> CBPeripheral? {
+		guard let identifier = UUID(uuidString: device.identifier) else {
+			Logger.transport.error("🛜 [BLE] Device identifier is not a UUID: \(device.identifier, privacy: .public)")
+			return nil
+		}
+		if let cachedPeripheral = discoveredPeripherals[identifier]?.peripheral {
+			return cachedPeripheral
+		}
+		return centralManager?.retrievePeripherals(withIdentifiers: [identifier]).first
 	}
 
 	func connect(to device: Device) async throws -> any Connection {
-		guard let peripheral = discoveredPeripherals[UUID(uuidString: device.identifier)!] else {
+		guard activeConnection == nil, connectContinuation == nil else {
+			throw AccessoryError.connectionFailed("BLE transport is busy: already connecting or connected")
+		}
+
+		pauseScanningForConnection()
+		guard let peripheral = resolvePeripheral(for: device) else {
+			resumeScanningAfterFailedConnection()
 			throw AccessoryError.connectionFailed("Peripheral not found")
 		}
 		
 		do {
-			if await self.activeConnection?.peripheral.state == .disconnected {
-				Logger.transport.error("🛜 [BLE] Connect request while an active (but disconnected)")
-				throw AccessoryError.connectionFailed("Connect request while an active connection exists")
-			}
-			
 			let returnConnection = try await withTaskCancellationHandler {
 				let newConnection: BLEConnection = try await withCheckedThrowingContinuation { cont in
 					if self.connectContinuation != nil || self.activeConnection != nil {
@@ -322,24 +389,25 @@ actor BLETransport: Transport {
 						return
 					}
 					self.connectContinuation = cont
-					self.connectingPeripheral = peripheral.peripheral
+					self.connectingPeripheral = peripheral
 					guard centralManager != nil else {
+						self.connectContinuation = nil
 						cont.resume(throwing: AccessoryError.connectionFailed("Bluetooth not initialized"))
 						return
 					}
-					centralManager.connect(peripheral.peripheral)
+					centralManager.connect(peripheral)
 				}
 				self.activeConnection = newConnection
 				return newConnection
 			} onCancel: {
 				Task {
-					await self.cancelConnectContinuation(for: peripheral.peripheral)
+					await self.cancelConnectContinuation(for: peripheral)
 				}
 			}
 			Logger.transport.debug("🛜 [BLE] Connect complete.")
 			return returnConnection
 		} catch {
-			connectionDidDisconnect(fromPeripheral: peripheral.peripheral)
+			connectionDidDisconnect(fromPeripheral: peripheral)
 			throw error
 		}
 	}
@@ -576,6 +644,7 @@ actor BLETransport: Transport {
 		self.activeConnection = nil
 		self.connectingPeripheral = nil
 		restoreInProgress = false
+		resumeScanningAfterFailedConnection()
 	}
 }
 

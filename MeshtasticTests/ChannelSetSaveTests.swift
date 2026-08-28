@@ -51,6 +51,16 @@ actor MockChannelSetConnection: Connection {
 		}
 	}
 
+	var sentChannelIndexes: [Int32] {
+		sentPackets.compactMap { toRadio in
+			guard case let .packet(meshPacket) = toRadio.payloadVariant,
+				  case let .decoded(dataMessage) = meshPacket.payloadVariant,
+				  let admin = try? AdminMessage(serializedBytes: dataMessage.payload),
+				  case let .setChannel(channel) = admin.payloadVariant else { return nil }
+			return Int32(truncatingIfNeeded: channel.index)
+		}
+	}
+
 	func send(_ data: ToRadio) async throws {
 		sentPackets.append(data)
 		if failureMode == .firstPacket, case .packet = data.payloadVariant {
@@ -128,6 +138,10 @@ struct ChannelSetSaveTests {
 	}
 
 	private func seedMyInfo(deviceNum: Int64, channelName: String) throws {
+		try seedMyInfo(deviceNum: deviceNum, channels: [(0, channelName)])
+	}
+
+	private func seedMyInfo(deviceNum: Int64, channels: [(index: Int32, name: String)]) throws {
 		let context = PersistenceController.shared.context
 		let descriptor = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == deviceNum })
 		for existing in try context.fetch(descriptor) {
@@ -137,14 +151,18 @@ struct ChannelSetSaveTests {
 
 		let myInfo = MyInfoEntity()
 		myInfo.myNodeNum = deviceNum
-		let channel = ChannelEntity()
-		channel.id = 0
-		channel.index = 0
-		channel.name = channelName
-		channel.role = Int32(Channel.Role.primary.rawValue)
 		context.insert(myInfo)
-		context.insert(channel)
-		myInfo.channels.append(channel)
+		for seeded in channels {
+			let channel = ChannelEntity()
+			channel.id = seeded.index
+			channel.index = seeded.index
+			channel.name = seeded.name
+			channel.role = seeded.index == 0
+				? Int32(Channel.Role.primary.rawValue)
+				: Int32(Channel.Role.secondary.rawValue)
+			context.insert(channel)
+			myInfo.channels.append(channel)
+		}
 		try context.save()
 		MeshPackets.recreateShared()
 	}
@@ -264,5 +282,76 @@ struct ChannelSetSaveTests {
 
 		#expect(try channelNames(for: connectedDeviceNum) == ["Imported"])
 		#expect(try channelNames(for: staleDeviceNum) == ["Stale"])
+	}
+
+	@Test("Local channel-set save is not diverted into an automatic refresh stage")
+	func testLocalChannelSetSaveIsNotDivertedIntoAutomaticRefreshStage() async throws {
+		let deviceNum: Int64 = 123_456_793
+		try seedMyInfo(deviceNum: deviceNum, channelName: "Existing")
+		await MeshPackets.shared.beginChannelRefreshStage(for: deviceNum)
+		let connection = MockChannelSetConnection()
+		let manager = makeManager(connection: connection, deviceNum: deviceNum)
+		let channelSet = makeChannelSet(channelNames: ["Imported"])
+
+		try await manager.saveChannelSet(channelSet: channelSet, addChannels: false, okToMQTT: false)
+
+		#expect(try channelNames(for: deviceNum) == ["Imported"])
+		await MeshPackets.shared.discardChannelRefreshStage(for: deviceNum)
+	}
+
+	@Test("QR add uses the free valid index when eight raw rows contain a duplicate")
+	func testAddWithDuplicateRawIndexUsesAvailableSlotWithoutDeletingLegacyRows() async throws {
+		let deviceNum: Int64 = 123_456_794
+		try seedMyInfo(
+			deviceNum: deviceNum,
+			channels: [
+				(0, "Legacy Primary"),
+				(0, "Current Primary"),
+				(1, "One"),
+				(2, "Two"),
+				(3, "Three"),
+				(4, "Four"),
+				(5, "Five"),
+				(6, "Six")
+			]
+		)
+		let connection = MockChannelSetConnection(failureMode: .wantConfig)
+		let manager = makeManager(connection: connection, deviceNum: deviceNum)
+		let channelSet = makeChannelSet(channelNames: ["Imported Seven"])
+
+		await #expect(throws: (any Error).self) {
+			try await manager.saveChannelSet(channelSet: channelSet, addChannels: true, okToMQTT: false)
+		}
+
+		#expect(await connection.sentChannelIndexes == [7])
+		let persistedNodeNum = deviceNum
+		let context = ModelContext(PersistenceController.shared.container)
+		let descriptor = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == persistedNodeNum })
+		let indexes = try #require(context.fetch(descriptor).first).channels.map(\.index)
+		#expect(indexes.filter { $0 == 0 }.count == 2)
+		#expect(indexes.contains(7))
+	}
+
+	@Test("Append mode never hands an imported channel the primary slot")
+	func appendModeNeverTargetsIndexZero() async throws {
+		// A partial local cache (the #1893 scenario) can leave slot 0 unoccupied.
+		// An appended QR channel must still land on a secondary index — the role
+		// assignment keys on index 0, so targeting it would promote the import
+		// to primary and overwrite the radio's primary channel.
+		let deviceNum: Int64 = 123_456_795
+		try seedMyInfo(deviceNum: deviceNum, channels: [(1, "Only Secondary")])
+		let connection = MockChannelSetConnection()
+		let manager = makeManager(connection: connection, deviceNum: deviceNum)
+		let link = try makeChannelSetLink(includeLoRaConfig: false, channelNames: ["Appended"])
+
+		// Append mode sends no LoRa config, so the mock's simulated post-wantConfig
+		// disconnect surfaces as an error — after the channel packet and local mirror.
+		await #expect(throws: (any Error).self) {
+			try await manager.saveChannelSet(base64UrlString: link, addChannels: true, okToMQTT: false)
+		}
+
+		let sentIndexes = await connection.sentChannelIndexes
+		#expect(sentIndexes == [2], "the appended channel must take the first free secondary slot, never index 0")
+		#expect(try channelNames(for: deviceNum) == ["Only Secondary", "Appended"])
 	}
 }
