@@ -79,9 +79,11 @@ struct MeshBeaconConfig: View {
 		canonicalValidUniqueChannels(from: node?.myInfo?.channels ?? [])
 	}
 
-	private func channelDisplayName(_ channel: ChannelEntity) -> String {
-		if let name = channel.name, !name.isEmpty { return name }
-		return channel.index == 0 ? "Primary" : "Channel \(channel.index)"
+	/// A real channel name is user content shown verbatim; the fallbacks are
+	/// localizable literals.
+	private func channelDisplayName(_ channel: ChannelEntity) -> Text {
+		if let name = channel.name, !name.isEmpty { return Text(verbatim: name) }
+		return channel.index == 0 ? Text("Primary") : Text("Channel \(channel.index)")
 	}
 
 	/// Resolves a stored name+key pair to the matching channel's index for the picker
@@ -125,7 +127,7 @@ struct MeshBeaconConfig: View {
 				Text("Channel \(selection.wrappedValue)").tag(selection.wrappedValue)
 			}
 			ForEach(nodeChannels, id: \.index) { channel in
-				Text(channelDisplayName(channel)).tag(channel.index)
+				channelDisplayName(channel).tag(channel.index)
 			}
 		} label: {
 			Label(label, systemImage: "fibrechannel")
