@@ -174,7 +174,6 @@ struct Settings: View {
 			|| isTAKModuleSupported(node)
 			|| isTrafficManagementModuleSupported(node)
 			|| isMeshBeaconModuleSupported(node)
-			|| accessoryManager.supportsStatusMessage
 	}
 
 	private func isMeshBeaconModuleSupported(_ node: SettingsNodeSnapshot?) -> Bool {
@@ -462,16 +461,6 @@ struct Settings: View {
 				}
 			}
 
-			if accessoryManager.supportsStatusMessage {
-				NavigationLink(value: SettingsNavigationState.statusMessage) {
-					Label {
-						Text("Status Message")
-					} icon: {
-						Image(systemName: "text.bubble")
-					}
-				}
-			}
-
 			if isModuleSupported(.storeforwardConfig, excludedModules: excludedModules) {
 				NavigationLink(value: SettingsNavigationState.storeAndForward) {
 					Label {
@@ -673,6 +662,15 @@ struct Settings: View {
 				}
 				.disabled(selectedNode > 0 && selectedNode != preferredNodeNum)
 
+				// A managed radio hides the configuration sections; say why instead of
+				// showing nothing (same message as Android).
+				if let node, node.isManaged, accessoryManager.isConnected {
+					Section("Configure") {
+						Label("This radio is managed and can only be changed by a remote admin.", systemImage: "lock.shield")
+							.font(.callout)
+							.foregroundStyle(.orange)
+					}
+				}
 				if let node, !node.isManaged {
 					if accessoryManager.isConnected {
 						Section("Configure") {
@@ -808,8 +806,6 @@ struct Settings: View {
 					SecurityConfig(node: configNode)
 				case .serial:
 					SerialConfig(node: configNode)
-				case .statusMessage:
-					StatusMessageConfig(node: configNode)
 				case .storeAndForward:
 					StoreForwardConfig(node: configNode)
 				case .telemetry:
