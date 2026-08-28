@@ -91,9 +91,15 @@ private struct StatusMessageAlertModifier: ViewModifier {
 		}
 		var config = ModuleConfig.StatusMessageConfig()
 		config.nodeStatus = status
+		let newStatus = status
 		Task {
 			do {
 				_ = try await accessoryManager.saveStatusMessageModuleConfig(config: config, fromUser: fromUser, toUser: toUser)
+				// Update the main-context entity the node list renders from, so the row
+				// changes now instead of waiting for the next broadcast to arrive.
+				presentedNode.nodeStatus = newStatus.isEmpty ? nil : newStatus
+				presentedNode.statusMessageConfig?.nodeStatus = newStatus
+				try? context.save()
 			} catch {
 				Logger.mesh.error("🚨 Status message save failed: \(error.localizedDescription)")
 			}
