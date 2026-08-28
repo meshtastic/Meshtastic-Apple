@@ -33,10 +33,11 @@ struct MeshBeaconConfig: View {
 	@State private var broadcastMessage = ""
 	@State private var offerChannelName = ""
 	@State private var offerChannelPSK = Data()
-	@State private var offerPreset: Int32 = -1
+	@State private var offerChannelIndex: Int32 = -1
 	@State private var onChannelName = ""
 	@State private var onChannelPSK = Data()
 	@State private var onPreset: Int32 = -1
+	@State private var onChannelIndex: Int32 = -1
 	@State private var beaconInterval = UpdateInterval(from: 3_600)
 	@State private var targets: [BroadcastTargetDraft] = []
 
@@ -59,6 +60,14 @@ struct MeshBeaconConfig: View {
 
 	private var hasConfiguredRegion: Bool { nodeRegion != RegionCodes.unset.rawValue }
 
+	/// The radio's own configured modem preset — what a picked channel actually runs on
+	/// today, and the natural preselection when a channel is chosen and no preset is set.
+	private var nodeModemPreset: Int32 { Int32(node?.loRaConfig?.modemPreset ?? -1) }
+
+	private var nodeModemPresetName: String {
+		ModemPresets(rawValue: Int(nodeModemPreset))?.description ?? "Unknown"
+	}
+
 	private var nodeRegionName: String {
 		RegionCodes(rawValue: Int(nodeRegion))?.description ?? "Unset"
 	}
@@ -73,34 +82,40 @@ struct MeshBeaconConfig: View {
 		return channel.index == 0 ? "Primary" : "Channel \(channel.index)"
 	}
 
-	/// Binds a name+key channel pair to a row in the radio's channel list. Selecting a
-	/// channel fills both fields from the entity; a pair set outside this editor that
-	/// matches no channel shows as a custom row (-2) until a listed channel is picked.
-	private func channelSelection(name: Binding<String>, psk: Binding<Data>) -> Binding<Int32> {
-		Binding<Int32>(
-			get: {
-				if name.wrappedValue.isEmpty { return -1 }
-				return nodeChannels.first { channelDisplayName($0) == name.wrappedValue || $0.name == name.wrappedValue }?.index ?? -2
-			},
-			set: { newValue in
-				guard newValue >= 0, let channel = nodeChannels.first(where: { $0.index == newValue }) else {
-					name.wrappedValue = ""
-					psk.wrappedValue = Data()
-					return
-				}
-				name.wrappedValue = channel.name ?? ""
-				psk.wrappedValue = channel.psk ?? Data()
+	/// Resolves a stored name+key pair to the matching channel's index for the picker
+	/// seed: -1 when the pair is empty (None), -2 when it matches no channel (a value
+	/// set outside this editor). The primary channel commonly has an empty name, so
+	/// the key participates in matching — a name round-trip alone cannot identify it.
+	private func resolveChannelIndex(name: String, psk: Data) -> Int32 {
+		if name.isEmpty && psk.isEmpty { return -1 }
+		if let match = nodeChannels.first(where: { ($0.name ?? "") == name && ($0.psk ?? Data()) == psk }) {
+			return match.index
+		}
+		if let match = nodeChannels.first(where: { ($0.name ?? "") == name && !name.isEmpty }) {
+			return match.index
+		}
+		return -2
+	}
+
+	/// Writes the selected channel's name and key into the edit buffer.
+	private func applyChannelSelection(_ index: Int32, name: inout String, psk: inout Data) {
+		guard index >= 0, let channel = nodeChannels.first(where: { $0.index == index }) else {
+			if index == -1 {
+				name = ""
+				psk = Data()
 			}
-		)
+			return
+		}
+		name = channel.name ?? ""
+		psk = channel.psk ?? Data()
 	}
 
 	@ViewBuilder
-	private func channelPicker(_ label: String, name: Binding<String>, psk: Binding<Data>) -> some View {
-		let selection = channelSelection(name: name, psk: psk)
+	private func channelPicker(_ label: String, selection: Binding<Int32>, customName: String) -> some View {
 		Picker(selection: selection) {
 			Text("None").tag(Int32(-1))
 			if selection.wrappedValue == -2 {
-				Text("Custom: \(name.wrappedValue)").tag(Int32(-2))
+				Text("Custom: \(customName.isEmpty ? "unnamed" : customName)").tag(Int32(-2))
 			}
 			ForEach(nodeChannels, id: \.index) { channel in
 				Text(channelDisplayName(channel)).tag(channel.index)
@@ -181,9 +196,13 @@ struct MeshBeaconConfig: View {
 			.disabled(!canSave)
 		}
 		.onChange(of: broadcastMessage) { if broadcastMessage != (node?.meshBeaconConfig?.broadcastMessage ?? "") { hasChanges = true } }
+		.onChange(of: offerChannelIndex) { applyChannelSelection(offerChannelIndex, name: &offerChannelName, psk: &offerChannelPSK) }
 		.onChange(of: offerChannelName) { if offerChannelName != (node?.meshBeaconConfig?.broadcastOfferChannelName ?? "") { hasChanges = true } }
 		.onChange(of: offerChannelPSK) { if offerChannelPSK != (node?.meshBeaconConfig?.broadcastOfferChannelPSK ?? Data()) { hasChanges = true } }
-		.onChange(of: offerPreset) { if offerPreset != (node?.meshBeaconConfig?.broadcastOfferPreset ?? -1) { hasChanges = true } }
+		.onChange(of: onChannelIndex) {
+			applyChannelSelection(onChannelIndex, name: &onChannelName, psk: &onChannelPSK)
+			if onChannelIndex >= 0, onPreset == -1 { onPreset = nodeModemPreset }
+		}
 		.onChange(of: onChannelName) { if onChannelName != (node?.meshBeaconConfig?.broadcastOnChannelName ?? "") { hasChanges = true } }
 		.onChange(of: onChannelPSK) { if onChannelPSK != (node?.meshBeaconConfig?.broadcastOnChannelPSK ?? Data()) { hasChanges = true } }
 		.onChange(of: onPreset) { if onPreset != (node?.meshBeaconConfig?.broadcastOnPreset ?? -1) { hasChanges = true } }
@@ -240,9 +259,20 @@ struct MeshBeaconConfig: View {
 
 	private var offeredSection: some View {
 		Section(header: Text("Offered to Listeners"), footer: Text("What the beacon advertises, chosen from this radio's channels — the channel's key is offered with it. None broadcasts a text-only beacon.")) {
-			channelPicker("Channel", name: $offerChannelName, psk: $offerChannelPSK)
+			channelPicker("Channel", selection: $offerChannelIndex, customName: offerChannelName)
 			regionRow
-			presetPicker("Preset", selection: $offerPreset)
+			offerPresetRow
+		}
+	}
+
+	/// The offered preset is always the radio's own modem preset — the offered channel
+	/// runs on it, so advertising any other preset would describe a channel wrong.
+	private var offerPresetRow: some View {
+		HStack {
+			Text("Preset")
+			Spacer()
+			Text(nodeModemPresetName)
+				.foregroundStyle(.secondary)
 		}
 	}
 
@@ -258,7 +288,7 @@ struct MeshBeaconConfig: View {
 
 	private var singleTargetSection: some View {
 		Section(header: Text("Broadcast On"), footer: Text("The channel and preset the beacon is transmitted on, chosen from this radio's channels. Used only when no broadcast targets are added below.")) {
-			channelPicker("Channel", name: $onChannelName, psk: $onChannelPSK)
+			channelPicker("Channel", selection: $onChannelIndex, customName: onChannelName)
 			regionRow
 			presetPicker("Preset", selection: $onPreset)
 		}
@@ -362,10 +392,11 @@ struct MeshBeaconConfig: View {
 		broadcastMessage = config?.broadcastMessage ?? ""
 		offerChannelName = config?.broadcastOfferChannelName ?? ""
 		offerChannelPSK = config?.broadcastOfferChannelPSK ?? Data()
-		offerPreset = config?.broadcastOfferPreset ?? -1
 		onChannelName = config?.broadcastOnChannelName ?? ""
 		onChannelPSK = config?.broadcastOnChannelPSK ?? Data()
 		onPreset = config?.broadcastOnPreset ?? -1
+		offerChannelIndex = resolveChannelIndex(name: offerChannelName, psk: offerChannelPSK)
+		onChannelIndex = resolveChannelIndex(name: onChannelName, psk: onChannelPSK)
 		beaconInterval = UpdateInterval(from: Int(config?.broadcastIntervalSecs ?? 3_600))
 		targets = (config?.broadcastTargets ?? []).map {
 			BroadcastTargetDraft(preset: $0.preset, channelIndex: $0.channelIndex)
@@ -380,7 +411,9 @@ struct MeshBeaconConfig: View {
 		config.flags = UInt32(truncatingIfNeeded: flags)
 		config.broadcastMessage = broadcastMessage
 
-		if !offerChannelName.isEmpty {
+		// The primary channel's name is empty, so presence is keyed on the selection
+		// (or a non-empty custom pair), never on the name alone.
+		if offerChannelIndex >= 0 || !offerChannelName.isEmpty || !offerChannelPSK.isEmpty {
 			var settings = ChannelSettings()
 			settings.name = offerChannelName
 			settings.psk = offerChannelPSK
@@ -389,11 +422,11 @@ struct MeshBeaconConfig: View {
 		if let region = Config.LoRaConfig.RegionCode(rawValue: Int(nodeRegion)) {
 			config.broadcastOfferRegion = region
 		}
-		if offerPreset >= 0, let preset = Config.LoRaConfig.ModemPreset(rawValue: Int(offerPreset)) {
+		if nodeModemPreset >= 0, let preset = Config.LoRaConfig.ModemPreset(rawValue: Int(nodeModemPreset)) {
 			config.broadcastOfferPreset = preset
 		}
 
-		if !onChannelName.isEmpty {
+		if onChannelIndex >= 0 || !onChannelName.isEmpty || !onChannelPSK.isEmpty {
 			var settings = ChannelSettings()
 			settings.name = onChannelName
 			settings.psk = onChannelPSK
