@@ -30,6 +30,93 @@ struct MaintenanceUF2: Sendable, Equatable {
 	}
 }
 
+/// nRF52 flash-level factory erase: a tiny UF2 the bootloader flashes and runs once,
+/// wiping the application flash and settings region — owner, channels, identity keys,
+/// node database — leaving only the SoftDevice and bootloader. Works with no running
+/// firmware, which is what makes it the recovery path for a radio that cannot boot.
+///
+/// The safety contract mirrors Meshtastic-Android's MaintenanceUf2.kt: the two images
+/// are linked for different application start addresses (S140 6.1.1 apps begin at
+/// 0x26000, S140 7.3.0 at 0x27000), and writing the wrong one erases part of the
+/// SoftDevice itself. The image is selected only by the `SoftDevice:` line the drive
+/// reports in INFO_UF2.TXT — read from the chip's MBR, not guessed from a hardware
+/// table — and the downloaded bytes are cross-checked against the expected start
+/// address before writing, the one authoring mistake a digest alone cannot catch.
+enum NRF52FactoryErase {
+
+	enum SoftDeviceVariant: String, Sendable {
+		case s140_6_1_1 = "6.1.1"
+		case s140_7_3_0 = "7.3.0"
+	}
+
+	/// Commit-pinned base for the factory-erase images checked into
+	/// `meshtastic/web-flasher` at `public/uf2/` (built from
+	/// `meshtastic/nrf52_factory_erase`, GPL-3.0). The blobs have not changed since
+	/// 2024-09-03, so the pin is cheap to hold — same images Android ships.
+	private static let eraseBase =
+		"https://raw.githubusercontent.com/meshtastic/web-flasher/0e353b5d0756c9a1b76f53be78e948fafc1ebd8a/public/uf2"
+
+	/// The flash address the image's first UF2 block writes to, checked against the
+	/// resolved SoftDevice before writing.
+	static let appStartS140_6_1_1: UInt32 = 0x26000
+	static let appStartS140_7_3_0: UInt32 = 0x27000
+
+	static let imageS140_6_1_1 = MaintenanceUF2(
+		url: URL(string: "\(eraseBase)/nrf_erase2.uf2")!,
+		fileName: "nrf_erase2.uf2",
+		sha256: "4b778a3def19854415db64cb51bfd29c15b11cc46006353dd518f62d09efe3fe"
+	)
+
+	static let imageS140_7_3_0 = MaintenanceUF2(
+		url: URL(string: "\(eraseBase)/nrf_erase_sd7_3.uf2")!,
+		fileName: "nrf_erase_sd7_3.uf2",
+		sha256: "13941bedce009e61255c37b1524d11ca604e88c38e7588bb8b391e2998da468f"
+	)
+
+	static func image(for variant: SoftDeviceVariant) -> MaintenanceUF2 {
+		switch variant {
+		case .s140_6_1_1: return imageS140_6_1_1
+		case .s140_7_3_0: return imageS140_7_3_0
+		}
+	}
+
+	static func expectedFirstTargetAddress(for variant: SoftDeviceVariant) -> UInt32 {
+		switch variant {
+		case .s140_6_1_1: return appStartS140_6_1_1
+		case .s140_7_3_0: return appStartS140_7_3_0
+		}
+	}
+
+	/// Extracts the installed SoftDevice from INFO_UF2.TXT contents. The bootloader
+	/// emits `SoftDevice: S140 7.3.0` read out of the MBR — the authoritative answer
+	/// to which SoftDevice is actually in flash. Nil when the line is absent (a very
+	/// old bootloader), the id is not S140, or the version is not one we ship an
+	/// erase image for — every one of which refuses the erase rather than guessing.
+	static func parseSoftDevice(fromInfoText text: String) -> SoftDeviceVariant? {
+		for line in text.split(whereSeparator: \.isNewline) {
+			let trimmed = line.trimmingCharacters(in: .whitespaces)
+			guard trimmed.lowercased().hasPrefix("softdevice:") else { continue }
+			let value = trimmed.dropFirst("softdevice:".count).trimmingCharacters(in: .whitespaces)
+			let parts = value.split(separator: " ").filter { !$0.isEmpty }
+			guard parts.count >= 2, parts[0].uppercased() == "S140" else { return nil }
+			return SoftDeviceVariant(rawValue: String(parts[1]))
+		}
+		return nil
+	}
+
+	/// Reads the target flash address of the first UF2 block, or nil when the payload
+	/// is not a UF2 image. Blocks are 512 bytes: magic 0x0A324655 at offset 0,
+	/// little-endian target address at offset 12.
+	static func uf2FirstTargetAddress(_ bytes: Data) -> UInt32? {
+		guard bytes.count >= 512 else { return nil }
+		func le32(_ offset: Int) -> UInt32 {
+			bytes.subdata(in: offset..<(offset + 4)).withUnsafeBytes { $0.loadUnaligned(as: UInt32.self) }.littleEndian
+		}
+		guard le32(0) == 0x0A32_4655 else { return nil }
+		return le32(12)
+	}
+}
+
 /// OTAFIX bootloader self-update images and the rules for resolving one safely.
 ///
 /// The safety contract, unchanged from Android: the **Board-ID the device itself
