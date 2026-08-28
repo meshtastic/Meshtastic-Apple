@@ -182,7 +182,7 @@ final class CoverageEstimateRunner: NSObject, ObservableObject {
 		// `await` we're back on the main actor and can assign published state directly.
 		Task { [weak self] in
 			do {
-				let metadata = try await MapDataManager.shared.importFromString(geoJSON, name: importName)
+				let metadata = try await MapDataManager.shared.importFromString(geoJSON, name: importName, source: .sitePlanner)
 				guard let self else { return }
 				self.importedResult = CoverageEstimateResult(metadata: metadata, coordinate: coordinate, boundingBox: boundingBox)
 				self.state = .imported

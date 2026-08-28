@@ -277,8 +277,6 @@ targets:
       - path: "Meshtastic/Resources/DeviceHardware.json"
       - path: "Meshtastic/Resources/urls.json"
       - path: "Meshtastic/Resources/event_firmware.json"
-      - path: "Meshtastic/Resources/FirmwareMaintenance/nrf52-factory-erase-s140-6.1.1-ios.uf2"
-      - path: "Meshtastic/Resources/FirmwareMaintenance/nrf52-factory-erase-s140-7.3.0-ios.uf2"
       - path: "Meshtastic/Resources/AppIcon.icon"
       - path: "Meshtastic/Resources/AppIconDebug.icon"
       - path: "Meshtastic/Resources/AppIcon_Chirpy.icon"

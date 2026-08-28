@@ -38,14 +38,25 @@ For ESP32 BLE updates, the app waits for the radio's final verification response
 
 **Do not close the app or move out of Bluetooth range during a firmware update.**
 
-## nRF52 Firmware Maintenance
+## Upgrading the Bootloader (nRF52)
 
-Supported nRF52 UF2 releases have a **Firmware Maintenance** menu in **Settings → Firmware Updates**.
+Radios with an nRF52 processor can install Meshtastic's OTAFIX bootloader, which makes Bluetooth firmware updates faster and more reliable. When your connected radio supports it, a **Bootloader** section appears on the Firmware Updates screen.
 
-- **Upgrade Bootloader** installs the OTAFIX bootloader for the mounted radio, then requires a second UF2 pass to reinstall the selected application firmware.
-- **Erase and Reinstall** performs a flash-level factory erase, then requires the same application reinstall. It permanently removes the radio's owner, channels, identity keys, settings, and node database.
+1. Tap **Upgrade Bootloader** and follow the steps: reboot the radio into DFU mode (or double-press its reset button) and connect it to this device with a USB cable. The radio appears as a USB drive.
+2. Choose the radio's drive in the file picker. The app reads the drive's `INFO_UF2.TXT` file to identify the board — the board on the drive decides which image is installed, so the wrong file can never be written to your hardware.
+3. Tap **Install Bootloader Update**. The app downloads the image for your board, verifies it against a pinned checksum, and writes it to the drive. The radio installs the bootloader and reboots itself.
 
-Both actions use the mounted bootloader volume in Files. Enter DFU mode, choose the volume for the maintenance pass, then enter DFU again and choose the freshly mounted volume for the application reinstall. Do not repeat a pass if Files reports that it could not save the UF2 file or the volume ejects. Reconnect the radio and verify the firmware before completing recovery.
+If the drive is not a bootloader drive, the board is not one OTAFIX supports, or the download does not match its checksum, nothing is written.
+
+## Factory Erase (nRF52)
+
+Factory erase wipes an nRF52 radio's flash from its bootloader drive — the owner, channels, identity keys, settings, and node database are permanently removed, and only the bootloader remains. Because it runs from the bootloader, it works on a radio whose firmware cannot boot, and it is the right way to wipe a radio before selling or handing it off.
+
+1. Tap **Factory Erase** in the Maintenance section, put the radio in DFU mode (double-press its reset button if the app cannot reach it), and connect it by USB.
+2. Choose the radio's drive in the file picker. The erase image is chosen from the SoftDevice version the drive reports, so the wrong image can never be written.
+3. Confirm the erase. The app downloads the image, verifies it against a pinned checksum and the reported SoftDevice, and writes it to the drive. The radio erases itself and reboots into the bootloader.
+
+Install firmware next from the Firmware Updates screen — the radio starts as a brand-new device. Nothing is restored automatically.
 
 ## During the Transfer
 
