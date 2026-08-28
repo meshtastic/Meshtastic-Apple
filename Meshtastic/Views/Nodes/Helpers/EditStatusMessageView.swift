@@ -82,6 +82,7 @@ private struct StatusMessageAlertModifier: ViewModifier {
 	/// Same save path the old Status Message config screen used.
 	private func save(for presentedNode: NodeInfoEntity) {
 		guard let deviceNum = accessoryManager.activeDeviceNum,
+			  presentedNode.num == deviceNum,
 			  let connectedNode = getNodeInfo(id: deviceNum, context: context),
 			  let fromUser = connectedNode.user,
 			  let toUser = presentedNode.user
