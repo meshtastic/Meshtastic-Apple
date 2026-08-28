@@ -1801,6 +1801,10 @@ extension MeshPackets {
 				} else {
 					fetchedNode[0].statusMessageConfig?.nodeStatus = config.nodeStatus
 				}
+				// The firmware broadcasts the configured value, so mirror it into the live
+				// status too — displays prefer the live field and would otherwise show the
+				// old status until the next broadcast arrives.
+				fetchedNode[0].nodeStatus = config.nodeStatus.isEmpty ? nil : config.nodeStatus
 				if sessionPasskey != nil {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)

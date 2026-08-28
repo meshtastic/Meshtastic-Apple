@@ -174,7 +174,6 @@ struct Settings: View {
 			|| isTAKModuleSupported(node)
 			|| isTrafficManagementModuleSupported(node)
 			|| isMeshBeaconModuleSupported(node)
-			|| accessoryManager.supportsStatusMessage
 	}
 
 	private func isMeshBeaconModuleSupported(_ node: SettingsNodeSnapshot?) -> Bool {
@@ -458,16 +457,6 @@ struct Settings: View {
 						Text("Serial")
 					} icon: {
 						Image(systemName: "terminal")
-					}
-				}
-			}
-
-			if accessoryManager.supportsStatusMessage {
-				NavigationLink(value: SettingsNavigationState.statusMessage) {
-					Label {
-						Text("Status Message")
-					} icon: {
-						Image(systemName: "text.bubble")
 					}
 				}
 			}
@@ -817,8 +806,6 @@ struct Settings: View {
 					SecurityConfig(node: configNode)
 				case .serial:
 					SerialConfig(node: configNode)
-				case .statusMessage:
-					StatusMessageConfig(node: configNode)
 				case .storeAndForward:
 					StoreForwardConfig(node: configNode)
 				case .telemetry:

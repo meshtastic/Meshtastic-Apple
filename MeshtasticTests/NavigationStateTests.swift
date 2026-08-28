@@ -181,7 +181,6 @@ struct SettingsNavigationStateTests {
 			(.ringtone, "ringtone"),
 			(.serial, "serial"),
 			(.security, "security"),
-			(.statusMessage, "statusMessage"),
 			(.storeAndForward, "storeAndForward"),
 			(.telemetry, "telemetry"),
 			(.trafficManagement, "trafficManagement"),
