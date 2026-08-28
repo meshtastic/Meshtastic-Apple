@@ -37,7 +37,7 @@ struct MeshBeaconConfig: View {
 	@State private var onChannelName = ""
 	@State private var onChannelPSK = Data()
 	@State private var onPreset: Int32 = -1
-	@State private var intervalSecs: Int32 = 3_600
+	@State private var beaconInterval = UpdateInterval(from: 3_600)
 	@State private var targets: [BroadcastTargetDraft] = []
 
 	/// In-memory draft for one `broadcast_targets` row.
@@ -63,9 +63,57 @@ struct MeshBeaconConfig: View {
 		RegionCodes(rawValue: Int(nodeRegion))?.description ?? "Unset"
 	}
 
+	/// The radio's own channels — the only channels a beacon can offer or transmit on.
+	private var nodeChannels: [ChannelEntity] {
+		canonicalValidUniqueChannels(from: node?.myInfo?.channels ?? [])
+	}
+
+	private func channelDisplayName(_ channel: ChannelEntity) -> String {
+		if let name = channel.name, !name.isEmpty { return name }
+		return channel.index == 0 ? "Primary" : "Channel \(channel.index)"
+	}
+
+	/// Binds a name+key channel pair to a row in the radio's channel list. Selecting a
+	/// channel fills both fields from the entity; a pair set outside this editor that
+	/// matches no channel shows as a custom row (-2) until a listed channel is picked.
+	private func channelSelection(name: Binding<String>, psk: Binding<Data>) -> Binding<Int32> {
+		Binding<Int32>(
+			get: {
+				if name.wrappedValue.isEmpty { return -1 }
+				return nodeChannels.first { channelDisplayName($0) == name.wrappedValue || $0.name == name.wrappedValue }?.index ?? -2
+			},
+			set: { newValue in
+				guard newValue >= 0, let channel = nodeChannels.first(where: { $0.index == newValue }) else {
+					name.wrappedValue = ""
+					psk.wrappedValue = Data()
+					return
+				}
+				name.wrappedValue = channel.name ?? ""
+				psk.wrappedValue = channel.psk ?? Data()
+			}
+		)
+	}
+
+	@ViewBuilder
+	private func channelPicker(_ label: String, name: Binding<String>, psk: Binding<Data>) -> some View {
+		let selection = channelSelection(name: name, psk: psk)
+		Picker(selection: selection) {
+			Text("None").tag(Int32(-1))
+			if selection.wrappedValue == -2 {
+				Text("Custom: \(name.wrappedValue)").tag(Int32(-2))
+			}
+			ForEach(nodeChannels, id: \.index) { channel in
+				Text(channelDisplayName(channel)).tag(channel.index)
+			}
+		} label: {
+			Label(label, systemImage: "fibrechannel")
+		}
+	}
+
 	// Blocking validation (FR-011 / FR-013) — never truncate or clamp; block save with inline errors.
 	private var isMessageValid: Bool { MeshBeaconValidation.isMessageValid(broadcastMessage) }
-	private var canSave: Bool { isMessageValid && hasConfiguredRegion }
+	private var isIntervalValid: Bool { MeshBeaconValidation.isIntervalValid(Int32(truncatingIfNeeded: beaconInterval.intValue)) }
+	private var canSave: Bool { isMessageValid && isIntervalValid && hasConfiguredRegion }
 
 	var body: some View {
 		Group {
@@ -139,7 +187,7 @@ struct MeshBeaconConfig: View {
 		.onChange(of: onChannelName) { if onChannelName != (node?.meshBeaconConfig?.broadcastOnChannelName ?? "") { hasChanges = true } }
 		.onChange(of: onChannelPSK) { if onChannelPSK != (node?.meshBeaconConfig?.broadcastOnChannelPSK ?? Data()) { hasChanges = true } }
 		.onChange(of: onPreset) { if onPreset != (node?.meshBeaconConfig?.broadcastOnPreset ?? -1) { hasChanges = true } }
-		.onChange(of: intervalSecs) { if intervalSecs != Int32(node?.meshBeaconConfig?.broadcastIntervalSecs ?? 3600) { hasChanges = true } }
+		.onChange(of: beaconInterval) { if beaconInterval.intValue != Int(node?.meshBeaconConfig?.broadcastIntervalSecs ?? 3600) { hasChanges = true } }
 		.onChange(of: targets) { if !targetsMatchEntity() { hasChanges = true } }
 	}
 
@@ -191,58 +239,26 @@ struct MeshBeaconConfig: View {
 	}
 
 	private var offeredSection: some View {
-		Section(header: Text("Offered to Listeners"), footer: Text("What the beacon advertises. Leave empty to broadcast a text-only beacon.")) {
-			HStack {
-				Label("Channel", systemImage: "fibrechannel")
-				TextField("Channel name", text: $offerChannelName)
-					.multilineTextAlignment(.trailing)
-					.autocorrectionDisabled()
-			}
-			pskField("Offered key", psk: $offerChannelPSK)
+		Section(header: Text("Offered to Listeners"), footer: Text("What the beacon advertises, chosen from this radio's channels — the channel's key is offered with it. None broadcasts a text-only beacon.")) {
+			channelPicker("Channel", name: $offerChannelName, psk: $offerChannelPSK)
 			regionRow
 			presetPicker("Preset", selection: $offerPreset)
 		}
 	}
 
-	/// The intervals offered, hours expressed in seconds. The firmware minimum
-	/// (3600) is the floor of the list, so the picker cannot produce an invalid value.
-	static let intervalChoices: [(label: String, seconds: Int32)] = [
-		("1 hour", 3_600),
-		("2 hours", 7_200),
-		("3 hours", 10_800),
-		("4 hours", 14_400),
-		("6 hours", 21_600),
-		("8 hours", 28_800),
-		("12 hours", 43_200),
-		("24 hours", 86_400)
-	]
-
 	private var intervalSection: some View {
 		Section(header: Text("Broadcast Interval"), footer: Text("How often to transmit a beacon.")) {
-			Picker(selection: $intervalSecs) {
-				// A value set outside this editor (CLI, another client) stays visible
-				// rather than rendering a blank selection; picking a listed value replaces it.
-				if !Self.intervalChoices.contains(where: { $0.seconds == intervalSecs }) {
-					Text("\(intervalSecs) seconds").tag(intervalSecs)
-				}
-				ForEach(Self.intervalChoices, id: \.seconds) { choice in
-					Text(choice.label).tag(choice.seconds)
-				}
-			} label: {
-				Label("Interval", systemImage: "timer")
-			}
+			UpdateIntervalPicker(
+				config: .meshBeacon,
+				pickerLabel: "Interval",
+				selectedInterval: $beaconInterval
+			)
 		}
 	}
 
 	private var singleTargetSection: some View {
-		Section(header: Text("Broadcast On"), footer: Text("The radio settings the beacon is transmitted on. Used only when no broadcast targets are added below.")) {
-			HStack {
-				Label("Channel", systemImage: "fibrechannel")
-				TextField("Channel name", text: $onChannelName)
-					.multilineTextAlignment(.trailing)
-					.autocorrectionDisabled()
-			}
-			pskField("Transmit key", psk: $onChannelPSK)
+		Section(header: Text("Broadcast On"), footer: Text("The channel and preset the beacon is transmitted on, chosen from this radio's channels. Used only when no broadcast targets are added below.")) {
+			channelPicker("Channel", name: $onChannelName, psk: $onChannelPSK)
 			regionRow
 			presetPicker("Preset", selection: $onPreset)
 		}
@@ -254,12 +270,15 @@ struct MeshBeaconConfig: View {
 				VStack(alignment: .leading, spacing: 6) {
 					presetPicker("Preset", selection: $target.preset)
 					HStack {
-						Label("Channel Index", systemImage: "number")
+						Label("Channel", systemImage: "fibrechannel")
 						Spacer()
 						Picker("", selection: $target.channelIndex) {
 							Text("Default").tag(Int32(-1))
-							ForEach(0..<8) { idx in
-								Text("\(idx)").tag(Int32(idx))
+							if target.channelIndex >= 0, !nodeChannels.contains(where: { $0.index == target.channelIndex }) {
+								Text("Channel \(target.channelIndex)").tag(target.channelIndex)
+							}
+							ForEach(nodeChannels, id: \.index) { channel in
+								Text(channelDisplayName(channel)).tag(channel.index)
 							}
 						}
 						.labelsHidden()
@@ -280,27 +299,6 @@ struct MeshBeaconConfig: View {
 	}
 
 	// MARK: - Reusable field builders
-
-	@ViewBuilder
-	private func pskField(_ label: String, psk: Binding<Data>) -> some View {
-		HStack {
-			Label(label, systemImage: "key")
-			TextField("Base64 key", text: Binding(
-				get: { psk.wrappedValue.base64EncodedString() },
-				set: { newValue in
-					if newValue.isEmpty {
-						psk.wrappedValue = Data()
-					} else if let decoded = Data(base64Encoded: newValue) {
-						psk.wrappedValue = decoded
-					}
-				}
-			))
-			.multilineTextAlignment(.trailing)
-			.autocorrectionDisabled()
-			.textInputAutocapitalization(.never)
-			.font(.caption.monospaced())
-		}
-	}
 
 	/// The beacon always uses the radio's configured region — shown, not chosen.
 	private var regionRow: some View {
@@ -368,7 +366,7 @@ struct MeshBeaconConfig: View {
 		onChannelName = config?.broadcastOnChannelName ?? ""
 		onChannelPSK = config?.broadcastOnChannelPSK ?? Data()
 		onPreset = config?.broadcastOnPreset ?? -1
-		intervalSecs = Int32(truncatingIfNeeded: config?.broadcastIntervalSecs ?? 3_600)
+		beaconInterval = UpdateInterval(from: Int(config?.broadcastIntervalSecs ?? 3_600))
 		targets = (config?.broadcastTargets ?? []).map {
 			BroadcastTargetDraft(preset: $0.preset, channelIndex: $0.channelIndex)
 		}
@@ -408,7 +406,7 @@ struct MeshBeaconConfig: View {
 			config.broadcastOnPreset = preset
 		}
 
-		config.broadcastIntervalSecs = UInt32(truncatingIfNeeded: intervalSecs)
+		config.broadcastIntervalSecs = UInt32(truncatingIfNeeded: beaconInterval.intValue)
 		// No longer exposed in this editor; ride the stored value along unchanged (D4) so
 		// saving other fields cannot clear a value set from the CLI or another client.
 		config.broadcastSendAsNode = UInt32(truncatingIfNeeded: node?.meshBeaconConfig?.broadcastSendAsNode ?? 0)

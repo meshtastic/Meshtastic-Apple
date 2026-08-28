@@ -14,6 +14,7 @@ enum IntervalConfiguration: CaseIterable {
 	case broadcastLong
 	case detectionSensorMinimum
 	case detectionSensorState
+	case meshBeacon
 	case nagTimeout
 	case neighborInfo
 	case paxCounter
@@ -34,6 +35,10 @@ enum IntervalConfiguration: CaseIterable {
 			return [.unset, .fifteenSeconds, .thirtySeconds, .oneMinute, .twoMinutes, .fiveMinutes, .tenMinutes, .fifteenMinutes, .thirtyMinutes, .oneHour, .twoHours, .threeHours, .fourHours, .fiveHours, .sixHours, .twelveHours, .eighteenHours, .twentyFourHours, .thirtySixHours, .fortyeightHours, .seventyTwoHours]
 		case .detectionSensorState:
 			return [.unset, .fifteenMinutes, .thirtyMinutes, .oneHour, .twoHours, .threeHours, .fourHours, .fiveHours, .sixHours, .twelveHours, .eighteenHours, .twentyFourHours, .thirtySixHours, .fortyeightHours, .seventyTwoHours]
+		case .meshBeacon:
+			// Firmware minimum is one hour; a beacon with broadcast enabled always has an
+			// interval, so there is no Never row.
+			return [.oneHour, .twoHours, .threeHours, .fourHours, .fiveHours, .sixHours, .twelveHours, .eighteenHours, .twentyFourHours, .thirtySixHours, .fortyeightHours, .seventyTwoHours]
 		case .nagTimeout:
 			return [.unset, .oneSecond, .fiveSeconds, .tenSeconds, .fifteenSeconds, .thirtySeconds, .oneMinute]
 		case .neighborInfo:
