@@ -1162,7 +1162,10 @@ enum MarketingSeed {
 		let named = name(for: index, anchor: anchor, ring: ring)
 		let licensed = index % 4 == 0
 		user.longName = licensed
-			? HamName(callSign: callsign(index), longName: HamName.limitLongName(named.long)).composed
+			? HamName(
+				callSign: callsign(index),
+				longName: ring > 0 ? "" : HamName.limitLongName(named.long)
+			).composed
 			: named.long
 		user.shortName = named.short
 		let hw = hardware(for: index)

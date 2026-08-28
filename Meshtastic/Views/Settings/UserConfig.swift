@@ -188,7 +188,7 @@ struct UserConfig: View {
 						titleVisibility: .visible
 					) {
 						Button("Save User Config to \(node?.user?.longName ?? "Unknown")?") {
-							if callSign.isEmpty && isLicensed {
+							if isLicensed && !HamName.hasCallSign(callSign) {
 								return
 							}
 							
@@ -196,7 +196,7 @@ struct UserConfig: View {
 							let connectedNode = getNodeInfo(id: accessoryManager.activeDeviceNum ?? -1, context: context)
 							if node != nil && connectedNode != nil {
 								
-								if !isLicensed || node?.user?.isLicensed == true {
+								if !isLicensed {
 									var u = User()
 									u.shortName = shortName
 									u.longName = longName

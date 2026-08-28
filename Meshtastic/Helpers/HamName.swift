@@ -1,3 +1,5 @@
+// MARK: HamName
+
 import Foundation
 
 struct HamName: Equatable {
@@ -36,6 +38,10 @@ struct HamName: Equatable {
 
 	static func limitLongName(_ longName: String) -> String {
 		limit(longName, toUTF8Bytes: maxLongNameBytes)
+	}
+
+	static func hasCallSign(_ callSign: String) -> Bool {
+		!callSign.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
 	}
 
 	static func forOnboarding(_ ownerLongName: String) -> String {
