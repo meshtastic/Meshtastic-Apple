@@ -210,7 +210,7 @@ struct MeshBeaconConfig: View {
 		Section(header: Text("Options")) {
 			Toggle(isOn: flagBinding(MeshBeaconFlags.listenEnabled)) {
 				Label("Listen for Beacons", systemImage: "antenna.radiowaves.left.and.right")
-				Text("Receive and act on beacon packets from other nodes so beaconed meshes appear in Nearby Meshes and the scan setup.")
+				Text("Receive beacon packets from other nodes so beaconed meshes appear in Nearby Meshes and the scan setup.")
 			}
 
 			Toggle(isOn: flagBinding(MeshBeaconFlags.broadcastEnabled)) {
