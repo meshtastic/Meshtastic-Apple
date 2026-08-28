@@ -38,6 +38,16 @@ For ESP32 BLE updates, the app waits for the radio's final verification response
 
 **Do not close the app or move out of Bluetooth range during a firmware update.**
 
+## Upgrading the Bootloader (nRF52)
+
+Radios with an nRF52 processor can install Meshtastic's OTAFIX bootloader, which makes Bluetooth firmware updates faster and more reliable. When your connected radio supports it, a **Bootloader** section appears on the Firmware Updates screen.
+
+1. Tap **Upgrade Bootloader** and follow the steps: reboot the radio into DFU mode (or double-press its reset button) and connect it to this device with a USB cable. The radio appears as a USB drive.
+2. Choose the radio's drive in the file picker. The app reads the drive's `INFO_UF2.TXT` file to identify the board — the board on the drive decides which image is installed, so the wrong file can never be written to your hardware.
+3. Tap **Install Bootloader Update**. The app downloads the image for your board, verifies it against a pinned checksum, and writes it to the drive. The radio installs the bootloader and reboots itself.
+
+If the drive is not a bootloader drive, the board is not one OTAFIX supports, or the download does not match its checksum, nothing is written.
+
 ## During the Transfer
 
 While a supported OTA transfer is active, the update screen rotates short tips, and you can tap **Play Chirpy Hop** to play without leaving the updater. Firmware progress remains visible above the game, and the back button returns to the normal update screen at any time. Keep the Meshtastic app in the foreground until the update finishes.
