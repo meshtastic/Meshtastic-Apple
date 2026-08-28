@@ -35,6 +35,9 @@ struct BootloaderUpgradeView: View {
 
 	@State private var phase: Phase = .idle
 	@State private var isPickingDrive = false
+	/// The in-flight download/verify/write. Cancelled before drive access is released so
+	/// the write can never run against a revoked security scope.
+	@State private var installTask: Task<Void, Never>?
 	/// The security-scoped drive URL from the folder picker. Access is started
 	/// when granted and stopped when this view goes away or a new pick begins.
 	@State private var driveURL: URL?
@@ -267,27 +270,40 @@ struct BootloaderUpgradeView: View {
 		}
 	}
 
-	/// INFO_UF2.TXT read, tolerant of FAT case differences.
+	/// INFO_UF2.TXT read, tolerant of FAT case differences. The bootloader emits a few
+	/// hundred bytes; anything large is not the file we expect, so refuse before reading
+	/// it into memory.
+	private static let maxInfoFileBytes = 16 * 1024
+
 	private func readInfoFile(in drive: URL) -> String? {
 		let fm = FileManager.default
 		let direct = drive.appendingPathComponent(OTAFIXBootloader.infoFileName)
-		if let text = try? String(contentsOf: direct, encoding: .utf8) { return text }
+		if let text = boundedInfoText(at: direct) { return text }
 		guard let names = try? fm.contentsOfDirectory(atPath: drive.path) else { return nil }
 		guard let match = names.first(where: { $0.caseInsensitiveCompare(OTAFIXBootloader.infoFileName) == .orderedSame }) else {
 			return nil
 		}
-		return try? String(contentsOf: drive.appendingPathComponent(match), encoding: .utf8)
+		return boundedInfoText(at: drive.appendingPathComponent(match))
+	}
+
+	private func boundedInfoText(at url: URL) -> String? {
+		guard let size = try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize,
+			  size <= Self.maxInfoFileBytes else { return nil }
+		return try? String(contentsOf: url, encoding: .utf8)
 	}
 
 	private func install() {
 		guard case .resolved(_, let image) = phase, let driveURL else { return }
 		phase = .installing
-		Task {
+		installTask = Task {
 			do {
 				let (data, response) = try await URLSession.shared.data(from: image.url)
 				if let http = response as? HTTPURLResponse, !(200...299).contains(http.statusCode) {
 					throw URLError(.badServerResponse)
 				}
+				// The sheet may have been dismissed (and drive access released) during
+				// the download — never write against a revoked scope.
+				try Task.checkCancellation()
 				guard image.matches(data) else {
 					Logger.services.error("OTAFIX image failed checksum verification: \(image.fileName, privacy: .public)")
 					phase = .failed(String(localized: "The downloaded image did not match its pinned checksum. Nothing was written — try again later."))
@@ -297,14 +313,19 @@ struct BootloaderUpgradeView: View {
 				try data.write(to: destination)
 				Logger.services.info("Wrote OTAFIX bootloader \(image.fileName, privacy: .public) to the device drive")
 				phase = .done(fileName: image.fileName)
+			} catch is CancellationError {
+				// Dismissed mid-install; nothing was written.
 			} catch {
-				Logger.services.error("OTAFIX bootloader install failed: \(error.localizedDescription, privacy: .public)")
+				// The error can carry the drive path — keep it out of public logs.
+				Logger.services.error("OTAFIX bootloader install failed: \(error.localizedDescription, privacy: .private)")
 				phase = .failed(String(localized: "Could not install the update: \(error.localizedDescription)"))
 			}
 		}
 	}
 
 	private func releaseDriveAccess() {
+		installTask?.cancel()
+		installTask = nil
 		driveURL?.stopAccessingSecurityScopedResource()
 		driveURL = nil
 	}

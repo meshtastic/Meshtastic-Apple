@@ -140,9 +140,8 @@ extension AccessoryManager {
 		// zstd decompression, CoT XML rebuilding, regex cleanup, KML/zip
 		// generation, and `Data.write(to:)` into `Documents/TAK Routes/`.
 		// Receiving a large route or shape used to freeze the UI for hundreds
-		// of milliseconds — Copilot flagged this as a UI hang risk, and the
-		// AccessoryManager dispatch loop also stalls because every other
-		// portnum handler is `await`ing the same actor.
+		// of milliseconds, and the AccessoryManager dispatch loop also stalls
+		// because every other portnum handler is `await`ing the same actor.
 		//
 		// `Task.detached` so we don't inherit `@MainActor` from the enclosing
 		// `AccessoryManager` actor context. We hop back only for the

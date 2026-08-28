@@ -132,7 +132,7 @@ extension AccessoryManager {
 				// Onboard a new device connection here
 			}
 		}
-		tryClearExistingChannels()
+		await beginAutomaticChannelRefreshStageIfNeeded(for: Int64(myNodeInfo.myNodeNum))
 
 		// Auto-disable new-node notifications for event firmware editions
 		applyEventFirmwareNotificationDefaults(myNodeInfo.firmwareEdition)

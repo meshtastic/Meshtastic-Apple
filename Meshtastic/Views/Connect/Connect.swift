@@ -1148,7 +1148,7 @@ func switchToDevice(
 	// initiation, not only deep in the connect flow (Step 5 writes it again on success).
 	// When it moved only on a fully-successful connect, any failed switch left the OLD
 	// preferred in place, so the error-path auto-reconnect bounced back to the previous
-	// radio instead of retrying the node the user asked for — and worse, that reconnect
+	// radio instead of retrying the node the user asked for — and that reconnect
 	// (a plain connect, no clear) dumped the previous radio's nodes on top of the target's
 	// freshly restored database. The node num moves with it (0 = unknown for a never-seen
 	// radio) so nothing keyed on the num keeps pointing at the abandoned node.
