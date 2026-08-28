@@ -673,6 +673,15 @@ struct Settings: View {
 				}
 				.disabled(selectedNode > 0 && selectedNode != preferredNodeNum)
 
+				// A managed radio hides the configuration sections; say why instead of
+				// showing nothing (same message as Android).
+				if let node, node.isManaged, accessoryManager.isConnected {
+					Section("Configure") {
+						Label("This radio is managed and can only be changed by a remote admin.", systemImage: "lock.shield")
+							.font(.callout)
+							.foregroundStyle(.orange)
+					}
+				}
 				if let node, !node.isManaged {
 					if accessoryManager.isConnected {
 						Section("Configure") {
