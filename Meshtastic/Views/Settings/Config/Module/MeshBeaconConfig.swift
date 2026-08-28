@@ -113,9 +113,11 @@ struct MeshBeaconConfig: View {
 	}
 
 	@ViewBuilder
-	private func channelPicker(_ label: String, selection: Binding<Int32>, customName: String, noneLabel: String = "None") -> some View {
+	private func channelPicker(_ label: String, selection: Binding<Int32>, customName: String, noneLabel: String? = "None") -> some View {
 		Picker(selection: selection) {
-			Text(noneLabel).tag(Int32(-1))
+			if let noneLabel {
+				Text(noneLabel).tag(Int32(-1))
+			}
 			if selection.wrappedValue == -2 {
 				Text("Custom: \(customName.isEmpty ? "unnamed" : customName)").tag(Int32(-2))
 			}
@@ -133,7 +135,8 @@ struct MeshBeaconConfig: View {
 	// Blocking validation (FR-011 / FR-013) — never truncate or clamp; block save with inline errors.
 	private var isMessageValid: Bool { MeshBeaconValidation.isMessageValid(broadcastMessage) }
 	private var isIntervalValid: Bool { MeshBeaconValidation.isIntervalValid(Int32(truncatingIfNeeded: beaconInterval.intValue)) }
-	private var canSave: Bool { isMessageValid && isIntervalValid && hasConfiguredRegion }
+	private var hasOfferChannel: Bool { offerChannelIndex >= 0 || offerChannelIndex == -2 }
+	private var canSave: Bool { isMessageValid && isIntervalValid && hasConfiguredRegion && hasOfferChannel }
 
 	var body: some View {
 		Group {
@@ -249,8 +252,8 @@ struct MeshBeaconConfig: View {
 	}
 
 	private var offeredSection: some View {
-		Section(header: Text("Offered to Listeners"), footer: Text("The channel and key the beacon invites listeners to join. None sends a text-only beacon.")) {
-			channelPicker("Channel", selection: $offerChannelIndex, customName: offerChannelName)
+		Section(header: Text("Offered to Listeners")) {
+			channelPicker("Channel", selection: $offerChannelIndex, customName: offerChannelName, noneLabel: nil)
 			regionRow
 			offerPresetRow
 		}
@@ -365,6 +368,13 @@ struct MeshBeaconConfig: View {
 		onChannelName = config?.broadcastOnChannelName ?? ""
 		onChannelPSK = config?.broadcastOnChannelPSK ?? Data()
 		offerChannelIndex = resolveChannelIndex(name: offerChannelName, psk: offerChannelPSK)
+		// A beacon must offer a channel to join; a stored config without one gets the
+		// primary channel.
+		if offerChannelIndex == -1, let first = nodeChannels.first {
+			offerChannelIndex = first.index
+			offerChannelName = first.name ?? ""
+			offerChannelPSK = first.psk ?? Data()
+		}
 		beaconInterval = UpdateInterval(from: Int(config?.broadcastIntervalSecs ?? 3_600))
 		// Stored targets when present, otherwise a single row from the broadcast-on
 		// fields. The relationship's order isn't guaranteed, so sort for a stable list.
