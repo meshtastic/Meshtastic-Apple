@@ -124,36 +124,36 @@
         "keywords": [
             "firmware",
             "update",
-            "event",
-            "app",
             "radio",
+            "app",
+            "event",
             "updates",
             "meshtastic",
             "hardware",
+            "drive",
+            "bootloader",
             "version",
+            "tap",
+            "screen",
+            "connected",
+            "connect",
             "ble",
             "transfer",
             "target",
             "stable",
-            "screen",
+            "radios",
             "progress",
             "notification",
-            "connected",
-            "connect",
+            "install",
+            "board",
             "artwork",
-            "tap",
             "standard",
             "some",
             "shows",
             "settings",
-            "running",
-            "radios",
-            "ota",
-            "node",
-            "keep",
-            "from"
+            "running"
         ],
-        "charCount": 4770
+        "charCount": 5806
     },
     {
         "id": "getting-started",
@@ -426,7 +426,7 @@
             "set",
             "selected"
         ],
-        "charCount": 16929
+        "charCount": 16945
     },
     {
         "id": "signal-meter",

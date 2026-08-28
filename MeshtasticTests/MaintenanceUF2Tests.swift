@@ -42,6 +42,57 @@ struct MaintenanceUF2Tests {
 		#expect(Set(OTAFIXBootloader.imagesByBoardID.keys) == Self.auditedBoardIDs)
 	}
 
+	/// The complete audited pairing, Board-ID → (board slug in the file name, digest
+	/// prefix), mirrored from Meshtastic-Android's MaintenanceUf2.kt and re-verified
+	/// against the release assets. A swapped pairing passes every structural check yet
+	/// writes a bootloader built for other hardware — this fixture is what fails then.
+	private static let auditedPairings: [String: (board: String, sha256Prefix: String)] = [
+		"HT-n5262": ("heltec_t114", "ae92d357"),
+		"MinewSemi-MX25LE01": ("minewsemi_mx25le01", "e09564fd"),
+		"TRACKER L1": ("wio_tracker_l1", "70fbce0e"),
+		"WisBlock-RAK4631-Board": ("wiscore_rak4631_board", "8741bc67"),
+		"WisMesh-Tag": ("wismesh_tag", "96d42e19"),
+		"nRF52840-SeeedSenseCAPSolarP1-v1": ("sensecap_solar_p1", "9b4bce48"),
+		"nRF52840-SeeedXiao-v1": ("xiao_nrf52840_ble", "ff8a0916"),
+		"nRF52840-SeeedXiaoSense-v1": ("xiao_nrf52840_ble_sense", "fc233d83"),
+		"nRF52840-T1000-E-v1": ("t1000_e", "5c065e11"),
+		"nRF52840-TEcho-v1": ("lilygo_techo", "2ddb3618"),
+		"nRF52840-ThinkNode-M3-v1": ("thinknode_m3", "bf90979f"),
+		"nRF52840-ThinkNodeM1-v1": ("thinknode_m1", "aa0721b5"),
+		"nRF52840-ThinkNodeM6-v1": ("thinknode_m6", "aaf94953"),
+		"nRF52840-promicro": ("promicro_nrf52840", "46ef3440")
+	]
+
+	@Test func everyPairingMatchesTheAuditedFixture() throws {
+		#expect(OTAFIXBootloader.imagesByBoardID.count == Self.auditedPairings.count)
+		for (boardID, expected) in Self.auditedPairings {
+			let image = try #require(OTAFIXBootloader.image(forBoardID: boardID), "missing \(boardID)")
+			#expect(
+				image.fileName == "update-\(expected.board)_bootloader-\(OTAFIXBootloader.releaseTag)_nosd.uf2",
+				"\(boardID) must map to the \(expected.board) image"
+			)
+			#expect(image.sha256.hasPrefix(expected.sha256Prefix), "\(boardID) digest drifted from the audited pin")
+		}
+	}
+
+	@Test func supportedTargetsMatchTheAuditedSetExactly() {
+		#expect(OTAFIXBootloader.supportedTargets == [
+			"rak4631",
+			"rak_wismeshtag",
+			"t-echo",
+			"heltec-mesh-node-t114",
+			"nrf52_promicro_diy_tcxo",
+			"thinknode_m1",
+			"thinknode_m3",
+			"thinknode_m6",
+			"tracker-t1000-e",
+			"seeed_wio_tracker_L1",
+			"seeed_wio_tracker_L1_eink",
+			"seeed_solar_node",
+			"seeed_xiao_nrf52840_kit"
+		])
+	}
+
 	@Test func everyRowIsInternallyConsistent() throws {
 		for (boardID, image) in OTAFIXBootloader.imagesByBoardID {
 			// Release-pinned URL that ends in its own file name.
