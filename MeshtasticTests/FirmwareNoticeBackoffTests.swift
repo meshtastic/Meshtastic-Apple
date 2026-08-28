@@ -101,6 +101,26 @@ struct FirmwareNoticeBackoffTests {
 		#expect(!AccessoryManager.isSecurityNotice(plain))
 	}
 
+	@Test func identifierFragmentsDoNotCollide() {
+		// Normalization maps '-' and '_' to the same character; the digest suffix
+		// must keep the identifiers distinct.
+		#expect(
+			AccessoryManager.noticeIdentifierFragment("warning|a-b") !=
+			AccessoryManager.noticeIdentifierFragment("warning|a_b")
+		)
+		// Long keys sharing a truncated prefix must also stay distinct.
+		let base = String(repeating: "x", count: 64)
+		#expect(
+			AccessoryManager.noticeIdentifierFragment(base + "one") !=
+			AccessoryManager.noticeIdentifierFragment(base + "two")
+		)
+		// Identical keys stay stable — the identifier must dedupe the same notice.
+		#expect(
+			AccessoryManager.noticeIdentifierFragment("warning|same") ==
+			AccessoryManager.noticeIdentifierFragment("warning|same")
+		)
+	}
+
 	@Test func identifierFragmentIsBoundedAndSafe() {
 		let fragment = AccessoryManager.noticeIdentifierFragment(
 			"warning|Location sharing is disabled on this channel " + String(repeating: "x", count: 200)

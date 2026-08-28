@@ -5,6 +5,7 @@
 //  Created by Jake Bordens on 7/18/25.
 //
 
+import CryptoKit
 import Foundation
 import MeshtasticProtobufs
 import CocoaMQTT
@@ -67,11 +68,11 @@ extension AccessoryManager {
 		}
 
 		// Always log, whether or not the user is alerted — Debug Logs stays complete.
-		Logger.services.error("⚠️ Client Notification: \(clientNotification.message, privacy: .public)")
+		Logger.services.error("⚠️ Client Notification: \(clientNotification.message, privacy: .private)")
 
 		let key = Self.noticeKey(for: clientNotification)
 		guard shouldSurfaceFirmwareNotice(key: key, isSecurity: Self.isSecurityNotice(clientNotification)) else {
-			Logger.services.debug("⏳ Firmware notification suppressed by backoff: \(key, privacy: .public)")
+			Logger.services.debug("⏳ Firmware notification suppressed by backoff: \(key, privacy: .private)")
 			return
 		}
 
@@ -153,9 +154,17 @@ extension AccessoryManager {
 
 	/// A notification identifier fragment: readable in logs, stable across launches, and
 	/// bounded in length.
+	/// A readable prefix plus a digest of the complete key. Normalization alone
+	/// collides ("a-b" and "a_b" both become "a_b"), and so do long keys sharing a
+	/// truncated prefix — colliding identifiers make one pending notification
+	/// silently replace another.
 	static func noticeIdentifierFragment(_ key: String) -> String {
+		let digest = SHA256.hash(data: Data(key.utf8))
+			.prefix(4)
+			.map { String(format: "%02x", $0) }
+			.joined()
 		let allowed = key.map { $0.isLetter || $0.isNumber ? $0 : "_" }
-		return String(String(allowed).prefix(64))
+		return String(String(allowed).prefix(55)) + "_" + digest
 	}
 
 	func handleMyInfo(_ myNodeInfo: MyNodeInfo) async {
