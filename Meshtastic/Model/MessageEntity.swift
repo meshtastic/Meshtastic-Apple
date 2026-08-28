@@ -44,3 +44,19 @@ final class MessageEntity {
 
 	init() {}
 }
+
+extension MessageEntity {
+	/// Drops later occurrences of a repeated `messageId`, preserving order.
+	///
+	/// `messageId` is `@Attribute(.unique)`, but uniqueness is enforced per save:
+	/// a sent message (main context) and its mesh echo (ingest actor) can coexist
+	/// briefly before the constraint merges them. The message lists key their
+	/// `ForEach` on `messageId`, and handing SwiftUI duplicate ids corrupts the
+	/// List's collection-view batch update, which crashes. First occurrence wins —
+	/// in the lists' chronological order that is the row the user already sees.
+	static func deduplicatedByMessageId(_ messages: [MessageEntity]) -> [MessageEntity] {
+		var seen = Set<Int64>()
+		seen.reserveCapacity(messages.count)
+		return messages.filter { seen.insert($0.messageId).inserted }
+	}
+}

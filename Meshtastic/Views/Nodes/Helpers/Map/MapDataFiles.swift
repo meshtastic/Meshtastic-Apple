@@ -197,6 +197,15 @@ struct MapDataFileRow: View {
 						.padding(.vertical, 2)
 						.background(Color.secondary.opacity(0.2))
 						.cornerRadius(4)
+					if file.source == .sitePlanner {
+						Text("Site Planner")
+							.font(.caption2)
+							.fixedSize()
+							.padding(.horizontal, 8)
+							.padding(.vertical, 2)
+							.background(Color.accentColor.opacity(0.2))
+							.cornerRadius(4)
+					}
 					Text("\(file.overlayCount) features")
 						.font(.caption2)
 						.foregroundColor(.secondary)

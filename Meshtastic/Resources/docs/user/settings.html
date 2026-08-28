@@ -51,6 +51,10 @@
 <td>Frequency Slot</td>
 <td>Fine-tune the exact frequency within your region.</td>
 </tr>
+<tr>
+<td>Frequency Override</td>
+<td>Use a specific frequency in MHz instead of the calculated slot. The LoRa and Licensed Operator settings show the stored frequency without rounding it.</td>
+</tr>
 </tbody>
 </table>
 <p>On firmware <strong>2.8.0 or later</strong>, the radio tells the app which modem presets are legal in each region. When you pick a region, the Presets list narrows to the compatible set, and if your current preset isn't allowed there the app switches you to that region's default. Setting the region to <strong>US</strong> on a newly flashed node moves the stock <strong>Long Fast</strong> preset to <strong>Long Turbo</strong> — Long Fast's bandwidth is not US-compliant — while a deliberately chosen preset that is legal in the US is kept. Amateur (ham) bands such as the Tiny and Narrow presets are marked <strong>licensed</strong> — the app shows a warning, and you should enable <strong>Licensed Operator</strong> (and set your call sign) in <strong>User</strong> config before transmitting. On older firmware the full preset list is shown unchanged.</p>

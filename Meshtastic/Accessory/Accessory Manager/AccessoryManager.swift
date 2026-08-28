@@ -105,6 +105,14 @@ enum AccessoryManagerState: Equatable {
 	}
 }
 
+private struct AutomaticConfigRefresh {
+	let owner: AutomaticChannelRefreshOwner
+	let sessionID: UUID
+	let channelRefreshBaselineByNode: [Int64: [ChannelRefreshSnapshot]]
+	var nodeNum: Int64?
+	var waiters: [UUID: CheckedContinuation<Void, Error>] = [:]
+}
+
 @MainActor
 class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	// Singleton Access.  Conditionally compiled
@@ -311,7 +319,9 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	var mqttProxyDroppedNoPayload: Int = 0
 	
 	// Continuations
-	var wantConfigContinuation: CheckedContinuation<Void, Error>?
+	private var activeAutomaticConfigRefresh: AutomaticConfigRefresh?
+	private var automaticConfigRefreshTask: Task<Void, Never>?
+	private var nextAutomaticConfigRefreshGeneration: UInt64 = 0
 	var firstDatabaseNodeInfoContinuation: CheckedContinuation<Void, Error>?
 	var wantDatabaseGate: AsyncGate = AsyncGate()
 
@@ -392,10 +402,8 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	}
 
 	func sendWantConfig() async throws {
-		if let inProgressWantConfigContinuation = wantConfigContinuation {
-			Logger.transport.info("[Accessory] Existing continuation for wantConfig(Config). Cancelling.")
-			wantConfigContinuation = nil
-			inProgressWantConfigContinuation.resume(throwing: CancellationError())
+		if let activeAutomaticConfigRefresh {
+			return try await waitForAutomaticConfigRefresh(activeAutomaticConfigRefresh.owner)
 		}
 		guard let connection = activeConnection?.connection else {
 			Logger.transport.error("Unable to send wantConfig (config): No device connected")
@@ -406,24 +414,109 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		// ingestion actor ahead of the config handshake and node-DB dump (one cause of slow/hung
 		// connects). It now runs after the connection completes — see connect() Step 8 — where it
 		// also prunes against post-dump lastHeard values instead of pre-dump ones.
+		nextAutomaticConfigRefreshGeneration &+= 1
+		let owner = AutomaticChannelRefreshOwner(
+			sessionID: activeConnection?.device.id ?? UUID(),
+			generation: nextAutomaticConfigRefreshGeneration
+		)
+		let channelRefreshBaselineByNode = MeshPackets.captureChannelRefreshBaselines(in: context)
+		activeAutomaticConfigRefresh = AutomaticConfigRefresh(
+			owner: owner,
+			sessionID: owner.sessionID,
+			channelRefreshBaselineByNode: channelRefreshBaselineByNode,
+			nodeNum: activeConnection?.device.num ?? activeDeviceNum
+		)
+		automaticConfigRefreshTask = Task { @MainActor [weak self] in
+			await self?.runAutomaticConfigRefresh(owner: owner, connection: connection)
+		}
+		try await waitForAutomaticConfigRefresh(owner)
+	}
 
-		try await withTaskCancellationHandler {
+	private func runAutomaticConfigRefresh(owner: AutomaticChannelRefreshOwner, connection: Connection) async {
+		guard !Task.isCancelled, activeAutomaticConfigRefresh?.owner == owner else { return }
+		do {
+			try Task.checkCancellation()
 			var toRadio: ToRadio = ToRadio()
 			toRadio.wantConfigID = UInt32(NONCE_ONLY_CONFIG)
-			try await self.send(toRadio)
+			try await send(toRadio)
+			try Task.checkCancellation()
 			try await connection.startDrainPendingPackets()
-			try await withCheckedThrowingContinuation { cont in
-				self.wantConfigContinuation = cont
+			try Task.checkCancellation()
+		} catch {
+			await finishAutomaticConfigRefresh(owner: owner, error: error)
+		}
+	}
+
+	private func waitForAutomaticConfigRefresh(_ owner: AutomaticChannelRefreshOwner) async throws {
+		let waiterID = UUID()
+		try await withTaskCancellationHandler {
+			try await withCheckedThrowingContinuation { continuation in
+				registerAutomaticConfigRefreshWaiter(continuation, id: waiterID, owner: owner)
 			}
-			self.wantConfigContinuation = nil
-			Logger.transport.info("✅ [Accessory] NONCE_ONLY_CONFIG Done")
 		} onCancel: {
 			Task { @MainActor in
-				if let continuation = wantConfigContinuation {
-					wantConfigContinuation = nil
-					continuation.resume(throwing: CancellationError())
-				}
+				self.cancelAutomaticConfigRefreshWaiter(id: waiterID, owner: owner)
 			}
+		}
+	}
+
+	private func registerAutomaticConfigRefreshWaiter(
+		_ continuation: CheckedContinuation<Void, Error>,
+		id: UUID,
+		owner: AutomaticChannelRefreshOwner
+	) {
+		guard !Task.isCancelled,
+			  var refresh = activeAutomaticConfigRefresh,
+			  refresh.owner == owner else {
+			continuation.resume(throwing: CancellationError())
+			return
+		}
+		refresh.waiters[id] = continuation
+		activeAutomaticConfigRefresh = refresh
+	}
+
+	private func cancelAutomaticConfigRefreshWaiter(id: UUID, owner: AutomaticChannelRefreshOwner) {
+		guard var refresh = activeAutomaticConfigRefresh,
+			  refresh.owner == owner,
+			  let continuation = refresh.waiters.removeValue(forKey: id) else { return }
+		activeAutomaticConfigRefresh = refresh
+		continuation.resume(throwing: CancellationError())
+	}
+
+	private func finishAutomaticConfigRefresh(owner: AutomaticChannelRefreshOwner, error: Error?) async {
+		guard let refresh = activeAutomaticConfigRefresh, refresh.owner == owner else { return }
+		activeAutomaticConfigRefresh = nil
+		automaticConfigRefreshTask = nil
+		if let error {
+			if let nodeNum = refresh.nodeNum {
+				await MeshPackets.shared.discardChannelRefreshStage(for: nodeNum, owner: owner)
+			}
+			for continuation in refresh.waiters.values {
+				continuation.resume(throwing: error)
+			}
+		} else {
+			for continuation in refresh.waiters.values {
+				continuation.resume()
+			}
+		}
+	}
+
+	func beginAutomaticChannelRefreshStageIfNeeded(for nodeNum: Int64) async {
+		guard var refresh = activeAutomaticConfigRefresh,
+			  refresh.sessionID == activeConnection?.device.id else { return }
+		refresh.nodeNum = nodeNum
+		activeAutomaticConfigRefresh = refresh
+		let owner = refresh.owner
+		let didBegin = await MeshPackets.shared.beginChannelRefreshStage(
+			for: nodeNum,
+			owner: owner,
+			baseline: refresh.channelRefreshBaselineByNode[nodeNum] ?? []
+		)
+		guard didBegin, activeAutomaticConfigRefresh?.owner == owner else {
+			if didBegin {
+				await MeshPackets.shared.discardChannelRefreshStage(for: nodeNum, owner: owner)
+			}
+			return
 		}
 	}
 
@@ -476,11 +569,19 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 
 		Logger.transport.debug("[AccessoryManager] received disconnect request")
 
+		let closingNodeNum = activeConnection?.device.num ?? activeDeviceNum
+
 		if let activeConnection {
 			updateDevice(deviceId: activeConnection.device.id, key: \.connectionState, value: .disconnected)
 			self.activeConnection = nil
 		}
 		self.activeDeviceNum = nil
+		if let refresh = activeAutomaticConfigRefresh {
+			automaticConfigRefreshTask?.cancel()
+			await finishAutomaticConfigRefresh(owner: refresh.owner, error: CancellationError())
+		} else if let closingNodeNum {
+			await MeshPackets.shared.discardChannelRefreshStage(for: closingNodeNum)
+		}
 
 		// Lockdown: clear per-connection state. If a Lock Now was in flight, the
 		// disconnect resolves the coordinator to `.lockNowAcknowledged`.
@@ -508,10 +609,6 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		heartbeatResponseTimer = nil
 		
 		// Clean up continuations — nil before resume to prevent double-resume races
-		if let continuation = wantConfigContinuation {
-			wantConfigContinuation = nil
-			continuation.resume(throwing: CancellationError())
-		}
 		if let continuation = firstDatabaseNodeInfoContinuation {
 			firstDatabaseNodeInfoContinuation = nil
 			continuation.resume(throwing: CancellationError())
@@ -1052,10 +1149,15 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			Logger.transport.info("✅ [Accessory] Notifying completions that have completed for configCompleteID: \(configCompleteID)")
 			switch configCompleteID {
 			case UInt32(NONCE_ONLY_CONFIG):
-				if let continuation = wantConfigContinuation {
-					wantConfigContinuation = nil
-					continuation.resume()
+				guard let refresh = activeAutomaticConfigRefresh,
+					  refresh.sessionID == activeConnection?.device.id else {
+					Logger.transport.warning("[Accessory] Ignoring config completion without its active refresh owner")
+					break
 				}
+				if let completedNodeNum = refresh.nodeNum {
+					await MeshPackets.shared.commitChannelRefreshStage(for: completedNodeNum, owner: refresh.owner)
+				}
+				await finishAutomaticConfigRefresh(owner: refresh.owner, error: nil)
 				
 			case UInt32(NONCE_ONLY_DB):
 				// Open the gate for the wantDatabaseContinuation

@@ -49,7 +49,6 @@ struct MapScreen: View {
 				nodes: locatedNodes,
 				selectedNodeNum: $selectedNodeNum,
 				recenterToken: recenterToken,
-				onMenuExit: escapeMap,
 				offlineVectors: offlineVectors
 			)
 			.ignoresSafeArea()
@@ -64,6 +63,10 @@ struct MapScreen: View {
 						edition: EventEdition(client.firmwareEdition)
 					)
 					.padding(TVTheme.statsStripMargin)
+					// The map is full-bleed but the overlay lands inside the safe
+					// area, so the bar stopped ~80pt short of the screen edge while
+					// its columns were squeezed. Reclaim that width.
+					.ignoresSafeArea(edges: .horizontal)
 				}
 			}
 		}
@@ -94,20 +97,6 @@ struct MapScreen: View {
 			.sorted { ($0.lastHeard ?? .distantPast) > ($1.lastHeard ?? .distantPast) }
 		if newSorted.map(\.num) != sortedNodes.map(\.num) { sortedNodes = newSorted }
 		if newLocated.map(\.num) != locatedNodes.map(\.num) { locatedNodes = newLocated }
-	}
-
-	/// Menu pressed while the map held focus: pop any open node detail and hand
-	/// focus back to the node list — without this, MKMapView is a focus trap.
-	private func escapeMap() {
-		navPath = []
-		if let selectedNodeNum, sortedNodes.contains(where: { $0.num == selectedNodeNum }) {
-			focusedNodeNum = selectedNodeNum
-		} else if let firstNodeNum = sortedNodes.first?.num {
-			focusedNodeNum = firstNodeNum
-		} else {
-			focusedNodeNum = nil
-			recenterFocused = true
-		}
 	}
 
 	private var nodeList: some View {
@@ -146,6 +135,8 @@ struct MapScreen: View {
 					Text("\(allNodes.count) nodes · \(locatedNodes.count) on map")
 				}
 			}
+			// Focused tvOS controls grow beyond their rows; keep them inside the List's clip.
+			.contentMargins(.horizontal, TVTheme.nodeListContentMargin, for: .scrollContent)
 			.onChange(of: focusedNodeNum) { _, newValue in
 				if let newValue { selectedNodeNum = newValue }
 			}
@@ -194,15 +185,6 @@ struct MapScreen: View {
 				.ignoresSafeArea(edges: [.top, .leading])
 		}
 	}
-
-	private var disconnectButton: some View {
-		Button(role: .destructive) {
-			client.disconnect()
-		} label: {
-			Label("Disconnect", systemImage: "xmark.circle.fill")
-		}
-		.buttonStyle(.bordered)
-	}
 }
 
 /// Compact node row, modelled on the iOS `NodeListItemCompact`: node-color circle,
@@ -227,9 +209,9 @@ private struct NodeRow: View {
 				HStack(spacing: 14) {
 					if let lastHeard = node.lastHeard {
 						Label {
-								// Abbreviated: the full "10 minutes ago" crowds out the role
-							// and position labels beside it on a 520pt list.
-							Text(lastHeard.formatted(.relative(presentation: .numeric, unitsStyle: .abbreviated)))
+								// Compact so the role and position labels fit beside it on a
+							// 520pt list, and never future-tense for a just-heard node.
+							Text(RelativeAge.text(since: lastHeard))
 						} icon: {
 							Image(systemName: node.isOnline ? "checkmark.circle.fill" : "moon.circle.fill")
 								.foregroundStyle(node.isOnline ? Color("MeshtasticSuccess") : Color("MeshtasticWarning"))

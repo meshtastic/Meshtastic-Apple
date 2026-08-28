@@ -24,7 +24,7 @@ packages:
     majorVersion: 4.16.0
   TAKPacket-SDK:
     url: https://github.com/meshtastic/TAKPacket-SDK.git
-    minorVersion: 0.5.1
+    minorVersion: 0.9.1
   CocoaMQTT:
     url: https://github.com/emqx/CocoaMQTT
     majorVersion: 2.0.0
@@ -288,8 +288,13 @@ targets:
         type: folder
       - path: "Localizable.xcstrings"
       - path: "Settings.bundle"
+      # Must be compiled into Meshtastic.momd and land in the bundle: the Core Data ->
+      # SwiftData migration loads it from Bundle.main at launch for anyone upgrading
+      # (CoreDataMigrationService, called from Persistence). buildPhase: none left it in
+      # the project tree but in no build phase, so no momd shipped and the migration
+      # bailed out. Guarded by CoreDataMigrationServiceTests.
       - path: "Meshtastic/Meshtastic.xcdatamodeld"
-        buildPhase: none
+        buildPhase: sources
       - path: "Meshtastic"
         type: group
         includes:

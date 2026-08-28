@@ -294,7 +294,7 @@ struct SaveChannelQRCode: View {
 			}
 			let channels = node.myInfo?.channels ?? []
 			let names = Set(channels.compactMap { $0.name?.isEmpty == false ? $0.name : nil })
-			return (names, channels.count, node.loRaConfig?.toProto())
+			return (names, validUniqueChannelIndexes(from: channels).count, node.loRaConfig?.toProto())
 		} catch {
 			Logger.data.error("Failed to fetch current channel state: \(error.localizedDescription, privacy: .public)")
 			return ([], 0, nil)

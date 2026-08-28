@@ -243,8 +243,9 @@ struct CreateNodeInfoTests {
 		let container = try makeTestContainer()
 		let context = container.mainContext
 		let node = createNodeInfo(num: 0xFF, context: context)
-		let hex = Int64(0xFF).toHex()
-		#expect(node.user?.userId == "!\(hex)")
+		// toHex() already carries the "!" — this previously expected "!!000000ff",
+		// codifying the extra prefix findOrCreateUser was writing.
+		#expect(node.user?.userId == Int64(0xFF).toHex())
 	}
 
 	@Test @MainActor func createNodeInfo_userShortNameIsLast4() throws {
@@ -1082,5 +1083,43 @@ struct ChannelSettingsQRImportTests {
 		#expect(chan.settings.hasModuleSettings == true)
 		#expect(chan.settings.moduleSettings.positionPrecision == 0)
 		#expect(chan.settings.moduleSettings.isMuted == false)
+	}
+}
+
+// MARK: - userId format
+
+/// `toHex()` already prefixes "!", so a call site that interpolated another one
+/// produced "!!deadbeef". `findOrCreateUser` is the node-ingest path (a packet from a
+/// node whose NodeInfo has not arrived yet), and the value it writes is shown in
+/// message rows, matched against by node search, and exported as `userProto.id`.
+@Suite("User identifier format")
+struct UserIdentifierFormatTests {
+
+	@Test @MainActor func createUserWritesASingleBang() throws {
+		let context = try makeTestContainer().mainContext
+		let user = try createUser(num: 0xDEADBEEF, context: context)
+		#expect(user.userId == "!deadbeef")
+	}
+
+	@Test @MainActor func findOrCreateUserWritesASingleBang() throws {
+		let context = try makeTestContainer().mainContext
+		let user = findOrCreateUser(num: 0xDEADBEEF, context: context)
+		#expect(user.userId == "!deadbeef")
+	}
+
+	/// Both paths must agree — they are used interchangeably across ingest.
+	@Test @MainActor func bothPathsAgree() throws {
+		let context = try makeTestContainer().mainContext
+		let viaFind = findOrCreateUser(num: 0x1234ABCD, context: context)
+		let otherContext = try makeTestContainer().mainContext
+		let viaCreate = try createUser(num: 0x1234ABCD, context: otherContext)
+		#expect(viaFind.userId == viaCreate.userId)
+	}
+
+	@Test @MainActor func shortNameIsTheLastFourOfTheHex() throws {
+		let context = try makeTestContainer().mainContext
+		let user = findOrCreateUser(num: 0xDEADBEEF, context: context)
+		// Derived from the hex, so the stray "!" also skewed nothing here — pin it.
+		#expect(user.shortName == "beef")
 	}
 }

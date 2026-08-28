@@ -28,53 +28,43 @@ struct BLETransportStatusUpdatesTests {
 		CBCentralManager(delegate: nil, queue: nil)
 	}
 
-	/// `BLETransport()` creates a *real* `CBCentralManager` on its own delegate whenever
-	/// `CBCentralManager.authorization` is already determined — true on the simulator, where
-	/// there's no real permission prompt to wait on. That manager asynchronously reports genuine
-	/// (simulator) hardware state — typically `.unsupported`, since simulators have no real radio
-	/// — independently of anything a test does. Those incidental values can land in the stream
-	/// interleaved with a test's own explicit `handleCentralState` calls, so assertions must drain
-	/// for the expected value rather than assume it's the very next element.
-	private func drainUntil(
-		_ expected: TransportStatus,
-		from iterator: inout AsyncStream<TransportStatus>.AsyncIterator,
-		attempts: Int = 10
-	) async -> Bool {
-		for _ in 0..<attempts {
-			guard let value = await iterator.next() else { return false }
-			if value == expected { return true }
-		}
-		return false
+	/// Every test here scripts `status` transitions by calling `handleCentralState` directly, so
+	/// the transport must not also own a real `CBCentralManager`: that manager reports the host's
+	/// genuine Bluetooth state on its own schedule, and the resulting `handleCentralState` call
+	/// lands in `status` at an arbitrary point between a test's own statements.
+	private func scriptedTransport() -> BLETransport {
+		BLETransport(createCentralManagerImmediately: false)
 	}
 
 	@Test func immediatelyYieldsCurrentStatus() async {
-		let transport = BLETransport()
+		let transport = scriptedTransport()
 		let stream = await transport.statusUpdates()
 		var iterator = stream.makeAsyncIterator()
 
-		// The very first element must be *a* status (the replay), not a hang waiting on a
-		// transition — the real value can legitimately be .uninitialized or the simulator's
-		// own incidental .unsupported depending on timing (see drainUntil above).
+		// A late subscriber must see the current status right away rather than waiting on the
+		// next transition — nothing has been scripted yet, so that's the initial value.
 		let first = await iterator.next()
-		#expect(first != nil, "a late subscriber must see a status right away, not wait for the next transition")
+		#expect(first == .uninitialized, "a late subscriber must see a status right away, not wait for the next transition")
 	}
 
 	@Test func yieldsOnStatusChange() async {
-		let transport = BLETransport()
+		let transport = scriptedTransport()
 		let stream = await transport.statusUpdates()
 		var iterator = stream.makeAsyncIterator()
 
+		#expect(await iterator.next() == .uninitialized) // the subscribe-time replay
+
 		await transport.handleCentralState(.poweredOff, central: unusedCentralManager())
 
-		let sawExpected = await drainUntil(.error(BLETransport.poweredOffStatusMessage), from: &iterator)
-		#expect(sawExpected, "statusUpdates() must eventually carry the .poweredOff transition")
+		let next = await iterator.next()
+		#expect(next == .error(BLETransport.poweredOffStatusMessage), "statusUpdates() must carry the .poweredOff transition")
 	}
 
 	/// The `status` `didSet` guards on an actual change before yielding — repeating the same
 	/// CoreBluetooth state (which can happen; CBCentralManagerDelegate doesn't guarantee distinct
 	/// states) must not enqueue a duplicate value that a late-arriving subscriber would trip over.
 	@Test func doesNotYieldADuplicateForAnUnchangedStatus() async {
-		let transport = BLETransport()
+		let transport = scriptedTransport()
 		let manager = unusedCentralManager()
 
 		await transport.handleCentralState(.poweredOff, central: manager)
@@ -82,47 +72,38 @@ struct BLETransportStatusUpdatesTests {
 		let stream = await transport.statusUpdates()
 		var iterator = stream.makeAsyncIterator()
 
-		// Replay of the current .error status from the subscribe-time yield (possibly preceded
-		// by incidental simulator-hardware values — drain until we see it).
-		let sawReplay = await drainUntil(.error(BLETransport.poweredOffStatusMessage), from: &iterator)
-		#expect(sawReplay)
+		// Replay of the current .error status from the subscribe-time yield.
+		#expect(await iterator.next() == .error(BLETransport.poweredOffStatusMessage))
 
 		// A second, identical .poweredOff must not produce a second queued value.
 		await transport.handleCentralState(.poweredOff, central: manager)
 
-		// A real change afterward proves the duplicate was swallowed: count how many further
-		// .error(poweredOff) values arrive before .discovering shows up. Zero means the repeat
-		// never got queued; any more than zero means it leaked through.
+		// A real change afterward proves the duplicate was swallowed: if the repeat had been
+		// queued it would be sitting ahead of .discovering in the stream.
 		await transport.handleCentralState(.poweredOn, central: manager)
-		var duplicateCount = 0
-		var sawDiscovering = false
-		for _ in 0..<10 {
-			guard let value = await iterator.next() else { break }
-			if value == .discovering { sawDiscovering = true; break }
-			if value == .error(BLETransport.poweredOffStatusMessage) { duplicateCount += 1 }
-		}
-		#expect(sawDiscovering)
-		#expect(duplicateCount == 0, "the repeated .poweredOff must have been swallowed by didSet's equality guard")
+
+		let next = await iterator.next()
+		#expect(next == .discovering, "the repeated .poweredOff must have been swallowed by didSet's equality guard")
 	}
 
 	/// Only `AccessoryManager` is expected to subscribe; a second `statusUpdates()` call replaces
 	/// the stored continuation, so the earlier stream stops receiving new values instead of both
 	/// streams staying live indefinitely.
 	@Test func aSecondSubscriberReplacesTheFirst() async {
-		let transport = BLETransport()
+		let transport = scriptedTransport()
 		let manager = unusedCentralManager()
 
 		let firstStream = await transport.statusUpdates()
 		var firstIterator = firstStream.makeAsyncIterator()
-		_ = await firstIterator.next() // consume the initial replay
+		#expect(await firstIterator.next() == .uninitialized) // consume the initial replay
 
 		let secondStream = await transport.statusUpdates()
 		var secondIterator = secondStream.makeAsyncIterator()
-		_ = await secondIterator.next() // consume the initial replay
+		#expect(await secondIterator.next() == .uninitialized) // consume the initial replay
 
 		await transport.handleCentralState(.poweredOff, central: manager)
 
-		let sawExpected = await drainUntil(.error(BLETransport.poweredOffStatusMessage), from: &secondIterator)
-		#expect(sawExpected)
+		let next = await secondIterator.next()
+		#expect(next == .error(BLETransport.poweredOffStatusMessage))
 	}
 }

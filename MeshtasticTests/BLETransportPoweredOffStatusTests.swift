@@ -29,8 +29,16 @@ struct BLETransportPoweredOffStatusTests {
 		CBCentralManager(delegate: nil, queue: nil)
 	}
 
+	/// These tests script `status` transitions by calling `handleCentralState` directly, so the
+	/// transport must not also own a real `CBCentralManager`: that manager reports the host's
+	/// genuine Bluetooth state on its own schedule, and that incidental value can overwrite
+	/// `status` between the scripted call and the assertion below it.
+	private func scriptedTransport() -> BLETransport {
+		BLETransport(createCentralManagerImmediately: false)
+	}
+
 	@Test func poweredOffSettlesOnError() async {
-		let transport = BLETransport()
+		let transport = scriptedTransport()
 
 		await transport.handleCentralState(.poweredOff, central: unusedCentralManager())
 
@@ -39,7 +47,7 @@ struct BLETransportPoweredOffStatusTests {
 	}
 
 	@Test func poweredOffNeverEndsAtReady() async {
-		let transport = BLETransport()
+		let transport = scriptedTransport()
 
 		await transport.handleCentralState(.poweredOff, central: unusedCentralManager())
 
@@ -50,7 +58,7 @@ struct BLETransportPoweredOffStatusTests {
 	/// A transport that was previously discovering (poweredOn) and then loses power should
 	/// still land on the off-state error, not silently revert to looking "ready".
 	@Test func poweredOffAfterPoweredOnStillSettlesOnError() async {
-		let transport = BLETransport()
+		let transport = scriptedTransport()
 		let manager = unusedCentralManager()
 
 		await transport.handleCentralState(.poweredOn, central: manager)
@@ -63,7 +71,7 @@ struct BLETransportPoweredOffStatusTests {
 	/// A second poweredOff after recovering (poweredOn) and losing power again must still settle
 	/// on the off-state error, not get stuck reflecting the intervening .discovering/.ready state.
 	@Test func poweredOffAfterRecoveryRoundTripStillSettlesOnError() async {
-		let transport = BLETransport()
+		let transport = scriptedTransport()
 		let manager = unusedCentralManager()
 
 		await transport.handleCentralState(.poweredOff, central: manager)

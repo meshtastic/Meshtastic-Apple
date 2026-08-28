@@ -34,6 +34,7 @@
 		5C31297EDE4B7294ECE538F4 /* AppIconDebug.icon in Resources */ = {isa = PBXBuildFile; fileRef = 6D159B66B1877A7506D1AB20 /* AppIconDebug.icon */; };
 		62C11A4D1644062EAD31615F /* Settings.bundle in Resources */ = {isa = PBXBuildFile; fileRef = F15A1577564640951AD3EA40 /* Settings.bundle */; };
 		66EFBB4E473C796ACAFF58C2 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = 6776764BA24154B603C76018 /* AppIcon.icon */; };
+		6742E3665676C65DDE17C453 /* Meshtastic.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 4C621B0715362CE25600901D /* Meshtastic.xcdatamodeld */; };
 		6CABB3DA5BDD75359320B657 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 985D21086E966D40C875F3CD /* InfoPlist.strings */; };
 		7443E9D2180568F2E62EDAB6 /* AppIcon_Ham.icon in Resources */ = {isa = PBXBuildFile; fileRef = DD9ED0AFED536B2EE5F32F23 /* AppIcon_Ham.icon */; };
 		78B74168A96E756F203F9D13 /* AppIcon_Chirpy.icon in Resources */ = {isa = PBXBuildFile; fileRef = DD8FE67D6F2C7F041F8E3C8C /* AppIcon_Chirpy.icon */; };
@@ -1249,6 +1250,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				3233E2EC4CCC91360E23F283 /* AppState.swift in Sources */,
+				6742E3665676C65DDE17C453 /* Meshtastic.xcdatamodeld in Sources */,
 				252DC3E6757A4880B3F749E5 /* MeshtasticApp.swift in Sources */,
 				ECF8A4938BAD87D6CD830F7A /* MeshtasticAppDelegate.swift in Sources */,
 			);
@@ -1949,7 +1951,7 @@
 			repositoryURL = "https://github.com/meshtastic/TAKPacket-SDK.git";
 			requirement = {
 				kind = upToNextMinorVersion;
-				minimumVersion = 0.5.1;
+				minimumVersion = 0.9.1;
 			};
 		};
 		EF8B64957FF0A454C2EE0FBB /* XCRemoteSwiftPackageReference "CocoaMQTT" */ = {

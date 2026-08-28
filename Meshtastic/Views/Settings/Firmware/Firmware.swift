@@ -236,7 +236,6 @@ private struct FirmwareContentView: View {
 					Text("Downloaded").tag(FirmwareTab.downloaded)
 				}.pickerStyle(.segmented)
 				
-				// Extracted switch logic to keep body clean
 				firmwareRows
 			}
 		}

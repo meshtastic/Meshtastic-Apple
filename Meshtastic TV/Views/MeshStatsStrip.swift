@@ -173,15 +173,17 @@ struct MeshStatsStrip: View {
 				packetCount(tx, arrow: "↑")
 				packetCount(rx, arrow: "↓")
 			}
+			.frame(maxWidth: .infinity, alignment: .leading)
 		} else {
 			metricValue("—", font: packetFont)
 		}
 	}
 
-	/// Grouped digits normally; compact ("457K", "1.2M") past six figures, where
-	/// the counters outgrow the column no matter how much they are scaled down.
+	/// Grouped digits up to five figures, compact ("17.2K", "584.1K", "1.2M") above
+	/// that — the counters outgrow the column at any scale otherwise. VoiceOver still
+	/// gets the exact digits from `packetsAccessibilityValue`.
 	private func packetText(_ value: UInt32, fractionDigits: Int = 1) -> String {
-		value >= 100_000
+		value >= 10_000
 			? value.formatted(.number.notation(.compactName).precision(.fractionLength(fractionDigits)))
 			: value.formatted()
 	}
@@ -191,25 +193,26 @@ struct MeshStatsStrip: View {
 			.font(packetFont.weight(.semibold).monospacedDigit())
 			.lineLimit(1)
 			.minimumScaleFactor(0.6)
-			.frame(maxWidth: .infinity, alignment: .leading)
 	}
 
-	/// One concatenated Text, not an HStack of several: separate Texts each get
-	/// their own width and the longest clips, so the scale factor never applies to
-	/// the line as a whole ("457K dup…").
+	/// One plain string, so `minimumScaleFactor` applies to the whole line. Text
+	/// concatenation does not work here: a `style: .relative` Text stays its own run
+	/// and each run clipped separately ("17,… · Up… 4 m…"). The timestamp is static
+	/// between telemetry updates, and the strip re-renders on each one.
 	@ViewBuilder
 	private var packetMetadata: some View {
 		if let stats {
-			dupesText(stats) + Text("Updated ") + Text(stats.receivedAt, style: .relative)
+			Text(metadataText(stats))
 		} else {
 			Text("Updated —")
 				.hidden()
 		}
 	}
 
-	private func dupesText(_ stats: MeshClient.ConnectedNodeStats) -> Text {
-		guard let dupes = stats.packetsRxDupe else { return Text(verbatim: "") }
-		return Text("\(packetText(dupes, fractionDigits: 0)) dupes") + Text(verbatim: " · ")
+	private func metadataText(_ stats: MeshClient.ConnectedNodeStats) -> String {
+		let updated = RelativeAge.text(since: stats.receivedAt)
+		guard let dupes = stats.packetsRxDupe else { return "Updated \(updated)" }
+		return "\(packetText(dupes, fractionDigits: 0)) dupes · Updated \(updated)"
 	}
 
 	private func metricLabel(_ text: LocalizedStringKey) -> some View {
