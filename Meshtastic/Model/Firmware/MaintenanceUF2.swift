@@ -74,6 +74,27 @@ private struct MaintenanceUf2ManifestPayload: Decodable {
 		}
 		return result
 	}
+
+	/// Structural validation, not content pinning: the fetch is trusted the same way the
+	/// firmware downloads are, but a payload that could produce an unsafe write path, a
+	/// non-HTTPS download, or an unverifiable digest is refused wholesale and the store
+	/// keeps what it had.
+	var isStructurallyValid: Bool {
+		guard !otafixReleaseTag.isEmpty,
+			  otafixBase.hasPrefix("https://"),
+			  !otafixByBoardId.isEmpty,
+			  !otafixSupportedTargets.isEmpty else { return false }
+		let safeSlug = { (slug: String) -> Bool in
+			!slug.isEmpty && slug.allSatisfy { $0.isLetter || $0.isNumber || $0 == "_" || $0 == "-" }
+		}
+		let safeTag = !otafixReleaseTag.contains("/") && !otafixReleaseTag.contains("..")
+		guard safeTag else { return false }
+		return otafixByBoardId.values.allSatisfy { asset in
+			safeSlug(asset.otafixBoardSlug)
+				&& asset.sha256.count == 64
+				&& asset.sha256.allSatisfy { $0.isHexDigit && (!$0.isLetter || $0.isLowercase) }
+		}
+	}
 }
 
 /// Thread-safe, mutable holder for the maintenance-UF2 manifest (currently: the OTAFIX board map
@@ -90,31 +111,22 @@ final class OTAFIXManifestStore: @unchecked Sendable {
 	private var _supportedTargets: Set<String>
 
 	private init() {
-		let seed = Self.decodeSeed()
-		_releaseTag = seed.otafixReleaseTag
-		_imagesByBoardID = seed.imagesByBoardID()
-		_supportedTargets = Set(seed.otafixSupportedTargets)
+		_releaseTag = OTAFIXBootloader.bundledReleaseTag
+		_imagesByBoardID = OTAFIXBootloader.bundledImagesByBoardID
+		_supportedTargets = OTAFIXBootloader.bundledSupportedTargets
 	}
 
-	/// Decodes the bundled seed. A decode failure here would mean a corrupt build — the seed is a
-	/// tool-generated, compile-time-constant payload — so this fails loudly rather than silently
-	/// starting from an empty manifest, matching `MaintenanceUf2ManifestSeed.rawJSON`'s own
-	/// fatalError posture for the same reason.
-	private static func decodeSeed() -> MaintenanceUf2ManifestPayload {
-		do {
-			return try JSONDecoder().decode(MaintenanceUf2ManifestPayload.self, from: MaintenanceUf2ManifestSeed.rawJSON)
-		} catch {
-			fatalError("MaintenanceUf2ManifestSeed.rawJSON failed to decode: \(error)")
-		}
-	}
-
-	/// Decodes `rawBytes` and, only on success, replaces the live manifest. Returns whether it was
-	/// applied. A decode failure is a no-op — the store keeps whatever it already had (the bundled
-	/// seed, or an earlier successful fetch).
+	/// Decodes and validates `rawBytes` and, only then, replaces the live manifest. Returns
+	/// whether it was applied. A decode or validation failure is a no-op — the store keeps
+	/// whatever it already had (the bundled audited map, or an earlier successful fetch).
 	@discardableResult
 	func apply(rawBytes: Data) -> Bool {
 		guard let decoded = try? JSONDecoder().decode(MaintenanceUf2ManifestPayload.self, from: rawBytes) else {
 			Logger.services.warning("maintenanceUf2 manifest decode failed — ignoring")
+			return false
+		}
+		guard decoded.isStructurallyValid else {
+			Logger.services.warning("maintenanceUf2 manifest failed validation — ignoring")
 			return false
 		}
 		lock.lock()
@@ -140,6 +152,17 @@ final class OTAFIXManifestStore: @unchecked Sendable {
 		return _imagesByBoardID[boardID]
 	}
 
+	#if DEBUG
+	/// Test-only: the store is a process-wide singleton; suites that apply payloads
+	/// restore the bundled seed so other suites read stable data.
+	func resetToBundledSeedForTesting() {
+		lock.lock(); defer { lock.unlock() }
+		_releaseTag = OTAFIXBootloader.bundledReleaseTag
+		_imagesByBoardID = OTAFIXBootloader.bundledImagesByBoardID
+		_supportedTargets = OTAFIXBootloader.bundledSupportedTargets
+	}
+	#endif
+
 	var imagesByBoardID: [String: MaintenanceUF2] {
 		lock.lock(); defer { lock.unlock() }
 		return _imagesByBoardID
@@ -157,6 +180,60 @@ final class OTAFIXManifestStore: @unchecked Sendable {
 /// The connected node's platformio target is a UX gate only: it decides whether
 /// the upgrade is offered, never which image is written.
 enum OTAFIXBootloader {
+
+	// MARK: Bundled audited seed
+	//
+	// The map the app ships with — human-readable, reviewable row by row, and pinned by
+	// the fixture tests. Mirrored verbatim from Meshtastic-Android's MaintenanceUf2.kt
+	// and re-verified against the release assets. The API refresh can only replace it
+	// with a payload that passes structural validation.
+
+	static let bundledReleaseTag = "0.9.2-OTAFIX2.3-BP1.5"
+
+	private static let bundledBase =
+		"https://github.com/meshtastic/Adafruit_nRF52_Bootloader_OTAFIX/releases/download/\(bundledReleaseTag)"
+
+	private static func asset(board: String, sha256: String) -> MaintenanceUF2 {
+		let name = "update-\(board)_bootloader-\(bundledReleaseTag)_nosd.uf2"
+		// Force-unwrap is safe: compile-time constants forming a valid URL, covered row
+		// by row by the audited-fixture tests.
+		return MaintenanceUF2(url: URL(string: "\(bundledBase)/\(name)")!, fileName: name, sha256: sha256)
+	}
+
+	static let bundledImagesByBoardID: [String: MaintenanceUF2] = [
+		"HT-n5262": asset(board: "heltec_t114", sha256: "ae92d3577cb58dd9b43c9b61ffb9bfffda05b0eca4113a0ec42a37cd8be53b19"),
+		"MinewSemi-MX25LE01": asset(board: "minewsemi_mx25le01", sha256: "e09564fd8dd03fc25d76dcb732a0214c79653da3b130240949b783254d3dfc1b"),
+		"TRACKER L1": asset(board: "wio_tracker_l1", sha256: "70fbce0eda9d70d7bd8a4367057badf5ec310838bf3221370d45a56f04956b9e"),
+		"WisBlock-RAK4631-Board": asset(board: "wiscore_rak4631_board", sha256: "8741bc677a3c24f28422c5ffb80761de7d98a127a3b0191ba6585bf57ce9f305"),
+		"WisMesh-Tag": asset(board: "wismesh_tag", sha256: "96d42e1990e17251e8c625e98a1551cac12c6e29111bc2e59ab7c9fe6dec8758"),
+		"nRF52840-SeeedSenseCAPSolarP1-v1": asset(board: "sensecap_solar_p1", sha256: "9b4bce48c1b4830617715c5619457bce6b21f3079803e35e13433de7701290f5"),
+		"nRF52840-SeeedXiao-v1": asset(board: "xiao_nrf52840_ble", sha256: "ff8a0916e98cceb394fd66590bccc17f63612c11ff56b086ef88bd436c8df67f"),
+		"nRF52840-SeeedXiaoSense-v1": asset(board: "xiao_nrf52840_ble_sense", sha256: "fc233d83a1011419625fcb50b49084578460c25bbc0270374ca176757a3c40da"),
+		"nRF52840-T1000-E-v1": asset(board: "t1000_e", sha256: "5c065e11b8acd5b0cefa9295f98bca1512306cfa478856aa76a871124a904cc4"),
+		"nRF52840-TEcho-v1": asset(board: "lilygo_techo", sha256: "2ddb36188ffe521c270bb2ce8441d742d0fe45325c57e4db6475bf63162a59b0"),
+		"nRF52840-ThinkNode-M3-v1": asset(board: "thinknode_m3", sha256: "bf90979f2f6adc96ef6ca09c280b2ab7e66cb8ce2654fc80da9b20407bfb8708"),
+		"nRF52840-ThinkNodeM1-v1": asset(board: "thinknode_m1", sha256: "aa0721b573c60e0b179274d5a5296bac7a8436faf339cfc03116ebe8a4375795"),
+		"nRF52840-ThinkNodeM6-v1": asset(board: "thinknode_m6", sha256: "aaf94953a540a18f3e48f4cdec0c78290ad3c5f8740aea26fa3b3ce3632a8d4a"),
+		"nRF52840-promicro": asset(board: "promicro_nrf52840", sha256: "46ef3440f151d6f2606075bcd1aa83db25a660da7d25b988aeb47ef350c98794")
+	]
+
+	static let bundledSupportedTargets: Set<String> = [
+		"rak4631",
+		"rak_wismeshtag",
+		"t-echo",
+		"heltec-mesh-node-t114",
+		"nrf52_promicro_diy_tcxo",
+		"thinknode_m1",
+		"thinknode_m3",
+		"thinknode_m6",
+		"tracker-t1000-e",
+		"seeed_wio_tracker_L1",
+		"seeed_wio_tracker_L1_eink",
+		"seeed_solar_node",
+		"seeed_xiao_nrf52840_kit"
+	]
+
+	// MARK: Live accessors (store-backed)
 
 	/// Release the currently-active pinned images were audited against.
 	static var releaseTag: String { OTAFIXManifestStore.shared.releaseTag }
