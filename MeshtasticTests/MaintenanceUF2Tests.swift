@@ -39,7 +39,7 @@ struct MaintenanceUF2Tests {
 	]
 
 	@Test func mapCarriesExactlyTheAuditedBoards() {
-		#expect(Set(OTAFIXBootloader.imagesByBoardID.keys) == Self.auditedBoardIDs)
+		#expect(Set(OTAFIXBootloader.bundledImagesByBoardID.keys) == Self.auditedBoardIDs)
 	}
 
 	/// The complete audited pairing, Board-ID → (board slug in the file name, digest
@@ -64,11 +64,11 @@ struct MaintenanceUF2Tests {
 	]
 
 	@Test func everyPairingMatchesTheAuditedFixture() throws {
-		#expect(OTAFIXBootloader.imagesByBoardID.count == Self.auditedPairings.count)
+		#expect(OTAFIXBootloader.bundledImagesByBoardID.count == Self.auditedPairings.count)
 		for (boardID, expected) in Self.auditedPairings {
 			let image = try #require(OTAFIXBootloader.image(forBoardID: boardID), "missing \(boardID)")
 			#expect(
-				image.fileName == "update-\(expected.board)_bootloader-\(OTAFIXBootloader.releaseTag)_nosd.uf2",
+				image.fileName == "update-\(expected.board)_bootloader-\(OTAFIXBootloader.bundledReleaseTag)_nosd.uf2",
 				"\(boardID) must map to the \(expected.board) image"
 			)
 			#expect(image.sha256.hasPrefix(expected.sha256Prefix), "\(boardID) digest drifted from the audited pin")
@@ -76,7 +76,7 @@ struct MaintenanceUF2Tests {
 	}
 
 	@Test func supportedTargetsMatchTheAuditedSetExactly() {
-		#expect(OTAFIXBootloader.supportedTargets == [
+		#expect(OTAFIXBootloader.bundledSupportedTargets == [
 			"rak4631",
 			"rak_wismeshtag",
 			"t-echo",
@@ -94,9 +94,9 @@ struct MaintenanceUF2Tests {
 	}
 
 	@Test func everyRowIsInternallyConsistent() throws {
-		for (boardID, image) in OTAFIXBootloader.imagesByBoardID {
+		for (boardID, image) in OTAFIXBootloader.bundledImagesByBoardID {
 			// Release-pinned URL that ends in its own file name.
-			#expect(image.url.absoluteString.contains(OTAFIXBootloader.releaseTag), "\(boardID) URL is not release-pinned")
+			#expect(image.url.absoluteString.contains(OTAFIXBootloader.bundledReleaseTag), "\(boardID) URL is not release-pinned")
 			#expect(image.url.lastPathComponent == image.fileName, "\(boardID) URL/fileName mismatch")
 			#expect(image.fileName.hasPrefix("update-"), "\(boardID) is not a self-update image")
 			#expect(image.fileName.hasSuffix("_nosd.uf2"), "\(boardID) image must not carry a SoftDevice")
