@@ -333,7 +333,19 @@ actor BLETransport: Transport {
 		centralManager.stopScan()
 	}
 
+	/// The pause exists to keep duplicate-advertisement traffic away from the pairing
+	/// window, which runs through the notify subscription — after the link itself comes
+	/// up. Once the handshake is fully established, resume so the Available Radios list
+	/// stays live for device switching while connected.
+	func resumeScanningAfterConnectionEstablished() {
+		resumeScanningIfPaused()
+	}
+
 	private func resumeScanningAfterFailedConnection() {
+		resumeScanningIfPaused()
+	}
+
+	private func resumeScanningIfPaused() {
 		guard scanningPausedForConnection else { return }
 		scanningPausedForConnection = false
 		guard discoveredDeviceContinuation != nil,

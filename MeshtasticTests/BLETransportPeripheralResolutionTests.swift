@@ -157,6 +157,31 @@ struct BLETransportPeripheralResolutionTests {
 		withExtendedLifetime(discovery) {}
 	}
 
+	@Test func establishedConnectionResumesScanningForSubscribedDiscovery() async {
+		let centralManager = RecordingCentralManager(scanning: false)
+		let discoverySetupSignal = Signal()
+		let transport = BLETransport(
+			createCentralManagerImmediately: false,
+			centralManager: centralManager,
+			discoverySetupHandler: { await discoverySetupSignal.markReached() }
+		)
+
+		await transport.handleCentralState(.poweredOn, central: centralManager)
+		await transport.pauseScanningForConnection()
+
+		let discovery = await transport.discoverDevices()
+		await discoverySetupSignal.wait()
+		#expect(centralManager.calls.isEmpty, "the pause must hold through the handshake")
+
+		await transport.resumeScanningAfterConnectionEstablished()
+
+		#expect(
+			centralManager.calls == [.startScan],
+			"An established connection must resume the waiting discovery subscriber so Available Radios stays live while connected"
+		)
+		withExtendedLifetime(discovery) {}
+	}
+
 	@Test func lateCancellationCleanupAfterConnectKeepsTransportBusy() async throws {
 		let peripheral = TestPeripheral.make()
 		let connectSignal = Signal()
