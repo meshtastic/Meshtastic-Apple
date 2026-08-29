@@ -439,6 +439,16 @@ struct Connect: View {
 						.textCase(nil)
 					}
 				}
+				// Connection flaps rewrite the connected-device section's rows (0-1 items)
+				// while UIKit is mid batch update, which asserts ("attempt to delete item N
+				// from section 0 which only contains N items" - Datadog eace6abe, crashing on
+				// every version since 2.7.12). A non-animated transaction makes the List
+				// reload instead of batch-update, the same treatment the node-switch gate
+				// below uses for the same assert.
+				.transaction { transaction in
+					transaction.disablesAnimations = true
+					transaction.animation = nil
+				}
 				HStack(alignment: .center) {
 					Spacer()
 #if targetEnvironment(macCatalyst)
