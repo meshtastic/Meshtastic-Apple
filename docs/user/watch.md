@@ -75,25 +75,3 @@ Tap **Refresh** to request an updated node list from the iPhone app. If the phon
 ## Setting Foxhunt Targets
 
 From the iPhone app, mark a node as a foxhunt target from its detail view. Marked nodes are pushed to the Watch and pinned at the top of the Foxhunt list regardless of distance — useful when you know which node you are hunting before you are within ½ mile range.
-
-## Notifications
-
-The Watch app does not create notifications. Every Meshtastic alert on your wrist is a notification from the **iPhone** app that watchOS mirrored across, so it arrives whether or not the Watch app is running.
-
-**Removing the Watch app does not stop them.** Mirroring is a function of the pairing rather than of the Watch app, so deleting Meshtastic from the Watch leaves the alerts exactly as they were. Installing or removing the Watch app and silencing Watch alerts are two separate decisions.
-
-### Silence Meshtastic on the Watch only
-
-On your iPhone, open the **Watch** app → **My Watch** → **Notifications** → **Meshtastic** → **Custom**:
-
-| Option | Effect |
-|--------|--------|
-| Allow Notifications | Alerts appear on the Watch |
-| Send to Notification Center | Delivered silently — no haptic, no screen wake |
-| Notifications Off | No Meshtastic alerts on the Watch at all |
-
-Your iPhone keeps alerting normally under all three.
-
-### Silence a category on both devices
-
-To stop a *kind* of alert everywhere, use **Settings → Meshtastic → Notifications** on the iPhone. Turning a category off there stops the notification being created at all, so nothing reaches the Watch either.

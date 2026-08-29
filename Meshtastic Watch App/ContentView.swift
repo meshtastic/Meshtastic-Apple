@@ -16,7 +16,6 @@ struct ContentView: View {
 
 	@StateObject private var phoneManager = PhoneConnectivityManager()
 	@StateObject private var locationManager = WatchLocationManager()
-	@StateObject private var notificationManager = WatchNotificationManager()
 
 	var body: some View {
 		TabView {
@@ -29,9 +28,6 @@ struct ContentView: View {
 		.tabViewStyle(.verticalPage)
 		.onAppear {
 			locationManager.requestAuthorization()
-		}
-		.task {
-			await notificationManager.requestAuthorizationIfNeeded()
 		}
 	}
 }
