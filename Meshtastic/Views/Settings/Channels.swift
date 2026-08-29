@@ -27,6 +27,10 @@ func projectedDisplayChannels(from channels: [ChannelEntity]) -> [ChannelEntity]
 /// The connected radio's channels as name|key identity strings, for suppressing beacon
 /// offers the radio already has (design#140 behavior 10 — a beacon inviting you to a
 /// mesh you are already on is not an invitation).
+///
+/// A fetch failure returns an empty set on purpose: suppression quietly turns off and
+/// every offer stays visible, which is the pre-suppression behavior and the safe
+/// direction — hiding an offer on bad data would be the harmful failure.
 @MainActor
 func configuredChannelOfferKeys(context: ModelContext) -> Set<String> {
 	let num = Int64(UserDefaults.preferredPeripheralNum)
