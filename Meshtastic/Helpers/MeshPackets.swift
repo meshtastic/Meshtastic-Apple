@@ -402,10 +402,17 @@ actor MeshPackets {
 	}
 
 	/// Evict down to the strict caps and commit. Called on the background transition —
-	/// the one moment deletes cannot race a view reading the doomed entities.
+	/// the one moment deletes cannot race a view reading the doomed entities. The flag
+	/// is re-checked here on the actor, not just at enqueue: a quick return to the
+	/// foreground can beat this task's turn on the actor, and evicting then would be
+	/// exactly the mid-render delete this exists to avoid.
 	func enforceEntityCapsAndSave() {
-		guard !invalidated else { return }
+		guard !invalidated, !Self.appIsActive else { return }
 		evictNodesIfOverCap(Self.maxTotalNodes)
+		guard !Self.appIsActive else {
+			savePendingChanges()
+			return
+		}
 		evictWaypointsIfOverCap(Self.maxTotalWaypoints)
 		savePendingChanges()
 	}
