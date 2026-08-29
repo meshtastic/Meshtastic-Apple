@@ -133,6 +133,18 @@ actor MeshPackets {
 	/// incoming channel frames) and the main actor (begin/commit/discard from AccessoryManager).
 	nonisolated(unsafe) private static var channelRefreshStages: [Int64: ChannelRefreshStage] = [:]
 	private static let channelRefreshStagesLock = NSLock()
+
+	// Main-thread views read node/user/position entities during body evaluation, and a
+	// cap eviction on this actor cascades all of them away — the invalid-entity trap
+	// that tops the crash reports (Settings, node detail, node list rows). Evictions
+	// wait for the app to background; while foregrounded only a doubled cap applies,
+	// so a device that never backgrounds (a wall display) still stays bounded.
+	nonisolated(unsafe) private static var _appIsActive = true
+	private static let appActiveLock = NSLock()
+	nonisolated static var appIsActive: Bool {
+		get { appActiveLock.withLock { _appIsActive } }
+		set { appActiveLock.withLock { _appIsActive = newValue } }
+	}
 	#if DEBUG
 	/// Deterministic concurrency checkpoint used by the refresh boundary regression test. Production
 	/// callers leave this nil, so validation and replacement execute without suspension.
@@ -384,8 +396,25 @@ actor MeshPackets {
 	/// Split into cap-parameterized helpers below so the eviction order is unit-testable with
 	/// small datasets rather than needing tens of thousands of inserts.
 	func enforceEntityCaps() {
+		let multiplier = Self.appIsActive ? 2 : 1
+		evictNodesIfOverCap(Self.maxTotalNodes * multiplier)
+		evictWaypointsIfOverCap(Self.maxTotalWaypoints * multiplier)
+	}
+
+	/// Evict down to the strict caps and commit. Called on the background transition —
+	/// the one moment deletes cannot race a view reading the doomed entities. The flag
+	/// is re-checked here on the actor, not just at enqueue: a quick return to the
+	/// foreground can beat this task's turn on the actor, and evicting then would be
+	/// exactly the mid-render delete this exists to avoid.
+	func enforceEntityCapsAndSave() {
+		guard !invalidated, !Self.appIsActive else { return }
 		evictNodesIfOverCap(Self.maxTotalNodes)
+		guard !Self.appIsActive else {
+			savePendingChanges()
+			return
+		}
 		evictWaypointsIfOverCap(Self.maxTotalWaypoints)
+		savePendingChanges()
 	}
 
 	// MARK: - Watch Snapshot
