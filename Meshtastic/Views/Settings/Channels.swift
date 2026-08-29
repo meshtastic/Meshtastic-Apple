@@ -24,6 +24,21 @@ func projectedDisplayChannels(from channels: [ChannelEntity]) -> [ChannelEntity]
 	canonicalValidUniqueChannels(from: channels)
 }
 
+/// The connected radio's channels as name|key identity strings, for suppressing beacon
+/// offers the radio already has (design#140 behavior 10 — a beacon inviting you to a
+/// mesh you are already on is not an invitation).
+@MainActor
+func configuredChannelOfferKeys(context: ModelContext) -> Set<String> {
+	let num = Int64(UserDefaults.preferredPeripheralNum)
+	guard num > 0 else { return [] }
+	var descriptor = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == num })
+	descriptor.fetchLimit = 1
+	guard let node = (try? context.fetch(descriptor))?.first else { return [] }
+	return Set(canonicalValidUniqueChannels(from: node.myInfo?.channels ?? []).map {
+		"\($0.name ?? "")|\(($0.psk ?? Data()).base64EncodedString())"
+	})
+}
+
 func canonicalValidUniqueChannels(from channels: [ChannelEntity]) -> [ChannelEntity] {
 	var byIndex: [Int32: ChannelEntity] = [:]
 	for channel in channels where (Int32(0)...Int32(7)).contains(channel.index) {

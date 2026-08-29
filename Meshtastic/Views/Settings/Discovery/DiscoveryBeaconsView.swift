@@ -27,6 +27,12 @@ struct DiscoveryBeaconsView: View {
 		allBeacons.filter { $0.session == nil }
 	}
 
+	/// Channels the connected radio already has — their beacons get an Already Joined
+	/// chip instead of reading as new meshes (design#140 behavior 10).
+	private var joinedChannelKeys: Set<String> {
+		configuredChannelOfferKeys(context: context)
+	}
+
 	var body: some View {
 		List {
 			if passiveBeacons.isEmpty {
@@ -98,6 +104,9 @@ struct DiscoveryBeaconsView: View {
 		}
 		if beacon.hasOfferChannel, !beacon.offerChannelName.isEmpty {
 			chips.append("#\(beacon.offerChannelName)")
+			if joinedChannelKeys.contains("\(beacon.offerChannelName)|\(beacon.offerChannelPSK.base64EncodedString())") {
+				chips.append(String(localized: "Already Joined"))
+			}
 		}
 		return chips
 	}
