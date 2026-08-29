@@ -67,11 +67,22 @@ SwiftUI client applications for iOS, iPadOS, macOS, visionOS and watchOS that co
     ```sh
     ./scripts/setup-hooks.sh
     ```
-4. Open `Meshtastic.xcworkspace`
+4. If you are not a member of the Meshtastic Apple Developer team and want to
+   run on a physical device or create an archive, create
+   `Configuration/Signing.local.xcconfig` with your own team and a unique
+   bundle identifier base:
+    ```xcconfig
+    DEVELOPMENT_TEAM = YOUR_TEAM_ID
+    BASE_BUNDLE_IDENTIFIER = com.example.MeshtasticClient
+    ```
+   This local file is ignored by Git. Meshtastic team members use the committed
+   defaults, and simulator builds need no local signing setup. See
+   [Code signing](CONTRIBUTING.md#code-signing) for details.
+5. Open `Meshtastic.xcworkspace`
     ```sh
     open Meshtastic.xcworkspace
     ```
-5. Build and run the `Meshtastic` target.
+6. Build and run the `Meshtastic` target.
 
 > `Meshtastic.xcodeproj` is generated from [`project.yml`](project.yml) by
 > [XcodeGen](https://github.com/yonaskolb/XcodeGen), but it is committed to the
@@ -105,4 +116,3 @@ This project is licensed under the GPL v3. See the [LICENSE](LICENSE) file for d
   <a href="https://meshtastic.org">meshtastic.org</a> · 
   <a href="https://github.com/meshtastic">GitHub @meshtastic</a>
 </p>
-

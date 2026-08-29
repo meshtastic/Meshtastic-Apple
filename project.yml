@@ -15,6 +15,10 @@ configs:
   Debug: debug
   Release: release
 
+configFiles:
+  Debug: "Configuration/Signing.xcconfig"
+  Release: "Configuration/Signing.xcconfig"
+
 packages:
   SwiftDraw:
     url: https://github.com/swhitty/SwiftDraw
@@ -82,7 +86,6 @@ settings:
       CLANG_WARN__DUPLICATE_METHOD_MATCH: "YES"
       COPY_PHASE_STRIP: "NO"
       DEBUG_INFORMATION_FORMAT: "dwarf"
-      DEVELOPMENT_TEAM: "GCH7VS5Y9R"
       ENABLE_STRICT_OBJC_MSGSEND: "YES"
       ENABLE_TESTABILITY: "YES"
       ENABLE_USER_SCRIPT_SANDBOXING: "NO"
@@ -145,7 +148,6 @@ settings:
       CLANG_WARN__DUPLICATE_METHOD_MATCH: "YES"
       COPY_PHASE_STRIP: "NO"
       DEBUG_INFORMATION_FORMAT: "dwarf-with-dsym"
-      DEVELOPMENT_TEAM: "GCH7VS5Y9R"
       ENABLE_NS_ASSERTIONS: "NO"
       ENABLE_STRICT_OBJC_MSGSEND: "YES"
       ENABLE_USER_SCRIPT_SANDBOXING: "YES"
@@ -175,6 +177,8 @@ targets:
     type: application
     platform: iOS
     sources:
+      - path: "Configuration"
+        type: syncedFolder
       - path: "Meshtastic/API"
         type: syncedFolder
       - path: "Meshtastic/Accessory"
@@ -397,7 +401,7 @@ targets:
           OTHER_LDFLAGS:
             - "-weak_framework"
             - "SwiftUI"
-          PRODUCT_BUNDLE_IDENTIFIER: "gvh.MeshtasticClient"
+          PRODUCT_BUNDLE_IDENTIFIER: "$(BASE_BUNDLE_IDENTIFIER)"
           PRODUCT_NAME: "$(TARGET_NAME)"
           SUPPORTS_MACCATALYST: "YES"
           SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD: "NO"
@@ -440,7 +444,7 @@ targets:
           OTHER_LDFLAGS:
             - "-weak_framework"
             - "SwiftUI"
-          PRODUCT_BUNDLE_IDENTIFIER: "gvh.MeshtasticClient"
+          PRODUCT_BUNDLE_IDENTIFIER: "$(BASE_BUNDLE_IDENTIFIER)"
           PRODUCT_NAME: "$(TARGET_NAME)"
           SUPPORTS_MACCATALYST: "YES"
           SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD: "NO"
@@ -458,7 +462,6 @@ targets:
         type: syncedFolder
         excludes:
           - "Info.plist"
-          - "WidgetsExtension.entitlements"
     dependencies:
       - package: MeshtasticProtobufs
         product: MeshtasticProtobufs
@@ -483,9 +486,8 @@ targets:
             - "@executable_path/../../Frameworks"
           MACOSX_DEPLOYMENT_TARGET: "14.6"
           MARKETING_VERSION: "2.7.20"
-          PRODUCT_BUNDLE_IDENTIFIER: "gvh.MeshtasticClient.Widgets"
+          PRODUCT_BUNDLE_IDENTIFIER: "$(BASE_BUNDLE_IDENTIFIER).Widgets"
           PRODUCT_NAME: "$(TARGET_NAME)"
-          PROVISIONING_PROFILE_SPECIFIER: ""
           SKIP_INSTALL: "YES"
           SUPPORTED_PLATFORMS: "iphoneos iphonesimulator"
           SUPPORTS_MACCATALYST: "YES"
@@ -512,9 +514,8 @@ targets:
             - "@executable_path/../../Frameworks"
           MACOSX_DEPLOYMENT_TARGET: "14.6"
           MARKETING_VERSION: "2.7.20"
-          PRODUCT_BUNDLE_IDENTIFIER: "gvh.MeshtasticClient.Widgets"
+          PRODUCT_BUNDLE_IDENTIFIER: "$(BASE_BUNDLE_IDENTIFIER).Widgets"
           PRODUCT_NAME: "$(TARGET_NAME)"
-          PROVISIONING_PROFILE_SPECIFIER: ""
           SKIP_INSTALL: "YES"
           SUPPORTED_PLATFORMS: "iphoneos iphonesimulator"
           SUPPORTS_MACCATALYST: "YES"
@@ -547,7 +548,7 @@ targets:
           GENERATE_INFOPLIST_FILE: "YES"
           IPHONEOS_DEPLOYMENT_TARGET: "17.5"
           MARKETING_VERSION: "1.0"
-          PRODUCT_BUNDLE_IDENTIFIER: "gvh.MeshtasticClient.MeshtasticTests"
+          PRODUCT_BUNDLE_IDENTIFIER: "$(BASE_BUNDLE_IDENTIFIER).MeshtasticTests"
           PRODUCT_NAME: "$(TARGET_NAME)"
           SUPPORTED_PLATFORMS: "iphoneos iphonesimulator"
           SUPPORTS_MACCATALYST: "YES"
@@ -567,7 +568,7 @@ targets:
           GENERATE_INFOPLIST_FILE: "YES"
           IPHONEOS_DEPLOYMENT_TARGET: "17.5"
           MARKETING_VERSION: "1.0"
-          PRODUCT_BUNDLE_IDENTIFIER: "gvh.MeshtasticClient.MeshtasticTests"
+          PRODUCT_BUNDLE_IDENTIFIER: "$(BASE_BUNDLE_IDENTIFIER).MeshtasticTests"
           PRODUCT_NAME: "$(TARGET_NAME)"
           SUPPORTED_PLATFORMS: "iphoneos iphonesimulator"
           SUPPORTS_MACCATALYST: "YES"
@@ -585,7 +586,6 @@ targets:
         type: syncedFolder
         excludes:
           - "Info.plist"
-          - "Meshtastic Watch App.entitlements"
     settings:
       configs:
         Debug:
@@ -595,19 +595,18 @@ targets:
           CODE_SIGN_ENTITLEMENTS: "Meshtastic Watch App/Meshtastic Watch App.entitlements"
           CODE_SIGN_STYLE: "Automatic"
           CURRENT_PROJECT_VERSION: "1"
-          DEVELOPMENT_TEAM: "GCH7VS5Y9R"
           GENERATE_INFOPLIST_FILE: "YES"
           INFOPLIST_FILE: "Meshtastic Watch App/Info.plist"
           INFOPLIST_KEY_CFBundleDisplayName: "Meshtastic"
           INFOPLIST_KEY_CFBundleIconName: "AppIcon"
           INFOPLIST_KEY_NSLocationWhenInUseUsageDescription: "Meshtastic needs your location to calculate distance and bearing to mesh nodes during foxhunt."
-          INFOPLIST_KEY_WKCompanionAppBundleIdentifier: "gvh.MeshtasticClient"
+          INFOPLIST_KEY_WKCompanionAppBundleIdentifier: "$(BASE_BUNDLE_IDENTIFIER)"
           INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp: "NO"
           LD_RUNPATH_SEARCH_PATHS:
             - "$(inherited)"
             - "@executable_path/Frameworks"
           MARKETING_VERSION: "2.7.20"
-          PRODUCT_BUNDLE_IDENTIFIER: "gvh.MeshtasticClient.watchkitapp"
+          PRODUCT_BUNDLE_IDENTIFIER: "$(BASE_BUNDLE_IDENTIFIER).watchkitapp"
           PRODUCT_NAME: "$(TARGET_NAME)"
           SDKROOT: "watchos"
           SKIP_INSTALL: "YES"
@@ -623,19 +622,18 @@ targets:
           CODE_SIGN_ENTITLEMENTS: "Meshtastic Watch App/Meshtastic Watch App.entitlements"
           CODE_SIGN_STYLE: "Automatic"
           CURRENT_PROJECT_VERSION: "1"
-          DEVELOPMENT_TEAM: "GCH7VS5Y9R"
           GENERATE_INFOPLIST_FILE: "YES"
           INFOPLIST_FILE: "Meshtastic Watch App/Info.plist"
           INFOPLIST_KEY_CFBundleDisplayName: "Meshtastic"
           INFOPLIST_KEY_CFBundleIconName: "AppIcon"
           INFOPLIST_KEY_NSLocationWhenInUseUsageDescription: "Meshtastic needs your location to calculate distance and bearing to mesh nodes during foxhunt."
-          INFOPLIST_KEY_WKCompanionAppBundleIdentifier: "gvh.MeshtasticClient"
+          INFOPLIST_KEY_WKCompanionAppBundleIdentifier: "$(BASE_BUNDLE_IDENTIFIER)"
           INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp: "NO"
           LD_RUNPATH_SEARCH_PATHS:
             - "$(inherited)"
             - "@executable_path/Frameworks"
           MARKETING_VERSION: "2.7.20"
-          PRODUCT_BUNDLE_IDENTIFIER: "gvh.MeshtasticClient.watchkitapp"
+          PRODUCT_BUNDLE_IDENTIFIER: "$(BASE_BUNDLE_IDENTIFIER).watchkitapp"
           PRODUCT_NAME: "$(TARGET_NAME)"
           SDKROOT: "watchos"
           SKIP_INSTALL: "YES"
@@ -650,6 +648,8 @@ targets:
     platform: tvOS
     sources:
       # New tvOS-only code (thin, independent client — mirrors the Watch App pattern).
+      - path: "Configuration"
+        type: syncedFolder
       - path: "Meshtastic TV"
         type: syncedFolder
         excludes:
@@ -690,13 +690,12 @@ targets:
           ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: "AccentColor"
           CODE_SIGN_STYLE: "Automatic"
           CURRENT_PROJECT_VERSION: "1"
-          DEVELOPMENT_TEAM: "GCH7VS5Y9R"
           INFOPLIST_FILE: "Meshtastic TV/Info.plist"
           LD_RUNPATH_SEARCH_PATHS:
             - "$(inherited)"
             - "@executable_path/Frameworks"
           MARKETING_VERSION: "2.7.20"
-          PRODUCT_BUNDLE_IDENTIFIER: "gvh.MeshtasticClient"
+          PRODUCT_BUNDLE_IDENTIFIER: "$(BASE_BUNDLE_IDENTIFIER)"
           PRODUCT_NAME: "$(TARGET_NAME)"
           SDKROOT: "appletvos"
           SUPPORTED_PLATFORMS: "appletvos appletvsimulator"
@@ -709,13 +708,12 @@ targets:
           ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: "AccentColor"
           CODE_SIGN_STYLE: "Automatic"
           CURRENT_PROJECT_VERSION: "1"
-          DEVELOPMENT_TEAM: "GCH7VS5Y9R"
           INFOPLIST_FILE: "Meshtastic TV/Info.plist"
           LD_RUNPATH_SEARCH_PATHS:
             - "$(inherited)"
             - "@executable_path/Frameworks"
           MARKETING_VERSION: "2.7.20"
-          PRODUCT_BUNDLE_IDENTIFIER: "gvh.MeshtasticClient"
+          PRODUCT_BUNDLE_IDENTIFIER: "$(BASE_BUNDLE_IDENTIFIER)"
           PRODUCT_NAME: "$(TARGET_NAME)"
           SDKROOT: "appletvos"
           SUPPORTED_PLATFORMS: "appletvos appletvsimulator"
@@ -737,10 +735,9 @@ targets:
         Debug:
           CODE_SIGN_STYLE: "Automatic"
           CURRENT_PROJECT_VERSION: "1"
-          DEVELOPMENT_TEAM: "GCH7VS5Y9R"
           GENERATE_INFOPLIST_FILE: "YES"
           MARKETING_VERSION: "1.0"
-          PRODUCT_BUNDLE_IDENTIFIER: "gvh.MeshtasticClient.TVUITests"
+          PRODUCT_BUNDLE_IDENTIFIER: "$(BASE_BUNDLE_IDENTIFIER).TVUITests"
           PRODUCT_NAME: "$(TARGET_NAME)"
           SDKROOT: "appletvos"
           SUPPORTED_PLATFORMS: "appletvos appletvsimulator"
@@ -750,10 +747,9 @@ targets:
         Release:
           CODE_SIGN_STYLE: "Automatic"
           CURRENT_PROJECT_VERSION: "1"
-          DEVELOPMENT_TEAM: "GCH7VS5Y9R"
           GENERATE_INFOPLIST_FILE: "YES"
           MARKETING_VERSION: "1.0"
-          PRODUCT_BUNDLE_IDENTIFIER: "gvh.MeshtasticClient.TVUITests"
+          PRODUCT_BUNDLE_IDENTIFIER: "$(BASE_BUNDLE_IDENTIFIER).TVUITests"
           PRODUCT_NAME: "$(TARGET_NAME)"
           SDKROOT: "appletvos"
           SUPPORTED_PLATFORMS: "appletvos appletvsimulator"
@@ -791,6 +787,7 @@ schemes:
       config: Debug
     archive:
       config: Release
+
   "Meshtastic (Background BLE)":
     build:
       targets:
@@ -854,4 +851,3 @@ schemes:
       config: Debug
     archive:
       config: Release
-

@@ -98,3 +98,6 @@ marketing/
 
 # Stray xcodebuild output logs (never commit build logs)
 /build*.log
+
+# Local Config Files
+Configuration/Signing.local.xcconfig
