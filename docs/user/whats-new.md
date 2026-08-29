@@ -14,8 +14,6 @@ Recent user-facing changes from roughly the last 12 months. Newest at the top.
 Show roughly the last 12 months of changes; archive entries older than a year by removing them.
 -->
 
-**Aug 2026** — [Apple Watch App](watch.md) — The Watch app now declares notification support, so Meshtastic gets its own entry under Watch → Notifications and alerts on the wrist can be silenced there without touching iPhone notifications. The page also explains that removing the Watch app does not stop mirrored alerts.
-
 **Jul 2026** — [Settings](settings.md) — Packet Authenticity: on firmware that reports XEdDSA support, Security settings gains a Protection Level of Compatible, Balanced, or Strict, controlling whether your radio accepts mesh packets it cannot cryptographically authenticate; Strict asks for confirmation first, and the setting matches the Meshtastic app for Android.
 
 **Jul 2026** — [Bluetooth Device Connection](bluetooth.md) — Connect now shows an inline "Bluetooth is off" row in Available Radios when Bluetooth is disabled, with a tap-to-open-Settings shortcut — previously there was no in-app signal once the system Bluetooth power alert was suppressed.
