@@ -1420,12 +1420,7 @@ extension MeshPackets {
 				entity.broadcastOfferChannelPSK = config.hasBroadcastOfferChannel ? config.broadcastOfferChannel.psk : Data()
 				entity.broadcastOfferRegion = Int32(config.broadcastOfferRegion.rawValue)
 				entity.broadcastOfferPreset = config.hasBroadcastOfferPreset ? Int32(config.broadcastOfferPreset.rawValue) : -1
-				entity.broadcastOnChannelName = config.hasBroadcastOnChannel ? config.broadcastOnChannel.name : ""
-				entity.broadcastOnChannelPSK = config.hasBroadcastOnChannel ? config.broadcastOnChannel.psk : Data()
-				entity.broadcastOnRegion = Int32(config.broadcastOnRegion.rawValue)
-				entity.broadcastOnPreset = config.hasBroadcastOnPreset ? Int32(config.broadcastOnPreset.rawValue) : -1
 				entity.broadcastIntervalSecs = config.broadcastIntervalSecs > 0 ? Int32(truncatingIfNeeded: config.broadcastIntervalSecs) : 3600
-				entity.broadcastSendAsNode = Int64(config.broadcastSendAsNode)
 
 				// Rebuild the multi-target list from the incoming config (cascade replaces the old rows).
 				for old in entity.broadcastTargets {
