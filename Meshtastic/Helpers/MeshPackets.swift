@@ -1149,7 +1149,7 @@ actor MeshPackets {
 		return nil
 	}
 
-	func adminAppPacket (packet: MeshPacket) {
+	func adminAppPacket (packet: MeshPacket, connectedNodeNum: Int64? = nil) {
 		if let adminMessage = try? AdminMessage(serializedBytes: packet.decoded.payload) {
 
 			if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getCannedMessageModuleMessagesResponse(adminMessage.getCannedMessageModuleMessagesResponse) {
@@ -1238,17 +1238,23 @@ actor MeshPackets {
 			}
 			// An admin *response* carrying a session passkey is proof an admin request we
 			// sent to this node succeeded, so remember that it has been administered.
-			// Response variants only — never a request another node sent. Runs after the
-			// handlers above so a node first heard via a metadata response exists by now.
-			switch adminMessage.payloadVariant {
-			case .getChannelResponse, .getOwnerResponse, .getConfigResponse, .getModuleConfigResponse,
-				 .getCannedMessageModuleMessagesResponse, .getDeviceMetadataResponse, .getRingtoneResponse,
-				 .getDeviceConnectionStatusResponse, .getNodeRemoteHardwarePinsResponse, .getUiConfigResponse:
-				if !adminMessage.sessionPasskey.isEmpty {
+			// Marking requires a response variant (never a request another node sent),
+			// a response correlated to a request (requestID != 0), and a packet addressed
+			// to the connected node — an unsolicited or forwarded admin message never
+			// unlocks the remote-admin UI. Runs after the handlers above so a node first
+			// heard via a metadata response exists by now.
+			if let connectedNodeNum,
+			   packet.decoded.requestID != 0,
+			   Int64(packet.to) == connectedNodeNum,
+			   !adminMessage.sessionPasskey.isEmpty {
+				switch adminMessage.payloadVariant {
+				case .getChannelResponse, .getOwnerResponse, .getConfigResponse, .getModuleConfigResponse,
+					 .getCannedMessageModuleMessagesResponse, .getDeviceMetadataResponse, .getRingtoneResponse,
+					 .getDeviceConnectionStatusResponse, .getNodeRemoteHardwarePinsResponse, .getUiConfigResponse:
 					markNodeAdministered(num: Int64(packet.from))
+				default:
+					break
 				}
-			default:
-				break
 			}
 			// Save an ack for the admin message log for each admin message response received as we stopped sending acks if there is also a response to reduce airtime.
 			self.adminResponseAck(packet: packet)

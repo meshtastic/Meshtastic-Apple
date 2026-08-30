@@ -104,10 +104,13 @@ struct NodeDetail: View {
 		return (fromUser, toUser)
 	}
 	/// The status row opens the status message editor for the connected node, or for a remote
-	/// node we have successfully administered before (firmware 2.8+ in both cases).
+	/// node we have successfully administered before. Firmware 2.8+ in both cases: the
+	/// connected node via `supportsStatusMessage`, a remote target additionally via its own
+	/// reported metadata (permissive when unknown, matching the house capability gates).
 	private var canEditStatusMessage: Bool {
-		accessoryManager.supportsStatusMessage &&
-			(accessoryManager.activeDeviceNum == nodeNum || node.hasBeenAdministered)
+		guard accessoryManager.supportsStatusMessage else { return false }
+		if accessoryManager.activeDeviceNum == nodeNum { return true }
+		return node.hasBeenAdministered && node.firmwareSupportsStatusMessage
 	}
 	@State var showingCompassSheet = false
 	@State private var nodeForDisplayNameEdit: NodeInfoEntity?

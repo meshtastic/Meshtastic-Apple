@@ -68,7 +68,31 @@ private struct StatusMessageAlertModifier: ViewModifier {
 				)
 				status = prefill
 				initialStatus = prefill
+				refreshRemoteSessionIfNeeded()
 			}
+	}
+
+	/// A remote save must carry a live session passkey — the firmware rejects writes with a
+	/// stale one (ADMIN_BAD_SESSION_KEY) and the passkey only lasts 5 minutes. When the editor
+	/// opens for a remote node without a live session, request this module's config now so the
+	/// response re-seeds the passkey while the user is still typing — the same on-appear
+	/// refresh the config screens use (`requestRemoteConfig`).
+	private func refreshRemoteSessionIfNeeded() {
+		guard let presentedNode = node,
+			  let deviceNum = accessoryManager.activeDeviceNum,
+			  presentedNode.num != deviceNum,
+			  !presentedNode.hasLiveAdminSession,
+			  let connectedNode = getNodeInfo(id: deviceNum, context: context),
+			  let fromUser = connectedNode.user,
+			  let toUser = presentedNode.user
+		else { return }
+		Task {
+			do {
+				try await accessoryManager.requestStatusMessageModuleConfig(fromUser: fromUser, toUser: toUser)
+			} catch {
+				Logger.mesh.error("🚨 Status message session refresh failed: \(error.localizedDescription)")
+			}
+		}
 	}
 
 	/// Clamp to the 80-byte UTF-8 limit the firmware enforces, dropping whole trailing
@@ -93,6 +117,13 @@ private struct StatusMessageAlertModifier: ViewModifier {
 			  let toUser = presentedNode.user
 		else {
 			Logger.mesh.warning("⚠️ Cannot save status message: missing connected node or user entities")
+			return
+		}
+		// A remote write needs a live admin session; with a stale passkey the target just
+		// rejects it. The editor requested a refresh when it opened — if none arrived by
+		// now, skip the send and the optimistic local update rather than pretending it worked.
+		if presentedNode.num != deviceNum && !presentedNode.hasLiveAdminSession {
+			Logger.mesh.warning("⚠️ Not saving status message for \(toUser.longName ?? "unknown node", privacy: .public): admin session expired")
 			return
 		}
 		var config = ModuleConfig.StatusMessageConfig()
