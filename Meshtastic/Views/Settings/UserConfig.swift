@@ -25,6 +25,8 @@ struct UserConfig: View {
 	@State var hasChanges = false
 	@State var shortName = ""
 	@State var longName: String = ""
+	@State var callSign: String = ""
+	@State var hamLongName: String = ""
 	@State var isUnmessagable: Bool = false
 	@State var isLicensed = false
 	@State var overrideDutyCycle = false
@@ -40,35 +42,59 @@ struct UserConfig: View {
 		Form {
 			Section(header: Text("User Details")) {
 				
-				VStack(alignment: .leading) {
-					HStack {
-						Label(isLicensed ? "Call Sign" : "Long Name", systemImage: "person.crop.rectangle.fill")
-						
-						TextField("Long Name", text: $longName)
-							.onChange(of: longName) {
-								var newValue = longName.withoutVariationSelectors
-								var totalBytes = newValue.utf8.count
-								// Only mess with the value if it is too big
-								while totalBytes > (isLicensed ? 6 : 36) {
-									newValue = String(newValue.dropLast())
-									totalBytes = newValue.utf8.count
+				if isLicensed {
+					VStack(alignment: .leading) {
+						HStack {
+							Label("Call Sign", systemImage: "person.crop.rectangle.fill")
+							TextField("Call Sign", text: $callSign)
+								.onChange(of: callSign) {
+									callSign = HamName.limitCallSign(callSign.withoutVariationSelectors)
+									longName = HamName(callSign: callSign, longName: hamLongName).composed
 								}
-								longName = newValue
-								if longName.contains("📵") {
-									isUnmessagable = true
+						}
+						Text("Call Sign can be up to 7 bytes long.")
+							.foregroundColor(.gray)
+							.font(.callout)
+						if callSign.isEmpty {
+							Label("Call Sign must not be empty", systemImage: "exclamationmark.square")
+								.foregroundColor(.red)
+						}
+						HStack {
+							Label("Long Name", systemImage: "text.alignleft")
+							TextField("Long Name", text: $hamLongName)
+								.onChange(of: hamLongName) {
+									hamLongName = HamName.limitLongName(hamLongName.withoutVariationSelectors)
+									longName = HamName(callSign: callSign, longName: hamLongName).composed
 								}
-							}
+						}
+						Text("Optional descriptive name, up to 14 bytes long.")
+							.foregroundColor(.gray)
+							.font(.callout)
 					}
 					.keyboardType(.default)
 					.disableAutocorrection(true)
-					if longName.isEmpty && isLicensed {
-						Label("Call Sign must not be empty", systemImage: "exclamationmark.square")
-							.foregroundColor(.red)
+				} else {
+					VStack(alignment: .leading) {
+						HStack {
+							Label("Long Name", systemImage: "person.crop.rectangle.fill")
+							TextField("Long Name", text: $longName)
+								.onChange(of: longName) {
+									var newValue = longName.withoutVariationSelectors
+									while newValue.utf8.count > 36 {
+										newValue = String(newValue.dropLast())
+									}
+									longName = newValue
+									if longName.contains("📵") {
+										isUnmessagable = true
+									}
+								}
+						}
+						Text("Long Name can be up to 36 bytes long.")
+							.foregroundColor(.gray)
+							.font(.callout)
 					}
-					Text("\(String(isLicensed ? "Call Sign" : "Long Name")) can be up to \(isLicensed ? "8" : "36") bytes long.")
-						.foregroundColor(.gray)
-						.font(.callout)
-					
+					.keyboardType(.default)
+					.disableAutocorrection(true)
 				}
 				VStack(alignment: .leading) {
 					HStack {
@@ -162,7 +188,7 @@ struct UserConfig: View {
 						titleVisibility: .visible
 					) {
 						Button("Save User Config to \(node?.user?.longName ?? "Unknown")?") {
-							if longName.isEmpty && isLicensed {
+							if isLicensed && !HamName.hasCallSign(callSign) {
 								return
 							}
 							
@@ -187,7 +213,8 @@ struct UserConfig: View {
 									var ham = HamParameters()
 									ham.shortName = shortName
 									// ham.isUnmessagable = isUnmessagable
-									ham.callSign = longName
+									ham.callSign = callSign
+									ham.longName = hamLongName
 									ham.txPower = Int32(txPower)
 									ham.frequency = overrideFrequency
 									Task {
@@ -215,6 +242,9 @@ struct UserConfig: View {
 		.onAppear {
 			self.shortName = node?.user?.shortName ?? ""
 			self.longName = node?.user?.longName ?? ""
+			let hamName = HamName(composed: longName)
+			self.callSign = hamName.callSign
+			self.hamLongName = hamName.longName
 			self.isUnmessagable = node?.user?.unmessagable ?? false
 			self.isLicensed = node?.user?.isLicensed ?? false
 			self.txPower = Int(node?.loRaConfig?.txPower ?? 0)
@@ -235,10 +265,13 @@ struct UserConfig: View {
 				if newIsLicensed != user.isLicensed {
 					hasChanges = true
 					if newIsLicensed {
-						if user.longName?.count ?? 0 > 8 {
-							longName = ""
-						}
+						longName = HamName.forOnboarding(longName)
+					} else {
+						longName = HamName.forUnlicensing(longName)
 					}
+					let hamName = HamName(composed: longName)
+					callSign = hamName.callSign
+					hamLongName = hamName.longName
 				}
 			}
 		}
