@@ -48,7 +48,7 @@ struct RegionCodesTests {
 	}
 
 	@Test func totalCaseCount() {
-		#expect(RegionCodes.allCases.count == 38)
+		#expect(RegionCodes.allCases.count == 37)
 	}
 
 	@Test func eu433_hasDutyCycle10() {
@@ -92,9 +92,9 @@ struct ModemPresetsTests {
 		}
 	}
 
-	@Test func allCases_haveProtoEnumValue() {
+	@Test func allCases_haveMatchingProtoRawValue() {
 		for preset in ModemPresets.allCases {
-			_ = preset.protoEnumValue()
+			#expect(preset.protoEnumValue().rawValue == preset.rawValue)
 		}
 	}
 
@@ -106,8 +106,89 @@ struct ModemPresetsTests {
 		#expect(ModemPresets.shortTurbo.snrLimit() == -7.5)
 	}
 
+	@Test func defaultCodingRate_matchesPresetParams() {
+		#expect(ModemPresets.longFast.defaultCodingRate == 5)
+		#expect(ModemPresets.longSlow.defaultCodingRate == 8)
+		#expect(ModemPresets.longModerate.defaultCodingRate == 8)
+		#expect(ModemPresets.longTurbo.defaultCodingRate == 8)
+		#expect(ModemPresets.narrowFast.defaultCodingRate == 6)
+		#expect(ModemPresets.narrowSlow.defaultCodingRate == 6)
+	}
+
 	@Test func totalCaseCount() {
-		#expect(ModemPresets.allCases.count == 15)
+		#expect(ModemPresets.allCases.count == 16)
+	}
+
+	@Test func mediumTurbo_values() {
+		#expect(ModemPresets.mediumTurbo.protoEnumValue() == .mediumTurbo)
+		#expect(ModemPresets.mediumTurbo.snrLimit() == -12.5)
+		#expect(ModemPresets.mediumTurbo.bandwidthMHz == 0.5)
+	}
+
+	@Test func firmwareChannelNames_matchEveryProtoPreset() {
+		let expected: [(Config.LoRaConfig.ModemPreset, String)] = [
+			(.longFast, "LongFast"),
+			(.longSlow, "LongSlow"),
+			(.veryLongSlow, "VLongSlow"),
+			(.mediumSlow, "MediumSlow"),
+			(.mediumFast, "MediumFast"),
+			(.shortSlow, "ShortSlow"),
+			(.shortFast, "ShortFast"),
+			(.longModerate, "LongMod"),
+			(.shortTurbo, "ShortTurbo"),
+			(.longTurbo, "LongTurbo"),
+			(.liteFast, "LiteFast"),
+			(.liteSlow, "LiteSlow"),
+			(.narrowFast, "NarrowFast"),
+			(.narrowSlow, "NarrowSlow"),
+			(.tinyFast, "TinyFast"),
+			(.tinySlow, "TinySlow"),
+			(.mediumTurbo, "MediumTurbo"),
+		]
+
+		#expect(expected.count == Config.LoRaConfig.ModemPreset.allCases.count)
+		for (preset, name) in expected {
+			#expect(preset.firmwareChannelName == name)
+		}
+	}
+
+	@Test func unknownFirmwarePreset_hasNoChannelName() {
+		#expect(Config.LoRaConfig.ModemPreset(rawValue: 99)?.firmwareChannelName == nil)
+	}
+
+	@Test func defaultChannelNames_useFirmwareSpelling() {
+		#expect(ModemPresets.medSlow.androidChannelName == "MediumSlow")
+		#expect(ModemPresets.medFast.androidChannelName == "MediumFast")
+		#expect(ModemPresets.longModerate.androidChannelName == "LongMod")
+	}
+}
+
+// MARK: - CodingRates
+
+@Suite("CodingRates")
+struct CodingRatesTests {
+
+	@Test func customMode_allowsExplicitCodingRatesOnly() {
+		#expect(CodingRates.options(usePreset: false, modemPreset: .longFast) == [5, 6, 7, 8])
+	}
+
+	@Test func presetMode_allowsAutoAndHigherRedundancyOnly() {
+		#expect(CodingRates.options(usePreset: true, modemPreset: .longFast) == [0, 6, 7, 8])
+		#expect(CodingRates.options(usePreset: true, modemPreset: .narrowFast) == [0, 7, 8])
+		#expect(CodingRates.options(usePreset: true, modemPreset: .longSlow) == [0])
+	}
+
+	@Test func presetMode_normalizesInvalidValuesToAuto() {
+		#expect(CodingRates.normalized(0, usePreset: true, modemPreset: .longFast) == 0)
+		#expect(CodingRates.normalized(5, usePreset: true, modemPreset: .longFast) == 0)
+		#expect(CodingRates.normalized(5, usePreset: true, modemPreset: .longSlow) == 0)
+		#expect(CodingRates.normalized(8, usePreset: true, modemPreset: .longSlow) == 0)
+		#expect(CodingRates.normalized(9, usePreset: true, modemPreset: .longFast) == 0)
+	}
+
+	@Test func customMode_normalizesInvalidValuesToLowestCodingRate() {
+		#expect(CodingRates.normalized(0, usePreset: false, modemPreset: .longFast) == 5)
+		#expect(CodingRates.normalized(9, usePreset: false, modemPreset: .longFast) == 5)
 	}
 }
 
@@ -129,7 +210,64 @@ struct BandwidthsTests {
 	}
 
 	@Test func totalCaseCount() {
-		#expect(Bandwidths.allCases.count == 5)
+		#expect(Bandwidths.allCases.count == 9)
+	}
+
+	@Test func subGHzOptions_preserveExistingWireValues() {
+		let options = Bandwidths.selectable(region: .us, pioEnv: nil)
+
+		#expect(options.map(\.pickerValue) == [31, 62, 125, 0, 500])
+	}
+
+	@Test func unknownRegion_fallsBackToSubGHzOptions() {
+		let options = Bandwidths.selectable(region: nil, pioEnv: nil)
+
+		#expect(options.map(\.pickerValue) == [31, 62, 125, 0, 500])
+	}
+
+	@Test func sx128xOptions_includeAllCanonicalHighBandValues() {
+		let options = Bandwidths.selectable(region: .lora24, pioEnv: "tlora-v2-1-1_8")
+
+		#expect(options.map(\.pickerValue) == [200, 400, 800, 1600])
+		#expect(options.map(\.description) == ["203.125 kHz", "406.25 kHz", "812.5 kHz", "1625 kHz"])
+	}
+
+	@Test(arguments: ["my-esp32s3-diy-oled", "my-esp32s3-diy-eink"])
+	func diySX128xOptions_include1625kHzBandwidth(pioEnv: String) {
+		let options = Bandwidths.selectable(region: .lora24, pioEnv: pioEnv)
+
+		#expect(options.map(\.pickerValue) == [200, 400, 800, 1600])
+	}
+
+	@Test func lr1121Options_excludeUnsupported1625kHzBandwidth() {
+		let options = Bandwidths.selectable(region: .lora24, pioEnv: "muzi-base")
+
+		#expect(options.map(\.pickerValue) == [200, 400, 800])
+	}
+
+	@Test func mixedSX128xLR1121Target_usesConservativeOptions() {
+		let options = Bandwidths.selectable(region: .lora24, pioEnv: "tlora-t3s3-v1")
+
+		#expect(options.map(\.pickerValue) == [200, 400, 800])
+	}
+
+	@Test func invalidStoredBandwidth_mustBeReplacedBeforeSaving() {
+		#expect(!Bandwidths.isValid(125, region: .lora24, pioEnv: "tlora-v2-1-1_8"))
+		#expect(!Bandwidths.isValid(1600, region: .lora24, pioEnv: "muzi-base"))
+		#expect(Bandwidths.isValid(800, region: .lora24, pioEnv: "muzi-base"))
+		#expect(Bandwidths.isValid(0, region: .us, pioEnv: nil))
+	}
+
+	@Test func zeroBandwidthInLora24_usesFirmwareDefault() {
+		#expect(Bandwidths.validationIssue(for: 0, region: .lora24, pioEnv: "tlora-t3s3-v1") == nil)
+		#expect(Bandwidths.isValid(0, region: .lora24, pioEnv: "tlora-t3s3-v1"))
+		#expect(Bandwidths.description(forPickerValue: 0, region: .lora24) == "Default (812.5 kHz)")
+	}
+
+	@Test func explicit250kHzStoredValue_remainsValidAndDisplaysAsDefaultOption() {
+		#expect(Bandwidths.isValid(250, region: .us, pioEnv: nil))
+		#expect(Bandwidths.pickerValue(forStoredValue: 250, region: .us) == 0)
+		#expect(Bandwidths.pickerValue(forStoredValue: 250, region: .lora24) == 250)
 	}
 }
 
@@ -173,7 +311,7 @@ struct DeviceRolesTests {
 	}
 
 	@Test func totalCaseCount() {
-		#expect(DeviceRoles.allCases.count == 11)
+		#expect(DeviceRoles.allCases.count == 12)
 	}
 }
 
@@ -636,6 +774,20 @@ struct LoRaFirmwareGatingTests {
 		#expect(selectable.contains(.tinyFast))
 		#expect(selectable.contains(.liteSlow))
 	}
+
+	@Test func deprecatedPreset_excludedFromSelectable() {
+		#expect(ModemPresets.longSlow.isDeprecated)
+		#expect(!ModemPresets.selectable(supports2_8: false).contains(.longSlow))
+		#expect(!ModemPresets.selectable(supports2_8: true).contains(.longSlow))
+		#expect(!ModemPresets.userSelectable.contains(.longSlow))
+	}
+
+	@Test func deprecatedPreset_stillExistsForDisplay() {
+		// longSlow remains a case so an existing radio's value round-trips and renders its label.
+		let preset = ModemPresets(rawValue: 1)
+		#expect(preset == .longSlow)
+		#expect(preset?.name == "LongSlow")
+	}
 }
 
 // MARK: - LoRaRegionPresetMap decoding (2.8 region→preset compatibility)
@@ -671,7 +823,7 @@ struct LoRaRegionPresetMapTests {
 			group([.tinyFast, .tinySlow], .tinyFast, true),
 			group([.narrowFast, .narrowSlow], .narrowSlow, true)
 		]
-		let group0Regions: [Region] = [.us, .eu433, .cn, .jp, .anz, .anz433, .ru, .kr, .tw, .in, .nz865, .th, .ua433, .ua868, .my433, .my919, .sg923, .ph433, .ph868, .ph915, .kz433, .kz863, .np865, .br902, .lora24]
+		let group0Regions: [Region] = [.us, .eu433, .cn, .jp, .anz, .anz433, .ru, .kr, .tw, .in, .nz865, .th, .ua433, .my433, .my919, .sg923, .ph433, .ph868, .ph915, .kz433, .kz863, .np865, .br902, .lora24]
 		map.regionGroups = group0Regions.map { entry($0, 0) }
 		map.regionGroups.append(entry(.eu868, 1))
 		map.regionGroups.append(entry(.eu866, 2))
@@ -729,7 +881,7 @@ struct LoRaRegionPresetMapTests {
 	}
 
 	@Test func decode_allRegionsPresent() {
-		#expect(referenceMap().decoded().count == 32)
+		#expect(referenceMap().decoded().count == 31)
 	}
 
 	@Test func absentRegion_hasNoConstraint() {
@@ -747,7 +899,7 @@ struct LoRaRegionPresetMapTests {
 		map.regionGroups.append(bad)
 		let decoded = map.decoded()
 		#expect(decoded[.eu874] == nil)   // skipped defensively (spec §4)
-		#expect(decoded.count == 32)      // unchanged
+		#expect(decoded.count == 31)      // unchanged
 	}
 
 	@Test func emptyMap_decodesEmpty() {
@@ -780,10 +932,25 @@ struct LoRaPresetSelectionTests {
 		licensedOnly: false)
 
 	// A factory-flashed (region unset) node on 2.8 firmware defaults to Long Turbo
-	// when the US region is selected.
-	@Test func factoryUS_on28_defaultsToLongTurbo() {
+	// when the US region is selected and there is no current preset to preserve.
+	@Test func factoryUS_on28_withoutCurrentPreset_defaultsToLongTurbo() {
+		let result = ModemPresets.presetToSelect(forRegion: .us, factoryFresh: true, supports2_8: true, usePreset: true, regionInfo: usInfo, currentPreset: nil)
+		#expect(result == .longTurbo)
+	}
+
+	// Stock Long Fast must migrate to Long Turbo on a factory-fresh US node even
+	// though the region map lists Long Fast: its bandwidth is not US-compliant,
+	// and 2.8 moves US users off it.
+	@Test func factoryUS_on28_stockLongFast_movesToLongTurbo() {
 		let result = ModemPresets.presetToSelect(forRegion: .us, factoryFresh: true, supports2_8: true, usePreset: true, regionInfo: usInfo, currentPreset: .longFast)
 		#expect(result == .longTurbo)
+	}
+
+	// A deliberate preset from a community firmware build must survive the first
+	// region selection when that preset is legal in the selected region.
+	@Test func factoryUS_on28_keepsLegalShortTurbo() {
+		let result = ModemPresets.presetToSelect(forRegion: .us, factoryFresh: true, supports2_8: true, usePreset: true, regionInfo: usInfo, currentPreset: .shortTurbo)
+		#expect(result == nil)
 	}
 
 	// US allows Long Turbo even before the region map has been received.
@@ -832,5 +999,124 @@ struct LoRaPresetSelectionTests {
 		let usNoTurbo = RegionPresetInfo(presets: Set<Preset>([.longFast, .longSlow]), defaultPreset: .longFast, licensedOnly: false)
 		let result = ModemPresets.presetToSelect(forRegion: .us, factoryFresh: true, supports2_8: true, usePreset: true, regionInfo: usNoTurbo, currentPreset: .longFast)
 		#expect(result == nil)
+	}
+
+	@Test func factoryUS_longTurboIllegal_withoutCurrentPreset_usesRegionDefault() {
+		let usNoTurbo = RegionPresetInfo(presets: Set<Preset>([.longFast, .longSlow]), defaultPreset: .longFast, licensedOnly: false)
+		let result = ModemPresets.presetToSelect(forRegion: .us, factoryFresh: true, supports2_8: true, usePreset: true, regionInfo: usNoTurbo, currentPreset: nil)
+		#expect(result == .longFast)
+	}
+}
+
+@Suite("LoRa channel frequency calculation")
+struct LoRaChannelCalculatorTests {
+	@Test("ITU Region 2 TinyFast defaults to firmware slot 51 at 145.010 MHz")
+	func itu2TinyFastDefault() {
+		let calculator = LoRaChannelCalculator(
+			regionCode: RegionCodes.itu22M.rawValue,
+			usePreset: true,
+			modemPreset: ModemPresets.tinyFast.rawValue,
+			channelNum: 0,
+			bandwidth: 0,
+			overrideFrequency: 0
+		)
+
+		let slot = calculator.effectiveChannelSlot(primaryName: "TinyFast")
+		#expect(slot == 51)
+		#expect(abs(calculator.radioFrequencyMHz(slot: slot) - 145.010) < 0.001)
+	}
+
+	@Test("ITU Region 2 TinyFast explicit slots advance by 20 kHz")
+	func itu2TinyFastExplicitSlot() {
+		let calculator = LoRaChannelCalculator(
+			regionCode: RegionCodes.itu22M.rawValue,
+			usePreset: true,
+			modemPreset: ModemPresets.tinyFast.rawValue,
+			channelNum: 52,
+			bandwidth: 0,
+			overrideFrequency: 0
+		)
+
+		let slot = calculator.effectiveChannelSlot(primaryName: "TinyFast")
+		#expect(slot == 52)
+		#expect(abs(calculator.radioFrequencyMHz(slot: slot) - 145.030) < 0.001)
+	}
+
+	@Test("EU_866 LiteFast uses the firmware Lite band plan")
+	func eu866LiteFast() {
+		let calculator = LoRaChannelCalculator(
+			regionCode: RegionCodes.eu866.rawValue,
+			usePreset: true,
+			modemPreset: ModemPresets.liteFast.rawValue,
+			channelNum: 0,
+			bandwidth: 0,
+			overrideFrequency: 0
+		)
+
+		// Firmware PROFILE_LITE: 400 kHz spacing + 37.5 kHz padding on either side
+		// of LiteFast's 125 kHz bandwidth → four 600 kHz slots in 865.6–867.6 MHz.
+		#expect(abs(calculator.radioFrequencyMHz(slot: 1) - 865.700) < 0.001)
+		#expect(abs(calculator.radioFrequencyMHz(slot: 4) - 867.500) < 0.001)
+	}
+
+	@Test("Channel frequency applies the configured offset after the firmware slot calculation")
+	func appliesFrequencyOffset() {
+		let calculator = LoRaChannelCalculator(
+			regionCode: RegionCodes.itu22M.rawValue,
+			usePreset: true,
+			modemPreset: ModemPresets.tinyFast.rawValue,
+			channelNum: 0,
+			bandwidth: 0,
+			overrideFrequency: 0,
+			frequencyOffset: 0.010
+		)
+
+		let slot = calculator.effectiveChannelSlot(primaryName: "TinyFast")
+		#expect(abs(calculator.radioFrequencyMHz(slot: slot) - 145.020) < 0.001)
+	}
+
+	@Test("Override frequency applies the configured offset regardless of slot")
+	func overrideFrequencyAppliesOffset() {
+		let calculator = LoRaChannelCalculator(
+			regionCode: RegionCodes.itu22M.rawValue,
+			usePreset: true,
+			modemPreset: ModemPresets.tinyFast.rawValue,
+			channelNum: 0,
+			bandwidth: 0,
+			overrideFrequency: 145.500,
+			frequencyOffset: 0.010
+		)
+
+		#expect(abs(calculator.radioFrequencyMHz(slot: 999) - 145.510) < 0.001)
+	}
+
+	@Test("ITU Region 2 1.25m uses the 100 kHz ham channel plan")
+	func itu2OnePointTwoFiveMeterDefault() {
+		let calculator = LoRaChannelCalculator(
+			regionCode: RegionCodes.itu2125Cm.rawValue,
+			usePreset: true,
+			modemPreset: ModemPresets.narrowSlow.rawValue,
+			channelNum: 0,
+			bandwidth: 0,
+			overrideFrequency: 0
+		)
+
+		let slot = calculator.effectiveChannelSlot(primaryName: "NarrowSlow")
+		#expect(slot == 37)
+		#expect(abs(calculator.radioFrequencyMHz(slot: slot) - 223.650) < 0.001)
+	}
+
+	@Test("US LongFast keeps standard channel centers")
+	func usLongFast() {
+		let calculator = LoRaChannelCalculator(
+			regionCode: RegionCodes.us.rawValue,
+			usePreset: true,
+			modemPreset: ModemPresets.longFast.rawValue,
+			channelNum: 1,
+			bandwidth: 0,
+			overrideFrequency: 0
+		)
+
+		#expect(abs(calculator.radioFrequencyMHz(slot: 1) - 902.125) < 0.001)
 	}
 }

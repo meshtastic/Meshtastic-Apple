@@ -1,4 +1,5 @@
 import Foundation
+import UIKit
 import Network
 import CryptoKit
 import Combine
@@ -34,13 +35,24 @@ class ESP32WifiOTAViewModel: ObservableObject {
 	func startUpdate(host: String? = nil, firmwareUrl: URL, password: String? = nil) async {
 		guard otaState == .idle || otaState == .error else { return }
 		
+		UIApplication.shared.isIdleTimerDisabled = true
+		defer {
+			UIApplication.shared.isIdleTimerDisabled = false
+		}
+		
 		progress = 0.0
 		errorMessage = nil
 		statusMessage = "Starting..."
 		otaState = .waitingForConnection
 		
 		do {
-			let firmwareData = try Data(contentsOf: firmwareUrl)
+			let (firmwareData, fileHash) = try await Task.detached(priority: .userInitiated) {
+				let data = try Data(contentsOf: firmwareUrl, options: .mappedIfSafe)
+				let digest = SHA256.hash(data: data)
+				let hash = digest.map { String(format: "%02hhx", $0) }.joined()
+				return (data, hash)
+			}.value
+			
 			let targetEndpoint: NWEndpoint
 			
 			// 1. Discovery / Connection Phase
@@ -60,7 +72,7 @@ class ESP32WifiOTAViewModel: ObservableObject {
 			statusMessage = "Device ready. Negotiating..."
 			Logger.services.info("[ESP OTA] Device Ready at \(String(describing: targetEndpoint)). Starting Protocol.")
 			
-			try await connectAndUpload(endpoint: targetEndpoint, data: firmwareData)
+			try await connectAndUpload(endpoint: targetEndpoint, data: firmwareData, fileHash: fileHash)
 			
 			// 3. Success
 			// Explicitly force progress to 1.0 to ensure Checkmark appears
@@ -79,7 +91,7 @@ class ESP32WifiOTAViewModel: ObservableObject {
 	
 	// MARK: - TCP Protocol Logic
 	
-	private func connectAndUpload(endpoint: NWEndpoint, data: Data) async throws {
+	private func connectAndUpload(endpoint: NWEndpoint, data: Data, fileHash: String) async throws {
 		let connection = NWConnection(to: endpoint, using: .tcp)
 		let reader = AsyncLineReader(connection: connection)
 		
@@ -88,8 +100,6 @@ class ESP32WifiOTAViewModel: ObservableObject {
 		try await waitForConnectionReady(connection)
 		
 		// 2. Prepare Command
-		let sha256Digest = SHA256.hash(data: data)
-		let fileHash = sha256Digest.map { String(format: "%02hhx", $0) }.joined()
 		let command = "OTA \(data.count) \(fileHash)\n"
 		
 		Logger.services.info("[ESP OTA] Sending Command: \(command)")
@@ -219,6 +229,7 @@ class ESP32WifiOTAViewModel: ObservableObject {
 	private func waitForManualHostReboot(endpoint: NWEndpoint) async throws {
 		let deadline = Date().addingTimeInterval(connectionTimeout)
 		while Date() < deadline {
+			try Task.checkCancellation()
 			if await probeTcpConnection(endpoint: endpoint) { return }
 			try await Task.sleep(for: .seconds(1))
 		}
@@ -311,7 +322,7 @@ class ESP32WifiOTAViewModel: ObservableObject {
 		}
 	}
 	
-	nonisolated private func withTimeout<T>(seconds: TimeInterval, operation: @escaping @Sendable () async throws -> T) async throws -> T {
+	nonisolated private func withTimeout<T: Sendable>(seconds: TimeInterval, operation: @escaping @Sendable () async throws -> T) async throws -> T {
 		return try await withThrowingTaskGroup(of: T.self) { group in
 			group.addTask { return try await operation() }
 			group.addTask {

@@ -225,15 +225,23 @@ struct DiscoveryScanView: View {
 							.font(.caption)
 							.foregroundStyle(.secondary)
 					}
-					HStack {
-						Text("Time Remaining")
-						Spacer()
-						Text(formatDuration(engine.dwellTimeRemaining)).monospacedDigit()
+					VStack(alignment: .leading, spacing: 2) {
+						HStack {
+							Text("Time Remaining")
+							Spacer()
+							Text(formatDuration(engine.dwellTimeRemaining)).monospacedDigit()
+						}
+						.font(.caption)
+						.foregroundStyle(.secondary)
+						ProgressView(value: 1.0 - (engine.dwellTimeRemaining / engine.dwellDuration))
 					}
-					.font(.caption)
-					.foregroundStyle(.secondary)
-					ProgressView(value: 1.0 - (engine.dwellTimeRemaining / engine.dwellDuration))
-						.tint(.accentColor)
+					.accessibilityElement(children: .combine)
+					.accessibilityValue(
+						String(
+							localized: "\(Int((1.0 - (engine.dwellTimeRemaining / engine.dwellDuration)) * 100)) percent",
+							comment: "VoiceOver: discovery scan dwell progress percentage"
+						)
+					)
 				}
 			}
 
@@ -344,7 +352,6 @@ struct DiscoveryScanView: View {
 						.foregroundStyle(.secondary)
 				}
 				ProgressView(value: 1.0 - (engine.dwellTimeRemaining / engine.dwellDuration))
-					.tint(.accentColor)
 			}
 
 			if let session = engine.session {
@@ -439,10 +446,13 @@ extension DiscoveryScanView {
 	var beaconChannels: [BeaconChannel] {
 		let descriptor = FetchDescriptor<DiscoveredBeaconEntity>()
 		guard let beacons = try? context.fetch(descriptor) else { return [] }
+		// Offers for channels the radio already has are not invitations (design#140).
+		let joined = configuredChannelOfferKeys(context: context)
 		var seen = Set<String>()
 		var channels: [BeaconChannel] = []
 		for beacon in beacons where beacon.hasOfferChannel && !beacon.offerChannelName.isEmpty {
 			guard let preset = beacon.offeredPreset else { continue }
+			if joined.contains("\(beacon.offerChannelName)|\(beacon.offerChannelPSK.base64EncodedString())") { continue }
 			let channel = BeaconChannel(name: beacon.offerChannelName, psk: beacon.offerChannelPSK,
 										preset: preset, regionRaw: beacon.offerRegion)
 			if seen.insert(channel.id).inserted { channels.append(channel) }

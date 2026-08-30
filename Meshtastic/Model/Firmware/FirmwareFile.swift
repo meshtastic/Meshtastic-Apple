@@ -83,9 +83,18 @@ class FirmwareFile: ObservableObject, Hashable, Equatable {
 	
 	let versionMajor, versionMinor, versionPatch: Int
 	
-	init(firmware: FirmwareReleaseEntity, hardware: DeviceHardwareEntity, type: FirmwareType? = nil, localeTags: [String] = []) throws {
-		// Get the target and architecture from the given DeviceHardwareEntity
-		guard let target = hardware.platformioTarget else { throw FirmwareFileError.unknownTarget }
+	init(
+		firmware: FirmwareReleaseEntity,
+		hardware: DeviceHardwareEntity,
+		platformioTarget: String? = nil,
+		type: FirmwareType? = nil,
+		localeTags: [String] = []
+	) throws {
+		// Keep artifact identity separate from fallback hardware metadata. A flavor target such as
+		// `thinknode_m1-inkhud` must never silently become the catalog's `thinknode_m1` target.
+		guard let target = platformioTarget ?? hardware.platformioTarget, !target.isEmpty else {
+			throw FirmwareFileError.unknownTarget
+		}
 		self.platformioTarget = target
 
 		guard let architecture = hardware.architecture.flatMap({ Architecture(rawValue: $0) }) else {
@@ -140,7 +149,7 @@ class FirmwareFile: ObservableObject, Hashable, Equatable {
 	}
 	
 	@MainActor
-	init(localFile url: URL) throws {
+	init(localFile url: URL, fallbackArchitecture: Architecture? = nil) throws {
 		self.localUrl = url
 		
 		let fileName = url.lastPathComponent
@@ -221,7 +230,8 @@ class FirmwareFile: ObservableObject, Hashable, Equatable {
 			throw FirmwareFileError.unknownArchitecture
 		}
 		let architecture = hardwareResult?.architecture.flatMap { Architecture(rawValue: $0) }
-		
+			?? fallbackArchitecture
+
 		guard let architecture else { throw FirmwareFileError.unknownArchitecture }
 		self.architecture = architecture
 		

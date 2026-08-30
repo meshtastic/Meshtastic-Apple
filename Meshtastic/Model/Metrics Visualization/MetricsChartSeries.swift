@@ -24,6 +24,10 @@ class MetricsChartSeries: ObservableObject {
 	// Heading for space-constrained areas
 	let abbreviatedName: String
 
+	// Optional unit symbol (e.g. "°", "%", "hPa", "µg/m³") appended to VoiceOver values so the
+	// spoken reading includes its units. nil for unitless/index series.
+	let unit: String?
+
 	// Should this column appear in the chart
 	var visible: Bool
 
@@ -50,6 +54,7 @@ class MetricsChartSeries: ObservableObject {
 		keyPath: KeyPath<TelemetryEntity, Value>,
 		name: String,
 		abbreviatedName: String,
+		unit: String? = nil,
 		initialYAxisRange: ClosedRange<Float>? = nil,
 		minumumYAxisSpan: Float? = nil,
 		conversion: ((Value) -> Value)? = nil,
@@ -63,6 +68,7 @@ class MetricsChartSeries: ObservableObject {
 		self.id = id
 		self.name = name
 		self.abbreviatedName = abbreviatedName
+		self.unit = unit
 		self.initialYAxisRange = initialYAxisRange
 		self.minumumYAxisSpan = minumumYAxisSpan
 		self.visible = visible
@@ -72,11 +78,31 @@ class MetricsChartSeries: ObservableObject {
 		// This is a less elegant form of type erasure, but doesn't require a new Any-type
 		self.foregroundStyle = { range in foregroundStyle(range).map({ AnyShapeStyle($0) }) }
 		self.chartBodyClosure = { series, range, entity in
-			if let time = entity.time {
-				return AnyChartContent(
-					chartBody(series, range, time, entity[keyPath: keyPath]))
+			guard let time = entity.time else { return nil }
+			let content = chartBody(series, range, time, entity[keyPath: keyPath])
+			// Per-mark VoiceOver descriptors, applied centrally so every telemetry series
+			// (AirQuality + Environment charts) becomes navigable with consistent phrasing.
+			let timeText = time.formatted(date: .abbreviated, time: .shortened)
+			let label = String(
+				localized: "\(series.name.localized) at \(timeText)",
+				comment: "VoiceOver label for a data point on a metrics chart. First value is the metric name, second is the timestamp."
+			)
+			let valueText: String
+			if let value = series.valueClosure(entity) {
+				let number = Double(value).formatted(.number.precision(.fractionLength(1)))
+				if let unit = series.unit, !unit.isEmpty {
+					valueText = "\(number) \(unit)"
+				} else {
+					valueText = number
+				}
+			} else {
+				valueText = String(localized: "No reading", comment: "VoiceOver value spoken when a metric data point has no reading.")
 			}
-			return nil
+			return AnyChartContent(
+				content
+					.accessibilityLabel(label)
+					.accessibilityValue(valueText)
+			)
 		}
 		self.valueClosure = { te in
 			if let conversion {

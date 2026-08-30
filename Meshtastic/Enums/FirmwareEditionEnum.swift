@@ -16,6 +16,9 @@ enum FirmwareEditions: Int, CaseIterable, Identifiable {
 	case defcon = 17
 	case burningMan = 18
 	case hamvention = 19
+	case fab = 20
+	case dragonCon = 21
+	case ccc = 22
 	case diyEdition = 127
 
 	var id: Int { self.rawValue }
@@ -34,6 +37,12 @@ enum FirmwareEditions: Int, CaseIterable, Identifiable {
 			return "Burning Man".localized
 		case .hamvention:
 			return "Hamvention".localized
+		case .fab:
+			return "FAB".localized
+		case .dragonCon:
+			return "Dragon Con".localized
+		case .ccc:
+			return "CCC".localized
 		case .diyEdition:
 			return "DIY Edition".localized
 		}
@@ -53,6 +62,12 @@ enum FirmwareEditions: Int, CaseIterable, Identifiable {
 			return "Event firmware for Burning Man, the annual gathering in Black Rock Desert.".localized
 		case .hamvention:
 			return "Event firmware for Hamvention, the Dayton amateur radio convention.".localized
+		case .fab:
+			return "Event firmware for FAB, the international Fab Lab digital fabrication conference.".localized
+		case .dragonCon:
+			return "Event firmware for Dragon Con, the annual multigenre convention in Atlanta.".localized
+		case .ccc:
+			return "Event firmware for the Chaos Communication Congress, the annual CCC hacker conference.".localized
 		case .diyEdition:
 			return "Firmware for DIY and unofficial community events.".localized
 		}
@@ -62,8 +77,60 @@ enum FirmwareEditions: Int, CaseIterable, Identifiable {
 		self != .vanilla
 	}
 
+	/// The stable proto enum name used as the join key against the off-device event-firmware
+	/// metadata (`EventFirmwareEntity.edition`). Matches the names in `event_firmware.json`.
+	var editionKey: String {
+		switch self {
+		case .vanilla:
+			return "VANILLA"
+		case .smartCitizen:
+			return "SMART_CITIZEN"
+		case .openSauce:
+			return "OPEN_SAUCE"
+		case .defcon:
+			return "DEFCON"
+		case .burningMan:
+			return "BURNING_MAN"
+		case .hamvention:
+			return "HAMVENTION"
+		case .fab:
+			return "FAB"
+		case .dragonCon:
+			return "DRAGON_CON"
+		case .ccc:
+			return "CCC"
+		case .diyEdition:
+			return "DIY_EDITION"
+		}
+	}
+
+	/// Edition artwork shipped in the asset catalog for offline fallback. Editions without
+	/// bundled artwork fall back to the standard Meshtastic logo.
+	var bundledIconAssetName: String? {
+		switch self {
+		case .hamvention:
+			return "EventFirmwareHAMVENTION"
+		case .defcon:
+			return "EventFirmwareDEFCON"
+		case .fab:
+			return "EventFirmwareFAB"
+		default:
+			return nil
+		}
+	}
+
 	/// Initialize from the protobuf FirmwareEdition enum
 	init(from protoEdition: FirmwareEdition) {
 		self = FirmwareEditions(rawValue: protoEdition.rawValue) ?? .vanilla
+	}
+
+	/// Initialize from the stable proto edition name (e.g. `"DEFCON"`) used in the
+	/// event-firmware metadata payload. Returns nil for an unknown key so callers can ignore
+	/// editions this app build doesn't know about.
+	init?(editionKey: String) {
+		guard let match = FirmwareEditions.allCases.first(where: { $0.editionKey == editionKey }) else {
+			return nil
+		}
+		self = match
 	}
 }

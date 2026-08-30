@@ -15,10 +15,12 @@ import SwiftDraw
 struct DeviceHardwareImage: View {
 	
 	@Query var hardwareResults: [DeviceHardwareEntity]
+	private let hardwareModel: Int64?
 	
 	// Init for Integer ID
 	init<T>(hwId: T) where T: BinaryInteger {
 		let hwModel = Int64(hwId)
+		hardwareModel = hwModel
 		_hardwareResults = Query(filter: #Predicate<DeviceHardwareEntity> { hw in
 			hw.hwModel == hwModel
 		}, sort: [SortDescriptor(\.hwModelSlug)])
@@ -26,6 +28,7 @@ struct DeviceHardwareImage: View {
 	
 	// Init for String Target
 	init(platformioTarget: String) {
+		hardwareModel = nil
 		_hardwareResults = Query(filter: #Predicate<DeviceHardwareEntity> { hw in
 			hw.platformioTarget == platformioTarget
 		}, sort: [SortDescriptor(\.hwModelSlug)])
@@ -33,7 +36,7 @@ struct DeviceHardwareImage: View {
 	
 	var body: some View {
 		// Pass the raw fetched results to the logic layer
-		DeviceHardwareImageProcessor(hardware: hardwareResults)
+		DeviceHardwareImageProcessor(hardware: hardwareResults, hardwareModel: hardwareModel)
 	}
 }
 
@@ -42,6 +45,7 @@ struct DeviceHardwareImage: View {
 // This uses .task to step out of the Layout Loop.
 private struct DeviceHardwareImageProcessor: View {
 	let hardware: [DeviceHardwareEntity]
+	let hardwareModel: Int64?
 	@EnvironmentObject var meshtasticAPI: MeshtasticAPI
 	
 	// We buffer the processed images in State.
@@ -50,7 +54,7 @@ private struct DeviceHardwareImageProcessor: View {
 	
 	/// A stable identity that changes when the actual hardware models change, not just the count.
 	private var hardwareIdentity: String {
-		hardware.map { "\($0.hwModel)" }.joined(separator: ",")
+		hardware.map { "\($0.hwModel):\($0.platformioTarget ?? "")" }.joined(separator: ",")
 	}
 
 	var body: some View {
@@ -67,10 +71,18 @@ private struct DeviceHardwareImageProcessor: View {
 	
 	// The heavy logic moved out of the computed property
 	private func processImages() -> [DeviceHardwareImageEntity] {
+		let displayedHardware: [DeviceHardwareEntity]
+		if let hardwareModel,
+		   let target = HardwareCatalogResolver.presentation(for: hardwareModel, in: hardware)?.platformioTarget {
+			displayedHardware = hardware.filter { $0.platformioTarget == target }
+		} else {
+			displayedHardware = hardware
+		}
+
 		var returnImages = [DeviceHardwareImageEntity]()
 		var seenFileNames = Set<String>()
 		
-		for item in hardware {
+		for item in displayedHardware {
 			for image in item.images {
 				if image.svgData != nil {
 					let name = image.fileName ?? ""

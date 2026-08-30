@@ -204,6 +204,7 @@ struct AppLogFilter: View {
 					.symbolRenderingMode(.palette)
 					.foregroundStyle(.white, Color(.systemGray3))
 			}
+			.accessibilityLabel(String(localized: "Close", comment: "VoiceOver: dismiss this sheet"))
 			.buttonStyle(.plain)
 			.padding(.top, 12)
 			.padding(.leading, 14)
@@ -259,6 +260,7 @@ struct AppLogFilter: View {
 			.contentShape(Rectangle())
 		}
 		.buttonStyle(.plain)
+		.accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
 	}
 
 	private func toggleCategory(_ id: Int) {

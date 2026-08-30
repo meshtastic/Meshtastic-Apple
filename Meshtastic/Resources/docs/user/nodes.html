@@ -130,6 +130,7 @@
 <p><a href="https://meshtastic.org/blog/choosing-the-right-device-role/">Choosing the Right Device Role →</a></p>
 <h2>Complete Node Row Examples</h2>
 <p>The full node row shows the circle avatar, battery level, encryption status, last-heard time, device role, signal strength, and log indicators all at once.</p>
+<p>The signal meter shown here (and on a node's detail screen) rates link quality from SNR relative to your radio preset — using your radio's recently reported noise floor when available — and the strength bar and the SNR text color always reflect the same rating. See <a href="signal-meter.html">Signal Meter</a> for how it works.</p>
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="../assets/screenshots/standard_directConnected_dark.png" />
   <img src="../assets/screenshots/standard_directConnected.png" alt="Directly connected node, favorite, with signal meter" />
@@ -223,6 +224,8 @@
 </table>
 <p>Filters are <strong>remembered between launches</strong> — the app reopens with the same filters applied. Search text is the exception: it is intentionally cleared on relaunch so you never reopen into a stale search that hides most of your nodes. Use the <strong>reset</strong> affordance to clear every filter and the search text at once.</p>
 <p>The map has one additional filter of its own — <strong>Precise Locations Only</strong>, which hides nodes reporting an approximate (reduced-precision) location. See <a href="map.html">Map &amp; Waypoints</a> for details.</p>
+<h2>Offline Map Detail</h2>
+<p>Downloaded offline maps include the local road network. Pedestrian streets render as minor roads, so walkable streets remain visible offline. On nodes reporting the Burning Man firmware edition, the downloadable Burning Man 2026 map pack uses full zoom-level 15 detail for the Black Rock City street grid and remains available until you remove it.</p>
 <h2>Additional Icons</h2>
 <p>Tap a node and scroll to the Logs section for detailed metrics:</p>
 <table>
@@ -263,12 +266,30 @@
 </tr>
 </tbody>
 </table>
+<p>When a node has a known position, the Logs section also offers <strong>Estimate Coverage</strong> (<code>cellularbars</code>). It switches to the Map tab and opens the Site Planner coverage-estimate form prefilled from that node. See <a href="map.html">Coverage Estimate (Site Planner)</a> on the Map page for the full flow.</p>
 <h2>Local Stats and Noise Floor</h2>
 <p>Local Stats show radio diagnostics reported by a node, including packets received, packets transmitted, duplicate packets, relayed packets, bad receives, canceled packets, online node count, total node count, and noise floor.</p>
+<p>When requesting Local Stats from another node, choose how to protect the request:</p>
+<ul>
+<li><strong>Shared channel</strong> encrypts the request with the selected mesh channel and is suitable for ordinary requests between channel members.</li>
+<li><strong>Remote admin</strong> uses PKI encryption and is unavailable until the destination has advertised a public key.</li>
+</ul>
 <p>Noise floor is displayed in dBm when the node reports it. Treat it as a directional diagnostic instead of an absolute site score: readings can vary quickly, and external filters can lower or skew the displayed value because of insertion loss or in-band interference.</p>
 <h2>Node Detail View</h2>
 <p>Tap any node to see the full detail view with hardware info, signal metrics, environment sensors, and log navigation:</p>
 <p><img src="../assets/screenshots/nodeDetail.png" alt="Node Detail" /></p>
+<p>For messageable nodes, use <strong>Actions &gt; Share Contact QR</strong> to show a Meshtastic contact link and QR code that another device can scan.</p>
+<h3>Share Connected Node</h3>
+<p>When a radio is connected, a <strong>Share Connected Node</strong> button appears in the node list toolbar. It opens the same share sheet as <strong>Share Contact QR</strong>, pre-filled with your own node — a quick way to hand someone your contact without finding yourself in the list.</p>
+<h3>Write a Contact to an NFC Tag</h3>
+<p>On iPhones with NFC hardware (iOS 18 or later), the contact share sheet also offers <strong>Write to NFC Tag</strong>. Hold a writable NFC tag near the top of your iPhone and the contact link is saved to it, replacing whatever the tag held before. Anyone can then tap that tag with their phone to open the contact in Meshtastic — the tag carries exactly the same link the QR code encodes.</p>
+<h3>Importing a Shared Contact</h3>
+<p>Opening a Meshtastic contact link — by scanning a QR code, tapping a shared link, or tapping an NFC tag — presents a confirmation sheet before anything is added. The sheet shows the node's colored initials, its long name, and an explanation that adding the contact saves their name and public key to your connected node. Choose <strong>Add Contact</strong> to import, or <strong>Cancel</strong> to dismiss.</p>
+<p>If the import fails — most often because the radio disconnected — the sheet stays open and shows the reason so you can reconnect and tap <strong>Add Contact</strong> again. It closes only once the contact has actually been sent to your node. A link that is damaged or truncated is reported as an invalid format instead of being imported.</p>
+<p>Importing a contact requires firmware 2.6.9 or later on the connected node.</p>
+<h3>Air Quality</h3>
+<p>Nodes with a particulate-matter sensor — reporting the firmware's Air Quality telemetry — show an <strong>Air Quality</strong> section with the latest PM2.5, PM1.0, and PM10 readings in µg/m³.</p>
+<p>An <strong>Air Quality Metrics Log</strong> entry appears under the node's logs, with a seven-day chart and table of the particulate-matter readings (configurable columns), a <strong>Clear</strong> action to delete stored readings, and <strong>CSV export</strong>.</p>
 <h3>Signed Node</h3>
 <p>If a node signs its broadcast packets, a green shield (🛡️) <strong>Signed node</strong> row appears in the detail view, marked <strong>Verified automatically</strong>. This means the radio has cryptographically verified an XEdDSA signature from this node (firmware 2.8 or later). Because a node's identity broadcast is itself signed, its name and identity are verified by extension.</p>
 <p>This is <em>automatic</em> trust observed from the radio — distinct from manually verifying a contact's public key out-of-band, which is a separate, user-asserted action. The row only ever affirms the good state; nodes that don't sign simply show no shield, which is not a warning.</p>

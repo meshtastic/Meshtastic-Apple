@@ -20,6 +20,66 @@ func generateChannelKey(size: Int) -> String {
 	return keyData.base64EncodedString()
 }
 
+func projectedDisplayChannels(from channels: [ChannelEntity]) -> [ChannelEntity] {
+	canonicalValidUniqueChannels(from: channels)
+}
+
+/// The connected radio's channels as name|key identity strings, for suppressing beacon
+/// offers the radio already has (design#140 behavior 10 — a beacon inviting you to a
+/// mesh you are already on is not an invitation).
+///
+/// A fetch failure returns an empty set on purpose: suppression quietly turns off and
+/// every offer stays visible, which is the pre-suppression behavior and the safe
+/// direction — hiding an offer on bad data would be the harmful failure.
+@MainActor
+func configuredChannelOfferKeys(context: ModelContext) -> Set<String> {
+	let num = Int64(UserDefaults.preferredPeripheralNum)
+	guard num > 0 else { return [] }
+	var descriptor = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == num })
+	descriptor.fetchLimit = 1
+	guard let node = (try? context.fetch(descriptor))?.first else { return [] }
+	return Set(canonicalValidUniqueChannels(from: node.myInfo?.channels ?? []).map {
+		"\($0.name ?? "")|\(($0.psk ?? Data()).base64EncodedString())"
+	})
+}
+
+func canonicalValidUniqueChannels(from channels: [ChannelEntity]) -> [ChannelEntity] {
+	var byIndex: [Int32: ChannelEntity] = [:]
+	for channel in channels where (Int32(0)...Int32(7)).contains(channel.index) {
+		byIndex[channel.index] = channel
+	}
+	return byIndex.values.sorted { $0.index < $1.index }
+}
+
+func validUniqueChannelIndexes(from channels: [ChannelEntity]) -> [Int32] {
+	canonicalValidUniqueChannels(from: channels).map(\.index)
+}
+
+func availableChannelIndexes(from channels: [ChannelEntity]) -> [Int32] {
+	let occupied = Set(validUniqueChannelIndexes(from: channels))
+	return (Int32(0)...Int32(7)).filter { !occupied.contains($0) }
+}
+
+func nextAvailableSecondaryChannelIndex(from channels: [ChannelEntity]) -> Int32? {
+	availableChannelIndexes(from: channels).first { $0 > 0 }
+}
+
+func channelSettingsForSharing(
+	from channels: [ChannelEntity],
+	includedIndexes: Set<Int32>
+) -> [ChannelSettings] {
+	canonicalValidUniqueChannels(from: channels).compactMap { channel in
+		guard channel.role > 0, includedIndexes.contains(channel.index) else { return nil }
+		var settings = ChannelSettings()
+		settings.name = channel.name ?? ""
+		settings.psk = channel.psk ?? Data()
+		settings.id = UInt32(truncatingIfNeeded: channel.id)
+		settings.moduleSettings.positionPrecision = UInt32(truncatingIfNeeded: channel.positionPrecision)
+		settings.moduleSettings.isMuted = channel.mute
+		return settings
+	}
+}
+
 struct Channels: View {
 
 	@Environment(\.modelContext) private var context
@@ -52,11 +112,7 @@ struct Channels: View {
 
 	private var displayChannels: [ChannelEntity] {
 		guard let channels = node.myInfo?.channels else { return [] }
-		var byIndex: [Int32: ChannelEntity] = [:]
-		for channel in channels {
-			byIndex[channel.index] = channel
-		}
-		return byIndex.values.sorted { $0.index < $1.index }
+		return projectedDisplayChannels(from: channels)
 	}
 
 	private var locationSharingChannelIndex: Int32? {
@@ -87,23 +143,6 @@ struct Channels: View {
 
 	private var channelFrequencySummary: ChannelFrequencySummary? {
 		ChannelFrequencySummary(loRaConfig: node.loRaConfig, primaryChannelName: primaryChannelName)
-	}
-
-	private func normalizeDuplicateChannelsIfNeeded() {
-		guard let channels = node.myInfo?.channels else { return }
-		var uniqueChannels: [Int32: ChannelEntity] = [:]
-		for channel in channels {
-			uniqueChannels[channel.index] = channel
-		}
-		let deduped = uniqueChannels.values.sorted { $0.index < $1.index }
-		guard deduped.count != channels.count else { return }
-		node.myInfo?.channels = deduped
-		do {
-			try context.save()
-			Logger.data.info("💾 Normalized duplicate channels for node \(self.node.num, privacy: .public)")
-		} catch {
-			Logger.data.error("Failed normalizing duplicate channels: \(error.localizedDescription, privacy: .public)")
-		}
 	}
 
 	var body: some View {
@@ -177,16 +216,12 @@ struct Channels: View {
 						.buttonStyle(.plain)
 					}
 				}
-				if (node.myInfo?.channels.count ?? 0) < 8 {
+				if let nextChannelIndex = nextAvailableSecondaryChannelIndex(from: node.myInfo?.channels ?? []) {
 					Button {
-						let channelIndexes = node.myInfo?.channels.compactMap({ ch -> Int in
-							return Int(ch.index)
-						})
-						let firstChannelIndex = firstMissingChannelIndex(channelIndexes ?? [])
 						channelKeySize = 16
 						let key = generateChannelKey(size: channelKeySize)
 						channelName = ""
-						channelIndex = Int32(firstChannelIndex)
+						channelIndex = nextChannelIndex
 						channelRole = 2
 						channelKey = key
 						positionsEnabled = false
@@ -352,32 +387,19 @@ struct Channels: View {
 				.foregroundColor(.accentColor)
 				.buttonStyle(.borderedProminent)
 				.buttonBorderShape(.circle)
+				.accessibilityLabel(showingHelp ? String(localized: "Hide help", comment: "VoiceOver label for the help toggle button when help is showing") : String(localized: "Show help", comment: "VoiceOver label for the help toggle button when help is hidden"))
 			}
 			.controlSize(.regular)
 			.padding(5)
 		}
 		.padding(.bottom, 5)
 		.navigationTitle("Channels")
-		.onAppear {
-			normalizeDuplicateChannelsIfNeeded()
-		}
 		.toolbar {
 			ToolbarItem(placement: .topBarTrailing) {
 				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
 			}
 		}
 	}
-}
-
-func firstMissingChannelIndex(_ indexes: [Int]) -> Int {
-	let smallestIndex = 1
-	if indexes.isEmpty { return smallestIndex }
-	if smallestIndex <= indexes.count {
-		for element in smallestIndex...indexes.count where !indexes.contains(element) {
-			return element
-		}
-	}
-	return indexes.count + 1
 }
 
 enum PositionPrecision: Int, CaseIterable, Identifiable {
@@ -522,16 +544,16 @@ private struct ChannelRow: View {
 					.foregroundStyle(.secondary)
 			}
 			Spacer(minLength: 0)
-			HStack(spacing: 8) {
-				if sharesLocation {
-					ChannelStatusIcon(systemImage: "location.fill", color: .green, accessibilityLabel: "Position sharing")
-				}
-				if channel.uplinkEnabled {
-					ChannelStatusIcon(systemImage: "icloud.and.arrow.up", color: .blue, accessibilityLabel: "MQTT uplink enabled")
-				}
-				if channel.downlinkEnabled {
-					ChannelStatusIcon(systemImage: "icloud.and.arrow.down", color: .blue, accessibilityLabel: "MQTT downlink enabled")
-				}
+			// MQTT uplink/downlink cloud icons used to render here too, but downlink is
+			// commonly enabled by default, so nearly every channel row carried a cloud
+			// that read as a download button rather than status — removed. The uplink/
+			// downlink toggles remain visible in the channel editor itself.
+			if sharesLocation {
+				ChannelStatusIcon(
+					systemImage: "location.fill",
+					color: .green,
+					accessibilityLabel: String(localized: "Position sharing", comment: "VoiceOver: this channel shares location")
+				)
 			}
 		}
 		.padding(.vertical, 4)

@@ -25,7 +25,7 @@ struct WeatherConditionsCompactWidget: View {
 			Text(temperature)
 				.font(temperature.length < 4 ? .system(size: 72) : .system(size: 54) )
 		}
-		.frame(minWidth: 100, idealWidth: 125, maxWidth: 150, minHeight: 120, idealHeight: 130, maxHeight: 140)
+		.frame(minWidth: 100, idealWidth: 125, maxWidth: 150, minHeight: 120)
 		.padding()
 		.background(Color("Colors/MeshtasticTile"), in: RoundedRectangle(cornerRadius: 20, style: .continuous))
 	}

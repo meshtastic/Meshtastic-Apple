@@ -5,101 +5,142 @@ import Testing
 import Foundation
 @testable import Meshtastic
 
-/// Stubs `URLSession` responses for `MapDataManager.importFromRemote` without touching the network.
-private final class GeoJSONStubURLProtocol: URLProtocol {
-	nonisolated(unsafe) static var statusCode = 200
-	nonisolated(unsafe) static var responseData: Data = Data()
+/// Covers `MapDataManager.importFromString` — the in-memory GeoJSON import path used by the
+/// Site Planner native bridge (meshtastic/Meshtastic-Apple#2058).
+@Suite("MapDataManager.importFromString", .serialized)
+struct MapDataManagerImportFromStringTests {
 
-	override class func canInit(with request: URLRequest) -> Bool { true }
-	override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
-
-	override func startLoading() {
-		let response = HTTPURLResponse(url: request.url!, statusCode: Self.statusCode, httpVersion: "HTTP/1.1", headerFields: nil)!
-		client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
-		client?.urlProtocol(self, didLoad: Self.responseData)
-		client?.urlProtocolDidFinishLoading(self)
-	}
-
-	override func stopLoading() {}
-
-	static func makeSession() -> URLSession {
-		let config = URLSessionConfiguration.ephemeral
-		config.protocolClasses = [GeoJSONStubURLProtocol.self]
-		return URLSession(configuration: config)
-	}
-}
-
-// Serialized: tests share mutable state on `GeoJSONStubURLProtocol` (its stubbed status/data are
-// process-global, keyed by class not by request), so concurrent runs race and cross-contaminate.
-@Suite("MapDataManager.importFromRemote", .serialized)
-struct MapDataManagerImportFromRemoteTests {
-
-	private let sampleGeoJSON = Data("""
-	{ "type": "FeatureCollection", "features": [
+	private let sampleGeoJSON = """
+	{ "type": "FeatureCollection", "properties": { "name": "Coverage" }, "features": [
 		{ "type": "Feature", "geometry": { "type": "Polygon", "coordinates": [[[0, 0], [1, 0], [1, 1], [0, 0]]] },
 		  "properties": { "fill": "#0080ff" } },
 		{ "type": "Feature", "geometry": { "type": "Polygon", "coordinates": [[[2, 2], [3, 2], [3, 3], [2, 2]]] },
 		  "properties": { "fill": "#00ff80" } }
 	]}
-	""".utf8)
+	"""
 
-	/// Deletes anything the test imported so repeated runs don't accumulate files in the real Documents
-	/// directory — `MapDataManager` has no injectable storage root, so cleanup has to happen here.
 	private func cleanUp(_ manager: MapDataManager, _ metadata: MapDataMetadata) async {
 		try? await manager.deleteFile(metadata)
 	}
 
-	@Test func downloadsAndImportsValidGeoJSON() async throws {
-		GeoJSONStubURLProtocol.statusCode = 200
-		GeoJSONStubURLProtocol.responseData = sampleGeoJSON
-
+	@Test func importsValidGeoJSONString() async throws {
 		let manager = MapDataManager()
-		let metadata = try await manager.importFromRemote(
-			urlString: "https://example.com/coverage-\(UUID().uuidString).geojson",
-			session: GeoJSONStubURLProtocol.makeSession()
-		)
+		let metadata = try await manager.importFromString(sampleGeoJSON, name: "Site Alpha \(UUID().uuidString)")
 		defer { Task { await cleanUp(manager, metadata) } }
 
 		#expect(metadata.overlayCount == 2)
 		#expect(metadata.format == "geojson")
 	}
 
-	@Test func throwsOnNonSuccessStatusCode() async throws {
-		GeoJSONStubURLProtocol.statusCode = 404
-		GeoJSONStubURLProtocol.responseData = Data()
-
+	@Test func enforcesGeojsonExtensionAndSanitizesName() async throws {
 		let manager = MapDataManager()
-		await #expect(throws: Error.self) {
-			try await manager.importFromRemote(
-				urlString: "https://example.com/missing.geojson",
-				session: GeoJSONStubURLProtocol.makeSession()
-			)
-		}
-	}
-
-	@Test func throwsOnOversizedDownload() async throws {
-		GeoJSONStubURLProtocol.statusCode = 200
-		GeoJSONStubURLProtocol.responseData = Data(repeating: 0, count: 11 * 1024 * 1024) // > 10MB cap
-
-		let manager = MapDataManager()
-		await #expect(throws: MapDataError.self) {
-			try await manager.importFromRemote(
-				urlString: "https://example.com/huge.geojson",
-				session: GeoJSONStubURLProtocol.makeSession()
-			)
-		}
-	}
-
-	@Test func readsLocalFileURLWithoutNetworking() async throws {
-		let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("local-\(UUID().uuidString).geojson")
-		try sampleGeoJSON.write(to: tempURL)
-		defer { try? FileManager.default.removeItem(at: tempURL) }
-
-		let manager = MapDataManager()
-		// No session is consulted for a `file://` URL — passing the stub session anyway proves that.
-		let metadata = try await manager.importFromRemote(urlString: tempURL.absoluteString, session: GeoJSONStubURLProtocol.makeSession())
+		// A name with path separators must not escape the temp directory or lose the extension.
+		let metadata = try await manager.importFromString(sampleGeoJSON, name: "a/b:c \(UUID().uuidString)")
 		defer { Task { await cleanUp(manager, metadata) } }
 
-		#expect(metadata.overlayCount == 2)
+		#expect(metadata.filename.hasSuffix(".geojson"))
+		#expect(!metadata.filename.contains("/"))
+		#expect(!metadata.filename.contains(":"))
+	}
+
+	@Test func throwsOnInvalidGeoJSON() async throws {
+		let manager = MapDataManager()
+		await #expect(throws: Error.self) {
+			try await manager.importFromString("not json at all", name: "bad")
+		}
+	}
+
+	@Test func throwsOnOversizedString() async throws {
+		let manager = MapDataManager()
+		let huge = String(repeating: "x", count: 11 * 1024 * 1024) // > 10MB cap
+		await #expect(throws: MapDataError.self) {
+			try await manager.importFromString(huge, name: "huge")
+		}
+	}
+}
+
+/// Covers file provenance and the per-source activation policy: a new Site Planner
+/// run replaces the previous one (only the newest planner file stays active), while
+/// manually uploaded files keep whatever visibility the user set.
+@Suite("MapData source and visibility policy", .serialized)
+struct MapDataSourcePolicyTests {
+
+	private let sampleGeoJSON = """
+	{ "type": "FeatureCollection", "features": [
+		{ "type": "Feature", "geometry": { "type": "Polygon", "coordinates": [[[0, 0], [1, 0], [1, 1], [0, 0]]] },
+		  "properties": { "fill": "#0080ff" } }
+	]}
+	"""
+
+	private func cleanUp(_ manager: MapDataManager, _ files: [MapDataMetadata]) async {
+		for file in files {
+			try? await manager.deleteFile(file)
+		}
+	}
+
+	@Test func manifestsWithoutSourceDecodeAsManualUpload() throws {
+		// A manifest entry written before `source` existed.
+		let legacy = """
+		{ "id": "9E8282D3-D73A-3954-8DD9-D5CAED9B4EFD", "filename": "a.geojson",
+		  "originalName": "a", "uploadDate": 700000000, "fileSize": 10,
+		  "format": "geojson", "overlayCount": 1, "isActive": true }
+		"""
+		let metadata = try JSONDecoder().decode(MapDataMetadata.self, from: Data(legacy.utf8))
+		#expect(metadata.source == .manualUpload)
+		#expect(metadata.isActive)
+	}
+
+	// Cleanup is awaited at the end of each test rather than launched from a defer:
+	// an unstructured cleanup Task can still be rewriting upload_history.json when
+	// the next serialized test starts. #expect failures are non-fatal in Swift
+	// Testing, so the cleanup line is reached on assertion failure too.
+
+	@Test func newPlannerRunDeactivatesOnlyOlderPlannerFiles() async throws {
+		let manager = MapDataManager()
+		var created: [MapDataMetadata] = []
+
+		let manual = try await manager.importFromString(sampleGeoJSON, name: "Manual \(UUID().uuidString)")
+		created.append(manual)
+		let firstRun = try await manager.importFromString(sampleGeoJSON, name: "Run1 \(UUID().uuidString)", source: .sitePlanner)
+		created.append(firstRun)
+		let secondRun = try await manager.importFromString(sampleGeoJSON, name: "Run2 \(UUID().uuidString)", source: .sitePlanner)
+		created.append(secondRun)
+
+		let files = manager.getUploadedFiles()
+		#expect(files.first(where: { $0.id == manual.id })?.isActive == true, "a planner run must not touch manual uploads")
+		#expect(files.first(where: { $0.id == firstRun.id })?.isActive == false, "an older planner run is replaced")
+		#expect(files.first(where: { $0.id == secondRun.id })?.isActive == true, "the newest planner run is the active one")
+		#expect(files.first(where: { $0.id == secondRun.id })?.source == .sitePlanner)
+
+		await cleanUp(manager, created)
+	}
+
+	@Test func manualUploadsArriveActiveAndKeepUserVisibility() async throws {
+		let manager = MapDataManager()
+		var created: [MapDataMetadata] = []
+
+		let first = try await manager.importFromString(sampleGeoJSON, name: "Manual1 \(UUID().uuidString)")
+		created.append(first)
+		#expect(manager.getUploadedFiles().first(where: { $0.id == first.id })?.isActive == true)
+
+		// The user hides it; a later manual upload must not resurrect or change it.
+		manager.setFileActive(first.id, false)
+		let second = try await manager.importFromString(sampleGeoJSON, name: "Manual2 \(UUID().uuidString)")
+		created.append(second)
+
+		let files = manager.getUploadedFiles()
+		#expect(files.first(where: { $0.id == first.id })?.isActive == false, "user-set visibility survives later uploads")
+		#expect(files.first(where: { $0.id == second.id })?.isActive == true)
+		#expect(files.first(where: { $0.id == second.id })?.source == .manualUpload)
+
+		// The hidden state must be in the manifest, not just this instance: a fresh
+		// manager reading the same store has to agree, or a relaunch flips it back.
+		let reloaded = MapDataManager()
+		reloaded.loadMetadata()
+		let reloadedFiles = reloaded.getUploadedFiles()
+		#expect(reloadedFiles.first(where: { $0.id == first.id })?.isActive == false, "setFileActive must persist to the manifest")
+		#expect(reloadedFiles.first(where: { $0.id == first.id })?.source == .manualUpload)
+
+		await cleanUp(manager, created)
 	}
 }

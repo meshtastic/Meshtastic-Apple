@@ -14,6 +14,11 @@ final class NodeInfoEntity {
 	var channel: Int32 = 0
 	var favorite: Bool = false
 	var firstHeard: Date?
+	/// True once an admin response carrying a session passkey has been received from this node,
+	/// correlated to a request this app sent (response variant, requestID set, addressed to the
+	/// connected node) — proof that an admin request we sent succeeded at least once. Set on
+	/// ingest (`MeshPackets.adminAppPacket`), carried through backup restore, never cleared.
+	var hasBeenAdministered: Bool = false
 	/// True when this node signs its broadcast packets via XEdDSA and the radio has verified at least one
 	/// (NodeInfo.has_xeddsa_signed, field 14). Observed automatic trust — not a configurable setting.
 	var hasXeddsaSigned: Bool = false
@@ -26,6 +31,9 @@ final class NodeInfoEntity {
 	var nodeStatus: String?
 	@Attribute(.unique) var num: Int64 = 0
 	var peripheralId: String?
+	/// User-editable per-channel power labels (e.g. "Solar", "Battery", "Load"), indexed 0-2.
+	/// A missing/empty entry falls back to the generic "Channel N" in the UI. Per meshtastic/design#53.
+	var powerChannelLabels: [String] = []
 	var rssi: Int32 = 0
 	var sessionExpiration: Date?
 	var sessionPasskey: Data?
@@ -148,8 +156,10 @@ extension NodeInfoEntity {
 	/// (PR #1668).
 	///
 	/// `nodes` is expected to already be sorted by `lastHeard` descending — as the
-	/// Settings `@Query` provides — so the partition yields favorites (most-recent
-	/// first) ahead of non-favorites (most-recent first). It's a `Bool`-keyed
+	/// Settings snapshot fetch provides — so the partition yields favorites (most-recent
+	/// first) ahead of non-favorites (most-recent first). Deleted or detached models are
+	/// screened out before their persisted properties are read because a snapshot can
+	/// outlive a node-database reset. It's a `Bool`-keyed
 	/// partition rather than a SwiftData `@Query` sort because `favorite` is a
 	/// `Bool`, and `Bool` is not `Comparable`, so it cannot be a `SortDescriptor`
 	/// key on a non-`NSObject` `@Model`.
@@ -158,7 +168,24 @@ extension NodeInfoEntity {
 	/// it is cheap to call per render, and deterministic across re-renders as long as
 	/// the input order is stable.
 	static func adminPickerOrder(_ nodes: [NodeInfoEntity]) -> [NodeInfoEntity] {
-		nodes.filter(\.favorite) + nodes.filter { !$0.favorite }
+		let liveNodes = nodes.filter { $0.modelContext != nil && !$0.isDeleted }
+		return liveNodes.filter(\.favorite) + liveNodes.filter { !$0.favorite }
+	}
+
+	/// True while the node's admin session is usable for a remote admin write: a non-empty
+	/// session passkey inside the firmware's 5-minute session window. Empty-passkey stamps
+	/// (from the local config download and post-save mirrors) don't count.
+	var hasLiveAdminSession: Bool {
+		sessionPasskey?.isEmpty == false && (sessionExpiration ?? .distantPast) >= Date()
+	}
+
+	/// Whether this node's own reported firmware supports the Status Message module (2.8+,
+	/// the same floor as `AccessoryManager.supportsStatusMessage`). Permissive when the node
+	/// has no known firmware version, matching the capability gates' unknown-version behavior.
+	var firmwareSupportsStatusMessage: Bool {
+		guard let version = metadata?.firmwareVersion, !version.isEmpty else { return true }
+		let comparison = "2.8.0".compare(version, options: .numeric)
+		return comparison == .orderedAscending || comparison == .orderedSame
 	}
 
 	/// The status message to render on read-only surfaces (node list card and node

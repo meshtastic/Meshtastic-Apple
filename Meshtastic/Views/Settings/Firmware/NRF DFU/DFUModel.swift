@@ -18,6 +18,11 @@ enum DFUUpdateState: Equatable {
     case uploading
     case success
     case error(String)
+
+	var isError: Bool {
+		if case .error = self { return true }
+		return false
+	}
 }
 
 class DFUViewModel: NSObject, ObservableObject {
@@ -29,16 +34,9 @@ class DFUViewModel: NSObject, ObservableObject {
 	
 	var lastRotatingMessageUpdate = Date.distantPast
 	var rotatingMessageIndex = -1
-	let rotatingMessages = [
-		"Keep your device close to your phone during the update.",
-		"Meshtastic uses LoRa to communicate without internet or cell service.",
-		"nRF52 devices are more power efficient than ESP32, ideal for solar deployments.",
-		"Meshtastic is 100% GPL V3 open source and community driven.",
-		"Do not close the app while the firmware update is in progress.",
-		"All messages on the mesh are encrypted by default.",
-		"Each device supports one connected phone at a time via Bluetooth.",
-		"Visit meshtastic.org/docs for guides, tips, and hardware info."
-	]
+	var rotatingMessages: [String] {
+		FirmwareUpdateTips.messages
+	}
 	
     // MARK: - DFU Controller
     private var dfuController: DFUServiceController?

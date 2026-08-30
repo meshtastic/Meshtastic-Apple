@@ -23,17 +23,19 @@ struct EnvironmentMetricsLog: View {
 
 	@State var isEditingColumnConfiguration = false
 	@State private var chartData: [TelemetryEntity] = []
+	/// Chart input only — the table and export use `chartData` in full.
+	@State private var chartPoints: [TelemetryEntity] = []
 	@State private var totalReadings = 0
 
 	var body: some View {
 		VStack {
 			if totalReadings > 0 {
-				let chartRange = applyMargins(seriesList.chartRange(forData: chartData))
+				let chartRange = applyMargins(seriesList.chartRange(forData: chartPoints))
 				VStack {
 					if chartData.count > 0 {
 						GroupBox(label: Label("\(totalReadings) Readings Total", systemImage: "chart.xyaxis.line")) {
 							Chart(seriesList.visible) { series in
-								ForEach(chartData, id: \.time) { dataPoint in
+								ForEach(chartPoints, id: \.time) { dataPoint in
 									series.body(dataPoint, inChartRange: chartRange)
 								}
 							}
@@ -166,7 +168,7 @@ struct EnvironmentMetricsLog: View {
 			isPresented: $isExporting,
 			document: CsvDocument(emptyCsv: exportString),
 			contentType: .commaSeparatedText,
-			defaultFilename: String("\(node.user?.longName ?? "Node") Environment Metrics Log \(Date.now.exportTimestamp)"),
+			defaultFilename: CsvDocument.exportFilename("\(node.user?.longName ?? "Node") Environment Metrics Log \(Date.now.exportTimestamp)"),
 			onCompletion: { result in
 				switch result {
 				case .success:
@@ -194,6 +196,10 @@ struct EnvironmentMetricsLog: View {
 		chartData = node.safeTelemetries(ofType: 1)
 			.filter { ($0.time ?? Date.distantPast) >= oneWeekAgo }
 			.sorted { ($0.time ?? .distantPast) > ($1.time ?? .distantPast) }
+		// chartData is sorted newest-first for the table; the chart wants the visible
+		// window oldest-first, decimated AFTER the week filter so the mark budget is
+		// spent entirely on points the chart will draw.
+		chartPoints = downsampledForChart(Array(chartData.reversed()))
 	}
 }
 

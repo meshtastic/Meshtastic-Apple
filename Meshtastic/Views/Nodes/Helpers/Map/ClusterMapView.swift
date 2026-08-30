@@ -2,25 +2,16 @@
 //  ClusterMapView.swift
 //  Meshtastic
 //
-//  SELF-CONTAINED PROOF OF CONCEPT — a declarative, data-driven SwiftUI wrapper over UIKit's
-//  `MKMapView`. It gives a `Map`-like call site (pass `items` + a `@ViewBuilder` per annotation)
-//  while keeping the three things SwiftUI's own `Map` can't do:
+//  A declarative, data-driven SwiftUI wrapper over UIKit's `MKMapView`. It gives a `Map`-like
+//  call site (pass `items` + a `@ViewBuilder` per annotation) plus the two things SwiftUI's own
+//  `Map` can't do: native MapKit clustering (`clusteringIdentifier`) with a SwiftUI cluster
+//  badge, and precise annotation-view reuse with Identifiable-id diffing (no flicker on update).
 //
-//    2. Native MapKit CLUSTERING (`clusteringIdentifier`) with a SwiftUI cluster badge.
-//    3. Precise annotation-view REUSE + Identifiable-id DIFFING (no flicker on update).
-//
-//  This file is standalone and does NOT touch the production `MeshMap`. It only REUSES symbols
-//  that already ship in the app target:
-//
-//    • OfflineTileSource / OfflineTileSourceFactory.source(for:)  (Helpers/Map/MBTilesArchive.swift)
-//    • GeoBounds                                                    (Helpers/Map/PMTilesArchive.swift)
-//    • AnimatedNodePin / CircleText / UIColor(hex: UInt32)          (node pin styling — demo only)
-//
-//  HOSTING APPROACH: SwiftUI annotation (and cluster) views are hosted inside `MKAnnotationView`
-//  via `UIHostingConfiguration` (iOS 16+). `MKAnnotationView` is a plain `UIView` and does NOT adopt
+//  Hosting approach: SwiftUI annotation (and cluster) views are hosted inside `MKAnnotationView`
+//  via `UIHostingConfiguration` (iOS 16+). `MKAnnotationView` is a plain `UIView` and does not adopt
 //  `UIContentConfiguration`, so we cannot assign `view.contentConfiguration = …` directly (that is a
 //  cell-only API). Instead we call the public `UIHostingConfiguration().makeContentView()`, which
-//  returns a self-sizing `UIView & UIContentView`, embed it ONCE, and only swap its `.configuration`
+//  returns a self-sizing `UIView & UIContentView`, embed it once, and only swap its `.configuration`
 //  on reuse — so the SwiftUI host (and any running animation, e.g. the pulse) survives recycling.
 //
 //  Target: iOS 17+. `PulsingCircle` inside `AnimatedNodePin` self-gates to iOS 18.
@@ -55,6 +46,9 @@ struct ClusterMapOverlayStyle {
 	var fillUIColor: UIColor?
 	var lineWidth: CGFloat = 1
 	var lineDash: [NSNumber]?
+	/// Offset into `lineDash` where the pattern starts. Combined with per-tier dash/width choices,
+	/// this lets a line's shape (not just its stroke color) encode signal quality.
+	var lineDashPhase: CGFloat = 0
 	var lineCap: CGLineCap = .round
 	var level: MKOverlayLevel = .aboveLabels
 	/// Draw chevrons along the line pointing in the direction of travel (uses the stroke color).
@@ -176,6 +170,10 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 	@ViewBuilder let clusterContent: (Int) -> Cluster
 	/// Called when the user taps an item's pin. (Tapping a cluster zooms to fit its members instead.)
 	let onSelect: ((Item) -> Void)?
+	/// Called when a tapped cluster's members are effectively coincident, so zoom-to-fit can't split
+	/// them (it would just slam to max zoom on a still-merged stack). Hands the members to the caller
+	/// for a disambiguation menu. `nil` = fall back to the normal zoom-to-fit.
+	let onColocatedStack: (([Item]) -> Void)?
 	/// Apple basemap type + map controls. The offline raster overlay (if any) draws on top.
 	let configuration: ClusterMapConfiguration
 	/// Vector overlays (accuracy circles, convex hull, routes, GeoJSON shapes). Diffed by `id`.
@@ -206,6 +204,7 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 		cameraCommand: ClusterMapCameraCommand? = nil,
 		clustering: Bool = true,
 		onSelect: ((Item) -> Void)? = nil,
+		onColocatedStack: (([Item]) -> Void)? = nil,
 		configuration: ClusterMapConfiguration = .init(),
 		overlays: [ClusterMapOverlay] = [],
 		coverageAreas: [GeoBounds] = [],
@@ -223,6 +222,7 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 		self.cameraCommand = cameraCommand
 		self.clustering = clustering
 		self.onSelect = onSelect
+		self.onColocatedStack = onColocatedStack
 		self.configuration = configuration
 		self.overlays = overlays
 		self.coverageAreas = coverageAreas
@@ -352,6 +352,7 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 		coordinator.clusterContent = { AnyView(clusterContent($0)) }
 		coordinator.regionBinding = region
 		coordinator.onSelect = onSelect
+		coordinator.onColocatedStack = onColocatedStack
 		coordinator.onMapTap = onMapTap
 		coordinator.onMapLongPress = onMapLongPress
 		coordinator.suppressRegionUpdates = suppressRegionUpdates
@@ -369,6 +370,13 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 		var regionBinding: Binding<MKCoordinateRegion?>?
 		/// Called when an item pin is tapped (set each render).
 		var onSelect: ((Item) -> Void)?
+		/// Called when a tapped cluster is a coincident stack (see `ClusterMapView.onColocatedStack`).
+		var onColocatedStack: (([Item]) -> Void)?
+		/// Members closer than this (max span, meters) can't be visually separated by zooming, so a
+		/// tapped cluster of them is treated as a coincident stack and routed to `onColocatedStack`
+		/// instead of a max-zoom lurch. Single source of truth in `MapColocation.spreadMeters`, shared
+		/// with `MeshMapMK`'s clustering-off pin-tap path.
+		static var colocatedSpreadMeters: Double { MapColocation.spreadMeters }
 		/// Empty-map tap / long-press handlers (create waypoint), set each render.
 		var onMapTap: ((CLLocationCoordinate2D) -> Void)?
 		var onMapLongPress: ((CLLocationCoordinate2D) -> Void)?
@@ -393,6 +401,8 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 		private weak var hostMapView: MKMapView?
 		private var controlsStack: UIStackView?
 		private var controlsBottomConstraint: NSLayoutConstraint?
+		/// Native follow/center control; hidden when `showsUserLocation` is off so it isn't a dead button.
+		private weak var userTrackingButton: MKUserTrackingButton?
 		/// id → standalone decoration annotation (route markers, waypoints) currently on the map.
 		private var decorationsByID: [AnyHashable: DecorationAnnotation] = [:]
 
@@ -461,6 +471,8 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 			}
 
 			mapView.showsUserLocation = config.showsUserLocation
+			// The tracking button is only meaningful when the user-location dot is shown.
+			userTrackingButton?.isHidden = !config.showsUserLocation
 			mapView.showsScale = config.showsScale
 			// A custom compass + pitch toggle are installed in `installControls` (bottom-trailing, above
 			// the caller's button bar); the built-in top-right compass is disabled there.
@@ -497,7 +509,25 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 				pitch.heightAnchor.constraint(equalToConstant: 44)
 			])
 
-			let stack = UIStackView(arrangedSubviews: [pitch, compass])
+			// Native follow/center control — MapKit owns the user-location camera behavior. Styled to
+			// match the pitch button; hidden while the user-location dot is off (see applyConfiguration).
+			let tracking = MKUserTrackingButton(mapView: mapView)
+			tracking.tintColor = .label
+			tracking.backgroundColor = UIColor.tertiarySystemBackground.withAlphaComponent(0.92)
+			tracking.layer.cornerRadius = 8
+			tracking.layer.shadowColor = UIColor.black.cgColor
+			tracking.layer.shadowOpacity = 0.2
+			tracking.layer.shadowRadius = 2
+			tracking.layer.shadowOffset = CGSize(width: 0, height: 1)
+			tracking.translatesAutoresizingMaskIntoConstraints = false
+			tracking.isHidden = !(appliedConfiguration?.showsUserLocation ?? true)
+			NSLayoutConstraint.activate([
+				tracking.widthAnchor.constraint(equalToConstant: 44),
+				tracking.heightAnchor.constraint(equalToConstant: 44)
+			])
+			userTrackingButton = tracking
+
+			let stack = UIStackView(arrangedSubviews: [tracking, pitch, compass])
 			stack.axis = .vertical
 			stack.spacing = 10
 			stack.alignment = .center
@@ -744,15 +774,42 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 
 		func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
 			if let cluster = view.annotation as? MKClusterAnnotation {
-				// Expand a cluster: zoom to the bounding rect of its members.
+				mapView.deselectAnnotation(cluster, animated: false)
+				// Bounding rect of the members' coordinates.
 				let rect = cluster.memberAnnotations.reduce(MKMapRect.null) { acc, member in
 					acc.union(MKMapRect(origin: MKMapPoint(member.coordinate), size: MKMapSize(width: 0, height: 0)))
 				}
+				// How far apart are the members on the ground? If they're effectively coincident, zooming
+				// to fit can't separate them, so route the members to a disambiguation menu instead.
+				let metersPerPoint = MKMetersPerMapPointAtLatitude(cluster.coordinate.latitude)
+				// Diagonal (corner-to-corner) of the members' bounding box, so this matches the
+				// CLLocation.distance metric the clustering-off pin path uses: a 4x4 m box is ~5.7 m
+				// across, not 4 m, and shouldn't be treated as an un-splittable coincident stack.
+				let spreadMeters = hypot(rect.size.width, rect.size.height) * metersPerPoint
+				if spreadMeters < Self.colocatedSpreadMeters, let onColocatedStack {
+					let items = cluster.memberAnnotations.compactMap { ($0 as? ItemAnnotation<Item>)?.item }
+					// Only present the picker for a genuine multi-node stack; a lone item (e.g. the rest of
+					// the cluster was non-Item annotations) falls through to the normal zoom-to-fit so we
+					// never show a one-row "Select a Node (1)". Mirrors the clustering-off `count > 1` guard.
+					if items.count > 1 {
+						onColocatedStack(items)
+						return
+					}
+				}
+				// Otherwise expand the cluster: zoom to the bounding rect of its members.
 				if !rect.isNull {
-					let padded = rect.insetBy(dx: -rect.size.width * 0.3 - 1, dy: -rect.size.height * 0.3 - 1)
+					// Pad generously so members land well inside the viewport.
+					var padded = rect.insetBy(dx: -max(rect.size.width * 0.8, 1), dy: -max(rect.size.height * 0.8, 1))
+					// Floor the span (~140 m) so a TIGHT cluster still zooms in to a readable street
+					// level instead of an imperceptible nudge — otherwise a stubborn "2" never breaks.
+					let pointsPerMeter = MKMapPointsPerMeterAtLatitude(cluster.coordinate.latitude)
+					let minSpan = 140.0 * pointsPerMeter
+					if padded.size.width < minSpan || padded.size.height < minSpan {
+						let span = max(minSpan, max(padded.size.width, padded.size.height))
+						padded = MKMapRect(x: padded.midX - span / 2, y: padded.midY - span / 2, width: span, height: span)
+					}
 					mapView.setVisibleMapRect(padded, animated: true)
 				}
-				mapView.deselectAnnotation(cluster, animated: false)
 				return
 			}
 			if let deco = view.annotation as? DecorationAnnotation {
@@ -803,6 +860,10 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 				renderer.lineJoin = .round
 				return renderer
 			}
+			// Raster tile overlays (hillshade) — MapKit's tile renderer, no styling.
+			if let tileOverlay = overlay as? MKTileOverlay {
+				return MKTileOverlayRenderer(tileOverlay: tileOverlay)
+			}
 			// Styled caller overlay (circle / polyline / polygon), style looked up by object identity.
 			let style = styleByOverlay[ObjectIdentifier(overlay)] ?? ClusterMapOverlayStyle()
 			let renderer: MKOverlayPathRenderer
@@ -819,6 +880,7 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 			renderer.fillColor = style.fillUIColor
 			renderer.lineWidth = style.lineWidth
 			renderer.lineDashPattern = style.lineDash
+			renderer.lineDashPhase = style.lineDashPhase
 			renderer.lineCap = style.lineCap
 			return renderer
 		}
@@ -874,6 +936,7 @@ extension ClusterMapView where Cluster == ClusterBadge {
 		cameraCommand: ClusterMapCameraCommand? = nil,
 		clustering: Bool = true,
 		onSelect: ((Item) -> Void)? = nil,
+		onColocatedStack: (([Item]) -> Void)? = nil,
 		configuration: ClusterMapConfiguration = .init(),
 		overlays: [ClusterMapOverlay] = [],
 		coverageAreas: [GeoBounds] = [],
@@ -890,6 +953,7 @@ extension ClusterMapView where Cluster == ClusterBadge {
 				  cameraCommand: cameraCommand,
 				  clustering: clustering,
 				  onSelect: onSelect,
+				  onColocatedStack: onColocatedStack,
 				  configuration: configuration,
 				  overlays: overlays,
 				coverageAreas: coverageAreas,

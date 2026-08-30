@@ -27,6 +27,8 @@ struct DiscoveryBeaconsView: View {
 		allBeacons.filter { $0.session == nil }
 	}
 
+
+
 	var body: some View {
 		List {
 			if passiveBeacons.isEmpty {
@@ -36,9 +38,12 @@ struct DiscoveryBeaconsView: View {
 					description: Text("Meshes heard advertising themselves via beacons will appear here.")
 				)
 			} else {
+				// Resolved once per render — the per-row chip builder must not re-fetch
+				// the radio's channels for every beacon.
+				let joinedChannelKeys = configuredChannelOfferKeys(context: context)
 				Section {
 					ForEach(passiveBeacons) { beacon in
-						beaconRow(beacon)
+						beaconRow(beacon, joinedChannelKeys: joinedChannelKeys)
 					}
 					.onDelete(perform: deleteBeacons)
 				} footer: {
@@ -50,7 +55,7 @@ struct DiscoveryBeaconsView: View {
 	}
 
 	@ViewBuilder
-	private func beaconRow(_ beacon: DiscoveredBeaconEntity) -> some View {
+	private func beaconRow(_ beacon: DiscoveredBeaconEntity, joinedChannelKeys: Set<String>) -> some View {
 		VStack(alignment: .leading, spacing: 6) {
 			HStack {
 				Text(beacon.displayName)
@@ -68,7 +73,7 @@ struct DiscoveryBeaconsView: View {
 					.fixedSize(horizontal: false, vertical: true)
 			}
 
-			let chips = beaconChips(beacon)
+			let chips = beaconChips(beacon, joinedChannelKeys: joinedChannelKeys)
 			if !chips.isEmpty {
 				HStack(spacing: 6) {
 					ForEach(chips, id: \.self) { chip in
@@ -88,7 +93,7 @@ struct DiscoveryBeaconsView: View {
 		.padding(.vertical, 4)
 	}
 
-	private func beaconChips(_ beacon: DiscoveredBeaconEntity) -> [String] {
+	private func beaconChips(_ beacon: DiscoveredBeaconEntity, joinedChannelKeys: Set<String>) -> [String] {
 		var chips: [String] = []
 		if let preset = beacon.offeredPreset {
 			chips.append(preset.description)
@@ -98,6 +103,9 @@ struct DiscoveryBeaconsView: View {
 		}
 		if beacon.hasOfferChannel, !beacon.offerChannelName.isEmpty {
 			chips.append("#\(beacon.offerChannelName)")
+			if joinedChannelKeys.contains("\(beacon.offerChannelName)|\(beacon.offerChannelPSK.base64EncodedString())") {
+				chips.append(String(localized: "Already Joined"))
+			}
 		}
 		return chips
 	}

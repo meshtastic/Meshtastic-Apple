@@ -48,6 +48,15 @@ struct ChannelForm: View {
 							hasChanges = true
 						}
 					}
+					if ChannelEntity.isReservedModuleName(channelName) {
+						Label {
+							Text("\"\(channelName)\" is a reserved module channel name and will not appear in the Messages channel list. Pick a different name for a messaging channel.")
+								.font(.callout)
+						} icon: {
+							Image(systemName: "exclamationmark.triangle.fill")
+						}
+						.foregroundColor(.orange)
+					}
 					HStack {
 						Picker("Key Size", selection: $channelKeySize) {
 							Text("Empty").tag(0)
@@ -72,6 +81,7 @@ struct ChannelForm: View {
 						.buttonStyle(.bordered)
 						.buttonBorderShape(.capsule)
 						.controlSize(.small)
+						.accessibilityLabel(String(localized: "Generate channel key", comment: "VoiceOver label for the generate channel key button"))
 					}
 					HStack(alignment: .center) {
 						Text("Key")
@@ -131,7 +141,7 @@ struct ChannelForm: View {
 						Toggle(isOn: $positionsEnabled) {
 							Label(channelRole == 1 ? "Positions Enabled" : "Allow Position Requests", systemImage: positionsEnabled ? "mappin" : "mappin.slash")
 						}
-						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						.toggleStyle(.switch)
 						.disabled(!supportedVersion)
 					}
 
@@ -141,7 +151,7 @@ struct ChannelForm: View {
 								Toggle(isOn: $preciseLocation) {
 									Label("Precise Location", systemImage: "scope")
 								}
-								.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+								.toggleStyle(.switch)
 								.disabled(!supportedVersion)
 								.listRowSeparator(.visible)
 								.onChange(of: preciseLocation) { _, pl in
@@ -158,9 +168,13 @@ struct ChannelForm: View {
 								Slider(value: $positionPrecision, in: 12...15, step: 1) {
 								} minimumValueLabel: {
 									Image(systemName: "plus")
+										.accessibilityHidden(true)
 								} maximumValueLabel: {
 									Image(systemName: "minus")
+										.accessibilityHidden(true)
 								}
+								.accessibilityLabel(String(localized: "Approximate location precision", comment: "VoiceOver label for the approximate location precision slider"))
+								.accessibilityValue(PositionPrecision(rawValue: Int(positionPrecision))?.description ?? "")
 								Text(PositionPrecision(rawValue: Int(positionPrecision))?.description ?? "")
 									.foregroundColor(.gray)
 									.font(.callout)
@@ -170,15 +184,15 @@ struct ChannelForm: View {
 				}
 				Section(header: Text("MQTT")) {
 					Toggle(isOn: $uplink) {
-						Label("Uplink Enabled", systemImage: "arrowshape.up")
+						Label("MQTT Uplink Enabled", systemImage: "arrowshape.up")
 					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.toggleStyle(.switch)
 					.listRowSeparator(.visible)
 
 					Toggle(isOn: $downlink) {
-						Label("Downlink Enabled", systemImage: "arrowshape.down")
+						Label("MQTT Downlink Enabled", systemImage: "arrowshape.down")
 					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.toggleStyle(.switch)
 				}
 		}
 		.onChange(of: channelName) {

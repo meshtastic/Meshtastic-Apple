@@ -30,7 +30,10 @@ struct MeshMapMK: View {
 	var showOpenWindowButton: Bool = true
 
 	/// Parameters
-	@State var showUserLocation: Bool = true
+	/// Whether to draw the device's own location (blue dot) + show the user-tracking control.
+	/// Persisted so the choice survives relaunch; gated on `isMapVisible` at the call site so the
+	/// dot/tracking turns off while the tab is off-screen or the app is backgrounded.
+	@AppStorage("enableMapUserLocation") private var showUserLocation: Bool = true
 	/// Map State User Defaults
 	@AppStorage("enableMapTraffic") private var showTraffic: Bool = false
 	@AppStorage("enableMapPointsOfInterest") private var showPointsOfInterest: Bool = false
@@ -39,13 +42,26 @@ struct MeshMapMK: View {
 	/// base layer -- so the styled offline box + coverage border work over Standard/Hybrid/Satellite.
 	@AppStorage("enableOfflineTiles") private var enableOfflineTiles = false
 	@AppStorage("enableMapClustering") private var enableMapClustering = true
+	@AppStorage("meshMapShowHillshade") private var showHillshade = false
+	@AppStorage("meshMapShowContours") private var showContours = false
+	/// Contour generation + the shared TerrainStore behind hillshade and contours (spec 018).
+	@StateObject private var terrainContours = TerrainContourProvider()
+	@State private var hillshadeOverlay: HillshadeTileOverlay?
 	/// Hide nodes whose latest position is reduced-precision (the ones drawn with a precision circle).
 	@AppStorage("enableMapPreciseLocationsOnly") private var preciseLocationsOnly = false
 	/// Map overlay configs
 	@State private var enabledOverlayConfigs: Set<UUID> = []
 	// Map Configuration
 	@Namespace var mapScope
-	@AppStorage("meshMapDistance") private var meshMapDistance: Double = 800000
+	// Persisted last-viewed camera region, so the map reopens where the user left it -- independent of
+	// GPS / connected device / node availability at launch. This is what fixes the cold-open default
+	// (0,0) "South Atlantic" view for a location-denied user with no positioned nodes. Stored as four
+	// primitives because `MKCoordinateRegion` isn't `Codable`; a non-positive saved span means
+	// "nothing saved yet".
+	@AppStorage("meshMapRegionCenterLatitude") private var savedRegionCenterLatitude: Double = 0
+	@AppStorage("meshMapRegionCenterLongitude") private var savedRegionCenterLongitude: Double = 0
+	@AppStorage("meshMapRegionSpanLatitude") private var savedRegionSpanLatitude: Double = 0
+	@AppStorage("meshMapRegionSpanLongitude") private var savedRegionSpanLongitude: Double = 0
 	@State var mapStyle: MapStyle = MapStyle.standard(elevation: .flat, emphasis: MapStyle.StandardEmphasis.muted, pointsOfInterest: .excludingAll, showsTraffic: false)
 	@State var position = MapCameraPosition.automatic
 	@State private var distance = 10000.0
@@ -56,7 +72,6 @@ struct MeshMapMK: View {
 	@State private var mapOverlays: [ClusterMapOverlay] = []
 	/// Display-coordinate overrides for nodes that sit on (nearly) the same point, fanned out into
 	/// a small ring so a stacked cluster always breaks into individual, tappable node circles.
-	@State private var spreadOverrides: [Int64: CLLocationCoordinate2D] = [:]
 	/// Guards the one-time initial camera framing (GPS-centered, zoomed out, ~100 miles max).
 	@State private var didInitialFrame = false
 	/// One-shot camera move fed to the map. Set ONCE by the initial framing; after that the user
@@ -68,6 +83,7 @@ struct MeshMapMK: View {
 	@StateObject private var offlineVectors = OfflineVectorTileProvider()
 	/// Downloaded offline regions; observed so a new download re-points offlineVectors.
 	@ObservedObject private var offlineMapManager = OfflineMapManager.shared
+	@ObservedObject private var offlineMapConnectivity = OfflineMapConnectivityMonitor.shared
 	@State private var offlineVectorOverlays: [ClusterMapOverlay] = []
 	/// Route polylines + start/finish markers, rebuilt only when the route set changes.
 	@State private var routeOverlays: [ClusterMapOverlay] = []
@@ -82,7 +98,13 @@ struct MeshMapMK: View {
 	@StateObject private var flyover = TraceRouteFlyover()
 	@AppStorage("enableMapWaypoints") private var showWaypoints = true
 	@AppStorage("mapOverlaysEnabled") private var mapOverlaysEnabled = false
-	@State private var waypointDecorations: [ClusterMapDecoration] = []
+	/// Waypoints as clustering items (so they merge into node clusters) rather than standalone
+	/// decorations. Rebuilt on add/remove/move/icon change; drawn as an orange emoji circle when a
+	/// waypoint isn't clustered.
+	@State private var waypointSnapshots: [MeshMapWaypointSnapshot] = []
+	/// Snapshot id -> the backing waypoint, so a tapped/picked waypoint opens its form without the
+	/// snapshot having to carry a SwiftData entity.
+	@State private var waypointEntitiesByID: [Int64: WaypointEntity] = [:]
 	/// User-uploaded GeoJSON overlays: lines/polygons -> overlays, points -> decorations.
 	@State private var geoJSONOverlays: [ClusterMapOverlay] = []
 	@State private var geoJSONDecorations: [ClusterMapDecoration] = []
@@ -97,6 +119,10 @@ struct MeshMapMK: View {
 	@State private var editingSettings = false
 	@State private var editingFilters = false
 	@State var selectedNode: MeshMapSelectedNode?
+	/// A tapped un-splittable coincident stack, shown in a disambiguation picker (nil = hidden).
+	@State private var colocatedStack: ColocatedMapStack?
+	/// An item chosen in the picker, opened only after that sheet dismisses (so the two don't collide).
+	@State private var pendingColocatedSelection: MeshMapItem?
 	@State private var visiblePositionSnapshots: [MeshMapPositionSnapshot] = []
 	@State var editingWaypoint: WaypointEntity?
 	@State var selectedWaypoint: WaypointEntity?
@@ -104,6 +130,9 @@ struct MeshMapMK: View {
 	@State var newWaypointCoord: CLLocationCoordinate2D?
 	@State var isMeshMap = true
 	@State private var showLegend = false
+	/// Site Planner coverage-estimate flow: the headless WebView+bridge runner and the form seed.
+	@StateObject private var coverageRunner = CoverageEstimateRunner()
+	@State private var coverageSeed: CoverageEstimateSeed?
 	/// Filter
 	@ObservedObject var filters = NodeFilterParameters.shared
 	/// Track whether a detached Mesh Map window is currently open.
@@ -134,8 +163,37 @@ struct MeshMapMK: View {
 		}
 	}
 
-	@Query(filter: #Predicate<PositionEntity> { $0.nodePosition != nil && $0.latest == true && $0.nodePosition?.ignored != true })
-	private var allLatestPositions: [PositionEntity]
+	/// Latest positions, refreshed on a throttled cadence (see the `.task` in `body`) instead of a
+	/// live `@Query`. Under heavy ingestion (large mesh, TCP replay, reconnect node-DB dump) a live
+	/// query invalidates `body` on every position write, and each evaluation re-ran the
+	/// filter + density sort over the whole set — pegging the main thread at ~100% CPU. A ~2s
+	/// refresh is imperceptible on a map while pan/zoom/filter changes still refresh immediately.
+	@State private var allLatestPositions: [PositionEntity] = []
+	/// Change-detection key of the last applied position state; skips snapshot/overlay rebuilds
+	/// when a periodic refresh finds nothing visibly different.
+	@State private var appliedPositionStateKey: Int64 = .min
+
+	private func fetchLatestPositions() -> [PositionEntity] {
+		let descriptor = FetchDescriptor<PositionEntity>(
+			predicate: #Predicate<PositionEntity> { $0.nodePosition != nil && $0.latest == true && $0.nodePosition?.ignored != true }
+		)
+		return (try? context.fetch(descriptor)) ?? []
+	}
+
+	/// Re-fetch positions, rebuild the derived state, and apply it when it actually changed.
+	/// `force` bypasses the change-detection key (used when visibility flips, so snapshots are
+	/// rebuilt after being dropped even though the underlying positions are unchanged).
+	@MainActor
+	private func refreshPositionState(force: Bool = false) {
+		allLatestPositions = fetchLatestPositions()
+		let state = visiblePositionState
+		guard force || state.key != appliedPositionStateKey else { return }
+		appliedPositionStateKey = state.key
+		refreshVisiblePositionSnapshots(from: state.positions)
+		syncFallbackLocation()
+		decodeOfflineIfVisible()
+		updateContoursIfNeeded()
+	}
 
 	/// Enabled saved routes drawn as polylines + start/finish markers (parity with the old map).
 	@Query(filter: #Predicate<RouteEntity> { $0.enabled == true }, sort: \RouteEntity.name)
@@ -213,28 +271,25 @@ struct MeshMapMK: View {
 			combine(&key, Int64((visibleRegion.span.longitudeDelta * 10_000).rounded(.towardZero)))
 		}
 		combine(&key, filterRefreshKey)
-		for position in positions.prefix(64) {
+		// Hash EVERY visible position: since the throttled refresh, this key is the only gate for
+		// snapshot/overlay rebuilds, and a truncated sample would leave pins beyond it permanently
+		// stale when a node moves without changing the set's count or ordering.
+		for position in positions {
 			combine(&key, Int64(truncatingIfNeeded: position.persistentModelID.hashValue))
 			combine(&key, Int64(position.latitudeI))
 			combine(&key, Int64(position.longitudeI))
 			combine(&key, Int64(position.precisionBits))
 		}
-		if let last = positions.last {
-			combine(&key, Int64(truncatingIfNeeded: last.persistentModelID.hashValue))
-			combine(&key, Int64(last.latitudeI))
-				combine(&key, Int64(last.longitudeI))
-			}
 		return MeshMapVisiblePositionState(positions: positions, key: key)
 	}
 
-	/// Draw the heavy offline detail only while the coverage box is actually on screen (and not at
-	/// Apple basemap type + controls fed to ClusterMapView (Phase 2).
+	/// Apple basemap type + controls fed to ClusterMapView.
 	private var clusterConfiguration: ClusterMapConfiguration {
 		ClusterMapConfiguration(
 			layer: selectedMapLayer == .offline ? .standard : selectedMapLayer,
 			showsTraffic: showTraffic,
 			showsPointsOfInterest: showPointsOfInterest,
-			showsUserLocation: showUserLocation,
+			showsUserLocation: showUserLocation && isMapVisible,
 			controlsBottomInset: 72   // lift compass + pitch toggle above the bottom button bar
 		)
 	}
@@ -242,22 +297,41 @@ struct MeshMapMK: View {
 	/// All downloaded regions to render when offline tiles are enabled (pruned to on-disk regions at
 	/// load). Empty when offline tiles are off or nothing is downloaded.
 	private var offlineRegions: [OfflineMapRegion] {
-		enableOfflineTiles ? offlineMapManager.regions : []
+		shouldRenderOfflineMaps ? offlineMapManager.regions : []
 	}
 
-	/// Archive URLs for every downloaded region — decoded + merged by `offlineVectors`.
-	private var offlineRegionURLs: [URL] {
-		offlineRegions.compactMap { offlineMapManager.fileURL(for: $0) }
+	/// A saved map is shown whenever the user enabled it, or temporarily when iOS reports that no
+	/// network route is usable. The temporary fallback never writes the user's saved preference.
+	private var shouldRenderOfflineMaps: Bool {
+		OfflineMapFallbackPolicy.shouldRenderOfflineMaps(
+			userEnabled: enableOfflineTiles,
+			hasSavedMaps: !offlineMapManager.regions.isEmpty,
+			networkAvailable: offlineMapConnectivity.isNetworkAvailable
+		)
 	}
 
-	/// Coverage box for each downloaded region (accent borders + capsules), shown once vectors load.
+	/// Coverage box for each downloaded region (accent borders + capsules). Basemap
+	/// boxes show once vectors load; regions with terrain also show whenever a
+	/// terrain layer is on — hillshade and contours draw over Apple maps even with
+	/// the offline tiles toggle off, and the box must match what actually renders.
 	private var offlineCoverageAreas: [GeoBounds] {
-		offlineVectors.isAvailable ? offlineRegions.map { $0.bounds } : []
+		var boxed = offlineVectors.isAvailable ? offlineRegions : []
+		if showHillshade || showContours {
+			for region in offlineMapManager.regions
+			where region.terrain != nil && !boxed.contains(where: { $0.id == region.id }) {
+				boxed.append(region)
+			}
+		}
+		return boxed.map { $0.bounds }
 	}
 	/// Cheap change-detector for the route set (drives rebuildRouteContent via onChange).
 	/// Change-detector for the waypoint set (rebuild markers on add/remove/move/icon change).
 	private var waypointsKey: String {
-		allWaypoints.map { "\($0.id)|\($0.icon)|\($0.latitudeI)|\($0.longitudeI)|\($0.geofenceRadius)|\($0.hasBoundingBox ? 1 : 0)|\($0.boundingBoxLatitudeNorthI)|\($0.boundingBoxLatitudeSouthI)|\($0.boundingBoxLongitudeEastI)|\($0.boundingBoxLongitudeWestI)" }.joined(separator: ",")
+		// Includes `name` and `expire`: both are now rendered directly from the snapshot (the map
+		// pin and the coincident-item picker), so a rename or an expiry must change this key to
+		// trigger rebuildWaypointItems() — otherwise a stale name / an expired-but-still-tappable
+		// waypoint would linger until some unrelated field changed.
+		allWaypoints.map { "\($0.id)|\($0.name ?? "")|\($0.icon)|\($0.latitudeI)|\($0.longitudeI)|\($0.geofenceRadius)|\($0.hasBoundingBox ? 1 : 0)|\($0.boundingBoxLatitudeNorthI)|\($0.boundingBoxLatitudeSouthI)|\($0.boundingBoxLongitudeEastI)|\($0.boundingBoxLongitudeWestI)|\($0.expire?.timeIntervalSinceReferenceDate ?? 0)" }.joined(separator: ",")
 	}
 	private var routesKey: String {
 		routes.map { "\($0.color)|\($0.locations.count)" }.joined(separator: ",")
@@ -268,12 +342,16 @@ struct MeshMapMK: View {
 	/// The map itself, extracted from `body` so the big generic expression type-checks on its own.
 	@ViewBuilder private var meshClusterMapView: some View {
 		ClusterMapView(
-				items: visiblePositionSnapshots,
-				coordinate: { spreadOverrides[$0.nodeNum] ?? $0.coordinate },
+				items: combinedMapItems,
+				coordinate: { $0.coordinate },
 				region: $visibleRegion,
 				cameraCommand: cameraCommand,
 				clustering: enableMapClustering,
-				onSelect: { snapshot in selectedWaypoint = nil; editingWaypoint = nil; selectedNode = MeshMapSelectedNode(id: snapshot.nodeNum) },
+				onSelect: { item in presentItemSelection(for: item) },
+				onColocatedStack: { items in
+					// Coincident stack that zoom-to-fit can't separate -> let the user pick an item by name.
+					presentColocatedStack(items)
+				},
 				configuration: clusterConfiguration,
 				overlays: combinedMapOverlays(),
 				coverageAreas: isMapVisible ? offlineCoverageAreas : [],
@@ -281,10 +359,28 @@ struct MeshMapMK: View {
 				onMapLongPress: { coordinate in beginNewWaypoint(at: coordinate) },
 				onMapCreated: { flyover.mapView = $0 },
 				suppressRegionUpdates: flyover.isFlying
-			) { snapshot in
-				MeshMapMKNodePin(nodeNum: snapshot.nodeNum, shortName: snapshot.shortName, isOnline: snapshot.isOnline, calculatedDelay: snapshot.calculatedDelay, dense: isDense)
-					.equatable()
+			) { item in
+				switch item {
+				case let .node(snapshot):
+					MeshMapMKNodePin(nodeNum: snapshot.nodeNum, shortName: snapshot.shortName, isOnline: snapshot.isOnline, calculatedDelay: snapshot.calculatedDelay, dense: isDense)
+						.equatable()
+				case let .waypoint(waypoint):
+					// Distinct waypoint glyph when not clustered (matches the map legend's orange circle).
+					CircleText(text: waypoint.icon, color: .orange, circleSize: 36)
+				}
 			}
+	}
+
+	/// Node position snapshots + waypoint snapshots merged into one clustering item list, so a waypoint
+	/// and nearby nodes collapse into one numbered cluster pin (and waypoints cluster with each other).
+	/// Empty off-screen so MapKit drops its annotation trees.
+	private var combinedMapItems: [MeshMapItem] {
+		guard isMapVisible else { return [] }
+		var result = visiblePositionSnapshots.map { MeshMapItem.node($0) }
+		if showWaypoints {
+			result += waypointSnapshots.map { MeshMapItem.waypoint($0) }
+		}
+		return result
 	}
 
 	/// Banner shown while a trace route is drawn on the map, with controls to fly through and clear it.
@@ -293,53 +389,77 @@ struct MeshMapMK: View {
 			let fromName = getNodeInfo(id: route.fromNum, context: context)?.user?.shortName ?? route.fromNum.toHex()
 			let toName = getNodeInfo(id: route.toNum, context: context)?.user?.shortName ?? route.toNum.toHex()
 			let flyLegs = traceRouteFlyoverLegs(for: route)
-			HStack(spacing: 10) {
-				Image(systemName: "point.3.connected.trianglepath.dotted")
-				Text("Trace Route: \(fromName) → \(toName)")
-					.font(.callout)
-					.fontWeight(.medium)
-					.lineLimit(1)
-				if flyLegs.contains(where: { $0.count >= 2 }) {
-					// Speed toggle: cycle 1× (base/slow) → 1.5× → 2× → 2.5× → 3× → 4× → 5× (400% faster). Live-adjustable.
-					Button {
-						let steps: [Double] = [1, 1.5, 2, 2.5, 3, 4, 5]
-						let next = (steps.firstIndex(of: flyover.speedMultiplier) ?? 0) + 1
-						flyover.speedMultiplier = steps[next % steps.count]
-					} label: {
-						Text(String(format: "%g×", flyover.speedMultiplier))
-							.font(.caption)
-							.fontWeight(.semibold)
-							.monospacedDigit()
-							.frame(minWidth: 30)
-					}
-					.buttonStyle(.bordered)
-					// Text(_:) localizes via the "Flyover speed %@" key; pass a language-agnostic "2×".
-					.accessibilityLabel(Text("Flyover speed \(String(format: "%g×", flyover.speedMultiplier))"))
-					Button {
-						if flyover.isFlying {
-							flyover.stop()
-						} else {
-							flyover.start(legs: flyLegs)
+			let hasFlyover = flyLegs.contains(where: { $0.count >= 2 })
+			// Pause the flyover when live mesh traffic is high: the flythrough is an MKMapView camera
+			// animation that competes with the SwiftUI re-renders ingestion drives, so it would stutter.
+			let flyoverPaused = hasFlyover && accessoryManager.isHighMeshTraffic
+			VStack(spacing: 6) {
+				HStack(spacing: 10) {
+					Image(systemName: "point.3.connected.trianglepath.dotted")
+					Text("Trace Route: \(fromName) → \(toName)")
+						.font(.callout)
+						.fontWeight(.medium)
+						.lineLimit(1)
+					if hasFlyover {
+						// Speed toggle: cycle 1× → 1.5× → 2× → 2.5× → 3× → 4× → 5×. Live-adjustable.
+						Button {
+							let steps: [Double] = [1, 1.5, 2, 2.5, 3, 4, 5]
+							let next = (steps.firstIndex(of: flyover.speedMultiplier) ?? 0) + 1
+							flyover.speedMultiplier = steps[next % steps.count]
+						} label: {
+							Text(String(format: "%g×", flyover.speedMultiplier))
+								.font(.caption)
+								.fontWeight(.semibold)
+								.monospacedDigit()
+								.frame(minWidth: 30)
 						}
+						.buttonStyle(.bordered)
+						// Text(_:) localizes via the "Flyover speed %@" key; pass a language-agnostic "2×".
+						.accessibilityLabel(Text("Flyover speed \(String(format: "%g×", flyover.speedMultiplier))"))
+						Button {
+							if flyover.isFlying {
+								flyover.stop()
+							} else if !flyoverPaused {
+								// Guard as well as disable: never launch a doomed flyover under heavy traffic.
+								flyover.start(legs: flyLegs)
+							}
+						} label: {
+							Image(systemName: flyover.isFlying ? "stop.circle.fill" : "play.circle.fill")
+								.foregroundStyle(flyover.isFlying ? Color.red : (flyoverPaused ? Color.secondary : Color.accentColor))
+						}
+						.buttonStyle(.plain)
+						// Keep the stop button live so a running flyover can always be dismissed; only
+						// block starting a new one while traffic is high.
+						.disabled(flyoverPaused && !flyover.isFlying)
+						.accessibilityLabel(flyover.isFlying ? Text("Stop flyover") : Text("Start flyover"))
+						.accessibilityHint(flyoverPaused && !flyover.isFlying ? Text("Flyover paused — mesh traffic is high") : Text(verbatim: ""))
+					}
+					Button {
+						clearTraceRoute()
 					} label: {
-						Image(systemName: flyover.isFlying ? "stop.circle.fill" : "play.circle.fill")
-							.foregroundStyle(flyover.isFlying ? Color.red : Color.accentColor)
+						Image(systemName: "xmark.circle.fill")
+							.foregroundStyle(.secondary)
 					}
 					.buttonStyle(.plain)
-					.accessibilityLabel(flyover.isFlying ? Text("Stop flyover") : Text("Start flyover"))
+					.accessibilityLabel(String(localized: "Clear trace route", comment: "VoiceOver label for the clear trace route button"))
 				}
-				Button {
-					clearTraceRoute()
-				} label: {
-					Image(systemName: "xmark.circle.fill")
+				.padding(.horizontal, 14)
+				.padding(.vertical, 8)
+				.background(.thinMaterial, in: Capsule())
+
+				if flyoverPaused {
+					// Localized reason shown under the banner while the flyover is held back.
+					Label("Flyover paused — mesh traffic is high", systemImage: "exclamationmark.triangle")
+						.font(.caption2)
 						.foregroundStyle(.secondary)
+						.padding(.horizontal, 12)
+						.padding(.vertical, 4)
+						.background(.thinMaterial, in: Capsule())
+						.transition(.opacity)
 				}
-				.buttonStyle(.plain)
 			}
-			.padding(.horizontal, 14)
-			.padding(.vertical, 8)
-			.background(.thinMaterial, in: Capsule())
 			.padding(.top, 8)
+			.animation(.default, value: flyoverPaused)
 		}
 	}
 
@@ -349,10 +469,19 @@ struct MeshMapMK: View {
 		meshClusterMapView
 			.ignoresSafeArea()
 			.overlay(alignment: .top) { traceRouteBanner }
+			.onChange(of: accessoryManager.isHighMeshTraffic) { _, isHigh in
+				// Traffic has been high for a sustained window (the monitor debounces this) — stop an
+				// in-flight flyover so it doesn't grind. The play button's disable + start guard keep it
+				// from relaunching until the rate settles back below the resume watermark.
+				if isHigh && flyover.isFlying {
+					Logger.services.info("🛰️ Pausing trace-route flyover: sustained high mesh traffic")
+					flyover.stop()
+				}
+			}
 				.sheet(item: $selectedNode) { selection in
 					if let node = getNodeInfo(id: selection.id, context: context) {
 						NavigationStack {
-							NodeDetail(node: node, showMapLink: false)
+							NodeDetail(node: node, nodeNum: selection.id, showMapLink: false)
 						}
 						#if targetEnvironment(macCatalyst)
 							.overlay(alignment: .topLeading) {
@@ -375,8 +504,47 @@ struct MeshMapMK: View {
 						#endif
 					}
 				}
+				.sheet(item: $colocatedStack, onDismiss: {
+					// Open the chosen item only after the picker has fully dismissed, so the two
+					// sheets don't fight over presentation.
+					if let selection = pendingColocatedSelection {
+						pendingColocatedSelection = nil
+						open(selection)
+					}
+				}) { stack in
+					NavigationStack {
+						List(stack.items) { item in
+							Button {
+								pendingColocatedSelection = item
+								colocatedStack = nil
+							} label: {
+								colocatedRow(for: item)
+							}
+							.buttonStyle(.plain)
+						}
+						.navigationTitle(String.localizedStringWithFormat("Select an Item (%@)".localized, String(stack.items.count)))
+						#if !targetEnvironment(macCatalyst)
+						.navigationBarTitleDisplayMode(.inline)
+						#endif
+						.toolbar {
+							ToolbarItem(placement: .cancellationAction) {
+								Button {
+									colocatedStack = nil
+								} label: {
+									Image(systemName: "xmark")
+								}
+								.accessibilityLabel(String(localized: "Cancel", comment: "VoiceOver: dismiss the map item disambiguation picker"))
+							}
+						}
+					}
+					.presentationDetents([.medium, .large])
+					#if !targetEnvironment(macCatalyst)
+					.presentationDragIndicator(.visible)
+					#endif
+				}
 				.sheet(item: $selectedWaypoint) { selection in
 					WaypointForm(waypoint: selection)
+						.environmentObject(accessoryManager)
 						.presentationDetents([.large]) // full screen
 						#if !targetEnvironment(macCatalyst)
 						.presentationDragIndicator(.visible)
@@ -384,6 +552,7 @@ struct MeshMapMK: View {
 				}
 				.sheet(item: $editingWaypoint) { selection in
 					WaypointForm(waypoint: selection, editMode: true)
+						.environmentObject(accessoryManager)
 						.presentationDetents([.large])
 						#if !targetEnvironment(macCatalyst)
 						.presentationDragIndicator(.visible)
@@ -396,6 +565,7 @@ struct MeshMapMK: View {
 				.onChange(of: router.mapState) {
 					guard case .map = router.selectedTab else { return }
 					applyTraceRouteSelection()
+					consumeCoverageEstimateState()
 					// TODO: handle deep link for waypoints
 				}
 				.onChange(of: selectedMapLayer) { _, newMapLayer in
@@ -428,9 +598,24 @@ struct MeshMapMK: View {
 						#endif
 						.presentationBackgroundInteraction(.enabled(upThrough: .medium))
 				}
+				.sheet(item: $coverageSeed) { seed in
+					CoverageEstimateForm(seed: seed, runner: coverageRunner)
+						.presentationDetents([.large])
+						#if !targetEnvironment(macCatalyst)
+						.presentationDragIndicator(.visible)
+						#endif
+				}
 				.safeAreaInset(edge: .bottom, alignment: .trailing) {
 					HStack(spacing: 12) {
 						Spacer()
+						Button(action: {
+							presentCoverageEstimateFromMap()
+						}) {
+							Image("custom.radio.tower")
+						}
+						.accessibilityLabel(String(localized: "Estimate coverage", comment: "VoiceOver label for the coverage estimate button"))
+						.accessibilityHint(String(localized: "Runs a Site Planner coverage estimate and adds it to the map.", comment: "VoiceOver hint for the coverage estimate button"))
+						.glassButtonStyle()
 						Button(action: {
 							withAnimation {
 								editingFilters = !editingFilters
@@ -438,8 +623,8 @@ struct MeshMapMK: View {
 						}) {
 							Image(systemName: filters.isFiltering ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle")
 						}
-						.accessibilityLabel(editingFilters ? "Hide node filters" : "Show node filters")
-						.accessibilityHint(editingFilters ? "Hides the node filter options." : "Shows the node filter options.")
+						.accessibilityLabel(editingFilters ? String(localized: "Hide node filters", comment: "VoiceOver label to hide map node filters") : String(localized: "Show node filters", comment: "VoiceOver label to show map node filters"))
+						.accessibilityHint(editingFilters ? String(localized: "Hides the node filter options.", comment: "VoiceOver hint to hide map node filters") : String(localized: "Shows the node filter options.", comment: "VoiceOver hint to show map node filters"))
 						.glassButtonStyle()
 						Button(action: {
 							withAnimation {
@@ -448,8 +633,8 @@ struct MeshMapMK: View {
 						}) {
 							Image(systemName: showLegend ? "map.fill" : "map")
 						}
-						.accessibilityLabel(showLegend ? "Hide map legend" : "Show map legend")
-						.accessibilityHint(showLegend ? "Hides the map legend." : "Shows the map legend.")
+						.accessibilityLabel(showLegend ? String(localized: "Hide map legend", comment: "VoiceOver label to hide the map legend") : String(localized: "Show map legend", comment: "VoiceOver label to show the map legend"))
+						.accessibilityHint(showLegend ? String(localized: "Hides the map legend.", comment: "VoiceOver hint to hide the map legend") : String(localized: "Shows the map legend.", comment: "VoiceOver hint to show the map legend"))
 						.glassButtonStyle()
 						Button(action: {
 							withAnimation {
@@ -458,6 +643,8 @@ struct MeshMapMK: View {
 						}) {
 							Image(systemName: editingSettings ? "info.circle.fill" : "info.circle")
 						}
+						.accessibilityLabel(editingSettings ? String(localized: "Hide map settings", comment: "VoiceOver label to hide the map settings panel") : String(localized: "Show map settings", comment: "VoiceOver label to show the map settings panel"))
+						.accessibilityHint(editingSettings ? String(localized: "Hides the map settings panel.", comment: "VoiceOver hint to hide the map settings panel") : String(localized: "Shows the map settings panel.", comment: "VoiceOver hint to show the map settings panel"))
 						.glassButtonStyle()
 					}
 					.controlSize(.regular)
@@ -466,48 +653,22 @@ struct MeshMapMK: View {
 				}
 	}
 
+	/// Split across several properties on purpose: as one expression this chain of
+	/// 13 modifiers sat at the type-checker's time limit, so CI flipped between
+	/// passing and "unable to type-check this expression in reasonable time" on
+	/// identical code. Each piece now infers on its own and stays well clear.
 	var body: some View {
-		let positionState = visiblePositionState
-		NavigationStack {
-			ZStack {
-			mapWithSheets
-			}
-			.toolbar {
-				ToolbarItem(placement: .topBarLeading) {
-					MeshtasticLogo()
-				}
-				ToolbarItem(placement: .topBarTrailing) {
-					HStack {
-						if supportsMultipleWindows && showOpenWindowButton && !isMapWindowOpen {
-							Button {
-								if router.selectedTab == .map {
-									router.selectedTab = .nodes
-								}
-								openWindow(id: "meshmap-window")
-								isMapWindowOpen = true
-							} label: {
-								Image(systemName: "macwindow.badge.plus")
-							}
-						}
-						ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
-					}
-				}
-			}
-			.toolbarBackground(.hidden, for: .navigationBar)
-		}
-			.onChange(of: positionState.key) {
-				refreshVisiblePositionSnapshots(from: positionState.positions)
-				syncFallbackLocation()
-				decodeOfflineIfVisible()
-			}
-			.onChange(of: offlineMapManager.regions) {
-				reloadOfflineSource()
-			}
-			.onChange(of: overlayInputsKey) {
-				rebuildAllMapContent()
-			}
-			.onChange(of: allLatestPositions) {
-				syncFallbackLocation()
+		mapWithStateHooks
+			.onChange(of: regionRefreshKey) {
+				// Pan/zoom settled: re-filter to the new region now; the state key dedupes
+				// the rebuild when the visible set is unchanged.
+				refreshPositionState()
+				// Contours track the CAMERA, not the node set — regenerate here directly,
+				// or panning with an unchanged visible node set never updates them
+				// (refreshPositionState early-returns before its contour call).
+				updateContoursIfNeeded()
+				// Remember where the user is looking so the map reopens here next launch.
+				persistVisibleRegion()
 			}
 			.onChange(of: accessoryManager.activeDeviceNum) {
 				syncFallbackLocation()
@@ -515,12 +676,17 @@ struct MeshMapMK: View {
 			.onChange(of: accessoryManager.isInBackground) {
 				// Foreground/background flips isMapVisible; refresh so the overlay-bearing
 				// snapshots are dropped when backgrounded and rebuilt when foregrounded.
-				refreshVisiblePositionSnapshots(from: positionState.positions)
+				refreshPositionState(force: true)
+			}
+			.onChange(of: coverageRunner.importedResult) { _, result in
+				guard let result else { return }
+				applyImportedCoverage(result)
 			}
 			.onAppear {
 				UIApplication.shared.isIdleTimerDisabled = true
 				syncFallbackLocation()
 				refreshMapWindowOpenState()
+				consumeCoverageEstimateState()
 			// Initialize enabled overlay configs with all active files
 			// Migrate the legacy `.offline` base layer to the new independent offline-tiles overlay.
 			if selectedMapLayer == .offline {
@@ -529,12 +695,13 @@ struct MeshMapMK: View {
 			}
 			let activeFiles = GeoJSONOverlayManager.shared.getUploadedFilesWithState().filter { $0.isActive }
 			enabledOverlayConfigs = Set(activeFiles.map { $0.id })
-			rebuildWaypointDecorations()
+			rebuildWaypointItems()
 			rebuildGeoJSONOverlays()
 			rebuildRouteContent()
 			applyTraceRouteSelection()
 			offlineMapManager.loadIfNeeded()
 			reloadOfflineSource()
+			refreshTerrainSources()
 			rebuildOfflineVectorOverlays()
 
 			switch selectedMapLayer {
@@ -547,7 +714,7 @@ struct MeshMapMK: View {
 			case .offline:
 				mapStyle = MapStyle.hybrid(elevation: .realistic, pointsOfInterest: showPointsOfInterest ? .all : .excludingAll, showsTraffic: showTraffic)
 			}
-			refreshVisiblePositionSnapshots(from: positionState.positions)
+			refreshPositionState(force: true)
 		}
 		.onDisappear(perform: {
 			UIApplication.shared.isIdleTimerDisabled = false
@@ -559,8 +726,9 @@ struct MeshMapMK: View {
 				syncFallbackLocation()
 				refreshMapWindowOpenState()
 				UIApplication.shared.isIdleTimerDisabled = true
-				refreshVisiblePositionSnapshots()
+				refreshPositionState(force: true)
 				applyTraceRouteSelection()
+				consumeCoverageEstimateState()
 			} else {
 				flyover.stop(restoreCamera: false)
 				UIApplication.shared.isIdleTimerDisabled = false
@@ -581,10 +749,207 @@ struct MeshMapMK: View {
 		}
 	}
 
+	private var mapWithStateHooks: some View {
+		mapWithDataHooks
+			.onChange(of: colorScheme) {
+				rebuildHillshadeOverlay()
+			}
+			.onChange(of: offlineMapConnectivity.isNetworkAvailable) {
+				rebuildAllMapContent()
+			}
+			.onChange(of: overlayInputsKey) {
+				rebuildAllMapContent()
+			}
+			.onChange(of: filterRefreshKey) {
+				// Filter/search edits should reflect immediately, not on the next tick.
+				refreshPositionState(force: true)
+			}
+	}
+
+	private var mapWithDataHooks: some View {
+		mapNavigation
+			.task(id: isMapVisible) {
+				// Throttled position refresh: re-derive the visible positions on a gentle
+				// cadence instead of on every SwiftData write (see `allLatestPositions`).
+				guard isMapVisible else { return }
+				while !Task.isCancelled {
+					refreshPositionState()
+					try? await Task.sleep(for: .seconds(2))
+				}
+			}
+			.onChange(of: offlineMapManager.regions) {
+				reloadOfflineSource()
+				refreshTerrainSources()
+			}
+			.onChange(of: showHillshade) {
+				rebuildHillshadeOverlay()
+			}
+			.onChange(of: showContours) {
+				updateContoursIfNeeded()
+			}
+	}
+
+	private var mapNavigation: some View {
+		NavigationStack {
+			ZStack {
+			mapWithSheets
+			}
+			.toolbar {
+				ToolbarItem(placement: .topBarLeading) {
+					MeshtasticLogo()
+				}
+				ToolbarItem(placement: .topBarTrailing) {
+					HStack {
+						if supportsMultipleWindows && showOpenWindowButton && !isMapWindowOpen {
+							Button {
+								if router.selectedTab == .map {
+									router.selectedTab = .nodes
+								}
+								openWindow(id: "meshmap-window")
+								isMapWindowOpen = true
+							} label: {
+								Image(systemName: "macwindow.badge.plus")
+							}
+							.accessibilityLabel(String(localized: "Open map in new window", comment: "VoiceOver label for the open map in a new window button"))
+						}
+						ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
+					}
+				}
+			}
+			.toolbarBackground(.hidden, for: .navigationBar)
+		}
+	}
+
+	/// A successful import turns on the overlay master toggle, enables the imported file's config,
+	/// refreshes the styled overlays, and recenters the map on the transmitter.
+	private func applyImportedCoverage(_ result: CoverageEstimateResult) {
+		GeoJSONOverlayManager.shared.clearCache()
+		mapOverlaysEnabled = true
+		// Resync from the store rather than just inserting: the import deactivated
+		// older Site Planner files, so their overlays leave the map with this render.
+		enabledOverlayConfigs = Set(
+			GeoJSONOverlayManager.shared.getUploadedFilesWithState().filter { $0.isActive }.map(\.id)
+		)
+		rebuildGeoJSONOverlays()
+		cameraCommand = ClusterMapCameraCommand(
+			id: UUID(),
+			region: coverageRegion(for: result),
+			animated: true
+		)
+	}
+
+	/// Frame the map on the imported coverage: fit its bounding box with padding so the whole
+	/// overlay is visible with breathing room. Falls back to a fixed span around the transmitter
+	/// when the GeoJSON yielded no bounds.
+	private func coverageRegion(for result: CoverageEstimateResult) -> MKCoordinateRegion {
+		guard let box = result.boundingBox else {
+			return MKCoordinateRegion(
+				center: result.coordinate,
+				span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
+			)
+		}
+		let padding = 1.3 // ~15% margin on each side
+		let center = CLLocationCoordinate2D(
+			latitude: (box.minLatitude + box.maxLatitude) / 2,
+			longitude: (box.minLongitude + box.maxLongitude) / 2
+		)
+		let span = MKCoordinateSpan(
+			latitudeDelta: min(max((box.maxLatitude - box.minLatitude) * padding, 0.01), 180),
+			longitudeDelta: min(max((box.maxLongitude - box.minLongitude) * padding, 0.01), 360)
+		)
+		return MKCoordinateRegion(center: center, span: span)
+	}
+
+	/// The connected radio's LoRa config, used to prefill frequency / power / sensitivity.
+	private var connectedLoRaConfig: LoRaConfigEntity? {
+		guard let num = accessoryManager.activeDeviceNum else { return nil }
+		return getNodeInfo(id: num, context: context)?.loRaConfig
+	}
+
+	/// The connected radio's primary channel name (for the firmware-accurate frequency-slot hash).
+	private var connectedPrimaryChannelName: String {
+		guard let num = accessoryManager.activeDeviceNum,
+			  let node = getNodeInfo(id: num, context: context) else { return "LongFast" }
+		if let primary = node.myInfo?.channels.first(where: { $0.index == 0 || $0.role == 1 }),
+		   let name = primary.name, !name.isEmpty {
+			return name
+		}
+		if node.loRaConfig?.usePreset == false { return "Custom" }
+		let preset = ModemPresets(rawValue: Int(node.loRaConfig?.modemPreset ?? 0)) ?? .longFast
+		return preset.androidChannelName
+	}
+
+	/// Open the estimate form from the map toolbar, prefilled from the connected radio and located at
+	/// the current map centre (falling back to device / connected-device GPS).
+	private func presentCoverageEstimateFromMap() {
+		let center = visibleRegion?.center
+		let coordinate = center ?? LocationsHandler.currentLocation ?? activeDeviceCoordinate
+		let params = SitePlannerParameters.prefilled(
+			name: "",
+			coordinate: coordinate,
+			loRaConfig: connectedLoRaConfig,
+			primaryChannelName: connectedPrimaryChannelName
+		)
+		coverageSeed = CoverageEstimateSeed(parameters: params, nodeCoordinate: nil, mapCenter: center)
+	}
+
+	/// Consume a `.coverageEstimate` map-state hand-off. Called from `onChange(of: router.mapState)`,
+	/// `onChange(of: router.selectedTab)`, and `onAppear` — mirroring `applyTraceRouteSelection` — so a
+	/// hand-off from node detail isn't dropped when the Map tab mounts fresh and misses the change.
+	private func consumeCoverageEstimateState() {
+		guard case .map = router.selectedTab else { return }
+		if case let .coverageEstimate(nodeNum)? = router.mapState {
+			presentCoverageEstimate(forNode: nodeNum)
+		}
+	}
+
+	/// Open the estimate form for a specific node (node-detail handoff), prefilled from the connected
+	/// radio and located at the node's latest position, and recenter the map on it. Consumes the
+	/// `.coverageEstimate` map state.
+	private func presentCoverageEstimate(forNode nodeNum: Int64) {
+		defer { router.mapState = nil }
+		guard let node = getNodeInfo(id: nodeNum, context: context) else { return }
+		let position = node.latestPosition
+		let coordinate = position?.nodeCoordinate
+		// 0 is the firmware's "no altitude" sentinel.
+		let altitude = position.flatMap { $0.altitude != 0 ? Double($0.altitude) : nil }
+		let name = node.user?.displayLongName ?? node.user?.shortName ?? ""
+		let params = SitePlannerParameters.prefilled(
+			name: name,
+			coordinate: coordinate,
+			loRaConfig: connectedLoRaConfig,
+			primaryChannelName: connectedPrimaryChannelName
+		)
+		coverageSeed = CoverageEstimateSeed(parameters: params, nodeCoordinate: coordinate, nodeAltitude: altitude, mapCenter: visibleRegion?.center)
+		if let coordinate {
+			cameraCommand = ClusterMapCameraCommand(
+				id: UUID(),
+				region: MKCoordinateRegion(
+					center: coordinate,
+					span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
+				),
+				animated: true
+			)
+		}
+	}
+
 	private func refreshMapWindowOpenState() {
 		// One primary app window plus one detached window means > 1 attached scenes.
 		let attachedScenes = UIApplication.shared.connectedScenes.filter { $0.activationState != .unattached }
 		isMapWindowOpen = attachedScenes.count > 1
+	}
+
+	/// Quantized camera key so `.onChange` can react to pan/zoom settles even though
+	/// `MKCoordinateRegion` isn't `Equatable`. Same quantization the position-state key uses.
+	private var regionRefreshKey: Int64 {
+		var key: Int64 = 0
+		if let visibleRegion {
+			combine(&key, Int64((visibleRegion.center.latitude * 10_000).rounded(.towardZero)))
+			combine(&key, Int64((visibleRegion.center.longitude * 10_000).rounded(.towardZero)))
+			combine(&key, Int64((visibleRegion.span.latitudeDelta * 10_000).rounded(.towardZero)))
+			combine(&key, Int64((visibleRegion.span.longitudeDelta * 10_000).rounded(.towardZero)))
+		}
+		return key
 	}
 
 	private var filterRefreshKey: Int64 {
@@ -608,49 +973,93 @@ struct MeshMapMK: View {
 		return key
 	}
 
-		private func refreshVisiblePositionSnapshots() {
-			visiblePositionSnapshots = makePositionSnapshots(from: visiblePositions)
-			spreadOverrides = computeSpreadOverrides(visiblePositionSnapshots)
-			frameInitialRegionIfNeeded()
-			rebuildOverlays()
+	/// Route a tapped marker to its detail, or — when other visible markers (nodes and/or waypoints)
+	/// sit on (nearly) the same point — to the disambiguation picker. MapKit only forms
+	/// `MKClusterAnnotation`s (which drive `onColocatedStack`) when clustering is enabled, so with
+	/// clustering OFF a tap can land on a fully-occluded stack; without this the covered markers would
+	/// be permanently untappable. Detecting coincident siblings here keeps every stacked marker
+	/// reachable regardless of the clustering setting.
+	private func presentItemSelection(for item: MeshMapItem) {
+		// De-dupe by identity before deciding: two coincident node snapshots that share a num (e.g.
+		// positions whose node is nil, both 0) are one selectable item, not a two-row picker.
+		let coincident = MeshMapItem.dedupedSortedForPicker(
+			MeshMapItem.colocated(
+				with: item,
+				in: combinedMapItems,
+				withinMeters: MapColocation.spreadMeters
+			)
+		)
+		if coincident.count > 1 {
+			presentColocatedStack(coincident)
+		} else {
+			open(item)
 		}
+	}
+
+	/// Present the colocated disambiguation picker for a set of coincident items. De-dupes by identity
+	/// first: the picker's `List` is keyed on `MeshMapItem.ID`, so duplicates would collide into
+	/// duplicate List IDs and mis-render.
+	private func presentColocatedStack(_ items: [MeshMapItem]) {
+		selectedWaypoint = nil
+		editingWaypoint = nil
+		colocatedStack = ColocatedMapStack(items: MeshMapItem.dedupedSortedForPicker(items))
+	}
+
+	/// The disambiguation-picker row for one map item: the standard node cell for nodes (matching the
+	/// Nodes tab) or a waypoint's emoji + name for waypoints (matching the map pin / legend).
+	@ViewBuilder
+	private func colocatedRow(for item: MeshMapItem) -> some View {
+		switch item {
+		case let .node(snapshot):
+			// Reuse the standard node-list cell so the picker matches the Nodes tab. Fall back to the
+			// snapshot's name if the live node was pruned between the tap and the sheet appearing.
+			if let node = getNodeInfo(id: snapshot.nodeNum, context: context) {
+				NodeListItem(
+					node: node,
+					isDirectlyConnected: snapshot.nodeNum == accessoryManager.activeDeviceNum,
+					connectedNode: accessoryManager.activeConnection?.device.num ?? -1
+				)
+			} else {
+				Text(snapshot.longName)
+			}
+		case let .waypoint(waypoint):
+			Label {
+				Text(waypoint.name)
+			} icon: {
+				CircleText(text: waypoint.icon, color: .orange, circleSize: 28)
+			}
+		}
+	}
+
+	/// Open a tapped/picked map item: node detail for nodes, the waypoint form for waypoints.
+	private func open(_ item: MeshMapItem) {
+		switch item {
+		case let .node(snapshot): selectNode(snapshot.nodeNum)
+		case let .waypoint(waypoint): openWaypoint(id: waypoint.id)
+		}
+	}
+
+	/// Open a single node's detail sheet, clearing any in-flight waypoint selection first.
+	private func selectNode(_ nodeNum: Int64) {
+		selectedWaypoint = nil
+		editingWaypoint = nil
+		selectedNode = MeshMapSelectedNode(id: nodeNum)
+	}
+
+	/// Open a waypoint's form — the same path a direct waypoint-marker tap takes — resolving the
+	/// backing entity from the snapshot id. No-op if the waypoint was pruned since the snapshot built.
+	private func openWaypoint(id: Int64) {
+		guard let waypoint = waypointEntitiesByID[id] else { return }
+		selectedNode = nil
+		editingWaypoint = nil
+		selectedWaypoint = waypoint
+	}
 
 		private func refreshVisiblePositionSnapshots(from positions: [PositionEntity]) {
 			visiblePositionSnapshots = makePositionSnapshots(from: positions)
-			spreadOverrides = computeSpreadOverrides(visiblePositionSnapshots)
 			frameInitialRegionIfNeeded()
 			rebuildOverlays()
 		}
-
-	/// Fan out nodes that sit on (nearly) the same coordinate into a small ring so a stacked cluster
-	/// always breaks into individual, tappable node circles instead of an un-splittable pin. The
-	/// accuracy circle stays at the true location; only the pin's display coordinate is offset.
-	private func computeSpreadOverrides(_ snaps: [MeshMapPositionSnapshot]) -> [Int64: CLLocationCoordinate2D] {
-		var groups: [Int64: [MeshMapPositionSnapshot]] = [:]
-		for snap in snaps {
-			// Quantize to ~1 m so only (near-)coincident nodes are grouped together.
-			let latKey = Int64((snap.coordinate.latitude * 1e5).rounded())
-			let lonKey = Int64((snap.coordinate.longitude * 1e5).rounded())
-			groups[latKey &* 100_000_000 &+ lonKey, default: []].append(snap)
-		}
-		var overrides: [Int64: CLLocationCoordinate2D] = [:]
-		let metersPerDegLat = 111_320.0
-		for members in groups.values where members.count > 1 {
-			let sorted = members.sorted { $0.nodeNum < $1.nodeNum }
-			let base = sorted[0].coordinate
-			let metersPerDegLon = max(1.0, metersPerDegLat * cos(base.latitude * .pi / 180))
-			// Grow the ring with crowd size so even a big pile stays individually tappable.
-			let radius = 14.0 + Double(sorted.count) * 1.5
-			for (index, member) in sorted.enumerated() {
-				let angle = 2 * Double.pi * Double(index) / Double(sorted.count)
-				overrides[member.nodeNum] = CLLocationCoordinate2D(
-					latitude: base.latitude + (radius * sin(angle)) / metersPerDegLat,
-					longitude: base.longitude + (radius * cos(angle)) / metersPerDegLon
-				)
-			}
-		}
-		return overrides
-	}
 
 	/// One-time initial camera framing. Centers on the phone's GPS (else the connected device's GPS,
 	/// else the node centroid) and zooms out to fit nearby nodes -- capped at ~100 miles so we "start
@@ -658,6 +1067,37 @@ struct MeshMapMK: View {
 	/// as positions pour in.
 	private func frameInitialRegionIfNeeded() {
 		guard !didInitialFrame else { return }
+		#if DEBUG
+		// Coincident-node demo: frame tight on the seeded pins so the stack(s) fill the view without the
+		// user having to pinch-zoom for a screenshot. Takes priority over the saved-region restore below
+		// since a developer invoking this explicit QA mode wants the tight demo framing every time, not
+		// whatever region happens to be saved from a previous session.
+		if PerformanceSeedData.configuration?.style == .clusterDemo {
+			let coords = mapEligiblePositions.compactMap { $0.nodeCoordinate ?? $0.fuzzedNodeCoordinate }
+			if let center = coordinateCentroid(of: coords) {
+				didInitialFrame = true
+				let span = ClusterDemoSeed.frameSpanDegrees
+				let region = MKCoordinateRegion(
+					center: center,
+					span: MKCoordinateSpan(latitudeDelta: span, longitudeDelta: span)
+				)
+				visibleRegion = region
+				cameraCommand = ClusterMapCameraCommand(id: UUID(), region: region)
+				return
+			}
+		}
+		#endif
+		// Restore the user's last-viewed region first: anyone who has ever moved the map reopens
+		// exactly where they left it, with no dependence on GPS / connected device / node data at
+		// launch. This is the only branch that resolves the reported cold-open (0,0) default for a
+		// location-denied user with no positioned nodes -- and it consumes the one-shot, so the user
+		// still owns the camera immediately afterward.
+		if let saved = savedMapRegion {
+			didInitialFrame = true
+			visibleRegion = saved
+			cameraCommand = ClusterMapCameraCommand(id: UUID(), region: saved)
+			return
+		}
 		// Frame from the same set the map actually shows, so "Precise Locations Only" doesn't start
 		// the camera centered on hidden reduced-precision nodes.
 		let nodeCoords = mapEligiblePositions.compactMap { $0.nodeCoordinate ?? $0.fuzzedNodeCoordinate }
@@ -684,6 +1124,43 @@ struct MeshMapMK: View {
 		cameraCommand = ClusterMapCameraCommand(id: UUID(), region: region)
 	}
 
+	/// The persisted last-viewed camera region, or `nil` when nothing valid has been saved yet
+	/// (fresh install, or a degenerate/near-global region we deliberately never store).
+	private var savedMapRegion: MKCoordinateRegion? {
+		let latDelta = savedRegionSpanLatitude, lonDelta = savedRegionSpanLongitude
+		guard latDelta > 0, lonDelta > 0 else { return nil }
+		let lat = savedRegionCenterLatitude, lon = savedRegionCenterLongitude
+		guard lat.isFinite, lon.isFinite, (-90...90).contains(lat), (-180...180).contains(lon) else {
+			return nil
+		}
+		return MKCoordinateRegion(
+			center: CLLocationCoordinate2D(latitude: lat, longitude: lon),
+			span: MKCoordinateSpan(latitudeDelta: latDelta, longitudeDelta: lonDelta)
+		)
+	}
+
+	/// Persist the current camera region so the next launch reopens here. Deliberately skips the
+	/// uninitialized/near-global region MapKit reports before the first real frame (its whole-world
+	/// default approaches a 180-degree latitude span) so we never save the (0,0) cold-open we're
+	/// fixing; genuine local pans/zooms always fall well under the guard.
+	private func persistVisibleRegion() {
+		guard let region = visibleRegion else { return }
+		let latDelta = region.span.latitudeDelta, lonDelta = region.span.longitudeDelta
+		guard latDelta > 0, latDelta < 90, lonDelta > 0, lonDelta < 180 else { return }
+		let center = region.center
+		guard center.latitude.isFinite, center.longitude.isFinite else { return }
+		// Also reject MapKit's *intermediate* pre-interaction default, which parks a broad span on
+		// (0,0). A wide region still centered at Null Island is the cold-open we're fixing -- never a
+		// real data-driven frame (those are small-span) nor a user pan (whose center has moved off the
+		// equator/prime meridian). A genuine local view near (0,0) is small-span and still saves.
+		let nearNullIsland = abs(center.latitude) < 1 && abs(center.longitude) < 1
+		guard !(nearNullIsland && (latDelta > 10 || lonDelta > 10)) else { return }
+		savedRegionCenterLatitude = center.latitude
+		savedRegionCenterLongitude = center.longitude
+		savedRegionSpanLatitude = latDelta
+		savedRegionSpanLongitude = lonDelta
+	}
+
 	/// Average of a coordinate list (nil when empty).
 	private func coordinateCentroid(of coords: [CLLocationCoordinate2D]) -> CLLocationCoordinate2D? {
 		guard !coords.isEmpty else { return nil }
@@ -703,7 +1180,7 @@ struct MeshMapMK: View {
 									parts.append(showWaypoints ? "w1" : "w0")
 									parts.append(showConvexHull ? "h1" : "h0")
 									parts.append(mapOverlaysEnabled ? "o1" : "o0")
-									parts.append(enableOfflineTiles ? "t1" : "t0")
+									parts.append(shouldRenderOfflineMaps ? "t1" : "t0")
 									parts.append(colorScheme == .dark ? "d1" : "d0")
 									parts.append(String(enabledOverlayConfigs.hashValue))
 									parts.append(String(offlineVectors.revision))
@@ -714,7 +1191,7 @@ struct MeshMapMK: View {
 								/// Re-bind the offline vector provider to the active archive (newest downloaded region, else the
 								/// bundled demo) and decode it. Cheap no-op when the archive hasn't changed.
 								private func reloadOfflineSource() {
-									offlineVectors.reload(urls: offlineRegionURLs)
+									offlineVectors.reload(regions: offlineRegions)
 									decodeOfflineIfVisible()
 								}
 
@@ -726,7 +1203,7 @@ struct MeshMapMK: View {
 
 								/// Whether ANY offline vector coverage box intersects the current (padded) viewport.
 								private func offlineRegionOnScreen() -> Bool {
-									guard enableOfflineTiles, let region = visibleRegion, !offlineVectors.coverageAreas.isEmpty else { return false }
+									guard shouldRenderOfflineMaps, let region = visibleRegion, !offlineVectors.coverageAreas.isEmpty else { return false }
 									let latPad = region.span.latitudeDelta * 0.75, lonPad = region.span.longitudeDelta * 0.75
 									let vMinLat = region.center.latitude - latPad, vMaxLat = region.center.latitude + latPad
 									let vMinLon = region.center.longitude - lonPad, vMaxLon = region.center.longitude + lonPad
@@ -739,9 +1216,60 @@ struct MeshMapMK: View {
 									reloadOfflineSource()
 									rebuildOfflineVectorOverlays()
 									rebuildRouteContent()
-									rebuildWaypointDecorations()
+									rebuildWaypointItems()
 									rebuildGeoJSONOverlays()
 									rebuildOverlays()
+								}
+
+								/// Terrain layer (spec 018): hillshade on standard/offline only; contours on
+								/// every map type, imagery-legible color over hybrid/satellite.
+								private var terrainOverlays: [ClusterMapOverlay] {
+									var result: [ClusterMapOverlay] = []
+									if showHillshade, selectedMapLayer == .standard || selectedMapLayer == .offline, let hillshadeOverlay {
+										result.append(ClusterMapOverlay(id: "terrain-hillshade", overlay: hillshadeOverlay, style: ClusterMapOverlayStyle(level: .aboveRoads)))
+									}
+									if showContours, let geometry = terrainContours.geometry {
+										let imagery = selectedMapLayer == .hybrid || selectedMapLayer == .satellite
+										let minorColor = imagery ? UIColor.white.withAlphaComponent(0.55) : UIColor.brown.withAlphaComponent(0.45)
+										let indexColor = imagery ? UIColor.white.withAlphaComponent(0.9) : UIColor.brown.withAlphaComponent(0.8)
+										var minorStyle = ClusterMapOverlayStyle(strokeUIColor: minorColor, lineWidth: 1)
+										minorStyle.level = .aboveRoads
+										var indexStyle = ClusterMapOverlayStyle(strokeUIColor: indexColor, lineWidth: 1.8)
+										indexStyle.level = .aboveRoads
+										result.append(ClusterMapOverlay(id: "terrain-contours-minor-\(geometry.key.hashValue)", overlay: geometry.minorLines, style: minorStyle))
+										result.append(ClusterMapOverlay(id: "terrain-contours-index-\(geometry.key.hashValue)", overlay: geometry.indexLines, style: indexStyle))
+									}
+									return result
+								}
+
+								/// Re-point the terrain store at downloaded terrain, then refresh dependents.
+								private func refreshTerrainSources() {
+									let sources = offlineMapManager.terrainSources()
+									Task {
+										await terrainContours.store.configure(sources: sources)
+										await MainActor.run {
+											terrainContours.invalidate()
+											rebuildHillshadeOverlay()
+											updateContoursIfNeeded()
+										}
+									}
+								}
+
+								private func rebuildHillshadeOverlay() {
+									guard showHillshade else {
+										hillshadeOverlay = nil
+										return
+									}
+									hillshadeOverlay = HillshadeTileOverlay(
+										store: terrainContours.store,
+										darkAppearance: colorScheme == .dark,
+										cacheDirectory: offlineMapManager.terrainHillshadeCacheDirectory(dark: colorScheme == .dark)
+									)
+								}
+
+								private func updateContoursIfNeeded() {
+									guard showContours, isMapVisible, let region = visibleRegion else { return }
+									terrainContours.update(region: region, metric: Locale.current.measurementSystem == .metric)
 								}
 
 								private func combinedMapOverlays() -> [ClusterMapOverlay] {
@@ -754,6 +1282,7 @@ struct MeshMapMK: View {
 									result += mapOverlays
 									result += geoJSONOverlays
 									result += geofenceOverlays
+									result += terrainOverlays
 									return result
 								}
 
@@ -761,9 +1290,34 @@ struct MeshMapMK: View {
 									guard isMapVisible else { return [] }
 									var result = routeDecorations
 									result += tracerouteDecorations
-									result += waypointDecorations
 									result += geoJSONDecorations
+									result += terrainLabelDecorations
 									return result
+								}
+
+								/// Elevation labels for the index contours (display-only).
+								private var terrainLabelDecorations: [ClusterMapDecoration] {
+									guard showContours, let geometry = terrainContours.geometry else { return [] }
+									let imagery = selectedMapLayer == .hybrid || selectedMapLayer == .satellite
+									let text: Color = imagery ? .white : Color(UIColor.brown)
+									return geometry.labels.map { label in
+										ClusterMapDecoration(
+											id: "terrain-label-\(label.id)",
+											coordinate: label.coordinate,
+											content: AnyView(
+												Text(label.text)
+													.font(.caption2.weight(.semibold))
+													.monospacedDigit()
+													.foregroundColor(text)
+													.padding(.horizontal, 4)
+													.padding(.vertical, 1)
+													.background(
+														Capsule().fill(imagery ? Color.black.opacity(0.35) : Color(UIColor.systemBackground).opacity(0.75))
+													)
+													.allowsHitTesting(false)
+											)
+										)
+									}
 								}
 
 								private func rebuildGeoJSONOverlays() {
@@ -809,27 +1363,37 @@ struct MeshMapMK: View {
 									geoJSONDecorations = decorations
 								}
 
-/// Build tappable waypoint markers (icon bubble) from saved waypoints; tap -> open the form.
-				private func rebuildWaypointDecorations() {
+/// Build waypoint clustering items (orange emoji circle) from saved waypoints, plus the id -> entity
+			/// lookup used to open a waypoint's form when its marker (or picker row) is tapped. As items —
+			/// not standalone decorations — waypoints merge into node clusters and appear in the picker.
+				private func rebuildWaypointItems() {
 					let key = "\(showWaypoints)|\(waypointsKey)"
 					guard key != lastWaypointKey else { return }
 					lastWaypointKey = key
 					guard showWaypoints else {
-						if !waypointDecorations.isEmpty { waypointDecorations = [] }
+						if !waypointSnapshots.isEmpty { waypointSnapshots = [] }
+						if !waypointEntitiesByID.isEmpty { waypointEntitiesByID = [:] }
 						if !geofenceOverlays.isEmpty { geofenceOverlays = [] }
 						return
 					}
 					let visibleWaypoints = allWaypoints.filter { $0.expire == nil || $0.expire! >= Date.now }
 					geofenceOverlays = buildGeofenceOverlays(from: visibleWaypoints)
-					waypointDecorations = visibleWaypoints.map { waypoint in
+					var snapshots: [MeshMapWaypointSnapshot] = []
+					var entitiesByID: [Int64: WaypointEntity] = [:]
+					snapshots.reserveCapacity(visibleWaypoints.count)
+					for waypoint in visibleWaypoints {
+						let id = Int64(truncatingIfNeeded: waypoint.persistentModelID.hashValue)
 						let icon = String(UnicodeScalar(Int(waypoint.icon)) ?? "📍")
-						return ClusterMapDecoration(
-							id: "waypoint-\(waypoint.persistentModelID.hashValue)",
+						snapshots.append(MeshMapWaypointSnapshot(
+							id: id,
 							coordinate: waypoint.mapCoordinate,
-							content: AnyView(CircleText(text: icon, color: .orange, circleSize: 36)),
-							onTap: { selectedNode = nil; editingWaypoint = nil; selectedWaypoint = waypoint }
-						)
+							name: waypoint.name ?? "Dropped Pin",
+							icon: icon
+						))
+						entitiesByID[id] = waypoint
 					}
+					waypointSnapshots = snapshots
+					waypointEntitiesByID = entitiesByID
 				}
 
 				/// Build geofence overlays (radius circle + bounding-box rectangle) for any waypoint
@@ -943,9 +1507,39 @@ struct MeshMapMK: View {
 		return legs
 	}
 
+	/// Per-leg line width, dash pattern, and dash phase for a trace-route polyline, keyed to signal
+	/// tier so degraded links are legible by shape and not only by the SNR hue. `baseDash` is the
+	/// leg's normal treatment (nil for the solid forward path, a fixed rhythm for the always-dashed
+	/// return path); every tier below good gets its own dash rhythm distinct from `baseDash`, so
+	/// fair/bad/none read differently from a good leg on both the forward and return path.
+	private struct TraceRouteLineStyle {
+		let width: CGFloat
+		let dash: [NSNumber]?
+		let phase: CGFloat
+	}
+
+	private func traceRouteLineStyle(
+		snr: Float,
+		preset: ModemPresets,
+		baseWidth: CGFloat,
+		baseDash: [NSNumber]?
+	) -> TraceRouteLineStyle {
+		switch getLoRaSignalStrength(snr: snr, rssi: 0, preset: preset) {
+		case .good:
+			return TraceRouteLineStyle(width: baseWidth, dash: baseDash, phase: 0)
+		case .fair:
+			return TraceRouteLineStyle(width: baseWidth - 0.5, dash: [10, 4], phase: 0)
+		case .bad:
+			return TraceRouteLineStyle(width: max(baseWidth - 1, 1), dash: [4, 4], phase: 3)
+		case .none:
+			return TraceRouteLineStyle(width: max(baseWidth - 1.5, 1), dash: [1, 5], phase: 6)
+		}
+	}
+
 	/// Build the forward (solid) + return (dashed) polylines and origin/target markers for the
 	/// selected trace route. Each leg is colored by that hop's SNR using the same signal-meter math
-	/// as the LoRa signal indicator (green/yellow/orange/red). Limited to nodes with a snapshot.
+	/// as the LoRa signal indicator (green/yellow/orange/red), and its width/dash rhythm now varies
+	/// with the same tier so signal quality isn't encoded by hue alone. Limited to nodes with a snapshot.
 	private func rebuildTraceRouteContent() {
 		let key = selectedTraceRoute.map { "\($0.id)|\($0.nodePositions.count)" } ?? "none"
 		guard key != lastTraceRouteKey else { return }
@@ -965,22 +1559,40 @@ struct MeshMapMK: View {
 		if forward.count >= 2 {
 			for i in 1..<forward.count {
 				var seg = [forward[i - 1].coordinate, forward[i].coordinate]
+				let style = traceRouteLineStyle(snr: forward[i].snr, preset: modemPreset, baseWidth: 4, baseDash: nil)
 				overlays.append(ClusterMapOverlay(
 					id: "traceroute-fwd-\(idKey)-\(i)",
 					overlay: MKPolyline(coordinates: &seg, count: 2),
-					style: ClusterMapOverlayStyle(strokeUIColor: UIColor(getSnrColor(snr: forward[i].snr, preset: modemPreset)), fillUIColor: nil, lineWidth: 4, lineCap: .round, directional: true)
+					style: ClusterMapOverlayStyle(
+						strokeUIColor: UIColor(getSnrColor(snr: forward[i].snr, preset: modemPreset)),
+						fillUIColor: nil,
+						lineWidth: style.width,
+						lineDash: style.dash,
+						lineDashPhase: style.phase,
+						lineCap: .round,
+						directional: true
+					)
 				))
 			}
 		}
-		// Return (dashed) — same per-leg signal coloring.
+		// Return (dashed) — same per-leg signal coloring, plus the same tier-driven shape variation.
 		let back = route.backSignalPath
 		if back.count >= 2 {
 			for i in 1..<back.count {
 				var seg = [back[i - 1].coordinate, back[i].coordinate]
+				let style = traceRouteLineStyle(snr: back[i].snr, preset: modemPreset, baseWidth: 3, baseDash: [2, 8])
 				overlays.append(ClusterMapOverlay(
 					id: "traceroute-back-\(idKey)-\(i)",
 					overlay: MKPolyline(coordinates: &seg, count: 2),
-					style: ClusterMapOverlayStyle(strokeUIColor: UIColor(getSnrColor(snr: back[i].snr, preset: modemPreset)), fillUIColor: nil, lineWidth: 3, lineDash: [2, 8], lineCap: .round, directional: true)
+					style: ClusterMapOverlayStyle(
+						strokeUIColor: UIColor(getSnrColor(snr: back[i].snr, preset: modemPreset)),
+						fillUIColor: nil,
+						lineWidth: style.width,
+						lineDash: style.dash,
+						lineDashPhase: style.phase,
+						lineCap: .round,
+						directional: true
+					)
 				))
 			}
 		}
@@ -1024,10 +1636,10 @@ struct MeshMapMK: View {
 	/// from the decoded vector tiles, using the same slate/cream palette as the old SwiftUI map. Stable
 	/// objects, rebuilt only on toggle/appearance/decode so the overlay diff is a no-op between renders.
 	private func rebuildOfflineVectorOverlays() {
-		let key = "\(enableOfflineTiles)|\(offlineVectors.isAvailable)|\(offlineVectors.revision)|\(colorScheme == .dark)"
+		let key = "\(shouldRenderOfflineMaps)|\(offlineVectors.isAvailable)|\(offlineVectors.revision)|\(colorScheme == .dark)"
 		guard key != lastOfflineOverlaysKey else { return }
 		lastOfflineOverlaysKey = key
-		guard enableOfflineTiles, offlineVectors.isAvailable, !offlineVectors.coverageAreas.isEmpty else {
+		guard shouldRenderOfflineMaps, offlineVectors.isAvailable, !offlineVectors.coverageAreas.isEmpty else {
 			if !offlineVectorOverlays.isEmpty { offlineVectorOverlays = [] }
 			return
 		}
@@ -1045,18 +1657,24 @@ struct MeshMapMK: View {
 			result.append(ClusterMapOverlay(
 				id: "offline-earth-\(index)",
 				overlay: MKPolygon(coordinates: &earth, count: earth.count),
-				style: ClusterMapOverlayStyle(strokeUIColor: nil, fillUIColor: Self.offlineEarthColor(dark: dark), lineWidth: 0, level: .aboveRoads)
+				style: ClusterMapOverlayStyle(strokeUIColor: nil, fillUIColor: OfflineMapPalette.earth(dark: dark), lineWidth: 0, level: .aboveRoads)
 			))
 		}
 
 		// 2) Water / park fills, batched per role (parks under water).
 		let fillsByRole = Dictionary(grouping: offlineVectors.polygons, by: { $0.role })
 		for role in [OfflineFeatureRole.park, .green, .water] {
-			guard let polys = fillsByRole[role], let fill = Self.offlineFillColor(role, dark: dark) else { continue }
+			guard let polys = fillsByRole[role], let fill = OfflineMapPalette.fill(role, dark: dark) else { continue }
 			let shapes = polys.compactMap { poly -> MKPolygon? in
 				guard poly.coordinates.count >= 3 else { return nil }
 				var coords = poly.coordinates
-				return MKPolygon(coordinates: &coords, count: coords.count)
+				// Interior rings punch holes (islands in water, clearings in parks).
+				let holes = poly.interiorRings.compactMap { ring -> MKPolygon? in
+					guard ring.count >= 3 else { return nil }
+					var holeCoords = ring
+					return MKPolygon(coordinates: &holeCoords, count: holeCoords.count)
+				}
+				return MKPolygon(coordinates: &coords, count: coords.count, interiorPolygons: holes.isEmpty ? nil : holes)
 			}
 			guard !shapes.isEmpty else { continue }
 			result.append(ClusterMapOverlay(
@@ -1066,8 +1684,25 @@ struct MeshMapMK: View {
 			))
 		}
 
+		// 2b) Rivers/streams as centerlines, under the road network.
+		let linesByRole = Dictionary(grouping: offlineVectors.roads, by: { $0.role })
+		if let rivers = linesByRole[.river] {
+			let shapes = rivers.compactMap { line -> MKPolyline? in
+				guard line.coordinates.count >= 2 else { return nil }
+				var coords = line.coordinates
+				return MKPolyline(coordinates: &coords, count: coords.count)
+			}
+			if !shapes.isEmpty {
+				result.append(ClusterMapOverlay(
+					id: "offline-rivers",
+					overlay: MKMultiPolyline(shapes),
+					style: ClusterMapOverlayStyle(strokeUIColor: OfflineMapPalette.riverStroke(dark: dark), fillUIColor: nil, lineWidth: 1.4, level: .aboveRoads)
+				))
+			}
+		}
+
 		// 3) Roads, batched per role into MKMultiPolylines (keeps the dense grid to a few overlays).
-		let roadsByRole = Dictionary(grouping: offlineVectors.roads, by: { $0.role })
+		let roadsByRole = linesByRole
 		func roadMultiPolyline(_ role: OfflineFeatureRole) -> MKMultiPolyline? {
 			guard let lines = roadsByRole[role] else { return nil }
 			let shapes = lines.compactMap { line -> MKPolyline? in
@@ -1080,25 +1715,25 @@ struct MeshMapMK: View {
 		let roadClasses: [OfflineFeatureRole] = [.minorRoad, .mediumRoad, .majorRoad]
 		// Casing pass (light mode only) gives the Apple white-road-with-outline look.
 		for role in roadClasses {
-			guard let casing = Self.offlineRoadCasingColor(role, dark: dark), let multi = roadMultiPolyline(role) else { continue }
+			guard let casing = OfflineMapPalette.roadCasing(role, dark: dark), let multi = roadMultiPolyline(role) else { continue }
 			result.append(ClusterMapOverlay(
 				id: "offline-road-casing-\(role)",
 				overlay: multi,
-				style: ClusterMapOverlayStyle(strokeUIColor: casing, fillUIColor: nil, lineWidth: Self.offlineRoadCasingWidth(role), lineCap: .round, level: .aboveRoads)
+				style: ClusterMapOverlayStyle(strokeUIColor: casing, fillUIColor: nil, lineWidth: OfflineMapPalette.roadCasingWidth(role), lineCap: .round, level: .aboveRoads)
 			))
 		}
 		// Fill pass — white centerlines (light) / lighter-than-land gray (dark).
 		for role in roadClasses {
-			guard let fill = Self.offlineRoadFillColor(role, dark: dark), let multi = roadMultiPolyline(role) else { continue }
+			guard let fill = OfflineMapPalette.roadFill(role, dark: dark), let multi = roadMultiPolyline(role) else { continue }
 			result.append(ClusterMapOverlay(
 				id: "offline-road-fill-\(role)",
 				overlay: multi,
-				style: ClusterMapOverlayStyle(strokeUIColor: fill, fillUIColor: nil, lineWidth: Self.offlineRoadWidth(role), lineCap: .round, level: .aboveRoads)
+				style: ClusterMapOverlayStyle(strokeUIColor: fill, fillUIColor: nil, lineWidth: OfflineMapPalette.roadWidth(role), lineCap: .round, level: .aboveRoads)
 			))
 		}
 		// Rail + admin boundaries (single dashed stroke, both modes).
 		for role in [OfflineFeatureRole.rail, .boundary] {
-			guard let color = Self.offlineLineColor(role, dark: dark), let multi = roadMultiPolyline(role) else { continue }
+			guard let color = OfflineMapPalette.line(role, dark: dark), let multi = roadMultiPolyline(role) else { continue }
 			result.append(ClusterMapOverlay(
 				id: "offline-line-\(role)",
 				overlay: multi,
@@ -1109,65 +1744,7 @@ struct MeshMapMK: View {
 		offlineVectorOverlays = result
 	}
 
-	// MARK: Offline basemap palette (approximates Apple Maps Standard, light + dark)
-
-	private static func offlineEarthColor(dark: Bool) -> UIColor {
-		dark ? UIColor(red: 0.137, green: 0.137, blue: 0.145, alpha: 1)
-			 : UIColor(red: 0.953, green: 0.945, blue: 0.929, alpha: 1)
-	}
-
-	private static func offlineFillColor(_ role: OfflineFeatureRole, dark: Bool) -> UIColor? {
-		switch role {
-		case .water: return dark ? UIColor(red: 0.094, green: 0.169, blue: 0.267, alpha: 1) : UIColor(red: 0.667, green: 0.831, blue: 0.953, alpha: 1)
-		case .park, .green: return dark ? UIColor(red: 0.122, green: 0.176, blue: 0.133, alpha: 1) : UIColor(red: 0.776, green: 0.882, blue: 0.706, alpha: 1)
-		case .land: return offlineEarthColor(dark: dark)
-		default: return nil
-		}
-	}
-
-	/// Road fill: white centerline (light) or a lighter-than-land gray (dark).
-	private static func offlineRoadFillColor(_ role: OfflineFeatureRole, dark: Bool) -> UIColor? {
-		switch role {
-		case .majorRoad: return dark ? UIColor(red: 0.46, green: 0.46, blue: 0.49, alpha: 1) : .white
-		case .mediumRoad: return dark ? UIColor(red: 0.38, green: 0.38, blue: 0.41, alpha: 1) : .white
-		case .minorRoad: return dark ? UIColor(red: 0.31, green: 0.31, blue: 0.34, alpha: 1) : .white
-		default: return nil
-		}
-	}
-
-	/// Road casing (light mode only): a warm-gray outline that makes the white roads read on pale land.
-	private static func offlineRoadCasingColor(_ role: OfflineFeatureRole, dark: Bool) -> UIColor? {
-		guard !dark else { return nil }
-		switch role {
-		case .majorRoad, .mediumRoad, .minorRoad: return UIColor(red: 0.835, green: 0.824, blue: 0.800, alpha: 1)
-		default: return nil
-		}
-	}
-
-	private static func offlineRoadWidth(_ role: OfflineFeatureRole) -> CGFloat {
-		switch role {
-		case .majorRoad: return 3.0
-		case .mediumRoad: return 2.2
-		case .minorRoad: return 1.3
-		default: return 1.0
-		}
-	}
-
-	/// Casing is ~1.4 pt wider than the fill (about 0.7 pt of outline each side).
-	private static func offlineRoadCasingWidth(_ role: OfflineFeatureRole) -> CGFloat {
-		offlineRoadWidth(role) + 1.4
-	}
-
-	/// Rail / admin-boundary stroke color (single dashed line, both modes).
-	private static func offlineLineColor(_ role: OfflineFeatureRole, dark: Bool) -> UIColor? {
-		switch role {
-		case .rail: return dark ? UIColor(red: 0.45, green: 0.46, blue: 0.49, alpha: 1) : UIColor(red: 0.62, green: 0.62, blue: 0.64, alpha: 1)
-		case .boundary: return dark ? UIColor(red: 0.50, green: 0.46, blue: 0.56, alpha: 1) : UIColor(red: 0.66, green: 0.62, blue: 0.70, alpha: 1)
-		default: return nil
-		}
-	}
-
-/// Rebuild the vector overlays (accuracy circles + convex hull) from the current snapshots.
+	/// Rebuild the vector overlays (accuracy circles + convex hull) from the current snapshots.
 	/// Called on data change so the overlay objects are stable between renders. Ports the styling
 	/// from MeshMapContent's reducedPrecisionMapCircles + convex hull.
 	private func rebuildOverlays() {
@@ -1223,7 +1800,11 @@ struct MeshMapMK: View {
 				position.fuzzedNodeCoordinate ?? LocationsHandler.DefaultLocation
 			}
 			let precisionBits = position.precisionBits
-			guard PositionEntity.reducedPrecisionBits ~= precisionBits || precisionBits == 32 else { return nil }
+			// Was `reducedPrecisionBits ~= precisionBits || precisionBits == 32`, which silently
+			// dropped positions with precisionBits == 0 (isPreciseLocation's other "precise" sentinel)
+			// from the map entirely. Use the same two predicates the rest of the file already relies
+			// on so this can't drift from isPreciseLocation / isReducedPrecision again.
+			guard position.isPreciseLocation || position.isReducedPrecision else { return nil }
 			let node = position.nodePosition
 			let nodeNum = node?.num ?? 0
 				return MeshMapPositionSnapshot(

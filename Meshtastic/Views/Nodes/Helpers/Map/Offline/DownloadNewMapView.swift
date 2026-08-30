@@ -53,6 +53,22 @@ struct DownloadNewMapView: View {
 				}
 			}
 
+			if query.isEmpty, !manager.regions.isEmpty {
+				Section {
+					ForEach(manager.regions) { region in
+						NavigationLink {
+							OfflineMapDetailView(region: region)
+						} label: {
+							OfflineMapRow(region: region)
+						}
+					}
+				} header: {
+					Text("Downloaded Maps")
+				} footer: {
+					Text("Downloaded maps are ready when you have no service.")
+				}
+			}
+
 			if !search.results.isEmpty {
 				Section {
 					ForEach(Array(search.results.enumerated()), id: \.offset) { _, completion in

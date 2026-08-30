@@ -40,6 +40,10 @@ struct SaveChannelQRCode: View {
 		}
 	}
 
+	private var channelQRMode: ChannelQRMode {
+		ChannelQRMode(addChannels: addChannels)
+	}
+
 	private var canReplace: Bool {
 		channelLink?.channelSet.hasLoraConfig == true
 	}
@@ -73,9 +77,12 @@ struct SaveChannelQRCode: View {
 			.navigationBarTitleDisplayMode(.inline)
 			.toolbar {
 				ToolbarItem(placement: .cancellationAction) {
-					Button("Cancel") {
+					Button {
 						dismiss()
+					} label: {
+						Image(systemName: "xmark")
 					}
+					.accessibilityLabel(String(localized: "Cancel", comment: "VoiceOver: dismiss the channel QR code sheet"))
 				}
 				ToolbarItem(placement: .confirmationAction) {
 					Button(isSaving ? "Saving" : "Save") {
@@ -100,15 +107,11 @@ struct SaveChannelQRCode: View {
 
 	private var header: some View {
 		VStack(alignment: .leading, spacing: 8) {
-			Text(addChannels ? "Add Channels" : "Replace Channels")
+			Text(channelQRMode.title)
 				.font(.title2.bold())
 
-			Text(
-				addChannels ?
-				"Selected channels will be appended to the connected radio. Existing channels and LoRa settings are preserved." :
-				"Selected channels will replace the connected radio's channel list. LoRa settings from the QR code will be applied."
-			)
-			.foregroundStyle(.secondary)
+			Text(channelQRMode.consequence)
+				.foregroundStyle(.secondary)
 
 			if !accessoryManager.isConnected {
 				Label("Connect to a radio before saving.", systemImage: "antenna.radiowaves.left.and.right.slash")
@@ -120,8 +123,8 @@ struct SaveChannelQRCode: View {
 	private var importModePicker: some View {
 		VStack(alignment: .leading, spacing: 8) {
 			Picker("Import Mode", selection: $addChannels) {
-				Text("Replace").tag(false)
-				Text("Add").tag(true)
+				Text(ChannelQRMode.replace.pickerTitle).tag(false)
+				Text(ChannelQRMode.add.pickerTitle).tag(true)
 			}
 			.pickerStyle(.segmented)
 
@@ -291,7 +294,7 @@ struct SaveChannelQRCode: View {
 			}
 			let channels = node.myInfo?.channels ?? []
 			let names = Set(channels.compactMap { $0.name?.isEmpty == false ? $0.name : nil })
-			return (names, channels.count, node.loRaConfig?.toProto())
+			return (names, validUniqueChannelIndexes(from: channels).count, node.loRaConfig?.toProto())
 		} catch {
 			Logger.data.error("Failed to fetch current channel state: \(error.localizedDescription, privacy: .public)")
 			return ([], 0, nil)

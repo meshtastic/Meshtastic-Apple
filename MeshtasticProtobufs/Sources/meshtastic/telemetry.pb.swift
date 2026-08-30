@@ -55,6 +55,8 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum, Swift.CaseIterable {
 
   ///
   /// TODO - REMOVE High accuracy temperature and humidity
+  ///
+  /// NOTE: This enum value was marked as deprecated in the .proto file
   case shtc3 // = 7
 
   ///
@@ -75,6 +77,8 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum, Swift.CaseIterable {
 
   ///
   /// TODO - REMOVE High accuracy temperature and humidity
+  ///
+  /// NOTE: This enum value was marked as deprecated in the .proto file
   case sht31 // = 12
 
   ///
@@ -95,6 +99,8 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum, Swift.CaseIterable {
 
   ///
   /// TODO - REMOVE Sensirion High accuracy temperature and humidity
+  ///
+  /// NOTE: This enum value was marked as deprecated in the .proto file
   case sht4X // = 17
 
   ///
@@ -215,6 +221,8 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum, Swift.CaseIterable {
 
   ///
   /// TODO - REMOVE STH21 Temperature and R. Humidity sensor
+  ///
+  /// NOTE: This enum value was marked as deprecated in the .proto file
   case sht21 // = 47
 
   ///
@@ -240,6 +248,22 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum, Swift.CaseIterable {
   ///
   /// ICM-42607-P 6‑Axis IMU
   case icm42607P // = 53
+
+  ///
+  /// SPA06 pressure and temperature
+  case spa06 // = 54
+
+  ///
+  /// HM330X PM SENSOR
+  case hm330X // = 55
+
+  ///
+  /// Sensirion SEN6X PM/RHT/VOC/NOx/CO2/HCHO sensor family (SEN62, SEN63C, SEN65, SEN66, SEN68, SEN69C)
+  case sen6X // = 56
+
+  ///
+  /// AS3935 Franklin lightning sensor
+  case as3935 // = 57
   case UNRECOGNIZED(Int)
 
   public init() {
@@ -302,6 +326,10 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum, Swift.CaseIterable {
     case 51: self = .ds248X
     case 52: self = .mmc5983Ma
     case 53: self = .icm42607P
+    case 54: self = .spa06
+    case 55: self = .hm330X
+    case 56: self = .sen6X
+    case 57: self = .as3935
     default: self = .UNRECOGNIZED(rawValue)
     }
   }
@@ -362,6 +390,10 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum, Swift.CaseIterable {
     case .ds248X: return 51
     case .mmc5983Ma: return 52
     case .icm42607P: return 53
+    case .spa06: return 54
+    case .hm330X: return 55
+    case .sen6X: return 56
+    case .as3935: return 57
     case .UNRECOGNIZED(let i): return i
     }
   }
@@ -422,6 +454,10 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum, Swift.CaseIterable {
     .ds248X,
     .mmc5983Ma,
     .icm42607P,
+    .spa06,
+    .hm330X,
+    .sen6X,
+    .as3935,
   ]
 
 }
@@ -751,11 +787,211 @@ public struct EnvironmentMetrics: @unchecked Sendable {
   public mutating func clearSoilTemperature() {_uniqueStorage()._soilTemperature = nil}
 
   ///
-  /// One-wire temperature (*C)
+  /// Never implemented, but Voltage may be mis-interpreted by old clients as temperature
+  ///
+  /// NOTE: This field was marked as deprecated in the .proto file.
   public var oneWireTemperature: [Float] {
     get {_storage._oneWireTemperature}
     set {_uniqueStorage()._oneWireTemperature = newValue}
   }
+
+  ///
+  /// Multi-channel ADC Voltage Channel 0 (V)
+  public var adcVoltageCh0: Float {
+    get {_storage._adcVoltageCh0 ?? 0}
+    set {_uniqueStorage()._adcVoltageCh0 = newValue}
+  }
+  /// Returns true if `adcVoltageCh0` has been explicitly set.
+  public var hasAdcVoltageCh0: Bool {_storage._adcVoltageCh0 != nil}
+  /// Clears the value of `adcVoltageCh0`. Subsequent reads from it will return its default value.
+  public mutating func clearAdcVoltageCh0() {_uniqueStorage()._adcVoltageCh0 = nil}
+
+  ///
+  /// Multi-channel ADC Voltage Channel 1 (V)
+  public var adcVoltageCh1: Float {
+    get {_storage._adcVoltageCh1 ?? 0}
+    set {_uniqueStorage()._adcVoltageCh1 = newValue}
+  }
+  /// Returns true if `adcVoltageCh1` has been explicitly set.
+  public var hasAdcVoltageCh1: Bool {_storage._adcVoltageCh1 != nil}
+  /// Clears the value of `adcVoltageCh1`. Subsequent reads from it will return its default value.
+  public mutating func clearAdcVoltageCh1() {_uniqueStorage()._adcVoltageCh1 = nil}
+
+  ///
+  /// Multi-channel ADC Voltage Channel 2 (V)
+  public var adcVoltageCh2: Float {
+    get {_storage._adcVoltageCh2 ?? 0}
+    set {_uniqueStorage()._adcVoltageCh2 = newValue}
+  }
+  /// Returns true if `adcVoltageCh2` has been explicitly set.
+  public var hasAdcVoltageCh2: Bool {_storage._adcVoltageCh2 != nil}
+  /// Clears the value of `adcVoltageCh2`. Subsequent reads from it will return its default value.
+  public mutating func clearAdcVoltageCh2() {_uniqueStorage()._adcVoltageCh2 = nil}
+
+  ///
+  /// Multi-channel ADC Voltage Channel 3 (V)
+  public var adcVoltageCh3: Float {
+    get {_storage._adcVoltageCh3 ?? 0}
+    set {_uniqueStorage()._adcVoltageCh3 = newValue}
+  }
+  /// Returns true if `adcVoltageCh3` has been explicitly set.
+  public var hasAdcVoltageCh3: Bool {_storage._adcVoltageCh3 != nil}
+  /// Clears the value of `adcVoltageCh3`. Subsequent reads from it will return its default value.
+  public mutating func clearAdcVoltageCh3() {_uniqueStorage()._adcVoltageCh3 = nil}
+
+  ///
+  /// Multi-channel ADC Voltage Channel 4 (V)
+  public var adcVoltageCh4: Float {
+    get {_storage._adcVoltageCh4 ?? 0}
+    set {_uniqueStorage()._adcVoltageCh4 = newValue}
+  }
+  /// Returns true if `adcVoltageCh4` has been explicitly set.
+  public var hasAdcVoltageCh4: Bool {_storage._adcVoltageCh4 != nil}
+  /// Clears the value of `adcVoltageCh4`. Subsequent reads from it will return its default value.
+  public mutating func clearAdcVoltageCh4() {_uniqueStorage()._adcVoltageCh4 = nil}
+
+  ///
+  /// Multi-channel ADC Voltage Channel 5 (V)
+  public var adcVoltageCh5: Float {
+    get {_storage._adcVoltageCh5 ?? 0}
+    set {_uniqueStorage()._adcVoltageCh5 = newValue}
+  }
+  /// Returns true if `adcVoltageCh5` has been explicitly set.
+  public var hasAdcVoltageCh5: Bool {_storage._adcVoltageCh5 != nil}
+  /// Clears the value of `adcVoltageCh5`. Subsequent reads from it will return its default value.
+  public mutating func clearAdcVoltageCh5() {_uniqueStorage()._adcVoltageCh5 = nil}
+
+  ///
+  /// Multi-channel ADC Voltage Channel 6 (V)
+  public var adcVoltageCh6: Float {
+    get {_storage._adcVoltageCh6 ?? 0}
+    set {_uniqueStorage()._adcVoltageCh6 = newValue}
+  }
+  /// Returns true if `adcVoltageCh6` has been explicitly set.
+  public var hasAdcVoltageCh6: Bool {_storage._adcVoltageCh6 != nil}
+  /// Clears the value of `adcVoltageCh6`. Subsequent reads from it will return its default value.
+  public mutating func clearAdcVoltageCh6() {_uniqueStorage()._adcVoltageCh6 = nil}
+
+  ///
+  /// Multi-channel ADC Voltage Channel 7 (V)
+  public var adcVoltageCh7: Float {
+    get {_storage._adcVoltageCh7 ?? 0}
+    set {_uniqueStorage()._adcVoltageCh7 = newValue}
+  }
+  /// Returns true if `adcVoltageCh7` has been explicitly set.
+  public var hasAdcVoltageCh7: Bool {_storage._adcVoltageCh7 != nil}
+  /// Clears the value of `adcVoltageCh7`. Subsequent reads from it will return its default value.
+  public mutating func clearAdcVoltageCh7() {_uniqueStorage()._adcVoltageCh7 = nil}
+
+  ///
+  /// Multi-channel One-Wire Temperature Channel 0 (*C)
+  public var oneWireTemperatureCh0: Float {
+    get {_storage._oneWireTemperatureCh0 ?? 0}
+    set {_uniqueStorage()._oneWireTemperatureCh0 = newValue}
+  }
+  /// Returns true if `oneWireTemperatureCh0` has been explicitly set.
+  public var hasOneWireTemperatureCh0: Bool {_storage._oneWireTemperatureCh0 != nil}
+  /// Clears the value of `oneWireTemperatureCh0`. Subsequent reads from it will return its default value.
+  public mutating func clearOneWireTemperatureCh0() {_uniqueStorage()._oneWireTemperatureCh0 = nil}
+
+  ///
+  /// Multi-channel One-Wire Temperature Channel 1 (*C)
+  public var oneWireTemperatureCh1: Float {
+    get {_storage._oneWireTemperatureCh1 ?? 0}
+    set {_uniqueStorage()._oneWireTemperatureCh1 = newValue}
+  }
+  /// Returns true if `oneWireTemperatureCh1` has been explicitly set.
+  public var hasOneWireTemperatureCh1: Bool {_storage._oneWireTemperatureCh1 != nil}
+  /// Clears the value of `oneWireTemperatureCh1`. Subsequent reads from it will return its default value.
+  public mutating func clearOneWireTemperatureCh1() {_uniqueStorage()._oneWireTemperatureCh1 = nil}
+
+  ///
+  /// Multi-channel One-Wire Temperature Channel 2 (*C)
+  public var oneWireTemperatureCh2: Float {
+    get {_storage._oneWireTemperatureCh2 ?? 0}
+    set {_uniqueStorage()._oneWireTemperatureCh2 = newValue}
+  }
+  /// Returns true if `oneWireTemperatureCh2` has been explicitly set.
+  public var hasOneWireTemperatureCh2: Bool {_storage._oneWireTemperatureCh2 != nil}
+  /// Clears the value of `oneWireTemperatureCh2`. Subsequent reads from it will return its default value.
+  public mutating func clearOneWireTemperatureCh2() {_uniqueStorage()._oneWireTemperatureCh2 = nil}
+
+  ///
+  /// Multi-channel One-Wire Temperature Channel 3 (*C)
+  public var oneWireTemperatureCh3: Float {
+    get {_storage._oneWireTemperatureCh3 ?? 0}
+    set {_uniqueStorage()._oneWireTemperatureCh3 = newValue}
+  }
+  /// Returns true if `oneWireTemperatureCh3` has been explicitly set.
+  public var hasOneWireTemperatureCh3: Bool {_storage._oneWireTemperatureCh3 != nil}
+  /// Clears the value of `oneWireTemperatureCh3`. Subsequent reads from it will return its default value.
+  public mutating func clearOneWireTemperatureCh3() {_uniqueStorage()._oneWireTemperatureCh3 = nil}
+
+  ///
+  /// Multi-channel One-Wire Temperature Channel 4 (*C)
+  public var oneWireTemperatureCh4: Float {
+    get {_storage._oneWireTemperatureCh4 ?? 0}
+    set {_uniqueStorage()._oneWireTemperatureCh4 = newValue}
+  }
+  /// Returns true if `oneWireTemperatureCh4` has been explicitly set.
+  public var hasOneWireTemperatureCh4: Bool {_storage._oneWireTemperatureCh4 != nil}
+  /// Clears the value of `oneWireTemperatureCh4`. Subsequent reads from it will return its default value.
+  public mutating func clearOneWireTemperatureCh4() {_uniqueStorage()._oneWireTemperatureCh4 = nil}
+
+  ///
+  /// Multi-channel One-Wire Temperature Channel 5 (*C)
+  public var oneWireTemperatureCh5: Float {
+    get {_storage._oneWireTemperatureCh5 ?? 0}
+    set {_uniqueStorage()._oneWireTemperatureCh5 = newValue}
+  }
+  /// Returns true if `oneWireTemperatureCh5` has been explicitly set.
+  public var hasOneWireTemperatureCh5: Bool {_storage._oneWireTemperatureCh5 != nil}
+  /// Clears the value of `oneWireTemperatureCh5`. Subsequent reads from it will return its default value.
+  public mutating func clearOneWireTemperatureCh5() {_uniqueStorage()._oneWireTemperatureCh5 = nil}
+
+  ///
+  /// Multi-channel One-Wire Temperature Channel 6 (*C)
+  public var oneWireTemperatureCh6: Float {
+    get {_storage._oneWireTemperatureCh6 ?? 0}
+    set {_uniqueStorage()._oneWireTemperatureCh6 = newValue}
+  }
+  /// Returns true if `oneWireTemperatureCh6` has been explicitly set.
+  public var hasOneWireTemperatureCh6: Bool {_storage._oneWireTemperatureCh6 != nil}
+  /// Clears the value of `oneWireTemperatureCh6`. Subsequent reads from it will return its default value.
+  public mutating func clearOneWireTemperatureCh6() {_uniqueStorage()._oneWireTemperatureCh6 = nil}
+
+  ///
+  /// Multi-channel One-Wire Temperature Channel 7 (*C)
+  public var oneWireTemperatureCh7: Float {
+    get {_storage._oneWireTemperatureCh7 ?? 0}
+    set {_uniqueStorage()._oneWireTemperatureCh7 = newValue}
+  }
+  /// Returns true if `oneWireTemperatureCh7` has been explicitly set.
+  public var hasOneWireTemperatureCh7: Bool {_storage._oneWireTemperatureCh7 != nil}
+  /// Clears the value of `oneWireTemperatureCh7`. Subsequent reads from it will return its default value.
+  public mutating func clearOneWireTemperatureCh7() {_uniqueStorage()._oneWireTemperatureCh7 = nil}
+
+  ///
+  /// Lightning strikes detected in the last hour
+  public var lightningStrikeCount1H: UInt32 {
+    get {_storage._lightningStrikeCount1H ?? 0}
+    set {_uniqueStorage()._lightningStrikeCount1H = newValue}
+  }
+  /// Returns true if `lightningStrikeCount1H` has been explicitly set.
+  public var hasLightningStrikeCount1H: Bool {_storage._lightningStrikeCount1H != nil}
+  /// Clears the value of `lightningStrikeCount1H`. Subsequent reads from it will return its default value.
+  public mutating func clearLightningStrikeCount1H() {_uniqueStorage()._lightningStrikeCount1H = nil}
+
+  ///
+  /// Estimated distance to the leading edge of the storm, in km
+  public var lightningDistanceKm: Float {
+    get {_storage._lightningDistanceKm ?? 0}
+    set {_uniqueStorage()._lightningDistanceKm = newValue}
+  }
+  /// Returns true if `lightningDistanceKm` has been explicitly set.
+  public var hasLightningDistanceKm: Bool {_storage._lightningDistanceKm != nil}
+  /// Clears the value of `lightningDistanceKm`. Subsequent reads from it will return its default value.
+  public mutating func clearLightningDistanceKm() {_uniqueStorage()._lightningDistanceKm = nil}
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -838,7 +1074,9 @@ public struct PowerMetrics: Sendable {
   public mutating func clearCh3Current() {self._ch3Current = nil}
 
   ///
-  /// Voltage (Ch4)
+  /// Voltage (Ch4) - TODO Remove
+  ///
+  /// NOTE: This field was marked as deprecated in the .proto file.
   public var ch4Voltage: Float {
     get {_ch4Voltage ?? 0}
     set {_ch4Voltage = newValue}
@@ -849,7 +1087,9 @@ public struct PowerMetrics: Sendable {
   public mutating func clearCh4Voltage() {self._ch4Voltage = nil}
 
   ///
-  /// Current (Ch4)
+  /// Current (Ch4) - TODO Remove
+  ///
+  /// NOTE: This field was marked as deprecated in the .proto file.
   public var ch4Current: Float {
     get {_ch4Current ?? 0}
     set {_ch4Current = newValue}
@@ -860,7 +1100,9 @@ public struct PowerMetrics: Sendable {
   public mutating func clearCh4Current() {self._ch4Current = nil}
 
   ///
-  /// Voltage (Ch5)
+  /// Voltage (Ch5) - TODO Remove
+  ///
+  /// NOTE: This field was marked as deprecated in the .proto file.
   public var ch5Voltage: Float {
     get {_ch5Voltage ?? 0}
     set {_ch5Voltage = newValue}
@@ -871,7 +1113,9 @@ public struct PowerMetrics: Sendable {
   public mutating func clearCh5Voltage() {self._ch5Voltage = nil}
 
   ///
-  /// Current (Ch5)
+  /// Current (Ch5) - TODO Remove
+  ///
+  /// NOTE: This field was marked as deprecated in the .proto file.
   public var ch5Current: Float {
     get {_ch5Current ?? 0}
     set {_ch5Current = newValue}
@@ -882,7 +1126,9 @@ public struct PowerMetrics: Sendable {
   public mutating func clearCh5Current() {self._ch5Current = nil}
 
   ///
-  /// Voltage (Ch6)
+  /// Voltage (Ch6) - TODO Remove
+  ///
+  /// NOTE: This field was marked as deprecated in the .proto file.
   public var ch6Voltage: Float {
     get {_ch6Voltage ?? 0}
     set {_ch6Voltage = newValue}
@@ -893,7 +1139,9 @@ public struct PowerMetrics: Sendable {
   public mutating func clearCh6Voltage() {self._ch6Voltage = nil}
 
   ///
-  /// Current (Ch6)
+  /// Current (Ch6) - TODO Remove
+  ///
+  /// NOTE: This field was marked as deprecated in the .proto file.
   public var ch6Current: Float {
     get {_ch6Current ?? 0}
     set {_ch6Current = newValue}
@@ -904,7 +1152,9 @@ public struct PowerMetrics: Sendable {
   public mutating func clearCh6Current() {self._ch6Current = nil}
 
   ///
-  /// Voltage (Ch7)
+  /// Voltage (Ch7) - TODO Remove
+  ///
+  /// NOTE: This field was marked as deprecated in the .proto file.
   public var ch7Voltage: Float {
     get {_ch7Voltage ?? 0}
     set {_ch7Voltage = newValue}
@@ -915,7 +1165,9 @@ public struct PowerMetrics: Sendable {
   public mutating func clearCh7Voltage() {self._ch7Voltage = nil}
 
   ///
-  /// Current (Ch7)
+  /// Current (Ch7) - TODO Remove
+  ///
+  /// NOTE: This field was marked as deprecated in the .proto file.
   public var ch7Current: Float {
     get {_ch7Current ?? 0}
     set {_ch7Current = newValue}
@@ -926,7 +1178,9 @@ public struct PowerMetrics: Sendable {
   public mutating func clearCh7Current() {self._ch7Current = nil}
 
   ///
-  /// Voltage (Ch8)
+  /// Voltage (Ch8) - TODO Remove
+  ///
+  /// NOTE: This field was marked as deprecated in the .proto file.
   public var ch8Voltage: Float {
     get {_ch8Voltage ?? 0}
     set {_ch8Voltage = newValue}
@@ -937,7 +1191,9 @@ public struct PowerMetrics: Sendable {
   public mutating func clearCh8Voltage() {self._ch8Voltage = nil}
 
   ///
-  /// Current (Ch8)
+  /// Current (Ch8) - TODO Remove
+  ///
+  /// NOTE: This field was marked as deprecated in the .proto file.
   public var ch8Current: Float {
     get {_ch8Current ?? 0}
     set {_ch8Current = newValue}
@@ -1250,6 +1506,20 @@ public struct AirQualityMetrics: @unchecked Sendable {
   public var hasParticlesTps: Bool {_storage._particlesTps != nil}
   /// Clears the value of `particlesTps`. Subsequent reads from it will return its default value.
   public mutating func clearParticlesTps() {_uniqueStorage()._particlesTps = nil}
+
+  ///
+  /// Raw PM sensor device status/error register bitmask, as defined by the sensor's own datasheet
+  /// (currently populated by the SEN6X family: bit 4 fan error, bit 6 RH&T error, bit 7 gas/VOC-NOx
+  /// error, bit 9 CO2 error (SEN66), bit 10 HCHO error, bit 11 PM error, bit 12 CO2 error (SEN63C/SEN69C),
+  /// bit 21 fan speed warning)
+  public var pmStatusFlags: UInt32 {
+    get {_storage._pmStatusFlags ?? 0}
+    set {_uniqueStorage()._pmStatusFlags = newValue}
+  }
+  /// Returns true if `pmStatusFlags` has been explicitly set.
+  public var hasPmStatusFlags: Bool {_storage._pmStatusFlags != nil}
+  /// Clears the value of `pmStatusFlags`. Subsequent reads from it will return its default value.
+  public mutating func clearPmStatusFlags() {_uniqueStorage()._pmStatusFlags = nil}
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -1650,7 +1920,24 @@ public struct Nau7802Config: Sendable {
 }
 
 ///
-/// SEN5X State, for saving to flash
+/// AS3935 lightning sensor configuration, for saving to flash
+public struct AS3935Config: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  ///
+  /// Antenna tuning capacitance in pF, 0 to 120 in steps of 8. The chip does not retain
+  /// this across power loss, so it is stored here and re-applied on every boot.
+  public var tuningCapPf: UInt32 = 0
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+///
+/// SEN5X State, for saving to flash (to be merged with SEN6XState)
 public struct SEN5XState: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
@@ -1710,12 +1997,73 @@ public struct SEN5XState: Sendable {
   fileprivate var _vocStateArray: UInt64? = nil
 }
 
+///
+/// SEN6X State, for saving to flash
+public struct SEN6XState: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  ///
+  /// Last cleaning time for SEN6X
+  public var lastCleaningTime: UInt32 = 0
+
+  ///
+  /// Last cleaning time for SEN6X - valid flag
+  public var lastCleaningValid: Bool = false
+
+  ///
+  /// Config flag for one-shot mode (see admin.proto)
+  public var oneShotMode: Bool = false
+
+  ///
+  /// Last VOC state time, for models with a VOC sensor (SEN65, SEN66, SEN68, SEN69C)
+  public var vocStateTime: UInt32 {
+    get {_vocStateTime ?? 0}
+    set {_vocStateTime = newValue}
+  }
+  /// Returns true if `vocStateTime` has been explicitly set.
+  public var hasVocStateTime: Bool {self._vocStateTime != nil}
+  /// Clears the value of `vocStateTime`. Subsequent reads from it will return its default value.
+  public mutating func clearVocStateTime() {self._vocStateTime = nil}
+
+  ///
+  /// Last VOC state validity flag, for models with a VOC sensor (SEN65, SEN66, SEN68, SEN69C)
+  public var vocStateValid: Bool {
+    get {_vocStateValid ?? false}
+    set {_vocStateValid = newValue}
+  }
+  /// Returns true if `vocStateValid` has been explicitly set.
+  public var hasVocStateValid: Bool {self._vocStateValid != nil}
+  /// Clears the value of `vocStateValid`. Subsequent reads from it will return its default value.
+  public mutating func clearVocStateValid() {self._vocStateValid = nil}
+
+  ///
+  /// VOC state array (8x uint8t), for models with a VOC sensor (SEN65, SEN66, SEN68, SEN69C)
+  public var vocStateArray: UInt64 {
+    get {_vocStateArray ?? 0}
+    set {_vocStateArray = newValue}
+  }
+  /// Returns true if `vocStateArray` has been explicitly set.
+  public var hasVocStateArray: Bool {self._vocStateArray != nil}
+  /// Clears the value of `vocStateArray`. Subsequent reads from it will return its default value.
+  public mutating func clearVocStateArray() {self._vocStateArray = nil}
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+
+  fileprivate var _vocStateTime: UInt32? = nil
+  fileprivate var _vocStateValid: Bool? = nil
+  fileprivate var _vocStateArray: UInt64? = nil
+}
+
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
 fileprivate let _protobuf_package = "meshtastic"
 
 extension TelemetrySensorType: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0SENSOR_UNSET\0\u{1}BME280\0\u{1}BME680\0\u{1}MCP9808\0\u{1}INA260\0\u{1}INA219\0\u{1}BMP280\0\u{1}SHTC3\0\u{1}LPS22\0\u{1}QMC6310\0\u{1}QMI8658\0\u{1}QMC5883L\0\u{1}SHT31\0\u{1}PMSA003I\0\u{1}INA3221\0\u{1}BMP085\0\u{1}RCWL9620\0\u{1}SHT4X\0\u{1}VEML7700\0\u{1}MLX90632\0\u{1}OPT3001\0\u{1}LTR390UV\0\u{1}TSL25911FN\0\u{1}AHT10\0\u{1}DFROBOT_LARK\0\u{1}NAU7802\0\u{1}BMP3XX\0\u{1}ICM20948\0\u{1}MAX17048\0\u{1}CUSTOM_SENSOR\0\u{1}MAX30102\0\u{1}MLX90614\0\u{1}SCD4X\0\u{1}RADSENS\0\u{1}INA226\0\u{1}DFROBOT_RAIN\0\u{1}DPS310\0\u{1}RAK12035\0\u{1}MAX17261\0\u{1}PCT2075\0\u{1}ADS1X15\0\u{1}ADS1X15_ALT\0\u{1}SFA30\0\u{1}SEN5X\0\u{1}TSL2561\0\u{1}BH1750\0\u{1}HDC1080\0\u{1}SHT21\0\u{1}STC31\0\u{1}SCD30\0\u{1}SHTXX\0\u{1}DS248X\0\u{1}MMC5983MA\0\u{1}ICM42607P\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0SENSOR_UNSET\0\u{1}BME280\0\u{1}BME680\0\u{1}MCP9808\0\u{1}INA260\0\u{1}INA219\0\u{1}BMP280\0\u{1}SHTC3\0\u{1}LPS22\0\u{1}QMC6310\0\u{1}QMI8658\0\u{1}QMC5883L\0\u{1}SHT31\0\u{1}PMSA003I\0\u{1}INA3221\0\u{1}BMP085\0\u{1}RCWL9620\0\u{1}SHT4X\0\u{1}VEML7700\0\u{1}MLX90632\0\u{1}OPT3001\0\u{1}LTR390UV\0\u{1}TSL25911FN\0\u{1}AHT10\0\u{1}DFROBOT_LARK\0\u{1}NAU7802\0\u{1}BMP3XX\0\u{1}ICM20948\0\u{1}MAX17048\0\u{1}CUSTOM_SENSOR\0\u{1}MAX30102\0\u{1}MLX90614\0\u{1}SCD4X\0\u{1}RADSENS\0\u{1}INA226\0\u{1}DFROBOT_RAIN\0\u{1}DPS310\0\u{1}RAK12035\0\u{1}MAX17261\0\u{1}PCT2075\0\u{1}ADS1X15\0\u{1}ADS1X15_ALT\0\u{1}SFA30\0\u{1}SEN5X\0\u{1}TSL2561\0\u{1}BH1750\0\u{1}HDC1080\0\u{1}SHT21\0\u{1}STC31\0\u{1}SCD30\0\u{1}SHTXX\0\u{1}DS248X\0\u{1}MMC5983MA\0\u{1}ICM42607P\0\u{1}SPA06\0\u{1}HM330X\0\u{1}SEN6X\0\u{1}AS3935\0")
 }
 
 extension DeviceMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
@@ -1774,7 +2122,7 @@ extension DeviceMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
 
 extension EnvironmentMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".EnvironmentMetrics"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}temperature\0\u{3}relative_humidity\0\u{3}barometric_pressure\0\u{3}gas_resistance\0\u{1}voltage\0\u{1}current\0\u{1}iaq\0\u{1}distance\0\u{1}lux\0\u{3}white_lux\0\u{3}ir_lux\0\u{3}uv_lux\0\u{3}wind_direction\0\u{3}wind_speed\0\u{1}weight\0\u{3}wind_gust\0\u{3}wind_lull\0\u{1}radiation\0\u{3}rainfall_1h\0\u{3}rainfall_24h\0\u{3}soil_moisture\0\u{3}soil_temperature\0\u{3}one_wire_temperature\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}temperature\0\u{3}relative_humidity\0\u{3}barometric_pressure\0\u{3}gas_resistance\0\u{1}voltage\0\u{1}current\0\u{1}iaq\0\u{1}distance\0\u{1}lux\0\u{3}white_lux\0\u{3}ir_lux\0\u{3}uv_lux\0\u{3}wind_direction\0\u{3}wind_speed\0\u{1}weight\0\u{3}wind_gust\0\u{3}wind_lull\0\u{1}radiation\0\u{3}rainfall_1h\0\u{3}rainfall_24h\0\u{3}soil_moisture\0\u{3}soil_temperature\0\u{3}one_wire_temperature\0\u{3}adc_voltage_ch0\0\u{3}adc_voltage_ch1\0\u{3}adc_voltage_ch2\0\u{3}adc_voltage_ch3\0\u{3}adc_voltage_ch4\0\u{3}adc_voltage_ch5\0\u{3}adc_voltage_ch6\0\u{3}adc_voltage_ch7\0\u{3}one_wire_temperature_ch0\0\u{3}one_wire_temperature_ch1\0\u{3}one_wire_temperature_ch2\0\u{3}one_wire_temperature_ch3\0\u{3}one_wire_temperature_ch4\0\u{3}one_wire_temperature_ch5\0\u{3}one_wire_temperature_ch6\0\u{3}one_wire_temperature_ch7\0\u{3}lightning_strike_count_1h\0\u{3}lightning_distance_km\0")
 
   fileprivate class _StorageClass {
     var _temperature: Float? = nil
@@ -1800,6 +2148,24 @@ extension EnvironmentMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
     var _soilMoisture: UInt32? = nil
     var _soilTemperature: Float? = nil
     var _oneWireTemperature: [Float] = []
+    var _adcVoltageCh0: Float? = nil
+    var _adcVoltageCh1: Float? = nil
+    var _adcVoltageCh2: Float? = nil
+    var _adcVoltageCh3: Float? = nil
+    var _adcVoltageCh4: Float? = nil
+    var _adcVoltageCh5: Float? = nil
+    var _adcVoltageCh6: Float? = nil
+    var _adcVoltageCh7: Float? = nil
+    var _oneWireTemperatureCh0: Float? = nil
+    var _oneWireTemperatureCh1: Float? = nil
+    var _oneWireTemperatureCh2: Float? = nil
+    var _oneWireTemperatureCh3: Float? = nil
+    var _oneWireTemperatureCh4: Float? = nil
+    var _oneWireTemperatureCh5: Float? = nil
+    var _oneWireTemperatureCh6: Float? = nil
+    var _oneWireTemperatureCh7: Float? = nil
+    var _lightningStrikeCount1H: UInt32? = nil
+    var _lightningDistanceKm: Float? = nil
 
       // This property is used as the initial default value for new instances of the type.
       // The type itself is protecting the reference to its storage via CoW semantics.
@@ -1833,6 +2199,24 @@ extension EnvironmentMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
       _soilMoisture = source._soilMoisture
       _soilTemperature = source._soilTemperature
       _oneWireTemperature = source._oneWireTemperature
+      _adcVoltageCh0 = source._adcVoltageCh0
+      _adcVoltageCh1 = source._adcVoltageCh1
+      _adcVoltageCh2 = source._adcVoltageCh2
+      _adcVoltageCh3 = source._adcVoltageCh3
+      _adcVoltageCh4 = source._adcVoltageCh4
+      _adcVoltageCh5 = source._adcVoltageCh5
+      _adcVoltageCh6 = source._adcVoltageCh6
+      _adcVoltageCh7 = source._adcVoltageCh7
+      _oneWireTemperatureCh0 = source._oneWireTemperatureCh0
+      _oneWireTemperatureCh1 = source._oneWireTemperatureCh1
+      _oneWireTemperatureCh2 = source._oneWireTemperatureCh2
+      _oneWireTemperatureCh3 = source._oneWireTemperatureCh3
+      _oneWireTemperatureCh4 = source._oneWireTemperatureCh4
+      _oneWireTemperatureCh5 = source._oneWireTemperatureCh5
+      _oneWireTemperatureCh6 = source._oneWireTemperatureCh6
+      _oneWireTemperatureCh7 = source._oneWireTemperatureCh7
+      _lightningStrikeCount1H = source._lightningStrikeCount1H
+      _lightningDistanceKm = source._lightningDistanceKm
     }
   }
 
@@ -1874,6 +2258,24 @@ extension EnvironmentMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
         case 21: try { try decoder.decodeSingularUInt32Field(value: &_storage._soilMoisture) }()
         case 22: try { try decoder.decodeSingularFloatField(value: &_storage._soilTemperature) }()
         case 23: try { try decoder.decodeRepeatedFloatField(value: &_storage._oneWireTemperature) }()
+        case 24: try { try decoder.decodeSingularFloatField(value: &_storage._adcVoltageCh0) }()
+        case 25: try { try decoder.decodeSingularFloatField(value: &_storage._adcVoltageCh1) }()
+        case 26: try { try decoder.decodeSingularFloatField(value: &_storage._adcVoltageCh2) }()
+        case 27: try { try decoder.decodeSingularFloatField(value: &_storage._adcVoltageCh3) }()
+        case 28: try { try decoder.decodeSingularFloatField(value: &_storage._adcVoltageCh4) }()
+        case 29: try { try decoder.decodeSingularFloatField(value: &_storage._adcVoltageCh5) }()
+        case 30: try { try decoder.decodeSingularFloatField(value: &_storage._adcVoltageCh6) }()
+        case 31: try { try decoder.decodeSingularFloatField(value: &_storage._adcVoltageCh7) }()
+        case 32: try { try decoder.decodeSingularFloatField(value: &_storage._oneWireTemperatureCh0) }()
+        case 33: try { try decoder.decodeSingularFloatField(value: &_storage._oneWireTemperatureCh1) }()
+        case 34: try { try decoder.decodeSingularFloatField(value: &_storage._oneWireTemperatureCh2) }()
+        case 35: try { try decoder.decodeSingularFloatField(value: &_storage._oneWireTemperatureCh3) }()
+        case 36: try { try decoder.decodeSingularFloatField(value: &_storage._oneWireTemperatureCh4) }()
+        case 37: try { try decoder.decodeSingularFloatField(value: &_storage._oneWireTemperatureCh5) }()
+        case 38: try { try decoder.decodeSingularFloatField(value: &_storage._oneWireTemperatureCh6) }()
+        case 39: try { try decoder.decodeSingularFloatField(value: &_storage._oneWireTemperatureCh7) }()
+        case 40: try { try decoder.decodeSingularUInt32Field(value: &_storage._lightningStrikeCount1H) }()
+        case 41: try { try decoder.decodeSingularFloatField(value: &_storage._lightningDistanceKm) }()
         default: break
         }
       }
@@ -1955,6 +2357,60 @@ extension EnvironmentMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
       if !_storage._oneWireTemperature.isEmpty {
         try visitor.visitPackedFloatField(value: _storage._oneWireTemperature, fieldNumber: 23)
       }
+      try { if let v = _storage._adcVoltageCh0 {
+        try visitor.visitSingularFloatField(value: v, fieldNumber: 24)
+      } }()
+      try { if let v = _storage._adcVoltageCh1 {
+        try visitor.visitSingularFloatField(value: v, fieldNumber: 25)
+      } }()
+      try { if let v = _storage._adcVoltageCh2 {
+        try visitor.visitSingularFloatField(value: v, fieldNumber: 26)
+      } }()
+      try { if let v = _storage._adcVoltageCh3 {
+        try visitor.visitSingularFloatField(value: v, fieldNumber: 27)
+      } }()
+      try { if let v = _storage._adcVoltageCh4 {
+        try visitor.visitSingularFloatField(value: v, fieldNumber: 28)
+      } }()
+      try { if let v = _storage._adcVoltageCh5 {
+        try visitor.visitSingularFloatField(value: v, fieldNumber: 29)
+      } }()
+      try { if let v = _storage._adcVoltageCh6 {
+        try visitor.visitSingularFloatField(value: v, fieldNumber: 30)
+      } }()
+      try { if let v = _storage._adcVoltageCh7 {
+        try visitor.visitSingularFloatField(value: v, fieldNumber: 31)
+      } }()
+      try { if let v = _storage._oneWireTemperatureCh0 {
+        try visitor.visitSingularFloatField(value: v, fieldNumber: 32)
+      } }()
+      try { if let v = _storage._oneWireTemperatureCh1 {
+        try visitor.visitSingularFloatField(value: v, fieldNumber: 33)
+      } }()
+      try { if let v = _storage._oneWireTemperatureCh2 {
+        try visitor.visitSingularFloatField(value: v, fieldNumber: 34)
+      } }()
+      try { if let v = _storage._oneWireTemperatureCh3 {
+        try visitor.visitSingularFloatField(value: v, fieldNumber: 35)
+      } }()
+      try { if let v = _storage._oneWireTemperatureCh4 {
+        try visitor.visitSingularFloatField(value: v, fieldNumber: 36)
+      } }()
+      try { if let v = _storage._oneWireTemperatureCh5 {
+        try visitor.visitSingularFloatField(value: v, fieldNumber: 37)
+      } }()
+      try { if let v = _storage._oneWireTemperatureCh6 {
+        try visitor.visitSingularFloatField(value: v, fieldNumber: 38)
+      } }()
+      try { if let v = _storage._oneWireTemperatureCh7 {
+        try visitor.visitSingularFloatField(value: v, fieldNumber: 39)
+      } }()
+      try { if let v = _storage._lightningStrikeCount1H {
+        try visitor.visitSingularUInt32Field(value: v, fieldNumber: 40)
+      } }()
+      try { if let v = _storage._lightningDistanceKm {
+        try visitor.visitSingularFloatField(value: v, fieldNumber: 41)
+      } }()
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -1987,6 +2443,24 @@ extension EnvironmentMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
         if _storage._soilMoisture != rhs_storage._soilMoisture {return false}
         if _storage._soilTemperature != rhs_storage._soilTemperature {return false}
         if _storage._oneWireTemperature != rhs_storage._oneWireTemperature {return false}
+        if _storage._adcVoltageCh0 != rhs_storage._adcVoltageCh0 {return false}
+        if _storage._adcVoltageCh1 != rhs_storage._adcVoltageCh1 {return false}
+        if _storage._adcVoltageCh2 != rhs_storage._adcVoltageCh2 {return false}
+        if _storage._adcVoltageCh3 != rhs_storage._adcVoltageCh3 {return false}
+        if _storage._adcVoltageCh4 != rhs_storage._adcVoltageCh4 {return false}
+        if _storage._adcVoltageCh5 != rhs_storage._adcVoltageCh5 {return false}
+        if _storage._adcVoltageCh6 != rhs_storage._adcVoltageCh6 {return false}
+        if _storage._adcVoltageCh7 != rhs_storage._adcVoltageCh7 {return false}
+        if _storage._oneWireTemperatureCh0 != rhs_storage._oneWireTemperatureCh0 {return false}
+        if _storage._oneWireTemperatureCh1 != rhs_storage._oneWireTemperatureCh1 {return false}
+        if _storage._oneWireTemperatureCh2 != rhs_storage._oneWireTemperatureCh2 {return false}
+        if _storage._oneWireTemperatureCh3 != rhs_storage._oneWireTemperatureCh3 {return false}
+        if _storage._oneWireTemperatureCh4 != rhs_storage._oneWireTemperatureCh4 {return false}
+        if _storage._oneWireTemperatureCh5 != rhs_storage._oneWireTemperatureCh5 {return false}
+        if _storage._oneWireTemperatureCh6 != rhs_storage._oneWireTemperatureCh6 {return false}
+        if _storage._oneWireTemperatureCh7 != rhs_storage._oneWireTemperatureCh7 {return false}
+        if _storage._lightningStrikeCount1H != rhs_storage._lightningStrikeCount1H {return false}
+        if _storage._lightningDistanceKm != rhs_storage._lightningDistanceKm {return false}
         return true
       }
       if !storagesAreEqual {return false}
@@ -2107,7 +2581,7 @@ extension PowerMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
 
 extension AirQualityMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".AirQualityMetrics"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}pm10_standard\0\u{3}pm25_standard\0\u{3}pm100_standard\0\u{3}pm10_environmental\0\u{3}pm25_environmental\0\u{3}pm100_environmental\0\u{3}particles_03um\0\u{3}particles_05um\0\u{3}particles_10um\0\u{3}particles_25um\0\u{3}particles_50um\0\u{3}particles_100um\0\u{1}co2\0\u{3}co2_temperature\0\u{3}co2_humidity\0\u{3}form_formaldehyde\0\u{3}form_humidity\0\u{3}form_temperature\0\u{3}pm40_standard\0\u{3}particles_40um\0\u{3}pm_temperature\0\u{3}pm_humidity\0\u{3}pm_voc_idx\0\u{3}pm_nox_idx\0\u{3}particles_tps\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}pm10_standard\0\u{3}pm25_standard\0\u{3}pm100_standard\0\u{3}pm10_environmental\0\u{3}pm25_environmental\0\u{3}pm100_environmental\0\u{3}particles_03um\0\u{3}particles_05um\0\u{3}particles_10um\0\u{3}particles_25um\0\u{3}particles_50um\0\u{3}particles_100um\0\u{1}co2\0\u{3}co2_temperature\0\u{3}co2_humidity\0\u{3}form_formaldehyde\0\u{3}form_humidity\0\u{3}form_temperature\0\u{3}pm40_standard\0\u{3}particles_40um\0\u{3}pm_temperature\0\u{3}pm_humidity\0\u{3}pm_voc_idx\0\u{3}pm_nox_idx\0\u{3}particles_tps\0\u{3}pm_status_flags\0")
 
   fileprivate class _StorageClass {
     var _pm10Standard: UInt32? = nil
@@ -2135,6 +2609,7 @@ extension AirQualityMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     var _pmVocIdx: Float? = nil
     var _pmNoxIdx: Float? = nil
     var _particlesTps: Float? = nil
+    var _pmStatusFlags: UInt32? = nil
 
       // This property is used as the initial default value for new instances of the type.
       // The type itself is protecting the reference to its storage via CoW semantics.
@@ -2170,6 +2645,7 @@ extension AirQualityMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
       _pmVocIdx = source._pmVocIdx
       _pmNoxIdx = source._pmNoxIdx
       _particlesTps = source._particlesTps
+      _pmStatusFlags = source._pmStatusFlags
     }
   }
 
@@ -2213,6 +2689,7 @@ extension AirQualityMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
         case 23: try { try decoder.decodeSingularFloatField(value: &_storage._pmVocIdx) }()
         case 24: try { try decoder.decodeSingularFloatField(value: &_storage._pmNoxIdx) }()
         case 25: try { try decoder.decodeSingularFloatField(value: &_storage._particlesTps) }()
+        case 26: try { try decoder.decodeSingularUInt32Field(value: &_storage._pmStatusFlags) }()
         default: break
         }
       }
@@ -2300,6 +2777,9 @@ extension AirQualityMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
       try { if let v = _storage._particlesTps {
         try visitor.visitSingularFloatField(value: v, fieldNumber: 25)
       } }()
+      try { if let v = _storage._pmStatusFlags {
+        try visitor.visitSingularUInt32Field(value: v, fieldNumber: 26)
+      } }()
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -2334,6 +2814,7 @@ extension AirQualityMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
         if _storage._pmVocIdx != rhs_storage._pmVocIdx {return false}
         if _storage._pmNoxIdx != rhs_storage._pmNoxIdx {return false}
         if _storage._particlesTps != rhs_storage._particlesTps {return false}
+        if _storage._pmStatusFlags != rhs_storage._pmStatusFlags {return false}
         return true
       }
       if !storagesAreEqual {return false}
@@ -2868,6 +3349,36 @@ extension Nau7802Config: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
   }
 }
 
+extension AS3935Config: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".AS3935Config"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}tuning_cap_pf\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularUInt32Field(value: &self.tuningCapPf) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.tuningCapPf != 0 {
+      try visitor.visitSingularUInt32Field(value: self.tuningCapPf, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: AS3935Config, rhs: AS3935Config) -> Bool {
+    if lhs.tuningCapPf != rhs.tuningCapPf {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
 extension SEN5XState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".SEN5XState"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}last_cleaning_time\0\u{3}last_cleaning_valid\0\u{3}one_shot_mode\0\u{3}voc_state_time\0\u{3}voc_state_valid\0\u{3}voc_state_array\0")
@@ -2916,6 +3427,65 @@ extension SEN5XState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
   }
 
   public static func ==(lhs: SEN5XState, rhs: SEN5XState) -> Bool {
+    if lhs.lastCleaningTime != rhs.lastCleaningTime {return false}
+    if lhs.lastCleaningValid != rhs.lastCleaningValid {return false}
+    if lhs.oneShotMode != rhs.oneShotMode {return false}
+    if lhs._vocStateTime != rhs._vocStateTime {return false}
+    if lhs._vocStateValid != rhs._vocStateValid {return false}
+    if lhs._vocStateArray != rhs._vocStateArray {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension SEN6XState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".SEN6XState"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}last_cleaning_time\0\u{3}last_cleaning_valid\0\u{3}one_shot_mode\0\u{3}voc_state_time\0\u{3}voc_state_valid\0\u{3}voc_state_array\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularUInt32Field(value: &self.lastCleaningTime) }()
+      case 2: try { try decoder.decodeSingularBoolField(value: &self.lastCleaningValid) }()
+      case 3: try { try decoder.decodeSingularBoolField(value: &self.oneShotMode) }()
+      case 4: try { try decoder.decodeSingularUInt32Field(value: &self._vocStateTime) }()
+      case 5: try { try decoder.decodeSingularBoolField(value: &self._vocStateValid) }()
+      case 6: try { try decoder.decodeSingularFixed64Field(value: &self._vocStateArray) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    if self.lastCleaningTime != 0 {
+      try visitor.visitSingularUInt32Field(value: self.lastCleaningTime, fieldNumber: 1)
+    }
+    if self.lastCleaningValid != false {
+      try visitor.visitSingularBoolField(value: self.lastCleaningValid, fieldNumber: 2)
+    }
+    if self.oneShotMode != false {
+      try visitor.visitSingularBoolField(value: self.oneShotMode, fieldNumber: 3)
+    }
+    try { if let v = self._vocStateTime {
+      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 4)
+    } }()
+    try { if let v = self._vocStateValid {
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 5)
+    } }()
+    try { if let v = self._vocStateArray {
+      try visitor.visitSingularFixed64Field(value: v, fieldNumber: 6)
+    } }()
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: SEN6XState, rhs: SEN6XState) -> Bool {
     if lhs.lastCleaningTime != rhs.lastCleaningTime {return false}
     if lhs.lastCleaningValid != rhs.lastCleaningValid {return false}
     if lhs.oneShotMode != rhs.oneShotMode {return false}

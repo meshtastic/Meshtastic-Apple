@@ -124,7 +124,7 @@ struct BackupManagement: View {
 						.symbolEffect(.pulse, isActive: isBackingUp)
 				}
 				.disabled(isBackingUp || isRestoringBackup)
-				.accessibilityLabel("Backup Now")
+				.accessibilityLabel(String(localized: "Backup Now", comment: "VoiceOver label for the backup now button"))
 			}
 		}
 		.onAppear {
@@ -191,8 +191,14 @@ struct BackupManagement: View {
 			isRestoringBackup = false
 		}
 
+		// Resolve the outgoing node before the flow disconnects anything.
+		let currentNodeNum = accessoryManager.activeDeviceNum ?? {
+			let num = Int64(UserDefaults.preferredPeripheralNum)
+			return num > 0 ? num : nil
+		}()
 		let restoreResult = await backupCurrentAndRestoreDatabase(
 			forNode: entry.nodeNum,
+			currentNodeNum: currentNodeNum,
 			accessoryManager: accessoryManager,
 			appState: accessoryManager.appState,
 			selectedTab: .settings,

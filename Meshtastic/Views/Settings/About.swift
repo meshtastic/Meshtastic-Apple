@@ -6,10 +6,9 @@
 //
 import SwiftUI
 import StoreKit
+import SwiftDraw
 
 struct AboutMeshtastic: View {
-
-	let locale = Locale.current
 
 	var body: some View {
 
@@ -20,24 +19,20 @@ struct AboutMeshtastic: View {
 						.font(.title3)
 
 				}
-				Section(header: Text("Apple Apps")) {
-
-					if locale.region?.identifier ?? "US" == "US" {
-						HStack {
-							Image("SOLAR_NODE")
-								.resizable()
-								.aspectRatio(contentMode: .fit)
-								.frame(width: 75)
-								.cornerRadius(5)
-								.padding()
-							VStack(alignment: .leading) {
-								Link("Buy Complete Radios", destination: URL(string: "http://garthvh.com")!)
-									.font(.title2)
-								Text("Get custom waterproof solar and detection sensor router nodes, aluminium desktop nodes and rugged handsets.")
-									.font(.callout)
-							}
+				Section(header: Text("Hardware")) {
+					HStack {
+						RotatingHardwareImage()
+							.frame(width: 110, height: 130)
+							.padding(.trailing, 8)
+						VStack(alignment: .leading) {
+							Link("Need Hardware?", destination: URL(string: "https://meshtastic.org/#hardware")!)
+								.font(.title2)
+							Text("Meshtastic requires a compatible device. Our backers and partners offer ready-to-use hardware. Here are some of the most popular options.")
+								.font(.callout)
 						}
 					}
+				}
+				Section(header: Text("Apple Apps")) {
 					Link("Sponsor App Development", destination: URL(string: "https://github.com/sponsors/garthvh")!)
 						.font(.title2)
 					Link("GitHub Repository", destination: URL(string: "https://github.com/meshtastic/Meshtastic-Apple")!)
@@ -65,6 +60,53 @@ struct AboutMeshtastic: View {
 		}
 		.navigationTitle("About")
 		.navigationBarTitleDisplayMode(.inline)
+	}
+}
+
+/// Cycles through the devices featured in the Need Hardware? section on
+/// meshtastic.org, using the device SVGs already bundled in the app.
+private struct RotatingHardwareImage: View {
+
+	private static let imageNames = [
+		"t-deck.svg",
+		"muzi_r1_neo.svg",
+		"tracker-t1000-e.svg",
+		"station-g2.svg",
+		"rak_wismesh_tag.svg",
+		"heltec_mesh_pocket.svg",
+		"thinknode_m1.svg"
+	]
+
+	@State private var svgs: [SVG] = []
+	@State private var index = 0
+
+	private let timer = Timer.publish(every: 3, on: .main, in: .common).autoconnect()
+
+	var body: some View {
+		ZStack {
+			if !svgs.isEmpty {
+				SVGView(svg: svgs[index % svgs.count])
+					.resizable()
+					.aspectRatio(contentMode: .fit)
+					.id(index)
+					.transition(.opacity)
+			}
+		}
+		.task {
+			// The device SVGs are copied flat into the bundle root, not into
+			// an images/ subdirectory.
+			svgs = Self.imageNames.compactMap { name in
+				guard let url = Bundle.main.url(forResource: name, withExtension: nil),
+					  let data = try? Data(contentsOf: url) else { return nil }
+				return SVG(data: data)
+			}
+		}
+		.onReceive(timer) { _ in
+			guard svgs.count > 1 else { return }
+			withAnimation(.easeInOut(duration: 0.5)) {
+				index += 1
+			}
+		}
 	}
 }
 

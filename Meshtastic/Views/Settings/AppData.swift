@@ -68,6 +68,7 @@ struct AppData: View {
 					}
 					.padding(.horizontal)
 					.padding(.vertical, 4)
+					.accessibilityElement(children: .combine)
 				}
 			}
 			Divider()
@@ -252,7 +253,6 @@ struct AppData: View {
 		} label: {
 			Label("Download", systemImage: "square.and.arrow.down")
 		}
-		.tint(.accentColor)
 	}
 
 	@ViewBuilder

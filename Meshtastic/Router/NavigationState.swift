@@ -37,6 +37,8 @@ enum MapNavigationState: Hashable {
 	case waypoint(Int64)
 	/// Show a specific trace route (by its request id) drawn on the map.
 	case traceRoute(Int64)
+	/// Open the Site Planner coverage-estimate flow prefilled from a node (by its node number).
+	case coverageEstimate(Int64)
 }
 
 // MARK: Settings
@@ -69,7 +71,6 @@ enum SettingsNavigationState: String {
 	case ringtone
 	case serial
 	case security
-	case statusMessage
 	case storeAndForward
 	case telemetry
 	case trafficManagement

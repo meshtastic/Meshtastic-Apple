@@ -134,8 +134,6 @@ class Router: ObservableObject {
 			routeNodes(components)
 		} else if components.path == "/map" {
 			routeMap(components)
-		} else if components.path == "/importGeoJSON" {
-			routeImportGeoJSON(components)
 		} else if components.path.hasPrefix("/settings") {
 			routeSettings(components)
 		} else {
@@ -235,23 +233,40 @@ class Router: ObservableObject {
 		}
 	}
 
-	/// Downloads (http/https) or reads (file) a GeoJSON map overlay from the `url` query param and
-	/// imports it via `MapDataManager`, reusing the same pipeline as the in-app file picker. Lets a
-	/// coverage map be imported hands-free, e.g. `xcrun simctl openurl <udid> "meshtastic:///importGeoJSON?url=<encoded-url>"`.
-	private func routeImportGeoJSON(_ components: URLComponents) {
-		guard let urlString = components.queryItems?.first(where: { $0.name == "url" })?.value else {
-			Logger.services.warning("🛣 [App] importGeoJSON route missing required 'url' query param.")
+	/// Imports a GeoJSON map overlay handed to the app as a file URL — e.g. via "Open in Meshtastic"
+	/// from the Share Sheet, the Files app, or a drag-and-drop — reusing the same pipeline as the
+	/// in-app file picker. Called from `onOpenURL` for file URLs, which is a distinct path from
+	/// `route(url:)` (that only handles `meshtastic://` scheme URLs).
+	func importMapFile(url: URL) {
+		if OfflineMapImportValidator.format(for: url) != nil {
+			importOfflineMap(url: url)
 			return
 		}
-
 		selectedTab = .map
 
 		Task {
 			do {
-				let metadata = try await MapDataManager.shared.importFromRemote(urlString: urlString)
-				Logger.services.info("🗺️ [App] Imported '\(metadata.originalName, privacy: .public)' (\(metadata.overlayCount, privacy: .public) overlays) via importGeoJSON deep link.")
+				let metadata = try await MapDataManager.shared.processUploadedFile(from: url)
+				Logger.services.info("🗺️ [App] Imported '\(metadata.originalName, privacy: .public)' (\(metadata.overlayCount, privacy: .public) overlays) via Open In.")
 			} catch {
-				Logger.services.error("🗺️ [App] importGeoJSON deep link failed: \(error.localizedDescription, privacy: .public)")
+				Logger.services.error("🗺️ [App] Open In GeoJSON import failed: \(error.localizedDescription, privacy: .public)")
+			}
+		}
+	}
+
+	/// Imports an offline basemap handed to the app through Files, AirDrop, or Open In.
+	func importOfflineMap(url: URL) {
+		selectedTab = .map
+		let hasAccess = url.startAccessingSecurityScopedResource()
+		Task { @MainActor in
+			defer {
+				if hasAccess { url.stopAccessingSecurityScopedResource() }
+			}
+			do {
+				let region = try await OfflineMapManager.shared.importOfflineMap(from: url)
+				Logger.services.info("🗺️ [Offline] Imported '\(region.name, privacy: .private)' via Open In.")
+			} catch {
+				Logger.services.error("🗺️ [Offline] Map archive import failed: \(error.localizedDescription, privacy: .private)")
 			}
 		}
 	}

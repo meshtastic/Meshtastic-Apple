@@ -34,133 +34,37 @@ struct ESP32WifiOTASheet: View {
 	}
 	
 	var body: some View {
-		NavigationStack {
-			List {
-				Section {
-					VStack(alignment: .leading) {
-						Text("Firmware File").font(.caption).foregroundColor(.secondary)
-						Text("\(self.binFileURL.lastPathComponent)").font(.caption)
-					}
-					VStack(alignment: .leading) {
-						Text("Network Location").font(.caption).foregroundColor(.secondary)
-						Text("\(host ?? "Unknown")").font(.caption)
-					}
-				} header: {
-					Text("Please do not leave this screen until this process is complete.")
-						.multilineTextAlignment(.center)
-				} footer: {
-					Text("Please be sure this is correct before proceeding.")
+		FirmwareOTAUpdateSheet(
+			title: "ESP32 WiFi Updater",
+			progress: ota.progress,
+			statusState: ota.otaState,
+			statusMessage: ota.statusMessage,
+			inRetryWorkflow: inRetryWorkflow,
+			isStartDisabled: accessoryManager.activeDeviceNum == nil,
+			onStart: { startWifiProcess() },
+			onRetry: {
+				inRetryWorkflow = true
+				var transaction = Transaction(animation: .none)
+				transaction.disablesAnimations = true
+				withTransaction(transaction) {
+					ota.retry()
 				}
-				
-				Section {
-					HStack(alignment: .center) {
-						Spacer()
-						
-						// MARK: - Progress View
-						CircularProgressView(
-							progress: ota.progress,
-							isIndeterminate: (ota.otaState == .preparing),
-							isError: (ota.otaState == .error),
-							size: 225.0,
-							// If error, we show only the triangle (nil).
-							// The detailed status message is shown below the ring.
-							subtitleText: (ota.otaState == .error) ? nil : ota.otaState.rawValue
-						)
-						.frame(minHeight: 250.0)
-						
-						Spacer()
-					}
-					.listRowBackground(Color.clear)
-					
-					VStack(spacing: 12) {
-						if ota.otaState != .idle {
-							Text("\(ota.statusMessage)")
-								.frame(maxWidth: .infinity)
-								.multilineTextAlignment(.center)
-								.font(.headline)
-								.foregroundStyle(ota.otaState == .error ? .red : .primary)
-						}
-
-						switch ota.otaState {
-						case .idle:
-							beginWifiProcessButton()
-							
-						case .error:
-							retryButton()
-							
-						default:
-							EmptyView()
-						}
-					}
-					.listRowBackground(Color.clear)
+			},
+			onDismiss: {
+				if let onUpdateComplete = self.onUpdateComplete, ota.otaState == .completed {
+					onUpdateComplete()
+				} else {
+					dismiss()
 				}
-				.listRowSeparator(.hidden)
-			}
-			.listSectionSpacing(.compact)
-			.navigationTitle("ESP32 WiFi Updater")
-			.navigationBarTitleDisplayMode(.inline)
-			.toolbar {
-				ToolbarItem(placement: .cancellationAction) {
-					Button("Done") {
-						if let onUpdateComplete = self.onUpdateComplete, ota.otaState == .completed {
-							onUpdateComplete()
-						} else {
-							dismiss()
-						}
-					}
-					.disabled(![.idle, .completed, .error].contains(ota.otaState))
-				}
-			}
-		}
+			},
+			gameTitle: "ESP32 Wi-Fi OTA"
+		)
 		.task {
 			// Attempt to grab host from current TCP connection if available
 			if let connection = accessoryManager.activeConnection?.connection as? TCPConnection {
 				self.host = await connection.host.stringValue
 			}
 		}
-		.interactiveDismissDisabled(true)
-	}
-	
-	// MARK: - Component Views
-	
-	@ViewBuilder
-	func retryButton() -> some View {
-		Button {
-			inRetryWorkflow = true
-			
-			// Disable animations for the immediate state reset
-			var transaction = Transaction(animation: .none)
-			transaction.disablesAnimations = true
-			
-			withTransaction(transaction) {
-				ota.retry()
-			}
-		} label: {
-			Label("Retry", systemImage: "arrow.clockwise")
-				.frame(maxWidth: .infinity)
-				.foregroundStyle(.white)
-		}
-		.buttonStyle(.borderedProminent)
-		.tint(.red)
-		.controlSize(.large)
-	}
-	
-	@ViewBuilder
-	func beginWifiProcessButton() -> some View {
-		Button {
-			startWifiProcess()
-		} label: {
-			if self.inRetryWorkflow {
-				Label("Retry Update", systemImage: "arrow.clockwise")
-					.frame(maxWidth: .infinity)
-			} else {
-				Label("Reboot & Start Update", systemImage: "square.and.arrow.down")
-					.frame(maxWidth: .infinity)
-			}
-		}
-		.buttonStyle(.bordered)
-		.controlSize(.large)
-		.disabled(accessoryManager.activeDeviceNum == nil)
 	}
 	
 	// MARK: - Logic
@@ -191,8 +95,7 @@ struct ESP32WifiOTASheet: View {
 						// Give the packet a moment to send before disconnecting
 						try await Task.sleep(for: .seconds(0.5))
 						try await accessoryManager.disconnect()
-						
-						await MainActor.run { alreadyRebooted = true }
+						alreadyRebooted = true
 					}
 					
 					// Begin the HTTP update
@@ -209,4 +112,12 @@ struct ESP32WifiOTASheet: View {
 			}
 		}
 	}
+}
+
+#Preview {
+	ESP32WifiOTASheet(
+		binFileURL: URL(fileURLWithPath: "/tmp/firmware-esp32-heltec-2.5.18.bin"),
+		host: "192.168.1.100"
+	)
+	.environmentObject(AccessoryManager.shared)
 }

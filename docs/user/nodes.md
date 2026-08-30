@@ -49,6 +49,8 @@ Each node is configured with a role that determines how it behaves on the mesh. 
 
 The full node row shows the circle avatar, battery level, encryption status, last-heard time, device role, signal strength, and log indicators all at once.
 
+The signal meter shown here (and on a node's detail screen) rates link quality from SNR relative to your radio preset — using your radio's recently reported noise floor when available — and the strength bar and the SNR text color always reflect the same rating. See [Signal Meter](signal-meter.md) for how it works.
+
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="../assets/screenshots/standard_directConnected_dark.png" />
   <img src="../assets/screenshots/standard_directConnected.png" alt="Directly connected node, favorite, with signal meter" />
@@ -97,6 +99,7 @@ Long-press any node in the list to access quick actions:
 
 - **Add to favorites / Remove from favorites** — star important nodes so they appear at the top of the list
 - **Display name** — give a node a local nickname (see Display Names below)
+- **Status Message** — set the status your radio broadcasts to the mesh (connected node only, firmware 2.8+)
 - **Mute notifications / Unmute** — silence alerts from this node
 - **Message** — open a direct message conversation with this node
 - **Trace Route** — discover the path messages take to reach this node
@@ -128,6 +131,10 @@ Filters are **remembered between launches** — the app reopens with the same fi
 
 The map has one additional filter of its own — **Precise Locations Only**, which hides nodes reporting an approximate (reduced-precision) location. See [Map & Waypoints](map.md) for details.
 
+## Offline Map Detail
+
+Downloaded offline maps include the local road network. Pedestrian streets render as minor roads, so walkable streets remain visible offline. On nodes reporting the Burning Man firmware edition, the downloadable Burning Man 2026 map pack uses full zoom-level 15 detail for the Black Rock City street grid and remains available until you remove it.
+
 ## Additional Icons
 
 Tap a node and scroll to the Logs section for detailed metrics:
@@ -142,9 +149,16 @@ Tap a node and scroll to the Logs section for detailed metrics:
 | ![Detection Sensor](../assets/screenshots/logDetectionSensor.png) | Motion or door open/close alerts from the node. |
 | ![Trace Routes](../assets/screenshots/logTraceRoutes.png) | Recorded trace route paths showing the hops a message took through the mesh. |
 
+When a node has a known position, the Logs section also offers **Estimate Coverage** (`cellularbars`). It switches to the Map tab and opens the Site Planner coverage-estimate form prefilled from that node. See [Coverage Estimate (Site Planner)](map.md) on the Map page for the full flow.
+
 ## Local Stats and Noise Floor
 
 Local Stats show radio diagnostics reported by a node, including packets received, packets transmitted, duplicate packets, relayed packets, bad receives, canceled packets, online node count, total node count, and noise floor.
+
+When requesting Local Stats from another node, choose how to protect the request:
+
+- **Shared channel** encrypts the request with the selected mesh channel and is suitable for ordinary requests between channel members.
+- **Remote admin** uses PKI encryption and is unavailable until the destination has advertised a public key.
 
 Noise floor is displayed in dBm when the node reports it. Treat it as a directional diagnostic instead of an absolute site score: readings can vary quickly, and external filters can lower or skew the displayed value because of insertion loss or in-band interference.
 
@@ -153,6 +167,30 @@ Noise floor is displayed in dBm when the node reports it. Treat it as a directio
 Tap any node to see the full detail view with hardware info, signal metrics, environment sensors, and log navigation:
 
 ![Node Detail](../assets/screenshots/nodeDetail.png)
+
+For messageable nodes, use **Actions > Share Contact QR** to show a Meshtastic contact link and QR code that another device can scan.
+
+### Share Connected Node
+
+When a radio is connected, a **Share Connected Node** button appears in the node list toolbar. It opens the same share sheet as **Share Contact QR**, pre-filled with your own node — a quick way to hand someone your contact without finding yourself in the list.
+
+### Write a Contact to an NFC Tag
+
+On iPhones with NFC hardware (iOS 18 or later), the contact share sheet also offers **Write to NFC Tag**. Hold a writable NFC tag near the top of your iPhone and the contact link is saved to it, replacing whatever the tag held before. Anyone can then tap that tag with their phone to open the contact in Meshtastic — the tag carries exactly the same link the QR code encodes.
+
+### Importing a Shared Contact
+
+Opening a Meshtastic contact link — by scanning a QR code, tapping a shared link, or tapping an NFC tag — presents a confirmation sheet before anything is added. The sheet shows the node's colored initials, its long name, and an explanation that adding the contact saves their name and public key to your connected node. Choose **Add Contact** to import, or **Cancel** to dismiss.
+
+If the import fails — most often because the radio disconnected — the sheet stays open and shows the reason so you can reconnect and tap **Add Contact** again. It closes only once the contact has actually been sent to your node. A link that is damaged or truncated is reported as an invalid format instead of being imported.
+
+Importing a contact requires firmware 2.6.9 or later on the connected node.
+
+### Air Quality
+
+Nodes with a particulate-matter sensor — reporting the firmware's Air Quality telemetry — show an **Air Quality** section with the latest PM2.5, PM1.0, and PM10 readings in µg/m³.
+
+An **Air Quality Metrics Log** entry appears under the node's logs, with a seven-day chart and table of the particulate-matter readings (configurable columns), a **Clear** action to delete stored readings, and **CSV export**.
 
 ### Signed Node
 

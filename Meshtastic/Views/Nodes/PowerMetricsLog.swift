@@ -29,6 +29,12 @@ struct PowerMetricsLog: View {
 	@State private var chartData: [TelemetryEntity] = []
 	@State private var totalReadings = 0
 
+	// User-editable per-channel labels (e.g. "Solar", "Battery", "Load"), persisted per node so a
+	// user can tell which line is which without memorizing their wiring. Empty entries fall back to
+	// the generic "Channel N". Per meshtastic/design#53 / Meshtastic-Apple#2046.
+	@State private var channelLabels: [String] = ["", "", ""]
+	@State private var isEditingLabels = false
+
 	var minMax: (min: Double, max: Double) {
 		let allValues = powerMetrics.flatMap { [
 			$0.powerCh1Voltage,
@@ -55,9 +61,9 @@ struct PowerMetricsLog: View {
 
 						// allow switching between different channels
 						Picker("Select Channel", selection: $channelSelection) {
-							Text("Channel 1").tag(0)
-							Text("Channel 2").tag(1)
-							Text("Channel 3").tag(2)
+							Text(displayLabel(0)).tag(0)
+							Text(displayLabel(1)).tag(1)
+							Text(displayLabel(2)).tag(2)
 						}
 
 						Chart {
@@ -71,10 +77,10 @@ struct PowerMetricsLog: View {
 										x: .value("Time", point.time ?? Date()),
 										y: .value("Voltage", voltage)
 									)
-									.foregroundStyle(by: .value("Series", "Voltage"))
+									.foregroundStyle(by: .value("Series", "Voltage".localized))
 									.interpolationMethod(.linear)
-									.accessibilityLabel("Voltage")
-									.accessibilityValue("X: \(point.time ?? Date()), Y: \(voltage)")
+									.accessibilityLabel(String(localized: "Voltage at \((point.time ?? Date()).formatted(date: .abbreviated, time: .shortened))", comment: "VoiceOver label for a voltage point on the power metrics chart. %@ is the timestamp."))
+									.accessibilityValue(String(localized: "\(voltage.formatted()) volts", comment: "VoiceOver value spoken as a voltage reading. %@ is the number."))
 								}
 
 								if let current {
@@ -82,16 +88,17 @@ struct PowerMetricsLog: View {
 										x: .value("Time", point.time ?? Date()),
 										y: .value("Current", current)
 									)
-									.foregroundStyle(by: .value("Series", "Current"))
+									.foregroundStyle(by: .value("Series", "Current".localized))
 									.interpolationMethod(.linear)
-									.accessibilityLabel("Current")
-									.accessibilityValue("X: \(point.time ?? Date()), Y: \(current)")
+									.accessibilityLabel(String(localized: "Current at \((point.time ?? Date()).formatted(date: .abbreviated, time: .shortened))", comment: "VoiceOver label for a current point on the power metrics chart. %@ is the timestamp."))
+									.accessibilityValue(String(localized: "\(current.formatted()) milliamps", comment: "VoiceOver value spoken as a current reading in milliamps. %@ is the number."))
 								}
 							}
 
 							if let chartSelection {
 								RuleMark(x: .value("Second", chartSelection, unit: .second))
 									.foregroundStyle(.tertiary.opacity(0.5))
+									.accessibilityHidden(true)
 							}
 
 						}
@@ -102,8 +109,8 @@ struct PowerMetricsLog: View {
 						.chartXSelection(value: $chartSelection)
 						.chartYScale(domain: minMax.min...minMax.max)
 						.chartForegroundStyleScale([
-							"Voltage": .blue,
-							"Current": .green
+							"Voltage".localized: .blue,
+							"Current".localized: .green
 						])
 						.chartLegend(position: .automatic, alignment: .bottom)
 					}
@@ -116,7 +123,7 @@ struct PowerMetricsLog: View {
 								Spacer()
 								HStack {
 									VStack {
-										Text("Channel 1")
+										Text(displayLabel(0))
 										HStack {
 											Image(systemName: "powerplug.fill")
 												.font(.caption)
@@ -130,11 +137,12 @@ struct PowerMetricsLog: View {
 											m.powerCh1Current.map { Text("\(String(format: "%.2f", $0))mA") } ?? Text(Constants.nilValueIndicator)
 										}
 									}
+									.accessibilityElement(children: .combine)
 								}
 								Spacer()
 								HStack {
 									VStack {
-										Text("Channel 2")
+										Text(displayLabel(1))
 										HStack {
 											Image(systemName: "powerplug.fill")
 												.font(.caption)
@@ -148,11 +156,12 @@ struct PowerMetricsLog: View {
 											m.powerCh2Current.map { Text("\(String(format: "%.2f", $0))mA") } ?? Text(Constants.nilValueIndicator)
 										}
 									}
+									.accessibilityElement(children: .combine)
 								}
 								Spacer()
 								HStack {
 									VStack {
-										Text("Channel 3")
+										Text(displayLabel(2))
 										HStack {
 											Image(systemName: "powerplug.fill")
 												.font(.caption)
@@ -166,6 +175,7 @@ struct PowerMetricsLog: View {
 											m.powerCh3Current.map { Text("\(String(format: "%.2f", $0))mA") } ?? Text(Constants.nilValueIndicator)
 										}
 									}
+									.accessibilityElement(children: .combine)
 								}
 							}
 						}
@@ -270,6 +280,7 @@ struct PowerMetricsLog: View {
 		}
 		.onAppear {
 			refreshMetrics()
+			channelLabels = loadChannelLabels()
 		}
 		.onChange(of: node.lastHeard) {
 			refreshMetrics()
@@ -277,15 +288,57 @@ struct PowerMetricsLog: View {
 		.navigationTitle("Power Metrics Log")
 		.navigationBarTitleDisplayMode(.inline)
 		.toolbar {
+			ToolbarItem(placement: .topBarLeading) {
+				Button {
+					isEditingLabels = true
+				} label: {
+					Label("Label Channels", systemImage: "pencil")
+				}
+			}
 			ToolbarItem(placement: .topBarTrailing) {
 				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
+			}
+		}
+		.sheet(isPresented: $isEditingLabels) {
+			NavigationStack {
+				Form {
+					Section {
+						ForEach(0..<3, id: \.self) { index in
+							TextField("Channel \(index + 1)", text: $channelLabels[index])
+								.autocorrectionDisabled()
+						}
+					} header: {
+						Text("Power Channel Labels")
+					} footer: {
+						Text("Give each channel a name (e.g. Solar, Battery, Load). Leave blank to use the default \"Channel N\".")
+					}
+				}
+				.navigationTitle("Label Power Channels")
+				.navigationBarTitleDisplayMode(.inline)
+				.toolbar {
+					ToolbarItem(placement: .cancellationAction) {
+						Button {
+							channelLabels = loadChannelLabels()
+							isEditingLabels = false
+						} label: {
+							Image(systemName: "xmark")
+						}
+						.accessibilityLabel(String(localized: "Cancel", comment: "VoiceOver: dismiss the label power channels sheet"))
+					}
+					ToolbarItem(placement: .confirmationAction) {
+						Button("Save") {
+							saveChannelLabels()
+							isEditingLabels = false
+						}
+					}
+				}
 			}
 		}
 		.fileExporter(
 			isPresented: $isExporting,
 			document: CsvDocument(emptyCsv: exportString),
 			contentType: .commaSeparatedText,
-			defaultFilename: String("\(node.user?.longName ?? "Node") \("Power Metrics Log".localized) \(Date.now.exportTimestamp)"),
+			defaultFilename: CsvDocument.exportFilename("\(node.user?.longName ?? "Node") \("Power Metrics Log".localized) \(Date.now.exportTimestamp)"),
 			onCompletion: { result in
 				switch result {
 				case .success:
@@ -305,6 +358,30 @@ struct PowerMetricsLog: View {
 		chartData = powerMetrics
 			.filter { ($0.time ?? Date.distantPast) >= oneWeekAgo }
 			.sorted { ($0.time ?? .distantPast) < ($1.time ?? .distantPast) }
+	}
+
+	// MARK: - Channel labels
+
+	/// Persisted on `node.powerChannelLabels` (SwiftData) rather than `UserDefaults` so labels are
+	/// deleted along with the node instead of accumulating indefinitely after it's forgotten.
+	private func loadChannelLabels() -> [String] {
+		let stored = node.powerChannelLabels
+		return (0..<3).map { index in index < stored.count ? stored[index] : "" }
+	}
+
+	private func saveChannelLabels() {
+		node.powerChannelLabels = channelLabels
+		do {
+			try context.save()
+		} catch let error as NSError {
+			Logger.data.error("\(error.localizedDescription, privacy: .public)")
+		}
+	}
+
+	/// The label shown for a power channel: the user's custom label, or the generic "Channel N" fallback.
+	private func displayLabel(_ index: Int) -> String {
+		let custom = index < channelLabels.count ? channelLabels[index].trimmingCharacters(in: .whitespaces) : ""
+		return custom.isEmpty ? String(format: "Channel %d".localized, index + 1) : custom
 	}
 }
 

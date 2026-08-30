@@ -64,7 +64,9 @@ struct NodeMapSwiftUI: View {
 	@State private var mapRegion = MKCoordinateRegion.init()
 
 	var body: some View {
-		if node.modelContext != nil {
+		// isDeleted too: a deleted-but-unsaved node keeps its modelContext until the save
+		// completes, and reading its persisted properties in that window traps.
+		if node.modelContext != nil && !node.isDeleted {
 			Group {
 				if totalPositionCount > 0 {
 					mapWithNavigation
@@ -208,6 +210,7 @@ struct NodeMapSwiftUI: View {
 			}) {
 				Image(systemName: isEditingSettings ? "info.circle.fill" : "info.circle")
 			}
+			.accessibilityLabel(isEditingSettings ? Text("Hide map settings") : Text("Show map settings"))
 			.glassButtonStyle()
 
 			if scene != nil {
@@ -219,6 +222,7 @@ struct NodeMapSwiftUI: View {
 				}) {
 					Image(systemName: isLookingAround ? "binoculars.fill" : "binoculars")
 				}
+				.accessibilityLabel(isLookingAround ? Text("Exit look around") : Text("Look around"))
 				.glassButtonStyle()
 			}
 
@@ -231,6 +235,7 @@ struct NodeMapSwiftUI: View {
 				}) {
 					Image(systemName: isShowingAltitude ? "mountain.2.fill" : "mountain.2")
 				}
+				.accessibilityLabel(isShowingAltitude ? Text("Hide altitude chart") : Text("Show altitude chart"))
 				.glassButtonStyle()
 			}
 		}

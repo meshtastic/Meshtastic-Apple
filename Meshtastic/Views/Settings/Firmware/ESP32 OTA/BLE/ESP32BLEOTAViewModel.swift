@@ -47,8 +47,11 @@ final class ESP32BLEOTAViewModel: ObservableObject {
 	}
 	
 	func startOTA(binURL: URL, desiredPeripheral: UUID?) async {
-		// Prevent screen sleep during update
+		// Prevent screen sleep during update; guaranteed cleanup on any exit
 		UIApplication.shared.isIdleTimerDisabled = true
+		defer {
+			UIApplication.shared.isIdleTimerDisabled = false
+		}
 		
 		do {
 			// --- 1. Connection Phase ---
@@ -97,10 +100,12 @@ final class ESP32BLEOTAViewModel: ObservableObject {
 			var iterator = stream.makeAsyncIterator()
 			
 			// --- 3. Prepare Firmware & Command ---
-			let data = try Data(contentsOf: binURL)
-			let sha256Digest = SHA256.hash(data: data)
-			let fileHash = sha256Digest.map { String(format: "%02hhx", $0) }.joined()
-			let fileSize = data.count
+			let (data, fileHash, fileSize) = try await Task.detached(priority: .userInitiated) {
+				let fileData = try Data(contentsOf: binURL, options: .mappedIfSafe)
+				let digest = SHA256.hash(data: fileData)
+				let hashString = digest.map { String(format: "%02hhx", $0) }.joined()
+				return (fileData, hashString, fileData.count)
+			}.value
 			
 			Logger.services.info("Firmware Size: \(fileSize), Hash: \(fileHash)")
 			
@@ -178,9 +183,8 @@ final class ESP32BLEOTAViewModel: ObservableObject {
 					throw BLEOTAFailure.unexpectedResponse("Encoding Error")
 				}
 				
-				let trimmed = respStr.trimmingCharacters(in: .whitespacesAndNewlines)
-				
-				if trimmed == "ACK" {
+				switch try ESP32OTAProtocol.chunkDecision(response: respStr, nextOffset: nextOffset, fileSize: fileSize) {
+				case .advance:
 					// Normal chunk processed successfully
 					offset = nextOffset
 					
@@ -189,27 +193,28 @@ final class ESP32BLEOTAViewModel: ObservableObject {
 						self.transferProgress = Double(offset) / Double(fileSize)
 					}
 					
-				} else if trimmed == "OK" {
+				case .complete:
 					// "OK" indicates completion (hash verified, partition set).
-					// This should only happen on the very last chunk.
-					if nextOffset >= fileSize {
-						offset = nextOffset
-						self.transferProgress = 1.0
-						self.otaStatus = .completed
-						self.statusMessage = "Success! Rebooting..."
-						Logger.services.info("OTA Success (OK received on last chunk)")
-						break // Exit loop
-					} else {
-						// OK received before we finished sending? Error.
-						throw BLEOTAFailure.unexpectedResponse("Premature OK received at offset \(nextOffset)")
-					}
-					
-				} else {
-					// Likely ERR or garbage
-					throw BLEOTAFailure.unexpectedResponse(trimmed)
+					offset = nextOffset
+					markUploadCompleted(logMessage: "OTA Success (OK received on last chunk)")
 				}
 			}
 			
+			if self.otaStatus != .completed, offset >= fileSize {
+				guard let terminalData = try await withTimeout(seconds: ESP32OTAProtocol.terminalResponseTimeout, operation: {
+					await iterator.next()
+				}) else {
+					throw BLEOTAFailure.disconnected
+				}
+
+				guard let terminalResponse = String(data: terminalData, encoding: .utf8) else {
+					throw BLEOTAFailure.unexpectedResponse("Encoding Error")
+				}
+
+				try ESP32OTAProtocol.validateTerminalResponse(terminalResponse)
+				markUploadCompleted(logMessage: "OTA Success (OK received after final ACK)")
+			}
+
 			// Double check completion state
 			if self.otaStatus != .completed {
 				throw BLEOTAFailure.unexpectedResponse("Stream ended without OK")
@@ -225,6 +230,13 @@ final class ESP32BLEOTAViewModel: ObservableObject {
 	}
 	
 	// MARK: - Helpers
+
+	private func markUploadCompleted(logMessage: String) {
+		self.transferProgress = 1.0
+		self.otaStatus = .completed
+		self.statusMessage = "Success! Rebooting..."
+		Logger.services.info("\(logMessage)")
+	}
 	
 	/// Executes an async operation with a strict timeout.
 	/// - Parameters:
@@ -232,7 +244,7 @@ final class ESP32BLEOTAViewModel: ObservableObject {
 	///   - operation: The async closure to execute.
 	/// - Returns: The result of the operation.
 	/// - Throws: `BLEOTAFailure.timeout` if time expires, or rethrows errors from the operation.
-	private func withTimeout<T>(seconds: TimeInterval, operation: @escaping @Sendable () async throws -> T) async throws -> T {
+	private func withTimeout<T: Sendable>(seconds: TimeInterval, operation: @escaping @Sendable () async throws -> T) async throws -> T {
 		return try await withThrowingTaskGroup(of: T.self) { group in
 			// Task 1: The actual operation
 			group.addTask {

@@ -47,6 +47,9 @@ final class BluetoothConfigEntity {
 
 @Model
 final class CannedMessageConfigEntity {
+	/// Deprecated (no successor, removed from active use — #2021). Retained as a stored
+	/// SwiftData property to preserve the schema and keep existing persisted values readable;
+	/// it is no longer surfaced in the UI, read, or actively written by app code.
 	var enabled: Bool = false
 	var inputbrokerEventCcw: Int32 = 0
 	var inputbrokerEventCw: Int32 = 0
@@ -91,16 +94,17 @@ final class MeshBeaconConfigEntity {
 	var broadcastOfferRegion: Int32 = 0
 	/// ModemPresets raw value advertised in offer_preset, or -1 when not offered (0 = LongFast).
 	var broadcastOfferPreset: Int32 = -1
-	/// Single-target TX channel (broadcast_on_channel); used only when `broadcastTargets` is empty.
+	// The broadcast-on fields and send-as-node were removed from the protobuf
+	// (TX destinations consolidated onto broadcast_targets). The columns below are
+	// retained only for schema compatibility; the editor reads them once to migrate
+	// a pre-consolidation destination into a target row, and nothing writes them.
 	var broadcastOnChannelName: String = ""
 	var broadcastOnChannelPSK: Data = Data()
-	/// RegionCodes raw value for single-target TX (broadcast_on_region); 0 = unset (running config).
 	var broadcastOnRegion: Int32 = 0
-	/// ModemPresets raw value for single-target TX, or -1 when unset (running config).
 	var broadcastOnPreset: Int32 = -1
 	/// How often to broadcast; firmware minimum & default is 3600 s.
 	var broadcastIntervalSecs: Int32 = 3600
-	/// Spoof the `from` of outgoing beacons as this node id; 0 = local node.
+	/// Retained for schema compatibility; removed from the protobuf, never written.
 	var broadcastSendAsNode: Int64 = 0
 
 	@Relationship(deleteRule: .cascade, inverse: \BroadcastTargetEntity.meshBeaconConfig)
@@ -336,6 +340,9 @@ final class SecurityConfigEntity {
 	var bluetoothLoggingEnabled: Bool = false
 	var debugLogApiEnabled: Bool = false
 	var isManaged: Bool = false
+	/// Raw value of `Config.SecurityConfig.PacketSignaturePolicy`. 0 (Compatible) is the
+	/// protobuf default, so an absent field and an unconfigured entity agree.
+	var packetSignaturePolicy: Int32 = 0
 	var privateKey: Data?
 	var publicKey: Data?
 	var serialEnabled: Bool = false

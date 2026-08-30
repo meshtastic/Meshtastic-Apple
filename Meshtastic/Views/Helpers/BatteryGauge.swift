@@ -78,8 +78,8 @@ struct PluggedInIndicator: View {
 			.symbolRenderingMode(.hierarchical)
 			// Override the accessibility to ensure correct VoiceOver announcement
 			.accessibilityElement(children: .ignore)
-			.accessibilityLabel("Battery Level".localized)
-			.accessibilityValue("Plugged in".localized)
+			.accessibilityLabel(String(localized: "Battery Level", comment: "VoiceOver label for battery gauge"))
+			.accessibilityValue(String(localized: "Plugged in", comment: "VoiceOver value when the device is plugged in"))
 	}
 }
 

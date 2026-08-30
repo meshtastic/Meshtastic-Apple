@@ -8,6 +8,7 @@
 import SwiftData
 import OSLog
 import Foundation
+import UIKit
 
 @MainActor
 class PersistenceController {
@@ -29,6 +30,9 @@ class PersistenceController {
 	}()
 
 	private(set) var container: ModelContainer
+	/// Advances synchronously with each container replacement. Long-lived view tasks capture the
+	/// generation they were mounted against and stop before touching a stale `ModelContext`.
+	private(set) var containerGeneration = 0
 
 	/// Remembered so the store can be reopened in a fresh container — see `recreateContainer()`.
 	private let storeName: String
@@ -38,6 +42,48 @@ class PersistenceController {
 		container.mainContext
 	}
 
+	/// True while `container` is a provisional, empty in-memory stand-in because the on-disk
+	/// store was unreadable under data protection (the process launched in the background before
+	/// the user's first unlock — Bluetooth state restoration does this after a phone reboot).
+	/// The real store is untouched on disk and is reopened by `observeFirstUnlockToReopenStore()`.
+	private(set) var isProvisionalPendingFirstUnlock = false
+
+	/// Distinguishes "the store file is locked by data protection" from "the store file is corrupt".
+	/// Before the first unlock, `open(2)` on a file protected with the default
+	/// CompleteUntilFirstUserAuthentication class fails outright; a corrupt-but-unlocked file opens
+	/// fine at the POSIX layer (its damage surfaces inside SQLite instead). Any exists-but-unopenable
+	/// state is treated as locked: the cost of a false positive is one provisional in-memory session,
+	/// while destructive "recovery" of a merely-locked store permanently deletes the user's data (#2243).
+	nonisolated static func storeExistsButIsUnreadable(at url: URL) -> Bool {
+		guard FileManager.default.fileExists(atPath: url.path) else { return false }
+		let fd = open(url.path, O_RDONLY)
+		if fd >= 0 {
+			close(fd)
+			return false
+		}
+		return true
+	}
+
+	/// Reopens the on-disk store once protected data becomes available (first unlock). The app is
+	/// still backgrounded at that moment — the user unlocks the phone before they can foreground
+	/// us — so nothing in the UI holds entities from the provisional container, and the scene
+	/// re-reads `container` on its next body evaluation (the same eventual-consistency the
+	/// data-clear flow's `recreateContainer()` relies on).
+	private func observeFirstUnlockToReopenStore() {
+		NotificationCenter.default.addObserver(
+			forName: UIApplication.protectedDataDidBecomeAvailableNotification,
+			object: nil,
+			queue: .main
+		) { [weak self] _ in
+			MainActor.assumeIsolated {
+				guard let self, self.isProvisionalPendingFirstUnlock else { return }
+				Logger.data.info("💾 Protected data is now available — reopening the on-disk store in place of the provisional container")
+				self.isProvisionalPendingFirstUnlock = false
+				self.recreateContainer()
+			}
+		}
+	}
+
 	/// Reopen the (already-migrated) store in a brand-new `ModelContainer`, replacing `container`.
 	///
 	/// Used after a full data clear so every context — the main context and any actor contexts
@@ -45,6 +91,13 @@ class PersistenceController {
 	/// long-lived context keeps the pre-clear objects registered; on reconnect SQLite reuses the
 	/// freed rowids, so a fetch/relationship access returns a dead instance and SwiftData traps
 	/// with "This model instance was destroyed by calling ModelContext.reset".
+	///
+	/// Invariant: any caller that can run while the UI is in the FOREGROUND must also bump
+	/// `AppState.databaseResetID` after this returns. The swap advances `containerGeneration`,
+	/// which makes guarded view tasks (e.g. the Nodes refresh loop) stop fetching; only the
+	/// `.id(databaseResetID)` remount re-binds them to the new container. A foreground caller
+	/// that forgets the bump gets a silently frozen list, not a crash. Background-only callers
+	/// (the first-unlock store reopen) are exempt because their views mount after the swap.
 	func recreateContainer() {
 		let schema = Schema(versionedSchema: MeshtasticSchema.current)
 		let config = ModelConfiguration(
@@ -63,6 +116,7 @@ class PersistenceController {
 				fresh = try ModelContainer(for: schema, migrationPlan: MeshtasticMigrationPlan.self, configurations: config)
 			}
 			fresh.mainContext.autosaveEnabled = false
+			containerGeneration &+= 1
 			container = fresh
 			Logger.data.info("💾 SwiftData container recreated after data clear")
 		} catch {
@@ -84,9 +138,58 @@ class PersistenceController {
 		}
 		let schema = Schema(versionedSchema: MeshtasticSchema.current)
 		let config = ModelConfiguration(storeName, schema: schema, isStoredInMemoryOnly: false, allowsSave: true)
-		Self.removeStoreFiles(at: config.url)
+		// Park, don't unlink — a leaked previous container may still hold the store open
+		// (see restoreStoreFromBackup); unlinking it live invalidates its fds and the broken
+		// container traps on the next save notification in the process.
+		Self.parkStoreFiles(at: config.url)
 		recreateContainer()
 		Logger.data.warning("💾 Store files destroyed and container recreated (escalated database reset)")
+	}
+
+	/// File-swap restore: replace the on-disk store with a copy of a backup and reopen the
+	/// container on top of it. The switch path must not run SwiftData saves at all —
+	/// observer bridges from previous containers survive any amount of view unmounting
+	/// (registration lives until dealloc and the graph retains them), and a bulk restore
+	/// save's synchronous NotificationCenter callout traps inside the stale bridge
+	/// regardless of thread or of what is mounted (caught live in lldb at the restore's
+	/// `save()`; the no-crash-report flavor of Datadog 324bff02). Replacing the store file
+	/// and reopening posts nothing. POSIX unlink semantics keep stragglers safe, as with
+	/// the destroy path above; `recreateContainer()` runs the migration plan in place on
+	/// the writable copy, which also covers backups written by older schemas.
+	/// Rename the store files out of the way instead of deleting them — unlinking a store a
+	/// leaked container still has open trips SQLite's vnode watch, which invalidates the open
+	/// fds ("database integrity compromised by API violation: vnode unlinked while in use")
+	/// and breaks that container and everything observing through it. (SQLite alarms on a
+	/// rename too, but the destroy path is an already-broken escalation; parking at least
+	/// preserves the bytes.) Parked files are orphans from this or previous sessions;
+	/// `sweepParkedStoreFiles()` removes last session's on launch.
+	private static func parkStoreFiles(at storeURL: URL) {
+		let fm = FileManager.default
+		let tag = ".parked-\(UUID().uuidString.prefix(8))"
+		for suffix in ["", "-wal", "-shm"] {
+			let src = URL(fileURLWithPath: storeURL.path + suffix)
+			guard fm.fileExists(atPath: src.path) else { continue }
+			let dst = URL(fileURLWithPath: storeURL.path + tag + suffix)
+			do {
+				try fm.moveItem(at: src, to: dst)
+			} catch {
+				Logger.data.error("💾 Failed to park store file \(src.lastPathComponent, privacy: .public): \(error.localizedDescription, privacy: .public)")
+				// Fall back to unlink rather than restoring on top of a stale file.
+				try? fm.removeItem(at: src)
+			}
+		}
+	}
+
+	/// Remove parked store files left by previous sessions' node switches. Called once at
+	/// launch, when nothing can still hold them open.
+	private static func sweepParkedStoreFiles(near storeURL: URL) {
+		let fm = FileManager.default
+		let dir = storeURL.deletingLastPathComponent()
+		let prefix = storeURL.lastPathComponent + ".parked-"
+		guard let names = try? fm.contentsOfDirectory(atPath: dir.path) else { return }
+		for name in names where name.hasPrefix(prefix) {
+			try? fm.removeItem(at: dir.appendingPathComponent(name))
+		}
 	}
 
 	private static func removeStoreFiles(at storeURL: URL) {
@@ -125,6 +228,15 @@ class PersistenceController {
 		}
 #endif
 
+		// Clean up store files parked by previous sessions' node switches (renamed aside
+		// instead of unlinked — see parkStoreFiles) and staged backup copies (never removed
+		// while their container object lives — see stagedBackupContainer). Nothing can hold
+		// either open at launch.
+		if !inMemory {
+			Self.sweepParkedStoreFiles(near: config.url)
+			NodeBackupManager.sweepStagedBackupDirectories()
+		}
+
 		// ── Step 0: guard Core Data store from being clobbered ───────────────
 		// Both the App Store (Core Data) build and this (SwiftData) build use
 		// "Meshtastic.sqlite".  If we let SwiftData open the file first it will
@@ -151,8 +263,35 @@ class PersistenceController {
 			container.mainContext.autosaveEnabled = false
 			Logger.data.info("💾 SwiftData store initialized successfully")
 		} catch {
-			// The store could not be opened (e.g. a Core Data file that
-			// prepareForMigration() did not rename, or a corrupt store from a
+			// The store could not be opened. Before treating that as corruption, rule out
+			// data protection: launched in the background before the user's first unlock
+			// (Bluetooth state restoration does this after a phone reboot), the store file
+			// exists but is unreadable, and destroying it here is how a reboot cost users
+			// their message history (#2243). A locked store is not a broken store — leave
+			// it alone, run this session on a provisional in-memory container, and reopen
+			// the real store once protected data becomes available.
+			if !inMemory && Self.storeExistsButIsUnreadable(at: config.url) {
+				Logger.data.critical("💾 SwiftData store exists but is unreadable — data protection lock (pre-first-unlock launch), not corruption. Leaving the store untouched and using a provisional in-memory container: \(error.localizedDescription, privacy: .public)")
+				let memoryConfig = ModelConfiguration(
+					storeName,
+					schema: schema,
+					isStoredInMemoryOnly: true,
+					allowsSave: true
+				)
+				do {
+					container = try ModelContainer(for: schema, configurations: memoryConfig)
+					container.mainContext.autosaveEnabled = false
+				} catch let memoryError {
+					fatalError("💾 SwiftData in-memory fallback failed: \(memoryError.localizedDescription)")
+				}
+				isProvisionalPendingFirstUnlock = true
+				observeFirstUnlockToReopenStore()
+				// Skip the legacy Core Data migration too — its files are equally unreadable
+				// right now, and the next post-unlock open runs the normal path.
+				return
+			}
+			// A readable-but-unopenable store really is corrupt (e.g. a Core Data file
+			// that prepareForMigration() did not rename, or a damaged store from a
 			// previous build).  Log the error, rename the broken file so it is
 			// preserved for diagnosis, and retry with a fresh empty store.
 			// A fatalError here would leave users permanently unable to open
@@ -247,6 +386,11 @@ class PersistenceController {
 			try container.mainContext.save()
 			try container.mainContext.delete(model: DeviceHardwareImageEntity.self)
 			try container.mainContext.save()
+			// Clearing the image/link rows must also reset their refresh throttle so the next pass
+			// restores them rather than skipping as "refreshed recently" (see MeshtasticAPI). Goes
+			// through the throttle rather than writing the timestamp directly so an image/link pass
+			// already in flight is superseded and cannot re-arm the throttle when it finishes.
+			DeviceImageLinkThrottle.invalidate()
 
 			for modelType in MeshtasticSchema.allModels {
 				if !includeRoutes && (modelType == RouteEntity.self || modelType == LocationEntity.self) {
@@ -255,6 +399,8 @@ class PersistenceController {
 				if modelType == DeviceHardwareTagEntity.self || modelType == DeviceHardwareImageEntity.self {
 					continue // already deleted above
 				}
+				// This is the full app-data reset, so global rebuildable caches such as
+				// EventFirmwareEntity are intentionally removed. Per-device clears preserve them.
 				try container.mainContext.delete(model: modelType)
 				try container.mainContext.save()
 			}

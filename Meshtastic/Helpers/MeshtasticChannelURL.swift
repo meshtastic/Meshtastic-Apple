@@ -8,6 +8,51 @@
 import Foundation
 import MeshtasticProtobufs
 
+enum ChannelQRMode: Sendable {
+	case replace
+	case add
+
+	init(addChannels: Bool) {
+		self = addChannels ? .add : .replace
+	}
+
+	var title: String {
+		switch self {
+		case .replace:
+			return String(localized: "Replace Channels")
+		case .add:
+			return String(localized: "Add Channels")
+		}
+	}
+
+	var pickerTitle: String {
+		switch self {
+		case .replace:
+			return String(localized: "Replace")
+		case .add:
+			return String(localized: "Add")
+		}
+	}
+
+	var symbolName: String {
+		switch self {
+		case .replace:
+			return "arrow.triangle.2.circlepath.circle"
+		case .add:
+			return "plus.app"
+		}
+	}
+
+	var consequence: String {
+		switch self {
+		case .replace:
+			return String(localized: "Selected channels will replace the connected radio's channel list. LoRa settings from the QR code will be applied.")
+		case .add:
+			return String(localized: "Selected channels will be appended to the connected radio. Existing channels and LoRa settings are preserved.")
+		}
+	}
+}
+
 // MARK: - MeshtasticChannelURL
 
 struct MeshtasticChannelURL: Sendable {
@@ -74,7 +119,11 @@ struct MeshtasticChannelURL: Sendable {
 	// MARK: - URL Helpers
 
 	static func urlString(for channelSet: ChannelSet, addChannels: Bool = false) throws -> String {
-		let encodedPayload = try payloadString(for: channelSet)
+		var payloadChannelSet = channelSet
+		if addChannels {
+			payloadChannelSet.clearLoraConfig()
+		}
+		let encodedPayload = try payloadString(for: payloadChannelSet)
 		let query = addChannels ? "?add=true" : ""
 		return "\(canonicalPrefix)\(query)#\(encodedPayload)"
 	}
@@ -121,7 +170,8 @@ struct MeshtasticChannelURL: Sendable {
 			return url.host?.lowercased() == channelPathSegment && pathSegments.isEmpty
 		}
 
-		guard url.host?.lowercased() == Self.host else { return false }
+		let supportedHosts = [Self.host, "www.\(Self.host)"]
+		guard let host = url.host?.lowercased(), supportedHosts.contains(host) else { return false }
 		return pathSegments(for: url) == [channelPathSegment]
 	}
 

@@ -1,6 +1,7 @@
 # Exclude automatically generated Swift files
 excluded:
   - MeshtasticProtobufs
+  - build
 
 line_length: 400
 

@@ -18,6 +18,7 @@ struct TextMessageField: View {
 	@State private var typingMessage: String = ""
 	@State private var totalBytes = 0
 	@State private var sendPositionWithMessage = false
+	@State private var mentionQuery: String? = nil
 
 	var body: some View {
 		if #available(iOS 18.0, macOS 15.0, *) {
@@ -33,6 +34,14 @@ struct TextMessageField: View {
 			)
 		} else {
 			VStack(spacing: 0) {
+				if let query = mentionQuery {
+					MentionAutocomplete(query: query) { user in
+						withAnimation(.easeInOut(duration: 0.15)) {
+							typingMessage = MentionParser.insertMentionToken(into: typingMessage, user: user)
+							mentionQuery = nil
+						}
+					}
+				}
 				HStack(alignment: .top) {
 					if replyMessageId != 0 || isFocused {
 						Button {
@@ -44,6 +53,7 @@ struct TextMessageField: View {
 							Image(systemName: "x.circle.fill")
 								.font(.largeTitle)
 							}
+							.accessibilityLabel(String(localized: "Cancel reply", comment: "VoiceOver: cancel replying to a message"))
 							if replyMessageId != 0 {
 								Text("Reply")
 									.padding(.top, 10)
@@ -65,6 +75,7 @@ struct TextMessageField: View {
 									typingMessage = String(typingMessage.dropLast())
 									totalBytes = typingMessage.utf8.count
 								}
+								mentionQuery = MentionParser.activeMentionQuery(in: value)
 							}
 							.keyboardType(.default)
 							.focused($isFocused)
@@ -81,6 +92,7 @@ struct TextMessageField: View {
 									.font(.largeTitle)
 									.foregroundColor(.accentColor)
 							}
+							.accessibilityLabel(String(localized: "Send message", comment: "VoiceOver: send the composed message"))
 						}
 					}
 					.padding(15)
@@ -118,6 +130,7 @@ struct TextMessageField: View {
 			} label: {
 				Image(systemName: "face.smiling")
 			}
+			.accessibilityLabel(String(localized: "Emoji picker", comment: "VoiceOver: open the character/emoji picker"))
 			Spacer()
 			#endif
 			AlertButton { typingMessage += "🔔 Alert Bell Character! \u{7}" }
@@ -181,10 +194,20 @@ private struct FormattingComposeArea: View {
 	@State private var textSelection: TextSelection?
 	@State private var showToolbar = false
 	@State private var showLinkSheet = false
+	@State private var mentionQuery: String? = nil
 
 	var body: some View {
 		VStack(spacing: 0) {
 			MessagePreview(text: typingMessage)
+			if let query = mentionQuery {
+				MentionAutocomplete(query: query) { user in
+					withAnimation(.easeInOut(duration: 0.15)) {
+						textSelection = nil
+						typingMessage = MentionParser.insertMentionToken(into: typingMessage, user: user)
+						mentionQuery = nil
+					}
+				}
+			}
 			HStack(alignment: .top) {
 				if replyMessageId != 0 || isFocused {
 					Button {
@@ -196,6 +219,7 @@ private struct FormattingComposeArea: View {
 						Image(systemName: "x.circle.fill")
 							.font(.largeTitle)
 					}
+					.accessibilityLabel(String(localized: "Cancel reply", comment: "VoiceOver: cancel replying to a message"))
 					if replyMessageId != 0 {
 						Text("Reply")
 							.padding(.top, 10)
@@ -228,6 +252,7 @@ private struct FormattingComposeArea: View {
 							totalBytes = typingMessage.utf8.count
 							textSelection = nil
 						}
+						mentionQuery = MentionParser.activeMentionQuery(in: value)
 					}
 					.keyboardType(.default)
 					.focused($isFocused)
@@ -239,6 +264,7 @@ private struct FormattingComposeArea: View {
 							.font(.largeTitle)
 							.foregroundColor(.accentColor)
 					}
+					.accessibilityLabel(String(localized: "Send message", comment: "VoiceOver: send the composed message"))
 				}
 			}
 			.padding(15)
@@ -287,16 +313,19 @@ private struct FormattingComposeArea: View {
 	// text/selection pair where the selection's UTF-16 range is out of bounds. (#1976)
 	private func send() {
 		textSelection = nil
+		mentionQuery = nil
 		onSend()
 	}
 
 	private func alert() {
 		textSelection = nil
+		mentionQuery = nil
 		onAlert()
 	}
 
 	private func requestPosition() {
 		textSelection = nil
+		mentionQuery = nil
 		onRequestPosition()
 	}
 
@@ -318,6 +347,7 @@ private struct FormattingComposeArea: View {
 					} label: {
 						Image(systemName: "face.smiling")
 					}
+					.accessibilityLabel(String(localized: "Emoji picker", comment: "VoiceOver: open the character/emoji picker"))
 					#endif
 					AlertButton(action: alert, compact: true)
 					RequestPositionButton(action: requestPosition, compact: true)

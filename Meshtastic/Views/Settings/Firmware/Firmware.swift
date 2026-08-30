@@ -19,27 +19,26 @@ import WebKit
 struct Firmware: View {
 	let node: NodeInfoEntity?
 
-	@Query var hardwareResults: [DeviceHardwareEntity]
+	@Query private var hardwareResults: [DeviceHardwareEntity]
 	@State private var cachedHardware: DeviceHardwareEntity?
 	@State private var cachedNode: NodeInfoEntity?
+	@State private var hardwareState = FirmwareHardwareViewState()
 
 	init(node: NodeInfoEntity?) {
 		self.node = node
-
-		if let pioEnv = node?.myInfo?.pioEnv {
-			_hardwareResults = Query(filter: #Predicate<DeviceHardwareEntity> { hw in
-				hw.platformioTarget == pioEnv
-			})
-		} else {
-			_hardwareResults = Query(filter: #Predicate<DeviceHardwareEntity> { _ in false })
-		}
 	}
 
 	var body: some View {
 		Group {
-			if let resolvedNode = cachedNode, let resolvedHardware = cachedHardware {
-				FirmwareContentView(node: resolvedNode, hardware: resolvedHardware)
-					.id(resolvedNode.num)
+			if let resolvedNode = cachedNode,
+			   let resolvedHardware = cachedHardware,
+			   let firmwareTarget = hardwareState.resolution?.firmwareTarget {
+				FirmwareContentView(
+					node: resolvedNode,
+					hardware: resolvedHardware,
+					firmwareTarget: firmwareTarget
+				)
+				.id("\(resolvedNode.num)-\(firmwareTarget)")
 			} else {
 				List {
 					ContentUnavailableView("Firmware Updates",
@@ -54,14 +53,71 @@ struct Firmware: View {
 		.onChange(of: hardwareResults) {
 			resolveHardware()
 		}
+		.onChange(of: node?.num) {
+			resetHardwareCache()
+			resolveHardware()
+		}
+		.onChange(of: node?.myInfo?.pioEnv) { _, newValue in
+			handlePlatformIOTargetChange(to: newValue)
+		}
+		.onChange(of: node?.user?.hwModelId) {
+			resolveHardware()
+		}
 	}
 
 	private func resolveHardware() {
-		// Only update cache when we have valid data — never clear it
-		if let node, node.myInfo?.pioEnv != nil, let hardware = hardwareResults.first {
-			cachedNode = node
-			cachedHardware = hardware
+		guard let node else {
+			resetHardwareCache()
+			return
 		}
+		let records = hardwareResults.map(HardwareCatalogRecord.init)
+		let hwModel = node.user.map { Int64($0.hwModelId) }
+		hardwareState.resolve(
+			nodeNum: node.num,
+			pioEnv: node.myInfo?.pioEnv,
+			hwModel: hwModel,
+			in: records
+		)
+		cacheResolvedHardware(for: node)
+	}
+
+	private func handlePlatformIOTargetChange(to pioEnv: String?) {
+		guard let node else {
+			resetHardwareCache()
+			return
+		}
+		let records = hardwareResults.map(HardwareCatalogRecord.init)
+		let hwModel = node.user.map { Int64($0.hwModelId) }
+		let didReset = hardwareState.handlePlatformIOTargetChange(
+			to: pioEnv,
+			nodeNum: node.num,
+			hwModel: hwModel,
+			in: records
+		)
+		if didReset, hardwareState.resolution == nil {
+			cachedNode = nil
+			cachedHardware = nil
+			return
+		}
+		cacheResolvedHardware(for: node)
+	}
+
+	private func cacheResolvedHardware(for node: NodeInfoEntity) {
+		guard let resolution = hardwareState.resolution,
+		      let hardware = hardwareResults.first(where: {
+			      $0.platformioTarget == resolution.metadataTarget
+		      }) else { return }
+
+		// Only update the cache when all data is valid. Relationship faults can momentarily make
+		// MyInfo or User nil, but should not replace working firmware content with the empty state.
+		cachedNode = node
+		cachedHardware = hardware
+	}
+
+	private func resetHardwareCache() {
+		cachedNode = nil
+		cachedHardware = nil
+		hardwareState.reset()
 	}
 }
 
@@ -78,6 +134,7 @@ private struct FirmwareContentView: View {
 	
 	let node: NodeInfoEntity
 	let hardware: DeviceHardwareEntity
+	let firmwareTarget: String
 	/// The node's LoRa region at the time this view was created; drives
 	/// region-aware artifact selection and the locale-variant guidance rows.
 	let nodeRegion: RegionCodes
@@ -92,6 +149,8 @@ private struct FirmwareContentView: View {
 	@State var locallyChosenFirmwareFile: URL?
 	// For row-level install sheet
 	@State var rowInstallation: RowInstallation?
+	@State var showBootloaderUpgrade = false
+	@State var showFactoryErase = false
 
 	struct RowInstallation: Identifiable {
 		let type: FirmwareFile.FirmwareType
@@ -99,12 +158,17 @@ private struct FirmwareContentView: View {
 		var id: String { "\(type.rawValue)-\(url.absoluteString)" }
 	}
 	
-	init(node: NodeInfoEntity, hardware: DeviceHardwareEntity) {
+	init(node: NodeInfoEntity, hardware: DeviceHardwareEntity, firmwareTarget: String) {
 		self.node = node
 		self.hardware = hardware
+		self.firmwareTarget = firmwareTarget
 		let region = node.loRaConfig.flatMap { RegionCodes(rawValue: Int($0.regionCode)) } ?? .unset
 		self.nodeRegion = region
-		_firmwareList = StateObject(wrappedValue: FirmwareViewModel(forHardware: hardware, preferredRegion: region))
+		_firmwareList = StateObject(wrappedValue: FirmwareViewModel(
+			forHardware: hardware,
+			platformioTarget: firmwareTarget,
+			preferredRegion: region
+		))
 	}
 	
 	var body: some View {
@@ -132,18 +196,22 @@ private struct FirmwareContentView: View {
 					Text("Platform IO").font(.caption).foregroundColor(.secondary)
 					Text("\(node.myInfo?.pioEnv ?? "Unknown")")
 				}
+				.accessibilityElement(children: .combine)
 				VStack(alignment: .leading) {
 					Text("Architecture").font(.caption).foregroundColor(.secondary)
 					Text("\(hardware.architecture ?? "Unknown")")
 				}
+				.accessibilityElement(children: .combine)
 				VStack(alignment: .leading) {
 					Text("Current Firmware Version").font(.caption).foregroundColor(.secondary)
 					Text("\(node.metadata?.firmwareVersion ?? "Unknown")")
 				}
+				.accessibilityElement(children: .combine)
 				VStack(alignment: .leading) {
 					Text("Intended LoRa Region").font(.caption).foregroundColor(.secondary)
 					Text(intendedRegionLabel)
 				}
+				.accessibilityElement(children: .combine)
 				if shouldShowRegionUnsetWarning {
 					Label("Set a LoRa region before installing firmware.", systemImage: "exclamationmark.triangle.fill")
 						.foregroundStyle(.orange)
@@ -170,8 +238,31 @@ private struct FirmwareContentView: View {
 					Text("Downloaded").tag(FirmwareTab.downloaded)
 				}.pickerStyle(.segmented)
 				
-				// Extracted switch logic to keep body clean
 				firmwareRows
+			}
+
+			// SECTION 3: BOOTLOADER — nRF52 boards OTAFIX ships a bootloader for.
+			// UX gate only; the sheet identifies the board from the drive's own
+			// INFO_UF2.TXT before anything is offered for writing.
+			if showsMaintenanceSection {
+				Section {
+					if showsBootloaderUpgrade {
+						Button {
+							showBootloaderUpgrade = true
+						} label: {
+							Label("Upgrade Bootloader", systemImage: "memorychip")
+						}
+					}
+					Button(role: .destructive) {
+						showFactoryErase = true
+					} label: {
+						Label("Factory Erase", systemImage: "externaldrive.badge.xmark")
+					}
+				} header: {
+					Text("Maintenance")
+				} footer: {
+					Text("OTAFIX is Meshtastic's improved nRF52 bootloader with faster, more reliable Bluetooth firmware updates. Factory erase wipes the radio's flash from its bootloader drive — the recovery path when firmware cannot boot.")
+				}
 			}
 		}
 		.navigationTitle("Firmware Updates")
@@ -180,6 +271,12 @@ private struct FirmwareContentView: View {
 			if !isLoading {
 				firmwareList.refresh()
 			}
+		}
+		.sheet(isPresented: $showBootloaderUpgrade) {
+			BootloaderUpgradeView()
+		}
+		.sheet(isPresented: $showFactoryErase) {
+			FactoryEraseView()
 		}
 		.sheet(item: $rowInstallation) { installation in
 			switch installation.type {
@@ -270,14 +367,25 @@ private struct FirmwareContentView: View {
 	/// tag shown for regions that ship localized-font variants. Selectable so
 	/// users hunting for a file on meshtastic.github.io can copy it.
 	var suggestedFileNameHint: String? {
-		guard let platformioTarget = hardware.platformioTarget?.trimmingCharacters(in: .whitespacesAndNewlines),
-			  !platformioTarget.isEmpty else {
-			return nil
-		}
+		let platformioTarget = firmwareTarget.trimmingCharacters(in: .whitespacesAndNewlines)
+		guard !platformioTarget.isEmpty else { return nil }
 		if nodeRegion.prefersLocalizedFontFirmware {
 			return "firmware-\(platformioTarget)-<version>[-\(nodeRegion.topic)]"
 		}
 		return "firmware-\(platformioTarget)-<version>"
+	}
+
+	/// Whether to offer the OTAFIX bootloader upgrade: nRF52 hardware whose
+	/// product OTAFIX lists as supported. Deciding which image to write happens
+	/// in the sheet, from the Board-ID on the device's own drive.
+	var showsMaintenanceSection: Bool {
+		hardware.architecture.flatMap { Architecture(rawValue: $0) } == .nrf52840
+	}
+
+	/// OTAFIX ships bootloaders for a subset of nRF52 products; factory erase works on
+	/// any Adafruit-family bootloader, so only the upgrade button carries this gate.
+	var showsBootloaderUpgrade: Bool {
+		OTAFIXBootloader.supportsTarget(firmwareTarget)
 	}
 
 	var allowedTypes: [UTType] {
@@ -358,6 +466,7 @@ private struct FirmwareContentView: View {
 					Image(systemName: "arrow.clockwise.circle")
 				}
 				.buttonStyle(.bordered)
+				.accessibilityLabel(String(localized: "Refresh firmware list", comment: "VoiceOver label for the refresh firmware list button"))
 			}
 		}.textCase(nil)
 		#else
@@ -374,6 +483,7 @@ private struct FirmwareContentView: View {
 				} label: {
 					Image(systemName: "arrow.clockwise.circle")
 				}
+				.accessibilityLabel(String(localized: "Refresh firmware list", comment: "VoiceOver label for the refresh firmware list button"))
 			}
 		}.textCase(nil)
 		#endif

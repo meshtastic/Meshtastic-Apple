@@ -103,7 +103,7 @@ final class PMTilesExtractor {
 			guard let day = calendar.date(byAdding: .day, value: -offset, to: today) else { continue }
 			let build = formatter.string(from: day)
 			guard let url = URL(string: "https://build.protomaps.com/\(build).pmtiles") else { continue }
-			if await buildExists(url) {
+			if await archiveExists(url) {
 				Logger.services.info("🗺️ [Offline] Using Protomaps build \(build, privacy: .public)")
 				return (url, build)
 			}
@@ -111,7 +111,8 @@ final class PMTilesExtractor {
 		return nil
 	}
 
-	private func buildExists(_ url: URL) async -> Bool {
+	/// Whether a PMTiles archive exists at `url`, probing the 7-byte magic with a range request.
+	func archiveExists(_ url: URL) async -> Bool {
 		do {
 			let data = try await fetchRange(url, start: 0, end: 6)
 			return data.count == 7 && data == Data("PMTiles".utf8)
@@ -274,10 +275,15 @@ final class PMTilesExtractor {
 			}
 			guard let entry = PMTilesArchive.find(tileID, in: entries) else { return nil }
 			if entry.runLength == 0 {
-				dirOffset = header.leafDirOffset + entry.offset
+				// Overflow-safe offset math, matching the #2192 hardening of PMTilesArchive.
+				let (leaf, overflow) = header.leafDirOffset.addingReportingOverflow(entry.offset)
+				guard !overflow else { return nil }
+				dirOffset = leaf
 				dirLength = UInt64(entry.length)
 			} else {
-				return (header.tileDataOffset + entry.offset, entry.length)
+				let (tileOffset, overflow) = header.tileDataOffset.addingReportingOverflow(entry.offset)
+				guard !overflow else { return nil }
+				return (tileOffset, entry.length)
 			}
 		}
 		return nil
@@ -286,10 +292,16 @@ final class PMTilesExtractor {
 	private func directory(at offset: UInt64, length: UInt64, compression: PMTilesCompression, sourceURL: URL, prefetched: Data?) async throws -> [PMTilesArchive.Entry] {
 		if let cached = leafCache[offset] { return cached }
 		let raw: Data
-		if let prefetched, offset + length <= UInt64(prefetched.count) {
-			raw = prefetched.subdata(in: Int(offset)..<Int(offset + length))
+		// Overflow-safe range math (matches #2192): guard the add and the Int conversions so a
+		// crafted header/directory offset can't trap while planning an extraction.
+		let (end, addOverflow) = offset.addingReportingOverflow(length)
+		if let prefetched, !addOverflow, end <= UInt64(prefetched.count),
+		   let start = Int(exactly: offset), let stop = Int(exactly: end) {
+			raw = prefetched.subdata(in: start..<stop)
+		} else if length > 0, !addOverflow {
+			raw = try await fetchRange(sourceURL, start: offset, end: end - 1)
 		} else {
-			raw = try await fetchRange(sourceURL, start: offset, end: offset + length - 1)
+			return []
 		}
 		let decompressed = compression == .gzip ? (PMTilesArchive.gunzip(raw) ?? raw) : raw
 		let entries = PMTilesArchive.deserializeDirectory(decompressed)
@@ -349,11 +361,27 @@ final class PMTilesExtractor {
 		return count
 	}
 
-	/// A network-free size estimate for the UI. Real size is known only after planning,
-	/// but this tracks it closely enough to show while choosing an area. ~28 KB/tile is a
-	/// rough average for gzipped Protomaps MVT tiles across zooms.
+	/// A network-free size estimate for the UI. Real size is known only after planning —
+	/// this only needs to be in the ballpark while the exact plan computes. Per-tile
+	/// averages were measured against a real build for an urban region: high-zoom tiles
+	/// are much smaller than mid-zoom ones (a flat constant overstated High detail by
+	/// ~70%). Rural areas run far below these numbers, which is why the UI marks this
+	/// value as approximate until the exact plan replaces it.
 	static func roughByteEstimate(in bounds: GeoBounds, minZoom: Int, maxZoom: Int) -> Int64 {
-		Int64(tileCount(in: bounds, minZoom: minZoom, maxZoom: maxZoom)) * 28_672
+		guard minZoom <= maxZoom else { return 0 }
+		func perTileBytes(_ z: Int) -> Int64 {
+			switch z {
+			case ..<13: return 40_960
+			case 13: return 34_816
+			case 14: return 20_480
+			default: return 13_824
+			}
+		}
+		var total: Int64 = 0
+		for z in minZoom...maxZoom {
+			total += Int64(tileCount(in: bounds, minZoom: z, maxZoom: z)) * perTileBytes(z)
+		}
+		return total
 	}
 
 	/// Web-Mercator slippy tile coordinate for a lon/lat at zoom `z` (clamped to valid range).

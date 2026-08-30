@@ -19,6 +19,8 @@
 </ul>
 <h2>Radio Configuration</h2>
 <p>Radio configuration requires a connected node. Select your node from the <strong>Configure</strong> section if you have multiple nodes.</p>
+<h3>Node selection</h3>
+<p>The Configure picker lists live nodes from the current node database, with favorites first. If the node database is reset or the selected node disappears, Settings clears that selection instead of opening configuration for a stale node. Reconnect to a radio or choose a currently listed node to continue configuring it.</p>
 <h3>LoRa</h3>
 <p>LoRa settings control how your radio communicates on the mesh:</p>
 <table>
@@ -38,6 +40,10 @@
 <td>Speed/range trade-off. Most users should use Long Fast or Long Slow. On firmware 2.8+, the preset list is filtered to those that are legal for the selected region (see below).</td>
 </tr>
 <tr>
+<td>Bandwidth</td>
+<td>Available under <strong>Advanced</strong> when <strong>Use Preset</strong> is off. The protobuf default value of 0 is shown as its effective firmware value: 250 kHz in sub-GHz regions and 812.5 kHz in the 2.4 GHz region. Choices are filtered for the selected region and connected radio. If a stored nonzero bandwidth is unsupported, the app shows a warning and prevents saving until you select a supported value.</td>
+</tr>
+<tr>
 <td>Hop Limit</td>
 <td>The number of times a message is repeated by other nodes. Higher values increase range but also mesh traffic.</td>
 </tr>
@@ -45,13 +51,45 @@
 <td>Frequency Slot</td>
 <td>Fine-tune the exact frequency within your region.</td>
 </tr>
+<tr>
+<td>Frequency Override</td>
+<td>Use a specific frequency in MHz instead of the calculated slot. The LoRa and Licensed Operator settings show the stored frequency without rounding it.</td>
+</tr>
 </tbody>
 </table>
-<p>On firmware <strong>2.8.0 or later</strong>, the radio tells the app which modem presets are legal in each region. When you pick a region, the Presets list narrows to the compatible set, and if your current preset isn't allowed there the app switches you to that region's default. Setting the region to <strong>US</strong> on a newly flashed node defaults the preset to <strong>Long Turbo</strong>. Amateur (ham) bands such as the Tiny and Narrow presets are marked <strong>licensed</strong> — the app shows a warning, and you should enable <strong>Licensed Operator</strong> (and set your call sign) in <strong>User</strong> config before transmitting. On older firmware the full preset list is shown unchanged.</p>
+<p>On firmware <strong>2.8.0 or later</strong>, the radio tells the app which modem presets are legal in each region. When you pick a region, the Presets list narrows to the compatible set, and if your current preset isn't allowed there the app switches you to that region's default. Setting the region to <strong>US</strong> on a newly flashed node moves the stock <strong>Long Fast</strong> preset to <strong>Long Turbo</strong> — Long Fast's bandwidth is not US-compliant — while a deliberately chosen preset that is legal in the US is kept. Amateur (ham) bands such as the Tiny and Narrow presets are marked <strong>licensed</strong> — the app shows a warning, and you should enable <strong>Licensed Operator</strong> (and set your call sign) in <strong>User</strong> config before transmitting. On older firmware the full preset list is shown unchanged.</p>
 <h3>Channels</h3>
 <p>Manage up to 8 channels (0–7). Channel 0 is the primary broadcast channel. Additional channels create isolated messaging groups with their own encryption keys.</p>
+<p>When sharing channels, the share screen shows a QR code and link, and — on iPhones with NFC hardware (iOS 18 or later) — a <strong>Write to NFC Tag</strong> button. Hold a writable NFC tag near the top of your iPhone to save the channel link to it, replacing any content the tag already held; tapping that tag on another phone opens the same add-or-replace channels flow the QR code does.</p>
 <h3>Security</h3>
 <p>Configure PKI (Public Key Infrastructure) encryption for direct messages. Requires firmware 2.5+.</p>
+<h4>Packet Authenticity</h4>
+<p>Firmware that reports XEdDSA support can authenticate the sender of a mesh packet. <strong>Protection Level</strong> controls what the radio does with traffic it cannot authenticate:</p>
+<table>
+<thead>
+<tr>
+<th>Level</th>
+<th>Behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Compatible — Accept unsigned</td>
+<td>Authenticates packets when possible, but accepts unsigned traffic for maximum compatibility. This is the default.</td>
+</tr>
+<tr>
+<td>Balanced — Prefer authenticated</td>
+<td>Recommended. Rejects unsigned broadcasts from nodes already known to sign, while still accepting traffic from nodes that never sign.</td>
+</tr>
+<tr>
+<td>Strict — Require authentication</td>
+<td>Accepts a remote packet only when it carries a verified XEdDSA signature or was successfully authenticated through PKI decryption.</td>
+</tr>
+</tbody>
+</table>
+<p>Strict applies to every remote mesh packet, including positions, messages, telemetry, node info, and routing traffic. Traffic from older firmware, from licensed (ham) nodes without PKI keys, and packets too large to carry a signature will disappear. PKI-authenticated direct messages remain available. The app asks you to confirm before enabling Strict.</p>
+<p>The selector is disabled when the connected radio does not report XEdDSA support, or has not reported its capability yet — update that radio's firmware to configure the policy. Note that a verified signature proves which key sent a packet; it does not prove that a reported position or sensor reading is true or current.</p>
+<p>This setting matches the Meshtastic app for Android, and the policy is enforced by the radio rather than the app.</p>
 <p>On hardened lockdown-firmware radios, this page also shows a <strong>Lockdown</strong> section with the session status, a <strong>Lock Now</strong> button, and a <strong>Forget Stored Passphrase</strong> button. See <a href="lockdown.html">Lockdown Mode</a>.</p>
 <h3>User</h3>
 <p>Set your Long Name (display name) and Short Name (4-character/emoji identifier shown in the node circle).</p>
@@ -59,6 +97,7 @@
 <p>BLE radio settings including PIN mode and power saving. Changes apply on next radio restart.</p>
 <h3>Device</h3>
 <p>Device role, serial output, debug log streaming, and node info broadcast interval.</p>
+<p>The <strong>Repeater</strong> role is deprecated and can no longer be selected for new configurations. If a node is still set to Repeater it is shown as &quot;Repeater (Deprecated)&quot; with a reminder to switch it to a Router-based role (Router or Router Late).</p>
 <h3>Display</h3>
 <p>Screen timeout, auto-carousel of screens, flip screen for alternate mounting orientations, and OLED contrast.</p>
 <h4>Compass Orientation</h4>
@@ -109,6 +148,7 @@
 <p>Wi-Fi SSID/password for TCP connection, NTP server, and Ethernet (supported hardware only).</p>
 <h3>Position</h3>
 <p>GPS update interval, position precision, and smart position broadcasting. Enable <strong>Broadcast Position</strong> to share your location with the mesh.</p>
+<p>The <strong>GPS Mode</strong> selector (Enabled / Disabled / Not Present) is the single source of truth for the GPS state that the app writes to the radio. The older on/off <code>gpsEnabled</code> field it replaced is deprecated: the app no longer writes it, but still reads it from older firmware so existing devices keep working. No action is needed when upgrading — your GPS setting is preserved.</p>
 <h3>Power</h3>
 <p>Battery saving profiles, sleep modes, and minimum wake time. Critical for solar-powered router nodes.</p>
 <h2>Module Configuration</h2>
@@ -140,6 +180,10 @@
 <tr>
 <td>External Notification</td>
 <td>Buzzer or LED alerts for incoming messages.</td>
+</tr>
+<tr>
+<td>Mesh Beacon</td>
+<td>Advertise this node's mesh so other users' discovery scans can find and join it, and listen for beacons from nearby meshes. Requires firmware 2.8.0+.</td>
 </tr>
 <tr>
 <td>MQTT</td>
@@ -251,8 +295,90 @@
 </tr>
 </tbody>
 </table>
+<h2>Tools</h2>
+<p>The <strong>Tools</strong> entry appears only on iPhones with NFC hardware running iOS 18 or later; it is hidden on iPads, Mac Catalyst, and any device without an NFC radio.</p>
+<p>It contains an <strong>NFC Tags</strong> section:</p>
+<table>
+<thead>
+<tr>
+<th>Action</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Write Contact to NFC Tag</strong></td>
+<td>Saves your connected node's contact link to a writable NFC tag, replacing any content it already held. Hold the tag near the top of your iPhone.</td>
+</tr>
+<tr>
+<td><strong>Scan NFC Tag</strong></td>
+<td>Reads a Meshtastic tag and imports what it holds — a contact opens the add-contact confirmation sheet, a channel link opens the add-or-replace channels flow, exactly as scanning the equivalent QR code would.</td>
+</tr>
+</tbody>
+</table>
+<p>If a scanned tag holds something other than a Meshtastic contact or channel link, or its channel settings can't be read, the scan reports the problem rather than appearing to succeed.</p>
+<p>Tags written by the Meshtastic app for Android are interchangeable with these — both platforms write the same contact and channel links.</p>
 <h2>Firmware Updates</h2>
 <p>Check for and apply OTA firmware updates to your connected radio directly from the app. See <a href="firmware.html">Firmware Updates</a> for full details.</p>
+<h2>Tools</h2>
+<p>The <strong>Tools</strong> screen (Settings → Tools) provides utilities for backing up, restoring, and sharing your connected radio's configuration.</p>
+<h3>Create Node Contact NFC Tag</h3>
+<p>Write your node's contact card to an NFC tag so others can add you by tapping it. Requires a connected node and NFC-capable hardware.</p>
+<h3>Export Device Configuration</h3>
+<p>Save the connected node's full configuration — radio, module, and channel settings — to a <code>.cfg</code> file you can back up or import onto another device. The format matches the Android app and the <code>meshtastic</code> CLI.</p>
+<div class="warning-callout"><strong>Warning — Backups contain secrets</strong>
+The exported file includes your node's private key, admin keys, channel keys (PSKs), and Wi-Fi/MQTT passwords. Anyone with the file can join and administer your mesh, so store and share it only with people you trust.</div>
+<h3>Import Device Configuration</h3>
+<p>Apply a saved <code>.cfg</code> configuration file to the connected node. After you pick a file, a review sheet shows what it contains, grouped into sections you can turn on or off before applying:</p>
+<table>
+<thead>
+<tr>
+<th>Section</th>
+<th>What it restores</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Owner Name</td>
+<td>Long and short name</td>
+</tr>
+<tr>
+<td>Radio &amp; Device</td>
+<td>Device, display, position, power, and Bluetooth settings</td>
+</tr>
+<tr>
+<td>Network</td>
+<td>Wi-Fi / Ethernet settings</td>
+</tr>
+<tr>
+<td>Modules</td>
+<td>All module settings (MQTT, Telemetry, Canned Messages, and so on)</td>
+</tr>
+<tr>
+<td>Ringtone &amp; Canned Messages</td>
+<td>Notification melody and canned-message text</td>
+</tr>
+<tr>
+<td>Fixed Position</td>
+<td>A saved fixed GPS position</td>
+</tr>
+<tr>
+<td>Security &amp; Identity</td>
+<td>Private key, admin keys, and admin access</td>
+</tr>
+<tr>
+<td>Channels &amp; LoRa</td>
+<td>Channels and LoRa/region settings</td>
+</tr>
+</tbody>
+</table>
+<p>All present sections are selected by default <strong>except Security &amp; Identity</strong>, which is off by default: importing it replaces this node's cryptographic identity (its private/public key) and admin keys, which can break existing direct messages and lock you out of local administration. Leave it off when cloning a configuration onto a second radio that should keep its own identity.</p>
+<div class="warning-callout"><strong>Warning — Import replaces settings</strong>
+Importing writes the selected settings — including any secrets in the file — onto the connected node. Only import files from a source you trust.</div>
+<p>Every non-empty import commits the selected settings and reboots the radio, so it briefly disconnects; the app reports this so you can reconnect. Settings are applied in order and the import stops at the first failure, telling you exactly what was and wasn't sent. Settings unsupported by the connected radio appear under <strong>Not Supported by This Radio</strong> instead of being sent.</p>
+<p>MQTT and Serial settings are applied after the main transaction because either can drop the Bluetooth link before the transaction is committed. If that disconnect interrupts them, the result shows <strong>Needs a Second Pass</strong> so you can reconnect and apply those sections separately. If the radio disconnects before acknowledging the commit, the result warns that saving was not confirmed.</p>
+<p>You can cancel while a setting is being sent over Bluetooth or TCP; cancellation typically completes quickly. The app stops sending additional sections, then commits the sections already applied so the radio does not remain in an unfinished edit transaction. If the transport callback does not settle, the sheet allows dismissal after 15 seconds. A write already handed to the operating system may still reach the radio, so review the result before retrying.</p>
+<p>Because the radio can silently discard settings it accepts, the result screen also offers <strong>Verify Against the Radio</strong>: once the radio reconnects and sends its configuration back, it compares each imported section against what the radio actually holds. Re-running an import is safe.</p>
 <h2>Automatic Documentation Translation</h2>
 <p>On devices running iOS 26 or later, the in-app documentation is automatically translated to your device language when it differs from English.</p>
 <h3>How It Works</h3>

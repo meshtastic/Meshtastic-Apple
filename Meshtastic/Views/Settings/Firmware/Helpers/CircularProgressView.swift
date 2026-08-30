@@ -19,10 +19,10 @@ struct CircularProgressView: View {
 	var errorColor: Color = .red
 	var percentageFontSize: CGFloat = 48.0
 	
-	// Changed to Optional, removed showSubtitle
 	var subtitleText: String?
 	
 	@State private var rotation: Double = 0
+	@Environment(\.accessibilityReduceMotion) private var reduceMotion
 	
 	private var isComplete: Bool {
 		// Complete only if 100%, not indeterminate, and NOT an error
@@ -71,11 +71,22 @@ struct CircularProgressView: View {
 		// Monitor both Indeterminate and Error to stop/start animations
 		.onChange(of: isIndeterminate) { _, _ in updateAnimationStatus() }
 		.onChange(of: isError) { _, _ in updateAnimationStatus() }
+		.onChange(of: reduceMotion) { _, _ in updateAnimationStatus() }
+		.accessibilityElement(children: .ignore)
+		.accessibilityLabel(String(localized: "Update progress", comment: "VoiceOver label for the firmware update progress ring"))
+		.accessibilityValue(
+			isError
+				? (subtitleText ?? String(localized: "Error", comment: "VoiceOver value when firmware update failed"))
+				: (isIndeterminate
+					? String(localized: "In progress", comment: "VoiceOver value for indeterminate firmware update state")
+					: String(localized: "\(Int(progress * 100)) percent", comment: "VoiceOver value spoken as the firmware update completion percentage"))
+		)
 	}
 	
 	private func updateAnimationStatus() {
-		// Only spin if Indeterminate AND we are not in an Error state
-		if isIndeterminate && !isError {
+		// Only spin if Indeterminate AND we are not in an Error state. Respect Reduce Motion by
+		// leaving the indeterminate segment static instead of spinning it forever.
+		if isIndeterminate && !isError && !reduceMotion {
 			rotation = 0
 			withAnimation(.linear(duration: 2.0).repeatForever(autoreverses: false)) {
 				rotation = 360
@@ -150,6 +161,10 @@ struct CircularProgressView: View {
 				Text(isIndeterminate && text == "Loading..." ? "Please wait" : text)
 					.font(.callout)
 					.foregroundColor(.secondary)
+					.multilineTextAlignment(.center)
+					.lineLimit(2)
+					.minimumScaleFactor(0.8)
+					.padding(.horizontal, 12)
 			}
 		}
 		.transition(.opacity)

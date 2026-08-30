@@ -20,6 +20,169 @@ private func makeTestContainer() throws -> ModelContainer {
 	return sharedModelContainer
 }
 
+// MARK: - Hardware catalog presentation
+
+@Suite("Hardware catalog presentation")
+struct HardwareCatalogPresentationTests {
+
+	private func record(
+		model: Int64,
+		slug: String,
+		target: String,
+		displayName: String,
+		activelySupported: Bool,
+		supportLevel: SupportLevel,
+		architecture: String? = nil
+	) -> HardwareCatalogRecord {
+		HardwareCatalogRecord(
+			hwModel: model,
+			hwModelSlug: slug,
+			platformioTarget: target,
+			displayName: displayName,
+			activelySupported: activelySupported,
+			supportLevel: supportLevel,
+			architecture: architecture
+		)
+	}
+
+	@Test func usesCanonicalTargetForTrackerAliasesRegardlessOfCatalogOrder() {
+		let heltec = record(
+			model: 48,
+			slug: "HELTEC_WIRELESS_TRACKER",
+			target: "heltec-wireless-tracker",
+			displayName: "Heltec Wireless Tracker V1.1",
+			activelySupported: true,
+			supportLevel: .flagship
+		)
+		let smallTracksenger = record(
+			model: 48,
+			slug: "HELTEC_WIRELESS_TRACKER",
+			target: "tracksenger",
+			displayName: "TrackSenger (small TFT)",
+			activelySupported: true,
+			supportLevel: .legacy
+		)
+		let largeTracksenger = record(
+			model: 48,
+			slug: "HELTEC_WIRELESS_TRACKER",
+			target: "tracksenger-lcd",
+			displayName: "TrackSenger (big TFT)",
+			activelySupported: false,
+			supportLevel: .legacy
+		)
+		let oledTracksenger = record(
+			model: 48,
+			slug: "HELTEC_WIRELESS_TRACKER",
+			target: "tracksenger-oled",
+			displayName: "TrackSenger (OLED)",
+			activelySupported: true,
+			supportLevel: .legacy
+		)
+
+		let presentation = HardwareCatalogResolver.presentation(
+			for: 48,
+			in: [oledTracksenger, largeTracksenger, smallTracksenger, heltec]
+		)
+
+		#expect(presentation?.displayName == "Heltec Wireless Tracker V1.1")
+		#expect(presentation?.platformioTarget == "heltec-wireless-tracker")
+		#expect(presentation?.supportLevel == .flagship)
+	}
+
+	@Test func preservesMissingCatalogMetadata() {
+		let entity = DeviceHardwareEntity()
+		entity.hwModel = 1
+		entity.hwModelSlug = nil
+		entity.platformioTarget = nil
+		entity.displayName = nil
+
+		let record = HardwareCatalogRecord(entity)
+
+		#expect(record.hwModelSlug == nil)
+		#expect(record.platformioTarget == nil)
+		#expect(record.displayName == nil)
+	}
+
+	@Test func usesRawStringOrderingForEqualPriorityRecords() {
+		let naturalFirst = record(
+			model: 1_000,
+			slug: "AMBIGUOUS_DEVICE",
+			target: "natural-first",
+			displayName: "Device 2",
+			activelySupported: true,
+			supportLevel: .flagship
+		)
+		let rawFirst = record(
+			model: 1_000,
+			slug: "AMBIGUOUS_DEVICE",
+			target: "raw-first",
+			displayName: "Device 10",
+			activelySupported: true,
+			supportLevel: .flagship
+		)
+
+		let presentation = HardwareCatalogResolver.presentation(for: 1_000, in: [naturalFirst, rawFirst])
+
+		#expect(presentation?.displayName == "Device 10")
+		#expect(presentation?.platformioTarget == "raw-first")
+	}
+
+	@Test func choosesPreferredVariantWhenTheProtocolCannotDistinguishIt() {
+		let smallDisplay = record(
+			model: 16,
+			slug: "TLORA_T3_S3",
+			target: "tlora-t3s3-v1",
+			displayName: "LILYGO T-LoRa T3-S3",
+			activelySupported: true,
+			supportLevel: .flagship,
+			architecture: "esp32-s3"
+		)
+		let eInk = record(
+			model: 16,
+			slug: "TLORA_T3_S3",
+			target: "tlora-t3s3-epaper",
+			displayName: "LILYGO T-LoRa T3-S3 E-Ink",
+			activelySupported: true,
+			supportLevel: .flagship,
+			architecture: "esp32-s3"
+		)
+
+		let presentation = HardwareCatalogResolver.presentation(for: 16, in: [eInk, smallDisplay])
+
+		#expect(presentation?.displayName == "LILYGO T-LoRa T3-S3")
+		#expect(presentation?.platformioTarget == "tlora-t3s3-v1")
+		#expect(presentation?.supportLevel == .flagship)
+		#expect(presentation?.activelySupported == true)
+		#expect(presentation?.architecture == "esp32-s3")
+	}
+
+	@Test func choosesBestSupportedVariantForFutureAmbiguousModels() {
+		let active = record(
+			model: 999,
+			slug: "FUTURE_DEVICE",
+			target: "future-device-a",
+			displayName: "Future Device A",
+			activelySupported: true,
+			supportLevel: .flagship
+		)
+		let legacy = record(
+			model: 999,
+			slug: "FUTURE_DEVICE",
+			target: "future-device-b",
+			displayName: "Future Device B",
+			activelySupported: false,
+			supportLevel: .legacy
+		)
+
+		let presentation = HardwareCatalogResolver.presentation(for: 999, in: [legacy, active])
+
+		#expect(presentation?.displayName == "Future Device A")
+		#expect(presentation?.platformioTarget == "future-device-a")
+		#expect(presentation?.supportLevel == .flagship)
+		#expect(presentation?.activelySupported == true)
+	}
+}
+
 // MARK: - createUser Tests
 
 @Suite("createUser")
@@ -80,8 +243,9 @@ struct CreateNodeInfoTests {
 		let container = try makeTestContainer()
 		let context = container.mainContext
 		let node = createNodeInfo(num: 0xFF, context: context)
-		let hex = Int64(0xFF).toHex()
-		#expect(node.user?.userId == "!\(hex)")
+		// toHex() already carries the "!" — this previously expected "!!000000ff",
+		// codifying the extra prefix findOrCreateUser was writing.
+		#expect(node.user?.userId == Int64(0xFF).toHex())
 	}
 
 	@Test @MainActor func createNodeInfo_userShortNameIsLast4() throws {
@@ -91,6 +255,115 @@ struct CreateNodeInfoTests {
 		let hex = Int64(0xDEADBEEF).toHex()
 		let last4 = String(hex.suffix(4))
 		#expect(node.user?.shortName == last4)
+	}
+}
+
+// MARK: - Share Contact QR Tests
+
+@Suite("ShareContactQR")
+struct ShareContactQRTests {
+
+	private func makeNodeInfo(num: UInt32 = 0x1234_ABCD, unmessagable: Bool = false) -> NodeInfo {
+		var user = User()
+		user.id = "!\(String(num, radix: 16))"
+		user.longName = "Node Alpha"
+		user.shortName = "ALFA"
+		user.hwModel = .tbeam
+		user.role = .client
+		user.publicKey = Data([0x01, 0x02, 0x03, 0x04])
+		user.isUnmessagable = unmessagable
+
+		var node = NodeInfo()
+		node.num = num
+		node.user = user
+		return node
+	}
+
+	@Test func contactURLRoundTripsSharedContactPayload() throws {
+		let node = makeNodeInfo()
+
+		let urlString = try #require(ShareContactQR.urlString(for: node, manuallyVerified: true))
+		#expect(urlString.hasPrefix("https://meshtastic.org/v/#"))
+
+		let payload = try #require(urlString.split(separator: "#").last.map(String.init))
+		let decodedData = try #require(Data(base64Encoded: payload.base64urlToBase64()))
+		let contact = try SharedContact(serializedBytes: decodedData)
+
+		#expect(contact.nodeNum == node.num)
+		#expect(contact.user.longName == node.user.longName)
+		#expect(contact.user.shortName == node.user.shortName)
+		#expect(contact.user.publicKey == node.user.publicKey)
+		#expect(contact.manuallyVerified)
+	}
+
+	@Test func recognizesAndroidCompatibleContactURLForms() throws {
+		let canonical = try #require(URL(string: "https://meshtastic.org/v/#CAE="))
+		let www = try #require(URL(string: "https://www.meshtastic.org/v/#CAE="))
+
+		#expect(ContactURLHandler.canHandle(canonical))
+		#expect(ContactURLHandler.canHandle(www))
+	}
+
+	@Test func leavesMeshtasticDocumentationURLsForTheSystemBrowser() throws {
+		let documentation = try #require(URL(string: "https://meshtastic.org/docs/configuration"))
+
+		#expect(!ContactURLHandler.canHandle(documentation))
+	}
+
+	@Test func decodesAndroidSharedContactPayload() throws {
+		let payload = "CAE="
+		let data = try #require(Data(base64Encoded: payload.base64urlToBase64()))
+		let contact = try SharedContact(serializedBytes: data)
+
+		#expect(contact.nodeNum == 1)
+	}
+
+	@Test func contactURLUnavailableForUnmessagableNode() {
+		let node = makeNodeInfo(unmessagable: true)
+
+		#expect(ShareContactQR.urlString(for: node, manuallyVerified: false) == nil)
+		#expect(ShareContactQR.urlString(for: node, manuallyVerified: true) == nil)
+	}
+
+	@Test func contactURLUnavailableWhenUserAbsent() {
+		let node = NodeInfo()
+
+		#expect(!ShareContactQR.canShareContact(for: node))
+		#expect(ShareContactQR.urlString(for: node, manuallyVerified: false) == nil)
+	}
+
+	@Test @MainActor func availabilityUsesNodeUserMessagingState() {
+		let node = NodeInfoEntity()
+		let user = UserEntity()
+		user.unmessagable = false
+		node.user = user
+
+		#expect(ShareContactQR.canShareContact(for: node))
+
+		user.unmessagable = true
+		#expect(!ShareContactQR.canShareContact(for: node))
+
+		node.user = nil
+		#expect(!ShareContactQR.canShareContact(for: node))
+	}
+
+	@Test @MainActor func nodeProtoPreservesUnmessagableStateForQRAvailability() {
+		let node = NodeInfoEntity()
+		let user = UserEntity()
+		user.unmessagable = true
+		node.user = user
+
+		let proto = node.toProto()
+
+		#expect(proto.user.isUnmessagable)
+		#expect(!ShareContactQR.canShareContact(for: proto))
+	}
+
+	@Test @MainActor func userProtoPreservesUnmessagableState() {
+		let user = UserEntity()
+		user.unmessagable = true
+
+		#expect(user.toProto().isUnmessagable)
 	}
 }
 
@@ -468,6 +741,35 @@ struct PositionEntityComputedTests {
 		#expect(pos.isPreciseLocation == false)
 	}
 
+	// `reducedPrecisionBits` previously only covered 12...15, so a node configured with any other
+	// valid PositionPrecision level (2...24) was neither precise nor reduced-precision and got
+	// dropped from the map entirely (see makePositionSnapshots' guard). Range is now 2...24 to
+	// match every value PositionPrecision actually defines.
+	@Test @MainActor func isReducedPrecision_16bits_isReduced() throws {
+		let pos = try makePosition(precisionBits: 16)
+		#expect(pos.isReducedPrecision == true)
+	}
+
+	@Test @MainActor func isReducedPrecision_8bits_isReduced() throws {
+		let pos = try makePosition(precisionBits: 8)
+		#expect(pos.isReducedPrecision == true)
+	}
+
+	@Test @MainActor func isReducedPrecision_13bits_isReduced() throws {
+		let pos = try makePosition(precisionBits: 13)
+		#expect(pos.isReducedPrecision == true)
+	}
+
+	@Test @MainActor func isReducedPrecision_32bits_isNotReduced() throws {
+		let pos = try makePosition(precisionBits: 32)
+		#expect(pos.isReducedPrecision == false)
+	}
+
+	@Test @MainActor func isReducedPrecision_0bits_isNotReduced() throws {
+		let pos = try makePosition(precisionBits: 0)
+		#expect(pos.isReducedPrecision == false)
+	}
+
 	@Test @MainActor func annotation_returnsPointAnnotation() throws {
 		let pos = try makePosition(latI: 374_000_000, lonI: -1_220_000_000)
 		let ann = pos.annotaton
@@ -781,5 +1083,43 @@ struct ChannelSettingsQRImportTests {
 		#expect(chan.settings.hasModuleSettings == true)
 		#expect(chan.settings.moduleSettings.positionPrecision == 0)
 		#expect(chan.settings.moduleSettings.isMuted == false)
+	}
+}
+
+// MARK: - userId format
+
+/// `toHex()` already prefixes "!", so a call site that interpolated another one
+/// produced "!!deadbeef". `findOrCreateUser` is the node-ingest path (a packet from a
+/// node whose NodeInfo has not arrived yet), and the value it writes is shown in
+/// message rows, matched against by node search, and exported as `userProto.id`.
+@Suite("User identifier format")
+struct UserIdentifierFormatTests {
+
+	@Test @MainActor func createUserWritesASingleBang() throws {
+		let context = try makeTestContainer().mainContext
+		let user = try createUser(num: 0xDEADBEEF, context: context)
+		#expect(user.userId == "!deadbeef")
+	}
+
+	@Test @MainActor func findOrCreateUserWritesASingleBang() throws {
+		let context = try makeTestContainer().mainContext
+		let user = findOrCreateUser(num: 0xDEADBEEF, context: context)
+		#expect(user.userId == "!deadbeef")
+	}
+
+	/// Both paths must agree — they are used interchangeably across ingest.
+	@Test @MainActor func bothPathsAgree() throws {
+		let context = try makeTestContainer().mainContext
+		let viaFind = findOrCreateUser(num: 0x1234ABCD, context: context)
+		let otherContext = try makeTestContainer().mainContext
+		let viaCreate = try createUser(num: 0x1234ABCD, context: otherContext)
+		#expect(viaFind.userId == viaCreate.userId)
+	}
+
+	@Test @MainActor func shortNameIsTheLastFourOfTheHex() throws {
+		let context = try makeTestContainer().mainContext
+		let user = findOrCreateUser(num: 0xDEADBEEF, context: context)
+		// Derived from the hex, so the stray "!" also skewed nothing here — pin it.
+		#expect(user.shortName == "beef")
 	}
 }

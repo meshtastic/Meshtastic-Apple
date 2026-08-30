@@ -35,7 +35,7 @@ enum PMTilesCompression: UInt8 {
 }
 
 /// Geographic bounds in degrees.
-struct GeoBounds: Equatable {
+struct GeoBounds: Equatable, Sendable {
 	let minLon: Double
 	let minLat: Double
 	let maxLon: Double
@@ -97,10 +97,19 @@ final class PMTilesArchive {
 		}
 	}
 
+	/// Parses only the fixed PMTiles v3 header without memory-mapping the map payload.
+	static func header(url: URL) -> PMTilesHeader? {
+		guard let handle = try? FileHandle(forReadingFrom: url) else { return nil }
+		defer { try? handle.close() }
+		guard let data = try? handle.read(upToCount: 127), data.count == 127 else { return nil }
+		return parseHeader(data)
+	}
+
 	// MARK: - Header
 
 	static func parseHeader(_ data: Data) -> PMTilesHeader? {
 		// Magic "PMTiles" + version 3.
+		guard data.count >= 127 else { return nil }
 		let magic = data.subdata(in: 0..<7)
 		guard magic == Data("PMTiles".utf8), data[7] == 3 else { return nil }
 
@@ -154,10 +163,13 @@ final class PMTilesArchive {
 
 			if entry.runLength == 0 {
 				// Leaf directory pointer — descend.
-				dirOffset = header.leafDirOffset + entry.offset
+				let (leafOffset, overflow) = header.leafDirOffset.addingReportingOverflow(entry.offset)
+				guard !overflow else { return nil }
+				dirOffset = leafOffset
 				dirLength = UInt64(entry.length)
 			} else {
-				guard let raw = slice(offset: header.tileDataOffset + entry.offset, length: entry.length) else { return nil }
+				let (tileOffset, overflow) = header.tileDataOffset.addingReportingOverflow(entry.offset)
+				guard !overflow, let raw = slice(offset: tileOffset, length: entry.length) else { return nil }
 				return decompress(raw, using: header.tileCompression)
 			}
 		}
@@ -193,9 +205,9 @@ final class PMTilesArchive {
 	// MARK: - Byte access
 
 	private func slice(offset: UInt64, length: UInt32) -> Data? {
-		let start = Int(offset)
-		let end = start + Int(length)
-		guard start >= 0, end <= data.count, length > 0 else { return nil }
+		guard let start = Int(exactly: offset), let byteCount = Int(exactly: length), length > 0 else { return nil }
+		let (end, overflow) = start.addingReportingOverflow(byteCount)
+		guard !overflow, start >= 0, end <= data.count else { return nil }
 		return data.subdata(in: start..<end)
 	}
 
@@ -203,31 +215,47 @@ final class PMTilesArchive {
 
 	static func deserializeDirectory(_ data: Data) -> [Entry] {
 		var pos = 0
-		func varint() -> UInt64 {
+		func varint() -> UInt64? {
 			var result: UInt64 = 0
 			var shift: UInt64 = 0
 			while pos < data.count {
 				let byte = data[data.startIndex + pos]; pos += 1
-				result |= UInt64(byte & 0x7F) << shift
-				if byte & 0x80 == 0 { break }
+				let value = UInt64(byte & 0x7F)
+				guard shift < 64, shift <= 56 || value <= 1 else { return nil }
+				result |= value << shift
+				if byte & 0x80 == 0 { return result }
 				shift += 7
 			}
-			return result
+			return nil
 		}
 
-		let count = Int(varint())
-		guard count > 0, count < 10_000_000 else { return [] }
+		guard let rawCount = varint(), let count = Int(exactly: rawCount), count > 0, count < 10_000_000 else { return [] }
 		var entries = [Entry](repeating: Entry(tileID: 0, offset: 0, length: 0, runLength: 0), count: count)
 
 		var lastID: UInt64 = 0
-		for index in 0..<count { lastID += varint(); entries[index].tileID = lastID }
-		for index in 0..<count { entries[index].runLength = UInt32(truncatingIfNeeded: varint()) }
-		for index in 0..<count { entries[index].length = UInt32(truncatingIfNeeded: varint()) }
 		for index in 0..<count {
-			let value = varint()
+			guard let delta = varint() else { return [] }
+			let (tileID, overflow) = lastID.addingReportingOverflow(delta)
+			guard !overflow else { return [] }
+			lastID = tileID
+			entries[index].tileID = tileID
+		}
+		for index in 0..<count {
+			guard let runLength = varint(), let value = UInt32(exactly: runLength) else { return [] }
+			entries[index].runLength = value
+		}
+		for index in 0..<count {
+			guard let length = varint(), let value = UInt32(exactly: length) else { return [] }
+			entries[index].length = value
+		}
+		for index in 0..<count {
+			guard let value = varint() else { return [] }
 			if value == 0 && index > 0 {
-				entries[index].offset = entries[index - 1].offset + UInt64(entries[index - 1].length)
+				let (offset, overflow) = entries[index - 1].offset.addingReportingOverflow(UInt64(entries[index - 1].length))
+				guard !overflow else { return [] }
+				entries[index].offset = offset
 			} else {
+				guard value > 0 else { return [] }
 				entries[index].offset = value - 1
 			}
 		}
