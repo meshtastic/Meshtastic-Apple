@@ -38,8 +38,8 @@ struct MeshBeaconConfig: View {
 	@State private var targets: [BroadcastTargetDraft] = [BroadcastTargetDraft()]
 	@State private var seededTargetKeys: [[Int32]] = []
 
-	/// In-memory draft for one broadcast row. A single row saves as the broadcast-on
-	/// config; multiple rows save as `broadcast_targets`, one beacon each.
+	/// In-memory draft for one broadcast row. Every row saves as a `broadcast_targets`
+	/// entry — one beacon each; the protobuf has no other TX destination.
 	struct BroadcastTargetDraft: Identifiable, Equatable {
 		let id = UUID()
 		var preset: Int32 = -1   // -1 = falls back to running config
@@ -379,7 +379,18 @@ struct MeshBeaconConfig: View {
 			($0.channelIndex, $0.preset) < ($1.channelIndex, $1.preset)
 		}
 		if storedTargets.isEmpty {
-			targets = [BroadcastTargetDraft()]
+			// A pre-consolidation config kept its destination in the legacy broadcast-on
+			// columns. Seed the row from them so an unrelated save doesn't replace the
+			// radio's destination with the default. An unmatched name+key pair (-2) can't
+			// be expressed as an index-based target; it falls back to the default channel.
+			let legacyIndex = resolveChannelIndex(
+				name: node?.meshBeaconConfig?.broadcastOnChannelName ?? "",
+				psk: node?.meshBeaconConfig?.broadcastOnChannelPSK ?? Data()
+			)
+			targets = [BroadcastTargetDraft(
+				preset: node?.meshBeaconConfig?.broadcastOnPreset ?? -1,
+				channelIndex: max(legacyIndex, -1)
+			)]
 		} else {
 			targets = storedTargets.map { BroadcastTargetDraft(preset: $0.preset, channelIndex: $0.channelIndex) }
 		}
