@@ -5,6 +5,7 @@
 //  Created by Garth Vander Houwen on 5/27/22.
 //
 
+import CoreLocation
 import Foundation
 @preconcurrency import SwiftData
 import MeshtasticProtobufs
@@ -66,8 +67,46 @@ func generateMessageMarkdown(message: String) -> String {
 	return messageWithMarkdown
 }
 
+/// Identifies one locally initiated automatic config refresh. The radio protocol reserves a
+/// single config nonce, so this ownership stays local rather than appearing on the wire.
+struct AutomaticChannelRefreshOwner: Equatable, Sendable {
+	let sessionID: UUID
+	let generation: UInt64
+}
+
+struct ChannelRefreshSnapshot: Equatable, Sendable {
+	let id: Int32
+	let index: Int32
+	let uplinkEnabled: Bool
+	let downlinkEnabled: Bool
+	let name: String
+	let role: Int32
+	let psk: Data
+	let positionPrecision: Int32
+	let mute: Bool
+}
+
 @ModelActor
 actor MeshPackets {
+	private struct StagedChannel: Sendable {
+		let id: Int32
+		let index: Int32
+		let uplinkEnabled: Bool
+		let downlinkEnabled: Bool
+		let name: String
+		let role: Int32
+		let psk: Data
+		let positionPrecision: Int32
+		let mute: Bool
+	}
+
+	private struct ChannelRefreshStage {
+		let id = UUID()
+		let owner: AutomaticChannelRefreshOwner?
+		let baseline: [ChannelRefreshSnapshot]
+		var channels: [Int32: StagedChannel] = [:]
+	}
+
 	private struct TelemetryPruneKey: Hashable {
 		let nodeNum: Int64
 		let metricsType: Int32
@@ -85,6 +124,40 @@ actor MeshPackets {
 	/// Periodically recreated to release accumulated ModelContext memory.
 	nonisolated(unsafe) private static var _shared: MeshPackets = MeshPackets(modelContainer: _container)
 	private static let _lock = NSLock()
+
+	/// Staged automatic channel refreshes, keyed by node number. Deliberately static rather
+	/// than actor state: `recreateShared()` swaps the shared instance to release memory, and a
+	/// stage tied to the retired instance would silently orphan an in-flight refresh. Static
+	/// storage makes recreation orthogonal — the successor actor stages into and commits from
+	/// the same map. The lock covers the two executors that touch it: this actor (staging
+	/// incoming channel frames) and the main actor (begin/commit/discard from AccessoryManager).
+	nonisolated(unsafe) private static var channelRefreshStages: [Int64: ChannelRefreshStage] = [:]
+	private static let channelRefreshStagesLock = NSLock()
+
+	// Main-thread views read node/user/position entities during body evaluation, and a
+	// cap eviction on this actor cascades all of them away — the invalid-entity trap
+	// that tops the crash reports (Settings, node detail, node list rows). Evictions
+	// wait for the app to background; while foregrounded only a doubled cap applies,
+	// so a device that never backgrounds (a wall display) still stays bounded.
+	nonisolated(unsafe) private static var _appIsActive = true
+	private static let appActiveLock = NSLock()
+	nonisolated static var appIsActive: Bool {
+		get { appActiveLock.withLock { _appIsActive } }
+		set { appActiveLock.withLock { _appIsActive = newValue } }
+	}
+	#if DEBUG
+	/// Deterministic concurrency checkpoint used by the refresh boundary regression test. Production
+	/// callers leave this nil, so validation and replacement execute without suspension.
+	@MainActor static var channelRefreshCommitValidationHook: (@MainActor @Sendable () async -> Void)?
+
+	/// Test-only: the static stage storage outlives any per-test actor, so suites reset it
+	/// alongside `recreateShared()`.
+	static func resetChannelRefreshStagesForTesting() {
+		channelRefreshStagesLock.lock()
+		defer { channelRefreshStagesLock.unlock() }
+		channelRefreshStages.removeAll()
+	}
+	#endif
 
 	static var shared: MeshPackets {
 		_lock.lock()
@@ -121,6 +194,178 @@ actor MeshPackets {
 		debounceSaveTask = nil
 	}
 
+	/// Begins a staged refresh for `nodeNum`, capturing the baseline the commit will later
+	/// validate against. Returns false when a stage already exists — unless `owner` is a newer
+	/// generation of the same refresh session, which supersedes the older stage atomically
+	/// (stale-owner cleanup stays owner-scoped, so it cannot discard the successor).
+	@discardableResult
+	func beginChannelRefreshStage(
+		for nodeNum: Int64,
+		owner: AutomaticChannelRefreshOwner? = nil,
+		baseline: [ChannelRefreshSnapshot]? = nil
+	) -> Bool {
+		let resolvedBaseline = baseline ?? currentChannelSnapshot(for: nodeNum)
+		Self.channelRefreshStagesLock.lock()
+		defer { Self.channelRefreshStagesLock.unlock() }
+		if let existingStage = Self.channelRefreshStages[nodeNum] {
+			guard Self.canReplaceChannelRefreshStage(existingStage, with: owner) else { return false }
+		}
+		Self.channelRefreshStages[nodeNum] = ChannelRefreshStage(owner: owner, baseline: resolvedBaseline)
+		return true
+	}
+
+	private static func canReplaceChannelRefreshStage(
+		_ existingStage: ChannelRefreshStage,
+		with owner: AutomaticChannelRefreshOwner?
+	) -> Bool {
+		guard let existingOwner = existingStage.owner,
+			  let owner,
+			  existingOwner.sessionID == owner.sessionID else { return false }
+		return existingOwner.generation < owner.generation
+	}
+
+	func discardChannelRefreshStage(for nodeNum: Int64, owner: AutomaticChannelRefreshOwner? = nil) {
+		Self.channelRefreshStagesLock.lock()
+		defer { Self.channelRefreshStagesLock.unlock() }
+		guard let stage = Self.channelRefreshStages[nodeNum],
+			  owner == nil || stage.owner == owner else { return }
+		Self.channelRefreshStages.removeValue(forKey: nodeNum)
+	}
+
+	func commitChannelRefreshStage(for nodeNum: Int64, owner: AutomaticChannelRefreshOwner? = nil) async {
+		Self.channelRefreshStagesLock.lock()
+		guard let stage = Self.channelRefreshStages[nodeNum],
+			  owner == nil || stage.owner == owner else {
+			Self.channelRefreshStagesLock.unlock()
+			return
+		}
+		Self.channelRefreshStagesLock.unlock()
+		defer { Self.endChannelRefreshStage(for: nodeNum, stageID: stage.id) }
+		guard isCompleteChannelRefresh(stage.channels) else {
+			Logger.data.error("💥 Refusing incomplete staged channel refresh for: \(nodeNum.toHex(), privacy: .public)")
+			return
+		}
+		let container = modelContext.container
+		await Self.commitChannelRefreshStageOnMainActor(
+			for: nodeNum,
+			baseline: stage.baseline,
+			stagedChannels: stage.channels,
+			container: container
+		)
+	}
+
+	/// UI channel edits are main-context mutations. Running both baseline validation and the
+	/// destructive replacement on that same executor makes them one non-reentrant critical section.
+	@MainActor
+	private static func commitChannelRefreshStageOnMainActor(
+		for nodeNum: Int64,
+		baseline: [ChannelRefreshSnapshot],
+		stagedChannels: [Int32: StagedChannel],
+		container: ModelContainer
+	) async {
+		let context = container.mainContext
+		let fetchDescriptor = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == nodeNum })
+		do {
+			let fetchedMyInfo = try context.fetch(fetchDescriptor)
+			guard fetchedMyInfo.count == 1 else {
+				Logger.data.error("💥Trying to commit staged channels to a MyInfo that does not exist: \(nodeNum.toHex(), privacy: .public)")
+				return
+			}
+			let myInfo = fetchedMyInfo[0]
+			guard channelSnapshot(from: myInfo) == baseline else {
+				Logger.data.info("💾 Discarded staged channel refresh after local channel changes for: \(nodeNum.toHex(), privacy: .public)")
+				return
+			}
+			#if DEBUG
+			if let hook = channelRefreshCommitValidationHook {
+				await hook()
+			}
+			#endif
+			guard channelSnapshot(from: myInfo) == baseline else {
+				Logger.data.info("💾 Discarded staged channel refresh after a serialized local channel change for: \(nodeNum.toHex(), privacy: .public)")
+				return
+			}
+			for channel in myInfo.channels {
+				context.delete(channel)
+			}
+			myInfo.channels.removeAll()
+			let enabledChannels = stagedChannels.values
+				.filter { $0.role != Int32(Channel.Role.disabled.rawValue) }
+				.sorted(by: { $0.index < $1.index })
+			for staged in enabledChannels {
+				let channel = ChannelEntity()
+				context.insert(channel)
+				apply(stagedChannel: staged, to: channel)
+				myInfo.channels.append(channel)
+			}
+			try context.save()
+			Logger.data.info("💾 Committed \(enabledChannels.count, privacy: .public) staged channel(s) for: \(nodeNum, privacy: .public)")
+		} catch {
+			context.rollback()
+			let nsError = error as NSError
+			Logger.data.error("💥 Error committing staged channels from ADMIN_APP \(nsError, privacy: .public)")
+		}
+	}
+
+	@MainActor
+	private static func channelSnapshot(from myInfo: MyInfoEntity) -> [ChannelRefreshSnapshot] {
+		myInfo.channels.map(Self.channelRefreshSnapshot).sorted(by: channelSnapshotIsOrderedBefore)
+	}
+
+	@MainActor
+	static func captureChannelRefreshBaselines(in context: ModelContext) -> [Int64: [ChannelRefreshSnapshot]] {
+		let myInfos = (try? context.fetch(FetchDescriptor<MyInfoEntity>())) ?? []
+		return myInfos.reduce(into: [:]) { baselines, myInfo in
+			baselines[myInfo.myNodeNum] = channelSnapshot(from: myInfo)
+		}
+	}
+
+	private static func channelSnapshotIsOrderedBefore(
+		_ lhs: ChannelRefreshSnapshot,
+		_ rhs: ChannelRefreshSnapshot
+	) -> Bool {
+		if lhs.index != rhs.index { return lhs.index < rhs.index }
+		if lhs.id != rhs.id { return lhs.id < rhs.id }
+		if lhs.role != rhs.role { return lhs.role < rhs.role }
+		if lhs.name != rhs.name { return lhs.name < rhs.name }
+		if lhs.psk != rhs.psk { return lhs.psk.lexicographicallyPrecedes(rhs.psk) }
+		if lhs.uplinkEnabled != rhs.uplinkEnabled { return !lhs.uplinkEnabled }
+		if lhs.downlinkEnabled != rhs.downlinkEnabled { return !lhs.downlinkEnabled }
+		if lhs.positionPrecision != rhs.positionPrecision { return lhs.positionPrecision < rhs.positionPrecision }
+		return !lhs.mute && rhs.mute
+	}
+
+	@MainActor
+	private static func apply(stagedChannel: StagedChannel, to channel: ChannelEntity) {
+		applyChannelRefresh(stagedChannel, to: channel)
+	}
+
+	nonisolated private static func channelRefreshSnapshot(from channel: ChannelEntity) -> ChannelRefreshSnapshot {
+		ChannelRefreshSnapshot(
+			id: channel.id,
+			index: channel.index,
+			uplinkEnabled: channel.uplinkEnabled,
+			downlinkEnabled: channel.downlinkEnabled,
+			name: channel.name ?? "",
+			role: channel.role,
+			psk: channel.psk ?? Data(),
+			positionPrecision: channel.positionPrecision,
+			mute: channel.mute
+		)
+	}
+
+	nonisolated private static func applyChannelRefresh(_ stagedChannel: StagedChannel, to channel: ChannelEntity) {
+		channel.id = stagedChannel.id
+		channel.index = stagedChannel.index
+		channel.uplinkEnabled = stagedChannel.uplinkEnabled
+		channel.downlinkEnabled = stagedChannel.downlinkEnabled
+		channel.name = stagedChannel.name
+		channel.role = stagedChannel.role
+		channel.psk = stagedChannel.psk
+		channel.positionPrecision = stagedChannel.positionPrecision
+		channel.mute = stagedChannel.mute
+	}
+
 	/// Saves any pending changes in the model context. Call once at the end of each
 	/// top-level packet handler to batch all mutations from a single packet into one write.
 	func savePendingChanges(caller: String = #function) {
@@ -151,8 +396,59 @@ actor MeshPackets {
 	/// Split into cap-parameterized helpers below so the eviction order is unit-testable with
 	/// small datasets rather than needing tens of thousands of inserts.
 	func enforceEntityCaps() {
+		let multiplier = Self.appIsActive ? 2 : 1
+		evictNodesIfOverCap(Self.maxTotalNodes * multiplier)
+		evictWaypointsIfOverCap(Self.maxTotalWaypoints * multiplier)
+	}
+
+	/// Evict down to the strict caps and commit. Called on the background transition —
+	/// the one moment deletes cannot race a view reading the doomed entities. The flag
+	/// is re-checked here on the actor, not just at enqueue: a quick return to the
+	/// foreground can beat this task's turn on the actor, and evicting then would be
+	/// exactly the mid-render delete this exists to avoid.
+	func enforceEntityCapsAndSave() {
+		guard !invalidated, !Self.appIsActive else { return }
 		evictNodesIfOverCap(Self.maxTotalNodes)
+		guard !Self.appIsActive else {
+			savePendingChanges()
+			return
+		}
 		evictWaypointsIfOverCap(Self.maxTotalWaypoints)
+		savePendingChanges()
+	}
+
+	// MARK: - Watch Snapshot
+
+	/// Value-copies every node the Watch cares about, on this actor.
+	///
+	/// The Watch update used to walk main-context entities while this actor's cap
+	/// eviction (`evictNodesIfOverCap`) and near-duplicate position pruning deleted
+	/// rows underneath them. An instance whose row another context deleted keeps
+	/// passing `modelContext != nil` / `isDeleted == false` until the merge lands,
+	/// and the next persisted-property read traps in SwiftData's backing-data
+	/// lookup — the app's largest crash. Running the snapshot here serializes it
+	/// against every delete this actor performs, and only value types cross back.
+	func watchNodeSnapshot(
+		userLatitude: Double,
+		userLongitude: Double,
+		maxDistanceMeters: Double
+	) -> [WatchNode] {
+		// A retired instance's container may already be torn down (see recreateShared()).
+		guard !invalidated else { return [] }
+		let descriptor = FetchDescriptor<NodeInfoEntity>(
+			predicate: #Predicate<NodeInfoEntity> { $0.user != nil }
+		)
+		let results: [NodeInfoEntity]
+		do {
+			results = try modelContext.fetch(descriptor)
+		} catch {
+			Logger.data.error("⌚ Watch snapshot fetch failed: \(error.localizedDescription, privacy: .public)")
+			return []
+		}
+		let userLocation = CLLocation(latitude: userLatitude, longitude: userLongitude)
+		return results.compactMap {
+			WatchNode.make(from: $0, userLocation: userLocation, maxDistanceMeters: maxDistanceMeters)
+		}
 	}
 
 	/// Nodes: cap the total, evicting least-recently-heard first. Never evict favorites — the user
@@ -442,10 +738,49 @@ actor MeshPackets {
 		return nil
 	}
 
-	func channelPacket (channel: Channel, fromNum: Int64) {
-		if channel.isInitialized && channel.hasSettings && channel.role != Channel.Role.disabled {
+	/// Removes the stage only when it is still the one the caller worked with — stale async
+	/// work ending late cannot remove a successor's stage.
+	private static func endChannelRefreshStage(for nodeNum: Int64, stageID: UUID) {
+		channelRefreshStagesLock.lock()
+		defer { channelRefreshStagesLock.unlock() }
+		guard let stage = channelRefreshStages[nodeNum], stage.id == stageID else { return }
+		channelRefreshStages.removeValue(forKey: nodeNum)
+	}
+
+	private func currentChannelSnapshot(for nodeNum: Int64) -> [ChannelRefreshSnapshot] {
+		let fetchDescriptor = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == nodeNum })
+		guard let myInfo = try? modelContext.fetch(fetchDescriptor).first else { return [] }
+		return currentChannelSnapshot(from: myInfo)
+	}
+
+	private func currentChannelSnapshot(from myInfo: MyInfoEntity) -> [ChannelRefreshSnapshot] {
+		myInfo.channels.map(Self.channelRefreshSnapshot).sorted(by: Self.channelSnapshotIsOrderedBefore)
+	}
+
+	private func isCompleteChannelRefresh(_ stagedChannels: [Int32: StagedChannel]) -> Bool {
+		guard let primary = stagedChannels[0],
+			  primary.role == Int32(Channel.Role.primary.rawValue) else { return false }
+		guard Set(stagedChannels.keys) == Set(Int32(0)...Int32(7)) else { return false }
+		return stagedChannels.values.allSatisfy { staged in
+			staged.index >= 0 && staged.index < 8 &&
+			(staged.index == 0 || staged.role != Int32(Channel.Role.primary.rawValue))
+		}
+	}
+
+	func channelPacket(channel: Channel, fromNum: Int64, stageIfRefreshing: Bool = true) {
+		if channel.isInitialized && (channel.hasSettings || channel.role == Channel.Role.disabled) {
 			let logString = String.localizedStringWithFormat("Channel received: %d %@".localized, channel.index, String(fromNum))
 			Logger.admin.info("🎛️ \(logString, privacy: .public)")
+
+			if stageIfRefreshing {
+				Self.channelRefreshStagesLock.lock()
+				let isStaging = Self.channelRefreshStages[fromNum] != nil
+				if isStaging {
+					Self.channelRefreshStages[fromNum]?.channels[Int32(truncatingIfNeeded: channel.index)] = stagedChannel(from: channel)
+				}
+				Self.channelRefreshStagesLock.unlock()
+				if isStaging { return }
+			}
 
 			let fetchDescriptor = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == fromNum })
 
@@ -453,6 +788,14 @@ actor MeshPackets {
 				let fetchedMyInfo = try modelContext.fetch(fetchDescriptor)
 				if fetchedMyInfo.count == 1 {
 					let existing = fetchedMyInfo[0].channels.first(where: { $0.index == Int32(truncatingIfNeeded: channel.index) })
+					if channel.role == Channel.Role.disabled {
+						if let existing {
+							modelContext.delete(existing)
+							savePendingChanges()
+							Logger.data.info("💾 Deleted MyInfo channel \(channel.index, privacy: .public) from Channel App Packet For: \(fetchedMyInfo[0].myNodeNum, privacy: .public)")
+						}
+						return
+					}
 					let newChannel: ChannelEntity
 					if let existing {
 						newChannel = existing
@@ -461,23 +804,7 @@ actor MeshPackets {
 						modelContext.insert(newChannel)
 						fetchedMyInfo[0].channels.append(newChannel)
 					}
-					newChannel.id = Int32(truncatingIfNeeded: channel.index)
-					newChannel.index = Int32(truncatingIfNeeded: channel.index)
-					newChannel.uplinkEnabled = channel.settings.uplinkEnabled
-					newChannel.downlinkEnabled = channel.settings.downlinkEnabled
-					newChannel.name = channel.settings.name
-					newChannel.role = Int32(channel.role.rawValue)
-					newChannel.psk = channel.settings.psk
-					if channel.settings.hasModuleSettings {
-						newChannel.positionPrecision = Int32(truncatingIfNeeded: channel.settings.moduleSettings.positionPrecision)
-						newChannel.mute = channel.settings.moduleSettings.isMuted
-					} else {
-						// When moduleSettings is absent, use proto3 defaults (0/false)
-						// rather than the entity default of 32, which would incorrectly
-						// enable full-precision position sharing.
-						newChannel.positionPrecision = 0
-						newChannel.mute = false
-					}
+					apply(stagedChannel: stagedChannel(from: channel), to: newChannel)
 					savePendingChanges()
 					Logger.data.info("💾 Updated MyInfo channel \(channel.index, privacy: .public) from Channel App Packet For: \(fetchedMyInfo[0].myNodeNum, privacy: .public)")
 				} else if channel.role.rawValue > 0 {
@@ -488,6 +815,49 @@ actor MeshPackets {
 				Logger.data.error("💥 Error Saving MyInfo Channel from ADMIN_APP \(nsError, privacy: .public)")
 			}
 		}
+	}
+
+	private func stagedChannel(from channel: Channel) -> StagedChannel {
+		if channel.role == Channel.Role.disabled {
+			return StagedChannel(
+				id: Int32(truncatingIfNeeded: channel.index),
+				index: Int32(truncatingIfNeeded: channel.index),
+				uplinkEnabled: false,
+				downlinkEnabled: false,
+				name: "",
+				role: Int32(Channel.Role.disabled.rawValue),
+				psk: Data(),
+				positionPrecision: 0,
+				mute: false
+			)
+		}
+		let positionPrecision: Int32
+		let mute: Bool
+		if channel.settings.hasModuleSettings {
+			positionPrecision = Int32(truncatingIfNeeded: channel.settings.moduleSettings.positionPrecision)
+			mute = channel.settings.moduleSettings.isMuted
+		} else {
+			// When moduleSettings is absent, use proto3 defaults (0/false)
+			// rather than the entity default of 32, which would incorrectly
+			// enable full-precision position sharing.
+			positionPrecision = 0
+			mute = false
+		}
+		return StagedChannel(
+			id: Int32(truncatingIfNeeded: channel.index),
+			index: Int32(truncatingIfNeeded: channel.index),
+			uplinkEnabled: channel.settings.uplinkEnabled,
+			downlinkEnabled: channel.settings.downlinkEnabled,
+			name: channel.settings.name,
+			role: Int32(channel.role.rawValue),
+			psk: channel.settings.psk,
+			positionPrecision: positionPrecision,
+			mute: mute
+		)
+	}
+
+	private func apply(stagedChannel: StagedChannel, to channel: ChannelEntity) {
+		Self.applyChannelRefresh(stagedChannel, to: channel)
 	}
 
 	func deviceMetadataPacket (metadata: DeviceMetadata, fromNum: Int64, sessionPasskey: Data? = Data()) {

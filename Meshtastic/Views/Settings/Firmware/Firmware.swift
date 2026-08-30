@@ -149,6 +149,8 @@ private struct FirmwareContentView: View {
 	@State var locallyChosenFirmwareFile: URL?
 	// For row-level install sheet
 	@State var rowInstallation: RowInstallation?
+	@State var showBootloaderUpgrade = false
+	@State var showFactoryErase = false
 
 	struct RowInstallation: Identifiable {
 		let type: FirmwareFile.FirmwareType
@@ -236,8 +238,31 @@ private struct FirmwareContentView: View {
 					Text("Downloaded").tag(FirmwareTab.downloaded)
 				}.pickerStyle(.segmented)
 				
-				// Extracted switch logic to keep body clean
 				firmwareRows
+			}
+
+			// SECTION 3: BOOTLOADER — nRF52 boards OTAFIX ships a bootloader for.
+			// UX gate only; the sheet identifies the board from the drive's own
+			// INFO_UF2.TXT before anything is offered for writing.
+			if showsMaintenanceSection {
+				Section {
+					if showsBootloaderUpgrade {
+						Button {
+							showBootloaderUpgrade = true
+						} label: {
+							Label("Upgrade Bootloader", systemImage: "memorychip")
+						}
+					}
+					Button(role: .destructive) {
+						showFactoryErase = true
+					} label: {
+						Label("Factory Erase", systemImage: "externaldrive.badge.xmark")
+					}
+				} header: {
+					Text("Maintenance")
+				} footer: {
+					Text("OTAFIX is Meshtastic's improved nRF52 bootloader with faster, more reliable Bluetooth firmware updates. Factory erase wipes the radio's flash from its bootloader drive — the recovery path when firmware cannot boot.")
+				}
 			}
 		}
 		.navigationTitle("Firmware Updates")
@@ -246,6 +271,12 @@ private struct FirmwareContentView: View {
 			if !isLoading {
 				firmwareList.refresh()
 			}
+		}
+		.sheet(isPresented: $showBootloaderUpgrade) {
+			BootloaderUpgradeView()
+		}
+		.sheet(isPresented: $showFactoryErase) {
+			FactoryEraseView()
 		}
 		.sheet(item: $rowInstallation) { installation in
 			switch installation.type {
@@ -342,6 +373,19 @@ private struct FirmwareContentView: View {
 			return "firmware-\(platformioTarget)-<version>[-\(nodeRegion.topic)]"
 		}
 		return "firmware-\(platformioTarget)-<version>"
+	}
+
+	/// Whether to offer the OTAFIX bootloader upgrade: nRF52 hardware whose
+	/// product OTAFIX lists as supported. Deciding which image to write happens
+	/// in the sheet, from the Board-ID on the device's own drive.
+	var showsMaintenanceSection: Bool {
+		hardware.architecture.flatMap { Architecture(rawValue: $0) } == .nrf52840
+	}
+
+	/// OTAFIX ships bootloaders for a subset of nRF52 products; factory erase works on
+	/// any Adafruit-family bootloader, so only the upgrade button carries this gate.
+	var showsBootloaderUpgrade: Bool {
+		OTAFIXBootloader.supportsTarget(firmwareTarget)
 	}
 
 	var allowedTypes: [UTType] {

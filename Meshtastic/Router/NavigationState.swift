@@ -71,7 +71,6 @@ enum SettingsNavigationState: String {
 	case ringtone
 	case serial
 	case security
-	case statusMessage
 	case storeAndForward
 	case telemetry
 	case trafficManagement

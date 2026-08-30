@@ -446,10 +446,13 @@ extension DiscoveryScanView {
 	var beaconChannels: [BeaconChannel] {
 		let descriptor = FetchDescriptor<DiscoveredBeaconEntity>()
 		guard let beacons = try? context.fetch(descriptor) else { return [] }
+		// Offers for channels the radio already has are not invitations (design#140).
+		let joined = configuredChannelOfferKeys(context: context)
 		var seen = Set<String>()
 		var channels: [BeaconChannel] = []
 		for beacon in beacons where beacon.hasOfferChannel && !beacon.offerChannelName.isEmpty {
 			guard let preset = beacon.offeredPreset else { continue }
+			if joined.contains("\(beacon.offerChannelName)|\(beacon.offerChannelPSK.base64EncodedString())") { continue }
 			let channel = BeaconChannel(name: beacon.offerChannelName, psk: beacon.offerChannelPSK,
 										preset: preset, regionRaw: beacon.offerRegion)
 			if seen.insert(channel.id).inserted { channels.append(channel) }

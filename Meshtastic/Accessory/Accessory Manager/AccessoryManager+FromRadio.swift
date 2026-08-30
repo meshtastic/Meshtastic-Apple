@@ -5,6 +5,7 @@
 //  Created by Jake Bordens on 7/18/25.
 //
 
+import CryptoKit
 import Foundation
 import MeshtasticProtobufs
 import CocoaMQTT
@@ -66,11 +67,22 @@ extension AccessoryManager {
 			}
 		}
 
+		// Always log, whether or not the user is alerted — Debug Logs stays complete.
+		Logger.services.error("⚠️ Client Notification: \(clientNotification.message, privacy: .private)")
+
+		let key = Self.noticeKey(for: clientNotification)
+		guard shouldSurfaceFirmwareNotice(key: key, isSecurity: Self.isSecurityNotice(clientNotification)) else {
+			Logger.services.debug("⏳ Firmware notification suppressed by backoff: \(key, privacy: .private)")
+			return
+		}
+
 		// TODO: Look at this to see if LocationManager should be singleton
 		let manager = LocalNotificationManager()
 		manager.notifications = [
 			Notification(
-				id: "client.notification",
+				// Per-message id: a fixed one let an unrelated notice silently replace a
+				// security warning that was still pending.
+				id: "client.notification.\(Self.noticeIdentifierFragment(key))",
 				title: "Firmware Notification".localized,
 				subtitle: "\(clientNotification.level)".capitalized,
 				content: clientNotification.message,
@@ -79,7 +91,80 @@ extension AccessoryManager {
 			)
 		]
 		manager.schedule()
-		Logger.services.error("⚠️ Client Notification: \(clientNotification.message, privacy: .public)")
+	}
+
+	// MARK: - Firmware notification backoff
+
+	/// Whether this notice should alert the user now.
+	///
+	/// Firmware repeats some notices on a timer — "Location sharing is disabled on this
+	/// channel" fires on every position interval when a channel deliberately has position
+	/// off, which on event firmware is configuration rather than a fault. A flat
+	/// suppression window can't serve both cases: short enough to report a real fault
+	/// promptly is short enough to nag. So repeats back off instead — immediate, then 5
+	/// minutes, 30, 2 hours, then once every 12. A one-off still alerts with no delay; a
+	/// standing condition settles to once or twice a day on its own.
+	///
+	/// Security notices never back off: they are rare, actionable, and the failure mode
+	/// worth avoiding is burying them.
+	func shouldSurfaceFirmwareNotice(key: String, isSecurity: Bool, now: Date = .now) -> Bool {
+		guard !isSecurity else { return true }
+
+		// Forget anything quiet for longer than the cap, so the map can't grow unbounded
+		// and a recurrence after a real lull is treated as new.
+		firmwareNoticeHistory = firmwareNoticeHistory.filter {
+			now.timeIntervalSince($0.value.lastShown) <= Self.firmwareNoticeForgetAfter
+		}
+
+		guard let entry = firmwareNoticeHistory[key] else {
+			firmwareNoticeHistory[key] = (count: 1, lastShown: now)
+			return true
+		}
+		let step = min(entry.count, Self.firmwareNoticeBackoff.count - 1)
+		guard now.timeIntervalSince(entry.lastShown) >= Self.firmwareNoticeBackoff[step] else {
+			return false
+		}
+		firmwareNoticeHistory[key] = (count: entry.count + 1, lastShown: now)
+		return true
+	}
+
+	/// Identity of a notice. The structured payload variant when there is one, so a
+	/// reworded firmware string stays the same notice; otherwise level plus message.
+	static func noticeKey(for notification: ClientNotification) -> String {
+		switch notification.payloadVariant {
+		case .lowEntropyKey: return "lowEntropyKey"
+		case .duplicatedPublicKey: return "duplicatedPublicKey"
+		case .keyVerificationNumberInform: return "keyVerificationNumberInform"
+		case .keyVerificationNumberRequest: return "keyVerificationNumberRequest"
+		case .keyVerificationFinal: return "keyVerificationFinal"
+		case .none: return "\(notification.level)|\(notification.message)"
+		}
+	}
+
+	/// Security notices bypass the backoff entirely.
+	static func isSecurityNotice(_ notification: ClientNotification) -> Bool {
+		switch notification.payloadVariant {
+		case .lowEntropyKey, .duplicatedPublicKey, .keyVerificationNumberInform,
+			 .keyVerificationNumberRequest, .keyVerificationFinal:
+			return true
+		case .none:
+			return false
+		}
+	}
+
+	/// A notification identifier fragment: readable in logs, stable across launches, and
+	/// bounded in length.
+	/// A readable prefix plus a digest of the complete key. Normalization alone
+	/// collides ("a-b" and "a_b" both become "a_b"), and so do long keys sharing a
+	/// truncated prefix — colliding identifiers make one pending notification
+	/// silently replace another.
+	static func noticeIdentifierFragment(_ key: String) -> String {
+		let digest = SHA256.hash(data: Data(key.utf8))
+			.prefix(4)
+			.map { String(format: "%02x", $0) }
+			.joined()
+		let allowed = key.map { $0.isLetter || $0.isNumber ? $0 : "_" }
+		return String(String(allowed).prefix(55)) + "_" + digest
 	}
 
 	func handleMyInfo(_ myNodeInfo: MyNodeInfo) async {
@@ -132,7 +217,7 @@ extension AccessoryManager {
 				// Onboard a new device connection here
 			}
 		}
-		tryClearExistingChannels()
+		await beginAutomaticChannelRefreshStageIfNeeded(for: Int64(myNodeInfo.myNodeNum))
 
 		// Auto-disable new-node notifications for event firmware editions
 		applyEventFirmwareNotificationDefaults(myNodeInfo.firmwareEdition)

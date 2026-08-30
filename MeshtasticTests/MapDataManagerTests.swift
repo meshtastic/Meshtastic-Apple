@@ -58,3 +58,89 @@ struct MapDataManagerImportFromStringTests {
 		}
 	}
 }
+
+/// Covers file provenance and the per-source activation policy: a new Site Planner
+/// run replaces the previous one (only the newest planner file stays active), while
+/// manually uploaded files keep whatever visibility the user set.
+@Suite("MapData source and visibility policy", .serialized)
+struct MapDataSourcePolicyTests {
+
+	private let sampleGeoJSON = """
+	{ "type": "FeatureCollection", "features": [
+		{ "type": "Feature", "geometry": { "type": "Polygon", "coordinates": [[[0, 0], [1, 0], [1, 1], [0, 0]]] },
+		  "properties": { "fill": "#0080ff" } }
+	]}
+	"""
+
+	private func cleanUp(_ manager: MapDataManager, _ files: [MapDataMetadata]) async {
+		for file in files {
+			try? await manager.deleteFile(file)
+		}
+	}
+
+	@Test func manifestsWithoutSourceDecodeAsManualUpload() throws {
+		// A manifest entry written before `source` existed.
+		let legacy = """
+		{ "id": "9E8282D3-D73A-3954-8DD9-D5CAED9B4EFD", "filename": "a.geojson",
+		  "originalName": "a", "uploadDate": 700000000, "fileSize": 10,
+		  "format": "geojson", "overlayCount": 1, "isActive": true }
+		"""
+		let metadata = try JSONDecoder().decode(MapDataMetadata.self, from: Data(legacy.utf8))
+		#expect(metadata.source == .manualUpload)
+		#expect(metadata.isActive)
+	}
+
+	// Cleanup is awaited at the end of each test rather than launched from a defer:
+	// an unstructured cleanup Task can still be rewriting upload_history.json when
+	// the next serialized test starts. #expect failures are non-fatal in Swift
+	// Testing, so the cleanup line is reached on assertion failure too.
+
+	@Test func newPlannerRunDeactivatesOnlyOlderPlannerFiles() async throws {
+		let manager = MapDataManager()
+		var created: [MapDataMetadata] = []
+
+		let manual = try await manager.importFromString(sampleGeoJSON, name: "Manual \(UUID().uuidString)")
+		created.append(manual)
+		let firstRun = try await manager.importFromString(sampleGeoJSON, name: "Run1 \(UUID().uuidString)", source: .sitePlanner)
+		created.append(firstRun)
+		let secondRun = try await manager.importFromString(sampleGeoJSON, name: "Run2 \(UUID().uuidString)", source: .sitePlanner)
+		created.append(secondRun)
+
+		let files = manager.getUploadedFiles()
+		#expect(files.first(where: { $0.id == manual.id })?.isActive == true, "a planner run must not touch manual uploads")
+		#expect(files.first(where: { $0.id == firstRun.id })?.isActive == false, "an older planner run is replaced")
+		#expect(files.first(where: { $0.id == secondRun.id })?.isActive == true, "the newest planner run is the active one")
+		#expect(files.first(where: { $0.id == secondRun.id })?.source == .sitePlanner)
+
+		await cleanUp(manager, created)
+	}
+
+	@Test func manualUploadsArriveActiveAndKeepUserVisibility() async throws {
+		let manager = MapDataManager()
+		var created: [MapDataMetadata] = []
+
+		let first = try await manager.importFromString(sampleGeoJSON, name: "Manual1 \(UUID().uuidString)")
+		created.append(first)
+		#expect(manager.getUploadedFiles().first(where: { $0.id == first.id })?.isActive == true)
+
+		// The user hides it; a later manual upload must not resurrect or change it.
+		manager.setFileActive(first.id, false)
+		let second = try await manager.importFromString(sampleGeoJSON, name: "Manual2 \(UUID().uuidString)")
+		created.append(second)
+
+		let files = manager.getUploadedFiles()
+		#expect(files.first(where: { $0.id == first.id })?.isActive == false, "user-set visibility survives later uploads")
+		#expect(files.first(where: { $0.id == second.id })?.isActive == true)
+		#expect(files.first(where: { $0.id == second.id })?.source == .manualUpload)
+
+		// The hidden state must be in the manifest, not just this instance: a fresh
+		// manager reading the same store has to agree, or a relaunch flips it back.
+		let reloaded = MapDataManager()
+		reloaded.loadMetadata()
+		let reloadedFiles = reloaded.getUploadedFiles()
+		#expect(reloadedFiles.first(where: { $0.id == first.id })?.isActive == false, "setFileActive must persist to the manifest")
+		#expect(reloadedFiles.first(where: { $0.id == first.id })?.source == .manualUpload)
+
+		await cleanUp(manager, created)
+	}
+}

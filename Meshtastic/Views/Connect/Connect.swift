@@ -439,6 +439,16 @@ struct Connect: View {
 						.textCase(nil)
 					}
 				}
+				// Connection flaps rewrite the connected-device section's rows (0-1 items)
+				// while UIKit is mid batch update, which asserts ("attempt to delete item N
+				// from section 0 which only contains N items" - Datadog eace6abe, crashing on
+				// every version since 2.7.12). A non-animated transaction makes the List
+				// reload instead of batch-update, the same treatment the node-switch gate
+				// below uses for the same assert.
+				.transaction { transaction in
+					transaction.disablesAnimations = true
+					transaction.animation = nil
+				}
 				HStack(alignment: .center) {
 					Spacer()
 #if targetEnvironment(macCatalyst)
@@ -983,12 +993,13 @@ func performRadioSwitch(_ device: Device, isSwitchingRadio: Binding<Bool>, acces
 	)
 }
 
+// The caller resolves `currentNodeNum` BEFORE starting its switch flow. Re-deriving it
+// here broke after the switch began writing the target's num into preferredPeripheralNum
+// up front and disconnect nils activeDeviceNum — the "current" node resolved to the
+// target and the backup was silently skipped on every switch, losing everything written
+// since the previous backup.
 @MainActor
-func backupCurrentDatabase(forTargetNode targetNodeNum: Int64?, accessoryManager: AccessoryManager) async {
-	let currentNodeNum = accessoryManager.activeDeviceNum ?? {
-		let num = Int64(UserDefaults.preferredPeripheralNum)
-		return num > 0 ? num : nil
-	}()
+func backupCurrentDatabase(forTargetNode targetNodeNum: Int64?, currentNodeNum: Int64?, accessoryManager: AccessoryManager) async {
 	let currentNodeName = currentNodeNum.flatMap { num in
 		accessoryManager.devices.first(where: { $0.num == num })?.longName
 	}
@@ -1020,12 +1031,13 @@ func backupCurrentDatabase(forTargetNode targetNodeNum: Int64?, accessoryManager
 @MainActor
 func backupCurrentAndRestoreDatabase(
 	forNode targetNodeNum: Int64?,
+	currentNodeNum: Int64?,
 	accessoryManager: AccessoryManager,
 	appState: AppState,
 	selectedTab: NavigationState.Tab,
 	disconnectCurrentDevice: Bool = false
 ) async -> NodeBackupResult {
-	await backupCurrentDatabase(forTargetNode: targetNodeNum, accessoryManager: accessoryManager)
+	await backupCurrentDatabase(forTargetNode: targetNodeNum, currentNodeNum: currentNodeNum, accessoryManager: accessoryManager)
 
 	if disconnectCurrentDevice, accessoryManager.allowDisconnect {
 		Logger.backup.info("💾 Disconnecting current device before restore")
@@ -1148,7 +1160,7 @@ func switchToDevice(
 	// initiation, not only deep in the connect flow (Step 5 writes it again on success).
 	// When it moved only on a fully-successful connect, any failed switch left the OLD
 	// preferred in place, so the error-path auto-reconnect bounced back to the previous
-	// radio instead of retrying the node the user asked for — and worse, that reconnect
+	// radio instead of retrying the node the user asked for — and that reconnect
 	// (a plain connect, no clear) dumped the previous radio's nodes on top of the target's
 	// freshly restored database. The node num moves with it (0 = unknown for a never-seen
 	// radio) so nothing keyed on the num keeps pointing at the abandoned node.
@@ -1177,6 +1189,7 @@ func switchToDevice(
 	// and dumped the new radio's nodes on top of the old radio's data.
 	let restoreResult = await backupCurrentAndRestoreDatabase(
 		forNode: targetNodeNum,
+		currentNodeNum: currentNodeNum,
 		accessoryManager: accessoryManager,
 		appState: appState,
 		selectedTab: .connect
