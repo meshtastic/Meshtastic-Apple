@@ -759,6 +759,18 @@ extension MeshPackets {
 		}
 	}
 	
+	/// Marks a node as successfully administered. Called when an admin response arrives
+	/// carrying a session passkey — proof that at least one admin request we sent to this
+	/// node succeeded. Never cleared once set; gates admin-only UI (like the status message
+	/// editor) for nodes other than the connected one.
+	func markNodeAdministered(num: Int64) {
+		var descriptor = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate<NodeInfoEntity> { $0.num == num })
+		descriptor.fetchLimit = 1
+		guard let node = try? modelContext.fetch(descriptor).first, !node.hasBeenAdministered else { return }
+		node.hasBeenAdministered = true
+		savePendingChanges()
+	}
+
 	func upsertBluetoothConfigPacket(config: Config.BluetoothConfig, nodeNum: Int64, sessionPasskey: Data? = Data()) {
 		
 		let logString = String.localizedStringWithFormat("Bluetooth config received: %@".localized, String(nodeNum))

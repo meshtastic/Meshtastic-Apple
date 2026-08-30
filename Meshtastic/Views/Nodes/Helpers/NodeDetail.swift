@@ -103,8 +103,15 @@ struct NodeDetail: View {
 		}
 		return (fromUser, toUser)
 	}
+	/// The status row opens the status message editor for the connected node, or for a remote
+	/// node we have successfully administered before (firmware 2.8+ in both cases).
+	private var canEditStatusMessage: Bool {
+		accessoryManager.supportsStatusMessage &&
+			(accessoryManager.activeDeviceNum == nodeNum || node.hasBeenAdministered)
+	}
 	@State var showingCompassSheet = false
 	@State private var nodeForDisplayNameEdit: NodeInfoEntity?
+	@State private var nodeForStatusMessageEdit: NodeInfoEntity?
 	/// Bumped whenever a local display name is set/cleared to force this view to re-render —
 	/// NodeDisplayNameStore is plain UserDefaults, not a SwiftData/@Bindable property, so nothing
 	/// else here would pick up the change.
@@ -127,6 +134,7 @@ struct NodeDetail: View {
 							)
 						}
 						.displayNameAlert(node: $nodeForDisplayNameEdit)
+						.statusMessageAlert(node: $nodeForStatusMessageEdit)
 					.onReceive(NotificationCenter.default.publisher(for: NodeDisplayNameStore.didChangeNotification)) { notification in
 						// Scoped to this node: the notification's object is unconditionally `nil`
 						// otherwise, and `displayNameRefresh` drives `.id()` below (which recreates
@@ -338,14 +346,36 @@ struct NodeDetail: View {
 				}
 				.accessibilityElement(children: .combine)
 			}
-			// User-authored status broadcast by the node. Omitted entirely when empty
-			// (no placeholder / em-dash). Untrusted free text — rendered verbatim as
-			// plain text, never markup. `Text(_: String)` does not parse markdown.
+			// User-authored status broadcast by the node. Untrusted free text — rendered
+			// verbatim as plain text, never markup. `Text(_: String)` does not parse markdown.
 			// Detail has more room than the cards (design#115), so it shows the full
 			// status rather than the 2-line card clamp — but still capped so a remote
 			// node broadcasting newline-laden text (the 80-byte cap is only enforced on
 			// the local save path) can't grow the row without bound.
-			if let status = node.statusMessageDisplay {
+			// For the connected node or an administered node the row is a button that opens
+			// the same status editor as the node list context menu, and it stays visible
+			// (with an em-dash) when no status is set. Read-only otherwise, and omitted
+			// entirely when empty (no placeholder).
+			if canEditStatusMessage {
+				Button {
+					nodeForStatusMessageEdit = node
+				} label: {
+					HStack(alignment: .top) {
+						Label {
+							Text("Status Message")
+						} icon: {
+							Image(systemName: NodeStatusStyle.glyph)
+								.symbolRenderingMode(.hierarchical)
+						}
+						Spacer()
+						Text(node.statusMessageDisplay ?? "—")
+							.foregroundStyle(.secondary)
+							.multilineTextAlignment(.trailing)
+							.lineLimit(6)
+					}
+				}
+				.accessibilityElement(children: .combine)
+			} else if let status = node.statusMessageDisplay {
 				HStack(alignment: .top) {
 					Label {
 						Text("Status Message")
