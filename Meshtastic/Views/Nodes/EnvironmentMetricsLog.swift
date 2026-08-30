@@ -23,17 +23,19 @@ struct EnvironmentMetricsLog: View {
 
 	@State var isEditingColumnConfiguration = false
 	@State private var chartData: [TelemetryEntity] = []
+	/// Chart input only — the table and export use `chartData` in full.
+	@State private var chartPoints: [TelemetryEntity] = []
 	@State private var totalReadings = 0
 
 	var body: some View {
 		VStack {
 			if totalReadings > 0 {
-				let chartRange = applyMargins(seriesList.chartRange(forData: chartData))
+				let chartRange = applyMargins(seriesList.chartRange(forData: chartPoints))
 				VStack {
 					if chartData.count > 0 {
 						GroupBox(label: Label("\(totalReadings) Readings Total", systemImage: "chart.xyaxis.line")) {
 							Chart(seriesList.visible) { series in
-								ForEach(chartData, id: \.time) { dataPoint in
+								ForEach(chartPoints, id: \.time) { dataPoint in
 									series.body(dataPoint, inChartRange: chartRange)
 								}
 							}
@@ -192,6 +194,7 @@ struct EnvironmentMetricsLog: View {
 		totalReadings = node.telemetryCount(ofType: 1, context: context)
 		let oneWeekAgo = Calendar.current.date(byAdding: .day, value: -7, to: Date()) ?? Date.distantPast
 		chartData = node.safeTelemetries(ofType: 1)
+		chartPoints = downsampledForChart(chartData.sorted { ($0.time ?? .distantPast) < ($1.time ?? .distantPast) })
 			.filter { ($0.time ?? Date.distantPast) >= oneWeekAgo }
 			.sorted { ($0.time ?? .distantPast) > ($1.time ?? .distantPast) }
 	}
