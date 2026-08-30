@@ -8,7 +8,7 @@ import MeshtasticProtobufs
 
 extension ChannelEntity {
 	func update(from channel: Channel) {
-		id = Int32(bitPattern: channel.settings.id)
+		id = channel.index
 		index = channel.index
 		uplinkEnabled = channel.settings.uplinkEnabled
 		downlinkEnabled = channel.settings.downlinkEnabled
@@ -28,7 +28,7 @@ extension ChannelEntity {
 		var settings = ChannelSettings()
 		settings.name = name ?? ""
 		settings.psk = psk ?? Data()
-		settings.id = UInt32(bitPattern: id)
+		settings.id = UInt32(bitPattern: index)
 		settings.uplinkEnabled = uplinkEnabled
 		settings.downlinkEnabled = downlinkEnabled
 		settings.moduleSettings.positionPrecision = UInt32(truncatingIfNeeded: positionPrecision)

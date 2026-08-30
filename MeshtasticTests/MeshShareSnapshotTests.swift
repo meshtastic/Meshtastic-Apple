@@ -23,9 +23,10 @@ struct MeshShareSnapshotTests {
 		entity.update(from: incoming)
 		let output = entity.settingsProto
 
+		#expect(entity.id == 3)
 		#expect(entity.index == 3)
 		#expect(entity.role == Int32(Channel.Role.secondary.rawValue))
-		#expect(output.id == 0xF1234567)
+		#expect(output.id == 3)
 		#expect(output.name == "Private")
 		#expect(output.psk == Data(repeating: 4, count: 16))
 		#expect(output.uplinkEnabled)

@@ -531,7 +531,7 @@ targets:
     type: app-extension.messages
     platform: iOS
     sources:
-      - path: "Shared"
+      - path: "Shared/MessageSharing"
         type: syncedFolder
       - path: "MeshtasticMessages"
         type: syncedFolder
@@ -561,7 +561,7 @@ targets:
             - "$(inherited)"
             - "@executable_path/Frameworks"
             - "@executable_path/../../Frameworks"
-          MARKETING_VERSION: "2.7.19"
+          MARKETING_VERSION: "2.7.20"
           PRODUCT_BUNDLE_IDENTIFIER: "gvh.MeshtasticClient.Messages"
           PRODUCT_NAME: "$(TARGET_NAME)"
           SKIP_INSTALL: "YES"
@@ -589,7 +589,7 @@ targets:
             - "$(inherited)"
             - "@executable_path/Frameworks"
             - "@executable_path/../../Frameworks"
-          MARKETING_VERSION: "2.7.19"
+          MARKETING_VERSION: "2.7.20"
           PRODUCT_BUNDLE_IDENTIFIER: "gvh.MeshtasticClient.Messages"
           PRODUCT_NAME: "$(TARGET_NAME)"
           SKIP_INSTALL: "YES"

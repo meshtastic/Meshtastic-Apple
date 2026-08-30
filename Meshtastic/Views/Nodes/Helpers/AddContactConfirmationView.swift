@@ -18,6 +18,7 @@ struct AddContactConfirmationView: View {
 	@State private var isAdding = false
 	@State private var failureMessage: String?
 	@State private var replyShareItem: ContactReplyShareItem?
+	@State private var hasShareableSnapshot = false
 
 	private var shortName: String {
 		let name = pendingContact.contact.user.shortName
@@ -58,7 +59,7 @@ struct AddContactConfirmationView: View {
 				}
 				.buttonStyle(.borderedProminent)
 				.frame(minWidth: 48, minHeight: 48)
-				.disabled(isAdding || MeshShareStore.load() == nil)
+				.disabled(isAdding || !hasShareableSnapshot)
 				Button {
 					addContact()
 				} label: {
@@ -85,6 +86,9 @@ struct AddContactConfirmationView: View {
 		.frame(maxWidth: 350)
 		.sheet(item: $replyShareItem, onDismiss: { dismiss() }) { item in
 			ContactReplyActivityView(url: item.url)
+		}
+		.onAppear {
+			hasShareableSnapshot = MeshShareStore.load() != nil
 		}
 	}
 

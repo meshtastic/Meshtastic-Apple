@@ -448,6 +448,16 @@
 			path = Shared;
 			sourceTree = "<group>";
 		};
+		45E13146D2205510320B8EB5 /* MessageSharing */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			name = MessageSharing;
+			path = MessageSharing;
+			sourceTree = "<group>";
+		};
 		46D9EC9A9870D40B64CBD339 /* Accessory */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			explicitFileTypes = {
@@ -688,6 +698,14 @@
 			path = Transports;
 			sourceTree = "<group>";
 		};
+		5A09511A8EFEB6219741EDDB /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				45E13146D2205510320B8EB5 /* MessageSharing */,
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
 		5D4AFA4225AF7D85EE343B80 /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -811,6 +829,7 @@
 				8F644F7974EA8B14E77ED53A /* Packages */,
 				F15A1577564640951AD3EA40 /* Settings.bundle */,
 				456E28D41A9B7B1788FEE0CD /* Shared */,
+				5A09511A8EFEB6219741EDDB /* Shared */,
 				7CF5820C55D8305FCC1F8A13 /* TV Test Support */,
 				0B1C4E352D6981242B97EF9C /* Widgets */,
 				5D4AFA4225AF7D85EE343B80 /* Products */,
@@ -1012,7 +1031,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				E9F0C0CD7E869D2F9CBD57E6 /* MeshtasticMessages */,
-				456E28D41A9B7B1788FEE0CD /* Shared */,
+				45E13146D2205510320B8EB5 /* MessageSharing */,
 			);
 			name = MeshtasticMessages;
 			packageProductDependencies = (
@@ -1664,7 +1683,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 2.7.19;
+				MARKETING_VERSION = 2.7.20;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.Messages;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -1748,7 +1767,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 2.7.19;
+				MARKETING_VERSION = 2.7.20;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.Messages;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
