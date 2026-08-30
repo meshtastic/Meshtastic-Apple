@@ -50,10 +50,6 @@ enum MarketingCapture {
 	/// DEBUG-only event presentation fixture. Launch with
 	/// `--event-firmware-preview FAB` to inspect the real connected UI without a radio.
 	static func simulateEventFirmwareIfNeeded(_ accessoryManager: AccessoryManager) {
-		if PerformanceSeedData.configuration?.style == .marketing {
-			simulateConnectedNode(accessoryManager)
-			return
-		}
 		guard let key = argValue("--event-firmware-preview"),
 			  let edition = FirmwareEditions(editionKey: key.uppercased()) else {
 			return

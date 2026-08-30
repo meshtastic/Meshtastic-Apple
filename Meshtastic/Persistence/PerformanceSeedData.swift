@@ -1160,13 +1160,7 @@ enum MarketingSeed {
 		let anchor = anchors[index % anchors.count]
 		let ring = index / anchors.count
 		let named = name(for: index, anchor: anchor, ring: ring)
-		let licensed = index % 4 == 0
-		user.longName = licensed
-			? HamName(
-				callSign: callsign(index),
-				longName: ring > 0 ? "" : HamName.limitLongName(named.long)
-			).composed
-			: named.long
+		user.longName = named.long
 		user.shortName = named.short
 		let hw = hardware(for: index)
 		user.hwModel = hw.slug
@@ -1182,7 +1176,7 @@ enum MarketingSeed {
 		user.pkiEncrypted = index % 2 == 0
 		user.keyMatch = true
 		user.unmessagable = false
-		user.isLicensed = licensed
+		user.isLicensed = index % 4 == 0
 		node.favorite = favoriteIndices.contains(index)
 		node.ignored = false
 		node.channel = 0
