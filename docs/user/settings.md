@@ -12,6 +12,20 @@ The Settings tab lets you configure the app and your connected Meshtastic radio.
 
 General app preferences including map style, notification behavior, and theme. These affect only the app — not the radio.
 
+### Notifications
+
+Which alerts the app raises is set per type in the iOS Settings app, under **Settings → Meshtastic**, in the **Notifications** section. **Open Settings** in App Settings takes you straight there. Every toggle is on by default.
+
+| Setting | Description |
+|---------|-------------|
+| Channel Messages | Alerts for incoming channel messages. Direct messages always notify unless the sender is muted, and a message that @mentions you notifies even with this off. |
+| Tapbacks | Alerts when someone reacts to a message, such as **Alice reacted 👍 to "See you soon"**. |
+| New Waypoints | Alerts when a node shares a new waypoint. |
+| New Nodes | Alerts when a node the app has not seen before joins the mesh. |
+| Low Battery | Alerts when the connected device's battery gets low. |
+
+Turning a toggle off suppresses only the alert — messages, reactions, waypoints, and nodes are still received and still appear in the app. Muting a channel or a sender in the app silences that conversation regardless of these settings.
+
 ### Data Management
 
 - **Erase All App Data** — clears the local database, translation cache, and all stored settings, then immediately reloads the bundled device hardware catalog. Use this as a last resort.
