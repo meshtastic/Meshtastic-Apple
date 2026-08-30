@@ -1939,10 +1939,9 @@ actor MeshPackets {
 										userNum: dmUserNum,
 										critical: critical
 									)
-								} else if UserDefaults.tapbackNotifications,
-										  let reactionBody = MeshPackets.reactionNotificationBody(replyID: newMessage.replyID, emoji: messageText, senderName: senderName, context: modelContext) {
-									// Tapback/reaction: only notify when the user hasn't switched tapback
-									// notifications off, and the reacted-to message is known locally.
+								} else if let reactionBody = MeshPackets.reactionNotificationBody(replyID: newMessage.replyID, emoji: messageText, senderName: senderName, context: modelContext) {
+									// Tapback/reaction: follows the same notification rules as the message it
+									// reacts to, and only notifies when the reacted-to message is known locally.
 									// A "phantom" tapback (replyID with no matching local message) is stored but not
 									// surfaced — reactionNotificationBody returns nil in that case.
 									dmNotification = makeMessageNotification(
@@ -1996,10 +1995,9 @@ actor MeshPackets {
 												userNum: channelUserNum,
 												critical: critical
 											)
-										} else if UserDefaults.tapbackNotifications,
-												  let reactionBody = MeshPackets.reactionNotificationBody(replyID: newMessage.replyID, emoji: messageText, senderName: senderName, context: modelContext) {
-											// Tapback/reaction: only notify when the user hasn't switched tapback
-											// notifications off, and the reacted-to message is known locally. A
+										} else if let reactionBody = MeshPackets.reactionNotificationBody(replyID: newMessage.replyID, emoji: messageText, senderName: senderName, context: modelContext) {
+											// Tapback/reaction: follows the channel-notification rules above, and
+											// only notifies when the reacted-to message is known locally. A
 											// "phantom" tapback is stored but not surfaced — the helper returns nil
 											// in that case, per Android's guard.
 											channelNotification = makeMessageNotification(

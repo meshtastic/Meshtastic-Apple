@@ -19,7 +19,6 @@ Which alerts the app raises is set per type in the iOS Settings app, under **Set
 | Setting | Description |
 |---------|-------------|
 | Channel Messages | Alerts for incoming channel messages. Direct messages always notify unless the sender is muted, and a message that @mentions you notifies even with this off. |
-| Tapbacks | Alerts when someone reacts to a message, such as **Alice reacted 👍 to "See you soon"**. |
 | New Waypoints | Alerts when a node shares a new waypoint. |
 | New Nodes | Alerts when a node the app has not seen before joins the mesh. |
 | Low Battery | Alerts when the connected device's battery gets low. |

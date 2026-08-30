@@ -97,16 +97,6 @@
 			<key>DefaultValue</key>
 			<true/>
 			<key>Key</key>
-			<string>tapbackNotifications</string>
-			<key>Title</key>
-			<string>Tapbacks</string>
-			<key>Type</key>
-			<string>PSToggleSwitchSpecifier</string>
-		</dict>
-		<dict>
-			<key>DefaultValue</key>
-			<true/>
-			<key>Key</key>
 			<string>waypointNotifications</string>
 			<key>Title</key>
 			<string>New Waypoints</string>

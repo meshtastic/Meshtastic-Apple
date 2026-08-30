@@ -72,7 +72,6 @@ extension UserDefaults {
 		case nodeNotificationsUserOverrideForEvent
 		case lowBatteryNotifications
 		case channelMessageNotifications
-		case tapbackNotifications
 		case waypointNotifications
 		case modemPreset
 		case firmwareVersion
@@ -157,8 +156,6 @@ extension UserDefaults {
 	@UserDefault(.channelMessageNotifications, defaultValue: true)
 	static var channelMessageNotifications: Bool
 
-	@UserDefault(.tapbackNotifications, defaultValue: true)
-	static var tapbackNotifications: Bool
 
 	@UserDefault(.waypointNotifications, defaultValue: true)
 	static var waypointNotifications: Bool
