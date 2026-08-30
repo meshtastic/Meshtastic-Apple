@@ -95,6 +95,9 @@ final class MeshBeaconConfigEntity {
 	/// ModemPresets raw value advertised in offer_preset, or -1 when not offered (0 = LongFast).
 	var broadcastOfferPreset: Int32 = -1
 	/// Single-target TX channel (broadcast_on_channel); used only when `broadcastTargets` is empty.
+	// The broadcast-on fields and send-as-node were removed from the protobuf
+	// (TX destinations consolidated onto broadcast_targets). The columns stay so
+	// the SwiftData schema is untouched; nothing writes or reads them anymore.
 	var broadcastOnChannelName: String = ""
 	var broadcastOnChannelPSK: Data = Data()
 	/// RegionCodes raw value for single-target TX (broadcast_on_region); 0 = unset (running config).

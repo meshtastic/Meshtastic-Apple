@@ -34,10 +34,6 @@ struct MeshBeaconConfig: View {
 	@State private var offerChannelName = ""
 	@State private var offerChannelPSK = Data()
 	@State private var offerChannelIndex: Int32 = -1
-	// Stored broadcast-on name+key pair, kept only to pass through unchanged when the
-	// seeded selection matches none of the radio's channels (a pair set from another client).
-	@State private var onChannelName = ""
-	@State private var onChannelPSK = Data()
 	@State private var beaconInterval = UpdateInterval(from: 3_600)
 	@State private var targets: [BroadcastTargetDraft] = [BroadcastTargetDraft()]
 	@State private var seededTargetKeys: [[Int32]] = []
@@ -286,7 +282,7 @@ struct MeshBeaconConfig: View {
 		Section(header: Text("Broadcast On"), footer: Text("The channel and preset the beacon transmits on. Add a target to broadcast on more channels.")) {
 			ForEach($targets) { $target in
 				VStack(alignment: .leading, spacing: 6) {
-					channelPicker("Channel", selection: $target.channelIndex, customName: onChannelName, noneLabel: "Default")
+					channelPicker("Channel", selection: $target.channelIndex, customName: "", noneLabel: "Default")
 					presetPicker("Preset", selection: $target.preset)
 				}
 			}
@@ -367,8 +363,6 @@ struct MeshBeaconConfig: View {
 		broadcastMessage = config?.broadcastMessage ?? ""
 		offerChannelName = config?.broadcastOfferChannelName ?? ""
 		offerChannelPSK = config?.broadcastOfferChannelPSK ?? Data()
-		onChannelName = config?.broadcastOnChannelName ?? ""
-		onChannelPSK = config?.broadcastOnChannelPSK ?? Data()
 		offerChannelIndex = resolveChannelIndex(name: offerChannelName, psk: offerChannelPSK)
 		// A beacon must offer a channel to join; a stored config without one gets the
 		// primary channel.
@@ -378,16 +372,14 @@ struct MeshBeaconConfig: View {
 			offerChannelPSK = first.psk ?? Data()
 		}
 		beaconInterval = UpdateInterval(from: Int(config?.broadcastIntervalSecs ?? 3_600))
-		// Stored targets when present, otherwise a single row from the broadcast-on
-		// fields. The relationship's order isn't guaranteed, so sort for a stable list.
+		// Targets are the only broadcast model since the protobuf consolidated TX
+		// destinations onto broadcast_targets. The relationship's order isn't
+		// guaranteed, so sort for a stable list; an empty config seeds one default row.
 		let storedTargets = (config?.broadcastTargets ?? []).sorted {
 			($0.channelIndex, $0.preset) < ($1.channelIndex, $1.preset)
 		}
 		if storedTargets.isEmpty {
-			targets = [BroadcastTargetDraft(
-				preset: config?.broadcastOnPreset ?? -1,
-				channelIndex: resolveChannelIndex(name: onChannelName, psk: onChannelPSK)
-			)]
+			targets = [BroadcastTargetDraft()]
 		} else {
 			targets = storedTargets.map { BroadcastTargetDraft(preset: $0.preset, channelIndex: $0.channelIndex) }
 		}
@@ -417,36 +409,10 @@ struct MeshBeaconConfig: View {
 			config.broadcastOfferPreset = preset
 		}
 
-		// The first row is the broadcast-on config. A custom row (-2) passes the stored
-		// name+key pair through unchanged.
-		if let first = targets.first {
-			if first.channelIndex >= 0, let channel = nodeChannels.first(where: { $0.index == first.channelIndex }) {
-				var settings = ChannelSettings()
-				settings.name = channel.name ?? ""
-				settings.psk = channel.psk ?? Data()
-				config.broadcastOnChannel = settings
-			} else if first.channelIndex == -2 {
-				var settings = ChannelSettings()
-				settings.name = onChannelName
-				settings.psk = onChannelPSK
-				config.broadcastOnChannel = settings
-			}
-			if first.preset >= 0, let preset = Config.LoRaConfig.ModemPreset(rawValue: Int(first.preset)) {
-				config.broadcastOnPreset = preset
-			}
-		}
-		if let region = Config.LoRaConfig.RegionCode(rawValue: Int(nodeRegion)) {
-			config.broadcastOnRegion = region
-		}
-
 		config.broadcastIntervalSecs = UInt32(truncatingIfNeeded: beaconInterval.intValue)
-		// No longer exposed in this editor; ride the stored value along unchanged (D4) so
-		// saving other fields cannot clear a value set from the CLI or another client.
-		config.broadcastSendAsNode = UInt32(truncatingIfNeeded: node?.meshBeaconConfig?.broadcastSendAsNode ?? 0)
 
-		// A single row rides in the broadcast-on fields alone; targets are written only
-		// when there is more than one beacon to send.
-		config.broadcastTargets = targets.count <= 1 ? [] : targets.map { draft in
+		// Every row is a broadcast target — the protobuf's only TX destination model.
+		config.broadcastTargets = targets.map { draft in
 			var target = ModuleConfig.MeshBeaconConfig.BroadcastTarget()
 			if draft.preset >= 0, let preset = Config.LoRaConfig.ModemPreset(rawValue: Int(draft.preset)) {
 				target.preset = preset
