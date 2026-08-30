@@ -194,9 +194,12 @@ struct EnvironmentMetricsLog: View {
 		totalReadings = node.telemetryCount(ofType: 1, context: context)
 		let oneWeekAgo = Calendar.current.date(byAdding: .day, value: -7, to: Date()) ?? Date.distantPast
 		chartData = node.safeTelemetries(ofType: 1)
-		chartPoints = downsampledForChart(chartData.sorted { ($0.time ?? .distantPast) < ($1.time ?? .distantPast) })
 			.filter { ($0.time ?? Date.distantPast) >= oneWeekAgo }
 			.sorted { ($0.time ?? .distantPast) > ($1.time ?? .distantPast) }
+		// chartData is sorted newest-first for the table; the chart wants the visible
+		// window oldest-first, decimated AFTER the week filter so the mark budget is
+		// spent entirely on points the chart will draw.
+		chartPoints = downsampledForChart(Array(chartData.reversed()))
 	}
 }
 
