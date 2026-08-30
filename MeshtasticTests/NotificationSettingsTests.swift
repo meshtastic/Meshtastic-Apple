@@ -2,7 +2,8 @@
 //  NotificationSettingsTests.swift
 //  MeshtasticTests
 //
-//  Coverage for the `tapbackNotifications` and `waypointNotifications` toggles in
+//  Coverage for tapback notifications following the message notification settings,
+//  and for the `waypointNotifications` toggle in
 //  Settings.bundle. Both notification types used to fire unconditionally, so the only way
 //  to stop them was to turn off notifications for the whole app.
 //
@@ -169,37 +170,8 @@ struct NotificationSettingsTests {
 
 	// MARK: - Tapback notifications
 
-	@Test @MainActor func tapbackNotificationsOff_directMessage_schedulesNothing() async throws {
-		let previous = UserDefaults.tapbackNotifications
-		UserDefaults.tapbackNotifications = false
-		defer { UserDefaults.tapbackNotifications = previous }
-
-		let recorder = NotificationRecorder()
-		let mp = await makeMeshPackets(recorder: recorder)
-		let originalId: Int64 = 0x00D0_0001
-		let reactionId: Int64 = 0x00D0_0002
-		try seedDirectMessageConversation(originalMessageId: originalId)
-
-		await mp.textMessageAppPacket(
-			packet: reactionPacket(id: UInt32(reactionId), from: UInt32(peerNode), to: UInt32(connectedNode), replyID: UInt32(originalId)),
-			wantRangeTestPackets: true,
-			connectedNode: connectedNode,
-			appState: nil
-		)
-
-		await drainScheduledNotificationWork()
-		#expect(recorder.notifications.isEmpty, "tapback must not notify when the setting is off")
-		// The reaction is still stored — the toggle silences the notification, nothing else.
-		let ctx = ModelContext(sharedModelContainer)
-		let stored = try ctx.fetch(FetchDescriptor<MessageEntity>(predicate: #Predicate { $0.messageId == reactionId }))
-		#expect(stored.first?.isEmoji == true, "the reaction itself must still be saved")
-	}
-
-	@Test @MainActor func tapbackNotificationsOn_directMessage_stillNotifies() async throws {
-		let previous = UserDefaults.tapbackNotifications
-		UserDefaults.tapbackNotifications = true
-		defer { UserDefaults.tapbackNotifications = previous }
-
+	/// Direct messages have no notification toggle, so their tapbacks notify unconditionally.
+	@Test @MainActor func directMessageTapback_notifies() async throws {
 		let recorder = NotificationRecorder()
 		let mp = await makeMeshPackets(recorder: recorder)
 		let originalId: Int64 = 0x00D0_0011
@@ -222,13 +194,11 @@ struct NotificationSettingsTests {
 		#expect(recorder.notifications.first?.replyMessageId == originalId)
 	}
 
-	@Test @MainActor func tapbackNotificationsOff_channelMessage_schedulesNothing() async throws {
-		let previousTapback = UserDefaults.tapbackNotifications
+	/// Channel tapbacks follow the channel-message toggle: off silences them too.
+	@Test @MainActor func channelNotificationsOff_silencesChannelTapbacks() async throws {
 		let previousChannel = UserDefaults.channelMessageNotifications
-		UserDefaults.tapbackNotifications = false
-		UserDefaults.channelMessageNotifications = true
+		UserDefaults.channelMessageNotifications = false
 		defer {
-			UserDefaults.tapbackNotifications = previousTapback
 			UserDefaults.channelMessageNotifications = previousChannel
 		}
 
@@ -246,29 +216,34 @@ struct NotificationSettingsTests {
 		)
 
 		await drainScheduledNotificationWork()
-		#expect(recorder.notifications.isEmpty, "channel tapback must not notify when the setting is off")
+		#expect(recorder.notifications.isEmpty, "channel tapback must not notify when channel notifications are off")
 	}
 
-	@Test @MainActor func tapbackNotificationsOff_leavesPlainMessagesAlone() async throws {
-		let previousTapback = UserDefaults.tapbackNotifications
-		UserDefaults.tapbackNotifications = false
-		defer { UserDefaults.tapbackNotifications = previousTapback }
+	/// And on means on: a channel tapback notifies under the same rules as channel messages.
+	@Test @MainActor func channelNotificationsOn_notifiesChannelTapbacks() async throws {
+		let previousChannel = UserDefaults.channelMessageNotifications
+		UserDefaults.channelMessageNotifications = true
+		defer {
+			UserDefaults.channelMessageNotifications = previousChannel
+		}
 
 		let recorder = NotificationRecorder()
 		let mp = await makeMeshPackets(recorder: recorder)
 		let originalId: Int64 = 0x00D0_0031
-		let messageId: Int64 = 0x00D0_0032
-		try seedDirectMessageConversation(originalMessageId: originalId)
+		let reactionId: Int64 = 0x00D0_0032
+		try seedChannelConversation(originalMessageId: originalId)
 
 		await mp.textMessageAppPacket(
-			packet: textPacket(id: UInt32(messageId), from: UInt32(peerNode), to: UInt32(connectedNode)),
+			packet: reactionPacket(id: UInt32(reactionId), from: UInt32(peerNode), to: Constants.maximumNodeNum, replyID: UInt32(originalId)),
 			wantRangeTestPackets: true,
 			connectedNode: connectedNode,
 			appState: nil
 		)
 
 		await recorder.waitForNextNotification()
-		#expect(recorder.notifications.first?.content == "hello mesh", "the tapback toggle must not silence ordinary messages")
+		#expect(recorder.notifications.count == 1)
+		#expect(recorder.notifications.first?.content.contains("👍") == true)
+		#expect(recorder.notifications.first?.replyMessageId == originalId)
 	}
 
 	// MARK: - Waypoint notifications
@@ -311,22 +286,18 @@ struct NotificationSettingsTests {
 
 	// MARK: - Defaults
 
-	/// Both toggles default to on, matching today's behavior for anyone who never opens Settings.
+	/// The toggle defaults to on, matching today's behavior for anyone who never opens Settings.
 	/// The Settings.bundle DefaultValue only applies once the user visits the pane, so the
 	/// `@UserDefault` default is what actually governs a fresh install.
 	@Test func togglesDefaultToOn() async {
 		let store = UserDefaults.standard
-		let previousTapback = store.object(forKey: UserDefaults.Keys.tapbackNotifications.rawValue)
 		let previousWaypoint = store.object(forKey: UserDefaults.Keys.waypointNotifications.rawValue)
 		defer {
-			store.set(previousTapback, forKey: UserDefaults.Keys.tapbackNotifications.rawValue)
 			store.set(previousWaypoint, forKey: UserDefaults.Keys.waypointNotifications.rawValue)
 		}
 
-		store.removeObject(forKey: UserDefaults.Keys.tapbackNotifications.rawValue)
 		store.removeObject(forKey: UserDefaults.Keys.waypointNotifications.rawValue)
 
-		#expect(UserDefaults.tapbackNotifications == true)
 		#expect(UserDefaults.waypointNotifications == true)
 	}
 }
