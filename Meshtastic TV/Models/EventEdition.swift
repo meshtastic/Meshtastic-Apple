@@ -37,6 +37,10 @@ struct EventEdition: Equatable {
 			self.init(name: "Hamvention", assetName: "EventFirmwareHAMVENTION")
 		case .fab:
 			self.init(name: "FAB", assetName: "EventFirmwareFAB")
+		case .dragonCon:
+			self.init(name: "Dragon Con", assetName: nil)
+		case .ccc:
+			self.init(name: "CCC", assetName: nil)
 		case .diyEdition:
 			self.init(name: "DIY Edition", assetName: nil)
 		}
