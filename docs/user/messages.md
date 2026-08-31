@@ -94,6 +94,8 @@ Long press any message and tap **Tapback** to send an emoji reaction.
 
 When someone reacts to a message, you get a notification such as **Alice reacted 👍 to "See you soon"** — unless the sender (for a direct message) or the channel is muted. Reactions notify **without** adding to the conversation's unread badge. If your radio hasn't seen the message that was reacted to, the reaction is saved but no notification is shown (there'd be nothing to display it against).
 
+Reaction alerts follow the same notification settings as the messages they react to: muting a channel, a sender, or channel message notifications silences their reactions too.
+
 ---
 
 {: .tip }

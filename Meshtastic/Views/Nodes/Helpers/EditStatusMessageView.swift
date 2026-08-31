@@ -4,7 +4,7 @@
 //
 //  Copyright(c) Garth Vander Houwen 8/27/26.
 //
-//  Alert-based prompt to set the status message the connected node broadcasts to the mesh.
+//  Alert-based prompt to set the status message a node broadcasts to the mesh.
 //
 
 import MeshtasticProtobufs
@@ -13,9 +13,11 @@ import SwiftData
 import SwiftUI
 
 extension View {
-	/// Presents a native alert with a text field to set the connected node's status message
+	/// Presents a native alert with a text field to set a node's status message
 	/// (firmware 2.8+, gated by `AccessoryManager.supportsStatusMessage` at the call site).
-	/// Driven by `node`: assign the connected node to present the alert, `nil` (or Cancel/Save) dismisses it.
+	/// Works for the connected node, or a remote node that has been successfully
+	/// administered before (`NodeInfoEntity.hasBeenAdministered`).
+	/// Driven by `node`: assign a node to present the alert, `nil` (or Cancel/Save) dismisses it.
 	func statusMessageAlert(node: Binding<NodeInfoEntity?>) -> some View {
 		modifier(StatusMessageAlertModifier(node: node))
 	}
@@ -66,7 +68,31 @@ private struct StatusMessageAlertModifier: ViewModifier {
 				)
 				status = prefill
 				initialStatus = prefill
+				refreshRemoteSessionIfNeeded()
 			}
+	}
+
+	/// A remote save must carry a live session passkey — the firmware rejects writes with a
+	/// stale one (ADMIN_BAD_SESSION_KEY) and the passkey only lasts 5 minutes. When the editor
+	/// opens for a remote node without a live session, request this module's config now so the
+	/// response re-seeds the passkey while the user is still typing — the same on-appear
+	/// refresh the config screens use (`requestRemoteConfig`).
+	private func refreshRemoteSessionIfNeeded() {
+		guard let presentedNode = node,
+			  let deviceNum = accessoryManager.activeDeviceNum,
+			  presentedNode.num != deviceNum,
+			  !presentedNode.hasLiveAdminSession,
+			  let connectedNode = getNodeInfo(id: deviceNum, context: context),
+			  let fromUser = connectedNode.user,
+			  let toUser = presentedNode.user
+		else { return }
+		Task {
+			do {
+				try await accessoryManager.requestStatusMessageModuleConfig(fromUser: fromUser, toUser: toUser)
+			} catch {
+				Logger.mesh.error("🚨 Status message session refresh failed: \(error.localizedDescription)")
+			}
+		}
 	}
 
 	/// Clamp to the 80-byte UTF-8 limit the firmware enforces, dropping whole trailing
@@ -80,14 +106,24 @@ private struct StatusMessageAlertModifier: ViewModifier {
 	}
 
 	/// Same save path the old Status Message config screen used.
+	/// `fromUser` is always the connected node's user and `toUser` the presented node's user —
+	/// `saveStatusMessageModuleConfig` attaches the session passkey when they differ. The presented
+	/// node must be the connected node or one we have successfully administered before.
 	private func save(for presentedNode: NodeInfoEntity) {
 		guard let deviceNum = accessoryManager.activeDeviceNum,
-			  presentedNode.num == deviceNum,
+			  presentedNode.num == deviceNum || presentedNode.hasBeenAdministered,
 			  let connectedNode = getNodeInfo(id: deviceNum, context: context),
 			  let fromUser = connectedNode.user,
 			  let toUser = presentedNode.user
 		else {
 			Logger.mesh.warning("⚠️ Cannot save status message: missing connected node or user entities")
+			return
+		}
+		// A remote write needs a live admin session; with a stale passkey the target just
+		// rejects it. The editor requested a refresh when it opened — if none arrived by
+		// now, skip the send and the optimistic local update rather than pretending it worked.
+		if presentedNode.num != deviceNum && !presentedNode.hasLiveAdminSession {
+			Logger.mesh.warning("⚠️ Not saving status message for \(toUser.longName ?? "unknown node", privacy: .public): admin session expired")
 			return
 		}
 		var config = ModuleConfig.StatusMessageConfig()

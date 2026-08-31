@@ -1149,7 +1149,7 @@ actor MeshPackets {
 		return nil
 	}
 
-	func adminAppPacket (packet: MeshPacket) {
+	func adminAppPacket (packet: MeshPacket, connectedNodeNum: Int64? = nil) {
 		if let adminMessage = try? AdminMessage(serializedBytes: packet.decoded.payload) {
 
 			if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getCannedMessageModuleMessagesResponse(adminMessage.getCannedMessageModuleMessagesResponse) {
@@ -1235,6 +1235,26 @@ actor MeshPackets {
 				}
 			} else {
 				Logger.admin.error("🕸️ MESH PACKET received Admin App UNHANDLED \((try? packet.decoded.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
+			}
+			// An admin *response* carrying a session passkey is proof an admin request we
+			// sent to this node succeeded, so remember that it has been administered.
+			// Marking requires a response variant (never a request another node sent),
+			// a response correlated to a request (requestID != 0), and a packet addressed
+			// to the connected node — an unsolicited or forwarded admin message never
+			// unlocks the remote-admin UI. Runs after the handlers above so a node first
+			// heard via a metadata response exists by now.
+			if let connectedNodeNum,
+			   packet.decoded.requestID != 0,
+			   Int64(packet.to) == connectedNodeNum,
+			   !adminMessage.sessionPasskey.isEmpty {
+				switch adminMessage.payloadVariant {
+				case .getChannelResponse, .getOwnerResponse, .getConfigResponse, .getModuleConfigResponse,
+					 .getCannedMessageModuleMessagesResponse, .getDeviceMetadataResponse, .getRingtoneResponse,
+					 .getDeviceConnectionStatusResponse, .getNodeRemoteHardwarePinsResponse, .getUiConfigResponse:
+					markNodeAdministered(num: Int64(packet.from))
+				default:
+					break
+				}
 			}
 			// Save an ack for the admin message log for each admin message response received as we stopped sending acks if there is also a response to reduce airtime.
 			self.adminResponseAck(packet: packet)
@@ -1940,7 +1960,8 @@ actor MeshPackets {
 										critical: critical
 									)
 								} else if let reactionBody = MeshPackets.reactionNotificationBody(replyID: newMessage.replyID, emoji: messageText, senderName: senderName, context: modelContext) {
-									// Tapback/reaction: only notify when the reacted-to message is known locally.
+									// Tapback/reaction: follows the same notification rules as the message it
+									// reacts to, and only notifies when the reacted-to message is known locally.
 									// A "phantom" tapback (replyID with no matching local message) is stored but not
 									// surfaced — reactionNotificationBody returns nil in that case.
 									dmNotification = makeMessageNotification(
@@ -1995,9 +2016,10 @@ actor MeshPackets {
 												critical: critical
 											)
 										} else if let reactionBody = MeshPackets.reactionNotificationBody(replyID: newMessage.replyID, emoji: messageText, senderName: senderName, context: modelContext) {
-											// Tapback/reaction: only notify when the reacted-to message is known
-											// locally. A "phantom" tapback is stored but not surfaced — the helper
-											// returns nil in that case, per Android's guard.
+											// Tapback/reaction: follows the channel-notification rules above, and
+											// only notifies when the reacted-to message is known locally. A
+											// "phantom" tapback is stored but not surfaced — the helper returns nil
+											// in that case, per Android's guard.
 											channelNotification = makeMessageNotification(
 												message: newMessage,
 												content: reactionBody,
@@ -2096,24 +2118,29 @@ actor MeshPackets {
 					savePendingChanges()
 					Logger.data.info("💾 Added Node Waypoint App Packet For: \(waypoint.id, privacy: .public)")
 
-					Task { @MainActor in
-							let manager = LocalNotificationManager()
-							let icon = String(UnicodeScalar(Int(waypoint.icon)) ?? "📍")
-							let latitude = Double(waypoint.latitudeI) / 1e7
-							let longitude = Double(waypoint.longitudeI) / 1e7
-							manager.notifications = [
-								Notification(
-									id: ("notification.id.\(waypoint.id)"),
-									title: "New Waypoint From \(nodeShortName)",
-									subtitle: "\(icon) \(waypoint.name ?? "Dropped Pin")",
-									content: "\(waypoint.longDescription ?? "\(latitude), \(longitude)")",
-									target: "map",
-									path: "meshtastic:///map?waypointid=\(waypoint.id)"
-								)
-							]
-							Logger.data.debug("meshtastic:///map?waypointid=\(waypoint.id, privacy: .public)")
-							manager.schedule()
+					if UserDefaults.waypointNotifications {
+						// Build the notification from the model now, while this context is valid, and
+						// capture only the resulting value — same rule as the message path: a deferred
+						// Task must not hold `waypoint`, a context-bound model.
+						let icon = String(UnicodeScalar(Int(waypoint.icon)) ?? "📍")
+						let latitude = Double(waypoint.latitudeI) / 1e7
+						let longitude = Double(waypoint.longitudeI) / 1e7
+						let waypointId = waypoint.id
+						let waypointName = waypoint.name ?? "Dropped Pin".localized
+						let notification = Notification(
+							id: ("notification.id.\(waypointId)"),
+							title: String.localizedStringWithFormat("New Waypoint From %@".localized, nodeShortName),
+							subtitle: "\(icon) \(waypointName)",
+							content: "\(waypoint.longDescription ?? "\(latitude), \(longitude)")",
+							target: "map",
+							path: "meshtastic:///map?waypointid=\(waypointId)"
+						)
+						let scheduler = notificationScheduler
+						Task { @MainActor in
+							scheduler([notification])
+							Logger.data.debug("meshtastic:///map?waypointid=\(waypointId, privacy: .public)")
 						}
+					}
 				} else {
 					// Update existing waypoint
 					let existingWaypoint = fetchedWaypoint[0]
