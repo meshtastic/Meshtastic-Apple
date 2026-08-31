@@ -24,13 +24,32 @@ import UniformTypeIdentifiers
 /// Coordinates writes to a security-scoped URL returned by the Files picker.
 /// External USB volumes are hosted by a file provider, so writing directly to
 /// the URL can fail even after the app has successfully read INFO_UF2.TXT.
-enum OTAFIXDriveWriter {
-	static func write(_ data: Data, to destination: URL) throws {
+protocol OTAFIXDriveWriteCoordinating {
+	func coordinateWritingItem(at destination: URL, accessor: (URL) -> Void) throws
+}
+
+struct OTAFIXDriveWriteCoordinator: OTAFIXDriveWriteCoordinating {
+	func coordinateWritingItem(at destination: URL, accessor: (URL) -> Void) throws {
 		let coordinator = NSFileCoordinator()
 		var coordinationError: NSError?
-		var writeError: Error?
 
 		coordinator.coordinate(writingItemAt: destination, options: [], error: &coordinationError) { coordinatedDestination in
+			accessor(coordinatedDestination)
+		}
+
+		if let coordinationError { throw coordinationError }
+	}
+}
+
+enum OTAFIXDriveWriter {
+	static func write(
+		_ data: Data,
+		to destination: URL,
+		coordinator: any OTAFIXDriveWriteCoordinating = OTAFIXDriveWriteCoordinator()
+	) throws {
+		var writeError: Error?
+
+		try coordinator.coordinateWritingItem(at: destination) { coordinatedDestination in
 			do {
 				try data.write(to: coordinatedDestination)
 			} catch {
@@ -38,7 +57,6 @@ enum OTAFIXDriveWriter {
 			}
 		}
 
-		if let coordinationError { throw coordinationError }
 		if let writeError { throw writeError }
 	}
 }
