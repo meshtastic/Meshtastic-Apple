@@ -314,6 +314,44 @@ struct SelfOriginatedMessageEchoTests {
 		#expect(stored.first?.read == true, "detection-sensor with notifications disabled must be read")
 	}
 
+	/// Detection-sensor packets are intentionally omitted from Direct Messages and live in the
+	/// sender node's Detection Sensor Log. When their notifications are enabled, opening one must
+	/// therefore select that node rather than navigating to an empty DM conversation.
+	@Test @MainActor func directDetectionSensor_notificationOpensSenderNode() async {
+		let previousValue = UserDefaults.enableDetectionNotifications
+		UserDefaults.enableDetectionNotifications = true
+		defer { UserDefaults.enableDetectionNotifications = previousValue }
+
+		let notifications = MainActorBox<[MeshNotification]>([])
+		let mp = await makeMeshPackets(scheduledNotifications: notifications)
+		let id: Int64 = 0x00C0_0031
+
+		let ctx = ModelContext(sharedModelContainer)
+		let sender = UserEntity()
+		ctx.insert(sender)
+		sender.num = peerNode
+		sender.longName = "Sensor"
+		sender.shortName = "SN"
+		sender.mute = false
+
+		let receiver = UserEntity()
+		ctx.insert(receiver)
+		receiver.num = connectedNode
+		receiver.longName = "Me"
+		receiver.shortName = "ME"
+		try? ctx.save()
+
+		await mp.textMessageAppPacket(
+			packet: detectionSensorPacket(id: UInt32(id), from: UInt32(peerNode), to: UInt32(connectedNode)),
+			wantRangeTestPackets: true,
+			connectedNode: connectedNode,
+			appState: nil
+		)
+
+		try? await Task.sleep(for: .milliseconds(100))
+		#expect(notifications.value.first?.path == "meshtastic:///nodes?nodenum=\(peerNode)")
+	}
+
 	// MARK: - Self-originated DM
 
 	/// A self-originated DM (not just broadcast) should schedule no notification.
