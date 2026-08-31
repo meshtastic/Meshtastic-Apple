@@ -16,9 +16,32 @@
 //
 
 import CryptoKit
+import Foundation
 import OSLog
 import SwiftUI
 import UniformTypeIdentifiers
+
+/// Coordinates writes to a security-scoped URL returned by the Files picker.
+/// External USB volumes are hosted by a file provider, so writing directly to
+/// the URL can fail even after the app has successfully read INFO_UF2.TXT.
+enum OTAFIXDriveWriter {
+	static func write(_ data: Data, to destination: URL) throws {
+		let coordinator = NSFileCoordinator()
+		var coordinationError: NSError?
+		var writeError: Error?
+
+		coordinator.coordinate(writingItemAt: destination, options: [], error: &coordinationError) { coordinatedDestination in
+			do {
+				try data.write(to: coordinatedDestination)
+			} catch {
+				writeError = error
+			}
+		}
+
+		if let coordinationError { throw coordinationError }
+		if let writeError { throw writeError }
+	}
+}
 
 struct BootloaderUpgradeView: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
@@ -310,7 +333,7 @@ struct BootloaderUpgradeView: View {
 					return
 				}
 				let destination = driveURL.appendingPathComponent(image.fileName)
-				try data.write(to: destination)
+				try OTAFIXDriveWriter.write(data, to: destination)
 				Logger.services.info("Wrote OTAFIX bootloader \(image.fileName, privacy: .public) to the device drive")
 				phase = .done(fileName: image.fileName)
 			} catch is CancellationError {
