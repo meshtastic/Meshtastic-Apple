@@ -12,12 +12,12 @@
 <h2>App Entry Point</h2>
 <p><code>Meshtastic/MeshtasticApp.swift</code> is the <code>@main</code> <code>App</code> struct. On launch it:</p>
 <ol>
-<li>Creates <code>PersistenceController.shared</code> (SwiftData <code>ModelContainer</code>)</li>
-<li>Instantiates <code>AppState</code> (wraps <code>Router</code>)</li>
-<li>Instantiates <code>AccessoryManager</code> (BLE/TCP/serial connectivity)</li>
-<li>Instantiates <code>AccessoryManager.shared</code> as an <code>@EnvironmentObject</code> for the view hierarchy</li>
+<li>Instantiates <code>AppState</code> and <code>AccessoryManager</code> without starting persistence-dependent services.</li>
+<li>Runs the process-wide <code>PersistenceBootstrap</code>, which checks protected-data access and prepares any legacy Core Data store.</li>
+<li>Shows <code>MigrationBootstrapView</code> while legacy data is copied into SwiftData off the main actor.</li>
+<li>Mounts the SwiftData view tree and starts database-dependent services only after the bootstrap state is <code>.ready</code>.</li>
 </ol>
-<p><code>MeshtasticAppDelegate.swift</code> handles <code>UIApplicationDelegate</code> hooks for SiriKit CarPlay messaging intents.</p>
+<p><code>MeshtasticAppDelegate.swift</code> handles <code>UIApplicationDelegate</code> hooks for SiriKit CarPlay messaging intents. BLE restoration, CarPlay, Siri, and notification cold-launch paths wait for the same persistence bootstrap before reading or writing SwiftData.</p>
 <h2>Router &amp; Navigation</h2>
 <p><code>Router</code> (<code>Meshtastic/Router/Router.swift</code>) is a <code>@MainActor</code> <code>ObservableObject</code> that owns a <code>NavigationState</code> struct. It drives tab selection and deep-link routing.</p>
 <pre><code>Router
@@ -72,8 +72,9 @@
 </table>
 <p>Transport protocols are in <code>Meshtastic/Accessory/Transports/</code>.</p>
 <h2>Persistence</h2>
-<p>SwiftData is the sole persistence layer. <code>PersistenceController.shared</code> owns the <code>ModelContainer</code>. Views use <code>@Environment(\.modelContext)</code> or <code>@Query</code>. Background writes use the <code>MeshPackets</code> <code>@ModelActor</code>.</p>
-<p>Model types are defined with <code>@Model</code> in <code>Meshtastic/Model/</code>. Schema evolution uses <code>VersionedSchema</code> and <code>SchemaMigrationPlan</code> in <code>MeshtasticSchema.swift</code>.</p>
+<p>SwiftData is the runtime persistence layer. <code>PersistenceBootstrap</code> prepares the store and publishes the <code>PersistenceController</code> that owns the <code>ModelContainer</code>. Views use <code>@Environment(\.modelContext)</code> or <code>@Query</code>. Background writes use the <code>MeshPackets</code> <code>@ModelActor</code>.</p>
+<p><code>CoreDataMigrationService</code> is a legacy import boundary, not a second runtime persistence stack. It reads the pre-SwiftData store in bounded batches, supports replay after interruption, and retires the source only after migration succeeds.</p>
+<p>Model types are defined with <code>@Model</code> in <code>Meshtastic/Model/</code>. SwiftData schema evolution uses <code>VersionedSchema</code> and <code>SchemaMigrationPlan</code> in <code>MeshtasticSchema.swift</code>.</p>
 <p><code>EventFirmwareEntity</code> is a global, rebuildable display cache seeded from the app bundle and
 refreshed from the event-firmware API. It persists event identity, lifecycle text, links, and
 theme values, including primary, secondary, and accent colors. Per-device database clears

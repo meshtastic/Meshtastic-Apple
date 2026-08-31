@@ -130,7 +130,9 @@ final class CoreDataMigrationServiceTests: XCTestCase {
 		// Message 1001 fills the gap; 1002 is not duplicated and keeps the live payload.
 		let messages = try context.fetch(FetchDescriptor<MessageEntity>())
 		XCTAssertEqual(messages.count, 2)
-		XCTAssertEqual(messages.first(where: { $0.messageId == 1001 })?.messagePayload, "legacy hello")
+		let migratedMessage = messages.first(where: { $0.messageId == 1001 })
+		XCTAssertEqual(migratedMessage?.messagePayload, "legacy hello")
+		XCTAssertEqual(migratedMessage?.fromUser?.num, 111)
 		let dupes = messages.filter { $0.messageId == 1002 }
 		XCTAssertEqual(dupes.count, 1)
 		XCTAssertEqual(dupes.first?.messagePayload, "live copy")

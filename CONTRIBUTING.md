@@ -143,7 +143,7 @@ git config pull.rebase true
 - This project requires swiftLint - see https://github.com/realm/SwiftLint
 - Use SwiftUI
 - Use SFSymbols for icons
-- Use Core Data for persistence
+- Use SwiftData for persistence. Core Data is limited to the legacy-store importer.
 - Ensure your code is clean and well-documented.
 
 ## Community

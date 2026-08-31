@@ -23,6 +23,9 @@ struct MessageChannelIntent: AppIntent {
 		Summary("Send \(\.$messageContent) to \(\.$channelNumber)")
 	}
 	func perform() async throws -> some IntentResult {
+		guard await PersistenceBootstrap.shared.waitUntilReady() else {
+			throw AppIntentErrors.AppIntentError.message("Local data is unavailable")
+		}
 		if !(await AccessoryManager.shared.isConnected) {
 			throw AppIntentErrors.AppIntentError.notConnected
 		}

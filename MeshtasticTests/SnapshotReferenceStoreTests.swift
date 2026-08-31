@@ -15,7 +15,6 @@ struct SnapshotReferenceStoreTests {
 		do {
 			try SnapshotReferenceStore().check(
 				pngData: Data("snapshot".utf8),
-				pixelDimensions: SnapshotPixelDimensions(width: 1, height: 1),
 				referenceURL: referenceURL,
 				mode: .verify
 			)
@@ -88,7 +87,6 @@ struct SnapshotReferenceStoreTests {
 		let firstData = try pngData(width: 1, height: 1)
 		try SnapshotReferenceStore().check(
 			pngData: firstData,
-			pixelDimensions: SnapshotPixelDimensions(width: 1, height: 1),
 			referenceURL: referenceURL,
 			mode: .record
 		)
@@ -97,11 +95,81 @@ struct SnapshotReferenceStoreTests {
 		let replacementData = try pngData(width: 2, height: 1)
 		try SnapshotReferenceStore().check(
 			pngData: replacementData,
-			pixelDimensions: SnapshotPixelDimensions(width: 2, height: 1),
 			referenceURL: referenceURL,
 			mode: .record
 		)
 		#expect(try Data(contentsOf: referenceURL) == replacementData)
+	}
+
+	@Test("Opt-in pixel verification rejects changed content")
+	func pixelVerificationRejectsChangedContent() throws {
+		let directory = FileManager.default.temporaryDirectory
+			.appendingPathComponent(UUID().uuidString, isDirectory: true)
+		let referenceURL = directory.appendingPathComponent("existing.png")
+		defer { try? FileManager.default.removeItem(at: directory) }
+
+		try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+		try pngData(width: 1, height: 1, color: .systemBlue).write(to: referenceURL)
+		let newData = try pngData(width: 1, height: 1, color: .systemRed)
+
+		do {
+			try SnapshotReferenceStore().check(
+				pngData: newData,
+				referenceURL: referenceURL,
+				mode: .verify,
+				comparePixels: true
+			)
+			Issue.record("Pixel verification unexpectedly accepted changed content")
+		} catch let error as SnapshotReferenceError {
+			#expect(error == .contentMismatch(differingPixels: 1, totalPixels: 1))
+		}
+	}
+
+	@Test("Pixel verification ignores channel differences within tolerance")
+	func pixelVerificationIgnoresSmallChannelDifferences() throws {
+		let directory = FileManager.default.temporaryDirectory
+			.appendingPathComponent(UUID().uuidString, isDirectory: true)
+		let referenceURL = directory.appendingPathComponent("existing.png")
+		defer { try? FileManager.default.removeItem(at: directory) }
+
+		try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+		try pngData(width: 1, height: 1, color: .black).write(to: referenceURL)
+		let nearlyBlack = UIColor(red: 4 / 255, green: 4 / 255, blue: 4 / 255, alpha: 1)
+		let newData = try pngData(width: 1, height: 1, color: nearlyBlack)
+
+		try SnapshotReferenceStore().check(
+			pngData: newData,
+			referenceURL: referenceURL,
+			mode: .verify,
+			comparePixels: true
+		)
+	}
+
+	@Test("Pixel verification rejects swapped dimensions")
+	func pixelVerificationRejectsSwappedDimensions() throws {
+		let directory = FileManager.default.temporaryDirectory
+			.appendingPathComponent(UUID().uuidString, isDirectory: true)
+		let referenceURL = directory.appendingPathComponent("existing.png")
+		defer { try? FileManager.default.removeItem(at: directory) }
+
+		try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+		try pngData(width: 2, height: 1).write(to: referenceURL)
+		let newData = try pngData(width: 1, height: 2)
+
+		do {
+			try SnapshotReferenceStore().check(
+				pngData: newData,
+				referenceURL: referenceURL,
+				mode: .verify,
+				comparePixels: true
+			)
+			Issue.record("Pixel verification unexpectedly accepted swapped dimensions")
+		} catch let error as SnapshotReferenceError {
+			#expect(error == .dimensionMismatch(
+				reference: SnapshotPixelDimensions(width: 2, height: 1),
+				actual: SnapshotPixelDimensions(width: 1, height: 2)
+			))
+		}
 	}
 
 	@Test("Verification does not replace a reference with different dimensions")
@@ -119,7 +187,6 @@ struct SnapshotReferenceStoreTests {
 		do {
 			try SnapshotReferenceStore().check(
 				pngData: newData,
-				pixelDimensions: SnapshotPixelDimensions(width: 2, height: 1),
 				referenceURL: referenceURL,
 				mode: .verify
 			)
@@ -134,11 +201,15 @@ struct SnapshotReferenceStoreTests {
 		#expect(try Data(contentsOf: referenceURL) == referenceData)
 	}
 
-	private func pngData(width: Int, height: Int) throws -> Data {
+	private func pngData(
+		width: Int,
+		height: Int,
+		color: UIColor = .systemBlue
+	) throws -> Data {
 		let format = UIGraphicsImageRendererFormat()
 		format.scale = 1
 		let image = UIGraphicsImageRenderer(size: CGSize(width: width, height: height), format: format).image { context in
-			UIColor.systemBlue.setFill()
+			color.setFill()
 			context.fill(CGRect(x: 0, y: 0, width: width, height: height))
 		}
 		return try #require(image.pngData())

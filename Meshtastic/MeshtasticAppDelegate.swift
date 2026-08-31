@@ -37,10 +37,6 @@ class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificat
 		if locationsHandler.backgroundActivity {
 			locationsHandler.backgroundActivity = true
 		}
-		// Initialize TAK Server if enabled
-		Task { @MainActor in
-			TAKServerManager.shared.initializeOnStartup()
-		}
 		// Request Siri authorization so intent donations work and CarPlay messaging is available.
 		#if !targetEnvironment(macCatalyst)
 		#if targetEnvironment(simulator)
@@ -64,8 +60,10 @@ class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificat
 	// MARK: - CarPlay Mark As Read
 
 	/// Marks all unread messages in a CarPlay conversation as read after Siri reads them aloud.
-	private func markCarPlayMessagesAsRead(conversationId: String) {
-		let context = PersistenceController.shared.context
+	@MainActor
+	private func markCarPlayMessagesAsRead(conversationId: String) async {
+		guard let controller = await PersistenceBootstrap.shared.readyController() else { return }
+		let context = controller.context
 		do {
 			var readMessageIDs = [Int64]()
 			if conversationId.hasPrefix("dm-"), let nodeNum = Int64(conversationId.replacingOccurrences(of: "dm-", with: "")) {
@@ -127,18 +125,21 @@ class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificat
 	) {
 		let userInfo = response.notification.request.content.userInfo
 
-		switch response.actionIdentifier {
-		case UNNotificationDefaultActionIdentifier:
-			// When Siri finishes reading a CarPlay message aloud, the notification
-			// response arrives here. Mark all unread messages in that conversation as read.
-			if userInfo["carplay_repost"] as? Bool == true,
-			   let threadId = response.notification.request.content.threadIdentifier as String? {
-				markCarPlayMessagesAsRead(conversationId: threadId)
-			}
-		case "messageNotification.thumbsUpAction":
-			if let channel = userInfo["channel"] as? Int32,
-			   let replyID = userInfo["replyMessageId"] as? Int64 ?? userInfo["messageId"] as? Int64 {
-				Task {
+		Task { @MainActor in
+			defer { completionHandler() }
+
+			switch response.actionIdentifier {
+			case UNNotificationDefaultActionIdentifier:
+				// When Siri finishes reading a CarPlay message aloud, the notification
+				// response arrives here. Mark all unread messages in that conversation as read.
+				if userInfo["carplay_repost"] as? Bool == true,
+				   let threadId = response.notification.request.content.threadIdentifier as String? {
+					await markCarPlayMessagesAsRead(conversationId: threadId)
+				}
+			case "messageNotification.thumbsUpAction":
+				if let channel = userInfo["channel"] as? Int32,
+				   let replyID = userInfo["replyMessageId"] as? Int64 ?? userInfo["messageId"] as? Int64,
+				   await PersistenceBootstrap.shared.waitUntilReady() {
 					do {
 						try await AccessoryManager.shared.sendMessage(
 							message: Tapbacks.thumbsUp.emojiString,
@@ -152,11 +153,10 @@ class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificat
 						Logger.services.error("Failed to retrieve channel or messageId from userInfo")
 					}
 				}
-			}
-		case "messageNotification.thumbsDownAction":
-			if let channel = userInfo["channel"] as? Int32,
-			   let replyID = userInfo["replyMessageId"] as? Int64 ?? userInfo["messageId"] as? Int64 {
-				Task {
+			case "messageNotification.thumbsDownAction":
+				if let channel = userInfo["channel"] as? Int32,
+				   let replyID = userInfo["replyMessageId"] as? Int64 ?? userInfo["messageId"] as? Int64,
+				   await PersistenceBootstrap.shared.waitUntilReady() {
 					do {
 						try await AccessoryManager.shared.sendMessage(
 							message: Tapbacks.thumbsDown.emojiString,
@@ -170,12 +170,11 @@ class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificat
 						Logger.services.error("Failed to retrieve channel or messageId from userInfo")
 					}
 				}
-			}
-		case "messageNotification.replyInputAction":
-			if let userInput = (response as? UNTextInputNotificationResponse)?.userText,
-			   let channel = userInfo["channel"] as? Int32,
-			   let replyID = userInfo["replyMessageId"] as? Int64 ?? userInfo["messageId"] as? Int64 {
-				Task {
+			case "messageNotification.replyInputAction":
+				if let userInput = (response as? UNTextInputNotificationResponse)?.userText,
+				   let channel = userInfo["channel"] as? Int32,
+				   let replyID = userInfo["replyMessageId"] as? Int64 ?? userInfo["messageId"] as? Int64,
+				   await PersistenceBootstrap.shared.waitUntilReady() {
 					do {
 						try await AccessoryManager.shared.sendMessage(
 							message: userInput,
@@ -184,32 +183,30 @@ class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificat
 							isEmoji: false,
 							replyID: replyID
 						)
-
 						Logger.services.info("Actionable notification reply sent")
 					} catch {
 						Logger.services.error("Failed to retrieve user input, channel, or messageId from userInfo")
 					}
 				}
+			default:
+				break
 			}
-		default:
-			break
-		}
 
-		if let targetValue = userInfo["target"] as? String,
-		   let deepLink = userInfo["path"] as? String,
-		   let url = URL(string: deepLink) {
-			Logger.services.info("userNotificationCenter didReceiveResponse handling deeplink: \(targetValue, privacy: .public) \(deepLink, privacy: .public)")
-			if url.scheme == "meshtastic" {
-				router?.route(url: url)
-			} else if targetValue == FirmwareUpdateNotifier.flasherTarget && url.absoluteString == FirmwareUpdateNotifier.flasherPath {
-				UIApplication.shared.open(url)
+			if let targetValue = userInfo["target"] as? String,
+			   let deepLink = userInfo["path"] as? String,
+			   let url = URL(string: deepLink) {
+				Logger.services.info("userNotificationCenter didReceiveResponse handling deeplink: \(targetValue, privacy: .public) \(deepLink, privacy: .public)")
+				if url.scheme == "meshtastic" {
+					router?.route(url: url)
+				} else if targetValue == FirmwareUpdateNotifier.flasherTarget && url.absoluteString == FirmwareUpdateNotifier.flasherPath {
+					_ = await UIApplication.shared.open(url)
+				} else {
+					Logger.services.error("Unsupported notification response URL: \(deepLink, privacy: .public)")
+				}
 			} else {
-				Logger.services.error("Unsupported notification response URL: \(deepLink, privacy: .public)")
+				Logger.services.error("Failed to handle notification response: \(userInfo, privacy: .public)")
 			}
-		} else {
-			Logger.services.error("Failed to handle notification response: \(userInfo, privacy: .public)")
 		}
-		completionHandler()
 	}
 }
 #endif

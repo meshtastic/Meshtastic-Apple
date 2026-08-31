@@ -17,6 +17,9 @@ struct AddContactIntent: AppIntent {
 
 	// Define the function that performs the main logic
 	func perform() async throws -> some IntentResult {
+		guard await PersistenceBootstrap.shared.waitUntilReady() else {
+			throw AppIntentErrors.AppIntentError.message("Local data is unavailable")
+		}
 		// Ensure the BLE Manager is connected
 		if !(await AccessoryManager.shared.isConnected) {
 			throw AppIntentErrors.AppIntentError.notConnected

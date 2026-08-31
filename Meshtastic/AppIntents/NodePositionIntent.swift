@@ -19,6 +19,9 @@ struct NodePositionIntent: AppIntent {
 	static let description: IntentDescription = "Fetch the latest position of a cetain node"
 
 	func perform() async throws -> some IntentResult & ReturnsValue<CLPlacemark> {
+		guard await PersistenceBootstrap.shared.waitUntilReady() else {
+			throw AppIntentErrors.AppIntentError.message("Local data is unavailable")
+		}
 		if !(await AccessoryManager.shared.isConnected) {
 			throw AppIntentErrors.AppIntentError.notConnected
 		}

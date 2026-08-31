@@ -514,7 +514,12 @@ actor BLETransport: Transport {
 		/// You will see Message from debugger: killed after you see this message, power off and back on your meshtastic device, bring the app back to the foreground and
 		/// look in the logs for the messages below.
 		Logger.transport.error("🛜 [BLE] Will Restore State was called. Attempting to restore connection.")
-		
+
+		guard await PersistenceBootstrap.shared.waitUntilReady() else {
+			Logger.transport.error("🛜 [BLE] Persistence is unavailable; skipping connection restoration.")
+			return
+		}
+
 		/// Find the peripheral that was connected before
 		guard let peripherals = dict[CBCentralManagerRestoredStatePeripheralsKey] as? [CBPeripheral],
 			  let peripheral = peripherals.first else {

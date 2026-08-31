@@ -34,6 +34,9 @@ final class SetMessageAttributeIntentHandler: NSObject, INSetMessageAttributeInt
 	// MARK: - Handling
 
 	func handle(intent: INSetMessageAttributeIntent) async -> INSetMessageAttributeIntentResponse {
+		guard await PersistenceBootstrap.shared.waitUntilReady() else {
+			return INSetMessageAttributeIntentResponse(code: .failure, userActivity: nil)
+		}
 		guard let identifiers = intent.identifiers, !identifiers.isEmpty else {
 			return INSetMessageAttributeIntentResponse(code: .failure, userActivity: nil)
 		}

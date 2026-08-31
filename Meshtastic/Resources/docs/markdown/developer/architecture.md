@@ -12,12 +12,12 @@ The Meshtastic Apple app targets iOS, iPadOS, and macOS (via Mac Catalyst). It c
 
 `Meshtastic/MeshtasticApp.swift` is the `@main` `App` struct. On launch it:
 
-1. Creates `PersistenceController.shared` (SwiftData `ModelContainer`)
-2. Instantiates `AppState` (wraps `Router`)
-3. Instantiates `AccessoryManager` (BLE/TCP/serial connectivity)
-4. Instantiates `AccessoryManager.shared` as an `@EnvironmentObject` for the view hierarchy
+1. Instantiates `AppState` and `AccessoryManager` without starting persistence-dependent services.
+2. Runs the process-wide `PersistenceBootstrap`, which checks protected-data access and prepares any legacy Core Data store.
+3. Shows `MigrationBootstrapView` while legacy data is copied into SwiftData off the main actor.
+4. Mounts the SwiftData view tree and starts database-dependent services only after the bootstrap state is `.ready`.
 
-`MeshtasticAppDelegate.swift` handles `UIApplicationDelegate` hooks for SiriKit CarPlay messaging intents.
+`MeshtasticAppDelegate.swift` handles `UIApplicationDelegate` hooks for SiriKit CarPlay messaging intents. BLE restoration, CarPlay, Siri, and notification cold-launch paths wait for the same persistence bootstrap before reading or writing SwiftData.
 
 ## Router & Navigation
 
@@ -56,9 +56,11 @@ Transport protocols are in `Meshtastic/Accessory/Transports/`.
 
 ## Persistence
 
-SwiftData is the sole persistence layer. `PersistenceController.shared` owns the `ModelContainer`. Views use `@Environment(\.modelContext)` or `@Query`. Background writes use the `MeshPackets` `@ModelActor`.
+SwiftData is the runtime persistence layer. `PersistenceBootstrap` prepares the store and publishes the `PersistenceController` that owns the `ModelContainer`. Views use `@Environment(\.modelContext)` or `@Query`. Background writes use the `MeshPackets` `@ModelActor`.
 
-Model types are defined with `@Model` in `Meshtastic/Model/`. Schema evolution uses `VersionedSchema` and `SchemaMigrationPlan` in `MeshtasticSchema.swift`.
+`CoreDataMigrationService` is a legacy import boundary, not a second runtime persistence stack. It reads the pre-SwiftData store in bounded batches, supports replay after interruption, and retires the source only after migration succeeds.
+
+Model types are defined with `@Model` in `Meshtastic/Model/`. SwiftData schema evolution uses `VersionedSchema` and `SchemaMigrationPlan` in `MeshtasticSchema.swift`.
 
 `EventFirmwareEntity` is a global, rebuildable display cache seeded from the app bundle and
 refreshed from the event-firmware API. It persists event identity, lifecycle text, links, and

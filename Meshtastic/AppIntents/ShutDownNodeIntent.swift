@@ -14,6 +14,9 @@ struct ShutDownNodeIntent: AppIntent {
 	static let description: IntentDescription = "Send a shutdown to the node you are connected to"
 
 	func perform() async throws -> some IntentResult {
+		guard await PersistenceBootstrap.shared.waitUntilReady() else {
+			throw AppIntentErrors.AppIntentError.message("Local data is unavailable")
+		}
 		try await requestConfirmation(result: .result(dialog: "Shut Down Node?"))
 
 		if !(await AccessoryManager.shared.isConnected) {

@@ -23,7 +23,7 @@ Meshtastic/
 ├── Intents/                    # INIntent handlers
 ├── Measurement/                # Unit/measurement formatting
 ├── Model/                      # @Model SwiftData types
-├── Persistence/                # PersistenceController, MeshPackets actor
+├── Persistence/                # Store bootstrap, legacy import, SwiftData controller and actors
 ├── Resources/                  # Assets, docs bundle, Info.plist
 ├── Router/                     # Router + NavigationState
 ├── Tips/                       # TipKit tips
@@ -63,7 +63,9 @@ Keep sibling group names unique. XcodeGen 2.46.0 does not produce a stable order
 | `Router/Router.swift` | Central navigation controller (`@MainActor`) |
 | `Router/NavigationState.swift` | Per-tab navigation state enums |
 | `Extensions/Logger.swift` | Typed OSLog loggers for all subsystems |
-| `Persistence/PersistenceController.swift` | SwiftData `ModelContainer` setup |
+| `Persistence/Persistence.swift` | SwiftData `ModelContainer` setup |
+| `Persistence/PersistenceBootstrap.swift` | Process-wide startup gate for protected data and legacy migration |
+| `Persistence/CoreDataMigrationService.swift` | Replay-safe import of pre-SwiftData stores |
 | `Model/MeshtasticSchema.swift` | `VersionedSchema` + `SchemaMigrationPlan` |
 | `Accessory/Accessory Manager/AccessoryManager.swift` | BLE/TCP manager root class |
 

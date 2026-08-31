@@ -14,6 +14,9 @@ struct DisconnectNodeIntent: AppIntent {
 	static let description: IntentDescription = "Disconnect the currently connected node"
 
 	func perform() async throws -> some IntentResult {
+		guard await PersistenceBootstrap.shared.waitUntilReady() else {
+			throw AppIntentErrors.AppIntentError.message("Local data is unavailable")
+		}
 		let isConnected = await AccessoryManager.shared.isConnected
 		if !isConnected {
 			throw AppIntentErrors.AppIntentError.notConnected

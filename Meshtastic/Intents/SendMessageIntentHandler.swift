@@ -16,6 +16,9 @@ final class SendMessageIntentHandler: NSObject, INSendMessageIntentHandling {
 	// MARK: - Resolution
 
 	func resolveRecipients(for intent: INSendMessageIntent) async -> [INSendMessageRecipientResolutionResult] {
+		guard await PersistenceBootstrap.shared.waitUntilReady() else {
+			return [.unsupported(forReason: .noAccount)]
+		}
 		guard let recipients = intent.recipients, !recipients.isEmpty else {
 			if intent.speakableGroupName != nil {
 				return []
@@ -70,6 +73,9 @@ final class SendMessageIntentHandler: NSObject, INSendMessageIntentHandling {
 	}
 
 	func resolveSpeakableGroupName(for intent: INSendMessageIntent) async -> INSpeakableStringResolutionResult {
+		guard await PersistenceBootstrap.shared.waitUntilReady() else {
+			return .unsupported()
+		}
 		guard let groupName = intent.speakableGroupName else {
 			if let recipients = intent.recipients, !recipients.isEmpty {
 				return .notRequired()
@@ -102,6 +108,9 @@ final class SendMessageIntentHandler: NSObject, INSendMessageIntentHandling {
 	// MARK: - Confirmation
 
 	func confirm(intent: INSendMessageIntent) async -> INSendMessageIntentResponse {
+		guard await PersistenceBootstrap.shared.waitUntilReady() else {
+			return INSendMessageIntentResponse(code: .failureRequiringAppLaunch, userActivity: nil)
+		}
 		let connected = await AccessoryManager.shared.isConnected
 		guard connected else {
 			return INSendMessageIntentResponse(code: .failureRequiringAppLaunch, userActivity: nil)
@@ -112,6 +121,9 @@ final class SendMessageIntentHandler: NSObject, INSendMessageIntentHandling {
 	// MARK: - Handling
 
 	func handle(intent: INSendMessageIntent) async -> INSendMessageIntentResponse {
+		guard await PersistenceBootstrap.shared.waitUntilReady() else {
+			return INSendMessageIntentResponse(code: .failureRequiringAppLaunch, userActivity: nil)
+		}
 		let connected = await AccessoryManager.shared.isConnected
 		guard connected else {
 			return INSendMessageIntentResponse(code: .failureRequiringAppLaunch, userActivity: nil)

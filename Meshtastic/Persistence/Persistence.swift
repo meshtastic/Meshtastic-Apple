@@ -209,10 +209,12 @@ class PersistenceController {
 		}
 	}
 
-	init(inMemory: Bool = false, storeName: String = "Meshtastic") {
+	init(
+		inMemory: Bool = false,
+		storeName: String = "Meshtastic"
+	) {
 		self.storeName = storeName
 		self.inMemory = inMemory
-		let isTestEnvironment = NSClassFromString("XCTestCase") != nil || ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
 		let schema = Schema(versionedSchema: MeshtasticSchema.current)
 
 		let config = ModelConfiguration(
@@ -223,6 +225,7 @@ class PersistenceController {
 		)
 
 #if DEBUG
+		let isTestEnvironment = NSClassFromString("XCTestCase") != nil || ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
 		if !inMemory && !isTestEnvironment && PerformanceSeedData.configuration?.resetStore == true {
 			Self.removeStoreFiles(at: config.url)
 		}
@@ -237,16 +240,8 @@ class PersistenceController {
 			NodeBackupManager.sweepStagedBackupDirectories()
 		}
 
-		// ── Step 0: guard Core Data store from being clobbered ───────────────
-		// Both the App Store (Core Data) build and this (SwiftData) build use
-		// "Meshtastic.sqlite".  If we let SwiftData open the file first it will
-		// corrupt the Core Data content.  Rename it out of the way so SwiftData
-		// creates a fresh store; migration reads from the renamed file below.
-		if !inMemory && !isTestEnvironment {
-			CoreDataMigrationService.prepareForMigration()
-		}
-
-		// ── Step 1: build the SwiftData container ────────────────────────────
+		// Build the SwiftData container after PersistenceBootstrap has moved any
+		// legacy Core Data store out of this path.
 		do {
 			if inMemory {
 				container = try ModelContainer(
@@ -341,19 +336,6 @@ class PersistenceController {
 					// the schema itself is invalid and there is no safe recovery.
 					fatalError("💾 SwiftData in-memory fallback failed: \(memoryError.localizedDescription)")
 				}
-			}
-		}
-
-		// ── Step 2: one-time Core Data → SwiftData migration ─────────────────
-		// Runs only when upgrading from 2.7.12 (or earlier) which used Core Data.
-		guard !inMemory, !isTestEnvironment else { return }
-		if CoreDataMigrationService.legacyStoreExists() {
-			do {
-				try CoreDataMigrationService.migrate(into: container)
-			} catch {
-				// Log but do not crash — the SwiftData store is usable even if
-				// migration fails; the user will simply start fresh on this device.
-				Logger.data.error("⬆️ CoreDataMigrationService failed: \(error.localizedDescription, privacy: .public)")
 			}
 		}
 	}

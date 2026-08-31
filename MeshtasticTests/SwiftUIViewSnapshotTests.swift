@@ -77,8 +77,10 @@ private func renderImage<V: View>(_ view: V, width: CGFloat, height: CGFloat? = 
 	}
 }
 
-/// Checks a rendered image against its reference dimensions without modifying
-/// the reference. Set `MESHTASTIC_RECORD_SNAPSHOTS=1` in the test process to
+/// Checks a rendered image against its reference without modifying it.
+/// By default only dimensions are compared. Set `comparePixels` to opt into
+/// content comparison with the store's fixed rendering tolerance.
+/// Set `MESHTASTIC_RECORD_SNAPSHOTS=1` in the test process to
 /// create or replace references explicitly. Mac Catalyst references use their
 /// own subdirectory so they cannot replace the checked-in iOS references.
 /// When height is nil the view determines its own height via sizeThatFits.
@@ -93,6 +95,7 @@ private func assertViewSnapshot<V: View>(
 	colorScheme: ColorScheme? = nil,
 	named name: String,
 	forDocs: Bool = false,
+	comparePixels: Bool = false,
 	filePath: String = #filePath,
 	sourceLocation: SourceLocation = #_sourceLocation
 ) {
@@ -102,10 +105,6 @@ private func assertViewSnapshot<V: View>(
 		return
 	}
 
-	guard let cgImage = image.cgImage else {
-		Issue.record("Failed to read rendered image dimensions", sourceLocation: sourceLocation)
-		return
-	}
 	let snapshotFile = SnapshotReferencePath.referenceURL(
 		testFileURL: URL(fileURLWithPath: filePath, isDirectory: false),
 		snapshotName: name,
@@ -116,9 +115,9 @@ private func assertViewSnapshot<V: View>(
 	do {
 		try SnapshotReferenceStore().check(
 			pngData: pngData,
-			pixelDimensions: SnapshotPixelDimensions(width: cgImage.width, height: cgImage.height),
 			referenceURL: snapshotFile,
-			mode: .current()
+			mode: .current(),
+			comparePixels: comparePixels
 		)
 	} catch {
 		Issue.record("\(error)", sourceLocation: sourceLocation)
@@ -2113,5 +2112,74 @@ struct PacketAuthenticitySnapshotTests {
 	@MainActor
 	func unknownCapabilityDark() async {
 		await assertViewSnapshot(of: section(.compatible, capability: .unknown), width: 390, height: 300, colorScheme: .dark, named: "packetAuthenticity_unknown_dark")
+	}
+}
+
+@Suite("MigrationBootstrapView Snapshots")
+struct MigrationBootstrapViewSnapshotTests {
+	@Test("Migrating, light")
+	@MainActor
+	func migratingLight() async {
+		await assertViewSnapshot(
+			of: MigrationBootstrapView(state: .migrating, retry: {}),
+			width: 390,
+			height: 844,
+			colorScheme: .light,
+			named: "migrationBootstrap_migrating_light",
+			comparePixels: true
+		)
+	}
+
+	@Test("Migrating, dark")
+	@MainActor
+	func migratingDark() async {
+		await assertViewSnapshot(
+			of: MigrationBootstrapView(state: .migrating, retry: {}),
+			width: 390,
+			height: 844,
+			colorScheme: .dark,
+			named: "migrationBootstrap_migrating_dark",
+			comparePixels: true
+		)
+	}
+
+	@Test("Migrating with accessibility text, narrow screen")
+	@MainActor
+	func migratingAccessibilityText() async {
+		await assertViewSnapshot(
+			of: MigrationBootstrapView(state: .migrating, retry: {})
+				.environment(\.dynamicTypeSize, .accessibility3),
+			width: 320,
+			height: 568,
+			colorScheme: .light,
+			named: "migrationBootstrap_migrating_accessibility3",
+			comparePixels: true
+		)
+	}
+
+	@Test("Failed, light")
+	@MainActor
+	func failedLight() async {
+		await assertViewSnapshot(
+			of: MigrationBootstrapView(state: .failed("Test migration error"), retry: {}),
+			width: 390,
+			height: 844,
+			colorScheme: .light,
+			named: "migrationBootstrap_failed_light",
+			comparePixels: true
+		)
+	}
+
+	@Test("Failed, dark")
+	@MainActor
+	func failedDark() async {
+		await assertViewSnapshot(
+			of: MigrationBootstrapView(state: .failed("Test migration error"), retry: {}),
+			width: 390,
+			height: 844,
+			colorScheme: .dark,
+			named: "migrationBootstrap_failed_dark",
+			comparePixels: true
+		)
 	}
 }

@@ -6,13 +6,21 @@ nav_order: 5
 
 # SwiftData
 
-The app uses SwiftData exclusively for persistence. Do not introduce SQLite, Realm, Core Data, or any other persistence library.
+The app uses SwiftData for runtime persistence. Core Data remains only as a read-only boundary for importing stores created by older app versions. Do not introduce another runtime persistence library.
 
 ## ModelContainer Setup
 
-`PersistenceController.shared` (in `Meshtastic/Persistence/PersistenceController.swift`) creates and owns the `ModelContainer`. It is initialised once at app launch in `MeshtasticApp.swift` and injected via `.modelContainer(PersistenceController.shared.container)`.
+`PersistenceController` (in `Meshtastic/Persistence/Persistence.swift`) creates and owns the `ModelContainer`. The process-wide `PersistenceBootstrap` prepares the store before creating the controller. `MeshtasticApp.swift` injects that container only after the bootstrap state is `.ready`.
+
+Do not access `PersistenceController.shared`, mount SwiftData-backed UI, or start database-dependent services before `.ready`. BLE restoration, CarPlay, Siri, notification actions, and other cold-launch entry points must wait for `PersistenceBootstrap.shared` before using SwiftData. The bootstrap screen must remain independent of SwiftData so it can render while the store is unavailable or migrating.
 
 Autosave is **disabled** in production (`container.mainContext.autosaveEnabled = false`). All persistence is driven by explicit `modelContext.save()` calls so the app controls exactly when SQLite writes occur.
+
+## Legacy Core Data Import
+
+`CoreDataMigrationService` imports the pre-SwiftData store. `PersistenceBootstrap` moves the legacy files out of the destination path, opens the SwiftData container, copies records off the main actor in bounded batches, and retires the source store after success.
+
+The import is replay-safe. A retry must preserve existing SwiftData records, restore relationships, and retain duplicate history rows. Store preparation and retirement use markers so unrelated filesystem collisions fail closed. Keep this flow separate from the SwiftData schema migrations below.
 
 ## Save Strategy
 

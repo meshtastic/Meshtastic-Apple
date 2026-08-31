@@ -8,10 +8,14 @@
 </head>
 <body data-page="swiftdata">
 <h1>SwiftData</h1>
-<p>The app uses SwiftData exclusively for persistence. Do not introduce SQLite, Realm, Core Data, or any other persistence library.</p>
+<p>The app uses SwiftData for runtime persistence. Core Data remains only as a read-only boundary for importing stores created by older app versions. Do not introduce another runtime persistence library.</p>
 <h2>ModelContainer Setup</h2>
-<p><code>PersistenceController.shared</code> (in <code>Meshtastic/Persistence/PersistenceController.swift</code>) creates and owns the <code>ModelContainer</code>. It is initialised once at app launch in <code>MeshtasticApp.swift</code> and injected via <code>.modelContainer(PersistenceController.shared.container)</code>.</p>
+<p><code>PersistenceController</code> (in <code>Meshtastic/Persistence/Persistence.swift</code>) creates and owns the <code>ModelContainer</code>. The process-wide <code>PersistenceBootstrap</code> prepares the store before creating the controller. <code>MeshtasticApp.swift</code> injects that container only after the bootstrap state is <code>.ready</code>.</p>
+<p>Do not access <code>PersistenceController.shared</code>, mount SwiftData-backed UI, or start database-dependent services before <code>.ready</code>. BLE restoration, CarPlay, Siri, notification actions, and other cold-launch entry points must wait for <code>PersistenceBootstrap.shared</code> before using SwiftData. The bootstrap screen must remain independent of SwiftData so it can render while the store is unavailable or migrating.</p>
 <p>Autosave is <strong>disabled</strong> in production (<code>container.mainContext.autosaveEnabled = false</code>). All persistence is driven by explicit <code>modelContext.save()</code> calls so the app controls exactly when SQLite writes occur.</p>
+<h2>Legacy Core Data Import</h2>
+<p><code>CoreDataMigrationService</code> imports the pre-SwiftData store. <code>PersistenceBootstrap</code> moves the legacy files out of the destination path, opens the SwiftData container, copies records off the main actor in bounded batches, and retires the source store after success.</p>
+<p>The import is replay-safe. A retry must preserve existing SwiftData records, restore relationships, and retain duplicate history rows. Store preparation and retirement use markers so unrelated filesystem collisions fail closed. Keep this flow separate from the SwiftData schema migrations below.</p>
 <h2>Save Strategy</h2>
 <p>The app uses two save patterns depending on packet frequency:</p>
 <h3>Immediate Saves</h3>
