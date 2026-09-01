@@ -266,19 +266,22 @@ class FirmwareFile: ObservableObject, Hashable, Equatable {
 	
 	/// Ask whether this release actually ships a build for the board's target, so a
 	/// release older than the board reads as unavailable instead of offering a download
-	/// that 404s. Checks the untagged filename, since locale variants 404 on their own.
+	/// that 404s. Checks every candidate the download would try, and only calls the
+	/// release unavailable when all of them are missing — a locale variant on its own is
+	/// still a build. Anything other than a clean 404 leaves the download on offer.
 	@MainActor
 	func checkAvailability() async {
 		guard !hasCheckedAvailability, status == .notDownloaded,
-		      let genericUrl = remoteUrlCandidates.last else { return }
+		      !remoteUrlCandidates.isEmpty else { return }
 		hasCheckedAvailability = true
-		var request = URLRequest(url: genericUrl)
-		request.httpMethod = "HEAD"
-		guard let (_, response) = try? await URLSession.shared.data(for: request),
-		      let httpResponse = response as? HTTPURLResponse else { return }
-		if httpResponse.statusCode == 404 {
-			status = .unavailable
+		for candidateRemoteUrl in remoteUrlCandidates {
+			var request = URLRequest(url: candidateRemoteUrl)
+			request.httpMethod = "HEAD"
+			guard let (_, response) = try? await URLSession.shared.data(for: request),
+			      let httpResponse = response as? HTTPURLResponse else { return }
+			if httpResponse.statusCode != 404 { return }
 		}
+		status = .unavailable
 	}
 
 	@MainActor
