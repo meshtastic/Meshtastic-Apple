@@ -578,9 +578,11 @@ struct FirmwareHeroImage: View {
 }
 
 struct FirmwareTagView: View {
-	let text: String
+	// LocalizedStringKey, not String: a String argument reaches Text() already resolved,
+	// so the tag literals were never extracted for translation.
+	let text: LocalizedStringKey
 	let color: Color
-	init(_ text: String, color: Color = .black) {
+	init(_ text: LocalizedStringKey, color: Color = .black) {
 		self.text = text
 		self.color = color
 	}
