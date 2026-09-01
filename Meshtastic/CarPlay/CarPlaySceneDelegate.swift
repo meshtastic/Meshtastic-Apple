@@ -65,6 +65,15 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 		self.interfaceController = interfaceController
 		interfaceController.delegate = self
 
+		Task { @MainActor [weak self] in
+			guard let self,
+				  (try? await PersistenceController.shared.ready()) != nil,
+				  self.interfaceController === interfaceController else { return }
+			self.finishConnecting()
+		}
+	}
+
+	private func finishConnecting() {
 		buildAndSetRootTemplate(animated: false)
 		donateUnreadMessages()
 
@@ -660,6 +669,7 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 	/// messages that arrived before the CarPlay session started.
 	private func donateUnreadMessages() {
 		Task { @MainActor in
+			guard (try? await PersistenceController.shared.ready()) != nil else { return }
 			let context = PersistenceController.shared.context
 			var descriptor = FetchDescriptor<MessageEntity>(
 				predicate: #Predicate<MessageEntity> { message in

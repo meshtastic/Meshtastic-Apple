@@ -14,6 +14,7 @@ struct DisconnectNodeIntent: AppIntent {
 	static let description: IntentDescription = "Disconnect the currently connected node"
 
 	func perform() async throws -> some IntentResult {
+		try await PersistenceController.shared.ready()
 		let isConnected = await AccessoryManager.shared.isConnected
 		if !isConnected {
 			throw AppIntentErrors.AppIntentError.notConnected

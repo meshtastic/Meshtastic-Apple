@@ -344,10 +344,12 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 
 		// Listen for system memory warnings to proactively save pending changes
 		if ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil {
-			NotificationCenter.default.addObserver(forName: UIApplication.didReceiveMemoryWarningNotification, object: nil, queue: .main) { [weak self] _ in
-				guard let self else { return }
-				try? self.context.save()
-				Logger.data.warning("⚠️ [AccessoryManager] Memory warning — saved context")
+			NotificationCenter.default.addObserver(forName: UIApplication.didReceiveMemoryWarningNotification, object: nil, queue: .main) { _ in
+				MainActor.assumeIsolated {
+					guard PersistenceController.shared.state == .ready else { return }
+					try? PersistenceController.shared.context.save()
+					Logger.data.warning("⚠️ [AccessoryManager] Memory warning — saved context")
+				}
 			}
 		}
 

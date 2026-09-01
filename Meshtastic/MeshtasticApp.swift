@@ -20,11 +20,12 @@ struct MeshtasticAppleApp: App {
 #endif
 	@StateObject var appState: AppState
 	@StateObject private var lockdownCoordinator: LockdownCoordinator
-	private let persistenceController: PersistenceController?
+	@StateObject private var persistenceController: PersistenceController
 	private let accessoryManager: AccessoryManager
 	@Environment(\.scenePhase) var scenePhase
 	@State var saveChannelLink: SaveChannelLinkData?
 	@State var incomingUrl: URL?
+	@State private var didStartReadyServices = false
 
 	private static let isRunningTests = NSClassFromString("XCTestCase") != nil || ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
 	private static let isChirpyOTADemo: Bool = {
@@ -43,15 +44,10 @@ struct MeshtasticAppleApp: App {
 
 	init() {
 
-		let persistenceController: PersistenceController? = Self.shouldInitializeAppServices ? PersistenceController.shared : nil
 #if DEBUG
-		let performanceSeedConfiguration = PerformanceSeedData.configuration
-		if let performanceSeedConfiguration {
+		if let performanceSeedConfiguration = PerformanceSeedData.configuration {
 			PerformanceSeedData.prepareDefaults(for: performanceSeedConfiguration)
 		}
-		let performanceSeedDisablesDiscovery = performanceSeedConfiguration?.disableDiscovery == true
-#else
-		let performanceSeedDisablesDiscovery = false
 #endif
 
 		let appState = AppState(
@@ -118,70 +114,64 @@ struct MeshtasticAppleApp: App {
 		self._lockdownCoordinator = StateObject(wrappedValue: lockdown)
 
 		self._appState = StateObject(wrappedValue: appState)
+		self._persistenceController = StateObject(wrappedValue: PersistenceController.shared)
 
-		self.persistenceController = persistenceController
 		// Wire up router
 #if os(iOS)
 		self.appDelegate.router = appState.router
 #endif
 
+	}
+
+	@MainActor
+	private func startReadyServicesIfNeeded() {
+		guard Self.shouldInitializeAppServices,
+			  persistenceController.state == .ready,
+			  !didStartReadyServices else { return }
+		didStartReadyServices = true
+
 #if DEBUG
-		if let persistenceController, let performanceSeedConfiguration {
+		let performanceSeedConfiguration = PerformanceSeedData.configuration
+		if let performanceSeedConfiguration {
 			PerformanceSeedData.seedIfNeeded(
 				using: persistenceController,
 				configuration: performanceSeedConfiguration,
 				router: appState.router
 			)
 		}
-		// Independent of the node performance seed: seeds a sample Discovery session with beacons
-		// when launched with --meshtastic-seed-beacons, without resetting the store or blocking a
-		// live radio connection.
-		if let persistenceController {
-			PerformanceSeedData.seedDiscoveryBeaconsIfRequested(using: persistenceController)
-		}
+		PerformanceSeedData.seedDiscoveryBeaconsIfRequested(using: persistenceController)
+		let performanceSeedDisablesDiscovery = performanceSeedConfiguration?.disableDiscovery == true
+#else
+		let performanceSeedDisablesDiscovery = false
 #endif
 
-		if Self.shouldInitializeAppServices {
-			// Initialize map data manager
-			MapDataManager.shared.initialize()
-
-			// Initialize WatchConnectivity session
-			_ = WatchSessionManager.shared
-#if DEBUG
-			// Show tips in development — but not during marketing screenshot capture, where TipKit
-			// popovers would clutter the shots.
-			if !CommandLine.arguments.contains("--marketing-capture") {
-				try? Tips.resetDatastore()
-			}
+		MapDataManager.shared.initialize()
+		_ = WatchSessionManager.shared
+#if os(iOS)
+		TAKServerManager.shared.initializeOnStartup()
 #endif
-			if !UserDefaults.firstLaunch {
-				// If this is first launch, we will show onboarding screens which
-				// Step through the authorization process. Do not start discovery
-				// unitl this workflow completes, otherwise the discovery process
-			// may trigger permission dialogs too soon.
-				if !performanceSeedDisablesDiscovery {
-					accessoryManager.startDiscovery()
-				}
-			}
 #if DEBUG
-			// Automated perf/stress testing: connect straight to a TCP radio (or replay
-			// server) with `-meshtastic-connect-tcp <host[:port]>`, skipping the Connect
-			// tab entirely. DEBUG-only, like the other automation hooks above.
-			let arguments = ProcessInfo.processInfo.arguments
-			if let flagIndex = arguments.firstIndex(of: "-meshtastic-connect-tcp"),
-			   arguments.indices.contains(flagIndex + 1),
-			   let tcpTransport = accessoryManager.transportForType(.tcp),
-			   let device = tcpTransport.device(forManualConnection: arguments[flagIndex + 1]) {
-				let manager = accessoryManager
-				Task {
-					// Give startup (container, transports, discovery) a beat to settle.
-					try? await Task.sleep(for: .seconds(2))
-					Logger.services.info("🧪 [App] Auto-connecting to TCP device \(device.identifier, privacy: .public) (launch argument)")
-					try? await manager.connect(to: device)
-				}
-			}
-#endif
+		if !CommandLine.arguments.contains("--marketing-capture") {
+			try? Tips.resetDatastore()
 		}
+#endif
+		if !UserDefaults.firstLaunch, !performanceSeedDisablesDiscovery {
+			accessoryManager.startDiscovery()
+		}
+#if DEBUG
+		let arguments = ProcessInfo.processInfo.arguments
+		if let flagIndex = arguments.firstIndex(of: "-meshtastic-connect-tcp"),
+		   arguments.indices.contains(flagIndex + 1),
+		   let tcpTransport = accessoryManager.transportForType(.tcp),
+		   let device = tcpTransport.device(forManualConnection: arguments[flagIndex + 1]) {
+			let manager = accessoryManager
+			Task {
+				try? await Task.sleep(for: .seconds(2))
+				Logger.services.info("🧪 [App] Auto-connecting to TCP device \(device.identifier, privacy: .public) (launch argument)")
+				try? await manager.connect(to: device)
+			}
+		}
+#endif
 	}
 
 	/// Single dispatch point for every URL the app receives — universal links
@@ -233,6 +223,11 @@ struct MeshtasticAppleApp: App {
 				Color.clear
 			} else if Self.isChirpyOTADemo {
 				FirmwareUpdateGameDemoHost()
+			} else if persistenceController.state != .ready {
+				MigrationBootstrapView(
+					state: persistenceController.state,
+					retry: { Task { await persistenceController.retry() } }
+				)
 			} else if appState.isDatabaseResetting {
 				// Unmount the WHOLE SwiftData-bound tree — including the `.modelContainer`
 				// modifier in mainAppContent — while a node switch clears the store. The
@@ -256,11 +251,22 @@ struct MeshtasticAppleApp: App {
 					Task { try? await accessoryManager.closeConnection() }
 				}
 			}
+			.task {
+				guard Self.shouldInitializeAppServices else { return }
+				try? await persistenceController.ready()
+				startReadyServicesIfNeeded()
+			}
+			.onChange(of: persistenceController.state) { _, state in
+				if state == .ready {
+					startReadyServicesIfNeeded()
+				}
+			}
 		}
 		.onChange(of: scenePhase) { (_, newScenePhase) in
 			// Also skipped in Chirpy OTA demo mode, where persistenceController is nil —
 			// backgrounding the demo must not touch (or force-unwrap) SwiftData.
-			guard Self.shouldInitializeAppServices, let persistenceController else { return }
+			guard Self.shouldInitializeAppServices,
+				  persistenceController.state == .ready else { return }
 			accessoryManager.isInBackground = (newScenePhase == .background)
 			switch newScenePhase {
 			case .background:
@@ -293,14 +299,15 @@ struct MeshtasticAppleApp: App {
 		.environmentObject(accessoryManager)
 		.environmentObject(lockdownCoordinator)
 		.environmentObject(appState.router)
-		.environmentObject(MeshtasticAPI.shared)
 
 			WindowGroup("Mesh Map", id: "meshmap-window") {
 				// Gated on shouldInitializeAppServices (not just tests): in Chirpy OTA demo mode
 				// persistenceController is nil, so building this scene would force-unwrap-crash.
 				// Also gated on the database reset, for the same stale-bridge reason as the main
 				// window: this scene's .modelContainer must unmount during a container swap.
-				if Self.shouldInitializeAppServices, let persistenceController, !appState.isDatabaseResetting {
+				if Self.shouldInitializeAppServices,
+				   persistenceController.state == .ready,
+				   !appState.isDatabaseResetting {
 					EventFirmwareTintScope {
 						MapWindow()
 							.id(appState.databaseResetID)
@@ -381,7 +388,6 @@ struct MeshtasticAppleApp: App {
 						NotificationCenter.default.publisher(for: .meshMessagesDidChange)
 							.debounce(for: .seconds(1), scheduler: DispatchQueue.main)
 					) { _ in
-						guard let persistenceController else { return }
 						appState.refreshBadgeCount(context: persistenceController.container.mainContext)
 					}
 				}
@@ -402,7 +408,7 @@ struct MeshtasticAppleApp: App {
 						)
 					}
 				}
-				.modelContainer(persistenceController!.container)
+				.modelContainer(persistenceController.container)
 				.environmentObject(appState)
 				.environmentObject(accessoryManager)
 				.environmentObject(appState.router)

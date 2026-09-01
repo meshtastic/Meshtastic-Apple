@@ -14,6 +14,7 @@ struct RestartNodeIntent: AppIntent {
 	static let description: IntentDescription = "Restart to the node you are connected to"
 
 	func perform() async throws -> some IntentResult {
+		try await PersistenceController.shared.ready()
 
 		if !(await AccessoryManager.shared.isConnected) {
 			throw AppIntentErrors.AppIntentError.notConnected

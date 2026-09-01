@@ -19,6 +19,9 @@ final class SearchForMessagesIntentHandler: NSObject, INSearchForMessagesIntentH
 	// MARK: - Handling
 
 	func handle(intent: INSearchForMessagesIntent) async -> INSearchForMessagesIntentResponse {
+		guard (try? await PersistenceController.shared.ready()) != nil else {
+			return INSearchForMessagesIntentResponse(code: .failure, userActivity: nil)
+		}
 		let messages: [INMessage] = await MainActor.run {
 			let context = PersistenceController.shared.context
 			let descriptor = FetchDescriptor<MessageEntity>(

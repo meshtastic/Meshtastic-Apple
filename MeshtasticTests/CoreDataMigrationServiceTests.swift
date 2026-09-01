@@ -14,6 +14,14 @@ import CoreData
 import SwiftData
 @testable import Meshtastic
 
+private actor MigrationExecutionRecorder {
+	private(set) var ranOnMainThread: Bool?
+
+	func record(_ ranOnMainThread: Bool) {
+		self.ranOnMainThread = ranOnMainThread
+	}
+}
+
 final class CoreDataMigrationServiceTests: XCTestCase {
 
 	// Mirrors of the service's private store URLs.
@@ -79,7 +87,7 @@ final class CoreDataMigrationServiceTests: XCTestCase {
 	/// install is the degenerate case (nothing preexisting), so this covers both paths:
 	/// node 111 exists only in the legacy store, node 222 exists in both.
 	@MainActor
-	func testMigrationFillsGapsWithoutDuplicatingLiveData() throws {
+	func testMigrationFillsGapsWithoutDuplicatingLiveData() async throws {
 		try buildLegacyStore()
 		XCTAssertTrue(CoreDataMigrationService.legacyStoreExists())
 
@@ -109,7 +117,15 @@ final class CoreDataMigrationServiceTests: XCTestCase {
 		context.insert(liveMessage)
 		try context.save()
 
-		try CoreDataMigrationService.migrate(into: container)
+		let executionRecorder = MigrationExecutionRecorder()
+		try await CoreDataMigrationService.migrateOffMain(
+			into: container,
+			executionProbe: { ranOnMainThread in
+				await executionRecorder.record(ranOnMainThread)
+			}
+		)
+		let migrationRanOnMainThread = await executionRecorder.ranOnMainThread
+		XCTAssertEqual(migrationRanOnMainThread, false)
 
 		// Node 111 migrated with its user and config; node 222 kept, not duplicated.
 		let nodes = try context.fetch(FetchDescriptor<NodeInfoEntity>())

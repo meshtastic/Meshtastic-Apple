@@ -9,13 +9,41 @@ import SwiftData
 import OSLog
 import Foundation
 import UIKit
+import Combine
 
 @MainActor
-class PersistenceController {
+final class PersistenceController: ObservableObject {
+
+	enum State: Equatable {
+		case idle
+		case waitingForProtectedData
+		case preparing
+		case migrating
+		case ready
+		case failed(String)
+	}
+
+	enum ReadinessError: LocalizedError {
+		case protectedDataUnavailable
+		case startupFailed(String)
+
+		var errorDescription: String? {
+			switch self {
+			case .protectedDataUnavailable:
+				return "Protected data is unavailable"
+			case .startupFailed(let message):
+				return message
+			}
+		}
+	}
 
 	static let shared: PersistenceController = {
-		let isTestEnvironment = NSClassFromString("XCTestCase") != nil || ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
-		return PersistenceController(inMemory: isTestEnvironment)
+		let isTestEnvironment = NSClassFromString("XCTestCase") != nil
+			|| ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
+		if isTestEnvironment {
+			return PersistenceController(inMemory: true, storeName: "MeshtasticTests")
+		}
+		return PersistenceController(deferred: true)
 	}()
 
 	static var preview: PersistenceController = {
@@ -29,7 +57,25 @@ class PersistenceController {
 		return result
 	}()
 
-	private(set) var container: ModelContainer
+	@Published private(set) var state: State
+
+	typealias StartupLoader = @MainActor () async throws -> ModelContainer
+	typealias ProtectedDataAvailability = @MainActor () -> Bool
+
+	private var readyContainer: ModelContainer?
+	private var startupTask: Task<PersistenceController, Error>?
+	private var protectedDataObserver: NSObjectProtocol?
+	private var protectedDataWaiters = [UUID: CheckedContinuation<Void, Error>]()
+	private let startupLoader: StartupLoader?
+	private let protectedDataAvailable: ProtectedDataAvailability
+
+	var container: ModelContainer {
+		guard state == .ready, let readyContainer else {
+			preconditionFailure("PersistenceController.ready() must succeed before accessing the container")
+		}
+		return readyContainer
+	}
+
 	/// Advances synchronously with each container replacement. Long-lived view tasks capture the
 	/// generation they were mounted against and stop before touching a stale `ModelContext`.
 	private(set) var containerGeneration = 0
@@ -42,18 +88,12 @@ class PersistenceController {
 		container.mainContext
 	}
 
-	/// True while `container` is a provisional, empty in-memory stand-in because the on-disk
-	/// store was unreadable under data protection (the process launched in the background before
-	/// the user's first unlock — Bluetooth state restoration does this after a phone reboot).
-	/// The real store is untouched on disk and is reopened by `observeFirstUnlockToReopenStore()`.
-	private(set) var isProvisionalPendingFirstUnlock = false
-
 	/// Distinguishes "the store file is locked by data protection" from "the store file is corrupt".
 	/// Before the first unlock, `open(2)` on a file protected with the default
 	/// CompleteUntilFirstUserAuthentication class fails outright; a corrupt-but-unlocked file opens
 	/// fine at the POSIX layer (its damage surfaces inside SQLite instead). Any exists-but-unopenable
-	/// state is treated as locked: the cost of a false positive is one provisional in-memory session,
-	/// while destructive "recovery" of a merely-locked store permanently deletes the user's data (#2243).
+	/// state is treated as locked: the cost of a false positive is delayed startup, while
+	/// destructive "recovery" of a merely-locked store permanently deletes the user's data (#2243).
 	nonisolated static func storeExistsButIsUnreadable(at url: URL) -> Bool {
 		guard FileManager.default.fileExists(atPath: url.path) else { return false }
 		let fd = open(url.path, O_RDONLY)
@@ -62,26 +102,6 @@ class PersistenceController {
 			return false
 		}
 		return true
-	}
-
-	/// Reopens the on-disk store once protected data becomes available (first unlock). The app is
-	/// still backgrounded at that moment — the user unlocks the phone before they can foreground
-	/// us — so nothing in the UI holds entities from the provisional container, and the scene
-	/// re-reads `container` on its next body evaluation (the same eventual-consistency the
-	/// data-clear flow's `recreateContainer()` relies on).
-	private func observeFirstUnlockToReopenStore() {
-		NotificationCenter.default.addObserver(
-			forName: UIApplication.protectedDataDidBecomeAvailableNotification,
-			object: nil,
-			queue: .main
-		) { [weak self] _ in
-			MainActor.assumeIsolated {
-				guard let self, self.isProvisionalPendingFirstUnlock else { return }
-				Logger.data.info("💾 Protected data is now available — reopening the on-disk store in place of the provisional container")
-				self.isProvisionalPendingFirstUnlock = false
-				self.recreateContainer()
-			}
-		}
 	}
 
 	/// Reopen the (already-migrated) store in a brand-new `ModelContainer`, replacing `container`.
@@ -96,8 +116,7 @@ class PersistenceController {
 	/// `AppState.databaseResetID` after this returns. The swap advances `containerGeneration`,
 	/// which makes guarded view tasks (e.g. the Nodes refresh loop) stop fetching; only the
 	/// `.id(databaseResetID)` remount re-binds them to the new container. A foreground caller
-	/// that forgets the bump gets a silently frozen list, not a crash. Background-only callers
-	/// (the first-unlock store reopen) are exempt because their views mount after the swap.
+	/// that forgets the bump gets a silently frozen list, not a crash.
 	func recreateContainer() {
 		let schema = Schema(versionedSchema: MeshtasticSchema.current)
 		let config = ModelConfiguration(
@@ -117,7 +136,7 @@ class PersistenceController {
 			}
 			fresh.mainContext.autosaveEnabled = false
 			containerGeneration &+= 1
-			container = fresh
+			readyContainer = fresh
 			Logger.data.info("💾 SwiftData container recreated after data clear")
 		} catch {
 			Logger.data.error("💾 Failed to recreate SwiftData container: \(error.localizedDescription, privacy: .public)")
@@ -209,12 +228,201 @@ class PersistenceController {
 		}
 	}
 
-	init(inMemory: Bool = false, storeName: String = "Meshtastic") {
-		self.storeName = storeName
-		self.inMemory = inMemory
+	private init(deferred: Bool) {
+		precondition(deferred)
+		storeName = "Meshtastic"
+		inMemory = false
+		state = .idle
+		readyContainer = nil
+		startupLoader = nil
+		protectedDataAvailable = { UIApplication.shared.isProtectedDataAvailable }
+	}
+
+	init(
+		startupLoader: @escaping StartupLoader,
+		protectedDataAvailable: @escaping ProtectedDataAvailability = { true }
+	) {
+		storeName = "MeshtasticTest"
+		inMemory = true
+		state = .idle
+		readyContainer = nil
+		self.startupLoader = startupLoader
+		self.protectedDataAvailable = protectedDataAvailable
+	}
+
+	@discardableResult
+	func ready() async throws -> PersistenceController {
+		if state == .ready {
+			return self
+		}
+		if case .failed(let message) = state {
+			throw ReadinessError.startupFailed(message)
+		}
+		if state == .waitingForProtectedData {
+			guard protectedDataAvailable() else {
+				throw ReadinessError.protectedDataUnavailable
+			}
+			state = .idle
+		}
+		if let startupTask {
+			return try await startupTask.value
+		}
+
+		let task = Task { @MainActor [weak self] in
+			guard let self else {
+				throw CancellationError()
+			}
+			do {
+				let controller = try await self.performStartup()
+				self.startupTask = nil
+				return controller
+			} catch ReadinessError.protectedDataUnavailable {
+				self.startupTask = nil
+				self.state = .waitingForProtectedData
+				self.observeProtectedDataAvailabilityIfNeeded()
+				throw ReadinessError.protectedDataUnavailable
+			} catch {
+				self.startupTask = nil
+				let message = error.localizedDescription
+				self.state = .failed(message)
+				Logger.data.error("⬆️ Persistence startup failed: \(message, privacy: .public)")
+				throw ReadinessError.startupFailed(message)
+			}
+		}
+		startupTask = task
+		return try await task.value
+	}
+
+	func waitUntilReady() async throws -> PersistenceController {
+		while true {
+			do {
+				return try await ready()
+			} catch ReadinessError.protectedDataUnavailable {
+				try await waitForProtectedData()
+			}
+		}
+	}
+
+	func retry() async {
+		guard case .failed = state else { return }
+		state = .idle
+		_ = try? await ready()
+	}
+
+	private func performStartup() async throws -> PersistenceController {
+		guard protectedDataAvailable() else {
+			throw ReadinessError.protectedDataUnavailable
+		}
+
+		if let startupLoader {
+			state = .preparing
+			readyContainer = try await startupLoader()
+			state = .ready
+			return self
+		}
+
+		let schema = Schema(versionedSchema: MeshtasticSchema.current)
+		let config = ModelConfiguration(
+			storeName,
+			schema: schema,
+			isStoredInMemoryOnly: false,
+			allowsSave: true
+		)
+		guard !Self.storeExistsButIsUnreadable(at: config.url),
+			  !CoreDataMigrationService.protectedStoreIsUnavailable() else {
+			throw ReadinessError.protectedDataUnavailable
+		}
+
+		state = .preparing
+		await Task.detached(priority: .userInitiated) {
+			CoreDataMigrationService.prepareForMigration()
+		}.value
+
+		let loadedContainer = try Self.makeContainer(
+			inMemory: false,
+			storeName: storeName
+		)
+
+		if CoreDataMigrationService.legacyStoreExists() {
+			state = .migrating
+			try await CoreDataMigrationService.migrateOffMain(into: loadedContainer)
+		}
+
+		readyContainer = loadedContainer
+		state = .ready
+		return self
+	}
+
+	private func waitForProtectedData() async throws {
+		guard !protectedDataAvailable() else { return }
+		let waiterID = UUID()
+		try await withTaskCancellationHandler(operation: {
+			try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+				if Task.isCancelled {
+					continuation.resume(throwing: CancellationError())
+				} else if protectedDataAvailable() {
+					continuation.resume()
+				} else {
+					protectedDataWaiters[waiterID] = continuation
+				}
+			}
+		}, onCancel: {
+			Task { @MainActor [weak self] in
+				self?.cancelProtectedDataWaiter(waiterID)
+			}
+		})
+	}
+
+	private func cancelProtectedDataWaiter(_ waiterID: UUID) {
+		protectedDataWaiters.removeValue(forKey: waiterID)?.resume(throwing: CancellationError())
+	}
+
+	var protectedDataWaiterCountForTesting: Int {
+		protectedDataWaiters.count
+	}
+
+	private func observeProtectedDataAvailabilityIfNeeded() {
+		if protectedDataObserver == nil {
+			protectedDataObserver = NotificationCenter.default.addObserver(
+				forName: UIApplication.protectedDataDidBecomeAvailableNotification,
+				object: nil,
+				queue: .main
+			) { [weak self] _ in
+				Task { @MainActor in
+					self?.protectedDataDidBecomeAvailable()
+				}
+			}
+		}
+
+		// Unlock may have occurred between the failed check and observer registration.
+		if protectedDataAvailable() {
+			protectedDataDidBecomeAvailable()
+		}
+	}
+
+	private func protectedDataDidBecomeAvailable() {
+		if let protectedDataObserver {
+			NotificationCenter.default.removeObserver(protectedDataObserver)
+			self.protectedDataObserver = nil
+		}
+		let waiters = protectedDataWaiters.values
+		protectedDataWaiters.removeAll()
+		for waiter in waiters {
+			waiter.resume()
+		}
+		guard state == .waitingForProtectedData else { return }
+		state = .idle
+		Task { @MainActor [weak self] in
+			_ = try? await self?.ready()
+		}
+	}
+
+	private static func makeContainer(
+		inMemory: Bool,
+		storeName: String
+	) throws -> ModelContainer {
 		let isTestEnvironment = NSClassFromString("XCTestCase") != nil || ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
 		let schema = Schema(versionedSchema: MeshtasticSchema.current)
-
 		let config = ModelConfiguration(
 			storeName,
 			schema: schema,
@@ -224,35 +432,19 @@ class PersistenceController {
 
 #if DEBUG
 		if !inMemory && !isTestEnvironment && PerformanceSeedData.configuration?.resetStore == true {
-			Self.removeStoreFiles(at: config.url)
+			removeStoreFiles(at: config.url)
 		}
 #endif
 
-		// Clean up store files parked by previous sessions' node switches (renamed aside
-		// instead of unlinked — see parkStoreFiles) and staged backup copies (never removed
-		// while their container object lives — see stagedBackupContainer). Nothing can hold
-		// either open at launch.
 		if !inMemory {
-			Self.sweepParkedStoreFiles(near: config.url)
+			sweepParkedStoreFiles(near: config.url)
 			NodeBackupManager.sweepStagedBackupDirectories()
 		}
 
-		// ── Step 0: guard Core Data store from being clobbered ───────────────
-		// Both the App Store (Core Data) build and this (SwiftData) build use
-		// "Meshtastic.sqlite".  If we let SwiftData open the file first it will
-		// corrupt the Core Data content.  Rename it out of the way so SwiftData
-		// creates a fresh store; migration reads from the renamed file below.
-		if !inMemory && !isTestEnvironment {
-			CoreDataMigrationService.prepareForMigration()
-		}
-
-		// ── Step 1: build the SwiftData container ────────────────────────────
 		do {
+			let container: ModelContainer
 			if inMemory {
-				container = try ModelContainer(
-					for: schema,
-					configurations: config
-				)
+				container = try ModelContainer(for: schema, configurations: config)
 			} else {
 				container = try ModelContainer(
 					for: schema,
@@ -262,48 +454,15 @@ class PersistenceController {
 			}
 			container.mainContext.autosaveEnabled = false
 			Logger.data.info("💾 SwiftData store initialized successfully")
+			return container
 		} catch {
-			// The store could not be opened. Before treating that as corruption, rule out
-			// data protection: launched in the background before the user's first unlock
-			// (Bluetooth state restoration does this after a phone reboot), the store file
-			// exists but is unreadable, and destroying it here is how a reboot cost users
-			// their message history (#2243). A locked store is not a broken store — leave
-			// it alone, run this session on a provisional in-memory container, and reopen
-			// the real store once protected data becomes available.
-			if !inMemory && Self.storeExistsButIsUnreadable(at: config.url) {
-				Logger.data.critical("💾 SwiftData store exists but is unreadable — data protection lock (pre-first-unlock launch), not corruption. Leaving the store untouched and using a provisional in-memory container: \(error.localizedDescription, privacy: .public)")
-				let memoryConfig = ModelConfiguration(
-					storeName,
-					schema: schema,
-					isStoredInMemoryOnly: true,
-					allowsSave: true
-				)
-				do {
-					container = try ModelContainer(for: schema, configurations: memoryConfig)
-					container.mainContext.autosaveEnabled = false
-				} catch let memoryError {
-					fatalError("💾 SwiftData in-memory fallback failed: \(memoryError.localizedDescription)")
-				}
-				isProvisionalPendingFirstUnlock = true
-				observeFirstUnlockToReopenStore()
-				// Skip the legacy Core Data migration too — its files are equally unreadable
-				// right now, and the next post-unlock open runs the normal path.
-				return
+			guard !inMemory else { throw error }
+			guard !storeExistsButIsUnreadable(at: config.url) else {
+				Logger.data.info("💾 SwiftData store is unavailable until first unlock")
+				throw ReadinessError.protectedDataUnavailable
 			}
-			// A readable-but-unopenable store really is corrupt (e.g. a Core Data file
-			// that prepareForMigration() did not rename, or a damaged store from a
-			// previous build).  Log the error, rename the broken file so it is
-			// preserved for diagnosis, and retry with a fresh empty store.
-			// A fatalError here would leave users permanently unable to open
-			// the app, so we recover instead and accept the data loss.
+
 			Logger.data.critical("💾 SwiftData store failed to open, attempting recovery: \(error.localizedDescription, privacy: .public)")
-			// Move the actual store files aside so the retry starts from a clean
-			// slate. SwiftData names the store from `config.url` — for a named
-			// configuration that is `<name>.store` with `-shm`/`-wal` siblings
-			// (NOT `.sqlite`). Derive the paths from `config.url.lastPathComponent`
-			// directly so we move the real files instead of a non-existent
-			// `<name>.sqlite`, which previously left the broken store in place and
-			// guaranteed the retry below failed.
 			let fm = FileManager.default
 			let storeURL = config.url
 			let directory = storeURL.deletingLastPathComponent()
@@ -314,49 +473,39 @@ class PersistenceController {
 				let to = directory.appendingPathComponent(storeFileName + suffix + sidecar)
 				try? fm.moveItem(at: from, to: to)
 			}
-			do {
-				container = try ModelContainer(
-					for: schema,
-					migrationPlan: MeshtasticMigrationPlan.self,
-					configurations: config
-				)
-				container.mainContext.autosaveEnabled = false
-				Logger.data.warning("💾 SwiftData store recreated after recovery — local data has been reset on this device")
-			} catch let recoveryError {
-				// Last resort: never crash at launch. Fall back to an in-memory
-				// container so the app remains usable (data not persisted this
-				// session) instead of crash-looping on every launch.
-				Logger.data.critical("💾 SwiftData store unrecoverable even after reset, falling back to in-memory: \(recoveryError.localizedDescription, privacy: .public)")
-				let memoryConfig = ModelConfiguration(
-					storeName,
-					schema: schema,
-					isStoredInMemoryOnly: true,
-					allowsSave: true
-				)
-				do {
-					container = try ModelContainer(for: schema, configurations: memoryConfig)
-					container.mainContext.autosaveEnabled = false
-				} catch let memoryError {
-					// An in-memory store cannot fail for file reasons; if it does,
-					// the schema itself is invalid and there is no safe recovery.
-					fatalError("💾 SwiftData in-memory fallback failed: \(memoryError.localizedDescription)")
-				}
-			}
-		}
 
-		// ── Step 2: one-time Core Data → SwiftData migration ─────────────────
-		// Runs only when upgrading from 2.7.12 (or earlier) which used Core Data.
-		guard !inMemory, !isTestEnvironment else { return }
-		if CoreDataMigrationService.legacyStoreExists() {
-			do {
-				try CoreDataMigrationService.migrate(into: container)
-			} catch {
-				// Log but do not crash — the SwiftData store is usable even if
-				// migration fails; the user will simply start fresh on this device.
-				Logger.data.error("⬆️ CoreDataMigrationService failed: \(error.localizedDescription, privacy: .public)")
-			}
+			let recovered = try ModelContainer(
+				for: schema,
+				migrationPlan: MeshtasticMigrationPlan.self,
+				configurations: config
+			)
+			recovered.mainContext.autosaveEnabled = false
+			Logger.data.warning("💾 SwiftData store recreated after recovery — local data has been reset on this device")
+			return recovered
 		}
 	}
+
+	init(
+		inMemory: Bool = false,
+		storeName: String = "Meshtastic"
+	) {
+		self.storeName = storeName
+		self.inMemory = inMemory
+		state = .preparing
+		readyContainer = nil
+		startupLoader = nil
+		protectedDataAvailable = { true }
+		do {
+			readyContainer = try Self.makeContainer(inMemory: inMemory, storeName: storeName)
+			state = .ready
+		} catch {
+			fatalError("💾 SwiftData container initialization failed: \(error.localizedDescription)")
+		}
+	}
+
+}
+
+extension PersistenceController {
 
 	@MainActor
 	public func clearDatabase(includeRoutes: Bool = true) {
