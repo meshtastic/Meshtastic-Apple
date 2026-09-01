@@ -156,7 +156,7 @@ struct Firmware: View {
 private struct FirmwareContentView: View {
 	
 	private enum FirmwareTab {
-		case stable, alpha, downloaded
+		case stable, alpha, nightly, downloaded
 	}
 	
 	@EnvironmentObject var accessoryManager: AccessoryManager
@@ -265,6 +265,7 @@ private struct FirmwareContentView: View {
 				Picker("Firmware Version", selection: $firmwareSelection) {
 					Text("Stable").tag(FirmwareTab.stable)
 					Text("Alpha").tag(FirmwareTab.alpha)
+					Text("Nightly").tag(FirmwareTab.nightly)
 					Text("Downloaded").tag(FirmwareTab.downloaded)
 				}.pickerStyle(.segmented)
 				
@@ -347,6 +348,22 @@ private struct FirmwareContentView: View {
 			if let last = alphas.last, let notes = last.releaseNotes {
 				NavigationLink("Release Notes") {
 					FirmwareReleaseNotesView(markdown: notes, versionId: last.versionId)
+				}
+			}
+		case .nightly:
+			let nightlies = firmwareList.mostRecentFirmware(forReleaseType: .nightly)
+			if nightlies.isEmpty {
+				Text("No nightly build is available for this device right now.")
+			} else {
+				ForEach(nightlies, id: \.localUrl) { release in
+					FirmwareRow(firmwareFile: release) { type, url in
+						self.rowInstallation = RowInstallation(type: type, url: url)
+					}
+				}
+				if let last = nightlies.last, let notes = last.releaseNotes {
+					NavigationLink("Release Notes") {
+						FirmwareReleaseNotesView(markdown: notes, versionId: last.versionId)
+					}
 				}
 			}
 		case .downloaded:
@@ -610,6 +627,8 @@ private struct FirmwareRow: View {
 						FirmwareTagView("STABLE", color: Color.green)
 					case .alpha:
 						FirmwareTagView("ALPHA", color: Color.blue)
+					case .nightly:
+						FirmwareTagView("NIGHTLY", color: Color.purple)
 					case .unlisted:
 						FirmwareTagView("UNLISTED", color: Color.orange)
 					}
