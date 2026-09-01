@@ -10,43 +10,7 @@ import SwiftUI
 import OSLog
 import MeshtasticProtobufs // Added to ensure RoutingError is accessible if needed
 
-struct UserMessageTimelineCursor: Comparable {
-	let timestamp: Int32
-	let messageId: Int64
 
-	static func < (lhs: UserMessageTimelineCursor, rhs: UserMessageTimelineCursor) -> Bool {
-		if lhs.timestamp == rhs.timestamp {
-			return lhs.messageId < rhs.messageId
-		}
-		return lhs.timestamp < rhs.timestamp
-	}
-}
-
-// Not private: the ACK-refresh tests build tokens directly to prove a tally reaches the
-// token's equality, which is what drives the reload.
-struct UserMessageListChangeToken: Equatable {
-	let latest: UserMessageTimelineCursor?
-	let count: Int
-	// Tallies of outgoing messages whose ACK has resolved, kept as separate delivered/errored
-	// counts rather than a single sum: an errored→delivered transition leaves the sum unchanged
-	// (delivered +1, errored −1) but moves both tallies, so the token still changes and the list
-	// reloads. Together with `latest`/`count` these cover every ACK transition the app produces:
-	// in-place mutations only ever move a message *into* delivered/errored (a tally changes), and
-	// the sole route back to "waiting" is RetryButton, which deletes the message and inserts a
-	// fresh one — moving `latest`/`count`. (There is deliberately no `max(ackTimestamp)` signal:
-	// `ackTimestamp` is stamped from the remote `packet.rxTime`, so it isn't reliably monotonic
-	// and would add an unindexed sort to the 5s poll for a net-zero case that can't occur.) An
-	// incoming ACK changes neither `latest` nor `count`, so without these tallies the poll-based
-	// refresh would never reload and the row would stay on "Waiting to be acknowledged" until the
-	// view is rebuilt.
-	let deliveredAckCount: Int
-	let erroredAckCount: Int
-	/// Counted separately from `deliveredAckCount` because a recipient's own ACK arriving after a
-	/// relay's implicit ACK moves neither of the other tallies: `receivedACK` is already true and
-	/// `ackError` is still 0, so the row stayed on "Relayed, not confirmed by recipient" until the
-	/// view was rebuilt. `realACK` is the only signal for that last transition.
-	let confirmedAckCount: Int
-}
 
 struct UserMessageList: View {
 	@EnvironmentObject var appState: AppState
@@ -68,10 +32,6 @@ struct UserMessageList: View {
 	@State private var repliesByID: [Int64: MessageEntity] = [:]
 	@State private var tapbacksByReplyID: [Int64: [MessageEntity]] = [:]
 	@State private var hasEarlierMessages = false
-	@State private var latestKnownMessageToken: UserMessageListChangeToken?
-	@State private var latestVisibleTapbackCursor: UserMessageTimelineCursor?
-	@State private var latestKnownConversationTapbackCursor: UserMessageTimelineCursor?
-	@State private var visibleTapbackCount = 0
 	@State private var tapbackTargetMessage: MessageEntity?
 	@State private var tapbackText = ""
 	@FocusState var tapbackFocused: Bool
@@ -104,8 +64,12 @@ struct UserMessageList: View {
 			   let connectedUser = connectedNode.user {
 				appState.unreadDirectMessages = connectedUser.unreadMessages(context: context, skipLastMessageCheck: true) // skipLastMessageCheck=true because we don't update lastMessage on our own connected node
 			}
-			// Refresh other unread surfaces (CarPlay templates) too.
-			NotificationCenter.default.post(name: .meshMessagesDidChange, object: nil)
+			// Refresh other unread surfaces (CarPlay templates) too. Only when something was
+			// actually marked read: this view reloads on that notification, and an unconditional
+			// post would have it marking read and reloading in a loop.
+			if !readMessageIDs.isEmpty {
+				NotificationCenter.default.post(name: .meshMessagesDidChange, object: nil)
+			}
 		} catch {
 			Logger.data.error("Failed to read direct messages: \(error.localizedDescription, privacy: .public)")
 		}
@@ -131,8 +95,6 @@ struct UserMessageList: View {
 			previousByID = buildPreviousByID(for: visibleMessages, previousMessage: previousMessage)
 			repliesByID = try fetchReplies(for: visibleMessages)
 			replaceTapbacks(try fetchTapbacks(for: visibleMessages))
-			latestKnownMessageToken = try fetchMessageChangeToken(latestMessage: fetchedMessages.first)
-			latestKnownConversationTapbackCursor = try fetchLatestTapbackCursor()
 
 			if markReadAfterLoad {
 				markMessagesAsRead()
@@ -160,83 +122,9 @@ struct UserMessageList: View {
 		try fetchIncomingMessages(unreadOnly: true) + fetchOutgoingMessages(unreadOnly: true)
 	}
 
-	private func fetchMessageChangeToken(latestMessage: MessageEntity? = nil) throws -> UserMessageListChangeToken {
-		let latest = try latestMessage ?? fetchMessages(limit: 1).first
-		let acks = try Self.resolvedAckCounts(in: context, toUserNum: user.num)
-		return UserMessageListChangeToken(
-			latest: latest.map(cursor(for:)),
-			count: try fetchIncomingMessageCount() + fetchOutgoingMessageCount(),
-			deliveredAckCount: acks.delivered,
-			erroredAckCount: acks.errored,
-			confirmedAckCount: acks.confirmed
-		)
-	}
 
-	/// Resolved-ACK tallies for this conversation's outgoing messages: delivered (`receivedACK`)
-	/// and failed (`ackError != 0`) counted separately. A message is shown as "Waiting to be
-	/// acknowledged" until it resolves; folding both tallies into the change token makes the poll
-	/// reload on any ACK state change. Keeping them distinct means errored→delivered (which keeps
-	/// the sum constant) still moves a tally. Only outgoing messages carry ACK state, so the
-	/// incoming side is excluded. Exposed `static` so the regression tests exercise these exact
-	/// predicates.
-	///
-	/// Two single-term `fetchCount`s rather than one `||` predicate: a compound `||` (and an extra
-	/// `&&` term such as an `isEmoji` filter) exceeds the `#Predicate` macro's type-check budget.
-	/// Not filtering `isEmoji` only means an acked tapback triggers one extra benign reload.
-	static func resolvedAckCounts(in context: ModelContext, toUserNum userNum: Int64) throws -> (delivered: Int, errored: Int, confirmed: Int) {
-		let detectionSensorPortNum: Int32 = 10
-		let deliveredDescriptor = FetchDescriptor<MessageEntity>(
-			predicate: #Predicate<MessageEntity> {
-				$0.toUser?.num == userNum
-				&& $0.admin == false && $0.portNum != detectionSensorPortNum
-				&& $0.receivedACK
-			}
-		)
-		let erroredDescriptor = FetchDescriptor<MessageEntity>(
-			predicate: #Predicate<MessageEntity> {
-				$0.toUser?.num == userNum
-				&& $0.admin == false && $0.portNum != detectionSensorPortNum
-				&& $0.ackError != 0
-			}
-		)
-		let confirmedDescriptor = FetchDescriptor<MessageEntity>(
-			predicate: #Predicate<MessageEntity> {
-				$0.toUser?.num == userNum
-				&& $0.admin == false && $0.portNum != detectionSensorPortNum
-				&& $0.realACK
-			}
-		)
-		return (
-			try context.fetchCount(deliveredDescriptor),
-			try context.fetchCount(erroredDescriptor),
-			try context.fetchCount(confirmedDescriptor)
-		)
-	}
 
-	private func fetchIncomingMessageCount() throws -> Int {
-		let userNum = user.num
-		let detectionSensorPortNum: Int32 = 10
-		let descriptor = FetchDescriptor<MessageEntity>(
-			predicate: #Predicate<MessageEntity> {
-				$0.fromUser?.num == userNum
-				&& $0.toUser != nil
-				&& $0.isEmoji == false && $0.admin == false && $0.portNum != detectionSensorPortNum
-			}
-		)
-		return try context.fetchCount(descriptor)
-	}
 
-	private func fetchOutgoingMessageCount() throws -> Int {
-		let userNum = user.num
-		let detectionSensorPortNum: Int32 = 10
-		let descriptor = FetchDescriptor<MessageEntity>(
-			predicate: #Predicate<MessageEntity> {
-				$0.toUser?.num == userNum
-				&& $0.isEmoji == false && $0.admin == false && $0.portNum != detectionSensorPortNum
-			}
-		)
-		return try context.fetchCount(descriptor)
-	}
 
 	private func fetchIncomingMessages(limit: Int? = nil, unreadOnly: Bool) throws -> [MessageEntity] {
 		let userNum = user.num
@@ -279,43 +167,9 @@ struct UserMessageList: View {
 		return try context.fetch(descriptor)
 	}
 
-	private func fetchLatestTapbackCursor() throws -> UserMessageTimelineCursor? {
-		try [fetchLatestIncomingTapbackCursor(), fetchLatestOutgoingTapbackCursor()].compactMap { $0 }.max()
-	}
 
-	private func fetchLatestIncomingTapbackCursor() throws -> UserMessageTimelineCursor? {
-		let userNum = user.num
-		var descriptor = FetchDescriptor<MessageEntity>(
-			predicate: #Predicate<MessageEntity> {
-				$0.fromUser?.num == userNum && $0.toUser != nil && $0.isEmoji == true && $0.replyID > 0
-			},
-			sortBy: [
-				SortDescriptor(\MessageEntity.messageTimestamp, order: .reverse),
-				SortDescriptor(\MessageEntity.messageId, order: .reverse)
-			]
-		)
-		descriptor.fetchLimit = 1
-		return try context.fetch(descriptor).first.map(cursor(for:))
-	}
 
-	private func fetchLatestOutgoingTapbackCursor() throws -> UserMessageTimelineCursor? {
-		let userNum = user.num
-		var descriptor = FetchDescriptor<MessageEntity>(
-			predicate: #Predicate<MessageEntity> {
-				$0.toUser?.num == userNum && $0.isEmoji == true && $0.replyID > 0
-			},
-			sortBy: [
-				SortDescriptor(\MessageEntity.messageTimestamp, order: .reverse),
-				SortDescriptor(\MessageEntity.messageId, order: .reverse)
-			]
-		)
-		descriptor.fetchLimit = 1
-		return try context.fetch(descriptor).first.map(cursor(for:))
-	}
 
-	private func cursor(for message: MessageEntity) -> UserMessageTimelineCursor {
-		UserMessageTimelineCursor(timestamp: message.messageTimestamp, messageId: message.messageId)
-	}
 
 	private func buildPreviousByID(for visibleMessages: [MessageEntity], previousMessage: MessageEntity?) -> [Int64: MessageEntity] {
 		var result: [Int64: MessageEntity] = [:]
@@ -362,47 +216,9 @@ struct UserMessageList: View {
 		return try context.fetch(descriptor)
 	}
 
-	@MainActor
-	@discardableResult
-	private func refreshVisibleTapbacks(markReadAfterLoad: Bool) -> Bool {
-		do {
-			let tapbacks = try fetchTapbacks(for: messages)
-			let latestTapbackCursor = tapbacks.map(cursor(for:)).max()
-			guard latestTapbackCursor != latestVisibleTapbackCursor || tapbacks.count != visibleTapbackCount else {
-				return true
-			}
-			replaceTapbacks(tapbacks)
-			if markReadAfterLoad {
-				markMessagesAsRead()
-			}
-			return true
-		} catch {
-			Logger.data.error("Failed to refresh direct message tapbacks: \(error.localizedDescription, privacy: .public)")
-			return false
-		}
-	}
 
-	@MainActor
-	private func refreshIfNeeded() {
-		do {
-			if try fetchMessageChangeToken() != latestKnownMessageToken {
-				loadMessages(markReadAfterLoad: routerIsShowingThisUser())
-			} else {
-				let latestTapbackCursor = try fetchLatestTapbackCursor()
-				if latestTapbackCursor != latestKnownConversationTapbackCursor {
-					if refreshVisibleTapbacks(markReadAfterLoad: routerIsShowingThisUser()) {
-						latestKnownConversationTapbackCursor = latestTapbackCursor
-					}
-				}
-			}
-		} catch {
-			Logger.data.error("Failed to refresh direct messages: \(error.localizedDescription, privacy: .public)")
-		}
-	}
 
 	private func replaceTapbacks(_ tapbacks: [MessageEntity]) {
-		latestVisibleTapbackCursor = tapbacks.map(cursor(for:)).max()
-		visibleTapbackCount = tapbacks.count
 		tapbacksByReplyID = Dictionary(grouping: tapbacks, by: \.replyID)
 	}
 
@@ -425,7 +241,7 @@ struct UserMessageList: View {
 					isEmoji: true,
 					replyID: target.messageId
 				)
-				await MainActor.run { _ = refreshVisibleTapbacks(markReadAfterLoad: routerIsShowingThisUser()) }
+				await MainActor.run { loadMessages(markReadAfterLoad: routerIsShowingThisUser()) }
 			} catch {
 				Logger.services.warning("Failed to send tapback.")
 			}
@@ -504,10 +320,12 @@ struct UserMessageList: View {
 					let isVisible = routerIsShowingThisUser()
 					loadMessages(markReadAfterLoad: isVisible)
 					guard isVisible else { return }
+					// Reloads are driven by .meshMessagesDidChange below. This is only a safety
+					// net for a change that somehow saved without one.
 					while !Task.isCancelled {
-						try? await Task.sleep(for: .seconds(5))
+						try? await Task.sleep(for: .seconds(30))
 						guard !Task.isCancelled else { return }
-						refreshIfNeeded()
+						loadMessages(markReadAfterLoad: routerIsShowingThisUser())
 					}
 				}
 				.onChange(of: messages.last?.messageId) {
@@ -515,10 +333,14 @@ struct UserMessageList: View {
 						scrollView.scrollTo("bottomAnchor", anchor: .bottom)
 					}
 				}
-				// Incoming DM traffic bumps appState.unreadDirectMessages; refresh on that
-				// signal so messages land live instead of waiting up to 5s for the poll.
-				.onChange(of: appState.unreadDirectMessages) {
-					refreshIfNeeded()
+				// Message writes happen on the packet actor's own context, which SwiftData does
+				// not propagate here, so the list reloads on the notification that actor posts
+				// after a save. Debounced because a burst of packets saves several times.
+				.onReceive(
+					NotificationCenter.default.publisher(for: .meshMessagesDidChange)
+						.debounce(for: .milliseconds(300), scheduler: DispatchQueue.main)
+				) { _ in
+					loadMessages(markReadAfterLoad: routerIsShowingThisUser())
 				}
 				.onChange(of: messageToHighlight) { scrollToHighlighted(scrollView) }
 				.onChange(of: messageFieldFocused) {
