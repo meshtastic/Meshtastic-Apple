@@ -257,6 +257,30 @@ struct MessageAckStatusRefreshTests {
 		#expect(errored != delivered)
 	}
 
+	/// A relay's implicit ACK resolves the message first (`receivedACK`), and the recipient's own
+	/// ACK arrives after it (`realACK`). That second transition moves neither the delivered nor the
+	/// errored tally, so without a `realACK` tally the row stayed on "Relayed, not confirmed by
+	/// recipient" until the view was rebuilt — the reported "status only updates after leaving and
+	/// re-entering the conversation".
+	@Test func directMessageRealAck_movesConfirmedCountAfterImplicitAck() throws {
+		let user = try makeUser(num: 0x2017_0009)
+		let msg = try insertOutgoingDirectMessage(to: user, messageId: 971_000_009)
+
+		// Implicit ACK from a relay: resolved, but not confirmed by the recipient.
+		msg.receivedACK = true
+		try context.save()
+		let relayed = try UserMessageList.resolvedAckCounts(in: context, toUserNum: user.num)
+		#expect(relayed.delivered == 1 && relayed.errored == 0 && relayed.confirmed == 0)
+
+		// The recipient's own ACK. Neither of the original tallies can see this.
+		msg.realACK = true
+		try context.save()
+		let confirmed = try UserMessageList.resolvedAckCounts(in: context, toUserNum: user.num)
+		#expect(confirmed.delivered == 1 && confirmed.errored == 0 && confirmed.confirmed == 1)
+		#expect(relayed.delivered == confirmed.delivered && relayed.errored == confirmed.errored)
+		#expect(relayed != confirmed)
+	}
+
 	@Test func directMessageRoutingError_movesResolvedCount() throws {
 		let user = try makeUser(num: 0x2017_0002)
 		let msg = try insertOutgoingDirectMessage(to: user, messageId: 971_000_002)

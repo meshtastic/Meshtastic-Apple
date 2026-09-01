@@ -39,6 +39,11 @@ private struct UserMessageListChangeToken: Equatable {
 	// view is rebuilt.
 	let deliveredAckCount: Int
 	let erroredAckCount: Int
+	/// Counted separately from `deliveredAckCount` because a recipient's own ACK arriving after a
+	/// relay's implicit ACK moves neither of the other tallies: `receivedACK` is already true and
+	/// `ackError` is still 0, so the row stayed on "Relayed, not confirmed by recipient" until the
+	/// view was rebuilt. `realACK` is the only signal for that last transition.
+	let confirmedAckCount: Int
 }
 
 struct UserMessageList: View {
@@ -160,7 +165,8 @@ struct UserMessageList: View {
 			latest: latest.map(cursor(for:)),
 			count: try fetchIncomingMessageCount() + fetchOutgoingMessageCount(),
 			deliveredAckCount: acks.delivered,
-			erroredAckCount: acks.errored
+			erroredAckCount: acks.errored,
+			confirmedAckCount: acks.confirmed
 		)
 	}
 
@@ -175,7 +181,7 @@ struct UserMessageList: View {
 	/// Two single-term `fetchCount`s rather than one `||` predicate: a compound `||` (and an extra
 	/// `&&` term such as an `isEmoji` filter) exceeds the `#Predicate` macro's type-check budget.
 	/// Not filtering `isEmoji` only means an acked tapback triggers one extra benign reload.
-	static func resolvedAckCounts(in context: ModelContext, toUserNum userNum: Int64) throws -> (delivered: Int, errored: Int) {
+	static func resolvedAckCounts(in context: ModelContext, toUserNum userNum: Int64) throws -> (delivered: Int, errored: Int, confirmed: Int) {
 		let detectionSensorPortNum: Int32 = 10
 		let deliveredDescriptor = FetchDescriptor<MessageEntity>(
 			predicate: #Predicate<MessageEntity> {
@@ -191,7 +197,18 @@ struct UserMessageList: View {
 				&& $0.ackError != 0
 			}
 		)
-		return (try context.fetchCount(deliveredDescriptor), try context.fetchCount(erroredDescriptor))
+		let confirmedDescriptor = FetchDescriptor<MessageEntity>(
+			predicate: #Predicate<MessageEntity> {
+				$0.toUser?.num == userNum
+				&& $0.admin == false && $0.portNum != detectionSensorPortNum
+				&& $0.realACK
+			}
+		)
+		return (
+			try context.fetchCount(deliveredDescriptor),
+			try context.fetchCount(erroredDescriptor),
+			try context.fetchCount(confirmedDescriptor)
+		)
 	}
 
 	private func fetchIncomingMessageCount() throws -> Int {
