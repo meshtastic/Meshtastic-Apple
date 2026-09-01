@@ -65,6 +65,20 @@ struct ESP32WifiOTASheet: View {
 				self.host = await connection.host.stringValue
 			}
 		}
+		.onDisappear {
+			if accessoryManager.otaInProgress {
+				releaseRadio()
+			}
+		}
+	}
+
+	/// Hand the radio back to the app: let discovery and auto-connect pick the device up once it
+	/// reboots into the new firmware.
+	private func releaseRadio() {
+		accessoryManager.otaInProgress = false
+		accessoryManager.userRequestedConnectionCancellation = false
+		accessoryManager.shouldAutomaticallyConnectToPreferredPeripheralAfterError = true
+		accessoryManager.startDiscovery()
 	}
 	
 	// MARK: - Logic
@@ -82,6 +96,14 @@ struct ESP32WifiOTASheet: View {
 					let device = accessoryManager.activeConnection?.device
 					
 					if !alreadyRebooted {
+						// Claim the radio before the reboot command goes out. The device reboots
+						// into OTA mode as soon as it lands and the connection drops with it; the
+						// Firmware screen keys its content off otaInProgress, so without this it
+						// swaps to the "please reconnect" placeholder and takes this sheet — and
+						// the update — down with it, leaving the device waiting in OTA mode.
+						accessoryManager.otaInProgress = true
+						accessoryManager.shouldAutomaticallyConnectToPreferredPeripheralAfterError = false
+
 						// Move heavy file reading/hashing off the Main Actor
 						let sha256Digest = try await Task.detached(priority: .userInitiated) {
 							let data = try Data(contentsOf: binFileURL)
@@ -101,14 +123,20 @@ struct ESP32WifiOTASheet: View {
 					// Begin the HTTP update
 					await ota.startUpdate(host: host, firmwareUrl: self.binFileURL)
 					
-					// Attempt to reconnect after update
+					// Attempt to reconnect after update. The reconnect needs the gate open, but
+					// the sheet stays up: releaseRadio only restores discovery and auto-connect,
+					// and the Firmware screen behind it rebuilds once the node is back.
 					if let device {
+						accessoryManager.otaInProgress = false
+						accessoryManager.userRequestedConnectionCancellation = false
+						accessoryManager.shouldAutomaticallyConnectToPreferredPeripheralAfterError = true
 						try await Task.sleep(for: .seconds(3))
 						try await accessoryManager.connect(to: device, retries: 5)
 					}
 				}
 			} catch {
 				Logger.mesh.error("ESP32 OTA Failed: \(error.localizedDescription)")
+				releaseRadio()
 			}
 		}
 	}
