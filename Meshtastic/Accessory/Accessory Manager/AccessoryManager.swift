@@ -393,6 +393,9 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	}
 	
 	func connectToPreferredDevice(device: Device? = nil) {
+		// A firmware update owns the radio: reconnecting mid-update fights the
+		// updater for the device while it is rebooting into its bootloader.
+		if otaInProgress { return }
 		if !self.isConnected && !self.isConnecting,
 		   let preferredDevice = device ?? self.devices.first(where: { $0.id.uuidString == UserDefaults.preferredPeripheralId }) {
 			Task {
