@@ -19,6 +19,7 @@ import WebKit
 struct Firmware: View {
 	let node: NodeInfoEntity?
 
+	@EnvironmentObject private var accessoryManager: AccessoryManager
 	@Query private var hardwareResults: [DeviceHardwareEntity]
 	@State private var cachedHardware: DeviceHardwareEntity?
 	@State private var cachedNode: NodeInfoEntity?
@@ -95,8 +96,10 @@ struct Firmware: View {
 			in: records
 		)
 		if didReset, hardwareState.resolution == nil {
-			cachedNode = nil
-			cachedHardware = nil
+			if !accessoryManager.otaInProgress {
+				cachedNode = nil
+				cachedHardware = nil
+			}
 			return
 		}
 		cacheResolvedHardware(for: node)
@@ -115,6 +118,10 @@ struct Firmware: View {
 	}
 
 	private func resetHardwareCache() {
+		// An update disconnects the radio on purpose. Keep the cached content on
+		// screen through it, or the update sheet is torn down mid-flash and the
+		// device is left sitting in its bootloader.
+		if accessoryManager.otaInProgress { return }
 		cachedNode = nil
 		cachedHardware = nil
 		hardwareState.reset()

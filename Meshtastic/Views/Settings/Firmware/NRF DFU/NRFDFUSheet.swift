@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import OSLog
 
 struct NRFDFUSheet: View {
 	@Environment(\.dismiss) var dismiss
@@ -59,10 +60,19 @@ struct NRFDFUSheet: View {
 								case .idle:
 									Button("Begin Update") {
 										Task {
-											if let connection = accessoryManager.activeConnection?.connection as? BLEConnection {
-												let peripheral = await connection.peripheral
-												dfuViewModel.startDFU(peripheral: peripheral, zipFileUrl: firmwareToFlash)
+											guard let connection = accessoryManager.activeConnection?.connection as? BLEConnection else {
+												Logger.services.error("NRF DFU: no active BLE connection, cannot start")
+												return
 											}
+											let peripheral = await connection.peripheral
+											// The DFU library reboots the radio into the bootloader and
+											// reconnects to it on its own. Stop scanning and auto-connect
+											// first or the app grabs the device out from under it.
+											accessoryManager.otaInProgress = true
+											accessoryManager.shouldAutomaticallyConnectToPreferredPeripheralAfterError = false
+											accessoryManager.stopDiscovery()
+											Logger.services.info("NRF DFU: handing the radio to the DFU library")
+											dfuViewModel.startDFU(peripheral: peripheral, zipFileUrl: firmwareToFlash)
 										}
 									}
 									.controlSize(.large)
@@ -118,6 +128,21 @@ struct NRFDFUSheet: View {
 		}
 		.interactiveDismissDisabled(true)
 		.firmwareUpdateGame(isPresented: $showChirpyGame, status: gameStatus)
+		.onDisappear {
+			if accessoryManager.otaInProgress {
+				restoreDiscovery()
+			}
+		}
+	}
+
+	/// Give the radio back to the app once DFU is finished: restart discovery and
+	/// let auto-connect pick the device up when it reboots into the new firmware.
+	private func restoreDiscovery() {
+		Logger.services.info("NRF DFU: restoring discovery")
+		accessoryManager.otaInProgress = false
+		accessoryManager.userRequestedConnectionCancellation = false
+		accessoryManager.shouldAutomaticallyConnectToPreferredPeripheralAfterError = true
+		accessoryManager.startDiscovery()
 	}
 
 	private var gameStatus: FirmwareUpdateGameStatus {

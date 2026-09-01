@@ -49,6 +49,7 @@ class DFUViewModel: NSObject, ObservableObject {
     func startDFU(peripheral: CBPeripheral, zipFileUrl: URL) {
         
         guard let firmware = try? DFUFirmware(urlToZipFile: zipFileUrl) else {
+			Logger.services.error("NRF DFU: could not read the firmware zip")
             self.state = .error("Invalid Zip File")
             return
         }
@@ -70,6 +71,7 @@ class DFUViewModel: NSObject, ObservableObject {
         
         // Start the process
         self.state = .uploading
+		Logger.services.info("NRF DFU: starting on \(peripheral.identifier.uuidString, privacy: .public)")
 		self.dfuController = initiator.with(firmware: firmware)
 			.start(target: peripheral)
     }
