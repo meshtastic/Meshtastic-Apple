@@ -52,7 +52,7 @@ struct Firmware: View {
 			resolveHardware()
 		}
 		.task {
-			await refreshCatalog()
+			await refreshFromAPI()
 		}
 		.onChange(of: hardwareResults) {
 			resolveHardware()
@@ -69,17 +69,29 @@ struct Firmware: View {
 		}
 	}
 
-	/// Pull the hardware catalog so boards added since this build shipped resolve by their
-	/// PlatformIO target instead of falling back to another board sharing their hardware model.
-	/// Not throttled here: the endpoint sends Cache-Control and an ETag, so URLSession serves a
-	/// repeat call from its cache or revalidates it for an empty 304. Metadata only — the image
-	/// pass is not worth running on a screen open.
-	private func refreshCatalog() async {
+	/// Pull the hardware catalog and the firmware release list when this screen opens.
+	///
+	/// The catalog is so a board added since this build shipped resolves by its PlatformIO target
+	/// rather than falling back to another board sharing its hardware model. The release list is
+	/// because nothing else on this screen fetches it: the rows read whatever is already stored,
+	/// and the only other fetch is the launch cascade. If that one failed — an API error, or the
+	/// GitHub fallback being rate limited — the screen stayed empty until the user found the
+	/// refresh button.
+	///
+	/// Neither is throttled. Both endpoints send Cache-Control and an ETag, so a repeat call is
+	/// served from URLSession's cache or revalidated for an empty 304. The catalog pass skips
+	/// images, which are local anyway.
+	private func refreshFromAPI() async {
 		do {
 			try await MeshtasticAPI.shared.refreshDevicesAPIData(includeImages: false)
 			resolveHardware()
 		} catch {
 			Logger.services.warning("Hardware catalog refresh failed: \(error.localizedDescription, privacy: .public)")
+		}
+		do {
+			try await MeshtasticAPI.shared.refreshFirmwareAPIData()
+		} catch {
+			Logger.services.warning("Firmware list refresh failed: \(error.localizedDescription, privacy: .public)")
 		}
 	}
 
