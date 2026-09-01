@@ -25,6 +25,9 @@ struct Firmware: View {
 	@State private var cachedNode: NodeInfoEntity?
 	@State private var hardwareState = FirmwareHardwareViewState()
 
+	private static let catalogRefreshKey = "firmware.hardwareCatalogRefreshedAt"
+	private static let catalogRefreshInterval: TimeInterval = 60 * 60 * 6
+
 	init(node: NodeInfoEntity?) {
 		self.node = node
 	}
@@ -51,6 +54,9 @@ struct Firmware: View {
 		.onAppear {
 			resolveHardware()
 		}
+		.task {
+			await refreshCatalogIfNeeded()
+		}
 		.onChange(of: hardwareResults) {
 			resolveHardware()
 		}
@@ -63,6 +69,23 @@ struct Firmware: View {
 		}
 		.onChange(of: node?.user?.hwModelId) {
 			resolveHardware()
+		}
+	}
+
+	/// Pull the hardware catalog from the API so boards added since this build shipped
+	/// resolve by their PlatformIO target instead of falling back to another board that
+	/// shares their hardware model. Metadata only — the image pass is not worth running here.
+	private func refreshCatalogIfNeeded() async {
+		let lastRefresh = UserDefaults.standard.object(forKey: Self.catalogRefreshKey) as? Date
+		if let lastRefresh, Date().timeIntervalSince(lastRefresh) < Self.catalogRefreshInterval {
+			return
+		}
+		do {
+			try await MeshtasticAPI.shared.refreshDevicesAPIData(includeImages: false)
+			UserDefaults.standard.set(Date(), forKey: Self.catalogRefreshKey)
+			resolveHardware()
+		} catch {
+			Logger.services.warning("Hardware catalog refresh failed: \(error.localizedDescription, privacy: .public)")
 		}
 	}
 
@@ -627,9 +650,17 @@ private struct FirmwareRow: View {
 				.buttonStyle(.bordered)
 				.buttonBorderShape(.capsule)
 				.controlSize(.small)
+			case .unavailable:
+				Text("Not built for this device")
+					.font(.caption2)
+					.foregroundColor(.secondary)
+
 			case .error:
 				Image(systemName: "exclamationmark.triangle.fill").foregroundColor(.red)
 			}
+		}
+		.task {
+			await firmwareFile.checkAvailability()
 		}
 	}
 	

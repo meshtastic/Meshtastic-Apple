@@ -1,5 +1,5 @@
 {
-  "api_hash": "78ad1f4fc5c37bfe064aa0a5a5dc6bd0aece879e75480baeddf35c958d3d768b",
+  "api_hash": "494ca528f19131056f0caafee2433f23a8c8d461c2f06ade795fe8b28ebfbf14",
   "files": {
     "crowpanel_2_4.svg": {
       "etag": "\"29194e5a415e5aee034b2d4a3ba2e398\""
@@ -52,6 +52,9 @@
     "heltec-vision-master-t190.svg": {
       "etag": "\"9b85f16d85e5589816d45f1b865f7132\""
     },
+    "heltec-wireless-paper-v1_0.svg": {
+      "etag": "\"09dff671cae6a64033c5160c62b1a6cb\""
+    },
     "heltec-wireless-paper.svg": {
       "etag": "\"09dff671cae6a64033c5160c62b1a6cb\""
     },
@@ -78,6 +81,12 @@
     },
     "m5stack_cardputer.svg": {
       "etag": "\"3b483e95371895fbaf5d22a289a9a48e\""
+    },
+    "meshnology_w10.svg": {
+      "etag": "\"04f7b6ff25d10b062e76c6aba1eb2dff\""
+    },
+    "meshnology_w12.svg": {
+      "etag": "\"6ae0178b461fc2b666f51cd54f76659a\""
     },
     "meshtasticd_tux.svg": {
       "etag": "\"b1dd17d142f042f588989d682c159356\""
@@ -154,6 +163,9 @@
     "station-g2.svg": {
       "etag": "\"5527898bfd96b94c05251f8c8876dbec\""
     },
+    "station-g3.svg": {
+      "etag": "\"a529f1ccc7a3bb64ab3bdc1f9824d10c\""
+    },
     "t-deck.svg": {
       "etag": "\"8b10a3d59ee362ea0190b6612c9e695e\""
     },
@@ -204,6 +216,9 @@
     },
     "thinknode_m7.svg": {
       "etag": "\"c0d6a733ef0c24c6c4323e76d41d913d\""
+    },
+    "thinknode_m9.svg": {
+      "etag": "\"e8f60f5e6e868ce060bdb1d28c38051a\""
     },
     "tlora-c6.svg": {
       "etag": "\"750e3861d8271eba9bcbab24f1699708\""
