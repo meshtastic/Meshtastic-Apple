@@ -291,7 +291,11 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 		UserDefaults.lastFirmwareAPIUpdate = Date()
 	}
 
-	func refreshDevicesAPIData() async throws {
+	/// Refresh the hardware catalog from the API.
+	///
+	/// `includeImages` runs the image/link pass afterwards. Callers that only need the
+	/// metadata — a new board's name and PlatformIO target — pass false and skip it.
+	func refreshDevicesAPIData(includeImages: Bool = true) async throws {
 		guard let container else { return }
 		// No spinner bookkeeping here: this function raises no loading flag of its own, and the
 		// image/link pass it delegates to in PHASE 3 manages the flag around its own lifetime.
@@ -360,6 +364,7 @@ deviceEntity.architecture = device.architecture
 		// PHASE 3: Images and msh.to links. This is the single image/link pass, driven by the
 		// live device list so hardware present only in the API still gets its images. It runs
 		// here, after the metadata upsert, so the device rows the images attach to already exist.
+		guard includeImages else { return }
 		await refreshDeviceImagesAndLinks(apiDevices: decodedDevices)
 	}
 
