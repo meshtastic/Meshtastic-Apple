@@ -18,15 +18,37 @@ fi
 # Best effort — never fail the build over release notes.
 TESTFLIGHT_DIR="$CI_PRIMARY_REPOSITORY_PATH/TestFlight"
 mkdir -p "$TESTFLIGHT_DIR"
-# Xcode Cloud clones are shallow; deepen so the merge history is visible.
+# Xcode Cloud clones are shallow; deepen and fetch tags so the merge history and
+# the previous release tag are both visible.
 git -C "$CI_PRIMARY_REPOSITORY_PATH" fetch --deepen 50 --quiet 2>/dev/null || true
-# GitHub merge commits carry the PR title in the body. Take the last 10 merges,
-# first line of each body, drop empties/trailers, de-duplicate.
-NOTES=$(git -C "$CI_PRIMARY_REPOSITORY_PATH" log --merges -10 --pretty=format:"%b%n---" 2>/dev/null \
+git -C "$CI_PRIMARY_REPOSITORY_PATH" fetch --tags --quiet 2>/dev/null || true
+
+# Bound the notes at the previous release tag, so a build lists what is new in it
+# rather than a fixed count of merges that runs back through earlier releases.
+LAST_TAG=$(git -C "$CI_PRIMARY_REPOSITORY_PATH" describe --tags --abbrev=0 --match 'v[0-9]*' 2>/dev/null)
+# If this commit is itself tagged, the release has already been cut — measure from
+# the tag before it, or the range would be empty.
+if [ -n "$LAST_TAG" ] && \
+	[ "$(git -C "$CI_PRIMARY_REPOSITORY_PATH" rev-list -n1 "$LAST_TAG" 2>/dev/null)" = "$(git -C "$CI_PRIMARY_REPOSITORY_PATH" rev-parse HEAD 2>/dev/null)" ]; then
+	LAST_TAG=$(git -C "$CI_PRIMARY_REPOSITORY_PATH" describe --tags --abbrev=0 --match 'v[0-9]*' "$LAST_TAG^" 2>/dev/null)
+fi
+if [ -n "$LAST_TAG" ]; then
+	RANGE="$LAST_TAG..HEAD"
+	echo "WhatToTest range: $RANGE"
+else
+	RANGE=""
+	echo "WhatToTest: no release tag found, falling back to the last 10 merges."
+fi
+
+# GitHub merge commits carry the PR title in the body. Take the first line of each
+# body, drop empties/trailers and the version bump, de-duplicate.
+NOTES=$(git -C "$CI_PRIMARY_REPOSITORY_PATH" log --merges ${RANGE:--10} --pretty=format:"%b%n---" 2>/dev/null \
 	| awk '/^---$/{first=0; next} !first++ && NF && !/^Co-authored|^Signed-off/ {print "• " $0}' \
+	| grep -v -i '^• Bump version' \
 	| awk '!seen[$0]++' | head -12)
 if [ -z "$NOTES" ]; then
-	NOTES=$(git -C "$CI_PRIMARY_REPOSITORY_PATH" log -10 --no-merges --pretty=format:"• %s" 2>/dev/null)
+	NOTES=$(git -C "$CI_PRIMARY_REPOSITORY_PATH" log ${RANGE:--10} --no-merges --pretty=format:"• %s" 2>/dev/null \
+		| grep -v -i '^• Bump version' | head -12)
 fi
 if [ -n "$NOTES" ]; then
 	printf "Recent changes in this build:\n\n%s\n" "$NOTES" > "$TESTFLIGHT_DIR/WhatToTest.en-US.txt"
