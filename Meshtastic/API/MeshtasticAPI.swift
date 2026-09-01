@@ -183,6 +183,22 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 	static let firmwareURLEndpoint = URL(string: "https://apiv2.meshtastic.org/github/firmware/list")!
 	static let firmwareGitHubURLEndpoint = URL(string: "https://api.github.com/repos/meshtastic/firmware/releases?per_page=100")!
 	static let nightlyIndexEndpoint = URL(string: "https://raw.githubusercontent.com/meshtastic/meshtastic.github.io/master/firmware-nightly/index.json")!
+
+	static let deviceCatalogETagKey = "deviceCatalog"
+	static let firmwareListETagKey = "firmwareReleaseList"
+
+	/// Last ETag seen for an endpoint. URLSession already spares us the download when nothing has
+	/// changed; this spares us the rest — decoding the payload and re-writing rows that are
+	/// already correct. Stored only after the write succeeds, so a run that fails part-way cannot
+	/// convince the next one that the store is current.
+	static func lastETag(for key: String) -> String? {
+		UserDefaults.standard.string(forKey: "api.etag.\(key)")
+	}
+
+	static func setLastETag(_ eTag: String?, for key: String) {
+		guard let eTag else { return }
+		UserDefaults.standard.set(eTag, forKey: "api.etag.\(key)")
+	}
 	static let nightlyReleaseNotesEndpoint = URL(string: "https://raw.githubusercontent.com/meshtastic/meshtastic.github.io/master/firmware-nightly/release_notes.md")!
 	static let eventFirmwareURLEndpoint = URL(string: "https://apiv2.meshtastic.org/resource/eventFirmware")!
 
@@ -256,8 +272,21 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 		}
 
 		let decodedFirmware: FirmwareReleases
+		var firmwareListETag: String?
 		do {
-			let apiData = try await Self.firmwareURLEndpoint.data(timeout: 5.0)
+			let (apiData, eTag) = try await Self.firmwareURLEndpoint.dataWithETag(timeout: 5.0)
+			// Same short-circuit as the catalog: an unchanged list is not worth re-writing.
+			if let eTag, eTag == Self.lastETag(for: Self.firmwareListETagKey) {
+				let hasReleases = await MainActor.run {
+					((try? container.mainContext.fetchCount(FetchDescriptor<FirmwareReleaseEntity>())) ?? 0) > 0
+				}
+				if hasReleases {
+					Logger.services.debug("Firmware list unchanged (ETag match), skipping the upsert")
+					UserDefaults.lastFirmwareAPIUpdate = Date()
+					return
+				}
+			}
+			firmwareListETag = eTag
 			decodedFirmware = try FirmwareReleaseCatalog.decode(apiData)
 		} catch {
 			Logger.services.warning("Firmware API request failed; falling back to GitHub releases: \(error.localizedDescription, privacy: .public)")
@@ -323,6 +352,7 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 		
 		// Save the last update date for the firmware
 		UserDefaults.lastFirmwareAPIUpdate = Date()
+		Self.setLastETag(firmwareListETag, for: Self.firmwareListETagKey)
 	}
 
 	/// Refresh the hardware catalog from the API.
@@ -335,8 +365,25 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 		// image/link pass it delegates to in PHASE 3 manages the flag around its own lifetime.
 		// Clearing it here would lower a flag a concurrent seed still needs raised.
 		// PHASE 1: Network only — no bundle fallback (bundle was already loaded at init).
-		let finalData = try await Self.deviceURLEndpoint.data(timeout: 10.0)
+		let (finalData, eTag) = try await Self.deviceURLEndpoint.dataWithETag(timeout: 10.0)
 		guard !finalData.isEmpty else { throw MeshtasticAPIError.unableToRetreviveJSON }
+
+		// Unchanged payload: skip the decode and the upsert. Guarded on the store actually holding
+		// rows, because a database clear leaves the stored ETag behind and skipping then would
+		// leave the catalog empty until the payload next changes.
+		if let eTag, eTag == Self.lastETag(for: Self.deviceCatalogETagKey) {
+			let hasRows = await MainActor.run {
+				let context = container.mainContext
+				let devices = (try? context.fetchCount(FetchDescriptor<DeviceHardwareEntity>())) ?? 0
+				guard devices > 0 else { return false }
+				guard includeImages else { return true }
+				return ((try? context.fetchCount(FetchDescriptor<DeviceHardwareImageEntity>())) ?? 0) > 0
+			}
+			if hasRows {
+				Logger.services.debug("Device catalog unchanged (ETag match), skipping the upsert")
+				return
+			}
+		}
 		// Decode Swift Structs (Safe to do off the DB thread)
 		let decodedDevices = try decoder.decode([DeviceHardware].self, from: finalData)
 
@@ -398,6 +445,8 @@ deviceEntity.architecture = device.architecture
 		// PHASE 3: Images and msh.to links. This is the single image/link pass, driven by the
 		// live device list so hardware present only in the API still gets its images. It runs
 		// here, after the metadata upsert, so the device rows the images attach to already exist.
+		Self.setLastETag(eTag, for: Self.deviceCatalogETagKey)
+
 		guard includeImages else { return }
 		await refreshDeviceImagesAndLinks(apiDevices: decodedDevices)
 	}
