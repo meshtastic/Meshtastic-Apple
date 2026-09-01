@@ -14,7 +14,6 @@ struct ShutDownNodeIntent: AppIntent {
 	static let description: IntentDescription = "Send a shutdown to the node you are connected to"
 
 	func perform() async throws -> some IntentResult {
-		try await PersistenceController.shared.ready()
 		try await requestConfirmation(result: .result(dialog: "Shut Down Node?"))
 
 		if !(await AccessoryManager.shared.isConnected) {

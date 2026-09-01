@@ -19,7 +19,6 @@ struct NodePositionIntent: AppIntent {
 	static let description: IntentDescription = "Fetch the latest position of a cetain node"
 
 	func perform() async throws -> some IntentResult & ReturnsValue<CLPlacemark> {
-		try await PersistenceController.shared.ready()
 		if !(await AccessoryManager.shared.isConnected) {
 			throw AppIntentErrors.AppIntentError.notConnected
 		}

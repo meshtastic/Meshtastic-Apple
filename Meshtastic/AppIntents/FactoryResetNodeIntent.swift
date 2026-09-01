@@ -17,7 +17,6 @@ struct FactoryResetNodeIntent: AppIntent {
 	var provideConfirmation: Bool
 
 	func perform() async throws -> some IntentResult {
-		try await PersistenceController.shared.ready()
 		// Request user confirmation before performing the factory reset
 		if provideConfirmation {
 			try await requestConfirmation(result: .result(dialog: "Are you sure you want to factory reset the node?"), confirmationActionName: ConfirmationActionName

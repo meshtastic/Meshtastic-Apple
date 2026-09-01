@@ -23,7 +23,6 @@ struct MessageChannelIntent: AppIntent {
 		Summary("Send \(\.$messageContent) to \(\.$channelNumber)")
 	}
 	func perform() async throws -> some IntentResult {
-		try await PersistenceController.shared.ready()
 		if !(await AccessoryManager.shared.isConnected) {
 			throw AppIntentErrors.AppIntentError.notConnected
 		}

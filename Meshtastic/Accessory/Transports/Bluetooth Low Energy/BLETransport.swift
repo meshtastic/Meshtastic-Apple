@@ -56,7 +56,6 @@ actor BLETransport: Transport {
 	private var cleanupTask: Task<Void, Never>?
 	private var scanningPausedForConnection = false
 	private let discoverySetupHandler: (@Sendable () async -> Void)?
-	private let persistenceReadiness: @Sendable () async throws -> Void
 	
 	// Transport properties
 	let supportsManualConnection: Bool = false
@@ -70,14 +69,10 @@ actor BLETransport: Transport {
 	init(
 		createCentralManagerImmediately: Bool = true,
 		centralManager: CBCentralManager? = nil,
-		discoverySetupHandler: (@Sendable () async -> Void)? = nil,
-		persistenceReadiness: @escaping @Sendable () async throws -> Void = {
-			_ = try await PersistenceController.shared.waitUntilReady()
-		}
+		discoverySetupHandler: (@Sendable () async -> Void)? = nil
 	) {
 		self.centralManager = centralManager
 		self.discoverySetupHandler = discoverySetupHandler
-		self.persistenceReadiness = persistenceReadiness
 		self.discoveredPeripherals = [:]
 		self.discoveredDeviceContinuation = nil
 		self.delegate = BLEDelegate()
@@ -514,26 +509,12 @@ actor BLETransport: Transport {
 		self.connectingPeripheral = nil
 	}
 	
-	func waitForPersistenceBeforeRestoration() async -> Bool {
-		do {
-			try await persistenceReadiness()
-			return true
-		} catch {
-			return false
-		}
-	}
-
 	func handleWillRestoreState(dict: [String: Any], central: CBCentralManager) async {
 		/// GVH - To test this you need to simulate the app getting killed in the background by the OS you can do this by stopping  the debugger while the app is connected to a device in the background
 		/// You will see Message from debugger: killed after you see this message, power off and back on your meshtastic device, bring the app back to the foreground and
 		/// look in the logs for the messages below.
 		Logger.transport.error("🛜 [BLE] Will Restore State was called. Attempting to restore connection.")
-
-		guard await waitForPersistenceBeforeRestoration() else {
-			Logger.transport.error("🛜 [BLE] Persistence startup failed; skipping connection restoration.")
-			return
-		}
-
+		
 		/// Find the peripheral that was connected before
 		guard let peripherals = dict[CBCentralManagerRestoredStatePeripheralsKey] as? [CBPeripheral],
 			  let peripheral = peripherals.first else {

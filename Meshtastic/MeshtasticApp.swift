@@ -20,11 +20,12 @@ struct MeshtasticAppleApp: App {
 #endif
 	@StateObject var appState: AppState
 	@StateObject private var lockdownCoordinator: LockdownCoordinator
-	@StateObject private var persistenceController: PersistenceController
+	private let persistenceController: PersistenceController
 	private let accessoryManager: AccessoryManager
 	@Environment(\.scenePhase) var scenePhase
 	@State var saveChannelLink: SaveChannelLinkData?
 	@State var incomingUrl: URL?
+	@State private var persistenceReady = false
 	@State private var didStartReadyServices = false
 
 	private static let isRunningTests = NSClassFromString("XCTestCase") != nil || ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
@@ -114,7 +115,7 @@ struct MeshtasticAppleApp: App {
 		self._lockdownCoordinator = StateObject(wrappedValue: lockdown)
 
 		self._appState = StateObject(wrappedValue: appState)
-		self._persistenceController = StateObject(wrappedValue: PersistenceController.shared)
+		self.persistenceController = PersistenceController.shared
 
 		// Wire up router
 #if os(iOS)
@@ -126,7 +127,7 @@ struct MeshtasticAppleApp: App {
 	@MainActor
 	private func startReadyServicesIfNeeded() {
 		guard Self.shouldInitializeAppServices,
-			  persistenceController.state == .ready,
+			  persistenceReady,
 			  !didStartReadyServices else { return }
 		didStartReadyServices = true
 
@@ -223,11 +224,8 @@ struct MeshtasticAppleApp: App {
 				Color.clear
 			} else if Self.isChirpyOTADemo {
 				FirmwareUpdateGameDemoHost()
-			} else if persistenceController.state != .ready {
-				MigrationBootstrapView(
-					state: persistenceController.state,
-					retry: { Task { await persistenceController.retry() } }
-				)
+			} else if !persistenceReady {
+				ProgressView("Updating local data…")
 			} else if appState.isDatabaseResetting {
 				// Unmount the WHOLE SwiftData-bound tree — including the `.modelContainer`
 				// modifier in mainAppContent — while a node switch clears the store. The
@@ -253,20 +251,14 @@ struct MeshtasticAppleApp: App {
 			}
 			.task {
 				guard Self.shouldInitializeAppServices else { return }
-				try? await persistenceController.ready()
+				await persistenceController.bootstrap()
+				persistenceReady = true
 				startReadyServicesIfNeeded()
-			}
-			.onChange(of: persistenceController.state) { _, state in
-				if state == .ready {
-					startReadyServicesIfNeeded()
-				}
 			}
 		}
 		.onChange(of: scenePhase) { (_, newScenePhase) in
-			// Also skipped in Chirpy OTA demo mode, where persistenceController is nil —
-			// backgrounding the demo must not touch (or force-unwrap) SwiftData.
-			guard Self.shouldInitializeAppServices,
-				  persistenceController.state == .ready else { return }
+			// Do not touch SwiftData until startup finishes or in modes that skip app services.
+			guard Self.shouldInitializeAppServices, persistenceReady else { return }
 			accessoryManager.isInBackground = (newScenePhase == .background)
 			switch newScenePhase {
 			case .background:
@@ -301,12 +293,11 @@ struct MeshtasticAppleApp: App {
 		.environmentObject(appState.router)
 
 			WindowGroup("Mesh Map", id: "meshmap-window") {
-				// Gated on shouldInitializeAppServices (not just tests): in Chirpy OTA demo mode
-				// persistenceController is nil, so building this scene would force-unwrap-crash.
+				// Gated on app-service startup so test and demo modes never mount SwiftData views.
 				// Also gated on the database reset, for the same stale-bridge reason as the main
 				// window: this scene's .modelContainer must unmount during a container swap.
 				if Self.shouldInitializeAppServices,
-				   persistenceController.state == .ready,
+				   persistenceReady,
 				   !appState.isDatabaseResetting {
 					EventFirmwareTintScope {
 						MapWindow()

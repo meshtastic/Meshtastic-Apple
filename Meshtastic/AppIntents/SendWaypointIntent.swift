@@ -39,7 +39,6 @@ struct SendWaypointIntent: AppIntent {
 	var expiration: Date?
 
 	func perform() async throws -> some IntentResult {
-		try await PersistenceController.shared.ready()
 		if !(await AccessoryManager.shared.isConnected) {
 			throw AppIntentErrors.AppIntentError.notConnected
 		}

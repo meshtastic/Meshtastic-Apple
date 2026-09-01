@@ -23,7 +23,6 @@ struct MessageNodeIntent: AppIntent {
 		Summary("Send \(\.$messageContent) to \(\.$nodeNumber)")
 	}
 	func perform() async throws -> some IntentResult {
-		try await PersistenceController.shared.ready()
 		if await !AccessoryManager.shared.isConnected {
 			throw AppIntentErrors.AppIntentError.notConnected
 		}
