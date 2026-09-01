@@ -178,13 +178,13 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 	}()
 	
 	// MARK: - Constants
-	static let deviceURLEndpoint = URL(string: "https://api.meshtastic.org/resource/deviceHardware")!
+	static let deviceURLEndpoint = URL(string: "https://apiv2.meshtastic.org/resource/deviceHardware")!
 	static let imageURLPrefix = URL(string: "https://flasher.meshtastic.org/img/devices/")!
-	static let firmwareURLEndpoint = URL(string: "https://api.meshtastic.org/github/firmware/list")!
+	static let firmwareURLEndpoint = URL(string: "https://apiv2.meshtastic.org/github/firmware/list")!
 	static let firmwareGitHubURLEndpoint = URL(string: "https://api.github.com/repos/meshtastic/firmware/releases?per_page=100")!
 	static let nightlyIndexEndpoint = URL(string: "https://raw.githubusercontent.com/meshtastic/meshtastic.github.io/master/firmware-nightly/index.json")!
 	static let nightlyReleaseNotesEndpoint = URL(string: "https://raw.githubusercontent.com/meshtastic/meshtastic.github.io/master/firmware-nightly/release_notes.md")!
-	static let eventFirmwareURLEndpoint = URL(string: "https://api.meshtastic.org/resource/eventFirmware")!
+	static let eventFirmwareURLEndpoint = URL(string: "https://apiv2.meshtastic.org/resource/eventFirmware")!
 
 	/// How long a completed device image + msh.to link pass stays fresh before another network pass
 	/// is allowed. `processImage` issues a remote ETag HEAD per image (~78) up front, so running the
