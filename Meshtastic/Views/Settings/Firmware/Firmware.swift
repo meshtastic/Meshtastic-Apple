@@ -25,9 +25,6 @@ struct Firmware: View {
 	@State private var cachedNode: NodeInfoEntity?
 	@State private var hardwareState = FirmwareHardwareViewState()
 
-	private static let catalogRefreshKey = "firmware.hardwareCatalogRefreshedAt"
-	private static let catalogRefreshInterval: TimeInterval = 60 * 60 * 6
-
 	init(node: NodeInfoEntity?) {
 		self.node = node
 	}
@@ -55,7 +52,7 @@ struct Firmware: View {
 			resolveHardware()
 		}
 		.task {
-			await refreshCatalogIfNeeded()
+			await refreshCatalog()
 		}
 		.onChange(of: hardwareResults) {
 			resolveHardware()
@@ -72,17 +69,14 @@ struct Firmware: View {
 		}
 	}
 
-	/// Pull the hardware catalog from the API so boards added since this build shipped
-	/// resolve by their PlatformIO target instead of falling back to another board that
-	/// shares their hardware model. Metadata only — the image pass is not worth running here.
-	private func refreshCatalogIfNeeded() async {
-		let lastRefresh = UserDefaults.standard.object(forKey: Self.catalogRefreshKey) as? Date
-		if let lastRefresh, Date().timeIntervalSince(lastRefresh) < Self.catalogRefreshInterval {
-			return
-		}
+	/// Pull the hardware catalog so boards added since this build shipped resolve by their
+	/// PlatformIO target instead of falling back to another board sharing their hardware model.
+	/// Not throttled here: the endpoint sends Cache-Control and an ETag, so URLSession serves a
+	/// repeat call from its cache or revalidates it for an empty 304. Metadata only — the image
+	/// pass is not worth running on a screen open.
+	private func refreshCatalog() async {
 		do {
 			try await MeshtasticAPI.shared.refreshDevicesAPIData(includeImages: false)
-			UserDefaults.standard.set(Date(), forKey: Self.catalogRefreshKey)
 			resolveHardware()
 		} catch {
 			Logger.services.warning("Hardware catalog refresh failed: \(error.localizedDescription, privacy: .public)")
