@@ -16,6 +16,7 @@ import os
 enum ReleaseType: String {
 	case stable = "Stable"
 	case alpha = "Alpha"
+	case nightly = "Nightly"
 	case unlisted = "Unlisted"
 }
 
@@ -70,6 +71,16 @@ struct FirmwareRelease: Codable {
 		case zipURL = "zip_url"
 		case releaseNotes = "release_notes"
 	}
+}
+
+/// Points at the current nightly build. Nightly artifacts live in one fixed
+/// `firmware-nightly` directory that is overwritten each build, so this file is the
+/// only way to learn which version is sitting in there right now.
+struct NightlyFirmwareIndex: Codable {
+	let version: String
+	let id: String
+	let title: String
+	let commit: String?
 }
 
 private struct GitHubFirmwareRelease: Decodable {
@@ -171,6 +182,8 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 	static let imageURLPrefix = URL(string: "https://flasher.meshtastic.org/img/devices/")!
 	static let firmwareURLEndpoint = URL(string: "https://api.meshtastic.org/github/firmware/list")!
 	static let firmwareGitHubURLEndpoint = URL(string: "https://api.github.com/repos/meshtastic/firmware/releases?per_page=100")!
+	static let nightlyIndexEndpoint = URL(string: "https://raw.githubusercontent.com/meshtastic/meshtastic.github.io/master/firmware-nightly/index.json")!
+	static let nightlyReleaseNotesEndpoint = URL(string: "https://raw.githubusercontent.com/meshtastic/meshtastic.github.io/master/firmware-nightly/release_notes.md")!
 	static let eventFirmwareURLEndpoint = URL(string: "https://api.meshtastic.org/resource/eventFirmware")!
 
 	/// How long a completed device image + msh.to link pass stays fresh before another network pass
@@ -253,6 +266,7 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 		}
 		let stableVersions = Set(decodedFirmware.releases.stable.map { $0.id })
 		let alphaVersions = Set(decodedFirmware.releases.alpha.map { $0.id })
+		let nightlyRelease = await fetchNightlyRelease()
 
 		// All DB work on mainContext so @Query observers see changes
 		await MainActor.run {
@@ -264,6 +278,26 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 
 			for alphaRelease in decodedFirmware.releases.alpha {
 				self.processFirmware(release: alphaRelease, releaseType: .alpha, context: context)
+			}
+
+			if let nightlyRelease {
+				self.processFirmware(release: nightlyRelease, releaseType: .nightly, context: context)
+
+				// Only one nightly exists at a time — the host overwrites the directory — so
+				// drop yesterday's row. Skipped when the index could not be read, or a failed
+				// fetch would empty the tab.
+				let nightlyRaw = ReleaseType.nightly.rawValue
+				let currentNightly = [nightlyRelease.id]
+				let staleNightlyDescriptor = FetchDescriptor<FirmwareReleaseEntity>(
+					predicate: #Predicate {
+						$0.releaseType == nightlyRaw && !currentNightly.contains($0.versionId)
+					}
+				)
+				if let staleNightlies = try? context.fetch(staleNightlyDescriptor) {
+					for staleNightly in staleNightlies {
+						context.delete(staleNightly)
+					}
+				}
 			}
 
 			// Anything that's left in stableVersions and alphaVersions is no longer present in the API and should be deleted.
@@ -468,6 +502,28 @@ deviceEntity.architecture = device.architecture
 		return decoded
 	}
 	
+	/// Read the nightly pointer file. Best effort on purpose: no nightly, or an
+	/// unreachable one, must not fail the stable and alpha list refresh.
+	private func fetchNightlyRelease() async -> FirmwareRelease? {
+		do {
+			let data = try await Self.nightlyIndexEndpoint.data(timeout: 5.0)
+			let index = try JSONDecoder().decode(NightlyFirmwareIndex.self, from: data)
+			let notes = try? await Self.nightlyReleaseNotesEndpoint.data(timeout: 5.0)
+			let pageURL = index.commit.map { "https://github.com/meshtastic/firmware/commit/\($0)" }
+				?? "https://github.com/meshtastic/firmware/commits/master"
+			return FirmwareRelease(
+				id: index.id,
+				title: index.title,
+				pageURL: pageURL,
+				zipURL: "",
+				releaseNotes: notes.flatMap { String(data: $0, encoding: .utf8) }
+			)
+		} catch {
+			Logger.services.warning("Nightly firmware index unavailable: \(error.localizedDescription, privacy: .public)")
+			return nil
+		}
+	}
+
 	private func processFirmware(release: FirmwareRelease, releaseType: ReleaseType, context: ModelContext) {
 		let releaseId = release.id
 		var descriptor = FetchDescriptor<FirmwareReleaseEntity>(

@@ -137,7 +137,11 @@ class FirmwareFile: ObservableObject, Hashable, Equatable {
 		let fileNameVersion = versionId.hasPrefix("v") ? String(versionId.dropFirst()) : versionId
 		let fileName = "firmware-\(target)-\(fileNameVersion)\(firmwareType)"
 		self.localUrl = FirmwareFile.localFirmwareStorageURL.appendingPathComponent(fileName)
+		// Tagged releases get a directory per version; the nightly is one fixed directory
+		// that each build overwrites.
+		let directoryName = releaseType == .nightly ? "firmware-nightly" : "firmware-\(fileNameVersion)"
 		self.remoteUrlCandidates = Self.makeRemoteURLCandidates(
+			directoryName: directoryName,
 			target: target,
 			version: fileNameVersion,
 			firmwareType: firmwareType,
@@ -360,12 +364,13 @@ class FirmwareFile: ObservableObject, Hashable, Equatable {
 	}
 
 	private static func makeRemoteURLCandidates(
+		directoryName: String,
 		target: String,
 		version: String,
 		firmwareType: FirmwareType,
 		localeTags: [String]
 	) -> [URL] {
-		let directory = remoteFirmwareURLPrefix.appendingPathComponent("firmware-\(version)")
+		let directory = remoteFirmwareURLPrefix.appendingPathComponent(directoryName)
 		var fileNames: [String] = []
 		var seen = Set<String>()
 		func append(_ value: String) {
