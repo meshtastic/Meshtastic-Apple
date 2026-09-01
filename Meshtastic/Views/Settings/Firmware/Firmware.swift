@@ -73,7 +73,10 @@ struct Firmware: View {
 	/// resolve by their PlatformIO target instead of falling back to another board that
 	/// shares their hardware model. Metadata only — the image pass is not worth running here.
 	private func refreshCatalogIfNeeded() async {
-		guard MeshtasticAPI.isStale(MeshtasticAPI.deviceCatalogRefreshKey) else { return }
+		guard MeshtasticAPI.isStale(
+			MeshtasticAPI.deviceCatalogRefreshKey,
+			interval: MeshtasticAPI.screenRefreshInterval
+		) else { return }
 		do {
 			// refreshDevicesAPIData stamps the shared timestamp on a successful fetch.
 			try await MeshtasticAPI.shared.refreshDevicesAPIData(includeImages: false)

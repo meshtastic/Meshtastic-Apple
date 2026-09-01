@@ -184,12 +184,17 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 	static let firmwareGitHubURLEndpoint = URL(string: "https://api.github.com/repos/meshtastic/firmware/releases?per_page=100")!
 	static let nightlyIndexEndpoint = URL(string: "https://raw.githubusercontent.com/meshtastic/meshtastic.github.io/master/firmware-nightly/index.json")!
 
-	/// How long a launch-time API refresh stays fresh. Every cold launch used to pull the full
+	/// How long a launch-time API refresh stays fresh. Every process start used to pull the full
 	/// device catalog and firmware list, and neither endpoint sends `Cache-Control` or an `ETag`,
 	/// so nothing downstream could cache or revalidate them. Across every install that is most of
-	/// the API's egress, for data that changes a few times a week. Manual refreshes — pull to
-	/// refresh, a user-initiated connect — are never throttled.
-	static let launchRefreshInterval: TimeInterval = 60 * 60 * 6
+	/// the API's egress, for data that changes a few times a week. Background wakes count as
+	/// process starts, so this is deliberately long. Manual refreshes — pull to refresh, a
+	/// user-initiated connect — are never throttled.
+	static let launchRefreshInterval: TimeInterval = 60 * 60 * 72
+	/// The firmware screen refreshes on a shorter interval than launch: the user opened it on
+	/// purpose, and it is the one place where a board newer than the build needs to resolve by
+	/// name rather than fall back to another board sharing its hardware model.
+	static let screenRefreshInterval: TimeInterval = 60 * 60 * 6
 	/// Shared with the firmware screen's own refresh so the two don't each pull the catalog.
 	static let deviceCatalogRefreshKey = "firmware.hardwareCatalogRefreshedAt"
 
