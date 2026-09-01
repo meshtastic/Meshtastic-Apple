@@ -279,6 +279,25 @@ struct MessageAckStatusRefreshTests {
 		#expect(confirmed.delivered == 1 && confirmed.errored == 0 && confirmed.confirmed == 1)
 		#expect(relayed.delivered == confirmed.delivered && relayed.errored == confirmed.errored)
 		#expect(relayed != confirmed)
+
+		// The tallies feed a change token, and it is the token's equality that decides whether the
+		// list reloads. Assert the transition there too: with only the delivered and errored
+		// counts the two tokens are identical, which is exactly why the row used to keep its old
+		// text until the view was rebuilt.
+		let cursor = UserMessageTimelineCursor(timestamp: 0, messageId: msg.messageId)
+		let before = UserMessageListChangeToken(
+			latest: cursor, count: 1,
+			deliveredAckCount: relayed.delivered,
+			erroredAckCount: relayed.errored,
+			confirmedAckCount: relayed.confirmed
+		)
+		let after = UserMessageListChangeToken(
+			latest: cursor, count: 1,
+			deliveredAckCount: confirmed.delivered,
+			erroredAckCount: confirmed.errored,
+			confirmedAckCount: confirmed.confirmed
+		)
+		#expect(before != after)
 	}
 
 	@Test func directMessageRoutingError_movesResolvedCount() throws {

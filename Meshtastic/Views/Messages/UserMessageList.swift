@@ -10,7 +10,7 @@ import SwiftUI
 import OSLog
 import MeshtasticProtobufs // Added to ensure RoutingError is accessible if needed
 
-private struct UserMessageTimelineCursor: Comparable {
+struct UserMessageTimelineCursor: Comparable {
 	let timestamp: Int32
 	let messageId: Int64
 
@@ -22,7 +22,9 @@ private struct UserMessageTimelineCursor: Comparable {
 	}
 }
 
-private struct UserMessageListChangeToken: Equatable {
+// Not private: the ACK-refresh tests build tokens directly to prove a tally reaches the
+// token's equality, which is what drives the reload.
+struct UserMessageListChangeToken: Equatable {
 	let latest: UserMessageTimelineCursor?
 	let count: Int
 	// Tallies of outgoing messages whose ACK has resolved, kept as separate delivered/errored
