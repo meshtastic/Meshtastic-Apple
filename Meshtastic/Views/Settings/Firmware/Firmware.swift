@@ -25,9 +25,6 @@ struct Firmware: View {
 	@State private var cachedNode: NodeInfoEntity?
 	@State private var hardwareState = FirmwareHardwareViewState()
 
-	private static let catalogRefreshKey = "firmware.hardwareCatalogRefreshedAt"
-	private static let catalogRefreshInterval: TimeInterval = 60 * 60 * 6
-
 	init(node: NodeInfoEntity?) {
 		self.node = node
 	}
@@ -76,13 +73,10 @@ struct Firmware: View {
 	/// resolve by their PlatformIO target instead of falling back to another board that
 	/// shares their hardware model. Metadata only — the image pass is not worth running here.
 	private func refreshCatalogIfNeeded() async {
-		let lastRefresh = UserDefaults.standard.object(forKey: Self.catalogRefreshKey) as? Date
-		if let lastRefresh, Date().timeIntervalSince(lastRefresh) < Self.catalogRefreshInterval {
-			return
-		}
+		guard MeshtasticAPI.isStale(MeshtasticAPI.deviceCatalogRefreshKey) else { return }
 		do {
+			// refreshDevicesAPIData stamps the shared timestamp on a successful fetch.
 			try await MeshtasticAPI.shared.refreshDevicesAPIData(includeImages: false)
-			UserDefaults.standard.set(Date(), forKey: Self.catalogRefreshKey)
 			resolveHardware()
 		} catch {
 			Logger.services.warning("Hardware catalog refresh failed: \(error.localizedDescription, privacy: .public)")

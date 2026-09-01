@@ -183,6 +183,20 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 	static let firmwareURLEndpoint = URL(string: "https://api.meshtastic.org/github/firmware/list")!
 	static let firmwareGitHubURLEndpoint = URL(string: "https://api.github.com/repos/meshtastic/firmware/releases?per_page=100")!
 	static let nightlyIndexEndpoint = URL(string: "https://raw.githubusercontent.com/meshtastic/meshtastic.github.io/master/firmware-nightly/index.json")!
+
+	/// How long a launch-time API refresh stays fresh. Every cold launch used to pull the full
+	/// device catalog and firmware list, and neither endpoint sends `Cache-Control` or an `ETag`,
+	/// so nothing downstream could cache or revalidate them. Across every install that is most of
+	/// the API's egress, for data that changes a few times a week. Manual refreshes — pull to
+	/// refresh, a user-initiated connect — are never throttled.
+	static let launchRefreshInterval: TimeInterval = 60 * 60 * 6
+	/// Shared with the firmware screen's own refresh so the two don't each pull the catalog.
+	static let deviceCatalogRefreshKey = "firmware.hardwareCatalogRefreshedAt"
+
+	static func isStale(_ key: String, interval: TimeInterval = launchRefreshInterval) -> Bool {
+		guard let last = UserDefaults.standard.object(forKey: key) as? Date else { return true }
+		return Date().timeIntervalSince(last) > interval
+	}
 	static let nightlyReleaseNotesEndpoint = URL(string: "https://raw.githubusercontent.com/meshtastic/meshtastic.github.io/master/firmware-nightly/release_notes.md")!
 	static let eventFirmwareURLEndpoint = URL(string: "https://api.meshtastic.org/resource/eventFirmware")!
 
@@ -229,12 +243,22 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 		Task.detached {
 			// Load bundled catalog first — instant display, no network needed.
 			try? await self.refreshBundledDevicesData()
-			try? await self.refreshFirmwareAPIData()
+			if UserDefaults.lastFirmwareAPIUpdate == .distantPast
+				|| abs(UserDefaults.lastFirmwareAPIUpdate.timeIntervalSinceNow) > Self.launchRefreshInterval {
+				try? await self.refreshFirmwareAPIData()
+			}
 			// Seed event-firmware branding from the bundle so it survives restarts offline.
 			await self.refreshBundledEventFirmwareData()
 			// Then silently update from the live API in the background.
-			Task.detached(priority: .utility) {
-				await self.refreshDevicesPreferringAPI()
+			if Self.isStale(Self.deviceCatalogRefreshKey) {
+				Task.detached(priority: .utility) {
+					await self.refreshDevicesPreferringAPI()
+				}
+			} else {
+				// Still resolve images and msh.to links from the bundle — that pass is local.
+				Task.detached(priority: .utility) {
+					await self.refreshDeviceImagesAndLinks()
+				}
 			}
 			Task.detached(priority: .utility) {
 				await self.refreshEventFirmwareAPIData()
@@ -398,6 +422,8 @@ deviceEntity.architecture = device.architecture
 		// PHASE 3: Images and msh.to links. This is the single image/link pass, driven by the
 		// live device list so hardware present only in the API still gets its images. It runs
 		// here, after the metadata upsert, so the device rows the images attach to already exist.
+		UserDefaults.standard.set(Date(), forKey: Self.deviceCatalogRefreshKey)
+
 		guard includeImages else { return }
 		await refreshDeviceImagesAndLinks(apiDevices: decodedDevices)
 	}
