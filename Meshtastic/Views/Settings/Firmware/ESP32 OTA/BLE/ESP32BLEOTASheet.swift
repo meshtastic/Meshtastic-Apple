@@ -26,6 +26,9 @@ struct ESP32BLEOTASheet: View {
 	var onUpdateComplete: (() -> Void)?
 
 	@State var peripheral: CBPeripheral?
+	/// Retained so dismissing the sheet cancels it. Without this the flow could resume after
+	/// cleanup had already handed the radio back and start a transfer against a reconnected node.
+	@State private var otaTask: Task<Void, Never>?
 	
 	var body: some View {
 		FirmwareOTAUpdateSheet(
@@ -60,6 +63,8 @@ struct ESP32BLEOTASheet: View {
 			}
 		}
 		.onDisappear {
+			otaTask?.cancel()
+			otaTask = nil
 			if accessoryManager.otaInProgress {
 				releaseRadio()
 			}
@@ -85,7 +90,7 @@ struct ESP32BLEOTASheet: View {
 			return
 		}
 		
-		Task {
+		otaTask = Task {
 			do {
 				if !rebootSuccessful {
 					// 0. Claim the radio before the reboot command goes out. The device reboots into
@@ -118,6 +123,10 @@ struct ESP32BLEOTASheet: View {
 					try await Task.sleep(nanoseconds: 2_000_000_000) // 2 seconds
 				}
 				
+				// The sheet can be dismissed during either sleep above, which cancels this task
+				// and hands the radio back. Do not start a transfer after that.
+				guard !Task.isCancelled else { return }
+
 				// 5. Start the OTA process. Discovery and auto-connect are restored when this
 				// sheet closes, not here: clearing the flag on completion lets the Firmware
 				// screen rebuild and dismiss the sheet before the result is read.

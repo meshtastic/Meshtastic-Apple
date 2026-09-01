@@ -26,6 +26,9 @@ struct ESP32WifiOTASheet: View {
 	
 	@State var alreadyRebooted: Bool = false
 	@State var inRetryWorkflow = false
+	/// Retained so dismissing the sheet cancels it. Without this the flow could resume after
+	/// cleanup had already handed the radio back and start a transfer against a reconnected node.
+	@State private var otaTask: Task<Void, Never>?
 
 	init(binFileURL: URL, host: String? = nil, onUpdateComplete: (() -> Void)? = nil) {
 		self.onUpdateComplete = onUpdateComplete
@@ -66,6 +69,8 @@ struct ESP32WifiOTASheet: View {
 			}
 		}
 		.onDisappear {
+			otaTask?.cancel()
+			otaTask = nil
 			if accessoryManager.otaInProgress {
 				releaseRadio()
 			}
@@ -90,7 +95,7 @@ struct ESP32WifiOTASheet: View {
 			return
 		}
 		
-		Task {
+		otaTask = Task {
 			do {
 				if let host {
 					let device = accessoryManager.activeConnection?.device
@@ -120,6 +125,10 @@ struct ESP32WifiOTASheet: View {
 						alreadyRebooted = true
 					}
 					
+					// The sheet can be dismissed while the reboot settles, which cancels this task
+					// and hands the radio back. Do not start a transfer after that.
+					guard !Task.isCancelled else { return }
+
 					// Begin the HTTP update
 					await ota.startUpdate(host: host, firmwareUrl: self.binFileURL)
 					
