@@ -6,6 +6,20 @@ struct SaveConfigButton: View {
 	let node: NodeInfoEntity?
 	@Binding var hasChanges: Bool
 	let onConfirmation: () -> Void
+	private let initiallyPresentingConfirmation: Bool
+
+	init(
+		node: NodeInfoEntity?,
+		hasChanges: Binding<Bool>,
+		initiallyPresentingConfirmation: Bool = false,
+		onConfirmation: @escaping () -> Void
+	) {
+		self.node = node
+		_hasChanges = hasChanges
+		_isPresentingSaveConfirm = State(initialValue: false)
+		self.onConfirmation = onConfirmation
+		self.initiallyPresentingConfirmation = initiallyPresentingConfirmation
+	}
 	
 	var body: some View {
 		if accessoryManager.isConnected && hasChanges {
@@ -32,7 +46,12 @@ struct SaveConfigButton: View {
 				} message: {
 					Text("After config values save the node will reboot.")
 				}
-				.saveConfigConfirmationActionStyle()
+				.tint(Color.primary)
+				.onAppear {
+					if initiallyPresentingConfirmation {
+						isPresentingSaveConfirm = true
+					}
+				}
 			} else {
 				Button {
 					isPresentingSaveConfirm = true
@@ -56,18 +75,12 @@ struct SaveConfigButton: View {
 				} message: {
 					Text("After config values save the node will reboot.")
 				}
+				.onAppear {
+					if initiallyPresentingConfirmation {
+						isPresentingSaveConfirm = true
+					}
+				}
 			}
-		}
-	}
-}
-
-extension View {
-	@ViewBuilder
-	func saveConfigConfirmationActionStyle() -> some View {
-		if #available(iOS 26.0, *) {
-			tint(Color.primary)
-		} else {
-			self
 		}
 	}
 }
