@@ -64,26 +64,18 @@ final class ESP32BLEOTAViewModel: ObservableObject {
 			
 			name = peripheral.name ?? "unknown"
 			
-			// Connect with timeout (10s)
-			try await withTimeout(seconds: 10) {
-				try await self.ble.connect(peripheral)
-			}
+			try await ble.connect(peripheral, timeout: 10)
 			
 			otaStatus = .connected
 			self.statusMessage = "Discovering Services..."
 			
-			// Discover Services with timeout (10s)
-			let services = try await withTimeout(seconds: 10) {
-				try await self.ble.discoverServices([meshtasticOTAServiceId], on: peripheral)
-			}
+			let services = try await ble.discoverServices([meshtasticOTAServiceId], on: peripheral, timeout: 10)
 			guard let service = services.first(where: { $0.uuid == meshtasticOTAServiceId }) else { throw BLEError.serviceMissing }
 			
-			// Discover Characteristics with timeout (10s)
-			let chars = try await withTimeout(seconds: 10) {
-				try await self.ble.discoverCharacteristics([statusCharacteristicId, otaCharacteristicId],
-														   in: service,
-														   on: peripheral)
-			}
+			let chars = try await ble.discoverCharacteristics([statusCharacteristicId, otaCharacteristicId],
+															 in: service,
+															 on: peripheral,
+															 timeout: 10)
 			
 			guard
 				let statusChar = chars.first(where: { $0.uuid == statusCharacteristicId }),
@@ -91,10 +83,7 @@ final class ESP32BLEOTAViewModel: ObservableObject {
 			else { throw BLEError.characteristicMissing }
 			
 			// --- 2. Setup Notification Stream ---
-			// Timeout for setting notify (usually fast, but good to be safe)
-			try await withTimeout(seconds: 5) {
-				try await self.ble.setNotify(true, for: statusChar, on: peripheral)
-			}
+			try await ble.setNotify(true, for: statusChar, on: peripheral, timeout: 5)
 			
 			let stream = ble.notifications(for: statusChar)
 			var iterator = stream.makeAsyncIterator()
@@ -161,6 +150,14 @@ final class ESP32BLEOTAViewModel: ObservableObject {
 			let chunkSize = peripheral.maximumWriteValueLength(for: .withoutResponse)
 			
 			while offset < fileSize {
+				// Closing the sheet cancels the task that owns this transfer. Stop writing
+				// and drop the connection rather than flashing on into a screen that is gone.
+				if Task.isCancelled {
+					Logger.services.info("📡 [ESP32 BLE OTA] Transfer cancelled at \(offset) of \(fileSize) bytes")
+					ble.disconnect(peripheral)
+					throw CancellationError()
+				}
+
 				let endIndex = min(offset + chunkSize, fileSize)
 				let chunk = data.subdata(in: offset..<endIndex)
 				
@@ -239,6 +236,11 @@ final class ESP32BLEOTAViewModel: ObservableObject {
 	}
 	
 	/// Executes an async operation with a strict timeout.
+	///
+	/// Only safe for operations that end when their task is cancelled — reading the
+	/// notification stream, for instance. A Core Bluetooth call waiting on a checked
+	/// continuation ignores cancellation, so racing it here would hang instead of
+	/// timing out; those calls carry their own deadlines in `AsyncCentral`.
 	/// - Parameters:
 	///   - seconds: The timeout duration.
 	///   - operation: The async closure to execute.
