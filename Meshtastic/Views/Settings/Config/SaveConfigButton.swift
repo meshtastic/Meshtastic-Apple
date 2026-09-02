@@ -18,6 +18,7 @@ struct SaveConfigButton: View {
 				.padding(.bottom)
 				.controlSize(.large)
 				.buttonStyle(.borderedProminent)
+				.tint(Color("Colors/MeshtasticAccent"))
 				.confirmationDialog(
 					"Are you sure?",
 					isPresented: $isPresentingSaveConfirm,
@@ -31,6 +32,7 @@ struct SaveConfigButton: View {
 				} message: {
 					Text("After config values save the node will reboot.")
 				}
+				.saveConfigConfirmationActionStyle()
 			} else {
 				Button {
 					isPresentingSaveConfirm = true
@@ -55,6 +57,17 @@ struct SaveConfigButton: View {
 					Text("After config values save the node will reboot.")
 				}
 			}
+		}
+	}
+}
+
+extension View {
+	@ViewBuilder
+	func saveConfigConfirmationActionStyle() -> some View {
+		if #available(iOS 26.0, *) {
+			tint(Color.primary)
+		} else {
+			self
 		}
 	}
 }

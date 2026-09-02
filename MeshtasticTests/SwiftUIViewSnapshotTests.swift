@@ -125,6 +125,66 @@ private func assertViewSnapshot<V: View>(
 	}
 }
 
+@MainActor
+private func assertPresentedViewSnapshot<V: View>(
+	of view: V,
+	width: CGFloat,
+	height: CGFloat,
+	colorScheme: ColorScheme,
+	named name: String,
+	filePath: String = #filePath,
+	sourceLocation: SourceLocation = #_sourceLocation
+) async {
+	let wrappedView = view
+		.environment(\.colorScheme, colorScheme)
+		.frame(width: width, height: height)
+	let hostingController = UIHostingController(rootView: wrappedView)
+	let frame = CGRect(x: 0, y: 0, width: width, height: height)
+	let window: UIWindow
+	if let windowScene = UIApplication.shared.connectedScenes.compactMap({ $0 as? UIWindowScene }).first {
+		window = UIWindow(windowScene: windowScene)
+		window.frame = frame
+	} else {
+		window = UIWindow(frame: frame)
+	}
+	window.overrideUserInterfaceStyle = colorScheme == .dark ? .dark : .light
+	window.rootViewController = hostingController
+	window.makeKeyAndVisible()
+	hostingController.view.frame = window.bounds
+	window.layoutIfNeeded()
+	hostingController.view.layoutIfNeeded()
+
+	try? await Task.sleep(for: .seconds(1))
+
+	let renderer = UIGraphicsImageRenderer(size: window.bounds.size)
+	let image = renderer.image { _ in
+		window.drawHierarchy(in: window.bounds, afterScreenUpdates: true)
+	}
+	window.isHidden = true
+
+	guard let pngData = image.pngData(), let cgImage = image.cgImage else {
+		Issue.record("Failed to generate presented-view PNG data", sourceLocation: sourceLocation)
+		return
+	}
+	let snapshotFile = SnapshotReferencePath.referenceURL(
+		testFileURL: URL(fileURLWithPath: filePath, isDirectory: false),
+		snapshotName: name,
+		forDocs: false,
+		platform: .current
+	)
+
+	do {
+		try SnapshotReferenceStore().check(
+			pngData: pngData,
+			pixelDimensions: SnapshotPixelDimensions(width: cgImage.width, height: cgImage.height),
+			referenceURL: snapshotFile,
+			mode: .current()
+		)
+	} catch {
+		Issue.record("\(error)", sourceLocation: sourceLocation)
+	}
+}
+
 // MARK: - CircleText Snapshot Tests
 
 @Suite("CircleText Snapshots")
@@ -1685,6 +1745,86 @@ struct BluetoothPoweredOffRowSnapshotTests {
 		}
 		.listStyle(.insetGrouped)
 		await assertViewSnapshot(of: view, width: 390, height: 160, named: "bluetoothOff", forDocs: true)
+	}
+}
+
+// MARK: - Save Config Confirmation Snapshot Tests
+
+@Suite("Save Config Confirmation Snapshots")
+struct SaveConfigConfirmationSnapshotTests {
+
+	private var platformSuffix: String {
+		"iOS\(ProcessInfo.processInfo.operatingSystemVersion.majorVersion)"
+	}
+
+	private struct ConfirmationFixture: View {
+		@State private var isPresented = false
+		let currentRadioLongName = "Test Radio"
+
+		private var confirmationButton: some View {
+			Button("Save", systemImage: "square.and.arrow.down") { isPresented = true }
+				.buttonStyle(.borderedProminent)
+				.tint(Color("Colors/MeshtasticAccent"))
+				.confirmationDialog(
+					"Are you sure?",
+					isPresented: $isPresented,
+					titleVisibility: .visible
+				) {
+					let buttonText = String.localizedStringWithFormat("Save Config for %@".localized, currentRadioLongName)
+					Button(buttonText) { }
+				} message: {
+					Text("After config values save the node will reboot.")
+				}
+		}
+
+		private var platformConfirmationButton: some View {
+			confirmationButton
+				.saveConfigConfirmationActionStyle()
+		}
+
+		var body: some View {
+			VStack(alignment: .leading, spacing: 24) {
+				Text("LoRa Config")
+					.font(.largeTitle.bold())
+				RoundedRectangle(cornerRadius: 24)
+					.fill(Color(uiColor: .secondarySystemBackground))
+					.frame(height: 430)
+				Spacer()
+				platformConfirmationButton
+					.frame(maxWidth: .infinity)
+			}
+			.padding(24)
+			.frame(maxWidth: .infinity, maxHeight: .infinity)
+			.background(Color(uiColor: .systemBackground))
+			.task {
+				try? await Task.sleep(for: .milliseconds(200))
+				isPresented = true
+			}
+		}
+	}
+
+	@Test("Dark confirmation dialog")
+	@MainActor
+	func darkConfirmationDialog() async {
+		await assertPresentedViewSnapshot(
+			of: ConfirmationFixture(),
+			width: 390,
+			height: 844,
+			colorScheme: .dark,
+			named: "saveConfigConfirmation_dark_\(platformSuffix)"
+		)
+	}
+
+	@Test("Light confirmation dialog")
+	@MainActor
+	func lightConfirmationDialog() async {
+		await assertPresentedViewSnapshot(
+			of: ConfirmationFixture(),
+			width: 390,
+			height: 844,
+			colorScheme: .light,
+			named: "saveConfigConfirmation_light_\(platformSuffix)"
+		)
 	}
 }
 
