@@ -256,13 +256,14 @@ extension AccessoryManager {
 
 		Logger.data.warning("💾 [Database] Connected to node \(incomingNodeNum.toHex(), privacy: .public) but the store belongs to \(nums.map { $0.toHex() }.joined(separator: ", "), privacy: .public) — backing up and resetting to prevent cross-device node bleed")
 
-		// Preserve the previous radio's data exactly like the switch flow would have.
+		// Preserve the previous radio's data exactly like the switch flow would have. Flush before
+		// copying the store files or the backup misses anything still waiting on a debounced save.
+		await MeshPackets.shared.flushDebouncedSaves()
 		if let previousNum = nums.first {
 			let previousName = devices.first(where: { $0.num == previousNum })?.longName
 			_ = await NodeBackupManager.shared.createBackup(forNode: previousNum, nodeName: previousName)
 		}
 
-		await MeshPackets.shared.flushDebouncedSaves()
 		let cleared = await MeshPackets.shared.clearDatabase(includeRoutes: false)
 		if !cleared {
 			// A half-cleared store must not receive this radio's dump (that IS the bleed).
@@ -281,10 +282,11 @@ extension AccessoryManager {
 	private func renumberStore(from oldNum: Int64, to newNum: Int64) async {
 		Logger.data.warning("💾 [Database] Node \(oldNum.toHex(), privacy: .public) now reports \(newNum.toHex(), privacy: .public) — same radio, renumbering the store")
 
-		// The backup is the safety net if the rewrite goes wrong.
+		// The backup is the safety net if the rewrite goes wrong, so flush first — it copies the
+		// store files, and anything still waiting on a debounced save would not be in them yet.
+		await MeshPackets.shared.flushDebouncedSaves()
 		let previousName = devices.first(where: { $0.num == oldNum })?.longName
 		_ = await NodeBackupManager.shared.createBackup(forNode: oldNum, nodeName: previousName)
-		await MeshPackets.shared.flushDebouncedSaves()
 
 		// Detail views bound to the old node have to unmount before its identity changes
 		// underneath them, the same reason the reset path pops first.

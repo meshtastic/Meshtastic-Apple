@@ -26,6 +26,7 @@ struct NodeRenumberTests {
 	@Test("Everything keyed to the old number moves to the new one")
 	func rewritesEveryReference() throws {
 		let context = makeContext()
+		defer { cleanUp(context) }
 		let old = Self.oldNum
 		let new = Self.newNum
 
@@ -75,6 +76,15 @@ struct NodeRenumberTests {
 		waypoint.lastUpdatedBy = old
 		context.insert(waypoint)
 
+		// Heard during a discovery scan, before the upgrade.
+		let discovered = DiscoveredNodeEntity()
+		discovered.nodeNum = old
+		context.insert(discovered)
+
+		let beacon = DiscoveredBeaconEntity()
+		beacon.nodeNum = old
+		context.insert(beacon)
+
 		try context.save()
 
 		#expect(NodeRenumber.apply(from: old, to: new, in: context))
@@ -92,21 +102,34 @@ struct NodeRenumberTests {
 		#expect(snapshot.num == new)
 		#expect(waypoint.createdBy == new)
 		#expect(waypoint.lastUpdatedBy == new)
+		#expect(discovered.nodeNum == new)
+		#expect(beacon.nodeNum == new)
 		// The node keeps its history rather than starting over.
 		#expect(user.sentMessages.contains { $0.messageId == 90_001 })
 
-		cleanUp(context)
+		// Read it back from a context that saw none of the edits, so this proves the rewrite
+		// was written to the store rather than just applied to instances in memory.
+		let fresh = makeContext()
+		let stored = try fresh.fetch(FetchDescriptor<UserEntity>(predicate: #Predicate { $0.num == new }))
+		#expect(stored.count == 1)
+		#expect(stored.first?.longName == "Test Radio")
+		let storedRoute = try fresh.fetch(FetchDescriptor<TraceRouteEntity>(predicate: #Predicate { $0.id == 90_002 })).first
+		#expect(storedRoute?.fromNum == new)
+		let goneUnderOldNumber = try fresh.fetch(FetchDescriptor<UserEntity>(predicate: #Predicate { $0.num == old }))
+		#expect(goneUnderOldNumber.isEmpty)
 	}
 
 	@Test("Rows already stored under the new number are folded in, not orphaned")
 	func foldsRowsAlreadyUnderTheNewNumber() throws {
 		let context = makeContext()
+		defer { cleanUp(context) }
 		let old = Self.oldNum + 0x10
 		let new = Self.newNum + 0x10
 
 		let keeper = UserEntity()
 		keeper.num = old
 		keeper.userId = old.toHex()
+		keeper.longName = "The Radio With The History"
 		context.insert(keeper)
 
 		let keeperNode = NodeInfoEntity()
@@ -119,6 +142,7 @@ struct NodeRenumberTests {
 		let heardOnMesh = UserEntity()
 		heardOnMesh.num = new
 		heardOnMesh.userId = new.toHex()
+		heardOnMesh.longName = "Heard On Mesh"
 		context.insert(heardOnMesh)
 
 		let heardNode = NodeInfoEntity()
@@ -133,40 +157,74 @@ struct NodeRenumberTests {
 		recent.fromUser = heardOnMesh
 		context.insert(recent)
 
+		let addressed = MessageEntity()
+		addressed.messageId = 90_011
+		addressed.messagePayload = "sent to it after the upgrade"
+		addressed.toUser = heardOnMesh
+		context.insert(addressed)
+
 		try context.save()
 
 		#expect(NodeRenumber.apply(from: old, to: new, in: context))
 
-		let users = try context.fetch(FetchDescriptor<UserEntity>(predicate: #Predicate { $0.num == new }))
+		let fresh = makeContext()
+		let users = try fresh.fetch(FetchDescriptor<UserEntity>(predicate: #Predicate { $0.num == new }))
 		#expect(users.count == 1, "one node, not two")
-		let nodes = try context.fetch(FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == new }))
+		#expect(users.first?.longName == "The Radio With The History", "the row with the history is the one that survives")
+		let nodes = try fresh.fetch(FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == new }))
 		#expect(nodes.count == 1)
 
-		let survivor = try context.fetch(FetchDescriptor<MessageEntity>(predicate: #Predicate { $0.messageId == 90_010 })).first
-		#expect(survivor != nil, "the message that arrived under the new number is kept")
-		#expect(survivor?.fromUser?.num == new)
+		let sent = try fresh.fetch(FetchDescriptor<MessageEntity>(predicate: #Predicate { $0.messageId == 90_010 })).first
+		#expect(sent != nil, "the message that arrived under the new number is kept")
+		#expect(sent?.fromUser?.num == new)
+		#expect(sent?.fromUser?.longName == "The Radio With The History")
 
-		cleanUp(context)
+		let received = try fresh.fetch(FetchDescriptor<MessageEntity>(predicate: #Predicate { $0.messageId == 90_011 })).first
+		#expect(received != nil, "a message addressed to the new number is kept too")
+		#expect(received?.toUser?.num == new)
+		#expect(received?.toUser?.longName == "The Radio With The History")
 	}
 
 	@Test("Refuses a no-op or a zero node number")
-	func refusesNonsense() {
+	func refusesNonsense() throws {
 		let context = makeContext()
-		#expect(!NodeRenumber.apply(from: 5, to: 5, in: context))
-		#expect(!NodeRenumber.apply(from: 0, to: 5, in: context))
-		#expect(!NodeRenumber.apply(from: 5, to: 0, in: context))
+		defer { cleanUp(context) }
+
+		let user = UserEntity()
+		user.num = Self.oldNum + 0x20
+		user.userId = user.num.toHex()
+		context.insert(user)
+		try context.save()
+
+		let seeded = user.num
+		#expect(!NodeRenumber.apply(from: seeded, to: seeded, in: context))
+		#expect(!NodeRenumber.apply(from: 0, to: seeded, in: context))
+		#expect(!NodeRenumber.apply(from: seeded, to: 0, in: context))
+
+		// A refused call changes nothing.
+		#expect(user.num == seeded)
+		let fresh = makeContext()
+		let stored = try fresh.fetch(FetchDescriptor<UserEntity>(predicate: #Predicate { $0.num == seeded }))
+		#expect(stored.count == 1, "the seeded row is still there under its own number")
 	}
 
 	/// The container is shared with every other suite, so leave nothing behind.
 	private func cleanUp(_ context: ModelContext) {
-		for user in (try? context.fetch(FetchDescriptor<UserEntity>())) ?? [] where user.num > 0x0BAD_0000 && user.num < 0x0BAE_0000 {
+		let range: (Int64) -> Bool = { $0 > 0x0BAD_0000 && $0 < 0x0BAE_0000 }
+		for user in (try? context.fetch(FetchDescriptor<UserEntity>())) ?? [] where range(user.num) {
 			context.delete(user)
 		}
-		for node in (try? context.fetch(FetchDescriptor<NodeInfoEntity>())) ?? [] where node.num > 0x0BAD_0000 && node.num < 0x0BAE_0000 {
+		for node in (try? context.fetch(FetchDescriptor<NodeInfoEntity>())) ?? [] where range(node.num) {
 			context.delete(node)
 		}
-		for myInfo in (try? context.fetch(FetchDescriptor<MyInfoEntity>())) ?? [] where myInfo.myNodeNum > 0x0BAD_0000 && myInfo.myNodeNum < 0x0BAE_0000 {
+		for myInfo in (try? context.fetch(FetchDescriptor<MyInfoEntity>())) ?? [] where range(myInfo.myNodeNum) {
 			context.delete(myInfo)
+		}
+		for discovered in (try? context.fetch(FetchDescriptor<DiscoveredNodeEntity>())) ?? [] where range(discovered.nodeNum) {
+			context.delete(discovered)
+		}
+		for beacon in (try? context.fetch(FetchDescriptor<DiscoveredBeaconEntity>())) ?? [] where range(beacon.nodeNum) {
+			context.delete(beacon)
 		}
 		for message in (try? context.fetch(FetchDescriptor<MessageEntity>())) ?? [] where message.messageId >= 90_000 && message.messageId < 91_000 {
 			context.delete(message)
