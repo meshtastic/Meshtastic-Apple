@@ -1512,6 +1512,9 @@ struct MeshMapMK: View {
 				let legs = traceRouteFlyoverLegs(for: route)
 				if legs.contains(where: { $0.count >= 2 }) {
 					DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
+						// The route can be cleared or the tab left inside the delay, which would
+						// otherwise restart a stopped flyover with the route it had then.
+						guard selectedTraceRoute?.id == id else { return }
 						flyover.start(legs: legs)
 					}
 				}

@@ -61,9 +61,17 @@ drive_step() {
 		if [ "$waited" -gt 240 ]; then echo "    ✗ timed out waiting for $name" >&2; return 1; fi
 	done
 	sleep 1.5   # let the last frame present after the app says it is ready
-	"$@" "$dest"
+	# Clear any shot from an earlier run first: otherwise a failed capture leaves the old
+	# file in place and this reads as success.
+	rm -f "$dest"
+	if ! "$@" "$dest" || [ ! -f "$dest" ]; then
+		echo "    ✗ capture failed: $name" >&2
+		# Leave the marker: releasing it would move the app to the next screen and this one
+		# would be missing from the set with nothing to show it.
+		return 1
+	fi
 	rm -f "$marker"
-	[ -f "$dest" ] && echo "    ✓ $name" || { echo "    ✗ capture failed: $name" >&2; return 1; }
+	echo "    ✓ $name"
 }
 
 capture_sim() {

@@ -82,26 +82,34 @@ enum MarketingCapture {
 		applyAppearanceAndWindowSize()
 		Logger.data.info("📸 [Marketing] Capture starting (\(appearanceName, privacy: .public))")
 		// Let the first frame (appearance/size change + the seeded @Query views) settle first.
-		try? await Task.sleep(for: .milliseconds(2200))
+		// Every wait from here on lets cancellation through: swallowing it would turn the
+		// remaining settle times into no-ops and run straight to exit(0) with blank frames.
+		do {
+			try await Task.sleep(for: .milliseconds(2200))
 
-		for step in makeSteps(router: router) {
-			step.navigate()
-			try? await Task.sleep(for: step.settle)
-			if usesExternalCapture {
-				await awaitExternalCapture(name: step.name)
-			} else if let image = snapshotKeyWindow() {
-				writePNG(image, name: step.name)
-				Logger.data.info("📸 [Marketing] Captured \(step.name, privacy: .public)")
-			} else {
-				Logger.data.error("📸 [Marketing] Failed to snapshot \(step.name, privacy: .public)")
+			for step in makeSteps(router: router) {
+				step.navigate()
+				try await Task.sleep(for: step.settle)
+				if usesExternalCapture {
+					try await awaitExternalCapture(name: step.name)
+				} else if let image = snapshotKeyWindow() {
+					writePNG(image, name: step.name)
+					Logger.data.info("📸 [Marketing] Captured \(step.name, privacy: .public)")
+				} else {
+					Logger.data.error("📸 [Marketing] Failed to snapshot \(step.name, privacy: .public)")
+				}
+				step.cleanup?()
+				try await Task.sleep(for: .milliseconds(500)) // let any pop/dismiss animation finish
 			}
-			step.cleanup?()
-			try? await Task.sleep(for: .milliseconds(500)) // let any pop/dismiss animation finish
-		}
 
-		Logger.data.info("📸 [Marketing] Capture complete — exiting")
-		try? await Task.sleep(for: .milliseconds(300))
-		exit(0)
+			Logger.data.info("📸 [Marketing] Capture complete — exiting")
+			try await Task.sleep(for: .milliseconds(300))
+			exit(0)
+		} catch {
+			// Cancelled: the run is over. Do not exit(0) — that would report a complete
+			// capture for a run that stopped part way through.
+			Logger.data.info("📸 [Marketing] Capture cancelled")
+		}
 	}
 
 	/// Record the trace-route flyover to a video file, for an App Store app preview.
@@ -114,13 +122,14 @@ enum MarketingCapture {
 		simulateConnectedNode(accessoryManager)
 		applyAppearanceAndWindowSize()
 
-		// Let the seeded map settle before the camera starts moving.
-		try? await Task.sleep(for: .milliseconds(2500))
+		// Let the seeded map settle before the camera starts moving. Cancellation ends the
+		// recording rather than being swallowed into a run of empty waits.
+		guard (try? await Task.sleep(for: .milliseconds(2500))) != nil else { return }
 		router.selectedTab = .map
 		router.mapState = .traceRoute(routeID)
 		Logger.data.info("🎬 [Marketing] Selected trace route \(routeID, privacy: .public)")
 		// The map frames the route and starts the flyover on its own; give it room to do both.
-		try? await Task.sleep(for: .seconds(2))
+		guard (try? await Task.sleep(for: .seconds(2))) != nil else { return }
 
 		guard let window = keyWindow else { return }
 		let size = CGSize(
@@ -140,17 +149,27 @@ enum MarketingCapture {
 		Logger.data.info("🎬 [Marketing] Recording \(Int(seconds), privacy: .public)s at \(Int(size.width), privacy: .public)x\(Int(size.height), privacy: .public)")
 
 		let deadline = Date().addingTimeInterval(seconds)
+		var cancelled = false
 		while Date() < deadline {
 			if let frame = snapshotKeyWindow() {
 				recorder.append(frame)
 			}
 			// 30fps target; capture at this size may not keep up, and the real timestamps mean the
 			// file still plays back at the speed the flyover actually ran.
-			try? await Task.sleep(for: .milliseconds(33))
+			guard (try? await Task.sleep(for: .milliseconds(33))) != nil else {
+				// Stop filming, but still close the file: an unfinished writer leaves an
+				// unplayable .mov behind.
+				cancelled = true
+				break
+			}
 		}
 		let result = await recorder.finish()
 		let fps = result.seconds > 0 ? Double(result.frames) / result.seconds : 0
 		Logger.data.info("🎬 [Marketing] Wrote \(result.frames, privacy: .public) frames in \(String(format: "%.1f", result.seconds), privacy: .public)s (\(String(format: "%.1f", fps), privacy: .public) fps)")
+		guard !cancelled else {
+			Logger.data.info("🎬 [Marketing] Recording cancelled")
+			return
+		}
 		try? await Task.sleep(for: .milliseconds(500))
 		exit(0)
 	}
@@ -256,7 +275,7 @@ enum MarketingCapture {
 	}
 
 	/// Announce that a screen is on-screen and settled, then wait for the script to take its shot.
-	static func awaitExternalCapture(name: String) async {
+	static func awaitExternalCapture(name: String) async throws {
 		let directory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
 			.appendingPathComponent("marketing")
 			.appendingPathComponent(appearanceName)
@@ -265,8 +284,9 @@ enum MarketingCapture {
 		FileManager.default.createFile(atPath: marker.path, contents: nil)
 		Logger.data.info("📸 [Marketing] Holding \(name, privacy: .public) for external capture")
 		// 60s: a first launch has to load map tiles over the network before the shot is worth taking.
+		// Cancellation ends the wait rather than spinning through the remaining polls.
 		for _ in 0..<300 where FileManager.default.fileExists(atPath: marker.path) {
-			try? await Task.sleep(for: .milliseconds(200))
+			try await Task.sleep(for: .milliseconds(200))
 		}
 	}
 

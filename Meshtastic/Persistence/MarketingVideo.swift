@@ -68,7 +68,9 @@ final class MarketingVideoRecorder {
 		while nextSlot <= targetSlot {
 			let time = CMTime(value: CMTimeValue(nextSlot), timescale: CMTimeScale(Self.frameRate))
 			guard let sample = Self.sampleBuffer(from: buffer, at: time) else { break }
-			input.append(sample)
+			// A refused append wrote nothing, so the slot is still empty and the count must
+			// not move — the next call retries it.
+			guard input.append(sample) else { break }
 			frames += 1
 			nextSlot += 1
 			// Stop filling if the writer needs to drain; the next call picks up where this left off.
