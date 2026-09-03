@@ -42,10 +42,11 @@ class ESP32WifiOTAViewModel: ObservableObject {
 	/// so only a message that is not about rebooting ends the update.
 	func handleDeviceNotice(_ message: String) {
 		guard otaState != .completed, otaState != .error else { return }
-		statusMessage = message
+		let shown = OTARefusal.explanation(for: message) ?? message
+		statusMessage = shown
 		guard !message.localizedCaseInsensitiveContains("rebooting to") else { return }
-		deviceRefusal = message
-		errorMessage = message
+		deviceRefusal = shown
+		errorMessage = shown
 		otaState = .error
 	}
 	
