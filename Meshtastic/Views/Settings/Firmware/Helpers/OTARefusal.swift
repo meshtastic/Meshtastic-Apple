@@ -17,6 +17,30 @@ import Foundation
 /// device metadata reports it, which is why the app finds out by asking.
 enum OTARefusal {
 
+	/// What a message from the radio about an update means.
+	enum Notice {
+		/// The radio will not start the update, with the reason put in the app's own words.
+		case refused(String)
+		/// The radio is on its way into update mode.
+		case progress(String)
+	}
+
+	/// Classifies a client notification that mentions OTA.
+	///
+	/// nil for anything not recognized. These sentences come from firmware source rather
+	/// than a protocol, so an unrecognized one is shown to the user but is not treated as a
+	/// refusal — matching on the substring "OTA" alone would let an unrelated notification
+	/// end an update that is going fine.
+	static func classify(_ message: String) -> Notice? {
+		if message.localizedCaseInsensitiveContains("rebooting to") {
+			return .progress(message)
+		}
+		if let explanation = explanation(for: message) {
+			return .refused(explanation)
+		}
+		return nil
+	}
+
 	/// The app's version of a firmware refusal, or nil for a message it does not recognize —
 	/// in which case the radio's own wording is shown as-is. Matching is by substring: these
 	/// come from firmware source, not a protocol, so the exact sentences change over time.

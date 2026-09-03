@@ -47,13 +47,31 @@ struct OTADeviceNoticeTests {
 		}
 	}
 
-	@Test("An unrecognized message is shown as the radio sent it")
-	func unknownMessagePassesThrough() {
-		#expect(OTARefusal.explanation(for: "Something new about OTA") == nil)
+	@Test("An unrecognized message is shown but does not end the update")
+	func unknownMessageDoesNotFailTheUpdate() {
+		// Matching "OTA" alone would let an unrelated notification fail an update that is
+		// going fine, and firmware wording changes, so only sentences we recognize are
+		// treated as a refusal.
+		#expect(OTARefusal.classify("Something new about OTA") == nil)
 		let model = ESP32BLEOTAViewModel()
 		model.handleDeviceNotice("Something new about OTA")
 		#expect(model.statusMessage == "Something new about OTA")
-		#expect(model.otaStatus == .error)
+		#expect(model.otaStatus != .error)
+		#expect(model.deviceRefusal == nil)
+	}
+
+	@Test("A refusal is what ends the update, on both transports")
+	func onlyRefusalsAreTerminal() {
+		for refusal in Self.refusals {
+			guard case .refused = OTARefusal.classify(refusal) else {
+				Issue.record("\(refusal) should classify as a refusal")
+				continue
+			}
+		}
+		guard case .progress = OTARefusal.classify("Rebooting to BLE OTA") else {
+			Issue.record("going into update mode is progress, not a refusal")
+			return
+		}
 	}
 
 	@Test("Going into update mode is not a failure")
@@ -86,11 +104,28 @@ struct OTADeviceNoticeTests {
 		}
 	}
 
-	@Test("Wi-Fi ignores a notice once the update already finished")
-	func wifiIgnoresAfterCompletion() {
+	@Test("A notice arriving after the update finished changes nothing")
+	func noticeAfterCompletionIsIgnored() {
 		let model = ESP32WifiOTAViewModel()
-		model.handleDeviceNotice("Rebooting to WiFi OTA")
-		model.retry()
-		#expect(model.otaState == .idle)
+		model.otaState = .completed
+		model.statusMessage = "Success! Rebooting..."
+
+		model.handleDeviceNotice("Cannot start OTA: Cannot find OTA Loader partition.")
+
+		#expect(model.otaState == .completed, "a finished update is not undone by a late notice")
+		#expect(model.statusMessage == "Success! Rebooting...")
+		#expect(model.errorMessage == nil)
+		#expect(model.deviceRefusal == nil)
+	}
+
+	@Test("A notice arriving after a failure does not replace the failure")
+	func noticeAfterFailureIsIgnored() {
+		let model = ESP32BLEOTAViewModel()
+		model.handleDeviceNotice("OTA Loader does not support BLE")
+		let firstReason = model.deviceRefusal
+
+		model.handleDeviceNotice("Cannot start OTA: Invalid `ota_hash` provided.")
+
+		#expect(model.deviceRefusal == firstReason, "the first reason is the real one")
 	}
 }

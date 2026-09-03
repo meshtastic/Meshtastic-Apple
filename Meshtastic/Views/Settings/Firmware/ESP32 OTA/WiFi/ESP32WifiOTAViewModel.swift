@@ -30,24 +30,36 @@ class ESP32WifiOTAViewModel: ObservableObject {
 	/// better error than the timeout that would otherwise be reported.
 	@Published private(set) var deviceRefusal: String?
 
+	/// The last thing the radio said about this update, recognized or not. A message we
+	/// cannot classify does not end the update, but if the update then fails anyway the
+	/// radio's own words are a better error than the timeout.
+	private var lastDeviceNotice: String?
+
 	func retry() {
 		self.progress = 0
 		self.statusMessage = "Idle"
 		self.errorMessage = nil
 		self.deviceRefusal = nil
+		self.lastDeviceNotice = nil
 		self.otaState = .idle
 	}
 
-	/// The radio sends one of these on its way into update mode as well as when it refuses,
-	/// so only a message that is not about rebooting ends the update.
 	func handleDeviceNotice(_ message: String) {
 		guard otaState != .completed, otaState != .error else { return }
-		let shown = OTARefusal.explanation(for: message) ?? message
-		statusMessage = shown
-		guard !message.localizedCaseInsensitiveContains("rebooting to") else { return }
-		deviceRefusal = shown
-		errorMessage = shown
-		otaState = .error
+		lastDeviceNotice = message
+		switch OTARefusal.classify(message) {
+		case .refused(let explanation):
+			statusMessage = explanation
+			errorMessage = explanation
+			deviceRefusal = explanation
+			otaState = .error
+		case .progress(let text):
+			statusMessage = text
+		case nil:
+			// Not a sentence we know. Show it, but leave the update running: it may be
+			// unrelated, and firmware wording changes.
+			statusMessage = message
+		}
 	}
 	
 	func startUpdate(host: String? = nil, firmwareUrl: URL, password: String? = nil) async {
@@ -61,6 +73,7 @@ class ESP32WifiOTAViewModel: ObservableObject {
 		progress = 0.0
 		errorMessage = nil
 		deviceRefusal = nil
+		lastDeviceNotice = nil
 		statusMessage = "Starting..."
 		otaState = .waitingForConnection
 		
@@ -102,7 +115,7 @@ class ESP32WifiOTAViewModel: ObservableObject {
 			
 		} catch {
 			// The radio's own reason beats the timeout, which is only ever the symptom of it.
-			let reason = deviceRefusal ?? error.localizedDescription
+			let reason = deviceRefusal ?? lastDeviceNotice ?? error.localizedDescription
 			Logger.services.error("[ESP OTA] Error: \(reason, privacy: .public)")
 			errorMessage = reason
 			statusMessage = deviceRefusal ?? "Failed"

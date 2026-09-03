@@ -65,6 +65,17 @@ struct ESP32BLEOTASheet: View {
 		.onReceive(NotificationCenter.default.publisher(for: .otaDeviceNotice)) { notice in
 			guard let message = notice.object as? String else { return }
 			ota.handleDeviceNotice(message)
+			guard ota.deviceRefusal != nil else { return }
+			// The radio is not going into update mode, so there is nothing left to wait for.
+			// Without this the transfer keeps scanning for a device that will never appear.
+			otaTask?.cancel()
+			otaTask = nil
+			// It refused, which means it did not reboot — whatever the reboot command
+			// returned. Retry has to ask again rather than transfer to a radio still running
+			// its normal firmware. Only cleared here: a refusal is the one case where we know
+			// the reboot did not happen, and a failure after a successful reboot must not
+			// re-send it, since by then the mesh connection is gone.
+			rebootSuccessful = false
 		}
 		.onDisappear {
 			otaTask?.cancel()
