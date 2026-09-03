@@ -94,7 +94,6 @@ extension UserDefaults {
 		case lastEventFirmwareAPIUpdate
 		case lastEventFirmwareAPIAttempt
 		case useEventTheme
-		case pairedPeripheralIds
 	}
 
 	func reset() {
@@ -218,31 +217,6 @@ extension UserDefaults {
 		var keys = firmwareUpdateNotificationKeySet
 		keys.insert(key)
 		firmwareUpdateNotificationKeys = keys.sorted()
-	}
-
-	/// UUIDs of BLE peripherals we have successfully bonded with (subscription to an
-	/// encrypted characteristic confirmed). Used only as a *hint*: on a first-ever
-	/// connection we allow a long window for the user to enter the pairing PIN, while
-	/// already-bonded peripherals keep the fast reconnect timeouts. Ground truth is
-	/// still the CoreBluetooth callbacks — a stale hint only affects the timeout length,
-	/// never correctness.
-	@UserDefault(.pairedPeripheralIds, defaultValue: [])
-	static var pairedPeripheralIds: [String]
-
-	static func isPairedPeripheral(_ id: UUID) -> Bool {
-		pairedPeripheralIds.contains(id.uuidString)
-	}
-
-	static func rememberPairedPeripheral(_ id: UUID) {
-		var ids = Set(pairedPeripheralIds)
-		guard ids.insert(id.uuidString).inserted else { return }
-		pairedPeripheralIds = ids.sorted()
-	}
-
-	static func forgetPairedPeripheral(_ id: UUID) {
-		var ids = Set(pairedPeripheralIds)
-		guard ids.remove(id.uuidString) != nil else { return }
-		pairedPeripheralIds = ids.sorted()
 	}
 	
 	static var manualConnections: [Device] {

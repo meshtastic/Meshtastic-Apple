@@ -43,20 +43,7 @@ extension AccessoryManager {
 
 		self.allowDisconnect = true
 		self.userRequestedConnectionCancellation = false
-
-		// On a first-ever BLE connection, iOS presents the pairing PIN sheet during
-		// characteristic subscription (Step 1). The user needs time to read and type a
-		// 6-digit PIN, so give the connect step a long window in that case. Already-bonded
-		// peripherals (and non-BLE transports) keep the fast timeout so a dead/out-of-range
-		// radio still fails quickly on reconnect.
-		// Treat the previously-preferred peripheral as already-bonded too, so users upgrading
-		// to this build (empty pairedPeripheralIds) don't pay the long pairing window on the
-		// first reconnect to a radio they already paired before.
-		let knownBonded = UserDefaults.isPairedPeripheral(device.id)
-			|| device.id.uuidString == UserDefaults.preferredPeripheralId
-		let isFirstTimeBLEBond = device.transportType == .ble && !knownBonded
-		let connectStepTimeout: Duration = isFirstTimeBLEBond ? .seconds(90) : .seconds(5)
-
+		
 		// Prepare to connect
 		self.connectionStepper = SequentialSteps(maxRetries: retries ?? maxRetries, retryDelay: retryDelay) {
 			
@@ -77,7 +64,7 @@ extension AccessoryManager {
 			}
 			
 			// Step 1: Setup the connection
-			Step(timeout: connectStepTimeout) { @MainActor _ in
+			Step(timeout: .seconds(5)) { @MainActor _ in
 				Logger.transport.info("🔗👟[Connect] Step 1: connection to \(device.id, privacy: .public)")
 				do {
 					let connection: Connection
