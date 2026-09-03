@@ -301,6 +301,9 @@ struct FirmwareOTASimulatorView: View {
 					resetToIdle()
 				},
 				onDismiss: {
+					// The simulation runs in an unstructured Task that would otherwise keep
+					// going after "Stop Update".
+					isLiveSimulating = false
 					dismiss()
 				},
 				gameTitle: selectedPreset.gameTitle

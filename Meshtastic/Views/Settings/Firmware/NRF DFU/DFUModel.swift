@@ -30,6 +30,9 @@ class DFUViewModel: NSObject, ObservableObject {
     @Published var progress: Double = 0.0
     @Published var state: DFUUpdateState = .idle
     @Published var statusMessage: String = "Ready"
+	/// Set when the library confirms an abort. Handing the radio back to the app before
+	/// this lands restarts discovery while NordicDFU still owns the peripheral.
+	@Published private(set) var didAbort = false
 	@Published var rotatingMessage: String = ""
 	
 	var lastRotatingMessageUpdate = Date.distantPast
@@ -70,6 +73,7 @@ class DFUViewModel: NSObject, ObservableObject {
         initiator.logger = self // Optional: For debugging
         
         // Start the process
+        self.didAbort = false
         self.state = .uploading
 		Logger.services.info("NRF DFU: starting on \(peripheral.identifier.uuidString, privacy: .public)")
 		self.dfuController = initiator.with(firmware: firmware)
@@ -105,6 +109,7 @@ extension DFUViewModel: DFUServiceDelegate {
 			UIApplication.shared.isIdleTimerDisabled = false
 			self.state = .error("Aborted")
 			self.statusMessage = "Update Aborted"
+			self.didAbort = true
 		case .uploading:
 			self.state = .uploading
 			self.statusMessage = "Uploading..."

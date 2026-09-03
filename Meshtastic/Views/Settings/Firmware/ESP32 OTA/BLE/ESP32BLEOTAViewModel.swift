@@ -95,6 +95,10 @@ final class ESP32BLEOTAViewModel: ObservableObject {
 			let peripheral = try await ble.scan(for: meshtasticOTAServiceId, timeout: 15.0)
 			
 			name = peripheral.name ?? "unknown"
+			// Every exit from here on leaves the device connected otherwise, including the
+			// failures: the device sits in update mode holding a link to an app that has
+			// given up on it.
+			defer { ble.disconnect(peripheral) }
 			
 			try await ble.connect(peripheral, timeout: 10)
 			
@@ -186,7 +190,6 @@ final class ESP32BLEOTAViewModel: ObservableObject {
 				// and drop the connection rather than flashing on into a screen that is gone.
 				if Task.isCancelled {
 					Logger.services.info("📡 [ESP32 BLE OTA] Transfer cancelled at \(offset) of \(fileSize) bytes")
-					ble.disconnect(peripheral)
 					throw CancellationError()
 				}
 
@@ -248,7 +251,6 @@ final class ESP32BLEOTAViewModel: ObservableObject {
 			if self.otaStatus != .completed {
 				throw BLEOTAFailure.unexpectedResponse("Stream ended without OK")
 			}
-			ble.disconnect(peripheral)
 		} catch {
 			self.otaStatus = .error
 			// The radio's own reason beats "the device never advertised in OTA mode", which is

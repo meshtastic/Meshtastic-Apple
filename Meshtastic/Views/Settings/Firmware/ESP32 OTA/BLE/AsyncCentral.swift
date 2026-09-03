@@ -18,16 +18,26 @@ enum BLEError: Error, LocalizedError {
 
 	var errorDescription: String? {
 		switch self {
-		case .poweredOff: return "Bluetooth is not available."
-		case .scanTimeout: return "The device never advertised in OTA mode."
-		case .connectFailed: return "Could not connect to the device."
-		case .connectTimeout: return "Timed out connecting to the device."
-		case .serviceMissing: return "The device is not offering the OTA service."
-		case .characteristicMissing: return "The OTA service is missing a characteristic."
-		case .discoveryTimeout: return "Timed out reading the device's OTA service."
-		case .notifyTimeout: return "The device never confirmed the status channel."
-		case .writeTimeout: return "Timed out writing to the device."
-		case .disconnected: return "The device disconnected."
+		case .poweredOff:
+			return String(localized: "Bluetooth is not available.", comment: "OTA failed because Bluetooth is off or not permitted")
+		case .scanTimeout:
+			return String(localized: "The device never advertised in update mode.", comment: "OTA failed because the device never appeared in update mode")
+		case .connectFailed:
+			return String(localized: "Could not connect to the device.", comment: "OTA failed to connect to the device in update mode")
+		case .connectTimeout:
+			return String(localized: "Timed out connecting to the device.", comment: "OTA connection to the device in update mode timed out")
+		case .serviceMissing:
+			return String(localized: "The device is not offering the update service.", comment: "OTA failed because the device is missing the update service")
+		case .characteristicMissing:
+			return String(localized: "The update service is missing a characteristic.", comment: "OTA failed because the update service is incomplete")
+		case .discoveryTimeout:
+			return String(localized: "Timed out reading the device's update service.", comment: "OTA timed out discovering the update service")
+		case .notifyTimeout:
+			return String(localized: "The device never confirmed the status channel.", comment: "OTA timed out enabling status notifications")
+		case .writeTimeout:
+			return String(localized: "Timed out writing to the device.", comment: "OTA timed out writing to the device")
+		case .disconnected:
+			return String(localized: "The device disconnected.", comment: "OTA failed because the device disconnected")
 		}
 	}
 }
@@ -49,6 +59,9 @@ final class AsyncCentral: NSObject {
 	private var writeContinuation: CheckedContinuation<Void, Error>?
 	private var notificationStreams: [CBUUID: AsyncStream<Data>.Continuation] = [:]
 	private var desiredUUID: UUID?
+	/// The peripheral `connect` is waiting on, so a callback for a stale attempt to a
+	/// different device cannot answer the current wait.
+	private var connectingPeripheral: CBPeripheral?
 
 	override init() {
 		super.init()
@@ -57,6 +70,11 @@ final class AsyncCentral: NSObject {
 
 	func waitUntilPoweredOn(timeout: TimeInterval = 10) async throws {
 		if central.state == .poweredOn { return }
+		// A state that is already terminal produces no further callback, so waiting out the
+		// deadline only delays the same answer.
+		if [.poweredOff, .unauthorized, .unsupported].contains(central.state) {
+			throw BLEError.poweredOff
+		}
 		try await withDeadline(timeout, onExpiry: { self.finishPower(with: .failure(BLEError.poweredOff)) }) {
 			try await withCheckedThrowingContinuation { cont in
 				self.powerContinuation = cont
@@ -103,6 +121,7 @@ final class AsyncCentral: NSObject {
 	private func finishConnect(with result: Result<Void, Error>) {
 		guard let cont = connectContinuation else { return }
 		connectContinuation = nil
+		connectingPeripheral = nil
 		cont.resume(with: result)
 	}
 
@@ -168,12 +187,14 @@ extension AsyncCentral: CBCentralManagerDelegate, CBPeripheralDelegate {
 
 	nonisolated func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
 		MainActor.assumeIsolated {
+			guard peripheral.identifier == connectingPeripheral?.identifier else { return }
 			finishConnect(with: .success(()))
 		}
 	}
 
 	nonisolated func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
 		MainActor.assumeIsolated {
+			guard peripheral.identifier == connectingPeripheral?.identifier else { return }
 			finishConnect(with: .failure(error ?? BLEError.connectFailed))
 		}
 	}
@@ -241,9 +262,18 @@ extension AsyncCentral {
 	}
 
 	func connect(_ peripheral: CBPeripheral, timeout: TimeInterval = 10) async throws {
-		try await withDeadline(timeout, onExpiry: { self.finishConnect(with: .failure(BLEError.connectTimeout)) }) {
+		// Give up on the connection as well as the wait. Core Bluetooth keeps trying
+		// indefinitely otherwise, and a late didConnect would resume whatever wait is
+		// current by then.
+		let expire = { [weak self] in
+			guard let self else { return }
+			self.central.cancelPeripheralConnection(peripheral)
+			self.finishConnect(with: .failure(BLEError.connectTimeout))
+		}
+		try await withDeadline(timeout, onExpiry: expire) {
 			try await withCheckedThrowingContinuation { cont in
 				self.connectContinuation = cont
+				self.connectingPeripheral = peripheral
 				central.connect(peripheral, options: nil)
 			}
 		}

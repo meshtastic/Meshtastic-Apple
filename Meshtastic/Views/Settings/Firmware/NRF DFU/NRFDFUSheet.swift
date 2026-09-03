@@ -138,8 +138,7 @@ struct NRFDFUSheet: View {
 			titleVisibility: .visible
 		) {
 			Button(role: .destructive) {
-				dfuViewModel.abort()
-				dismiss()
+				Task { await stopUpdate() }
 			} label: {
 				Text("Stop Update", comment: "Button that abandons an update in progress")
 			}
@@ -156,6 +155,25 @@ struct NRFDFUSheet: View {
 				restoreDiscovery()
 			}
 		}
+	}
+
+	/// Abort, then wait for the library to confirm before handing the radio back: restarting
+	/// discovery while NordicDFU still owns the peripheral lets auto-connect grab it out from
+	/// under the abort. Bounded, because an abort that never confirms must not leave the app
+	/// unable to find the radio again.
+	private func stopUpdate() async {
+		dfuViewModel.abort()
+		let deadline = Date().addingTimeInterval(3)
+		while !dfuViewModel.didAbort && Date() < deadline {
+			try? await Task.sleep(for: .milliseconds(100))
+		}
+		if !dfuViewModel.didAbort {
+			Logger.services.error("NRF DFU: abort was not confirmed, handing the radio back anyway")
+		}
+		if accessoryManager.otaInProgress {
+			restoreDiscovery()
+		}
+		dismiss()
 	}
 
 	/// Give the radio back to the app once DFU is finished: restart discovery and

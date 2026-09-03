@@ -21,16 +21,21 @@ struct AsyncCentralDeadlineTests {
 
 	private static let otaServiceId = CBUUID(string: "4FAFC201-1FB5-459E-8FCC-C5C9C331914B")
 
-	@Test("Waiting for Bluetooth to power on ends on its own", .timeLimit(.minutes(1)))
+	@Test("Bluetooth being unavailable is reported at once, not after the deadline", .timeLimit(.minutes(1)))
 	func powerOnWaitEnds() async {
 		let central = AsyncCentral()
 		let start = Date()
+		var thrown: Error?
 		do {
-			try await central.waitUntilPoweredOn(timeout: 2)
+			try await central.waitUntilPoweredOn(timeout: 30)
 		} catch {
-			// Bluetooth being unavailable is the expected outcome here.
+			thrown = error
 		}
-		#expect(Date().timeIntervalSince(start) < 10)
+		let elapsed = Date().timeIntervalSince(start)
+		// The simulator has no Bluetooth, so the state is already terminal. A terminal state
+		// produces no further callback: waiting out the deadline only delays the same answer.
+		#expect(thrown as? BLEError == .poweredOff)
+		#expect(elapsed < 5, "reported after \(elapsed)s against a 30s deadline")
 	}
 
 	@Test("Scanning for a device in OTA mode ends on its own", .timeLimit(.minutes(1)))
