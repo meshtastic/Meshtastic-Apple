@@ -2097,6 +2097,9 @@ extension AccessoryManager {
 		} else {
 			throw AccessoryError.ioFailed("sendRebootOta: Unable to serialize admin packet")
 		}
+		// Log the packet id so a routing ack can be matched back to this request — the
+		// difference between the radio refusing the reboot and never hearing it.
+		Logger.services.info("📡 [ESP32 OTA] Reboot admin packet \(meshPacket.id) to \(meshPacket.to) from \(meshPacket.from)")
 		let messageDescription = "🚀 Sent Reboot OTA Admin Message to: \(toUser.longName ?? "Unknown".localized) from: \(fromUser.longName ?? "Unknown".localized)"
 		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
 	}

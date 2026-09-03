@@ -78,6 +78,7 @@ struct ESP32BLEOTASheet: View {
 			rebootSuccessful = false
 		}
 		.onDisappear {
+			Logger.services.info("📡 [ESP32 BLE OTA] Sheet dismissed (otaInProgress=\(accessoryManager.otaInProgress))")
 			otaTask?.cancel()
 			otaTask = nil
 			if accessoryManager.otaInProgress {
@@ -89,6 +90,7 @@ struct ESP32BLEOTASheet: View {
 	/// Hand the radio back to the app: restart discovery and let auto-connect pick the device up
 	/// once it reboots into the new firmware.
 	private func releaseRadio() {
+		Logger.services.info("📡 [ESP32 BLE OTA] Releasing the radio, restarting discovery")
 		accessoryManager.otaInProgress = false
 		accessoryManager.userRequestedConnectionCancellation = false
 		accessoryManager.shouldAutomaticallyConnectToPreferredPeripheralAfterError = true
@@ -113,6 +115,7 @@ struct ESP32BLEOTASheet: View {
 					// otaInProgress — a disconnect arriving while this is still false tears this
 					// sheet down mid-update and leaves the device in OTA mode with nothing driving
 					// it. Stopping discovery here also keeps the teardown from re-arming it.
+					Logger.services.info("📡 [ESP32 BLE OTA] Step 1: claiming the radio (node \(deviceNum), peripheral \(peripheral?.identifier.uuidString ?? "nil", privacy: .private))")
 					accessoryManager.otaInProgress = true
 					accessoryManager.shouldAutomaticallyConnectToPreferredPeripheralAfterError = false
 					accessoryManager.stopDiscovery()
@@ -125,14 +128,18 @@ struct ESP32BLEOTASheet: View {
 					}.value
 					
 					// 2. Send the reboot command via existing connection
+					Logger.services.info("📡 [ESP32 BLE OTA] Step 2: sending reboot into OTA mode")
 					try await accessoryManager.sendRebootOta(fromUser: user, toUser: user, mode: .otaBle, otaHash: sha256Digest)
 					rebootSuccessful = true
+					Logger.services.info("📡 [ESP32 BLE OTA] Reboot command accepted")
 					
 					// Give some time for any final incoming notifications
 					try await Task.sleep(for: .seconds(1.0))
 
 					// 3. Disconnect app so the ViewModel can grab the new OTA-Mode advertisement
+					Logger.services.info("📡 [ESP32 BLE OTA] Step 3: disconnecting")
 					try await accessoryManager.disconnect()
+					Logger.services.info("📡 [ESP32 BLE OTA] Disconnected")
 
 					// 4. Wait briefly for device to reboot
 					try await Task.sleep(nanoseconds: 2_000_000_000) // 2 seconds
@@ -140,15 +147,25 @@ struct ESP32BLEOTASheet: View {
 				
 				// The sheet can be dismissed during either sleep above, which cancels this task
 				// and hands the radio back. Do not start a transfer after that.
-				guard !Task.isCancelled else { return }
+				guard !Task.isCancelled else {
+					Logger.services.info("📡 [ESP32 BLE OTA] Cancelled before the transfer — sheet was dismissed")
+					return
+				}
 
 				// 5. Start the OTA process. Discovery and auto-connect are restored when this
 				// sheet closes, not here: clearing the flag on completion lets the Firmware
 				// screen rebuild and dismiss the sheet before the result is read.
+				Logger.services.info("📡 [ESP32 BLE OTA] Step 4: starting the transfer")
 				await ota.startOTA(binURL: binFileURL, desiredPeripheral: peripheral?.identifier)
+				Logger.services.info("📡 [ESP32 BLE OTA] Transfer returned, status \(String(describing: ota.otaStatus), privacy: .public)")
 
+			} catch is CancellationError {
+				// Dismissing the sheet cancels this task mid-sleep, which arrives here as a
+				// thrown cancellation rather than the guard below. Not a failure.
+				Logger.services.info("📡 [ESP32 BLE OTA] Cancelled — sheet was dismissed")
+				releaseRadio()
 			} catch {
-				Logger.mesh.error("ESP32 BLE OTA Failed: \(error.localizedDescription)")
+				Logger.services.error("📡 [ESP32 BLE OTA] Failed: \(error.localizedDescription, privacy: .public)")
 				releaseRadio()
 			}
 		}
