@@ -76,6 +76,15 @@ class RequestRecordingURLProtocol: URLProtocol {
 @Suite("MeshtasticAPI bundled device seed", .serialized)
 final class MeshtasticAPIBundledSeedTests {
 
+	/// Stub key for the device catalog, taken from the endpoint the app actually calls rather
+	/// than written out here. A hardcoded host stops matching the moment the endpoint moves,
+	/// and the request then escapes to the real network — which is how these tests started
+	/// failing on a CI runner with no internet.
+	private var deviceHardwareStubKey: String {
+		let endpoint = MeshtasticAPI.deviceURLEndpoint
+		return (endpoint.host ?? "") + endpoint.path
+	}
+
 	/// The throttle timestamp as it was before this test ran, restored in `deinit`.
 	private let priorImageAndLinkUpdate: Date
 
@@ -275,7 +284,7 @@ final class MeshtasticAPIBundledSeedTests {
 	@Test @MainActor func startupCascadeRunsOneImagePass() async throws {
 		URLProtocol.registerClass(RequestRecordingURLProtocol.self)
 		RequestRecordingURLProtocol.reset(stubs: [
-			"api.meshtastic.org/resource/deviceHardware": try bundledCatalogData()
+			deviceHardwareStubKey: try bundledCatalogData()
 		])
 		defer { URLProtocol.unregisterClass(RequestRecordingURLProtocol.self) }
 
@@ -310,7 +319,7 @@ final class MeshtasticAPIBundledSeedTests {
 		"""
 		URLProtocol.registerClass(RequestRecordingURLProtocol.self)
 		RequestRecordingURLProtocol.reset(stubs: [
-			"api.meshtastic.org/resource/deviceHardware": Data(apiOnly.utf8)
+			deviceHardwareStubKey: Data(apiOnly.utf8)
 		])
 		defer { URLProtocol.unregisterClass(RequestRecordingURLProtocol.self) }
 
