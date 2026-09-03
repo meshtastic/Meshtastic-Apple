@@ -428,24 +428,25 @@ extension BLEConnection {
 	func didUpdateNotificationState(characteristic: CBCharacteristic, error: Error?) {
 		if let error {
 			Logger.transport.error("🛜 [BLE] Notify state error for \(characteristic.meshtasticCharacteristicName, privacy: .public): \(error, privacy: .public)")
-			// A pairing/auth failure (wrong or cancelled PIN) surfaces here as a
-			// CBATTError. Treat it as a bond failure even if it lands on a non-gating
-			// characteristic (FROMRADIO/LOGRADIO) — encryption failures typically hit
-			// every subscription. A benign "notify not supported" error on those, by
-			// contrast, is ignored so it can't fail an otherwise-good connect.
-			if isAwaitingNotifyConfirmation
-				&& (pendingNotifyConfirmations.contains(characteristic.uuid) || Self.isPairingFailure(error)) {
-				// Which of these is a bond the radio threw away turns on whether we ever had
-				// one, and tearing the connection down forgets it — so decide first.
-				let reported = AccessoryError.forNotifyFailure(error, hadBond: UserDefaults.isPairedPeripheral(peripheral.identifier))
-				// Then hand it to the same classifier every other peripheral error goes
-				// through. It decides whether the error is worth reconnecting for — none of
-				// these are — tears the link down, forgets the stale pairing hint, and resumes
-				// the suspended connect with the error. Resuming the connect directly from
-				// here skipped all of that, and a connect step retries by default, so a
-				// pairing failure came back as "Too Many Retries" with the reason discarded.
-				Task { try? await self.handlePeripheralError(error: reported) }
-			}
+			guard case .endConnection = Self.notifyFailure(
+				error: error,
+				isAwaitingConfirmation: isAwaitingNotifyConfirmation,
+				gatesConnect: pendingNotifyConfirmations.contains(characteristic.uuid)
+			) else { return }
+
+			isAwaitingNotifyConfirmation = false
+			pendingNotifyConfirmations.removeAll()
+			let reported = Self.bondLostError(for: peripheral.identifier, error: error)
+			// Torn down while still waiting for the subscription means bonding did not
+			// complete, so the hint goes either way. `bondLostError` reads it first.
+			UserDefaults.forgetPairedPeripheral(peripheral.identifier)
+			// Then hand it to the same classifier every other peripheral error goes through.
+			// It decides whether the error is worth reconnecting for — none of these are —
+			// tears the link down, and resumes the suspended connect with the error.
+			// Resuming the connect directly from here skipped all of that, and a connect step
+			// retries by default, so a pairing failure came back as "Too Many Retries" with
+			// the reason discarded.
+			Task { try? await self.handlePeripheralError(error: reported) }
 			return
 		}
 
@@ -658,43 +659,86 @@ extension BLEConnection {
 	}
 	
 	func handlePeripheralError(error: Error) async throws {
-		/// Explicit retries for a few specific errors where we want to re-connect, all other errors should not reconnect automatically
-		var shouldReconnect = false
+		let shouldReconnect = Self.shouldReconnect(after: error)
+		logPeripheralError(error)
+
+		// Inform the active connection that there was an error and it should disconnect
+		try await self.disconnect(withError: error, shouldReconnect: shouldReconnect)
+	}
+
+	/// Whether an error is worth reconnecting for.
+	///
+	/// Three codes are: everything else is final. A pairing failure is one of the final
+	/// ones — the radio has thrown away a bond only the user can clear — and reconnecting on
+	/// it burns the connect step's retry budget and ends as "Too Many Retries" with the real
+	/// reason discarded. Pure so it can be tested without a peripheral.
+	static func shouldReconnect(after error: Error) -> Bool {
 		switch error {
 		case let attError as CBATTError:
-			 switch attError.code {
-			 case .insufficientResources:
-				 // The radio could not allocate a buffer for THIS write. The link is fine and the next
-				 // write usually succeeds, so reconnect rather than dropping the session. Observed on a
-				 // Heltec V4 (ESP32-S3/NimBLE): writes of 8-33B succeed while a 104B set_owner is rejected,
-				 // with an ATT MTU of 255 negotiated — so it is buffer exhaustion, not a size limit.
-				 Logger.transport.error("🛜 [BLEConnection] Radio out of buffers for this write (CBATTError \(attError.code.rawValue)); reconnecting rather than ending the session")
-				 shouldReconnect = true
-			 default:
-				 // All other CBATTErrors should not try and reconnect
-				 Logger.transport.error("🛜 [BLEConnection] Disconnected with CBATTError code: \(attError.code.rawValue) - \(attError.localizedDescription)")
-			 }
+			// The radio could not allocate a buffer for THIS write. The link is fine and the next
+			// write usually succeeds, so reconnect rather than dropping the session. Observed on a
+			// Heltec V4 (ESP32-S3/NimBLE): writes of 8-33B succeed while a 104B set_owner is rejected,
+			// with an ATT MTU of 255 negotiated — so it is buffer exhaustion, not a size limit.
+			return attError.code == .insufficientResources
 		case let cbError as CBError:
 			switch cbError.code {
-			case .connectionTimeout: // 6
-				// Happens when the node goes out of range or the shutdown or reset buttons are presses
-				// Should disconnect, show error, and retry when re-advertised
-				Logger.transport.error("🛜 [BLEConnection] Disconnected with CBError code: \(cbError.code.rawValue) - \(cbError.localizedDescription)")
-				shouldReconnect = true
-			case .peripheralDisconnected: // 7
-				// Happens when the node reboots or shuts down intentionally via the firmware or app
-				// Should disconnect, show error, and retry when re-advertised
-				Logger.transport.error("🛜 [BLEConnection] Disconnected with CBError code: \(cbError.code.rawValue) - \(cbError.localizedDescription)")
-				shouldReconnect = true
+			// Happens when the node goes out of range or the shutdown or reset buttons are pressed,
+			// and when it reboots or shuts down intentionally via the firmware or app. Disconnect,
+			// show the error, and retry when it advertises again.
+			case .connectionTimeout, .peripheralDisconnected: // 6, 7
+				return true
 			default:
-				Logger.transport.error("🛜 [BLEConnection] Disconnected with CBError code: \(cbError.code.rawValue) - \(cbError.localizedDescription)")
+				return false
 			}
+		default:
+			return false
+		}
+	}
+
+	/// What a notify-state error means for a connect still waiting on its subscription.
+	///
+	/// `.ignore` for a benign error on a characteristic the connect does not gate on — a
+	/// radio that does not support notifications on one of them must not fail an otherwise
+	/// good connect. A pairing failure counts wherever it lands, because an encryption
+	/// failure typically hits every subscription. Pure so it can be tested without a
+	/// peripheral.
+	enum NotifyFailure {
+		case ignore
+		case endConnection
+	}
+
+	static func notifyFailure(error: Error, isAwaitingConfirmation: Bool, gatesConnect: Bool) -> NotifyFailure {
+		guard isAwaitingConfirmation, gatesConnect || isPairingFailure(error) else { return .ignore }
+		return .endConnection
+	}
+
+	/// Reads the bond hint and clears it in one step, so the two cannot end up the wrong way
+	/// around: the answer depends on the hint that clearing destroys.
+	///
+	/// A radio that erased its pairing and a mistyped PIN arrive under the same Core
+	/// Bluetooth codes and need opposite advice — clear the pairing in Settings, or try the
+	/// PIN again. Having paired with this radio before is what separates them. Clearing the
+	/// hint also self-heals the connect timeout back to the long pairing window.
+	static func bondLostError(for peripheralID: UUID, error: Error) -> Error {
+		guard isPairingFailure(error) else { return error }
+		let hadBond = UserDefaults.isPairedPeripheral(peripheralID)
+		UserDefaults.forgetPairedPeripheral(peripheralID)
+		return hadBond ? AccessoryError.bondLost : error
+	}
+
+	private func logPeripheralError(_ error: Error) {
+		switch error {
+		case let attError as CBATTError:
+			if attError.code == .insufficientResources {
+				Logger.transport.error("🛜 [BLEConnection] Radio out of buffers for this write (CBATTError \(attError.code.rawValue)); reconnecting rather than ending the session")
+			} else {
+				Logger.transport.error("🛜 [BLEConnection] Disconnected with CBATTError code: \(attError.code.rawValue) - \(attError.localizedDescription)")
+			}
+		case let cbError as CBError:
+			Logger.transport.error("🛜 [BLEConnection] Disconnected with CBError code: \(cbError.code.rawValue) - \(cbError.localizedDescription)")
 		case let otherError:
 			Logger.transport.error("🛜 [BLEConnection] Disconnected with non CBError or CBATTError: \(otherError.localizedDescription)")
 		}
-		
-		// Inform the active connection that there was an error and it should disconnect
-		try await self.disconnect(withError: error, shouldReconnect: shouldReconnect)
 	}
 	
 	func appDidEnterBackground() {

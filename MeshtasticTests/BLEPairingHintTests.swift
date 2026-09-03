@@ -111,43 +111,142 @@ struct BLEPairingFailureTests {
 	}
 }
 
-/// A factory-erased radio throws away the pairing this device still holds. The app has a
-/// message for it — forget the radio under Settings > Bluetooth — and the advice differs from
-/// the one for a mistyped PIN even though iOS reports both under the same codes.
-@Suite("Lost BLE bond")
-struct LostBondTests {
+/// A factory-erased radio throws away the pairing this device still holds. Reconnecting
+/// cannot fix it, so it must not be retried, and the advice differs from the one for a
+/// mistyped PIN even though iOS reports both under the same codes.
+///
+/// Serialized: these share the persisted `pairedPeripheralIds`, so they must not run in
+/// parallel with each other or with the hint suite above.
+@Suite("Lost BLE bond", .serialized)
+final class LostBondTests {
+
+	private let radio = UUID(uuidString: "00000000-0000-0000-0000-0000000000CC")!
+	private let originalPairedIds: [String]
+
+	init() {
+		originalPairedIds = UserDefaults.pairedPeripheralIds
+		UserDefaults.pairedPeripheralIds = []
+	}
+
+	deinit {
+		UserDefaults.pairedPeripheralIds = originalPairedIds
+	}
 
 	private func isBondLost(_ error: Error) -> Bool {
 		guard let accessoryError = error as? AccessoryError, case .bondLost = accessoryError else { return false }
 		return true
 	}
 
-	@Test func everyPairingCodeIsALostBondWhenWePairedBefore() {
-		let codes: [Error] = [
-			CBError(.peerRemovedPairingInformation),
-			CBError(.encryptionTimedOut),
-			CBATTError(.insufficientAuthentication),
-			CBATTError(.insufficientEncryption),
-			CBATTError(.insufficientAuthorization)
-		]
-		for code in codes {
-			#expect(isBondLost(AccessoryError.forNotifyFailure(code, hadBond: true)),
-					"\(code) should report a lost bond")
+	private static let pairingCodes: [Error] = [
+		CBError(.peerRemovedPairingInformation),
+		CBError(.encryptionTimedOut),
+		CBATTError(.insufficientAuthentication),
+		CBATTError(.insufficientEncryption),
+		CBATTError(.insufficientAuthorization)
+	]
+
+	// MARK: - Never retried
+
+	@Test func pairingFailuresAreNeverReconnected() {
+		// This is what stops the connect: `shouldReconnect == false` sends the error out as
+		// `errorWithoutReconnect`, which disables auto-reconnect and cancels the whole connect
+		// process instead of retrying it into "Too Many Retries".
+		for code in Self.pairingCodes {
+			#expect(BLEConnection.shouldReconnect(after: code) == false, "\(code) must not reconnect")
+		}
+		#expect(BLEConnection.shouldReconnect(after: AccessoryError.bondLost) == false)
+	}
+
+	@Test func theThreeRecoverableErrorsStillReconnect() {
+		#expect(BLEConnection.shouldReconnect(after: CBATTError(.insufficientResources)))
+		#expect(BLEConnection.shouldReconnect(after: CBError(.connectionTimeout)))
+		#expect(BLEConnection.shouldReconnect(after: CBError(.peripheralDisconnected)))
+	}
+
+	@Test func unrelatedErrorsDoNotReconnect() {
+		#expect(BLEConnection.shouldReconnect(after: CBATTError(.writeNotPermitted)) == false)
+		#expect(BLEConnection.shouldReconnect(after: NSError(domain: "com.example.test", code: 42)) == false)
+	}
+
+	// MARK: - Which advice
+
+	@Test func aRadioWePairedWithBeforeReportsALostBond() {
+		for code in Self.pairingCodes {
+			UserDefaults.rememberPairedPeripheral(radio)
+
+			let reported = BLEConnection.bondLostError(for: radio, error: code)
+
+			#expect(isBondLost(reported), "\(code) should report a lost bond")
+			// Read before clear, in one step: reversing them would answer from an already
+			// cleared hint and report the wrong advice.
+			#expect(UserDefaults.isPairedPeripheral(radio) == false,
+					"the stale pairing is forgotten, so the next attempt gets the long pairing window")
 		}
 	}
 
-	@Test func aFirstPairingAttemptIsNotALostBond() {
+	@Test func aFirstPairingAttemptKeepsItsOwnError() {
 		// Never paired with this radio: the same codes mean a wrong or cancelled PIN, which
 		// needs the opposite advice, so the original error has to survive.
-		let reported = AccessoryError.forNotifyFailure(CBATTError(.insufficientAuthentication), hadBond: false)
+		let reported = BLEConnection.bondLostError(for: radio, error: CBATTError(.insufficientAuthentication))
+
 		#expect(isBondLost(reported) == false)
 		#expect((reported as? CBATTError)?.code == .insufficientAuthentication)
 	}
 
-	@Test func benignNotifyErrorsPassThrough() {
-		let reported = AccessoryError.forNotifyFailure(CBATTError(.requestNotSupported), hadBond: true)
+	@Test func benignErrorsPassThroughAndKeepTheBond() {
+		UserDefaults.rememberPairedPeripheral(radio)
+
+		let reported = BLEConnection.bondLostError(for: radio, error: CBATTError(.requestNotSupported))
+
 		#expect(isBondLost(reported) == false)
 		#expect((reported as? CBATTError)?.code == .requestNotSupported)
+		#expect(UserDefaults.isPairedPeripheral(radio), "a benign error is not a bond failure")
+	}
+
+	// MARK: - Ignore or end the connection
+
+	@Test func aPairingFailureEndsTheConnectWhereverItLands() {
+		// An encryption failure typically hits every subscription, including ones the connect
+		// does not gate on.
+		for code in Self.pairingCodes {
+			let action = BLEConnection.notifyFailure(error: code, isAwaitingConfirmation: true, gatesConnect: false)
+			guard case .endConnection = action else {
+				Issue.record("\(code) should end the connect")
+				continue
+			}
+		}
+	}
+
+	@Test func abenignErrorOnANonGatingCharacteristicIsIgnored() {
+		// A radio that does not support notifications on FROMRADIO must not fail an
+		// otherwise-good connect.
+		let action = BLEConnection.notifyFailure(
+			error: CBATTError(.requestNotSupported), isAwaitingConfirmation: true, gatesConnect: false
+		)
+		guard case .ignore = action else {
+			Issue.record("a benign error off the gating path should be ignored")
+			return
+		}
+	}
+
+	@Test func aFailureOnTheGatingCharacteristicEndsTheConnect() {
+		let action = BLEConnection.notifyFailure(
+			error: CBATTError(.requestNotSupported), isAwaitingConfirmation: true, gatesConnect: true
+		)
+		guard case .endConnection = action else {
+			Issue.record("the connect waits on this subscription, so it cannot be ignored")
+			return
+		}
+	}
+
+	@Test func nothingHappensWhenTheConnectIsNotWaiting() {
+		let action = BLEConnection.notifyFailure(
+			error: CBError(.peerRemovedPairingInformation), isAwaitingConfirmation: false, gatesConnect: true
+		)
+		guard case .ignore = action else {
+			Issue.record("no connect in flight, nothing to end")
+			return
+		}
 	}
 
 	@Test func theMessageSaysHowToFixIt() {
