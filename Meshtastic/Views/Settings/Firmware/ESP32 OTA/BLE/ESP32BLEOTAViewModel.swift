@@ -40,10 +40,39 @@ final class ESP32BLEOTAViewModel: ObservableObject {
 	
 	// MARK: - User Actions
 	
+	/// What the radio said about the update it was asked to start. A refusal arrives while
+	/// the app is still waiting for the device to show up in OTA mode, and it is a far better
+	/// error than the timeout that would otherwise be reported.
+	@Published private(set) var deviceRefusal: String?
+
+	/// The last thing the radio said about this update, recognized or not. A message we
+	/// cannot classify does not end the update, but if the update then fails anyway the
+	/// radio's own words are a better error than the timeout.
+	private var lastDeviceNotice: String?
+
 	func retry() {
 		self.transferProgress = 0
 		self.statusMessage = ""
+		self.deviceRefusal = nil
+		self.lastDeviceNotice = nil
 		self.otaStatus = .idle
+	}
+
+	func handleDeviceNotice(_ message: String) {
+		guard otaStatus != .completed, otaStatus != .error else { return }
+		lastDeviceNotice = message
+		switch OTARefusal.classify(message) {
+		case .refused(let explanation):
+			statusMessage = explanation
+			deviceRefusal = explanation
+			otaStatus = .error
+		case .progress(let text):
+			statusMessage = text
+		case nil:
+			// Not a sentence we know. Show it, but leave the update running: it may be
+			// unrelated, and firmware wording changes.
+			statusMessage = message
+		}
 	}
 	
 	func startOTA(binURL: URL, desiredPeripheral: UUID?) async {
@@ -53,6 +82,9 @@ final class ESP32BLEOTAViewModel: ObservableObject {
 			UIApplication.shared.isIdleTimerDisabled = false
 		}
 		
+		deviceRefusal = nil
+		lastDeviceNotice = nil
+
 		do {
 			// --- 1. Connection Phase ---
 			self.statusMessage = "Connecting..."
@@ -219,8 +251,10 @@ final class ESP32BLEOTAViewModel: ObservableObject {
 			ble.disconnect(peripheral)
 		} catch {
 			self.otaStatus = .error
-			self.statusMessage = error.localizedDescription
-			Logger.services.error("OTA Failed: \(error.localizedDescription)")
+			// The radio's own reason beats "the device never advertised in OTA mode", which is
+			// only ever the symptom of it.
+			self.statusMessage = deviceRefusal ?? lastDeviceNotice ?? error.localizedDescription
+			Logger.services.error("OTA Failed: \(self.statusMessage, privacy: .public)")
 		}
 		
 		UIApplication.shared.isIdleTimerDisabled = false

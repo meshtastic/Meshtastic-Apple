@@ -68,6 +68,19 @@ struct ESP32WifiOTASheet: View {
 				self.host = await connection.host.stringValue
 			}
 		}
+		.onReceive(NotificationCenter.default.publisher(for: .otaDeviceNotice)) { notice in
+			guard let message = notice.object as? String else { return }
+			ota.handleDeviceNotice(message)
+			guard ota.deviceRefusal != nil else { return }
+			// The radio is not going into update mode, so there is nothing left to wait for.
+			otaTask?.cancel()
+			otaTask = nil
+			// It refused, which means it did not reboot — whatever the reboot command
+			// returned. Retry has to ask again rather than transfer to a radio still running
+			// its normal firmware. Only cleared here: a failure after a successful reboot
+			// must not re-send it, since by then the mesh connection is gone.
+			alreadyRebooted = false
+		}
 		.onDisappear {
 			otaTask?.cancel()
 			otaTask = nil
