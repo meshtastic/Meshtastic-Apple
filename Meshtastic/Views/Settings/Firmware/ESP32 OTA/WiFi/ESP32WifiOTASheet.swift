@@ -68,6 +68,10 @@ struct ESP32WifiOTASheet: View {
 				self.host = await connection.host.stringValue
 			}
 		}
+		.onReceive(NotificationCenter.default.publisher(for: .otaDeviceNotice)) { notice in
+			guard let message = notice.object as? String else { return }
+			ota.handleDeviceNotice(message)
+		}
 		.onDisappear {
 			otaTask?.cancel()
 			otaTask = nil

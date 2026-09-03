@@ -25,11 +25,28 @@ class ESP32WifiOTAViewModel: ObservableObject {
 	
 	// MARK: - Public Interface
 	
+	/// What the radio said about the update it was asked to start. A refusal arrives while
+	/// the app is still waiting for the device to come up in update mode, and it is a far
+	/// better error than the timeout that would otherwise be reported.
+	@Published private(set) var deviceRefusal: String?
+
 	func retry() {
 		self.progress = 0
 		self.statusMessage = "Idle"
 		self.errorMessage = nil
+		self.deviceRefusal = nil
 		self.otaState = .idle
+	}
+
+	/// The radio sends one of these on its way into update mode as well as when it refuses,
+	/// so only a message that is not about rebooting ends the update.
+	func handleDeviceNotice(_ message: String) {
+		guard otaState != .completed, otaState != .error else { return }
+		statusMessage = message
+		guard !message.localizedCaseInsensitiveContains("rebooting to") else { return }
+		deviceRefusal = message
+		errorMessage = message
+		otaState = .error
 	}
 	
 	func startUpdate(host: String? = nil, firmwareUrl: URL, password: String? = nil) async {
@@ -42,6 +59,7 @@ class ESP32WifiOTAViewModel: ObservableObject {
 		
 		progress = 0.0
 		errorMessage = nil
+		deviceRefusal = nil
 		statusMessage = "Starting..."
 		otaState = .waitingForConnection
 		
@@ -82,9 +100,11 @@ class ESP32WifiOTAViewModel: ObservableObject {
 			Logger.services.info("[ESP OTA] Update Complete")
 			
 		} catch {
-			Logger.services.error("[ESP OTA] Error: \(error.localizedDescription)")
-			errorMessage = error.localizedDescription
-			statusMessage = "Failed"
+			// The radio's own reason beats the timeout, which is only ever the symptom of it.
+			let reason = deviceRefusal ?? error.localizedDescription
+			Logger.services.error("[ESP OTA] Error: \(reason, privacy: .public)")
+			errorMessage = reason
+			statusMessage = deviceRefusal ?? "Failed"
 			otaState = .error
 		}
 	}

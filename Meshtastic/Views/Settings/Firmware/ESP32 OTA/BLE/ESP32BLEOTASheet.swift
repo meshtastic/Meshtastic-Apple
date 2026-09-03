@@ -62,6 +62,10 @@ struct ESP32BLEOTASheet: View {
 				self.peripheral = await connection.peripheral
 			}
 		}
+		.onReceive(NotificationCenter.default.publisher(for: .otaDeviceNotice)) { notice in
+			guard let message = notice.object as? String else { return }
+			ota.handleDeviceNotice(message)
+		}
 		.onDisappear {
 			otaTask?.cancel()
 			otaTask = nil

@@ -40,10 +40,26 @@ final class ESP32BLEOTAViewModel: ObservableObject {
 	
 	// MARK: - User Actions
 	
+	/// What the radio said about the update it was asked to start. A refusal arrives while
+	/// the app is still waiting for the device to show up in OTA mode, and it is a far better
+	/// error than the timeout that would otherwise be reported.
+	@Published private(set) var deviceRefusal: String?
+
 	func retry() {
 		self.transferProgress = 0
 		self.statusMessage = ""
+		self.deviceRefusal = nil
 		self.otaStatus = .idle
+	}
+
+	/// The radio sends one of these on its way into update mode as well as when it refuses,
+	/// so only a message that is not about rebooting ends the update.
+	func handleDeviceNotice(_ message: String) {
+		guard otaStatus != .completed, otaStatus != .error else { return }
+		statusMessage = message
+		guard !message.localizedCaseInsensitiveContains("rebooting to") else { return }
+		deviceRefusal = message
+		otaStatus = .error
 	}
 	
 	func startOTA(binURL: URL, desiredPeripheral: UUID?) async {
@@ -53,6 +69,8 @@ final class ESP32BLEOTAViewModel: ObservableObject {
 			UIApplication.shared.isIdleTimerDisabled = false
 		}
 		
+		deviceRefusal = nil
+
 		do {
 			// --- 1. Connection Phase ---
 			self.statusMessage = "Connecting..."
@@ -222,8 +240,10 @@ final class ESP32BLEOTAViewModel: ObservableObject {
 			ble.disconnect(peripheral)
 		} catch {
 			self.otaStatus = .error
-			self.statusMessage = error.localizedDescription
-			Logger.services.error("OTA Failed: \(error.localizedDescription)")
+			// The radio's own reason beats "the device never advertised in OTA mode", which is
+			// only ever the symptom of it.
+			self.statusMessage = deviceRefusal ?? error.localizedDescription
+			Logger.services.error("OTA Failed: \(self.statusMessage, privacy: .public)")
 		}
 		
 		UIApplication.shared.isIdleTimerDisabled = false

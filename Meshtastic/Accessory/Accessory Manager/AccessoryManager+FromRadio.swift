@@ -70,6 +70,15 @@ extension AccessoryManager {
 		// Always log, whether or not the user is alerted — Debug Logs stays complete.
 		Logger.services.error("⚠️ Client Notification: \(clientNotification.message, privacy: .private)")
 
+		// The radio answers an OTA request with one of these, and it is the only place it says
+		// why it would not start. Log it in the clear — it names a hardware capability, not
+		// anything about the user — and hand it to the update sheet, which otherwise sits there
+		// until it times out waiting for a device that never rebooted.
+		if clientNotification.message.contains("OTA") {
+			Logger.services.error("📡 [ESP32 OTA] Radio says: \(clientNotification.message, privacy: .public)")
+			NotificationCenter.default.post(name: .otaDeviceNotice, object: clientNotification.message)
+		}
+
 		let key = Self.noticeKey(for: clientNotification)
 		guard shouldSurfaceFirmwareNotice(key: key, isSecurity: Self.isSecurityNotice(clientNotification)) else {
 			Logger.services.debug("⏳ Firmware notification suppressed by backoff: \(key, privacy: .private)")
