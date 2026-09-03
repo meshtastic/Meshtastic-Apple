@@ -85,6 +85,7 @@ struct ContentView: View {
 				MarketingCapture.simulateEventFirmwareIfNeeded(accessoryManager)
 				// No-op unless launched with --marketing-capture (see MarketingCapture / PerformanceSeedData).
 				await MarketingCapture.runIfNeeded(router: router, accessoryManager: accessoryManager)
+				await MarketingCapture.recordFlyoverIfNeeded(router: router, accessoryManager: accessoryManager)
 				// No-op unless launched with `-switch-stress N` (node-switch crash harness).
 				await SwitchStress.runIfNeeded(accessoryManager: accessoryManager, appState: appState)
 #endif

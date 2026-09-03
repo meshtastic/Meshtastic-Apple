@@ -95,6 +95,9 @@ iOSInjectionProject/
 
 # Marketing screenshot capture output (scripts/capture-marketing.sh)
 marketing/
+# …and the external-capture driver's output (scripts/capture-marketing-external.sh)
+marketing-external/
+marketing-mac/
 
 # Stray xcodebuild output logs (never commit build logs)
 /build*.log

@@ -1072,6 +1072,32 @@ struct MeshMapMK: View {
 		// user having to pinch-zoom for a screenshot. Takes priority over the saved-region restore below
 		// since a developer invoking this explicit QA mode wants the tight demo framing every time, not
 		// whatever region happens to be saved from a previous session.
+		// Marketing capture: frame the seeded mesh, never the machine's own GPS. A Mac reports its
+		// real location, so the shot came out centered wherever the Mac is with the seeded nodes
+		// off-screen entirely. Takes priority over the saved region for the same reason the cluster
+		// demo does — the capture must be identical on every machine.
+		if MarketingCapture.isActive {
+			let coords = mapEligiblePositions.compactMap { $0.nodeCoordinate ?? $0.fuzzedNodeCoordinate }
+			if let center = coordinateCentroid(of: coords) {
+				didInitialFrame = true
+				var maxLat = 0.0, maxLon = 0.0
+				for coord in coords {
+					maxLat = max(maxLat, abs(coord.latitude - center.latitude))
+					maxLon = max(maxLon, abs(coord.longitude - center.longitude))
+				}
+				// 2.4x the spread leaves a margin of empty map around the outermost pins.
+				let region = MKCoordinateRegion(
+					center: center,
+					span: MKCoordinateSpan(
+						latitudeDelta: max(maxLat * 2.4, 0.06),
+						longitudeDelta: max(maxLon * 2.4, 0.06)
+					)
+				)
+				visibleRegion = region
+				cameraCommand = ClusterMapCameraCommand(id: UUID(), region: region)
+				return
+			}
+		}
 		if PerformanceSeedData.configuration?.style == .clusterDemo {
 			let coords = mapEligiblePositions.compactMap { $0.nodeCoordinate ?? $0.fuzzedNodeCoordinate }
 			if let center = coordinateCentroid(of: coords) {
@@ -1479,6 +1505,18 @@ struct MeshMapMK: View {
 			}
 			rebuildTraceRouteContent()
 			frameTraceRoute()
+			#if DEBUG
+			// App preview recording: start the flyover without a tap, once the route is framed.
+			// The recorder is already capturing, so this is what it films.
+			if isNewSelection, MarketingCapture.flyoverRouteID == id, let route = selectedTraceRoute {
+				let legs = traceRouteFlyoverLegs(for: route)
+				if legs.contains(where: { $0.count >= 2 }) {
+					DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
+						flyover.start(legs: legs)
+					}
+				}
+			}
+			#endif
 		} else if selectedTraceRoute != nil {
 			flyover.stop(restoreCamera: false)
 			selectedTraceRoute = nil
