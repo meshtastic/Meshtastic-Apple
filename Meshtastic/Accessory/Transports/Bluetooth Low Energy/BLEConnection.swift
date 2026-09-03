@@ -435,10 +435,16 @@ extension BLEConnection {
 			// contrast, is ignored so it can't fail an otherwise-good connect.
 			if isAwaitingNotifyConfirmation
 				&& (pendingNotifyConfirmations.contains(characteristic.uuid) || Self.isPairingFailure(error)) {
-				isAwaitingNotifyConfirmation = false
-				pendingNotifyConfirmations.removeAll()
-				UserDefaults.forgetPairedPeripheral(peripheral.identifier)
-				self.continueConnectionProcess(throwing: error)
+				// Which of these is a bond the radio threw away turns on whether we ever had
+				// one, and tearing the connection down forgets it — so decide first.
+				let reported = AccessoryError.forNotifyFailure(error, hadBond: UserDefaults.isPairedPeripheral(peripheral.identifier))
+				// Then hand it to the same classifier every other peripheral error goes
+				// through. It decides whether the error is worth reconnecting for — none of
+				// these are — tears the link down, forgets the stale pairing hint, and resumes
+				// the suspended connect with the error. Resuming the connect directly from
+				// here skipped all of that, and a connect step retries by default, so a
+				// pairing failure came back as "Too Many Retries" with the reason discarded.
+				Task { try? await self.handlePeripheralError(error: reported) }
 			}
 			return
 		}

@@ -110,3 +110,50 @@ struct BLEPairingFailureTests {
 		#expect(BLEConnection.isPairingFailure(generic) == false)
 	}
 }
+
+/// A factory-erased radio throws away the pairing this device still holds. The app has a
+/// message for it — forget the radio under Settings > Bluetooth — and the advice differs from
+/// the one for a mistyped PIN even though iOS reports both under the same codes.
+@Suite("Lost BLE bond")
+struct LostBondTests {
+
+	private func isBondLost(_ error: Error) -> Bool {
+		guard let accessoryError = error as? AccessoryError, case .bondLost = accessoryError else { return false }
+		return true
+	}
+
+	@Test func everyPairingCodeIsALostBondWhenWePairedBefore() {
+		let codes: [Error] = [
+			CBError(.peerRemovedPairingInformation),
+			CBError(.encryptionTimedOut),
+			CBATTError(.insufficientAuthentication),
+			CBATTError(.insufficientEncryption),
+			CBATTError(.insufficientAuthorization)
+		]
+		for code in codes {
+			#expect(isBondLost(AccessoryError.forNotifyFailure(code, hadBond: true)),
+					"\(code) should report a lost bond")
+		}
+	}
+
+	@Test func aFirstPairingAttemptIsNotALostBond() {
+		// Never paired with this radio: the same codes mean a wrong or cancelled PIN, which
+		// needs the opposite advice, so the original error has to survive.
+		let reported = AccessoryError.forNotifyFailure(CBATTError(.insufficientAuthentication), hadBond: false)
+		#expect(isBondLost(reported) == false)
+		#expect((reported as? CBATTError)?.code == .insufficientAuthentication)
+	}
+
+	@Test func benignNotifyErrorsPassThrough() {
+		let reported = AccessoryError.forNotifyFailure(CBATTError(.requestNotSupported), hadBond: true)
+		#expect(isBondLost(reported) == false)
+		#expect((reported as? CBATTError)?.code == .requestNotSupported)
+	}
+
+	@Test func theMessageSaysHowToFixIt() {
+		let message = AccessoryError.bondLost.errorDescription ?? ""
+		#expect(message.contains("forget the radio"))
+		#expect(message == AccessoryError.coreBluetoothError(CBError(.peerRemovedPairingInformation)).errorDescription,
+				"however it arrives, it reads the same")
+	}
+}
