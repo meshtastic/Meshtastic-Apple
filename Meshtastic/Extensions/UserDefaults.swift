@@ -95,7 +95,6 @@ extension UserDefaults {
 		case lastEventFirmwareAPIAttempt
 		case useEventTheme
 		case pairedPeripheralIds
-		case migratedPreferredPeripheralPairing
 	}
 
 	func reset() {
@@ -245,13 +244,6 @@ extension UserDefaults {
 		guard ids.remove(id.uuidString) != nil else { return }
 		pairedPeripheralIds = ids.sorted()
 	}
-
-	/// One-time flag: whether the legacy `preferredPeripheralId` has been migrated into
-	/// `pairedPeripheralIds`. Once set, the preferred-peripheral fallback is never consulted for
-	/// bonding decisions again, so a bond the user later removes can self-heal back to the long
-	/// pairing window instead of being pinned to the fast reconnect timeout.
-	@UserDefault(.migratedPreferredPeripheralPairing, defaultValue: false)
-	static var migratedPreferredPeripheralPairing: Bool
 	
 	static var manualConnections: [Device] {
 		get {

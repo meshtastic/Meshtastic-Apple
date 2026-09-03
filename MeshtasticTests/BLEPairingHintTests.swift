@@ -17,27 +17,18 @@ import Testing
 // Serialized: these tests share global UserDefaults state (`pairedPeripheralIds`),
 // so they must not run in parallel with each other.
 @Suite("Paired peripheral hint", .serialized)
-final class PairedPeripheralHintTests {
+struct PairedPeripheralHintTests {
 
 	private let idA = UUID(uuidString: "00000000-0000-0000-0000-0000000000AA")!
 	private let idB = UUID(uuidString: "00000000-0000-0000-0000-0000000000BB")!
 
-	/// Snapshot of the real persisted value, captured before each test and restored in `deinit`
-	/// so this suite leaves no residue for later tests to observe.
-	private let originalPairedIds: [String]
-
-	/// Swift Testing creates a fresh instance per test, so `init`/`deinit` act as per-test
-	/// setup/teardown: start every test from a clean slate, then restore the original value.
-	init() {
-		originalPairedIds = UserDefaults.pairedPeripheralIds
+	/// Start every test from a clean slate so global UserDefaults state doesn't leak.
+	private func reset() {
 		UserDefaults.pairedPeripheralIds = []
 	}
 
-	deinit {
-		UserDefaults.pairedPeripheralIds = originalPairedIds
-	}
-
 	@Test func rememberMakesPeripheralKnown() {
+		reset()
 		#expect(UserDefaults.isPairedPeripheral(idA) == false)
 
 		UserDefaults.rememberPairedPeripheral(idA)
@@ -47,6 +38,7 @@ final class PairedPeripheralHintTests {
 	}
 
 	@Test func rememberIsIdempotent() {
+		reset()
 		UserDefaults.rememberPairedPeripheral(idA)
 		UserDefaults.rememberPairedPeripheral(idA)
 
@@ -54,6 +46,7 @@ final class PairedPeripheralHintTests {
 	}
 
 	@Test func forgetRemovesOnlyThatPeripheral() {
+		reset()
 		UserDefaults.rememberPairedPeripheral(idA)
 		UserDefaults.rememberPairedPeripheral(idB)
 
@@ -64,6 +57,7 @@ final class PairedPeripheralHintTests {
 	}
 
 	@Test func forgetUnknownPeripheralIsNoOp() {
+		reset()
 		UserDefaults.rememberPairedPeripheral(idB)
 
 		UserDefaults.forgetPairedPeripheral(idA)
@@ -72,6 +66,7 @@ final class PairedPeripheralHintTests {
 	}
 
 	@Test func storedIdsAreSorted() {
+		reset()
 		UserDefaults.rememberPairedPeripheral(idB)
 		UserDefaults.rememberPairedPeripheral(idA)
 

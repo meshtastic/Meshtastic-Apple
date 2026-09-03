@@ -49,20 +49,11 @@ extension AccessoryManager {
 		// 6-digit PIN, so give the connect step a long window in that case. Already-bonded
 		// peripherals (and non-BLE transports) keep the fast timeout so a dead/out-of-range
 		// radio still fails quickly on reconnect.
-		// One-time migration: seed pairedPeripheralIds from the legacy preferredPeripheralId so
-		// users upgrading to this build (empty pairedPeripheralIds) don't pay the long pairing
-		// window on the first reconnect to a radio they already paired before. After this runs
-		// once, the preferred-peripheral fallback is never consulted again — the remember/forget
-		// lifecycle in BLEConnection becomes the sole source of truth. That way a bond the user
-		// later removes (e.g. via iOS Settings > Bluetooth) self-heals back to the long pairing
-		// window instead of being pinned to the fast reconnect timeout forever.
-		if !UserDefaults.migratedPreferredPeripheralPairing {
-			UserDefaults.migratedPreferredPeripheralPairing = true
-			if let preferredUUID = UUID(uuidString: UserDefaults.preferredPeripheralId) {
-				UserDefaults.rememberPairedPeripheral(preferredUUID)
-			}
-		}
+		// Treat the previously-preferred peripheral as already-bonded too, so users upgrading
+		// to this build (empty pairedPeripheralIds) don't pay the long pairing window on the
+		// first reconnect to a radio they already paired before.
 		let knownBonded = UserDefaults.isPairedPeripheral(device.id)
+			|| device.id.uuidString == UserDefaults.preferredPeripheralId
 		let isFirstTimeBLEBond = device.transportType == .ble && !knownBonded
 		let connectStepTimeout: Duration = isFirstTimeBLEBond ? .seconds(90) : .seconds(5)
 
