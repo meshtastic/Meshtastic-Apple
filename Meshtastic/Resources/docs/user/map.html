@@ -241,7 +241,19 @@ Geofences are evaluated on your own device as position packets arrive from the m
 <p>Tap <strong>▶</strong> in the route banner for a guided 3D flythrough over satellite imagery: it flies the outbound path, lands at the target, then flies the return path and eases back to the map. Tap the <strong>speed control</strong> to cycle the pace from 1× up to 5× (1×, 1.5×, 2×, 2.5×, 3×, 4×, 5×) — adjustable mid-flight — and <strong>■</strong> to stop.</p>
 <p>Tap the <strong>legend</strong> button (map icon, bottom-right) for a key to the colors and markers.</p>
 <h2>Node Trail</h2>
-<p>When a node has reported multiple positions over time, a trail line connects the historical positions on the map, showing the node's path.</p>
+<p>Node tracks make recent movement easier to read while navigating, hiking, or using the mesh away from roads. Older reports use a lighter treatment and the newest part of the route is most prominent, so direction is visible without obscuring the map.</p>
+<h3>Focus a track on the main map</h3>
+<ol>
+<li>Tap a node pin on the <strong>Map</strong> tab.</li>
+<li>In the node detail sheet, tap <strong>Show Track</strong>.</li>
+<li>The map shows that node's track and a <strong>Track: <em>node</em></strong> banner. Tap the banner's close button to hide it.</li>
+</ol>
+<p>The main map shows only the one track you choose; it does not draw history for every node. A node needs at least two full-precision position reports before <strong>Show Track</strong> is available. The track refreshes as additional full-precision position history arrives.</p>
+<p><img src="../assets/screenshots/focused-node-track.jpg" alt="Focused node track on the main map" /></p>
+<h3>Review a node's position history</h3>
+<p>Open a node's map from its detail screen to review its own history. Use the Map Options sheet to turn on <strong>Track Points</strong> and/or <strong>Track Line</strong>. The track-range control (<code>point.3.connected.trianglepath.dotted</code>) selects <strong>All</strong>, <strong>1h</strong>, <strong>8h</strong>, <strong>1d</strong>, or <strong>2d</strong> of history.</p>
+<p>The node's latest pin remains visible even when it is outside the selected range; the selected range affects only the track points and route geometry. For privacy, only full-precision reports appear in a track. Approximate or reduced-precision reports are not connected or shown as history points.</p>
+<p><img src="../assets/screenshots/node-map-history.jpg" alt="Node Map position history with Track Points and Track Line" /></p>
 <h2>Your Location</h2>
 <p>Your current GPS position appears as a blue dot (standard iOS location indicator). Enable position broadcasting in <strong>Settings → Position</strong> to share your location with the mesh.</p>
 </body>
