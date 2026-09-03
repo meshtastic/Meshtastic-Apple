@@ -252,7 +252,10 @@ struct Connect: View {
 									} label: {
 										Label("Disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
 									}
-									.disabled(!accessoryManager.allowDisconnect)
+									// Tinted explicitly: a destructive role alone leaves the swipe action
+									// the default gray here, and dropping the radio should read as
+									// destructive before the user commits to the swipe.
+									.tint(.red)
 								}
 							}
 							.contextMenu {
@@ -352,7 +355,7 @@ struct Connect: View {
 										} label: {
 											Label("Disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
 										}
-										.disabled(!accessoryManager.allowDisconnect)
+										.tint(.red)
 									}
 								}
 								
