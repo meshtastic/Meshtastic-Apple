@@ -79,17 +79,14 @@ struct UserConfig: View {
 							Label("Long Name", systemImage: "person.crop.rectangle.fill")
 							TextField("Long Name", text: $longName)
 								.onChange(of: longName) {
-									var newValue = longName.withoutVariationSelectors
-									while newValue.utf8.count > 36 {
-										newValue = String(newValue.dropLast())
-									}
-									longName = newValue
+									let newValue = longName.withoutVariationSelectors
+									longName = NodeNameLimits.trimmed(newValue, toBytes: NodeNameLimits.longNameBytes)
 									if longName.contains("📵") {
 										isUnmessagable = true
 									}
 								}
 						}
-						Text("Long Name can be up to 36 bytes long.")
+						Text("Long Name can be up to 24 bytes long.")
 							.foregroundColor(.gray)
 							.font(.callout)
 					}
