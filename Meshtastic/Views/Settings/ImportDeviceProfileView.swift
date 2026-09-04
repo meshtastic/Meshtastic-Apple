@@ -384,17 +384,16 @@ struct ImportDeviceProfileView: View {
 						}
 					}
 				} else {
-					Button {
-						runVerification(result)
-					} label: {
-						Label("Verify Against the Radio", systemImage: "checkmark.shield")
-					}
-					.disabled(!canVerify)
-					if !canVerify {
-						Text("Available once the radio reconnects and sends its configuration back.")
-							.font(.caption)
-							.foregroundColor(.secondary)
-					}
+					Label("Waiting for the radio to reconnect", systemImage: "antenna.radiowaves.left.and.right")
+						.foregroundStyle(.secondary)
+					Text("Results will appear here automatically after the radio sends its configuration.")
+						.font(.caption)
+						.foregroundStyle(.secondary)
+				}
+			}
+			.onChange(of: canVerify, initial: true) { _, isReady in
+				if isReady && verification == nil {
+					runVerification(result)
 				}
 			}
 			if let failed = result.failed {
@@ -489,8 +488,8 @@ struct ImportDeviceProfileView: View {
 	/// True once the radio has sent a fresh configuration since the import finished.
 	///
 	/// Verifying before this would compare against the pre-import cache and report every item as lost,
-	/// which is indistinguishable from a real total failure. So the action stays disabled until the
-	/// radio has actually reported back after its reboot.
+	/// which is indistinguishable from a real total failure. So verification waits until the radio has
+	/// actually reported back after its reboot.
 	private var canVerify: Bool {
 		guard let importFinishedAt, let refreshed = accessoryManager.lastConfigRefresh else { return false }
 		return refreshed >= importFinishedAt
