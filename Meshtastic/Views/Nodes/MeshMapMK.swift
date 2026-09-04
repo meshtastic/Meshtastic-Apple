@@ -482,6 +482,7 @@ struct MeshMapMK: View {
 					if let node = getNodeInfo(id: selection.id, context: context) {
 						NavigationStack {
 							NodeDetail(node: node, nodeNum: selection.id, showMapLink: false)
+								.trackScreen("Node Detail")
 						}
 						#if targetEnvironment(macCatalyst)
 							.overlay(alignment: .topLeading) {
