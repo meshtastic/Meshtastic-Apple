@@ -12,6 +12,19 @@ The Settings tab lets you configure the app and your connected Meshtastic radio.
 
 General app preferences including map style, notification behavior, and theme. These affect only the app — not the radio.
 
+### Notifications
+
+Which alerts the app raises is set per type in the iOS Settings app, under **Settings → Meshtastic**, in the **Notifications** section. **Open Settings** in App Settings takes you straight there. Every toggle is on by default.
+
+| Setting | Description |
+|---------|-------------|
+| Channel Messages | Alerts for incoming channel messages. Direct messages always notify unless the sender is muted, and a message that @mentions you notifies even with this off. |
+| New Waypoints | Alerts when a node shares a new waypoint. |
+| New Nodes | Alerts when a node the app has not seen before joins the mesh. |
+| Low Battery | Alerts when the connected device's battery gets low. |
+
+Turning a toggle off suppresses only the alert — messages, reactions, waypoints, and nodes are still received and still appear in the app. Muting a channel or a sender in the app silences that conversation regardless of these settings.
+
 ### Data Management
 
 - **Erase All App Data** — clears the local database, translation cache, and all stored settings, then immediately reloads the bundled device hardware catalog. Use this as a last resort.
@@ -40,6 +53,8 @@ LoRa settings control how your radio communicates on the mesh:
 | Frequency Override | Use a specific frequency in MHz instead of the calculated slot. The LoRa and Licensed Operator settings show the stored frequency without rounding it. |
 
 On firmware **2.8.0 or later**, the radio tells the app which modem presets are legal in each region. When you pick a region, the Presets list narrows to the compatible set, and if your current preset isn't allowed there the app switches you to that region's default. Setting the region to **US** on a newly flashed node moves the stock **Long Fast** preset to **Long Turbo** — Long Fast's bandwidth is not US-compliant — while a deliberately chosen preset that is legal in the US is kept. Amateur (ham) bands such as the Tiny and Narrow presets are marked **licensed** — the app shows a warning, and you should enable **Licensed Operator** (and set your call sign) in **User** config before transmitting. On older firmware the full preset list is shown unchanged.
+
+Saving LoRa settings may reboot the radio and briefly disconnect it. If the radio reports a region from newer firmware that this app does not recognize, choose a supported region before saving.
 
 ### Channels
 
@@ -135,9 +150,8 @@ Optional feature modules. Only available when your connected node supports the m
 | Ringtone | Custom RTTTL melodies for notification tones. |
 | Store & Forward | Store packets for nodes that are temporarily offline. |
 | Serial | UART serial output for integration with other hardware. |
-| Status Message | Set a custom status message broadcast to the mesh. |
 | Telemetry | Device, environment, and air-quality sensor reporting. |
-| Traffic Management | Mesh traffic optimisation — position deduplication, rate limiting, and unknown-packet filtering. Requires firmware 2.8.0+. |
+| Traffic Management | Mesh traffic optimization — position deduplication, rate limiting, and unknown-packet filtering. Requires firmware 2.8.0+. |
 
 ### Traffic Management
 

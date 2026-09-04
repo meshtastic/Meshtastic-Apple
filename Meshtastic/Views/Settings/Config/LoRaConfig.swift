@@ -10,6 +10,12 @@ import SwiftData
 import MeshtasticProtobufs
 import OSLog
 
+enum LoRaRegionValidation {
+	static func supportedRegion(rawValue: Int) -> RegionCodes? {
+		RegionCodes(rawValue: rawValue)
+	}
+}
+
 struct LoRaConfig: View {
 
 	enum Field: Hashable {
@@ -162,6 +168,10 @@ struct LoRaConfig: View {
 		)
 	}
 
+	private var savedRegion: RegionCodes? {
+		LoRaRegionValidation.supportedRegion(rawValue: region)
+	}
+
 	private var bandwidthSelection: Binding<Int> {
 		Binding(
 			get: {
@@ -261,7 +271,7 @@ struct LoRaConfig: View {
 				) {
 					saveLoRaConfig()
 				}
-				.disabled(customBandwidthValidationIssue != nil)
+				.disabled(customBandwidthValidationIssue != nil || savedRegion == nil)
 			}
 		}
 		.navigationTitle("LoRa Config")
@@ -285,8 +295,7 @@ struct LoRaConfig: View {
 	/// type-check-time treatment as SecurityConfig (body's chained expression measured ~10s
 	/// with -warn-long-expression-type-checking before extraction).
 	private func saveLoRaConfig() {
-		guard customBandwidthValidationIssue == nil else { return }
-		let savedRegion = RegionCodes(rawValue: region)!
+		guard customBandwidthValidationIssue == nil, let savedRegion else { return }
 		performConfigSave(
 			node: node,
 			context: context,
@@ -337,6 +346,11 @@ struct LoRaConfig: View {
 				Text("The region where you will be using your radios.")
 					.foregroundColor(.gray)
 					.font(.callout)
+				if savedRegion == nil {
+					Label("This radio uses a newer region that this app does not support. Choose a supported region before saving.", systemImage: "exclamationmark.triangle.fill")
+						.foregroundStyle(.orange)
+						.font(.callout)
+				}
 			}
 
 			if let info = regionPresetInfo, info.licensedOnly {
