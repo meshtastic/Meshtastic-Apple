@@ -232,7 +232,7 @@ MQTT and Serial settings are applied after the main transaction because either c
 
 You can cancel while a setting is being sent over Bluetooth or TCP; cancellation typically completes quickly. The app stops sending additional sections, then commits the sections already applied so the radio does not remain in an unfinished edit transaction. If the transport callback does not settle, the sheet allows dismissal after 15 seconds. A write already handed to the operating system may still reach the radio, so review the result before retrying.
 
-Because the radio can silently discard settings it accepts, the result screen also offers **Verify Against the Radio**: once the radio reconnects and sends its configuration back, it compares each imported section against what the radio actually holds. Re-running an import is safe.
+Because the radio can silently discard settings it accepts, imports that reboot the radio show **Check What Applied** while the app waits for it to reconnect. Once the radio sends its configuration back, the app automatically compares each imported section against what the radio actually holds. Re-running an import is safe.
 
 ## Automatic Documentation Translation
 
