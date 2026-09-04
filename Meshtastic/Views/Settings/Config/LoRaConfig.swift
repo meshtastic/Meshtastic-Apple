@@ -30,6 +30,15 @@ struct LoRaConfig: View {
 	@FocusState var focusedField: Field?
 
 	let node: NodeInfoEntity?
+	let onSuccessfulSave: (_ nodeNum: Int64, _ region: RegionCodes) -> Void
+
+	init(
+		node: NodeInfoEntity?,
+		onSuccessfulSave: @escaping (_ nodeNum: Int64, _ region: RegionCodes) -> Void = { _, _ in }
+	) {
+		self.node = node
+		self.onSuccessfulSave = onSuccessfulSave
+	}
 
 	private var selectedModemPreset: ModemPresets {
 		ModemPresets(rawValue: modemPreset) ?? .longFast
@@ -245,7 +254,11 @@ struct LoRaConfig: View {
 		.disabled(!accessoryManager.isConnected || node?.loRaConfig == nil)
 		.safeAreaInset(edge: .bottom, alignment: .center) {
 			HStack(spacing: 0) {
-				SaveConfigButton(node: node, hasChanges: $hasChanges) {
+				SaveConfigButton(
+					node: node,
+					hasChanges: $hasChanges,
+					confirmationMessage: "Your device may reboot after saving.".localized
+				) {
 					saveLoRaConfig()
 				}
 				.disabled(customBandwidthValidationIssue != nil)
@@ -273,6 +286,7 @@ struct LoRaConfig: View {
 	/// with -warn-long-expression-type-checking before extraction).
 	private func saveLoRaConfig() {
 		guard customBandwidthValidationIssue == nil else { return }
+		let savedRegion = RegionCodes(rawValue: region)!
 		performConfigSave(
 			node: node,
 			context: context,
@@ -282,7 +296,7 @@ struct LoRaConfig: View {
 		) { fromUser, toUser in
 			var lc = Config.LoRaConfig()
 			lc.hopLimit = UInt32(hopLimit)
-			lc.region = RegionCodes(rawValue: region)!.protoEnumValue()
+			lc.region = savedRegion.protoEnumValue()
 			lc.modemPreset = ModemPresets(rawValue: modemPreset)!.protoEnumValue()
 			lc.usePreset = usePreset
 			lc.txEnabled = txEnabled
@@ -301,6 +315,7 @@ struct LoRaConfig: View {
 				UserDefaults.modemPreset = modemPreset
 			}
 			_ = try await accessoryManager.saveLoRaConfig(config: lc, fromUser: fromUser, toUser: toUser)
+			onSuccessfulSave(toUser.num, savedRegion)
 		}
 	}
 
