@@ -726,14 +726,12 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		// Update the device in the devices array if it exists
 		if let index = devices.firstIndex(where: { $0.id == deviceId }) {
 			var device = devices[index]
-			device[keyPath: key] = value
 			if device[keyPath: key] != value {
 				// Update the @Published stuff for the UI
 				self.objectWillChange.send()
-				
-				if let index = devices.firstIndex(where: { $0.id == deviceId }) {
-					devices[index] = device
-				}
+
+				device[keyPath: key] = value
+				devices[index] = device
 			}
 		} else {
 			// Durring active connections, this discover list will be empty, so this is expected.

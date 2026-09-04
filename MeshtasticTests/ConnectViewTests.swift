@@ -644,3 +644,19 @@ struct SignalStrengthIndicatorTests {
 		#expect(view.signalStrength == strength)
 	}
 }
+
+@Suite("AccessoryManager device updates")
+struct AccessoryManagerDeviceUpdateTests {
+	@MainActor
+	@Test func nameUpdateRefreshesAvailableDevices() {
+		let deviceID = UUID()
+		let manager = AccessoryManager(transports: [])
+		manager.devices = [
+			Device(id: deviceID, name: "Old Radio", transportType: .ble, identifier: deviceID.uuidString)
+		]
+
+		manager.updateDevice(deviceId: deviceID, key: \.name, value: "New Radio")
+
+		#expect(manager.devices.first?.name == "New Radio")
+	}
+}
