@@ -792,7 +792,7 @@ struct NodeDetail: View {
 					node: node
 				)
 				if accessoryManager.activeDeviceNum != nodeNum {
-					if !(currentUser?.unmessagable ?? true) {
+					if currentUser?.showsDirectMessageAction == true {
 						Button(action: {
 							if let url = URL(string: "meshtastic:///messages?userNum=\(nodeNum)") {
 								UIApplication.shared.open(url)

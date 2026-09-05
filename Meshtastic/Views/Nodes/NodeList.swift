@@ -471,7 +471,7 @@ private struct FilteredNodeList: View {
 				NodeAlertsButton(context: context, node: node, user: user)
 			}
 			if connectedNode.num != node.num {
-				if !(node.user?.unmessagable ?? true) {
+				if node.user?.showsDirectMessageAction == true {
 					Button(action: {
 						if let url = URL(string: "meshtastic:///messages?userNum=\(node.num)") {
 							UIApplication.shared.open(url)
