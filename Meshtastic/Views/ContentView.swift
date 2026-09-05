@@ -25,6 +25,10 @@ struct ContentView: View {
 	/// non-blocking state (.none, .unlocked, .lockNowAcknowledged).
 	private var isLockdownGateActive: Bool { lockdown.isBlockingSession }
 
+	private var selectedTabNeedsLocation: Bool {
+		router.selectedTab == .nodes || router.selectedTab == .map
+	}
+
 	/// Plain view-state mirror of `isLockdownGateActive`, kept in sync from the
 	/// coordinator via `.onChange`. Presenting the lockdown `fullScreenCover`
 	/// through a *computed* `Binding` — getter reading the `lockdown`
@@ -44,6 +48,7 @@ struct ContentView: View {
 
 	var body: some View {
 		gatedContent
+			.locationUpdates(for: .userInterface, while: selectedTabNeedsLocation)
 			.sheet(
 				isPresented: $isShowingDeviceOnboardingFlow,
 				onDismiss: {

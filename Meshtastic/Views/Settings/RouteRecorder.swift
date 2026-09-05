@@ -323,5 +323,6 @@ struct RouteRecorder: View {
 			}
 		}
 		.ignoresSafeArea(.all, edges: [.top, .leading, .trailing])
+		.locationUpdates(for: .userInterface)
 	}
 }

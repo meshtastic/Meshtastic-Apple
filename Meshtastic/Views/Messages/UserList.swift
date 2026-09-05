@@ -81,6 +81,7 @@ struct UserList: View {
 			.autocorrectionDisabled(true)
 			.scrollDismissesKeyboard(.immediately)
 		}
+		.locationUpdates(for: .userInterface)
 	}
 }
 

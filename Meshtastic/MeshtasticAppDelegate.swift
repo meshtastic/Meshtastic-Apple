@@ -31,12 +31,8 @@ class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificat
 		}
 #endif
 		UNUserNotificationCenter.current().delegate = self
-		let locationsHandler = LocationsHandler.shared
-		locationsHandler.startLocationUpdates()
-		// If a background activity session was previously active, reinstantiate it after the background launch.
-		if locationsHandler.backgroundActivity {
-			locationsHandler.backgroundActivity = true
-		}
+		// Restore location delivery only when the user enabled continuous background updates.
+		_ = LocationsHandler.shared
 		// Initialize TAK Server if enabled
 		Task { @MainActor in
 			TAKServerManager.shared.initializeOnStartup()

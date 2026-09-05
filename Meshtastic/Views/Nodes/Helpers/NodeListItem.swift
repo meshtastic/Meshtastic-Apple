@@ -199,6 +199,7 @@ struct NodeListItem: View {
 	}
 
 	@Bindable var node: NodeInfoEntity
+	@ObservedObject private var locationsHandler = LocationsHandler.shared
 	/// The memoized value-type snapshot the row renders from. Captured while the node is live and
 	/// never re-derived from the live model during a plain re-evaluation, so a retained row can't
 	/// fault on a zombie @Model. Refreshed (guarded) when the node's `lastHeard` changes.
@@ -211,7 +212,7 @@ struct NodeListItem: View {
 		guard let nodeCoordinate else {
 			return nil
 		}
-		guard let currentLocation = LocationsHandler.shared.locationsArray.last else {
+		guard let currentLocation = locationsHandler.locationsArray.last else {
 			return nil
 		}
 

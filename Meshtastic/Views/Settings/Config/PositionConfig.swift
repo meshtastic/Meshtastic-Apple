@@ -438,6 +438,7 @@ struct PositionConfig: View {
 		.onChange(of: gpsUpdateInterval) { _, newGpsUpdateInterval in
 			if newGpsUpdateInterval != node?.positionConfig?.gpsUpdateInterval ?? 0 { hasChanges = true }
 		}
+		.locationUpdates(for: .userInterface)
 	}
 	
 	func handlePositionFlagtChanges() {

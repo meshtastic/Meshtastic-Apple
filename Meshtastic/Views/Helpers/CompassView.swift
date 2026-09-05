@@ -194,12 +194,11 @@ struct CompassView: View {
 			.statusBar(hidden: true)
 			.onAppear {
 				locationsHandler.startHeadingUpdates()
-				locationsHandler.startLocationUpdates()
 			}
 			.onDisappear {
 				locationsHandler.stopHeadingUpdates()
-				locationsHandler.stopLocationUpdates()
 			}
+			.locationUpdates(for: .userInterface)
 			.navigationTitle("Compass")
 		}
 	}

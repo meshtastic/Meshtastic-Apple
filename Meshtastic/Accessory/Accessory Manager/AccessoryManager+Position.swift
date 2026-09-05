@@ -16,10 +16,12 @@ extension AccessoryManager {
 	}
 
 	func initializeLocationProvider() {
+		updateLocationProviderDemand()
 		self.locationTask = Task {
 			repeat {
 				let sleepSeconds = Self.locationProviderSleepSeconds(configuredInterval: UserDefaults.provideLocationInterval)
-				try? await Task.sleep(for: .seconds(sleepSeconds)) // Throws if task is cancelled
+				try? await Task.sleep(for: .seconds(sleepSeconds))
+				updateLocationProviderDemand()
 
 				guard let fromNodeNum = activeConnection?.device.num else {
 					return
@@ -29,6 +31,17 @@ extension AccessoryManager {
 					_ = try await sendPosition(channel: 0, destNum: fromNodeNum, wantResponse: false)
 				}
 			} while !Task.isCancelled
+		}
+	}
+
+	func updateLocationProviderDemand() {
+		let shouldRequestUpdates = activeConnection != nil && UserDefaults.provideLocation
+		guard shouldRequestUpdates != locationUpdatesRequestedForPositionSharing else { return }
+		locationUpdatesRequestedForPositionSharing = shouldRequestUpdates
+		if shouldRequestUpdates {
+			LocationsHandler.shared.startLocationUpdates(for: .radioPositionSharing)
+		} else {
+			LocationsHandler.shared.stopLocationUpdates(for: .radioPositionSharing)
 		}
 	}
 

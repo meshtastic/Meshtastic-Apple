@@ -4,8 +4,18 @@ import Testing
 @testable import Meshtastic
 
 private final class RecordingLocationManager: CLLocationManager {
+	var authorizationStatusOverride: CLAuthorizationStatus = .authorizedAlways
+	var requestAlwaysAuthorizationCallCount = 0
 	var startUpdatingLocationCallCount = 0
 	var stopUpdatingLocationCallCount = 0
+
+	override var authorizationStatus: CLAuthorizationStatus {
+		authorizationStatusOverride
+	}
+
+	override func requestAlwaysAuthorization() {
+		requestAlwaysAuthorizationCallCount += 1
+	}
 
 	override func startUpdatingLocation() {
 		startUpdatingLocationCallCount += 1
@@ -82,27 +92,178 @@ struct LocationProviderCadenceTests {
 	}
 }
 
-@Suite("Location updates energy")
+@Suite("Location demand lifecycle", .serialized)
 @MainActor
-struct LocationUpdatesEnergyTests {
+struct LocationDemandLifecycleTests {
 
-	@Test func beginsStandardLocationManagerUpdates() {
-		let handler = LocationsHandler()
+	private func makeHandler() -> (LocationsHandler, RecordingLocationManager) {
 		let manager = RecordingLocationManager()
-		handler.manager = manager
+		let handler = LocationsHandler(
+			manager: manager,
+			backgroundActivity: false,
+			backgroundActivitySessionFactory: { nil }
+		)
+		return (handler, manager)
+	}
 
-		handler.beginLocationDelivery()
+	@Test func doesNotStartWithoutDemand() {
+		let (_, manager) = makeHandler()
+
+		#expect(manager.startUpdatingLocationCallCount == 0)
+	}
+
+	@Test func startsForFirstDemandAndStopsAfterLastDemand() {
+		let (handler, manager) = makeHandler()
+
+		handler.startLocationUpdates(for: .userInterface)
+		handler.startLocationUpdates(for: .radioPositionSharing)
+		handler.stopLocationUpdates(for: .userInterface)
+
+		#expect(manager.startUpdatingLocationCallCount == 1)
+		#expect(manager.stopUpdatingLocationCallCount == 0)
+
+		handler.stopLocationUpdates(for: .radioPositionSharing)
+
+		#expect(manager.stopUpdatingLocationCallCount == 1)
+	}
+
+	@Test func countsMultipleConsumersOfTheSamePurpose() {
+		let (handler, manager) = makeHandler()
+
+		handler.startLocationUpdates(for: .userInterface)
+		handler.startLocationUpdates(for: .userInterface)
+		handler.stopLocationUpdates(for: .userInterface)
+
+		#expect(manager.stopUpdatingLocationCallCount == 0)
+
+		handler.stopLocationUpdates(for: .userInterface)
+
+		#expect(manager.stopUpdatingLocationCallCount == 1)
+	}
+
+	@Test func pausesForegroundDemandWhileApplicationIsInactive() {
+		let (handler, manager) = makeHandler()
+		handler.startLocationUpdates(for: .userInterface)
+
+		handler.setApplicationActive(false)
+		handler.setApplicationActive(true)
+
+		#expect(manager.stopUpdatingLocationCallCount == 1)
+		#expect(manager.startUpdatingLocationCallCount == 2)
+	}
+
+	@Test func routeRecordingKeepsBackgroundDeliveryActive() {
+		let (handler, manager) = makeHandler()
+
+		handler.isRecording = true
+		handler.setApplicationActive(false)
+
+		#expect(manager.startUpdatingLocationCallCount == 1)
+		#expect(manager.stopUpdatingLocationCallCount == 0)
+		#expect(manager.allowsBackgroundLocationUpdates)
+		#expect(manager.desiredAccuracy == kCLLocationAccuracyBest)
+
+		handler.isRecording = false
+
+		#expect(manager.stopUpdatingLocationCallCount == 1)
+		#expect(!manager.allowsBackgroundLocationUpdates)
+		#expect(manager.desiredAccuracy == kCLLocationAccuracyHundredMeters)
+	}
+
+	@Test func startsPendingDemandAfterAuthorizationChanges() {
+		let (handler, manager) = makeHandler()
+		manager.authorizationStatusOverride = .notDetermined
+
+		handler.startLocationUpdates(for: .userInterface)
+		#expect(manager.startUpdatingLocationCallCount == 0)
+
+		manager.authorizationStatusOverride = .authorizedWhenInUse
+		handler.locationManagerDidChangeAuthorization(manager)
 
 		#expect(manager.startUpdatingLocationCallCount == 1)
 	}
 
-	@Test func endsStandardLocationManagerUpdates() {
-		let handler = LocationsHandler()
-		let manager = RecordingLocationManager()
-		handler.manager = manager
+	@Test func stopsDeliveryAfterAuthorizationIsRevoked() {
+		let (handler, manager) = makeHandler()
+		handler.startLocationUpdates(for: .userInterface)
 
-		handler.stopLocationUpdates()
+		manager.authorizationStatusOverride = .denied
+		handler.locationManagerDidChangeAuthorization(manager)
 
 		#expect(manager.stopUpdatingLocationCallCount == 1)
+	}
+
+	@Test func waitsForFirstLocationAndReleasesDemand() async {
+		let (handler, manager) = makeHandler()
+		handler.enableSmartPosition = false
+		let expected = CLLocation(latitude: 37.3346, longitude: -122.0090)
+		let locationTask = Task { @MainActor in
+			await handler.location(for: .watchSync, timeout: .seconds(1))
+		}
+
+		await Task.yield()
+		#expect(manager.startUpdatingLocationCallCount == 1)
+		handler.locationManager(manager, didUpdateLocations: [expected])
+
+		let location = await locationTask.value
+		#expect(location?.coordinate.latitude == expected.coordinate.latitude)
+		#expect(location?.coordinate.longitude == expected.coordinate.longitude)
+		#expect(manager.stopUpdatingLocationCallCount == 1)
+		#expect(!manager.allowsBackgroundLocationUpdates)
+	}
+
+	@Test func releasesOneShotDemandAfterTimeout() async {
+		let (handler, manager) = makeHandler()
+
+		let location = await handler.location(for: .watchSync, timeout: .milliseconds(1))
+
+		#expect(location == nil)
+		#expect(manager.startUpdatingLocationCallCount == 1)
+		#expect(manager.stopUpdatingLocationCallCount == 1)
+		#expect(!manager.allowsBackgroundLocationUpdates)
+	}
+
+	@Test func permissionRequestCanRetryAfterTimeout() async {
+		let manager = RecordingLocationManager()
+		let handler = LocationsHandler(
+			manager: manager,
+			backgroundActivity: false,
+			backgroundActivitySessionFactory: { nil },
+			permissionRequestTimeout: .milliseconds(1)
+		)
+
+		_ = await handler.requestLocationAlwaysPermissions()
+		_ = await handler.requestLocationAlwaysPermissions()
+
+		#expect(manager.requestAlwaysAuthorizationCallCount == 2)
+	}
+
+	@Test func completedPermissionRequestCancelsItsTimeout() async {
+		let manager = RecordingLocationManager()
+		let handler = LocationsHandler(
+			manager: manager,
+			backgroundActivity: false,
+			backgroundActivitySessionFactory: { nil },
+			permissionRequestTimeout: .milliseconds(200)
+		)
+		let firstRequest = Task { @MainActor in
+			await handler.requestLocationAlwaysPermissions()
+		}
+		await Task.yield()
+		handler.locationManagerDidChangeAuthorization(manager)
+		_ = await firstRequest.value
+
+		try? await Task.sleep(for: .milliseconds(150))
+		let secondRequest = Task { @MainActor in
+			await handler.requestLocationAlwaysPermissions()
+		}
+		await Task.yield()
+		try? await Task.sleep(for: .milliseconds(100))
+
+		_ = await handler.requestLocationAlwaysPermissions()
+		#expect(manager.requestAlwaysAuthorizationCallCount == 2)
+
+		handler.locationManagerDidChangeAuthorization(manager)
+		_ = await secondRequest.value
 	}
 }

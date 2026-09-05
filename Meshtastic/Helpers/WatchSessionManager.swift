@@ -101,7 +101,7 @@ final class WatchSessionManager: NSObject, ObservableObject {
 	private func performSendNodesToWatch() async {
 		lastWatchSendTime = Date()
 
-		guard let userLocation = LocationsHandler.shared.locationsArray.last else {
+		guard let userLocation = await LocationsHandler.shared.location(for: .watchSync) else {
 			logger.info("No user location available, skipping Watch update")
 			return
 		}

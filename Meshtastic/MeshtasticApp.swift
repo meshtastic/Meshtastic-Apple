@@ -272,6 +272,7 @@ struct MeshtasticAppleApp: App {
 			switch newScenePhase {
 			case .background:
 				Logger.services.info("🎬 [App] Scene is in the background")
+				LocationsHandler.shared.setApplicationActive(false)
 				accessoryManager.appDidEnterBackground()
 				// Entity-cap evictions run now, while no view is mid-render on the
 				// doomed entities. Foregrounded, the packet actor defers them.
@@ -287,8 +288,10 @@ struct MeshtasticAppleApp: App {
 				}
 			case .inactive:
 				Logger.services.info("🎬 [App] Scene is inactive")
+				LocationsHandler.shared.setApplicationActive(false)
 			case .active:
 				Logger.services.info("🎬 [App] Scene is active")
+				LocationsHandler.shared.setApplicationActive(true)
 				MeshPackets.appIsActive = true
 				accessoryManager.appDidBecomeActive()
 				appState.refreshBadgeCount(context: persistenceController.container.mainContext)

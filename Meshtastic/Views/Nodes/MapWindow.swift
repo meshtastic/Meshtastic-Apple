@@ -24,6 +24,7 @@ struct MapWindow: View {
 					Label("Mesh Map", systemImage: "map")
 				}
 		}
+		.locationUpdates(for: .userInterface)
 		.frame(minWidth: 400, idealWidth: 900, maxWidth: .infinity, minHeight: 300, idealHeight: 700, maxHeight: .infinity)
 		.onChange(of: scenePhase) { _, newPhase in
 			if newPhase == .background {

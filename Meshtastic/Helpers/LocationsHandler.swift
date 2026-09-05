@@ -9,154 +9,192 @@ import SwiftUI
 import CoreLocation
 import OSLog
 
-// The @MainActor annotation ensures that all state changes and UI updates happen on the main thread,
-// preventing potential race conditions and crashes related to UI updates from background threads.
+enum LocationUpdatePurpose: Hashable {
+	case userInterface
+	case routeRecording
+	case radioPositionSharing
+	case watchSync
+	case continuousBackground
+
+	var requiresBackgroundDelivery: Bool {
+		self == .routeRecording || self == .watchSync || self == .continuousBackground
+	}
+}
+
 @MainActor class LocationsHandler: NSObject, ObservableObject, CLLocationManagerDelegate {
 
-	static let shared = LocationsHandler()  // Create a single, shared instance of the object.
-	public var manager = CLLocationManager()
+	static let shared = LocationsHandler()
+	let manager: CLLocationManager
+	private let backgroundActivitySessionFactory: () -> CLBackgroundActivitySession?
+	private let permissionRequestTimeout: Duration
 	private var background: CLBackgroundActivitySession?
+	private var locationDemandCounts: [LocationUpdatePurpose: Int] = [:]
 	private var locationDeliveryStarted = false
+	private var applicationIsActive = true
 	var enableSmartPosition: Bool = UserDefaults.enableSmartPosition
 
 	@Published var locationsArray: [CLLocation] = [CLLocation]()
 	@Published var isStationary = false
 	@Published var count = 0
 	@Published var isRecording = false {
-		didSet { updateAccuracyForRecordingState() }
+		didSet {
+			guard isRecording != oldValue else { return }
+			updateAccuracyForRecordingState()
+			if isRecording {
+				startLocationUpdates(for: .routeRecording)
+			} else {
+				stopLocationUpdates(for: .routeRecording)
+			}
+		}
 	}
 	@Published var isRecordingPaused = false
 	@Published var recordingStarted: Date?
 	@Published var distanceTraveled = 0.0
 	@Published var elevationGain = 0.0
-	@Published var heading: Double = 0.0 // Current heading in degrees
-	@Published var headingUpdatesStarted: Bool = false // Track heading updates state
+	@Published var heading: Double = 0.0
+	@Published var headingUpdatesStarted: Bool = false
+	@Published private(set) var updatesStarted = false
 
-	@Published
-	var updatesStarted: Bool = UserDefaults.standard.bool(forKey: "liveUpdatesStarted") {
-		didSet { UserDefaults.standard.set(updatesStarted, forKey: "liveUpdatesStarted") }
-	}
-
-	@Published
-	var backgroundActivity: Bool = UserDefaults.standard.bool(forKey: "BGActivitySessionStarted") {
+	@Published var backgroundActivity: Bool {
 		didSet {
-			// Invalidate or create the background activity session based on the new value.
-			backgroundActivity ? self.background = CLBackgroundActivitySession() : self.background?.invalidate()
+			guard backgroundActivity != oldValue else { return }
 			UserDefaults.standard.set(backgroundActivity, forKey: "BGActivitySessionStarted")
+			if backgroundActivity {
+				startLocationUpdates(for: .continuousBackground)
+			} else {
+				stopLocationUpdates(for: .continuousBackground)
+			}
 		}
 	}
 
 	// The continuation we will use to asynchronously ask the user permission to track their location.
 	// This is an Optional to ensure it can be nilled out after use.
 	private var permissionContinuation: CheckedContinuation<CLAuthorizationStatus, Never>?
+	private var permissionTimeoutTask: Task<Void, Never>?
 
 	// A flag to prevent multiple concurrent permission requests
 	private var isRequestingPermission = false
 
 	/// Requests "Always" location authorization from the user.
-	/// This method uses Swift's structured concurrency to await the user's decision.
-	/// It includes a timeout to prevent continuation leaks if the delegate method isn't called.
-	/// - Returns: The `CLAuthorizationStatus` reflecting the user's choice.
+	/// It includes a timeout so the request can be retried if no delegate callback arrives.
 	func requestLocationAlwaysPermissions() async -> CLAuthorizationStatus {
-		// If a request is already in progress, return the current status immediately.
-		// This prevents creating multiple continuations and potential leaks.
 		guard !isRequestingPermission else {
 			Logger.services.debug("📍 [App] requestLocationAlwaysPermissions called while a request is already active. Returning current status.")
 			return manager.authorizationStatus
 		}
-		// Set flag to indicate a request is in progress
 		isRequestingPermission = true
 
-		return await withCheckedContinuation { continuation in
-			// Store the continuation.
-			self.permissionContinuation = continuation
-
-			// Request authorization. The response will come via `locationManagerDidChangeAuthorization`.
+		let status = await withCheckedContinuation { continuation in
+			permissionContinuation = continuation
 			manager.requestAlwaysAuthorization()
 
-			// Add a timeout to ensure the continuation is always resumed.
-			// If the delegate method doesn't fire within a reasonable time (e.g., 10 seconds),
-			// we'll resume the continuation with .notDetermined to prevent a leak.
-			Task { @MainActor in // Ensure this task runs on the MainActor
+			permissionTimeoutTask = Task { @MainActor in
 				do {
-					try await Task.sleep(for: .seconds(5)) // Wait for 5 seconds
-					if let currentContinuation = self.permissionContinuation {
-						// If the continuation hasn't been nilled out yet, it means
-						// locationManagerDidChangeAuthorization hasn't been called.
-						Logger.services.warning("📍 [App] Location permission request timed out. Resuming continuation with .notDetermined.")
-						currentContinuation.resume(returning: .denied)
-						self.permissionContinuation = nil // Clear the reference
-					}
-				} catch is CancellationError {
-					// This task was cancelled, likely because the main continuation was already resumed
-					// by locationManagerDidChangeAuthorization. This is expected and safe.
-					Logger.services.debug("📍 [App] Permission timeout task cancelled.")
+					try await Task.sleep(for: permissionRequestTimeout)
 				} catch {
-					Logger.services.error("💥 [App] Error in permission timeout task: \(error.localizedDescription, privacy: .public)")
+					return
 				}
+				guard let continuation = permissionContinuation else { return }
+				Logger.services.warning("📍 [App] Location permission request timed out.")
+				continuation.resume(returning: .denied)
+				permissionContinuation = nil
+				permissionTimeoutTask = nil
 			}
 		}
-		// This defer block ensures `isRequestingPermission` is reset and `permissionContinuation` is nilled out
-		// regardless of how the `withCheckedContinuation` block exits (success, error, or cancellation).
-		// It acts as a final cleanup mechanism.
-		defer {
-			self.isRequestingPermission = false
-			// This nil assignment is somewhat redundant with the one in locationManagerDidChangeAuthorization
-			// and the timeout Task, but it provides an extra layer of safety.
-			self.permissionContinuation = nil
-		}
+		permissionTimeoutTask?.cancel()
+		permissionTimeoutTask = nil
+		isRequestingPermission = false
+		permissionContinuation = nil
+		return status
 	}
 
 	/// Delegate method called when the location authorization status changes.
 	/// - Parameter manager: The CLLocationManager instance.
 	func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
-		// Ensure the continuation exists before attempting to resume it.
-		// If it's nil, it means either no request was pending or it was already resumed (e.g., by the timeout).
-		guard let continuation = permissionContinuation else {
-			Logger.services.debug("📍 [App] locationManagerDidChangeAuthorization called but no permissionContinuation is active or it was already handled.")
-			return
+		if let continuation = permissionContinuation {
+			continuation.resume(returning: manager.authorizationStatus)
+			permissionContinuation = nil
+			permissionTimeoutTask?.cancel()
+			permissionTimeoutTask = nil
+		} else {
+			Logger.services.debug("📍 [App] Location authorization changed without an active permission request.")
 		}
-		// Resume the continuation with the current authorization status.
-		continuation.resume(returning: manager.authorizationStatus)
-		// CRUCIAL: Nil out the continuation immediately after resuming it.
-		// This prevents attempting to resume the same continuation multiple times,
-		// which would lead to a runtime crash.
-		self.permissionContinuation = nil
-		self.isRequestingPermission = false // Reset the flag as the request has completed
+		reconcileLocationDelivery()
 	}
 
-	override init() {
+	init(
+		manager: CLLocationManager = CLLocationManager(),
+		backgroundActivity: Bool = UserDefaults.standard.bool(forKey: "BGActivitySessionStarted"),
+		backgroundActivitySessionFactory: @escaping () -> CLBackgroundActivitySession? = { CLBackgroundActivitySession() },
+		permissionRequestTimeout: Duration = .seconds(5)
+	) {
+		self.manager = manager
+		self.backgroundActivity = backgroundActivity
+		self.backgroundActivitySessionFactory = backgroundActivitySessionFactory
+		self.permissionRequestTimeout = permissionRequestTimeout
 		super.init()
 		self.manager.delegate = self
-		// Allow background location updates for continuous tracking.
-		self.manager.allowsBackgroundLocationUpdates = true
-		// Set desired accuracy for location updates.
-		// Use HundredMeters by default to save battery; escalate to Best during route recording.
+		self.manager.allowsBackgroundLocationUpdates = false
 		self.manager.desiredAccuracy = kCLLocationAccuracyHundredMeters
-		// Only deliver updates when the device has moved at least 10 meters.
 		self.manager.distanceFilter = 10
 		if CLLocationManager.headingAvailable() {
-				self.manager.headingFilter = 1 // Update heading when it changes by 1 degree
-				self.manager.headingOrientation = .portrait // Adjust based on device orientation
-			}
-	}
-
-	func startLocationUpdates() {
-		let status = self.manager.authorizationStatus
-		// Guard against starting updates without proper authorization.
-		guard status == .authorizedAlways || status == .authorizedWhenInUse else {
-			Logger.services.warning("📍 [App] Cannot start location updates: insufficient authorization status: \(status.rawValue)")
-			return
+			self.manager.headingFilter = 1
+			self.manager.headingOrientation = .portrait
 		}
-		guard !locationDeliveryStarted else { return }
-		Logger.services.info("📍 [App] Starting location updates")
-		updatesStarted = true
-		beginLocationDelivery()
+		if backgroundActivity {
+			startLocationUpdates(for: .continuousBackground)
+		}
 	}
 
-	func beginLocationDelivery() {
-		locationDeliveryStarted = true
-		manager.startUpdatingLocation()
+	func startLocationUpdates(for purpose: LocationUpdatePurpose) {
+		locationDemandCounts[purpose, default: 0] += 1
+		reconcileLocationDelivery()
+	}
+
+	func stopLocationUpdates(for purpose: LocationUpdatePurpose) {
+		guard let count = locationDemandCounts[purpose] else { return }
+		if count == 1 {
+			locationDemandCounts.removeValue(forKey: purpose)
+		} else {
+			locationDemandCounts[purpose] = count - 1
+		}
+		reconcileLocationDelivery()
+	}
+
+	func setApplicationActive(_ isActive: Bool) {
+		guard applicationIsActive != isActive else { return }
+		applicationIsActive = isActive
+		reconcileLocationDelivery()
+	}
+
+	func location(for purpose: LocationUpdatePurpose, timeout: Duration = .seconds(10)) async -> CLLocation? {
+		if let location = locationsArray.last {
+			return location
+		}
+
+		startLocationUpdates(for: purpose)
+		defer { stopLocationUpdates(for: purpose) }
+
+		return await withTaskGroup(of: CLLocation?.self) { group in
+			group.addTask { @MainActor [weak self] in
+				guard let self else { return nil }
+				for await locations in self.$locationsArray.values {
+					guard !Task.isCancelled else { return nil }
+					if let location = locations.last {
+						return location
+					}
+				}
+				return nil
+			}
+			group.addTask {
+				try? await Task.sleep(for: timeout)
+				return nil
+			}
+
+			let location = await group.next() ?? nil
+			group.cancelAll()
+			return location
+		}
 	}
 
 	// New method to start heading updates
@@ -200,12 +238,51 @@ import OSLog
 		}
 	}
 
-	/// Stops receiving live location updates.
-	func stopLocationUpdates() {
+	private func reconcileLocationDelivery() {
+		let hasBackgroundDemand = locationDemandCounts.contains { purpose, count in
+			count > 0 && purpose.requiresBackgroundDelivery
+		}
+		let hasForegroundDemand = locationDemandCounts.contains { purpose, count in
+			count > 0 && !purpose.requiresBackgroundDelivery
+		}
+		let status = manager.authorizationStatus
+		let isAuthorized = status == .authorizedAlways || status == .authorizedWhenInUse
+		updateBackgroundDelivery(hasBackgroundDemand && isAuthorized)
+
+		let hasActiveDemand = hasBackgroundDemand || (applicationIsActive && hasForegroundDemand)
+		guard hasActiveDemand && isAuthorized else {
+			stopLocationDelivery()
+			return
+		}
+		guard !locationDeliveryStarted else { return }
+
+		Logger.services.info("📍 [App] Starting location updates")
+		updatesStarted = true
+		locationDeliveryStarted = true
+		manager.startUpdatingLocation()
+	}
+
+	private func stopLocationDelivery() {
+		guard locationDeliveryStarted else {
+			updatesStarted = false
+			return
+		}
 		Logger.services.info("🛑 [App] Stopping location updates")
-		self.updatesStarted = false
-		self.locationDeliveryStarted = false
-		self.manager.stopUpdatingLocation()
+		updatesStarted = false
+		locationDeliveryStarted = false
+		manager.stopUpdatingLocation()
+	}
+
+	private func updateBackgroundDelivery(_ isRequired: Bool) {
+		manager.allowsBackgroundLocationUpdates = isRequired
+		if isRequired {
+			if background == nil {
+				background = backgroundActivitySessionFactory()
+			}
+		} else {
+			background?.invalidate()
+			background = nil
+		}
 	}
 
 	private func recordLocation(_ location: CLLocation, isStationary: Bool) {
@@ -316,5 +393,46 @@ import OSLog
 			}
 		}
 		return sats
+	}
+}
+
+@MainActor
+private struct LocationUpdatesModifier: ViewModifier {
+	let purpose: LocationUpdatePurpose
+	let isEnabled: Bool
+	@State private var isVisible = false
+	@State private var isRequestingUpdates = false
+
+	func body(content: Content) -> some View {
+		content
+			.onAppear {
+				isVisible = true
+				updateDemand()
+			}
+			.onDisappear {
+				isVisible = false
+				updateDemand()
+			}
+			.onChange(of: isEnabled) { _, _ in
+				updateDemand()
+			}
+	}
+
+	private func updateDemand() {
+		let shouldRequestUpdates = isVisible && isEnabled
+		guard shouldRequestUpdates != isRequestingUpdates else { return }
+		isRequestingUpdates = shouldRequestUpdates
+		if shouldRequestUpdates {
+			LocationsHandler.shared.startLocationUpdates(for: purpose)
+		} else {
+			LocationsHandler.shared.stopLocationUpdates(for: purpose)
+		}
+	}
+}
+
+extension View {
+	@MainActor
+	func locationUpdates(for purpose: LocationUpdatePurpose, while isEnabled: Bool = true) -> some View {
+		modifier(LocationUpdatesModifier(purpose: purpose, isEnabled: isEnabled))
 	}
 }

@@ -14,6 +14,7 @@ struct MQTTConfig: View {
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
+	@ObservedObject private var locationsHandler = LocationsHandler.shared
 	let node: NodeInfoEntity?
 	@State private var isPresentingSaveConfirm: Bool = false
 	@State var hasChanges: Bool = false
@@ -359,6 +360,12 @@ struct MQTTConfig: View {
 		.onChange(of: accessoryManager.mqttProxyConnected) { _, connected in
 			mqttConnected = connected
 		}
+		.onChange(of: locationsHandler.locationsArray.last) { _, location in
+			if location != nil && nearbyTopics.isEmpty {
+				setMqttValues()
+			}
+		}
+		.locationUpdates(for: .userInterface)
 	}
 }
 
@@ -366,10 +373,10 @@ private extension MQTTConfig {
 	func setMqttValues() {
 		nearbyTopics = []
 		let geocoder = CLGeocoder()
-		if LocationsHandler.shared.locationsArray.count > 0 {
+		if locationsHandler.locationsArray.count > 0 {
 			let region  = RegionCodes(rawValue: Int(node?.loRaConfig?.regionCode ?? 0))
 			defaultTopic = "msh/" + (region?.topic ?? "UNSET")
-			geocoder.reverseGeocodeLocation(LocationsHandler.shared.locationsArray.first!, completionHandler: {(placemarks, error) in
+			geocoder.reverseGeocodeLocation(locationsHandler.locationsArray.first!, completionHandler: {(placemarks, error) in
 				if let error {
 					Logger.services.error("Failed to reverse geocode location: \(error.localizedDescription, privacy: .public)")
 					return

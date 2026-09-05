@@ -141,6 +141,7 @@ struct DeviceOnboarding: View {
 					.onChange(of: provideLocation) {
 						UserDefaults.provideLocationInterval = 30
 						UserDefaults.enableSmartPosition = true
+						accessoryManager.updateLocationProviderDemand()
 					}
 					makeRow(
 						icon: "location.fill",
@@ -182,6 +183,7 @@ struct DeviceOnboarding: View {
 			.capsuleButtonStyle()
 			.padding(.bottom)
 		}
+		.locationUpdates(for: .userInterface)
 	}
 	
 	var localNetworkView: some View {

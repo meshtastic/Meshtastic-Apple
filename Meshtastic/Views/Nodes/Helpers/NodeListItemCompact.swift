@@ -121,6 +121,7 @@ struct NodeListItemCompact: View {
 	}
 
 		@Bindable var node: NodeInfoEntity
+		@ObservedObject private var locationsHandler = LocationsHandler.shared
 		// Memoized value-type snapshot; rendered from instead of re-reading the live @Model on every
 		// body re-evaluation, so a retained row can't fault on a deleted/zombie node. See NodeListItem.
 		@State private var rowSummary: NodeListRowSummary?
@@ -132,7 +133,7 @@ struct NodeListItemCompact: View {
 		guard let nodeCoordinate else {
 			return nil
 		}
-		guard let currentLocation = LocationsHandler.shared.locationsArray.last else {
+		guard let currentLocation = locationsHandler.locationsArray.last else {
 			return nil
 		}
 
