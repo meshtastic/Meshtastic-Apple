@@ -290,8 +290,12 @@ struct Connect: View {
 									if ShareContactQR.canShareContact(for: node) {
 										Button {
 											// Same liveness re-check as Power Off below: the node captured
-											// when the menu opened can fault before the tap lands.
-											guard let live = Connect.liveNode(node) else { return }
+											// when the menu opened can fault before the tap lands. Share
+											// eligibility is re-checked too — the menu condition ran when the
+											// menu was built, and a node that loses its key or turns
+											// unmessagable in between would produce a QR of an empty string.
+											guard let live = Connect.liveNode(node),
+												  ShareContactQR.canShareContact(for: live) else { return }
 											shareContactNode = live.toProto()
 											showingShareContactQR = true
 										} label: {
