@@ -15,6 +15,14 @@ struct BackupRowView: View {
 	var onRestore: (() -> Void)?
 	var onDelete: (() -> Void)?
 
+	/// Spoken form of the identity line — two bare hex strings read aloud are meaningless.
+	private var identityDescription: String {
+		if let deviceId = entry.deviceId {
+			return String(localized: "Node \(entry.nodeNum.toHex()), keyed by device \(deviceId)")
+		}
+		return String(localized: "Node \(entry.nodeNum.toHex()), keyed by node number")
+	}
+
 	var body: some View {
 		HStack {
 			Image(systemName: "cylinder.split.1x2")
@@ -23,16 +31,44 @@ struct BackupRowView: View {
 				.foregroundColor(.accentColor)
 				.frame(width: 35)
 
-			VStack(alignment: .leading, spacing: 4) {
+			VStack(alignment: .leading, spacing: 2) {
 				Text(entry.nodeName ?? entry.nodeNum.toHex())
 					.font(.headline)
-				HStack {
-					Text(entry.createdAt, style: .date)
-					Text("•")
-					Text(entry.createdAt, style: .time)
+					.lineLimit(1)
+
+				// The two identifiers answer different questions: the node number is what the radio
+				// reports now and changes on the 2.8 upgrade, the device id is what the backup is
+				// filed under and does not. The node number only repeats here when the headline shows
+				// a name instead.
+				if entry.nodeName != nil {
+					Text(entry.nodeNum.toHex())
+						.font(.caption.monospaced())
+						.foregroundColor(.secondary)
+						.lineLimit(1)
 				}
-				.font(.caption)
-				.foregroundColor(.secondary)
+
+				// Its own line and never truncated — a partial device id cannot be checked against
+				// anything, which is the only reason to show it. Scales down to fit instead.
+				// No device id means this radio has not been reconnected since backups moved off
+				// node numbers, so it is still keyed by one.
+				if let deviceId = entry.deviceId {
+					HStack(spacing: 4) {
+						Image(systemName: "checkmark.seal")
+						Text(deviceId)
+							.lineLimit(1)
+							.minimumScaleFactor(0.5)
+					}
+					.font(.caption2.monospaced())
+					.foregroundColor(.secondary)
+					.accessibilityElement(children: .combine)
+					.accessibilityLabel(identityDescription)
+				}
+
+				// One string rather than date and time as separate views, which wrapped mid-line.
+				Text(entry.createdAt.formatted(date: .abbreviated, time: .shortened))
+					.font(.caption)
+					.foregroundColor(.secondary)
+					.lineLimit(1)
 			}
 
 			Spacer()

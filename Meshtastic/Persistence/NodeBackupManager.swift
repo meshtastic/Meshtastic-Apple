@@ -28,7 +28,7 @@ final class NodeBackupManager: NodeBackupManaging {
 	private static let storeFileName = "Meshtastic.store"
 	private static let walFileName = "Meshtastic.store-wal"
 	private static let shmFileName = "Meshtastic.store-shm"
-	private static let maximumBackupCount = 50
+	private static let maximumBackupCount = 100
 	/// Minimum free disk space required for backup (50 MB)
 	private static let minimumFreeDiskSpace: Int64 = 50 * 1024 * 1024
 
@@ -145,25 +145,28 @@ final class NodeBackupManager: NodeBackupManaging {
 	/// Validates backup index consistency on launch. Removes entries for orphaned or missing files.
 	private func validateIndexConsistency() {
 		var modified = false
-		for (nodeNum, entry) in backupIndex.entries {
-			let nodeDir = backupBaseURL.appendingPathComponent(entry.backupPath, isDirectory: true)
+		for (key, entry) in backupIndex.entries {
+			guard let nodeDir = backupDirectory(for: entry) else { continue }
 			let sqliteFile = nodeDir.appendingPathComponent(Self.storeFileName)
 			if !fileManager.fileExists(atPath: sqliteFile.path) {
-				Logger.backup.warning("Orphaned index entry for node \(nodeNum) — backup file missing, removing entry")
-				backupIndex.entries.removeValue(forKey: nodeNum)
+				Logger.backup.warning("Orphaned index entry for \(key, privacy: .public) — backup file missing, removing entry")
+				backupIndex.entries.removeValue(forKey: key)
 				modified = true
 			}
 		}
 
-		// Check for orphaned directories without index entries
+		// Check for orphaned directories without index entries. Match on the paths the index actually
+		// references rather than on the directory name: names are node numbers on older installs and
+		// device ids once a radio has been reconnected, and parsing them would delete every re-keyed
+		// directory the first time this ran.
+		let referencedPaths = Set(backupIndex.entries.values.map(\.backupPath))
 		if let contents = try? fileManager.contentsOfDirectory(at: backupBaseURL, includingPropertiesForKeys: nil) {
 			for item in contents {
 				let name = item.lastPathComponent
 				// Skip index file
 				if name == Self.indexFileName { continue }
-				// If it's a directory with a numeric name but no index entry, clean it up
-				if let nodeNum = Int64(name), backupIndex.entries[nodeNum] == nil {
-					Logger.backup.warning("Orphaned backup directory for node \(nodeNum) — removing")
+				if !referencedPaths.contains(name), Self.isBackupDirectoryName(name) {
+					Logger.backup.warning("Orphaned backup directory \(name, privacy: .public) — removing")
 					try? fileManager.removeItem(at: item)
 					modified = true
 				}
@@ -175,7 +178,37 @@ final class NodeBackupManager: NodeBackupManaging {
 		}
 	}
 
+	/// Whether a directory in the backup folder is one of ours, so the orphan sweep leaves anything
+	/// else alone. Covers the bare node numbers written before this change, the `node-` form, and a
+	/// device id.
+	private static func isBackupDirectoryName(_ name: String) -> Bool {
+		if Int64(name) != nil { return true }
+		if BackupKey.isNodeNumberKey(name) { return true }
+		return name.count == 32 && name.allSatisfy { $0.isHexDigit && !$0.isUppercase }
+	}
+
 	// MARK: - T006: SHA-256 Checksum
+
+	/// The directory an entry lives in, or nil when its recorded path is not a plain folder name.
+	///
+	/// `backup-index.json` sits in Documents and is visible in Files, so a hand-edited `backupPath`
+	/// could carry `..` components or an absolute path, and every delete, move and read here would
+	/// follow it out of the backup folder. Paths we write are always a single component.
+	private func backupDirectory(for entry: BackupEntry) -> URL? {
+		guard Self.isPlainBackupPath(entry.backupPath) else {
+			Logger.backup.error("Refusing to use backup path \(entry.backupPath, privacy: .public) — not a plain folder name")
+			return nil
+		}
+		return backupBaseURL.appendingPathComponent(entry.backupPath, isDirectory: true)
+	}
+
+	nonisolated static func isPlainBackupPath(_ path: String) -> Bool {
+		!path.isEmpty
+		&& path != "."
+		&& path != ".."
+		&& !path.contains("/")
+		&& !path.contains("\\")
+	}
 
 	/// Computes SHA-256 checksum of the file at the given URL.
 	private func computeChecksum(for fileURL: URL) async throws -> String {
@@ -204,7 +237,10 @@ final class NodeBackupManager: NodeBackupManaging {
 
 	// MARK: - T007: Create Backup
 
-	func createBackup(forNode nodeNum: Int64, nodeName: String?) async -> NodeBackupResult {
+	/// - Parameter deviceId: The radio's `MyNodeInfo.device_id`, which keys the backup. Node numbers
+	///   change when a radio upgrades to 2.8, so a backup keyed on one is orphaned by the upgrade.
+	///   Pass nil for a radio that reports none and the backup keeps the old node-number key.
+	func createBackup(forNode nodeNum: Int64, deviceId: Data?, nodeName: String?) async -> NodeBackupResult {
 		Logger.backup.info("Creating backup for node \(nodeNum)")
 
 		// T026: Check disk space
@@ -216,7 +252,7 @@ final class NodeBackupManager: NodeBackupManaging {
 		// Retry-once logic (FR-004)
 		for attempt in 1...2 {
 			do {
-				let entry = try await performBackup(forNode: nodeNum, nodeName: nodeName)
+				let entry = try await performBackup(forNode: nodeNum, deviceId: deviceId, nodeName: nodeName)
 				Logger.backup.info("Backup created for node \(nodeNum): \(entry.fileSize) bytes, checksum: \(entry.checksum, privacy: .public)")
 				return .success(entry)
 			} catch {
@@ -232,8 +268,14 @@ final class NodeBackupManager: NodeBackupManaging {
 		return .skipped(reason: "Backup failed unexpectedly")
 	}
 
-	private func performBackup(forNode nodeNum: Int64, nodeName: String?) async throws -> BackupEntry {
-		let nodeDirName = "\(nodeNum)"
+	private func performBackup(forNode nodeNum: Int64, deviceId: Data?, nodeName: String?) async throws -> BackupEntry {
+		// Fall back to the device id already recorded for this node. Callers resolve it from the
+		// store, which can come back nil part way through a connect or a radio switch, and minting a
+		// node-number key then would sit a second backup beside the device-keyed one for the same
+		// radio — which is exactly what happened on my phone before this.
+		let deviceKey = BackupKey.forDevice(deviceId)
+			?? backupIndex.entries.values.first { $0.nodeNum == nodeNum }?.deviceId
+		let nodeDirName = deviceKey ?? BackupKey.forNode(nodeNum)
 		let nodeBackupDir = backupBaseURL.appendingPathComponent(nodeDirName, isDirectory: true)
 
 		// Create or clean destination directory
@@ -286,14 +328,23 @@ final class NodeBackupManager: NodeBackupManaging {
 		// Update index
 		let entry = BackupEntry(
 			nodeNum: nodeNum,
+			deviceId: deviceKey,
 			nodeName: nodeName,
 			createdAt: .now,
 			fileSize: fileSize,
 			checksum: checksum,
 			backupPath: nodeDirName
 		)
-		backupIndex.entries[nodeNum] = entry
-		enforceBackupLimit(keeping: nodeNum)
+		backupIndex.entries[nodeDirName] = entry
+
+		// A radio backed up under its node number before we knew its device id leaves an entry behind
+		// once it is keyed by device. Drop it here so the same radio is not listed twice; anything
+		// filed under an *earlier* node number is cleaned up by adoptLegacyBackups on connect.
+		if deviceKey != nil {
+			removeBackup(forKey: BackupKey.forNode(nodeNum), reason: "superseded by the device id backup")
+		}
+
+		enforceBackupLimit(keeping: nodeDirName)
 		saveIndex()
 		scheduleBackupCompaction(for: entry)
 
@@ -305,10 +356,10 @@ final class NodeBackupManager: NodeBackupManaging {
 			do {
 				let compactedEntry = try Self.compactBackupSnapshot(entry, backupBaseURL: backupBaseURL)
 				await MainActor.run {
-					guard self.backupIndex.entries[entry.nodeNum]?.createdAt == entry.createdAt else {
+					guard self.backupIndex.entries[entry.key]?.createdAt == entry.createdAt else {
 						return
 					}
-					self.backupIndex.entries[entry.nodeNum] = compactedEntry
+					self.backupIndex.entries[entry.key] = compactedEntry
 					self.saveIndex()
 					Logger.backup.info("Compacted backup for node \(entry.nodeNum) to \(compactedEntry.fileSize) bytes")
 				}
@@ -385,30 +436,94 @@ final class NodeBackupManager: NodeBackupManaging {
 		return digest.map { String(format: "%02x", $0) }.joined()
 	}
 
-	private func enforceBackupLimit(keeping nodeNum: Int64) {
+	private func enforceBackupLimit(keeping key: String) {
 		guard backupIndex.entries.count > Self.maximumBackupCount else { return }
 
-		let overflowEntries = backupIndex.entries.values
-			.filter { $0.nodeNum != nodeNum }
-			.sorted { $0.createdAt < $1.createdAt }
+		let overflow = backupIndex.entries
+			.filter { $0.key != key }
+			.sorted { $0.value.createdAt < $1.value.createdAt }
 			.prefix(max(0, backupIndex.entries.count - Self.maximumBackupCount))
 
-		for entry in overflowEntries {
-			let nodeBackupDir = backupBaseURL.appendingPathComponent(entry.backupPath, isDirectory: true)
-			try? fileManager.removeItem(at: nodeBackupDir)
-			backupIndex.entries.removeValue(forKey: entry.nodeNum)
+		for (overflowKey, entry) in overflow {
+			if let nodeBackupDir = backupDirectory(for: entry) {
+				try? fileManager.removeItem(at: nodeBackupDir)
+			}
+			backupIndex.entries.removeValue(forKey: overflowKey)
 			Logger.backup.info("Pruned oldest backup for node \(entry.nodeNum) to enforce limit of \(Self.maximumBackupCount)")
 		}
+	}
+
+	/// Deletes a backup's directory and its index entry. Returns whether there was one to remove.
+	@discardableResult
+	private func removeBackup(forKey key: String, reason: String) -> Bool {
+		guard let entry = backupIndex.entries[key] else { return false }
+		if let dir = backupDirectory(for: entry) {
+			try? fileManager.removeItem(at: dir)
+		}
+		backupIndex.entries.removeValue(forKey: key)
+		Logger.backup.info("Removed backup for node \(entry.nodeNum) (\(entry.fileSize) bytes): \(reason, privacy: .public)")
+		return true
 	}
 
 	// MARK: - T009: Query Methods
 
 	func hasBackup(forNode nodeNum: Int64) -> Bool {
-		backupIndex.entries[nodeNum] != nil
+		// The caller knows a node number, which may be keyed either way depending on whether we have
+		// connected to that radio since it started reporting a device id.
+		backupIndex.entries.values.contains { $0.nodeNum == nodeNum }
 	}
 
 	func listBackups() -> [BackupEntry] {
 		Array(backupIndex.entries.values).sorted { $0.createdAt > $1.createdAt }
+	}
+
+	/// Whether a backup belongs to the given peripheral, read from the backup itself.
+	///
+	/// Staged copy: a pending schema migration cannot run on a read-only store, and the backup itself
+	/// must never be mutated. See `stagedBackupContainer` (staging dirs are swept at launch, never
+	/// removed while live).
+	nonisolated private static func backupBelongs(
+		to peripheralId: String,
+		storeURL: URL,
+		schema: Schema
+	) throws -> Int64? {
+		let backupContainer = try stagedBackupContainer(for: storeURL, schema: schema)
+		let backupContext = ModelContext(backupContainer)
+		backupContext.autosaveEnabled = false
+
+		let descriptor = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.peripheralId == peripheralId })
+		return try backupContext.fetch(descriptor).first?.myNodeNum
+	}
+
+	/// Index keys whose backup was taken from the given peripheral. Only searches entries still keyed
+	/// by node number, since anything already keyed by device id has been identified.
+	private func legacyKeys(forPeripheralId peripheralId: String) async -> [String] {
+		let candidates = backupIndex.entries
+			.filter { BackupKey.isNodeNumberKey($0.key) }
+			.map { ($0.key, $0.value.backupPath) }
+		guard !candidates.isEmpty else { return [] }
+
+		let baseURL = backupBaseURL
+		return await Task.detached(priority: .userInitiated) {
+			let fileManager = FileManager.default
+			let schema = Schema(versionedSchema: MeshtasticSchema.current)
+			var matches: [String] = []
+
+			for (key, backupPath) in candidates {
+				let storeURL = baseURL
+					.appendingPathComponent(backupPath, isDirectory: true)
+					.appendingPathComponent(Self.storeFileName)
+				guard fileManager.fileExists(atPath: storeURL.path) else { continue }
+				do {
+					if try Self.backupBelongs(to: peripheralId, storeURL: storeURL, schema: schema) != nil {
+						matches.append(key)
+					}
+				} catch {
+					Logger.backup.warning("Could not read backup \(key, privacy: .public) while matching a peripheral: \(error.localizedDescription, privacy: .public)")
+				}
+			}
+			return matches
+		}.value
 	}
 
 	/// Resolves a node number for a device peripheral identifier by inspecting existing backups.
@@ -417,49 +532,104 @@ final class NodeBackupManager: NodeBackupManaging {
 		let entries = listBackups()
 		guard !entries.isEmpty else { return nil }
 
-		do {
-			return try await Task.detached(priority: .userInitiated) {
-				let fileManager = FileManager.default
-				let schema = Schema(versionedSchema: MeshtasticSchema.current)
+		let baseURL = backupBaseURL
+		return await Task.detached(priority: .userInitiated) {
+			let fileManager = FileManager.default
+			let schema = Schema(versionedSchema: MeshtasticSchema.current)
 
-				for entry in entries {
-					let nodeBackupDir = self.backupBaseURL.appendingPathComponent(entry.backupPath, isDirectory: true)
-					let backupStoreURL = nodeBackupDir.appendingPathComponent(Self.storeFileName)
-					guard fileManager.fileExists(atPath: backupStoreURL.path) else { continue }
-
-					// Staged copy: a pending schema migration cannot run on a read-only store,
-					// and the backup itself must never be mutated. See stagedBackupContainer
-					// (staging dirs are swept at launch, never removed while live).
-					let backupContainer = try Self.stagedBackupContainer(for: backupStoreURL, schema: schema)
-					let backupContext = ModelContext(backupContainer)
-					backupContext.autosaveEnabled = false
-
-					let descriptor = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.peripheralId == peripheralId })
-					if let myInfo = try backupContext.fetch(descriptor).first {
-						return myInfo.myNodeNum
+			for entry in entries {
+				let storeURL = baseURL
+					.appendingPathComponent(entry.backupPath, isDirectory: true)
+					.appendingPathComponent(Self.storeFileName)
+				guard fileManager.fileExists(atPath: storeURL.path) else { continue }
+				do {
+					if let nodeNum = try Self.backupBelongs(to: peripheralId, storeURL: storeURL, schema: schema) {
+						return nodeNum
 					}
+				} catch {
+					Logger.backup.error("💾 Failed to read backup while resolving peripheral \(peripheralId, privacy: .public): \(error.localizedDescription, privacy: .public)")
 				}
-
-				return nil
-			}.value
-		} catch {
-			Logger.backup.error("💾 Failed to resolve node for peripheral \(peripheralId, privacy: .public): \(error.localizedDescription, privacy: .public)")
+			}
 			return nil
+		}.value
+	}
+
+	// MARK: - Re-keying backups to the device id
+
+	/// Moves this radio's backup from a node-number key onto its device id.
+	///
+	/// Called on connect, when the device id, node number and peripheral id are all known. Node
+	/// numbers change on the 2.8 upgrade, so a backup keyed on one is orphaned by the upgrade and a
+	/// fresh one starts alongside it. Re-keying happens a radio at a time rather than as one pass over
+	/// every backup, so nothing expensive or destructive runs at launch and radios that are never
+	/// reconnected keep working exactly as they do now.
+	///
+	/// Matching on the current node number is free but only finds a backup taken since the last
+	/// renumber. Backups filed under *earlier* node numbers are found by peripheral id, which means
+	/// reading them, so that only runs when the cheap match fails.
+	func adoptLegacyBackups(deviceId: Data?, nodeNum: Int64, peripheralId: String?) async {
+		guard let deviceKey = BackupKey.forDevice(deviceId) else { return }
+		// Already re-keyed — the common path on every connect after the first. Still worth looking for
+		// a node-number entry for the same radio: a backup taken while the device id lookup was
+		// coming back nil left one sitting beside the device-keyed backup. Clearing it here means a
+		// connect is enough to tidy up, rather than waiting for whatever takes the next backup.
+		if backupIndex.entries[deviceKey] != nil {
+			if removeBackup(forKey: BackupKey.forNode(nodeNum), reason: "duplicate of \(deviceKey)") {
+				saveIndex()
+			}
+			return
 		}
+
+		var candidateKeys: [String] = []
+		let nodeKey = BackupKey.forNode(nodeNum)
+		if backupIndex.entries[nodeKey] != nil {
+			candidateKeys.append(nodeKey)
+		}
+		if let peripheralId {
+			for key in await legacyKeys(forPeripheralId: peripheralId) where !candidateKeys.contains(key) {
+				candidateKeys.append(key)
+			}
+		}
+
+		let candidates = candidateKeys.compactMap { key in backupIndex.entries[key].map { (key, $0) } }
+		guard let (survivingKey, surviving) = candidates.max(by: { $0.1.createdAt < $1.1.createdAt }) else {
+			return
+		}
+
+		guard let oldDir = backupDirectory(for: surviving) else { return }
+		let newDir = backupBaseURL.appendingPathComponent(deviceKey, isDirectory: true)
+		if fileManager.fileExists(atPath: newDir.path) {
+			try? fileManager.removeItem(at: newDir)
+		}
+
+		// The survivor moves first. Deleting the duplicates before this meant a transient move
+		// failure destroyed them and re-keyed nothing, turning a retryable hiccup into permanent
+		// backup loss. Nothing is deleted until the one we are keeping is safely in place.
+		do {
+			try fileManager.moveItem(at: oldDir, to: newDir)
+		} catch {
+			Logger.backup.error("Could not move backup \(survivingKey, privacy: .public) to its device id, leaving it and its duplicates alone: \(error.localizedDescription, privacy: .public)")
+			return
+		}
+
+		var adopted = surviving
+		adopted.deviceId = deviceKey
+		adopted.backupPath = deviceKey
+		backupIndex.entries.removeValue(forKey: survivingKey)
+		backupIndex.entries[deviceKey] = adopted
+
+		for (key, _) in candidates where key != survivingKey {
+			removeBackup(forKey: key, reason: "duplicate of \(deviceKey) from an earlier node number")
+		}
+		saveIndex()
+
+		Logger.backup.info("Re-keyed the backup for node \(surviving.nodeNum) onto its device id, dropping \(candidates.count - 1) duplicate(s)")
 	}
 
 	@discardableResult
-	func deleteBackup(forNode nodeNum: Int64) -> Bool {
-		guard let entry = backupIndex.entries[nodeNum] else {
-			return false
-		}
-
-		let nodeBackupDir = backupBaseURL.appendingPathComponent(entry.backupPath, isDirectory: true)
-		try? fileManager.removeItem(at: nodeBackupDir)
-		backupIndex.entries.removeValue(forKey: nodeNum)
+	func deleteBackup(forKey key: String) -> Bool {
+		guard removeBackup(forKey: key, reason: "deleted by the user") else { return false }
 		saveIndex()
-
-		Logger.backup.info("Deleted backup for node \(nodeNum)")
 		return true
 	}
 
@@ -493,7 +663,9 @@ final class NodeBackupManager: NodeBackupManaging {
 	func restoreFromBackup(forNode nodeNum: Int64, into container: ModelContainer) async -> NodeBackupResult {
 		Logger.backup.info("💾 Restoring full backup for node \(nodeNum)")
 
-		guard let entry = backupIndex.entries[nodeNum] else {
+		// Looked up by node number rather than by key: a backup for this radio may still be keyed by
+		// node number, or already re-keyed onto its device id.
+		guard let entry = backupIndex.entries.values.first(where: { $0.nodeNum == nodeNum }) else {
 			Logger.backup.debug("💾 No backup found for node \(nodeNum)")
 			return .noBackupFound
 		}
@@ -561,7 +733,7 @@ final class NodeBackupManager: NodeBackupManaging {
 		let currentChecksum = try await computeChecksum(for: backupStoreURL)
 		guard currentChecksum == entry.checksum else {
 			Logger.backup.error("Checksum mismatch for node \(entry.nodeNum) — backup is corrupt, deleting")
-			deleteBackup(forNode: entry.nodeNum)
+			deleteBackup(forKey: entry.key)
 			throw BackupError.checksumMismatch
 		}
 	}

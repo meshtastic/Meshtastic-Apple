@@ -1241,6 +1241,16 @@ extension AccessoryManager {
 		return activeConnection?.device.firmwareVersion
 	}
 
+	/// The connected radio's `MyNodeInfo.device_id`, which is what backups are keyed on. Nil before
+	/// MyInfo lands, and for a radio whose firmware reports none.
+	var connectedDeviceId: Data? {
+		guard let connectedNodeNum = activeDeviceNum else { return nil }
+		let descriptor = FetchDescriptor<MyInfoEntity>(
+			predicate: #Predicate { $0.myNodeNum == connectedNodeNum }
+		)
+		return try? context.fetch(descriptor).first?.deviceId
+	}
+
 	var connectedDeviceRole: DeviceRoles? {
 		guard let connectedNodeNum = activeDeviceNum else { return nil }
 		guard let connectedNode = getNodeInfo(id: connectedNodeNum, context: context) else { return nil }
