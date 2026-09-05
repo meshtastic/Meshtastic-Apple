@@ -75,12 +75,18 @@ func performConfigSave(
 			case .succeeded:
 				hasChanges.wrappedValue = false
 				dismiss()
+			case .acknowledged:
+				hasChanges.wrappedValue = false
+				dismiss()
 			case .failed(let message):
 				accessoryManager.remoteAdminConfigFeedback = (targetNode.num, message)
 				Logger.mesh.error("🚨 Config save rejected: \(message, privacy: .public)")
 			case .timedOut:
 				accessoryManager.remoteAdminConfigFeedback = (targetNode.num, "No confirmation was received from the remote node. Check that it is online and retry.")
 				Logger.mesh.error("🚨 Config save timed out")
+			case .unconfirmed:
+				accessoryManager.remoteAdminConfigFeedback = (targetNode.num, "The remote node did not confirm the configuration. Check its state before retrying.")
+				Logger.mesh.error("🚨 Config save unconfirmed")
 			}
 		} catch {
 			if let operationID {

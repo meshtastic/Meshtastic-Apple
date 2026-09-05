@@ -194,7 +194,8 @@ extension AccessoryManager {
 	}
 
 	// Send an admin message to a radio, save a message to core data for logging
-	private func sendAdminMessageToRadio(meshPacket: MeshPacket, adminDescription: String?) async throws {
+	@discardableResult
+	private func sendAdminMessageToRadio(meshPacket: MeshPacket, adminDescription: String?) async throws -> RemoteAdminConfigOperationResult? {
 
 		var toRadio: ToRadio!
 		toRadio = ToRadio()
@@ -208,17 +209,53 @@ extension AccessoryManager {
 		)
 		try await send(toRadio)
 		if enrolled, let operationID {
-			switch await remoteAdminConfigTracker.waitForPacket(packetID: meshPacket.id, operationID: operationID) {
+			let result = await remoteAdminConfigTracker.waitForPacket(packetID: meshPacket.id, operationID: operationID)
+			switch result {
 			case .succeeded:
+				break
+			case .acknowledged:
 				break
 			case .failed(let message):
 				throw AccessoryError.ioFailed(message)
 			case .timedOut:
 				throw AccessoryError.timeout
+			case .unconfirmed:
+				break
 			}
+			if let adminDescription {
+				Logger.admin.debug("\(adminDescription, privacy: .public)")
+			}
+			return result
 		}
 		if let adminDescription {
 			Logger.admin.debug("\(adminDescription, privacy: .public)")
+		}
+		return nil
+	}
+
+	private func sendRemoteAdminAction(
+		meshPacket: MeshPacket,
+		targetNodeNum: Int64,
+		adminDescription: String
+	) async throws -> RemoteAdminActionResult {
+		guard let operationID = beginRemoteAdminConfigOperation(kind: .action, targetNodeNum: targetNodeNum, section: "action") else {
+			throw AccessoryError.ioFailed("A remote admin action is already in progress for this node.")
+		}
+		do {
+			let transportResult = try await RemoteAdminConfigTracker.$currentOperationID.withValue(operationID) {
+				try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: adminDescription)
+			}
+			switch transportResult {
+			case .acknowledged, .succeeded:
+				return .acknowledged
+			case .unconfirmed, .timedOut, nil:
+				return .unconfirmed
+			case .failed(let message):
+				return .failed(message)
+			}
+		} catch {
+			remoteAdminConfigTracker.fail(operationID, with: error)
+			throw error
 		}
 	}
 
@@ -2266,7 +2303,8 @@ extension AccessoryManager {
 		return Int64(meshPacket.id)
 	}
 
-	public func sendFactoryReset(fromUser: UserEntity, toUser: UserEntity, resetDevice: Bool = false) async throws {
+	@discardableResult
+	public func sendFactoryReset(fromUser: UserEntity, toUser: UserEntity, resetDevice: Bool = false) async throws -> RemoteAdminActionResult {
 		var adminPacket = AdminMessage()
 		if resetDevice {
 			adminPacket.factoryResetDevice = 5
@@ -2286,13 +2324,21 @@ extension AccessoryManager {
 		if let serializedData: Data = try? adminPacket.serializedData() {
 			dataMessage.payload = serializedData
 			dataMessage.portnum = PortNum.adminApp
+			dataMessage.wantResponse = true
 			meshPacket.decoded = dataMessage
 		} else {
 			throw AccessoryError.ioFailed("saveLicensedUser: Unable to serialize admin packet")
 		}
 
 		let messageDescription = "🚀 Sent Factory Reset Admin Message to: \(toUser.longName ?? "Unknown".localized) from: \(fromUser.longName ??  "Unknown".localized)"
-		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
+		if fromUser.num == toUser.num {
+			try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
+			return .acknowledged
+		}
+		return try await sendRemoteAdminAction(
+			meshPacket: meshPacket,
+			targetNodeNum: toUser.num,
+			adminDescription: messageDescription)
 	}
 
 	public func setFixedPosition(fromUser: UserEntity, channel: Int32) async throws {
@@ -2626,7 +2672,8 @@ extension AccessoryManager {
 		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
 	}
 
-	public func sendNodeDBReset(fromUser: UserEntity, toUser: UserEntity, preserveFavorites: Bool = true) async throws {
+	@discardableResult
+	public func sendNodeDBReset(fromUser: UserEntity, toUser: UserEntity, preserveFavorites: Bool = true) async throws -> RemoteAdminActionResult {
 		var adminPacket = AdminMessage()
 		// nodedbReset = true means preserve favorites; false means wipe all nodes.
 		adminPacket.nodedbReset = preserveFavorites
@@ -2635,7 +2682,7 @@ extension AccessoryManager {
 		}
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
-		meshPacket.from	= 0 // UInt32(fromUser.num)
+		meshPacket.from	= UInt32(fromUser.num)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
@@ -2645,10 +2692,18 @@ extension AccessoryManager {
 		}
 		dataMessage.payload = adminData
 		dataMessage.portnum = PortNum.adminApp
+		dataMessage.wantResponse = true
 
 		meshPacket.decoded = dataMessage
 		let messageDescription = "🚀 Sent NodeDB Reset Admin Message to: \(toUser.longName ?? "unknown".localized) from: \(fromUser.longName ?? "unknown".localized)"
-		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
+		if fromUser.num == toUser.num {
+			try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
+			return .acknowledged
+		}
+		return try await sendRemoteAdminAction(
+			meshPacket: meshPacket,
+			targetNodeNum: toUser.num,
+			adminDescription: messageDescription)
 	}
 
 	public func requestBluetoothConfig(fromUser: UserEntity, toUser: UserEntity) async throws {

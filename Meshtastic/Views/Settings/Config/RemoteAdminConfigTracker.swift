@@ -10,12 +10,15 @@ import MeshtasticProtobufs
 enum RemoteAdminConfigOperationKind: Equatable {
 	case request
 	case save
+	case action
 }
 
 enum RemoteAdminConfigOperationResult: Equatable {
 	case succeeded
+	case acknowledged
 	case failed(String)
 	case timedOut
+	case unconfirmed
 }
 
 struct RemoteAdminConfigOperation: Identifiable, Equatable {
@@ -74,13 +77,16 @@ final class RemoteAdminConfigTracker: ObservableObject {
 		guard let operation = operations.values.first(where: {
 			$0.pendingPacketIDs.contains(packetID) && $0.targetNodeNum == sourceNodeNum && !$0.isFinished
 		}) else { return nil }
-		return resolvePacket(packetID: packetID, operationID: operation.id, result: .succeeded)
+		let result: RemoteAdminConfigOperationResult = operation.kind == .action ? .acknowledged : .succeeded
+		return resolvePacket(packetID: packetID, operationID: operation.id, result: result)
 	}
 
 	func resolveRouting(packetID: UInt32, sourceNodeNum: Int64, reason: String?, isFailure: Bool) -> UUID? {
 		guard let operation = operations.values.first(where: { $0.pendingPacketIDs.contains(packetID) && !$0.isFinished }) else { return nil }
-		guard isFailure || (operation.kind == .save && operation.targetNodeNum == sourceNodeNum) else { return nil }
-		let result: RemoteAdminConfigOperationResult = isFailure ? .failed(reason ?? "Remote delivery failed") : .succeeded
+		guard isFailure || ((operation.kind == .save || operation.kind == .action) && operation.targetNodeNum == sourceNodeNum) else { return nil }
+		let result: RemoteAdminConfigOperationResult = isFailure
+			? .failed(reason ?? "Remote delivery failed")
+			: (operation.kind == .action ? .acknowledged : .succeeded)
 		return resolvePacket(packetID: packetID, operationID: operation.id, result: result)
 	}
 
@@ -88,6 +94,7 @@ final class RemoteAdminConfigTracker: ObservableObject {
 		guard var operation = operations[operationID], !operation.isFinished else { return operationID }
 		operation.pendingPacketIDs.remove(packetID)
 		if case .failed = result { operation.result = result }
+		if case .acknowledged = result { operation.result = result }
 		operations[operationID] = operation
 		return operationID
 	}
@@ -97,10 +104,12 @@ final class RemoteAdminConfigTracker: ObservableObject {
 		while !Task.isCancelled {
 			guard let operation = operations[operationID] else { return .failed("Operation cancelled") }
 			if let result = operation.result { return result }
-			if !operation.pendingPacketIDs.contains(packetID) { return .succeeded }
+			if !operation.pendingPacketIDs.contains(packetID) {
+				return operation.kind == .action ? .acknowledged : .succeeded
+			}
 			if ContinuousClock.now >= deadline {
 				self.timeout(operationID)
-				return .timedOut
+				return operation.kind == .action ? .unconfirmed : .timedOut
 			}
 			try? await Task.sleep(for: .milliseconds(50))
 		}
@@ -111,16 +120,16 @@ final class RemoteAdminConfigTracker: ObservableObject {
 	func timeout(_ operationID: UUID) {
 		guard var operation = operations[operationID], !operation.isFinished else { return }
 		operation.pendingPacketIDs.removeAll()
-		operation.result = .timedOut
+		operation.result = operation.kind == .action ? .unconfirmed : .timedOut
 		operations[operationID] = operation
 	}
 
 	func finish(_ operationID: UUID) -> RemoteAdminConfigOperationResult {
 		guard var operation = operations[operationID], !operation.isFinished else { return operations[operationID]?.result ?? .failed("Operation cancelled") }
-		guard operation.pendingPacketIDs.isEmpty else { return .timedOut }
-		operation.result = .succeeded
+		guard operation.pendingPacketIDs.isEmpty else { return operation.kind == .action ? .unconfirmed : .timedOut }
+		operation.result = operation.kind == .action ? .acknowledged : .succeeded
 		operations[operationID] = operation
-		return .succeeded
+		return operation.result ?? .failed("Operation cancelled")
 	}
 
 	func fail(_ operationID: UUID, with error: Error) {
