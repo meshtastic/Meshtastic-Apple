@@ -798,6 +798,9 @@ extension AccessoryManager {
 	public func saveChannel(channel: Channel, fromUser: UserEntity, toUser: UserEntity) async throws -> Int64 {
 		var adminPacket = AdminMessage()
 		adminPacket.setChannel = channel
+		if fromUser != toUser {
+			adminPacket.sessionPasskey = toUser.userNode?.sessionPasskey ?? Data()
+		}
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	= UInt32(fromUser.num)
@@ -815,6 +818,23 @@ extension AccessoryManager {
 		let messageDescription = "🛟 Saved Channel \(channel.index) for \(toUser.longName ?? "Unknown".localized)"
 		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
 		return Int64(meshPacket.id)
+	}
+
+	/// Requests one channel from a remote admin target. The wire request is one based while
+	/// the response's Channel.index remains zero based.
+	public func requestRemoteChannel(index: Int32, fromUser: UserEntity, toUser: UserEntity) async throws -> UInt32 {
+		guard (0...7).contains(index) else {
+			throw AccessoryError.appError("Channel index must be between 0 and 7")
+		}
+		let sessionPasskey = toUser.userNode?.sessionPasskey ?? Data()
+		let packet = try RemoteChannelsPacketBuilder.getRequest(
+			index: index, from: UInt32(fromUser.num), to: UInt32(toUser.num), sessionPasskey: sessionPasskey
+		)
+		try await sendAdminMessageToRadio(
+			meshPacket: packet,
+			adminDescription: "🛟 Requested remote Channel \(index) for \(toUser.longName ?? "Unknown".localized)"
+		)
+		return packet.id
 	}
 
 	/// Join a mesh advertised by a beacon: set the primary channel to the offered channel (name +
