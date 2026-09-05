@@ -170,10 +170,6 @@ Tap any node to see the full detail view with hardware info, signal metrics, env
 
 For messageable nodes, use **Actions > Share Contact QR** to show a Meshtastic contact link and QR code that another device can scan.
 
-### Share Connected Node
-
-When a radio is connected, a **Share Connected Node** button appears in the node list toolbar. It opens the same share sheet as **Share Contact QR**, pre-filled with your own node — a quick way to hand someone your contact without finding yourself in the list.
-
 ### Write a Contact to an NFC Tag
 
 On iPhones with NFC hardware (iOS 18 or later), the contact share sheet also offers **Write to NFC Tag**. Hold a writable NFC tag near the top of your iPhone and the contact link is saved to it, replacing whatever the tag held before. Anyone can then tap that tag with their phone to open the contact in Meshtastic — the tag carries exactly the same link the QR code encodes.

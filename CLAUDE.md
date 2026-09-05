@@ -25,3 +25,18 @@ thousands of lines across dozens of files, it is doing more than one thing.
 
 Describe the change in terms of what the app and the radio do. Parity with
 another client is a reason to want a change, not a description of one.
+
+## The connection status indicator
+
+`ConnectedDevice` is the small indicator in the top right of most screens: the
+radio's short name, the link icon, the MQTT icon and the RX/TX lights.
+
+It is full. Do not add controls to it, and do not add toolbar buttons beside it
+in `topBarTrailing`. The space is a status readout, not an action bar, and on a
+phone in the narrow width it is already close to overflowing — anything more
+either crowds the name or pushes the indicator off.
+
+New actions belong where the thing they act on lives: on the node's row or its
+detail screen, in a section on the relevant settings page, or in the Tools
+screen. If an action seems to need the top right of every screen, that is worth
+questioning rather than designing around.
