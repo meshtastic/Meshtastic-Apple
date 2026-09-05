@@ -75,6 +75,7 @@ struct RtttlConfig: View {
 				context: context,
 				accessoryManager: accessoryManager,
 				configIsNil: { $0.rtttlConfig == nil },
+				section: "Ringtone",
 				request: accessoryManager.requestRtttlConfig
 			)
 		}

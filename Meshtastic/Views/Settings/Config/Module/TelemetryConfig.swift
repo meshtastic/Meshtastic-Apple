@@ -179,6 +179,7 @@ struct TelemetryConfig: View {
 				context: context,
 				accessoryManager: accessoryManager,
 				configIsNil: { $0.telemetryConfig == nil },
+				section: "Telemetry",
 				request: accessoryManager.requestTelemetryModuleConfig
 			)
 		}

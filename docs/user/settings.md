@@ -45,6 +45,10 @@ The Remote Admin page stays inside node navigation: Back from a configuration se
 
 The Configure picker lists live nodes from the current node database, with favorites first. If the node database is reset or the selected node disappears, Settings clears that selection instead of opening configuration for a stale node. Reconnect to a radio or choose a currently listed node to continue configuring it.
 
+### Remote configuration
+
+When you configure another node, Settings shows progress while the request or save is being confirmed by that node. A timeout or delivery error keeps your edits on screen and provides a **Retry** action, so you can check the node and try again without re-entering the values.
+
 ### LoRa
 
 LoRa settings control how your radio communicates on the mesh:

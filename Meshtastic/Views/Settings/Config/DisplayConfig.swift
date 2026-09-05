@@ -171,6 +171,7 @@ struct DisplayConfig: View {
 				context: context,
 				accessoryManager: accessoryManager,
 				configIsNil: { $0.displayConfig == nil },
+				section: "Display",
 				request: accessoryManager.requestDisplayConfig
 			)
 		}

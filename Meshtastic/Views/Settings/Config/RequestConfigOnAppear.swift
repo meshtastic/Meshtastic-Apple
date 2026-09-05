@@ -18,6 +18,7 @@ func requestRemoteConfig(
 	context: ModelContext,
 	accessoryManager: AccessoryManager,
 	configIsNil: @escaping (NodeInfoEntity) -> Bool,
+	section: String,
 	request: @escaping (_ fromUser: UserEntity, _ toUser: UserEntity) async throws -> Void,
 	requestForConnectedNode: Bool = false
 ) {
@@ -29,7 +30,9 @@ func requestRemoteConfig(
 	if requestForConnectedNode && node.num == deviceNum && configIsNil(node) {
 		Task {
 			do {
-				guard let fromUser = connectedNode.user, let toUser = node.user else { return }
+				guard let fromUser = connectedNode.user, let toUser = node.user else {
+					return
+				}
 				Logger.mesh.info("⚙️ Config missing for connected node, requesting")
 				try await request(fromUser, toUser)
 			} catch {
@@ -44,13 +47,24 @@ func requestRemoteConfig(
 	if UserDefaults.enableAdministration {
 		let expiration = node.sessionExpiration ?? Date()
 		if expiration < Date() || configIsNil(node) {
+			let operationID = accessoryManager.beginRemoteAdminConfigOperation(kind: .request, targetNodeNum: node.num, section: section)
+			guard let operationID else { return }
 			Task {
 				do {
-					guard let fromUser = connectedNode.user, let toUser = node.user else { return }
+					guard let fromUser = connectedNode.user, let toUser = node.user else {
+						accessoryManager.remoteAdminConfigTracker.fail(operationID, with: AccessoryError.appError("Missing user identity"))
+						return
+					}
 					Logger.mesh.info("⚙️ Empty or expired config requesting via PKI admin")
+				try await RemoteAdminConfigTracker.$currentOperationID.withValue(operationID) {
 					try await request(fromUser, toUser)
-				} catch {
-					Logger.mesh.error("🚨 Config request failed")
+				}
+				if case .failed(let message) = accessoryManager.remoteAdminConfigTracker.finish(operationID) {
+					accessoryManager.remoteAdminConfigFeedback = (node.num, message)
+				}
+			} catch {
+				accessoryManager.remoteAdminConfigTracker.fail(operationID, with: error)
+				Logger.mesh.error("🚨 Config request failed")
 				}
 			}
 		}

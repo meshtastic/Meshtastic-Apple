@@ -42,18 +42,51 @@ func performConfigSave(
 	guard let deviceNum = accessoryManager.activeDeviceNum,
 		  let connectedNode = getNodeInfo(id: deviceNum, context: context),
 		  let fromUser = connectedNode.user,
-		  let toUser = node?.user
+		  let toUser = node?.user,
+		  let targetNode = node
 	else {
 		Logger.mesh.warning("⚠️ Cannot save config: missing connected node or user entities")
+		return
+	}
+	let operationID = targetNode.num == deviceNum
+		? nil
+		: accessoryManager.beginRemoteAdminConfigOperation(kind: .save, targetNodeNum: targetNode.num)
+	if targetNode.num != deviceNum, operationID == nil {
+		accessoryManager.remoteAdminConfigFeedback = (targetNode.num, "A configuration save is already in progress for this node. Please wait for it to finish.")
 		return
 	}
 
 	Task {
 		do {
-			try await save(fromUser, toUser)
-			hasChanges.wrappedValue = false
-			dismiss()
+			if let operationID {
+				try await RemoteAdminConfigTracker.$currentOperationID.withValue(operationID) {
+					try await save(fromUser, toUser)
+				}
+			} else {
+				try await save(fromUser, toUser)
+			}
+			if targetNode.num == deviceNum {
+				hasChanges.wrappedValue = false
+				dismiss()
+				return
+			}
+			guard let operationID else { return }
+			switch accessoryManager.remoteAdminConfigTracker.finish(operationID) {
+			case .succeeded:
+				hasChanges.wrappedValue = false
+				dismiss()
+			case .failed(let message):
+				accessoryManager.remoteAdminConfigFeedback = (targetNode.num, message)
+				Logger.mesh.error("🚨 Config save rejected: \(message, privacy: .public)")
+			case .timedOut:
+				accessoryManager.remoteAdminConfigFeedback = (targetNode.num, "No confirmation was received from the remote node. Check that it is online and retry.")
+				Logger.mesh.error("🚨 Config save timed out")
+			}
 		} catch {
+			if let operationID {
+				accessoryManager.remoteAdminConfigTracker.fail(operationID, with: error)
+			}
+			accessoryManager.remoteAdminConfigFeedback = (targetNode.num, error.localizedDescription)
 			Logger.mesh.error("🚨 Config save failed: \(error.localizedDescription)")
 		}
 	}

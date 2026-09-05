@@ -286,6 +286,7 @@ struct LoRaConfig: View {
 				context: context,
 				accessoryManager: accessoryManager,
 				configIsNil: { $0.loRaConfig == nil },
+				section: "LoRa",
 				request: accessoryManager.requestLoRaConfig
 			)
 		}
