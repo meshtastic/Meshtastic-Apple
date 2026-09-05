@@ -32,7 +32,17 @@ struct DisplayConfig: View {
 	
 	var body: some View {
 		Form {
-			ConfigHeader(title: "Display", config: \.displayConfig, node: node, onAppear: setDisplayValues)
+			ConfigHeader(title: "Display", config: \.displayConfig, node: node, onAppear: setDisplayValues, onRetry: {
+			requestRemoteConfig(
+				node: node,
+				context: context,
+				accessoryManager: accessoryManager,
+				configIsNil: { $0.displayConfig == nil },
+				section: "Display",
+				request: accessoryManager.requestDisplayConfig,
+				force: true
+			)
+		})
 			
 			Section(header: Text("Device Screen")) {
 				

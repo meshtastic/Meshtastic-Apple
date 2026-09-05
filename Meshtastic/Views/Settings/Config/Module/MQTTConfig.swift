@@ -50,7 +50,17 @@ struct MQTTConfig: View {
 					}
 				}
 				
-				ConfigHeader(title: "MQTT", config: \.mqttConfig, node: node, onAppear: setMqttValues)
+				ConfigHeader(title: "MQTT", config: \.mqttConfig, node: node, onAppear: setMqttValues, onRetry: {
+			requestRemoteConfig(
+				node: node,
+				context: context,
+				accessoryManager: accessoryManager,
+				configIsNil: { $0.mqttConfig == nil },
+				section: "MQTT",
+				request: accessoryManager.requestMqttModuleConfig,
+				force: true
+			)
+		})
 				
 				Section(header: Text("Options")) {
 					

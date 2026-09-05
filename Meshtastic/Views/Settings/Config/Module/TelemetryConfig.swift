@@ -32,7 +32,17 @@ struct TelemetryConfig: View {
 
 	var body: some View {
 		Form {
-			ConfigHeader(title: "Telemetry", config: \.telemetryConfig, node: node, onAppear: setTelemetryValues)
+			ConfigHeader(title: "Telemetry", config: \.telemetryConfig, node: node, onAppear: setTelemetryValues, onRetry: {
+			requestRemoteConfig(
+				node: node,
+				context: context,
+				accessoryManager: accessoryManager,
+				configIsNil: { $0.telemetryConfig == nil },
+				section: "Telemetry",
+				request: accessoryManager.requestTelemetryModuleConfig,
+				force: true
+			)
+		})
 			
 			Section(header: Text("Device Options")) {
 				if accessoryManager.checkIsVersionSupported(forVersion: "2.7.12") {
