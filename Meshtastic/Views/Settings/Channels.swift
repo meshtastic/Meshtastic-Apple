@@ -509,7 +509,7 @@ private struct ChannelConfigSummaryRow: View {
 	}
 }
 
-private struct ChannelRow: View {
+struct ChannelRow: View {
 	let channel: ChannelEntity
 	let sharesLocation: Bool
 
