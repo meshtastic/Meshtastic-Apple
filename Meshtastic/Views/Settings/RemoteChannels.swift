@@ -244,78 +244,156 @@ final class RemoteChannelsCoordinator: ObservableObject {
 	}
 
 struct RemoteChannels: View {
-    @Environment(\.dismiss) private var dismiss
-    @ObservedObject var accessoryManager: AccessoryManager
-    let node: NodeInfoEntity
-    let connectedNode: NodeInfoEntity
-    let fromUser: UserEntity
-    let toUser: UserEntity
-    @StateObject private var coordinator: RemoteChannelsCoordinator
-    @State private var selected: Channel?
-    @State private var errorMessage: String?
+	@ObservedObject var accessoryManager: AccessoryManager
+	let node: NodeInfoEntity
+	let connectedNode: NodeInfoEntity
+	let fromUser: UserEntity
+	let toUser: UserEntity
+	@StateObject private var coordinator: RemoteChannelsCoordinator
+	@State private var selected: Channel?
+	@State private var errorMessage: String?
+	@State private var editorErrorMessage: String?
+	@State private var channelIndex: Int32 = 0
+	@State private var channelName = ""
+	@State private var channelKeySize = 16
+	@State private var channelKey = "AQ=="
+	@State private var channelRole = 0
+	@State private var uplink = false
+	@State private var downlink = false
+	@State private var positionPrecision = 32.0
+	@State private var preciseLocation = true
+	@State private var positionsEnabled = true
+	@State private var hasChanges = false
+	@State private var hasValidKey = true
+	@State private var supportedVersion = true
 
-    init(node: NodeInfoEntity, connectedNode: NodeInfoEntity, fromUser: UserEntity, toUser: UserEntity, accessoryManager: AccessoryManager) {
-        self.node = node
-        self.connectedNode = connectedNode
-        self.fromUser = fromUser
-        self.toUser = toUser
+	init(node: NodeInfoEntity, connectedNode: NodeInfoEntity, fromUser: UserEntity, toUser: UserEntity, accessoryManager: AccessoryManager) {
+		self.node = node
+		self.connectedNode = connectedNode
+		self.fromUser = fromUser
+		self.toUser = toUser
 		self.accessoryManager = accessoryManager
 		_coordinator = StateObject(wrappedValue: RemoteChannelsCoordinator(
 			transport: AccessoryManagerRemoteChannelsTransport(manager: accessoryManager, fromUser: fromUser, toUser: toUser),
 			sourceNum: fromUser.num, targetNum: toUser.num
 		))
-    }
+	}
 
-    var body: some View {
-        List {
-            if coordinator.isLoading {
-                ProgressView("Reading remote channels (\(coordinator.progress)/8)…")
-            }
-            ForEach(Int32(0)...Int32(7), id: \.self) { index in
-                if let channel = coordinator.channels[index] {
-                    Button {
-                        selected = channel
-                    } label: {
-                        HStack {
-                            Text(channel.settings.name.isEmpty ? "Channel \(index)" : channel.settings.name)
-                            Spacer()
-                            Text(channel.role == .primary ? "Primary" : channel.role == .disabled ? "Disabled" : "Secondary")
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-                    .buttonStyle(.plain)
-                }
-            }
-        }
-        .navigationTitle("Remote Channels")
-        .task {
-            do { try await coordinator.load() }
-            catch { errorMessage = error.localizedDescription }
-        }
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button("Retry") {
-                    Task {
-                        do { try await coordinator.load(); errorMessage = nil }
-                        catch { errorMessage = error.localizedDescription }
-                    }
-                }
-                .disabled(coordinator.isLoading || coordinator.isSaving)
-            }
-        }
-        .onReceive(NotificationCenter.default.publisher(for: .remoteChannelResponse).receive(on: RunLoop.main)) { coordinator.receive($0) }
-        .alert("Remote Channels", isPresented: Binding(get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } })) {
-            Button("OK", role: .cancel) { errorMessage = nil }
-        } message: { Text(errorMessage ?? "") }
-        .sheet(isPresented: Binding(get: { selected != nil }, set: { if !$0 { selected = nil } })) {
-            if let channel = selected {
-                RemoteChannelEditor(channel: channel, isSaving: coordinator.isSaving) { edited in
-                    try await coordinator.save([edited])
-                    selected = nil
-                }
-            }
-        }
-    }
+	private func select(_ channel: Channel) {
+		selected = channel
+		channelIndex = channel.index
+		channelRole = channel.index == 0 ? 1 : (channel.role == .primary ? 1 : channel.role == .secondary ? 2 : 0)
+		channelName = channel.settings.name
+		channelKey = channel.settings.psk.base64EncodedString()
+		channelKeySize = channel.settings.psk.isEmpty ? 0 : (channel.settings.psk == Data([1]) ? -1 : channel.settings.psk.count)
+		uplink = channel.settings.uplinkEnabled
+		downlink = channel.settings.downlinkEnabled
+		positionPrecision = Double(channel.settings.moduleSettings.positionPrecision)
+		positionsEnabled = positionPrecision > 0
+		preciseLocation = positionPrecision == 32
+		hasChanges = false
+		hasValidKey = true
+		editorErrorMessage = nil
+	}
+
+	private func displayEntity(_ channel: Channel) -> ChannelEntity {
+		let entity = ChannelEntity()
+		entity.index = channel.index
+		entity.id = channel.index
+		entity.role = channel.role == .primary ? 1 : channel.role == .secondary ? 2 : 0
+		entity.name = channel.settings.name
+		entity.psk = channel.settings.psk
+		entity.uplinkEnabled = channel.settings.uplinkEnabled
+		entity.downlinkEnabled = channel.settings.downlinkEnabled
+		entity.positionPrecision = Int32(channel.settings.moduleSettings.positionPrecision)
+		entity.mute = channel.settings.moduleSettings.isMuted
+		return entity
+	}
+
+	private func saveEditor() {
+		guard let original = selected else { return }
+		guard channelIndex == 0 ? channelRole == 1 : (channelRole == 0 || channelRole == 2) else {
+			editorErrorMessage = "Only slot 0 can be primary."
+			return
+		}
+		guard channelName.utf8.count <= 11 else {
+			editorErrorMessage = "Channel names must be 11 bytes or fewer"
+			return
+		}
+		guard let decodedKey = Data(base64Encoded: channelKey), [0, 1, 16, 32].contains(decodedKey.count) else {
+			editorErrorMessage = "Key must be valid base64 with 0, 1, 16, or 32 bytes"
+			return
+		}
+		var edited = original
+		edited.settings.name = channelName
+		edited.settings.psk = decodedKey
+		edited.role = ChannelRoles(rawValue: channelRole)?.protoEnumValue() ?? .disabled
+		edited.settings.uplinkEnabled = uplink
+		edited.settings.downlinkEnabled = downlink
+		edited.settings.moduleSettings.positionPrecision = UInt32(positionPrecision)
+		hasChanges = false
+		Task {
+			do {
+				try await coordinator.save([edited])
+				selected = nil
+			} catch {
+				editorErrorMessage = error.localizedDescription
+				hasChanges = true
+			}
+		}
+	}
+
+	var body: some View {
+		List {
+			if coordinator.isLoading {
+				ProgressView("Reading remote channels (\(coordinator.progress)/8)…")
+			}
+			ForEach(Int32(0)...Int32(7), id: \.self) { index in
+				if let channel = coordinator.channels[index] {
+					Button { select(channel) } label: {
+						ChannelRow(channel: displayEntity(channel), sharesLocation: channel.settings.moduleSettings.positionPrecision > 0)
+					}
+					.buttonStyle(.plain)
+				}
+			}
+		}
+		.navigationTitle("Channels")
+		.task {
+			do { try await coordinator.load() }
+			catch { errorMessage = error.localizedDescription }
+		}
+		.toolbar {
+			ToolbarItem(placement: .topBarTrailing) {
+				Button("Retry") {
+					Task {
+						do { try await coordinator.load(); errorMessage = nil }
+						catch { errorMessage = error.localizedDescription }
+					}
+				}
+				.disabled(coordinator.isLoading || coordinator.isSaving)
+			}
+		}
+		.onReceive(NotificationCenter.default.publisher(for: .remoteChannelResponse).receive(on: RunLoop.main)) { coordinator.receive($0) }
+		.alert("Channels", isPresented: Binding(get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } })) {
+			Button("OK", role: .cancel) { errorMessage = nil }
+		} message: { Text(errorMessage ?? "") }
+		.sheet(isPresented: Binding(get: { selected != nil }, set: { if !$0 { selected = nil } })) {
+			NavigationStack {
+				ChannelForm(channelIndex: $channelIndex, channelName: $channelName, channelKeySize: $channelKeySize, channelKey: $channelKey, channelRole: $channelRole, uplink: $uplink, downlink: $downlink, positionPrecision: $positionPrecision, preciseLocation: $preciseLocation, positionsEnabled: $positionsEnabled, hasChanges: $hasChanges, hasValidKey: $hasValidKey, supportedVersion: $supportedVersion)
+					.navigationTitle("Channel \(channelIndex)")
+					.toolbar {
+						ToolbarItem(placement: .cancellationAction) { Button("Cancel") { selected = nil } }
+						ToolbarItem(placement: .confirmationAction) {
+							Button(coordinator.isSaving ? "Saving…" : "Save", action: saveEditor)
+							.disabled(coordinator.isSaving || !hasValidKey)
+						}
+					}
+					.safeAreaInset(edge: .bottom) {
+						if let editorErrorMessage { Text(editorErrorMessage).foregroundStyle(.red).font(.callout).padding() }
+					}
+			}
+		}
+	}
 }
 
 struct RemoteChannelsUnavailable: View {
@@ -331,93 +409,4 @@ struct RemoteChannelsUnavailable: View {
 		.padding()
 		.navigationTitle("Remote Channels")
 	}
-}
-
-private struct RemoteChannelEditor: View {
-    @Environment(\.dismiss) private var dismiss
-    let channel: Channel
-    let isSaving: Bool
-    let onSave: (Channel) async throws -> Void
-    @State private var name: String
-    @State private var key: String
-    @State private var role: Channel.Role
-    @State private var uplink: Bool
-    @State private var downlink: Bool
-    @State private var precision: Int
-    @State private var muted: Bool
-    @State private var errorMessage: String?
-
-    init(channel: Channel, isSaving: Bool, onSave: @escaping (Channel) async throws -> Void) {
-        self.channel = channel
-        self.isSaving = isSaving
-        self.onSave = onSave
-        _name = State(initialValue: channel.settings.name)
-        _key = State(initialValue: channel.settings.psk.base64EncodedString())
-        _role = State(initialValue: channel.role)
-        _uplink = State(initialValue: channel.settings.uplinkEnabled)
-        _downlink = State(initialValue: channel.settings.downlinkEnabled)
-        _precision = State(initialValue: Int(channel.settings.moduleSettings.positionPrecision))
-        _muted = State(initialValue: channel.settings.moduleSettings.isMuted)
-    }
-
-    var body: some View {
-        NavigationStack {
-            Form {
-                TextField("Name", text: $name)
-                    .onChange(of: name) { _, value in
-                        let compact = value.replacingOccurrences(of: " ", with: "")
-                        var limited = ""
-                        for scalar in compact.unicodeScalars {
-                            guard limited.utf8.count + String(scalar).utf8.count <= 11 else { break }
-                            limited.append(String(scalar))
-                        }
-                        name = limited
-                    }
-                TextField("Key (base64)", text: $key)
-                    .textSelection(.enabled)
-                Picker("Role", selection: $role) {
-                    if channel.index == 0 {
-                        Text("Primary").tag(Channel.Role.primary)
-                    } else {
-                        Text("Secondary").tag(Channel.Role.secondary)
-                        Text("Disabled").tag(Channel.Role.disabled)
-                    }
-                }
-                Toggle("MQTT Uplink Enabled", isOn: $uplink)
-                Toggle("MQTT Downlink Enabled", isOn: $downlink)
-                Toggle("Mute", isOn: $muted)
-                Stepper("Position Precision: \(precision)", value: $precision, in: 0...32)
-                if let errorMessage { Text(errorMessage).foregroundStyle(.red).font(.callout) }
-            }
-            .navigationTitle("Channel \(channel.index)")
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button(isSaving ? "Saving…" : "Save") {
-                        guard name.utf8.count <= 11 else {
-                            errorMessage = "Channel names must be 11 bytes or fewer"
-                            return
-                        }
-                        guard let decodedKey = Data(base64Encoded: key), [0, 1, 16, 32].contains(decodedKey.count) else {
-                            errorMessage = "Key must be valid base64 with 0, 1, 16, or 32 bytes"
-                            return
-                        }
-                        var edited = channel
-                        edited.settings.name = name
-                        edited.settings.psk = decodedKey
-                        edited.role = role
-                        edited.settings.uplinkEnabled = uplink
-                        edited.settings.downlinkEnabled = downlink
-                        edited.settings.moduleSettings.positionPrecision = UInt32(precision)
-                        edited.settings.moduleSettings.isMuted = muted
-                        Task {
-                            do { try await onSave(edited) }
-                            catch { errorMessage = error.localizedDescription }
-                        }
-                    }
-                    .disabled(isSaving)
-                }
-            }
-        }
-    }
 }
