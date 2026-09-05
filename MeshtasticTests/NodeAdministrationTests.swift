@@ -126,6 +126,18 @@ struct NodeAdministrationTests {
 
 		let node = try fetchNode(num: num, in: container)
 		#expect(node.hasBeenAdministered)
+		#expect(node.sessionPasskey == Data([0x01, 0x02, 0x03]))
+		#expect(node.sessionExpiration != nil)
+		let expiration = node.sessionExpiration
+		admin.sessionPasskey = Data()
+		await mesh.adminAppPacket(packet: try adminPacket(from: num, message: admin), connectedNodeNum: Self.myNum)
+		let emptyResponseNode = try fetchNode(num: num, in: container)
+		#expect(emptyResponseNode.sessionPasskey == Data([0x01, 0x02, 0x03]))
+		#expect(emptyResponseNode.sessionExpiration == expiration)
+		await mesh.moduleConfig(config: moduleConfig, nodeNum: num, nodeLongName: "Remote Node")
+		let mirroredNode = try fetchNode(num: num, in: container)
+		#expect(mirroredNode.sessionPasskey == Data([0x01, 0x02, 0x03]))
+		#expect(mirroredNode.sessionExpiration == expiration)
 	}
 
 	@Test func metadataResponseWithPasskeyMarksUnknownNode() async throws {
@@ -169,8 +181,7 @@ struct NodeAdministrationTests {
 
 		let node = try fetchNode(num: num, in: container)
 		#expect(!node.hasBeenAdministered)
-		// The local download still stamps the (empty) passkey as before.
-		#expect(node.sessionPasskey == Data())
+		#expect(node.sessionPasskey == nil)
 	}
 
 	@Test func setConfigRequestWithPasskeyDoesNotMark() async throws {
