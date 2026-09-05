@@ -84,6 +84,52 @@ struct RemoteAdminConfigTrackerTests {
 		#expect(tracker.operations[operationID]?.result == .failed("No route"))
 	}
 
+	@Test func routingRejectionInvalidatesOnlyRejectedTargetSession() async throws {
+		let container = try ModelContainer(
+			for: Schema(MeshtasticSchema.allModels),
+			configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+		)
+		let context = ModelContext(container)
+		let rejectedTarget = NodeInfoEntity()
+		rejectedTarget.num = 42
+		rejectedTarget.sessionPasskey = Data([0xA5])
+		rejectedTarget.sessionExpiration = Date().addingTimeInterval(300)
+		let unaffectedTarget = NodeInfoEntity()
+		unaffectedTarget.num = 99
+		unaffectedTarget.sessionPasskey = Data([0x5A])
+		unaffectedTarget.sessionExpiration = Date().addingTimeInterval(300)
+		context.insert(rejectedTarget)
+		context.insert(unaffectedTarget)
+		try context.save()
+
+		let connection = RemoteAdminReceiveConnection()
+		let manager = makeManager(connection: connection)
+		manager.context = context
+		let operationID = try #require(manager.beginRemoteAdminConfigOperation(kind: .save, targetNodeNum: 42))
+		#expect(manager.remoteAdminConfigTracker.registerPacket(packetID: 100, targetNodeNum: 42, operationID: operationID))
+
+		var routing = Routing()
+		routing.errorReason = .adminBadSessionKey
+		var data = DataMessage()
+		data.portnum = .routingApp
+		data.requestID = 100
+		data.payload = try routing.serializedData()
+		var packet = MeshPacket()
+		packet.from = 1
+		packet.to = 42
+		packet.decoded = data
+		var fromRadio = FromRadio()
+		fromRadio.packet = packet
+
+		await manager.didReceive(.data(fromRadio))
+
+		#expect(rejectedTarget.sessionPasskey == nil)
+		#expect(rejectedTarget.sessionExpiration == nil)
+		#expect(unaffectedTarget.sessionPasskey == Data([0x5A]))
+		#expect(unaffectedTarget.sessionExpiration != nil)
+		#expect(manager.remoteAdminConfigTracker.operations[operationID]?.result == .failed("Remote node rejected the request: adminBadSessionKey"))
+	}
+
 	@Test func relaySuccessIsIgnoredUntilTargetConfirms() throws {
 		let tracker = RemoteAdminConfigTracker()
 		let operationID = try #require(tracker.begin(kind: .save, targetNodeNum: 42))
