@@ -304,24 +304,41 @@ struct NodeDetail: View {
 				let publicKey = nodeNum == accessoryManager.activeDeviceNum
 				? node.securityConfig?.publicKey?.base64EncodedString() ?? ""
 				: user.publicKey?.base64EncodedString() ?? ""
-				HStack {
+				if publicKey.isEmpty {
+					// Nodes we have only heard packets from have no key on file. Matches the yellow
+					// open lock the node list shows, rather than a green lock over an empty key.
 					Label {
-						Text("Public Key")
+						VStack(alignment: .leading, spacing: 4) {
+							Text("No Public Key")
+							Text("This node has not shared a public key, so direct messages to it cannot be sent. Exchange User Info asks for one.")
+								.foregroundStyle(.secondary)
+								.font(.callout)
+						}
+						.accessibilityElement(children: .combine)
 					} icon: {
-						Image(systemName: "lock.fill")
-							.foregroundColor(.green)
+						Image(systemName: "lock.open.fill")
+							.foregroundColor(.yellow)
 					}
-					Spacer()
-					Button(action: {
-						UIPasteboard.general.string = publicKey
-					}) {
-						HStack {
-							Image(systemName: "key.horizontal.fill")
-							Text("Copy")
+				} else {
+					HStack {
+						Label {
+							Text("Public Key")
+						} icon: {
+							Image(systemName: "lock.fill")
+								.foregroundColor(.green)
+						}
+						Spacer()
+						Button(action: {
+							UIPasteboard.general.string = publicKey
+						}) {
+							HStack {
+								Image(systemName: "key.horizontal.fill")
+								Text("Copy")
+							}
 						}
 					}
+					.accessibilityElement(children: .combine)
 				}
-				.accessibilityElement(children: .combine)
 			}
 			if let metadata = node.metadata {
 				HStack {
