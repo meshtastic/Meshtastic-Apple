@@ -120,6 +120,27 @@ struct RemoteChannelsTests {
 	}
 
 	@MainActor
+	@Test("coordinator refreshes a rejected session before retrying a channel read")
+	func coordinatorRefreshesAfterRejectedRead() async throws {
+		let transport = TestRemoteChannelsTransport()
+		transport.session = true
+		transport.rejectNextRequest = true
+		let coordinator = RemoteChannelsCoordinator(transport: transport, sourceNum: 1, targetNum: 2)
+		transport.onRequest = { [weak coordinator] id, channel in
+			coordinator?.receive(TestRemoteChannelsTransport.notification(id: id, source: 2, destination: 1, channel: channel))
+		}
+
+		var primary = Channel()
+		primary.index = 0
+		primary.role = .primary
+		transport.channels[0] = primary
+		try await coordinator.load()
+
+		#expect(transport.refreshCount == 1)
+		#expect(coordinator.channels[0]?.role == .primary)
+	}
+
+	@MainActor
 	@Test("coordinator reports a real no reply timeout")
 	func coordinatorNoReplyTimesOut() async {
 		let transport = TestRemoteChannelsTransport(); transport.session = true
@@ -182,6 +203,7 @@ private final class TestRemoteChannelsTransport: RemoteChannelsTransport {
 	var session = false
 	var refreshCount = 0
 	var saveCount = 0
+	var rejectNextRequest = false
 	var channels: [Int32: Channel] = [:]
 	var onRequest: ((UInt32, Channel) -> Void)?
 	private var nextID: UInt32 = 100
@@ -192,7 +214,13 @@ private final class TestRemoteChannelsTransport: RemoteChannelsTransport {
 
 	func refreshMetadata() async throws { refreshCount += 1; session = true }
 	func requestChannel(index: Int32) async throws -> UInt32 {
+		guard session else { throw AccessoryError.ioFailed("Remote admin session expired") }
 		let id = nextID; nextID += 1
+		if rejectNextRequest {
+			rejectNextRequest = false
+			session = false
+			throw AccessoryError.ioFailed("Remote node rejected the request: adminBadSessionKey")
+		}
 		var channel = channels[index] ?? Channel()
 		channel.index = index
 		onRequest?(id, channel)
