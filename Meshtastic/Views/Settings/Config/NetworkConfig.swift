@@ -35,7 +35,17 @@ struct NetworkConfig: View {
 	var body: some View {
 		let staticValid = staticConfigIsValid
 		Form {
-			ConfigHeader(title: "Network", config: \.networkConfig, node: node, onAppear: setNetworkValues)
+			ConfigHeader(title: "Network", config: \.networkConfig, node: node, onAppear: setNetworkValues, onRetry: {
+			requestRemoteConfig(
+				node: node,
+				context: context,
+				accessoryManager: accessoryManager,
+				configIsNil: { $0.networkConfig == nil },
+				section: "Network",
+				request: accessoryManager.requestNetworkConfig,
+				force: true
+			)
+		})
 			
 			if let node {
 				if node.metadata?.hasWifi ?? false {
