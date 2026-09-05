@@ -42,9 +42,12 @@ struct NodeNameLimitsTests {
 		#expect(NodeNameLimits.trimmed(name, toBytes: 24) == name)
 	}
 
-	@Test("A name over the limit is trimmed to it")
+	@Test("A name over the limit keeps its first 24 bytes")
 	func overTheLimit() {
-		let trimmed = NodeNameLimits.trimmed(String(repeating: "a", count: 40), toBytes: 24)
+		// Assert the retained prefix, not just the length: trimming the wrong end, or
+		// returning any 24 bytes at all, would pass a count-only check.
+		let trimmed = NodeNameLimits.trimmed("abcdefghijklmnopqrstuvwxyz0123456789", toBytes: 24)
+		#expect(trimmed == "abcdefghijklmnopqrstuvwx")
 		#expect(trimmed.utf8.count == 24)
 	}
 
