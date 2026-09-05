@@ -718,6 +718,15 @@ extension AccessoryManager {
 		// failed replace cannot wipe local state. No wholesale clear first: every slot was
 		// written above, and applyLocalChannelMutation deletes the row for a disabled one, so
 		// the local set follows the radio slot by slot.
+		//
+		// Duplicate rows for one slot are the exception. Older app versions could leave them,
+		// and the mutation below only ever sees the canonical one, so a sibling would survive
+		// a replace that is meant to be authoritative — including on a slot just disabled.
+		// The wholesale clear this replaced took them with it. Drop them here, after the
+		// writes succeeded, so a failed replace still leaves local state alone.
+		if !addChannels {
+			removeDuplicateChannelRows(for: deviceNum)
+		}
 		for chan in deliveredChannels {
 			do {
 				try applyLocalChannelMutation(chan, fromNum: deviceNum)
@@ -748,6 +757,25 @@ extension AccessoryManager {
 
 	/// Mirrors a user-initiated channel write on the main context. Automatic refresh replacement
 	/// uses this same executor, so a QR/UI mutation cannot land between its baseline check and save.
+	/// Leaves one row per channel index, keeping the same row `canonicalValidUniqueChannels`
+	/// would pick so nothing visible changes.
+	private func removeDuplicateChannelRows(for deviceNum: Int64) {
+		let descriptor = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == deviceNum })
+		guard let myInfo = try? context.fetch(descriptor).first else { return }
+		let keep = Set(canonicalValidUniqueChannels(from: myInfo.channels).map { ObjectIdentifier($0) })
+		var removed = false
+		for row in myInfo.channels where !keep.contains(ObjectIdentifier(row)) {
+			context.delete(row)
+			removed = true
+		}
+		guard removed else { return }
+		do {
+			try context.save()
+		} catch {
+			Logger.data.error("💥 Could not remove duplicate channel rows: \(error.localizedDescription, privacy: .public)")
+		}
+	}
+
 	func applyLocalChannelMutation(_ channel: Channel, fromNum: Int64) throws {
 		guard channel.isInitialized && (channel.hasSettings || channel.role == .disabled) else { return }
 		let descriptor = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == fromNum })
@@ -760,24 +788,13 @@ extension AccessoryManager {
 		}
 
 		let channelIndex = Int32(truncatingIfNeeded: channel.index)
-		// Every row at this index, not just the canonical one. Older app versions could leave
-		// duplicate rows for a slot, and `canonicalValidUniqueChannels` keeps one of them and
-		// hides the rest — so acting on that alone would leave a stale sibling behind. The
-		// wholesale clear this replaced used to take them with it.
-		let matches = myInfo.channels.filter { $0.index == channelIndex }
-		let existing = canonicalValidUniqueChannels(from: matches).first
+		let existing = canonicalValidUniqueChannels(from: myInfo.channels).first { $0.index == channelIndex }
 		if channel.role == .disabled {
-			guard !matches.isEmpty else { return }
-			for row in matches {
-				context.delete(row)
+			if let existing {
+				context.delete(existing)
+				try context.save()
 			}
-			try context.save()
 			return
-		}
-
-		// Keep the canonical row and drop any siblings, so a slot ends up with exactly one.
-		for row in matches where row !== existing {
-			context.delete(row)
 		}
 
 		let entity: ChannelEntity
