@@ -213,57 +213,72 @@ extension AccessoryManager {
 		}
 
 		let decodedString = base64UrlString.base64urlToBase64()
-		if let decodedData = Data(base64Encoded: decodedString) {
-			do {
-				let contact: SharedContact = try SharedContact(serializedBytes: decodedData)
-				var adminPacket = AdminMessage()
-				adminPacket.addContact = contact
-				var meshPacket: MeshPacket = MeshPacket()
-				meshPacket.to = UInt32(deviceNum)
-				meshPacket.from	= UInt32(deviceNum)
-				meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
-				meshPacket.priority =  MeshPacket.Priority.reliable
-				meshPacket.wantAck = true
-				meshPacket.channel = 0
-				var dataMessage = DataMessage()
-				guard let adminData: Data = try? adminPacket.serializedData() else {
-					throw AccessoryError.ioFailed("addContactFromURL: Unable to serialize admin packet")
-				}
-				dataMessage.payload = adminData
-				dataMessage.portnum = PortNum.adminApp
-				meshPacket.decoded = dataMessage
-				var toRadio: ToRadio!
-				toRadio = ToRadio()
-				toRadio.packet = meshPacket
-
-				let logString = String.localizedStringWithFormat("Added contact %@ to device".localized, contact.user.longName)
-				try await send(toRadio, debugDescription: logString)
-
-				// Create a NodeInfo (User) packet for the newly added contact
-				var dataNodeMessage = DataMessage()
-				if let nodeInfoData = try? contact.user.serializedData() {
-					dataNodeMessage.payload = nodeInfoData
-					dataNodeMessage.portnum = PortNum.nodeinfoApp
-					var nodeMeshPacket = MeshPacket()
-					nodeMeshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
-					nodeMeshPacket.to = UInt32.max
-					nodeMeshPacket.from = UInt32(contact.nodeNum)
-					nodeMeshPacket.decoded = dataNodeMessage
-
-					// Update local database with the new node info
-					// Do not auto-favorite when using CLIENT_BASE role to avoid creating routing issues
-					let shouldFavorite = connectedDeviceRole != .clientBase
-					await MeshPackets.shared.upsertNodeInfoPacket(packet: nodeMeshPacket, favorite: shouldFavorite, overTheMesh: false)
-				}
-			} catch {
-				Logger.data.error("Failed to decode contact data: \(error.localizedDescription, privacy: .public)")
-				throw AccessoryError.appError("Unable to decode contact data from QR code.")
-			}
-		} else {
+		guard let decodedData = Data(base64Encoded: decodedString) else {
 			// Without this the method returned normally on undecodable input, so
 			// callers treated a failed import as a success.
 			Logger.data.error("Contact payload is not valid base64url data.")
 			throw AccessoryError.appError("Unable to decode contact data from QR code.")
+		}
+
+		let contact: SharedContact
+		do {
+			contact = try SharedContact(serializedBytes: decodedData)
+		} catch {
+			Logger.data.error("Failed to decode contact data: \(error.localizedDescription, privacy: .public)")
+			throw AccessoryError.appError("Unable to decode contact data from QR code.")
+		}
+
+		// Checked out here rather than alongside the radio work below, so a keyless contact is not
+		// reported to the caller as malformed QR data.
+		guard contact.carriesPublicKey else {
+			Logger.services.error("addContactFromURL: refusing a contact for \(contact.nodeNum, privacy: .public) with no public key; applying it would erase the key the radio holds")
+			throw AccessoryError.appError("This contact does not include a public key, so it cannot be added.")
+		}
+
+		do {
+			var adminPacket = AdminMessage()
+			adminPacket.addContact = contact
+			var meshPacket: MeshPacket = MeshPacket()
+			meshPacket.to = UInt32(deviceNum)
+			meshPacket.from	= UInt32(deviceNum)
+			meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+			meshPacket.priority =  MeshPacket.Priority.reliable
+			meshPacket.wantAck = true
+			meshPacket.channel = 0
+			var dataMessage = DataMessage()
+			guard let adminData: Data = try? adminPacket.serializedData() else {
+				throw AccessoryError.ioFailed("addContactFromURL: Unable to serialize admin packet")
+			}
+			dataMessage.payload = adminData
+			dataMessage.portnum = PortNum.adminApp
+			meshPacket.decoded = dataMessage
+			var toRadio: ToRadio!
+			toRadio = ToRadio()
+			toRadio.packet = meshPacket
+
+			let logString = String.localizedStringWithFormat("Added contact %@ to device".localized, contact.user.longName)
+			try await send(toRadio, debugDescription: logString)
+
+			// Create a NodeInfo (User) packet for the newly added contact
+			var dataNodeMessage = DataMessage()
+			if let nodeInfoData = try? contact.user.serializedData() {
+				dataNodeMessage.payload = nodeInfoData
+				dataNodeMessage.portnum = PortNum.nodeinfoApp
+				var nodeMeshPacket = MeshPacket()
+				nodeMeshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+				nodeMeshPacket.to = UInt32.max
+				nodeMeshPacket.from = UInt32(contact.nodeNum)
+				nodeMeshPacket.decoded = dataNodeMessage
+
+				// Update local database with the new node info
+				// Do not auto-favorite when using CLIENT_BASE role to avoid creating routing issues
+				let shouldFavorite = connectedDeviceRole != .clientBase
+				await MeshPackets.shared.upsertNodeInfoPacket(packet: nodeMeshPacket, favorite: shouldFavorite, overTheMesh: false)
+			}
+		} catch {
+			// The contact decoded fine and carries a key; this is the radio send failing.
+			Logger.data.error("Failed to add contact: \(error.localizedDescription, privacy: .public)")
+			throw AccessoryError.appError("Unable to add this contact.")
 		}
 	}
 	
@@ -426,11 +441,41 @@ extension AccessoryManager {
 								var contact = SharedContact()
 								contact.manuallyVerified = false
 								contact.nodeNum = UInt32(truncatingIfNeeded: user.num)
-								user.userNode?.favorite = user.userNode?.deviceConfig?.role ?? 0 != DeviceRoles.clientBase.rawValue
 								contact.user = user.toProto()
 								do {
-									let contactString = try contact.serializedData().base64EncodedString()
-									try? await am.addContactFromURL(base64UrlString: contactString)
+									// toProto() emits an empty key when we hold none, and the radio would
+									// take that as the node's key. Skip the contact rather than erase it.
+									if contact.carriesPublicKey {
+										let contactString = try contact.serializedData().base64EncodedString()
+										do {
+											try await am.addContactFromURL(base64UrlString: contactString)
+										} catch {
+											// Best effort. The message still goes out, and the radio may
+											// already hold the key, so a failure here is not fatal — but it
+											// should not vanish either.
+											Logger.services.warning("Could not refresh the contact for \(user.num, privacy: .public) before a direct message: \(error.localizedDescription, privacy: .public)")
+										}
+									} else {
+										Logger.services.info("Skipping the pre-message contact for \(user.num, privacy: .public); no public key on file")
+									}
+									// Pin the node we are messaging so it does not age out of the radio's
+									// node db mid conversation. It has to go to the radio as an admin
+									// message: setting the local flag alone is overwritten by the next
+									// NodeInfo, so the star would appear and then quietly revert.
+									if let node = user.userNode,
+									   let connectedNodeNum = am.activeDeviceNum,
+									   AutoFavoriteRule.shouldFavorite(
+										destinationRole: node.deviceConfig?.role,
+										connectedRole: am.connectedDeviceRole,
+										isAlreadyFavorite: node.favorite
+									   ) {
+										do {
+											try await am.setFavoriteNode(node: node, connectedNodeNum: Int64(connectedNodeNum))
+											node.favorite = true
+										} catch {
+											Logger.services.error("Could not favorite \(user.num, privacy: .public) while sending a direct message: \(error.localizedDescription, privacy: .public)")
+										}
+									}
 									try context.save()
 								} catch {
 									Logger.services.error("Error inserting new contact and resending encrypted send failed message: \(error)")
