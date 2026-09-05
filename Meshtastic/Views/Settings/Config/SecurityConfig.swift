@@ -135,7 +135,17 @@ struct SecurityConfig: View {
 	/// See `body` — the Form and its chrome, split out for type-check time.
 	private var securityForm: some View {
 		Form {
-			ConfigHeader(title: "Security", config: \.securityConfig, node: node, onAppear: setSecurityValues)
+			ConfigHeader(title: "Security", config: \.securityConfig, node: node, onAppear: setSecurityValues, onRetry: {
+			requestRemoteConfig(
+				node: node,
+				context: context,
+				accessoryManager: accessoryManager,
+				configIsNil: { $0.securityConfig == nil },
+				section: "Security",
+				request: accessoryManager.requestSecurityConfig,
+				force: true
+			)
+		})
 			Text("Security Config Settings require a firmware version 2.5+")
 				.font(.title3)
 			packetAuthenticitySection
