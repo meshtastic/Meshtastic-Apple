@@ -1093,6 +1093,11 @@ struct NodeDetail: View {
 			remoteAdminState = .failed(.targetChanged)
 			return
 		}
+		defer {
+			if remoteAdminAttemptID == attemptID {
+				remoteAdminAttemptID = nil
+			}
+		}
 		guard UserDefaults.enableAdministration else {
 			remoteAdminState = .failed(.requestFailed)
 			return
