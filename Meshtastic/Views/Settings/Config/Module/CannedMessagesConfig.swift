@@ -38,7 +38,17 @@ struct CannedMessagesConfig: View {
 	@State var messages = ""
 	var body: some View {
 		Form {
-			ConfigHeader(title: "Canned messages", config: \.cannedMessageConfig, node: node, onAppear: setCannedMessagesValues)
+			ConfigHeader(title: "Canned messages", config: \.cannedMessageConfig, node: node, onAppear: setCannedMessagesValues, onRetry: {
+			requestRemoteConfig(
+				node: node,
+				context: context,
+				accessoryManager: accessoryManager,
+				configIsNil: { $0.cannedMessageConfig == nil },
+				section: "Canned messages",
+				request: accessoryManager.requestCannedMessagesModuleConfig,
+				force: true
+			)
+		})
 			
 			Section(header: Text("Options")) {
 				

@@ -22,7 +22,16 @@ struct NeighborInfoConfig: View {
 
 	var body: some View {
 		Form {
-			ConfigHeader(title: "Neighbor Info", config: \.neighborInfoConfig, node: node, onAppear: setNeighborInfoValues)
+			ConfigHeader(title: "Neighbor Info", config: \.neighborInfoConfig, node: node, onAppear: setNeighborInfoValues, onRetry: {
+				requestRemoteConfig(
+					node: node,
+					context: context,
+					accessoryManager: accessoryManager,
+					configIsNil: { $0.neighborInfoConfig == nil },
+					section: "Neighbor Info",
+					request: accessoryManager.requestNeighborInfoModuleConfig,
+					force: true)
+			})
 
 			Section(header: Text("Options")) {
 				Toggle(isOn: $enabled) {
@@ -82,28 +91,13 @@ struct NeighborInfoConfig: View {
 			}
 		}
 		.onFirstAppear {
-			if let deviceNum = accessoryManager.activeDeviceNum, let node {
-				let connectedNode = getNodeInfo(id: deviceNum, context: context)
-				if let connectedNode {
-					if node.num != deviceNum {
-						if UserDefaults.enableAdministration && node.num != connectedNode.num {
-							let expiration = node.sessionExpiration ?? Date()
-							if expiration < Date() || node.neighborInfoConfig == nil {
-								Task {
-									do {
-										Logger.mesh.info("⚙️ Empty or expired neighbor info module config requesting via PKI admin")
-										try await accessoryManager.requestNeighborInfoModuleConfig(fromUser: connectedNode.user!, toUser: node.user!)
-									} catch {
-										Logger.mesh.info("🚨 Request for neighbor info module config failed")
-									}
-								}
-							}
-						} else {
-							Logger.mesh.info("☠️ Using insecure legacy admin that is no longer supported, please upgrade your firmware.")
-						}
-					}
-				}
-			}
+			requestRemoteConfig(
+				node: node,
+				context: context,
+				accessoryManager: accessoryManager,
+				configIsNil: { $0.neighborInfoConfig == nil },
+				section: "Neighbor Info",
+				request: accessoryManager.requestNeighborInfoModuleConfig)
 		}
 		.onChange(of: enabled) { oldEnabled, newEnabled in
 			if oldEnabled != newEnabled && newEnabled != (node?.neighborInfoConfig?.enabled ?? false) { hasChanges = true }
