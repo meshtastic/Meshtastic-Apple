@@ -8,6 +8,7 @@ struct ConfigHeader<T>: View {
 	let config: KeyPath<NodeInfoEntity, T?>
 	let node: NodeInfoEntity?
 	let onAppear: () -> Void
+	var onRetry: (() -> Void)? = nil
 
 	var body: some View {
 		let request = node.flatMap { accessoryManager.remoteAdminConfigTracker.latest(for: $0.num, kind: .request, section: title) }
@@ -19,8 +20,10 @@ struct ConfigHeader<T>: View {
 				Text(result == .timedOut ? "No response was received from the remote node." : "The configuration request failed.")
 					.font(.callout)
 					.foregroundColor(.red)
-				Button("Retry") { onAppear() }
-					.environment(\.isEnabled, accessoryManager.isConnected && UserDefaults.enableAdministration)
+				if let onRetry {
+					Button("Retry", action: onRetry)
+						.environment(\.isEnabled, accessoryManager.isConnected && UserDefaults.enableAdministration)
+				}
 			}
 		} else if node != nil && node?.metadata == nil && node?.num ?? 0 != accessoryManager.activeDeviceNum ?? 0 {
 			Text("There has been no response to a request for device metadata via PKC admin for this node.")

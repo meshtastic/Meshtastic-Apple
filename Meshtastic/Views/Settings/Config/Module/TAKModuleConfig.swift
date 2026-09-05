@@ -32,7 +32,17 @@ struct TAKModuleConfig: View {
 
 	var body: some View {
 		Form {
-			ConfigHeader(title: "TAK", config: \.takConfig, node: node, onAppear: setTAKValues)
+			ConfigHeader(title: "TAK", config: \.takConfig, node: node, onAppear: setTAKValues, onRetry: {
+			requestRemoteConfig(
+				node: node,
+				context: context,
+				accessoryManager: accessoryManager,
+				configIsNil: { $0.takConfig == nil },
+				section: "TAK",
+				request: accessoryManager.requestTAKModuleConfig,
+				force: true
+			)
+		})
 
 			if accessoryManager.isConnected, node?.takConfig == nil {
 				Section {
