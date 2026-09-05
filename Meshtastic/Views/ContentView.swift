@@ -241,21 +241,33 @@ struct ContentView: View {
 					.trackScreen(NavigationState.Tab.messages.screenName)
 				}
 				.badge(appState.totalUnreadMessages)
+				// Intended as stable, non-localized identifiers for MeshtasticUITests/
+				// AccessibilityDriver (NavigationStep.tab) to select a tab bar button without
+				// depending on locale. As of Xcode 26.6 / iOS 18+, SwiftUI's value-based
+				// Tab(value:) API does NOT propagate this identifier down to the underlying
+				// UITabBarButton (verified against the live accessibility hierarchy — no
+				// identifier: field reaches the button either way), so the driver currently
+				// falls back to matching on the visible title instead. Left in place: harmless
+				// today, and picked up automatically if a future SwiftUI version fixes the gap.
+				.accessibilityIdentifier("tab-messages")
 
 				Tab("Nodes", image: "custom.mesh.radio", value: NavigationState.Tab.nodes) {
 					NodeList()
 						.trackScreen(NavigationState.Tab.nodes.screenName)
 				}
+				.accessibilityIdentifier("tab-nodes")
 
 				Tab("Map", systemImage: "map", value: NavigationState.Tab.map) {
 					MeshMapMK(router: appState.router)
 						.trackScreen(NavigationState.Tab.map.screenName)
 				}
+				.accessibilityIdentifier("tab-map")
 
 				Tab("Settings", systemImage: "gear", value: NavigationState.Tab.settings) {
 					Settings()
 						.trackScreen(NavigationState.Tab.settings.screenName)
 				}
+				.accessibilityIdentifier("tab-settings")
 
 				Tab("Connect", systemImage: "link", value: NavigationState.Tab.connect) {
 					Connect(
@@ -263,6 +275,7 @@ struct ContentView: View {
 					)
 					.trackScreen(NavigationState.Tab.connect.screenName)
 				}
+				.accessibilityIdentifier("tab-connect")
 			}
 		} else {
 			// iOS 17 gets the legacy TabView, which differs from iOS 18's `Tab` in two
@@ -282,6 +295,7 @@ struct ContentView: View {
 					.tabItem { tab.label }
 					.tag(tab.value)
 					.badge(tab == .messages ? appState.totalUnreadMessages : 0)
+					.accessibilityIdentifier("tab-\(tab.rawValue)")
 				}
 			}
 		}
