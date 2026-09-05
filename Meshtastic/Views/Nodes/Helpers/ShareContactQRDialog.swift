@@ -15,12 +15,18 @@ import OSLog
 enum ShareContactQR {
 	static let urlPrefix = "https://meshtastic.org/v/#"
 
+	/// Whether there is anything worth sharing for this node.
+	///
+	/// Carrying the public key is the point of a shared contact — it is what lets the receiving radio
+	/// direct message the node. A contact with no key is worse than useless: firmware assigns
+	/// `public_key` unconditionally when it applies one, so it clears the key the receiving radio
+	/// already held. We refuse those on import, so we must not hand them out either.
 	static func canShareContact(for node: NodeInfoEntity) -> Bool {
-		node.user?.unmessagable == false
+		node.user?.unmessagable == false && node.user?.publicKey?.isEmpty == false
 	}
 
 	static func canShareContact(for node: NodeInfo) -> Bool {
-		node.hasUser && !node.user.isUnmessagable
+		node.hasUser && !node.user.isUnmessagable && !node.user.publicKey.isEmpty
 	}
 
 	static func urlString(for node: NodeInfo, manuallyVerified: Bool) -> String? {

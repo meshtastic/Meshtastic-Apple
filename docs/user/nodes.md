@@ -185,6 +185,8 @@ Opening a Meshtastic contact link — by scanning a QR code, tapping a shared li
 
 If the import fails — most often because the radio disconnected — the sheet stays open and shows the reason so you can reconnect and tap **Add Contact** again. It closes only once the contact has actually been sent to your node. A link that is damaged or truncated is reported as an invalid format instead of being imported.
 
+A contact that carries no public key cannot be added. **Add Contact** is disabled and the sheet says the contact does not include one. The key is the point of a shared contact — it is what lets your node send direct messages to that contact — and applying a keyless one would clear the key your node already held, breaking direct messages that used to work. For the same reason, a node you have no public key for cannot be shared from this app.
+
 Importing a contact requires firmware 2.6.9 or later on the connected node.
 
 ### Air Quality

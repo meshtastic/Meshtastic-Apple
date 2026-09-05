@@ -22,6 +22,12 @@ struct AddContactConfirmationView: View {
 		return name.isEmpty ? "?" : name
 	}
 
+	/// A contact with no public key would clear the key the node already holds, so there is
+	/// nothing safe to import. See `SharedContact.carriesPublicKey`.
+	private var canAdd: Bool {
+		pendingContact.contact.carriesPublicKey
+	}
+
 	var body: some View {
 		VStack(spacing: 20) {
 			Text("Add Contact")
@@ -38,6 +44,12 @@ struct AddContactConfirmationView: View {
 				.font(.subheadline)
 				.multilineTextAlignment(.center)
 				.foregroundColor(.secondary)
+			if !canAdd {
+				Text("This contact does not include a public key, so it cannot be added.")
+					.font(.subheadline)
+					.multilineTextAlignment(.center)
+					.foregroundColor(.red)
+			}
 			if let failureMessage {
 				Text(failureMessage)
 					.font(.subheadline)
@@ -50,7 +62,7 @@ struct AddContactConfirmationView: View {
 				Label("Add Contact", systemImage: "person.crop.circle.badge.plus")
 			}
 			.buttonStyle(.borderedProminent)
-			.disabled(isAdding)
+			.disabled(isAdding || !canAdd)
 			Button("Cancel") { dismiss() }
 				.padding(.bottom)
 		}

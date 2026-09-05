@@ -336,6 +336,7 @@ struct ShareContactQRTests {
 		let node = NodeInfoEntity()
 		let user = UserEntity()
 		user.unmessagable = false
+		user.publicKey = Data(repeating: 0x2B, count: 32)
 		node.user = user
 
 		#expect(ShareContactQR.canShareContact(for: node))
@@ -345,6 +346,37 @@ struct ShareContactQRTests {
 
 		node.user = nil
 		#expect(!ShareContactQR.canShareContact(for: node))
+	}
+
+	@Test @MainActor func availabilityRequiresAPublicKey() {
+		// The key is what makes a shared contact worth anything, and firmware assigns public_key
+		// unconditionally when it applies one, so a keyless contact clears the key the receiving radio
+		// already held.
+		let node = NodeInfoEntity()
+		let user = UserEntity()
+		user.unmessagable = false
+		node.user = user
+
+		#expect(!ShareContactQR.canShareContact(for: node))
+
+		user.publicKey = Data()
+		#expect(!ShareContactQR.canShareContact(for: node))
+
+		user.publicKey = Data(repeating: 0x2B, count: 32)
+		#expect(ShareContactQR.canShareContact(for: node))
+	}
+
+	@Test func contactURLUnavailableWithoutAPublicKey() {
+		var user = User()
+		user.id = "!1234abcd"
+		user.longName = "Node Alpha"
+		user.shortName = "ALFA"
+		var node = NodeInfo()
+		node.num = 0x1234_ABCD
+		node.user = user
+
+		#expect(!ShareContactQR.canShareContact(for: node))
+		#expect(ShareContactQR.urlString(for: node, manuallyVerified: true) == nil)
 	}
 
 	@Test @MainActor func nodeProtoPreservesUnmessagableStateForQRAvailability() {
