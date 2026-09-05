@@ -84,6 +84,10 @@ struct Connect: View {
 		Connect.liveNode(node)
 	}
 
+	private var loRaConfigDestination: some View {
+		LoRaConfig(node: safeNode, onSuccessfulSave: handleSuccessfulLoRaSave)
+	}
+
 	/// Returns `node` only while it is still a live SwiftData object (`modelContext != nil`),
 	/// otherwise nil. Reading attributes on a faulted/detached `@Model` traps, so callers gate
 	/// every read through this. Static + value-in/value-out so it can be unit-tested directly.
@@ -332,7 +336,7 @@ struct Connect: View {
 							if isUnsetRegion && !lockdown.isBlockingSession {
 								HStack {
 									NavigationLink {
-										LoRaConfig(node: safeNode)
+										loRaConfigDestination
 									} label: {
 										Label("Set LoRa Region", systemImage: "globe.americas.fill")
 											.foregroundColor(.red)
@@ -661,6 +665,12 @@ struct Connect: View {
 		} else {
 			nymeaProvisioning.stopDiscovery()
 		}
+	}
+
+	private func handleSuccessfulLoRaSave(_ savedNodeNum: Int64, _ savedRegion: RegionCodes) {
+		guard accessoryManager.state == .subscribed,
+			  savedNodeNum == accessoryManager.activeDeviceNum else { return }
+		isUnsetRegion = savedRegion == .unset
 	}
 
 	@MainActor
