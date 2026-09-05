@@ -68,6 +68,8 @@ On firmware **2.8.0 or later**, the radio tells the app which modem presets are 
 
 Manage up to 8 channels (0–7). Channel 0 is the primary broadcast channel. Additional channels create isolated messaging groups with their own encryption keys.
 
+When a remote administered node is selected in Settings, Channels loads that node's eight slots through the connected radio. Remote edits are sent in slot order and confirmed by reading each slot back; progress and the first failed slot are shown in the screen. Remote channel responses stay scoped to the selected node and are not copied into the connected radio's local channel database.
+
 When sharing channels, the share screen shows a QR code and link, and — on iPhones with NFC hardware (iOS 18 or later) — a **Write to NFC Tag** button. Hold a writable NFC tag near the top of your iPhone to save the channel link to it, replacing any content the tag already held; tapping that tag on another phone opens the same add-or-replace channels flow the QR code does.
 
 ### Security
