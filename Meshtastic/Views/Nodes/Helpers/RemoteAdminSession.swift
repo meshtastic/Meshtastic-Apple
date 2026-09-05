@@ -43,6 +43,7 @@ enum RemoteAdminSessionWaiter {
 		targetIsCurrent: @escaping @MainActor () -> Bool,
 		sleep: @escaping @MainActor (Duration) async throws -> Void = { try await Task.sleep(for: $0) }
 	) async -> Result {
+		guard pollInterval > .zero else { return .timedOut }
 		var elapsed = Duration.zero
 		while true {
 			if Task.isCancelled { return .cancelled }
@@ -86,5 +87,15 @@ enum RemoteAdminSessionOrchestrator {
 		guard allowed() else { return .requestFailed }
 		guard attemptIsCurrent() else { return .targetChanged }
 		return .active
+	}
+}
+
+struct RemoteAdminSettingsDestination {
+	let nodeNum: Int64
+	let radioNum: Int64
+	let connectionID: ObjectIdentifier
+
+	func isCurrent(radioNum: Int64?, connectionID: ObjectIdentifier?, isConnected: Bool) -> Bool {
+		isConnected && radioNum == self.radioNum && connectionID == self.connectionID
 	}
 }
