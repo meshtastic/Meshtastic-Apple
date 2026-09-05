@@ -727,9 +727,8 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		if let index = devices.firstIndex(where: { $0.id == deviceId }) {
 			var device = devices[index]
 			if device[keyPath: key] != value {
-				// Update the @Published stuff for the UI
-				self.objectWillChange.send()
-
+				// No objectWillChange here: `devices` is @Published, so assigning to it
+				// notifies on its own. Sending as well invalidated twice per change.
 				device[keyPath: key] = value
 				devices[index] = device
 			}
