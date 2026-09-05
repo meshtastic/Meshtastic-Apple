@@ -7,8 +7,28 @@ struct RemoteAdminActionTarget: Equatable {
 	let connectionID: ObjectIdentifier
 }
 
+enum RemoteAdminActionResult: Equatable {
+	case acknowledged
+	case verified
+	case unconfirmed
+	case failed(String)
+}
+
 @MainActor
 enum RemoteAdminActionGuard {
+	private static func validate(
+		target: RemoteAdminActionTarget,
+		activeRadioNum: @escaping @MainActor () -> Int64?,
+		activeConnectionID: @escaping @MainActor () -> ObjectIdentifier?,
+		isConnected: @escaping @MainActor () -> Bool,
+		hasLiveSession: @escaping @MainActor () -> Bool
+	) -> String? {
+		guard isConnected(), activeRadioNum() == target.radioNum,
+			  activeConnectionID() == target.connectionID else { return "Connection changed. Please try again." }
+		guard hasLiveSession() else { return "Session expired for \(target.name). Refresh device metadata first." }
+		return nil
+	}
+
 	static func run(
 		target: RemoteAdminActionTarget,
 		activeRadioNum: @escaping @MainActor () -> Int64?,
@@ -17,14 +37,38 @@ enum RemoteAdminActionGuard {
 		hasLiveSession: @escaping @MainActor () -> Bool,
 		action: @escaping @MainActor () async throws -> Void
 	) async -> String? {
-		guard isConnected(), activeRadioNum() == target.radioNum,
-			  activeConnectionID() == target.connectionID else { return "Connection changed. Please try again." }
-		guard hasLiveSession() else { return "Session expired for \(target.name). Refresh device metadata first." }
+		if let error = validate(
+			target: target,
+			activeRadioNum: activeRadioNum,
+			activeConnectionID: activeConnectionID,
+			isConnected: isConnected,
+			hasLiveSession: hasLiveSession) { return error }
 		do {
 			try await action()
 			return nil
 		} catch {
 			return error.localizedDescription
+		}
+	}
+
+	static func runOutcome(
+		target: RemoteAdminActionTarget,
+		activeRadioNum: @escaping @MainActor () -> Int64?,
+		activeConnectionID: @escaping @MainActor () -> ObjectIdentifier?,
+		isConnected: @escaping @MainActor () -> Bool,
+		hasLiveSession: @escaping @MainActor () -> Bool,
+		action: @escaping @MainActor () async throws -> RemoteAdminActionResult
+	) async -> RemoteAdminActionResult {
+		if let error = validate(
+			target: target,
+			activeRadioNum: activeRadioNum,
+			activeConnectionID: activeConnectionID,
+			isConnected: isConnected,
+			hasLiveSession: hasLiveSession) { return .failed(error) }
+		do {
+			return try await action()
+		} catch {
+			return .failed(error.localizedDescription)
 		}
 	}
 }

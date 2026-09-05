@@ -1092,7 +1092,7 @@ struct NodeDetail: View {
 							guard let target = pendingAdminTarget else { return }
 							isPerformingAdminAction = true
 							defer { isPerformingAdminAction = false }
-							let error = await RemoteAdminActionGuard.run(
+							let result = await RemoteAdminActionGuard.runOutcome(
 								target: target,
 								activeRadioNum: { accessoryManager.activeDeviceNum },
 								activeConnectionID: { accessoryManager.activeConnection.map { ObjectIdentifier($0.connection) } },
@@ -1100,9 +1100,14 @@ struct NodeDetail: View {
 								hasLiveSession: { getNodeInfo(id: target.nodeNum, context: context)?.hasLiveAdminSession == true }
 							) {
 								guard let pair = administrationUserPair, pair.toUser.num == target.nodeNum else { throw AccessoryError.connectionFailed("The selected target is no longer available") }
-								try await accessoryManager.sendFactoryReset(fromUser: pair.fromUser, toUser: pair.toUser)
+								return try await accessoryManager.sendFactoryReset(fromUser: pair.fromUser, toUser: pair.toUser)
 							}
-							if let error { adminErrorMessage = "Factory Reset failed for \(target.name): \(error)" }
+							switch result {
+							case .acknowledged: adminErrorMessage = "Factory Reset acknowledged for \(target.name)."
+							case .verified: adminErrorMessage = "Factory Reset verified for \(target.name)."
+							case .unconfirmed: adminErrorMessage = "Factory Reset unconfirmed for \(target.name). Check the target before retrying."
+							case .failed(let error): adminErrorMessage = "Factory Reset failed for \(target.name): \(error)"
+							}
 						}
 					}
 					Button("Delete all config, keys and BLE bonds?", role: .destructive) {
@@ -1110,7 +1115,7 @@ struct NodeDetail: View {
 							guard let target = pendingAdminTarget else { return }
 							isPerformingAdminAction = true
 							defer { isPerformingAdminAction = false }
-							let error = await RemoteAdminActionGuard.run(
+							let result = await RemoteAdminActionGuard.runOutcome(
 								target: target,
 								activeRadioNum: { accessoryManager.activeDeviceNum },
 								activeConnectionID: { accessoryManager.activeConnection.map { ObjectIdentifier($0.connection) } },
@@ -1118,9 +1123,14 @@ struct NodeDetail: View {
 								hasLiveSession: { getNodeInfo(id: target.nodeNum, context: context)?.hasLiveAdminSession == true }
 							) {
 								guard let pair = administrationUserPair, pair.toUser.num == target.nodeNum else { throw AccessoryError.connectionFailed("The selected target is no longer available") }
-								try await accessoryManager.sendFactoryReset(fromUser: pair.fromUser, toUser: pair.toUser, resetDevice: true)
+								return try await accessoryManager.sendFactoryReset(fromUser: pair.fromUser, toUser: pair.toUser, resetDevice: true)
 							}
-							if let error { adminErrorMessage = "Factory Reset failed for \(target.name): \(error)" }
+							switch result {
+							case .acknowledged: adminErrorMessage = "Factory Reset acknowledged for \(target.name)."
+							case .verified: adminErrorMessage = "Factory Reset verified for \(target.name)."
+							case .unconfirmed: adminErrorMessage = "Factory Reset unconfirmed for \(target.name). Check the target before retrying."
+							case .failed(let error): adminErrorMessage = "Factory Reset failed for \(target.name): \(error)"
+							}
 						}
 					}
 				}
@@ -1141,7 +1151,7 @@ struct NodeDetail: View {
 							guard let target = pendingAdminTarget else { return }
 							isPerformingAdminAction = true
 							defer { isPerformingAdminAction = false }
-							let error = await RemoteAdminActionGuard.run(
+							let result = await RemoteAdminActionGuard.runOutcome(
 								target: target,
 								activeRadioNum: { accessoryManager.activeDeviceNum },
 								activeConnectionID: { accessoryManager.activeConnection.map { ObjectIdentifier($0.connection) } },
@@ -1149,9 +1159,14 @@ struct NodeDetail: View {
 								hasLiveSession: { getNodeInfo(id: target.nodeNum, context: context)?.hasLiveAdminSession == true }
 							) {
 								guard let pair = administrationUserPair, pair.toUser.num == target.nodeNum else { throw AccessoryError.connectionFailed("The selected target is no longer available") }
-								try await accessoryManager.sendNodeDBReset(fromUser: pair.fromUser, toUser: pair.toUser, preserveFavorites: true)
+								return try await accessoryManager.sendNodeDBReset(fromUser: pair.fromUser, toUser: pair.toUser, preserveFavorites: true)
 							}
-							if let error { adminErrorMessage = "NodeDB Reset failed for \(target.name): \(error)" }
+							switch result {
+							case .acknowledged: adminErrorMessage = "NodeDB Reset acknowledged for \(target.name)."
+							case .verified: adminErrorMessage = "NodeDB Reset verified for \(target.name)."
+							case .unconfirmed: adminErrorMessage = "NodeDB Reset unconfirmed for \(target.name). Check the target before retrying."
+							case .failed(let error): adminErrorMessage = "NodeDB Reset failed for \(target.name): \(error)"
+							}
 						}
 					}
 					Button("Reset node database and favorites?", role: .destructive) {
@@ -1159,7 +1174,7 @@ struct NodeDetail: View {
 							guard let target = pendingAdminTarget else { return }
 							isPerformingAdminAction = true
 							defer { isPerformingAdminAction = false }
-							let error = await RemoteAdminActionGuard.run(
+							let result = await RemoteAdminActionGuard.runOutcome(
 								target: target,
 								activeRadioNum: { accessoryManager.activeDeviceNum },
 								activeConnectionID: { accessoryManager.activeConnection.map { ObjectIdentifier($0.connection) } },
@@ -1167,9 +1182,14 @@ struct NodeDetail: View {
 								hasLiveSession: { getNodeInfo(id: target.nodeNum, context: context)?.hasLiveAdminSession == true }
 							) {
 								guard let pair = administrationUserPair, pair.toUser.num == target.nodeNum else { throw AccessoryError.connectionFailed("The selected target is no longer available") }
-								try await accessoryManager.sendNodeDBReset(fromUser: pair.fromUser, toUser: pair.toUser, preserveFavorites: false)
+								return try await accessoryManager.sendNodeDBReset(fromUser: pair.fromUser, toUser: pair.toUser, preserveFavorites: false)
 							}
-							if let error { adminErrorMessage = "NodeDB Reset failed for \(target.name): \(error)" }
+							switch result {
+							case .acknowledged: adminErrorMessage = "NodeDB Reset acknowledged for \(target.name)."
+							case .verified: adminErrorMessage = "NodeDB Reset verified for \(target.name)."
+							case .unconfirmed: adminErrorMessage = "NodeDB Reset unconfirmed for \(target.name). Check the target before retrying."
+							case .failed(let error): adminErrorMessage = "NodeDB Reset failed for \(target.name): \(error)"
+							}
 						}
 					}
 				}
@@ -1177,14 +1197,14 @@ struct NodeDetail: View {
 				if isPerformingAdminAction {
 					HStack {
 						ProgressView()
-						Text("Sending command…")
+						Text("Waiting for target acknowledgement…")
 							.foregroundColor(.secondary)
 							.font(.caption)
 					}
 				}
 				}
 			}
-			.alert("Admin Action Failed", isPresented: Binding(
+			.alert("Admin Action Result", isPresented: Binding(
 				get: { adminErrorMessage != nil },
 				set: { if !$0 { adminErrorMessage = nil } }
 			)) {
