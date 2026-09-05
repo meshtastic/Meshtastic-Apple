@@ -31,7 +31,18 @@ struct SerialConfig: View {
 	var body: some View {
 		VStack {
 			Form {
-				ConfigHeader(title: "Serial", config: \.serialConfig, node: node, onAppear: setSerialValues)
+				ConfigHeader(title: "Serial", config: \.serialConfig, node: node, onAppear: setSerialValues, onRetry: {
+			requestRemoteConfig(
+					node: node,
+					context: context,
+					accessoryManager: accessoryManager,
+					configIsNil: { $0.serialConfig == nil },
+					section: "Serial",
+					request: accessoryManager.requestSerialModuleConfig
+				,
+				force: true
+			)
+		})
 				
 				Section(header: Text("Options")) {
 					

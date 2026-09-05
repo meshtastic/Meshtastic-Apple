@@ -24,7 +24,17 @@ struct AmbientLightingConfig: View {
 	@State private var components: Color.Resolved?
 	var body: some View {
 		Form {
-			ConfigHeader(title: "Ambient Lighting", config: \.ambientLightingConfig, node: node, onAppear: setAmbientLightingConfigValue)
+			ConfigHeader(title: "Ambient Lighting", config: \.ambientLightingConfig, node: node, onAppear: setAmbientLightingConfigValue, onRetry: {
+			requestRemoteConfig(
+				node: node,
+				context: context,
+				accessoryManager: accessoryManager,
+				configIsNil: { $0.ambientLightingConfig == nil },
+				section: "Ambient Lighting",
+				request: accessoryManager.requestAmbientLightingConfig,
+				force: true
+			)
+		})
 			
 			Section(header: Text("Options")) {
 				

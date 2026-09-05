@@ -28,7 +28,17 @@ struct PowerConfig: View {
 
 	var body: some View {
 		Form {
-			ConfigHeader(title: "Power Config", config: \.powerConfig, node: node, onAppear: setPowerValues)
+			ConfigHeader(title: "Power Config", config: \.powerConfig, node: node, onAppear: setPowerValues, onRetry: {
+			requestRemoteConfig(
+				node: node,
+				context: context,
+				accessoryManager: accessoryManager,
+				configIsNil: { $0.powerConfig == nil },
+				section: "Power Config",
+				request: accessoryManager.requestPowerConfig,
+				force: true
+			)
+		})
 
 			Section {
 				if let architecture, (architecture == .esp32 || architecture == .esp32S3) || (architecture == .nrf52840 && (node?.deviceConfig?.role ?? 0 == 5 || node?.deviceConfig?.role ?? 0 == 6)) {

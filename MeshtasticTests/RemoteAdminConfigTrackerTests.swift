@@ -1,6 +1,7 @@
 import Foundation
 import Combine
 import Testing
+import SwiftData
 @testable import Meshtastic
 import MeshtasticProtobufs
 
@@ -134,6 +135,43 @@ struct RemoteAdminConfigTrackerTests {
 		let bluetooth = try #require(tracker.begin(kind: .request, targetNodeNum: 42, section: "Bluetooth"))
 		#expect(tracker.latest(for: 42, kind: .request, section: "Device")?.id == device)
 		#expect(tracker.latest(for: 42, kind: .request, section: "Bluetooth")?.id == bluetooth)
+	}
+
+	@Test func forcedRemoteConfigRetryDispatchesRequest() async throws {
+		let container = try ModelContainer(
+			for: Schema(MeshtasticSchema.allModels),
+			configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+		)
+		let context = ModelContext(container)
+		let local = NodeInfoEntity(); local.num = 1; local.id = 1
+		let remote = NodeInfoEntity(); remote.num = 2; remote.id = 2
+		let from = UserEntity(); from.num = 1; from.userNode = local
+		let to = UserEntity(); to.num = 2; to.userNode = remote
+		local.user = from; remote.user = to
+		context.insert(local); context.insert(remote); context.insert(from); context.insert(to)
+		try context.save()
+
+		let manager = AccessoryManager(transports: [])
+		manager.context = context
+		manager.activeDeviceNum = 1
+		manager.updateState(.subscribed)
+		let previousAdministration = UserDefaults.enableAdministration
+		UserDefaults.enableAdministration = true
+		defer { UserDefaults.enableAdministration = previousAdministration }
+
+		var requests = 0
+		requestRemoteConfig(
+			node: remote,
+			context: context,
+			accessoryManager: manager,
+			configIsNil: { _ in false },
+			section: "Retry test",
+			request: { _, _ in requests += 1 },
+			force: true)
+		for _ in 0..<20 where requests == 0 {
+			try await Task.sleep(for: .milliseconds(10))
+		}
+		#expect(requests == 1)
 	}
 
 	@Test func managerPublishesNestedTrackerMutations() {
