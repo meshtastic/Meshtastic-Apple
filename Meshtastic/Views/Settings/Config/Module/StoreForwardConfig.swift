@@ -132,6 +132,7 @@ struct StoreForwardConfig: View {
 				context: context,
 				accessoryManager: accessoryManager,
 				configIsNil: { $0.storeForwardConfig == nil },
+				section: "Store & Forward",
 				request: accessoryManager.requestStoreAndForwardModuleConfig
 			)
 		}
