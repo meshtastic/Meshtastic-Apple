@@ -19,6 +19,33 @@ struct RemoteChannelsTests {
         #expect(packet.decoded.wantResponse)
     }
 
+    @Test("channel read requests reject indexes outside the firmware slot range")
+    func channelReadRequestRejectsInvalidIndex() {
+        #expect(throws: AccessoryError.self) {
+            _ = try RemoteChannelsPacketBuilder.getRequest(
+                index: 8, from: 0x1111, to: 0x2222, sessionPasskey: Data(), id: 42
+            )
+        }
+    }
+
+    @Test("channel writes carry the session key and request an acknowledgement")
+    func channelWriteRequestUsesFirmwareEnvelope() throws {
+        var channel = Channel()
+        channel.index = 2
+        channel.role = .secondary
+        channel.settings.name = "Remote"
+        channel.settings.psk = Data(repeating: 7, count: 16)
+        let packet = try RemoteChannelsPacketBuilder.setRequest(
+            channel: channel, from: 0x1111, to: 0x2222, sessionPasskey: Data([1, 2, 3]), id: 43
+        )
+        let admin = try AdminMessage(serializedBytes: packet.decoded.payload)
+
+        #expect(admin.setChannel == channel)
+        #expect(admin.sessionPasskey == Data([1, 2, 3]))
+        #expect(packet.wantAck)
+        #expect(packet.decoded.wantResponse)
+    }
+
     @Test("response matching isolates target and request index")
     func responseMatchingIsTargetScoped() throws {
         var channel = Channel()

@@ -4,9 +4,32 @@ import SwiftUI
 
 enum RemoteChannelsPacketBuilder {
     static func getRequest(index: Int32, from: UInt32, to: UInt32, sessionPasskey: Data, id: UInt32 = .random(in: 256...UInt32.max)) throws -> MeshPacket {
-        precondition((0...7).contains(index))
+        guard (0...7).contains(index) else {
+            throw AccessoryError.appError("Channel index must be between 0 and 7")
+        }
         var admin = AdminMessage()
         admin.getChannelRequest = UInt32(index + 1)
+        admin.sessionPasskey = sessionPasskey
+        var packet = MeshPacket()
+        packet.id = id
+        packet.from = from
+        packet.to = to
+        packet.priority = .reliable
+        packet.wantAck = true
+        var data = DataMessage()
+        data.payload = try admin.serializedData()
+        data.portnum = .adminApp
+        data.wantResponse = true
+        packet.decoded = data
+        return packet
+    }
+
+    static func setRequest(channel: Channel, from: UInt32, to: UInt32, sessionPasskey: Data, id: UInt32 = .random(in: 256...UInt32.max)) throws -> MeshPacket {
+        guard (0...7).contains(channel.index) else {
+            throw AccessoryError.appError("Channel index must be between 0 and 7")
+        }
+        var admin = AdminMessage()
+        admin.setChannel = channel
         admin.sessionPasskey = sessionPasskey
         var packet = MeshPacket()
         packet.id = id
