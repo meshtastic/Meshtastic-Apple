@@ -55,6 +55,7 @@ func performConfigSave(
 		accessoryManager.remoteAdminConfigFeedback = (targetNode.num, "A configuration save is already in progress for this node. Please wait for it to finish.")
 		return
 	}
+	let connectionID = accessoryManager.activeConnection.map { ObjectIdentifier($0.connection) }
 
 	Task {
 		do {
@@ -72,9 +73,17 @@ func performConfigSave(
 						let result = await RemoteAdminSessionWaiter.wait(
 							isLive: { targetNode.hasLiveAdminSession },
 							isConnected: { accessoryManager.isConnected },
-							targetIsCurrent: { accessoryManager.activeDeviceNum == deviceNum }
+							targetIsCurrent: {
+								accessoryManager.activeDeviceNum == deviceNum
+									&& accessoryManager.activeConnection.map { ObjectIdentifier($0.connection) } == connectionID
+							}
 						)
 						guard result == .active else {
+							throw AccessoryError.ioFailed("Remote admin authorization was not refreshed. Please retry.")
+						}
+						guard accessoryManager.isConnected,
+							  accessoryManager.activeDeviceNum == deviceNum,
+							  accessoryManager.activeConnection.map({ ObjectIdentifier($0.connection) }) == connectionID else {
 							throw AccessoryError.ioFailed("Remote admin authorization was not refreshed. Please retry.")
 						}
 						guard let refreshedNode = getNodeInfo(id: targetNode.num, context: context),

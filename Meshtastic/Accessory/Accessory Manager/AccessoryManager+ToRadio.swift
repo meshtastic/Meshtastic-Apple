@@ -206,6 +206,9 @@ extension AccessoryManager {
 			targetNodeNum: Int64(meshPacket.to),
 			operationID: operationID
 		)
+		if operationID != nil && !enrolled {
+			throw AccessoryError.ioFailed("Remote admin operation is no longer active.")
+		}
 		try await send(toRadio)
 		if enrolled, let operationID {
 			switch await remoteAdminConfigTracker.waitForPacket(packetID: meshPacket.id, operationID: operationID) {
