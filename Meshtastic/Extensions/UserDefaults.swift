@@ -72,6 +72,7 @@ extension UserDefaults {
 		case nodeNotificationsUserOverrideForEvent
 		case lowBatteryNotifications
 		case channelMessageNotifications
+		case waypointNotifications
 		case modemPreset
 		case firmwareVersion
 		case hardwareModel
@@ -154,6 +155,10 @@ extension UserDefaults {
 
 	@UserDefault(.channelMessageNotifications, defaultValue: true)
 	static var channelMessageNotifications: Bool
+
+
+	@UserDefault(.waypointNotifications, defaultValue: true)
+	static var waypointNotifications: Bool
 
 	@UserDefault(.newNodeNotifications, defaultValue: true)
 	static var newNodeNotifications: Bool

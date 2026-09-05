@@ -482,6 +482,7 @@ struct MeshMapMK: View {
 					if let node = getNodeInfo(id: selection.id, context: context) {
 						NavigationStack {
 							NodeDetail(node: node, nodeNum: selection.id, showMapLink: false)
+								.trackScreen("Node Detail")
 						}
 						#if targetEnvironment(macCatalyst)
 							.overlay(alignment: .topLeading) {
@@ -825,7 +826,11 @@ struct MeshMapMK: View {
 	private func applyImportedCoverage(_ result: CoverageEstimateResult) {
 		GeoJSONOverlayManager.shared.clearCache()
 		mapOverlaysEnabled = true
-		enabledOverlayConfigs.insert(result.metadata.id)
+		// Resync from the store rather than just inserting: the import deactivated
+		// older Site Planner files, so their overlays leave the map with this render.
+		enabledOverlayConfigs = Set(
+			GeoJSONOverlayManager.shared.getUploadedFilesWithState().filter { $0.isActive }.map(\.id)
+		)
 		rebuildGeoJSONOverlays()
 		cameraCommand = ClusterMapCameraCommand(
 			id: UUID(),

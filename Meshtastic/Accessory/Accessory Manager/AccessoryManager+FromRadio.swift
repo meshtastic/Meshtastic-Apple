@@ -5,6 +5,7 @@
 //  Created by Jake Bordens on 7/18/25.
 //
 
+import CryptoKit
 import Foundation
 import MeshtasticProtobufs
 import CocoaMQTT
@@ -66,11 +67,31 @@ extension AccessoryManager {
 			}
 		}
 
+		// Always log, whether or not the user is alerted — Debug Logs stays complete.
+		Logger.services.error("⚠️ Client Notification: \(clientNotification.message, privacy: .private)")
+
+		// The radio answers an OTA request with one of these, and it is the only place it says
+		// why it would not start. Log it in the clear — it names a hardware capability, not
+		// anything about the user — and hand it to the update sheet, which otherwise sits there
+		// until it times out waiting for a device that never rebooted.
+		if clientNotification.message.contains("OTA") {
+			Logger.services.error("📡 [ESP32 OTA] Radio says: \(clientNotification.message, privacy: .public)")
+			NotificationCenter.default.post(name: .otaDeviceNotice, object: clientNotification.message)
+		}
+
+		let key = Self.noticeKey(for: clientNotification)
+		guard shouldSurfaceFirmwareNotice(key: key, isSecurity: Self.isSecurityNotice(clientNotification)) else {
+			Logger.services.debug("⏳ Firmware notification suppressed by backoff: \(key, privacy: .private)")
+			return
+		}
+
 		// TODO: Look at this to see if LocationManager should be singleton
 		let manager = LocalNotificationManager()
 		manager.notifications = [
 			Notification(
-				id: "client.notification",
+				// Per-message id: a fixed one let an unrelated notice silently replace a
+				// security warning that was still pending.
+				id: "client.notification.\(Self.noticeIdentifierFragment(key))",
 				title: "Firmware Notification".localized,
 				subtitle: "\(clientNotification.level)".capitalized,
 				content: clientNotification.message,
@@ -79,7 +100,80 @@ extension AccessoryManager {
 			)
 		]
 		manager.schedule()
-		Logger.services.error("⚠️ Client Notification: \(clientNotification.message, privacy: .public)")
+	}
+
+	// MARK: - Firmware notification backoff
+
+	/// Whether this notice should alert the user now.
+	///
+	/// Firmware repeats some notices on a timer — "Location sharing is disabled on this
+	/// channel" fires on every position interval when a channel deliberately has position
+	/// off, which on event firmware is configuration rather than a fault. A flat
+	/// suppression window can't serve both cases: short enough to report a real fault
+	/// promptly is short enough to nag. So repeats back off instead — immediate, then 5
+	/// minutes, 30, 2 hours, then once every 12. A one-off still alerts with no delay; a
+	/// standing condition settles to once or twice a day on its own.
+	///
+	/// Security notices never back off: they are rare, actionable, and the failure mode
+	/// worth avoiding is burying them.
+	func shouldSurfaceFirmwareNotice(key: String, isSecurity: Bool, now: Date = .now) -> Bool {
+		guard !isSecurity else { return true }
+
+		// Forget anything quiet for longer than the cap, so the map can't grow unbounded
+		// and a recurrence after a real lull is treated as new.
+		firmwareNoticeHistory = firmwareNoticeHistory.filter {
+			now.timeIntervalSince($0.value.lastShown) <= Self.firmwareNoticeForgetAfter
+		}
+
+		guard let entry = firmwareNoticeHistory[key] else {
+			firmwareNoticeHistory[key] = (count: 1, lastShown: now)
+			return true
+		}
+		let step = min(entry.count, Self.firmwareNoticeBackoff.count - 1)
+		guard now.timeIntervalSince(entry.lastShown) >= Self.firmwareNoticeBackoff[step] else {
+			return false
+		}
+		firmwareNoticeHistory[key] = (count: entry.count + 1, lastShown: now)
+		return true
+	}
+
+	/// Identity of a notice. The structured payload variant when there is one, so a
+	/// reworded firmware string stays the same notice; otherwise level plus message.
+	static func noticeKey(for notification: ClientNotification) -> String {
+		switch notification.payloadVariant {
+		case .lowEntropyKey: return "lowEntropyKey"
+		case .duplicatedPublicKey: return "duplicatedPublicKey"
+		case .keyVerificationNumberInform: return "keyVerificationNumberInform"
+		case .keyVerificationNumberRequest: return "keyVerificationNumberRequest"
+		case .keyVerificationFinal: return "keyVerificationFinal"
+		case .none: return "\(notification.level)|\(notification.message)"
+		}
+	}
+
+	/// Security notices bypass the backoff entirely.
+	static func isSecurityNotice(_ notification: ClientNotification) -> Bool {
+		switch notification.payloadVariant {
+		case .lowEntropyKey, .duplicatedPublicKey, .keyVerificationNumberInform,
+			 .keyVerificationNumberRequest, .keyVerificationFinal:
+			return true
+		case .none:
+			return false
+		}
+	}
+
+	/// A notification identifier fragment: readable in logs, stable across launches, and
+	/// bounded in length.
+	/// A readable prefix plus a digest of the complete key. Normalization alone
+	/// collides ("a-b" and "a_b" both become "a_b"), and so do long keys sharing a
+	/// truncated prefix — colliding identifiers make one pending notification
+	/// silently replace another.
+	static func noticeIdentifierFragment(_ key: String) -> String {
+		let digest = SHA256.hash(data: Data(key.utf8))
+			.prefix(4)
+			.map { String(format: "%02x", $0) }
+			.joined()
+		let allowed = key.map { $0.isLetter || $0.isNumber ? $0 : "_" }
+		return String(String(allowed).prefix(55)) + "_" + digest
 	}
 
 	func handleMyInfo(_ myNodeInfo: MyNodeInfo) async {
@@ -159,15 +253,26 @@ extension AccessoryManager {
 			return // The store already belongs to (or was restored for) this radio.
 		}
 
+		// Same radio, new number. A firmware upgrade to 2.8 changes the node number a radio
+		// reports, and everything the app stored is keyed to the old one. The MyInfo row records
+		// the peripheral it came from, so a match means this is that radio under a new number
+		// rather than a different radio — renumber the store instead of throwing it away.
+		if let connectedDeviceId = activeConnection?.device.id.uuidString,
+		   let sameRadio = myInfos.first(where: { $0.peripheralId == connectedDeviceId }) {
+			await renumberStore(from: sameRadio.myNodeNum, to: incomingNodeNum)
+			return
+		}
+
 		Logger.data.warning("💾 [Database] Connected to node \(incomingNodeNum.toHex(), privacy: .public) but the store belongs to \(nums.map { $0.toHex() }.joined(separator: ", "), privacy: .public) — backing up and resetting to prevent cross-device node bleed")
 
-		// Preserve the previous radio's data exactly like the switch flow would have.
+		// Preserve the previous radio's data exactly like the switch flow would have. Flush before
+		// copying the store files or the backup misses anything still waiting on a debounced save.
+		await MeshPackets.shared.flushDebouncedSaves()
 		if let previousNum = nums.first {
 			let previousName = devices.first(where: { $0.num == previousNum })?.longName
 			_ = await NodeBackupManager.shared.createBackup(forNode: previousNum, nodeName: previousName)
 		}
 
-		await MeshPackets.shared.flushDebouncedSaves()
 		let cleared = await MeshPackets.shared.clearDatabase(includeRoutes: false)
 		if !cleared {
 			// A half-cleared store must not receive this radio's dump (that IS the bleed).
@@ -178,6 +283,38 @@ extension AccessoryManager {
 		// Pops views, repoints the container (recreating the MeshPackets actor), and bumps
 		// databaseResetID so @Query views rebind before the new radio's data starts landing.
 		await resetDatabaseAfterClear()
+	}
+
+	/// Rewrites the store from the node number this radio used to report to the one it reports
+	/// now. Runs before any data for the new number is ingested, so what it rewrites is exactly
+	/// what the previous session left behind.
+	private func renumberStore(from oldNum: Int64, to newNum: Int64) async {
+		Logger.data.warning("💾 [Database] Node \(oldNum.toHex(), privacy: .public) now reports \(newNum.toHex(), privacy: .public) — same radio, renumbering the store")
+
+		// The backup is the safety net if the rewrite goes wrong, so flush first — it copies the
+		// store files, and anything still waiting on a debounced save would not be in them yet.
+		await MeshPackets.shared.flushDebouncedSaves()
+		let previousName = devices.first(where: { $0.num == oldNum })?.longName
+		_ = await NodeBackupManager.shared.createBackup(forNode: oldNum, nodeName: previousName)
+
+		// Detail views bound to the old node have to unmount before its identity changes
+		// underneath them, the same reason the reset path pops first.
+		if let router = appState?.router {
+			router.popToRoot(tab: .messages)
+			router.popToRoot(tab: .nodes)
+			router.popToRoot(tab: .map)
+			router.popToRoot(tab: .settings)
+			await Task.yield()
+		}
+
+		guard NodeRenumber.apply(from: oldNum, to: newNum, in: context) else {
+			// Leave the store alone rather than half-renumbering it. The connect carries on and
+			// the radio arrives as a new node, which is what happened before this existed.
+			Logger.data.error("💾 [Database] Renumbering failed, leaving the store as it is")
+			return
+		}
+		UserDefaults.preferredPeripheralNum = Int(newNum)
+		appState?.databaseResetID = UUID()
 	}
 
 	/// When event firmware is detected (DEFCON, BURNING_MAN, OPEN_SAUCE, etc.),

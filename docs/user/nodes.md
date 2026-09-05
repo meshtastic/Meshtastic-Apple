@@ -21,9 +21,14 @@ The Nodes tab shows every device your radio has heard on the mesh. Tap any node 
 
 | Icon | Meaning |
 |------|---------|
-| ![Shared Key](../assets/screenshots/lockOpen.png) | **Shared Key** — direct messages are using the shared key for the channel. |
+| ![No Public Key](../assets/screenshots/lockOpen.png) | **No Public Key** — no public key has been received for this node, so direct messages to it cannot be sent. Use **Exchange User Info** on the node to ask for one. |
 | ![Public Key Encryption](../assets/screenshots/lockClosed.png) | **Public Key Encryption** — direct messages use public key infrastructure. Requires firmware 2.5+. |
 | ![PKI Mismatch](../assets/screenshots/keySlash.png) | **Public Key Mismatch** — public key does not match the previously recorded key. Verify the contact out-of-band. |
+
+Every radio has generated a keypair since firmware 2.5, so direct messages use it. A radio with no
+public key for the destination refuses to send rather than falling back to the channel key, so a node
+showing the open lock cannot be messaged until its node info arrives. Node detail shows **No Public
+Key** in place of the public key row for those nodes, and they are left out of the contact list.
 
 ## Device Roles
 
@@ -99,6 +104,7 @@ Long-press any node in the list to access quick actions:
 
 - **Add to favorites / Remove from favorites** — star important nodes so they appear at the top of the list
 - **Display name** — give a node a local nickname (see Display Names below)
+- **Status Message** — set the status your radio broadcasts to the mesh (connected node only, firmware 2.8+)
 - **Mute notifications / Unmute** — silence alerts from this node
 - **Message** — open a direct message conversation with this node
 - **Trace Route** — discover the path messages take to reach this node
@@ -168,10 +174,6 @@ Tap any node to see the full detail view with hardware info, signal metrics, env
 ![Node Detail](../assets/screenshots/nodeDetail.png)
 
 For messageable nodes, use **Actions > Share Contact QR** to show a Meshtastic contact link and QR code that another device can scan.
-
-### Share Connected Node
-
-When a radio is connected, a **Share Connected Node** button appears in the node list toolbar. It opens the same share sheet as **Share Contact QR**, pre-filled with your own node — a quick way to hand someone your contact without finding yourself in the list.
 
 ### Write a Contact to an NFC Tag
 

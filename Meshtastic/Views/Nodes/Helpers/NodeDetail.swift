@@ -103,8 +103,18 @@ struct NodeDetail: View {
 		}
 		return (fromUser, toUser)
 	}
+	/// The status row opens the status message editor for the connected node, or for a remote
+	/// node we have successfully administered before. Firmware 2.8+ in both cases: the
+	/// connected node via `supportsStatusMessage`, a remote target additionally via its own
+	/// reported metadata (permissive when unknown, matching the house capability gates).
+	private var canEditStatusMessage: Bool {
+		guard accessoryManager.supportsStatusMessage else { return false }
+		if accessoryManager.activeDeviceNum == nodeNum { return true }
+		return node.hasBeenAdministered && node.firmwareSupportsStatusMessage
+	}
 	@State var showingCompassSheet = false
 	@State private var nodeForDisplayNameEdit: NodeInfoEntity?
+	@State private var nodeForStatusMessageEdit: NodeInfoEntity?
 	/// Bumped whenever a local display name is set/cleared to force this view to re-render —
 	/// NodeDisplayNameStore is plain UserDefaults, not a SwiftData/@Bindable property, so nothing
 	/// else here would pick up the change.
@@ -127,6 +137,7 @@ struct NodeDetail: View {
 							)
 						}
 						.displayNameAlert(node: $nodeForDisplayNameEdit)
+						.statusMessageAlert(node: $nodeForStatusMessageEdit)
 					.onReceive(NotificationCenter.default.publisher(for: NodeDisplayNameStore.didChangeNotification)) { notification in
 						// Scoped to this node: the notification's object is unconditionally `nil`
 						// otherwise, and `displayNameRefresh` drives `.id()` below (which recreates
@@ -293,24 +304,41 @@ struct NodeDetail: View {
 				let publicKey = nodeNum == accessoryManager.activeDeviceNum
 				? node.securityConfig?.publicKey?.base64EncodedString() ?? ""
 				: user.publicKey?.base64EncodedString() ?? ""
-				HStack {
+				if publicKey.isEmpty {
+					// Nodes we have only heard packets from have no key on file. Matches the yellow
+					// open lock the node list shows, rather than a green lock over an empty key.
 					Label {
-						Text("Public Key")
+						VStack(alignment: .leading) {
+							Text("No Public Key")
+							Text("This node has not shared a public key, so direct messages to it cannot be sent. Exchange User Info asks for one.")
+								.foregroundStyle(.secondary)
+								.font(.callout)
+						}
+						.accessibilityElement(children: .combine)
 					} icon: {
-						Image(systemName: "lock.fill")
-							.foregroundColor(.green)
+						Image(systemName: "lock.open.fill")
+							.foregroundColor(.yellow)
 					}
-					Spacer()
-					Button(action: {
-						UIPasteboard.general.string = publicKey
-					}) {
-						HStack {
-							Image(systemName: "key.horizontal.fill")
-							Text("Copy")
+				} else {
+					HStack {
+						Label {
+							Text("Public Key")
+						} icon: {
+							Image(systemName: "lock.fill")
+								.foregroundColor(.green)
+						}
+						Spacer()
+						Button(action: {
+							UIPasteboard.general.string = publicKey
+						}) {
+							HStack {
+								Image(systemName: "key.horizontal.fill")
+								Text("Copy")
+							}
 						}
 					}
+					.accessibilityElement(children: .combine)
 				}
-				.accessibilityElement(children: .combine)
 			}
 			if let metadata = node.metadata {
 				HStack {
@@ -338,14 +366,36 @@ struct NodeDetail: View {
 				}
 				.accessibilityElement(children: .combine)
 			}
-			// User-authored status broadcast by the node. Omitted entirely when empty
-			// (no placeholder / em-dash). Untrusted free text — rendered verbatim as
-			// plain text, never markup. `Text(_: String)` does not parse markdown.
+			// User-authored status broadcast by the node. Untrusted free text — rendered
+			// verbatim as plain text, never markup. `Text(_: String)` does not parse markdown.
 			// Detail has more room than the cards (design#115), so it shows the full
 			// status rather than the 2-line card clamp — but still capped so a remote
 			// node broadcasting newline-laden text (the 80-byte cap is only enforced on
 			// the local save path) can't grow the row without bound.
-			if let status = node.statusMessageDisplay {
+			// For the connected node or an administered node the row is a button that opens
+			// the same status editor as the node list context menu, and it stays visible
+			// (with an em-dash) when no status is set. Read-only otherwise, and omitted
+			// entirely when empty (no placeholder).
+			if canEditStatusMessage {
+				Button {
+					nodeForStatusMessageEdit = node
+				} label: {
+					HStack(alignment: .top) {
+						Label {
+							Text("Status Message")
+						} icon: {
+							Image(systemName: NodeStatusStyle.glyph)
+								.symbolRenderingMode(.hierarchical)
+						}
+						Spacer()
+						Text(node.statusMessageDisplay ?? "—")
+							.foregroundStyle(.secondary)
+							.multilineTextAlignment(.trailing)
+							.lineLimit(6)
+					}
+				}
+				.accessibilityElement(children: .combine)
+			} else if let status = node.statusMessageDisplay {
 				HStack(alignment: .top) {
 					Label {
 						Text("Status Message")
@@ -759,7 +809,7 @@ struct NodeDetail: View {
 					node: node
 				)
 				if accessoryManager.activeDeviceNum != nodeNum {
-					if !(currentUser?.unmessagable ?? true) {
+					if currentUser?.showsDirectMessageAction == true {
 						Button(action: {
 							if let url = URL(string: "meshtastic:///messages?userNum=\(nodeNum)") {
 								UIApplication.shared.open(url)

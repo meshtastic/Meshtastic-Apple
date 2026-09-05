@@ -12,6 +12,9 @@ struct NodeListFilter: View {
 	@Environment(\.dismiss) private var dismiss
 	@State var editMode = EditMode.active
 	var filterTitle = "Node Filters"
+	/// The contact list only ever shows contacts we can direct message, so filtering it by key
+	/// state would be a no-op. Node and map filters keep the toggle.
+	var showsEncryptedFilter = true
 	@ObservedObject var filters: NodeFilterParameters
 
 	var body: some View {
@@ -36,11 +39,13 @@ struct NodeListFilter: View {
 					.toggleStyle(.switch)
 					.listRowSeparator(.visible)
 
-					Toggle(isOn: $filters.isPkiEncrypted) {
-						Label("Encrypted", systemImage: "lock.fill")
+					if showsEncryptedFilter {
+						Toggle(isOn: $filters.isPkiEncrypted) {
+							Label("Encrypted", systemImage: "lock.fill")
+						}
+						.toggleStyle(.switch)
+						.listRowSeparator(.visible)
 					}
-					.toggleStyle(.switch)
-					.listRowSeparator(.visible)
 
 					Toggle(isOn: $filters.isFavorite) {
 						Label("Favorites", systemImage: "star.fill")

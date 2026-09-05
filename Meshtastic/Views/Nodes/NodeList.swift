@@ -22,6 +22,7 @@ struct NodeList: View {
 	@State private var deleteNodeId: Int64 = 0
 	@State private var shareContactNode: NodeInfoEntity?
 	@State private var nodeForDisplayNameEdit: NodeInfoEntity?
+	@State private var nodeForStatusMessageEdit: NodeInfoEntity?
 	@ObservedObject var filters = NodeFilterParameters.shared
 	@State var isEditingFilters = false
 	@State private var showingHelp = false
@@ -47,6 +48,7 @@ struct NodeList: View {
 						LocalStatsLog(node: node)
 					} else {
 						NodeDetail(node: node, nodeNum: selectedNum)
+							.trackScreen("Node Detail")
 					}
 				} else {
 					ContentUnavailableView("Select a Node", systemImage: "flipphone")
@@ -81,6 +83,7 @@ struct NodeList: View {
 			deleteNodeId: $deleteNodeId,
 			shareContactNode: $shareContactNode,
 			nodeForDisplayNameEdit: $nodeForDisplayNameEdit,
+			nodeForStatusMessageEdit: $nodeForStatusMessageEdit,
 			nodeListDensity: $nodeListDensity,
 			selectedNodeNum: $router.selectedNodeNum
 		)
@@ -169,19 +172,11 @@ struct NodeList: View {
 			)
 		}
 		.displayNameAlert(node: $nodeForDisplayNameEdit)
+		.statusMessageAlert(node: $nodeForStatusMessageEdit)
 		.navigationSplitViewColumnWidth(min: 100, ideal: 300, max: .infinity)
 		.toolbar {
 			ToolbarItem(placement: .topBarLeading) {
 				MeshtasticLogo()
-			}
-			if let connectedNode, ShareContactQR.canShareContact(for: connectedNode) {
-				ToolbarItem(placement: .topBarTrailing) {
-					Button {
-						shareContactNode = connectedNode
-					} label: {
-						Label("Share Connected Node", systemImage: "person.crop.circle.badge.plus")
-					}
-				}
 			}
 			ToolbarItem(placement: .topBarTrailing) {
 				ConnectedDevice(
@@ -243,6 +238,7 @@ private struct FilteredNodeList: View {
 	@Binding var deleteNodeId: Int64
 	@Binding var shareContactNode: NodeInfoEntity?
 	@Binding var nodeForDisplayNameEdit: NodeInfoEntity?
+	@Binding var nodeForStatusMessageEdit: NodeInfoEntity?
 	@Binding var nodeListDensity: NodeListDensity
 	@Binding var selectedNodeNum: Int64?
 	var filters: NodeFilterParameters
@@ -254,6 +250,7 @@ private struct FilteredNodeList: View {
 		deleteNodeId: Binding<Int64>,
 		shareContactNode: Binding<NodeInfoEntity?>,
 		nodeForDisplayNameEdit: Binding<NodeInfoEntity?>,
+		nodeForStatusMessageEdit: Binding<NodeInfoEntity?>,
 		nodeListDensity: Binding<NodeListDensity>,
 		selectedNodeNum: Binding<Int64?>
 	) {
@@ -263,6 +260,7 @@ private struct FilteredNodeList: View {
 		self._deleteNodeId = deleteNodeId
 		self._shareContactNode = shareContactNode
 		self._nodeForDisplayNameEdit = nodeForDisplayNameEdit
+		self._nodeForStatusMessageEdit = nodeForStatusMessageEdit
 		self._nodeListDensity = nodeListDensity
 		self._selectedNodeNum = selectedNodeNum
 	}
@@ -458,13 +456,22 @@ private struct FilteredNodeList: View {
 		} label: {
 			Label("Display name", systemImage: "person.crop.circle")
 		}
+		// Status message the connected node broadcasts to the mesh. Only for your own
+		// node, with the same firmware 2.8+ gate the old Settings entry used.
+		if node.num == connectedNode?.num, accessoryManager.supportsStatusMessage {
+			Button {
+				nodeForStatusMessageEdit = node
+			} label: {
+				Label("Status Message", systemImage: "text.bubble")
+			}
+		}
 		if let connectedNode {
 			FavoriteNodeButton(node: node)
 			if let user = node.user {
 				NodeAlertsButton(context: context, node: node, user: user)
 			}
 			if connectedNode.num != node.num {
-				if !(node.user?.unmessagable ?? true) {
+				if node.user?.showsDirectMessageAction == true {
 					Button(action: {
 						if let url = URL(string: "meshtastic:///messages?userNum=\(node.num)") {
 							UIApplication.shared.open(url)

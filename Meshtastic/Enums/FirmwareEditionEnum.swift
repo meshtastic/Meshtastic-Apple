@@ -17,6 +17,8 @@ enum FirmwareEditions: Int, CaseIterable, Identifiable {
 	case burningMan = 18
 	case hamvention = 19
 	case fab = 20
+	case dragonCon = 21
+	case ccc = 22
 	case diyEdition = 127
 
 	var id: Int { self.rawValue }
@@ -37,6 +39,10 @@ enum FirmwareEditions: Int, CaseIterable, Identifiable {
 			return "Hamvention".localized
 		case .fab:
 			return "FAB".localized
+		case .dragonCon:
+			return "Dragon Con".localized
+		case .ccc:
+			return "CCC".localized
 		case .diyEdition:
 			return "DIY Edition".localized
 		}
@@ -58,6 +64,10 @@ enum FirmwareEditions: Int, CaseIterable, Identifiable {
 			return "Event firmware for Hamvention, the Dayton amateur radio convention.".localized
 		case .fab:
 			return "Event firmware for FAB, the international Fab Lab digital fabrication conference.".localized
+		case .dragonCon:
+			return "Event firmware for Dragon Con, the annual multigenre convention in Atlanta.".localized
+		case .ccc:
+			return "Event firmware for the Chaos Communication Congress, the annual CCC hacker conference.".localized
 		case .diyEdition:
 			return "Firmware for DIY and unofficial community events.".localized
 		}
@@ -85,6 +95,10 @@ enum FirmwareEditions: Int, CaseIterable, Identifiable {
 			return "HAMVENTION"
 		case .fab:
 			return "FAB"
+		case .dragonCon:
+			return "DRAGON_CON"
+		case .ccc:
+			return "CCC"
 		case .diyEdition:
 			return "DIY_EDITION"
 		}

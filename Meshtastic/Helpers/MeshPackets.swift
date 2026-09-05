@@ -133,6 +133,18 @@ actor MeshPackets {
 	/// incoming channel frames) and the main actor (begin/commit/discard from AccessoryManager).
 	nonisolated(unsafe) private static var channelRefreshStages: [Int64: ChannelRefreshStage] = [:]
 	private static let channelRefreshStagesLock = NSLock()
+
+	// Main-thread views read node/user/position entities during body evaluation, and a
+	// cap eviction on this actor cascades all of them away — the invalid-entity trap
+	// that tops the crash reports (Settings, node detail, node list rows). Evictions
+	// wait for the app to background; while foregrounded only a doubled cap applies,
+	// so a device that never backgrounds (a wall display) still stays bounded.
+	nonisolated(unsafe) private static var _appIsActive = true
+	private static let appActiveLock = NSLock()
+	nonisolated static var appIsActive: Bool {
+		get { appActiveLock.withLock { _appIsActive } }
+		set { appActiveLock.withLock { _appIsActive = newValue } }
+	}
 	#if DEBUG
 	/// Deterministic concurrency checkpoint used by the refresh boundary regression test. Production
 	/// callers leave this nil, so validation and replacement execute without suspension.
@@ -356,6 +368,15 @@ actor MeshPackets {
 
 	/// Saves any pending changes in the model context. Call once at the end of each
 	/// top-level packet handler to batch all mutations from a single packet into one write.
+	/// Set by any handler that touches a MessageEntity. Writes happen on this actor's context,
+	/// which SwiftData does not propagate to views, so the message lists cannot observe them.
+	/// One notification per save is enough for them to reload; observers debounce.
+	private var pendingMessageChange = false
+
+	func noteMessageChange() {
+		pendingMessageChange = true
+	}
+
 	func savePendingChanges(caller: String = #function) {
 		guard !invalidated else {
 			Logger.data.warning("💾 [\(caller, privacy: .public)] Dropped save on retired MeshPackets instance")
@@ -373,6 +394,12 @@ actor MeshPackets {
 		do {
 			try modelContext.save()
 			Logger.data.debug("💾 [\(caller, privacy: .public)] Saved pending changes")
+			if pendingMessageChange {
+				pendingMessageChange = false
+				Task { @MainActor in
+					NotificationCenter.default.post(name: .meshMessagesDidChange, object: nil)
+				}
+			}
 		} catch {
 			Logger.data.error("💥 [\(caller, privacy: .public)] Error saving: \(error.localizedDescription, privacy: .public)")
 		}
@@ -384,8 +411,25 @@ actor MeshPackets {
 	/// Split into cap-parameterized helpers below so the eviction order is unit-testable with
 	/// small datasets rather than needing tens of thousands of inserts.
 	func enforceEntityCaps() {
+		let multiplier = Self.appIsActive ? 2 : 1
+		evictNodesIfOverCap(Self.maxTotalNodes * multiplier)
+		evictWaypointsIfOverCap(Self.maxTotalWaypoints * multiplier)
+	}
+
+	/// Evict down to the strict caps and commit. Called on the background transition —
+	/// the one moment deletes cannot race a view reading the doomed entities. The flag
+	/// is re-checked here on the actor, not just at enqueue: a quick return to the
+	/// foreground can beat this task's turn on the actor, and evicting then would be
+	/// exactly the mid-render delete this exists to avoid.
+	func enforceEntityCapsAndSave() {
+		guard !invalidated, !Self.appIsActive else { return }
 		evictNodesIfOverCap(Self.maxTotalNodes)
+		guard !Self.appIsActive else {
+			savePendingChanges()
+			return
+		}
 		evictWaypointsIfOverCap(Self.maxTotalWaypoints)
+		savePendingChanges()
 	}
 
 	// MARK: - Watch Snapshot
@@ -1120,7 +1164,7 @@ actor MeshPackets {
 		return nil
 	}
 
-	func adminAppPacket (packet: MeshPacket) {
+	func adminAppPacket (packet: MeshPacket, connectedNodeNum: Int64? = nil) {
 		if let adminMessage = try? AdminMessage(serializedBytes: packet.decoded.payload) {
 
 			if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getCannedMessageModuleMessagesResponse(adminMessage.getCannedMessageModuleMessagesResponse) {
@@ -1207,6 +1251,26 @@ actor MeshPackets {
 			} else {
 				Logger.admin.error("🕸️ MESH PACKET received Admin App UNHANDLED \((try? packet.decoded.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
 			}
+			// An admin *response* carrying a session passkey is proof an admin request we
+			// sent to this node succeeded, so remember that it has been administered.
+			// Marking requires a response variant (never a request another node sent),
+			// a response correlated to a request (requestID != 0), and a packet addressed
+			// to the connected node — an unsolicited or forwarded admin message never
+			// unlocks the remote-admin UI. Runs after the handlers above so a node first
+			// heard via a metadata response exists by now.
+			if let connectedNodeNum,
+			   packet.decoded.requestID != 0,
+			   Int64(packet.to) == connectedNodeNum,
+			   !adminMessage.sessionPasskey.isEmpty {
+				switch adminMessage.payloadVariant {
+				case .getChannelResponse, .getOwnerResponse, .getConfigResponse, .getModuleConfigResponse,
+					 .getCannedMessageModuleMessagesResponse, .getDeviceMetadataResponse, .getRingtoneResponse,
+					 .getDeviceConnectionStatusResponse, .getNodeRemoteHardwarePinsResponse, .getUiConfigResponse:
+					markNodeAdministered(num: Int64(packet.from))
+				default:
+					break
+				}
+			}
 			// Save an ack for the admin message log for each admin message response received as we stopped sending acks if there is also a response to reduce airtime.
 			self.adminResponseAck(packet: packet)
 		}
@@ -1225,6 +1289,7 @@ actor MeshPackets {
 				fetchedMessage[0].relayNode = Int64(packet.relayNode)
 				fetchedMessage[0].ackSNR = packet.rxSnr
 
+				noteMessageChange()
 				savePendingChanges()
 			}
 		} catch {
@@ -1300,6 +1365,7 @@ actor MeshPackets {
 				} else {
 					return
 				}
+				noteMessageChange()
 				scheduleDebouncedSave()
 				Logger.data.debug("💾 ACK buffered for Message: \(packet.decoded.requestID, privacy: .public)")
 			} catch {
@@ -1872,9 +1938,9 @@ actor MeshPackets {
 						CarPlayIntentDonation.donateReceivedMessage(newMessage)
 						#endif
 
-						// Let unread-displaying surfaces (badge, CarPlay templates) refresh.
-						// Observers debounce, so posting per saved message is cheap.
-						NotificationCenter.default.post(name: .meshMessagesDidChange, object: nil)
+						// Let the message lists and unread-displaying surfaces refresh. The
+						// notification is posted once per save, from savePendingChanges.
+						noteMessageChange()
 
 						// Self-originated messages and muted detection-sensor packets skip
 						// all notification work (no badge recount, no local notification).
@@ -1911,7 +1977,8 @@ actor MeshPackets {
 										critical: critical
 									)
 								} else if let reactionBody = MeshPackets.reactionNotificationBody(replyID: newMessage.replyID, emoji: messageText, senderName: senderName, context: modelContext) {
-									// Tapback/reaction: only notify when the reacted-to message is known locally.
+									// Tapback/reaction: follows the same notification rules as the message it
+									// reacts to, and only notifies when the reacted-to message is known locally.
 									// A "phantom" tapback (replyID with no matching local message) is stored but not
 									// surfaced — reactionNotificationBody returns nil in that case.
 									dmNotification = makeMessageNotification(
@@ -1966,9 +2033,10 @@ actor MeshPackets {
 												critical: critical
 											)
 										} else if let reactionBody = MeshPackets.reactionNotificationBody(replyID: newMessage.replyID, emoji: messageText, senderName: senderName, context: modelContext) {
-											// Tapback/reaction: only notify when the reacted-to message is known
-											// locally. A "phantom" tapback is stored but not surfaced — the helper
-											// returns nil in that case, per Android's guard.
+											// Tapback/reaction: follows the channel-notification rules above, and
+											// only notifies when the reacted-to message is known locally. A
+											// "phantom" tapback is stored but not surfaced — the helper returns nil
+											// in that case, per Android's guard.
 											channelNotification = makeMessageNotification(
 												message: newMessage,
 												content: reactionBody,
@@ -2067,24 +2135,29 @@ actor MeshPackets {
 					savePendingChanges()
 					Logger.data.info("💾 Added Node Waypoint App Packet For: \(waypoint.id, privacy: .public)")
 
-					Task { @MainActor in
-							let manager = LocalNotificationManager()
-							let icon = String(UnicodeScalar(Int(waypoint.icon)) ?? "📍")
-							let latitude = Double(waypoint.latitudeI) / 1e7
-							let longitude = Double(waypoint.longitudeI) / 1e7
-							manager.notifications = [
-								Notification(
-									id: ("notification.id.\(waypoint.id)"),
-									title: "New Waypoint From \(nodeShortName)",
-									subtitle: "\(icon) \(waypoint.name ?? "Dropped Pin")",
-									content: "\(waypoint.longDescription ?? "\(latitude), \(longitude)")",
-									target: "map",
-									path: "meshtastic:///map?waypointid=\(waypoint.id)"
-								)
-							]
-							Logger.data.debug("meshtastic:///map?waypointid=\(waypoint.id, privacy: .public)")
-							manager.schedule()
+					if UserDefaults.waypointNotifications {
+						// Build the notification from the model now, while this context is valid, and
+						// capture only the resulting value — same rule as the message path: a deferred
+						// Task must not hold `waypoint`, a context-bound model.
+						let icon = String(UnicodeScalar(Int(waypoint.icon)) ?? "📍")
+						let latitude = Double(waypoint.latitudeI) / 1e7
+						let longitude = Double(waypoint.longitudeI) / 1e7
+						let waypointId = waypoint.id
+						let waypointName = waypoint.name ?? "Dropped Pin".localized
+						let notification = Notification(
+							id: ("notification.id.\(waypointId)"),
+							title: String.localizedStringWithFormat("New Waypoint From %@".localized, nodeShortName),
+							subtitle: "\(icon) \(waypointName)",
+							content: "\(waypoint.longDescription ?? "\(latitude), \(longitude)")",
+							target: "map",
+							path: "meshtastic:///map?waypointid=\(waypointId)"
+						)
+						let scheduler = notificationScheduler
+						Task { @MainActor in
+							scheduler([notification])
+							Logger.data.debug("meshtastic:///map?waypointid=\(waypointId, privacy: .public)")
 						}
+					}
 				} else {
 					// Update existing waypoint
 					let existingWaypoint = fetchedWaypoint[0]

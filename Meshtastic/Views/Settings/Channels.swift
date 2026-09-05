@@ -24,6 +24,25 @@ func projectedDisplayChannels(from channels: [ChannelEntity]) -> [ChannelEntity]
 	canonicalValidUniqueChannels(from: channels)
 }
 
+/// The connected radio's channels as name|key identity strings, for suppressing beacon
+/// offers the radio already has (design#140 behavior 10 — a beacon inviting you to a
+/// mesh you are already on is not an invitation).
+///
+/// A fetch failure returns an empty set on purpose: suppression quietly turns off and
+/// every offer stays visible, which is the pre-suppression behavior and the safe
+/// direction — hiding an offer on bad data would be the harmful failure.
+@MainActor
+func configuredChannelOfferKeys(context: ModelContext) -> Set<String> {
+	let num = Int64(UserDefaults.preferredPeripheralNum)
+	guard num > 0 else { return [] }
+	var descriptor = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == num })
+	descriptor.fetchLimit = 1
+	guard let node = (try? context.fetch(descriptor))?.first else { return [] }
+	return Set(canonicalValidUniqueChannels(from: node.myInfo?.channels ?? []).map {
+		"\($0.name ?? "")|\(($0.psk ?? Data()).base64EncodedString())"
+	})
+}
+
 func canonicalValidUniqueChannels(from channels: [ChannelEntity]) -> [ChannelEntity] {
 	var byIndex: [Int32: ChannelEntity] = [:]
 	for channel in channels where (Int32(0)...Int32(7)).contains(channel.index) {
@@ -36,9 +55,12 @@ func validUniqueChannelIndexes(from channels: [ChannelEntity]) -> [Int32] {
 	canonicalValidUniqueChannels(from: channels).map(\.index)
 }
 
+/// Slots the radio keeps. It is a fixed array with a role per slot, not a list that grows.
+let maxChannelSlots: Int32 = 8
+
 func availableChannelIndexes(from channels: [ChannelEntity]) -> [Int32] {
 	let occupied = Set(validUniqueChannelIndexes(from: channels))
-	return (Int32(0)...Int32(7)).filter { !occupied.contains($0) }
+	return (Int32(0)..<maxChannelSlots).filter { !occupied.contains($0) }
 }
 
 func nextAvailableSecondaryChannelIndex(from channels: [ChannelEntity]) -> Int32? {

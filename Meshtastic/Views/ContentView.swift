@@ -238,6 +238,7 @@ struct ContentView: View {
 						unreadChannelMessages: $appState.unreadChannelMessages,
 						unreadDirectMessages: $appState.unreadDirectMessages
 					)
+					.trackScreen(NavigationState.Tab.messages.screenName)
 				}
 				.badge(appState.totalUnreadMessages)
 				// Intended as stable, non-localized identifiers for MeshtasticUITests/
@@ -252,16 +253,19 @@ struct ContentView: View {
 
 				Tab("Nodes", image: "custom.mesh.radio", value: NavigationState.Tab.nodes) {
 					NodeList()
+						.trackScreen(NavigationState.Tab.nodes.screenName)
 				}
 				.accessibilityIdentifier("tab-nodes")
 
 				Tab("Map", systemImage: "map", value: NavigationState.Tab.map) {
 					MeshMapMK(router: appState.router)
+						.trackScreen(NavigationState.Tab.map.screenName)
 				}
 				.accessibilityIdentifier("tab-map")
 
 				Tab("Settings", systemImage: "gear", value: NavigationState.Tab.settings) {
 					Settings()
+						.trackScreen(NavigationState.Tab.settings.screenName)
 				}
 				.accessibilityIdentifier("tab-settings")
 
@@ -269,6 +273,7 @@ struct ContentView: View {
 					Connect(
 						router: appState.router
 					)
+					.trackScreen(NavigationState.Tab.connect.screenName)
 				}
 				.accessibilityIdentifier("tab-connect")
 			}
@@ -333,10 +338,11 @@ struct ContentView: View {
 				unreadChannelMessages: $appState.unreadChannelMessages,
 				unreadDirectMessages: $appState.unreadDirectMessages
 			)
-		case .nodes: NodeList()
-		case .map: MeshMapMK(router: appState.router)
-		case .settings: Settings()
-		case .connect: Connect(router: appState.router)
+			.trackScreen(tab.value.screenName)
+		case .nodes: NodeList().trackScreen(tab.value.screenName)
+		case .map: MeshMapMK(router: appState.router).trackScreen(tab.value.screenName)
+		case .settings: Settings().trackScreen(tab.value.screenName)
+		case .connect: Connect(router: appState.router).trackScreen(tab.value.screenName)
 		}
 	}
 

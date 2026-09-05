@@ -232,7 +232,14 @@ struct MeshtasticAppleApp: App {
 			if Self.isRunningTests {
 				Color.clear
 			} else if Self.isChirpyOTADemo {
+				// Kept out of the release build's view type on purpose, not just behind a flag
+				// that is false there: the automatic RUM view naming reflects over these
+				// branches, and this type — which can never be on screen in release — was
+				// being reported as the view for everything that happened at the app root.
+				// See `trackScreen`.
+				#if DEBUG
 				FirmwareUpdateGameDemoHost()
+				#endif
 			} else if appState.isDatabaseResetting {
 				// Unmount the WHOLE SwiftData-bound tree — including the `.modelContainer`
 				// modifier in mainAppContent — while a node switch clears the store. The
@@ -266,6 +273,10 @@ struct MeshtasticAppleApp: App {
 			case .background:
 				Logger.services.info("🎬 [App] Scene is in the background")
 				accessoryManager.appDidEnterBackground()
+				// Entity-cap evictions run now, while no view is mid-render on the
+				// doomed entities. Foregrounded, the packet actor defers them.
+				MeshPackets.appIsActive = false
+				Task { await MeshPackets.shared.enforceEntityCapsAndSave() }
 				do {
 					try persistenceController.container.mainContext.save()
 					Logger.services.info("💾 [App] Saved SwiftData context when the app went to the background.")
@@ -278,6 +289,7 @@ struct MeshtasticAppleApp: App {
 				Logger.services.info("🎬 [App] Scene is inactive")
 			case .active:
 				Logger.services.info("🎬 [App] Scene is active")
+				MeshPackets.appIsActive = true
 				accessoryManager.appDidBecomeActive()
 				appState.refreshBadgeCount(context: persistenceController.container.mainContext)
 			@unknown default:
