@@ -8,8 +8,15 @@ import MeshtasticProtobufs
 private actor RemoteAdminReceiveConnection: Connection {
 	let type: TransportType = .ble
 	var isConnected = true
-	private(set) var sendCount = 0
-	func send(_ data: ToRadio) async throws { sendCount += 1 }
+	private(set) var sentPackets: [ToRadio] = []
+	var sendCount: Int { sentPackets.count }
+	var sentPacketIDs: [UInt32] {
+		sentPackets.compactMap { toRadio in
+			guard case .packet(let packet) = toRadio.payloadVariant else { return nil }
+			return packet.id
+		}
+	}
+	func send(_ data: ToRadio) async throws { sentPackets.append(data) }
 	func connect() async throws -> AsyncStream<ConnectionEvent> { AsyncStream { $0.finish() } }
 	func disconnect(withError: Error?, shouldReconnect: Bool) async throws {}
 	func drainPendingPackets() async throws {}
@@ -148,6 +155,63 @@ struct RemoteAdminConfigTrackerTests {
 		#expect(unaffectedTarget.sessionPasskey == Data([0x5A]))
 		#expect(unaffectedTarget.sessionExpiration != nil)
 		#expect(manager.remoteAdminConfigTracker.operations[operationID]?.result == .failed("Remote node rejected the request: adminBadSessionKey"))
+	}
+
+	@Test func remoteChannelRequestEnrollsBeforeRoutingRejection() async throws {
+		let container = try ModelContainer(
+			for: Schema(MeshtasticSchema.allModels),
+			configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+		)
+		let context = ModelContext(container)
+		let rejectedTarget = NodeInfoEntity()
+		rejectedTarget.num = 42
+		rejectedTarget.sessionPasskey = Data([0xA5])
+		rejectedTarget.sessionExpiration = Date().addingTimeInterval(300)
+		let unaffectedTarget = NodeInfoEntity()
+		unaffectedTarget.num = 99
+		unaffectedTarget.sessionPasskey = Data([0x5A])
+		unaffectedTarget.sessionExpiration = Date().addingTimeInterval(300)
+		context.insert(rejectedTarget)
+		context.insert(unaffectedTarget)
+		try context.save()
+
+		let connection = RemoteAdminReceiveConnection()
+		let manager = makeManager(connection: connection)
+		manager.context = context
+		let fromUser = UserEntity()
+		fromUser.num = 1
+		let toUser = UserEntity()
+		toUser.num = 42
+		toUser.userNode = rejectedTarget
+
+		let request = Task { @MainActor in
+			try await manager.requestRemoteChannel(index: 0, fromUser: fromUser, toUser: toUser)
+		}
+		var packetID: UInt32?
+		for _ in 0..<20 where packetID == nil {
+			packetID = await connection.sentPacketIDs.first
+			if packetID == nil { try await Task.sleep(for: .milliseconds(10)) }
+		}
+		let requestID = try #require(packetID)
+
+		var routing = Routing()
+		routing.errorReason = .adminBadSessionKey
+		var data = DataMessage()
+		data.portnum = .routingApp
+		data.requestID = requestID
+		data.payload = try routing.serializedData()
+		var packet = MeshPacket()
+		packet.from = 1
+		packet.to = 42
+		packet.decoded = data
+		var fromRadio = FromRadio()
+		fromRadio.packet = packet
+
+		await manager.didReceive(.data(fromRadio))
+		#expect((try? await request.value) == nil)
+		#expect(rejectedTarget.sessionPasskey == nil)
+		#expect(rejectedTarget.sessionExpiration == nil)
+		#expect(unaffectedTarget.sessionPasskey == Data([0x5A]))
 	}
 
 	@Test func relaySuccessIsIgnoredUntilTargetConfirms() throws {
