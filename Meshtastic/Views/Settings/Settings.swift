@@ -113,7 +113,9 @@ struct Settings: View {
 
 	private func refreshNodes() {
 		let descriptor = FetchDescriptor<NodeInfoEntity>(sortBy: [SortDescriptor(\NodeInfoEntity.lastHeard, order: .reverse)])
-		nodes = ((try? context.fetch(descriptor)) ?? []).compactMap(SettingsNodeSnapshot.init)
+		let refreshedNodes = ((try? context.fetch(descriptor)) ?? []).compactMap(SettingsNodeSnapshot.init)
+		nodes = refreshedNodes
+		applyPendingSettingsNode(availableNodes: refreshedNodes)
 	}
 
 	/// Nodes for the admin / configuration picker, ordered favorites-first while
@@ -873,6 +875,10 @@ struct Settings: View {
 					self.preferredNodeNum = UserDefaults.preferredPeripheralNum
 					setSelectedNode(to: UserDefaults.preferredPeripheralNum)
 				}
+				applyPendingSettingsNode()
+			}
+			.onChange(of: router.settingsNodeNum) { _, _ in
+				applyPendingSettingsNode()
 			}
 			.task(id: router.selectedTab) {
 				// Refresh the node snapshot on a gentle cadence, and only while Settings is
@@ -914,6 +920,15 @@ struct Settings: View {
 		} else {
 			self.selectedNode = Int(accessoryManager.isConnected ? nodeNum: 0)
 		}
+	}
+
+	private func applyPendingSettingsNode(availableNodes: [SettingsNodeSnapshot]? = nil) {
+		guard let requestedNodeNum = router.settingsNodeNum,
+			(availableNodes ?? sortedNodes).contains(where: { $0.num == requestedNodeNum }),
+			accessoryManager.isConnected else { return }
+		preferredNodeNum = Int(accessoryManager.activeDeviceNum ?? Int64(requestedNodeNum))
+		selectedNode = Int(requestedNodeNum)
+		router.settingsNodeNum = nil
 	}
 
 	private func handleSelectedNodeChange(_ newValue: Int) {
