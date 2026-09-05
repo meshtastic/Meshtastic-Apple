@@ -46,7 +46,7 @@ LoRa settings control how your radio communicates on the mesh:
 | Setting | Description |
 |---------|-------------|
 | Region | Your geographical region. **Must be set correctly** — using the wrong region is illegal and prevents communication with local nodes. The standard regions are always available; the amateur (ham) 2m / 70cm / 1.25m bands and the EU 866 / narrow bands require firmware **2.8.0 or later** and only appear when your connected radio supports them. |
-| Modem Preset | Speed/range trade-off. Most users should use Long Fast or Long Slow. On firmware 2.8+, the preset list is filtered to those that are legal for the selected region (see below). |
+| Modem Preset | Speed/range trade-off. Which preset to use depends on your region — on firmware 2.8+ the list is filtered to those legal there, and the recommended one differs by region (see below). |
 | Bandwidth | Available under **Advanced** when **Use Preset** is off. The protobuf default value of 0 is shown as its effective firmware value: 250 kHz in sub-GHz regions and 812.5 kHz in the 2.4 GHz region. Choices are filtered for the selected region and connected radio. If a stored nonzero bandwidth is unsupported, the app shows a warning and prevents saving until you select a supported value. |
 | Hop Limit | The number of times a message is repeated by other nodes. Higher values increase range but also mesh traffic. |
 | Frequency Slot | Fine-tune the exact frequency within your region. |
@@ -85,6 +85,22 @@ On hardened lockdown-firmware radios, this page also shows a **Lockdown** sectio
 ### User
 
 Set your Long Name (display name) and Short Name (4-character/emoji identifier shown in the node circle).
+
+Both limits are counted in UTF-8 bytes rather than characters, because that is
+how the radio stores them: an emoji is four bytes, so four emoji fill the short
+name exactly. Typing past the limit stops rather than cutting a character in
+half.
+
+How long a Long Name can be depends on the radio. Firmware 2.8 and later keeps
+24 bytes of it — those radios store every node they hear in a slimmer record to
+save memory, and truncate anything longer as it arrives. Older firmware keeps
+39. The hint under the field shows whichever applies to the radio you are
+connected to.
+
+A name you already have is left alone, even if it is longer than the radio you
+are now connected to would keep. Note that a 2.8 radio hearing an older one
+still stores only 24 bytes of its name, so a longer name is shortened by
+everyone else's radio even when your own keeps it.
 
 ### Bluetooth
 

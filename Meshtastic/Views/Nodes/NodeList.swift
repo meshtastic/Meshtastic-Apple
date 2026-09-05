@@ -48,6 +48,7 @@ struct NodeList: View {
 						LocalStatsLog(node: node)
 					} else {
 						NodeDetail(node: node, nodeNum: selectedNum)
+							.trackScreen("Node Detail")
 					}
 				} else {
 					ContentUnavailableView("Select a Node", systemImage: "flipphone")
@@ -176,15 +177,6 @@ struct NodeList: View {
 		.toolbar {
 			ToolbarItem(placement: .topBarLeading) {
 				MeshtasticLogo()
-			}
-			if let connectedNode, ShareContactQR.canShareContact(for: connectedNode) {
-				ToolbarItem(placement: .topBarTrailing) {
-					Button {
-						shareContactNode = connectedNode
-					} label: {
-						Label("Share Connected Node", systemImage: "person.crop.circle.badge.plus")
-					}
-				}
 			}
 			ToolbarItem(placement: .topBarTrailing) {
 				ConnectedDevice(
@@ -479,7 +471,7 @@ private struct FilteredNodeList: View {
 				NodeAlertsButton(context: context, node: node, user: user)
 			}
 			if connectedNode.num != node.num {
-				if !(node.user?.unmessagable ?? true) {
+				if node.user?.showsDirectMessageAction == true {
 					Button(action: {
 						if let url = URL(string: "meshtastic:///messages?userNum=\(node.num)") {
 							UIApplication.shared.open(url)

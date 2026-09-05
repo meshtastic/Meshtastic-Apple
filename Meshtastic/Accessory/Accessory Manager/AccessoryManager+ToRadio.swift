@@ -543,6 +543,23 @@ extension AccessoryManager {
 		try await send(toRadio, debugDescription: logString)
 	}
 
+	/// Builds one channel write. Role comes from the slot: index 0 is the primary, the rest are
+	/// secondaries.
+	private func makeChannel(_ settings: ChannelSettings, at index: Int32) -> Channel {
+		var chan = Channel()
+		chan.role = (index == 0) ? .primary : .secondary
+		chan.settings = settings
+		chan.index = index
+		// Ensure moduleSettings is always explicitly set so the device stores a defined
+		// position_precision value. QR codes typically omit moduleSettings which causes the
+		// firmware to default to 32 (full precision), leaking exact GPS coordinates.
+		if !settings.hasModuleSettings {
+			chan.settings.moduleSettings.positionPrecision = 0
+			chan.settings.moduleSettings.isMuted = false
+		}
+		return chan
+	}
+
 	public func saveChannelSet(base64UrlString: String, addChannels: Bool = false, okToMQTT: Bool = false) async throws {
 		let channelLink = try MeshtasticChannelURL.parse(base64UrlString, defaultAddChannels: addChannels)
 		try await saveChannelSet(
@@ -612,26 +629,35 @@ extension AccessoryManager {
 			targetChannelIndexes = channelSet.settings.indices.map { Int32($0) }
 		}
 
+		// A replace has to say something about every slot, not just the ones it fills. The radio
+		// keeps a fixed array of 8 and a role per slot, so writing only 0..n-1 leaves whatever
+		// was in the rest still enabled — replace an 8 channel set with a 2 channel one and the
+		// old channels 2-7 keep running. Disabling the tail is what makes the import
+		// authoritative; the radio drops those slots on the reboot the LoRa config below
+		// triggers.
+		let plannedChannels: [Channel] = {
+			var planned = zip(channelSet.settings, targetChannelIndexes).map { cs, targetIndex in
+				makeChannel(cs, at: targetIndex)
+			}
+			guard !addChannels else { return planned }
+			let filled = Set(targetChannelIndexes)
+			for index in Int32(0)..<maxChannelSlots where !filled.contains(index) {
+				var disabled = Channel()
+				disabled.index = index
+				disabled.role = .disabled
+				planned.append(disabled)
+			}
+			return planned
+		}()
+
 		var deliveredChannels: [Channel] = []
-		for (cs, targetIndex) in zip(channelSet.settings, targetChannelIndexes) {
+		for chan in plannedChannels {
 			// Stop sending channels if the calling Task was cancelled. The channels already
 			// sent are fine inside a transaction (commit will persist them); skipping the rest
 			// lets the import engine exit promptly. The local-state upserts below are safe to
 			// skip: they mirror to Core Data and are rebuilt on the next connect/drain.
 			try Task.checkCancellation()
 
-			var chan = Channel()
-			chan.role = (targetIndex == 0) ? .primary : .secondary
-			chan.settings = cs
-			chan.index = targetIndex
-			// Ensure moduleSettings is always explicitly set so the device
-			// stores a defined position_precision value. QR codes typically
-			// omit moduleSettings which causes the firmware to default to 32
-			// (full precision), leaking exact GPS coordinates.
-			if !cs.hasModuleSettings {
-				chan.settings.moduleSettings.positionPrecision = 0
-				chan.settings.moduleSettings.isMuted = false
-			}
 			var adminPacket = AdminMessage()
 			adminPacket.setChannel = chan
 
@@ -688,10 +714,18 @@ extension AccessoryManager {
 			try await send(toRadio, debugDescription: logString)
 		}
 
-		// Mirror delivered channels locally only after channel and LoRa writes
-		// succeed, so a failed replace cannot wipe local state.
+		// Mirror delivered channels locally only after channel and LoRa writes succeed, so a
+		// failed replace cannot wipe local state. No wholesale clear first: every slot was
+		// written above, and applyLocalChannelMutation deletes the row for a disabled one, so
+		// the local set follows the radio slot by slot.
+		//
+		// Duplicate rows for one slot are the exception. Older app versions could leave them,
+		// and the mutation below only ever sees the canonical one, so a sibling would survive
+		// a replace that is meant to be authoritative — including on a slot just disabled.
+		// The wholesale clear this replaced took them with it. Drop them here, after the
+		// writes succeeded, so a failed replace still leaves local state alone.
 		if !addChannels {
-			tryClearExistingChannels()
+			removeDuplicateChannelRows(for: deviceNum)
 		}
 		for chan in deliveredChannels {
 			do {
@@ -723,6 +757,25 @@ extension AccessoryManager {
 
 	/// Mirrors a user-initiated channel write on the main context. Automatic refresh replacement
 	/// uses this same executor, so a QR/UI mutation cannot land between its baseline check and save.
+	/// Leaves one row per channel index, keeping the same row `canonicalValidUniqueChannels`
+	/// would pick so nothing visible changes.
+	private func removeDuplicateChannelRows(for deviceNum: Int64) {
+		let descriptor = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == deviceNum })
+		guard let myInfo = try? context.fetch(descriptor).first else { return }
+		let keep = Set(canonicalValidUniqueChannels(from: myInfo.channels).map { ObjectIdentifier($0) })
+		var removed = false
+		for row in myInfo.channels where !keep.contains(ObjectIdentifier(row)) {
+			context.delete(row)
+			removed = true
+		}
+		guard removed else { return }
+		do {
+			try context.save()
+		} catch {
+			Logger.data.error("💥 Could not remove duplicate channel rows: \(error.localizedDescription, privacy: .public)")
+		}
+	}
+
 	func applyLocalChannelMutation(_ channel: Channel, fromNum: Int64) throws {
 		guard channel.isInitialized && (channel.hasSettings || channel.role == .disabled) else { return }
 		let descriptor = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == fromNum })
@@ -2097,6 +2150,9 @@ extension AccessoryManager {
 		} else {
 			throw AccessoryError.ioFailed("sendRebootOta: Unable to serialize admin packet")
 		}
+		// Log the packet id so a routing ack can be matched back to this request — the
+		// difference between the radio refusing the reboot and never hearing it.
+		Logger.services.info("📡 [ESP32 OTA] Reboot admin packet \(meshPacket.id) to \(meshPacket.to) from \(meshPacket.from)")
 		let messageDescription = "🚀 Sent Reboot OTA Admin Message to: \(toUser.longName ?? "Unknown".localized) from: \(fromUser.longName ?? "Unknown".localized)"
 		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
 	}

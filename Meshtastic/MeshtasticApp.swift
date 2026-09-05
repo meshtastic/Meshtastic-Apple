@@ -223,7 +223,14 @@ struct MeshtasticAppleApp: App {
 			if Self.isRunningTests {
 				Color.clear
 			} else if Self.isChirpyOTADemo {
+				// Kept out of the release build's view type on purpose, not just behind a flag
+				// that is false there: the automatic RUM view naming reflects over these
+				// branches, and this type — which can never be on screen in release — was
+				// being reported as the view for everything that happened at the app root.
+				// See `trackScreen`.
+				#if DEBUG
 				FirmwareUpdateGameDemoHost()
+				#endif
 			} else if !persistenceReady {
 				ProgressView("Updating local data…")
 			} else if appState.isDatabaseResetting {

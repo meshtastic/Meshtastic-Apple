@@ -9,6 +9,7 @@ import Foundation
 import os.log
 import DatadogRUM
 import DatadogLogs
+import SwiftUI
 
 enum DataDogLoggableAction {
 	// Add more cases as new loggable actions are required.
@@ -90,4 +91,22 @@ struct DatadogLogger {
 
 extension os.Logger {
 	static let datadog = DatadogLogger(subsystem: "datadog", category: "🐶 DataDog")
+}
+
+extension View {
+	/// Names this screen for RUM, so crashes and hangs that happen on it are filed under it.
+	///
+	/// Automatic SwiftUI view tracking names a view by reflecting the hosting controller's
+	/// type. The app root is type-erased, so it resolved to the first concrete view type it
+	/// found in the root `Group`'s branches — `FirmwareUpdateGameDemoHost`, which is
+	/// DEBUG-only and cannot be on screen in a release build. Everything happening at the
+	/// root was filed under that name, and the rest landed on
+	/// `NavigationStackHostingController<AnyView>`, so nothing could be attributed to a
+	/// screen at all.
+	///
+	/// A name set here wins: an error is attributed to the innermost view that has started.
+	/// Keep the names stable — renaming one splits that screen's history in Error Tracking.
+	func trackScreen(_ name: String) -> some View {
+		trackRUMView(name: name)
+	}
 }

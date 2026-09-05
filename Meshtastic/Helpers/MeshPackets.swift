@@ -368,6 +368,15 @@ actor MeshPackets {
 
 	/// Saves any pending changes in the model context. Call once at the end of each
 	/// top-level packet handler to batch all mutations from a single packet into one write.
+	/// Set by any handler that touches a MessageEntity. Writes happen on this actor's context,
+	/// which SwiftData does not propagate to views, so the message lists cannot observe them.
+	/// One notification per save is enough for them to reload; observers debounce.
+	private var pendingMessageChange = false
+
+	func noteMessageChange() {
+		pendingMessageChange = true
+	}
+
 	func savePendingChanges(caller: String = #function) {
 		guard !invalidated else {
 			Logger.data.warning("💾 [\(caller, privacy: .public)] Dropped save on retired MeshPackets instance")
@@ -385,6 +394,12 @@ actor MeshPackets {
 		do {
 			try modelContext.save()
 			Logger.data.debug("💾 [\(caller, privacy: .public)] Saved pending changes")
+			if pendingMessageChange {
+				pendingMessageChange = false
+				Task { @MainActor in
+					NotificationCenter.default.post(name: .meshMessagesDidChange, object: nil)
+				}
+			}
 		} catch {
 			Logger.data.error("💥 [\(caller, privacy: .public)] Error saving: \(error.localizedDescription, privacy: .public)")
 		}
@@ -1274,6 +1289,7 @@ actor MeshPackets {
 				fetchedMessage[0].relayNode = Int64(packet.relayNode)
 				fetchedMessage[0].ackSNR = packet.rxSnr
 
+				noteMessageChange()
 				savePendingChanges()
 			}
 		} catch {
@@ -1349,6 +1365,7 @@ actor MeshPackets {
 				} else {
 					return
 				}
+				noteMessageChange()
 				scheduleDebouncedSave()
 				Logger.data.debug("💾 ACK buffered for Message: \(packet.decoded.requestID, privacy: .public)")
 			} catch {
@@ -1921,9 +1938,9 @@ actor MeshPackets {
 						CarPlayIntentDonation.donateReceivedMessage(newMessage)
 						#endif
 
-						// Let unread-displaying surfaces (badge, CarPlay templates) refresh.
-						// Observers debounce, so posting per saved message is cheap.
-						NotificationCenter.default.post(name: .meshMessagesDidChange, object: nil)
+						// Let the message lists and unread-displaying surfaces refresh. The
+						// notification is posted once per save, from savePendingChanges.
+						noteMessageChange()
 
 						// Self-originated messages and muted detection-sensor packets skip
 						// all notification work (no badge recount, no local notification).
