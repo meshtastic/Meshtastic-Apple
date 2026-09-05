@@ -79075,6 +79075,17 @@
         }
       }
     },
+    "Remote Signed Admin: %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Remote Signed Admin: %@"
+          }
+        }
+      }
+    },
     "Request Legacy Admin: %@": {
       "localizations": {
         "da": {
@@ -79517,6 +79528,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "需要您的裝置內建加速度感測器。"
+          }
+        }
+      }
+    },
+    "Request Signed Admin: %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Request Signed Admin: %@"
           }
         }
       }
