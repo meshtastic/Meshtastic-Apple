@@ -772,4 +772,36 @@ struct NodeBackupManagerTests {
 		#expect(FileManager.default.fileExists(atPath: backupDir.appendingPathComponent("node-1000").path))
 	}
 
+
+	@Test("connecting clears a duplicate left beside a device-keyed backup")
+	@MainActor
+	func testConnectClearsStrayNodeKeyedBackup() async throws {
+		let tempDir = try makeTempDir()
+		defer { cleanup(tempDir) }
+		let backupDir = tempDir.appendingPathComponent("Backups", isDirectory: true)
+
+		// The state my phone was actually in: one backup keyed by device id, and a second for the
+		// same radio keyed by node number, written while the device id lookup was returning nil.
+		var keyed = try makeBackup(
+			in: backupDir, dirName: "abcd", nodeNum: 4242, peripheralId: "PERIPHERAL-A",
+			createdAt: Date(timeIntervalSince1970: 2000), makeContainer: { try makeContainer(inMemory: false, storeURL: $0) }
+		)
+		keyed.deviceId = "abcd"
+		let stray = try makeBackup(
+			in: backupDir, dirName: "node-4242", nodeNum: 4242, peripheralId: "PERIPHERAL-A",
+			createdAt: Date(timeIntervalSince1970: 1000), makeContainer: { try makeContainer(inMemory: false, storeURL: $0) }
+		)
+		try writeIndex(entries: [keyed, stray], to: backupDir)
+
+		let manager = NodeBackupManager(baseURL: backupDir)
+		#expect(manager.listBackups().count == 2)
+
+		await manager.adoptLegacyBackups(deviceId: Data([0xAB, 0xCD]), nodeNum: 4242, peripheralId: "PERIPHERAL-A")
+
+		let backups = manager.listBackups()
+		#expect(backups.count == 1)
+		#expect(backups.first?.deviceId == "abcd")
+		#expect(!FileManager.default.fileExists(atPath: backupDir.appendingPathComponent("node-4242").path))
+	}
+
 }

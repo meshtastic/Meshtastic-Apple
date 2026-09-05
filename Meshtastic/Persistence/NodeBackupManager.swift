@@ -569,8 +569,16 @@ final class NodeBackupManager: NodeBackupManaging {
 	/// reading them, so that only runs when the cheap match fails.
 	func adoptLegacyBackups(deviceId: Data?, nodeNum: Int64, peripheralId: String?) async {
 		guard let deviceKey = BackupKey.forDevice(deviceId) else { return }
-		// Already re-keyed. This is the common path on every connect after the first.
-		guard backupIndex.entries[deviceKey] == nil else { return }
+		// Already re-keyed — the common path on every connect after the first. Still worth looking for
+		// a node-number entry for the same radio: a backup taken while the device id lookup was
+		// coming back nil left one sitting beside the device-keyed backup. Clearing it here means a
+		// connect is enough to tidy up, rather than waiting for whatever takes the next backup.
+		if backupIndex.entries[deviceKey] != nil {
+			if removeBackup(forKey: BackupKey.forNode(nodeNum), reason: "duplicate of \(deviceKey)") {
+				saveIndex()
+			}
+			return
+		}
 
 		var candidateKeys: [String] = []
 		let nodeKey = BackupKey.forNode(nodeNum)
