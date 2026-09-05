@@ -781,7 +781,7 @@ struct Settings: View {
 				case .power:
 					PowerConfig(node: configNode)
 				case .ambientLighting:
-					AmbientLightingConfig(node: node)
+					AmbientLightingConfig(node: configNode)
 				case .audio:
 					AudioConfig(node: configNode)
 				case .cannedMessages:
