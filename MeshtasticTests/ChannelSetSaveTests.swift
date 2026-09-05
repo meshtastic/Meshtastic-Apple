@@ -51,6 +51,17 @@ actor MockChannelSetConnection: Connection {
 		}
 	}
 
+	/// Role written to each slot, in send order.
+	var sentChannelRoles: [(index: Int32, role: Channel.Role)] {
+		sentPackets.compactMap { toRadio in
+			guard case let .packet(meshPacket) = toRadio.payloadVariant,
+				  case let .decoded(dataMessage) = meshPacket.payloadVariant,
+				  let admin = try? AdminMessage(serializedBytes: dataMessage.payload),
+				  case let .setChannel(channel) = admin.payloadVariant else { return nil }
+			return (Int32(truncatingIfNeeded: channel.index), channel.role)
+		}
+	}
+
 	var sentChannelIndexes: [Int32] {
 		sentPackets.compactMap { toRadio in
 			guard case let .packet(meshPacket) = toRadio.payloadVariant,
@@ -199,6 +210,47 @@ struct ChannelSetSaveTests {
 		// Regression for the duplicated LoRa send block (#1682): the config must be sent once.
 		let count = await connection.loraConfigSendCount
 		#expect(count == 1)
+	}
+
+	@Test("A replace disables every slot it does not fill")
+	func testReplaceDisablesTrailingSlots() async throws {
+		let connection = MockChannelSetConnection()
+		let manager = makeManager(connection: connection)
+		let link = try makeChannelSetLink(channelNames: ["TestNet", "Second"])
+
+		try await manager.saveChannelSet(base64UrlString: link, addChannels: false, okToMQTT: false)
+
+		// The radio keeps a fixed array of 8 slots with a role each. Writing only the two the
+		// import fills would leave whatever was in slots 2-7 still enabled, so an 8 channel
+		// radio would keep running six channels the import never mentioned.
+		let roles = await connection.sentChannelRoles
+		#expect(roles.count == 8, "every slot is written, got \(roles.count)")
+		#expect(roles.first { $0.index == 0 }?.role == .primary)
+		#expect(roles.first { $0.index == 1 }?.role == .secondary)
+		for index in Int32(2)..<Int32(8) {
+			#expect(roles.first { $0.index == index }?.role == .disabled,
+					"slot \(index) should be disabled")
+		}
+	}
+
+	@Test("Appending channels leaves the other slots alone")
+	func testAppendDoesNotDisableAnything() async throws {
+		let deviceNum: Int64 = 123_456_799
+		try seedMyInfo(deviceNum: deviceNum, channels: [(0, "Primary"), (1, "Secondary")])
+		let connection = MockChannelSetConnection()
+		let manager = makeManager(connection: connection, deviceNum: deviceNum)
+		let link = try makeChannelSetLink(includeLoRaConfig: false, channelNames: ["Added"])
+
+		// Append sends no LoRa config, so the mock's post-wantConfig disconnect surfaces as an
+		// error — after the channel write.
+		await #expect(throws: (any Error).self) {
+			try await manager.saveChannelSet(base64UrlString: link, addChannels: true, okToMQTT: false)
+		}
+
+		// Append is not authoritative: it fills a free slot and says nothing about the rest.
+		let roles = await connection.sentChannelRoles
+		#expect(roles.allSatisfy { $0.role != .disabled }, "append must not disable a slot")
+		#expect(roles.map(\.index) == [2])
 	}
 
 	@Test("A malformed channel-set link throws instead of silently succeeding")
