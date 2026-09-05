@@ -43,6 +43,12 @@ struct NodeDetail: View {
 	@EnvironmentObject var router: Router
 	@State private var showingShutdownConfirm: Bool = false
 	@State private var showingRebootConfirm: Bool = false
+	@State private var showingSetTimeConfirm: Bool = false
+	@State private var showingFactoryResetConfirm: Bool = false
+	@State private var showingNodeDBResetConfirm: Bool = false
+	@State private var isPerformingAdminAction: Bool = false
+	@State private var adminErrorMessage: String?
+	@State private var pendingAdminTarget: RemoteAdminActionTarget?
 	@State private var dateFormatRelative: Bool = true
 	@Bindable	var node: NodeInfoEntity
 	private let nodeNum: Int64
@@ -106,6 +112,15 @@ struct NodeDetail: View {
 			return nil
 		}
 		return (fromUser, toUser)
+	}
+	private var currentAdminTarget: RemoteAdminActionTarget? {
+		guard let radioNum = accessoryManager.activeDeviceNum,
+			  let connection = accessoryManager.activeConnection?.connection else { return nil }
+		return RemoteAdminActionTarget(
+			nodeNum: nodeNum,
+			name: currentUser?.displayLongName ?? "Unknown",
+			radioNum: radioNum,
+			connectionID: ObjectIdentifier(connection))
 	}
 	/// The status row opens the status message editor for the connected node, or for a remote
 	/// node we have successfully administered before. Firmware 2.8+ in both cases: the
@@ -976,8 +991,8 @@ struct NodeDetail: View {
 					"Are you sure?",
 					isPresented: $showingRebootConfirm
 				) {
-					Button("Reboot node?", role: .destructive) {
-						Task {
+						Button("Reboot node?", role: .destructive) {
+							Task {
 							guard let administrationUserPair else { return }
 							do {
 								try await accessoryManager.sendReboot(
@@ -991,7 +1006,149 @@ struct NodeDetail: View {
 					}
 				}
 				.disabled(administrationUserPair == nil)
+				Button {
+					pendingAdminTarget = currentAdminTarget
+					showingSetTimeConfirm = true
+				} label: {
+					Label("Set Time", systemImage: "clock")
 				}
+				.confirmationDialog(
+					"Set time on \(pendingAdminTarget?.name ?? "node")?",
+					isPresented: $showingSetTimeConfirm
+				) {
+					Button("Set time to now") {
+						Task {
+							guard let target = pendingAdminTarget else { return }
+							isPerformingAdminAction = true
+							defer { isPerformingAdminAction = false }
+							let error = await RemoteAdminActionGuard.run(
+								target: target,
+								activeRadioNum: { accessoryManager.activeDeviceNum },
+								activeConnectionID: { accessoryManager.activeConnection.map { ObjectIdentifier($0.connection) } },
+								isConnected: { accessoryManager.isConnected },
+								hasLiveSession: { getNodeInfo(id: target.nodeNum, context: context)?.hasLiveAdminSession == true }
+							) {
+								guard let pair = administrationUserPair, pair.toUser.num == target.nodeNum else { throw AccessoryError.connectionFailed("The selected target is no longer available") }
+								try await accessoryManager.sendTime(fromUser: pair.fromUser, toUser: pair.toUser)
+							}
+							if let error { adminErrorMessage = "Set Time failed for \(target.name): \(error)" }
+						}
+					}
+				}
+				.disabled(administrationUserPair == nil || nodeNum == accessoryManager.activeDeviceNum || isPerformingAdminAction)
+				Button {
+					pendingAdminTarget = currentAdminTarget
+					showingFactoryResetConfirm = true
+				} label: {
+					Label("Factory Reset", systemImage: "arrowcounterclockwise")
+				}
+				.confirmationDialog(
+					"Factory reset \(pendingAdminTarget?.name ?? "node")?",
+					isPresented: $showingFactoryResetConfirm
+				) {
+					Button("Delete all config?", role: .destructive) {
+						Task {
+							guard let target = pendingAdminTarget else { return }
+							isPerformingAdminAction = true
+							defer { isPerformingAdminAction = false }
+							let error = await RemoteAdminActionGuard.run(
+								target: target,
+								activeRadioNum: { accessoryManager.activeDeviceNum },
+								activeConnectionID: { accessoryManager.activeConnection.map { ObjectIdentifier($0.connection) } },
+								isConnected: { accessoryManager.isConnected },
+								hasLiveSession: { getNodeInfo(id: target.nodeNum, context: context)?.hasLiveAdminSession == true }
+							) {
+								guard let pair = administrationUserPair, pair.toUser.num == target.nodeNum else { throw AccessoryError.connectionFailed("The selected target is no longer available") }
+								try await accessoryManager.sendFactoryReset(fromUser: pair.fromUser, toUser: pair.toUser)
+							}
+							if let error { adminErrorMessage = "Factory Reset failed for \(target.name): \(error)" }
+						}
+					}
+					Button("Delete all config, keys and BLE bonds?", role: .destructive) {
+						Task {
+							guard let target = pendingAdminTarget else { return }
+							isPerformingAdminAction = true
+							defer { isPerformingAdminAction = false }
+							let error = await RemoteAdminActionGuard.run(
+								target: target,
+								activeRadioNum: { accessoryManager.activeDeviceNum },
+								activeConnectionID: { accessoryManager.activeConnection.map { ObjectIdentifier($0.connection) } },
+								isConnected: { accessoryManager.isConnected },
+								hasLiveSession: { getNodeInfo(id: target.nodeNum, context: context)?.hasLiveAdminSession == true }
+							) {
+								guard let pair = administrationUserPair, pair.toUser.num == target.nodeNum else { throw AccessoryError.connectionFailed("The selected target is no longer available") }
+								try await accessoryManager.sendFactoryReset(fromUser: pair.fromUser, toUser: pair.toUser, resetDevice: true)
+							}
+							if let error { adminErrorMessage = "Factory Reset failed for \(target.name): \(error)" }
+						}
+					}
+				}
+				.disabled(administrationUserPair == nil || nodeNum == accessoryManager.activeDeviceNum || isPerformingAdminAction)
+				Button {
+					pendingAdminTarget = currentAdminTarget
+					showingNodeDBResetConfirm = true
+				} label: {
+					Label("NodeDB Reset", systemImage: "list.bullet.rectangle")
+				}
+				.confirmationDialog(
+					"Reset node database on \(pendingAdminTarget?.name ?? "node")?",
+					isPresented: $showingNodeDBResetConfirm
+				) {
+					Button("Reset node database, preserving favorites") {
+						Task {
+							guard let target = pendingAdminTarget else { return }
+							isPerformingAdminAction = true
+							defer { isPerformingAdminAction = false }
+							let error = await RemoteAdminActionGuard.run(
+								target: target,
+								activeRadioNum: { accessoryManager.activeDeviceNum },
+								activeConnectionID: { accessoryManager.activeConnection.map { ObjectIdentifier($0.connection) } },
+								isConnected: { accessoryManager.isConnected },
+								hasLiveSession: { getNodeInfo(id: target.nodeNum, context: context)?.hasLiveAdminSession == true }
+							) {
+								guard let pair = administrationUserPair, pair.toUser.num == target.nodeNum else { throw AccessoryError.connectionFailed("The selected target is no longer available") }
+								try await accessoryManager.sendNodeDBReset(fromUser: pair.fromUser, toUser: pair.toUser, preserveFavorites: true)
+							}
+							if let error { adminErrorMessage = "NodeDB Reset failed for \(target.name): \(error)" }
+						}
+					}
+					Button("Reset node database and favorites?", role: .destructive) {
+						Task {
+							guard let target = pendingAdminTarget else { return }
+							isPerformingAdminAction = true
+							defer { isPerformingAdminAction = false }
+							let error = await RemoteAdminActionGuard.run(
+								target: target,
+								activeRadioNum: { accessoryManager.activeDeviceNum },
+								activeConnectionID: { accessoryManager.activeConnection.map { ObjectIdentifier($0.connection) } },
+								isConnected: { accessoryManager.isConnected },
+								hasLiveSession: { getNodeInfo(id: target.nodeNum, context: context)?.hasLiveAdminSession == true }
+							) {
+								guard let pair = administrationUserPair, pair.toUser.num == target.nodeNum else { throw AccessoryError.connectionFailed("The selected target is no longer available") }
+								try await accessoryManager.sendNodeDBReset(fromUser: pair.fromUser, toUser: pair.toUser, preserveFavorites: false)
+							}
+							if let error { adminErrorMessage = "NodeDB Reset failed for \(target.name): \(error)" }
+						}
+					}
+				}
+				.disabled(administrationUserPair == nil || nodeNum == accessoryManager.activeDeviceNum || isPerformingAdminAction)
+				if isPerformingAdminAction {
+					HStack {
+						ProgressView()
+						Text("Sending command…")
+							.foregroundColor(.secondary)
+							.font(.caption)
+					}
+				}
+				}
+			}
+			.alert("Admin Action Failed", isPresented: Binding(
+				get: { adminErrorMessage != nil },
+				set: { if !$0 { adminErrorMessage = nil } }
+			)) {
+				Button("OK", role: .cancel) { adminErrorMessage = nil }
+			} message: {
+				Text(adminErrorMessage ?? "")
 			}
 		}
 	}
