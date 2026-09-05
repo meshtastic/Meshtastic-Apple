@@ -26,20 +26,34 @@ struct BackupRowView: View {
 			VStack(alignment: .leading, spacing: 4) {
 				Text(entry.nodeName ?? entry.nodeNum.toHex())
 					.font(.headline)
+
+				// Both identifiers, because they answer different questions. The node number is what
+				// the radio reports now and changes on the 2.8 upgrade; the device id is the hardware
+				// identifier the backup is filed under and does not. An entry with no device id has
+				// not been reconnected since this changed and is still keyed by node number.
+				HStack(spacing: 4) {
+					Text(entry.nodeNum.toHex())
+					if let deviceId = entry.deviceId {
+						Text("•")
+						Image(systemName: "checkmark.seal")
+						Text(deviceId)
+							.lineLimit(1)
+							.truncationMode(.middle)
+					}
+				}
+				.font(.caption.monospaced())
+				.foregroundColor(.secondary)
+				.accessibilityElement(children: .combine)
+				.accessibilityLabel(
+					entry.deviceId == nil
+					? String(localized: "Node \(entry.nodeNum.toHex()), keyed by node number")
+					: String(localized: "Node \(entry.nodeNum.toHex()), keyed by device \(entry.deviceId ?? "")")
+				)
+
 				HStack {
 					Text(entry.createdAt, style: .date)
 					Text("•")
 					Text(entry.createdAt, style: .time)
-					Text("•")
-					// Node numbers change on the 2.8 upgrade, so a backup keyed on one is orphaned by
-					// the upgrade. Showing which entries are keyed by device and which are still
-					// waiting to be is the only way to see that from here.
-					if entry.deviceId == nil {
-						Text(entry.nodeNum.toHex())
-					} else {
-						Label(entry.nodeNum.toHex(), systemImage: "checkmark.seal")
-							.labelStyle(.titleAndIcon)
-					}
 				}
 				.font(.caption)
 				.foregroundColor(.secondary)
