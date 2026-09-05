@@ -60,7 +60,31 @@ func performConfigSave(
 		do {
 			if let operationID {
 				try await RemoteAdminConfigTracker.$currentOperationID.withValue(operationID) {
-					try await save(fromUser, toUser)
+					var saveUser = toUser
+					if !targetNode.hasLiveAdminSession {
+						// A routing rejection clears the cached passkey. Before a user-initiated
+						// save retry, establish a new session and use the refreshed user entity.
+						// The metadata request is not the save operation, so it must not complete
+						// or fail this operation's packet tracker.
+						try await RemoteAdminConfigTracker.$currentOperationID.withValue(nil) {
+							_ = try await accessoryManager.requestDeviceMetadata(fromUser: fromUser, toUser: toUser)
+						}
+						let result = await RemoteAdminSessionWaiter.wait(
+							isLive: { targetNode.hasLiveAdminSession },
+							isConnected: { accessoryManager.isConnected },
+							targetIsCurrent: { accessoryManager.activeDeviceNum == deviceNum }
+						)
+						guard result == .active else {
+							throw AccessoryError.ioFailed("Remote admin authorization was not refreshed. Please retry.")
+						}
+						guard let refreshedNode = getNodeInfo(id: targetNode.num, context: context),
+							  refreshedNode.hasLiveAdminSession,
+							  let refreshedUser = refreshedNode.user else {
+							throw AccessoryError.ioFailed("Remote admin authorization was not refreshed. Please retry.")
+						}
+						saveUser = refreshedUser
+					}
+					try await save(fromUser, saveUser)
 				}
 			} else {
 				try await save(fromUser, toUser)

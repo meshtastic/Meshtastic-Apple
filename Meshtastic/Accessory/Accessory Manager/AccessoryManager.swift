@@ -614,6 +614,25 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		}
 	}
 
+	/// A routing rejection invalidates only the remote node whose session was rejected.
+	/// The local transport and sessions for other remote nodes remain usable.
+	@discardableResult
+	func invalidateRemoteAdminSession(for targetNodeNum: Int64) -> Bool {
+		let descriptor = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == targetNodeNum })
+		guard let node = try? context.fetch(descriptor).first,
+			  node.sessionPasskey != nil || node.sessionExpiration != nil else { return false }
+
+		node.sessionPasskey = nil
+		node.sessionExpiration = nil
+		do {
+			try context.save()
+			return true
+		} catch {
+			Logger.data.error("💥 [AccessoryManager] Failed to clear remote admin session for node \(targetNodeNum, privacy: .public): \(error.localizedDescription, privacy: .public)")
+			return false
+		}
+	}
+
 	func closeConnection() async throws {
 		failRemoteAdminConfigOperations(with: "The radio connection was closed before the remote node confirmed the configuration.")
 		guard !isClosingConnection else {
@@ -819,11 +838,17 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		}
 	}
 
-	func resolveRemoteAdminRoutingError(packetID: UInt32, reason: String) {
-		guard let operationID = remoteAdminConfigTracker.resolveRouting(packetID: packetID, sourceNodeNum: 0, reason: reason, isFailure: true),
+	func resolveRemoteAdminRoutingError(packetID: UInt32, reason: Routing.Error) {
+		let message = "Remote node rejected the request: \(reason)"
+		guard let operationID = remoteAdminConfigTracker.resolveRouting(packetID: packetID, sourceNodeNum: 0, reason: message, isFailure: true),
 			  let operation = remoteAdminConfigTracker.operations[operationID]
 		else { return }
-		remoteAdminConfigFeedback = (operation.targetNodeNum, reason)
+		// A rejected passkey must not be retried. Other routing errors do not prove that
+		// the cached authorization material itself is invalid.
+		if reason == .adminBadSessionKey {
+			invalidateRemoteAdminSession(for: operation.targetNodeNum)
+		}
+		remoteAdminConfigFeedback = (operation.targetNodeNum, message)
 	}
 
 	func failRemoteAdminConfigOperations(with message: String) {
@@ -1021,7 +1046,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 						} else {
 							resolveRemoteAdminRoutingError(
 								packetID: responseID,
-								reason: "Remote node rejected the request: \(reason)")
+								reason: reason)
 						}
 					}
 				}
