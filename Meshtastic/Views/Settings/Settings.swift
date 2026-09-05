@@ -102,6 +102,25 @@ struct SettingsNodeSnapshot: Identifiable, Equatable {
 }
 
 struct Settings: View {
+	static func remoteSettingsSelection(
+		requestedNodeNum: Int64?,
+		activeDeviceNum: Int64?,
+		availableNodeNums: Set<Int64>,
+		isConnected: Bool
+	) -> (preferredNodeNum: Int64, selectedNode: Int64)? {
+		guard let requestedNodeNum,
+			let activeDeviceNum,
+			availableNodeNums.contains(requestedNodeNum),
+			isConnected else { return nil }
+		return (activeDeviceNum, requestedNodeNum)
+	}
+
+	let remoteNodeNum: Int64?
+
+	init(remoteNodeNum: Int64? = nil) {
+		self.remoteNodeNum = remoteNodeNum
+	}
+
 	@Environment(\.modelContext) private var context
 	@Environment(\.colorScheme) private var colorScheme
 	@EnvironmentObject var accessoryManager: AccessoryManager
@@ -115,7 +134,7 @@ struct Settings: View {
 		let descriptor = FetchDescriptor<NodeInfoEntity>(sortBy: [SortDescriptor(\NodeInfoEntity.lastHeard, order: .reverse)])
 		let refreshedNodes = ((try? context.fetch(descriptor)) ?? []).compactMap(SettingsNodeSnapshot.init)
 		nodes = refreshedNodes
-		applyPendingSettingsNode(availableNodes: refreshedNodes)
+		applyRemoteSettingsNode(availableNodes: refreshedNodes)
 	}
 
 	/// Nodes for the admin / configuration picker, ordered favorites-first while
@@ -179,7 +198,8 @@ struct Settings: View {
 	}
 
 	private func isMeshBeaconModuleSupported(_ node: SettingsNodeSnapshot?) -> Bool {
-		guard node != nil else { return false }
+		// Mesh Beacon currently has no remote read path.
+		guard let node, node.num == accessoryManager.activeDeviceNum else { return false }
 		return accessoryManager.checkIsVersionSupported(forVersion: "2.8.0")
 	}
 
@@ -604,11 +624,20 @@ struct Settings: View {
 	}
 
 	var body: some View {
-		NavigationStack(
-			path: $router.settingsPath
-		) {
+		if remoteNodeNum != nil {
+			settingsContent
+		} else {
+			NavigationStack(path: $router.settingsPath) {
+				settingsContent
+			}
+		}
+	}
+
+	@ViewBuilder
+	private var settingsContent: some View {
 			let node = nodeSnapshot(for: preferredNodeNum)
 			List {
+				if remoteNodeNum == nil {
 				NavigationLink(value: SettingsNavigationState.about) {
 					Label {
 						Text("About Meshtastic")
@@ -664,6 +693,8 @@ struct Settings: View {
 				}
 				.disabled(selectedNode > 0 && selectedNode != preferredNodeNum)
 
+				}
+
 				// A managed radio hides the configuration sections; say why instead of
 				// showing nothing (same message as Android).
 				if let node, node.isManaged, accessoryManager.isConnected {
@@ -676,7 +707,9 @@ struct Settings: View {
 				if let node, !node.isManaged {
 					if accessoryManager.isConnected {
 						Section("Configure") {
-							if node.canRemoteAdmin {
+							if let remoteNodeNum {
+								LabeledContent("Node", value: nodeSnapshot(for: Int(remoteNodeNum))?.userLongName ?? "Unknown")
+							} else if node.canRemoteAdmin {
 								Picker("Node", selection: $selectedNode) {
 									if selectedNode == 0 {
 										Text("Connect to a Node").tag(0)
@@ -740,8 +773,8 @@ struct Settings: View {
 					radioConfigurationSection
 					deviceConfigurationSection
 					moduleConfigurationSection
-					loggingSection
-					if showsDevelopersSection {
+					if remoteNodeNum == nil { loggingSection }
+					if remoteNodeNum == nil && showsDevelopersSection {
 					developersSection
 					}
 				}
@@ -843,12 +876,14 @@ struct Settings: View {
 				}
 			}
 			.onChange(of: UserDefaults.preferredPeripheralNum ) { _, newConnectedNode in
+				guard remoteNodeNum == nil else { applyRemoteSettingsNode(); return }
 				// If the preferred node changes, then select the newly preferred node
 				// This should only happen during connect
 				preferredNodeNum = newConnectedNode
 				selectedNode = Int(accessoryManager.isConnected ? newConnectedNode : 0)
 			}
 			.onChange(of: accessoryManager.isConnected) { _, isConnectedNow in
+				guard remoteNodeNum == nil else { applyRemoteSettingsNode(); return }
 				// If we are on this screen, haven't iniatialized the selection yet,
 				// And we transition, to connected, then initialize the selection
 				if isConnectedNow, self.selectedNode == 0 {
@@ -857,6 +892,12 @@ struct Settings: View {
 				}
 			}
 			.onChange(of: accessoryManager.activeDeviceNum) { oldDevice, newDevice in
+				if remoteNodeNum != nil {
+					preferredNodeNum = Int(newDevice ?? 0)
+					selectedNode = 0
+					applyRemoteSettingsNode()
+					return
+				}
 				if newDevice == nil {
 					selectedNode = 0
 					preferredNodeNum = 0
@@ -871,21 +912,18 @@ struct Settings: View {
 				// If we are not fully connected yet, then setSelectedNode will
 				// not select the node and it will remain 0
 				refreshNodes()
-				if self.preferredNodeNum <= 0 {
+				if remoteNodeNum == nil && self.preferredNodeNum <= 0 {
 					self.preferredNodeNum = UserDefaults.preferredPeripheralNum
 					setSelectedNode(to: UserDefaults.preferredPeripheralNum)
 				}
-				applyPendingSettingsNode()
-			}
-			.onChange(of: router.settingsNodeNum) { _, _ in
-				applyPendingSettingsNode()
+				applyRemoteSettingsNode()
 			}
 			.task(id: router.selectedTab) {
 				// Refresh the node snapshot on a gentle cadence, and only while Settings is
 				// the frontmost tab — the stale snapshot is invisible from other tabs, this
 				// task re-fires on every tab switch (so the guard comes first), and switching
 				// here restarts it for an immediate refresh.
-				guard router.selectedTab == .settings else { return }
+				guard remoteNodeNum != nil || router.selectedTab == .settings else { return }
 				refreshNodes()
 				while !Task.isCancelled {
 					do {
@@ -897,8 +935,9 @@ struct Settings: View {
 					refreshNodes()
 				}
 			}
-			.navigationTitle("Settings")
+			.navigationTitle(remoteNodeNum == nil ? "Settings" : "Remote Settings")
 			.toolbar {
+				if remoteNodeNum == nil {
 				ToolbarItem(placement: .topBarLeading) {
 					MeshtasticLogo().onLongPressGesture(minimumDuration: 1.0) {
 					}
@@ -922,13 +961,14 @@ struct Settings: View {
 		}
 	}
 
-	private func applyPendingSettingsNode(availableNodes: [SettingsNodeSnapshot]? = nil) {
-		guard let requestedNodeNum = router.settingsNodeNum,
-			(availableNodes ?? sortedNodes).contains(where: { $0.num == requestedNodeNum }),
-			accessoryManager.isConnected else { return }
-		preferredNodeNum = Int(accessoryManager.activeDeviceNum ?? Int64(requestedNodeNum))
-		selectedNode = Int(requestedNodeNum)
-		router.settingsNodeNum = nil
+	private func applyRemoteSettingsNode(availableNodes: [SettingsNodeSnapshot]? = nil) {
+		guard let selection = Self.remoteSettingsSelection(
+			requestedNodeNum: remoteNodeNum,
+			activeDeviceNum: accessoryManager.activeDeviceNum,
+			availableNodeNums: Set((availableNodes ?? sortedNodes).map(\.num)),
+			isConnected: accessoryManager.isConnected) else { return }
+		preferredNodeNum = Int(selection.preferredNodeNum)
+		selectedNode = Int(selection.selectedNode)
 	}
 
 	private func handleSelectedNodeChange(_ newValue: Int) {
