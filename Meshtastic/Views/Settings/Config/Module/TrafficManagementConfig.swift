@@ -196,6 +196,7 @@ struct TrafficManagementConfig: View {
 				context: context,
 				accessoryManager: accessoryManager,
 				configIsNil: { $0.trafficManagementConfig == nil },
+				section: "Traffic Management",
 				request: accessoryManager.requestTrafficManagementModuleConfig
 			)
 		}
