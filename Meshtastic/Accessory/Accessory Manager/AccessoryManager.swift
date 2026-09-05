@@ -162,6 +162,8 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	/// back off repeats (see `shouldSurfaceFirmwareNotice`). In memory on purpose: after a
 	/// relaunch a standing notice alerts once more, which is the useful behaviour.
 	var firmwareNoticeHistory: [String: (count: Int, lastShown: Date)] = [:]
+	let remoteAdminConfigTracker = RemoteAdminConfigTracker()
+	@Published var remoteAdminConfigFeedback: (targetNodeNum: Int64, message: String)? = nil
 	/// Delay before the Nth repeat of the same notice may alert again.
 	static let firmwareNoticeBackoff: [TimeInterval] = [0, 300, 1_800, 7_200, 43_200]
 	/// A notice unseen for this long is forgotten, so it alerts immediately if it returns.
@@ -320,6 +322,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	/// monitor. True while sustained inbound mesh traffic is high enough to pause the map flyover.
 	@Published private(set) var isHighMeshTraffic = false
 	private var meshTrafficCancellable: AnyCancellable?
+	private var remoteAdminTrackerCancellable: AnyCancellable?
 
 	/// Packet count at the last periodic MeshPackets recycle (see `didReceive`). The ingest
 	/// actor's ModelContext registers every entity it inserts or faults and never lets go, so a
@@ -385,6 +388,8 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			.sink { [weak self] isHigh in
 				self?.isHighMeshTraffic = isHigh
 			}
+		remoteAdminTrackerCancellable = remoteAdminConfigTracker.objectWillChange
+			.sink { [weak self] _ in self?.objectWillChange.send() }
 	}
 
 	func transportForType(_ type: TransportType) -> Transport? {
@@ -586,7 +591,50 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	// Fully tears down a connection and sets up the AccessoryManager for the next.
 	// If you are calling this in response to an error, then you should have
 	// exposed the error to the UI or handled the error prior to calling this.
+	/// Clears every cached remote-admin authorization before the next transport can be used.
+	/// Session passkeys are scoped to the local transport session; retaining one across a
+	/// disconnect would let a reconnect reuse authorization established by the previous link.
+	@discardableResult
+	func invalidateRemoteAdminSessions() -> Int {
+		do {
+			let nodes = try context.fetch(FetchDescriptor<NodeInfoEntity>())
+			var invalidated = 0
+			for node in nodes where node.sessionPasskey != nil || node.sessionExpiration != nil {
+				node.sessionPasskey = nil
+				node.sessionExpiration = nil
+				invalidated += 1
+			}
+			if invalidated > 0 {
+				try context.save()
+			}
+			return invalidated
+		} catch {
+			Logger.data.error("💥 [AccessoryManager] Failed to clear remote admin sessions: \(error.localizedDescription, privacy: .public)")
+			return 0
+		}
+	}
+
+	/// A routing rejection invalidates only the remote node whose session was rejected.
+	/// The local transport and sessions for other remote nodes remain usable.
+	@discardableResult
+	func invalidateRemoteAdminSession(for targetNodeNum: Int64) -> Bool {
+		let descriptor = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == targetNodeNum })
+		guard let node = try? context.fetch(descriptor).first,
+			  node.sessionPasskey != nil || node.sessionExpiration != nil else { return false }
+
+		node.sessionPasskey = nil
+		node.sessionExpiration = nil
+		do {
+			try context.save()
+			return true
+		} catch {
+			Logger.data.error("💥 [AccessoryManager] Failed to clear remote admin session for node \(targetNodeNum, privacy: .public): \(error.localizedDescription, privacy: .public)")
+			return false
+		}
+	}
+
 	func closeConnection() async throws {
+		failRemoteAdminConfigOperations(with: "The radio connection was closed before the remote node confirmed the configuration.")
 		guard !isClosingConnection else {
 			Logger.transport.debug("[AccessoryManager] closeConnection ignored while teardown is already in progress")
 			return
@@ -603,6 +651,9 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			self.activeConnection = nil
 		}
 		self.activeDeviceNum = nil
+		// A remote-admin session is authorized by the local transport that established it.
+		// Clear all cached passkeys before a replacement/reconnect can observe them as fresh.
+		invalidateRemoteAdminSessions()
 		if let refresh = activeAutomaticConfigRefresh {
 			automaticConfigRefreshTask?.cancel()
 			await finishAutomaticConfigRefresh(owner: refresh.owner, error: CancellationError())
@@ -773,6 +824,37 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		}
 	}
 
+	@discardableResult
+	func beginRemoteAdminConfigOperation(kind: RemoteAdminConfigOperationKind, targetNodeNum: Int64, section: String = "save") -> UUID? {
+		remoteAdminConfigTracker.begin(kind: kind, targetNodeNum: targetNodeNum, section: section)
+	}
+
+	func resolveRemoteAdminConfigPacket(packetID: UInt32, sourceNodeNum: Int64, result: RemoteAdminConfigOperationResult) {
+		guard let operationID = remoteAdminConfigTracker.resolveAdminResponse(packetID: packetID, sourceNodeNum: sourceNodeNum),
+			  let operation = remoteAdminConfigTracker.operations[operationID]
+		else { return }
+		if case .failed(let message) = result {
+			remoteAdminConfigFeedback = (operation.targetNodeNum, message)
+		}
+	}
+
+	func resolveRemoteAdminRoutingError(packetID: UInt32, reason: Routing.Error) {
+		let message = "Remote node rejected the request: \(reason)"
+		guard let operationID = remoteAdminConfigTracker.resolveRouting(packetID: packetID, sourceNodeNum: 0, reason: message, isFailure: true),
+			  let operation = remoteAdminConfigTracker.operations[operationID]
+		else { return }
+		// A rejected passkey must not be retried. Other routing errors do not prove that
+		// the cached authorization material itself is invalid.
+		if reason == .adminBadSessionKey {
+			invalidateRemoteAdminSession(for: operation.targetNodeNum)
+		}
+		remoteAdminConfigFeedback = (operation.targetNodeNum, message)
+	}
+
+	func failRemoteAdminConfigOperations(with message: String) {
+		remoteAdminConfigTracker.failAll(with: message)
+	}
+
 	func didReceive(_ event: ConnectionEvent) async {
 		let shouldIgnoreTransientEvent = isClosingConnection || userRequestedConnectionCancellation || activeConnection == nil
 
@@ -824,6 +906,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			updateDevice(deviceId: deviceId, key: \.rssi, value: rssi)
 			
 		case .error(let error), .errorWithoutReconnect(let error):
+			failRemoteAdminConfigOperations(with: "The radio connection was lost before the remote node confirmed the configuration.")
 			Task {
 				// Figure out if we'll reconnect
 				if case .errorWithoutReconnect = event {
@@ -853,6 +936,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			}
 			
 		case .disconnected:
+			failRemoteAdminConfigOperations(with: "The radio connection was lost before the remote node confirmed the configuration.")
 			guard !shouldIgnoreTransientEvent else {
 				Logger.transport.info("[Accessory] Ignoring disconnect event during teardown.")
 				return
@@ -940,6 +1024,32 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 
 			// Dispatch based on packet contents.
 			if case let .decoded(data) = packet.payloadVariant {
+				let responseID = data.requestID != 0 ? data.requestID : data.replyID
+				if responseID != 0 {
+					if data.portnum == .adminApp,
+						let adminMessage = try? AdminMessage(serializedBytes: data.payload),
+						RemoteAdminConfigTracker.isAdminResponse(adminMessage) {
+						resolveRemoteAdminConfigPacket(
+							packetID: responseID,
+							sourceNodeNum: Int64(packet.from),
+							result: .succeeded
+						)
+					} else if data.portnum == .routingApp,
+						   let routing = try? Routing(serializedBytes: data.payload),
+						   case .errorReason(let reason)? = routing.variant {
+						if reason == .none {
+							remoteAdminConfigTracker.resolveRouting(
+								packetID: responseID,
+								sourceNodeNum: Int64(packet.from),
+								reason: nil,
+								isFailure: false)
+						} else {
+							resolveRemoteAdminRoutingError(
+								packetID: responseID,
+								reason: reason)
+						}
+					}
+				}
 				// Forward packets to discovery scan engine if active
 				if let engine = discoveryScanEngine, engine.isScanning {
 					engine.handleMeshPacket(packet, portNum: data.portnum)

@@ -35,9 +35,19 @@ Turning a toggle off suppresses only the alert — messages, reactions, waypoint
 
 Radio configuration requires a connected node. Select your node from the **Configure** section if you have multiple nodes.
 
+### Remote administration
+
+From a node's detail screen, **Remote Admin** opens that node's configuration directly. If the app does not have a current admin session, it requests fresh device metadata first and shows the target name while the session is established. A disconnected radio, changed target, or 30-second timeout leaves the screen in an error state with a **Retry Remote Admin** action; Settings is opened only after the session becomes active.
+
+The Remote Admin page stays inside node navigation: Back from a configuration section returns to the remote Settings page, and Back from that page returns to the node. It does not switch to the app’s Settings tab.
+
 ### Node selection
 
 The Configure picker lists live nodes from the current node database, with favorites first. If the node database is reset or the selected node disappears, Settings clears that selection instead of opening configuration for a stale node. Reconnect to a radio or choose a currently listed node to continue configuring it.
+
+### Remote configuration
+
+When you configure another node, Settings shows progress while the request or save is being confirmed by that node. A timeout or delivery error keeps your edits on screen and provides a **Retry** action, so you can check the node and try again without re-entering the values.
 
 ### LoRa
 

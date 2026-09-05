@@ -29,6 +29,7 @@ private struct NodeDetailLogAvailability {
 
 struct NodeDetail: View {
 	private let gridItemLayout = Array(repeating: GridItem(.flexible(), spacing: 10), count: 2)
+	private let nodeDetailScrollContentTopMargin: CGFloat = 0
 	private static let relativeFormatter: RelativeDateTimeFormatter = {
 		let formatter = RelativeDateTimeFormatter()
 		formatter.unitsStyle = .full
@@ -55,6 +56,9 @@ struct NodeDetail: View {
 	@State private var latestPowerMetrics: TelemetryEntity?
 	@State private var logAvailability = NodeDetailLogAvailability()
 	@State private var showingShareContactQR = false
+	@State private var remoteAdminState: RemoteAdminSessionState = .stale
+	@State private var remoteAdminAttemptID: UUID?
+	@State private var remoteSettingsDestination: RemoteAdminSettingsDestination?
 
 	init(node: NodeInfoEntity, nodeNum: Int64, showMapLink: Bool = true) {
 		self.node = node
@@ -153,11 +157,50 @@ struct NodeDetail: View {
 						.onChange(of: node.lastHeard) {
 							refreshNodeSummary()
 						}
+						.onChange(of: accessoryManager.activeDeviceNum) { _, _ in
+							remoteSettingsDestination = nil
+							remoteAdminAttemptID = nil
+							if !accessoryManager.isConnected {
+								remoteAdminState = .stale
+							}
+						}
+						.onChange(of: accessoryManager.isConnected) { _, connected in
+							if !connected {
+								remoteSettingsDestination = nil
+								remoteAdminAttemptID = nil
+								remoteAdminState = .stale
+							}
+						}
 						.onReceive(NotificationCenter.default.publisher(for: .nodeLogAvailabilityDidChange)) { notification in
 							guard notification.object as? Int64 == nodeNum else { return }
 							refreshNodeSummary()
 						}
-						.contentMargins(.top, 0, for: .scrollContent)
+						.contentMargins(.top, nodeDetailScrollContentTopMargin, for: .scrollContent)
+						.task(id: remoteAdminAttemptID) {
+							guard remoteAdminAttemptID != nil else { return }
+							await establishRemoteAdminSession()
+						}
+					.onChange(of: accessoryManager.activeConnection.map { ObjectIdentifier($0.connection) }) { _, connectionID in
+						if let destination = remoteSettingsDestination, destination.connectionID != connectionID {
+							remoteSettingsDestination = nil
+						}
+					}
+					.navigationDestination(isPresented: Binding(
+						get: { remoteSettingsDestination != nil },
+						set: { if !$0 { remoteSettingsDestination = nil } }
+					)) {
+						if let destination = remoteSettingsDestination {
+							Settings(remoteNodeNum: destination.nodeNum)
+								.disabled(!destination.isCurrent(
+									radioNum: accessoryManager.activeDeviceNum,
+									connectionID: accessoryManager.activeConnection.map { ObjectIdentifier($0.connection) },
+									isConnected: accessoryManager.isConnected))
+						}
+					}
+					.onChange(of: nodeNum) { _, _ in
+						remoteSettingsDestination = nil
+						remoteAdminAttemptID = nil
+					}
 					.navigationTitle(String((currentUser?.displayLongName ?? "Unknown".localized).addingVariationSelectors))
 					.navigationBarTitleDisplayMode(.inline)
 					.id(displayNameRefresh)
@@ -884,11 +927,13 @@ struct NodeDetail: View {
 
 	@ViewBuilder
 	private var administrationSection: some View {
-		if let metadata = node.metadata,
-		   connectedNode != nil,
-		   accessoryManager.isConnected {
+		if connectedNode != nil, accessoryManager.isConnected {
 			Section("Administration") {
 				let administrationUserPair = self.administrationUserPair
+				if nodeNum != accessoryManager.activeDeviceNum {
+					remoteAdminEntry(administrationUserPair: administrationUserPair)
+				}
+				if let metadata = node.metadata {
 				if UserDefaults.enableAdministration {
 					Button {
 						Task {
@@ -963,8 +1008,132 @@ struct NodeDetail: View {
 					}
 				}
 				.disabled(administrationUserPair == nil)
+				}
 			}
 		}
+	}
+
+	@ViewBuilder
+	private func remoteAdminEntry(administrationUserPair: (fromUser: UserEntity, toUser: UserEntity)?) -> some View {
+		let targetName = currentUser?.displayLongName ?? "Unknown".localized
+		switch remoteAdminState {
+		case .establishing:
+			HStack {
+				ProgressView()
+				Text("Establishing remote admin for \(targetName)")
+			}
+		case .active:
+			Button {
+				remoteAdminState = .establishing
+				remoteAdminAttemptID = UUID()
+			} label: {
+				Label("Remote Admin: \(targetName)", systemImage: "checkmark.shield")
+					.frame(minWidth: 48, minHeight: 48, alignment: .leading)
+			}
+		case .failed(let result):
+			VStack(alignment: .leading) {
+				Button {
+					remoteAdminState = .establishing
+					remoteAdminAttemptID = UUID()
+				} label: {
+					Label("Retry Remote Admin for \(targetName)", systemImage: "arrow.clockwise")
+						.frame(minWidth: 48, minHeight: 48, alignment: .leading)
+				}
+				Text("Remote admin failed: \(RemoteAdminSessionWaiter.description(for: result)).")
+					.font(.caption)
+					.foregroundStyle(.orange)
+			}
+			.disabled(administrationUserPair == nil || !UserDefaults.enableAdministration)
+		case .stale:
+			VStack(alignment: .leading) {
+				Button {
+					remoteAdminState = .establishing
+					remoteAdminAttemptID = UUID()
+				} label: {
+					Label("Remote Admin: \(targetName)", systemImage: "shield")
+						.frame(minWidth: 48, minHeight: 48, alignment: .leading)
+				}
+				if !UserDefaults.enableAdministration {
+					Text("Enable Administration in App Settings to use remote admin.")
+						.font(.caption)
+						.foregroundStyle(.orange)
+				}
+			}
+			.disabled(administrationUserPair == nil || !UserDefaults.enableAdministration)
+		}
+	}
+
+	@MainActor
+	private func establishRemoteAdminSession() async {
+		guard let attemptID = remoteAdminAttemptID,
+			let radioNum = accessoryManager.activeDeviceNum,
+			let connection = accessoryManager.activeConnection?.connection,
+			nodeNum != radioNum else {
+			remoteAdminState = .failed(.targetChanged)
+			return
+		}
+		defer {
+			if remoteAdminAttemptID == attemptID {
+				remoteAdminAttemptID = nil
+			}
+		}
+		guard UserDefaults.enableAdministration else {
+			remoteAdminState = .failed(.requestFailed)
+			return
+		}
+		guard let administrationUserPair else {
+			remoteAdminState = .failed(.disconnected)
+			return
+		}
+		let connectionID = ObjectIdentifier(connection)
+		let result = await RemoteAdminSessionOrchestrator.establish(
+			allowed: { UserDefaults.enableAdministration && accessoryManager.isConnected },
+			attemptIsCurrent: { [weak accessoryManager, weak node, weak router] in
+				accessoryManager?.activeDeviceNum == radioNum
+					&& accessoryManager?.activeConnection.map { ObjectIdentifier($0.connection) } == connectionID
+					&& node?.modelContext != nil && node?.isDeleted == false
+					&& (router?.selectedNodeNum == nil || router?.selectedNodeNum == nodeNum)
+					&& self.remoteAdminAttemptID == attemptID
+			},
+			// Fetch to refresh the retained main-context node after the packet actor saves a session.
+			fresh: { getNodeInfo(id: nodeNum, context: context)?.hasLiveAdminSession == true },
+			request: {
+				_ = try await accessoryManager.requestDeviceMetadata(
+					fromUser: administrationUserPair.fromUser,
+					toUser: administrationUserPair.toUser
+				)
+			},
+			wait: {
+				await RemoteAdminSessionWaiter.wait(
+					isLive: { getNodeInfo(id: nodeNum, context: context)?.hasLiveAdminSession == true },
+					isConnected: { [weak accessoryManager] in
+						accessoryManager?.isConnected == true
+						&& accessoryManager?.activeDeviceNum == radioNum
+						&& accessoryManager?.activeConnection.map { ObjectIdentifier($0.connection) } == connectionID
+						&& self.remoteAdminAttemptID == attemptID
+					},
+					targetIsCurrent: { [weak node, weak router] in
+						node?.modelContext != nil && node?.isDeleted == false
+						&& (router?.selectedNodeNum == nil || router?.selectedNodeNum == nodeNum)
+					}
+				)
+			}
+		)
+		guard result == .active else {
+			remoteAdminState = .failed(result)
+			return
+		}
+		guard UserDefaults.enableAdministration,
+			accessoryManager.isConnected,
+			accessoryManager.activeDeviceNum == radioNum,
+			accessoryManager.activeConnection.map({ ObjectIdentifier($0.connection) }) == connectionID,
+			node.modelContext != nil, !node.isDeleted,
+			remoteAdminAttemptID == attemptID else {
+			remoteAdminState = .failed(.targetChanged)
+			return
+		}
+		remoteAdminState = .active
+		remoteSettingsDestination = RemoteAdminSettingsDestination(nodeNum: nodeNum, radioNum: radioNum, connectionID: connectionID)
 	}
 
 	private func refreshNodeSummary() {
