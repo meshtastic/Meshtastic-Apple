@@ -1,4 +1,13 @@
+//
+//  RemoteAdminSession.swift
+//  Meshtastic
+//
+//  Coordinates remote administration session state and confirmation waits.
+//
+
 import Foundation
+
+// MARK: - Session State
 
 enum RemoteAdminSessionState: Equatable {
 	case stale
@@ -7,12 +16,16 @@ enum RemoteAdminSessionState: Equatable {
 	case failed(RemoteAdminSessionWaiter.Result)
 }
 
+// MARK: - Session Freshness
+
 enum RemoteAdminSessionFreshness {
 	static func isFresh(passkey: Data?, expiration: Date?, now: Date = Date()) -> Bool {
 		guard let passkey, !passkey.isEmpty, let expiration else { return false }
 		return expiration >= now
 	}
 }
+
+// MARK: - Session Waiter
 
 enum RemoteAdminSessionWaiter {
 	enum Result: Equatable {
@@ -62,6 +75,8 @@ enum RemoteAdminSessionWaiter {
 	}
 }
 
+// MARK: - Session Orchestration
+
 enum RemoteAdminSessionOrchestrator {
 	@MainActor
 	static func establish(
@@ -89,6 +104,8 @@ enum RemoteAdminSessionOrchestrator {
 		return .active
 	}
 }
+
+// MARK: - Settings Destination
 
 struct RemoteAdminSettingsDestination {
 	let nodeNum: Int64
