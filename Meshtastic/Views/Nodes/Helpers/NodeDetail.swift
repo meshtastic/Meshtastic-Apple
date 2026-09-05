@@ -1063,6 +1063,7 @@ struct NodeDetail: View {
 	private func establishRemoteAdminSession() async {
 		guard let attemptID = remoteAdminAttemptID,
 			let radioNum = accessoryManager.activeDeviceNum,
+			let connection = accessoryManager.activeConnection?.connection,
 			nodeNum != radioNum else {
 			remoteAdminState = .failed(.targetChanged)
 			return
@@ -1075,10 +1076,12 @@ struct NodeDetail: View {
 			remoteAdminState = .failed(.disconnected)
 			return
 		}
+		let connectionID = ObjectIdentifier(connection)
 		let result = await RemoteAdminSessionOrchestrator.establish(
 			allowed: { UserDefaults.enableAdministration && accessoryManager.isConnected },
 			attemptIsCurrent: { [weak accessoryManager, weak node, weak router] in
 				accessoryManager?.activeDeviceNum == radioNum
+					&& accessoryManager?.activeConnection.map { ObjectIdentifier($0.connection) } == connectionID
 					&& node?.modelContext != nil && node?.isDeleted == false
 					&& (router?.selectedNodeNum == nil || router?.selectedNodeNum == nodeNum)
 					&& self.remoteAdminAttemptID == attemptID
@@ -1096,6 +1099,7 @@ struct NodeDetail: View {
 					isConnected: { [weak accessoryManager] in
 						accessoryManager?.isConnected == true
 						&& accessoryManager?.activeDeviceNum == radioNum
+						&& accessoryManager?.activeConnection.map { ObjectIdentifier($0.connection) } == connectionID
 						&& self.remoteAdminAttemptID == attemptID
 					},
 					targetIsCurrent: { [weak node, weak router] in
@@ -1112,6 +1116,7 @@ struct NodeDetail: View {
 		guard UserDefaults.enableAdministration,
 			accessoryManager.isConnected,
 			accessoryManager.activeDeviceNum == radioNum,
+			accessoryManager.activeConnection.map({ ObjectIdentifier($0.connection) }) == connectionID,
 			node.modelContext != nil, !node.isDeleted,
 			remoteAdminAttemptID == attemptID else {
 			remoteAdminState = .failed(.targetChanged)
