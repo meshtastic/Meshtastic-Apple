@@ -37,6 +37,7 @@ class PersistenceController {
 	/// Remembered so the store can be reopened in a fresh container — see `recreateContainer()`.
 	private let storeName: String
 	private let inMemory: Bool
+	private var bootstrapTask: Task<Void, Never>?
 
 	var context: ModelContext {
 		container.mainContext
@@ -344,18 +345,28 @@ class PersistenceController {
 			}
 		}
 
-		// ── Step 2: one-time Core Data → SwiftData migration ─────────────────
-		// Runs only when upgrading from 2.7.12 (or earlier) which used Core Data.
-		guard !inMemory, !isTestEnvironment else { return }
-		if CoreDataMigrationService.legacyStoreExists() {
+	}
+
+	/// Finishes the one-time legacy copy before the app mounts its SwiftData view tree.
+	func bootstrap() async {
+		guard !inMemory, CoreDataMigrationService.legacyStoreExists() else { return }
+		if let bootstrapTask {
+			await bootstrapTask.value
+			return
+		}
+
+		let container = container
+		let task = Task { @MainActor in
 			do {
-				try CoreDataMigrationService.migrate(into: container)
+				try await CoreDataMigrationService.migrateOffMain(into: container)
 			} catch {
-				// Log but do not crash — the SwiftData store is usable even if
-				// migration fails; the user will simply start fresh on this device.
+				// Preserve the existing behavior: migration failure does not make the app unusable.
 				Logger.data.error("⬆️ CoreDataMigrationService failed: \(error.localizedDescription, privacy: .public)")
 			}
 		}
+		bootstrapTask = task
+		await task.value
+		bootstrapTask = nil
 	}
 
 	@MainActor

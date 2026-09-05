@@ -23,6 +23,11 @@ import CoreData
 import SwiftData
 import OSLog
 
+@globalActor
+private actor LegacyMigrationActor {
+	static let shared = LegacyMigrationActor()
+}
+
 // MARK: - Public API
 
 enum CoreDataMigrationService {
@@ -61,6 +66,25 @@ enum CoreDataMigrationService {
 		FileManager.default.fileExists(atPath: legacyStoreURL.path)
 	}
 
+	/// A pre-first-unlock launch can see the store files but cannot read them.
+	/// Do not open or rename either legacy location until protected data is available.
+	static func protectedStoreIsUnavailable() -> Bool {
+		[candidateStoreURL, legacyStoreURL].contains { url in
+			FileManager.default.fileExists(atPath: url.path)
+				&& !FileManager.default.isReadableFile(atPath: url.path)
+		}
+	}
+
+	typealias MigrationExecutionProbe = @Sendable (Bool) async -> Void
+
+	/// Runs the complete legacy copy on a dedicated serial executor.
+	static func migrateOffMain(
+		into swiftDataContainer: ModelContainer,
+		executionProbe: MigrationExecutionProbe? = nil
+	) async throws {
+		try await migrate(into: swiftDataContainer, executionProbe: executionProbe)
+	}
+
 	/// Performs the full Core Data → SwiftData migration.
 	///
 	/// - Parameter swiftDataContainer: The already-initialised SwiftData
@@ -68,8 +92,12 @@ enum CoreDataMigrationService {
 	/// - Throws: Any error encountered while reading Core Data or writing
 	///   SwiftData.  The caller is responsible for surfacing this to the user
 	///   rather than silently destroying data.
-	@MainActor
-	static func migrate(into swiftDataContainer: ModelContainer) throws {
+	@LegacyMigrationActor
+	static func migrate(
+		into swiftDataContainer: ModelContainer,
+		executionProbe: MigrationExecutionProbe? = nil
+	) async throws {
+		await executionProbe?(migrationExecutorIsMainThread())
 		Logger.data.info("⬆️ CoreDataMigrationService: beginning legacy migration")
 
 		// Reset merge state: non-empty only in the rescue scenario (#2152) — releases
@@ -85,7 +113,8 @@ enum CoreDataMigrationService {
 		let cdContext = coreDataContainer.viewContext
 		cdContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
 
-		let sdContext = swiftDataContainer.mainContext
+		let sdContext = ModelContext(swiftDataContainer)
+		sdContext.autosaveEnabled = false
 
 		// ── Phase 1: nodes, users, info (no inter-entity dependencies) ──────
 		let nodeMap   = try migrateNodes(cdContext: cdContext, sdContext: sdContext)
@@ -119,6 +148,11 @@ enum CoreDataMigrationService {
 		// ── Rename old store so this migration never runs again ──────────────
 		renameOldStore()
 		Logger.data.info("⬆️ CoreDataMigrationService: legacy store renamed – migration complete")
+	}
+
+	@LegacyMigrationActor
+	private static func migrationExecutorIsMainThread() -> Bool {
+		Thread.isMainThread
 	}
 }
 
@@ -228,6 +262,7 @@ private extension CoreDataMigrationService {
 // Each function returns a dictionary mapping NSManagedObjectID → SwiftData
 // entity so that relationships can be wired up in later phases.
 
+@LegacyMigrationActor
 private extension CoreDataMigrationService {
 
 	// MARK: NodeInfoEntity
