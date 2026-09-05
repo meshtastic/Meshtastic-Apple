@@ -586,6 +586,29 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	// Fully tears down a connection and sets up the AccessoryManager for the next.
 	// If you are calling this in response to an error, then you should have
 	// exposed the error to the UI or handled the error prior to calling this.
+	/// Clears every cached remote-admin authorization before the next transport can be used.
+	/// Session passkeys are scoped to the local transport session; retaining one across a
+	/// disconnect would let a reconnect reuse authorization established by the previous link.
+	@discardableResult
+	func invalidateRemoteAdminSessions() -> Int {
+		do {
+			let nodes = try context.fetch(FetchDescriptor<NodeInfoEntity>())
+			var invalidated = 0
+			for node in nodes where node.sessionPasskey != nil || node.sessionExpiration != nil {
+				node.sessionPasskey = nil
+				node.sessionExpiration = nil
+				invalidated += 1
+			}
+			if invalidated > 0 {
+				try context.save()
+			}
+			return invalidated
+		} catch {
+			Logger.data.error("💥 [AccessoryManager] Failed to clear remote admin sessions: \(error.localizedDescription, privacy: .public)")
+			return 0
+		}
+	}
+
 	func closeConnection() async throws {
 		guard !isClosingConnection else {
 			Logger.transport.debug("[AccessoryManager] closeConnection ignored while teardown is already in progress")
@@ -603,6 +626,9 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			self.activeConnection = nil
 		}
 		self.activeDeviceNum = nil
+		// A remote-admin session is authorized by the local transport that established it.
+		// Clear all cached passkeys before a replacement/reconnect can observe them as fresh.
+		invalidateRemoteAdminSessions()
 		if let refresh = activeAutomaticConfigRefresh {
 			automaticConfigRefreshTask?.cancel()
 			await finishAutomaticConfigRefresh(owner: refresh.owner, error: CancellationError())

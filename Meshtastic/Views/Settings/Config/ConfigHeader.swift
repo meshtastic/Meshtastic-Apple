@@ -17,8 +17,7 @@ struct ConfigHeader<T>: View {
 
 		} else if node != nil && node?.num ?? 0 != accessoryManager.activeDeviceNum ?? 0 {
 			// Let users know what is going on if they are using remote admin and don't have the config yet
-			let expiration = node?.sessionExpiration ?? Date()
-			if node?[keyPath: config] == nil  || expiration < node?.sessionExpiration ?? Date() {
+			if node?[keyPath: config] == nil || node?.hasLiveAdminSession != true {
 				Text("\(title) config data was requested via PKC admin but no response has been returned from the remote node.")
 					.font(.callout)
 					.foregroundColor(.orange)
