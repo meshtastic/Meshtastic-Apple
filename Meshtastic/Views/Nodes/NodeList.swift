@@ -178,15 +178,6 @@ struct NodeList: View {
 			ToolbarItem(placement: .topBarLeading) {
 				MeshtasticLogo()
 			}
-			if let connectedNode, ShareContactQR.canShareContact(for: connectedNode) {
-				ToolbarItem(placement: .topBarTrailing) {
-					Button {
-						shareContactNode = connectedNode
-					} label: {
-						Label("Share Connected Node", systemImage: "person.crop.circle.badge.plus")
-					}
-				}
-			}
 			ToolbarItem(placement: .topBarTrailing) {
 				ConnectedDevice(
 					deviceConnected: accessoryManager.isConnected,
