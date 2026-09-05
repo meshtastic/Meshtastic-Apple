@@ -87,6 +87,30 @@ struct NodeAdministrationTests {
 		#expect(node.sessionExpiration != nil)
 	}
 
+	@Test func refetchMakesReceivedSessionVisibleToRetainedNode() async throws {
+		let (mesh, container) = try freshMesh()
+		let num: Int64 = 0x13AB34
+		try seedNode(num: num, in: container)
+		let mainContext = container.mainContext
+		let cachedNode = try #require(getNodeInfo(id: num, context: mainContext))
+		#expect(!cachedNode.hasLiveAdminSession)
+
+		var admin = AdminMessage()
+		admin.sessionPasskey = Data([0xA5, 0x5A])
+		var metadata = DeviceMetadata()
+		metadata.firmwareVersion = "2.8.0"
+		admin.getDeviceMetadataResponse = metadata
+		await mesh.adminAppPacket(packet: try adminPacket(from: num, message: admin), connectedNodeNum: Self.myNum)
+
+		let result = await RemoteAdminSessionWaiter.wait(
+			timeout: .milliseconds(20),
+			isLive: { getNodeInfo(id: num, context: mainContext)?.hasLiveAdminSession == true },
+			isConnected: { true }, targetIsCurrent: { true })
+		#expect(result == .active)
+		#expect(cachedNode.hasLiveAdminSession)
+		#expect(cachedNode.metadata?.firmwareVersion == "2.8")
+	}
+
 	@Test func moduleConfigResponseWithPasskeyMarksAdministered() async throws {
 		let (mesh, container) = try freshMesh()
 		let num: Int64 = 0x22BB33
