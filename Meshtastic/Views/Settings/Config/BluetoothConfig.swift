@@ -101,6 +101,7 @@ struct BluetoothConfig: View {
 				context: context,
 				accessoryManager: accessoryManager,
 				configIsNil: { $0.bluetoothConfig == nil },
+				section: "Bluetooth",
 				request: accessoryManager.requestBluetoothConfig
 			)
 		}

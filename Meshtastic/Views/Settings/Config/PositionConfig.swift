@@ -395,6 +395,7 @@ struct PositionConfig: View {
 				context: context,
 				accessoryManager: accessoryManager,
 				configIsNil: { $0.positionConfig == nil },
+				section: "Position",
 				request: accessoryManager.requestPositionConfig
 			)
 		}

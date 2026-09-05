@@ -174,6 +174,7 @@ struct ExternalNotificationConfig: View {
 				context: context,
 				accessoryManager: accessoryManager,
 				configIsNil: { $0.externalNotificationConfig == nil },
+				section: "External notification",
 				request: accessoryManager.requestExternalNotificationModuleConfig
 			)
 		}
