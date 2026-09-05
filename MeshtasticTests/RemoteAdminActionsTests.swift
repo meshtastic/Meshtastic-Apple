@@ -99,7 +99,7 @@ struct RemoteAdminActionTransportTests {
 		#expect(result == .acknowledged)
 	}
 
-	@Test func actionTrackerResolvesRoutingAckAsAcknowledged() async throws {
+	@Test func actionTrackerDoesNotTreatRoutingAckAsActionAcknowledgement() async throws {
 		let tracker = RemoteAdminConfigTracker()
 		let operationID = tracker.begin(kind: .action, targetNodeNum: 42, section: "reset")
 		#expect(operationID != nil)
@@ -110,7 +110,20 @@ struct RemoteAdminActionTransportTests {
 		}
 		await Task.yield()
 		tracker.resolveRouting(packetID: packetID, sourceNodeNum: 42, reason: nil, isFailure: false)
-		#expect(try await waitTask.value == .acknowledged)
+		#expect(try await waitTask.value == .unconfirmed)
+	}
+
+	@Test func actionTrackerResolvesActualAdminResponseAsAcknowledged() async throws {
+		let tracker = RemoteAdminConfigTracker()
+		let operationID = try #require(tracker.begin(kind: .action, targetNodeNum: 42, section: "reset"))
+		let packetID: UInt32 = 126
+		#expect(tracker.registerPacket(packetID: packetID, targetNodeNum: 42, operationID: operationID))
+		let waitTask = Task {
+			await tracker.waitForPacket(packetID: packetID, operationID: operationID, timeout: .seconds(1))
+		}
+		await Task.yield()
+		#expect(tracker.resolveAdminResponse(packetID: packetID, sourceNodeNum: 42) == operationID)
+		#expect(await waitTask.value == .acknowledged)
 	}
 
 	@Test func actionTrackerIgnoresRoutingAckFromRelay() async throws {
@@ -142,10 +155,18 @@ struct RemoteAdminActionTransportTests {
 
 	@Test func sendTimeUsesProductionTransportAndRemoteAuth() async throws {
 		let fixture = try fixture()
-		try await fixture.manager.sendTime(fromUser: fixture.from, toUser: fixture.to)
+		let action = Task { try await fixture.manager.sendTime(fromUser: fixture.from, toUser: fixture.to) }
+		while await fixture.connection.sent.isEmpty { await Task.yield() }
+		let firstSent = try #require(await fixture.connection.sent.first)
+		let sentPacket = try admin(from: firstSent).0
+		#expect(fixture.manager.remoteAdminConfigTracker.operations.values.contains {
+			$0.kind == .action && $0.targetNodeNum == 42 && !$0.isFinished
+		})
+		#expect(fixture.manager.remoteAdminConfigTracker.resolveAdminResponse(packetID: sentPacket.id, sourceNodeNum: 42) != nil)
+		#expect(try await action.value == .acknowledged)
 		let (packet, admin) = try admin(from: await fixture.connection.sent[0])
 		#expect(packet.from == 7); #expect(packet.to == 42); #expect(admin.sessionPasskey == Data([0xA5, 0x5A]))
-		#expect(admin.setTimeOnly > 0); #expect(packet.decoded.portnum == .adminApp)
+		#expect(admin.setTimeOnly > 0); #expect(packet.decoded.portnum == .adminApp); #expect(packet.decoded.wantResponse)
 	}
 
 	@Test(arguments: [false, true]) func factoryResetModesReachRemote(resetDevice: Bool) async throws {
@@ -155,7 +176,7 @@ struct RemoteAdminActionTransportTests {
 		}
 		while await fixture.connection.sent.isEmpty { await Task.yield() }
 		let (sentPacket, _) = try admin(from: await fixture.connection.sent[0])
-		fixture.manager.remoteAdminConfigTracker.resolveRouting(packetID: sentPacket.id, sourceNodeNum: Int64(sentPacket.to), reason: nil, isFailure: false)
+		#expect(fixture.manager.remoteAdminConfigTracker.resolveAdminResponse(packetID: sentPacket.id, sourceNodeNum: Int64(sentPacket.to)) != nil)
 		#expect(try await action.value == .acknowledged)
 		let (packet, admin) = try admin(from: await fixture.connection.sent[0])
 		#expect(packet.to == 42); #expect(admin.sessionPasskey == Data([0xA5, 0x5A]))
@@ -173,7 +194,7 @@ struct RemoteAdminActionTransportTests {
 		}
 		while await fixture.connection.sent.isEmpty { await Task.yield() }
 		let (sentPacket, _) = try admin(from: await fixture.connection.sent[0])
-		fixture.manager.remoteAdminConfigTracker.resolveRouting(packetID: sentPacket.id, sourceNodeNum: Int64(sentPacket.to), reason: nil, isFailure: false)
+		#expect(fixture.manager.remoteAdminConfigTracker.resolveAdminResponse(packetID: sentPacket.id, sourceNodeNum: Int64(sentPacket.to)) != nil)
 		#expect(try await action.value == .acknowledged)
 		let (packet, admin) = try admin(from: await fixture.connection.sent[0])
 		#expect(packet.from == 7); #expect(packet.to == 42); #expect(admin.nodedbReset == preserveFavorites)
@@ -181,5 +202,19 @@ struct RemoteAdminActionTransportTests {
 		#expect(stillThere?.favorite == true)
 		let targetStillTracked = try context.fetch(FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == 42 })).first
 		#expect(targetStillTracked != nil)
+	}
+
+	@Test func destructiveActionConfirmationCapturesTargetAndIrreversibleEffects() {
+		let target = RemoteAdminActionTarget(
+			nodeNum: 42,
+			name: "Target",
+			radioNum: 7,
+			connectionID: ObjectIdentifier(RemoteActionConnection()))
+		#expect(target.confirmationLabel == "Target (node 42)")
+		#expect(target.factoryResetConfirmationMessage(resetDevice: false).contains("Target (node 42)"))
+		#expect(target.factoryResetConfirmationMessage(resetDevice: false).contains("irreversibly"))
+		#expect(target.factoryResetConfirmationMessage(resetDevice: true).contains("identity, admin keys, channels, and Bluetooth bonds"))
+		#expect(target.nodeDBResetConfirmationMessage(preserveFavorites: false).contains("Target (node 42)"))
+		#expect(target.nodeDBResetConfirmationMessage(preserveFavorites: false).contains("cannot be undone"))
 	}
 }

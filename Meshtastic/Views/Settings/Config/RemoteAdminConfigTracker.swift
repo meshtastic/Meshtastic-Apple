@@ -83,10 +83,12 @@ final class RemoteAdminConfigTracker: ObservableObject {
 
 	func resolveRouting(packetID: UInt32, sourceNodeNum: Int64, reason: String?, isFailure: Bool) -> UUID? {
 		guard let operation = operations.values.first(where: { $0.pendingPacketIDs.contains(packetID) && !$0.isFinished }) else { return nil }
-		guard isFailure || ((operation.kind == .save || operation.kind == .action) && operation.targetNodeNum == sourceNodeNum) else { return nil }
-		let result: RemoteAdminConfigOperationResult = isFailure
-			? .failed(reason ?? "Remote delivery failed")
-			: (operation.kind == .action ? .acknowledged : .succeeded)
+		guard isFailure || (operation.kind == .save && operation.targetNodeNum == sourceNodeNum) else { return nil }
+		// A routing ACK only proves that the mesh accepted the packet for delivery. It does not
+		// prove that the target executed a destructive action. Keep action packets pending until
+		// an admin response (or another target-specific evidence packet) resolves them; timeout
+		// then reports `.unconfirmed`.
+		let result: RemoteAdminConfigOperationResult = isFailure ? .failed(reason ?? "Remote delivery failed") : .succeeded
 		return resolvePacket(packetID: packetID, operationID: operation.id, result: result)
 	}
 
