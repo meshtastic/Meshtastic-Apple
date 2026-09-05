@@ -1193,7 +1193,17 @@ actor MeshPackets {
 					}
 				}
 			} else if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getChannelResponse(adminMessage.getChannelResponse) {
-				channelPacket(channel: adminMessage.getChannelResponse, fromNum: Int64(packet.from))
+				// Remote Channels editing owns an in-memory target-scoped snapshot. Persisting a
+				// remote response through channelPacket would incorrectly attach it to MyInfo and
+				// overwrite the connected radio's local channel state.
+				if let connectedNodeNum, Int64(packet.from) == connectedNodeNum {
+					channelPacket(channel: adminMessage.getChannelResponse, fromNum: Int64(packet.from))
+				}
+				NotificationCenter.default.post(
+					name: .remoteChannelResponse,
+					object: nil,
+					userInfo: ["packet": packet, "response": adminMessage]
+				)
 			} else if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getDeviceMetadataResponse(adminMessage.getDeviceMetadataResponse) {
 				deviceMetadataPacket(metadata: adminMessage.getDeviceMetadataResponse, fromNum: Int64(packet.from), sessionPasskey: adminMessage.sessionPasskey)
 			} else if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getConfigResponse(adminMessage.getConfigResponse) {
