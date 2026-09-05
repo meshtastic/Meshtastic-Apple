@@ -20,6 +20,22 @@ struct NodeNameLimitsTests {
 		#expect(NodeNameLimits.longNameBytes == 24)
 	}
 
+	@Test("Older radios keep the wire length")
+	func legacyCap() {
+		// Before 2.8 a radio stores peers in UserLite, whose long_name is 40 including the
+		// terminator, so nothing was truncated.
+		#expect(NodeNameLimits.legacyLongNameBytes == 39)
+		#expect(NodeNameLimits.longNameBytes(storesCompactNames: false) == 39)
+		#expect(NodeNameLimits.longNameBytes(storesCompactNames: true) == 24)
+	}
+
+	@Test("A name that fits an older radio is not trimmed for it")
+	func legacyNameSurvives() {
+		let name = String(repeating: "a", count: 30)
+		#expect(NodeNameLimits.trimmed(name, toBytes: NodeNameLimits.longNameBytes(storesCompactNames: false)) == name)
+		#expect(NodeNameLimits.trimmed(name, toBytes: NodeNameLimits.longNameBytes(storesCompactNames: true)).utf8.count == 24)
+	}
+
 	@Test("A name at the limit is left alone")
 	func atTheLimit() {
 		let name = String(repeating: "a", count: 24)
