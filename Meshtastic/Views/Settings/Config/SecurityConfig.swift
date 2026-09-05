@@ -107,6 +107,7 @@ struct SecurityConfig: View {
 				context: context,
 				accessoryManager: accessoryManager,
 				configIsNil: { $0.securityConfig == nil },
+				section: "Security",
 				request: accessoryManager.requestSecurityConfig
 			)
 		}

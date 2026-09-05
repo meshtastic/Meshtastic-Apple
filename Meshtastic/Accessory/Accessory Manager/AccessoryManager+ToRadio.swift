@@ -200,7 +200,23 @@ extension AccessoryManager {
 		toRadio = ToRadio()
 		toRadio.packet = meshPacket
 
+		let operationID = RemoteAdminConfigTracker.currentOperationID
+		let enrolled = remoteAdminConfigTracker.registerPacket(
+			packetID: meshPacket.id,
+			targetNodeNum: Int64(meshPacket.to),
+			operationID: operationID
+		)
 		try await send(toRadio)
+		if enrolled, let operationID {
+			switch await remoteAdminConfigTracker.waitForPacket(packetID: meshPacket.id, operationID: operationID) {
+			case .succeeded:
+				break
+			case .failed(let message):
+				throw AccessoryError.ioFailed(message)
+			case .timedOut:
+				throw AccessoryError.timeout
+			}
+		}
 		if let adminDescription {
 			Logger.admin.debug("\(adminDescription, privacy: .public)")
 		}

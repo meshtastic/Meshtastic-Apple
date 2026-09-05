@@ -353,6 +353,7 @@ struct MQTTConfig: View {
 				context: context,
 				accessoryManager: accessoryManager,
 				configIsNil: { $0.mqttConfig == nil },
+				section: "MQTT",
 				request: accessoryManager.requestMqttModuleConfig
 			)
 		}

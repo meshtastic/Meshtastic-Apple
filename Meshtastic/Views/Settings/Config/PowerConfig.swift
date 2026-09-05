@@ -133,6 +133,7 @@ struct PowerConfig: View {
 				context: context,
 				accessoryManager: accessoryManager,
 				configIsNil: { $0.powerConfig == nil },
+				section: "Power Config",
 				request: accessoryManager.requestPowerConfig
 			)
 		}
