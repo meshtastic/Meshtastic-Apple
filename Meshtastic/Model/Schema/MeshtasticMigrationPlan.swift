@@ -30,9 +30,8 @@ enum MeshtasticMigrationPlan: SchemaMigrationPlan {
 	/// Use `.custom` when you need to transform data programmatically.
 	static var stages: [MigrationStage] {
 		[
-			// No migrations yet — V1 is the initial (unreleased) version, so
-			// model changes go directly into V1 rather than a new versioned
-			// schema + stage. Add migrations here only once V1 has shipped.
+			// No migration stages have been defined. V1 shipped in v2.7.13 and
+			// must not change again. Add a new schema and stage for later changes.
 		]
 	}
 }
