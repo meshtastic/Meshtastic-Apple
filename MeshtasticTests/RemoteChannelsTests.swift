@@ -5,6 +5,14 @@ import MeshtasticProtobufs
 
 @Suite("Remote Channels")
 struct RemoteChannelsTests {
+	@Test("remote channel identity includes the target name and node number")
+	func remoteTargetIdentityIsAccessible() {
+		let label = RemoteTargetIdentity.accessibilityLabel(name: "Relay Alpha", nodeNum: 0x1234)
+
+		#expect(label.contains("Relay Alpha"))
+		#expect(label.contains("4660"))
+	}
+
     @Test("channel read requests use one based wire indexes")
     func channelReadRequestUsesOneBasedWireIndex() throws {
         let packet = try RemoteChannelsPacketBuilder.getRequest(

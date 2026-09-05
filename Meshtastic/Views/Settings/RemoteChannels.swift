@@ -345,6 +345,9 @@ struct RemoteChannels: View {
 
 	var body: some View {
 		List {
+			RemoteTargetIdentity(name: toUser.displayLongName, nodeNum: toUser.num)
+				.listRowInsets(EdgeInsets(top: 8, leading: 20, bottom: 8, trailing: 20))
+				.listRowSeparator(.hidden)
 			if coordinator.isLoading {
 				ProgressView("Reading remote channels (\(coordinator.progress)/8)…")
 			}
@@ -379,7 +382,11 @@ struct RemoteChannels: View {
 		} message: { Text(errorMessage ?? "") }
 		.sheet(isPresented: Binding(get: { selected != nil }, set: { if !$0 { selected = nil } })) {
 			NavigationStack {
-				ChannelForm(channelIndex: $channelIndex, channelName: $channelName, channelKeySize: $channelKeySize, channelKey: $channelKey, channelRole: $channelRole, uplink: $uplink, downlink: $downlink, positionPrecision: $positionPrecision, preciseLocation: $preciseLocation, positionsEnabled: $positionsEnabled, hasChanges: $hasChanges, hasValidKey: $hasValidKey, supportedVersion: $supportedVersion)
+				VStack(spacing: 0) {
+					RemoteTargetIdentity(name: toUser.displayLongName, nodeNum: toUser.num)
+						.padding(.horizontal)
+					ChannelForm(channelIndex: $channelIndex, channelName: $channelName, channelKeySize: $channelKeySize, channelKey: $channelKey, channelRole: $channelRole, uplink: $uplink, downlink: $downlink, positionPrecision: $positionPrecision, preciseLocation: $preciseLocation, positionsEnabled: $positionsEnabled, hasChanges: $hasChanges, hasValidKey: $hasValidKey, supportedVersion: $supportedVersion)
+				}
 					.navigationTitle("Channel \(channelIndex)")
 					.toolbar {
 						ToolbarItem(placement: .cancellationAction) { Button("Cancel") { selected = nil } }
@@ -393,6 +400,39 @@ struct RemoteChannels: View {
 					}
 			}
 		}
+	}
+}
+
+struct RemoteTargetIdentity: View {
+	let name: String
+	let nodeNum: Int64
+
+	static func accessibilityLabel(name: String, nodeNum: Int64) -> String {
+		let nodeNumber = String(nodeNum)
+		return String(localized: "Remote target \(name), node number \(nodeNumber)", comment: "VoiceOver label identifying the node whose remote settings are being edited")
+	}
+
+	var body: some View {
+		HStack(alignment: .top, spacing: 12) {
+			Image(systemName: "antenna.radiowaves.left.and.right")
+				.font(.title3)
+				.foregroundStyle(.tint)
+				.accessibilityHidden(true)
+			VStack(alignment: .leading, spacing: 3) {
+				Text("Remote target")
+					.font(.caption)
+					.foregroundStyle(.secondary)
+				Text(name)
+					.font(.headline)
+				Text("Node number \(nodeNum)")
+					.font(.caption)
+					.foregroundStyle(.secondary)
+					.monospacedDigit()
+			}
+			Spacer(minLength: 0)
+		}
+		.accessibilityElement(children: .ignore)
+		.accessibilityLabel(Self.accessibilityLabel(name: name, nodeNum: nodeNum))
 	}
 }
 
