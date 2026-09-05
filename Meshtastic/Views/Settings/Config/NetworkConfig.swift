@@ -235,6 +235,7 @@ struct NetworkConfig: View {
 				context: context,
 				accessoryManager: accessoryManager,
 				configIsNil: { $0.networkConfig == nil },
+				section: "Network",
 				request: accessoryManager.requestNetworkConfig
 			)
 		}

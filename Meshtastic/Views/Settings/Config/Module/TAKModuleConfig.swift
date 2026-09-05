@@ -132,6 +132,7 @@ struct TAKModuleConfig: View {
 				context: context,
 				accessoryManager: accessoryManager,
 				configIsNil: { $0.takConfig == nil },
+				section: "TAK",
 				request: accessoryManager.requestTAKModuleConfig
 			)
 		}

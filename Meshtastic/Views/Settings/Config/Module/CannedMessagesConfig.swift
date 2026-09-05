@@ -221,6 +221,7 @@ struct CannedMessagesConfig: View {
 				context: context,
 				accessoryManager: accessoryManager,
 				configIsNil: { $0.cannedMessageConfig == nil },
+				section: "Canned messages",
 				request: accessoryManager.requestCannedMessagesModuleConfig
 			)
 		}

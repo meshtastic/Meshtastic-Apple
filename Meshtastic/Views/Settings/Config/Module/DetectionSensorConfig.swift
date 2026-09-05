@@ -183,6 +183,7 @@ struct DetectionSensorConfig: View {
 				context: context,
 				accessoryManager: accessoryManager,
 				configIsNil: { $0.detectionSensorConfig == nil },
+				section: "Detection Sensor",
 				request: accessoryManager.requestDetectionSensorModuleConfig
 			)
 		}

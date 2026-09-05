@@ -131,6 +131,7 @@ struct SerialConfig: View {
 					context: context,
 					accessoryManager: accessoryManager,
 					configIsNil: { $0.serialConfig == nil },
+					section: "Serial",
 					request: accessoryManager.requestSerialModuleConfig
 				)
 			}
