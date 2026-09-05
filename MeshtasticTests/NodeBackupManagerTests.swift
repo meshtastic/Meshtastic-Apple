@@ -697,4 +697,79 @@ struct NodeBackupManagerTests {
 		#expect(FileManager.default.fileExists(atPath: backupDir.appendingPathComponent("abcd").path))
 	}
 
+
+	// MARK: - Review fixes
+
+	@Test("a node- key needs a real node number, so user folders are not swept")
+	func testNodeKeyRequiresNumber() {
+		#expect(BackupKey.isNodeNumberKey("node-1373366617"))
+		// The backup folder shows up in Files, so anything can land in it.
+		#expect(!BackupKey.isNodeNumberKey("node-notes"))
+		#expect(!BackupKey.isNodeNumberKey("node-"))
+		#expect(!BackupKey.isNodeNumberKey("notes"))
+	}
+
+	@Test("a recorded backup path has to be a plain folder name")
+	func testBackupPathMustBePlain() {
+		// backup-index.json is user-writable, so a hand-edited path could walk out of the folder.
+		#expect(NodeBackupManager.isPlainBackupPath("18f062fc2c5525e37635701f8442a5a4"))
+		#expect(NodeBackupManager.isPlainBackupPath("node-1373366617"))
+		#expect(!NodeBackupManager.isPlainBackupPath(".."))
+		#expect(!NodeBackupManager.isPlainBackupPath("."))
+		#expect(!NodeBackupManager.isPlainBackupPath(""))
+		#expect(!NodeBackupManager.isPlainBackupPath("../../Library/Application Support"))
+		#expect(!NodeBackupManager.isPlainBackupPath("/tmp/elsewhere"))
+		#expect(!NodeBackupManager.isPlainBackupPath("nested/path"))
+	}
+
+	@Test("a backup with no device id joins the one already keyed by device")
+	@MainActor
+	func testBackupReusesKnownDeviceId() async throws {
+		let tempDir = try makeTempDir()
+		defer { cleanup(tempDir) }
+		let backupDir = tempDir.appendingPathComponent("Backups", isDirectory: true)
+		let dbDir = tempDir.appendingPathComponent("ActiveDB", isDirectory: true)
+		_ = try createFakeDatabase(at: dbDir)
+
+		let manager = NodeBackupManager(baseURL: backupDir)
+		_ = await manager.createBackup(forNode: 4242, deviceId: Data([0xAB, 0xCD]), nodeName: "First")
+
+		// The caller resolves the device id from the store, which can come back nil part way through
+		// a connect or a radio switch. That must not sit a second backup beside the first.
+		_ = await manager.createBackup(forNode: 4242, deviceId: nil, nodeName: "Second")
+
+		let backups = manager.listBackups()
+		#expect(backups.count == 1)
+		#expect(backups.first?.deviceId == "abcd")
+		#expect(backups.first?.nodeName == "Second")
+	}
+
+	@Test("a failed re-key leaves every backup alone")
+	@MainActor
+	func testFailedAdoptionKeepsDuplicates() async throws {
+		let tempDir = try makeTempDir()
+		defer { cleanup(tempDir) }
+		let backupDir = tempDir.appendingPathComponent("Backups", isDirectory: true)
+
+		let older = try makeBackup(
+			in: backupDir, dirName: "node-1000", nodeNum: 1000, peripheralId: "PERIPHERAL-A",
+			createdAt: Date(timeIntervalSince1970: 1000), makeContainer: { try makeContainer(inMemory: false, storeURL: $0) }
+		)
+		let newer = try makeBackup(
+			in: backupDir, dirName: "node-2000", nodeNum: 2000, peripheralId: "PERIPHERAL-A",
+			createdAt: Date(timeIntervalSince1970: 2000), makeContainer: { try makeContainer(inMemory: false, storeURL: $0) }
+		)
+		try writeIndex(entries: [older, newer], to: backupDir)
+
+		let manager = NodeBackupManager(baseURL: backupDir)
+		// Pull the survivor's directory out from under the move. Duplicates used to be deleted
+		// before the move ran, so a failure here destroyed them and re-keyed nothing.
+		try FileManager.default.removeItem(at: backupDir.appendingPathComponent("node-2000"))
+
+		await manager.adoptLegacyBackups(deviceId: Data([0x18, 0xF0]), nodeNum: 2000, peripheralId: "PERIPHERAL-A")
+
+		#expect(manager.listBackups().contains { $0.nodeNum == 1000 })
+		#expect(FileManager.default.fileExists(atPath: backupDir.appendingPathComponent("node-1000").path))
+	}
+
 }

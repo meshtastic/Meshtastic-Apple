@@ -146,7 +146,7 @@ final class NodeBackupManager: NodeBackupManaging {
 	private func validateIndexConsistency() {
 		var modified = false
 		for (key, entry) in backupIndex.entries {
-			let nodeDir = backupBaseURL.appendingPathComponent(entry.backupPath, isDirectory: true)
+			guard let nodeDir = backupDirectory(for: entry) else { continue }
 			let sqliteFile = nodeDir.appendingPathComponent(Self.storeFileName)
 			if !fileManager.fileExists(atPath: sqliteFile.path) {
 				Logger.backup.warning("Orphaned index entry for \(key, privacy: .public) — backup file missing, removing entry")
@@ -188,6 +188,27 @@ final class NodeBackupManager: NodeBackupManaging {
 	}
 
 	// MARK: - T006: SHA-256 Checksum
+
+	/// The directory an entry lives in, or nil when its recorded path is not a plain folder name.
+	///
+	/// `backup-index.json` sits in Documents and is visible in Files, so a hand-edited `backupPath`
+	/// could carry `..` components or an absolute path, and every delete, move and read here would
+	/// follow it out of the backup folder. Paths we write are always a single component.
+	private func backupDirectory(for entry: BackupEntry) -> URL? {
+		guard Self.isPlainBackupPath(entry.backupPath) else {
+			Logger.backup.error("Refusing to use backup path \(entry.backupPath, privacy: .public) — not a plain folder name")
+			return nil
+		}
+		return backupBaseURL.appendingPathComponent(entry.backupPath, isDirectory: true)
+	}
+
+	nonisolated static func isPlainBackupPath(_ path: String) -> Bool {
+		!path.isEmpty
+		&& path != "."
+		&& path != ".."
+		&& !path.contains("/")
+		&& !path.contains("\\")
+	}
 
 	/// Computes SHA-256 checksum of the file at the given URL.
 	private func computeChecksum(for fileURL: URL) async throws -> String {
@@ -248,7 +269,12 @@ final class NodeBackupManager: NodeBackupManaging {
 	}
 
 	private func performBackup(forNode nodeNum: Int64, deviceId: Data?, nodeName: String?) async throws -> BackupEntry {
+		// Fall back to the device id already recorded for this node. Callers resolve it from the
+		// store, which can come back nil part way through a connect or a radio switch, and minting a
+		// node-number key then would sit a second backup beside the device-keyed one for the same
+		// radio — which is exactly what happened on my phone before this.
 		let deviceKey = BackupKey.forDevice(deviceId)
+			?? backupIndex.entries.values.first { $0.nodeNum == nodeNum }?.deviceId
 		let nodeDirName = deviceKey ?? BackupKey.forNode(nodeNum)
 		let nodeBackupDir = backupBaseURL.appendingPathComponent(nodeDirName, isDirectory: true)
 
@@ -419,8 +445,9 @@ final class NodeBackupManager: NodeBackupManaging {
 			.prefix(max(0, backupIndex.entries.count - Self.maximumBackupCount))
 
 		for (overflowKey, entry) in overflow {
-			let nodeBackupDir = backupBaseURL.appendingPathComponent(entry.backupPath, isDirectory: true)
-			try? fileManager.removeItem(at: nodeBackupDir)
+			if let nodeBackupDir = backupDirectory(for: entry) {
+				try? fileManager.removeItem(at: nodeBackupDir)
+			}
 			backupIndex.entries.removeValue(forKey: overflowKey)
 			Logger.backup.info("Pruned oldest backup for node \(entry.nodeNum) to enforce limit of \(Self.maximumBackupCount)")
 		}
@@ -430,8 +457,9 @@ final class NodeBackupManager: NodeBackupManaging {
 	@discardableResult
 	private func removeBackup(forKey key: String, reason: String) -> Bool {
 		guard let entry = backupIndex.entries[key] else { return false }
-		let dir = backupBaseURL.appendingPathComponent(entry.backupPath, isDirectory: true)
-		try? fileManager.removeItem(at: dir)
+		if let dir = backupDirectory(for: entry) {
+			try? fileManager.removeItem(at: dir)
+		}
 		backupIndex.entries.removeValue(forKey: key)
 		Logger.backup.info("Removed backup for node \(entry.nodeNum) (\(entry.fileSize) bytes): \(reason, privacy: .public)")
 		return true
@@ -560,20 +588,19 @@ final class NodeBackupManager: NodeBackupManaging {
 			return
 		}
 
-		for (key, _) in candidates where key != survivingKey {
-			removeBackup(forKey: key, reason: "duplicate of \(deviceKey) from an earlier node number")
-		}
-
-		let oldDir = backupBaseURL.appendingPathComponent(surviving.backupPath, isDirectory: true)
+		guard let oldDir = backupDirectory(for: surviving) else { return }
 		let newDir = backupBaseURL.appendingPathComponent(deviceKey, isDirectory: true)
 		if fileManager.fileExists(atPath: newDir.path) {
 			try? fileManager.removeItem(at: newDir)
 		}
+
+		// The survivor moves first. Deleting the duplicates before this meant a transient move
+		// failure destroyed them and re-keyed nothing, turning a retryable hiccup into permanent
+		// backup loss. Nothing is deleted until the one we are keeping is safely in place.
 		do {
 			try fileManager.moveItem(at: oldDir, to: newDir)
 		} catch {
-			Logger.backup.error("Could not move backup \(survivingKey, privacy: .public) to its device id: \(error.localizedDescription, privacy: .public)")
-			saveIndex()
+			Logger.backup.error("Could not move backup \(survivingKey, privacy: .public) to its device id, leaving it and its duplicates alone: \(error.localizedDescription, privacy: .public)")
 			return
 		}
 
@@ -582,6 +609,10 @@ final class NodeBackupManager: NodeBackupManaging {
 		adopted.backupPath = deviceKey
 		backupIndex.entries.removeValue(forKey: survivingKey)
 		backupIndex.entries[deviceKey] = adopted
+
+		for (key, _) in candidates where key != survivingKey {
+			removeBackup(forKey: key, reason: "duplicate of \(deviceKey) from an earlier node number")
+		}
 		saveIndex()
 
 		Logger.backup.info("Re-keyed the backup for node \(surviving.nodeNum) onto its device id, dropping \(candidates.count - 1) duplicate(s)")

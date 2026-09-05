@@ -742,6 +742,12 @@ actor MeshPackets {
 				if !myInfo.pioEnv.isEmpty {
 					fetchedMyInfo[0].pioEnv = myInfo.pioEnv
 				}
+				// Only set on insert before, so a row first written when the radio reported no device
+				// id never gained one. Backups key on this. Guarded like pioEnv: an empty value never
+				// clears a stored one.
+				if !myInfo.deviceID.isEmpty {
+					fetchedMyInfo[0].deviceId = myInfo.deviceID
+				}
 
 				Logger.data.info("💾 Updated myInfo for node: \(myInfo.myNodeNum.toHex(), privacy: .public)")
 				savePendingChanges()

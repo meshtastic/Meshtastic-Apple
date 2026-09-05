@@ -30,8 +30,12 @@ enum BackupKey {
 	}
 
 	/// Whether this key is still waiting to be re-keyed to a device id.
+	///
+	/// The suffix has to parse as a node number. The backup folder is visible in Files, so anything
+	/// the user drops in there could otherwise look like one of ours and be swept as an orphan.
 	static func isNodeNumberKey(_ key: String) -> Bool {
-		key.hasPrefix(nodeNumberPrefix)
+		guard key.hasPrefix(nodeNumberPrefix) else { return false }
+		return Int64(key.dropFirst(nodeNumberPrefix.count)) != nil
 	}
 }
 
