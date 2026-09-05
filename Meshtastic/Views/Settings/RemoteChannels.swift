@@ -205,10 +205,11 @@ final class RemoteChannelsCoordinator: ObservableObject {
         }
     }
 
-    private func read(index: Int32, retries: Int) async throws -> Channel {
-        try await RemoteChannelsReadPlan.retry(retries: retries) {
-                try Task.checkCancellation()
-                try self.validateConnection()
+	private func read(index: Int32, retries: Int) async throws -> Channel {
+		try await RemoteChannelsReadPlan.retry(retries: retries) {
+				try Task.checkCancellation()
+				try self.validateConnection()
+				try await self.refreshSessionIfNeeded()
 				let requestID = try await transport.requestChannel(index: index)
 				let deadline = ContinuousClock.now + transport.responseTimeout
                 while ContinuousClock.now < deadline {
