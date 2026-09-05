@@ -291,7 +291,7 @@ struct NodeDetail: View {
 					Label {
 						Text("Signed node")
 					} icon: {
-						Image(systemName: "person.badge.shield.checkmark.fill")
+						Image(systemName: SignedNodeIcon.symbolName)
 							.foregroundColor(.green)
 					}
 					Spacer()

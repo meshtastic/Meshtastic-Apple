@@ -234,7 +234,7 @@ struct NodeListItemCompact: View {
 					// A person badge rather than a bare shield: what was verified is who this node
 					// says it is, not that the traffic is encrypted, which the lock already covers.
 					if summary.hasXeddsaSigned {
-						IconAndText(systemName: "person.badge.shield.checkmark.fill",
+						IconAndText(systemName: SignedNodeIcon.symbolName,
 									imageColor: .green,
 									text: "Signed node".localized)
 					}

@@ -12,38 +12,25 @@ import UIKit
 #endif
 @testable import Meshtastic
 
-/// The signed-node icon says the radio verified who this node claims to be. SwiftUI renders nothing
-/// at all for a name that does not exist, so a typo or a symbol that needs a newer OS than the
-/// deployment target would silently leave the row blank rather than fail a build.
+/// The signed-node icon says the radio verified who this node claims to be.
 @Suite("Signed node icon")
 struct SignedNodeIconTests {
 
-	private let signedNodeSymbol = "person.badge.shield.checkmark.fill"
-
-	@Test("the signed node symbol resolves on this deployment target")
-	func symbolResolves() throws {
-		#if canImport(UIKit)
-		#expect(UIImage(systemName: signedNodeSymbol) != nil)
-		#endif
+	@Test("the signed node symbol is the person badge, not a bare shield")
+	func symbolIsThePersonBadge() {
+		// The three views that draw this all read the constant, so they cannot drift from each other
+		// — only from intent, which is what this pins. `checkmark.shield.fill` reads as "secure"
+		// generally and is what the message signature badges still use.
+		#expect(SignedNodeIcon.symbolName == "person.badge.shield.checkmark.fill")
 	}
 
-	@Test("the node list and node detail use the same symbol")
-	func symbolIsConsistentAcrossViews() throws {
-		// The rows carry comments saying they mirror the Node Detail row, so a change to one that
-		// misses the others would leave the same fact drawn two different ways.
-		let sources = [
-			"Meshtastic/Views/Nodes/Helpers/NodeListItem.swift",
-			"Meshtastic/Views/Nodes/Helpers/NodeListItemCompact.swift",
-			"Meshtastic/Views/Nodes/Helpers/NodeDetail.swift"
-		]
-
-		let root = URL(fileURLWithPath: #filePath)
-			.deletingLastPathComponent()
-			.deletingLastPathComponent()
-
-		for source in sources {
-			let contents = try String(contentsOf: root.appendingPathComponent(source), encoding: .utf8)
-			#expect(contents.contains(signedNodeSymbol), "\(source) does not use the signed node symbol")
-		}
+	@Test("the signed node symbol resolves at runtime")
+	func symbolResolves() {
+		// A smoke test for a typo, and nothing more: UIImage(systemName:) asks the *running* OS, so
+		// passing here does not prove the symbol exists on the 17.5 deployment target. What settles
+		// that is the SF Symbols catalog, which puts this symbol at iOS 16.0 — see SignedNodeIcon.
+		#if canImport(UIKit)
+		#expect(UIImage(systemName: SignedNodeIcon.symbolName) != nil)
+		#endif
 	}
 }
