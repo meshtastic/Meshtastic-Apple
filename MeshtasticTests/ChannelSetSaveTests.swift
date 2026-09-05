@@ -148,6 +148,13 @@ struct ChannelSetSaveTests {
 		return manager
 	}
 
+	/// Every persisted row for a device, duplicates included.
+	private func channelRows(for deviceNum: Int64) throws -> [ChannelEntity] {
+		let context = PersistenceController.shared.context
+		let descriptor = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == deviceNum })
+		return try context.fetch(descriptor).first?.channels.sorted { $0.index < $1.index } ?? []
+	}
+
 	private func seedMyInfo(deviceNum: Int64, channelName: String) throws {
 		try seedMyInfo(deviceNum: deviceNum, channels: [(0, channelName)])
 	}
@@ -231,6 +238,28 @@ struct ChannelSetSaveTests {
 			#expect(roles.first { $0.index == index }?.role == .disabled,
 					"slot \(index) should be disabled")
 		}
+	}
+
+	@Test("A replace clears duplicate rows left by older versions")
+	func testReplaceRemovesDuplicateRows() async throws {
+		// Duplicate rows for one slot are a supported legacy state — see the append test
+		// below. The wholesale clear this replace path used to do took them with it; acting
+		// only on the canonical row would leave the sibling behind, enabled and stale.
+		let deviceNum: Int64 = 123_456_801
+		try seedMyInfo(
+			deviceNum: deviceNum,
+			channels: [(0, "Legacy Primary"), (0, "Current Primary"), (1, "One"), (1, "One Again"), (2, "Two")]
+		)
+		let connection = MockChannelSetConnection()
+		let manager = makeManager(connection: connection, deviceNum: deviceNum)
+		let channelSet = makeChannelSet(channelNames: ["Replaced"])
+
+		try await manager.saveChannelSet(channelSet: channelSet, addChannels: false, okToMQTT: false)
+
+		let remaining = try channelRows(for: deviceNum)
+		#expect(remaining.count == 1, "one row for the one imported slot, got \(remaining.map { "\($0.index):\($0.name ?? "")" })")
+		#expect(remaining.first?.index == 0)
+		#expect(remaining.first?.name == "Replaced")
 	}
 
 	@Test("Appending channels leaves the other slots alone")

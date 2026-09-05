@@ -760,13 +760,24 @@ extension AccessoryManager {
 		}
 
 		let channelIndex = Int32(truncatingIfNeeded: channel.index)
-		let existing = canonicalValidUniqueChannels(from: myInfo.channels).first { $0.index == channelIndex }
+		// Every row at this index, not just the canonical one. Older app versions could leave
+		// duplicate rows for a slot, and `canonicalValidUniqueChannels` keeps one of them and
+		// hides the rest — so acting on that alone would leave a stale sibling behind. The
+		// wholesale clear this replaced used to take them with it.
+		let matches = myInfo.channels.filter { $0.index == channelIndex }
+		let existing = canonicalValidUniqueChannels(from: matches).first
 		if channel.role == .disabled {
-			if let existing {
-				context.delete(existing)
-				try context.save()
+			guard !matches.isEmpty else { return }
+			for row in matches {
+				context.delete(row)
 			}
+			try context.save()
 			return
+		}
+
+		// Keep the canonical row and drop any siblings, so a slot ends up with exactly one.
+		for row in matches where row !== existing {
+			context.delete(row)
 		}
 
 		let entity: ChannelEntity
