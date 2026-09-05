@@ -49,6 +49,8 @@ The Configure picker lists live nodes from the current node database, with favor
 
 When you configure another node, Settings shows progress while the request or save is being confirmed by that node. A timeout or delivery error keeps your edits on screen and provides a **Retry** action, so you can check the node and try again without re-entering the values.
 
+Remote **Set Time**, **Factory Reset**, and **NodeDB Reset** actions are sent only while the connected radio and live administration session still match the selected target. If the connection changes or the session expires, Settings stops the action and reports the failure rather than applying it to a stale target.
+
 ### LoRa
 
 LoRa settings control how your radio communicates on the mesh:
