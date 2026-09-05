@@ -1053,7 +1053,8 @@ struct NodeDetail: View {
 				}
 				.confirmationDialog(
 					"Set time on \(pendingAdminTarget?.name ?? "node")?",
-					isPresented: $showingSetTimeConfirm
+					isPresented: $showingSetTimeConfirm,
+					titleVisibility: .visible
 				) {
 					Button("Set time to now") {
 						Task {
@@ -1083,7 +1084,8 @@ struct NodeDetail: View {
 				}
 				.confirmationDialog(
 					"Factory reset \(pendingAdminTarget?.name ?? "node")?",
-					isPresented: $showingFactoryResetConfirm
+					isPresented: $showingFactoryResetConfirm,
+					titleVisibility: .visible
 				) {
 					Button("Delete all config?", role: .destructive) {
 						Task {
@@ -1131,7 +1133,8 @@ struct NodeDetail: View {
 				}
 				.confirmationDialog(
 					"Reset node database on \(pendingAdminTarget?.name ?? "node")?",
-					isPresented: $showingNodeDBResetConfirm
+					isPresented: $showingNodeDBResetConfirm,
+					titleVisibility: .visible
 				) {
 					Button("Reset node database, preserving favorites") {
 						Task {
@@ -1252,9 +1255,7 @@ struct NodeDetail: View {
 			return
 		}
 		defer {
-			if remoteAdminAttemptID == attemptID {
-				remoteAdminAttemptID = nil
-			}
+			if remoteAdminAttemptID == attemptID { remoteAdminAttemptID = nil }
 		}
 		guard UserDefaults.enableAdministration else {
 			remoteAdminState = .failed(.requestFailed)
