@@ -22,10 +22,12 @@ struct RemoteAdminEntryTests {
 
 	@Test @MainActor func orchestrator_staleSessionSendsAndWaits() async {
 		var sends = 0
+		var waits = 0
 		var fresh = false
-		let result = await RemoteAdminSessionOrchestrator.establish(allowed: { true }, attemptIsCurrent: { true }, fresh: { fresh }, request: { sends += 1; fresh = true }, wait: { fresh ? .active : .timedOut })
+		let result = await RemoteAdminSessionOrchestrator.establish(allowed: { true }, attemptIsCurrent: { true }, fresh: { fresh }, request: { sends += 1; fresh = true }, wait: { waits += 1; return fresh ? .active : .timedOut })
 		#expect(result == .active)
 		#expect(sends == 1)
+		#expect(waits == 1)
 	}
 
 	@Test @MainActor func orchestrator_identityChangeAfterSendCannotActivate() async {
@@ -96,7 +98,7 @@ struct RemoteAdminEntryTests {
 	@Test func sessionWaiter_stopsWhenConnectionDrops() async {
 		let result = await RemoteAdminSessionWaiter.wait(
 			timeout: .seconds(30),
-			pollInterval: .zero,
+			pollInterval: .milliseconds(1),
 			isLive: { false },
 			isConnected: { false },
 			targetIsCurrent: { true }
@@ -107,7 +109,7 @@ struct RemoteAdminEntryTests {
 	@Test func sessionWaiter_stopsWhenTargetChanges() async {
 		let result = await RemoteAdminSessionWaiter.wait(
 			timeout: .seconds(30),
-			pollInterval: .zero,
+			pollInterval: .milliseconds(1),
 			isLive: { false },
 			isConnected: { true },
 			targetIsCurrent: { false }
@@ -115,11 +117,38 @@ struct RemoteAdminEntryTests {
 		#expect(result == .targetChanged)
 	}
 
-	@Test @MainActor func routerStoresPendingSettingsNodeUntilSettingsAppears() {
-		let router = Router()
-		router.navigateToSettings(nodeNum: 42)
-		#expect(router.selectedTab == .settings)
-		#expect(router.settingsNodeNum == 42)
-		#expect(router.settingsPath.isEmpty)
+	@Test func sessionWaiter_rejectsNonPositivePollInterval() async {
+		let result = await RemoteAdminSessionWaiter.wait(
+			timeout: .seconds(30),
+			pollInterval: .zero,
+			isLive: { false },
+			isConnected: { true },
+			targetIsCurrent: { true }
+		)
+		#expect(result == .timedOut)
+	}
+
+	@Test @MainActor func remoteSettingsSelectionRequiresActiveDevice() {
+		#expect(Settings.remoteSettingsSelection(
+			requestedNodeNum: 42,
+			activeDeviceNum: nil,
+			availableNodeNums: [42],
+			isConnected: true
+		) == nil)
+		#expect(Settings.remoteSettingsSelection(
+			requestedNodeNum: 42,
+			activeDeviceNum: 7,
+			availableNodeNums: [42],
+			isConnected: true
+		)?.preferredNodeNum == 7)
+	}
+	@Test func remoteSettingsDestinationRejectsSourceReplacement() {
+		let connection = NSObject()
+		let replacement = NSObject()
+		let destination = RemoteAdminSettingsDestination(nodeNum: 42, radioNum: 7, connectionID: ObjectIdentifier(connection))
+		#expect(destination.isCurrent(radioNum: 7, connectionID: ObjectIdentifier(connection), isConnected: true))
+		#expect(!destination.isCurrent(radioNum: 8, connectionID: ObjectIdentifier(connection), isConnected: true))
+		#expect(!destination.isCurrent(radioNum: 7, connectionID: ObjectIdentifier(replacement), isConnected: true))
+		#expect(!destination.isCurrent(radioNum: 7, connectionID: ObjectIdentifier(connection), isConnected: false))
 	}
 }
