@@ -857,8 +857,10 @@ extension AccessoryManager {
 		)
 
 		let messageDescription = "🛟 Saved Channel \(channel.index) for \(toUser.longName ?? "Unknown".localized)"
-		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
-		return Int64(meshPacket.id)
+		return try await withRemoteChannelOperation(kind: .save, targetNodeNum: toUser.num, isRemote: fromUser != toUser) {
+			try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
+			return Int64(meshPacket.id)
+		}
 	}
 
 	/// Requests one channel from a remote admin target. The wire request is one based while
@@ -871,11 +873,46 @@ extension AccessoryManager {
 		let packet = try RemoteChannelsPacketBuilder.getRequest(
 			index: index, from: UInt32(fromUser.num), to: UInt32(toUser.num), sessionPasskey: sessionPasskey
 		)
-		try await sendAdminMessageToRadio(
-			meshPacket: packet,
-			adminDescription: "🛟 Requested remote Channel \(index) for \(toUser.longName ?? "Unknown".localized)"
-		)
-		return packet.id
+		return try await withRemoteChannelOperation(kind: .request, targetNodeNum: toUser.num, isRemote: fromUser != toUser) {
+			try await sendAdminMessageToRadio(
+				meshPacket: packet,
+				adminDescription: "🛟 Requested remote Channel \(index) for \(toUser.longName ?? "Unknown".localized)"
+			)
+			return packet.id
+		}
+	}
+
+	private func withRemoteChannelOperation<T>(
+		kind: RemoteAdminConfigOperationKind,
+		targetNodeNum: Int64,
+		isRemote: Bool,
+		operation: () async throws -> T
+	) async throws -> T {
+		guard isRemote else { return try await operation() }
+		guard let existingOperationID = RemoteAdminConfigTracker.currentOperationID else {
+			guard let operationID = beginRemoteAdminConfigOperation(kind: kind, targetNodeNum: targetNodeNum, section: "Channels") else {
+				throw AccessoryError.ioFailed("A remote channel operation is already in progress for this node")
+			}
+			do {
+				let value = try await RemoteAdminConfigTracker.$currentOperationID.withValue(operationID) {
+					try await operation()
+				}
+				switch remoteAdminConfigTracker.finish(operationID) {
+				case .succeeded:
+					return value
+				case .failed(let message):
+					throw AccessoryError.ioFailed(message)
+				case .timedOut:
+					throw AccessoryError.timeout
+				}
+			} catch {
+				remoteAdminConfigTracker.fail(operationID, with: error)
+				throw error
+			}
+		}
+		return try await RemoteAdminConfigTracker.$currentOperationID.withValue(existingOperationID) {
+			try await operation()
+		}
 	}
 
 	/// Join a mesh advertised by a beacon: set the primary channel to the offered channel (name +
