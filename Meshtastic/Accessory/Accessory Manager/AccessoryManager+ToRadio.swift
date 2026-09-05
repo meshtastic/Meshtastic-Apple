@@ -216,6 +216,10 @@ extension AccessoryManager {
 		if let decodedData = Data(base64Encoded: decodedString) {
 			do {
 				let contact: SharedContact = try SharedContact(serializedBytes: decodedData)
+				guard contact.carriesPublicKey else {
+					Logger.services.error("addContactFromURL: refusing a contact for \(contact.nodeNum, privacy: .public) with no public key; applying it would erase the key the radio holds")
+					throw AccessoryError.ioFailed("addContactFromURL: Contact has no public key")
+				}
 				var adminPacket = AdminMessage()
 				adminPacket.addContact = contact
 				var meshPacket: MeshPacket = MeshPacket()
@@ -429,8 +433,14 @@ extension AccessoryManager {
 								user.userNode?.favorite = user.userNode?.deviceConfig?.role ?? 0 != DeviceRoles.clientBase.rawValue
 								contact.user = user.toProto()
 								do {
-									let contactString = try contact.serializedData().base64EncodedString()
-									try? await am.addContactFromURL(base64UrlString: contactString)
+									// toProto() emits an empty key when we hold none, and the radio would
+									// take that as the node's key. Skip the contact rather than erase it.
+									if contact.carriesPublicKey {
+										let contactString = try contact.serializedData().base64EncodedString()
+										try? await am.addContactFromURL(base64UrlString: contactString)
+									} else {
+										Logger.services.info("Skipping the pre-message contact for \(user.num, privacy: .public); no public key on file")
+									}
 									try context.save()
 								} catch {
 									Logger.services.error("Error inserting new contact and resending encrypted send failed message: \(error)")
