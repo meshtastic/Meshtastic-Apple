@@ -1969,10 +1969,13 @@ actor MeshPackets {
 								let dmUserNum = Int64(packet.from)
 								var dmNotification: Notification?
 								if newMessage.isEmoji == false {
+									let notificationPath = packet.decoded.portnum == PortNum.detectionSensorApp
+										? "meshtastic:///nodes?nodenum=\(dmUserNum)"
+										: "meshtastic:///messages?userNum=\(newMessage.fromUser?.num ?? 0)&messageId=\(newMessage.messageId)"
 									dmNotification = makeMessageNotification(
 										message: newMessage,
 										content: messageText!,
-										path: "meshtastic:///messages?userNum=\(newMessage.fromUser?.num ?? 0)&messageId=\(newMessage.messageId)",
+										path: notificationPath,
 										userNum: dmUserNum,
 										critical: critical
 									)
