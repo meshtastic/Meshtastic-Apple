@@ -55,6 +55,8 @@ struct NodeDetail: View {
 	@State private var latestPowerMetrics: TelemetryEntity?
 	@State private var logAvailability = NodeDetailLogAvailability()
 	@State private var showingShareContactQR = false
+	@State private var remoteAdminState: RemoteAdminSessionState = .stale
+	@State private var remoteAdminAttemptID: UUID?
 
 	init(node: NodeInfoEntity, nodeNum: Int64, showMapLink: Bool = true) {
 		self.node = node
@@ -153,11 +155,29 @@ struct NodeDetail: View {
 						.onChange(of: node.lastHeard) {
 							refreshNodeSummary()
 						}
+						.onChange(of: accessoryManager.activeDeviceNum) { _, _ in
+							remoteAdminAttemptID = nil
+							if router.settingsNodeNum == nodeNum { router.settingsNodeNum = nil }
+							if !accessoryManager.isConnected {
+								remoteAdminState = .stale
+							}
+						}
+						.onChange(of: accessoryManager.isConnected) { _, connected in
+							if !connected {
+								remoteAdminAttemptID = nil
+								if router.settingsNodeNum == nodeNum { router.settingsNodeNum = nil }
+								remoteAdminState = .stale
+							}
+						}
 						.onReceive(NotificationCenter.default.publisher(for: .nodeLogAvailabilityDidChange)) { notification in
 							guard notification.object as? Int64 == nodeNum else { return }
 							refreshNodeSummary()
 						}
 						.contentMargins(.top, 0, for: .scrollContent)
+						.task(id: remoteAdminAttemptID) {
+							guard remoteAdminAttemptID != nil else { return }
+							await establishRemoteAdminSession()
+						}
 					.navigationTitle(String((currentUser?.displayLongName ?? "Unknown".localized).addingVariationSelectors))
 					.navigationBarTitleDisplayMode(.inline)
 					.id(displayNameRefresh)
@@ -867,11 +887,13 @@ struct NodeDetail: View {
 
 	@ViewBuilder
 	private var administrationSection: some View {
-		if let metadata = node.metadata,
-		   connectedNode != nil,
-		   accessoryManager.isConnected {
+		if connectedNode != nil, accessoryManager.isConnected {
 			Section("Administration") {
 				let administrationUserPair = self.administrationUserPair
+				if nodeNum != accessoryManager.activeDeviceNum {
+					remoteAdminEntry(administrationUserPair: administrationUserPair)
+				}
+				if let metadata = node.metadata {
 				if UserDefaults.enableAdministration {
 					Button {
 						Task {
@@ -946,8 +968,118 @@ struct NodeDetail: View {
 					}
 				}
 				.disabled(administrationUserPair == nil)
+				}
 			}
 		}
+	}
+
+	@ViewBuilder
+	private func remoteAdminEntry(administrationUserPair: (fromUser: UserEntity, toUser: UserEntity)?) -> some View {
+		let targetName = currentUser?.displayLongName ?? "Unknown".localized
+		switch remoteAdminState {
+		case .establishing:
+			HStack {
+				ProgressView()
+				Text("Establishing remote admin for \(targetName)")
+			}
+		case .active:
+			Button {
+				remoteAdminState = .establishing
+				remoteAdminAttemptID = UUID()
+			} label: {
+				Label("Remote Admin: \(targetName)", systemImage: "checkmark.shield")
+			}
+		case .failed(let result):
+			VStack(alignment: .leading) {
+				Button {
+					remoteAdminState = .establishing
+					remoteAdminAttemptID = UUID()
+				} label: {
+					Label("Retry Remote Admin for \(targetName)", systemImage: "arrow.clockwise")
+				}
+				Text("Remote admin failed: \(RemoteAdminSessionWaiter.description(for: result)).")
+					.font(.caption)
+					.foregroundStyle(.orange)
+			}
+			.disabled(administrationUserPair == nil || !UserDefaults.enableAdministration)
+		case .stale:
+			VStack(alignment: .leading) {
+				Button {
+					remoteAdminState = .establishing
+					remoteAdminAttemptID = UUID()
+				} label: {
+					Label("Remote Admin: \(targetName)", systemImage: "shield")
+				}
+				if !UserDefaults.enableAdministration {
+					Text("Enable Administration in App Settings to use remote admin.")
+						.font(.caption)
+						.foregroundStyle(.orange)
+				}
+			}
+			.disabled(administrationUserPair == nil || !UserDefaults.enableAdministration)
+		}
+	}
+
+	@MainActor
+	private func establishRemoteAdminSession() async {
+		guard let attemptID = remoteAdminAttemptID,
+			let radioNum = accessoryManager.activeDeviceNum,
+			nodeNum != radioNum else {
+			remoteAdminState = .failed(.targetChanged)
+			return
+		}
+		guard UserDefaults.enableAdministration else {
+			remoteAdminState = .failed(.requestFailed)
+			return
+		}
+		guard let administrationUserPair else {
+			remoteAdminState = .failed(.disconnected)
+			return
+		}
+		let result = await RemoteAdminSessionOrchestrator.establish(
+			allowed: { UserDefaults.enableAdministration && accessoryManager.isConnected },
+			attemptIsCurrent: { [weak accessoryManager, weak node, weak router] in
+				accessoryManager?.activeDeviceNum == radioNum
+					&& node?.modelContext != nil && node?.isDeleted == false
+					&& (router?.selectedNodeNum == nil || router?.selectedNodeNum == nodeNum)
+					&& self.remoteAdminAttemptID == attemptID
+			},
+			fresh: { [weak node] in node?.hasLiveAdminSession == true },
+			request: {
+				_ = try await accessoryManager.requestDeviceMetadata(
+					fromUser: administrationUserPair.fromUser,
+					toUser: administrationUserPair.toUser
+				)
+			},
+			wait: {
+				await RemoteAdminSessionWaiter.wait(
+					isLive: { [weak node] in node?.hasLiveAdminSession == true },
+					isConnected: { [weak accessoryManager] in
+						accessoryManager?.isConnected == true
+						&& accessoryManager?.activeDeviceNum == radioNum
+						&& self.remoteAdminAttemptID == attemptID
+					},
+					targetIsCurrent: { [weak node, weak router] in
+						node?.modelContext != nil && node?.isDeleted == false
+						&& (router?.selectedNodeNum == nil || router?.selectedNodeNum == nodeNum)
+					}
+				)
+			}
+		)
+		guard result == .active else {
+			remoteAdminState = .failed(result)
+			return
+		}
+		guard UserDefaults.enableAdministration,
+			accessoryManager.isConnected,
+			accessoryManager.activeDeviceNum == radioNum,
+			node.modelContext != nil, !node.isDeleted,
+			remoteAdminAttemptID == attemptID else {
+			remoteAdminState = .failed(.targetChanged)
+			return
+		}
+		remoteAdminState = .active
+		router.navigateToSettings(nodeNum: nodeNum)
 	}
 
 	private func refreshNodeSummary() {
