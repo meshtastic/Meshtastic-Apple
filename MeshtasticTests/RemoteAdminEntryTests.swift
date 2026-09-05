@@ -57,6 +57,22 @@ struct RemoteAdminEntryTests {
 		#expect(result == .requestFailed)
 	}
 
+	@Test @MainActor func sameRadioWithReplacementConnectionCannotActivate() async {
+		let initial = NSObject()
+		let replacement = NSObject()
+		let capturedID = ObjectIdentifier(initial)
+		var connectionID = capturedID
+		let radioNum = 42
+		let result = await RemoteAdminSessionOrchestrator.establish(
+			allowed: { true },
+			attemptIsCurrent: { radioNum == 42 && connectionID == capturedID },
+			fresh: { false },
+			request: { connectionID = ObjectIdentifier(replacement) },
+			wait: { .active }
+		)
+		#expect(result == .targetChanged)
+	}
+
 	@Test func sessionFreshness_requiresPasskeyAndFutureExpiration() {
 		let now = Date(timeIntervalSince1970: 100)
 		#expect(RemoteAdminSessionFreshness.isFresh(passkey: Data([1]), expiration: now.addingTimeInterval(1), now: now))
