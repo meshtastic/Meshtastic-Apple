@@ -25,7 +25,7 @@ struct UserList: View {
 		VStack {
 			FilteredUserList(withFilters: filters, node: $node, userSelection: $userSelection)
 			.sheet(isPresented: $editingFilters) {
-				NodeListFilter(filterTitle: "Contact Filters", filters: filters)
+				NodeListFilter(filterTitle: "Contact Filters", showsEncryptedFilter: false, filters: filters)
 			}
 			.sheet(isPresented: $showingHelp) {
 				DirectMessagesHelp()
@@ -505,16 +505,12 @@ fileprivate extension NodeFilterParameters {
 				return false
 			}
 		}
-		// Unmessagable filter
-		if user.unmessagable {
-			if user.lastMessage == nil { return false }
-		}
+		// Contacts we cannot direct message: the node says it is unmessagable, or we hold no public
+		// key and the radio would refuse to send. Keep any that already have a thread so existing
+		// conversations stay reachable.
+		if !user.showsDirectMessageAction { return false }
 		// Ignored
 		if user.userNode?.ignored == true { return false }
-		// Encrypted
-		if isPkiEncrypted {
-			if !user.pkiEncrypted { return false }
-		}
 		// Connected node
 		if user.numString == String(UserDefaults.preferredPeripheralNum) { return false }
 		return true

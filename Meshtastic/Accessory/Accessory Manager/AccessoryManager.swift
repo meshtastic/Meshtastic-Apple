@@ -24,7 +24,16 @@ enum AccessoryError: Error, LocalizedError {
 	case eventStreamCancelled
 	case coreBluetoothError(CBError)
 	case coreBluetoothATTError(CBATTError)
+	/// The radio has thrown away the pairing this device still holds — a factory erase, a
+	/// reflash, or its Bluetooth settings being cleared. Nothing the app does fixes it; the
+	/// stale pairing has to be removed in Settings first.
+	case bondLost
 	
+	/// Said the same way whichever code the failure arrives under. iOS reports a stale
+	/// pairing as CBError 14, as CBError.encryptionTimedOut, or as a CBATTError about
+	/// authentication or encryption, and the advice is the same for all of them.
+	static let bondLostAdvice = "The radio has deleted its stored pairing information, but your device has not. To resolve this, you must forget the radio under Settings > Bluetooth to clear the old, now invalid, pairing information.".localized
+
 	var errorDescription: String? {
 		switch self {
 		case .discoveryFailed(let message):
@@ -53,11 +62,13 @@ enum AccessoryError: Error, LocalizedError {
 			case .peripheralDisconnected: // 7
 				return "The Bluetooth connection to the radio was disconnected, it will automatically reconnect to the preferred radio when it is powered back on or finishes rebooting.".localized
 			case .peerRemovedPairingInformation: // 14
-				return "The radio has deleted its stored pairing information, but your device has not. To resolve this, you must forget the radio under Settings > Bluetooth to clear the old, now invalid, pairing information.".localized
+				return Self.bondLostAdvice
 			default:
 				// Fallback for other CBError codes
 				return "A Bluetooth error occurred: \(cbError.localizedDescription)"
 			}
+		case .bondLost:
+			return Self.bondLostAdvice
 		case .coreBluetoothATTError(let attError):
 			// Map specific CBATTError values to a more user-friendly message
 			switch attError.code {
@@ -70,6 +81,19 @@ enum AccessoryError: Error, LocalizedError {
 				return "A Bluetooth Attribute Protocol error occurred: \(attError.localizedDescription)"
 			}
 		}
+	}
+}
+
+extension AccessoryError {
+	/// What to report when subscribing to notifications fails.
+	///
+	/// A radio that erased its pairing and a mistyped PIN arrive under the same Core
+	/// Bluetooth codes and need opposite advice — clear the pairing in Settings, or try the
+	/// PIN again. Having paired with this radio before is what separates them, so it has to
+	/// be decided here, while that is still known: tearing the connection down forgets it.
+	static func forNotifyFailure(_ error: Error, hadBond: Bool) -> Error {
+		guard hadBond, BLEConnection.isPairingFailure(error) else { return error }
+		return AccessoryError.bondLost
 	}
 }
 
@@ -702,14 +726,11 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		// Update the device in the devices array if it exists
 		if let index = devices.firstIndex(where: { $0.id == deviceId }) {
 			var device = devices[index]
-			device[keyPath: key] = value
 			if device[keyPath: key] != value {
-				// Update the @Published stuff for the UI
-				self.objectWillChange.send()
-				
-				if let index = devices.firstIndex(where: { $0.id == deviceId }) {
-					devices[index] = device
-				}
+				// No objectWillChange here: `devices` is @Published, so assigning to it
+				// notifies on its own. Sending as well invalidated twice per change.
+				device[keyPath: key] = value
+				devices[index] = device
 			}
 		} else {
 			// Durring active connections, this discover list will be empty, so this is expected.

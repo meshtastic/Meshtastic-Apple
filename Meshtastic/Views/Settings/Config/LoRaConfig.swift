@@ -359,7 +359,7 @@ struct LoRaConfig: View {
 						}
 					}
 					.fixedSize()
-					Text("Available modem presets, default is Long Fast.")
+					Text("Available modem presets.")
 						.foregroundColor(.gray)
 						.font(.callout)
 					// Long Fast stays selectable in the US, but its bandwidth is not
