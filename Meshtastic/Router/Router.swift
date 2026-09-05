@@ -62,6 +62,10 @@ class Router: ObservableObject {
 	/// The currently selected node in the NavigationSplitView detail pane.
 	@Published var selectedNodeNum: Int64?
 
+	/// One-shot request consumed by Settings after a remote-admin entry point selects a node.
+	/// It remains pending while the Settings tab is lazy or its node snapshot is still loading.
+	@Published var settingsNodeNum: Int64?
+
 	// MARK: Node Object ID Cache
 
 	/// In-memory cache mapping node numbers to their SwiftData `PersistentIdentifier` for O(1) lookups.
@@ -189,6 +193,13 @@ class Router: ObservableObject {
 		Logger.services.info("🛣 [App] Direct route to node detail \(nodeNum, privacy: .public)")
 		selectedTab = .nodes
 		selectedNodeNum = nodeNum
+	}
+
+	func navigateToSettings(nodeNum: Int64) {
+		Logger.services.info("🛣 [App] Direct route to settings for node \(nodeNum, privacy: .public)")
+		settingsNodeNum = nodeNum
+		settingsPath = []
+		selectedTab = .settings
 	}
 
 	func popToRoot(tab: NavigationState.Tab) {
