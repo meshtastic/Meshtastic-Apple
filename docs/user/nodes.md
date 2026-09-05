@@ -106,6 +106,12 @@ Long-press any node in the list to access quick actions:
 - **Ignore / Remove from ignored** — hide this node from normal views
 - **Remove** — remove the node from your local database
 
+## Remote Admin
+
+Remote Admin pushes a Settings page for that node within the Nodes navigation stack. Open a configuration section and use Back to return to the node’s Settings; use Back again to return to the node details. The target stays fixed while this page is open.
+
+On a node's detail screen, **Remote Admin** requires a connected radio and **Administration** enabled in App Settings. When the target has no live admin session, the app requests device metadata through the connected radio and waits for the session to become active before opening the target's configuration. If the request fails, the radio disconnects, the target changes, the request is cancelled, or the 30-second wait expires, the screen shows the reason and a **Retry Remote Admin** action. Retry after restoring the connection, selecting the intended target, or enabling Administration.
+
 ## Display Names
 
 You can give any node a local nickname that's shown throughout the app instead of its device long name — in the node list, node details, and messages. Set it from the node's long-press menu ("Display name") or from the **Name** row in Node Detail. The avatar circle always shows the node's actual short code, unaffected by the nickname.
