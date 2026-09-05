@@ -5,6 +5,22 @@ struct RemoteAdminActionTarget: Equatable {
 	let name: String
 	let radioNum: Int64
 	let connectionID: ObjectIdentifier
+
+	var confirmationLabel: String { "\(name) (node \(nodeNum))" }
+
+	func factoryResetConfirmationMessage(resetDevice: Bool) -> String {
+		if resetDevice {
+			return "This irreversibly erases \(confirmationLabel)'s configuration, identity, admin keys, channels, and Bluetooth bonds. This cannot be undone."
+		}
+		return "This irreversibly erases \(confirmationLabel)'s configuration. This cannot be undone."
+	}
+
+	func nodeDBResetConfirmationMessage(preserveFavorites: Bool) -> String {
+		if preserveFavorites {
+			return "This irreversibly resets \(confirmationLabel)'s node database while preserving favorites. This cannot be undone."
+		}
+		return "This irreversibly erases \(confirmationLabel)'s node database and favorites. This cannot be undone."
+	}
 }
 
 enum RemoteAdminActionResult: Equatable {

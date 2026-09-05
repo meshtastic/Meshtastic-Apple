@@ -1013,7 +1013,7 @@ struct NodeDetail: View {
 					Label("Set Time", systemImage: "clock")
 				}
 				.confirmationDialog(
-					"Set time on \(pendingAdminTarget?.name ?? "node")?",
+					"Set time on \(pendingAdminTarget?.confirmationLabel ?? "node")?",
 					isPresented: $showingSetTimeConfirm,
 					titleVisibility: .visible
 				) {
@@ -1022,7 +1022,7 @@ struct NodeDetail: View {
 							guard let target = pendingAdminTarget else { return }
 							isPerformingAdminAction = true
 							defer { isPerformingAdminAction = false }
-							let error = await RemoteAdminActionGuard.run(
+							let result = await RemoteAdminActionGuard.runOutcome(
 								target: target,
 								activeRadioNum: { accessoryManager.activeDeviceNum },
 								activeConnectionID: { accessoryManager.activeConnection.map { ObjectIdentifier($0.connection) } },
@@ -1030,9 +1030,14 @@ struct NodeDetail: View {
 								hasLiveSession: { getNodeInfo(id: target.nodeNum, context: context)?.hasLiveAdminSession == true }
 							) {
 								guard let pair = administrationUserPair, pair.toUser.num == target.nodeNum else { throw AccessoryError.connectionFailed("The selected target is no longer available") }
-								try await accessoryManager.sendTime(fromUser: pair.fromUser, toUser: pair.toUser)
+								return try await accessoryManager.sendTime(fromUser: pair.fromUser, toUser: pair.toUser)
 							}
-							if let error { adminErrorMessage = "Set Time failed for \(target.name): \(error)" }
+							switch result {
+							case .acknowledged: adminErrorMessage = "Set Time acknowledged for \(target.confirmationLabel)."
+							case .verified: adminErrorMessage = "Set Time verified for \(target.confirmationLabel)."
+							case .unconfirmed: adminErrorMessage = "Set Time unconfirmed for \(target.confirmationLabel). Check the target before retrying."
+							case .failed(let error): adminErrorMessage = "Set Time failed for \(target.confirmationLabel): \(error)"
+							}
 						}
 					}
 				}
@@ -1044,11 +1049,11 @@ struct NodeDetail: View {
 					Label("Factory Reset", systemImage: "arrowcounterclockwise")
 				}
 				.confirmationDialog(
-					"Factory reset \(pendingAdminTarget?.name ?? "node")?",
+					"Factory reset \(pendingAdminTarget?.confirmationLabel ?? "node")?",
 					isPresented: $showingFactoryResetConfirm,
 					titleVisibility: .visible
 				) {
-					Button("Delete all config?", role: .destructive) {
+					Button("Delete all config", role: .destructive) {
 						Task {
 							guard let target = pendingAdminTarget else { return }
 							isPerformingAdminAction = true
@@ -1064,14 +1069,14 @@ struct NodeDetail: View {
 								return try await accessoryManager.sendFactoryReset(fromUser: pair.fromUser, toUser: pair.toUser)
 							}
 							switch result {
-							case .acknowledged: adminErrorMessage = "Factory Reset acknowledged for \(target.name)."
-							case .verified: adminErrorMessage = "Factory Reset verified for \(target.name)."
-							case .unconfirmed: adminErrorMessage = "Factory Reset unconfirmed for \(target.name). Check the target before retrying."
-							case .failed(let error): adminErrorMessage = "Factory Reset failed for \(target.name): \(error)"
+							case .acknowledged: adminErrorMessage = "Factory Reset acknowledged for \(target.confirmationLabel)."
+							case .verified: adminErrorMessage = "Factory Reset verified for \(target.confirmationLabel)."
+							case .unconfirmed: adminErrorMessage = "Factory Reset unconfirmed for \(target.confirmationLabel). Check the target before retrying."
+							case .failed(let error): adminErrorMessage = "Factory Reset failed for \(target.confirmationLabel): \(error)"
 							}
 						}
 					}
-					Button("Delete all config, keys and BLE bonds?", role: .destructive) {
+					Button("Delete all config, keys and Bluetooth bonds", role: .destructive) {
 						Task {
 							guard let target = pendingAdminTarget else { return }
 							isPerformingAdminAction = true
@@ -1087,13 +1092,15 @@ struct NodeDetail: View {
 								return try await accessoryManager.sendFactoryReset(fromUser: pair.fromUser, toUser: pair.toUser, resetDevice: true)
 							}
 							switch result {
-							case .acknowledged: adminErrorMessage = "Factory Reset acknowledged for \(target.name)."
-							case .verified: adminErrorMessage = "Factory Reset verified for \(target.name)."
-							case .unconfirmed: adminErrorMessage = "Factory Reset unconfirmed for \(target.name). Check the target before retrying."
-							case .failed(let error): adminErrorMessage = "Factory Reset failed for \(target.name): \(error)"
+							case .acknowledged: adminErrorMessage = "Factory Reset acknowledged for \(target.confirmationLabel)."
+							case .verified: adminErrorMessage = "Factory Reset verified for \(target.confirmationLabel)."
+							case .unconfirmed: adminErrorMessage = "Factory Reset unconfirmed for \(target.confirmationLabel). Check the target before retrying."
+							case .failed(let error): adminErrorMessage = "Factory Reset failed for \(target.confirmationLabel): \(error)"
 							}
 						}
 					}
+				} message: {
+					Text(pendingAdminTarget?.factoryResetConfirmationMessage(resetDevice: true) ?? "This action cannot be undone.")
 				}
 				.disabled(administrationUserPair == nil || nodeNum == accessoryManager.activeDeviceNum || isPerformingAdminAction)
 				Button {
@@ -1103,7 +1110,7 @@ struct NodeDetail: View {
 					Label("NodeDB Reset", systemImage: "list.bullet.rectangle")
 				}
 				.confirmationDialog(
-					"Reset node database on \(pendingAdminTarget?.name ?? "node")?",
+					"Reset node database on \(pendingAdminTarget?.confirmationLabel ?? "node")?",
 					isPresented: $showingNodeDBResetConfirm,
 					titleVisibility: .visible
 				) {
@@ -1123,14 +1130,14 @@ struct NodeDetail: View {
 								return try await accessoryManager.sendNodeDBReset(fromUser: pair.fromUser, toUser: pair.toUser, preserveFavorites: true)
 							}
 							switch result {
-							case .acknowledged: adminErrorMessage = "NodeDB Reset acknowledged for \(target.name)."
-							case .verified: adminErrorMessage = "NodeDB Reset verified for \(target.name)."
-							case .unconfirmed: adminErrorMessage = "NodeDB Reset unconfirmed for \(target.name). Check the target before retrying."
-							case .failed(let error): adminErrorMessage = "NodeDB Reset failed for \(target.name): \(error)"
+							case .acknowledged: adminErrorMessage = "NodeDB Reset acknowledged for \(target.confirmationLabel)."
+							case .verified: adminErrorMessage = "NodeDB Reset verified for \(target.confirmationLabel)."
+							case .unconfirmed: adminErrorMessage = "NodeDB Reset unconfirmed for \(target.confirmationLabel). Check the target before retrying."
+							case .failed(let error): adminErrorMessage = "NodeDB Reset failed for \(target.confirmationLabel): \(error)"
 							}
 						}
 					}
-					Button("Reset node database and favorites?", role: .destructive) {
+					Button("Reset node database and favorites", role: .destructive) {
 						Task {
 							guard let target = pendingAdminTarget else { return }
 							isPerformingAdminAction = true
@@ -1146,13 +1153,15 @@ struct NodeDetail: View {
 								return try await accessoryManager.sendNodeDBReset(fromUser: pair.fromUser, toUser: pair.toUser, preserveFavorites: false)
 							}
 							switch result {
-							case .acknowledged: adminErrorMessage = "NodeDB Reset acknowledged for \(target.name)."
-							case .verified: adminErrorMessage = "NodeDB Reset verified for \(target.name)."
-							case .unconfirmed: adminErrorMessage = "NodeDB Reset unconfirmed for \(target.name). Check the target before retrying."
-							case .failed(let error): adminErrorMessage = "NodeDB Reset failed for \(target.name): \(error)"
+							case .acknowledged: adminErrorMessage = "NodeDB Reset acknowledged for \(target.confirmationLabel)."
+							case .verified: adminErrorMessage = "NodeDB Reset verified for \(target.confirmationLabel)."
+							case .unconfirmed: adminErrorMessage = "NodeDB Reset unconfirmed for \(target.confirmationLabel). Check the target before retrying."
+							case .failed(let error): adminErrorMessage = "NodeDB Reset failed for \(target.confirmationLabel): \(error)"
 							}
 						}
 					}
+				} message: {
+					Text(pendingAdminTarget?.nodeDBResetConfirmationMessage(preserveFavorites: false) ?? "This action cannot be undone.")
 				}
 				.disabled(administrationUserPair == nil || nodeNum == accessoryManager.activeDeviceNum || isPerformingAdminAction)
 				if isPerformingAdminAction {

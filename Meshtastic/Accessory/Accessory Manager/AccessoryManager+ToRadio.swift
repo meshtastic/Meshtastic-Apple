@@ -365,7 +365,8 @@ extension AccessoryManager {
 		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
 	}
 
-	public func sendTime(fromUser: UserEntity, toUser: UserEntity) async throws {
+	@discardableResult
+	public func sendTime(fromUser: UserEntity, toUser: UserEntity) async throws -> RemoteAdminActionResult {
 		var adminPacket = AdminMessage()
 		adminPacket.setTimeOnly = UInt32(Date().timeIntervalSince1970)
 		if fromUser != toUser {
@@ -381,12 +382,20 @@ extension AccessoryManager {
 		if let serializedData: Data = try? adminPacket.serializedData() {
 			dataMessage.payload = serializedData
 			dataMessage.portnum = PortNum.adminApp
+			dataMessage.wantResponse = true
 			meshPacket.decoded = dataMessage
 		} else {
 			throw AccessoryError.ioFailed("sendTime(fromUser:toUser:): Unable to serialize admin packet")
 		}
 		let messageDescription = "🕛 Sent Set Time Admin Message to: \(toUser.longName ?? "Unknown".localized) from: \(fromUser.longName ?? "Unknown".localized)"
-		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
+		if fromUser.num == toUser.num {
+			try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
+			return .acknowledged
+		}
+		return try await sendRemoteAdminAction(
+			meshPacket: meshPacket,
+			targetNodeNum: toUser.num,
+			adminDescription: messageDescription)
 	}
 	
 	public func sendShutdown(fromUser: UserEntity, toUser: UserEntity) async throws {
