@@ -11,6 +11,7 @@ struct PendingContact: Identifiable {
 	let id = UUID()
 	let contact: SharedContact
 	let base64UrlString: String
+	let exchangeRequested: Bool
 }
 
 extension NSNotification.Name {

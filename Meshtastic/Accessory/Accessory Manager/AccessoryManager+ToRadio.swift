@@ -779,7 +779,12 @@ extension AccessoryManager {
 		}
 	}
 
-	public func saveChannel(channel: Channel, fromUser: UserEntity, toUser: UserEntity) async throws -> Int64 {
+	public func saveChannel(
+		channel: Channel,
+		fromUser: UserEntity,
+		toUser: UserEntity,
+		refreshShareSnapshot: Bool = false
+	) async throws -> Int64 {
 		var adminPacket = AdminMessage()
 		adminPacket.setChannel = channel
 		var meshPacket: MeshPacket = MeshPacket()
@@ -798,6 +803,12 @@ extension AccessoryManager {
 
 		let messageDescription = "🛟 Saved Channel \(channel.index) for \(toUser.longName ?? "Unknown".localized)"
 		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
+		if refreshShareSnapshot,
+		   let activeDeviceNum,
+		   fromUser.num == activeDeviceNum,
+		   toUser.num == activeDeviceNum {
+			MeshShareSnapshotBuilder.refresh(nodeNum: activeDeviceNum, context: context)
+		}
 		return Int64(meshPacket.id)
 	}
 
