@@ -12,6 +12,19 @@ The Settings tab lets you configure the app and your connected Meshtastic radio.
 
 General app preferences including map style, notification behavior, and theme. These affect only the app — not the radio.
 
+### Notifications
+
+Which alerts the app raises is set per type in the iOS Settings app, under **Settings → Meshtastic**, in the **Notifications** section. **Open Settings** in App Settings takes you straight there. Every toggle is on by default.
+
+| Setting | Description |
+|---------|-------------|
+| Channel Messages | Alerts for incoming channel messages. Direct messages always notify unless the sender is muted, and a message that @mentions you notifies even with this off. |
+| New Waypoints | Alerts when a node shares a new waypoint. |
+| New Nodes | Alerts when a node the app has not seen before joins the mesh. |
+| Low Battery | Alerts when the connected device's battery gets low. |
+
+Turning a toggle off suppresses only the alert — messages, reactions, waypoints, and nodes are still received and still appear in the app. Muting a channel or a sender in the app silences that conversation regardless of these settings.
+
 ### Data Management
 
 - **Erase All App Data** — clears the local database, translation cache, and all stored settings, then immediately reloads the bundled device hardware catalog. Use this as a last resort.
@@ -135,9 +148,8 @@ Optional feature modules. Only available when your connected node supports the m
 | Ringtone | Custom RTTTL melodies for notification tones. |
 | Store & Forward | Store packets for nodes that are temporarily offline. |
 | Serial | UART serial output for integration with other hardware. |
-| Status Message | Set a custom status message broadcast to the mesh. |
 | Telemetry | Device, environment, and air-quality sensor reporting. |
-| Traffic Management | Mesh traffic optimisation — position deduplication, rate limiting, and unknown-packet filtering. Requires firmware 2.8.0+. |
+| Traffic Management | Mesh traffic optimization — position deduplication, rate limiting, and unknown-packet filtering. Requires firmware 2.8.0+. |
 
 ### Traffic Management
 
@@ -220,7 +232,7 @@ MQTT and Serial settings are applied after the main transaction because either c
 
 You can cancel while a setting is being sent over Bluetooth or TCP; cancellation typically completes quickly. The app stops sending additional sections, then commits the sections already applied so the radio does not remain in an unfinished edit transaction. If the transport callback does not settle, the sheet allows dismissal after 15 seconds. A write already handed to the operating system may still reach the radio, so review the result before retrying.
 
-Because the radio can silently discard settings it accepts, the result screen also offers **Verify Against the Radio**: once the radio reconnects and sends its configuration back, it compares each imported section against what the radio actually holds. Re-running an import is safe.
+Because the radio can silently discard settings it accepts, imports that reboot the radio show **Check What Applied** while the app waits for it to reconnect. Once the radio sends its configuration back, the app automatically compares each imported section against what the radio actually holds. Re-running an import is safe.
 
 ## Automatic Documentation Translation
 

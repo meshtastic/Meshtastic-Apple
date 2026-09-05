@@ -11,6 +11,35 @@
 <p>The Settings tab lets you configure the app and your connected Meshtastic radio.</p>
 <h2>App Settings</h2>
 <p>General app preferences including map style, notification behavior, and theme. These affect only the app — not the radio.</p>
+<h3>Notifications</h3>
+<p>Which alerts the app raises is set per type in the iOS Settings app, under <strong>Settings → Meshtastic</strong>, in the <strong>Notifications</strong> section. <strong>Open Settings</strong> in App Settings takes you straight there. Every toggle is on by default.</p>
+<table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Channel Messages</td>
+<td>Alerts for incoming channel messages. Direct messages always notify unless the sender is muted, and a message that @mentions you notifies even with this off.</td>
+</tr>
+<tr>
+<td>New Waypoints</td>
+<td>Alerts when a node shares a new waypoint.</td>
+</tr>
+<tr>
+<td>New Nodes</td>
+<td>Alerts when a node the app has not seen before joins the mesh.</td>
+</tr>
+<tr>
+<td>Low Battery</td>
+<td>Alerts when the connected device's battery gets low.</td>
+</tr>
+</tbody>
+</table>
+<p>Turning a toggle off suppresses only the alert — messages, reactions, waypoints, and nodes are still received and still appear in the app. Muting a channel or a sender in the app silences that conversation regardless of these settings.</p>
 <h3>Data Management</h3>
 <ul>
 <li><strong>Erase All App Data</strong> — clears the local database, translation cache, and all stored settings, then immediately reloads the bundled device hardware catalog. Use this as a last resort.</li>
@@ -214,16 +243,12 @@
 <td>UART serial output for integration with other hardware.</td>
 </tr>
 <tr>
-<td>Status Message</td>
-<td>Set a custom status message broadcast to the mesh.</td>
-</tr>
-<tr>
 <td>Telemetry</td>
 <td>Device, environment, and air-quality sensor reporting.</td>
 </tr>
 <tr>
 <td>Traffic Management</td>
-<td>Mesh traffic optimisation — position deduplication, rate limiting, and unknown-packet filtering. Requires firmware 2.8.0+.</td>
+<td>Mesh traffic optimization — position deduplication, rate limiting, and unknown-packet filtering. Requires firmware 2.8.0+.</td>
 </tr>
 </tbody>
 </table>
@@ -378,7 +403,7 @@ Importing writes the selected settings — including any secrets in the file —
 <p>Every non-empty import commits the selected settings and reboots the radio, so it briefly disconnects; the app reports this so you can reconnect. Settings are applied in order and the import stops at the first failure, telling you exactly what was and wasn't sent. Settings unsupported by the connected radio appear under <strong>Not Supported by This Radio</strong> instead of being sent.</p>
 <p>MQTT and Serial settings are applied after the main transaction because either can drop the Bluetooth link before the transaction is committed. If that disconnect interrupts them, the result shows <strong>Needs a Second Pass</strong> so you can reconnect and apply those sections separately. If the radio disconnects before acknowledging the commit, the result warns that saving was not confirmed.</p>
 <p>You can cancel while a setting is being sent over Bluetooth or TCP; cancellation typically completes quickly. The app stops sending additional sections, then commits the sections already applied so the radio does not remain in an unfinished edit transaction. If the transport callback does not settle, the sheet allows dismissal after 15 seconds. A write already handed to the operating system may still reach the radio, so review the result before retrying.</p>
-<p>Because the radio can silently discard settings it accepts, the result screen also offers <strong>Verify Against the Radio</strong>: once the radio reconnects and sends its configuration back, it compares each imported section against what the radio actually holds. Re-running an import is safe.</p>
+<p>Because the radio can silently discard settings it accepts, imports that reboot the radio show <strong>Check What Applied</strong> while the app waits for it to reconnect. Once the radio sends its configuration back, the app automatically compares each imported section against what the radio actually holds. Re-running an import is safe.</p>
 <h2>Automatic Documentation Translation</h2>
 <p>On devices running iOS 26 or later, the in-app documentation is automatically translated to your device language when it differs from English.</p>
 <h3>How It Works</h3>

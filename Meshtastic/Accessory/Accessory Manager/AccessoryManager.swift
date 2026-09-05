@@ -1167,9 +1167,6 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			// Logger.mesh.error("✅ [Accessory] Unknown UNHANDLED confligCompleteID: \(configCompleteID)")
 			// }
 
-			// Stamp the arrival so callers can tell a post-reboot refresh from a stale cache.
-			lastConfigRefresh = Date()
-
 			Logger.transport.info("✅ [Accessory] Notifying completions that have completed for configCompleteID: \(configCompleteID)")
 			switch configCompleteID {
 			case UInt32(NONCE_ONLY_CONFIG):
@@ -1178,6 +1175,8 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 					Logger.transport.warning("[Accessory] Ignoring config completion without its active refresh owner")
 					break
 				}
+				// Only an owned config completion proves the cached configuration is fresh.
+				lastConfigRefresh = Date()
 				if let completedNodeNum = refresh.nodeNum {
 					await MeshPackets.shared.commitChannelRefreshStage(for: completedNodeNum, owner: refresh.owner)
 				}
