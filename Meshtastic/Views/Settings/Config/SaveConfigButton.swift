@@ -6,6 +6,20 @@ struct SaveConfigButton: View {
 	let node: NodeInfoEntity?
 	@Binding var hasChanges: Bool
 	let onConfirmation: () -> Void
+	private let initiallyPresentingConfirmation: Bool
+
+	init(
+		node: NodeInfoEntity?,
+		hasChanges: Binding<Bool>,
+		initiallyPresentingConfirmation: Bool = false,
+		onConfirmation: @escaping () -> Void
+	) {
+		self.node = node
+		_hasChanges = hasChanges
+		_isPresentingSaveConfirm = State(initialValue: false)
+		self.onConfirmation = onConfirmation
+		self.initiallyPresentingConfirmation = initiallyPresentingConfirmation
+	}
 	
 	var body: some View {
 		if accessoryManager.isConnected && hasChanges {
@@ -18,6 +32,7 @@ struct SaveConfigButton: View {
 				.padding(.bottom)
 				.controlSize(.large)
 				.buttonStyle(.borderedProminent)
+				.tint(Color("Colors/MeshtasticAccent"))
 				.confirmationDialog(
 					"Are you sure?",
 					isPresented: $isPresentingSaveConfirm,
@@ -30,6 +45,12 @@ struct SaveConfigButton: View {
 					}
 				} message: {
 					Text("After config values save the node will reboot.")
+				}
+				.tint(Color.primary)
+				.onAppear {
+					if initiallyPresentingConfirmation {
+						isPresentingSaveConfirm = true
+					}
 				}
 			} else {
 				Button {
@@ -53,6 +74,11 @@ struct SaveConfigButton: View {
 					}
 				} message: {
 					Text("After config values save the node will reboot.")
+				}
+				.onAppear {
+					if initiallyPresentingConfirmation {
+						isPresentingSaveConfirm = true
+					}
 				}
 			}
 		}
