@@ -176,7 +176,7 @@ extension NodeInfoEntity {
 	/// session passkey inside the firmware's 5-minute session window. Empty-passkey stamps
 	/// (from the local config download and post-save mirrors) don't count.
 	var hasLiveAdminSession: Bool {
-		sessionPasskey?.isEmpty == false && (sessionExpiration ?? .distantPast) >= Date()
+		RemoteAdminSessionFreshness.isFresh(passkey: sessionPasskey, expiration: sessionExpiration)
 	}
 
 	/// Whether this node's own reported firmware supports the Status Message module (2.8+,

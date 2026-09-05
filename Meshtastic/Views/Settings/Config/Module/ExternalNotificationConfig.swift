@@ -36,7 +36,17 @@ struct ExternalNotificationConfig: View {
 	
 	var body: some View {
 		Form {
-			ConfigHeader(title: "External notification", config: \.externalNotificationConfig, node: node, onAppear: setExternalNotificationValues)
+			ConfigHeader(title: "External notification", config: \.externalNotificationConfig, node: node, onAppear: setExternalNotificationValues, onRetry: {
+			requestRemoteConfig(
+				node: node,
+				context: context,
+				accessoryManager: accessoryManager,
+				configIsNil: { $0.externalNotificationConfig == nil },
+				section: "External notification",
+				request: accessoryManager.requestExternalNotificationModuleConfig,
+				force: true
+			)
+		})
 			
 			Section(header: Text("Options")) {
 				
@@ -174,6 +184,7 @@ struct ExternalNotificationConfig: View {
 				context: context,
 				accessoryManager: accessoryManager,
 				configIsNil: { $0.externalNotificationConfig == nil },
+				section: "External notification",
 				request: accessoryManager.requestExternalNotificationModuleConfig
 			)
 		}
