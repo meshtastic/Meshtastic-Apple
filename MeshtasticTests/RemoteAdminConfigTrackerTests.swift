@@ -9,6 +9,7 @@ private actor RemoteAdminReceiveConnection: Connection {
 	let type: TransportType = .ble
 	var isConnected = true
 	private(set) var sentPackets: [ToRadio] = []
+	var sendCount: Int { sentPackets.count }
 	var sentPacketIDs: [UInt32] {
 		sentPackets.compactMap { toRadio in
 			guard case .packet(let packet) = toRadio.payloadVariant else { return nil }
@@ -64,6 +65,25 @@ struct RemoteAdminConfigTrackerTests {
 		let operationID = try #require(tracker.begin(kind: .save, targetNodeNum: 42))
 		#expect(!tracker.registerPacket(packetID: 100, targetNodeNum: 42, operationID: nil))
 		#expect(tracker.operations[operationID]?.pendingPacketIDs.isEmpty == true)
+	}
+
+	@Test func finishedOperationIsRejectedBeforeDispatch() async throws {
+		let connection = RemoteAdminReceiveConnection()
+		let manager = makeManager(connection: connection)
+		let operationID = try #require(manager.beginRemoteAdminConfigOperation(kind: .save, targetNodeNum: 42))
+		#expect(manager.remoteAdminConfigTracker.finish(operationID) == .succeeded)
+
+		do {
+			try await RemoteAdminConfigTracker.$currentOperationID.withValue(operationID) {
+				try await manager.saveTimeZone(config: Config.DeviceConfig(), user: 42)
+			}
+			Issue.record("A finished remote-admin operation was dispatched")
+		} catch let error as AccessoryError {
+			#expect(error.localizedDescription.contains("no longer active"))
+		} catch {
+			Issue.record("Unexpected error: \(error)")
+		}
+		#expect(await connection.sendCount == 0)
 	}
 
 	@Test func responseMustMatchPacketIDAndTarget() throws {
