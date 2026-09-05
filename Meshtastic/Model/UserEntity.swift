@@ -37,6 +37,25 @@ final class UserEntity {
 
 	var userNode: NodeInfoEntity?
 
+	/// Whether a direct message to this contact can actually be delivered.
+	///
+	/// Two independent gates. `unmessagable` is the node saying it does not accept messages.
+	/// The public key is what the sending radio needs: firmware has generated a keypair since 2.5,
+	/// so a direct message takes the PKC path, and a radio with no key for the destination refuses
+	/// to send (`PKI_SEND_FAIL_PUBLIC_KEY`) rather than falling back to channel encryption. A node we
+	/// have only heard packets from has no key until its NodeInfo arrives, and cannot be messaged.
+	var canDirectMessage: Bool {
+		!unmessagable && !(publicKey?.isEmpty ?? true)
+	}
+
+	/// Whether to offer the Message shortcut for this contact.
+	///
+	/// `canDirectMessage` with an escape hatch: a contact we can no longer send to may still have a
+	/// thread worth reading. The contact list keeps those rows for the same reason.
+	var showsDirectMessageAction: Bool {
+		canDirectMessage || lastMessage != nil
+	}
+
 	init() {}
 }
 
