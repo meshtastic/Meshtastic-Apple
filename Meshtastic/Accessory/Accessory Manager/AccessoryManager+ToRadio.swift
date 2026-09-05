@@ -430,7 +430,6 @@ extension AccessoryManager {
 								var contact = SharedContact()
 								contact.manuallyVerified = false
 								contact.nodeNum = UInt32(truncatingIfNeeded: user.num)
-								user.userNode?.favorite = user.userNode?.deviceConfig?.role ?? 0 != DeviceRoles.clientBase.rawValue
 								contact.user = user.toProto()
 								do {
 									// toProto() emits an empty key when we hold none, and the radio would
@@ -440,6 +439,24 @@ extension AccessoryManager {
 										try? await am.addContactFromURL(base64UrlString: contactString)
 									} else {
 										Logger.services.info("Skipping the pre-message contact for \(user.num, privacy: .public); no public key on file")
+									}
+									// Pin the node we are messaging so it does not age out of the radio's
+									// node db mid conversation. It has to go to the radio as an admin
+									// message: setting the local flag alone is overwritten by the next
+									// NodeInfo, so the star would appear and then quietly revert.
+									if let node = user.userNode,
+									   let connectedNodeNum = am.activeDeviceNum,
+									   AutoFavoriteRule.shouldFavorite(
+										destinationRole: node.deviceConfig?.role,
+										connectedRole: am.connectedDeviceRole,
+										isAlreadyFavorite: node.favorite
+									   ) {
+										do {
+											try await am.setFavoriteNode(node: node, connectedNodeNum: Int64(connectedNodeNum))
+											node.favorite = true
+										} catch {
+											Logger.services.error("Could not favorite \(user.num, privacy: .public) while sending a direct message: \(error.localizedDescription, privacy: .public)")
+										}
 									}
 									try context.save()
 								} catch {
