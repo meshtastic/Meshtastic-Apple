@@ -308,7 +308,7 @@ struct NodeDetail: View {
 					// Nodes we have only heard packets from have no key on file. Matches the yellow
 					// open lock the node list shows, rather than a green lock over an empty key.
 					Label {
-						VStack(alignment: .leading, spacing: 4) {
+						VStack(alignment: .leading) {
 							Text("No Public Key")
 							Text("This node has not shared a public key, so direct messages to it cannot be sent. Exchange User Info asks for one.")
 								.foregroundStyle(.secondary)

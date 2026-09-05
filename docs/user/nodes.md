@@ -21,9 +21,14 @@ The Nodes tab shows every device your radio has heard on the mesh. Tap any node 
 
 | Icon | Meaning |
 |------|---------|
-| ![Shared Key](../assets/screenshots/lockOpen.png) | **Shared Key** — direct messages are using the shared key for the channel. |
+| ![No Public Key](../assets/screenshots/lockOpen.png) | **No Public Key** — no public key has been received for this node, so direct messages to it cannot be sent. Use **Exchange User Info** on the node to ask for one. |
 | ![Public Key Encryption](../assets/screenshots/lockClosed.png) | **Public Key Encryption** — direct messages use public key infrastructure. Requires firmware 2.5+. |
 | ![PKI Mismatch](../assets/screenshots/keySlash.png) | **Public Key Mismatch** — public key does not match the previously recorded key. Verify the contact out-of-band. |
+
+Every radio has generated a keypair since firmware 2.5, so direct messages use it. A radio with no
+public key for the destination refuses to send rather than falling back to the channel key, so a node
+showing the open lock cannot be messaged until its node info arrives. Node detail shows **No Public
+Key** in place of the public key row for those nodes, and they are left out of the contact list.
 
 ## Device Roles
 
