@@ -42,7 +42,16 @@ struct DeviceConfig: View {
 			}
 		} else {
 		Form {
-			ConfigHeader(title: "Device", config: \.deviceConfig, node: node, onAppear: setDeviceValues)
+			ConfigHeader(title: "Device", config: \.deviceConfig, node: node, onAppear: setDeviceValues, onRetry: {
+				requestRemoteConfig(
+					node: node,
+					context: context,
+					accessoryManager: accessoryManager,
+					configIsNil: { $0.deviceConfig == nil },
+					section: "Device",
+					request: accessoryManager.requestDeviceConfig,
+					force: true)
+			})
 			
 			Section(header: Text("Options")) {
 				VStack(alignment: .leading) {
@@ -319,33 +328,13 @@ struct DeviceConfig: View {
 		} // end else
 		} // end Group
 		.onFirstAppear {
-			// Need to request a DeviceConfig from the remote node before allowing changes
-			if let deviceNum = accessoryManager.activeDeviceNum, let node {
-				let connectedNode = getNodeInfo(id: deviceNum, context: context)
-				if let connectedNode {
-					if node.num != deviceNum {
-						if UserDefaults.enableAdministration {
-							/// 2.5 Administration with session passkey
-							let expiration = node.sessionExpiration ?? Date()
-							if expiration < Date() || node.deviceConfig == nil {
-								Task {
-									do {
-										Logger.mesh.info("⚙️ Empty or expired device config requesting via PKI admin")
-										try await accessoryManager.requestDeviceConfig(fromUser: connectedNode.user!, toUser: node.user!)
-									} catch {
-										Logger.mesh.error("🚨 Device config request failed")
-									}
-								}
-							}
-						} else {
-							if node.deviceConfig == nil {
-								/// Legacy Administration
-								Logger.mesh.info("☠️ Using insecure legacy admin that is no longer supported, please upgrade your firmware.")
-							}
-						}
-					}
-				}
-			}
+			requestRemoteConfig(
+				node: node,
+				context: context,
+				accessoryManager: accessoryManager,
+				configIsNil: { $0.deviceConfig == nil },
+				section: "Device",
+				request: accessoryManager.requestDeviceConfig)
 		}
 		.onChange(of: deviceRole) { oldRole, newRole in
 			guard !isResetting else { return }
