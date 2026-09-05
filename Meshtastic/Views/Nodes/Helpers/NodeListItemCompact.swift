@@ -231,8 +231,10 @@ struct NodeListItemCompact: View {
 					}
 					// Signed node = XEdDSA-signed NodeInfo broadcast → identity verified by the radio.
 					// Affirmative only; never shown for unsigned nodes. Mirrors the Node Detail row.
+					// A person badge rather than a bare shield: what was verified is who this node
+					// says it is, not that the traffic is encrypted, which the lock already covers.
 					if summary.hasXeddsaSigned {
-						IconAndText(systemName: "checkmark.shield.fill",
+						IconAndText(systemName: SignedNodeIcon.symbolName,
 									imageColor: .green,
 									text: "Signed node".localized)
 					}

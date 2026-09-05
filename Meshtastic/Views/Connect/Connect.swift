@@ -10,6 +10,7 @@ import MapKit
 @preconcurrency import SwiftData
 import CoreLocation
 import CoreBluetooth
+import MeshtasticProtobufs
 import OSLog
 import TipKit
 #if canImport(ActivityKit)
@@ -43,6 +44,11 @@ struct Connect: View {
 	@State private var pendingNymeaDevice: NymeaDiscoveredDevice?
 	@State private var isSwitchingRadio = false
 	@State private var showingShutdownConfirm = false
+	@State private var showingShareContactQR = false
+	/// The connected node as a plain protobuf value, copied when the share menu item is tapped.
+	/// The sheet outlives the row it was opened from, and reading a faulted @Model after a
+	/// reconnect traps, so nothing SwiftData-backed is held here.
+	@State private var shareContactNode: NodeInfo?
 	/// Stable identity of the node whose context menu opened the shutdown dialog, captured at tap
 	/// time so the confirmation can't drift to a different node if the connection changes first.
 	@State private var pendingShutdownNodeNum: Int64?
@@ -285,6 +291,21 @@ struct Connect: View {
 										}
 									}
 #endif
+									if ShareContactQR.canShareContact(for: node) {
+										Button {
+											// Same liveness re-check as Power Off below: the node captured
+											// when the menu opened can fault before the tap lands. Share
+											// eligibility is re-checked too — the menu condition ran when the
+											// menu was built, and a node that loses its key or turns
+											// unmessagable in between would produce a QR of an empty string.
+											guard let live = Connect.liveNode(node),
+												  ShareContactQR.canShareContact(for: live) else { return }
+											shareContactNode = live.toProto()
+											showingShareContactQR = true
+										} label: {
+											Label("Share Contact QR", systemImage: "qrcode")
+										}
+									}
 									if accessoryManager.allowDisconnect {
 										Button(role: .destructive) {
 											if accessoryManager.allowDisconnect {
@@ -542,6 +563,15 @@ struct Connect: View {
 							Logger.mesh.error("Shutdown Failed: \(error)")
 						}
 					}
+				}
+			}
+			// Attached here for the same reason as the dialog above: the connected-device
+			// row unmounts on disconnect, which would tear the sheet down with it.
+			.sheet(isPresented: $showingShareContactQR) {
+				if let shareContactNode {
+					// This menu only ever shows on the connected radio, which is verified by
+					// definition.
+					ShareContactQRDialog(manuallyVerified: true, node: shareContactNode)
 				}
 			}
 		}
