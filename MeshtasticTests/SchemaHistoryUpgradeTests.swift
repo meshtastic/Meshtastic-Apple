@@ -26,7 +26,10 @@ private struct SchemaHistoryXcode: Decodable {
 
 private struct SchemaHistoryMetadata: Decodable {
 	let checksum: String
+	let entityCount: Int
+	let entityVersionHashes: [String: String]
 	let sourceTag: String
+	let versionIdentifiers: [String]
 }
 
 private final class SchemaHistoryBundleMarker: NSObject {}
@@ -69,8 +72,22 @@ struct SchemaHistoryUpgradeTests {
 
 			let metadataURL = root.appendingPathComponent(checksum).appendingPathComponent("metadata.json")
 			let metadata = try JSONDecoder().decode(SchemaHistoryMetadata.self, from: Data(contentsOf: metadataURL))
+			let storeURL = root.appendingPathComponent(fixture.fixture)
+			let storeMetadata = try NSPersistentStoreCoordinator.metadataForPersistentStore(
+				ofType: NSSQLiteStoreType,
+				at: storeURL,
+				options: nil
+			)
+			let entityVersionHashes = (storeMetadata[NSStoreModelVersionHashesKey] as? [String: Data] ?? [:])
+				.mapValues { $0.base64EncodedString() }
+			let versionIdentifiers = (storeMetadata[NSStoreModelVersionIdentifiersKey] as? Set<AnyHashable> ?? [])
+				.map(String.init(describing:))
+				.sorted()
 			#expect(metadata.checksum == checksum)
+			#expect(metadata.entityCount == entityVersionHashes.count)
+			#expect(metadata.entityVersionHashes == entityVersionHashes)
 			#expect(metadata.sourceTag == fixture.sourceTag)
+			#expect(metadata.versionIdentifiers == versionIdentifiers)
 		}
 	}
 

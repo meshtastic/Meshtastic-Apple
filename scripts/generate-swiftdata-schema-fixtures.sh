@@ -16,6 +16,13 @@ else
 	tags=("${default_tags[@]}")
 fi
 
+for tag in "${tags[@]}"; do
+	if [[ ! "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+		echo "Invalid release tag: $tag (expected v<major>.<minor>.<patch>)" >&2
+		exit 64
+	fi
+done
+
 if [[ -e "$fixture_root" ]]; then
 	echo "Refusing to replace existing fixtures: $fixture_root" >&2
 	echo "Move that directory aside, then rerun this script." >&2
