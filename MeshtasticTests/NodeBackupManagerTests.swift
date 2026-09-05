@@ -64,7 +64,7 @@ struct NodeBackupManagerTests {
 
 	private func writeIndex(entry: BackupEntry, to backupDir: URL) throws {
 		var index = BackupIndex()
-		index.entries[entry.nodeNum] = entry
+		index.entries[entry.key] = entry
 		let indexData = try JSONEncoder().encode(index)
 		try indexData.write(to: backupDir.appendingPathComponent("backup-index.json"))
 	}
@@ -86,7 +86,7 @@ struct NodeBackupManagerTests {
 		let manager = NodeBackupManager(baseURL: backupDir)
 
 		// Act
-		let result = await manager.createBackup(forNode: 12345, nodeName: "TestNode")
+		let result = await manager.createBackup(forNode: 12345, deviceId: nil, nodeName: "TestNode")
 
 		// Assert
 		switch result {
@@ -115,10 +115,10 @@ struct NodeBackupManagerTests {
 		let manager = NodeBackupManager(baseURL: backupDir)
 
 		// First backup
-		let result1 = await manager.createBackup(forNode: 99999, nodeName: "NodeV1")
+		let result1 = await manager.createBackup(forNode: 99999, deviceId: nil, nodeName: "NodeV1")
 
 		// Second backup (overwrite)
-		let result2 = await manager.createBackup(forNode: 99999, nodeName: "NodeV2")
+		let result2 = await manager.createBackup(forNode: 99999, deviceId: nil, nodeName: "NodeV2")
 
 		// Only one backup should exist for this node
 		let backups = manager.listBackups()
@@ -147,7 +147,7 @@ struct NodeBackupManagerTests {
 
 		// The active database path won't exist in test environment,
 		// so backup should fail and return .skipped after retry
-		let result = await manager.createBackup(forNode: 77777, nodeName: "FailNode")
+		let result = await manager.createBackup(forNode: 77777, deviceId: nil, nodeName: "FailNode")
 
 		switch result {
 		case .skipped(let reason):
@@ -314,7 +314,7 @@ struct NodeBackupManagerTests {
 		// The manager is @MainActor-isolated, but file I/O runs via Task.detached
 		// We verify that calling createBackup is async (doesn't synchronously block)
 		let startTime = Date()
-		_ = await manager.createBackup(forNode: 88888, nodeName: "AsyncTest")
+		_ = await manager.createBackup(forNode: 88888, deviceId: nil, nodeName: "AsyncTest")
 		let elapsed = Date().timeIntervalSince(startTime)
 
 		// The operation should complete quickly (< 5s per SC-001)
@@ -343,14 +343,14 @@ struct NodeBackupManagerTests {
 		// Write index
 		let entry = BackupEntry(nodeNum: nodeNum, nodeName: "DeleteMe", createdAt: .now, fileSize: 4, checksum: "abc", backupPath: nodeDirName)
 		var index = BackupIndex()
-		index.entries[nodeNum] = entry
+		index.entries[entry.key] = entry
 		let indexData = try JSONEncoder().encode(index)
 		try indexData.write(to: backupDir.appendingPathComponent("backup-index.json"))
 
 		let manager = NodeBackupManager(baseURL: backupDir)
 		#expect(manager.hasBackup(forNode: nodeNum))
 
-		let deleted = manager.deleteBackup(forNode: nodeNum)
+		let deleted = manager.deleteBackup(forKey: BackupKey.forNode(nodeNum))
 		#expect(deleted)
 		#expect(!manager.hasBackup(forNode: nodeNum))
 	}
@@ -366,9 +366,9 @@ struct NodeBackupManagerTests {
 
 		// Create index with multiple entries
 		var index = BackupIndex()
-		index.entries[1] = BackupEntry(nodeNum: 1, nodeName: "Old", createdAt: Date(timeIntervalSince1970: 1000), fileSize: 100, checksum: "aaa", backupPath: "1")
-		index.entries[2] = BackupEntry(nodeNum: 2, nodeName: "New", createdAt: Date(timeIntervalSince1970: 2000), fileSize: 200, checksum: "bbb", backupPath: "2")
-		index.entries[3] = BackupEntry(nodeNum: 3, nodeName: "Mid", createdAt: Date(timeIntervalSince1970: 1500), fileSize: 150, checksum: "ccc", backupPath: "3")
+		index.entries[BackupKey.forNode(1)] = BackupEntry(nodeNum: 1, deviceId: nil, nodeName: "Old", createdAt: Date(timeIntervalSince1970: 1000), fileSize: 100, checksum: "aaa", backupPath: "1")
+		index.entries[BackupKey.forNode(2)] = BackupEntry(nodeNum: 2, deviceId: nil, nodeName: "New", createdAt: Date(timeIntervalSince1970: 2000), fileSize: 200, checksum: "bbb", backupPath: "2")
+		index.entries[BackupKey.forNode(3)] = BackupEntry(nodeNum: 3, deviceId: nil, nodeName: "Mid", createdAt: Date(timeIntervalSince1970: 1500), fileSize: 150, checksum: "ccc", backupPath: "3")
 
 		// Create directories so validation doesn't remove them
 		for n in 1...3 {
@@ -399,8 +399,8 @@ struct NodeBackupManagerTests {
 		try FileManager.default.createDirectory(at: backupDir, withIntermediateDirectories: true)
 
 		var index = BackupIndex()
-		index.entries[1] = BackupEntry(nodeNum: 1, nodeName: "A", createdAt: .now, fileSize: 1000, checksum: "a", backupPath: "1")
-		index.entries[2] = BackupEntry(nodeNum: 2, nodeName: "B", createdAt: .now, fileSize: 2000, checksum: "b", backupPath: "2")
+		index.entries[BackupKey.forNode(1)] = BackupEntry(nodeNum: 1, deviceId: nil, nodeName: "A", createdAt: .now, fileSize: 1000, checksum: "a", backupPath: "1")
+		index.entries[BackupKey.forNode(2)] = BackupEntry(nodeNum: 2, deviceId: nil, nodeName: "B", createdAt: .now, fileSize: 2000, checksum: "b", backupPath: "2")
 
 		// Create directories so validation doesn't remove them
 		for n in 1...2 {
@@ -509,4 +509,192 @@ struct NodeBackupManagerTests {
 		// No migration was attempted into the blocked location; the backup is intact where it was.
 		#expect(FileManager.default.fileExists(atPath: nodeDir.appendingPathComponent("Meshtastic.store").path))
 	}
+
+	// MARK: - Keying backups by device id
+
+	private func makeBackup(
+		in backupDir: URL,
+		dirName: String,
+		nodeNum: Int64,
+		peripheralId: String?,
+		createdAt: Date,
+		makeContainer: (URL) throws -> ModelContainer
+	) throws -> BackupEntry {
+		let dir = backupDir.appendingPathComponent(dirName, isDirectory: true)
+		try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+
+		let storeURL = dir.appendingPathComponent("Meshtastic.store")
+		let container = try makeContainer(storeURL)
+		let context = ModelContext(container)
+		context.autosaveEnabled = false
+		let myInfo = MyInfoEntity()
+		myInfo.myNodeNum = nodeNum
+		myInfo.peripheralId = peripheralId
+		context.insert(myInfo)
+		try context.save()
+
+		let data = try Data(contentsOf: storeURL)
+		return BackupEntry(
+			nodeNum: nodeNum,
+			deviceId: nil,
+			nodeName: "Node \(nodeNum)",
+			createdAt: createdAt,
+			fileSize: Int64(data.count),
+			checksum: "unused",
+			backupPath: dirName
+		)
+	}
+
+	private func writeIndex(entries: [BackupEntry], to backupDir: URL) throws {
+		try FileManager.default.createDirectory(at: backupDir, withIntermediateDirectories: true)
+		var index = BackupIndex()
+		for entry in entries {
+			index.entries[entry.key] = entry
+		}
+		let data = try JSONEncoder().encode(index)
+		try data.write(to: backupDir.appendingPathComponent("backup-index.json"))
+	}
+
+	@Test("BackupKey uses the device id when there is one and the node number otherwise")
+	func testBackupKeyDerivation() {
+		#expect(BackupKey.forDevice(Data([0x18, 0xF0, 0x62])) == "18f062")
+		#expect(BackupKey.forDevice(Data()) == nil)
+		#expect(BackupKey.forDevice(nil) == nil)
+		#expect(BackupKey.forNode(1_373_366_617) == "node-1373366617")
+		#expect(BackupKey.isNodeNumberKey("node-1373366617"))
+		#expect(!BackupKey.isNodeNumberKey("18f062fc2c5525e37635701f8442a5a4"))
+	}
+
+	@Test("a version 1 index decodes to node-number keys without touching any files")
+	func testVersionOneIndexDecodes() throws {
+		// Version 1 keyed by Int64, which Swift encodes as a flat [key, value] array rather than an
+		// object, so this is the shape the decoder has to recognize.
+		let json = """
+		{"version":1,"lastModified":768000000,"entries":[1373366617,{"nodeNum":1373366617,\
+		"nodeName":"cebc","createdAt":768000000,"fileSize":120,"checksum":"abc","backupPath":"1373366617"}]}
+		"""
+		let index = try JSONDecoder().decode(BackupIndex.self, from: Data(json.utf8))
+
+		#expect(index.version == BackupIndex.currentVersion)
+		#expect(index.entries.count == 1)
+		#expect(index.entries["node-1373366617"]?.nodeNum == 1_373_366_617)
+		#expect(index.entries["node-1373366617"]?.deviceId == nil)
+	}
+
+	@Test("adopting a radio re-keys the backup filed under its current node number")
+	@MainActor
+	func testAdoptRekeysByNodeNum() async throws {
+		let tempDir = try makeTempDir()
+		defer { cleanup(tempDir) }
+		let backupDir = tempDir.appendingPathComponent("Backups", isDirectory: true)
+
+		let entry = try makeBackup(
+			in: backupDir, dirName: "node-4242", nodeNum: 4242, peripheralId: "PERIPHERAL-A",
+			createdAt: .now, makeContainer: { try makeContainer(inMemory: false, storeURL: $0) }
+		)
+		try writeIndex(entries: [entry], to: backupDir)
+
+		let manager = NodeBackupManager(baseURL: backupDir)
+		let deviceId = Data([0xAB, 0xCD])
+		await manager.adoptLegacyBackups(deviceId: deviceId, nodeNum: 4242, peripheralId: "PERIPHERAL-A")
+
+		let backups = manager.listBackups()
+		#expect(backups.count == 1)
+		#expect(backups.first?.deviceId == "abcd")
+		#expect(backups.first?.backupPath == "abcd")
+		#expect(FileManager.default.fileExists(atPath: backupDir.appendingPathComponent("abcd").path))
+		#expect(!FileManager.default.fileExists(atPath: backupDir.appendingPathComponent("node-4242").path))
+	}
+
+	@Test("adopting a renumbered radio keeps the newest backup and deletes the rest")
+	@MainActor
+	func testAdoptCollapsesRenumberDuplicates() async throws {
+		let tempDir = try makeTempDir()
+		defer { cleanup(tempDir) }
+		let backupDir = tempDir.appendingPathComponent("Backups", isDirectory: true)
+
+		// One radio, three node numbers — what a pair of 2.8 upgrades leaves behind. Only the last is
+		// findable by the number the radio reports now; the others are found by peripheral id.
+		let old = try makeBackup(
+			in: backupDir, dirName: "node-1373366617", nodeNum: 1_373_366_617, peripheralId: "PERIPHERAL-A",
+			createdAt: Date(timeIntervalSince1970: 1000), makeContainer: { try makeContainer(inMemory: false, storeURL: $0) }
+		)
+		let middle = try makeBackup(
+			in: backupDir, dirName: "node-1658900156", nodeNum: 1_658_900_156, peripheralId: "PERIPHERAL-A",
+			createdAt: Date(timeIntervalSince1970: 2000), makeContainer: { try makeContainer(inMemory: false, storeURL: $0) }
+		)
+		let newest = try makeBackup(
+			in: backupDir, dirName: "node-3177266887", nodeNum: 3_177_266_887, peripheralId: "PERIPHERAL-A",
+			createdAt: Date(timeIntervalSince1970: 3000), makeContainer: { try makeContainer(inMemory: false, storeURL: $0) }
+		)
+		// A different radio, which must be left alone.
+		let other = try makeBackup(
+			in: backupDir, dirName: "node-999", nodeNum: 999, peripheralId: "PERIPHERAL-B",
+			createdAt: Date(timeIntervalSince1970: 4000), makeContainer: { try makeContainer(inMemory: false, storeURL: $0) }
+		)
+		try writeIndex(entries: [old, middle, newest, other], to: backupDir)
+
+		let manager = NodeBackupManager(baseURL: backupDir)
+		await manager.adoptLegacyBackups(
+			deviceId: Data([0x18, 0xF0]), nodeNum: 3_177_266_887, peripheralId: "PERIPHERAL-A"
+		)
+
+		let backups = manager.listBackups()
+		#expect(backups.count == 2)
+		let adopted = backups.first { $0.deviceId == "18f0" }
+		#expect(adopted?.nodeNum == 3_177_266_887)
+		#expect(adopted?.createdAt == Date(timeIntervalSince1970: 3000))
+
+		let fm = FileManager.default
+		#expect(fm.fileExists(atPath: backupDir.appendingPathComponent("18f0").path))
+		#expect(!fm.fileExists(atPath: backupDir.appendingPathComponent("node-1373366617").path))
+		#expect(!fm.fileExists(atPath: backupDir.appendingPathComponent("node-1658900156").path))
+		#expect(!fm.fileExists(atPath: backupDir.appendingPathComponent("node-3177266887").path))
+		// The other radio is untouched and still keyed by node number.
+		#expect(fm.fileExists(atPath: backupDir.appendingPathComponent("node-999").path))
+		#expect(backups.contains { $0.nodeNum == 999 && $0.deviceId == nil })
+	}
+
+	@Test("a radio reporting no device id is left keyed by node number")
+	@MainActor
+	func testAdoptIgnoresRadioWithoutDeviceId() async throws {
+		let tempDir = try makeTempDir()
+		defer { cleanup(tempDir) }
+		let backupDir = tempDir.appendingPathComponent("Backups", isDirectory: true)
+
+		let entry = try makeBackup(
+			in: backupDir, dirName: "node-4242", nodeNum: 4242, peripheralId: "PERIPHERAL-A",
+			createdAt: .now, makeContainer: { try makeContainer(inMemory: false, storeURL: $0) }
+		)
+		try writeIndex(entries: [entry], to: backupDir)
+
+		let manager = NodeBackupManager(baseURL: backupDir)
+		await manager.adoptLegacyBackups(deviceId: Data(), nodeNum: 4242, peripheralId: "PERIPHERAL-A")
+
+		#expect(manager.listBackups().first?.deviceId == nil)
+		#expect(FileManager.default.fileExists(atPath: backupDir.appendingPathComponent("node-4242").path))
+	}
+
+	@Test("re-keyed directories survive the orphan sweep")
+	@MainActor
+	func testRekeyedDirectorySurvivesSweep() async throws {
+		let tempDir = try makeTempDir()
+		defer { cleanup(tempDir) }
+		let backupDir = tempDir.appendingPathComponent("Backups", isDirectory: true)
+
+		let entry = try makeBackup(
+			in: backupDir, dirName: "node-4242", nodeNum: 4242, peripheralId: "PERIPHERAL-A",
+			createdAt: .now, makeContainer: { try makeContainer(inMemory: false, storeURL: $0) }
+		)
+		try writeIndex(entries: [entry], to: backupDir)
+
+		let manager = NodeBackupManager(baseURL: backupDir)
+		await manager.adoptLegacyBackups(deviceId: Data([0xAB, 0xCD]), nodeNum: 4242, peripheralId: "PERIPHERAL-A")
+
+		// The sweep used to parse directory names as node numbers, which would have deleted this one.
+		let reopened = NodeBackupManager(baseURL: backupDir)
+		#expect(reopened.listBackups().count == 1)
+		#expect(FileManager.default.fileExists(atPath: backupDir.appendingPathComponent("abcd").path))
+	}
+
 }

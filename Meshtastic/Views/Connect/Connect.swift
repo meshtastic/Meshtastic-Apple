@@ -1044,6 +1044,7 @@ func backupCurrentDatabase(forTargetNode targetNodeNum: Int64?, currentNodeNum: 
 		Logger.backup.info("💾 Creating backup for current node \(currentNodeNum) before restore")
 		let backupResult = await NodeBackupManager.shared.createBackup(
 			forNode: currentNodeNum,
+			deviceId: accessoryManager.connectedDeviceId,
 			nodeName: currentNodeName
 		)
 		switch backupResult {

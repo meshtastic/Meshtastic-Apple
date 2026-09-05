@@ -200,7 +200,7 @@ struct AppSettings: View {
 								
 								/// Delete any node database backups too.
 								for entry in NodeBackupManager.shared.listBackups() {
-									_ = NodeBackupManager.shared.deleteBackup(forNode: entry.nodeNum)
+									_ = NodeBackupManager.shared.deleteBackup(forKey: entry.key)
 								}
 								await MeshPackets.shared.flushDebouncedSaves()
 								await MeshPackets.shared.clearDatabase(includeRoutes: true)
