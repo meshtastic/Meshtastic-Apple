@@ -29,6 +29,7 @@ private struct NodeDetailLogAvailability {
 
 struct NodeDetail: View {
 	private let gridItemLayout = Array(repeating: GridItem(.flexible(), spacing: 10), count: 2)
+	private let nodeDetailScrollContentTopMargin: CGFloat = 0
 	private static let relativeFormatter: RelativeDateTimeFormatter = {
 		let formatter = RelativeDateTimeFormatter()
 		formatter.unitsStyle = .full
@@ -174,7 +175,7 @@ struct NodeDetail: View {
 							guard notification.object as? Int64 == nodeNum else { return }
 							refreshNodeSummary()
 						}
-						.contentMargins(.top, 0, for: .scrollContent)
+						.contentMargins(.top, nodeDetailScrollContentTopMargin, for: .scrollContent)
 						.task(id: remoteAdminAttemptID) {
 							guard remoteAdminAttemptID != nil else { return }
 							await establishRemoteAdminSession()
