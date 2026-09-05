@@ -983,11 +983,11 @@ extension AccessoryManager {
 					try await operation()
 				}
 				switch remoteAdminConfigTracker.finish(operationID) {
-				case .succeeded:
+				case .succeeded, .acknowledged:
 					return value
 				case .failed(let message):
 					throw AccessoryError.ioFailed(message)
-				case .timedOut:
+				case .timedOut, .unconfirmed:
 					throw AccessoryError.timeout
 				}
 			} catch {
