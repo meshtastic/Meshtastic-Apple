@@ -275,7 +275,6 @@ struct Settings: View {
 					Image(systemName: "fibrechannel")
 				}
 			}
-			.disabled(selectedNode > 0 && selectedNode != preferredNodeNum)
 
 			settingsLink(value: .security) {
 				Label {
@@ -883,7 +882,15 @@ struct Settings: View {
 				case .lora:
 					LoRaConfig(node: configNode)
 				case .channels:
-					if let node = node {
+					if let targetNode = configNode, let connectedNode = node,
+						 targetNode.num != connectedNode.num,
+						 let fromUser = connectedNode.user, let toUser = targetNode.user {
+						if targetNode.sessionPasskey?.isEmpty == false {
+							RemoteChannels(node: targetNode, connectedNode: connectedNode, fromUser: fromUser, toUser: toUser, accessoryManager: accessoryManager)
+						} else {
+							RemoteChannelsUnavailable(nodeName: targetNode.user?.longName ?? "Selected node")
+						}
+					} else if let node = node {
 						Channels(node: node)
 					} else {
 						Text("Loading...")
