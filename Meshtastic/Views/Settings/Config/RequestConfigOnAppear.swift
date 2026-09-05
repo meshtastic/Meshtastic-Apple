@@ -20,7 +20,8 @@ func requestRemoteConfig(
 	configIsNil: @escaping (NodeInfoEntity) -> Bool,
 	section: String,
 	request: @escaping (_ fromUser: UserEntity, _ toUser: UserEntity) async throws -> Void,
-	requestForConnectedNode: Bool = false
+	requestForConnectedNode: Bool = false,
+	force: Bool = false
 ) {
 	guard let deviceNum = accessoryManager.activeDeviceNum,
 		  let node,
@@ -46,7 +47,7 @@ func requestRemoteConfig(
 
 	if UserDefaults.enableAdministration {
 		let expiration = node.sessionExpiration ?? Date()
-		if expiration < Date() || configIsNil(node) {
+		if force || expiration < Date() || configIsNil(node) {
 			let operationID = accessoryManager.beginRemoteAdminConfigOperation(kind: .request, targetNodeNum: node.num, section: section)
 			guard let operationID else { return }
 			Task {

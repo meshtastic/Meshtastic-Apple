@@ -235,7 +235,17 @@ struct LoRaConfig: View {
 	/// See `body` — the Form and its chrome, split out for type-check time.
 	private var loRaForm: some View {
 		Form {
-			ConfigHeader(title: "LoRa", config: \.loRaConfig, node: node, onAppear: setLoRaValues)
+			ConfigHeader(title: "LoRa", config: \.loRaConfig, node: node, onAppear: setLoRaValues, onRetry: {
+			requestRemoteConfig(
+				node: node,
+				context: context,
+				accessoryManager: accessoryManager,
+				configIsNil: { $0.loRaConfig == nil },
+				section: "LoRa",
+				request: accessoryManager.requestLoRaConfig,
+				force: true
+			)
+		})
 
 			optionsSection
 
