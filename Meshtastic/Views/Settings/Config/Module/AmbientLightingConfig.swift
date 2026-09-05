@@ -87,6 +87,7 @@ struct AmbientLightingConfig: View {
 				context: context,
 				accessoryManager: accessoryManager,
 				configIsNil: { $0.ambientLightingConfig == nil },
+				section: "Ambient Lighting",
 				request: accessoryManager.requestAmbientLightingConfig
 			)
 		}

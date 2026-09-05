@@ -107,6 +107,7 @@ struct RangeTestConfig: View {
 				context: context,
 				accessoryManager: accessoryManager,
 				configIsNil: { $0.rangeTestConfig == nil },
+				section: "Range",
 				request: accessoryManager.requestRangeTestModuleConfig,
 				requestForConnectedNode: true
 			)

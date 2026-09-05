@@ -156,6 +156,7 @@ struct AudioConfig: View {
 					context: context,
 					accessoryManager: accessoryManager,
 					configIsNil: { $0.audioConfig == nil },
+					section: "Audio",
 					request: accessoryManager.requestAudioModuleConfig
 				)
 			}
