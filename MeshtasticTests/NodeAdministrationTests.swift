@@ -140,6 +140,49 @@ struct NodeAdministrationTests {
 		#expect(mirroredNode.sessionExpiration == expiration)
 	}
 
+	@Test func channelResponseRefreshesTargetSessionPasskeyWithoutPersistingChannels() async throws {
+		let (mesh, container) = try freshMesh()
+		let num: Int64 = 0x2CDD33
+		try seedNode(num: num, in: container)
+
+		var admin = AdminMessage()
+		admin.sessionPasskey = Data([0x0A, 0x0B, 0x0C])
+		var channel = Channel()
+		channel.index = 0
+		channel.role = .primary
+		channel.settings.name = "Remote Primary"
+		admin.getChannelResponse = channel
+
+		await mesh.adminAppPacket(packet: try adminPacket(from: num, message: admin), connectedNodeNum: Self.myNum)
+
+		let node = try fetchNode(num: num, in: container)
+		#expect(node.sessionPasskey == Data([0x0A, 0x0B, 0x0C]))
+		#expect(node.sessionExpiration != nil)
+		#expect(node.myInfo == nil)
+	}
+
+	@Test func channelResponseAddressedToAnotherNodeDoesNotRefreshSession() async throws {
+		let (mesh, container) = try freshMesh()
+		let num: Int64 = 0x2DEE44
+		try seedNode(num: num, in: container)
+
+		var admin = AdminMessage()
+		admin.sessionPasskey = Data([0x0A, 0x0B, 0x0C])
+		var channel = Channel()
+		channel.index = 0
+		channel.role = .primary
+		admin.getChannelResponse = channel
+
+		await mesh.adminAppPacket(
+			packet: try adminPacket(from: num, message: admin, to: 0x0D00D),
+			connectedNodeNum: Self.myNum
+		)
+
+		let node = try fetchNode(num: num, in: container)
+		#expect(node.sessionPasskey == nil)
+		#expect(node.sessionExpiration == nil)
+	}
+
 	@Test func metadataResponseWithPasskeyMarksUnknownNode() async throws {
 		// A metadata response is the first admin exchange when selecting a remote node,
 		// and its handler creates the node if it has never been heard.

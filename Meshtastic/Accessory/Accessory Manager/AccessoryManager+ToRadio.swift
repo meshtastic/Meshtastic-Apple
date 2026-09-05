@@ -849,24 +849,12 @@ extension AccessoryManager {
 	}
 
 	public func saveChannel(channel: Channel, fromUser: UserEntity, toUser: UserEntity) async throws -> Int64 {
-		var adminPacket = AdminMessage()
-		adminPacket.setChannel = channel
-		if fromUser != toUser {
-			adminPacket.sessionPasskey = toUser.userNode?.sessionPasskey ?? Data()
-		}
-		var meshPacket: MeshPacket = MeshPacket()
-		meshPacket.to = UInt32(toUser.num)
-		meshPacket.from	= UInt32(fromUser.num)
-		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
-		meshPacket.priority =  MeshPacket.Priority.reliable
-		var dataMessage = DataMessage()
-		guard let adminData: Data = try? adminPacket.serializedData() else {
-			throw AccessoryError.ioFailed("saveChannel: Unable to serialize Admin packet")
-		}
-		dataMessage.payload = adminData
-		dataMessage.portnum = PortNum.adminApp
-		dataMessage.wantResponse = true
-		meshPacket.decoded = dataMessage
+		let meshPacket = try RemoteChannelsPacketBuilder.setRequest(
+			channel: channel,
+			from: UInt32(fromUser.num),
+			to: UInt32(toUser.num),
+			sessionPasskey: fromUser != toUser ? (toUser.userNode?.sessionPasskey ?? Data()) : Data()
+		)
 
 		let messageDescription = "🛟 Saved Channel \(channel.index) for \(toUser.longName ?? "Unknown".localized)"
 		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)

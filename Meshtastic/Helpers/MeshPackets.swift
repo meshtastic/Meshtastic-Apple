@@ -875,6 +875,23 @@ actor MeshPackets {
 		Self.applyChannelRefresh(stagedChannel, to: channel)
 	}
 
+	/// Stores the passkey returned by an authenticated admin response for that response's
+	/// target. Firmware may rotate the key after 150 seconds, and channel responses carry
+	/// the replacement even though they do not include device metadata.
+	private func rememberAdminSession(passkey: Data, fromNum: Int64) {
+		guard fromNum > 0, !passkey.isEmpty else { return }
+		let fetchDescriptor = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == fromNum })
+		do {
+			let fetchedNode = try modelContext.fetch(fetchDescriptor)
+			let node = fetchedNode.first ?? findOrCreateNode(num: fromNum, context: modelContext)
+			node.sessionPasskey = passkey
+			node.sessionExpiration = Date().addingTimeInterval(300)
+			savePendingChanges()
+		} catch {
+			Logger.data.error("Error saving admin session for \(fromNum.toHex(), privacy: .public): \(error.localizedDescription, privacy: .public)")
+		}
+	}
+
 	func deviceMetadataPacket (metadata: DeviceMetadata, fromNum: Int64, sessionPasskey: Data? = Data()) {
 		if metadata.isInitialized {
 			let logString = String.localizedStringWithFormat("Device Metadata received from: %@".localized, fromNum.toHex())
@@ -1198,6 +1215,11 @@ actor MeshPackets {
 				// overwrite the connected radio's local channel state.
 				if let connectedNodeNum, Int64(packet.from) == connectedNodeNum {
 					channelPacket(channel: adminMessage.getChannelResponse, fromNum: Int64(packet.from))
+				}
+				if let connectedNodeNum,
+					packet.decoded.requestID != 0,
+					Int64(packet.to) == connectedNodeNum {
+					rememberAdminSession(passkey: adminMessage.sessionPasskey, fromNum: Int64(packet.from))
 				}
 				NotificationCenter.default.post(
 					name: .remoteChannelResponse,
