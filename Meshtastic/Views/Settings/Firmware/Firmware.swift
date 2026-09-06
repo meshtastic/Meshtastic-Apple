@@ -25,9 +25,6 @@ struct Firmware: View {
 	@State private var cachedNode: NodeInfoEntity?
 	@State private var hardwareState = FirmwareHardwareViewState()
 
-	private static let catalogRefreshKey = "firmware.hardwareCatalogRefreshedAt"
-	private static let catalogRefreshInterval: TimeInterval = 60 * 60 * 6
-
 	init(node: NodeInfoEntity?) {
 		self.node = node
 	}
@@ -55,7 +52,7 @@ struct Firmware: View {
 			resolveHardware()
 		}
 		.task {
-			await refreshCatalogIfNeeded()
+			await refreshFromAPI()
 		}
 		.onChange(of: hardwareResults) {
 			resolveHardware()
@@ -72,20 +69,29 @@ struct Firmware: View {
 		}
 	}
 
-	/// Pull the hardware catalog from the API so boards added since this build shipped
-	/// resolve by their PlatformIO target instead of falling back to another board that
-	/// shares their hardware model. Metadata only — the image pass is not worth running here.
-	private func refreshCatalogIfNeeded() async {
-		let lastRefresh = UserDefaults.standard.object(forKey: Self.catalogRefreshKey) as? Date
-		if let lastRefresh, Date().timeIntervalSince(lastRefresh) < Self.catalogRefreshInterval {
-			return
-		}
+	/// Pull the hardware catalog and the firmware release list when this screen opens.
+	///
+	/// The catalog is so a board added since this build shipped resolves by its PlatformIO target
+	/// rather than falling back to another board sharing its hardware model. The release list is
+	/// because nothing else on this screen fetches it: the rows read whatever is already stored,
+	/// and the only other fetch is the launch cascade. If that one failed — an API error, or the
+	/// GitHub fallback being rate limited — the screen stayed empty until the user found the
+	/// refresh button.
+	///
+	/// Neither is throttled. Both endpoints send Cache-Control and an ETag, so a repeat call is
+	/// served from URLSession's cache or revalidated for an empty 304. The catalog pass skips
+	/// images, which are local anyway.
+	private func refreshFromAPI() async {
 		do {
 			try await MeshtasticAPI.shared.refreshDevicesAPIData(includeImages: false)
-			UserDefaults.standard.set(Date(), forKey: Self.catalogRefreshKey)
 			resolveHardware()
 		} catch {
 			Logger.services.warning("Hardware catalog refresh failed: \(error.localizedDescription, privacy: .public)")
+		}
+		do {
+			try await MeshtasticAPI.shared.refreshFirmwareAPIData()
+		} catch {
+			Logger.services.warning("Firmware list refresh failed: \(error.localizedDescription, privacy: .public)")
 		}
 	}
 
