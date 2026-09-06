@@ -1333,6 +1333,22 @@ extension AccessoryManager {
 	var supportsStatusMessage: Bool {
 		checkIsVersionSupported(forVersion: "2.8.0")
 	}
+
+	/// Whether a LoRa config save lands without dropping the connection.
+	///
+	/// Firmware 2.8 applies every LoRa change live (firmware #9962). Before that, `set_config(lora)`
+	/// skipped the reboot only when no radio field actually changed, which a real edit never
+	/// satisfies.
+	///
+	/// Deliberately conservative where the other gates here are permissive. `checkIsVersionSupported`
+	/// returns true for an unknown version, and assuming "no reboot" when we do not know is the
+	/// direction that hurts: it warns nobody before a reboot they did not expect, and it turns a real
+	/// post-save failure into a shrug. Unknown means assume it may reboot.
+	var appliesLoRaConfigWithoutReboot: Bool {
+		let live = connectedVersion ?? ""
+		let known = !live.isEmpty || UserDefaults.firmwareVersion != "0.0.0"
+		return known && checkIsVersionSupported(forVersion: "2.8.0")
+	}
 }
 
 extension AccessoryManager {
