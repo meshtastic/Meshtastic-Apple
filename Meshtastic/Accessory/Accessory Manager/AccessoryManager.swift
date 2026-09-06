@@ -1106,6 +1106,8 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 					Logger.mesh.info("[LoRa OTA] packet received from \(packet.from.toHex(), privacy: .public)")
 				case .remoteShellApp:
 					Logger.mesh.info("[Remote Shell] packet received from \(packet.from.toHex(), privacy: .public)")
+				case .pagingApp:
+					Logger.mesh.info("[Paging] packet received from \(packet.from.toHex(), privacy: .public)")
 				case .unknownApp:
 					Logger.mesh.info("[Unknown] packet received from \(packet.from.toHex(), privacy: .public)")
 				}
