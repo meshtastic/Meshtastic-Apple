@@ -124,10 +124,10 @@ enum NRF52FactoryErase {
 	static let bootloaderEraseFamilyID: UInt32 = 0x4D45_5348
 
 	/// One 512-byte block for every nRF52 board whose bootloader reports
-	/// `Factory-Erase:`. Pinned to the commit that added it (MIT) because no OTAFIX
-	/// release ships the file yet — move to the release asset once one does.
+	/// `Factory-Erase:`. The `meshtastic_factory_erase.uf2` asset of OTAFIX release
+	/// 0.9.2-OTAFIX2.4 (MIT).
 	static let bootloaderImage = MaintenanceUF2(
-		url: URL(string: "https://raw.githubusercontent.com/meshtastic/Adafruit_nRF52_Bootloader_OTAFIX/c8ccd1d7419fda4c01c30c8a9bf144d30a424c46/tools/meshtastic_factory_erase.uf2")!,
+		url: URL(string: "https://github.com/meshtastic/Adafruit_nRF52_Bootloader_OTAFIX/releases/download/0.9.2-OTAFIX2.4/meshtastic_factory_erase.uf2")!,
 		fileName: "meshtastic_factory_erase.uf2",
 		sha256: "6ef3146505c40079ee9e7e692448e40a793dad636f55d1545063299d28908f0d"
 	)

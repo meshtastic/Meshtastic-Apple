@@ -77,7 +77,7 @@ struct NRF52FactoryEraseTests {
 		#expect(image.fileName == "meshtastic_factory_erase.uf2")
 		#expect(image.sha256 == "6ef3146505c40079ee9e7e692448e40a793dad636f55d1545063299d28908f0d")
 		#expect(image.url.lastPathComponent == image.fileName)
-		#expect(image.url.absoluteString.hasPrefix("https://raw.githubusercontent.com/meshtastic/Adafruit_nRF52_Bootloader_OTAFIX/c8ccd1d7"), "commit-pinned until an OTAFIX release ships the file")
+		#expect(image.url.absoluteString == "https://github.com/meshtastic/Adafruit_nRF52_Bootloader_OTAFIX/releases/download/0.9.2-OTAFIX2.4/meshtastic_factory_erase.uf2", "the OTAFIX 2.4 release asset")
 		#expect(NRF52FactoryErase.bootloaderEraseFamilyID == 0x4D45_5348)
 	}
 
