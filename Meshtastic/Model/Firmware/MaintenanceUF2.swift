@@ -30,18 +30,24 @@ struct MaintenanceUF2: Sendable, Equatable {
 	}
 }
 
-/// nRF52 flash-level factory erase: a tiny UF2 the bootloader flashes and runs once,
-/// wiping the application flash and settings region — owner, channels, identity keys,
-/// node database — leaving only the SoftDevice and bootloader. Works with no running
-/// firmware, which is what makes it the recovery path for a radio that cannot boot.
+/// nRF52 factory erase from the bootloader drive. Works with no running firmware,
+/// which is what makes it the recovery path for a radio that cannot boot.
 ///
-/// The safety contract mirrors Meshtastic-Android's MaintenanceUf2.kt: the two images
-/// are linked for different application start addresses (S140 6.1.1 apps begin at
-/// 0x26000, S140 7.3.0 at 0x27000), and writing the wrong one erases part of the
-/// SoftDevice itself. The image is selected only by the `SoftDevice:` line the drive
-/// reports in INFO_UF2.TXT — read from the chip's MBR, not guessed from a hardware
-/// table — and the downloaded bytes are cross-checked against the expected start
-/// address before writing, the one authoring mistake a digest alone cannot catch.
+/// Two paths, chosen by what the drive reports in INFO_UF2.TXT:
+///
+/// - A bootloader that prints `Factory-Erase: UF2 family 0x4D455348` erases its own
+///   App Data region (settings, keys, BLE bonds, node database) when a UF2 block with
+///   that family ID lands on the drive. One board-agnostic file; the installed
+///   firmware is kept and boots factory-fresh.
+/// - Older bootloaders run a tiny erase image once, wiping the application flash and
+///   settings region and leaving only the SoftDevice and bootloader. The two images
+///   are linked for different application start addresses (S140 6.1.1 apps begin at
+///   0x26000, S140 7.3.0 at 0x27000), and writing the wrong one erases part of the
+///   SoftDevice itself — so the image is selected only by the `SoftDevice:` line, read
+///   from the chip's MBR, and the bytes are cross-checked against the expected start
+///   address before writing, the one authoring mistake a digest alone cannot catch.
+///
+/// Mirrors Meshtastic-Android's MaintenanceUf2.kt so both apps ship the same pairings.
 enum NRF52FactoryErase {
 
 	enum SoftDeviceVariant: String, Sendable {
@@ -108,12 +114,53 @@ enum NRF52FactoryErase {
 	/// is not a UF2 image. Blocks are 512 bytes: magic 0x0A324655 at offset 0,
 	/// little-endian target address at offset 12.
 	static func uf2FirstTargetAddress(_ bytes: Data) -> UInt32? {
-		guard bytes.count >= 512 else { return nil }
-		func le32(_ offset: Int) -> UInt32 {
-			bytes.subdata(in: offset..<(offset + 4)).withUnsafeBytes { $0.loadUnaligned(as: UInt32.self) }.littleEndian
+		guard bytes.count >= 512, le32(bytes, at: 0) == uf2Magic0 else { return nil }
+		return le32(bytes, at: 12)
+	}
+
+	// MARK: - Bootloader-run erase
+
+	/// The UF2 family ID the bootloader's built-in factory erase listens for ("MESH").
+	static let bootloaderEraseFamilyID: UInt32 = 0x4D45_5348
+
+	/// One 512-byte block for every nRF52 board whose bootloader reports
+	/// `Factory-Erase:`. Pinned to the commit that added it (MIT) because no OTAFIX
+	/// release ships the file yet — move to the release asset once one does.
+	static let bootloaderImage = MaintenanceUF2(
+		url: URL(string: "https://raw.githubusercontent.com/meshtastic/Adafruit_nRF52_Bootloader_OTAFIX/c8ccd1d7419fda4c01c30c8a9bf144d30a424c46/tools/meshtastic_factory_erase.uf2")!,
+		fileName: "meshtastic_factory_erase.uf2",
+		sha256: "6ef3146505c40079ee9e7e692448e40a793dad636f55d1545063299d28908f0d"
+	)
+
+	/// Extracts the family ID from the `Factory-Erase: UF2 family 0x4D455348` line the
+	/// bootloader emits in INFO_UF2.TXT — the last `0x` token on the line. Nil when
+	/// the line is absent (every bootloader before the feature) or carries no hex
+	/// value; the caller then falls back to the SoftDevice-specific images.
+	static func parseFactoryEraseFamily(fromInfoText text: String) -> UInt32? {
+		for line in text.split(whereSeparator: \.isNewline) {
+			let trimmed = line.trimmingCharacters(in: .whitespaces)
+			guard trimmed.lowercased().hasPrefix("factory-erase:") else { continue }
+			let tokens = trimmed.dropFirst("factory-erase:".count)
+				.split(whereSeparator: \.isWhitespace)
+				.filter { $0.lowercased().hasPrefix("0x") }
+			guard let last = tokens.last else { return nil }
+			return UInt32(last.dropFirst(2), radix: 16)
 		}
-		guard le32(0) == 0x0A32_4655 else { return nil }
-		return le32(12)
+		return nil
+	}
+
+	/// Reads the family ID of a UF2 block, or nil when the bytes are not a UF2 block
+	/// that carries one: magic 0x0A324655 at offset 0, the family-ID-present flag
+	/// (0x2000) at offset 8, little-endian family ID at offset 28.
+	static func uf2FamilyID(_ bytes: Data) -> UInt32? {
+		guard bytes.count >= 32, le32(bytes, at: 0) == uf2Magic0, le32(bytes, at: 8) & 0x2000 != 0 else { return nil }
+		return le32(bytes, at: 28)
+	}
+
+	private static let uf2Magic0: UInt32 = 0x0A32_4655
+
+	private static func le32(_ bytes: Data, at offset: Int) -> UInt32 {
+		bytes.subdata(in: offset..<(offset + 4)).withUnsafeBytes { $0.loadUnaligned(as: UInt32.self) }.littleEndian
 	}
 }
 

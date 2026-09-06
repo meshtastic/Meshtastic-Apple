@@ -50,13 +50,18 @@ If the drive is not a bootloader drive, the board is not one OTAFIX supports, or
 
 ## Factory Erase (nRF52)
 
-Factory erase wipes an nRF52 radio's flash from its bootloader drive — the owner, channels, identity keys, settings, and node database are permanently removed, and only the bootloader remains. Because it runs from the bootloader, it works on a radio whose firmware cannot boot, and it is the right way to wipe a radio before selling or handing it off.
+Factory erase wipes an nRF52 radio from its bootloader drive — the owner, channels, identity keys, settings, Bluetooth bonds, and node database are permanently removed. Because it runs from the bootloader, it works on a radio whose firmware cannot boot, and it is the right way to wipe a radio before selling or handing it off.
 
 1. Tap **Factory Erase** in the Maintenance section, put the radio in DFU mode (double-press its reset button if the app cannot reach it), and connect it by USB.
-2. Choose the radio's drive in the file picker. The erase image is chosen from the SoftDevice version the drive reports, so the wrong image can never be written.
-3. Confirm the erase. The app downloads the image, verifies it against a pinned checksum and the reported SoftDevice, and writes it to the drive. The radio erases itself and reboots into the bootloader.
+2. Choose the radio's drive in the file picker. The app reads the drive's `INFO_UF2.TXT` to choose the erase file, so the wrong file can never be written.
+3. Confirm the erase. The app downloads the file, verifies it against a pinned checksum and against what the drive reported, and writes it to the drive. The radio erases itself; the drive disappears and comes back a couple of seconds later.
 
-Install firmware next from the Firmware Updates screen — the radio starts as a brand-new device. Nothing is restored automatically.
+What is left on the radio depends on its bootloader:
+
+- **Bootloaders that erase themselves** (they list a `Factory-Erase:` line in `INFO_UF2.TXT`) take one file for every nRF52 board and keep the installed firmware. Unplug the radio and it starts as a brand-new device; install new firmware from the Firmware Updates screen only if you want to.
+- **Older bootloaders** run an erase image matched to the SoftDevice version they report, and only the SoftDevice and bootloader remain. Install firmware next from the Firmware Updates screen.
+
+Nothing is restored automatically.
 
 ## During the Transfer
 

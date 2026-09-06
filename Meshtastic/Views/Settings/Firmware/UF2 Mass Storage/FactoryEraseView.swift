@@ -4,18 +4,17 @@
 //
 //  Copyright(c) Garth Vander Houwen 8/27/26.
 //
-//  Guides an nRF52 user through a flash-level factory erase from the radio's
-//  bootloader drive — the recovery path when firmware cannot boot, and the right
-//  way to wipe a radio before handing it off. The erase image runs once on the
-//  radio and removes the owner, channels, identity keys, settings, and node
-//  database; only the SoftDevice and bootloader remain, and firmware must be
-//  installed afterward through the normal firmware flow.
+//  Guides an nRF52 user through a factory erase from the radio's bootloader
+//  drive — the recovery path when firmware cannot boot, and the right way to
+//  wipe a radio before handing it off. The owner, channels, identity keys,
+//  settings, Bluetooth bonds, and node database are removed.
 //
-//  Safety model (mirrors Meshtastic-Android): the image is selected only by the
-//  SoftDevice line the drive reports in INFO_UF2.TXT — the two erase images are
-//  linked for different flash addresses, and the wrong one erases part of the
-//  SoftDevice — and the downloaded bytes are digest-verified and cross-checked
-//  against the expected start address before writing.
+//  Two paths, chosen by INFO_UF2.TXT (see NRF52FactoryErase). A bootloader that
+//  reports `Factory-Erase:` wipes its settings region itself and keeps the
+//  installed firmware; the file is verified by digest and UF2 family ID. Older
+//  bootloaders run a SoftDevice-specific erase image that leaves only the
+//  SoftDevice and bootloader; that file is verified by digest and flash start
+//  address, because the wrong one erases part of the SoftDevice.
 //
 
 import CryptoKit
@@ -28,11 +27,19 @@ struct FactoryEraseView: View {
 	@Environment(\.dismiss) var dismiss
 	@Environment(\.modelContext) var context
 
+	/// Which erase the drive supports, and so which header check gates the write.
+	enum Method: Equatable {
+		/// The bootloader erases its own settings region; firmware is kept.
+		case bootloader
+		/// A SoftDevice-specific image erases application flash and settings.
+		case softDevice(NRF52FactoryErase.SoftDeviceVariant)
+	}
+
 	enum Phase: Equatable {
 		case idle
-		case resolved(variant: NRF52FactoryErase.SoftDeviceVariant, image: MaintenanceUF2)
+		case resolved(method: Method, image: MaintenanceUF2)
 		case installing
-		case done
+		case done(Method)
 		case failed(String)
 	}
 
@@ -54,7 +61,7 @@ struct FactoryEraseView: View {
 							.font(.title2)
 							.foregroundStyle(.orange)
 
-						Text("Factory erase permanently removes the radio's owner, channels, identity keys, settings, and node database. Nothing is restored automatically. Firmware must be installed afterward.")
+						Text("Factory erase permanently removes the radio's owner, channels, identity keys, settings, Bluetooth bonds, and node database. Nothing is restored automatically.")
 							.font(.callout)
 					}
 					.padding()
@@ -79,7 +86,7 @@ struct FactoryEraseView: View {
 						Label("Step 2: Choose the Bootloader Drive", systemImage: "2.circle.fill")
 							.font(.headline)
 
-						Text("Select the device's drive in the file picker. The erase image is chosen from the SoftDevice version the drive reports, so the wrong image can never be written.")
+						Text("Select the device's drive in the file picker. The app reads the drive's INFO_UF2.TXT to choose the erase file: newer bootloaders erase themselves with one file for every board, older ones need an image matched to their SoftDevice version. The wrong file can never be written.")
 							.font(.callout)
 							.fixedSize(horizontal: false, vertical: true)
 
@@ -102,9 +109,10 @@ struct FactoryEraseView: View {
 							.font(.caption.bold())
 							.foregroundStyle(.secondary)
 
-						Text("• The download is verified against a pinned checksum, and its flash address is cross-checked against the reported SoftDevice, before anything is written.")
-						Text("• After the file is written the radio erases itself and reboots back into the bootloader; the drive disappears and comes back.")
-						Text("• Install firmware next from the Firmware Updates screen. The radio starts as a brand-new device.")
+						Text("• The download is verified against a pinned checksum, and its header is cross-checked against what the drive reported, before anything is written.")
+						Text("• After the file is written the radio erases itself; the drive disappears and comes back a couple of seconds later.")
+						Text("• On a bootloader that erases itself, the installed firmware stays and starts as a brand-new device when you unplug the radio. Install new firmware from the Firmware Updates screen only if you want to.")
+						Text("• On older bootloaders only the SoftDevice and bootloader remain, so install firmware next from the Firmware Updates screen.")
 					}
 					.font(.caption)
 					.foregroundStyle(.secondary)
@@ -141,7 +149,7 @@ struct FactoryEraseView: View {
 			Button("Erase Everything", role: .destructive) { install() }
 			Button("Cancel", role: .cancel) {}
 		} message: {
-			Text("The owner, channels, identity keys, settings, and node database are permanently removed.")
+			Text("The owner, channels, identity keys, settings, Bluetooth bonds, and node database are permanently removed.")
 		}
 		.onDisappear {
 			releaseDriveAccess()
@@ -189,14 +197,19 @@ struct FactoryEraseView: View {
 	func statusView() -> some View {
 		switch phase {
 		case .idle:
-			Text("Choose the drive above to identify the SoftDevice.")
+			Text("Choose the drive above to identify the bootloader.")
 				.font(.callout)
 				.foregroundStyle(.secondary)
 
-		case .resolved(let variant, let image):
+		case .resolved(let method, let image):
 			VStack(alignment: .leading, spacing: 8) {
 				Label {
-					Text("SoftDevice **S140 \(variant.rawValue)**")
+					switch method {
+					case .bootloader:
+						Text("Bootloader erase — **firmware is kept**")
+					case .softDevice(let variant):
+						Text("SoftDevice **S140 \(variant.rawValue)** — firmware is removed")
+					}
 				} icon: {
 					Image(systemName: "checkmark.seal.fill")
 						.foregroundStyle(.green)
@@ -222,10 +235,16 @@ struct FactoryEraseView: View {
 					.font(.callout)
 			}
 
-		case .done:
+		case .done(let method):
 			Label {
-				Text("Erase image written. The radio is wiping its flash and will reboot into the bootloader — install firmware next from the Firmware Updates screen.")
-					.font(.callout)
+				switch method {
+				case .bootloader:
+					Text("Erase file written. The radio is wiping its settings and comes back as a bootloader drive in a few seconds. Unplug it to start the installed firmware as a brand-new device, or install firmware from the Firmware Updates screen.")
+						.font(.callout)
+				case .softDevice:
+					Text("Erase image written. The radio is wiping its flash and will reboot into the bootloader — install firmware next from the Firmware Updates screen.")
+						.font(.callout)
+				}
 			} icon: {
 				Image(systemName: "checkmark.circle.fill")
 					.foregroundStyle(.green)
@@ -258,11 +277,18 @@ struct FactoryEraseView: View {
 				phase = .failed(String(localized: "That folder is not a UF2 bootloader drive — no INFO_UF2.TXT found. Select the drive the device mounts in DFU mode."))
 				return
 			}
+			// A bootloader that erases itself takes one file for every board and needs
+			// no SoftDevice match. Anything else — line absent, or a family we do not
+			// ship — falls through to the SoftDevice-specific path unchanged.
+			if NRF52FactoryErase.parseFactoryEraseFamily(fromInfoText: infoText) == NRF52FactoryErase.bootloaderEraseFamilyID {
+				phase = .resolved(method: .bootloader, image: NRF52FactoryErase.bootloaderImage)
+				return
+			}
 			guard let variant = NRF52FactoryErase.parseSoftDevice(fromInfoText: infoText) else {
 				phase = .failed(String(localized: "The drive does not report a SoftDevice this erase supports (S140 6.1.1 or 7.3.0), so the right image cannot be chosen safely. Nothing was written."))
 				return
 			}
-			phase = .resolved(variant: variant, image: NRF52FactoryErase.image(for: variant))
+			phase = .resolved(method: .softDevice(variant), image: NRF52FactoryErase.image(for: variant))
 		} catch {
 			phase = .failed(error.localizedDescription)
 		}
@@ -290,7 +316,7 @@ struct FactoryEraseView: View {
 	}
 
 	private func install() {
-		guard case .resolved(let variant, let image) = phase, let driveURL else { return }
+		guard case .resolved(let method, let image) = phase, let driveURL else { return }
 		phase = .installing
 		installTask = Task {
 			do {
@@ -305,16 +331,25 @@ struct FactoryEraseView: View {
 					return
 				}
 				// The digest proves the bytes; this proves the row: a swapped URL/digest
-				// pairing would still write an image linked for the wrong SoftDevice.
-				guard NRF52FactoryErase.uf2FirstTargetAddress(data) == NRF52FactoryErase.expectedFirstTargetAddress(for: variant) else {
-					Logger.services.error("Factory erase image start address does not match SoftDevice S140 \(variant.rawValue, privacy: .public)")
-					phase = .failed(String(localized: "The erase image does not match the radio's SoftDevice. Nothing was written."))
-					return
+				// pairing would still write a file the drive cannot safely take.
+				switch method {
+				case .bootloader:
+					guard NRF52FactoryErase.uf2FamilyID(data) == NRF52FactoryErase.bootloaderEraseFamilyID else {
+						Logger.services.error("Factory erase file does not carry the bootloader erase family ID")
+						phase = .failed(String(localized: "The erase file is not the one the bootloader expects. Nothing was written."))
+						return
+					}
+				case .softDevice(let variant):
+					guard NRF52FactoryErase.uf2FirstTargetAddress(data) == NRF52FactoryErase.expectedFirstTargetAddress(for: variant) else {
+						Logger.services.error("Factory erase image start address does not match SoftDevice S140 \(variant.rawValue, privacy: .public)")
+						phase = .failed(String(localized: "The erase image does not match the radio's SoftDevice. Nothing was written."))
+						return
+					}
 				}
 				let destination = driveURL.appendingPathComponent(image.fileName)
 				try data.write(to: destination)
 				Logger.services.info("Wrote factory erase image \(image.fileName, privacy: .public) to the device drive")
-				phase = .done
+				phase = .done(method)
 			} catch is CancellationError {
 				// Dismissed mid-install; nothing was written.
 			} catch {
