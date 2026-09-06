@@ -1340,14 +1340,22 @@ extension AccessoryManager {
 	/// skipped the reboot only when no radio field actually changed, which a real edit never
 	/// satisfies.
 	///
-	/// Deliberately conservative where the other gates here are permissive. `checkIsVersionSupported`
-	/// returns true for an unknown version, and assuming "no reboot" when we do not know is the
-	/// direction that hurts: it warns nobody before a reboot they did not expect, and it turns a real
-	/// post-save failure into a shrug. Unknown means assume it may reboot.
+	/// Deliberately conservative where the other gates here are permissive, and read from the live
+	/// connection only. `UserDefaults.firmwareVersion` is global rather than per radio, so falling
+	/// back to it right after switching radios answers for the *previous* radio — and assuming
+	/// "no reboot" on the wrong radio is the direction that hurts: it warns nobody before a reboot
+	/// they did not expect, and turns a real post-save failure into a shrug. No live version means
+	/// assume it may reboot, which merely restores the old forgiving behavior for that window.
 	var appliesLoRaConfigWithoutReboot: Bool {
-		let live = connectedVersion ?? ""
-		let known = !live.isEmpty || UserDefaults.firmwareVersion != "0.0.0"
-		return known && checkIsVersionSupported(forVersion: "2.8.0")
+		Self.appliesLoRaConfigWithoutReboot(liveVersion: connectedVersion)
+	}
+
+	/// Pure core of the gate, split out so tests exercise the decision without a live connection
+	/// or the global stored version.
+	nonisolated static func appliesLoRaConfigWithoutReboot(liveVersion: String?) -> Bool {
+		guard let liveVersion, !liveVersion.isEmpty else { return false }
+		let comparison = "2.8.0".compare(liveVersion, options: .numeric)
+		return comparison == .orderedAscending || comparison == .orderedSame
 	}
 }
 
