@@ -6,6 +6,7 @@
 import MeshtasticProtobufs
 import OSLog
 import SwiftUI
+import SwiftData
 
 struct TrafficManagementConfig: View {
 
@@ -21,6 +22,7 @@ struct TrafficManagementConfig: View {
 	// gate whether the corresponding interval/threshold is sent (a value) or
 	// cleared (0). `enabled` is a master switch that clears everything when off.
 	@State var hasChanges = false
+	@State private var directNeighborCount = 0
 	@State var enabled = false
 	@State var positionDedupEnabled = false
 	@State var positionMinInterval = UpdateInterval(from: 0)
@@ -35,6 +37,23 @@ struct TrafficManagementConfig: View {
 	var body: some View {
 		Form {
 			ConfigHeader(title: "Traffic Management", config: \.trafficManagementConfig, node: node, onAppear: setTrafficManagementValues)
+				.onAppear(perform: refreshDirectNeighborCount)
+
+			Section(header: Text("Placement")) {
+				Label {
+					VStack(alignment: .leading, spacing: 4) {
+						Text(TrafficManagementCandidacy.summary(directNeighborCount: directNeighborCount))
+							.font(.callout)
+							.fixedSize(horizontal: false, vertical: true)
+					}
+				} icon: {
+					Image(systemName: "antenna.radiowaves.left.and.right")
+						.foregroundStyle(
+							TrafficManagementCandidacy.tier(directNeighborCount: directNeighborCount) == .limited
+							? Color.orange : Color.green
+						)
+				}
+			}
 
 			Section(header: Text("Options")) {
 				Toggle(isOn: $enabled) {
@@ -216,6 +235,25 @@ struct TrafficManagementConfig: View {
 		}
 		.onChange(of: unknownPacketThreshold) { oldVal, newVal in
 			if oldVal != newVal && newVal != Int(node?.trafficManagementConfig?.unknownPacketThreshold ?? -1) { hasChanges = true }
+		}
+	}
+
+	/// Nodes this radio has heard directly and recently: zero hops, over RF, inside the same
+	/// two-hour window the node filters treat as online. Bound to locals first — a #Predicate that
+	/// reaches through self throws at fetch time and try? would turn that into a silent zero.
+	private func refreshDirectNeighborCount() {
+		let cutoff = Date().addingTimeInterval(-7_200)
+		// Both dates bound to locals: the #Predicate macro rejects constructors and self-reaching
+		// expressions inside the closure, and the failure would otherwise be a silent zero.
+		let epoch = Date(timeIntervalSince1970: 0)
+		let descriptor = FetchDescriptor<NodeInfoEntity>(
+			predicate: #Predicate { $0.hopsAway == 0 && $0.viaMqtt == false && ($0.lastHeard ?? epoch) > cutoff }
+		)
+		do {
+			directNeighborCount = try context.fetchCount(descriptor)
+		} catch {
+			Logger.data.error("Could not count direct neighbors for the traffic management screen: \(error.localizedDescription, privacy: .public)")
+			directNeighborCount = 0
 		}
 	}
 
