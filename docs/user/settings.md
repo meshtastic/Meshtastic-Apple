@@ -88,10 +88,7 @@ On hardened lockdown-firmware radios, this page also shows a **Lockdown** sectio
 
 Set your Long Name (display name) and Short Name (4-character/emoji identifier shown in the node circle).
 
-Both limits are counted in UTF-8 bytes rather than characters, because that is
-how the radio stores them: an emoji is four bytes, so four emoji fill the short
-name exactly. Typing past the limit stops rather than cutting a character in
-half.
+Both limits are counted in UTF-8 bytes rather than characters, because that is how the radio stores them. Most emoji are four bytes, so a single emoji fills the short name; some older symbols are smaller. Typing past the limit stops rather than cutting a character in half.
 
 How long a Long Name can be depends on the radio. Firmware 2.8 and later keeps
 24 bytes of it — those radios store every node they hear in a slimmer record to
