@@ -130,7 +130,7 @@ enum HardwareCatalogResolver {
 		)
 	}
 
-	static func normalizedTarget(from hardwareModelSlug: String) -> String {
+	fileprivate static func normalizedTarget(from hardwareModelSlug: String) -> String {
 		hardwareModelSlug.lowercased().replacingOccurrences(of: "_", with: "-")
 	}
 
