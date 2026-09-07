@@ -39,7 +39,6 @@ struct TrafficManagementConfig: View {
 			Section(header: Text("Options")) {
 				Toggle(isOn: $enabled) {
 					Label("Enabled", systemImage: "arrow.triangle.branch")
-					Text("Master enable for the traffic management module.")
 				}
 			}
 
@@ -47,7 +46,7 @@ struct TrafficManagementConfig: View {
 				Section(header: Text("Position Deduplication")) {
 					Toggle(isOn: $positionDedupEnabled) {
 						Label("Position Dedup", systemImage: "location.slash")
-						Text("Drop redundant position broadcasts from the same node.")
+						Text("Drop repeated position broadcasts.")
 					}
 
 					if positionDedupEnabled {
@@ -57,7 +56,7 @@ struct TrafficManagementConfig: View {
 								pickerLabel: "Minimum Interval",
 								selectedInterval: $positionMinInterval
 							)
-							Text("Minimum time between position updates from the same node.")
+							Text("Positions from the same node arriving sooner than this are dropped.")
 								.foregroundColor(.gray)
 								.font(.callout)
 						}
@@ -67,7 +66,7 @@ struct TrafficManagementConfig: View {
 				Section(header: Text("NodeInfo Direct Response")) {
 					Toggle(isOn: $nodeinfoDirectResponse) {
 						Label("Direct Response", systemImage: "arrow.turn.down.right")
-						Text("Respond to NodeInfo requests directly from local cache.")
+						Text("Answer NodeInfo requests from the local cache.")
 					}
 
 					if nodeinfoDirectResponse {
@@ -79,7 +78,7 @@ struct TrafficManagementConfig: View {
 								.textFieldStyle(.roundedBorder)
 								.keyboardType(.numberPad)
 						}
-						Text("Maximum hop distance from the requestor at which direct NodeInfo responses are served from the local cache.")
+						Text("Only answer requestors within this many hops.")
 							.foregroundColor(.gray)
 							.font(.callout)
 					}
@@ -88,7 +87,7 @@ struct TrafficManagementConfig: View {
 				Section(header: Text("Rate Limiting")) {
 					Toggle(isOn: $rateLimitEnabled) {
 						Label("Rate Limiting", systemImage: "speedometer")
-						Text("Enable per-node rate limiting to throttle chatty nodes.")
+						Text("Throttle nodes that send too many packets.")
 					}
 
 					if rateLimitEnabled {
@@ -111,7 +110,7 @@ struct TrafficManagementConfig: View {
 								.textFieldStyle(.roundedBorder)
 								.keyboardType(.numberPad)
 						}
-						Text("Maximum packets allowed per node within the rate limit window.")
+						Text("The most packets one node may send per window.")
 							.foregroundColor(.gray)
 							.font(.callout)
 					}
@@ -120,7 +119,7 @@ struct TrafficManagementConfig: View {
 				Section(header: Text("Unknown Packet Handling")) {
 					Toggle(isOn: $dropUnknownEnabled) {
 						Label("Drop Unknown", systemImage: "xmark.shield")
-						Text("Enable dropping of unknown/undecryptable packets.")
+						Text("Drop packets that cannot be decrypted.")
 					}
 
 					if dropUnknownEnabled {
@@ -132,7 +131,7 @@ struct TrafficManagementConfig: View {
 								.textFieldStyle(.roundedBorder)
 								.keyboardType(.numberPad)
 						}
-						Text("Maximum unknown/undecryptable packets per rate window before the source is dropped.")
+						Text("How many per window before the sender is dropped.")
 							.foregroundColor(.gray)
 							.font(.callout)
 					}

@@ -175,20 +175,20 @@ The Traffic Management module helps reduce unnecessary mesh traffic and improve 
 
 | Setting | Description |
 |---------|-------------|
-| Enabled | Master enable for the traffic management module. |
+| Enabled | Turns the module on or off. |
 | **Position Deduplication** | |
-| Position Dedup | Drop redundant position broadcasts from the same node. |
-| Minimum Interval | Minimum time between position updates from the same node, chosen from a list of intervals. The firmware default is five hours between identical positions. |
+| Position Dedup | Drop repeated position broadcasts. |
+| Minimum Interval | Positions from the same node arriving sooner than this are dropped. The firmware default is five hours. |
 | **NodeInfo Direct Response** | |
-| Direct Response | Respond to NodeInfo requests directly from local cache instead of flooding the mesh. |
-| Max Hops | Maximum hop distance from the requestor at which direct NodeInfo responses are served from the local cache. |
+| Direct Response | Answer NodeInfo requests from the local cache instead of flooding the mesh. |
+| Max Hops | Only answer requestors within this many hops. |
 | **Rate Limiting** | |
-| Rate Limiting | Enable per-node rate limiting to throttle chatty nodes. |
-| Window | The time window packets are counted over, chosen from a list of intervals. |
-| Max Packets | Maximum packets allowed per node within the rate limit window. |
+| Rate Limiting | Throttle nodes that send too many packets. |
+| Window | The time window packets are counted over. |
+| Max Packets | The most packets one node may send per window. |
 | **Unknown Packet Handling** | |
-| Drop Unknown | Enable dropping of unknown/undecryptable packets. |
-| Threshold | Maximum unknown/undecryptable packets per rate window before the source is dropped. |
+| Drop Unknown | Drop packets that cannot be decrypted. |
+| Threshold | How many per window before the sender is dropped. |
 
 ## Tools
 

@@ -278,7 +278,7 @@ everyone else's radio even when your own keeps it.</p>
 <tbody>
 <tr>
 <td>Enabled</td>
-<td>Master enable for the traffic management module.</td>
+<td>Turns the module on or off.</td>
 </tr>
 <tr>
 <td><strong>Position Deduplication</strong></td>
@@ -286,11 +286,11 @@ everyone else's radio even when your own keeps it.</p>
 </tr>
 <tr>
 <td>Position Dedup</td>
-<td>Drop redundant position broadcasts from the same node.</td>
+<td>Drop repeated position broadcasts.</td>
 </tr>
 <tr>
 <td>Minimum Interval</td>
-<td>Minimum time between position updates from the same node, chosen from a list of intervals. The firmware default is five hours between identical positions.</td>
+<td>Positions from the same node arriving sooner than this are dropped. The firmware default is five hours.</td>
 </tr>
 <tr>
 <td><strong>NodeInfo Direct Response</strong></td>
@@ -298,11 +298,11 @@ everyone else's radio even when your own keeps it.</p>
 </tr>
 <tr>
 <td>Direct Response</td>
-<td>Respond to NodeInfo requests directly from local cache instead of flooding the mesh.</td>
+<td>Answer NodeInfo requests from the local cache instead of flooding the mesh.</td>
 </tr>
 <tr>
 <td>Max Hops</td>
-<td>Maximum hop distance from the requestor at which direct NodeInfo responses are served from the local cache.</td>
+<td>Only answer requestors within this many hops.</td>
 </tr>
 <tr>
 <td><strong>Rate Limiting</strong></td>
@@ -310,15 +310,15 @@ everyone else's radio even when your own keeps it.</p>
 </tr>
 <tr>
 <td>Rate Limiting</td>
-<td>Enable per-node rate limiting to throttle chatty nodes.</td>
+<td>Throttle nodes that send too many packets.</td>
 </tr>
 <tr>
 <td>Window</td>
-<td>The time window packets are counted over, chosen from a list of intervals.</td>
+<td>The time window packets are counted over.</td>
 </tr>
 <tr>
 <td>Max Packets</td>
-<td>Maximum packets allowed per node within the rate limit window.</td>
+<td>The most packets one node may send per window.</td>
 </tr>
 <tr>
 <td><strong>Unknown Packet Handling</strong></td>
@@ -326,11 +326,11 @@ everyone else's radio even when your own keeps it.</p>
 </tr>
 <tr>
 <td>Drop Unknown</td>
-<td>Enable dropping of unknown/undecryptable packets.</td>
+<td>Drop packets that cannot be decrypted.</td>
 </tr>
 <tr>
 <td>Threshold</td>
-<td>Maximum unknown/undecryptable packets per rate window before the source is dropped.</td>
+<td>How many per window before the sender is dropped.</td>
 </tr>
 </tbody>
 </table>
