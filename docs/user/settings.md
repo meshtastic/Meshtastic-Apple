@@ -171,20 +171,20 @@ Optional feature modules. Only available when your connected node supports the m
 
 ### Traffic Management
 
-The Traffic Management module helps reduce unnecessary mesh traffic and improve network efficiency. It is available on nodes running firmware **2.8.0 or later**. Each feature is enabled implicitly by a non-zero value — turning a section's toggle off (or the master **Enabled** switch) clears its values and disables that feature on the radio.
+The Traffic Management module helps reduce unnecessary mesh traffic and improve network efficiency. It is available on nodes running firmware **2.8.0 or later**. Each feature is enabled implicitly by a non-zero value — turning a section's toggle off (or the master **Enabled** switch) clears its values and disables that feature on the radio. Turning a feature on starts its interval at the firmware default rather than zero, so saving right away enables it.
 
 | Setting | Description |
 |---------|-------------|
 | Enabled | Master enable for the traffic management module. |
 | **Position Deduplication** | |
 | Position Dedup | Drop redundant position broadcasts from the same node. |
-| Min Interval (s) | Minimum seconds between position updates from the same node. |
+| Minimum Interval | Minimum time between position updates from the same node, chosen from a list of intervals. The firmware default is five hours between identical positions. |
 | **NodeInfo Direct Response** | |
 | Direct Response | Respond to NodeInfo requests directly from local cache instead of flooding the mesh. |
 | Max Hops | Maximum hop distance from the requestor at which direct NodeInfo responses are served from the local cache. |
 | **Rate Limiting** | |
 | Rate Limiting | Enable per-node rate limiting to throttle chatty nodes. |
-| Window (s) | Time window in seconds for rate limiting calculations. |
+| Window | The time window packets are counted over, chosen from a list of intervals. |
 | Max Packets | Maximum packets allowed per node within the rate limit window. |
 | **Unknown Packet Handling** | |
 | Drop Unknown | Enable dropping of unknown/undecryptable packets. |

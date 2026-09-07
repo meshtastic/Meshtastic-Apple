@@ -66,7 +66,7 @@
 </tr>
 <tr>
 <td>Modem Preset</td>
-<td>Speed/range trade-off. Most users should use Long Fast or Long Slow. On firmware 2.8+, the preset list is filtered to those that are legal for the selected region (see below).</td>
+<td>Speed/range trade-off. Which preset to use depends on your region — on firmware 2.8+ the list is filtered to those legal there, and the recommended one differs by region (see below).</td>
 </tr>
 <tr>
 <td>Bandwidth</td>
@@ -123,6 +123,19 @@
 <p>On hardened lockdown-firmware radios, this page also shows a <strong>Lockdown</strong> section with the session status, a <strong>Lock Now</strong> button, and a <strong>Forget Stored Passphrase</strong> button. See <a href="lockdown.html">Lockdown Mode</a>.</p>
 <h3>User</h3>
 <p>Set your Long Name (display name) and Short Name (4-character/emoji identifier shown in the node circle).</p>
+<p>Both limits are counted in UTF-8 bytes rather than characters, because that is
+how the radio stores them: an emoji is four bytes, so four emoji fill the short
+name exactly. Typing past the limit stops rather than cutting a character in
+half.</p>
+<p>How long a Long Name can be depends on the radio. Firmware 2.8 and later keeps
+24 bytes of it — those radios store every node they hear in a slimmer record to
+save memory, and truncate anything longer as it arrives. Older firmware keeps
+39. The hint under the field shows whichever applies to the radio you are
+connected to.</p>
+<p>A name you already have is left alone, even if it is longer than the radio you
+are now connected to would keep. Note that a 2.8 radio hearing an older one
+still stores only 24 bytes of its name, so a longer name is shortened by
+everyone else's radio even when your own keeps it.</p>
 <h3>Bluetooth</h3>
 <p>BLE radio settings including PIN mode and power saving. Changes apply on next radio restart.</p>
 <h3>Device</h3>
@@ -254,7 +267,7 @@
 </tbody>
 </table>
 <h3>Traffic Management</h3>
-<p>The Traffic Management module helps reduce unnecessary mesh traffic and improve network efficiency. It is available on nodes running firmware <strong>2.8.0 or later</strong>. Each feature is enabled implicitly by a non-zero value — turning a section's toggle off (or the master <strong>Enabled</strong> switch) clears its values and disables that feature on the radio.</p>
+<p>The Traffic Management module helps reduce unnecessary mesh traffic and improve network efficiency. It is available on nodes running firmware <strong>2.8.0 or later</strong>. Each feature is enabled implicitly by a non-zero value — turning a section's toggle off (or the master <strong>Enabled</strong> switch) clears its values and disables that feature on the radio. Turning a feature on starts its interval at the firmware default rather than zero, so saving right away enables it.</p>
 <table>
 <thead>
 <tr>
@@ -276,8 +289,8 @@
 <td>Drop redundant position broadcasts from the same node.</td>
 </tr>
 <tr>
-<td>Min Interval (s)</td>
-<td>Minimum seconds between position updates from the same node.</td>
+<td>Minimum Interval</td>
+<td>Minimum time between position updates from the same node, chosen from a list of intervals. The firmware default is five hours between identical positions.</td>
 </tr>
 <tr>
 <td><strong>NodeInfo Direct Response</strong></td>
@@ -300,8 +313,8 @@
 <td>Enable per-node rate limiting to throttle chatty nodes.</td>
 </tr>
 <tr>
-<td>Window (s)</td>
-<td>Time window in seconds for rate limiting calculations.</td>
+<td>Window</td>
+<td>The time window packets are counted over, chosen from a list of intervals.</td>
 </tr>
 <tr>
 <td>Max Packets</td>

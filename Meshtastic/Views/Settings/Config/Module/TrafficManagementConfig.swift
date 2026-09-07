@@ -23,11 +23,11 @@ struct TrafficManagementConfig: View {
 	@State var hasChanges = false
 	@State var enabled = false
 	@State var positionDedupEnabled = false
-	@State var positionMinIntervalSecs = 0
+	@State var positionMinInterval = UpdateInterval(from: 0)
 	@State var nodeinfoDirectResponse = false
 	@State var nodeinfoDirectResponseMaxHops = 0
 	@State var rateLimitEnabled = false
-	@State var rateLimitWindowSecs = 0
+	@State var rateLimitWindow = UpdateInterval(from: 0)
 	@State var rateLimitMaxPackets = 0
 	@State var dropUnknownEnabled = false
 	@State var unknownPacketThreshold = 0
@@ -51,17 +51,16 @@ struct TrafficManagementConfig: View {
 					}
 
 					if positionDedupEnabled {
-						HStack {
-							Label("Min Interval (s)", systemImage: "clock")
-							Spacer()
-							TextField("Seconds", value: $positionMinIntervalSecs, format: .number)
-								.frame(width: 80)
-								.textFieldStyle(.roundedBorder)
-								.keyboardType(.numberPad)
+						VStack(alignment: .leading) {
+							UpdateIntervalPicker(
+								config: .trafficPositionDedup,
+								pickerLabel: "Minimum Interval",
+								selectedInterval: $positionMinInterval
+							)
+							Text("Minimum time between position updates from the same node.")
+								.foregroundColor(.gray)
+								.font(.callout)
 						}
-						Text("Minimum interval in seconds between position updates from the same node.")
-							.foregroundColor(.gray)
-							.font(.callout)
 					}
 				}
 
@@ -93,17 +92,16 @@ struct TrafficManagementConfig: View {
 					}
 
 					if rateLimitEnabled {
-						HStack {
-							Label("Window (s)", systemImage: "clock.arrow.circlepath")
-							Spacer()
-							TextField("Seconds", value: $rateLimitWindowSecs, format: .number)
-								.frame(width: 80)
-								.textFieldStyle(.roundedBorder)
-								.keyboardType(.numberPad)
+						VStack(alignment: .leading) {
+							UpdateIntervalPicker(
+								config: .trafficRateLimitWindow,
+								pickerLabel: "Window",
+								selectedInterval: $rateLimitWindow
+							)
+							Text("The time window packets are counted over.")
+								.foregroundColor(.gray)
+								.font(.callout)
 						}
-						Text("Time window in seconds for rate limiting calculations.")
-							.foregroundColor(.gray)
-							.font(.callout)
 
 						HStack {
 							Label("Max Packets", systemImage: "number")
@@ -156,9 +154,9 @@ struct TrafficManagementConfig: View {
 					// 2.8 schema: each feature is enabled by a non-zero value, so
 					// a disabled toggle (or the master switch off) sends 0.
 					var tmc = ModuleConfig.TrafficManagementConfig()
-					tmc.positionMinIntervalSecs = UInt32(enabled && positionDedupEnabled ? positionMinIntervalSecs : 0)
+					tmc.positionMinIntervalSecs = UInt32(enabled && positionDedupEnabled ? positionMinInterval.intValue : 0)
 					tmc.nodeinfoDirectResponseMaxHops = UInt32(enabled && nodeinfoDirectResponse ? nodeinfoDirectResponseMaxHops : 0)
-					tmc.rateLimitWindowSecs = UInt32(enabled && rateLimitEnabled ? rateLimitWindowSecs : 0)
+					tmc.rateLimitWindowSecs = UInt32(enabled && rateLimitEnabled ? rateLimitWindow.intValue : 0)
 					tmc.rateLimitMaxPackets = UInt32(enabled && rateLimitEnabled ? rateLimitMaxPackets : 0)
 					tmc.unknownPacketThreshold = UInt32(enabled && dropUnknownEnabled ? unknownPacketThreshold : 0)
 					_ = try await accessoryManager.saveTrafficManagementModuleConfig(config: tmc, fromUser: fromUser, toUser: toUser)
@@ -186,9 +184,12 @@ struct TrafficManagementConfig: View {
 		}
 		.onChange(of: positionDedupEnabled) { oldVal, newVal in
 			if oldVal != newVal && newVal != node?.trafficManagementConfig?.positionDedupEnabled { hasChanges = true }
+			// Turning the feature on with a cleared value used to save 0, which kept it disabled.
+			// Seed the firmware default (5 hours between identical positions) instead.
+			if newVal && positionMinInterval.intValue == 0 { positionMinInterval = UpdateInterval(from: FixedUpdateIntervals.fiveHours.rawValue) }
 		}
-		.onChange(of: positionMinIntervalSecs) { oldVal, newVal in
-			if oldVal != newVal && newVal != Int(node?.trafficManagementConfig?.positionMinIntervalSecs ?? -1) { hasChanges = true }
+		.onChange(of: positionMinInterval) { oldVal, newVal in
+			if oldVal != newVal && newVal.intValue != Int(node?.trafficManagementConfig?.positionMinIntervalSecs ?? -1) { hasChanges = true }
 		}
 		.onChange(of: nodeinfoDirectResponse) { oldVal, newVal in
 			if oldVal != newVal && newVal != node?.trafficManagementConfig?.nodeinfoDirectResponse { hasChanges = true }
@@ -198,9 +199,11 @@ struct TrafficManagementConfig: View {
 		}
 		.onChange(of: rateLimitEnabled) { oldVal, newVal in
 			if oldVal != newVal && newVal != node?.trafficManagementConfig?.rateLimitEnabled { hasChanges = true }
+			// Firmware needs a non-zero window; one minute is the shortest broadly useful one.
+			if newVal && rateLimitWindow.intValue == 0 { rateLimitWindow = UpdateInterval(from: FixedUpdateIntervals.oneMinute.rawValue) }
 		}
-		.onChange(of: rateLimitWindowSecs) { oldVal, newVal in
-			if oldVal != newVal && newVal != Int(node?.trafficManagementConfig?.rateLimitWindowSecs ?? -1) { hasChanges = true }
+		.onChange(of: rateLimitWindow) { oldVal, newVal in
+			if oldVal != newVal && newVal.intValue != Int(node?.trafficManagementConfig?.rateLimitWindowSecs ?? -1) { hasChanges = true }
 		}
 		.onChange(of: rateLimitMaxPackets) { oldVal, newVal in
 			if oldVal != newVal && newVal != Int(node?.trafficManagementConfig?.rateLimitMaxPackets ?? -1) { hasChanges = true }
@@ -217,15 +220,15 @@ struct TrafficManagementConfig: View {
 		// Derive the UI toggles from the stored values: a non-zero interval /
 		// threshold means that feature is active (mirrors the firmware schema).
 		let cfg = node?.trafficManagementConfig
-		self.positionMinIntervalSecs = Int(cfg?.positionMinIntervalSecs ?? 0)
+		self.positionMinInterval = UpdateInterval(from: Int(cfg?.positionMinIntervalSecs ?? 0))
 		self.nodeinfoDirectResponseMaxHops = Int(cfg?.nodeinfoDirectResponseMaxHops ?? 0)
-		self.rateLimitWindowSecs = Int(cfg?.rateLimitWindowSecs ?? 0)
+		self.rateLimitWindow = UpdateInterval(from: Int(cfg?.rateLimitWindowSecs ?? 0))
 		self.rateLimitMaxPackets = Int(cfg?.rateLimitMaxPackets ?? 0)
 		self.unknownPacketThreshold = Int(cfg?.unknownPacketThreshold ?? 0)
 
-		self.positionDedupEnabled = self.positionMinIntervalSecs > 0
+		self.positionDedupEnabled = self.positionMinInterval.intValue > 0
 		self.nodeinfoDirectResponse = self.nodeinfoDirectResponseMaxHops > 0
-		self.rateLimitEnabled = self.rateLimitWindowSecs > 0 || self.rateLimitMaxPackets > 0
+		self.rateLimitEnabled = self.rateLimitWindow.intValue > 0 || self.rateLimitMaxPackets > 0
 		self.dropUnknownEnabled = self.unknownPacketThreshold > 0
 		self.enabled = self.positionDedupEnabled || self.nodeinfoDirectResponse || self.rateLimitEnabled || self.dropUnknownEnabled
 		self.hasChanges = false
