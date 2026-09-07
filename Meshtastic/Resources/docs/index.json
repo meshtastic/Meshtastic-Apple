@@ -404,9 +404,9 @@
             "connected",
             "region",
             "from",
+            "only",
             "nodes",
             "position",
-            "only",
             "messages",
             "mesh",
             "default",
@@ -426,7 +426,7 @@
             "setting",
             "packets"
         ],
-        "charCount": 18758
+        "charCount": 18877
     },
     {
         "id": "signal-meter",

@@ -70,17 +70,19 @@ struct TrafficManagementConfig: View {
 					}
 
 					if nodeinfoDirectResponse {
-						HStack {
-							Label("Max Hops", systemImage: "point.3.connected.trianglepath.dotted")
-							Spacer()
-							TextField("Hops", value: $nodeinfoDirectResponseMaxHops, format: .number)
-								.frame(width: 80)
-								.textFieldStyle(.roundedBorder)
-								.keyboardType(.numberPad)
+						VStack(alignment: .leading) {
+							// Firmware clamps to a role limit of 3 hops (and plain clients to direct
+							// only), so offering more would be silently ignored.
+							Picker("Max Hops", selection: $nodeinfoDirectResponseMaxHops) {
+								ForEach(1..<4) {
+									Text("\($0)")
+										.tag($0)
+								}
+							}
+							Text("Only answer requestors within this many hops.")
+								.foregroundColor(.gray)
+								.font(.callout)
 						}
-						Text("Only answer requestors within this many hops.")
-							.foregroundColor(.gray)
-							.font(.callout)
 					}
 				}
 
@@ -192,6 +194,8 @@ struct TrafficManagementConfig: View {
 		}
 		.onChange(of: nodeinfoDirectResponse) { oldVal, newVal in
 			if oldVal != newVal && newVal != node?.trafficManagementConfig?.nodeinfoDirectResponse { hasChanges = true }
+			// The picker has no zero row; give a freshly enabled toggle a valid selection.
+			if newVal && nodeinfoDirectResponseMaxHops == 0 { nodeinfoDirectResponseMaxHops = 1 }
 		}
 		.onChange(of: nodeinfoDirectResponseMaxHops) { oldVal, newVal in
 			if oldVal != newVal && newVal != Int(node?.trafficManagementConfig?.nodeinfoDirectResponseMaxHops ?? -1) { hasChanges = true }

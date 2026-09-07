@@ -181,7 +181,7 @@ The Traffic Management module helps reduce unnecessary mesh traffic and improve 
 | Minimum Interval | Positions from the same node arriving sooner than this are dropped. The firmware default is five hours. |
 | **NodeInfo Direct Response** | |
 | Direct Response | Answer NodeInfo requests from the local cache instead of flooding the mesh. |
-| Max Hops | Only answer requestors within this many hops. |
+| Max Hops | Only answer requestors within this many hops, 1 to 3. The radio's role caps the effective value: routers allow up to 3, plain clients answer direct requestors only. |
 | **Rate Limiting** | |
 | Rate Limiting | Throttle nodes that send too many packets. |
 | Window | The time window packets are counted over. |
