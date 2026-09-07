@@ -77,18 +77,19 @@ struct NodeBackupManagerTests {
 		let tempDir = try makeTempDir()
 		defer { cleanup(tempDir) }
 
-		// Setup: Create a fake active database
+		// Setup: Create a fake active database and point the manager at it, so the test never
+		// touches the live Application Support store other suites open and replace.
 		let dbDir = tempDir.appendingPathComponent("ActiveDB", isDirectory: true)
-		_ = try createFakeDatabase(at: dbDir)
+		let storeURL = try createFakeDatabase(at: dbDir)
 
-		// Create manager with custom base
 		let backupDir = tempDir.appendingPathComponent("Backups", isDirectory: true)
-		let manager = NodeBackupManager(baseURL: backupDir)
+		let manager = NodeBackupManager(baseURL: backupDir, activeStoreURL: storeURL)
 
 		// Act
 		let result = await manager.createBackup(forNode: 12345, deviceId: nil, nodeName: "TestNode")
 
-		// Assert
+		// Assert — no tolerance for .skipped: the source store is guaranteed to exist now, so a
+		// skip is a real failure rather than a test-environment shrug.
 		switch result {
 		case .success(let entry):
 			#expect(entry.nodeNum == 12345)
@@ -96,10 +97,10 @@ struct NodeBackupManagerTests {
 			#expect(entry.fileSize > 0)
 			#expect(entry.checksum.count == 64) // SHA-256 hex digest
 			#expect(manager.hasBackup(forNode: 12345))
-		case .skipped, .noBackupFound:
-			// In test environment, database file may not exist at expected path
-			// This verifies the retry logic works (skipped after retry)
-			break
+		case .skipped(let reason):
+			Issue.record("createBackup skipped with a guaranteed source store: \(reason)")
+		case .noBackupFound:
+			Issue.record("createBackup should never return .noBackupFound")
 		}
 	}
 
@@ -111,27 +112,29 @@ struct NodeBackupManagerTests {
 		let tempDir = try makeTempDir()
 		defer { cleanup(tempDir) }
 
+		let storeURL = try createFakeDatabase(at: tempDir.appendingPathComponent("ActiveDB", isDirectory: true))
 		let backupDir = tempDir.appendingPathComponent("Backups", isDirectory: true)
-		let manager = NodeBackupManager(baseURL: backupDir)
+		let manager = NodeBackupManager(baseURL: backupDir, activeStoreURL: storeURL)
 
-		// First backup
+		// First backup — must succeed, or the overwrite below is never actually exercised.
 		let result1 = await manager.createBackup(forNode: 99999, deviceId: nil, nodeName: "NodeV1")
+		guard case .success = result1 else {
+			Issue.record("first backup did not succeed: \(result1)")
+			return
+		}
 
 		// Second backup (overwrite)
 		let result2 = await manager.createBackup(forNode: 99999, deviceId: nil, nodeName: "NodeV2")
 
-		// Only one backup should exist for this node
-		let backups = manager.listBackups()
-		let nodeBackups = backups.filter { $0.nodeNum == 99999 }
-		#expect(nodeBackups.count <= 1) // At most 1 backup per node
-
-		// If both succeeded, name should be updated
-		if case .success(let entry) = result2 {
-			#expect(entry.nodeName == "NodeV2")
+		// Exactly one backup for this node, carrying the second name. With a guaranteed source
+		// store there is nothing to hedge: both saves succeed or the test should fail.
+		let nodeBackups = manager.listBackups().filter { $0.nodeNum == 99999 }
+		#expect(nodeBackups.count == 1)
+		guard case .success(let entry) = result2 else {
+			Issue.record("second backup did not succeed: \(result2)")
+			return
 		}
-
-		// Suppress unused variable warnings
-		_ = result1
+		#expect(entry.nodeName == "NodeV2")
 	}
 
 	// MARK: - T012: createBackup Failure and Retry
@@ -143,18 +146,19 @@ struct NodeBackupManagerTests {
 		defer { cleanup(tempDir) }
 
 		let backupDir = tempDir.appendingPathComponent("Backups", isDirectory: true)
-		let manager = NodeBackupManager(baseURL: backupDir)
+		// A source path that is guaranteed missing, so the failure is deterministic instead of
+		// depending on whether the test host happens to have a live store.
+		let missingStore = tempDir.appendingPathComponent("Nowhere", isDirectory: true)
+			.appendingPathComponent("Meshtastic.store")
+		let manager = NodeBackupManager(baseURL: backupDir, activeStoreURL: missingStore)
 
-		// The active database path won't exist in test environment,
-		// so backup should fail and return .skipped after retry
 		let result = await manager.createBackup(forNode: 77777, deviceId: nil, nodeName: "FailNode")
 
 		switch result {
 		case .skipped(let reason):
 			#expect(reason.contains("failed") || reason.contains("Failed") || reason.contains("No such file"))
 		case .success:
-			// If somehow it succeeded (environment has the file), that's also acceptable
-			break
+			Issue.record("createBackup succeeded with a missing source store")
 		case .noBackupFound:
 			Issue.record("createBackup should never return .noBackupFound")
 		}
@@ -308,8 +312,9 @@ struct NodeBackupManagerTests {
 		let tempDir = try makeTempDir()
 		defer { cleanup(tempDir) }
 
+		let storeURL = try createFakeDatabase(at: tempDir.appendingPathComponent("ActiveDB", isDirectory: true))
 		let backupDir = tempDir.appendingPathComponent("Backups", isDirectory: true)
-		let manager = NodeBackupManager(baseURL: backupDir)
+		let manager = NodeBackupManager(baseURL: backupDir, activeStoreURL: storeURL)
 
 		// The manager is @MainActor-isolated, but file I/O runs via Task.detached
 		// We verify that calling createBackup is async (doesn't synchronously block)
@@ -729,9 +734,9 @@ struct NodeBackupManagerTests {
 		defer { cleanup(tempDir) }
 		let backupDir = tempDir.appendingPathComponent("Backups", isDirectory: true)
 		let dbDir = tempDir.appendingPathComponent("ActiveDB", isDirectory: true)
-		_ = try createFakeDatabase(at: dbDir)
+		let storeURL = try createFakeDatabase(at: dbDir)
 
-		let manager = NodeBackupManager(baseURL: backupDir)
+		let manager = NodeBackupManager(baseURL: backupDir, activeStoreURL: storeURL)
 		_ = await manager.createBackup(forNode: 4242, deviceId: Data([0xAB, 0xCD]), nodeName: "First")
 
 		// The caller resolves the device id from the store, which can come back nil part way through
