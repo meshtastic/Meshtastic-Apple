@@ -48,12 +48,10 @@ struct AudioConfig: View {
 							Text("1400 bps").tag(4)
 							Text("1300 bps").tag(5)
 							Text("1200 bps").tag(6)
-							Text("700 bps (Deprecated)").tag(7)
-							Text("700B bps (Deprecated)").tag(8)
-							Text("700C bps").tag(9)
-							Text("450 bps").tag(10)
+							Text("700 bps").tag(7)
+							Text("700B bps").tag(8)
 						}
-						Text("The Codec2 bitrate. 700C replaces 700 and 700B. Lower bitrates use less bandwidth but reduce audio quality.")
+						Text("The audio sample rate to use for Codec2. Lower bitrates use less bandwidth but reduce audio quality.")
 							.foregroundColor(.gray)
 							.font(.callout)
 					}
