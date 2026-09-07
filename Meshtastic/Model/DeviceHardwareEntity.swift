@@ -130,7 +130,7 @@ enum HardwareCatalogResolver {
 		)
 	}
 
-	private static func normalizedTarget(from hardwareModelSlug: String) -> String {
+	static func normalizedTarget(from hardwareModelSlug: String) -> String {
 		hardwareModelSlug.lowercased().replacingOccurrences(of: "_", with: "-")
 	}
 
@@ -185,9 +185,14 @@ enum FirmwareHardwareResolver {
 		      hwModel != 0,
 		      let fallback = HardwareCatalogResolver.record(for: hwModel, in: records),
 		      let metadataTarget = fallback.platformioTarget else { return nil }
+		// Some factory firmware reports a board identifier derived from the hardware-model slug
+		// instead of the PlatformIO environment used to publish firmware artifacts.
+		let reportedTargetIsHardwareModelAlias = fallback.hwModelSlug.map {
+			HardwareCatalogResolver.normalizedTarget(from: $0)
+		} == firmwareTarget.lowercased()
 		return FirmwareHardwareResolution(
 			metadataTarget: metadataTarget,
-			firmwareTarget: firmwareTarget
+			firmwareTarget: reportedTargetIsHardwareModelAlias ? metadataTarget : firmwareTarget
 		)
 	}
 }

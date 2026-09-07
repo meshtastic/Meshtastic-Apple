@@ -32,6 +32,51 @@ struct FirmwareHardwareResolutionTests {
 		#expect(resolution.firmwareTarget == "thinknode_m1-inkhud")
 	}
 
+	@Test func meshTrackerX1BoardIdentifierUsesPublishedFirmwareTarget() throws {
+		let x1 = HardwareCatalogRecord(
+			hwModel: 128,
+			hwModelSlug: "MESH_TRACKER_X1",
+			platformioTarget: "seeed_mesh_tracker_X1",
+			displayName: "Seeed MeshTracker X1",
+			activelySupported: true,
+			supportLevel: .flagship,
+			architecture: "nrf52840"
+		)
+
+		let resolution = try #require(FirmwareHardwareResolver.resolve(
+			pioEnv: "mesh-tracker-x1",
+			hwModel: 128,
+			in: [x1]
+		))
+
+		#expect(resolution.metadataTarget == "seeed_mesh_tracker_X1")
+		#expect(resolution.firmwareTarget == "seeed_mesh_tracker_X1")
+
+		let hardware = DeviceHardwareEntity()
+		hardware.platformioTarget = resolution.metadataTarget
+		hardware.architecture = "nrf52840"
+
+		let release = FirmwareReleaseEntity()
+		release.versionId = "v2.8.0.47db0e3"
+		release.releaseType = ReleaseType.alpha.rawValue
+
+		let uf2 = try FirmwareFile(
+			firmware: release,
+			hardware: hardware,
+			platformioTarget: resolution.firmwareTarget,
+			type: .uf2
+		)
+		let otaZip = try FirmwareFile(
+			firmware: release,
+			hardware: hardware,
+			platformioTarget: resolution.firmwareTarget,
+			type: .otaZip
+		)
+
+		#expect(uf2.remoteUrl?.absoluteString == "https://raw.githubusercontent.com/meshtastic/meshtastic.github.io/master/firmware-2.8.0.47db0e3/firmware-seeed_mesh_tracker_X1-2.8.0.47db0e3.uf2")
+		#expect(otaZip.remoteUrl?.absoluteString == "https://raw.githubusercontent.com/meshtastic/meshtastic.github.io/master/firmware-2.8.0.47db0e3/firmware-seeed_mesh_tracker_X1-2.8.0.47db0e3-ota.zip")
+	}
+
 	@Test func platformIOTargetChangeHandlerResolvesFirmwareContent() throws {
 		let catalog = [thinkNodeRecord(target: "thinknode_m1")]
 		var state = FirmwareHardwareViewState()
