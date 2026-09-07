@@ -168,7 +168,9 @@ Optional feature modules. Only available when your connected node supports the m
 
 ### Traffic Management
 
-The Traffic Management module helps reduce unnecessary mesh traffic and improve network efficiency. It is available on nodes running firmware **2.8.0 or later**. Each feature is enabled implicitly by a non-zero value — turning a section's toggle off (or the master **Enabled** switch) clears its values and disables that feature on the radio. Turning a feature on starts its interval at the firmware default rather than zero, so saving right away enables it.
+The Traffic Management module helps reduce unnecessary mesh traffic and improve network efficiency. It is available on nodes running firmware **2.8.0 or later**.
+
+The screen opens with a placement assessment: how many nodes this radio hears directly (over RF, within the last two hours), and whether that makes the module worth enabling. Traffic management pays off on a well-placed node that reaches 50 or more nodes in a single transmission — ideally around 200 — where cutting hop counts on the chattiest packets removes the retransmission storm that follows each broadcast. On a node with a handful of direct neighbors it has little to police. Each feature is enabled implicitly by a non-zero value — turning a section's toggle off (or the master **Enabled** switch) clears its values and disables that feature on the radio. Turning a feature on starts its interval at the firmware default rather than zero, so saving right away enables it.
 
 | Setting | Description |
 |---------|-------------|
