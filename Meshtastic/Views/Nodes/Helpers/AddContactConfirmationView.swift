@@ -44,26 +44,34 @@ struct AddContactConfirmationView: View {
 				.font(.subheadline)
 				.multilineTextAlignment(.center)
 				.foregroundColor(.secondary)
+				// The sheet's medium detent compresses flexible text into an ellipsis even with
+				// room left in the sheet. Fixed vertical size keeps every line.
+				.fixedSize(horizontal: false, vertical: true)
 			if !canAdd {
 				Text("This contact does not include a public key, so it cannot be added.")
 					.font(.subheadline)
 					.multilineTextAlignment(.center)
 					.foregroundColor(.red)
+					.fixedSize(horizontal: false, vertical: true)
 			}
 			if let failureMessage {
 				Text(failureMessage)
 					.font(.subheadline)
 					.multilineTextAlignment(.center)
 					.foregroundColor(.red)
+					.fixedSize(horizontal: false, vertical: true)
 			}
 			Button {
 				addContact()
 			} label: {
 				Label("Add Contact", systemImage: "person.crop.circle.badge.plus")
+					.frame(maxWidth: .infinity)
 			}
 			.buttonStyle(.borderedProminent)
+			.controlSize(.large)
 			.disabled(isAdding || !canAdd)
 			Button("Cancel") { dismiss() }
+				.controlSize(.large)
 				.padding(.bottom)
 		}
 		.padding()
