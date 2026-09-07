@@ -44,8 +44,8 @@ struct AddContactConfirmationView: View {
 				.font(.subheadline)
 				.multilineTextAlignment(.center)
 				.foregroundColor(.secondary)
-				// The sheet's medium detent compresses flexible text into an ellipsis while the
-				// spacer below keeps the leftover room. Fixed vertical size keeps every line.
+				// The sheet's medium detent compresses flexible text into an ellipsis even with
+				// room left in the sheet. Fixed vertical size keeps every line.
 				.fixedSize(horizontal: false, vertical: true)
 			if !canAdd {
 				Text("This contact does not include a public key, so it cannot be added.")
