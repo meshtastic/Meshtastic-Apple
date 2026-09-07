@@ -39,11 +39,11 @@ enum TrafficManagementCandidacy {
 	static func summary(directNeighborCount count: Int) -> String {
 		switch tier(directNeighborCount: count) {
 		case .strong:
-			return String(localized: "This node heard \(count) nodes directly in the last two hours — a strong fit. One transmission from here reaches enough of the mesh for traffic management to cut the retransmission storm that follows.")
+			return String(localized: "This node heard ^[\(count) node](inflect: true) directly in the last two hours — a strong fit. One transmission from here reaches enough of the mesh for traffic management to cut the retransmission storm that follows.")
 		case .good:
-			return String(localized: "This node heard \(count) nodes directly in the last two hours — a good fit. Traffic management works best from around 200 direct neighbors, but from 50 it already has traffic worth policing.")
+			return String(localized: "This node heard ^[\(count) node](inflect: true) directly in the last two hours — a good fit. Traffic management works best from around 200 direct neighbors, but from 50 it already has traffic worth policing.")
 		case .limited:
-			return String(localized: "This node heard \(count) nodes directly in the last two hours. Traffic management is built for well-placed nodes that reach 50 or more in a single transmission; it will have little effect here.")
+			return String(localized: "This node heard ^[\(count) node](inflect: true) directly in the last two hours. Traffic management is built for well-placed nodes with 50 or more direct neighbors; it will have little effect here.")
 		}
 	}
 }

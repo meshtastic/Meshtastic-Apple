@@ -402,9 +402,9 @@
             "firmware",
             "device",
             "connected",
+            "from",
             "region",
             "nodes",
-            "from",
             "only",
             "traffic",
             "position",
@@ -421,12 +421,12 @@
             "than",
             "packets",
             "lora",
+            "direct",
             "contact",
             "before",
-            "shows",
-            "setting"
+            "shows"
         ],
-        "charCount": 19398
+        "charCount": 19461
     },
     {
         "id": "signal-meter",

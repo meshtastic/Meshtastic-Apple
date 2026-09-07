@@ -31,4 +31,11 @@ struct TrafficManagementCandidacyTests {
 			#expect(TrafficManagementCandidacy.summary(directNeighborCount: count).contains("\(count)"))
 		}
 	}
+
+	@Test("a count of one reads as one node, not one nodes")
+	func singularCountInflects() {
+		let summary = TrafficManagementCandidacy.summary(directNeighborCount: 1)
+		#expect(summary.contains("1 node"))
+		#expect(!summary.contains("1 nodes"))
+	}
 }
