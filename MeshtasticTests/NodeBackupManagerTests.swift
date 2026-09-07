@@ -116,8 +116,12 @@ struct NodeBackupManagerTests {
 		let backupDir = tempDir.appendingPathComponent("Backups", isDirectory: true)
 		let manager = NodeBackupManager(baseURL: backupDir, activeStoreURL: storeURL)
 
-		// First backup
-		_ = await manager.createBackup(forNode: 99999, deviceId: nil, nodeName: "NodeV1")
+		// First backup — must succeed, or the overwrite below is never actually exercised.
+		let result1 = await manager.createBackup(forNode: 99999, deviceId: nil, nodeName: "NodeV1")
+		guard case .success = result1 else {
+			Issue.record("first backup did not succeed: \(result1)")
+			return
+		}
 
 		// Second backup (overwrite)
 		let result2 = await manager.createBackup(forNode: 99999, deviceId: nil, nodeName: "NodeV2")
