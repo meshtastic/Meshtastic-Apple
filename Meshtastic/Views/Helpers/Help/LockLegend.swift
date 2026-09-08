@@ -24,7 +24,7 @@ struct LockLegend: View {
 				symbol: AnyView(
 					Image("radio.badge.shield.checkmark")
 						.font(.title3)
-						.foregroundColor(.secondary)
+						.foregroundColor(.green)
 				),
 				title: String(localized: "Signed Node"),
 				subtitle: String(localized: "The radio verified this node's signed broadcasts, so its identity is consistent over time, but you have not verified it in person.")

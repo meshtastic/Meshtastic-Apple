@@ -36,7 +36,8 @@ enum NodeSecurityIndicator: Equatable {
 		case .signed:
 			// Custom symbol: the mesh radio with a shield-checkmark badge — verified by the
 			// radio over the mesh, as opposed to the person badge for in-person verification.
-			return ("radio.badge.shield.checkmark", .secondary)
+			// Green like the lock it replaces: this is a good state, not a lesser one.
+			return ("radio.badge.shield.checkmark", .green)
 		case .publicKey:
 			return ("lock.fill", .green)
 		case .sharedKey:
