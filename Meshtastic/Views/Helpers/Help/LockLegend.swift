@@ -22,7 +22,7 @@ struct LockLegend: View {
 			)
 			HelpItem(
 				symbol: AnyView(
-					Image("radio.badge.shield.checkmark")
+					SignedNodeIcon.image
 						.font(.title3)
 						.foregroundColor(.green)
 				),
