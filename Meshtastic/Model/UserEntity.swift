@@ -104,4 +104,19 @@ extension UserEntity {
 		publicKey = inboundKey
 		return .stored
 	}
+
+	/// Accepts the connected radio's own public key as ground truth.
+	///
+	/// First-wins protects against a mesh peer substituting a contact's key, but the radio the
+	/// app is directly connected to reports its own key over BLE, USB or TCP — there is no mesh
+	/// hop to spoof. A 2.8 upgrade or factory reset regenerates the radio's keypair, and
+	/// refusing the radio's own new key left the connected node flagged as a key mismatch
+	/// forever. A changed key replaces the stored one and clears any recorded mismatch.
+	func acceptOwnRadioPublicKey(_ inboundKey: Data) {
+		guard !inboundKey.isEmpty else { return }
+		publicKey = inboundKey
+		pkiEncrypted = true
+		keyMatch = true
+		newPublicKey = nil
+	}
 }

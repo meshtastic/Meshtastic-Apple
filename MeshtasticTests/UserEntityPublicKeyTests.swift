@@ -73,4 +73,32 @@ struct UserEntityApplyInboundPublicKeyTests {
 		#expect(user.keyMatch == false)         // drives the red key.slash indicator
 		#expect(user.newPublicKey == keyB)      // records the rejected key
 	}
+
+	@Test("the connected radio's own key replaces the stored one and clears a recorded mismatch")
+	func ownRadioKeyIsGroundTruth() {
+		let user = UserEntity()
+		user.publicKey = keyA
+		user.pkiEncrypted = true
+		// A mesh packet already flagged the new key as a substitution attempt.
+		user.keyMatch = false
+		user.newPublicKey = keyB
+
+		user.acceptOwnRadioPublicKey(keyB)
+
+		#expect(user.publicKey == keyB)         // the radio's own report wins
+		#expect(user.keyMatch == true)          // the mismatch flag clears
+		#expect(user.newPublicKey == nil)
+	}
+
+	@Test("an empty key from the radio changes nothing")
+	func ownRadioEmptyKeyIsIgnored() {
+		let user = UserEntity()
+		user.publicKey = keyA
+		user.pkiEncrypted = true
+
+		user.acceptOwnRadioPublicKey(Data())
+
+		#expect(user.publicKey == keyA)
+		#expect(user.pkiEncrypted == true)
+	}
 }
