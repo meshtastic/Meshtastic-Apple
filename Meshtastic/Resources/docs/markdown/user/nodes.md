@@ -224,6 +224,8 @@ For devices with known purchase links, an **I want one** section appears below t
 
 Marketplace links are filtered to your device region, so only stores that ship to your area are shown. Vendor links (directly from the device manufacturer) are always shown regardless of region.
 
+Some of these are affiliate links. The app says so above the links, in both the **I want one** section and the full directory at **Settings → Device Links**: product links may be affiliate links, and purchases may earn Meshtastic a commission.
+
 > **Tip — No purchase links shown**
 > Purchase links require an internet connection on first launch and after clearing app data. Connect the app to update the device catalog.
 

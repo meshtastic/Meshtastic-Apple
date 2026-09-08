@@ -370,24 +370,24 @@
             "shows",
             "shown",
             "radio",
+            "links",
             "packets",
             "direct",
             "detail",
+            "one",
             "list",
             "link",
             "hardware",
             "channel",
             "broadcasts",
             "tag",
+            "section",
             "row",
-            "one",
             "mesh",
             "map",
-            "local",
-            "tap",
-            "status"
+            "local"
         ],
-        "charCount": 12368
+        "charCount": 12606
     },
     {
         "id": "settings",
