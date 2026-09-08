@@ -583,6 +583,14 @@ struct FirmwareHeroImage: View {
 		   let svg = SVG(data: data) {
 			return svg
 		}
+		// The synced image entities only exist after a catalog pass, which is throttled to
+		// once every two days. The bundle carries the catalog images named by hardware-model
+		// slug, so a fresh install can still show the radio without waiting for a sync.
+		if let slug = hardware.hwModelSlug, !slug.isEmpty,
+		   let data = Self.bundledImageData(named: "\(slug.lowercased()).svg"),
+		   let svg = SVG(data: data) {
+			return svg
+		}
 		return nil
 	}
 	
