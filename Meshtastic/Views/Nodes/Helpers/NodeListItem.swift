@@ -106,7 +106,8 @@ struct NodeListRowSummary {
 			pkiEncrypted: pkiEncrypted,
 			keyMatch: keyMatch,
 			verified: isKeyManuallyVerified,
-			isOwnNode: isConnectedNode
+			isOwnNode: isConnectedNode,
+			hasXeddsaSigned: hasXeddsaSigned
 		).glyph
 	}
 }
