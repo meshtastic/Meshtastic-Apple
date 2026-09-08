@@ -36,7 +36,8 @@ enum NodeSecurityIndicator: Equatable {
 		case .signed:
 			// The radio with a shield badge — vouched for by the radio over the mesh, as
 			// opposed to the person badge for a contact verified face to face. Green like
-			// the lock it replaces: this is a good state, not a lesser one.
+			// .verified: both are a verified identity, and the glyph carries which route
+			// earned it. A muted color read as a weaker or partial state, which it is not.
 			return (SignedNodeIcon.symbolName, .green)
 		case .publicKey:
 			return ("lock.fill", .green)
