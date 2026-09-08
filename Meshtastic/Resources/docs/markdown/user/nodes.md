@@ -21,9 +21,14 @@ The Nodes tab shows every device your radio has heard on the mesh. Tap any node 
 
 | Icon | Meaning |
 |------|---------|
-| ![Shared Key](../assets/screenshots/lockOpen.png) | **Shared Key** — direct messages are using the shared key for the channel. |
+| ![No Public Key](../assets/screenshots/lockOpen.png) | **No Public Key** — no public key has been received for this node, so direct messages to it cannot be sent. Use **Exchange User Info** on the node to ask for one. |
 | ![Public Key Encryption](../assets/screenshots/lockClosed.png) | **Public Key Encryption** — direct messages use public key infrastructure. Requires firmware 2.5+. |
 | ![PKI Mismatch](../assets/screenshots/keySlash.png) | **Public Key Mismatch** — public key does not match the previously recorded key. Verify the contact out-of-band. |
+
+Every radio has generated a keypair since firmware 2.5, so direct messages use it. A radio with no
+public key for the destination refuses to send rather than falling back to the channel key, so a node
+showing the open lock cannot be messaged until its node info arrives. Node detail shows **No Public
+Key** in place of the public key row for those nodes, and they are left out of the contact list.
 
 ## Device Roles
 
@@ -99,6 +104,7 @@ Long-press any node in the list to access quick actions:
 
 - **Add to favorites / Remove from favorites** — star important nodes so they appear at the top of the list
 - **Display name** — give a node a local nickname (see Display Names below)
+- **Status Message** — set the status your radio broadcasts to the mesh (connected node only, firmware 2.8+)
 - **Mute notifications / Unmute** — silence alerts from this node
 - **Message** — open a direct message conversation with this node
 - **Trace Route** — discover the path messages take to reach this node
@@ -169,10 +175,6 @@ Tap any node to see the full detail view with hardware info, signal metrics, env
 
 For messageable nodes, use **Actions > Share Contact QR** to show a Meshtastic contact link and QR code that another device can scan.
 
-### Share Connected Node
-
-When a radio is connected, a **Share Connected Node** button appears in the node list toolbar. It opens the same share sheet as **Share Contact QR**, pre-filled with your own node — a quick way to hand someone your contact without finding yourself in the list.
-
 ### Write a Contact to an NFC Tag
 
 On iPhones with NFC hardware (iOS 18 or later), the contact share sheet also offers **Write to NFC Tag**. Hold a writable NFC tag near the top of your iPhone and the contact link is saved to it, replacing whatever the tag held before. Anyone can then tap that tag with their phone to open the contact in Meshtastic — the tag carries exactly the same link the QR code encodes.
@@ -182,6 +184,8 @@ On iPhones with NFC hardware (iOS 18 or later), the contact share sheet also off
 Opening a Meshtastic contact link — by scanning a QR code, tapping a shared link, or tapping an NFC tag — presents a confirmation sheet before anything is added. The sheet shows the node's colored initials, its long name, and an explanation that adding the contact saves their name and public key to your connected node. Choose **Add Contact** to import, or **Cancel** to dismiss.
 
 If the import fails — most often because the radio disconnected — the sheet stays open and shows the reason so you can reconnect and tap **Add Contact** again. It closes only once the contact has actually been sent to your node. A link that is damaged or truncated is reported as an invalid format instead of being imported.
+
+A contact that carries no public key cannot be added. **Add Contact** is disabled and the sheet says the contact does not include one. The key is the point of a shared contact — it is what lets your node send direct messages to that contact — and applying a keyless one would clear the key your node already held, breaking direct messages that used to work. For the same reason, a node you have no public key for cannot be shared from this app.
 
 Importing a contact requires firmware 2.6.9 or later on the connected node.
 
@@ -219,6 +223,8 @@ For supported devices, the support tier is shown below the hardware name:
 For devices with known purchase links, an **I want one** section appears below the hardware info. It shows the official vendor link and regional marketplace options (Amazon, Rokland, AliExpress, and others) sourced from [msh.to](https://msh.to).
 
 Marketplace links are filtered to your device region, so only stores that ship to your area are shown. Vendor links (directly from the device manufacturer) are always shown regardless of region.
+
+Some of these are affiliate links. The app says so above the links, in both the **I want one** section and the full directory at **Settings → Device Links**: product links may be affiliate links, and purchases may earn Meshtastic a commission.
 
 > **Tip — No purchase links shown**
 > Purchase links require an internet connection on first launch and after clearing app data. Connect the app to update the device catalog.

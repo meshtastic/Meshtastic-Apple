@@ -723,7 +723,26 @@ extension BLEConnection {
 		guard isPairingFailure(error) else { return error }
 		let hadBond = UserDefaults.isPairedPeripheral(peripheralID)
 		UserDefaults.forgetPairedPeripheral(peripheralID)
+		// Peer-removed-pairing is the radio saying outright that it dropped the bond — there is
+		// nothing to disambiguate, so it is a lost bond with or without the hint. Relying on the
+		// hint here made the classification one-shot: the first failure cleared it, and every
+		// retry after that saw a raw, retryable-looking error. Reconnecting can never fix this;
+		// only forgetting the device in iOS Settings can.
+		if let cbError = error as? CBError, cbError.code == .peerRemovedPairingInformation {
+			return AccessoryError.bondLost
+		}
 		return hadBond ? AccessoryError.bondLost : error
+	}
+
+	/// Whether a connect failure can never be fixed by trying again.
+	///
+	/// A lost bond needs the user to forget the device in iOS Settings > Bluetooth — every retry
+	/// re-fails the same way, and retrying it is the reconnect loop this exists to end. Pure so the
+	/// policy is testable without a peripheral.
+	static func terminatesConnectRetries(_ error: Error) -> Bool {
+		if case AccessoryError.bondLost = error { return true }
+		if let cbError = error as? CBError, cbError.code == .peerRemovedPairingInformation { return true }
+		return false
 	}
 
 	private func logPeripheralError(_ error: Error) {

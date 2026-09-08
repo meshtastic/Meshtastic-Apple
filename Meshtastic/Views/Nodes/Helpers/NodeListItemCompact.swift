@@ -218,7 +218,7 @@ struct NodeListItemCompact: View {
 				// Second Column
 				VStack(alignment: .leading, spacing: rowSpacing) {
 					HStack(alignment: .firstTextBaseline) {
-						let (image, color) = summary.keyStatus
+						let (image, color) = summary.keyStatus(isConnectedNode: isDirectlyConnected)
 						IconAndText(systemName: image,
 									imageColor: color,
 									text: summary.displayLongName.addingVariationSelectors,

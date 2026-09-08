@@ -255,4 +255,47 @@ final class LostBondTests {
 		#expect(message == AccessoryError.coreBluetoothError(CBError(.peerRemovedPairingInformation)).errorDescription,
 				"however it arrives, it reads the same")
 	}
+
+	// MARK: - The reconnect loop (regression)
+
+	@Test func peerRemovedPairingIsALostBondWithoutAnyHint() {
+		// The radio said outright that it removed the pairing — no hint needed. Relying on the
+		// hint made this one-shot: the first failure cleared it and every retry after saw a raw
+		// error, which the connect flow retried forever.
+		let radio = UUID()
+		#expect(!UserDefaults.isPairedPeripheral(radio))
+		let reported = BLEConnection.bondLostError(for: radio, error: CBError(.peerRemovedPairingInformation))
+		guard case AccessoryError.bondLost = reported else {
+			Issue.record("peer-removed-pairing without a hint reported \(reported) instead of bondLost")
+			return
+		}
+	}
+
+	@Test func theClassificationSurvivesRepeatedFailures() {
+		// The loop's signature: the same failure arriving again after the hint is gone must get
+		// the same terminal answer, not degrade to a retryable-looking error.
+		let radio = UUID()
+		UserDefaults.rememberPairedPeripheral(radio)
+		for attempt in 1...3 {
+			let reported = BLEConnection.bondLostError(for: radio, error: CBError(.peerRemovedPairingInformation))
+			guard case AccessoryError.bondLost = reported else {
+				Issue.record("attempt \(attempt) reported \(reported) instead of bondLost")
+				return
+			}
+		}
+	}
+
+	@Test func lostBondsTerminateConnectRetries() {
+		#expect(BLEConnection.terminatesConnectRetries(AccessoryError.bondLost))
+		#expect(BLEConnection.terminatesConnectRetries(CBError(.peerRemovedPairingInformation)))
+	}
+
+	@Test func recoverableErrorsKeepRetrying() {
+		// Timeouts and reboots recover on their own; a wrong PIN deserves another attempt.
+		#expect(!BLEConnection.terminatesConnectRetries(CBError(.connectionTimeout)))
+		#expect(!BLEConnection.terminatesConnectRetries(CBError(.peripheralDisconnected)))
+		#expect(!BLEConnection.terminatesConnectRetries(CBATTError(.insufficientAuthentication)))
+		#expect(!BLEConnection.terminatesConnectRetries(AccessoryError.disconnected("x")))
+	}
+
 }

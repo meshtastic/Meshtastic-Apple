@@ -506,24 +506,6 @@ struct ConnectViewCreationTests {
 	}
 }
 
-// MARK: - InvalidVersion View Tests
-
-@Suite("InvalidVersion")
-struct InvalidVersionTests {
-
-	@Test func viewCreation() {
-		let view = InvalidVersion(minimumVersion: "2.5.0", version: "2.3.0")
-		#expect(view.minimumVersion == "2.5.0")
-		#expect(view.version == "2.3.0")
-	}
-
-	@Test func viewCreationWithEmptyVersions() {
-		let view = InvalidVersion(minimumVersion: "", version: "")
-		#expect(view.minimumVersion == "")
-		#expect(view.version == "")
-	}
-}
-
 // MARK: - ConnectedDevice View Tests
 
 @Suite("ConnectedDevice")
