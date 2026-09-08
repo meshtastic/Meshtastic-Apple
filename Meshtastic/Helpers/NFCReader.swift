@@ -34,7 +34,9 @@ final class NFCReader: NSObject, ObservableObject, NFCNDEFReaderSessionDelegate 
 	}
 
 	/// Starts a session that writes `payload` to the next tag presented.
-	func write(payload: String) {
+	/// - Parameter message: Shown under the system sheet's Ready to Scan title, so it can say
+	///   what is being written — a contact, channels — rather than "the NFC tag".
+	func write(payload: String, message: String? = nil) {
 		// Tear down any in-flight session so a stale one can't race the new mode.
 		session?.invalidate()
 		mode = .write(payload: payload)
@@ -45,13 +47,14 @@ final class NFCReader: NSObject, ObservableObject, NFCNDEFReaderSessionDelegate 
 			invalidateAfterFirstRead: false
 		)
 
-		session?.alertMessage = String(localized: "Hold your iPhone near the NFC tag.")
+		session?.alertMessage = message ?? String(localized: "Hold your iPhone near the NFC tag.")
 		session?.begin()
 	}
 
 	/// Starts a read session and calls `onURL` (on the main actor) with the
 	/// first https/meshtastic URL found on the tag.
-	func scanToRead(onURL: @escaping (URL) -> Void) {
+	/// - Parameter message: Shown under the system sheet's Ready to Scan title.
+	func scanToRead(message: String? = nil, onURL: @escaping (URL) -> Void) {
 		// Tear down any in-flight session so a stale one can't race the new mode.
 		session?.invalidate()
 		mode = .read(onURL: onURL)
@@ -62,7 +65,7 @@ final class NFCReader: NSObject, ObservableObject, NFCNDEFReaderSessionDelegate 
 			invalidateAfterFirstRead: true
 		)
 
-		session?.alertMessage = String(localized: "Hold your iPhone near the Meshtastic NFC tag.")
+		session?.alertMessage = message ?? String(localized: "Hold your iPhone near the Meshtastic NFC tag.")
 		session?.begin()
 	}
 

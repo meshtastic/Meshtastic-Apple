@@ -64,7 +64,10 @@ struct Tools: View {
 						if let node = connectedNode {
 							Text("Node Name: \(node.user?.longName ?? "Unknown".localized)")
 							Button {
-								nfcReader.write(payload: qrString)
+								nfcReader.write(
+									payload: qrString,
+									message: String(localized: "Hold your iPhone near a writable tag to save your contact to it.")
+								)
 							} label: {
 								Label("Write Contact to NFC Tag", systemImage: "tag")
 							}
@@ -74,7 +77,9 @@ struct Tools: View {
 								.foregroundStyle(.secondary)
 						}
 						Button {
-							nfcReader.scanToRead { url in
+							nfcReader.scanToRead(
+								message: String(localized: "Hold your iPhone near a Meshtastic tag to add the contact or channels it holds.")
+							) { url in
 								handleScannedURL(url)
 							}
 						} label: {
