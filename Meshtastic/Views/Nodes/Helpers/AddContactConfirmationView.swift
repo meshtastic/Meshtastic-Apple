@@ -63,15 +63,15 @@ struct AddContactConfirmationView: View {
 					Toggle(isOn: $confirmsInPersonExchange) {
 						Label {
 							Text("Verified in person")
-								.font(.subheadline.weight(.medium))
+								.font(.footnote.weight(.medium))
 						} icon: {
-							Image(systemName: "person.badge.shield.checkmark")
+							VerifiedContactIcon.image
 								.foregroundStyle(confirmsInPersonExchange ? .green : .secondary)
 						}
 					}
 					.tint(.green)
 					Text("This contact says it was handed to you directly. It is added either way — confirm only if that is true.")
-						.font(.caption)
+						.font(.caption2)
 						.foregroundColor(.secondary)
 						.fixedSize(horizontal: false, vertical: true)
 				}

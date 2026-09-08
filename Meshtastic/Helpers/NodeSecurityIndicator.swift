@@ -32,13 +32,13 @@ enum NodeSecurityIndicator: Equatable {
 	var glyph: (image: String, color: Color) {
 		switch self {
 		case .verified:
-			return ("person.badge.shield.checkmark.fill", .green)
+			return (VerifiedContactIcon.symbolName, .green)
 		case .signed:
-			// Custom symbol: the mesh radio with a shield-checkmark badge — verified by the
-			// radio over the mesh, as opposed to the person badge for in-person verification.
-			// Green like .verified: both are a verified identity, and the glyph carries which
-			// route earned it. A muted color read as a weaker or partial state, which it is not.
-			return ("radio.badge.shield.checkmark", .green)
+			// The radio with a shield badge — vouched for by the radio over the mesh, as
+			// opposed to the person badge for a contact verified face to face. Green like
+			// .verified: both are a verified identity, and the glyph carries which route
+			// earned it. A muted color read as a weaker or partial state, which it is not.
+			return (SignedNodeIcon.symbolName, .green)
 		case .publicKey:
 			return ("lock.fill", .green)
 		case .sharedKey:
@@ -63,18 +63,22 @@ enum NodeSecurityIndicator: Equatable {
 	}
 
 	/// Decides the indicator for one row from snapshot fields alone (no live model access).
-	static func status(firmwareVersion: String?, pkiEncrypted: Bool, keyMatch: Bool, verified: Bool = false, isOwnNode: Bool = false) -> NodeSecurityIndicator {
+	static func status(firmwareVersion: String?, pkiEncrypted: Bool, keyMatch: Bool, signed: Bool = false, verified: Bool = false, isOwnNode: Bool = false) -> NodeSecurityIndicator {
 		// A stored key that stopped matching is a warning regardless of firmware version —
 		// most of all for a contact the user personally verified.
 		if pkiEncrypted && !keyMatch {
 			return .keyMismatch
 		}
-		if supportsSigning(firmwareVersion: firmwareVersion) {
-			// Every 2.8 node signs its broadcasts, so a 2.8 node is signed by definition.
-			// The connected radio is the user's own device: they hold its key, so its
-			// identity needs no third-party verification. Sharing your own contact QR
-			// already marks it manually verified on the same reasoning.
-			return (verified || isOwnNode) ? .verified : .signed
+		// The connected radio is the user's own device: they hold its key, so its identity
+		// needs no third-party verification. Sharing your own contact QR already marks it
+		// manually verified on the same reasoning.
+		if verified || isOwnNode {
+			return .verified
+		}
+		// Every 2.8 node signs its broadcasts, and a signature the radio has already verified
+		// says so outright — which is what a node reporting no version still tells us.
+		if signed || supportsSigning(firmwareVersion: firmwareVersion) {
+			return .signed
 		}
 		return pkiEncrypted ? .publicKey : .sharedKey
 	}
