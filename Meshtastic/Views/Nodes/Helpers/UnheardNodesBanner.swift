@@ -58,25 +58,35 @@ struct UnheardNodesBanner: View {
 					.font(.caption)
 					.foregroundStyle(.secondary)
 
-				HStack(spacing: 12) {
-					Button(role: .destructive) {
-						isConfirming = true
-					} label: {
-						Text("Remove Them")
-							.frame(minWidth: 48, minHeight: 48)
+				if isRemoving {
+					// One admin message per node, so a large cleanup takes a while. The count in the
+					// headline ticks down as nodes are removed.
+					HStack(spacing: 8) {
+						ProgressView()
+						Text("Removing…")
+							.font(.callout)
+							.foregroundStyle(.secondary)
 					}
-					.buttonStyle(.borderedProminent)
-					.disabled(isRemoving)
+					.frame(minHeight: 48)
+				} else {
+					HStack(spacing: 12) {
+						Button(role: .destructive) {
+							isConfirming = true
+						} label: {
+							Text("Remove Them")
+								.frame(minWidth: 48, minHeight: 48)
+						}
+						.buttonStyle(.borderedProminent)
 
-					Button {
-						LoRaConfigChange.dismissOffer(forNode: connectedNodeNum)
-						refresh()
-					} label: {
-						Text("Keep")
-							.frame(minWidth: 48, minHeight: 48)
+						Button {
+							LoRaConfigChange.dismissOffer(forNode: connectedNodeNum)
+							refresh()
+						} label: {
+							Text("Keep")
+								.frame(minWidth: 48, minHeight: 48)
+						}
+						.buttonStyle(.bordered)
 					}
-					.buttonStyle(.bordered)
-					.disabled(isRemoving)
 				}
 			}
 			Spacer(minLength: 0)
@@ -86,7 +96,9 @@ struct UnheardNodesBanner: View {
 		.padding(.horizontal)
 		.padding(.bottom, 4)
 		.confirmationDialog(
-			Text("Remove ^[\(unheardNodes.count) node](inflect: true)?", comment: "Confirmation title for removing nodes not heard since the settings changed"),
+			// Resolved through String(localized:) first: the Text(_:comment:) initializer showed the
+			// inflection markup literally in the dialog title on device — "^[117 node](inflect: true)".
+			Text(verbatim: String(localized: "Remove ^[\(unheardNodes.count) node](inflect: true)?", comment: "Confirmation title for removing nodes not heard since the settings changed")),
 			isPresented: $isConfirming,
 			titleVisibility: .visible
 		) {
@@ -154,6 +166,7 @@ struct UnheardNodesBanner: View {
 			do {
 				try await accessoryManager.removeNode(node: node, connectedNodeNum: connectedNodeNum)
 				removed += 1
+				unheardNodes.removeAll { $0.num == node.num }
 			} catch {
 				// Keep going: one node the radio refuses should not strand the rest.
 				failed += 1
