@@ -320,6 +320,7 @@ private struct BuildTestNodeSnapshot {
 			firmwareVersion: node.metadata?.firmwareVersion,
 			pkiEncrypted: node.user?.pkiEncrypted ?? false,
 			keyMatch: node.user?.keyMatch ?? false,
+			signed: node.hasXeddsaSigned,
 			verified: node.isKeyManuallyVerified
 		)
 		keyStatusImage = indicator.glyph.image
