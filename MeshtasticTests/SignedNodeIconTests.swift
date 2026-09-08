@@ -16,21 +16,37 @@ import UIKit
 @Suite("Signed node icon")
 struct SignedNodeIconTests {
 
-	@Test("the signed node symbol is the person badge, not a bare shield")
-	func symbolIsThePersonBadge() {
-		// The three views that draw this all read the constant, so they cannot drift from each other
-		// — only from intent, which is what this pins. `checkmark.shield.fill` reads as "secure"
-		// generally and is what the message signature badges still use.
-		#expect(SignedNodeIcon.symbolName == "person.badge.shield.checkmark.fill")
+	@Test("the signed node symbol is the radio badge, not the person badge")
+	func symbolIsTheRadioBadge() {
+		// The list rows, node detail, the filter and the help legend all read this constant, so they
+		// cannot drift from each other — only from intent, which is what this pins. The person badge
+		// means something different and stronger: a contact verified face to face.
+		#expect(SignedNodeIcon.symbolName == "radio.badge.shield.checkmark")
 	}
 
-	@Test("the signed node symbol resolves at runtime")
-	func symbolResolves() {
-		// A smoke test for a typo, and nothing more: UIImage(systemName:) asks the *running* OS, so
-		// passing here does not prove the symbol exists on the 17.5 deployment target. What settles
-		// that is the SF Symbols catalog, which puts this symbol at iOS 16.0 — see SignedNodeIcon.
+	@Test("the signed node symbol loads from the asset catalog")
+	func symbolLoads() {
+		// This is a custom symbol, so it is loaded by name rather than through systemName. It is
+		// worth asserting: a symbol template only fills, so artwork drawn with strokes compiles into
+		// the catalog and then draws nothing at all — the row goes silently blank.
 		#if canImport(UIKit)
-		#expect(UIImage(systemName: SignedNodeIcon.symbolName) != nil)
+		let image = UIImage(named: SignedNodeIcon.symbolName)
+		#expect(image != nil)
+		#expect(image?.isSymbolImage == true)
+		// A glyph that carries no fill reports no size, which is what a stroked template does.
+		#expect((image?.size.width ?? 0) > 1)
+		#expect((image?.size.height ?? 0) > 1)
+		#expect(UIImage(systemName: SignedNodeIcon.symbolName) == nil, "not a system symbol")
+		#endif
+	}
+
+	@Test("the verified contact symbol is the filled person badge")
+	func verifiedContactSymbol() {
+		// The filled variant is deliberate and was chosen once already — this pins it so the
+		// unfilled one cannot creep back in. Four views read this constant.
+		#expect(VerifiedContactIcon.symbolName == "person.badge.shield.checkmark.fill")
+		#if canImport(UIKit)
+		#expect(UIImage(systemName: VerifiedContactIcon.symbolName) != nil, "a real SF Symbol")
 		#endif
 	}
 }

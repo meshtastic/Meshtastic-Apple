@@ -192,8 +192,12 @@ struct BundleExtensionDetailedTests {
 struct IntervalConfigurationDetailedTests {
 
 	@Test func allCases_count() {
-		// Bump when a case is added — this is the guard that it was considered.
+		// Bump when a case is added — this is the guard that it was considered. The count alone
+		// would still pass if a case were swapped for an unrelated one, so the two newest are
+		// named outright.
 		#expect(IntervalConfiguration.allCases.count == 14)
+		#expect(IntervalConfiguration.allCases.contains(.trafficPositionDedup))
+		#expect(IntervalConfiguration.allCases.contains(.trafficRateLimitWindow))
 	}
 
 	@Test func all_returnsAllFixedCases() {
