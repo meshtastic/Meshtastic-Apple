@@ -277,6 +277,11 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	public var wantRangeTestPackets = false
 	var wantStoreAndForwardPackets = false
 	var shouldAutomaticallyConnectToPreferredPeripheralAfterError = true
+	/// Set when a lost bond ends a connect. Auto-reconnect stays off for the rest of the app
+	/// session — reconnecting can never fix a lost bond, and any later transient error would
+	/// otherwise re-arm it and restart the loop. Manual connects are always allowed; only a
+	/// fresh app launch clears this.
+	var autoReconnectSuspendedForSession = false
 	var userRequestedConnectionCancellation = false
 
 	/// True while a device switch (backup → clear → restore → connect) is in flight.
@@ -829,7 +834,9 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 				if case .errorWithoutReconnect = event {
 					shouldAutomaticallyConnectToPreferredPeripheralAfterError = false
 				} else {
-					shouldAutomaticallyConnectToPreferredPeripheralAfterError = true
+					// A suspended session stays suspended: a transient error after a lost bond
+					// must not re-arm the reconnect loop the suspension exists to end.
+					shouldAutomaticallyConnectToPreferredPeripheralAfterError = !autoReconnectSuspendedForSession
 				}
 				
 				Logger.transport.info("🚨 [Accessory] didReceive with failure: \(error.localizedDescription, privacy: .public) (willReconnect = \(self.shouldAutomaticallyConnectToPreferredPeripheralAfterError, privacy: .public))")
