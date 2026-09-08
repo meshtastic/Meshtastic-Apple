@@ -31,21 +31,21 @@ struct LockLegend: View {
 			)
 			HelpItem(
 				symbol: AnyView(
-					Image(systemName: "lock.open.fill")
-						.font(.title3)
-						.foregroundColor(.yellow)
-				),
-				title: String(localized: "Shared Key"),
-				subtitle: String(localized: "Direct messages are using the shared key for the channel. Shown for nodes below firmware 2.8 or with unknown firmware.")
-			)
-			HelpItem(
-				symbol: AnyView(
 					Image(systemName: "lock.fill")
 						.font(.title3)
 						.foregroundColor(.green)
 				),
 				title: String(localized: "Public Key Encryption"),
-				subtitle: String(localized: "Direct messages are using the public key infrastructure for encryption. Requires firmware version 2.5 or greater. Shown for nodes below firmware 2.8 or with unknown firmware.")
+				subtitle: String(localized: "Direct messages are using the public key infrastructure for encryption. Requires firmware version 2.5 or greater.")
+			)
+			HelpItem(
+				symbol: AnyView(
+					Image(systemName: "lock.open.fill")
+						.font(.title3)
+						.foregroundColor(.yellow)
+				),
+				title: String(localized: "Shared Key"),
+				subtitle: String(localized: "Direct messages are using the shared key for the channel. Shown for nodes on firmware before 2.5.")
 			)
 			HelpItem(
 				symbol: AnyView(
