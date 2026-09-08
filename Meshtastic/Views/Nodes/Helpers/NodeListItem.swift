@@ -101,13 +101,19 @@ struct NodeListRowSummary {
 	/// a mismatch warning at any version. Derived from the snapshot so the row never re-reads
 	/// `node.user` at render time.
 	func keyStatus(isConnectedNode: Bool = false) -> (image: String, color: Color) {
+		securityIndicator(isConnectedNode: isConnectedNode).glyph
+	}
+
+	/// The indicator state itself — the single contract the glyph and the VoiceOver
+	/// description both read, so the two can never disagree about signing.
+	func securityIndicator(isConnectedNode: Bool = false) -> NodeSecurityIndicator {
 		NodeSecurityIndicator.status(
 			firmwareVersion: firmwareVersion,
 			pkiEncrypted: pkiEncrypted,
 			keyMatch: keyMatch,
 			verified: isKeyManuallyVerified,
 			isOwnNode: isConnectedNode
-		).glyph
+		)
 	}
 }
 
@@ -198,10 +204,13 @@ struct NodeListItem: View {
 			}
 			desc += ", " + signalString
 		}
-		// The security glyph beside the name carries signing state visually; name it for VoiceOver
-		// too, since a glyph alone announces nothing. Affirmative only, never for unsigned nodes.
-		if summary.hasXeddsaSigned {
+		// Announce signing the way the glyph shows it — both read securityIndicator(), so
+		// VoiceOver can never claim "Signed node" on a row drawing a lock. Affirmative only.
+		switch summary.securityIndicator() {
+		case .signed, .verified:
 			desc += ", " + "Signed node".localized
+		default:
+			break
 		}
 		return desc
 	}
