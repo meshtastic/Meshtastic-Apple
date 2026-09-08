@@ -29,6 +29,15 @@ struct NodeSecurityIndicatorTests {
 		#expect(NodeSecurityIndicator.status(firmwareVersion: "2.8.0", pkiEncrypted: false, keyMatch: false) == .signed)
 	}
 
+	@Test("a heard signature shows the signed glyph even when the version is unknown")
+	func heardSignatureBeatsUnknownVersion() {
+		// A node whose metadata never arrived still reports its signing through the radio.
+		#expect(NodeSecurityIndicator.status(firmwareVersion: nil, pkiEncrypted: true, keyMatch: true, signed: true) == .signed)
+		#expect(NodeSecurityIndicator.status(firmwareVersion: "2.7.26", pkiEncrypted: true, keyMatch: true, signed: true) == .signed)
+		// Never heard signing and no 2.8 report: the locks still describe it honestly.
+		#expect(NodeSecurityIndicator.status(firmwareVersion: "2.7.26", pkiEncrypted: true, keyMatch: true, signed: false) == .publicKey)
+	}
+
 	@Test("older nodes keep the locks")
 	func olderNodesKeepLocks() {
 		#expect(NodeSecurityIndicator.status(firmwareVersion: "2.7.26", pkiEncrypted: true, keyMatch: true) == .publicKey)
@@ -45,16 +54,17 @@ struct NodeSecurityIndicatorTests {
 	@Test("the connected radio's own row shows verified on 2.8")
 	func ownNodeIsVerified() {
 		#expect(NodeSecurityIndicator.status(firmwareVersion: "2.8.0", pkiEncrypted: false, keyMatch: false, isOwnNode: true) == .verified)
-		// Below 2.8 the own node keeps the locks like everything else.
-		#expect(NodeSecurityIndicator.status(firmwareVersion: "2.7.26", pkiEncrypted: true, keyMatch: true, isOwnNode: true) == .publicKey)
+		// The user holds their own radio's key whatever it runs, so this does not depend on version.
+		#expect(NodeSecurityIndicator.status(firmwareVersion: "2.7.26", pkiEncrypted: true, keyMatch: true, isOwnNode: true) == .verified)
 	}
 
 	@Test("an in-person verified contact outranks signing on 2.8")
 	func verifiedOutranksSigned() {
 		#expect(NodeSecurityIndicator.status(firmwareVersion: "2.8.0", pkiEncrypted: true, keyMatch: true, verified: true) == .verified)
 		#expect(NodeSecurityIndicator.status(firmwareVersion: "2.8.0", pkiEncrypted: false, keyMatch: false, verified: true) == .verified)
-		// Verification does not override a mismatch warning, and does not apply below 2.8.
+		// A mismatch still outranks it — that is the one warning verification must not hide.
 		#expect(NodeSecurityIndicator.status(firmwareVersion: "2.8.0", pkiEncrypted: true, keyMatch: false, verified: true) == .keyMismatch)
-		#expect(NodeSecurityIndicator.status(firmwareVersion: "2.7.26", pkiEncrypted: true, keyMatch: true, verified: true) == .publicKey)
+		// Meeting someone in person is the same evidence whatever their radio runs.
+		#expect(NodeSecurityIndicator.status(firmwareVersion: "2.7.26", pkiEncrypted: true, keyMatch: true, verified: true) == .verified)
 	}
 }
