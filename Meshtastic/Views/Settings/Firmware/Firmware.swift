@@ -216,9 +216,8 @@ private struct FirmwareContentView: View {
 						.frame(width: 72)
 						.padding(.leading, 4)
 
-					FirmwareHeroImage(hardware: hardware)
+					FirmwareHeroImage(hardware: hardware, pioEnv: node.myInfo?.pioEnv)
 						.frame(maxWidth: .infinity)
-						.frame(height: 140)
 				}
 				.padding(.bottom, 2)
 
@@ -542,7 +541,9 @@ private struct FirmwareContentView: View {
 // preventing the List layout pass from triggering Core Data faults repeatedly.
 struct FirmwareHeroImage: View {
 	let hardware: DeviceHardwareEntity
+	var pioEnv: String?
 	@State private var svg: SVG?
+	@State private var resolved = false
 	
 	var body: some View {
 		Group {
@@ -551,29 +552,44 @@ struct FirmwareHeroImage: View {
 					.resizable()
 					.scaledToFit()
 					.cornerRadius(5)
-			} else {
-				// Placeholder prevents List jumpiness while loading
+					.frame(maxWidth: .infinity, maxHeight: 140)
+			} else if !resolved {
+				// Placeholder prevents List jumpiness while loading. Once resolution has
+				// run and found nothing, render nothing so the row collapses instead of
+				// holding a 140 point hole in the layout.
 				Color.clear
 					.frame(height: 140)
 			}
 		}
-		.frame(maxWidth: .infinity, maxHeight: 140)
 		.task {
 			// Perform the Core Data relationship traversal off the main layout pass
 			if svg == nil {
 				self.svg = getSVG()
 			}
+			resolved = true
 		}
 	}
 	
 	private func getSVG() -> SVG? {
-		let images = hardware.images
-		if let image = images.first,
+		// The radio's own PlatformIO env wins when an image with that exact name ships,
+		// so a product like the WisMesh Pocket can get its own art without a catalog change.
+		if let pioEnv, !pioEnv.isEmpty,
+		   let data = Self.bundledImageData(named: "\(pioEnv).svg"),
+		   let svg = SVG(data: data) {
+			return svg
+		}
+		if let image = hardware.images.first,
 		   let data = image.svgData,
 		   let svg = SVG(data: data) {
 			return svg
 		}
 		return nil
+	}
+	
+	static func bundledImageData(named name: String) -> Data? {
+		let url = Bundle.main.url(forResource: name, withExtension: nil, subdirectory: "images")
+			?? Bundle.main.url(forResource: name, withExtension: nil)
+		return url.flatMap { try? Data(contentsOf: $0) }
 	}
 }
 

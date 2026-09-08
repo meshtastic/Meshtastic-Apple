@@ -556,7 +556,7 @@ deviceEntity.architecture = device.architecture
 	}
 	
 	/// Handles the logic of checking ETag -> Checking DB -> Downloading -> Bundle Fallback -> Saving
-	private func processImage(imageName: String, platform: String ) async {
+	private func processImage(imageName: String, platforms: [String]) async {
 		guard let container else { return }
 		// Skip if the pass was cancelled (connection teardown) — don't even do the bundle fallback.
 		if Task.isCancelled { return }
@@ -604,8 +604,10 @@ deviceEntity.architecture = device.architecture
 		if dataToSave == nil {
 			Logger.services.debug("Network unavailable or failed for \(imageName). Checking local bundle.")
 
-			// Look in the 'images' subdirectory
-			if let bundleURL = Bundle.main.url(forResource: imageName, withExtension: nil, subdirectory: "images"),
+			// The synchronized images folder lands flat in the bundle root, but check the
+			// subdirectory first in case that ever changes.
+			if let bundleURL = Bundle.main.url(forResource: imageName, withExtension: nil, subdirectory: "images")
+				?? Bundle.main.url(forResource: imageName, withExtension: nil),
 			   let bundleData = try? Data(contentsOf: bundleURL) {
 
 				dataToSave = bundleData
@@ -623,13 +625,6 @@ deviceEntity.architecture = device.architecture
 
 		await MainActor.run {
 			let context = container.mainContext
-
-			// Find the Device
-			var deviceDescriptor = FetchDescriptor<DeviceHardwareEntity>(
-				predicate: #Predicate { $0.platformioTarget == platform }
-			)
-			deviceDescriptor.fetchLimit = 1
-			guard let deviceEntity = try? context.fetch(deviceDescriptor).first else { return }
 
 			// Find or Create Image Entity
 			var imageDescriptor = FetchDescriptor<DeviceHardwareImageEntity>(
@@ -650,10 +645,17 @@ deviceEntity.architecture = device.architecture
 			imageEntity.eTag = finalETag
 			imageEntity.svgData = finalData
 
-			// Create Relationship
-			imageEntity.device = deviceEntity
-			if !deviceEntity.images.contains(where: { $0.fileName == imageName }) {
-				deviceEntity.images.append(imageEntity)
+			// Link the image to every device that references it
+			for platform in platforms {
+				var deviceDescriptor = FetchDescriptor<DeviceHardwareEntity>(
+					predicate: #Predicate { $0.platformioTarget == platform }
+				)
+				deviceDescriptor.fetchLimit = 1
+				guard let deviceEntity = try? context.fetch(deviceDescriptor).first else { continue }
+				imageEntity.device = deviceEntity
+				if !deviceEntity.images.contains(where: { $0.fileName == imageName }) {
+					deviceEntity.images.append(imageEntity)
+				}
 			}
 
 			try? context.save()
@@ -851,19 +853,29 @@ extension MeshtasticAPI {
 			bundledDevices = []
 		}
 
-		var work: [(imageName: String, platform: String)] = []
-		var seen = Set<String>()
+		// One download per image, but linked to every device that references it — several
+		// catalog records share one file (all three RAK4631 products use rak4631.svg), and
+		// deduping the link too left every device after the first with no image.
+		var work: [String: [String]] = [:]
+		var order: [String] = []
 		for device in bundledDevices + (apiDevices ?? []) {
-			for imageName in device.images ?? [] where seen.insert(imageName).inserted {
-				work.append((imageName: imageName, platform: device.platformioTarget))
+			for imageName in device.images ?? [] {
+				if work[imageName] == nil {
+					work[imageName] = []
+					order.append(imageName)
+				}
+				if work[imageName]?.contains(device.platformioTarget) == false {
+					work[imageName]?.append(device.platformioTarget)
+				}
 			}
 		}
 
 		await withTaskGroup(of: Void.self) { group in
-			for item in work {
+			for imageName in order {
 				if Task.isCancelled { break }   // teardown mid-pass: stop queueing image fetches
+				let platforms = work[imageName] ?? []
 				group.addTask {
-					await self.processImage(imageName: item.imageName, platform: item.platform)
+					await self.processImage(imageName: imageName, platforms: platforms)
 				}
 			}
 		}
