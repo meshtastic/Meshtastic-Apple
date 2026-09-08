@@ -63,13 +63,17 @@ enum NodeSecurityIndicator: Equatable {
 	}
 
 	/// Decides the indicator for one row from snapshot fields alone (no live model access).
-	static func status(firmwareVersion: String?, pkiEncrypted: Bool, keyMatch: Bool, verified: Bool = false, isOwnNode: Bool = false) -> NodeSecurityIndicator {
+	static func status(firmwareVersion: String?, pkiEncrypted: Bool, keyMatch: Bool, verified: Bool = false, isOwnNode: Bool = false, hasXeddsaSigned: Bool = false) -> NodeSecurityIndicator {
 		// A stored key that stopped matching is a warning regardless of firmware version —
 		// most of all for a contact the user personally verified.
 		if pkiEncrypted && !keyMatch {
 			return .keyMismatch
 		}
-		if supportsSigning(firmwareVersion: firmwareVersion) {
+		// A verified signature is direct evidence the node signs, and outranks the version
+		// gate, which is only the proxy "every 2.8 node signs". A node can report a stale or
+		// empty version — DeviceMetadata that never arrived, or arrived before an update —
+		// and still be signing; showing it a lock contradicts what the radio has proven.
+		if hasXeddsaSigned || supportsSigning(firmwareVersion: firmwareVersion) {
 			// Every 2.8 node signs its broadcasts, so a 2.8 node is signed by definition.
 			// The connected radio is the user's own device: they hold its key, so its
 			// identity needs no third-party verification. Sharing your own contact QR
