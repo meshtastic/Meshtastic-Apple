@@ -133,17 +133,17 @@
             "bootloader",
             "screen",
             "meshtastic",
+            "from",
             "version",
             "image",
-            "from",
             "tap",
+            "shows",
+            "connected",
             "connect",
             "artwork",
             "target",
-            "shows",
             "install",
             "erase",
-            "connected",
             "ble",
             "transfer",
             "stable",
@@ -153,7 +153,7 @@
             "nrf52",
             "notification"
         ],
-        "charCount": 7251
+        "charCount": 7481
     },
     {
         "id": "getting-started",
@@ -366,8 +366,8 @@
             "only",
             "name",
             "messages",
-            "firmware",
             "shows",
+            "firmware",
             "shown",
             "radio",
             "links",
@@ -387,7 +387,7 @@
             "map",
             "local"
         ],
-        "charCount": 12606
+        "charCount": 12656
     },
     {
         "id": "settings",
