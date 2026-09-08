@@ -635,6 +635,11 @@ fileprivate extension NodeFilterParameters {
 			if lastHeard < threshold { return false }
 		}
 
+		// Signed filter
+		if isSigned {
+			if !node.hasXeddsaSigned { return false }
+		}
+
 		// Encrypted filter (requires relationship traversal)
 		if isPkiEncrypted {
 			if node.user?.pkiEncrypted != true { return false }

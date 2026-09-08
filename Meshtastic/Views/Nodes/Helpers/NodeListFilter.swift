@@ -13,7 +13,7 @@ struct NodeListFilter: View {
 	@State var editMode = EditMode.active
 	var filterTitle = "Node Filters"
 	/// The contact list only ever shows contacts we can direct message, so filtering it by key
-	/// state would be a no-op. Node and map filters keep the toggle.
+	/// state would be a no-op. Node and map filters keep the Signed and Encrypted toggles.
 	var showsEncryptedFilter = true
 	@ObservedObject var filters: NodeFilterParameters
 
@@ -40,6 +40,12 @@ struct NodeListFilter: View {
 					.listRowSeparator(.visible)
 
 					if showsEncryptedFilter {
+						Toggle(isOn: $filters.isSigned) {
+							Label("Signed", systemImage: SignedNodeIcon.symbolName)
+						}
+						.toggleStyle(.switch)
+						.listRowSeparator(.visible)
+
 						Toggle(isOn: $filters.isPkiEncrypted) {
 							Label("Encrypted", systemImage: "lock.fill")
 						}
