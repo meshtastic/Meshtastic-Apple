@@ -35,6 +35,8 @@ struct NodeListRowSummary {
 	// Node scalars
 	let favorite: Bool
 	let hasXeddsaSigned: Bool
+	let isKeyManuallyVerified: Bool
+	let firmwareVersion: String?
 	let statusMessage: String?
 	let lastHeard: Date?
 	let isOnline: Bool
@@ -72,6 +74,8 @@ struct NodeListRowSummary {
 
 		favorite = node.favorite
 		hasXeddsaSigned = node.hasXeddsaSigned
+		isKeyManuallyVerified = node.isKeyManuallyVerified
+		firmwareVersion = node.metadata?.firmwareVersion
 		statusMessage = node.statusMessageDisplay
 		lastHeard = node.lastHeard
 		isOnline = node.isOnline
@@ -93,13 +97,17 @@ struct NodeListRowSummary {
 		hasTraceRoutes = includeLogAvailability ? node.hasTraceRoutes : false
 	}
 
-	/// The lock/key glyph and color for the node's PKI state — derived from the snapshot so the row
-	/// never re-reads `node.user` at render time.
-	var keyStatus: (image: String, color: Color) {
-		if pkiEncrypted {
-			return keyMatch ? ("lock.fill", .green) : ("key.slash", .red)
-		}
-		return ("lock.open.fill", .yellow)
+	/// The security glyph and color for the row — signing state on 2.8+, PKI locks below,
+	/// a mismatch warning at any version. Derived from the snapshot so the row never re-reads
+	/// `node.user` at render time.
+	func keyStatus(isConnectedNode: Bool = false) -> (image: String, color: Color) {
+		NodeSecurityIndicator.status(
+			firmwareVersion: firmwareVersion,
+			pkiEncrypted: pkiEncrypted,
+			keyMatch: keyMatch,
+			verified: isKeyManuallyVerified,
+			isOwnNode: isConnectedNode
+		).glyph
 	}
 }
 
@@ -266,7 +274,7 @@ struct NodeListItem: View {
 				}
 				VStack(alignment: .leading) {
 					HStack {
-						let (image, color) = summary.keyStatus
+						let (image, color) = summary.keyStatus(isConnectedNode: isDirectlyConnected)
 						IconAndText(systemName: image,
 									imageColor: color,
 									text: summary.displayLongName.addingVariationSelectors,
@@ -463,13 +471,20 @@ struct IconAndText: View {
 	let text: String
 	var textColor: Color = .gray
 
+	/// System symbol when the name resolves, custom symbol from the asset catalog otherwise
+	/// (custom.link.slash, radio.badge.shield.checkmark, ...). Custom symbols follow the same
+	/// template pipeline, so rendering mode and color apply either way.
+	private var symbolImage: Image {
+		UIImage(systemName: systemName) != nil ? Image(systemName: systemName) : Image(systemName)
+	}
+
 	@ViewBuilder
 	var image: some View {
 		if let color = imageColor {
-			Image(systemName: systemName)
+			symbolImage
 				.foregroundColor(color)
 		} else {
-			Image(systemName: systemName)
+			symbolImage
 		}
 	}
 

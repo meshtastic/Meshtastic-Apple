@@ -46,8 +46,8 @@
 </thead>
 <tbody>
 <tr>
-<td><img src="../assets/screenshots/lockOpen.png" alt="Shared Key" /></td>
-<td><strong>Shared Key</strong> — direct messages are using the shared key for the channel.</td>
+<td><img src="../assets/screenshots/lockOpen.png" alt="No Public Key" /></td>
+<td><strong>No Public Key</strong> — no public key has been received for this node, so direct messages to it cannot be sent. Use <strong>Exchange User Info</strong> on the node to ask for one.</td>
 </tr>
 <tr>
 <td><img src="../assets/screenshots/lockClosed.png" alt="Public Key Encryption" /></td>
@@ -59,6 +59,10 @@
 </tr>
 </tbody>
 </table>
+<p>Every radio has generated a keypair since firmware 2.5, so direct messages use it. A radio with no
+public key for the destination refuses to send rather than falling back to the channel key, so a node
+showing the open lock cannot be messaged until its node info arrives. Node detail shows <strong>No Public
+Key</strong> in place of the public key row for those nodes, and they are left out of the contact list.</p>
 <h2>Device Roles</h2>
 <p>Each node is configured with a role that determines how it behaves on the mesh. Roles are shown in the node detail view.</p>
 <table>
@@ -169,6 +173,7 @@
 <ul>
 <li><strong>Add to favorites / Remove from favorites</strong> — star important nodes so they appear at the top of the list</li>
 <li><strong>Display name</strong> — give a node a local nickname (see Display Names below)</li>
+<li><strong>Status Message</strong> — set the status your radio broadcasts to the mesh (connected node only, firmware 2.8+)</li>
 <li><strong>Mute notifications / Unmute</strong> — silence alerts from this node</li>
 <li><strong>Message</strong> — open a direct message conversation with this node</li>
 <li><strong>Trace Route</strong> — discover the path messages take to reach this node</li>
@@ -279,13 +284,12 @@
 <p>Tap any node to see the full detail view with hardware info, signal metrics, environment sensors, and log navigation:</p>
 <p><img src="../assets/screenshots/nodeDetail.png" alt="Node Detail" /></p>
 <p>For messageable nodes, use <strong>Actions &gt; Share Contact QR</strong> to show a Meshtastic contact link and QR code that another device can scan.</p>
-<h3>Share Connected Node</h3>
-<p>When a radio is connected, a <strong>Share Connected Node</strong> button appears in the node list toolbar. It opens the same share sheet as <strong>Share Contact QR</strong>, pre-filled with your own node — a quick way to hand someone your contact without finding yourself in the list.</p>
 <h3>Write a Contact to an NFC Tag</h3>
 <p>On iPhones with NFC hardware (iOS 18 or later), the contact share sheet also offers <strong>Write to NFC Tag</strong>. Hold a writable NFC tag near the top of your iPhone and the contact link is saved to it, replacing whatever the tag held before. Anyone can then tap that tag with their phone to open the contact in Meshtastic — the tag carries exactly the same link the QR code encodes.</p>
 <h3>Importing a Shared Contact</h3>
 <p>Opening a Meshtastic contact link — by scanning a QR code, tapping a shared link, or tapping an NFC tag — presents a confirmation sheet before anything is added. The sheet shows the node's colored initials, its long name, and an explanation that adding the contact saves their name and public key to your connected node. Choose <strong>Add Contact</strong> to import, or <strong>Cancel</strong> to dismiss.</p>
 <p>If the import fails — most often because the radio disconnected — the sheet stays open and shows the reason so you can reconnect and tap <strong>Add Contact</strong> again. It closes only once the contact has actually been sent to your node. A link that is damaged or truncated is reported as an invalid format instead of being imported.</p>
+<p>A contact that carries no public key cannot be added. <strong>Add Contact</strong> is disabled and the sheet says the contact does not include one. The key is the point of a shared contact — it is what lets your node send direct messages to that contact — and applying a keyless one would clear the key your node already held, breaking direct messages that used to work. For the same reason, a node you have no public key for cannot be shared from this app.</p>
 <p>Importing a contact requires firmware 2.6.9 or later on the connected node.</p>
 <h3>Air Quality</h3>
 <p>Nodes with a particulate-matter sensor — reporting the firmware's Air Quality telemetry — show an <strong>Air Quality</strong> section with the latest PM2.5, PM1.0, and PM10 readings in µg/m³.</p>
@@ -339,6 +343,7 @@
 <h3>Where to Buy</h3>
 <p>For devices with known purchase links, an <strong>I want one</strong> section appears below the hardware info. It shows the official vendor link and regional marketplace options (Amazon, Rokland, AliExpress, and others) sourced from <a href="https://msh.to">msh.to</a>.</p>
 <p>Marketplace links are filtered to your device region, so only stores that ship to your area are shown. Vendor links (directly from the device manufacturer) are always shown regardless of region.</p>
+<p>Some of these are affiliate links. The app says so above the links, in both the <strong>I want one</strong> section and the full directory at <strong>Settings → Device Links</strong>: product links may be affiliate links, and purchases may earn Meshtastic a commission.</p>
 <div class="tips-callout"><strong>Tip — No purchase links shown</strong>
 Purchase links require an internet connection on first launch and after clearing app data. Connect the app to update the device catalog.</div>
 <p><a href="https://meshtastic.org/docs/configuration/radio/device/">Device Configuration Docs →</a></p>

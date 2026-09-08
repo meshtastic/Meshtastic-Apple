@@ -60,7 +60,7 @@ struct BackupManagement: View {
 						.foregroundColor(.secondary)
 						.italic()
 				} else {
-					ForEach(backups, id: \.nodeNum) { entry in
+					ForEach(backups, id: \.key) { entry in
 						BackupRowView(
 							entry: entry,
 							showRestoreButton: showsInlineRestoreButton,
@@ -160,7 +160,7 @@ struct BackupManagement: View {
 		.alert("Delete Backup?", isPresented: $showDeleteConfirmation, presenting: entryToDelete) { entry in
 			Button("Delete", role: .destructive) {
 				Task { @MainActor in
-					NodeBackupManager.shared.deleteBackup(forNode: entry.nodeNum)
+					NodeBackupManager.shared.deleteBackup(forKey: entry.key)
 					refreshBackups()
 				}
 			}
@@ -229,7 +229,11 @@ struct BackupManagement: View {
 		isBackingUp = true
 		defer { isBackingUp = false }
 
-		let result = await NodeBackupManager.shared.createBackup(forNode: nodeNum, nodeName: nodeName)
+		let result = await NodeBackupManager.shared.createBackup(
+			forNode: nodeNum,
+			deviceId: accessoryManager.connectedDeviceId,
+			nodeName: nodeName
+		)
 		switch result {
 		case .success:
 			refreshBackups()

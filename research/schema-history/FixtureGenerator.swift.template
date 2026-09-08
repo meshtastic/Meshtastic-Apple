@@ -1,0 +1,75 @@
+
+@Suite("Schema history fixture generator")
+struct SchemaHistoryFixtureGeneratorTests {
+	@Test @MainActor func generateFixture() throws {
+		let tag = "__TAG__"
+		let patch = try #require(Int(tag.split(separator: ".").last ?? ""))
+		let outputDirectory = URL(fileURLWithPath: "__OUTPUT_DIRECTORY__", isDirectory: true)
+		let storeURL = outputDirectory.appendingPathComponent("Meshtastic.store")
+		try FileManager.default.createDirectory(at: outputDirectory, withIntermediateDirectories: true)
+
+		let schema = Schema(versionedSchema: MeshtasticSchema.current)
+		let configuration = ModelConfiguration(
+			"Meshtastic",
+			schema: schema,
+			url: storeURL,
+			allowsSave: true
+		)
+		do {
+			let container = try ModelContainer(
+				for: schema,
+				migrationPlan: MeshtasticMigrationPlan.self,
+				configurations: configuration
+			)
+			let context = container.mainContext
+			context.autosaveEnabled = false
+			let fixtureBase = Int64(2_700_000 + patch * 1_000)
+
+			let sender = UserEntity()
+			sender.num = fixtureBase + 1
+			sender.longName = "Schema fixture sender \(tag)"
+			sender.shortName = "S\(patch)"
+			sender.publicKey = Data([0x27, UInt8(patch), 0x01])
+			context.insert(sender)
+
+			let receiver = UserEntity()
+			receiver.num = fixtureBase + 2
+			receiver.longName = "Schema fixture receiver \(tag)"
+			receiver.shortName = "R\(patch)"
+			context.insert(receiver)
+
+			let node = NodeInfoEntity()
+			node.num = sender.num
+			node.favorite = true
+			node.bleName = "fixture-\(tag)"
+			node.lastHeard = Date(timeIntervalSince1970: TimeInterval(1_700_000_000 + patch))
+			context.insert(node)
+			node.user = sender
+
+			let position = PositionEntity()
+			position.latitudeI = Int32(377_749_000 + patch)
+			position.longitudeI = Int32(-1_224_194_000 - patch)
+			position.altitude = Int32(patch)
+			position.time = Date(timeIntervalSince1970: TimeInterval(1_700_000_100 + patch))
+			context.insert(position)
+			node.positions.append(position)
+
+			let message = MessageEntity()
+			message.messageId = fixtureBase + Int64(patch)
+			message.messagePayload = "schema-history-\(tag)"
+			message.messageTimestamp = Int32(1_700_000_200 + patch)
+			message.read = false
+			context.insert(message)
+			message.fromUser = sender
+			message.toUser = receiver
+
+			try context.save()
+			#expect(try context.fetch(FetchDescriptor<NodeInfoEntity>()).count == 1)
+			#expect(try context.fetch(FetchDescriptor<UserEntity>()).count == 2)
+			#expect(try context.fetch(FetchDescriptor<MessageEntity>()).count == 1)
+			#expect(try context.fetch(FetchDescriptor<PositionEntity>()).count == 1)
+		}
+
+		print("SCHEMA_FIXTURE_GENERATED=\(storeURL.path)")
+	}
+}

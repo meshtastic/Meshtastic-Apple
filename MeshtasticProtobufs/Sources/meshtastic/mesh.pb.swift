@@ -3427,6 +3427,20 @@ public struct NodeInfo: @unchecked Sendable {
     set {_uniqueStorage()._hasXeddsaSigned_p = newValue}
   }
 
+  ///
+  /// True if we have heard this node over RF since our current LoRa
+  /// configuration took effect. Cleared for every node whenever the region,
+  /// modem preset (or the custom bandwidth/spread factor/coding rate when
+  /// use_preset is false), override_frequency, channel_num or the primary
+  /// channel name changes - the frequency slot is derived from that name.
+  /// Not set for nodes heard over MQTT, which reach us over the internet
+  /// rather than over our own radio - see via_mqtt.
+  /// LSB 11 of the bitfield
+  public var heardOnCurrentLora: Bool {
+    get {_storage._heardOnCurrentLora}
+    set {_uniqueStorage()._heardOnCurrentLora = newValue}
+  }
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
@@ -5924,7 +5938,7 @@ extension MeshPacket.TransportMechanism: SwiftProtobuf._ProtoNameProviding {
 
 extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".NodeInfo"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}num\0\u{1}user\0\u{1}position\0\u{1}snr\0\u{3}last_heard\0\u{3}device_metrics\0\u{1}channel\0\u{3}via_mqtt\0\u{3}hops_away\0\u{3}is_favorite\0\u{3}is_ignored\0\u{3}is_key_manually_verified\0\u{3}is_muted\0\u{3}has_xeddsa_signed\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}num\0\u{1}user\0\u{1}position\0\u{1}snr\0\u{3}last_heard\0\u{3}device_metrics\0\u{1}channel\0\u{3}via_mqtt\0\u{3}hops_away\0\u{3}is_favorite\0\u{3}is_ignored\0\u{3}is_key_manually_verified\0\u{3}is_muted\0\u{3}has_xeddsa_signed\0\u{3}heard_on_current_lora\0")
 
   fileprivate class _StorageClass {
     var _num: UInt32 = 0
@@ -5941,6 +5955,7 @@ extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     var _isKeyManuallyVerified: Bool = false
     var _isMuted: Bool = false
     var _hasXeddsaSigned_p: Bool = false
+    var _heardOnCurrentLora: Bool = false
 
       // This property is used as the initial default value for new instances of the type.
       // The type itself is protecting the reference to its storage via CoW semantics.
@@ -5965,6 +5980,7 @@ extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
       _isKeyManuallyVerified = source._isKeyManuallyVerified
       _isMuted = source._isMuted
       _hasXeddsaSigned_p = source._hasXeddsaSigned_p
+      _heardOnCurrentLora = source._heardOnCurrentLora
     }
   }
 
@@ -5997,6 +6013,7 @@ extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
         case 12: try { try decoder.decodeSingularBoolField(value: &_storage._isKeyManuallyVerified) }()
         case 13: try { try decoder.decodeSingularBoolField(value: &_storage._isMuted) }()
         case 14: try { try decoder.decodeSingularBoolField(value: &_storage._hasXeddsaSigned_p) }()
+        case 15: try { try decoder.decodeSingularBoolField(value: &_storage._heardOnCurrentLora) }()
         default: break
         }
       }
@@ -6051,6 +6068,9 @@ extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
       if _storage._hasXeddsaSigned_p != false {
         try visitor.visitSingularBoolField(value: _storage._hasXeddsaSigned_p, fieldNumber: 14)
       }
+      if _storage._heardOnCurrentLora != false {
+        try visitor.visitSingularBoolField(value: _storage._heardOnCurrentLora, fieldNumber: 15)
+      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -6074,6 +6094,7 @@ extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
         if _storage._isKeyManuallyVerified != rhs_storage._isKeyManuallyVerified {return false}
         if _storage._isMuted != rhs_storage._isMuted {return false}
         if _storage._hasXeddsaSigned_p != rhs_storage._hasXeddsaSigned_p {return false}
+        if _storage._heardOnCurrentLora != rhs_storage._heardOnCurrentLora {return false}
         return true
       }
       if !storagesAreEqual {return false}
