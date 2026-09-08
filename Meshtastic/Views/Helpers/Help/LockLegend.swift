@@ -13,7 +13,7 @@ struct LockLegend: View {
 		Section {
 			HelpItem(
 				symbol: AnyView(
-					Image(systemName: "person.badge.shield.checkmark")
+					VerifiedContactIcon.image
 						.font(.title3)
 						.foregroundColor(.green)
 				),

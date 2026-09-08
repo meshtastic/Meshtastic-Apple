@@ -65,7 +65,7 @@ struct AddContactConfirmationView: View {
 							Text("Verified in person")
 								.font(.footnote.weight(.medium))
 						} icon: {
-							Image(systemName: "person.badge.shield.checkmark")
+							VerifiedContactIcon.image
 								.foregroundStyle(confirmsInPersonExchange ? .green : .secondary)
 						}
 					}

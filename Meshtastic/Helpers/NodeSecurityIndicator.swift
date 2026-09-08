@@ -32,7 +32,7 @@ enum NodeSecurityIndicator: Equatable {
 	var glyph: (image: String, color: Color) {
 		switch self {
 		case .verified:
-			return ("person.badge.shield.checkmark", .green)
+			return (VerifiedContactIcon.symbolName, .green)
 		case .signed:
 			// The radio with a shield badge — vouched for by the radio over the mesh, as
 			// opposed to the person badge for a contact verified face to face. Green like

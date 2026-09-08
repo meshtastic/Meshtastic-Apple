@@ -303,13 +303,13 @@ struct NodeDetail: View {
 				// You hold this radio, so neither of the other two describes it: you did not
 				// meet yourself in person, and its signature is not what makes it trusted.
 				trustRow(
-					icon: AnyView(Image(systemName: "person.badge.shield.checkmark").foregroundColor(.green)),
+					icon: AnyView(VerifiedContactIcon.image.foregroundColor(.green)),
 					title: "Connected node",
 					detail: "This is your radio"
 				)
 			} else if node.isKeyManuallyVerified {
 				trustRow(
-					icon: AnyView(Image(systemName: "person.badge.shield.checkmark").foregroundColor(.green)),
+					icon: AnyView(VerifiedContactIcon.image.foregroundColor(.green)),
 					title: "Verified contact",
 					detail: "Verified in person"
 				)

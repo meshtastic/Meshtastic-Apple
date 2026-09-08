@@ -39,4 +39,14 @@ struct SignedNodeIconTests {
 		#expect(UIImage(systemName: SignedNodeIcon.symbolName) == nil, "not a system symbol")
 		#endif
 	}
+
+	@Test("the verified contact symbol is the filled person badge")
+	func verifiedContactSymbol() {
+		// The filled variant is deliberate and was chosen once already — this pins it so the
+		// unfilled one cannot creep back in. Four views read this constant.
+		#expect(VerifiedContactIcon.symbolName == "person.badge.shield.checkmark.fill")
+		#if canImport(UIKit)
+		#expect(UIImage(systemName: VerifiedContactIcon.symbolName) != nil, "a real SF Symbol")
+		#endif
+	}
 }
