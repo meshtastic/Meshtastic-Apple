@@ -261,7 +261,11 @@ final class MeshtasticAPIBundledSeedTests {
 		while ContinuousClock.now < deadline {
 			try await Task.sleep(for: pollInterval)
 			let all = RequestRecordingURLProtocol.recordedURLs
-			if all.count == lastCount && !imageRequests(from: all).isEmpty {
+			// The link import is the cascade's last network call, so the record is only
+			// complete once it is present — a quiet stretch between the images and the
+			// link fetch must not count as settled.
+			let tailArrived = all.contains { $0.absoluteString.contains("msh.to/api/urls") }
+			if all.count == lastCount && tailArrived && !imageRequests(from: all).isEmpty {
 				stablePolls += 1
 				if stablePolls >= quietPolls { return imageRequests(from: all) }
 			} else {
@@ -297,6 +301,10 @@ final class MeshtasticAPIBundledSeedTests {
 			images.count == expected.count,
 			"startup should issue one request per unique image (\(expected.count)), got \(images.count)"
 		)
+		// The regression this suite caught on CI: the cascade's trailing link import must be in
+		// the record before the helper returns, or it lands in the next test's window instead.
+		let linkImports = RequestRecordingURLProtocol.recordedURLs.filter { $0.absoluteString.contains("msh.to/api/urls") }
+		#expect(linkImports.count == 1, "the cascade imports the link catalog exactly once, inside this test's window")
 	}
 
 	/// The API-driven pass must cover hardware that exists only in the live API list (which the
