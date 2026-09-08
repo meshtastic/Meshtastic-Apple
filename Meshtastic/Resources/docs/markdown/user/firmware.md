@@ -94,6 +94,9 @@ The metadata feed is informational. The app does not download or install firmwar
 **Firmware below the supported minimum**
 The radio stays connected and the app shows the firmware update screen, with everything else blocked until the radio is updated. Update from that screen, or disconnect to use a different radio.
 
+**Security update recommended**
+Firmware before 2.6 works but has known security fixes available, so the app recommends updating without blocking anything.
+
 ![Security update recommended](../assets/screenshots/securityVersionNag.png)
 
 **Radio not appearing in firmware list**
