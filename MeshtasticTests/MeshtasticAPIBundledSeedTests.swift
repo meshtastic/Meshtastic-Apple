@@ -244,6 +244,12 @@ final class MeshtasticAPIBundledSeedTests {
 
 	/// Polls until the detached startup cascade stops issuing image requests, then returns them.
 	/// The cascade is unstructured `Task.detached` work with no completion handle to await.
+	///
+	/// Settles on the count of ALL recorded requests, not just images: the cascade's tail —
+	/// orphan cleanup, then the msh.to link import — runs after the last image fetch, and a
+	/// settle that only watched images could return while that tail was still in flight. On a
+	/// slow runner the straggling link fetch then landed inside the NEXT test's recording
+	/// window, which counted it as a duplicate. CI caught that; local machines never did.
 	private func settledImageRequests(
 		timeout: Duration = .seconds(30),
 		quietPolls: Int = 5,
@@ -254,13 +260,13 @@ final class MeshtasticAPIBundledSeedTests {
 		let deadline = ContinuousClock.now.advanced(by: timeout)
 		while ContinuousClock.now < deadline {
 			try await Task.sleep(for: pollInterval)
-			let current = imageRequests(from: RequestRecordingURLProtocol.recordedURLs)
-			if current.count == lastCount && !current.isEmpty {
+			let all = RequestRecordingURLProtocol.recordedURLs
+			if all.count == lastCount && !imageRequests(from: all).isEmpty {
 				stablePolls += 1
-				if stablePolls >= quietPolls { return current }
+				if stablePolls >= quietPolls { return imageRequests(from: all) }
 			} else {
 				stablePolls = 0
-				lastCount = current.count
+				lastCount = all.count
 			}
 		}
 		return imageRequests(from: RequestRecordingURLProtocol.recordedURLs)
