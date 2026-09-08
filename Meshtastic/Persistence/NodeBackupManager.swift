@@ -36,12 +36,15 @@ final class NodeBackupManager: NodeBackupManaging {
 
 	private var backupIndex: BackupIndex
 	private let backupBaseURL: URL
+	/// Test-only redirect for the store `createBackup` copies from. Nil in production.
+	private var activeStoreURLOverride: URL?
 	private let fileManager = FileManager.default
 
 	// MARK: - Initialization
 
 	private init() {
 		backupBaseURL = Self.resolveBackupBaseURL()
+		activeStoreURLOverride = nil
 
 		// Ensure backup directory exists
 		try? FileManager.default.createDirectory(at: backupBaseURL, withIntermediateDirectories: true)
@@ -108,8 +111,14 @@ final class NodeBackupManager: NodeBackupManaging {
 	}
 
 	/// Initializer for testing with a custom base URL.
-	init(baseURL: URL) {
+	///
+	/// `activeStoreURL` points `createBackup` at a store the test owns. Without it the manager reads
+	/// the live Application Support store, which the schema-history tests open and replace through
+	/// the real `PersistenceController` — so a full parallel run could catch it mid-manipulation and
+	/// fail tests that pass in isolation.
+	init(baseURL: URL, activeStoreURL: URL? = nil) {
 		backupBaseURL = baseURL
+		self.activeStoreURLOverride = activeStoreURL
 		try? FileManager.default.createDirectory(at: backupBaseURL, withIntermediateDirectories: true)
 		backupIndex = Self.loadIndex(from: backupBaseURL)
 		validateIndexConsistency()
@@ -641,6 +650,7 @@ final class NodeBackupManager: NodeBackupManaging {
 
 	/// Returns the URL to the active SQLite database file.
 	private func activeDatabaseURL() -> URL {
+		if let activeStoreURLOverride { return activeStoreURLOverride }
 		let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
 		return appSupport.appendingPathComponent("Meshtastic.store")
 	}

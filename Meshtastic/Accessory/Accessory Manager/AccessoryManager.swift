@@ -149,7 +149,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	// Constants
 	let NONCE_ONLY_CONFIG = 69420
 	let NONCE_ONLY_DB = 69421
-	let minimumVersion = "2.5.18"
+	let minimumVersion = "2.5.14"
 	let securityVersion = "2.6.0"
 
 	// Global Objects
@@ -233,6 +233,9 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	@Published var activeDeviceNum: Int64?
 	@Published var allowDisconnect = false
 	@Published var lastConnectionError: Error?
+	/// True while the connected radio's firmware is below `minimumVersion`. ContentView
+	/// presents the firmware update gate over the whole app while this is set.
+	@Published var firmwareUpdateRequired = false
 	@Published var isConnected: Bool = false
 	/// When the radio last finished sending its configuration.
 	///
@@ -277,6 +280,11 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	public var wantRangeTestPackets = false
 	var wantStoreAndForwardPackets = false
 	var shouldAutomaticallyConnectToPreferredPeripheralAfterError = true
+	/// Set when a lost bond ends a connect. Auto-reconnect stays off for the rest of the app
+	/// session — reconnecting can never fix a lost bond, and any later transient error would
+	/// otherwise re-arm it and restart the loop. Manual connects are always allowed; only a
+	/// fresh app launch clears this.
+	var autoReconnectSuspendedForSession = false
 	var userRequestedConnectionCancellation = false
 
 	/// True while a device switch (backup → clear → restore → connect) is in flight.
@@ -603,6 +611,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			self.activeConnection = nil
 		}
 		self.activeDeviceNum = nil
+		self.firmwareUpdateRequired = false
 		if let refresh = activeAutomaticConfigRefresh {
 			automaticConfigRefreshTask?.cancel()
 			await finishAutomaticConfigRefresh(owner: refresh.owner, error: CancellationError())
@@ -829,7 +838,9 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 				if case .errorWithoutReconnect = event {
 					shouldAutomaticallyConnectToPreferredPeripheralAfterError = false
 				} else {
-					shouldAutomaticallyConnectToPreferredPeripheralAfterError = true
+					// A suspended session stays suspended: a transient error after a lost bond
+					// must not re-arm the reconnect loop the suspension exists to end.
+					shouldAutomaticallyConnectToPreferredPeripheralAfterError = !autoReconnectSuspendedForSession
 				}
 				
 				Logger.transport.info("🚨 [Accessory] didReceive with failure: \(error.localizedDescription, privacy: .public) (willReconnect = \(self.shouldAutomaticallyConnectToPreferredPeripheralAfterError, privacy: .public))")

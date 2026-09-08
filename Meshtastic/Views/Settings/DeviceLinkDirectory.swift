@@ -13,6 +13,12 @@ struct DeviceLinkDirectory: View {
 
 	var body: some View {
 		List {
+			if !allLinks.isEmpty {
+				// The disclosure sits above the links it covers.
+				Text("Product links may be affiliate links — purchases may earn Meshtastic a commission.")
+					.font(.subheadline)
+					.foregroundStyle(.secondary)
+			}
 			ForEach(allLinks, id: \.shortCode) { link in
 				Button {
 					if let url = URL(string: "https://msh.to/\(link.shortCode)") {

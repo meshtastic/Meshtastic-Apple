@@ -66,7 +66,7 @@
 </tr>
 <tr>
 <td>Modem Preset</td>
-<td>Speed/range trade-off. Most users should use Long Fast or Long Slow. On firmware 2.8+, the preset list is filtered to those that are legal for the selected region (see below).</td>
+<td>Speed/range trade-off. Which preset to use depends on your region — on firmware 2.8+ the list is filtered to those legal there, and the recommended one differs by region (see below).</td>
 </tr>
 <tr>
 <td>Bandwidth</td>
@@ -123,6 +123,16 @@
 <p>On hardened lockdown-firmware radios, this page also shows a <strong>Lockdown</strong> section with the session status, a <strong>Lock Now</strong> button, and a <strong>Forget Stored Passphrase</strong> button. See <a href="lockdown.html">Lockdown Mode</a>.</p>
 <h3>User</h3>
 <p>Set your Long Name (display name) and Short Name (4-character/emoji identifier shown in the node circle).</p>
+<p>Both limits are counted in UTF-8 bytes rather than characters, because that is how the radio stores them. Most emoji are four bytes, so a single emoji fills the short name; some older symbols are smaller. Typing past the limit stops rather than cutting a character in half.</p>
+<p>How long a Long Name can be depends on the radio. Firmware 2.8 and later keeps
+24 bytes of it — those radios store every node they hear in a slimmer record to
+save memory, and truncate anything longer as it arrives. Older firmware keeps
+39. The hint under the field shows whichever applies to the radio you are
+connected to.</p>
+<p>A name you already have is left alone, even if it is longer than the radio you
+are now connected to would keep. Note that a 2.8 radio hearing an older one
+still stores only 24 bytes of its name, so a longer name is shortened by
+everyone else's radio even when your own keeps it.</p>
 <h3>Bluetooth</h3>
 <p>BLE radio settings including PIN mode and power saving. Changes apply on next radio restart.</p>
 <h3>Device</h3>
@@ -254,7 +264,8 @@
 </tbody>
 </table>
 <h3>Traffic Management</h3>
-<p>The Traffic Management module helps reduce unnecessary mesh traffic and improve network efficiency. It is available on nodes running firmware <strong>2.8.0 or later</strong>. Each feature is enabled implicitly by a non-zero value — turning a section's toggle off (or the master <strong>Enabled</strong> switch) clears its values and disables that feature on the radio.</p>
+<p>The Traffic Management module helps reduce unnecessary mesh traffic and improve network efficiency. It is available on nodes running firmware <strong>2.8.0 or later</strong>.</p>
+<p>The screen opens with a placement assessment: how many nodes this radio heard directly (over RF, within the last two hours), and whether that makes the module worth enabling. Traffic management pays off on a well-placed node with many direct neighbors — 50 or more heard in that window, ideally around 200. One transmission from such a node reaches most of them at once, so cutting hop counts on the chattiest packets removes the retransmission storm that follows each broadcast. On a node with a handful of direct neighbors it has little to police. Each feature is enabled implicitly by a non-zero value — turning a section's toggle off (or the master <strong>Enabled</strong> switch) clears its values and disables that feature on the radio. Turning a feature on starts its interval at the firmware default rather than zero, so saving right away enables it.</p>
 <table>
 <thead>
 <tr>
@@ -265,7 +276,7 @@
 <tbody>
 <tr>
 <td>Enabled</td>
-<td>Master enable for the traffic management module.</td>
+<td>Turns the module on or off.</td>
 </tr>
 <tr>
 <td><strong>Position Deduplication</strong></td>
@@ -273,11 +284,11 @@
 </tr>
 <tr>
 <td>Position Dedup</td>
-<td>Drop redundant position broadcasts from the same node.</td>
+<td>Drop repeated position broadcasts.</td>
 </tr>
 <tr>
-<td>Min Interval (s)</td>
-<td>Minimum seconds between position updates from the same node.</td>
+<td>Minimum Interval</td>
+<td>Positions from the same node arriving sooner than this are dropped. The firmware default is five hours.</td>
 </tr>
 <tr>
 <td><strong>NodeInfo Direct Response</strong></td>
@@ -285,11 +296,11 @@
 </tr>
 <tr>
 <td>Direct Response</td>
-<td>Respond to NodeInfo requests directly from local cache instead of flooding the mesh.</td>
+<td>Answer NodeInfo requests from the local cache instead of flooding the mesh.</td>
 </tr>
 <tr>
 <td>Max Hops</td>
-<td>Maximum hop distance from the requestor at which direct NodeInfo responses are served from the local cache.</td>
+<td>Only answer requestors within this many hops, 1 to 3. The radio's role caps the effective value: routers allow up to 3, plain clients answer direct requestors only.</td>
 </tr>
 <tr>
 <td><strong>Rate Limiting</strong></td>
@@ -297,15 +308,15 @@
 </tr>
 <tr>
 <td>Rate Limiting</td>
-<td>Enable per-node rate limiting to throttle chatty nodes.</td>
+<td>Throttle nodes that send too many packets.</td>
 </tr>
 <tr>
-<td>Window (s)</td>
-<td>Time window in seconds for rate limiting calculations.</td>
+<td>Window</td>
+<td>The time window packets are counted over.</td>
 </tr>
 <tr>
 <td>Max Packets</td>
-<td>Maximum packets allowed per node within the rate limit window.</td>
+<td>The most packets one node may send per window.</td>
 </tr>
 <tr>
 <td><strong>Unknown Packet Handling</strong></td>
@@ -313,11 +324,11 @@
 </tr>
 <tr>
 <td>Drop Unknown</td>
-<td>Enable dropping of unknown/undecryptable packets.</td>
+<td>Drop packets that cannot be decrypted.</td>
 </tr>
 <tr>
 <td>Threshold</td>
-<td>Maximum unknown/undecryptable packets per rate window before the source is dropped.</td>
+<td>How many per window before the sender is dropped.</td>
 </tr>
 </tbody>
 </table>
