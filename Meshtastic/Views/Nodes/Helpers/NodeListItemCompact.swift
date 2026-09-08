@@ -112,7 +112,7 @@ struct NodeListItemCompact: View {
 			}
 			desc += ", " + signalString
 		}
-		// Mirror the visual "Signed node" shield (rendered below) so VoiceOver announces it in the
+		// The security glyph beside the name carries signing state visually; name it for VoiceOver in the
 		// compact list too — affirmative only, never for unsigned nodes.
 		if summary.hasXeddsaSigned {
 			desc += ", " + "Signed node".localized
@@ -144,20 +144,13 @@ struct NodeListItemCompact: View {
 		return nil
 	}
 	
-	private func lineNums(hasXeddsaSigned: Bool) -> Int {
+	private func lineNums() -> Int {
 		var lines = 1
 		if shouldShowRole || shouldShowLocation || shouldShowTelemetry || shouldShowChannel || shouldShowHops || shouldShowSignal {
 			lines += 1
 		}
 
 		if shouldShowLastHeard {
-			lines += 1
-		}
-
-		// The signed-node ("Signed node") row renders on its own line whenever the node is signed,
-		// so reserve space for it too — otherwise the avatar circle is sized too short for signed
-		// nodes, most visibly when last-heard / telemetry rows are disabled.
-		if hasXeddsaSigned {
 			lines += 1
 		}
 
@@ -190,7 +183,7 @@ struct NodeListItemCompact: View {
 	@ViewBuilder private func rowContent(_ summary: NodeListRowSummary) -> some View {
 		// Resolve the status once per render; reused for the row, circle sizing, and a11y.
 		let statusMessage = summary.statusMessage
-		let circleSize = max(minCircle, min(maxCircle, baseUnit * CGFloat(lineNums(hasXeddsaSigned: summary.hasXeddsaSigned) + (statusMessage != nil ? 1 : 0))))
+		let circleSize = max(minCircle, min(maxCircle, baseUnit * CGFloat(lineNums() + (statusMessage != nil ? 1 : 0))))
 		let cachedBatteryLevel = (shouldShowPower || shouldShowTelemetry) ? summary.batteryLevel : nil
 		let needsLatestPosition = shouldShowTelemetry || (shouldShowLocation && connectedNode != summary.num)
 		let cachedLatestNodeCoordinate = needsLatestPosition ? summary.latestNodeCoordinate : nil
@@ -228,15 +221,6 @@ struct NodeListItemCompact: View {
 							Image(systemName: "star.fill")
 								.symbolRenderingMode(.multicolor)
 						}
-					}
-					// Signed node = XEdDSA-signed NodeInfo broadcast → identity verified by the radio.
-					// Affirmative only; never shown for unsigned nodes. Mirrors the Node Detail row.
-					// A person badge rather than a bare shield: what was verified is who this node
-					// says it is, not that the traffic is encrypted, which the lock already covers.
-					if summary.hasXeddsaSigned {
-						IconAndText(systemName: SignedNodeIcon.symbolName,
-									imageColor: .green,
-									text: "Signed node".localized)
 					}
 					// User-authored status broadcast by the node, directly beneath the name.
 					// Single-line clamp keeps the compact row dense; omitted when empty.
