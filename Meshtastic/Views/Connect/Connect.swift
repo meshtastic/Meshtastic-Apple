@@ -302,7 +302,7 @@ struct Connect: View {
 											shareContactNode = live.toProto()
 											showingShareContactQR = true
 										} label: {
-											Label("Share Contact QR", systemImage: "qrcode")
+											Label("Share Contact", systemImage: "qrcode")
 										}
 									}
 									if accessoryManager.allowDisconnect {
