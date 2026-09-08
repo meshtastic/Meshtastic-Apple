@@ -14,6 +14,10 @@ The app can check for and install Meshtastic firmware updates directly on your c
 2. Go to **Settings → Firmware Updates**.
 3. The app shows the firmware version currently running on your radio and the latest stable release available from GitHub.
 
+Opening the screen fetches the release list and the hardware catalog. Previously the list was only fetched at launch, so if that fetch failed the screen stayed empty until you pulled to refresh; now it fills in on its own. Refreshing the catalog means a board added since your build of the app shipped is recognized by its exact firmware target instead of falling back to another board that shares its hardware model.
+
+Neither fetch is rate limited, because both are cached: opening the screen repeatedly is served from the cache or answered with an empty "not modified" reply rather than downloading the lists again.
+
 The screen shows a picture of your radio above the details. Images for supported hardware ship with the app, so the picture appears even without an internet connection. A radio reporting a specialized firmware target with its own artwork gets that artwork; otherwise the app shows the base hardware image. If no image is available for your hardware, the screen leaves the picture out instead of showing an empty space.
 
 When you connect to a node running firmware older than the latest stable release, the app can send a firmware update notification. For hardware the app can update directly, tapping the notification opens **Firmware Updates** so you can review and start the OTA update. For hardware that needs an external updater, the notification tells you to use **Meshtastic Flasher** instead.
