@@ -35,6 +35,7 @@ extension AccessoryManager {
 		
 		// Clear any errors and stale state from last connection
 		lastConnectionError = nil
+		firmwareUpdateRequired = false
 		self.activeDeviceNum = nil
 		packetsSent = 0
 		packetsReceived = 0
@@ -108,8 +109,16 @@ extension AccessoryManager {
 					// The mesh-traffic monitor (map flyover gate) self-starts its decay timer on the
 					// first inbound packet and is cleared by Step 0's closeConnection() reset(), so
 					// there's no explicit start to make here — it stays correct across connect retries.
-				} catch let error as CBError where error.code == .peerRemovedPairingInformation {
-					await self.connectionStepper?.cancelCurrentlyExecutingStep(withError: AccessoryError.coreBluetoothError(error), cancelFullProcess: true)
+				} catch let error where BLEConnection.terminatesConnectRetries(error) {
+					// A lost bond cannot be fixed by retrying or reconnecting — the user has to
+					// forget the device in iOS Settings. The old catch matched only the raw CBError,
+					// but the transport maps that into AccessoryError.bondLost before throwing, so
+					// the mapped error fell through to retryAll and looped. Kill auto-reconnect
+					// before cancelling or discovery immediately starts the loop again.
+					self.shouldAutomaticallyConnectToPreferredPeripheralAfterError = false
+					self.autoReconnectSuspendedForSession = true
+					self.lastConnectionError = AccessoryError.bondLost
+					await self.connectionStepper?.cancelCurrentlyExecutingStep(withError: AccessoryError.bondLost, cancelFullProcess: true)
 				}
 			}
 			
@@ -237,10 +246,11 @@ extension AccessoryManager {
 				// TODO: do we really need to store the firmware version in the UserDefaults?
 				UserDefaults.firmwareVersion = String(version)
 				
-				let supportedVersion = self.checkIsVersionSupported(forVersion: self.minimumVersion)
-				if !supportedVersion {
-					throw AccessoryError.connectionFailed("🚨" + "Update Your Firmware".localized)
-				}
+				// Below-minimum firmware keeps its connection. Throwing here used to retry the
+				// whole process and then disconnect, which left the user no way to update the
+				// radio from the app. The gate in ContentView blocks everything but the
+				// firmware update screen instead.
+				self.firmwareUpdateRequired = !self.checkIsVersionSupported(forVersion: self.minimumVersion)
 			}
 			
 			// Step 7: Update UI and status to connected
@@ -323,7 +333,7 @@ extension AccessoryManager {
 			try await self.closeConnection()
 			updateState(.discovering)
 		} catch {
-			Logger.transport.error("🔗 [Connect] Error returned by connectionStepper: \(error)")
+			Logger.transport.error("🔗 [Connect] Error returned by connectionStepper: \(error, privacy: .public)")
 			try await self.closeConnection()
 			updateState(.discovering)
 			self.lastConnectionError = error

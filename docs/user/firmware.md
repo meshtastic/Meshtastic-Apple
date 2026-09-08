@@ -14,6 +14,8 @@ The app can check for and install Meshtastic firmware updates directly on your c
 2. Go to **Settings → Firmware Updates**.
 3. The app shows the firmware version currently running on your radio and the latest stable release available from GitHub.
 
+The screen shows a picture of your radio above the details. Images for supported hardware ship with the app, so the picture appears even without an internet connection. A radio reporting a specialized firmware target with its own artwork gets that artwork; otherwise the app shows the base hardware image. If no image is available for your hardware, the screen leaves the picture out instead of showing an empty space.
+
 When you connect to a node running firmware older than the latest stable release, the app can send a firmware update notification. For hardware the app can update directly, tapping the notification opens **Firmware Updates** so you can review and start the OTA update. For hardware that needs an external updater, the notification tells you to use **Meshtastic Flasher** instead.
 
 The app remembers each node, hardware target, and stable version it has already notified you about, so it will not keep sending the same reminder.
@@ -89,7 +91,8 @@ The metadata feed is informational. The app does not download or install firmwar
 - Keep the radio within 1–2 meters of your phone during the update.
 - If the radio appears bricked after a failed update, it can usually be recovered using the [Meshtastic Flasher](https://flasher.meshtastic.org/) on a computer.
 
-![Incompatible firmware version warning](../assets/screenshots/invalidVersion.png)
+**Firmware below the supported minimum**
+The radio stays connected and the app shows the firmware update screen, with everything else blocked until the radio is updated. Update from that screen, or disconnect to use a different radio.
 
 ![Security update recommended](../assets/screenshots/securityVersionNag.png)
 

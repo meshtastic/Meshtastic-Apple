@@ -54,6 +54,8 @@ LoRa settings control how your radio communicates on the mesh:
 
 On firmware **2.8.0 or later**, the radio tells the app which modem presets are legal in each region. When you pick a region, the Presets list narrows to the compatible set, and if your current preset isn't allowed there the app switches you to that region's default. Setting the region to **US** on a newly flashed node moves the stock **Long Fast** preset to **Long Turbo** — Long Fast's bandwidth is not US-compliant — while a deliberately chosen preset that is legal in the US is kept. Amateur (ham) bands such as the Tiny and Narrow presets are marked **licensed** — the app shows a warning, and you should enable **Licensed Operator** (and set your call sign) in **User** config before transmitting. On older firmware the full preset list is shown unchanged.
 
+Saving LoRa settings may reboot the radio and briefly disconnect it. If the radio reports a region from newer firmware that this app does not recognize, choose a supported region before saving.
+
 ### Channels
 
 Manage up to 8 channels (0–7). Channel 0 is the primary broadcast channel. Additional channels create isolated messaging groups with their own encryption keys.
@@ -86,10 +88,7 @@ On hardened lockdown-firmware radios, this page also shows a **Lockdown** sectio
 
 Set your Long Name (display name) and Short Name (4-character/emoji identifier shown in the node circle).
 
-Both limits are counted in UTF-8 bytes rather than characters, because that is
-how the radio stores them: an emoji is four bytes, so four emoji fill the short
-name exactly. Typing past the limit stops rather than cutting a character in
-half.
+Both limits are counted in UTF-8 bytes rather than characters, because that is how the radio stores them. Most emoji are four bytes, so a single emoji fills the short name; some older symbols are smaller. Typing past the limit stops rather than cutting a character in half.
 
 How long a Long Name can be depends on the radio. Firmware 2.8 and later keeps
 24 bytes of it — those radios store every node they hear in a slimmer record to
@@ -169,24 +168,26 @@ Optional feature modules. Only available when your connected node supports the m
 
 ### Traffic Management
 
-The Traffic Management module helps reduce unnecessary mesh traffic and improve network efficiency. It is available on nodes running firmware **2.8.0 or later**. Each feature is enabled implicitly by a non-zero value — turning a section's toggle off (or the master **Enabled** switch) clears its values and disables that feature on the radio.
+The Traffic Management module helps reduce unnecessary mesh traffic and improve network efficiency. It is available on nodes running firmware **2.8.0 or later**.
+
+The screen opens with a placement assessment: how many nodes this radio heard directly (over RF, within the last two hours), and whether that makes the module worth enabling. Traffic management pays off on a well-placed node with many direct neighbors — 50 or more heard in that window, ideally around 200. One transmission from such a node reaches most of them at once, so cutting hop counts on the chattiest packets removes the retransmission storm that follows each broadcast. On a node with a handful of direct neighbors it has little to police. Each feature is enabled implicitly by a non-zero value — turning a section's toggle off (or the master **Enabled** switch) clears its values and disables that feature on the radio. Turning a feature on starts its interval at the firmware default rather than zero, so saving right away enables it.
 
 | Setting | Description |
 |---------|-------------|
-| Enabled | Master enable for the traffic management module. |
+| Enabled | Turns the module on or off. |
 | **Position Deduplication** | |
-| Position Dedup | Drop redundant position broadcasts from the same node. |
-| Min Interval (s) | Minimum seconds between position updates from the same node. |
+| Position Dedup | Drop repeated position broadcasts. |
+| Minimum Interval | Positions from the same node arriving sooner than this are dropped. The firmware default is five hours. |
 | **NodeInfo Direct Response** | |
-| Direct Response | Respond to NodeInfo requests directly from local cache instead of flooding the mesh. |
-| Max Hops | Maximum hop distance from the requestor at which direct NodeInfo responses are served from the local cache. |
+| Direct Response | Answer NodeInfo requests from the local cache instead of flooding the mesh. |
+| Max Hops | Only answer requestors within this many hops, 1 to 3. The radio's role caps the effective value: routers allow up to 3, plain clients answer direct requestors only. |
 | **Rate Limiting** | |
-| Rate Limiting | Enable per-node rate limiting to throttle chatty nodes. |
-| Window (s) | Time window in seconds for rate limiting calculations. |
-| Max Packets | Maximum packets allowed per node within the rate limit window. |
+| Rate Limiting | Throttle nodes that send too many packets. |
+| Window | The time window packets are counted over. |
+| Max Packets | The most packets one node may send per window. |
 | **Unknown Packet Handling** | |
-| Drop Unknown | Enable dropping of unknown/undecryptable packets. |
-| Threshold | Maximum unknown/undecryptable packets per rate window before the source is dropped. |
+| Drop Unknown | Drop packets that cannot be decrypted. |
+| Threshold | How many per window before the sender is dropped. |
 
 ## Tools
 

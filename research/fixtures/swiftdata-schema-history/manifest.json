@@ -1,0 +1,72 @@
+{
+  "formatVersion" : 1,
+  "tags" : [
+    {
+      "checksum" : "02880e176ae9ea6b61970a90a8f03ab621887f66df7ecdd815469df703a01bb1",
+      "commit" : "00e35b446ca666c42a719f33463e5f6073b96093",
+      "fixture" : "02880e176ae9ea6b61970a90a8f03ab621887f66df7ecdd815469df703a01bb1/Meshtastic.store",
+      "sourceTag" : "v2.7.13",
+      "tag" : "v2.7.13"
+    },
+    {
+      "checksum" : "a15a6d3e5c2e0774adda80a5e68131dee89f63d688c3731a11e89ce4028e27a6",
+      "commit" : "8f5d3f73a64f1f0ed34335b62f2f85ccc0819139",
+      "fixture" : "a15a6d3e5c2e0774adda80a5e68131dee89f63d688c3731a11e89ce4028e27a6/Meshtastic.store",
+      "sourceTag" : "v2.7.14",
+      "tag" : "v2.7.14"
+    },
+    {
+      "checksum" : "558b2ef749cc5ac4bf6fdb33dfb30fb1bc007897e3477346be851f6a0a822ac8",
+      "commit" : "bad8024fa30891807ec9f211b1c30b9a1209805a",
+      "fixture" : "558b2ef749cc5ac4bf6fdb33dfb30fb1bc007897e3477346be851f6a0a822ac8/Meshtastic.store",
+      "sourceTag" : "v2.7.15",
+      "tag" : "v2.7.15"
+    },
+    {
+      "checksum" : "cd7b63c2b2a52199ee3d5a623d43443671b30a73347e7e3858f695aac1ca4837",
+      "commit" : "0422cb52cd4e54a34dad003213cc0a930eb4760e",
+      "fixture" : "cd7b63c2b2a52199ee3d5a623d43443671b30a73347e7e3858f695aac1ca4837/Meshtastic.store",
+      "sourceTag" : "v2.7.16",
+      "tag" : "v2.7.16"
+    },
+    {
+      "checksum" : "0e4b5cd7583f3bfc4a5f42c2cb8c6f4235b4f22fad7a294ccde8dc63c2ef8da4",
+      "commit" : "de26cc465f213903a15c1ece833b1681dbe33407",
+      "fixture" : "0e4b5cd7583f3bfc4a5f42c2cb8c6f4235b4f22fad7a294ccde8dc63c2ef8da4/Meshtastic.store",
+      "sourceTag" : "v2.7.17",
+      "tag" : "v2.7.17"
+    },
+    {
+      "checksum" : "546f11b725b6f9caf81e743d7af542ee981abeadca7e955bee8c3c1191bae293",
+      "commit" : "20a263de699f6c6f9c6f9972f70f82f3dea55a4c",
+      "fixture" : "546f11b725b6f9caf81e743d7af542ee981abeadca7e955bee8c3c1191bae293/Meshtastic.store",
+      "sourceTag" : "v2.7.18",
+      "tag" : "v2.7.18"
+    },
+    {
+      "checksum" : "a2cd1ebf5f283d6d58a8f257a7ffdbc37a6946efae39087f2be85bf8a705ccd9",
+      "commit" : "f9acc4cff2c92a38e0679bf56ea2d33e5a878d93",
+      "fixture" : "a2cd1ebf5f283d6d58a8f257a7ffdbc37a6946efae39087f2be85bf8a705ccd9/Meshtastic.store",
+      "sourceTag" : "v2.7.19",
+      "tag" : "v2.7.19"
+    },
+    {
+      "checksum" : "e6b2a95d7a2ffdcd3c17579191161532a2025a8cf5af8f315bf6331f385117f0",
+      "commit" : "4c2f180fefe4c494c3b1daa594aa65192c4bc667",
+      "fixture" : "e6b2a95d7a2ffdcd3c17579191161532a2025a8cf5af8f315bf6331f385117f0/Meshtastic.store",
+      "sourceTag" : "v2.7.20",
+      "tag" : "v2.7.20"
+    },
+    {
+      "checksum" : "e6b2a95d7a2ffdcd3c17579191161532a2025a8cf5af8f315bf6331f385117f0",
+      "commit" : "4ea817379c4d70075c3c5b8cc0cecee7938a23bd",
+      "fixture" : "e6b2a95d7a2ffdcd3c17579191161532a2025a8cf5af8f315bf6331f385117f0/Meshtastic.store",
+      "sourceTag" : "v2.7.20",
+      "tag" : "v2.7.21"
+    }
+  ],
+  "xcode" : {
+    "build" : "27A5252f",
+    "version" : "27.0"
+  }
+}

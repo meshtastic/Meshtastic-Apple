@@ -5,18 +5,21 @@ struct SaveConfigButton: View {
 	@State private var isPresentingSaveConfirm = false
 	let node: NodeInfoEntity?
 	@Binding var hasChanges: Bool
+	let confirmationMessage: String
 	let onConfirmation: () -> Void
 	private let initiallyPresentingConfirmation: Bool
 
 	init(
 		node: NodeInfoEntity?,
 		hasChanges: Binding<Bool>,
+		confirmationMessage: String = "After config values save the node will reboot.".localized,
 		initiallyPresentingConfirmation: Bool = false,
 		onConfirmation: @escaping () -> Void
 	) {
 		self.node = node
 		_hasChanges = hasChanges
 		_isPresentingSaveConfirm = State(initialValue: false)
+		self.confirmationMessage = confirmationMessage
 		self.onConfirmation = onConfirmation
 		self.initiallyPresentingConfirmation = initiallyPresentingConfirmation
 	}
@@ -44,7 +47,7 @@ struct SaveConfigButton: View {
 						onConfirmation()
 					}
 				} message: {
-					Text("After config values save the node will reboot.")
+					Text(confirmationMessage)
 				}
 				.tint(Color.primary)
 				.onAppear {
@@ -73,7 +76,7 @@ struct SaveConfigButton: View {
 						onConfirmation()
 					}
 				} message: {
-					Text("After config values save the node will reboot.")
+					Text(confirmationMessage)
 				}
 				.onAppear {
 					if initiallyPresentingConfirmation {

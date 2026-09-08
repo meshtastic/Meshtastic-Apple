@@ -79,6 +79,9 @@ class FirmwareViewModel: ObservableObject {
 			let firmwareReleases = try context.fetch(descriptor)
 			let localeTags = preferredRegion.prefersLocalizedFontFirmware ? preferredRegion.firmwareLocaleTagCandidates : []
 			for release in firmwareReleases {
+				// One release that fails to parse must not blank the whole list — catch per
+				// release, log it, and keep building rows for the others.
+				do {
 				if let architecture = hardwareArchitecture {
 					for firmwareType in FirmwareFile.validFilenameSuffixes(forArchitecture: architecture) {
 						let firmwareFile = try FirmwareFile(
@@ -99,6 +102,9 @@ class FirmwareViewModel: ObservableObject {
 						localeTags: localeTags
 					)
 					newFirmwareList[firmwareFile.localUrl.lastPathComponent] = firmwareFile
+				}
+				} catch {
+					Logger.services.error("Skipping firmware release \(release.versionId): \(error)")
 				}
 			}
 		} catch {

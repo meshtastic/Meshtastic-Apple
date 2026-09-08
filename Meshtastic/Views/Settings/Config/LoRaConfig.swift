@@ -10,6 +10,12 @@ import SwiftData
 import MeshtasticProtobufs
 import OSLog
 
+enum LoRaRegionValidation {
+	static func supportedRegion(rawValue: Int) -> RegionCodes? {
+		RegionCodes(rawValue: rawValue)
+	}
+}
+
 struct LoRaConfig: View {
 
 	enum Field: Hashable {
@@ -30,6 +36,15 @@ struct LoRaConfig: View {
 	@FocusState var focusedField: Field?
 
 	let node: NodeInfoEntity?
+	let onSuccessfulSave: (_ nodeNum: Int64, _ region: RegionCodes) -> Void
+
+	init(
+		node: NodeInfoEntity?,
+		onSuccessfulSave: @escaping (_ nodeNum: Int64, _ region: RegionCodes) -> Void = { _, _ in }
+	) {
+		self.node = node
+		self.onSuccessfulSave = onSuccessfulSave
+	}
 
 	private var selectedModemPreset: ModemPresets {
 		ModemPresets(rawValue: modemPreset) ?? .longFast
@@ -153,6 +168,10 @@ struct LoRaConfig: View {
 		)
 	}
 
+	private var savedRegion: RegionCodes? {
+		LoRaRegionValidation.supportedRegion(rawValue: region)
+	}
+
 	private var bandwidthSelection: Binding<Int> {
 		Binding(
 			get: {
@@ -245,10 +264,14 @@ struct LoRaConfig: View {
 		.disabled(!accessoryManager.isConnected || node?.loRaConfig == nil)
 		.safeAreaInset(edge: .bottom, alignment: .center) {
 			HStack(spacing: 0) {
-				SaveConfigButton(node: node, hasChanges: $hasChanges) {
+				SaveConfigButton(
+					node: node,
+					hasChanges: $hasChanges,
+					confirmationMessage: "Your device may reboot after saving.".localized
+				) {
 					saveLoRaConfig()
 				}
-				.disabled(customBandwidthValidationIssue != nil)
+				.disabled(customBandwidthValidationIssue != nil || savedRegion == nil)
 			}
 		}
 		.navigationTitle("LoRa Config")
@@ -272,7 +295,7 @@ struct LoRaConfig: View {
 	/// type-check-time treatment as SecurityConfig (body's chained expression measured ~10s
 	/// with -warn-long-expression-type-checking before extraction).
 	private func saveLoRaConfig() {
-		guard customBandwidthValidationIssue == nil else { return }
+		guard customBandwidthValidationIssue == nil, let savedRegion else { return }
 		performConfigSave(
 			node: node,
 			context: context,
@@ -282,7 +305,7 @@ struct LoRaConfig: View {
 		) { fromUser, toUser in
 			var lc = Config.LoRaConfig()
 			lc.hopLimit = UInt32(hopLimit)
-			lc.region = RegionCodes(rawValue: region)!.protoEnumValue()
+			lc.region = savedRegion.protoEnumValue()
 			lc.modemPreset = ModemPresets(rawValue: modemPreset)!.protoEnumValue()
 			lc.usePreset = usePreset
 			lc.txEnabled = txEnabled
@@ -300,7 +323,35 @@ struct LoRaConfig: View {
 			   connectedNode.num == node?.user?.num ?? 0 {
 				UserDefaults.modemPreset = modemPreset
 			}
+
+			// Read the stored settings before the save: the radio reboots on a LoRa write and echoes
+			// the new config back, so afterwards there is nothing left to compare against.
+			let previous = node?.loRaConfig.map {
+				LoRaChannelSettings(
+					regionCode: $0.regionCode, modemPreset: $0.modemPreset, usePreset: $0.usePreset,
+					channelNum: $0.channelNum, overrideFrequency: $0.overrideFrequency,
+					bandwidth: $0.bandwidth, spreadFactor: $0.spreadFactor, codingRate: $0.codingRate
+				)
+			}
+			let updated = LoRaChannelSettings(
+				regionCode: Int32(region), modemPreset: Int32(modemPreset), usePreset: usePreset,
+				channelNum: Int32(channelNum), overrideFrequency: overrideFrequency,
+				bandwidth: Int32(bandwidth), spreadFactor: Int32(spreadFactor),
+				codingRate: Int32(normalizedCodingRate)
+			)
+
 			_ = try await accessoryManager.saveLoRaConfig(config: lc, fromUser: fromUser, toUser: toUser)
+
+			// Only when the radio actually moved channel, and only for a change made here. The
+			// beacon join flow writes the same config to follow a mesh it has just found, where every
+			// node in the list is expected to be on the old channel and there is nothing to offer.
+			if let previous, updated.movesOffChannel(from: previous),
+			   let targetNum = node?.user?.num {
+				LoRaConfigChange.recordChange(forNode: targetNum)
+				Logger.mesh.info("📡 LoRa settings moved node \(targetNum.toHex(), privacy: .public) to a different channel; flagging nodes not heard since")
+			}
+
+			onSuccessfulSave(toUser.num, savedRegion)
 		}
 	}
 
@@ -322,6 +373,11 @@ struct LoRaConfig: View {
 				Text("The region where you will be using your radios.")
 					.foregroundColor(.gray)
 					.font(.callout)
+				if savedRegion == nil {
+					Label("This radio uses a newer region that this app does not support. Choose a supported region before saving.", systemImage: "exclamationmark.triangle.fill")
+						.foregroundStyle(.orange)
+						.font(.callout)
+				}
 			}
 
 			if let info = regionPresetInfo, info.licensedOnly {

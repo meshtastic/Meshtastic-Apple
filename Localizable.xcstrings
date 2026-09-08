@@ -10,6 +10,9 @@
     "Please do not leave this screen until the update is complete. You can safely play Chirpy Hop while waiting!": {
       "comment": "Notice displayed during OTA firmware update"
     },
+    "Product links may be affiliate links — purchases may earn Meshtastic a commission.": {
+      "comment": "Affiliate disclosure shown above msh.to product links"
+    },
     "Visit meshtastic.org/docs for guides, hardware information, and community tips.": {
       "comment": "OTA update tip: docs website"
     },
@@ -53903,6 +53906,7 @@
         }
       }
     },
+    "Your device may reboot after saving.": {},
     "LoRa Config": {
       "localizations": {
         "da": {
@@ -93588,6 +93592,16 @@
           "stringUnit": {
             "state": "needs_review",
             "value": "訊號：極差"
+          }
+        }
+      }
+    },
+    "Signed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Signed"
           }
         }
       }
