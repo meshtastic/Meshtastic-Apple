@@ -145,15 +145,15 @@
             "install",
             "erase",
             "ble",
+            "without",
             "transfer",
             "stable",
             "settings",
             "radios",
             "progress",
-            "nrf52",
-            "notification"
+            "nrf52"
         ],
-        "charCount": 7481
+        "charCount": 7633
     },
     {
         "id": "getting-started",
