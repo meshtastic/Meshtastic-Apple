@@ -49,6 +49,16 @@ struct NodeSecurityIndicatorTests {
 		#expect(NodeSecurityIndicator.status(firmwareVersion: "2.7.26", pkiEncrypted: true, keyMatch: true, isOwnNode: true) == .publicKey)
 	}
 
+	@Test("a verified signature shows signed even when the version gate says no")
+	func signatureEvidenceBeatsVersionGate() {
+		// The radio verified this node's signature, so it signs — whatever version it reports.
+		#expect(NodeSecurityIndicator.status(firmwareVersion: "2.7.26", pkiEncrypted: true, keyMatch: true, hasXeddsaSigned: true) == .signed)
+		#expect(NodeSecurityIndicator.status(firmwareVersion: nil, pkiEncrypted: false, keyMatch: false, hasXeddsaSigned: true) == .signed)
+		// In-person verification still outranks it, and a mismatch still wins.
+		#expect(NodeSecurityIndicator.status(firmwareVersion: "2.7.26", pkiEncrypted: true, keyMatch: true, verified: true, hasXeddsaSigned: true) == .verified)
+		#expect(NodeSecurityIndicator.status(firmwareVersion: "2.7.26", pkiEncrypted: true, keyMatch: false, hasXeddsaSigned: true) == .keyMismatch)
+	}
+
 	@Test("an in-person verified contact outranks signing on 2.8")
 	func verifiedOutranksSigned() {
 		#expect(NodeSecurityIndicator.status(firmwareVersion: "2.8.0", pkiEncrypted: true, keyMatch: true, verified: true) == .verified)
