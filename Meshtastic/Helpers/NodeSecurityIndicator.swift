@@ -19,9 +19,8 @@ enum NodeSecurityIndicator: Equatable {
 	/// verification flow). The strongest trust the list can show.
 	case verified
 	/// 2.8+: the node's NodeInfo broadcast carried an XEdDSA signature the radio verified.
+	/// Every 2.8 node signs, so this is the baseline for that firmware.
 	case signed
-	/// 2.8+: the node's broadcasts are not signed. Honest and neutral — common, not an alarm.
-	case notSigned
 	/// Pre-2.8 or unknown firmware: a public key is on file and matches.
 	case publicKey
 	/// Pre-2.8 or unknown firmware: no public key on file; direct messages use the channel key.
@@ -36,9 +35,6 @@ enum NodeSecurityIndicator: Equatable {
 			return ("person.badge.shield.checkmark", .green)
 		case .signed:
 			return (SignedNodeIcon.symbolName, .secondary)
-		case .notSigned:
-			// An empty shield in gray: no identity verification, stated without alarm.
-			return ("shield", .gray)
 		case .publicKey:
 			return ("lock.fill", .green)
 		case .sharedKey:
@@ -60,18 +56,18 @@ enum NodeSecurityIndicator: Equatable {
 	}
 
 	/// Decides the indicator for one row from snapshot fields alone (no live model access).
-	static func status(firmwareVersion: String?, pkiEncrypted: Bool, keyMatch: Bool, signed: Bool, verified: Bool = false, isOwnNode: Bool = false) -> NodeSecurityIndicator {
+	static func status(firmwareVersion: String?, pkiEncrypted: Bool, keyMatch: Bool, verified: Bool = false, isOwnNode: Bool = false) -> NodeSecurityIndicator {
 		// A stored key that stopped matching is a warning regardless of firmware version —
 		// most of all for a contact the user personally verified.
 		if pkiEncrypted && !keyMatch {
 			return .keyMismatch
 		}
 		if supportsSigning(firmwareVersion: firmwareVersion) {
+			// Every 2.8 node signs its broadcasts, so a 2.8 node is signed by definition.
 			// The connected radio is the user's own device: they hold its key, so its
 			// identity needs no third-party verification. Sharing your own contact QR
 			// already marks it manually verified on the same reasoning.
-			if verified || isOwnNode { return .verified }
-			return signed ? .signed : .notSigned
+			return (verified || isOwnNode) ? .verified : .signed
 		}
 		return pkiEncrypted ? .publicKey : .sharedKey
 	}

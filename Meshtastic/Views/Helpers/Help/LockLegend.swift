@@ -31,15 +31,6 @@ struct LockLegend: View {
 			)
 			HelpItem(
 				symbol: AnyView(
-					Image(systemName: "shield")
-						.font(.title3)
-						.foregroundColor(.gray)
-				),
-				title: String(localized: "Not Signed"),
-				subtitle: String(localized: "This node's broadcasts are not signed. Shown for nodes on firmware 2.8 or later.")
-			)
-			HelpItem(
-				symbol: AnyView(
 					Image(systemName: "lock.open.fill")
 						.font(.title3)
 						.foregroundColor(.yellow)

@@ -105,7 +105,6 @@ struct NodeListRowSummary {
 			firmwareVersion: firmwareVersion,
 			pkiEncrypted: pkiEncrypted,
 			keyMatch: keyMatch,
-			signed: hasXeddsaSigned,
 			verified: isKeyManuallyVerified,
 			isOwnNode: isConnectedNode
 		).glyph
