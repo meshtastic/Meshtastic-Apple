@@ -22,6 +22,10 @@ final class NodeInfoEntity {
 	/// True when this node signs its broadcast packets via XEdDSA and the radio has verified at least one
 	/// (NodeInfo.has_xeddsa_signed, field 14). Observed automatic trust — not a configurable setting.
 	var hasXeddsaSigned: Bool = false
+	/// True when the user verified this node's key in person — an in-person contact QR exchange
+	/// (SharedContact.manually_verified) or the radio's own verification flow. Reported by the
+	/// connected radio's node DB (NodeInfo.is_key_manually_verified); the radio owns the flag.
+	var isKeyManuallyVerified: Bool = false
 	var hopsAway: Int32 = 0
 	var id: Int64 = 0
 	var ignored: Bool = false

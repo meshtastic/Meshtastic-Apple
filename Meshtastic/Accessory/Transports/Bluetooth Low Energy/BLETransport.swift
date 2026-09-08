@@ -448,19 +448,19 @@ actor BLETransport: Transport {
 			case .connectionTimeout: // 6
 				// Happens when the node goes out of range or the shutdown or reset buttons are presses
 				// Should disconnect, show error, and retry when re-advertised
-				Logger.transport.error("🛜 [BLETransport] Disconnected with CBError code: \(cbError.code.rawValue) - \(cbError.localizedDescription)")
+				Logger.transport.error("🛜 [BLETransport] Disconnected with CBError code: \(cbError.code.rawValue, privacy: .public) - \(cbError.localizedDescription, privacy: .public)")
 				shouldReconnect = true
 			case .peripheralDisconnected: // 7
 				// Happens when the node reboots or shuts down intentionally via the firmware or app
 				// Should disconnect, show error, and retry when re-advertised
-				Logger.transport.error("🛜 [BLETransport] Disconnected with CBError code: \(cbError.code.rawValue) - \(cbError.localizedDescription)")
+				Logger.transport.error("🛜 [BLETransport] Disconnected with CBError code: \(cbError.code.rawValue, privacy: .public) - \(cbError.localizedDescription, privacy: .public)")
 				shouldReconnect = true
 			default:
 				// Fallback for other CBError codes
-				Logger.transport.error("🛜 [BLETransport] Disconnected with CBError code: \(cbError.code.rawValue) - \(cbError.localizedDescription)")
+				Logger.transport.error("🛜 [BLETransport] Disconnected with CBError code: \(cbError.code.rawValue, privacy: .public) - \(cbError.localizedDescription, privacy: .public)")
 			}
 		case let otherError:
-			Logger.transport.error("🛜 [BLETransport] Disconnected with non-CBError: \(otherError.localizedDescription)")
+			Logger.transport.error("🛜 [BLETransport] Disconnected with non-CBError: \(otherError.localizedDescription, privacy: .public)")
 		}
 		
 		if let continuation = self.connectContinuation {
@@ -689,7 +689,7 @@ class BLEDelegate: NSObject, CBCentralManagerDelegate {
 
 	func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
 		if let error = error as? NSError {
-			Logger.transport.error("🛜 [BLETransport] Error while disconnecting peripheral: \(peripheral.name ?? ""): \(error)")
+			Logger.transport.error("🛜 [BLETransport] Error while disconnecting peripheral: \(peripheral.name ?? "", privacy: .public): \(error, privacy: .public)")
 			Task { await transport?.handlePeripheralDisconnectError(peripheral: peripheral, error: error) }
 		} else {
 			Logger.transport.error("🛜 [BLETransport] Did succesfully disconnect peripheral: \(peripheral.name ?? "")")

@@ -95,6 +95,12 @@ struct NodeList: View {
 		.sheet(isPresented: $showingHelp) {
 			NodeListHelp()
 		}
+		.safeAreaInset(edge: .top) {
+			// Shown after the radio's LoRa settings move it to a different channel. A banner rather
+			// than an alert on the settings screen: a LoRa write reboots the radio, so anything modal
+			// at save time competes with the reconnect, and this needs to survive being missed.
+			UnheardNodesBanner()
+		}
 		.safeAreaInset(edge: .bottom, alignment: .leading) {
 			HStack {
 				Button(action: {
@@ -627,6 +633,11 @@ fileprivate extension NodeFilterParameters {
 				return false
 			}
 			if lastHeard < threshold { return false }
+		}
+
+		// Signed filter
+		if isSigned {
+			if !node.hasXeddsaSigned { return false }
 		}
 
 		// Encrypted filter (requires relationship traversal)

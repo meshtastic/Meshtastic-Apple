@@ -65,6 +65,7 @@ extension AccessoryManager {
 						// connect must be the only one running, or its database clear/restore
 						// races a second node dump (nodes bleeding between radios).
 						if self.shouldAutomaticallyConnectToPreferredPeripheralAfterError, !userRequestedConnectionCancellation,
+						   !self.autoReconnectSuspendedForSession,
 						   !self.isSwitchingDevices,
 						   UserDefaults.autoconnectOnDiscovery, UserDefaults.preferredPeripheralId == newDevice.id.uuidString {
 							Logger.transport.debug("🔎 [Discovery] Found preferred peripheral \(newDevice.name)")
