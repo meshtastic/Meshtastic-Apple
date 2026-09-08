@@ -911,7 +911,7 @@ actor MeshPackets {
 		}
 	}
 
-	func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, deferSave: Bool = false) -> PersistentIdentifier? {
+	func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, deferSave: Bool = false, connectedNodeNum: Int64? = nil) -> PersistentIdentifier? {
 		// This path handles the connected device's local node-DB dump during wantConfig
 		// (FromRadio.nodeInfo), not packets that crossed the mesh — log it as admin/setup.
 		// Over-the-air NodeInfo arrives via upsertNodeInfoPacket and stays on .mesh.
@@ -1071,9 +1071,16 @@ actor MeshPackets {
 							let newUserEntity = findOrCreateUser(num: Int64(nodeInfo.num), context: modelContext)
 							fetchedNode[0].user = newUserEntity
 						}
-						// First-wins on the public key, consistent with the NodeInfo/User paths in UpdateSwiftData
-						// (previously a `== nil` guard here silently ignored mismatches). See `applyInboundPublicKey`.
-						fetchedNode[0].user?.applyInboundPublicKey(nodeInfo.user.publicKey, nodeNum: Int64(nodeInfo.num))
+						if let connectedNodeNum, nodeNum == connectedNodeNum {
+							// The connected radio reporting its own user over the direct link is
+							// ground truth — a 2.8 upgrade or factory reset regenerates its keypair,
+							// and first-wins would flag the radio's own new key as a mismatch.
+							fetchedNode[0].user?.acceptOwnRadioPublicKey(nodeInfo.user.publicKey)
+						} else {
+							// First-wins on the public key, consistent with the NodeInfo/User paths in UpdateSwiftData
+							// (previously a `== nil` guard here silently ignored mismatches). See `applyInboundPublicKey`.
+							fetchedNode[0].user?.applyInboundPublicKey(nodeInfo.user.publicKey, nodeNum: Int64(nodeInfo.num))
+						}
 						fetchedNode[0].user?.userId = nodeInfo.num.toHex()
 						fetchedNode[0].user?.num = Int64(nodeInfo.num)
 						fetchedNode[0].user?.numString = String(nodeInfo.num)

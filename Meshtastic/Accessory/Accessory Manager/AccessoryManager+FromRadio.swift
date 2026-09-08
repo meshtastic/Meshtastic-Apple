@@ -383,7 +383,7 @@ extension AccessoryManager {
 		// throughput cliff behind slow/hung connects on large meshes. Deferred writes are
 		// flushed by the actor's debounced save (at most every 5s) and finally at
 		// configCompleteID (NONCE_ONLY_DB), which also batch-saves the main context.
-		_ = await MeshPackets.shared.nodeInfoPacket(nodeInfo: nodeInfo, channel: 0, deferSave: true)
+		_ = await MeshPackets.shared.nodeInfoPacket(nodeInfo: nodeInfo, channel: 0, deferSave: true, connectedNodeNum: activeConnection?.device.num)
 
 		// Update the connected device's display metadata straight from the protobuf — the
 		// previous code resolved the just-inserted entity on a fresh ModelContext for every
