@@ -548,7 +548,10 @@ struct FirmwareHeroImage: View {
 	var pioEnv: String?
 	@State private var svg: SVG?
 	@State private var resolved = false
-	
+	// One height for the image and its placeholder so the row doesn't jump when
+	// resolution finishes.
+	private static let heroHeight: CGFloat = 140
+
 	var body: some View {
 		Group {
 			if let svg = svg {
@@ -556,20 +559,20 @@ struct FirmwareHeroImage: View {
 					.resizable()
 					.scaledToFit()
 					.cornerRadius(5)
-					.frame(maxWidth: .infinity, maxHeight: 140)
+					.frame(maxWidth: .infinity, maxHeight: Self.heroHeight)
 			} else if !resolved {
 				// Placeholder prevents List jumpiness while loading. Once resolution has
 				// run and found nothing, render nothing so the row collapses instead of
-				// holding a 140 point hole in the layout.
+				// holding an image-sized hole in the layout.
 				Color.clear
-					.frame(height: 140)
+					.frame(height: Self.heroHeight)
 			}
 		}
-		.task {
-			// Perform the Core Data relationship traversal off the main layout pass
-			if svg == nil {
-				self.svg = getSVG()
-			}
+		.task(id: pioEnv) {
+			// Perform the Core Data relationship traversal off the main layout pass.
+			// Keyed on pioEnv: the radio reports its PlatformIO env after connect, so
+			// resolution must rerun when it arrives or changes.
+			svg = getSVG()
 			resolved = true
 		}
 	}

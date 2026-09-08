@@ -565,22 +565,22 @@ deviceEntity.architecture = device.architecture
 		// 1. Network: Try to get ETag (Optional - might fail if offline or timeout)
 		let remoteETag = try? await url.eTag()
 
-		// 2. DB: Check if we already have this version or a usable cached version
+		// 2. DB: Check if we already have this version or a usable cached version.
+		// The image's device relationship is to-one, so shared art is stored once per
+		// device — every device that references the file needs its own current copy.
 		let isUpToDate: Bool = await MainActor.run {
 			let context = container.mainContext
-			var imageDescriptor = FetchDescriptor<DeviceHardwareImageEntity>(
-				predicate: #Predicate { $0.fileName == imageName }
-			)
-			imageDescriptor.fetchLimit = 1
-
-			if let existing = try? context.fetch(imageDescriptor).first,
-			   let data = existing.svgData, !data.isEmpty {
-				if let rTag = remoteETag {
-					return existing.eTag == rTag
-				}
-				return true
+			for platform in platforms {
+				var deviceDescriptor = FetchDescriptor<DeviceHardwareEntity>(
+					predicate: #Predicate { $0.platformioTarget == platform }
+				)
+				deviceDescriptor.fetchLimit = 1
+				guard let deviceEntity = try? context.fetch(deviceDescriptor).first else { continue }
+				guard let existing = deviceEntity.images.first(where: { $0.fileName == imageName }),
+					  let data = existing.svgData, !data.isEmpty else { return false }
+				if let rTag = remoteETag, existing.eTag != rTag { return false }
 			}
-			return false
+			return true
 		}
 
 		if isUpToDate {
@@ -626,36 +626,28 @@ deviceEntity.architecture = device.architecture
 		await MainActor.run {
 			let context = container.mainContext
 
-			// Find or Create Image Entity
-			var imageDescriptor = FetchDescriptor<DeviceHardwareImageEntity>(
-				predicate: #Predicate { $0.fileName == imageName }
-			)
-			imageDescriptor.fetchLimit = 1
-
-			let existingImg = try? context.fetch(imageDescriptor).first
-			let imageEntity: DeviceHardwareImageEntity
-			if let existingImg {
-				imageEntity = existingImg
-			} else {
-				imageEntity = DeviceHardwareImageEntity()
-				context.insert(imageEntity)
-			}
-
-			imageEntity.fileName = imageName
-			imageEntity.eTag = finalETag
-			imageEntity.svgData = finalData
-
-			// Link the image to every device that references it
+			// Link the image to every device that references it. The device relationship
+			// is to-one (the inverse of DeviceHardwareEntity.images), so each device gets
+			// its own entity — appending one shared entity to several devices would move
+			// it, leaving only the last platform linked.
 			for platform in platforms {
 				var deviceDescriptor = FetchDescriptor<DeviceHardwareEntity>(
 					predicate: #Predicate { $0.platformioTarget == platform }
 				)
 				deviceDescriptor.fetchLimit = 1
 				guard let deviceEntity = try? context.fetch(deviceDescriptor).first else { continue }
-				imageEntity.device = deviceEntity
-				if !deviceEntity.images.contains(where: { $0.fileName == imageName }) {
-					deviceEntity.images.append(imageEntity)
+
+				let imageEntity: DeviceHardwareImageEntity
+				if let existing = deviceEntity.images.first(where: { $0.fileName == imageName }) {
+					imageEntity = existing
+				} else {
+					imageEntity = DeviceHardwareImageEntity()
+					context.insert(imageEntity)
+					imageEntity.device = deviceEntity
 				}
+				imageEntity.fileName = imageName
+				imageEntity.eTag = finalETag
+				imageEntity.svgData = finalData
 			}
 
 			try? context.save()
