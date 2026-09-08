@@ -24,12 +24,16 @@ class RequestRecordingURLProtocol: URLProtocol {
 
 	nonisolated(unsafe) private static var stubs: [String: Data] = [:]
 
+	/// Applied to every stubbed response when set, so the ETag-skip path is testable.
+	nonisolated(unsafe) private static var stubETag: String?
+
 	/// Resets the recorder. Any request whose URL contains one of the `stubs` keys is answered
 	/// with a 200 and that body; everything else fails immediately.
-	static func reset(stubs: [String: Data] = [:]) {
+	static func reset(stubs: [String: Data] = [:], eTag: String? = nil) {
 		lock.lock()
 		recorded = []
 		Self.stubs = stubs
+		Self.stubETag = eTag
 		lock.unlock()
 	}
 
@@ -56,11 +60,16 @@ class RequestRecordingURLProtocol: URLProtocol {
 		let stubbed = Self.stubs.first { absolute.contains($0.key) }?.value
 		Self.lock.unlock()
 
+		Self.lock.lock()
+		let eTag = Self.stubETag
+		Self.lock.unlock()
+		var headers = ["Content-Type": "application/json"]
+		if let eTag { headers["ETag"] = eTag }
 		guard let body = stubbed, let url = request.url, let response = HTTPURLResponse(
 			url: url,
 			statusCode: 200,
 			httpVersion: "HTTP/1.1",
-			headerFields: ["Content-Type": "application/json"]
+			headerFields: headers
 		) else {
 			client?.urlProtocol(self, didFailWithError: URLError(.notConnectedToInternet))
 			return
@@ -319,6 +328,66 @@ final class MeshtasticAPIBundledSeedTests {
 	/// The API-driven pass must cover hardware that exists only in the live API list (which the
 	/// bundled snapshot can lag behind) while still not re-requesting the bundled images, and must
 	/// import the msh.to link catalog exactly once.
+	/// The caching this PR adds: an unchanged ETag skips the decode and the upsert, a new ETag
+	/// does not, and a server that sends no ETag (api.meshtastic.org until its DNS moves to the
+	/// cached deployment) behaves exactly as before.
+	@Test @MainActor func matchingETagSkipsTheUpsert() async throws {
+		func catalog(name: String) -> Data {
+			Data("""
+			[{
+			  "hwModel": 99002,
+			  "hwModelSlug": "ETAG_TEST",
+			  "platformioTarget": "etag_test",
+			  "architecture": "esp32",
+			  "activelySupported": true,
+			  "displayName": "\(name)",
+			  "images": []
+			}]
+			""".utf8)
+		}
+		let eTagKey = "api.etag.\(MeshtasticAPI.deviceCatalogETagKey)"
+		UserDefaults.standard.removeObject(forKey: eTagKey)
+		defer { UserDefaults.standard.removeObject(forKey: eTagKey) }
+		URLProtocol.registerClass(RequestRecordingURLProtocol.self)
+		defer { URLProtocol.unregisterClass(RequestRecordingURLProtocol.self) }
+
+		let container = try makeContainer()
+		let api = MeshtasticAPI(container: container, startupRefresh: false)
+		let context = container.mainContext
+		func displayName() throws -> String? {
+			let hwModel: Int64 = 99002
+			return try context.fetch(FetchDescriptor<DeviceHardwareEntity>(
+				predicate: #Predicate { $0.hwModel == hwModel })).first?.displayName
+		}
+
+		// First fetch stores the payload and its ETag.
+		RequestRecordingURLProtocol.reset(
+			stubs: ["api.meshtastic.org/resource/deviceHardware": catalog(name: "First")], eTag: "v1")
+		try await api.refreshDevicesAPIData(includeImages: false)
+		#expect(try displayName() == "First")
+		#expect(MeshtasticAPI.lastETag(for: MeshtasticAPI.deviceCatalogETagKey) == "v1")
+
+		// Same ETag, different body: the skip means the body is never applied — that is the
+		// database pass this cache exists to avoid.
+		RequestRecordingURLProtocol.reset(
+			stubs: ["api.meshtastic.org/resource/deviceHardware": catalog(name: "Skipped")], eTag: "v1")
+		try await api.refreshDevicesAPIData(includeImages: false)
+		#expect(try displayName() == "First", "an unchanged ETag must skip the upsert")
+
+		// New ETag: the pass runs and the change lands.
+		RequestRecordingURLProtocol.reset(
+			stubs: ["api.meshtastic.org/resource/deviceHardware": catalog(name: "Second")], eTag: "v2")
+		try await api.refreshDevicesAPIData(includeImages: false)
+		#expect(try displayName() == "Second", "a new ETag must not be skipped")
+		#expect(MeshtasticAPI.lastETag(for: MeshtasticAPI.deviceCatalogETagKey) == "v2")
+
+		// No ETag at all — today's api.meshtastic.org — upserts every time, as before.
+		RequestRecordingURLProtocol.reset(
+			stubs: ["api.meshtastic.org/resource/deviceHardware": catalog(name: "Third")])
+		try await api.refreshDevicesAPIData(includeImages: false)
+		#expect(try displayName() == "Third", "no ETag means no skip")
+	}
+
 	@Test @MainActor func apiRefreshCoversApiOnlyHardwareWithoutDuplicating() async throws {
 		let apiOnly = """
 		[{
