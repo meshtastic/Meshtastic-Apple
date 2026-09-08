@@ -36,7 +36,9 @@ enum NodeSecurityIndicator: Equatable {
 		case .signed:
 			// Custom symbol: the mesh radio with a shield-checkmark badge — verified by the
 			// radio over the mesh, as opposed to the person badge for in-person verification.
-			return ("radio.badge.shield.checkmark", .secondary)
+			// Green like .verified: both are a verified identity, and the glyph carries which
+			// route earned it. A muted color read as a weaker or partial state, which it is not.
+			return ("radio.badge.shield.checkmark", .green)
 		case .publicKey:
 			return ("lock.fill", .green)
 		case .sharedKey:
