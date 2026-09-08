@@ -149,7 +149,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	// Constants
 	let NONCE_ONLY_CONFIG = 69420
 	let NONCE_ONLY_DB = 69421
-	let minimumVersion = "2.5.18"
+	let minimumVersion = "2.5.14"
 	let securityVersion = "2.6.0"
 
 	// Global Objects
@@ -233,6 +233,9 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	@Published var activeDeviceNum: Int64?
 	@Published var allowDisconnect = false
 	@Published var lastConnectionError: Error?
+	/// True while the connected radio's firmware is below `minimumVersion`. ContentView
+	/// presents the firmware update gate over the whole app while this is set.
+	@Published var firmwareUpdateRequired = false
 	@Published var isConnected: Bool = false
 	/// When the radio last finished sending its configuration.
 	///
@@ -608,6 +611,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			self.activeConnection = nil
 		}
 		self.activeDeviceNum = nil
+		self.firmwareUpdateRequired = false
 		if let refresh = activeAutomaticConfigRefresh {
 			automaticConfigRefreshTask?.cancel()
 			await finishAutomaticConfigRefresh(owner: refresh.owner, error: CancellationError())

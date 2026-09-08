@@ -31,7 +31,6 @@ struct Connect: View {
 	@State private var connectedBatteryLevel: Int32?
 	@State private var firmwareUpdateNotice: FirmwareUpdateNotice?
 	@State var isUnsetRegion = false
-	@State var invalidFirmwareVersion = false
 	@State var showSecurityVersionNag = false
 #if !targetEnvironment(macCatalyst)
 	@State var liveActivityStarted = false
@@ -575,20 +574,6 @@ struct Connect: View {
 				}
 			}
 		}
-		// TODO: REMOVING VERSION STUFF?
-		//		.sheet(isPresented: $invalidFirmwareVersion, onDismiss: didDismissSheet) {
-		//			InvalidVersion(minimumVersion: accessoryManager.minimumVersion, version: accessoryManager.activeConnection?.device.firmwareVersion ?? "?.?.?")
-		//				.presentationDetents([.large])
-		//				.presentationDragIndicator(.automatic)
-		//		}
-		//		.onChange(of: accessoryManager) {
-		//			invalidFirmwareVersion = self.bleManager.invalidVersion
-		//		}
-		.sheet(isPresented: $invalidFirmwareVersion) {
-			InvalidVersion(minimumVersion: accessoryManager.minimumVersion, version: accessoryManager.activeConnection?.device.firmwareVersion ?? "?.?.?")
-				.presentationDetents([.large])
-				.presentationDragIndicator(.automatic)
-		}
 		.sheet(isPresented: $showSecurityVersionNag) {
 			SecurityVersionNag(minimumSecureVersion: accessoryManager.securityVersion, version: accessoryManager.activeConnection?.device.firmwareVersion ?? "?.?.?")
 				.presentationDetents([.large])
@@ -705,7 +690,6 @@ struct Connect: View {
 		if let firmwareVersion = accessoryManager.activeConnection?.device.firmwareVersion, firmwareVersion != "?.?.?" && !firmwareVersion.isEmpty {
 			let meetsMinimumVersion = accessoryManager.checkIsVersionSupported(forVersion: accessoryManager.minimumVersion)
 			let meetsSecurityVersion = accessoryManager.checkIsVersionSupported(forVersion: accessoryManager.securityVersion)
-			invalidFirmwareVersion = !meetsMinimumVersion
 			showSecurityVersionNag = meetsMinimumVersion && !meetsSecurityVersion
 		}
 	}
