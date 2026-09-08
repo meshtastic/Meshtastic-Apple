@@ -270,8 +270,6 @@
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		0846840A4300FE311DCFDA44 /* images */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
 			explicitFileTypes = {
 			};
 			explicitFolders = (

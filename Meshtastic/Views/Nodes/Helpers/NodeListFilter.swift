@@ -41,7 +41,7 @@ struct NodeListFilter: View {
 
 					if showsEncryptedFilter {
 						Toggle(isOn: $filters.isSigned) {
-							Label("Signed", systemImage: SignedNodeIcon.symbolName)
+							Label { Text("Signed") } icon: { SignedNodeIcon.image }
 						}
 						.toggleStyle(.switch)
 						.listRowSeparator(.visible)
