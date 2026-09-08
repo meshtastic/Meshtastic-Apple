@@ -93593,6 +93593,16 @@
         }
       }
     },
+    "Signed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Signed"
+          }
+        }
+      }
+    },
     "Signed node": {
       "localizations": {
         "en": {

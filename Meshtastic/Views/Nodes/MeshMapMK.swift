@@ -958,6 +958,7 @@ struct MeshMapMK: View {
 		combine(&key, preciseLocationsOnly ? 1 : 0)
 		combine(&key, stableStringKey(filters.searchText.lowercased()))
 		combine(&key, filters.isOnline ? 1 : 0)
+		combine(&key, filters.isSigned ? 1 : 0)
 		combine(&key, filters.isPkiEncrypted ? 1 : 0)
 		combine(&key, filters.isFavorite ? 1 : 0)
 		combine(&key, filters.isIgnored ? 1 : 0)
