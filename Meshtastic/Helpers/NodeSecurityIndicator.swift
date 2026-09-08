@@ -60,14 +60,17 @@ enum NodeSecurityIndicator: Equatable {
 	}
 
 	/// Decides the indicator for one row from snapshot fields alone (no live model access).
-	static func status(firmwareVersion: String?, pkiEncrypted: Bool, keyMatch: Bool, signed: Bool, verified: Bool = false) -> NodeSecurityIndicator {
+	static func status(firmwareVersion: String?, pkiEncrypted: Bool, keyMatch: Bool, signed: Bool, verified: Bool = false, isOwnNode: Bool = false) -> NodeSecurityIndicator {
 		// A stored key that stopped matching is a warning regardless of firmware version —
 		// most of all for a contact the user personally verified.
 		if pkiEncrypted && !keyMatch {
 			return .keyMismatch
 		}
 		if supportsSigning(firmwareVersion: firmwareVersion) {
-			if verified { return .verified }
+			// The connected radio is the user's own device: they hold its key, so its
+			// identity needs no third-party verification. Sharing your own contact QR
+			// already marks it manually verified on the same reasoning.
+			if verified || isOwnNode { return .verified }
 			return signed ? .signed : .notSigned
 		}
 		return pkiEncrypted ? .publicKey : .sharedKey

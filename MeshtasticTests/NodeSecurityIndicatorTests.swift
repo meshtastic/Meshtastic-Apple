@@ -42,6 +42,13 @@ struct NodeSecurityIndicatorTests {
 		#expect(NodeSecurityIndicator.status(firmwareVersion: "2.7.26", pkiEncrypted: true, keyMatch: false, signed: false) == .keyMismatch)
 	}
 
+	@Test("the connected radio's own row shows verified on 2.8")
+	func ownNodeIsVerified() {
+		#expect(NodeSecurityIndicator.status(firmwareVersion: "2.8.0", pkiEncrypted: false, keyMatch: false, signed: false, isOwnNode: true) == .verified)
+		// Below 2.8 the own node keeps the locks like everything else.
+		#expect(NodeSecurityIndicator.status(firmwareVersion: "2.7.26", pkiEncrypted: true, keyMatch: true, signed: false, isOwnNode: true) == .publicKey)
+	}
+
 	@Test("an in-person verified contact outranks signing on 2.8")
 	func verifiedOutranksSigned() {
 		#expect(NodeSecurityIndicator.status(firmwareVersion: "2.8.0", pkiEncrypted: true, keyMatch: true, signed: true, verified: true) == .verified)

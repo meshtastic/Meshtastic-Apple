@@ -100,13 +100,14 @@ struct NodeListRowSummary {
 	/// The security glyph and color for the row — signing state on 2.8+, PKI locks below,
 	/// a mismatch warning at any version. Derived from the snapshot so the row never re-reads
 	/// `node.user` at render time.
-	var keyStatus: (image: String, color: Color) {
+	func keyStatus(isConnectedNode: Bool = false) -> (image: String, color: Color) {
 		NodeSecurityIndicator.status(
 			firmwareVersion: firmwareVersion,
 			pkiEncrypted: pkiEncrypted,
 			keyMatch: keyMatch,
 			signed: hasXeddsaSigned,
-			verified: isKeyManuallyVerified
+			verified: isKeyManuallyVerified,
+			isOwnNode: isConnectedNode
 		).glyph
 	}
 }
@@ -274,7 +275,7 @@ struct NodeListItem: View {
 				}
 				VStack(alignment: .leading) {
 					HStack {
-						let (image, color) = summary.keyStatus
+						let (image, color) = summary.keyStatus(isConnectedNode: isDirectlyConnected)
 						IconAndText(systemName: image,
 									imageColor: color,
 									text: summary.displayLongName.addingVariationSelectors,
