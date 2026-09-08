@@ -316,18 +316,14 @@ private struct BuildTestNodeSnapshot {
 		hopsAway = Int(node.hopsAway)
 		snr = node.snr
 
-		if node.user?.pkiEncrypted ?? false {
-			if node.user?.keyMatch ?? false {
-				keyStatusImage = "lock.fill"
-				keyStatusColor = .green
-			} else {
-				keyStatusImage = "key.slash"
-				keyStatusColor = .red
-			}
-		} else {
-			keyStatusImage = "lock.open.fill"
-			keyStatusColor = .yellow
-		}
+		let indicator = NodeSecurityIndicator.status(
+			firmwareVersion: node.metadata?.firmwareVersion,
+			pkiEncrypted: node.user?.pkiEncrypted ?? false,
+			keyMatch: node.user?.keyMatch ?? false,
+			signed: node.hasXeddsaSigned
+		)
+		keyStatusImage = indicator.glyph.image
+		keyStatusColor = indicator.glyph.color
 	}
 }
 

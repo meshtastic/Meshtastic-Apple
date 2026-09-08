@@ -35,6 +35,7 @@ struct NodeListRowSummary {
 	// Node scalars
 	let favorite: Bool
 	let hasXeddsaSigned: Bool
+	let firmwareVersion: String?
 	let statusMessage: String?
 	let lastHeard: Date?
 	let isOnline: Bool
@@ -72,6 +73,7 @@ struct NodeListRowSummary {
 
 		favorite = node.favorite
 		hasXeddsaSigned = node.hasXeddsaSigned
+		firmwareVersion = node.metadata?.firmwareVersion
 		statusMessage = node.statusMessageDisplay
 		lastHeard = node.lastHeard
 		isOnline = node.isOnline
@@ -93,13 +95,16 @@ struct NodeListRowSummary {
 		hasTraceRoutes = includeLogAvailability ? node.hasTraceRoutes : false
 	}
 
-	/// The lock/key glyph and color for the node's PKI state — derived from the snapshot so the row
-	/// never re-reads `node.user` at render time.
+	/// The security glyph and color for the row — signing state on 2.8+, PKI locks below,
+	/// a mismatch warning at any version. Derived from the snapshot so the row never re-reads
+	/// `node.user` at render time.
 	var keyStatus: (image: String, color: Color) {
-		if pkiEncrypted {
-			return keyMatch ? ("lock.fill", .green) : ("key.slash", .red)
-		}
-		return ("lock.open.fill", .yellow)
+		NodeSecurityIndicator.status(
+			firmwareVersion: firmwareVersion,
+			pkiEncrypted: pkiEncrypted,
+			keyMatch: keyMatch,
+			signed: hasXeddsaSigned
+		).glyph
 	}
 }
 
