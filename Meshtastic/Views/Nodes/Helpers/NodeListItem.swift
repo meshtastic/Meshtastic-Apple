@@ -35,6 +35,7 @@ struct NodeListRowSummary {
 	// Node scalars
 	let favorite: Bool
 	let hasXeddsaSigned: Bool
+	let isKeyManuallyVerified: Bool
 	let firmwareVersion: String?
 	let statusMessage: String?
 	let lastHeard: Date?
@@ -73,6 +74,7 @@ struct NodeListRowSummary {
 
 		favorite = node.favorite
 		hasXeddsaSigned = node.hasXeddsaSigned
+		isKeyManuallyVerified = node.isKeyManuallyVerified
 		firmwareVersion = node.metadata?.firmwareVersion
 		statusMessage = node.statusMessageDisplay
 		lastHeard = node.lastHeard
@@ -103,7 +105,8 @@ struct NodeListRowSummary {
 			firmwareVersion: firmwareVersion,
 			pkiEncrypted: pkiEncrypted,
 			keyMatch: keyMatch,
-			signed: hasXeddsaSigned
+			signed: hasXeddsaSigned,
+			verified: isKeyManuallyVerified
 		).glyph
 	}
 }
@@ -468,13 +471,20 @@ struct IconAndText: View {
 	let text: String
 	var textColor: Color = .gray
 
+	/// System symbol when the name resolves, custom symbol from the asset catalog otherwise
+	/// (custom.link.slash, radio.badge.shield.checkmark, ...). Custom symbols follow the same
+	/// template pipeline, so rendering mode and color apply either way.
+	private var symbolImage: Image {
+		UIImage(systemName: systemName) != nil ? Image(systemName: systemName) : Image(systemName)
+	}
+
 	@ViewBuilder
 	var image: some View {
 		if let color = imageColor {
-			Image(systemName: systemName)
+			symbolImage
 				.foregroundColor(color)
 		} else {
-			Image(systemName: systemName)
+			symbolImage
 		}
 	}
 

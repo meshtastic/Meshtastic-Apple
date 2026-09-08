@@ -13,12 +13,21 @@ struct LockLegend: View {
 		Section {
 			HelpItem(
 				symbol: AnyView(
-					Image(systemName: SignedNodeIcon.symbolName)
+					Image(systemName: "person.badge.shield.checkmark")
 						.font(.title3)
 						.foregroundColor(.green)
 				),
+				title: String(localized: "Verified Contact"),
+				subtitle: String(localized: "You verified this node's key in person, by exchanging contact QR codes. The strongest trust shown in the list. Nodes on firmware 2.8 or later show signing state instead of the locks.")
+			)
+			HelpItem(
+				symbol: AnyView(
+					Image(systemName: SignedNodeIcon.symbolName)
+						.font(.title3)
+						.foregroundColor(.secondary)
+				),
 				title: String(localized: "Signed Node"),
-				subtitle: String(localized: "The radio verified this node's signed broadcasts, so its identity is confirmed. Nodes on firmware 2.8 or later show signing state instead of the locks.")
+				subtitle: String(localized: "The radio verified this node's signed broadcasts, so its identity is consistent over time, but you have not verified it in person.")
 			)
 			HelpItem(
 				symbol: AnyView(

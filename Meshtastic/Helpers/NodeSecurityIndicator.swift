@@ -15,6 +15,9 @@ import SwiftUI
 /// not signed) instead of the PKI lock. Nodes on older firmware — or with no reported version —
 /// keep the locks. A key mismatch is a real warning at any version and is never hidden.
 enum NodeSecurityIndicator: Equatable {
+	/// 2.8+: the user verified this node's key in person (contact QR exchange or the radio's
+	/// verification flow). The strongest trust the list can show.
+	case verified
 	/// 2.8+: the node's NodeInfo broadcast carried an XEdDSA signature the radio verified.
 	case signed
 	/// 2.8+: the node's broadcasts are not signed. Honest and neutral — common, not an alarm.
@@ -29,8 +32,10 @@ enum NodeSecurityIndicator: Equatable {
 	/// The SF Symbol and color the row renders for this state.
 	var glyph: (image: String, color: Color) {
 		switch self {
+		case .verified:
+			return ("person.badge.shield.checkmark", .green)
 		case .signed:
-			return (SignedNodeIcon.symbolName, .green)
+			return (SignedNodeIcon.symbolName, .secondary)
 		case .notSigned:
 			// An empty shield in gray: no identity verification, stated without alarm.
 			return ("shield", .gray)
@@ -55,12 +60,14 @@ enum NodeSecurityIndicator: Equatable {
 	}
 
 	/// Decides the indicator for one row from snapshot fields alone (no live model access).
-	static func status(firmwareVersion: String?, pkiEncrypted: Bool, keyMatch: Bool, signed: Bool) -> NodeSecurityIndicator {
-		// A stored key that stopped matching is a warning regardless of firmware version.
+	static func status(firmwareVersion: String?, pkiEncrypted: Bool, keyMatch: Bool, signed: Bool, verified: Bool = false) -> NodeSecurityIndicator {
+		// A stored key that stopped matching is a warning regardless of firmware version —
+		// most of all for a contact the user personally verified.
 		if pkiEncrypted && !keyMatch {
 			return .keyMismatch
 		}
 		if supportsSigning(firmwareVersion: firmwareVersion) {
+			if verified { return .verified }
 			return signed ? .signed : .notSigned
 		}
 		return pkiEncrypted ? .publicKey : .sharedKey
