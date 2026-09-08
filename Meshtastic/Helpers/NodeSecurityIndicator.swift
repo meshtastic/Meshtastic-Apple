@@ -34,7 +34,9 @@ enum NodeSecurityIndicator: Equatable {
 		case .verified:
 			return ("person.badge.shield.checkmark", .green)
 		case .signed:
-			return (SignedNodeIcon.symbolName, .secondary)
+			// Custom symbol: the mesh radio with a shield-checkmark badge — verified by the
+			// radio over the mesh, as opposed to the person badge for in-person verification.
+			return ("radio.badge.shield.checkmark", .secondary)
 		case .publicKey:
 			return ("lock.fill", .green)
 		case .sharedKey:
@@ -51,7 +53,10 @@ enum NodeSecurityIndicator: Equatable {
 	/// familiar locks rather than being credited with signing support it may not have.
 	static func supportsSigning(firmwareVersion: String?) -> Bool {
 		guard let version = firmwareVersion, !version.isEmpty else { return false }
-		let comparison = "2.8.0".compare(version, options: .numeric)
+		// Compare against "2.8", not "2.8.0": DeviceMetadataEntity truncates the version to two
+		// components, and numeric comparison treats "2.8.0" as greater than "2.8", which would
+		// wrongly keep a stored "2.8" on the legacy lock indicator.
+		let comparison = "2.8".compare(version, options: .numeric)
 		return comparison == .orderedAscending || comparison == .orderedSame
 	}
 

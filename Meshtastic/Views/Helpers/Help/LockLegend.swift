@@ -22,7 +22,7 @@ struct LockLegend: View {
 			)
 			HelpItem(
 				symbol: AnyView(
-					Image(systemName: SignedNodeIcon.symbolName)
+					Image("radio.badge.shield.checkmark")
 						.font(.title3)
 						.foregroundColor(.secondary)
 				),
@@ -36,7 +36,7 @@ struct LockLegend: View {
 						.foregroundColor(.yellow)
 				),
 				title: String(localized: "Shared Key"),
-				subtitle: String(localized: "Direct messages are using the shared key for the channel. Shown for nodes below firmware 2.8.")
+				subtitle: String(localized: "Direct messages are using the shared key for the channel. Shown for nodes below firmware 2.8 or with unknown firmware.")
 			)
 			HelpItem(
 				symbol: AnyView(
@@ -45,7 +45,7 @@ struct LockLegend: View {
 						.foregroundColor(.green)
 				),
 				title: String(localized: "Public Key Encryption"),
-				subtitle: String(localized: "Direct messages are using the public key infrastructure for encryption. Requires firmware version 2.5 or greater. Shown for nodes below firmware 2.8.")
+				subtitle: String(localized: "Direct messages are using the public key infrastructure for encryption. Requires firmware version 2.5 or greater. Shown for nodes below firmware 2.8 or with unknown firmware.")
 			)
 			HelpItem(
 				symbol: AnyView(

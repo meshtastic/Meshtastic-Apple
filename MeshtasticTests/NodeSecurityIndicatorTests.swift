@@ -13,6 +13,7 @@ struct NodeSecurityIndicatorTests {
 
 	@Test("2.8 and newer report signing support, older and unknown do not")
 	func versionGate() {
+		#expect(NodeSecurityIndicator.supportsSigning(firmwareVersion: "2.8"))   // DeviceMetadata truncates to two components
 		#expect(NodeSecurityIndicator.supportsSigning(firmwareVersion: "2.8.0"))
 		#expect(NodeSecurityIndicator.supportsSigning(firmwareVersion: "2.8.1"))
 		#expect(NodeSecurityIndicator.supportsSigning(firmwareVersion: "2.10.0"))
