@@ -221,39 +221,43 @@ private struct FirmwareContentView: View {
 				}
 				.padding(.bottom, 2)
 
-				VStack(alignment: .leading) {
-					Text("Platform IO").font(.caption).foregroundColor(.secondary)
-					Text("\(node.myInfo?.pioEnv ?? "Unknown")")
-				}
-				.accessibilityElement(children: .combine)
-				VStack(alignment: .leading) {
-					Text("Architecture").font(.caption).foregroundColor(.secondary)
-					Text("\(hardware.architecture ?? "Unknown")")
-				}
-				.accessibilityElement(children: .combine)
-				VStack(alignment: .leading) {
-					Text("Current Firmware Version").font(.caption).foregroundColor(.secondary)
-					Text("\(node.metadata?.firmwareVersion ?? "Unknown")")
-				}
-				.accessibilityElement(children: .combine)
-				VStack(alignment: .leading) {
-					Text("Intended LoRa Region").font(.caption).foregroundColor(.secondary)
-					Text(intendedRegionLabel)
-				}
-				.accessibilityElement(children: .combine)
-				if shouldShowRegionUnsetWarning {
-					Label("Set a LoRa region before installing firmware.", systemImage: "exclamationmark.triangle.fill")
-						.foregroundStyle(.orange)
-						.font(.caption)
-				} else if shouldShowLocaleVariantWarning {
-					Label("This region may require a locale-specific firmware file for correct on-device text rendering.", systemImage: "character.book.closed.fill")
-						.foregroundStyle(.orange)
-						.font(.caption)
-				}
-				if let suggestedFileNameHint {
+				// One row for all the data points: as separate rows each carried the full
+				// list row padding above and below, which read as big dead bands between them.
+				VStack(alignment: .leading, spacing: 12) {
 					VStack(alignment: .leading, spacing: 2) {
-						Text("Suggested file pattern").font(.caption).foregroundColor(.secondary)
-						Text(suggestedFileNameHint).font(.caption).textSelection(.enabled)
+						Text("Platform IO").font(.caption).foregroundColor(.secondary)
+						Text("\(node.myInfo?.pioEnv ?? "Unknown")")
+					}
+					.accessibilityElement(children: .combine)
+					VStack(alignment: .leading, spacing: 2) {
+						Text("Architecture").font(.caption).foregroundColor(.secondary)
+						Text("\(hardware.architecture ?? "Unknown")")
+					}
+					.accessibilityElement(children: .combine)
+					VStack(alignment: .leading, spacing: 2) {
+						Text("Current Firmware Version").font(.caption).foregroundColor(.secondary)
+						Text("\(node.metadata?.firmwareVersion ?? "Unknown")")
+					}
+					.accessibilityElement(children: .combine)
+					VStack(alignment: .leading, spacing: 2) {
+						Text("Intended LoRa Region").font(.caption).foregroundColor(.secondary)
+						Text(intendedRegionLabel)
+					}
+					.accessibilityElement(children: .combine)
+					if shouldShowRegionUnsetWarning {
+						Label("Set a LoRa region before installing firmware.", systemImage: "exclamationmark.triangle.fill")
+							.foregroundStyle(.orange)
+							.font(.caption)
+					} else if shouldShowLocaleVariantWarning {
+						Label("This region may require a locale-specific firmware file for correct on-device text rendering.", systemImage: "character.book.closed.fill")
+							.foregroundStyle(.orange)
+							.font(.caption)
+					}
+					if let suggestedFileNameHint {
+						VStack(alignment: .leading, spacing: 2) {
+							Text("Suggested file pattern").font(.caption).foregroundColor(.secondary)
+							Text(suggestedFileNameHint).font(.caption).textSelection(.enabled)
+						}
 					}
 				}
 			}
