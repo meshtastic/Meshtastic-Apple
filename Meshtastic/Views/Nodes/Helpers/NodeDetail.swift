@@ -283,9 +283,25 @@ struct NodeDetail: View {
 					.textSelection(.enabled)
 			}
 			.accessibilityElement(children: .combine)
+			// The trust rows read most-trusted-first, matching the order the node list resolves
+			// them in: verified in person, then signed, then the key itself. Affirmative only —
+			// none of them appear for a node that has not earned them.
+			if node.isKeyManuallyVerified {
+				HStack {
+					Label {
+						Text("Verified contact")
+					} icon: {
+						Image(systemName: "person.badge.shield.checkmark")
+							.foregroundColor(.green)
+					}
+					Spacer()
+					Text("Verified in person")
+						.foregroundStyle(.secondary)
+				}
+				.accessibilityElement(children: .combine)
+			}
 			// Signed node = automatic trust, observed from the radio. Because NodeInfo is itself a signed
-			// broadcast, the node's identity is verified by extension. Ordered above the public-key (has-key)
-			// row so the section reads most-trusted-first. Affirmative only — never shown for unsigned nodes.
+			// broadcast, the node's identity is verified by extension.
 			if node.hasXeddsaSigned {
 				HStack {
 					Label {
@@ -295,7 +311,7 @@ struct NodeDetail: View {
 							.foregroundColor(.green)
 					}
 					Spacer()
-					Text("Verified automatically")
+					Text("Verified by the radio")
 						.foregroundStyle(.secondary)
 				}
 				.accessibilityElement(children: .combine)
