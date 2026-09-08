@@ -69,7 +69,7 @@ struct ShareContactQRDialog: View {
 
 	var body: some View {
 		VStack(spacing: 20) {
-			Text("Share Contact QR")
+			Text("Share Contact")
 				.font(.title2)
 				.padding(.top)
 			Text(node.user.longName)

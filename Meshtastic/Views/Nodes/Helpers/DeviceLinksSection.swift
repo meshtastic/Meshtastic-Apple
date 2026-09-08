@@ -52,10 +52,6 @@ struct DeviceLinksSection: View {
 					}
 				}
 				if isExpanded {
-					// The disclosure sits above the links it covers.
-					Text("Product links may be affiliate links — purchases may earn Meshtastic a commission.")
-						.font(.subheadline)
-						.foregroundStyle(.secondary)
 					ForEach(matchingLinks, id: \.shortCode) { link in
 						Button {
 							if let url = URL(string: "https://msh.to/\(link.shortCode)") {
@@ -73,6 +69,9 @@ struct DeviceLinksSection: View {
 							}
 						}
 					}
+					Text("Product links may be affiliate links — purchases may earn Meshtastic a commission.")
+						.font(.footnote)
+						.foregroundStyle(.secondary)
 				}
 			}
 		}

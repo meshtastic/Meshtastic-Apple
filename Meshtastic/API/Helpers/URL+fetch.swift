@@ -21,6 +21,32 @@ extension URL {
 		}
 	}
 
+	/// Fetches data and the response's ETag, so a caller can tell an unchanged payload from a new
+	/// one and skip the work of decoding and re-writing it.
+	///
+	/// The network saving is already handled beneath this: URLSession revalidates with
+	/// `If-None-Match` on its own and a 304 costs an empty body. What the ETag buys the caller is
+	/// the database pass — re-upserting a catalog that has not changed is pure cost.
+	/// - Returns: The `Data`, and the ETag if the server sent one. Local files have no ETag.
+	func dataWithETag(timeout: TimeInterval) async throws -> (data: Data, eTag: String?) {
+		if isFileURL {
+			return (try await data(timeout: timeout), nil)
+		}
+		return try await withThrowingTaskGroup(of: (Data, String?).self) { group in
+			group.addTask {
+				let (data, response) = try await URLSession.shared.data(from: self)
+				return (data, (response as? HTTPURLResponse)?.value(forHTTPHeaderField: "ETag"))
+			}
+			group.addTask {
+				try await Task.sleep(nanoseconds: UInt64(timeout * 1_000_000_000))
+				throw TimeoutError.timedOut(timeout)
+			}
+			guard let result = try await group.next() else { throw URLError(.unknown) }
+			group.cancelAll()
+			return result
+		}
+	}
+
 	/// Fetches data from the URL (local or remote) with a strict timeout.
 	/// - Parameter timeout: The duration in seconds to wait before throwing an error.
 	/// - Returns: The `Data` retrieved.

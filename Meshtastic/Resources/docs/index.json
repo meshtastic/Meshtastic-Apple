@@ -128,32 +128,32 @@
             "app",
             "event",
             "updates",
+            "screen",
             "hardware",
             "drive",
             "bootloader",
-            "screen",
-            "meshtastic",
             "from",
+            "meshtastic",
             "version",
             "image",
+            "target",
             "tap",
             "shows",
             "connected",
             "connect",
+            "board",
             "artwork",
-            "target",
             "install",
             "erase",
             "ble",
+            "without",
             "transfer",
             "stable",
             "settings",
             "radios",
-            "progress",
-            "nrf52",
-            "notification"
+            "progress"
         ],
-        "charCount": 7481
+        "charCount": 8260
     },
     {
         "id": "getting-started",
@@ -366,8 +366,8 @@
             "only",
             "name",
             "messages",
-            "firmware",
             "shows",
+            "firmware",
             "shown",
             "radio",
             "links",
@@ -387,7 +387,7 @@
             "map",
             "local"
         ],
-        "charCount": 12606
+        "charCount": 12656
     },
     {
         "id": "settings",
