@@ -166,6 +166,7 @@ struct UnheardNodesBanner: View {
 			do {
 				try await accessoryManager.removeNode(node: node, connectedNodeNum: connectedNodeNum)
 				removed += 1
+				unheardNodes.removeAll { $0.num == node.num }
 			} catch {
 				// Keep going: one node the radio refuses should not strand the rest.
 				failed += 1
