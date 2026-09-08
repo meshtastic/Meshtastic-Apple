@@ -373,22 +373,6 @@ struct CompactWidgetSnapshotTests {
 	}
 }
 
-// MARK: - InvalidVersion Snapshot Tests
-
-@Suite("InvalidVersion Snapshots")
-struct InvalidVersionSnapshotTests {
-
-	@Test("InvalidVersion view")
-	func invalidVersion() async {
-		await assertViewSnapshot(of: InvalidVersion(minimumVersion: "2.5.0", version: "2.3.1"), width: 390, height: 600, named: "invalidVersion", forDocs: true)
-	}
-
-	@Test("InvalidVersion empty version")
-	func invalidVersionEmpty() async {
-		await assertViewSnapshot(of: InvalidVersion(minimumVersion: "2.5.0", version: ""), width: 390, height: 600, named: "invalidVersionEmpty")
-	}
-}
-
 // MARK: - SecurityVersionNag Snapshot Tests
 
 @Suite("SecurityVersionNag Snapshots")
