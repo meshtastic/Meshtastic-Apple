@@ -56,29 +56,28 @@ struct AddContactConfirmationView: View {
 				// room left in the sheet. Fixed vertical size keeps every line.
 				.fixedSize(horizontal: false, vertical: true)
 			if claimsInPersonExchange && canAdd {
-				VStack(alignment: .leading, spacing: 10) {
-					Label {
-						Text("This contact says it was exchanged in person.")
-							.font(.subheadline)
-							.fixedSize(horizontal: false, vertical: true)
-					} icon: {
-						Image(systemName: "person.badge.shield.checkmark")
-							.foregroundStyle(.green)
-					}
+				VStack(spacing: 12) {
 					Toggle(isOn: $confirmsInPersonExchange) {
-						Text("They gave me this contact directly")
-							.font(.subheadline)
-							.fixedSize(horizontal: false, vertical: true)
+						HStack(spacing: 10) {
+							Image(systemName: "person.badge.shield.checkmark")
+								.font(.title3)
+								.foregroundStyle(confirmsInPersonExchange ? .green : .secondary)
+							VStack(alignment: .leading, spacing: 2) {
+								Text("Verified in person")
+									.font(.subheadline.weight(.medium))
+								Text("They handed me this contact directly")
+									.font(.caption)
+									.foregroundColor(.secondary)
+									.fixedSize(horizontal: false, vertical: true)
+							}
+						}
 					}
-					if !confirmsInPersonExchange {
-						Text("The contact is still added, just not marked as verified.")
-							.font(.caption)
-							.foregroundColor(.secondary)
-							.fixedSize(horizontal: false, vertical: true)
-					}
+					.tint(.green)
 				}
-				.padding(12)
-				.background(.quaternary, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+				.padding(.vertical, 12)
+				.padding(.horizontal, 14)
+				.frame(maxWidth: .infinity)
+				.background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
 			}
 			if !canAdd {
 				Text("This contact does not include a public key, so it cannot be added.")
