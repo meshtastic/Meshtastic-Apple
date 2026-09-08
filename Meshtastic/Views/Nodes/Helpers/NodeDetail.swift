@@ -822,7 +822,7 @@ struct NodeDetail: View {
 					Button {
 						showingShareContactQR = true
 					} label: {
-						Label("Share Contact QR", systemImage: "qrcode")
+						Label("Share Contact", systemImage: "qrcode")
 					}
 				}
 			}
