@@ -113,7 +113,10 @@ extension UserEntity {
 	/// refusing the radio's own new key left the connected node flagged as a key mismatch
 	/// forever. A changed key replaces the stored one and clears any recorded mismatch.
 	func acceptOwnRadioPublicKey(_ inboundKey: Data) {
-		guard !inboundKey.isEmpty else { return }
+		// Only a well-formed Curve25519 public key (32 bytes) may replace the stored one and
+		// clear a recorded mismatch. Empty is what firmware sends when it has no key; any other
+		// length is malformed and changes nothing.
+		guard inboundKey.count == 32 else { return }
 		publicKey = inboundKey
 		pkiEncrypted = true
 		keyMatch = true

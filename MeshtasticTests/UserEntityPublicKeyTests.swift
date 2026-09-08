@@ -13,6 +13,9 @@ struct UserEntityApplyInboundPublicKeyTests {
 
 	private let keyA = Data([0x01, 0x02, 0x03, 0x04])
 	private let keyB = Data([0xAA, 0xBB, 0xCC, 0xDD])
+	// Well-formed Curve25519 public keys are exactly 32 bytes; the own-radio path insists on that.
+	private let key32A = Data(repeating: 0x11, count: 32)
+	private let key32B = Data(repeating: 0xAB, count: 32)
 
 	@Test("stores the first non-empty key when none is on file")
 	func storesFirstKey() {
@@ -77,28 +80,47 @@ struct UserEntityApplyInboundPublicKeyTests {
 	@Test("the connected radio's own key replaces the stored one and clears a recorded mismatch")
 	func ownRadioKeyIsGroundTruth() {
 		let user = UserEntity()
-		user.publicKey = keyA
+		user.publicKey = key32A
 		user.pkiEncrypted = true
 		// A mesh packet already flagged the new key as a substitution attempt.
 		user.keyMatch = false
-		user.newPublicKey = keyB
+		user.newPublicKey = key32B
 
-		user.acceptOwnRadioPublicKey(keyB)
+		user.acceptOwnRadioPublicKey(key32B)
 
-		#expect(user.publicKey == keyB)         // the radio's own report wins
+		#expect(user.publicKey == key32B)       // the radio's own report wins
 		#expect(user.keyMatch == true)          // the mismatch flag clears
 		#expect(user.newPublicKey == nil)
 	}
 
-	@Test("an empty key from the radio changes nothing")
+	@Test("an empty key from the radio changes nothing, including a recorded mismatch")
 	func ownRadioEmptyKeyIsIgnored() {
 		let user = UserEntity()
-		user.publicKey = keyA
+		user.publicKey = key32A
 		user.pkiEncrypted = true
+		user.keyMatch = false
+		user.newPublicKey = key32B
 
 		user.acceptOwnRadioPublicKey(Data())
 
-		#expect(user.publicKey == keyA)
+		#expect(user.publicKey == key32A)
 		#expect(user.pkiEncrypted == true)
+		#expect(user.keyMatch == false)         // an empty key must not clear a mismatch
+		#expect(user.newPublicKey == key32B)
+	}
+
+	@Test("a malformed key from the radio changes nothing")
+	func ownRadioMalformedKeyIsIgnored() {
+		let user = UserEntity()
+		user.publicKey = key32A
+		user.pkiEncrypted = true
+		user.keyMatch = false
+		user.newPublicKey = key32B
+
+		user.acceptOwnRadioPublicKey(keyB)      // 4 bytes, not a Curve25519 key
+
+		#expect(user.publicKey == key32A)
+		#expect(user.keyMatch == false)
+		#expect(user.newPublicKey == key32B)
 	}
 }
