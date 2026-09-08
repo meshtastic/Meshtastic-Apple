@@ -331,7 +331,7 @@ extension AccessoryManager {
 			try await self.closeConnection()
 			updateState(.discovering)
 		} catch {
-			Logger.transport.error("🔗 [Connect] Error returned by connectionStepper: \(error)")
+			Logger.transport.error("🔗 [Connect] Error returned by connectionStepper: \(error, privacy: .public)")
 			try await self.closeConnection()
 			updateState(.discovering)
 			self.lastConnectionError = error
