@@ -11,6 +11,35 @@
 <p>The Settings tab lets you configure the app and your connected Meshtastic radio.</p>
 <h2>App Settings</h2>
 <p>General app preferences including map style, notification behavior, and theme. These affect only the app — not the radio.</p>
+<h3>Notifications</h3>
+<p>Which alerts the app raises is set per type in the iOS Settings app, under <strong>Settings → Meshtastic</strong>, in the <strong>Notifications</strong> section. <strong>Open Settings</strong> in App Settings takes you straight there. Every toggle is on by default.</p>
+<table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Channel Messages</td>
+<td>Alerts for incoming channel messages. Direct messages always notify unless the sender is muted, and a message that @mentions you notifies even with this off.</td>
+</tr>
+<tr>
+<td>New Waypoints</td>
+<td>Alerts when a node shares a new waypoint.</td>
+</tr>
+<tr>
+<td>New Nodes</td>
+<td>Alerts when a node the app has not seen before joins the mesh.</td>
+</tr>
+<tr>
+<td>Low Battery</td>
+<td>Alerts when the connected device's battery gets low.</td>
+</tr>
+</tbody>
+</table>
+<p>Turning a toggle off suppresses only the alert — messages, reactions, waypoints, and nodes are still received and still appear in the app. Muting a channel or a sender in the app silences that conversation regardless of these settings.</p>
 <h3>Data Management</h3>
 <ul>
 <li><strong>Erase All App Data</strong> — clears the local database, translation cache, and all stored settings, then immediately reloads the bundled device hardware catalog. Use this as a last resort.</li>
@@ -37,7 +66,7 @@
 </tr>
 <tr>
 <td>Modem Preset</td>
-<td>Speed/range trade-off. Most users should use Long Fast or Long Slow. On firmware 2.8+, the preset list is filtered to those that are legal for the selected region (see below).</td>
+<td>Speed/range trade-off. Which preset to use depends on your region — on firmware 2.8+ the list is filtered to those legal there, and the recommended one differs by region (see below).</td>
 </tr>
 <tr>
 <td>Bandwidth</td>
@@ -58,6 +87,7 @@
 </tbody>
 </table>
 <p>On firmware <strong>2.8.0 or later</strong>, the radio tells the app which modem presets are legal in each region. When you pick a region, the Presets list narrows to the compatible set, and if your current preset isn't allowed there the app switches you to that region's default. Setting the region to <strong>US</strong> on a newly flashed node moves the stock <strong>Long Fast</strong> preset to <strong>Long Turbo</strong> — Long Fast's bandwidth is not US-compliant — while a deliberately chosen preset that is legal in the US is kept. Amateur (ham) bands such as the Tiny and Narrow presets are marked <strong>licensed</strong> — the app shows a warning, and you should enable <strong>Licensed Operator</strong> (and set your call sign) in <strong>User</strong> config before transmitting. On older firmware the full preset list is shown unchanged.</p>
+<p>Saving LoRa settings may reboot the radio and briefly disconnect it. If the radio reports a region from newer firmware that this app does not recognize, choose a supported region before saving.</p>
 <h3>Channels</h3>
 <p>Manage up to 8 channels (0–7). Channel 0 is the primary broadcast channel. Additional channels create isolated messaging groups with their own encryption keys.</p>
 <p>When sharing channels, the share screen shows a QR code and link, and — on iPhones with NFC hardware (iOS 18 or later) — a <strong>Write to NFC Tag</strong> button. Hold a writable NFC tag near the top of your iPhone to save the channel link to it, replacing any content the tag already held; tapping that tag on another phone opens the same add-or-replace channels flow the QR code does.</p>
@@ -93,6 +123,16 @@
 <p>On hardened lockdown-firmware radios, this page also shows a <strong>Lockdown</strong> section with the session status, a <strong>Lock Now</strong> button, and a <strong>Forget Stored Passphrase</strong> button. See <a href="lockdown.html">Lockdown Mode</a>.</p>
 <h3>User</h3>
 <p>Set your Long Name (display name) and Short Name (4-character/emoji identifier shown in the node circle).</p>
+<p>Both limits are counted in UTF-8 bytes rather than characters, because that is how the radio stores them. Most emoji are four bytes, so a single emoji fills the short name; some older symbols are smaller. Typing past the limit stops rather than cutting a character in half.</p>
+<p>How long a Long Name can be depends on the radio. Firmware 2.8 and later keeps
+24 bytes of it — those radios store every node they hear in a slimmer record to
+save memory, and truncate anything longer as it arrives. Older firmware keeps
+39. The hint under the field shows whichever applies to the radio you are
+connected to.</p>
+<p>A name you already have is left alone, even if it is longer than the radio you
+are now connected to would keep. Note that a 2.8 radio hearing an older one
+still stores only 24 bytes of its name, so a longer name is shortened by
+everyone else's radio even when your own keeps it.</p>
 <h3>Bluetooth</h3>
 <p>BLE radio settings including PIN mode and power saving. Changes apply on next radio restart.</p>
 <h3>Device</h3>
@@ -214,21 +254,18 @@
 <td>UART serial output for integration with other hardware.</td>
 </tr>
 <tr>
-<td>Status Message</td>
-<td>Set a custom status message broadcast to the mesh.</td>
-</tr>
-<tr>
 <td>Telemetry</td>
 <td>Device, environment, and air-quality sensor reporting.</td>
 </tr>
 <tr>
 <td>Traffic Management</td>
-<td>Mesh traffic optimisation — position deduplication, rate limiting, and unknown-packet filtering. Requires firmware 2.8.0+.</td>
+<td>Mesh traffic optimization — position deduplication, rate limiting, and unknown-packet filtering. Requires firmware 2.8.0+.</td>
 </tr>
 </tbody>
 </table>
 <h3>Traffic Management</h3>
-<p>The Traffic Management module helps reduce unnecessary mesh traffic and improve network efficiency. It is available on nodes running firmware <strong>2.8.0 or later</strong>. Each feature is enabled implicitly by a non-zero value — turning a section's toggle off (or the master <strong>Enabled</strong> switch) clears its values and disables that feature on the radio.</p>
+<p>The Traffic Management module helps reduce unnecessary mesh traffic and improve network efficiency. It is available on nodes running firmware <strong>2.8.0 or later</strong>.</p>
+<p>The screen opens with a placement assessment: how many nodes this radio heard directly (over RF, within the last two hours), and whether that makes the module worth enabling. Traffic management pays off on a well-placed node with many direct neighbors — 50 or more heard in that window, ideally around 200. One transmission from such a node reaches most of them at once, so cutting hop counts on the chattiest packets removes the retransmission storm that follows each broadcast. On a node with a handful of direct neighbors it has little to police. Each feature is enabled implicitly by a non-zero value — turning a section's toggle off (or the master <strong>Enabled</strong> switch) clears its values and disables that feature on the radio. Turning a feature on starts its interval at the firmware default rather than zero, so saving right away enables it.</p>
 <table>
 <thead>
 <tr>
@@ -239,7 +276,7 @@
 <tbody>
 <tr>
 <td>Enabled</td>
-<td>Master enable for the traffic management module.</td>
+<td>Turns the module on or off.</td>
 </tr>
 <tr>
 <td><strong>Position Deduplication</strong></td>
@@ -247,11 +284,11 @@
 </tr>
 <tr>
 <td>Position Dedup</td>
-<td>Drop redundant position broadcasts from the same node.</td>
+<td>Drop repeated position broadcasts.</td>
 </tr>
 <tr>
-<td>Min Interval (s)</td>
-<td>Minimum seconds between position updates from the same node.</td>
+<td>Minimum Interval</td>
+<td>Positions from the same node arriving sooner than this are dropped. The firmware default is five hours.</td>
 </tr>
 <tr>
 <td><strong>NodeInfo Direct Response</strong></td>
@@ -259,11 +296,11 @@
 </tr>
 <tr>
 <td>Direct Response</td>
-<td>Respond to NodeInfo requests directly from local cache instead of flooding the mesh.</td>
+<td>Answer NodeInfo requests from the local cache instead of flooding the mesh.</td>
 </tr>
 <tr>
 <td>Max Hops</td>
-<td>Maximum hop distance from the requestor at which direct NodeInfo responses are served from the local cache.</td>
+<td>Only answer requestors within this many hops, 1 to 3. The radio's role caps the effective value: routers allow up to 3, plain clients answer direct requestors only.</td>
 </tr>
 <tr>
 <td><strong>Rate Limiting</strong></td>
@@ -271,15 +308,15 @@
 </tr>
 <tr>
 <td>Rate Limiting</td>
-<td>Enable per-node rate limiting to throttle chatty nodes.</td>
+<td>Throttle nodes that send too many packets.</td>
 </tr>
 <tr>
-<td>Window (s)</td>
-<td>Time window in seconds for rate limiting calculations.</td>
+<td>Window</td>
+<td>The time window packets are counted over.</td>
 </tr>
 <tr>
 <td>Max Packets</td>
-<td>Maximum packets allowed per node within the rate limit window.</td>
+<td>The most packets one node may send per window.</td>
 </tr>
 <tr>
 <td><strong>Unknown Packet Handling</strong></td>
@@ -287,11 +324,11 @@
 </tr>
 <tr>
 <td>Drop Unknown</td>
-<td>Enable dropping of unknown/undecryptable packets.</td>
+<td>Drop packets that cannot be decrypted.</td>
 </tr>
 <tr>
 <td>Threshold</td>
-<td>Maximum unknown/undecryptable packets per rate window before the source is dropped.</td>
+<td>How many per window before the sender is dropped.</td>
 </tr>
 </tbody>
 </table>

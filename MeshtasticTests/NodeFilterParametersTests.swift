@@ -44,6 +44,7 @@ struct NodeFilterParametersTests {
 
 		#expect(filters.searchText == "")
 		#expect(filters.isOnline == false)
+		#expect(filters.isSigned == false)
 		#expect(filters.isPkiEncrypted == false)
 		#expect(filters.isFavorite == false)
 		#expect(filters.isIgnored == false)
@@ -84,6 +85,7 @@ struct NodeFilterParametersTests {
 	func booleanFiltersPersistence() {
 		let filters1 = NodeFilterParameters(store: defaults)
 		filters1.isOnline = true
+		filters1.isSigned = true
 		filters1.isPkiEncrypted = true
 		filters1.isFavorite = true
 		filters1.isIgnored = true
@@ -93,6 +95,7 @@ struct NodeFilterParametersTests {
 
 		let filters2 = NodeFilterParameters(store: defaults)
 		#expect(filters2.isOnline == true)
+		#expect(filters2.isSigned == true)
 		#expect(filters2.isPkiEncrypted == true)
 		#expect(filters2.isFavorite == true)
 		#expect(filters2.isIgnored == true)
@@ -348,6 +351,7 @@ struct NodeFilterParametersTests {
 		// Set all values to non-default
 		filters.searchText = "Test"
 		filters.isOnline = true
+		filters.isSigned = true
 		filters.isPkiEncrypted = true
 		filters.isFavorite = true
 		filters.isIgnored = true
@@ -364,6 +368,7 @@ struct NodeFilterParametersTests {
 		// In-memory values are back to defaults
 		#expect(filters.searchText == "")
 		#expect(filters.isOnline == false)
+		#expect(filters.isSigned == false)
 		#expect(filters.isPkiEncrypted == false)
 		#expect(filters.isFavorite == false)
 		#expect(filters.isIgnored == false)
@@ -379,6 +384,7 @@ struct NodeFilterParametersTests {
 		// reset() persists the defaults, so a fresh instance loads them too
 		let newFilters = NodeFilterParameters(store: defaults)
 		#expect(newFilters.isOnline == false)
+		#expect(newFilters.isSigned == false)
 		#expect(newFilters.isPkiEncrypted == false)
 		#expect(newFilters.isFavorite == false)
 		#expect(newFilters.isIgnored == false)
@@ -597,6 +603,23 @@ struct NodeFilterParametersMatchesTests {
 		#expect(filters.matches(encrypted))
 		#expect(!filters.matches(plain))
 		#expect(!filters.matches(noUser))
+	}
+
+	// MARK: Signed filter
+
+	@Test("Signed filter matches only signed nodes")
+	func signedFilter() {
+		let context = sharedModelContainer.mainContext
+		let filters = NodeFilterParameters(store: defaults)
+		filters.isSigned = true
+
+		let signed = makeNode(context, num: 9_951_001)
+		signed.hasXeddsaSigned = true
+
+		let unsigned = makeNode(context, num: 9_951_002)
+
+		#expect(filters.matches(signed))
+		#expect(!filters.matches(unsigned))
 	}
 
 	// MARK: Ignored filter

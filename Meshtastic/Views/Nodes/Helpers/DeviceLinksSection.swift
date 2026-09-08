@@ -69,6 +69,9 @@ struct DeviceLinksSection: View {
 							}
 						}
 					}
+					Text("Product links may be affiliate links — purchases may earn Meshtastic a commission.")
+						.font(.footnote)
+						.foregroundStyle(.secondary)
 				}
 			}
 		}

@@ -92,6 +92,10 @@ Select a node from the drop-down to manage connected or remote devices.</div>
 </tr>
 </tbody>
 </table>
+<p>The contact list shows the contacts you can actually direct message. Nodes that report themselves as
+unmessagable, and nodes no public key has been received for, are left out — the radio would refuse to
+send to them. A contact you already have a conversation with stays in the list either way, so an
+existing thread is never hidden.</p>
 <h3>Encryption</h3>
 <p><img src="../assets/screenshots/lockLegend.png" alt="Encryption legend" /></p>
 <table>
@@ -103,8 +107,8 @@ Select a node from the drop-down to manage connected or remote devices.</div>
 </thead>
 <tbody>
 <tr>
-<td><img src="../assets/screenshots/lockOpen.png" alt="Shared Key" /></td>
-<td><strong>Shared Key</strong> — direct messages are using the shared key for the channel.</td>
+<td><img src="../assets/screenshots/lockOpen.png" alt="No Public Key" /></td>
+<td><strong>No Public Key</strong> — no public key has been received for this node, so direct messages to it cannot be sent. Use <strong>Exchange User Info</strong> on the node to ask for one.</td>
 </tr>
 <tr>
 <td><img src="../assets/screenshots/lockClosed.png" alt="Public Key Encryption" /></td>
@@ -127,6 +131,7 @@ Select a node from the drop-down to manage connected or remote devices.</div>
 <h3>Tapback Reactions</h3>
 <p>Long press any message and tap <strong>Tapback</strong> to send an emoji reaction.</p>
 <p>When someone reacts to a message, you get a notification such as <strong>Alice reacted 👍 to &quot;See you soon&quot;</strong> — unless the sender (for a direct message) or the channel is muted. Reactions notify <strong>without</strong> adding to the conversation's unread badge. If your radio hasn't seen the message that was reacted to, the reaction is saved but no notification is shown (there'd be nothing to display it against).</p>
+<p>Reaction alerts follow the same notification settings as the messages they react to: muting a channel, a sender, or channel message notifications silences their reactions too.</p>
 <hr />
 <div class="tips-callout"><strong>Tip — Messages</strong>
 Send channel broadcasts and direct messages. Long press any message for actions like copy, reply, tapback, and delivery details.</div>

@@ -35,8 +35,18 @@ struct UserConfig: View {
 	@FocusState var focusedField: Field?
 	
 	public var minimumVersion = "2.6.9"
+	/// From this version a radio stores peers in `NodeInfoLite`, which holds 24 bytes of long
+	/// name rather than 39.
+	private let minimumCompactNameVersion = "2.8.0"
 	let floatFormatter = frequencyOverrideFormatter
 	
+	/// Bytes the radio being edited will keep of a long name.
+	private var longNameLimit: Int {
+		NodeNameLimits.longNameBytes(
+			storesCompactNames: accessoryManager.checkIsVersionSupported(forVersion: minimumCompactNameVersion)
+		)
+	}
+
 	var body: some View {
 		
 		Form {
@@ -77,19 +87,25 @@ struct UserConfig: View {
 					VStack(alignment: .leading) {
 						HStack {
 							Label("Long Name", systemImage: "person.crop.rectangle.fill")
-							TextField("Long Name", text: $longName)
-								.onChange(of: longName) {
-									var newValue = longName.withoutVariationSelectors
-									while newValue.utf8.count > 36 {
-										newValue = String(newValue.dropLast())
-									}
-									longName = newValue
-									if longName.contains("📵") {
-										isUnmessagable = true
-									}
+							// Limit through the binding, not onChange: onAppear assigns the stored
+							// name straight to the state, and trimming there would shorten a name
+							// the radio is perfectly happy with and mark the form dirty before the
+							// user has touched anything.
+							TextField("Long Name", text: Binding(
+								get: { longName },
+								set: { typed in
+									longName = NodeNameLimits.trimmed(
+										typed.withoutVariationSelectors, toBytes: longNameLimit
+									)
 								}
+							))
+							.onChange(of: longName) {
+								if longName.contains("📵") {
+									isUnmessagable = true
+								}
+							}
 						}
-						Text("Long Name can be up to 36 bytes long.")
+						Text("Long Name can be up to \(longNameLimit) bytes long.")
 							.foregroundColor(.gray)
 							.font(.callout)
 					}

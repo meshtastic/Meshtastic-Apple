@@ -178,9 +178,9 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 	}()
 	
 	// MARK: - Constants
-	static let deviceURLEndpoint = URL(string: "https://apiv2.meshtastic.org/resource/deviceHardware")!
+	static let deviceURLEndpoint = URL(string: "https://api.meshtastic.org/resource/deviceHardware")!
 	static let imageURLPrefix = URL(string: "https://flasher.meshtastic.org/img/devices/")!
-	static let firmwareURLEndpoint = URL(string: "https://apiv2.meshtastic.org/github/firmware/list")!
+	static let firmwareURLEndpoint = URL(string: "https://api.meshtastic.org/github/firmware/list")!
 	static let firmwareGitHubURLEndpoint = URL(string: "https://api.github.com/repos/meshtastic/firmware/releases?per_page=100")!
 	static let nightlyIndexEndpoint = URL(string: "https://raw.githubusercontent.com/meshtastic/meshtastic.github.io/master/firmware-nightly/index.json")!
 
@@ -200,7 +200,7 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 		UserDefaults.standard.set(eTag, forKey: "api.etag.\(key)")
 	}
 	static let nightlyReleaseNotesEndpoint = URL(string: "https://raw.githubusercontent.com/meshtastic/meshtastic.github.io/master/firmware-nightly/release_notes.md")!
-	static let eventFirmwareURLEndpoint = URL(string: "https://apiv2.meshtastic.org/resource/eventFirmware")!
+	static let eventFirmwareURLEndpoint = URL(string: "https://api.meshtastic.org/resource/eventFirmware")!
 
 	/// How long a completed device image + msh.to link pass stays fresh before another network pass
 	/// is allowed. `processImage` issues a remote ETag HEAD per image (~78) up front, so running the
@@ -605,7 +605,7 @@ deviceEntity.architecture = device.architecture
 	}
 	
 	/// Handles the logic of checking ETag -> Checking DB -> Downloading -> Bundle Fallback -> Saving
-	private func processImage(imageName: String, platform: String ) async {
+	private func processImage(imageName: String, platforms: [String]) async {
 		guard let container else { return }
 		// Skip if the pass was cancelled (connection teardown) — don't even do the bundle fallback.
 		if Task.isCancelled { return }
@@ -614,22 +614,22 @@ deviceEntity.architecture = device.architecture
 		// 1. Network: Try to get ETag (Optional - might fail if offline or timeout)
 		let remoteETag = try? await url.eTag()
 
-		// 2. DB: Check if we already have this version or a usable cached version
+		// 2. DB: Check if we already have this version or a usable cached version.
+		// The image's device relationship is to-one, so shared art is stored once per
+		// device — every device that references the file needs its own current copy.
 		let isUpToDate: Bool = await MainActor.run {
 			let context = container.mainContext
-			var imageDescriptor = FetchDescriptor<DeviceHardwareImageEntity>(
-				predicate: #Predicate { $0.fileName == imageName }
-			)
-			imageDescriptor.fetchLimit = 1
-
-			if let existing = try? context.fetch(imageDescriptor).first,
-			   let data = existing.svgData, !data.isEmpty {
-				if let rTag = remoteETag {
-					return existing.eTag == rTag
-				}
-				return true
+			for platform in platforms {
+				var deviceDescriptor = FetchDescriptor<DeviceHardwareEntity>(
+					predicate: #Predicate { $0.platformioTarget == platform }
+				)
+				deviceDescriptor.fetchLimit = 1
+				guard let deviceEntity = try? context.fetch(deviceDescriptor).first else { continue }
+				guard let existing = deviceEntity.images.first(where: { $0.fileName == imageName }),
+					  let data = existing.svgData, !data.isEmpty else { return false }
+				if let rTag = remoteETag, existing.eTag != rTag { return false }
 			}
-			return false
+			return true
 		}
 
 		if isUpToDate {
@@ -653,8 +653,10 @@ deviceEntity.architecture = device.architecture
 		if dataToSave == nil {
 			Logger.services.debug("Network unavailable or failed for \(imageName). Checking local bundle.")
 
-			// Look in the 'images' subdirectory
-			if let bundleURL = Bundle.main.url(forResource: imageName, withExtension: nil, subdirectory: "images"),
+			// The synchronized images folder lands flat in the bundle root, but check the
+			// subdirectory first in case that ever changes.
+			if let bundleURL = Bundle.main.url(forResource: imageName, withExtension: nil, subdirectory: "images")
+				?? Bundle.main.url(forResource: imageName, withExtension: nil),
 			   let bundleData = try? Data(contentsOf: bundleURL) {
 
 				dataToSave = bundleData
@@ -673,36 +675,28 @@ deviceEntity.architecture = device.architecture
 		await MainActor.run {
 			let context = container.mainContext
 
-			// Find the Device
-			var deviceDescriptor = FetchDescriptor<DeviceHardwareEntity>(
-				predicate: #Predicate { $0.platformioTarget == platform }
-			)
-			deviceDescriptor.fetchLimit = 1
-			guard let deviceEntity = try? context.fetch(deviceDescriptor).first else { return }
+			// Link the image to every device that references it. The device relationship
+			// is to-one (the inverse of DeviceHardwareEntity.images), so each device gets
+			// its own entity — appending one shared entity to several devices would move
+			// it, leaving only the last platform linked.
+			for platform in platforms {
+				var deviceDescriptor = FetchDescriptor<DeviceHardwareEntity>(
+					predicate: #Predicate { $0.platformioTarget == platform }
+				)
+				deviceDescriptor.fetchLimit = 1
+				guard let deviceEntity = try? context.fetch(deviceDescriptor).first else { continue }
 
-			// Find or Create Image Entity
-			var imageDescriptor = FetchDescriptor<DeviceHardwareImageEntity>(
-				predicate: #Predicate { $0.fileName == imageName }
-			)
-			imageDescriptor.fetchLimit = 1
-
-			let existingImg = try? context.fetch(imageDescriptor).first
-			let imageEntity: DeviceHardwareImageEntity
-			if let existingImg {
-				imageEntity = existingImg
-			} else {
-				imageEntity = DeviceHardwareImageEntity()
-				context.insert(imageEntity)
-			}
-
-			imageEntity.fileName = imageName
-			imageEntity.eTag = finalETag
-			imageEntity.svgData = finalData
-
-			// Create Relationship
-			imageEntity.device = deviceEntity
-			if !deviceEntity.images.contains(where: { $0.fileName == imageName }) {
-				deviceEntity.images.append(imageEntity)
+				let imageEntity: DeviceHardwareImageEntity
+				if let existing = deviceEntity.images.first(where: { $0.fileName == imageName }) {
+					imageEntity = existing
+				} else {
+					imageEntity = DeviceHardwareImageEntity()
+					context.insert(imageEntity)
+					imageEntity.device = deviceEntity
+				}
+				imageEntity.fileName = imageName
+				imageEntity.eTag = finalETag
+				imageEntity.svgData = finalData
 			}
 
 			try? context.save()
@@ -900,19 +894,29 @@ extension MeshtasticAPI {
 			bundledDevices = []
 		}
 
-		var work: [(imageName: String, platform: String)] = []
-		var seen = Set<String>()
+		// One download per image, but linked to every device that references it — several
+		// catalog records share one file (all three RAK4631 products use rak4631.svg), and
+		// deduping the link too left every device after the first with no image.
+		var work: [String: [String]] = [:]
+		var order: [String] = []
 		for device in bundledDevices + (apiDevices ?? []) {
-			for imageName in device.images ?? [] where seen.insert(imageName).inserted {
-				work.append((imageName: imageName, platform: device.platformioTarget))
+			for imageName in device.images ?? [] {
+				if work[imageName] == nil {
+					work[imageName] = []
+					order.append(imageName)
+				}
+				if work[imageName]?.contains(device.platformioTarget) == false {
+					work[imageName]?.append(device.platformioTarget)
+				}
 			}
 		}
 
 		await withTaskGroup(of: Void.self) { group in
-			for item in work {
+			for imageName in order {
 				if Task.isCancelled { break }   // teardown mid-pass: stop queueing image fetches
+				let platforms = work[imageName] ?? []
 				group.addTask {
-					await self.processImage(imageName: item.imageName, platform: item.platform)
+					await self.processImage(imageName: imageName, platforms: platforms)
 				}
 			}
 		}

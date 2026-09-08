@@ -253,6 +253,12 @@ final class MeshtasticAPIBundledSeedTests {
 
 	/// Polls until the detached startup cascade stops issuing image requests, then returns them.
 	/// The cascade is unstructured `Task.detached` work with no completion handle to await.
+	///
+	/// Settles on the count of ALL recorded requests, not just images: the cascade's tail —
+	/// orphan cleanup, then the msh.to link import — runs after the last image fetch, and a
+	/// settle that only watched images could return while that tail was still in flight. On a
+	/// slow runner the straggling link fetch then landed inside the NEXT test's recording
+	/// window, which counted it as a duplicate. CI caught that; local machines never did.
 	private func settledImageRequests(
 		timeout: Duration = .seconds(30),
 		quietPolls: Int = 5,
@@ -263,13 +269,17 @@ final class MeshtasticAPIBundledSeedTests {
 		let deadline = ContinuousClock.now.advanced(by: timeout)
 		while ContinuousClock.now < deadline {
 			try await Task.sleep(for: pollInterval)
-			let current = imageRequests(from: RequestRecordingURLProtocol.recordedURLs)
-			if current.count == lastCount && !current.isEmpty {
+			let all = RequestRecordingURLProtocol.recordedURLs
+			// The link import is the cascade's last network call, so the record is only
+			// complete once it is present — a quiet stretch between the images and the
+			// link fetch must not count as settled.
+			let tailArrived = all.contains { $0.absoluteString.contains("msh.to/api/urls") }
+			if all.count == lastCount && tailArrived && !imageRequests(from: all).isEmpty {
 				stablePolls += 1
-				if stablePolls >= quietPolls { return current }
+				if stablePolls >= quietPolls { return imageRequests(from: all) }
 			} else {
 				stablePolls = 0
-				lastCount = current.count
+				lastCount = all.count
 			}
 		}
 		return imageRequests(from: RequestRecordingURLProtocol.recordedURLs)
@@ -300,6 +310,10 @@ final class MeshtasticAPIBundledSeedTests {
 			images.count == expected.count,
 			"startup should issue one request per unique image (\(expected.count)), got \(images.count)"
 		)
+		// The regression this suite caught on CI: the cascade's trailing link import must be in
+		// the record before the helper returns, or it lands in the next test's window instead.
+		let linkImports = RequestRecordingURLProtocol.recordedURLs.filter { $0.absoluteString.contains("msh.to/api/urls") }
+		#expect(linkImports.count == 1, "the cascade imports the link catalog exactly once, inside this test's window")
 	}
 
 	/// The API-driven pass must cover hardware that exists only in the live API list (which the
