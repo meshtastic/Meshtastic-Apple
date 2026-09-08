@@ -35,6 +35,7 @@ extension AccessoryManager {
 		
 		// Clear any errors and stale state from last connection
 		lastConnectionError = nil
+		firmwareUpdateRequired = false
 		self.activeDeviceNum = nil
 		packetsSent = 0
 		packetsReceived = 0
@@ -245,10 +246,11 @@ extension AccessoryManager {
 				// TODO: do we really need to store the firmware version in the UserDefaults?
 				UserDefaults.firmwareVersion = String(version)
 				
-				let supportedVersion = self.checkIsVersionSupported(forVersion: self.minimumVersion)
-				if !supportedVersion {
-					throw AccessoryError.connectionFailed("🚨" + "Update Your Firmware".localized)
-				}
+				// Below-minimum firmware keeps its connection. Throwing here used to retry the
+				// whole process and then disconnect, which left the user no way to update the
+				// radio from the app. The gate in ContentView blocks everything but the
+				// firmware update screen instead.
+				self.firmwareUpdateRequired = !self.checkIsVersionSupported(forVersion: self.minimumVersion)
 			}
 			
 			// Step 7: Update UI and status to connected
