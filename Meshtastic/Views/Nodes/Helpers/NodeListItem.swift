@@ -198,8 +198,8 @@ struct NodeListItem: View {
 			}
 			desc += ", " + signalString
 		}
-		// Mirror the visual "Signed node" trust signal (see the shield row below) so VoiceOver
-		// announces it too — affirmative only, never for unsigned nodes.
+		// The security glyph beside the name carries signing state visually; name it for VoiceOver
+		// too, since a glyph alone announces nothing. Affirmative only, never for unsigned nodes.
 		if summary.hasXeddsaSigned {
 			desc += ", " + "Signed node".localized
 		}
@@ -284,15 +284,6 @@ struct NodeListItem: View {
 							Image(systemName: "star.fill")
 								.symbolRenderingMode(.multicolor)
 						}
-					}
-					// Signed node = XEdDSA-signed NodeInfo broadcast → identity verified by the radio.
-					// Affirmative only; never shown for unsigned nodes. Mirrors the Node Detail row.
-					// A person badge rather than a bare shield: what was verified is who this node
-					// says it is, not that the traffic is encrypted, which the lock already covers.
-					if summary.hasXeddsaSigned {
-						IconAndText(systemName: SignedNodeIcon.symbolName,
-									imageColor: .green,
-									text: "Signed node".localized)
 					}
 					// User-authored status broadcast by the node — shown directly beneath the
 					// name, clamped to 2 lines so it can never grow the card unbounded. Omitted
