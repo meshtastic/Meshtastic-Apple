@@ -41,13 +41,16 @@ struct AddContactConfirmationView: View {
 			Text("Add Contact")
 				.font(.title2)
 				.padding(.top)
-			CircleText(
-				text: shortName,
-				color: Color(UIColor(hex: UInt32(pendingContact.contact.nodeNum))),
-				circleSize: 60
-			)
-			Text(pendingContact.contact.user.longName)
-				.font(.headline)
+			HStack(spacing: 12) {
+				CircleText(
+					text: shortName,
+					color: Color(UIColor(hex: UInt32(pendingContact.contact.nodeNum))),
+					circleSize: 60
+				)
+				Text(pendingContact.contact.user.longName)
+					.font(.headline)
+					.fixedSize(horizontal: false, vertical: true)
+			}
 			Text("Adding a contact saves their name and public key to your connected node so you can message them securely.")
 				.font(.subheadline)
 				.multilineTextAlignment(.center)
