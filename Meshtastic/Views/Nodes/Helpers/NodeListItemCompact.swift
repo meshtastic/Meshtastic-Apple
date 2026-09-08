@@ -112,10 +112,13 @@ struct NodeListItemCompact: View {
 			}
 			desc += ", " + signalString
 		}
-		// The security glyph beside the name carries signing state visually; name it for VoiceOver in the
-		// compact list too — affirmative only, never for unsigned nodes.
-		if summary.hasXeddsaSigned {
+		// Announce signing the way the glyph shows it — both read securityIndicator(), the
+		// same contract the visual indicator uses. Affirmative only.
+		switch summary.securityIndicator() {
+		case .signed, .verified:
 			desc += ", " + "Signed node".localized
+		default:
+			break
 		}
 		return desc
 	}
