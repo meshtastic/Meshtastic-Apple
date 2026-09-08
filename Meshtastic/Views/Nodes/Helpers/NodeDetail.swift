@@ -28,6 +28,19 @@ private struct NodeDetailLogAvailability {
 }
 
 struct NodeDetail: View {
+
+	/// One row of the node's trust state: a green glyph, what it is, and how it was earned.
+	@ViewBuilder
+	private func trustRow(icon: AnyView, title: LocalizedStringKey, detail: LocalizedStringKey) -> some View {
+		HStack {
+			Label { Text(title) } icon: { icon }
+			Spacer()
+			Text(detail)
+				.foregroundStyle(.secondary)
+				.multilineTextAlignment(.trailing)
+		}
+		.accessibilityElement(children: .combine)
+	}
 	private let gridItemLayout = Array(repeating: GridItem(.flexible(), spacing: 10), count: 2)
 	private static let relativeFormatter: RelativeDateTimeFormatter = {
 		let formatter = RelativeDateTimeFormatter()
@@ -283,38 +296,31 @@ struct NodeDetail: View {
 					.textSelection(.enabled)
 			}
 			.accessibilityElement(children: .combine)
-			// The trust rows read most-trusted-first, matching the order the node list resolves
-			// them in: verified in person, then signed, then the key itself. Affirmative only —
-			// none of them appear for a node that has not earned them.
-			if node.isKeyManuallyVerified {
-				HStack {
-					Label {
-						Text("Verified contact")
-					} icon: {
-						Image(systemName: "person.badge.shield.checkmark")
-							.foregroundColor(.green)
-					}
-					Spacer()
-					Text("Verified in person")
-						.foregroundStyle(.secondary)
-				}
-				.accessibilityElement(children: .combine)
-			}
-			// Signed node = automatic trust, observed from the radio. Because NodeInfo is itself a signed
-			// broadcast, the node's identity is verified by extension.
-			if node.hasXeddsaSigned {
-				HStack {
-					Label {
-						Text("Signed node")
-					} icon: {
-						SignedNodeIcon.image
-							.foregroundColor(.green)
-					}
-					Spacer()
-					Text("Verified by the radio")
-						.foregroundStyle(.secondary)
-				}
-				.accessibilityElement(children: .combine)
+			// One trust row, the strongest that applies, resolved the same way the node list
+			// resolves its glyph — showing both at once said the node was vouched for twice.
+			// Affirmative only: a node that has earned none of these gets no row.
+			if nodeNum == accessoryManager.activeDeviceNum {
+				// You hold this radio, so neither of the other two describes it: you did not
+				// meet yourself in person, and its signature is not what makes it trusted.
+				trustRow(
+					icon: AnyView(Image(systemName: "person.badge.shield.checkmark").foregroundColor(.green)),
+					title: "Connected node",
+					detail: "This is your radio"
+				)
+			} else if node.isKeyManuallyVerified {
+				trustRow(
+					icon: AnyView(Image(systemName: "person.badge.shield.checkmark").foregroundColor(.green)),
+					title: "Verified contact",
+					detail: "Verified in person"
+				)
+			} else if node.hasXeddsaSigned {
+				// NodeInfo is itself a signed broadcast, so the node's identity is verified by
+				// extension when the radio accepts the signature.
+				trustRow(
+					icon: AnyView(SignedNodeIcon.image.foregroundColor(.green)),
+					title: "Signed node",
+					detail: "Verified by the radio"
+				)
 			}
 			if let user = currentUser, user.keyMatch {
 				let publicKey = nodeNum == accessoryManager.activeDeviceNum
