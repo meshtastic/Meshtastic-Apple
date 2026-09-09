@@ -79,7 +79,7 @@ struct NodeAdministrationTests {
 		try seedNode(num: num, in: container)
 
 		let admin = deviceConfigResponse(passkey: Data([0xA5, 0x5A, 0x99, 0x01]))
-		await mesh.adminAppPacket(packet: try adminPacket(from: num, message: admin), connectedNodeNum: Self.myNum)
+		await mesh.adminAppPacket(packet: try adminPacket(from: num, message: admin), connectedNodeNum: Self.myNum, isCorrelatedRemoteAdminResponse: true)
 
 		let node = try fetchNode(num: num, in: container)
 		#expect(node.hasBeenAdministered)
@@ -100,7 +100,7 @@ struct NodeAdministrationTests {
 		var metadata = DeviceMetadata()
 		metadata.firmwareVersion = "2.8.0"
 		admin.getDeviceMetadataResponse = metadata
-		await mesh.adminAppPacket(packet: try adminPacket(from: num, message: admin), connectedNodeNum: Self.myNum)
+		await mesh.adminAppPacket(packet: try adminPacket(from: num, message: admin), connectedNodeNum: Self.myNum, isCorrelatedRemoteAdminResponse: true)
 
 		let result = await RemoteAdminSessionWaiter.wait(
 			timeout: .milliseconds(20),
@@ -122,7 +122,7 @@ struct NodeAdministrationTests {
 		moduleConfig.statusmessage = ModuleConfig.StatusMessageConfig()
 		admin.getModuleConfigResponse = moduleConfig
 
-		await mesh.adminAppPacket(packet: try adminPacket(from: num, message: admin), connectedNodeNum: Self.myNum)
+		await mesh.adminAppPacket(packet: try adminPacket(from: num, message: admin), connectedNodeNum: Self.myNum, isCorrelatedRemoteAdminResponse: true)
 
 		let node = try fetchNode(num: num, in: container)
 		#expect(node.hasBeenAdministered)
@@ -130,7 +130,7 @@ struct NodeAdministrationTests {
 		#expect(node.sessionExpiration != nil)
 		let expiration = node.sessionExpiration
 		admin.sessionPasskey = Data()
-		await mesh.adminAppPacket(packet: try adminPacket(from: num, message: admin), connectedNodeNum: Self.myNum)
+		await mesh.adminAppPacket(packet: try adminPacket(from: num, message: admin), connectedNodeNum: Self.myNum, isCorrelatedRemoteAdminResponse: true)
 		let emptyResponseNode = try fetchNode(num: num, in: container)
 		#expect(emptyResponseNode.sessionPasskey == Data([0x01, 0x02, 0x03]))
 		#expect(emptyResponseNode.sessionExpiration == expiration)
@@ -140,6 +140,48 @@ struct NodeAdministrationTests {
 		#expect(mirroredNode.sessionExpiration == expiration)
 	}
 
+	@Test func channelResponseRefreshesTargetSessionPasskeyWithoutPersistingChannels() async throws {
+		let (mesh, container) = try freshMesh()
+		let num: Int64 = 0x2CDD33
+		try seedNode(num: num, in: container)
+
+		var admin = AdminMessage()
+		admin.sessionPasskey = Data([0x0A, 0x0B, 0x0C])
+		var channel = Channel()
+		channel.index = 0
+		channel.role = .primary
+		channel.settings.name = "Remote Primary"
+		admin.getChannelResponse = channel
+
+		await mesh.adminAppPacket(packet: try adminPacket(from: num, message: admin), connectedNodeNum: Self.myNum, isCorrelatedRemoteAdminResponse: true)
+
+		let node = try fetchNode(num: num, in: container)
+		#expect(node.sessionPasskey == Data([0x0A, 0x0B, 0x0C]))
+		#expect(node.sessionExpiration != nil)
+		#expect(node.myInfo == nil)
+	}
+
+	@Test func channelResponseAddressedToAnotherNodeDoesNotRefreshSession() async throws {
+		let (mesh, container) = try freshMesh()
+		let num: Int64 = 0x2DEE44
+		try seedNode(num: num, in: container)
+
+		var admin = AdminMessage()
+		admin.sessionPasskey = Data([0x0A, 0x0B, 0x0C])
+		var channel = Channel()
+		channel.index = 0
+		channel.role = .primary
+		admin.getChannelResponse = channel
+
+		await mesh.adminAppPacket(
+			packet: try adminPacket(from: num, message: admin, to: 0x0D00D),
+			connectedNodeNum: Self.myNum
+		)
+
+		let node = try fetchNode(num: num, in: container)
+		#expect(node.sessionPasskey == nil)
+		#expect(node.sessionExpiration == nil)
+	}
 	@Test func metadataResponseWithPasskeyMarksUnknownNode() async throws {
 		// A metadata response is the first admin exchange when selecting a remote node,
 		// and its handler creates the node if it has never been heard.
@@ -152,7 +194,7 @@ struct NodeAdministrationTests {
 		metadata.firmwareVersion = "2.8.0"
 		admin.getDeviceMetadataResponse = metadata
 
-		await mesh.adminAppPacket(packet: try adminPacket(from: num, message: admin), connectedNodeNum: Self.myNum)
+		await mesh.adminAppPacket(packet: try adminPacket(from: num, message: admin), connectedNodeNum: Self.myNum, isCorrelatedRemoteAdminResponse: true)
 
 		let node = try fetchNode(num: num, in: container)
 		#expect(node.hasBeenAdministered)
@@ -168,6 +210,40 @@ struct NodeAdministrationTests {
 
 		let node = try fetchNode(num: num, in: container)
 		#expect(!node.hasBeenAdministered)
+	}
+
+	@Test func uncorrelatedModuleResponseDoesNotPersistItsPasskey() async throws {
+		let (mesh, container) = try freshMesh()
+		let num: Int64 = 0x45DD66
+		try seedNode(num: num, in: container)
+		var admin = AdminMessage()
+		admin.sessionPasskey = Data([0x01, 0x02])
+		admin.getModuleConfigResponse = ModuleConfig()
+
+		await mesh.adminAppPacket(packet: try adminPacket(from: num, message: admin), connectedNodeNum: Self.myNum)
+
+		let node = try fetchNode(num: num, in: container)
+		#expect(node.sessionPasskey == nil)
+		#expect(node.sessionExpiration == nil)
+	}
+
+	@Test func correlatedRtttlResponsePersistsItsPasskey() async throws {
+		let (mesh, container) = try freshMesh()
+		let num: Int64 = 0x46DD77
+		try seedNode(num: num, in: container)
+		var admin = AdminMessage()
+		admin.sessionPasskey = Data([0x0A, 0x0B])
+		admin.getRingtoneResponse = "Beep:d=4,o=5,b=120:c"
+
+		await mesh.adminAppPacket(
+			packet: try adminPacket(from: num, message: admin),
+			connectedNodeNum: Self.myNum,
+			isCorrelatedRemoteAdminResponse: true
+		)
+
+		let node = try fetchNode(num: num, in: container)
+		#expect(node.sessionPasskey == Data([0x0A, 0x0B]))
+		#expect(node.rtttlConfig?.ringtone == "Beep:d=4,o=5,b=120:c")
 	}
 
 	@Test func localConfigDownloadDoesNotMark() async throws {
@@ -252,11 +328,11 @@ struct NodeAdministrationTests {
 		try seedNode(num: num, in: container)
 
 		let withPasskey = deviceConfigResponse(passkey: Data([0x01]))
-		await mesh.adminAppPacket(packet: try adminPacket(from: num, message: withPasskey), connectedNodeNum: Self.myNum)
+		await mesh.adminAppPacket(packet: try adminPacket(from: num, message: withPasskey), connectedNodeNum: Self.myNum, isCorrelatedRemoteAdminResponse: true)
 
 		// A later response without a passkey must not clear the flag.
 		let withoutPasskey = deviceConfigResponse(passkey: nil)
-		await mesh.adminAppPacket(packet: try adminPacket(from: num, message: withoutPasskey), connectedNodeNum: Self.myNum)
+		await mesh.adminAppPacket(packet: try adminPacket(from: num, message: withoutPasskey), connectedNodeNum: Self.myNum, isCorrelatedRemoteAdminResponse: true)
 
 		let node = try fetchNode(num: num, in: container)
 		#expect(node.hasBeenAdministered)

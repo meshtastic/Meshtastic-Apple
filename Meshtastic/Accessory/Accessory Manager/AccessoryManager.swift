@@ -838,13 +838,15 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		remoteAdminConfigTracker.begin(kind: kind, targetNodeNum: targetNodeNum, section: section)
 	}
 
-	func resolveRemoteAdminConfigPacket(packetID: UInt32, sourceNodeNum: Int64, result: RemoteAdminConfigOperationResult) {
+	@discardableResult
+	func resolveRemoteAdminConfigPacket(packetID: UInt32, sourceNodeNum: Int64, result: RemoteAdminConfigOperationResult) -> Bool {
 		guard let operationID = remoteAdminConfigTracker.resolveAdminResponse(packetID: packetID, sourceNodeNum: sourceNodeNum),
 			  let operation = remoteAdminConfigTracker.operations[operationID]
-		else { return }
+		else { return false }
 		if case .failed(let message) = result {
 			remoteAdminConfigFeedback = (operation.targetNodeNum, message)
 		}
+		return true
 	}
 
 	func resolveRemoteAdminRoutingError(packetID: UInt32, reason: Routing.Error) {
@@ -1035,12 +1037,14 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 
 			// Dispatch based on packet contents.
 			if case let .decoded(data) = packet.payloadVariant {
+				var isCorrelatedRemoteAdminResponse = false
 				let responseID = data.requestID != 0 ? data.requestID : data.replyID
 				if responseID != 0 {
 					if data.portnum == .adminApp,
+						packet.to == UInt32(self.activeDeviceNum ?? 0),
 						let adminMessage = try? AdminMessage(serializedBytes: data.payload),
 						RemoteAdminConfigTracker.isAdminResponse(adminMessage) {
-						resolveRemoteAdminConfigPacket(
+						isCorrelatedRemoteAdminResponse = resolveRemoteAdminConfigPacket(
 							packetID: responseID,
 							sourceNodeNum: Int64(packet.from),
 							result: .succeeded
@@ -1120,7 +1124,11 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 					}
 					await MeshPackets.shared.routingPacket(packet: packet, connectedNodeNum: deviceNum)
 				case .adminApp:
-					await MeshPackets.shared.adminAppPacket(packet: packet, connectedNodeNum: self.activeDeviceNum)
+					await MeshPackets.shared.adminAppPacket(
+						packet: packet,
+						connectedNodeNum: self.activeDeviceNum,
+						isCorrelatedRemoteAdminResponse: isCorrelatedRemoteAdminResponse
+					)
 				case .replyApp:
 					Logger.mesh.info("[Reply] packet received from \(packet.from.toHex(), privacy: .public)")
 					guard let deviceNum = activeConnection?.device.num else {

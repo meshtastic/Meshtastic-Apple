@@ -119,8 +119,39 @@ extension AccessoryManager {
 		meshPacket.decoded = dataMessage
 
 		let messageDescription = "⌚ Device Config timezone was empty set timezone to \(config.tzdef)"
-		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
-		return Int64(meshPacket.id)
+		func sendRequest() async throws -> Int64 {
+			try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
+			return Int64(meshPacket.id)
+		}
+
+		// A remote metadata response establishes a PKI session. Enroll the request so
+		// only a response matched to this packet can persist its passkey.
+		guard fromUserNum != toUserNum, RemoteAdminConfigTracker.currentOperationID == nil else {
+			return try await sendRequest()
+		}
+		guard let operationID = beginRemoteAdminConfigOperation(
+			kind: .request,
+			targetNodeNum: Int64(toUserNum),
+			section: "Metadata"
+		) else {
+			throw AccessoryError.ioFailed("A remote metadata request is already in progress for this node")
+		}
+		do {
+			let value = try await RemoteAdminConfigTracker.$currentOperationID.withValue(operationID) {
+				try await sendRequest()
+			}
+			switch remoteAdminConfigTracker.finish(operationID) {
+			case .succeeded:
+				return value
+			case .failed(let message):
+				throw AccessoryError.ioFailed(message)
+			case .timedOut:
+				throw AccessoryError.timeout
+			}
+		} catch {
+			remoteAdminConfigTracker.fail(operationID, with: error)
+			throw error
+		}
 	}
 
 	// MARK: - Edit transactions

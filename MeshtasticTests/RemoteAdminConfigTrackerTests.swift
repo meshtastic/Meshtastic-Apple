@@ -241,6 +241,16 @@ struct RemoteAdminConfigTrackerTests {
 		#expect(tracker.finish(operationID) == .succeeded)
 	}
 
+	@Test func finishingWithPendingPacketsTimesOutAndAllowsRetry() throws {
+		let tracker = RemoteAdminConfigTracker()
+		let first = try #require(tracker.begin(kind: .save, targetNodeNum: 42))
+		tracker.registerPacket(packetID: 100, targetNodeNum: 42, operationID: first)
+
+		#expect(tracker.finish(first) == .timedOut)
+		#expect(tracker.operations[first]?.result == .timedOut)
+		#expect(tracker.begin(kind: .save, targetNodeNum: 42) != nil)
+	}
+
 	@Test func packetTimeoutIsRetainedAsTimeout() async throws {
 		let tracker = RemoteAdminConfigTracker()
 		let operationID = try #require(tracker.begin(kind: .save, targetNodeNum: 42))

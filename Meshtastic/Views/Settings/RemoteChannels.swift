@@ -157,7 +157,9 @@ final class RemoteChannelsCoordinator: ObservableObject {
     }
 
     func save(_ changed: [Channel]) async throws {
-        guard !isSaving else { return }
+        guard !isSaving else {
+            throw AccessoryError.ioFailed("A remote channel save is already in progress")
+        }
         isSaving = true
         defer { isSaving = false }
         try Task.checkCancellation()
