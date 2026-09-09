@@ -19,6 +19,16 @@ extension Color {
 	/// Cobalt #2855A8 both modes
 	static var accentColor: Color { Color("Colors/MeshtasticAccent") }
 
+	/// The accent for text and glyphs that sit *on* a surface: the `AccentColor` asset, Cobalt
+	/// #2855A8 light / Blue 300 #B0BFF0 dark.
+	///
+	/// Separate from `accentColor` because the two roles need opposite things in dark mode.
+	/// `accentColor` is a *fill* drawn under white text — message bubbles, prominent buttons —
+	/// so it has to stay dark. A tinted label is the reverse: cobalt on a dark sheet is about
+	/// 1.7:1, so it needs the palette's light blue. Using one color for both is what made the
+	/// save confirmation unreadable in dark mode.
+	static let accentTint = Color("AccentColor")
+
 	/// Branded primary text — shadows SwiftUI `Color.primary`
 	/// Neutral 700 #3D3E50 light / Neutral 50 #F5F6FA dark
 	static let primary = Color("Colors/MeshtasticPrimary")

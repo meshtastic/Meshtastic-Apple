@@ -104,10 +104,16 @@ struct ShareContactQRDialog: View {
 			#endif
 			Button("Done") { dismiss() }
 				.buttonStyle(.borderedProminent)
+				// A filled accent shape under a white label, so it keeps the dark fill accent
+				// rather than the lighter on-surface one the plain buttons above need.
+				.tint(.accentColor)
 				.padding(.bottom)
 		}
 		.padding()
 		.frame(maxWidth: 350)
+		// Share and the NFC button are plain labels on the sheet, so they read as text and need
+		// the on-surface accent; the inherited fill accent is close to unreadable here in dark.
+		.tint(.accentTint)
 	}
 }
 
