@@ -20,6 +20,15 @@ struct RemoteAdminEntryTests {
 		#expect(sends == 0)
 	}
 
+	@Test @MainActor func orchestrator_staleFreshSessionCannotActivate() async {
+		var sends = 0
+		var waits = 0
+		let result = await RemoteAdminSessionOrchestrator.establish(allowed: { true }, attemptIsCurrent: { false }, fresh: { true }, request: { sends += 1 }, wait: { waits += 1; return .active })
+		#expect(result == .targetChanged)
+		#expect(sends == 0)
+		#expect(waits == 0)
+	}
+
 	@Test @MainActor func orchestrator_staleSessionSendsAndWaits() async {
 		var sends = 0
 		var waits = 0

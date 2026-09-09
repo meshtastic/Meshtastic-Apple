@@ -87,8 +87,8 @@ enum RemoteAdminSessionOrchestrator {
 		wait: @escaping @MainActor () async -> RemoteAdminSessionWaiter.Result
 	) async -> RemoteAdminSessionWaiter.Result {
 		guard allowed() else { return .requestFailed }
-		guard !fresh() else { return .active }
 		guard attemptIsCurrent() else { return .targetChanged }
+		guard !fresh() else { return .active }
 		do {
 			try await request()
 		} catch is CancellationError {
