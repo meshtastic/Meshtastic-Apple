@@ -125,7 +125,10 @@ func performConfigSave(
 					message: "No confirmation was received from the remote node. Check that it is online and retry.")
 				Logger.mesh.error("🚨 Config save timed out")
 			case .unconfirmed:
-				accessoryManager.remoteAdminConfigFeedback = (targetNode.num, "The remote node did not confirm the configuration. Check its state before retrying.")
+				accessoryManager.remoteAdminConfigFeedback = RemoteAdminConfigFeedback(
+					targetNodeNum: targetNode.num,
+					kind: .save,
+					message: "The remote node did not confirm the configuration. Check its state before retrying.")
 				Logger.mesh.error("🚨 Config save unconfirmed")
 			}
 		} catch {
