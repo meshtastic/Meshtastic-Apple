@@ -14,6 +14,10 @@ enum RemoteAdminSessionState: Equatable {
 	case establishing
 	case active
 	case failed(RemoteAdminSessionWaiter.Result)
+
+	mutating func invalidateForActiveRadioReplacement() {
+		self = .stale
+	}
 }
 
 // MARK: - Session Freshness

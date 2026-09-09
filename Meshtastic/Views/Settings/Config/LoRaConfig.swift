@@ -271,7 +271,7 @@ struct LoRaConfig: View {
 			advancedSection
 		}
 		.scrollDismissesKeyboard(.immediately)
-		.disabled(!accessoryManager.isConnected || node?.loRaConfig == nil)
+		.disabled(ConfigFormAvailability.isDisabled(isConnected: accessoryManager.isConnected))
 		.safeAreaInset(edge: .bottom, alignment: .center) {
 			HStack(spacing: 0) {
 				SaveConfigButton(

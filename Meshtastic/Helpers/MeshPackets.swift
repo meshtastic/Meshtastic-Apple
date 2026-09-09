@@ -881,6 +881,22 @@ actor MeshPackets {
 		Self.applyChannelRefresh(stagedChannel, to: channel)
 	}
 
+	/// Stores a session key only after the receive path has correlated the response
+	/// with an authenticated remote-admin request.
+	private func rememberAdminSession(passkey: Data, fromNum: Int64) {
+		guard fromNum > 0, !passkey.isEmpty else { return }
+		let fetchDescriptor = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == fromNum })
+		do {
+			let fetchedNode = try modelContext.fetch(fetchDescriptor)
+			let node = fetchedNode.first ?? findOrCreateNode(num: fromNum, context: modelContext)
+			node.sessionPasskey = passkey
+			node.sessionExpiration = Date().addingTimeInterval(300)
+			savePendingChanges()
+		} catch {
+			Logger.data.error("Error saving admin session for \(fromNum.toHex(), privacy: .public): \(error.localizedDescription, privacy: .public)")
+		}
+	}
+
 	func deviceMetadataPacket (metadata: DeviceMetadata, fromNum: Int64, sessionPasskey: Data? = Data()) {
 		if metadata.isInitialized {
 			let logString = String.localizedStringWithFormat("Device Metadata received from: %@".localized, fromNum.toHex())

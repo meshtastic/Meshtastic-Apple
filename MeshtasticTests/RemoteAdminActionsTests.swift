@@ -57,6 +57,14 @@ struct RemoteAdminActionTransportTests {
 		return (packet, try AdminMessage(serializedBytes: packet.decoded.payload))
 	}
 
+	private func firstSent(from connection: RemoteActionConnection) async -> ToRadio? {
+		for _ in 0..<100 {
+			if let sent = await connection.sent.first { return sent }
+			await Task.yield()
+		}
+		return nil
+	}
+
 	@Test func guardRejectsExpiredSessionWithoutSending() async {
 		let connection = RemoteActionConnection()
 		var sends = 0
@@ -156,8 +164,7 @@ struct RemoteAdminActionTransportTests {
 	@Test func sendTimeUsesProductionTransportAndRemoteAuth() async throws {
 		let fixture = try fixture()
 		let action = Task { try await fixture.manager.sendTime(fromUser: fixture.from, toUser: fixture.to) }
-		while await fixture.connection.sent.isEmpty { await Task.yield() }
-		let firstSent = try #require(await fixture.connection.sent.first)
+		let firstSent = try #require(await firstSent(from: fixture.connection))
 		let sentPacket = try admin(from: firstSent).0
 		#expect(fixture.manager.remoteAdminConfigTracker.operations.values.contains {
 			$0.kind == .action && $0.targetNodeNum == 42 && !$0.isFinished
@@ -174,8 +181,8 @@ struct RemoteAdminActionTransportTests {
 		let action = Task {
 			try await fixture.manager.sendFactoryReset(fromUser: fixture.from, toUser: fixture.to, resetDevice: resetDevice)
 		}
-		while await fixture.connection.sent.isEmpty { await Task.yield() }
-		let (sentPacket, _) = try admin(from: await fixture.connection.sent[0])
+		let sent = try #require(await firstSent(from: fixture.connection))
+		let (sentPacket, _) = try admin(from: sent)
 		#expect(fixture.manager.remoteAdminConfigTracker.resolveAdminResponse(packetID: sentPacket.id, sourceNodeNum: Int64(sentPacket.to)) != nil)
 		#expect(try await action.value == .acknowledged)
 		let (packet, admin) = try admin(from: await fixture.connection.sent[0])
@@ -192,8 +199,8 @@ struct RemoteAdminActionTransportTests {
 		let action = Task {
 			try await fixture.manager.sendNodeDBReset(fromUser: fixture.from, toUser: fixture.to, preserveFavorites: preserveFavorites)
 		}
-		while await fixture.connection.sent.isEmpty { await Task.yield() }
-		let (sentPacket, _) = try admin(from: await fixture.connection.sent[0])
+		let sent = try #require(await firstSent(from: fixture.connection))
+		let (sentPacket, _) = try admin(from: sent)
 		#expect(fixture.manager.remoteAdminConfigTracker.resolveAdminResponse(packetID: sentPacket.id, sourceNodeNum: Int64(sentPacket.to)) != nil)
 		#expect(try await action.value == .acknowledged)
 		let (packet, admin) = try admin(from: await fixture.connection.sent[0])

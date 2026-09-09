@@ -170,7 +170,7 @@ struct CannedMessagesConfig: View {
 			.disabled(configPreset > 0)
 		}
 		.scrollDismissesKeyboard(.immediately)
-		.disabled(!accessoryManager.isConnected || node?.cannedMessageConfig == nil)
+		.disabled(ConfigFormAvailability.isDisabled(isConnected: accessoryManager.isConnected))
 		.safeAreaInset(edge: .bottom, alignment: .center) {
 			HStack(spacing: 0) {
 			SaveConfigButton(node: node, hasChanges: $hasChanges) {

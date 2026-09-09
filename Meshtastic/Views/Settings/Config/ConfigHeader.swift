@@ -1,6 +1,10 @@
 import SwiftUI
 import SwiftData
 
+enum ConfigFormAvailability {
+	static func isDisabled(isConnected: Bool) -> Bool { !isConnected }
+}
+
 struct ConfigHeader<T>: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
 

@@ -59,7 +59,7 @@ struct NeighborInfoConfig: View {
 				}
 			}
 		}
-		.disabled(!accessoryManager.isConnected || node?.neighborInfoConfig == nil)
+		.disabled(ConfigFormAvailability.isDisabled(isConnected: accessoryManager.isConnected))
 		.safeAreaInset(edge: .bottom, alignment: .center) {
 			HStack(spacing: 0) {
 			SaveConfigButton(node: node, hasChanges: $hasChanges) {

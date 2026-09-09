@@ -368,7 +368,7 @@ struct PositionConfig: View {
 				advancedDeviceGPSSection
 			}
 		}
-		.disabled(!accessoryManager.isConnected || node?.positionConfig == nil)
+		.disabled(ConfigFormAvailability.isDisabled(isConnected: accessoryManager.isConnected))
 		.alert(setFixedAlertTitle, isPresented: $showingSetFixedAlert) {
 			Button("Cancel", role: .cancel) {
 				fixedPosition = !fixedPosition

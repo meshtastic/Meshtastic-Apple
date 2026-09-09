@@ -75,6 +75,12 @@ struct RemoteAdminEntryTests {
 		#expect(result == .targetChanged)
 	}
 
+	@Test func activeSessionIsResetWhenTheActiveRadioChanges() {
+		var state = RemoteAdminSessionState.active
+		state.invalidateForActiveRadioReplacement()
+		#expect(state == .stale)
+	}
+
 	@Test func sessionFreshness_requiresPasskeyAndFutureExpiration() {
 		let now = Date(timeIntervalSince1970: 100)
 		#expect(RemoteAdminSessionFreshness.isFresh(passkey: Data([1]), expiration: now.addingTimeInterval(1), now: now))

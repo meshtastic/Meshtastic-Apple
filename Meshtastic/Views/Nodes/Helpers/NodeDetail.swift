@@ -188,9 +188,7 @@ struct NodeDetail: View {
 						.onChange(of: accessoryManager.activeDeviceNum) { _, _ in
 							remoteSettingsDestination = nil
 							remoteAdminAttemptID = nil
-							if !accessoryManager.isConnected {
-								remoteAdminState = .stale
-							}
+							remoteAdminState.invalidateForActiveRadioReplacement()
 						}
 						.onChange(of: accessoryManager.isConnected) { _, connected in
 							if !connected {

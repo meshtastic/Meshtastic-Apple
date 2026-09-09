@@ -87,7 +87,7 @@ struct RangeTestConfig: View {
 				
 			}
 		}
-		.disabled(!accessoryManager.isConnected || node?.rangeTestConfig == nil || isPrimaryChannelPublic)
+		.disabled(ConfigFormAvailability.isDisabled(isConnected: accessoryManager.isConnected) || isPrimaryChannelPublic)
 		.safeAreaInset(edge: .bottom, alignment: .center) {
 			HStack(spacing: 0) {
 			SaveConfigButton(node: node, hasChanges: $hasChanges) {

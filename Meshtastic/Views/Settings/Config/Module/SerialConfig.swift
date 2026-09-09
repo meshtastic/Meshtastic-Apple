@@ -105,7 +105,7 @@ struct SerialConfig: View {
 						.font(.callout)
 				}
 			}
-			.disabled(!accessoryManager.isConnected || node?.serialConfig == nil)
+			.disabled(ConfigFormAvailability.isDisabled(isConnected: accessoryManager.isConnected))
 			.safeAreaInset(edge: .bottom, alignment: .center) {
 				HStack(spacing: 0) {
 				SaveConfigButton(node: node, hasChanges: $hasChanges) {

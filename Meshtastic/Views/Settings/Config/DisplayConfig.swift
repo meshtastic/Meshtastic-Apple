@@ -141,7 +141,7 @@ struct DisplayConfig: View {
 				}
 			}
 		}
-		.disabled(!accessoryManager.isConnected || node?.displayConfig == nil)
+		.disabled(ConfigFormAvailability.isDisabled(isConnected: accessoryManager.isConnected))
 		.safeAreaInset(edge: .bottom, alignment: .center) {
 			HStack(spacing: 0) {
 				SaveConfigButton(node: node, hasChanges: $hasChanges) {

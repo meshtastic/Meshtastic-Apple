@@ -314,6 +314,11 @@ struct RemoteAdminConfigTrackerTests {
 		#expect(requests == 1)
 	}
 
+	@Test func configFormKeepsRetryEnabledWhenTheConfigIsMissing() {
+		#expect(!ConfigFormAvailability.isDisabled(isConnected: true))
+		#expect(ConfigFormAvailability.isDisabled(isConnected: false))
+	}
+
 	@Test func managerPublishesNestedTrackerMutations() {
 		let manager = AccessoryManager(transports: [])
 		var changeCount = 0

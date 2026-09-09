@@ -174,7 +174,7 @@ struct DeviceConfig: View {
 				.pickerStyle(DefaultPickerStyle())
 			}
 		}
-		.disabled(!accessoryManager.isConnected || node?.deviceConfig == nil)
+		.disabled(ConfigFormAvailability.isDisabled(isConnected: accessoryManager.isConnected))
 		.safeAreaInset(edge: .bottom, alignment: .center) {
 			VStack(spacing: 0) {
 				// Only show these buttons for the BLE connected node
