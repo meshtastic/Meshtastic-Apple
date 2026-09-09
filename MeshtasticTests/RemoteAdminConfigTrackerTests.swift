@@ -302,7 +302,7 @@ struct RemoteAdminConfigTrackerTests {
 		tracker.registerPacket(packetID: 100, targetNodeNum: 42, operationID: operationID)
 		tracker.registerPacket(packetID: 200, targetNodeNum: 42, operationID: operationID)
 		tracker.resolveAdminResponse(packetID: 100, sourceNodeNum: 42)
-		#expect(tracker.finish(operationID) == .timedOut)
+		#expect(tracker.operations[operationID]?.pendingPacketIDs == [200])
 		tracker.resolveAdminResponse(packetID: 200, sourceNodeNum: 42)
 		#expect(tracker.finish(operationID) == .succeeded)
 	}
