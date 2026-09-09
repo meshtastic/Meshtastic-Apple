@@ -1392,120 +1392,58 @@ public struct ModuleConfig: Sendable {
 
   ///
   /// MeshBeacon module config
-  public struct MeshBeaconConfig: @unchecked Sendable {
+  public struct MeshBeaconConfig: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
 
     ///
     /// Bitwise-OR of Flags values (listen / broadcast / legacy-split toggles).
-    public var flags: UInt32 {
-      get {_storage._flags}
-      set {_uniqueStorage()._flags = newValue}
-    }
-
-    ///
-    /// Optional: node ID to send beacon messages AS.
-    /// When set, the `from` field of outgoing beacon packets is set to this node ID,
-    /// making beacons appear to originate from that node.
-    /// When unset (0), beacons are sent as the local node.
-    /// A remote admin can only set this field to their own node ID.
-    public var broadcastSendAsNode: UInt32 {
-      get {_storage._broadcastSendAsNode}
-      set {_uniqueStorage()._broadcastSendAsNode = newValue}
-    }
+    public var flags: UInt32 = 0
 
     ///
     /// Message to include in each beacon broadcast. Max 100 bytes enforced by firmware.
-    public var broadcastMessage: String {
-      get {_storage._broadcastMessage}
-      set {_uniqueStorage()._broadcastMessage = newValue}
-    }
+    public var broadcastMessage: String = String()
 
     ///
     /// Optional channel (name + PSK) to advertise in the MeshBeacon offer_channel field.
     public var broadcastOfferChannel: ChannelSettings {
-      get {_storage._broadcastOfferChannel ?? ChannelSettings()}
-      set {_uniqueStorage()._broadcastOfferChannel = newValue}
+      get {_broadcastOfferChannel ?? ChannelSettings()}
+      set {_broadcastOfferChannel = newValue}
     }
     /// Returns true if `broadcastOfferChannel` has been explicitly set.
-    public var hasBroadcastOfferChannel: Bool {_storage._broadcastOfferChannel != nil}
+    public var hasBroadcastOfferChannel: Bool {self._broadcastOfferChannel != nil}
     /// Clears the value of `broadcastOfferChannel`. Subsequent reads from it will return its default value.
-    public mutating func clearBroadcastOfferChannel() {_uniqueStorage()._broadcastOfferChannel = nil}
+    public mutating func clearBroadcastOfferChannel() {self._broadcastOfferChannel = nil}
 
     ///
     /// Optional region to advertise in the MeshBeacon offer_region field.
-    public var broadcastOfferRegion: Config.LoRaConfig.RegionCode {
-      get {_storage._broadcastOfferRegion}
-      set {_uniqueStorage()._broadcastOfferRegion = newValue}
-    }
+    public var broadcastOfferRegion: Config.LoRaConfig.RegionCode = .unset
 
     ///
     /// Optional modem preset to advertise in the MeshBeacon offer_preset field.
     public var broadcastOfferPreset: Config.LoRaConfig.ModemPreset {
-      get {_storage._broadcastOfferPreset ?? .longFast}
-      set {_uniqueStorage()._broadcastOfferPreset = newValue}
+      get {_broadcastOfferPreset ?? .longFast}
+      set {_broadcastOfferPreset = newValue}
     }
     /// Returns true if `broadcastOfferPreset` has been explicitly set.
-    public var hasBroadcastOfferPreset: Bool {_storage._broadcastOfferPreset != nil}
+    public var hasBroadcastOfferPreset: Bool {self._broadcastOfferPreset != nil}
     /// Clears the value of `broadcastOfferPreset`. Subsequent reads from it will return its default value.
-    public mutating func clearBroadcastOfferPreset() {_uniqueStorage()._broadcastOfferPreset = nil}
-
-    ///
-    /// Single-target TX channel: channel settings (name + PSK) to send beacons on.
-    /// If unset, beacons go out on the primary channel. Used only when broadcast_targets is empty.
-    /// NOTE: the single-target path embeds the ChannelSettings inline here, whereas a
-    /// broadcast_targets entry references a channel-table slot by channel_index instead — see
-    /// BroadcastTarget. The two paths are equal, first-class options; only this representation differs.
-    public var broadcastOnChannel: ChannelSettings {
-      get {_storage._broadcastOnChannel ?? ChannelSettings()}
-      set {_uniqueStorage()._broadcastOnChannel = newValue}
-    }
-    /// Returns true if `broadcastOnChannel` has been explicitly set.
-    public var hasBroadcastOnChannel: Bool {_storage._broadcastOnChannel != nil}
-    /// Clears the value of `broadcastOnChannel`. Subsequent reads from it will return its default value.
-    public mutating func clearBroadcastOnChannel() {_uniqueStorage()._broadcastOnChannel = nil}
-
-    ///
-    /// Region to use when sending beacons on broadcast_on_preset.
-    public var broadcastOnRegion: Config.LoRaConfig.RegionCode {
-      get {_storage._broadcastOnRegion}
-      set {_uniqueStorage()._broadcastOnRegion = newValue}
-    }
-
-    ///
-    /// Modem preset to use when sending beacons.
-    /// If different from current config, the radio is temporarily switched for TX.
-    public var broadcastOnPreset: Config.LoRaConfig.ModemPreset {
-      get {_storage._broadcastOnPreset ?? .longFast}
-      set {_uniqueStorage()._broadcastOnPreset = newValue}
-    }
-    /// Returns true if `broadcastOnPreset` has been explicitly set.
-    public var hasBroadcastOnPreset: Bool {_storage._broadcastOnPreset != nil}
-    /// Clears the value of `broadcastOnPreset`. Subsequent reads from it will return its default value.
-    public mutating func clearBroadcastOnPreset() {_uniqueStorage()._broadcastOnPreset = nil}
+    public mutating func clearBroadcastOfferPreset() {self._broadcastOfferPreset = nil}
 
     ///
     /// How often to broadcast, in seconds. Min 3600 (1 h), default 3600.
-    public var broadcastIntervalSecs: UInt32 {
-      get {_storage._broadcastIntervalSecs}
-      set {_uniqueStorage()._broadcastIntervalSecs = newValue}
-    }
+    public var broadcastIntervalSecs: UInt32 = 0
 
     ///
-    /// Multi-target broadcast list.
-    /// When non-empty the broadcaster transmits one beacon copy per entry in sequence,
-    /// each temporarily switching the radio to that entry's preset/region/channel.
-    /// When empty, the broadcaster uses the scalar broadcast_on_preset / broadcast_on_region /
-    /// broadcast_on_channel fields instead (the single-target path).
-    /// Single- and multi-target are equal, first-class options — neither is preferred or
-    /// deprecated. They differ only in how the TX channel is named: broadcast_on_channel embeds a
-    /// ChannelSettings inline, while a target references an existing channel-table slot by
-    /// channel_index (see BroadcastTarget).
-    public var broadcastTargets: [ModuleConfig.MeshBeaconConfig.BroadcastTarget] {
-      get {_storage._broadcastTargets}
-      set {_uniqueStorage()._broadcastTargets = newValue}
-    }
+    /// Broadcast destination list.
+    /// The broadcaster sends one beacon copy per distinct destination, in sequence, temporarily
+    /// switching the radio to that entry's preset/region/channel for each.
+    /// When empty, a single beacon is sent on the node's running preset and region over the
+    /// primary channel.
+    /// Entries that resolve to the same effective preset, region and channel are deduplicated, so
+    /// a duplicate entry does not produce a second transmission.
+    public var broadcastTargets: [ModuleConfig.MeshBeaconConfig.BroadcastTarget] = []
 
     public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -1571,8 +1509,8 @@ public struct ModuleConfig: Sendable {
     }
 
     ///
-    /// One entry in the multi-target broadcast list.
-    /// The broadcaster transmits one beacon copy per entry, each on its own radio settings.
+    /// One entry in the broadcast destination list.
+    /// Each entry names one set of radio settings to send a beacon copy on.
     public struct BroadcastTarget: Sendable {
       // SwiftProtobuf.Message conformance is added in an extension below. See the
       // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
@@ -1618,7 +1556,8 @@ public struct ModuleConfig: Sendable {
 
     public init() {}
 
-    fileprivate var _storage = _StorageClass.defaultInstance
+    fileprivate var _broadcastOfferChannel: ChannelSettings? = nil
+    fileprivate var _broadcastOfferPreset: Config.LoRaConfig.ModemPreset? = nil
   }
 
   ///
@@ -2971,139 +2910,63 @@ extension ModuleConfig.StatusMessageConfig: SwiftProtobuf.Message, SwiftProtobuf
 
 extension ModuleConfig.MeshBeaconConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = ModuleConfig.protoMessageName + ".MeshBeaconConfig"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}flags\0\u{4}\u{2}broadcast_send_as_node\0\u{3}broadcast_message\0\u{3}broadcast_offer_channel\0\u{3}broadcast_offer_region\0\u{3}broadcast_offer_preset\0\u{3}broadcast_on_channel\0\u{3}broadcast_on_region\0\u{3}broadcast_on_preset\0\u{3}broadcast_interval_secs\0\u{4}\u{2}broadcast_targets\0")
-
-  fileprivate class _StorageClass {
-    var _flags: UInt32 = 0
-    var _broadcastSendAsNode: UInt32 = 0
-    var _broadcastMessage: String = String()
-    var _broadcastOfferChannel: ChannelSettings? = nil
-    var _broadcastOfferRegion: Config.LoRaConfig.RegionCode = .unset
-    var _broadcastOfferPreset: Config.LoRaConfig.ModemPreset? = nil
-    var _broadcastOnChannel: ChannelSettings? = nil
-    var _broadcastOnRegion: Config.LoRaConfig.RegionCode = .unset
-    var _broadcastOnPreset: Config.LoRaConfig.ModemPreset? = nil
-    var _broadcastIntervalSecs: UInt32 = 0
-    var _broadcastTargets: [ModuleConfig.MeshBeaconConfig.BroadcastTarget] = []
-
-      // This property is used as the initial default value for new instances of the type.
-      // The type itself is protecting the reference to its storage via CoW semantics.
-      // This will force a copy to be made of this reference when the first mutation occurs;
-      // hence, it is safe to mark this as `nonisolated(unsafe)`.
-      static nonisolated(unsafe) let defaultInstance = _StorageClass()
-
-    private init() {}
-
-    init(copying source: _StorageClass) {
-      _flags = source._flags
-      _broadcastSendAsNode = source._broadcastSendAsNode
-      _broadcastMessage = source._broadcastMessage
-      _broadcastOfferChannel = source._broadcastOfferChannel
-      _broadcastOfferRegion = source._broadcastOfferRegion
-      _broadcastOfferPreset = source._broadcastOfferPreset
-      _broadcastOnChannel = source._broadcastOnChannel
-      _broadcastOnRegion = source._broadcastOnRegion
-      _broadcastOnPreset = source._broadcastOnPreset
-      _broadcastIntervalSecs = source._broadcastIntervalSecs
-      _broadcastTargets = source._broadcastTargets
-    }
-  }
-
-  fileprivate mutating func _uniqueStorage() -> _StorageClass {
-    if !isKnownUniquelyReferenced(&_storage) {
-      _storage = _StorageClass(copying: _storage)
-    }
-    return _storage
-  }
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}flags\0\u{4}\u{3}broadcast_message\0\u{3}broadcast_offer_channel\0\u{3}broadcast_offer_region\0\u{3}broadcast_offer_preset\0\u{4}\u{4}broadcast_interval_secs\0\u{4}\u{2}broadcast_targets\0\u{b}broadcast_send_as_node\0\u{b}broadcast_on_channel\0\u{b}broadcast_on_region\0\u{b}broadcast_on_preset\0\u{c}\u{3}\u{1}\u{c}\u{8}\u{1}\u{c}\u{9}\u{1}\u{c}\u{a}\u{1}")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    _ = _uniqueStorage()
-    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
-      while let fieldNumber = try decoder.nextFieldNumber() {
-        // The use of inline closures is to circumvent an issue where the compiler
-        // allocates stack space for every case branch when no optimizations are
-        // enabled. https://github.com/apple/swift-protobuf/issues/1034
-        switch fieldNumber {
-        case 1: try { try decoder.decodeSingularUInt32Field(value: &_storage._flags) }()
-        case 3: try { try decoder.decodeSingularUInt32Field(value: &_storage._broadcastSendAsNode) }()
-        case 4: try { try decoder.decodeSingularStringField(value: &_storage._broadcastMessage) }()
-        case 5: try { try decoder.decodeSingularMessageField(value: &_storage._broadcastOfferChannel) }()
-        case 6: try { try decoder.decodeSingularEnumField(value: &_storage._broadcastOfferRegion) }()
-        case 7: try { try decoder.decodeSingularEnumField(value: &_storage._broadcastOfferPreset) }()
-        case 8: try { try decoder.decodeSingularMessageField(value: &_storage._broadcastOnChannel) }()
-        case 9: try { try decoder.decodeSingularEnumField(value: &_storage._broadcastOnRegion) }()
-        case 10: try { try decoder.decodeSingularEnumField(value: &_storage._broadcastOnPreset) }()
-        case 11: try { try decoder.decodeSingularUInt32Field(value: &_storage._broadcastIntervalSecs) }()
-        case 13: try { try decoder.decodeRepeatedMessageField(value: &_storage._broadcastTargets) }()
-        default: break
-        }
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularUInt32Field(value: &self.flags) }()
+      case 4: try { try decoder.decodeSingularStringField(value: &self.broadcastMessage) }()
+      case 5: try { try decoder.decodeSingularMessageField(value: &self._broadcastOfferChannel) }()
+      case 6: try { try decoder.decodeSingularEnumField(value: &self.broadcastOfferRegion) }()
+      case 7: try { try decoder.decodeSingularEnumField(value: &self._broadcastOfferPreset) }()
+      case 11: try { try decoder.decodeSingularUInt32Field(value: &self.broadcastIntervalSecs) }()
+      case 13: try { try decoder.decodeRepeatedMessageField(value: &self.broadcastTargets) }()
+      default: break
       }
     }
   }
 
   public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every if/case branch local when no optimizations
-      // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
-      // https://github.com/apple/swift-protobuf/issues/1182
-      if _storage._flags != 0 {
-        try visitor.visitSingularUInt32Field(value: _storage._flags, fieldNumber: 1)
-      }
-      if _storage._broadcastSendAsNode != 0 {
-        try visitor.visitSingularUInt32Field(value: _storage._broadcastSendAsNode, fieldNumber: 3)
-      }
-      if !_storage._broadcastMessage.isEmpty {
-        try visitor.visitSingularStringField(value: _storage._broadcastMessage, fieldNumber: 4)
-      }
-      try { if let v = _storage._broadcastOfferChannel {
-        try visitor.visitSingularMessageField(value: v, fieldNumber: 5)
-      } }()
-      if _storage._broadcastOfferRegion != .unset {
-        try visitor.visitSingularEnumField(value: _storage._broadcastOfferRegion, fieldNumber: 6)
-      }
-      try { if let v = _storage._broadcastOfferPreset {
-        try visitor.visitSingularEnumField(value: v, fieldNumber: 7)
-      } }()
-      try { if let v = _storage._broadcastOnChannel {
-        try visitor.visitSingularMessageField(value: v, fieldNumber: 8)
-      } }()
-      if _storage._broadcastOnRegion != .unset {
-        try visitor.visitSingularEnumField(value: _storage._broadcastOnRegion, fieldNumber: 9)
-      }
-      try { if let v = _storage._broadcastOnPreset {
-        try visitor.visitSingularEnumField(value: v, fieldNumber: 10)
-      } }()
-      if _storage._broadcastIntervalSecs != 0 {
-        try visitor.visitSingularUInt32Field(value: _storage._broadcastIntervalSecs, fieldNumber: 11)
-      }
-      if !_storage._broadcastTargets.isEmpty {
-        try visitor.visitRepeatedMessageField(value: _storage._broadcastTargets, fieldNumber: 13)
-      }
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    if self.flags != 0 {
+      try visitor.visitSingularUInt32Field(value: self.flags, fieldNumber: 1)
+    }
+    if !self.broadcastMessage.isEmpty {
+      try visitor.visitSingularStringField(value: self.broadcastMessage, fieldNumber: 4)
+    }
+    try { if let v = self._broadcastOfferChannel {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 5)
+    } }()
+    if self.broadcastOfferRegion != .unset {
+      try visitor.visitSingularEnumField(value: self.broadcastOfferRegion, fieldNumber: 6)
+    }
+    try { if let v = self._broadcastOfferPreset {
+      try visitor.visitSingularEnumField(value: v, fieldNumber: 7)
+    } }()
+    if self.broadcastIntervalSecs != 0 {
+      try visitor.visitSingularUInt32Field(value: self.broadcastIntervalSecs, fieldNumber: 11)
+    }
+    if !self.broadcastTargets.isEmpty {
+      try visitor.visitRepeatedMessageField(value: self.broadcastTargets, fieldNumber: 13)
     }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: ModuleConfig.MeshBeaconConfig, rhs: ModuleConfig.MeshBeaconConfig) -> Bool {
-    if lhs._storage !== rhs._storage {
-      let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
-        let _storage = _args.0
-        let rhs_storage = _args.1
-        if _storage._flags != rhs_storage._flags {return false}
-        if _storage._broadcastSendAsNode != rhs_storage._broadcastSendAsNode {return false}
-        if _storage._broadcastMessage != rhs_storage._broadcastMessage {return false}
-        if _storage._broadcastOfferChannel != rhs_storage._broadcastOfferChannel {return false}
-        if _storage._broadcastOfferRegion != rhs_storage._broadcastOfferRegion {return false}
-        if _storage._broadcastOfferPreset != rhs_storage._broadcastOfferPreset {return false}
-        if _storage._broadcastOnChannel != rhs_storage._broadcastOnChannel {return false}
-        if _storage._broadcastOnRegion != rhs_storage._broadcastOnRegion {return false}
-        if _storage._broadcastOnPreset != rhs_storage._broadcastOnPreset {return false}
-        if _storage._broadcastIntervalSecs != rhs_storage._broadcastIntervalSecs {return false}
-        if _storage._broadcastTargets != rhs_storage._broadcastTargets {return false}
-        return true
-      }
-      if !storagesAreEqual {return false}
-    }
+    if lhs.flags != rhs.flags {return false}
+    if lhs.broadcastMessage != rhs.broadcastMessage {return false}
+    if lhs._broadcastOfferChannel != rhs._broadcastOfferChannel {return false}
+    if lhs.broadcastOfferRegion != rhs.broadcastOfferRegion {return false}
+    if lhs._broadcastOfferPreset != rhs._broadcastOfferPreset {return false}
+    if lhs.broadcastIntervalSecs != rhs.broadcastIntervalSecs {return false}
+    if lhs.broadcastTargets != rhs.broadcastTargets {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

@@ -22,6 +22,13 @@ extension NSNotification.Name {
 	/// (NSNotification.Name, not Notification.Name — the app defines its own
 	/// `Notification` model type which shadows Foundation's in some files.)
 	static let meshMessagesDidChange = NSNotification.Name("MeshMessagesDidChange")
+
+	/// Posted when the radio reports something about a firmware update it was asked to start.
+	/// The firmware answers an OTA request with a client notification saying what it did —
+	/// rebooting into update mode, or why it would not: no OTA loader, a loader that does not
+	/// do this transport, a bad hash. The update sheet shows it instead of waiting to time out
+	/// on a device that was never coming. The message is the notification object.
+	static let otaDeviceNotice = NSNotification.Name("OTADeviceNotice")
 }
 
 class AppState: ObservableObject {

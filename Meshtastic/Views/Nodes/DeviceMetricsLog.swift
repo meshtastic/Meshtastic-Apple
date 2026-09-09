@@ -271,9 +271,11 @@ struct DeviceMetricsLog: View {
 		totalReadings = node.telemetryCount(ofType: 0, context: context)
 		deviceMetrics = node.safeTelemetries(ofType: 0)
 		let oneWeekAgo = Calendar.current.date(byAdding: .day, value: -7, to: Date()) ?? Date.distantPast
-		chartData = deviceMetrics
-			.filter { ($0.time ?? Date.distantPast) >= oneWeekAgo }
-			.sorted { ($0.time ?? .distantPast) < ($1.time ?? .distantPast) }
+		chartData = downsampledForChart(
+			deviceMetrics
+				.filter { ($0.time ?? Date.distantPast) >= oneWeekAgo }
+				.sorted { ($0.time ?? .distantPast) < ($1.time ?? .distantPast) }
+		)
 	}
 }
 

@@ -105,6 +105,8 @@ Tap **Estimate**. A progress indicator appears while the planner computes the co
 
 Waypoints are named points of interest you can share across the mesh.
 
+When a node on the mesh shares a new waypoint, your device raises a notification you can tap to open it on the map. To turn that off, switch off **New Waypoints** under **Settings → Meshtastic → Notifications** in the iOS Settings app — waypoints still arrive and still appear on the map.
+
 ### Creating a Waypoint
 
 1. Long press anywhere on the map.

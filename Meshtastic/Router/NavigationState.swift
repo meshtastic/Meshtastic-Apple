@@ -95,6 +95,19 @@ struct NavigationState: Hashable {
 		case map
 		case settings
 		case connect
+
+		/// Screen name reported to RUM. Written out rather than derived from the raw value:
+		/// these names are the grouping key for a screen's crashes and hangs, so they need to
+		/// survive a rename of the case.
+		var screenName: String {
+			switch self {
+			case .messages: return "Messages"
+			case .nodes: return "Nodes"
+			case .map: return "Map"
+			case .settings: return "Settings"
+			case .connect: return "Connect"
+			}
+		}
 	}
 
 	var selectedTab: Tab = .connect

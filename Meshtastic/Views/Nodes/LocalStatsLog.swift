@@ -502,7 +502,7 @@ private extension LocalStatsLog {
 				return LocalStatsChartPoint(time: time, noiseFloor: noiseFloor)
 			}.reversed()
 		)
-		noiseFloorReadings = readings
+		noiseFloorReadings = downsampledForChart(readings)
 
 		let values = readings.map { Int($0.noiseFloor) }
 		if let minValue = values.min(), let maxValue = values.max() {

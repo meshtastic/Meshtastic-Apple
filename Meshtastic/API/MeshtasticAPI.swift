@@ -16,6 +16,7 @@ import os
 enum ReleaseType: String {
 	case stable = "Stable"
 	case alpha = "Alpha"
+	case nightly = "Nightly"
 	case unlisted = "Unlisted"
 }
 
@@ -70,6 +71,16 @@ struct FirmwareRelease: Codable {
 		case zipURL = "zip_url"
 		case releaseNotes = "release_notes"
 	}
+}
+
+/// Points at the current nightly build. Nightly artifacts live in one fixed
+/// `firmware-nightly` directory that is overwritten each build, so this file is the
+/// only way to learn which version is sitting in there right now.
+struct NightlyFirmwareIndex: Codable {
+	let version: String
+	let id: String
+	let title: String
+	let commit: String?
 }
 
 private struct GitHubFirmwareRelease: Decodable {
@@ -171,6 +182,24 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 	static let imageURLPrefix = URL(string: "https://flasher.meshtastic.org/img/devices/")!
 	static let firmwareURLEndpoint = URL(string: "https://api.meshtastic.org/github/firmware/list")!
 	static let firmwareGitHubURLEndpoint = URL(string: "https://api.github.com/repos/meshtastic/firmware/releases?per_page=100")!
+	static let nightlyIndexEndpoint = URL(string: "https://raw.githubusercontent.com/meshtastic/meshtastic.github.io/master/firmware-nightly/index.json")!
+
+	static let deviceCatalogETagKey = "deviceCatalog"
+	static let firmwareListETagKey = "firmwareReleaseList"
+
+	/// Last ETag seen for an endpoint. URLSession already spares us the download when nothing has
+	/// changed; this spares us the rest — decoding the payload and re-writing rows that are
+	/// already correct. Stored only after the write succeeds, so a run that fails part-way cannot
+	/// convince the next one that the store is current.
+	static func lastETag(for key: String) -> String? {
+		UserDefaults.standard.string(forKey: "api.etag.\(key)")
+	}
+
+	static func setLastETag(_ eTag: String?, for key: String) {
+		guard let eTag else { return }
+		UserDefaults.standard.set(eTag, forKey: "api.etag.\(key)")
+	}
+	static let nightlyReleaseNotesEndpoint = URL(string: "https://raw.githubusercontent.com/meshtastic/meshtastic.github.io/master/firmware-nightly/release_notes.md")!
 	static let eventFirmwareURLEndpoint = URL(string: "https://api.meshtastic.org/resource/eventFirmware")!
 
 	/// How long a completed device image + msh.to link pass stays fresh before another network pass
@@ -243,8 +272,21 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 		}
 
 		let decodedFirmware: FirmwareReleases
+		var firmwareListETag: String?
 		do {
-			let apiData = try await Self.firmwareURLEndpoint.data(timeout: 5.0)
+			let (apiData, eTag) = try await Self.firmwareURLEndpoint.dataWithETag(timeout: 5.0)
+			// Same short-circuit as the catalog: an unchanged list is not worth re-writing.
+			if let eTag, eTag == Self.lastETag(for: Self.firmwareListETagKey) {
+				let hasReleases = await MainActor.run {
+					((try? container.mainContext.fetchCount(FetchDescriptor<FirmwareReleaseEntity>())) ?? 0) > 0
+				}
+				if hasReleases {
+					Logger.services.debug("Firmware list unchanged (ETag match), skipping the upsert")
+					UserDefaults.lastFirmwareAPIUpdate = Date()
+					return
+				}
+			}
+			firmwareListETag = eTag
 			decodedFirmware = try FirmwareReleaseCatalog.decode(apiData)
 		} catch {
 			Logger.services.warning("Firmware API request failed; falling back to GitHub releases: \(error.localizedDescription, privacy: .public)")
@@ -253,6 +295,7 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 		}
 		let stableVersions = Set(decodedFirmware.releases.stable.map { $0.id })
 		let alphaVersions = Set(decodedFirmware.releases.alpha.map { $0.id })
+		let nightlyRelease = await fetchNightlyRelease()
 
 		// All DB work on mainContext so @Query observers see changes
 		await MainActor.run {
@@ -264,6 +307,26 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 
 			for alphaRelease in decodedFirmware.releases.alpha {
 				self.processFirmware(release: alphaRelease, releaseType: .alpha, context: context)
+			}
+
+			if let nightlyRelease {
+				self.processFirmware(release: nightlyRelease, releaseType: .nightly, context: context)
+
+				// Only one nightly exists at a time — the host overwrites the directory — so
+				// drop yesterday's row. Skipped when the index could not be read, or a failed
+				// fetch would empty the tab.
+				let nightlyRaw = ReleaseType.nightly.rawValue
+				let currentNightly = [nightlyRelease.id]
+				let staleNightlyDescriptor = FetchDescriptor<FirmwareReleaseEntity>(
+					predicate: #Predicate {
+						$0.releaseType == nightlyRaw && !currentNightly.contains($0.versionId)
+					}
+				)
+				if let staleNightlies = try? context.fetch(staleNightlyDescriptor) {
+					for staleNightly in staleNightlies {
+						context.delete(staleNightly)
+					}
+				}
 			}
 
 			// Anything that's left in stableVersions and alphaVersions is no longer present in the API and should be deleted.
@@ -289,16 +352,38 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 		
 		// Save the last update date for the firmware
 		UserDefaults.lastFirmwareAPIUpdate = Date()
+		Self.setLastETag(firmwareListETag, for: Self.firmwareListETagKey)
 	}
 
-	func refreshDevicesAPIData() async throws {
+	/// Refresh the hardware catalog from the API.
+	///
+	/// `includeImages` runs the image/link pass afterwards. Callers that only need the
+	/// metadata — a new board's name and PlatformIO target — pass false and skip it.
+	func refreshDevicesAPIData(includeImages: Bool = true) async throws {
 		guard let container else { return }
 		// No spinner bookkeeping here: this function raises no loading flag of its own, and the
 		// image/link pass it delegates to in PHASE 3 manages the flag around its own lifetime.
 		// Clearing it here would lower a flag a concurrent seed still needs raised.
 		// PHASE 1: Network only — no bundle fallback (bundle was already loaded at init).
-		let finalData = try await Self.deviceURLEndpoint.data(timeout: 10.0)
+		let (finalData, eTag) = try await Self.deviceURLEndpoint.dataWithETag(timeout: 10.0)
 		guard !finalData.isEmpty else { throw MeshtasticAPIError.unableToRetreviveJSON }
+
+		// Unchanged payload: skip the decode and the upsert. Guarded on the store actually holding
+		// rows, because a database clear leaves the stored ETag behind and skipping then would
+		// leave the catalog empty until the payload next changes.
+		if let eTag, eTag == Self.lastETag(for: Self.deviceCatalogETagKey) {
+			let hasRows = await MainActor.run {
+				let context = container.mainContext
+				let devices = (try? context.fetchCount(FetchDescriptor<DeviceHardwareEntity>())) ?? 0
+				guard devices > 0 else { return false }
+				guard includeImages else { return true }
+				return ((try? context.fetchCount(FetchDescriptor<DeviceHardwareImageEntity>())) ?? 0) > 0
+			}
+			if hasRows {
+				Logger.services.debug("Device catalog unchanged (ETag match), skipping the upsert")
+				return
+			}
+		}
 		// Decode Swift Structs (Safe to do off the DB thread)
 		let decodedDevices = try decoder.decode([DeviceHardware].self, from: finalData)
 
@@ -360,6 +445,9 @@ deviceEntity.architecture = device.architecture
 		// PHASE 3: Images and msh.to links. This is the single image/link pass, driven by the
 		// live device list so hardware present only in the API still gets its images. It runs
 		// here, after the metadata upsert, so the device rows the images attach to already exist.
+		Self.setLastETag(eTag, for: Self.deviceCatalogETagKey)
+
+		guard includeImages else { return }
 		await refreshDeviceImagesAndLinks(apiDevices: decodedDevices)
 	}
 
@@ -463,6 +551,28 @@ deviceEntity.architecture = device.architecture
 		return decoded
 	}
 	
+	/// Read the nightly pointer file. Best effort on purpose: no nightly, or an
+	/// unreachable one, must not fail the stable and alpha list refresh.
+	private func fetchNightlyRelease() async -> FirmwareRelease? {
+		do {
+			let data = try await Self.nightlyIndexEndpoint.data(timeout: 5.0)
+			let index = try JSONDecoder().decode(NightlyFirmwareIndex.self, from: data)
+			let notes = try? await Self.nightlyReleaseNotesEndpoint.data(timeout: 5.0)
+			let pageURL = index.commit.map { "https://github.com/meshtastic/firmware/commit/\($0)" }
+				?? "https://github.com/meshtastic/firmware/commits/master"
+			return FirmwareRelease(
+				id: index.id,
+				title: index.title,
+				pageURL: pageURL,
+				zipURL: "",
+				releaseNotes: notes.flatMap { String(data: $0, encoding: .utf8) }
+			)
+		} catch {
+			Logger.services.warning("Nightly firmware index unavailable: \(error.localizedDescription, privacy: .public)")
+			return nil
+		}
+	}
+
 	private func processFirmware(release: FirmwareRelease, releaseType: ReleaseType, context: ModelContext) {
 		let releaseId = release.id
 		var descriptor = FetchDescriptor<FirmwareReleaseEntity>(
@@ -495,7 +605,7 @@ deviceEntity.architecture = device.architecture
 	}
 	
 	/// Handles the logic of checking ETag -> Checking DB -> Downloading -> Bundle Fallback -> Saving
-	private func processImage(imageName: String, platform: String ) async {
+	private func processImage(imageName: String, platforms: [String]) async {
 		guard let container else { return }
 		// Skip if the pass was cancelled (connection teardown) — don't even do the bundle fallback.
 		if Task.isCancelled { return }
@@ -504,22 +614,22 @@ deviceEntity.architecture = device.architecture
 		// 1. Network: Try to get ETag (Optional - might fail if offline or timeout)
 		let remoteETag = try? await url.eTag()
 
-		// 2. DB: Check if we already have this version or a usable cached version
+		// 2. DB: Check if we already have this version or a usable cached version.
+		// The image's device relationship is to-one, so shared art is stored once per
+		// device — every device that references the file needs its own current copy.
 		let isUpToDate: Bool = await MainActor.run {
 			let context = container.mainContext
-			var imageDescriptor = FetchDescriptor<DeviceHardwareImageEntity>(
-				predicate: #Predicate { $0.fileName == imageName }
-			)
-			imageDescriptor.fetchLimit = 1
-
-			if let existing = try? context.fetch(imageDescriptor).first,
-			   let data = existing.svgData, !data.isEmpty {
-				if let rTag = remoteETag {
-					return existing.eTag == rTag
-				}
-				return true
+			for platform in platforms {
+				var deviceDescriptor = FetchDescriptor<DeviceHardwareEntity>(
+					predicate: #Predicate { $0.platformioTarget == platform }
+				)
+				deviceDescriptor.fetchLimit = 1
+				guard let deviceEntity = try? context.fetch(deviceDescriptor).first else { continue }
+				guard let existing = deviceEntity.images.first(where: { $0.fileName == imageName }),
+					  let data = existing.svgData, !data.isEmpty else { return false }
+				if let rTag = remoteETag, existing.eTag != rTag { return false }
 			}
-			return false
+			return true
 		}
 
 		if isUpToDate {
@@ -543,8 +653,10 @@ deviceEntity.architecture = device.architecture
 		if dataToSave == nil {
 			Logger.services.debug("Network unavailable or failed for \(imageName). Checking local bundle.")
 
-			// Look in the 'images' subdirectory
-			if let bundleURL = Bundle.main.url(forResource: imageName, withExtension: nil, subdirectory: "images"),
+			// The synchronized images folder lands flat in the bundle root, but check the
+			// subdirectory first in case that ever changes.
+			if let bundleURL = Bundle.main.url(forResource: imageName, withExtension: nil, subdirectory: "images")
+				?? Bundle.main.url(forResource: imageName, withExtension: nil),
 			   let bundleData = try? Data(contentsOf: bundleURL) {
 
 				dataToSave = bundleData
@@ -563,36 +675,28 @@ deviceEntity.architecture = device.architecture
 		await MainActor.run {
 			let context = container.mainContext
 
-			// Find the Device
-			var deviceDescriptor = FetchDescriptor<DeviceHardwareEntity>(
-				predicate: #Predicate { $0.platformioTarget == platform }
-			)
-			deviceDescriptor.fetchLimit = 1
-			guard let deviceEntity = try? context.fetch(deviceDescriptor).first else { return }
+			// Link the image to every device that references it. The device relationship
+			// is to-one (the inverse of DeviceHardwareEntity.images), so each device gets
+			// its own entity — appending one shared entity to several devices would move
+			// it, leaving only the last platform linked.
+			for platform in platforms {
+				var deviceDescriptor = FetchDescriptor<DeviceHardwareEntity>(
+					predicate: #Predicate { $0.platformioTarget == platform }
+				)
+				deviceDescriptor.fetchLimit = 1
+				guard let deviceEntity = try? context.fetch(deviceDescriptor).first else { continue }
 
-			// Find or Create Image Entity
-			var imageDescriptor = FetchDescriptor<DeviceHardwareImageEntity>(
-				predicate: #Predicate { $0.fileName == imageName }
-			)
-			imageDescriptor.fetchLimit = 1
-
-			let existingImg = try? context.fetch(imageDescriptor).first
-			let imageEntity: DeviceHardwareImageEntity
-			if let existingImg {
-				imageEntity = existingImg
-			} else {
-				imageEntity = DeviceHardwareImageEntity()
-				context.insert(imageEntity)
-			}
-
-			imageEntity.fileName = imageName
-			imageEntity.eTag = finalETag
-			imageEntity.svgData = finalData
-
-			// Create Relationship
-			imageEntity.device = deviceEntity
-			if !deviceEntity.images.contains(where: { $0.fileName == imageName }) {
-				deviceEntity.images.append(imageEntity)
+				let imageEntity: DeviceHardwareImageEntity
+				if let existing = deviceEntity.images.first(where: { $0.fileName == imageName }) {
+					imageEntity = existing
+				} else {
+					imageEntity = DeviceHardwareImageEntity()
+					context.insert(imageEntity)
+					imageEntity.device = deviceEntity
+				}
+				imageEntity.fileName = imageName
+				imageEntity.eTag = finalETag
+				imageEntity.svgData = finalData
 			}
 
 			try? context.save()
@@ -790,19 +894,29 @@ extension MeshtasticAPI {
 			bundledDevices = []
 		}
 
-		var work: [(imageName: String, platform: String)] = []
-		var seen = Set<String>()
+		// One download per image, but linked to every device that references it — several
+		// catalog records share one file (all three RAK4631 products use rak4631.svg), and
+		// deduping the link too left every device after the first with no image.
+		var work: [String: [String]] = [:]
+		var order: [String] = []
 		for device in bundledDevices + (apiDevices ?? []) {
-			for imageName in device.images ?? [] where seen.insert(imageName).inserted {
-				work.append((imageName: imageName, platform: device.platformioTarget))
+			for imageName in device.images ?? [] {
+				if work[imageName] == nil {
+					work[imageName] = []
+					order.append(imageName)
+				}
+				if work[imageName]?.contains(device.platformioTarget) == false {
+					work[imageName]?.append(device.platformioTarget)
+				}
 			}
 		}
 
 		await withTaskGroup(of: Void.self) { group in
-			for item in work {
+			for imageName in order {
 				if Task.isCancelled { break }   // teardown mid-pass: stop queueing image fetches
+				let platforms = work[imageName] ?? []
 				group.addTask {
-					await self.processImage(imageName: item.imageName, platform: item.platform)
+					await self.processImage(imageName: imageName, platforms: platforms)
 				}
 			}
 		}

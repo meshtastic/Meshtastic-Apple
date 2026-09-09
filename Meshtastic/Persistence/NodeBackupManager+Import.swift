@@ -20,6 +20,7 @@ extension NodeBackupManager {
 			dst.channel = src.channel
 			dst.favorite = src.favorite
 			dst.firstHeard = src.firstHeard
+			dst.hasBeenAdministered = src.hasBeenAdministered
 			dst.hopsAway = src.hopsAway
 			dst.ignored = src.ignored
 			dst.lastHeard = src.lastHeard

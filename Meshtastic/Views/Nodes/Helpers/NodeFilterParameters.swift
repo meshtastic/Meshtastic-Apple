@@ -73,6 +73,7 @@ final class NodeFilterParameters: ObservableObject {
 
 	private enum Keys {
 		static let isOnline = "nodeFilter.isOnline"
+		static let isSigned = "nodeFilter.isSigned"
 		static let isPkiEncrypted = "nodeFilter.isPkiEncrypted"
 		static let isFavorite = "nodeFilter.isFavorite"
 		static let isIgnored = "nodeFilter.isIgnored"
@@ -94,6 +95,7 @@ final class NodeFilterParameters: ObservableObject {
 	// `@AppStorage` property inside an `ObservableObject` reads/writes `UserDefaults` but does NOT
 	// fire `objectWillChange`) and mirrors its value to `store` in `didSet` so it survives relaunch.
 	@Published var isOnline: Bool { didSet { store.set(isOnline, forKey: Keys.isOnline) } }
+	@Published var isSigned: Bool { didSet { store.set(isSigned, forKey: Keys.isSigned) } }
 	@Published var isPkiEncrypted: Bool { didSet { store.set(isPkiEncrypted, forKey: Keys.isPkiEncrypted) } }
 	@Published var isFavorite: Bool { didSet { store.set(isFavorite, forKey: Keys.isFavorite) } }
 	@Published var isIgnored: Bool { didSet { store.set(isIgnored, forKey: Keys.isIgnored) } }
@@ -146,6 +148,7 @@ final class NodeFilterParameters: ObservableObject {
 		// Property observers do not fire for assignments made inside `init`, so loading persisted
 		// values here reads from `store` without writing back to it.
 		isOnline = store.object(forKey: Keys.isOnline) as? Bool ?? false
+		isSigned = store.object(forKey: Keys.isSigned) as? Bool ?? false
 		isPkiEncrypted = store.object(forKey: Keys.isPkiEncrypted) as? Bool ?? false
 		isFavorite = store.object(forKey: Keys.isFavorite) as? Bool ?? false
 		isIgnored = store.object(forKey: Keys.isIgnored) as? Bool ?? false
@@ -167,6 +170,7 @@ final class NodeFilterParameters: ObservableObject {
 	func reset() {
 		searchText = ""
 		isOnline = false
+		isSigned = false
 		isPkiEncrypted = false
 		isFavorite = false
 		isIgnored = false
@@ -182,7 +186,7 @@ final class NodeFilterParameters: ObservableObject {
 
 	/// Whether any filter is actively narrowing results (ignoring search text).
 	var isFiltering: Bool {
-		isOnline || isPkiEncrypted || isFavorite || isIgnored || isEnvironment ||
+		isOnline || isSigned || isPkiEncrypted || isFavorite || isIgnored || isEnvironment ||
 		distanceFilter || hopsAway >= 0.0 || (roleFilter && !deviceRoles.isEmpty) ||
 		(viaLora && !viaMqtt) || (!viaLora && viaMqtt)
 	}
@@ -261,6 +265,11 @@ final class NodeFilterParameters: ObservableObject {
 			}
 			let threshold = onlineThreshold ?? Date().addingTimeInterval(-7_200)
 			if lastHeard < threshold { return false }
+		}
+
+		// Signed filter
+		if isSigned {
+			if !node.hasXeddsaSigned { return false }
 		}
 
 		// Encrypted filter

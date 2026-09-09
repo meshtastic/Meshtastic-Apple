@@ -50,6 +50,8 @@ extension FirmwareFile {
 		case notDownloaded
 		case downloading
 		case downloaded
+		/// The release has no artifact for this board's target — it predates the board.
+		case unavailable
 		case error(String)
 	}
 	
@@ -77,6 +79,8 @@ class FirmwareFile: ObservableObject, Hashable, Equatable {
 	let platformioTarget: String
 	let releaseType: ReleaseType
 	@Published var status: DownloadStatus
+	/// One availability probe per file; the rows are rebuilt on every list refresh.
+	private var hasCheckedAvailability = false
 	let firmwareType: FirmwareType
 	let architecture: Architecture
 	let releaseNotes: String?
@@ -133,7 +137,11 @@ class FirmwareFile: ObservableObject, Hashable, Equatable {
 		let fileNameVersion = versionId.hasPrefix("v") ? String(versionId.dropFirst()) : versionId
 		let fileName = "firmware-\(target)-\(fileNameVersion)\(firmwareType)"
 		self.localUrl = FirmwareFile.localFirmwareStorageURL.appendingPathComponent(fileName)
+		// Tagged releases get a directory per version; the nightly is one fixed directory
+		// that each build overwrites.
+		let directoryName = releaseType == .nightly ? "firmware-nightly" : "firmware-\(fileNameVersion)"
 		self.remoteUrlCandidates = Self.makeRemoteURLCandidates(
+			directoryName: directoryName,
 			target: target,
 			version: fileNameVersion,
 			firmwareType: firmwareType,
@@ -260,6 +268,26 @@ class FirmwareFile: ObservableObject, Hashable, Equatable {
 		self.remoteUrlCandidates = [self.remoteUrl].compactMap { $0 }
 	}
 	
+	/// Ask whether this release actually ships a build for the board's target, so a
+	/// release older than the board reads as unavailable instead of offering a download
+	/// that 404s. Checks every candidate the download would try, and only calls the
+	/// release unavailable when all of them are missing — a locale variant on its own is
+	/// still a build. Anything other than a clean 404 leaves the download on offer.
+	@MainActor
+	func checkAvailability() async {
+		guard !hasCheckedAvailability, status == .notDownloaded,
+		      !remoteUrlCandidates.isEmpty else { return }
+		hasCheckedAvailability = true
+		for candidateRemoteUrl in remoteUrlCandidates {
+			var request = URLRequest(url: candidateRemoteUrl)
+			request.httpMethod = "HEAD"
+			guard let (_, response) = try? await URLSession.shared.data(for: request),
+			      let httpResponse = response as? HTTPURLResponse else { return }
+			if httpResponse.statusCode != 404 { return }
+		}
+		status = .unavailable
+	}
+
 	@MainActor
 	func download() async throws {
 		guard !remoteUrlCandidates.isEmpty else {
@@ -269,12 +297,16 @@ class FirmwareFile: ObservableObject, Hashable, Equatable {
 		// Try each candidate in order (locale-tagged variants first, generic
 		// last); a release without a locale variant 404s and falls through.
 		var lastError: Error?
+		var missingCandidates = 0
 		for candidateRemoteUrl in remoteUrlCandidates {
 			try Task.checkCancellation()
 			do {
 				let (tempLocalUrl, response) = try await URLSession.shared.download(from: candidateRemoteUrl)
 
 				if let httpResponse = response as? HTTPURLResponse, !(200...299).contains(httpResponse.statusCode) {
+					if httpResponse.statusCode == 404 {
+						missingCandidates += 1
+					}
 					throw URLError(.badServerResponse)
 				}
 
@@ -294,7 +326,9 @@ class FirmwareFile: ObservableObject, Hashable, Equatable {
 
 		try? FileManager.default.removeItem(at: localUrl)
 		let finalError = lastError ?? URLError(.badServerResponse)
-		self.status = .error(finalError.localizedDescription)
+		// Every candidate 404ing means this release has no build for the board, which is
+		// not a download failure — releases older than the board never will have one.
+		self.status = missingCandidates == remoteUrlCandidates.count ? .unavailable : .error(finalError.localizedDescription)
 		throw finalError
 	}
 	
@@ -330,12 +364,13 @@ class FirmwareFile: ObservableObject, Hashable, Equatable {
 	}
 
 	private static func makeRemoteURLCandidates(
+		directoryName: String,
 		target: String,
 		version: String,
 		firmwareType: FirmwareType,
 		localeTags: [String]
 	) -> [URL] {
-		let directory = remoteFirmwareURLPrefix.appendingPathComponent("firmware-\(version)")
+		let directory = remoteFirmwareURLPrefix.appendingPathComponent(directoryName)
 		var fileNames: [String] = []
 		var seen = Set<String>()
 		func append(_ value: String) {

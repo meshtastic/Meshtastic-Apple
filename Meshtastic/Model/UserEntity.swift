@@ -37,6 +37,25 @@ final class UserEntity {
 
 	var userNode: NodeInfoEntity?
 
+	/// Whether a direct message to this contact can actually be delivered.
+	///
+	/// Two independent gates. `unmessagable` is the node saying it does not accept messages.
+	/// The public key is what the sending radio needs: firmware has generated a keypair since 2.5,
+	/// so a direct message takes the PKC path, and a radio with no key for the destination refuses
+	/// to send (`PKI_SEND_FAIL_PUBLIC_KEY`) rather than falling back to channel encryption. A node we
+	/// have only heard packets from has no key until its NodeInfo arrives, and cannot be messaged.
+	var canDirectMessage: Bool {
+		!unmessagable && !(publicKey?.isEmpty ?? true)
+	}
+
+	/// Whether to offer the Message shortcut for this contact.
+	///
+	/// `canDirectMessage` with an escape hatch: a contact we can no longer send to may still have a
+	/// thread worth reading. The contact list keeps those rows for the same reason.
+	var showsDirectMessageAction: Bool {
+		canDirectMessage || lastMessage != nil
+	}
+
 	init() {}
 }
 
@@ -84,5 +103,23 @@ extension UserEntity {
 		pkiEncrypted = true
 		publicKey = inboundKey
 		return .stored
+	}
+
+	/// Accepts the connected radio's own public key as ground truth.
+	///
+	/// First-wins protects against a mesh peer substituting a contact's key, but the radio the
+	/// app is directly connected to reports its own key over BLE, USB or TCP — there is no mesh
+	/// hop to spoof. A 2.8 upgrade or factory reset regenerates the radio's keypair, and
+	/// refusing the radio's own new key left the connected node flagged as a key mismatch
+	/// forever. A changed key replaces the stored one and clears any recorded mismatch.
+	func acceptOwnRadioPublicKey(_ inboundKey: Data) {
+		// Only a well-formed Curve25519 public key (32 bytes) may replace the stored one and
+		// clear a recorded mismatch. Empty is what firmware sends when it has no key; any other
+		// length is malformed and changes nothing.
+		guard inboundKey.count == 32 else { return }
+		publicKey = inboundKey
+		pkiEncrypted = true
+		keyMatch = true
+		newPublicKey = nil
 	}
 }

@@ -759,6 +759,18 @@ extension MeshPackets {
 		}
 	}
 	
+	/// Marks a node as successfully administered. Called when an admin response arrives
+	/// carrying a session passkey — proof that at least one admin request we sent to this
+	/// node succeeded. Never cleared once set; gates admin-only UI (like the status message
+	/// editor) for nodes other than the connected one.
+	func markNodeAdministered(num: Int64) {
+		var descriptor = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate<NodeInfoEntity> { $0.num == num })
+		descriptor.fetchLimit = 1
+		guard let node = try? modelContext.fetch(descriptor).first, !node.hasBeenAdministered else { return }
+		node.hasBeenAdministered = true
+		savePendingChanges()
+	}
+
 	func upsertBluetoothConfigPacket(config: Config.BluetoothConfig, nodeNum: Int64, sessionPasskey: Data? = Data()) {
 		
 		let logString = String.localizedStringWithFormat("Bluetooth config received: %@".localized, String(nodeNum))
@@ -1420,12 +1432,7 @@ extension MeshPackets {
 				entity.broadcastOfferChannelPSK = config.hasBroadcastOfferChannel ? config.broadcastOfferChannel.psk : Data()
 				entity.broadcastOfferRegion = Int32(config.broadcastOfferRegion.rawValue)
 				entity.broadcastOfferPreset = config.hasBroadcastOfferPreset ? Int32(config.broadcastOfferPreset.rawValue) : -1
-				entity.broadcastOnChannelName = config.hasBroadcastOnChannel ? config.broadcastOnChannel.name : ""
-				entity.broadcastOnChannelPSK = config.hasBroadcastOnChannel ? config.broadcastOnChannel.psk : Data()
-				entity.broadcastOnRegion = Int32(config.broadcastOnRegion.rawValue)
-				entity.broadcastOnPreset = config.hasBroadcastOnPreset ? Int32(config.broadcastOnPreset.rawValue) : -1
 				entity.broadcastIntervalSecs = config.broadcastIntervalSecs > 0 ? Int32(truncatingIfNeeded: config.broadcastIntervalSecs) : 3600
-				entity.broadcastSendAsNode = Int64(config.broadcastSendAsNode)
 
 				// Rebuild the multi-target list from the incoming config (cascade replaces the old rows).
 				for old in entity.broadcastTargets {

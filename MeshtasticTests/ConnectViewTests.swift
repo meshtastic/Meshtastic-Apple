@@ -1,3 +1,4 @@
+import Combine
 import Foundation
 import SwiftData
 import SwiftUI
@@ -505,24 +506,6 @@ struct ConnectViewCreationTests {
 	}
 }
 
-// MARK: - InvalidVersion View Tests
-
-@Suite("InvalidVersion")
-struct InvalidVersionTests {
-
-	@Test func viewCreation() {
-		let view = InvalidVersion(minimumVersion: "2.5.0", version: "2.3.0")
-		#expect(view.minimumVersion == "2.5.0")
-		#expect(view.version == "2.3.0")
-	}
-
-	@Test func viewCreationWithEmptyVersions() {
-		let view = InvalidVersion(minimumVersion: "", version: "")
-		#expect(view.minimumVersion == "")
-		#expect(view.version == "")
-	}
-}
-
 // MARK: - ConnectedDevice View Tests
 
 @Suite("ConnectedDevice")
@@ -642,5 +625,43 @@ struct SignalStrengthIndicatorTests {
 	func allStrengthLevels(strength: BLESignalStrength) {
 		let view = SignalStrengthIndicator(signalStrength: strength)
 		#expect(view.signalStrength == strength)
+	}
+}
+
+@Suite("AccessoryManager device updates")
+struct AccessoryManagerDeviceUpdateTests {
+	@MainActor
+	@Test func nameUpdateRefreshesAvailableDevices() {
+		let deviceID = UUID()
+		let manager = AccessoryManager(transports: [])
+		manager.devices = [
+			Device(id: deviceID, name: "Old Radio", transportType: .ble, identifier: deviceID.uuidString)
+		]
+
+		manager.updateDevice(deviceId: deviceID, key: \.name, value: "New Radio")
+
+		#expect(manager.devices.first?.name == "New Radio")
+	}
+
+	@MainActor
+	@Test func unchangedValueDoesNotRefreshTheUI() {
+		let deviceID = UUID()
+		let manager = AccessoryManager(transports: [])
+		manager.devices = [
+			Device(id: deviceID, name: "Same Radio", transportType: .ble, identifier: deviceID.uuidString)
+		]
+
+		var refreshes = 0
+		let cancellable = manager.objectWillChange.sink { _ in refreshes += 1 }
+		defer { cancellable.cancel() }
+
+		manager.updateDevice(deviceId: deviceID, key: \.name, value: "Same Radio")
+		#expect(refreshes == 0, "an unchanged value should not refresh the list")
+
+		manager.updateDevice(deviceId: deviceID, key: \.name, value: "Renamed Radio")
+		// Once, not twice: `devices` is @Published and notifies on assignment, so an
+		// explicit objectWillChange alongside it invalidated every observer twice.
+		#expect(refreshes == 1, "a changed value refreshes once")
+		#expect(manager.devices.first?.name == "Renamed Radio")
 	}
 }
