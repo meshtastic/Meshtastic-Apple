@@ -50,6 +50,7 @@ struct DeviceConfig: View {
 					configIsNil: { $0.deviceConfig == nil },
 					section: "Device",
 					request: accessoryManager.requestDeviceConfig,
+					requestForConnectedNode: true,
 					force: true)
 			})
 			
@@ -334,7 +335,8 @@ struct DeviceConfig: View {
 				accessoryManager: accessoryManager,
 				configIsNil: { $0.deviceConfig == nil },
 				section: "Device",
-				request: accessoryManager.requestDeviceConfig)
+				request: accessoryManager.requestDeviceConfig,
+				requestForConnectedNode: true)
 		}
 		.onChange(of: deviceRole) { oldRole, newRole in
 			guard !isResetting else { return }

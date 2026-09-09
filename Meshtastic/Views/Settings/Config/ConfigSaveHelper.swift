@@ -52,7 +52,10 @@ func performConfigSave(
 		? nil
 		: accessoryManager.beginRemoteAdminConfigOperation(kind: .save, targetNodeNum: targetNode.num)
 	if targetNode.num != deviceNum, operationID == nil {
-		accessoryManager.remoteAdminConfigFeedback = (targetNode.num, "A configuration save is already in progress for this node. Please wait for it to finish.")
+		accessoryManager.remoteAdminConfigFeedback = RemoteAdminConfigFeedback(
+			targetNodeNum: targetNode.num,
+			kind: .save,
+			message: "A configuration save is already in progress for this node. Please wait for it to finish.")
 		return
 	}
 	let connectionID = accessoryManager.activeConnection.map { ObjectIdentifier($0.connection) }
@@ -112,10 +115,14 @@ func performConfigSave(
 				hasChanges.wrappedValue = false
 				dismiss()
 			case .failed(let message):
-				accessoryManager.remoteAdminConfigFeedback = (targetNode.num, message)
+				accessoryManager.remoteAdminConfigFeedback = RemoteAdminConfigFeedback(
+					targetNodeNum: targetNode.num, kind: .save, message: message)
 				Logger.mesh.error("🚨 Config save rejected: \(message, privacy: .public)")
 			case .timedOut:
-				accessoryManager.remoteAdminConfigFeedback = (targetNode.num, "No confirmation was received from the remote node. Check that it is online and retry.")
+				accessoryManager.remoteAdminConfigFeedback = RemoteAdminConfigFeedback(
+					targetNodeNum: targetNode.num,
+					kind: .save,
+					message: "No confirmation was received from the remote node. Check that it is online and retry.")
 				Logger.mesh.error("🚨 Config save timed out")
 			case .unconfirmed:
 				accessoryManager.remoteAdminConfigFeedback = (targetNode.num, "The remote node did not confirm the configuration. Check its state before retrying.")
@@ -125,7 +132,8 @@ func performConfigSave(
 			if let operationID {
 				accessoryManager.remoteAdminConfigTracker.fail(operationID, with: error)
 			}
-			accessoryManager.remoteAdminConfigFeedback = (targetNode.num, error.localizedDescription)
+			accessoryManager.remoteAdminConfigFeedback = RemoteAdminConfigFeedback(
+				targetNodeNum: targetNode.num, kind: .save, message: error.localizedDescription)
 			Logger.mesh.error("🚨 Config save failed: \(error.localizedDescription)")
 		}
 	}

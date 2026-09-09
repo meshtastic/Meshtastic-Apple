@@ -33,6 +33,12 @@ struct RemoteAdminConfigOperation: Identifiable, Equatable {
 	var isFinished: Bool { result != nil }
 }
 
+struct RemoteAdminConfigFeedback: Equatable {
+	let targetNodeNum: Int64
+	let kind: RemoteAdminConfigOperationKind
+	let message: String
+}
+
 /// Tracks only explicitly enrolled remote-admin work. The operation token is carried through the
 /// async request/save closure with TaskLocal, so unrelated admin packets can never be enrolled by
 /// target-node coincidence.

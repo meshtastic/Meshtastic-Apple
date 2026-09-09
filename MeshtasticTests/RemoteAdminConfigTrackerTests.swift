@@ -60,6 +60,72 @@ struct RemoteAdminConfigTrackerTests {
 		#expect(manager.remoteAdminConfigTracker.operations[operationID]?.pendingPacketIDs.isEmpty == true)
 		#expect(manager.remoteAdminConfigTracker.finish(operationID) == .succeeded)
 	}
+
+	@Test func replyIDCannotResolveRemoteAdminOperationWithoutRequestID() async throws {
+		let connection = RemoteAdminReceiveConnection()
+		let manager = makeManager(connection: connection)
+		let operationID = try #require(manager.beginRemoteAdminConfigOperation(kind: .request, targetNodeNum: 42))
+		#expect(manager.remoteAdminConfigTracker.registerPacket(packetID: 100, targetNodeNum: 42, operationID: operationID))
+
+		var admin = AdminMessage()
+		admin.getModuleConfigResponse = ModuleConfig()
+		var data = DataMessage()
+		data.portnum = .adminApp
+		data.replyID = 100
+		data.payload = try admin.serializedData()
+		var packet = MeshPacket()
+		packet.from = 42
+		packet.to = 1
+		packet.decoded = data
+		var fromRadio = FromRadio()
+		fromRadio.packet = packet
+
+		await manager.didReceive(.data(fromRadio))
+		#expect(manager.remoteAdminConfigTracker.operations[operationID]?.pendingPacketIDs == [100])
+		#expect(manager.remoteAdminConfigTracker.operations[operationID]?.result == nil)
+	}
+
+	@Test func connectedNodeMissingDeviceConfigRequestsIt() async throws {
+		let container = try ModelContainer(
+			for: Schema(MeshtasticSchema.allModels),
+			configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+		)
+		let context = ModelContext(container)
+		let local = NodeInfoEntity(); local.num = 1; local.id = 1
+		let user = UserEntity(); user.num = 1; user.userNode = local
+		local.user = user
+		context.insert(local); context.insert(user)
+		try context.save()
+
+		let manager = AccessoryManager(transports: [])
+		manager.context = context
+		manager.activeDeviceNum = 1
+		manager.updateState(.subscribed)
+
+		var requests = 0
+		requestRemoteConfig(
+			node: local,
+			context: context,
+			accessoryManager: manager,
+			configIsNil: { $0.deviceConfig == nil },
+			section: "Device",
+			request: { _, _ in requests += 1 },
+			requestForConnectedNode: true)
+		for _ in 0..<20 where requests == 0 {
+			try await Task.sleep(for: .milliseconds(10))
+		}
+		#expect(requests == 1)
+	}
+
+	@Test func requestFeedbackIsScopedAwayFromSaveButton() {
+		let manager = AccessoryManager(transports: [])
+		manager.remoteAdminConfigFeedback = RemoteAdminConfigFeedback(
+			targetNodeNum: 42,
+			kind: .request,
+			message: "request failed")
+		#expect(manager.remoteAdminConfigFeedback(for: 42, kind: .save) == nil)
+		#expect(manager.remoteAdminConfigFeedback(for: 42, kind: .request) == "request failed")
+	}
 	@Test func unrelatedPacketsCannotEnroll() throws {
 		let tracker = RemoteAdminConfigTracker()
 		let operationID = try #require(tracker.begin(kind: .save, targetNodeNum: 42))
