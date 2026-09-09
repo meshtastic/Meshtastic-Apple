@@ -22,7 +22,9 @@ struct SaveConfigButton: View {
 	
 	var body: some View {
 		if accessoryManager.isConnected && hasChanges {
-			let feedback = node.map { accessoryManager.remoteAdminConfigFeedback?.targetNodeNum == $0.num ? accessoryManager.remoteAdminConfigFeedback?.message : nil } ?? nil
+			let feedback = node.flatMap {
+				accessoryManager.remoteAdminConfigFeedback(for: $0.num, kind: .save)
+			}
 			let remoteSaveInProgress = node.flatMap {
 				accessoryManager.remoteAdminConfigTracker.latest(for: $0.num, kind: .save, section: "save")
 			}?.isFinished == false

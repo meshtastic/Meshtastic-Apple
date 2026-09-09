@@ -61,7 +61,8 @@ func requestRemoteConfig(
 					try await request(fromUser, toUser)
 				}
 				if case .failed(let message) = accessoryManager.remoteAdminConfigTracker.finish(operationID) {
-					accessoryManager.remoteAdminConfigFeedback = (node.num, message)
+					accessoryManager.remoteAdminConfigFeedback = RemoteAdminConfigFeedback(
+						targetNodeNum: node.num, kind: .request, message: message)
 				}
 			} catch {
 				accessoryManager.remoteAdminConfigTracker.fail(operationID, with: error)
