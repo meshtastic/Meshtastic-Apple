@@ -279,10 +279,10 @@ struct NodeListItem: View {
 					}
 					// Signed node = XEdDSA-signed NodeInfo broadcast → identity verified by the radio.
 					// Affirmative only; never shown for unsigned nodes. Mirrors the Node Detail row.
-					// A person badge rather than a bare shield: what was verified is who this node
-					// says it is, not that the traffic is encrypted, which the lock already covers.
+					// A radio with a shield badge rather than a bare shield: what was verified is who
+					// this node says it is, not that the traffic is encrypted, which the lock covers.
 					if summary.hasXeddsaSigned {
-						IconAndText(systemName: SignedNodeIcon.symbolName,
+						IconAndText(icon: SignedNodeIcon.image,
 									imageColor: .green,
 									text: "Signed node".localized)
 					}
@@ -457,19 +457,31 @@ struct DefaultIcon: View {
 }
 
 struct IconAndText: View {
-	let systemName: String
+	private let icon: Image
 	var imageColor: Color?
 	var renderingMode: SymbolRenderingMode = .hierarchical
 	let text: String
 	var textColor: Color = .gray
 
+	init(systemName: String, imageColor: Color? = nil, renderingMode: SymbolRenderingMode = .hierarchical, text: String, textColor: Color = .gray) {
+		self.init(icon: Image(systemName: systemName), imageColor: imageColor, renderingMode: renderingMode, text: text, textColor: textColor)
+	}
+
+	/// For symbols that live in the asset catalog, which `Image(systemName:)` cannot load.
+	init(icon: Image, imageColor: Color? = nil, renderingMode: SymbolRenderingMode = .hierarchical, text: String, textColor: Color = .gray) {
+		self.icon = icon
+		self.imageColor = imageColor
+		self.renderingMode = renderingMode
+		self.text = text
+		self.textColor = textColor
+	}
+
 	@ViewBuilder
 	var image: some View {
 		if let color = imageColor {
-			Image(systemName: systemName)
-				.foregroundColor(color)
+			icon.foregroundColor(color)
 		} else {
-			Image(systemName: systemName)
+			icon
 		}
 	}
 

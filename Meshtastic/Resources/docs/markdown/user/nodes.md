@@ -193,7 +193,7 @@ An **Air Quality Metrics Log** entry appears under the node's logs, with a seven
 
 ### Signed Node
 
-If a node signs its broadcast packets, a green shield (🛡️) **Signed node** row appears in the detail view, marked **Verified automatically**. This means the radio has cryptographically verified an XEdDSA signature from this node (firmware 2.8 or later). Because a node's identity broadcast is itself signed, its name and identity are verified by extension.
+If a node signs its broadcast packets, a **Signed node** row appears in the node list and in the detail view, where it is marked **Verified automatically**. The row's icon is a radio wearing a green shield badge (🛡️). This means the radio has cryptographically verified an XEdDSA signature from this node (firmware 2.8 or later). Because a node's identity broadcast is itself signed, its name and identity are verified by extension.
 
 This is *automatic* trust observed from the radio — distinct from manually verifying a contact's public key out-of-band, which is a separate, user-asserted action. The row only ever affirms the good state; nodes that don't sign simply show no shield, which is not a warning.
 

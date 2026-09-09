@@ -51,6 +51,21 @@ struct NodeListHelp: View {
 				} header: {
 					Text("Node Status")
 				}
+				// Node identity, kept out of LockLegend because that legend is shared with the
+				// Direct Messages help, where a per-node trust signal has nothing to explain.
+				Section {
+					HelpItem(
+						symbol: AnyView(
+							SignedNodeIcon.image
+								.font(.title3)
+								.foregroundColor(.green)
+						),
+						title: String(localized: "Signed Node"),
+						subtitle: String(localized: "The node signs what it broadcasts and your radio checked the signature, so its identity was verified automatically over the mesh. Nodes that do not sign show no row at all.")
+					)
+				} header: {
+					Text("Security")
+				}
 				LockLegend()
 				Section {
 					ForEach(DeviceRoles.allCases) { role in
