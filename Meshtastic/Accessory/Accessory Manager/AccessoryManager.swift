@@ -163,7 +163,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	/// relaunch a standing notice alerts once more, which is the useful behaviour.
 	var firmwareNoticeHistory: [String: (count: Int, lastShown: Date)] = [:]
 	let remoteAdminConfigTracker = RemoteAdminConfigTracker()
-	@Published var remoteAdminConfigFeedback: (targetNodeNum: Int64, message: String)? = nil
+	@Published var remoteAdminConfigFeedback: RemoteAdminConfigFeedback?
 	/// Delay before the Nth repeat of the same notice may alert again.
 	static let firmwareNoticeBackoff: [TimeInterval] = [0, 300, 1_800, 7_200, 43_200]
 	/// A notice unseen for this long is forgotten, so it alerts immediately if it returns.
@@ -838,12 +838,20 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		remoteAdminConfigTracker.begin(kind: kind, targetNodeNum: targetNodeNum, section: section)
 	}
 
+	func remoteAdminConfigFeedback(for targetNodeNum: Int64, kind: RemoteAdminConfigOperationKind) -> String? {
+		guard let feedback = remoteAdminConfigFeedback,
+			  feedback.targetNodeNum == targetNodeNum,
+			  feedback.kind == kind else { return nil }
+		return feedback.message
+	}
+
 	func resolveRemoteAdminConfigPacket(packetID: UInt32, sourceNodeNum: Int64, result: RemoteAdminConfigOperationResult) {
 		guard let operationID = remoteAdminConfigTracker.resolveAdminResponse(packetID: packetID, sourceNodeNum: sourceNodeNum),
 			  let operation = remoteAdminConfigTracker.operations[operationID]
 		else { return }
 		if case .failed(let message) = result {
-			remoteAdminConfigFeedback = (operation.targetNodeNum, message)
+			remoteAdminConfigFeedback = RemoteAdminConfigFeedback(
+				targetNodeNum: operation.targetNodeNum, kind: operation.kind, message: message)
 		}
 	}
 
@@ -857,7 +865,8 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		if reason == .adminBadSessionKey {
 			invalidateRemoteAdminSession(for: operation.targetNodeNum)
 		}
-		remoteAdminConfigFeedback = (operation.targetNodeNum, message)
+		remoteAdminConfigFeedback = RemoteAdminConfigFeedback(
+			targetNodeNum: operation.targetNodeNum, kind: operation.kind, message: message)
 	}
 
 	func failRemoteAdminConfigOperations(with message: String) {
@@ -1035,7 +1044,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 
 			// Dispatch based on packet contents.
 			if case let .decoded(data) = packet.payloadVariant {
-				let responseID = data.requestID != 0 ? data.requestID : data.replyID
+				let responseID = data.requestID
 				if responseID != 0 {
 					if data.portnum == .adminApp,
 						let adminMessage = try? AdminMessage(serializedBytes: data.payload),

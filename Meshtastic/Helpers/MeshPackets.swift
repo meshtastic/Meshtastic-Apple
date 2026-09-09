@@ -1261,9 +1261,10 @@ actor MeshPackets {
 					self.upsertTrafficManagementModuleConfigPacket(config: moduleConfig.trafficManagement, nodeNum: Int64(packet.from), sessionPasskey: adminMessage.sessionPasskey)
 				}
 			} else if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getRingtoneResponse(adminMessage.getRingtoneResponse) {
-				if let rt = try? RTTTLConfig(serializedBytes: packet.decoded.payload) {
-					self.upsertRtttlConfigPacket(ringtone: rt.ringtone, nodeNum: Int64(packet.from))
-				}
+				self.upsertRtttlConfigPacket(
+					ringtone: adminMessage.getRingtoneResponse,
+					nodeNum: Int64(packet.from),
+					sessionPasskey: adminMessage.sessionPasskey)
 			} else {
 				Logger.admin.error("🕸️ MESH PACKET received Admin App UNHANDLED \((try? packet.decoded.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
 			}

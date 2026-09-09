@@ -140,6 +140,23 @@ struct NodeAdministrationTests {
 		#expect(mirroredNode.sessionExpiration == expiration)
 	}
 
+	@Test func ringtoneResponsePersistsSessionPasskey() async throws {
+		let (mesh, container) = try freshMesh()
+		let num: Int64 = 0x2A2B2C
+		try seedNode(num: num, in: container)
+
+		var admin = AdminMessage()
+		admin.sessionPasskey = Data([0xCA, 0xFE])
+		admin.getRingtoneResponse = "Beep:d=4,o=5,b=120:c"
+
+		await mesh.adminAppPacket(packet: try adminPacket(from: num, message: admin), connectedNodeNum: Self.myNum)
+
+		let node = try fetchNode(num: num, in: container)
+		#expect(node.rtttlConfig?.ringtone == "Beep:d=4,o=5,b=120:c")
+		#expect(node.sessionPasskey == Data([0xCA, 0xFE]))
+		#expect(node.sessionExpiration != nil)
+	}
+
 	@Test func metadataResponseWithPasskeyMarksUnknownNode() async throws {
 		// A metadata response is the first admin exchange when selecting a remote node,
 		// and its handler creates the node if it has never been heard.
