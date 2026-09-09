@@ -296,7 +296,7 @@ struct RemoteAdminConfigTrackerTests {
 		#expect(tracker.resolveAdminResponse(packetID: 100, sourceNodeNum: 42) == operationID)
 	}
 
-	@Test func multiPacketOperationWaitsForEveryPacket() throws {
+	@Test func multiPacketOperationTimesOutTerminallyWhenAnyPacketIsMissing() throws {
 		let tracker = RemoteAdminConfigTracker()
 		let operationID = try #require(tracker.begin(kind: .save, targetNodeNum: 42))
 		tracker.registerPacket(packetID: 100, targetNodeNum: 42, operationID: operationID)
@@ -304,7 +304,7 @@ struct RemoteAdminConfigTrackerTests {
 		tracker.resolveAdminResponse(packetID: 100, sourceNodeNum: 42)
 		#expect(tracker.finish(operationID) == .timedOut)
 		tracker.resolveAdminResponse(packetID: 200, sourceNodeNum: 42)
-		#expect(tracker.finish(operationID) == .succeeded)
+		#expect(tracker.finish(operationID) == .timedOut)
 	}
 
 	@Test func finishingWithPendingPacketsTimesOutAndAllowsRetry() throws {

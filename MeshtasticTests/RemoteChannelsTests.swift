@@ -207,6 +207,9 @@ struct RemoteChannelsTests {
 		let transport = TestRemoteChannelsTransport(); transport.session = true
 		transport.saveDelay = .milliseconds(100)
 		let coordinator = RemoteChannelsCoordinator(transport: transport, sourceNum: 1, targetNum: 2)
+		transport.onRequest = { [weak coordinator] id, channel in
+			coordinator?.receive(TestRemoteChannelsTransport.notification(id: id, source: 2, destination: 1, channel: channel))
+		}
 		var channel = Channel(); channel.index = 1; channel.role = .secondary
 		let firstSave = Task { try await coordinator.save([channel]) }
 		while !transport.saveStarted { try await Task.sleep(for: .milliseconds(1)) }
