@@ -202,6 +202,20 @@ struct RemoteChannelsTests {
 	}
 
 	@MainActor
+	@Test("coordinator reports an in-progress save")
+	func coordinatorReportsInProgressSave() async throws {
+		let transport = TestRemoteChannelsTransport(); transport.session = true
+		transport.saveDelay = .milliseconds(100)
+		let coordinator = RemoteChannelsCoordinator(transport: transport, sourceNum: 1, targetNum: 2)
+		var channel = Channel(); channel.index = 1; channel.role = .secondary
+		let firstSave = Task { try await coordinator.save([channel]) }
+		while !transport.saveStarted { try await Task.sleep(for: .milliseconds(1)) }
+
+		await #expect(throws: AccessoryError.self) { try await coordinator.save([channel]) }
+		_ = try await firstSave.value
+	}
+
+	@MainActor
 	@Test("disabled channel writes clear settings and invalid roles are rejected")
 	func disabledAndInvalidRoles() async throws {
 		let transport = TestRemoteChannelsTransport(); transport.session = true
@@ -230,6 +244,8 @@ private final class TestRemoteChannelsTransport: RemoteChannelsTransport {
 	var session = false
 	var refreshCount = 0
 	var saveCount = 0
+	var saveStarted = false
+	var saveDelay: Duration?
 	var rejectNextRequest = false
 	var channels: [Int32: Channel] = [:]
 	var onRequest: ((UInt32, Channel) -> Void)?
@@ -253,7 +269,12 @@ private final class TestRemoteChannelsTransport: RemoteChannelsTransport {
 		onRequest?(id, channel)
 		return id
 	}
-	func saveChannel(_ channel: Channel) async throws { saveCount += 1; channels[channel.index] = channel }
+	func saveChannel(_ channel: Channel) async throws {
+		saveCount += 1
+		saveStarted = true
+		if let saveDelay { try await Task.sleep(for: saveDelay) }
+		channels[channel.index] = channel
+	}
 
 	static func notification(id: UInt32, source: UInt32, destination: UInt32, channel: Channel) -> Foundation.Notification {
 		var response = AdminMessage(); response.getChannelResponse = channel

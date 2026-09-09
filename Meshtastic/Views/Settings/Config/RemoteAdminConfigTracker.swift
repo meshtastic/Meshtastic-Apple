@@ -117,7 +117,10 @@ final class RemoteAdminConfigTracker: ObservableObject {
 
 	func finish(_ operationID: UUID) -> RemoteAdminConfigOperationResult {
 		guard var operation = operations[operationID], !operation.isFinished else { return operations[operationID]?.result ?? .failed("Operation cancelled") }
-		guard operation.pendingPacketIDs.isEmpty else { return .timedOut }
+		guard operation.pendingPacketIDs.isEmpty else {
+			timeout(operationID)
+			return .timedOut
+		}
 		operation.result = .succeeded
 		operations[operationID] = operation
 		return .succeeded

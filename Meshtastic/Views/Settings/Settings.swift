@@ -40,7 +40,7 @@ struct SettingsNodeSnapshot: Identifiable, Equatable {
 		num = node.num
 		favorite = node.favorite
 		canRemoteAdmin = node.canRemoteAdmin
-		hasSessionPasskey = node.sessionPasskey != nil
+		hasSessionPasskey = node.hasLiveAdminSession
 
 		if let user = node.user,
 			user.modelContext != nil,
