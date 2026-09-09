@@ -1447,11 +1447,11 @@ extension AccessoryManager {
 				try await sendRequest()
 			}
 			switch remoteAdminConfigTracker.finish(operationID) {
-			case .succeeded, .acknowledged:
+			case .succeeded:
 				return value
 			case .failed(let message):
 				throw AccessoryError.ioFailed(message)
-			case .timedOut, .unconfirmed:
+			case .timedOut:
 				throw AccessoryError.timeout
 			}
 		} catch {
