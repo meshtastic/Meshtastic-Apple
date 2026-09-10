@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Combine
 import CoreLocation
 import OSLog
 
@@ -15,6 +16,7 @@ import OSLog
 
 	static let shared = LocationsHandler()  // Create a single, shared instance of the object.
 	public var manager = CLLocationManager()
+	let locationUpdates = PassthroughSubject<CLLocation, Never>()
 	private var background: CLBackgroundActivitySession?
 	private var locationDeliveryStarted = false
 	var enableSmartPosition: Bool = UserDefaults.enableSmartPosition
@@ -195,6 +197,7 @@ import OSLog
 		Task { @MainActor in
 			guard self.updatesStarted else { return }
 			for location in locations {
+				self.locationUpdates.send(location)
 				self.recordLocation(location, isStationary: false)
 			}
 		}

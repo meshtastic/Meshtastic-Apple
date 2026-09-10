@@ -5,6 +5,7 @@
 //  Copyright(c) Garth Vander Houwen 9/8/23.
 //
 import SwiftUI
+import Combine
 import CoreLocation
 import OSLog
 @preconcurrency import SwiftData
@@ -219,6 +220,29 @@ struct NodeList: View {
 //  FilteredNodeList.swift
 //  Meshtastic
 //
+struct NodeListRefreshState {
+	private(set) var needsRefresh = true
+	private(set) var isScrolling = false
+
+	var canRefresh: Bool {
+		needsRefresh && !isScrolling
+	}
+
+	mutating func setNeedsRefresh() {
+		guard !needsRefresh else { return }
+		needsRefresh = true
+	}
+
+	mutating func setScrolling(_ isScrolling: Bool) {
+		guard self.isScrolling != isScrolling else { return }
+		self.isScrolling = isScrolling
+	}
+
+	mutating func didRefresh(succeeded: Bool) {
+		needsRefresh = !succeeded
+	}
+}
+
 /// Wraps a NodeInfoEntity with a pre-extracted stable identity so that List/ForEach never
 /// reads a key path on a live SwiftData object during diffing. If the backing object is
 /// faulted between snapshot and render, the identity comparison still works safely.
@@ -231,10 +255,10 @@ private struct FilteredNodeList: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@EnvironmentObject var router: Router
 	@Environment(\.modelContext) private var context
-	/// Throttled snapshot of the filtered/sorted nodes actually shown. Recomputed on a gentle
-	/// cadence (see `.task`) instead of in `body`, so the full-node-set scan in `displayNodes`
-	/// doesn't run on every SwiftData write — which pegged the CPU on reconnect with a large DB.
+	/// Throttled snapshot of the filtered/sorted nodes actually shown. Changes are coalesced
+	/// on a gentle cadence instead of being recomputed in `body` for every SwiftData write.
 	@State private var displayedNodes: [NodeListEntry] = []
+	@State private var refreshState = NodeListRefreshState()
 	/// Kept in view state so a controller swap invalidates this task until SwiftUI remounts the
 	/// list against the new root `.modelContainer` and `databaseResetID`.
 	@State private var boundContainerGeneration = PersistenceController.shared.containerGeneration
@@ -306,16 +330,16 @@ private struct FilteredNodeList: View {
 		)
 	}
 
-	private func displayNodes(from allNodes: [NodeInfoEntity], activeNodeNum: Int64?) -> [NodeListEntry] {
+	private func displayNodes(from allNodes: [NodeInfoEntity], activeNodeNum: Int64?) -> [NodeListEntry]? {
 		let searchText = filters.searchText.lowercased()
 		let onlineThreshold = filters.isOnline ? Date().addingTimeInterval(-7_200) : nil
 		let distanceBounds = filters.currentDistanceBounds
-		let filterLookup = NodeListFilterLookup(
+		guard let filterLookup = try? NodeListFilterLookup(
 			nodes: allNodes,
 			needsEnvironment: filters.isEnvironment,
 			distanceBounds: filters.distanceFilter ? distanceBounds : nil,
 			context: context
-		)
+		) else { return nil }
 		var seenNodeNums = Set<Int64>()
 		seenNodeNums.reserveCapacity(allNodes.count)
 		var connectedNode: NodeInfoEntity?
@@ -405,23 +429,38 @@ private struct FilteredNodeList: View {
 					.accessibilityHidden(true)
 			}
 		}
+		.observeNodeListScrollPhase { isScrolling in
+			updateScrolling(isScrolling)
+		}
 		.navigationTitle(String.localizedStringWithFormat("Nodes (%@)".localized, String(displayedNodes.count)))
+		.onReceive(filters.objectWillChange) {
+			markRefreshNeeded()
+		}
+		.onReceive(accessoryManager.$activeDeviceNum.dropFirst()) { _ in
+			markRefreshNeeded()
+		}
+		.onReceive(LocationsHandler.shared.locationUpdates) { _ in
+			if filters.distanceFilter {
+				markRefreshNeeded()
+			}
+		}
+		.onReceive(NotificationCenter.default.publisher(for: ModelContext.didSave).receive(on: RunLoop.main)) { _ in
+			markRefreshNeeded()
+		}
 		.task(id: router.selectedTab) {
-			// Recompute the displayed list on a gentle cadence instead of inside `body`.
-			// During live ingestion every packet writes to SwiftData; running displayNodes
-			// (a scan over the whole node set) per write pegged the main thread on reconnect
-			// with a large DB. ~3/sec is imperceptible and keeps CPU sane. The full scan only
-			// runs while the Nodes tab is frontmost — TabView keeps this view alive on other
-			// tabs (and this task re-fires on every tab switch), so entering the tab refreshes
-			// immediately. While parked on another tab the loop still ticks, but only to drop
-			// entries whose nodes have been deleted (cap evictions keep running during
-			// ingestion): the stale snapshot otherwise holds dead nodes for as long as the
-			// user stays away, and any row re-evaluation in that window hits them.
-			refreshDisplayedNodes()
+			// Refresh immediately when entering the tab. While the tab stays visible, saves and
+			// filter changes are coalesced on the existing cadence. Expensive work waits until
+			// scrolling ends so it cannot interrupt interaction or deceleration.
+			refreshState.didRefresh(succeeded: refreshDisplayedNodes())
 			while !Task.isCancelled {
 				try? await Task.sleep(for: .milliseconds(350))
+				if filters.isOnline {
+					markRefreshNeeded()
+				}
 				if router.selectedTab == .nodes {
-					refreshDisplayedNodes()
+					if refreshState.canRefresh {
+						refreshState.didRefresh(succeeded: refreshDisplayedNodes())
+					}
 				} else {
 					purgeDeadDisplayedNodes()
 				}
@@ -429,13 +468,29 @@ private struct FilteredNodeList: View {
 		}
 	}
 
-	private func refreshDisplayedNodes() {
+	private func markRefreshNeeded() {
+		guard !refreshState.needsRefresh else { return }
+		refreshState.setNeedsRefresh()
+	}
+
+	private func updateScrolling(_ isScrolling: Bool) {
+		guard refreshState.isScrolling != isScrolling else { return }
+		refreshState.setScrolling(isScrolling)
+	}
+
+	@discardableResult
+	private func refreshDisplayedNodes() -> Bool {
 		// Accessing any property on a ModelContext whose container was replaced can trap in SwiftData.
-		guard boundContainerGeneration == PersistenceController.shared.containerGeneration else { return }
-		guard router.selectedTab == .nodes else { return }
-		let allNodes = (try? context.fetch(makeNodeFetchDescriptor())) ?? []
-		replaceDisplayedNodesIfNeeded(with: displayNodes(from: allNodes, activeNodeNum: accessoryManager.activeDeviceNum))
+		guard boundContainerGeneration == PersistenceController.shared.containerGeneration else { return false }
+		guard router.selectedTab == .nodes else { return false }
+		guard let allNodes = try? context.fetch(makeNodeFetchDescriptor()) else { return false }
+		guard let newDisplayedNodes = displayNodes(
+			from: allNodes,
+			activeNodeNum: accessoryManager.activeDeviceNum
+		) else { return false }
+		replaceDisplayedNodesIfNeeded(with: newDisplayedNodes)
 		router.updateNodeIndex(from: allNodes)
+		return true
 	}
 
 	/// Drops entries whose backing node has been deleted, without the full fetch/sort of a
@@ -503,6 +558,20 @@ private struct FilteredNodeList: View {
 	}
 }
 
+private extension View {
+	@ViewBuilder
+	func observeNodeListScrollPhase(_ action: @escaping (Bool) -> Void) -> some View {
+		if #available(iOS 18.0, macOS 15.0, macCatalyst 18.0, *) {
+			onScrollPhaseChange { _, newPhase in
+				action(newPhase.isScrolling)
+			}
+		} else {
+			// iOS 17 has no scroll-phase API. Change-driven refreshes still avoid polling a static store.
+			self
+		}
+	}
+}
+
 private struct NodeListFilterLookup {
 	private let environmentNodeNums: Set<Int64>?
 	private let distanceNodeNums: Set<Int64>?
@@ -516,7 +585,7 @@ private struct NodeListFilterLookup {
 		needsEnvironment: Bool,
 		distanceBounds: NodeDistanceFilterBounds?,
 		context: ModelContext
-	) {
+	) throws {
 		// Only materialize the node-num set (a scan over every node) when a filter actually
 		// needs it; the common no-filter case skips this work entirely.
 		guard needsEnvironment || distanceBounds != nil else {
@@ -527,12 +596,12 @@ private struct NodeListFilterLookup {
 		}
 		let nodeNums = Array(Set(nodes.map(\.num)))
 		if needsEnvironment {
-			self.environmentNodeNums = Self.fetchEnvironmentNodeNums(nodeNums: nodeNums, context: context)
+			self.environmentNodeNums = try Self.fetchEnvironmentNodeNums(nodeNums: nodeNums, context: context)
 		} else {
 			self.environmentNodeNums = nil
 		}
 		if let distanceBounds {
-			let (within, positioned) = Self.fetchDistanceNodeNums(nodeNums: nodeNums, bounds: distanceBounds, context: context)
+			let (within, positioned) = try Self.fetchDistanceNodeNums(nodeNums: nodeNums, bounds: distanceBounds, context: context)
 			self.distanceNodeNums = within
 			self.positionedNodeNums = positioned
 		} else {
@@ -552,7 +621,7 @@ private struct NodeListFilterLookup {
 		return distanceNodeNums.contains(node.num)
 	}
 
-	private static func fetchEnvironmentNodeNums(nodeNums: [Int64], context: ModelContext) -> Set<Int64> {
+	private static func fetchEnvironmentNodeNums(nodeNums: [Int64], context: ModelContext) throws -> Set<Int64> {
 		guard !nodeNums.isEmpty else { return [] }
 		let metricsType: Int32 = 1
 		let descriptor = FetchDescriptor<TelemetryEntity>(
@@ -562,7 +631,7 @@ private struct NodeListFilterLookup {
 				&& ($0.nodeTelemetry.flatMap { nodeNums.contains($0.num) } ?? false)
 			}
 		)
-		let metrics = (try? context.fetch(descriptor)) ?? []
+		let metrics = try context.fetch(descriptor)
 		return Set(metrics.compactMap { $0.nodeTelemetry?.num })
 	}
 
@@ -570,7 +639,7 @@ private struct NodeListFilterLookup {
 		nodeNums: [Int64],
 		bounds: NodeDistanceFilterBounds,
 		context: ModelContext
-	) -> (withinBounds: Set<Int64>, withAnyPosition: Set<Int64>) {
+	) throws -> (withinBounds: Set<Int64>, withAnyPosition: Set<Int64>) {
 		guard !nodeNums.isEmpty else { return ([], []) }
 		let descriptor = FetchDescriptor<PositionEntity>(
 			predicate: #Predicate<PositionEntity> {
@@ -579,7 +648,7 @@ private struct NodeListFilterLookup {
 				&& ($0.nodePosition.flatMap { nodeNums.contains($0.num) } ?? false)
 			}
 		)
-		let positions = (try? context.fetch(descriptor)) ?? []
+		let positions = try context.fetch(descriptor)
 		var withinBounds = Set<Int64>()
 		var withAnyPosition = Set<Int64>()
 		for position in positions {

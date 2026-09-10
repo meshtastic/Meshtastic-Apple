@@ -38,6 +38,77 @@ struct NodeListDensityTests {
 	}
 }
 
+// MARK: - NodeListRefreshState
+
+@Suite("NodeListRefreshState")
+struct NodeListRefreshStateTests {
+
+	@Test func startsWithPendingRefresh() {
+		let state = NodeListRefreshState()
+
+		#expect(state.needsRefresh)
+		#expect(state.canRefresh)
+	}
+
+	@Test func completedRefreshWaitsForAnotherChange() {
+		var state = NodeListRefreshState()
+
+		state.didRefresh(succeeded: true)
+
+		#expect(!state.needsRefresh)
+		#expect(!state.canRefresh)
+		state.setNeedsRefresh()
+		#expect(state.needsRefresh)
+		#expect(state.canRefresh)
+	}
+
+	@Test func failedRefreshRemainsPending() {
+		var state = NodeListRefreshState()
+		state.didRefresh(succeeded: true)
+
+		state.didRefresh(succeeded: false)
+
+		#expect(state.needsRefresh)
+		#expect(state.canRefresh)
+	}
+
+	@Test func scrollingDefersPendingRefresh() {
+		var state = NodeListRefreshState()
+
+		state.setScrolling(true)
+
+		#expect(state.needsRefresh)
+		#expect(!state.canRefresh)
+		state.setScrolling(false)
+		#expect(state.canRefresh)
+	}
+
+	@Test func scrollingDoesNotRequestRefresh() {
+		var state = NodeListRefreshState()
+		state.didRefresh(succeeded: true)
+
+		state.setScrolling(true)
+		state.setScrolling(false)
+
+		#expect(!state.needsRefresh)
+		#expect(!state.canRefresh)
+	}
+
+	@Test func changesWhileScrollingRemainPending() {
+		var state = NodeListRefreshState()
+		state.didRefresh(succeeded: true)
+		state.setScrolling(true)
+
+		state.setNeedsRefresh()
+		state.setNeedsRefresh()
+
+		#expect(state.needsRefresh)
+		#expect(!state.canRefresh)
+		state.setScrolling(false)
+		#expect(state.canRefresh)
+	}
+}
+
 // MARK: - NodeListPreferences
 
 @Suite("NodeListPreferences")
