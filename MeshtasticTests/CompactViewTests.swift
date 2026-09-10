@@ -107,6 +107,29 @@ struct NodeListRefreshStateTests {
 		state.setScrolling(false)
 		#expect(state.canRefresh)
 	}
+
+	@Test func refreshPipelineDefersSideEffectUntilScrollingEnds() {
+		var state = NodeListRefreshState()
+		var refreshCallCount = 0
+		let refresh = {
+			refreshCallCount += 1
+			return true
+		}
+
+		state.setScrolling(true)
+		let scrollingResult = state.runRefreshIfNeeded(refresh)
+
+		#expect(scrollingResult == nil)
+		#expect(refreshCallCount == 0)
+
+		state.setScrolling(false)
+		if let succeeded = state.runRefreshIfNeeded(refresh) {
+			state.didRefresh(succeeded: succeeded)
+		}
+
+		#expect(refreshCallCount == 1)
+		#expect(!state.needsRefresh)
+	}
 }
 
 // MARK: - NodeListPreferences

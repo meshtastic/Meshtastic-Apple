@@ -241,6 +241,11 @@ struct NodeListRefreshState {
 	mutating func didRefresh(succeeded: Bool) {
 		needsRefresh = !succeeded
 	}
+
+	func runRefreshIfNeeded(_ refresh: () -> Bool) -> Bool? {
+		guard canRefresh else { return nil }
+		return refresh()
+	}
 }
 
 /// Wraps a NodeInfoEntity with a pre-extracted stable identity so that List/ForEach never
@@ -451,21 +456,24 @@ private struct FilteredNodeList: View {
 			// Refresh immediately when entering the tab. While the tab stays visible, saves and
 			// filter changes are coalesced on the existing cadence. Expensive work waits until
 			// scrolling ends so it cannot interrupt interaction or deceleration.
-			refreshState.didRefresh(succeeded: refreshDisplayedNodes())
+			runPendingRefresh()
 			while !Task.isCancelled {
 				try? await Task.sleep(for: .milliseconds(350))
 				if filters.isOnline {
 					markRefreshNeeded()
 				}
 				if router.selectedTab == .nodes {
-					if refreshState.canRefresh {
-						refreshState.didRefresh(succeeded: refreshDisplayedNodes())
-					}
+					runPendingRefresh()
 				} else {
 					purgeDeadDisplayedNodes()
 				}
 			}
 		}
+	}
+
+	private func runPendingRefresh() {
+		guard let succeeded = refreshState.runRefreshIfNeeded(refreshDisplayedNodes) else { return }
+		refreshState.didRefresh(succeeded: succeeded)
 	}
 
 	private func markRefreshNeeded() {
