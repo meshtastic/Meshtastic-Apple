@@ -187,18 +187,6 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 	static let deviceCatalogETagKey = "deviceCatalog"
 	static let firmwareListETagKey = "firmwareReleaseList"
 
-	/// Last ETag seen for an endpoint. URLSession already spares us the download when nothing has
-	/// changed; this spares us the rest — decoding the payload and re-writing rows that are
-	/// already correct. Stored only after the write succeeds, so a run that fails part-way cannot
-	/// convince the next one that the store is current.
-	static func lastETag(for key: String) -> String? {
-		UserDefaults.standard.string(forKey: "api.etag.\(key)")
-	}
-
-	static func setLastETag(_ eTag: String?, for key: String) {
-		guard let eTag else { return }
-		UserDefaults.standard.set(eTag, forKey: "api.etag.\(key)")
-	}
 	static let nightlyReleaseNotesEndpoint = URL(string: "https://raw.githubusercontent.com/meshtastic/meshtastic.github.io/master/firmware-nightly/release_notes.md")!
 	static let eventFirmwareURLEndpoint = URL(string: "https://api.meshtastic.org/resource/eventFirmware")!
 
@@ -209,9 +197,12 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 	static let staleDeviceImageLinkInterval: TimeInterval = 48 * 60 * 60
 
 	// MARK: - Private properties
+	private static let defaultURLSession = URLSession(configuration: .meshtasticAPI)
+
 	private let fileManager = FileManager.default
 	private let decoder = JSONDecoder()
 	private let container: ModelContainer?
+	private let urlSession: URLSession
 	
 	@Published var isLoadingDeviceList: Bool = false
 	@Published var isLoadingFirmwareList: Bool = false
@@ -239,8 +230,9 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 	// assert the bundled seed stays network-free. `shared` remains the only app-side entry.
 	// `startupRefresh: false` suppresses the launch refresh cascade below so a test can call a
 	// single refresh function in isolation without the detached startup work racing it.
-	init(container: ModelContainer?, startupRefresh: Bool = true) {
+	init(container: ModelContainer?, startupRefresh: Bool = true, urlSession: URLSession? = nil) {
 		self.container = container
+		self.urlSession = urlSession ?? Self.defaultURLSession
 		guard container != nil, startupRefresh else { return }
 		Task.detached {
 			// Load bundled catalog first — instant display, no network needed.
@@ -274,7 +266,7 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 		let decodedFirmware: FirmwareReleases
 		var firmwareListETag: String?
 		do {
-			let (apiData, eTag) = try await Self.firmwareURLEndpoint.dataWithETag(timeout: 5.0)
+			let (apiData, eTag) = try await urlSession.dataWithETag(from: Self.firmwareURLEndpoint)
 			// Same short-circuit as the catalog: an unchanged list is not worth re-writing.
 			if let eTag, eTag == Self.lastETag(for: Self.firmwareListETagKey) {
 				let hasReleases = await MainActor.run {
@@ -290,7 +282,7 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 			decodedFirmware = try FirmwareReleaseCatalog.decode(apiData)
 		} catch {
 			Logger.services.warning("Firmware API request failed; falling back to GitHub releases: \(error.localizedDescription, privacy: .public)")
-			let githubData = try await Self.firmwareGitHubURLEndpoint.data(timeout: 5.0)
+			let (githubData, _) = try await urlSession.data(from: Self.firmwareGitHubURLEndpoint)
 			decodedFirmware = try FirmwareReleaseCatalog.decode(githubData)
 		}
 		let stableVersions = Set(decodedFirmware.releases.stable.map { $0.id })
@@ -365,7 +357,7 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 		// image/link pass it delegates to in PHASE 3 manages the flag around its own lifetime.
 		// Clearing it here would lower a flag a concurrent seed still needs raised.
 		// PHASE 1: Network only — no bundle fallback (bundle was already loaded at init).
-		let (finalData, eTag) = try await Self.deviceURLEndpoint.dataWithETag(timeout: 10.0)
+		let (finalData, eTag) = try await urlSession.dataWithETag(from: Self.deviceURLEndpoint)
 		guard !finalData.isEmpty else { throw MeshtasticAPIError.unableToRetreviveJSON }
 
 		// An unchanged metadata payload can skip the upsert when device rows still exist. When images
@@ -532,9 +524,8 @@ deviceEntity.architecture = device.architecture
 	private func loadMshToUrls() async -> MshToUrlsFile? {
 		if let url = URL(string: "https://msh.to/api/urls") {
 			var request = URLRequest(url: url)
-			request.timeoutInterval = 15
 			request.cachePolicy = .reloadRevalidatingCacheData
-			if let (data, response) = try? await URLSession.shared.data(for: request),
+			if let (data, response) = try? await urlSession.data(for: request),
 			   let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode),
 			   let decoded = try? JSONDecoder().decode(MshToUrlsFile.self, from: data) {
 				Logger.services.info("Loaded msh.to urls from API (\(decoded.routes.count, privacy: .public) routes)")
@@ -557,9 +548,10 @@ deviceEntity.architecture = device.architecture
 	/// unreachable one, must not fail the stable and alpha list refresh.
 	private func fetchNightlyRelease() async -> FirmwareRelease? {
 		do {
-			let data = try await Self.nightlyIndexEndpoint.data(timeout: 5.0)
+			let (data, _) = try await urlSession.data(from: Self.nightlyIndexEndpoint)
 			let index = try JSONDecoder().decode(NightlyFirmwareIndex.self, from: data)
-			let notes = try? await Self.nightlyReleaseNotesEndpoint.data(timeout: 5.0)
+			let notesResponse = try? await urlSession.data(from: Self.nightlyReleaseNotesEndpoint)
+			let notes = notesResponse?.0
 			let pageURL = index.commit.map { "https://github.com/meshtastic/firmware/commit/\($0)" }
 				?? "https://github.com/meshtastic/firmware/commits/master"
 			return FirmwareRelease(
@@ -614,7 +606,7 @@ deviceEntity.architecture = device.architecture
 		let url = Self.imageURLPrefix.appendingPathComponent(imageName)
 
 		// URLSession handles HTTP cache validation and supplies cached data after a 304 response.
-		let fetchedResult = try? await url.dataWithETag(timeout: 5.0)
+		let fetchedResult = try? await urlSession.dataWithETag(from: url)
 		guard !Task.isCancelled else { return }
 		let networkResult = fetchedResult.flatMap { $0.data.isEmpty ? nil : $0 }
 
@@ -1236,5 +1228,20 @@ extension MeshtasticAPI {
 
 			try? context.save()
 		}
+	}
+}
+
+extension MeshtasticAPI {
+	/// Last ETag seen for an endpoint. URLSession already spares us the download when nothing has
+	/// changed; this spares us the rest — decoding the payload and re-writing rows that are
+	/// already correct. Stored only after the write succeeds, so a run that fails part-way cannot
+	/// convince the next one that the store is current.
+	static func lastETag(for key: String) -> String? {
+		UserDefaults.standard.string(forKey: "api.etag.\(key)")
+	}
+
+	static func setLastETag(_ eTag: String?, for key: String) {
+		guard let eTag else { return }
+		UserDefaults.standard.set(eTag, forKey: "api.etag.\(key)")
 	}
 }

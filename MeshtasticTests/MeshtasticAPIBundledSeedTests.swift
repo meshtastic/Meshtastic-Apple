@@ -7,14 +7,9 @@ import Testing
 /// Records every request the URL loading system is asked to perform, and fails them
 /// immediately so a test can never depend on real network reachability.
 ///
-/// Scope caveat: `URLProtocol.registerClass` only intercepts `URLSession.shared` and sessions
-/// built from a default configuration. That covers the code under test — `URL.dataWithETag()`
-/// uses `URLSession.shared` — but a future regression that reaches the network through a
-/// custom-configured session would slip past this recorder.
-///
-/// Registration is process-global, so a suite using this must not run alongside another suite
-/// that does its own networking. No other suite in this target does today; `.serialized` on the
-/// suite below covers ordering within it.
+/// Each test injects a URL session whose configuration names this protocol, so requests cannot
+/// escape to the real network. The suite remains serialized because the recorder and stubs share
+/// static state.
 ///
 /// Not `final`: the URLProtocol hooks below are class-method overrides, which SwiftLint's
 /// `static_over_final_class` rule would otherwise flag.
@@ -148,6 +143,13 @@ final class MeshtasticAPIBundledSeedTests {
 		return try ModelContainer(for: schema, configurations: config)
 	}
 
+	private func makeAPI(container: ModelContainer, startupRefresh: Bool = false) -> MeshtasticAPI {
+		let configuration = URLSessionConfiguration.meshtasticAPI
+		configuration.protocolClasses = [RequestRecordingURLProtocol.self]
+		let urlSession = URLSession(configuration: configuration)
+		return MeshtasticAPI(container: container, startupRefresh: startupRefresh, urlSession: urlSession)
+	}
+
 	/// Regression test for #2196.
 	///
 	/// `refreshBundledDevicesData()` is awaited inline by BLE connect Step 3, which has a 30s
@@ -156,13 +158,11 @@ final class MeshtasticAPIBundledSeedTests {
 	/// zero-rated cellular link stalled the seed well past that budget and blocked BLE sync.
 	/// The seed must therefore stay entirely local.
 	@Test @MainActor func bundledSeedIssuesNoNetworkRequests() async throws {
-		URLProtocol.registerClass(RequestRecordingURLProtocol.self)
 		RequestRecordingURLProtocol.reset()
-		defer { URLProtocol.unregisterClass(RequestRecordingURLProtocol.self) }
 
 		// startupRefresh: false — the init cascade would otherwise fire detached firmware,
 		// image, and device requests that race the recorder and make this assertion flaky.
-		let api = MeshtasticAPI(container: try makeContainer(), startupRefresh: false)
+		let api = makeAPI(container: try makeContainer(), startupRefresh: false)
 		try await api.refreshBundledDevicesData()
 
 		// Snapshot once: `recordedURLs` takes the lock per read, so asserting on one read and
@@ -185,12 +185,10 @@ final class MeshtasticAPIBundledSeedTests {
 		// Register the recorder here too. The property under test is that this call is local, so if
 		// the eTag fan-out is ever reintroduced this test must not start issuing real HEAD requests
 		// from CI (or hang behind the very captive portal #2196 is about).
-		URLProtocol.registerClass(RequestRecordingURLProtocol.self)
 		RequestRecordingURLProtocol.reset()
-		defer { URLProtocol.unregisterClass(RequestRecordingURLProtocol.self) }
 
 		let container = try makeContainer()
-		let api = MeshtasticAPI(container: container, startupRefresh: false)
+		let api = makeAPI(container: container, startupRefresh: false)
 
 		try await api.refreshBundledDevicesData()
 
@@ -227,11 +225,9 @@ final class MeshtasticAPIBundledSeedTests {
 	/// and link pass, so every online startup fetched all 82 ETags twice. One pass, one request
 	/// per image.
 	@Test @MainActor func offlineImageRefreshRequestsEachImageOnce() async throws {
-		URLProtocol.registerClass(RequestRecordingURLProtocol.self)
 		RequestRecordingURLProtocol.reset()
-		defer { URLProtocol.unregisterClass(RequestRecordingURLProtocol.self) }
 
-		let api = MeshtasticAPI(container: try makeContainer(), startupRefresh: false)
+		let api = makeAPI(container: try makeContainer(), startupRefresh: false)
 		await api.refreshDeviceImagesAndLinks()
 
 		let imageNetworkRequests = RequestRecordingURLProtocol.recordedRequests.filter {
@@ -321,14 +317,12 @@ final class MeshtasticAPIBundledSeedTests {
 	/// The API endpoint is stubbed with the bundled catalog itself, so the union of the two lists
 	/// is exactly the bundled set: one pass is N requests, the old double pass would be 2N.
 	@Test @MainActor func startupCascadeRunsOneImagePass() async throws {
-		URLProtocol.registerClass(RequestRecordingURLProtocol.self)
 		RequestRecordingURLProtocol.reset(stubs: [
 			deviceHardwareStubKey: try bundledCatalogData()
 		])
-		defer { URLProtocol.unregisterClass(RequestRecordingURLProtocol.self) }
 
 		// Retained for the lifetime of the test: the cascade is detached and captures self.
-		let api = MeshtasticAPI(container: try makeContainer(), startupRefresh: true)
+		let api = makeAPI(container: try makeContainer(), startupRefresh: true)
 		defer { _ = api }
 
 		let images = try await settledImageRequests()
@@ -368,11 +362,9 @@ final class MeshtasticAPIBundledSeedTests {
 		let eTagKey = "api.etag.\(MeshtasticAPI.deviceCatalogETagKey)"
 		UserDefaults.standard.removeObject(forKey: eTagKey)
 		defer { UserDefaults.standard.removeObject(forKey: eTagKey) }
-		URLProtocol.registerClass(RequestRecordingURLProtocol.self)
-		defer { URLProtocol.unregisterClass(RequestRecordingURLProtocol.self) }
 
 		let container = try makeContainer()
-		let api = MeshtasticAPI(container: container, startupRefresh: false)
+		let api = makeAPI(container: container, startupRefresh: false)
 		let context = container.mainContext
 		func displayName() throws -> String? {
 			let hwModel: Int64 = 99002
@@ -428,11 +420,9 @@ extension MeshtasticAPIBundledSeedTests {
 		let eTagKey = "api.etag.\(MeshtasticAPI.deviceCatalogETagKey)"
 		UserDefaults.standard.removeObject(forKey: eTagKey)
 		defer { UserDefaults.standard.removeObject(forKey: eTagKey) }
-		URLProtocol.registerClass(RequestRecordingURLProtocol.self)
-		defer { URLProtocol.unregisterClass(RequestRecordingURLProtocol.self) }
 
 		let container = try makeContainer()
-		let api = MeshtasticAPI(container: container, startupRefresh: false)
+		let api = makeAPI(container: container, startupRefresh: false)
 		RequestRecordingURLProtocol.reset(
 			stubs: [deviceHardwareStubKey: catalog(displayName: "Original")],
 			eTag: "catalog-v1"
@@ -471,15 +461,13 @@ extension MeshtasticAPIBundledSeedTests {
 		}]
 		"""
 		let apiOnlyImage = Data("<svg>api-only</svg>".utf8)
-		URLProtocol.registerClass(RequestRecordingURLProtocol.self)
 		RequestRecordingURLProtocol.reset(stubs: [
 			deviceHardwareStubKey: Data(apiOnly.utf8),
 			"api-only-test.svg": apiOnlyImage
 		])
-		defer { URLProtocol.unregisterClass(RequestRecordingURLProtocol.self) }
 
 		let container = try makeContainer()
-		let api = MeshtasticAPI(container: container, startupRefresh: false)
+		let api = makeAPI(container: container, startupRefresh: false)
 		try await api.refreshDevicesAPIData()
 
 		// One snapshot, two views of it — see the note in bundledSeedIssuesNoNetworkRequests.
@@ -535,15 +523,13 @@ extension MeshtasticAPIBundledSeedTests {
 		"""
 		let catalogData = Data(apiOnly.utf8)
 		let originalImage = Data("<svg>original</svg>".utf8)
-		URLProtocol.registerClass(RequestRecordingURLProtocol.self)
-		defer { URLProtocol.unregisterClass(RequestRecordingURLProtocol.self) }
 
 		RequestRecordingURLProtocol.reset(stubs: [
 			deviceHardwareStubKey: catalogData,
 			"api-only-test.svg": originalImage
 		])
 		let container = try makeContainer()
-		let api = MeshtasticAPI(container: container, startupRefresh: false)
+		let api = makeAPI(container: container, startupRefresh: false)
 		try await api.refreshDevicesAPIData()
 
 		let failures = [
@@ -597,15 +583,13 @@ extension MeshtasticAPIBundledSeedTests {
 		"""
 		let catalogData = Data(apiCatalog.utf8)
 		let networkImage = Data("<svg>newer network image</svg>".utf8)
-		URLProtocol.registerClass(RequestRecordingURLProtocol.self)
-		defer { URLProtocol.unregisterClass(RequestRecordingURLProtocol.self) }
 
 		RequestRecordingURLProtocol.reset(stubs: [
 			deviceHardwareStubKey: catalogData,
 			sharedImageName: networkImage
 		])
 		let container = try makeContainer()
-		let api = MeshtasticAPI(container: container, startupRefresh: false)
+		let api = makeAPI(container: container, startupRefresh: false)
 		try await api.refreshDevicesAPIData()
 
 		var devices = try container.mainContext.fetch(FetchDescriptor<DeviceHardwareEntity>())
@@ -640,11 +624,9 @@ extension MeshtasticAPIBundledSeedTests {
 	/// fires it on every reconnect, so without the throttle each reconnect revalidates every image.
 	/// The first pass hits the network; a second pass inside the window must issue nothing.
 	@Test @MainActor func imageRefreshThrottledWithinWindow() async throws {
-		URLProtocol.registerClass(RequestRecordingURLProtocol.self)
 		RequestRecordingURLProtocol.reset()
-		defer { URLProtocol.unregisterClass(RequestRecordingURLProtocol.self) }
 
-		let api = MeshtasticAPI(container: try makeContainer(), startupRefresh: false)
+		let api = makeAPI(container: try makeContainer(), startupRefresh: false)
 		await api.refreshDeviceImagesAndLinks()
 		#expect(!imageRequests(from: RequestRecordingURLProtocol.recordedURLs).isEmpty,
 				"the first pass should hit the network")
@@ -660,11 +642,9 @@ extension MeshtasticAPIBundledSeedTests {
 	/// `lastDeviceImageAndLinkUpdate` so Step 3b restores them rather than skipping as "refreshed
 	/// recently". Resetting the timestamp (what the clear does) must re-enable the pass in-window.
 	@Test @MainActor func resetTimestampReenablesImageRefreshAfterClear() async throws {
-		URLProtocol.registerClass(RequestRecordingURLProtocol.self)
 		RequestRecordingURLProtocol.reset()
-		defer { URLProtocol.unregisterClass(RequestRecordingURLProtocol.self) }
 
-		let api = MeshtasticAPI(container: try makeContainer(), startupRefresh: false)
+		let api = makeAPI(container: try makeContainer(), startupRefresh: false)
 		await api.refreshDeviceImagesAndLinks()   // first pass arms the throttle
 		#expect(!imageRequests(from: RequestRecordingURLProtocol.recordedURLs).isEmpty)
 
@@ -730,15 +710,13 @@ extension MeshtasticAPIBundledSeedTests {
 		  "images": ["\(sharedImageName)"]
 		}]
 		"""
-		URLProtocol.registerClass(RequestRecordingURLProtocol.self)
 		RequestRecordingURLProtocol.reset(
 			stubs: [deviceHardwareStubKey: Data(apiCatalog.utf8)],
 			suspendedStubKeys: [sharedImageName]
 		)
-		defer { URLProtocol.unregisterClass(RequestRecordingURLProtocol.self) }
 
 		let container = try makeContainer()
-		let api = MeshtasticAPI(container: container, startupRefresh: false)
+		let api = makeAPI(container: container, startupRefresh: false)
 		let refreshTask = Task { try? await api.refreshDevicesAPIData() }
 		let deadline = ContinuousClock.now.advanced(by: .seconds(5))
 		while ContinuousClock.now < deadline,
@@ -763,12 +741,10 @@ extension MeshtasticAPIBundledSeedTests {
 
 	@Test @MainActor func cancellationDuringLinkRequestDoesNotImportBundleOrArmThrottle() async throws {
 		let linkURL = "msh.to/api/urls"
-		URLProtocol.registerClass(RequestRecordingURLProtocol.self)
 		RequestRecordingURLProtocol.reset(suspendedStubKeys: [linkURL])
-		defer { URLProtocol.unregisterClass(RequestRecordingURLProtocol.self) }
 
 		let container = try makeContainer()
-		let api = MeshtasticAPI(container: container, startupRefresh: false)
+		let api = makeAPI(container: container, startupRefresh: false)
 		let refreshTask = Task { await api.refreshDeviceImagesAndLinks() }
 		let deadline = ContinuousClock.now.advanced(by: .seconds(5))
 		while ContinuousClock.now < deadline,
@@ -792,11 +768,9 @@ extension MeshtasticAPIBundledSeedTests {
 	/// restore. Self-cancelling *before* the pass starts trips the worker's early guard
 	/// deterministically — no scheduling race on when `.cancel()` lands.
 	@Test @MainActor func cancelledPassIssuesNoRequestsAndLeavesThrottleUnarmed() async throws {
-		URLProtocol.registerClass(RequestRecordingURLProtocol.self)
 		RequestRecordingURLProtocol.reset()
-		defer { URLProtocol.unregisterClass(RequestRecordingURLProtocol.self) }
 
-		let api = MeshtasticAPI(container: try makeContainer(), startupRefresh: false)
+		let api = makeAPI(container: try makeContainer(), startupRefresh: false)
 		let task = Task {
 			withUnsafeCurrentTask { $0?.cancel() }   // cancel before the pass does any work
 			await api.refreshDeviceImagesAndLinks()
