@@ -7,6 +7,8 @@ Thank you for considering contributing to Meshtastic! We appreciate your time an
 - [Contributing to Meshtastic](#contributing-to-meshtastic)
   - [Table of Contents](#table-of-contents)
   - [Getting Started](#getting-started)
+    - [Code Signing](#code-signing)
+    - [Changing the Project Structure](#changing-the-project-structure)
   - [Development Workflow](#development-workflow)
     - [Targeting `main`](#targeting-main)
     - [Small, Incremental Changes](#small-incremental-changes)
@@ -38,6 +40,37 @@ Thank you for considering contributing to Meshtastic! We appreciate your time an
    ```sh
    open Meshtastic.xcworkspace
    ```
+
+### Code signing
+
+The project reads signing values from `Configuration/Signing.xcconfig`. That
+committed file contains the Meshtastic Apple Developer team and bundle
+identifier defaults. Meshtastic team members can use those values as-is.
+
+If you are not a member of the Meshtastic Apple Developer team, create
+`Configuration/Signing.local.xcconfig` to override the defaults with your own
+Apple Developer team and bundle identifier. The committed configuration
+optionally includes this file when it exists, so no project-file changes are
+needed:
+
+```xcconfig
+DEVELOPMENT_TEAM = YOUR_TEAM_ID
+BASE_BUNDLE_IDENTIFIER = com.example.MeshtasticClient
+```
+
+- Set `DEVELOPMENT_TEAM` to your 10-character Apple Developer Team ID.
+- Choose a reverse-DNS `BASE_BUNDLE_IDENTIFIER` that is unique to your team.
+  Use only the base identifier; the project automatically adds suffixes for
+  the widgets, Watch app, and test bundles.
+- Do not edit `Configuration/Signing.xcconfig` just to use a personal account.
+  `Signing.local.xcconfig` is ignored by Git and must not be committed.
+- Simulator builds do not require a local signing override.
+- Changing the local file does not require XcodeGen or a regenerated project.
+  Close and reopen the workspace, or clean the build folder, if Xcode has
+  cached the previous signing values.
+
+Xcode uses automatic signing for the app and its extensions. After creating
+the local file, select your device and build the `Meshtastic` scheme normally.
 
 ### Changing the project structure
 

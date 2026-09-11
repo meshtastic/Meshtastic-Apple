@@ -1,0 +1,13 @@
+//
+//  Signing.xcconfig
+//  Meshtastic
+
+// Configuration settings file format documentation can be found at:
+// https://developer.apple.com/documentation/xcode/adding-a-build-configuration-file-to-your-project
+
+DEVELOPMENT_TEAM = GCH7VS5Y9R
+BASE_BUNDLE_IDENTIFIER = gvh.MeshtasticClient
+
+// Create an `Signing.local.xcconfig` if you need a different bundle id and/or development ID
+#include? "Signing.local.xcconfig"
+

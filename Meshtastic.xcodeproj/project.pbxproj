@@ -128,7 +128,7 @@
 		0D3292ABF1A342707957A3F6 /* MeshtasticDataModelV4.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV4.xcdatamodel; sourceTree = "<group>"; };
 		0E531C14ABE7F1491959BBE3 /* OfflineMapManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineMapManager.swift; sourceTree = "<group>"; };
 		122531D8C1D7CC809C6EF3B7 /* WriteContinuationStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WriteContinuationStore.swift; sourceTree = "<group>"; };
-		1A740EACFF7FA4000F22EF4E /* Meshtastic.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Meshtastic.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		1A740EACFF7FA4000F22EF4E /* Meshtastic.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Meshtastic.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		25A13454C9C85CEBBBC2DD1F /* he */ = {isa = PBXFileReference; lastKnownFileType = text.plist; name = he; path = he.lproj/AppIntentVocabulary.plist; sourceTree = "<group>"; };
 		25BA43A8304E6CC120811070 /* Certificates */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Certificates; path = Meshtastic/Resources/Certificates; sourceTree = SOURCE_ROOT; };
 		2625B7E87368ACBC51E821F5 /* MeshtasticDataModelV 38.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 38.xcdatamodel"; sourceTree = "<group>"; };
@@ -192,7 +192,7 @@
 		9C0850C36BB4CC43CFB1DB8F /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist; name = "zh-Hans"; path = "zh-Hans.lproj/AppIntentVocabulary.plist"; sourceTree = "<group>"; };
 		9DBED19900EBE8EC0F488AC6 /* sr */ = {isa = PBXFileReference; lastKnownFileType = text.plist; name = sr; path = sr.lproj/AppIntentVocabulary.plist; sourceTree = "<group>"; };
 		9EAC56C4BC71EE20B393C372 /* pl */ = {isa = PBXFileReference; lastKnownFileType = text.plist; name = pl; path = pl.lproj/AppIntentVocabulary.plist; sourceTree = "<group>"; };
-		A127CADA4845100E1C10B022 /* Meshtastic TV.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = "Meshtastic TV.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		A127CADA4845100E1C10B022 /* Meshtastic TV.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Meshtastic TV.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		A2B4D8B84124EC1D98F4065A /* se */ = {isa = PBXFileReference; lastKnownFileType = text.plist; name = se; path = se.lproj/AppIntentVocabulary.plist; sourceTree = "<group>"; };
 		A7443D3C9E82A023A4388EFC /* InfoPlist.strings */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = InfoPlist.strings; path = uk.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		A80E1960A69051EE698AAE97 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
@@ -210,7 +210,7 @@
 		BD1780B27CE8A3FF56E1C632 /* zh-Hant */ = {isa = PBXFileReference; lastKnownFileType = text.plist; name = "zh-Hant"; path = "zh-Hant.lproj/AppIntentVocabulary.plist"; sourceTree = "<group>"; };
 		BDE4E12D1CA4D31DF54808B6 /* MeshtasticDataModelV 28.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 28.xcdatamodel"; sourceTree = "<group>"; };
 		BF2A0F6C2F79E131B73DE4D4 /* MeshtasticDataModelV 41.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 41.xcdatamodel"; sourceTree = "<group>"; };
-		BF325A6359A74DDECD015FA1 /* MeshtasticProtobufs */ = {isa = PBXFileReference; lastKnownFileType = folder; name = MeshtasticProtobufs; path = MeshtasticProtobufs; sourceTree = SOURCE_ROOT; };
+		BF325A6359A74DDECD015FA1 /* MeshtasticProtobufs */ = {isa = PBXFileReference; lastKnownFileType = folder; path = MeshtasticProtobufs; sourceTree = SOURCE_ROOT; };
 		BFF8C95A2DA86E1690F165CE /* MeshtasticDataModelV15.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV15.xcdatamodel; sourceTree = "<group>"; };
 		C0810161F73BC57A90E60D0C /* event_firmware.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = event_firmware.json; sourceTree = "<group>"; };
 		C6BCC32505771F08628D70D7 /* DeviceHardware.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = DeviceHardware.json; sourceTree = "<group>"; };
@@ -223,8 +223,8 @@
 		D8AE43380BF070E6E906D841 /* MeshtasticDataModelV 53.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 53.xcdatamodel"; sourceTree = "<group>"; };
 		DD8FE67D6F2C7F041F8E3C8C /* AppIcon_Chirpy.icon */ = {isa = PBXFileReference; lastKnownFileType = wrapper.icon; path = AppIcon_Chirpy.icon; sourceTree = "<group>"; };
 		DD9ED0AFED536B2EE5F32F23 /* AppIcon_Ham.icon */ = {isa = PBXFileReference; lastKnownFileType = wrapper.icon; path = AppIcon_Ham.icon; sourceTree = "<group>"; };
-		E4053FDE501FD7E0A02CEA8D /* WidgetsExtension.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = WidgetsExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
-		E41F76E242AA58583D058626 /* Meshtastic TVUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = "Meshtastic TVUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		E4053FDE501FD7E0A02CEA8D /* WidgetsExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = WidgetsExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		E41F76E242AA58583D058626 /* Meshtastic TVUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Meshtastic TVUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		E4B18DB5D1945CE9ABE5A18D /* MeshtasticDataModelV 58.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 58.xcdatamodel"; sourceTree = "<group>"; };
 		E4FC9164DF840C79496963DD /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist; name = ru; path = ru.lproj/AppIntentVocabulary.plist; sourceTree = "<group>"; };
 		E81B359C631E51C6461AAE00 /* MeshtasticDataModelV12.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV12.xcdatamodel; sourceTree = "<group>"; };
@@ -239,10 +239,11 @@
 		F6D4ACC3C6BD92C9A04ED41D /* MeshtasticDataModelV10.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV10.xcdatamodel; sourceTree = "<group>"; };
 		FAE5E6259410D2A524285D8F /* MeshtasticDataModelV 57.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 57.xcdatamodel"; sourceTree = "<group>"; };
 		FD9D5D4A334ED0C02B7F908F /* MeshtasticDataModelV 45.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 45.xcdatamodel"; sourceTree = "<group>"; };
+		"TEMP_05DF69E9-9457-4FD9-A0FF-39EE03AA580D" /* Signing.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Signing.xcconfig; path = Configuration/Signing.xcconfig; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		10AC9C325A88647D0207B117 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+		10AC9C325A88647D0207B117 /* Exceptions for "Meshtastic TV" folder in "Meshtastic TV" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
@@ -253,15 +254,13 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
-				WidgetsExtension.entitlements,
 			);
 			target = A2F1595BC848E48B138C58E1 /* WidgetsExtension */;
 		};
-		DB19C69A7D6E83F95BB67635 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+		DB19C69A7D6E83F95BB67635 /* Exceptions for "Meshtastic Watch App" folder in "Meshtastic Watch App" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
-				"Meshtastic Watch App.entitlements",
 			);
 			target = C4BC64E061C609D15F5DFAF5 /* Meshtastic Watch App */;
 		};
@@ -281,210 +280,115 @@
 		0B1C4E352D6981242B97EF9C /* Widgets */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				8924DE954AC79FD140612404 /* PBXFileSystemSynchronizedBuildFileExceptionSet */,
-			);
-			explicitFileTypes = {
-			};
-			explicitFolders = (
+				8924DE954AC79FD140612404 /* Exceptions for "Widgets" folder in "WidgetsExtension" target */,
 			);
 			path = Widgets;
 			sourceTree = "<group>";
 		};
 		0B574D8559FE5799ADB5A517 /* Services */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			name = Services;
 			path = Services;
 			sourceTree = "<group>";
 		};
 		11D3172B1FEF230630B7A990 /* Extensions */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			name = Extensions;
 			path = Extensions;
 			sourceTree = "<group>";
 		};
 		1A7C0874097266C63EDD8A18 /* Import */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			name = Import;
 			path = Import;
 			sourceTree = "<group>";
 		};
 		1B104A61866EBBAB39A96CD6 /* API */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			name = API;
 			path = API;
 			sourceTree = "<group>";
 		};
 		22FDA4B8722F2CC1F4B5A929 /* Helpers */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			name = Helpers;
 			path = Helpers;
 			sourceTree = "<group>";
 		};
 		25C42CF0517289648017F9AA /* Intents */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			name = Intents;
 			path = Intents;
 			sourceTree = "<group>";
 		};
 		306AEE0BD7EDAF65F6E3B376 /* Measurement */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			name = Measurement;
 			path = Measurement;
 			sourceTree = "<group>";
 		};
 		456E28D41A9B7B1788FEE0CD /* Shared */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
 			path = Shared;
 			sourceTree = "<group>";
 		};
 		46D9EC9A9870D40B64CBD339 /* Accessory */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			name = Accessory;
 			path = Accessory;
 			sourceTree = "<group>";
 		};
 		4E52FFD5347832FDB8575177 /* Persistence */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			name = Persistence;
 			path = Persistence;
 			sourceTree = "<group>";
 		};
 		811D897CDBB8285F81701314 /* Enums */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			name = Enums;
 			path = Enums;
 			sourceTree = "<group>";
 		};
 		867FD80926C4A4286D635BAD /* MeshtasticTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
 			path = MeshtasticTests;
 			sourceTree = "<group>";
 		};
 		91DE2B8079DF4453A2B7A512 /* AppIntents */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			name = AppIntents;
 			path = AppIntents;
 			sourceTree = "<group>";
 		};
 		9AE441C6AC684B0738ED364A /* MeshtasticTVUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
 			path = MeshtasticTVUITests;
 			sourceTree = "<group>";
 		};
 		9F6D2EC582CAA968D897F796 /* Router */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			name = Router;
 			path = Router;
+			sourceTree = "<group>";
+		};
+		AF9B5929FB1BDF0B94F59636 /* Configuration */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Configuration;
 			sourceTree = "<group>";
 		};
 		B47C68738DD365F2A873DF1E /* CarPlay */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			name = CarPlay;
 			path = CarPlay;
 			sourceTree = "<group>";
 		};
 		C21C46F8F2BCFF68F31B12C0 /* Export */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			name = Export;
 			path = Export;
 			sourceTree = "<group>";
 		};
 		C95A60ECD93D37F4971EC685 /* Tips */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			name = Tips;
 			path = Tips;
 			sourceTree = "<group>";
 		};
 		D983771846F46D151DDE372B /* Views */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			name = Views;
 			path = Views;
 			sourceTree = "<group>";
 		};
 		EA229AC7C87CBBD64EC61AA1 /* Meshtastic TV */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				10AC9C325A88647D0207B117 /* PBXFileSystemSynchronizedBuildFileExceptionSet */,
-			);
-			explicitFileTypes = {
-			};
-			explicitFolders = (
+				10AC9C325A88647D0207B117 /* Exceptions for "Meshtastic TV" folder in "Meshtastic TV" target */,
 			);
 			path = "Meshtastic TV";
 			sourceTree = "<group>";
@@ -492,32 +396,18 @@
 		F0E2A06151AF30290D808624 /* Meshtastic Watch App */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				DB19C69A7D6E83F95BB67635 /* PBXFileSystemSynchronizedBuildFileExceptionSet */,
-			);
-			explicitFileTypes = {
-			};
-			explicitFolders = (
+				DB19C69A7D6E83F95BB67635 /* Exceptions for "Meshtastic Watch App" folder in "Meshtastic Watch App" target */,
 			);
 			path = "Meshtastic Watch App";
 			sourceTree = "<group>";
 		};
 		F7C2596BDB5FBBD06602EAAF /* Model */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			name = Model;
 			path = Model;
 			sourceTree = "<group>";
 		};
 		FFE592D22DEA437B6844BD5F /* Provisioning */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			name = Provisioning;
 			path = Provisioning;
 			sourceTree = "<group>";
 		};
@@ -570,6 +460,14 @@
 				B8C15787882CA30C9787154D /* Logger.swift */,
 			);
 			path = Extensions;
+			sourceTree = "<group>";
+		};
+		22F7F74A3043C51700B0CC1E /* Recovered References */ = {
+			isa = PBXGroup;
+			children = (
+				"TEMP_05DF69E9-9457-4FD9-A0FF-39EE03AA580D" /* Signing.xcconfig */,
+			);
+			name = "Recovered References";
 			sourceTree = "<group>";
 		};
 		29F5EBC33E7FAC687E6B7F7D /* Preview Content */ = {
@@ -717,6 +615,7 @@
 		C38AE1DFD847A4C81F189C1B = {
 			isa = PBXGroup;
 			children = (
+				AF9B5929FB1BDF0B94F59636 /* Configuration */,
 				26351F51CD01C94D8D82486A /* Localizable.xcstrings */,
 				68569A5CFCF946568B4E32C5 /* Meshtastic */,
 				EA229AC7C87CBBD64EC61AA1 /* Meshtastic TV */,
@@ -730,6 +629,7 @@
 				7CF5820C55D8305FCC1F8A13 /* TV Test Support */,
 				0B1C4E352D6981242B97EF9C /* Widgets */,
 				5D4AFA4225AF7D85EE343B80 /* Products */,
+				22F7F74A3043C51700B0CC1E /* Recovered References */,
 			);
 			sourceTree = "<group>";
 		};
@@ -836,6 +736,7 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
+				AF9B5929FB1BDF0B94F59636 /* Configuration */,
 				EA229AC7C87CBBD64EC61AA1 /* Meshtastic TV */,
 			);
 			name = "Meshtastic TV";
@@ -860,8 +761,8 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				456E28D41A9B7B1788FEE0CD /* Shared */,
 				0B1C4E352D6981242B97EF9C /* Widgets */,
+				456E28D41A9B7B1788FEE0CD /* Shared */,
 			);
 			name = WidgetsExtension;
 			packageProductDependencies = (
@@ -932,26 +833,27 @@
 				9F8D08FE8C3920E29BC0C051 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				1B104A61866EBBAB39A96CD6 /* API */,
-				46D9EC9A9870D40B64CBD339 /* Accessory */,
-				91DE2B8079DF4453A2B7A512 /* AppIntents */,
-				B47C68738DD365F2A873DF1E /* CarPlay */,
-				811D897CDBB8285F81701314 /* Enums */,
-				C21C46F8F2BCFF68F31B12C0 /* Export */,
+				0846840A4300FE311DCFDA44 /* images */,
+				0B574D8559FE5799ADB5A517 /* Services */,
 				11D3172B1FEF230630B7A990 /* Extensions */,
-				22FDA4B8722F2CC1F4B5A929 /* Helpers */,
 				1A7C0874097266C63EDD8A18 /* Import */,
+				1B104A61866EBBAB39A96CD6 /* API */,
+				22FDA4B8722F2CC1F4B5A929 /* Helpers */,
 				25C42CF0517289648017F9AA /* Intents */,
 				306AEE0BD7EDAF65F6E3B376 /* Measurement */,
-				F7C2596BDB5FBBD06602EAAF /* Model */,
-				4E52FFD5347832FDB8575177 /* Persistence */,
-				FFE592D22DEA437B6844BD5F /* Provisioning */,
-				9F6D2EC582CAA968D897F796 /* Router */,
-				0B574D8559FE5799ADB5A517 /* Services */,
 				456E28D41A9B7B1788FEE0CD /* Shared */,
+				46D9EC9A9870D40B64CBD339 /* Accessory */,
+				4E52FFD5347832FDB8575177 /* Persistence */,
+				811D897CDBB8285F81701314 /* Enums */,
+				91DE2B8079DF4453A2B7A512 /* AppIntents */,
+				9F6D2EC582CAA968D897F796 /* Router */,
+				AF9B5929FB1BDF0B94F59636 /* Configuration */,
+				B47C68738DD365F2A873DF1E /* CarPlay */,
+				C21C46F8F2BCFF68F31B12C0 /* Export */,
 				C95A60ECD93D37F4971EC685 /* Tips */,
 				D983771846F46D151DDE372B /* Views */,
-				0846840A4300FE311DCFDA44 /* images */,
+				F7C2596BDB5FBBD06602EAAF /* Model */,
+				FFE592D22DEA437B6844BD5F /* Provisioning */,
 			);
 			name = Meshtastic;
 			packageProductDependencies = (
@@ -1276,10 +1178,9 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = GCH7VS5Y9R;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.TVUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(BASE_BUNDLE_IDENTIFIER).TVUITests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = appletvos;
 				SUPPORTED_PLATFORMS = "appletvos appletvsimulator";
@@ -1302,7 +1203,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.5;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.MeshtasticTests;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(BASE_BUNDLE_IDENTIFIER).MeshtasticTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = YES;
@@ -1327,7 +1228,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.5;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.MeshtasticTests;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(BASE_BUNDLE_IDENTIFIER).MeshtasticTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = YES;
@@ -1342,6 +1243,7 @@
 		};
 		67E591654DF7A3F0BC045D06 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = "TEMP_05DF69E9-9457-4FD9-A0FF-39EE03AA580D" /* Signing.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "";
@@ -1378,7 +1280,6 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = GCH7VS5Y9R;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -1407,6 +1308,7 @@
 		};
 		6936E75845F3455F2F8A83BA /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = "TEMP_05DF69E9-9457-4FD9-A0FF-39EE03AA580D" /* Signing.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "";
@@ -1443,7 +1345,6 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = GCH7VS5Y9R;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
@@ -1496,9 +1397,8 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.6;
 				MARKETING_VERSION = 2.7.22;
-				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.Widgets;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(BASE_BUNDLE_IDENTIFIER).Widgets";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = YES;
@@ -1516,14 +1416,13 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = GCH7VS5Y9R;
 				INFOPLIST_FILE = "Meshtastic TV/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 2.7.22;
-				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(BASE_BUNDLE_IDENTIFIER)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = appletvos;
 				SUPPORTED_PLATFORMS = "appletvos appletvsimulator";
@@ -1541,14 +1440,13 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = GCH7VS5Y9R;
 				INFOPLIST_FILE = "Meshtastic TV/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 2.7.22;
-				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(BASE_BUNDLE_IDENTIFIER)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = appletvos;
 				SUPPORTED_PLATFORMS = "appletvos appletvsimulator";
@@ -1581,9 +1479,8 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.6;
 				MARKETING_VERSION = 2.7.22;
-				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.Widgets;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(BASE_BUNDLE_IDENTIFIER).Widgets";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = YES;
@@ -1603,20 +1500,19 @@
 				CODE_SIGN_ENTITLEMENTS = "Meshtastic Watch App/Meshtastic Watch App.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = GCH7VS5Y9R;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Meshtastic Watch App/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = Meshtastic;
 				INFOPLIST_KEY_CFBundleIconName = AppIcon;
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Meshtastic needs your location to calculate distance and bearing to mesh nodes during foxhunt.";
-				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = gvh.MeshtasticClient;
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = "$(BASE_BUNDLE_IDENTIFIER)";
 				INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp = NO;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 2.7.22;
-				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.watchkitapp;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(BASE_BUNDLE_IDENTIFIER).watchkitapp";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
 				SKIP_INSTALL = YES;
@@ -1633,10 +1529,9 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = GCH7VS5Y9R;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.TVUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(BASE_BUNDLE_IDENTIFIER).TVUITests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = appletvos;
 				SUPPORTED_PLATFORMS = "appletvos appletvsimulator";
@@ -1656,20 +1551,19 @@
 				CODE_SIGN_ENTITLEMENTS = "Meshtastic Watch App/Meshtastic Watch App.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = GCH7VS5Y9R;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Meshtastic Watch App/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = Meshtastic;
 				INFOPLIST_KEY_CFBundleIconName = AppIcon;
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Meshtastic needs your location to calculate distance and bearing to mesh nodes during foxhunt.";
-				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = gvh.MeshtasticClient;
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = "$(BASE_BUNDLE_IDENTIFIER)";
 				INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp = NO;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 2.7.22;
-				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.watchkitapp;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(BASE_BUNDLE_IDENTIFIER).watchkitapp";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
 				SKIP_INSTALL = YES;
@@ -1720,7 +1614,7 @@
 					"-weak_framework",
 					SwiftUI,
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(BASE_BUNDLE_IDENTIFIER)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTS_MACCATALYST = YES;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
@@ -1770,7 +1664,7 @@
 					"-weak_framework",
 					SwiftUI,
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(BASE_BUNDLE_IDENTIFIER)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTS_MACCATALYST = YES;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
