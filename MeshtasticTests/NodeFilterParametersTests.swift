@@ -26,6 +26,36 @@ private func makeIsolatedDefaults(_ suiteName: String) -> UserDefaults {
 }
 
 @MainActor
+private final class ControlledSearchSleeper {
+	private(set) var durations: [Duration] = []
+	private var continuations: [CheckedContinuation<Void, Error>] = []
+
+	var pendingCount: Int { continuations.count }
+
+	func sleep(for duration: Duration) async throws {
+		durations.append(duration)
+		// Deliberately resume cancelled sleeps so tests also exercise stale completion guards.
+		try await withCheckedThrowingContinuation { continuation in
+			continuations.append(continuation)
+		}
+	}
+
+	func resumeNext() {
+		continuations.removeFirst().resume()
+	}
+}
+
+@MainActor
+private func waitForPendingSleeps(_ count: Int, in sleeper: ControlledSearchSleeper) async {
+	var yields = 0
+	while sleeper.pendingCount < count && yields < 20 {
+		yields += 1
+		await Task.yield()
+	}
+	#expect(sleeper.pendingCount == count)
+}
+
+@MainActor
 @Suite("NodeFilterParameters", .serialized)
 struct NodeFilterParametersTests {
 
@@ -79,6 +109,146 @@ struct NodeFilterParametersTests {
 		// searchText is intentionally session-only — a stale search on relaunch hides most nodes.
 		let filters2 = NodeFilterParameters(store: defaults)
 		#expect(filters2.searchText == "")
+	}
+
+	@Test("Rapid search input coalesces to the latest value")
+	func rapidSearchInputCoalesces() async {
+		let sleeper = ControlledSearchSleeper()
+		let filters = NodeFilterParameters(store: defaults, searchDebounceSleep: sleeper.sleep)
+
+		filters.searchText = "n"
+		await waitForPendingSleeps(1, in: sleeper)
+		filters.searchText = "no"
+		await waitForPendingSleeps(2, in: sleeper)
+		filters.searchText = "node"
+		await waitForPendingSleeps(3, in: sleeper)
+
+		#expect(filters.debouncedSearchText == "")
+		#expect(sleeper.durations == [.milliseconds(150), .milliseconds(150), .milliseconds(150)])
+
+		sleeper.resumeNext()
+		await Task.yield()
+		#expect(filters.debouncedSearchText == "")
+		sleeper.resumeNext()
+		await Task.yield()
+		#expect(filters.debouncedSearchText == "")
+		sleeper.resumeNext()
+		await Task.yield()
+		#expect(filters.debouncedSearchText == "node")
+	}
+
+	@Test("Draft search edits do not invoke contact filtering before commit")
+	func draftSearchDoesNotInvokeContactFiltering() async {
+		let sleeper = ControlledSearchSleeper()
+		let filters = NodeFilterParameters(store: defaults, searchDebounceSleep: sleeper.sleep)
+		let contacts = ["Node Alpha", "Contact Bravo"]
+		var invalidationCount = 0
+		var matchInvocationCount = 0
+		var visibleContacts: [String] = []
+		let invalidationCancellable = filters.objectWillChange.sink {
+			invalidationCount += 1
+		}
+		let committedSearchCancellable = filters.$debouncedSearchText.dropFirst().sink { committedSearchText in
+			visibleContacts = filterContacts(contacts, committedSearchText: committedSearchText) { contact, searchText in
+				matchInvocationCount += 1
+				return contact.lowercased().contains(searchText)
+			}
+		}
+
+		filters.searchText = "n"
+		await waitForPendingSleeps(1, in: sleeper)
+		filters.searchText = "no"
+		await waitForPendingSleeps(2, in: sleeper)
+		filters.searchText = "node"
+		await waitForPendingSleeps(3, in: sleeper)
+
+		#expect(invalidationCount == 0)
+		#expect(matchInvocationCount == 0)
+
+		sleeper.resumeNext()
+		await Task.yield()
+		sleeper.resumeNext()
+		await Task.yield()
+		#expect(invalidationCount == 0)
+		#expect(matchInvocationCount == 0)
+
+		sleeper.resumeNext()
+		await Task.yield()
+		#expect(invalidationCount == 1)
+		#expect(matchInvocationCount == contacts.count)
+		#expect(visibleContacts == ["Node Alpha"])
+
+		invalidationCancellable.cancel()
+		committedSearchCancellable.cancel()
+	}
+
+	@Test("Clearing search text applies immediately and cancels pending input")
+	func clearingSearchTextIsImmediate() async {
+		let sleeper = ControlledSearchSleeper()
+		let filters = NodeFilterParameters(store: defaults, searchDebounceSleep: sleeper.sleep)
+
+		filters.searchText = "node"
+		await waitForPendingSleeps(1, in: sleeper)
+		sleeper.resumeNext()
+		await Task.yield()
+		#expect(filters.debouncedSearchText == "node")
+
+		filters.searchText = "pending"
+		await waitForPendingSleeps(1, in: sleeper)
+		filters.searchText = ""
+
+		#expect(filters.searchText == "")
+		#expect(filters.debouncedSearchText == "")
+
+		sleeper.resumeNext()
+		await Task.yield()
+		#expect(filters.debouncedSearchText == "")
+	}
+
+	@Test("Programmatic changes debounce and reset clears immediately")
+	func programmaticChangesAndReset() async {
+		let sleeper = ControlledSearchSleeper()
+		let filters = NodeFilterParameters(store: defaults, searchDebounceSleep: sleeper.sleep)
+
+		filters.searchText = "external"
+		await waitForPendingSleeps(1, in: sleeper)
+		#expect(filters.debouncedSearchText == "")
+		sleeper.resumeNext()
+		await Task.yield()
+		#expect(filters.debouncedSearchText == "external")
+
+		filters.searchText = "pending"
+		await waitForPendingSleeps(1, in: sleeper)
+		filters.reset()
+
+		#expect(filters.searchText == "")
+		#expect(filters.debouncedSearchText == "")
+		sleeper.resumeNext()
+		await Task.yield()
+		#expect(filters.debouncedSearchText == "")
+	}
+
+	@Test("Shared search state rejects a stale hidden-tab promotion")
+	func sharedSearchRejectsStalePromotion() async {
+		let sleeper = ControlledSearchSleeper()
+		let filters = NodeFilterParameters(store: defaults, searchDebounceSleep: sleeper.sleep)
+		let nodeTabFilters = filters
+		let contactTabFilters = filters
+
+		nodeTabFilters.searchText = "node"
+		await waitForPendingSleeps(1, in: sleeper)
+		contactTabFilters.searchText = "contact"
+		await waitForPendingSleeps(2, in: sleeper)
+
+		sleeper.resumeNext()
+		await Task.yield()
+		#expect(nodeTabFilters.searchText == "contact")
+		#expect(contactTabFilters.debouncedSearchText == "")
+
+		sleeper.resumeNext()
+		await Task.yield()
+		#expect(nodeTabFilters.searchText == "contact")
+		#expect(contactTabFilters.debouncedSearchText == "contact")
 	}
 
 	@Test("Boolean filters persist across instances")

@@ -307,7 +307,7 @@ private struct FilteredNodeList: View {
 	}
 
 	private func displayNodes(from allNodes: [NodeInfoEntity], activeNodeNum: Int64?) -> [NodeListEntry] {
-		let searchText = filters.searchText.lowercased()
+		let searchText = filters.debouncedSearchText.lowercased()
 		let onlineThreshold = filters.isOnline ? Date().addingTimeInterval(-7_200) : nil
 		let distanceBounds = filters.currentDistanceBounds
 		let filterLookup = NodeListFilterLookup(
