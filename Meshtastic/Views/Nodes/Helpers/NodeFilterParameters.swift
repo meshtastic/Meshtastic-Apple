@@ -255,7 +255,7 @@ final class NodeFilterParameters: ObservableObject {
 		distanceBounds: NodeDistanceFilterBounds? = nil
 	) -> Bool {
 		// Search text
-		let text = normalizedSearchText ?? searchText.lowercased()
+		let text = normalizedSearchText ?? debouncedSearchText.lowercased()
 		if !text.isEmpty {
 			let matchesSearch = [
 				node.user?.userId,
