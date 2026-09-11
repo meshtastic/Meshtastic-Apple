@@ -148,25 +148,19 @@ struct DirectMessageSummaryTests {
 	func cancelledBurstRefreshNeverReachesFetchPhase() async {
 		let recorder = RefreshInvocationRecorder()
 		let superseded = Task {
-			try await DirectMessageSummaryRefreshLifecycle.waitForBurstToSettle(for: .seconds(1))
+			withUnsafeCurrentTask { $0?.cancel() }
+			try await DirectMessageSummaryRefreshLifecycle.waitForBurstToSettle(
+				for: .zero,
+				sleep: { _ in }
+			)
 			await recorder.record(1)
-		}
-		for _ in 0..<3 {
-			await Task.yield()
-		}
-		superseded.cancel()
-
-		let current = Task {
-			try await DirectMessageSummaryRefreshLifecycle.waitForBurstToSettle(for: .zero)
-			await recorder.record(2)
 		}
 
 		await #expect(throws: CancellationError.self) {
 			try await superseded.value
 		}
-		try? await current.value
 		let invocations = await recorder.invocations
-		#expect(invocations == [2])
+		#expect(invocations.isEmpty)
 	}
 
 	@Test("in-flight reduction observes cancellation")

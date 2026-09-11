@@ -51,8 +51,11 @@ struct DirectMessageSummaryActorCache {
 enum DirectMessageSummaryRefreshLifecycle {
 	static let burstDelay: Duration = .milliseconds(100)
 
-	static func waitForBurstToSettle(for delay: Duration = burstDelay) async throws {
-		try await Task.sleep(for: delay)
+	static func waitForBurstToSettle(
+		for delay: Duration = burstDelay,
+		sleep: @Sendable (Duration) async throws -> Void = { try await Task.sleep(for: $0) }
+	) async throws {
+		try await sleep(delay)
 		try Task.checkCancellation()
 	}
 }
