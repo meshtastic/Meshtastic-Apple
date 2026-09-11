@@ -35,7 +35,11 @@ extension URL {
 		return try await withThrowingTaskGroup(of: (Data, String?).self) { group in
 			group.addTask {
 				let (data, response) = try await URLSession.shared.data(from: self)
-				return (data, (response as? HTTPURLResponse)?.value(forHTTPHeaderField: "ETag"))
+				guard let response = response as? HTTPURLResponse,
+					  (200..<300).contains(response.statusCode) else {
+					throw URLError(.badServerResponse)
+				}
+				return (data, response.value(forHTTPHeaderField: "ETag"))
 			}
 			group.addTask {
 				try await Task.sleep(nanoseconds: UInt64(timeout * 1_000_000_000))
@@ -95,31 +99,5 @@ extension URL {
 			return result
 		}
 	}
-	
-	/// Performs a HEAD request to fetch the ETag header for the URL.
-	/// - Parameter session: The URLSession to use (defaults to .shared).
-	/// - Returns: The ETag string if found and the request is successful, otherwise nil.
-	func eTag(using session: URLSession = .shared) async throws -> String? {
-		var request = URLRequest(url: self)
-		request.httpMethod = "HEAD"
-		
-		// Ensure we don't use the local cache so we get the real ETag from the server
-		request.cachePolicy = .reloadIgnoringLocalCacheData
-		
-		let (_, response) = try await session.data(for: request)
-		
-		guard let httpResponse = response as? HTTPURLResponse else {
-			return nil
-		}
-		
-		// Optional: Check for success status codes (200-299)
-		guard (200...299).contains(httpResponse.statusCode) else {
-			// You might want to return nil or throw a specific error here
-			// depending on your requirements (e.g. 404 Not Found)
-			return nil
-		}
-		
-		// Header lookup is case-insensitive
-		return httpResponse.value(forHTTPHeaderField: "ETag")
-	}
+
 }

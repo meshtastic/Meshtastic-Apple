@@ -203,9 +203,9 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 	static let eventFirmwareURLEndpoint = URL(string: "https://api.meshtastic.org/resource/eventFirmware")!
 
 	/// How long a completed device image + msh.to link pass stays fresh before another network pass
-	/// is allowed. `processImage` issues a remote ETag HEAD per image (~78) up front, so running the
-	/// pass on every reconnect is wasteful when nothing changed. `clearDatabase` invalidates the
-	/// throttle (see `DeviceImageLinkThrottle`), so restore-after-clear ignores this window.
+	/// is allowed. `processImage` revalidates every image, so running the pass on every reconnect is
+	/// wasteful when nothing changed. `clearDatabase` invalidates the throttle (see
+	/// `DeviceImageLinkThrottle`), so restore-after-clear ignores this window.
 	static let staleDeviceImageLinkInterval: TimeInterval = 48 * 60 * 60
 
 	// MARK: - Private properties
@@ -368,19 +368,19 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 		let (finalData, eTag) = try await Self.deviceURLEndpoint.dataWithETag(timeout: 10.0)
 		guard !finalData.isEmpty else { throw MeshtasticAPIError.unableToRetreviveJSON }
 
-		// Unchanged payload: skip the decode and the upsert. Guarded on the store actually holding
-		// rows, because a database clear leaves the stored ETag behind and skipping then would
-		// leave the catalog empty until the payload next changes.
+		// An unchanged metadata payload can skip the upsert when device rows still exist. When images
+		// are requested, decode the cached payload for its image work list and run that pass below.
+		// A database clear leaves the stored ETag behind, so an empty catalog must still be rebuilt.
 		if let eTag, eTag == Self.lastETag(for: Self.deviceCatalogETagKey) {
 			let hasRows = await MainActor.run {
 				let context = container.mainContext
-				let devices = (try? context.fetchCount(FetchDescriptor<DeviceHardwareEntity>())) ?? 0
-				guard devices > 0 else { return false }
-				guard includeImages else { return true }
-				return ((try? context.fetchCount(FetchDescriptor<DeviceHardwareImageEntity>())) ?? 0) > 0
+				return ((try? context.fetchCount(FetchDescriptor<DeviceHardwareEntity>())) ?? 0) > 0
 			}
 			if hasRows {
 				Logger.services.debug("Device catalog unchanged (ETag match), skipping the upsert")
+				guard includeImages else { return }
+				let decodedDevices = try decoder.decode([DeviceHardware].self, from: finalData)
+				await refreshDeviceImagesAndLinks(apiDevices: decodedDevices)
 				return
 			}
 		}
@@ -460,6 +460,7 @@ deviceEntity.architecture = device.architecture
 			Logger.services.warning("Unable to load msh.to urls (API and bundled fallback both failed)")
 			return
 		}
+		guard !Task.isCancelled else { return }
 
 		await MainActor.run {
 			let context = container.mainContext
@@ -541,6 +542,7 @@ deviceEntity.architecture = device.architecture
 			}
 			Logger.services.warning("msh.to API fetch failed; falling back to bundled urls.json")
 		}
+		guard !Task.isCancelled else { return nil }
 
 		guard let bundledURL = Bundle.main.url(forResource: "urls", withExtension: "json"),
 			  let data = try? Data(contentsOf: bundledURL),
@@ -604,17 +606,19 @@ deviceEntity.architecture = device.architecture
 		Logger.services.info("Saving firmware release \(release.id, privacy: .public) in database.")
 	}
 	
-	/// Handles the logic of checking ETag -> Checking DB -> Downloading -> Bundle Fallback -> Saving
+	/// Fetches one cache-aware response, checks the database, then falls back to the bundle if needed.
 	private func processImage(imageName: String, platforms: [String]) async {
 		guard let container else { return }
 		// Skip if the pass was cancelled (connection teardown) — don't even do the bundle fallback.
 		if Task.isCancelled { return }
 		let url = Self.imageURLPrefix.appendingPathComponent(imageName)
 
-		// 1. Network: Try to get ETag (Optional - might fail if offline or timeout)
-		let remoteETag = try? await url.eTag()
+		// URLSession handles HTTP cache validation and supplies cached data after a 304 response.
+		let fetchedResult = try? await url.dataWithETag(timeout: 5.0)
+		guard !Task.isCancelled else { return }
+		let networkResult = fetchedResult.flatMap { $0.data.isEmpty ? nil : $0 }
 
-		// 2. DB: Check if we already have this version or a usable cached version.
+		// Check if every device already has this version or a usable offline copy.
 		// The image's device relationship is to-one, so shared art is stored once per
 		// device — every device that references the file needs its own current copy.
 		let isUpToDate: Bool = await MainActor.run {
@@ -627,29 +631,22 @@ deviceEntity.architecture = device.architecture
 				guard let deviceEntity = try? context.fetch(deviceDescriptor).first else { continue }
 				guard let existing = deviceEntity.images.first(where: { $0.fileName == imageName }),
 					  let data = existing.svgData, !data.isEmpty else { return false }
-				if let rTag = remoteETag, existing.eTag != rTag { return false }
+				if let remoteETag = networkResult?.eTag {
+					if existing.eTag != remoteETag { return false }
+				} else if let remoteData = networkResult?.data, data != remoteData {
+					return false
+				}
 			}
 			return true
 		}
 
-		if isUpToDate {
-			Logger.services.debug("Image \(imageName) is up to date (or cached offline).")
-			return
-		}
+		guard !isUpToDate else { return }
 
-		// 3. Acquire Data (Network Primary -> Bundle Secondary)
-		var dataToSave: Data?
-		var eTagToSave: String?
+		// Use the network response directly. URLSession may have supplied its body from URLCache.
+		var dataToSave = networkResult?.data
+		var eTagToSave = networkResult?.eTag
 
-		// A: Attempt Network Download (only if we successfully got an ETag previously)
-		if let rTag = remoteETag {
-			if let networkData = try? await url.data(timeout: 5.0) {
-				dataToSave = networkData
-				eTagToSave = rTag
-			}
-		}
-
-		// B: Fallback to Bundle if Network failed or returned no data
+		// Fall back to the bundle if the network failed or returned no data.
 		if dataToSave == nil {
 			Logger.services.debug("Network unavailable or failed for \(imageName). Checking local bundle.")
 
@@ -666,11 +663,12 @@ deviceEntity.architecture = device.architecture
 			}
 		}
 
-		// 4. DB: Save Image and Link to Device on mainContext
-		guard let finalData = dataToSave, let finalETag = eTagToSave else {
+		// Save the image and link it to each device on mainContext.
+		guard let finalData = dataToSave else {
 			Logger.services.error("Could not find image \(imageName) in Network or Bundle.")
 			return
 		}
+		let finalETag = eTagToSave
 
 		await MainActor.run {
 			let context = container.mainContext
@@ -686,11 +684,10 @@ deviceEntity.architecture = device.architecture
 				deviceDescriptor.fetchLimit = 1
 				guard let deviceEntity = try? context.fetch(deviceDescriptor).first else { continue }
 
-				let imageEntity: DeviceHardwareImageEntity
-				if let existing = deviceEntity.images.first(where: { $0.fileName == imageName }) {
-					imageEntity = existing
-				} else {
-					imageEntity = DeviceHardwareImageEntity()
+				let existing = deviceEntity.images.first(where: { $0.fileName == imageName })
+				if networkResult == nil, existing?.svgData?.isEmpty == false { continue }
+				let imageEntity = existing ?? DeviceHardwareImageEntity()
+				if existing == nil {
 					context.insert(imageEntity)
 					imageEntity.device = deviceEntity
 				}
@@ -700,7 +697,7 @@ deviceEntity.architecture = device.architecture
 			}
 
 			try? context.save()
-			Logger.services.info("Saving \(imageName) in database. eTag=\(finalETag)")
+			Logger.services.info("Saving \(imageName) in database. eTag=\(finalETag ?? "none")")
 		}
 	}
 
@@ -836,23 +833,19 @@ extension MeshtasticAPI {
 
 	/// The single image/link refresh pass.
 	///
-	/// Both halves hit the network, so this must never be awaited from the connect path. On a
-	/// captive portal or a zero-rated cellular link the image requests neither succeed nor fail
-	/// fast: `URL.eTag()` sets no timeout and inherits `URLSession.shared`'s 60s default, so none
-	/// of the 82 image requests resolve inside connect Step 3's 30s budget (issue #2196). Callers
-	/// must run this detached.
+	/// Both halves hit the network, so this must never be awaited from the connect path. Image
+	/// requests have a short deadline, but the complete pass is not part of BLE synchronization
+	/// and must not consume connect Step 3's 30s budget (issue #2196). Callers must run this detached.
 	///
 	/// The work list is the union of the bundled catalog and, when the caller has one, the live
 	/// API list. The bundled seed and the API refresh used to run a pass each, so every online
-	/// startup fetched every ETag twice. Unioning here keeps it to one pass without dropping
+	/// startup requested every image twice. Unioning here keeps it to one pass without dropping
 	/// images for hardware that appears in only one of the lists.
 	///
 	/// Deduplication is on image file name, not (platform, name): the request URL derives from the
-	/// file name alone, and `DeviceHardwareImageEntity` is keyed by `fileName` with a single
-	/// `device` relationship, so a name shared by several platforms (3 in the current catalog, and
-	/// 82 entries collapse to 78 names) can only ever belong to one device row. Previously that was
-	/// a fetch per platform racing to claim the row; now it is one fetch attached to the first
-	/// device in catalog order.
+	/// file name alone, so shared artwork is downloaded once. `DeviceHardwareImageEntity` has a
+	/// to-one `device` relationship, so every device that references the file gets its own entity
+	/// containing that downloaded data.
 	private func refreshDeviceImagesAndLinks(apiDevices: [DeviceHardware]?) async {
 		guard let container else { return }
 
@@ -862,9 +855,9 @@ extension MeshtasticAPI {
 		guard !Task.isCancelled else { return }
 
 		// Throttle the network image/link pass to at most once per `staleDeviceImageLinkInterval`
-		// (48h). `processImage` issues a remote ETag HEAD per image (~78) before it even consults
-		// the cache, and Step 3b fires this on every reconnect, so an un-throttled pass re-hits the
-		// network each connect when nothing changed. A database clear (factory/NodeDB reset,
+		// (48h). `processImage` revalidates every image, and Step 3b fires this on every reconnect,
+		// so an un-throttled pass re-hits the network each connect when nothing changed. A database
+		// clear (factory/NodeDB reset,
 		// foreign-database device switch) invalidates the throttle in `clearDatabase`, so the
 		// restore-after-clear pass still runs regardless of this window.
 		//
@@ -933,6 +926,7 @@ extension MeshtasticAPI {
 			try? context.save()
 		}
 		await importDeviceLinks()
+		guard !Task.isCancelled else { return }
 		// Mark the pass complete so the next reconnect within the window skips the network. Recorded
 		// even when the pass reached no network: processImage falls back to the app bundle, so it
 		// still restored artwork/links locally — the window only bounds how often we re-check for
