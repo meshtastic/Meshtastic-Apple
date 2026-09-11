@@ -130,6 +130,45 @@ struct NodeListRefreshStateTests {
 		#expect(refreshCallCount == 1)
 		#expect(!state.needsRefresh)
 	}
+
+	@Test @MainActor func onlineAgingUsesMinuteCadence() async {
+		var requestedIntervals: [Duration] = []
+		var refreshCallCount = 0
+
+		await runOnlineNodeAgingTask(
+			isEnabled: true,
+			sleep: { interval in
+				requestedIntervals.append(interval)
+				if requestedIntervals.count > 1 {
+					throw CancellationError()
+				}
+			},
+			markRefreshNeeded: {
+				refreshCallCount += 1
+			}
+		)
+
+		#expect(requestedIntervals == [.seconds(60), .seconds(60)])
+		#expect(refreshCallCount == 1)
+	}
+
+	@Test @MainActor func onlineAgingStopsWhenDisabled() async {
+		var sleepCallCount = 0
+		var refreshCallCount = 0
+
+		await runOnlineNodeAgingTask(
+			isEnabled: false,
+			sleep: { _ in
+				sleepCallCount += 1
+			},
+			markRefreshNeeded: {
+				refreshCallCount += 1
+			}
+		)
+
+		#expect(sleepCallCount == 0)
+		#expect(refreshCallCount == 0)
+	}
 }
 
 // MARK: - NodeListPreferences

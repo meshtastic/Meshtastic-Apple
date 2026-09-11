@@ -248,6 +248,26 @@ struct NodeListRefreshState {
 	}
 }
 
+@MainActor
+func runOnlineNodeAgingTask(
+	isEnabled: Bool,
+	sleep: (Duration) async throws -> Void = { duration in
+		try await Task.sleep(for: duration)
+	},
+	markRefreshNeeded: () -> Void
+) async {
+	guard isEnabled else { return }
+	while !Task.isCancelled {
+		do {
+			try await sleep(.seconds(60))
+		} catch {
+			return
+		}
+		guard !Task.isCancelled else { return }
+		markRefreshNeeded()
+	}
+}
+
 /// Wraps a NodeInfoEntity with a pre-extracted stable identity so that List/ForEach never
 /// reads a key path on a live SwiftData object during diffing. If the backing object is
 /// faulted between snapshot and render, the identity comparison still works safely.
@@ -459,14 +479,16 @@ private struct FilteredNodeList: View {
 			runPendingRefresh()
 			while !Task.isCancelled {
 				try? await Task.sleep(for: .milliseconds(350))
-				if filters.isOnline {
-					markRefreshNeeded()
-				}
 				if router.selectedTab == .nodes {
 					runPendingRefresh()
 				} else {
 					purgeDeadDisplayedNodes()
 				}
+			}
+		}
+		.task(id: filters.isOnline) {
+			await runOnlineNodeAgingTask(isEnabled: filters.isOnline) {
+				markRefreshNeeded()
 			}
 		}
 	}
