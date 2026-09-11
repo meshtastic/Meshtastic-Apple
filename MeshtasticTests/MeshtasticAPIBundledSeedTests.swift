@@ -21,6 +21,13 @@ class RequestRecordingURLProtocol: URLProtocol {
 	nonisolated(unsafe) private static var stubStatusCodes: [String: Int] = [:]
 	nonisolated(unsafe) private static var suspendedStubKeys: Set<String> = []
 
+	private struct RequestStartWaiter {
+		let key: String
+		let continuation: CheckedContinuation<Void, Error>
+	}
+
+	nonisolated(unsafe) private static var requestStartWaiters: [UUID: RequestStartWaiter] = [:]
+
 	/// Applied to every stubbed response when set, so the ETag-skip path is testable.
 	nonisolated(unsafe) private static var stubETag: String?
 
@@ -33,12 +40,15 @@ class RequestRecordingURLProtocol: URLProtocol {
 		suspendedStubKeys: Set<String> = []
 	) {
 		lock.lock()
+		let staleWaiters = requestStartWaiters.values.map(\.continuation)
 		recorded = []
 		Self.stubs = stubs
 		Self.stubETag = eTag
 		Self.stubStatusCodes = statusCodes
 		Self.suspendedStubKeys = suspendedStubKeys
+		requestStartWaiters = [:]
 		lock.unlock()
+		staleWaiters.forEach { $0.resume(throwing: CancellationError()) }
 	}
 
 	static var recordedRequests: [URLRequest] {
@@ -51,6 +61,37 @@ class RequestRecordingURLProtocol: URLProtocol {
 		recordedRequests.compactMap(\.url)
 	}
 
+	static func waitUntilRequestStarts(containing key: String) async throws {
+		let waiterID = UUID()
+		try await withTaskCancellationHandler {
+			try await withCheckedThrowingContinuation { continuation in
+				lock.lock()
+				let alreadyStarted = recorded.contains {
+					$0.url?.absoluteString.contains(key) == true
+				}
+				if !alreadyStarted, !Task.isCancelled {
+					requestStartWaiters[waiterID] = RequestStartWaiter(
+						key: key,
+						continuation: continuation
+					)
+					lock.unlock()
+					return
+				}
+				lock.unlock()
+				if Task.isCancelled {
+					continuation.resume(throwing: CancellationError())
+				} else {
+					continuation.resume()
+				}
+			}
+		} onCancel: {
+			lock.lock()
+			let continuation = requestStartWaiters.removeValue(forKey: waiterID)?.continuation
+			lock.unlock()
+			continuation?.resume(throwing: CancellationError())
+		}
+	}
+
 	// Recording happens in startLoading(), not here: the URL loading system may call canInit
 	// several times while deciding who handles a request, which would inflate the counts.
 	override class func canInit(with request: URLRequest) -> Bool { true }
@@ -61,13 +102,18 @@ class RequestRecordingURLProtocol: URLProtocol {
 		let absolute = request.url?.absoluteString ?? ""
 		Self.lock.lock()
 		Self.recorded.append(request)
-		Self.lock.unlock()
-		Self.lock.lock()
+		let matchingWaiterIDs = Self.requestStartWaiters.compactMap { id, waiter in
+			absolute.contains(waiter.key) ? id : nil
+		}
+		let waiters = matchingWaiterIDs.compactMap {
+			Self.requestStartWaiters.removeValue(forKey: $0)?.continuation
+		}
 		let stubbed = Self.stubs.first { absolute.contains($0.key) }?.value
 		let statusCode = Self.stubStatusCodes.first { absolute.contains($0.key) }?.value ?? 200
 		let isSuspended = Self.suspendedStubKeys.contains { absolute.contains($0) }
 		let eTag = Self.stubETag
 		Self.lock.unlock()
+		waiters.forEach { $0.resume() }
 
 		if isSuspended { return }
 
@@ -238,6 +284,10 @@ final class MeshtasticAPIBundledSeedTests {
 		#expect(
 			imageNetworkRequests.allSatisfy { ($0.httpMethod ?? "GET") == "GET" },
 			"device images should use one cache-aware GET rather than a separate HEAD"
+		)
+		#expect(
+			imageNetworkRequests.allSatisfy { $0.cachePolicy == .reloadRevalidatingCacheData },
+			"the scheduled image pass should revalidate cached responses with the origin"
 		)
 		#expect(duplicates(in: images).isEmpty, "image requested more than once: \(duplicates(in: images))")
 
@@ -697,7 +747,25 @@ extension MeshtasticAPIBundledSeedTests {
 		) == nil, "a second pass inside the window must be refused")
 	}
 
-	@Test @MainActor func cancellationDuringImageRequestDoesNotWriteBundleFallback() async throws {
+	@Test func requestStartWaitStopsWhenCancelled() async {
+		RequestRecordingURLProtocol.reset()
+		let waiter = Task {
+			try await RequestRecordingURLProtocol.waitUntilRequestStarts(containing: "never-started")
+		}
+		waiter.cancel()
+
+		do {
+			try await waiter.value
+			Issue.record("Expected the request-start wait to stop on cancellation")
+		} catch is CancellationError {
+			// Expected.
+		} catch {
+			Issue.record("Expected CancellationError, got \(error)")
+		}
+	}
+
+	@Test(.timeLimit(.minutes(1))) @MainActor
+	func cancellationDuringImageRequestDoesNotWriteBundleFallback() async throws {
 		let sharedImageName = "rak4631.svg"
 		let apiCatalog = """
 		[{
@@ -718,17 +786,9 @@ extension MeshtasticAPIBundledSeedTests {
 		let container = try makeContainer()
 		let api = makeAPI(container: container, startupRefresh: false)
 		let refreshTask = Task { try? await api.refreshDevicesAPIData() }
-		let deadline = ContinuousClock.now.advanced(by: .seconds(5))
-		while ContinuousClock.now < deadline,
-			  !RequestRecordingURLProtocol.recordedURLs.contains(where: { $0.lastPathComponent == sharedImageName }) {
-			try await Task.sleep(for: .milliseconds(10))
-		}
-		let requestStarted = RequestRecordingURLProtocol.recordedURLs.contains {
-			$0.lastPathComponent == sharedImageName
-		}
+		try await RequestRecordingURLProtocol.waitUntilRequestStarts(containing: sharedImageName)
 		refreshTask.cancel()
 		await refreshTask.value
-		#expect(requestStarted, "the test must cancel while the image request is in flight")
 
 		let devices = try container.mainContext.fetch(FetchDescriptor<DeviceHardwareEntity>())
 		let device = try #require(devices.first { $0.platformioTarget == "cancel_image_test" })
@@ -739,24 +799,17 @@ extension MeshtasticAPIBundledSeedTests {
 		#expect(UserDefaults.lastDeviceImageAndLinkUpdate == .distantPast)
 	}
 
-	@Test @MainActor func cancellationDuringLinkRequestDoesNotImportBundleOrArmThrottle() async throws {
+	@Test(.timeLimit(.minutes(1))) @MainActor
+	func cancellationDuringLinkRequestDoesNotImportBundleOrArmThrottle() async throws {
 		let linkURL = "msh.to/api/urls"
 		RequestRecordingURLProtocol.reset(suspendedStubKeys: [linkURL])
 
 		let container = try makeContainer()
 		let api = makeAPI(container: container, startupRefresh: false)
 		let refreshTask = Task { await api.refreshDeviceImagesAndLinks() }
-		let deadline = ContinuousClock.now.advanced(by: .seconds(5))
-		while ContinuousClock.now < deadline,
-			  !RequestRecordingURLProtocol.recordedURLs.contains(where: { $0.absoluteString.contains(linkURL) }) {
-			try await Task.sleep(for: .milliseconds(10))
-		}
-		let requestStarted = RequestRecordingURLProtocol.recordedURLs.contains {
-			$0.absoluteString.contains(linkURL)
-		}
+		try await RequestRecordingURLProtocol.waitUntilRequestStarts(containing: linkURL)
 		refreshTask.cancel()
 		await refreshTask.value
-		#expect(requestStarted, "the test must cancel while the link request is in flight")
 
 		let linkCount = try container.mainContext.fetchCount(FetchDescriptor<DeviceLinkEntity>())
 		#expect(linkCount == 0, "cancellation must not import bundled links")

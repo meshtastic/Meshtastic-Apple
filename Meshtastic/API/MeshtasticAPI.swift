@@ -455,6 +455,7 @@ deviceEntity.architecture = device.architecture
 		guard !Task.isCancelled else { return }
 
 		await MainActor.run {
+			guard !Task.isCancelled else { return }
 			let context = container.mainContext
 			var importedCount = 0
 			let importedShortCodes = Set(decoded.routes.map { $0.shortCode })
@@ -605,8 +606,10 @@ deviceEntity.architecture = device.architecture
 		if Task.isCancelled { return }
 		let url = Self.imageURLPrefix.appendingPathComponent(imageName)
 
-		// URLSession handles HTTP cache validation and supplies cached data after a 304 response.
-		let fetchedResult = try? await urlSession.dataWithETag(from: url)
+		// Revalidate once per scheduled pass. URLSession supplies cached data after a 304 response.
+		var request = URLRequest(url: url)
+		request.cachePolicy = .reloadRevalidatingCacheData
+		let fetchedResult = try? await urlSession.dataWithETag(for: request)
 		guard !Task.isCancelled else { return }
 		let networkResult = fetchedResult.flatMap { $0.data.isEmpty ? nil : $0 }
 
@@ -632,6 +635,7 @@ deviceEntity.architecture = device.architecture
 			return true
 		}
 
+		guard !Task.isCancelled else { return }
 		guard !isUpToDate else { return }
 
 		// Use the network response directly. URLSession may have supplied its body from URLCache.
@@ -663,6 +667,7 @@ deviceEntity.architecture = device.architecture
 		let finalETag = eTagToSave
 
 		await MainActor.run {
+			guard !Task.isCancelled else { return }
 			let context = container.mainContext
 
 			// Link the image to every device that references it. The device relationship
@@ -913,6 +918,7 @@ extension MeshtasticAPI {
 			return
 		}
 		await MainActor.run {
+			guard !Task.isCancelled else { return }
 			let context = container.mainContext
 			Self.deleteOrphanedImages(context: context)
 			try? context.save()
