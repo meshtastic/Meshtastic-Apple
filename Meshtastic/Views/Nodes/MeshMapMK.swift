@@ -538,6 +538,7 @@ struct MeshMapMK: View {
 							}
 						}
 					}
+					.trackScreen("Map Item Picker")
 					.presentationDetents([.medium, .large])
 					#if !targetEnvironment(macCatalyst)
 					.presentationDragIndicator(.visible)
@@ -546,6 +547,7 @@ struct MeshMapMK: View {
 				.sheet(item: $selectedWaypoint) { selection in
 					WaypointForm(waypoint: selection)
 						.environmentObject(accessoryManager)
+						.trackScreen("Waypoint")
 						.presentationDetents([.large]) // full screen
 						#if !targetEnvironment(macCatalyst)
 						.presentationDragIndicator(.visible)
@@ -554,6 +556,7 @@ struct MeshMapMK: View {
 				.sheet(item: $editingWaypoint) { selection in
 					WaypointForm(waypoint: selection, editMode: true)
 						.environmentObject(accessoryManager)
+						.trackScreen("Waypoint")
 						.presentationDetents([.large])
 						#if !targetEnvironment(macCatalyst)
 						.presentationDragIndicator(.visible)
@@ -592,6 +595,7 @@ struct MeshMapMK: View {
 				}
 				.sheet(isPresented: $showLegend) {
 					MapLegend(isMeshMap: true)
+						.trackScreen("Map Legend")
 						.presentationDetents([.large])
 						.presentationContentInteraction(.scrolls)
 						#if !targetEnvironment(macCatalyst)
@@ -601,6 +605,7 @@ struct MeshMapMK: View {
 				}
 				.sheet(item: $coverageSeed) { seed in
 					CoverageEstimateForm(seed: seed, runner: coverageRunner)
+						.trackScreen("Coverage Estimate")
 						.presentationDetents([.large])
 						#if !targetEnvironment(macCatalyst)
 						.presentationDragIndicator(.visible)

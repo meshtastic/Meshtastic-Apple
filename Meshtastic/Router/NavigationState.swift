@@ -86,6 +86,57 @@ enum SettingsNavigationState: String {
 	case localMeshDiscovery
 	case helpDocs
 	case backupManagement
+
+	/// Screen name reported to RUM. Written out rather than derived from the raw value, for the
+	/// same reason as `NavigationState.Tab.screenName`: these are the grouping key for a screen's
+	/// crashes and hangs. Not localized — a name that changed with the device language would
+	/// scatter one screen across as many buckets as there are languages.
+	var screenName: String {
+		switch self {
+		case .about: return "About Meshtastic"
+		case .appSettings: return "App Settings"
+		case .routes: return "Routes"
+		case .routeRecorder: return "Route Recorder"
+		case .lora: return "LoRa Config"
+		case .channels: return "Channel Config"
+		case .shareQRCode: return "Share QR Code"
+		case .user: return "User Config"
+		case .bluetooth: return "Bluetooth Config"
+		case .device: return "Device Config"
+		case .display: return "Display Config"
+		case .network: return "Network Config"
+		case .position: return "Position Config"
+		case .power: return "Power Config"
+		case .ambientLighting: return "Ambient Lighting Config"
+		case .audio: return "Audio Config"
+		case .cannedMessages: return "Canned Messages Config"
+		case .detectionSensor: return "Detection Sensor Config"
+		case .meshBeacon: return "Mesh Beacon Config"
+		case .externalNotification: return "External Notification Config"
+		case .mqtt: return "MQTT Config"
+		case .neighborInfo: return "Neighbor Info Config"
+		case .rangeTest: return "Range Test Config"
+		case .paxCounter: return "PAX Counter Config"
+		case .ringtone: return "Ringtone Config"
+		case .serial: return "Serial Config"
+		case .security: return "Security Config"
+		case .storeAndForward: return "Store and Forward Config"
+		case .telemetry: return "Telemetry Config"
+		case .trafficManagement: return "Traffic Management Config"
+		case .debugLogs: return "Logs"
+		case .traceRoutes: return "Trace Routes"
+		case .appFiles: return "App Files"
+		case .firmwareUpdates: return "Firmware Updates"
+		case .deviceLinks: return "Device Links"
+		case .tak: return "TAK Server"
+		case .takConfig: return "TAK Module Config"
+		case .tools: return "Tools"
+		case .coreDataBrowser: return "Data Browser"
+		case .localMeshDiscovery: return "Local Mesh Discovery"
+		case .helpDocs: return "Help and Documentation"
+		case .backupManagement: return "Backup Management"
+		}
+	}
 }
 
 struct NavigationState: Hashable {

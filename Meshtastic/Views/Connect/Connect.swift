@@ -85,6 +85,7 @@ struct Connect: View {
 
 	private var loRaConfigDestination: some View {
 		LoRaConfig(node: safeNode, onSuccessfulSave: handleSuccessfulLoRaSave)
+			.trackScreen(SettingsNavigationState.lora.screenName)
 	}
 
 	/// Returns `node` only while it is still a live SwiftData object (`modelContext != nil`),
@@ -576,6 +577,7 @@ struct Connect: View {
 		}
 		.sheet(isPresented: $showSecurityVersionNag) {
 			SecurityVersionNag(minimumSecureVersion: accessoryManager.securityVersion, version: accessoryManager.activeConnection?.device.firmwareVersion ?? "?.?.?")
+				.trackScreen("Firmware Security Warning")
 				.presentationDetents([.large])
 				.presentationDragIndicator(.automatic)
 		}
@@ -590,6 +592,7 @@ struct Connect: View {
 			updateNymeaDiscovery()
 		}) { device in
 			WifiProvisioningView(preselectedDevice: device)
+				.trackScreen("Wi-Fi Provisioning")
 		}
 		.onAppear {
 			updateNymeaDiscovery()

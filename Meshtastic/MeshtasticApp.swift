@@ -91,7 +91,7 @@ struct MeshtasticAppleApp: App {
 
 			var rumConfig = RUM.Configuration(
 				applicationID: appID,
-				swiftUIViewsPredicate: DefaultSwiftUIRUMViewsPredicate(),
+				swiftUIViewsPredicate: MeshtasticSwiftUIViewsPredicate(),
 				swiftUIActionsPredicate: DefaultSwiftUIRUMActionsPredicate(isLegacyDetectionEnabled: true),
 				trackBackgroundEvents: true
 			)
@@ -347,6 +347,7 @@ struct MeshtasticAppleApp: App {
 						channelSetLink: link.data,
 						addChannels: link.add, // <-- Uses the now reliable 'add' boolean
 						accessoryManager: accessoryManager				)
+					.trackScreen("Save Channel QR Code")
 					.presentationDetents([.large])
 					#if !targetEnvironment(macCatalyst)
 					.presentationDragIndicator(.visible)
@@ -357,6 +358,7 @@ struct MeshtasticAppleApp: App {
 							pendingContact: pendingContact,
 							accessoryManager: accessoryManager
 						)
+						.trackScreen("Add Contact")
 						.presentationDetents([.medium, .large])
 						#if !targetEnvironment(macCatalyst)
 						.presentationDragIndicator(.visible)

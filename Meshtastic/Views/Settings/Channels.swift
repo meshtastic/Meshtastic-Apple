@@ -262,6 +262,7 @@ struct Channels: View {
 					.padding()
 				#endif
 				ChannelForm(channelIndex: $channelIndex, channelName: $channelName, channelKeySize: $channelKeySize, channelKey: $channelKey, channelRole: $channelRole, uplink: $uplink, downlink: $downlink, positionPrecision: $positionPrecision, preciseLocation: $preciseLocation, positionsEnabled: $positionsEnabled, hasChanges: $hasChanges, hasValidKey: $hasValidKey, supportedVersion: $supportedVersion)
+					.trackScreen("Channel Editor")
 					.presentationDetents([.large])
 					#if !targetEnvironment(macCatalyst)
 					.presentationDragIndicator(.visible)

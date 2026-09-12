@@ -12,6 +12,17 @@ struct DeviceOnboarding: View {
 		case bluetooth
 		case localNetwork
 		case siri
+
+		/// Screen name reported to RUM. Not localized — see `SettingsNavigationState.screenName`.
+		var screenName: String {
+			switch self {
+			case .notifications: return "Onboarding Notifications"
+			case .location: return "Onboarding Location"
+			case .bluetooth: return "Onboarding Bluetooth"
+			case .localNetwork: return "Onboarding Local Network"
+			case .siri: return "Onboarding Siri"
+			}
+		}
 	}
 	
 	@EnvironmentObject var accessoryManager: AccessoryManager
@@ -347,18 +358,21 @@ struct DeviceOnboarding: View {
 		NavigationStack(path: $navigationPath) {
 			bluetoothView
 				.navigationDestination(for: SetupGuide.self) { guide in
-					switch guide {
-					case .notifications:
-						notificationView
-					case .location:
-						locationView
-					case .bluetooth:
-						bluetoothView
-					case .localNetwork:
-						localNetworkView
-					case .siri:
-						siriView
+					Group {
+						switch guide {
+						case .notifications:
+							notificationView
+						case .location:
+							locationView
+						case .bluetooth:
+							bluetoothView
+						case .localNetwork:
+							localNetworkView
+						case .siri:
+							siriView
+						}
 					}
+					.trackScreen(guide.screenName)
 				}
 		}
 		.interactiveDismissDisabled()

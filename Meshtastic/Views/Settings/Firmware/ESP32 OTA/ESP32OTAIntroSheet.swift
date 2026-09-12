@@ -194,11 +194,13 @@ struct ESP32OTAIntroSheet: View {
 				let _ = Logger.services.info("📡 [ESP32 OTA] Wi-Fi path, file \(binFileURL.lastPathComponent, privacy: .public)")
 				ESP32WifiOTASheet(binFileURL: binFileURL, host: theHost, onUpdateComplete: { dismiss() })
 					.environmentObject(accessoryManager)
+					.trackScreen("ESP32 Wi-Fi Update")
 			}
 			.sheet(isPresented: $showBLEUpdater) {
 				let _ = Logger.services.info("📡 [ESP32 OTA] BLE path, file \(binFileURL.lastPathComponent, privacy: .public)")
 				ESP32BLEOTASheet(binFileURL: binFileURL, onUpdateComplete: { dismiss() })
 					.environmentObject(accessoryManager)
+					.trackScreen("ESP32 BLE Update")
 			}
 			.navigationTitle("ESP32 Update")
 			.navigationBarTitleDisplayMode(.inline)
