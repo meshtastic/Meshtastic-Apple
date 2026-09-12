@@ -129,11 +129,13 @@ struct MeshtasticSwiftUIViewsPredicate: SwiftUIRUMViewsPredicate {
 		"UUID"
 	]
 
-	/// Three view types the reflection does name, but for screens that now name themselves.
-	/// `AppSettings` was the misleading one: it was reported for pushes all over the Settings
-	/// stack, not just for App Settings. Dropping these keeps one name per screen.
+	/// View types the reflection does name, but for screens that now name themselves. Two of
+	/// them stood in for more than the screen they are named after: `AppSettings` was reported
+	/// for pushes all over the Settings stack, and `DeviceOnboarding` is the sheet the setup
+	/// steps live in rather than any one step. Dropping these keeps one name per screen.
 	private static let namedElsewhere: Set<String> = [
 		"AppSettings",
+		"DeviceOnboarding",
 		"LoRaConfig",
 		"ShareChannels"
 	]

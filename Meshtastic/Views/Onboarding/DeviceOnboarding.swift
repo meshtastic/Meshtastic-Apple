@@ -356,7 +356,10 @@ struct DeviceOnboarding: View {
 	
 	var body: some View {
 		NavigationStack(path: $navigationPath) {
+			// The Bluetooth step is the stack's root rather than a pushed destination, so it
+			// needs the name here; the rest get it below.
 			bluetoothView
+				.trackScreen(SetupGuide.bluetooth.screenName)
 				.navigationDestination(for: SetupGuide.self) { guide in
 					Group {
 						switch guide {

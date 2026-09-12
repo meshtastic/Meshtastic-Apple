@@ -17,7 +17,7 @@ struct RUMScreenNameTests {
 
 	@Test("A view type the reflection resolved is reported under its own name")
 	func keepsRealScreenNames() {
-		for name in ["TraceRouteLog", "DeviceMetricsLog", "NodeListFilter", "MapSettingsForm", "DeviceOnboarding"] {
+		for name in ["TraceRouteLog", "DeviceMetricsLog", "NodeListFilter", "MapSettingsForm", "CompassView"] {
 			#expect(predicate.rumView(for: name)?.name == name)
 		}
 	}
@@ -43,7 +43,7 @@ struct RUMScreenNameTests {
 
 	@Test("Screens that name themselves are not also reported under a reflected name")
 	func dropsNamesSetElsewhere() {
-		for name in ["AppSettings", "LoRaConfig", "ShareChannels"] {
+		for name in ["AppSettings", "DeviceOnboarding", "LoRaConfig", "ShareChannels"] {
 			#expect(predicate.rumView(for: name) == nil)
 		}
 	}
