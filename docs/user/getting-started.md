@@ -37,7 +37,7 @@ The first time you open the app, a short guided setup walks you through the perm
 
 ![Bluetooth permission screen](../assets/screenshots/onboarding_bluetooth.png)
 
-**2. Local Network** — lets the app find radios connected over WiFi or Ethernet.
+**2. Local Network** — lets the app find radios connected over Wi-Fi or Ethernet.
 
 ![Local Network permission screen](../assets/screenshots/onboarding_localNetwork.png)
 
