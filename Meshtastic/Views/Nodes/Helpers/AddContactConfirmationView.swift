@@ -7,6 +7,7 @@
 //
 
 import SwiftUI
+import UIKit
 import MeshtasticProtobufs
 import OSLog
 
@@ -16,6 +17,8 @@ struct AddContactConfirmationView: View {
 	@Environment(\.dismiss) private var dismiss
 	@State private var isAdding = false
 	@State private var failureMessage: String?
+	@State private var replyShareItem: ContactReplyShareItem?
+	@State private var hasShareableSnapshot = false
 	@State private var confirmsInPersonExchange = false
 
 	private var shortName: String {
@@ -93,21 +96,52 @@ struct AddContactConfirmationView: View {
 					.foregroundColor(.red)
 					.fixedSize(horizontal: false, vertical: true)
 			}
-			Button {
-				addContact()
-			} label: {
-				Label("Add Contact", systemImage: "person.crop.circle.badge.plus")
-					.frame(maxWidth: .infinity)
+			if pendingContact.exchangeRequested {
+				Text("They asked to exchange contacts. You can add theirs and immediately share your recently connected radio's contact back.")
+					.font(.subheadline)
+					.multilineTextAlignment(.center)
+					.foregroundColor(.secondary)
+				Button {
+					addContact(replyAfterAdding: true)
+				} label: {
+					Label("Add & Share Mine", systemImage: "arrow.left.arrow.right.circle.fill")
+						.frame(maxWidth: .infinity)
+				}
+				.buttonStyle(.borderedProminent)
+				.controlSize(.large)
+				.disabled(isAdding || !canAdd || !hasShareableSnapshot)
+				Button {
+					addContact()
+				} label: {
+					Label("Just Add Contact", systemImage: "person.crop.circle.badge.plus")
+						.frame(maxWidth: .infinity)
+				}
+				.buttonStyle(.bordered)
+				.controlSize(.large)
+				.disabled(isAdding || !canAdd)
+			} else {
+				Button {
+					addContact()
+				} label: {
+					Label("Add Contact", systemImage: "person.crop.circle.badge.plus")
+						.frame(maxWidth: .infinity)
+				}
+				.buttonStyle(.borderedProminent)
+				.controlSize(.large)
+				.disabled(isAdding || !canAdd)
 			}
-			.buttonStyle(.borderedProminent)
-			.controlSize(.large)
-			.disabled(isAdding || !canAdd)
 			Button("Cancel") { dismiss() }
 				.controlSize(.large)
 				.padding(.bottom)
 		}
 		.padding()
 		.frame(maxWidth: 350)
+		.sheet(item: $replyShareItem, onDismiss: { dismiss() }) { item in
+			ContactReplyActivityView(url: item.url)
+		}
+		.onAppear {
+			hasShareableSnapshot = MeshShareStore.load() != nil
+		}
 	}
 
 	/// Imports the contact, dismissing only once it actually succeeds so a
@@ -117,7 +151,7 @@ struct AddContactConfirmationView: View {
 	/// mutations and `dismiss()` below then run on the main actor rather than
 	/// whatever executor the task would otherwise pick up.
 	@MainActor
-	private func addContact() {
+	private func addContact(replyAfterAdding: Bool = false) {
 		let base64UrlString: String
 		if claimsInPersonExchange && !confirmsInPersonExchange {
 			// The user did not attest to the in-person exchange, so the claim is stripped
@@ -138,7 +172,13 @@ struct AddContactConfirmationView: View {
 			do {
 				try await accessoryManager.addContactFromURL(base64UrlString: base64UrlString)
 				Logger.services.debug("Contact added from URL successfully")
-				dismiss()
+				if replyAfterAdding,
+				   let snapshot = MeshShareStore.load(),
+				   let url = URL(string: snapshot.contactReplyURL) {
+					replyShareItem = ContactReplyShareItem(url: url)
+				} else {
+					dismiss()
+				}
 			} catch {
 				Logger.services.error("Contact added from URL failed with error \(error.localizedDescription, privacy: .public)")
 				failureMessage = String(localized: "Couldn't add this contact. Check that your node is connected and try again.")
@@ -146,6 +186,27 @@ struct AddContactConfirmationView: View {
 			}
 		}
 	}
+}
+
+private struct ContactReplyShareItem: Identifiable {
+	let id = UUID()
+	let url: URL
+}
+
+private struct ContactReplyActivityView: UIViewControllerRepresentable {
+	let url: URL
+
+	func makeUIViewController(context: Context) -> UIActivityViewController {
+		UIActivityViewController(
+			activityItems: [
+				String(localized: "Here's my Meshtastic contact — let's stay connected on the mesh."),
+				url
+			],
+			applicationActivities: nil
+		)
+	}
+
+	func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }
 
 #if DEBUG
@@ -160,7 +221,11 @@ struct AddContactConfirmationView_Previews: PreviewProvider {
 		contact.user = userProto
 
 		return AddContactConfirmationView(
-			pendingContact: PendingContact(contact: contact, base64UrlString: ""),
+			pendingContact: PendingContact(
+				contact: contact,
+				base64UrlString: "",
+				exchangeRequested: true
+			),
 			accessoryManager: AccessoryManager.shared
 		)
 	}

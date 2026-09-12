@@ -1,6 +1,9 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "Here's my Meshtastic contact — let's stay connected on the mesh.": {
+
+    },
     "Do not close the app or turn off Bluetooth while the update is in progress.": {
       "comment": "OTA update tip: do not close app"
     },

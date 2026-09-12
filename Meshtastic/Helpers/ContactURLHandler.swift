@@ -16,10 +16,7 @@ struct ContactURLHandler {
 
 	/// The shared-contact link prefix — the contact counterpart to
 	/// `MeshtasticChannelURL.canonicalPrefix`.
-	static let canonicalPrefix = "https://meshtastic.org/v/#"
-
-	private static let host = MeshtasticChannelURL.host
-	private static let contactPathSegment = "v"
+	static let canonicalPrefix = MeshContactURL.canonicalPrefix + "#"
 
 	/// True when this URL is a Meshtastic shared-contact link. Single source of
 	/// truth for every contact-link entry point (universal links, custom scheme,
@@ -29,25 +26,7 @@ struct ContactURLHandler {
 	/// whole URL string, so a foreign link that merely embeds `meshtastic.org/v/#`
 	/// (in a query or path) is not mistaken for a contact import.
 	static func canHandle(_ url: URL) -> Bool {
-		guard let fragment = url.fragment, !fragment.isEmpty else { return false }
-
-		let pathSegments = url.pathComponents
-			.filter { $0 != "/" }
-			.map { $0.lowercased() }
-
-		// Custom scheme: the segment lands in the host for `meshtastic://v#…`
-		// and in the path for `meshtastic:///v#…`.
-		if url.scheme?.lowercased() == MeshtasticChannelURL.appScheme {
-			if url.host == nil {
-				return pathSegments == [contactPathSegment]
-			}
-			return url.host?.lowercased() == contactPathSegment && pathSegments.isEmpty
-		}
-
-		guard let urlHost = url.host?.lowercased(), urlHost == host || urlHost == "www.\(host)" else {
-			return false
-		}
-		return pathSegments == [contactPathSegment]
+		MeshContactURL.canHandle(url)
 	}
 
 	@MainActor
@@ -71,36 +50,21 @@ struct ContactURLHandler {
 			}
 			Logger.services.debug("User Alerted that a firmware upgrade is required to import contacts.")
 		} else {
-			let components = url.absoluteString.components(separatedBy: "#")
-			if let contactData = components.last {
-				let decodedString = contactData.base64urlToBase64()
-				if let decodedData = Data(base64Encoded: decodedString) {
-					do {
-						let contact = try MeshtasticProtobufs.SharedContact(serializedBytes: decodedData)
-						// Present the SwiftUI confirmation sheet (AddContactConfirmationView)
-						// via published state, mirroring the channel-link import flow.
-						guard let appState = accessoryManager.appState else {
-							// Without app state there is no sheet to present, so fail loudly
-							// rather than dropping the import with no user feedback.
-							Logger.services.error("Cannot present contact import: app state is not wired yet.")
-							return
-						}
-						appState.pendingContactToAdd = PendingContact(
-							contact: contact,
-							base64UrlString: contactData
-						)
-						Logger.services.debug("Contact data extracted from URL: \(contactData, privacy: .public)")
-					} catch {
-						Logger.services.error("Failed to parse contact data: \(error.localizedDescription, privacy: .public)")
-						presentInvalidContactAlert()
-					}
-				} else {
-					// This previously fell through silently, so a contact link whose
-					// fragment is not valid base64url looked like it imported when
-					// nothing had happened.
-					Logger.services.error("Contact link fragment is not valid base64url data.")
-					presentInvalidContactAlert()
+			do {
+				let parsed = try MeshContactURL.parse(url.absoluteString)
+				guard let appState = accessoryManager.appState else {
+					Logger.services.error("Cannot present contact import: app state is not wired yet.")
+					return
 				}
+				appState.pendingContactToAdd = PendingContact(
+					contact: parsed.contact,
+					base64UrlString: parsed.payload,
+					exchangeRequested: parsed.exchangeRequested
+				)
+				Logger.services.debug("Validated a shared Meshtastic contact URL.")
+			} catch {
+				Logger.services.error("Failed to parse contact data: \(error.localizedDescription, privacy: .public)")
+				presentInvalidContactAlert()
 			}
 		}
 	}

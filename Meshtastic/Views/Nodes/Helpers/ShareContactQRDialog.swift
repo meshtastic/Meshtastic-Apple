@@ -13,7 +13,7 @@ import MeshtasticProtobufs
 import OSLog
 
 enum ShareContactQR {
-	static let urlPrefix = "https://meshtastic.org/v/#"
+	static let urlPrefix = MeshContactURL.canonicalPrefix + "#"
 
 	/// Whether there is anything worth sharing for this node.
 	///
@@ -29,7 +29,11 @@ enum ShareContactQR {
 		node.hasUser && !node.user.isUnmessagable && !node.user.publicKey.isEmpty
 	}
 
-	static func urlString(for node: NodeInfo, manuallyVerified: Bool) -> String? {
+	static func urlString(
+		for node: NodeInfo,
+		manuallyVerified: Bool,
+		exchangeRequested: Bool = false
+	) -> String? {
 		guard canShareContact(for: node) else { return nil }
 
 		var contact = SharedContact()
@@ -37,8 +41,10 @@ enum ShareContactQR {
 		contact.user = node.user
 		contact.manuallyVerified = manuallyVerified
 		do {
-			let contactString = try contact.serializedData().base64EncodedString()
-			return urlPrefix + contactString.base64ToBase64url()
+			return try MeshContactURL.urlString(
+				for: contact,
+				exchangeRequested: exchangeRequested
+			)
 		} catch {
 			Logger.services.error("Error serializing contact: \(error)")
 			return nil
