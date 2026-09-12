@@ -260,6 +260,7 @@ struct AskChirpyToolbar: ViewModifier {
 			.sheet(isPresented: $isAIPresented) {
 				if #available(iOS 26, *) {
 					AIDocAssistantView()
+						.trackScreen(.askChirpy)
 				}
 			}
 	}
