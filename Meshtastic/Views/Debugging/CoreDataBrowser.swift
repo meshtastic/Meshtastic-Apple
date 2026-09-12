@@ -44,7 +44,7 @@ struct CoreDataBrowser: View {
 		List {
 			Section(header: Text("Entities (\(sortedModels.count))")) {
 				ForEach(sortedModels, id: \.name) { model in
-					NavigationLink(destination: DynamicEntityListView(modelType: model.type, entityName: model.name)) {
+					NavigationLink(destination: DynamicEntityListView(modelType: model.type, entityName: model.name).trackScreen(.dataBrowserEntities)) {
 						HStack {
 							Label(model.name, systemImage: "tablecells")
 								.font(.subheadline)
@@ -72,7 +72,7 @@ struct DynamicEntityListView: View {
 	var body: some View {
 		List(objects.indices, id: \.self) { index in
 			let object = objects[index]
-			NavigationLink(destination: EntityDetailView(object: object)) {
+			NavigationLink(destination: EntityDetailView(object: object).trackScreen(.dataBrowserEntity)) {
 				VStack(alignment: .leading) {
 					Text(displayName(for: object))
 						.font(.subheadline)
@@ -172,6 +172,7 @@ struct PropertyRow: View {
 		} else if let array = unwrapped as? [any PersistentModel] {
 			NavigationLink {
 				RelationshipListView(title: key, objects: array)
+					.trackScreen(.dataBrowserRelationships)
 			} label: {
 				HStack {
 					Text("[\(array.count) items]")
@@ -184,6 +185,7 @@ struct PropertyRow: View {
 		} else if let related = unwrapped as? any PersistentModel {
 			NavigationLink {
 				EntityDetailView(object: related)
+					.trackScreen(.dataBrowserEntity)
 			} label: {
 				Text(displayName(for: related))
 					.foregroundColor(.secondary)
@@ -205,7 +207,7 @@ struct RelationshipListView: View {
 	var body: some View {
 		List(objects.indices, id: \.self) { index in
 			let object = objects[index]
-			NavigationLink(destination: EntityDetailView(object: object)) {
+			NavigationLink(destination: EntityDetailView(object: object).trackScreen(.dataBrowserEntity)) {
 				VStack(alignment: .leading) {
 					Text(displayName(for: object))
 						.font(.headline)
