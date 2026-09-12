@@ -54,7 +54,7 @@ Show roughly the last 12 months of changes; archive entries older than a year by
 
 **May 2026** — [Settings](settings.md) — Neighbor Info Module Config: neighbor info broadcasting with configurable update interval (4–72 hours).
 
-**May 2026** — [Settings](settings.md) — Pax Counter: added WiFi and BLE RSSI threshold fields for device counting sensitivity.
+**May 2026** — [Settings](settings.md) — Pax Counter: added Wi-Fi and BLE RSSI threshold fields for device counting sensitivity.
 
 **May 2026** — [Settings](settings.md) — Compass Orientation: new 8-option picker in Display config for radios mounted at non-standard angles.
 

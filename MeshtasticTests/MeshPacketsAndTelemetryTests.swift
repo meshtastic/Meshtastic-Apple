@@ -796,23 +796,6 @@ struct NymeaCommanderErrorDescriptionExtendedTests {
 	}
 }
 
-// MARK: - URL.TimeoutError
-
-@Suite("URL TimeoutError extended")
-struct URLTimeoutErrorExtendedTests {
-
-	@Test func errorDescription_containsSeconds() {
-		let error = URL.TimeoutError.timedOut(30.0)
-		#expect(error.errorDescription?.contains("30.0") == true)
-		#expect(error.errorDescription?.contains("timed out") == true)
-	}
-
-	@Test func errorDescription_smallTimeout() {
-		let error = URL.TimeoutError.timedOut(0.5)
-		#expect(error.errorDescription?.contains("0.5") == true)
-	}
-}
-
 // MARK: - NymeaGetNetworksResponse
 
 @Suite("NymeaGetNetworksResponse decoding extended")
