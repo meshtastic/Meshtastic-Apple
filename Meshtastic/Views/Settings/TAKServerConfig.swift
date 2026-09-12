@@ -129,6 +129,7 @@ struct TAKServerConfig: View {
 		.navigationDestination(isPresented: $showShareChannels) {
 			if let node = connectedNode {
 				ShareChannels(node: node)
+					.trackScreen(SettingsNavigationState.shareQRCode.screenName)
 			}
 		}
 	}

@@ -31,6 +31,7 @@ struct MessageText: View {
 					addChannels: link.add,
 					accessoryManager: accessoryManager
 				)
+				.trackScreen(.saveChannelQRCode)
 				.presentationDetents([.large])
 				#if !targetEnvironment(macCatalyst)
 				.presentationDragIndicator(.visible)
