@@ -50,6 +50,17 @@
                ReferencedContainer = "container:Meshtastic.xcodeproj">
             </BuildableReference>
          </TestableReference>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "28B0B51E3AE1F3623280EB90"
+               BuildableName = "MeshtasticUITests.xctest"
+               BlueprintName = "MeshtasticUITests"
+               ReferencedContainer = "container:Meshtastic.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
       <CommandLineArguments>
       </CommandLineArguments>
