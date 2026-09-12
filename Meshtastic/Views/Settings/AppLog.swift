@@ -93,6 +93,7 @@ struct AppLog: View {
 		.sheet(item: $selectedLog, onDismiss: didDismiss) { log in
 			LogDetail(log: log)
 				.padding()
+				.trackScreen(.logDetail)
 		}
 		.task {
 			logs = await searchAppLogs()

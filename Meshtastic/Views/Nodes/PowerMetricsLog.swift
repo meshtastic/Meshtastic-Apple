@@ -333,6 +333,7 @@ struct PowerMetricsLog: View {
 					}
 				}
 			}
+			.trackScreen(.powerChannelLabels)
 		}
 		.fileExporter(
 			isPresented: $isExporting,

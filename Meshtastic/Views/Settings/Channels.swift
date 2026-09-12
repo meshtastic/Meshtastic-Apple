@@ -262,6 +262,7 @@ struct Channels: View {
 					.padding()
 				#endif
 				ChannelForm(channelIndex: $channelIndex, channelName: $channelName, channelKeySize: $channelKeySize, channelKey: $channelKey, channelRole: $channelRole, uplink: $uplink, downlink: $downlink, positionPrecision: $positionPrecision, preciseLocation: $preciseLocation, positionsEnabled: $positionsEnabled, hasChanges: $hasChanges, hasValidKey: $hasValidKey, supportedVersion: $supportedVersion)
+					.trackScreen(.channelEditor)
 					.presentationDetents([.large])
 					#if !targetEnvironment(macCatalyst)
 					.presentationDragIndicator(.visible)
@@ -371,6 +372,7 @@ struct Channels: View {
 		}
 		.sheet(isPresented: $showingHelp) {
 			ChannelsHelp()
+				.trackScreen(.channelsHelp)
 				.presentationDetents([.large])
 				#if !targetEnvironment(macCatalyst)
 				.presentationDragIndicator(.visible)

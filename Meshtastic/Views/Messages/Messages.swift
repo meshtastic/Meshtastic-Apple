@@ -137,10 +137,10 @@ struct Messages: View {
 				Group {
 					if let myInfo = node?.myInfo, let channelSelection {
 						ChannelMessageList(myInfo: myInfo, channel: channelSelection)
-							.trackScreen("Channel Messages")
+							.trackScreen(.channelMessages)
 					} else if let userSelection {
 						UserMessageList(user: userSelection)
-							.trackScreen("Direct Messages")
+							.trackScreen(.directMessages)
 					} else if case .channels = router.messagesSection {
 						Text("Select a channel")
 					} else if case .directMessages = router.messagesSection {
@@ -150,7 +150,7 @@ struct Messages: View {
 				.navigationDestination(for: Int64.self) { nodeNum in
 					if let node = getNodeInfo(id: nodeNum, context: context) {
 						NodeDetail(node: node, nodeNum: nodeNum)
-							.trackScreen("Node Detail")
+							.trackScreen(.nodeDetail)
 					}
 				}
 			}

@@ -197,6 +197,7 @@ struct ChannelList: View {
 		}
 		.sheet(isPresented: $showingHelp) {
 			ChannelsHelp()
+				.trackScreen(.channelsHelp)
 				.presentationDetents([.large])
 				#if !targetEnvironment(macCatalyst)
 				.presentationDragIndicator(.visible)

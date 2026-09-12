@@ -45,7 +45,7 @@ struct AppData: View {
 
 			// Map Data Section
 			Section(header: Text("Map Data")) {
-				NavigationLink(destination: MapDataFiles()) {
+				NavigationLink(destination: MapDataFiles().trackScreen(.mapDataFiles)) {
 					HStack {
 						Image(systemName: "map")
 							.symbolRenderingMode(.hierarchical)

@@ -39,6 +39,7 @@ struct DiscoveryHistoryView: View {
 				ForEach(sessions, id: \.timestamp) { session in
 					NavigationLink {
 						sessionDetailView(session)
+							.trackScreen(.discoverySession)
 					} label: {
 						sessionRow(session)
 					}

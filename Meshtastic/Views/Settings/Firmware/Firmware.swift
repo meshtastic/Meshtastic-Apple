@@ -319,13 +319,17 @@ private struct FirmwareContentView: View {
 			FactoryEraseView()
 		}
 		.sheet(item: $rowInstallation) { installation in
+			// UF2MassStorageView is left unnamed here and below: reflection already names it,
+			// and a second name would split its history in Error Tracking.
 			switch installation.type {
 			case .otaZip:
 				NRFDFUSheet(firmwareToFlash: installation.url)
+					.trackScreen(.nordicDFUUpdate)
 			case .uf2:
 				UF2MassStorageView(fileURL: installation.url)
 			case .bin:
 				ESP32OTAIntroSheet(binFileURL: installation.url)
+					.trackScreen(.esp32Update)
 			}
 		}
 	}
@@ -504,10 +508,12 @@ private struct FirmwareContentView: View {
 					switch type {
 					case .otaZip:
 						NRFDFUSheet(firmwareToFlash: locallyChosenFirmwareFile)
+							.trackScreen(.nordicDFUUpdate)
 					case .uf2:
 						UF2MassStorageView(fileURL: locallyChosenFirmwareFile)
 					case .bin:
 						ESP32OTAIntroSheet(binFileURL: locallyChosenFirmwareFile)
+							.trackScreen(.esp32Update)
 					}
 				}
 			}

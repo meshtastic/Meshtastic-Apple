@@ -142,6 +142,7 @@ struct Tools: View {
 				addChannels: link.add,
 				accessoryManager: accessoryManager
 			)
+			.trackScreen(.saveChannelQRCode)
 			.presentationDetents([.large])
 			#if !targetEnvironment(macCatalyst)
 			.presentationDragIndicator(.visible)
@@ -201,6 +202,7 @@ struct Tools: View {
 		.sheet(item: $pendingImport) { pending in
 			ImportDeviceProfileView(plan: pending.plan)
 				.environmentObject(accessoryManager)
+				.trackScreen(.importDeviceProfile)
 		}
 		.alert("Import Failed", isPresented: $isPresentingImportFailedAlert) {
 			Button("OK") { }.keyboardShortcut(.defaultAction)

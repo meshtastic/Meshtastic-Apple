@@ -110,6 +110,7 @@ struct LocalStatsLog: View {
 						}
 					}
 			}
+			.trackScreen(.noiseFloorInfo)
 			.presentationDetents([.medium])
 		}
 		.fileExporter(

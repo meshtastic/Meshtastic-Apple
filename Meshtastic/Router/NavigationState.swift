@@ -86,6 +86,55 @@ enum SettingsNavigationState: String {
 	case localMeshDiscovery
 	case helpDocs
 	case backupManagement
+
+	/// Screen name reported to RUM, written out rather than derived from the raw value so a
+	/// rename of the case cannot move a screen to a different bucket. See `ScreenName`.
+	var screenName: ScreenName {
+		switch self {
+		case .about: return .about
+		case .appSettings: return .appSettings
+		case .routes: return .routes
+		case .routeRecorder: return .routeRecorder
+		case .lora: return .lora
+		case .channels: return .channels
+		case .shareQRCode: return .shareQRCode
+		case .user: return .user
+		case .bluetooth: return .bluetooth
+		case .device: return .device
+		case .display: return .display
+		case .network: return .network
+		case .position: return .position
+		case .power: return .power
+		case .ambientLighting: return .ambientLighting
+		case .audio: return .audio
+		case .cannedMessages: return .cannedMessages
+		case .detectionSensor: return .detectionSensor
+		case .meshBeacon: return .meshBeacon
+		case .externalNotification: return .externalNotification
+		case .mqtt: return .mqtt
+		case .neighborInfo: return .neighborInfo
+		case .rangeTest: return .rangeTest
+		case .paxCounter: return .paxCounter
+		case .ringtone: return .ringtone
+		case .serial: return .serial
+		case .security: return .security
+		case .storeAndForward: return .storeAndForward
+		case .telemetry: return .telemetry
+		case .trafficManagement: return .trafficManagement
+		case .debugLogs: return .debugLogs
+		case .traceRoutes: return .traceRoutes
+		case .appFiles: return .appFiles
+		case .firmwareUpdates: return .firmwareUpdates
+		case .deviceLinks: return .deviceLinks
+		case .tak: return .tak
+		case .takConfig: return .takConfig
+		case .tools: return .tools
+		case .coreDataBrowser: return .coreDataBrowser
+		case .localMeshDiscovery: return .localMeshDiscovery
+		case .helpDocs: return .helpDocs
+		case .backupManagement: return .backupManagement
+		}
+	}
 }
 
 struct NavigationState: Hashable {
@@ -99,13 +148,13 @@ struct NavigationState: Hashable {
 		/// Screen name reported to RUM. Written out rather than derived from the raw value:
 		/// these names are the grouping key for a screen's crashes and hangs, so they need to
 		/// survive a rename of the case.
-		var screenName: String {
+		var screenName: ScreenName {
 			switch self {
-			case .messages: return "Messages"
-			case .nodes: return "Nodes"
-			case .map: return "Map"
-			case .settings: return "Settings"
-			case .connect: return "Connect"
+			case .messages: return .messages
+			case .nodes: return .nodes
+			case .map: return .map
+			case .settings: return .settings
+			case .connect: return .connect
 			}
 		}
 	}

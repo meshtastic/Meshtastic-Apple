@@ -111,6 +111,7 @@ struct NodeMapSwiftUI: View {
 			}
 			.sheet(isPresented: $isShowingLegend) {
 				MapLegend(isMeshMap: false)
+					.trackScreen(.mapLegend)
 					.presentationDetents([.medium, .large])
 					.presentationContentInteraction(.scrolls)
 					#if !targetEnvironment(macCatalyst)
