@@ -125,6 +125,115 @@ private func assertViewSnapshot<V: View>(
 	}
 }
 
+@MainActor
+private func presentedViewController(in viewController: UIViewController) -> UIViewController? {
+	if let presented = viewController.presentedViewController {
+		return presented
+	}
+	for child in viewController.children {
+		if let presented = presentedViewController(in: child) {
+			return presented
+		}
+	}
+	return nil
+}
+
+@MainActor
+private func label(withText text: String, in rootView: UIView) -> UILabel? {
+	if let label = rootView as? UILabel, label.text == text {
+		return label
+	}
+	for subview in rootView.subviews {
+		if let label = label(withText: text, in: subview) {
+			return label
+		}
+	}
+	return nil
+}
+
+@MainActor
+private func assertPresentedViewSnapshot<V: View>(
+	of view: V,
+	width: CGFloat,
+	height: CGFloat,
+	colorScheme: ColorScheme,
+	named name: String,
+	validatePresentation: ((UIViewController, UIImage) -> Void)? = nil,
+	filePath: String = #filePath,
+	sourceLocation: SourceLocation = #_sourceLocation
+) async {
+	let wrappedView = view
+		.environment(\.colorScheme, colorScheme)
+		.frame(width: width, height: height)
+	let hostingController = UIHostingController(rootView: wrappedView)
+	let frame = CGRect(x: 0, y: 0, width: width, height: height)
+	let window: UIWindow
+	if let windowScene = UIApplication.shared.connectedScenes.compactMap({ $0 as? UIWindowScene }).first {
+		window = UIWindow(windowScene: windowScene)
+		window.frame = frame
+	} else {
+		window = UIWindow(frame: frame)
+	}
+	window.overrideUserInterfaceStyle = colorScheme == .dark ? .dark : .light
+	window.rootViewController = hostingController
+	window.makeKeyAndVisible()
+	hostingController.view.frame = window.bounds
+	window.layoutIfNeeded()
+	hostingController.view.layoutIfNeeded()
+	let clock = ContinuousClock()
+	let presentationDeadline = clock.now.advanced(by: .seconds(5))
+	var presentedController = presentedViewController(in: hostingController)
+	while presentedController?.viewIfLoaded?.window == nil {
+		guard clock.now < presentationDeadline else {
+			Issue.record("Timed out waiting for the presented view", sourceLocation: sourceLocation)
+			return
+		}
+		await Task.yield()
+		presentedController = presentedViewController(in: hostingController)
+	}
+	guard let presentedController else {
+		Issue.record("Failed to find the presented view controller", sourceLocation: sourceLocation)
+		return
+	}
+	while presentedController.transitionCoordinator != nil {
+		guard clock.now < presentationDeadline else {
+			Issue.record("Timed out waiting for the presentation transition", sourceLocation: sourceLocation)
+			return
+		}
+		await Task.yield()
+	}
+	window.layoutIfNeeded()
+
+	let renderer = UIGraphicsImageRenderer(size: window.bounds.size)
+	let image = renderer.image { _ in
+		window.drawHierarchy(in: window.bounds, afterScreenUpdates: true)
+	}
+	validatePresentation?(presentedController, image)
+	window.isHidden = true
+
+	guard let pngData = image.pngData(), let cgImage = image.cgImage else {
+		Issue.record("Failed to generate presented-view PNG data", sourceLocation: sourceLocation)
+		return
+	}
+	let snapshotFile = SnapshotReferencePath.referenceURL(
+		testFileURL: URL(fileURLWithPath: filePath, isDirectory: false),
+		snapshotName: name,
+		forDocs: false,
+		platform: .current
+	)
+
+	do {
+		try SnapshotReferenceStore().check(
+			pngData: pngData,
+			pixelDimensions: SnapshotPixelDimensions(width: cgImage.width, height: cgImage.height),
+			referenceURL: snapshotFile,
+			mode: .current()
+		)
+	} catch {
+		Issue.record("\(error)", sourceLocation: sourceLocation)
+	}
+}
+
 // MARK: - CircleText Snapshot Tests
 
 @Suite("CircleText Snapshots")
@@ -1669,6 +1778,163 @@ struct BluetoothPoweredOffRowSnapshotTests {
 		}
 		.listStyle(.insetGrouped)
 		await assertViewSnapshot(of: view, width: 390, height: 160, named: "bluetoothOff", forDocs: true)
+	}
+}
+
+// MARK: - Save Config Confirmation Snapshot Tests
+
+@Suite("Save Config Confirmation Snapshots", .serialized)
+struct SaveConfigConfirmationSnapshotTests {
+
+	private enum SnapshotCanvas {
+		static let iPhone13 = CGSize(width: 390, height: 844)
+	}
+
+	private var platformSuffix: String {
+		"iOS\(ProcessInfo.processInfo.operatingSystemVersion.majorVersion)"
+	}
+
+	private func matchingPixelCount(
+		in image: UIImage,
+		frame: CGRect,
+		color: UIColor,
+		channelTolerance: UInt8 = 16
+	) -> Int? {
+		guard let cgImage = image.cgImage else { return nil }
+		let imageScale = image.scale
+		let imageBounds = CGRect(x: 0, y: 0, width: cgImage.width, height: cgImage.height)
+		let pixelFrame = CGRect(
+			x: frame.minX * imageScale,
+			y: frame.minY * imageScale,
+			width: frame.width * imageScale,
+			height: frame.height * imageScale
+		).integral.intersection(imageBounds)
+		guard !pixelFrame.isNull,
+			  let croppedImage = cgImage.cropping(to: pixelFrame) else { return nil }
+
+		let bytesPerRow = croppedImage.width * 4
+		var bytes = [UInt8](repeating: 0, count: bytesPerRow * croppedImage.height)
+		let bitmapInfo = CGImageAlphaInfo.premultipliedLast.rawValue |
+			CGBitmapInfo.byteOrder32Big.rawValue
+		let didRender = bytes.withUnsafeMutableBytes { buffer -> Bool in
+			guard let context = CGContext(
+				data: buffer.baseAddress,
+				width: croppedImage.width,
+				height: croppedImage.height,
+				bitsPerComponent: 8,
+				bytesPerRow: bytesPerRow,
+				space: CGColorSpaceCreateDeviceRGB(),
+				bitmapInfo: bitmapInfo
+			) else { return false }
+			context.draw(croppedImage, in: CGRect(x: 0, y: 0, width: croppedImage.width, height: croppedImage.height))
+			return true
+		}
+		guard didRender else { return nil }
+
+		var red: CGFloat = 0
+		var green: CGFloat = 0
+		var blue: CGFloat = 0
+		guard color.getRed(&red, green: &green, blue: &blue, alpha: nil) else { return nil }
+		let expectedChannels = [red, green, blue].map {
+			UInt8(clamping: Int(($0 * 255).rounded()))
+		}
+		return stride(from: 0, to: bytes.count, by: 4).reduce(into: 0) { count, offset in
+			let matches = (0..<3).allSatisfy { channel in
+				abs(Int(bytes[offset + channel]) - Int(expectedChannels[channel])) <= Int(channelTolerance)
+			}
+			if matches {
+				count += 1
+			}
+		}
+	}
+
+	@MainActor
+	private func validateConfirmationPresentation(_ viewController: UIViewController, image: UIImage) {
+		let actionTitle = "Save Config for Test Radio"
+		guard let actionLabel = label(withText: actionTitle, in: viewController.view) else {
+			Issue.record("Missing confirmation action named \(actionTitle)")
+			return
+		}
+		if #available(iOS 26.0, *) {
+			let traits = actionLabel.traitCollection
+			guard let expectedTint = UIColor(named: "AccentColor")?.resolvedColor(with: traits),
+				  let window = actionLabel.window else {
+				Issue.record("Unable to resolve the confirmation action color")
+				return
+			}
+			let actionFrame = actionLabel.convert(actionLabel.bounds, to: window)
+			guard let matchingPixels = matchingPixelCount(in: image, frame: actionFrame, color: expectedTint) else {
+				Issue.record("Unable to inspect the rendered confirmation action")
+				return
+			}
+			#expect(matchingPixels >= 100, "Rendered confirmation action does not use AccentColor")
+		}
+	}
+
+	@MainActor
+	private struct ConfirmationFixture: View {
+		@State private var hasChanges = true
+		private let accessoryManager: AccessoryManager
+		private let node: NodeInfoEntity
+
+		init() {
+			let accessoryManager = AccessoryManager(transports: [])
+			accessoryManager.isConnected = true
+			self.accessoryManager = accessoryManager
+
+			let user = UserEntity()
+			user.longName = "Test Radio"
+			let node = NodeInfoEntity()
+			node.user = user
+			self.node = node
+		}
+
+		var body: some View {
+			NavigationStack {
+				Form {
+					Section("LoRa") {
+						Text("Configuration values")
+					}
+				}
+				.navigationTitle("LoRa Config")
+				.safeAreaInset(edge: .bottom) {
+					SaveConfigButton(
+						node: node,
+						hasChanges: $hasChanges,
+						initiallyPresentingConfirmation: true,
+						onConfirmation: { }
+					)
+				}
+			}
+			.environmentObject(accessoryManager)
+			.tint(Color("Colors/MeshtasticAccent"))
+		}
+	}
+
+	@Test("Dark confirmation dialog")
+	@MainActor
+	func darkConfirmationDialog() async {
+		await assertPresentedViewSnapshot(
+			of: ConfirmationFixture(),
+			width: SnapshotCanvas.iPhone13.width,
+			height: SnapshotCanvas.iPhone13.height,
+			colorScheme: .dark,
+			named: "saveConfigConfirmation_dark_\(platformSuffix)",
+			validatePresentation: validateConfirmationPresentation
+		)
+	}
+
+	@Test("Light confirmation dialog")
+	@MainActor
+	func lightConfirmationDialog() async {
+		await assertPresentedViewSnapshot(
+			of: ConfirmationFixture(),
+			width: SnapshotCanvas.iPhone13.width,
+			height: SnapshotCanvas.iPhone13.height,
+			colorScheme: .light,
+			named: "saveConfigConfirmation_light_\(platformSuffix)",
+			validatePresentation: validateConfirmationPresentation
+		)
 	}
 }
 
