@@ -6,6 +6,7 @@
 // MARK: AccessoryManagerDisconnectTests
 
 import Foundation
+import SwiftData
 import Testing
 
 @testable import Meshtastic
@@ -119,5 +120,33 @@ struct AccessoryManagerDisconnectTests {
 		await expectTornDown(manager, connection: connection)
 		#expect(manager.packetsReceived == 1)
 		#expect(manager.shouldAutomaticallyConnectToPreferredPeripheralAfterError)
+	}
+
+	@Test func teardownInvalidatesAllRemoteAdminSessions() async throws {
+		let connection = DisconnectTestConnection()
+		let manager = makeManager(connection: connection)
+		let container = try ModelContainer(
+			for: Schema(MeshtasticSchema.allModels),
+			configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+		)
+		let context = ModelContext(container)
+		let administeredNode = NodeInfoEntity()
+		administeredNode.num = 101
+		administeredNode.sessionPasskey = Data([0xA5, 0x5A])
+		administeredNode.sessionExpiration = Date().addingTimeInterval(300)
+		administeredNode.hasBeenAdministered = true
+		let expirationOnlyNode = NodeInfoEntity()
+		expirationOnlyNode.num = 202
+		expirationOnlyNode.sessionExpiration = Date().addingTimeInterval(300)
+		context.insert(administeredNode)
+		context.insert(expirationOnlyNode)
+		try context.save()
+		manager.context = context
+
+		try await manager.closeConnection()
+
+		let nodes = try context.fetch(FetchDescriptor<NodeInfoEntity>())
+		#expect(nodes.allSatisfy { $0.sessionPasskey == nil && $0.sessionExpiration == nil })
+		#expect(nodes.first(where: { $0.num == 101 })?.hasBeenAdministered == true)
 	}
 }
