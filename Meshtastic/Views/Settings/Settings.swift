@@ -747,98 +747,101 @@ struct Settings: View {
 			.navigationDestination(for: SettingsNavigationState.self) { destination in
 				let node = liveNode(for: preferredNodeNum)
 				let configNode = liveNode(for: selectedNode)
-				switch destination {
-				case .about:
-					AboutMeshtastic()
-				case .appSettings:
-					AppSettings()
-				case .routes:
-					Routes()
-				case .routeRecorder:
-					RouteRecorder()
-				case .lora:
-					LoRaConfig(node: configNode)
-				case .channels:
-					if let node = node {
-						Channels(node: node)
-					} else {
-						Text("Loading...")
+				Group {
+					switch destination {
+					case .about:
+						AboutMeshtastic()
+					case .appSettings:
+						AppSettings()
+					case .routes:
+						Routes()
+					case .routeRecorder:
+						RouteRecorder()
+					case .lora:
+						LoRaConfig(node: configNode)
+					case .channels:
+						if let node = node {
+							Channels(node: node)
+						} else {
+							Text("Loading...")
+						}
+					case .shareQRCode:
+						ShareChannels(node: node)
+					case .user:
+						UserConfig(node: configNode)
+					case .bluetooth:
+						BluetoothConfig(node: configNode)
+					case .device:
+						DeviceConfig(node: configNode)
+					case .display:
+						DisplayConfig(node: configNode)
+					case .network:
+						NetworkConfig(node: configNode)
+					case .position:
+						PositionConfig(node: configNode)
+					case .power:
+						PowerConfig(node: configNode)
+					case .ambientLighting:
+						AmbientLightingConfig(node: configNode)
+					case .audio:
+						AudioConfig(node: configNode)
+					case .cannedMessages:
+						CannedMessagesConfig(node: configNode)
+					case .detectionSensor:
+						DetectionSensorConfig(node: configNode)
+					case .meshBeacon:
+						MeshBeaconConfig(node: configNode)
+					case .externalNotification:
+						ExternalNotificationConfig(node: configNode)
+					case .mqtt:
+						MQTTConfig(node: configNode)
+					case .neighborInfo:
+						NeighborInfoConfig(node: configNode)
+					case .rangeTest:
+						RangeTestConfig(node: configNode)
+					case .paxCounter:
+						PaxCounterConfig(node: configNode)
+					case .ringtone:
+						RtttlConfig(node: configNode)
+					case .security:
+						SecurityConfig(node: configNode)
+					case .serial:
+						SerialConfig(node: configNode)
+					case .storeAndForward:
+						StoreForwardConfig(node: configNode)
+					case .telemetry:
+						TelemetryConfig(node: configNode)
+					case .trafficManagement:
+						TrafficManagementConfig(node: configNode)
+					case .debugLogs:
+						AppLog()
+					case .traceRoutes:
+						AllTraceRoutesLog()
+					case .appFiles:
+						AppData()
+					case .firmwareUpdates:
+						Firmware(node: node)
+					case .deviceLinks:
+						DeviceLinkDirectory()
+					case .tools:
+						if #available(iOS 18, *) {
+							Tools()
+						}
+					case .tak:
+						TAKServerConfig()
+					case .takConfig:
+						TAKModuleConfig(node: configNode)
+					case .coreDataBrowser:
+						CoreDataBrowser()
+					case .localMeshDiscovery:
+						DiscoveryScanView()
+					case .helpDocs:
+						DocBrowserView()
+					case .backupManagement:
+						BackupManagement()
 					}
-				case .shareQRCode:
-					ShareChannels(node: node)
-				case .user:
-					UserConfig(node: configNode)
-				case .bluetooth:
-					BluetoothConfig(node: configNode)
-				case .device:
-					DeviceConfig(node: configNode)
-				case .display:
-					DisplayConfig(node: configNode)
-				case .network:
-					NetworkConfig(node: configNode)
-				case .position:
-					PositionConfig(node: configNode)
-				case .power:
-					PowerConfig(node: configNode)
-				case .ambientLighting:
-					AmbientLightingConfig(node: configNode)
-				case .audio:
-					AudioConfig(node: configNode)
-				case .cannedMessages:
-					CannedMessagesConfig(node: configNode)
-				case .detectionSensor:
-					DetectionSensorConfig(node: configNode)
-				case .meshBeacon:
-					MeshBeaconConfig(node: configNode)
-				case .externalNotification:
-					ExternalNotificationConfig(node: configNode)
-				case .mqtt:
-					MQTTConfig(node: configNode)
-				case .neighborInfo:
-					NeighborInfoConfig(node: configNode)
-				case .rangeTest:
-					RangeTestConfig(node: configNode)
-				case .paxCounter:
-					PaxCounterConfig(node: configNode)
-				case .ringtone:
-					RtttlConfig(node: configNode)
-				case .security:
-					SecurityConfig(node: configNode)
-				case .serial:
-					SerialConfig(node: configNode)
-				case .storeAndForward:
-					StoreForwardConfig(node: configNode)
-				case .telemetry:
-					TelemetryConfig(node: configNode)
-				case .trafficManagement:
-					TrafficManagementConfig(node: configNode)
-				case .debugLogs:
-					AppLog()
-				case .traceRoutes:
-					AllTraceRoutesLog()
-				case .appFiles:
-					AppData()
-				case .firmwareUpdates:
-					Firmware(node: node)
-				case .deviceLinks:
-					DeviceLinkDirectory()
-				case .tools:
-					if #available(iOS 18, *) {
-						Tools()
-					}
-				case .tak:
-					TAKServerConfig()
-				case .takConfig:
-					TAKModuleConfig(node: configNode)
-				case .coreDataBrowser:
-					CoreDataBrowser()
-				case .localMeshDiscovery:
-					DiscoveryScanView()
-				case .helpDocs:
-					DocBrowserView()
-				case .backupManagement:
-					BackupManagement()
 				}
+				.trackScreen(destination.screenName)
 			}
 			.onChange(of: UserDefaults.preferredPeripheralNum ) { _, newConnectedNode in
 				// If the preferred node changes, then select the newly preferred node

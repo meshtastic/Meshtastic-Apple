@@ -57,6 +57,7 @@ private struct NetworkRow: View {
 				},
 				onCancel: { showPasswordSheet = false }
 			)
+			.trackScreen(.wifiPassword)
 			.presentationDetents([.medium])
 			.presentationBackground(.regularMaterial)
 			#if !targetEnvironment(macCatalyst)
@@ -163,6 +164,7 @@ struct WifiNetworkListView: View {
 				},
 				onCancel: { showOtherSheet = false }
 			)
+			.trackScreen(.hiddenWiFiNetwork)
 			.presentationDetents([.medium])
 			.presentationBackground(.regularMaterial)
 			#if !targetEnvironment(macCatalyst)

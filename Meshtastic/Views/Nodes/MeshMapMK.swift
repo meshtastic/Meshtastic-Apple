@@ -482,7 +482,7 @@ struct MeshMapMK: View {
 					if let node = getNodeInfo(id: selection.id, context: context) {
 						NavigationStack {
 							NodeDetail(node: node, nodeNum: selection.id, showMapLink: false)
-								.trackScreen("Node Detail")
+								.trackScreen(.nodeDetail)
 						}
 						#if targetEnvironment(macCatalyst)
 							.overlay(alignment: .topLeading) {
@@ -538,6 +538,7 @@ struct MeshMapMK: View {
 							}
 						}
 					}
+					.trackScreen(.mapItemPicker)
 					.presentationDetents([.medium, .large])
 					#if !targetEnvironment(macCatalyst)
 					.presentationDragIndicator(.visible)
@@ -546,6 +547,7 @@ struct MeshMapMK: View {
 				.sheet(item: $selectedWaypoint) { selection in
 					WaypointForm(waypoint: selection)
 						.environmentObject(accessoryManager)
+						.trackScreen(.waypoint)
 						.presentationDetents([.large]) // full screen
 						#if !targetEnvironment(macCatalyst)
 						.presentationDragIndicator(.visible)
@@ -554,6 +556,7 @@ struct MeshMapMK: View {
 				.sheet(item: $editingWaypoint) { selection in
 					WaypointForm(waypoint: selection, editMode: true)
 						.environmentObject(accessoryManager)
+						.trackScreen(.waypoint)
 						.presentationDetents([.large])
 						#if !targetEnvironment(macCatalyst)
 						.presentationDragIndicator(.visible)
@@ -592,6 +595,7 @@ struct MeshMapMK: View {
 				}
 				.sheet(isPresented: $showLegend) {
 					MapLegend(isMeshMap: true)
+						.trackScreen(.mapLegend)
 						.presentationDetents([.large])
 						.presentationContentInteraction(.scrolls)
 						#if !targetEnvironment(macCatalyst)
@@ -601,6 +605,7 @@ struct MeshMapMK: View {
 				}
 				.sheet(item: $coverageSeed) { seed in
 					CoverageEstimateForm(seed: seed, runner: coverageRunner)
+						.trackScreen(.coverageEstimate)
 						.presentationDetents([.large])
 						#if !targetEnvironment(macCatalyst)
 						.presentationDragIndicator(.visible)

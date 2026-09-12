@@ -49,7 +49,7 @@ struct NodeList: View {
 						LocalStatsLog(node: node)
 					} else {
 						NodeDetail(node: node, nodeNum: selectedNum)
-							.trackScreen("Node Detail")
+							.trackScreen(.nodeDetail)
 					}
 				} else {
 					ContentUnavailableView("Select a Node", systemImage: "flipphone")
