@@ -1198,7 +1198,8 @@
     ],
     "images": [
       "m5_c6l.svg"
-    ]
+    ],
+    "partitionScheme": "16MB"
   },
   {
     "hwModel": 110,
@@ -1535,7 +1536,7 @@
       "Elecrow"
     ],
     "images": [
-      "thinknode-m8.svg"
+      "thinknode_m8.svg"
     ]
   },
   {
@@ -1551,6 +1552,218 @@
     ],
     "images": [
       "tbeam-bpf.svg"
+    ],
+    "partitionScheme": "16MB"
+  },
+  {
+    "hwModel": 131,
+    "hwModelSlug": "THINKNODE_M9",
+    "platformioTarget": "thinknode_m9",
+    "architecture": "esp32-s3",
+    "activelySupported": true,
+    "supportLevel": 1,
+    "partitionScheme": "16MB",
+    "displayName": "Elecrow ThinkNode M9",
+    "images": [
+      "thinknode_m9.svg"
+    ],
+    "tags": [
+      "Elecrow"
+    ],
+    "hasMui": true
+  },
+  {
+    "hwModel": 136,
+    "hwModelSlug": "T_ECHO_CARD",
+    "platformioTarget": "t-echo-card",
+    "architecture": "nrf52840",
+    "activelySupported": false,
+    "supportLevel": 1,
+    "displayName": "LilyGo T-Echo-Card",
+    "tags": [
+      "LilyGo"
     ]
+  },
+  {
+    "hwModel": 114,
+    "hwModelSlug": "T_WATCH_ULTRA",
+    "platformioTarget": "t-watch-ultra",
+    "architecture": "esp32-s3",
+    "activelySupported": false,
+    "supportLevel": 1,
+    "displayName": "T-Watch Ultra",
+    "tags": [
+      "LilyGo"
+    ],
+    "images": [
+      "t-watch-ultra.svg"
+    ],
+    "requiresDfu": false,
+    "partitionScheme": "16MB",
+    "hasMui": true
+  },
+  {
+    "hwModel": 139,
+    "hwModelSlug": "HELTEC_MESH_TOWER_V2",
+    "platformioTarget": "heltec-mesh-tower-v2",
+    "architecture": "nrf52840",
+    "activelySupported": false,
+    "supportLevel": 1,
+    "displayName": "Heltec MeshTower V2",
+    "tags": [
+      "Heltec"
+    ],
+    "images": [
+      "heltec-mesh-tower-v2.svg"
+    ],
+    "requiresDfu": true
+  },
+  {
+    "hwModel": 140,
+    "hwModelSlug": "MESHNOLOGY_W10",
+    "platformioTarget": "meshnology_w10",
+    "architecture": "esp32-s3",
+    "activelySupported": false,
+    "supportLevel": 1,
+    "displayName": "Meshnology W10",
+    "tags": [
+      "Meshnology"
+    ],
+    "images": [
+      "meshnology_w10.svg"
+    ],
+    "requiresDfu": true,
+    "partitionScheme": "16MB"
+  },
+  {
+    "hwModel": 141,
+    "hwModelSlug": "HELTEC_RC32",
+    "platformioTarget": "heltec-rc32",
+    "architecture": "esp32-s3",
+    "activelySupported": false,
+    "supportLevel": 1,
+    "displayName": "Heltec RC32",
+    "tags": [
+      "Heltec"
+    ],
+    "images": [
+      "heltec_rc32.svg"
+    ],
+    "requiresDfu": true,
+    "partitionScheme": "16MB"
+  },
+  {
+    "hwModel": 142,
+    "hwModelSlug": "HELTEC_RC52",
+    "platformioTarget": "heltec-rc52",
+    "architecture": "nrf52840",
+    "activelySupported": false,
+    "supportLevel": 1,
+    "displayName": "Heltec RC52",
+    "tags": [
+      "Heltec"
+    ],
+    "images": [
+      "heltec-rc52.svg"
+    ],
+    "requiresDfu": true
+  },
+  {
+    "hwModel": 143,
+    "hwModelSlug": "HELTEC_RCC6",
+    "platformioTarget": "heltec-rcc6",
+    "architecture": "esp32-c6",
+    "activelySupported": false,
+    "supportLevel": 1,
+    "displayName": "Heltec RCC6",
+    "tags": [
+      "Heltec"
+    ],
+    "images": [
+      "heltec_rcc6.svg"
+    ],
+    "requiresDfu": false,
+    "partitionScheme": "16MB"
+  },
+  {
+    "hwModel": 145,
+    "hwModelSlug": "MESHNOLOGY_W12",
+    "platformioTarget": "meshnology_w12",
+    "architecture": "esp32-s3",
+    "activelySupported": false,
+    "supportLevel": 1,
+    "displayName": "Meshnology W12",
+    "tags": [
+      "Meshnology"
+    ],
+    "images": [
+      "meshnology_w12.svg"
+    ],
+    "requiresDfu": true,
+    "partitionScheme": "16MB"
+  },
+  {
+    "hwModel": 144,
+    "hwModelSlug": "SEEED_WIO_TRACKER_L1_PRO_1W",
+    "platformioTarget": "seeed_wio_tracker_L1_Pro_1W",
+    "architecture": "nrf52840",
+    "activelySupported": false,
+    "supportLevel": 1,
+    "displayName": "Seeed Wio Tracker L1 Pro 1W",
+    "tags": [
+      "Seeed"
+    ],
+    "images": [
+      "wio_tracker_l1_case.svg"
+    ],
+    "requiresDfu": true
+  },
+  {
+    "hwModel": 9,
+    "hwModelSlug": "RAK4631",
+    "platformioTarget": "rak_wismesh_pocket",
+    "architecture": "nrf52840",
+    "activelySupported": false,
+    "supportLevel": 1,
+    "displayName": "RAK WisMesh Pocket V3",
+    "tags": [
+      "RAK"
+    ],
+    "images": [
+      "rak4631.svg"
+    ],
+    "requiresDfu": true
+  },
+  {
+    "hwModel": 9,
+    "hwModelSlug": "RAK4631",
+    "platformioTarget": "rak_wismesh_repeater_mini",
+    "architecture": "nrf52840",
+    "activelySupported": false,
+    "supportLevel": 1,
+    "displayName": "RAK WisMesh Repeater Mini V2",
+    "tags": [
+      "RAK"
+    ],
+    "images": [
+      "rak4631.svg"
+    ],
+    "requiresDfu": true
+  },
+  {
+    "hwModel": 117,
+    "hwModelSlug": "RAK3401",
+    "platformioTarget": "rak_wismesh_repeater_mini_hp",
+    "architecture": "nrf52840",
+    "activelySupported": false,
+    "supportLevel": 1,
+    "displayName": "RAK WisMesh Repeater Mini V2 HP",
+    "tags": [
+      "RAK"
+    ],
+    "images": [
+      "rak3401.svg"
+    ],
+    "requiresDfu": true
   }
 ]

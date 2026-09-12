@@ -19,6 +19,7 @@ import WebKit
 struct Firmware: View {
 	let node: NodeInfoEntity?
 
+	@EnvironmentObject private var accessoryManager: AccessoryManager
 	@Query private var hardwareResults: [DeviceHardwareEntity]
 	@State private var cachedHardware: DeviceHardwareEntity?
 	@State private var cachedNode: NodeInfoEntity?
@@ -50,6 +51,9 @@ struct Firmware: View {
 		.onAppear {
 			resolveHardware()
 		}
+		.task {
+			await refreshFromAPI()
+		}
 		.onChange(of: hardwareResults) {
 			resolveHardware()
 		}
@@ -62,6 +66,32 @@ struct Firmware: View {
 		}
 		.onChange(of: node?.user?.hwModelId) {
 			resolveHardware()
+		}
+	}
+
+	/// Pull the hardware catalog and the firmware release list when this screen opens.
+	///
+	/// The catalog is so a board added since this build shipped resolves by its PlatformIO target
+	/// rather than falling back to another board sharing its hardware model. The release list is
+	/// because nothing else on this screen fetches it: the rows read whatever is already stored,
+	/// and the only other fetch is the launch cascade. If that one failed — an API error, or the
+	/// GitHub fallback being rate limited — the screen stayed empty until the user found the
+	/// refresh button.
+	///
+	/// Neither is throttled. Both endpoints send Cache-Control and an ETag, so a repeat call is
+	/// served from URLSession's cache or revalidated for an empty 304. The catalog pass skips
+	/// images, which are local anyway.
+	private func refreshFromAPI() async {
+		do {
+			try await MeshtasticAPI.shared.refreshDevicesAPIData(includeImages: false)
+			resolveHardware()
+		} catch {
+			Logger.services.warning("Hardware catalog refresh failed: \(error.localizedDescription, privacy: .public)")
+		}
+		do {
+			try await MeshtasticAPI.shared.refreshFirmwareAPIData()
+		} catch {
+			Logger.services.warning("Firmware list refresh failed: \(error.localizedDescription, privacy: .public)")
 		}
 	}
 
@@ -95,8 +125,10 @@ struct Firmware: View {
 			in: records
 		)
 		if didReset, hardwareState.resolution == nil {
-			cachedNode = nil
-			cachedHardware = nil
+			if !accessoryManager.otaInProgress {
+				cachedNode = nil
+				cachedHardware = nil
+			}
 			return
 		}
 		cacheResolvedHardware(for: node)
@@ -115,6 +147,10 @@ struct Firmware: View {
 	}
 
 	private func resetHardwareCache() {
+		// An update disconnects the radio on purpose. Keep the cached content on
+		// screen through it, or the update sheet is torn down mid-flash and the
+		// device is left sitting in its bootloader.
+		if accessoryManager.otaInProgress { return }
 		cachedNode = nil
 		cachedHardware = nil
 		hardwareState.reset()
@@ -126,7 +162,7 @@ struct Firmware: View {
 private struct FirmwareContentView: View {
 	
 	private enum FirmwareTab {
-		case stable, alpha, downloaded
+		case stable, alpha, nightly, downloaded
 	}
 	
 	@EnvironmentObject var accessoryManager: AccessoryManager
@@ -186,45 +222,48 @@ private struct FirmwareContentView: View {
 						.frame(width: 72)
 						.padding(.leading, 4)
 
-					FirmwareHeroImage(hardware: hardware)
+					FirmwareHeroImage(hardware: hardware, pioEnv: node.myInfo?.pioEnv)
 						.frame(maxWidth: .infinity)
-						.frame(height: 140)
 				}
 				.padding(.bottom, 2)
 
-				VStack(alignment: .leading) {
-					Text("Platform IO").font(.caption).foregroundColor(.secondary)
-					Text("\(node.myInfo?.pioEnv ?? "Unknown")")
-				}
-				.accessibilityElement(children: .combine)
-				VStack(alignment: .leading) {
-					Text("Architecture").font(.caption).foregroundColor(.secondary)
-					Text("\(hardware.architecture ?? "Unknown")")
-				}
-				.accessibilityElement(children: .combine)
-				VStack(alignment: .leading) {
-					Text("Current Firmware Version").font(.caption).foregroundColor(.secondary)
-					Text("\(node.metadata?.firmwareVersion ?? "Unknown")")
-				}
-				.accessibilityElement(children: .combine)
-				VStack(alignment: .leading) {
-					Text("Intended LoRa Region").font(.caption).foregroundColor(.secondary)
-					Text(intendedRegionLabel)
-				}
-				.accessibilityElement(children: .combine)
-				if shouldShowRegionUnsetWarning {
-					Label("Set a LoRa region before installing firmware.", systemImage: "exclamationmark.triangle.fill")
-						.foregroundStyle(.orange)
-						.font(.caption)
-				} else if shouldShowLocaleVariantWarning {
-					Label("This region may require a locale-specific firmware file for correct on-device text rendering.", systemImage: "character.book.closed.fill")
-						.foregroundStyle(.orange)
-						.font(.caption)
-				}
-				if let suggestedFileNameHint {
+				// One row for all the data points: as separate rows each carried the full
+				// list row padding above and below, which read as big dead bands between them.
+				VStack(alignment: .leading, spacing: 12) {
 					VStack(alignment: .leading, spacing: 2) {
-						Text("Suggested file pattern").font(.caption).foregroundColor(.secondary)
-						Text(suggestedFileNameHint).font(.caption).textSelection(.enabled)
+						Text("Platform IO").font(.caption).foregroundColor(.secondary)
+						Text("\(node.myInfo?.pioEnv ?? "Unknown")")
+					}
+					.accessibilityElement(children: .combine)
+					VStack(alignment: .leading, spacing: 2) {
+						Text("Architecture").font(.caption).foregroundColor(.secondary)
+						Text("\(hardware.architecture ?? "Unknown")")
+					}
+					.accessibilityElement(children: .combine)
+					VStack(alignment: .leading, spacing: 2) {
+						Text("Current Firmware Version").font(.caption).foregroundColor(.secondary)
+						Text("\(node.metadata?.firmwareVersion ?? "Unknown")")
+					}
+					.accessibilityElement(children: .combine)
+					VStack(alignment: .leading, spacing: 2) {
+						Text("Intended LoRa Region").font(.caption).foregroundColor(.secondary)
+						Text(intendedRegionLabel)
+					}
+					.accessibilityElement(children: .combine)
+					if shouldShowRegionUnsetWarning {
+						Label("Set a LoRa region before installing firmware.", systemImage: "exclamationmark.triangle.fill")
+							.foregroundStyle(.orange)
+							.font(.caption)
+					} else if shouldShowLocaleVariantWarning {
+						Label("This region may require a locale-specific firmware file for correct on-device text rendering.", systemImage: "character.book.closed.fill")
+							.foregroundStyle(.orange)
+							.font(.caption)
+					}
+					if let suggestedFileNameHint {
+						VStack(alignment: .leading, spacing: 2) {
+							Text("Suggested file pattern").font(.caption).foregroundColor(.secondary)
+							Text(suggestedFileNameHint).font(.caption).textSelection(.enabled)
+						}
 					}
 				}
 			}
@@ -235,6 +274,7 @@ private struct FirmwareContentView: View {
 				Picker("Firmware Version", selection: $firmwareSelection) {
 					Text("Stable").tag(FirmwareTab.stable)
 					Text("Alpha").tag(FirmwareTab.alpha)
+					Text("Nightly").tag(FirmwareTab.nightly)
 					Text("Downloaded").tag(FirmwareTab.downloaded)
 				}.pickerStyle(.segmented)
 				
@@ -279,13 +319,17 @@ private struct FirmwareContentView: View {
 			FactoryEraseView()
 		}
 		.sheet(item: $rowInstallation) { installation in
+			// UF2MassStorageView is left unnamed here and below: reflection already names it,
+			// and a second name would split its history in Error Tracking.
 			switch installation.type {
 			case .otaZip:
 				NRFDFUSheet(firmwareToFlash: installation.url)
+					.trackScreen(.nordicDFUUpdate)
 			case .uf2:
 				UF2MassStorageView(fileURL: installation.url)
 			case .bin:
 				ESP32OTAIntroSheet(binFileURL: installation.url)
+					.trackScreen(.esp32Update)
 			}
 		}
 	}
@@ -317,6 +361,22 @@ private struct FirmwareContentView: View {
 			if let last = alphas.last, let notes = last.releaseNotes {
 				NavigationLink("Release Notes") {
 					FirmwareReleaseNotesView(markdown: notes, versionId: last.versionId)
+				}
+			}
+		case .nightly:
+			let nightlies = firmwareList.mostRecentFirmware(forReleaseType: .nightly)
+			if nightlies.isEmpty {
+				Text("No nightly build is available for this device right now.")
+			} else {
+				ForEach(nightlies, id: \.localUrl) { release in
+					FirmwareRow(firmwareFile: release) { type, url in
+						self.rowInstallation = RowInstallation(type: type, url: url)
+					}
+				}
+				if let last = nightlies.last, let notes = last.releaseNotes {
+					NavigationLink("Release Notes") {
+						FirmwareReleaseNotesView(markdown: notes, versionId: last.versionId)
+					}
 				}
 			}
 		case .downloaded:
@@ -448,10 +508,12 @@ private struct FirmwareContentView: View {
 					switch type {
 					case .otaZip:
 						NRFDFUSheet(firmwareToFlash: locallyChosenFirmwareFile)
+							.trackScreen(.nordicDFUUpdate)
 					case .uf2:
 						UF2MassStorageView(fileURL: locallyChosenFirmwareFile)
 					case .bin:
 						ESP32OTAIntroSheet(binFileURL: locallyChosenFirmwareFile)
+							.trackScreen(.esp32Update)
 					}
 				}
 			}
@@ -495,8 +557,13 @@ private struct FirmwareContentView: View {
 // preventing the List layout pass from triggering Core Data faults repeatedly.
 struct FirmwareHeroImage: View {
 	let hardware: DeviceHardwareEntity
+	var pioEnv: String?
 	@State private var svg: SVG?
-	
+	@State private var resolved = false
+	// One height for the image and its placeholder so the row doesn't jump when
+	// resolution finishes.
+	private static let heroHeight: CGFloat = 140
+
 	var body: some View {
 		Group {
 			if let svg = svg {
@@ -504,36 +571,61 @@ struct FirmwareHeroImage: View {
 					.resizable()
 					.scaledToFit()
 					.cornerRadius(5)
-			} else {
-				// Placeholder prevents List jumpiness while loading
+					.frame(maxWidth: .infinity, maxHeight: Self.heroHeight)
+			} else if !resolved {
+				// Placeholder prevents List jumpiness while loading. Once resolution has
+				// run and found nothing, render nothing so the row collapses instead of
+				// holding an image-sized hole in the layout.
 				Color.clear
-					.frame(height: 140)
+					.frame(height: Self.heroHeight)
 			}
 		}
-		.frame(maxWidth: .infinity, maxHeight: 140)
-		.task {
-			// Perform the Core Data relationship traversal off the main layout pass
-			if svg == nil {
-				self.svg = getSVG()
-			}
+		.task(id: pioEnv) {
+			// Perform the Core Data relationship traversal off the main layout pass.
+			// Keyed on pioEnv: the radio reports its PlatformIO env after connect, so
+			// resolution must rerun when it arrives or changes.
+			svg = getSVG()
+			resolved = true
 		}
 	}
 	
 	private func getSVG() -> SVG? {
-		let images = hardware.images
-		if let image = images.first,
+		// The radio's own PlatformIO env wins when an image with that exact name ships,
+		// so a product like the WisMesh Pocket can get its own art without a catalog change.
+		if let pioEnv, !pioEnv.isEmpty,
+		   let data = Self.bundledImageData(named: "\(pioEnv).svg"),
+		   let svg = SVG(data: data) {
+			return svg
+		}
+		if let image = hardware.images.first,
 		   let data = image.svgData,
+		   let svg = SVG(data: data) {
+			return svg
+		}
+		// The synced image entities only exist after a catalog pass, which is throttled to
+		// once every two days. The bundle carries the catalog images named by hardware-model
+		// slug, so a fresh install can still show the radio without waiting for a sync.
+		if let slug = hardware.hwModelSlug, !slug.isEmpty,
+		   let data = Self.bundledImageData(named: "\(slug.lowercased()).svg"),
 		   let svg = SVG(data: data) {
 			return svg
 		}
 		return nil
 	}
+	
+	static func bundledImageData(named name: String) -> Data? {
+		let url = Bundle.main.url(forResource: name, withExtension: nil, subdirectory: "images")
+			?? Bundle.main.url(forResource: name, withExtension: nil)
+		return url.flatMap { try? Data(contentsOf: $0) }
+	}
 }
 
 struct FirmwareTagView: View {
-	let text: String
+	// LocalizedStringKey, not String: a String argument reaches Text() already resolved,
+	// so the tag literals were never extracted for translation.
+	let text: LocalizedStringKey
 	let color: Color
-	init(_ text: String, color: Color = .black) {
+	init(_ text: LocalizedStringKey, color: Color = .black) {
 		self.text = text
 		self.color = color
 	}
@@ -580,6 +672,8 @@ private struct FirmwareRow: View {
 						FirmwareTagView("STABLE", color: Color.green)
 					case .alpha:
 						FirmwareTagView("ALPHA", color: Color.blue)
+					case .nightly:
+						FirmwareTagView("NIGHTLY", color: Color.purple)
 					case .unlisted:
 						FirmwareTagView("UNLISTED", color: Color.orange)
 					}
@@ -620,9 +714,17 @@ private struct FirmwareRow: View {
 				.buttonStyle(.bordered)
 				.buttonBorderShape(.capsule)
 				.controlSize(.small)
+			case .unavailable:
+				Text("Not built for this device")
+					.font(.caption2)
+					.foregroundColor(.secondary)
+
 			case .error:
 				Image(systemName: "exclamationmark.triangle.fill").foregroundColor(.red)
 			}
+		}
+		.task {
+			await firmwareFile.checkAvailability()
 		}
 	}
 	

@@ -55,9 +55,12 @@ func validUniqueChannelIndexes(from channels: [ChannelEntity]) -> [Int32] {
 	canonicalValidUniqueChannels(from: channels).map(\.index)
 }
 
+/// Slots the radio keeps. It is a fixed array with a role per slot, not a list that grows.
+let maxChannelSlots: Int32 = 8
+
 func availableChannelIndexes(from channels: [ChannelEntity]) -> [Int32] {
 	let occupied = Set(validUniqueChannelIndexes(from: channels))
-	return (Int32(0)...Int32(7)).filter { !occupied.contains($0) }
+	return (Int32(0)..<maxChannelSlots).filter { !occupied.contains($0) }
 }
 
 func nextAvailableSecondaryChannelIndex(from channels: [ChannelEntity]) -> Int32? {
@@ -259,6 +262,7 @@ struct Channels: View {
 					.padding()
 				#endif
 				ChannelForm(channelIndex: $channelIndex, channelName: $channelName, channelKeySize: $channelKeySize, channelKey: $channelKey, channelRole: $channelRole, uplink: $uplink, downlink: $downlink, positionPrecision: $positionPrecision, preciseLocation: $preciseLocation, positionsEnabled: $positionsEnabled, hasChanges: $hasChanges, hasValidKey: $hasValidKey, supportedVersion: $supportedVersion)
+					.trackScreen(.channelEditor)
 					.presentationDetents([.large])
 					#if !targetEnvironment(macCatalyst)
 					.presentationDragIndicator(.visible)
@@ -373,6 +377,7 @@ struct Channels: View {
 		}
 		.sheet(isPresented: $showingHelp) {
 			ChannelsHelp()
+				.trackScreen(.channelsHelp)
 				.presentationDetents([.large])
 				#if !targetEnvironment(macCatalyst)
 				.presentationDragIndicator(.visible)

@@ -15,12 +15,18 @@ import OSLog
 enum ShareContactQR {
 	static let urlPrefix = MeshContactURL.canonicalPrefix + "#"
 
+	/// Whether there is anything worth sharing for this node.
+	///
+	/// Carrying the public key is the point of a shared contact — it is what lets the receiving radio
+	/// direct message the node. A contact with no key is worse than useless: firmware assigns
+	/// `public_key` unconditionally when it applies one, so it clears the key the receiving radio
+	/// already held. We refuse those on import, so we must not hand them out either.
 	static func canShareContact(for node: NodeInfoEntity) -> Bool {
-		node.user?.unmessagable == false
+		node.user?.unmessagable == false && node.user?.publicKey?.isEmpty == false
 	}
 
 	static func canShareContact(for node: NodeInfo) -> Bool {
-		node.hasUser && !node.user.isUnmessagable
+		node.hasUser && !node.user.isUnmessagable && !node.user.publicKey.isEmpty
 	}
 
 	static func urlString(
@@ -69,7 +75,7 @@ struct ShareContactQRDialog: View {
 
 	var body: some View {
 		VStack(spacing: 20) {
-			Text("Share Contact QR")
+			Text("Share Contact")
 				.font(.title2)
 				.padding(.top)
 			Text(node.user.longName)
@@ -79,7 +85,6 @@ struct ShareContactQRDialog: View {
 				.resizable()
 				.scaledToFit()
 				.background(Color(.systemBackground))
-				.cornerRadius(16)
 				.shadow(radius: 4)
 			Text("Scan this QR code to add \(node.user.longName) to another device.")
 				.font(.subheadline)
@@ -102,12 +107,33 @@ struct ShareContactQRDialog: View {
 				)
 			}
 			#endif
-			Button("Done") { dismiss() }
-				.buttonStyle(.borderedProminent)
-				.padding(.bottom)
 		}
 		.padding()
 		.frame(maxWidth: 350)
+		// Share and the NFC button are plain labels on the sheet, so they read as text and need
+		// the on-surface accent; the inherited fill accent is close to unreadable here in dark.
+		.tint(.accentTint)
+		#if targetEnvironment(macCatalyst)
+		// Catalyst has no drag-to-dismiss, so it gets the close button the other sheets use.
+		// Widened first, or the overlay would anchor to the 350pt content rather than the sheet.
+		.frame(maxWidth: .infinity)
+		.overlay(alignment: .topLeading) {
+			Button {
+				dismiss()
+			} label: {
+				Image(systemName: "xmark.circle.fill")
+					.font(.system(size: 34))
+					.symbolRenderingMode(.palette)
+					.foregroundStyle(.white, Color(.systemGray3))
+			}
+			.accessibilityLabel(String(localized: "Close", comment: "VoiceOver: dismiss this sheet"))
+			.buttonStyle(.plain)
+			.padding(.top, 12)
+			.padding(.leading, 14)
+		}
+		#else
+		.presentationDragIndicator(.visible)
+		#endif
 	}
 }
 

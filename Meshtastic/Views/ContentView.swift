@@ -36,6 +36,7 @@ struct ContentView: View {
 	/// affordance, so this stays non-dismissable — only the coordinator leaving a
 	/// blocking state clears it.
 	@State private var isShowingLockdownGate: Bool = false
+	@State private var isShowingFirmwareGate: Bool = false
 
 	init(appState: AppState, router: Router) {
 		self.appState = appState
@@ -55,6 +56,10 @@ struct ContentView: View {
 			)
 			.fullScreenCover(isPresented: $isShowingLockdownGate) {
 				LockdownSheet()
+					.trackScreen(.lockdown)
+			}
+			.fullScreenCover(isPresented: $isShowingFirmwareGate) {
+				FirmwareUpdateGate()
 			}
 			.onAppear {
 				// Trust the first-launch flag only when this process can actually read it. Launched
@@ -69,6 +74,7 @@ struct ContentView: View {
 				// Present the gate if the device is already in a blocking state when
 				// this view appears.
 				isShowingLockdownGate = isLockdownGateActive
+				isShowingFirmwareGate = accessoryManager.firmwareUpdateRequired
 			}
 			.onChange(of: isLockdownGateActive) { _, active in
 				// Follow the coordinator's blocking state. The gate never closes from
@@ -76,6 +82,10 @@ struct ContentView: View {
 				// LockdownSheet exposes no dismiss control), so this is the only path
 				// that shows or hides it.
 				isShowingLockdownGate = active
+			}
+			.onChange(of: accessoryManager.firmwareUpdateRequired) { _, required in
+				// Same rule as the lockdown gate: only the manager's state opens or closes it.
+				isShowingFirmwareGate = required
 			}
 			.onChange(of: UserDefaults.showDeviceOnboarding) {_, newValue in
 				isShowingDeviceOnboardingFlow = newValue
@@ -238,25 +248,30 @@ struct ContentView: View {
 						unreadChannelMessages: $appState.unreadChannelMessages,
 						unreadDirectMessages: $appState.unreadDirectMessages
 					)
+					.trackScreen(NavigationState.Tab.messages.screenName)
 				}
 				.badge(appState.totalUnreadMessages)
 
 				Tab("Nodes", image: "custom.mesh.radio", value: NavigationState.Tab.nodes) {
 					NodeList()
+						.trackScreen(NavigationState.Tab.nodes.screenName)
 				}
 
 				Tab("Map", systemImage: "map", value: NavigationState.Tab.map) {
 					MeshMapMK(router: appState.router)
+						.trackScreen(NavigationState.Tab.map.screenName)
 				}
 
 				Tab("Settings", systemImage: "gear", value: NavigationState.Tab.settings) {
 					Settings()
+						.trackScreen(NavigationState.Tab.settings.screenName)
 				}
 
 				Tab("Connect", systemImage: "link", value: NavigationState.Tab.connect) {
 					Connect(
 						router: appState.router
 					)
+					.trackScreen(NavigationState.Tab.connect.screenName)
 				}
 			}
 		} else {
@@ -319,10 +334,11 @@ struct ContentView: View {
 				unreadChannelMessages: $appState.unreadChannelMessages,
 				unreadDirectMessages: $appState.unreadDirectMessages
 			)
-		case .nodes: NodeList()
-		case .map: MeshMapMK(router: appState.router)
-		case .settings: Settings()
-		case .connect: Connect(router: appState.router)
+			.trackScreen(tab.value.screenName)
+		case .nodes: NodeList().trackScreen(tab.value.screenName)
+		case .map: MeshMapMK(router: appState.router).trackScreen(tab.value.screenName)
+		case .settings: Settings().trackScreen(tab.value.screenName)
+		case .connect: Connect(router: appState.router).trackScreen(tab.value.screenName)
 		}
 	}
 

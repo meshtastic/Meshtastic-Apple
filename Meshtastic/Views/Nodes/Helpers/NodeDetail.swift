@@ -28,6 +28,19 @@ private struct NodeDetailLogAvailability {
 }
 
 struct NodeDetail: View {
+
+	/// One row of the node's trust state: a green glyph, what it is, and how it was earned.
+	@ViewBuilder
+	private func trustRow(icon: AnyView, title: LocalizedStringKey, detail: LocalizedStringKey) -> some View {
+		HStack {
+			Label { Text(title) } icon: { icon }
+			Spacer()
+			Text(detail)
+				.foregroundStyle(.secondary)
+				.multilineTextAlignment(.trailing)
+		}
+		.accessibilityElement(children: .combine)
+	}
 	private let gridItemLayout = Array(repeating: GridItem(.flexible(), spacing: 10), count: 2)
 	private static let relativeFormatter: RelativeDateTimeFormatter = {
 		let formatter = RelativeDateTimeFormatter()
@@ -283,45 +296,71 @@ struct NodeDetail: View {
 					.textSelection(.enabled)
 			}
 			.accessibilityElement(children: .combine)
-			// Signed node = automatic trust, observed from the radio. Because NodeInfo is itself a signed
-			// broadcast, the node's identity is verified by extension. Ordered above the public-key (has-key)
-			// row so the section reads most-trusted-first. Affirmative only — never shown for unsigned nodes.
-			if node.hasXeddsaSigned {
-				HStack {
-					Label {
-						Text("Signed node")
-					} icon: {
-						Image(systemName: "checkmark.shield.fill")
-							.foregroundColor(.green)
-					}
-					Spacer()
-					Text("Verified automatically")
-						.foregroundStyle(.secondary)
-				}
-				.accessibilityElement(children: .combine)
+			// One trust row, the strongest that applies, resolved the same way the node list
+			// resolves its glyph — showing both at once said the node was vouched for twice.
+			// Affirmative only: a node that has earned none of these gets no row.
+			if nodeNum == accessoryManager.activeDeviceNum {
+				// You hold this radio, so neither of the other two describes it: you did not
+				// meet yourself in person, and its signature is not what makes it trusted.
+				trustRow(
+					icon: AnyView(VerifiedContactIcon.image.foregroundColor(.green)),
+					title: "Connected node",
+					detail: "This is your radio"
+				)
+			} else if node.isKeyManuallyVerified {
+				trustRow(
+					icon: AnyView(VerifiedContactIcon.image.foregroundColor(.green)),
+					title: "Verified contact",
+					detail: "Verified in person"
+				)
+			} else if node.hasXeddsaSigned {
+				// NodeInfo is itself a signed broadcast, so the node's identity is verified by
+				// extension when the radio accepts the signature.
+				trustRow(
+					icon: AnyView(SignedNodeIcon.image.foregroundColor(.green)),
+					title: "Signed node",
+					detail: "Verified by the radio"
+				)
 			}
 			if let user = currentUser, user.keyMatch {
 				let publicKey = nodeNum == accessoryManager.activeDeviceNum
 				? node.securityConfig?.publicKey?.base64EncodedString() ?? ""
 				: user.publicKey?.base64EncodedString() ?? ""
-				HStack {
+				if publicKey.isEmpty {
+					// Nodes we have only heard packets from have no key on file. Matches the yellow
+					// open lock the node list shows, rather than a green lock over an empty key.
 					Label {
-						Text("Public Key")
+						VStack(alignment: .leading) {
+							Text("No Public Key")
+							Text("This node has not shared a public key, so direct messages to it cannot be sent. Exchange User Info asks for one.")
+								.foregroundStyle(.secondary)
+								.font(.callout)
+						}
+						.accessibilityElement(children: .combine)
 					} icon: {
-						Image(systemName: "lock.fill")
-							.foregroundColor(.green)
+						Image(systemName: "lock.open.fill")
+							.foregroundColor(.yellow)
 					}
-					Spacer()
-					Button(action: {
-						UIPasteboard.general.string = publicKey
-					}) {
-						HStack {
-							Image(systemName: "key.horizontal.fill")
-							Text("Copy")
+				} else {
+					HStack {
+						Label {
+							Text("Public Key")
+						} icon: {
+							Image(systemName: "lock.fill")
+								.foregroundColor(.green)
+						}
+						Spacer()
+						Button(action: {
+							UIPasteboard.general.string = publicKey
+						}) {
+							HStack {
+								Image(systemName: "key.horizontal.fill")
+								Text("Copy")
+							}
 						}
 					}
+					.accessibilityElement(children: .combine)
 				}
-				.accessibilityElement(children: .combine)
 			}
 			if let metadata = node.metadata {
 				HStack {
@@ -783,7 +822,7 @@ struct NodeDetail: View {
 					Button {
 						showingShareContactQR = true
 					} label: {
-						Label("Share Contact QR", systemImage: "qrcode")
+						Label("Share Contact", systemImage: "qrcode")
 					}
 				}
 			}
@@ -792,7 +831,7 @@ struct NodeDetail: View {
 					node: node
 				)
 				if accessoryManager.activeDeviceNum != nodeNum {
-					if !(currentUser?.unmessagable ?? true) {
+					if currentUser?.showsDirectMessageAction == true {
 						Button(action: {
 							if let url = URL(string: "meshtastic:///messages?userNum=\(nodeNum)") {
 								UIApplication.shared.open(url)

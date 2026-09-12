@@ -52,6 +52,7 @@ struct FirmwareOTAUpdateSheet: View {
 	var gameTitle: String?
 
 	@State private var showChirpyGame = false
+	@State private var showStopConfirmation = false
 	@State private var tipIndex: Int = 0
 	private let tipTimer = Timer.publish(every: 8.0, on: .main, in: .common).autoconnect()
 
@@ -181,16 +182,39 @@ struct FirmwareOTAUpdateSheet: View {
 			.toolbar {
 				ToolbarItem(placement: .cancellationAction) {
 					Button {
-						onDismiss()
+						// Always a way out. An update can stall somewhere the app cannot
+						// recover from — the radio never advertises in OTA mode, say — and
+						// a disabled close button leaves force-quitting as the only exit.
+						if isDismissSafe {
+							onDismiss()
+						} else {
+							showStopConfirmation = true
+						}
 					} label: {
 						Image(systemName: "xmark")
 					}
 					.accessibilityLabel(String(localized: "Close", comment: "VoiceOver: dismiss this sheet"))
-					.disabled(!isDismissAllowed)
 				}
 			}
 		}
 		.interactiveDismissDisabled(true)
+		.confirmationDialog(
+			Text("Stop the update?", comment: "Title of the confirmation shown when closing an update in progress"),
+			isPresented: $showStopConfirmation,
+			titleVisibility: .visible
+		) {
+			Button(role: .destructive) {
+				onDismiss()
+			} label: {
+				Text("Stop Update", comment: "Button that abandons an update in progress")
+			}
+			Button(role: .cancel) { } label: {
+				Text("Keep Waiting", comment: "Button that returns to an update in progress")
+			}
+		} message: {
+			Text("The device stays in update mode until the update finishes or you power it off and on again.",
+				 comment: "Explains what happens to the device when an update is abandoned")
+		}
 		.firmwareUpdateGame(isPresented: $showChirpyGame, status: gameStatus)
 		.onReceive(tipTimer) { _ in
 			withAnimation(.easeInOut(duration: 0.35)) {
@@ -199,7 +223,8 @@ struct FirmwareOTAUpdateSheet: View {
 		}
 	}
 
-	private var isDismissAllowed: Bool {
+	/// States where nothing is under way, so closing needs no confirmation.
+	private var isDismissSafe: Bool {
 		[.idle, .completed, .error].contains(statusState)
 	}
 
@@ -276,6 +301,9 @@ struct FirmwareOTASimulatorView: View {
 					resetToIdle()
 				},
 				onDismiss: {
+					// The simulation runs in an unstructured Task that would otherwise keep
+					// going after "Stop Update".
+					isLiveSimulating = false
 					dismiss()
 				},
 				gameTitle: selectedPreset.gameTitle

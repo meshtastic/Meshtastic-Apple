@@ -10,6 +10,7 @@ import MapKit
 @preconcurrency import SwiftData
 import CoreLocation
 import CoreBluetooth
+import MeshtasticProtobufs
 import OSLog
 import TipKit
 #if canImport(ActivityKit)
@@ -30,7 +31,6 @@ struct Connect: View {
 	@State private var connectedBatteryLevel: Int32?
 	@State private var firmwareUpdateNotice: FirmwareUpdateNotice?
 	@State var isUnsetRegion = false
-	@State var invalidFirmwareVersion = false
 	@State var showSecurityVersionNag = false
 #if !targetEnvironment(macCatalyst)
 	@State var liveActivityStarted = false
@@ -43,6 +43,11 @@ struct Connect: View {
 	@State private var pendingNymeaDevice: NymeaDiscoveredDevice?
 	@State private var isSwitchingRadio = false
 	@State private var showingShutdownConfirm = false
+	@State private var showingShareContactQR = false
+	/// The connected node as a plain protobuf value, copied when the share menu item is tapped.
+	/// The sheet outlives the row it was opened from, and reading a faulted @Model after a
+	/// reconnect traps, so nothing SwiftData-backed is held here.
+	@State private var shareContactNode: NodeInfo?
 	/// Stable identity of the node whose context menu opened the shutdown dialog, captured at tap
 	/// time so the confirmation can't drift to a different node if the connection changes first.
 	@State private var pendingShutdownNodeNum: Int64?
@@ -76,6 +81,11 @@ struct Connect: View {
 	/// gating every read through this accessor prevents the crash. (Same guard pattern as #1944.)
 	private var safeNode: NodeInfoEntity? {
 		Connect.liveNode(node)
+	}
+
+	private var loRaConfigDestination: some View {
+		LoRaConfig(node: safeNode, onSuccessfulSave: handleSuccessfulLoRaSave)
+			.trackScreen(SettingsNavigationState.lora.screenName)
 	}
 
 	/// Returns `node` only while it is still a live SwiftData object (`modelContext != nil`),
@@ -252,7 +262,10 @@ struct Connect: View {
 									} label: {
 										Label("Disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
 									}
-									.disabled(!accessoryManager.allowDisconnect)
+									// Tinted explicitly: a destructive role alone leaves the swipe action
+									// the default gray here, and dropping the radio should read as
+									// destructive before the user commits to the swipe.
+									.tint(.red)
 								}
 							}
 							.contextMenu {
@@ -278,6 +291,21 @@ struct Connect: View {
 										}
 									}
 #endif
+									if ShareContactQR.canShareContact(for: node) {
+										Button {
+											// Same liveness re-check as Power Off below: the node captured
+											// when the menu opened can fault before the tap lands. Share
+											// eligibility is re-checked too — the menu condition ran when the
+											// menu was built, and a node that loses its key or turns
+											// unmessagable in between would produce a QR of an empty string.
+											guard let live = Connect.liveNode(node),
+												  ShareContactQR.canShareContact(for: live) else { return }
+											shareContactNode = live.toProto()
+											showingShareContactQR = true
+										} label: {
+											Label("Share Contact", systemImage: "qrcode")
+										}
+									}
 									if accessoryManager.allowDisconnect {
 										Button(role: .destructive) {
 											if accessoryManager.allowDisconnect {
@@ -308,7 +336,7 @@ struct Connect: View {
 							if isUnsetRegion && !lockdown.isBlockingSession {
 								HStack {
 									NavigationLink {
-										LoRaConfig(node: safeNode)
+										loRaConfigDestination
 									} label: {
 										Label("Set LoRa Region", systemImage: "globe.americas.fill")
 											.foregroundColor(.red)
@@ -352,7 +380,7 @@ struct Connect: View {
 										} label: {
 											Label("Disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
 										}
-										.disabled(!accessoryManager.allowDisconnect)
+										.tint(.red)
 									}
 								}
 								
@@ -537,23 +565,19 @@ struct Connect: View {
 					}
 				}
 			}
-		}
-		// TODO: REMOVING VERSION STUFF?
-		//		.sheet(isPresented: $invalidFirmwareVersion, onDismiss: didDismissSheet) {
-		//			InvalidVersion(minimumVersion: accessoryManager.minimumVersion, version: accessoryManager.activeConnection?.device.firmwareVersion ?? "?.?.?")
-		//				.presentationDetents([.large])
-		//				.presentationDragIndicator(.automatic)
-		//		}
-		//		.onChange(of: accessoryManager) {
-		//			invalidFirmwareVersion = self.bleManager.invalidVersion
-		//		}
-		.sheet(isPresented: $invalidFirmwareVersion) {
-			InvalidVersion(minimumVersion: accessoryManager.minimumVersion, version: accessoryManager.activeConnection?.device.firmwareVersion ?? "?.?.?")
-				.presentationDetents([.large])
-				.presentationDragIndicator(.automatic)
+			// Attached here for the same reason as the dialog above: the connected-device
+			// row unmounts on disconnect, which would tear the sheet down with it.
+			.sheet(isPresented: $showingShareContactQR) {
+				if let shareContactNode {
+					// This menu only ever shows on the connected radio, which is verified by
+					// definition.
+					ShareContactQRDialog(manuallyVerified: true, node: shareContactNode)
+				}
+			}
 		}
 		.sheet(isPresented: $showSecurityVersionNag) {
 			SecurityVersionNag(minimumSecureVersion: accessoryManager.securityVersion, version: accessoryManager.activeConnection?.device.firmwareVersion ?? "?.?.?")
+				.trackScreen(.firmwareSecurityWarning)
 				.presentationDetents([.large])
 				.presentationDragIndicator(.automatic)
 		}
@@ -568,6 +592,7 @@ struct Connect: View {
 			updateNymeaDiscovery()
 		}) { device in
 			WifiProvisioningView(preselectedDevice: device)
+				.trackScreen(.wifiProvisioning)
 		}
 		.onAppear {
 			updateNymeaDiscovery()
@@ -630,6 +655,12 @@ struct Connect: View {
 		}
 	}
 
+	private func handleSuccessfulLoRaSave(_ savedNodeNum: Int64, _ savedRegion: RegionCodes) {
+		guard accessoryManager.state == .subscribed,
+			  savedNodeNum == accessoryManager.activeDeviceNum else { return }
+		isUnsetRegion = savedRegion == .unset
+	}
+
 	@MainActor
 	private func refreshConnectedNodeState() {
 		guard let deviceNum = accessoryManager.activeDeviceNum,
@@ -662,7 +693,6 @@ struct Connect: View {
 		if let firmwareVersion = accessoryManager.activeConnection?.device.firmwareVersion, firmwareVersion != "?.?.?" && !firmwareVersion.isEmpty {
 			let meetsMinimumVersion = accessoryManager.checkIsVersionSupported(forVersion: accessoryManager.minimumVersion)
 			let meetsSecurityVersion = accessoryManager.checkIsVersionSupported(forVersion: accessoryManager.securityVersion)
-			invalidFirmwareVersion = !meetsMinimumVersion
 			showSecurityVersionNag = meetsMinimumVersion && !meetsSecurityVersion
 		}
 	}
@@ -1011,6 +1041,7 @@ func backupCurrentDatabase(forTargetNode targetNodeNum: Int64?, currentNodeNum: 
 		Logger.backup.info("💾 Creating backup for current node \(currentNodeNum) before restore")
 		let backupResult = await NodeBackupManager.shared.createBackup(
 			forNode: currentNodeNum,
+			deviceId: accessoryManager.connectedDeviceId,
 			nodeName: currentNodeName
 		)
 		switch backupResult {

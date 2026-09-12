@@ -20,6 +20,8 @@ enum IntervalConfiguration: CaseIterable {
 	case paxCounter
 	case rangeTestSender
 	case smartBroadcastMinimum
+	case trafficPositionDedup
+	case trafficRateLimitWindow
 
 	var allowedCases: [FixedUpdateIntervals] {
 		switch self {
@@ -49,6 +51,15 @@ enum IntervalConfiguration: CaseIterable {
 			return [.unset, .fifteenSeconds, .thirtySeconds, .fortyFiveSeconds, .oneMinute, .fiveMinutes, .tenMinutes, .fifteenMinutes, .thirtyMinutes, .oneHour]
 		case .smartBroadcastMinimum:
 			return [.fifteenSeconds, .thirtySeconds, .fortyFiveSeconds, .oneMinute, .fiveMinutes, .tenMinutes, .fifteenMinutes, .thirtyMinutes, .oneHour]
+		case .trafficPositionDedup:
+			// Firmware's defaults run long: 5 hours between identical positions, 1 hour for
+			// trackers, 15 minutes for lost-and-found. No zero row — the feature toggle clears
+			// the value instead.
+			return [.oneMinute, .fiveMinutes, .tenMinutes, .fifteenMinutes, .thirtyMinutes, .oneHour, .twoHours, .threeHours, .fourHours, .fiveHours, .sixHours, .twelveHours, .twentyFourHours]
+		case .trafficRateLimitWindow:
+			// The accounting window packets are counted over, so it stays short. No zero row —
+			// firmware needs both the window and the packet count non-zero.
+			return [.tenSeconds, .fifteenSeconds, .thirtySeconds, .oneMinute, .twoMinutes, .fiveMinutes, .tenMinutes, .fifteenMinutes, .thirtyMinutes, .oneHour]
 		}
 	}
 }

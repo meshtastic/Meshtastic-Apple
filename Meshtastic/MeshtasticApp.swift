@@ -91,7 +91,7 @@ struct MeshtasticAppleApp: App {
 
 			var rumConfig = RUM.Configuration(
 				applicationID: appID,
-				swiftUIViewsPredicate: DefaultSwiftUIRUMViewsPredicate(),
+				swiftUIViewsPredicate: MeshtasticSwiftUIViewsPredicate(),
 				swiftUIActionsPredicate: DefaultSwiftUIRUMActionsPredicate(isLegacyDetectionEnabled: true),
 				trackBackgroundEvents: true
 			)
@@ -232,7 +232,14 @@ struct MeshtasticAppleApp: App {
 			if Self.isRunningTests {
 				Color.clear
 			} else if Self.isChirpyOTADemo {
+				// Kept out of the release build's view type on purpose, not just behind a flag
+				// that is false there: the automatic RUM view naming reflects over these
+				// branches, and this type — which can never be on screen in release — was
+				// being reported as the view for everything that happened at the app root.
+				// See `trackScreen`.
+				#if DEBUG
 				FirmwareUpdateGameDemoHost()
+				#endif
 			} else if appState.isDatabaseResetting {
 				// Unmount the WHOLE SwiftData-bound tree — including the `.modelContainer`
 				// modifier in mainAppContent — while a node switch clears the store. The
@@ -340,6 +347,7 @@ struct MeshtasticAppleApp: App {
 						channelSetLink: link.data,
 						addChannels: link.add, // <-- Uses the now reliable 'add' boolean
 						accessoryManager: accessoryManager				)
+					.trackScreen(.saveChannelQRCode)
 					.presentationDetents([.large])
 					#if !targetEnvironment(macCatalyst)
 					.presentationDragIndicator(.visible)
@@ -350,6 +358,7 @@ struct MeshtasticAppleApp: App {
 							pendingContact: pendingContact,
 							accessoryManager: accessoryManager
 						)
+						.trackScreen(.addContact)
 						.presentationDetents([.medium, .large])
 						#if !targetEnvironment(macCatalyst)
 						.presentationDragIndicator(.visible)
