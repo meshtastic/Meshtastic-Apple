@@ -1208,21 +1208,19 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 
 				// Perform a single batch save after database retrieval completes
 				// This significantly improves performance on reconnect
-				Task {
-					// The dump was ingested with deferred saves on the MeshPackets actor
-					// (see handleNodeInfo); flush it so every node from the dump is persisted
-					// now rather than waiting on the debounce timer.
-					await MeshPackets.shared.flushDebouncedSaves()
-					do {
-						try context.save()
-						Logger.data.info("💾 [Database] Batch saved all node info after database retrieval")
+				// The dump was ingested with deferred saves on the MeshPackets actor
+				// (see handleNodeInfo); flush it so every node from the dump is persisted
+				// now rather than waiting on the debounce timer.
+				await MeshPackets.shared.flushDebouncedSaves()
+				do {
+					try context.save()
+					Logger.data.info("💾 [Database] Batch saved all node info after database retrieval")
 
-						// Push updated node data to the companion Watch app
-						WatchSessionManager.shared.sendNodesToWatch()
-					} catch {
-						let nsError = error as NSError
-						Logger.data.error("💥 [Database] Error saving batch node info: \(nsError, privacy: .public)")
-					}
+					// Push updated node data to the companion Watch app
+					WatchSessionManager.shared.sendNodesToWatch()
+				} catch {
+					let nsError = error as NSError
+					Logger.data.error("💥 [Database] Error saving batch node info: \(nsError, privacy: .public)")
 				}
 				
 			default:
