@@ -35,7 +35,7 @@ struct SaveConfigButton: View {
 				.padding(.bottom)
 				.controlSize(.large)
 				.buttonStyle(.borderedProminent)
-				.tint(Color("Colors/MeshtasticAccent"))
+				.tint(.accentColor)
 				.confirmationDialog(
 					"Are you sure?",
 					isPresented: $isPresentingSaveConfirm,
@@ -49,7 +49,10 @@ struct SaveConfigButton: View {
 				} message: {
 					Text(confirmationMessage)
 				}
-				.tint(Color.primary)
+				// After the dialog modifier, so this tints the dialog's actions rather than the
+				// Save button. The button above is a filled accent shape and keeps `accentColor`;
+				// the dialog's action is plain text on glass and needs the on-surface accent.
+				.tint(.accentTint)
 				.onAppear {
 					if initiallyPresentingConfirmation {
 						isPresentingSaveConfirm = true
