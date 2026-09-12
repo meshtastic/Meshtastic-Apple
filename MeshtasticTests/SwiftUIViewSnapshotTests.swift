@@ -158,7 +158,7 @@ private func assertPresentedViewSnapshot<V: View>(
 	height: CGFloat,
 	colorScheme: ColorScheme,
 	named name: String,
-	validatePresentation: ((UIViewController) -> Void)? = nil,
+	validatePresentation: ((UIViewController, UIImage) -> Void)? = nil,
 	filePath: String = #filePath,
 	sourceLocation: SourceLocation = #_sourceLocation
 ) async {
@@ -202,13 +202,13 @@ private func assertPresentedViewSnapshot<V: View>(
 		}
 		await Task.yield()
 	}
-	validatePresentation?(presentedController)
 	window.layoutIfNeeded()
 
 	let renderer = UIGraphicsImageRenderer(size: window.bounds.size)
 	let image = renderer.image { _ in
 		window.drawHierarchy(in: window.bounds, afterScreenUpdates: true)
 	}
+	validatePresentation?(presentedController, image)
 	window.isHidden = true
 
 	guard let pngData = image.pngData(), let cgImage = image.cgImage else {
@@ -1794,8 +1794,62 @@ struct SaveConfigConfirmationSnapshotTests {
 		"iOS\(ProcessInfo.processInfo.operatingSystemVersion.majorVersion)"
 	}
 
+	private func matchingPixelCount(
+		in image: UIImage,
+		frame: CGRect,
+		color: UIColor,
+		channelTolerance: UInt8 = 16
+	) -> Int? {
+		guard let cgImage = image.cgImage else { return nil }
+		let imageScale = image.scale
+		let imageBounds = CGRect(x: 0, y: 0, width: cgImage.width, height: cgImage.height)
+		let pixelFrame = CGRect(
+			x: frame.minX * imageScale,
+			y: frame.minY * imageScale,
+			width: frame.width * imageScale,
+			height: frame.height * imageScale
+		).integral.intersection(imageBounds)
+		guard !pixelFrame.isNull,
+			  let croppedImage = cgImage.cropping(to: pixelFrame) else { return nil }
+
+		let bytesPerRow = croppedImage.width * 4
+		var bytes = [UInt8](repeating: 0, count: bytesPerRow * croppedImage.height)
+		let bitmapInfo = CGImageAlphaInfo.premultipliedLast.rawValue |
+			CGBitmapInfo.byteOrder32Big.rawValue
+		let didRender = bytes.withUnsafeMutableBytes { buffer -> Bool in
+			guard let context = CGContext(
+				data: buffer.baseAddress,
+				width: croppedImage.width,
+				height: croppedImage.height,
+				bitsPerComponent: 8,
+				bytesPerRow: bytesPerRow,
+				space: CGColorSpaceCreateDeviceRGB(),
+				bitmapInfo: bitmapInfo
+			) else { return false }
+			context.draw(croppedImage, in: CGRect(x: 0, y: 0, width: croppedImage.width, height: croppedImage.height))
+			return true
+		}
+		guard didRender else { return nil }
+
+		var red: CGFloat = 0
+		var green: CGFloat = 0
+		var blue: CGFloat = 0
+		guard color.getRed(&red, green: &green, blue: &blue, alpha: nil) else { return nil }
+		let expectedChannels = [red, green, blue].map {
+			UInt8(clamping: Int(($0 * 255).rounded()))
+		}
+		return stride(from: 0, to: bytes.count, by: 4).reduce(into: 0) { count, offset in
+			let matches = (0..<3).allSatisfy { channel in
+				abs(Int(bytes[offset + channel]) - Int(expectedChannels[channel])) <= Int(channelTolerance)
+			}
+			if matches {
+				count += 1
+			}
+		}
+	}
+
 	@MainActor
-	private func validateConfirmationPresentation(_ viewController: UIViewController) {
+	private func validateConfirmationPresentation(_ viewController: UIViewController, image: UIImage) {
 		let actionTitle = "Save Config for Test Radio"
 		guard let actionLabel = label(withText: actionTitle, in: viewController.view) else {
 			Issue.record("Missing confirmation action named \(actionTitle)")
@@ -1803,28 +1857,17 @@ struct SaveConfigConfirmationSnapshotTests {
 		}
 		if #available(iOS 26.0, *) {
 			let traits = actionLabel.traitCollection
-			let actionTint = actionLabel.tintColor.resolvedColor(with: traits)
-			guard let expectedTint = UIColor(named: "AccentColor")?.resolvedColor(with: traits) else {
-				Issue.record("Missing AccentColor")
+			guard let expectedTint = UIColor(named: "AccentColor")?.resolvedColor(with: traits),
+				  let window = actionLabel.window else {
+				Issue.record("Unable to resolve the confirmation action color")
 				return
 			}
-			var actionRed: CGFloat = 0
-			var actionGreen: CGFloat = 0
-			var actionBlue: CGFloat = 0
-			var expectedRed: CGFloat = 0
-			var expectedGreen: CGFloat = 0
-			var expectedBlue: CGFloat = 0
-			guard actionTint.getRed(&actionRed, green: &actionGreen, blue: &actionBlue, alpha: nil),
-				  expectedTint.getRed(&expectedRed, green: &expectedGreen, blue: &expectedBlue, alpha: nil) else {
-				Issue.record("Unable to resolve confirmation action colors")
+			let actionFrame = actionLabel.convert(actionLabel.bounds, to: window)
+			guard let matchingPixels = matchingPixelCount(in: image, frame: actionFrame, color: expectedTint) else {
+				Issue.record("Unable to inspect the rendered confirmation action")
 				return
 			}
-			let maximumChannelDifference = [
-				abs(actionRed - expectedRed),
-				abs(actionGreen - expectedGreen),
-				abs(actionBlue - expectedBlue)
-			].max() ?? 0
-			#expect(maximumChannelDifference <= 0.01)
+			#expect(matchingPixels >= 100, "Rendered confirmation action does not use AccentColor")
 		}
 	}
 
