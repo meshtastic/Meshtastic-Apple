@@ -1196,9 +1196,6 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 				await finishAutomaticConfigRefresh(owner: refresh.owner, error: nil)
 				
 			case UInt32(NONCE_ONLY_DB):
-				// Open the gate for the wantDatabaseContinuation
-				Task { await wantDatabaseGate.open() }
-
 				// If we get the "done" for NONCE_ONLY_DB, but are still waiting for the first NodeInfo,
 				// Then the database is probably empty, and can continue
 				if let firstDatabaseNodeInfoContinuation {
@@ -1222,6 +1219,9 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 					let nsError = error as NSError
 					Logger.data.error("💥 [Database] Error saving batch node info: \(nsError, privacy: .public)")
 				}
+
+				// Step 5a must not advance until the retrieved database has been saved.
+				await wantDatabaseGate.open()
 				
 			default:
 				Logger.transport.error("[Accessory] Unknown nonce completed: \(configCompleteID)")
