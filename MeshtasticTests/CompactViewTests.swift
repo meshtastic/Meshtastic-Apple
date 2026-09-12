@@ -38,6 +38,139 @@ struct NodeListDensityTests {
 	}
 }
 
+// MARK: - NodeListRefreshState
+
+@Suite("NodeListRefreshState")
+struct NodeListRefreshStateTests {
+
+	@Test func startsWithPendingRefresh() {
+		let state = NodeListRefreshState()
+
+		#expect(state.needsRefresh)
+		#expect(state.canRefresh)
+	}
+
+	@Test func completedRefreshWaitsForAnotherChange() {
+		var state = NodeListRefreshState()
+
+		state.didRefresh(succeeded: true)
+
+		#expect(!state.needsRefresh)
+		#expect(!state.canRefresh)
+		state.setNeedsRefresh()
+		#expect(state.needsRefresh)
+		#expect(state.canRefresh)
+	}
+
+	@Test func failedRefreshRemainsPending() {
+		var state = NodeListRefreshState()
+		state.didRefresh(succeeded: true)
+
+		state.didRefresh(succeeded: false)
+
+		#expect(state.needsRefresh)
+		#expect(state.canRefresh)
+	}
+
+	@Test func scrollingDefersPendingRefresh() {
+		var state = NodeListRefreshState()
+
+		state.setScrolling(true)
+
+		#expect(state.needsRefresh)
+		#expect(!state.canRefresh)
+		state.setScrolling(false)
+		#expect(state.canRefresh)
+	}
+
+	@Test func scrollingDoesNotRequestRefresh() {
+		var state = NodeListRefreshState()
+		state.didRefresh(succeeded: true)
+
+		state.setScrolling(true)
+		state.setScrolling(false)
+
+		#expect(!state.needsRefresh)
+		#expect(!state.canRefresh)
+	}
+
+	@Test func changesWhileScrollingRemainPending() {
+		var state = NodeListRefreshState()
+		state.didRefresh(succeeded: true)
+		state.setScrolling(true)
+
+		state.setNeedsRefresh()
+		state.setNeedsRefresh()
+
+		#expect(state.needsRefresh)
+		#expect(!state.canRefresh)
+		state.setScrolling(false)
+		#expect(state.canRefresh)
+	}
+
+	@Test func refreshPipelineDefersSideEffectUntilScrollingEnds() {
+		var state = NodeListRefreshState()
+		var refreshCallCount = 0
+		let refresh = {
+			refreshCallCount += 1
+			return true
+		}
+
+		state.setScrolling(true)
+		let scrollingResult = state.runRefreshIfNeeded(refresh)
+
+		#expect(scrollingResult == nil)
+		#expect(refreshCallCount == 0)
+
+		state.setScrolling(false)
+		if let succeeded = state.runRefreshIfNeeded(refresh) {
+			state.didRefresh(succeeded: succeeded)
+		}
+
+		#expect(refreshCallCount == 1)
+		#expect(!state.needsRefresh)
+	}
+
+	@Test @MainActor func onlineAgingUsesMinuteCadence() async {
+		var requestedIntervals: [Duration] = []
+		var refreshCallCount = 0
+
+		await runOnlineNodeAgingTask(
+			isEnabled: true,
+			sleep: { interval in
+				requestedIntervals.append(interval)
+				if requestedIntervals.count > 1 {
+					throw CancellationError()
+				}
+			},
+			markRefreshNeeded: {
+				refreshCallCount += 1
+			}
+		)
+
+		#expect(requestedIntervals == [.seconds(60), .seconds(60)])
+		#expect(refreshCallCount == 1)
+	}
+
+	@Test @MainActor func onlineAgingStopsWhenDisabled() async {
+		var sleepCallCount = 0
+		var refreshCallCount = 0
+
+		await runOnlineNodeAgingTask(
+			isEnabled: false,
+			sleep: { _ in
+				sleepCallCount += 1
+			},
+			markRefreshNeeded: {
+				refreshCallCount += 1
+			}
+		)
+
+		#expect(sleepCallCount == 0)
+		#expect(refreshCallCount == 0)
+	}
+}
+
 // MARK: - NodeListPreferences
 
 @Suite("NodeListPreferences")
