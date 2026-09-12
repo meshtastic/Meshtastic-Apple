@@ -29,7 +29,18 @@ struct AudioConfig: View {
 	var body: some View {
 		VStack {
 			Form {
-				ConfigHeader(title: "Audio", config: \.audioConfig, node: node, onAppear: setAudioValues)
+				ConfigHeader(title: "Audio", config: \.audioConfig, node: node, onAppear: setAudioValues, onRetry: {
+			requestRemoteConfig(
+					node: node,
+					context: context,
+					accessoryManager: accessoryManager,
+					configIsNil: { $0.audioConfig == nil },
+					section: "Audio",
+					request: accessoryManager.requestAudioModuleConfig
+				,
+				force: true
+			)
+		})
 
 				Section(header: Text("Options")) {
 					Toggle(isOn: $codec2Enabled) {
@@ -156,6 +167,7 @@ struct AudioConfig: View {
 					context: context,
 					accessoryManager: accessoryManager,
 					configIsNil: { $0.audioConfig == nil },
+					section: "Audio",
 					request: accessoryManager.requestAudioModuleConfig
 				)
 			}

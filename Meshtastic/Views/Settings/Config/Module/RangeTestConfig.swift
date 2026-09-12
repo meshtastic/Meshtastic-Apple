@@ -37,7 +37,18 @@ struct RangeTestConfig: View {
 
 	var body: some View {
 		Form {
-			ConfigHeader(title: "Range", config: \.rangeTestConfig, node: node, onAppear: setRangeTestValues)
+			ConfigHeader(title: "Range", config: \.rangeTestConfig, node: node, onAppear: setRangeTestValues, onRetry: {
+			requestRemoteConfig(
+				node: node,
+				context: context,
+				accessoryManager: accessoryManager,
+				configIsNil: { $0.rangeTestConfig == nil },
+				section: "Range",
+				request: accessoryManager.requestRangeTestModuleConfig,
+				requestForConnectedNode: true,
+				force: true
+			)
+		})
 
 			if isPrimaryChannelPublic {
 				Section {
@@ -107,6 +118,7 @@ struct RangeTestConfig: View {
 				context: context,
 				accessoryManager: accessoryManager,
 				configIsNil: { $0.rangeTestConfig == nil },
+				section: "Range",
 				request: accessoryManager.requestRangeTestModuleConfig,
 				requestForConnectedNode: true
 			)
