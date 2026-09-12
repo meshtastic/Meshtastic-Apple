@@ -56,6 +56,7 @@ actor BLETransport: Transport {
 	private var cleanupTask: Task<Void, Never>?
 	private var scanningPausedForConnection = false
 	private let discoverySetupHandler: (@Sendable () async -> Void)?
+	private let persistenceBootstrap: @Sendable () async -> Void
 	
 	// Transport properties
 	let supportsManualConnection: Bool = false
@@ -66,13 +67,18 @@ actor BLETransport: Transport {
 	///   authorization already does. Tests that drive `handleCentralState` directly need this: a
 	///   real manager reports the host's actual Bluetooth state on its own schedule, and that
 	///   incidental value lands in `status` at an unpredictable point mid-test.
+	/// - Parameter persistenceBootstrap: Finishes legacy migration before restoration reads SwiftData.
 	init(
 		createCentralManagerImmediately: Bool = true,
 		centralManager: CBCentralManager? = nil,
-		discoverySetupHandler: (@Sendable () async -> Void)? = nil
+		discoverySetupHandler: (@Sendable () async -> Void)? = nil,
+		persistenceBootstrap: @escaping @Sendable () async -> Void = {
+			await PersistenceController.shared.bootstrap()
+		}
 	) {
 		self.centralManager = centralManager
 		self.discoverySetupHandler = discoverySetupHandler
+		self.persistenceBootstrap = persistenceBootstrap
 		self.discoveredPeripherals = [:]
 		self.discoveredDeviceContinuation = nil
 		self.delegate = BLEDelegate()
@@ -509,7 +515,9 @@ actor BLETransport: Transport {
 		self.connectingPeripheral = nil
 	}
 	
-	func handleWillRestoreState(dict: [String: Any], central: CBCentralManager) async {
+	func handleWillRestoreState(dict: [String: Any], central: CBCentralManager?) async {
+		await persistenceBootstrap()
+
 		/// GVH - To test this you need to simulate the app getting killed in the background by the OS you can do this by stopping  the debugger while the app is connected to a device in the background
 		/// You will see Message from debugger: killed after you see this message, power off and back on your meshtastic device, bring the app back to the foreground and
 		/// look in the logs for the messages below.
@@ -519,6 +527,10 @@ actor BLETransport: Transport {
 		guard let peripherals = dict[CBCentralManagerRestoredStatePeripheralsKey] as? [CBPeripheral],
 			  let peripheral = peripherals.first else {
 			Logger.transport.error("🛜 [BLE] No peripherals found in restore state dictionary.")
+			return
+		}
+		guard let central else {
+			Logger.transport.error("🛜 [BLE] No central manager available for state restoration.")
 			return
 		}
 		

@@ -26,6 +26,10 @@ Each transport conforms to a `MeshTransport` protocol that exposes `connect()`, 
 
 `status` is actor-isolated state, so nothing outside `BLETransport` could observe it changing until `statusUpdates() -> AsyncStream<TransportStatus>` was added: it replays the current status to a new subscriber, then yields again on every subsequent change (a `didSet` on `status` drives the broadcast, guarded so an unchanged value never yields a duplicate). `AccessoryManager.observeBLETransportStatus()` is the sole subscriber — it consumes the stream for the app's lifetime and mirrors every value onto `@Published var bleTransportStatus`, from which the computed `isBluetoothPoweredOff` derives. The Connect tab reads `isBluetoothPoweredOff` to show an inline "Bluetooth is off" row in Available Radios, since the system "Bluetooth is turned off" alert is intentionally suppressed (`CBCentralManagerOptionShowPowerAlertKey: false`, see above) and would otherwise be the only in-app signal a BLE user gets.
 
+### BLE State Restoration and Persistence
+
+CoreBluetooth can deliver `willRestoreState` while the app is still copying a legacy Core Data store into SwiftData. The callback starts asynchronous restoration processing, which waits for `PersistenceController.bootstrap()` before it reads node details or resumes a restored connection. Processing keeps the original restoration payload across the wait and continues after migration completes. Migration failure keeps the existing behavior: the error is logged, the usable SwiftData store remains available, and restoration continues without migrated node metadata.
+
 ## AccessoryManager Extension Map
 
 | Extension | Key Methods |
