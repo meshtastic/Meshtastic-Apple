@@ -253,14 +253,41 @@ struct MeshtasticAPIErrorTests {
 	}
 }
 
-// MARK: - URL TimeoutError
+// MARK: - Meshtastic API URL session
 
-@Suite("URL TimeoutError")
-struct URLTimeoutErrorTests {
+class MeshtasticAPIStalledURLProtocol: URLProtocol {
+	override class func canInit(with request: URLRequest) -> Bool { true }
+	override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
+	override func startLoading() {}
+	override func stopLoading() {}
+}
 
-	@Test func timedOut_description() {
-		let error = URL.TimeoutError.timedOut(3.0)
-		#expect(error.errorDescription?.contains("3.0") == true)
+@Suite("Meshtastic API URL session")
+struct MeshtasticAPIURLSessionTests {
+
+	@Test func configurationUsesNativeTimeoutsAndHTTPURLCache() {
+		let configuration = URLSessionConfiguration.meshtasticAPI
+		#expect(configuration.timeoutIntervalForRequest == 5)
+		#expect(configuration.timeoutIntervalForResource == 10)
+		#expect(configuration.requestCachePolicy == .useProtocolCachePolicy)
+	}
+
+	@Test func nativeSessionTimesOutAStalledRequest() async {
+		let configuration = URLSessionConfiguration.meshtasticAPI
+		configuration.timeoutIntervalForRequest = 0.05
+		configuration.timeoutIntervalForResource = 0.1
+		configuration.protocolClasses = [MeshtasticAPIStalledURLProtocol.self]
+		let session = URLSession(configuration: configuration)
+		defer { session.invalidateAndCancel() }
+
+		do {
+			_ = try await session.data(from: URL(string: "https://example.com/stalled")!)
+			Issue.record("Expected the configured URLSession to time out")
+		} catch let error as URLError {
+			#expect(error.code == .timedOut)
+		} catch {
+			Issue.record("Expected URLError.timedOut, got \(error)")
+		}
 	}
 }
 
