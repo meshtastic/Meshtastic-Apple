@@ -340,7 +340,7 @@ targets:
             - "$(inherited)"
             - "@executable_path/Frameworks"
           MACOSX_DEPLOYMENT_TARGET: "14.6"
-          MARKETING_VERSION: "2.7.22"
+          MARKETING_VERSION: "2.7.23"
           OTHER_LDFLAGS:
             - "-weak_framework"
             - "SwiftUI"
@@ -383,7 +383,7 @@ targets:
             - "$(inherited)"
             - "@executable_path/Frameworks"
           MACOSX_DEPLOYMENT_TARGET: "14.6"
-          MARKETING_VERSION: "2.7.22"
+          MARKETING_VERSION: "2.7.23"
           OTHER_LDFLAGS:
             - "-weak_framework"
             - "SwiftUI"
@@ -429,7 +429,7 @@ targets:
             - "@executable_path/Frameworks"
             - "@executable_path/../../Frameworks"
           MACOSX_DEPLOYMENT_TARGET: "14.6"
-          MARKETING_VERSION: "2.7.22"
+          MARKETING_VERSION: "2.7.23"
           PRODUCT_BUNDLE_IDENTIFIER: "gvh.MeshtasticClient.Widgets"
           PRODUCT_NAME: "$(TARGET_NAME)"
           PROVISIONING_PROFILE_SPECIFIER: ""
@@ -458,7 +458,7 @@ targets:
             - "@executable_path/Frameworks"
             - "@executable_path/../../Frameworks"
           MACOSX_DEPLOYMENT_TARGET: "14.6"
-          MARKETING_VERSION: "2.7.22"
+          MARKETING_VERSION: "2.7.23"
           PRODUCT_BUNDLE_IDENTIFIER: "gvh.MeshtasticClient.Widgets"
           PRODUCT_NAME: "$(TARGET_NAME)"
           PROVISIONING_PROFILE_SPECIFIER: ""
@@ -604,7 +604,7 @@ targets:
           LD_RUNPATH_SEARCH_PATHS:
             - "$(inherited)"
             - "@executable_path/Frameworks"
-          MARKETING_VERSION: "2.7.22"
+          MARKETING_VERSION: "2.7.23"
           PRODUCT_BUNDLE_IDENTIFIER: "gvh.MeshtasticClient.watchkitapp"
           PRODUCT_NAME: "$(TARGET_NAME)"
           SDKROOT: "watchos"
@@ -632,7 +632,7 @@ targets:
           LD_RUNPATH_SEARCH_PATHS:
             - "$(inherited)"
             - "@executable_path/Frameworks"
-          MARKETING_VERSION: "2.7.22"
+          MARKETING_VERSION: "2.7.23"
           PRODUCT_BUNDLE_IDENTIFIER: "gvh.MeshtasticClient.watchkitapp"
           PRODUCT_NAME: "$(TARGET_NAME)"
           SDKROOT: "watchos"
@@ -693,7 +693,7 @@ targets:
           LD_RUNPATH_SEARCH_PATHS:
             - "$(inherited)"
             - "@executable_path/Frameworks"
-          MARKETING_VERSION: "2.7.22"
+          MARKETING_VERSION: "2.7.23"
           PRODUCT_BUNDLE_IDENTIFIER: "gvh.MeshtasticClient"
           PRODUCT_NAME: "$(TARGET_NAME)"
           SDKROOT: "appletvos"
@@ -712,7 +712,7 @@ targets:
           LD_RUNPATH_SEARCH_PATHS:
             - "$(inherited)"
             - "@executable_path/Frameworks"
-          MARKETING_VERSION: "2.7.22"
+          MARKETING_VERSION: "2.7.23"
           PRODUCT_BUNDLE_IDENTIFIER: "gvh.MeshtasticClient"
           PRODUCT_NAME: "$(TARGET_NAME)"
           SDKROOT: "appletvos"
