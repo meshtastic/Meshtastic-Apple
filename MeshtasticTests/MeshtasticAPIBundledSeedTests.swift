@@ -7,40 +7,89 @@ import Testing
 /// Records every request the URL loading system is asked to perform, and fails them
 /// immediately so a test can never depend on real network reachability.
 ///
-/// Scope caveat: `URLProtocol.registerClass` only intercepts `URLSession.shared` and sessions
-/// built from a default configuration. That covers the code under test — `URL.eTag()` and
-/// `URL.data(timeout:)` both use `URLSession.shared` — but a future regression that reaches the
-/// network through a custom-configured session would slip past this recorder.
-///
-/// Registration is process-global, so a suite using this must not run alongside another suite
-/// that does its own networking. No other suite in this target does today; `.serialized` on the
-/// suite below covers ordering within it.
+/// Each test injects a URL session whose configuration names this protocol, so requests cannot
+/// escape to the real network. The suite remains serialized because the recorder and stubs share
+/// static state.
 ///
 /// Not `final`: the URLProtocol hooks below are class-method overrides, which SwiftLint's
 /// `static_over_final_class` rule would otherwise flag.
 class RequestRecordingURLProtocol: URLProtocol {
 	private static let lock = NSLock()
-	nonisolated(unsafe) private static var recorded: [URL] = []
+	nonisolated(unsafe) private static var recorded: [URLRequest] = []
 
 	nonisolated(unsafe) private static var stubs: [String: Data] = [:]
+	nonisolated(unsafe) private static var stubStatusCodes: [String: Int] = [:]
+	nonisolated(unsafe) private static var suspendedStubKeys: Set<String> = []
+
+	private struct RequestStartWaiter {
+		let key: String
+		let continuation: CheckedContinuation<Void, Error>
+	}
+
+	nonisolated(unsafe) private static var requestStartWaiters: [UUID: RequestStartWaiter] = [:]
 
 	/// Applied to every stubbed response when set, so the ETag-skip path is testable.
 	nonisolated(unsafe) private static var stubETag: String?
 
 	/// Resets the recorder. Any request whose URL contains one of the `stubs` keys is answered
-	/// with a 200 and that body; everything else fails immediately.
-	static func reset(stubs: [String: Data] = [:], eTag: String? = nil) {
+	/// with that body and its configured status code; everything else fails immediately.
+	static func reset(
+		stubs: [String: Data] = [:],
+		eTag: String? = nil,
+		statusCodes: [String: Int] = [:],
+		suspendedStubKeys: Set<String> = []
+	) {
 		lock.lock()
+		let staleWaiters = requestStartWaiters.values.map(\.continuation)
 		recorded = []
 		Self.stubs = stubs
 		Self.stubETag = eTag
+		Self.stubStatusCodes = statusCodes
+		Self.suspendedStubKeys = suspendedStubKeys
+		requestStartWaiters = [:]
 		lock.unlock()
+		staleWaiters.forEach { $0.resume(throwing: CancellationError()) }
 	}
 
-	static var recordedURLs: [URL] {
+	static var recordedRequests: [URLRequest] {
 		lock.lock()
 		defer { lock.unlock() }
 		return recorded
+	}
+
+	static var recordedURLs: [URL] {
+		recordedRequests.compactMap(\.url)
+	}
+
+	static func waitUntilRequestStarts(containing key: String) async throws {
+		let waiterID = UUID()
+		try await withTaskCancellationHandler {
+			try await withCheckedThrowingContinuation { continuation in
+				lock.lock()
+				let alreadyStarted = recorded.contains {
+					$0.url?.absoluteString.contains(key) == true
+				}
+				if !alreadyStarted, !Task.isCancelled {
+					requestStartWaiters[waiterID] = RequestStartWaiter(
+						key: key,
+						continuation: continuation
+					)
+					lock.unlock()
+					return
+				}
+				lock.unlock()
+				if Task.isCancelled {
+					continuation.resume(throwing: CancellationError())
+				} else {
+					continuation.resume()
+				}
+			}
+		} onCancel: {
+			lock.lock()
+			let continuation = requestStartWaiters.removeValue(forKey: waiterID)?.continuation
+			lock.unlock()
+			continuation?.resume(throwing: CancellationError())
+		}
 	}
 
 	// Recording happens in startLoading(), not here: the URL loading system may call canInit
@@ -51,23 +100,28 @@ class RequestRecordingURLProtocol: URLProtocol {
 
 	override func startLoading() {
 		let absolute = request.url?.absoluteString ?? ""
-		if let url = request.url {
-			Self.lock.lock()
-			Self.recorded.append(url)
-			Self.lock.unlock()
+		Self.lock.lock()
+		Self.recorded.append(request)
+		let matchingWaiterIDs = Self.requestStartWaiters.compactMap { id, waiter in
+			absolute.contains(waiter.key) ? id : nil
 		}
-		Self.lock.lock()
+		let waiters = matchingWaiterIDs.compactMap {
+			Self.requestStartWaiters.removeValue(forKey: $0)?.continuation
+		}
 		let stubbed = Self.stubs.first { absolute.contains($0.key) }?.value
-		Self.lock.unlock()
-
-		Self.lock.lock()
+		let statusCode = Self.stubStatusCodes.first { absolute.contains($0.key) }?.value ?? 200
+		let isSuspended = Self.suspendedStubKeys.contains { absolute.contains($0) }
 		let eTag = Self.stubETag
 		Self.lock.unlock()
+		waiters.forEach { $0.resume() }
+
+		if isSuspended { return }
+
 		var headers = ["Content-Type": "application/json"]
 		if let eTag { headers["ETag"] = eTag }
 		guard let body = stubbed, let url = request.url, let response = HTTPURLResponse(
 			url: url,
-			statusCode: 200,
+			statusCode: statusCode,
 			httpVersion: "HTTP/1.1",
 			headerFields: headers
 		) else {
@@ -135,6 +189,13 @@ final class MeshtasticAPIBundledSeedTests {
 		return try ModelContainer(for: schema, configurations: config)
 	}
 
+	private func makeAPI(container: ModelContainer, startupRefresh: Bool = false) -> MeshtasticAPI {
+		let configuration = URLSessionConfiguration.meshtasticAPI
+		configuration.protocolClasses = [RequestRecordingURLProtocol.self]
+		let urlSession = URLSession(configuration: configuration)
+		return MeshtasticAPI(container: container, startupRefresh: startupRefresh, urlSession: urlSession)
+	}
+
 	/// Regression test for #2196.
 	///
 	/// `refreshBundledDevicesData()` is awaited inline by BLE connect Step 3, which has a 30s
@@ -143,13 +204,11 @@ final class MeshtasticAPIBundledSeedTests {
 	/// zero-rated cellular link stalled the seed well past that budget and blocked BLE sync.
 	/// The seed must therefore stay entirely local.
 	@Test @MainActor func bundledSeedIssuesNoNetworkRequests() async throws {
-		URLProtocol.registerClass(RequestRecordingURLProtocol.self)
 		RequestRecordingURLProtocol.reset()
-		defer { URLProtocol.unregisterClass(RequestRecordingURLProtocol.self) }
 
 		// startupRefresh: false — the init cascade would otherwise fire detached firmware,
 		// image, and device requests that race the recorder and make this assertion flaky.
-		let api = MeshtasticAPI(container: try makeContainer(), startupRefresh: false)
+		let api = makeAPI(container: try makeContainer(), startupRefresh: false)
 		try await api.refreshBundledDevicesData()
 
 		// Snapshot once: `recordedURLs` takes the lock per read, so asserting on one read and
@@ -172,12 +231,10 @@ final class MeshtasticAPIBundledSeedTests {
 		// Register the recorder here too. The property under test is that this call is local, so if
 		// the eTag fan-out is ever reintroduced this test must not start issuing real HEAD requests
 		// from CI (or hang behind the very captive portal #2196 is about).
-		URLProtocol.registerClass(RequestRecordingURLProtocol.self)
 		RequestRecordingURLProtocol.reset()
-		defer { URLProtocol.unregisterClass(RequestRecordingURLProtocol.self) }
 
 		let container = try makeContainer()
-		let api = MeshtasticAPI(container: container, startupRefresh: false)
+		let api = makeAPI(container: container, startupRefresh: false)
 
 		try await api.refreshBundledDevicesData()
 
@@ -214,15 +271,24 @@ final class MeshtasticAPIBundledSeedTests {
 	/// and link pass, so every online startup fetched all 82 ETags twice. One pass, one request
 	/// per image.
 	@Test @MainActor func offlineImageRefreshRequestsEachImageOnce() async throws {
-		URLProtocol.registerClass(RequestRecordingURLProtocol.self)
 		RequestRecordingURLProtocol.reset()
-		defer { URLProtocol.unregisterClass(RequestRecordingURLProtocol.self) }
 
-		let api = MeshtasticAPI(container: try makeContainer(), startupRefresh: false)
+		let api = makeAPI(container: try makeContainer(), startupRefresh: false)
 		await api.refreshDeviceImagesAndLinks()
 
-		let images = imageRequests(from: RequestRecordingURLProtocol.recordedURLs)
+		let imageNetworkRequests = RequestRecordingURLProtocol.recordedRequests.filter {
+			$0.url?.absoluteString.contains("/img/devices/") == true
+		}
+		let images = imageRequests(from: imageNetworkRequests.compactMap(\.url))
 		#expect(!images.isEmpty, "the bundled catalog should yield image requests")
+		#expect(
+			imageNetworkRequests.allSatisfy { ($0.httpMethod ?? "GET") == "GET" },
+			"device images should use one cache-aware GET rather than a separate HEAD"
+		)
+		#expect(
+			imageNetworkRequests.allSatisfy { $0.cachePolicy == .reloadRevalidatingCacheData },
+			"the scheduled image pass should revalidate cached responses with the origin"
+		)
 		#expect(duplicates(in: images).isEmpty, "image requested more than once: \(duplicates(in: images))")
 
 		// Pin the count to the catalog rather than hardcoding it: one request per *unique* image
@@ -301,14 +367,12 @@ final class MeshtasticAPIBundledSeedTests {
 	/// The API endpoint is stubbed with the bundled catalog itself, so the union of the two lists
 	/// is exactly the bundled set: one pass is N requests, the old double pass would be 2N.
 	@Test @MainActor func startupCascadeRunsOneImagePass() async throws {
-		URLProtocol.registerClass(RequestRecordingURLProtocol.self)
 		RequestRecordingURLProtocol.reset(stubs: [
 			deviceHardwareStubKey: try bundledCatalogData()
 		])
-		defer { URLProtocol.unregisterClass(RequestRecordingURLProtocol.self) }
 
 		// Retained for the lifetime of the test: the cascade is detached and captures self.
-		let api = MeshtasticAPI(container: try makeContainer(), startupRefresh: true)
+		let api = makeAPI(container: try makeContainer(), startupRefresh: true)
 		defer { _ = api }
 
 		let images = try await settledImageRequests()
@@ -348,11 +412,9 @@ final class MeshtasticAPIBundledSeedTests {
 		let eTagKey = "api.etag.\(MeshtasticAPI.deviceCatalogETagKey)"
 		UserDefaults.standard.removeObject(forKey: eTagKey)
 		defer { UserDefaults.standard.removeObject(forKey: eTagKey) }
-		URLProtocol.registerClass(RequestRecordingURLProtocol.self)
-		defer { URLProtocol.unregisterClass(RequestRecordingURLProtocol.self) }
 
 		let container = try makeContainer()
-		let api = MeshtasticAPI(container: container, startupRefresh: false)
+		let api = makeAPI(container: container, startupRefresh: false)
 		let context = container.mainContext
 		func displayName() throws -> String? {
 			let hwModel: Int64 = 99002
@@ -387,6 +449,54 @@ final class MeshtasticAPIBundledSeedTests {
 		try await api.refreshDevicesAPIData(includeImages: false)
 		#expect(try displayName() == "Third", "no ETag means no skip")
 	}
+}
+
+extension MeshtasticAPIBundledSeedTests {
+	@Test @MainActor func matchingCatalogETagStillRunsImageRefresh() async throws {
+		func catalog(displayName: String) -> Data {
+			Data("""
+			[{
+			  "hwModel": 99004,
+			  "hwModelSlug": "ETAG_IMAGE_TEST",
+			  "platformioTarget": "etag_image_test",
+			  "architecture": "esp32",
+			  "activelySupported": true,
+			  "displayName": "\(displayName)",
+			  "images": ["etag-image-test.svg"]
+			}]
+			""".utf8)
+		}
+		let imageData = Data("<svg>etag image</svg>".utf8)
+		let eTagKey = "api.etag.\(MeshtasticAPI.deviceCatalogETagKey)"
+		UserDefaults.standard.removeObject(forKey: eTagKey)
+		defer { UserDefaults.standard.removeObject(forKey: eTagKey) }
+
+		let container = try makeContainer()
+		let api = makeAPI(container: container, startupRefresh: false)
+		RequestRecordingURLProtocol.reset(
+			stubs: [deviceHardwareStubKey: catalog(displayName: "Original")],
+			eTag: "catalog-v1"
+		)
+		try await api.refreshDevicesAPIData(includeImages: false)
+
+		RequestRecordingURLProtocol.reset(
+			stubs: [
+				deviceHardwareStubKey: catalog(displayName: "Must not be applied"),
+				"etag-image-test.svg": imageData
+			],
+			eTag: "catalog-v1"
+		)
+		try await api.refreshDevicesAPIData()
+
+		let images = imageRequests(from: RequestRecordingURLProtocol.recordedURLs)
+		#expect(
+			images.filter { $0.hasSuffix("etag-image-test.svg") }.count == 1,
+			"a matching catalog ETag must skip only the metadata upsert, not the image refresh"
+		)
+		let devices = try container.mainContext.fetch(FetchDescriptor<DeviceHardwareEntity>())
+		let device = try #require(devices.first { $0.platformioTarget == "etag_image_test" })
+		#expect(device.displayName == "Original", "a matching ETag must still skip the metadata upsert")
+	}
 
 	@Test @MainActor func apiRefreshCoversApiOnlyHardwareWithoutDuplicating() async throws {
 		let apiOnly = """
@@ -400,13 +510,14 @@ final class MeshtasticAPIBundledSeedTests {
 		  "images": ["api-only-test.svg"]
 		}]
 		"""
-		URLProtocol.registerClass(RequestRecordingURLProtocol.self)
+		let apiOnlyImage = Data("<svg>api-only</svg>".utf8)
 		RequestRecordingURLProtocol.reset(stubs: [
-			deviceHardwareStubKey: Data(apiOnly.utf8)
+			deviceHardwareStubKey: Data(apiOnly.utf8),
+			"api-only-test.svg": apiOnlyImage
 		])
-		defer { URLProtocol.unregisterClass(RequestRecordingURLProtocol.self) }
 
-		let api = MeshtasticAPI(container: try makeContainer(), startupRefresh: false)
+		let container = try makeContainer()
+		let api = makeAPI(container: container, startupRefresh: false)
 		try await api.refreshDevicesAPIData()
 
 		// One snapshot, two views of it — see the note in bundledSeedIssuesNoNetworkRequests.
@@ -435,21 +546,137 @@ final class MeshtasticAPIBundledSeedTests {
 			"expected the bundled set plus the one API-only image (\(bundledNames.count + 1)), got \(images.count)"
 		)
 		#expect(duplicates(in: images).isEmpty, "image requested more than once: \(duplicates(in: images))")
+
+		let devices = try container.mainContext.fetch(FetchDescriptor<DeviceHardwareEntity>())
+		let apiOnlyDevice = try #require(devices.first { $0.platformioTarget == "api_only_test" })
+		let storedImage = try #require(apiOnlyDevice.images.first { $0.fileName == "api-only-test.svg" })
+		#expect(storedImage.svgData == apiOnlyImage, "a valid image response should not require an ETag")
+		#expect(storedImage.eTag == nil)
+
 		#expect(
 			recorded.filter { $0.contains("msh.to/api/urls") }.count == 1,
 			"the msh.to link catalog should be imported exactly once per pass"
 		)
 	}
 
+	@Test @MainActor func failedOrEmptyImageResponsePreservesStoredImage() async throws {
+		let apiOnly = """
+		[{
+		  "hwModel": 99001,
+		  "hwModelSlug": "API_ONLY_TEST",
+		  "platformioTarget": "api_only_test",
+		  "architecture": "esp32",
+		  "activelySupported": true,
+		  "displayName": "API Only Test Device",
+		  "images": ["api-only-test.svg"]
+		}]
+		"""
+		let catalogData = Data(apiOnly.utf8)
+		let originalImage = Data("<svg>original</svg>".utf8)
+
+		RequestRecordingURLProtocol.reset(stubs: [
+			deviceHardwareStubKey: catalogData,
+			"api-only-test.svg": originalImage
+		])
+		let container = try makeContainer()
+		let api = makeAPI(container: container, startupRefresh: false)
+		try await api.refreshDevicesAPIData()
+
+		let failures = [
+			(body: Data("server error".utf8), statusCode: 500, name: "HTTP error"),
+			(body: Data(), statusCode: 200, name: "empty response")
+		]
+		for failure in failures {
+			UserDefaults.lastDeviceImageAndLinkUpdate = .distantPast
+			RequestRecordingURLProtocol.reset(
+				stubs: [
+					deviceHardwareStubKey: catalogData,
+					"api-only-test.svg": failure.body
+				],
+				statusCodes: ["api-only-test.svg": failure.statusCode]
+			)
+			try await api.refreshDevicesAPIData()
+
+			let devices = try container.mainContext.fetch(FetchDescriptor<DeviceHardwareEntity>())
+			let apiOnlyDevice = try #require(devices.first { $0.platformioTarget == "api_only_test" })
+			let storedImage = try #require(apiOnlyDevice.images.first { $0.fileName == "api-only-test.svg" })
+			#expect(
+				storedImage.svgData == originalImage,
+				"a \(failure.name) must not replace a stored image"
+			)
+		}
+	}
+
+	@Test @MainActor func bundleFallbackFillsMissingSharedCopyWithoutReplacingExistingImage() async throws {
+		let sharedImageName = "rak4631.svg"
+		let apiCatalog = """
+		[
+		  {
+		    "hwModel": 99001,
+		    "hwModelSlug": "SHARED_IMAGE_ONE",
+		    "platformioTarget": "shared_image_one",
+		    "architecture": "esp32",
+		    "activelySupported": true,
+		    "displayName": "Shared Image One",
+		    "images": ["\(sharedImageName)"]
+		  },
+		  {
+		    "hwModel": 99002,
+		    "hwModelSlug": "SHARED_IMAGE_TWO",
+		    "platformioTarget": "shared_image_two",
+		    "architecture": "esp32",
+		    "activelySupported": true,
+		    "displayName": "Shared Image Two",
+		    "images": ["\(sharedImageName)"]
+		  }
+		]
+		"""
+		let catalogData = Data(apiCatalog.utf8)
+		let networkImage = Data("<svg>newer network image</svg>".utf8)
+
+		RequestRecordingURLProtocol.reset(stubs: [
+			deviceHardwareStubKey: catalogData,
+			sharedImageName: networkImage
+		])
+		let container = try makeContainer()
+		let api = makeAPI(container: container, startupRefresh: false)
+		try await api.refreshDevicesAPIData()
+
+		var devices = try container.mainContext.fetch(FetchDescriptor<DeviceHardwareEntity>())
+		let secondDevice = try #require(devices.first { $0.platformioTarget == "shared_image_two" })
+		let secondImage = try #require(secondDevice.images.first { $0.fileName == sharedImageName })
+		container.mainContext.delete(secondImage)
+		try container.mainContext.save()
+
+		UserDefaults.lastDeviceImageAndLinkUpdate = .distantPast
+		RequestRecordingURLProtocol.reset(
+			stubs: [
+				deviceHardwareStubKey: catalogData,
+				sharedImageName: Data("server error".utf8)
+			],
+			statusCodes: [sharedImageName: 500]
+		)
+		try await api.refreshDevicesAPIData()
+
+		devices = try container.mainContext.fetch(FetchDescriptor<DeviceHardwareEntity>())
+		let firstDevice = try #require(devices.first { $0.platformioTarget == "shared_image_one" })
+		let refreshedSecondDevice = try #require(devices.first { $0.platformioTarget == "shared_image_two" })
+		let firstImage = try #require(firstDevice.images.first { $0.fileName == sharedImageName })
+		let restoredSecondImage = try #require(
+			refreshedSecondDevice.images.first { $0.fileName == sharedImageName }
+		)
+		#expect(firstImage.svgData == networkImage, "bundle fallback must preserve an existing shared copy")
+		#expect(restoredSecondImage.svgData?.isEmpty == false, "bundle fallback should fill the missing copy")
+		#expect(restoredSecondImage.eTag == "bundled")
+	}
+
 	/// The image/link pass is throttled to once per `staleDeviceImageLinkInterval` (48h). Step 3b
-	/// fires it on every reconnect, so without the throttle each reconnect re-issued ~78 ETag HEADs.
+	/// fires it on every reconnect, so without the throttle each reconnect revalidates every image.
 	/// The first pass hits the network; a second pass inside the window must issue nothing.
 	@Test @MainActor func imageRefreshThrottledWithinWindow() async throws {
-		URLProtocol.registerClass(RequestRecordingURLProtocol.self)
 		RequestRecordingURLProtocol.reset()
-		defer { URLProtocol.unregisterClass(RequestRecordingURLProtocol.self) }
 
-		let api = MeshtasticAPI(container: try makeContainer(), startupRefresh: false)
+		let api = makeAPI(container: try makeContainer(), startupRefresh: false)
 		await api.refreshDeviceImagesAndLinks()
 		#expect(!imageRequests(from: RequestRecordingURLProtocol.recordedURLs).isEmpty,
 				"the first pass should hit the network")
@@ -465,11 +692,9 @@ final class MeshtasticAPIBundledSeedTests {
 	/// `lastDeviceImageAndLinkUpdate` so Step 3b restores them rather than skipping as "refreshed
 	/// recently". Resetting the timestamp (what the clear does) must re-enable the pass in-window.
 	@Test @MainActor func resetTimestampReenablesImageRefreshAfterClear() async throws {
-		URLProtocol.registerClass(RequestRecordingURLProtocol.self)
 		RequestRecordingURLProtocol.reset()
-		defer { URLProtocol.unregisterClass(RequestRecordingURLProtocol.self) }
 
-		let api = MeshtasticAPI(container: try makeContainer(), startupRefresh: false)
+		let api = makeAPI(container: try makeContainer(), startupRefresh: false)
 		await api.refreshDeviceImagesAndLinks()   // first pass arms the throttle
 		#expect(!imageRequests(from: RequestRecordingURLProtocol.recordedURLs).isEmpty)
 
@@ -522,16 +747,83 @@ final class MeshtasticAPIBundledSeedTests {
 		) == nil, "a second pass inside the window must be refused")
 	}
 
+	@Test func requestStartWaitStopsWhenCancelled() async {
+		RequestRecordingURLProtocol.reset()
+		let waiter = Task {
+			try await RequestRecordingURLProtocol.waitUntilRequestStarts(containing: "never-started")
+		}
+		waiter.cancel()
+
+		do {
+			try await waiter.value
+			Issue.record("Expected the request-start wait to stop on cancellation")
+		} catch is CancellationError {
+			// Expected.
+		} catch {
+			Issue.record("Expected CancellationError, got \(error)")
+		}
+	}
+
+	@Test(.timeLimit(.minutes(1))) @MainActor
+	func cancellationDuringImageRequestDoesNotWriteBundleFallback() async throws {
+		let sharedImageName = "rak4631.svg"
+		let apiCatalog = """
+		[{
+		  "hwModel": 99003,
+		  "hwModelSlug": "CANCEL_IMAGE_TEST",
+		  "platformioTarget": "cancel_image_test",
+		  "architecture": "esp32",
+		  "activelySupported": true,
+		  "displayName": "Cancel Image Test",
+		  "images": ["\(sharedImageName)"]
+		}]
+		"""
+		RequestRecordingURLProtocol.reset(
+			stubs: [deviceHardwareStubKey: Data(apiCatalog.utf8)],
+			suspendedStubKeys: [sharedImageName]
+		)
+
+		let container = try makeContainer()
+		let api = makeAPI(container: container, startupRefresh: false)
+		let refreshTask = Task { try? await api.refreshDevicesAPIData() }
+		try await RequestRecordingURLProtocol.waitUntilRequestStarts(containing: sharedImageName)
+		refreshTask.cancel()
+		await refreshTask.value
+
+		let devices = try container.mainContext.fetch(FetchDescriptor<DeviceHardwareEntity>())
+		let device = try #require(devices.first { $0.platformioTarget == "cancel_image_test" })
+		#expect(
+			device.images.contains { $0.fileName == sharedImageName } == false,
+			"cancellation must not write the bundled image"
+		)
+		#expect(UserDefaults.lastDeviceImageAndLinkUpdate == .distantPast)
+	}
+
+	@Test(.timeLimit(.minutes(1))) @MainActor
+	func cancellationDuringLinkRequestDoesNotImportBundleOrArmThrottle() async throws {
+		let linkURL = "msh.to/api/urls"
+		RequestRecordingURLProtocol.reset(suspendedStubKeys: [linkURL])
+
+		let container = try makeContainer()
+		let api = makeAPI(container: container, startupRefresh: false)
+		let refreshTask = Task { await api.refreshDeviceImagesAndLinks() }
+		try await RequestRecordingURLProtocol.waitUntilRequestStarts(containing: linkURL)
+		refreshTask.cancel()
+		await refreshTask.value
+
+		let linkCount = try container.mainContext.fetchCount(FetchDescriptor<DeviceLinkEntity>())
+		#expect(linkCount == 0, "cancellation must not import bundled links")
+		#expect(UserDefaults.lastDeviceImageAndLinkUpdate == .distantPast)
+	}
+
 	/// A disconnect cancels the Step 3b task running the pass (`closeConnection`). A cancelled pass
 	/// must issue no image requests and leave the throttle un-armed so the next connect runs a real
 	/// restore. Self-cancelling *before* the pass starts trips the worker's early guard
 	/// deterministically — no scheduling race on when `.cancel()` lands.
 	@Test @MainActor func cancelledPassIssuesNoRequestsAndLeavesThrottleUnarmed() async throws {
-		URLProtocol.registerClass(RequestRecordingURLProtocol.self)
 		RequestRecordingURLProtocol.reset()
-		defer { URLProtocol.unregisterClass(RequestRecordingURLProtocol.self) }
 
-		let api = MeshtasticAPI(container: try makeContainer(), startupRefresh: false)
+		let api = makeAPI(container: try makeContainer(), startupRefresh: false)
 		let task = Task {
 			withUnsafeCurrentTask { $0?.cancel() }   // cancel before the pass does any work
 			await api.refreshDeviceImagesAndLinks()
