@@ -50,7 +50,17 @@ struct MQTTConfig: View {
 					}
 				}
 				
-				ConfigHeader(title: "MQTT", config: \.mqttConfig, node: node, onAppear: setMqttValues)
+				ConfigHeader(title: "MQTT", config: \.mqttConfig, node: node, onAppear: setMqttValues, onRetry: {
+			requestRemoteConfig(
+				node: node,
+				context: context,
+				accessoryManager: accessoryManager,
+				configIsNil: { $0.mqttConfig == nil },
+				section: "MQTT",
+				request: accessoryManager.requestMqttModuleConfig,
+				force: true
+			)
+		})
 				
 				Section(header: Text("Options")) {
 					
@@ -251,7 +261,7 @@ struct MQTTConfig: View {
 					.font(.callout)
 			}
 			.scrollDismissesKeyboard(.immediately)
-			.disabled(!accessoryManager.isConnected || node?.mqttConfig == nil)
+			.disabled(ConfigFormAvailability.isDisabled(isConnected: accessoryManager.isConnected))
 			.safeAreaInset(edge: .bottom, alignment: .center) {
 				HStack(spacing: 0) {
 				SaveConfigButton(node: node, hasChanges: $hasChanges) {
@@ -353,6 +363,7 @@ struct MQTTConfig: View {
 				context: context,
 				accessoryManager: accessoryManager,
 				configIsNil: { $0.mqttConfig == nil },
+				section: "MQTT",
 				request: accessoryManager.requestMqttModuleConfig
 			)
 		}

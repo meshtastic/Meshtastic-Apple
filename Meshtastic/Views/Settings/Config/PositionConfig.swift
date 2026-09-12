@@ -349,7 +349,17 @@ struct PositionConfig: View {
 	var body: some View {
 		
 		Form {
-			ConfigHeader(title: "Position", config: \.positionConfig, node: node, onAppear: setPositionValues)
+			ConfigHeader(title: "Position", config: \.positionConfig, node: node, onAppear: setPositionValues, onRetry: {
+			requestRemoteConfig(
+				node: node,
+				context: context,
+				accessoryManager: accessoryManager,
+				configIsNil: { $0.positionConfig == nil },
+				section: "Position",
+				request: accessoryManager.requestPositionConfig,
+				force: true
+			)
+		})
 			positionPacketSection
 			deviceGPSSection
 			positionFlagsSection
@@ -358,7 +368,7 @@ struct PositionConfig: View {
 				advancedDeviceGPSSection
 			}
 		}
-		.disabled(!accessoryManager.isConnected || node?.positionConfig == nil)
+		.disabled(ConfigFormAvailability.isDisabled(isConnected: accessoryManager.isConnected))
 		.alert(setFixedAlertTitle, isPresented: $showingSetFixedAlert) {
 			Button("Cancel", role: .cancel) {
 				fixedPosition = !fixedPosition
@@ -395,6 +405,7 @@ struct PositionConfig: View {
 				context: context,
 				accessoryManager: accessoryManager,
 				configIsNil: { $0.positionConfig == nil },
+				section: "Position",
 				request: accessoryManager.requestPositionConfig
 			)
 		}

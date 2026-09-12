@@ -31,7 +31,17 @@ struct StoreForwardConfig: View {
 	
 	var body: some View {
 		Form {
-			ConfigHeader(title: "Store & Forward", config: \.storeForwardConfig, node: node, onAppear: setStoreAndForwardValues)
+			ConfigHeader(title: "Store & Forward", config: \.storeForwardConfig, node: node, onAppear: setStoreAndForwardValues, onRetry: {
+			requestRemoteConfig(
+				node: node,
+				context: context,
+				accessoryManager: accessoryManager,
+				configIsNil: { $0.storeForwardConfig == nil },
+				section: "Store & Forward",
+				request: accessoryManager.requestStoreAndForwardModuleConfig,
+				force: true
+			)
+		})
 			
 			Section(header: Text("Options")) {
 				Toggle(isOn: $enabled) {
@@ -86,7 +96,7 @@ struct StoreForwardConfig: View {
 			}
 		}
 		.scrollDismissesKeyboard(.interactively)
-		.disabled(!accessoryManager.isConnected || node?.storeForwardConfig == nil)
+		.disabled(ConfigFormAvailability.isDisabled(isConnected: accessoryManager.isConnected))
 		.safeAreaInset(edge: .bottom, alignment: .center) {
 			HStack(spacing: 0) {
 			SaveConfigButton(node: node, hasChanges: $hasChanges) {
@@ -132,6 +142,7 @@ struct StoreForwardConfig: View {
 				context: context,
 				accessoryManager: accessoryManager,
 				configIsNil: { $0.storeForwardConfig == nil },
+				section: "Store & Forward",
 				request: accessoryManager.requestStoreAndForwardModuleConfig
 			)
 		}

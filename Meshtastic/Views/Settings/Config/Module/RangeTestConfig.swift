@@ -37,7 +37,18 @@ struct RangeTestConfig: View {
 
 	var body: some View {
 		Form {
-			ConfigHeader(title: "Range", config: \.rangeTestConfig, node: node, onAppear: setRangeTestValues)
+			ConfigHeader(title: "Range", config: \.rangeTestConfig, node: node, onAppear: setRangeTestValues, onRetry: {
+			requestRemoteConfig(
+				node: node,
+				context: context,
+				accessoryManager: accessoryManager,
+				configIsNil: { $0.rangeTestConfig == nil },
+				section: "Range",
+				request: accessoryManager.requestRangeTestModuleConfig,
+				requestForConnectedNode: true,
+				force: true
+			)
+		})
 
 			if isPrimaryChannelPublic {
 				Section {
@@ -76,7 +87,7 @@ struct RangeTestConfig: View {
 				
 			}
 		}
-		.disabled(!accessoryManager.isConnected || node?.rangeTestConfig == nil || isPrimaryChannelPublic)
+		.disabled(ConfigFormAvailability.isDisabled(isConnected: accessoryManager.isConnected) || isPrimaryChannelPublic)
 		.safeAreaInset(edge: .bottom, alignment: .center) {
 			HStack(spacing: 0) {
 			SaveConfigButton(node: node, hasChanges: $hasChanges) {
@@ -107,6 +118,7 @@ struct RangeTestConfig: View {
 				context: context,
 				accessoryManager: accessoryManager,
 				configIsNil: { $0.rangeTestConfig == nil },
+				section: "Range",
 				request: accessoryManager.requestRangeTestModuleConfig,
 				requestForConnectedNode: true
 			)

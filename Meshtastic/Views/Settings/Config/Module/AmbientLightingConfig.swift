@@ -24,7 +24,17 @@ struct AmbientLightingConfig: View {
 	@State private var components: Color.Resolved?
 	var body: some View {
 		Form {
-			ConfigHeader(title: "Ambient Lighting", config: \.ambientLightingConfig, node: node, onAppear: setAmbientLightingConfigValue)
+			ConfigHeader(title: "Ambient Lighting", config: \.ambientLightingConfig, node: node, onAppear: setAmbientLightingConfigValue, onRetry: {
+			requestRemoteConfig(
+				node: node,
+				context: context,
+				accessoryManager: accessoryManager,
+				configIsNil: { $0.ambientLightingConfig == nil },
+				section: "Ambient Lighting",
+				request: accessoryManager.requestAmbientLightingConfig,
+				force: true
+			)
+		})
 			
 			Section(header: Text("Options")) {
 				
@@ -51,7 +61,7 @@ struct AmbientLightingConfig: View {
 				}
 			}
 		}
-		.disabled(!self.accessoryManager.isConnected || node?.ambientLightingConfig == nil)
+		.disabled(ConfigFormAvailability.isDisabled(isConnected: accessoryManager.isConnected))
 		.safeAreaInset(edge: .bottom, alignment: .center) {
 			HStack(spacing: 0) {
 			SaveConfigButton(node: node, hasChanges: $hasChanges) {
@@ -87,6 +97,7 @@ struct AmbientLightingConfig: View {
 				context: context,
 				accessoryManager: accessoryManager,
 				configIsNil: { $0.ambientLightingConfig == nil },
+				section: "Ambient Lighting",
 				request: accessoryManager.requestAmbientLightingConfig
 			)
 		}

@@ -254,14 +254,24 @@ struct LoRaConfig: View {
 	/// See `body` — the Form and its chrome, split out for type-check time.
 	private var loRaForm: some View {
 		Form {
-			ConfigHeader(title: "LoRa", config: \.loRaConfig, node: node, onAppear: setLoRaValues)
+			ConfigHeader(title: "LoRa", config: \.loRaConfig, node: node, onAppear: setLoRaValues, onRetry: {
+			requestRemoteConfig(
+				node: node,
+				context: context,
+				accessoryManager: accessoryManager,
+				configIsNil: { $0.loRaConfig == nil },
+				section: "LoRa",
+				request: accessoryManager.requestLoRaConfig,
+				force: true
+			)
+		})
 
 			optionsSection
 
 			advancedSection
 		}
 		.scrollDismissesKeyboard(.immediately)
-		.disabled(!accessoryManager.isConnected || node?.loRaConfig == nil)
+		.disabled(ConfigFormAvailability.isDisabled(isConnected: accessoryManager.isConnected))
 		.safeAreaInset(edge: .bottom, alignment: .center) {
 			HStack(spacing: 0) {
 				SaveConfigButton(
@@ -286,6 +296,7 @@ struct LoRaConfig: View {
 				context: context,
 				accessoryManager: accessoryManager,
 				configIsNil: { $0.loRaConfig == nil },
+				section: "LoRa",
 				request: accessoryManager.requestLoRaConfig
 			)
 		}

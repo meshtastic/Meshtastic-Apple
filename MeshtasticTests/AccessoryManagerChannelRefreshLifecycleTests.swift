@@ -155,10 +155,14 @@ struct AccessoryManagerChannelRefreshLifecycleTests {
 	private func startAutomaticConfigRefresh(
 		_ manager: AccessoryManager,
 		connection: ChannelRefreshLifecycleConnection
-	) async -> Task<Void, Error> {
+	) async throws -> Task<Void, Error> {
 		let refresh = Task { try await manager.sendWantConfig() }
-		while await connection.sentWantConfigIDs.isEmpty {
+		for _ in 0..<100 where await connection.sentWantConfigIDs.isEmpty {
 			await Task.yield()
+		}
+		guard !(await connection.sentWantConfigIDs.isEmpty) else {
+			refresh.cancel()
+			throw AccessoryError.ioFailed("Timed out waiting for automatic config refresh")
 		}
 		return refresh
 	}
@@ -179,7 +183,7 @@ struct AccessoryManagerChannelRefreshLifecycleTests {
 		try seedMyInfo(nodeNum: nodeNum, channelName: "Old Primary")
 		let connection = ChannelRefreshLifecycleConnection()
 		let manager = makeManager(nodeNum: nodeNum, connection: connection)
-		let refresh = await startAutomaticConfigRefresh(manager, connection: connection)
+		let refresh = try await startAutomaticConfigRefresh(manager, connection: connection)
 
 		await manager.handleMyInfo(myInfo(nodeNum: nodeNum))
 		await manager.handleChannel(channel(index: 0, name: "New Primary"))
@@ -201,7 +205,7 @@ struct AccessoryManagerChannelRefreshLifecycleTests {
 		try seedMyInfo(nodeNum: nodeNum, channelName: "Kept Primary")
 		let connection = ChannelRefreshLifecycleConnection()
 		let manager = makeManager(nodeNum: nodeNum, connection: connection)
-		let refresh = await startAutomaticConfigRefresh(manager, connection: connection)
+		let refresh = try await startAutomaticConfigRefresh(manager, connection: connection)
 
 		await manager.handleMyInfo(myInfo(nodeNum: nodeNum))
 		await manager.handleChannel(channel(index: 0, name: "Discarded Primary"))
@@ -228,7 +232,7 @@ struct AccessoryManagerChannelRefreshLifecycleTests {
 		)
 		let connection = ChannelRefreshLifecycleConnection()
 		let manager = makeManager(nodeNum: nodeNum, connection: connection)
-		let refresh = await startAutomaticConfigRefresh(manager, connection: connection)
+		let refresh = try await startAutomaticConfigRefresh(manager, connection: connection)
 
 		await manager.handleMyInfo(myInfo(nodeNum: nodeNum))
 		await manager.handleChannel(channel(index: 0, name: "Primary"))
@@ -256,7 +260,7 @@ struct AccessoryManagerChannelRefreshLifecycleTests {
 		try seedMyInfo(nodeNum: nodeNum, channelName: "Original Primary")
 		let connection = ChannelRefreshLifecycleConnection()
 		let manager = makeManager(nodeNum: nodeNum, connection: connection)
-		let refresh = await startAutomaticConfigRefresh(manager, connection: connection)
+		let refresh = try await startAutomaticConfigRefresh(manager, connection: connection)
 
 		let context = PersistenceController.shared.context
 		let persistedNodeNum = Int64(nodeNum)
@@ -287,7 +291,7 @@ struct AccessoryManagerChannelRefreshLifecycleTests {
 		)
 		let connection = ChannelRefreshLifecycleConnection()
 		let manager = makeManager(nodeNum: nodeNum, connection: connection)
-		let refresh = await startAutomaticConfigRefresh(manager, connection: connection)
+		let refresh = try await startAutomaticConfigRefresh(manager, connection: connection)
 
 		await manager.handleMyInfo(myInfo(nodeNum: nodeNum))
 		await manager.handleChannel(channel(index: 1, name: "Lone Secondary", role: .secondary))
@@ -310,7 +314,7 @@ struct AccessoryManagerChannelRefreshLifecycleTests {
 		)
 		let connection = ChannelRefreshLifecycleConnection()
 		let manager = makeManager(nodeNum: nodeNum, connection: connection)
-		let refresh = await startAutomaticConfigRefresh(manager, connection: connection)
+		let refresh = try await startAutomaticConfigRefresh(manager, connection: connection)
 		var disabled = Channel()
 		disabled.index = 1
 		disabled.role = .disabled
@@ -335,7 +339,7 @@ struct AccessoryManagerChannelRefreshLifecycleTests {
 		await connection.pauseNextWantConfigSend()
 
 		let firstRefresh = Task { try await manager.sendWantConfig() }
-		while await connection.sentWantConfigIDs.count < 1 {
+		for _ in 0..<100 where await connection.sentWantConfigIDs.count < 1 {
 			await Task.yield()
 		}
 		let secondRefresh = Task { try await manager.sendWantConfig() }
@@ -369,7 +373,7 @@ struct AccessoryManagerChannelRefreshLifecycleTests {
 		try seedMyInfo(nodeNum: nodeNum, channelName: "Old Primary")
 		let connection = ChannelRefreshLifecycleConnection()
 		let manager = makeManager(nodeNum: nodeNum, connection: connection)
-		let refresh = await startAutomaticConfigRefresh(manager, connection: connection)
+		let refresh = try await startAutomaticConfigRefresh(manager, connection: connection)
 
 		await manager.handleMyInfo(myInfo(nodeNum: nodeNum))
 		await manager.handleChannel(channel(index: 0, name: "New Primary"))
@@ -389,7 +393,7 @@ struct AccessoryManagerChannelRefreshLifecycleTests {
 		try seedMyInfo(nodeNum: nodeNum, channelName: "Kept Primary")
 		let connection = ChannelRefreshLifecycleConnection()
 		let manager = makeManager(nodeNum: nodeNum, connection: connection)
-		let refresh = await startAutomaticConfigRefresh(manager, connection: connection)
+		let refresh = try await startAutomaticConfigRefresh(manager, connection: connection)
 
 		await manager.handleMyInfo(myInfo(nodeNum: nodeNum))
 		await manager.handleChannel(channel(index: 0, name: "Replacement Primary"))
@@ -407,7 +411,7 @@ struct AccessoryManagerChannelRefreshLifecycleTests {
 		try seedMyInfo(nodeNum: nodeNum, channelName: "Kept Primary")
 		let connection = ChannelRefreshLifecycleConnection()
 		let manager = makeManager(nodeNum: nodeNum, connection: connection)
-		let refresh = await startAutomaticConfigRefresh(manager, connection: connection)
+		let refresh = try await startAutomaticConfigRefresh(manager, connection: connection)
 
 		await manager.handleMyInfo(myInfo(nodeNum: nodeNum))
 		await manager.handleChannel(channel(index: 1, name: "Incomplete Secondary", role: .secondary))
@@ -425,7 +429,7 @@ struct AccessoryManagerChannelRefreshLifecycleTests {
 		try seedMyInfo(nodeNum: nodeNum, channelName: "Old Primary")
 		let connection = ChannelRefreshLifecycleConnection()
 		let manager = makeManager(nodeNum: nodeNum, connection: connection)
-		let refresh = await startAutomaticConfigRefresh(manager, connection: connection)
+		let refresh = try await startAutomaticConfigRefresh(manager, connection: connection)
 
 		await manager.handleMyInfo(myInfo(nodeNum: nodeNum))
 		await manager.handleChannel(channel(index: 0, name: "New Primary"))
@@ -454,7 +458,7 @@ struct AccessoryManagerChannelRefreshLifecycleTests {
 		)
 		let connection = ChannelRefreshLifecycleConnection()
 		let manager = makeManager(nodeNum: nodeNum, connection: connection)
-		let refresh = await startAutomaticConfigRefresh(manager, connection: connection)
+		let refresh = try await startAutomaticConfigRefresh(manager, connection: connection)
 
 		await manager.handleMyInfo(myInfo(nodeNum: nodeNum))
 		await manager.handleChannel(channel(index: 0, name: "Remote Primary"))
@@ -556,7 +560,7 @@ extension AccessoryManagerChannelRefreshLifecycleTests {
 		await connection.pauseNextWantConfigSend()
 
 		let refresh = Task { try await manager.sendWantConfig() }
-		while await connection.sentWantConfigIDs.isEmpty {
+		for _ in 0..<100 where await connection.sentWantConfigIDs.isEmpty {
 			await Task.yield()
 		}
 
@@ -579,7 +583,7 @@ extension AccessoryManagerChannelRefreshLifecycleTests {
 		try seedMyInfo(nodeNum: nodeNum, channelName: "Original Primary")
 		let connection = ChannelRefreshLifecycleConnection()
 		let manager = makeManager(nodeNum: nodeNum, connection: connection)
-		let refresh = await startAutomaticConfigRefresh(manager, connection: connection)
+		let refresh = try await startAutomaticConfigRefresh(manager, connection: connection)
 		let validationReached = AsyncGate()
 		let allowCommitToContinue = AsyncGate()
 
@@ -664,7 +668,7 @@ extension AccessoryManagerChannelRefreshLifecycleTests {
 		await connection.pauseNextWantConfigSend()
 
 		let cancelledWaiter = Task { try await manager.sendWantConfig() }
-		while await connection.sentWantConfigIDs.count < 1 {
+		for _ in 0..<100 where await connection.sentWantConfigIDs.count < 1 {
 			await Task.yield()
 		}
 		cancelledWaiter.cancel()
@@ -752,7 +756,7 @@ extension AccessoryManagerChannelRefreshLifecycleTests {
 		try seedMyInfo(nodeNum: nodeNum, channelName: "Original Primary")
 		let connection = ChannelRefreshLifecycleConnection()
 		let manager = makeManager(nodeNum: nodeNum, connection: connection)
-		let refresh = await startAutomaticConfigRefresh(manager, connection: connection)
+		let refresh = try await startAutomaticConfigRefresh(manager, connection: connection)
 
 		await manager.handleMyInfo(myInfo(nodeNum: nodeNum))
 		await manager.handleChannel(channel(index: 0, name: "Remote Primary"))
@@ -781,7 +785,7 @@ extension AccessoryManagerChannelRefreshLifecycleTests {
 		let manager = makeManager(nodeNum: nodeNum, connection: connection)
 		await connection.pauseNextWantConfigSend()
 		await connection.failNextPendingPacketDrain()
-		let refresh = await startAutomaticConfigRefresh(manager, connection: connection)
+		let refresh = try await startAutomaticConfigRefresh(manager, connection: connection)
 
 		await manager.handleMyInfo(myInfo(nodeNum: nodeNum))
 		await manager.handleChannel(channel(index: 0, name: "Failed Refresh Primary"))

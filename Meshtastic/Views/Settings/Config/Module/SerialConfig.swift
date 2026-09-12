@@ -31,7 +31,18 @@ struct SerialConfig: View {
 	var body: some View {
 		VStack {
 			Form {
-				ConfigHeader(title: "Serial", config: \.serialConfig, node: node, onAppear: setSerialValues)
+				ConfigHeader(title: "Serial", config: \.serialConfig, node: node, onAppear: setSerialValues, onRetry: {
+			requestRemoteConfig(
+					node: node,
+					context: context,
+					accessoryManager: accessoryManager,
+					configIsNil: { $0.serialConfig == nil },
+					section: "Serial",
+					request: accessoryManager.requestSerialModuleConfig
+				,
+				force: true
+			)
+		})
 				
 				Section(header: Text("Options")) {
 					
@@ -94,7 +105,7 @@ struct SerialConfig: View {
 						.font(.callout)
 				}
 			}
-			.disabled(!accessoryManager.isConnected || node?.serialConfig == nil)
+			.disabled(ConfigFormAvailability.isDisabled(isConnected: accessoryManager.isConnected))
 			.safeAreaInset(edge: .bottom, alignment: .center) {
 				HStack(spacing: 0) {
 				SaveConfigButton(node: node, hasChanges: $hasChanges) {
@@ -131,6 +142,7 @@ struct SerialConfig: View {
 					context: context,
 					accessoryManager: accessoryManager,
 					configIsNil: { $0.serialConfig == nil },
+					section: "Serial",
 					request: accessoryManager.requestSerialModuleConfig
 				)
 			}

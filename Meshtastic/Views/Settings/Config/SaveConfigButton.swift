@@ -22,6 +22,26 @@ struct SaveConfigButton: View {
 	
 	var body: some View {
 		if accessoryManager.isConnected && hasChanges {
+			let feedback = node.flatMap {
+				accessoryManager.remoteAdminConfigFeedback(for: $0.num, kind: .save)
+			}
+			let remoteSaveInProgress = node.flatMap {
+				accessoryManager.remoteAdminConfigTracker.latest(for: $0.num, kind: .save, section: "save")
+			}?.isFinished == false
+			if let feedback {
+				VStack(spacing: 8) {
+					Label(feedback, systemImage: "exclamationmark.triangle")
+						.foregroundColor(.red)
+					Button("Retry") {
+						accessoryManager.remoteAdminConfigFeedback = nil
+						onConfirmation()
+					}
+				}
+				.padding(.bottom)
+			} else if remoteSaveInProgress {
+				ProgressView("Saving…")
+					.padding(.bottom)
+			} else {
 			if #available(iOS 26.0, *) {
 				Button {
 					isPresentingSaveConfirm = true
@@ -72,6 +92,7 @@ struct SaveConfigButton: View {
 				} message: {
 					Text(confirmationMessage)
 				}
+			}
 			}
 		}
 	}

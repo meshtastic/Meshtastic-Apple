@@ -32,7 +32,17 @@ struct TAKModuleConfig: View {
 
 	var body: some View {
 		Form {
-			ConfigHeader(title: "TAK", config: \.takConfig, node: node, onAppear: setTAKValues)
+			ConfigHeader(title: "TAK", config: \.takConfig, node: node, onAppear: setTAKValues, onRetry: {
+			requestRemoteConfig(
+				node: node,
+				context: context,
+				accessoryManager: accessoryManager,
+				configIsNil: { $0.takConfig == nil },
+				section: "TAK",
+				request: accessoryManager.requestTAKModuleConfig,
+				force: true
+			)
+		})
 
 			if accessoryManager.isConnected, node?.takConfig == nil {
 				Section {
@@ -82,7 +92,7 @@ struct TAKModuleConfig: View {
 					.font(.callout)
 			}
 		}
-		.disabled(!accessoryManager.isConnected || node?.takConfig == nil)
+		.disabled(ConfigFormAvailability.isDisabled(isConnected: accessoryManager.isConnected))
 		.safeAreaInset(edge: .bottom, alignment: .center) {
 			HStack(spacing: 0) {
 			SaveConfigButton(node: node, hasChanges: $hasChanges) {
@@ -132,6 +142,7 @@ struct TAKModuleConfig: View {
 				context: context,
 				accessoryManager: accessoryManager,
 				configIsNil: { $0.takConfig == nil },
+				section: "TAK",
 				request: accessoryManager.requestTAKModuleConfig
 			)
 		}

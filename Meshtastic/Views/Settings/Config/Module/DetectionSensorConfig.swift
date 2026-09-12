@@ -44,7 +44,17 @@ struct DetectionSensorConfig: View {
 	
 	var body: some View {
 		Form {
-			ConfigHeader(title: "Detection Sensor", config: \.detectionSensorConfig, node: node, onAppear: setDetectionSensorValues)
+			ConfigHeader(title: "Detection Sensor", config: \.detectionSensorConfig, node: node, onAppear: setDetectionSensorValues, onRetry: {
+			requestRemoteConfig(
+				node: node,
+				context: context,
+				accessoryManager: accessoryManager,
+				configIsNil: { $0.detectionSensorConfig == nil },
+				section: "Detection Sensor",
+				request: accessoryManager.requestDetectionSensorModuleConfig,
+				force: true
+			)
+		})
 			
 			Section(header: Text("Options")) {
 				
@@ -148,7 +158,7 @@ struct DetectionSensorConfig: View {
 			}
 		}
 		.scrollDismissesKeyboard(.interactively)
-		.disabled(!accessoryManager.isConnected || node?.detectionSensorConfig == nil)
+		.disabled(ConfigFormAvailability.isDisabled(isConnected: accessoryManager.isConnected))
 		.safeAreaInset(edge: .bottom, alignment: .center) {
 			HStack(spacing: 0) {
 			SaveConfigButton(node: node, hasChanges: $hasChanges) {
@@ -183,6 +193,7 @@ struct DetectionSensorConfig: View {
 				context: context,
 				accessoryManager: accessoryManager,
 				configIsNil: { $0.detectionSensorConfig == nil },
+				section: "Detection Sensor",
 				request: accessoryManager.requestDetectionSensorModuleConfig
 			)
 		}
