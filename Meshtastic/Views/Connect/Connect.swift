@@ -577,7 +577,7 @@ struct Connect: View {
 		}
 		.sheet(isPresented: $showSecurityVersionNag) {
 			SecurityVersionNag(minimumSecureVersion: accessoryManager.securityVersion, version: accessoryManager.activeConnection?.device.firmwareVersion ?? "?.?.?")
-				.trackScreen("Firmware Security Warning")
+				.trackScreen(.firmwareSecurityWarning)
 				.presentationDetents([.large])
 				.presentationDragIndicator(.automatic)
 		}
@@ -592,7 +592,7 @@ struct Connect: View {
 			updateNymeaDiscovery()
 		}) { device in
 			WifiProvisioningView(preselectedDevice: device)
-				.trackScreen("Wi-Fi Provisioning")
+				.trackScreen(.wifiProvisioning)
 		}
 		.onAppear {
 			updateNymeaDiscovery()

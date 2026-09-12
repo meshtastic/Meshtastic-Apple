@@ -48,8 +48,25 @@ struct RUMScreenNameTests {
 		}
 	}
 
-	@Test("Every settings destination has a name, and no two share one")
-	func settingsNamesAreUniqueAndPresent() {
+	/// Swift already rejects a duplicate raw value, so this can only fail if `ScreenName` stops
+	/// being the single source of names. It is here to say that out loud.
+	@Test("No two screens share a name")
+	func namesAreUnique() {
+		let names = ScreenName.allCases.map(\.rawValue)
+		#expect(Set(names).count == names.count)
+	}
+
+	@Test("Every name reads as a name, not as a type")
+	func namesAreReadable() {
+		for name in ScreenName.allCases.map(\.rawValue) {
+			#expect(!name.isEmpty)
+			#expect(name.trimmingCharacters(in: .whitespaces) == name)
+			#expect(!name.contains(where: { "_<>().".contains($0) }), "\(name) looks like a type description")
+		}
+	}
+
+	@Test("Every settings destination resolves to a name")
+	func settingsDestinationsAreNamed() {
 		let destinations: [SettingsNavigationState] = [
 			.about, .appSettings, .routes, .routeRecorder, .lora, .channels, .shareQRCode, .user,
 			.bluetooth, .device, .display, .network, .position, .power, .ambientLighting, .audio,
@@ -60,7 +77,6 @@ struct RUMScreenNameTests {
 			.helpDocs, .backupManagement
 		]
 		let names = destinations.map(\.screenName)
-		#expect(names.allSatisfy { !$0.isEmpty })
 		#expect(Set(names).count == names.count)
 	}
 }

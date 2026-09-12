@@ -347,7 +347,7 @@ struct MeshtasticAppleApp: App {
 						channelSetLink: link.data,
 						addChannels: link.add, // <-- Uses the now reliable 'add' boolean
 						accessoryManager: accessoryManager				)
-					.trackScreen("Save Channel QR Code")
+					.trackScreen(.saveChannelQRCode)
 					.presentationDetents([.large])
 					#if !targetEnvironment(macCatalyst)
 					.presentationDragIndicator(.visible)
@@ -358,7 +358,7 @@ struct MeshtasticAppleApp: App {
 							pendingContact: pendingContact,
 							accessoryManager: accessoryManager
 						)
-						.trackScreen("Add Contact")
+						.trackScreen(.addContact)
 						.presentationDetents([.medium, .large])
 						#if !targetEnvironment(macCatalyst)
 						.presentationDragIndicator(.visible)

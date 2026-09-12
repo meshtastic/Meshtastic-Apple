@@ -13,14 +13,14 @@ struct DeviceOnboarding: View {
 		case localNetwork
 		case siri
 
-		/// Screen name reported to RUM. Not localized — see `SettingsNavigationState.screenName`.
-		var screenName: String {
+		/// Screen name reported to RUM. See `ScreenName`.
+		var screenName: ScreenName {
 			switch self {
-			case .notifications: return "Onboarding Notifications"
-			case .location: return "Onboarding Location"
-			case .bluetooth: return "Onboarding Bluetooth"
-			case .localNetwork: return "Onboarding Local Network"
-			case .siri: return "Onboarding Siri"
+			case .notifications: return .onboardingNotifications
+			case .location: return .onboardingLocation
+			case .bluetooth: return .onboardingBluetooth
+			case .localNetwork: return .onboardingLocalNetwork
+			case .siri: return .onboardingSiri
 			}
 		}
 	}

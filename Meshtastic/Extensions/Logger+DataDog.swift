@@ -170,9 +170,9 @@ extension View {
 	/// screen at all.
 	///
 	/// A name set here only wins while no hosting controller reports over it, which is what
-	/// `MeshtasticSwiftUIViewsPredicate` above is for. Keep the names stable — renaming one
-	/// splits that screen's history in Error Tracking.
-	func trackScreen(_ name: String) -> some View {
-		trackRUMView(name: name)
+	/// `MeshtasticSwiftUIViewsPredicate` above is for. The names live in `ScreenName` so that no
+	/// two screens can share one.
+	func trackScreen(_ screen: ScreenName) -> some View {
+		trackRUMView(name: screen.rawValue)
 	}
 }

@@ -56,7 +56,7 @@ struct ContentView: View {
 			)
 			.fullScreenCover(isPresented: $isShowingLockdownGate) {
 				LockdownSheet()
-					.trackScreen("Lockdown")
+					.trackScreen(.lockdown)
 			}
 			.fullScreenCover(isPresented: $isShowingFirmwareGate) {
 				FirmwareUpdateGate()

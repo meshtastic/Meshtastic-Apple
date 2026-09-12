@@ -83,6 +83,7 @@ struct NodeMapContent: MapContent {
 											PositionPopover(position: selection)
 												.padding()
 												.opacity(0.8)
+												.trackScreen(.positionDetail)
 												.presentationCompactAdaptation(.popover)
 										}
 
@@ -100,6 +101,7 @@ struct NodeMapContent: MapContent {
 											PositionPopover(position: selection)
 												.padding()
 												.opacity(0.8)
+												.trackScreen(.positionDetail)
 												.presentationCompactAdaptation(.popover)
 										}
 								}
