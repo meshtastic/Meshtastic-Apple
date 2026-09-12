@@ -6256,6 +6256,7 @@
         }
       }
     },
+    "450 bps": {},
     "50": {
       "localizations": {
         "da": {
@@ -6526,6 +6527,7 @@
         }
       }
     },
+    "700 bps (Deprecated)": {},
     "700B bps": {
       "localizations": {
         "ko": {
@@ -6548,6 +6550,8 @@
         }
       }
     },
+    "700B bps (Deprecated)": {},
+    "700C bps": {},
     "75": {
       "localizations": {
         "da": {
@@ -98360,6 +98364,7 @@
         }
       }
     },
+    "The Codec2 bitrate. 700C replaces 700 and 700B. Lower bitrates use less bandwidth but reduce audio quality.": {},
     "The audio sample rate to use for Codec2. Lower bitrates use less bandwidth but reduce audio quality.": {
       "localizations": {
         "ko": {

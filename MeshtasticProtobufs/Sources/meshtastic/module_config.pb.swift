@@ -590,7 +590,7 @@ public struct ModuleConfig: Sendable {
     public var pttPin: UInt32 = 0
 
     ///
-    /// The audio sample rate to use for codec2
+    /// The codec2 bitrate to encode at. Sample rate is always 8 kHz.
     public var bitrate: ModuleConfig.AudioConfig.Audio_Baud = .codec2Default
 
     ///
@@ -622,8 +622,24 @@ public struct ModuleConfig: Sendable {
       case codec21400 // = 4
       case codec21300 // = 5
       case codec21200 // = 6
+
+      ///
+      /// Removed from libcodec2 upstream. A device configured to one of these
+      /// falls back to CODEC2_700C.
+      ///
+      /// NOTE: This enum value was marked as deprecated in the .proto file
       case codec2700 // = 7
+
+      /// NOTE: This enum value was marked as deprecated in the .proto file
       case codec2700B // = 8
+
+      ///
+      /// Replaces CODEC2_700. Default for new configurations.
+      case codec2700C // = 9
+
+      ///
+      /// Lowest rate, and the only one usable on slower modem presets.
+      case codec2450 // = 10
       case UNRECOGNIZED(Int)
 
       public init() {
@@ -641,6 +657,8 @@ public struct ModuleConfig: Sendable {
         case 6: self = .codec21200
         case 7: self = .codec2700
         case 8: self = .codec2700B
+        case 9: self = .codec2700C
+        case 10: self = .codec2450
         default: self = .UNRECOGNIZED(rawValue)
         }
       }
@@ -656,6 +674,8 @@ public struct ModuleConfig: Sendable {
         case .codec21200: return 6
         case .codec2700: return 7
         case .codec2700B: return 8
+        case .codec2700C: return 9
+        case .codec2450: return 10
         case .UNRECOGNIZED(let i): return i
         }
       }
@@ -671,6 +691,8 @@ public struct ModuleConfig: Sendable {
         .codec21200,
         .codec2700,
         .codec2700B,
+        .codec2700C,
+        .codec2450,
       ]
 
     }
@@ -2273,7 +2295,7 @@ extension ModuleConfig.AudioConfig: SwiftProtobuf.Message, SwiftProtobuf._Messag
 }
 
 extension ModuleConfig.AudioConfig.Audio_Baud: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0CODEC2_DEFAULT\0\u{1}CODEC2_3200\0\u{1}CODEC2_2400\0\u{1}CODEC2_1600\0\u{1}CODEC2_1400\0\u{1}CODEC2_1300\0\u{1}CODEC2_1200\0\u{1}CODEC2_700\0\u{1}CODEC2_700B\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0CODEC2_DEFAULT\0\u{1}CODEC2_3200\0\u{1}CODEC2_2400\0\u{1}CODEC2_1600\0\u{1}CODEC2_1400\0\u{1}CODEC2_1300\0\u{1}CODEC2_1200\0\u{1}CODEC2_700\0\u{1}CODEC2_700B\0\u{1}CODEC2_700C\0\u{1}CODEC2_450\0")
 }
 
 extension ModuleConfig.PaxcounterConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
