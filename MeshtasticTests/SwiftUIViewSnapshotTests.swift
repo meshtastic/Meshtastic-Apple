@@ -1804,27 +1804,27 @@ struct SaveConfigConfirmationSnapshotTests {
 		if #available(iOS 26.0, *) {
 			let traits = actionLabel.traitCollection
 			let actionTint = actionLabel.tintColor.resolvedColor(with: traits)
-			guard let brandTint = UIColor(named: "Colors/MeshtasticAccent")?.resolvedColor(with: traits) else {
-				Issue.record("Missing Colors/MeshtasticAccent")
+			guard let expectedTint = UIColor(named: "AccentColor")?.resolvedColor(with: traits) else {
+				Issue.record("Missing AccentColor")
 				return
 			}
 			var actionRed: CGFloat = 0
 			var actionGreen: CGFloat = 0
 			var actionBlue: CGFloat = 0
-			var brandRed: CGFloat = 0
-			var brandGreen: CGFloat = 0
-			var brandBlue: CGFloat = 0
+			var expectedRed: CGFloat = 0
+			var expectedGreen: CGFloat = 0
+			var expectedBlue: CGFloat = 0
 			guard actionTint.getRed(&actionRed, green: &actionGreen, blue: &actionBlue, alpha: nil),
-				  brandTint.getRed(&brandRed, green: &brandGreen, blue: &brandBlue, alpha: nil) else {
+				  expectedTint.getRed(&expectedRed, green: &expectedGreen, blue: &expectedBlue, alpha: nil) else {
 				Issue.record("Unable to resolve confirmation action colors")
 				return
 			}
 			let maximumChannelDifference = [
-				abs(actionRed - brandRed),
-				abs(actionGreen - brandGreen),
-				abs(actionBlue - brandBlue)
+				abs(actionRed - expectedRed),
+				abs(actionGreen - expectedGreen),
+				abs(actionBlue - expectedBlue)
 			].max() ?? 0
-			#expect(maximumChannelDifference > 0.1)
+			#expect(maximumChannelDifference <= 0.01)
 		}
 	}
 
