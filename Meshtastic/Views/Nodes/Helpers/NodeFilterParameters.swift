@@ -88,8 +88,12 @@ final class NodeFilterParameters: ObservableObject {
 	}
 
 	/// Search text is intentionally **not** persisted — relaunching into a stale search that hides
-	/// most nodes is confusing. It lives in memory for the app session only.
-	@Published var searchText = ""
+	/// most nodes is confusing. The draft is shared immediately but does not invalidate filtering.
+	var searchText = "" {
+		didSet { debounceSearchText() }
+	}
+	/// The value used by expensive node and contact filtering.
+	@Published private(set) var debouncedSearchText = ""
 
 	// Each filter is `@Published` (so SwiftUI observers update live when it toggles — an
 	// `@AppStorage` property inside an `ObservableObject` reads/writes `UserDefaults` but does NOT
@@ -118,6 +122,8 @@ final class NodeFilterParameters: ObservableObject {
 	/// Backing store for all persisted filter values. Defaults to `.standard`; tests inject an
 	/// isolated suite so they don't read or clobber the shared `UserDefaults.standard` domain.
 	private let store: UserDefaults
+	private let searchDebounceSleep: @MainActor @Sendable (Duration) async throws -> Void
+	private var searchDebounceTask: Task<Void, Never>?
 
 	// Public computed wrappers with enforcement
 	var viaLora: Bool {
@@ -142,8 +148,12 @@ final class NodeFilterParameters: ObservableObject {
 
 	/// - Parameter store: The `UserDefaults` instance backing all persisted filter values.
 	///   Defaults to `.standard`; pass an isolated suite in tests.
-	init(store: UserDefaults = .standard) {
+	init(
+		store: UserDefaults = .standard,
+		searchDebounceSleep: @escaping @MainActor @Sendable (Duration) async throws -> Void = { try await Task.sleep(for: $0) }
+	) {
 		self.store = store
+		self.searchDebounceSleep = searchDebounceSleep
 
 		// Property observers do not fire for assignments made inside `init`, so loading persisted
 		// values here reads from `store` without writing back to it.
@@ -162,6 +172,26 @@ final class NodeFilterParameters: ObservableObject {
 
 		if let storedRoles = store.array(forKey: Keys.deviceRoles) as? [Int] {
 			deviceRoles = Set(storedRoles)
+		}
+	}
+
+	private func debounceSearchText() {
+		searchDebounceTask?.cancel()
+		guard !searchText.isEmpty else {
+			debouncedSearchText = ""
+			return
+		}
+
+		let pendingSearchText = searchText
+		let sleep = searchDebounceSleep
+		searchDebounceTask = Task { @MainActor [weak self] in
+			do {
+				try await sleep(.milliseconds(150))
+			} catch {
+				return
+			}
+			guard !Task.isCancelled, self?.searchText == pendingSearchText else { return }
+			self?.debouncedSearchText = pendingSearchText
 		}
 	}
 
@@ -225,7 +255,7 @@ final class NodeFilterParameters: ObservableObject {
 		distanceBounds: NodeDistanceFilterBounds? = nil
 	) -> Bool {
 		// Search text
-		let text = normalizedSearchText ?? searchText.lowercased()
+		let text = normalizedSearchText ?? debouncedSearchText.lowercased()
 		if !text.isEmpty {
 			let matchesSearch = [
 				node.user?.userId,

@@ -204,7 +204,7 @@ struct MeshMapMK: View {
 
 	/// Positions filtered once per render using the full NodeFilterParameters.
 	private func filteredPositions(from positions: [PositionEntity]) -> [PositionEntity] {
-		let searchText = filters.searchText.lowercased()
+		let searchText = filters.debouncedSearchText.lowercased()
 		let onlineThreshold = filters.isOnline ? Date().addingTimeInterval(-7_200) : nil
 		let distanceBounds = filters.currentDistanceBounds
 		return positions.filter { position in
@@ -246,7 +246,7 @@ struct MeshMapMK: View {
 
 		let eligiblePositions = mapEligiblePositions
 		guard let visibleRegion else {
-			guard filters.isFiltering || !filters.searchText.isEmpty else {
+			guard filters.isFiltering || !filters.debouncedSearchText.isEmpty else {
 				return densityLimitedPositions(eligiblePositions)
 			}
 			return densityLimitedPositions(filteredPositions(from: eligiblePositions))
@@ -255,7 +255,7 @@ struct MeshMapMK: View {
 		// MapKit can briefly report a stale/empty camera region while restoring
 		// the tab or handling deep links. Never blank all pins because of that.
 		let positions = positionsInRegion.isEmpty ? eligiblePositions : positionsInRegion
-		guard filters.isFiltering || !filters.searchText.isEmpty else {
+		guard filters.isFiltering || !filters.debouncedSearchText.isEmpty else {
 			return densityLimitedPositions(positions)
 		}
 		return densityLimitedPositions(filteredPositions(from: positions))
@@ -956,7 +956,7 @@ struct MeshMapMK: View {
 	private var filterRefreshKey: Int64 {
 		var key: Int64 = 0
 		combine(&key, preciseLocationsOnly ? 1 : 0)
-		combine(&key, stableStringKey(filters.searchText.lowercased()))
+		combine(&key, stableStringKey(filters.debouncedSearchText.lowercased()))
 		combine(&key, filters.isOnline ? 1 : 0)
 		combine(&key, filters.isSigned ? 1 : 0)
 		combine(&key, filters.isPkiEncrypted ? 1 : 0)
