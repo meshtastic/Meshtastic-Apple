@@ -87,6 +87,30 @@ struct NodeAdministrationTests {
 		#expect(node.sessionExpiration != nil)
 	}
 
+	@Test func refetchMakesReceivedSessionVisibleToRetainedNode() async throws {
+		let (mesh, container) = try freshMesh()
+		let num: Int64 = 0x13AB34
+		try seedNode(num: num, in: container)
+		let mainContext = container.mainContext
+		let cachedNode = try #require(getNodeInfo(id: num, context: mainContext))
+		#expect(!cachedNode.hasLiveAdminSession)
+
+		var admin = AdminMessage()
+		admin.sessionPasskey = Data([0xA5, 0x5A])
+		var metadata = DeviceMetadata()
+		metadata.firmwareVersion = "2.8.0"
+		admin.getDeviceMetadataResponse = metadata
+		await mesh.adminAppPacket(packet: try adminPacket(from: num, message: admin), connectedNodeNum: Self.myNum)
+
+		let result = await RemoteAdminSessionWaiter.wait(
+			timeout: .milliseconds(20),
+			isLive: { getNodeInfo(id: num, context: mainContext)?.hasLiveAdminSession == true },
+			isConnected: { true }, targetIsCurrent: { true })
+		#expect(result == .active)
+		#expect(cachedNode.hasLiveAdminSession)
+		#expect(cachedNode.metadata?.firmwareVersion == "2.8")
+	}
+
 	@Test func moduleConfigResponseWithPasskeyMarksAdministered() async throws {
 		let (mesh, container) = try freshMesh()
 		let num: Int64 = 0x22BB33
@@ -102,6 +126,35 @@ struct NodeAdministrationTests {
 
 		let node = try fetchNode(num: num, in: container)
 		#expect(node.hasBeenAdministered)
+		#expect(node.sessionPasskey == Data([0x01, 0x02, 0x03]))
+		#expect(node.sessionExpiration != nil)
+		let expiration = node.sessionExpiration
+		admin.sessionPasskey = Data()
+		await mesh.adminAppPacket(packet: try adminPacket(from: num, message: admin), connectedNodeNum: Self.myNum)
+		let emptyResponseNode = try fetchNode(num: num, in: container)
+		#expect(emptyResponseNode.sessionPasskey == Data([0x01, 0x02, 0x03]))
+		#expect(emptyResponseNode.sessionExpiration == expiration)
+		await mesh.moduleConfig(config: moduleConfig, nodeNum: num, nodeLongName: "Remote Node")
+		let mirroredNode = try fetchNode(num: num, in: container)
+		#expect(mirroredNode.sessionPasskey == Data([0x01, 0x02, 0x03]))
+		#expect(mirroredNode.sessionExpiration == expiration)
+	}
+
+	@Test func ringtoneResponsePersistsSessionPasskey() async throws {
+		let (mesh, container) = try freshMesh()
+		let num: Int64 = 0x2A2B2C
+		try seedNode(num: num, in: container)
+
+		var admin = AdminMessage()
+		admin.sessionPasskey = Data([0xCA, 0xFE])
+		admin.getRingtoneResponse = "Beep:d=4,o=5,b=120:c"
+
+		await mesh.adminAppPacket(packet: try adminPacket(from: num, message: admin), connectedNodeNum: Self.myNum)
+
+		let node = try fetchNode(num: num, in: container)
+		#expect(node.rtttlConfig?.ringtone == "Beep:d=4,o=5,b=120:c")
+		#expect(node.sessionPasskey == Data([0xCA, 0xFE]))
+		#expect(node.sessionExpiration != nil)
 	}
 
 	@Test func metadataResponseWithPasskeyMarksUnknownNode() async throws {
@@ -145,8 +198,7 @@ struct NodeAdministrationTests {
 
 		let node = try fetchNode(num: num, in: container)
 		#expect(!node.hasBeenAdministered)
-		// The local download still stamps the (empty) passkey as before.
-		#expect(node.sessionPasskey == Data())
+		#expect(node.sessionPasskey == nil)
 	}
 
 	@Test func setConfigRequestWithPasskeyDoesNotMark() async throws {

@@ -102,6 +102,25 @@ struct SettingsNodeSnapshot: Identifiable, Equatable {
 }
 
 struct Settings: View {
+	static func remoteSettingsSelection(
+		requestedNodeNum: Int64?,
+		activeDeviceNum: Int64?,
+		availableNodeNums: Set<Int64>,
+		isConnected: Bool
+	) -> (preferredNodeNum: Int64, selectedNode: Int64)? {
+		guard let requestedNodeNum,
+			let activeDeviceNum,
+			availableNodeNums.contains(requestedNodeNum),
+			isConnected else { return nil }
+		return (activeDeviceNum, requestedNodeNum)
+	}
+
+	let remoteNodeNum: Int64?
+
+	init(remoteNodeNum: Int64? = nil) {
+		self.remoteNodeNum = remoteNodeNum
+	}
+
 	@Environment(\.modelContext) private var context
 	@Environment(\.colorScheme) private var colorScheme
 	@EnvironmentObject var accessoryManager: AccessoryManager
@@ -113,7 +132,9 @@ struct Settings: View {
 
 	private func refreshNodes() {
 		let descriptor = FetchDescriptor<NodeInfoEntity>(sortBy: [SortDescriptor(\NodeInfoEntity.lastHeard, order: .reverse)])
-		nodes = ((try? context.fetch(descriptor)) ?? []).compactMap(SettingsNodeSnapshot.init)
+		let refreshedNodes = ((try? context.fetch(descriptor)) ?? []).compactMap(SettingsNodeSnapshot.init)
+		nodes = refreshedNodes
+		applyRemoteSettingsNode(availableNodes: refreshedNodes)
 	}
 
 	/// Nodes for the admin / configuration picker, ordered favorites-first while
@@ -177,7 +198,8 @@ struct Settings: View {
 	}
 
 	private func isMeshBeaconModuleSupported(_ node: SettingsNodeSnapshot?) -> Bool {
-		guard node != nil else { return false }
+		// Mesh Beacon currently has no remote read path.
+		guard let node, node.num == accessoryManager.activeDeviceNum else { return false }
 		return accessoryManager.checkIsVersionSupported(forVersion: "2.8.0")
 	}
 
@@ -237,7 +259,7 @@ struct Settings: View {
 					.foregroundColor(.gray)
 			}
 
-			NavigationLink(value: SettingsNavigationState.lora) {
+			settingsLink(value: .lora) {
 				Label {
 					Text("LoRa")
 				} icon: {
@@ -246,7 +268,7 @@ struct Settings: View {
 				}
 			}
 
-			NavigationLink(value: SettingsNavigationState.channels) {
+			settingsLink(value: .channels) {
 				Label {
 					Text("Channels")
 				} icon: {
@@ -255,7 +277,7 @@ struct Settings: View {
 			}
 			.disabled(selectedNode > 0 && selectedNode != preferredNodeNum)
 
-			NavigationLink(value: SettingsNavigationState.security) {
+			settingsLink(value: .security) {
 				Label {
 					Text("Security")
 				} icon: {
@@ -263,7 +285,7 @@ struct Settings: View {
 				}
 			}
 
-			NavigationLink(value: SettingsNavigationState.shareQRCode) {
+			settingsLink(value: .shareQRCode) {
 				Label {
 					Text("Share QR Code")
 				} icon: {
@@ -276,7 +298,7 @@ struct Settings: View {
 
 	var deviceConfigurationSection: some View {
 		Section("Device Configuration") {
-			NavigationLink(value: SettingsNavigationState.user) {
+			settingsLink(value: .user) {
 				Label {
 					Text("User")
 				} icon: {
@@ -284,7 +306,7 @@ struct Settings: View {
 				}
 			}
 
-			NavigationLink(value: SettingsNavigationState.bluetooth) {
+			settingsLink(value: .bluetooth) {
 				Label {
 					Text("Bluetooth")
 				} icon: {
@@ -292,7 +314,7 @@ struct Settings: View {
 				}
 			}
 
-			NavigationLink(value: SettingsNavigationState.device) {
+			settingsLink(value: .device) {
 				Label {
 					Text("Device")
 				} icon: {
@@ -300,7 +322,7 @@ struct Settings: View {
 				}
 			}
 
-			NavigationLink(value: SettingsNavigationState.display) {
+			settingsLink(value: .display) {
 				Label {
 					Text("Display")
 				} icon: {
@@ -308,7 +330,7 @@ struct Settings: View {
 				}
 			}
 
-			NavigationLink(value: SettingsNavigationState.network) {
+			settingsLink(value: .network) {
 				Label {
 					Text("Network")
 				} icon: {
@@ -316,7 +338,7 @@ struct Settings: View {
 				}
 			}
 
-			NavigationLink(value: SettingsNavigationState.position) {
+			settingsLink(value: .position) {
 				Label {
 					Text("Position")
 				} icon: {
@@ -324,7 +346,7 @@ struct Settings: View {
 				}
 			}
 
-			NavigationLink(value: SettingsNavigationState.power) {
+			settingsLink(value: .power) {
 				Label {
 					Text("Power")
 				} icon: {
@@ -342,7 +364,7 @@ struct Settings: View {
 		let excludedModules = node?.excludedModules ?? 0
 		return Section {
 			if isModuleSupported(.ambientlightingConfig, excludedModules: excludedModules) {
-				NavigationLink(value: SettingsNavigationState.ambientLighting) {
+				settingsLink(value: .ambientLighting) {
 					Label {
 						Text("Ambient Lighting")
 					} icon: {
@@ -352,7 +374,7 @@ struct Settings: View {
 			}
 
 			if isModuleSupported(.audioConfig, excludedModules: excludedModules) {
-				NavigationLink(value: SettingsNavigationState.audio) {
+				settingsLink(value: .audio) {
 					Label {
 						Text("Audio")
 					} icon: {
@@ -362,7 +384,7 @@ struct Settings: View {
 			}
 
 			if isModuleSupported(.cannedmsgConfig, excludedModules: excludedModules) {
-				NavigationLink(value: SettingsNavigationState.cannedMessages) {
+				settingsLink(value: .cannedMessages) {
 					Label {
 						Text("Canned Messages")
 					} icon: {
@@ -372,7 +394,7 @@ struct Settings: View {
 			}
 
 			if isModuleSupported(.detectionsensorConfig, excludedModules: excludedModules) {
-				NavigationLink(value: SettingsNavigationState.detectionSensor) {
+				settingsLink(value: .detectionSensor) {
 					Label {
 						Text("Detection Sensor")
 					} icon: {
@@ -382,7 +404,7 @@ struct Settings: View {
 			}
 
 			if isMeshBeaconModuleSupported(node) {
-				NavigationLink(value: SettingsNavigationState.meshBeacon) {
+				settingsLink(value: .meshBeacon) {
 					Label {
 						Text("Mesh Beacon")
 					} icon: {
@@ -392,7 +414,7 @@ struct Settings: View {
 			}
 
 			if isModuleSupported(.extnotifConfig, excludedModules: excludedModules) {
-				NavigationLink(value: SettingsNavigationState.externalNotification) {
+				settingsLink(value: .externalNotification) {
 					Label {
 						Text("External Notification")
 					} icon: {
@@ -402,7 +424,7 @@ struct Settings: View {
 			}
 
 			if isModuleSupported(.mqttConfig, excludedModules: excludedModules) {
-				NavigationLink(value: SettingsNavigationState.mqtt) {
+				settingsLink(value: .mqtt) {
 					Label {
 						Text("MQTT")
 					} icon: {
@@ -412,7 +434,7 @@ struct Settings: View {
 			}
 
 			if isModuleSupported(.neighborinfoConfig, excludedModules: excludedModules) {
-				NavigationLink(value: SettingsNavigationState.neighborInfo) {
+				settingsLink(value: .neighborInfo) {
 					Label {
 						Text("Neighbor Info")
 					} icon: {
@@ -422,7 +444,7 @@ struct Settings: View {
 			}
 
 			if isModuleSupported(.rangetestConfig, excludedModules: excludedModules) {
-				NavigationLink(value: SettingsNavigationState.rangeTest) {
+				settingsLink(value: .rangeTest) {
 					Label {
 						Text("Range Test")
 					} icon: {
@@ -432,7 +454,7 @@ struct Settings: View {
 			}
 
 			if isModuleSupported(.paxcounterConfig, excludedModules: excludedModules) {
-				NavigationLink(value: SettingsNavigationState.paxCounter) {
+				settingsLink(value: .paxCounter) {
 					Label {
 						Text("PAX Counter")
 					} icon: {
@@ -442,7 +464,7 @@ struct Settings: View {
 			}
 
 			if isModuleSupported(.extnotifConfig, excludedModules: excludedModules) {
-				NavigationLink(value: SettingsNavigationState.ringtone) {
+				settingsLink(value: .ringtone) {
 					Label {
 						Text("Ringtone")
 					} icon: {
@@ -452,7 +474,7 @@ struct Settings: View {
 			}
 
 			if isModuleSupported(.serialConfig, excludedModules: excludedModules) {
-				NavigationLink(value: SettingsNavigationState.serial) {
+				settingsLink(value: .serial) {
 					Label {
 						Text("Serial")
 					} icon: {
@@ -462,7 +484,7 @@ struct Settings: View {
 			}
 
 			if isModuleSupported(.storeforwardConfig, excludedModules: excludedModules) {
-				NavigationLink(value: SettingsNavigationState.storeAndForward) {
+				settingsLink(value: .storeAndForward) {
 					Label {
 						Text("Store & Forward")
 					} icon: {
@@ -477,7 +499,7 @@ struct Settings: View {
 			// the top, and the in-app TAK Server controls (Enable, channel,
 			// mTLS certificates, data package export) below it. The TAK
 			// section at the bottom of this screen links to the same view.
-			NavigationLink(value: SettingsNavigationState.tak) {
+			settingsLink(value: .tak) {
 				Label {
 					Text("TAK Server")
 				} icon: {
@@ -486,7 +508,7 @@ struct Settings: View {
 			}
 
 			if isModuleSupported(.telemetryConfig, excludedModules: excludedModules) {
-				NavigationLink(value: SettingsNavigationState.telemetry) {
+				settingsLink(value: .telemetry) {
 					Label {
 						Text("Telemetry")
 					} icon: {
@@ -496,7 +518,7 @@ struct Settings: View {
 			}
 
 			if isTrafficManagementModuleSupported(node) {
-				NavigationLink(value: SettingsNavigationState.trafficManagement) {
+				settingsLink(value: .trafficManagement) {
 					Label {
 						Text("Traffic Management")
 					} icon: {
@@ -516,14 +538,14 @@ struct Settings: View {
 
 	var loggingSection: some View {
 		Section(header: Text("Logging")) {
-			NavigationLink(value: SettingsNavigationState.debugLogs) {
+			settingsLink(value: .debugLogs) {
 				Label {
 					Text("Logs")
 				} icon: {
 					Image(systemName: "scroll")
 				}
 			}
-			NavigationLink(value: SettingsNavigationState.traceRoutes) {
+			settingsLink(value: .traceRoutes) {
 				Label {
 					Text("Trace Routes")
 				} icon: {
@@ -535,28 +557,28 @@ struct Settings: View {
 
 	var developersSection: some View {
 		Section(header: Text("Developers")) {
-			NavigationLink(value: SettingsNavigationState.backupManagement) {
+			settingsLink(value: .backupManagement) {
 				Label {
 					Text("Backup Management")
 				} icon: {
 					Image(systemName: "externaldrive")
 				}
 			}
-			NavigationLink(value: SettingsNavigationState.coreDataBrowser) {
+			settingsLink(value: .coreDataBrowser) {
 				Label {
 					Text("Data Browser")
 				} icon: {
 					Image(systemName: "tablecells")
 				}
 			}
-			NavigationLink(value: SettingsNavigationState.deviceLinks) {
+			settingsLink(value: .deviceLinks) {
 				Label {
 					Text("Device Links")
 				} icon: {
 					Image(systemName: "link")
 				}
 			}
-			NavigationLink(value: SettingsNavigationState.appFiles) {
+			settingsLink(value: .appFiles) {
 				Label {
 					Text("App Files")
 				} icon: {
@@ -570,7 +592,7 @@ struct Settings: View {
 			#if !targetEnvironment(macCatalyst)
 			if #available(iOS 18, *) {
 				if NFCReader.isAvailable || accessoryManager.isConnected {
-					NavigationLink(value: SettingsNavigationState.tools) {
+					settingsLink(value: .tools) {
 						Label {
 							Text("Tools")
 						} icon: {
@@ -591,7 +613,7 @@ struct Settings: View {
 			// TAK — the Module Config link discovers the feature alongside
 			// other module configs, and the dedicated TAK section advertises
 			// the TAK Server functionality at a glance.
-			NavigationLink(value: SettingsNavigationState.tak) {
+			settingsLink(value: .tak) {
 				Label {
 					Text("TAK Server")
 				} icon: {
@@ -601,13 +623,35 @@ struct Settings: View {
 		}
 	}
 
+	@ViewBuilder
+	private func settingsLink<Label: View>(value: SettingsNavigationState, @ViewBuilder label: () -> Label) -> some View {
+		if remoteNodeNum != nil {
+			NavigationLink {
+				settingsDestination(value)
+			} label: {
+				label()
+			}
+		} else {
+			NavigationLink(value: value, label: label)
+		}
+	}
+
 	var body: some View {
-		NavigationStack(
-			path: $router.settingsPath
-		) {
+		if remoteNodeNum != nil {
+			settingsContent
+		} else {
+			NavigationStack(path: $router.settingsPath) {
+				settingsContent
+			}
+		}
+	}
+
+	@ViewBuilder
+	private var settingsContent: some View {
 			let node = nodeSnapshot(for: preferredNodeNum)
 			List {
-				NavigationLink(value: SettingsNavigationState.about) {
+				if remoteNodeNum == nil {
+				settingsLink(value: .about) {
 					Label {
 						Text("About Meshtastic")
 					} icon: {
@@ -615,7 +659,7 @@ struct Settings: View {
 					}
 				}
 
-				NavigationLink(value: SettingsNavigationState.helpDocs) {
+				settingsLink(value: .helpDocs) {
 					Label {
 						Text("Help & Documentation")
 					} icon: {
@@ -623,21 +667,21 @@ struct Settings: View {
 					}
 				}
 
-				NavigationLink(value: SettingsNavigationState.appSettings) {
+				settingsLink(value: .appSettings) {
 					Label {
 						Text("App Settings")
 					} icon: {
 						Image(systemName: "gearshape")
 					}
 				}
-				NavigationLink(value: SettingsNavigationState.localMeshDiscovery) {
+				settingsLink(value: .localMeshDiscovery) {
 					Label {
 						Text("Local Mesh Discovery")
 					} icon: {
 						Image(systemName: "antenna.radiowaves.left.and.right")
 					}
 				}
-				NavigationLink(value: SettingsNavigationState.routes) {
+				settingsLink(value: .routes) {
 					Label {
 						Text("Routes")
 					} icon: {
@@ -645,7 +689,7 @@ struct Settings: View {
 					}
 				}
 
-				NavigationLink(value: SettingsNavigationState.routeRecorder) {
+				settingsLink(value: .routeRecorder) {
 					Label {
 						Text("Route Recorder")
 					} icon: {
@@ -653,7 +697,7 @@ struct Settings: View {
 							.foregroundColor(.red)
 					}
 				}
-				NavigationLink(value: SettingsNavigationState.firmwareUpdates) {
+				settingsLink(value: .firmwareUpdates) {
 					Label {
 						Text("Firmware Updates")
 					} icon: {
@@ -661,6 +705,8 @@ struct Settings: View {
 					}
 				}
 				.disabled(selectedNode > 0 && selectedNode != preferredNodeNum)
+
+				}
 
 				// A managed radio hides the configuration sections; say why instead of
 				// showing nothing (same message as Android).
@@ -674,7 +720,9 @@ struct Settings: View {
 				if let node, !node.isManaged {
 					if accessoryManager.isConnected {
 						Section("Configure") {
-							if node.canRemoteAdmin {
+							if let remoteNodeNum {
+								LabeledContent("Node", value: nodeSnapshot(for: Int(remoteNodeNum))?.userLongName ?? "Unknown")
+							} else if node.canRemoteAdmin {
 								Picker("Node", selection: $selectedNode) {
 									if selectedNode == 0 {
 										Text("Connect to a Node").tag(0)
@@ -738,13 +786,89 @@ struct Settings: View {
 					radioConfigurationSection
 					deviceConfigurationSection
 					moduleConfigurationSection
-					loggingSection
-					if showsDevelopersSection {
+					if remoteNodeNum == nil { loggingSection }
+					if remoteNodeNum == nil && showsDevelopersSection {
 					developersSection
 					}
 				}
 			}
 			.navigationDestination(for: SettingsNavigationState.self) { destination in
+				settingsDestination(destination)
+			}
+
+			.onChange(of: UserDefaults.preferredPeripheralNum ) { _, newConnectedNode in
+				guard remoteNodeNum == nil else { applyRemoteSettingsNode(); return }
+				// If the preferred node changes, then select the newly preferred node
+				// This should only happen during connect
+				preferredNodeNum = newConnectedNode
+				selectedNode = Int(accessoryManager.isConnected ? newConnectedNode : 0)
+			}
+			.onChange(of: accessoryManager.isConnected) { _, isConnectedNow in
+				guard remoteNodeNum == nil else { applyRemoteSettingsNode(); return }
+				// If we are on this screen, haven't iniatialized the selection yet,
+				// And we transition, to connected, then initialize the selection
+				if isConnectedNow, self.selectedNode == 0 {
+					self.preferredNodeNum = UserDefaults.preferredPeripheralNum
+					setSelectedNode(to: UserDefaults.preferredPeripheralNum)
+				}
+			}
+			.onChange(of: accessoryManager.activeDeviceNum) { oldDevice, newDevice in
+				if remoteNodeNum != nil {
+					preferredNodeNum = Int(newDevice ?? 0)
+					selectedNode = 0
+					applyRemoteSettingsNode()
+					return
+				}
+				if newDevice == nil {
+					selectedNode = 0
+					preferredNodeNum = 0
+				} else if oldDevice != newDevice {
+					// Physical connection changed — any prior remote admin session is invalid
+					preferredNodeNum = Int(newDevice!)
+					selectedNode = Int(newDevice!)
+				}
+			}
+			.onAppear {
+				// If the selection hasn't be initialized yet, try to initalize it.
+				// If we are not fully connected yet, then setSelectedNode will
+				// not select the node and it will remain 0
+				refreshNodes()
+				if remoteNodeNum == nil && self.preferredNodeNum <= 0 {
+					self.preferredNodeNum = UserDefaults.preferredPeripheralNum
+					setSelectedNode(to: UserDefaults.preferredPeripheralNum)
+				}
+				applyRemoteSettingsNode()
+			}
+			.task(id: router.selectedTab) {
+				// Refresh the node snapshot on a gentle cadence, and only while Settings is
+				// the frontmost tab — the stale snapshot is invisible from other tabs, this
+				// task re-fires on every tab switch (so the guard comes first), and switching
+				// here restarts it for an immediate refresh.
+				guard remoteNodeNum != nil || router.selectedTab == .settings else { return }
+				refreshNodes()
+				while !Task.isCancelled {
+					do {
+						try await Task.sleep(for: .seconds(2))
+					} catch {
+						break
+					}
+					guard !Task.isCancelled else { break }
+					refreshNodes()
+				}
+			}
+			.navigationTitle(remoteNodeNum == nil ? "Settings" : "Remote Settings")
+			.toolbar {
+				if remoteNodeNum == nil {
+				ToolbarItem(placement: .topBarLeading) {
+					MeshtasticLogo().onLongPressGesture(minimumDuration: 1.0) {
+					}
+				}
+			}
+		}
+	}
+
+	@ViewBuilder
+	private func settingsDestination(_ destination: SettingsNavigationState) -> some View {
 				let node = liveNode(for: preferredNodeNum)
 				let configNode = liveNode(for: selectedNode)
 				switch destination {
@@ -839,66 +963,6 @@ struct Settings: View {
 				case .backupManagement:
 					BackupManagement()
 				}
-			}
-			.onChange(of: UserDefaults.preferredPeripheralNum ) { _, newConnectedNode in
-				// If the preferred node changes, then select the newly preferred node
-				// This should only happen during connect
-				preferredNodeNum = newConnectedNode
-				selectedNode = Int(accessoryManager.isConnected ? newConnectedNode : 0)
-			}
-			.onChange(of: accessoryManager.isConnected) { _, isConnectedNow in
-				// If we are on this screen, haven't iniatialized the selection yet,
-				// And we transition, to connected, then initialize the selection
-				if isConnectedNow, self.selectedNode == 0 {
-					self.preferredNodeNum = UserDefaults.preferredPeripheralNum
-					setSelectedNode(to: UserDefaults.preferredPeripheralNum)
-				}
-			}
-			.onChange(of: accessoryManager.activeDeviceNum) { oldDevice, newDevice in
-				if newDevice == nil {
-					selectedNode = 0
-					preferredNodeNum = 0
-				} else if oldDevice != newDevice {
-					// Physical connection changed — any prior remote admin session is invalid
-					preferredNodeNum = Int(newDevice!)
-					selectedNode = Int(newDevice!)
-				}
-			}
-			.onAppear {
-				// If the selection hasn't be initialized yet, try to initalize it.
-				// If we are not fully connected yet, then setSelectedNode will
-				// not select the node and it will remain 0
-				refreshNodes()
-				if self.preferredNodeNum <= 0 {
-					self.preferredNodeNum = UserDefaults.preferredPeripheralNum
-					setSelectedNode(to: UserDefaults.preferredPeripheralNum)
-				}
-			}
-			.task(id: router.selectedTab) {
-				// Refresh the node snapshot on a gentle cadence, and only while Settings is
-				// the frontmost tab — the stale snapshot is invisible from other tabs, this
-				// task re-fires on every tab switch (so the guard comes first), and switching
-				// here restarts it for an immediate refresh.
-				guard router.selectedTab == .settings else { return }
-				refreshNodes()
-				while !Task.isCancelled {
-					do {
-						try await Task.sleep(for: .seconds(2))
-					} catch {
-						break
-					}
-					guard !Task.isCancelled else { break }
-					refreshNodes()
-				}
-			}
-			.navigationTitle("Settings")
-			.toolbar {
-				ToolbarItem(placement: .topBarLeading) {
-					MeshtasticLogo().onLongPressGesture(minimumDuration: 1.0) {
-					}
-				}
-			}
-		}
 	}
 
 	func setSelectedNode(to nodeNum: Int) {
@@ -914,6 +978,16 @@ struct Settings: View {
 		} else {
 			self.selectedNode = Int(accessoryManager.isConnected ? nodeNum: 0)
 		}
+	}
+
+	private func applyRemoteSettingsNode(availableNodes: [SettingsNodeSnapshot]? = nil) {
+		guard let selection = Self.remoteSettingsSelection(
+			requestedNodeNum: remoteNodeNum,
+			activeDeviceNum: accessoryManager.activeDeviceNum,
+			availableNodeNums: Set((availableNodes ?? sortedNodes).map(\.num)),
+			isConnected: accessoryManager.isConnected) else { return }
+		preferredNodeNum = Int(selection.preferredNodeNum)
+		selectedNode = Int(selection.selectedNode)
 	}
 
 	private func handleSelectedNodeChange(_ newValue: Int) {

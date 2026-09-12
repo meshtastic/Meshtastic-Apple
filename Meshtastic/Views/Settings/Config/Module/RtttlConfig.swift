@@ -21,7 +21,17 @@ struct RtttlConfig: View {
 	
 	var body: some View {
 		Form {
-			ConfigHeader(title: "Ringtone", config: \.rtttlConfig, node: node, onAppear: setRtttLConfigValue)
+			ConfigHeader(title: "Ringtone", config: \.rtttlConfig, node: node, onAppear: setRtttLConfigValue, onRetry: {
+			requestRemoteConfig(
+				node: node,
+				context: context,
+				accessoryManager: accessoryManager,
+				configIsNil: { $0.rtttlConfig == nil },
+				section: "Ringtone",
+				request: accessoryManager.requestRtttlConfig,
+				force: true
+			)
+		})
 			
 			Section(header: Text("Options")) {
 				HStack {
@@ -75,6 +85,7 @@ struct RtttlConfig: View {
 				context: context,
 				accessoryManager: accessoryManager,
 				configIsNil: { $0.rtttlConfig == nil },
+				section: "Ringtone",
 				request: accessoryManager.requestRtttlConfig
 			)
 		}

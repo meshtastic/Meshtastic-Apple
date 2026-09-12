@@ -24,7 +24,16 @@ struct PaxCounterConfig: View {
 	
 	var body: some View {
 		Form {
-			ConfigHeader(title: "PAX Counter Config", config: \.powerConfig, node: node, onAppear: setPaxValues)
+			ConfigHeader(title: "PAX Counter Config", config: \.powerConfig, node: node, onAppear: setPaxValues, onRetry: {
+				requestRemoteConfig(
+					node: node,
+					context: context,
+					accessoryManager: accessoryManager,
+					configIsNil: { $0.paxCounterConfig == nil },
+					section: "PAX Counter Config",
+					request: accessoryManager.requestPaxCounterModuleConfig,
+					force: true)
+			})
 			
 			Section {
 				Toggle(isOn: $enabled) {
@@ -108,31 +117,13 @@ struct PaxCounterConfig: View {
 			}
 		}
 		.onFirstAppear {
-			// Need to request a PaxCounterModuleConfig from the remote node before allowing changes
-			if let deviceNum = accessoryManager.activeDeviceNum, let node {
-				let connectedNode = getNodeInfo(id: deviceNum, context: context)
-				if let connectedNode {
-					if node.num != deviceNum {
-						if UserDefaults.enableAdministration && node.num != connectedNode.num {
-							/// 2.5 Administration with session passkey
-							let expiration = node.sessionExpiration ?? Date()
-							if expiration < Date() || node.paxCounterConfig == nil {
-								Task {
-									do {
-										Logger.mesh.info("⚙️ Empty or expired pax counter module config requesting via PKI admin")
-										try await accessoryManager.requestPaxCounterModuleConfig(fromUser: connectedNode.user!, toUser: node.user!)
-									} catch {
-										Logger.mesh.info("🚨 Request for pax counter module config failed")
-									}
-								}
-							}
-						} else {
-							/// Legacy Administration
-							Logger.mesh.info("☠️ Using insecure legacy admin that is no longer supported, please upgrade your firmware.")
-						}
-					}
-				}
-			}
+			requestRemoteConfig(
+				node: node,
+				context: context,
+				accessoryManager: accessoryManager,
+				configIsNil: { $0.paxCounterConfig == nil },
+				section: "PAX Counter Config",
+				request: accessoryManager.requestPaxCounterModuleConfig)
 		}
 		.onChange(of: enabled) { oldEnabled, newEnabled in
 			if oldEnabled != newEnabled && newEnabled != (node?.paxCounterConfig?.enabled ?? false) { hasChanges = true }

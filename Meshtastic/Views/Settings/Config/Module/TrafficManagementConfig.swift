@@ -36,7 +36,17 @@ struct TrafficManagementConfig: View {
 
 	var body: some View {
 		Form {
-			ConfigHeader(title: "Traffic Management", config: \.trafficManagementConfig, node: node, onAppear: setTrafficManagementValues)
+			ConfigHeader(title: "Traffic Management", config: \.trafficManagementConfig, node: node, onAppear: setTrafficManagementValues, onRetry: {
+				requestRemoteConfig(
+					node: node,
+					context: context,
+					accessoryManager: accessoryManager,
+					configIsNil: { $0.trafficManagementConfig == nil },
+					section: "Traffic Management",
+					request: accessoryManager.requestTrafficManagementModuleConfig,
+					force: true
+				)
+			})
 				.onAppear(perform: refreshDirectNeighborCount)
 
 			Section(header: Text("Placement")) {
@@ -196,6 +206,7 @@ struct TrafficManagementConfig: View {
 				context: context,
 				accessoryManager: accessoryManager,
 				configIsNil: { $0.trafficManagementConfig == nil },
+				section: "Traffic Management",
 				request: accessoryManager.requestTrafficManagementModuleConfig
 			)
 		}
