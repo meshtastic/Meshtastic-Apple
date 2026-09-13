@@ -245,11 +245,27 @@ extension, the Go and Swift generators, the parity harness, and — as of `20fad
 generator fixes in D3, and `hop_limit` annotated as a worked example. `ascii-dash`,
 `build`, `go-plugin-test` and `generator-parity` green.
 
-**The annotation change** applies `label`, `description` and `keywords` across
-`config.proto` and `module_config.proto` — roughly 201 of the 221 fields, excluding the
-nine deprecated and those with no control. Branch it from #952 rather than waiting: the
-app can then be built end to end against a real generated registry, and nothing is thrown
-away when #952 merges and the branch rebases.
+**The annotation change** has two halves.
+
+*Enum values — done.* 122 values across 13 enums are annotated on #952, seeded
+mechanically from the strings the app already carries: `RegionCode` 36, `Serial_Baud` 16,
+`ModemPreset` 15, `Role` 12, `CompassOrientation` 8, `InputEventChar` 8,
+`RebroadcastMode` 6, `Serial_Mode` 5, `DisplayMode` 4, `OledType` 4, `GpsMode` 3,
+`PairingMode` 3, `DisplayUnits` 2. The join was by value number, which is aligned with
+each app enum's raw value; names were not used for matching, since the app spells them
+differently (`degrees0` vs `DEGREES_0`, `txtmsg` vs `TEXTMSG`).
+
+*Fields — not started.* `label`, `description` and `keywords` across `config.proto` and
+`module_config.proto`, roughly 201 of the 221 fields, excluding the nine deprecated and
+those with no control. Unlike the enum values there is no existing per-field string in the
+app to lift: labels live inside view files as `Label("Number of hops", …)` arguments, so
+this is either a second extraction pass over `Meshtastic/Views/Settings/` or hand-written.
+
+**Eight values the app is behind on.** Annotating surfaced schema values with no app
+string at all — `RegionCode.IN`, two `OLED_SH1107` variants, and six `Serial_Mode` values
+(`DEFAULT`, `WS85`, `VE_DIRECT`, `MS_CONFIG`, `LOG`, `LOGTEXT`). They are newer than the
+client. Once annotated upstream every client picks them up at once, which is the argument
+for this design in miniature.
 
 **What this costs**: unlike the previous plan, search cannot ship ahead of the
 annotations — an index whose labels do not exist yet has nothing to match. The trade is
@@ -277,6 +293,31 @@ The remaining **192 are app-only enums with no protobuf behind them** — `Inter
 `RoutingError`, `ActivityType`, `FirmwareEditions`, `SupportLevel`, `KeyBackupStatus`, the
 `AppSettings` enums — and those still need the migration below. So FR-016 shrinks but does
 not go away, and the `UpdateIntervalPicker` fix is untouched by any of this.
+
+**What replacing them looks like.** The app enums are not deleted: they carry ordering
+(`DeviceRoles` lists `client, clientMute, clientHidden, tracker…`, deliberately not proto
+order), `id`, icons and `protoEnumValue()`. Only the string properties go, from a switch
+per value to a single lookup:
+
+```swift
+// before - one case per value, English only
+var name: String {
+    switch self {
+    case .client: return "Client".localized
+    ...
+    }
+}
+
+// after - the schema is the source, already localized
+var name: String {
+    Config.DeviceConfig.Role(rawValue: rawValue)?.metadata?.label ?? ""
+}
+```
+
+`isDeprecated` collapses the same way, onto the mirrored `deprecated` attribute, which
+removes the hand-maintained list at `DeviceEnums.swift:23-31`. This cannot land until the
+registry is generated into the app, so it belongs to the field-metadata wiring change in
+the plan's sequencing, not to the search change.
 
 **Rationale**: CLAUDE.md requires one change per pull request. The migration is a
 mechanical sweep across 18 files that is independently valuable — those strings are

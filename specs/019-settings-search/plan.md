@@ -120,10 +120,11 @@ one-change-per-PR rule:
 **Upstream (meshtastic/protobufs)**
 
 - **#952** — the mechanism, plus the new attributes and generator fixes already pushed.
-- **Annotations** — `label`, `description` and `keywords` across `config.proto` and
-  `module_config.proto`, roughly 201 fields. Branch from #952 so the app can be built
-  against a real registry before #952 merges. This is the critical path: search cannot
-  index labels that do not exist yet.
+- **Annotations** — enum values are done (122 across 13 enums, seeded from the strings the
+  app already carries). Fields are not: `label`, `description` and `keywords` across
+  roughly 201 of the 221 fields, which have no existing per-field string to lift because
+  their labels sit inside view files. This is the critical path — search cannot index
+  labels that do not exist yet.
 
 **This repo**
 
@@ -134,7 +135,9 @@ one-change-per-PR rule:
    untranslated today regardless of search — and can proceed in parallel with the
    upstream work.
 2. **Field-metadata wiring** — the `gen_protos.sh` phase, the submodule bump, the
-   SwiftLint exclusions and the CI checkout fix. Lands the generated registry.
+   SwiftLint exclusions and the CI checkout fix. Lands the generated registry, and
+   replaces the string properties on the 13 proto-backed app enums with registry lookups
+   (their ordering, icons and `protoEnumValue()` stay).
 3. **Settings search** — the index, the engine, the UI and the drift tests.
 
 ## Complexity Tracking
