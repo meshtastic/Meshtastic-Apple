@@ -2,7 +2,7 @@
 
 **Feature Branch**: `019-settings-search`
 **Created**: 2026-09-13
-**Status**: Draft — approved direction, not yet implemented
+**Status**: Upstream complete, app work not started — see Progress below
 **Input**: User description: "a settings search view to help users find features similar to how settings search works on iOS and Mac", extended to cover every individual setting, the in-app documentation, and generation of the index from protobuf field metadata.
 
 ## Overview
@@ -16,9 +16,30 @@ The search covers three kinds of result: the settings screens themselves, the in
 them, and the in-app documentation pages. Typing filters the Settings list in place rather than
 pushing a separate results screen.
 
-The index for radio and module settings is **generated from protobuf field metadata**, not hand
-written, so it cannot drift from the schema it describes. App-level settings that have no protobuf
-field behind them are curated, and a test keeps that remainder honest.
+The index for radio and module settings is **generated from protobuf metadata**, not hand written,
+so it cannot drift from the schema it describes. Field labels come from
+`(meshtastic.field_metadata)`; picker options and bitfield flags come from
+`(meshtastic.enum_value_metadata)` on the enum values, since those are what a picker actually
+offers. App-level settings, which have no protobuf behind them, are curated, and a test keeps that
+remainder honest.
+
+The English in the schema is the **source string** for translation: the generators emit it as
+`String(localized:defaultValue:comment:)`, so Xcode's extractor pulls it into
+`Localizable.xcstrings` and translations live in the app rather than in the wire schema. One place
+says what a setting is called, and every client reads it.
+
+## Progress
+
+| | Status |
+|---|---|
+| Schema and generators (`meshtastic/protobufs#952`) | **Done** — all checks green |
+| Annotations, 140 fields + 122 enum values (`#1081`) | **Done** — all checks green, based on #952 |
+| String catalog migration (FR-016) | Not started |
+| Field-metadata wiring into the app | Not started |
+| Search itself | Not started |
+
+Nothing in this repository has changed yet. The upstream work is what the app will build on, and
+it is described in [research.md](./research.md) D1–D5.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -160,6 +181,14 @@ result is listed, visibly de-emphasised, with an explanation.
   simply absent from search, which no test that only validates existing entries can detect. The
   authoritative list of fields is the protobuf source text, not the generated registry, which holds
   only the fields that carry an annotation.
+- **FR-015a**: The exemption list is the 33 fields that annotation deliberately skipped, in four
+  groups: controls whose label is interpolated and has no stable literal (`tx_power`'s stepper reads
+  `"\(txPower)dBm Transmit Power"`; also `ls_secs`, `min_wake_secs`, the ambient-lighting colour
+  values and the PaxCounter thresholds); controls inside nested custom views (`bandwidth`,
+  `coding_rate`); fields with no user interface at all (`private_key`, `admin_key`,
+  `broadcast_targets`, `ipv4_config`); and `position_flags`, whose ten toggles take their labels from
+  the `PositionFlags` enum values instead. Adding to this list MUST require stating which group a
+  field belongs to.
 - **FR-016**: Any string the index needs that currently bypasses the string catalog MUST be migrated
   into it as part of this feature. Two known groups qualify: the enumeration values behind picker
   options, which localize at runtime through a mechanism the extractor cannot see, and the interval
@@ -242,17 +271,24 @@ package, since a SwiftPM package has no string catalog. See [research.md](./rese
 
 ## Dependencies
 
-- **meshtastic/protobufs#952** introduces `field_metadata.proto` and the code generators, including
-  `tools/protoc-gen-fieldmeta-swift`. As of 2026-09-13 it is open and mergeable, and now also
-  carries the `label`, `description` and `keywords` attributes, localized string emission, and fixes
-  for two generator bugs those attributes exposed (`20fadc6`). The submodule here does not yet
-  contain `field_metadata.proto`.
-- A second protobufs change, branched from #952, MUST carry the annotations themselves — label,
-  description and keywords across the configuration and module configuration fields, roughly 201 of
-  221. #952 supplies the mechanism; this supplies the data. Branching rather than waiting lets the
-  app be built and tested end to end against a real generated registry, and the annotations are the
-  permanent deliverable, so nothing is thrown away when #952 merges and the branch rebases.
-- This is the critical path: search cannot index labels that do not exist yet.
+Two upstream changes, both open and green as of 2026-09-13. The submodule here does not yet contain
+`field_metadata.proto`, so neither is consumable until it is bumped.
+
+- **[meshtastic/protobufs#952](https://github.com/meshtastic/protobufs/pull/952)** — the mechanism.
+  `field_metadata.proto` with both extensions, the Go and Swift generators, the byte-identical
+  parity harness, localized string emission, and three generator fixes (see
+  [research.md](./research.md) D3). Carries five worked-example annotations and no bulk data.
+- **[meshtastic/protobufs#1081](https://github.com/meshtastic/protobufs/pull/1081)** — the data.
+  140 fields and 122 enum values, seeded from the strings this app already carries. Based on #952's
+  branch so the mechanism can be reviewed without the annotations on top of it; retargets to
+  `master` once #952 merges.
+
+Keeping these apart matters for review: the mechanism is the part that needs scrutiny, and the
+annotations are 262 lines of English that need reading as prose rather than as a diff.
+
+This is the critical path — search cannot index labels that do not exist yet — but the two can be
+reviewed in parallel.
+
 - The documentation index at `Meshtastic/Resources/docs/index.json`, generated by
   `scripts/build-docs.sh`.
 
@@ -262,10 +298,18 @@ package, since a SwiftPM package has no string catalog. See [research.md](./rese
   list is therefore a single string, delimited with `|` — chosen over `,` because a keyword may
   itself contain a comma — which the app splits and trims.
 - Not every control maps to a protobuf field, and the relationship is not one-to-one in either
-  direction. `position_flags` is a single field behind ten toggles; `coding_rate` backs three
-  controls; `json_enabled`, `frequency_offset` and `override_duty_cycle` have no control at all.
-  User-interface-only affordances such as "Use Preset" and every app-level screen stay curated.
-  There are 221 configuration fields across 29 messages, nine of them already deprecated.
+  direction. `coding_rate` backs three controls; `json_enabled`, `frequency_offset` and
+  `override_duty_cycle` have no control at all. User-interface-only affordances such as "Use Preset"
+  and every app-level screen stay curated. There are 221 configuration fields across 29 messages,
+  nine of them already deprecated; 140 are annotated and 33 are exempt under FR-015a.
+- `keywords` is annotated nowhere. It cannot be derived from the app, and generating synonyms
+  mechanically would be guessing; labels and descriptions already carry the words a user is most
+  likely to type, and "hops" is inside "Number of hops". Adding keywords by hand is worthwhile where
+  a term is genuinely absent — "psk" for the pre-shared key control is the spec's own example — and
+  ranking already weights a keyword hit below a label hit, so a sparse keyword set costs nothing.
+- Annotating surfaced eight schema values this app does not yet offer at all: `RegionCode.IN`, two
+  `OLED_SH1107` variants, and six `Serial_Mode` values. They are newer than the client. Search will
+  not show them until the app adds the corresponding cases, which is a separate gap.
 - Migrating the remaining enumeration values and interval picker labels into the catalog (FR-016)
   covers the 192 of 319 literal `.localized` sites in `Meshtastic/Enums/` that have no protobuf
   behind them — `IntervalType`, `RoutingError`, `ActivityType`, `FirmwareEditions` and the app

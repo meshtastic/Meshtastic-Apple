@@ -49,8 +49,7 @@ the hand-written strings in D6.
 - `keywords` is a single `|`-delimited string, because `FieldMetadata` attributes must be
   scalar and `repeated` is rejected at generation time. The app splits on `|` and trims.
   A translator sees one catalog entry per field with a comment naming the field.
-- A second protobufs change carrying annotations for all 221 fields is back on the
-  critical path — see D5.
+- A second protobufs change carrying the annotations is back on the critical path — see D5.
 
 ## D2. The registry is generated into the app target
 
@@ -181,8 +180,8 @@ estimated "~201 of 269".
 | **Total** | **93** | **Total** | **128** |
 
 Nine of the 221 are already marked `[deprecated = true]` upstream, leaving **212 live
-fields** — which lines up with the spec's estimate of roughly 201 proto-backed controls
-once the fields with no screen are removed. Two messages sit outside the count on purpose:
+fields**. Of those, 140 are annotated and 33 are exempt under FR-015a; the rest have no
+screen. Two messages sit outside the count on purpose:
 `Config.SessionkeyConfig` is empty, and `DeviceUIConfig` lives in a third file,
 `device_ui.proto`, so surfacing device-UI settings later is additional annotation scope
 rather than something this count already covers.
@@ -255,19 +254,23 @@ workflow at all. If the registry is to be trusted, that filter needs `protobufs`
 
 ## D5. Upstream is on the critical path, in two steps
 
-**Decision**: 019 depends on meshtastic/protobufs#952 for the mechanism, and on a second
-protobufs change carrying the annotations for every proto-backed control. The second is
-the bulk of the work and the permanent deliverable.
+**Decision**: 019 depends on two upstream changes, deliberately kept apart so the mechanism
+can be reviewed without the data on top of it. Both are open and fully green as of
+2026-09-13.
 
-**Status of #952** (2026-09-13): open and mergeable. Carries the `field_metadata`
-extension, the Go and Swift generators, the parity harness, and — as of `20fadc6` — the
-`label`, `description` and `keywords` attributes with localized string emission, the two
-generator fixes in D3, and `hop_limit` annotated as a worked example. `ascii-dash`,
-`build`, `go-plugin-test` and `generator-parity` green.
+| PR | Carries |
+|---|---|
+| [#952](https://github.com/meshtastic/protobufs/pull/952) | `field_metadata.proto` with both extensions, the Go and Swift generators, the byte-identical parity harness, localized string emission, the three fixes in D3. Five worked-example annotations, no bulk data. |
+| [#1081](https://github.com/meshtastic/protobufs/pull/1081) | The annotations: 140 fields, 122 enum values. Based on #952's branch; retargets to `master` when #952 merges. |
 
-**The annotation change** has two halves.
+The annotations went into #952 first and were split out afterwards — they are the data, not
+the mechanism, and 262 lines of English on top of a generator change makes both harder to
+review.
 
-*Enum values — done.* 122 values across 13 enums are annotated on #952, seeded
+**The annotation work** has two halves.
+
+*Enum values — done.* 122 values across 13 enums are annotated in
+[#1081](https://github.com/meshtastic/protobufs/pull/1081), seeded
 mechanically from the strings the app already carries: `RegionCode` 36, `Serial_Baud` 16,
 `ModemPreset` 15, `Role` 12, `CompassOrientation` 8, `InputEventChar` 8,
 `RebroadcastMode` 6, `Serial_Mode` 5, `DisplayMode` 4, `OledType` 4, `GpsMode` 3,
@@ -275,7 +278,7 @@ mechanically from the strings the app already carries: `RegionCode` 36, `Serial_
 each app enum's raw value; names were not used for matching, since the app spells them
 differently (`degrees0` vs `DEGREES_0`, `txtmsg` vs `TEXTMSG`).
 
-*Fields — done.* 140 fields across 24 messages carry `label` and `description` in meshtastic/protobufs#1081, seeded from
+*Fields — done.* 140 fields across 24 messages carry `label` and `description`, seeded from
 the config views. Nothing in a view says which proto field a control edits, so the link came
 from the save closure: `var lc = Config.LoRaConfig()` names the message,
 `lc.hopLimit = UInt32(hopLimit)` ties the proto property to a `@State` var, and

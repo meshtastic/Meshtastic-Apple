@@ -17,12 +17,16 @@ name. Xcode's extractor pulls those into `Localizable.xcstrings` on build, so th
 in the schema is the source string and translations live in the app's catalog. One source
 of truth for what a setting is called, shared by every client.
 
-Making that work took three changes to
-[meshtastic/protobufs#952](https://github.com/meshtastic/protobufs/pull/952), pushed as
-`20fadc6`: the new attributes with localized emission, plus fixes for two latent bugs the
-attributes exposed — the Swift plugin crashed on any seventh attribute, and both plugins
-emitted multi-attribute literals in an order Swift's memberwise initializer rejects. See
-[research.md](./research.md) D1 and D3.
+Picker options and bitfield flags come from a second extension,
+`(meshtastic.enum_value_metadata)`, on the enum values — a picker offers enum values, and a
+field carries one label, so the ten toggles behind `position_flags` are named by the
+`PositionFlags` values rather than by the field.
+
+The upstream half is complete and green: [#952](https://github.com/meshtastic/protobufs/pull/952)
+for the mechanism, [#1081](https://github.com/meshtastic/protobufs/pull/1081) for 140 field
+and 122 enum-value annotations seeded from strings this app already carries. Getting there
+turned up three latent generator bugs, all fixed with tests — see
+[research.md](./research.md) D3. Nothing in this repository has changed yet.
 
 Because the registry now carries localizable strings it must be generated into the **app
 target**, not the `MeshtasticProtobufs` package: `SWIFT_EMIT_LOC_STRINGS` is per-target
