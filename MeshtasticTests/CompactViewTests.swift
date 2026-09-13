@@ -92,3 +92,24 @@ struct NodeListPreferencesTests {
 		#expect(unique.count == allPrefs.count)
 	}
 }
+
+@Suite("Node list row refresh decision")
+struct NodeListRowRefreshDecisionTests {
+	@Test func initialTaskDoesNotRefreshExistingSnapshot() {
+		var gate = NodeListRowRefreshGate()
+		let shouldRefresh = gate.shouldRefresh()
+
+		#expect(!shouldRefresh)
+	}
+
+	@Test func subsequentTasksRefreshSnapshot() {
+		var gate = NodeListRowRefreshGate()
+		let initialShouldRefresh = gate.shouldRefresh()
+		let secondShouldRefresh = gate.shouldRefresh()
+		let thirdShouldRefresh = gate.shouldRefresh()
+
+		#expect(!initialShouldRefresh)
+		#expect(secondShouldRefresh)
+		#expect(thirdShouldRefresh)
+	}
+}
