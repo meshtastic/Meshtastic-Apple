@@ -130,14 +130,28 @@ result is listed, visibly de-emphasised, with an explanation.
   documentation index, and MUST appear under a section separate from settings results.
 - **FR-010**: Matching MUST be case- and diacritic-insensitive, so "prasa" finds "Přáša" and "MQTT"
   finds "mqtt".
-- **FR-011**: Results MUST be ranked by relevance, with a deterministic order for equal scores so the
-  same query always produces the same list.
+- **FR-011**: Results MUST be ranked by where the match landed, in the order exact label, label
+  prefix, keyword, then description or option value. Equal scores MUST break by section order and
+  then label, so the same query always produces the same list — a match in a control's own name is
+  what a user expects first, regardless of how many keywords a rival entry carries.
 - **FR-012**: Results whose screen requires a connected radio MUST remain visible while disconnected,
   visually de-emphasised and labelled as requiring a radio, and MUST still navigate.
 - **FR-013**: Navigation MUST route through the existing settings navigation state so deep links and
-  search results share one path.
+  search results share one path. Selecting a result MUST open the screen holding that control and
+  nothing further — no scrolling to or highlighting of the individual control, which would require
+  per-control anchors on all 25 configuration screens and has no defined behaviour for the controls
+  that carry no stable identity.
 - **FR-014**: Result rows MUST meet the 44×44 point minimum touch target and MUST remain legible at
   the largest Dynamic Type size without clipping.
+- **FR-015**: The index MUST be provably complete, not merely valid. A test MUST fail when a field in
+  the configuration protobufs carries no `field_metadata`, and each curated screen MUST pin its
+  expected entry count — otherwise a newly added control is simply absent from search, which no test
+  that only validates existing entries can detect.
+- **FR-016**: Any string the index needs that currently bypasses the string catalog MUST be migrated
+  into it as part of this feature. Two known groups qualify: the enumeration values behind picker
+  options, which localize at runtime through a mechanism the extractor cannot see, and the interval
+  picker labels, which pass through a `String` parameter that binds the non-localizing overload.
+  Neither translates today, so this fixes an existing defect rather than only serving search.
 
 ### Key Entities
 
@@ -155,8 +169,9 @@ result is listed, visibly de-emphasised, with an explanation.
 
 - **SC-001**: Searching "hops", "psk", "duty cycle" and "Long Fast" each returns the correct control
   as the first settings result.
-- **SC-002**: Every control under Settings is findable by at least one term that is not its exact
-  label — verified by a test asserting each entry carries at least one keyword or description.
+- **SC-002**: Every control under Settings is indexed, and findable by at least one term that is not
+  its exact label — completeness enforced by FR-015 rather than assumed, and findability verified by
+  a test asserting each entry carries at least one keyword or description.
 - **SC-003**: Renaming a setting's label without updating its entry fails a test, demonstrated by
   performing the rename and observing the failure before reverting.
 - **SC-004**: No indexed string is missing from `Localizable.xcstrings`, and none renders in English
@@ -183,6 +198,19 @@ result is listed, visibly de-emphasised, with an explanation.
   only for settings that have none.
 - **Localized strings**: labels, descriptions and keywords all belong in the string catalog, so
   proto-declared strings must reach it rather than bypassing it.
+- Q: How should a missing index entry be caught — a control that exists but was never indexed? →
+  A: A test asserting every configuration protobuf field carries `field_metadata`, plus a pinned
+  entry count per curated screen.
+- Q: Picker option values never reach the string catalog, contradicting FR-007. How is that resolved?
+  → A: Migrate them into the catalog as part of this feature, along with the interval picker labels
+  that bypass it the same way.
+- Q: What determines result order? → A: Field-weighted — exact label, label prefix, keyword, then
+  description or option value — with ties broken by section order and then label.
+- Q: If #952 slips, what does 019 do? → A: Open a second protobufs change branched from #952 carrying
+  the annotations for every configuration field, so the app can be built end to end against a real
+  generated registry rather than waiting or writing throwaway entries.
+- Q: When a result is a single control, what happens on arrival at its screen? → A: Open the screen
+  only; no scrolling to or highlighting of the individual control.
 
 ## Dependencies
 
@@ -190,6 +218,12 @@ result is listed, visibly de-emphasised, with an explanation.
   Swift generator. It is approved and mergeable but its build is failing, and the submodule here does
   not yet contain `field_metadata.proto`. Adding attributes is documented as a schema-only change, so
   no generator work is expected once it lands, subject to the scalar constraint below.
+- A second protobufs change, branched from #952, MUST carry the annotations themselves — the label,
+  description and keyword attributes applied across the configuration and module configuration
+  fields. #952 supplies the mechanism; this supplies the data. Branching from it rather than waiting
+  lets the app be built and tested end to end against a real generated registry, and the annotations
+  are the permanent deliverable rather than scaffolding, so nothing is thrown away when #952 merges
+  and the branch rebases onto master.
 - The documentation index at `Meshtastic/Resources/docs/index.json`, generated by
   `scripts/build-docs.sh`.
 
@@ -200,9 +234,9 @@ result is listed, visibly de-emphasised, with an explanation.
 - Not every control maps to a protobuf field. User-interface-only affordances such as "Use Preset",
   and every app-level screen, have no field and stay curated. Roughly 201 of 269 controls are
   proto-backed on current counts.
-- Picker option values come from enumerations that localize at runtime through a mechanism the string
-  extractor cannot see, so those values are absent from the catalog today. Making FR-007 true for
-  option values requires moving them into the catalog, which the plan must account for.
+- Migrating the enumeration values and interval picker labels into the catalog (FR-016) touches
+  roughly 200 strings across the enumeration files — `LoraConfigEnums` and `IntervalEnums` hold the
+  largest share — and changes what every non-English user sees, independently of search.
 - The existing `unit`, `min_value`, `max_value`, `diy_only` and `admin_only` attributes are useful to
   search beyond labelling — a unit gives a searchable term, and the two boolean attributes can
   explain why a setting is absent on a given radio.
