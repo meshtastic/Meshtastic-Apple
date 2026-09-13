@@ -32,6 +32,10 @@ struct NodeListRowRefreshGate {
 /// it, so a re-evaluation after the model dies never touches the live object. Value types can't
 /// fault.
 struct NodeListRowSummary {
+	#if DEBUG
+	@MainActor static var testInitializationObserver: (() -> Void)?
+	#endif
+
 	// Identity / name
 	let num: Int64
 	let shortName: String?
@@ -72,6 +76,10 @@ struct NodeListRowSummary {
 		includePosition: Bool = true,
 		includeLogAvailability: Bool = true
 	) {
+		#if DEBUG
+		Self.testInitializationObserver?()
+		#endif
+
 		num = node.num
 		let user = node.user
 		shortName = user?.shortName
