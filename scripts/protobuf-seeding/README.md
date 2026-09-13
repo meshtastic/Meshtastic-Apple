@@ -3,7 +3,7 @@
 One-time scaffolding used to lift this app's English display strings into the Meshtastic
 schema, so `(meshtastic.field_metadata)` and `(meshtastic.enum_value_metadata)` become the
 source of truth instead of switch statements here. Produced
-[meshtastic/protobufs#1081](https://github.com/meshtastic/protobufs/pull/1081) — 140 fields
+[meshtastic/protobufs#1081](https://github.com/meshtastic/protobufs/pull/1081) — 150 fields
 and 122 enum values.
 
 Kept in the repository so that annotation diff can be re-run and checked rather than read
@@ -57,11 +57,17 @@ protoc-gen-swift's naming rules.
 ## What they deliberately skip
 
 Both seeders report what they could not match rather than guessing. As of the run that
-produced #1081 that was 33 fields, in four groups: interpolated labels with no stable
-literal (`"\(txPower)dBm Transmit Power"`), controls inside nested custom views
-(`bandwidth`, `coding_rate`), fields with no user interface (`private_key`, `admin_key`),
-and `position_flags`, whose ten toggles take their labels from the `PositionFlags` enum
-values instead. Those are the exemption list in spec 019 FR-015a.
+produced #1081 that was 21 fields, in four groups: fields with no control at all
+(`ls_secs`, `private_key`, `admin_key`, `ipv4_config`), several fields sharing one control
+(AmbientLighting `red`/`green`/`blue`/`current` behind a single `ColorPicker`), one
+interpolated label (`"\(txPower)dBm Transmit Power"`), and `position_flags`, whose ten
+toggles take their labels from the `PositionFlags` enum values instead. Those are the
+exemption list in spec 019 FR-015a.
+
+A control in a nested view or behind a computed `Binding` is NOT in that group — it has a
+label and should be annotated. An earlier version of the seeder missed twelve such fields
+(`bandwidth`, `coding_rate`, the Audio I2S pins, the PaxCounter thresholds) because it only
+looked at `$state` bindings and first-argument labels.
 
 `keywords` is never seeded. It cannot be derived from the app, and generating synonyms
 mechanically would be guessing.

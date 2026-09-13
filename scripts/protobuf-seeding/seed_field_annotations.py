@@ -90,6 +90,13 @@ def controls(src: str) -> dict:
     lines = src.split("\n")
 
     def record(var, label=None, desc=None):
+        # Reject interpolated strings. They are not display text that can live in a
+        # schema - "\(messageByteCount) / \(max) bytes" is a live character counter,
+        # and "\(txPower)dBm Transmit Power" changes with the value.
+        if label and "\\(" in label:
+            label = None
+        if desc and "\\(" in desc:
+            desc = None
         e = out.setdefault(var, {})
         if label and "label" not in e:
             e["label"] = label
@@ -111,20 +118,29 @@ def controls(src: str) -> dict:
             continue
 
         # Toggle(isOn: $var) { Label("X", ...) ; Text("desc") }
+        # Some toggles carry the label in a Text instead of a Label, with no Label at
+        # all - Toggle(isOn: $adcOverride) { Text("ADC Override") }. In that case the
+        # first Text is the label, not the description.
         m = re.search(r'Toggle\(\s*isOn:\s*\$(\w+)\s*\)\s*\{', line)
         if m:
             label = desc = None
+            texts = []
             for k in range(i + 1, min(i + 6, len(lines))):
                 if label is None:
                     lm = LABEL_RE.search(lines[k])
                     if lm:
                         label = lm.group(1)
                         continue
-                if label is not None:
-                    tm = TEXT_RE.search(lines[k])
-                    if tm:
-                        desc = tm.group(1)
+                tm = TEXT_RE.search(lines[k])
+                if tm:
+                    texts.append(tm.group(1))
+                    if label is not None:
+                        break
+                elif re.search(r'^\s*\}', lines[k]):
                     break
+            if label is None and texts:
+                label, texts = texts[0], texts[1:]
+            desc = texts[0] if texts else None
             record(m.group(1), label, desc)
             continue
 
@@ -138,15 +154,47 @@ def controls(src: str) -> dict:
                 record(vm.group(1), lm.group(1), None)
             continue
 
-        # TextField("placeholder", text: $var) - the real label is a sibling Label above
-        m = re.search(r'TextField\(\s*"((?:[^"\\]|\\.)*)"\s*,\s*text:\s*\$(\w+)', line)
+        # TextField("placeholder", text:/value: $var) - the real label is usually a
+        # sibling Label above, since the first argument is often a placeholder.
+        m = re.search(r'TextField\(\s*"((?:[^"\\]|\\.)*)"\s*,\s*(?:text|value):\s*\$(\w+)', line)
         if m:
             label = None
             for k in range(max(0, i - 4), i):
                 lm = LABEL_RE.search(lines[k])
                 if lm:
                     label = lm.group(1)
-            record(m.group(2), label or m.group(1), None)
+            desc = None
+            for k in range(i + 1, min(i + 10, len(lines))):
+                tm = TEXT_RE.search(lines[k])
+                if tm and len(tm.group(1)) > 25:
+                    desc = tm.group(1)
+                    break
+            record(m.group(2), label or m.group(1), desc)
+            continue
+
+        # Slider(value: <binding>, ...) { Text("X") } minimumValueLabel: { ... }
+        # The label is in a trailing closure, not an argument, and the binding may be a
+        # computed Binding property rather than $state - so record it unprefixed too.
+        m = re.search(r'Slider\(', line)
+        if m:
+            blob = "\n".join(lines[i:i + 14])
+            vm = re.search(r'value:\s*\$?(\w+)', blob)
+            lm = re.search(r'\)\s*\{\s*\n\s*Text\(\s*"((?:[^"\\]|\\.)*)"', blob)
+            if vm and lm:
+                desc = None
+                for k in range(i + 1, min(i + 20, len(lines))):
+                    tm = TEXT_RE.search(lines[k])
+                    if tm and len(tm.group(1)) > 40:
+                        desc = tm.group(1)
+                        break
+                record(vm.group(1), lm.group(1), desc)
+            continue
+
+        # Stepper("literal", value: $var) - skipped when the title is interpolated,
+        # since "\(txPower)dBm Transmit Power" has no stable label to lift.
+        m = re.search(r'Stepper\(\s*"((?:[^"\\]|\\.)*)"\s*,\s*value:\s*\$?(\w+)', line)
+        if m and "\\(" not in m.group(1):
+            record(m.group(2), m.group(1), None)
 
     return out
 
@@ -189,6 +237,15 @@ def main() -> None:
                 if not entry:
                     for cand, info in ctrl.items():
                         if norm(cand) == norm(prop) and info.get("label"):
+                            entry = dict(info)
+                            break
+                # Last resort: a control whose LABEL names the field. Catches controls in
+                # nested views bound to a @Binding parameter, where neither the binding
+                # name nor the save closure mentions the field - Picker("Bandwidth",
+                # selection: $selection) inside CustomBandwidthPicker, for instance.
+                if not entry:
+                    for info in ctrl.values():
+                        if info.get("label") and norm(info["label"]) == norm(proto_field):
                             entry = dict(info)
                             break
                 if not entry:

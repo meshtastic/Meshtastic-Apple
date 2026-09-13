@@ -23,7 +23,7 @@ field carries one label, so the ten toggles behind `position_flags` are named by
 `PositionFlags` values rather than by the field.
 
 The upstream half is complete and green: [#952](https://github.com/meshtastic/protobufs/pull/952)
-for the mechanism, [#1081](https://github.com/meshtastic/protobufs/pull/1081) for 140 field
+for the mechanism, [#1081](https://github.com/meshtastic/protobufs/pull/1081) for 150 field
 and 122 enum-value annotations seeded from strings this app already carries. Getting there
 turned up three latent generator bugs, all fixed with tests — see
 [research.md](./research.md) D3. Nothing in this repository has changed yet.
@@ -129,10 +129,10 @@ one-change-per-PR rule:
 - **[#1081](https://github.com/meshtastic/protobufs/pull/1081)** — the annotations, based
   on #952's branch so the mechanism can be reviewed on its own. Retargets to `master` once
   #952 merges.
-  Between them: 122 enum values across 13 enums and 140 fields across 24 messages, seeded
-  from strings the app already carries. 33 fields are deliberately unannotated
-  (interpolated stepper labels, controls in nested custom views, fields with no UI) and
-  form the exemption list FR-015 reads. `keywords` is unseeded and can be added by hand
+  Between them: 122 enum values across 13 enums and 150 fields across 24 messages, seeded
+  from strings the app already carries. 21 fields are deliberately unannotated (fields with
+  no control, several fields behind one control, one interpolated label, and
+  `position_flags`) and form the exemption list FR-015a names. `keywords` is unseeded and can be added by hand
   where a term is genuinely absent from the label.
 
 **This repo**
