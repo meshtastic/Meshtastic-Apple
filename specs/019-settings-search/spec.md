@@ -113,12 +113,18 @@ result is listed, visibly de-emphasised, with an explanation.
   text fields, because the description is where a user's own wording is most likely to appear.
 - **FR-004**: Picker option values MUST be indexed, so "Long Fast", "Router" and "United States" find
   the controls that offer them.
-- **FR-005**: For settings backed by a protobuf field, label, description and keywords MUST be
-  declared as `meshtastic.field_metadata` attributes in the schema and consumed from generated code —
-  the schema is the single source of truth, and a generated registry cannot drift from it.
-- **FR-006**: Generated registry code MUST be emitted where the app's string catalog can see it, and
-  MUST emit its strings as literal localized-string expressions — `MeshtasticProtobufs` is a separate
-  package with no catalog of its own, so a registry generated into it would never reach translators.
+- **FR-005**: For settings backed by a protobuf field, the entry MUST identify that field by proto
+  message name and tag, and MUST read its structural attributes — bounds, unit, DIY-only, admin-only
+  and deprecated — from the generated registry rather than restating them. Tag, not name: a field's
+  spelling differs across its proto, generated, entity and view-state forms, and only the tag is
+  stable by contract.
+- **FR-006**: Labels, descriptions and keywords MUST be declared app-side in a form the string
+  catalog extracts. They MUST NOT be carried as protobuf attributes: the generator emits string
+  attributes as plain Swift literals that the extractor cannot see, so they would never reach
+  translators, and a wire schema shared with the other clients is the wrong home for one client's UI
+  copy.
+- **FR-006a**: Search MUST work when the generated registry is absent, treating every setting as
+  visible and non-deprecated, so the feature does not depend on a protobuf release.
 - **FR-007**: Every indexed string MUST appear in `Localizable.xcstrings` and MUST render in the
   user's language. Keywords MUST match against both the user's language and the English source, so a
   term learned from English documentation still finds its setting.
@@ -214,14 +220,19 @@ result is listed, visibly de-emphasised, with an explanation.
 - Q: When a result is a single control, what happens on arrival at its screen? → A: Open the screen
   only; no scrolling to or highlighting of the individual control.
 
-**Superseded by Phase 0 research.** Two of the decisions above rest on a premise that turned out
+**Superseded by Phase 0 research.** Three of the decisions above rest on a premise that turned out
 to be false: that user-facing strings declared in `(meshtastic.field_metadata)` would reach the
 string catalog. The Swift generator emits them as plain Swift literals, invisible to Xcode's
 extractor, so any label shipped that way would be permanently English. The index is therefore split
 — language app-side in the catalog, structure from the generated registry, joined on proto message
-name and tag. This changes the "index source" decision and the answer about #952 slipping, and
-dissolves the delimiter question entirely. See [research.md](./research.md) D1, and the revised
-dependencies below.
+name and tag.
+
+What changed: the **index source** decision, now a split rather than generation; the **completeness**
+answer, now "every field is indexed or exempted with a reason" rather than "every field carries
+`field_metadata`", because one field can back ten controls and some back none; and the **#952 slips**
+answer, which no longer needs a second protobufs change at all. The delimiter question dissolves,
+since app-side keywords are an ordinary list. See [research.md](./research.md) D1 and D4, and the
+revised dependencies below.
 
 ## Dependencies
 
