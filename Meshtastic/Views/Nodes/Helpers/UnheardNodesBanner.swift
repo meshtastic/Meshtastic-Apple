@@ -9,6 +9,24 @@ import SwiftUI
 import SwiftData
 import OSLog
 
+enum UnheardNodesPromptCopy {
+	static let reviewTitle = String(localized: "Nodes Needing Review", comment: "Title for the review sheet for nodes not heard since a radio settings change")
+	static let reviewMessage = String(localized: "These nodes haven’t been heard since the radio settings changed. Favorite nodes and this radio are kept.", comment: "Explains why nodes are listed for review after a radio settings change")
+	static let removeAction = String(localized: "Remove Nodes", comment: "Confirms removing nodes not heard since a radio settings change")
+	static let confirmationMessage = String(localized: "Remove these nodes from this app and the connected radio? Nodes heard again later will reappear.", comment: "Explains the effect of removing nodes not heard since a radio settings change")
+
+	static func headline(nodeCount: Int) -> String {
+		let noun = nodeCount == 1 ? String(localized: "node", comment: "Singular noun in the unheard-nodes notice") : String(localized: "nodes", comment: "Plural noun in the unheard-nodes notice")
+		let verb = nodeCount == 1 ? String(localized: "needs", comment: "Singular verb in the unheard-nodes notice") : String(localized: "need", comment: "Plural verb in the unheard-nodes notice")
+		return String(localized: "\(nodeCount) \(noun) \(verb) review", comment: "Compact notice shown when nodes have not been heard since a radio settings change")
+	}
+
+	static func confirmationTitle(nodeCount: Int) -> String {
+		let noun = nodeCount == 1 ? String(localized: "Node", comment: "Singular noun in the remove-nodes confirmation title") : String(localized: "Nodes", comment: "Plural noun in the remove-nodes confirmation title")
+		return String(localized: "Remove \(nodeCount) \(noun)?", comment: "Confirmation title for removing nodes not heard since a radio settings change")
+	}
+}
+
 /// Offered after the radio's LoRa settings move it to a different channel.
 ///
 /// The node db does not move with the radio: every node in the list was heard on the old channel and
@@ -19,10 +37,18 @@ import OSLog
 /// removed without the user asking — a node may simply be out of range rather than on another preset,
 /// and it comes back on its own when it is next heard.
 struct UnheardNodesBanner: View {
-	@Environment(\.modelContext) private var context
+	private struct NodeState: Equatable {
+		let num: Int64
+		let lastHeard: Date?
+		let favorite: Bool
+		let viaMqtt: Bool
+	}
+
 	@EnvironmentObject private var accessoryManager: AccessoryManager
+	@Query private var nodes: [NodeInfoEntity]
 
 	@State private var unheardNodes: [NodeInfoEntity] = []
+	@State private var isReviewing = false
 	@State private var isConfirming = false
 	@State private var isRemoving = false
 
@@ -30,6 +56,9 @@ struct UnheardNodesBanner: View {
 	/// connected has to be re-evaluated when one arrives, and inside a `safeAreaInset` that
 	/// evaluates during layout — before the connection is established — it simply stays empty.
 	private var connectedNodeNum: Int64? { accessoryManager.activeDeviceNum }
+	private var nodeState: [NodeState] {
+		nodes.map { NodeState(num: $0.num, lastHeard: $0.lastHeard, favorite: $0.favorite, viaMqtt: $0.viaMqtt) }
+	}
 
 	var body: some View {
 		Group {
@@ -40,78 +69,97 @@ struct UnheardNodesBanner: View {
 		}
 		.onAppear(perform: refresh)
 		.onChange(of: accessoryManager.activeDeviceNum) { _, _ in refresh() }
+		.onChange(of: nodeState) { _, _ in refresh() }
 	}
 
 	private func content(connectedNodeNum: Int64) -> some View {
-		HStack(alignment: .top, spacing: 12) {
-			Image(systemName: "antenna.radiowaves.left.and.right.slash")
-				.font(.title3)
-				.foregroundStyle(.orange)
-
-			VStack(alignment: .leading, spacing: 6) {
-				// The honest claim: we know we have not heard them since the settings changed. We
-				// cannot know they moved to another preset — a radio cannot observe a channel it is
-				// not tuned to.
-				Text("^[\(unheardNodes.count) node](inflect: true) not heard since you changed settings")
-					.font(.callout.weight(.semibold))
-				Text("They were heard on the old channel and cannot be reached from this one. Favorites and the connected node are kept.")
-					.font(.caption)
-					.foregroundStyle(.secondary)
-
+		Button {
+			isReviewing = true
+		} label: {
+			HStack(spacing: 12) {
+				Image(systemName: "antenna.radiowaves.left.and.right.slash")
+					.foregroundStyle(.orange)
+					.frame(width: 24)
+				VStack(alignment: .leading, spacing: 2) {
+					Text(UnheardNodesPromptCopy.reviewTitle)
+						.font(.callout.weight(.semibold))
+					Text(UnheardNodesPromptCopy.headline(nodeCount: unheardNodes.count))
+						.font(.footnote)
+						.foregroundStyle(.secondary)
+				}
+				Spacer()
 				if isRemoving {
-					// One admin message per node, so a large cleanup takes a while. The count in the
-					// headline ticks down as nodes are removed.
-					HStack(spacing: 8) {
-						ProgressView()
-						Text("Removing…")
-							.font(.callout)
-							.foregroundStyle(.secondary)
-					}
-					.frame(minHeight: 48)
+					ProgressView()
 				} else {
-					HStack(spacing: 12) {
-						Button(role: .destructive) {
-							isConfirming = true
-						} label: {
-							Text("Remove Them")
-								.frame(minWidth: 48, minHeight: 48)
-						}
-						.buttonStyle(.borderedProminent)
-
-						Button {
-							LoRaConfigChange.dismissOffer(forNode: connectedNodeNum)
-							refresh()
-						} label: {
-							Text("Keep")
-								.frame(minWidth: 48, minHeight: 48)
-						}
-						.buttonStyle(.bordered)
-					}
+					Image(systemName: "chevron.right")
+						.font(.footnote.weight(.semibold))
+						.foregroundStyle(.tertiary)
 				}
 			}
-			Spacer(minLength: 0)
+			.frame(minHeight: 44)
+			.padding(.horizontal)
+			.padding(.vertical, 8)
 		}
-		.padding(12)
-		.background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-		.padding(.horizontal)
-		.padding(.bottom, 4)
-		.confirmationDialog(
-			// Resolved through String(localized:) first: the Text(_:comment:) initializer showed the
-			// inflection markup literally in the dialog title on device — "^[117 node](inflect: true)".
-			Text(verbatim: String(localized: "Remove ^[\(unheardNodes.count) node](inflect: true)?", comment: "Confirmation title for removing nodes not heard since the settings changed")),
-			isPresented: $isConfirming,
-			titleVisibility: .visible
-		) {
-			Button(role: .destructive) {
-				Task { await removeUnheardNodes(connectedNodeNum: connectedNodeNum) }
-			} label: {
-				Text("Remove", comment: "Confirms removing nodes not heard since the settings changed")
+		.buttonStyle(.plain)
+		.disabled(isRemoving)
+		.background(.bar)
+		.overlay(alignment: .bottom) { Divider() }
+		.sheet(isPresented: $isReviewing) {
+			reviewSheet(connectedNodeNum: connectedNodeNum)
+		}
+	}
+
+	private func reviewSheet(connectedNodeNum: Int64) -> some View {
+		NavigationStack {
+			List {
+				Section {
+					Text(UnheardNodesPromptCopy.reviewMessage)
+				}
+
+				Section("Nodes") {
+					ForEach(unheardNodes, id: \.num) { node in
+						VStack(alignment: .leading, spacing: 2) {
+							Text(node.user?.longName ?? "Unknown Node")
+							Text(node.num.toHex())
+								.font(.footnote)
+								.foregroundStyle(.secondary)
+						}
+					}
+				}
+
+				Section {
+					Button(role: .destructive) {
+						isConfirming = true
+					} label: {
+						Text(UnheardNodesPromptCopy.removeAction)
+					}
+					.disabled(isRemoving)
+
+					Button("Keep Nodes") {
+						LoRaConfigChange.dismissOffer(forNode: connectedNodeNum)
+						isReviewing = false
+						refresh()
+					}
+					.disabled(isRemoving)
+				}
 			}
-			Button(role: .cancel) { } label: {
-				Text("Cancel")
+			.navigationTitle(UnheardNodesPromptCopy.reviewTitle)
+			.navigationBarTitleDisplayMode(.inline)
+			.alert(
+				UnheardNodesPromptCopy.confirmationTitle(nodeCount: unheardNodes.count),
+				isPresented: $isConfirming
+			) {
+				Button(role: .destructive) {
+					Task { await removeUnheardNodes(connectedNodeNum: connectedNodeNum) }
+				} label: {
+					Text(UnheardNodesPromptCopy.removeAction)
+				}
+				Button(role: .cancel) { } label: {
+					Text("Cancel")
+				}
+			} message: {
+				Text(UnheardNodesPromptCopy.confirmationMessage)
 			}
-		} message: {
-			Text("They are removed from this app and from the radio. Any that are still out there come back when they are next heard.")
 		}
 	}
 
@@ -125,21 +173,9 @@ struct UnheardNodesBanner: View {
 			unheardNodes = []
 			return
 		}
-		// Bound to a local first: a #Predicate that reaches through self for the node number throws
-		// at fetch time, and the failure is invisible — it just yields no nodes and no banner.
-		let excludedNum = connectedNodeNum
-		let descriptor = FetchDescriptor<NodeInfoEntity>(
-			predicate: #Predicate { $0.favorite == false && $0.num != excludedNum }
-		)
-		let candidates: [NodeInfoEntity]
-		do {
-			candidates = try context.fetch(descriptor)
-		} catch {
-			Logger.data.error("Could not read nodes to flag after a channel change: \(error.localizedDescription, privacy: .public)")
-			unheardNodes = []
-			return
-		}
-		unheardNodes = candidates.filter {
+		unheardNodes = nodes.filter {
+			$0.favorite == false && $0.num != connectedNodeNum
+		}.filter {
 			LoRaConfigChange.isUnheard(lastHeard: $0.lastHeard, viaMqtt: $0.viaMqtt, changedAt: changedAt)
 		}
 	}
