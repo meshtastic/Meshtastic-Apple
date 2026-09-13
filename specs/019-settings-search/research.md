@@ -97,11 +97,12 @@ one, so this does not bite.
   asymmetry is acceptable but must be stated, because the existing pin is load-bearing
   and a reader will assume it covers both.
 
-## D3. Two generator bugs found and fixed upstream
+## D3. Three generator bugs found and fixed upstream
 
-Adding attributes in D1 meant exercising paths #952 had never run. Both bugs were latent:
-every existing annotation sets exactly one attribute, which is the only case that worked.
-Fixed in `20fadc6` on `jamesarich/field-metadata`, with tests that fail without the fix.
+Adding attributes in D1 meant exercising paths #952 had never run. All three were latent,
+because every annotation the PR shipped with sets exactly one attribute and has no digit in
+its name — the only case that worked. Fixed in `20fadc6` and `d6117b6` on
+`jamesarich/field-metadata`, with tests that fail without the fix.
 
 **The Swift plugin was not schema-extensible.** `field_metadata.proto` documents that
 adding an attribute is "a SCHEMA-ONLY change… No code generator or build change is
@@ -274,7 +275,7 @@ mechanically from the strings the app already carries: `RegionCode` 36, `Serial_
 each app enum's raw value; names were not used for matching, since the app spells them
 differently (`degrees0` vs `DEGREES_0`, `txtmsg` vs `TEXTMSG`).
 
-*Fields — done.* 140 fields across 24 messages carry `label` and `description`, seeded from
+*Fields — done.* 140 fields across 24 messages carry `label` and `description` in meshtastic/protobufs#1081, seeded from
 the config views. Nothing in a view says which proto field a control edits, so the link came
 from the save closure: `var lc = Config.LoRaConfig()` names the message,
 `lc.hopLimit = UInt32(hopLimit)` ties the proto property to a `@State` var, and
