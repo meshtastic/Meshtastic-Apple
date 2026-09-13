@@ -9,7 +9,7 @@ entitled to assume, and everything it must not.
 
 One generated file, `FieldMetadataRegistry.swift`, produced by
 `tools/protoc-gen-fieldmeta-swift` from `(meshtastic.field_metadata)` options and
-committed to `MeshtasticProtobufs/Sources/meshtastic/`.
+committed to `Meshtastic/Model/` — the app target, not the protobuf package.
 
 The app reads exactly two things from it:
 
@@ -18,8 +18,8 @@ FieldMetadataRegistry.get("meshtastic.Config.LoRaConfig", tag: 8)   // -> FieldM
 Config.LoRaConfig.hopLimit                                          // -> FieldMetadata
 ```
 
-and from the returned value, only `diyOnly`, `adminOnly`, `deprecated`, `unit`,
-`minValue`, `maxValue`.
+and from the returned value: `label`, `description`, `keywords`, `diyOnly`, `adminOnly`,
+`deprecated`, `unit`, `minValue`, `maxValue`.
 
 ## Guarantees relied on
 
@@ -39,25 +39,40 @@ and from the returned value, only `diyOnly`, `adminOnly`, `deprecated`, `unit`,
 - **That the registry lists every field.** Entries exist only for fields carrying an
   annotation or the deprecated option. The authoritative list of settings is the `.proto`
   text; see research decision D4.
-- **That string attributes are localizable.** `unit` and any future string attribute are
-  emitted as plain Swift literals via `swiftStringLiteral(_:)`. They are invisible to
-  Xcode's string-catalog extractor and are English by construction. `unit` is used only for
-  short symbols such as "m", "s" and "dBm", which do not need translating; nothing
-  user-facing in a sentence may come from here.
-- **That the attribute set can grow freely.** `field_metadata.proto` states that adding an
-  attribute is a schema-only change. That holds for the Go generator, which is generic, and
-  not for the Swift one, whose `literal(for:shape:)` switches on attribute name and ends in
-  `default: fatalError`. Adding a seventh attribute crashes the Swift plugin for every
-  field until a case is added. Reported upstream; this feature adds no attributes.
+- **That the generated file can live anywhere.** String attributes are emitted as
+  `String(localized:defaultValue:comment:)`, and Xcode extracts those only from a target
+  that has a string catalog and `SWIFT_EMIT_LOC_STRINGS = YES`. Generated into
+  `MeshtasticProtobufs`, the calls would still compile and would resolve to English
+  forever, silently. This is the single most breakable part of the contract.
+- **That a field's `label` names one control.** A field carries one label, but
+  `position_flags` sits behind ten toggles and `coding_rate` behind three. Those controls
+  stay curated; the annotation describes the field.
+- **That the attribute set can grow without touching the Swift plugin's binding.** Adding
+  an attribute needs no generator *code* change — both plugins read values generically —
+  but `protoc-gen-fieldmeta-swift` decodes the option through its own bundled
+  `field_metadata.pb.swift`, so that binding must be regenerated or the new attribute
+  arrives in `unknownFields`. Generation fails with a pointed error rather than dropping
+  it.
+
+## Localization
+
+The English in the schema is the source string; translations live in
+`Localizable.xcstrings`. The catalog key is the field's full proto name plus the attribute
+(`meshtastic.Config.LoRaConfig.hop_limit.label`), never the English, so the six controls
+labelled "Enabled" get six independently translatable entries.
+
+Keys appear in the catalog only as a side effect of an Xcode build — there is no headless
+extraction path in this repo. After regenerating the registry, build once and check the
+`Localizable.xcstrings` diff is purely additive before committing.
 
 ## Degradation when #952 has not landed
 
-The app must build and search correctly with no registry at all. Until the submodule
-carries `field_metadata.proto`, `FieldMetadataRegistry` is absent and every lookup site
-compiles against a local stub returning `nil`, which the index reads as "visible, not
-deprecated, no bounds". Search then offers every indexed setting, including the nine
-deprecated fields, and gains the filtering when the annotations arrive — no redesign, no
-throwaway index entries.
+The app must build with no registry at all. Until the submodule carries
+`field_metadata.proto`, `FieldMetadataRegistry` is absent and lookup sites compile against
+a local stub returning `nil`. Unlike the structural attributes, missing labels cannot be
+defaulted — an entry with no label has nothing to match — so proto-backed entries simply
+do not exist until the annotations land. App-level entries and documentation results work
+throughout.
 
 ## Regeneration
 
@@ -68,14 +83,14 @@ swift build --package-path protobufs/tools/protoc-gen-fieldmeta-swift -c release
 protoc \
 	--plugin=protoc-gen-fieldmeta-swift="$FIELDMETA_PLUGIN" \
 	--proto_path=./protobufs \
-	--fieldmeta-swift_out=./MeshtasticProtobufs/Sources/meshtastic \
+	--fieldmeta-swift_out=./Meshtastic/Model \
 	./protobufs/meshtastic/config.proto ./protobufs/meshtastic/module_config.proto
 ```
 
 A separate invocation, not a second `--*_out` on the existing one, because the output
-directory differs. The out path names the `meshtastic` subdirectory directly: this plugin
-emits a bare filename with no package-path prefix, and a loose file under `Sources/` would
-break the package's implicit target path.
+directory differs: the `.pb.swift` files go to the package, the registry to the app target
+so its localized strings reach the catalog. The out path names the destination directory
+directly, since this plugin emits a bare filename with no package-path prefix.
 
 Unlike `protoc-gen-swift`, which `gen_protos.sh:57-64` builds from
 `MeshtasticProtobufs/Package.resolved` so that plugin and runtime agree by construction,

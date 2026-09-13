@@ -113,18 +113,19 @@ result is listed, visibly de-emphasised, with an explanation.
   text fields, because the description is where a user's own wording is most likely to appear.
 - **FR-004**: Picker option values MUST be indexed, so "Long Fast", "Router" and "United States" find
   the controls that offer them.
-- **FR-005**: For settings backed by a protobuf field, the entry MUST identify that field by proto
-  message name and tag, and MUST read its structural attributes — bounds, unit, DIY-only, admin-only
-  and deprecated — from the generated registry rather than restating them. Tag, not name: a field's
-  spelling differs across its proto, generated, entity and view-state forms, and only the tag is
-  stable by contract.
-- **FR-006**: Labels, descriptions and keywords MUST be declared app-side in a form the string
-  catalog extracts. They MUST NOT be carried as protobuf attributes: the generator emits string
-  attributes as plain Swift literals that the extractor cannot see, so they would never reach
-  translators, and a wire schema shared with the other clients is the wrong home for one client's UI
-  copy.
-- **FR-006a**: Search MUST work when the generated registry is absent, treating every setting as
-  visible and non-deprecated, so the feature does not depend on a protobuf release.
+- **FR-005**: For settings backed by a protobuf field, label, description and keywords MUST be
+  declared as `meshtastic.field_metadata` attributes and consumed from generated code — the schema
+  is the single source of truth, and a generated registry cannot drift from it. The entry MUST key
+  on proto message name and tag, not on any Swift name: a field's spelling differs across its proto,
+  generated, entity and view-state forms, and only the tag is stable by contract.
+- **FR-006**: Generated registry code MUST be emitted where the app's string catalog can see it, and
+  MUST emit its strings as localized-string expressions keyed by the field's full proto name. String
+  attributes that render as bare literals never reach translators, and a catalog keyed by the
+  English would collapse the six different controls labelled "Enabled" onto one translation.
+- **FR-006a**: Attributes MUST be scalar, so `keywords` is a single `|`-delimited string that the
+  app splits and trims. Where a single field backs several controls — `position_flags` behind ten
+  toggles, `coding_rate` behind three — the schema cannot name them individually, and those controls
+  MUST stay curated on the exemption list FR-015 defines.
 - **FR-007**: Every indexed string MUST appear in `Localizable.xcstrings` and MUST render in the
   user's language. Keywords MUST match against both the user's language and the English source, so a
   term learned from English documentation still finds its setting.
@@ -220,38 +221,42 @@ result is listed, visibly de-emphasised, with an explanation.
 - Q: When a result is a single control, what happens on arrival at its screen? → A: Open the screen
   only; no scrolling to or highlighting of the individual control.
 
-**Superseded by Phase 0 research.** Three of the decisions above rest on a premise that turned out
-to be false: that user-facing strings declared in `(meshtastic.field_metadata)` would reach the
-string catalog. The Swift generator emits them as plain Swift literals, invisible to Xcode's
-extractor, so any label shipped that way would be permanently English. The index is therefore split
-— language app-side in the catalog, structure from the generated registry, joined on proto message
-name and tag.
+**Refined by Phase 0 research.** The decisions above stand. Two are sharper now:
 
-What changed: the **index source** decision, now a split rather than generation; the **completeness**
-answer, now "every field is indexed or exempted with a reason" rather than "every field carries
-`field_metadata`", because one field can back ten controls and some back none; and the **#952 slips**
-answer, which no longer needs a second protobufs change at all. The delimiter question dissolves,
-since app-side keywords are an ordinary list. See [research.md](./research.md) D1 and D4, and the
-revised dependencies below.
+The **completeness** answer becomes "every field is indexed or exempted with a reason" rather than
+"every field carries `field_metadata`". A field maps to any number of controls in both directions —
+`position_flags` is one field behind ten toggles, `json_enabled` has no control at all — so a strict
+one-entry-per-field rule would be wrong. The authoritative list of fields is the protobuf source
+text, not the generated registry, which holds only annotated fields.
+
+The **localized strings** decision needed work upstream to be true. String attributes were emitted
+as bare Swift literals that Xcode's extractor cannot see, which would have left every label
+permanently English. Fixed in meshtastic/protobufs#952 (`20fadc6`): both generators now emit
+`String(localized:defaultValue:comment:)` keyed by the field's full proto name. That work also
+required the registry be generated into the app target rather than the `MeshtasticProtobufs`
+package, since a SwiftPM package has no string catalog. See [research.md](./research.md) D1 to D3.
 
 ## Dependencies
 
 - **meshtastic/protobufs#952** introduces `field_metadata.proto` and the code generators, including
-  `tools/protoc-gen-fieldmeta-swift`. As of 2026-09-13 it is open, mergeable and all seven checks
-  are green; the submodule here does not yet contain `field_metadata.proto`. It supplies the
-  `diy_only`, `admin_only` and `deprecated` signals that decide whether a setting should be offered
-  in results.
-- No second protobufs change is required. Search does not depend on annotations for all 221
-  configuration fields, and adds no attributes to `FieldMetadata`. If #952 slips, the feature ships
-  with every setting treated as visible and non-deprecated, and gains the filtering later without a
-  redesign.
+  `tools/protoc-gen-fieldmeta-swift`. As of 2026-09-13 it is open and mergeable, and now also
+  carries the `label`, `description` and `keywords` attributes, localized string emission, and fixes
+  for two generator bugs those attributes exposed (`20fadc6`). The submodule here does not yet
+  contain `field_metadata.proto`.
+- A second protobufs change, branched from #952, MUST carry the annotations themselves — label,
+  description and keywords across the configuration and module configuration fields, roughly 201 of
+  221. #952 supplies the mechanism; this supplies the data. Branching rather than waiting lets the
+  app be built and tested end to end against a real generated registry, and the annotations are the
+  permanent deliverable, so nothing is thrown away when #952 merges and the branch rebases.
+- This is the critical path: search cannot index labels that do not exist yet.
 - The documentation index at `Meshtastic/Resources/docs/index.json`, generated by
   `scripts/build-docs.sh`.
 
 ## Assumptions
 
-- Keywords are an ordinary list on the app-side entry, so the scalar-only constraint on
-  `FieldMetadata` attributes no longer bears on this feature and no delimiter convention is needed.
+- `FieldMetadata` attributes must be scalar; `repeated` is rejected at generation time. A keyword
+  list is therefore a single string, delimited with `|` — chosen over `,` because a keyword may
+  itself contain a comma — which the app splits and trims.
 - Not every control maps to a protobuf field, and the relationship is not one-to-one in either
   direction. `position_flags` is a single field behind ten toggles; `coding_rate` backs three
   controls; `json_enabled`, `frequency_offset` and `override_duty_cycle` have no control at all.

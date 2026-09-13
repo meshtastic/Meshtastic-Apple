@@ -46,11 +46,19 @@ why than by an empty result.
 ## Localization
 
 Switch the device to a non-English locale and repeat US1. Every result label, section and
-option value should render translated. Any English text that appears is a string that has
-not reached `Localizable.xcstrings` — which is the whole of FR-016, and the reason it
-ships as its own change first.
+option value should render translated. English text that appears is a string that has not
+reached `Localizable.xcstrings`, and it comes from one of two places:
 
-Note the catalog only gains keys as a side effect of an Xcode build; there is no headless
+- **Labels, descriptions, keywords** — annotated in the protobufs and emitted by the
+  generator as `String(localized:)`. Missing means either the field is not yet annotated,
+  or the registry was generated into the wrong target: `SWIFT_EMIT_LOC_STRINGS` is
+  per-target, so a registry in `MeshtasticProtobufs` compiles fine and silently stays
+  English. Check `Meshtastic/Model/FieldMetadataRegistry.swift` exists.
+- **Picker option values** — "Long Range - Fast", "Router", "United States" — which come
+  from the enums, not the schema. That is FR-016, and the reason it ships as its own
+  change.
+
+The catalog only gains keys as a side effect of an Xcode build; there is no headless
 extraction path. After that build, check the `Localizable.xcstrings` diff is purely
 additive before committing — it is 3.1 MB and 1842 keys, and a rebuild that reorders or
 prunes produces an unreviewable diff.

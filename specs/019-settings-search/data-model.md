@@ -40,11 +40,14 @@ control contributes none.
 
 Labels are not unique across the app — "Enabled" occurs six times, "Options" twelve — so
 identity is `destination` plus `label`, never `label` alone, and results always render the
-screen and section alongside the label.
+screen and section alongside the label. This is also why the string catalog keys on the
+field's full proto name rather than on the English: one translation of "Enabled" cannot
+serve six controls in a language that inflects.
 
-`keywords` is an ordinary array. The clarification session assumed keywords would be a
-delimited string packed into a scalar proto attribute; research decision D1 moved them
-app-side, so no packing convention is needed.
+For proto-backed entries `label`, `subtitle` and `keywords` are read from the generated
+registry, already localized. `keywords` arrives as a single `|`-delimited string, because
+`FieldMetadata` attributes must be scalar; the entry splits and trims it. App-level entries
+declare the same three fields by hand with `String(localized:)`.
 
 ## FieldIdentity
 
@@ -98,7 +101,8 @@ moves them into the string catalog so the indexed text is localized too.
 
 ## Generated registry (external, from meshtastic/protobufs#952)
 
-Read-only input, generated into `MeshtasticProtobufs/Sources/meshtastic/FieldMetadataRegistry.swift`:
+Read-only input, generated into `Meshtastic/Model/FieldMetadataRegistry.swift` — the app
+target, not the protobuf package, so its localized strings reach the catalog:
 
 ```swift
 public struct FieldMetadata {
@@ -108,12 +112,29 @@ public struct FieldMetadata {
     public var maxValue: Double?
     public var unit: String?
     public var deprecated: Bool?
+    public var label: String?
+    public var description: String?
+    public var keywords: String?
 }
 
 public enum FieldMetadataRegistry {
     public static func get(_ messageType: String, tag: Int) -> FieldMetadata?
 }
 ```
+
+String attributes are emitted already resolved for the current locale:
+
+```swift
+"meshtastic.Config.LoRaConfig#8": FieldMetadata(
+    minValue: 0.0, maxValue: 7.0,
+    label: String(localized: "meshtastic.Config.LoRaConfig.hop_limit.label",
+                  defaultValue: "Hop Limit",
+                  comment: "label of meshtastic.Config.LoRaConfig.hop_limit"),
+    ...)
+```
+
+Note `description` is a legal stored property here — the struct does not conform to
+`CustomStringConvertible`, and the generated output is verified to typecheck.
 
 Entries exist only for fields carrying `(meshtastic.field_metadata)` or the standard
 `[deprecated = true]` option, so the registry is a source of *attributes*, never the list

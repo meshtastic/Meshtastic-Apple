@@ -5,68 +5,90 @@
 Phase 0 findings. Each decision below resolves an unknown left open by the spec or
 the clarification session.
 
-## D1. Split the index: proto registry for structure, string catalog for language
+## D1. The whole index comes from the protobufs, including the display strings
 
-**Decision**: The generated field-metadata registry supplies the *spine* of the index —
-which settings exist, their proto identity, bounds, unit, and whether they are
-DIY-only, admin-only or deprecated. Labels, descriptions and search keywords stay in
-app-side Swift, declared with `String(localized:)`, joined to the spine by the field's
-proto identity (`"meshtastic.Config.LoRaConfig#3"`).
+**Decision**: `label`, `description` and `keywords` are `(meshtastic.field_metadata)`
+attributes alongside `unit`, `min_value`, `max_value`, `diy_only`, `admin_only` and
+`deprecated`. The generators emit string attributes as
+`String(localized:defaultValue:comment:)`, so the English in the schema is the source
+string, Xcode's extractor pulls it into `Localizable.xcstrings` on build, and
+translations live in the app's catalog. One source of truth for what a setting is
+called, shared by every client.
 
-**Rationale**: The spec assumed user-facing strings could ride along in
-`(meshtastic.field_metadata)` and be picked up by Xcode's string-catalog extractor.
-They cannot. The Swift generator renders string attributes as plain Swift literals —
-`protoc-gen-fieldmeta-swift/Sources/.../Generator.swift` builds them through
-`swiftStringLiteral(_:)`, producing `unit: "m"`, not `String(localized: "m")`. A bare
-`String` literal is invisible to the extractor, so any label shipped that way would be
-permanently English.
+**Rationale**: The generator emitting bare literals was a property of the generator, not
+a constraint — and the generator is ours. Changed in
+[meshtastic/protobufs#952](https://github.com/meshtastic/protobufs/pull/952) (commit
+`20fadc6`, `generator-parity` green): both the Go and Swift plugins now render string
+attributes as
 
-The deeper reason is that a wire schema is the wrong home for UI copy. `config.proto`
-is shared by Apple, Android, web, Python and firmware; translations are per-client
-assets. Putting English labels in the proto would make them untranslatable in every
-client at once, and would mean a translation fix required a protobuf release.
+```swift
+label: String(localized: "meshtastic.Config.LoRaConfig.hop_limit.label",
+              defaultValue: "Hop Limit",
+              comment: "label of meshtastic.Config.LoRaConfig.hop_limit")
+```
+
+The catalog key is the field's full proto name plus the attribute, not the English. That
+matters: "Enabled" labels six different controls, and a value-keyed catalog would force
+one translation on all of them, which languages that inflect cannot do. Keying on the
+field gives each its own entry, and sidesteps the collision problem that already affects
+the hand-written strings in D6.
 
 **Alternatives considered**:
 
-- *Add `label` / `description` / `keywords` string attributes to `FieldMetadata` and
-  teach the Swift generator to emit `String(localized:)`.* Rejected. It breaks the
-  byte-identical Go/Swift parity that #952's `generator-parity` CI job enforces, and it
-  bakes English into the wire schema.
-- *Emit keys from the proto, then declare those keys in a separate catalog-visible Swift
-  file.* Rejected. Two sources of truth with nothing enforcing they agree — renaming a
-  label silently falls back to the key with no build error.
+- *Keep language app-side and take only structure from the proto.* Rejected. Two files to
+  edit per setting, held together only by a test, and the English would drift from the
+  schema every other client reads.
+- *Emit keys from the proto and declare them in a separate catalog-visible Swift file.*
+  Rejected for the same reason, with the added failure mode that a rename falls back to
+  the raw key with no build error.
 
-**Consequence**: the clarification question about a delimiter for a scalar-only keyword
-string dissolves. App-side keywords are an ordinary Swift `[String]`; no packing needed.
+**Consequences**:
 
-## D2. The registry stays in `MeshtasticProtobufs`
+- The registry must be generated into the **app target**, not `MeshtasticProtobufs` — see
+  D2, which this reverses.
+- `keywords` is a single `|`-delimited string, because `FieldMetadata` attributes must be
+  scalar and `repeated` is rejected at generation time. The app splits on `|` and trims.
+  A translator sees one catalog entry per field with a comment naming the field.
+- A second protobufs change carrying annotations for all 221 fields is back on the
+  critical path — see D5.
 
-**Decision**: Generate `FieldMetadataRegistry.swift` into
-`MeshtasticProtobufs/Sources/meshtastic/`, next to the other generated protobuf code.
+## D2. The registry is generated into the app target
 
-**Rationale**: D1 removes every user-facing string from the generated file, so the
-constraint that forced it into the app target — being visible to `Localizable.xcstrings`
-— no longer applies. Keeping it in the package puts generated code where generated code
-already lives, and it inherits the existing SwiftLint exclusion (`.swiftlint.yml` and
-`.swiftlint-precommit.yml` both exclude `MeshtasticProtobufs`, and nothing else relevant).
-Had it gone into the app target it would have needed the `// swiftlint:disable all`
-header that `config.pb.swift:3` carries, and it would have been the first generated
-Swift in that target.
+**Decision**: Generate `FieldMetadataRegistry.swift` into `Meshtastic/Model/`, not into
+`MeshtasticProtobufs` beside the other generated protobuf code.
+
+**Rationale**: this is forced by D1. `SWIFT_EMIT_LOC_STRINGS` is a per-target setting with
+no file-level opt-out, and it is `YES` on the app target (`project.yml:355, 398`). A
+SwiftPM package has neither that setting nor a string catalog, so a registry generated
+into `MeshtasticProtobufs` would have its `String(localized:)` calls compile and resolve
+to English forever — the strings would simply never be offered to translators.
+
+`Meshtastic/Model/` is already a `syncedFolder` (`project.yml:200-201`) and holds
+`ConfigModels.swift`, the SwiftData mirror of the same protos. Dropping a file there needs
+no `project.yml` edit and no regenerated `.xcodeproj`, so `xcodegen-drift.yml` stays green.
+
+**Cost this carries**: the app target *is* linted — `.swiftlint.yml` excludes only
+`MeshtasticProtobufs` and `build` — and the generated literals run to several hundred
+characters against a `line_length: 400` limit. The file needs an entry in the `excluded:`
+lists of both `.swiftlint.yml` and `.swiftlint-precommit.yml`. That follows the precedent
+already set for `MeshtasticProtobufs` rather than establishing a new one, and it is the
+consuming app's lint policy to set, which is why it is handled here and not by teaching a
+shared cross-language generator about SwiftLint.
+
+This will also be the first generated Swift committed into the app target; there is no
+existing precedent in the repo.
 
 **Note**: the emitted `public struct FieldMetadata` has no explicit initializer, so its
-memberwise init is internal to the package. Consumers read through the public
-`FieldMetadataRegistry.get(_:tag:)` and the per-type static accessors; they never
-construct a `FieldMetadata`. This is fine for our use and needs no upstream change.
+memberwise init is internal to whatever module holds it. Consumers read through
+`FieldMetadataRegistry.get(_:tag:)` and the per-type static accessors and never construct
+one, so this does not bite.
 
-**Two details that decide whether this works**:
+**One detail that decides whether this works**:
 
-- Point `--fieldmeta-swift_out` at `MeshtasticProtobufs/Sources/meshtastic`, not at
-  `Sources`. Unlike `protoc-gen-swift`, this plugin emits a bare filename
+- Point `--fieldmeta-swift_out` at the directory the file should land in. Unlike
+  `protoc-gen-swift`, this plugin emits a bare filename
   (`generatorOutputs.add(fileName: "FieldMetadataRegistry.swift")`) with no package-path
-  prefix, so aiming at `Sources` would drop a loose file beside the one subdirectory.
-  `MeshtasticProtobufs/Package.swift` declares no `path:` for its target and relies on
-  SwiftPM's fallback of "exactly one directory under `Sources/`" — a loose file or a
-  second directory there breaks the package build.
+  prefix.
 - The plugin is pinned differently from `protoc-gen-swift`. `gen_protos.sh:57-64` builds
   `protoc-gen-swift` out of `MeshtasticProtobufs/Package.resolved`, so plugin and runtime
   library versions agree by construction — a deliberate guard, documented at `:12-20`,
@@ -75,27 +97,34 @@ construct a `FieldMetadata`. This is fine for our use and needs no upstream chan
   asymmetry is acceptable but must be stated, because the existing pin is load-bearing
   and a reader will assume it covers both.
 
-## D3. The Swift generator is not schema-extensible — report upstream
+## D3. Two generator bugs found and fixed upstream
 
-**Finding**: `field_metadata.proto` documents that adding an attribute is "a SCHEMA-ONLY
-change… No code generator or build change is needed". That holds for the Go plugin and
-not for the Swift one.
+Adding attributes in D1 meant exercising paths #952 had never run. Both bugs were latent:
+every existing annotation sets exactly one attribute, which is the only case that worked.
+Fixed in `20fadc6` on `jamesarich/field-metadata`, with tests that fail without the fix.
 
-- Go (`tools/protoc-gen-fieldmeta`) is generic: `fieldMetadataSchema` reads the attribute
-  list off the extension descriptor, and `main.go:316` walks set values with
-  `m.Get(xtd).Message().Range(...)`, rendering by `protoreflect.Kind`. A new scalar
-  attribute flows through untouched.
-- Swift (`protoc-gen-fieldmeta-swift`) emits the *struct* generically, but renders
-  *values* in `literal(for:shape:)` via `switch f.name` over the six known attribute
-  names, ending in `default: fatalError(...)`. That loop runs over every schema field for
-  every entry, so adding a seventh attribute crashes the plugin immediately — for all
-  fields, whether or not any of them sets it.
+**The Swift plugin was not schema-extensible.** `field_metadata.proto` documents that
+adding an attribute is "a SCHEMA-ONLY change… No code generator or build change is
+needed". That held for the Go plugin — `fieldMetadataSchema` reads the attribute list off
+the extension descriptor and `main.go:316` walks values with
+`m.Get(xtd).Message().Range(...)` — but not the Swift one, which rendered values in
+`literal(for:shape:)` through `switch f.name` over the six known names ending in
+`default: fatalError`. That loop runs over every schema field for every entry, so a
+seventh attribute crashed the plugin for all fields, whether or not any set it. It now
+reads values by traversing the decoded option with a `SwiftProtobuf.Visitor`, the direct
+counterpart of Go's `Range`.
 
-The `default:` comment claims "parity with the Go plugin's guard", but the Go plugin has
-no such guard; it is generic by construction.
+**Multi-attribute literals did not compile.** Both generators emitted arguments in
+name-sorted order, but the `FieldMetadata` struct's properties are emitted in schema
+declaration order, and Swift's memberwise initializer requires arguments in
+property-declaration order. Any field setting two attributes produced code that would not
+build — and the `generator-parity` job could not catch it, because both generators were
+identically wrong. Both now emit in schema order.
 
-**Impact on this feature**: none directly — D1 means we add no attributes. Worth
-reporting on #952 anyway, because the proto's own contract is the thing that is wrong.
+Two smaller divergences fixed alongside: the Swift plugin mapped integer kinds to
+`Int32`/`UInt32`/`UInt64` and float to `Float` where the Go plugin used `Int64` and
+`Double`, so the two agreed only because bool, double and string are the only types in
+use; and the Swift string escaper did not handle tabs, which the Go one did.
 
 ## D4. Completeness is checked against the `.proto` text, not the registry
 
@@ -147,9 +176,9 @@ in-tree as a submodule, and parsing it needs no build-time protobuf machinery.
 
 - *Runtime reflection over swift-protobuf's `_protobuf_nameMap`.* Rejected — it is an
   opaque bytecode string (`config.pb.swift:2425`) with no stable public iteration API.
-- *Require `(meshtastic.field_metadata)` on all 221 fields so the registry is complete.*
-  Rejected — it makes an unrelated upstream protobuf PR a hard blocker for this feature
-  and annotates fields that have nothing worth annotating.
+- *Treat the registry itself as the list of what exists.* Rejected — it holds only fields
+  that carry an annotation, and fields with no control are deliberately never annotated,
+  so it can confirm what is there but never what is missing.
 
 **The assertion is "accounted for", not "one entry each".** A field maps to any number of
 controls, in both directions, so a strict bijection would be wrong:
@@ -165,6 +194,13 @@ controls, in both directions, so a strict bijection would be wrong:
   `@State` and no save assignment; `RemoteHardwarePin`'s three fields have no screen.
 - *Read-but-never-written.* `gps_enabled` is loaded for a migration heuristic and
   deliberately never saved (`PositionConfig.swift:312-314`). Search must not offer it.
+
+**One-to-many is the limit of what the schema can express, and it is small.** A field
+carries one `label`, so it cannot name ten toggles. `position_flags`, `coding_rate` and
+`tls_enabled` therefore keep curated app-side entries; the proto annotation describes the
+field, and the individual controls are indexed beside it. This is an enumerated exception
+of three fields out of 221, recorded on the same exemption list the completeness test
+already reads, rather than a general escape hatch.
 
 So the test asserts every field either has at least one index entry or appears on an
 exemption list carrying a stated reason, and that the exemption list is the only way a
@@ -188,25 +224,41 @@ generated `.pb.swift` files are committed; only regeneration needs the submodule
 `protobufs` or `.gitmodules`. A pull request that bumps only the submodule triggers no
 workflow at all. If the registry is to be trusted, that filter needs `protobufs` too.
 
-## D5. Upstream dependency is smaller than the spec assumed
+## D5. Upstream is on the critical path, in two steps
 
-**Decision**: 019 depends on meshtastic/protobufs#952 only for the `diy_only`,
-`admin_only` and `deprecated` signals that decide whether a setting should be offered in
-search results. It does **not** depend on a follow-on annotation PR covering all 221
-fields, and it does not depend on any `FieldMetadata` schema change.
+**Decision**: 019 depends on meshtastic/protobufs#952 for the mechanism, and on a second
+protobufs change carrying the annotations for every proto-backed control. The second is
+the bulk of the work and the permanent deliverable.
 
-**Status of #952** (checked 2026-09-13): open, mergeable, all seven checks green
-(`build`, `build-kmp`, `go-plugin-test`, `generator-parity`, `ascii-dash`, CodeRabbit,
-CLA). It annotates 3 fields in `config.proto` as a demonstration.
+**Status of #952** (2026-09-13): open and mergeable. Carries the `field_metadata`
+extension, the Go and Swift generators, the parity harness, and — as of `20fadc6` — the
+`label`, `description` and `keywords` attributes with localized string emission, the two
+generator fixes in D3, and `hop_limit` annotated as a worked example. `ascii-dash`,
+`build`, `go-plugin-test` and `generator-parity` green.
 
-**Consequence**: if #952 slips, 019 ships with every setting treated as visible and
-non-deprecated, and gains the filtering later without a redesign. That removes the
-critical-path dependency the spec carried.
+**The annotation change** applies `label`, `description` and `keywords` across
+`config.proto` and `module_config.proto` — roughly 201 of the 221 fields, excluding the
+nine deprecated and those with no control. Branch it from #952 rather than waiting: the
+app can then be built end to end against a real generated registry, and nothing is thrown
+away when #952 merges and the branch rebases.
+
+**What this costs**: unlike the previous plan, search cannot ship ahead of the
+annotations — an index whose labels do not exist yet has nothing to match. The trade is
+deliberate: one source of truth for what every setting is called, shared by Apple,
+Android and web, instead of three hand-maintained copies.
 
 ## D6. Localization migration is its own change
 
 **Decision**: FR-016 (the string-catalog migration) ships as a separate pull request,
 before or alongside search, not inside it.
+
+**Still required despite D1.** `(meshtastic.field_metadata)` annotates *fields*, not
+*enum values*. Picker option text — "Long Range - Fast", "Router", "United States" — comes
+from `description` and `name` properties on the enums in `Meshtastic/Enums/`, and no
+attribute in `FieldMetadata` reaches them. Covering those from the schema would need a
+parallel `EnumValueOptions` extension, which #952 does not have and which is not proposed
+here. So the option values that FR-004 requires be searchable are localized the ordinary
+way, below.
 
 **Rationale**: CLAUDE.md requires one change per pull request. The migration is a
 mechanical sweep across 18 files that is independently valuable — those strings are
@@ -256,25 +308,28 @@ the catalog. Because the file is 3.1 MB and 1842 keys, the extraction commit mus
 checked for an additive-only diff before pushing — `f3c6aab0` and `4cecf06a` in the
 history are both cleanups after a rebuild went wide.
 
-## D7. Search labels are indexed labels, not a rename of the screens
+## D7. The annotated `label` is the search label; on-screen wording is untouched
 
-**Decision**: The index carries its own label for each entry, matched to what the control
-actually says on screen. The registry does not become the source of truth for on-screen
-labels, and no existing control is relabelled to match a proto field name.
+**Decision**: `label` in the proto is the name search matches and displays in a result
+row. It is *not* pushed back into the forms — no existing control is relabelled — and the
+annotation should be written to match what the control already says, not the field name.
 
-**Rationale**: proto field names and UI labels diverge freely and the UI wording is
+**Rationale**: proto field names and UI wording diverge freely, and the UI wording is
 usually the better one. `hop_limit`'s control reads "Number of hops"
-(`LoRaConfig.swift:522`); `sx126x_rx_boosted_gain` is `@State rxBoostedGain` with a
-different label again. Treating the proto name as the label would regress wording that was
-chosen deliberately, and the spec's own worked example — searching "hops" — depends on the
-UI phrasing, not the field name.
+(`LoRaConfig.swift:522`); `sx126x_rx_boosted_gain` appears as `rxBoostedGain` with a
+different label again. So the annotation carries the human phrasing — "Hop Limit" or
+"Number of hops" as the screen has it — and `keywords` carries the rest ("hops", "ttl").
+The spec's worked example, searching "hops", is served by the keyword either way.
 
-The practical consequence is that the field-to-control join is a hand-written table, not a
-derivation. Only the *screen*-level join is machine-derivable: `ConfigHeader(title:config:)`
-pairs a screen title with a `KeyPath<NodeInfoEntity, T?>` at
-`ConfigHeader.swift:4-10`, used uniformly as `config: \.loRaConfig`, `\.positionConfig`,
-`\.mqttConfig`. That is what ties a message to a `SettingsNavigationState` destination; the
-per-field rows below it are curated, and D4's completeness test is what keeps them honest.
+Rewriting the forms to read their labels from the registry is a much larger change and is
+out of scope here. It is the natural follow-on once every field is annotated, and it would
+retire the D4 drift test by construction — worth noting, not worth doing now.
+
+The field-to-control join stays a hand-written table for the reasons in D4. Only the
+*screen*-level join is machine-derivable: `ConfigHeader(title:config:)` pairs a screen
+title with a `KeyPath<NodeInfoEntity, T?>` at `ConfigHeader.swift:4-10`, used uniformly as
+`config: \.loRaConfig`, `\.positionConfig`, `\.mqttConfig`. That ties a message to a
+`SettingsNavigationState` destination.
 
 ## D8. Matching and ranking
 
