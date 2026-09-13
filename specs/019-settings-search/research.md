@@ -195,12 +195,21 @@ controls, in both directions, so a strict bijection would be wrong:
 - *Read-but-never-written.* `gps_enabled` is loaded for a migration heuristic and
   deliberately never saved (`PositionConfig.swift:312-314`). Search must not offer it.
 
-**One-to-many is the limit of what the schema can express, and it is small.** A field
-carries one `label`, so it cannot name ten toggles. `position_flags`, `coding_rate` and
-`tls_enabled` therefore keep curated app-side entries; the proto annotation describes the
-field, and the individual controls are indexed beside it. This is an enumerated exception
-of three fields out of 221, recorded on the same exemption list the completeness test
-already reads, rather than a general escape hatch.
+**One-to-many is mostly solved by annotating enum values, not fields.** A field carries
+one `label`, so it cannot name ten toggles — but the ten toggles behind `position_flags`
+are not really sub-fields. They are the values of the `PositionFlags` enum, which the
+schema already declares; the field is a `uint32` bitfield over them. So the labels belong
+on the *values*, and `(meshtastic.enum_value_metadata)` puts them there. Same mechanism
+covers every picker's options.
+
+Two genuine exceptions remain, both small and enumerated on the exemption list:
+
+- `coding_rate` backs three controls (`LoRaConfig.swift:65-101`) — a preset/custom toggle
+  and two sliders. That is app-side UI decomposition of one scalar, not a schema concept,
+  and it stays curated.
+- `tls_enabled` renders as two toggles (`MQTTConfig.swift:237-248`), but they are the same
+  setting with different helper text depending on the server. One entry, not two — this
+  was miscounted as a multi-label case earlier.
 
 So the test asserts every field either has at least one index entry or appears on an
 exemption list carrying a stated reason, and that the exemption list is the only way a
@@ -252,13 +261,22 @@ Android and web, instead of three hand-maintained copies.
 **Decision**: FR-016 (the string-catalog migration) ships as a separate pull request,
 before or alongside search, not inside it.
 
-**Still required despite D1.** `(meshtastic.field_metadata)` annotates *fields*, not
-*enum values*. Picker option text — "Long Range - Fast", "Router", "United States" — comes
-from `description` and `name` properties on the enums in `Meshtastic/Enums/`, and no
-attribute in `FieldMetadata` reaches them. Covering those from the schema would need a
-parallel `EnumValueOptions` extension, which #952 does not have and which is not proposed
-here. So the option values that FR-004 requires be searchable are localized the ordinary
-way, below.
+**Scope cut roughly in half by annotating enum values.** The earlier version of this
+decision said picker option text could not come from the schema, because
+`(meshtastic.field_metadata)` annotates fields and not enum values. That gap is now
+closed: #952 carries a second extension, `(meshtastic.enum_value_metadata)`, so
+"Long Range - Fast", "Router" and "United States" come from the schema like everything
+else.
+
+Of the 319 literal `.localized` sites in `Meshtastic/Enums/`, **127 sit on proto-backed
+enums** and move to the schema — `RegionCodes` 37, `DeviceRoles` 24, `ModemPresets` 16,
+`RebroadcastModes` 12, `CompassOrientations` 8, `InputEventChars` 8, `SerialModeTypes` 6,
+`DisplayModes` 4, plus a handful of smaller ones.
+
+The remaining **192 are app-only enums with no protobuf behind them** — `IntervalType`,
+`RoutingError`, `ActivityType`, `FirmwareEditions`, `SupportLevel`, `KeyBackupStatus`, the
+`AppSettings` enums — and those still need the migration below. So FR-016 shrinks but does
+not go away, and the `UpdateIntervalPicker` fix is untouched by any of this.
 
 **Rationale**: CLAUDE.md requires one change per pull request. The migration is a
 mechanical sweep across 18 files that is independently valuable — those strings are

@@ -95,9 +95,15 @@ are never dimmed, since documentation reads the same with or without a radio.
 
 Picker options are indexed as additional match text on the entry that owns the picker,
 not as entries of their own — searching "Long Range - Fast" surfaces the Presets control
-on LoRa rather than a free-floating row. They come from the enum `description` and `name`
-properties in `Meshtastic/Enums/`, which today return English regardless of locale; FR-016
-moves them into the string catalog so the indexed text is localized too.
+on LoRa rather than a free-floating row.
+
+For proto-backed enums their text comes from `(meshtastic.enum_value_metadata)` through the
+same registry, already localized: `preset.metadata?.label`. That covers 127 of the 319
+`.localized` sites in `Meshtastic/Enums/`, including all 37 region names. The remaining 192
+belong to app-only enums with no protobuf behind them and are localized by FR-016.
+
+The ten toggles behind `position_flags` are indexed as ten entries sharing one field
+identity, each taking its label from the corresponding `PositionFlags` value.
 
 ## Generated registry (external, from meshtastic/protobufs#952)
 
@@ -115,6 +121,11 @@ public struct FieldMetadata {
     public var label: String?
     public var description: String?
     public var keywords: String?
+}
+
+// Enum values share the registry; each enum type gets an instance accessor.
+extension Config.LoRaConfig.ModemPreset {
+    public var metadata: FieldMetadata? { ... }
 }
 
 public enum FieldMetadataRegistry {

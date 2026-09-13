@@ -123,9 +123,13 @@ result is listed, visibly de-emphasised, with an explanation.
   attributes that render as bare literals never reach translators, and a catalog keyed by the
   English would collapse the six different controls labelled "Enabled" onto one translation.
 - **FR-006a**: Attributes MUST be scalar, so `keywords` is a single `|`-delimited string that the
-  app splits and trims. Where a single field backs several controls — `position_flags` behind ten
-  toggles, `coding_rate` behind three — the schema cannot name them individually, and those controls
-  MUST stay curated on the exemption list FR-015 defines.
+  app splits and trims.
+- **FR-006b**: Picker option values and bitfield flags MUST take their display text from
+  `meshtastic.enum_value_metadata` on the enum value, not from a hand-written copy in the app. A
+  field carries one label, so the ten toggles behind `position_flags` are named by the values of the
+  `PositionFlags` enum rather than by the field. Where a single field genuinely backs several
+  controls with no enum behind them — `coding_rate` behind a preset toggle and two sliders — those
+  controls MUST stay curated on the exemption list FR-015 defines.
 - **FR-007**: Every indexed string MUST appear in `Localizable.xcstrings` and MUST render in the
   user's language. Keywords MUST match against both the user's language and the English source, so a
   term learned from English documentation still finds its setting.
@@ -262,11 +266,12 @@ package, since a SwiftPM package has no string catalog. See [research.md](./rese
   controls; `json_enabled`, `frequency_offset` and `override_duty_cycle` have no control at all.
   User-interface-only affordances such as "Use Preset" and every app-level screen stay curated.
   There are 221 configuration fields across 29 messages, nine of them already deprecated.
-- Migrating the enumeration values and interval picker labels into the catalog (FR-016) touches 321
-  call sites across 18 enumeration files, of which 239 distinct strings are absent from the catalog
-  today — `LoraConfigEnums` holds the largest share, including 37 region names none of which are
-  translated. It changes what every non-English user sees, independently of search, so it ships as
-  its own pull request.
+- Migrating the remaining enumeration values and interval picker labels into the catalog (FR-016)
+  covers the 192 of 319 literal `.localized` sites in `Meshtastic/Enums/` that have no protobuf
+  behind them — `IntervalType`, `RoutingError`, `ActivityType`, `FirmwareEditions` and the app
+  settings enums. The other 127, including all 37 region names, come from the schema under FR-006b.
+  It changes what every non-English user sees independently of search, so it ships as its own pull
+  request.
 - The existing `unit`, `min_value`, `max_value`, `diy_only` and `admin_only` attributes are useful to
   search beyond labelling — a unit gives a searchable term, and the two boolean attributes can
   explain why a setting is absent on a given radio.

@@ -21,6 +21,16 @@ Config.LoRaConfig.hopLimit                                          // -> FieldM
 and from the returned value: `label`, `description`, `keywords`, `diyOnly`, `adminOnly`,
 `deprecated`, `unit`, `minValue`, `maxValue`.
 
+Enum values share the same registry and key format, keyed by the enum's full name and the
+value number. Each enum type also gets an instance accessor:
+
+```swift
+Config.LoRaConfig.ModemPreset.longFast.metadata?.label   // -> "Long Range - Fast"
+```
+
+An instance property rather than a static, because a static named for the value would
+collide with the enum case of that name.
+
 ## Guarantees relied on
 
 1. **Keys are `"<full proto message name>#<tag>"`.** Nested messages use their full path,
@@ -45,8 +55,10 @@ and from the returned value: `label`, `description`, `keywords`, `diyOnly`, `adm
   `MeshtasticProtobufs`, the calls would still compile and would resolve to English
   forever, silently. This is the single most breakable part of the contract.
 - **That a field's `label` names one control.** A field carries one label, but
-  `position_flags` sits behind ten toggles and `coding_rate` behind three. Those controls
-  stay curated; the annotation describes the field.
+  `position_flags` sits behind ten toggles. Those toggles are values of the `PositionFlags`
+  enum, so their labels come from `(meshtastic.enum_value_metadata)` on the values, not from
+  the field. `coding_rate`, which backs a preset toggle and two sliders with no enum behind
+  them, stays curated.
 - **That the attribute set can grow without touching the Swift plugin's binding.** Adding
   an attribute needs no generator *code* change — both plugins read values generically —
   but `protoc-gen-fieldmeta-swift` decodes the option through its own bundled
