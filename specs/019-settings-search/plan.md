@@ -120,11 +120,11 @@ one-change-per-PR rule:
 **Upstream (meshtastic/protobufs)**
 
 - **#952** — the mechanism, plus the new attributes and generator fixes already pushed.
-- **Annotations** — enum values are done (122 across 13 enums, seeded from the strings the
-  app already carries). Fields are not: `label`, `description` and `keywords` across
-  roughly 201 of the 221 fields, which have no existing per-field string to lift because
-  their labels sit inside view files. This is the critical path — search cannot index
-  labels that do not exist yet.
+- **Annotations** — done. 122 enum values across 13 enums and 140 fields across 24
+  messages, both seeded from strings the app already carries. 33 fields are deliberately
+  unannotated (interpolated stepper labels, controls in nested custom views, fields with
+  no UI) and form the exemption list FR-015 reads. `keywords` is unseeded and can be added
+  by hand where a term is genuinely absent from the label.
 
 **This repo**
 

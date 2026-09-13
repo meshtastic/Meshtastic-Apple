@@ -121,6 +121,25 @@ property-declaration order. Any field setting two attributes produced code that 
 build — and the `generator-parity` job could not catch it, because both generators were
 identically wrong. Both now emit in schema order.
 
+**The Go plugin's Swift naming was wrong.** Caught by the parity job the moment the field
+annotations landed. `protoc-gen-fieldmeta` used a naive `snake_case` → `camelCase`, but
+swift-protobuf's `NamingUtils.toLowerCamelCase` splits on *character-class* changes, so a
+digit run starts a new segment and the letter after it is capitalised. Three fields in this
+schema differ:
+
+| proto | naive | swift-protobuf (correct) |
+|---|---|---|
+| `use_12h_clock` | `use12hClock` | `use12HClock` |
+| `sx126x_rx_boosted_gain` | `sx126xRxBoostedGain` | `sx126XRxBoostedGain` |
+| `use_i2s_as_buzzer` | `useI2sAsBuzzer` | `useI2SAsBuzzer` |
+
+All three now match the committed `.pb.swift` exactly. This is the drift the Swift plugin's
+README warns about, demonstrated: the pure-Swift sibling was right for free because it
+calls swift-protobuf, while the Go port had to guess. `toLowerCamelCase` is now ported as
+`swiftCamelCase` for the Swift target only — TypeScript keeps the naive rule it had — with
+a test whose expected values are copied from real generated output rather than from the
+implementation.
+
 Two smaller divergences fixed alongside: the Swift plugin mapped integer kinds to
 `Int32`/`UInt32`/`UInt64` and float to `Float` where the Go plugin used `Int64` and
 `Double`, so the two agreed only because bool, double and string are the only types in
@@ -255,11 +274,27 @@ mechanically from the strings the app already carries: `RegionCode` 36, `Serial_
 each app enum's raw value; names were not used for matching, since the app spells them
 differently (`degrees0` vs `DEGREES_0`, `txtmsg` vs `TEXTMSG`).
 
-*Fields — not started.* `label`, `description` and `keywords` across `config.proto` and
-`module_config.proto`, roughly 201 of the 221 fields, excluding the nine deprecated and
-those with no control. Unlike the enum values there is no existing per-field string in the
-app to lift: labels live inside view files as `Label("Number of hops", …)` arguments, so
-this is either a second extraction pass over `Meshtastic/Views/Settings/` or hand-written.
+*Fields — done.* 140 fields across 24 messages carry `label` and `description`, seeded from
+the config views. Nothing in a view says which proto field a control edits, so the link came
+from the save closure: `var lc = Config.LoRaConfig()` names the message,
+`lc.hopLimit = UInt32(hopLimit)` ties the proto property to a `@State` var, and
+`Picker("Number of hops", selection: $hopLimit)` supplies the label.
+
+**33 fields are deliberately unannotated**, and they are the exemption list FR-015 needs:
+
+- *Interpolated labels* — `Stepper(txPower == 0 ? "Max Transmit Power" : "\(txPower)dBm Transmit Power", …)`
+  has no stable literal. Also `ls_secs`, `min_wake_secs`, the RGB values in
+  `AmbientLightingConfig`, and the PaxCounter thresholds.
+- *Controls in nested custom views* — `bandwidth` lives in `CustomBandwidthPicker`,
+  `coding_rate` behind a preset toggle and two sliders.
+- *No UI at all* — `private_key`, `admin_key`, `broadcast_targets`, `ipv4_config`.
+- *`position_flags`*, unannotated by design: its ten toggles are enum values and carry
+  their own labels.
+
+`keywords` is not seeded for any field. It cannot be derived from the app, and inventing
+synonyms mechanically would be guessing; labels and descriptions already carry the words a
+user is most likely to type. Worth adding by hand where a term is genuinely absent — "psk"
+for the pre-shared key control being the spec's own example.
 
 **Eight values the app is behind on.** Annotating surfaced schema values with no app
 string at all — `RegionCode.IN`, two `OLED_SH1107` variants, and six `Serial_Mode` values
