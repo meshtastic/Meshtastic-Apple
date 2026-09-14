@@ -770,7 +770,7 @@ struct Settings: View {
 						}
 					}
 					if isSearching {
-						SettingsSearchResultsView(results: searchResults)
+						SettingsSearchResultsView(results: searchResults, docs: DocumentationSearch.search(searchText))
 					} else {
 						radioConfigurationSection
 						deviceConfigurationSection
@@ -879,7 +879,9 @@ struct Settings: View {
 					case .localMeshDiscovery:
 						DiscoveryScanView()
 					case .helpDocs:
-						DocBrowserView()
+						// Carries the settings-search query through, so a documentation
+						// result opens filtered. Empty when reached from the list row.
+						DocBrowserView(initialSearch: searchText)
 					case .backupManagement:
 						BackupManagement()
 					}

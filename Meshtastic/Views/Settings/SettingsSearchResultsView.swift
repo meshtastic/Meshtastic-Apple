@@ -14,9 +14,10 @@ import SwiftUI
 /// by scrolling.
 struct SettingsSearchResultsView: View {
 	let results: [SettingsSearchResult]
+	let docs: [DocumentationSearch.Page]
 
 	var body: some View {
-		if results.isEmpty {
+		if results.isEmpty && docs.isEmpty {
 			ContentUnavailableView.search
 		} else {
 			// compactMap drops sections with no matches rather than rendering empty
@@ -29,6 +30,26 @@ struct SettingsSearchResultsView: View {
 							NavigationLink(value: result.entry.destination) {
 								row(for: result)
 							}
+						}
+					}
+				}
+			}
+
+			// Documentation last, under its own heading, and never dimmed: a page
+			// reads the same with or without a radio.
+			if !docs.isEmpty {
+				Section(String(localized: "Help & Documentation", comment: "Search results section")) {
+					ForEach(docs) { page in
+						NavigationLink(value: SettingsNavigationState.helpDocs) {
+							VStack(alignment: .leading, spacing: 2) {
+								Text(page.title)
+									.font(.body)
+								Text(String(localized: "Documentation", comment: "Search result breadcrumb"))
+									.font(.caption)
+									.foregroundStyle(.secondary)
+							}
+							.padding(.vertical, 2)
+							.frame(minHeight: 44, alignment: .leading)
 						}
 					}
 				}
