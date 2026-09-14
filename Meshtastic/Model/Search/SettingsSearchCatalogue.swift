@@ -200,7 +200,7 @@ enum SettingsSearchCatalogue {
 			listSection: .radioConfiguration,
 			label: String(localized: "Channels", comment: "Settings control"),
 			keywords: [String(localized: "psk", comment: "Search keyword"), String(localized: "encryption", comment: "Search keyword"), String(localized: "key", comment: "Search keyword"), String(localized: "primary", comment: "Search keyword"), String(localized: "secondary", comment: "Search keyword")],
-			requiresConnection: false),
+			requiresConnection: true),
 
 		// MARK: Route Recorder
 		.init(
@@ -238,7 +238,7 @@ enum SettingsSearchCatalogue {
 			listSection: .radioConfiguration,
 			label: String(localized: "Share QR Code", comment: "Settings control"),
 			keywords: [String(localized: "qr", comment: "Search keyword"), String(localized: "share", comment: "Search keyword"), String(localized: "invite", comment: "Search keyword")],
-			requiresConnection: false),
+			requiresConnection: true),
 
 		// MARK: TAK Server
 		.init(
@@ -246,53 +246,53 @@ enum SettingsSearchCatalogue {
 			screenTitle: String(localized: "TAK Server", comment: "Settings screen"),
 			listSection: .configure,
 			label: String(localized: "TAK Server", comment: "Settings control"),
-			requiresConnection: false),
+			requiresConnection: true),
 		.init(
 			destination: .tak,
 			screenTitle: String(localized: "TAK Server", comment: "Settings screen"),
 			listSection: .configure,
 			label: String(localized: "Auto-Fix Channel", comment: "Settings control"),
-			requiresConnection: false),
+			requiresConnection: true),
 		.init(
 			destination: .tak,
 			screenTitle: String(localized: "TAK Server", comment: "Settings screen"),
 			listSection: .configure,
 			label: String(localized: "Enable TAK Server", comment: "Settings control"),
-			requiresConnection: false),
+			requiresConnection: true),
 		.init(
 			destination: .tak,
 			screenTitle: String(localized: "TAK Server", comment: "Settings screen"),
 			listSection: .configure,
 			label: String(localized: "Read-Only Mode", comment: "Settings control"),
 			subtitle: String(localized: "Meshtastic -> TAK works, TAK -> Meshtastic blocked", comment: "Settings control"),
-			requiresConnection: false),
+			requiresConnection: true),
 		.init(
 			destination: .tak,
 			screenTitle: String(localized: "TAK Server", comment: "Settings screen"),
 			listSection: .configure,
 			label: String(localized: "Mesh to CoT Converter", comment: "Settings control"),
 			subtitle: String(localized: "Bridge Meshtastic positions, nodes, waypoints, and messages to TAK/CoT format", comment: "Settings control"),
-			requiresConnection: false),
+			requiresConnection: true),
 		.init(
 			destination: .tak,
 			screenTitle: String(localized: "TAK Server", comment: "Settings screen"),
 			listSection: .configure,
 			label: String(localized: "Download TAK Server Data Package", comment: "Settings control"),
-			requiresConnection: false),
+			requiresConnection: true),
 		.init(
 			destination: .tak,
 			screenTitle: String(localized: "TAK Server", comment: "Settings screen"),
 			sectionTitle: String(localized: "TAK Identity", comment: "Settings section"),
 			listSection: .configure,
 			label: String(localized: "Team", comment: "Settings control"),
-			requiresConnection: false),
+			requiresConnection: true),
 		.init(
 			destination: .tak,
 			screenTitle: String(localized: "TAK Server", comment: "Settings screen"),
 			sectionTitle: String(localized: "TAK Identity", comment: "Settings section"),
 			listSection: .configure,
 			label: String(localized: "Role", comment: "Settings control"),
-			requiresConnection: false),
+			requiresConnection: true),
 
 		// MARK: User
 		.init(
@@ -300,28 +300,28 @@ enum SettingsSearchCatalogue {
 			screenTitle: String(localized: "User", comment: "Settings screen"),
 			listSection: .deviceConfiguration,
 			label: String(localized: "User", comment: "Settings control"),
-			requiresConnection: false),
+			requiresConnection: true),
 		.init(
 			destination: .user,
 			screenTitle: String(localized: "User", comment: "Settings screen"),
 			sectionTitle: String(localized: "User Details", comment: "Settings section"),
 			listSection: .deviceConfiguration,
 			label: String(localized: "Call Sign", comment: "Settings control"),
-			requiresConnection: false),
+			requiresConnection: true),
 		.init(
 			destination: .user,
 			screenTitle: String(localized: "User", comment: "Settings screen"),
 			sectionTitle: String(localized: "User Details", comment: "Settings section"),
 			listSection: .deviceConfiguration,
 			label: String(localized: "Long Name", comment: "Settings control"),
-			requiresConnection: false),
+			requiresConnection: true),
 		.init(
 			destination: .user,
 			screenTitle: String(localized: "User", comment: "Settings screen"),
 			sectionTitle: String(localized: "User Details", comment: "Settings section"),
 			listSection: .deviceConfiguration,
 			label: String(localized: "Short Name", comment: "Settings control"),
-			requiresConnection: false),
+			requiresConnection: true),
 		.init(
 			destination: .user,
 			screenTitle: String(localized: "User", comment: "Settings screen"),
@@ -329,20 +329,20 @@ enum SettingsSearchCatalogue {
 			listSection: .deviceConfiguration,
 			label: String(localized: "Unmessagable", comment: "Settings control"),
 			subtitle: String(localized: "Used to identify unmonitored or infrastructure nodes so that messaging is not avaliable to nodes that will never respond.", comment: "Settings control"),
-			requiresConnection: false),
+			requiresConnection: true),
 		.init(
 			destination: .user,
 			screenTitle: String(localized: "User", comment: "Settings screen"),
 			sectionTitle: String(localized: "User Details", comment: "Settings section"),
 			listSection: .deviceConfiguration,
 			label: String(localized: "Licensed Operator", comment: "Settings control"),
-			requiresConnection: false),
+			requiresConnection: true),
 		.init(
 			destination: .user,
 			screenTitle: String(localized: "User", comment: "Settings screen"),
 			sectionTitle: String(localized: "User Details", comment: "Settings section"),
 			listSection: .deviceConfiguration,
 			label: String(localized: "Frequency Override", comment: "Settings control"),
-			requiresConnection: false),
+			requiresConnection: true),
 	]
 }

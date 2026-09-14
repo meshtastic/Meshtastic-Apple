@@ -26,13 +26,26 @@ enum DocumentationSearch {
 		let keywords: [String]
 	}
 
-	static let pages: [Page] = load()
+	/// Not `static let`: the translated index arrives asynchronously from the CDN,
+	/// so a value cached at first use would pin whatever was available then.
+	///
+	/// Main-actor isolated because `DocBundle` is, and the translated index is read
+	/// from it. Search runs from the view anyway.
+	@MainActor
+	static var pages: [Page] { load() }
 
 	/// Pages matching `query`, best first.
 	///
 	/// Documentation is never de-emphasised: a page reads the same whether or not a
 	/// radio is connected, so the reasons that dim a settings result do not apply.
+	@MainActor
 	static func search(_ query: String) -> [Page] {
+		rank(query, in: pages)
+	}
+
+	/// The ranking half, over an explicit page list, so it can be tested without
+	/// depending on what the bundle happens to contain.
+	static func rank(_ query: String, in pages: [Page]) -> [Page] {
 		let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
 		guard trimmed.count >= SettingsSearchEngine.minimumQueryLength else { return [] }
 
@@ -54,7 +67,19 @@ enum DocumentationSearch {
 			.map(\.0)
 	}
 
+	@MainActor
 	private static func load() -> [Page] {
+		// Prefer the translated index the documentation browser uses. Without this a
+		// localized query finds a page inside the browser and nothing from Settings
+		// search, which reads as search being broken rather than untranslated.
+		let language = Bundle.main.documentationLanguageCode
+		if language != "en",
+		   let translated = DocBundle.shared.searchIndex(for: language), !translated.isEmpty {
+			return translated.map {
+				Page(id: $0.id, title: $0.title, section: $0.section, keywords: $0.keywords)
+			}
+		}
+
 		guard let url = Bundle.main.url(forResource: "index", withExtension: "json",
 										subdirectory: "docs"),
 			  let data = try? Data(contentsOf: url) else {

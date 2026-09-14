@@ -608,8 +608,12 @@ struct Settings: View {
 			// The DIY tag marks a product line rather than how a unit was built, so
 			// this is a hint and not a fact. See spec 019 FR-012a.
 			isDIYHardware: connectedHardwareIsDIY,
-			currentValues: []
+			isManaged: connectedNodeIsManaged
 		)
+	}
+
+	private var connectedNodeIsManaged: Bool {
+		nodes.first(where: { $0.num == Int64(preferredNodeNum) })?.isManaged ?? false
 	}
 
 	private var connectedHardwareIsDIY: Bool {

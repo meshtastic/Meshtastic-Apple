@@ -30,9 +30,13 @@ The `seed_*` scripts only read and print a plan; the `apply_*` scripts write. Bo
 are idempotent — a field or value already carrying the annotation is left alone — so a
 partial run can be repeated safely.
 
-That is why the plans are slightly larger than what #1081 contains: 141 fields and 123 enum
-values planned, 140 and 122 applied. The difference is the worked examples already annotated
-by hand in #952 (`hop_limit`, `ModemPreset.LONG_FAST`), which the appliers leave untouched.
+That is also why the plan totals and the pull request totals differ, in both directions.
+#1081 carries **155 fields**; the seeder plans 153. Two of those it skips as already
+annotated in #952 (`hop_limit`, and the `diy_only` GPIO pair), and five more were written by
+hand because the app renders their label from a value rather than a literal - `tx_power` and
+the four ambient-lighting colour components. 153 - 2 + 5 + the two GPIO labels merged by
+hand = 155. The enum side is simpler: 123 planned, 122 applied, the difference being
+`ModemPreset.LONG_FAST` from #952.
 
 ## How the joins work
 

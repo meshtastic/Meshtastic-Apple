@@ -31,21 +31,27 @@ REPO = Path(__file__).resolve().parent.parent
 VIEWS = REPO / "Meshtastic/Views/Settings"
 OUTPUT = REPO / "Meshtastic/Model/Search/SettingsSearchCatalogue.swift"
 
-# view file -> (destination, screen title, list section)
+# view file -> (destination, screen title, list section, requires a radio)
 #
 # Only screens with no protobuf behind them. A settings screen backed by a config
 # message is indexed from the registry instead, and listing it here would duplicate
 # every one of its controls.
-SCREENS: dict[str, tuple[str, str, str]] = {
-    "AppSettings.swift": ("appSettings", "App Settings", "configure"),
-    "Channels.swift": ("channels", "Channels", "radioConfiguration"),
-    "ShareChannels.swift": ("shareQRCode", "Share QR Code", "radioConfiguration"),
-    "Routes.swift": ("routes", "Routes", "configure"),
-    "RouteRecorder.swift": ("routeRecorder", "Route Recorder", "configure"),
-    "UserConfig.swift": ("user", "User", "deviceConfiguration"),
-    "TAKServerConfig.swift": ("tak", "TAK Server", "configure"),
-    "AppData.swift": ("appFiles", "App Data", "configure"),
-    "About.swift": ("about", "About", "configure"),
+#
+# The last flag is per-screen rather than per-control because every control on a
+# given screen shares it. Channels, the QR code, the user record and the TAK server
+# all read or write the connected node, so they are dimmed while disconnected. The
+# rest are app preferences that work with no radio at all, which is most of why
+# they are worth finding then.
+SCREENS: dict[str, tuple[str, str, str, bool]] = {
+    "AppSettings.swift": ("appSettings", "App Settings", "configure", False),
+    "Channels.swift": ("channels", "Channels", "radioConfiguration", True),
+    "ShareChannels.swift": ("shareQRCode", "Share QR Code", "radioConfiguration", True),
+    "Routes.swift": ("routes", "Routes", "configure", False),
+    "RouteRecorder.swift": ("routeRecorder", "Route Recorder", "configure", False),
+    "UserConfig.swift": ("user", "User", "deviceConfiguration", True),
+    "TAKServerConfig.swift": ("tak", "TAK Server", "configure", True),
+    "AppData.swift": ("appFiles", "App Data", "configure", False),
+    "About.swift": ("about", "About", "configure", False),
 }
 
 # Terms a user would search for that appear nowhere on the screen. Kept small and
@@ -167,8 +173,12 @@ def render() -> str:
     for filename in sorted(SCREENS):
         path = VIEWS / filename
         if not path.exists():
-            continue
-        destination, screen, section = SCREENS[filename]
+            # Not a skip: a renamed or deleted view would drop an entire screen from
+            # the index, and --check would happily accept the smaller catalogue.
+            raise SystemExit(
+                f"  {filename} is listed in SCREENS but does not exist in {VIEWS.name}/.\n"
+                "  Update SCREENS if the view was renamed or removed.")
+        destination, screen, section, needs_radio = SCREENS[filename]
         items = controls(path.read_text())
         # The screen itself, so "Channels" finds Channels and screen-wide keywords
         # have somewhere to live. Emitted even when no control was extracted - a
@@ -198,7 +208,7 @@ def render() -> str:
                 keywords = ", ".join(
                     f"String(localized: {swift_string(k)}, comment: \"Search keyword\")" for k in extra)
                 parts.append(f"keywords: [{keywords}]")
-            parts.append("requiresConnection: false")
+            parts.append(f"requiresConnection: {str(needs_radio).lower()}")
             out.append("\t\t.init(")
             for part in parts[:-1]:
                 out.append(f"\t\t\t{part},")

@@ -192,7 +192,9 @@ result is listed, visibly de-emphasised, with an explanation.
   then label, so the same query always produces the same list — a match in a control's own name is
   what a user expects first, regardless of how many keywords a rival entry carries.
 - **FR-012**: Results whose screen requires a connected radio MUST remain visible while disconnected,
-  visually de-emphasised and labelled as requiring a radio, and MUST still navigate.
+  visually de-emphasised and labelled as requiring a radio, and MUST still navigate. A managed radio
+  MUST be treated the same way: it exposes no configuration, its settings screens render read-only,
+  and a result that looks editable when it is not is worse than one that says why.
 - **FR-012a**: Results for fields marked `diy_only` MUST be hidden when the connected radio's
   hardware model is not tagged `DIY` in `DeviceHardware.json`. Only six models carry that tag
   (`DIY_V1`, `HYDRA`, `DR_DEV`, `RPI_PICO`, `NRF52_PROMICRO_DIY`), so on a commercial board these
@@ -201,12 +203,14 @@ result is listed, visibly de-emphasised, with an explanation.
 - **FR-012b**: `admin_only` is not device-dependent, so hiding it would make those settings
   permanently unfindable. Results for fields marked `admin_only` MUST be shown, de-emphasised in the
   same way as FR-012's disconnected results, with the reason given.
-- **FR-012c**: Entries whose field or enum value is marked `deprecated` MUST be hidden unless the
-  connected radio currently holds that value, in which case they MUST be shown and marked
-  deprecated. This mirrors the rule the app already applies at `DeviceConfig.swift:410`
-  (`allCases.filter { !$0.isDeprecated || $0.rawValue == deviceRole }`): a node running `REPEATER`
-  can still find and migrate off it, while nobody is offered it afresh. Nine configuration fields
-  and seven enum values are deprecated upstream.
+- **FR-012c**: Entries whose field or enum value is marked `deprecated` MUST be shown,
+  de-emphasised and labelled as deprecated, rather than hidden. An earlier draft hid them unless
+  the connected radio currently held that value, so a node on a deprecated setting could still
+  migrate off it — but deciding that needs per-field node state the index does not carry, and the
+  half-built version hid every deprecated setting including the one the user was searching for.
+  Showing it marked serves the same intent: search is a deliberate act, and someone who types the
+  name is better answered by "this exists and is deprecated" than by nothing at all. Nine
+  configuration fields and seven enum values are deprecated upstream.
 - **FR-013**: Navigation MUST route through the existing settings navigation state so deep links and
   search results share one path. Selecting a result MUST open the screen holding that control and
   nothing further — no scrolling to or highlighting of the individual control, which would require
@@ -337,9 +341,10 @@ package, since a SwiftPM package has no string catalog. See [research.md](./rese
   file, same entry shape, `String(localized:)` text, `field: nil`. Not declarations beside each view,
   which would scatter the index; not generated, since with no schema behind them the generated file
   would be the source of truth and nothing would enforce regenerating it.
-- Q: Should deprecated settings appear in results? → A: Mirror the app's existing rule rather than
-  the blanket hide the contract assumed — hidden unless the connected radio currently holds that
-  value, then shown and marked deprecated, so the migration path stays discoverable.
+- Q: Should deprecated settings appear in results? → A: Shown, de-emphasised and marked. The first
+  answer was "hidden unless the radio currently holds that value", which review showed could not be
+  implemented — the index has no per-field node state — and whose half-built form hid every
+  deprecated setting, the opposite of the intent.
 - Q: How should `diy_only` and `admin_only` affect results, given the app has no direct signal for
   how a board was built? → A: Hide `diy_only` results unless the connected hardware model is
   `DIY`-tagged in `DeviceHardware.json`; show them when disconnected, since the hardware is unknown.

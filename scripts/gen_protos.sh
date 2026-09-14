@@ -108,8 +108,12 @@ if [ -d "$FIELDMETA_PKG" ]; then
 	python3 "$REPO_ROOT/scripts/strip-fieldmeta-message-accessors.py" "$REGISTRY"
 	echo "Generated Meshtastic/Model/FieldMetadataRegistry.swift"
 else
-	echo "Skipping the field-metadata registry: $FIELDMETA_PKG not present."
-	echo "Bump the 'protobufs' submodule to a commit that carries tools/protoc-gen-fieldmeta-swift."
+	echo "error: $FIELDMETA_PKG not present." >&2
+	echo "The app needs Meshtastic/Model/FieldMetadataRegistry.swift, which is generated from" >&2
+	echo "the submodule. Exiting non-zero rather than leaving the committed registry stale" >&2
+	echo "while this script reports success. Bump 'protobufs' to a commit carrying" >&2
+	echo "tools/protoc-gen-fieldmeta-swift." >&2
+	exit 1
 fi
 
 echo

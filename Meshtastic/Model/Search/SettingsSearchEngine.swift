@@ -18,12 +18,12 @@ enum SettingsSearchEngine {
 		let isConnected: Bool
 		/// Whether the connected hardware model is tagged DIY.
 		let isDIYHardware: Bool
-		/// Values the connected radio currently holds, keyed as the registry keys
-		/// them (`"meshtastic.Config.LoRaConfig#8"`). Used to decide whether a
-		/// deprecated setting is still worth showing so it can be migrated off.
-		let currentValues: Set<String>
+		/// A managed radio exposes no configuration; its settings screens render
+		/// read-only, so results behave as they do when disconnected.
+		let isManaged: Bool
 
-		static let disconnected = Availability(isConnected: false, isDIYHardware: false, currentValues: [])
+		static let disconnected = Availability(
+			isConnected: false, isDIYHardware: false, isManaged: false)
 	}
 
 	/// Queries shorter than this match nothing. One character matches most of the
@@ -101,14 +101,16 @@ enum SettingsSearchEngine {
 	) -> SettingsSearchVisibility {
 		let metadata = entry.field?.metadata
 
-		// Deprecated settings are hidden unless the radio is actually using one, in
-		// which case it needs to be findable so it can be migrated off. Mirrors the
-		// rule DeviceConfig already applies to the role picker.
+		// Deprecated settings are shown, marked, rather than hidden.
+		//
+		// The rule was once "hidden unless the radio currently holds that value", so a
+		// node on a deprecated setting could still migrate off it. Determining that
+		// needs per-field node state the index does not have, and the half-built
+		// version hid every deprecated setting including the one a user was looking
+		// for. Showing it marked serves the same intent: search is a deliberate act,
+		// and someone who types the name is better answered by "this exists and is
+		// deprecated" than by nothing at all.
 		if metadata?.deprecated == true {
-			guard let field = entry.field,
-				  availability.currentValues.contains("\(field.messageName)#\(field.tag)") else {
-				return .hidden
-			}
 			return .deEmphasised(reason: String(
 				localized: "Deprecated — move to a supported setting",
 				comment: "Why a settings search result is de-emphasised"))
@@ -128,10 +130,12 @@ enum SettingsSearchEngine {
 				comment: "Why a settings search result is de-emphasised"))
 		}
 
-		if entry.requiresConnection, !availability.isConnected {
-			return .deEmphasised(reason: String(
-				localized: "Needs a connected radio",
-				comment: "Why a settings search result is de-emphasised"))
+		if entry.requiresConnection, !availability.isConnected || availability.isManaged {
+			return .deEmphasised(reason: availability.isManaged
+				? String(localized: "This radio is managed and cannot be configured here",
+						 comment: "Why a settings search result is de-emphasised")
+				: String(localized: "Needs a connected radio",
+						 comment: "Why a settings search result is de-emphasised"))
 		}
 
 		return .normal

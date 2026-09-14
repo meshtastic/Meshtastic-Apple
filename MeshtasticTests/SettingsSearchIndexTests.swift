@@ -89,8 +89,17 @@ struct SettingsSearchIndexTests {
 
 	@Test("Every configuration field is indexed or exempted with a stated reason")
 	func everyFieldIsAccountedFor() throws {
-		guard let config = Self.proto("config"), let module = Self.proto("module_config") else {
-			return  // submodule not readable here; CI checks out submodules for this
+		let config = Self.proto("config")
+		let module = Self.proto("module_config")
+		guard let config, let module else {
+			// On CI this must fail: unit-tests.yml checks out submodules precisely so
+			// this test has something to read, and a silent skip there would let the
+			// whole guard pass for the wrong reason. Locally the simulator sometimes
+			// cannot see host paths, and skipping is the right call.
+			if ProcessInfo.processInfo.environment["CI"] != nil {
+				Issue.record("protobufs/meshtastic/*.proto unreadable on CI — is the submodule checked out?")
+			}
+			return
 		}
 
 		let indexedTags = Set(
@@ -108,8 +117,11 @@ struct SettingsSearchIndexTests {
 				guard let _ = SettingsSearchIndex.screens[message] else { continue }
 				if indexedTags.contains("\(message)#\(tag)") { continue }
 				if Self.exemptFields[field] != nil { continue }
-				// Deprecated fields are excluded from results by design and need no entry.
-				if FieldMetadataRegistry.get(message, tag: tag)?.deprecated == true { continue }
+				// Deprecated fields are NOT excluded. They are shown marked rather than
+				// hidden, so one carrying a label still needs an entry; only an
+				// unlabelled deprecated field is genuinely unsearchable.
+				if let meta = FieldMetadataRegistry.get(message, tag: tag),
+				   meta.deprecated == true, meta.label == nil { continue }
 				unaccounted.append("\(source): \(message).\(field) (tag \(tag))")
 			}
 		}
@@ -249,13 +261,21 @@ struct SettingsSearchIndexTests {
 @Suite("Settings search catalogue")
 struct SettingsSearchCatalogueTests {
 
-	@Test("App-level entries are reachable without a radio")
-	func appLevelDoesNotRequireConnection() throws {
-		// The point of indexing these is that they work while disconnected; marking
-		// one as needing a radio would dim it for no reason.
+	@Test("Curated entries carry no proto field, and app preferences work offline")
+	func curatedEntriesAreShapedCorrectly() throws {
 		for entry in SettingsSearchCatalogue.entries {
-			#expect(!entry.requiresConnection, "\(entry.id) should not require a radio")
-			#expect(entry.field == nil, "\(entry.id) has a proto field; it belongs in the registry half")
+			#expect(
+				entry.field == nil,
+				"\(entry.id) has a proto field; it belongs in the registry half")
+		}
+
+		// Not every curated entry is offline-capable. Channels, the QR code, the user
+		// record and the TAK server read the connected node. The app preferences do
+		// not, and dimming those would be wrong - being findable with no radio is
+		// most of why they are indexed.
+		let offlineScreens: Set<SettingsNavigationState> = [.appSettings, .about, .routes, .routeRecorder, .appFiles]
+		for entry in SettingsSearchCatalogue.entries where offlineScreens.contains(entry.destination) {
+			#expect(!entry.requiresConnection, "\(entry.id) is an app preference and should not require a radio")
 		}
 	}
 }
