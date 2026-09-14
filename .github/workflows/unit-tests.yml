@@ -21,6 +21,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # The index completeness test parses protobufs/meshtastic/*.proto. Without
+          # the submodule that directory is empty, the test takes its soft-skip, and
+          # a green run proves nothing.
+          submodules: recursive
 
       - name: Select Xcode
         run: sudo xcode-select -s /Applications/Xcode_26.3.app/Contents/Developer
