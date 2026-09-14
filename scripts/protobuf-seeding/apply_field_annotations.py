@@ -14,7 +14,9 @@ import sys
 from pathlib import Path
 
 PROTO_DIR = Path(sys.argv[1]) if len(sys.argv) > 1 else Path("meshtastic")
-PLAN = json.load(open(sys.argv[2] if len(sys.argv) > 2 else "/tmp/fplan.json"))["plan"]
+PLAN_PATH = Path(sys.argv[2] if len(sys.argv) > 2 else "/tmp/fplan.json")
+with PLAN_PATH.open(encoding="utf-8") as plan_file:
+    PLAN = json.load(plan_file)["plan"]
 
 # Anchored to line start with HORIZONTAL whitespace only: `\s` would span newlines
 # and let a word from the preceding comment stand in as the type, which silently

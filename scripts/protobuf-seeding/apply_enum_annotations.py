@@ -14,7 +14,9 @@ import sys
 from pathlib import Path
 
 PROTO_DIR = Path(sys.argv[1]) if len(sys.argv) > 1 else Path("meshtastic")
-PLAN = json.load(open(sys.argv[2] if len(sys.argv) > 2 else "/tmp/plan.json"))["plan"]
+PLAN_PATH = Path(sys.argv[2] if len(sys.argv) > 2 else "/tmp/plan.json")
+with PLAN_PATH.open(encoding="utf-8") as plan_file:
+    PLAN = json.load(plan_file)["plan"]
 
 # The app appends this to a label because it has no other way to say so; the
 # schema carries `deprecated` mirrored from the standard option instead.

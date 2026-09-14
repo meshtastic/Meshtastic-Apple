@@ -5,7 +5,7 @@ the app shows inside a titled section - does not survive the trip. Several also
 collided: NetworkConfig had three fields labelled "Enabled" and MQTTConfig two,
 which would be indistinguishable as search results on the same screen.
 """
-import re, sys
+import re
 
 FIXES = {
     ("BluetoothConfig", 1): "Bluetooth Enabled",
@@ -47,7 +47,8 @@ def spans(t, name):
 
 changed = 0
 for path in ("meshtastic/config.proto", "meshtastic/module_config.proto"):
-    t = open(path).read()
+    with open(path, encoding="utf-8") as handle:
+        t = handle.read()
     for (msg, tag), new in FIXES.items():
         for lo, hi in spans(t, msg):
             body = t[lo:hi]
@@ -74,5 +75,6 @@ for path in ("meshtastic/config.proto", "meshtastic/module_config.proto"):
             print(f"  {msg}#{tag}: {old[:40]!r} -> {new!r}")
             changed += 1
             break
-    open(path, "w").write(t)
+    with open(path, "w", encoding="utf-8") as handle:
+        handle.write(t)
 print(f"  {changed} labels fixed")

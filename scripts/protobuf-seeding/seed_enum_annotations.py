@@ -82,7 +82,10 @@ def string_property(body: str, prop: str) -> dict[str, str]:
         tail = block[cm.end():]
         nxt = re.search(r"\n\s*(?:case\s+\.|default\s*:)", tail)
         seg = tail[:nxt.start()] if nxt else tail
-        lit = re.search(r'return\s+"((?:[^"\\]|\\.)*)"', seg)
+        # Both spellings: the original `"X".localized`, and `String(localized: "X")`
+        # for enums already migrated to the string catalog.
+        lit = (re.search(r'return\s+"((?:[^"\\]|\\.)*)"', seg)
+               or re.search(r'return\s+String\(localized:\s*"((?:[^"\\]|\\.)*)"', seg))
         if lit:
             for n in names:
                 out[n] = lit.group(1)
