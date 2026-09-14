@@ -33,7 +33,7 @@ says what a setting is called, and every client reads it.
 | | Status |
 |---|---|
 | Schema and generators (`meshtastic/protobufs#952`) | **Done** — all checks green |
-| Annotations, 150 fields + 122 enum values (`#1081`) | **Done** — all checks green, based on #952 |
+| Annotations, 155 fields + 122 enum values (`#1081`) | **Done** — all checks green, based on #952 |
 | String catalog migration (FR-016) | Not started |
 | Field-metadata wiring into the app | Not started |
 | Search itself | Not started |
@@ -181,15 +181,18 @@ result is listed, visibly de-emphasised, with an explanation.
   simply absent from search, which no test that only validates existing entries can detect. The
   authoritative list of fields is the protobuf source text, not the generated registry, which holds
   only the fields that carry an annotation.
-- **FR-015a**: The exemption list is the 21 fields that annotation deliberately skipped, in four
-  groups: fields with no control at all, whether saved-but-unexposed (`ls_secs`, `min_wake_secs`,
+- **FR-015a**: The exemption list is the 16 fields with no label to give, in two groups: fields with
+  no control at all, whether saved-but-unexposed (`ls_secs`, `min_wake_secs`,
   `wait_bluetooth_secs`) or not user-facing (`private_key`, `admin_key`, `broadcast_targets`,
-  `ipv4_config`); several fields behind one control (`red`, `green`, `blue` and `current` share a
-  single `ColorPicker`); a label that is interpolated and so has no stable literal (`tx_power` reads
-  `"\(txPower)dBm Transmit Power"`); and `position_flags`, whose ten toggles take their labels from
-  the `PositionFlags` enum values instead. Adding to this list MUST require stating which group a
-  field belongs to, because "the extractor could not find a label" is not one of these groups — a
-  control in a nested view or behind a computed binding still has a label and MUST be annotated.
+  `ipv4_config`); and controls whose label the app renders from a value rather than a literal, such
+  as `position_flags`, whose ten toggles take their labels from the `PositionFlags` enum values
+  instead. Adding to this list MUST require stating which group a field belongs to. Two things are
+  explicitly NOT reasons to exempt: that the extractor could not find a label — a control in a
+  nested view or behind a computed binding still has one — and that the on-screen label is
+  interpolated. Where the interface renders a label from a value, the schema MUST carry the stable
+  name instead: `tx_power` is "Transmit Power" even though its stepper reads
+  `"\(txPower)dBm Transmit Power"`, and `red`, `green`, `blue` and `current` are named individually
+  even though the app presents them as one colour picker, with keywords so "color" finds them.
 - **FR-016**: Any string the index needs that currently bypasses the string catalog MUST be migrated
   into it as part of this feature. Two known groups qualify: the enumeration values behind picker
   options, which localize at runtime through a mechanism the extractor cannot see, and the interval
@@ -280,7 +283,7 @@ Two upstream changes, both open and green as of 2026-09-13. The submodule here d
   parity harness, localized string emission, and three generator fixes (see
   [research.md](./research.md) D3). Carries five worked-example annotations and no bulk data.
 - **[meshtastic/protobufs#1081](https://github.com/meshtastic/protobufs/pull/1081)** — the data.
-  150 fields and 122 enum values, seeded from the strings this app already carries. Based on #952's
+  155 fields and 122 enum values, seeded from the strings this app already carries. Based on #952's
   branch so the mechanism can be reviewed without the annotations on top of it; retargets to
   `master` once #952 merges.
 
@@ -302,12 +305,14 @@ reviewed in parallel.
   direction. `coding_rate` backs three controls; `json_enabled`, `frequency_offset` and
   `override_duty_cycle` have no control at all. User-interface-only affordances such as "Use Preset"
   and every app-level screen stay curated. There are 221 configuration fields across 29 messages,
-  nine of them already deprecated; 150 are annotated and 21 are exempt under FR-015a.
-- `keywords` is annotated nowhere. It cannot be derived from the app, and generating synonyms
-  mechanically would be guessing; labels and descriptions already carry the words a user is most
-  likely to type, and "hops" is inside "Number of hops". Adding keywords by hand is worthwhile where
-  a term is genuinely absent — "psk" for the pre-shared key control is the spec's own example — and
-  ranking already weights a keyword hit below a label hit, so a sparse keyword set costs nothing.
+  nine of them already deprecated; 155 are annotated and 16 are exempt under FR-015a.
+- `keywords` is annotated only where the label cannot carry the term. It cannot be seeded from the
+  app, and generating synonyms mechanically would be guessing; labels and descriptions already hold
+  the words a user is most likely to type, and "hops" is inside "Number of hops". It earns its place
+  when no field is named what the user searches for: `red`, `green` and `blue` carry
+  `color|colour|rgb|led` because the app shows them as one "Color" picker and nothing is called
+  that. Adding more by hand stays worthwhile — "psk" for the pre-shared key control is the spec's
+  own example — and ranking weights a keyword hit below a label hit, so a sparse set costs nothing.
 - Annotating surfaced eight schema values this app does not yet offer at all: `RegionCode.IN`, two
   `OLED_SH1107` variants, and six `Serial_Mode` values. They are newer than the client. Search will
   not show them until the app adds the corresponding cases, which is a separate gap.

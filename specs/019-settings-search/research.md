@@ -180,7 +180,7 @@ estimated "~201 of 269".
 | **Total** | **93** | **Total** | **128** |
 
 Nine of the 221 are already marked `[deprecated = true]` upstream, leaving **212 live
-fields**. Of those, 150 are annotated and 21 are exempt under FR-015a; the rest have no
+fields**. Of those, 155 are annotated and 16 are exempt under FR-015a; the rest have no
 screen. Two messages sit outside the count on purpose:
 `Config.SessionkeyConfig` is empty, and `DeviceUIConfig` lives in a third file,
 `device_ui.proto`, so surfacing device-UI settings later is additional annotation scope
@@ -261,7 +261,7 @@ can be reviewed without the data on top of it. Both are open and fully green as 
 | PR | Carries |
 |---|---|
 | [#952](https://github.com/meshtastic/protobufs/pull/952) | `field_metadata.proto` with both extensions, the Go and Swift generators, the byte-identical parity harness, localized string emission, the three fixes in D3. Five worked-example annotations, no bulk data. |
-| [#1081](https://github.com/meshtastic/protobufs/pull/1081) | The annotations: 150 fields, 122 enum values. Based on #952's branch; retargets to `master` when #952 merges. |
+| [#1081](https://github.com/meshtastic/protobufs/pull/1081) | The annotations: 155 fields, 122 enum values. Based on #952's branch; retargets to `master` when #952 merges. |
 
 The annotations went into #952 first and were split out afterwards — they are the data, not
 the mechanism, and 262 lines of English on top of a generator change makes both harder to
@@ -278,13 +278,13 @@ mechanically from the strings the app already carries: `RegionCode` 36, `Serial_
 each app enum's raw value; names were not used for matching, since the app spells them
 differently (`degrees0` vs `DEGREES_0`, `txtmsg` vs `TEXTMSG`).
 
-*Fields — done.* 150 fields across 24 messages carry `label` and `description`, seeded from
+*Fields — done.* 155 fields across 24 messages carry `label` and `description`, seeded from
 the config views. Nothing in a view says which proto field a control edits, so the link came
 from the save closure: `var lc = Config.LoRaConfig()` names the message,
 `lc.hopLimit = UInt32(hopLimit)` ties the proto property to a `@State` var, and
 `Picker("Number of hops", selection: $hopLimit)` supplies the label.
 
-**21 fields are deliberately unannotated**, and they are the exemption list FR-015 needs:
+**16 fields are deliberately unannotated**, and they are the exemption list FR-015 needs:
 
 - *Interpolated labels* — `Stepper(txPower == 0 ? "Max Transmit Power" : "\(txPower)dBm Transmit Power", …)`
   has no stable literal. Also `ls_secs`, `min_wake_secs`, the RGB values in

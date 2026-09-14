@@ -3,7 +3,7 @@
 One-time scaffolding used to lift this app's English display strings into the Meshtastic
 schema, so `(meshtastic.field_metadata)` and `(meshtastic.enum_value_metadata)` become the
 source of truth instead of switch statements here. Produced
-[meshtastic/protobufs#1081](https://github.com/meshtastic/protobufs/pull/1081) — 150 fields
+[meshtastic/protobufs#1081](https://github.com/meshtastic/protobufs/pull/1081) — 155 fields
 and 122 enum values.
 
 Kept in the repository so that annotation diff can be re-run and checked rather than read
@@ -57,7 +57,7 @@ protoc-gen-swift's naming rules.
 ## What they deliberately skip
 
 Both seeders report what they could not match rather than guessing. As of the run that
-produced #1081 that was 21 fields, in four groups: fields with no control at all
+produced #1081 that was 16 fields: fields with no control at all
 (`ls_secs`, `private_key`, `admin_key`, `ipv4_config`), several fields sharing one control
 (AmbientLighting `red`/`green`/`blue`/`current` behind a single `ColorPicker`), one
 interpolated label (`"\(txPower)dBm Transmit Power"`), and `position_flags`, whose ten
