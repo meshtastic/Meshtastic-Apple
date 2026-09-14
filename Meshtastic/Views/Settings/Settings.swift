@@ -623,6 +623,15 @@ struct Settings: View {
 		) {
 			let node = nodeSnapshot(for: preferredNodeNum)
 			List {
+				if isSearching {
+					// Results replace the whole list, not just the config sections.
+					// Leaving the standalone links and the node picker above them
+					// pushed results off the top of the screen and read as broken.
+					SettingsSearchResultsView(
+						results: searchResults,
+						docs: DocumentationSearch.search(searchText)
+					)
+				} else {
 				NavigationLink(value: SettingsNavigationState.about) {
 					Label {
 						Text("About Meshtastic")
@@ -751,17 +760,14 @@ struct Settings: View {
 							}
 						}
 					}
-					if isSearching {
-						SettingsSearchResultsView(results: searchResults, docs: DocumentationSearch.search(searchText))
-					} else {
-						radioConfigurationSection
-						deviceConfigurationSection
-						moduleConfigurationSection
-						loggingSection
-						if showsDevelopersSection {
-							developersSection
-						}
+					radioConfigurationSection
+					deviceConfigurationSection
+					moduleConfigurationSection
+					loggingSection
+					if showsDevelopersSection {
+						developersSection
 					}
+				}
 				}
 			}
 			.searchable(
