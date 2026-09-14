@@ -31,8 +31,14 @@ enum OfflineMapDetailLevel: String, CaseIterable, Identifiable {
 
 	var label: String {
 		switch self {
-		case .standard: return String(localized: "Standard")
-		case .high: return String(localized: "High detail")
+		// Explicit key: "Standard" is also a map style (MeshMapTypes, MapLayer), and
+		// one translation cannot serve both senses in languages that inflect.
+		case .standard: return String(localized: "offlineMap.detail.standard",
+		                              defaultValue: "Standard",
+		                              comment: "Detail level for an offline map download; the other level is \"High detail\".")
+		case .high: return String(localized: "offlineMap.detail.high",
+		                          defaultValue: "High detail",
+		                          comment: "Detail level for an offline map download; the other level is \"Standard\".")
 		}
 	}
 }

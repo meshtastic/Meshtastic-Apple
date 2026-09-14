@@ -19,26 +19,26 @@ enum SupportLevel: Int, CaseIterable, Identifiable {
 	var name: String {
 		switch self {
 		case .discontinued:
-			return "Discontinued".localized
+			return String(localized: "Discontinued", comment: "SupportLevel.name")
 		case .flagship:
-			return "Flagship".localized
+			return String(localized: "Flagship", comment: "SupportLevel.name")
 		case .niche:
-			return "Niche".localized
+			return String(localized: "Niche", comment: "SupportLevel.name")
 		case .legacy:
-			return "Legacy".localized
+			return String(localized: "Legacy", comment: "SupportLevel.name")
 		}
 	}
 
 	var description: String {
 		switch self {
 		case .discontinued:
-			return "This device is no longer supported and does not receive firmware updates.".localized
+			return String(localized: "This device is no longer supported and does not receive firmware updates.", comment: "SupportLevel.description")
 		case .flagship:
-			return "Recommended device with full feature support and active development.".localized
+			return String(localized: "Recommended device with full feature support and active development.", comment: "SupportLevel.description")
 		case .niche:
-			return "Supported niche device with active firmware updates and a specialized form factor.".localized
+			return String(localized: "Supported niche device with active firmware updates and a specialized form factor.", comment: "SupportLevel.description")
 		case .legacy:
-			return "Older or legacy device that still receives firmware updates but may lack some features.".localized
+			return String(localized: "Older or legacy device that still receives firmware updates but may lack some features.", comment: "SupportLevel.description")
 		}
 	}
 
