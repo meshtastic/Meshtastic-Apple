@@ -817,7 +817,7 @@ enum CodingRates {
 	static func description(for codingRate: Int, modemPreset: ModemPresets?) -> String {
 		if codingRate == 0 {
 			let defaultCodingRate = modemPreset?.defaultCodingRate ?? ModemPresets.longFast.defaultCodingRate
-			return String.localizedStringWithFormat("Preset Default (4/%d)".localized, defaultCodingRate)
+			return String.localizedStringWithFormat(String(localized: "Preset Default (4/%d)", comment: "CodingRates.description"), defaultCodingRate)
 		}
 		return "4/\(codingRate)"
 	}
