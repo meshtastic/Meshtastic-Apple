@@ -89,7 +89,8 @@ Meshtastic/
 │   ├── FieldMetadataRegistry.swift      # NEW, generated — not hand-edited
 │   └── Search/
 │       ├── SettingsSearchEntry.swift    # NEW: entry, FieldIdentity, list section
-│       ├── SettingsSearchIndex.swift    # NEW: registry-backed entries + curated remainder
+│       ├── SettingsSearchIndex.swift    # NEW: joins the two halves below
+│       ├── SettingsSearchCatalogue.swift # NEW: ~68 curated app-level entries (FR-008a)
 │       └── SettingsSearchEngine.swift   # NEW: matching + field-weighted ranking
 ├── Views/Settings/
 │   ├── Settings.swift                   # extended: .searchable, filtered sections in place

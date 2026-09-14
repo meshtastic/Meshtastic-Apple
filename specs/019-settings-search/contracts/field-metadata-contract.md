@@ -40,7 +40,8 @@ collide with the enum case of that name.
    key on tag rather than on any of the four diverging spellings of a field's name.
 3. **`deprecated` mirrors the standard option.** The generators populate it from
    `[deprecated = true]`; setting it inside the annotation is a generation-time error. The
-   app treats it as authoritative and hides those settings from results.
+   app treats it as authoritative, hiding those settings from results unless the connected
+   radio currently holds the deprecated value — see spec FR-012c.
 4. **Labels are unique within a type.** Generation fails if two fields of one message, or two
    values of one enum, carry the same label, so the index can rely on `(destination, label)`
    distinguishing entries on the same screen. Across types they may repeat.

@@ -117,6 +117,9 @@ result is listed, visibly de-emphasised, with an explanation.
 - A module excluded on the connected node, or requiring newer firmware, is absent from the Settings
   list but still present in the index — the index is static while the list is node-dependent.
 - A managed radio shows no configuration sections; search behaves as it does when disconnected.
+- The `DIY` tag in `DeviceHardware.json` marks a product line, not how a particular unit was
+  assembled. A hand-wired board reporting a commercial hardware model is tagged as that model, so
+  FR-012a will hide its GPIO settings from search; they remain reachable by opening the screen.
 - Queries shorter than two characters, or consisting only of punctuation, return nothing rather than
   everything.
 - A term matching many entries must order them predictably, including when scores tie.
@@ -156,6 +159,13 @@ result is listed, visibly de-emphasised, with an explanation.
 - **FR-007**: Every indexed string MUST appear in `Localizable.xcstrings` and MUST render in the
   user's language. Keywords MUST match against both the user's language and the English source, so a
   term learned from English documentation still finds its setting.
+- **FR-008a**: The curated catalogue MUST be a single Swift file declaring entries in the same shape
+  as registry-backed ones, with `String(localized:)` text and no field identity. One file rather than
+  declarations beside each view, so that what is indexed can be read in one place rather than
+  assembled from twenty; and hand-written rather than generated, because these controls have no
+  schema behind them, so a generated file would itself be the source of truth with nothing enforcing
+  regeneration. Roughly 68 controls qualify — `AppSettings` alone has 18, plus Channels, Routes,
+  Tools, App Data, About and the icon picker.
 - **FR-008**: Settings with no protobuf field behind them MUST be covered by a curated catalogue, and
   a test MUST fail when an entry names a destination that does not exist or a label that no longer
   appears in the screen it claims. Controls with no static label MUST be listed as explicit,
@@ -170,6 +180,20 @@ result is listed, visibly de-emphasised, with an explanation.
   what a user expects first, regardless of how many keywords a rival entry carries.
 - **FR-012**: Results whose screen requires a connected radio MUST remain visible while disconnected,
   visually de-emphasised and labelled as requiring a radio, and MUST still navigate.
+- **FR-012a**: Results for fields marked `diy_only` MUST be hidden when the connected radio's
+  hardware model is not tagged `DIY` in `DeviceHardware.json`. Only six models carry that tag
+  (`DIY_V1`, `HYDRA`, `DR_DEV`, `RPI_PICO`, `NRF52_PROMICRO_DIY`), so on a commercial board these
+  settings do not appear at all. When no radio is connected the hardware is unknown and they MUST be
+  shown, dimmed as FR-012 requires, rather than hidden on an assumption.
+- **FR-012b**: `admin_only` is not device-dependent, so hiding it would make those settings
+  permanently unfindable. Results for fields marked `admin_only` MUST be shown, de-emphasised in the
+  same way as FR-012's disconnected results, with the reason given.
+- **FR-012c**: Entries whose field or enum value is marked `deprecated` MUST be hidden unless the
+  connected radio currently holds that value, in which case they MUST be shown and marked
+  deprecated. This mirrors the rule the app already applies at `DeviceConfig.swift:410`
+  (`allCases.filter { !$0.isDeprecated || $0.rawValue == deviceRole }`): a node running `REPEATER`
+  can still find and migrate off it, while nobody is offered it afresh. Nine configuration fields
+  and seven enum values are deprecated upstream.
 - **FR-013**: Navigation MUST route through the existing settings navigation state so deep links and
   search results share one path. Selecting a result MUST open the screen holding that control and
   nothing further — no scrolling to or highlighting of the individual control, which would require
@@ -288,6 +312,18 @@ package, since a SwiftPM package has no string catalog. See [research.md](./rese
   `coding_rate`, `channel_num`, the Audio I2S pins, the PaxCounter thresholds) and five annotated by
   hand (`tx_power`, `red`, `green`, `blue`, `current`). The remaining 16 exemptions are fields with
   no control at all, which are correctly absent from search.
+- Q: Where do the app-level entries live, given they have no schema? → A: A single curated Swift
+  file, same entry shape, `String(localized:)` text, `field: nil`. Not declarations beside each view,
+  which would scatter the index; not generated, since with no schema behind them the generated file
+  would be the source of truth and nothing would enforce regenerating it.
+- Q: Should deprecated settings appear in results? → A: Mirror the app's existing rule rather than
+  the blanket hide the contract assumed — hidden unless the connected radio currently holds that
+  value, then shown and marked deprecated, so the migration path stays discoverable.
+- Q: How should `diy_only` and `admin_only` affect results, given the app has no direct signal for
+  how a board was built? → A: Hide `diy_only` results unless the connected hardware model is
+  `DIY`-tagged in `DeviceHardware.json`; show them when disconnected, since the hardware is unknown.
+  `admin_only` is shown de-emphasised rather than hidden, because it marks a class of setting rather
+  than a class of device and hiding it would make those settings unfindable.
 - Q: SC-002 required every entry to carry a keyword or description, which 248 of 318 entries do not.
   How is that resolved? → A: Make the criterion match reality. Not everything will have keywords.
   Coverage stays enforced by FR-015 against the protobuf source; findability moves to a corpus of

@@ -83,6 +83,14 @@ An entry plus what the match was worth. Not stored; produced per keystroke.
 | `entry` | `SettingsSearchEntry` | |
 | `score` | `Int` | Field-weighted per FR-011 |
 | `isAvailable` | `Bool` | False when the entry needs a radio and none is connected |
+| `visibility` | `Visibility` | `.normal`, `.deEmphasised(reason)`, or `.hidden` |
+
+`visibility` is computed per query from connection and node state, not baked into the index,
+which stays static. It is `.hidden` for a `diy_only` entry on non-DIY hardware (FR-012a) and
+for a deprecated entry the radio does not currently hold (FR-012c); `.deEmphasised` when a
+radio is needed and none is connected, when the field is `admin_only`, or when a deprecated
+value is in use. Three rules, one mechanism, and nothing disappears without a reason the row
+can state.
 
 Weights, highest first: exact label match, label prefix, keyword match, then subtitle or
 option-value match. Ties break by `listSection` order, then by `label`, so the order is
