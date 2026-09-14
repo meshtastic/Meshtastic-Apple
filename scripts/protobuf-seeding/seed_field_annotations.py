@@ -225,12 +225,33 @@ def main() -> None:
                     continue
                 proto_field, number, full = fm
 
-                # Prefer a control bound to a variable the save closure actually reads.
+                # Prefer a control bound to a variable the save closure actually reads -
+                # but among those, the one whose name best matches the proto field, not
+                # simply the first. A save line often gates on a screen-level flag:
+                #
+                #   tmc.positionMinIntervalSecs =
+                #       UInt32(enabled && positionDedupEnabled ? positionMinInterval... : 0)
+                #
+                # `enabled` comes first and has a control labelled "Enabled", so taking
+                # the first match labels five different settings "Enabled".
+                target = norm(proto_field)
+
+                def affinity(ident: str) -> int:
+                    n = norm(ident)
+                    if n == target:
+                        return 3
+                    if target.startswith(n) or n.startswith(target):
+                        return 2
+                    return 1 if n in target or target in n else 0
+
                 entry = None
-                for ident in re.findall(r"\b(\w+)\b", rhs):
-                    if ident in ctrl and ctrl[ident].get("label"):
-                        entry = dict(ctrl[ident])
-                        break
+                candidates = [
+                    i for i in dict.fromkeys(re.findall(r"\b(\w+)\b", rhs))
+                    if i in ctrl and ctrl[i].get("label")
+                ]
+                if candidates:
+                    best = max(candidates, key=affinity)
+                    entry = dict(ctrl[best])
                 # Otherwise fall back to a control named after the proto property. The
                 # save closure often reads through a local (`lc.region = savedRegion...`)
                 # while the control still binds `$region`.
