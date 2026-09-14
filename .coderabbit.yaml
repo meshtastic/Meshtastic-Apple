@@ -13,10 +13,10 @@ reviews:
   auto_review:
     enabled: true
     drafts: false
-    # Review once when the PR goes ready, then on demand via `@coderabbitai review`.
-    # Re-reviewing every push turns multi-commit PRs into many review rounds, because
-    # each fix commit reopens a full pass. Batch the fixes, push, then ask for one re-review.
-    auto_incremental_review: false
+    # Review each push incrementally. With this off, a push got no review at all and the
+    # only way to re-review was `@coderabbitai full review`, which re-reads the whole diff
+    # and surfaces new findings on unchanged lines every round.
+    auto_incremental_review: true
     ignore_usernames:
       # Workflow-authored PRs (device SVG/hardware syncs, design-standards syncs,
       # docs bundles) — machine-generated content, nothing to review.
