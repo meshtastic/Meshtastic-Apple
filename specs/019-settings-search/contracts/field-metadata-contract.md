@@ -41,7 +41,10 @@ collide with the enum case of that name.
 3. **`deprecated` mirrors the standard option.** The generators populate it from
    `[deprecated = true]`; setting it inside the annotation is a generation-time error. The
    app treats it as authoritative and hides those settings from results.
-4. **Absence is not a signal.** A field with no annotation produces no registry entry.
+4. **Labels are unique within a type.** Generation fails if two fields of one message, or two
+   values of one enum, carry the same label, so the index can rely on `(destination, label)`
+   distinguishing entries on the same screen. Across types they may repeat.
+5. **Absence is not a signal.** A field with no annotation produces no registry entry.
    `get` returning `nil` means "nothing was said", never "not DIY-only" or "not deprecated".
 
 ## What the app must not assume

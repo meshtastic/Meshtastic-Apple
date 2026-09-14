@@ -32,8 +32,8 @@ says what a setting is called, and every client reads it.
 
 | | Status |
 |---|---|
-| Schema and generators (`meshtastic/protobufs#952`) | **Done** — all checks green |
-| Annotations, 155 fields + 122 enum values (`#1081`) | **Done** — all checks green, based on #952 |
+| Schema and generators (`meshtastic/protobufs#952`) | Open, all checks green |
+| Annotations, 155 fields + 122 enum values (`#1081`) | Open, all checks green; review comments addressed, awaiting re-review |
 | String catalog migration (FR-016) | Not started |
 | Field-metadata wiring into the app | Not started |
 | Search itself | Not started |
@@ -272,6 +272,17 @@ permanently English. Fixed in meshtastic/protobufs#952 (`20fadc6`): both generat
 `String(localized:defaultValue:comment:)` keyed by the field's full proto name. That work also
 required the registry be generated into the app target rather than the `MeshtasticProtobufs`
 package, since a SwiftPM package has no string catalog. See [research.md](./research.md) D1 to D3.
+
+
+### Session 2026-09-13 (post-upstream)
+
+- Q: Are the fields that annotation skipped still findable in search, or absent from it? →
+  A: The question dissolved — nothing with a control is skipped any more. A control whose label the
+  app interpolates, or whose binding the extractor could not follow, gets a hand-written annotation
+  instead of an exemption. Twelve fields were recovered by fixing the extractor (`bandwidth`,
+  `coding_rate`, `channel_num`, the Audio I2S pins, the PaxCounter thresholds) and five annotated by
+  hand (`tx_power`, `red`, `green`, `blue`, `current`). The remaining 16 exemptions are fields with
+  no control at all, which are correctly absent from search.
 
 ## Dependencies
 

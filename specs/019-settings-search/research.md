@@ -96,7 +96,7 @@ one, so this does not bite.
   asymmetry is acceptable but must be stated, because the existing pin is load-bearing
   and a reader will assume it covers both.
 
-## D3. Three generator bugs found and fixed upstream
+## D3. Three generator bugs fixed, and a guard added
 
 Adding attributes in D1 meant exercising paths #952 had never run. All three were latent,
 because every annotation the PR shipped with sets exactly one attribute and has no digit in
@@ -139,6 +139,15 @@ calls swift-protobuf, while the Go port had to guess. `toLowerCamelCase` is now 
 `swiftCamelCase` for the Swift target only — TypeScript keeps the naive rule it had — with
 a test whose expected values are copied from real generated output rather than from the
 implementation.
+
+**A fourth change, not a bug: duplicate labels are now rejected.** Review on #1081 found five
+`TrafficManagementConfig` fields annotated `label: "Enabled"` — the seeder had matched a
+screen-level gate flag instead of the field's own control. The annotation was present and
+syntactically valid, so nothing downstream could catch it, and a label is the source string
+every client translates. Both generators now fail generation when two fields of one message,
+or two values of one enum, share a label. Scoped per type, since "Enabled" once each on
+`MQTTConfig` and `SerialConfig` is fine. A hard error rather than a CI check, matching the
+scalar-only and generator-managed-`deprecated` guards.
 
 Two smaller divergences fixed alongside: the Swift plugin mapped integer kinds to
 `Int32`/`UInt32`/`UInt64` and float to `Float` where the Go plugin used `Int64` and
