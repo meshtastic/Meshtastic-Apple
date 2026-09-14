@@ -131,9 +131,9 @@ one-change-per-PR rule:
   on #952's branch so the mechanism can be reviewed on its own. Retargets to `master` once
   #952 merges.
   Between them: 122 enum values across 13 enums and 155 fields across 24 messages, seeded
-  from strings the app already carries. 16 fields are deliberately unannotated - fields with no
-  control, and controls whose label the app renders from a value - and form the exemption
-  list FR-015a names. `keywords` is unseeded and can be added by hand
+  from strings the app already carries. 37 fields are deliberately unannotated - no control at all, not yet
+  offered by this client, or a label the app renders from a value - and form the
+  exemption list FR-015a names. `keywords` is unseeded and can be added by hand
   where a term is genuinely absent from the label.
 
 **This repo**

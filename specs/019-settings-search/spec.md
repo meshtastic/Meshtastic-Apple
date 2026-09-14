@@ -220,16 +220,23 @@ result is listed, visibly de-emphasised, with an explanation.
   simply absent from search, which no test that only validates existing entries can detect. The
   authoritative list of fields is the protobuf source text, not the generated registry, which holds
   only the fields that carry an annotation.
-- **FR-015a**: The exemption list is the 16 fields with no label to give, in two groups: fields with
-  no control at all, whether saved-but-unexposed (`ls_secs`, `min_wake_secs`,
-  `wait_bluetooth_secs`) or not user-facing (`private_key`, `admin_key`, `broadcast_targets`,
-  `ipv4_config`); and controls whose label the app renders from a value rather than a literal, such
-  as `position_flags`, whose ten toggles take their labels from the `PositionFlags` enum values
-  instead. Adding to this list MUST require stating which group a field belongs to. Two things are
-  explicitly NOT reasons to exempt: that the extractor could not find a label — a control in a
-  nested view or behind a computed binding still has one — and that the on-screen label is
-  interpolated. Where the interface renders a label from a value, the schema MUST carry the stable
-  name instead: `tx_power` is "Transmit Power" even though its stepper reads
+- **FR-015a**: The exemption list is the fields with no label to give, currently **37**, in three
+  groups. Adding to it MUST require stating which group a field belongs to.
+  1. *No control at all*, whether saved-but-unexposed (`ls_secs`, `min_wake_secs`,
+     `wait_bluetooth_secs`, `frequency_offset`, `override_duty_cycle`) or not user-facing
+     (`private_key`, `admin_key`, `broadcast_targets`, `ipv4_config`).
+  2. *Not yet offered by this client* — `buzzer_mode`, `ipv6_enabled`, `use_long_node_name`, the
+     health telemetry fields and others the firmware has and the app does not. These are the reason
+     the list is 37 rather than 16: the original count only covered fields the seeder examined, and
+     it never saw these because the app has no save path for them. Each should leave the list when
+     the app grows a control, which is the prompt the list exists to give.
+  3. *A label the app renders from a value rather than a literal*, such as `position_flags`, whose
+     ten toggles take their labels from the `PositionFlags` enum values instead.
+
+  Two things are explicitly NOT reasons to exempt: that the extractor could not find a label — a
+  control in a nested view or behind a computed binding still has one — and that the on-screen label
+  is interpolated. Where the interface renders a label from a value, the schema MUST carry the
+  stable name instead: `tx_power` is "Transmit Power" even though its stepper reads
   `"\(txPower)dBm Transmit Power"`, and `red`, `green`, `blue` and `current` are named individually
   even though the app presents them as one colour picker, with keywords so "color" finds them.
 - **FR-016**: Any string the index needs that currently bypasses the string catalog MUST be migrated
@@ -323,8 +330,9 @@ package, since a SwiftPM package has no string catalog. See [research.md](./rese
   app interpolates, or whose binding the extractor could not follow, gets a hand-written annotation
   instead of an exemption. Twelve fields were recovered by fixing the extractor (`bandwidth`,
   `coding_rate`, `channel_num`, the Audio I2S pins, the PaxCounter thresholds) and five annotated by
-  hand (`tx_power`, `red`, `green`, `blue`, `current`). The remaining 16 exemptions are fields with
-  no control at all, which are correctly absent from search.
+  hand (`tx_power`, `red`, `green`, `blue`, `current`). The exemptions that remain are fields with no
+  control at all, which are correctly absent from search — 37 once the completeness test ran against
+  a real registry and surfaced the firmware settings this client does not offer yet.
 - Q: Where do the app-level entries live, given they have no schema? → A: A single curated Swift
   file, same entry shape, `String(localized:)` text, `field: nil`. Not declarations beside each view,
   which would scatter the index; not generated, since with no schema behind them the generated file
@@ -376,7 +384,7 @@ reviewed in parallel.
   direction. `coding_rate` backs three controls; `json_enabled`, `frequency_offset` and
   `override_duty_cycle` have no control at all. User-interface-only affordances such as "Use Preset"
   and every app-level screen stay curated. There are 221 configuration fields across 29 messages,
-  nine of them already deprecated; 155 are annotated and 16 are exempt under FR-015a.
+  nine of them already deprecated; 155 are annotated and 37 are exempt under FR-015a.
 - `keywords` is annotated only where the label cannot carry the term. It cannot be seeded from the
   app, and generating synonyms mechanically would be guessing; labels and descriptions already hold
   the words a user is most likely to type, and "hops" is inside "Number of hops". It earns its place

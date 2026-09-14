@@ -57,7 +57,7 @@ protoc-gen-swift's naming rules.
 ## What they deliberately skip
 
 Both seeders report what they could not match rather than guessing. As of the run that
-produced #1081 that was 16 fields: fields with no control at all
+produced #1081 that was 37 fields: fields with no control at all
 (`ls_secs`, `private_key`, `admin_key`, `ipv4_config`), several fields sharing one control
 (AmbientLighting `red`/`green`/`blue`/`current` behind a single `ColorPicker`), one
 interpolated label (`"\(txPower)dBm Transmit Power"`), and `position_flags`, whose ten

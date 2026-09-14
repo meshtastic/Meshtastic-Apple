@@ -154,6 +154,36 @@ Two smaller divergences fixed alongside: the Swift plugin mapped integer kinds t
 `Double`, so the two agreed only because bool, double and string are the only types in
 use; and the Swift string escaper did not handle tabs, which the Go one did.
 
+## D3a. Two things the generated registry cannot supply, found while wiring it
+
+Both surfaced only on building the app against a real registry, and both are recorded here because
+a reader of D2 would otherwise assume generation is the whole job.
+
+**The generator emits no imports.** It cannot know which module holds the generated protobuf types —
+that is the consumer's choice — and the file is full of `extension Config { … }`. `gen_protos.sh`
+adds `import MeshtasticProtobufs` after generation.
+
+**Its per-message static accessors break ordinary code across modules.** This one matters:
+
+```swift
+loraConfig.modemPreset = .shortFast
+// error: static member 'modemPreset' cannot be used on instance of type 'Config.LoRaConfig'
+```
+
+A `public static var` added by an extension in module B shadows the *instance* property of a struct
+from module A, for writes. Reads resolve correctly. In one file it compiles; across modules it does
+not — and D2 forces our layout to be cross-module, since the registry must live in the app target
+for its strings to be extracted.
+
+The plugin's README claims the two coexist, citing `config.rxGpio` against
+`Config.PositionConfig.rxGpio`. That holds for reading and was evidently not tested for assignment.
+
+Reported upstream with a two-module repro. Until it is fixed,
+`scripts/strip-fieldmeta-message-accessors.py` removes those blocks after generation and the index
+uses `FieldMetadataRegistry.get(_:tag:)`, which is what it needs anyway. Enum accessors are kept —
+`public var metadata` is an instance member on an enum and shadows nothing. If upstream nests the
+message accessors under a namespace, the script becomes a no-op and should be deleted.
+
 ## D4. Completeness is checked against the `.proto` text, not the registry
 
 **Decision**: The completeness test parses `protobufs/meshtastic/config.proto` and
@@ -189,7 +219,7 @@ estimated "~201 of 269".
 | **Total** | **93** | **Total** | **128** |
 
 Nine of the 221 are already marked `[deprecated = true]` upstream, leaving **212 live
-fields**. Of those, 155 are annotated and 16 are exempt under FR-015a; the rest have no
+fields**. Of those, 155 are annotated and 37 are exempt under FR-015a; the rest have no
 screen. Two messages sit outside the count on purpose:
 `Config.SessionkeyConfig` is empty, and `DeviceUIConfig` lives in a third file,
 `device_ui.proto`, so surfacing device-UI settings later is additional annotation scope
@@ -222,6 +252,13 @@ controls, in both directions, so a strict bijection would be wrong:
   `@State` and no save assignment; `RemoteHardwarePin`'s three fields have no screen.
 - *Read-but-never-written.* `gps_enabled` is loaded for a migration heuristic and
   deliberately never saved (`PositionConfig.swift:312-314`). Search must not offer it.
+
+**The exemption list is 37, not 16.** The smaller figure counted only fields the seeder examined.
+Running the completeness test against a real registry surfaced 21 more — `buzzer_mode`,
+`ipv6_enabled`, `use_long_node_name`, the health telemetry fields — which the seeder never saw
+because the app has no save path for them. Each was checked for a control and has none: they are
+firmware settings this client does not offer yet. That is a third exemption group, and the most
+useful one, since a field leaving it is the signal that the app has caught up.
 
 **One-to-many is mostly solved by annotating enum values, not fields.** A field carries
 one `label`, so it cannot name ten toggles — but the ten toggles behind `position_flags`
@@ -293,7 +330,7 @@ from the save closure: `var lc = Config.LoRaConfig()` names the message,
 `lc.hopLimit = UInt32(hopLimit)` ties the proto property to a `@State` var, and
 `Picker("Number of hops", selection: $hopLimit)` supplies the label.
 
-**16 fields are deliberately unannotated**, and they are the exemption list FR-015 needs:
+**37 fields are deliberately unannotated**, and they are the exemption list FR-015 needs:
 
 - *Interpolated labels* — `Stepper(txPower == 0 ? "Max Transmit Power" : "\(txPower)dBm Transmit Power", …)`
   has no stable literal. Also `ls_secs`, `min_wake_secs`, the RGB values in
