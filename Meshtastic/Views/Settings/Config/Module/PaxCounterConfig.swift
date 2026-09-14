@@ -76,7 +76,7 @@ struct PaxCounterConfig: View {
 				Text("Options")
 			}
 		}
-		.disabled(!accessoryManager.isConnected || node?.powerConfig == nil)
+		.disabled(!accessoryManager.isConnected || node?.paxCounterConfig == nil)
 		.safeAreaInset(edge: .bottom, alignment: .center) {
 			HStack(spacing: 0) {
 			SaveConfigButton(node: node, hasChanges: $hasChanges) {

@@ -583,24 +583,6 @@ struct Settings: View {
 		}
 	}
 
-	var takSection: some View {
-		Section(header: Text("TAK")) {
-			// Routes to the same combined TAK Server page reached via the
-			// Module Configuration section above. Both entry points are kept
-			// because users naturally look in both places when configuring
-			// TAK — the Module Config link discovers the feature alongside
-			// other module configs, and the dedicated TAK section advertises
-			// the TAK Server functionality at a glance.
-			NavigationLink(value: SettingsNavigationState.tak) {
-				Label {
-					Text("TAK Server")
-				} icon: {
-					Image(systemName: "target")
-				}
-			}
-		}
-	}
-
 	var body: some View {
 		NavigationStack(
 			path: $router.settingsPath
