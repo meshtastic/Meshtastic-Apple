@@ -16,7 +16,7 @@ Show roughly the last 12 months of changes; archive entries older than a year by
 
 **Sep 2026** — [Firmware Updates](firmware.md) — Factory Erase now uses the OTAFIX bootloader's own erase when the radio's bootloader supports it: one file for every board, and the installed firmware is kept, so the radio boots factory-fresh instead of needing firmware reinstalled. Older bootloaders are unchanged.
 
-**Sep 2026** — [Firmware Updates](firmware.md) — The bootloader board list and erase files are now fetched from meshtastic.org instead of being built into the app, so newly supported boards work without an app update. Five more boards are supported as a result.
+**Sep 2026** — [Firmware Updates](firmware.md) — The bootloader board list and erase files are now fetched from meshtastic.org in the background rather than being fixed at each app release, so newly supported boards work without an app update. The app still ships with a copy and falls back to it when offline. Five more boards are supported as a result.
 
 **Aug 2026** — [Settings](settings.md) — New Waypoints notification setting: received-waypoint alerts can be switched off on their own. Reaction alerts follow the existing message notification settings.
 

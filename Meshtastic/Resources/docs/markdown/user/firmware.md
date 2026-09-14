@@ -50,7 +50,7 @@ Radios with an nRF52 processor can install Meshtastic's OTAFIX bootloader, which
 
 1. Tap **Upgrade Bootloader** and follow the steps: reboot the radio into DFU mode (or double-press its reset button) and connect it to this device with a USB cable. The radio appears as a USB drive.
 2. Choose the radio's drive in the file picker. The app reads the drive's `INFO_UF2.TXT` file to identify the board — the board on the drive decides which image is installed, so the wrong file can never be written to your hardware.
-3. Tap **Install Bootloader Update**. The app downloads the image for your board, verifies it against a pinned checksum, and writes it to the drive. The radio installs the bootloader and reboots itself.
+3. Tap **Install Bootloader Update**. The app downloads the image for your board, checks it against the checksum published for that board, and writes it to the drive. The radio installs the bootloader and reboots itself.
 
 If the drive is not a bootloader drive, the board is not one OTAFIX supports, or the download does not match its checksum, nothing is written.
 
@@ -62,7 +62,7 @@ Factory erase wipes an nRF52 radio from its bootloader drive — the owner, chan
 
 1. Tap **Factory Erase** in the Maintenance section, put the radio in DFU mode (double-press its reset button if the app cannot reach it), and connect it by USB.
 2. Choose the radio's drive in the file picker. The app reads the drive's `INFO_UF2.TXT` to choose the erase file, so the wrong file can never be written.
-3. Confirm the erase. The app downloads the file, verifies it against a pinned checksum and against what the drive reported, and writes it to the drive. The radio erases itself.
+3. Confirm the erase. The app downloads the file, checks it against its published checksum and against what the drive reported, and writes it to the drive. The radio erases itself.
 
 What happens next depends on the bootloader. A recent OTAFIX bootloader erases its own settings itself and keeps the installed firmware: the radio comes back as a bootloader drive for a few seconds, and unplugging it starts the firmware as a brand-new device. On older bootloaders only the SoftDevice and bootloader remain, so install firmware next from the Firmware Updates screen. Nothing is restored automatically either way.
 

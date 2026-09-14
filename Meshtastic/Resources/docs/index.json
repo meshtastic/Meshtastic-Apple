@@ -134,8 +134,8 @@
             "bootloader",
             "meshtastic",
             "from",
-            "file",
             "board",
+            "file",
             "version",
             "target",
             "tap",
@@ -153,7 +153,7 @@
             "works",
             "transfer"
         ],
-        "charCount": 8751
+        "charCount": 8772
     },
     {
         "id": "getting-started",
@@ -675,8 +675,8 @@
             "nodes",
             "messages",
             "firmware",
-            "node",
             "app",
+            "node",
             "mesh",
             "map",
             "page",
@@ -699,7 +699,7 @@
             "only",
             "meshtastic"
         ],
-        "charCount": 7986
+        "charCount": 8079
     },
     {
         "id": "adding-features",
