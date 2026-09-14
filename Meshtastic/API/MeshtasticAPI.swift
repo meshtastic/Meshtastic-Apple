@@ -189,6 +189,7 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 
 	static let nightlyReleaseNotesEndpoint = URL(string: "https://raw.githubusercontent.com/meshtastic/meshtastic.github.io/master/firmware-nightly/release_notes.md")!
 	static let eventFirmwareURLEndpoint = URL(string: "https://api.meshtastic.org/resource/eventFirmware")!
+	static let maintenanceUf2URLEndpoint = URL(string: "https://api.meshtastic.org/resource/maintenanceUf2")!
 
 	/// How long a completed device image + msh.to link pass stays fresh before another network pass
 	/// is allowed. `processImage` revalidates every image, so running the pass on every reconnect is
@@ -246,6 +247,9 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 			}
 			Task.detached(priority: .utility) {
 				await self.refreshEventFirmwareAPIData()
+			}
+			Task.detached(priority: .utility) {
+				await self.refreshMaintenanceUf2APIData()
 			}
 		}
 	}
@@ -1249,5 +1253,61 @@ extension MeshtasticAPI {
 	static func setLastETag(_ eTag: String?, for key: String) {
 		guard let eTag else { return }
 		UserDefaults.standard.set(eTag, forKey: "api.etag.\(key)")
+	}
+}
+
+// MARK: - Maintenance UF2 Manifest (OTAFIX bootloader map)
+
+enum MaintenanceUf2RefreshPolicy {
+
+	/// Same interval class as `EventFirmwareRefreshPolicy` — this data "only changes via a
+	/// committed edit + redeploy" per the api repo's own doc comment, so there is nothing to gain
+	/// from checking more often.
+	static let minimumAttemptInterval: TimeInterval = 6 * 60 * 60
+
+	static func shouldRefresh(lastAttempt: Date, now: Date = Date()) -> Bool {
+		let elapsed = now.timeIntervalSince(lastAttempt)
+		return elapsed < 0 || elapsed >= minimumAttemptInterval
+	}
+}
+
+extension MeshtasticAPI {
+
+	/// Silently refresh the OTAFIX bootloader manifest from the live API.
+	///
+	/// Unlike `refreshDevicesAPIData`/`refreshEventFirmwareAPIData`, this has no SwiftData entity
+	/// to write — `MaintenanceUf2ManifestStore` (see MaintenanceUF2.swift) is an in-memory, lock-protected
+	/// cache, since nothing in the UI observes this data via `@Query`. `guard container != nil`
+	/// mirrors every other refresh's no-op-in-seed/test-mode contract even though this function
+	/// never touches the container itself, so `MeshtasticAPIBundledSeedTests`' "no network in seed
+	/// mode" assertion still holds for this resource too.
+	///
+	/// Same fail-safe shape as the other refreshes: a network failure, non-2xx, or decode failure
+	/// is a no-op that leaves the store exactly as it was, never destroying an already-loaded
+	/// manifest over a bad response.
+	func refreshMaintenanceUf2APIData() async {
+		guard container != nil else { return }
+		let attemptDate = Date()
+		guard MaintenanceUf2RefreshPolicy.shouldRefresh(
+			lastAttempt: UserDefaults.lastMaintenanceUf2APIAttempt,
+			now: attemptDate
+		) else {
+			return
+		}
+		UserDefaults.lastMaintenanceUf2APIAttempt = attemptDate
+
+		guard let (data, response) = try? await URLSession.shared.data(from: Self.maintenanceUf2URLEndpoint),
+			  let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode),
+			  !data.isEmpty else {
+			Logger.services.warning("maintenanceUf2 API fetch failed or empty — keeping current manifest")
+			return
+		}
+
+		guard MaintenanceUf2ManifestStore.shared.apply(rawBytes: data) else {
+			// MaintenanceUf2ManifestStore.apply already logs the decode failure.
+			return
+		}
+		UserDefaults.lastMaintenanceUf2APIUpdate = attemptDate
+		Logger.services.info("Refreshed maintenanceUf2 manifest from API")
 	}
 }
