@@ -24,17 +24,17 @@ alone, and the first two are useful whether or not search ships.
 
 ---
 
-## Phase 1: String catalog migration (PR 1)
+## Phase 1: String catalog migration (PR 1) — [#2489](https://github.com/meshtastic/Meshtastic-Apple/pull/2489)
 
 Independently valuable: these strings are untranslated today whether or not search ships. Must
 land first, because search indexes them.
 
-- [ ] T001 Change `pickerLabel` from `String` to `LocalizedStringKey` in `Meshtastic/Views/Settings/UpdateIntervalPicker.swift` (the stored property and the memberwise init). All 19 call sites pass literals and need no edit; `Picker(pickerLabel, …)` then binds the localizing overload.
-- [ ] T002 [P] Convert `"X".localized` → `String(localized: "X", comment: …)` across the app-only enums in `Meshtastic/Enums/` — `IntervalEnums.swift`, `RouteEnums.swift`, `RoutingError.swift`, `SupportLevel.swift`, `KeyBackupStatus.swift`, `FirmwareEditionEnum.swift`, `MessagingEnums.swift`, `TelemetryEnums.swift`, `LayoutEnums.swift`, `ChannelRoles.swift`, `AppSettingsEnums.swift`. 192 sites; the return type stays `String` so no call site changes.
-- [ ] T003 [P] Fix the two adjacent bugs in `Meshtastic/Enums/DisplayEnums.swift`: `ScreenUnits.description` returns bare `"Metric"`/`"Imperial"` with no localization at all, and line 88 returns `"off".localized.capitalized` where the catalog key is `"Off"` and `.capitalized` is wrong for several locales.
-- [ ] T004 Split the four keys that collide across senses, using explicit keys with `defaultValue:` — `Cancel` in `Meshtastic/Enums/CannedMessagesConfigEnums.swift` (keypad key vs dismiss verb), `All` in `Meshtastic/Enums/DeviceEnums.swift` (rebroadcast mode vs log filter vs VoiceOver hop limit), `Default` in `Meshtastic/Enums/SerialConfigEnums.swift` (baud rate vs log level vs app icon vs no-channel), and generalize the `Standard` comment in `Localizable.xcstrings`, which is offline-map-download specific.
-- [ ] T005 Handle the two non-literal receivers that cannot be converted mechanically: `MapLayer` and `OverlayType` in `Meshtastic/Enums/AppSettingsEnums.swift` both do `self.rawValue.localized`, which the extractor cannot see. Replace with a `switch` over the cases.
-- [ ] T006 Build once in Xcode so the extractor writes the new keys into `Localizable.xcstrings`, then verify the diff is **purely additive** before committing. There is no headless path; the file is 3.1 MB and 1842 keys, and a rebuild that reorders or prunes produces an unreviewable diff.
+- [X] T001 Change `pickerLabel` from `String` to `LocalizedStringKey` in `Meshtastic/Views/Settings/UpdateIntervalPicker.swift` (the stored property and the memberwise init). All 19 call sites pass literals and need no edit; `Picker(pickerLabel, …)` then binds the localizing overload.
+- [X] T002 [P] Convert `"X".localized` → `String(localized: "X", comment: …)` across the app-only enums in `Meshtastic/Enums/` — `IntervalEnums.swift`, `RouteEnums.swift`, `RoutingError.swift`, `SupportLevel.swift`, `KeyBackupStatus.swift`, `FirmwareEditionEnum.swift`, `MessagingEnums.swift`, `TelemetryEnums.swift`, `LayoutEnums.swift`, `ChannelRoles.swift`, `AppSettingsEnums.swift`. 192 sites; the return type stays `String` so no call site changes.
+- [X] T003 [P] Fix the two adjacent bugs in `Meshtastic/Enums/DisplayEnums.swift`: `ScreenUnits.description` returns bare `"Metric"`/`"Imperial"` with no localization at all, and line 88 returns `"off".localized.capitalized` where the catalog key is `"Off"` and `.capitalized` is wrong for several locales.
+- [X] T004 Split the four keys that collide across senses, using explicit keys with `defaultValue:` — `Cancel` in `Meshtastic/Enums/CannedMessagesConfigEnums.swift` (keypad key vs dismiss verb), `All` in `Meshtastic/Enums/DeviceEnums.swift` (rebroadcast mode vs log filter vs VoiceOver hop limit), `Default` in `Meshtastic/Enums/SerialConfigEnums.swift` (baud rate vs log level vs app icon vs no-channel), and generalize the `Standard` comment in `Localizable.xcstrings`, which is offline-map-download specific.
+- [X] T005 Handle the two non-literal receivers that cannot be converted mechanically: `MapLayer` and `OverlayType` in `Meshtastic/Enums/AppSettingsEnums.swift` both do `self.rawValue.localized`, which the extractor cannot see. Replace with a `switch` over the cases.
+- [ ] T006 (blocked on the Xcode GUI — `xcodebuild` emits `.stringsdata` but does not write back) Build once in Xcode so the extractor writes the new keys into `Localizable.xcstrings`, then verify the diff is **purely additive** before committing. There is no headless path; the file is 3.1 MB and 1842 keys, and a rebuild that reorders or prunes produces an unreviewable diff.
 
 **Checkpoint**: new keys present in the catalog, no existing key removed or reordered, app builds.
 
