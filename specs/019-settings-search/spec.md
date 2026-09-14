@@ -30,16 +30,29 @@ says what a setting is called, and every client reads it.
 
 ## Progress
 
+**Upstream** (meshtastic/protobufs)
+
 | | Status |
 |---|---|
-| Schema and generators (`meshtastic/protobufs#952`) | Open, all checks green |
-| Annotations, 155 fields + 122 enum values (`#1081`) | Open, all checks green; review comments addressed, awaiting re-review |
-| String catalog migration (FR-016) | Not started |
-| Field-metadata wiring into the app | Not started |
-| Search itself | Not started |
+| Schema and generators — [#952](https://github.com/meshtastic/protobufs/pull/952) | Open, all checks green |
+| Annotations, 155 fields + 122 enum values — [#1081](https://github.com/meshtastic/protobufs/pull/1081) | Open, approved, all checks green |
 
-Nothing in this repository has changed yet. The upstream work is what the app will build on, and
-it is described in [research.md](./research.md) D1–D5.
+**This repository**
+
+| | Status |
+|---|---|
+| String catalog migration, FR-016 — [#2489](https://github.com/meshtastic/Meshtastic-Apple/pull/2489) | Open, green. 195 strings converted |
+| Two settings bugs found while surveying — [#2490](https://github.com/meshtastic/Meshtastic-Apple/pull/2490) | Open |
+| Field-metadata wiring **and search, US1** — [#2491](https://github.com/meshtastic/Meshtastic-Apple/pull/2491) | Open, green |
+| Documentation results, US2 | Not started |
+| Enum string properties reading the registry (T014/T015) | Deferred — cleanup, not a prerequisite |
+
+The wiring and search are one pull request, not two. Search cannot stand without the registry, and
+this repository does not take stacked pull requests, so they go together against `main`.
+
+One step cannot be automated: `xcodebuild` emits `.stringsdata` but only the Xcode GUI writes back
+to `Localizable.xcstrings`. Opening the project once and committing that diff — checked for being
+purely additive — is a manual step for both #2489 and #2491.
 
 ## User Scenarios & Testing *(mandatory)*
 
