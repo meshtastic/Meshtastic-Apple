@@ -26,6 +26,8 @@ struct SettingsNodeSnapshot: Identifiable, Equatable {
 	let hasTAKConfig: Bool
 	let userLongName: String?
 	let userIsLicensed: Bool
+	/// Hardware model slug, for the DIY check in settings search.
+	let hwModelSlug: String?
 	let userIsPkiEncrypted: Bool
 	let role: Int32?
 	let regionCode: Int?
@@ -46,6 +48,7 @@ struct SettingsNodeSnapshot: Identifiable, Equatable {
 			user.modelContext != nil,
 			!user.isDeleted {
 			userLongName = user.longName
+			hwModelSlug = user.hwModel
 			userIsLicensed = user.isLicensed
 			userIsPkiEncrypted = user.pkiEncrypted
 			let userRole = user.role
@@ -60,6 +63,7 @@ struct SettingsNodeSnapshot: Identifiable, Equatable {
 			}
 		} else {
 			userLongName = nil
+			hwModelSlug = nil
 			userIsLicensed = false
 			userIsPkiEncrypted = false
 			if let deviceConfig = node.deviceConfig,
@@ -138,6 +142,7 @@ struct Settings: View {
 		return node
 	}
 
+	@State private var searchText = ""
 	@State private var selectedNode: Int = 0
 	@State private var preferredNodeNum: Int = 0
 
@@ -583,6 +588,35 @@ struct Settings: View {
 		}
 	}
 
+	private var isSearching: Bool {
+		searchText.trimmingCharacters(in: .whitespacesAndNewlines).count
+			>= SettingsSearchEngine.minimumQueryLength
+	}
+
+	/// Recomputed per keystroke. The index is static; only availability moves.
+	private var searchResults: [SettingsSearchResult] {
+		SettingsSearchEngine.search(
+			searchText,
+			in: SettingsSearchIndex.entries,
+			availability: searchAvailability
+		)
+	}
+
+	private var searchAvailability: SettingsSearchEngine.Availability {
+		SettingsSearchEngine.Availability(
+			isConnected: accessoryManager.isConnected,
+			// The DIY tag marks a product line rather than how a unit was built, so
+			// this is a hint and not a fact. See spec 019 FR-012a.
+			isDIYHardware: connectedHardwareIsDIY,
+			currentValues: []
+		)
+	}
+
+	private var connectedHardwareIsDIY: Bool {
+		guard let node = nodes.first(where: { $0.num == Int64(preferredNodeNum) }) else { return false }
+		return DIYHardware.isDIY(slug: node.hwModelSlug)
+	}
+
 	var body: some View {
 		NavigationStack(
 			path: $router.settingsPath
@@ -717,15 +751,24 @@ struct Settings: View {
 							}
 						}
 					}
-					radioConfigurationSection
-					deviceConfigurationSection
-					moduleConfigurationSection
-					loggingSection
-					if showsDevelopersSection {
-					developersSection
+					if isSearching {
+						SettingsSearchResultsView(results: searchResults, docs: DocumentationSearch.search(searchText))
+					} else {
+						radioConfigurationSection
+						deviceConfigurationSection
+						moduleConfigurationSection
+						loggingSection
+						if showsDevelopersSection {
+							developersSection
+						}
 					}
 				}
 			}
+			.searchable(
+				text: $searchText,
+				placement: .navigationBarDrawer(displayMode: .always),
+				prompt: "Search settings"
+			)
 			.navigationDestination(for: SettingsNavigationState.self) { destination in
 				let node = liveNode(for: preferredNodeNum)
 				let configNode = liveNode(for: selectedNode)
@@ -818,7 +861,9 @@ struct Settings: View {
 					case .localMeshDiscovery:
 						DiscoveryScanView()
 					case .helpDocs:
-						DocBrowserView()
+						// Carries the settings-search query through, so a documentation
+						// result opens filtered. Empty when reached from the list row.
+						DocBrowserView(initialSearch: searchText)
 					case .backupManagement:
 						BackupManagement()
 					}

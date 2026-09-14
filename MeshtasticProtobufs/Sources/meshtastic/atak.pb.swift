@@ -784,7 +784,7 @@ public enum CotType: SwiftProtobuf.Enum, Swift.CaseIterable {
   /// y-: TAKTALK room/membership broadcast. Payload carried via the
   /// TakTalkRoomData typed variant (sender_callsign, room_id, room_name,
   /// participants). The CoT type literally has a trailing dash and no
-  /// second atom — not a typo.
+  /// second atom - not a typo.
   case y // = 126
   case UNRECOGNIZED(Int)
 
@@ -1655,10 +1655,10 @@ public struct AircraftTrack: Sendable {
 /// hundred meters of the anchor has per-vertex deltas in the ±10^4 range.
 /// Under sint32+zigzag those encode as 2 bytes each (tag+varint), versus the
 /// 4 bytes that sfixed32 would always require. At 32 vertices that is ~128
-/// bytes of savings — the difference between fitting under the LoRa MTU or
+/// bytes of savings - the difference between fitting under the LoRa MTU or
 /// not. Absolute coordinates (values ~10^9) would cost sint32 varint 5 bytes
 /// per field, which is why TAKPacketV2's top-level latitude_i / longitude_i
-/// stay sfixed32 — only small values win with sint32.
+/// stay sfixed32 - only small values win with sint32.
 public struct CotGeoPoint: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
@@ -1872,7 +1872,7 @@ public struct DrawnShape: @unchecked Sendable {
 
     ///
     /// u-d-c-e: Ellipse with distinct major/minor axes (same storage as
-    /// Kind_Circle — uses major_cm/minor_cm/angle_deg — but receivers
+    /// Kind_Circle - uses major_cm/minor_cm/angle_deg - but receivers
     /// render it as a non-circular ellipse rather than a round circle).
     case ellipse // = 8
 
@@ -1955,7 +1955,7 @@ public struct DrawnShape: @unchecked Sendable {
     public typealias RawValue = Int
 
     ///
-    /// Unspecified — receiver infers from which color fields are non-zero.
+    /// Unspecified - receiver infers from which color fields are non-zero.
     case unspecified // = 0
 
     ///
@@ -2076,7 +2076,7 @@ public struct Marker: Sendable {
     public typealias RawValue = Int
 
     ///
-    /// Unspecified — fall back to TAKPacketV2.cot_type_id
+    /// Unspecified - fall back to TAKPacketV2.cot_type_id
     case unspecified // = 0
 
     ///
@@ -2199,7 +2199,7 @@ public struct Marker: Sendable {
 ///
 /// Covers CoT type u-rb-a. The anchor position is on
 /// TAKPacketV2.latitude_i/longitude_i; the target endpoint is carried as a
-/// CotGeoPoint — same delta-from-anchor encoding used by DrawnShape.vertices
+/// CotGeoPoint - same delta-from-anchor encoding used by DrawnShape.vertices
 /// so a self-anchored RAB (common case) encodes in zero bytes.
 public struct RangeAndBearing: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
@@ -2579,7 +2579,7 @@ public struct CasevacReport: @unchecked Sendable {
   }
 
   ///
-  /// Primary medline free-text — the single most clinically important line
+  /// Primary medline free-text - the single most clinically important line
   /// on a MEDLINE form (e.g. "2 urgent litter patients, smoke on approach").
   /// MUST be preserved under MTU pressure as long as any casevac is sent.
   public var medlineRemarks: String {
@@ -2589,7 +2589,7 @@ public struct CasevacReport: @unchecked Sendable {
 
   ///
   /// Line 3 (newer ATAK format): patient counts by precedence level.
-  /// Coexists with the enum-style `precedence` field (tag 1) — older ATAK
+  /// Coexists with the enum-style `precedence` field (tag 1) - older ATAK
   /// emits a single enum, newer ATAK emits these counts, and both can be
   /// set simultaneously. Senders populate whichever style(s) the source
   /// XML had; receivers prefer counts when non-zero.
@@ -2702,7 +2702,7 @@ public struct CasevacReport: @unchecked Sendable {
 
   ///
   /// Per-patient clinical records. Each entry is one patient's ZMIST card
-  /// (Zap number / Mechanism / Injuries / Signs / Treatment). Repeatable —
+  /// (Zap number / Mechanism / Injuries / Signs / Treatment). Repeatable -
   /// a mass-casualty event can carry 1-6 entries in practice, limited by
   /// the 237 B LoRa MTU.
   public var zmist: [ZMistEntry] {
@@ -2888,7 +2888,7 @@ public struct CasevacReport: @unchecked Sendable {
 }
 
 ///
-/// Per-patient clinical summary record — one entry per patient in a CASEVAC.
+/// Per-patient clinical summary record - one entry per patient in a CASEVAC.
 /// Maps directly to ATAK's <zMist> child element inside <zMistsMap>.
 /// All fields are optional free-text; senders populate what they have.
 public struct ZMistEntry: Sendable {
@@ -2901,7 +2901,7 @@ public struct ZMistEntry: Sendable {
   public var title: String = String()
 
   ///
-  /// Zap number — unique patient tracking ID (often a terse code like
+  /// Zap number - unique patient tracking ID (often a terse code like
   /// "Gunshot" or a serial).
   public var z: String = String()
 
@@ -3033,7 +3033,7 @@ public struct EmergencyAlert: Sendable {
 /// creation time; the fields below carry structured metadata the raw-detail
 /// fallback currently loses.
 ///
-/// Fields are deliberately lean — this variant is closer to the MTU ceiling
+/// Fields are deliberately lean - this variant is closer to the MTU ceiling
 /// than the others, so every string is capped in options.
 public struct TaskRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
@@ -3177,7 +3177,7 @@ public struct TaskRequest: Sendable {
 ///
 /// Weather annotation from <environment> CoT detail element.
 ///
-/// Attaches to any TAKPacketV2 regardless of payload_variant — an Aircraft,
+/// Attaches to any TAKPacketV2 regardless of payload_variant - an Aircraft,
 /// PLI, or Marker can all carry observed conditions at the emitting station.
 /// ATAK-CIV ships an XSD for <environment> but no dedicated handler, so the
 /// element round-trips through the generic detail pipeline; this message
@@ -3186,7 +3186,7 @@ public struct TaskRequest: Sendable {
 /// Target wire cost: ~6-8 bytes compressed with a fully populated instance.
 ///
 /// Named `TAKEnvironment` (not just `Environment`) because the bare name
-/// collides with `SwiftUI.Environment` — every SwiftUI view in a consuming
+/// collides with `SwiftUI.Environment` - every SwiftUI view in a consuming
 /// iOS app uses the `@Environment` property wrapper, and importing the
 /// generated proto module would make `Environment` ambiguous in every one
 /// of those files. The `TAK` prefix matches the convention used by the
@@ -3229,7 +3229,7 @@ public struct TAKEnvironment: Sendable {
 /// The receiving ATAK client restores those from its own defaults, same as
 /// every other CoT carried over Meshtastic today.
 ///
-/// Attaches to any TAKPacketV2 — a PLI with a sensor on the operator's head,
+/// Attaches to any TAKPacketV2 - a PLI with a sensor on the operator's head,
 /// an Aircraft with a FLIR turret, a Marker dropped on a UAV.
 /// Target wire cost: ~7-14 bytes compressed (dominated by model string).
 public struct SensorFov: Sendable {
@@ -3247,7 +3247,7 @@ public struct SensorFov: Sendable {
 
   ///
   /// Maximum range of the cone in meters.
-  /// Optional — if unset, receivers should use the ATAK-CIV default of 100m.
+  /// Optional - if unset, receivers should use the ATAK-CIV default of 100m.
   public var rangeM: UInt32 {
     get {_rangeM ?? 0}
     set {_rangeM = newValue}
@@ -3264,7 +3264,7 @@ public struct SensorFov: Sendable {
 
   ///
   /// Vertical field of view in whole degrees. ATAK-CIV default is 45°.
-  /// Optional — a value of 0 means "not set / use horizontal FOV".
+  /// Optional - a value of 0 means "not set / use horizontal FOV".
   public var fovVerticalDeg: UInt32 = 0
 
   ///
@@ -3274,12 +3274,12 @@ public struct SensorFov: Sendable {
 
   ///
   /// Roll (camera tilt) in whole degrees, -180 to +180.
-  /// Optional — use 0 if the sensor doesn't track roll.
+  /// Optional - use 0 if the sensor doesn't track roll.
   public var rollDeg: Int32 = 0
 
   ///
   /// Free-form device model identifier, e.g. "FLIR-Boson-640", "SEEK".
-  /// Optional — empty string means "unknown model" (ATAK-CIV default).
+  /// Optional - empty string means "unknown model" (ATAK-CIV default).
   public var model: String = String()
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
@@ -3361,7 +3361,7 @@ public struct SensorFov: Sendable {
 /// TAKTALK chat message payload (CoT type m-t-t).
 ///
 /// TAKTALK is an ATAK plugin for voice + text team messaging. The voice
-/// audio stream goes over UDP/RTP and is NOT carried by the mesh — only
+/// audio stream goes over UDP/RTP and is NOT carried by the mesh - only
 /// the text envelope (this message) is. `from_voice` marks messages sent
 /// via push-to-talk speech-to-text so receivers can render a mic icon
 /// next to the text.
@@ -3411,7 +3411,7 @@ public struct TakTalkMessage: Sendable {
 /// Announces a TAKTALK chatroom's friendly name and roster so peers can
 /// resolve room UUIDs (used in TakTalkMessage.chatroom_id and
 /// GeoChat.room_id) to a display name and participant list. Not a chat
-/// message itself — these events are emitted by TAKTALK when rooms are
+/// message itself - these events are emitted by TAKTALK when rooms are
 /// created or memberships change.
 public struct TakTalkRoomData: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
@@ -3473,7 +3473,7 @@ public struct Marti: Sendable {
   /// primary-vs-cc distinction the same way ATAK does.
   ///
   /// If dest_callsign is [TAKPacketV2.callsign] (self-addressed, unusual but
-  /// legal — e.g. ATAK echoing back to its own room), the builder still emits
+  /// legal - e.g. ATAK echoing back to its own room), the builder still emits
   /// the element so loopback shapes round-trip cleanly.
   public var destCallsign: [String] = []
 

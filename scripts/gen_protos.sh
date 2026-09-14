@@ -71,6 +71,47 @@ protoc \
 	--swift_out=./MeshtasticProtobufs/Sources \
 	./protobufs/meshtastic/*.proto
 
+# 4. Generate the field-metadata registry from the (meshtastic.field_metadata) and
+#    (meshtastic.enum_value_metadata) options.
+#
+#    Two things differ from step 3 and both matter.
+#
+#    The output goes to the APP TARGET, not to MeshtasticProtobufs. The registry emits
+#    its labels and descriptions as String(localized:), and Xcode only extracts those
+#    from a target that owns a string catalog and sets SWIFT_EMIT_LOC_STRINGS. A SwiftPM
+#    package has neither, so a registry generated there would compile fine and resolve to
+#    English forever - a silent failure. Hence a separate protoc invocation rather than a
+#    second --*_out on the call above. The plugin emits a bare filename with no package
+#    path, so the out directory is the destination directory itself.
+#
+#    This plugin is pinned by the 'protobufs' submodule SHA, not by
+#    MeshtasticProtobufs/Package.resolved as protoc-gen-swift is above. The guard in step
+#    2 does not cover it.
+FIELDMETA_PKG="$REPO_ROOT/protobufs/tools/protoc-gen-fieldmeta-swift"
+if [ -d "$FIELDMETA_PKG" ]; then
+	echo "Building protoc-gen-fieldmeta-swift from the protobufs submodule …"
+	swift build --package-path "$FIELDMETA_PKG" -c release --cache-path "$FIELDMETA_PKG/.build/spm-cache"
+	FIELDMETA_PLUGIN="$FIELDMETA_PKG/.build/release/protoc-gen-fieldmeta-swift"
+	protoc \
+		--plugin=protoc-gen-fieldmeta-swift="$FIELDMETA_PLUGIN" \
+		--proto_path=./protobufs \
+		--fieldmeta-swift_out=./Meshtastic/Model \
+		./protobufs/meshtastic/*.proto
+	# The plugin emits no imports: it cannot know what module holds the generated
+	# protobuf types, since that is the consumer's choice. Ours is MeshtasticProtobufs,
+	# and the file is full of `extension Config { … }`, so add it here.
+	REGISTRY="$REPO_ROOT/Meshtastic/Model/FieldMetadataRegistry.swift"
+	if ! grep -q "^import MeshtasticProtobufs$" "$REGISTRY"; then
+		awk 'NR==1 { print; print ""; print "import MeshtasticProtobufs"; next } { print }' \
+			"$REGISTRY" > "$REGISTRY.tmp" && mv "$REGISTRY.tmp" "$REGISTRY"
+	fi
+	python3 "$REPO_ROOT/scripts/strip-fieldmeta-message-accessors.py" "$REGISTRY"
+	echo "Generated Meshtastic/Model/FieldMetadataRegistry.swift"
+else
+	echo "Skipping the field-metadata registry: $FIELDMETA_PKG not present."
+	echo "Bump the 'protobufs' submodule to a commit that carries tools/protoc-gen-fieldmeta-swift."
+fi
+
 echo
 echo "Done — generated Swift into MeshtasticProtobufs/Sources with $("$PLUGIN" --version)."
 echo "Build, test, and commit the changes (including the bumped 'protobufs' submodule)."

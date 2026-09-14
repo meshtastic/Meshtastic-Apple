@@ -1304,7 +1304,7 @@ public struct LockdownAuth: Sendable {
   /// token at unlock time: the client-supplied boots_remaining when
   /// non-zero, otherwise the firmware default (TOKEN_DEFAULT_BOOTS).
   /// Note that boots_remaining == 0 in this message means "use firmware
-  /// default", NOT "zero boots" — a client computing the ceiling for
+  /// default", NOT "zero boots" - a client computing the ceiling for
   /// display should mirror that resolution rather than multiplying the
   /// raw request value.
   ///
@@ -1314,7 +1314,7 @@ public struct LockdownAuth: Sendable {
   ///
   /// Uses millis() (CPU uptime), not wall-clock time, so the cap is
   /// immune to GPS spoofing, RTC backup-battery removal, and Faraday
-  /// cage isolation — none of those move the uptime counter. The only
+  /// cage isolation - none of those move the uptime counter. The only
   /// way to reset the session clock is a reboot, which costs a boot
   /// from the on-flash, HMAC-bound counter.
   public var maxSessionSeconds: UInt32 = 0
@@ -1333,7 +1333,7 @@ public struct LockdownAuth: Sendable {
   ///
   /// NOT reversed by this operation: APPROTECT. Once the debug port
   /// lockout has been burned (on silicon where it is effective) it is
-  /// permanent — disabling lockdown decrypts your data and removes the
+  /// permanent - disabling lockdown decrypts your data and removes the
   /// access gates, but the SWD/JTAG port stays locked for the life of
   /// the device (recoverable only via a full chip erase over a debug
   /// probe, which destroys all data). Clients should make this
