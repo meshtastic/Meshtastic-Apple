@@ -14,6 +14,10 @@ Recent user-facing changes from roughly the last 12 months. Newest at the top.
 Show roughly the last 12 months of changes; archive entries older than a year by removing them.
 -->
 
+**Sep 2026** — [Firmware Updates](firmware.md) — Factory Erase now uses the OTAFIX bootloader's own erase when the radio's bootloader supports it: one file for every board, and the installed firmware is kept, so the radio boots factory-fresh instead of needing firmware reinstalled. Older bootloaders are unchanged.
+
+**Sep 2026** — [Firmware Updates](firmware.md) — The bootloader board list and erase files are now fetched from meshtastic.org instead of being built into the app, so newly supported boards work without an app update. Five more boards are supported as a result.
+
 **Aug 2026** — [Settings](settings.md) — New Waypoints notification setting: received-waypoint alerts can be switched off on their own. Reaction alerts follow the existing message notification settings.
 
 **Jul 2026** — [Settings](settings.md) — Packet Authenticity: on firmware that reports XEdDSA support, Security settings gains a Protection Level of Compatible, Balanced, or Strict, controlling whether your radio accepts mesh packets it cannot cryptographically authenticate; Strict asks for confirmation first, and the setting matches the Meshtastic app for Android.
