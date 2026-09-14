@@ -1,0 +1,79 @@
+//
+//  SettingsSearchResultsView.swift
+//  Meshtastic
+//
+//  Copyright(c) Garth Vander Houwen 9/13/26.
+//
+import SwiftUI
+
+/// The Settings list while a search is active.
+///
+/// Replaces the list in place rather than pushing a results screen, so clearing the
+/// field returns the user exactly where they were. Results are grouped by the same
+/// sections the full list uses, so a result sits where the user would have found it
+/// by scrolling.
+struct SettingsSearchResultsView: View {
+	let results: [SettingsSearchResult]
+
+	var body: some View {
+		if results.isEmpty {
+			ContentUnavailableView.search
+		} else {
+			// compactMap drops sections with no matches rather than rendering empty
+			// headers, the same way the documentation browser filters its catalogue.
+			ForEach(SettingsListSection.allCases, id: \.self) { section in
+				let matches = results.filter { $0.entry.listSection == section }
+				if !matches.isEmpty {
+					Section(section.title) {
+						ForEach(matches) { result in
+							NavigationLink(value: result.entry.destination) {
+								row(for: result)
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	@ViewBuilder
+	private func row(for result: SettingsSearchResult) -> some View {
+		let dimmed: Bool = {
+			if case .deEmphasised = result.visibility { return true }
+			return false
+		}()
+
+		VStack(alignment: .leading, spacing: 2) {
+			Text(result.entry.label)
+				.font(.body)
+			// The breadcrumb is not decoration: "Enabled" labels six different
+			// controls, so the screen and section are what tell them apart.
+			Text(breadcrumb(for: result.entry))
+				.font(.caption)
+				.foregroundStyle(.secondary)
+			if case .deEmphasised(let reason) = result.visibility {
+				Text(reason)
+					.font(.caption2)
+					.foregroundStyle(.tertiary)
+			}
+		}
+		.padding(.vertical, 2)
+		// 44pt is the minimum comfortable target, and the row must survive the
+		// largest Dynamic Type size without clipping.
+		.frame(minHeight: 44, alignment: .leading)
+		.opacity(dimmed ? 0.55 : 1)
+		.accessibilityElement(children: .combine)
+		.accessibilityLabel(accessibilityLabel(for: result))
+	}
+
+	private func breadcrumb(for entry: SettingsSearchEntry) -> String {
+		guard let section = entry.sectionTitle, !section.isEmpty else { return entry.screenTitle }
+		return "\(entry.screenTitle) › \(section)"
+	}
+
+	private func accessibilityLabel(for result: SettingsSearchResult) -> String {
+		var parts = [result.entry.label, breadcrumb(for: result.entry)]
+		if case .deEmphasised(let reason) = result.visibility { parts.append(reason) }
+		return parts.joined(separator: ", ")
+	}
+}
