@@ -34,7 +34,7 @@ control contributes none.
 | `listSection` | `SettingsListSection` | Which Settings group the row sits in |
 | `label` | `String` | Localized; what the control says on screen |
 | `subtitle` | `String?` | Localized; the control's explanatory text |
-| `keywords` | `[String]` | Localized synonyms a user might type |
+| `keywords` | `[String]` | Localized synonyms; usually empty, see below |
 | `field` | `FieldIdentity?` | `nil` for app-level settings |
 | `requiresConnection` | `Bool` | Radio config is unavailable when disconnected |
 
@@ -48,6 +48,12 @@ For proto-backed entries `label`, `subtitle` and `keywords` are read from the ge
 registry, already localized. `keywords` arrives as a single `|`-delimited string, because
 `FieldMetadata` attributes must be scalar; the entry splits and trims it. App-level entries
 declare the same three fields by hand with `String(localized:)`.
+
+Only `label` is reliably present. Of the 318 registry entries, 280 carry a label, 70 a
+description and 5 keywords — a setting whose label already says what it is does not need
+synonyms invented for it, and per SC-002 findability is measured by a query corpus rather
+than by requiring every entry to be padded out. Ranking already weights label above keyword
+above description, so a sparse set costs nothing.
 
 ## FieldIdentity
 

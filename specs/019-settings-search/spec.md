@@ -129,9 +129,11 @@ result is listed, visibly de-emphasised, with an explanation.
   non-empty query MUST filter the Settings list in place rather than pushing a separate results view.
 - **FR-002**: The index MUST cover every individual control under Settings — radio configuration,
   module configuration, and app-level screens — not only the 42 screen titles.
-- **FR-003**: Each entry MUST carry a label, a plain-language description, and search keywords, and
-  MUST identify the settings destination and section it belongs to. Matching MUST consider all three
-  text fields, because the description is where a user's own wording is most likely to appear.
+- **FR-003**: Each entry MUST carry a label and MUST identify the settings destination and section
+  it belongs to. A description and keywords are optional — most settings are adequately named by
+  their label, and prose written only to satisfy a schema is worse than none. Matching MUST consider
+  whichever of the three are present, since the description, where there is one, is where a user's
+  own wording is most likely to appear.
 - **FR-004**: Picker option values MUST be indexed, so "Long Fast", "Router" and "United States" find
   the controls that offer them.
 - **FR-005**: For settings backed by a protobuf field, label, description and keywords MUST be
@@ -215,9 +217,12 @@ result is listed, visibly de-emphasised, with an explanation.
 
 - **SC-001**: Searching "hops", "psk", "duty cycle" and "Long Fast" each returns the correct control
   as the first settings result.
-- **SC-002**: Every control under Settings is indexed, and findable by at least one term that is not
-  its exact label — completeness enforced by FR-015 rather than assumed, and findability verified by
-  a test asserting each entry carries at least one keyword or description.
+- **SC-002**: Every control under Settings is indexed, enforced by FR-015 against the protobuf
+  source rather than assumed. Findability is measured by a corpus of terms a user would plausibly
+  type, each asserted to return its intended control among the top results — not by requiring every
+  entry to carry a keyword or description, which would mean inventing synonyms for settings whose
+  label already says what they are. The corpus MUST grow whenever a search that should have worked
+  did not.
 - **SC-003**: Renaming a setting's label without updating its entry fails a test, demonstrated by
   performing the rename and observing the failure before reverting.
 - **SC-004**: No indexed string is missing from `Localizable.xcstrings`, and none renders in English
@@ -283,6 +288,12 @@ package, since a SwiftPM package has no string catalog. See [research.md](./rese
   `coding_rate`, `channel_num`, the Audio I2S pins, the PaxCounter thresholds) and five annotated by
   hand (`tx_power`, `red`, `green`, `blue`, `current`). The remaining 16 exemptions are fields with
   no control at all, which are correctly absent from search.
+- Q: SC-002 required every entry to carry a keyword or description, which 248 of 318 entries do not.
+  How is that resolved? → A: Make the criterion match reality. Not everything will have keywords.
+  Coverage stays enforced by FR-015 against the protobuf source; findability moves to a corpus of
+  terms a user would plausibly type, asserted to return the intended control, which grows whenever a
+  search that should have worked did not. FR-003 correspondingly requires only a label, with
+  description and keywords optional.
 
 ## Dependencies
 
