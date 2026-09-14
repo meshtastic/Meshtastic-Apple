@@ -19,7 +19,17 @@ import Foundation
 enum SettingsSearchIndex {
 
 	/// Every indexed control, proto-backed first.
-	static let entries: [SettingsSearchEntry] = protoBackedEntries() + SettingsSearchCatalogue.entries
+	///
+	/// A curated entry is dropped when the registry already describes a control with
+	/// the same label on the same screen. Some screens are mixed — TAK Server shows
+	/// `ModuleConfig.TAKConfig.team` and `.role` alongside app-only controls — and two
+	/// entries with one identity are indistinguishable in results. The schema wins,
+	/// since its label is the one every client shares.
+	static let entries: [SettingsSearchEntry] = {
+		let fromRegistry = protoBackedEntries()
+		let claimed = Set(fromRegistry.map(\.id))
+		return fromRegistry + SettingsSearchCatalogue.entries.filter { !claimed.contains($0.id) }
+	}()
 
 	/// Where a config message's fields live in the Settings tree.
 	///

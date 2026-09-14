@@ -239,3 +239,23 @@ struct SettingsSearchIndexTests {
 		}
 	}
 }
+
+/// Keeps the generated app-level catalogue honest.
+///
+/// The protobuf half cannot drift, because it is generated from the schema. This
+/// half is generated from the views, and staleness is caught by
+/// `.github/workflows/settings-catalogue-drift.yml` rather than here — these tests
+/// run in the simulator, which has no way to shell out to the generator.
+@Suite("Settings search catalogue")
+struct SettingsSearchCatalogueTests {
+
+	@Test("App-level entries are reachable without a radio")
+	func appLevelDoesNotRequireConnection() throws {
+		// The point of indexing these is that they work while disconnected; marking
+		// one as needing a radio would dim it for no reason.
+		for entry in SettingsSearchCatalogue.entries {
+			#expect(!entry.requiresConnection, "\(entry.id) should not require a radio")
+			#expect(entry.field == nil, "\(entry.id) has a proto field; it belongs in the registry half")
+		}
+	}
+}
