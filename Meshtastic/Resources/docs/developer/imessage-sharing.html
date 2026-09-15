@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Messages sharing extension</title>
+  <link rel="stylesheet" href="../assets/docs.css">
+</head>
+<body data-page="imessage-sharing">
+<h1>Messages sharing extension</h1>
+<p>The <code>MeshtasticMessages</code> target is an iMessage app extension embedded in the
+main iOS app. It supports three share types:</p>
+<ul>
+<li>Contact exchange cards using Meshtastic <code>/v/</code> contact URLs.</li>
+<li>Channel cards using the existing <code>/e/</code> channel URL format.</li>
+<li>Static original Chirpy and official Meshtastic design-repository stickers.</li>
+</ul>
+<p>All bundled sticker and Messages icon artwork comes directly from the official
+<a href="https://github.com/meshtastic/design"><code>meshtastic/design</code></a> repository. The
+extension does not use AI-generated or redrawn brand artwork.</p>
+<h2>Screenshots</h2>
+<table>
+<thead>
+<tr>
+<th>Contact and channel cards in Messages</th>
+<th>Contact exchange composer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><img src="../assets/screenshots/imessage-contact-card.jpg" alt="Received Meshtastic contact card and stickers in Messages" /></td>
+<td><img src="../assets/screenshots/imessage-contact-exchange.png" alt="Contact exchange composer" /></td>
+</tr>
+<tr>
+<td><img src="../assets/screenshots/imessage-channel-card.jpg" alt="Received selected-channel card and contact card in Messages" /></td>
+<td><img src="../assets/screenshots/imessage-channel-sharing.png" alt="Channel-sharing composer with Replace selected" /></td>
+</tr>
+</tbody>
+</table>
+<h2>Recent radio snapshot</h2>
+<p>After configuration or node-database synchronization completes, the main app
+serializes the active radio's own contact, LoRa configuration, and active
+channels into <code>MeshShareSnapshot</code>. <code>MeshShareStore</code> keeps that snapshot in the
+device-only Keychain access group shared by the app and extension. This lets
+Messages share the most recently connected radio while the radio is offline.</p>
+<p>Snapshots older than 30 days remain usable but display a warning.</p>
+<h2>Contact exchange</h2>
+<p>Initial contact cards include <code>exchange=true</code>. Selecting one in Messages offers
+<code>Add &amp; Reply with Mine</code>. That action inserts the local contact reply into the
+same conversation, without the exchange flag, and then opens the main app to
+confirm the incoming contact import. Removing the flag from replies prevents an
+endless exchange prompt.</p>
+<p>Legacy contact links without the query remain supported.</p>
+<h2>Channel behavior</h2>
+<p>All active channels start selected and can be deselected. Replace is the
+default and includes the sender's LoRa configuration. Add mode uses the
+existing <code>?add=true</code> URL behavior and omits LoRa configuration. Encrypted
+channel PSKs are preserved, and the extension warns the sender before sharing.</p>
+<h2>Security notes</h2>
+<ul>
+<li>Snapshot Keychain accessibility is
+<code>kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly</code>.</li>
+<li>The snapshot does not sync through iCloud.</li>
+<li>Raw contact or channel payloads are not logged.</li>
+<li>Incoming contacts still require confirmation in the main app.</li>
+</ul>
+</body>
+</html>
