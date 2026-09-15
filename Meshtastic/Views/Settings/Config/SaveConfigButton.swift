@@ -7,17 +7,21 @@ struct SaveConfigButton: View {
 	@Binding var hasChanges: Bool
 	let confirmationMessage: String
 	let onConfirmation: () -> Void
+	private let initiallyPresentingConfirmation: Bool
 
 	init(
 		node: NodeInfoEntity?,
 		hasChanges: Binding<Bool>,
 		confirmationMessage: String = "After config values save the node will reboot.".localized,
+		initiallyPresentingConfirmation: Bool = false,
 		onConfirmation: @escaping () -> Void
 	) {
 		self.node = node
 		_hasChanges = hasChanges
+		_isPresentingSaveConfirm = State(initialValue: false)
 		self.confirmationMessage = confirmationMessage
 		self.onConfirmation = onConfirmation
+		self.initiallyPresentingConfirmation = initiallyPresentingConfirmation
 	}
 	
 	var body: some View {
@@ -49,6 +53,11 @@ struct SaveConfigButton: View {
 				// Save button. The button above is a filled accent shape and keeps `accentColor`;
 				// the dialog's action is plain text on glass and needs the on-surface accent.
 				.tint(.accentTint)
+				.onAppear {
+					if initiallyPresentingConfirmation {
+						isPresentingSaveConfirm = true
+					}
+				}
 			} else {
 				Button {
 					isPresentingSaveConfirm = true
@@ -71,6 +80,11 @@ struct SaveConfigButton: View {
 					}
 				} message: {
 					Text(confirmationMessage)
+				}
+				.onAppear {
+					if initiallyPresentingConfirmation {
+						isPresentingSaveConfirm = true
+					}
 				}
 			}
 		}
