@@ -105,8 +105,30 @@ if [ -d "$FIELDMETA_PKG" ]; then
 		awk 'NR==1 { print; print ""; print "import MeshtasticProtobufs"; next } { print }' \
 			"$REGISTRY" > "$REGISTRY.tmp" && mv "$REGISTRY.tmp" "$REGISTRY"
 	fi
-	python3 "$REPO_ROOT/scripts/strip-fieldmeta-message-accessors.py" "$REGISTRY"
-	echo "Generated Meshtastic/Model/FieldMetadataRegistry.swift"
+	# Stop a regeneration that would quietly empty settings search.
+	#
+	# Generating against protos with no field_metadata annotations succeeds. It
+	# still emits a row per deprecated field, so the file looks populated while
+	# carrying almost no labels - and labels are what search matches on. With no
+	# arguments this script pulls origin/master first, so this happens by accident
+	# whenever the annotations have not landed upstream yet.
+	#
+	# Compare labelled entries against the committed file rather than a fixed
+	# threshold, so the check calibrates itself as annotations land. Set
+	# ALLOW_FEWER_LABELS=1 for a deliberate upstream removal.
+	LABELS=$(grep -c 'label: String(localized:' "$REGISTRY" || true)
+	WAS=$(git show HEAD:Meshtastic/Model/FieldMetadataRegistry.swift 2>/dev/null \
+		| grep -c 'label: String(localized:' || true)
+	if [ "$LABELS" -lt "$WAS" ] && [ "${ALLOW_FEWER_LABELS:-0}" != "1" ]; then
+		echo "error: regenerating dropped labelled entries: $WAS -> $LABELS." >&2
+		echo "protobufs is at $(git -C protobufs rev-parse --short HEAD), which carries fewer" >&2
+		echo "field_metadata annotations than the commit the registry was built from." >&2
+		echo "Settings search matches on those labels, so this would empty it silently." >&2
+		echo "Point the submodule at protos carrying the annotations, or re-run with" >&2
+		echo "ALLOW_FEWER_LABELS=1 if the removal is intended." >&2
+		exit 1
+	fi
+	echo "Generated Meshtastic/Model/FieldMetadataRegistry.swift ($LABELS labelled entries)"
 else
 	echo "error: $FIELDMETA_PKG not present." >&2
 	echo "The app needs Meshtastic/Model/FieldMetadataRegistry.swift, which is generated from" >&2

@@ -178,11 +178,16 @@ for its strings to be extracted.
 The plugin's README claims the two coexist, citing `config.rxGpio` against
 `Config.PositionConfig.rxGpio`. That holds for reading and was evidently not tested for assignment.
 
-Reported upstream with a two-module repro. Until it is fixed,
-`scripts/strip-fieldmeta-message-accessors.py` removes those blocks after generation and the index
-uses `FieldMetadataRegistry.get(_:tag:)`, which is what it needs anyway. Enum accessors are kept —
-`public var metadata` is an instance member on an enum and shadows nothing. If upstream nests the
-message accessors under a namespace, the script becomes a no-op and should be deleted.
+Reported upstream with a two-module repro, and fixed there: the Swift generators no longer emit
+per-field message accessors at all (protobufs `c49d4ed`, on `master` via #952). Rather than nest
+them under a namespace, they were dropped — the accessor was keyed on a name swift-protobuf
+chooses rather than one the schema controls (`sx126x_rx_boosted_gain` generates as
+`sx126XRxBoostedGain`), so only the tag is stable by contract. Kotlin keeps its field accessors,
+because Wire keeps the proto's snake_case name.
+
+The index uses `FieldMetadataRegistry.get(_:tag:)`, which is what it needed anyway. Enum accessors
+are kept — `public var metadata` is an instance member on an enum and shadows nothing. The
+interim `scripts/strip-fieldmeta-message-accessors.py` workaround has been deleted.
 
 ## D4. Completeness is checked against the `.proto` text, not the registry
 

@@ -36,11 +36,31 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
 /// dynamic reflection as the Go plugin does, so a stale binding cannot see the
 /// new attribute. It fails loudly rather than dropping it silently.
 ///
-/// Constraint: attributes must be SCALAR (bool / int / float / string). A
-/// message, enum, bytes, repeated, or map attribute is rejected at generation
+/// Constraint: attributes must be SCALAR (bool / 32-bit int / float / string).
+/// A message, enum, bytes, repeated, or map attribute is rejected at generation
 /// time (the generators would otherwise emit meaningless, non-deterministic
-/// values). A list is therefore a single delimited string - see `keywords`.
-/// See tools/protoc-gen-fieldmeta.
+/// values), and so is a 64-bit integer kind, which TypeScript's number cannot
+/// hold exactly. Float attributes must be finite: an open bound is left unset,
+/// not set to inf. A list is therefore a single delimited string - see
+/// `keywords`. See tools/protoc-gen-fieldmeta.
+///
+/// BOUNDS (`min_value`, `max_value`) are PRESENTATION metadata, deliberately, and
+/// they overlap an existing standard. protovalidate - `(buf.validate.field)`,
+/// buf's successor to protoc-gen-validate - is the industry-standard way to
+/// express a numeric constraint in a schema, and where a constraint must be
+/// ENFORCED that is the thing to reach for, not these two attributes.
+///
+/// They exist here anyway because protovalidate evaluates CEL against a
+/// descriptor at runtime, and the consumers that most need a bound cannot do
+/// that: nanopb on the firmware has no descriptors and no CEL, and neither do
+/// the generated Wire, prost or swift-protobuf types the clients use. A build-
+/// time attribute is the only form that reaches every target.
+///
+/// The cost is that a bound stated here and a bound enforced elsewhere can
+/// drift, and nothing detects it. So: state a bound here only when the firmware
+/// genuinely enforces it, treat the firmware as the source of truth, and if
+/// `(buf.validate.field)` is ever adopted for a field, make these mirror it
+/// rather than compete with it.
 ///
 /// STRING attributes are treated as user-facing display text and are emitted for
 /// localization where the target supports it - the Swift target emits
@@ -90,7 +110,10 @@ public struct FieldMetadata: Sendable {
   public mutating func clearAdminOnly() {self._adminOnly = nil}
 
   ///
-  /// Inclusive lower bound for the field value, for UI validation/clamping.
+  /// Inclusive lower bound, for PRESENTATION: slider and stepper range, and the
+  /// client-side check that stops a user entering a value the firmware would
+  /// reject anyway. It is NOT the wire contract and nothing enforces it on
+  /// receipt - see the note on bounds below.
   public var minValue: Double {
     get {_minValue ?? 0}
     set {_minValue = newValue}
@@ -101,7 +124,7 @@ public struct FieldMetadata: Sendable {
   public mutating func clearMinValue() {self._minValue = nil}
 
   ///
-  /// Inclusive upper bound for the field value, for UI validation/clamping.
+  /// Inclusive upper bound, for PRESENTATION. Same status as `min_value`.
   public var maxValue: Double {
     get {_maxValue ?? 0}
     set {_maxValue = newValue}
