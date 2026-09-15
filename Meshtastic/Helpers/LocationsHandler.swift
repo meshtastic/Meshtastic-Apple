@@ -66,6 +66,15 @@ import OSLog
 		}
 		// Set flag to indicate a request is in progress
 		isRequestingPermission = true
+		// This defer block ensures `isRequestingPermission` is reset and `permissionContinuation` is nilled out
+		// regardless of how the `withCheckedContinuation` block exits (success, error, or cancellation).
+		// It acts as a final cleanup mechanism.
+		defer {
+			self.isRequestingPermission = false
+			// This nil assignment is somewhat redundant with the one in locationManagerDidChangeAuthorization
+			// and the timeout Task, but it provides an extra layer of safety.
+			self.permissionContinuation = nil
+		}
 
 		return await withCheckedContinuation { continuation in
 			// Store the continuation.
@@ -99,15 +108,6 @@ import OSLog
 					Logger.services.error("💥 [App] Error in permission timeout task: \(error.localizedDescription, privacy: .public)")
 				}
 			}
-		}
-		// This defer block ensures `isRequestingPermission` is reset and `permissionContinuation` is nilled out
-		// regardless of how the `withCheckedContinuation` block exits (success, error, or cancellation).
-		// It acts as a final cleanup mechanism.
-		defer {
-			self.isRequestingPermission = false
-			// This nil assignment is somewhat redundant with the one in locationManagerDidChangeAuthorization
-			// and the timeout Task, but it provides an extra layer of safety.
-			self.permissionContinuation = nil
 		}
 	}
 
@@ -143,9 +143,9 @@ import OSLog
 		self.manager.distanceFilter = 10
 		#if !os(visionOS)
 		if CLLocationManager.headingAvailable() {
-				self.manager.headingFilter = 1 // Update heading when it changes by 1 degree
-				self.manager.headingOrientation = .portrait // Adjust based on device orientation
-			}
+			self.manager.headingFilter = 1 // Update heading when it changes by 1 degree
+			self.manager.headingOrientation = .portrait // Adjust based on device orientation
+		}
 		#endif
 	}
 
