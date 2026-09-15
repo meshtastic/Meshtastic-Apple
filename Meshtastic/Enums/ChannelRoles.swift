@@ -19,11 +19,11 @@ enum ChannelRoles: Int, CaseIterable, Identifiable {
 		switch self {
 
 		case .disabled:
-			return "Disabled".localized
+			return String(localized: "Disabled", comment: "ChannelRoles.description")
 		case .primary:
-			return "Primary".localized
+			return String(localized: "Primary", comment: "ChannelRoles.description")
 		case .secondary:
-			return "Secondary".localized
+			return String(localized: "Secondary", comment: "ChannelRoles.description")
 		}
 	}
 	func protoEnumValue() -> Channel.Role {

@@ -14,12 +14,11 @@ enum DetectionSensorRole: String, CaseIterable, Equatable, Decodable {
 	var description: String {
 		switch self {
 		case .sensor:
-			return "Sensor"
+			return String(localized: "Sensor", comment: "DetectionSensorRole.description")
 		case .client:
-			return "Client"
+			return String(localized: "Client", comment: "DetectionSensorRole.description")
 		}
 	}
-	var localized: String { self.rawValue.localized }
 }
 
 struct DetectionSensorConfig: View {
