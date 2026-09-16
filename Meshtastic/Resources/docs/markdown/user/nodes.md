@@ -98,6 +98,12 @@ The signal meter shown here (and on a node's detail screen) rates link quality f
   <img src="../assets/screenshots/compact_mqtt.png" alt="MQTT-bridged node" />
 </picture>
 
+## Nodes Not Heard After a Settings Change
+
+After you change the radio's LoRa settings, the Nodes tab may show a notice for nodes that were heard on the old channel but have not been heard on the new one. Favorite nodes and the connected node are excluded.
+
+Choose **Remove Them** to open a confirmation that includes the number of nodes, such as **Remove 1 node?** or **Remove 10 nodes?**. Confirming removes those nodes from this app and the connected radio. A node returns if it is heard again. Choose **Keep** to dismiss the notice without removing nodes.
+
 ## Context Menu Actions
 
 Long-press any node in the list to access quick actions:

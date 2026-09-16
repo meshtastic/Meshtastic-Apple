@@ -147,7 +147,12 @@ struct ChannelList: View {
 					channel.mute.toggle()
 					Task {
 						do {
-							_ = try await accessoryManager.saveChannel(channel: channel.protoBuf, fromUser: node.user!, toUser: node.user!)
+							_ = try await accessoryManager.saveChannel(
+								channel: channel.protoBuf,
+								fromUser: node.user!,
+								toUser: node.user!,
+								refreshShareSnapshot: true
+							)
 							Task { @MainActor in
 								do {
 									try context.save()
