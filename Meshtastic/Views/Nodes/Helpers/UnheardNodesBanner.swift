@@ -96,9 +96,7 @@ struct UnheardNodesBanner: View {
 		.padding(.horizontal)
 		.padding(.bottom, 4)
 		.confirmationDialog(
-			// Resolved through String(localized:) first: the Text(_:comment:) initializer showed the
-			// inflection markup literally in the dialog title on device — "^[117 node](inflect: true)".
-			Text(verbatim: String(localized: "Remove ^[\(unheardNodes.count) node](inflect: true)?", comment: "Confirmation title for removing nodes not heard since the settings changed")),
+			Text(AttributedString(localized: "Remove ^[\(unheardNodes.count) node](inflect: true)?", comment: "Confirmation title for removing nodes not heard since the settings changed")),
 			isPresented: $isConfirming,
 			titleVisibility: .visible
 		) {
