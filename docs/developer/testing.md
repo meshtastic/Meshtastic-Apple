@@ -36,7 +36,8 @@ struct MyFeatureTests {
 
 ## Running Tests
 
-Run with ⌘U in Xcode. There is no CLI test runner — tests require Xcode.
+Run with ⌘U in Xcode, or from the command line with `xcodebuild test` — see "Running UI Tests"
+below for the exact invocation `MeshtasticUITests` uses.
 
 Ensure all existing tests pass before opening a PR. SwiftLint runs on every commit; tests failing due to lint errors will block CI.
 
@@ -86,6 +87,74 @@ This works in both contexts because `build-docs.sh` invokes `cmark-gfm --unsafe`
 ### Regenerating Snapshots
 
 Delete the reference PNG and run the test once — it records a new reference. Commit the new reference with your PR.
+
+## UI Tests (MeshtasticUITests)
+
+`MeshtasticUITests/` is a separate target from `MeshtasticTests/` for accessibility-tree-driven
+UI automation — driving the app through real `XCUIApplication` element queries and taps, the
+same path VoiceOver and a real user's touches take. This is deliberately **not** the same
+mechanism as `MarketingCapture` (`Meshtastic/Persistence/MarketingCapture.swift`), which
+navigates in-process via `Router` for fast, curated App Store screenshots but bypasses real touch
+dispatch, hit-testing, and accessibility traits entirely — a UI test here proves the target is
+actually reachable and tappable through the accessibility tree, catching a class of regression
+(broken hit-testing, missing/incorrect accessibility traits) in-process navigation can't.
+
+**XCUITest requires `XCTestCase`, not Swift Testing.** Unlike `MeshtasticTests`, files in
+`MeshtasticUITests/` use `XCTestCase`/`XCTFail`/`continueAfterFailure` — this is a deliberate,
+necessary exception to the "no `XCTAssert*` in new test files" rule above, not a drift from it;
+Swift Testing has no UI-automation equivalent to `XCUIApplication`.
+
+### AccessibilityDriver
+
+`AccessibilityDriver.swift` provides `NavigationStep` (`tab`, `tapIdentifier`,
+`tapButtonLabeled`, `waitForIdentifier`, `pause`) and a `run(_:app:)` that fails the calling test
+immediately — not silently — when a step's target never appears, since an unreachable target is
+itself the finding:
+
+```swift
+import XCTest
+
+final class MyFeatureUITests: XCTestCase {
+    override func setUpWithError() throws {
+        continueAfterFailure = false
+    }
+
+    @MainActor
+    func testSomeFlowIsReachable() {
+        let app = XCUIApplication()
+        // Pin the locale so tab-title matching in AccessibilityDriver (see the note below)
+        // doesn't flake on a non-English simulator/device.
+        app.launchArguments += [
+            "--meshtastic-marketing-seed",  // skip onboarding, seed demo data
+            "-AppleLanguages", "(en)",
+            "-AppleLocale", "en_US"
+        ]
+        app.launch()
+
+        AccessibilityDriver.run([.tab("Connect")], app: app)
+    }
+}
+```
+
+Note on tab lookup: `ContentView` tags each root tab bar button with a stable
+`.accessibilityIdentifier("tab-*")`, but as of Xcode 26.6 / iOS 18+ that identifier does not
+propagate to the underlying `UITabBarButton` through SwiftUI's value-based `Tab(value:)` API
+(confirmed by dumping the live accessibility hierarchy during a real run — the button exposes a
+`label:` but no `identifier:` at all). `NavigationStep.tab` therefore matches on the visible
+title as a working fallback, which means tab lookup is currently locale-dependent — unlike
+`.tapIdentifier`, which is genuinely identifier-based and locale-independent. See the doc comment
+on `NavigationStep.tab` for the full story.
+
+### Running UI Tests
+
+```bash
+xcodebuild -project Meshtastic.xcodeproj -scheme Meshtastic \
+  -destination 'platform=iOS Simulator,name=<device>' \
+  -only-testing:MeshtasticUITests/<SuiteName> test
+```
+
+⌘U also runs them from Xcode alongside `MeshtasticTests`, since both are wired into the
+`Meshtastic` scheme's test action.
 
 ## Async Tests
 
