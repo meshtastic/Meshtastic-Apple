@@ -845,6 +845,17 @@ struct NodeDetail: View {
 						connectedNode: connectedNode
 					)
 					RequestLocalStatsButton(node: node)
+					if UserDefaults.enableAdministration,
+					   node.sessionPasskey != nil || currentUser?.pkiEncrypted == true {
+						Button {
+							router.navigateToRemoteAdmin(nodeNum: nodeNum)
+						} label: {
+							Label(
+								node.sessionPasskey != nil ? "Remote PKI Admin" : "Request PKI Admin",
+								systemImage: node.sessionPasskey != nil ? "av.remote" : "rectangle.and.hand.point.up.left"
+							)
+						}
+					}
 					ExchangeUserInfoButton(
 						node: node,
 						connectedNode: connectedNode
