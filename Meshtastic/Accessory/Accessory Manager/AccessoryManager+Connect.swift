@@ -279,6 +279,15 @@ extension AccessoryManager {
 					ManualConnectionList.shared.insert(device: activeDevice)
 				}
 
+				// Refresh the Messages sharing snapshot here rather than only off the config and
+				// database completions: a background BLE restoration of an already-connected
+				// peripheral reconnects with wantConfig and wantDatabase false (BLETransport's
+				// `.connected` case), so neither completion fires and the extension is left
+				// reporting no radio. Every connect path reaches this step.
+				if let activeDeviceNum = self.activeDeviceNum {
+					MeshShareSnapshotBuilder.refresh(nodeNum: activeDeviceNum, context: self.context)
+				}
+
 				// Best-effort: the notifier bounds stale API refresh and cannot roll back a completed connect.
 				await FirmwareUpdateNotifier.notifyIfNeeded(accessoryManager: self)
 			}
