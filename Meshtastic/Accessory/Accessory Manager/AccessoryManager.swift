@@ -1193,6 +1193,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 				}
 				if let completedNodeNum = refresh.nodeNum {
 					await MeshPackets.shared.commitChannelRefreshStage(for: completedNodeNum, owner: refresh.owner)
+					MeshShareSnapshotBuilder.refresh(nodeNum: completedNodeNum, context: context)
 				}
 				await finishAutomaticConfigRefresh(owner: refresh.owner, error: nil)
 				
@@ -1217,6 +1218,12 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 					do {
 						try context.save()
 						Logger.data.info("💾 [Database] Batch saved all node info after database retrieval")
+						if let activeDeviceNum {
+							MeshShareSnapshotBuilder.refresh(
+								nodeNum: activeDeviceNum,
+								context: context
+							)
+						}
 
 						// Push updated node data to the companion Watch app
 						WatchSessionManager.shared.sendNodesToWatch()

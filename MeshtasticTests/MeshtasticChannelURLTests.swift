@@ -140,6 +140,33 @@ struct MeshtasticChannelURLTests {
 		}
 	}
 
+	@Test func rejectsPayloadsLargerThan16KiBBeforeDecoding() {
+		let oversizedPayload = String(repeating: "a", count: 16 * 1_024 + 1)
+
+		do {
+			_ = try MeshtasticChannelURL.parse("https://meshtastic.org/e/#\(oversizedPayload)")
+			Issue.record("Oversized channel URLs must be rejected before decoding.")
+		} catch {
+			#expect(error.localizedDescription == "Channel link is too large.")
+		}
+	}
+
+	@Test func rejectsInsecureCredentialedAndCustomPortWebForms() throws {
+		let payload = try MeshtasticChannelURL.payloadString(for: makeChannelSet())
+		for value in [
+			"http://meshtastic.org/e/#\(payload)",
+			"ftp://meshtastic.org/e/#\(payload)",
+			"https://user@meshtastic.org/e/#\(payload)",
+			"https://meshtastic.org:8443/e/#\(payload)",
+			"meshtastic://user@e#\(payload)",
+			"meshtastic://e:8443#\(payload)"
+		] {
+			#expect(throws: MeshtasticChannelURL.ParseError.notChannelURL, "\(value) must be rejected") {
+				_ = try MeshtasticChannelURL.parse(value)
+			}
+		}
+	}
+
 	@Test func rejectsContactURLPath() throws {
 		let payload = try MeshtasticChannelURL.payloadString(for: makeChannelSet())
 
