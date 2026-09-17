@@ -479,6 +479,7 @@ targets:
     platform: iOS
     sources:
       - path: "Shared/MessageSharing"
+        group: "Message Sharing"
         type: syncedFolder
       - path: "MeshtasticMessages"
         type: syncedFolder
