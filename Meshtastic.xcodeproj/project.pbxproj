@@ -1643,7 +1643,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 2.7.20;
-				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.Messages;
+				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.MessagesExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -1727,7 +1727,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 2.7.20;
-				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.Messages;
+				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.MessagesExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
