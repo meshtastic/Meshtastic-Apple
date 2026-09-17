@@ -40,7 +40,7 @@ struct BLETransportRestorationReadinessTests {
 			persistenceBootstrap: { await gate.wait() }
 		)
 		let restoration = Task {
-			await transport.handleWillRestoreState(dict: [:], central: nil)
+			await transport.waitForPersistenceBeforeRestoration()
 			await completionRecorder.recordCompletion()
 		}
 

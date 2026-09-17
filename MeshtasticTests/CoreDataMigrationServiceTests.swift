@@ -14,14 +14,6 @@ import CoreData
 import SwiftData
 @testable import Meshtastic
 
-private actor MigrationExecutionRecorder {
-	private(set) var ranOnMainThread: Bool?
-
-	func record(_ ranOnMainThread: Bool) {
-		self.ranOnMainThread = ranOnMainThread
-	}
-}
-
 final class CoreDataMigrationServiceTests: XCTestCase {
 
 	// Mirrors of the service's private store URLs.
@@ -117,15 +109,7 @@ final class CoreDataMigrationServiceTests: XCTestCase {
 		context.insert(liveMessage)
 		try context.save()
 
-		let executionRecorder = MigrationExecutionRecorder()
-		try await CoreDataMigrationService.migrateOffMain(
-			into: container,
-			executionProbe: { ranOnMainThread in
-				await executionRecorder.record(ranOnMainThread)
-			}
-		)
-		let migrationRanOnMainThread = await executionRecorder.ranOnMainThread
-		XCTAssertEqual(migrationRanOnMainThread, false)
+		try await CoreDataMigrationService.migrate(into: container)
 
 		// Node 111 migrated with its user and config; node 222 kept, not duplicated.
 		let nodes = try context.fetch(FetchDescriptor<NodeInfoEntity>())

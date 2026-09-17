@@ -358,7 +358,7 @@ class PersistenceController {
 		let container = container
 		let task = Task { @MainActor in
 			do {
-				try await CoreDataMigrationService.migrateOffMain(into: container)
+				try await CoreDataMigrationService.migrate(into: container)
 			} catch {
 				// Preserve the existing behavior: migration failure does not make the app unusable.
 				Logger.data.error("⬆️ CoreDataMigrationService failed: \(error.localizedDescription, privacy: .public)")
