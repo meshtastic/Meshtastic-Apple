@@ -2041,6 +2041,33 @@ public struct Routing: Sendable {
     set {variant = .errorReason(newValue)}
   }
 
+  ///
+  /// Optional proof that this ack/nak was produced by the node that actually received the packet
+  /// identified by Data.request_id, rather than by anyone holding the channel key.
+  ///
+  /// Explicit acks are usually sent on the channel, and channel traffic is encrypted but not
+  /// authenticated, so such an ack can be forged by any listener holding the PSK. When the
+  /// acknowledged packet WAS PKI encrypted, the two endpoints already share a Curve25519 secret, so
+  /// the receiver can prove receipt cheaply rather than signing the ack:
+  ///
+  ///   ack_proof = HMAC-SHA256(shared_key,
+  ///                           "ack" | LE32(from) | LE32(to) | LE32(request_id) | routing)[0..8)
+  ///
+  /// where shared_key is the same SHA256(X25519(sender_private, receiver_public)) used for PKI
+  /// packet encryption, and `routing` is this encoded Routing message without the ack_proof field.
+  ///
+  /// Each input is load-bearing. request_id stops a captured proof being replayed against a
+  /// different outstanding packet. The Routing bytes stop a bit-flip turning a proven success into a
+  /// failure: an ack and a nak for one packet otherwise share every other input, and channel
+  /// encryption is CTR with no integrity check. Integers are little-endian so the value is a
+  /// property of the protocol rather than of the host that computed it.
+  ///
+  /// Unset when no pairwise key is available, including the PKI_UNKNOWN_PUBKEY and NO_CHANNEL naks,
+  /// which are emitted precisely because the packet could not be decrypted. Receivers that do not
+  /// understand this field ignore it. It does not replace xeddsa_signature, which remains the only
+  /// option for traffic with no pairwise key and the only proof a third party can check.
+  public var ackProof: Data = Data()
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public enum OneOf_Variant: Equatable, Sendable {
@@ -5099,7 +5126,7 @@ extension RouteDiscovery: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
 
 extension Routing: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".Routing"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}route_request\0\u{3}route_reply\0\u{3}error_reason\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}route_request\0\u{3}route_reply\0\u{3}error_reason\0\u{3}ack_proof\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -5141,6 +5168,7 @@ extension Routing: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
           self.variant = .errorReason(v)
         }
       }()
+      case 4: try { try decoder.decodeSingularBytesField(value: &self.ackProof) }()
       default: break
       }
     }
@@ -5166,11 +5194,15 @@ extension Routing: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
     }()
     case nil: break
     }
+    if !self.ackProof.isEmpty {
+      try visitor.visitSingularBytesField(value: self.ackProof, fieldNumber: 4)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: Routing, rhs: Routing) -> Bool {
     if lhs.variant != rhs.variant {return false}
+    if lhs.ackProof != rhs.ackProof {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
