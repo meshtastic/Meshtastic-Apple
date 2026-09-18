@@ -11,7 +11,6 @@ import MeshtasticProtobufs
 import OSLog
 @preconcurrency import SwiftData
 import SwiftUI
-import TipKit
 
 struct DiscoveryScanView: View {
 	@Environment(\.modelContext) private var context
@@ -72,7 +71,6 @@ struct DiscoveryScanView: View {
 		return Set(beacons.compactMap { $0.offeredPreset }).intersection(available)
 	}
 
-	private let discoveryScanTip = DiscoveryScanTip()
 
 	var body: some View {
 		GeometryReader { proxy in
@@ -138,10 +136,6 @@ struct DiscoveryScanView: View {
 	@ViewBuilder
 	private func scanList(proxy: GeometryProxy) -> some View {
 		List {
-			TipView(discoveryScanTip)
-				.listRowBackground(Color.clear)
-				.listRowInsets(EdgeInsets())
-
 			if let engine {
 				if engine.isScanning || engine.currentState == .complete || engine.currentState == .analysis {
 					scanProgressSection(engine)
