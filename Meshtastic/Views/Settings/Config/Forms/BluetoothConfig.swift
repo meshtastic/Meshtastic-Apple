@@ -22,9 +22,19 @@ struct BluetoothConfig: View {
 	@EnvironmentObject private var accessoryManager: AccessoryManager
 	let node: NodeInfoEntity?
 
+	/// A PIN being typed can be too short to save. The field reports that here so the
+	/// Save button can wait for the sixth digit.
+	@State private var pinIsComplete = true
+
 	private typealias F = Config.BluetoothConfig.Fields
 
-	static func overlay() -> ConfigFormOverlay<Config.BluetoothConfig> {
+	/// The radio only uses the PIN on fixed-pin pairing, so a short one holds Save back
+	/// only there.
+	static func canSave(_ config: Config.BluetoothConfig, pinIsComplete: Bool) -> Bool {
+		config.mode != .fixedPin || pinIsComplete
+	}
+
+	static func overlay(pinIsComplete: Binding<Bool> = .constant(true)) -> ConfigFormOverlay<Config.BluetoothConfig> {
 		.init(sections: [
 			.init(title: String(localized: "Options", comment: "Settings section"), fields: [
 				.init(F.enabled, symbol: "antenna.radiowaves.left.and.right"),
@@ -32,14 +42,17 @@ struct BluetoothConfig: View {
 				// Six digits, digits only, no leading zeros: the firmware stores the PIN as a
 				// number. A plain number field would take anything.
 				.init(F.fixedPin, shownWhen: .equals(F.mode, .fixedPin),
-					  control: .custom { config in AnyView(BluetoothPINField(pin: config.fixedPin)) })
+					  control: .custom { config in
+						  AnyView(BluetoothPINField(pin: config.fixedPin, isComplete: pinIsComplete))
+					  })
 			])
 		])
 	}
 
 	var body: some View {
 		MetadataConfigForm(
-			node: node, title: "Bluetooth", overlay: Self.overlay(),
+			node: node, title: "Bluetooth", overlay: Self.overlay(pinIsComplete: $pinIsComplete),
+			canSave: { Self.canSave($0, pinIsComplete: pinIsComplete) },
 			request: accessoryManager.requestBluetoothConfig,
 			save: { config, from, to in
 				_ = try await accessoryManager.saveBluetoothConfig(config: config, fromUser: from, toUser: to)
@@ -49,14 +62,16 @@ struct BluetoothConfig: View {
 }
 
 /// The fixed pairing PIN: exactly six digits, kept as text while typing so a partial
-/// entry can be shown as short rather than silently accepted.
+/// entry can be shown as short rather than silently accepted. What is typed is written
+/// through as it is typed, so the PIN on screen is always the one that would be saved,
+/// and a short one holds the Save button back rather than sending the previous value.
 private struct BluetoothPINField: View {
 	@Binding var pin: UInt32
+	@Binding var isComplete: Bool
 	@State private var text = ""
 	private let length = 6
 
 	private var label: String { Config.BluetoothConfig.Fields.fixedPin.metadata?.label ?? "Fixed Pin" }
-	private var isShort: Bool { !text.isEmpty && text.count < length }
 
 	var body: some View {
 		HStack {
@@ -66,17 +81,23 @@ private struct BluetoothPINField: View {
 				.multilineTextAlignment(.trailing)
 				.keyboardType(.numberPad)
 		}
-		.onAppear { text = pin == 0 ? "" : String(pin) }
+		.onAppear {
+			text = pin == 0 ? "" : String(pin)
+			isComplete = text.count == length
+		}
 		.onChange(of: text) { _, new in
 			let digits = String(new.filter(\.isNumber).drop(while: { $0 == "0" }).prefix(length))
 			if digits != new { text = digits }
-			if digits.count == length, let value = UInt32(digits) { pin = value }
+			pin = UInt32(digits) ?? 0
+			isComplete = digits.count == length
 		}
 		.onChange(of: pin) { _, new in
+			// A config arriving from the radio replaces what is shown; setting the text
+			// runs the handler above, which reports whether it is complete.
 			let shown = new == 0 ? "" : String(new)
-			if shown != text, text.count == length || text.isEmpty { text = shown }
+			if shown != text { text = shown }
 		}
-		if isShort {
+		if !isComplete {
 			Text("BLE Pin must be 6 digits long.")
 				.font(.callout)
 				.foregroundColor(.red)

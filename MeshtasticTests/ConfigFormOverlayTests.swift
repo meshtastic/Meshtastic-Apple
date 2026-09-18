@@ -111,4 +111,15 @@ struct ConfigFormOverlayTests {
 		let counter = ModuleConfig.PaxcounterConfig(entity: pax)
 		#expect(counter.wifiThreshold == -70 && counter.paxcounterUpdateInterval == 900)
 	}
+
+	@Test("Bluetooth waits for the sixth PIN digit before it will save")
+	func bluetoothShortPinHoldsSave() {
+		var message = Config.BluetoothConfig()
+		message.mode = .fixedPin
+		#expect(!BluetoothConfig.canSave(message, pinIsComplete: false), "a short PIN must not save the previous one")
+		#expect(BluetoothConfig.canSave(message, pinIsComplete: true))
+		// The PIN is only used for fixed-pin pairing, so it cannot block the other modes.
+		message.mode = .randomPin
+		#expect(BluetoothConfig.canSave(message, pinIsComplete: false))
+	}
 }
