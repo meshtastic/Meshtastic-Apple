@@ -174,11 +174,18 @@ private struct IntegerRow<M: ConfigSchemaMessage>: View {
 	private func numberField(bare: Bool) -> some View {
 		HStack {
 			if !bare {
-				if let symbol = field.symbol {
-					Label(label, systemImage: symbol)
-				} else {
-					Text(label)
+				// The registry's names are longer than the ones these screens used to
+				// hardcode, so the label claims its width first; the number needs little.
+				// (Sizing the field instead does the opposite: a TextField's ideal width
+				// comes from its placeholder, which is this same label.)
+				Group {
+					if let symbol = field.symbol {
+						Label(label, systemImage: symbol)
+					} else {
+						Text(label)
+					}
 				}
+				.layoutPriority(1)
 			}
 			Spacer()
 			// The placeholder keeps the field's name for VoiceOver even when the row is bare.
