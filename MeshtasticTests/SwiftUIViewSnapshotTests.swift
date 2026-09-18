@@ -2099,3 +2099,145 @@ struct PacketAuthenticitySnapshotTests {
 		await assertViewSnapshot(of: section(.compatible, capability: .unknown), width: 390, height: 300, colorScheme: .dark, named: "packetAuthenticity_unknown_dark")
 	}
 }
+
+// MARK: - Schema-driven configuration screens
+
+/// The screens on `MetadataConfigForm`, rendered with a populated node so every row
+/// shows a value rather than the "connect a radio" header the `node: nil` snapshots
+/// capture. One suite per migrated screen; each migration adds its own.
+@Suite("SerialConfig Snapshots")
+struct SerialConfigSnapshotTests {
+
+	@MainActor
+	private func makeNode() throws -> NodeInfoEntity {
+		let context = sharedModelContainer.mainContext
+		let node = NodeInfoEntity()
+		node.num = 0xC0FF_EE01
+		context.insert(node)
+		let user = UserEntity()
+		user.num = node.num
+		user.longName = "Snapshot Serial Node"
+		user.shortName = "SSER"
+		context.insert(user)
+		node.user = user
+		let serial = SerialConfigEntity()
+		serial.enabled = true
+		serial.echo = true
+		serial.baudRate = Int32(ModuleConfig.SerialConfig.Serial_Baud.baud115200.rawValue)
+		serial.timeout = 30
+		serial.mode = Int32(ModuleConfig.SerialConfig.Serial_Mode.nmea.rawValue)
+		serial.rxd = 16
+		serial.txd = 17
+		context.insert(serial)
+		node.serialConfig = serial
+		try context.save()
+		return node
+	}
+
+	@Test("Serial config form, populated")
+	@MainActor
+	func serialConfigForm() async throws {
+		// ConfigHeader loads the stored values only for the connected node (or one with
+		// metadata), so the fixture has to be the connected node to render populated.
+		let node = try makeNode()
+		AccessoryManager.shared.isConnected = true
+		AccessoryManager.shared.activeDeviceNum = node.num
+		let view = NavigationView {
+			SerialConfig(node: node)
+				.environmentObject(AccessoryManager.shared)
+				.modelContainer(sharedModelContainer)
+		}
+		await assertViewSnapshot(of: view, width: 390, height: 900, named: "serialConfigForm")
+	}
+}
+
+@Suite("NeighborInfoConfig Snapshots")
+struct NeighborInfoConfigSnapshotTests {
+
+	@MainActor
+	private func makeNode() throws -> NodeInfoEntity {
+		let context = sharedModelContainer.mainContext
+		let node = NodeInfoEntity()
+		node.num = 0xC0FF_EE02
+		context.insert(node)
+		let user = UserEntity()
+		user.num = node.num
+		user.longName = "Snapshot Neighbor Node"
+		user.shortName = "SNBR"
+		context.insert(user)
+		node.user = user
+		let neighbor = NeighborInfoConfigEntity()
+		neighbor.enabled = true
+		neighbor.updateInterval = 0   // stored zero: the picker must show the four-hour default
+		neighbor.transmitOverLora = true
+		context.insert(neighbor)
+		node.neighborInfoConfig = neighbor
+		try context.save()
+		return node
+	}
+
+	@Test("Neighbor info form, enabled, with the default interval shown")
+	@MainActor
+	func neighborInfoForm() async throws {
+		// ConfigHeader loads the stored values only for the connected node (or one with
+		// metadata), so the fixture has to be the connected node to render populated.
+		let node = try makeNode()
+		AccessoryManager.shared.isConnected = true
+		AccessoryManager.shared.activeDeviceNum = node.num
+		let view = NavigationView {
+			NeighborInfoConfig(node: node)
+				.environmentObject(AccessoryManager.shared)
+				.modelContainer(sharedModelContainer)
+		}
+		await assertViewSnapshot(of: view, width: 390, height: 700, named: "neighborInfoConfigForm")
+	}
+}
+
+@Suite("ExternalNotificationConfig Snapshots")
+struct ExternalNotificationConfigSnapshotTests {
+
+	@MainActor
+	private func makeNode() throws -> NodeInfoEntity {
+		let context = sharedModelContainer.mainContext
+		let node = NodeInfoEntity()
+		node.num = 0xC0FF_EE03
+		context.insert(node)
+		let user = UserEntity()
+		user.num = node.num
+		user.longName = "Snapshot Notification Node"
+		user.shortName = "SNOT"
+		context.insert(user)
+		node.user = user
+		let ext = ExternalNotificationConfigEntity()
+		ext.enabled = true
+		ext.alertBell = true
+		ext.alertMessage = true
+		ext.usePWM = true
+		ext.active = true
+		ext.output = 13
+		ext.outputMilliseconds = 1000
+		ext.nagTimeout = 60
+		ext.outputBuzzer = 14
+		ext.alertMessageBuzzer = true
+		context.insert(ext)
+		node.externalNotificationConfig = ext
+		try context.save()
+		return node
+	}
+
+	@Test("External notification form, populated")
+	@MainActor
+	func externalNotificationForm() async throws {
+		// ConfigHeader loads the stored values only for the connected node (or one with
+		// metadata), so the fixture has to be the connected node to render populated.
+		let node = try makeNode()
+		AccessoryManager.shared.isConnected = true
+		AccessoryManager.shared.activeDeviceNum = node.num
+		let view = NavigationView {
+			ExternalNotificationConfig(node: node)
+				.environmentObject(AccessoryManager.shared)
+				.modelContainer(sharedModelContainer)
+		}
+		await assertViewSnapshot(of: view, width: 390, height: 1400, named: "externalNotificationConfigForm")
+	}
+}

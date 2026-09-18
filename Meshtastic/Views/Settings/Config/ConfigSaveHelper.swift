@@ -37,6 +37,7 @@ func performConfigSave(
 	accessoryManager: AccessoryManager,
 	hasChanges: Binding<Bool>,
 	dismiss: DismissAction,
+	onError: ((String) -> Void)? = nil,
 	save: @escaping (_ fromUser: UserEntity, _ toUser: UserEntity) async throws -> Void
 ) {
 	guard let deviceNum = accessoryManager.activeDeviceNum,
@@ -44,7 +45,11 @@ func performConfigSave(
 		  let fromUser = connectedNode.user,
 		  let toUser = node?.user
 	else {
+		// The Save button only checks for a connection and a change, so this can be
+		// reached from a tap. Say so rather than doing nothing.
 		Logger.mesh.warning("⚠️ Cannot save config: missing connected node or user entities")
+		onError?(String(localized: "The connected radio or this node's user record is missing, so nothing was saved.",
+						comment: "Config save could not start"))
 		return
 	}
 
@@ -55,6 +60,7 @@ func performConfigSave(
 			dismiss()
 		} catch {
 			Logger.mesh.error("🚨 Config save failed: \(error.localizedDescription)")
+			onError?(error.localizedDescription)
 		}
 	}
 }

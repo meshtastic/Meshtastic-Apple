@@ -161,6 +161,10 @@ struct SettingsSearchIndexTests {
 					idx = body.index(after: idx)
 				}
 				let start = body.distance(from: body.startIndex, to: Range(m.range, in: body)!.lowerBound)
+				// Matches are enumerated over the unmasked body, so a message nested two deep
+				// shows up here as well as inside its parent's walk. Its start is already
+				// masked by the parent's block, which is how to tell.
+				guard start < masked.count, masked[start] != " " else { return }
 				let end = body.distance(from: body.startIndex, to: idx)
 				let kind = ns.substring(with: m.range(at: 1))
 				let name = ns.substring(with: m.range(at: 2))
