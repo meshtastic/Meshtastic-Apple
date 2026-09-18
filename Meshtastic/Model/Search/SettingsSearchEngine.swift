@@ -21,6 +21,21 @@ enum SettingsSearchEngine {
 		/// A managed radio exposes no configuration; its settings screens render
 		/// read-only, so results behave as they do when disconnected.
 		let isManaged: Bool
+		/// Whether Settings is rendering its Developers section, which appears only
+		/// in debug and TestFlight builds.
+		let showsDeveloperSettings: Bool
+
+		init(
+			isConnected: Bool,
+			isDIYHardware: Bool,
+			isManaged: Bool,
+			showsDeveloperSettings: Bool = false
+		) {
+			self.isConnected = isConnected
+			self.isDIYHardware = isDIYHardware
+			self.isManaged = isManaged
+			self.showsDeveloperSettings = showsDeveloperSettings
+		}
 
 		static let disconnected = Availability(
 			isConnected: false, isDIYHardware: false, isManaged: false)
@@ -99,6 +114,13 @@ enum SettingsSearchEngine {
 		for entry: SettingsSearchEntry,
 		availability: Availability
 	) -> SettingsSearchVisibility {
+		// The Developers section is absent from App Store builds, so its screens are
+		// not "unavailable" there — they are not present at all. Hidden rather than
+		// de-emphasised: there is nothing a user could do to reach them.
+		if entry.requiresDeveloperBuild, !availability.showsDeveloperSettings {
+			return .hidden
+		}
+
 		let metadata = entry.field?.metadata
 
 		// Deprecated settings are shown, marked, rather than hidden.

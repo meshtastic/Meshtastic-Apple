@@ -608,7 +608,10 @@ struct Settings: View {
 			// The DIY tag marks a product line rather than how a unit was built, so
 			// this is a hint and not a fact. See spec 019 FR-012a.
 			isDIYHardware: connectedHardwareIsDIY,
-			isManaged: connectedNodeIsManaged
+			isManaged: connectedNodeIsManaged,
+			// The same condition the Developers section itself renders on, so search
+			// never offers a screen this build does not show.
+			showsDeveloperSettings: showsDevelopersSection
 		)
 	}
 

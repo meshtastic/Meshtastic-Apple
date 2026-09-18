@@ -28,30 +28,59 @@ import sys
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
-VIEWS = REPO / "Meshtastic/Views/Settings"
+VIEWS = REPO / "Meshtastic/Views"
 OUTPUT = REPO / "Meshtastic/Model/Search/SettingsSearchCatalogue.swift"
 
-# view file -> (destination, screen title, list section, requires a radio)
+# view path (under Meshtastic/Views) -> (destination, screen title, list section,
+# requires a radio, requires a developer build)
 #
 # Only screens with no protobuf behind them. A settings screen backed by a config
 # message is indexed from the registry instead, and listing it here would duplicate
 # every one of its controls.
 #
-# The last flag is per-screen rather than per-control because every control on a
-# given screen shares it. Channels, the QR code, the user record and the TAK server
-# all read or write the connected node, so they are dimmed while disconnected. The
-# rest are app preferences that work with no radio at all, which is most of why
-# they are worth finding then.
-SCREENS: dict[str, tuple[str, str, str, bool]] = {
-    "AppSettings.swift": ("appSettings", "App Settings", "configure", False),
-    "Channels.swift": ("channels", "Channels", "radioConfiguration", True),
-    "ShareChannels.swift": ("shareQRCode", "Share QR Code", "radioConfiguration", True),
-    "Routes.swift": ("routes", "Routes", "configure", False),
-    "RouteRecorder.swift": ("routeRecorder", "Route Recorder", "configure", False),
-    "UserConfig.swift": ("user", "User", "deviceConfiguration", True),
-    "TAKServerConfig.swift": ("tak", "TAK Server", "configure", True),
-    "AppData.swift": ("appFiles", "App Data", "configure", False),
-    "About.swift": ("about", "About", "configure", False),
+# The list section is the group the row sits in on the Settings screen, so a result
+# carries the breadcrumb a user would have scrolled to. Paths are relative to
+# Meshtastic/Views because several of these screens live in their own folders, and
+# the Core Data browser is not under Settings at all.
+#
+# The last two flags are per-screen rather than per-control because every control on
+# a given screen shares them. Channels, the QR code, the user record, the ringtone
+# and the TAK server all read or write the connected node, so they are dimmed while
+# disconnected. The Developers section renders only in debug and TestFlight builds,
+# so its screens are hidden outright on an App Store build.
+SCREENS: dict[str, tuple[str, str, str, bool, bool]] = {
+    # The unlabelled group at the top of Settings.
+    "Settings/About.swift": ("about", "About", "general", False, False),
+    "Settings/HelpAndDocumentation/DocBrowserView.swift": (
+        "helpDocs", "Help & Documentation", "general", False, False),
+    "Settings/AppSettings.swift": ("appSettings", "App Settings", "general", False, False),
+    "Settings/Discovery/DiscoveryScanView.swift": (
+        "localMeshDiscovery", "Local Mesh Discovery", "general", False, False),
+    "Settings/Routes.swift": ("routes", "Routes", "general", False, False),
+    "Settings/RouteRecorder.swift": ("routeRecorder", "Route Recorder", "general", False, False),
+    "Settings/Firmware/Firmware.swift": (
+        "firmwareUpdates", "Firmware Updates", "general", False, False),
+
+    "Settings/Channels.swift": ("channels", "Channels", "radioConfiguration", True, False),
+    "Settings/ShareChannels.swift": (
+        "shareQRCode", "Share QR Code", "radioConfiguration", True, False),
+
+    "Settings/UserConfig.swift": ("user", "User", "deviceConfiguration", True, False),
+
+    "Settings/TAKServerConfig.swift": ("tak", "TAK Server", "configure", True, False),
+    "Settings/Config/Module/RtttlConfig.swift": ("ringtone", "Ringtone", "configure", True, False),
+
+    "Settings/AppLog.swift": ("debugLogs", "Logs", "logging", False, False),
+    "Settings/AllTraceRoutesLog.swift": ("traceRoutes", "Trace Routes", "logging", False, False),
+
+    "Settings/BackupManagement/BackupManagement.swift": (
+        "backupManagement", "Backup Management", "developers", False, True),
+    "Debugging/CoreDataBrowser.swift": (
+        "coreDataBrowser", "Data Browser", "developers", False, True),
+    "Settings/DeviceLinkDirectory.swift": (
+        "deviceLinks", "Device Links", "developers", False, True),
+    "Settings/AppData.swift": ("appFiles", "App Data", "developers", False, True),
+    "Settings/Tools.swift": ("tools", "Tools", "developers", False, True),
 }
 
 # Terms a user would search for that appear nowhere on the screen. Kept small and
@@ -59,6 +88,11 @@ SCREENS: dict[str, tuple[str, str, str, bool]] = {
 # weights a keyword below a label anyway.
 EXTRA_KEYWORDS: dict[tuple[str, str], list[str]] = {
     ("channels", "Channels"): ["psk", "encryption", "key", "primary", "secondary"],
+    ("localMeshDiscovery", "Local Mesh Discovery"): ["lan", "network", "wifi", "scan", "bonjour"],
+    ("firmwareUpdates", "Firmware Updates"): ["update", "flash", "ota", "version"],
+    ("helpDocs", "Help & Documentation"): ["help", "docs", "manual", "guide"],
+    ("traceRoutes", "Trace Routes"): ["hops", "path", "route"],
+    ("debugLogs", "Logs"): ["debug", "console", "diagnostics"],
     ("shareQRCode", "Share QR Code"): ["qr", "share", "invite"],
     ("appSettings", "Usage and Crash Data"): ["analytics", "telemetry", "privacy"],
     ("appSettings", "Clear App Data"): ["erase", "delete", "reset"],
@@ -176,9 +210,9 @@ def render() -> str:
             # Not a skip: a renamed or deleted view would drop an entire screen from
             # the index, and --check would happily accept the smaller catalogue.
             raise SystemExit(
-                f"  {filename} is listed in SCREENS but does not exist in {VIEWS.name}/.\n"
+                f"  {filename} is listed in SCREENS but does not exist under {VIEWS.relative_to(REPO)}/.\n"
                 "  Update SCREENS if the view was renamed or removed.")
-        destination, screen, section, needs_radio = SCREENS[filename]
+        destination, screen, section, needs_radio, needs_dev = SCREENS[filename]
         items = controls(path.read_text())
         # The screen itself, so "Channels" finds Channels and screen-wide keywords
         # have somewhere to live. Emitted even when no control was extracted - a
@@ -209,6 +243,8 @@ def render() -> str:
                     f"String(localized: {swift_string(k)}, comment: \"Search keyword\")" for k in extra)
                 parts.append(f"keywords: [{keywords}]")
             parts.append(f"requiresConnection: {str(needs_radio).lower()}")
+            if needs_dev:
+                parts.append("requiresDeveloperBuild: true")
             out.append("\t\t.init(")
             for part in parts[:-1]:
                 out.append(f"\t\t\t{part},")

@@ -19,55 +19,91 @@ import Foundation
 enum SettingsSearchCatalogue {
 
 	static let entries: [SettingsSearchEntry] = [
+		// MARK: Data Browser
+		.init(
+			destination: .coreDataBrowser,
+			screenTitle: String(localized: "Data Browser", comment: "Settings screen"),
+			listSection: .developers,
+			label: String(localized: "Data Browser", comment: "Settings control"),
+			requiresConnection: false,
+			requiresDeveloperBuild: true),
+
 		// MARK: About
 		.init(
 			destination: .about,
 			screenTitle: String(localized: "About", comment: "Settings screen"),
-			listSection: .configure,
+			listSection: .general,
 			label: String(localized: "About", comment: "Settings control"),
+			requiresConnection: false),
+
+		// MARK: Trace Routes
+		.init(
+			destination: .traceRoutes,
+			screenTitle: String(localized: "Trace Routes", comment: "Settings screen"),
+			listSection: .logging,
+			label: String(localized: "Trace Routes", comment: "Settings control"),
+			keywords: [String(localized: "hops", comment: "Search keyword"), String(localized: "path", comment: "Search keyword"), String(localized: "route", comment: "Search keyword")],
+			requiresConnection: false),
+		.init(
+			destination: .traceRoutes,
+			screenTitle: String(localized: "Trace Routes", comment: "Settings screen"),
+			listSection: .logging,
+			label: String(localized: "Delete", comment: "Settings control"),
 			requiresConnection: false),
 
 		// MARK: App Data
 		.init(
 			destination: .appFiles,
 			screenTitle: String(localized: "App Data", comment: "Settings screen"),
-			listSection: .configure,
+			listSection: .developers,
 			label: String(localized: "App Data", comment: "Settings control"),
-			requiresConnection: false),
+			requiresConnection: false,
+			requiresDeveloperBuild: true),
 		.init(
 			destination: .appFiles,
 			screenTitle: String(localized: "App Data", comment: "Settings screen"),
 			sectionTitle: String(localized: "Documents", comment: "Settings section"),
-			listSection: .configure,
+			listSection: .developers,
 			label: String(localized: "Download", comment: "Settings control"),
-			requiresConnection: false),
+			requiresConnection: false,
+			requiresDeveloperBuild: true),
 		.init(
 			destination: .appFiles,
 			screenTitle: String(localized: "App Data", comment: "Settings screen"),
 			sectionTitle: String(localized: "Documents", comment: "Settings section"),
-			listSection: .configure,
+			listSection: .developers,
 			label: String(localized: "Delete", comment: "Settings control"),
+			requiresConnection: false,
+			requiresDeveloperBuild: true),
+
+		// MARK: Logs
+		.init(
+			destination: .debugLogs,
+			screenTitle: String(localized: "Logs", comment: "Settings screen"),
+			listSection: .logging,
+			label: String(localized: "Logs", comment: "Settings control"),
+			keywords: [String(localized: "debug", comment: "Search keyword"), String(localized: "console", comment: "Search keyword"), String(localized: "diagnostics", comment: "Search keyword")],
 			requiresConnection: false),
 
 		// MARK: App Settings
 		.init(
 			destination: .appSettings,
 			screenTitle: String(localized: "App Settings", comment: "Settings screen"),
-			listSection: .configure,
+			listSection: .general,
 			label: String(localized: "App Settings", comment: "Settings control"),
 			requiresConnection: false),
 		.init(
 			destination: .appSettings,
 			screenTitle: String(localized: "App Settings", comment: "Settings screen"),
 			sectionTitle: String(localized: "App Settings", comment: "Settings section"),
-			listSection: .configure,
+			listSection: .general,
 			label: String(localized: "Administration", comment: "Settings control"),
 			requiresConnection: false),
 		.init(
 			destination: .appSettings,
 			screenTitle: String(localized: "App Settings", comment: "Settings screen"),
 			sectionTitle: String(localized: "App Settings", comment: "Settings section"),
-			listSection: .configure,
+			listSection: .general,
 			label: String(localized: "Usage and Crash Data", comment: "Settings control"),
 			keywords: [String(localized: "analytics", comment: "Search keyword"), String(localized: "telemetry", comment: "Search keyword"), String(localized: "privacy", comment: "Search keyword")],
 			requiresConnection: false),
@@ -75,14 +111,14 @@ enum SettingsSearchCatalogue {
 			destination: .appSettings,
 			screenTitle: String(localized: "App Settings", comment: "Settings screen"),
 			sectionTitle: String(localized: "App Settings", comment: "Settings section"),
-			listSection: .configure,
+			listSection: .general,
 			label: String(localized: "Automatically Connect", comment: "Settings control"),
 			requiresConnection: false),
 		.init(
 			destination: .appSettings,
 			screenTitle: String(localized: "App Settings", comment: "Settings screen"),
 			sectionTitle: String(localized: "App Settings", comment: "Settings section"),
-			listSection: .configure,
+			listSection: .general,
 			label: String(localized: "App Icon", comment: "Settings control"),
 			keywords: [String(localized: "icon", comment: "Search keyword"), String(localized: "appearance", comment: "Search keyword")],
 			requiresConnection: false),
@@ -90,91 +126,91 @@ enum SettingsSearchCatalogue {
 			destination: .appSettings,
 			screenTitle: String(localized: "App Settings", comment: "Settings screen"),
 			sectionTitle: String(localized: "Node Layout", comment: "Settings section"),
-			listSection: .configure,
+			listSection: .general,
 			label: String(localized: "Node List Density", comment: "Settings control"),
 			requiresConnection: false),
 		.init(
 			destination: .appSettings,
 			screenTitle: String(localized: "App Settings", comment: "Settings screen"),
 			sectionTitle: String(localized: "Node Layout", comment: "Settings section"),
-			listSection: .configure,
+			listSection: .general,
 			label: String(localized: "Power", comment: "Settings control"),
 			requiresConnection: false),
 		.init(
 			destination: .appSettings,
 			screenTitle: String(localized: "App Settings", comment: "Settings screen"),
 			sectionTitle: String(localized: "Node Layout", comment: "Settings section"),
-			listSection: .configure,
+			listSection: .general,
 			label: String(localized: "Last Heard Time", comment: "Settings control"),
 			requiresConnection: false),
 		.init(
 			destination: .appSettings,
 			screenTitle: String(localized: "App Settings", comment: "Settings screen"),
 			sectionTitle: String(localized: "Node Layout", comment: "Settings section"),
-			listSection: .configure,
+			listSection: .general,
 			label: String(localized: "Relative Last Heard Time", comment: "Settings control"),
 			requiresConnection: false),
 		.init(
 			destination: .appSettings,
 			screenTitle: String(localized: "App Settings", comment: "Settings screen"),
 			sectionTitle: String(localized: "Node Layout", comment: "Settings section"),
-			listSection: .configure,
+			listSection: .general,
 			label: String(localized: "Distance and Bearing", comment: "Settings control"),
 			requiresConnection: false),
 		.init(
 			destination: .appSettings,
 			screenTitle: String(localized: "App Settings", comment: "Settings screen"),
 			sectionTitle: String(localized: "Node Layout", comment: "Settings section"),
-			listSection: .configure,
+			listSection: .general,
 			label: String(localized: "Hops Away", comment: "Settings control"),
 			requiresConnection: false),
 		.init(
 			destination: .appSettings,
 			screenTitle: String(localized: "App Settings", comment: "Settings screen"),
 			sectionTitle: String(localized: "Node Layout", comment: "Settings section"),
-			listSection: .configure,
+			listSection: .general,
 			label: String(localized: "Signal (Direct Only)", comment: "Settings control"),
 			requiresConnection: false),
 		.init(
 			destination: .appSettings,
 			screenTitle: String(localized: "App Settings", comment: "Settings screen"),
 			sectionTitle: String(localized: "Node Layout", comment: "Settings section"),
-			listSection: .configure,
+			listSection: .general,
 			label: String(localized: "Channel", comment: "Settings control"),
 			requiresConnection: false),
 		.init(
 			destination: .appSettings,
 			screenTitle: String(localized: "App Settings", comment: "Settings screen"),
 			sectionTitle: String(localized: "Node Layout", comment: "Settings section"),
-			listSection: .configure,
+			listSection: .general,
 			label: String(localized: "Device Role", comment: "Settings control"),
 			requiresConnection: false),
 		.init(
 			destination: .appSettings,
 			screenTitle: String(localized: "App Settings", comment: "Settings screen"),
 			sectionTitle: String(localized: "Node Layout", comment: "Settings section"),
-			listSection: .configure,
+			listSection: .general,
 			label: String(localized: "Log Icons", comment: "Settings control"),
 			requiresConnection: false),
 		.init(
 			destination: .appSettings,
 			screenTitle: String(localized: "App Settings", comment: "Settings screen"),
 			sectionTitle: String(localized: "Environment", comment: "Settings section"),
-			listSection: .configure,
+			listSection: .general,
 			label: String(localized: "Weather Conditions", comment: "Settings control"),
 			requiresConnection: false),
 		.init(
 			destination: .appSettings,
 			screenTitle: String(localized: "App Settings", comment: "Settings screen"),
 			sectionTitle: String(localized: "App Data", comment: "Settings section"),
-			listSection: .configure,
+			listSection: .general,
 			label: String(localized: "Clear Stale Nodes", comment: "Settings control"),
 			requiresConnection: false),
 		.init(
 			destination: .appSettings,
 			screenTitle: String(localized: "App Settings", comment: "Settings screen"),
 			sectionTitle: String(localized: "App Data", comment: "Settings section"),
-			listSection: .configure,
+			listSection: .general,
 			label: String(localized: "Clear App Data", comment: "Settings control"),
 			keywords: [String(localized: "erase", comment: "Search keyword"), String(localized: "delete", comment: "Search keyword"), String(localized: "reset", comment: "Search keyword")],
 			requiresConnection: false),
@@ -182,16 +218,33 @@ enum SettingsSearchCatalogue {
 			destination: .appSettings,
 			screenTitle: String(localized: "App Settings", comment: "Settings screen"),
 			sectionTitle: String(localized: "App Data", comment: "Settings section"),
-			listSection: .configure,
+			listSection: .general,
 			label: String(localized: "Reset App Settings", comment: "Settings control"),
 			requiresConnection: false),
 		.init(
 			destination: .appSettings,
 			screenTitle: String(localized: "App Settings", comment: "Settings screen"),
 			sectionTitle: String(localized: "Documentation Translations", comment: "Settings section"),
-			listSection: .configure,
+			listSection: .general,
 			label: String(localized: "Participate in Distributed Translations", comment: "Settings control"),
 			requiresConnection: false),
+
+		// MARK: Backup Management
+		.init(
+			destination: .backupManagement,
+			screenTitle: String(localized: "Backup Management", comment: "Settings screen"),
+			listSection: .developers,
+			label: String(localized: "Backup Management", comment: "Settings control"),
+			requiresConnection: false,
+			requiresDeveloperBuild: true),
+		.init(
+			destination: .backupManagement,
+			screenTitle: String(localized: "Backup Management", comment: "Settings screen"),
+			sectionTitle: String(localized: "Node Backups", comment: "Settings section"),
+			listSection: .developers,
+			label: String(localized: "Backup Now", comment: "Settings control"),
+			requiresConnection: false,
+			requiresDeveloperBuild: true),
 
 		// MARK: Channels
 		.init(
@@ -202,11 +255,107 @@ enum SettingsSearchCatalogue {
 			keywords: [String(localized: "psk", comment: "Search keyword"), String(localized: "encryption", comment: "Search keyword"), String(localized: "key", comment: "Search keyword"), String(localized: "primary", comment: "Search keyword"), String(localized: "secondary", comment: "Search keyword")],
 			requiresConnection: true),
 
+		// MARK: Ringtone
+		.init(
+			destination: .ringtone,
+			screenTitle: String(localized: "Ringtone", comment: "Settings screen"),
+			listSection: .configure,
+			label: String(localized: "Ringtone", comment: "Settings control"),
+			requiresConnection: true),
+		.init(
+			destination: .ringtone,
+			screenTitle: String(localized: "Ringtone", comment: "Settings screen"),
+			sectionTitle: String(localized: "Options", comment: "Settings section"),
+			listSection: .configure,
+			label: String(localized: "Ringtone Transfer Language", comment: "Settings control"),
+			requiresConnection: true),
+
+		// MARK: Device Links
+		.init(
+			destination: .deviceLinks,
+			screenTitle: String(localized: "Device Links", comment: "Settings screen"),
+			listSection: .developers,
+			label: String(localized: "Device Links", comment: "Settings control"),
+			requiresConnection: false,
+			requiresDeveloperBuild: true),
+
+		// MARK: Local Mesh Discovery
+		.init(
+			destination: .localMeshDiscovery,
+			screenTitle: String(localized: "Local Mesh Discovery", comment: "Settings screen"),
+			listSection: .general,
+			label: String(localized: "Local Mesh Discovery", comment: "Settings control"),
+			keywords: [String(localized: "lan", comment: "Search keyword"), String(localized: "network", comment: "Search keyword"), String(localized: "wifi", comment: "Search keyword"), String(localized: "scan", comment: "Search keyword"), String(localized: "bonjour", comment: "Search keyword")],
+			requiresConnection: false),
+		.init(
+			destination: .localMeshDiscovery,
+			screenTitle: String(localized: "Local Mesh Discovery", comment: "Settings screen"),
+			listSection: .general,
+			label: String(localized: "View Summary", comment: "Settings control"),
+			requiresConnection: false),
+		.init(
+			destination: .localMeshDiscovery,
+			screenTitle: String(localized: "Local Mesh Discovery", comment: "Settings screen"),
+			sectionTitle: String(localized: "Discovery Map", comment: "Settings section"),
+			listSection: .general,
+			label: String(localized: "Stop Scan", comment: "Settings control"),
+			requiresConnection: false),
+		.init(
+			destination: .localMeshDiscovery,
+			screenTitle: String(localized: "Local Mesh Discovery", comment: "Settings screen"),
+			sectionTitle: String(localized: "Discovery Map", comment: "Settings section"),
+			listSection: .general,
+			label: String(localized: "Dwell Duration", comment: "Settings control"),
+			requiresConnection: false),
+		.init(
+			destination: .localMeshDiscovery,
+			screenTitle: String(localized: "Local Mesh Discovery", comment: "Settings screen"),
+			sectionTitle: String(localized: "Discovery Map", comment: "Settings section"),
+			listSection: .general,
+			label: String(localized: "Analyze Current Preset", comment: "Settings control"),
+			requiresConnection: false),
+
+		// MARK: Firmware Updates
+		.init(
+			destination: .firmwareUpdates,
+			screenTitle: String(localized: "Firmware Updates", comment: "Settings screen"),
+			listSection: .general,
+			label: String(localized: "Firmware Updates", comment: "Settings control"),
+			keywords: [String(localized: "update", comment: "Search keyword"), String(localized: "flash", comment: "Search keyword"), String(localized: "ota", comment: "Search keyword"), String(localized: "version", comment: "Search keyword")],
+			requiresConnection: false),
+		.init(
+			destination: .firmwareUpdates,
+			screenTitle: String(localized: "Firmware Updates", comment: "Settings screen"),
+			listSection: .general,
+			label: String(localized: "Firmware Version", comment: "Settings control"),
+			requiresConnection: false),
+		.init(
+			destination: .firmwareUpdates,
+			screenTitle: String(localized: "Firmware Updates", comment: "Settings screen"),
+			listSection: .general,
+			label: String(localized: "Upgrade Bootloader", comment: "Settings control"),
+			requiresConnection: false),
+		.init(
+			destination: .firmwareUpdates,
+			screenTitle: String(localized: "Firmware Updates", comment: "Settings screen"),
+			listSection: .general,
+			label: String(localized: "Factory Erase", comment: "Settings control"),
+			requiresConnection: false),
+
+		// MARK: Help & Documentation
+		.init(
+			destination: .helpDocs,
+			screenTitle: String(localized: "Help & Documentation", comment: "Settings screen"),
+			listSection: .general,
+			label: String(localized: "Help & Documentation", comment: "Settings control"),
+			keywords: [String(localized: "help", comment: "Search keyword"), String(localized: "docs", comment: "Search keyword"), String(localized: "manual", comment: "Search keyword"), String(localized: "guide", comment: "Search keyword")],
+			requiresConnection: false),
+
 		// MARK: Route Recorder
 		.init(
 			destination: .routeRecorder,
 			screenTitle: String(localized: "Route Recorder", comment: "Settings screen"),
-			listSection: .configure,
+			listSection: .general,
 			label: String(localized: "Route Recorder", comment: "Settings control"),
 			requiresConnection: false),
 
@@ -214,20 +363,20 @@ enum SettingsSearchCatalogue {
 		.init(
 			destination: .routes,
 			screenTitle: String(localized: "Routes", comment: "Settings screen"),
-			listSection: .configure,
+			listSection: .general,
 			label: String(localized: "Routes", comment: "Settings control"),
 			keywords: [String(localized: "track", comment: "Search keyword"), String(localized: "gpx", comment: "Search keyword")],
 			requiresConnection: false),
 		.init(
 			destination: .routes,
 			screenTitle: String(localized: "Routes", comment: "Settings screen"),
-			listSection: .configure,
+			listSection: .general,
 			label: String(localized: "Enabled", comment: "Settings control"),
 			requiresConnection: false),
 		.init(
 			destination: .routes,
 			screenTitle: String(localized: "Routes", comment: "Settings screen"),
-			listSection: .configure,
+			listSection: .general,
 			label: String(localized: "Color", comment: "Settings control"),
 			requiresConnection: false),
 
@@ -293,6 +442,39 @@ enum SettingsSearchCatalogue {
 			listSection: .configure,
 			label: String(localized: "Role", comment: "Settings control"),
 			requiresConnection: true),
+
+		// MARK: Tools
+		.init(
+			destination: .tools,
+			screenTitle: String(localized: "Tools", comment: "Settings screen"),
+			listSection: .developers,
+			label: String(localized: "Tools", comment: "Settings control"),
+			requiresConnection: false,
+			requiresDeveloperBuild: true),
+		.init(
+			destination: .tools,
+			screenTitle: String(localized: "Tools", comment: "Settings screen"),
+			sectionTitle: String(localized: "NFC Tags", comment: "Settings section"),
+			listSection: .developers,
+			label: String(localized: "Write Contact to NFC Tag", comment: "Settings control"),
+			requiresConnection: false,
+			requiresDeveloperBuild: true),
+		.init(
+			destination: .tools,
+			screenTitle: String(localized: "Tools", comment: "Settings screen"),
+			sectionTitle: String(localized: "Export Device Configuration", comment: "Settings section"),
+			listSection: .developers,
+			label: String(localized: "Export Configuration", comment: "Settings control"),
+			requiresConnection: false,
+			requiresDeveloperBuild: true),
+		.init(
+			destination: .tools,
+			screenTitle: String(localized: "Tools", comment: "Settings screen"),
+			sectionTitle: String(localized: "Import Device Configuration", comment: "Settings section"),
+			listSection: .developers,
+			label: String(localized: "Import Configuration", comment: "Settings control"),
+			requiresConnection: false,
+			requiresDeveloperBuild: true),
 
 		// MARK: User
 		.init(

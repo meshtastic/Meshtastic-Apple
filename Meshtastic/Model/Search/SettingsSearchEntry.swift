@@ -32,6 +32,9 @@ struct SettingsSearchEntry: Identifiable, Hashable {
 	let field: FieldIdentity?
 	/// Radio configuration is unavailable without a connected radio.
 	let requiresConnection: Bool
+	/// The Developers section only renders in debug and TestFlight builds, so its
+	/// screens must not surface in search on an App Store build.
+	let requiresDeveloperBuild: Bool
 
 	/// Destination plus label, never label alone: "Enabled" is the label of six
 	/// different controls, so the screen is part of an entry's identity.
@@ -46,7 +49,8 @@ struct SettingsSearchEntry: Identifiable, Hashable {
 		subtitle: String? = nil,
 		keywords: [String] = [],
 		field: FieldIdentity? = nil,
-		requiresConnection: Bool = true
+		requiresConnection: Bool = true,
+		requiresDeveloperBuild: Bool = false
 	) {
 		self.destination = destination
 		self.screenTitle = screenTitle
@@ -57,6 +61,7 @@ struct SettingsSearchEntry: Identifiable, Hashable {
 		self.keywords = keywords
 		self.field = field
 		self.requiresConnection = requiresConnection
+		self.requiresDeveloperBuild = requiresDeveloperBuild
 	}
 }
 
@@ -81,18 +86,30 @@ struct FieldIdentity: Hashable {
 /// matches the list the user would otherwise have scrolled. Declaration order is
 /// also the tiebreak order for equally-scored results.
 enum SettingsListSection: Int, CaseIterable, Hashable {
+	/// The unlabelled group at the top of Settings — About, Help, App Settings,
+	/// Local Mesh Discovery, Routes, Route Recorder, Firmware Updates.
+	case general
 	case radioConfiguration
 	case deviceConfiguration
 	case configure
+	case logging
+	case developers
 
 	var title: String {
 		switch self {
+		case .general:
+			// No header on screen; results still need one to group under.
+			return String(localized: "General", comment: "Settings list section")
 		case .radioConfiguration:
 			return String(localized: "Radio Configuration", comment: "Settings list section")
 		case .deviceConfiguration:
 			return String(localized: "Device Configuration", comment: "Settings list section")
 		case .configure:
 			return String(localized: "Configure", comment: "Settings list section")
+		case .logging:
+			return String(localized: "Logging", comment: "Settings list section")
+		case .developers:
+			return String(localized: "Developers", comment: "Settings list section")
 		}
 	}
 }

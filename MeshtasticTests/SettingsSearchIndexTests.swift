@@ -273,9 +273,87 @@ struct SettingsSearchCatalogueTests {
 		// record and the TAK server read the connected node. The app preferences do
 		// not, and dimming those would be wrong - being findable with no radio is
 		// most of why they are indexed.
-		let offlineScreens: Set<SettingsNavigationState> = [.appSettings, .about, .routes, .routeRecorder, .appFiles]
+		let offlineScreens: Set<SettingsNavigationState> = [
+			.appSettings, .about, .routes, .routeRecorder, .appFiles,
+			.localMeshDiscovery, .firmwareUpdates, .helpDocs,
+			.debugLogs, .traceRoutes, .backupManagement, .coreDataBrowser,
+			.deviceLinks, .tools
+		]
 		for entry in SettingsSearchCatalogue.entries where offlineScreens.contains(entry.destination) {
 			#expect(!entry.requiresConnection, "\(entry.id) is an app preference and should not require a radio")
+		}
+	}
+
+	@Test("Every app-level row on the Settings screen is indexed")
+	func everyAppLevelScreenIsReachable() throws {
+		// The rows that are not backed by a config message. Each one is a screen a
+		// user can open from Settings, so each one must be findable by its name -
+		// this is the half that does not come from the schema, so nothing else
+		// catches it going missing.
+		let expected: Set<SettingsNavigationState> = [
+			.about, .helpDocs, .appSettings, .localMeshDiscovery, .routes,
+			.routeRecorder, .firmwareUpdates, .channels, .shareQRCode, .user,
+			.tak, .ringtone, .debugLogs, .traceRoutes, .backupManagement,
+			.coreDataBrowser, .deviceLinks, .appFiles, .tools
+		]
+		let indexed = Set(SettingsSearchCatalogue.entries.map(\.destination))
+		#expect(
+			expected.subtracting(indexed).isEmpty,
+			"not indexed: \(expected.subtracting(indexed).map(\.rawValue).sorted())")
+	}
+
+	@Test("A screen sits in the section it occupies on the Settings list")
+	func sectionsMatchTheSettingsScreen() throws {
+		// The breadcrumb is only useful if it names the group the user would have
+		// scrolled to, so these pin a representative row per section.
+		let expected: [SettingsNavigationState: SettingsListSection] = [
+			.localMeshDiscovery: .general, .about: .general, .firmwareUpdates: .general,
+			.channels: .radioConfiguration, .user: .deviceConfiguration,
+			.ringtone: .configure, .debugLogs: .logging, .tools: .developers
+		]
+		for (destination, section) in expected {
+			let entry = SettingsSearchCatalogue.entries.first { $0.destination == destination }
+			let found = try #require(entry, "\(destination.rawValue) is not in the catalogue")
+			#expect(found.listSection == section, "\(destination.rawValue) is in \(found.listSection)")
+		}
+	}
+
+	@Test("Developers screens are hidden on a build that does not show them")
+	func developerScreensAreBuildGated() throws {
+		let developerScreens: Set<SettingsNavigationState> = [
+			.backupManagement, .coreDataBrowser, .deviceLinks, .appFiles, .tools
+		]
+		for entry in SettingsSearchCatalogue.entries where developerScreens.contains(entry.destination) {
+			#expect(entry.requiresDeveloperBuild, "\(entry.id) is in the Developers section")
+		}
+
+		// App Store builds do not render the Developers section at all, so a result
+		// pointing into it would be an offer the user cannot take up.
+		let release = SettingsSearchEngine.Availability(
+			isConnected: true, isDIYHardware: false, isManaged: false,
+			showsDeveloperSettings: false)
+		#expect(
+			SettingsSearchEngine.search("Data Browser", in: SettingsSearchCatalogue.entries, availability: release).isEmpty,
+			"a Developers screen surfaced on a release build")
+
+		let testflight = SettingsSearchEngine.Availability(
+			isConnected: true, isDIYHardware: false, isManaged: false,
+			showsDeveloperSettings: true)
+		#expect(
+			!SettingsSearchEngine.search("Data Browser", in: SettingsSearchCatalogue.entries, availability: testflight).isEmpty,
+			"a Developers screen should be findable where the section renders")
+	}
+
+	@Test("Searching the discovery screen by name finds it")
+	func localMeshDiscoveryIsFindable() throws {
+		let available = SettingsSearchEngine.Availability(
+			isConnected: false, isDIYHardware: false, isManaged: false)
+		for query in ["Local Mesh", "discovery", "bonjour"] {
+			let results = SettingsSearchEngine.search(
+				query, in: SettingsSearchIndex.entries, availability: available)
+			#expect(
+				results.prefix(5).contains { $0.entry.destination == .localMeshDiscovery },
+				"\"\(query)\" did not surface Local Mesh Discovery; got \(results.prefix(5).map(\.entry.label))")
 		}
 	}
 }
