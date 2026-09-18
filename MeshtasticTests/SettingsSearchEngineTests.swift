@@ -163,3 +163,24 @@ struct DocumentationSearchTests {
 		#expect(forward.map(\.id) == reversed.map(\.id))
 	}
 }
+
+@Suite("DIY hardware lookup")
+struct DIYHardwareTests {
+
+	@Test("A missing catalogue never hides anything")
+	func unknownCatalogueIsNotNotDIY() throws {
+		// "We do not know" and "not DIY" must not give the same answer: the engine hides
+		// DIY-only settings when this is false, so unknown has to read as true.
+		#expect(DIYHardware.isDIY(slug: "HELTEC_V3", in: nil))
+		#expect(DIYHardware.isDIY(slug: nil, in: nil))
+	}
+
+	@Test("A known catalogue answers by tag, and an absent slug is not DIY")
+	func knownCatalogue() throws {
+		let catalogue: Set<String> = ["DIY_V1", "RAK4631"]
+		#expect(DIYHardware.isDIY(slug: "diy_v1", in: catalogue), "lookup is case-insensitive")
+		#expect(!DIYHardware.isDIY(slug: "HELTEC_V3", in: catalogue))
+		#expect(!DIYHardware.isDIY(slug: nil, in: catalogue))
+		#expect(!DIYHardware.isDIY(slug: "", in: catalogue))
+	}
+}

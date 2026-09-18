@@ -101,7 +101,7 @@ listed, de-emphasised, with an explanation.
 
 - [X] T032 [US3] Compute `Visibility` per query in `Meshtastic/Model/Search/SettingsSearchEngine.swift` from connection and node state: `.deEmphasised` when a radio is needed and none is connected (FR-012), and for `admin_only` fields (FR-012b).
 - [X] T033 [US3] Hide `diy_only` results unless the connected hardware model is `DIY`-tagged in `DeviceHardware.json` — six models carry it. Show them when disconnected, since the hardware is unknown (FR-012a).
-- [X] T034 [US3] Hide deprecated entries unless the connected radio currently holds that value, then show them marked deprecated (FR-012c). Mirrors `DeviceConfig.swift:410`, so a node on `REPEATER` can still find it to migrate off.
+- [X] T034 [US3] Show deprecated entries de-emphasised and labelled as deprecated rather than hidden (FR-012c). The earlier "hide unless the radio holds that value" rule needed per-field node state the index does not carry and hid the setting a user was searching for; see the clarification in spec.md.
 - [ ] T035 [US3] Confirm a dimmed result still navigates, landing on the screen's existing "Please connect to a radio" state from `ConfigHeader.swift:33-35` rather than an error.
 
 ---

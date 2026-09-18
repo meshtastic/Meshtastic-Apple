@@ -26,13 +26,16 @@ enum DocumentationSearch {
 		let keywords: [String]
 	}
 
-	/// Not `static let`: the translated index arrives asynchronously from the CDN,
-	/// so a value cached at first use would pin whatever was available then.
+	/// The translated index when one is present, otherwise the bundled English one.
 	///
-	/// Main-actor isolated because `DocBundle` is, and the translated index is read
-	/// from it. Search runs from the view anyway.
+	/// Two halves with different lifetimes. The bundled index ships with the app and
+	/// never changes, so it is read and decoded once. The translated index arrives
+	/// asynchronously from the CDN and is a dictionary lookup on `DocBundle`, cheap
+	/// enough to consult on every keystroke - which is what `.searchable` does.
+	///
+	/// Main-actor isolated because `DocBundle` is.
 	@MainActor
-	static var pages: [Page] { load() }
+	static var pages: [Page] { translatedPages() ?? basePages }
 
 	/// Pages matching `query`, best first.
 	///
@@ -67,19 +70,25 @@ enum DocumentationSearch {
 			.map(\.0)
 	}
 
+	/// Prefer the translated index the documentation browser uses. Without this a
+	/// localized query finds a page inside the browser and nothing from Settings
+	/// search, which reads as search being broken rather than untranslated.
 	@MainActor
-	private static func load() -> [Page] {
-		// Prefer the translated index the documentation browser uses. Without this a
-		// localized query finds a page inside the browser and nothing from Settings
-		// search, which reads as search being broken rather than untranslated.
+	private static func translatedPages() -> [Page]? {
 		let language = Bundle.main.documentationLanguageCode
-		if language != "en",
-		   let translated = DocBundle.shared.searchIndex(for: language), !translated.isEmpty {
-			return translated.map {
-				Page(id: $0.id, title: $0.title, section: $0.section, keywords: $0.keywords)
-			}
+		guard language != "en",
+			  let translated = DocBundle.shared.searchIndex(for: language), !translated.isEmpty else {
+			return nil
 		}
+		return translated.map {
+			Page(id: $0.id, title: $0.title, section: $0.section, keywords: $0.keywords)
+		}
+	}
 
+	/// Read once: the bundled index cannot change while the app runs.
+	private static let basePages: [Page] = loadBase()
+
+	private static func loadBase() -> [Page] {
 		guard let url = Bundle.main.url(forResource: "index", withExtension: "json",
 										subdirectory: "docs"),
 			  let data = try? Data(contentsOf: url) else {

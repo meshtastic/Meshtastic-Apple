@@ -20,30 +20,41 @@ import OSLog
 /// opening the screen.
 enum DIYHardware {
 
-	/// Uppercased hardware model slugs carrying the `DIY` tag.
-	static let slugs: Set<String> = load()
+	/// Uppercased hardware model slugs carrying the `DIY` tag, or nil when the
+	/// catalogue could not be read. Nil is "we do not know", and is kept distinct
+	/// from an empty set, which would mean "nothing is DIY".
+	private static let catalogue: Set<String>? = load()
 
-	/// True if `slug` names a DIY-tagged model. An unknown or absent slug is not
-	/// DIY — but callers should only ask when a radio is actually connected, since
-	/// "we do not know" and "not DIY" are different answers.
+	/// True if `slug` names a DIY-tagged model.
+	///
+	/// When the catalogue is unavailable this answers true, so that nothing is hidden
+	/// on a guess: the only consumer hides DIY-only settings when this is false, and
+	/// "we do not know" must not produce the same result as "not DIY". An absent slug
+	/// is not DIY — callers should only ask when a radio is actually connected.
 	static func isDIY(slug: String?) -> Bool {
-		guard let slug, !slug.isEmpty else { return false }
-		return slugs.contains(slug.uppercased())
+		isDIY(slug: slug, in: catalogue)
 	}
 
-	private static func load() -> Set<String> {
+	/// The rule with the catalogue injected, so the unavailable case can be tested.
+	static func isDIY(slug: String?, in catalogue: Set<String>?) -> Bool {
+		guard let catalogue else { return true }
+		guard let slug, !slug.isEmpty else { return false }
+		return catalogue.contains(slug.uppercased())
+	}
+
+	private static func load() -> Set<String>? {
 		guard let url = Bundle.main.url(forResource: "DeviceHardware", withExtension: "json"),
 			  let data = try? Data(contentsOf: url) else {
-			Logger.data.warning("DeviceHardware.json missing; treating no hardware as DIY")
-			return []
+			Logger.data.warning("DeviceHardware.json missing; DIY-only settings stay visible")
+			return nil
 		}
 		struct Entry: Decodable {
 			let hwModelSlug: String?
 			let tags: [String]?
 		}
 		guard let entries = try? JSONDecoder().decode([Entry].self, from: data) else {
-			Logger.data.warning("DeviceHardware.json could not be decoded; treating no hardware as DIY")
-			return []
+			Logger.data.warning("DeviceHardware.json could not be decoded; DIY-only settings stay visible")
+			return nil
 		}
 		return Set(
 			entries

@@ -13,6 +13,8 @@ on:
   pull_request:
     paths:
       - "Meshtastic/Views/Settings/**"
+      # Listed in the generator's SCREENS but not under Settings/.
+      - "Meshtastic/Views/Debugging/CoreDataBrowser.swift"
       - "Meshtastic/Model/Search/SettingsSearchCatalogue.swift"
       - "scripts/generate-settings-catalogue.py"
       - ".github/workflows/settings-catalogue-drift.yml"
