@@ -1598,6 +1598,55 @@ struct NodeDetailSnapshotTests {
 @Suite("MQTTConfig Snapshots")
 struct MQTTConfigSnapshotTests {
 
+	@MainActor
+	private func makeNode() throws -> NodeInfoEntity {
+		let context = sharedModelContainer.mainContext
+		let node = NodeInfoEntity()
+		node.num = 0xC0FF_EE0E
+		context.insert(node)
+		let user = UserEntity()
+		user.num = node.num
+		user.longName = "Snapshot MQTT Node"
+		user.shortName = "SMQT"
+		context.insert(user)
+		node.user = user
+		let mqtt = MQTTConfigEntity()
+		mqtt.enabled = true
+		mqtt.proxyToClientEnabled = true
+		mqtt.address = "mqtt.meshtastic.org"
+		mqtt.username = "meshdev"
+		mqtt.password = "large4cats"
+		mqtt.root = "msh/US"
+		mqtt.encryptionEnabled = true
+		mqtt.tlsEnabled = true
+		mqtt.mapReportingEnabled = true
+		mqtt.mapReportingShouldReportLocation = true
+		mqtt.mapPublishIntervalSecs = 3600
+		mqtt.mapPositionPrecision = 14
+		context.insert(mqtt)
+		node.mqttConfig = mqtt
+		try context.save()
+		return node
+	}
+
+	@Test("MQTT form, public server with map reporting consented")
+	@MainActor
+	func mqttForm() async throws {
+		let node = try makeNode()
+		AccessoryManager.shared.isConnected = true
+		AccessoryManager.shared.activeDeviceNum = node.num
+		// Consent is the app's own record; the form reads it on load.
+		let consent = UserDefaults.mapReportingOptIn
+		UserDefaults.mapReportingOptIn = true
+		defer { UserDefaults.mapReportingOptIn = consent }
+		let view = NavigationView {
+			MQTTConfig(node: node)
+				.environmentObject(AccessoryManager.shared)
+				.modelContainer(sharedModelContainer)
+		}
+		await assertViewSnapshot(of: view, width: 390, height: 1800, named: "mqttConfigForm")
+	}
+
 	@Test("MQTT settings form")
 	@MainActor
 	func mqttSettingsForm() async {
@@ -2239,5 +2288,135 @@ struct ExternalNotificationConfigSnapshotTests {
 				.modelContainer(sharedModelContainer)
 		}
 		await assertViewSnapshot(of: view, width: 390, height: 1400, named: "externalNotificationConfigForm")
+	}
+}
+
+@Suite("PowerConfig Snapshots")
+struct PowerConfigSnapshotTests {
+
+	@MainActor
+	private func makeNode() throws -> NodeInfoEntity {
+		let context = sharedModelContainer.mainContext
+		let node = NodeInfoEntity()
+		node.num = 0xC0FF_EE0C
+		context.insert(node)
+		let user = UserEntity()
+		user.num = node.num
+		user.longName = "Snapshot Power Node"
+		user.shortName = "SPWR"
+		context.insert(user)
+		node.user = user
+		let power = PowerConfigEntity()
+		power.isPowerSaving = false
+		power.onBatteryShutdownAfterSecs = 3600
+		power.waitBluetoothSecs = 60
+		power.lsSecs = 300
+		power.minWakeSecs = 10
+		context.insert(power)
+		node.powerConfig = power
+		try context.save()
+		return node
+	}
+
+	@Test("Power form, shutdown on power loss after an hour")
+	@MainActor
+	func powerForm() async throws {
+		let node = try makeNode()
+		AccessoryManager.shared.isConnected = true
+		AccessoryManager.shared.activeDeviceNum = node.num
+		let view = NavigationView {
+			PowerConfig(node: node)
+				.environmentObject(AccessoryManager.shared)
+				.modelContainer(sharedModelContainer)
+		}
+		await assertViewSnapshot(of: view, width: 390, height: 700, named: "powerConfigForm")
+	}
+}
+
+@Suite("TrafficManagementConfig Snapshots")
+struct TrafficManagementConfigSnapshotTests {
+
+	@MainActor
+	private func makeNode() throws -> NodeInfoEntity {
+		let context = sharedModelContainer.mainContext
+		let node = NodeInfoEntity()
+		node.num = 0xC0FF_EE0D
+		context.insert(node)
+		let user = UserEntity()
+		user.num = node.num
+		user.longName = "Snapshot Traffic Node"
+		user.shortName = "STRF"
+		context.insert(user)
+		node.user = user
+		let traffic = TrafficManagementConfigEntity()
+		traffic.positionMinIntervalSecs = 18000
+		traffic.nodeinfoDirectResponseMaxHops = 2
+		traffic.rateLimitWindowSecs = 60
+		traffic.rateLimitMaxPackets = 20
+		traffic.unknownPacketThreshold = 5
+		context.insert(traffic)
+		node.trafficManagementConfig = traffic
+		try context.save()
+		return node
+	}
+
+	@Test("Traffic Management form, every feature on")
+	@MainActor
+	func trafficManagementForm() async throws {
+		let node = try makeNode()
+		AccessoryManager.shared.isConnected = true
+		AccessoryManager.shared.activeDeviceNum = node.num
+		let view = NavigationView {
+			TrafficManagementConfig(node: node)
+				.environmentObject(AccessoryManager.shared)
+				.modelContainer(sharedModelContainer)
+		}
+		await assertViewSnapshot(of: view, width: 390, height: 1500, named: "trafficManagementConfigForm")
+	}
+}
+
+@Suite("CannedMessagesConfig Snapshots")
+struct CannedMessagesConfigSnapshotTests {
+
+	@MainActor
+	private func makeNode() throws -> NodeInfoEntity {
+		let context = sharedModelContainer.mainContext
+		let node = NodeInfoEntity()
+		node.num = 0xC0FF_EE0F
+		context.insert(node)
+		let user = UserEntity()
+		user.num = node.num
+		user.longName = "Snapshot Canned Node"
+		user.shortName = "SCAN"
+		context.insert(user)
+		node.user = user
+		let canned = CannedMessageConfigEntity()
+		canned.sendBell = true
+		canned.updown1Enabled = true
+		canned.inputbrokerPinA = 4
+		canned.inputbrokerPinB = 10
+		canned.inputbrokerPinPress = 9
+		canned.inputbrokerEventCw = Int32(ModuleConfig.CannedMessageConfig.InputEventChar.down.rawValue)
+		canned.inputbrokerEventCcw = Int32(ModuleConfig.CannedMessageConfig.InputEventChar.up.rawValue)
+		canned.inputbrokerEventPress = Int32(ModuleConfig.CannedMessageConfig.InputEventChar.select.rawValue)
+		canned.messages = "Hello|On my way|Yes|No"
+		context.insert(canned)
+		node.cannedMessageConfig = canned
+		try context.save()
+		return node
+	}
+
+	@Test("Canned Messages form, RAK rotary encoder wiring")
+	@MainActor
+	func cannedMessagesForm() async throws {
+		let node = try makeNode()
+		AccessoryManager.shared.isConnected = true
+		AccessoryManager.shared.activeDeviceNum = node.num
+		let view = NavigationView {
+			CannedMessagesConfig(node: node)
+				.environmentObject(AccessoryManager.shared)
+				.modelContainer(sharedModelContainer)
+		}
+		await assertViewSnapshot(of: view, width: 390, height: 1500, named: "cannedMessagesConfigForm")
 	}
 }

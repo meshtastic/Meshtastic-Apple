@@ -35,9 +35,13 @@ struct ConfigFormOverlayTests {
 	func escapeHatchesArePinned() throws {
 		// Grow these numbers in the pull request that adds the hatch, so it is reviewed as one.
 		let expected: [String: (custom: Int, environment: Int)] = [
+			"meshtastic.Config.PowerConfig": (1, 2),                    // ADC override; power saving and battery rows by architecture
+			"meshtastic.ModuleConfig.CannedMessageConfig": (0, 3),      // three sections locked while a preset is chosen
 			"meshtastic.ModuleConfig.ExternalNotificationConfig": (0, 0),
+			"meshtastic.ModuleConfig.MQTTConfig": (4, 1),               // proxy, consent, precision, root topic; TLS by firmware
 			"meshtastic.ModuleConfig.NeighborInfoConfig": (0, 0),
-			"meshtastic.ModuleConfig.SerialConfig": (0, 0)
+			"meshtastic.ModuleConfig.SerialConfig": (0, 0),
+			"meshtastic.ModuleConfig.TrafficManagementConfig": (0, 4)   // four feature sections behind the main switch
 		]
 		for overlay in ConfigFormOverlays.all {
 			let pinned = try #require(expected[overlay.protoName], "\(overlay.protoName) has no pinned hatch counts")
@@ -83,5 +87,50 @@ struct ConfigFormOverlayTests {
 		#expect(message.timeout == 30)
 		#expect(message.mode == .nmea)
 		#expect(message.overrideConsoleSerialPort, "the old screen dropped this; the bridge must not")
+	}
+
+	@Test("Traffic Management's main switch derives from the values and clears them")
+	func trafficManagementMainSwitch() {
+		var message = ModuleConfig.TrafficManagementConfig()
+		#expect(!TrafficManagementConfig.isActive(message))
+		message.rateLimitWindowSecs = 60
+		message.rateLimitMaxPackets = 20
+		#expect(TrafficManagementConfig.isActive(message))
+		#expect(!TrafficManagementConfig.isActive(TrafficManagementConfig.cleared(message)))
+		// A cleared window takes the packet count with it.
+		message.rateLimitWindowSecs = 0
+		TrafficManagementConfig.reconcile(&message)
+		#expect(message.rateLimitMaxPackets == 0)
+	}
+
+	@Test("MQTT keeps the old screen's load-time rules")
+	func mqttNormalise() {
+		var message = ModuleConfig.MQTTConfig()
+		message.address = "MQTT.meshtastic.org"
+		message.mapReportSettings.positionPrecision = 11
+		message.mapReportSettings.publishIntervalSecs = 60
+		let normalised = MQTTConfig.normalize(message, tlsRequired: true)
+		#expect(normalised.mapReportSettings.positionPrecision == 14)
+		#expect(normalised.mapReportSettings.publishIntervalSecs == 3600)
+		#expect(normalised.tlsEnabled, "the public server needs TLS on firmware that requires it")
+		#expect(!MQTTConfig.normalize(message, tlsRequired: false).tlsEnabled)
+		var edited = normalised
+		MQTTConfig.reconcile(&edited, tlsRequired: true)
+		#expect(edited.username == "meshdev" && edited.password == "large4cats")
+		edited.address = "broker.example.org"
+		edited.username = "me"
+		MQTTConfig.reconcile(&edited, tlsRequired: true)
+		#expect(edited.username == "me", "a private server keeps its own credentials")
+	}
+
+	@Test("Canned Messages presets fill in the hardware they name")
+	func cannedMessagesPresets() {
+		var message = ModuleConfig.CannedMessageConfig()
+		CannedMessagesConfig.apply(.rakRotaryEncoder, to: &message)
+		#expect(message.updown1Enabled && !message.rotary1Enabled)
+		#expect(message.inputbrokerPinA == 4 && message.inputbrokerPinB == 10 && message.inputbrokerPinPress == 9)
+		#expect(message.inputbrokerEventCw == .down && message.inputbrokerEventCcw == .up && message.inputbrokerEventPress == .select)
+		CannedMessagesConfig.apply(.cardKB, to: &message)
+		#expect(!message.updown1Enabled && message.inputbrokerPinA == 0 && message.inputbrokerEventPress == .none)
 	}
 }

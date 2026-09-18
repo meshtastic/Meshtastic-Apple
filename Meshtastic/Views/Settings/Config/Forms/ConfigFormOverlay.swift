@@ -33,15 +33,18 @@ struct ConfigFormSection<M: ConfigSchemaMessage>: Identifiable {
 	var title: String?
 	var footer: String?
 	var shownWhen: ConfigFormCondition<M>?
+	/// Greyed out as a whole, for a screen where a preset takes over its fields.
+	var enabledWhen: ConfigFormCondition<M>?
 	var fields: [ConfigFormField<M>]
 
 	init(
 		title: String? = nil, footer: String? = nil, shownWhen: ConfigFormCondition<M>? = nil,
-		fields: [ConfigFormField<M>]
+		enabledWhen: ConfigFormCondition<M>? = nil, fields: [ConfigFormField<M>]
 	) {
 		self.title = title
 		self.footer = footer
 		self.shownWhen = shownWhen
+		self.enabledWhen = enabledWhen
 		self.fields = fields
 	}
 }
@@ -260,6 +263,11 @@ struct ConfigFormCondition<M: ConfigSchemaMessage> {
 		.init { m, _ in m[keyPath: f.keyPath] == value }
 	}
 	static func nonZero<V: BinaryInteger>(_ f: ConfigField<M, V>) -> Self { .init { m, _ in m[keyPath: f.keyPath] != 0 } }
+	/// A predicate over one field's value, for what `equals` cannot say - "the address
+	/// names the public server".
+	static func satisfies<V>(_ f: ConfigField<M, V>, _ predicate: @escaping (V) -> Bool) -> Self {
+		.init { m, _ in predicate(m[keyPath: f.keyPath]) }
+	}
 	static func flag<V: BinaryInteger>(_ f: ConfigField<M, V>, _ bit: V) -> Self {
 		.init { m, _ in m[keyPath: f.keyPath] & bit != 0 }
 	}
@@ -325,8 +333,10 @@ enum ConfigFormControl<M: ConfigSchemaMessage> {
 	case segmented
 	/// A string shown masked, through `SecureInput`.
 	case secure
-	/// "Zero means off": a toggle, and the value control beneath it while on.
-	case nonZeroToggle(onValue: UInt32)
+	/// "Zero means off": a toggle, and the value control beneath it while on. `onValue`
+	/// is what switching on writes; `then` renders the value - `.automatic`, an interval,
+	/// an option list, a stepper or a slider.
+	indirect case nonZeroToggle(onValue: UInt32, then: ConfigFormControl<M> = .automatic)
 	/// A bitfield, one toggle per listed bit.
 	case flags([ConfigFormFlag<M>])
 	/// Anything else. Counted by the tests, so use it knowingly.
@@ -359,7 +369,7 @@ extension ConfigFormOverlay: AnyConfigFormOverlay {
 	var customControlCount: Int { laidOut.filter { $0.control.isCustom }.count }
 
 	var environmentConditionCount: Int {
-		let sectionConditions = sections.compactMap(\.shownWhen)
+		let sectionConditions = sections.compactMap(\.shownWhen) + sections.compactMap(\.enabledWhen)
 		let fieldConditions = laidOut.flatMap { [$0.shownWhen, $0.enabledWhen].compactMap { $0 } }
 		return (sectionConditions + fieldConditions).filter(\.isEnvironmental).count
 	}
@@ -391,7 +401,8 @@ extension ConfigFormOverlay: AnyConfigFormOverlay {
 
 		for f in fields {
 			let name = f.field.name
-			if f.field.metadata?.label == nil {
+			// A custom control brings its own text; everything else reads the registry.
+			if f.field.metadata?.label == nil, !f.control.isCustom {
 				out.append("\(name) has no label in the registry; annotate it upstream before laying it out")
 			}
 			if f.byteCap != nil, f.field.kind != .string { out.append("\(name): byteCap on a non-string field") }
@@ -402,21 +413,34 @@ extension ConfigFormOverlay: AnyConfigFormOverlay {
 			if case .unsupported = f.value, !f.control.isCustom {
 				out.append("\(name) is \(f.field.kind) and needs a custom control")
 			}
-			switch f.control {
-			case .interval, .gpioPin, .options, .nonZeroToggle, .flags:
-				if !(f.field.kind == .uint32 || f.field.kind == .int32) { out.append("\(name): integer control on \(f.field.kind)") }
-			case .slider, .stepper:
-				if f.field.metadata?.minValue == nil || f.field.metadata?.maxValue == nil {
-					out.append("\(name): slider/stepper without min_value and max_value in the registry")
+			out += Self.problems(with: f.control, on: f, name: name)
+			if case .nonZeroToggle(_, let inner) = f.control {
+				switch inner {
+				case .automatic, .interval, .options, .stepper, .slider:
+					out += Self.problems(with: inner, on: f, name: name)
+				default:
+					out.append("\(name): the control inside a non-zero toggle must be automatic, an interval, an option list, a stepper or a slider")
 				}
-			case .secure:
-				if f.field.kind != .string { out.append("\(name): secure on a non-string field") }
-			case .segmented:
-				if f.field.kind != .enumeration { out.append("\(name): segmented on a non-enum field") }
-			case .automatic, .custom:
-				break
 			}
 		}
 		return out
+	}
+
+	private static func problems(with control: ConfigFormControl<M>, on f: ConfigFormField<M>, name: String) -> [String] {
+		switch control {
+		case .interval, .gpioPin, .options, .nonZeroToggle, .flags:
+			if !(f.field.kind == .uint32 || f.field.kind == .int32) { return ["\(name): integer control on \(f.field.kind)"] }
+		case .slider, .stepper:
+			if f.field.metadata?.minValue == nil || f.field.metadata?.maxValue == nil {
+				return ["\(name): slider/stepper without min_value and max_value in the registry"]
+			}
+		case .secure:
+			if f.field.kind != .string { return ["\(name): secure on a non-string field"] }
+		case .segmented:
+			if f.field.kind != .enumeration { return ["\(name): segmented on a non-enum field"] }
+		case .automatic, .custom:
+			break
+		}
+		return []
 	}
 }
