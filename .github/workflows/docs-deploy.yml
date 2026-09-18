@@ -28,27 +28,36 @@ jobs:
 
       - name: Regenerate doc snapshots
         run: |
-          set -o pipefail
-          # Each @Suite in this file needs its own Swift Testing selector.
-          snapshot_tests=()
-          while IFS= read -r suite; do
-            snapshot_tests+=("-only-testing:MeshtasticTests/$suite")
-          done < <(
-            python3 - <<'PY'
+          set -eo pipefail
+          # Each @Suite in this file needs its own Swift Testing selector. The list is
+          # checked against the structs declared in the file, so a suite the pattern
+          # misses fails the job instead of silently not running.
+          python3 - <<'PY' > /tmp/snapshot-suites.txt
           import pathlib
           import re
+          import sys
 
           source = pathlib.Path("MeshtasticTests/SwiftUIViewSnapshotTests.swift").read_text()
           suites = re.findall(r"@Suite\([^\n]+\)\s*\n(?:@MainActor\s*\n)?struct\s+(\w+SnapshotTests)\b", source)
+          declared = re.findall(r"^struct\s+(\w+SnapshotTests)\b", source, re.M)
+          missing = sorted(set(declared) - set(suites))
+          if missing:
+              print("snapshot suites without a recognised @Suite line:", *missing, file=sys.stderr)
+              sys.exit(1)
+          if not suites:
+              print("no snapshot suites found", file=sys.stderr)
+              sys.exit(1)
           print(*suites, sep="\n")
           PY
-          )
-
-          expected_snapshot_suite_count=38
-          if (( ${#snapshot_tests[@]} != expected_snapshot_suite_count )); then
-            echo "Expected $expected_snapshot_suite_count snapshot test suites, found ${#snapshot_tests[@]}" >&2
+          snapshot_tests=()
+          while IFS= read -r suite; do
+            snapshot_tests+=("-only-testing:MeshtasticTests/$suite")
+          done < /tmp/snapshot-suites.txt
+          if (( ${#snapshot_tests[@]} == 0 )); then
+            echo "no snapshot suites to run" >&2
             exit 1
           fi
+          echo "Running ${#snapshot_tests[@]} snapshot suites"
 
           # tee the full log so a failure can surface the actual error lines — a bare
           # `tail -20` swallowed the file/line of compile failures (e.g. the
