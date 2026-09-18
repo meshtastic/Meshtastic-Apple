@@ -114,7 +114,7 @@ struct SettingsSearchIndexTests {
 			for (message, field, tag) in Self.fields(in: text) {
 				// Only messages that map to a settings screen are in scope; the rest
 				// have no UI to search for.
-				guard let _ = SettingsSearchIndex.screens[message] else { continue }
+				guard SettingsSearchIndex.screens[message] != nil else { continue }
 				if indexedTags.contains("\(message)#\(tag)") { continue }
 				if Self.exemptFields[field] != nil { continue }
 				// Deprecated fields are NOT excluded. They are shown marked rather than
