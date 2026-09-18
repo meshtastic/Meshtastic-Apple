@@ -52,7 +52,7 @@ struct UnheardNodesBanner: View {
 				// The honest claim: we know we have not heard them since the settings changed. We
 				// cannot know they moved to another preset — a radio cannot observe a channel it is
 				// not tuned to.
-				Text("^[\(unheardNodes.count) node](inflect: true) not heard since you changed settings")
+				Text("\(unheardNodes.count) nodes not heard since you changed settings")
 					.font(.callout.weight(.semibold))
 				Text("They were heard on the old channel and cannot be reached from this one. Favorites and the connected node are kept.")
 					.font(.caption)
@@ -96,7 +96,7 @@ struct UnheardNodesBanner: View {
 		.padding(.horizontal)
 		.padding(.bottom, 4)
 		.confirmationDialog(
-			Text(AttributedString(localized: "Remove ^[\(unheardNodes.count) node](inflect: true)?", comment: "Confirmation title for removing nodes not heard since the settings changed")),
+			Text(AttributedString(localized: "Remove \(unheardNodes.count) nodes?", comment: "Confirmation title for removing nodes not heard since the settings changed")),
 			isPresented: $isConfirming,
 			titleVisibility: .visible
 		) {
