@@ -13,9 +13,13 @@ import Foundation
 /// neither be half-migrated nor forgotten.
 enum ConfigFormOverlays {
 	static let all: [any AnyConfigFormOverlay] = [
+		AmbientLightingConfig.overlay(),
+		DeviceConfig.overlay(),
+		DisplayConfig.overlay(),
 		ExternalNotificationConfig.overlay(),
 		NeighborInfoConfig.overlay(),
-		SerialConfig.overlay()
+		SerialConfig.overlay(),
+		TelemetryConfig.overlay()
 	]
 
 	/// Messages whose screens stay hand-written, and why.
@@ -27,11 +31,8 @@ enum ConfigFormOverlays {
 		"meshtastic.ModuleConfig.CannedMessageConfig": "the messages themselves travel in a separate admin message",
 		// Not migrated yet. Each moves to `all` in its own pull request.
 		"meshtastic.Config.BluetoothConfig": "pending",
-		"meshtastic.Config.DeviceConfig": "pending",
-		"meshtastic.Config.DisplayConfig": "pending",
 		"meshtastic.Config.PositionConfig": "pending",
 		"meshtastic.Config.PowerConfig": "pending",
-		"meshtastic.ModuleConfig.AmbientLightingConfig": "pending",
 		"meshtastic.ModuleConfig.AudioConfig": "pending",
 		"meshtastic.ModuleConfig.DetectionSensorConfig": "pending",
 		"meshtastic.ModuleConfig.MQTTConfig": "pending",
@@ -40,7 +41,6 @@ enum ConfigFormOverlays {
 		"meshtastic.ModuleConfig.RangeTestConfig": "pending",
 		"meshtastic.ModuleConfig.StoreForwardConfig": "pending",
 		"meshtastic.ModuleConfig.TAKConfig": "pending",
-		"meshtastic.ModuleConfig.TelemetryConfig": "pending",
 		"meshtastic.ModuleConfig.TrafficManagementConfig": "pending"
 	]
 }
