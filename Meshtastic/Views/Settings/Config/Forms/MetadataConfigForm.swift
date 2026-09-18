@@ -48,6 +48,10 @@ struct MetadataConfigForm<M: ConfigFormMessage, Leading: View, Trailing: View>: 
 	@State private var original = M()
 	@State private var loaded = false
 	@State private var saveError: String?
+	/// The message as it was when Save was tapped. The form is locked while this is
+	/// set, and on success it - not whatever `config` holds by then - becomes the
+	/// new baseline, so nothing typed mid-flight is ever marked as saved.
+	@State private var inFlight: M?
 
 	init(
 		node: NodeInfoEntity?,
@@ -78,7 +82,14 @@ struct MetadataConfigForm<M: ConfigFormMessage, Leading: View, Trailing: View>: 
 	/// `SaveConfigButton` and `performConfigSave` want a binding. Setting it false is
 	/// how a successful save resets the baseline.
 	private var hasChanges: Binding<Bool> {
-		Binding(get: { loaded && config != original }, set: { if !$0 { original = config } })
+		Binding(
+			get: { loaded && config != original },
+			set: { changed in
+				guard !changed else { return }
+				original = inFlight ?? config
+				inFlight = nil
+			}
+		)
 	}
 
 	private var environment: ConfigFormEnvironment {
@@ -118,15 +129,15 @@ struct MetadataConfigForm<M: ConfigFormMessage, Leading: View, Trailing: View>: 
 			}
 			trailing($config)
 		}
-		.disabled(!accessoryManager.isConnected || node?[keyPath: M.entityKeyPath] == nil)
+		.disabled(!accessoryManager.isConnected || node?[keyPath: M.entityKeyPath] == nil || inFlight != nil)
 		.safeAreaInset(edge: .bottom, alignment: .center) {
 			HStack(spacing: 0) {
 				if let confirmationMessage {
 					SaveConfigButton(node: node, hasChanges: hasChanges, confirmationMessage: confirmationMessage) { performSave() }
-						.disabled(!canSave(config))
+						.disabled(!canSave(config) || inFlight != nil)
 				} else {
 					SaveConfigButton(node: node, hasChanges: hasChanges) { performSave() }
-						.disabled(!canSave(config))
+						.disabled(!canSave(config) || inFlight != nil)
 				}
 			}
 		}
@@ -172,14 +183,18 @@ struct MetadataConfigForm<M: ConfigFormMessage, Leading: View, Trailing: View>: 
 	}
 
 	private func performSave() {
+		let sent = config
+		inFlight = sent
 		performConfigSave(node: node, context: context, accessoryManager: accessoryManager,
 						  hasChanges: hasChanges, dismiss: goBack,
-						  onError: { saveError = $0 }) { fromUser, toUser in
-			try await save(config, fromUser, toUser)
+						  onError: { message in
+							  saveError = message
+							  inFlight = nil
+						  }) { fromUser, toUser in
+			try await save(sent, fromUser, toUser)
 		}
 	}
 }
-
 // Swift will not default a generic view-builder parameter, so the common shapes -
 // no bespoke content, or only one side of it - get their own initialisers.
 extension MetadataConfigForm where Leading == EmptyView, Trailing == EmptyView {

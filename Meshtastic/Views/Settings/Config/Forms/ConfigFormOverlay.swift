@@ -85,7 +85,10 @@ struct ConfigFormField<M: ConfigSchemaMessage>: Identifiable {
 	/// default of 4 hours" pattern. Leaving it alone still saves 0.
 	var displayDefault: Int?
 
-	var id: Int { field.tag }
+	/// The proto name, dotted for a flattened nested field. Not the tag: a nested
+	/// field shares its tag space with the parent's, so `ipv4_config.ip` and
+	/// `wifi_enabled` are both tag 1 on NetworkConfig.
+	var id: String { field.name }
 
 	private init<V>(
 		erasing field: ConfigField<M, V>, value: ConfigFormValue<M>, symbol: String?,
@@ -364,24 +367,24 @@ extension ConfigFormOverlay: AnyConfigFormOverlay {
 	func problems() -> [String] {
 		var out: [String] = []
 		let fields = laidOut
-		let tags = fields.map(\.field.tag)
+		let names = fields.map(\.field.name)
 		for section in sections where section.fields.isEmpty {
 			out.append("section \(section.title ?? "(untitled)") has no fields")
 		}
-		for tag in Set(tags) where tags.filter({ $0 == tag }).count > 1 {
-			out.append("tag \(tag) is laid out more than once")
+		for name in Set(names) where names.filter({ $0 == name }).count > 1 {
+			out.append("\(name) is laid out more than once")
 		}
-		for omission in omitted where tags.contains(omission.tag) {
+		for omission in omitted where names.contains(omission.name) {
 			out.append("\(omission.name) is both laid out and omitted")
 		}
 
 		// Every field a form could render is either laid out or omitted with a reason.
 		// A nested message is covered by its flattened children, and a deprecated field
-		// with no label has nothing to render.
-		let accounted = Set(tags + omitted.map(\.tag))
+		// with no label has nothing to render. Names, not tags: see `id`.
+		let accounted = Set(names + omitted.map(\.name))
 		for field in M.allFields where field.unsupportedReason == nil && field.kind != .message && !field.name.contains(".") {
 			if field.isDeprecated, field.metadata?.label == nil { continue }
-			if !accounted.contains(field.tag) {
+			if !accounted.contains(field.name) {
 				out.append("\(field.name) (tag \(field.tag)) is neither laid out nor omitted")
 			}
 		}

@@ -159,8 +159,10 @@ protoc \
 SCHEMA="$REPO_ROOT/Meshtastic/Model/ConfigForms/ConfigFormSchema.swift"
 # A schema that shrank means a message or field vanished upstream, or the plugin
 # broke. Either deserves a look before it is committed.
-FIELDS=$(grep -c 'ConfigField<' "$SCHEMA" || true)
-WAS=$(git show HEAD:Meshtastic/Model/ConfigForms/ConfigFormSchema.swift 2>/dev/null | grep -c 'ConfigField<' || true)
+# Typed descriptors and the .unsupported(...) rows for repeated, map and oneof
+# fields both count, so dropping only the latter cannot slip past.
+FIELDS=$(grep -cE 'ConfigField<|\.unsupported\(' "$SCHEMA" || true)
+WAS=$(git show HEAD:Meshtastic/Model/ConfigForms/ConfigFormSchema.swift 2>/dev/null | grep -cE 'ConfigField<|\.unsupported\(' || true)
 if [ "$FIELDS" -lt "$WAS" ] && [ "${ALLOW_FEWER_FIELDS:-0}" != "1" ]; then
 	echo "error: regenerating dropped field descriptors: $WAS -> $FIELDS." >&2
 	echo "Re-run with ALLOW_FEWER_FIELDS=1 if fields were removed upstream on purpose." >&2

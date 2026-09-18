@@ -2109,7 +2109,7 @@ struct PacketAuthenticitySnapshotTests {
 struct SerialConfigSnapshotTests {
 
 	@MainActor
-	private func makeNode() -> NodeInfoEntity {
+	private func makeNode() throws -> NodeInfoEntity {
 		let context = sharedModelContainer.mainContext
 		let node = NodeInfoEntity()
 		node.num = 0xC0FF_EE01
@@ -2130,16 +2130,16 @@ struct SerialConfigSnapshotTests {
 		serial.txd = 17
 		context.insert(serial)
 		node.serialConfig = serial
-		try? context.save()
+		try context.save()
 		return node
 	}
 
 	@Test("Serial config form, populated")
 	@MainActor
-	func serialConfigForm() async {
+	func serialConfigForm() async throws {
 		// ConfigHeader loads the stored values only for the connected node (or one with
 		// metadata), so the fixture has to be the connected node to render populated.
-		let node = makeNode()
+		let node = try makeNode()
 		AccessoryManager.shared.isConnected = true
 		AccessoryManager.shared.activeDeviceNum = node.num
 		let view = NavigationView {
@@ -2155,7 +2155,7 @@ struct SerialConfigSnapshotTests {
 struct NeighborInfoConfigSnapshotTests {
 
 	@MainActor
-	private func makeNode() -> NodeInfoEntity {
+	private func makeNode() throws -> NodeInfoEntity {
 		let context = sharedModelContainer.mainContext
 		let node = NodeInfoEntity()
 		node.num = 0xC0FF_EE02
@@ -2172,16 +2172,16 @@ struct NeighborInfoConfigSnapshotTests {
 		neighbor.transmitOverLora = true
 		context.insert(neighbor)
 		node.neighborInfoConfig = neighbor
-		try? context.save()
+		try context.save()
 		return node
 	}
 
 	@Test("Neighbor info form, enabled, with the default interval shown")
 	@MainActor
-	func neighborInfoForm() async {
+	func neighborInfoForm() async throws {
 		// ConfigHeader loads the stored values only for the connected node (or one with
 		// metadata), so the fixture has to be the connected node to render populated.
-		let node = makeNode()
+		let node = try makeNode()
 		AccessoryManager.shared.isConnected = true
 		AccessoryManager.shared.activeDeviceNum = node.num
 		let view = NavigationView {
@@ -2197,7 +2197,7 @@ struct NeighborInfoConfigSnapshotTests {
 struct ExternalNotificationConfigSnapshotTests {
 
 	@MainActor
-	private func makeNode() -> NodeInfoEntity {
+	private func makeNode() throws -> NodeInfoEntity {
 		let context = sharedModelContainer.mainContext
 		let node = NodeInfoEntity()
 		node.num = 0xC0FF_EE03
@@ -2221,16 +2221,16 @@ struct ExternalNotificationConfigSnapshotTests {
 		ext.alertMessageBuzzer = true
 		context.insert(ext)
 		node.externalNotificationConfig = ext
-		try? context.save()
+		try context.save()
 		return node
 	}
 
 	@Test("External notification form, populated")
 	@MainActor
-	func externalNotificationForm() async {
+	func externalNotificationForm() async throws {
 		// ConfigHeader loads the stored values only for the connected node (or one with
 		// metadata), so the fixture has to be the connected node to render populated.
-		let node = makeNode()
+		let node = try makeNode()
 		AccessoryManager.shared.isConnected = true
 		AccessoryManager.shared.activeDeviceNum = node.num
 		let view = NavigationView {

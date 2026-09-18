@@ -45,7 +45,11 @@ func performConfigSave(
 		  let fromUser = connectedNode.user,
 		  let toUser = node?.user
 	else {
+		// The Save button only checks for a connection and a change, so this can be
+		// reached from a tap. Say so rather than doing nothing.
 		Logger.mesh.warning("⚠️ Cannot save config: missing connected node or user entities")
+		onError?(String(localized: "The connected radio or this node's user record is missing, so nothing was saved.",
+						comment: "Config save could not start"))
 		return
 	}
 
