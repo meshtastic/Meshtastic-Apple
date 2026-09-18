@@ -2365,6 +2365,21 @@ struct AmbientLightingConfigSnapshotTests {
 	}
 }
 
+/// The reset buttons are only offered for the device this phone is connected to over
+/// BLE, which the screen decides from `activeConnection`, so the fixture needs one.
+private actor SnapshotIdleConnection: Connection {
+	let type: TransportType = .ble
+	var isConnected = true
+
+	func send(_ data: ToRadio) async throws {}
+	func connect() async throws -> AsyncStream<ConnectionEvent> { AsyncStream { $0.finish() } }
+	func disconnect(withError: Error?, shouldReconnect: Bool) async throws { isConnected = false }
+	func drainPendingPackets() async throws {}
+	func startDrainPendingPackets() throws {}
+	func appDidEnterBackground() {}
+	func appDidBecomeActive() {}
+}
+
 @Suite("DeviceConfig Snapshots")
 struct DeviceConfigSnapshotTests {
 
@@ -2402,6 +2417,16 @@ struct DeviceConfigSnapshotTests {
 		let node = try makeNode()
 		AccessoryManager.shared.isConnected = true
 		AccessoryManager.shared.activeDeviceNum = node.num
+		let device = Device(
+			id: UUID(),
+			name: "Snapshot Device Node",
+			transportType: .ble,
+			identifier: "snapshot-device-node",
+			connectionState: .connected,
+			num: node.num
+		)
+		AccessoryManager.shared.activeConnection = (device: device, connection: SnapshotIdleConnection())
+		defer { AccessoryManager.shared.activeConnection = nil }
 		let view = NavigationView {
 			DeviceConfig(node: node)
 				.environmentObject(AccessoryManager.shared)
