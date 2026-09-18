@@ -126,60 +126,60 @@ struct UpdateInterval: Hashable, Identifiable {
 		case .fixed(let fixedCase):
 			switch fixedCase {
 			case .unset:
-				return "Unset".localized
+				return String(localized: "Unset", comment: "UpdateInterval.description")
 			case .oneSecond:
-				return "One Second".localized
+				return String(localized: "One Second", comment: "UpdateInterval.description")
 			case .fiveSeconds:
-				return "Five Seconds".localized
+				return String(localized: "Five Seconds", comment: "UpdateInterval.description")
 			case .tenSeconds:
-				return "Ten Seconds".localized
+				return String(localized: "Ten Seconds", comment: "UpdateInterval.description")
 			case .fifteenSeconds:
-				return "Fifteen Seconds".localized
+				return String(localized: "Fifteen Seconds", comment: "UpdateInterval.description")
 			case .thirtySeconds:
-				return "Thirty Seconds".localized
+				return String(localized: "Thirty Seconds", comment: "UpdateInterval.description")
 			case .fortyFiveSeconds:
-				return "Forty Five Seconds".localized
+				return String(localized: "Forty Five Seconds", comment: "UpdateInterval.description")
 			case .oneMinute:
-				return "One Minute".localized
+				return String(localized: "One Minute", comment: "UpdateInterval.description")
 			case .twoMinutes:
-				return "Two Minutes".localized
+				return String(localized: "Two Minutes", comment: "UpdateInterval.description")
 			case .fiveMinutes:
-				return "Five Minutes".localized
+				return String(localized: "Five Minutes", comment: "UpdateInterval.description")
 			case .tenMinutes:
-				return "Ten Minutes".localized
+				return String(localized: "Ten Minutes", comment: "UpdateInterval.description")
 			case .fifteenMinutes:
-				return "Fifteen Minutes".localized
+				return String(localized: "Fifteen Minutes", comment: "UpdateInterval.description")
 			case .thirtyMinutes:
-				return "Thirty Minutes".localized
+				return String(localized: "Thirty Minutes", comment: "UpdateInterval.description")
 			case .oneHour:
-				return "One Hour".localized
+				return String(localized: "One Hour", comment: "UpdateInterval.description")
 			case .twoHours:
-				return "Two Hours".localized
+				return String(localized: "Two Hours", comment: "UpdateInterval.description")
 			case .threeHours:
-				return "Three Hours".localized
+				return String(localized: "Three Hours", comment: "UpdateInterval.description")
 			case .fourHours:
-				return "Four Hours".localized
+				return String(localized: "Four Hours", comment: "UpdateInterval.description")
 			case .fiveHours:
-				return "Five Hours".localized
+				return String(localized: "Five Hours", comment: "UpdateInterval.description")
 			case .sixHours:
-				return "Six Hours".localized
+				return String(localized: "Six Hours", comment: "UpdateInterval.description")
 			case .twelveHours:
-				return "Twelve Hours".localized
+				return String(localized: "Twelve Hours", comment: "UpdateInterval.description")
 			case .eighteenHours:
-				return "Eighteen Hours".localized
+				return String(localized: "Eighteen Hours", comment: "UpdateInterval.description")
 			case .twentyFourHours:
-				return "Twenty Four Hours".localized
+				return String(localized: "Twenty Four Hours", comment: "UpdateInterval.description")
 			case .thirtySixHours:
-				return "Thirty Six Hours".localized
+				return String(localized: "Thirty Six Hours", comment: "UpdateInterval.description")
 			case .fortyeightHours:
-				return "Forty Eight Hours".localized
+				return String(localized: "Forty Eight Hours", comment: "UpdateInterval.description")
 			case .seventyTwoHours:
-				return "Seventy Two Hours".localized
+				return String(localized: "Seventy Two Hours", comment: "UpdateInterval.description")
 			case .never:
-				return "Never".localized
+				return String(localized: "Never", comment: "UpdateInterval.description")
 			}
 		case .manual(let value):
-			return "Custom: \(value) Seconds".localized
+			return String(localized: "Custom: \(value) Seconds", comment: "UpdateInterval.description")
 		}
 	}
 	
@@ -211,25 +211,25 @@ enum OutputIntervals: Int, CaseIterable, Identifiable {
 
 		switch self {
 		case .unset:
-			return "Unset".localized
+			return String(localized: "Unset", comment: "OutputIntervals.description")
 		case .oneSecond:
-			return "One Second".localized
+			return String(localized: "One Second", comment: "OutputIntervals.description")
 		case .twoSeconds:
-			return "Two Seconds".localized
+			return String(localized: "Two Seconds", comment: "OutputIntervals.description")
 		case .threeSeconds:
-			return "Three Seconds".localized
+			return String(localized: "Three Seconds", comment: "OutputIntervals.description")
 		case .fourSeconds:
-			return "Four Seconds".localized
+			return String(localized: "Four Seconds", comment: "OutputIntervals.description")
 		case .fiveSeconds:
-			return "Five Seconds".localized
+			return String(localized: "Five Seconds", comment: "OutputIntervals.description")
 		case .tenSeconds:
-			return "Ten Seconds".localized
+			return String(localized: "Ten Seconds", comment: "OutputIntervals.description")
 		case .fifteenSeconds:
-			return "Fifteen Seconds".localized
+			return String(localized: "Fifteen Seconds", comment: "OutputIntervals.description")
 		case .thirtySeconds:
-			return "Thirty Seconds".localized
+			return String(localized: "Thirty Seconds", comment: "OutputIntervals.description")
 		case .oneMinute:
-			return "One Minute".localized
+			return String(localized: "One Minute", comment: "OutputIntervals.description")
 		}
 	}
 }

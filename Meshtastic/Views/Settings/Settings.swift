@@ -26,6 +26,8 @@ struct SettingsNodeSnapshot: Identifiable, Equatable {
 	let hasTAKConfig: Bool
 	let userLongName: String?
 	let userIsLicensed: Bool
+	/// Hardware model slug, for the DIY check in settings search.
+	let hwModelSlug: String?
 	let userIsPkiEncrypted: Bool
 	let role: Int32?
 	let regionCode: Int?
@@ -46,6 +48,7 @@ struct SettingsNodeSnapshot: Identifiable, Equatable {
 			user.modelContext != nil,
 			!user.isDeleted {
 			userLongName = user.longName
+			hwModelSlug = user.hwModel
 			userIsLicensed = user.isLicensed
 			userIsPkiEncrypted = user.pkiEncrypted
 			let userRole = user.role
@@ -60,6 +63,7 @@ struct SettingsNodeSnapshot: Identifiable, Equatable {
 			}
 		} else {
 			userLongName = nil
+			hwModelSlug = nil
 			userIsLicensed = false
 			userIsPkiEncrypted = false
 			if let deviceConfig = node.deviceConfig,
@@ -138,6 +142,7 @@ struct Settings: View {
 		return node
 	}
 
+	@State private var searchText = ""
 	@State private var selectedNode: Int = 0
 	@State private var preferredNodeNum: Int = 0
 
@@ -583,22 +588,40 @@ struct Settings: View {
 		}
 	}
 
-	var takSection: some View {
-		Section(header: Text("TAK")) {
-			// Routes to the same combined TAK Server page reached via the
-			// Module Configuration section above. Both entry points are kept
-			// because users naturally look in both places when configuring
-			// TAK — the Module Config link discovers the feature alongside
-			// other module configs, and the dedicated TAK section advertises
-			// the TAK Server functionality at a glance.
-			NavigationLink(value: SettingsNavigationState.tak) {
-				Label {
-					Text("TAK Server")
-				} icon: {
-					Image(systemName: "target")
-				}
-			}
-		}
+	private var isSearching: Bool {
+		searchText.trimmingCharacters(in: .whitespacesAndNewlines).count
+			>= SettingsSearchEngine.minimumQueryLength
+	}
+
+	/// Recomputed per keystroke. The index is static; only availability moves.
+	private var searchResults: [SettingsSearchResult] {
+		SettingsSearchEngine.search(
+			searchText,
+			in: SettingsSearchIndex.entries,
+			availability: searchAvailability
+		)
+	}
+
+	private var searchAvailability: SettingsSearchEngine.Availability {
+		SettingsSearchEngine.Availability(
+			isConnected: accessoryManager.isConnected,
+			// The DIY tag marks a product line rather than how a unit was built, so
+			// this is a hint and not a fact. See spec 019 FR-012a.
+			isDIYHardware: connectedHardwareIsDIY,
+			isManaged: connectedNodeIsManaged,
+			// The same condition the Developers section itself renders on, so search
+			// never offers a screen this build does not show.
+			showsDeveloperSettings: showsDevelopersSection
+		)
+	}
+
+	private var connectedNodeIsManaged: Bool {
+		nodes.first(where: { $0.num == Int64(preferredNodeNum) })?.isManaged ?? false
+	}
+
+	private var connectedHardwareIsDIY: Bool {
+		guard let node = nodes.first(where: { $0.num == Int64(preferredNodeNum) }) else { return false }
+		return DIYHardware.isDIY(slug: node.hwModelSlug)
 	}
 
 	var body: some View {
@@ -607,6 +630,15 @@ struct Settings: View {
 		) {
 			let node = nodeSnapshot(for: preferredNodeNum)
 			List {
+				if isSearching {
+					// Results replace the whole list, not just the config sections.
+					// Leaving the standalone links and the node picker above them
+					// pushed results off the top of the screen and read as broken.
+					SettingsSearchResultsView(
+						results: searchResults,
+						docs: DocumentationSearch.search(searchText)
+					)
+				} else {
 				NavigationLink(value: SettingsNavigationState.about) {
 					Label {
 						Text("About Meshtastic")
@@ -740,10 +772,16 @@ struct Settings: View {
 					moduleConfigurationSection
 					loggingSection
 					if showsDevelopersSection {
-					developersSection
+						developersSection
 					}
 				}
+				}
 			}
+			.searchable(
+				text: $searchText,
+				placement: .navigationBarDrawer(displayMode: .always),
+				prompt: "Search settings"
+			)
 			.navigationDestination(for: SettingsNavigationState.self) { destination in
 				let node = liveNode(for: preferredNodeNum)
 				let configNode = liveNode(for: selectedNode)
@@ -836,7 +874,9 @@ struct Settings: View {
 					case .localMeshDiscovery:
 						DiscoveryScanView()
 					case .helpDocs:
-						DocBrowserView()
+						// Carries the settings-search query through, so a documentation
+						// result opens filtered. Empty when reached from the list row.
+						DocBrowserView(initialSearch: searchText)
 					case .backupManagement:
 						BackupManagement()
 					}

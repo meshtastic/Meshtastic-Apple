@@ -15,17 +15,17 @@ enum KeyBackupStatus: String, CaseIterable, Equatable, Decodable {
 	var description: String {
 		switch self {
 		case .saved:
-			return "Private Key saved successfully to iCloud keychain.".localized
+			return String(localized: "Private Key saved successfully to iCloud keychain.", comment: "KeyBackupStatus.description")
 		case .restored:
-			return "Private Key restored successfully from iCloud keychain.".localized
+			return String(localized: "Private Key restored successfully from iCloud keychain.", comment: "KeyBackupStatus.description")
 		case .deleted:
-			return "Private Key deleted successfully from iCloud keychain.".localized
+			return String(localized: "Private Key deleted successfully from iCloud keychain.", comment: "KeyBackupStatus.description")
 		case .saveFailed:
-			return "Private Key failed to save to iCloud keychain.".localized
+			return String(localized: "Private Key failed to save to iCloud keychain.", comment: "KeyBackupStatus.description")
 		case .restoreFailed:
-			return "Private Key value not found in iCloud keychain.".localized
+			return String(localized: "Private Key value not found in iCloud keychain.", comment: "KeyBackupStatus.description")
 		case .deleteFailed:
-			return "Private Key failed to delete from iCloud keychain.".localized
+			return String(localized: "Private Key failed to delete from iCloud keychain.", comment: "KeyBackupStatus.description")
 		}
 	}
 	var success: Bool {

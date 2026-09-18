@@ -1352,9 +1352,9 @@ public struct Config: Sendable {
     }
 
     ///
-    /// Bandwidth in MHz
+    /// Bandwidth in kHz
     /// Certain bandwidth numbers are 'special' and will be converted to the
-    /// appropriate floating point value: 31 -> 31.25MHz
+    /// appropriate floating point value: 31 -> 31.25kHz
     public var bandwidth: UInt32 {
       get {_storage._bandwidth}
       set {_uniqueStorage()._bandwidth = newValue}

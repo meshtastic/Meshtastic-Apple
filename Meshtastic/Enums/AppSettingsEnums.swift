@@ -19,17 +19,17 @@ enum MeshMapTypes: Int, CaseIterable, Identifiable {
 	var description: String {
 		switch self {
 		case .standard:
-			return "Standard".localized
+			return String(localized: "Standard", comment: "MeshMapTypes.description")
 		case .mutedStandard:
-			return "Standard Muted".localized
+			return String(localized: "Standard Muted", comment: "MeshMapTypes.description")
 		case .hybrid:
-			return "Hybrid".localized
+			return String(localized: "Hybrid", comment: "MeshMapTypes.description")
 		case .hybridFlyover:
-			return "Hybrid Flyover".localized
+			return String(localized: "Hybrid Flyover", comment: "MeshMapTypes.description")
 		case .satellite:
-			return "Satellite".localized
+			return String(localized: "Satellite", comment: "MeshMapTypes.description")
 		case .satelliteFlyover:
-			return "Satellite Flyover".localized
+			return String(localized: "Satellite Flyover", comment: "MeshMapTypes.description")
 		}
 	}
 	func MKMapTypeValue() -> MKMapType {
@@ -65,7 +65,7 @@ enum MeshMapDistances: Double, CaseIterable, Identifiable {
 	var id: Double { self.rawValue }
 	var description: String {
 		let distanceFormatter = MKDistanceFormatter()
-		return String.localizedStringWithFormat("%@".localized, distanceFormatter.string(fromDistance: Double(self.rawValue)))
+		return String.localizedStringWithFormat(String(localized: "%@", comment: "MeshMapDistances.description"), distanceFormatter.string(fromDistance: Double(self.rawValue)))
 	}
 }
 
@@ -108,11 +108,11 @@ enum UserTrackingModes: Int, CaseIterable, Identifiable {
 	var description: String {
 		switch self {
 		case .none:
-			return "map.usertrackingmode.none".localized
+			return String(localized: "map.usertrackingmode.none", comment: "UserTrackingModes.description")
 		case .follow:
-			return "Follow".localized
+			return String(localized: "Follow", comment: "UserTrackingModes.description")
 		case .followWithHeading:
-			return "Follow with heading".localized
+			return String(localized: "Follow with heading", comment: "UserTrackingModes.description")
 		}
 	}
 	var icon: String {
@@ -147,21 +147,21 @@ enum LocationUpdateInterval: Int, CaseIterable, Identifiable {
 	var description: String {
 		switch self {
 		case .tenSeconds:
-			return "Ten Seconds".localized
+			return String(localized: "Ten Seconds", comment: "LocationUpdateInterval.description")
 		case .fifteenSeconds:
-			return "Fifteen Seconds".localized
+			return String(localized: "Fifteen Seconds", comment: "LocationUpdateInterval.description")
 		case .thirtySeconds:
-			return "Thirty Seconds".localized
+			return String(localized: "Thirty Seconds", comment: "LocationUpdateInterval.description")
 		case .fortyFiveSeconds:
-			return "Forty Five Seconds".localized
+			return String(localized: "Forty Five Seconds", comment: "LocationUpdateInterval.description")
 		case .oneMinute:
-			return "One Minute".localized
+			return String(localized: "One Minute", comment: "LocationUpdateInterval.description")
 		case .fiveMinutes:
-			return "Five Minutes".localized
+			return String(localized: "Five Minutes", comment: "LocationUpdateInterval.description")
 		case .tenMinutes:
-			return "Ten Minutes".localized
+			return String(localized: "Ten Minutes", comment: "LocationUpdateInterval.description")
 		case .fifteenMinutes:
-			return "Fifteen Minutes".localized
+			return String(localized: "Fifteen Minutes", comment: "LocationUpdateInterval.description")
 		}
 	}
 }
@@ -171,7 +171,20 @@ enum MapLayer: String, CaseIterable, Equatable, Decodable {
 	case hybrid
 	case satellite
 	case offline
-	var localized: String { self.rawValue.localized }
+	// A switch, not rawValue.localized: the extractor cannot see a non-literal
+	// receiver, so these four never reached the string catalog.
+	var localized: String {
+		switch self {
+		case .standard:
+			return String(localized: "Standard", comment: "MapLayer.localized: map layer style")
+		case .hybrid:
+			return String(localized: "Hybrid", comment: "MapLayer.localized: map layer style")
+		case .satellite:
+			return String(localized: "Satellite", comment: "MapLayer.localized: map layer style")
+		case .offline:
+			return String(localized: "Offline", comment: "MapLayer.localized: map layer style")
+		}
+	}
 }
 
 enum MapTileServer: String, CaseIterable, Identifiable, Decodable {
@@ -306,7 +319,15 @@ enum MapTileServer: String, CaseIterable, Identifiable, Decodable {
 enum OverlayType: String, CaseIterable, Equatable {
 	case tileServer
 	case geoJson
-	var localized: String { self.rawValue.localized }
+	// Rendered as the camelCase raw value before this; see MapLayer above.
+	var localized: String {
+		switch self {
+		case .tileServer:
+			return String(localized: "Tile Server", comment: "OverlayType.localized: map overlay kind")
+		case .geoJson:
+			return String(localized: "GeoJSON", comment: "OverlayType.localized: map overlay kind")
+		}
+	}
 }
 
 enum MapOverlayServer: String, CaseIterable, Identifiable, Decodable {
