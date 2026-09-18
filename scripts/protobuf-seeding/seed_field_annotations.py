@@ -375,9 +375,16 @@ def main() -> None:
                 # Otherwise fall back to a control named after the proto property. The
                 # save closure often reads through a local (`lc.region = savedRegion...`)
                 # while the control still binds `$region`.
+                # A Stepper whose title is interpolated ("\(txPower)dBm Transmit Power")
+                # has no label to lift but may still carry bounds or a description. Only
+                # this exact-name match may take an unlabelled control, and only when it
+                # has something else to say; the heuristics above still need a label.
                 if not entry:
                     for cand, info in ctrl.items():
-                        if norm(cand) == norm(prop) and info.get("label"):
+                        carries_metadata = any(
+                            info.get(k) is not None for k in ("description", "unit", "min_value", "max_value")
+                        )
+                        if norm(cand) == norm(prop) and (info.get("label") or carries_metadata):
                             entry = dict(info)
                             break
                 # Last resort: a control whose LABEL names the field. Catches controls in
