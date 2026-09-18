@@ -13,8 +13,10 @@ import re
 import sys
 from pathlib import Path
 
-PROTO_DIR = Path(sys.argv[1]) if len(sys.argv) > 1 else Path("meshtastic")
-PLAN_PATH = Path(sys.argv[2] if len(sys.argv) > 2 else "/tmp/fplan.json")
+ARGS = [a for a in sys.argv[1:] if not a.startswith("--only=")]
+ONLY = next((set(a.split("=", 1)[1].split(",")) for a in sys.argv[1:] if a.startswith("--only=")), None)
+PROTO_DIR = Path(ARGS[0]) if len(ARGS) > 0 else Path("meshtastic")
+PLAN_PATH = Path(ARGS[1] if len(ARGS) > 1 else "/tmp/fplan.json")
 with PLAN_PATH.open(encoding="utf-8") as plan_file:
     PLAN = json.load(plan_file)["plan"]
 
@@ -59,14 +61,46 @@ def message_span(txt: str, full: str):
     return lo, hi
 
 
+ATTRIBUTES = tuple(k for k in ("label", "description", "keywords", "unit", "min_value", "max_value")
+                   if ONLY is None or k in ONLY)
+
+
+def attribute_line(inner: str, key: str, value) -> str:
+    if key in ("min_value", "max_value"):
+        number = float(value)
+        text = str(int(number)) if number == int(number) else repr(number)
+        return f"{inner}{key}: {text}"
+    return f"{inner}{key}: {proto_string(str(value))}"
+
+
 def render(indent: str, entry: dict) -> str:
     inner = indent + "  "
-    parts = [
-        f"{inner}{k}: {proto_string(entry[k])}"
-        for k in ("label", "description", "keywords")
-        if k in entry
-    ]
+    parts = [attribute_line(inner, k, entry[k]) for k in ATTRIBUTES if k in entry]
     return "{\n" + "\n".join(parts) + "\n" + indent + "}"
+
+
+def merge(opts: str, indent: str, entry: dict) -> str | None:
+    """Add the attributes `entry` has and the existing block lacks; None if nothing to add.
+
+    The block is rewritten one attribute per line in its existing order, with the
+    missing ones appended, so a single-line original comes out in the multi-line
+    style `buf format` writes and the diff is only the lines added.
+    """
+    m = re.search(r"\(meshtastic\.field_metadata\)\s*=\s*\{", opts)
+    if not m:
+        return None
+    open_idx = opts.index("{", m.start())
+    close_idx = match_brace(opts, open_idx) - 1
+    body = opts[open_idx + 1:close_idx]
+    pairs = re.findall(r'(\w+)\s*:\s*("(?:[^"\\]|\\.)*"|-?\d+(?:\.\d+)?|\w+)', body)
+    present = {k for k, _ in pairs}
+    missing = [k for k in ATTRIBUTES if k in entry and k not in present]
+    if not missing:
+        return None
+    inner = indent + "  "
+    lines = [f"{inner}{k}: {v}" for k, v in pairs]
+    lines += [attribute_line(inner, k, entry[k]) for k in missing]
+    return opts[:open_idx] + "{\n" + "\n".join(lines) + "\n" + indent + "}" + opts[close_idx + 1:]
 
 
 def main() -> None:
@@ -95,12 +129,19 @@ def main() -> None:
                 nonlocal applied
                 opts = m.group("opts") or ""
                 entry = info["values"].get(m.group("num"))
-                if not entry or "field_metadata" in opts:
+                if not entry:
                     return m.group(0)
+                indent = m.group("indent")
+                if "field_metadata" in opts:
+                    merged = merge(opts, indent, entry)
+                    if merged is None:
+                        return m.group(0)
+                    applied += 1
+                    return (f"{indent}{m.group('type')}{m.group('name')} = {m.group('num')} "
+                            f"{merged};{m.group('trail') or ''}")
                 existing = opts.strip()[1:-1].strip() if opts.strip() else ""
                 prefix = f"{existing}, " if existing else ""
                 applied += 1
-                indent = m.group("indent")
                 return (
                     f"{indent}{m.group('type')}{m.group('name')} = {m.group('num')} "
                     f"[{prefix}(meshtastic.field_metadata) = {render(indent, entry)}];"
