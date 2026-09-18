@@ -2130,8 +2130,8 @@ public struct Nau7802Config: Sendable {
 }
 
 ///
-/// AS3935 lightning sensor configuration, for saving to flash
-public struct AS3935Config: Sendable {
+/// AS3935 lightning sensor state, for saving to flash
+public struct AS3935State: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -3680,8 +3680,8 @@ extension Nau7802Config: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
   }
 }
 
-extension AS3935Config: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  public static let protoMessageName: String = _protobuf_package + ".AS3935Config"
+extension AS3935State: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".AS3935State"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}tuning_cap_pf\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -3703,7 +3703,7 @@ extension AS3935Config: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  public static func ==(lhs: AS3935Config, rhs: AS3935Config) -> Bool {
+  public static func ==(lhs: AS3935State, rhs: AS3935State) -> Bool {
     if lhs.tuningCapPf != rhs.tuningCapPf {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
