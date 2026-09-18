@@ -138,6 +138,36 @@ else
 	exit 1
 fi
 
+# 5. Field schema for the configuration forms (typed descriptors: tag, key path, kind).
+#    Generated into the app target next to the registry. Nothing here is display text -
+#    labels come from the registry at runtime - so this is purely structural, and a field
+#    the schema renames or removes fails to compile instead of failing to render.
+#
+#    The plugin lives in this repo (scripts/protoc-gen-configform-swift) and is pinned to
+#    the exact swift-protobuf version MeshtasticProtobufs resolves, so the key paths it
+#    writes spell properties the way protoc-gen-swift did.
+CONFIGFORM_PKG="$REPO_ROOT/scripts/protoc-gen-configform-swift"
+echo "Building protoc-gen-configform-swift …"
+swift build --package-path "$CONFIGFORM_PKG" -c release --cache-path "$CONFIGFORM_PKG/.build/spm-cache"
+CONFIGFORM_PLUGIN="$CONFIGFORM_PKG/.build/release/protoc-gen-configform-swift"
+mkdir -p "$REPO_ROOT/Meshtastic/Model/ConfigForms"
+protoc \
+	--plugin=protoc-gen-configform-swift="$CONFIGFORM_PLUGIN" \
+	--proto_path=./protobufs \
+	--configform-swift_out=./Meshtastic/Model/ConfigForms \
+	./protobufs/meshtastic/config.proto ./protobufs/meshtastic/module_config.proto
+SCHEMA="$REPO_ROOT/Meshtastic/Model/ConfigForms/ConfigFormSchema.swift"
+# A schema that shrank means a message or field vanished upstream, or the plugin
+# broke. Either deserves a look before it is committed.
+FIELDS=$(grep -c 'ConfigField<' "$SCHEMA" || true)
+WAS=$(git show HEAD:Meshtastic/Model/ConfigForms/ConfigFormSchema.swift 2>/dev/null | grep -c 'ConfigField<' || true)
+if [ "$FIELDS" -lt "$WAS" ] && [ "${ALLOW_FEWER_FIELDS:-0}" != "1" ]; then
+	echo "error: regenerating dropped field descriptors: $WAS -> $FIELDS." >&2
+	echo "Re-run with ALLOW_FEWER_FIELDS=1 if fields were removed upstream on purpose." >&2
+	exit 1
+fi
+echo "Generated Meshtastic/Model/ConfigForms/ConfigFormSchema.swift ($FIELDS field descriptors)"
+
 echo
 echo "Done — generated Swift into MeshtasticProtobufs/Sources with $("$PLUGIN" --version)."
 echo "Build, test, and commit the changes (including the bumped 'protobufs' submodule)."

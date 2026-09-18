@@ -37,6 +37,7 @@ func performConfigSave(
 	accessoryManager: AccessoryManager,
 	hasChanges: Binding<Bool>,
 	dismiss: DismissAction,
+	onError: ((String) -> Void)? = nil,
 	save: @escaping (_ fromUser: UserEntity, _ toUser: UserEntity) async throws -> Void
 ) {
 	guard let deviceNum = accessoryManager.activeDeviceNum,
@@ -55,6 +56,7 @@ func performConfigSave(
 			dismiss()
 		} catch {
 			Logger.mesh.error("🚨 Config save failed: \(error.localizedDescription)")
+			onError?(error.localizedDescription)
 		}
 	}
 }
