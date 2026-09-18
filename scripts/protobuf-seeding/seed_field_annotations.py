@@ -230,7 +230,9 @@ def controls(src: str) -> dict:
 
     def unit_nearby(start: int, end: int) -> str | None:
         """A bare unit shown beside a numeric field, e.g. `Text("dBm")` in the same row."""
-        blob = "\n".join(lines[max(0, start - 3):end + 4])
+        # The unit sits after the field's own modifiers, which can run to several
+        # lines, so look a little further down than the row itself.
+        blob = "\n".join(lines[max(0, start - 3):end + 8])
         m = re.search(r'Text\(\s*"(' + "|".join(map(re.escape, sorted(UNITS))) + r')"\s*\)', blob)
         return m.group(1) if m else None
 
