@@ -636,7 +636,13 @@ struct Settings: View {
 					// pushed results off the top of the screen and read as broken.
 					SettingsSearchResultsView(
 						results: searchResults,
-						docs: DocumentationSearch.search(searchText)
+						docs: DocumentationSearch.search(searchText),
+						onSelect: { entry in
+							// The screen scrolls to the control the result named; screens
+							// that are still hand-written just open as before.
+							router.settingsFieldFocus = entry.field
+							router.settingsPath = [entry.destination]
+						}
 					)
 				} else {
 				NavigationLink(value: SettingsNavigationState.about) {
@@ -782,6 +788,12 @@ struct Settings: View {
 				placement: .navigationBarDrawer(displayMode: .always),
 				prompt: "Search settings"
 			)
+			// Handed to every pushed screen: the schema-driven ones scroll to the control
+			// a search result named, and take it so going back does not scroll again.
+			.environment(\.settingsFieldFocus, SettingsFieldFocus(
+				target: router.settingsFieldFocus,
+				clear: { router.settingsFieldFocus = nil }
+			))
 			.navigationDestination(for: SettingsNavigationState.self) { destination in
 				let node = liveNode(for: preferredNodeNum)
 				let configNode = liveNode(for: selectedNode)

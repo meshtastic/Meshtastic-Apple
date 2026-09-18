@@ -52,6 +52,9 @@ struct MetadataConfigForm<M: ConfigFormMessage, Leading: View, Trailing: View>: 
 	/// set, and on success it - not whatever `config` holds by then - becomes the
 	/// new baseline, so nothing typed mid-flight is ever marked as saved.
 	@State private var inFlight: M?
+	/// The row a search result asked for, marked briefly so the eye lands on it.
+	@State private var highlightedRow: String?
+	@Environment(\.settingsFieldFocus) private var settingsFieldFocus
 
 	init(
 		node: NodeInfoEntity?,
@@ -107,6 +110,7 @@ struct MetadataConfigForm<M: ConfigFormMessage, Leading: View, Trailing: View>: 
 
 	var body: some View {
 		let env = environment
+		ScrollViewReader { proxy in
 		Form {
 			ConfigHeader(title: title, config: M.entityKeyPath, node: node, onAppear: load)
 			leading()
@@ -117,6 +121,8 @@ struct MetadataConfigForm<M: ConfigFormMessage, Leading: View, Trailing: View>: 
 						Section {
 							ForEach(visible) { field in
 								ConfigFormFieldRow(field: field, config: $config, environment: env)
+									.id(field.id)
+									.listRowBackground(highlightedRow == field.id ? Color.accentColor.opacity(0.15) : nil)
 									.disabled(!(field.enabledWhen?.evaluate(config, env) ?? true))
 							}
 						} header: {
@@ -162,6 +168,24 @@ struct MetadataConfigForm<M: ConfigFormMessage, Leading: View, Trailing: View>: 
 			var adjusted = config
 			reconcile(&adjusted, env)
 			if adjusted != config { config = adjusted }
+		}
+		.onAppear { focusSearchedControl(using: proxy) }
+		}
+	}
+
+	/// A search result names one control, so scroll to it and mark it rather than leaving
+	/// the reader to pick it out of rows that all look alike.
+	private func focusSearchedControl(using proxy: ScrollViewProxy) {
+		guard let target = settingsFieldFocus.target, let row = overlay.rowID(for: target) else { return }
+		// Taken once: coming back to this screen later should not scroll again.
+		settingsFieldFocus.clear()
+		Task { @MainActor in
+			// The rows exist only after the form's first layout pass.
+			try? await Task.sleep(for: .milliseconds(350))
+			withAnimation { proxy.scrollTo(row, anchor: .center) }
+			highlightedRow = row
+			try? await Task.sleep(for: .seconds(2))
+			withAnimation { highlightedRow = nil }
 		}
 	}
 

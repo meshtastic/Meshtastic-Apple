@@ -30,6 +30,12 @@ class Router: ObservableObject {
 	@Published
 	var settingsPath: [SettingsNavigationState] = []
 
+	/// The control a search result asked for, cleared by the screen that honours it.
+	/// Separate from `settingsPath` because the path is also how deep links and restored
+	/// state name a screen, and neither singles out a control.
+	@Published
+	var settingsFieldFocus: FieldIdentity?
+
 	@Published
 	var discoveryShowHistory: Bool = false
 

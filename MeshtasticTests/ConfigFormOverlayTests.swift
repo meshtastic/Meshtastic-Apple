@@ -84,4 +84,31 @@ struct ConfigFormOverlayTests {
 		#expect(message.mode == .nmea)
 		#expect(message.overrideConsoleSerialPort, "the old screen dropped this; the bridge must not")
 	}
+
+	@Test("A search result finds the row its field is laid out in")
+	func overlayFindsTheRowForAField() throws {
+		let serial = SerialConfig.overlay()
+		let baud = ModuleConfig.SerialConfig.Fields.baud
+		#expect(serial.rowID(for: baud.identity) == baud.name)
+		// A field this screen omits has no row to scroll to.
+		#expect(serial.rowID(for: ModuleConfig.SerialConfig.Fields.overrideConsoleSerialPort.identity) == nil)
+		// Nor does a field belonging to another message, whose tags would otherwise collide.
+		#expect(serial.rowID(for: FieldIdentity(messageName: "meshtastic.Config.DeviceConfig", tag: baud.tag)) == nil)
+	}
+
+	@Test("A search result for a migrated screen lands on a control, not just the screen")
+	func searchResultsResolveToRows() throws {
+		// The point of the deep link: a result that opens the right screen but cannot
+		// name a row scrolls nowhere. Every indexed field whose screen is on the generic
+		// form has to resolve, or the result silently degrades to screen-level.
+		let byName = Dictionary(uniqueKeysWithValues: ConfigFormOverlays.all.map { ($0.protoName, $0) })
+		var checked = 0
+		for entry in SettingsSearchIndex.entries {
+			guard let field = entry.field, let overlay = byName[field.messageName] else { continue }
+			checked += 1
+			#expect(overlay.rowID(for: field) != nil,
+					"\(field.messageName)#\(field.tag) (\(entry.label)) is indexed but has no row on its form")
+		}
+		#expect(checked > 0, "no indexed field reached a migrated screen; the lookup is not being exercised")
+	}
 }

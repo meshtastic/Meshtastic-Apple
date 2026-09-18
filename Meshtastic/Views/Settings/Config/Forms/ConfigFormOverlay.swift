@@ -26,6 +26,13 @@ struct ConfigFormOverlay<M: ConfigSchemaMessage> {
 	/// that every renderable field of `M` be laid out or listed here.
 	var omitted: [ConfigFormOmission<M>] = []
 
+	/// The row a search result names, or nil when this screen does not lay that field
+	/// out. Identity rather than tag: a flattened child field carries its own message's
+	/// name, so tags alone would collide.
+	func rowID(for identity: FieldIdentity) -> String? {
+		sections.flatMap(\.fields).first { $0.field.identity == identity }?.id
+	}
+
 }
 
 struct ConfigFormSection<M: ConfigSchemaMessage>: Identifiable {
@@ -344,6 +351,8 @@ enum ConfigFormControl<M: ConfigSchemaMessage> {
 /// the overlays of different messages can sit in one list.
 protocol AnyConfigFormOverlay {
 	var protoName: String { get }
+	/// The row a search result names, or nil when this screen does not lay it out.
+	func rowID(for identity: FieldIdentity) -> String?
 	/// What is wrong with the overlay, as sentences; empty when nothing is.
 	func problems() -> [String]
 	/// Escape hatches in use, pinned by the tests so a new one is added on purpose.
