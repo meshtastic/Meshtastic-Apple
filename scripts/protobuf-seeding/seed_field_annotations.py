@@ -65,7 +65,16 @@ REWRITES: dict[str, str | None] = {
     "Units displayed on the device screen":
         "Units shown on the device screen.",
     "Set the GPIO pins for RXD and TXD.": None,     # section text, not a description of one pin
+    # The fields carry unit "dBm"; a default is the firmware's to state.
+    "RSSI threshold for WiFi device counting. Default is \u221280 dBm.":
+        "RSSI threshold for counting WiFi devices.",
+    "RSSI threshold for BLE device counting. Default is \u221280 dBm.":
+        "RSSI threshold for counting BLE devices.",
 }
+
+
+# Bare units a screen shows beside a numeric field.
+UNITS = {"dBm", "kHz", "MHz", "ms", "mA", "m", "s", "%"}
 
 
 def norm(s: str) -> str:
@@ -188,6 +197,10 @@ def controls(src: str) -> dict:
             if not t:
                 return None
             text = t.group(1)
+            # A bare unit beside a numeric field ("dBm") is not the helper text; the
+            # helper text follows the row. Any other short text ends the search.
+            if text in UNITS:
+                continue
             if len(text) <= 25 or "\\(" in text:
                 return None
             tail = "\n".join(lines[k + 1:k + 4])
@@ -198,21 +211,27 @@ def controls(src: str) -> dict:
     def bounds(text: str):
         """(lo, hi) from `in: a...b`, or from a `ForEach(a..<b)` option list.
 
-        A ForEach with a `.tag(` remap is skipped: LoRa's spread factor shows 7..<13 but
-        stores 12 as 0, so the visible range is not the stored one.
+        A ForEach whose `.tag(` remaps the element is skipped: LoRa's spread factor
+        shows 7..<13 but stores 12 as 0, so the visible range is not the stored one.
+        An identity tag - `.tag($0)`, or `.tag(pin)` for `pin in` - changes nothing
+        and keeps the bounds.
         """
         m = re.search(r"in:\s*(-?\d+(?:\.\d+)?)\.\.\.(-?\d+(?:\.\d+)?)", text)
         if m:
             return float(m.group(1)), float(m.group(2))
-        m = re.search(r"ForEach\((\d+)\.\.<(\d+)\)", text)
-        if m and ".tag(" not in text:
-            return float(m.group(1)), float(m.group(2)) - 1
-        return None, None
+        m = re.search(r"ForEach\((\d+)\.\.<(\d+)\)\s*(?:\{\s*(\w+)\s+in)?", text)
+        if not m:
+            return None, None
+        loop_var = m.group(3) or "$0"
+        for tag in re.findall(r"\.tag\(([^)]*)\)", text):
+            if tag.strip() != loop_var:
+                return None, None
+        return float(m.group(1)), float(m.group(2)) - 1
 
     def unit_nearby(start: int, end: int) -> str | None:
         """A bare unit shown beside a numeric field, e.g. `Text("dBm")` in the same row."""
         blob = "\n".join(lines[max(0, start - 3):end + 4])
-        m = re.search(r'Text\(\s*"(dBm|kHz|MHz|ms|mA|m|s|%)"\s*\)', blob)
+        m = re.search(r'Text\(\s*"(' + "|".join(map(re.escape, sorted(UNITS))) + r')"\s*\)', blob)
         return m.group(1) if m else None
 
     for i, line in enumerate(lines):

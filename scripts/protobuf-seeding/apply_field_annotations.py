@@ -13,8 +13,16 @@ import re
 import sys
 from pathlib import Path
 
+SUPPORTED = ("label", "description", "keywords", "unit", "min_value", "max_value")
+
 ARGS = [a for a in sys.argv[1:] if not a.startswith("--only=")]
-ONLY = next((set(a.split("=", 1)[1].split(",")) for a in sys.argv[1:] if a.startswith("--only=")), None)
+ONLY = next((set(a.split("=", 1)[1].split(",")) - {""} for a in sys.argv[1:] if a.startswith("--only=")), None)
+if ONLY is not None:
+    # A typo here would otherwise write empty annotation blocks and report success.
+    unknown = sorted(ONLY - set(SUPPORTED))
+    if unknown or not ONLY:
+        sys.exit(f"--only: {'unsupported ' + ', '.join(unknown) if unknown else 'no attributes given'}; "
+                 f"choose from {', '.join(SUPPORTED)}")
 PROTO_DIR = Path(ARGS[0]) if len(ARGS) > 0 else Path("meshtastic")
 PLAN_PATH = Path(ARGS[1] if len(ARGS) > 1 else "/tmp/fplan.json")
 with PLAN_PATH.open(encoding="utf-8") as plan_file:
@@ -61,8 +69,7 @@ def message_span(txt: str, full: str):
     return lo, hi
 
 
-ATTRIBUTES = tuple(k for k in ("label", "description", "keywords", "unit", "min_value", "max_value")
-                   if ONLY is None or k in ONLY)
+ATTRIBUTES = tuple(k for k in SUPPORTED if ONLY is None or k in ONLY)
 
 
 def attribute_line(inner: str, key: str, value) -> str:
@@ -92,7 +99,15 @@ def merge(opts: str, indent: str, entry: dict) -> str | None:
     open_idx = opts.index("{", m.start())
     close_idx = match_brace(opts, open_idx) - 1
     body = opts[open_idx + 1:close_idx]
-    pairs = re.findall(r'(\w+)\s*:\s*("(?:[^"\\]|\\.)*"|-?\d+(?:\.\d+)?|\w+)', body)
+    # Text-format scalars: a quoted string, a number in any spelling the format
+    # accepts (1e6, -0.5, .25), or a bare identifier such as true.
+    pair_re = re.compile(r'(\w+)\s*:\s*("(?:[^"\\]|\\.)*"|[-+]?(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?|\w+)')
+    pairs = pair_re.findall(body)
+    # The block is rebuilt from these pairs, so anything the pattern did not
+    # recognise would be dropped silently. Refuse rather than lose it.
+    leftover = pair_re.sub("", body).strip()
+    if leftover:
+        sys.exit(f"cannot rebuild a field_metadata block; unrecognised content: {leftover!r}")
     present = {k for k, _ in pairs}
     missing = [k for k in ATTRIBUTES if k in entry and k not in present]
     if not missing:
