@@ -25,6 +25,7 @@ struct SettingsNodeSnapshot: Identifiable, Equatable {
 	let hasMetadata: Bool
 	let hasTAKConfig: Bool
 	let userLongName: String?
+	let userShortName: String?
 	let userIsLicensed: Bool
 	let userIsPkiEncrypted: Bool
 	let role: Int32?
@@ -46,6 +47,7 @@ struct SettingsNodeSnapshot: Identifiable, Equatable {
 			user.modelContext != nil,
 			!user.isDeleted {
 			userLongName = user.longName
+			userShortName = user.shortName
 			userIsLicensed = user.isLicensed
 			userIsPkiEncrypted = user.pkiEncrypted
 			let userRole = user.role
@@ -60,6 +62,7 @@ struct SettingsNodeSnapshot: Identifiable, Equatable {
 			}
 		} else {
 			userLongName = nil
+			userShortName = nil
 			userIsLicensed = false
 			userIsPkiEncrypted = false
 			if let deviceConfig = node.deviceConfig,
@@ -116,13 +119,33 @@ struct Settings: View {
 		nodes = ((try? context.fetch(descriptor)) ?? []).compactMap(SettingsNodeSnapshot.init)
 	}
 
-	/// Nodes for the admin / configuration picker, ordered favorites-first while
-	/// preserving the snapshot fetch's `lastHeard`-descending order within each group. The
-	/// favorite-on-top behavior can't be expressed as a SwiftData `@Query` sort
-	/// because `favorite` is a `Bool` and `Bool` isn't `Comparable` (so it's not a
-	/// valid `SortDescriptor` key); it's applied here as a cheap stable partition over value data.
+	/// Nodes for the admin/configuration picker. Keep the physically connected node first,
+	/// then nodes that are already ready for Remote Admin, then the remaining nodes. Within each
+	/// group favorites are promoted and names are sorted alphabetically. This makes a known remote
+	/// admin target findable without scrolling through a last-heard ordered mesh.
 	private var sortedNodes: [SettingsNodeSnapshot] {
-		nodes.filter(\.favorite) + nodes.filter { !$0.favorite }
+		let activeNodeNum = Int64(accessoryManager.activeDeviceNum ?? 0)
+		return nodes.sorted { lhs, rhs in
+			let lhsConnected = lhs.num == activeNodeNum
+			let rhsConnected = rhs.num == activeNodeNum
+			if lhsConnected != rhsConnected { return lhsConnected }
+
+			let lhsAdminReady = UserDefaults.enableAdministration
+				? (lhs.canRemoteAdmin && lhs.hasSessionPasskey)
+				: lhs.hasMetadata
+			let rhsAdminReady = UserDefaults.enableAdministration
+				? (rhs.canRemoteAdmin && rhs.hasSessionPasskey)
+				: rhs.hasMetadata
+			if lhsAdminReady != rhsAdminReady { return lhsAdminReady }
+
+			if lhs.favorite != rhs.favorite { return lhs.favorite }
+
+			let lhsName = lhs.userLongName ?? "Unknown".localized
+			let rhsName = rhs.userLongName ?? "Unknown".localized
+			let comparison = lhsName.localizedCaseInsensitiveCompare(rhsName)
+			if comparison != .orderedSame { return comparison == .orderedAscending }
+			return lhs.num < rhs.num
+		}
 	}
 
 	private func nodeSnapshot(for nodeNum: Int) -> SettingsNodeSnapshot? {
@@ -136,6 +159,20 @@ struct Settings: View {
 			!node.isDeleted
 		else { return nil }
 		return node
+	}
+
+	/// Consumes a Node Details -> Settings handoff once the node snapshot is available.
+	/// Assigning `selectedNode` deliberately reuses the existing onChange handler, including
+	/// metadata/session setup, instead of creating a second Remote Admin implementation.
+	private func applyPendingRemoteAdminTarget() {
+		guard let target = router.remoteAdminTargetNodeNum,
+			nodeSnapshot(for: Int(target)) != nil else { return }
+
+		if let activeDeviceNum = accessoryManager.activeDeviceNum {
+			preferredNodeNum = Int(activeDeviceNum)
+		}
+		selectedNode = Int(target)
+		router.remoteAdminTargetNodeNum = nil
 	}
 
 	@State private var selectedNode: Int = 0
@@ -675,56 +712,24 @@ struct Settings: View {
 					if accessoryManager.isConnected {
 						Section("Configure") {
 							if node.canRemoteAdmin {
-								Picker("Node", selection: $selectedNode) {
-									if selectedNode == 0 {
-										Text("Connect to a Node").tag(0)
-									}
-									ForEach(sortedNodes) { node in
-										/// Connected Node
-										if node.num == accessoryManager.activeDeviceNum ?? 0 {
-											Label {
-												Text("Connected") + Text(verbatim: ": \(node.userLongName?.addingVariationSelectors ?? "Unknown".localized)")
-											} icon: {
-												accessoryManager.activeConnection?.device.transportType.icon ?? Image(systemName: "questionmark.circle")
-											}
-											.tag(Int(node.num))
-										} else if node.canRemoteAdmin && UserDefaults.enableAdministration && node.hasSessionPasskey { /// Nodes using the new PKI system
-											Label {
-												Text("Remote PKI Admin: \(node.userLongName ?? "Unknown".localized)")
-											} icon: {
-												Image(systemName: "av.remote")
-											}
-											.font(.caption2)
-											.tag(Int(node.num))
-										} else if !UserDefaults.enableAdministration && node.hasMetadata { /// Nodes using the old admin system
-											Label {
-												Text("Remote Legacy Admin: \(node.userLongName ?? "Unknown".localized)")
-											} icon: {
-												Image(systemName: "av.remote")
-											}
-											.tag(Int(node.num))
-										} else if UserDefaults.enableAdministration && node.userIsPkiEncrypted {
-											Label {
-												Text("Request PKI Admin: \(node.userLongName?.addingVariationSelectors ?? "Unknown".localized)")
-											} icon: {
-												Image(systemName: "rectangle.and.hand.point.up.left")
-											}
-											.tag(Int(node.num))
-										} else if !UserDefaults.enableAdministration {
-											Label {
-												Text("Request Legacy Admin: \(node.userLongName?.addingVariationSelectors ?? "Unknown".localized)")
-											} icon: {
-												Image(systemName: "rectangle.and.hand.point.up.left")
-											}
-											.tag(Int(node.num))
-									}
-								}
-								}
-								.pickerStyle(.navigationLink)
-								.onChange(of: selectedNode) { _, newValue in
-									handleSelectedNodeChange(newValue)
-								}
-								TipView(AdminChannelTip(), arrowEdge: .top)
+								NavigationLink {
+					SettingsNodePicker(
+						nodes: sortedNodes,
+						selectedNode: $selectedNode
+					)
+				} label: {
+					HStack {
+						Text("Node")
+						Spacer()
+						Text(nodeSnapshot(for: selectedNode)?.userLongName?.addingVariationSelectors ?? "Connect to a Node".localized)
+							.foregroundStyle(.secondary)
+							.lineLimit(1)
+					}
+				}
+				.onChange(of: selectedNode) { _, newValue in
+					handleSelectedNodeChange(newValue)
+				}
+				TipView(AdminChannelTip(), arrowEdge: .top)
 									.tipViewStyle(PersistentTipStyle())
 									.tipBackground(colorScheme == .dark ? Color(.systemBackground) : Color(.secondarySystemBackground))
 									.listRowSeparator(.hidden)
@@ -876,6 +881,7 @@ struct Settings: View {
 					self.preferredNodeNum = UserDefaults.preferredPeripheralNum
 					setSelectedNode(to: UserDefaults.preferredPeripheralNum)
 				}
+				applyPendingRemoteAdminTarget()
 			}
 			.task(id: router.selectedTab) {
 				// Refresh the node snapshot on a gentle cadence, and only while Settings is
@@ -884,6 +890,7 @@ struct Settings: View {
 				// here restarts it for an immediate refresh.
 				guard router.selectedTab == .settings else { return }
 				refreshNodes()
+				applyPendingRemoteAdminTarget()
 				while !Task.isCancelled {
 					do {
 						try await Task.sleep(for: .seconds(2))
@@ -892,6 +899,7 @@ struct Settings: View {
 					}
 					guard !Task.isCancelled else { break }
 					refreshNodes()
+					applyPendingRemoteAdminTarget()
 				}
 			}
 			.navigationTitle("Settings")

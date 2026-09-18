@@ -30,6 +30,11 @@ class Router: ObservableObject {
 	@Published
 	var settingsPath: [SettingsNavigationState] = []
 
+	/// One-shot target used when Node Details hands a remote node directly to Settings.
+	/// Settings consumes and clears this after selecting the node in the existing admin flow.
+	@Published
+	var remoteAdminTargetNodeNum: Int64?
+
 	@Published
 	var discoveryShowHistory: Bool = false
 
@@ -189,6 +194,14 @@ class Router: ObservableObject {
 		Logger.services.info("🛣 [App] Direct route to node detail \(nodeNum, privacy: .public)")
 		selectedTab = .nodes
 		selectedNodeNum = nodeNum
+	}
+
+	/// Opens the existing Settings remote-admin flow with a specific node preselected.
+	func navigateToRemoteAdmin(nodeNum: Int64) {
+		Logger.services.info("🛣 [App] Direct route to remote admin for \(nodeNum, privacy: .public)")
+		remoteAdminTargetNodeNum = nodeNum
+		settingsPath = []
+		selectedTab = .settings
 	}
 
 	func popToRoot(tab: NavigationState.Tab) {
