@@ -38,7 +38,7 @@ struct ConfigFormOverlayTests {
 		let expected: [String: (custom: Int, environment: Int)] = [
 			"meshtastic.Config.BluetoothConfig": (1, 0),                // the six-digit PIN field
 			"meshtastic.Config.DeviceConfig": (1, 0),                   // role picker with its warning
-			"meshtastic.Config.DisplayConfig": (0, 0),
+			"meshtastic.Config.DisplayConfig": (0, 0),                  // no hatches: every row reads its own field
 			"meshtastic.Config.PowerConfig": (1, 2),                    // ADC override; power saving and battery rows by architecture
 			"meshtastic.ModuleConfig.AmbientLightingConfig": (1, 0),    // one colour picker for three channels
 			"meshtastic.ModuleConfig.CannedMessageConfig": (0, 3),      // three sections locked while a preset is chosen
@@ -57,6 +57,18 @@ struct ConfigFormOverlayTests {
 			#expect(overlay.customControlCount == pinned.custom, "\(overlay.protoName) custom controls")
 			#expect(overlay.environmentConditionCount == pinned.environment, "\(overlay.protoName) environment conditions")
 		}
+	}
+
+	@Test("Display offers the compass orientation picker and not the toggle it replaced")
+	func displayOffersCompassOrientation() throws {
+		typealias F = Config.DisplayConfig.Fields
+		let overlay = DisplayConfig.overlay()
+		#expect(overlay.rowID(for: F.compassOrientation.identity) != nil,
+				"the orientation picker should have a row on every supported firmware")
+		#expect(overlay.rowID(for: F.compassNorthTop.identity) == nil,
+				"the north-up toggle it replaced should not be rendered")
+		#expect(overlay.omits(F.compassNorthTop.identity),
+				"the north-up toggle should be listed as omitted, with its reason")
 	}
 
 	@Test("Conditions read the field they name")

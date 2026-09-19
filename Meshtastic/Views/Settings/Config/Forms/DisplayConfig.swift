@@ -51,10 +51,12 @@ struct DisplayConfig: View {
 				.init(F.oled, enumValues: { _ in OledTypes.allCases.map(\.rawValue) })
 			])
 		], omitted: [
-			// Replaced by compass_orientation in 2.3.13, which is below the oldest firmware
-			// the app will talk to (AccessoryManager.minimumVersion), so no connected node
-			// reads it. It still round-trips from the entity.
-			.init(F.compassNorthTop, "superseded by compass_orientation before the app's minimum firmware"),
+			// Superseded by compass_orientation in 2.3.13. The screen only ever offered it
+			// below that version, under AccessoryManager.minimumVersion, so the row has
+			// never been reachable. Firmware honors it through 2.7.0 and ignores it from
+			// 2.7.2, so it can return as an ordinary deprecated field once the schema
+			// carries a deprecated-since version. It still round-trips from the entity.
+			.init(F.compassNorthTop, "superseded by compass_orientation; only ever offered below the app's minimum firmware"),
 			.init(F.useLongNodeName, "not yet offered by this client; unlabelled upstream"),
 			.init(F.enableMessageBubbles, "not yet offered by this client; unlabelled upstream")
 		])
