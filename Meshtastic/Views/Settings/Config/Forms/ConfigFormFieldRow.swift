@@ -98,51 +98,62 @@ private struct IntegerRow<M: ConfigSchemaMessage>: View {
 	@Binding var value: Int
 
 	var body: some View {
-		switch field.control {
+		if case .nonZeroToggle(let onValue, let inner) = field.control {
+			NonZeroToggle(label: label, symbol: field.symbol, onValue: Int(onValue), value: $value) {
+				// The toggle above already carries the field's one label, so the value
+				// control beneath it shows the value alone rather than repeating it.
+				plain(inner, bare: true)
+			}
+		} else {
+			plain(field.control, bare: false)
+		}
+	}
+
+	/// Every integer control but the non-zero toggle, which wraps one of these.
+	@ViewBuilder
+	private func plain(_ control: ConfigFormControl<M>, bare: Bool) -> some View {
+		let rowLabel = bare ? "" : label
+		switch control {
 		case .gpioPin:
-			GPIOPinPicker(title: label, selection: $value)
+			GPIOPinPicker(title: rowLabel, selection: $value)
 		case .interval(let configuration):
-			UpdateIntervalPicker(config: configuration, pickerLabel: LocalizedStringKey(label), selectedInterval: $value.asInterval)
+			UpdateIntervalPicker(config: configuration, pickerLabel: LocalizedStringKey(rowLabel), selectedInterval: $value.asInterval)
 		case .options(let options):
-			Picker(label, selection: $value) {
+			Picker(rowLabel, selection: $value) {
 				ForEach(options) { option in
 					Text(option.title).tag(option.value)
 				}
 			}
 		case .stepper:
-			bounded(preferSlider: false)
+			bounded(preferSlider: false, bare: bare)
 		case .slider:
-			bounded(preferSlider: true)
-		case .nonZeroToggle(let onValue):
-			NonZeroToggle(label: label, symbol: field.symbol, onValue: Int(onValue), value: $value) {
-				numberField
-			}
+			bounded(preferSlider: true, bare: bare)
 		default:
-			automatic
+			automatic(bare: bare)
 		}
 	}
 
 	/// Bounds in the registry make a stepper; a seconds unit makes an interval picker;
 	/// anything else is a number field with the unit beside it.
 	@ViewBuilder
-	private var automatic: some View {
+	private func automatic(bare: Bool) -> some View {
 		if metadata?.minValue != nil, metadata?.maxValue != nil {
-			bounded(preferSlider: false)
+			bounded(preferSlider: false, bare: bare)
 		} else if metadata?.unit == "s" {
-			UpdateIntervalPicker(config: .all, pickerLabel: LocalizedStringKey(label), selectedInterval: $value.asInterval)
+			UpdateIntervalPicker(config: .all, pickerLabel: LocalizedStringKey(bare ? "" : label), selectedInterval: $value.asInterval)
 		} else {
-			numberField
+			numberField(bare: bare)
 		}
 	}
 
 	@ViewBuilder
-	private func bounded(preferSlider: Bool) -> some View {
+	private func bounded(preferSlider: Bool, bare: Bool) -> some View {
 		let lower = Int(metadata?.minValue ?? 0)
 		let upper = Int(metadata?.maxValue ?? Double(Int32.max))
 		if preferSlider || upper - lower > 32 {
 			VStack(alignment: .leading) {
 				HStack {
-					Text(label)
+					if !bare { Text(label) }
 					Spacer()
 					Text(valueWithUnit).foregroundStyle(.secondary)
 				}
@@ -152,7 +163,7 @@ private struct IntegerRow<M: ConfigSchemaMessage>: View {
 		} else {
 			Stepper(value: $value, in: lower...upper) {
 				HStack {
-					Text(label)
+					if !bare { Text(label) }
 					Spacer()
 					Text(valueWithUnit).foregroundStyle(.secondary)
 				}
@@ -160,14 +171,24 @@ private struct IntegerRow<M: ConfigSchemaMessage>: View {
 		}
 	}
 
-	private var numberField: some View {
+	private func numberField(bare: Bool) -> some View {
 		HStack {
-			if let symbol = field.symbol {
-				Label(label, systemImage: symbol)
-			} else {
-				Text(label)
+			if !bare {
+				// The registry's names are longer than the ones these screens used to
+				// hardcode, so the label claims its width first; the number needs little.
+				// (Sizing the field instead does the opposite: a TextField's ideal width
+				// comes from its placeholder, which is this same label.)
+				Group {
+					if let symbol = field.symbol {
+						Label(label, systemImage: symbol)
+					} else {
+						Text(label)
+					}
+				}
+				.layoutPriority(1)
 			}
 			Spacer()
+			// The placeholder keeps the field's name for VoiceOver even when the row is bare.
 			TextField(label, value: $value, format: .number)
 				.multilineTextAlignment(.trailing)
 				.keyboardType(.numbersAndPunctuation)
@@ -233,12 +254,26 @@ private struct StringRow<M: ConfigSchemaMessage>: View {
 	@Binding var text: String
 
 	var body: some View {
-		Group {
-			if case .secure = field.control {
-				SecureField(label, text: $text)
+		// Label beside the field, as the old screens laid it out; the placeholder alone
+		// disappears as soon as there is a value.
+		HStack {
+			if let symbol = field.symbol {
+				Label(label, systemImage: symbol)
 			} else {
-				TextField(label, text: $text, axis: .vertical)
+				Text(label)
 			}
+			Group {
+				if case .secure = field.control {
+					SecureField(label, text: $text)
+				} else {
+					TextField(label, text: $text, axis: .vertical)
+				}
+			}
+			.foregroundColor(.gray)
+			.multilineTextAlignment(.trailing)
+			// Config strings are identifiers - topics, addresses, a TZ rule - never prose.
+			.autocorrectionDisabled()
+			.textInputAutocapitalization(.never)
 		}
 		.onChange(of: text) { _, new in
 			// The twelve UTF-8 truncation loops the old screens carried, once.
@@ -297,6 +332,13 @@ private struct EnumRow<M: ConfigSchemaMessage>: View {
 			}
 		}
 		.modifier(SegmentedIfAsked(segmented: { if case .segmented = field.control { return true }; return false }()))
+		// A value can carry its own explanation upstream (device roles do); show the
+		// selected one's beneath the picker.
+		if let description = meta(selection)?.description {
+			Text(description)
+				.foregroundColor(.gray)
+				.font(.callout)
+		}
 	}
 }
 

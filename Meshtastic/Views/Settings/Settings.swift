@@ -640,8 +640,7 @@ struct Settings: View {
 						onSelect: { entry in
 							// The screen scrolls to the control the result named; screens
 							// that are still hand-written just open as before.
-							router.settingsFieldFocus = entry.field
-							router.settingsPath = [entry.destination]
+							router.navigate(toSetting: entry.destination, focusing: entry.field)
 						}
 					)
 				} else {
@@ -792,7 +791,7 @@ struct Settings: View {
 			// a search result named, and take it so going back does not scroll again.
 			.environment(\.settingsFieldFocus, SettingsFieldFocus(
 				target: router.settingsFieldFocus,
-				clear: { router.settingsFieldFocus = nil }
+				clear: { router.clearSettingsFieldFocus() }
 			))
 			.navigationDestination(for: SettingsNavigationState.self) { destination in
 				let node = liveNode(for: preferredNodeNum)

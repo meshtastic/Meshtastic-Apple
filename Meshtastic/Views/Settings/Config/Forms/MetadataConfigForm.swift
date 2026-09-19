@@ -36,10 +36,14 @@ struct MetadataConfigForm<M: ConfigFormMessage, Leading: View, Trailing: View>: 
 	var canSave: (M) -> Bool = { _ in true }
 	/// Replaces the default "the node will reboot" confirmation.
 	var confirmationMessage: String?
+	/// A change the message does not hold - text sent in a separate admin message, say -
+	/// so the Save button appears for it too.
+	var externalChanges = false
 	let request: (UserEntity, UserEntity) async throws -> Void
 	let save: (M, UserEntity, UserEntity) async throws -> Void
-	/// Bespoke content above the sections: warnings, a placement summary.
-	@ViewBuilder let leading: () -> Leading
+	/// Bespoke content above the sections: warnings, a placement summary, a control
+	/// that edits several fields at once.
+	@ViewBuilder let leading: (Binding<M>) -> Leading
 	/// Bespoke content below them: reset buttons, app-local toggles, anything the
 	/// schema does not hold.
 	@ViewBuilder let trailing: (Binding<M>) -> Trailing
@@ -64,9 +68,10 @@ struct MetadataConfigForm<M: ConfigFormMessage, Leading: View, Trailing: View>: 
 		reconcile: ((inout M, ConfigFormEnvironment) -> Void)? = nil,
 		canSave: @escaping (M) -> Bool = { _ in true },
 		confirmationMessage: String? = nil,
+		externalChanges: Bool = false,
 		request: @escaping (UserEntity, UserEntity) async throws -> Void,
 		save: @escaping (M, UserEntity, UserEntity) async throws -> Void,
-		@ViewBuilder leading: @escaping () -> Leading,
+		@ViewBuilder leading: @escaping (Binding<M>) -> Leading,
 		@ViewBuilder trailing: @escaping (Binding<M>) -> Trailing
 	) {
 		self.node = node
@@ -76,6 +81,7 @@ struct MetadataConfigForm<M: ConfigFormMessage, Leading: View, Trailing: View>: 
 		self.reconcile = reconcile
 		self.canSave = canSave
 		self.confirmationMessage = confirmationMessage
+		self.externalChanges = externalChanges
 		self.request = request
 		self.save = save
 		self.leading = leading
@@ -86,7 +92,7 @@ struct MetadataConfigForm<M: ConfigFormMessage, Leading: View, Trailing: View>: 
 	/// how a successful save resets the baseline.
 	private var hasChanges: Binding<Bool> {
 		Binding(
-			get: { loaded && config != original },
+			get: { loaded && (config != original || externalChanges) },
 			set: { changed in
 				guard !changed else { return }
 				original = inFlight ?? config
@@ -113,7 +119,7 @@ struct MetadataConfigForm<M: ConfigFormMessage, Leading: View, Trailing: View>: 
 		ScrollViewReader { proxy in
 		Form {
 			ConfigHeader(title: title, config: M.entityKeyPath, node: node, onAppear: load)
-			leading()
+			leading($config)
 			ForEach(overlay.sections) { section in
 				if section.shownWhen?.evaluate(config, env) ?? true {
 					let visible = section.fields.filter { isVisible($0, env) }
@@ -130,11 +136,13 @@ struct MetadataConfigForm<M: ConfigFormMessage, Leading: View, Trailing: View>: 
 						} footer: {
 							if let footer = section.footer { Text(footer) }
 						}
+						.disabled(!(section.enabledWhen?.evaluate(config, env) ?? true))
 					}
 				}
 			}
 			trailing($config)
 		}
+		.scrollDismissesKeyboard(.immediately)
 		.disabled(!accessoryManager.isConnected || node?[keyPath: M.entityKeyPath] == nil || inFlight != nil)
 		.safeAreaInset(edge: .bottom, alignment: .center) {
 			HStack(spacing: 0) {
@@ -169,23 +177,36 @@ struct MetadataConfigForm<M: ConfigFormMessage, Leading: View, Trailing: View>: 
 			reconcile(&adjusted, env)
 			if adjusted != config { config = adjusted }
 		}
-		.onAppear { focusSearchedControl(using: proxy) }
+		// A view-bound task, so leaving the screen mid-scroll cancels it rather than
+		// letting it move a form the reader has already navigated away from.
+		.task { await focusSearchedControl(using: proxy, env) }
 		}
 	}
 
 	/// A search result names one control, so scroll to it and mark it rather than leaving
 	/// the reader to pick it out of rows that all look alike.
-	private func focusSearchedControl(using proxy: ScrollViewProxy) {
-		guard let target = settingsFieldFocus.target, let row = overlay.rowID(for: target) else { return }
-		// Taken once: coming back to this screen later should not scroll again.
+	@MainActor
+	private func focusSearchedControl(using proxy: ScrollViewProxy, _ env: ConfigFormEnvironment) async {
+		guard let target = settingsFieldFocus.target else { return }
+		// Taken whether or not this screen can honour it: a request left pending would be
+		// picked up later by whichever screen does own the field.
 		settingsFieldFocus.clear()
-		Task { @MainActor in
+		// Only rows that are actually on screen can be scrolled to. A field behind a
+		// toggle that is off - NeighborInfo's interval, say - has no row today, so the
+		// screen just opens.
+		guard let row = overlay.rowID(for: target),
+			  overlay.sections.flatMap(\.fields).contains(where: { $0.id == row && isVisible($0, env) })
+		else { return }
+		do {
 			// The rows exist only after the form's first layout pass.
-			try? await Task.sleep(for: .milliseconds(350))
+			try await Task.sleep(for: .milliseconds(350))
 			withAnimation { proxy.scrollTo(row, anchor: .center) }
 			highlightedRow = row
-			try? await Task.sleep(for: .seconds(2))
+			try await Task.sleep(for: .seconds(2))
 			withAnimation { highlightedRow = nil }
+		} catch {
+			// Cancelled by leaving the screen; the mark goes with it.
+			highlightedRow = nil
 		}
 	}
 
@@ -228,13 +249,15 @@ extension MetadataConfigForm where Leading == EmptyView, Trailing == EmptyView {
 		reconcile: ((inout M, ConfigFormEnvironment) -> Void)? = nil,
 		canSave: @escaping (M) -> Bool = { _ in true },
 		confirmationMessage: String? = nil,
+		externalChanges: Bool = false,
 		request: @escaping (UserEntity, UserEntity) async throws -> Void,
 		save: @escaping (M, UserEntity, UserEntity) async throws -> Void
 	) {
 		self.init(
 			node: node, title: title, overlay: overlay, normalize: normalize, reconcile: reconcile,
-			canSave: canSave, confirmationMessage: confirmationMessage, request: request, save: save,
-			leading: { EmptyView() }, trailing: { _ in EmptyView() }
+			canSave: canSave, confirmationMessage: confirmationMessage, externalChanges: externalChanges,
+			request: request, save: save,
+			leading: { _ in EmptyView() }, trailing: { _ in EmptyView() }
 		)
 	}
 }
@@ -246,13 +269,15 @@ extension MetadataConfigForm where Trailing == EmptyView {
 		reconcile: ((inout M, ConfigFormEnvironment) -> Void)? = nil,
 		canSave: @escaping (M) -> Bool = { _ in true },
 		confirmationMessage: String? = nil,
+		externalChanges: Bool = false,
 		request: @escaping (UserEntity, UserEntity) async throws -> Void,
 		save: @escaping (M, UserEntity, UserEntity) async throws -> Void,
-		@ViewBuilder leading: @escaping () -> Leading
+		@ViewBuilder leading: @escaping (Binding<M>) -> Leading
 	) {
 		self.init(
 			node: node, title: title, overlay: overlay, normalize: normalize, reconcile: reconcile,
-			canSave: canSave, confirmationMessage: confirmationMessage, request: request, save: save,
+			canSave: canSave, confirmationMessage: confirmationMessage, externalChanges: externalChanges,
+			request: request, save: save,
 			leading: leading, trailing: { _ in EmptyView() }
 		)
 	}
@@ -265,14 +290,16 @@ extension MetadataConfigForm where Leading == EmptyView {
 		reconcile: ((inout M, ConfigFormEnvironment) -> Void)? = nil,
 		canSave: @escaping (M) -> Bool = { _ in true },
 		confirmationMessage: String? = nil,
+		externalChanges: Bool = false,
 		request: @escaping (UserEntity, UserEntity) async throws -> Void,
 		save: @escaping (M, UserEntity, UserEntity) async throws -> Void,
 		@ViewBuilder trailing: @escaping (Binding<M>) -> Trailing
 	) {
 		self.init(
 			node: node, title: title, overlay: overlay, normalize: normalize, reconcile: reconcile,
-			canSave: canSave, confirmationMessage: confirmationMessage, request: request, save: save,
-			leading: { EmptyView() }, trailing: trailing
+			canSave: canSave, confirmationMessage: confirmationMessage, externalChanges: externalChanges,
+			request: request, save: save,
+			leading: { _ in EmptyView() }, trailing: trailing
 		)
 	}
 }

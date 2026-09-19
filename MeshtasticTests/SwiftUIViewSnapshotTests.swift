@@ -1598,6 +1598,55 @@ struct NodeDetailSnapshotTests {
 @Suite("MQTTConfig Snapshots")
 struct MQTTConfigSnapshotTests {
 
+	@MainActor
+	private func makeNode() throws -> NodeInfoEntity {
+		let context = sharedModelContainer.mainContext
+		let node = NodeInfoEntity()
+		node.num = 0xC0FF_EE0E
+		context.insert(node)
+		let user = UserEntity()
+		user.num = node.num
+		user.longName = "Snapshot MQTT Node"
+		user.shortName = "SMQT"
+		context.insert(user)
+		node.user = user
+		let mqtt = MQTTConfigEntity()
+		mqtt.enabled = true
+		mqtt.proxyToClientEnabled = true
+		mqtt.address = "mqtt.meshtastic.org"
+		mqtt.username = "meshdev"
+		mqtt.password = "large4cats"
+		mqtt.root = "msh/US"
+		mqtt.encryptionEnabled = true
+		mqtt.tlsEnabled = true
+		mqtt.mapReportingEnabled = true
+		mqtt.mapReportingShouldReportLocation = true
+		mqtt.mapPublishIntervalSecs = 3600
+		mqtt.mapPositionPrecision = 14
+		context.insert(mqtt)
+		node.mqttConfig = mqtt
+		try context.save()
+		return node
+	}
+
+	@Test("MQTT form, public server with map reporting consented")
+	@MainActor
+	func mqttForm() async throws {
+		let node = try makeNode()
+		AccessoryManager.shared.isConnected = true
+		AccessoryManager.shared.activeDeviceNum = node.num
+		// Consent is the app's own record; the form reads it on load.
+		let consent = UserDefaults.mapReportingOptIn
+		UserDefaults.mapReportingOptIn = true
+		defer { UserDefaults.mapReportingOptIn = consent }
+		let view = NavigationView {
+			MQTTConfig(node: node)
+				.environmentObject(AccessoryManager.shared)
+				.modelContainer(sharedModelContainer)
+		}
+		await assertViewSnapshot(of: view, width: 390, height: 1800, named: "mqttConfigForm")
+	}
+
 	@Test("MQTT settings form")
 	@MainActor
 	func mqttSettingsForm() async {
@@ -1611,23 +1660,6 @@ struct MQTTConfigSnapshotTests {
 }
 
 // MARK: - TelemetryConfig Snapshot Tests
-
-@Suite("TelemetryConfig Snapshots")
-struct TelemetryConfigSnapshotTests {
-
-	@Test("Telemetry settings form")
-	@MainActor
-	func telemetrySettingsForm() async {
-		let view = NavigationView {
-			TelemetryConfig(node: nil)
-				.environmentObject(AccessoryManager.shared)
-				.modelContainer(PersistenceController.preview.container)
-		}
-		await assertViewSnapshot(of: view, width: 390, height: 900, named: "telemetryConfig", forDocs: true)
-	}
-}
-
-// MARK: - BLE Signal Strength Snapshot Tests
 
 @Suite("BLE Signal Strength Snapshots")
 struct BLESignalStrengthSnapshotTests {
@@ -2239,5 +2271,509 @@ struct ExternalNotificationConfigSnapshotTests {
 				.modelContainer(sharedModelContainer)
 		}
 		await assertViewSnapshot(of: view, width: 390, height: 1400, named: "externalNotificationConfigForm")
+	}
+}
+@Suite("BluetoothConfig Snapshots")
+struct BluetoothConfigSnapshotTests {
+
+	@MainActor
+	private func makeNode() throws -> NodeInfoEntity {
+		let context = sharedModelContainer.mainContext
+		let node = NodeInfoEntity()
+		node.num = 0xC0FF_EE04
+		context.insert(node)
+		let user = UserEntity()
+		user.num = node.num
+		user.longName = "Snapshot Bluetooth Node"
+		user.shortName = "SBLE"
+		context.insert(user)
+		node.user = user
+		let bluetooth = BluetoothConfigEntity()
+		bluetooth.enabled = true
+		bluetooth.mode = Int32(Config.BluetoothConfig.PairingMode.fixedPin.rawValue)
+		bluetooth.fixedPin = 654321
+		context.insert(bluetooth)
+		node.bluetoothConfig = bluetooth
+		try context.save()
+		return node
+	}
+
+	@Test("Bluetooth form, fixed pin mode")
+	@MainActor
+	func bluetoothForm() async throws {
+		let node = try makeNode()
+		AccessoryManager.shared.isConnected = true
+		AccessoryManager.shared.activeDeviceNum = node.num
+		let view = NavigationView {
+			BluetoothConfig(node: node)
+				.environmentObject(AccessoryManager.shared)
+				.modelContainer(sharedModelContainer)
+		}
+		await assertViewSnapshot(of: view, width: 390, height: 700, named: "bluetoothConfigForm")
+	}
+}
+
+@Suite("PaxCounterConfig Snapshots")
+struct PaxCounterConfigSnapshotTests {
+
+	@MainActor
+	private func makeNode() throws -> NodeInfoEntity {
+		let context = sharedModelContainer.mainContext
+		let node = NodeInfoEntity()
+		node.num = 0xC0FF_EE05
+		context.insert(node)
+		let user = UserEntity()
+		user.num = node.num
+		user.longName = "Snapshot PAX Node"
+		user.shortName = "SPAX"
+		context.insert(user)
+		node.user = user
+		let pax = PaxCounterConfigEntity()
+		pax.enabled = true
+		pax.updateInterval = 0      // stored zero: the picker shows the one-hour default
+		pax.wifiThreshold = 0       // stored zero: the field shows -80
+		pax.bleThreshold = -75
+		context.insert(pax)
+		node.paxCounterConfig = pax
+		try context.save()
+		return node
+	}
+
+	@Test("PAX Counter form, enabled, with defaults shown for stored zeros")
+	@MainActor
+	func paxCounterForm() async throws {
+		let node = try makeNode()
+		AccessoryManager.shared.isConnected = true
+		AccessoryManager.shared.activeDeviceNum = node.num
+		let view = NavigationView {
+			PaxCounterConfig(node: node)
+				.environmentObject(AccessoryManager.shared)
+				.modelContainer(sharedModelContainer)
+		}
+		await assertViewSnapshot(of: view, width: 390, height: 800, named: "paxCounterConfigForm")
+	}
+}
+
+@Suite("StoreForwardConfig Snapshots")
+struct StoreForwardConfigSnapshotTests {
+
+	@MainActor
+	private func makeNode() throws -> NodeInfoEntity {
+		let context = sharedModelContainer.mainContext
+		let node = NodeInfoEntity()
+		node.num = 0xC0FF_EE06
+		context.insert(node)
+		let user = UserEntity()
+		user.num = node.num
+		user.longName = "Snapshot S&F Node"
+		user.shortName = "SSAF"
+		context.insert(user)
+		node.user = user
+		let store = StoreForwardConfigEntity()
+		store.enabled = true
+		store.heartbeat = true
+		store.records = 50
+		store.historyReturnMax = 100
+		store.historyReturnWindow = 7200
+		store.isRouter = true
+		context.insert(store)
+		node.storeForwardConfig = store
+		try context.save()
+		return node
+	}
+
+	@Test("Store and forward form, enabled as a server")
+	@MainActor
+	func storeForwardForm() async throws {
+		let node = try makeNode()
+		AccessoryManager.shared.isConnected = true
+		AccessoryManager.shared.activeDeviceNum = node.num
+		let view = NavigationView {
+			StoreForwardConfig(node: node)
+				.environmentObject(AccessoryManager.shared)
+				.modelContainer(sharedModelContainer)
+		}
+		await assertViewSnapshot(of: view, width: 390, height: 1000, named: "storeForwardConfigForm")
+	}
+}
+
+@Suite("RangeTestConfig Snapshots")
+struct RangeTestConfigSnapshotTests {
+
+	@MainActor
+	private func makeNode() throws -> NodeInfoEntity {
+		let context = sharedModelContainer.mainContext
+		let node = NodeInfoEntity()
+		node.num = 0xC0FF_EE07
+		context.insert(node)
+		let user = UserEntity()
+		user.num = node.num
+		user.longName = "Snapshot Range Node"
+		user.shortName = "SRNG"
+		context.insert(user)
+		node.user = user
+		let range = RangeTestConfigEntity()
+		range.enabled = true
+		range.sender = 60
+		range.save = false
+		context.insert(range)
+		node.rangeTestConfig = range
+		try context.save()
+		return node
+	}
+
+	@Test("Range test form, enabled, no channels so no public-channel warning")
+	@MainActor
+	func rangeTestForm() async throws {
+		let node = try makeNode()
+		AccessoryManager.shared.isConnected = true
+		AccessoryManager.shared.activeDeviceNum = node.num
+		let view = NavigationView {
+			RangeTestConfig(node: node)
+				.environmentObject(AccessoryManager.shared)
+				.modelContainer(sharedModelContainer)
+		}
+		await assertViewSnapshot(of: view, width: 390, height: 700, named: "rangeTestConfigForm")
+	}
+}
+
+@Suite("TelemetryConfig Snapshots")
+struct TelemetryConfigSnapshotTests {
+
+	@MainActor
+	private func makeNode() throws -> NodeInfoEntity {
+		let context = sharedModelContainer.mainContext
+		let node = NodeInfoEntity()
+		node.num = 0xC0FF_EE08
+		context.insert(node)
+		let user = UserEntity()
+		user.num = node.num
+		user.longName = "Snapshot Telemetry Node"
+		user.shortName = "STEL"
+		context.insert(user)
+		node.user = user
+		let telemetry = TelemetryConfigEntity()
+		telemetry.deviceTelemetryEnabled = true
+		telemetry.deviceUpdateInterval = 1800
+		telemetry.environmentMeasurementEnabled = true
+		telemetry.environmentUpdateInterval = 1800
+		telemetry.environmentScreenEnabled = true
+		telemetry.powerMeasurementEnabled = false
+		context.insert(telemetry)
+		node.telemetryConfig = telemetry
+		try context.save()
+		return node
+	}
+
+	@Test("Telemetry form, device and environment metrics on")
+	@MainActor
+	func telemetryForm() async throws {
+		let node = try makeNode()
+		AccessoryManager.shared.isConnected = true
+		AccessoryManager.shared.activeDeviceNum = node.num
+		let view = NavigationView {
+			TelemetryConfig(node: node)
+				.environmentObject(AccessoryManager.shared)
+				.modelContainer(sharedModelContainer)
+		}
+		await assertViewSnapshot(of: view, width: 390, height: 1300, named: "telemetryConfigForm")
+	}
+
+	@Test("Telemetry settings form")
+	@MainActor
+	func telemetrySettingsForm() async {
+		let view = NavigationView {
+			TelemetryConfig(node: nil)
+				.environmentObject(AccessoryManager.shared)
+				.modelContainer(PersistenceController.preview.container)
+		}
+		await assertViewSnapshot(of: view, width: 390, height: 900, named: "telemetryConfig", forDocs: true)
+	}
+}
+
+@Suite("DisplayConfig Snapshots")
+struct DisplayConfigSnapshotTests {
+
+	@MainActor
+	private func makeNode() throws -> NodeInfoEntity {
+		let context = sharedModelContainer.mainContext
+		let node = NodeInfoEntity()
+		node.num = 0xC0FF_EE09
+		context.insert(node)
+		let user = UserEntity()
+		user.num = node.num
+		user.longName = "Snapshot Display Node"
+		user.shortName = "SDSP"
+		context.insert(user)
+		node.user = user
+		let display = DisplayConfigEntity()
+		display.screenOnSeconds = 60
+		display.screenCarouselInterval = 30
+		display.compassOrientation = Int32(Config.DisplayConfig.CompassOrientation.degrees90.rawValue)
+		display.use12HClock = true
+		display.headingBold = true
+		display.units = Int32(Config.DisplayConfig.DisplayUnits.imperial.rawValue)
+		display.oledType = Int32(Config.DisplayConfig.OledType.oledSh1106.rawValue)
+		context.insert(display)
+		node.displayConfig = display
+		try context.save()
+		return node
+	}
+
+	@Test("Display form, populated")
+	@MainActor
+	func displayForm() async throws {
+		let node = try makeNode()
+		AccessoryManager.shared.isConnected = true
+		AccessoryManager.shared.activeDeviceNum = node.num
+		let view = NavigationView {
+			DisplayConfig(node: node)
+				.environmentObject(AccessoryManager.shared)
+				.modelContainer(sharedModelContainer)
+		}
+		await assertViewSnapshot(of: view, width: 390, height: 1100, named: "displayConfigForm")
+	}
+}
+
+@Suite("AmbientLightingConfig Snapshots")
+struct AmbientLightingConfigSnapshotTests {
+
+	@MainActor
+	private func makeNode() throws -> NodeInfoEntity {
+		let context = sharedModelContainer.mainContext
+		let node = NodeInfoEntity()
+		node.num = 0xC0FF_EE0A
+		context.insert(node)
+		let user = UserEntity()
+		user.num = node.num
+		user.longName = "Snapshot Lighting Node"
+		user.shortName = "SLED"
+		context.insert(user)
+		node.user = user
+		let lighting = AmbientLightingConfigEntity()
+		lighting.ledState = true
+		lighting.current = 12
+		lighting.red = 40
+		lighting.green = 200
+		lighting.blue = 90
+		context.insert(lighting)
+		node.ambientLightingConfig = lighting
+		try context.save()
+		return node
+	}
+
+	@Test("Ambient lighting form, LED on")
+	@MainActor
+	func ambientLightingForm() async throws {
+		let node = try makeNode()
+		AccessoryManager.shared.isConnected = true
+		AccessoryManager.shared.activeDeviceNum = node.num
+		let view = NavigationView {
+			AmbientLightingConfig(node: node)
+				.environmentObject(AccessoryManager.shared)
+				.modelContainer(sharedModelContainer)
+		}
+		await assertViewSnapshot(of: view, width: 390, height: 700, named: "ambientLightingConfigForm")
+	}
+}
+
+/// The reset buttons are only offered for the device this phone is connected to over
+/// BLE, which the screen decides from `activeConnection`, so the fixture needs one.
+private actor SnapshotIdleConnection: Connection {
+	let type: TransportType = .ble
+	var isConnected = true
+
+	func send(_ data: ToRadio) async throws {}
+	func connect() async throws -> AsyncStream<ConnectionEvent> { AsyncStream { $0.finish() } }
+	func disconnect(withError: Error?, shouldReconnect: Bool) async throws { isConnected = false }
+	func drainPendingPackets() async throws {}
+	func startDrainPendingPackets() throws {}
+	func appDidEnterBackground() {}
+	func appDidBecomeActive() {}
+}
+
+@Suite("DeviceConfig Snapshots")
+struct DeviceConfigSnapshotTests {
+
+	@MainActor
+	private func makeNode() throws -> NodeInfoEntity {
+		let context = sharedModelContainer.mainContext
+		let node = NodeInfoEntity()
+		node.num = 0xC0FF_EE0B
+		context.insert(node)
+		let user = UserEntity()
+		user.num = node.num
+		user.longName = "Snapshot Device Node"
+		user.shortName = "SDEV"
+		context.insert(user)
+		node.user = user
+		let device = DeviceConfigEntity()
+		device.role = Int32(Config.DeviceConfig.Role.tracker.rawValue)
+		device.rebroadcastMode = Int32(Config.DeviceConfig.RebroadcastMode.localOnly.rawValue)
+		device.nodeInfoBroadcastSecs = 14400
+		device.doubleTapAsButtonPress = true
+		device.tripleClickAsAdHocPing = true
+		device.ledHeartbeatEnabled = true
+		device.tzdef = "PST8PDT,M3.2.0,M11.1.0"
+		device.buttonGpio = 0
+		device.buzzerGpio = 21
+		context.insert(device)
+		node.deviceConfig = device
+		try context.save()
+		return node
+	}
+
+	@Test("Device form, tracker role, populated")
+	@MainActor
+	func deviceForm() async throws {
+		let node = try makeNode()
+		AccessoryManager.shared.isConnected = true
+		AccessoryManager.shared.activeDeviceNum = node.num
+		let device = Device(
+			id: UUID(),
+			name: "Snapshot Device Node",
+			transportType: .ble,
+			identifier: "snapshot-device-node",
+			connectionState: .connected,
+			num: node.num
+		)
+		AccessoryManager.shared.activeConnection = (device: device, connection: SnapshotIdleConnection())
+		defer { AccessoryManager.shared.activeConnection = nil }
+		let view = NavigationView {
+			DeviceConfig(node: node)
+				.environmentObject(AccessoryManager.shared)
+				.modelContainer(sharedModelContainer)
+		}
+		await assertViewSnapshot(of: view, width: 390, height: 1400, named: "deviceConfigForm")
+	}
+}
+
+@Suite("PowerConfig Snapshots")
+struct PowerConfigSnapshotTests {
+
+	@MainActor
+	private func makeNode() throws -> NodeInfoEntity {
+		let context = sharedModelContainer.mainContext
+		let node = NodeInfoEntity()
+		node.num = 0xC0FF_EE0C
+		context.insert(node)
+		let user = UserEntity()
+		user.num = node.num
+		user.longName = "Snapshot Power Node"
+		user.shortName = "SPWR"
+		context.insert(user)
+		node.user = user
+		let power = PowerConfigEntity()
+		power.isPowerSaving = false
+		power.onBatteryShutdownAfterSecs = 3600
+		power.waitBluetoothSecs = 60
+		power.lsSecs = 300
+		power.minWakeSecs = 10
+		context.insert(power)
+		node.powerConfig = power
+		try context.save()
+		return node
+	}
+
+	@Test("Power form, shutdown on power loss after an hour")
+	@MainActor
+	func powerForm() async throws {
+		let node = try makeNode()
+		AccessoryManager.shared.isConnected = true
+		AccessoryManager.shared.activeDeviceNum = node.num
+		let view = NavigationView {
+			PowerConfig(node: node)
+				.environmentObject(AccessoryManager.shared)
+				.modelContainer(sharedModelContainer)
+		}
+		await assertViewSnapshot(of: view, width: 390, height: 700, named: "powerConfigForm")
+	}
+}
+
+@Suite("TrafficManagementConfig Snapshots")
+struct TrafficManagementConfigSnapshotTests {
+
+	@MainActor
+	private func makeNode() throws -> NodeInfoEntity {
+		let context = sharedModelContainer.mainContext
+		let node = NodeInfoEntity()
+		node.num = 0xC0FF_EE0D
+		context.insert(node)
+		let user = UserEntity()
+		user.num = node.num
+		user.longName = "Snapshot Traffic Node"
+		user.shortName = "STRF"
+		context.insert(user)
+		node.user = user
+		let traffic = TrafficManagementConfigEntity()
+		traffic.positionMinIntervalSecs = 18000
+		traffic.nodeinfoDirectResponseMaxHops = 2
+		traffic.rateLimitWindowSecs = 60
+		traffic.rateLimitMaxPackets = 20
+		traffic.unknownPacketThreshold = 5
+		context.insert(traffic)
+		node.trafficManagementConfig = traffic
+		try context.save()
+		return node
+	}
+
+	@Test("Traffic Management form, every feature on")
+	@MainActor
+	func trafficManagementForm() async throws {
+		let node = try makeNode()
+		AccessoryManager.shared.isConnected = true
+		AccessoryManager.shared.activeDeviceNum = node.num
+		let view = NavigationView {
+			TrafficManagementConfig(node: node)
+				.environmentObject(AccessoryManager.shared)
+				.modelContainer(sharedModelContainer)
+		}
+		await assertViewSnapshot(of: view, width: 390, height: 1500, named: "trafficManagementConfigForm")
+	}
+}
+
+@Suite("CannedMessagesConfig Snapshots")
+struct CannedMessagesConfigSnapshotTests {
+
+	@MainActor
+	private func makeNode() throws -> NodeInfoEntity {
+		let context = sharedModelContainer.mainContext
+		let node = NodeInfoEntity()
+		node.num = 0xC0FF_EE0F
+		context.insert(node)
+		let user = UserEntity()
+		user.num = node.num
+		user.longName = "Snapshot Canned Node"
+		user.shortName = "SCAN"
+		context.insert(user)
+		node.user = user
+		let canned = CannedMessageConfigEntity()
+		canned.sendBell = true
+		canned.updown1Enabled = true
+		canned.inputbrokerPinA = 4
+		canned.inputbrokerPinB = 10
+		canned.inputbrokerPinPress = 9
+		canned.inputbrokerEventCw = Int32(ModuleConfig.CannedMessageConfig.InputEventChar.down.rawValue)
+		canned.inputbrokerEventCcw = Int32(ModuleConfig.CannedMessageConfig.InputEventChar.up.rawValue)
+		canned.inputbrokerEventPress = Int32(ModuleConfig.CannedMessageConfig.InputEventChar.select.rawValue)
+		canned.messages = "Hello|On my way|Yes|No"
+		context.insert(canned)
+		node.cannedMessageConfig = canned
+		try context.save()
+		return node
+	}
+
+	@Test("Canned Messages form, RAK rotary encoder wiring")
+	@MainActor
+	func cannedMessagesForm() async throws {
+		let node = try makeNode()
+		AccessoryManager.shared.isConnected = true
+		AccessoryManager.shared.activeDeviceNum = node.num
+		let view = NavigationView {
+			CannedMessagesConfig(node: node)
+				.environmentObject(AccessoryManager.shared)
+				.modelContainer(sharedModelContainer)
+		}
+		await assertViewSnapshot(of: view, width: 390, height: 1500, named: "cannedMessagesConfigForm")
 	}
 }
