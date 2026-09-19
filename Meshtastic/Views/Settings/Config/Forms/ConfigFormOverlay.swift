@@ -324,23 +324,29 @@ struct ConfigFormEnvironment {
 	let hasWifi: Bool
 	let hasEthernet: Bool
 	let hasXeddsa: Bool
+	/// Whether the node being configured is known to run at least this version. Asked of
+	/// the target node, not of whatever radio happens to be connected: under remote admin
+	/// those are different radios on different firmware.
 	let firmwareAtLeast: (String) -> Bool
+	/// Whether that version is known at all. False for a node the app has never heard
+	/// metadata from, where every answer above would be a guess.
+	let isFirmwareKnown: Bool
 
 	/// Whether the radio's firmware reads this field, from the schema's own version
 	/// attributes: `since_firmware` is the first release that reads it, `deprecated_since`
 	/// the first that stops. Outside that window the control writes a value nothing acts
 	/// on, so the form leaves it out - no overlay entry and no version string in the app.
 	///
-	/// A field is only ever hidden on a firmware version the app actually knows. With no
-	/// radio connected the answer is yes, and `firmwareAtLeast` is itself permissive while
-	/// a connected radio has not reported a version yet. Offering a control the radio
-	/// ignores is a smaller failure than hiding a setting somebody came here to change.
+	/// A field is only ever hidden on a firmware version the app actually knows, and the
+	/// version is the target node's own. A node the app has no metadata for shows
+	/// everything. Offering a control the radio ignores is a smaller failure than hiding
+	/// a setting somebody came here to change.
 	///
 	/// Note this is the version, not the stored value. Firmware force-writes some
 	/// deprecated fields - `canned_message.enabled` is set true from 2.7.4 - so "the node
 	/// holds a non-default value" would show those rows on every modern radio.
 	func firmwareReads(_ metadata: FieldMetadata?) -> Bool {
-		guard isConnected, let metadata else { return true }
+		guard isFirmwareKnown, let metadata else { return true }
 		if let since = metadata.sinceFirmware, !firmwareAtLeast(since) { return false }
 		if let until = metadata.deprecatedSince, firmwareAtLeast(until) { return false }
 		return true

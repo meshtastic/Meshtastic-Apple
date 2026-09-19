@@ -110,15 +110,24 @@ struct MetadataConfigForm<M: ConfigFormMessage, Leading: View, Trailing: View>: 
 	}
 
 	private var environment: ConfigFormEnvironment {
-		ConfigFormEnvironment(
+		let isConnectedNode = node != nil && node?.num == accessoryManager.activeDeviceNum
+		return ConfigFormEnvironment(
 			node: node,
 			isConnected: accessoryManager.isConnected,
-			isConnectedNode: node != nil && node?.num == accessoryManager.activeDeviceNum,
+			isConnectedNode: isConnectedNode,
 			isDIYHardware: DIYHardware.isDIY(slug: node?.user?.hwModel),
 			hasWifi: node?.metadata?.hasWifi ?? false,
 			hasEthernet: node?.metadata?.hasEthernet ?? false,
 			hasXeddsa: node?.metadata?.hasXeddsa ?? false,
-			firmwareAtLeast: { accessoryManager.checkIsVersionSupported(forVersion: $0) }
+			// The connected radio answers for itself, because its live version is fresher
+			// than anything stored. A remote admin target answers from its own metadata:
+			// asking the gateway would gate the wrong radio's fields.
+			firmwareAtLeast: { version in
+				isConnectedNode
+					? accessoryManager.checkIsVersionSupported(forVersion: version)
+					: node?.firmwareAtLeast(version) ?? true
+			},
+			isFirmwareKnown: isConnectedNode ? accessoryManager.isConnected : node?.knownFirmwareVersion != nil
 		)
 	}
 

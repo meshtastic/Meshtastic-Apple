@@ -52,6 +52,10 @@ struct ConfigFormOverlayTests {
 			"meshtastic.ModuleConfig.TelemetryConfig": (0, 1),          // the interval stands alone where there is no toggle
 			"meshtastic.ModuleConfig.TrafficManagementConfig": (0, 4)   // four feature sections behind the main switch
 		]
+		// Without this, moving a screen to `bespoke` would silently stop checking its
+		// hatches: the loop below would just not visit it.
+		#expect(Set(ConfigFormOverlays.all.map(\.protoName)) == Set(expected.keys),
+				"the pinned table and the registered overlays have drifted apart")
 		for overlay in ConfigFormOverlays.all {
 			let pinned = try #require(expected[overlay.protoName], "\(overlay.protoName) has no pinned hatch counts")
 			#expect(overlay.customControlCount == pinned.custom, "\(overlay.protoName) custom controls")
@@ -76,7 +80,8 @@ struct ConfigFormOverlayTests {
 		typealias F = ModuleConfig.NeighborInfoConfig.Fields
 		var message = ModuleConfig.NeighborInfoConfig()
 		let env = ConfigFormEnvironment(node: nil, isConnected: true, isConnectedNode: true, isDIYHardware: false,
-										hasWifi: false, hasEthernet: false, hasXeddsa: false, firmwareAtLeast: { _ in true })
+										hasWifi: false, hasEthernet: false, hasXeddsa: false, firmwareAtLeast: { _ in true },
+			isFirmwareKnown: false)
 		let enabled = ConfigFormCondition<ModuleConfig.NeighborInfoConfig>.isTrue(F.enabled)
 		#expect(!enabled.evaluate(message, env))
 		message.enabled = true
@@ -314,7 +319,8 @@ struct ConfigFormOverlayTests {
 		let interval = ModuleConfig.NeighborInfoConfig.Fields.updateInterval.identity
 		let env = ConfigFormEnvironment(
 			node: nil, isConnected: true, isConnectedNode: true, isDIYHardware: false,
-			hasWifi: false, hasEthernet: false, hasXeddsa: false, firmwareAtLeast: { _ in true })
+			hasWifi: false, hasEthernet: false, hasXeddsa: false, firmwareAtLeast: { _ in true },
+			isFirmwareKnown: false)
 
 		// The empty message a form holds before the radio's values arrive. Deciding here
 		// is what made search open the screen and scroll nowhere.
@@ -336,7 +342,8 @@ struct ConfigFormOverlayTests {
 		let password = ModuleConfig.MQTTConfig.Fields.password.identity
 		let env = ConfigFormEnvironment(
 			node: nil, isConnected: true, isConnectedNode: true, isDIYHardware: false,
-			hasWifi: false, hasEthernet: false, hasXeddsa: false, firmwareAtLeast: { _ in true })
+			hasWifi: false, hasEthernet: false, hasXeddsa: false, firmwareAtLeast: { _ in true },
+			isFirmwareKnown: false)
 
 		// A private broker shows its credentials, so the control itself is the target.
 		var config = ModuleConfig.MQTTConfig()
@@ -372,7 +379,8 @@ struct ConfigFormOverlayTests {
 			firmwareAtLeast: { required in
 				guard let version else { return true }
 				return required.compare(version, options: .numeric) != .orderedDescending
-			})
+			},
+			isFirmwareKnown: version != nil)
 	}
 
 	@Test("A field is offered only on firmware that reads it")
@@ -401,6 +409,22 @@ struct ConfigFormOverlayTests {
 		#expect(cannedEnabled?.deprecatedSince == "2.7.0")
 		#expect(Self.environment(firmware: "2.6.9").firmwareReads(cannedEnabled))
 		#expect(!Self.environment(firmware: "2.7.4").firmwareReads(cannedEnabled))
+	}
+
+	@Test("An unknown firmware version hides nothing")
+	func unknownFirmwareShowsEverything() throws {
+		// A node the app has never heard metadata from, and the same node once it has.
+		// Guessing wrong here takes a setting away from somebody who came to change it.
+		let unknown = ConfigFormEnvironment(
+			node: nil, isConnected: true, isConnectedNode: true, isDIYHardware: false,
+			hasWifi: false, hasEthernet: false, hasXeddsa: false,
+			firmwareAtLeast: { _ in false }, isFirmwareKnown: false)
+		let clock = Config.DisplayConfig.Fields.use12HClock.metadata
+		#expect(clock?.sinceFirmware == "2.5.22", "the schema still dates this field")
+		#expect(unknown.firmwareReads(clock), "no known version means the window does not apply")
+
+		let known = Self.environment(firmware: "2.5.21")
+		#expect(!known.firmwareReads(clock), "once the version is known, the window applies")
 	}
 
 	@Test("Public-server TLS waits for the firmware that accepts it")
