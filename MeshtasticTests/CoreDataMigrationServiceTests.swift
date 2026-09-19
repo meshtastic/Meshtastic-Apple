@@ -79,7 +79,7 @@ final class CoreDataMigrationServiceTests: XCTestCase {
 	/// install is the degenerate case (nothing preexisting), so this covers both paths:
 	/// node 111 exists only in the legacy store, node 222 exists in both.
 	@MainActor
-	func testMigrationFillsGapsWithoutDuplicatingLiveData() throws {
+	func testMigrationFillsGapsWithoutDuplicatingLiveData() async throws {
 		try buildLegacyStore()
 		XCTAssertTrue(CoreDataMigrationService.legacyStoreExists())
 
@@ -109,7 +109,7 @@ final class CoreDataMigrationServiceTests: XCTestCase {
 		context.insert(liveMessage)
 		try context.save()
 
-		try CoreDataMigrationService.migrate(into: container)
+		try await CoreDataMigrationService.migrate(into: container)
 
 		// Node 111 migrated with its user and config; node 222 kept, not duplicated.
 		let nodes = try context.fetch(FetchDescriptor<NodeInfoEntity>())
