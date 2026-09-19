@@ -33,6 +33,11 @@ struct ConfigFormFieldRow<M: ConfigSchemaMessage>: View {
 		switch field.control {
 		case .custom(let make):
 			make($config)
+		case .flags(let flags):
+			// One row per bit, not one row holding them all: a Form section draws a
+			// VStack as a single row, and these are separate settings.
+			FlagRows(flags: flags, description: metadata?.description,
+					 config: $config, environment: environment, value: integerBinding)
 		default:
 			VStack(alignment: .leading, spacing: 4) {
 				control
@@ -48,6 +53,14 @@ struct ConfigFormFieldRow<M: ConfigSchemaMessage>: View {
 				}
 			}
 		}
+	}
+
+	/// The field's integer binding, for a control that reads the whole word rather than
+	/// one typed value. Only `.flags` uses this, and the overlay test rejects `.flags`
+	/// on anything but an integer field.
+	private var integerBinding: Binding<Int> {
+		if case .integer(let make) = field.value { return make($config) }
+		return .constant(0)
 	}
 
 	@ViewBuilder
@@ -371,5 +384,49 @@ private extension Binding where Value == Int {
 
 	var asInterval: Binding<UpdateInterval> {
 		Binding<UpdateInterval>(get: { UpdateInterval(from: self.wrappedValue) }, set: { self.wrappedValue = $0.intValue })
+	}
+}
+
+/// A bitfield as one toggle per bit. The labels come from the flags' own enum value
+/// metadata, so the words are the schema's; only which bits a screen offers, and which
+/// of them depend on another being set, are stated in the overlay.
+private struct FlagRows<M: ConfigSchemaMessage>: View {
+	let flags: [ConfigFormFlag<M>]
+	let description: String?
+	@Binding var config: M
+	let environment: ConfigFormEnvironment
+	@Binding var value: Int
+
+	var body: some View {
+		if let description {
+			Text(description)
+				.foregroundColor(.gray)
+				.font(.callout)
+		}
+		ForEach(flags.filter { $0.shownWhen?.evaluate(config, environment) ?? true }, id: \.rawValue) { flag in
+			Toggle(isOn: binding(for: flag.rawValue)) {
+				if let symbol = flag.symbol {
+					Label(flag.label() ?? "", systemImage: symbol)
+				} else {
+					Text(flag.label() ?? "")
+				}
+			}
+		}
+	}
+
+	private func binding(for bit: Int) -> Binding<Bool> {
+		Binding(
+			get: { ConfigFormFlagBits.isSet(bit, in: value) },
+			set: { value = ConfigFormFlagBits.setting(bit, to: $0, in: value) })
+	}
+}
+
+/// The bit arithmetic behind a flags row, separated so it can be tested without
+/// rendering: a toggle must change its own bit and leave every other one alone.
+enum ConfigFormFlagBits {
+	static func isSet(_ bit: Int, in word: Int) -> Bool { word & bit != 0 }
+
+	static func setting(_ bit: Int, to isOn: Bool, in word: Int) -> Int {
+		isOn ? word | bit : word & ~bit
 	}
 }
