@@ -54,6 +54,10 @@ struct ConfigFormOverlayTests {
 			"meshtastic.ModuleConfig.TelemetryConfig": (0, 2),          // device-telemetry toggle by firmware version
 			"meshtastic.ModuleConfig.TrafficManagementConfig": (0, 4)   // four feature sections behind the main switch
 		]
+		// Without this, moving a screen to `bespoke` would silently stop checking its
+		// hatches: the loop below would just not visit it.
+		#expect(Set(ConfigFormOverlays.all.map(\.protoName)) == Set(expected.keys),
+				"the pinned table and the registered overlays have drifted apart")
 		for overlay in ConfigFormOverlays.all {
 			let pinned = try #require(expected[overlay.protoName], "\(overlay.protoName) has no pinned hatch counts")
 			#expect(overlay.customControlCount == pinned.custom, "\(overlay.protoName) custom controls")
