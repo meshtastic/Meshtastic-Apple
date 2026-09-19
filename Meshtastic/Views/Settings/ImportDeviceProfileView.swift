@@ -32,7 +32,9 @@ struct ImportDeviceProfileView: View {
 	/// The node's config as it stood just before the import, so verification can tell an unchanged
 	/// section (the signature of a dropped write) from one the firmware normalized.
 	@State private var configBeforeImport: [ImportItemKind: ImportPayload] = [:]
-	@State private var importFinishedAt: Date?
+	/// The instant before sends begin. A configuration refresh after this is safe to verify, even if it
+	/// arrives before the importer returns after a reconnect.
+	@State private var verificationRefreshNotBefore: Date?
 	@State private var verification: DeviceProfileVerification?
 
 	private enum Phase: Equatable {
@@ -383,19 +385,22 @@ struct ImportDeviceProfileView: View {
 							verificationRow(entry.kind, entry.outcome)
 						}
 					}
+				} else if result.transactionCommitted {
+					Label("Waiting for the radio to reconnect", systemImage: "antenna.radiowaves.left.and.right")
+						.foregroundStyle(.secondary)
+					Text("Results will appear here automatically after the radio sends its configuration.")
+						.font(.caption)
+						.foregroundStyle(.secondary)
 				} else {
-					Button {
-						runVerification(result)
-					} label: {
-						Label("Verify Against the Radio", systemImage: "checkmark.shield")
-					}
-					.disabled(!canVerify)
-					if !canVerify {
-						Text("Available once the radio reconnects and sends its configuration back.")
-							.font(.caption)
-							.foregroundColor(.secondary)
-					}
+					Label("Verification unavailable", systemImage: "minus.circle")
+						.foregroundStyle(.secondary)
+					Text("The radio did not confirm a reboot, so automatic verification is unavailable.")
+						.font(.caption)
+						.foregroundStyle(.secondary)
 				}
+			}
+			.onChange(of: verificationReadiness(for: result).shouldVerify) { _, shouldVerify in
+				if shouldVerify { runVerification(result) }
 			}
 			if let failed = result.failed {
 				Section("Failed") {
@@ -454,6 +459,7 @@ struct ImportDeviceProfileView: View {
 			return
 		}
 		phase = .applying
+		verification = nil
 		// Snapshot what the radio holds now. The import cannot be verified from the sends alone: firmware
 		// acks writes it discards, so only a later readback distinguishes applied from lost.
 		let source = NodeProfileConfigSource(node: node, lastConfigRefresh: accessoryManager.lastConfigRefresh)
@@ -470,34 +476,42 @@ struct ImportDeviceProfileView: View {
 			sectionCounts[item.section, default: 0] += 1
 		}
 		applyProgress = ImportApplyProgress(sectionItemCounts: sectionCounts)
+		// Record this before awaiting so a config refresh received during the import is not missed.
+		verificationRefreshNotBefore = Date()
 		let result = await DeviceProfileImporter.apply(
 			plan: plan,
 			selection: selection,
 			gateway: gateway,
 			progress: { item, index, total in
+				// A readback cannot verify items sent after it. Advance the boundary before every send,
+				// including MQTT and Serial, which run after the transaction commit.
+				verificationRefreshNotBefore = Date()
 				applyProgress?.announce(item: item, index: index, total: total)
 			}
 		)
 		applyProgress = nil
 		importTask = nil
 		canForceDismiss = false
-		importFinishedAt = Date()
 		// Only publish the result if we're still the active apply (the user may have force-dismissed).
-		if isApplying { phase = .done(result) }
+		if isApplying {
+			phase = .done(result)
+			// A config refresh can finish while the importer is still awaiting its final send. Handle that
+			// order explicitly instead of relying on the result section's initial onChange callback.
+			if verificationReadiness(for: result).shouldVerify { runVerification(result) }
+		}
 	}
 
-	/// True once the radio has sent a fresh configuration since the import finished.
-	///
-	/// Verifying before this would compare against the pre-import cache and report every item as lost,
-	/// which is indistinguishable from a real total failure. So the action stays disabled until the
-	/// radio has actually reported back after its reboot.
-	private var canVerify: Bool {
-		guard let importFinishedAt, let refreshed = accessoryManager.lastConfigRefresh else { return false }
-		return refreshed >= importFinishedAt
+	private func verificationReadiness(for result: DeviceProfileImportResult) -> DeviceProfileVerificationReadiness {
+		DeviceProfileVerificationReadiness(
+			expectsReconnect: result.transactionCommitted,
+			refreshNotBefore: verificationRefreshNotBefore,
+			lastConfigRefresh: accessoryManager.lastConfigRefresh,
+			hasVerification: verification != nil
+		)
 	}
 
 	private func runVerification(_ result: DeviceProfileImportResult) {
-		guard let node = connectedNode else { return }
+		guard verificationReadiness(for: result).shouldVerify, let node = connectedNode else { return }
 		let source = NodeProfileConfigSource(node: node,
 											 lastConfigRefresh: accessoryManager.lastConfigRefresh)
 		verification = DeviceProfileVerifier.verify(
@@ -505,7 +519,7 @@ struct ImportDeviceProfileView: View {
 			plan: plan,
 			before: configBeforeImport,
 			source: source,
-			importFinishedAt: importFinishedAt ?? .distantFuture
+			readbackNotBefore: verificationRefreshNotBefore ?? .distantFuture
 		)
 	}
 

@@ -34,6 +34,84 @@ struct DeviceProfileVerifierTests {
 		return try DeviceProfileImportPlan(profile: profile, currentUser: nil)
 	}
 
+	// MARK: - Verification readiness
+
+	@Test("A refresh received during import verifies when the result is published, then only once")
+	func refreshDuringImportTriggersVerificationOnResultPublicationOnce() {
+		let importStartedAt = Date()
+		let refreshDuringImport = importStartedAt.addingTimeInterval(1)
+
+		// The refresh alone cannot trigger before the importer publishes whether a reconnect is expected.
+		let beforeResult = DeviceProfileVerificationReadiness(
+			expectsReconnect: false,
+			refreshNotBefore: importStartedAt,
+			lastConfigRefresh: refreshDuringImport,
+			hasVerification: false
+		)
+		#expect(!beforeResult.shouldVerify)
+
+		// Publishing the rebooting result must consume the refresh that arrived while apply was suspended.
+		let resultPublished = DeviceProfileVerificationReadiness(
+			expectsReconnect: true,
+			refreshNotBefore: importStartedAt,
+			lastConfigRefresh: refreshDuringImport,
+			hasVerification: false
+		)
+		#expect(resultPublished.shouldVerify)
+
+		// Once verification is recorded, another refresh must not run it again.
+		let afterLaterRefresh = DeviceProfileVerificationReadiness(
+			expectsReconnect: true,
+			refreshNotBefore: importStartedAt,
+			lastConfigRefresh: refreshDuringImport.addingTimeInterval(1),
+			hasVerification: true
+		)
+		#expect(!afterLaterRefresh.shouldVerify)
+	}
+
+	@Test("A refresh before a later deferred item does not trigger verification")
+	func refreshBeforeDeferredItemDoesNotTriggerVerification() {
+		let importStartedAt = Date()
+		let channelRefresh = importStartedAt.addingTimeInterval(1)
+		let deferredItemStartedAt = importStartedAt.addingTimeInterval(2)
+
+		let resultPublished = DeviceProfileVerificationReadiness(
+			expectsReconnect: true,
+			refreshNotBefore: deferredItemStartedAt,
+			lastConfigRefresh: channelRefresh,
+			hasVerification: false
+		)
+		#expect(!resultPublished.shouldVerify)
+
+		let refreshAfterDeferredItem = DeviceProfileVerificationReadiness(
+			expectsReconnect: true,
+			refreshNotBefore: deferredItemStartedAt,
+			lastConfigRefresh: deferredItemStartedAt.addingTimeInterval(1),
+			hasVerification: false
+		)
+		#expect(refreshAfterDeferredItem.shouldVerify)
+	}
+
+	@Test("Stale and non-reboot imports do not trigger verification")
+	func staleOrNonRebootImportsDoNotTriggerVerification() {
+		let importStartedAt = Date()
+		let stale = DeviceProfileVerificationReadiness(
+			expectsReconnect: true,
+			refreshNotBefore: importStartedAt,
+			lastConfigRefresh: importStartedAt.addingTimeInterval(-1),
+			hasVerification: false
+		)
+		#expect(!stale.shouldVerify)
+
+		let noReboot = DeviceProfileVerificationReadiness(
+			expectsReconnect: false,
+			refreshNotBefore: importStartedAt,
+			lastConfigRefresh: importStartedAt.addingTimeInterval(1),
+			hasVerification: false
+		)
+		#expect(!noReboot.shouldVerify)
+	}
+
 	// MARK: - Staleness gate
 
 	@MainActor
@@ -49,7 +127,7 @@ struct DeviceProfileVerifierTests {
 		source.lastConfigRefresh = importedAt.addingTimeInterval(-60)   // refreshed BEFORE the import
 
 		let report = DeviceProfileVerifier.verify(applied: [.telemetry], plan: plan, before: [:],
-												  source: source, importFinishedAt: importedAt)
+												  source: source, readbackNotBefore: importedAt)
 		// A stale cache still holds pre-import values, which would read as a total wipe. Reporting
 		// "everything dropped" there would be worse than reporting nothing.
 		#expect(report.unavailable != nil)
@@ -64,7 +142,7 @@ struct DeviceProfileVerifierTests {
 		let source = MockSource()
 		source.lastConfigRefresh = nil
 		let report = DeviceProfileVerifier.verify(applied: [.telemetry], plan: plan, before: [:],
-												  source: source, importFinishedAt: Date())
+												  source: source, readbackNotBefore: Date())
 		#expect(report.unavailable != nil)
 	}
 
@@ -82,7 +160,7 @@ struct DeviceProfileVerifierTests {
 		source.lastConfigRefresh = Date().addingTimeInterval(60)
 
 		let report = DeviceProfileVerifier.verify(applied: [.telemetry], plan: plan, before: [:],
-												  source: source, importFinishedAt: Date())
+												  source: source, readbackNotBefore: Date())
 		#expect(report.applied == [.telemetry])
 		#expect(report.isClean)
 	}
@@ -103,7 +181,7 @@ struct DeviceProfileVerifierTests {
 
 		let report = DeviceProfileVerifier.verify(applied: [.telemetry], plan: plan,
 												  before: [.telemetry: .telemetry(previous)],
-												  source: source, importFinishedAt: Date())
+												  source: source, readbackNotBefore: Date())
 		#expect(report.likelyDropped == [.telemetry])
 		#expect(!report.isClean)
 	}
@@ -132,7 +210,7 @@ struct DeviceProfileVerifierTests {
 
 		let report = DeviceProfileVerifier.verify(applied: [.neighborInfo], plan: plan,
 												  before: [.neighborInfo: .neighborInfo(reported)],
-												  source: source, importFinishedAt: Date())
+												  source: source, readbackNotBefore: Date())
 		#expect(report.likelyDropped.isEmpty)
 		#expect(report.applied == [.neighborInfo])
 		#expect(report.isClean)
@@ -148,7 +226,7 @@ struct DeviceProfileVerifierTests {
 		source.lastConfigRefresh = Date().addingTimeInterval(60)
 
 		let report = DeviceProfileVerifier.verify(applied: [.telemetry], plan: plan, before: [:],
-												  source: source, importFinishedAt: Date())
+												  source: source, readbackNotBefore: Date())
 		#expect(report.notComparable == [.telemetry])
 		#expect(report.isClean)   // absence of signal is not a failure
 	}
@@ -173,7 +251,7 @@ struct DeviceProfileVerifierTests {
 
 		let report = DeviceProfileVerifier.verify(applied: [.deviceConfig], plan: plan,
 												  before: [.deviceConfig: .deviceConfig(previous)],
-												  source: source, importFinishedAt: Date())
+												  source: source, readbackNotBefore: Date())
 		#expect(report.inconclusive == [.deviceConfig])
 		#expect(report.likelyDropped.isEmpty)
 		#expect(report.isClean)   // not proof of loss
@@ -193,7 +271,7 @@ struct DeviceProfileVerifierTests {
 		source.lastConfigRefresh = Date().addingTimeInterval(60)
 
 		let report = DeviceProfileVerifier.verify(applied: [.ringtone, .cannedMessagesText], plan: plan,
-												  before: [:], source: source, importFinishedAt: Date())
+												  before: [:], source: source, readbackNotBefore: Date())
 		// Silently dropping these from the report invites "did my ringtone apply?" confusion.
 		#expect(Set(report.notComparable) == [.ringtone, .cannedMessagesText])
 		#expect(report.outcomes.count == 2)
