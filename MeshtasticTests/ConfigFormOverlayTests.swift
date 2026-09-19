@@ -5,6 +5,7 @@
 //  Copyright(c) Garth Vander Houwen 9/18/26.
 //
 import Testing
+import SwiftUI
 import MeshtasticProtobufs
 @testable import Meshtastic
 
@@ -293,5 +294,76 @@ struct ConfigFormOverlayTests {
 		router.navigate(toSetting: .serial, focusing: baud)
 		router.clearSettingsFieldFocus()
 		#expect(router.settingsFieldFocus == nil, "the screen that honours it takes it")
+	}
+
+	@Test("A control is only a scroll target once the values say it is on screen")
+	func focusNeedsTheLoadedValues() {
+		let overlay = NeighborInfoConfig.overlay()
+		let interval = ModuleConfig.NeighborInfoConfig.Fields.updateInterval.identity
+		let env = ConfigFormEnvironment(
+			node: nil, isConnected: true, isConnectedNode: true, isDIYHardware: false,
+			hasWifi: false, hasEthernet: false, hasXeddsa: false, firmwareAtLeast: { _ in true })
+
+		// The empty message a form holds before the radio's values arrive. Deciding here
+		// is what made search open the screen and scroll nowhere.
+		var config = ModuleConfig.NeighborInfoConfig()
+		#expect(overlay.rowID(for: interval) != nil, "the screen does lay the interval out")
+		#expect(overlay.visibleRowID(for: interval, in: config, env) == nil, "but not while the module reads as off")
+
+		config.enabled = true
+		#expect(overlay.visibleRowID(for: interval, in: config, env) != nil)
+
+		// A control with no condition is a target either way.
+		let enabled = ModuleConfig.NeighborInfoConfig.Fields.enabled.identity
+		#expect(overlay.visibleRowID(for: enabled, in: ModuleConfig.NeighborInfoConfig(), env) != nil)
+	}
+
+	@Test("A search result lands on the control, or on the section that explains its absence")
+	func focusRowFollowsTheValues() {
+		let overlay = MQTTConfig.overlay()
+		let password = ModuleConfig.MQTTConfig.Fields.password.identity
+		let env = ConfigFormEnvironment(
+			node: nil, isConnected: true, isConnectedNode: true, isDIYHardware: false,
+			hasWifi: false, hasEthernet: false, hasXeddsa: false, firmwareAtLeast: { _ in true })
+
+		// A private broker shows its credentials, so the control itself is the target.
+		var config = ModuleConfig.MQTTConfig()
+		config.address = "broker.example.org"
+		#expect(overlay.focusRowID(for: password, in: config, env) == "password")
+
+		// The public server hides them. Deciding this against an empty message - which
+		// is what the form holds before the radio's values arrive - picks a row that is
+		// about to be removed, and scrolling to a removed row does nothing at all.
+		config.address = "mqtt.meshtastic.org"
+		#expect(overlay.visibleRowID(for: password, in: config, env) == nil)
+		#expect(overlay.focusRowID(for: password, in: config, env) == "address",
+				"falls back to the first row of the section the control lives in")
+
+		// A whole section that is hidden has nothing worth showing.
+		let interval = ModuleConfig.NeighborInfoConfig.Fields.updateInterval.identity
+		#expect(NeighborInfoConfig.overlay().focusRowID(for: interval, in: ModuleConfig.NeighborInfoConfig(), env) == nil)
+
+		// And a screen must not answer for a field it does not lay out: both of these
+		// screens have a Password, and each has to leave the other's alone.
+		let wifiPassword = FieldIdentity(messageName: "meshtastic.Config.NetworkConfig", tag: 4)
+		#expect(overlay.rowID(for: wifiPassword) == nil)
+	}
+
+	@Test("A focus request waits for a stored config, and survives one that never comes")
+	func focusWaitsForStoredValues() {
+		typealias Form = MetadataConfigForm<ModuleConfig.MQTTConfig, EmptyView, EmptyView>
+
+		// Nothing stored: the empty message is what the screen is showing, so its rows
+		// are the right ones to scroll to.
+		#expect(Form.readiness(hasStoredConfig: false, loaded: false, waitedOut: false) == .resolveNow)
+		#expect(Form.readiness(hasStoredConfig: false, loaded: false, waitedOut: true) == .resolveNow)
+
+		// Stored and still arriving: wait, because which rows exist depends on it.
+		#expect(Form.readiness(hasStoredConfig: true, loaded: false, waitedOut: false) == .waitForValues)
+		#expect(Form.readiness(hasStoredConfig: true, loaded: true, waitedOut: false) == .resolveNow)
+
+		// Stored but never arrived: leave the request for the next appearance rather
+		// than resolving against defaults and scrolling to a row the values may remove.
+		#expect(Form.readiness(hasStoredConfig: true, loaded: false, waitedOut: true) == .leaveForLater)
 	}
 }

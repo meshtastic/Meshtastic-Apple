@@ -787,12 +787,6 @@ struct Settings: View {
 				placement: .navigationBarDrawer(displayMode: .always),
 				prompt: "Search settings"
 			)
-			// Handed to every pushed screen: the schema-driven ones scroll to the control
-			// a search result named, and take it so going back does not scroll again.
-			.environment(\.settingsFieldFocus, SettingsFieldFocus(
-				target: router.settingsFieldFocus,
-				clear: { router.clearSettingsFieldFocus() }
-			))
 			.navigationDestination(for: SettingsNavigationState.self) { destination in
 				let node = liveNode(for: preferredNodeNum)
 				let configNode = liveNode(for: selectedNode)
@@ -893,6 +887,14 @@ struct Settings: View {
 					}
 				}
 				.trackScreen(destination.screenName)
+				// Handed to the pushed screen itself: the schema-driven ones scroll to
+				// the control a search result named and take it, so going back and
+				// returning does not scroll again. Set on the destination rather than on
+				// the stack's content, which does not reliably reach a pushed screen.
+				.environment(\.settingsFieldFocus, SettingsFieldFocus(
+					target: router.settingsFieldFocus,
+					clear: { router.clearSettingsFieldFocus() }
+				))
 			}
 			.onChange(of: UserDefaults.preferredPeripheralNum ) { _, newConnectedNode in
 				// If the preferred node changes, then select the newly preferred node
