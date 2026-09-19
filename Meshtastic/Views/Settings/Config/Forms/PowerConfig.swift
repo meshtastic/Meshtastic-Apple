@@ -6,6 +6,7 @@
 //
 import SwiftUI
 @preconcurrency import SwiftData
+import OSLog
 import MeshtasticProtobufs
 
 extension Config.PowerConfig: ConfigFormMessage {
@@ -76,10 +77,16 @@ struct PowerConfig: View {
 		guard let hwModelId = node?.user?.hwModelId else { return }
 		let hwModelValue = Int64(hwModelId)
 		let descriptor = FetchDescriptor<DeviceHardwareEntity>(predicate: #Predicate { $0.hwModel == hwModelValue })
-		if let hardware = try? context.fetch(descriptor),
-		   let archString = HardwareCatalogResolver.presentation(for: hwModelValue, in: hardware)?.architecture,
-		   let arch = Architecture(rawValue: archString) {
-			architecture = arch
+		do {
+			let hardware = try context.fetch(descriptor)
+			if let archString = HardwareCatalogResolver.presentation(for: hwModelValue, in: hardware)?.architecture,
+			   let arch = Architecture(rawValue: archString) {
+				architecture = arch
+			}
+		} catch {
+			// The rows this gates stay hidden, which looks like hardware that does not
+			// support them. Say so rather than letting the screen quietly lose them.
+			Logger.data.error("Could not read the hardware catalog for the power screen: \(error.localizedDescription, privacy: .public)")
 		}
 	}
 }
@@ -102,7 +109,9 @@ private struct ADCOverrideField: View {
 			typed = multiplier
 		}
 		.onChange(of: overriding) { _, on in
-			if !on { multiplier = 0 }
+			// Switching back on has to restore what is on screen: leaving `multiplier`
+			// at zero would save "no override" while the field shows a value.
+			multiplier = on ? (typed > 0 ? typed : multiplier) : 0
 		}
 		if overriding {
 			HStack {

@@ -41,7 +41,18 @@ struct MQTTConfig: View {
 	/// Firmware from here requires TLS to the public server; the toggle is locked on.
 	static let tlsRequiredFirmware = "2.7.3"
 
-	static func usesPublicServer(_ address: String) -> Bool { address.lowercased().contains(publicServer) }
+	/// Host equality, not a substring: `mqtt.meshtastic.org.example.com` is somebody
+	/// else's server, and treating it as the public one would hide the credential
+	/// fields and overwrite what was typed with the public defaults. The address the
+	/// firmware accepts is a host with an optional port, never a scheme or a path.
+	static func usesPublicServer(_ address: String) -> Bool {
+		let host = address.trimmingCharacters(in: .whitespaces)
+			.lowercased()
+			.split(separator: ":", maxSplits: 1, omittingEmptySubsequences: false)
+			.first
+			.map(String.init) ?? ""
+		return host == publicServer
+	}
 
 	/// The load-time rules the old screen applied: the map report precision the firmware
 	/// accepts, the hour floor on its interval, TLS to the public server, and the app's own

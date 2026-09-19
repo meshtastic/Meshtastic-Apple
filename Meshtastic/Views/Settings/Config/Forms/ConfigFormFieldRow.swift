@@ -254,6 +254,8 @@ private struct StringRow<M: ConfigSchemaMessage>: View {
 	@Binding var text: String
 
 	var body: some View {
+		// Label beside the field, as the old screens laid it out; the placeholder alone
+		// disappears as soon as there is a value.
 		HStack {
 			if let symbol = field.symbol {
 				Label(label, systemImage: symbol)
@@ -330,6 +332,13 @@ private struct EnumRow<M: ConfigSchemaMessage>: View {
 			}
 		}
 		.modifier(SegmentedIfAsked(segmented: { if case .segmented = field.control { return true }; return false }()))
+		// A value can carry its own explanation upstream (device roles do); show the
+		// selected one's beneath the picker.
+		if let description = meta(selection)?.description {
+			Text(description)
+				.foregroundColor(.gray)
+				.font(.callout)
+		}
 	}
 }
 

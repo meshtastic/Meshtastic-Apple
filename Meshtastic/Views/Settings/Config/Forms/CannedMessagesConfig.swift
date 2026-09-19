@@ -65,6 +65,20 @@ struct CannedMessagesConfig: View {
 		}
 	}
 
+	/// What a save has to send. The module config and the messages travel as separate
+	/// admin messages, so sending one whose contents did not change is a wasted round
+	/// trip to the radio — and sending the messages through the config operation would
+	/// not store them at all.
+	static func pending(
+		config: ModuleConfig.CannedMessageConfig,
+		stored: CannedMessageConfigEntity?,
+		messages: String,
+		loadedMessages: String
+	) -> (config: Bool, messages: Bool) {
+		let configChanged = stored.map { config != ModuleConfig.CannedMessageConfig(entity: $0) } ?? true
+		return (configChanged, messages != loadedMessages)
+	}
+
 	static func overlay(preset: ConfigPresets = .unset) -> ConfigFormOverlay<ModuleConfig.CannedMessageConfig> {
 		// With a preset chosen its fields are shown but not editable, as before.
 		let manual = ConfigFormCondition<ModuleConfig.CannedMessageConfig>.environment { _ in preset == .unset }
@@ -95,11 +109,12 @@ struct CannedMessagesConfig: View {
 			externalChanges: messages != loadedMessages,
 			request: accessoryManager.requestCannedMessagesModuleConfig,
 			save: { config, from, to in
-				// Two admin messages; send only what changed, as before.
-				if node?.cannedMessageConfig.map({ config != ModuleConfig.CannedMessageConfig(entity: $0) }) ?? true {
+				let pending = Self.pending(config: config, stored: node?.cannedMessageConfig,
+										   messages: messages, loadedMessages: loadedMessages)
+				if pending.config {
 					_ = try await accessoryManager.saveCannedMessageModuleConfig(config: config, fromUser: from, toUser: to)
 				}
-				if messages != loadedMessages {
+				if pending.messages {
 					_ = try await accessoryManager.saveCannedMessageModuleMessages(messages: messages, fromUser: from, toUser: to)
 					loadedMessages = messages
 				}
