@@ -45,13 +45,13 @@ struct ConfigFormOverlayTests {
 			"meshtastic.ModuleConfig.AmbientLightingConfig": (1, 0),    // one colour picker for three channels
 			"meshtastic.ModuleConfig.CannedMessageConfig": (0, 3),      // three sections locked while a preset is chosen
 			"meshtastic.ModuleConfig.ExternalNotificationConfig": (0, 0),
-			"meshtastic.ModuleConfig.MQTTConfig": (4, 1),               // proxy, consent, precision, root topic; TLS by firmware
+			"meshtastic.ModuleConfig.MQTTConfig": (4, 2),               // proxy, consent, precision, root topic; TLS by firmware, consent kept on older firmware
 			"meshtastic.ModuleConfig.NeighborInfoConfig": (0, 0),
 			"meshtastic.ModuleConfig.PaxcounterConfig": (0, 0),
 			"meshtastic.ModuleConfig.RangeTestConfig": (0, 1),          // save needs WiFi
 			"meshtastic.ModuleConfig.SerialConfig": (0, 0),
 			"meshtastic.ModuleConfig.StoreForwardConfig": (0, 0),
-			"meshtastic.ModuleConfig.TelemetryConfig": (0, 2),          // device-telemetry toggle by firmware version
+			"meshtastic.ModuleConfig.TelemetryConfig": (0, 1),          // the interval stands alone where there is no toggle
 			"meshtastic.ModuleConfig.TrafficManagementConfig": (0, 4)   // four feature sections behind the main switch
 		]
 		// Without this, moving a screen to `bespoke` would silently stop checking its
@@ -82,7 +82,8 @@ struct ConfigFormOverlayTests {
 		typealias F = ModuleConfig.NeighborInfoConfig.Fields
 		var message = ModuleConfig.NeighborInfoConfig()
 		let env = ConfigFormEnvironment(node: nil, isConnected: true, isConnectedNode: true, isDIYHardware: false,
-										hasWifi: false, hasEthernet: false, hasXeddsa: false, firmwareAtLeast: { _ in true })
+										hasWifi: false, hasEthernet: false, hasXeddsa: false, firmwareAtLeast: { _ in true },
+			isFirmwareKnown: false)
 		let enabled = ConfigFormCondition<ModuleConfig.NeighborInfoConfig>.isTrue(F.enabled)
 		#expect(!enabled.evaluate(message, env))
 		message.enabled = true
@@ -320,7 +321,8 @@ struct ConfigFormOverlayTests {
 		let interval = ModuleConfig.NeighborInfoConfig.Fields.updateInterval.identity
 		let env = ConfigFormEnvironment(
 			node: nil, isConnected: true, isConnectedNode: true, isDIYHardware: false,
-			hasWifi: false, hasEthernet: false, hasXeddsa: false, firmwareAtLeast: { _ in true })
+			hasWifi: false, hasEthernet: false, hasXeddsa: false, firmwareAtLeast: { _ in true },
+			isFirmwareKnown: false)
 
 		// The empty message a form holds before the radio's values arrive. Deciding here
 		// is what made search open the screen and scroll nowhere.
@@ -342,7 +344,8 @@ struct ConfigFormOverlayTests {
 		let password = ModuleConfig.MQTTConfig.Fields.password.identity
 		let env = ConfigFormEnvironment(
 			node: nil, isConnected: true, isConnectedNode: true, isDIYHardware: false,
-			hasWifi: false, hasEthernet: false, hasXeddsa: false, firmwareAtLeast: { _ in true })
+			hasWifi: false, hasEthernet: false, hasXeddsa: false, firmwareAtLeast: { _ in true },
+			isFirmwareKnown: false)
 
 		// A private broker shows its credentials, so the control itself is the target.
 		var config = ModuleConfig.MQTTConfig()
@@ -365,6 +368,142 @@ struct ConfigFormOverlayTests {
 		// screens have a Password, and each has to leave the other's alone.
 		let wifiPassword = FieldIdentity(messageName: "meshtastic.Config.NetworkConfig", tag: 4)
 		#expect(overlay.rowID(for: wifiPassword) == nil)
+	}
+
+	// MARK: - Firmware versions from the schema
+
+	/// An environment for a radio on `version`, comparing the way `checkIsVersionSupported`
+	/// does. Pass nil for no radio connected.
+	private static func environment(firmware version: String?) -> ConfigFormEnvironment {
+		ConfigFormEnvironment(
+			node: nil, isConnected: version != nil, isConnectedNode: version != nil, isDIYHardware: false,
+			hasWifi: false, hasEthernet: false, hasXeddsa: false,
+			firmwareAtLeast: { required in
+				guard let version else { return true }
+				return required.compare(version, options: .numeric) != .orderedDescending
+			},
+			isFirmwareKnown: version != nil)
+	}
+
+	@Test("A field is offered only on firmware that reads it")
+	func firmwareWindowDecidesVisibility() {
+		let since = FieldMetadata(sinceFirmware: "2.7.13")
+		#expect(!Self.environment(firmware: "2.7.12").firmwareReads(since))
+		#expect(Self.environment(firmware: "2.7.13").firmwareReads(since))
+		#expect(Self.environment(firmware: "2.8.0").firmwareReads(since))
+
+		// Deprecation is the other end of the same window: the firmware below it still
+		// reads the field, so that is where the control belongs.
+		let until = FieldMetadata(deprecated: true, deprecatedSince: "2.7.1")
+		#expect(Self.environment(firmware: "2.7.0").firmwareReads(until))
+		#expect(!Self.environment(firmware: "2.7.1").firmwareReads(until))
+		#expect(!Self.environment(firmware: "2.8.0").firmwareReads(until))
+
+		// Nothing is hidden on a guess: with no radio, neither attribute applies.
+		#expect(Self.environment(firmware: nil).firmwareReads(since))
+		#expect(Self.environment(firmware: nil).firmwareReads(until))
+		// Nor when a connected radio has not reported a version, which reads as current.
+		#expect(Self.environment(firmware: "2.8.0").firmwareReads(nil))
+
+		// The same rule over the real registry. Firmware force-writes canned_message.enabled
+		// true from 2.7.4, so the version has to decide this and not the stored value.
+		let cannedEnabled = FieldIdentity(messageName: "meshtastic.ModuleConfig.CannedMessageConfig", tag: 9).metadata
+		#expect(cannedEnabled?.deprecatedSince == "2.7.0")
+		#expect(Self.environment(firmware: "2.6.9").firmwareReads(cannedEnabled))
+		#expect(!Self.environment(firmware: "2.7.4").firmwareReads(cannedEnabled))
+	}
+
+	@Test("An unknown firmware version hides nothing")
+	func unknownFirmwareShowsEverything() throws {
+		// A node the app has never heard metadata from, and the same node once it has.
+		// Guessing wrong here takes a setting away from somebody who came to change it.
+		let unknown = ConfigFormEnvironment(
+			node: nil, isConnected: true, isConnectedNode: true, isDIYHardware: false,
+			hasWifi: false, hasEthernet: false, hasXeddsa: false,
+			firmwareAtLeast: { _ in false }, isFirmwareKnown: false)
+		let clock = Config.DisplayConfig.Fields.use12HClock.metadata
+		#expect(clock?.sinceFirmware == "2.5.22", "the schema still dates this field")
+		#expect(unknown.firmwareReads(clock), "no known version means the window does not apply")
+
+		let known = Self.environment(firmware: "2.5.21")
+		#expect(!known.firmwareReads(clock), "once the version is known, the window applies")
+	}
+
+	@Test("Public-server TLS waits for the firmware that accepts it")
+	func mqttTlsFollowsTheServerRule() throws {
+		// Up to 2.7.3 the radio rejects the whole MQTT config when TLS is on with the
+		// default server, so locking the toggle on there would make the save fail.
+		#expect(MQTTConfig.tlsRequiredFirmware == "2.7.4",
+				"2.7.3 still refuses TLS to the default server")
+
+		let overlay = MQTTConfig.overlay()
+		let tls = try #require(overlay.sections.flatMap(\.fields).first { $0.id == "tls_enabled" })
+		var config = ModuleConfig.MQTTConfig()
+		config.address = MQTTConfig.publicServer
+
+		#expect(!overlay.isVisible(tls, in: config, Self.environment(firmware: "2.7.3")),
+				"the public server refuses TLS on 2.7.3, so the row has nothing to offer")
+		#expect(overlay.isVisible(tls, in: config, Self.environment(firmware: "2.7.4")),
+				"2.7.4 accepts it, so the row appears locked on")
+	}
+
+	@Test("The device telemetry toggle appears on the firmware that reads it, not one before")
+	func telemetryToggleFollowsTheSchema() throws {
+		let overlay = TelemetryConfig.overlay()
+		let toggle = try #require(overlay.sections.flatMap(\.fields).first { $0.id == "device_telemetry_enabled" })
+		let interval = try #require(overlay.sections.flatMap(\.fields).first { $0.id == "device_update_interval" })
+		#expect(TelemetryConfig.deviceToggleFirmware == "2.7.13", "the schema says 2.7.13; 2.7.12 has no read of the field")
+
+		// 2.7.12 shipped the toggle in the proto but nothing in the firmware reads it, so
+		// the app used to draw a switch that did nothing. The interval alone stands there.
+		var config = ModuleConfig.TelemetryConfig()
+		let old = Self.environment(firmware: "2.7.12")
+		#expect(!overlay.isVisible(toggle, in: config, old))
+		#expect(overlay.isVisible(interval, in: config, old), "with no toggle the interval is the only control")
+		#expect(TelemetryConfig.isLegacy(isConnected: true, firmwareAtLeast: old.firmwareAtLeast))
+
+		let current = Self.environment(firmware: "2.7.13")
+		#expect(overlay.isVisible(toggle, in: config, current))
+		#expect(!overlay.isVisible(interval, in: config, current), "the interval waits on the toggle once there is one")
+		config.deviceTelemetryEnabled = true
+		#expect(overlay.isVisible(interval, in: config, current))
+		#expect(!TelemetryConfig.isLegacy(isConnected: true, firmwareAtLeast: current.firmwareAtLeast))
+
+		// Without a radio the screen is read, not guessed at: both controls are there.
+		let offline = Self.environment(firmware: nil)
+		#expect(overlay.isVisible(toggle, in: ModuleConfig.TelemetryConfig(), offline))
+		#expect(!TelemetryConfig.isLegacy(isConnected: false, firmwareAtLeast: { _ in false }))
+	}
+
+	@Test("A screen hides a control the connected firmware is too old for")
+	func schemaHidesControlsOlderFirmwareIgnores() throws {
+		// The 12-hour clock is read from 2.5.22; no overlay says so.
+		let overlay = DisplayConfig.overlay()
+		let clock = try #require(overlay.sections.flatMap(\.fields).first { $0.id == "use_12h_clock" })
+		let config = Config.DisplayConfig()
+		#expect(!overlay.isVisible(clock, in: config, Self.environment(firmware: "2.5.21")))
+		#expect(overlay.isVisible(clock, in: config, Self.environment(firmware: "2.5.22")))
+		#expect(overlay.isVisible(clock, in: config, Self.environment(firmware: nil)))
+	}
+
+	@Test("A row that means something to the app stays on firmware without the field")
+	func consentRowSurvivesOlderFirmware() throws {
+		// map_report_settings.should_report_location is read from 2.6.8, but the toggle is
+		// also the app's own consent record and the proxy honours it on every firmware.
+		// Hiding it would take the privacy text and the interval and precision with it.
+		let overlay = MQTTConfig.overlay()
+		let consent = try #require(overlay.sections.flatMap(\.fields)
+			.first { $0.id == "map_report_settings.should_report_location" })
+		let interval = try #require(overlay.sections.flatMap(\.fields)
+			.first { $0.id == "map_report_settings.publish_interval_secs" })
+		#expect(consent.shownDespiteFirmware != nil, "kept on purpose, with the reason stated")
+
+		var config = ModuleConfig.MQTTConfig()
+		config.mapReportingEnabled = true
+		let old = Self.environment(firmware: "2.6.7")
+		#expect(overlay.isVisible(consent, in: config, old))
+		config.mapReportSettings.shouldReportLocation = true
+		#expect(overlay.isVisible(interval, in: config, old))
 	}
 
 	@Test("A focus request waits for a stored config, and survives one that never comes")

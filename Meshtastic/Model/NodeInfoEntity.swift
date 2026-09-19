@@ -183,14 +183,25 @@ extension NodeInfoEntity {
 		sessionPasskey?.isEmpty == false && (sessionExpiration ?? .distantPast) >= Date()
 	}
 
-	/// Whether this node's own reported firmware supports the Status Message module (2.8+,
-	/// the same floor as `AccessoryManager.supportsStatusMessage`). Permissive when the node
-	/// has no known firmware version, matching the capability gates' unknown-version behavior.
-	var firmwareSupportsStatusMessage: Bool {
-		guard let version = metadata?.firmwareVersion, !version.isEmpty else { return true }
-		let comparison = "2.8.0".compare(version, options: .numeric)
+	/// This node's own reported firmware version, when it has told us one. Under remote
+	/// admin this is the target's version, which is not the connected radio's.
+	var knownFirmwareVersion: String? {
+		guard let version = metadata?.firmwareVersion, !version.isEmpty else { return nil }
+		return version
+	}
+
+	/// Whether this node's own reported firmware is at least `version`. Permissive when
+	/// the node has never reported one, matching the capability gates' unknown-version
+	/// behavior.
+	func firmwareAtLeast(_ version: String) -> Bool {
+		guard let mine = knownFirmwareVersion else { return true }
+		let comparison = version.compare(mine, options: .numeric)
 		return comparison == .orderedAscending || comparison == .orderedSame
 	}
+
+	/// Whether this node's own reported firmware supports the Status Message module (2.8+,
+	/// the same floor as `AccessoryManager.supportsStatusMessage`).
+	var firmwareSupportsStatusMessage: Bool { firmwareAtLeast("2.8.0") }
 
 	/// The status message to render on read-only surfaces (node list card and node
 	/// details). Prefers the live broadcast value (`nodeStatus`, NODE_STATUS_APP) and
