@@ -35,13 +35,17 @@ struct ConfigFormOverlayTests {
 	func escapeHatchesArePinned() throws {
 		// Grow these numbers in the pull request that adds the hatch, so it is reviewed as one.
 		let expected: [String: (custom: Int, environment: Int)] = [
-			"meshtastic.Config.BluetoothConfig": (1, 0),           // the six-digit PIN field
+			"meshtastic.Config.BluetoothConfig": (1, 0),                // the six-digit PIN field
+			"meshtastic.Config.DeviceConfig": (1, 0),                   // role picker with its warning
+			"meshtastic.Config.DisplayConfig": (0, 2),                  // compass control by firmware version
+			"meshtastic.ModuleConfig.AmbientLightingConfig": (1, 0),    // one colour picker for three channels
 			"meshtastic.ModuleConfig.ExternalNotificationConfig": (0, 0),
 			"meshtastic.ModuleConfig.NeighborInfoConfig": (0, 0),
 			"meshtastic.ModuleConfig.PaxcounterConfig": (0, 0),
-			"meshtastic.ModuleConfig.RangeTestConfig": (0, 1),      // save needs WiFi
+			"meshtastic.ModuleConfig.RangeTestConfig": (0, 1),          // save needs WiFi
 			"meshtastic.ModuleConfig.SerialConfig": (0, 0),
-			"meshtastic.ModuleConfig.StoreForwardConfig": (0, 0)
+			"meshtastic.ModuleConfig.StoreForwardConfig": (0, 0),
+			"meshtastic.ModuleConfig.TelemetryConfig": (0, 2)           // device-telemetry toggle by firmware version
 		]
 		for overlay in ConfigFormOverlays.all {
 			let pinned = try #require(expected[overlay.protoName], "\(overlay.protoName) has no pinned hatch counts")
@@ -87,6 +91,32 @@ struct ConfigFormOverlayTests {
 		#expect(message.timeout == 30)
 		#expect(message.mode == .nmea)
 		#expect(message.overrideConsoleSerialPort, "the old screen dropped this; the bridge must not")
+	}
+
+	@Test("Device's inverted and retired values bridge and normalise as the old screen did")
+	func deviceBridgeAndNormalise() throws {
+		let entity = DeviceConfigEntity()
+		entity.tripleClickAsAdHocPing = true
+		entity.ledHeartbeatEnabled = false
+		entity.role = Int32(Config.DeviceConfig.Role.routerClient.rawValue)
+		entity.nodeInfoBroadcastSecs = 600
+		let message = Config.DeviceConfig(entity: entity)
+		#expect(!message.disableTripleClick, "the entity stores the positive sense")
+		#expect(message.ledHeartbeatDisabled)
+		let normalised = DeviceConfig.normalize(message)
+		#expect(normalised.role == .clientMute)
+		#expect(normalised.nodeInfoBroadcastSecs == 10800)
+	}
+
+	@Test("Telemetry reads Int32.max as off only on firmware without the toggle")
+	func telemetryLegacyOff() {
+		var message = ModuleConfig.TelemetryConfig()
+		message.deviceUpdateInterval = UInt32(Int32.max)
+		message.deviceTelemetryEnabled = true
+		#expect(!TelemetryConfig.normalize(message, legacy: true).deviceTelemetryEnabled)
+		#expect(TelemetryConfig.normalize(message, legacy: false).deviceTelemetryEnabled)
+		message.deviceUpdateInterval = 1800
+		#expect(TelemetryConfig.normalize(message, legacy: true).deviceTelemetryEnabled)
 	}
 
 	@Test("The irregular entity names bridge to the right proto fields")
