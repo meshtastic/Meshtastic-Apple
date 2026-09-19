@@ -38,4 +38,18 @@ struct TrafficManagementCandidacyTests {
 		#expect(summary.contains("1 node"))
 		#expect(!summary.contains("1 nodes"))
 	}
+
+	@Test("the plural is resolved rather than shown as markup")
+	func summaryResolvesItsPlural() {
+		// The earlier wording carried automatic grammar agreement markup, which only
+		// inflects when the catalog has a value to compile. These entries had none, so
+		// the screen showed the markup verbatim - and the singular test above still
+		// passed, because "^[1 node](inflect: true)" does contain "1 node".
+		for count in [0, 1, 2, 50] {
+			let summary = TrafficManagementCandidacy.summary(directNeighborCount: count)
+			#expect(!summary.contains("^["), "\(count): markup leaked into the summary")
+			#expect(!summary.contains("inflect"), "\(count): markup leaked into the summary")
+		}
+		#expect(TrafficManagementCandidacy.summary(directNeighborCount: 2).contains("2 nodes"))
+	}
 }

@@ -38,14 +38,18 @@ struct ConfigFormOverlayTests {
 			"meshtastic.Config.BluetoothConfig": (1, 0),                // the six-digit PIN field
 			"meshtastic.Config.DeviceConfig": (1, 0),                   // role picker with its warning
 			"meshtastic.Config.DisplayConfig": (0, 2),                  // compass control by firmware version
+			"meshtastic.Config.PowerConfig": (1, 2),                    // ADC override; power saving and battery rows by architecture
 			"meshtastic.ModuleConfig.AmbientLightingConfig": (1, 0),    // one colour picker for three channels
+			"meshtastic.ModuleConfig.CannedMessageConfig": (0, 3),      // three sections locked while a preset is chosen
 			"meshtastic.ModuleConfig.ExternalNotificationConfig": (0, 0),
+			"meshtastic.ModuleConfig.MQTTConfig": (4, 1),               // proxy, consent, precision, root topic; TLS by firmware
 			"meshtastic.ModuleConfig.NeighborInfoConfig": (0, 0),
 			"meshtastic.ModuleConfig.PaxcounterConfig": (0, 0),
 			"meshtastic.ModuleConfig.RangeTestConfig": (0, 1),          // save needs WiFi
 			"meshtastic.ModuleConfig.SerialConfig": (0, 0),
 			"meshtastic.ModuleConfig.StoreForwardConfig": (0, 0),
-			"meshtastic.ModuleConfig.TelemetryConfig": (0, 2)           // device-telemetry toggle by firmware version
+			"meshtastic.ModuleConfig.TelemetryConfig": (0, 2),          // device-telemetry toggle by firmware version
+			"meshtastic.ModuleConfig.TrafficManagementConfig": (0, 4)   // four feature sections behind the main switch
 		]
 		for overlay in ConfigFormOverlays.all {
 			let pinned = try #require(expected[overlay.protoName], "\(overlay.protoName) has no pinned hatch counts")
@@ -91,6 +95,57 @@ struct ConfigFormOverlayTests {
 		#expect(message.timeout == 30)
 		#expect(message.mode == .nmea)
 		#expect(message.overrideConsoleSerialPort, "the old screen dropped this; the bridge must not")
+	}
+
+	@Test("Traffic Management's main switch derives from the values and clears them")
+	func trafficManagementMainSwitch() {
+		var message = ModuleConfig.TrafficManagementConfig()
+		#expect(!TrafficManagementConfig.isActive(message))
+		message.rateLimitWindowSecs = 60
+		message.rateLimitMaxPackets = 20
+		#expect(TrafficManagementConfig.isActive(message))
+		#expect(!TrafficManagementConfig.isActive(TrafficManagementConfig.cleared(message)))
+		// A cleared window takes the packet count with it.
+		message.rateLimitWindowSecs = 0
+		TrafficManagementConfig.reconcile(&message)
+		#expect(message.rateLimitMaxPackets == 0)
+	}
+
+	@Test("MQTT keeps the old screen's load-time rules")
+	func mqttNormalise() {
+		var message = ModuleConfig.MQTTConfig()
+		message.address = "MQTT.meshtastic.org"
+		message.mapReportSettings.positionPrecision = 11
+		message.mapReportSettings.publishIntervalSecs = 60
+		let normalised = MQTTConfig.normalize(message, tlsRequired: true)
+		#expect(normalised.mapReportSettings.positionPrecision == 14)
+		#expect(normalised.mapReportSettings.publishIntervalSecs == 3600)
+		#expect(normalised.tlsEnabled, "the public server needs TLS on firmware that requires it")
+		#expect(!MQTTConfig.normalize(message, tlsRequired: false).tlsEnabled)
+		var edited = normalised
+		MQTTConfig.reconcile(&edited, tlsRequired: true)
+		#expect(edited.username == "meshdev" && edited.password == "large4cats")
+		edited.address = "broker.example.org"
+		edited.username = "me"
+		edited.password = "hunter2"
+		MQTTConfig.reconcile(&edited, tlsRequired: true)
+		#expect(edited.username == "me", "a private server keeps its own credentials")
+		#expect(edited.password == "hunter2", "and its own password")
+		// A host that merely starts with the public one belongs to somebody else.
+		#expect(!MQTTConfig.usesPublicServer("mqtt.meshtastic.org.example.com"))
+		#expect(MQTTConfig.usesPublicServer("mqtt.meshtastic.org"))
+		#expect(MQTTConfig.usesPublicServer("MQTT.Meshtastic.org:1883"), "host match ignores case and port")
+	}
+
+	@Test("Canned Messages presets fill in the hardware they name")
+	func cannedMessagesPresets() {
+		var message = ModuleConfig.CannedMessageConfig()
+		CannedMessagesConfig.apply(.rakRotaryEncoder, to: &message)
+		#expect(message.updown1Enabled && !message.rotary1Enabled)
+		#expect(message.inputbrokerPinA == 4 && message.inputbrokerPinB == 10 && message.inputbrokerPinPress == 9)
+		#expect(message.inputbrokerEventCw == .down && message.inputbrokerEventCcw == .up && message.inputbrokerEventPress == .select)
+		CannedMessagesConfig.apply(.cardKB, to: &message)
+		#expect(!message.updown1Enabled && message.inputbrokerPinA == 0 && message.inputbrokerEventPress == .none)
 	}
 
 	@Test("Device's inverted and retired values bridge and normalise as the old screen did")
@@ -151,5 +206,40 @@ struct ConfigFormOverlayTests {
 		// The PIN is only used for fixed-pin pairing, so it cannot block the other modes.
 		message.mode = .randomPin
 		#expect(BluetoothConfig.canSave(message, pinIsComplete: false))
+	}
+
+	@Test("The MQTT bridge keeps a flag the old screen always cleared")
+	func mqttBridgeKeepsJSONEnabled() {
+		let entity = MQTTConfigEntity()
+		entity.jsonEnabled = true
+		entity.address = "broker.example.org"
+		// The hand-written screen built its message from scratch and never wrote this,
+		// so every save turned it off. It round-trips now.
+		#expect(ModuleConfig.MQTTConfig(entity: entity).jsonEnabled)
+	}
+
+	@Test("Canned Messages sends only what changed, on the right admin message")
+	func cannedMessagesSendOnlyWhatChanged() {
+		let entity = CannedMessageConfigEntity()
+		entity.sendBell = true
+		entity.messages = "Hello|Yes"
+		let stored = ModuleConfig.CannedMessageConfig(entity: entity)
+
+		// Editing the text must not send the module config, which does not carry it.
+		let textOnly = CannedMessagesConfig.pending(config: stored, stored: entity,
+													messages: "Hello|Yes|No", loadedMessages: "Hello|Yes")
+		#expect(textOnly.messages && !textOnly.config)
+
+		// Editing a control must not re-send the text as a second admin message.
+		var edited = stored
+		edited.sendBell = false
+		let configOnly = CannedMessagesConfig.pending(config: edited, stored: entity,
+													  messages: "Hello|Yes", loadedMessages: "Hello|Yes")
+		#expect(configOnly.config && !configOnly.messages)
+
+		// Nothing changed: nothing to send.
+		let quiet = CannedMessagesConfig.pending(config: stored, stored: entity,
+												 messages: "Hello|Yes", loadedMessages: "Hello|Yes")
+		#expect(!quiet.config && !quiet.messages)
 	}
 }

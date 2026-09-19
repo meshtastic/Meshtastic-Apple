@@ -52,7 +52,7 @@ struct RangeTestConfig: View {
 			save: { config, from, to in
 				_ = try await accessoryManager.saveRangeTestModuleConfig(config: config, fromUser: from, toUser: to)
 			},
-			leading: {
+			leading: { _ in
 				if isPrimaryChannelPublic {
 					Section {
 						Label("Range test requires an encrypted private channel. The primary channel on this node is using a default or empty key.", systemImage: "lock.open.fill")
