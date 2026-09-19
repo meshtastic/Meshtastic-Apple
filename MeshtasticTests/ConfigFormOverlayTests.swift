@@ -106,8 +106,11 @@ struct ConfigFormOverlayTests {
 		for entry in SettingsSearchIndex.entries {
 			guard let field = entry.field, let overlay = byName[field.messageName] else { continue }
 			checked += 1
-			#expect(overlay.rowID(for: field) != nil,
-					"\(field.messageName)#\(field.tag) (\(entry.label)) is indexed but has no row on its form")
+			// Either the screen has a row for it, or it deliberately omits it - a field
+			// folded into another control names that control with `coveredBy`, and one
+			// the client does not offer at all has nothing to scroll to by design.
+			#expect(overlay.rowID(for: field) != nil || overlay.omits(field),
+					"\(field.messageName)#\(field.tag) (\(entry.label)) is indexed but the form neither shows nor omits it")
 		}
 		#expect(checked > 0, "no indexed field reached a migrated screen; the lookup is not being exercised")
 	}
