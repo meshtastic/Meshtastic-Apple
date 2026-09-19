@@ -13,9 +13,21 @@ import Foundation
 /// neither be half-migrated nor forgotten.
 enum ConfigFormOverlays {
 	static let all: [any AnyConfigFormOverlay] = [
+		AmbientLightingConfig.overlay(),
+		BluetoothConfig.overlay(),
+		CannedMessagesConfig.overlay(),
+		DeviceConfig.overlay(),
+		DisplayConfig.overlay(),
 		ExternalNotificationConfig.overlay(),
+		MQTTConfig.overlay(),
 		NeighborInfoConfig.overlay(),
-		SerialConfig.overlay()
+		PaxCounterConfig.overlay(),
+		PowerConfig.overlay(),
+		RangeTestConfig.overlay(),
+		SerialConfig.overlay(),
+		StoreForwardConfig.overlay(),
+		TelemetryConfig.overlay(),
+		TrafficManagementConfig.overlay()
 	]
 
 	/// Messages whose screens stay hand-written, and why.
@@ -24,23 +36,11 @@ enum ConfigFormOverlays {
 		"meshtastic.Config.SecurityConfig": "key management, lockdown and a repeated admin_key field",
 		"meshtastic.Config.NetworkConfig": "static IPv4 as dotted quads over a nested message, with validation",
 		"meshtastic.ModuleConfig.MeshBeaconConfig": "a repeated broadcast_targets editor and channel resolution",
-		"meshtastic.ModuleConfig.CannedMessageConfig": "the messages themselves travel in a separate admin message",
+		"meshtastic.ModuleConfig.MapReportSettings": "not a screen: nested in MQTTConfig and laid out there through its flattened fields",
 		// Not migrated yet. Each moves to `all` in its own pull request.
-		"meshtastic.Config.BluetoothConfig": "pending",
-		"meshtastic.Config.DeviceConfig": "pending",
-		"meshtastic.Config.DisplayConfig": "pending",
 		"meshtastic.Config.PositionConfig": "pending",
-		"meshtastic.Config.PowerConfig": "pending",
-		"meshtastic.ModuleConfig.AmbientLightingConfig": "pending",
 		"meshtastic.ModuleConfig.AudioConfig": "pending",
 		"meshtastic.ModuleConfig.DetectionSensorConfig": "pending",
-		"meshtastic.ModuleConfig.MQTTConfig": "pending",
-		"meshtastic.ModuleConfig.MapReportSettings": "pending, with MQTT",
-		"meshtastic.ModuleConfig.PaxcounterConfig": "pending",
-		"meshtastic.ModuleConfig.RangeTestConfig": "pending",
-		"meshtastic.ModuleConfig.StoreForwardConfig": "pending",
-		"meshtastic.ModuleConfig.TAKConfig": "pending",
-		"meshtastic.ModuleConfig.TelemetryConfig": "pending",
-		"meshtastic.ModuleConfig.TrafficManagementConfig": "pending"
+		"meshtastic.ModuleConfig.TAKConfig": "pending: Team and MemberRole values have no labels upstream yet, so its pickers would show case names"
 	]
 }
