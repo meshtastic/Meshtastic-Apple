@@ -14,11 +14,15 @@ import Foundation
 enum ConfigFormOverlays {
 	static let all: [any AnyConfigFormOverlay] = [
 		AmbientLightingConfig.overlay(),
+		BluetoothConfig.overlay(),
 		DeviceConfig.overlay(),
 		DisplayConfig.overlay(),
 		ExternalNotificationConfig.overlay(),
 		NeighborInfoConfig.overlay(),
+		PaxCounterConfig.overlay(),
+		RangeTestConfig.overlay(),
 		SerialConfig.overlay(),
+		StoreForwardConfig.overlay(),
 		TelemetryConfig.overlay()
 	]
 
@@ -30,17 +34,13 @@ enum ConfigFormOverlays {
 		"meshtastic.ModuleConfig.MeshBeaconConfig": "a repeated broadcast_targets editor and channel resolution",
 		"meshtastic.ModuleConfig.CannedMessageConfig": "the messages themselves travel in a separate admin message",
 		// Not migrated yet. Each moves to `all` in its own pull request.
-		"meshtastic.Config.BluetoothConfig": "pending",
 		"meshtastic.Config.PositionConfig": "pending",
 		"meshtastic.Config.PowerConfig": "pending",
 		"meshtastic.ModuleConfig.AudioConfig": "pending",
 		"meshtastic.ModuleConfig.DetectionSensorConfig": "pending",
 		"meshtastic.ModuleConfig.MQTTConfig": "pending",
 		"meshtastic.ModuleConfig.MapReportSettings": "pending, with MQTT",
-		"meshtastic.ModuleConfig.PaxcounterConfig": "pending",
-		"meshtastic.ModuleConfig.RangeTestConfig": "pending",
-		"meshtastic.ModuleConfig.StoreForwardConfig": "pending",
-		"meshtastic.ModuleConfig.TAKConfig": "pending",
+		"meshtastic.ModuleConfig.TAKConfig": "pending: Team and MemberRole values have no labels upstream yet, so its pickers would show case names",
 		"meshtastic.ModuleConfig.TrafficManagementConfig": "pending"
 	]
 }

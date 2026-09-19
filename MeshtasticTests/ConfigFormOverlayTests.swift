@@ -35,13 +35,17 @@ struct ConfigFormOverlayTests {
 	func escapeHatchesArePinned() throws {
 		// Grow these numbers in the pull request that adds the hatch, so it is reviewed as one.
 		let expected: [String: (custom: Int, environment: Int)] = [
-			"meshtastic.Config.DeviceConfig": (1, 0),           // role picker with its warning
-			"meshtastic.Config.DisplayConfig": (0, 2),          // compass control by firmware version
-			"meshtastic.ModuleConfig.AmbientLightingConfig": (1, 0), // one colour picker for three channels
+			"meshtastic.Config.BluetoothConfig": (1, 0),                // the six-digit PIN field
+			"meshtastic.Config.DeviceConfig": (1, 0),                   // role picker with its warning
+			"meshtastic.Config.DisplayConfig": (0, 2),                  // compass control by firmware version
+			"meshtastic.ModuleConfig.AmbientLightingConfig": (1, 0),    // one colour picker for three channels
 			"meshtastic.ModuleConfig.ExternalNotificationConfig": (0, 0),
 			"meshtastic.ModuleConfig.NeighborInfoConfig": (0, 0),
+			"meshtastic.ModuleConfig.PaxcounterConfig": (0, 0),
+			"meshtastic.ModuleConfig.RangeTestConfig": (0, 1),          // save needs WiFi
 			"meshtastic.ModuleConfig.SerialConfig": (0, 0),
-			"meshtastic.ModuleConfig.TelemetryConfig": (0, 2)   // device-telemetry toggle by firmware version
+			"meshtastic.ModuleConfig.StoreForwardConfig": (0, 0),
+			"meshtastic.ModuleConfig.TelemetryConfig": (0, 2)           // device-telemetry toggle by firmware version
 		]
 		for overlay in ConfigFormOverlays.all {
 			let pinned = try #require(expected[overlay.protoName], "\(overlay.protoName) has no pinned hatch counts")
@@ -113,5 +117,39 @@ struct ConfigFormOverlayTests {
 		#expect(TelemetryConfig.normalize(message, legacy: false).deviceTelemetryEnabled)
 		message.deviceUpdateInterval = 1800
 		#expect(TelemetryConfig.normalize(message, legacy: true).deviceTelemetryEnabled)
+	}
+
+	@Test("The irregular entity names bridge to the right proto fields")
+	func irregularEntityNamesBridge() throws {
+		let store = StoreForwardConfigEntity()
+		store.isRouter = true
+		store.historyReturnWindow = 7200
+		let sf = ModuleConfig.StoreForwardConfig(entity: store)
+		#expect(sf.isServer, "the entity calls is_server isRouter")
+		#expect(sf.historyReturnWindow == 7200)
+
+		let bt = BluetoothConfigEntity()
+		bt.mode = Int32(Config.BluetoothConfig.PairingMode.fixedPin.rawValue)
+		bt.fixedPin = 654321
+		let bluetooth = Config.BluetoothConfig(entity: bt)
+		#expect(bluetooth.mode == .fixedPin)
+		#expect(bluetooth.fixedPin == 654321)
+
+		let pax = PaxCounterConfigEntity()
+		pax.wifiThreshold = -70
+		pax.updateInterval = 900
+		let counter = ModuleConfig.PaxcounterConfig(entity: pax)
+		#expect(counter.wifiThreshold == -70 && counter.paxcounterUpdateInterval == 900)
+	}
+
+	@Test("Bluetooth waits for the sixth PIN digit before it will save")
+	func bluetoothShortPinHoldsSave() {
+		var message = Config.BluetoothConfig()
+		message.mode = .fixedPin
+		#expect(!BluetoothConfig.canSave(message, pinIsComplete: false), "a short PIN must not save the previous one")
+		#expect(BluetoothConfig.canSave(message, pinIsComplete: true))
+		// The PIN is only used for fixed-pin pairing, so it cannot block the other modes.
+		message.mode = .randomPin
+		#expect(BluetoothConfig.canSave(message, pinIsComplete: false))
 	}
 }

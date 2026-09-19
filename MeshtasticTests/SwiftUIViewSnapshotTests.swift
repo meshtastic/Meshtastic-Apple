@@ -2224,6 +2224,169 @@ struct ExternalNotificationConfigSnapshotTests {
 		await assertViewSnapshot(of: view, width: 390, height: 1400, named: "externalNotificationConfigForm")
 	}
 }
+@Suite("BluetoothConfig Snapshots")
+struct BluetoothConfigSnapshotTests {
+
+	@MainActor
+	private func makeNode() throws -> NodeInfoEntity {
+		let context = sharedModelContainer.mainContext
+		let node = NodeInfoEntity()
+		node.num = 0xC0FF_EE04
+		context.insert(node)
+		let user = UserEntity()
+		user.num = node.num
+		user.longName = "Snapshot Bluetooth Node"
+		user.shortName = "SBLE"
+		context.insert(user)
+		node.user = user
+		let bluetooth = BluetoothConfigEntity()
+		bluetooth.enabled = true
+		bluetooth.mode = Int32(Config.BluetoothConfig.PairingMode.fixedPin.rawValue)
+		bluetooth.fixedPin = 654321
+		context.insert(bluetooth)
+		node.bluetoothConfig = bluetooth
+		try context.save()
+		return node
+	}
+
+	@Test("Bluetooth form, fixed pin mode")
+	@MainActor
+	func bluetoothForm() async throws {
+		let node = try makeNode()
+		AccessoryManager.shared.isConnected = true
+		AccessoryManager.shared.activeDeviceNum = node.num
+		let view = NavigationView {
+			BluetoothConfig(node: node)
+				.environmentObject(AccessoryManager.shared)
+				.modelContainer(sharedModelContainer)
+		}
+		await assertViewSnapshot(of: view, width: 390, height: 700, named: "bluetoothConfigForm")
+	}
+}
+
+@Suite("PaxCounterConfig Snapshots")
+struct PaxCounterConfigSnapshotTests {
+
+	@MainActor
+	private func makeNode() throws -> NodeInfoEntity {
+		let context = sharedModelContainer.mainContext
+		let node = NodeInfoEntity()
+		node.num = 0xC0FF_EE05
+		context.insert(node)
+		let user = UserEntity()
+		user.num = node.num
+		user.longName = "Snapshot PAX Node"
+		user.shortName = "SPAX"
+		context.insert(user)
+		node.user = user
+		let pax = PaxCounterConfigEntity()
+		pax.enabled = true
+		pax.updateInterval = 0      // stored zero: the picker shows the one-hour default
+		pax.wifiThreshold = 0       // stored zero: the field shows -80
+		pax.bleThreshold = -75
+		context.insert(pax)
+		node.paxCounterConfig = pax
+		try context.save()
+		return node
+	}
+
+	@Test("PAX Counter form, enabled, with defaults shown for stored zeros")
+	@MainActor
+	func paxCounterForm() async throws {
+		let node = try makeNode()
+		AccessoryManager.shared.isConnected = true
+		AccessoryManager.shared.activeDeviceNum = node.num
+		let view = NavigationView {
+			PaxCounterConfig(node: node)
+				.environmentObject(AccessoryManager.shared)
+				.modelContainer(sharedModelContainer)
+		}
+		await assertViewSnapshot(of: view, width: 390, height: 800, named: "paxCounterConfigForm")
+	}
+}
+
+@Suite("StoreForwardConfig Snapshots")
+struct StoreForwardConfigSnapshotTests {
+
+	@MainActor
+	private func makeNode() throws -> NodeInfoEntity {
+		let context = sharedModelContainer.mainContext
+		let node = NodeInfoEntity()
+		node.num = 0xC0FF_EE06
+		context.insert(node)
+		let user = UserEntity()
+		user.num = node.num
+		user.longName = "Snapshot S&F Node"
+		user.shortName = "SSAF"
+		context.insert(user)
+		node.user = user
+		let store = StoreForwardConfigEntity()
+		store.enabled = true
+		store.heartbeat = true
+		store.records = 50
+		store.historyReturnMax = 100
+		store.historyReturnWindow = 7200
+		store.isRouter = true
+		context.insert(store)
+		node.storeForwardConfig = store
+		try context.save()
+		return node
+	}
+
+	@Test("Store and forward form, enabled as a server")
+	@MainActor
+	func storeForwardForm() async throws {
+		let node = try makeNode()
+		AccessoryManager.shared.isConnected = true
+		AccessoryManager.shared.activeDeviceNum = node.num
+		let view = NavigationView {
+			StoreForwardConfig(node: node)
+				.environmentObject(AccessoryManager.shared)
+				.modelContainer(sharedModelContainer)
+		}
+		await assertViewSnapshot(of: view, width: 390, height: 1000, named: "storeForwardConfigForm")
+	}
+}
+
+@Suite("RangeTestConfig Snapshots")
+struct RangeTestConfigSnapshotTests {
+
+	@MainActor
+	private func makeNode() throws -> NodeInfoEntity {
+		let context = sharedModelContainer.mainContext
+		let node = NodeInfoEntity()
+		node.num = 0xC0FF_EE07
+		context.insert(node)
+		let user = UserEntity()
+		user.num = node.num
+		user.longName = "Snapshot Range Node"
+		user.shortName = "SRNG"
+		context.insert(user)
+		node.user = user
+		let range = RangeTestConfigEntity()
+		range.enabled = true
+		range.sender = 60
+		range.save = false
+		context.insert(range)
+		node.rangeTestConfig = range
+		try context.save()
+		return node
+	}
+
+	@Test("Range test form, enabled, no channels so no public-channel warning")
+	@MainActor
+	func rangeTestForm() async throws {
+		let node = try makeNode()
+		AccessoryManager.shared.isConnected = true
+		AccessoryManager.shared.activeDeviceNum = node.num
+		let view = NavigationView {
+			RangeTestConfig(node: node)
+				.environmentObject(AccessoryManager.shared)
+				.modelContainer(sharedModelContainer)
+		}
+		await assertViewSnapshot(of: view, width: 390, height: 700, named: "rangeTestConfigForm")
+	}
+}
 
 @Suite("TelemetryConfig Snapshots")
 struct TelemetryConfigSnapshotTests {
