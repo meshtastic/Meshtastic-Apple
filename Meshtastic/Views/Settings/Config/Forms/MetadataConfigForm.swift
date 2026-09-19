@@ -188,24 +188,26 @@ struct MetadataConfigForm<M: ConfigFormMessage, Leading: View, Trailing: View>: 
 		}
 		// A view-bound task, so leaving the screen mid-scroll cancels it rather than
 		// letting it move a form the reader has already navigated away from.
-		.task { await focusSearchedControl(using: proxy, env) }
+		// Keyed on `loaded`: the values arrive on appear, and a field's visibility cannot
+		// be judged against an empty message.
+		.task(id: loaded) { await focusSearchedControl(using: proxy) }
 		}
 	}
 
 	/// A search result names one control, so scroll to it and mark it rather than leaving
 	/// the reader to pick it out of rows that all look alike.
 	@MainActor
-	private func focusSearchedControl(using proxy: ScrollViewProxy, _ env: ConfigFormEnvironment) async {
-		guard let target = settingsFieldFocus.target else { return }
+	private func focusSearchedControl(using proxy: ScrollViewProxy) async {
+		// Wait for the radio's values. Asking whether a control is on screen before they
+		// arrive tests it against an empty message, so anything behind a toggle - most of
+		// Telemetry and MQTT, NeighborInfo's interval - reads as hidden and never scrolls.
+		guard loaded, let target = settingsFieldFocus.target else { return }
 		// Taken whether or not this screen can honour it: a request left pending would be
 		// picked up later by whichever screen does own the field.
 		settingsFieldFocus.clear()
-		// Only rows that are actually on screen can be scrolled to. A field behind a
-		// toggle that is off - NeighborInfo's interval, say - has no row today, so the
-		// screen just opens.
-		guard let row = overlay.rowID(for: target),
-			  overlay.sections.flatMap(\.fields).contains(where: { $0.id == row && isVisible($0, env) })
-		else { return }
+		// A control behind a toggle that is off has no row to scroll to; the screen opens
+		// and leaves it at that.
+		guard let row = overlay.visibleRowID(for: target, in: config, environment) else { return }
 		do {
 			// The rows exist only after the form's first layout pass.
 			try await Task.sleep(for: .milliseconds(350))
@@ -222,10 +224,7 @@ struct MetadataConfigForm<M: ConfigFormMessage, Leading: View, Trailing: View>: 
 	/// The overlay's condition, then the schema's own hiding rules: a DIY-only field
 	/// on hardware not tagged DIY, and a deprecated field still at its zero value.
 	private func isVisible(_ field: ConfigFormField<M>, _ env: ConfigFormEnvironment) -> Bool {
-		if let condition = field.shownWhen, !condition.evaluate(config, env) { return false }
-		let metadata = field.field.metadata
-		if metadata?.diyOnly == true, env.isConnected, !env.isDIYHardware { return false }
-		return true
+		overlay.isVisible(field, in: config, env)
 	}
 
 	private func load() {

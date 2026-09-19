@@ -294,4 +294,26 @@ struct ConfigFormOverlayTests {
 		router.clearSettingsFieldFocus()
 		#expect(router.settingsFieldFocus == nil, "the screen that honours it takes it")
 	}
+
+	@Test("A control is only a scroll target once the values say it is on screen")
+	func focusNeedsTheLoadedValues() {
+		let overlay = NeighborInfoConfig.overlay()
+		let interval = ModuleConfig.NeighborInfoConfig.Fields.updateInterval.identity
+		let env = ConfigFormEnvironment(
+			node: nil, isConnected: true, isConnectedNode: true, isDIYHardware: false,
+			hasWifi: false, hasEthernet: false, hasXeddsa: false, firmwareAtLeast: { _ in true })
+
+		// The empty message a form holds before the radio's values arrive. Deciding here
+		// is what made search open the screen and scroll nowhere.
+		var config = ModuleConfig.NeighborInfoConfig()
+		#expect(overlay.rowID(for: interval) != nil, "the screen does lay the interval out")
+		#expect(overlay.visibleRowID(for: interval, in: config, env) == nil, "but not while the module reads as off")
+
+		config.enabled = true
+		#expect(overlay.visibleRowID(for: interval, in: config, env) != nil)
+
+		// A control with no condition is a target either way.
+		let enabled = ModuleConfig.NeighborInfoConfig.Fields.enabled.identity
+		#expect(overlay.visibleRowID(for: enabled, in: ModuleConfig.NeighborInfoConfig(), env) != nil)
+	}
 }

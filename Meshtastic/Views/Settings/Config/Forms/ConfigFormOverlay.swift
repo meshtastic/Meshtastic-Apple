@@ -33,6 +33,32 @@ struct ConfigFormOverlay<M: ConfigSchemaMessage> {
 		omitted.contains { $0.identity == identity }
 	}
 
+	/// Whether a field is rendered for these values: the overlay's own condition first,
+	/// then the schema's own rule that a DIY-only field is not offered on hardware that
+	/// is not tagged DIY.
+	func isVisible(_ field: ConfigFormField<M>, in config: M, _ env: ConfigFormEnvironment) -> Bool {
+		if let condition = field.shownWhen, !condition.evaluate(config, env) { return false }
+		if field.field.metadata?.diyOnly == true, env.isConnected, !env.isDIYHardware { return false }
+		return true
+	}
+
+	/// The row a search result should land on: laid out by this screen, and actually on
+	/// screen for these values. A control behind a toggle that is off has no row to
+	/// scroll to, so the screen simply opens.
+	///
+	/// A field can be hidden by its own condition or by its section's — NeighborInfo
+	/// puts its interval in a section that appears only once the module is on — so both
+	/// are checked, the same pair the body evaluates.
+	func visibleRowID(for identity: FieldIdentity, in config: M, _ env: ConfigFormEnvironment) -> String? {
+		guard let row = rowID(for: identity) else { return nil }
+		for section in sections where section.shownWhen?.evaluate(config, env) ?? true {
+			if let field = section.fields.first(where: { $0.id == row }), isVisible(field, in: config, env) {
+				return field.id
+			}
+		}
+		return nil
+	}
+
 	func rowID(for identity: FieldIdentity) -> String? {
 		if let row = sections.flatMap(\.fields).first(where: { $0.field.identity == identity })?.id {
 			return row
