@@ -416,9 +416,17 @@ private struct FlagRows<M: ConfigSchemaMessage>: View {
 
 	private func binding(for bit: Int) -> Binding<Bool> {
 		Binding(
-			get: { value & bit != 0 },
-			set: { isOn in
-				if isOn { value |= bit } else { value &= ~bit }
-			})
+			get: { ConfigFormFlagBits.isSet(bit, in: value) },
+			set: { value = ConfigFormFlagBits.setting(bit, to: $0, in: value) })
+	}
+}
+
+/// The bit arithmetic behind a flags row, separated so it can be tested without
+/// rendering: a toggle must change its own bit and leave every other one alone.
+enum ConfigFormFlagBits {
+	static func isSet(_ bit: Int, in word: Int) -> Bool { word & bit != 0 }
+
+	static func setting(_ bit: Int, to isOn: Bool, in word: Int) -> Int {
+		isOn ? word | bit : word & ~bit
 	}
 }

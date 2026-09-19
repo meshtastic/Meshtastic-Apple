@@ -39,10 +39,7 @@ extension Config.PositionConfig: ConfigFormMessage {
 		broadcastSmartMinimumDistance = UInt32(truncatingIfNeeded: entity.broadcastSmartMinimumDistance)
 		broadcastSmartMinimumIntervalSecs = UInt32(truncatingIfNeeded: entity.broadcastSmartMinimumIntervalSecs)
 		gpsEnGpio = UInt32(truncatingIfNeeded: entity.gpsEnGpio)
-		// gps_mode is the source of truth. A radio old enough to have only sent the
-		// retired gps_enabled still reads correctly, which is what normalize covers.
 		gpsMode = GpsMode(rawValue: Int(entity.gpsMode)) ?? .notPresent
-		gpsEnabled = entity.deviceGpsEnabled
 	}
 }
 
@@ -51,13 +48,6 @@ struct PositionConfig: View {
 	let node: NodeInfoEntity?
 
 	private typealias F = Config.PositionConfig.Fields
-
-	/// A radio that only ever reported the retired `gps_enabled` reads as enabled.
-	static func normalize(_ config: Config.PositionConfig) -> Config.PositionConfig {
-		var config = config
-		if config.gpsEnabled, config.gpsMode != .enabled { config.gpsMode = .enabled }
-		return config
-	}
 
 	static func overlay(node: NodeInfoEntity? = nil) -> ConfigFormOverlay<Config.PositionConfig> {
 		let smart = ConfigFormCondition<Config.PositionConfig>.isTrue(F.positionBroadcastSmartEnabled)
@@ -115,7 +105,10 @@ struct PositionConfig: View {
 				.init(F.gpsEnGpio, control: .gpioPin)
 			])
 		], omitted: [
-			.init(F.gpsEnabled, "retired upstream in favour of gps_mode; read on load, never written",
+			// Firmware has migrated this into gps_mode and cleared it on load since
+			// 2.5.14, which is the oldest firmware the app will connect to, so no radio
+			// it talks to still reports it. Never read, never written.
+			.init(F.gpsEnabled, "migrated into gps_mode by the firmware itself before the app's minimum version",
 				  coveredBy: F.gpsMode.identity),
 			.init(F.gpsAttemptTime, "not offered by this client; the firmware clamps it")
 		])
@@ -128,12 +121,8 @@ struct PositionConfig: View {
 	var body: some View {
 		MetadataConfigForm(
 			node: node, title: "Position", overlay: Self.overlay(node: node),
-			normalize: Self.normalize,
 			request: accessoryManager.requestPositionConfig,
 			save: { config, from, to in
-				var config = config
-				// The retired field is never written back: gps_mode carries the answer.
-				config.gpsEnabled = false
 				_ = try await accessoryManager.savePositionConfig(config: config, fromUser: from, toUser: to)
 			})
 		.navigationTitle("Position Config")
@@ -187,6 +176,11 @@ private struct FixedPositionRow: View {
 		}
 	}
 
+	/// Sends the change, and puts the switch back if it does not happen. The toggle has
+	/// already moved by the time the alert is answered, so a failure that only logged
+	/// would leave the form claiming a fixed position the radio never took, and the
+	/// later config save would write that claim.
+	///
 	/// Resolve the user before the async hop and without force-unwraps: a device switch
 	/// or node deletion mid-flow leaves it nil or invalidated, which crashed here in the
 	/// field under Swift Concurrency.
@@ -194,6 +188,7 @@ private struct FixedPositionRow: View {
 		guard let nodeNum = accessoryManager.activeDeviceNum, nodeNum > 0,
 			  let user = node?.user, user.modelContext != nil else {
 			Logger.mesh.error("Fixed position change failed - no live user for the connected node")
+			config.fixedPosition = !fixed
 			return
 		}
 		Task {
@@ -205,6 +200,7 @@ private struct FixedPositionRow: View {
 				}
 			} catch {
 				Logger.mesh.error("Fixed position change failed")
+				config.fixedPosition = !fixed
 			}
 		}
 	}

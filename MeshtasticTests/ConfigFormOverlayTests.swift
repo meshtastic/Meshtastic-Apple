@@ -123,6 +123,33 @@ struct ConfigFormOverlayTests {
 		#expect(shown(.Hvdop))
 	}
 
+	@Test("Toggling one position flag leaves the others alone")
+	func flagBitsRoundTrip() {
+		// The bit arithmetic the flags rows bind to. Without this the suite would pass
+		// with the renderer deleted, because the rest only reads overlay metadata.
+		var word = 0
+		word = ConfigFormFlagBits.setting(PositionFlags.Altitude.rawValue, to: true, in: word)
+		word = ConfigFormFlagBits.setting(PositionFlags.Dop.rawValue, to: true, in: word)
+		#expect(word == PositionFlags.Altitude.rawValue | PositionFlags.Dop.rawValue)
+		#expect(ConfigFormFlagBits.isSet(PositionFlags.Altitude.rawValue, in: word))
+		#expect(ConfigFormFlagBits.isSet(PositionFlags.Dop.rawValue, in: word))
+		#expect(!ConfigFormFlagBits.isSet(PositionFlags.Speed.rawValue, in: word))
+
+		// Clearing one bit must not disturb its neighbours.
+		word = ConfigFormFlagBits.setting(PositionFlags.Altitude.rawValue, to: false, in: word)
+		#expect(word == PositionFlags.Dop.rawValue)
+
+		// Setting a bit that is already set is not a toggle.
+		let twice = ConfigFormFlagBits.setting(PositionFlags.Dop.rawValue, to: true, in: word)
+		#expect(twice == word)
+
+		// The high bit the screen offers survives the round trip.
+		var high = ConfigFormFlagBits.setting(PositionFlags.Heading.rawValue, to: true, in: 0)
+		#expect(high == 512)
+		high = ConfigFormFlagBits.setting(PositionFlags.Heading.rawValue, to: false, in: high)
+		#expect(high == 0)
+	}
+
 	@Test("Conditions read the field they name")
 	func conditionsEvaluate() throws {
 		typealias F = ModuleConfig.NeighborInfoConfig.Fields
