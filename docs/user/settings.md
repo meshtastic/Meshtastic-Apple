@@ -146,7 +146,13 @@ Battery saving profiles, sleep modes, and minimum wake time. Critical for solar-
 
 ## Module Configuration
 
-Optional feature modules. Only available when your connected node supports the module.
+Optional feature modules. A module's settings appear only when your connected node
+can actually use them, which means two things: the radio's firmware build did not
+leave the module out, and the firmware is new enough to have it at all. Where a
+module needs a particular firmware version, it is noted in the table below.
+
+A node that has not yet reported its firmware version is offered everything, so a
+screen may briefly appear before the radio finishes identifying itself.
 
 | Module | Description |
 |--------|-------------|

@@ -194,9 +194,15 @@ extension NodeInfoEntity {
 	/// the node has never reported one, matching the capability gates' unknown-version
 	/// behavior.
 	func firmwareAtLeast(_ version: String) -> Bool {
-		guard let mine = knownFirmwareVersion else { return true }
-		let comparison = version.compare(mine, options: .numeric)
-		return comparison == .orderedAscending || comparison == .orderedSame
+		Self.firmware(knownFirmwareVersion, isAtLeast: version)
+	}
+
+	/// The one version comparison, for callers that hold a reported version rather than
+	/// the entity: the settings list works from a snapshot. A nil or empty `reported`
+	/// means the node has never said, and every gate is permissive there.
+	static func firmware(_ reported: String?, isAtLeast required: String) -> Bool {
+		guard let reported, !reported.isEmpty else { return true }
+		return required.compare(reported, options: .numeric) != .orderedDescending
 	}
 
 	/// Whether this node's own reported firmware supports the Status Message module (2.8+,

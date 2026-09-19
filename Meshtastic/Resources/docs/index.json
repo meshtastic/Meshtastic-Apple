@@ -396,8 +396,8 @@
         "navOrder": 7,
         "keywords": [
             "radio",
-            "app",
             "node",
+            "app",
             "settings",
             "firmware",
             "device",
@@ -417,16 +417,16 @@
             "off",
             "configuration",
             "name",
+            "module",
             "language",
+            "before",
             "than",
             "packets",
             "lora",
             "direct",
-            "contact",
-            "before",
-            "shows"
+            "contact"
         ],
-        "charCount": 19461
+        "charCount": 19849
     },
     {
         "id": "signal-meter",
@@ -481,16 +481,16 @@
             "role",
             "itak",
             "route",
+            "radio",
+            "firmware",
             "channel",
             "identity",
             "cot",
-            "radio",
-            "firmware",
             "format",
+            "only",
             "device",
             "atak",
             "package",
-            "only",
             "meshtastic",
             "mesh",
             "import",
@@ -498,13 +498,13 @@
             "connected",
             "zip",
             "tip",
+            "section",
             "read",
             "primary",
             "position",
-            "pickers",
-            "lora"
+            "pickers"
         ],
-        "charCount": 6073
+        "charCount": 6368
     },
     {
         "id": "telemetry",
@@ -934,6 +934,45 @@
             "tools"
         ],
         "charCount": 3473
+    },
+    {
+        "id": "imessage-sharing",
+        "title": "Messages sharing extension",
+        "section": "developer",
+        "navOrder": 999,
+        "keywords": [
+            "contact",
+            "messages",
+            "extension",
+            "exchange",
+            "channel",
+            "app",
+            "snapshot",
+            "radio",
+            "main",
+            "configuration",
+            "cards",
+            "sharing",
+            "meshtastic",
+            "lora",
+            "add",
+            "active",
+            "without",
+            "using",
+            "url",
+            "true",
+            "share",
+            "sender",
+            "repository",
+            "reply",
+            "remain",
+            "official",
+            "keychain",
+            "into",
+            "incoming",
+            "from"
+        ],
+        "charCount": 2101
     },
     {
         "id": "lora-region-presets",
