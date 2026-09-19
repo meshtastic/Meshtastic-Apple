@@ -37,6 +37,8 @@ struct ConfigFormOverlayTests {
 		// Grow these numbers in the pull request that adds the hatch, so it is reviewed as one.
 		let expected: [String: (custom: Int, environment: Int)] = [
 			"meshtastic.Config.BluetoothConfig": (1, 0),                // the six-digit PIN field
+			"meshtastic.ModuleConfig.AudioConfig": (0, 0),
+			"meshtastic.ModuleConfig.DetectionSensorConfig": (1, 2),      // role picker folded onto the enable row; two sections by that role
 			"meshtastic.Config.DeviceConfig": (1, 0),                   // role picker with its warning
 			"meshtastic.Config.DisplayConfig": (0, 0),                  // no hatches: every row reads its own field
 			"meshtastic.Config.PowerConfig": (1, 2),                    // ADC override; power saving and battery rows by architecture

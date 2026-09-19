@@ -14,8 +14,10 @@ import Foundation
 enum ConfigFormOverlays {
 	static let all: [any AnyConfigFormOverlay] = [
 		AmbientLightingConfig.overlay(),
+		AudioConfig.overlay(),
 		BluetoothConfig.overlay(),
 		CannedMessagesConfig.overlay(),
+		DetectionSensorConfig.overlay(),
 		DeviceConfig.overlay(),
 		DisplayConfig.overlay(),
 		ExternalNotificationConfig.overlay(),
@@ -39,8 +41,6 @@ enum ConfigFormOverlays {
 		"meshtastic.ModuleConfig.MapReportSettings": "not a screen: nested in MQTTConfig and laid out there through its flattened fields",
 		// Not migrated yet. Each moves to `all` in its own pull request.
 		"meshtastic.Config.PositionConfig": "pending",
-		"meshtastic.ModuleConfig.AudioConfig": "pending",
-		"meshtastic.ModuleConfig.DetectionSensorConfig": "pending",
 		"meshtastic.ModuleConfig.TAKConfig": "pending: Team and MemberRole values have no labels upstream yet, so its pickers would show case names"
 	]
 }
