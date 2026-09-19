@@ -5,6 +5,7 @@
 //  Copyright(c) Garth Vander Houwen 9/18/26.
 //
 import Testing
+import SwiftUI
 import MeshtasticProtobufs
 @testable import Meshtastic
 
@@ -346,5 +347,23 @@ struct ConfigFormOverlayTests {
 		// screens have a Password, and each has to leave the other's alone.
 		let wifiPassword = FieldIdentity(messageName: "meshtastic.Config.NetworkConfig", tag: 4)
 		#expect(overlay.rowID(for: wifiPassword) == nil)
+	}
+
+	@Test("A focus request waits for a stored config, and survives one that never comes")
+	func focusWaitsForStoredValues() {
+		typealias Form = MetadataConfigForm<ModuleConfig.MQTTConfig, EmptyView, EmptyView>
+
+		// Nothing stored: the empty message is what the screen is showing, so its rows
+		// are the right ones to scroll to.
+		#expect(Form.readiness(hasStoredConfig: false, loaded: false, waitedOut: false) == .resolveNow)
+		#expect(Form.readiness(hasStoredConfig: false, loaded: false, waitedOut: true) == .resolveNow)
+
+		// Stored and still arriving: wait, because which rows exist depends on it.
+		#expect(Form.readiness(hasStoredConfig: true, loaded: false, waitedOut: false) == .waitForValues)
+		#expect(Form.readiness(hasStoredConfig: true, loaded: true, waitedOut: false) == .resolveNow)
+
+		// Stored but never arrived: leave the request for the next appearance rather
+		// than resolving against defaults and scrolling to a row the values may remove.
+		#expect(Form.readiness(hasStoredConfig: true, loaded: false, waitedOut: true) == .leaveForLater)
 	}
 }

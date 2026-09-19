@@ -195,25 +195,46 @@ struct MetadataConfigForm<M: ConfigFormMessage, Leading: View, Trailing: View>: 
 	/// A search result names one control, so scroll to it and mark it rather than leaving
 	/// the reader to pick it out of rows that all look alike.
 	@MainActor
+	/// What to do about a focus request, given what the screen knows so far.
+	enum FocusReadiness: Equatable {
+		/// The rows on screen are the ones to scroll to.
+		case resolveNow
+		/// A stored config is still on its way; which rows exist depends on it.
+		case waitForValues
+		/// It never came. Leave the request alone so the next appearance can honour it,
+		/// rather than scrolling to a row the arriving values may remove.
+		case leaveForLater
+	}
+
+	static func readiness(hasStoredConfig: Bool, loaded: Bool, waitedOut: Bool) -> FocusReadiness {
+		// Nothing stored means nothing will arrive: the empty message is what the form
+		// is showing, so its rows are the right ones to scroll to.
+		if !hasStoredConfig || loaded { return .resolveNow }
+		return waitedOut ? .leaveForLater : .waitForValues
+	}
+
 	private func focusSearchedControl(using proxy: ScrollViewProxy) async {
 		guard let target = settingsFieldFocus.target else { return }
 		// Only take a request this screen can answer. Another screen's field must be
 		// left for the screen that owns it, even though both are on the same stack.
 		guard overlay.rowID(for: target) != nil else { return }
-		settingsFieldFocus.clear()
 
 		// Which rows exist depends on the radio's values: MQTT drops the credential
 		// rows on the public server, NeighborInfo hides its interval while the module
 		// is off. Deciding before they arrive picks a row that is about to disappear.
+		let hasStoredConfig = node?[keyPath: M.entityKeyPath] != nil
 		var waited = 0
-		while !loaded && waited < 14 {
+		while Self.readiness(hasStoredConfig: hasStoredConfig, loaded: loaded, waitedOut: waited >= 14) == .waitForValues {
 			do { try await Task.sleep(for: .milliseconds(150)) } catch { return }
 			waited += 1
 		}
+		// Untaken, so a later appearance of this screen can still honour it.
+		guard Self.readiness(hasStoredConfig: hasStoredConfig, loaded: loaded, waitedOut: true) == .resolveNow else { return }
+		settingsFieldFocus.clear()
+
 		// Then let the list lay the rows out; it has not measured anything below the
 		// fold yet, and a scroll asked for now lands short of a distant row.
 		do { try await Task.sleep(for: .milliseconds(300)) } catch { return }
-
 		guard let row = overlay.focusRowID(for: target, in: config, environment) else { return }
 		do {
 			withAnimation { proxy.scrollTo(row, anchor: .center) }
