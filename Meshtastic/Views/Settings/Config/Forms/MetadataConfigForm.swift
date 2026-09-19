@@ -92,6 +92,14 @@ struct MetadataConfigForm<M: ConfigFormMessage, Leading: View, Trailing: View>: 
 		)
 	}
 
+	/// Whether the controls accept input. Without a radio, or before its config has
+	/// arrived, the screen still renders what it knows and can be read and scrolled -
+	/// only the controls are inert. Disabling the `Form` itself would take the scroll
+	/// gesture with it and leave the screen unreadable below the fold.
+	private var isEditable: Bool {
+		accessoryManager.isConnected && node?[keyPath: M.entityKeyPath] != nil && inFlight == nil
+	}
+
 	private var environment: ConfigFormEnvironment {
 		ConfigFormEnvironment(
 			node: node,
@@ -110,6 +118,7 @@ struct MetadataConfigForm<M: ConfigFormMessage, Leading: View, Trailing: View>: 
 		Form {
 			ConfigHeader(title: title, config: M.entityKeyPath, node: node, onAppear: load)
 			leading()
+				.disabled(!isEditable)
 			ForEach(overlay.sections) { section in
 				if section.shownWhen?.evaluate(config, env) ?? true {
 					let visible = section.fields.filter { isVisible($0, env) }
@@ -117,7 +126,7 @@ struct MetadataConfigForm<M: ConfigFormMessage, Leading: View, Trailing: View>: 
 						Section {
 							ForEach(visible) { field in
 								ConfigFormFieldRow(field: field, config: $config, environment: env)
-									.disabled(!(field.enabledWhen?.evaluate(config, env) ?? true))
+									.disabled(!isEditable || !(field.enabledWhen?.evaluate(config, env) ?? true))
 							}
 						} header: {
 							if let title = section.title { Text(title) }
@@ -128,8 +137,8 @@ struct MetadataConfigForm<M: ConfigFormMessage, Leading: View, Trailing: View>: 
 				}
 			}
 			trailing($config)
+				.disabled(!isEditable)
 		}
-		.disabled(!accessoryManager.isConnected || node?[keyPath: M.entityKeyPath] == nil || inFlight != nil)
 		.safeAreaInset(edge: .bottom, alignment: .center) {
 			HStack(spacing: 0) {
 				if let confirmationMessage {
