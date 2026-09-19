@@ -38,7 +38,7 @@ struct ConfigFormOverlayTests {
 		let expected: [String: (custom: Int, environment: Int)] = [
 			"meshtastic.Config.BluetoothConfig": (1, 0),                // the six-digit PIN field
 			"meshtastic.Config.DeviceConfig": (1, 0),                   // role picker with its warning
-			"meshtastic.Config.DisplayConfig": (0, 2),                  // compass control by firmware version
+			"meshtastic.Config.DisplayConfig": (0, 0),
 			"meshtastic.Config.PowerConfig": (1, 2),                    // ADC override; power saving and battery rows by architecture
 			"meshtastic.ModuleConfig.AmbientLightingConfig": (1, 0),    // one colour picker for three channels
 			"meshtastic.ModuleConfig.CannedMessageConfig": (0, 3),      // three sections locked while a preset is chosen

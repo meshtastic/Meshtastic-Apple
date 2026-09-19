@@ -33,13 +33,9 @@ struct DisplayConfig: View {
 	private typealias F = Config.DisplayConfig.Fields
 
 	static func overlay() -> ConfigFormOverlay<Config.DisplayConfig> {
-		let hasOrientation = ConfigFormCondition<Config.DisplayConfig>.firmware(atLeast: "2.3.13")
-		return .init(sections: [
+		.init(sections: [
 			.init(title: String(localized: "Device Screen", comment: "Settings section"), fields: [
-				// Firmware before 2.3.13 has only the north-up toggle; later firmware has the
-				// full orientation picker. Both fields are always saved.
-				.init(F.compassOrientation, shownWhen: hasOrientation),
-				.init(F.compassNorthTop, symbol: "location.north.circle", shownWhen: .not(hasOrientation)),
+				.init(F.compassOrientation),
 				.init(F.use12HClock, symbol: "clock"),
 				.init(F.headingBold, symbol: "bold"),
 				.init(F.units)
@@ -55,6 +51,10 @@ struct DisplayConfig: View {
 				.init(F.oled, enumValues: { _ in OledTypes.allCases.map(\.rawValue) })
 			])
 		], omitted: [
+			// Replaced by compass_orientation in 2.3.13, which is below the oldest firmware
+			// the app will talk to (AccessoryManager.minimumVersion), so no connected node
+			// reads it. It still round-trips from the entity.
+			.init(F.compassNorthTop, "superseded by compass_orientation before the app's minimum firmware"),
 			.init(F.useLongNodeName, "not yet offered by this client; unlabelled upstream"),
 			.init(F.enableMessageBubbles, "not yet offered by this client; unlabelled upstream")
 		])
