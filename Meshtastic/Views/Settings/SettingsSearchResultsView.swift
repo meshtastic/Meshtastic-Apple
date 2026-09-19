@@ -15,6 +15,9 @@ import SwiftUI
 struct SettingsSearchResultsView: View {
 	let results: [SettingsSearchResult]
 	let docs: [DocumentationSearch.Page]
+	/// Opens the result's screen. A plain `NavigationLink` cannot do it: the row names a
+	/// control as well as a screen, and only the tap knows which one was chosen.
+	let onSelect: (SettingsSearchEntry) -> Void
 
 	var body: some View {
 		if results.isEmpty && docs.isEmpty {
@@ -27,9 +30,21 @@ struct SettingsSearchResultsView: View {
 				if !matches.isEmpty {
 					Section(section.title) {
 						ForEach(matches) { result in
-							NavigationLink(value: result.entry.destination) {
-								row(for: result)
+							Button {
+								onSelect(result.entry)
+							} label: {
+								HStack {
+									row(for: result)
+									Spacer(minLength: 8)
+									// A Button has no disclosure indicator of its own, and
+									// these rows push a screen like the ones above them.
+									Image(systemName: "chevron.forward")
+										.font(.footnote.weight(.semibold))
+										.foregroundStyle(.tertiary)
+										.accessibilityHidden(true)
+								}
 							}
+							.buttonStyle(.plain)
 						}
 					}
 				}

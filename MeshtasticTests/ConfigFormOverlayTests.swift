@@ -97,6 +97,36 @@ struct ConfigFormOverlayTests {
 		#expect(message.overrideConsoleSerialPort, "the old screen dropped this; the bridge must not")
 	}
 
+	@Test("A search result finds the row its field is laid out in")
+	func overlayFindsTheRowForAField() throws {
+		let serial = SerialConfig.overlay()
+		let baud = ModuleConfig.SerialConfig.Fields.baud
+		#expect(serial.rowID(for: baud.identity) == baud.name)
+		// A field this screen omits has no row to scroll to.
+		#expect(serial.rowID(for: ModuleConfig.SerialConfig.Fields.overrideConsoleSerialPort.identity) == nil)
+		// Nor does a field belonging to another message, whose tags would otherwise collide.
+		#expect(serial.rowID(for: FieldIdentity(messageName: "meshtastic.Config.DeviceConfig", tag: baud.tag)) == nil)
+	}
+
+	@Test("A search result for a migrated screen lands on a control, not just the screen")
+	func searchResultsResolveToRows() throws {
+		// The point of the deep link: a result that opens the right screen but cannot
+		// name a row scrolls nowhere. Every indexed field whose screen is on the generic
+		// form has to resolve, or the result silently degrades to screen-level.
+		let byName = Dictionary(uniqueKeysWithValues: ConfigFormOverlays.all.map { ($0.protoName, $0) })
+		var checked = 0
+		for entry in SettingsSearchIndex.entries {
+			guard let field = entry.field, let overlay = byName[field.messageName] else { continue }
+			checked += 1
+			// Either the screen has a row for it, or it deliberately omits it - a field
+			// folded into another control names that control with `coveredBy`, and one
+			// the client does not offer at all has nothing to scroll to by design.
+			#expect(overlay.rowID(for: field) != nil || overlay.omits(field),
+					"\(field.messageName)#\(field.tag) (\(entry.label)) is indexed but the form neither shows nor omits it")
+		}
+		#expect(checked > 0, "no indexed field reached a migrated screen; the lookup is not being exercised")
+	}
+
 	@Test("Traffic Management's main switch derives from the values and clears them")
 	func trafficManagementMainSwitch() {
 		var message = ModuleConfig.TrafficManagementConfig()
@@ -241,5 +271,27 @@ struct ConfigFormOverlayTests {
 		let quiet = CannedMessagesConfig.pending(config: stored, stored: entity,
 												 messages: "Hello|Yes", loadedMessages: "Hello|Yes")
 		#expect(!quiet.config && !quiet.messages)
+	}
+
+	@Test("A focus request does not outlive the navigation that made it")
+	@MainActor
+	func focusRequestDoesNotGoStale() {
+		let router = Router()
+		let baud = ModuleConfig.SerialConfig.Fields.baud.identity
+		router.navigate(toSetting: .serial, focusing: baud)
+		#expect(router.settingsFieldFocus == baud)
+
+		// Opening a settings screen any other way drops it, so a screen that happens to
+		// own the field cannot pick up a request meant for an earlier navigation.
+		router.navigate(toSetting: .lora)
+		#expect(router.settingsFieldFocus == nil)
+
+		router.navigate(toSetting: .serial, focusing: baud)
+		router.popToRoot(tab: .settings)
+		#expect(router.settingsFieldFocus == nil)
+
+		router.navigate(toSetting: .serial, focusing: baud)
+		router.clearSettingsFieldFocus()
+		#expect(router.settingsFieldFocus == nil, "the screen that honours it takes it")
 	}
 }

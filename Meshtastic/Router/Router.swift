@@ -30,6 +30,29 @@ class Router: ObservableObject {
 	@Published
 	var settingsPath: [SettingsNavigationState] = []
 
+	/// The control a search result asked for, cleared by the screen that honours it.
+	/// Separate from `settingsPath` because the path is also how deep links and restored
+	/// state name a screen, and neither singles out a control.
+	///
+	/// Set it through `navigate(toSetting:focusing:)` rather than directly: a request
+	/// left behind by navigation that never reached the screen owning that field would
+	/// be picked up later by whichever screen does own it.
+	@Published
+	private(set) var settingsFieldFocus: FieldIdentity?
+
+	/// Opens a settings screen, optionally asking it to single out one control.
+	/// Any earlier request is dropped, so only the most recent navigation can scroll.
+	func navigate(toSetting setting: SettingsNavigationState, focusing field: FieldIdentity? = nil) {
+		settingsFieldFocus = field
+		settingsPath = [setting]
+	}
+
+	/// Called by the screen that honoured the request, and by any navigation that did
+	/// not come from a search result.
+	func clearSettingsFieldFocus() {
+		settingsFieldFocus = nil
+	}
+
 	@Published
 	var discoveryShowHistory: Bool = false
 
@@ -53,8 +76,10 @@ class Router: ObservableObject {
 			mapState = newValue.map
 			if let setting = newValue.settings {
 				settingsPath = [setting]
+				settingsFieldFocus = nil
 			} else {
 				settingsPath = []
+				settingsFieldFocus = nil
 			}
 		}
 	}
@@ -109,6 +134,7 @@ class Router: ObservableObject {
 		self.mapState = navigationState.map
 		if let setting = navigationState.settings {
 			self.settingsPath = [setting]
+			settingsFieldFocus = nil
 		}
 
 		$selectedTab.sink { tab in
@@ -202,6 +228,7 @@ class Router: ObservableObject {
 			mapState = nil
 		case .settings:
 			settingsPath = []
+			settingsFieldFocus = nil
 		default:
 			break
 		}
@@ -283,8 +310,10 @@ class Router: ObservableObject {
 		selectedTab = .settings
 		if let settingFromPath {
 			settingsPath = [settingFromPath]
+			settingsFieldFocus = nil
 		} else {
 			settingsPath = []
+			settingsFieldFocus = nil
 		}
 
 		if settingFromPath == .localMeshDiscovery && segments.count > 1 && segments[1] == "history" {
