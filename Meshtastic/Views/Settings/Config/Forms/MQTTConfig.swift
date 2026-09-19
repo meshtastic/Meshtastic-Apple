@@ -39,7 +39,12 @@ struct MQTTConfig: View {
 
 	static let publicServer = "mqtt.meshtastic.org"
 	/// Firmware from here requires TLS to the public server; the toggle is locked on.
-	static let tlsRequiredFirmware = "2.7.3"
+	/// Up to 2.7.3 the radio rejects the whole MQTT config when TLS is on with the
+	/// default server ("the default server does not support TLS" in MQTT.cpp), so the
+	/// row stays hidden there rather than locked on. Not a schema question: tls_enabled
+	/// is read on every release, and private brokers use it on older firmware. It is a
+	/// rule about one server.
+	static let tlsRequiredFirmware = "2.7.4"
 
 	/// Host equality, not a substring: `mqtt.meshtastic.org.example.com` is somebody
 	/// else's server, and treating it as the public one would hide the credential

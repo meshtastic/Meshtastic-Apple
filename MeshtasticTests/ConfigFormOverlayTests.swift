@@ -403,6 +403,24 @@ struct ConfigFormOverlayTests {
 		#expect(!Self.environment(firmware: "2.7.4").firmwareReads(cannedEnabled))
 	}
 
+	@Test("Public-server TLS waits for the firmware that accepts it")
+	func mqttTlsFollowsTheServerRule() throws {
+		// Up to 2.7.3 the radio rejects the whole MQTT config when TLS is on with the
+		// default server, so locking the toggle on there would make the save fail.
+		#expect(MQTTConfig.tlsRequiredFirmware == "2.7.4",
+				"2.7.3 still refuses TLS to the default server")
+
+		let overlay = MQTTConfig.overlay()
+		let tls = try #require(overlay.sections.flatMap(\.fields).first { $0.id == "tls_enabled" })
+		var config = ModuleConfig.MQTTConfig()
+		config.address = MQTTConfig.publicServer
+
+		#expect(!overlay.isVisible(tls, in: config, Self.environment(firmware: "2.7.3")),
+				"the public server refuses TLS on 2.7.3, so the row has nothing to offer")
+		#expect(overlay.isVisible(tls, in: config, Self.environment(firmware: "2.7.4")),
+				"2.7.4 accepts it, so the row appears locked on")
+	}
+
 	@Test("The device telemetry toggle appears on the firmware that reads it, not one before")
 	func telemetryToggleFollowsTheSchema() throws {
 		let overlay = TelemetryConfig.overlay()
