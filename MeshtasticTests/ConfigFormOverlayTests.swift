@@ -316,4 +316,35 @@ struct ConfigFormOverlayTests {
 		let enabled = ModuleConfig.NeighborInfoConfig.Fields.enabled.identity
 		#expect(overlay.visibleRowID(for: enabled, in: ModuleConfig.NeighborInfoConfig(), env) != nil)
 	}
+
+	@Test("A search result lands on the control, or on the section that explains its absence")
+	func focusRowFollowsTheValues() {
+		let overlay = MQTTConfig.overlay()
+		let password = ModuleConfig.MQTTConfig.Fields.password.identity
+		let env = ConfigFormEnvironment(
+			node: nil, isConnected: true, isConnectedNode: true, isDIYHardware: false,
+			hasWifi: false, hasEthernet: false, hasXeddsa: false, firmwareAtLeast: { _ in true })
+
+		// A private broker shows its credentials, so the control itself is the target.
+		var config = ModuleConfig.MQTTConfig()
+		config.address = "broker.example.org"
+		#expect(overlay.focusRowID(for: password, in: config, env) == "password")
+
+		// The public server hides them. Deciding this against an empty message - which
+		// is what the form holds before the radio's values arrive - picks a row that is
+		// about to be removed, and scrolling to a removed row does nothing at all.
+		config.address = "mqtt.meshtastic.org"
+		#expect(overlay.visibleRowID(for: password, in: config, env) == nil)
+		#expect(overlay.focusRowID(for: password, in: config, env) == "address",
+				"falls back to the first row of the section the control lives in")
+
+		// A whole section that is hidden has nothing worth showing.
+		let interval = ModuleConfig.NeighborInfoConfig.Fields.updateInterval.identity
+		#expect(NeighborInfoConfig.overlay().focusRowID(for: interval, in: ModuleConfig.NeighborInfoConfig(), env) == nil)
+
+		// And a screen must not answer for a field it does not lay out: both of these
+		// screens have a Password, and each has to leave the other's alone.
+		let wifiPassword = FieldIdentity(messageName: "meshtastic.Config.NetworkConfig", tag: 4)
+		#expect(overlay.rowID(for: wifiPassword) == nil)
+	}
 }

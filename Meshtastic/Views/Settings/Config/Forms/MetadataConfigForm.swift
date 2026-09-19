@@ -188,9 +188,7 @@ struct MetadataConfigForm<M: ConfigFormMessage, Leading: View, Trailing: View>: 
 		}
 		// A view-bound task, so leaving the screen mid-scroll cancels it rather than
 		// letting it move a form the reader has already navigated away from.
-		// Keyed on `loaded`: the values arrive on appear, and a field's visibility cannot
-		// be judged against an empty message.
-		.task(id: loaded) { await focusSearchedControl(using: proxy) }
+		.task { await focusSearchedControl(using: proxy) }
 		}
 	}
 
@@ -198,19 +196,30 @@ struct MetadataConfigForm<M: ConfigFormMessage, Leading: View, Trailing: View>: 
 	/// the reader to pick it out of rows that all look alike.
 	@MainActor
 	private func focusSearchedControl(using proxy: ScrollViewProxy) async {
-		// Wait for the radio's values. Asking whether a control is on screen before they
-		// arrive tests it against an empty message, so anything behind a toggle - most of
-		// Telemetry and MQTT, NeighborInfo's interval - reads as hidden and never scrolls.
-		guard loaded, let target = settingsFieldFocus.target else { return }
-		// Taken whether or not this screen can honour it: a request left pending would be
-		// picked up later by whichever screen does own the field.
+		guard let target = settingsFieldFocus.target else { return }
+		// Only take a request this screen can answer. Another screen's field must be
+		// left for the screen that owns it, even though both are on the same stack.
+		guard overlay.rowID(for: target) != nil else { return }
 		settingsFieldFocus.clear()
-		// A control behind a toggle that is off has no row to scroll to; the screen opens
-		// and leaves it at that.
-		guard let row = overlay.visibleRowID(for: target, in: config, environment) else { return }
+
+		// Which rows exist depends on the radio's values: MQTT drops the credential
+		// rows on the public server, NeighborInfo hides its interval while the module
+		// is off. Deciding before they arrive picks a row that is about to disappear.
+		var waited = 0
+		while !loaded && waited < 14 {
+			do { try await Task.sleep(for: .milliseconds(150)) } catch { return }
+			waited += 1
+		}
+		// Then let the list lay the rows out; it has not measured anything below the
+		// fold yet, and a scroll asked for now lands short of a distant row.
+		do { try await Task.sleep(for: .milliseconds(300)) } catch { return }
+
+		guard let row = overlay.focusRowID(for: target, in: config, environment) else { return }
 		do {
-			// The rows exist only after the form's first layout pass.
-			try await Task.sleep(for: .milliseconds(350))
+			withAnimation { proxy.scrollTo(row, anchor: .center) }
+			// That scroll creates the rows it passed over; ask again now they have a
+			// measured height so the target lands where it belongs.
+			try await Task.sleep(for: .milliseconds(150))
 			withAnimation { proxy.scrollTo(row, anchor: .center) }
 			highlightedRow = row
 			try await Task.sleep(for: .seconds(2))

@@ -59,6 +59,21 @@ struct ConfigFormOverlay<M: ConfigSchemaMessage> {
 		return nil
 	}
 
+	/// The row a search result should land on.
+	///
+	/// The control itself when it is on screen, and otherwise the first row of the
+	/// section it belongs to: a control can be laid out but hidden for these values -
+	/// MQTT drops the credentials on the public server - and showing the reader where
+	/// it lives beats doing nothing. Nil when its whole section is hidden, or when
+	/// this screen does not lay the field out at all.
+	func focusRowID(for identity: FieldIdentity, in config: M, _ env: ConfigFormEnvironment) -> String? {
+		if let row = visibleRowID(for: identity, in: config, env) { return row }
+		guard let section = sections.first(where: { section in
+			section.fields.contains { $0.field.identity == identity }
+		}), section.shownWhen?.evaluate(config, env) ?? true else { return nil }
+		return section.fields.first { isVisible($0, in: config, env) }?.id
+	}
+
 	func rowID(for identity: FieldIdentity) -> String? {
 		if let row = sections.flatMap(\.fields).first(where: { $0.field.identity == identity })?.id {
 			return row
