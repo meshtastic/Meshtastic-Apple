@@ -24,6 +24,7 @@ enum ConfigFormOverlays {
 		MQTTConfig.overlay(),
 		NeighborInfoConfig.overlay(),
 		PaxCounterConfig.overlay(),
+		PositionConfig.overlay(),
 		PowerConfig.overlay(),
 		RangeTestConfig.overlay(),
 		SerialConfig.overlay(),
@@ -40,7 +41,6 @@ enum ConfigFormOverlays {
 		"meshtastic.ModuleConfig.MeshBeaconConfig": "a repeated broadcast_targets editor and channel resolution",
 		"meshtastic.ModuleConfig.MapReportSettings": "not a screen: nested in MQTTConfig and laid out there through its flattened fields",
 		// Not migrated yet. Each moves to `all` in its own pull request.
-		"meshtastic.Config.PositionConfig": "pending",
 		"meshtastic.ModuleConfig.TAKConfig": "pending: Team and MemberRole values have no labels upstream yet, so its pickers would show case names"
 	]
 }
