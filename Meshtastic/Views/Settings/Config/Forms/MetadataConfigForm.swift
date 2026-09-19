@@ -251,8 +251,8 @@ struct MetadataConfigForm<M: ConfigFormMessage, Leading: View, Trailing: View>: 
 		}
 	}
 
-	/// The overlay's condition, then the schema's own hiding rules: a DIY-only field
-	/// on hardware not tagged DIY, and a deprecated field still at its zero value.
+	/// The overlay's condition, then the schema's own hiding rules: a DIY-only field on
+	/// hardware not tagged DIY, and a field the connected firmware does not read.
 	private func isVisible(_ field: ConfigFormField<M>, _ env: ConfigFormEnvironment) -> Bool {
 		overlay.isVisible(field, in: config, env)
 	}

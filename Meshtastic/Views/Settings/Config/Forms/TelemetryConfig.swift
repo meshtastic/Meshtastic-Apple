@@ -31,15 +31,21 @@ struct TelemetryConfig: View {
 	let node: NodeInfoEntity?
 
 	private typealias F = ModuleConfig.TelemetryConfig.Fields
-	private static let deviceToggleFirmware = "2.7.12"
+
+	/// The release that started reading the broadcast toggle, from the schema. Nil only
+	/// if the annotation is ever dropped upstream, which reads as "every firmware has it".
+	static var deviceToggleFirmware: String? { F.deviceTelemetryEnabled.metadata?.sinceFirmware }
 
 	static func overlay() -> ConfigFormOverlay<ModuleConfig.TelemetryConfig> {
-		let hasToggle = ConfigFormCondition<ModuleConfig.TelemetryConfig>.firmware(atLeast: deviceToggleFirmware)
-		return .init(sections: [
+		.init(sections: [
 			.init(title: String(localized: "Device Options", comment: "Settings section"), fields: [
-				// Firmware before 2.7.12 has no toggle; the interval alone is shown there.
-				.init(F.deviceTelemetryEnabled, symbol: "wifi", shownWhen: hasToggle),
-				.init(F.deviceUpdateInterval, shownWhen: .any([.not(hasToggle), .isTrue(F.deviceTelemetryEnabled)]),
+				// The toggle hides itself on firmware that does not read it; the schema
+				// says which release that is.
+				.init(F.deviceTelemetryEnabled, symbol: "wifi"),
+				// Where there is no toggle the interval alone says whether device metrics
+				// are broadcast, so it is shown on its own there.
+				.init(F.deviceUpdateInterval,
+					  shownWhen: .any([.not(.firmwareReads(F.deviceTelemetryEnabled)), .isTrue(F.deviceTelemetryEnabled)]),
 					  control: .interval(.broadcastShort))
 			]),
 			.init(title: String(localized: "Environment Sensor Options", comment: "Settings section"), fields: [
@@ -72,8 +78,17 @@ struct TelemetryConfig: View {
 		return c
 	}
 
+	/// Whether to read the stored values that old way: only on a connected radio the app
+	/// knows to be older than the toggle, the same rule the form uses to hide it.
+	static func isLegacy(isConnected: Bool, firmwareAtLeast: (String) -> Bool) -> Bool {
+		guard isConnected, let since = deviceToggleFirmware else { return false }
+		return !firmwareAtLeast(since)
+	}
+
 	var body: some View {
-		let legacy = !accessoryManager.checkIsVersionSupported(forVersion: Self.deviceToggleFirmware)
+		let legacy = Self.isLegacy(isConnected: accessoryManager.isConnected) {
+			accessoryManager.checkIsVersionSupported(forVersion: $0)
+		}
 		MetadataConfigForm(
 			node: node, title: "Telemetry", overlay: Self.overlay(),
 			normalize: { Self.normalize($0, legacy: legacy) },

@@ -89,8 +89,13 @@ struct MQTTConfig: View {
 			]),
 			.init(title: String(localized: "Map Report", comment: "Settings section"), fields: [
 				.init(F.mapReportingEnabled, symbol: "map"),
+				// The schema says firmware reads this from 2.6.8, but the row is also the app's
+				// own consent record: `MqttClientProxyManager` will not relay a map report
+				// without it, whatever the radio runs. Firmware older than that shares
+				// location unconditionally, which is when the text most needs reading.
 				.init(F.mapReportSettings_shouldReportLocation, shownWhen: .isTrue(F.mapReportingEnabled),
-					  control: .custom { config in AnyView(MapReportConsent(consented: config.mapReportSettings.shouldReportLocation)) }),
+					  control: .custom { config in AnyView(MapReportConsent(consented: config.mapReportSettings.shouldReportLocation)) })
+					.shown(despiteFirmware: "the app's own consent record, which gates the proxy on every firmware"),
 				.init(F.mapReportSettings_publishIntervalSecs, shownWhen: consented, control: .interval(.broadcastMedium)),
 				// Unlabelled upstream, and the precision needs its own explanation anyway.
 				.init(F.mapReportSettings_positionPrecision, shownWhen: consented,
