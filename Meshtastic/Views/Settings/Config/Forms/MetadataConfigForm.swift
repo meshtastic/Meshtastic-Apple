@@ -56,6 +56,9 @@ struct MetadataConfigForm<M: ConfigFormMessage, Leading: View, Trailing: View>: 
 	/// set, and on success it - not whatever `config` holds by then - becomes the
 	/// new baseline, so nothing typed mid-flight is ever marked as saved.
 	@State private var inFlight: M?
+	/// The row a search result asked for, marked briefly so the eye lands on it.
+	@State private var highlightedRow: String?
+	@Environment(\.settingsFieldFocus) private var settingsFieldFocus
 
 	init(
 		node: NodeInfoEntity?,
@@ -113,6 +116,7 @@ struct MetadataConfigForm<M: ConfigFormMessage, Leading: View, Trailing: View>: 
 
 	var body: some View {
 		let env = environment
+		ScrollViewReader { proxy in
 		Form {
 			ConfigHeader(title: title, config: M.entityKeyPath, node: node, onAppear: load)
 			leading($config)
@@ -123,6 +127,8 @@ struct MetadataConfigForm<M: ConfigFormMessage, Leading: View, Trailing: View>: 
 						Section {
 							ForEach(visible) { field in
 								ConfigFormFieldRow(field: field, config: $config, environment: env)
+									.id(field.id)
+									.listRowBackground(highlightedRow == field.id ? Color.accentColor.opacity(0.15) : nil)
 									.disabled(!(field.enabledWhen?.evaluate(config, env) ?? true))
 							}
 						} header: {
@@ -170,6 +176,37 @@ struct MetadataConfigForm<M: ConfigFormMessage, Leading: View, Trailing: View>: 
 			var adjusted = config
 			reconcile(&adjusted, env)
 			if adjusted != config { config = adjusted }
+		}
+		// A view-bound task, so leaving the screen mid-scroll cancels it rather than
+		// letting it move a form the reader has already navigated away from.
+		.task { await focusSearchedControl(using: proxy, env) }
+		}
+	}
+
+	/// A search result names one control, so scroll to it and mark it rather than leaving
+	/// the reader to pick it out of rows that all look alike.
+	@MainActor
+	private func focusSearchedControl(using proxy: ScrollViewProxy, _ env: ConfigFormEnvironment) async {
+		guard let target = settingsFieldFocus.target else { return }
+		// Taken whether or not this screen can honour it: a request left pending would be
+		// picked up later by whichever screen does own the field.
+		settingsFieldFocus.clear()
+		// Only rows that are actually on screen can be scrolled to. A field behind a
+		// toggle that is off - NeighborInfo's interval, say - has no row today, so the
+		// screen just opens.
+		guard let row = overlay.rowID(for: target),
+			  overlay.sections.flatMap(\.fields).contains(where: { $0.id == row && isVisible($0, env) })
+		else { return }
+		do {
+			// The rows exist only after the form's first layout pass.
+			try await Task.sleep(for: .milliseconds(350))
+			withAnimation { proxy.scrollTo(row, anchor: .center) }
+			highlightedRow = row
+			try await Task.sleep(for: .seconds(2))
+			withAnimation { highlightedRow = nil }
+		} catch {
+			// Cancelled by leaving the screen; the mark goes with it.
+			highlightedRow = nil
 		}
 	}
 

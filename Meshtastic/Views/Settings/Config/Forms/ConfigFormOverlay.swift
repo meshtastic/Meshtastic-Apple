@@ -26,6 +26,23 @@ struct ConfigFormOverlay<M: ConfigSchemaMessage> {
 	/// that every renderable field of `M` be laid out or listed here.
 	var omitted: [ConfigFormOmission<M>] = []
 
+	/// The row a search result names, or nil when this screen does not lay that field
+	/// out. Identity rather than tag: a flattened child field carries its own message's
+	/// name, so tags alone would collide.
+	func omits(_ identity: FieldIdentity) -> Bool {
+		omitted.contains { $0.identity == identity }
+	}
+
+	func rowID(for identity: FieldIdentity) -> String? {
+		if let row = sections.flatMap(\.fields).first(where: { $0.field.identity == identity })?.id {
+			return row
+		}
+		// A field folded into another control is still its own entry in the index, so
+		// send the reader to the control that writes it rather than nowhere.
+		guard let covered = omitted.first(where: { $0.identity == identity })?.coveredBy else { return nil }
+		return sections.flatMap(\.fields).first { $0.field.identity == covered }?.id
+	}
+
 }
 
 struct ConfigFormSection<M: ConfigSchemaMessage>: Identifiable {
@@ -214,19 +231,28 @@ struct ConfigFormField<M: ConfigSchemaMessage>: Identifiable {
 struct ConfigFormOmission<M: ConfigSchemaMessage> {
 	let tag: Int
 	let name: String
+	let identity: FieldIdentity
 	let reason: String
+	/// The field whose control also writes this one, when a screen folds several fields
+	/// into one row - a colour picker writing red, green and blue. A search result for
+	/// the folded-away field then lands on the control that sets it.
+	let coveredBy: FieldIdentity?
 
-	init<V>(_ field: ConfigField<M, V>, _ reason: String) {
+	init<V>(_ field: ConfigField<M, V>, _ reason: String, coveredBy: FieldIdentity? = nil) {
 		tag = field.tag
 		name = field.name
+		identity = field.identity
 		self.reason = reason
+		self.coveredBy = coveredBy
 	}
 
 	/// For fields the schema marks unsupported, which have no typed descriptor.
-	init(_ field: AnyConfigField<M>, _ reason: String) {
+	init(_ field: AnyConfigField<M>, _ reason: String, coveredBy: FieldIdentity? = nil) {
 		tag = field.tag
 		name = field.name
+		identity = field.identity
 		self.reason = reason
+		self.coveredBy = coveredBy
 	}
 }
 
@@ -354,6 +380,10 @@ enum ConfigFormControl<M: ConfigSchemaMessage> {
 /// the overlays of different messages can sit in one list.
 protocol AnyConfigFormOverlay {
 	var protoName: String { get }
+	/// The row a search result names, or nil when this screen does not lay it out.
+	func rowID(for identity: FieldIdentity) -> String?
+	/// Whether this screen leaves the field out on purpose.
+	func omits(_ identity: FieldIdentity) -> Bool
 	/// What is wrong with the overlay, as sentences; empty when nothing is.
 	func problems() -> [String]
 	/// Escape hatches in use, pinned by the tests so a new one is added on purpose.
