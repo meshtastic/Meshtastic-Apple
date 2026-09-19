@@ -10,18 +10,16 @@ import Testing
 
 /// The banner's two counted strings used automatic grammar agreement, which only inflects
 /// when the string catalog has a value to compile. Their catalog entries had none, so the
-/// banner showed the markup verbatim. These resolve the same strings the view builds, so a
-/// catalog entry going missing again fails here rather than on someone's screen.
+/// banner showed the markup verbatim. These call the same helpers the view renders, so the
+/// markup coming back, or a catalog entry going missing, fails here and not on a screen.
 @Suite("Unheard nodes banner strings")
 struct UnheardNodesBannerStringsTests {
 
-	private func headline(_ count: Int) -> String {
-		String(localized: "\(count) nodes not heard since you changed settings")
-	}
+	// The production strings, not copies of them: restating the literal here would keep
+	// passing if the view went back to the inflected form.
+	private func headline(_ count: Int) -> String { UnheardNodesStrings.headline(count: count) }
 
-	private func confirmation(_ count: Int) -> String {
-		String(localized: "Remove \(count) nodes?", comment: "Confirmation title for removing nodes not heard since the settings changed")
-	}
+	private func confirmation(_ count: Int) -> String { UnheardNodesStrings.removeConfirmation(count: count) }
 
 	@Test("one node reads as one node")
 	func singular() {
