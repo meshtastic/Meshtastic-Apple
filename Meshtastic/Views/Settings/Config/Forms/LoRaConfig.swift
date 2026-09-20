@@ -79,8 +79,25 @@ struct LoRaConfig: View {
 			pioEnv: node?.myInfo?.pioEnv) == nil
 	}
 
+	/// The boards whose firmware drives a PA fan from a GPIO: the four variants that
+	/// define `RF95_FAN_EN`. Nothing in the device catalog records a fan, and the radio
+	/// does not report one, so the list is the only way to ask. Anywhere else the toggle
+	/// would write a field no firmware reads.
+	static let paFanHardware: Set<Int32> = [
+		Int32(HardwareModel.betafpv2400Tx.rawValue),
+		Int32(HardwareModel.radiomaster900BanditNano.rawValue),
+		Int32(HardwareModel.radiomaster900Bandit.rawValue),
+		Int32(HardwareModel.tbeam1Watt.rawValue)
+	]
+
 	static func overlay(node: NodeInfoEntity? = nil) -> ConfigFormOverlay<Config.LoRaConfig> {
 		let custom = ConfigFormCondition<Config.LoRaConfig>.isFalse(F.usePreset)
+		// Hidden on hardware the app has not identified, the same as the other rows that
+		// turn on something the schema cannot see.
+		let hasPAFan = ConfigFormCondition<Config.LoRaConfig>.environment { env in
+			guard let hwModel = env.node?.user?.hwModelId else { return false }
+			return paFanHardware.contains(hwModel)
+		}
 		return .init(sections: [
 			.init(title: String(localized: "Options", comment: "Settings section"), fields: [
 				// Custom for the notices that sit with them: a region this app cannot save,
@@ -110,7 +127,7 @@ struct LoRaConfig: View {
 				// Transmitting past the region's duty cycle is the operator's responsibility,
 				// so the radio wants it asked for explicitly rather than assumed.
 				.init(F.overrideDutyCycle, symbol: "clock.arrow.2.circlepath"),
-				.init(F.paFanDisabled, symbol: "fan"),
+				.init(F.paFanDisabled, symbol: "fan", shownWhen: hasPAFan),
 				.init(F.overrideFrequency, symbol: "waveform.path.ecg", control: .preciseDecimal)
 			])
 		], omitted: [

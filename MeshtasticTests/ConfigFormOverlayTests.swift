@@ -22,6 +22,20 @@ private func testEnvironment(firmware version: String?) -> ConfigFormEnvironment
 		isFirmwareKnown: version != nil)
 }
 
+/// An environment for a radio the app has identified as `hwModel`, for the rows gated
+/// on hardware neither the schema nor the radio describes.
+@MainActor
+private func environment(hwModel: Int32) -> ConfigFormEnvironment {
+	let node = NodeInfoEntity()
+	let user = UserEntity()
+	user.hwModelId = hwModel
+	node.user = user
+	return ConfigFormEnvironment(
+		node: node, isConnected: true, isConnectedNode: true, isDIYHardware: false,
+		hasWifi: false, hasEthernet: false, hasXeddsa: false,
+		firmwareAtLeast: { _ in true }, isFirmwareKnown: true)
+}
+
 /// Keeps the screen overlays honest against the schema and the registry.
 @Suite("Configuration form overlays")
 struct ConfigFormOverlayTests {
@@ -59,7 +73,7 @@ struct ConfigFormOverlayTests {
 			"meshtastic.ModuleConfig.AmbientLightingConfig": (1, 0),    // one colour picker for three channels
 			"meshtastic.ModuleConfig.CannedMessageConfig": (0, 3),      // three sections locked while a preset is chosen
 			"meshtastic.ModuleConfig.ExternalNotificationConfig": (0, 0),
-			"meshtastic.Config.LoRaConfig": (4, 0),                    // region, preset, bandwidth and coding rate all constrain each other
+			"meshtastic.Config.LoRaConfig": (4, 1),                    // region, preset, bandwidth and coding rate all constrain each other; the PA fan by hardware
 			"meshtastic.ModuleConfig.MQTTConfig": (4, 2),               // proxy, consent, precision, root topic; TLS by firmware, consent kept on older firmware
 			"meshtastic.Config.NetworkConfig": (0, 6),                  // every section turns on hardware the schema cannot see
 			"meshtastic.ModuleConfig.NeighborInfoConfig": (0, 0),
@@ -89,6 +103,30 @@ struct ConfigFormOverlayTests {
 		let overlay = LoRaConfig.overlay(node: nil)
 		#expect(overlay.rowID(for: F.overrideDutyCycle.identity) != nil)
 		#expect(overlay.rowID(for: F.paFanDisabled.identity) != nil)
+	}
+
+	@Test("The PA fan toggle is offered only on the boards that drive one")
+	@MainActor func paFanIsHardwareGated() throws {
+		typealias F = Config.LoRaConfig.Fields
+		let overlay = LoRaConfig.overlay(node: nil)
+		let row = try #require(overlay.sections.flatMap(\.fields)
+			.first { $0.id == F.paFanDisabled.name })
+		let condition = try #require(row.shownWhen, "the fan row should be hardware gated")
+		let config = Config.LoRaConfig()
+
+		// The four firmware variants that define RF95_FAN_EN.
+		#expect(LoRaConfig.paFanHardware == [45, 64, 74, 122])
+
+		for hwModel in LoRaConfig.paFanHardware {
+			#expect(condition.evaluate(config, environment(hwModel: hwModel)),
+					"hardware \(hwModel) drives a PA fan")
+		}
+		for hwModel: Int32 in [4, 43, 63, 123] {
+			#expect(!condition.evaluate(config, environment(hwModel: hwModel)),
+					"hardware \(hwModel) has no PA fan")
+		}
+		// Hardware the app has not identified hides the row rather than guessing.
+		#expect(!condition.evaluate(config, testEnvironment(firmware: "2.8.0")))
 	}
 
 	@Test("The Bluetooth wait is offered on ESP32 boards only")
