@@ -98,6 +98,12 @@ struct LoRaConfig: View {
 			guard let hwModel = env.node?.user?.hwModelId else { return false }
 			return paFanHardware.contains(hwModel)
 		}
+		// Nothing to override where the region has no hourly limit, so the toggle only
+		// appears in the bands that do. A region this app does not know hides it.
+		let hasDutyCycle = ConfigFormCondition<Config.LoRaConfig>.satisfies(F.region) { region in
+			guard let code = RegionCodes(rawValue: region.rawValue) else { return false }
+			return code.dutyCycle > 0 && code.dutyCycle < 100
+		}
 		return .init(sections: [
 			.init(title: String(localized: "Options", comment: "Settings section"), fields: [
 				// Custom for the notices that sit with them: a region this app cannot save,
@@ -126,7 +132,7 @@ struct LoRaConfig: View {
 				.init(F.sx126XRxBoostedGain, symbol: "waveform.badge.plus"),
 				// Transmitting past the region's duty cycle is the operator's responsibility,
 				// so the radio wants it asked for explicitly rather than assumed.
-				.init(F.overrideDutyCycle, symbol: "clock.arrow.2.circlepath"),
+				.init(F.overrideDutyCycle, symbol: "clock.arrow.2.circlepath", shownWhen: hasDutyCycle),
 				.init(F.paFanDisabled, symbol: "fan", shownWhen: hasPAFan),
 				.init(F.overrideFrequency, symbol: "waveform.path.ecg", control: .preciseDecimal)
 			])
