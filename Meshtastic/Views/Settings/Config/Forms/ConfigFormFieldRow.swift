@@ -72,7 +72,8 @@ struct ConfigFormFieldRow<M: ConfigSchemaMessage>: View {
 			IntegerRow(field: field, label: label, metadata: metadata, environment: environment,
 					   value: make($config).showingDefault(field.displayDefault))
 		case .float(let make):
-			FloatRow(label: label, symbol: field.symbol, value: make($config))
+			FloatRow(label: label, symbol: field.symbol, value: make($config),
+					 formatter: { if case .preciseDecimal = field.control { return frequencyOverrideFormatter }; return nil }())
 		case .string(let make):
 			StringRow(field: field, label: label, text: make($config))
 		case .enumeration(let make, let cases, let caseName):
@@ -246,6 +247,9 @@ private struct FloatRow: View {
 	let label: String
 	let symbol: String?
 	@Binding var value: Double
+	/// For a value whose text has to round-trip exactly. Plain `.number` rounds, which
+	/// for a frequency means saving one the radio was never set to.
+	var formatter: NumberFormatter?
 
 	var body: some View {
 		HStack {
@@ -255,10 +259,19 @@ private struct FloatRow: View {
 				Text(label)
 			}
 			Spacer()
-			TextField(label, value: $value, format: .number)
+			field
 				.multilineTextAlignment(.trailing)
 				.keyboardType(.decimalPad)
 				.foregroundColor(.gray)
+		}
+	}
+
+	@ViewBuilder
+	private var field: some View {
+		if let formatter {
+			TextField(label, value: $value, formatter: formatter)
+		} else {
+			TextField(label, value: $value, format: .number)
 		}
 	}
 }
