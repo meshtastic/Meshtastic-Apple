@@ -1473,6 +1473,22 @@ public enum ExcludedModules: SwiftProtobuf.Enum, Swift.CaseIterable {
   ///
   /// Network config (not technically a module, but used to indicate network capabilities)
   case networkConfig // = 16384
+
+  ///
+  /// Status Message module
+  case statusmessageConfig // = 32768
+
+  ///
+  /// Traffic Management module
+  case trafficmanagementConfig // = 65536
+
+  ///
+  /// TAK module
+  case takConfig // = 131072
+
+  ///
+  /// Mesh Beacon module
+  case meshbeaconConfig // = 262144
   case UNRECOGNIZED(Int)
 
   public init() {
@@ -1497,6 +1513,10 @@ public enum ExcludedModules: SwiftProtobuf.Enum, Swift.CaseIterable {
     case 4096: self = .paxcounterConfig
     case 8192: self = .bluetoothConfig
     case 16384: self = .networkConfig
+    case 32768: self = .statusmessageConfig
+    case 65536: self = .trafficmanagementConfig
+    case 131072: self = .takConfig
+    case 262144: self = .meshbeaconConfig
     default: self = .UNRECOGNIZED(rawValue)
     }
   }
@@ -1519,6 +1539,10 @@ public enum ExcludedModules: SwiftProtobuf.Enum, Swift.CaseIterable {
     case .paxcounterConfig: return 4096
     case .bluetoothConfig: return 8192
     case .networkConfig: return 16384
+    case .statusmessageConfig: return 32768
+    case .trafficmanagementConfig: return 65536
+    case .takConfig: return 131072
+    case .meshbeaconConfig: return 262144
     case .UNRECOGNIZED(let i): return i
     }
   }
@@ -1541,6 +1565,10 @@ public enum ExcludedModules: SwiftProtobuf.Enum, Swift.CaseIterable {
     .paxcounterConfig,
     .bluetoothConfig,
     .networkConfig,
+    .statusmessageConfig,
+    .trafficmanagementConfig,
+    .takConfig,
+    .meshbeaconConfig,
   ]
 
 }
@@ -4783,7 +4811,7 @@ extension FirmwareEdition: SwiftProtobuf._ProtoNameProviding {
 }
 
 extension ExcludedModules: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0EXCLUDED_NONE\0\u{1}MQTT_CONFIG\0\u{1}SERIAL_CONFIG\0\u{2}\u{2}EXTNOTIF_CONFIG\0\u{2}\u{4}STOREFORWARD_CONFIG\0\u{2}\u{8}RANGETEST_CONFIG\0\u{2}\u{10}TELEMETRY_CONFIG\0\u{2} CANNEDMSG_CONFIG\0\u{2}@\u{1}AUDIO_CONFIG\0\u{2}@\u{2}REMOTEHARDWARE_CONFIG\0\u{2}@\u{4}NEIGHBORINFO_CONFIG\0\u{2}@\u{8}AMBIENTLIGHTING_CONFIG\0\u{2}@\u{10}DETECTIONSENSOR_CONFIG\0\u{2}@ PAXCOUNTER_CONFIG\0\u{2}@@\u{1}BLUETOOTH_CONFIG\0\u{2}@@\u{2}NETWORK_CONFIG\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0EXCLUDED_NONE\0\u{1}MQTT_CONFIG\0\u{1}SERIAL_CONFIG\0\u{2}\u{2}EXTNOTIF_CONFIG\0\u{2}\u{4}STOREFORWARD_CONFIG\0\u{2}\u{8}RANGETEST_CONFIG\0\u{2}\u{10}TELEMETRY_CONFIG\0\u{2} CANNEDMSG_CONFIG\0\u{2}@\u{1}AUDIO_CONFIG\0\u{2}@\u{2}REMOTEHARDWARE_CONFIG\0\u{2}@\u{4}NEIGHBORINFO_CONFIG\0\u{2}@\u{8}AMBIENTLIGHTING_CONFIG\0\u{2}@\u{10}DETECTIONSENSOR_CONFIG\0\u{2}@ PAXCOUNTER_CONFIG\0\u{2}@@\u{1}BLUETOOTH_CONFIG\0\u{2}@@\u{2}NETWORK_CONFIG\0\u{2}@@\u{4}STATUSMESSAGE_CONFIG\0\u{2}@@\u{8}TRAFFICMANAGEMENT_CONFIG\0\u{2}@@\u{10}TAK_CONFIG\0\u{2}@@ MESHBEACON_CONFIG\0")
 }
 
 extension Position: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {

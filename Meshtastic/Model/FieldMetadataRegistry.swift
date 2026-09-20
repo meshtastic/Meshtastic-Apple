@@ -86,6 +86,11 @@ extension Config.SecurityConfig.PacketSignaturePolicy {
     public var metadata: FieldMetadata? { FieldMetadataRegistry.get("meshtastic.Config.SecurityConfig.PacketSignaturePolicy", tag: rawValue) }
 }
 
+extension MemberRole {
+    /// Metadata for this value, or nil if it carries none.
+    public var metadata: FieldMetadata? { FieldMetadataRegistry.get("meshtastic.MemberRole", tag: rawValue) }
+}
+
 extension ModuleConfig.AudioConfig.Audio_Baud {
     /// Metadata for this value, or nil if it carries none.
     public var metadata: FieldMetadata? { FieldMetadataRegistry.get("meshtastic.ModuleConfig.AudioConfig.Audio_Baud", tag: rawValue) }
@@ -109,6 +114,11 @@ extension ModuleConfig.SerialConfig.Serial_Baud {
 extension ModuleConfig.SerialConfig.Serial_Mode {
     /// Metadata for this value, or nil if it carries none.
     public var metadata: FieldMetadata? { FieldMetadataRegistry.get("meshtastic.ModuleConfig.SerialConfig.Serial_Mode", tag: rawValue) }
+}
+
+extension Team {
+    /// Metadata for this value, or nil if it carries none.
+    public var metadata: FieldMetadata? { FieldMetadataRegistry.get("meshtastic.Team", tag: rawValue) }
 }
 
 extension TelemetrySensorType {
@@ -325,6 +335,15 @@ public enum FieldMetadataRegistry {
         "meshtastic.DeviceState#9": FieldMetadata(deprecated: true),
         "meshtastic.DeviceState#11": FieldMetadata(deprecated: true),
         "meshtastic.EnvironmentMetrics#23": FieldMetadata(deprecated: true),
+        "meshtastic.MemberRole#0": FieldMetadata(label: String(localized: "meshtastic.MemberRole.Unspecifed.label", defaultValue: "Default (Team Member)", comment: "label of meshtastic.MemberRole.Unspecifed")),
+        "meshtastic.MemberRole#1": FieldMetadata(label: String(localized: "meshtastic.MemberRole.TeamMember.label", defaultValue: "Team Member", comment: "label of meshtastic.MemberRole.TeamMember")),
+        "meshtastic.MemberRole#2": FieldMetadata(label: String(localized: "meshtastic.MemberRole.TeamLead.label", defaultValue: "Team Lead", comment: "label of meshtastic.MemberRole.TeamLead")),
+        "meshtastic.MemberRole#3": FieldMetadata(label: String(localized: "meshtastic.MemberRole.HQ.label", defaultValue: "HQ", comment: "label of meshtastic.MemberRole.HQ")),
+        "meshtastic.MemberRole#4": FieldMetadata(label: String(localized: "meshtastic.MemberRole.Sniper.label", defaultValue: "Sniper", comment: "label of meshtastic.MemberRole.Sniper")),
+        "meshtastic.MemberRole#5": FieldMetadata(label: String(localized: "meshtastic.MemberRole.Medic.label", defaultValue: "Medic", comment: "label of meshtastic.MemberRole.Medic")),
+        "meshtastic.MemberRole#6": FieldMetadata(label: String(localized: "meshtastic.MemberRole.ForwardObserver.label", defaultValue: "Forward Observer", comment: "label of meshtastic.MemberRole.ForwardObserver")),
+        "meshtastic.MemberRole#7": FieldMetadata(label: String(localized: "meshtastic.MemberRole.RTO.label", defaultValue: "RTO", comment: "label of meshtastic.MemberRole.RTO")),
+        "meshtastic.MemberRole#8": FieldMetadata(label: String(localized: "meshtastic.MemberRole.K9.label", defaultValue: "K9", comment: "label of meshtastic.MemberRole.K9")),
         "meshtastic.MeshPacket#13": FieldMetadata(deprecated: true),
         "meshtastic.ModuleConfig#14": FieldMetadata(sinceFirmware: "2.7.20"),
         "meshtastic.ModuleConfig#15": FieldMetadata(sinceFirmware: "2.8.0"),
@@ -491,6 +510,21 @@ public enum FieldMetadataRegistry {
         "meshtastic.PowerMetrics#15": FieldMetadata(deprecated: true),
         "meshtastic.PowerMetrics#16": FieldMetadata(deprecated: true),
         "meshtastic.TakTalkRoomData#1": FieldMetadata(deprecated: true),
+        "meshtastic.Team#0": FieldMetadata(label: String(localized: "meshtastic.Team.Unspecifed_Color.label", defaultValue: "Default (Cyan)", comment: "label of meshtastic.Team.Unspecifed_Color")),
+        "meshtastic.Team#1": FieldMetadata(label: String(localized: "meshtastic.Team.White.label", defaultValue: "White", comment: "label of meshtastic.Team.White")),
+        "meshtastic.Team#2": FieldMetadata(label: String(localized: "meshtastic.Team.Yellow.label", defaultValue: "Yellow", comment: "label of meshtastic.Team.Yellow")),
+        "meshtastic.Team#3": FieldMetadata(label: String(localized: "meshtastic.Team.Orange.label", defaultValue: "Orange", comment: "label of meshtastic.Team.Orange")),
+        "meshtastic.Team#4": FieldMetadata(label: String(localized: "meshtastic.Team.Magenta.label", defaultValue: "Magenta", comment: "label of meshtastic.Team.Magenta")),
+        "meshtastic.Team#5": FieldMetadata(label: String(localized: "meshtastic.Team.Red.label", defaultValue: "Red", comment: "label of meshtastic.Team.Red")),
+        "meshtastic.Team#6": FieldMetadata(label: String(localized: "meshtastic.Team.Maroon.label", defaultValue: "Maroon", comment: "label of meshtastic.Team.Maroon")),
+        "meshtastic.Team#7": FieldMetadata(label: String(localized: "meshtastic.Team.Purple.label", defaultValue: "Purple", comment: "label of meshtastic.Team.Purple")),
+        "meshtastic.Team#8": FieldMetadata(label: String(localized: "meshtastic.Team.Dark_Blue.label", defaultValue: "Dark Blue", comment: "label of meshtastic.Team.Dark_Blue")),
+        "meshtastic.Team#9": FieldMetadata(label: String(localized: "meshtastic.Team.Blue.label", defaultValue: "Blue", comment: "label of meshtastic.Team.Blue")),
+        "meshtastic.Team#10": FieldMetadata(label: String(localized: "meshtastic.Team.Cyan.label", defaultValue: "Cyan", comment: "label of meshtastic.Team.Cyan")),
+        "meshtastic.Team#11": FieldMetadata(label: String(localized: "meshtastic.Team.Teal.label", defaultValue: "Teal", comment: "label of meshtastic.Team.Teal")),
+        "meshtastic.Team#12": FieldMetadata(label: String(localized: "meshtastic.Team.Green.label", defaultValue: "Green", comment: "label of meshtastic.Team.Green")),
+        "meshtastic.Team#13": FieldMetadata(label: String(localized: "meshtastic.Team.Dark_Green.label", defaultValue: "Dark Green", comment: "label of meshtastic.Team.Dark_Green")),
+        "meshtastic.Team#14": FieldMetadata(label: String(localized: "meshtastic.Team.Brown.label", defaultValue: "Brown", comment: "label of meshtastic.Team.Brown")),
         "meshtastic.TelemetrySensorType#7": FieldMetadata(deprecated: true),
         "meshtastic.TelemetrySensorType#12": FieldMetadata(deprecated: true),
         "meshtastic.TelemetrySensorType#17": FieldMetadata(deprecated: true),
