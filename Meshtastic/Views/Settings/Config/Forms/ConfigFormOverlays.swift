@@ -28,6 +28,7 @@ enum ConfigFormOverlays {
 		PositionConfig.overlay(),
 		PowerConfig.overlay(),
 		RangeTestConfig.overlay(),
+		SecurityConfig.overlay(),
 		SerialConfig.overlay(),
 		StoreForwardConfig.overlay(),
 		TAKModuleConfig.overlay(),
@@ -38,7 +39,6 @@ enum ConfigFormOverlays {
 	/// Messages whose screens stay hand-written, and why.
 	static let bespoke: [String: String] = [
 		"meshtastic.Config.LoRaConfig": "region, preset, bandwidth and coding rate constrain each other from live radio data",
-		"meshtastic.Config.SecurityConfig": "key management, lockdown and a repeated admin_key field",
 		"meshtastic.ModuleConfig.MeshBeaconConfig": "a repeated broadcast_targets editor and channel resolution",
 		"meshtastic.ModuleConfig.MapReportSettings": "not a screen: nested in MQTTConfig and laid out there through its flattened fields"
 	]

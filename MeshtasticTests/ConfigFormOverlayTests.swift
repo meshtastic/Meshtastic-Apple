@@ -64,6 +64,7 @@ struct ConfigFormOverlayTests {
 			"meshtastic.ModuleConfig.NeighborInfoConfig": (0, 0),
 			"meshtastic.ModuleConfig.PaxcounterConfig": (0, 0),
 			"meshtastic.ModuleConfig.RangeTestConfig": (0, 1),          // save needs WiFi
+			"meshtastic.Config.SecurityConfig": (4, 0),                 // every key row, and managed mode needing one
 			"meshtastic.ModuleConfig.SerialConfig": (0, 0),
 			"meshtastic.ModuleConfig.StoreForwardConfig": (0, 0),
 			"meshtastic.ModuleConfig.TAKConfig": (0, 0),
