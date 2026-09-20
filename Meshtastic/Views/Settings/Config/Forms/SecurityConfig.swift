@@ -207,7 +207,10 @@ private struct PrivateKeyRows: View {
 
 	private static let metadata = FieldMetadataRegistry.get("meshtastic.Config.SecurityConfig", tag: 2)
 
-	private var isValid: Bool { SecurityKey.isValid(text) && !text.isEmpty }
+	/// Blank is not a fault. Before the radio's values arrive the field is empty, and
+	/// marking that red says there is something wrong with a key the user has not seen
+	/// yet. Only text that is present and not a 32-byte key is wrong.
+	private var isValid: Bool { SecurityKey.isValid(text) }
 
 	var body: some View {
 		VStack(alignment: .leading) {
@@ -224,6 +227,12 @@ private struct PrivateKeyRows: View {
 			}
 		}
 		.onAppear { text = SecurityKey.text(config.privateKey) }
+		.onChange(of: config.privateKey) { _, new in
+			// The radio's values land after the row is on screen, so the field has to
+			// follow them. Without this the key never appears at all.
+			let incoming = SecurityKey.text(new)
+			if incoming != text, SecurityKey.data(text) != new { text = incoming }
+		}
 		.onChange(of: text) { _, new in
 			// A key that does not decode to 32 bytes stores as empty rather than as
 			// itself: half a key is not a key, and writing one costs every existing
@@ -324,6 +333,13 @@ private struct AdminKeyRows: View {
 	]
 
 	var body: some View {
+		keyRows
+			.onAppear { sync() }
+			.onChange(of: config.adminKey) { _, _ in sync() }
+	}
+
+	@ViewBuilder
+	private var keyRows: some View {
 		ForEach(0..<SecurityKey.slots, id: \.self) { slot in
 			VStack(alignment: .leading) {
 				Label(Self.titles[slot], systemImage: "key.viewfinder")
@@ -339,7 +355,17 @@ private struct AdminKeyRows: View {
 			Text(description)
 				.foregroundStyle(.secondary)
 				.font(idiom == .phone ? .caption : .callout)
-				.onAppear { text = SecurityKey.padded(config.adminKey).map(SecurityKey.text) }
+		}
+	}
+
+	/// The radio's keys land after the rows are on screen, so they have to follow them.
+	/// Seeding only on appear left the slots empty, and hanging that off the description
+	/// meant it would not have run at all for a message with no description.
+	private func sync() {
+		let incoming = SecurityKey.padded(config.adminKey).map(SecurityKey.text)
+		for slot in 0..<SecurityKey.slots where incoming[slot] != text[slot]
+			&& SecurityKey.data(text[slot]) != SecurityKey.padded(config.adminKey)[slot] {
+			text[slot] = incoming[slot]
 		}
 	}
 

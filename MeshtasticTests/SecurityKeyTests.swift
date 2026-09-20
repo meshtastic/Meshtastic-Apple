@@ -17,6 +17,33 @@ struct SecurityKeyTests {
 
 	private func key(_ byte: UInt8) -> Data { Data(repeating: byte, count: SecurityKey.byteCount) }
 
+	// A row is on screen before the radio's values arrive: the form fills the message
+	// after load(). Seeding a field once on appear leaves it empty and, if blank counts
+	// as invalid, red — which is what shipped to a device and showed an empty key in red.
+	@Test("A key that has not arrived yet is not an error")
+	func blankIsNotAFault() {
+		#expect(SecurityKey.isValid(""), "an empty field is unset or still loading, not wrong")
+		#expect(!SecurityKey.isValid("AAAA"), "text that is present and not a key is wrong")
+	}
+
+	@Test("A field seeded before the values arrive still picks them up")
+	func lateValuesAreAdopted() {
+		// What the row does when config.privateKey changes under it: text it has not been
+		// edited into keeps following the message.
+		var text = ""
+		let arriving = key(0x5A)
+		let incoming = SecurityKey.text(arriving)
+		if incoming != text, SecurityKey.data(text) != arriving { text = incoming }
+		#expect(text == incoming, "the key must appear once it loads")
+
+		// An edit in progress is not overwritten by the same value arriving again.
+		var edited = SecurityKey.text(key(0x77))
+		let before = edited
+		let same = SecurityKey.data(edited)
+		if SecurityKey.text(same) != edited, SecurityKey.data(edited) != same { edited = SecurityKey.text(same) }
+		#expect(edited == before, "a field already holding that key is left alone")
+	}
+
 	@Test("A key round-trips through text unchanged")
 	func keyRoundTrips() {
 		let original = key(0xAB)
