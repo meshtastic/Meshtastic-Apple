@@ -220,7 +220,6 @@ struct PacketAuthenticityIngestionTests {
 	}
 }
 
-
 @Suite("Packet authenticity picker options")
 struct PacketAuthenticityPickerOptionTests {
 
