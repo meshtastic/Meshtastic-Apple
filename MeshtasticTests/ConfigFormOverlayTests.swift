@@ -59,6 +59,7 @@ struct ConfigFormOverlayTests {
 			"meshtastic.ModuleConfig.AmbientLightingConfig": (1, 0),    // one colour picker for three channels
 			"meshtastic.ModuleConfig.CannedMessageConfig": (0, 3),      // three sections locked while a preset is chosen
 			"meshtastic.ModuleConfig.ExternalNotificationConfig": (0, 0),
+			"meshtastic.Config.LoRaConfig": (4, 0),                    // region, preset, bandwidth and coding rate all constrain each other
 			"meshtastic.ModuleConfig.MQTTConfig": (4, 2),               // proxy, consent, precision, root topic; TLS by firmware, consent kept on older firmware
 			"meshtastic.Config.NetworkConfig": (0, 6),                  // every section turns on hardware the schema cannot see
 			"meshtastic.ModuleConfig.NeighborInfoConfig": (0, 0),

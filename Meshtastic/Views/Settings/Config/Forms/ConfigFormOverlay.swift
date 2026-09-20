@@ -476,7 +476,11 @@ enum ConfigFormControl<M: ConfigSchemaMessage> {
 	indirect case nonZeroToggle(onValue: UInt32, then: ConfigFormControl<M> = .automatic)
 	/// A bitfield, one toggle per listed bit.
 	case flags([ConfigFormFlag<M>])
-	/// A uint32 holding an IPv4 address, typed as a dotted quad. `required` tints a
+	/// A float that must survive its own round trip: a frequency stored as a Float needs
+	/// six fraction digits and no grouping separator, or redisplaying it writes back a
+	/// different frequency than the one the radio holds.
+	case preciseDecimal
+		/// A uint32 holding an IPv4 address, typed as a dotted quad. `required` tints a
 	/// blank field as invalid, for an address a static configuration cannot go without.
 	case ipv4Address(required: Bool)
 	/// Anything else. Counted by the tests, so use it knowingly.
@@ -584,6 +588,8 @@ extension ConfigFormOverlay: AnyConfigFormOverlay {
 			}
 		case .secure:
 			if f.field.kind != .string { return ["\(name): secure on a non-string field"] }
+		case .preciseDecimal:
+			if f.field.kind != .float { return ["\(name): precise decimal on a non-float field"] }
 		case .segmented:
 			if f.field.kind != .enumeration { return ["\(name): segmented on a non-enum field"] }
 		case .automatic, .custom:

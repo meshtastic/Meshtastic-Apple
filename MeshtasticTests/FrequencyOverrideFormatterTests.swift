@@ -6,10 +6,11 @@ import Testing
 @Suite("Frequency override formatting")
 @MainActor
 struct FrequencyOverrideFormatterTests {
+	// LoRa's frequency override now goes through the form's `.preciseDecimal` control,
+	// which uses this same shared formatter, so the view no longer exposes its own.
 	@Test func sharedAndViewFormattersUseRequiredPrecision() throws {
 		let formatters = [
 			frequencyOverrideFormatter,
-			LoRaConfig(node: nil).floatFormatter,
 			UserConfig(node: nil).floatFormatter
 		]
 		// Real band values. Note what 6 fraction digits means for a Float field: a
