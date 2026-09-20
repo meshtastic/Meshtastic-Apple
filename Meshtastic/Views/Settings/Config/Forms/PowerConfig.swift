@@ -37,6 +37,10 @@ struct PowerConfig: View {
 
 	static func overlay(architecture: Architecture? = nil) -> ConfigFormOverlay<Config.PowerConfig> {
 		let esp32 = architecture == .esp32 || architecture == .esp32S3
+		// "ESP32 only" in the firmware means the whole family. Power saving and the
+		// battery section have only ever been offered on esp32 and esp32-s3, so they
+		// keep that check; the Bluetooth wait uses the wider one.
+		let esp32Family = esp32 || architecture == .esp32C3 || architecture == .esp32C6
 		// Power saving sleeps the radio too, so it is only offered where the firmware
 		// honours it: ESP32 boards, and nRF52 boards in the tracker or sensor role.
 		let canPowerSave = ConfigFormCondition<Config.PowerConfig>.environment { env in
@@ -51,7 +55,7 @@ struct PowerConfig: View {
 				// How long the board holds BLE up in a no-Bluetooth state before turning it
 				// off. ESP32 only, and zero is the firmware default of one minute.
 				.init(F.waitBluetoothSecs, symbol: "dot.radiowaves.right",
-					  shownWhen: .environment { _ in esp32 }, control: .interval(.waitBluetooth))
+					  shownWhen: .environment { _ in esp32Family }, control: .interval(.waitBluetooth))
 			]),
 			.init(title: String(localized: "Battery", comment: "Settings section"), shownWhen: .environment { _ in esp32 }, fields: [
 				.init(F.adcMultiplierOverride, control: .custom { config in AnyView(ADCOverrideField(multiplier: config.adcMultiplierOverride)) })

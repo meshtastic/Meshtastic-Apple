@@ -135,7 +135,7 @@ struct ConfigFormOverlayTests {
 		let env = testEnvironment(firmware: "2.8.0")
 		let config = Config.PowerConfig()
 
-		for architecture in [Architecture.esp32, .esp32S3] {
+		for architecture in [Architecture.esp32, .esp32S3, .esp32C3, .esp32C6] {
 			let overlay = PowerConfig.overlay(architecture: architecture)
 			let row = try #require(overlay.sections.flatMap(\.fields)
 				.first { $0.id == F.waitBluetoothSecs.name })
