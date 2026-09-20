@@ -5,6 +5,11 @@
 Phase 0 findings. Each decision below resolves an unknown left open by the spec or
 the clarification session.
 
+**Kept as written, 2026-09-20.** This is the record of what was known in September 2026,
+including counts that have since moved and two decisions that were later reversed (the
+app-level catalog is now generated, and a search result now lands on the control). Read
+[spec.md](./spec.md) for what shipped; this file is history.
+
 ## D1. The whole index comes from the protobufs, including the display strings
 
 **Decision**: `label`, `description` and `keywords` are `(meshtastic.field_metadata)`
