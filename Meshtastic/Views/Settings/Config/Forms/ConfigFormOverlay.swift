@@ -455,6 +455,9 @@ enum ConfigFormControl<M: ConfigSchemaMessage> {
 	indirect case nonZeroToggle(onValue: UInt32, then: ConfigFormControl<M> = .automatic)
 	/// A bitfield, one toggle per listed bit.
 	case flags([ConfigFormFlag<M>])
+	/// A uint32 holding an IPv4 address, typed as a dotted quad. `required` tints a
+	/// blank field as invalid, for an address a static configuration cannot go without.
+	case ipv4Address(required: Bool)
 	/// Anything else. Counted by the tests, so use it knowingly.
 	case custom((Binding<M>) -> AnyView)
 
@@ -552,7 +555,7 @@ extension ConfigFormOverlay: AnyConfigFormOverlay {
 
 	private static func problems(with control: ConfigFormControl<M>, on f: ConfigFormField<M>, name: String) -> [String] {
 		switch control {
-		case .interval, .gpioPin, .options, .nonZeroToggle, .flags:
+		case .interval, .gpioPin, .options, .nonZeroToggle, .flags, .ipv4Address:
 			if !(f.field.kind == .uint32 || f.field.kind == .int32) { return ["\(name): integer control on \(f.field.kind)"] }
 		case .slider, .stepper:
 			if f.field.metadata?.minValue == nil || f.field.metadata?.maxValue == nil {
