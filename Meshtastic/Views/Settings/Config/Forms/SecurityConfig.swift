@@ -46,6 +46,34 @@ func generatePublicKeyDisplay(from privateKeyData: Data) -> Data? {
 	}
 }
 
+/// A fresh Curve25519 private key, clamped the way the specification requires: the
+/// three right-most bits of the first byte cleared, the left-most bit of the last byte
+/// cleared and the second-from-left set.
+func generatePrivateKey(count: Int) -> Data? {
+	var randomBytes = Data(count: count)
+	let status = randomBytes.withUnsafeMutableBytes { (mutableBytes: UnsafeMutableRawBufferPointer) -> Int32 in
+		guard let pointer = mutableBytes.baseAddress?.assumingMemoryBound(to: UInt8.self) else {
+			return -1 // Indicate an error
+		}
+		return SecRandomCopyBytes(kSecRandomDefault, count, pointer)
+	}
+
+	if status == errSecSuccess {
+		// Generate a random "f" value and then adjust the value to make
+		// it valid as an "s" value for eval().  According to the specification
+		// we need to mask off the 3 right-most bits of f[0], mask off the
+		// left-most bit of f[31], and set the second to left-most bit of f[31].
+		var f = randomBytes
+		f[0] &= 0xF8
+		f[31] = (f[31] & 0x7F) | 0x40
+		return f
+	} else {
+		// Handle error, perhaps by logging or throwing an exception
+		Logger.mesh.debug("Error generating random bytes: \(status)")
+		return nil
+	}
+}
+
 /// A 32-byte key, as typed and as stored.
 enum SecurityKey {
 	static let byteCount = 32
@@ -305,6 +333,7 @@ private struct PrivateKeyRows: View {
 				config.publicKey = derived
 			}
 		}
+		RegeneratePrivateKeyRow(privateKey: $text, isSecure: $isSecure)
 		if let currentNode = node {
 			KeyBackupRow(privateKey: $text, isSecure: $isSecure, status: $backupStatus, nodeNum: currentNode.num)
 		}
@@ -469,6 +498,42 @@ private struct ManagedDeviceRow: View {
 					.font(.caption)
 					.foregroundStyle(.orange)
 			}
+		}
+	}
+}
+
+/// Replaces the private key with a freshly generated one. The public key follows from
+/// it, so both change together, and every node that holds the old public key can no
+/// longer decrypt direct messages from this one until it learns the new one.
+private struct RegeneratePrivateKeyRow: View {
+	@Binding var privateKey: String
+	@Binding var isSecure: Bool
+	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
+
+	var body: some View {
+		VStack(alignment: .leading) {
+			Divider()
+			HStack(alignment: .firstTextBaseline) {
+				Label("Regenerate Private Key", systemImage: "arrow.clockwise.circle")
+				Spacer()
+				Button {
+					guard let keyBytes = generatePrivateKey(count: SecurityKey.byteCount) else { return }
+					privateKey = keyBytes.base64EncodedString()
+					// Reveal it: a key you cannot read is one you cannot copy to the
+					// devices that need to know it.
+					isSecure = false
+				} label: {
+					Image(systemName: "lock.rotation").font(.title)
+				}
+				.buttonStyle(.bordered)
+				.buttonBorderShape(.capsule)
+				.controlSize(.small)
+				.accessibilityLabel(String(localized: "Regenerate private key",
+										   comment: "VoiceOver label for the regenerate private key button"))
+			}
+			Text("Generate a new private key to replace the one currently in use. The public key will automatically be regenerated from your private key.")
+				.foregroundStyle(.secondary)
+				.font(idiom == .phone ? .caption : .callout)
 		}
 	}
 }
