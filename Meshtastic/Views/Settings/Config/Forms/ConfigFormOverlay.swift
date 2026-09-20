@@ -272,6 +272,27 @@ struct ConfigFormField<M: ConfigSchemaMessage>: Identifiable {
 		)
 	}
 
+	/// A field the generator gives no typed descriptor at all: a repeated one. The whole
+	/// field is the control's to own, which is the only way three key slots can sit on one
+	/// array. Laid out rather than omitted so settings search can still land on it.
+	init(
+		repeated field: AnyConfigField<M>, control: ConfigFormControl<M>, symbol: String? = nil,
+		shownWhen: ConfigFormCondition<M>? = nil, enabledWhen: ConfigFormCondition<M>? = nil
+	) {
+		self.field = field
+		self.value = .unsupported
+		self.symbol = symbol
+		self.shownWhen = shownWhen
+		self.enabledWhen = enabledWhen
+		self.control = control
+		self.byteCap = nil
+		self.inverted = false
+		self.enumOrder = nil
+		self.enumValues = nil
+		self.displayDefault = nil
+		self.shownDespiteFirmware = nil
+	}
+
 	/// Anything else - a nested message, bytes, a 64-bit field. Only `.custom` renders it.
 	init<V>(
 		unsupported field: ConfigField<M, V>, control: ConfigFormControl<M>, symbol: String? = nil,

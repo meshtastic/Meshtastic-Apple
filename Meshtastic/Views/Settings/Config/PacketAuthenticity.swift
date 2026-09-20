@@ -74,33 +74,6 @@ struct PacketAuthenticitySelectionState: Equatable {
 
 // MARK: - Security config wiring
 
-extension SecurityConfig {
-	/// Kept in an extension rather than the main `SecurityConfig` body, which is already at
-	/// SwiftLint's `type_body_length` ceiling.
-	var packetAuthenticityCapability: PacketAuthenticityCapability {
-		PacketAuthenticityCapability(metadata: node?.metadata)
-	}
-
-	var packetAuthenticitySection: some View {
-		PacketAuthenticitySection(
-			capability: packetAuthenticityCapability,
-			isConnected: accessoryManager.isConnected,
-			selection: $packetAuthenticitySelection
-		)
-	}
-
-	/// The policy the radio last reported, defaulting to Compatible — the protobuf zero value — so an
-	/// unconfigured node and an absent field agree.
-	var storedPacketAuthenticitySelection: PacketAuthenticitySelectionState {
-		PacketAuthenticitySelectionState(selected: node?.securityConfig?.storedPacketSignaturePolicy ?? .compatible)
-	}
-
-	/// Flags the Save button when the chosen policy differs from what the radio reported.
-	func packetAuthenticityDidChange(to policy: Config.SecurityConfig.PacketSignaturePolicy) {
-		if policy != storedPacketAuthenticitySelection.selected { hasChanges = true }
-	}
-}
-
 // MARK: - Section
 
 /// "Packet Authenticity" section of the Security config screen.
