@@ -421,12 +421,12 @@
             "language",
             "before",
             "than",
+            "shows",
             "packets",
             "lora",
-            "direct",
-            "contact"
+            "direct"
         ],
-        "charCount": 19849
+        "charCount": 20449
     },
     {
         "id": "signal-meter",

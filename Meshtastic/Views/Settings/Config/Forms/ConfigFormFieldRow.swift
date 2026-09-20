@@ -501,13 +501,19 @@ enum IPv4Address {
 		}
 	}
 
-	/// For an address a static configuration cannot go without, where blank is a fault
-	/// rather than "unset".
+	/// For an address a static configuration cannot go without. Anything that packs to
+	/// zero is a fault here, which covers blank and `0.0.0.0` alike: both store as zero,
+	/// and a row that reads as valid while the save is blocked explains nothing.
 	static func isRequiredFieldValid(_ text: String) -> Bool {
-		!text.isEmpty && isFieldValid(text)
+		isFieldValid(text) && toUInt32(text) != 0
 	}
 
+	/// Zero for anything the strict check rejects. Parsing leniently here would let the
+	/// two disagree: `split` drops a trailing empty component, so `192.168.1.1.` would
+	/// pack to a perfectly good address while the field showed it in red, and the save
+	/// gate reads the packed value.
 	static func toUInt32(_ text: String) -> UInt32 {
+		guard isFieldValid(text) else { return 0 }
 		let parts = text.split(separator: ".").compactMap { UInt32($0) }
 		guard parts.count == 4, parts.allSatisfy({ $0 <= 255 }) else { return 0 }
 		return parts[0] | (parts[1] << 8) | (parts[2] << 16) | (parts[3] << 24)

@@ -132,7 +132,17 @@ Controls which direction the on-device compass points when the screen is at rest
 
 ### Network
 
-Wi-Fi SSID/password for TCP connection, NTP server, and Ethernet (supported hardware only).
+Wi-Fi SSID/password for TCP connection, NTP and syslog servers, UDP broadcast, and
+Ethernet. Each section appears only on hardware that has the radio it configures, so a
+board with neither Wi-Fi nor Ethernet shows nothing here.
+
+**Address Mode** chooses between DHCP and a static address. On DHCP the radio asks the
+network for its address and the static fields are not shown.
+
+Choosing **Static** reveals four address fields. Address, gateway and subnet are
+required: a static setup missing any of them leaves the node unreachable, so Save stays
+disabled until all three are complete and well formed. A malformed entry is shown in
+red. **DNS is optional** and may be left blank, which stores it as unset.
 
 ### Position
 

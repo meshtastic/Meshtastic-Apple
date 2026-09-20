@@ -125,6 +125,38 @@ struct NetworkConfigIPConversionTests {
 		#expect(IPv4Address.isFieldValid(address) == false)
 	}
 
+	// MARK: - The converter and the validator agree
+
+	// These are the same hazard from two directions: a field the validator rejects must
+	// never pack to a usable address, because the save gate reads the packed value and
+	// the user only sees the text. `split` drops a trailing empty component, so a
+	// lenient parse turned "192.168.1.1." into a perfectly good address while the field
+	// showed it in red — and Save would have sent that address instead.
+	@Test(arguments: [
+		"192.168.1.1.",      // trailing dot: four parts once the empty one is dropped
+		"192.168.1.1.."      // and more than one
+	])
+	func textTheValidatorRejectsNeverPacksToAnAddress(_ address: String) {
+		#expect(IPv4Address.isFieldValid(address) == false)
+		#expect(IPv4Address.toUInt32(address) == 0, "a rejected address must not pack to a usable value")
+	}
+
+	// A required address that packs to zero is a fault, not a value. Blank and 0.0.0.0
+	// both store as zero, so a row reading as valid while Save stays blocked would
+	// explain nothing.
+	@Test func requiredFieldRejectsEverythingThatPacksToZero() {
+		#expect(IPv4Address.isRequiredFieldValid("0.0.0.0") == false)
+		#expect(IPv4Address.isRequiredFieldValid("") == false)
+		#expect(IPv4Address.isRequiredFieldValid("192.168.1.10") == true)
+	}
+
+	@Test func aRejectedAddressCannotBeSaved() {
+		// The end-to-end shape of the bug: red text, a stored address, Save enabled.
+		let config = staticConfig(mode: 1, ip: "192.168.1.1.", gateway: "192.168.1.1", subnet: "255.255.255.0", dns: "")
+		#expect(config.ipv4Config.ip == 0)
+		#expect(NetworkConfig.canSave(config) == false)
+	}
+
 	// MARK: - Save gating (canSave)
 
 	// `canSave` is the logic behind the Save button, so its behavior — DHCP bypass,
