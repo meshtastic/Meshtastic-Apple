@@ -43,6 +43,12 @@ struct IntervalConfigurationTests {
 		#expect(cases.contains(.fifteenSeconds))
 	}
 
+	@Test func waitBluetooth_staysShort() {
+		let cases = IntervalConfiguration.waitBluetooth.allowedCases
+		#expect(cases.first == .unset, "zero is the firmware default of one minute")
+		#expect(cases.allSatisfy { $0.rawValue < FixedUpdateIntervals.oneHour.rawValue })
+	}
+
 	@Test func allConfigurations_haveNonEmptyAllowedCases() {
 		for config in IntervalConfiguration.allCases {
 			#expect(!config.allowedCases.isEmpty, "\(config) has empty allowed cases")

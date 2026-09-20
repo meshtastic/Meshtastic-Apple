@@ -106,16 +106,16 @@ struct LoRaConfig: View {
 				// A frequency override replaces the slot, so the slot stops applying.
 				.init(F.channelNum, enabledWhen: .equals(F.overrideFrequency, 0)),
 				.init(F.sx126XRxBoostedGain, symbol: "waveform.badge.plus"),
+				// Transmitting past the region's duty cycle is the operator's responsibility,
+				// so the radio wants it asked for explicitly rather than assumed.
+				.init(F.overrideDutyCycle, symbol: "clock.arrow.2.circlepath"),
 				.init(F.overrideFrequency, symbol: "waveform.path.ecg", control: .preciseDecimal)
 			])
 		], omitted: [
 			.init(F.txPower, "set by the radio for the region and preset; not offered by this client"),
-			// Labelled upstream, so it could be offered; this screen has never shown it and a
-			// migration is the wrong place to add a control.
-			.init(F.paFanDisabled, "not offered by this client"),
+			.init(F.paFanDisabled, "not stored by the entity, so saved as the proto default as before"),
 			// A repeated list of node numbers to ignore, with no editor on any client.
 			.init(Self.ignoreIncomingField, "a repeated node list; not offered by this client"),
-			.init(F.overrideDutyCycle, "not offered by this client; unlabelled upstream"),
 			.init(F.frequencyOffset, "not offered by this client; unlabelled upstream"),
 			.init(F.femLnaMode, "not offered by this client; unlabelled upstream"),
 			.init(F.serialHalOnly, "not offered by this client; unlabelled upstream")

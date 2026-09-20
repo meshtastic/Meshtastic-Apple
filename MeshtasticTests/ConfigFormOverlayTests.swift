@@ -55,7 +55,7 @@ struct ConfigFormOverlayTests {
 			"meshtastic.Config.DeviceConfig": (1, 0),                   // role picker with its warning
 			"meshtastic.Config.DisplayConfig": (0, 0),                  // no hatches: every row reads its own field
 			"meshtastic.Config.PositionConfig": (1, 0),                 // fixed position confirms before it sends
-			"meshtastic.Config.PowerConfig": (1, 2),                    // ADC override; power saving and battery rows by architecture
+			"meshtastic.Config.PowerConfig": (1, 3),                    // ADC override; power saving, Bluetooth wait and battery rows by architecture
 			"meshtastic.ModuleConfig.AmbientLightingConfig": (1, 0),    // one colour picker for three channels
 			"meshtastic.ModuleConfig.CannedMessageConfig": (0, 3),      // three sections locked while a preset is chosen
 			"meshtastic.ModuleConfig.ExternalNotificationConfig": (0, 0),
@@ -80,6 +80,40 @@ struct ConfigFormOverlayTests {
 			let pinned = try #require(expected[overlay.protoName], "\(overlay.protoName) has no pinned hatch counts")
 			#expect(overlay.customControlCount == pinned.custom, "\(overlay.protoName) custom controls")
 			#expect(overlay.environmentConditionCount == pinned.environment, "\(overlay.protoName) environment conditions")
+		}
+	}
+
+	@Test("LoRa offers the duty cycle override")
+	func loRaOffersDutyCycleOverride() throws {
+		typealias F = Config.LoRaConfig.Fields
+		let overlay = LoRaConfig.overlay(node: nil)
+		#expect(overlay.rowID(for: F.overrideDutyCycle.identity) != nil)
+		// No entity property, so the toggle would show and then save the wrong value.
+		#expect(overlay.omits(F.paFanDisabled.identity))
+	}
+
+	@Test("The Bluetooth wait is offered on ESP32 boards only")
+	func powerOffersBluetoothWaitOnESP32() throws {
+		typealias F = Config.PowerConfig.Fields
+		let env = testEnvironment(firmware: "2.8.0")
+		let config = Config.PowerConfig()
+
+		for architecture in [Architecture.esp32, .esp32S3] {
+			let overlay = PowerConfig.overlay(architecture: architecture)
+			let row = try #require(overlay.sections.flatMap(\.fields)
+				.first { $0.id == F.waitBluetoothSecs.name })
+			#expect(row.shownWhen?.evaluate(config, env) ?? true, "\(architecture) should show it")
+			guard case .interval(let intervals) = row.control else {
+				Issue.record("the Bluetooth wait should render as an interval picker"); return
+			}
+			#expect(intervals == .waitBluetooth)
+		}
+
+		for architecture in [Architecture.nrf52840, .rp2040] {
+			let overlay = PowerConfig.overlay(architecture: architecture)
+			let row = try #require(overlay.sections.flatMap(\.fields)
+				.first { $0.id == F.waitBluetoothSecs.name })
+			#expect(!(row.shownWhen?.evaluate(config, env) ?? true), "\(architecture) should hide it")
 		}
 	}
 

@@ -47,13 +47,16 @@ struct PowerConfig: View {
 			.init(title: String(localized: "Power", comment: "Settings section"), fields: [
 				.init(F.isPowerSaving, symbol: "bolt", shownWhen: canPowerSave),
 				// Half an hour when switched on; the old screen left the picker unset, which saved as off.
-				.init(F.onBatteryShutdownAfterSecs, symbol: "power", control: .nonZeroToggle(onValue: 1800))
+				.init(F.onBatteryShutdownAfterSecs, symbol: "power", control: .nonZeroToggle(onValue: 1800)),
+				// How long the board holds BLE up in a no-Bluetooth state before turning it
+				// off. ESP32 only, and zero is the firmware default of one minute.
+				.init(F.waitBluetoothSecs, symbol: "dot.radiowaves.right",
+					  shownWhen: .environment { _ in esp32 }, control: .interval(.waitBluetooth))
 			]),
 			.init(title: String(localized: "Battery", comment: "Settings section"), shownWhen: .environment { _ in esp32 }, fields: [
 				.init(F.adcMultiplierOverride, control: .custom { config in AnyView(ADCOverrideField(multiplier: config.adcMultiplierOverride)) })
 			])
 		], omitted: [
-			.init(F.waitBluetoothSecs, "not offered by this client; round-trips from the entity"),
 			.init(F.sdsSecs, "not offered by this client; not stored by the entity, so saved as the proto default as before"),
 			.init(F.lsSecs, "not offered by this client; round-trips from the entity"),
 			.init(F.minWakeSecs, "not offered by this client; round-trips from the entity"),
