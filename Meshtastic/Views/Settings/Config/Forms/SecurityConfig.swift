@@ -79,6 +79,7 @@ struct SecurityConfig: View {
 	@EnvironmentObject private var accessoryManager: AccessoryManager
 	@EnvironmentObject private var lockdown: LockdownCoordinator
 	@State private var showLockNowAlert = false
+	@State private var packetAuthenticity = PacketAuthenticitySelectionState()
 	let node: NodeInfoEntity?
 
 	private typealias F = Config.SecurityConfig.Fields
@@ -129,12 +130,25 @@ struct SecurityConfig: View {
 			leading: { config in
 				// Its own view with a per-level explanation and a confirmation for Strict,
 				// and unlabelled upstream, so it stays a section rather than becoming a row.
+				//
+				// Real state, not a binding derived from the message. Choosing Strict does
+				// not commit: it raises a pending flag that the confirmation reads. A
+				// derived binding rebuilds the state on every read, so that flag was
+				// discarded the moment it was set and Strict could never be reached.
 				PacketAuthenticitySection(
 					capability: PacketAuthenticityCapability(metadata: node?.metadata),
 					isConnected: accessoryManager.isConnected,
-					selection: Binding(
-						get: { PacketAuthenticitySelectionState(selected: config.wrappedValue.packetSignaturePolicy) },
-						set: { config.wrappedValue.packetSignaturePolicy = $0.selected }))
+					selection: $packetAuthenticity)
+					.onAppear { packetAuthenticity = PacketAuthenticitySelectionState(selected: config.wrappedValue.packetSignaturePolicy) }
+					.onChange(of: config.wrappedValue.packetSignaturePolicy) { _, policy in
+						// The radio's value arriving, not the user choosing.
+						if policy != packetAuthenticity.selected {
+							packetAuthenticity = PacketAuthenticitySelectionState(selected: policy)
+						}
+					}
+					.onChange(of: packetAuthenticity.selected) { _, policy in
+						config.wrappedValue.packetSignaturePolicy = policy
+					}
 			},
 			trailing: { _ in
 				LockdownSection(lockdown: lockdown, showLockNowAlert: $showLockNowAlert)
