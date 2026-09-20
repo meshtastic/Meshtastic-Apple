@@ -26,22 +26,28 @@ struct SecurityKeyTests {
 		#expect(!SecurityKey.isValid("AAAA"), "text that is present and not a key is wrong")
 	}
 
+	// The private key field and the three admin slots share one rule for taking up a
+	// value that arrives late, so they share one function and this tests that, rather
+	// than a copy of its condition that would keep passing if the rows stopped using it.
 	@Test("A field seeded before the values arrive still picks them up")
 	func lateValuesAreAdopted() {
-		// What the row does when config.privateKey changes under it: text it has not been
-		// edited into keeps following the message.
-		var text = ""
 		let arriving = key(0x5A)
-		let incoming = SecurityKey.text(arriving)
-		if incoming != text, SecurityKey.data(text) != arriving { text = incoming }
-		#expect(text == incoming, "the key must appear once it loads")
+		#expect(SecurityKey.shouldAdopt(arriving, into: ""),
+				"the key must appear once it loads")
+		#expect(!SecurityKey.shouldAdopt(arriving, into: SecurityKey.text(arriving)),
+				"a field already holding that key is left alone")
+		#expect(SecurityKey.shouldAdopt(arriving, into: SecurityKey.text(key(0x77))),
+				"a field holding some other key follows the radio")
+		#expect(!SecurityKey.shouldAdopt(Data(), into: ""),
+				"nothing arriving into a blank field is not a change")
+	}
 
-		// An edit in progress is not overwritten by the same value arriving again.
-		var edited = SecurityKey.text(key(0x77))
-		let before = edited
-		let same = SecurityKey.data(edited)
-		if SecurityKey.text(same) != edited, SecurityKey.data(edited) != same { edited = SecurityKey.text(same) }
-		#expect(edited == before, "a field already holding that key is left alone")
+	@Test("A key being typed is not overwritten under the cursor")
+	func partialTextSurvivesAnArrival() {
+		// Half a key reads as unset, so the plain "does this text mean that key" check
+		// would call it stale and replace what the user is still typing.
+		#expect(!SecurityKey.shouldAdopt(key(0x5A), into: "AAAA"))
+		#expect(!SecurityKey.shouldAdopt(Data(), into: "AAAA"))
 	}
 
 	@Test("A key round-trips through text unchanged")
@@ -81,7 +87,7 @@ struct SecurityKeyTests {
 
 	@Test("The three stored columns become the array in order")
 	func entityBridgeKeepsOrder() {
-		// The bridge the form loads through. A swap here authorises a different key than
+		// The bridge the form loads through. A swap here authorizes a different key than
 		// the one the user put in the primary slot.
 		let entity = SecurityConfigEntity()
 		entity.adminKey = key(0x11)
@@ -103,6 +109,34 @@ struct SecurityKeyTests {
 		#expect(config.adminKey.count == SecurityKey.slots)
 		let allEmpty = config.adminKey.allSatisfy { $0.isEmpty }
 		#expect(allEmpty)
+	}
+
+	@Test("Clearing one slot leaves the others where they were")
+	func clearingASlotKeepsThePositions() {
+		var config = Config.SecurityConfig()
+		config.adminKey = [key(0x11), key(0x22), key(0x33)]
+		config.setAdminKey(Data(), at: 1)
+		#expect(config.adminKey == [key(0x11), Data(), key(0x33)],
+				"a cleared slot holds its place, or the tertiary key becomes the secondary")
+	}
+
+	@Test("Managed mode goes with the last admin key")
+	func managedModeNeedsAnAdministrator() {
+		// A managed node with no administrator cannot be changed back: its owner is
+		// locked out of settings and there is no key left to sign a remote change with.
+		var config = Config.SecurityConfig()
+		config.adminKey = [key(0x11), Data(), Data()]
+		config.isManaged = true
+
+		config.setAdminKey(key(0x22), at: 1)
+		#expect(config.isManaged, "another administrator is still an administrator")
+
+		config.setAdminKey(Data(), at: 1)
+		#expect(config.isManaged, "the primary key is still set")
+
+		config.setAdminKey(Data(), at: 0)
+		#expect(!config.isManaged, "the last key went, so managed mode goes with it")
+		#expect(config.adminKey.count == SecurityKey.slots)
 	}
 
 }

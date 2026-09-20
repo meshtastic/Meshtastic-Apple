@@ -5,6 +5,7 @@
 //  Copyright(c) Garth Vander Houwen 9/19/26.
 //
 import SwiftUI
+import SwiftData
 import MeshtasticProtobufs
 import OSLog
 import CryptoKit
@@ -73,9 +74,38 @@ enum SecurityKey {
 		while keys.count < slots { keys.append(Data()) }
 		return Array(keys.prefix(slots))
 	}
+
+	/// Whether a field showing `current` should take up `arriving`, the key that just
+	/// landed from the radio.
+	///
+	/// The radio's values arrive after the rows are on screen, so a field has to follow
+	/// them or the key never appears at all. What the user has typed is left alone: text
+	/// that already means this key, and text that is not a key yet because they are
+	/// still typing it.
+	static func shouldAdopt(_ arriving: Data, into current: String) -> Bool {
+		guard isValid(current) else { return false }
+		return text(arriving) != current && data(current) != arriving
+	}
+}
+
+extension Config.SecurityConfig {
+	/// Writes one admin key slot.
+	///
+	/// The array is positional and always three long: an empty slot still occupies its
+	/// place, or the keys after it would shift and authorize the wrong administrator.
+	/// Managed mode goes with the last key, because a managed node with no administrator
+	/// cannot be changed back - not by its owner, who is locked out, and not remotely,
+	/// because there is no key left to sign with.
+	mutating func setAdminKey(_ key: Data, at slot: Int) {
+		var keys = SecurityKey.padded(adminKey)
+		keys[slot] = key
+		adminKey = keys
+		if keys.allSatisfy(\.isEmpty) { isManaged = false }
+	}
 }
 
 struct SecurityConfig: View {
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject private var accessoryManager: AccessoryManager
 	@EnvironmentObject private var lockdown: LockdownCoordinator
 	@State private var showLockNowAlert = false
@@ -124,7 +154,11 @@ struct SecurityConfig: View {
 			node: node, title: "Security", overlay: Self.overlay(node: node),
 			request: accessoryManager.requestSecurityConfig,
 			save: { config, from, to in
+				// Read before the save, which writes the new key over the stored one.
+				let storedPrivateKey = node?.securityConfig?.privateKey ?? Data()
 				_ = try await accessoryManager.saveSecurityConfig(config: config, fromUser: from, toUser: to)
+				guard config.privateKey != storedPrivateKey else { return }
+				await privateKeyDidChange(config, fromUser: from, toUser: to)
 			},
 			leading: { config in
 				// Its own view with a per-level explanation, and unlabelled upstream, so it
@@ -139,6 +173,34 @@ struct SecurityConfig: View {
 				LockdownSection(lockdown: lockdown, showLockNowAlert: $showLockNowAlert)
 			})
 		.navigationTitle("Security Config")
+	}
+
+	/// The keypair changed, so two things have to follow it. The app's copy of this
+	/// node's public key is now the old one, and remote nodes keep encrypting to the old
+	/// key until the radio restarts on the new one - either way direct messages fail.
+	///
+	/// This is the node's own keypair, changed deliberately on this screen, so the
+	/// first-wins protection that guards inbound keys from other nodes does not apply.
+	@MainActor
+	private func privateKeyDidChange(
+		_ config: Config.SecurityConfig, fromUser: UserEntity, toUser: UserEntity
+	) async {
+		// Derived, never typed. An empty one would wipe the stored key rather than
+		// replace it, which costs every existing conversation, so it is left alone.
+		if !config.publicKey.isEmpty {
+			node?.user?.publicKey = config.publicKey
+			do {
+				try context.save()
+				Logger.data.info("💾 Saved UserEntity Public Key to Core Data for \(node?.num ?? 0, privacy: .public)")
+			} catch {
+				Logger.data.error("Error Updating UserEntity: \(error as NSError, privacy: .public)")
+			}
+		}
+		do {
+			try await accessoryManager.sendReboot(fromUser: fromUser, toUser: toUser)
+		} catch {
+			Logger.mesh.warning("Reboot Failed")
+		}
 	}
 }
 
@@ -227,15 +289,15 @@ private struct PrivateKeyRows: View {
 		}
 		.onAppear { text = SecurityKey.text(config.privateKey) }
 		.onChange(of: config.privateKey) { _, new in
-			// The radio's values land after the row is on screen, so the field has to
-			// follow them. Without this the key never appears at all.
-			let incoming = SecurityKey.text(new)
-			if incoming != text, SecurityKey.data(text) != new { text = incoming }
+			if SecurityKey.shouldAdopt(new, into: text) { text = SecurityKey.text(new) }
 		}
 		.onChange(of: text) { _, new in
 			// A key that does not decode to 32 bytes stores as empty rather than as
 			// itself: half a key is not a key, and writing one costs every existing
-			// direct-message conversation.
+			// direct-message conversation. Half-typed text does not reach the message
+			// at all, so a save made mid-edit sends the last good key rather than an
+			// unset one; only clearing the field clears the key.
+			guard SecurityKey.isValid(new) else { return }
 			config.privateKey = SecurityKey.data(new)
 			// The public key is derived, never typed, so it follows the private one.
 			if !config.privateKey.isEmpty,
@@ -361,10 +423,9 @@ private struct AdminKeyRows: View {
 	/// Seeding only on appear left the slots empty, and hanging that off the description
 	/// meant it would not have run at all for a message with no description.
 	private func sync() {
-		let incoming = SecurityKey.padded(config.adminKey).map(SecurityKey.text)
-		for slot in 0..<SecurityKey.slots where incoming[slot] != text[slot]
-			&& SecurityKey.data(text[slot]) != SecurityKey.padded(config.adminKey)[slot] {
-			text[slot] = incoming[slot]
+		let arriving = SecurityKey.padded(config.adminKey)
+		for slot in 0..<SecurityKey.slots where SecurityKey.shouldAdopt(arriving[slot], into: text[slot]) {
+			text[slot] = SecurityKey.text(arriving[slot])
 		}
 	}
 
@@ -373,11 +434,10 @@ private struct AdminKeyRows: View {
 			get: { text[slot] },
 			set: { new in
 				text[slot] = new
-				// Positional: an empty slot still occupies its place, or the keys after
-				// it would shift and authorise the wrong administrator.
-				var keys = SecurityKey.padded(config.adminKey)
-				keys[slot] = SecurityKey.data(new)
-				config.adminKey = keys
+				// Half-typed text is not a key. The slot keeps the last good one until
+				// it is one, so a save made mid-edit cannot drop an administrator.
+				guard SecurityKey.isValid(new) else { return }
+				config.setAdminKey(SecurityKey.data(new), at: slot)
 			})
 	}
 }

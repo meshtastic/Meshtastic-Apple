@@ -5,7 +5,7 @@
 //   - Config.SecurityConfig.packet_signature_policy (field 9) → SecurityConfigEntity.packetSignaturePolicy
 //   - DeviceMetadata.has_xeddsa (field 14)                    → DeviceMetadataEntity.hasXeddsa
 // The behavioral expectations mirror Android's PacketAuthenticitySettingTest (Meshtastic-Android#6178)
-// so the two clients cannot drift apart on the wire contract or the Strict confirmation flow.
+// so the two clients cannot drift apart on the wire contract.
 
 import Testing
 import Foundation

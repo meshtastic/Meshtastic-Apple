@@ -6,9 +6,9 @@
 //
 //  Cross-client contract: design#121, protobufs#983 (Config.SecurityConfig.packet_signature_policy,
 //  DeviceMetadata.has_xeddsa) and firmware#10967. The Android/Desktop equivalent is
-//  `PacketAuthenticitySetting.kt` (Meshtastic-Android#6178) — the policy labels, summaries and the
-//  Strict confirmation copy are deliberately kept identical across clients. The labels themselves
-//  live in `Extensions/Protobufs/Config+PacketSignaturePolicy.swift`.
+//  `PacketAuthenticitySetting.kt` (Meshtastic-Android#6178) — the policy labels and summaries are
+//  deliberately kept identical across clients. The labels themselves live in
+//  `Extensions/Protobufs/Config+PacketSignaturePolicy.swift`.
 //
 
 import SwiftUI
@@ -37,10 +37,6 @@ enum PacketAuthenticityCapability: Equatable {
 	var allowsChanges: Bool { self == .supported }
 }
 
-// MARK: - Selection state machine
-
-// MARK: - Security config wiring
-
 // MARK: - Section
 
 /// "Packet Authenticity" section of the Security config screen.
@@ -49,7 +45,7 @@ struct PacketAuthenticitySection: View {
 
 	let capability: PacketAuthenticityCapability
 	/// Whether the radio is reachable. Combined with `capability` this decides whether the policy
-	/// can be changed, and a loss of either dismisses a pending Strict confirmation.
+	/// can be changed.
 	let isConnected: Bool
 	@Binding var policy: Config.SecurityConfig.PacketSignaturePolicy
 
