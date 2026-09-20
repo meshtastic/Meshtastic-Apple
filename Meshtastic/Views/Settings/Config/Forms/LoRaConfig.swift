@@ -255,7 +255,12 @@ private struct ModemPresetRow: View {
 	}
 
 	private var available: [ModemPresets] {
-		let base = ModemPresets.selectable(supports2_8: supports2_8)
+		var base = ModemPresets.selectable(supports2_8: supports2_8)
+		// The EU band plans cap bandwidth below what Turbo uses, so those are not offered
+		// at all there rather than offered with a warning.
+		if RegionCodes(rawValue: config.region.rawValue)?.prohibitsTurboPresets == true {
+			base = base.filter { !$0.isTurbo }
+		}
 		var presets = base
 		if supports2_8,
 		   let code = RegionCodes(rawValue: config.region.rawValue)?.protoEnumValue(),
@@ -284,13 +289,13 @@ private struct ModemPresetRow: View {
 					.foregroundColor(.gray)
 					.font(.callout)
 			}
-			// Long Fast stays selectable in the US, but its bandwidth is not US-compliant
-			// on 2.8 - warn rather than block.
+			// Every non-Turbo preset stays selectable in the US, but none of their
+			// bandwidths is US-compliant on 2.8 - warn rather than block.
 			if supports2_8,
 			   config.region.rawValue == RegionCodes.us.rawValue,
-			   config.modemPreset.rawValue == ModemPresets.longFast.rawValue {
+			   let preset = ModemPresets(rawValue: config.modemPreset.rawValue), !preset.isTurbo {
 				Label {
-					Text("Long Fast's bandwidth is not compliant in the US. Long Turbo is the recommended preset.")
+					Text("\(preset.description)'s bandwidth is not compliant in the US. The Turbo presets are recommended.")
 						.foregroundColor(.gray)
 						.font(.caption)
 				} icon: {
