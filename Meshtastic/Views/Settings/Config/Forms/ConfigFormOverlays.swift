@@ -29,6 +29,7 @@ enum ConfigFormOverlays {
 		RangeTestConfig.overlay(),
 		SerialConfig.overlay(),
 		StoreForwardConfig.overlay(),
+		TAKModuleConfig.overlay(),
 		TelemetryConfig.overlay(),
 		TrafficManagementConfig.overlay()
 	]
@@ -39,8 +40,6 @@ enum ConfigFormOverlays {
 		"meshtastic.Config.SecurityConfig": "key management, lockdown and a repeated admin_key field",
 		"meshtastic.Config.NetworkConfig": "static IPv4 as dotted quads over a nested message, with validation",
 		"meshtastic.ModuleConfig.MeshBeaconConfig": "a repeated broadcast_targets editor and channel resolution",
-		"meshtastic.ModuleConfig.MapReportSettings": "not a screen: nested in MQTTConfig and laid out there through its flattened fields",
-		// Not migrated yet. Each moves to `all` in its own pull request.
-		"meshtastic.ModuleConfig.TAKConfig": "pending: Team and MemberRole values have no labels upstream yet, so its pickers would show case names"
+		"meshtastic.ModuleConfig.MapReportSettings": "not a screen: nested in MQTTConfig and laid out there through its flattened fields"
 	]
 }

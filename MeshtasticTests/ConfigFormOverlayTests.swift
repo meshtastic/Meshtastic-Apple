@@ -65,6 +65,7 @@ struct ConfigFormOverlayTests {
 			"meshtastic.ModuleConfig.RangeTestConfig": (0, 1),          // save needs WiFi
 			"meshtastic.ModuleConfig.SerialConfig": (0, 0),
 			"meshtastic.ModuleConfig.StoreForwardConfig": (0, 0),
+			"meshtastic.ModuleConfig.TAKConfig": (0, 0),
 			"meshtastic.ModuleConfig.TelemetryConfig": (0, 1),          // the interval stands alone where there is no toggle
 			"meshtastic.ModuleConfig.TrafficManagementConfig": (0, 4)   // four feature sections behind the main switch
 		]
