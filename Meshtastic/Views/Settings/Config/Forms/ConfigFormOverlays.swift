@@ -22,6 +22,7 @@ enum ConfigFormOverlays {
 		DisplayConfig.overlay(),
 		ExternalNotificationConfig.overlay(),
 		MQTTConfig.overlay(),
+		NetworkConfig.overlay(),
 		NeighborInfoConfig.overlay(),
 		PaxCounterConfig.overlay(),
 		PositionConfig.overlay(),
@@ -38,7 +39,6 @@ enum ConfigFormOverlays {
 	static let bespoke: [String: String] = [
 		"meshtastic.Config.LoRaConfig": "region, preset, bandwidth and coding rate constrain each other from live radio data",
 		"meshtastic.Config.SecurityConfig": "key management, lockdown and a repeated admin_key field",
-		"meshtastic.Config.NetworkConfig": "static IPv4 as dotted quads over a nested message, with validation",
 		"meshtastic.ModuleConfig.MeshBeaconConfig": "a repeated broadcast_targets editor and channel resolution",
 		"meshtastic.ModuleConfig.MapReportSettings": "not a screen: nested in MQTTConfig and laid out there through its flattened fields"
 	]

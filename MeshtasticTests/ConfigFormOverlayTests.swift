@@ -60,6 +60,7 @@ struct ConfigFormOverlayTests {
 			"meshtastic.ModuleConfig.CannedMessageConfig": (0, 3),      // three sections locked while a preset is chosen
 			"meshtastic.ModuleConfig.ExternalNotificationConfig": (0, 0),
 			"meshtastic.ModuleConfig.MQTTConfig": (4, 2),               // proxy, consent, precision, root topic; TLS by firmware, consent kept on older firmware
+			"meshtastic.Config.NetworkConfig": (0, 6),                  // every section turns on hardware the schema cannot see
 			"meshtastic.ModuleConfig.NeighborInfoConfig": (0, 0),
 			"meshtastic.ModuleConfig.PaxcounterConfig": (0, 0),
 			"meshtastic.ModuleConfig.RangeTestConfig": (0, 1),          // save needs WiFi

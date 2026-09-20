@@ -127,6 +127,8 @@ private struct IntegerRow<M: ConfigSchemaMessage>: View {
 	private func plain(_ control: ConfigFormControl<M>, bare: Bool) -> some View {
 		let rowLabel = bare ? "" : label
 		switch control {
+		case .ipv4Address(let required):
+			IPv4Row(label: rowLabel, symbol: field.symbol, required: required, value: $value)
 		case .gpioPin:
 			GPIOPinPicker(title: rowLabel, selection: $value)
 		case .interval(let configuration):
@@ -428,5 +430,98 @@ enum ConfigFormFlagBits {
 
 	static func setting(_ bit: Int, to isOn: Bool, in word: Int) -> Int {
 		isOn ? word | bit : word & ~bit
+	}
+}
+
+/// A uint32 IPv4 address, typed and shown as a dotted quad. The radio stores the
+/// address as a number; nobody reads one that way, and a half-typed address must not
+/// be silently written as 0.0.0.0, so the text is kept as text while it is being
+/// edited and only converted when it parses.
+struct IPv4Row: View {
+	let label: String
+	let symbol: String?
+	/// A blank address reads as invalid: a static configuration cannot work without it.
+	let required: Bool
+	@Binding var value: Int
+	@State private var text: String = ""
+	@State private var editing = false
+
+	private var isValid: Bool {
+		required ? IPv4Address.isRequiredFieldValid(text) : IPv4Address.isFieldValid(text)
+	}
+
+	var body: some View {
+		HStack {
+			if let symbol {
+				Label(label, systemImage: symbol)
+			} else {
+				Text(label)
+			}
+			Spacer()
+			TextField(required ? "192.168.1.10" : String(localized: "Optional", comment: "Optional address field"),
+					  text: $text)
+				.multilineTextAlignment(.trailing)
+				.foregroundColor(isValid ? .gray : .red)
+				.keyboardType(.numbersAndPunctuation)
+				.autocorrectionDisabled()
+				.textInputAutocapitalization(.never)
+				.onChange(of: text) { _, new in
+					// Text that does not parse writes 0, which reads as unset. Keeping the
+					// previous value instead would be worse: the field would show a typo
+					// in red while the form still held the old address, and saving would
+					// quietly write that old address back.
+					value = Int(IPv4Address.toUInt32(new))
+				}
+				.onAppear { text = IPv4Address.toString(UInt32(truncatingIfNeeded: value)) }
+				.onChange(of: value) { _, new in
+					// The radio's values arriving after the form opened, not the user typing.
+					let incoming = IPv4Address.toString(UInt32(truncatingIfNeeded: new))
+					if incoming != text, IPv4Address.toUInt32(text) != UInt32(truncatingIfNeeded: new) {
+						text = incoming
+					}
+				}
+		}
+	}
+}
+
+/// IPv4 in the shape the radio stores it and the shape people type it.
+enum IPv4Address {
+	/// A well-formed dotted quad, or blank. Each octet is 1-3 ASCII digits in range,
+	/// which also rejects the signs and whitespace `UInt32` alone would accept: without
+	/// that, a typo like `192.168.1` or `192.168.1.300` becomes 0.0.0.0 silently.
+	static func isFieldValid(_ text: String) -> Bool {
+		if text.isEmpty { return true }
+		let parts = text.split(separator: ".", omittingEmptySubsequences: false)
+		guard parts.count == 4 else { return false }
+		return parts.allSatisfy { part in
+			guard part.count <= 3,
+				  part.allSatisfy({ $0.isASCII && $0.isNumber }),
+				  let value = UInt32(part) else { return false }
+			return value <= 255
+		}
+	}
+
+	/// For an address a static configuration cannot go without. Anything that packs to
+	/// zero is a fault here, which covers blank and `0.0.0.0` alike: both store as zero,
+	/// and a row that reads as valid while the save is blocked explains nothing.
+	static func isRequiredFieldValid(_ text: String) -> Bool {
+		isFieldValid(text) && toUInt32(text) != 0
+	}
+
+	/// Zero for anything the strict check rejects. Parsing leniently here would let the
+	/// two disagree: `split` drops a trailing empty component, so `192.168.1.1.` would
+	/// pack to a perfectly good address while the field showed it in red, and the save
+	/// gate reads the packed value.
+	static func toUInt32(_ text: String) -> UInt32 {
+		guard isFieldValid(text) else { return 0 }
+		let parts = text.split(separator: ".").compactMap { UInt32($0) }
+		guard parts.count == 4, parts.allSatisfy({ $0 <= 255 }) else { return 0 }
+		return parts[0] | (parts[1] << 8) | (parts[2] << 16) | (parts[3] << 24)
+	}
+
+	/// Zero round-trips as blank, which is how the firmware reports an unset address.
+	static func toString(_ value: UInt32) -> String {
+		if value == 0 { return "" }
+		return "\(value & 0xFF).\((value >> 8) & 0xFF).\((value >> 16) & 0xFF).\((value >> 24) & 0xFF)"
 	}
 }
