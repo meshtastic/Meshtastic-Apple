@@ -2066,7 +2066,7 @@ struct PacketAuthenticitySnapshotTests {
 			PacketAuthenticitySection(
 				capability: capability,
 				isConnected: isConnected,
-				selection: .constant(PacketAuthenticitySelectionState(selected: policy))
+				policy: .constant(policy)
 			)
 		}
 	}
