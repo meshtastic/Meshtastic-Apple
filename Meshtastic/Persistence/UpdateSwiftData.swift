@@ -941,6 +941,7 @@ extension MeshPackets {
 					newLoRaConfig.frequencyOffset = config.frequencyOffset
 					newLoRaConfig.overrideFrequency = config.overrideFrequency
 					newLoRaConfig.overrideDutyCycle = config.overrideDutyCycle
+					newLoRaConfig.paFanDisabled = config.paFanDisabled
 					newLoRaConfig.hopLimit = Int32(truncatingIfNeeded: config.hopLimit)
 					newLoRaConfig.txPower = Int32(truncatingIfNeeded: config.txPower)
 					newLoRaConfig.txEnabled = config.txEnabled
@@ -959,6 +960,7 @@ extension MeshPackets {
 					fetchedNode[0].loRaConfig?.frequencyOffset = config.frequencyOffset
 					fetchedNode[0].loRaConfig?.overrideFrequency = config.overrideFrequency
 					fetchedNode[0].loRaConfig?.overrideDutyCycle = config.overrideDutyCycle
+					fetchedNode[0].loRaConfig?.paFanDisabled = config.paFanDisabled
 					fetchedNode[0].loRaConfig?.hopLimit = Int32(truncatingIfNeeded: config.hopLimit)
 					fetchedNode[0].loRaConfig?.txPower = Int32(truncatingIfNeeded: config.txPower)
 					fetchedNode[0].loRaConfig?.txEnabled = config.txEnabled

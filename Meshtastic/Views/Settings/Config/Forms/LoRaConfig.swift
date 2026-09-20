@@ -32,6 +32,7 @@ extension Config.LoRaConfig: ConfigFormMessage {
 		txPower = entity.txPower
 		channelNum = UInt32(truncatingIfNeeded: entity.channelNum)
 		overrideDutyCycle = entity.overrideDutyCycle
+		paFanDisabled = entity.paFanDisabled
 		sx126XRxBoostedGain = entity.sx126xRxBoostedGain
 		overrideFrequency = entity.overrideFrequency
 		ignoreMqtt = entity.ignoreMqtt
@@ -78,8 +79,31 @@ struct LoRaConfig: View {
 			pioEnv: node?.myInfo?.pioEnv) == nil
 	}
 
+	/// The boards whose firmware drives a PA fan from a GPIO: the four variants that
+	/// define `RF95_FAN_EN`. Nothing in the device catalog records a fan, and the radio
+	/// does not report one, so the list is the only way to ask. Anywhere else the toggle
+	/// would write a field no firmware reads.
+	static let paFanHardware: Set<Int32> = [
+		Int32(HardwareModel.betafpv2400Tx.rawValue),
+		Int32(HardwareModel.radiomaster900BanditNano.rawValue),
+		Int32(HardwareModel.radiomaster900Bandit.rawValue),
+		Int32(HardwareModel.tbeam1Watt.rawValue)
+	]
+
 	static func overlay(node: NodeInfoEntity? = nil) -> ConfigFormOverlay<Config.LoRaConfig> {
 		let custom = ConfigFormCondition<Config.LoRaConfig>.isFalse(F.usePreset)
+		// Hidden on hardware the app has not identified, the same as the other rows that
+		// turn on something the schema cannot see.
+		let hasPAFan = ConfigFormCondition<Config.LoRaConfig>.environment { env in
+			guard let hwModel = env.node?.user?.hwModelId else { return false }
+			return paFanHardware.contains(hwModel)
+		}
+		// Nothing to override where the region has no hourly limit, so the toggle only
+		// appears in the bands that do. A region this app does not know hides it.
+		let hasDutyCycle = ConfigFormCondition<Config.LoRaConfig>.satisfies(F.region) { region in
+			guard let code = RegionCodes(rawValue: region.rawValue) else { return false }
+			return code.dutyCycle > 0 && code.dutyCycle < 100
+		}
 		return .init(sections: [
 			.init(title: String(localized: "Options", comment: "Settings section"), fields: [
 				// Custom for the notices that sit with them: a region this app cannot save,
@@ -106,16 +130,16 @@ struct LoRaConfig: View {
 				// A frequency override replaces the slot, so the slot stops applying.
 				.init(F.channelNum, enabledWhen: .equals(F.overrideFrequency, 0)),
 				.init(F.sx126XRxBoostedGain, symbol: "waveform.badge.plus"),
+				// Transmitting past the region's duty cycle is the operator's responsibility,
+				// so the radio wants it asked for explicitly rather than assumed.
+				.init(F.overrideDutyCycle, symbol: "clock.arrow.2.circlepath", shownWhen: hasDutyCycle),
+				.init(F.paFanDisabled, symbol: "fan", shownWhen: hasPAFan),
 				.init(F.overrideFrequency, symbol: "waveform.path.ecg", control: .preciseDecimal)
 			])
 		], omitted: [
 			.init(F.txPower, "set by the radio for the region and preset; not offered by this client"),
-			// Labelled upstream, so it could be offered; this screen has never shown it and a
-			// migration is the wrong place to add a control.
-			.init(F.paFanDisabled, "not offered by this client"),
 			// A repeated list of node numbers to ignore, with no editor on any client.
 			.init(Self.ignoreIncomingField, "a repeated node list; not offered by this client"),
-			.init(F.overrideDutyCycle, "not offered by this client; unlabelled upstream"),
 			.init(F.frequencyOffset, "not offered by this client; unlabelled upstream"),
 			.init(F.femLnaMode, "not offered by this client; unlabelled upstream"),
 			.init(F.serialHalOnly, "not offered by this client; unlabelled upstream")

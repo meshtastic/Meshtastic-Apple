@@ -22,6 +22,20 @@ private func testEnvironment(firmware version: String?) -> ConfigFormEnvironment
 		isFirmwareKnown: version != nil)
 }
 
+/// An environment for a radio the app has identified as `hwModel`, for the rows gated
+/// on hardware neither the schema nor the radio describes.
+@MainActor
+private func environment(hwModel: Int32) -> ConfigFormEnvironment {
+	let node = NodeInfoEntity()
+	let user = UserEntity()
+	user.hwModelId = hwModel
+	node.user = user
+	return ConfigFormEnvironment(
+		node: node, isConnected: true, isConnectedNode: true, isDIYHardware: false,
+		hasWifi: false, hasEthernet: false, hasXeddsa: false,
+		firmwareAtLeast: { _ in true }, isFirmwareKnown: true)
+}
+
 /// Keeps the screen overlays honest against the schema and the registry.
 @Suite("Configuration form overlays")
 struct ConfigFormOverlayTests {
@@ -55,11 +69,11 @@ struct ConfigFormOverlayTests {
 			"meshtastic.Config.DeviceConfig": (1, 0),                   // role picker with its warning
 			"meshtastic.Config.DisplayConfig": (0, 0),                  // no hatches: every row reads its own field
 			"meshtastic.Config.PositionConfig": (1, 0),                 // fixed position confirms before it sends
-			"meshtastic.Config.PowerConfig": (1, 2),                    // ADC override; power saving and battery rows by architecture
+			"meshtastic.Config.PowerConfig": (1, 3),                    // ADC override; power saving, Bluetooth wait and battery rows by architecture
 			"meshtastic.ModuleConfig.AmbientLightingConfig": (1, 0),    // one colour picker for three channels
 			"meshtastic.ModuleConfig.CannedMessageConfig": (0, 3),      // three sections locked while a preset is chosen
 			"meshtastic.ModuleConfig.ExternalNotificationConfig": (0, 0),
-			"meshtastic.Config.LoRaConfig": (4, 0),                    // region, preset, bandwidth and coding rate all constrain each other
+			"meshtastic.Config.LoRaConfig": (4, 1),                    // region, preset, bandwidth and coding rate all constrain each other; the PA fan by hardware
 			"meshtastic.ModuleConfig.MQTTConfig": (4, 2),               // proxy, consent, precision, root topic; TLS by firmware, consent kept on older firmware
 			"meshtastic.Config.NetworkConfig": (0, 6),                  // every section turns on hardware the schema cannot see
 			"meshtastic.ModuleConfig.NeighborInfoConfig": (0, 0),
@@ -466,6 +480,101 @@ struct ConfigFormOverlayTests {
 		// than resolving against defaults and scrolling to a row the values may remove.
 		#expect(Form.readiness(hasStoredConfig: true, loaded: false, waitedOut: true) == .leaveForLater)
 	}
+}
+
+/// The rows that turn on something outside the message: the board the radio runs on,
+/// and the region it is set to.
+@Suite("Configuration form hardware and region gates")
+struct ConfigFormGateTests {
+
+	@Test("LoRa offers the duty cycle override and the PA fan toggle")
+	func loRaOffersDutyCycleOverride() throws {
+		typealias F = Config.LoRaConfig.Fields
+		let overlay = LoRaConfig.overlay(node: nil)
+		#expect(overlay.rowID(for: F.overrideDutyCycle.identity) != nil)
+		#expect(overlay.rowID(for: F.paFanDisabled.identity) != nil)
+	}
+
+	@Test("The duty cycle override is offered only where there is a duty cycle")
+	func dutyCycleOverrideIsRegionGated() throws {
+		typealias F = Config.LoRaConfig.Fields
+		let overlay = LoRaConfig.overlay(node: nil)
+		let row = try #require(overlay.sections.flatMap(\.fields)
+			.first { $0.id == F.overrideDutyCycle.name })
+		let condition = try #require(row.shownWhen, "the override should be region gated")
+		let env = testEnvironment(firmware: "2.8.0")
+
+		func shown(_ region: Config.LoRaConfig.RegionCode) -> Bool {
+			var config = Config.LoRaConfig()
+			config.region = region
+			return condition.evaluate(config, env)
+		}
+
+		// Every region the app records an hourly limit for, derived rather than listed
+		// so a change to RegionCodes.dutyCycle carries here.
+		let restricted = RegionCodes.allCases.filter { $0.dutyCycle > 0 && $0.dutyCycle < 100 }
+		#expect(!restricted.isEmpty, "the app should know of at least one restricted region")
+		for code in restricted {
+			let region = try #require(Config.LoRaConfig.RegionCode(rawValue: code.rawValue))
+			#expect(shown(region), "\(code) has a \(code.dutyCycle)% duty cycle")
+		}
+
+		#expect(!shown(.us))
+		#expect(!shown(.anz))
+		#expect(!shown(.jp))
+		// Unset has no limit to exceed either, so there is nothing to override yet.
+		#expect(!shown(.unset))
+	}
+
+	@Test("The PA fan toggle is offered only on the boards that drive one")
+	@MainActor func paFanIsHardwareGated() throws {
+		typealias F = Config.LoRaConfig.Fields
+		let overlay = LoRaConfig.overlay(node: nil)
+		let row = try #require(overlay.sections.flatMap(\.fields)
+			.first { $0.id == F.paFanDisabled.name })
+		let condition = try #require(row.shownWhen, "the fan row should be hardware gated")
+		let config = Config.LoRaConfig()
+
+		// The four firmware variants that define RF95_FAN_EN.
+		#expect(LoRaConfig.paFanHardware == [45, 64, 74, 122])
+
+		for hwModel in LoRaConfig.paFanHardware {
+			#expect(condition.evaluate(config, environment(hwModel: hwModel)),
+					"hardware \(hwModel) drives a PA fan")
+		}
+		for hwModel: Int32 in [4, 43, 63, 123] {
+			#expect(!condition.evaluate(config, environment(hwModel: hwModel)),
+					"hardware \(hwModel) has no PA fan")
+		}
+		// Hardware the app has not identified hides the row rather than guessing.
+		#expect(!condition.evaluate(config, testEnvironment(firmware: "2.8.0")))
+	}
+
+	@Test("The Bluetooth wait is offered on ESP32 boards only")
+	func powerOffersBluetoothWaitOnESP32() throws {
+		typealias F = Config.PowerConfig.Fields
+		let env = testEnvironment(firmware: "2.8.0")
+		let config = Config.PowerConfig()
+
+		for architecture in [Architecture.esp32, .esp32S3, .esp32C3, .esp32C6] {
+			let overlay = PowerConfig.overlay(architecture: architecture)
+			let row = try #require(overlay.sections.flatMap(\.fields)
+				.first { $0.id == F.waitBluetoothSecs.name })
+			#expect(row.shownWhen?.evaluate(config, env) ?? true, "\(architecture) should show it")
+			guard case .interval(let intervals) = row.control else {
+				Issue.record("the Bluetooth wait should render as an interval picker"); return
+			}
+			#expect(intervals == .waitBluetooth)
+		}
+
+		for architecture in [Architecture.nrf52840, .rp2040] {
+			let overlay = PowerConfig.overlay(architecture: architecture)
+			let row = try #require(overlay.sections.flatMap(\.fields)
+				.first { $0.id == F.waitBluetoothSecs.name })
+			#expect(!(row.shownWhen?.evaluate(config, env) ?? true), "\(architecture) should hide it")
+		}
+	}
+
 }
 
 /// The schema's firmware window: which releases read a field, and what the form does

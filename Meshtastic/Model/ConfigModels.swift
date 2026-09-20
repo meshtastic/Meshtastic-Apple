@@ -206,6 +206,7 @@ final class LoRaConfigEntity {
 	var modemPreset: Int32 = 0
 	var okToMqtt: Bool = false
 	var overrideDutyCycle: Bool = false
+	var paFanDisabled: Bool = false
 	var overrideFrequency: Float = 0.0
 	var regionCode: Int32 = 0
 	var spreadFactor: Int32 = 0

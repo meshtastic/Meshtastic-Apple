@@ -370,6 +370,7 @@ final class DiscoveryScanEngine {
 		config.frequencyOffset = entity.frequencyOffset
 		config.overrideFrequency = entity.overrideFrequency
 		config.overrideDutyCycle = entity.overrideDutyCycle
+		config.paFanDisabled = entity.paFanDisabled
 		config.sx126XRxBoostedGain = entity.sx126xRxBoostedGain
 		config.ignoreMqtt = entity.ignoreMqtt
 		config.configOkToMqtt = entity.okToMqtt

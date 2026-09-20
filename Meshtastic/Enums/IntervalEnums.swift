@@ -22,6 +22,7 @@ enum IntervalConfiguration: CaseIterable {
 	case smartBroadcastMinimum
 	case trafficPositionDedup
 	case trafficRateLimitWindow
+	case waitBluetooth
 
 	var allowedCases: [FixedUpdateIntervals] {
 		switch self {
@@ -56,6 +57,10 @@ enum IntervalConfiguration: CaseIterable {
 			// trackers, 15 minutes for lost-and-found. No zero row — the feature toggle clears
 			// the value instead.
 			return [.oneMinute, .fiveMinutes, .tenMinutes, .fifteenMinutes, .thirtyMinutes, .oneHour, .twoHours, .threeHours, .fourHours, .fiveHours, .sixHours, .twelveHours, .twentyFourHours]
+		case .waitBluetooth:
+			// How long an ESP32 board holds BLE up before sleeping. Unset leaves the
+			// firmware default of one minute.
+			return [.unset, .fifteenSeconds, .thirtySeconds, .oneMinute, .twoMinutes, .fiveMinutes, .tenMinutes, .fifteenMinutes]
 		case .trafficRateLimitWindow:
 			// The accounting window packets are counted over, so it stays short. No zero row —
 			// firmware needs both the window and the packet count non-zero.
