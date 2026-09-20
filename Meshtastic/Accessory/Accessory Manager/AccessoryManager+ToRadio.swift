@@ -960,6 +960,7 @@ extension AccessoryManager {
 			lora.frequencyOffset = existing.frequencyOffset
 			lora.overrideFrequency = existing.overrideFrequency
 			lora.overrideDutyCycle = existing.overrideDutyCycle
+			lora.paFanDisabled = existing.paFanDisabled
 			lora.sx126XRxBoostedGain = existing.sx126xRxBoostedGain
 			lora.ignoreMqtt = existing.ignoreMqtt
 			lora.configOkToMqtt = existing.okToMqtt

@@ -32,6 +32,7 @@ extension Config.LoRaConfig: ConfigFormMessage {
 		txPower = entity.txPower
 		channelNum = UInt32(truncatingIfNeeded: entity.channelNum)
 		overrideDutyCycle = entity.overrideDutyCycle
+		paFanDisabled = entity.paFanDisabled
 		sx126XRxBoostedGain = entity.sx126xRxBoostedGain
 		overrideFrequency = entity.overrideFrequency
 		ignoreMqtt = entity.ignoreMqtt
@@ -109,11 +110,11 @@ struct LoRaConfig: View {
 				// Transmitting past the region's duty cycle is the operator's responsibility,
 				// so the radio wants it asked for explicitly rather than assumed.
 				.init(F.overrideDutyCycle, symbol: "clock.arrow.2.circlepath"),
+				.init(F.paFanDisabled, symbol: "fan"),
 				.init(F.overrideFrequency, symbol: "waveform.path.ecg", control: .preciseDecimal)
 			])
 		], omitted: [
 			.init(F.txPower, "set by the radio for the region and preset; not offered by this client"),
-			.init(F.paFanDisabled, "not stored by the entity, so saved as the proto default as before"),
 			// A repeated list of node numbers to ignore, with no editor on any client.
 			.init(Self.ignoreIncomingField, "a repeated node list; not offered by this client"),
 			.init(F.frequencyOffset, "not offered by this client; unlabelled upstream"),

@@ -83,13 +83,12 @@ struct ConfigFormOverlayTests {
 		}
 	}
 
-	@Test("LoRa offers the duty cycle override")
+	@Test("LoRa offers the duty cycle override and the PA fan toggle")
 	func loRaOffersDutyCycleOverride() throws {
 		typealias F = Config.LoRaConfig.Fields
 		let overlay = LoRaConfig.overlay(node: nil)
 		#expect(overlay.rowID(for: F.overrideDutyCycle.identity) != nil)
-		// No entity property, so the toggle would show and then save the wrong value.
-		#expect(overlay.omits(F.paFanDisabled.identity))
+		#expect(overlay.rowID(for: F.paFanDisabled.identity) != nil)
 	}
 
 	@Test("The Bluetooth wait is offered on ESP32 boards only")
