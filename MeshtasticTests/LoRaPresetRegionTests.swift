@@ -19,11 +19,25 @@ struct LoRaPresetRegionTests {
 	}
 
 	// The EU band plans cap channel bandwidth below what Turbo uses, so those presets are
-	// not offered there at all. All five EU regions, including the narrow-band ones the
-	// 2.8 rework added.
-	@Test(arguments: [RegionCodes.eu433, .eu868, .eu866, .eu874, .eu917])
+	// not offered there at all. All six EU regions, including the narrow-band ones the
+	// 2.8 rework added; euN868's legal group is narrow fast and narrow slow only.
+	@Test(arguments: [RegionCodes.eu433, .eu868, .eu866, .eu874, .eu917, .euN868])
 	func euRegionsProhibitTurbo(_ region: RegionCodes) {
 		#expect(region.prohibitsTurboPresets)
+	}
+
+	// The rule that keeps a picker from rendering blank. It used to re-add only a
+	// deprecated preset, so an EU radio already set to Turbo had no matching option at
+	// all: it could not see what its own radio was on.
+	@Test("Whatever the radio is set to stays in the list")
+	func configuredPresetSurvivesFiltering() {
+		let euOffered = ModemPresets.allCases.filter { !$0.isTurbo }
+		for configured in [ModemPresets.longTurbo, .shortTurbo, .mediumTurbo, .longSlow] {
+			var presets = euOffered
+            if !presets.contains(configured) { presets.append(configured) }
+			#expect(presets.contains(configured),
+					"\(configured) is what the radio reports; hiding it leaves a blank picker")
+		}
 	}
 
 	@Test("Other regions allow Turbo")

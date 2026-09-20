@@ -227,9 +227,13 @@ private struct LicensedBandNotice: View {
 				.accessibilityHidden(true)
 			VStack(alignment: .leading, spacing: 2) {
 				Text("Licensed band").font(.callout).bold()
+				// Each branch localized separately: a ternary of two literals is a String,
+				// and Text would then render it verbatim, skipping the catalog.
 				Text(isLicensed
-					 ? "This region is restricted to licensed amateur radio operators. Your operator profile is marked as licensed."
-					 : "This region is restricted to licensed amateur radio operators. Enable \u{201C}Licensed Operator\u{201D} and set your call sign in User Config before transmitting.")
+					 ? String(localized: "This region is restricted to licensed amateur radio operators. Your operator profile is marked as licensed.",
+							  comment: "Licensed band notice, operator is licensed")
+					 : String(localized: "This region is restricted to licensed amateur radio operators. Enable \u{201C}Licensed Operator\u{201D} and set your call sign in User Config before transmitting.",
+							  comment: "Licensed band notice, operator is not licensed"))
 					.foregroundColor(.gray)
 					.font(.caption)
 			}
@@ -268,9 +272,11 @@ private struct ModemPresetRow: View {
 			let constrained = base.filter { info.presets.contains($0.protoEnumValue()) }
 			if !constrained.isEmpty { presets = constrained }
 		}
-		// Keep a configured but deprecated preset visible, or the picker renders blank.
-		if let current = ModemPresets(rawValue: config.modemPreset.rawValue),
-		   current.isDeprecated, !presets.contains(current) {
+		// Whatever the radio is actually set to stays visible, whether it was filtered out
+		// for being deprecated or for being Turbo in a region that forbids it. Otherwise
+		// the picker renders blank and the user cannot see what their radio is on, let
+		// alone that it is the thing they are being steered away from.
+		if let current = ModemPresets(rawValue: config.modemPreset.rawValue), !presets.contains(current) {
 			presets.append(current)
 		}
 		return presets

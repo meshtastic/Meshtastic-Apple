@@ -485,7 +485,7 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 	/// are not offered here at all rather than merely warned about.
 	var prohibitsTurboPresets: Bool {
 		switch self {
-		case .eu433, .eu868, .eu866, .eu874, .eu917:
+		case .eu433, .eu868, .eu866, .eu874, .eu917, .euN868:
 			return true
 		default:
 			return false
