@@ -277,18 +277,19 @@ private struct StringRow<M: ConfigSchemaMessage>: View {
 			} else {
 				Text(label)
 			}
-			Group {
-				if case .secure = field.control {
-					SecureField(label, text: $text)
-				} else {
-					TextField(label, text: $text, axis: .vertical)
-				}
+			if case .secure = field.control {
+				// The app's own masked field rather than a plain SecureField: it can be
+				// revealed, which matters for a value you are copying off another device
+				// and cannot check by reading it back.
+				SecureInput(label, text: $text, isValid: .constant(true))
+			} else {
+				TextField(label, text: $text, axis: .vertical)
+					.foregroundColor(.gray)
+					.multilineTextAlignment(.trailing)
+					// Config strings are identifiers - topics, addresses, a TZ rule, never prose.
+					.autocorrectionDisabled()
+					.textInputAutocapitalization(.never)
 			}
-			.foregroundColor(.gray)
-			.multilineTextAlignment(.trailing)
-			// Config strings are identifiers - topics, addresses, a TZ rule - never prose.
-			.autocorrectionDisabled()
-			.textInputAutocapitalization(.never)
 		}
 		.onChange(of: text) { _, new in
 			// The twelve UTF-8 truncation loops the old screens carried, once.
