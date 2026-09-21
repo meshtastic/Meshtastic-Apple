@@ -54,27 +54,42 @@ struct AmbientLightingConfig: View {
 }
 
 /// The LED colour as one control over the message's red, green and blue channels.
+///
+/// The color is read from and written to the message directly. Nothing is kept here:
+/// this row appears before the form has loaded the config, so a copy taken on appear
+/// would start at a default and then be written back over the values that arrived.
 private struct AmbientColorPicker: View {
 	@Binding var config: ModuleConfig.AmbientLightingConfig
 	@Environment(\.self) private var environment
-	@State private var color: Color = .white
+
+	private var color: Binding<Color> {
+		Binding(
+			get: {
+				Color(red: Double(config.red) / 255,
+					  green: Double(config.green) / 255,
+					  blue: Double(config.blue) / 255)
+			},
+			set: { picked in
+				let resolved = picked.resolve(in: environment)
+				config.red = level(resolved.red)
+				config.green = level(resolved.green)
+				config.blue = level(resolved.blue)
+			}
+		)
+	}
+
+	/// The picker works in the display's color space and the radio takes 0-255 sRGB,
+	/// so a wide-gamut color resolves outside that range and is clamped into it.
+	private func level(_ value: Float) -> UInt32 {
+		UInt32(min(255, max(0, (value * 255).rounded())))
+	}
 
 	var body: some View {
 		HStack {
 			Image(systemName: "eyedropper")
 				.foregroundColor(.accentColor)
 				.accessibilityHidden(true)
-			ColorPicker(String(localized: "Color", comment: "Ambient LED colour"), selection: $color, supportsOpacity: false)
-		}
-		.onAppear {
-			color = Color(red: Double(config.red) / 255, green: Double(config.green) / 255, blue: Double(config.blue) / 255)
-		}
-		.onChange(of: color) { _, new in
-			let c = new.resolve(in: environment)
-			let (r, g, b) = (UInt32((c.red * 255).rounded()), UInt32((c.green * 255).rounded()), UInt32((c.blue * 255).rounded()))
-			if (r, g, b) != (config.red, config.green, config.blue) {
-				config.red = r; config.green = g; config.blue = b
-			}
+			ColorPicker(String(localized: "Color", comment: "Ambient LED colour"), selection: color, supportsOpacity: false)
 		}
 	}
 }
