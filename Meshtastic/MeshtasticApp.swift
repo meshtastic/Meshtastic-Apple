@@ -184,6 +184,48 @@ struct MeshtasticAppleApp: App {
 		}
 	}
 
+	/// Runs the work the app owes at backgrounding — the main-context save, then the
+	/// entity-cap eviction — under one background task assertion.
+	///
+	/// `beginBackgroundTask` is what asks iOS for time to finish work after the app leaves
+	/// the screen. Both pieces need it: between them they are the app's heaviest SwiftData
+	/// work and they start at the moment iOS begins charging for background CPU. The
+	/// expiration handler fires shortly before the grant runs out and sets the flag the
+	/// chunked eviction checks, so the pass ends at a committed boundary and whatever is
+	/// left waits for the next background transition.
+	///
+	/// The save goes first and stays on the main actor: it is the one that must happen (it
+	/// is flushing edits the user just made), while the eviction is housekeeping that can
+	/// resume later.
+	///
+	/// On Mac Catalyst the assertion is a no-op the system accepts, so the same path runs
+	/// everywhere without a platform branch here.
+	private func startBackgroundMaintenance(_ persistenceController: PersistenceController) {
+		// Numbered, because backgrounding twice in quick succession leaves two passes in
+		// flight and each has its own grant. The handler quotes its own number so an older
+		// pass expiring cannot stop a newer one.
+		let generation = MeshPackets.beginMaintenance()
+		var taskID = UIBackgroundTaskIdentifier.invalid
+		taskID = UIApplication.shared.beginBackgroundTask(withName: "BackgroundMaintenance") {
+			MeshPackets.expireMaintenance(generation)
+			Logger.services.warning("🗄️ [Caps] Background time expired; eviction will stop at the next chunk")
+		}
+		Task { @MainActor in
+			do {
+				try persistenceController.container.mainContext.save()
+				Logger.services.info("💾 [App] Saved SwiftData context when the app went to the background.")
+			} catch {
+				Logger.services.error("💥 [App] Failed to save context when the app goes to the background.")
+			}
+			await MeshPackets.shared.enforceEntityCapsAndSave()
+			// Nothing to clear: the next pass takes a new number, which supersedes any
+			// expiry recorded against this one.
+			if taskID != .invalid {
+				UIApplication.shared.endBackgroundTask(taskID)
+			}
+		}
+	}
+
 	/// Single dispatch point for every URL the app receives — universal links
 	/// (user activities), custom-scheme opens, and file opens all route here.
 	private func dispatchIncomingURL(_ url: URL, fromActivity: Bool) {
@@ -275,16 +317,15 @@ struct MeshtasticAppleApp: App {
 				accessoryManager.appDidEnterBackground()
 				// Entity-cap evictions run now, while no view is mid-render on the
 				// doomed entities. Foregrounded, the packet actor defers them.
+				//
+				// Held under a background task assertion: this is the app's heaviest
+				// SwiftData work and it starts at the moment iOS begins charging for
+				// background CPU. Without the assertion there is no time granted and no
+				// warning before the process is killed for the budget, which reads as a
+				// Background High CPU termination. The expiration handler stops the
+				// eviction on a committed chunk boundary instead.
 				MeshPackets.appIsActive = false
-				Task { await MeshPackets.shared.enforceEntityCapsAndSave() }
-				do {
-					try persistenceController.container.mainContext.save()
-					Logger.services.info("💾 [App] Saved SwiftData context when the app went to the background.")
-
-				} catch {
-
-					Logger.services.error("💥 [App] Failed to save context when the app goes to the background.")
-				}
+				startBackgroundMaintenance(persistenceController)
 			case .inactive:
 				Logger.services.info("🎬 [App] Scene is inactive")
 			case .active:

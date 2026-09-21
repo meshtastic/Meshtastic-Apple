@@ -145,6 +145,40 @@ actor MeshPackets {
 		get { appActiveLock.withLock { _appIsActive } }
 		set { appActiveLock.withLock { _appIsActive = newValue } }
 	}
+	/// Background maintenance passes are numbered, and only the newest one's expiry counts.
+	///
+	/// Backgrounding twice in quick succession leaves two passes in flight. With a single
+	/// shared flag the older one's expiration handler would stop the newer pass, and the
+	/// older one finishing would clear the newer one's expiry — each pass would be steering
+	/// the other. A pass takes a number from `beginMaintenance()` and hands it back to
+	/// `expireMaintenance(_:)`; a stale number is ignored, and starting a pass supersedes any
+	/// earlier expiry without anyone having to clear it.
+	nonisolated(unsafe) private static var _maintenanceGeneration = 0
+	nonisolated(unsafe) private static var _expiredGeneration = -1
+
+	/// Starts a maintenance pass and returns the number its expiration handler must quote.
+	@discardableResult
+	nonisolated static func beginMaintenance() -> Int {
+		appActiveLock.withLock {
+			_maintenanceGeneration += 1
+			return _maintenanceGeneration
+		}
+	}
+
+	/// Records that iOS is about to reclaim the assertion covering pass `generation`. Ignored
+	/// if a later pass has already started, since that pass has its own grant.
+	nonisolated static func expireMaintenance(_ generation: Int) {
+		appActiveLock.withLock {
+			if generation == _maintenanceGeneration { _expiredGeneration = generation }
+		}
+	}
+
+	/// True when the pass currently running has been told its time is up. The chunked
+	/// eviction checks this between chunks and stops on a committed boundary, rather than
+	/// being killed mid-pass for CPU.
+	nonisolated static var backgroundTimeExpired: Bool {
+		appActiveLock.withLock { _expiredGeneration == _maintenanceGeneration }
+	}
 	#if DEBUG
 	/// Deterministic concurrency checkpoint used by the refresh boundary regression test. Production
 	/// callers leave this nil, so validation and replacement execute without suspension.
@@ -421,15 +455,72 @@ actor MeshPackets {
 	/// is re-checked here on the actor, not just at enqueue: a quick return to the
 	/// foreground can beat this task's turn on the actor, and evicting then would be
 	/// exactly the mid-render delete this exists to avoid.
-	func enforceEntityCapsAndSave() {
+	/// The caps and chunk size are parameters so a test can drive this exact code against a
+	/// store small enough to go over cap. Production calls it with no arguments.
+	func enforceEntityCapsAndSave(
+		nodeCap: Int = MeshPackets.maxTotalNodes,
+		waypointCap: Int = MeshPackets.maxTotalWaypoints,
+		chunkSize: Int = MeshPackets.evictionChunkSize
+	) async {
 		guard !invalidated, !Self.appIsActive else { return }
-		evictNodesIfOverCap(Self.maxTotalNodes)
+		// One deadline for the pass, not one per collection: two three-second budgets would
+		// be a six-second burst, which is the thing being bounded.
+		let deadline = ContinuousClock.now + Self.evictionBudget
+		await evictInChunks(until: deadline) {
+			self.evictNodesIfOverCap(nodeCap, limit: chunkSize)
+		}
 		guard !Self.appIsActive else {
-			savePendingChanges()
+			commitEvictions()
 			return
 		}
-		evictWaypointsIfOverCap(Self.maxTotalWaypoints)
-		savePendingChanges()
+		await evictInChunks(until: deadline) {
+			self.evictWaypointsIfOverCap(waypointCap, limit: chunkSize)
+		}
+		commitEvictions()
+	}
+
+	/// Commits without going through `savePendingChanges`, whose periodic cap hook would run
+	/// an unbounded `enforceEntityCaps` — deleting the whole remaining overage in one pass,
+	/// immediately after the budget or the expiry stopped exactly that.
+	private func commitEvictions() {
+		guard !invalidated, modelContext.hasChanges else { return }
+		do {
+			try modelContext.save()
+		} catch {
+			Logger.data.error("💥 [Caps] Eviction failed to commit: \(error.localizedDescription, privacy: .public)")
+		}
+	}
+
+	/// Run `step` until it reports nothing left to evict, committing and yielding between
+	/// chunks.
+	///
+	/// The whole point is that this is interruptible. A device that drifted up to the doubled
+	/// foreground cap has to delete as many as `maxTotalNodes` rows here, each cascading to a
+	/// user and its positions, at the exact moment iOS starts charging the app for background
+	/// CPU. In one pass that is a single uninterruptible burst; in chunks it is a series of
+	/// committed steps that can stop at any boundary and resume on the next background
+	/// transition, having kept everything already deleted.
+	///
+	/// Committing per chunk uses `modelContext.save()` rather than `savePendingChanges()`,
+	/// which would re-enter `enforceEntityCaps` on its own interval and undo the chunking.
+	private func evictInChunks(until deadline: ContinuousClock.Instant, _ step: () -> Int) async {
+		while !invalidated, !Self.appIsActive, !Self.backgroundTimeExpired {
+			guard ContinuousClock.now < deadline else {
+				Logger.data.info("🗄️ [Caps] Eviction budget spent; the rest waits for the next background transition")
+				return
+			}
+			let removed = step()
+			guard removed > 0 else { return }
+			if modelContext.hasChanges {
+				do {
+					try modelContext.save()
+				} catch {
+					Logger.data.error("💥 [Caps] Eviction chunk failed to commit: \(error.localizedDescription, privacy: .public)")
+					return
+				}
+			}
+			await Task.yield()
+		}
 	}
 
 	// MARK: - Watch Snapshot
@@ -470,40 +561,49 @@ actor MeshPackets {
 	/// explicitly kept those. Among already-persisted rows, `lastHeard` is optional; nil sorts first
 	/// (ascending), so never-heard stubs go before any dated node, which is the correct "stalest
 	/// first" order.
-	func evictNodesIfOverCap(_ cap: Int) {
+	/// `limit` bounds a single pass, for the chunked background path; nil evicts the whole
+	/// overage at once, which is what the in-line `savePendingChanges` hook wants. Returns how
+	/// many rows went, so a chunking caller knows when to stop.
+	@discardableResult
+	func evictNodesIfOverCap(_ cap: Int, limit: Int? = nil) -> Int {
 		guard let nodeCount = try? modelContext.fetchCount(FetchDescriptor<NodeInfoEntity>()),
-			  nodeCount > cap else { return }
+			  nodeCount > cap else { return 0 }
 		var descriptor = FetchDescriptor<NodeInfoEntity>(
 			predicate: #Predicate { $0.favorite == false },
 			sortBy: [SortDescriptor(\.lastHeard, order: .forward)]
 		)
-		descriptor.fetchLimit = nodeCount - cap
+		let overage = nodeCount - cap
+		descriptor.fetchLimit = limit.map { Swift.min($0, overage) } ?? overage
 		// Only already-persisted rows are eligible for eviction. Caps are enforced inside
 		// `savePendingChanges` *before* the commit, so a node just created this transaction by
 		// `findOrCreateNode` is still a pending insert with a nil `lastHeard` — which sorts first
 		// (stalest) and would otherwise be deleted before it is ever saved. The count above stays
 		// inclusive of pending inserts, so we free enough persisted rows to make room for them.
 		descriptor.includePendingChanges = false
-		guard let stale = try? modelContext.fetch(descriptor), !stale.isEmpty else { return }
+		guard let stale = try? modelContext.fetch(descriptor), !stale.isEmpty else { return 0 }
 		for node in stale { modelContext.delete(node) }
 		Logger.data.info("🗄️ [Caps] Evicted \(stale.count, privacy: .public) least-recently-heard node(s) (was \(nodeCount, privacy: .public), cap \(cap, privacy: .public))")
+		return stale.count
 	}
 
 	/// Waypoints: cap the total, evicting oldest-last-updated first.
-	func evictWaypointsIfOverCap(_ cap: Int) {
+	@discardableResult
+	func evictWaypointsIfOverCap(_ cap: Int, limit: Int? = nil) -> Int {
 		guard let waypointCount = try? modelContext.fetchCount(FetchDescriptor<WaypointEntity>()),
-			  waypointCount > cap else { return }
+			  waypointCount > cap else { return 0 }
 		var descriptor = FetchDescriptor<WaypointEntity>(
 			sortBy: [SortDescriptor(\.lastUpdated, order: .forward)]
 		)
-		descriptor.fetchLimit = waypointCount - cap
+		let overage = waypointCount - cap
+		descriptor.fetchLimit = limit.map { Swift.min($0, overage) } ?? overage
 		// Same rationale as node eviction: never delete an un-saved waypoint from the in-flight
 		// transaction (a fresh insert has a nil `lastUpdated` and would sort first). Count stays
 		// inclusive of pending inserts for cap accounting.
 		descriptor.includePendingChanges = false
-		guard let stale = try? modelContext.fetch(descriptor), !stale.isEmpty else { return }
+		guard let stale = try? modelContext.fetch(descriptor), !stale.isEmpty else { return 0 }
 		for waypoint in stale { modelContext.delete(waypoint) }
 		Logger.data.info("🗄️ [Caps] Evicted \(stale.count, privacy: .public) oldest waypoint(s) (was \(waypointCount, privacy: .public), cap \(cap, privacy: .public))")
+		return stale.count
 	}
 
 #if DEBUG
@@ -538,6 +638,19 @@ actor MeshPackets {
 	/// evict oldest-last-updated first. Favorite nodes are never evicted.
 	static let maxTotalNodes = 10_000
 	static let maxTotalWaypoints = 5_000
+	/// Rows deleted per committed chunk on the background transition. Small enough that a
+	/// chunk plus its cascades is a short burst, large enough that the worst case (a full
+	/// `maxTotalNodes` overage) is tens of chunks rather than thousands.
+	static let evictionChunkSize = 500
+	/// How long one background transition may spend evicting.
+	///
+	/// Chunking alone does not bound CPU: `Task.yield()` hands control back immediately when
+	/// nothing else is queued, so the chunks run back to back and a large backlog is still a
+	/// long continuous burst — which is what the background CPU budget kills an app for. This
+	/// is the actual bound. Whatever is left is already committed and the next background
+	/// transition carries on, so a device over cap converges over a few backgroundings instead
+	/// of paying for all of it at once. The doubled foreground cap holds the line meanwhile.
+	static let evictionBudget: Duration = .seconds(3)
 	private static let positionPruneInterval = 128
 	private static let telemetryPruneInterval = 128
 	private static let messagePruneInterval = 256
