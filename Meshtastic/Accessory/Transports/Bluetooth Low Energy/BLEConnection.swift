@@ -549,28 +549,46 @@ extension BLEConnection {
 				try await performWrite(binaryData, to: characteristic, type: writeType)
 				return
 			} catch let attError as CBATTError where attError.code == .insufficientResources {
-				guard attempt + 1 < Self.writeAttemptLimit else {
+				switch Self.refusedWriteAction(afterAttempt: attempt) {
+				case .giveUp:
 					Logger.transport.error("🛜 [BLE] write of \(binaryData.count, privacy: .public)B still refused after \(Self.writeAttemptLimit, privacy: .public) attempts")
-					// Throw to the caller and leave the link alone. A refused write says the radio
-					// could not allocate a buffer for this one payload; it says nothing about the
-					// link, which is still up and still carrying smaller writes. Escalating here
-					// used to cycle the connection, and a connection that cycles is worse than a
-					// write that fails: the caller can retry a write, while a reconnect restarts
-					// config exchange and rewrites every view watching the connection.
 					throw attError
+				case .retry(let backoff):
+					Logger.transport.error("🛜 [BLE] radio out of buffers for a \(binaryData.count, privacy: .public)B write; retry \(attempt + 1, privacy: .public)")
+					// Not `try?`: a cancellation during the backoff must propagate rather than fall
+					// through into another write.
+					try await Task.sleep(for: backoff)
 				}
-				let backoff = Duration.milliseconds(120 * (attempt + 1))
-				Logger.transport.error("🛜 [BLE] radio out of buffers for a \(binaryData.count, privacy: .public)B write; retry \(attempt + 1, privacy: .public)")
-				// Not `try?`: a cancellation during the backoff must propagate rather than fall
-				// through into another write.
-				try await Task.sleep(for: backoff)
 			}
 		}
 	}
 
+	/// What to do after a write comes back refused for buffers.
+	///
+	/// There is no case here for tearing the link down, and that is the point. A refused write
+	/// says the radio could not allocate a buffer for this one payload; it says nothing about
+	/// the link, which is still up and still carrying smaller writes. Escalating on the last
+	/// attempt used to cycle the connection, and a connection that cycles is worse than a write
+	/// that fails: a caller can retry a write, while a reconnect restarts config exchange and
+	/// rewrites every view watching the connection.
+	///
+	/// Pure, so the retry count and the backoff schedule can be tested without a peripheral —
+	/// the same reason `shouldReconnect(after:)` below is pure.
+	enum RefusedWriteAction: Equatable {
+		/// Wait this long, then write again.
+		case retry(backoff: Duration)
+		/// Attempts are spent. Throw to the caller and leave the link alone.
+		case giveUp
+	}
+
+	static func refusedWriteAction(afterAttempt attempt: Int) -> RefusedWriteAction {
+		guard attempt + 1 < writeAttemptLimit else { return .giveUp }
+		return .retry(backoff: .milliseconds(120 * (attempt + 1)))
+	}
+
 	/// Total number of times a single write is attempted when the radio reports it is out of
 	/// buffers: the initial write plus three retries, backing off 120/240/360ms between them.
-	private static let writeAttemptLimit = 4
+	static let writeAttemptLimit = 4
 
 	private func performWrite(
 		_ binaryData: Data,

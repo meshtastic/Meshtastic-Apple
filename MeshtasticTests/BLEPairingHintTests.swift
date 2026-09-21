@@ -169,6 +169,23 @@ final class LostBondTests {
 		#expect(BLEConnection.shouldReconnect(after: CBATTError(.insufficientResources)) == false)
 	}
 
+	@Test func refusedWritesRetryOnABackoffThenGiveUp() {
+		// Four attempts: the write, then three retries backing off 120/240/360ms.
+		#expect(BLEConnection.writeAttemptLimit == 4)
+		#expect(BLEConnection.refusedWriteAction(afterAttempt: 0) == .retry(backoff: .milliseconds(120)))
+		#expect(BLEConnection.refusedWriteAction(afterAttempt: 1) == .retry(backoff: .milliseconds(240)))
+		#expect(BLEConnection.refusedWriteAction(afterAttempt: 2) == .retry(backoff: .milliseconds(360)))
+	}
+
+	@Test func anExhaustedWriteGivesUpRatherThanTouchingTheLink() {
+		// The last attempt gives up, meaning throw to the caller. There is deliberately no
+		// action that tears the link down: escalating here is what used to cycle the
+		// connection on every exhausted write.
+		#expect(BLEConnection.refusedWriteAction(afterAttempt: BLEConnection.writeAttemptLimit - 1) == .giveUp)
+		// And nothing past the limit re-enters the retry path either.
+		#expect(BLEConnection.refusedWriteAction(afterAttempt: BLEConnection.writeAttemptLimit) == .giveUp)
+	}
+
 	@Test func unrelatedErrorsDoNotReconnect() {
 		#expect(BLEConnection.shouldReconnect(after: CBATTError(.writeNotPermitted)) == false)
 		#expect(BLEConnection.shouldReconnect(after: NSError(domain: "com.example.test", code: 42)) == false)
