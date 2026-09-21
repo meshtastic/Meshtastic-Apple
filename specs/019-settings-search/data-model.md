@@ -1,166 +1,168 @@
 # Data Model: Settings Search
 
-**Feature**: 019-settings-search | **Date**: 2026-09-13
+**Feature**: 019-settings-search | **Date**: 2026-09-13 | **Verified against the code**: 2026-09-20
 
-No SwiftData schema changes. The index is static, built at launch from compiled-in
-declarations plus the bundled docs index, and held in memory. Nothing here persists.
+Nothing here persists. The index is static, built once from the generated registry plus the
+generated app-level catalog and the bundled documentation index, and held in memory. Whether a
+result is shown, dimmed or hidden is decided per query from connection and node state.
+
+Type names below are the iOS reference implementation's, under `Meshtastic/Model/Search/`. The
+shapes are the portable part; the names are not.
 
 ## Field identity (the join key)
 
-Every proto-backed entry names the field it describes by proto message name and tag —
-the same key the generated registry uses, `"meshtastic.Config.LoRaConfig#8"`. Nested
-messages carry their full path (`meshtastic.ModuleConfig.MapReportSettings`), which is
-what `mqtt.mapReportSettings.positionPrecision` writes through.
+Every schema-backed entry names the field it describes by **proto message full name and field
+tag** — the same key the generated registry uses, `"meshtastic.Config.LoRaConfig#8"`. Nested
+messages carry their full path (`meshtastic.ModuleConfig.MapReportSettings`), not a path through
+the parent field.
 
-Tag, not Swift property name: property names diverge across the four representations of
-a field (proto `sx126x_rx_boosted_gain`, generated `sx126XRxBoostedGain`, entity
-`sx126xRxBoostedGain`, view state `rxBoostedGain`), and the tag is the only one that is
-stable by contract.
+Tag, not property name: property names diverge across the four representations of a field (proto
+`sx126x_rx_boosted_gain`, generated `sx126XRxBoostedGain`, persisted `sx126xRxBoostedGain`, view
+state `rxBoostedGain`), and the tag is the only one that is stable by contract.
 
-App-level settings have no field identity and carry `nil`.
+App-level settings have no field identity.
 
-## SettingsSearchEntry
+The same identity is what a search result hands to the screen it opens, so the screen knows which
+row to scroll to.
 
-One row of the index. One control, one entry — so a bitfield field such as
-`position_flags` contributes ten entries that share a field identity, and a field with no
-control contributes none.
+## Search entry
+
+One row of the index. One control, one entry.
 
 | Property | Type | Notes |
 |---|---|---|
-| `id` | `String` | Stable; destination + label, used for diffing and tests |
-| `destination` | `SettingsNavigationState` | Where tapping the result goes |
+| `id` | `String` | Destination + label. Used for de-duplication and tests |
+| `destination` | navigation case | Where tapping the result goes |
 | `screenTitle` | `String` | Localized; the screen's own title, e.g. "LoRa" |
-| `sectionTitle` | `String?` | Localized; the section within that screen |
-| `listSection` | `SettingsListSection` | Which Settings group the row sits in |
+| `sectionTitle` | `String?` | Localized; the section within that screen. Always nil for schema-backed entries — the schema carries no section (spec FR-017) |
+| `listSection` | enum | Which group of the Settings list the row sits in |
 | `label` | `String` | Localized; what the control says on screen |
 | `subtitle` | `String?` | Localized; the control's explanatory text |
-| `keywords` | `[String]` | Localized synonyms; usually empty, see below |
-| `field` | `FieldIdentity?` | `nil` for app-level settings |
+| `keywords` | `[String]` | Localized synonyms; usually empty |
+| `field` | identity? | nil for app-level settings |
 | `requiresConnection` | `Bool` | Radio config is unavailable when disconnected |
+| `requiresDeveloperBuild` | `Bool` | The Developers section renders only on debug and TestFlight builds, so its screens must not surface in search elsewhere |
 
-Labels are not unique across the app — "Enabled" occurs six times, "Options" twelve — so
-identity is `destination` plus `label`, never `label` alone, and results always render the
-screen and section alongside the label. This is also why the string catalog keys on the
-field's full proto name rather than on the English: one translation of "Enabled" cannot
-serve six controls in a language that inflects.
+Labels are not unique across the app — "Enabled" occurs six times — so identity is destination plus
+label, never label alone, and results always render the screen alongside the label. This is also
+why the string catalog keys on the field's full proto name rather than on the English: one
+translation of "Enabled" cannot serve six controls in a language that inflects.
 
-For proto-backed entries `label`, `subtitle` and `keywords` are read from the generated
-registry, already localized. `keywords` arrives as a single `|`-delimited string, because
-`FieldMetadata` attributes must be scalar; the entry splits and trims it. App-level entries
-declare the same three fields by hand with `String(localized:)`.
+The index currently holds **233 entries**: 167 generated from the registry and 66 from the
+generated app-level catalog. The catalog declares 68; two are dropped because the registry already
+describes a control with the same label on the same screen (TAK Server shows `TAKConfig.team` and
+`.role` alongside app-only controls). The schema wins those collisions, since its label is the one
+every client shares.
 
-Only `label` is reliably present. Of the 318 registry entries, 280 carry a label, 70 a
-description and 5 keywords — a setting whose label already says what it is does not need
-synonyms invented for it, and per SC-002 findability is measured by a query corpus rather
-than by requiring every entry to be padded out. Ranking already weights label above keyword
-above description, so a sparse set costs nothing.
+Only `label` is reliably present. Of the 167 schema-backed entries, 144 carry a description and 6
+carry keywords. Ranking weights label above keyword above description, so a sparse set costs
+nothing, and per SC-002 findability is measured by a query corpus rather than by requiring every
+entry to be padded out.
 
-## FieldIdentity
+## Field metadata (the generated registry)
 
-| Property | Type | Notes |
-|---|---|---|
-| `messageName` | `String` | Full proto name, e.g. `meshtastic.Config.LoRaConfig` |
-| `tag` | `Int` | Proto field number |
+Read-only input, generated from `(meshtastic.field_metadata)` and `(meshtastic.enum_value_metadata)`
+options. Field entries and enum-value entries share one table and one key format; an enum value is
+keyed by the enum's full name and the value number.
 
-Resolves against the generated registry to pick up `diyOnly`, `adminOnly`, `deprecated`,
-`unit`, `minValue` and `maxValue`. A field with no annotation resolves to `nil`, which is
-treated as "visible, not deprecated, no bounds" so the index works whether or not the
-upstream annotations have landed.
+```
+diyOnly          Bool?
+adminOnly        Bool?
+minValue         Double?
+maxValue         Double?
+unit             String?
+deprecated       Bool?      // mirrors the standard [deprecated = true] option
+label            String?
+description      String?
+keywords         String?    // "|"-delimited
+sinceFirmware    String?    // first firmware release that reads the field
+deprecatedSince  String?    // first firmware release that stops reading it
+```
 
-## SettingsListSection
+The last two arrived after this feature shipped and are machine-readable version literals, not
+display text. Everything else that is a string is display text and is localized.
 
-The three groupings `Settings.swift` already uses, so a result's breadcrumb matches the
-list the user would otherwise have scrolled: `radioConfiguration`, `deviceConfiguration`,
-`configure`. Ordering is the declaration order, which is also the tiebreak order for
-equally-scored results.
+Current contents of the registry as generated on `main`: **402 rows — 210 field entries and 192
+enum-value entries.** The extra rows beyond the 187 field and 186 enum-value annotations in the
+protos are entries generated from the standard `[deprecated = true]` option alone, which carry
+nothing but `deprecated`.
 
-## SettingsSearchResult
+Attribute coverage across the 167 schema-backed index entries: 144 descriptions, 27 units, 7
+min/max pairs, 6 keyword strings, 3 `diyOnly`, 0 `adminOnly`. Across the whole registry, 16 rows
+carry `sinceFirmware` and 5 carry `deprecatedSince`.
+
+A field with no annotation resolves to nothing, which is treated as "visible, not deprecated, no
+bounds". Absence is never a signal.
+
+## Settings list section
+
+The groups the Settings screen already uses, so a result's breadcrumb names the group the user
+would otherwise have scrolled to: general, radio configuration, device configuration, configure,
+logging, developers. Declaration order is also the tiebreak order for equally-scored results.
+
+## Search result
 
 An entry plus what the match was worth. Not stored; produced per keystroke.
 
 | Property | Type | Notes |
 |---|---|---|
-| `entry` | `SettingsSearchEntry` | |
+| `entry` | search entry | |
 | `score` | `Int` | Field-weighted per FR-011 |
-| `isAvailable` | `Bool` | False when the entry needs a radio and none is connected |
-| `visibility` | `Visibility` | `.normal`, `.deEmphasised(reason)`, or `.hidden` |
+| `visibility` | enum | `.normal`, `.deEmphasised(reason)`, or `.hidden` |
 
-`visibility` is computed per query from connection and node state, not baked into the index,
-which stays static. It is `.hidden` for a `diy_only` entry on non-DIY hardware (FR-012a) and
-for a deprecated entry the radio does not currently hold (FR-012c); `.deEmphasised` when a
-radio is needed and none is connected, when the field is `admin_only`, or when a deprecated
-value is in use. Three rules, one mechanism, and nothing disappears without a reason the row
-can state.
+There is no separate availability flag; the reason a result is dimmed travels with the visibility
+case, so nothing is de-emphasized without a reason the row can state.
 
-Weights, highest first: exact label match, label prefix, keyword match, then subtitle or
-option-value match. Ties break by `listSection` order, then by `label`, so the order is
-fully determined — `DocModels.swift:305-335` is the scoring precedent but sorts unstably,
-which is the part not carried over.
+Visibility is computed per query from an availability value — connected, DIY hardware, managed
+radio, developer build — never baked into the index. The rules, in the order they are applied:
+
+1. A developer-only screen on a build that does not render the Developers section is `.hidden`.
+   There is nothing the user could do to reach it.
+2. A `deprecated` field is `.deEmphasised`, marked as deprecated. Note this does **not** consult
+   `deprecatedSince`; see spec FR-012c.
+3. A `diyOnly` field on connected hardware not tagged DIY is `.hidden`. Disconnected, or with an
+   unreadable hardware catalog, it is shown.
+4. An `adminOnly` field is `.deEmphasised` as an advanced setting.
+5. An entry needing a radio, with none connected or with a managed radio, is `.deEmphasised` with
+   the respective reason.
+
+Weights, highest first: exact label 1000, label prefix 500, label substring 250, keyword 100,
+description 50. The label term and the other two add. Ties break by list section, then label, then
+destination, so the order is fully determined — the index is built from a dictionary and would
+otherwise reshuffle between launches, which is why the entries are sorted when the index is built.
 
 ## Documentation entries
 
-The docs half needs no new type. `Meshtastic/Resources/docs/index.json` already carries
-`{id, title, section, navOrder, keywords}` for 31 pages and is generated by
-`scripts/build-docs.sh:163-178`, so it cannot drift from the pages it describes. Doc
-results render in their own "Help & Documentation" section below the settings results and
-are never dimmed, since documentation reads the same with or without a radio.
+The documentation half needs no new type. The bundled index carries `{id, title, section, navOrder,
+keywords}` for 32 pages and is generated from the pages themselves, so it cannot drift from them.
+Doc results render in their own section below the settings results and are never dimmed, since
+documentation reads the same with or without a radio. A translated index replaces the bundled one
+when it has been fetched.
 
 ## Option values
 
-Picker options are indexed as additional match text on the entry that owns the picker,
-not as entries of their own — searching "Long Range - Fast" surfaces the Presets control
-on LoRa rather than a free-floating row.
+Picker option text comes from `enum_value_metadata` through the same registry, already localized,
+and a value may carry its own description which the form shows under the picker when that value is
+selected. A deprecated enum value is filtered out of a picker unless it is the value currently
+held, so a node sitting on a retired preset can still see and change it.
 
-For proto-backed enums their text comes from `(meshtastic.enum_value_metadata)` through the
-same registry, already localized: `preset.metadata?.label`. That covers 127 of the 319
-`.localized` sites in `Meshtastic/Enums/`, including all 37 region names. The remaining 192
-belong to app-only enums with no protobuf behind them and are localized by FR-016.
+Option values are **not** in the search index. An entry matches on its label, keywords and
+description only, so "Long Range - Fast" does not find the Presets control. See spec FR-004.
 
-The ten toggles behind `position_flags` are indexed as ten entries sharing one field
-identity, each taking its label from the corresponding `PositionFlags` value.
+## The settings forms
 
-## Generated registry (external, from meshtastic/protobufs#952)
+The registry is also what the configuration screens render from, which is not a search concern but
+is the reason the annotations have to be good enough to read on screen:
 
-Read-only input, generated into `Meshtastic/Model/FieldMetadataRegistry.swift` — the app
-target, not the protobuf package, so its localized strings reach the catalog:
+- `label` is the control's title; a field with no label cannot be laid out at all.
+- `description` is the explanatory line under it.
+- `unit` is appended to a stepper's value, and `"s"` alone is enough to pick an interval control.
+- `minValue`/`maxValue` give a slider or stepper its range; without both, the control falls back to
+  a default range.
+- `sinceFirmware`/`deprecatedSince` decide whether the control is offered for the target node's
+  firmware at all.
 
-```swift
-public struct FieldMetadata {
-    public var diyOnly: Bool?
-    public var adminOnly: Bool?
-    public var minValue: Double?
-    public var maxValue: Double?
-    public var unit: String?
-    public var deprecated: Bool?
-    public var label: String?
-    public var description: String?
-    public var keywords: String?
-}
-
-// Enum values share the registry; each enum type gets an instance accessor.
-extension Config.LoRaConfig.ModemPreset {
-    public var metadata: FieldMetadata? { ... }
-}
-
-public enum FieldMetadataRegistry {
-    public static func get(_ messageType: String, tag: Int) -> FieldMetadata?
-}
-```
-
-String attributes are emitted already resolved for the current locale:
-
-```swift
-"meshtastic.Config.LoRaConfig#8": FieldMetadata(
-    minValue: 0.0, maxValue: 7.0,
-    label: String(localized: "meshtastic.Config.LoRaConfig.hop_limit.label",
-                  defaultValue: "Hop Limit",
-                  comment: "label of meshtastic.Config.LoRaConfig.hop_limit"),
-    ...)
-```
-
-Note `description` is a legal stored property here — the struct does not conform to
-`CustomStringConvertible`, and the generated output is verified to typecheck.
-
-Entries exist only for fields carrying `(meshtastic.field_metadata)` or the standard
-`[deprecated = true]` option, so the registry is a source of *attributes*, never the list
-of what settings exist. That list comes from the `.proto` text, per research decision D4.
+What the schema does not supply, and each client decides alone: which fields share a section, in
+what order, which controls depend on another field's value, and which fields are deliberately not
+rendered. In this app those live in a per-screen Swift overlay next to the form
+(`Meshtastic/Views/Settings/Config/Forms/`), holding no display text of its own.

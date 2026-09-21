@@ -11,6 +11,10 @@ and 122 enum-value annotations. Nothing in this repository has changed yet beyon
 
 `[P]` marks tasks that touch different files and can run in parallel.
 
+**Kept as written, 2026-09-20.** A completed work log. Some unchecked boxes were done
+differently rather than left undone — the app-level catalog became generated, and the string
+catalog work landed inside #2487. Read [spec.md](./spec.md) for what shipped.
+
 ## Phase to pull request mapping
 
 The plan's three pull requests map onto the phases below. Keep them apart — each is reviewable
