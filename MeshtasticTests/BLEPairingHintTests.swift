@@ -157,10 +157,16 @@ final class LostBondTests {
 		#expect(BLEConnection.shouldReconnect(after: AccessoryError.bondLost) == false)
 	}
 
-	@Test func theThreeRecoverableErrorsStillReconnect() {
-		#expect(BLEConnection.shouldReconnect(after: CBATTError(.insufficientResources)))
+	@Test func theTwoRecoverableErrorsStillReconnect() {
 		#expect(BLEConnection.shouldReconnect(after: CBError(.connectionTimeout)))
 		#expect(BLEConnection.shouldReconnect(after: CBError(.peripheralDisconnected)))
+	}
+
+	@Test func aRefusedWriteDoesNotReconnect() {
+		// The radio could not allocate a buffer for one write. The link is up, `send` retries,
+		// and a reconnect would restart config exchange over a write the caller can simply be
+		// told about. Reconnecting here cycled the connection on every exhausted write.
+		#expect(BLEConnection.shouldReconnect(after: CBATTError(.insufficientResources)) == false)
 	}
 
 	@Test func unrelatedErrorsDoNotReconnect() {

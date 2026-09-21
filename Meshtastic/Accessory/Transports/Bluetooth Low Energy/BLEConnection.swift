@@ -551,21 +551,12 @@ extension BLEConnection {
 			} catch let attError as CBATTError where attError.code == .insufficientResources {
 				guard attempt + 1 < Self.writeAttemptLimit else {
 					Logger.transport.error("🛜 [BLE] write of \(binaryData.count, privacy: .public)B still refused after \(Self.writeAttemptLimit, privacy: .public) attempts")
-					// Every attempt was refused, so this is no longer a momentary allocation miss.
-					// `didWriteValueFor` deliberately skips the shared error handler for this code so a
-					// transient failure does not tear the link down, which also means nothing else can
-					// reach the reconnect branch in `handlePeripheralError`. Escalate here now that the
-					// attempts are spent, then propagate the original error to the caller.
-					//
-					// Cancellation arriving during that last write lands here, past the check at the
-					// top of the loop. A cancelled send is usually the app tearing the link down on
-					// purpose, so escalating would start a reconnect that fights it.
-					try Task.checkCancellation()
-					do {
-						try await handlePeripheralError(error: attError)
-					} catch {
-						Logger.transport.error("🛜 [BLE] failed to escalate an exhausted write: \(error, privacy: .public)")
-					}
+					// Throw to the caller and leave the link alone. A refused write says the radio
+					// could not allocate a buffer for this one payload; it says nothing about the
+					// link, which is still up and still carrying smaller writes. Escalating here
+					// used to cycle the connection, and a connection that cycles is worse than a
+					// write that fails: the caller can retry a write, while a reconnect restarts
+					// config exchange and rewrites every view watching the connection.
 					throw attError
 				}
 				let backoff = Duration.milliseconds(120 * (attempt + 1))
@@ -674,12 +665,14 @@ extension BLEConnection {
 	/// reason discarded. Pure so it can be tested without a peripheral.
 	static func shouldReconnect(after error: Error) -> Bool {
 		switch error {
-		case let attError as CBATTError:
-			// The radio could not allocate a buffer for THIS write. The link is fine and the next
-			// write usually succeeds, so reconnect rather than dropping the session. Observed on a
-			// Heltec V4 (ESP32-S3/NimBLE): writes of 8-33B succeed while a 104B set_owner is rejected,
-			// with an ATT MTU of 255 negotiated — so it is buffer exhaustion, not a size limit.
-			return attError.code == .insufficientResources
+		case is CBATTError:
+			// No ATT error is worth reconnecting for, including `insufficientResources`. That one
+			// is the radio failing to allocate for a single write — observed on a Heltec V4
+			// (ESP32-S3/NimBLE), where writes of 8-33B succeed while a 104B set_owner is refused
+			// with an ATT MTU of 255 negotiated. The link is up either way, so cycling it fixes
+			// nothing and costs a full reconnect. `send` retries the write; if the retries are
+			// spent it throws, and the caller decides.
+			return false
 		case let cbError as CBError:
 			switch cbError.code {
 			// Happens when the node goes out of range or the shutdown or reset buttons are pressed,
@@ -749,7 +742,7 @@ extension BLEConnection {
 		switch error {
 		case let attError as CBATTError:
 			if attError.code == .insufficientResources {
-				Logger.transport.error("🛜 [BLEConnection] Radio out of buffers for this write (CBATTError \(attError.code.rawValue)); reconnecting rather than ending the session")
+				Logger.transport.error("🛜 [BLEConnection] Radio out of buffers for this write (CBATTError \(attError.code.rawValue)); leaving the link up")
 			} else {
 				Logger.transport.error("🛜 [BLEConnection] Disconnected with CBATTError code: \(attError.code.rawValue) - \(attError.localizedDescription)")
 			}
