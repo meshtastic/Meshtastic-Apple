@@ -201,9 +201,13 @@ struct MeshtasticAppleApp: App {
 	/// On Mac Catalyst the assertion is a no-op the system accepts, so the same path runs
 	/// everywhere without a platform branch here.
 	private func startBackgroundMaintenance(_ persistenceController: PersistenceController) {
+		// Numbered, because backgrounding twice in quick succession leaves two passes in
+		// flight and each has its own grant. The handler quotes its own number so an older
+		// pass expiring cannot stop a newer one.
+		let generation = MeshPackets.beginMaintenance()
 		var taskID = UIBackgroundTaskIdentifier.invalid
 		taskID = UIApplication.shared.beginBackgroundTask(withName: "BackgroundMaintenance") {
-			MeshPackets.backgroundTimeExpired = true
+			MeshPackets.expireMaintenance(generation)
 			Logger.services.warning("🗄️ [Caps] Background time expired; eviction will stop at the next chunk")
 		}
 		Task { @MainActor in
@@ -214,7 +218,8 @@ struct MeshtasticAppleApp: App {
 				Logger.services.error("💥 [App] Failed to save context when the app goes to the background.")
 			}
 			await MeshPackets.shared.enforceEntityCapsAndSave()
-			MeshPackets.backgroundTimeExpired = false
+			// Nothing to clear: the next pass takes a new number, which supersedes any
+			// expiry recorded against this one.
 			if taskID != .invalid {
 				UIApplication.shared.endBackgroundTask(taskID)
 			}
@@ -320,7 +325,6 @@ struct MeshtasticAppleApp: App {
 				// Background High CPU termination. The expiration handler stops the
 				// eviction on a committed chunk boundary instead.
 				MeshPackets.appIsActive = false
-				MeshPackets.backgroundTimeExpired = false
 				startBackgroundMaintenance(persistenceController)
 			case .inactive:
 				Logger.services.info("🎬 [App] Scene is inactive")

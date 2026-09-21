@@ -145,13 +145,39 @@ actor MeshPackets {
 		get { appActiveLock.withLock { _appIsActive } }
 		set { appActiveLock.withLock { _appIsActive = newValue } }
 	}
-	/// Set by the background-task expiration handler when iOS is about to reclaim the
-	/// assertion covering the eviction. The chunked eviction checks it between chunks and
-	/// stops on a committed boundary, rather than being killed mid-pass for CPU.
-	nonisolated(unsafe) private static var _backgroundTimeExpired = false
+	/// Background maintenance passes are numbered, and only the newest one's expiry counts.
+	///
+	/// Backgrounding twice in quick succession leaves two passes in flight. With a single
+	/// shared flag the older one's expiration handler would stop the newer pass, and the
+	/// older one finishing would clear the newer one's expiry — each pass would be steering
+	/// the other. A pass takes a number from `beginMaintenance()` and hands it back to
+	/// `expireMaintenance(_:)`; a stale number is ignored, and starting a pass supersedes any
+	/// earlier expiry without anyone having to clear it.
+	nonisolated(unsafe) private static var _maintenanceGeneration = 0
+	nonisolated(unsafe) private static var _expiredGeneration = -1
+
+	/// Starts a maintenance pass and returns the number its expiration handler must quote.
+	@discardableResult
+	nonisolated static func beginMaintenance() -> Int {
+		appActiveLock.withLock {
+			_maintenanceGeneration += 1
+			return _maintenanceGeneration
+		}
+	}
+
+	/// Records that iOS is about to reclaim the assertion covering pass `generation`. Ignored
+	/// if a later pass has already started, since that pass has its own grant.
+	nonisolated static func expireMaintenance(_ generation: Int) {
+		appActiveLock.withLock {
+			if generation == _maintenanceGeneration { _expiredGeneration = generation }
+		}
+	}
+
+	/// True when the pass currently running has been told its time is up. The chunked
+	/// eviction checks this between chunks and stops on a committed boundary, rather than
+	/// being killed mid-pass for CPU.
 	nonisolated static var backgroundTimeExpired: Bool {
-		get { appActiveLock.withLock { _backgroundTimeExpired } }
-		set { appActiveLock.withLock { _backgroundTimeExpired = newValue } }
+		appActiveLock.withLock { _expiredGeneration == _maintenanceGeneration }
 	}
 	#if DEBUG
 	/// Deterministic concurrency checkpoint used by the refresh boundary regression test. Production
@@ -431,13 +457,32 @@ actor MeshPackets {
 	/// exactly the mid-render delete this exists to avoid.
 	func enforceEntityCapsAndSave() async {
 		guard !invalidated, !Self.appIsActive else { return }
-		await evictInChunks { self.evictNodesIfOverCap(Self.maxTotalNodes, limit: Self.evictionChunkSize) }
+		// One deadline for the pass, not one per collection: two three-second budgets would
+		// be a six-second burst, which is the thing being bounded.
+		let deadline = ContinuousClock.now + Self.evictionBudget
+		await evictInChunks(until: deadline) {
+			self.evictNodesIfOverCap(Self.maxTotalNodes, limit: Self.evictionChunkSize)
+		}
 		guard !Self.appIsActive else {
-			savePendingChanges()
+			commitEvictions()
 			return
 		}
-		await evictInChunks { self.evictWaypointsIfOverCap(Self.maxTotalWaypoints, limit: Self.evictionChunkSize) }
-		savePendingChanges()
+		await evictInChunks(until: deadline) {
+			self.evictWaypointsIfOverCap(Self.maxTotalWaypoints, limit: Self.evictionChunkSize)
+		}
+		commitEvictions()
+	}
+
+	/// Commits without going through `savePendingChanges`, whose periodic cap hook would run
+	/// an unbounded `enforceEntityCaps` — deleting the whole remaining overage in one pass,
+	/// immediately after the budget or the expiry stopped exactly that.
+	private func commitEvictions() {
+		guard !invalidated, modelContext.hasChanges else { return }
+		do {
+			try modelContext.save()
+		} catch {
+			Logger.data.error("💥 [Caps] Eviction failed to commit: \(error.localizedDescription, privacy: .public)")
+		}
 	}
 
 	/// Run `step` until it reports nothing left to evict, committing and yielding between
@@ -452,8 +497,7 @@ actor MeshPackets {
 	///
 	/// Committing per chunk uses `modelContext.save()` rather than `savePendingChanges()`,
 	/// which would re-enter `enforceEntityCaps` on its own interval and undo the chunking.
-	private func evictInChunks(_ step: () -> Int) async {
-		let deadline = ContinuousClock.now + Self.evictionBudget
+	private func evictInChunks(until deadline: ContinuousClock.Instant, _ step: () -> Int) async {
 		while !invalidated, !Self.appIsActive, !Self.backgroundTimeExpired {
 			guard ContinuousClock.now < deadline else {
 				Logger.data.info("🗄️ [Caps] Eviction budget spent; the rest waits for the next background transition")
