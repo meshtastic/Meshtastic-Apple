@@ -952,8 +952,14 @@ struct Settings: View {
 			}
 			.onChange(of: accessoryManager.activeDeviceNum) { oldDevice, newDevice in
 				if newDevice == nil {
+					// The transport dropped — often just the radio rebooting after a config
+					// save, not a real device change. preferredNodeNum tracks
+					// UserDefaults.preferredPeripheralNum (see the onChange above), which a
+					// reboot doesn't touch, so leave it alone: zeroing it here collapsed the
+					// Configure/Radio/Device/Module/Logging sections every time a save
+					// rebooted the node, even though it's still the preferred node. Only the
+					// remote-admin target is genuinely invalid without a live link.
 					selectedNode = 0
-					preferredNodeNum = 0
 				} else if oldDevice != newDevice {
 					// Physical connection changed — any prior remote admin session is invalid
 					preferredNodeNum = Int(newDevice!)
