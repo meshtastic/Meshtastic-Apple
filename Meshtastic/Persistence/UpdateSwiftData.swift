@@ -1265,28 +1265,16 @@ extension MeshPackets {
 			// Found a node, save Ambient Lighting Config
 			if !fetchedNode.isEmpty {
 				
-				if fetchedNode[0].cannedMessageConfig == nil {
-					let newAmbientLightingConfig = AmbientLightingConfigEntity()
-					modelContext.insert(newAmbientLightingConfig)
-					newAmbientLightingConfig.ledState = config.ledState
-					newAmbientLightingConfig.current = Int32(truncatingIfNeeded: config.current)
-					newAmbientLightingConfig.red = Int32(truncatingIfNeeded: config.red)
-					newAmbientLightingConfig.green = Int32(truncatingIfNeeded: config.green)
-					newAmbientLightingConfig.blue = Int32(truncatingIfNeeded: config.blue)
-					fetchedNode[0].ambientLightingConfig = newAmbientLightingConfig
-				} else {
-					
-					if fetchedNode[0].ambientLightingConfig == nil {
-						let newAmbientLighting = AmbientLightingConfigEntity()
-						modelContext.insert(newAmbientLighting)
-						fetchedNode[0].ambientLightingConfig = newAmbientLighting
-					}
-					fetchedNode[0].ambientLightingConfig?.ledState = config.ledState
-					fetchedNode[0].ambientLightingConfig?.current = Int32(truncatingIfNeeded: config.current)
-					fetchedNode[0].ambientLightingConfig?.red = Int32(truncatingIfNeeded: config.red)
-					fetchedNode[0].ambientLightingConfig?.green = Int32(truncatingIfNeeded: config.green)
-					fetchedNode[0].ambientLightingConfig?.blue = Int32(truncatingIfNeeded: config.blue)
+				if fetchedNode[0].ambientLightingConfig == nil {
+					let newAmbientLighting = AmbientLightingConfigEntity()
+					modelContext.insert(newAmbientLighting)
+					fetchedNode[0].ambientLightingConfig = newAmbientLighting
 				}
+				fetchedNode[0].ambientLightingConfig?.ledState = config.ledState
+				fetchedNode[0].ambientLightingConfig?.current = Int32(truncatingIfNeeded: config.current)
+				fetchedNode[0].ambientLightingConfig?.red = Int32(truncatingIfNeeded: config.red)
+				fetchedNode[0].ambientLightingConfig?.green = Int32(truncatingIfNeeded: config.green)
+				fetchedNode[0].ambientLightingConfig?.blue = Int32(truncatingIfNeeded: config.blue)
 				if sessionPasskey != nil {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
