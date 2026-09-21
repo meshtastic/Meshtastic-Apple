@@ -43,9 +43,13 @@ struct AmbientLightingColorTests {
 	}
 
 	/// Hosts the view in a window so appearance and the state changes it causes really run.
+	/// A window has to be given a size before anything lays out, and a test wants the same
+	/// one every run. Phone-shaped so the rows lay out the way they do in the app.
+	private static let hostSize = CGSize(width: 390, height: 700)
+
 	@MainActor
 	private func host<V: View>(_ view: V) {
-		let size = CGSize(width: 390, height: 700)
+		let size = Self.hostSize
 		let hosting = UIHostingController(rootView: view.frame(width: size.width))
 		let window = UIWindow(frame: CGRect(origin: .zero, size: size))
 		window.rootViewController = hosting
@@ -89,11 +93,26 @@ struct AmbientLightingColorTests {
 		let environment = EnvironmentValues()
 		var wrong: [Int] = []
 		for value in 0...255 {
-			let shown = Color(red: Double(value) / 255, green: Double(value) / 255, blue: Double(value) / 255)
+			let shown = AmbientChannels.color(red: UInt32(value), green: UInt32(value), blue: UInt32(value))
 			let resolved = shown.resolve(in: environment)
-			if UInt32((resolved.red * 255).rounded()) != UInt32(value) { wrong.append(value) }
+			if AmbientChannels.level(resolved.red) != UInt32(value) { wrong.append(value) }
 		}
 		#expect(wrong.isEmpty, "channels that did not come back: \(wrong)")
+	}
+
+	@Test @MainActor
+	func aWideGamutColorIsClampedRatherThanTrapping() {
+		// Color.resolve does not clamp to sRGB, so a P3 colour comes back outside 0...1 —
+		// pure P3 green resolves with red near -0.5. Rounding that straight into UInt32
+		// traps, so the clamp is load-bearing, not defensive.
+		#expect(AmbientChannels.level(-0.51) == 0)
+		#expect(AmbientChannels.level(1.4) == 255)
+		// And the ordinary range still rounds rather than truncating.
+		#expect(AmbientChannels.level(0) == 0)
+		#expect(AmbientChannels.level(1) == 255)
+		#expect(AmbientChannels.level(0.5) == 128)
+		#expect(AmbientChannels.level(100.4 / 255) == 100)
+		#expect(AmbientChannels.level(100.6 / 255) == 101)
 	}
 }
 

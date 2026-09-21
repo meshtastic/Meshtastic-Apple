@@ -53,6 +53,27 @@ struct AmbientLightingConfig: View {
 	}
 }
 
+/// Converting between the picker's colour and the radio's three 0-255 channels.
+///
+/// Its own type so the conversion can be tested directly. A test that repeats the
+/// arithmetic instead passes whether or not the clamp and the rounding are still here.
+enum AmbientChannels {
+
+	/// The colour the radio is currently showing.
+	static func color(red: UInt32, green: UInt32, blue: UInt32) -> Color {
+		Color(red: Double(red) / 255, green: Double(green) / 255, blue: Double(blue) / 255)
+	}
+
+	/// One resolved colour component as the radio wants it.
+	///
+	/// The picker works in the display's colour space and the radio takes 0-255 sRGB, so a
+	/// wide-gamut colour resolves outside that range — P3 pure green comes back with red at
+	/// about -0.51. Rounding that without clamping traps on the conversion to UInt32.
+	static func level(_ value: Float) -> UInt32 {
+		UInt32(min(255, max(0, (value * 255).rounded())))
+	}
+}
+
 /// The LED colour as one control over the message's red, green and blue channels.
 ///
 /// The color is read from and written to the message directly. Nothing is kept here:
@@ -64,24 +85,14 @@ private struct AmbientColorPicker: View {
 
 	private var color: Binding<Color> {
 		Binding(
-			get: {
-				Color(red: Double(config.red) / 255,
-					  green: Double(config.green) / 255,
-					  blue: Double(config.blue) / 255)
-			},
+			get: { AmbientChannels.color(red: config.red, green: config.green, blue: config.blue) },
 			set: { picked in
 				let resolved = picked.resolve(in: environment)
-				config.red = level(resolved.red)
-				config.green = level(resolved.green)
-				config.blue = level(resolved.blue)
+				config.red = AmbientChannels.level(resolved.red)
+				config.green = AmbientChannels.level(resolved.green)
+				config.blue = AmbientChannels.level(resolved.blue)
 			}
 		)
-	}
-
-	/// The picker works in the display's color space and the radio takes 0-255 sRGB,
-	/// so a wide-gamut color resolves outside that range and is clamped into it.
-	private func level(_ value: Float) -> UInt32 {
-		UInt32(min(255, max(0, (value * 255).rounded())))
 	}
 
 	var body: some View {
