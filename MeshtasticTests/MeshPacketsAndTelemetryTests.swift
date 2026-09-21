@@ -1208,8 +1208,10 @@ struct EntityCapEvictionTests {
 		#expect(none == 0)
 	}
 
-	@Test func backgroundEviction_stopsWhenBackgroundTimeExpires() async throws {
-		let (mesh, container) = try freshMesh()
+	/// 30 nodes against a cap of 5 in chunks of 10, so the pass really is over cap and
+	/// really does take several chunks. Against the production cap of 10,000 nothing would
+	/// be evicted and both tests below would pass with the expiry check deleted.
+	private func seedThirtyNodes(_ container: ModelContainer) throws {
 		let context = ModelContext(container)
 		let base = Date(timeIntervalSince1970: 1_700_000_000)
 		for num in 1...30 {
@@ -1221,11 +1223,34 @@ struct EntityCapEvictionTests {
 			context.insert(node)
 		}
 		try context.save()
+	}
+
+	@Test func backgroundEviction_evictsToCapWhenTimeAllows() async throws {
+		let (mesh, container) = try freshMesh()
+		try seedThirtyNodes(container)
+
+		let wasActive = MeshPackets.appIsActive
+		MeshPackets.appIsActive = false
+		MeshPackets.beginMaintenance()
+		defer { MeshPackets.appIsActive = wasActive }
+
+		await mesh.enforceEntityCapsAndSave(nodeCap: 5, waypointCap: 5, chunkSize: 10)
+		await mesh.flushDebouncedSaves()
+
+		let remaining = try ModelContext(container)
+			.fetch(FetchDescriptor<NodeInfoEntity>()).map(\.num).sorted()
+		#expect(remaining == Array(26...30), "chunks run to the cap, keeping the newest")
+	}
+
+	@Test func backgroundEviction_stopsWhenBackgroundTimeExpires() async throws {
+		let (mesh, container) = try freshMesh()
+		try seedThirtyNodes(container)
 
 		let wasActive = MeshPackets.appIsActive
 		MeshPackets.appIsActive = false
 		// Stand in for the expiration handler having already fired: the pass must not
-		// start, rather than running to completion and being killed for it.
+		// start, rather than running to completion and being killed for it. Same caps as
+		// the test above, which evicts 25 — so this fails if the check is removed.
 		let generation = MeshPackets.beginMaintenance()
 		MeshPackets.expireMaintenance(generation)
 		defer {
@@ -1233,7 +1258,7 @@ struct EntityCapEvictionTests {
 			MeshPackets.appIsActive = wasActive
 		}
 
-		await mesh.enforceEntityCapsAndSave()
+		await mesh.enforceEntityCapsAndSave(nodeCap: 5, waypointCap: 5, chunkSize: 10)
 		await mesh.flushDebouncedSaves()
 
 		let count = try ModelContext(container).fetchCount(FetchDescriptor<NodeInfoEntity>())

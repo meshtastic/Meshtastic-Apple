@@ -455,20 +455,26 @@ actor MeshPackets {
 	/// is re-checked here on the actor, not just at enqueue: a quick return to the
 	/// foreground can beat this task's turn on the actor, and evicting then would be
 	/// exactly the mid-render delete this exists to avoid.
-	func enforceEntityCapsAndSave() async {
+	/// The caps and chunk size are parameters so a test can drive this exact code against a
+	/// store small enough to go over cap. Production calls it with no arguments.
+	func enforceEntityCapsAndSave(
+		nodeCap: Int = MeshPackets.maxTotalNodes,
+		waypointCap: Int = MeshPackets.maxTotalWaypoints,
+		chunkSize: Int = MeshPackets.evictionChunkSize
+	) async {
 		guard !invalidated, !Self.appIsActive else { return }
 		// One deadline for the pass, not one per collection: two three-second budgets would
 		// be a six-second burst, which is the thing being bounded.
 		let deadline = ContinuousClock.now + Self.evictionBudget
 		await evictInChunks(until: deadline) {
-			self.evictNodesIfOverCap(Self.maxTotalNodes, limit: Self.evictionChunkSize)
+			self.evictNodesIfOverCap(nodeCap, limit: chunkSize)
 		}
 		guard !Self.appIsActive else {
 			commitEvictions()
 			return
 		}
 		await evictInChunks(until: deadline) {
-			self.evictWaypointsIfOverCap(Self.maxTotalWaypoints, limit: Self.evictionChunkSize)
+			self.evictWaypointsIfOverCap(waypointCap, limit: chunkSize)
 		}
 		commitEvictions()
 	}
