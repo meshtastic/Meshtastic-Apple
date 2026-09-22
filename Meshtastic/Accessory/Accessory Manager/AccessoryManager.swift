@@ -701,6 +701,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			}
 		}
 		try await closeConnection()
+		Logger.datadog.clearRadioContext()
 		updateState(.discovering)
 
 		if let disconnectError {

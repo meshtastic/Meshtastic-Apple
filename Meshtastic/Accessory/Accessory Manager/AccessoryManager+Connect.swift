@@ -308,6 +308,10 @@ extension AccessoryManager {
 				}
 				
 				if let device = self.activeConnection?.device {
+					// On a reconnect the device metadata can land after the connection is up, so
+					// `device.firmwareVersion` is briefly nil here and the action used to report
+					// nothing at all. Fall back to the version stored at the version check, the
+					// same way `checkIsVersionSupported` does for the same window.
 					var version: String?
 					if let firmwareVersion = device.firmwareVersion {
 						if let lastDotIndex = firmwareVersion.lastIndex(of: ".") {
@@ -315,6 +319,8 @@ extension AccessoryManager {
 						} else {
 							version = firmwareVersion
 						}
+					} else if UserDefaults.firmwareVersion != "0.0.0" {
+						version = UserDefaults.firmwareVersion
 					}
 				
 					let connectionWasRestored = (withConnection != nil)
