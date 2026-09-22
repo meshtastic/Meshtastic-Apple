@@ -7,6 +7,7 @@
 
 import Foundation
 import OSLog
+import SwiftData
 import MeshtasticProtobufs
 import CoreBluetooth
 
@@ -310,17 +311,16 @@ extension AccessoryManager {
 				if let device = self.activeConnection?.device {
 					// On a reconnect the device metadata can land after the connection is up, so
 					// `device.firmwareVersion` is briefly nil here and the action used to report
-					// nothing at all. Fall back to the version stored at the version check, the
-					// same way `checkIsVersionSupported` does for the same window.
+					// nothing at all. Fall back to what this node last told us, read from its own
+					// stored metadata — not `UserDefaults.firmwareVersion`, which holds whichever
+					// radio was checked last and would report that one's version against this one.
 					var version: String?
-					if let firmwareVersion = device.firmwareVersion {
+					if let firmwareVersion = device.firmwareVersion ?? self.storedFirmwareVersion(for: device.num) {
 						if let lastDotIndex = firmwareVersion.lastIndex(of: ".") {
 							version = String(firmwareVersion[...(lastDotIndex)].dropLast())
 						} else {
 							version = firmwareVersion
 						}
-					} else if UserDefaults.firmwareVersion != "0.0.0" {
-						version = UserDefaults.firmwareVersion
 					}
 				
 					let connectionWasRestored = (withConnection != nil)
@@ -357,6 +357,19 @@ extension AccessoryManager {
 		// All done, one way or another, clean up
 		self.connectionStepper = nil
 	}
+	/// The firmware version this node last reported, from its own stored metadata.
+	///
+	/// Per node on purpose. `UserDefaults.firmwareVersion` holds whichever radio was version
+	/// checked last, so using it here would report one radio's firmware against another when
+	/// a second radio connects before its metadata arrives.
+	func storedFirmwareVersion(for nodeNum: Int64?) -> String? {
+		guard let nodeNum else { return nil }
+		let descriptor = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == nodeNum })
+		guard let stored = try? context.fetch(descriptor).first?.metadata?.firmwareVersion,
+			  !stored.isEmpty else { return nil }
+		return stored
+	}
+
 }
 
 // Sequentially stepped tasks
