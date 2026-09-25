@@ -111,8 +111,7 @@ struct Connect: View {
 
 	var body: some View {
 		NavigationStack {
-			VStack(spacing: 0) {
-				List {
+			List {
 					Section {
 						if let connectedDevice = accessoryManager.activeConnection?.device,
 						   accessoryManager.isConnected || accessoryManager.isConnecting {
@@ -477,33 +476,33 @@ struct Connect: View {
 					transaction.disablesAnimations = true
 					transaction.animation = nil
 				}
-				HStack(alignment: .center) {
-					Spacer()
 #if targetEnvironment(macCatalyst)
-					// TODO: should this be allowDisconnect?
+				// A view under the list, even an empty one, lifts the list off the
+				// bottom safe area. The tab bar inset then shows as a blank strip.
+				.safeAreaInset(edge: .bottom, spacing: 0) {
 					if accessoryManager.allowDisconnect {
-						Button(role: .destructive, action: {
-							if accessoryManager.allowDisconnect {
-								Task {
-									try await accessoryManager.disconnect()
+						HStack {
+							Spacer()
+							Button(role: .destructive, action: {
+								if accessoryManager.allowDisconnect {
+									Task {
+										try await accessoryManager.disconnect()
+									}
 								}
+							}) {
+								Label("Disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
 							}
-						}) {
-							Label("Disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
+							.buttonStyle(.bordered)
+							.buttonBorderShape(.capsule)
+							.controlSize(.large)
+							.padding()
+							Spacer()
 						}
-						.buttonStyle(.bordered)
-						.buttonBorderShape(.capsule)
-						.controlSize(.large)
-						.padding()
+						.padding(.bottom, 10)
+						.background(Color(.systemGroupedBackground))
 					}
-#endif
-					Spacer()
 				}
-				.padding(.bottom, 10)
-			}
-			.background {
-				Color(.systemGroupedBackground)
-			}
+#endif
 			.disabled(isSwitchingRadio)
 			.overlay {
 				if isSwitchingRadio {
@@ -537,7 +536,7 @@ struct Connect: View {
 					)
 				}
 			}
-			// Attached to the root VStack (not the connected-device subtree, which unmounts
+			// Attached to the list (not the connected-device subtree, which unmounts
 			// on disconnect) so the confirmation survives a connection state change between
 			// the long-press and the user tapping "Shutdown Node?".
 			.confirmationDialog(
