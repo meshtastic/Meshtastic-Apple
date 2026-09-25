@@ -14,6 +14,7 @@ import SwiftUI
 
 struct ChannelMessageList: View {
 	@EnvironmentObject var appState: AppState
+	@EnvironmentObject private var router: Router
 	@Environment(\.scenePhase) var scenePhase
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
@@ -182,7 +183,7 @@ struct ChannelMessageList: View {
 	}
 
 	private func routerIsShowingThisChannel() -> Bool {
-		guard appState.router.selectedTab == .messages else { return false }
+		guard router.selectedTab == .messages else { return false }
 		return scenePhase == .active
 	}
 

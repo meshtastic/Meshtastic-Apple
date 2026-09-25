@@ -209,6 +209,25 @@ private struct ContactReplyActivityView: UIViewControllerRepresentable {
 	func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }
 
+extension View {
+	func contactImportSheet(
+		_ pendingContact: Binding<PendingContact?>,
+		accessoryManager: AccessoryManager
+	) -> some View {
+		sheet(item: pendingContact) { pendingContact in
+			AddContactConfirmationView(
+				pendingContact: pendingContact,
+				accessoryManager: accessoryManager
+			)
+			.trackScreen(.addContact)
+			.presentationDetents([.medium, .large])
+			#if !targetEnvironment(macCatalyst)
+			.presentationDragIndicator(.visible)
+			#endif
+		}
+	}
+}
+
 #if DEBUG
 struct AddContactConfirmationView_Previews: PreviewProvider {
 	static var previews: some View {

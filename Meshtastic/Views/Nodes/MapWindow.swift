@@ -16,6 +16,8 @@ struct MapWindow: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismissWindow) private var dismissWindow
 	@Environment(\.scenePhase) private var scenePhase
+	@StateObject private var router = Router()
+	@State private var routerToken: UUID?
 
 	var body: some View {
 		TabView {
@@ -31,6 +33,9 @@ struct MapWindow: View {
 			}
 		}
 		.onAppear {
+			if routerToken == nil {
+				routerToken = appState.sceneRouters.register(router)
+			}
 			// If the map window is restored on launch without the main window, dismiss it
 			let mainScenes = UIApplication.shared.connectedScenes.filter {
 				$0.session.configuration.name != "meshmap-window" && $0.activationState != .unattached
@@ -38,6 +43,11 @@ struct MapWindow: View {
 			if mainScenes.isEmpty {
 				dismissWindow(id: "meshmap-window")
 			}
+		}
+		.onDisappear {
+			guard let routerToken else { return }
+			appState.sceneRouters.unregister(routerToken)
+			self.routerToken = nil
 		}
 		.onReceive(NotificationCenter.default.publisher(for: UIScene.didDisconnectNotification)) { _ in
 			// Close the map window when the main window is closed
@@ -48,14 +58,18 @@ struct MapWindow: View {
 		}
 	}
 
-	@ViewBuilder
 	private var meshMapView: some View {
+		mapRoot.environmentObject(router)
+	}
+
+	@ViewBuilder
+	private var mapRoot: some View {
 		#if os(visionOS)
-		MeshMapMK(router: appState.router, showOpenWindowButton: false)
+		MeshMapMK(router: router, showOpenWindowButton: false)
 			.toolbar(.hidden, for: .windowToolbar)
 			.persistentSystemOverlays(.hidden)
 		#else
-		MeshMapMK(router: appState.router, showOpenWindowButton: false)
+		MeshMapMK(router: router, showOpenWindowButton: false)
 		#endif
 	}
 }

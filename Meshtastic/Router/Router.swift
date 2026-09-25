@@ -234,6 +234,17 @@ class Router: ObservableObject {
 		}
 	}
 
+	/// Drops every detail stack in this window. Leaves `selectedTab` alone so a
+	/// store reset can unmount doomed model objects without dragging every
+	/// window onto the same tab.
+	func popAllStacks() {
+		popToRoot(tab: .messages)
+		popToRoot(tab: .nodes)
+		popToRoot(tab: .map)
+		popToRoot(tab: .settings)
+		discoveryShowHistory = false
+	}
+
 	private func routeMap(_ components: URLComponents) {
 		let nodeId = components.queryItems?
 			.first(where: { $0.name == "nodenum" })?
@@ -318,6 +329,41 @@ class Router: ObservableObject {
 
 		if settingFromPath == .localMeshDiscovery && segments.count > 1 && segments[1] == "history" {
 			discoveryShowHistory = true
+		}
+	}
+}
+
+/// The open windows' routers.
+///
+/// A node switch has to pop detail views on every window before it touches the
+/// store, and that pop has to happen in the call, not on a later `onChange`:
+/// the views are still mounted, holding model objects the reset is about to
+/// destroy. Each window registers the router it owns. This does not own a tab.
+///
+/// Not itself main-actor isolated: `AppState` is created and passed into the
+/// packet actor, and a main-actor type cannot live on it. Every method hops
+/// to the main actor before touching a router. The dictionary is only used
+/// from those methods.
+final class SceneRouters: @unchecked Sendable {
+	private var routers: [UUID: Router] = [:]
+
+	@MainActor
+	@discardableResult
+	func register(_ router: Router) -> UUID {
+		let id = UUID()
+		routers[id] = router
+		return id
+	}
+
+	@MainActor
+	func unregister(_ id: UUID) {
+		routers.removeValue(forKey: id)
+	}
+
+	@MainActor
+	func popAllStacks() {
+		for router in Array(routers.values) {
+			router.popAllStacks()
 		}
 	}
 }

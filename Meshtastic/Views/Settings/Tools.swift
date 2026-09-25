@@ -19,6 +19,7 @@ struct Tools: View {
 	@StateObject private var nfcReader = NFCReader()
 	#endif
 	@State private var saveChannelLink: SaveChannelLinkData?
+	@State private var pendingContact: PendingContact?
 	@State private var scanErrorMessage: String?
 
 	@State private var isExportingConfig = false
@@ -136,6 +137,7 @@ struct Tools: View {
 		} message: { message in
 			Text(message)
 		}
+		.contactImportSheet($pendingContact, accessoryManager: accessoryManager)
 		.sheet(item: $saveChannelLink) { link in
 			SaveChannelQRCode(
 				channelSetLink: link.data,
@@ -282,7 +284,9 @@ struct Tools: View {
 	/// URLs present the SaveChannelQRCode flow.
 	private func handleScannedURL(_ url: URL) {
 		if ContactURLHandler.canHandle(url) {
-			ContactURLHandler.handleContactUrl(url: url, accessoryManager: accessoryManager)
+			if let pending = ContactURLHandler.makePendingContact(from: url, accessoryManager: accessoryManager) {
+				pendingContact = pending
+			}
 		} else if MeshtasticChannelURL.canHandle(url) {
 			do {
 				let channelLink = try MeshtasticChannelURL.parse(url.absoluteString)

@@ -25,6 +25,44 @@ struct RouterTests {
 		#expect(state == custom)
 	}
 
+	@Test func popAllStacksKeepsTheTab() async {
+		let router = await Router(navigationState: NavigationState(
+			selectedTab: .settings,
+			messages: .channels(),
+			nodeListSelectedNodeNum: 5,
+			map: .waypoint(9),
+			settings: .lora
+		))
+		await router.popAllStacks()
+		let state = await router.navigationState
+		#expect(state.selectedTab == .settings)
+		#expect(state.messages == nil)
+		#expect(state.nodeListSelectedNodeNum == nil)
+		#expect(state.map == nil)
+		#expect(state.settings == nil)
+	}
+
+	@Test func poppingEverySceneKeepsEachTab() async {
+		let messages = await Router(navigationState: NavigationState(
+			selectedTab: .messages,
+			messages: .directMessages()
+		))
+		let nodes = await Router(navigationState: NavigationState(
+			selectedTab: .nodes,
+			nodeListSelectedNodeNum: 3
+		))
+		let registry = SceneRouters()
+		let messagesToken = await registry.register(messages)
+		let nodesToken = await registry.register(nodes)
+		await registry.popAllStacks()
+		#expect(await messages.selectedTab == .messages)
+		#expect(await messages.messagesState == nil)
+		#expect(await nodes.selectedTab == .nodes)
+		#expect(await nodes.selectedNodeNum == nil)
+		await registry.unregister(messagesToken)
+		await registry.unregister(nodesToken)
+	}
+
 	// MARK: - Invalid URL Handling
 
 	@Test func invalidSchemeIsIgnored() async throws {
