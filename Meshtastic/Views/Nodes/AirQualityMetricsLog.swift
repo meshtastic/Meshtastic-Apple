@@ -13,6 +13,11 @@ struct AirQualityMetricsLog: View {
 
 	@Environment(\.modelContext) private var context
 	@Environment(\.horizontalSizeClass) private var horizontalSizeClass
+
+	/// Table on iPhone shows only its first column, even in a regular size class.
+	private var showsWideTable: Bool {
+		horizontalSizeClass == .regular && UIDevice.current.userInterfaceIdiom != .phone
+	}
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@State private var isPresentingClearLogConfirm: Bool = false
 	@State var isExporting = false
@@ -56,7 +61,7 @@ struct AirQualityMetricsLog: View {
 
 					// Dynamic table column using SwiftUI Table requires TableColumnForEach which requires the target
 					// to be bumped to 17.4 -- Until that happens, the existing non-configurable table is used.
-					if horizontalSizeClass == .regular {
+					if showsWideTable {
 						Table(chartData) {
 							TableColumnForEach(columnList.visible) { col in
 								TableColumn(col.name) { em in

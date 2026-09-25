@@ -31,6 +31,11 @@ struct AppLog: View {
 	@StateObject private var streamModel = PacketStreamModel()
 	@Environment(\.scenePhase) private var scenePhase
 	@Environment(\.horizontalSizeClass) private var horizontalSizeClass
+
+	/// Table on iPhone shows only its first column, even in a regular size class.
+	private var showsWideTable: Bool {
+		horizontalSizeClass == .regular && UIDevice.current.userInterfaceIdiom != .phone
+	}
 	/// Fixed ISO 8601-style timestamp in local time, e.g. "2026-05-29 09:37:16.305".
 	/// `en_US_POSIX` keeps the format literal and locale-independent so log lines stay
 	/// sortable and unambiguous regardless of device region.
@@ -163,7 +168,7 @@ struct AppLog: View {
 	private var mainLogView: some View {
 		HStack {
 
-			if horizontalSizeClass == .regular {
+			if showsWideTable {
 				desktopLogTable
 			} else {
 				phoneLogTable

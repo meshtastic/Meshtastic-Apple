@@ -16,6 +16,11 @@ struct LocalStatsLog: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
+	/// Table on iPhone shows only its first column, even in a regular size class.
+	private var showsWideTable: Bool {
+		horizontalSizeClass == .regular && UIDevice.current.userInterfaceIdiom != .phone
+	}
+
 	@State private var isPresentingClearLogConfirm: Bool = false
 	@State var isExporting = false
 	@State var exportString = ""
@@ -225,7 +230,7 @@ struct LocalStatsLog: View {
 
 	@ViewBuilder
 	private var tableView: some View {
-		if horizontalSizeClass == .regular {
+		if showsWideTable {
 			macTableView
 		} else {
 			phoneTableView

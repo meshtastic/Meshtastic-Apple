@@ -16,6 +16,11 @@ struct PowerMetricsLog: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Bindable var node: NodeInfoEntity
 	@Environment(\.horizontalSizeClass) private var horizontalSizeClass
+
+	/// Table on iPhone shows only its first column, even in a regular size class.
+	private var showsWideTable: Bool {
+		horizontalSizeClass == .regular && UIDevice.current.userInterfaceIdiom != .phone
+	}
 	@State private var sortOrder = [KeyPathComparator(\TelemetryEntity.time, order: .reverse)]
 	@State private var selection: TelemetryEntity.ID?
 	@State private var chartSelection: Date?
@@ -115,7 +120,7 @@ struct PowerMetricsLog: View {
 						.chartLegend(position: .automatic, alignment: .bottom)
 					}
 				}
-				if horizontalSizeClass != .regular {
+				if !showsWideTable {
 					Table(powerMetrics, selection: $selection, sortOrder: $sortOrder) {
 						TableColumn("Timestamp") { m in
 							HStack {

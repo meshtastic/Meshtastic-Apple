@@ -14,6 +14,11 @@ import OSLog
 struct DetectionSensorLog: View {
 	@Environment(\.modelContext) private var context
 	@Environment(\.horizontalSizeClass) private var horizontalSizeClass
+
+	/// Table on iPhone shows only its first column, even in a regular size class.
+	private var showsWideTable: Bool {
+		horizontalSizeClass == .regular && UIDevice.current.userInterfaceIdiom != .phone
+	}
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@State private var isPresentingClearLogConfirm: Bool = false
 	@State var isExporting = false
@@ -62,7 +67,7 @@ struct DetectionSensorLog: View {
 				}
 				.frame(minHeight: 250)
 			}
-			if horizontalSizeClass == .regular {
+			if showsWideTable {
 				Table(detections) {
 					TableColumn("Detection event") { d in
 						Text(d.messagePayload ?? "Detected")

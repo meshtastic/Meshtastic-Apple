@@ -13,6 +13,11 @@ struct PositionLog: View {
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.horizontalSizeClass) private var horizontalSizeClass
+
+	/// Table on iPhone shows only its first column, even in a regular size class.
+	private var showsWideTable: Bool {
+		horizontalSizeClass == .regular && UIDevice.current.userInterfaceIdiom != .phone
+	}
 	@State var isExporting = false
 	@State var exportString = ""
 	@Bindable var node: NodeInfoEntity
@@ -24,7 +29,7 @@ struct PositionLog: View {
 	var body: some View {
 		VStack {
 			if totalPositionCount > 0 {
-				if horizontalSizeClass == .regular {
+				if showsWideTable {
 					Table(positions, sortOrder: $sortOrder) {
 						TableColumn("Latitude") { position in
 							Text(String(format: "%.5f", position.latitude ?? 0))
