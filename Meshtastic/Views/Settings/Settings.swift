@@ -32,6 +32,8 @@ struct SettingsNodeSnapshot: Identifiable, Equatable {
 	let role: Int32?
 	let regionCode: Int?
 	let excludedModules: Int
+	/// The node's own reported firmware, for the module version gates.
+	let firmwareVersion: String?
 	let isManaged: Bool
 
 	var id: Int64 { num }
@@ -90,9 +92,11 @@ struct SettingsNodeSnapshot: Identifiable, Equatable {
 			!metadata.isDeleted {
 			hasMetadata = true
 			excludedModules = Int(metadata.excludedModules)
+			firmwareVersion = metadata.firmwareVersion
 		} else {
 			hasMetadata = false
 			excludedModules = 0
+			firmwareVersion = nil
 		}
 
 		if let takConfig = node.takConfig,
@@ -181,13 +185,45 @@ struct Settings: View {
 			|| isMeshBeaconModuleSupported(node)
 	}
 
-	private func isMeshBeaconModuleSupported(_ node: SettingsNodeSnapshot?) -> Bool {
-		guard node != nil else { return false }
-		return accessoryManager.checkIsVersionSupported(forVersion: "2.8.0")
+	/// The `ModuleConfig` field tag for each module whose settings this screen offers.
+	/// The schema states on that field which firmware first reads the module, so the
+	/// version lives upstream instead of being written out here.
+	private enum ModuleField {
+		static let statusMessage = 14
+		static let trafficManagement = 15
+		static let tak = 16
+		static let meshBeacon = 17
 	}
 
-	private func isModuleSupported(_ module: ExcludedModules, excludedModules: Int) -> Bool {
-		return excludedModules & module.rawValue == 0
+	private func isMeshBeaconModuleSupported(_ node: SettingsNodeSnapshot?) -> Bool {
+		guard node != nil else { return false }
+		return firmwareReadsModule(tag: ModuleField.meshBeacon, node: node)
+	}
+
+	/// Whether a module's settings belong on this node's list. Two separate questions:
+	/// whether the build left the module out, which is the `excluded_modules` bitmask,
+	/// and whether the firmware is new enough to read it at all, which is the schema's
+	/// `since_firmware`. Neither substitutes for the other - firmware older than a
+	/// module has no bit for it either way - and a module needs both to pass.
+	private func isModuleSupported(
+		_ module: ExcludedModules,
+		excludedModules: Int,
+		tag: Int? = nil,
+		node: SettingsNodeSnapshot? = nil
+	) -> Bool {
+		guard excludedModules & module.rawValue == 0 else { return false }
+		guard let tag else { return true }
+		return firmwareReadsModule(tag: tag, node: node)
+	}
+
+	/// Whether the node's firmware reads this module, from the version the schema puts
+	/// on its `ModuleConfig` field. A module with no annotation, or a node that has
+	/// never reported a version, is offered: hiding settings on a guess is worse than
+	/// offering ones the radio ignores.
+	private func firmwareReadsModule(tag: Int, node: SettingsNodeSnapshot?) -> Bool {
+		guard let since = FieldMetadataRegistry.get("meshtastic.ModuleConfig", tag: tag)?.sinceFirmware
+		else { return true }
+		return NodeInfoEntity.firmware(node?.firmwareVersion, isAtLeast: since)
 	}
 
 	private func isAnySupported(_ modules: [ExcludedModules], excludedModules: Int) -> Bool {
@@ -196,6 +232,10 @@ struct Settings: View {
 
 	private func isTAKModuleSupported(_ node: SettingsNodeSnapshot?) -> Bool {
 		guard let node else { return false }
+		// The role says whether TAK is relevant to this node; the schema says whether the
+		// firmware reads the config at all. Without the second, setting the role on an
+		// older radio opened a screen whose settings it ignores.
+		guard firmwareReadsModule(tag: ModuleField.tak, node: node) else { return false }
 		if node.hasTAKConfig {
 			return true
 		}
@@ -210,7 +250,7 @@ struct Settings: View {
 
 	private func isTrafficManagementModuleSupported(_ node: SettingsNodeSnapshot?) -> Bool {
 		guard node != nil else { return false }
-		return accessoryManager.checkIsVersionSupported(forVersion: "2.8.0")
+		return firmwareReadsModule(tag: ModuleField.trafficManagement, node: node)
 	}
 
 	private var showsDevelopersSection: Bool {
@@ -787,12 +827,6 @@ struct Settings: View {
 				placement: .navigationBarDrawer(displayMode: .always),
 				prompt: "Search settings"
 			)
-			// Handed to every pushed screen: the schema-driven ones scroll to the control
-			// a search result named, and take it so going back does not scroll again.
-			.environment(\.settingsFieldFocus, SettingsFieldFocus(
-				target: router.settingsFieldFocus,
-				clear: { router.clearSettingsFieldFocus() }
-			))
 			.navigationDestination(for: SettingsNavigationState.self) { destination in
 				let node = liveNode(for: preferredNodeNum)
 				let configNode = liveNode(for: selectedNode)
@@ -893,6 +927,14 @@ struct Settings: View {
 					}
 				}
 				.trackScreen(destination.screenName)
+				// Handed to the pushed screen itself: the schema-driven ones scroll to
+				// the control a search result named and take it, so going back and
+				// returning does not scroll again. Set on the destination rather than on
+				// the stack's content, which does not reliably reach a pushed screen.
+				.environment(\.settingsFieldFocus, SettingsFieldFocus(
+					target: router.settingsFieldFocus,
+					clear: { router.clearSettingsFieldFocus() }
+				))
 			}
 			.onChange(of: UserDefaults.preferredPeripheralNum ) { _, newConnectedNode in
 				// If the preferred node changes, then select the newly preferred node
@@ -910,8 +952,14 @@ struct Settings: View {
 			}
 			.onChange(of: accessoryManager.activeDeviceNum) { oldDevice, newDevice in
 				if newDevice == nil {
+					// The transport dropped — often just the radio rebooting after a config
+					// save, not a real device change. preferredNodeNum tracks
+					// UserDefaults.preferredPeripheralNum (see the onChange above), which a
+					// reboot doesn't touch, so leave it alone: zeroing it here collapsed the
+					// Configure/Radio/Device/Module/Logging sections every time a save
+					// rebooted the node, even though it's still the preferred node. Only the
+					// remote-admin target is genuinely invalid without a live link.
 					selectedNode = 0
-					preferredNodeNum = 0
 				} else if oldDevice != newDevice {
 					// Physical connection changed — any prior remote admin session is invalid
 					preferredNodeNum = Int(newDevice!)

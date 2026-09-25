@@ -157,10 +157,33 @@ final class LostBondTests {
 		#expect(BLEConnection.shouldReconnect(after: AccessoryError.bondLost) == false)
 	}
 
-	@Test func theThreeRecoverableErrorsStillReconnect() {
-		#expect(BLEConnection.shouldReconnect(after: CBATTError(.insufficientResources)))
+	@Test func theTwoRecoverableErrorsStillReconnect() {
 		#expect(BLEConnection.shouldReconnect(after: CBError(.connectionTimeout)))
 		#expect(BLEConnection.shouldReconnect(after: CBError(.peripheralDisconnected)))
+	}
+
+	@Test func aRefusedWriteDoesNotReconnect() {
+		// The radio could not allocate a buffer for one write. The link is up, `send` retries,
+		// and a reconnect would restart config exchange over a write the caller can simply be
+		// told about. Reconnecting here cycled the connection on every exhausted write.
+		#expect(BLEConnection.shouldReconnect(after: CBATTError(.insufficientResources)) == false)
+	}
+
+	@Test func refusedWritesRetryOnABackoffThenGiveUp() {
+		// Four attempts: the write, then three retries backing off 120/240/360ms.
+		#expect(BLEConnection.writeAttemptLimit == 4)
+		#expect(BLEConnection.refusedWriteAction(afterAttempt: 0) == .retry(backoff: .milliseconds(120)))
+		#expect(BLEConnection.refusedWriteAction(afterAttempt: 1) == .retry(backoff: .milliseconds(240)))
+		#expect(BLEConnection.refusedWriteAction(afterAttempt: 2) == .retry(backoff: .milliseconds(360)))
+	}
+
+	@Test func anExhaustedWriteGivesUpRatherThanTouchingTheLink() {
+		// The last attempt gives up, meaning throw to the caller. There is deliberately no
+		// action that tears the link down: escalating here is what used to cycle the
+		// connection on every exhausted write.
+		#expect(BLEConnection.refusedWriteAction(afterAttempt: BLEConnection.writeAttemptLimit - 1) == .giveUp)
+		// And nothing past the limit re-enters the retry path either.
+		#expect(BLEConnection.refusedWriteAction(afterAttempt: BLEConnection.writeAttemptLimit) == .giveUp)
 	}
 
 	@Test func unrelatedErrorsDoNotReconnect() {

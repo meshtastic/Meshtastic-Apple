@@ -980,7 +980,6 @@ public struct Config: Sendable {
     public var screenOnSecs: UInt32 = 0
 
     ///
-    /// Deprecated in 2.7.4: Unused
     /// How the GPS coordinates are formatted on the OLED screen.
     ///
     /// NOTE: This field was marked as deprecated in the .proto file.
@@ -1043,7 +1042,8 @@ public struct Config: Sendable {
     public var unknownFields = SwiftProtobuf.UnknownStorage()
 
     ///
-    /// Deprecated in 2.7.4: Unused
+    /// Unused. Kept so the deprecated gps_format field still has a type; when
+    /// firmware stopped reading that field is recorded on the field itself.
     public enum DeprecatedGpsCoordinateFormat: SwiftProtobuf.Enum, Swift.CaseIterable {
       public typealias RawValue = Int
       case unused // = 0
@@ -1361,8 +1361,10 @@ public struct Config: Sendable {
     }
 
     ///
-    /// A number from 7 to 12.
+    /// A number from 5 to 12, which the firmware clamps to that range.
     /// Indicates number of chirps per symbol as 1<<spread_factor.
+    /// RF95 radios additionally reject 5 and 6; that exclusion is per hardware
+    /// and so is not expressible as a bound here.
     public var spreadFactor: UInt32 {
       get {_storage._spreadFactor}
       set {_uniqueStorage()._spreadFactor = newValue}

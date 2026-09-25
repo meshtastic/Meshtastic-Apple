@@ -2050,9 +2050,6 @@ struct DeviceOnboardingSnapshotTests {
 /// Visual coverage for the Packet Authenticity policy selector, mirroring the Android
 /// screenshot-test matrix in `SettingsScreenshotTests.kt` (Meshtastic-Android#6178): each policy
 /// plus the states where the control is unavailable, in light and dark.
-///
-/// The Strict confirmation is an `.alert`, which a windowless host does not render, so it is
-/// covered by the state-machine tests in `PacketAuthenticityTests` rather than here.
 @Suite("PacketAuthenticity Snapshots")
 struct PacketAuthenticitySnapshotTests {
 
@@ -2066,7 +2063,7 @@ struct PacketAuthenticitySnapshotTests {
 			PacketAuthenticitySection(
 				capability: capability,
 				isConnected: isConnected,
-				selection: .constant(PacketAuthenticitySelectionState(selected: policy))
+				policy: .constant(policy)
 			)
 		}
 	}

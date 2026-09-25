@@ -37,6 +37,10 @@ struct PowerConfig: View {
 
 	static func overlay(architecture: Architecture? = nil) -> ConfigFormOverlay<Config.PowerConfig> {
 		let esp32 = architecture == .esp32 || architecture == .esp32S3
+		// "ESP32 only" in the firmware means the whole family. Power saving and the
+		// battery section have only ever been offered on esp32 and esp32-s3, so they
+		// keep that check; the Bluetooth wait uses the wider one.
+		let esp32Family = esp32 || architecture == .esp32C3 || architecture == .esp32C6
 		// Power saving sleeps the radio too, so it is only offered where the firmware
 		// honours it: ESP32 boards, and nRF52 boards in the tracker or sensor role.
 		let canPowerSave = ConfigFormCondition<Config.PowerConfig>.environment { env in
@@ -47,13 +51,16 @@ struct PowerConfig: View {
 			.init(title: String(localized: "Power", comment: "Settings section"), fields: [
 				.init(F.isPowerSaving, symbol: "bolt", shownWhen: canPowerSave),
 				// Half an hour when switched on; the old screen left the picker unset, which saved as off.
-				.init(F.onBatteryShutdownAfterSecs, symbol: "power", control: .nonZeroToggle(onValue: 1800))
+				.init(F.onBatteryShutdownAfterSecs, symbol: "power", control: .nonZeroToggle(onValue: 1800)),
+				// How long the board holds BLE up in a no-Bluetooth state before turning it
+				// off. ESP32 only, and zero is the firmware default of one minute.
+				.init(F.waitBluetoothSecs, symbol: "dot.radiowaves.right",
+					  shownWhen: .environment { _ in esp32Family }, control: .interval(.waitBluetooth))
 			]),
 			.init(title: String(localized: "Battery", comment: "Settings section"), shownWhen: .environment { _ in esp32 }, fields: [
 				.init(F.adcMultiplierOverride, control: .custom { config in AnyView(ADCOverrideField(multiplier: config.adcMultiplierOverride)) })
 			])
 		], omitted: [
-			.init(F.waitBluetoothSecs, "not offered by this client; round-trips from the entity"),
 			.init(F.sdsSecs, "not offered by this client; not stored by the entity, so saved as the proto default as before"),
 			.init(F.lsSecs, "not offered by this client; round-trips from the entity"),
 			.init(F.minWakeSecs, "not offered by this client; round-trips from the entity"),

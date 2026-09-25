@@ -239,10 +239,13 @@ struct SettingsSearchIndexTests {
 	func perScreenCounts() throws {
 		// A control added to a form without an index entry is otherwise invisible:
 		// nothing fails, it is just unsearchable. Update these deliberately.
+		// LoRa and Security each gained three when protobufs#1101 and #1103 labelled
+		// fields these hand-written screens already showed: duty-cycle override, the
+		// PA fan and SX126x boosted gain on LoRa, and the three key fields on Security.
 		let expected: [SettingsNavigationState: Int] = [
-			.lora: 14,
+			.lora: 17,
 			.bluetooth: 3,
-			.security: 3
+			.security: 6
 		]
 		for (destination, count) in expected {
 			let actual = SettingsSearchIndex.entries.filter { $0.destination == destination }.count

@@ -393,6 +393,7 @@ extension AccessoryManager {
 			updateDevice(deviceId: activeDevice.id, key: \.shortName, value: shortName.isEmpty ? "?" : shortName)
 			updateDevice(deviceId: activeDevice.id, key: \.longName, value: longName.isEmpty ? "Unknown".localized : longName)
 			updateDevice(deviceId: activeDevice.id, key: \.hardwareModel, value: hwModel)
+			Logger.datadog.setRadioContext(.hardwareModel, hwModel)
 
 			if activeDevice.isManualConnection {
 				// We just received a NodeInfo for the currently connected node and this is a
@@ -479,6 +480,7 @@ extension AccessoryManager {
 		Logger.transport.debug("[Version] handleDeviceMetadata returned version: \(metadata.firmwareVersion)")
 
 		updateDevice(key: \.firmwareVersion, value: metadata.firmwareVersion)
+		Logger.datadog.setRadioContext(.firmwareVersion, metadata.firmwareVersion)
 
 		await MeshPackets.shared.deviceMetadataPacket(metadata: metadata, fromNum: deviceNum)
 		Logger.transport.info("✅ [handleDeviceMetadata] deviceMetadataPacket completed for \(deviceNum.toHex(), privacy: .public)")

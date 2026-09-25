@@ -110,15 +110,24 @@ struct MetadataConfigForm<M: ConfigFormMessage, Leading: View, Trailing: View>: 
 	}
 
 	private var environment: ConfigFormEnvironment {
-		ConfigFormEnvironment(
+		let isConnectedNode = node != nil && node?.num == accessoryManager.activeDeviceNum
+		return ConfigFormEnvironment(
 			node: node,
 			isConnected: accessoryManager.isConnected,
-			isConnectedNode: node != nil && node?.num == accessoryManager.activeDeviceNum,
+			isConnectedNode: isConnectedNode,
 			isDIYHardware: DIYHardware.isDIY(slug: node?.user?.hwModel),
 			hasWifi: node?.metadata?.hasWifi ?? false,
 			hasEthernet: node?.metadata?.hasEthernet ?? false,
 			hasXeddsa: node?.metadata?.hasXeddsa ?? false,
-			firmwareAtLeast: { accessoryManager.checkIsVersionSupported(forVersion: $0) }
+			// The connected radio answers for itself, because its live version is fresher
+			// than anything stored. A remote admin target answers from its own metadata:
+			// asking the gateway would gate the wrong radio's fields.
+			firmwareAtLeast: { version in
+				isConnectedNode
+					? accessoryManager.checkIsVersionSupported(forVersion: version)
+					: node?.firmwareAtLeast(version) ?? true
+			},
+			isFirmwareKnown: isConnectedNode ? accessoryManager.isConnected : node?.knownFirmwareVersion != nil
 		)
 	}
 
@@ -188,27 +197,59 @@ struct MetadataConfigForm<M: ConfigFormMessage, Leading: View, Trailing: View>: 
 		}
 		// A view-bound task, so leaving the screen mid-scroll cancels it rather than
 		// letting it move a form the reader has already navigated away from.
-		.task { await focusSearchedControl(using: proxy, env) }
+		.task { await focusSearchedControl(using: proxy) }
 		}
 	}
 
 	/// A search result names one control, so scroll to it and mark it rather than leaving
 	/// the reader to pick it out of rows that all look alike.
 	@MainActor
-	private func focusSearchedControl(using proxy: ScrollViewProxy, _ env: ConfigFormEnvironment) async {
+	/// What to do about a focus request, given what the screen knows so far.
+	enum FocusReadiness: Equatable {
+		/// The rows on screen are the ones to scroll to.
+		case resolveNow
+		/// A stored config is still on its way; which rows exist depends on it.
+		case waitForValues
+		/// It never came. Leave the request alone so the next appearance can honour it,
+		/// rather than scrolling to a row the arriving values may remove.
+		case leaveForLater
+	}
+
+	static func readiness(hasStoredConfig: Bool, loaded: Bool, waitedOut: Bool) -> FocusReadiness {
+		// Nothing stored means nothing will arrive: the empty message is what the form
+		// is showing, so its rows are the right ones to scroll to.
+		if !hasStoredConfig || loaded { return .resolveNow }
+		return waitedOut ? .leaveForLater : .waitForValues
+	}
+
+	private func focusSearchedControl(using proxy: ScrollViewProxy) async {
 		guard let target = settingsFieldFocus.target else { return }
-		// Taken whether or not this screen can honour it: a request left pending would be
-		// picked up later by whichever screen does own the field.
+		// Only take a request this screen can answer. Another screen's field must be
+		// left for the screen that owns it, even though both are on the same stack.
+		guard overlay.rowID(for: target) != nil else { return }
+
+		// Which rows exist depends on the radio's values: MQTT drops the credential
+		// rows on the public server, NeighborInfo hides its interval while the module
+		// is off. Deciding before they arrive picks a row that is about to disappear.
+		let hasStoredConfig = node?[keyPath: M.entityKeyPath] != nil
+		var waited = 0
+		while Self.readiness(hasStoredConfig: hasStoredConfig, loaded: loaded, waitedOut: waited >= 14) == .waitForValues {
+			do { try await Task.sleep(for: .milliseconds(150)) } catch { return }
+			waited += 1
+		}
+		// Untaken, so a later appearance of this screen can still honour it.
+		guard Self.readiness(hasStoredConfig: hasStoredConfig, loaded: loaded, waitedOut: true) == .resolveNow else { return }
 		settingsFieldFocus.clear()
-		// Only rows that are actually on screen can be scrolled to. A field behind a
-		// toggle that is off - NeighborInfo's interval, say - has no row today, so the
-		// screen just opens.
-		guard let row = overlay.rowID(for: target),
-			  overlay.sections.flatMap(\.fields).contains(where: { $0.id == row && isVisible($0, env) })
-		else { return }
+
+		// Then let the list lay the rows out; it has not measured anything below the
+		// fold yet, and a scroll asked for now lands short of a distant row.
+		do { try await Task.sleep(for: .milliseconds(300)) } catch { return }
+		guard let row = overlay.focusRowID(for: target, in: config, environment) else { return }
 		do {
-			// The rows exist only after the form's first layout pass.
-			try await Task.sleep(for: .milliseconds(350))
+			withAnimation { proxy.scrollTo(row, anchor: .center) }
+			// That scroll creates the rows it passed over; ask again now they have a
+			// measured height so the target lands where it belongs.
+			try await Task.sleep(for: .milliseconds(150))
 			withAnimation { proxy.scrollTo(row, anchor: .center) }
 			highlightedRow = row
 			try await Task.sleep(for: .seconds(2))
@@ -219,13 +260,10 @@ struct MetadataConfigForm<M: ConfigFormMessage, Leading: View, Trailing: View>: 
 		}
 	}
 
-	/// The overlay's condition, then the schema's own hiding rules: a DIY-only field
-	/// on hardware not tagged DIY, and a deprecated field still at its zero value.
+	/// The overlay's condition, then the schema's own hiding rules: a DIY-only field on
+	/// hardware not tagged DIY, and a field the connected firmware does not read.
 	private func isVisible(_ field: ConfigFormField<M>, _ env: ConfigFormEnvironment) -> Bool {
-		if let condition = field.shownWhen, !condition.evaluate(config, env) { return false }
-		let metadata = field.field.metadata
-		if metadata?.diyOnly == true, env.isConnected, !env.isDIYHardware { return false }
-		return true
+		overlay.isVisible(field, in: config, env)
 	}
 
 	private func load() {

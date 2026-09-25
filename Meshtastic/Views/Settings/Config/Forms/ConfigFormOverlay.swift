@@ -33,6 +33,49 @@ struct ConfigFormOverlay<M: ConfigSchemaMessage> {
 		omitted.contains { $0.identity == identity }
 	}
 
+	/// Whether a field is rendered for these values: the overlay's own condition first,
+	/// then the schema's own rules - a DIY-only field is not offered on hardware that is
+	/// not tagged DIY, and a field outside the firmware's reading window is not offered
+	/// at all.
+	func isVisible(_ field: ConfigFormField<M>, in config: M, _ env: ConfigFormEnvironment) -> Bool {
+		if let condition = field.shownWhen, !condition.evaluate(config, env) { return false }
+		if field.field.metadata?.diyOnly == true, env.isConnected, !env.isDIYHardware { return false }
+		if field.shownDespiteFirmware != nil { return true }
+		return env.firmwareReads(field.field.metadata)
+	}
+
+	/// The row a search result should land on: laid out by this screen, and actually on
+	/// screen for these values. A control behind a toggle that is off has no row to
+	/// scroll to, so the screen simply opens.
+	///
+	/// A field can be hidden by its own condition or by its section's — NeighborInfo
+	/// puts its interval in a section that appears only once the module is on — so both
+	/// are checked, the same pair the body evaluates.
+	func visibleRowID(for identity: FieldIdentity, in config: M, _ env: ConfigFormEnvironment) -> String? {
+		guard let row = rowID(for: identity) else { return nil }
+		for section in sections where section.shownWhen?.evaluate(config, env) ?? true {
+			if let field = section.fields.first(where: { $0.id == row }), isVisible(field, in: config, env) {
+				return field.id
+			}
+		}
+		return nil
+	}
+
+	/// The row a search result should land on.
+	///
+	/// The control itself when it is on screen, and otherwise the first row of the
+	/// section it belongs to: a control can be laid out but hidden for these values -
+	/// MQTT drops the credentials on the public server - and showing the reader where
+	/// it lives beats doing nothing. Nil when its whole section is hidden, or when
+	/// this screen does not lay the field out at all.
+	func focusRowID(for identity: FieldIdentity, in config: M, _ env: ConfigFormEnvironment) -> String? {
+		if let row = visibleRowID(for: identity, in: config, env) { return row }
+		guard let section = sections.first(where: { section in
+			section.fields.contains { $0.field.identity == identity }
+		}), section.shownWhen?.evaluate(config, env) ?? true else { return nil }
+		return section.fields.first { isVisible($0, in: config, env) }?.id
+	}
+
 	func rowID(for identity: FieldIdentity) -> String? {
 		if let row = sections.flatMap(\.fields).first(where: { $0.field.identity == identity })?.id {
 			return row
@@ -104,17 +147,30 @@ struct ConfigFormField<M: ConfigSchemaMessage>: Identifiable {
 	/// A stored zero reads as this value in the control - the "0 means the firmware
 	/// default of 4 hours" pattern. Leaving it alone still saves 0.
 	var displayDefault: Int?
+	/// Why this row stays on firmware the schema says does not read the field. For a
+	/// control that means something to the app as well as the radio; nil for every
+	/// field that simply follows the schema. Counted with the other escape hatches.
+	var shownDespiteFirmware: String?
 
 	/// The proto name, dotted for a flattened nested field. Not the tag: a nested
 	/// field shares its tag space with the parent's, so `ipv4_config.ip` and
 	/// `wifi_enabled` are both tag 1 on NetworkConfig.
 	var id: String { field.name }
 
+	/// Keep this row on firmware that does not read the field, with the reason stated
+	/// where the test can read it.
+	func shown(despiteFirmware reason: String) -> Self {
+		var copy = self
+		copy.shownDespiteFirmware = reason
+		return copy
+	}
+
 	private init<V>(
 		erasing field: ConfigField<M, V>, value: ConfigFormValue<M>, symbol: String?,
 		shownWhen: ConfigFormCondition<M>?, enabledWhen: ConfigFormCondition<M>?,
 		control: ConfigFormControl<M>, byteCap: Int?, inverted: Bool,
-		enumOrder: [Int]?, enumValues: ((ConfigFormEnvironment) -> [Int])?, displayDefault: Int?
+		enumOrder: [Int]?, enumValues: ((ConfigFormEnvironment) -> [Int])?, displayDefault: Int?,
+		shownDespiteFirmware: String? = nil
 	) {
 		guard let erased = M.allFields.first(where: { $0.tag == field.tag && $0.name == field.name }) else {
 			preconditionFailure("\(M.protoName).\(field.name) is not in the generated schema")
@@ -130,6 +186,7 @@ struct ConfigFormField<M: ConfigSchemaMessage>: Identifiable {
 		self.enumOrder = enumOrder
 		self.enumValues = enumValues
 		self.displayDefault = displayDefault
+		self.shownDespiteFirmware = shownDespiteFirmware
 	}
 
 	init(
@@ -215,6 +272,27 @@ struct ConfigFormField<M: ConfigSchemaMessage>: Identifiable {
 		)
 	}
 
+	/// A field the generator gives no typed descriptor at all: a repeated one. The whole
+	/// field is the control's to own, which is the only way three key slots can sit on one
+	/// array. Laid out rather than omitted so settings search can still land on it.
+	init(
+		repeated field: AnyConfigField<M>, control: ConfigFormControl<M>, symbol: String? = nil,
+		shownWhen: ConfigFormCondition<M>? = nil, enabledWhen: ConfigFormCondition<M>? = nil
+	) {
+		self.field = field
+		self.value = .unsupported
+		self.symbol = symbol
+		self.shownWhen = shownWhen
+		self.enabledWhen = enabledWhen
+		self.control = control
+		self.byteCap = nil
+		self.inverted = false
+		self.enumOrder = nil
+		self.enumValues = nil
+		self.displayDefault = nil
+		self.shownDespiteFirmware = nil
+	}
+
 	/// Anything else - a nested message, bytes, a 64-bit field. Only `.custom` renders it.
 	init<V>(
 		unsupported field: ConfigField<M, V>, control: ConfigFormControl<M>, symbol: String? = nil,
@@ -267,7 +345,33 @@ struct ConfigFormEnvironment {
 	let hasWifi: Bool
 	let hasEthernet: Bool
 	let hasXeddsa: Bool
+	/// Whether the node being configured is known to run at least this version. Asked of
+	/// the target node, not of whatever radio happens to be connected: under remote admin
+	/// those are different radios on different firmware.
 	let firmwareAtLeast: (String) -> Bool
+	/// Whether that version is known at all. False for a node the app has never heard
+	/// metadata from, where every answer above would be a guess.
+	let isFirmwareKnown: Bool
+
+	/// Whether the radio's firmware reads this field, from the schema's own version
+	/// attributes: `since_firmware` is the first release that reads it, `deprecated_since`
+	/// the first that stops. Outside that window the control writes a value nothing acts
+	/// on, so the form leaves it out - no overlay entry and no version string in the app.
+	///
+	/// A field is only ever hidden on a firmware version the app actually knows, and the
+	/// version is the target node's own. A node the app has no metadata for shows
+	/// everything. Offering a control the radio ignores is a smaller failure than hiding
+	/// a setting somebody came here to change.
+	///
+	/// Note this is the version, not the stored value. Firmware force-writes some
+	/// deprecated fields - `canned_message.enabled` is set true from 2.7.4 - so "the node
+	/// holds a non-default value" would show those rows on every modern radio.
+	func firmwareReads(_ metadata: FieldMetadata?) -> Bool {
+		guard isFirmwareKnown, let metadata else { return true }
+		if let since = metadata.sinceFirmware, !firmwareAtLeast(since) { return false }
+		if let until = metadata.deprecatedSince, firmwareAtLeast(until) { return false }
+		return true
+	}
 }
 
 /// A yes/no about the message or the environment, built from typed fields so a renamed
@@ -309,6 +413,13 @@ struct ConfigFormCondition<M: ConfigSchemaMessage> {
 
 	// The environment gates the census found: firmware version and hardware capability.
 	static func firmware(atLeast version: String) -> Self { .init(environmental: true) { _, e in e.firmwareAtLeast(version) } }
+	/// Whether the firmware reads another field, from that field's own schema attributes.
+	/// For a control whose meaning depends on a second one being there - the telemetry
+	/// interval stands alone on firmware with no broadcast toggle - so neither the
+	/// condition nor the release it turns on has to be written out here.
+	static func firmwareReads<V>(_ field: ConfigField<M, V>) -> Self {
+		.init(environmental: true) { _, e in e.firmwareReads(field.metadata) }
+	}
 	static var hasWifi: Self { .init(environmental: true) { _, e in e.hasWifi } }
 	static var hasEthernet: Self { .init(environmental: true) { _, e in e.hasEthernet } }
 	static var hasXeddsa: Self { .init(environmental: true) { _, e in e.hasXeddsa } }
@@ -365,6 +476,13 @@ enum ConfigFormControl<M: ConfigSchemaMessage> {
 	indirect case nonZeroToggle(onValue: UInt32, then: ConfigFormControl<M> = .automatic)
 	/// A bitfield, one toggle per listed bit.
 	case flags([ConfigFormFlag<M>])
+	/// A float that must survive its own round trip: a frequency stored as a Float needs
+	/// six fraction digits and no grouping separator, or redisplaying it writes back a
+	/// different frequency than the one the radio holds.
+	case preciseDecimal
+		/// A uint32 holding an IPv4 address, typed as a dotted quad. `required` tints a
+	/// blank field as invalid, for an address a static configuration cannot go without.
+	case ipv4Address(required: Bool)
 	/// Anything else. Counted by the tests, so use it knowingly.
 	case custom((Binding<M>) -> AnyView)
 
@@ -402,6 +520,7 @@ extension ConfigFormOverlay: AnyConfigFormOverlay {
 		let sectionConditions = sections.compactMap(\.shownWhen) + sections.compactMap(\.enabledWhen)
 		let fieldConditions = laidOut.flatMap { [$0.shownWhen, $0.enabledWhen].compactMap { $0 } }
 		return (sectionConditions + fieldConditions).filter(\.isEnvironmental).count
+			+ laidOut.filter { $0.shownDespiteFirmware != nil }.count
 	}
 
 	func problems() -> [String] {
@@ -435,6 +554,9 @@ extension ConfigFormOverlay: AnyConfigFormOverlay {
 			if f.field.metadata?.label == nil, !f.control.isCustom {
 				out.append("\(name) has no label in the registry; annotate it upstream before laying it out")
 			}
+			if f.shownDespiteFirmware != nil, f.field.metadata?.sinceFirmware == nil, f.field.metadata?.deprecatedSince == nil {
+				out.append("\(name): kept despite the firmware window, but the schema gives it no version to ignore")
+			}
 			if f.byteCap != nil, f.field.kind != .string { out.append("\(name): byteCap on a non-string field") }
 			if f.inverted, f.field.kind != .bool { out.append("\(name): inverted on a non-Bool field") }
 			if f.enumOrder != nil || f.enumValues != nil, f.field.kind != .enumeration {
@@ -458,7 +580,7 @@ extension ConfigFormOverlay: AnyConfigFormOverlay {
 
 	private static func problems(with control: ConfigFormControl<M>, on f: ConfigFormField<M>, name: String) -> [String] {
 		switch control {
-		case .interval, .gpioPin, .options, .nonZeroToggle, .flags:
+		case .interval, .gpioPin, .options, .nonZeroToggle, .flags, .ipv4Address:
 			if !(f.field.kind == .uint32 || f.field.kind == .int32) { return ["\(name): integer control on \(f.field.kind)"] }
 		case .slider, .stepper:
 			if f.field.metadata?.minValue == nil || f.field.metadata?.maxValue == nil {
@@ -466,6 +588,8 @@ extension ConfigFormOverlay: AnyConfigFormOverlay {
 			}
 		case .secure:
 			if f.field.kind != .string { return ["\(name): secure on a non-string field"] }
+		case .preciseDecimal:
+			if f.field.kind != .float { return ["\(name): precise decimal on a non-float field"] }
 		case .segmented:
 			if f.field.kind != .enumeration { return ["\(name): segmented on a non-enum field"] }
 		case .automatic, .custom:

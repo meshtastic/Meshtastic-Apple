@@ -3,6 +3,10 @@
 **Branch**: `019-settings-search` | **Date**: 2026-09-13 | **Spec**: [spec.md](./spec.md)
 **Input**: Feature specification from `/specs/019-settings-search/spec.md`
 
+**Kept as written, 2026-09-20.** The planning-time record, including the three-pull-request
+sequencing that did not survive contact (#2489, #2490 and #2491 were closed and their content
+landed in #2487) and counts that have since moved. Read [spec.md](./spec.md) for what shipped.
+
 ## Summary
 
 Add a search field to Settings that finds an individual control by name, keyword or option
