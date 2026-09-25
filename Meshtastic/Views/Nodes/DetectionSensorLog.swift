@@ -13,6 +13,7 @@ import OSLog
 
 struct DetectionSensorLog: View {
 	@Environment(\.modelContext) private var context
+	@Environment(\.horizontalSizeClass) private var horizontalSizeClass
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@State private var isPresentingClearLogConfirm: Bool = false
 	@State var isExporting = false
@@ -61,8 +62,7 @@ struct DetectionSensorLog: View {
 				}
 				.frame(minHeight: 250)
 			}
-			if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
-				// Add a table for mac and ipad
+			if horizontalSizeClass == .regular {
 				Table(detections) {
 					TableColumn("Detection event") { d in
 						Text(d.messagePayload ?? "Detected")

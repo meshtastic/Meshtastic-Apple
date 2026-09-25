@@ -15,7 +15,7 @@ struct PowerMetricsLog: View {
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Bindable var node: NodeInfoEntity
-	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
+	@Environment(\.horizontalSizeClass) private var horizontalSizeClass
 	@State private var sortOrder = [KeyPathComparator(\TelemetryEntity.time, order: .reverse)]
 	@State private var selection: TelemetryEntity.ID?
 	@State private var chartSelection: Date?
@@ -115,7 +115,7 @@ struct PowerMetricsLog: View {
 						.chartLegend(position: .automatic, alignment: .bottom)
 					}
 				}
-				if idiom == .phone {
+				if horizontalSizeClass != .regular {
 					Table(powerMetrics, selection: $selection, sortOrder: $sortOrder) {
 						TableColumn("Timestamp") { m in
 							HStack {
@@ -233,7 +233,7 @@ struct PowerMetricsLog: View {
 					}
 					.buttonStyle(.bordered)
 					.buttonBorderShape(.capsule)
-					.controlSize(idiom == .phone ? .regular : .large)
+					.controlSize(horizontalSizeClass == .regular ? .large : .regular)
 					.padding(.bottom)
 					.padding(.leading)
 					.confirmationDialog(
@@ -264,7 +264,7 @@ struct PowerMetricsLog: View {
 					}
 					.buttonStyle(.bordered)
 					.buttonBorderShape(.capsule)
-					.controlSize(idiom == .phone ? .regular : .large)
+					.controlSize(horizontalSizeClass == .regular ? .large : .regular)
 					.padding(.bottom)
 					.padding(.trailing)
 				}

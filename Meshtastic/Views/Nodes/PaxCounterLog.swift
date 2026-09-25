@@ -12,6 +12,7 @@ import OSLog
 struct PaxCounterLog: View {
 
 	@Environment(\.modelContext) private var context
+	@Environment(\.horizontalSizeClass) private var horizontalSizeClass
 	@EnvironmentObject var accessoryManager: AccessoryManager
 
 	@State private var isPresentingClearLogConfirm: Bool = false
@@ -87,8 +88,7 @@ struct PaxCounterLog: View {
 					}
 					.frame(minHeight: 250)
 				}
-				if UIScreen.main.bounds.size.width > 768 && (UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac) {
-					// Add a table for mac and ipad
+				if horizontalSizeClass == .regular {
 					Table(paxCounters) {
 						TableColumn("BLE") { pc in
 							Text("\(pc.ble)")

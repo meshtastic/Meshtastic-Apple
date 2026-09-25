@@ -30,8 +30,7 @@ struct AppLog: View {
 	@State private var lastStreamScroll = Date.distantPast
 	@StateObject private var streamModel = PacketStreamModel()
 	@Environment(\.scenePhase) private var scenePhase
-
-	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
+	@Environment(\.horizontalSizeClass) private var horizontalSizeClass
 	/// Fixed ISO 8601-style timestamp in local time, e.g. "2026-05-29 09:37:16.305".
 	/// `en_US_POSIX` keeps the format literal and locale-independent so log lines stay
 	/// sortable and unambiguous regardless of device region.
@@ -164,10 +163,10 @@ struct AppLog: View {
 	private var mainLogView: some View {
 		HStack {
 
-			if idiom == .phone {
-				phoneLogTable
-			} else {
+			if horizontalSizeClass == .regular {
 				desktopLogTable
+			} else {
+				phoneLogTable
 			}
 		}
 	}
@@ -287,12 +286,11 @@ struct AppLog: View {
 		}
 	}
 
-	/// One streamed log row. Phone uses the compact composed-message row (matching the
-	/// phone Table); iPad/macCatalyst mirror the Mac log Table's Time/Level/Category/Message
-	/// columns so the streaming view matches the existing desktop log layout.
+	/// One streamed log row. Compact width uses the composed-message row. Regular width
+	/// mirrors the desktop log table's timestamp and message columns.
 	@ViewBuilder
 	private func streamRow(_ value: OSLogEntryLog) -> some View {
-		if idiom == .phone {
+		if horizontalSizeClass != .regular {
 			Text(value.composedMessage)
 				.foregroundStyle(value.level.color)
 				.font(.caption)
@@ -313,9 +311,8 @@ struct AppLog: View {
 		}
 	}
 
-	/// Live packet stream view, used for both phone and iPad/macCatalyst. The surrounding
-	/// scroll/auto-scroll/pause/empty infrastructure is shared; only the row layout differs
-	/// per idiom (see `streamRow`).
+	/// Live packet stream view. The scroll, auto-scroll, pause, and empty state are shared.
+	/// The row layout follows the width available now (see `streamRow`).
 	private var packetStreamView: some View {
 		let entries = searchText.isEmpty
 			? streamModel.visibleEntries

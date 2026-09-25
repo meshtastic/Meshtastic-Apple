@@ -14,6 +14,7 @@ import SwiftUI
 
 struct DiscoveryScanView: View {
 	@Environment(\.modelContext) private var context
+	@Environment(\.horizontalSizeClass) private var horizontalSizeClass
 	@EnvironmentObject var accessoryManager: AccessoryManager
 
 	@State private var selectedPresets: Set<ModemPresets> = []
@@ -121,13 +122,14 @@ struct DiscoveryScanView: View {
 		}
 	}
 
-	/// iPad and Mac Catalyst show a non-scrolling, map-filling layout while scanning or when a scan
-	/// is complete; iPhone keeps the scrolling list so the controls aren't cramped on a small screen.
+	/// Regular width shows a non-scrolling, map-filling layout while scanning or when a scan
+	/// is complete. Compact width keeps the scrolling list so the controls aren't cramped.
+	/// Mac Catalyst keeps the filling layout at any window size.
 	private var usesFillMapLayout: Bool {
 		#if targetEnvironment(macCatalyst)
 		return true
 		#else
-		return UIDevice.current.userInterfaceIdiom == .pad
+		return horizontalSizeClass == .regular
 		#endif
 	}
 
@@ -287,11 +289,11 @@ struct DiscoveryScanView: View {
 
 	// MARK: - Discovery Map
 
-	/// The discovery map sized for the device. On iPad and Mac Catalyst it fills most of the screen's
-	/// available height (`availableHeight` comes from the `GeometryReader` wrapping the `List` —
+	/// The discovery map sized for the space available. Regular width and Mac Catalyst fill most of
+	/// the height (`availableHeight` comes from the `GeometryReader` wrapping the `List` —
 	/// `containerRelativeFrame` inside a List row resolves against the self-sizing cell, not the
 	/// window, so it collapses) so the map is the dominant element rather than a short fixed band;
-	/// the controls remain reachable by scrolling. iPhone keeps a compact fixed height so it doesn't
+	/// the controls remain reachable by scrolling. Compact width keeps a fixed height so it doesn't
 	/// crowd the controls on a small screen.
 	@ViewBuilder
 	private func discoveryMap(for session: DiscoverySessionEntity, engine: DiscoveryScanEngine, availableHeight: CGFloat) -> some View {
@@ -304,7 +306,7 @@ struct DiscoveryScanView: View {
 		#if targetEnvironment(macCatalyst)
 		map.frame(height: max(520, availableHeight * 0.8))
 		#else
-		if UIDevice.current.userInterfaceIdiom == .pad {
+		if horizontalSizeClass == .regular {
 			map.frame(height: max(450, availableHeight * 0.78))
 		} else {
 			map.frame(height: 300)

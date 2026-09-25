@@ -12,6 +12,7 @@ import SwiftData
 struct EnvironmentMetricsLog: View {
 
 	@Environment(\.modelContext) private var context
+	@Environment(\.horizontalSizeClass) private var horizontalSizeClass
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@State private var isPresentingClearLogConfirm: Bool = false
 	@State var isExporting = false
@@ -52,8 +53,7 @@ struct EnvironmentMetricsLog: View {
 
 					// Dynamic table column using SwiftUI Table requires TableColumnForEach which requires the target
 					// to be bumped to 17.4 -- Until that happens, the existing non-configurable table is used.
-					if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
-						// Add a table for mac and ipad
+					if horizontalSizeClass == .regular {
 						Table(chartData) {
 							TableColumnForEach(columnList.visible) { col in
 								TableColumn(col.name) { em in
@@ -86,9 +86,9 @@ struct EnvironmentMetricsLog: View {
 					}
 				}
 				HStack {
-					let isPadOrCatalyst = UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac
-					let buttonSize: ControlSize =  isPadOrCatalyst ? .large : .small
-					let imageScale: Image.Scale = isPadOrCatalyst ? .medium : .small
+					let wide = horizontalSizeClass == .regular
+					let buttonSize: ControlSize = wide ? .large : .small
+					let imageScale: Image.Scale = wide ? .medium : .small
 					Button {
 						self.isEditingColumnConfiguration = true
 					} label: {
