@@ -14,6 +14,11 @@ struct DeviceMetricsLog: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
+	/// Table on iPhone shows only its first column, even in a regular size class.
+	private var showsStackedReadings: Bool {
+		horizontalSizeClass != .regular || UIDevice.current.userInterfaceIdiom == .phone
+	}
+
 	@State private var isPresentingClearLogConfirm: Bool = false
 	@State var isExporting = false
 	@State var exportString = ""
@@ -104,8 +109,8 @@ struct DeviceMetricsLog: View {
 					}
 					.frame(minHeight: 240)
 				}
-				if horizontalSizeClass != .regular {
-					/// Single Cell Compact display for phones
+				if showsStackedReadings {
+					/// Single cell. On iPhone this is the only column Table draws.
 					Table(deviceMetrics, selection: $selection, sortOrder: $sortOrder) {
 						TableColumn("Battery Level") { dm in
 							Group {
@@ -142,7 +147,7 @@ struct DeviceMetricsLog: View {
 						.width(ideal: 200, max: .infinity)
 					}
 				} else {
-					/// Multi Column table for ipads and mac
+					/// Columns for iPad and Mac, where Table shows them.
 					Table(deviceMetrics, selection: $selection, sortOrder: $sortOrder) {
 						TableColumn("Battery Level") { dm in
 							if dm.batteryLevel ?? 0 > 100 {
