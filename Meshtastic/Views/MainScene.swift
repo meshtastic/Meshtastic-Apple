@@ -8,6 +8,7 @@ import TipKit
 struct MainScene: View {
 	let persistenceController: PersistenceController
 	@StateObject private var router = Router()
+	@StateObject private var nodeFilters = NodeFilterParameters()
 	@EnvironmentObject private var appState: AppState
 	@EnvironmentObject private var accessoryManager: AccessoryManager
 	@Environment(\.scenePhase) private var scenePhase
@@ -22,6 +23,7 @@ struct MainScene: View {
 	var body: some View {
 		sceneContent
 			.environmentObject(router)
+			.environmentObject(nodeFilters)
 			.onAppear {
 				if routerToken == nil {
 					routerToken = appState.sceneRouters.register(router)
@@ -121,6 +123,7 @@ struct MainScene: View {
 		.environmentObject(appState)
 		.environmentObject(accessoryManager)
 		.environmentObject(router)
+		.environmentObject(nodeFilters)
 		.environmentObject(MeshtasticAPI.shared)
 	}
 

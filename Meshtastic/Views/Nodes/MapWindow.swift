@@ -17,6 +17,7 @@ struct MapWindow: View {
 	@Environment(\.dismissWindow) private var dismissWindow
 	@Environment(\.scenePhase) private var scenePhase
 	@StateObject private var router = Router()
+	@StateObject private var nodeFilters = NodeFilterParameters()
 	@State private var routerToken: UUID?
 
 	var body: some View {
@@ -59,7 +60,9 @@ struct MapWindow: View {
 	}
 
 	private var meshMapView: some View {
-		mapRoot.environmentObject(router)
+		mapRoot
+			.environmentObject(router)
+			.environmentObject(nodeFilters)
 	}
 
 	@ViewBuilder
