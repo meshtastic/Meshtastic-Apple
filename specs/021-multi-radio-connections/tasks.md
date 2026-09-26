@@ -19,8 +19,9 @@ phases don't change behaviour and keep the app shippable, which makes a rebase o
 
 - [X] T001 Rebase onto `origin/main`, create `feature/multi-radio` — branch created 2026-09-25 on top of `ed36762c`.
 - [X] T002 Create the tracking docs (this folder) and point the SpecKit block in `.github/copilot-instructions.md` at `specs/021-multi-radio-connections/plan.md` — verified: files present, pointer updated.
-- [ ] T003 Side-by-side build (D-07): scheme, configurations, bundle-ID suffixes, reduced entitlements, display name "Meshtastic β". Regenerate with pinned XcodeGen. **Blocked on the owner's answers (spec.md Open items).**
-- [ ] T004 Add a "Seeding the side-by-side build" section to `HANDOFF.md` once T003 is done.
+- [~] T003 Side-by-side build (D-07), local only: `.local/side-by-side/` generates `MeshtasticSxS.xcodeproj` (bundle ID `gvh.MeshtasticClientMulti`, "Mesh Multi", owner's team `6UB3T8FJYV`, reduced entitlements) with the pinned XcodeGen. Not committed by design (see plan.md). Mac only. Verified: generated settings per target; Mac Catalyst build signed, installed, own container.
+- [X] T004 Seeding: `sxs.sh transfer-mac` (container to container, read-only on the App Store app). Documented in `HANDOFF.md`. The owner runs it when ready.
+- [X] T005 Split the standalone changes into their own pull requests: `fix/restore-dropped-backup-fields` (`b9974ada`) and `chore/sync-string-catalog` (`f405e7b8`), each one commit on `origin/main` — verified: identical content to `15baebb0` / `67fba963`.
 
 **Checkpoint**: the side-by-side app installs next to the released app with its own data.
 

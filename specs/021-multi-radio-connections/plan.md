@@ -111,17 +111,29 @@ This follows report §13.3, with these differences for D-06:
 
 ## Side-by-side build (D-07)
 
-Planned shape, pending the owner's answers (see `spec.md` Open items):
-- A scheme and build configurations, "Meshtastic (Side by Side)", in `project.yml`:
-  - `PRODUCT_BUNDLE_IDENTIFIER` gets the suffix `.sidebyside`, and the display name is "Meshtastic β";
-  - a separate entitlements file drops the capabilities that need Apple approval for a new App ID
-    (CarPlay communication, critical alerts, Siri, NFC, WeatherKit, associated domains);
-  - the extensions and the watch app get matching bundle-ID suffixes.
-- A different bundle ID gives a separate data container, so the released app's data is never touched.
-- Seeding with real data: in the released app, Backup Management › back up now. Then, in the
-  Files app, copy `Meshtastic/NodeBackups` into the side-by-side app's Documents. On launch,
-  D-09's auto-merge brings it in.
-- A BLE radio accepts one phone connection at a time, so don't point both apps at the same radio.
+Local only, and Mac only (the owner's decision: nothing touches phones, tablets or watches).
+Nothing below is committed: `.local/` and `MeshtasticSxS.xcodeproj/` are listed in
+`.git/info/exclude`. `project.yml` and `Meshtastic.xcodeproj` are never touched.
+
+- `.local/side-by-side/sxs.sh` drives everything (`setup`, `generate`, `install-mac`,
+  `transfer-mac`). Settings are in `.local/side-by-side/config.env`.
+- `generate.py` reads `project.yml` and writes `MeshtasticSxS.xcodeproj` with the pinned XcodeGen:
+  - bundle ID `gvh.MeshtasticClientMulti` (extensions and the watch app follow), display name
+    "Mesh Multi", Debug icon, signed with the owner's own team;
+  - entitlements copied without CarPlay, critical alerts, custom-protocol, WeatherKit and
+    associated domains (and, for Catalyst, Siri and NFC); keychain groups renamed to the new ID;
+  - the TV targets and the test target are left out; `Package.resolved` is copied from the workspace.
+- `transfer.py mac` seeds it with the Mac App Store app's data, container to container: live
+  store, Documents (including every radio's backup, for the D-09 merge) and preferences. It only
+  reads the App Store app. Whatever the side-by-side app held before is moved to
+  `.local/side-by-side/transfers/<time>/`. Run only when the owner asks.
+- Not carried over: keychain items (TAK certificates, MQTT and other saved secrets).
+- The owner's main data is on the Mac: the radio that is always connected to it. The other radios
+  were connected only now and then.
+- Known quirks: both apps register `meshtastic:///`. A BLE radio accepts one app connection at a
+  time, so don't point both apps at the same radio.
+- Safety: a Mac Catalyst run of the normal project (tests included) shares the App Store app's
+  container on this Mac. Run unit tests in the iOS Simulator only.
 
 ## Testing
 

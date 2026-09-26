@@ -4,6 +4,18 @@ Read this first if you are picking the work up. Update it in the same commit as 
 
 **Feature**: 021-multi-radio-connections | [spec.md](./spec.md) · [plan.md](./plan.md) · [tasks.md](./tasks.md)
 
+## Owner's rules (read before running anything)
+
+- **Never access the owner's phones, tablets or watches**, not even read-only. No `devicectl`,
+  no `pymobiledevice3`, no Xcode device installs. All testing happens on the Mac.
+- **Never run the normal Mac Catalyst build of `Meshtastic.xcodeproj`, or its tests.** It has the
+  App Store app's bundle ID (`gvh.MeshtasticClient`), so on this Mac it opens the same container
+  as the App Store app, which holds the owner's most important data (the radio that is always
+  connected to this Mac). Unit tests run in the **iOS Simulator** only. To run the app on the
+  Mac, use the side-by-side "Mesh Multi" build.
+- **Don't run `transfer-mac`** (copying the real data) until the owner asks. The owner will do the
+  backup and the real-radio tests once they are happy with the work.
+
 ## Current state
 
 - Branch `feature/multi-radio`, based on `origin/main` `ed36762c` (2026-09-25). Not pushed; the owner pushes.
@@ -11,8 +23,13 @@ Read this first if you are picking the work up. Update it in the same commit as 
   - `15baebb0` Keep every stored field when restoring a radio's backup (fix + tests)
   - `67fba963` Sync the string catalog with the current source
   - `d913970a`, `230eda8c` Research report and recommendation
-- Done: tracking docs. Next up: T003 (blocked on the owner), then Phase 2 (session extraction).
-- Nothing in the app has changed yet for this feature.
+- Done: tracking docs; split pull request branches (T005); side-by-side Mac tooling (T003/T004,
+  local only). Next up: Phase 2 (session extraction).
+- Small pull requests, ready for the owner to push (each is one commit on `origin/main`):
+  - `fix/restore-dropped-backup-fields` — the restore fix and its tests.
+  - `chore/sync-string-catalog` — the string catalog sync.
+  The same two commits stay at the bottom of this branch; after they merge upstream,
+  `git rebase origin/main` drops them.
 
 ## In progress
 
@@ -20,9 +37,33 @@ _Nothing. When you start a task, mark it `[~]` in tasks.md and note it here._
 
 ## Blocked / waiting on the owner
 
-- T003 side-by-side build: which app holds the long-lived data (App Store/TestFlight or an
-  Xcode build), which signing team is used, and whether the side-by-side scheme goes in the PR.
-- Whether the standalone restore fix and the catalog sync should go in their own pull requests (`CLAUDE.md` rule).
+- Real-radio testing: the owner is preparing two more radios and will test on the Mac when ready.
+
+## Side-by-side build (local only, Mac only)
+
+Not in git, on purpose (D-07): `.local/` and `MeshtasticSxS.xcodeproj/` are in `.git/info/exclude`.
+If you are on another clone, this tooling does not exist there; `plan.md` › Side-by-side build
+describes it well enough to rebuild.
+
+```sh
+.local/side-by-side/sxs.sh install-mac     # build and install ~/Applications/Mesh Multi.app (keeps its data)
+.local/side-by-side/sxs.sh transfer-mac    # copy the App Store app's data. Only when the owner asks.
+```
+
+- Settings: `.local/side-by-side/config.env` (bundle ID, team, display name, extensions on/off).
+- The transfer only reads the App Store app. It moves whatever Mesh Multi held to
+  `.local/side-by-side/transfers/<time>/side-by-side-before/`.
+- `sxs.sh generate` is only needed when `project.yml` changes.
+- Verified 2026-09-25: generated settings for every target; Mac Catalyst build signed with team
+  `6UB3T8FJYV` and installed to `~/Applications/Mesh Multi.app`, with its own container and
+  keychain groups.
+- Build pitfalls hit so far:
+  - Mac Catalyst profiles reject the Siri and NFC entitlements, so the generator removes them for
+    Catalyst only.
+  - DerivedData must stay outside the repo, because the SwiftLint build phase lints everything
+    under the repo root.
+  - The app ignores an AppleScript quit (-128), so the scripts stop Mesh Multi with a signal and
+    ask you to quit the App Store app yourself.
 
 ## Environment and commands
 

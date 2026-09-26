@@ -27,7 +27,7 @@ reception details) is kept per radio.
 | D-04 | Implementation order and bundling are up to the implementer. No intermediate releases. |
 | D-05 | No global feature flag. When a radio is already connected and the user connects another, ask: keep both connected, or switch. A setting remembers the answer (Ask / Keep both / Switch). |
 | D-06 | Deployment targets stay as they are (iOS 17.5, Mac Catalyst 14.6). No iOS 18-only SwiftData APIs (`#Unique`, `#Index`). |
-| D-07 | Existing data must not be at risk while this is developed. Provide a side-by-side build (separate bundle ID and data container) so the released app and the development build can both be installed. Details pending, see "Open items". |
+| D-07 | Existing data must not be at risk while this is developed. The owner's main data is in the Mac App Store app (the radio always connected to the Mac). A side-by-side Mac build (own bundle ID, data container and signing team) runs next to it, and a script copies the App Store app's data into it when the owner asks. Mac only: the owner's phones, tablets and watches are never accessed. Local only: never part of the pull request. See `plan.md` › Side-by-side build. |
 | D-08 | Add a per-radio reception table in the schema change, with a retention cap. |
 | D-09 | On first launch of the new build, automatically merge backups from other radios into the shared database. Keep the backup files. |
 | D-10 | Up to 4 radios at once. Must support four BLE radios together, plus TCP. |
@@ -87,5 +87,10 @@ Services
 
 ## Open items
 
-- Side-by-side build (D-07): which app holds the long-lived data (App Store/TestFlight or an Xcode build); which signing team is used; whether the side-by-side scheme goes in the pull request or stays local.
-- Project rule conflict: `CLAUDE.md` asks for one change per pull request, with standalone fixes kept separate. The branch currently includes a standalone restore fix and a string-catalog sync. The owner decides whether those go in separate pull requests.
+- None. Resolved 2026-09-25:
+  - D-07 details: see the decision table.
+  - The standalone restore fix and the string-catalog sync each get their own small pull request
+    (branches `fix/restore-dropped-backup-fields` and `chore/sync-string-catalog`, each one commit on
+    `origin/main`). They stay in this branch too; once they merge upstream, a rebase drops them.
+    The owner is discussing with a project admin how the large feature pull request gets merged; it
+    can be split into smaller pull requests later if asked.
