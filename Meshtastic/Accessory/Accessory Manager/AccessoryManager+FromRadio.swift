@@ -214,7 +214,7 @@ extension AccessoryManager {
 			}
 
 			if myNodeInfo.nodedbCount > 0 {
-				expectedNodeDBSize = Int(myNodeInfo.nodedbCount)
+				update(session, \.expectedNodeDBSize, to: Int(myNodeInfo.nodedbCount))
 			}
 
 			// Compare BEFORE persisting the new num — the previous code assigned first, so
@@ -229,7 +229,7 @@ extension AccessoryManager {
 
 		// Auto-disable new-node notifications for event firmware editions
 		applyEventFirmwareNotificationDefaults(myNodeInfo.firmwareEdition)
-		firmwareEdition = FirmwareEditions(from: myNodeInfo.firmwareEdition)
+		update(session, \.firmwareEdition, to: FirmwareEditions(from: myNodeInfo.firmwareEdition))
 
 		// Initialize TAK bridge for TAK integration
 		initializeTAKBridge()
@@ -422,9 +422,9 @@ extension AccessoryManager {
 	/// config screen can constrain its preset picker to the selected region's
 	/// legal set. Older firmware never sends this; the map simply stays empty and
 	/// the UI falls back to its unconstrained behavior.
-	func handleRegionPresets(_ regionPresets: LoRaRegionPresetMap) {
+	func handleRegionPresets(_ regionPresets: LoRaRegionPresetMap, session: RadioSession) {
 		let decoded = regionPresets.decoded()
-		loRaRegionPresets = decoded
+		update(session, \.loRaRegionPresets, to: decoded)
 		Logger.services.info("✅ [handleRegionPresets] decoded \(decoded.count, privacy: .public) region(s) from \(regionPresets.groups.count, privacy: .public) preset group(s)")
 	}
 

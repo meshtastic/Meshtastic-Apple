@@ -246,7 +246,14 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	@Published var lastConfigRefresh: Date?
 	@Published var isConnecting: Bool = false
 	@Published var isInBackground: Bool = false
-	@Published var firmwareEdition: FirmwareEditions = .vanilla
+	/// The focused radio's firmware edition (kept on its `RadioSession`, T069).
+	var firmwareEdition: FirmwareEditions {
+		get { activeConnection?.firmwareEdition ?? .vanilla }
+		set {
+			objectWillChange.send()
+			activeConnection?.firmwareEdition = newValue
+		}
+	}
 	/// Mirrors the BLE transport's `TransportStatus`, most notably `.error(BLETransport.
 	/// poweredOffStatusMessage)` when CoreBluetooth reports `.poweredOff`. Nothing read
 	/// `BLETransport.status` before this (#2175): with the system "Bluetooth is turned off"
@@ -265,7 +272,14 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	/// want_config handshake (FromRadio.region_presets, 2.8+). Empty when the
 	/// firmware predates the feature or hasn't sent it yet — callers must treat an
 	/// absent region (or an empty map) as "no constraint". Reset on disconnect.
-	@Published var loRaRegionPresets: [Config.LoRaConfig.RegionCode: RegionPresetInfo] = [:]
+	/// The focused radio's region → legal preset map (kept on its `RadioSession`, T069).
+	var loRaRegionPresets: [Config.LoRaConfig.RegionCode: RegionPresetInfo] {
+		get { activeConnection?.loRaRegionPresets ?? [:] }
+		set {
+			objectWillChange.send()
+			activeConnection?.loRaRegionPresets = newValue
+		}
+	}
 
 	/// The live connection, if any. A `RadioSession` rather than a bare (device, connection) pair
 	/// so every event and handler can carry which connection it belongs to (feature 021).
@@ -382,7 +396,22 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	private var nextAutomaticConfigRefreshGeneration: UInt64 = 0
 
 	// Misc
-	@Published var expectedNodeDBSize: Int?
+	/// How many nodes the focused radio said its node DB holds (kept on its `RadioSession`, T069).
+	var expectedNodeDBSize: Int? {
+		get { activeConnection?.expectedNodeDBSize }
+		set {
+			objectWillChange.send()
+			activeConnection?.expectedNodeDBSize = newValue
+		}
+	}
+
+	/// Sets a value on `session`, telling the views when it's the focused radio's (T069).
+	func update<T>(_ session: RadioSession, _ keyPath: ReferenceWritableKeyPath<RadioSession, T>, to value: T) {
+		if session === activeConnection {
+			objectWillChange.send()
+		}
+		session[keyPath: keyPath] = value
+	}
 	
 	/// The focused connection's heartbeat timers (on its `RadioSession`, T069).
 	var heartbeatTimer: ResettableTimer? { activeConnection?.heartbeatTimer }
@@ -1231,7 +1260,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			await handleDeviceMetadata(metadata, session: session)
 
 		case .regionPresets(let regionPresets):
-			handleRegionPresets(regionPresets)
+			handleRegionPresets(regionPresets, session: session)
 
 		case .deviceuiConfig:
 #if DEBUG

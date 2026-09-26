@@ -82,6 +82,34 @@ struct RadioSessionTests {
 		#expect(manager.activeDeviceNum == 0x1234)
 	}
 
+	/// T069: what a radio reports lives on its own session; the manager shows the focused one's.
+	@Test func reportedValuesStayWithTheirRadio() {
+		let focused = makeSession()
+		let other = makeSession(num: 0x0000_CAFE)
+		let manager = makeManager(active: focused)
+		var notifications = 0
+		let cancellable = manager.objectWillChange.sink { notifications += 1 }
+		defer { cancellable.cancel() }
+
+		manager.update(other, \.firmwareEdition, to: .defcon)
+		manager.update(other, \.expectedNodeDBSize, to: 42)
+		#expect(other.firmwareEdition == .defcon)
+		#expect(manager.firmwareEdition == .vanilla)
+		#expect(manager.expectedNodeDBSize == nil)
+		#expect(notifications == 0, "another radio's values don't redraw the focused radio's views")
+
+		manager.update(focused, \.firmwareEdition, to: .burningMan)
+		#expect(manager.firmwareEdition == .burningMan)
+		#expect(notifications == 1)
+
+		manager.activeConnection = other
+		#expect(manager.firmwareEdition == .defcon)
+		#expect(manager.expectedNodeDBSize == 42)
+		manager.activeConnection = nil
+		#expect(manager.firmwareEdition == .vanilla)
+		#expect(manager.loRaRegionPresets.isEmpty)
+	}
+
 	@Test func updateDeviceWithTheSameValueDoesNotNotify() {
 		let session = makeSession()
 		let manager = makeManager(active: session)

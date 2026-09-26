@@ -68,12 +68,15 @@ A `region_groups` entry whose `group_index` is out of range is skipped defensive
 which tolerates malformed or forward-compatible data.
 
 `AccessoryManager.processFromRadio(_:)` dispatches the new `.regionPresets` variant to
-`handleRegionPresets(_:)` (in `AccessoryManager+FromRadio.swift`), which stores the
-decoded lookup on the connection model:
+`handleRegionPresets(_:session:)` (in `AccessoryManager+FromRadio.swift`), which stores the
+decoded lookup on the radio's `RadioSession`:
 
 ```swift
-@Published var loRaRegionPresets: [Config.LoRaConfig.RegionCode: RegionPresetInfo] = [:]
+var loRaRegionPresets: [Config.LoRaConfig.RegionCode: RegionPresetInfo] = [:]
 ```
+
+`AccessoryManager.loRaRegionPresets` reads the focused radio's, so the views below see the radio
+they configure.
 
 It is **reset to empty on disconnect** (`updateState` → `.idle`/`.discovering`), so the
 map always reflects the currently connected radio. There is no SwiftData persistence —
@@ -137,7 +140,7 @@ from the map and carry no constraint.
 | --- | --- |
 | `Meshtastic/Enums/LoraConfigEnums.swift` | `RegionCodes`/`ModemPresets` cases, gating helpers, `RegionPresetInfo`, `LoRaRegionPresetMap.decoded()` |
 | `Meshtastic/Accessory/Accessory Manager/AccessoryManager.swift` | `loRaRegionPresets` storage, `.regionPresets` dispatch, disconnect reset |
-| `Meshtastic/Accessory/Accessory Manager/AccessoryManager+FromRadio.swift` | `handleRegionPresets(_:)` |
+| `Meshtastic/Accessory/Accessory Manager/AccessoryManager+FromRadio.swift` | `handleRegionPresets(_:session:)` |
 | `Meshtastic/Views/Settings/Config/LoRaConfig.swift` | Region/preset pickers, filtering, default-preset switch, licensed warning |
 | `MeshtasticTests/LoraDeviceEnumTests.swift` | `LoRaRegionPresetMapTests`, `LoRaFirmwareGatingTests` |
 

@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import MeshtasticProtobufs
 
 /// One live connection to one radio.
 ///
@@ -51,4 +52,13 @@ final class RadioSession: Identifiable {
 	/// A config-only want-config in progress (`AccessoryManager.sendWantConfig`), and its task.
 	var automaticConfigRefresh: AutomaticConfigRefresh?
 	var automaticConfigRefreshTask: Task<Void, Never>?
+
+	// MARK: - What the radio reported (feature 021, T069)
+
+	/// How many nodes the radio's MyInfo said its node DB holds (the Connect tab's progress).
+	var expectedNodeDBSize: Int?
+	/// The firmware edition from its MyInfo (event firmware and the like).
+	var firmwareEdition: FirmwareEditions = .vanilla
+	/// The region → legal preset map it advertised in the config handshake (2.8+).
+	var loRaRegionPresets: [Config.LoRaConfig.RegionCode: RegionPresetInfo] = [:]
 }
