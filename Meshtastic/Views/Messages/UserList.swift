@@ -329,17 +329,18 @@ private struct DirectMessageUserRow: View {
 		}
 		.contextMenu {
 			Button {
-				guard let userNode = user.userNode, let node else { return }
+				guard let userNode = user.userNode, node != nil else { return }
 				if !(userNode.favorite) {
 					userNode.favorite = true
 					Task {
-						try await accessoryManager.setFavoriteNode(node: userNode, connectedNodeNum: Int64(node.num))
+						// Feature 021 (D-11): on every connected radio.
+						try await accessoryManager.setFavorite(true, node: userNode)
 						Logger.data.info("Favorited a node")
 					}
 				} else {
 					userNode.favorite = false
 					Task {
-						try await accessoryManager.removeFavoriteNode(node: userNode, connectedNodeNum: Int64(node.num))
+						try await accessoryManager.setFavorite(false, node: userNode)
 						Logger.data.info("Unfavorited a node")
 					}
 				}

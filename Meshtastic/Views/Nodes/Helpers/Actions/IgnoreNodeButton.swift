@@ -11,20 +11,11 @@ struct IgnoreNodeButton: View {
 
 	var body: some View {
 		Button(role: .destructive) {
-			guard let connectedNodeNum = accessoryManager.activeDeviceNum else { return }
+			guard accessoryManager.activeDeviceNum != nil else { return }
 			Task {
 				do {
-					if node.ignored {
-						try await accessoryManager.removeIgnoredNode(
-							node: node,
-							connectedNodeNum: Int64(connectedNodeNum)
-						)
-					} else {
-						try await accessoryManager.setIgnoredNode(
-							node: node,
-							connectedNodeNum: Int64(connectedNodeNum)
-						)
-					}
+					// Feature 021 (D-11): on every connected radio, the focused one first.
+					try await accessoryManager.setIgnored(!node.ignored, node: node)
 					Task {@MainActor in
 						// CoreData Stuff
 						node.ignored = !node.ignored

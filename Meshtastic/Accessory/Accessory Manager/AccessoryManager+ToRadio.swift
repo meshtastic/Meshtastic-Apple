@@ -678,7 +678,7 @@ extension AccessoryManager {
 		toRadio.packet = meshPacket
 
 		let logString = String.localizedStringWithFormat("Set node %@ as favorite on %@".localized, node.num.toHex(), connectedNodeNum.toHex())
-		try await send(toRadio, debugDescription: logString)
+		try await sendLocalAdmin(toRadio, to: connectedNodeNum, debugDescription: logString)
 	}
 
 	public func removeFavoriteNode(node: NodeInfoEntity, connectedNodeNum: Int64) async throws {
@@ -701,7 +701,7 @@ extension AccessoryManager {
 		toRadio.packet = meshPacket
 
 		let logString = String.localizedStringWithFormat("Remove node %@ as favorite on %@".localized, node.num.toHex(), connectedNodeNum.toHex())
-		try await send(toRadio, debugDescription: logString)
+		try await sendLocalAdmin(toRadio, to: connectedNodeNum, debugDescription: logString)
 	}
 
 	/// Builds one channel write. Role comes from the slot: index 0 is the primary, the rest are
@@ -1401,7 +1401,7 @@ extension AccessoryManager {
 		toRadio.packet = meshPacket
 
 		let logString = String.localizedStringWithFormat("📮 Sent a request to  ignore \(node.num.toHex())")
-		try await send(toRadio, debugDescription: logString)
+		try await sendLocalAdmin(toRadio, to: connectedNodeNum, debugDescription: logString)
 	}
 
 	public func removeIgnoredNode(node: NodeInfoEntity, connectedNodeNum: Int64) async throws {
@@ -1424,7 +1424,7 @@ extension AccessoryManager {
 		toRadio.packet = meshPacket
 
 		let logString = String.localizedStringWithFormat("📮 Sent a request to un-ignore \(node.num.toHex())")
-		try await send(toRadio, debugDescription: logString)
+		try await sendLocalAdmin(toRadio, to: connectedNodeNum, debugDescription: logString)
 	}
 
 	public func removeNode(node: NodeInfoEntity, connectedNodeNum: Int64) async throws {

@@ -189,6 +189,7 @@ struct NodeDetail: View {
 			NodeInfoItem(nodeNum: nodeNum)
 				.id(nodeNum)
 			nodeSection
+			NodeHeardBySection(nodeNum: nodeNum, lastHeard: node.lastHeard)
 			environmentSection
 			airQualitySection
 			powerSection

@@ -50,17 +50,8 @@ struct FavoriteNodeButton: View {
 
 	private func assignFavorite (node: NodeInfoEntity, setToFavorite: Bool, connectedNodeNum: Int64) async {
 		do {
-			if setToFavorite {
-				try await accessoryManager.setFavoriteNode(
-					node: node,
-					connectedNodeNum: Int64(connectedNodeNum)
-				)
-			} else {
-				try await accessoryManager.removeFavoriteNode(
-					node: node,
-					connectedNodeNum: Int64(connectedNodeNum)
-				)
-			}
+			// Feature 021 (D-11): on every connected radio, the focused one first.
+			try await accessoryManager.setFavorite(setToFavorite, node: node)
 
 			Task { @MainActor in
 				// Update CoreData

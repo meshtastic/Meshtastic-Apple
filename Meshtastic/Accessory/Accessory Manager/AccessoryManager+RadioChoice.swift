@@ -48,4 +48,48 @@ extension AccessoryManager {
 			Logger.transport.info("📻 [\(session.device.shortName ?? session.device.name, privacy: .public)] \(debugDescription, privacy: .public)")
 		}
 	}
+
+	// MARK: - Local admin on every radio (D-11)
+
+	/// Sends an admin message addressed to one of the user's own radios through that radio. The
+	/// focused radio, or a radio that isn't connected, keeps the old path (`send`).
+	func sendLocalAdmin(_ data: ToRadio, to radioNum: Int64, debugDescription: String? = nil) async throws {
+		if let session = connectedSession(forRadio: radioNum), session !== activeConnection {
+			try await send(data, via: session, debugDescription: debugDescription)
+		} else {
+			try await send(data, debugDescription: debugDescription)
+		}
+	}
+
+	/// Favorites or unfavorites `node` on every connected radio (D-11), the focused one first.
+	/// Throws only if the focused radio fails; another radio's failure is logged, since the
+	/// node is still favorited where it matters most and the next node DB will show the rest.
+	func setFavorite(_ favorite: Bool, node: NodeInfoEntity) async throws {
+		for (offset, radioNum) in connectedRadioNums.enumerated() where radioNum != node.num {
+			do {
+				if favorite {
+					try await setFavoriteNode(node: node, connectedNodeNum: radioNum)
+				} else {
+					try await removeFavoriteNode(node: node, connectedNodeNum: radioNum)
+				}
+			} catch where offset > 0 {
+				Logger.admin.error("Could not update favorite \(node.num.toHex(), privacy: .public) on \(radioNum.toHex(), privacy: .public): \(error.localizedDescription, privacy: .public)")
+			}
+		}
+	}
+
+	/// Ignores or un-ignores `node` on every connected radio (D-11), like `setFavorite`.
+	func setIgnored(_ ignored: Bool, node: NodeInfoEntity) async throws {
+		for (offset, radioNum) in connectedRadioNums.enumerated() where radioNum != node.num {
+			do {
+				if ignored {
+					try await setIgnoredNode(node: node, connectedNodeNum: radioNum)
+				} else {
+					try await removeIgnoredNode(node: node, connectedNodeNum: radioNum)
+				}
+			} catch where offset > 0 {
+				Logger.admin.error("Could not update ignored \(node.num.toHex(), privacy: .public) on \(radioNum.toHex(), privacy: .public): \(error.localizedDescription, privacy: .public)")
+			}
+		}
+	}
 }

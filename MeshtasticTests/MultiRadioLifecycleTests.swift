@@ -147,6 +147,33 @@ struct MultiRadioConnectLifecycleTests {
 		#expect(manager.device(for: bad) == nil)
 	}
 
+	@Test("Favoriting a node reaches every connected radio, each on its own connection")
+	func favoriteOnEveryRadio() async throws {
+		let focusedNum: Int64 = 0x0A0A, extraNum: Int64 = 0x0B0B
+		let manager = AccessoryManager(transports: [])
+		manager.isSwitchingDevices = true
+		let focusedConnection = IdleConnection()
+		var focusedDevice = device("Focused")
+		focusedDevice.num = focusedNum
+		manager.activeConnection = RadioSession(device: focusedDevice, connection: focusedConnection)
+		let extraConnection = IdleConnection()
+		var extraDevice = device("Extra")
+		extraDevice.num = extraNum
+		manager.additionalRadios[extraDevice.id] = AdditionalRadio(session: RadioSession(device: extraDevice, connection: extraConnection))
+		let node = NodeInfoEntity()
+		node.num = 0x1234
+
+		try await manager.setFavorite(true, node: node)
+
+		for (connection, radioNum) in [(focusedConnection, focusedNum), (extraConnection, extraNum)] {
+			let sent = await connection.sent
+			#expect(sent.count == 1)
+			#expect(sent.first?.packet.to == UInt32(radioNum))
+			let admin = try AdminMessage(serializedBytes: try #require(sent.first?.packet.decoded.payload))
+			#expect(admin.setFavoriteNode == 0x1234)
+		}
+	}
+
 	@Test("A message sent via another radio goes out on that radio, as that radio")
 	func sendViaAdditionalRadio() async throws {
 		let focusedNum: Int64 = 0x0A0A, extraNum: Int64 = 0x0B0B, remoteNum: Int64 = 0x1234
