@@ -99,8 +99,10 @@ Read this first if you are picking the work up. Update it in the same commit as 
 
 ## In progress
 
-- T068 (started 2026-09-26): characterization tests of the focused radio's connect flow, the
-  first step of D-17 (every radio the same; plan.md › Every radio the same). Next: T069.
+- T069 (next): per-connection state onto `RadioSession`, the manager forwarding to the focused
+  session, no behaviour change. Step 2 of D-17 (every radio the same; plan.md › Every radio the
+  same). T068's `ConnectFlowCharacterizationTests` must keep passing unchanged through T069–T072;
+  a test that has to change there means behaviour changed, so say why in the commit.
   When you start a task, mark it `[~]` in tasks.md and note it here.
 
 ## Blocked / waiting on the owner
@@ -261,6 +263,12 @@ describes it well enough to rebuild.
   isn't remembered (`autoConnect` off) is released after `restoredStandbyGracePeriod`. If the
   focused restore fails, the others are released too; the remembered-radio fallback at discovery
   can bring one back as the focus.
+- Connect Step 5 (found writing T068): `sendWantDatabase` sends the node-DB request, then
+  starts waiting for the first NodeInfo. If the radio's "node DB complete" arrives before that
+  wait starts (an empty node DB answered faster than the app gets there), the wait is missed and
+  Step 5 times out after 10 s and asks again. Real radios haven't shown it, since the round trip
+  is slower than that gap, but the unified flow should start waiting before it sends.
+  `ScriptedRadio` answers after 20 ms for that reason.
 - Focus when things go wrong (`AccessoryManager+FocusHandover.swift`): the Connect tab's
   Disconnect hands the focus to another connected radio at once (`disconnectFocusedRadio`).
   If the focused radio drops, `closeConnection` starts `scheduleFocusHandover`: after 30 s

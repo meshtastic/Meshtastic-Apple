@@ -85,8 +85,8 @@ phases don't change behaviour and keep the app shippable, which makes a rebase o
 
 ### Every radio the same (D-17, plan.md › Every radio the same)
 
-- [~] T068 Characterization tests of today's connect flow (Steps 0–8) with a fake connection.
-- [ ] T069 Per-connection state onto `RadioSession`; `AccessoryManager` forwards to the focused session. No behaviour change.
+- [X] T068 Characterization tests of today's connect flow (Steps 0–8) with a fake connection. — `ConnectFlowCharacterizationTests` (13 cases) against `ScriptedRadio`, which answers both want-config requests like firmware: request order (heartbeat, config, heartbeat, node DB, set time), the end state and what's recorded (preferred radio, firmware version, MyInfo, channels, the node dump and its observations), old firmware behind the update gate, teardown, transport retries (two attempts), lost bond (one attempt, reconnects suspended), a second connect refused, timezone fill, canned messages request, periodic heartbeat and its timeout, link error and link disconnect, reboot refresh. Not covered (the step timeouts make them 30 s or longer): a radio that never answers, and the Step 5 re-request guard.
+- [~] T069 Per-connection state onto `RadioSession`; `AccessoryManager` forwards to the focused session. No behaviour change.
 - [ ] T070 Split the connect steps into per-radio and once-per-app work.
 - [ ] T071 Every radio runs the same connect steps; remove the `AdditionalRadio` flow. Closes the gaps in plan.md's table (firmware warnings, region presets, firmware edition, canned messages, ringtone, timezone, heartbeat timeout, per-radio range test and store and forward).
 - [ ] T072 Focus as a pointer change: switching, focus handover and Disconnect on the focused radio don't reconnect anything.
