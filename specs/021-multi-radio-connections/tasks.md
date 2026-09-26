@@ -74,21 +74,21 @@ phases don't change behaviour and keep the app shippable, which makes a rebase o
 
 ## Phase 5: Several sessions at once
 
-- [ ] T060 `RadioSessionManager`: sessions dictionary, focus, cap of 4, facade forwards to the focused session.
-- [ ] T061 `BLETransport`: per-peripheral connect continuations and active connections; route delegate callbacks by identifier; stop pausing the scan for the whole handshake.
+- [~] T060 `RadioSessionManager`: sessions dictionary, focus, cap of 4, facade forwards to the focused session. — first step in `40605d38`: the focused radio keeps `activeConnection` and the full flow; additional radios are `AdditionalRadio` sessions (`AccessoryManager+AdditionalRadios.swift`). A full `RadioSessionManager` that also owns the focused radio comes with focus switching without reconnecting (T082).
+- [X] T061 `BLETransport`: per-peripheral connect continuations and active connections; route delegate callbacks by identifier; stop pausing the scan for the whole handshake. — commit `40605d38`, verified: `MultiRadioBLETransportTests`.
 - [ ] T062 BLE restoration for every restored peripheral.
-- [ ] T063 Discovery keeps running while connected; auto-connect uses the set of radios in `MyInfoEntity.autoConnect`.
+- [~] T063 Discovery keeps running while connected; auto-connect uses the set of radios in `MyInfoEntity.autoConnect`. — discovery runs while connected on the Connect tab without changing the connection state (`40605d38`). Left: auto-connect and auto-reconnect of additional radios.
 - [ ] T064 A global handshake gate: one config and node-DB dump at a time across sessions.
 - [ ] T065 Per-session firmware gate, lockdown and OTA scope.
-- [ ] T066 Remove `switchToDevice`, `backupCurrentAndRestoreDatabase`, `defensiveResetIfForeignDatabase` and `isSwitchingDevices`.
-- [ ] T067 Tests: several mock sessions; BLE continuation routing with a fake central.
+- [~] T066 Remove `switchToDevice`, `backupCurrentAndRestoreDatabase`, `defensiveResetIfForeignDatabase` and `isSwitchingDevices`. — commit `40605d38`: the foreign-store reset is now renumber-only (`renumberIfSameRadio`), and `switchToDevice` no longer backs up, clears or restores. Left: remove the unused backup helpers once T030 lands.
+- [~] T067 Tests: several mock sessions; BLE continuation routing with a fake central. — `MultiRadioSessionTests` and `MultiRadioBLETransportTests` (`40605d38`). Left: the two-stream replay through the real dispatch (was T050).
 
 **Checkpoint**: two TCP radios, or a mock pair, stay connected and ingest into one store.
 
 ## Phase 6: UI
 
-- [ ] T080 Connect dialog (D-05) plus the "Connecting another radio" setting.
-- [ ] T081 Connect tab: "Connected Radios" section (state, signal, battery, unread, disconnect, focus); Available Radios always shown.
+- [X] T080 Connect dialog (D-05) plus the "Connecting another radio" setting. — commit `40605d38`: confirmation dialog on tap plus Settings › App Settings › Connecting Another Radio (Ask / Keep Both / Switch). "Remember my choice" is the setting rather than a checkbox in the dialog.
+- [~] T081 Connect tab: "Connected Radios" section (state, signal, battery, unread, disconnect, focus); Available Radios always shown. — "Also Connected" (focus, disconnect) and "Add a Radio" while connected (`40605d38`). Left: battery, unread and signal in the rows.
 - [ ] T082 Radio switcher in the `ConnectedDevice` toolbar indicator and on iPad/Mac sidebars.
 - [ ] T083 Channel list grouped by `channelKey` with radio badges.
 - [ ] T084 Composer "via" control (D-13).

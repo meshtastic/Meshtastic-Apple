@@ -27,11 +27,28 @@ Read this first if you are picking the work up. Update it in the same commit as 
   local only). Phase 2 receive path (T010–T012, T019, part of T016) in `5671f9d2`; channel
   identity (T027) in `2a3e3653`; uniqueness spike (T020) in `6c173b7c`, which led to D-16.
   Phase 3 schema (T023–T025, T028, T029) in `7cf22678` and `3579188b`. Phase 4 ingest
-  (T041–T049) in `10b6cba4`, `35a0936c`, `5ea963bd`; see tasks.md for the partial ones.
-- Next up: Phase 5 (T060 `RadioSessionManager`, T061 BLE per-peripheral continuations), then
-  T066 + T030 together (drop the switch flow, merge old backups).
-- Baseline and latest: the full suite passes in the iOS Simulator (3,317 Swift Testing tests plus
-  29 XCTests, about 45 seconds of test time).
+  (T041–T049) in `10b6cba4`, `35a0936c`, `5ea963bd`. Phase 5 first step (additional radio
+  sessions, per-peripheral BLE, no more store wipe on switch) and the connect dialog in
+  `40605d38`; see tasks.md for the partial ones.
+- Mesh Multi (`~/Applications/Mesh Multi.app`, side-by-side, own container) was rebuilt from
+  `40605d38` and is ready for the first two-radio test below. Not yet run by anyone.
+- Next up: the owner's two-radio test; then auto-reconnect for additional radios (T063), BLE
+  restoration (T062), and the handshake gate (T064). T030 (merge old backups) before release.
+- Baseline and latest: the full suite passes in the iOS Simulator (3,326 Swift Testing tests plus
+  29 XCTests, about 35–45 seconds of test time).
+
+## First two-radio test (Mesh Multi, Mac)
+
+1. Open Mesh Multi, connect radio A from Available Radios (normal first connect).
+2. On the Connect tab, "Add a Radio" lists radio B. Tap it; choose "Keep A and Add B".
+3. B shows under "Also Connected", Connecting… then Connected. Log lines start with `🔗➕`.
+4. Send a channel message from a third device: it appears once. Nodes heard by both radios
+   appear once; the node list shows the best hops.
+5. ⋯ → Disconnect on B: A stays connected. Re-add B. ⋯ → Focus This Radio on B: A disconnects,
+   B reconnects as focused, and nothing is wiped (messages and nodes from A remain).
+6. Settings › App Settings › Connecting Another Radio: try Keep Both / Switch.
+7. Worth watching: memory and CPU with two node dumps; any "Dropping an event from a
+   disconnected additional radio" spam; whether BLE scanning while connected upsets pairing.
 - Small pull requests, ready for the owner to push (each is one commit on `origin/main`):
   - `fix/restore-dropped-backup-fields` — the restore fix and its tests.
   - `chore/sync-string-catalog` — the string catalog sync.
@@ -125,6 +142,16 @@ describes it well enough to rebuild.
 - The backfill attributes old rows to `UserDefaults.preferredPeripheralNum`, which is the store's
   owner only while the switch flow exists. When T066 removes switching, run the backfill for
   each store before it is merged (T030), not after.
+- Additional radios must never reach the focused radio's handlers for anything but mesh
+  packets: `handleMyInfo` writes the preferred radio, `handleConfig` sends a timezone to the
+  focused radio, `handleModuleConfig` sends admin requests through it, and the `.error` /
+  `.disconnected` branches of `didReceive` close the focused connection. Route through
+  `processAdditionalFromRadio`.
+- `MeshPackets.recreateShared()` (connect Step 7 and every `ingestRecycleInterval` packets)
+  invalidates the old actor; an additional radio's handler that captured it mid-write loses
+  that write. Rare, but a candidate for the 24-hour test's "missing packet" findings.
+- Discovery while connected must not call `updateState(.discovering)`; `startDiscovery` only
+  does that with no focused radio now.
 - `SchemaHistoryUpgradeTests.fixtureInventoryCoversEverySwiftDataRelease` sometimes fails with a
   SQLite disk I/O error reading the bundled fixture's metadata. It predates this work and passes
   on a re-run.

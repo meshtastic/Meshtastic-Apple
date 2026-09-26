@@ -103,6 +103,17 @@ Key model types:
 | `TraceRouteEntity` | A recorded trace route |
 | `WaypointEntity` | A shared map waypoint |
 | `EventFirmwareEntity` | Cached off-device event-firmware branding/lifecycle metadata |
+| `NodeObservationEntity` | One local radio's view of one node (signal, hops, last heard, admin session), unique on `"radio:node"` |
+| `PacketReceptionEntity` | One local radio's reception of one packet, unique on `"radio:sender:packet"`; kept for 30 days or 50,000 rows |
+
+### Multi-radio data (feature 021)
+
+Every connected radio writes to the same store. Rows say which radio they came through:
+
+- `MessageEntity.messageKey` (`"sender:packetId"`) is the unique key, since a packet id is only unique per sender. `messageId` is no longer unique; replies and tapbacks still refer to it. `fromNum`, `toNum`, `localNodeNum` (the radio that received or sent it) and `channelKey` (`ChannelIdentity`) are flat columns so queries don't join.
+- `NodeInfoEntity` keeps its signal, hops and last-heard fields. With one radio observing a node they are written directly, as before. With several, `NodeObservationEntity.applyAggregate` writes the best path (RF over MQTT, fewest hops, most recent) and the latest last-heard.
+- A broadcast another local radio already delivered records a reception and skips the packet handlers, so it is stored once.
+- Rows from older builds get the new columns from `MultiRadioBackfill`, a resumable job in the background maintenance pass. Readers must cope with nil in those columns until it has run.
 
 ### `EventFirmwareEntity` — off-device event branding cache
 

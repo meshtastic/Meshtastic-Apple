@@ -25,6 +25,16 @@ Which alerts the app raises is set per type in the iOS Settings app, under **Set
 
 Turning a toggle off suppresses only the alert — messages, reactions, waypoints, and nodes are still received and still appear in the app. Muting a channel or a sender in the app silences that conversation regardless of these settings.
 
+### Connecting Another Radio
+
+What happens when you tap a radio on the Connect tab while another one is connected. See [Managing Multiple Radios](bluetooth.md#managing-multiple-radios).
+
+| Option | Behavior |
+|--------|----------|
+| Ask Each Time | Asks whether to keep the connected radio and add the new one, or switch to it. This is the default. |
+| Keep Both Connected | Adds the new radio without asking, up to four radios. At four, the app asks. |
+| Switch Radios | Disconnects the focused radio and connects the new one without asking. |
+
 ### Data Management
 
 - **Erase All App Data** — clears the local database, translation cache, and all stored settings, then immediately reloads the bundled device hardware catalog. Use this as a last resort.

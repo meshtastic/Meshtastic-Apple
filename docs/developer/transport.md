@@ -102,6 +102,18 @@ During an explicit radio switch from the Connect view, the app uses the same con
 
 This refresh is only enabled for the switch-radio flow. Automatic reconnects and ordinary connects continue using the standard transport handshake without forcing a hardware catalog refresh.
 
+### Several Radios at Once
+
+Up to `AccessoryManager.maxConnectedRadios` (4) radios can be connected. The **focused** radio is `activeConnection` and keeps the full sequence above. Every other radio is an `AdditionalRadio` in `AccessoryManager.additionalRadios` (`AccessoryManager+AdditionalRadios.swift`) and runs a shorter flow on its own `Connection`: transport connect, a heartbeat, then `wantConfig` with `NONCE_ONLY_CONFIG` and `NONCE_ONLY_DB`, each awaited on its own `configCompleteID`.
+
+- **Events.** `didReceive(_:from:)` routes an additional radio's events to `didReceiveAdditional` before any focused-radio handling, so its errors and disconnects only disconnect that radio. Sessions of disconnected additional radios are remembered (`retiredAdditionalSessionIDs`) and their late events are dropped.
+- **What an additional radio skips.** Its `FromRadio` handling leaves out everything tied to the focused radio: the preferred-radio update and connect-flow state in `handleMyInfo`, MQTT proxying, region presets, the timezone write in `handleConfig`, and the admin follow-ups in `handleModuleConfig`. Mesh packets go through the same `processFromRadio(_:session:)` path as the focused radio's, which is scoped to the session.
+- **Heartbeats** go over the radio's own connection and don't reset the focused radio's heartbeat timers.
+- **BLE.** `BLETransport` keeps its connect continuations and active connections per peripheral identifier, so every CoreBluetooth callback reaches the right radio. The same peripheral still can't connect twice.
+- **Switching** the focused radio (`switchToDevice`) disconnects it and connects the chosen radio. It no longer backs up, clears and restores the store, which every connected radio shares. A radio the store hasn't seen joins it; only a radio reporting a new node number for a known `deviceId` renumbers the store (`renumberIfSameRadio`).
+
+Not yet handled for additional radios: automatic reconnect, BLE state restoration, and sending through them.
+
 ### BLE Pairing PIN Handshake
 
 A first-ever connection to an encrypted radio makes iOS present a 6-digit pairing PIN sheet. `BLEConnection` gates connect-completion on that bond so the sheet is not torn down before the user can respond:

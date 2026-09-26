@@ -6,7 +6,7 @@ nav_order: 2
 
 # Bluetooth Device Connection
 
-The Meshtastic app connects to your radio over Bluetooth Low Energy (BLE). You can manage multiple radios and switch between them without re-pairing.
+The Meshtastic app connects to your radio over Bluetooth Low Energy (BLE). You can keep up to four radios connected at once and switch which one is focused without re-pairing.
 
 ## Connecting a Radio
 
@@ -33,9 +33,28 @@ Long press a connected radio row to start a Live Activity (iOS 16.2+). The Live 
 
 ## Managing Multiple Radios
 
-You can pair multiple radios but only one is active at a time. Switch between them by tapping a different device in the Connect view.
+You can connect up to four radios at once, over Bluetooth, TCP, or serial in any mix. All of them share one database: every message, node, and position they hear is stored once, and the app remembers which radio heard what.
 
-When you switch radios, the app restores the last saved local database for that radio if one exists, then reconnects and resumes syncing with the newly active device. After the new radio finishes its initial config handshake, the app first reapplies the bundled Meshtastic hardware catalog that ships with the app, then refreshes the same catalog from the Meshtastic API in the background so hardware names, images, and firmware-target metadata stay current.
+One connected radio is the **focused** radio. It is the one shown at the top of the Connect tab, and the one that settings, MQTT, location sharing, and sending use. The other connected radios keep receiving in the background and are listed under **Also Connected**.
+
+### Adding a Radio
+
+While a radio is connected, the Connect tab lists nearby radios under **Add a Radio**. Tap one to connect it. The app asks what you want to do:
+
+- **Keep [radio] and Add [new radio]** connects the new radio and keeps the current one.
+- **Switch to [new radio]** disconnects the focused radio and connects the new one in its place. Nothing is deleted.
+
+To stop the question, choose a default in **Settings › App Settings › Connecting Another Radio**: Ask Each Time, Keep Both Connected, or Switch Radios. With four radios connected, only switching is offered.
+
+> **Tip — Focus another radio**
+> In **Also Connected**, tap the **⋯** button next to a radio and choose **Focus This Radio** to make it the focused radio. Choose **Disconnect** to disconnect only that radio.
+
+### Switching Radios
+
+Switching the focused radio disconnects it and connects the new one. The database stays as it is, so the previous radio's messages and nodes remain in the app. After the new radio finishes its initial config handshake, the app first reapplies the bundled Meshtastic hardware catalog that ships with the app, then refreshes the same catalog from the Meshtastic API in the background so hardware names, images, and firmware-target metadata stay current.
+
+> **Warning — Restoring a backup**
+> Restoring a backup from **Settings › Backups** replaces the whole database, so the app disconnects any radios connected alongside the focused one first.
 
 ## BLE Signal Strength
 
