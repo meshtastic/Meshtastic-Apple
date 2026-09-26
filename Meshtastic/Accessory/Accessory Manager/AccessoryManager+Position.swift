@@ -27,13 +27,24 @@ extension AccessoryManager {
 
 				if UserDefaults.provideLocation {
 					_ = try await sendPosition(channel: 0, destNum: fromNodeNum, wantResponse: false)
+					// Feature 021 (T101): every connected radio gets the phone's position, each on
+					// its own connection. Their failures don't end the loop the focused radio drives.
+					for radioNum in connectedRadioNums where radioNum != fromNodeNum {
+						do {
+							try await sendPosition(channel: 0, destNum: radioNum, wantResponse: false, viaRadio: radioNum)
+						} catch {
+							Logger.services.warning("📍 Could not share the phone's position with \(radioNum.toHex(), privacy: .public): \(error.localizedDescription, privacy: .public)")
+						}
+					}
 				}
 			} while !Task.isCancelled
 		}
 	}
 
-	public func sendPosition(channel: Int32, destNum: Int64, hopsAway: Int32 = 0, wantResponse: Bool) async throws {
-		guard let fromNodeNum = activeConnection?.device.num else {
+	/// Sends the phone's position. `viaRadio` picks the connected radio that sends it (feature
+	/// 021); nil is the focused radio.
+	public func sendPosition(channel: Int32, destNum: Int64, hopsAway: Int32 = 0, wantResponse: Bool, viaRadio: Int64? = nil) async throws {
+		guard let session = connectedSession(forRadio: viaRadio), let fromNodeNum = session.nodeNum else {
 			throw AccessoryError.ioFailed("Not connected to any device")
 		}
 
@@ -63,7 +74,7 @@ extension AccessoryManager {
 		var toRadio: ToRadio!
 		toRadio = ToRadio()
 		toRadio.packet = meshPacket
-		try await self.send(toRadio)
+		try await self.send(toRadio, via: session)
 	}
 
 	public func getPositionFromPhoneGPS(destNum: Int64, fixedPosition: Bool) async throws -> Position? {

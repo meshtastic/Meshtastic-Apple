@@ -104,7 +104,7 @@ phases don't change behaviour and keep the app shippable, which makes a rebase o
 ## Phase 7: Services
 
 - [ ] T100 MQTT proxy per session.
-- [ ] T101 Phone position per session.
+- [X] T101 Phone position per session. — the location loop shares the phone position with every connected radio on its own connection; `sendPosition(…, viaRadio:)`, and the composer position share goes through the message's radio and slot. Not unit tested (needs a phone location); check on hardware.
 - [ ] T102 Radio picker setting for TAK, CarPlay & Siri, and Watch (D-12).
 - [ ] T103 TAK bridge uses the chosen radio.
 - [ ] T104 CarPlay and App Intents use the chosen radio; add an optional `radio` intent parameter.

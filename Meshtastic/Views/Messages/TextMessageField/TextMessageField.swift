@@ -146,10 +146,6 @@ struct TextMessageField: View {
 		}
 	}
 
-	private var viaFocusedRadio: Bool {
-		viaRadio == nil || viaRadio == accessoryManager.activeDeviceNum
-	}
-
 	private func requestPosition() {
 		let userLongName = accessoryManager.connectedSession(forRadio: viaRadio)?.device.longName ?? "Unknown"
 		sendPositionWithMessage = true
@@ -171,13 +167,13 @@ struct TextMessageField: View {
 				isFocused = false
 				replyMessageId = 0
 
-				// Positions go through the focused radio only, so another radio's message
-				// doesn't carry one (feature 021).
-				if sendPositionWithMessage, viaFocusedRadio {
+				// Through the radio that sent the message, in its slot for the channel (feature 021).
+				if sendPositionWithMessage {
 					try await accessoryManager.sendPosition(
-						channel: destination.channelNum,
+						channel: viaChannel ?? destination.channelNum,
 						destNum: destination.positionDestNum,
-						wantResponse: destination.wantPositionResponse
+						wantResponse: destination.wantPositionResponse,
+						viaRadio: viaRadio
 					)
 					Logger.mesh.info("Location Sent")
 				}
