@@ -697,6 +697,7 @@ extension MeshPackets {
 							modelContext.insert(position)
 						}
 						position.latest = true
+						position.packetId = Int64(packet.id)
 						position.snr = packet.rxSnr
 						position.rssi = packet.rxRssi
 						// All of these protobuf fields are UInt32; convert with truncatingIfNeeded

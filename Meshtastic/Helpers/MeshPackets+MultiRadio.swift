@@ -36,6 +36,25 @@ extension MeshPackets {
 		return Set(myInfos.map(\.myNodeNum).filter { $0 != 0 })
 	}
 
+	// MARK: - Admin sessions
+
+	/// Stores a remote-admin session passkey on the asking radio's observation of the node
+	/// (T045). The node's own `sessionPasskey`, written by the config handlers, stays the
+	/// focused radio's until the send path reads per radio (T060).
+	func recordAdminSession(passkey: Data, nodeNum: Int64, radioNum: Int64) {
+		guard nodeNum != radioNum else { return }
+		var descriptor = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == nodeNum })
+		descriptor.fetchLimit = 1
+		do {
+			guard let node = try modelContext.fetch(descriptor).first else { return }
+			let observation = observation(of: node, by: radioNum, among: try observations(ofNode: nodeNum))
+			observation.sessionPasskey = passkey
+			observation.sessionExpiration = Date().addingTimeInterval(300)
+		} catch {
+			Logger.data.error("💥 [MultiRadio] Admin session failed: \(error.localizedDescription, privacy: .public)")
+		}
+	}
+
 	// MARK: - Receptions
 
 	/// Records that `radioNum` received `packet` and reports whether any local radio had it

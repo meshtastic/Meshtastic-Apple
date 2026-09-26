@@ -1410,6 +1410,11 @@ actor MeshPackets {
 					break
 				}
 			}
+			// Feature 021 (T045): the passkey belongs to the session between this node and the
+			// radio that asked; another local radio administering the same node gets its own.
+			if let connectedNodeNum, Int64(packet.to) == connectedNodeNum, !adminMessage.sessionPasskey.isEmpty {
+				recordAdminSession(passkey: adminMessage.sessionPasskey, nodeNum: Int64(packet.from), radioNum: connectedNodeNum)
+			}
 			// Save an ack for the admin message log for each admin message response received as we stopped sending acks if there is also a response to reduce airtime.
 			self.adminResponseAck(packet: packet)
 		}
@@ -1594,6 +1599,7 @@ actor MeshPackets {
 			let node = findOrCreateNode(num: packetFrom, context: modelContext)
 			let telemetry = TelemetryEntity()
 			modelContext.insert(telemetry)
+			telemetry.packetId = Int64(packet.id)
 			/// Currently only Device Metrics and Environment Telemetry are supported in the app
 			if telemetryMessage.variant == Telemetry.OneOf_Variant.deviceMetrics(telemetryMessage.deviceMetrics) {
 				// Device Metrics

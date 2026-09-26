@@ -219,6 +219,55 @@ struct MultiRadioIngestTests {
 		])
 	}
 
+	// MARK: - Positions, telemetry, admin sessions
+
+	@Test("Stored positions and telemetry carry their packet id")
+	func packetIdsAreStored() async throws {
+		let container = try makeContainer()
+		try seedNodes([remote], in: container)
+		let packets = await makePackets(container)
+
+		var position = Position()
+		position.latitudeI = 400_000_000
+		position.longitudeI = -1_050_000_000
+		position.time = 1_800_000_000
+		var positionPacket = packet(id: 51, from: remote)
+		positionPacket.decoded.payload = try position.serializedData()
+		await packets.upsertPositionPacket(packet: positionPacket)
+
+		var telemetry = Telemetry()
+		var metrics = DeviceMetrics()
+		metrics.batteryLevel = 80
+		telemetry.deviceMetrics = metrics
+		var telemetryPacket = packet(id: 52, from: remote)
+		telemetryPacket.decoded.portnum = .telemetryApp
+		telemetryPacket.decoded.payload = try telemetry.serializedData()
+		await packets.telemetryPacket(packet: telemetryPacket, connectedNode: radioA)
+		await packets.savePendingChanges()
+
+		#expect(try fetch(PositionEntity.self, in: container).map(\.packetId) == [51])
+		#expect(try fetch(TelemetryEntity.self, in: container).map(\.packetId) == [52])
+	}
+
+	@Test("Each radio keeps its own admin session with a node")
+	func adminSessionsPerRadio() async throws {
+		let container = try makeContainer()
+		try seedNodes([remote], in: container)
+		let packets = await makePackets(container)
+
+		await packets.recordAdminSession(passkey: Data([1]), nodeNum: remote, radioNum: radioA)
+		await packets.recordAdminSession(passkey: Data([2]), nodeNum: remote, radioNum: radioB)
+		// A radio has no admin session with itself.
+		await packets.recordAdminSession(passkey: Data([3]), nodeNum: radioA, radioNum: radioA)
+		await packets.savePendingChanges()
+
+		let observations = try fetch(NodeObservationEntity.self, in: container)
+		#expect(observations.count == 2)
+		#expect(observations.first { $0.radioNum == radioA }?.sessionPasskey == Data([1]))
+		#expect(observations.first { $0.radioNum == radioB }?.sessionPasskey == Data([2]))
+		#expect(observations.allSatisfy { $0.sessionExpiration != nil })
+	}
+
 	// MARK: - Notifications
 
 	/// Both radios known to the store, each with an unmuted primary channel.
