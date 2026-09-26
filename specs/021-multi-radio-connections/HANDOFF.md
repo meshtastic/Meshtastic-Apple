@@ -36,14 +36,16 @@ Read this first if you are picking the work up. Update it in the same commit as 
   "Via" picker that sends in each radio's own slot (T083, T084) in `df9649f9`. Battery, signal
   and unread on connected-radio rows, and "via B" on your channel messages (T081, T086) in
   `d08fde38`. Node detail "Heard By" and favorite/ignore on every radio (T088, D-11) in
-  `2af545de`. See tasks.md for the partial ones.
+  `2af545de`. Focus keeps the previous radio (`6ae292ca`). Toolbar radio menu, Settings note and
+  "on <radio>" in notifications (T082, T089, T091) in `bca4ecef`; the DM badge totals every radio
+  (T090) in `2d7ab3fa`. See tasks.md for the partial ones.
 - Mesh Multi (`~/Applications/Mesh Multi.app`, side-by-side, own container) is rebuilt from the
   latest commit on this branch and ready for the first two-radio test below. Not yet run by anyone.
-- Next up: the owner's two-radio test; then the radio switcher in the toolbar (T082), settings
-  showing which radio they configure (T089), per-radio unread badges and notifications
-  (T090/T091), BLE restoration (T062), per-session firmware gate/lockdown (T065). T030 (merge
-  old backups) before release.
-- Baseline and latest: the full suite passes in the iOS Simulator (3,341 Swift Testing tests plus
+- Next up: the owner's two-radio test; then `radio=` in deep links (rest of T091), BLE
+  restoration (T062), per-session firmware gate/lockdown (T065), MQTT per session (T100), and
+  moving admin sends onto sessions (T060, which T089's relaying radio needs). T030 (merge old
+  backups) before release.
+- Baseline and latest: the full suite passes in the iOS Simulator (3,343 Swift Testing tests plus
   29 XCTests, about 35–50 seconds of test time).
 
 ## First two-radio test (Mesh Multi, Mac)
@@ -214,6 +216,9 @@ describes it well enough to rebuild.
   wins. That's why favorite/ignore go to every connected radio (`setFavorite`, `setIgnored`).
   A radio that was offline when the user changed it will flip the flag back when it next
   connects; syncing on reconnect is not built.
+- Editing tools: after changing a file with a script (`python3 /tmp/x.py`), re-read it before
+  using the editor's find-and-replace on it. Once the editor applied an edit to its own stale
+  copy of `UserMessageList.swift` and silently undid a script's refactor; `git diff` caught it.
 - "Mine" in the views: channel rows use `ownRadioNums` (every `MyInfoEntity`); DM rows use the
   selected radio of the thread. `UserDefaults.preferredPeripheralNum` is only the fallback.
 

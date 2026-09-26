@@ -89,16 +89,16 @@ phases don't change behaviour and keep the app shippable, which makes a rebase o
 
 - [X] T080 Connect dialog (D-05) plus the "Connecting another radio" setting. — commit `40605d38`: confirmation dialog on tap plus Settings › App Settings › Connecting Another Radio (Ask / Keep Both / Switch). "Remember my choice" is the setting rather than a checkbox in the dialog.
 - [X] T081 Connect tab: "Connected Radios" section (state, signal, battery, unread, disconnect, focus); Available Radios always shown. — "Also Connected" (focus, disconnect) and "Add a Radio" while connected (`40605d38`); battery, BLE signal and unread direct messages in each row (`d08fde38`).
-- [ ] T082 Radio switcher in the `ConnectedDevice` toolbar indicator and on iPad/Mac sidebars.
+- [~] T082 Radio switcher in the `ConnectedDevice` toolbar indicator and on iPad/Mac sidebars. — toolbar indicator in `bca4ecef` (`RadioSwitcherMenu`: "+N" badge and a focus menu with more than one radio). Left: a sidebar entry on iPad/Mac.
 - [X] T083 Channel list grouped by `channelKey` with radio badges. — commit `df9649f9`: `ChannelMessageQuery` groups a channel's timeline (and its unread badge) by key across radios, plus the radio's own slot rows; one radio keeps the slot query. Radio badges are the "Via" labels. Verified: `ChannelMessageQueryTests`. The channel list itself is still the focused radio's channels.
 - [X] T084 Composer "via" control (D-13). — send path in `2f5dcf6a` (`sendMessage(…, viaRadio:)`, `send(_:via:)`, `resendMessage` through the sending radio); DMs pick the radio with the conversation's "Via" picker (`2f5dcf6a`); channels pick among connected radios that have the channel, each in its own slot (`df9649f9`, `TextMessageField(viaChannel:)`).
 - [X] T085 DM list grouped or filtered by local radio; DM conversation query per report §13.4. — commit `2f5dcf6a`: `DirectMessageQuery` (per-radio thread by `localNodeNum`; unfiltered with one radio) and the "Via" segmented picker in `UserMessageList` (unread per radio, Offline radios readable but not writable). Verified: `DirectMessageQueryTests`, `MultiRadioConnectLifecycleTests`. The contact list itself is still one row per node.
 - [X] T086 "Mine" bubbles labelled with the radio when more than one is configured. — commit `d08fde38` ("via B" on your channel messages; DM threads are already one radio each).
 - [ ] T087 Node list and map "heard by" filter.
 - [X] T088 Node detail per-radio table; favorite/ignore per D-11. — commit `2af545de`: `NodeHeardBySection` (hops, SNR/RSSI, last heard per radio); favorite and ignore go to every connected radio through its own connection (`setFavorite`, `setIgnored`, `sendLocalAdmin`). The per-radio override from D-11 isn't built.
-- [ ] T089 Settings shows which radio it configures; remote admin shows the relaying radio.
-- [ ] T090 Per-radio unread badges; the app icon badge is the sum.
-- [ ] T091 Notifications name the radio; deep links take `radio=`, handled in `Router` and `NavigationState`.
+- [~] T089 Settings shows which radio it configures; remote admin shows the relaying radio. — `bca4ecef` (`OtherRadiosSettingsNote` under Configure). Left: remote admin always relays through the focused radio; showing or choosing the relaying radio needs admin sends on sessions (T060).
+- [X] T090 Per-radio unread badges; the app icon badge is the sum. — per-radio unread in the Connect rows (`d08fde38`) and the DM "Via" picker (`2f5dcf6a`); the Messages badge's quick updates total every radio (`2d7ab3fa`); the full recount already did.
+- [~] T091 Notifications name the radio; deep links take `radio=`, handled in `Router` and `NavigationState`. — notification subtitle "on <radio>" with more than one radio (`bca4ecef`). Left: `radio=` in deep links, so tapping a notification opens that radio's DM thread / channel slot.
 - [ ] T092 Snapshot tests for the new views (`<ViewName>SnapshotTests`).
 
 ## Phase 7: Services

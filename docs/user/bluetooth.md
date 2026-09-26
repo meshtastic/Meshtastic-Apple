@@ -51,6 +51,8 @@ To stop the question, choose a default in **Settings › App Settings › Connec
 > **Tip — Focus another radio**
 > In **Also Connected**, tap the **⋯** button next to a radio and choose **Focus This Radio** to make it the focused radio. The previously focused radio reconnects under **Also Connected** a moment later. Choose **Disconnect** to disconnect only that radio.
 
+With more than one radio connected, the radio indicator at the top of each screen shows **+1**, **+2** or **+3** for the other radios. Tap it to see them all and focus a different one from anywhere in the app.
+
 ### Reconnecting
 
 A radio connected alongside the focused one is remembered. If it drops out of range or restarts, the app keeps trying to reconnect it, backing off to once a minute. The next time the focused radio connects — for example when you open the app — the remembered radios are connected again too. Choosing **Disconnect** on a radio stops this until you connect it again yourself.

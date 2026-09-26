@@ -49,6 +49,8 @@ Radio configuration requires a connected node. Select your node from the **Confi
 
 The Configure picker lists live nodes from the current node database, with favorites first. If the node database is reset or the selected node disappears, Settings clears that selection instead of opening configuration for a stale node. Reconnect to a radio or choose a currently listed node to continue configuring it.
 
+With more than one radio connected, Settings configures the focused radio, and a note under **Configure** says so. To configure another connected radio, focus it from the Connect tab or the radio indicator at the top of the screen.
+
 ### LoRa
 
 LoRa settings control how your radio communicates on the mesh:

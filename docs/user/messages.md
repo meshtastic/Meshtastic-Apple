@@ -88,6 +88,8 @@ A direct message is between one of your radios and the other node: only that rad
 
 With one radio, the control doesn't appear and conversations work as before. Retrying a message that failed always uses the radio that sent it.
 
+With more than one radio, a message notification ends with **on** and the radio it came in on, and the Messages badge counts unread direct messages to all of your radios.
+
 > **Tip — Sharing your position**
 > The position button in the message field shares the focused radio's position, so it isn't attached to messages sent through another radio.
 
