@@ -63,7 +63,8 @@ Read this first if you are picking the work up. Update it in the same commit as 
    device sees the reply from B.
 6. ⋯ → Disconnect on B: A stays connected, and the conversation's B segment says Offline with
    "Connect B to reply from it." Re-add B. ⋯ → Focus This Radio on B: A disconnects, B
-   reconnects as focused, and nothing is wiped (messages and nodes from A remain).
+   reconnects as focused, then A comes back under "Also Connected" (`6ae292ca`). Nothing is
+   wiped (messages and nodes from A remain).
 7. Settings › App Settings › Connecting Another Radio: try Keep Both / Switch.
 8. Power-cycle B while both are connected: it should drop from "Also Connected" and come back
    on its own (`🔗🔁` log lines). A disconnects nothing.
