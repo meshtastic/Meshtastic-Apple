@@ -268,10 +268,14 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 
 	/// The live connection, if any. A `RadioSession` rather than a bare (device, connection) pair
 	/// so every event and handler can carry which connection it belongs to (feature 021).
-	var activeConnection: RadioSession?
+	var activeConnection: RadioSession? {
+		didSet { Logger.datadog.setConnectedRadioCount(connectedRadioCount) }
+	}
 	/// Feature 021: radios connected alongside the focused one (`activeConnection`), by device
 	/// id. See `AccessoryManager+AdditionalRadios.swift`.
-	@Published var additionalRadios: [UUID: AdditionalRadio] = [:]
+	@Published var additionalRadios: [UUID: AdditionalRadio] = [:] {
+		didSet { Logger.datadog.setConnectedRadioCount(connectedRadioCount) }
+	}
 	/// Sessions of additional radios that have been disconnected. Their late events are
 	/// dropped rather than mistaken for the focused radio's.
 	var retiredAdditionalSessionIDs: Set<UUID> = []

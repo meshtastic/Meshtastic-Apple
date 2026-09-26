@@ -102,6 +102,32 @@ struct MultiRadioServiceRadioTests {
 		#expect(manager.intentRadioNum(Int(offlineNum), store: store) == nil, "never sent from another radio")
 	}
 
+	// MARK: - Datadog (T107)
+
+	@Test("The connect event reports each radio's own firmware, from its metadata when the device has none yet")
+	func reportedFirmwareVersion() throws {
+		let manager = makeManager().manager
+		let schema = Schema(versionedSchema: MeshtasticSchema.current)
+		let container = try ModelContainer(for: schema, configurations: ModelConfiguration("ServiceRadio-\(UUID().uuidString)", schema: schema, isStoredInMemoryOnly: true, allowsSave: true))
+		manager.context = ModelContext(container)
+		let node = NodeInfoEntity()
+		node.num = extraNum
+		let metadata = DeviceMetadataEntity()
+		metadata.firmwareVersion = "2.6.11.60ec05e"
+		node.metadata = metadata
+		manager.context.insert(metadata)
+		manager.context.insert(node)
+
+		var device = Device(id: UUID(), name: "Extra", transportType: .tcp, identifier: "b.local:4403")
+		device.num = extraNum
+		#expect(manager.reportedFirmwareVersion(for: device) == "2.6.11", "stored metadata, build suffix dropped")
+		device.firmwareVersion = "2.7.15.567b8ea"
+		#expect(manager.reportedFirmwareVersion(for: device) == "2.7.15")
+		device.num = offlineNum
+		device.firmwareVersion = nil
+		#expect(manager.reportedFirmwareVersion(for: device) == nil)
+	}
+
 	// MARK: - Watch (T105)
 
 	private func seedWatchStore() throws -> ModelContainer {

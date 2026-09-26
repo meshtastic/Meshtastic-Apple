@@ -7,13 +7,16 @@
 
 import Foundation
 import os.log
+import DatadogCore
 import DatadogRUM
 import DatadogLogs
 import SwiftUI
 
 enum DataDogLoggableAction {
 	// Add more cases as new loggable actions are required.
-	case connect(firmwareVersion: String?, transportType: String?, hardwareModel: String?, nodes: Int?, connectionRestored: Bool = false)
+	/// `additionalRadio`: a radio connected alongside the focused one (feature 021). Its
+	/// attributes are that radio's, and override the global radio context on this event.
+	case connect(firmwareVersion: String?, transportType: String?, hardwareModel: String?, nodes: Int?, connectionRestored: Bool = false, additionalRadio: Bool = false)
 	
 	var name: String {
 		switch self {
@@ -102,17 +105,35 @@ struct DatadogLogger {
 		}
 	}
 
+	/// How many radios are connected (feature 021), on every RUM event while at least one is.
+	/// The radio context above describes the focused radio; this says whether others were
+	/// connected alongside it.
+	func setConnectedRadioCount(_ count: Int) {
+		// Called on every change to the connected radios, tests included, where the SDK isn't set up.
+		guard Datadog.isInitialized() else { return }
+		if count > 0 {
+			RUMMonitor.shared().addAttribute(forKey: Self.connectedRadiosKey, value: count)
+		} else {
+			RUMMonitor.shared().removeAttribute(forKey: Self.connectedRadiosKey)
+		}
+	}
+
+	static let connectedRadiosKey = "connectedRadios"
+
 	// MARK: - Methods for RUM actions
 	func action(_ action: DataDogLoggableAction) {
 		var attributes = [String: any Encodable]()
 		switch action {
-		case .connect(let firmwareVersion, let transportType, let hardwareModel, let nodes, let connectionRestored):
+		case .connect(let firmwareVersion, let transportType, let hardwareModel, let nodes, let connectionRestored, let additionalRadio):
 			attributes["firmwareVersion"] = firmwareVersion
 			attributes["transportType"] = transportType
 			attributes["hardwareModel"] = hardwareModel
 			attributes["nodes"] = nodes
 			if connectionRestored {
 				attributes["connectionRestored"] = true
+			}
+			if additionalRadio {
+				attributes["additionalRadio"] = true
 			}
 		}
 		

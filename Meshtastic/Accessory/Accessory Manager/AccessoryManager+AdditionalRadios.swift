@@ -207,6 +207,13 @@ extension AccessoryManager {
 		if session.device.isManualConnection {
 			ManualConnectionList.shared.insert(device: session.device)
 		}
+		Logger.datadog.action(.connect(
+			firmwareVersion: reportedFirmwareVersion(for: session.device),
+			transportType: session.device.transportType.rawValue,
+			hardwareModel: session.device.hardwareModel,
+			nodes: radio.nodeCount,
+			additionalRadio: true
+		))
 		Logger.transport.info("🔗➕ [Additional] \(session.device.longName ?? device.name, privacy: .public) connected (\(radio.nodeCount) nodes); \(self.connectedRadioCount) radios connected")
 	}
 

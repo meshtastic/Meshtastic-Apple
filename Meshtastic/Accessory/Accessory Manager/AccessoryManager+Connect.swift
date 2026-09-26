@@ -329,22 +329,8 @@ extension AccessoryManager {
 				}
 				
 				if let device = self.activeConnection?.device {
-					// On a reconnect the device metadata can land after the connection is up, so
-					// `device.firmwareVersion` is briefly nil here and the action used to report
-					// nothing at all. Fall back to what this node last told us, read from its own
-					// stored metadata — not `UserDefaults.firmwareVersion`, which holds whichever
-					// radio was checked last and would report that one's version against this one.
-					var version: String?
-					if let firmwareVersion = device.firmwareVersion ?? self.storedFirmwareVersion(for: device.num) {
-						if let lastDotIndex = firmwareVersion.lastIndex(of: ".") {
-							version = String(firmwareVersion[...(lastDotIndex)].dropLast())
-						} else {
-							version = firmwareVersion
-						}
-					}
-				
 					let connectionWasRestored = (withConnection != nil)
-					Logger.datadog.action(.connect(firmwareVersion: version,
+					Logger.datadog.action(.connect(firmwareVersion: self.reportedFirmwareVersion(for: device),
 													transportType: device.transportType.rawValue,
 												   hardwareModel: device.hardwareModel,
 												   nodes: self.expectedNodeDBSize,
@@ -396,6 +382,19 @@ extension AccessoryManager {
 		return stored
 	}
 
+	/// `device`'s firmware version as the `connect` action reports it, without the build suffix.
+	/// On a reconnect the device metadata can land after the connection is up, so
+	/// `device.firmwareVersion` is briefly nil. Fall back to what this node last told us
+	/// (`storedFirmwareVersion(for:)`).
+	func reportedFirmwareVersion(for device: Device) -> String? {
+		guard let firmwareVersion = device.firmwareVersion ?? storedFirmwareVersion(for: device.num) else {
+			return nil
+		}
+		guard let lastDotIndex = firmwareVersion.lastIndex(of: ".") else {
+			return firmwareVersion
+		}
+		return String(firmwareVersion[...lastDotIndex].dropLast())
+	}
 }
 
 // Sequentially stepped tasks
