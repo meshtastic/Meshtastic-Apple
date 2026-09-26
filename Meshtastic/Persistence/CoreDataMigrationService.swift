@@ -23,6 +23,11 @@ import CoreData
 import SwiftData
 import OSLog
 
+@globalActor
+private actor LegacyMigrationActor {
+	static let shared = LegacyMigrationActor()
+}
+
 // MARK: - Public API
 
 enum CoreDataMigrationService {
@@ -68,8 +73,8 @@ enum CoreDataMigrationService {
 	/// - Throws: Any error encountered while reading Core Data or writing
 	///   SwiftData.  The caller is responsible for surfacing this to the user
 	///   rather than silently destroying data.
-	@MainActor
-	static func migrate(into swiftDataContainer: ModelContainer) throws {
+	@LegacyMigrationActor
+	static func migrate(into swiftDataContainer: ModelContainer) async throws {
 		Logger.data.info("⬆️ CoreDataMigrationService: beginning legacy migration")
 
 		// Reset merge state: non-empty only in the rescue scenario (#2152) — releases
@@ -85,7 +90,8 @@ enum CoreDataMigrationService {
 		let cdContext = coreDataContainer.viewContext
 		cdContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
 
-		let sdContext = swiftDataContainer.mainContext
+		let sdContext = ModelContext(swiftDataContainer)
+		sdContext.autosaveEnabled = false
 
 		// ── Phase 1: nodes, users, info (no inter-entity dependencies) ──────
 		let nodeMap   = try migrateNodes(cdContext: cdContext, sdContext: sdContext)
@@ -228,6 +234,7 @@ private extension CoreDataMigrationService {
 // Each function returns a dictionary mapping NSManagedObjectID → SwiftData
 // entity so that relationships can be wired up in later phases.
 
+@LegacyMigrationActor
 private extension CoreDataMigrationService {
 
 	// MARK: NodeInfoEntity

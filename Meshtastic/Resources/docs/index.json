@@ -1181,13 +1181,13 @@
             "connection",
             "continuation",
             "radio",
+            "error",
             "accessorymanager",
             "transport",
             "only",
             "from",
-            "error",
-            "tcp",
             "ble",
+            "tcp",
             "resumes",
             "corebluetooth",
             "while",
@@ -1206,7 +1206,7 @@
             "every",
             "cancelled"
         ],
-        "charCount": 16232
+        "charCount": 16834
     },
     {
         "id": "whats-new",
