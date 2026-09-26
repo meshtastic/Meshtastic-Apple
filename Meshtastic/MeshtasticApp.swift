@@ -218,6 +218,11 @@ struct MeshtasticAppleApp: App {
 				Logger.services.error("💥 [App] Failed to save context when the app goes to the background.")
 			}
 			await MeshPackets.shared.enforceEntityCapsAndSave()
+			// The backfill attributes old rows to the radio the store belongs to, so it must
+			// not run while a switch is swapping the store for another radio's.
+			if !accessoryManager.isSwitchingDevices {
+				await MeshPackets.shared.runMultiRadioMaintenance(ownRadio: Int64(UserDefaults.preferredPeripheralNum))
+			}
 			// Nothing to clear: the next pass takes a new number, which supersedes any
 			// expiry recorded against this one.
 			if taskID != .invalid {

@@ -220,7 +220,7 @@ actor MeshPackets {
 
 	/// Set when this instance has been replaced by `recreateShared()`. A retired instance must
 	/// never persist again — see `recreateShared()`.
-	private var invalidated = false
+	private(set) var invalidated = false
 
 	func invalidate() {
 		invalidated = true
