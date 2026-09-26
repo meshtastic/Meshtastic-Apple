@@ -26,9 +26,12 @@ Read this first if you are picking the work up. Update it in the same commit as 
 - Done: tracking docs; split pull request branches (T005); side-by-side Mac tooling (T003/T004,
   local only). Phase 2 receive path (T010–T012, T019, part of T016) in `5671f9d2`; channel
   identity (T027) in `2a3e3653`; uniqueness spike (T020) in `6c173b7c`, which led to D-16.
-- Next up: Phase 3 schema changes (T023, T024, T025), then Phase 4 ingest scoping.
-- Baseline and latest: the full suite passes in the iOS Simulator (3,283 Swift Testing tests plus
-  29 XCTests, about 3.5 minutes).
+  Phase 3 schema (T023–T025, T028, T029) in `7cf22678` and `3579188b`. Phase 4 ingest
+  (T041–T049) in `10b6cba4`, `35a0936c`, `5ea963bd`; see tasks.md for the partial ones.
+- Next up: Phase 5 (T060 `RadioSessionManager`, T061 BLE per-peripheral continuations), then
+  T066 + T030 together (drop the switch flow, merge old backups).
+- Baseline and latest: the full suite passes in the iOS Simulator (3,317 Swift Testing tests plus
+  29 XCTests, about 45 seconds of test time).
 - Small pull requests, ready for the owner to push (each is one commit on `origin/main`):
   - `fix/restore-dropped-backup-fields` — the restore fix and its tests.
   - `chore/sync-string-catalog` — the string catalog sync.
@@ -109,9 +112,22 @@ describes it well enough to rebuild.
   work, and the feature's changes add at most four lines to each. Splitting them up is part of T060.
 - `MeshtasticSchemaV1` lists the live model types, and that is intended (D-16): every release since
   2.7.13 has changed them additively.
-- `MessageEntity.messageId` is `@Attribute(.unique)`. Code elsewhere relies on the constraint
-  merging a sent message with its mesh echo across contexts (see `MessageEntity.deduplicatedByMessageId`).
-  Keep an equivalent when uniqueness moves to `messageKey`.
+- `MessageEntity.messageId` is no longer unique (`10b6cba4`); `messageKey` ("sender:packetId")
+  is. Both insert paths (ingest, `sendMessage`) set it, so a sent message and its echo still merge.
+  Anything that looks a message up by `messageId` alone (ACKs, `adminResponseAck`, tapback
+  replies) can in rare cases match another sender's message; the lists already dedupe by id
+  before building `Dictionary(uniqueKeysWithValues:)`, which would otherwise trap.
+- SwiftData `fetch` does not see unsaved inserts. The new lookups (`receptions`,
+  `observations(ofNode:)`) also scan `modelContext.insertedModelsArray`, like `findOrCreateNode`.
+- Single-radio behaviour is kept on purpose: with one observation, `updateAnyPacketFrom` writes
+  the node exactly as before and only mirrors into the observation. Aggregation starts with a
+  second observation. Keep it that way; the owner's always-on radio must see no change.
+- The backfill attributes old rows to `UserDefaults.preferredPeripheralNum`, which is the store's
+  owner only while the switch flow exists. When T066 removes switching, run the backfill for
+  each store before it is merged (T030), not after.
+- `SchemaHistoryUpgradeTests.fixtureInventoryCoversEverySwiftDataRelease` sometimes fails with a
+  SQLite disk I/O error reading the bundled fixture's metadata. It predates this work and passes
+  on a re-run.
 - The restore importer copies fields by hand. Every new stored attribute must be added to
   `NodeBackupManager+Import.swift` (`NodeBackupRestoreFieldTests` shows the pattern).
 - A BLE radio serves one phone connection at a time. The released app and the side-by-side

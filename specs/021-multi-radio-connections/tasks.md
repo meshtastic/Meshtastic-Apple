@@ -45,30 +45,30 @@ phases don't change behaviour and keep the app shippable, which makes a rebase o
 - [X] T020 Spike: move message uniqueness to a sender-scoped key — commit `6c173b7c`, verified: `MessageKeyMigrationSpikeTests` (5 cases, incl. the single-step upgrade). Outcome recorded as D-16.
 - [-] T021 Freeze V1. Dropped by D-16: the project changes live models under V1 and proves every release store still opens (`SchemaHistoryUpgradeTests`).
 - [-] T022 `MeshtasticSchemaV1_1` / `V2`. Dropped by D-16.
-- [ ] T023 Add `NodeObservationEntity` and `PacketReceptionEntity` (added to `MeshtasticSchemaV1.models`).
-- [ ] T024 Add the new attributes (plan.md › Schema changes item 5), all optional or defaulted. `MessageEntity.messageId` loses `.unique`; `messageKey: String?` becomes the unique attribute.
-- [ ] T025 Resumable backfill job on `MeshPackets` (plan.md › Schema changes item 7), replacing the planned custom stage.
+- [X] T023 Add `NodeObservationEntity` and `PacketReceptionEntity` (added to `MeshtasticSchemaV1.models`) — commit `7cf22678`, verified: `MultiRadioSchemaTests`, `SchemaHistoryUpgradeTests`.
+- [X] T024 Add the new attributes (plan.md › Schema changes item 5), all optional or defaulted — commit `7cf22678`. `messageKey: String?` is unique; `messageId` lost `.unique` in `10b6cba4`, once every insert set the key.
+- [X] T025 Resumable backfill (`MultiRadioBackfill`, run by `MeshPackets.runMultiRadioMaintenance` in the background maintenance pass, skipped during a device switch) — commit `3579188b`, verified: `MultiRadioBackfillTests`; `SchemaHistoryUpgradeTests` backfills every release store.
 - [-] T026 Lightweight stage V1_1 → V2. Dropped by D-16.
 - [X] T027 `channelKey` derivation (`ChannelIdentity.swift`) plus tests — commit `2a3e3653`, verified: `ChannelIdentityTests` (16 cases).
-- [ ] T028 Update the backup importer (`NodeBackupManager+Import.swift`) for the new entities and attributes.
-- [ ] T029 Migration tests: every fixture in `research/schema-history` opens with the new models, and the backfill fills them correctly.
-- [ ] T030 Backup merge job (D-09): resumable, keyed merge, originals kept. Tests use two synthetic radio backups.
+- [X] T028 Update the backup importer for the new entities and attributes; `NodeRenumber` moves the new node-number columns and keys too — commit `7cf22678`, verified: `MultiRadioSchemaTests`.
+- [X] T029 Migration tests: every release fixture opens with the new models, arrives with empty new columns, and is backfilled and saved — commit `3579188b`.
+- [ ] T030 Backup merge job (D-09): resumable, keyed merge, originals kept. Tests use two synthetic radio backups. **Moved next to T066**: a merge only makes sense once switching stops wiping the store, and it relies on `messageKey` (now in place).
 
 **Checkpoint**: an existing store and its backups upgrade with nothing lost; the app still runs with one radio.
 
 ## Phase 4: Ingest scoping and de-duplication
 
-- [ ] T040 Every `MeshPackets` entry point takes `radioNum`.
-- [ ] T041 Receptions: upsert `(radioNum, from, id)`; run the handler only for new packets.
-- [ ] T042 Observations: upsert per `(radioNum, from)` on every packet and in the node-DB dump; recompute aggregates in one function.
-- [ ] T043 Text messages: set `fromNum`, `toNum`, `localNodeNum`, `channelKey`, `messageKey`; de-duplicate by `messageKey`.
-- [ ] T044 [P] Positions and telemetry: de-duplicate by `(node, packetId)`.
-- [ ] T045 [P] Admin sessions: read and write passkeys on the observation for the relaying radio.
-- [ ] T046 [P] Trace routes: originator is the sending local radio.
-- [ ] T047 "Is this me" checks use the set of local node numbers (`ChannelMessageRow`, `UserMessageRow`, the self-packet drop, `isFromSelf`, beacons).
-- [ ] T048 Notifications: once per `messageKey`; none for broadcasts from the user's own radios.
-- [ ] T049 Reception retention pruning (30 days or 50k rows).
-- [ ] T050 Replay test: two captured radio streams into one store; assert de-duplication, scoping and aggregates.
+- [~] T040 Every `MeshPackets` entry point takes `radioNum`. Done for the ones that need it (receptions, observations, text, telemetry, routing, admin, node info). Left: `upsertPositionPacket`, `waypointPacket`, `paxCounterPacket`, `upsertNodeStatusPacket` (they don't depend on the radio yet).
+- [X] T041 Receptions: upsert `(radioNum, from, id)`; a broadcast another local radio already delivered skips the handlers (repeats from the same radio are handled as before) — commit `10b6cba4`, verified: `MultiRadioIngestTests`.
+- [X] T042 Observations: `updateAnyPacketFrom` and the node-DB dump write the radio's observation; one observation → node written directly as before; several → `NodeObservationEntity.applyAggregate` — commit `10b6cba4`. Follow-up: other paths that write node hops/last-heard directly (`upsertNodeInfoPacket` new-node branch, position/telemetry hop updates, trace-route last-heard) are last-writer-wins until the next aggregate.
+- [X] T043 Text messages (ingest and send): set `fromNum`, `toNum`, `localNodeNum`, `channelKey`, `messageKey`; de-duplicate by `messageKey` (falls back to `messageId` for rows without a key) — commit `10b6cba4`. Follow-up: ACK matching (`routingPacket`, `adminResponseAck`) still looks messages up by `messageId` alone; scope it to the sending radio's key in T060.
+- [X] T044 [P] Positions and telemetry store their `packetId`; cross-radio duplicates are already stopped by T041 — commit `5ea963bd`.
+- [~] T045 [P] Admin sessions: passkeys written on the asking radio's observation — commit `5ea963bd`. Reading them per radio in the send path waits for T060.
+- [X] T046 [P] Trace routes: originator is the session's radio — already true since `5671f9d2` (`handleTraceRouteApp(_:session:)`).
+- [~] T047 "Is this me" checks use the set of local node numbers: `isFromSelf` in text ingest done (`35a0936c`, `MeshPackets.localRadioNums()`). Left: `ChannelMessageRow`, `UserMessageRow` (Phase 6, T086), beacons.
+- [X] T048 Notifications: once per `messageKey`; none for messages from the user's own radios — commit `35a0936c`, verified: `MultiRadioIngestTests`.
+- [X] T049 Reception retention pruning (30 days or 50k rows): background pass (`3579188b`) and the periodic save cap, doubled in the foreground (`10b6cba4`).
+- [-] T050 Replay test through the real dispatch. Moved to T067: it needs two live sessions. The ingest halves are covered by `MultiRadioIngestTests`.
 
 **Checkpoint**: with one radio, results are the same as before; the replay test passes.
 
