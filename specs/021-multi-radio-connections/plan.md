@@ -123,6 +123,31 @@ work as the focused radio's, in the same order as today. T071 then runs other ra
 same steps with the app-wide work skipped, and adds per-radio connection status and teardown on
 retry (Step 0 calls `closeConnection()`, which is the focused radio's).
 
+T071 in commits (each with the full suite passing; the MultiRadio tests that build an
+`AdditionalRadio` by hand, in six files, are rewritten against sessions as each part lands):
+
+- T071a: connection status per radio. `RadioSession` gets its own status (connecting,
+  communicating, retrying, loading the node DB with a count, connected) and its own "can
+  disconnect"; the manager's `state`, `isConnected`, `isConnecting` and `allowDisconnect` show the
+  focused radio's, and discovering/idle when nothing is focused. The connect stepper moves onto
+  `ConnectAttempt`, one per radio being connected, so `disconnect()`, the heartbeat timeout and a
+  link error cancel that radio's attempt.
+- T071b: one set of sessions. The focused radio is a pointer into it. Reconnects, remembered
+  radios, the retired-session list, the Connect tab rows and `send(_:via:)` work on sessions. A
+  link error or disconnect tears down that session; only the focused radio's also runs focus
+  handover and discovery.
+- T071c: an MQTT client proxy per session, one type for every radio (the shared manager and
+  `AdditionalRadioMqttBridge` become one); the MQTT icon shows the focused radio's. Range test
+  and store and forward read the receiving radio's config.
+- T071d: every radio connects through the same steps (`isFocused: false` for the others), with
+  the handshake gate, the bounded automatic connect and remembered radios as now. The app-wide
+  parts of the handlers are the focused radio's (the preferred radio in `handleMyInfo`, the TAK
+  bridge, event firmware notification defaults, the Datadog context); firmware warnings name the
+  radio. Lock-down and old firmware on a radio that isn't focused keep today's handling until
+  T073. `processAdditionalFromRadio`, `requestHandshake`, the additional heartbeat and
+  `AdditionalRadioMqttBridge` are deleted. The characterization tests gain a second radio that
+  must receive the same requests as the first.
+
 Things the code can't settle, left for the device test: CoreBluetooth with four links, lock-down
 firmware's reaction to a replayed status, and whether firmware warnings go to every phone link.
 
