@@ -99,9 +99,10 @@ Read this first if you are picking the work up. Update it in the same commit as 
 
 ## In progress
 
-- T070 (next): split the connect steps into per-radio and once-per-app work. Step 3 of D-17
-  (every radio the same; plan.md › Every radio the same). T069 is done (see tasks.md for what
-  it moved and what waits for T071/T073). T068's `ConnectFlowCharacterizationTests` must keep passing unchanged through T069–T072;
+- T071 (next): every radio runs the same connect steps, and the `AdditionalRadio` flow goes.
+  Step 4 of D-17 (every radio the same; plan.md › Every radio the same). T069 and T070 are done;
+  tasks.md lists what T070 left on the manager for T071 (status, lock-down reset, retry teardown,
+  MQTT, the stepper). T068's `ConnectFlowCharacterizationTests` must keep passing unchanged through T069–T072;
   a test that has to change there means behaviour changed, so say why in the commit.
   When you start a task, mark it `[~]` in tasks.md and note it here.
 

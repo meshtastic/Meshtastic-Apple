@@ -289,8 +289,9 @@ extension AccessoryManager {
 		}
 	}
 	
-	// toConnection parameter can be used during connection process before the AccessoryManager is fully setup
-	public func sendHeartbeat(toConnection: Connection? = nil) async throws {
+	// toConnection parameter can be used during connection process before the AccessoryManager is fully setup.
+	// `session` sends it through that radio (feature 021, T070); nil is the focused radio.
+	public func sendHeartbeat(toConnection: Connection? = nil, on session: RadioSession? = nil) async throws {
 		var heartbeatToRadio: ToRadio = ToRadio()
 		var heartbeatPacket = Heartbeat()
 		
@@ -302,14 +303,19 @@ extension AccessoryManager {
 		heartbeatToRadio.payloadVariant = .heartbeat(heartbeatPacket)
 		if let toConnection {
 			try await toConnection.send(heartbeatToRadio)
+		} else if let session {
+			try await self.send(heartbeatToRadio, via: session)
 		} else {
 			try await self.send(heartbeatToRadio)
 		}
-		await self.heartbeatResponseTimer?.reset(delay: .seconds(5.0))
+		await (session ?? activeConnection)?.heartbeatResponseTimer?.reset(delay: .seconds(5.0))
 	}
 	
-	public func sendTime() async throws {
-		guard let deviceNum = self.activeDeviceNum.map({ UInt32($0) }) else {
+	/// Sets the time on `session`'s radio (the focused one by default). Addressed to the radio
+	/// itself, so the admin routing sends it over that radio's connection.
+	public func sendTime(on session: RadioSession? = nil) async throws {
+		let nodeNum = session == nil ? self.activeDeviceNum : session?.nodeNum
+		guard let deviceNum = nodeNum.map({ UInt32($0) }) else {
 			Logger.mesh.error("🚫 Unable to send time, connected node is disconnected or invalid")
 			return
 		}

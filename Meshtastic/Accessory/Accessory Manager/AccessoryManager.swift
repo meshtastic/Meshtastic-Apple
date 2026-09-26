@@ -490,8 +490,9 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		}
 	}
 
-	func sendWantConfig() async throws {
-		guard let session = activeConnection else {
+	/// Asks `session`'s radio (the focused one by default) for its config and waits for it.
+	func sendWantConfig(on session: RadioSession? = nil) async throws {
+		guard let session = session ?? activeConnection else {
 			Logger.transport.error("Unable to send wantConfig (config): No device connected")
 			return
 		}
@@ -528,7 +529,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			try Task.checkCancellation()
 			var toRadio: ToRadio = ToRadio()
 			toRadio.wantConfigID = UInt32(NONCE_ONLY_CONFIG)
-			try await send(toRadio)
+			try await send(toRadio, via: session)
 			try Task.checkCancellation()
 			try await connection.startDrainPendingPackets()
 			try Task.checkCancellation()
@@ -611,8 +612,9 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		}
 	}
 
-	func sendWantDatabase() async throws {
-		guard let session = activeConnection else {
+	/// Asks `session`'s radio (the focused one by default) for its node DB and waits for the first node.
+	func sendWantDatabase(on session: RadioSession? = nil) async throws {
+		guard let session = session ?? activeConnection else {
 			Logger.transport.error("Unable to send wantConfig (Database): No device connected")
 			return
 		}
@@ -626,7 +628,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		try await withTaskCancellationHandler {
 			var toRadio: ToRadio = ToRadio()
 			toRadio.wantConfigID = UInt32(NONCE_ONLY_DB)
-			try await self.send(toRadio)
+			try await self.send(toRadio, via: session)
 			try await connection.startDrainPendingPackets()
 			try await withCheckedThrowingContinuation { cont in
 				session.firstDatabaseNodeInfoContinuation = cont
@@ -643,8 +645,8 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		}
 	}
 	
-	func waitForWantDatabaseResponse() async throws {
-		guard let session = activeConnection else {
+	func waitForWantDatabaseResponse(on session: RadioSession? = nil) async throws {
+		guard let session = session ?? activeConnection else {
 			throw AccessoryError.disconnected("No device connected")
 		}
 		try await session.wantDatabaseGate.wait()
@@ -1512,8 +1514,9 @@ extension AccessoryManager {
 }
 
 extension AccessoryManager {
-	func setupPeriodicHeartbeat() async {
-		guard let session = activeConnection else { return }
+	/// Starts `session`'s heartbeat (the focused radio's by default), for transports that need one.
+	func setupPeriodicHeartbeat(on session: RadioSession? = nil) async {
+		guard let session = session ?? activeConnection else { return }
 		if session.heartbeatTimer != nil {
 			Logger.transport.debug("💓 [Heartbeat] Cancelling existing heartbeat timer")
 			await session.heartbeatTimer?.cancel(withReason: "Duplicate setup, cancelling previous timer")
@@ -1523,9 +1526,10 @@ extension AccessoryManager {
 		// No debugName: this timer is reset on every received data/log packet, so a per-reset debug
 		// line would flood the log on busy TCP/serial links. The meaningful "heartbeat sent" log
 		// below still fires only when a heartbeat is actually sent (i.e. after an idle interval).
-		session.heartbeatTimer = ResettableTimer(isRepeating: true) {
+		session.heartbeatTimer = ResettableTimer(isRepeating: true) { [weak session] in
 			Logger.transport.debug("💓 [Heartbeat] Sending periodic heartbeat")
-			try? await self.sendHeartbeat()
+			guard let session else { return }
+			try? await self.sendHeartbeat(on: session)
 		}
 		
 		// We can send heartbeats for older versions just fine, but only 2.7.4 and up will respond with
@@ -1534,14 +1538,15 @@ extension AccessoryManager {
 			// No debugName: this timer is cancelled on every received data/log packet, so a per-cancel
 			// debug line would flood the log on busy links. The timeout error below still fires if a
 			// heartbeat truly goes unanswered.
-			session.heartbeatResponseTimer = ResettableTimer(isRepeating: false) { @MainActor in
+			session.heartbeatResponseTimer = ResettableTimer(isRepeating: false) { @MainActor [weak session] in
 				Logger.transport.error("💓 [Heartbeat] Connection Timeout: Did not receive a packet after heartbeat.")
 				// If we're in the middle of a connection cancel it.
 				await self.connectionStepper?.cancel()
 				
-				// Close out the connection
-				if let activeConnection = self.activeConnection {
-					try? await activeConnection.connection.disconnect(withError: AccessoryError.timeout, shouldReconnect: true)
+				// Close out this radio's connection. Its timers stop when it's torn down, so the
+				// session is the one that timed out.
+				if let session {
+					try? await session.connection.disconnect(withError: AccessoryError.timeout, shouldReconnect: true)
 				} else {
 					self.lastConnectionError = AccessoryError.timeout
 					try? await self.closeConnection()
