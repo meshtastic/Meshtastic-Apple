@@ -14,6 +14,8 @@ struct TextMessageField: View {
 	/// (poll-based) message list can reload immediately instead of waiting for
 	/// the next refresh tick.
 	var onMessageSent: (@MainActor () -> Void)?
+	/// The connected radio that sends (feature 021); nil means the focused radio.
+	var viaRadio: Int64?
 
 	@State private var typingMessage: String = ""
 	@State private var totalBytes = 0
@@ -142,8 +144,12 @@ struct TextMessageField: View {
 		}
 	}
 
+	private var viaFocusedRadio: Bool {
+		viaRadio == nil || viaRadio == accessoryManager.activeDeviceNum
+	}
+
 	private func requestPosition() {
-		let userLongName = accessoryManager.activeConnection?.device.longName ?? "Unknown"
+		let userLongName = accessoryManager.connectedSession(forRadio: viaRadio)?.device.longName ?? "Unknown"
 		sendPositionWithMessage = true
 		typingMessage = "📍 " + userLongName + " \(destination.positionShareMessage)."
 	}
@@ -156,13 +162,16 @@ struct TextMessageField: View {
 					toUserNum: destination.userNum,
 					channel: destination.channelNum,
 					isEmoji: false,
-					replyID: replyMessageId)
+					replyID: replyMessageId,
+					viaRadio: viaRadio)
 
 				typingMessage = ""
 				isFocused = false
 				replyMessageId = 0
 
-				if sendPositionWithMessage {
+				// Positions go through the focused radio only, so another radio's message
+				// doesn't carry one (feature 021).
+				if sendPositionWithMessage, viaFocusedRadio {
 					try await accessoryManager.sendPosition(
 						channel: destination.channelNum,
 						destNum: destination.positionDestNum,

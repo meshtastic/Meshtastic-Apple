@@ -14,13 +14,14 @@ import Testing
 
 // MARK: - Test doubles
 
-/// A connection that does nothing and records disconnects.
+/// A connection that records what it sends and how often it's disconnected.
 private actor IdleConnection: Connection {
 	let type: TransportType = .tcp
 	var isConnected = true
 	private(set) var disconnects = 0
+	private(set) var sent: [ToRadio] = []
 
-	func send(_ data: ToRadio) async throws {}
+	func send(_ data: ToRadio) async throws { sent.append(data) }
 	func connect() async throws -> AsyncStream<ConnectionEvent> { AsyncStream { $0.finish() } }
 	func disconnect(withError: Error?, shouldReconnect: Bool) async throws {
 		isConnected = false
@@ -144,6 +145,58 @@ struct MultiRadioConnectLifecycleTests {
 
 		let bad = MeshPackets.RememberedRadio(nodeNum: 0x0D0D, peripheralId: "not-a-uuid", name: "Radio D", transport: .ble)
 		#expect(manager.device(for: bad) == nil)
+	}
+
+	@Test("A message sent via another radio goes out on that radio, as that radio")
+	func sendViaAdditionalRadio() async throws {
+		let focusedNum: Int64 = 0x0A0A, extraNum: Int64 = 0x0B0B, remoteNum: Int64 = 0x1234
+		let schema = Schema(versionedSchema: MeshtasticSchema.current)
+		let container = try ModelContainer(for: schema, configurations: ModelConfiguration("SendVia-\(UUID().uuidString)", schema: schema, isStoredInMemoryOnly: true, allowsSave: true))
+		let context = ModelContext(container)
+		for num in [focusedNum, extraNum, remoteNum] {
+			let user = UserEntity()
+			user.num = num
+			context.insert(user)
+		}
+		try context.save()
+
+		let manager = AccessoryManager(transports: [])
+		manager.isSwitchingDevices = true
+		manager.context = context
+		let focusedConnection = IdleConnection()
+		var focusedDevice = device("Focused")
+		focusedDevice.num = focusedNum
+		manager.activeConnection = RadioSession(device: focusedDevice, connection: focusedConnection)
+		let extraConnection = IdleConnection()
+		var extraDevice = device("Extra")
+		extraDevice.num = extraNum
+		let extra = AdditionalRadio(session: RadioSession(device: extraDevice, connection: extraConnection))
+		manager.additionalRadios[extraDevice.id] = extra
+
+		try await manager.sendMessage(message: "hello", toUserNum: remoteNum, channel: 0, isEmoji: false, replyID: 0, viaRadio: extraNum)
+
+		// The transmit runs in its own task after the save.
+		var waited = 0
+		while await extraConnection.sent.isEmpty, waited < 100 {
+			try await Task.sleep(for: .milliseconds(10))
+			waited += 1
+		}
+		let sent = await extraConnection.sent
+		#expect(sent.count == 1)
+		#expect(sent.first?.packet.from == UInt32(extraNum))
+		#expect(sent.first?.packet.to == UInt32(remoteNum))
+		#expect(await focusedConnection.sent.isEmpty)
+
+		let stored = try context.fetch(FetchDescriptor<MessageEntity>())
+		#expect(stored.count == 1)
+		#expect(stored.first?.localNodeNum == extraNum)
+		#expect(stored.first?.fromNum == extraNum)
+		#expect(stored.first?.messageKey == MessageEntity.key(fromNum: extraNum, messageId: stored.first?.messageId ?? 0))
+
+		// A radio that isn't connected can't send.
+		await #expect(throws: AccessoryError.self) {
+			try await manager.sendMessage(message: "nope", toUserNum: remoteNum, channel: 0, isEmoji: false, replyID: 0, viaRadio: 0x0C0C)
+		}
 	}
 }
 

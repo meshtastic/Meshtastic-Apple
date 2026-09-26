@@ -375,11 +375,14 @@ extension AccessoryManager {
 		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
 	}
 
-	public func sendMessage(message: String, toUserNum: Int64, channel: Int32, isEmoji: Bool, replyID: Int64) async throws {
-		guard let fromUserNum = self.activeConnection?.device.num else {
+	/// Sends a text message. `viaRadio` picks the connected radio that sends it (feature 021);
+	/// nil means the focused radio.
+	public func sendMessage(message: String, toUserNum: Int64, channel: Int32, isEmoji: Bool, replyID: Int64, viaRadio: Int64? = nil) async throws {
+		guard let sendingSession = connectedSession(forRadio: viaRadio), let fromUserNum = sendingSession.nodeNum else {
 			Logger.services.error("Error while sending CannedMessageModule request.  No active device.")
 			throw AccessoryError.ioFailed("No active device")
 		}
+		let viaFocusedRadio = sendingSession === activeConnection
 
 		guard message.count > 0 else {
 			// Don't send an empty message
@@ -447,6 +450,9 @@ extension AccessoryManager {
 						meshPacket.publicKey = newMessage.toUser?.publicKey ?? Data()
 						// Send a contact to the phone every time we send a dm so that any nodes that have rolled out of the db are there and we don't get a PKI Failed error
 						Task { @MainActor in
+							// Both follow-ups below are admin messages to the focused radio. Through
+							// another radio they'd configure the wrong one (feature 021).
+							guard viaFocusedRadio else { return }
 							let am = AccessoryManager.shared
 							if let user = newMessage.toUser {
 								var contact = SharedContact()
@@ -524,10 +530,10 @@ extension AccessoryManager {
 						// message list briefly renders duplicate ForEach ids, which corrupts
 						// the List's collection-view diff (the 2.7.19 SIGABRT batch-update crash).
 						try context.save()
-						Logger.data.info("💾 Saved a new sent message from \(self.activeDeviceNum?.toHex() ?? "0", privacy: .public) to \(toUserNum.toHex(), privacy: .public)")
+						Logger.data.info("💾 Saved a new sent message from \(fromUserNum.toHex(), privacy: .public) to \(toUserNum.toHex(), privacy: .public)")
 						Task {
 							let logString = String.localizedStringWithFormat("Sent message %@ from %@ to %@".localized, String(newMessage.messageId), fromUserNum.toHex(), toUserNum.toHex())
-							try await send(toRadio, debugDescription: logString)
+							try await send(toRadio, via: sendingSession, debugDescription: logString)
 							Logger.mesh.info("💬 \(logString, privacy: .public)")
 						}
 						// Donate outgoing message to SiriKit for CarPlay
@@ -565,8 +571,12 @@ extension AccessoryManager {
 	/// the row shows "Sending…" again: `messageTimestamp` has to move with it, because the status
 	/// is derived from how long ago the message was sent.
 	public func resendMessage(_ message: MessageEntity) async throws {
-		guard let fromUserNum = self.activeConnection?.device.num else {
-			Logger.services.error("Error while resending a message. No active device.")
+		// Feature 021: the same packet id only makes the same message from the same sender, so a
+		// resend goes through the radio that sent it. Rows from before the backfill use the
+		// focused radio, as before.
+		let sendingRadio = message.localNodeNum ?? message.fromNum
+		guard let sendingSession = connectedSession(forRadio: sendingRadio), let fromUserNum = sendingSession.nodeNum else {
+			Logger.services.error("Error while resending a message. The radio that sent it isn't connected.")
 			throw AccessoryError.ioFailed("No active device")
 		}
 		// Not a silent return the way the first send treats an empty draft: there is no draft
@@ -638,7 +648,7 @@ extension AccessoryManager {
 		let logString = String.localizedStringWithFormat(
 			"Resent message %@ from %@ to %@".localized, String(messageId), fromUserNum.toHex(), toUserNum.toHex())
 		do {
-			try await send(toRadio, debugDescription: logString)
+			try await send(toRadio, via: sendingSession, debugDescription: logString)
 		} catch {
 			message.markResendFailed(ackError: previousAckError, timestamp: previousTimestamp)
 			try? context.save()
