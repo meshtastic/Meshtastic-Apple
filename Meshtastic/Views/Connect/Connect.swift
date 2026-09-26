@@ -1278,8 +1278,8 @@ func switchToDevice(
 		}
 	}
 
-	if accessoryManager.additionalRadios[device.id] != nil {
-		await accessoryManager.disconnectAdditionalRadio(device.id)
+	if accessoryManager.additionalRadios[device.id] != nil || accessoryManager.additionalRadioReconnects[device.id] != nil {
+		await accessoryManager.disconnectAdditionalRadio(device.id, byUser: true)
 	}
 	if accessoryManager.allowDisconnect {
 		try? await accessoryManager.disconnect()

@@ -53,7 +53,7 @@ struct AdditionalRadioRow: View {
 				}
 				.disabled(isConnecting)
 				Button(role: .destructive) {
-					Task { await accessoryManager.disconnectAdditionalRadio(device.id) }
+					Task { await accessoryManager.disconnectAdditionalRadio(device.id, byUser: true) }
 				} label: {
 					Label("Disconnect", systemImage: "xmark.circle")
 				}

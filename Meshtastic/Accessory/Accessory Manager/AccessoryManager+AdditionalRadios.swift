@@ -210,6 +210,7 @@ extension AccessoryManager {
 				} catch {
 					Logger.transport.error("🔗➕ [Additional] Heartbeat to \(radio.session.device.name, privacy: .public) failed: \(error.localizedDescription, privacy: .public)")
 					await self.disconnectAdditionalRadio(radio.id)
+					self.scheduleAdditionalRadioReconnect(radio.session.device)
 					return
 				}
 			}
@@ -219,7 +220,11 @@ extension AccessoryManager {
 	// MARK: - Disconnect
 
 	/// Disconnects one additional radio. The focused radio and the others are unaffected.
-	func disconnectAdditionalRadio(_ deviceId: UUID) async {
+	/// `byUser` also stops any automatic reconnect for it.
+	func disconnectAdditionalRadio(_ deviceId: UUID, byUser: Bool = false) async {
+		if byUser {
+			additionalRadioReconnects.removeValue(forKey: deviceId)?.cancel()
+		}
 		guard let radio = additionalRadios.removeValue(forKey: deviceId) else { return }
 		retiredAdditionalSessionIDs.insert(radio.session.id)
 		radio.heartbeatTask?.cancel()
@@ -237,7 +242,38 @@ extension AccessoryManager {
 
 	func disconnectAllAdditionalRadios() async {
 		for deviceId in Array(additionalRadios.keys) {
-			await disconnectAdditionalRadio(deviceId)
+			await disconnectAdditionalRadio(deviceId, byUser: true)
+		}
+	}
+
+	// MARK: - Reconnect (T063)
+
+	/// Keeps trying to reconnect a radio that dropped, until it's back, the user disconnects
+	/// it, or it becomes the focused radio. Over BLE a connect attempt waits until the radio
+	/// is in range again; other transports fail fast, so attempts back off up to a minute.
+	func scheduleAdditionalRadioReconnect(_ device: Device) {
+		guard additionalRadioReconnects[device.id] == nil else { return }
+		Logger.transport.info("🔗🔁 [Additional] Will reconnect \(device.name, privacy: .public) when it's back")
+		additionalRadioReconnects[device.id] = Task { @MainActor [weak self] in
+			var delay: Duration = .seconds(5)
+			defer { self?.additionalRadioReconnects.removeValue(forKey: device.id) }
+			while !Task.isCancelled {
+				try? await Task.sleep(for: delay)
+				guard let self, !Task.isCancelled else { return }
+				if self.isRadioConnected(device.id) { return }
+				// Wait for a focused radio and a free slot rather than taking over as the focused
+				// radio, which is the preferred radio's own reconnect to make.
+				if self.activeConnection != nil, self.canConnectAnotherRadio {
+					do {
+						try await self.connectAdditionalRadio(device)
+						Logger.transport.info("🔗🔁 [Additional] Reconnected \(device.name, privacy: .public)")
+						return
+					} catch {
+						Logger.transport.info("🔗🔁 [Additional] Reconnect to \(device.name, privacy: .public) failed: \(error.localizedDescription, privacy: .public)")
+					}
+				}
+				delay = min(delay * 2, .seconds(60))
+			}
 		}
 	}
 
@@ -252,11 +288,18 @@ extension AccessoryManager {
 			didReceiveLog(message: message)
 		case .rssiUpdate(let rssi):
 			updateDevice(deviceId: radio.id, key: \.rssi, value: rssi)
-		case .error(let error), .errorWithoutReconnect(let error):
+		case .error(let error):
 			Logger.transport.error("🔗➕ [Additional] \(radio.session.device.name, privacy: .public) reported: \(error.localizedDescription, privacy: .public)")
 			await disconnectAdditionalRadio(radio.id)
-		case .disconnected:
+			scheduleAdditionalRadioReconnect(radio.session.device)
+		case .errorWithoutReconnect(let error):
+			Logger.transport.error("🔗➕ [Additional] \(radio.session.device.name, privacy: .public) reported: \(error.localizedDescription, privacy: .public)")
 			await disconnectAdditionalRadio(radio.id)
+		case .disconnected(let shouldReconnect):
+			await disconnectAdditionalRadio(radio.id)
+			if shouldReconnect {
+				scheduleAdditionalRadioReconnect(radio.session.device)
+			}
 		}
 	}
 

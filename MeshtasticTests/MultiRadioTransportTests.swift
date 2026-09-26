@@ -301,6 +301,23 @@ struct MultiRadioSessionTests {
 		#expect(manager.activeConnection === focused)
 	}
 
+	@Test("A dropped additional radio is reconnected; one the user disconnects is not")
+	func reconnectRules() async {
+		let manager = makeManager().manager
+		let (dropped, _) = addRadio(to: manager, num: 1)
+		let (refused, _) = addRadio(to: manager, num: 2)
+		let (closed, _) = addRadio(to: manager, num: 3)
+
+		await manager.didReceive(.error(AccessoryError.disconnected("lost")), from: dropped.session)
+		await manager.didReceive(.errorWithoutReconnect(AccessoryError.bondLost), from: refused.session)
+		await manager.didReceive(.disconnected(shouldReconnect: false), from: closed.session)
+
+		#expect(Set(manager.additionalRadioReconnects.keys) == [dropped.id])
+
+		await manager.disconnectAdditionalRadio(dropped.id, byUser: true)
+		#expect(manager.additionalRadioReconnects.isEmpty)
+	}
+
 	@Test("At most four radios are connected at once")
 	func capOfFour() {
 		let manager = makeManager().manager

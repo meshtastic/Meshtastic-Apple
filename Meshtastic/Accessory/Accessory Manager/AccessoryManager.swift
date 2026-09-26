@@ -275,6 +275,8 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	/// Sessions of additional radios that have been disconnected. Their late events are
 	/// dropped rather than mistaken for the focused radio's.
 	var retiredAdditionalSessionIDs: Set<UUID> = []
+	/// Reconnect loops for additional radios that dropped, by device id (T063).
+	var additionalRadioReconnects: [UUID: Task<Void, Never>] = [:]
 
 	/// Reference to the active discovery scan engine, if any
 	var discoveryScanEngine: DiscoveryScanEngine?
