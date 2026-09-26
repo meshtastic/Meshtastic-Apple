@@ -39,6 +39,8 @@ You can connect up to four radios at once, over Bluetooth, TCP, or serial in any
 
 One connected radio is the **focused** radio. It is the one shown at the top of the Connect tab, and the one that settings and MQTT use. Messages go through the focused radio too, unless you pick another radio with **Via** in a conversation (see [Messages](messages.md)). With **Share Location** on, every connected radio gets your phone's position. The other connected radios keep receiving in the background and are listed under **Also Connected**, with their battery, Bluetooth signal and unread direct messages.
 
+![A radio listed under Also Connected](../assets/screenshots/additionalRadioRow_connected.png)
+
 Radios connect one at a time: while one downloads its settings and node list, another waits its turn, so connecting several at once takes a little longer than one.
 
 ### Adding a Radio

@@ -2774,3 +2774,31 @@ struct CannedMessagesConfigSnapshotTests {
 		await assertViewSnapshot(of: view, width: 390, height: 1500, named: "cannedMessagesConfigForm")
 	}
 }
+
+// MARK: - AdditionalRadioRow Snapshot Tests (feature 021)
+
+@Suite("AdditionalRadioRow Snapshots")
+struct AdditionalRadioRowSnapshotTests {
+
+	@MainActor
+	private func radio(_ state: ConnectionState) -> Device {
+		var device = Device(id: UUID(uuidString: "00000000-0000-0000-0000-00000000021B")!, name: "Meshtastic_b0b0", transportType: .ble, identifier: "00000000-0000-0000-0000-00000000021B")
+		device.num = 0x0B0B_0B0B
+		device.longName = "Hilltop Relay"
+		device.shortName = "HILL"
+		device.rssi = -67
+		device.connectionState = state
+		return device
+	}
+
+	@Test("A radio connected alongside the focused one")
+	@MainActor
+	func connected() async {
+		let view = List {
+			AdditionalRadioRow(device: radio(.connected), isSwitchingRadio: .constant(false))
+		}
+		.environmentObject(AccessoryManager.shared)
+		.modelContainer(sharedModelContainer)
+		await assertViewSnapshot(of: view, width: 390, height: 140, named: "additionalRadioRow_connected", forDocs: true)
+	}
+}
