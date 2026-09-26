@@ -604,6 +604,12 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 
 		Logger.transport.debug("[AccessoryManager] received disconnect request")
 
+		// Here rather than in `disconnect()`: an unexpected link loss, a failed connect and a
+		// retry all tear down through this function without going near `disconnect()`, and
+		// leaving the attributes set would report the old radio's version and model against
+		// whatever happens next.
+		Logger.datadog.clearRadioContext()
+
 		let closingNodeNum = activeConnection?.device.num ?? activeDeviceNum
 
 		if let activeConnection {

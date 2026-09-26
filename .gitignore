@@ -98,3 +98,6 @@ marketing/
 
 # Stray xcodebuild output logs (never commit build logs)
 /build*.log
+
+# SwiftPM build output of the in-repo protoc plugin (scripts/gen_protos.sh, phase 5)
+scripts/protoc-gen-configform-swift/.build/

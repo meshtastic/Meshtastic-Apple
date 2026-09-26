@@ -480,6 +480,17 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 			return Config.LoRaConfig.RegionCode.itu2125Cm
 		}
 	}
+
+	/// The EU band plans cap channel bandwidth below what the Turbo presets use, so they
+	/// are not offered here at all rather than merely warned about.
+	var prohibitsTurboPresets: Bool {
+		switch self {
+		case .eu433, .eu868, .eu866, .eu874, .eu917, .euN868:
+			return true
+		default:
+			return false
+		}
+	}
 }
 
 enum ModemPresets: Int, CaseIterable, Identifiable {
@@ -523,6 +534,17 @@ enum ModemPresets: Int, CaseIterable, Identifiable {
 	var isDeprecated: Bool {
 		switch self {
 		case .longSlow:
+			return true
+		default:
+			return false
+		}
+	}
+
+	/// The Turbo presets use the wider bandwidth the US band plan expects. Every other
+	/// preset is narrower, which is why they are flagged there on 2.8 firmware.
+	var isTurbo: Bool {
+		switch self {
+		case .longTurbo, .shortTurbo, .mediumTurbo:
 			return true
 		default:
 			return false
@@ -817,7 +839,7 @@ enum CodingRates {
 	static func description(for codingRate: Int, modemPreset: ModemPresets?) -> String {
 		if codingRate == 0 {
 			let defaultCodingRate = modemPreset?.defaultCodingRate ?? ModemPresets.longFast.defaultCodingRate
-			return String.localizedStringWithFormat("Preset Default (4/%d)".localized, defaultCodingRate)
+			return String.localizedStringWithFormat(String(localized: "Preset Default (4/%d)", comment: "CodingRates.description"), defaultCodingRate)
 		}
 		return "4/\(codingRate)"
 	}

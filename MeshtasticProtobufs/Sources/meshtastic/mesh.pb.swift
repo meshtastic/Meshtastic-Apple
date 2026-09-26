@@ -639,6 +639,14 @@ public enum HardwareModel: SwiftProtobuf.Enum, Swift.CaseIterable {
   case meshpagerX2 // = 146
 
   ///
+  /// Lilygo T-CONNECT PRO
+  case tConnectPro // = 147
+
+  ///
+  /// Axiometa Axiometa Genesis Mini
+  case axiometaGenesisMini // = 148
+
+  ///
   /// ------------------------------------------------------------------------------------------------------------------------------------------
   /// Reserved ID For developing private Ports. These will show up in live traffic sparsely, so we can use a high number. Keep it within 8 bits.
   /// ------------------------------------------------------------------------------------------------------------------------------------------
@@ -798,6 +806,8 @@ public enum HardwareModel: SwiftProtobuf.Enum, Swift.CaseIterable {
     case 144: self = .seeedWioTrackerL1Pro1W
     case 145: self = .meshnologyW12
     case 146: self = .meshpagerX2
+    case 147: self = .tConnectPro
+    case 148: self = .axiometaGenesisMini
     case 255: self = .privateHw
     default: self = .UNRECOGNIZED(rawValue)
     }
@@ -952,6 +962,8 @@ public enum HardwareModel: SwiftProtobuf.Enum, Swift.CaseIterable {
     case .seeedWioTrackerL1Pro1W: return 144
     case .meshnologyW12: return 145
     case .meshpagerX2: return 146
+    case .tConnectPro: return 147
+    case .axiometaGenesisMini: return 148
     case .privateHw: return 255
     case .UNRECOGNIZED(let i): return i
     }
@@ -1106,6 +1118,8 @@ public enum HardwareModel: SwiftProtobuf.Enum, Swift.CaseIterable {
     .seeedWioTrackerL1Pro1W,
     .meshnologyW12,
     .meshpagerX2,
+    .tConnectPro,
+    .axiometaGenesisMini,
     .privateHw,
   ]
 
@@ -1459,6 +1473,22 @@ public enum ExcludedModules: SwiftProtobuf.Enum, Swift.CaseIterable {
   ///
   /// Network config (not technically a module, but used to indicate network capabilities)
   case networkConfig // = 16384
+
+  ///
+  /// Status Message module
+  case statusmessageConfig // = 32768
+
+  ///
+  /// Traffic Management module
+  case trafficmanagementConfig // = 65536
+
+  ///
+  /// TAK module
+  case takConfig // = 131072
+
+  ///
+  /// Mesh Beacon module
+  case meshbeaconConfig // = 262144
   case UNRECOGNIZED(Int)
 
   public init() {
@@ -1483,6 +1513,10 @@ public enum ExcludedModules: SwiftProtobuf.Enum, Swift.CaseIterable {
     case 4096: self = .paxcounterConfig
     case 8192: self = .bluetoothConfig
     case 16384: self = .networkConfig
+    case 32768: self = .statusmessageConfig
+    case 65536: self = .trafficmanagementConfig
+    case 131072: self = .takConfig
+    case 262144: self = .meshbeaconConfig
     default: self = .UNRECOGNIZED(rawValue)
     }
   }
@@ -1505,6 +1539,10 @@ public enum ExcludedModules: SwiftProtobuf.Enum, Swift.CaseIterable {
     case .paxcounterConfig: return 4096
     case .bluetoothConfig: return 8192
     case .networkConfig: return 16384
+    case .statusmessageConfig: return 32768
+    case .trafficmanagementConfig: return 65536
+    case .takConfig: return 131072
+    case .meshbeaconConfig: return 262144
     case .UNRECOGNIZED(let i): return i
     }
   }
@@ -1527,6 +1565,10 @@ public enum ExcludedModules: SwiftProtobuf.Enum, Swift.CaseIterable {
     .paxcounterConfig,
     .bluetoothConfig,
     .networkConfig,
+    .statusmessageConfig,
+    .trafficmanagementConfig,
+    .takConfig,
+    .meshbeaconConfig,
   ]
 
 }
@@ -2033,6 +2075,33 @@ public struct Routing: Sendable {
     }
     set {variant = .errorReason(newValue)}
   }
+
+  ///
+  /// Optional proof that this ack/nak was produced by the node that actually received the packet
+  /// identified by Data.request_id, rather than by anyone holding the channel key.
+  ///
+  /// Explicit acks are usually sent on the channel, and channel traffic is encrypted but not
+  /// authenticated, so such an ack can be forged by any listener holding the PSK. When the
+  /// acknowledged packet WAS PKI encrypted, the two endpoints already share a Curve25519 secret, so
+  /// the receiver can prove receipt cheaply rather than signing the ack:
+  ///
+  ///   ack_proof = HMAC-SHA256(shared_key,
+  ///                           "ack" | LE32(from) | LE32(to) | LE32(request_id) | routing)[0..8)
+  ///
+  /// where shared_key is the same SHA256(X25519(sender_private, receiver_public)) used for PKI
+  /// packet encryption, and `routing` is this encoded Routing message without the ack_proof field.
+  ///
+  /// Each input is load-bearing. request_id stops a captured proof being replayed against a
+  /// different outstanding packet. The Routing bytes stop a bit-flip turning a proven success into a
+  /// failure: an ack and a nak for one packet otherwise share every other input, and channel
+  /// encryption is CTR with no integrity check. Integers are little-endian so the value is a
+  /// property of the protocol rather than of the host that computed it.
+  ///
+  /// Unset when no pairwise key is available, including the PKI_UNKNOWN_PUBKEY and NO_CHANNEL naks,
+  /// which are emitted precisely because the packet could not be decrypted. Receivers that do not
+  /// understand this field ignore it. It does not replace xeddsa_signature, which remains the only
+  /// option for traffic with no pairwise key and the only proof a third party can check.
+  public var ackProof: Data = Data()
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -3428,14 +3497,20 @@ public struct NodeInfo: @unchecked Sendable {
   }
 
   ///
-  /// True if we have heard this node over RF since our current LoRa
-  /// configuration took effect. Cleared for every node whenever the region,
-  /// modem preset (or the custom bandwidth/spread factor/coding rate when
-  /// use_preset is false), override_frequency, channel_num or the primary
-  /// channel name changes - the frequency slot is derived from that name.
-  /// Not set for nodes heard over MQTT, which reach us over the internet
-  /// rather than over our own radio - see via_mqtt.
-  /// LSB 11 of the bitfield
+  /// True if we have heard this node over RF on the LoRa configuration the
+  /// radio is using right now. Derived on the device rather than stored: each
+  /// node records the frequency slot it was last heard on, and this reports
+  /// whether that slot matches the one the radio is currently committed to.
+  /// The slot covers the region, modem preset (or the custom bandwidth/spread
+  /// factor/coding rate when use_preset is false), override_frequency,
+  /// channel_num and the primary channel name.
+  /// Because it is derived, leaving a configuration and returning to it
+  /// restores the previous answers, so a client sweeping through presets to
+  /// listen for traffic does not disturb them.
+  /// Not set for nodes heard only over MQTT, which reach us over the internet
+  /// rather than over our own radio - see via_mqtt - nor for nodes added as a
+  /// shared contact, which have never been heard over RF at all.
+  /// Derived from LSB 11 and bits 12..23 of NodeInfoLite.bitfield.
   public var heardOnCurrentLora: Bool {
     get {_storage._heardOnCurrentLora}
     set {_uniqueStorage()._heardOnCurrentLora = newValue}
@@ -3936,15 +4011,15 @@ public struct LockdownStatus: Sendable {
 
   ///
   /// For LOCKED: machine-readable reason. Known values:
-  ///   "needs_auth"        — storage already unlocked, client must auth
-  ///   "token_missing"     — no boot token on flash
-  ///   "token_expired"     — boot token wall-clock TTL elapsed
-  ///   "token_boots_zero"  — boot token boot-count TTL exhausted
-  ///   "token_hmac_fail"   — token tampered or wrong device
-  ///   "token_dek_fail"    — token DEK decrypt failed
-  ///   "token_wrong_size"  — token file corrupted
-  ///   "token_bad_magic"   — token file corrupted
-  ///   "not_provisioned"   — should generally use NEEDS_PROVISION state instead
+  ///   "needs_auth"        - storage already unlocked, client must auth
+  ///   "token_missing"     - no boot token on flash
+  ///   "token_expired"     - boot token wall-clock TTL elapsed
+  ///   "token_boots_zero"  - boot token boot-count TTL exhausted
+  ///   "token_hmac_fail"   - token tampered or wrong device
+  ///   "token_dek_fail"    - token DEK decrypt failed
+  ///   "token_wrong_size"  - token file corrupted
+  ///   "token_bad_magic"   - token file corrupted
+  ///   "not_provisioned"   - should generally use NEEDS_PROVISION state instead
   /// Other values may be added; clients should treat unknown values as
   /// "locked, ask for passphrase".
   public var lockReason: String = String()
@@ -4720,7 +4795,7 @@ public struct ChunkedPayloadResponse: Sendable {
 fileprivate let _protobuf_package = "meshtastic"
 
 extension HardwareModel: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0UNSET\0\u{1}TLORA_V2\0\u{1}TLORA_V1\0\u{1}TLORA_V2_1_1P6\0\u{1}TBEAM\0\u{1}HELTEC_V2_0\0\u{1}TBEAM_V0P7\0\u{1}T_ECHO\0\u{1}TLORA_V1_1P3\0\u{1}RAK4631\0\u{1}HELTEC_V2_1\0\u{1}HELTEC_V1\0\u{1}LILYGO_TBEAM_S3_CORE\0\u{1}RAK11200\0\u{1}NANO_G1\0\u{1}TLORA_V2_1_1P8\0\u{1}TLORA_T3_S3\0\u{1}NANO_G1_EXPLORER\0\u{1}NANO_G2_ULTRA\0\u{1}LORA_TYPE\0\u{1}WIPHONE\0\u{1}WIO_WM1110\0\u{1}RAK2560\0\u{1}HELTEC_HRU_3601\0\u{1}HELTEC_WIRELESS_BRIDGE\0\u{1}STATION_G1\0\u{1}RAK11310\0\u{1}MAKERFABS_TRACKER\0\u{1}MAKERFABS_RESERVED\0\u{1}CANARYONE\0\u{1}RP2040_LORA\0\u{1}STATION_G2\0\u{1}LORA_RELAY_V1\0\u{1}T_ECHO_PLUS\0\u{1}PPR\0\u{1}GENIEBLOCKS\0\u{1}NRF52_UNKNOWN\0\u{1}PORTDUINO\0\u{1}ANDROID_SIM\0\u{1}DIY_V1\0\u{1}NRF52840_PCA10059\0\u{1}DR_DEV\0\u{1}M5STACK\0\u{1}HELTEC_V3\0\u{1}HELTEC_WSL_V3\0\u{1}BETAFPV_2400_TX\0\u{1}BETAFPV_900_NANO_TX\0\u{1}RPI_PICO\0\u{1}HELTEC_WIRELESS_TRACKER\0\u{1}HELTEC_WIRELESS_PAPER\0\u{1}T_DECK\0\u{1}T_WATCH_S3\0\u{1}PICOMPUTER_S3\0\u{1}HELTEC_HT62\0\u{1}EBYTE_ESP32_S3\0\u{1}ESP32_S3_PICO\0\u{1}CHATTER_2\0\u{1}HELTEC_WIRELESS_PAPER_V1_0\0\u{1}HELTEC_WIRELESS_TRACKER_V1_0\0\u{1}UNPHONE\0\u{1}TD_LORAC\0\u{1}CDEBYTE_EORA_S3\0\u{1}TWC_MESH_V4\0\u{1}NRF52_PROMICRO_DIY\0\u{1}RADIOMASTER_900_BANDIT_NANO\0\u{1}HELTEC_CAPSULE_SENSOR_V3\0\u{1}HELTEC_VISION_MASTER_T190\0\u{1}HELTEC_VISION_MASTER_E213\0\u{1}HELTEC_VISION_MASTER_E290\0\u{1}HELTEC_MESH_NODE_T114\0\u{1}SENSECAP_INDICATOR\0\u{1}TRACKER_T1000_E\0\u{1}RAK3172\0\u{1}WIO_E5\0\u{1}RADIOMASTER_900_BANDIT\0\u{1}ME25LS01_4Y10TD\0\u{1}RP2040_FEATHER_RFM95\0\u{1}M5STACK_COREBASIC\0\u{1}M5STACK_CORE2\0\u{1}RPI_PICO2\0\u{1}M5STACK_CORES3\0\u{1}SEEED_XIAO_S3\0\u{1}MS24SF1\0\u{1}TLORA_C6\0\u{1}WISMESH_TAP\0\u{1}ROUTASTIC\0\u{1}MESH_TAB\0\u{1}MESHLINK\0\u{1}XIAO_NRF52_KIT\0\u{1}THINKNODE_M1\0\u{1}THINKNODE_M2\0\u{1}T_ETH_ELITE\0\u{1}HELTEC_SENSOR_HUB\0\u{1}MUZI_BASE\0\u{1}HELTEC_MESH_POCKET\0\u{1}SEEED_SOLAR_NODE\0\u{1}NOMADSTAR_METEOR_PRO\0\u{1}CROWPANEL\0\u{1}LINK_32\0\u{1}SEEED_WIO_TRACKER_L1\0\u{1}SEEED_WIO_TRACKER_L1_EINK\0\u{1}MUZI_R1_NEO\0\u{1}T_DECK_PRO\0\u{1}T_LORA_PAGER\0\u{1}M5STACK_RESERVED\0\u{1}WISMESH_TAG\0\u{1}RAK3312\0\u{1}THINKNODE_M5\0\u{1}HELTEC_MESH_SOLAR\0\u{1}T_ECHO_LITE\0\u{1}HELTEC_V4\0\u{1}M5STACK_C6L\0\u{1}M5STACK_CARDPUTER_ADV\0\u{1}HELTEC_WIRELESS_TRACKER_V2\0\u{1}T_WATCH_ULTRA\0\u{1}THINKNODE_M3\0\u{1}WISMESH_TAP_V2\0\u{1}RAK3401\0\u{1}RAK6421\0\u{1}THINKNODE_M4\0\u{1}THINKNODE_M6\0\u{1}MESHSTICK_1262\0\u{1}TBEAM_1_WATT\0\u{1}T5_S3_EPAPER_PRO\0\u{1}TBEAM_BPF\0\u{1}MINI_EPAPER_S3\0\u{1}TDISPLAY_S3_PRO\0\u{1}HELTEC_MESH_NODE_T096\0\u{1}MESH_TRACKER_X1\0\u{1}THINKNODE_M7\0\u{1}THINKNODE_M8\0\u{1}THINKNODE_M9\0\u{1}HELTEC_V4_R8\0\u{1}HELTEC_MESH_NODE_T1\0\u{1}STATION_G3\0\u{1}T_IMPULSE_PLUS\0\u{1}T_ECHO_CARD\0\u{1}SEEED_WIO_TRACKER_L2\0\u{1}CROWPANEL_P4\0\u{1}HELTEC_MESH_TOWER_V2\0\u{1}MESHNOLOGY_W10\0\u{1}HELTEC_RC32\0\u{1}HELTEC_RC52\0\u{1}HELTEC_RCC6\0\u{1}SEEED_WIO_TRACKER_L1_PRO_1W\0\u{1}MESHNOLOGY_W12\0\u{1}MESHPAGER_X2\0\u{2}m\u{1}PRIVATE_HW\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0UNSET\0\u{1}TLORA_V2\0\u{1}TLORA_V1\0\u{1}TLORA_V2_1_1P6\0\u{1}TBEAM\0\u{1}HELTEC_V2_0\0\u{1}TBEAM_V0P7\0\u{1}T_ECHO\0\u{1}TLORA_V1_1P3\0\u{1}RAK4631\0\u{1}HELTEC_V2_1\0\u{1}HELTEC_V1\0\u{1}LILYGO_TBEAM_S3_CORE\0\u{1}RAK11200\0\u{1}NANO_G1\0\u{1}TLORA_V2_1_1P8\0\u{1}TLORA_T3_S3\0\u{1}NANO_G1_EXPLORER\0\u{1}NANO_G2_ULTRA\0\u{1}LORA_TYPE\0\u{1}WIPHONE\0\u{1}WIO_WM1110\0\u{1}RAK2560\0\u{1}HELTEC_HRU_3601\0\u{1}HELTEC_WIRELESS_BRIDGE\0\u{1}STATION_G1\0\u{1}RAK11310\0\u{1}MAKERFABS_TRACKER\0\u{1}MAKERFABS_RESERVED\0\u{1}CANARYONE\0\u{1}RP2040_LORA\0\u{1}STATION_G2\0\u{1}LORA_RELAY_V1\0\u{1}T_ECHO_PLUS\0\u{1}PPR\0\u{1}GENIEBLOCKS\0\u{1}NRF52_UNKNOWN\0\u{1}PORTDUINO\0\u{1}ANDROID_SIM\0\u{1}DIY_V1\0\u{1}NRF52840_PCA10059\0\u{1}DR_DEV\0\u{1}M5STACK\0\u{1}HELTEC_V3\0\u{1}HELTEC_WSL_V3\0\u{1}BETAFPV_2400_TX\0\u{1}BETAFPV_900_NANO_TX\0\u{1}RPI_PICO\0\u{1}HELTEC_WIRELESS_TRACKER\0\u{1}HELTEC_WIRELESS_PAPER\0\u{1}T_DECK\0\u{1}T_WATCH_S3\0\u{1}PICOMPUTER_S3\0\u{1}HELTEC_HT62\0\u{1}EBYTE_ESP32_S3\0\u{1}ESP32_S3_PICO\0\u{1}CHATTER_2\0\u{1}HELTEC_WIRELESS_PAPER_V1_0\0\u{1}HELTEC_WIRELESS_TRACKER_V1_0\0\u{1}UNPHONE\0\u{1}TD_LORAC\0\u{1}CDEBYTE_EORA_S3\0\u{1}TWC_MESH_V4\0\u{1}NRF52_PROMICRO_DIY\0\u{1}RADIOMASTER_900_BANDIT_NANO\0\u{1}HELTEC_CAPSULE_SENSOR_V3\0\u{1}HELTEC_VISION_MASTER_T190\0\u{1}HELTEC_VISION_MASTER_E213\0\u{1}HELTEC_VISION_MASTER_E290\0\u{1}HELTEC_MESH_NODE_T114\0\u{1}SENSECAP_INDICATOR\0\u{1}TRACKER_T1000_E\0\u{1}RAK3172\0\u{1}WIO_E5\0\u{1}RADIOMASTER_900_BANDIT\0\u{1}ME25LS01_4Y10TD\0\u{1}RP2040_FEATHER_RFM95\0\u{1}M5STACK_COREBASIC\0\u{1}M5STACK_CORE2\0\u{1}RPI_PICO2\0\u{1}M5STACK_CORES3\0\u{1}SEEED_XIAO_S3\0\u{1}MS24SF1\0\u{1}TLORA_C6\0\u{1}WISMESH_TAP\0\u{1}ROUTASTIC\0\u{1}MESH_TAB\0\u{1}MESHLINK\0\u{1}XIAO_NRF52_KIT\0\u{1}THINKNODE_M1\0\u{1}THINKNODE_M2\0\u{1}T_ETH_ELITE\0\u{1}HELTEC_SENSOR_HUB\0\u{1}MUZI_BASE\0\u{1}HELTEC_MESH_POCKET\0\u{1}SEEED_SOLAR_NODE\0\u{1}NOMADSTAR_METEOR_PRO\0\u{1}CROWPANEL\0\u{1}LINK_32\0\u{1}SEEED_WIO_TRACKER_L1\0\u{1}SEEED_WIO_TRACKER_L1_EINK\0\u{1}MUZI_R1_NEO\0\u{1}T_DECK_PRO\0\u{1}T_LORA_PAGER\0\u{1}M5STACK_RESERVED\0\u{1}WISMESH_TAG\0\u{1}RAK3312\0\u{1}THINKNODE_M5\0\u{1}HELTEC_MESH_SOLAR\0\u{1}T_ECHO_LITE\0\u{1}HELTEC_V4\0\u{1}M5STACK_C6L\0\u{1}M5STACK_CARDPUTER_ADV\0\u{1}HELTEC_WIRELESS_TRACKER_V2\0\u{1}T_WATCH_ULTRA\0\u{1}THINKNODE_M3\0\u{1}WISMESH_TAP_V2\0\u{1}RAK3401\0\u{1}RAK6421\0\u{1}THINKNODE_M4\0\u{1}THINKNODE_M6\0\u{1}MESHSTICK_1262\0\u{1}TBEAM_1_WATT\0\u{1}T5_S3_EPAPER_PRO\0\u{1}TBEAM_BPF\0\u{1}MINI_EPAPER_S3\0\u{1}TDISPLAY_S3_PRO\0\u{1}HELTEC_MESH_NODE_T096\0\u{1}MESH_TRACKER_X1\0\u{1}THINKNODE_M7\0\u{1}THINKNODE_M8\0\u{1}THINKNODE_M9\0\u{1}HELTEC_V4_R8\0\u{1}HELTEC_MESH_NODE_T1\0\u{1}STATION_G3\0\u{1}T_IMPULSE_PLUS\0\u{1}T_ECHO_CARD\0\u{1}SEEED_WIO_TRACKER_L2\0\u{1}CROWPANEL_P4\0\u{1}HELTEC_MESH_TOWER_V2\0\u{1}MESHNOLOGY_W10\0\u{1}HELTEC_RC32\0\u{1}HELTEC_RC52\0\u{1}HELTEC_RCC6\0\u{1}SEEED_WIO_TRACKER_L1_PRO_1W\0\u{1}MESHNOLOGY_W12\0\u{1}MESHPAGER_X2\0\u{1}T_CONNECT_PRO\0\u{1}AXIOMETA_GENESIS_MINI\0\u{2}k\u{1}PRIVATE_HW\0")
 }
 
 extension Constants: SwiftProtobuf._ProtoNameProviding {
@@ -4736,7 +4811,7 @@ extension FirmwareEdition: SwiftProtobuf._ProtoNameProviding {
 }
 
 extension ExcludedModules: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0EXCLUDED_NONE\0\u{1}MQTT_CONFIG\0\u{1}SERIAL_CONFIG\0\u{2}\u{2}EXTNOTIF_CONFIG\0\u{2}\u{4}STOREFORWARD_CONFIG\0\u{2}\u{8}RANGETEST_CONFIG\0\u{2}\u{10}TELEMETRY_CONFIG\0\u{2} CANNEDMSG_CONFIG\0\u{2}@\u{1}AUDIO_CONFIG\0\u{2}@\u{2}REMOTEHARDWARE_CONFIG\0\u{2}@\u{4}NEIGHBORINFO_CONFIG\0\u{2}@\u{8}AMBIENTLIGHTING_CONFIG\0\u{2}@\u{10}DETECTIONSENSOR_CONFIG\0\u{2}@ PAXCOUNTER_CONFIG\0\u{2}@@\u{1}BLUETOOTH_CONFIG\0\u{2}@@\u{2}NETWORK_CONFIG\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0EXCLUDED_NONE\0\u{1}MQTT_CONFIG\0\u{1}SERIAL_CONFIG\0\u{2}\u{2}EXTNOTIF_CONFIG\0\u{2}\u{4}STOREFORWARD_CONFIG\0\u{2}\u{8}RANGETEST_CONFIG\0\u{2}\u{10}TELEMETRY_CONFIG\0\u{2} CANNEDMSG_CONFIG\0\u{2}@\u{1}AUDIO_CONFIG\0\u{2}@\u{2}REMOTEHARDWARE_CONFIG\0\u{2}@\u{4}NEIGHBORINFO_CONFIG\0\u{2}@\u{8}AMBIENTLIGHTING_CONFIG\0\u{2}@\u{10}DETECTIONSENSOR_CONFIG\0\u{2}@ PAXCOUNTER_CONFIG\0\u{2}@@\u{1}BLUETOOTH_CONFIG\0\u{2}@@\u{2}NETWORK_CONFIG\0\u{2}@@\u{4}STATUSMESSAGE_CONFIG\0\u{2}@@\u{8}TRAFFICMANAGEMENT_CONFIG\0\u{2}@@\u{10}TAK_CONFIG\0\u{2}@@ MESHBEACON_CONFIG\0")
 }
 
 extension Position: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
@@ -5092,7 +5167,7 @@ extension RouteDiscovery: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
 
 extension Routing: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".Routing"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}route_request\0\u{3}route_reply\0\u{3}error_reason\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}route_request\0\u{3}route_reply\0\u{3}error_reason\0\u{3}ack_proof\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -5134,6 +5209,7 @@ extension Routing: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
           self.variant = .errorReason(v)
         }
       }()
+      case 4: try { try decoder.decodeSingularBytesField(value: &self.ackProof) }()
       default: break
       }
     }
@@ -5159,11 +5235,15 @@ extension Routing: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
     }()
     case nil: break
     }
+    if !self.ackProof.isEmpty {
+      try visitor.visitSingularBytesField(value: self.ackProof, fieldNumber: 4)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: Routing, rhs: Routing) -> Bool {
     if lhs.variant != rhs.variant {return false}
+    if lhs.ackProof != rhs.ackProof {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

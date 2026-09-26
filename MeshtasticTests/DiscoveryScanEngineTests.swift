@@ -209,6 +209,7 @@ struct DiscoveryScanEngineLoRaConfigTests {
 		entity.frequencyOffset = 1.5
 		entity.overrideFrequency = 915.0
 		entity.overrideDutyCycle = true
+		entity.paFanDisabled = true
 		entity.sx126xRxBoostedGain = true
 		entity.ignoreMqtt = true
 		entity.okToMqtt = true
@@ -236,6 +237,7 @@ struct DiscoveryScanEngineLoRaConfigTests {
 		#expect(config.frequencyOffset == 1.5)
 		#expect(config.overrideFrequency == 915.0)
 		#expect(config.overrideDutyCycle)
+		#expect(config.paFanDisabled)
 		#expect(config.sx126XRxBoostedGain)
 		#expect(config.ignoreMqtt)
 		#expect(config.configOkToMqtt)

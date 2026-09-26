@@ -1171,6 +1171,119 @@ struct EntityCapEvictionTests {
 		#expect(remaining == [1, 4])
 	}
 
+	@Test func nodeEviction_respectsAChunkLimit() async throws {
+		let (mesh, container) = try freshMesh()
+		let context = ModelContext(container)
+		let base = Date(timeIntervalSince1970: 1_700_000_000)
+		for num in 1...20 {
+			let node = NodeInfoEntity()
+			node.num = Int64(num)
+			node.id = Int64(num)
+			node.lastHeard = base.addingTimeInterval(TimeInterval(num))
+			node.favorite = false
+			context.insert(node)
+		}
+		try context.save()
+
+		func remaining() throws -> [Int64] {
+			try ModelContext(container).fetch(FetchDescriptor<NodeInfoEntity>()).map(\.num).sorted()
+		}
+
+		// 20 nodes, cap 5, so 15 are over. A limited pass takes only its chunk, and it must
+		// take the stalest four — a chunk that deleted any four would keep the count right
+		// while evicting the wrong nodes.
+		let firstPass = await mesh.evictNodesIfOverCap(5, limit: 4)
+		#expect(firstPass == 4)
+		await mesh.flushDebouncedSaves()
+		#expect(try remaining() == Array(5...20), "the four least-recently-heard, not any four")
+
+		// Unlimited finishes the rest in one pass, as the in-line save hook wants.
+		let rest = await mesh.evictNodesIfOverCap(5)
+		#expect(rest == 11)
+		await mesh.flushDebouncedSaves()
+		#expect(try remaining() == Array(16...20), "the five most-recently-heard survive")
+
+		// Nothing over cap reports nothing done, which is how the chunk loop terminates.
+		let none = await mesh.evictNodesIfOverCap(5, limit: 4)
+		#expect(none == 0)
+	}
+
+	/// 30 nodes against a cap of 5 in chunks of 10, so the pass really is over cap and
+	/// really does take several chunks. Against the production cap of 10,000 nothing would
+	/// be evicted and both tests below would pass with the expiry check deleted.
+	private func seedThirtyNodes(_ container: ModelContainer) throws {
+		let context = ModelContext(container)
+		let base = Date(timeIntervalSince1970: 1_700_000_000)
+		for num in 1...30 {
+			let node = NodeInfoEntity()
+			node.num = Int64(num)
+			node.id = Int64(num)
+			node.lastHeard = base.addingTimeInterval(TimeInterval(num))
+			node.favorite = false
+			context.insert(node)
+		}
+		try context.save()
+	}
+
+	@Test func backgroundEviction_evictsToCapWhenTimeAllows() async throws {
+		let (mesh, container) = try freshMesh()
+		try seedThirtyNodes(container)
+
+		let wasActive = MeshPackets.appIsActive
+		MeshPackets.appIsActive = false
+		MeshPackets.beginMaintenance()
+		defer { MeshPackets.appIsActive = wasActive }
+
+		await mesh.enforceEntityCapsAndSave(nodeCap: 5, waypointCap: 5, chunkSize: 10)
+		await mesh.flushDebouncedSaves()
+
+		let remaining = try ModelContext(container)
+			.fetch(FetchDescriptor<NodeInfoEntity>()).map(\.num).sorted()
+		#expect(remaining == Array(26...30), "chunks run to the cap, keeping the newest")
+	}
+
+	@Test func backgroundEviction_stopsWhenBackgroundTimeExpires() async throws {
+		let (mesh, container) = try freshMesh()
+		try seedThirtyNodes(container)
+
+		let wasActive = MeshPackets.appIsActive
+		MeshPackets.appIsActive = false
+		// Stand in for the expiration handler having already fired: the pass must not
+		// start, rather than running to completion and being killed for it. Same caps as
+		// the test above, which evicts 25 — so this fails if the check is removed.
+		let generation = MeshPackets.beginMaintenance()
+		MeshPackets.expireMaintenance(generation)
+		defer {
+			MeshPackets.beginMaintenance()
+			MeshPackets.appIsActive = wasActive
+		}
+
+		await mesh.enforceEntityCapsAndSave(nodeCap: 5, waypointCap: 5, chunkSize: 10)
+		await mesh.flushDebouncedSaves()
+
+		let count = try ModelContext(container).fetchCount(FetchDescriptor<NodeInfoEntity>())
+		#expect(count == 30, "expired background time stops the eviction")
+	}
+
+	@Test func aStaleMaintenancePassCannotExpireTheCurrentOne() {
+		// Background, foreground, background again: two passes in flight. The first one's
+		// handler firing late must not stop the second, and the second must still be able
+		// to expire itself.
+		let first = MeshPackets.beginMaintenance()
+		let second = MeshPackets.beginMaintenance()
+		#expect(second != first)
+
+		MeshPackets.expireMaintenance(first)
+		#expect(!MeshPackets.backgroundTimeExpired, "a stale pass expiring is ignored")
+
+		MeshPackets.expireMaintenance(second)
+		#expect(MeshPackets.backgroundTimeExpired)
+
+		// Starting the next pass supersedes it, with nothing to clear.
+		MeshPackets.beginMaintenance()
+		#expect(!MeshPackets.backgroundTimeExpired)
+	}
+
 	@Test func waypoints_evictOldestLastUpdated() async throws {
 		let (mesh, container) = try freshMesh()
 		let context = ModelContext(container)

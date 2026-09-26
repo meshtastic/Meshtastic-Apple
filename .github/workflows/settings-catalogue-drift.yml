@@ -1,0 +1,33 @@
+name: settings-catalogue-drift
+
+# The app-level half of the settings search index is generated from the settings
+# views by scripts/generate-settings-catalogue.py, the same way docs/index.json is
+# generated from the documentation pages. Generating it is only worth anything if
+# something notices when it was not regenerated: a control added without a rerun is
+# simply unsearchable, and nothing else fails.
+#
+# The unit tests cannot do this — they run in the iOS simulator and cannot spawn the
+# generator — so it lives here, alongside the xcodegen drift check it is modelled on.
+
+on:
+  pull_request:
+    paths:
+      - "Meshtastic/Views/Settings/**"
+      # Listed in the generator's SCREENS but not under Settings/.
+      - "Meshtastic/Views/Debugging/CoreDataBrowser.swift"
+      - "Meshtastic/Model/Search/SettingsSearchCatalogue.swift"
+      - "scripts/generate-settings-catalogue.py"
+      - ".github/workflows/settings-catalogue-drift.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  catalogue-drift:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Fail on a stale catalogue
+        run: python3 scripts/generate-settings-catalogue.py --check
