@@ -32,14 +32,19 @@ Read this first if you are picking the work up. Update it in the same commit as 
   `40605d38`; reconnect after a drop in `adfaad63`. Handshake gate (T064), remembered radios
   (rest of T063), bounded automatic connects and per-radio ACK matching in `5754e69b`. Per-radio
   direct messages with a "Via" picker, and sending/resending through a chosen radio (T085, send
-  half of T084) in `2f5dcf6a`. See tasks.md for the partial ones.
-- Mesh Multi (`~/Applications/Mesh Multi.app`, side-by-side, own container) was rebuilt from
-  `2f5dcf6a` and is ready for the first two-radio test below. Not yet run by anyone.
-- Next up: the owner's two-radio test; then the channel side of T083/T084 (channels grouped by
-  `channelKey`, "via" for channel messages), BLE restoration (T062), per-session firmware
-  gate/lockdown (T065). T030 (merge old backups) before release.
-- Baseline and latest: the full suite passes in the iOS Simulator (3,337 Swift Testing tests plus
-  29 XCTests, about 35–45 seconds of test time).
+  half of T084) in `2f5dcf6a`. Channels as one timeline across radios by `channelKey`, with a
+  "Via" picker that sends in each radio's own slot (T083, T084) in `df9649f9`. Battery, signal
+  and unread on connected-radio rows, and "via B" on your channel messages (T081, T086) in
+  `d08fde38`. Node detail "Heard By" and favorite/ignore on every radio (T088, D-11) in
+  `2af545de`. See tasks.md for the partial ones.
+- Mesh Multi (`~/Applications/Mesh Multi.app`, side-by-side, own container) is rebuilt from the
+  latest commit on this branch and ready for the first two-radio test below. Not yet run by anyone.
+- Next up: the owner's two-radio test; then the radio switcher in the toolbar (T082), settings
+  showing which radio they configure (T089), per-radio unread badges and notifications
+  (T090/T091), BLE restoration (T062), per-session firmware gate/lockdown (T065). T030 (merge
+  old backups) before release.
+- Baseline and latest: the full suite passes in the iOS Simulator (3,341 Swift Testing tests plus
+  29 XCTests, about 35–50 seconds of test time).
 
 ## First two-radio test (Mesh Multi, Mac)
 
@@ -49,7 +54,9 @@ Read this first if you are picking the work up. Update it in the same commit as 
    at a time; log line "waits for another radio's handshake").
 3. B shows under "Also Connected", Connecting… then Connected. Log lines start with `🔗➕`.
 4. Send a channel message from a third device: it appears once. Nodes heard by both radios
-   appear once; the node list shows the best hops.
+   appear once; the node list shows the best hops. Open that node: "Heard By" lists A and B.
+   In the channel, the "Via" picker lists A and B; send one via B and check the third device
+   gets it from B, and your bubble says "via B".
 5. Direct messages: from a third device, DM radio A, then DM radio B. Open the conversation with
    that device: a "Via" picker shows A and B; each segment shows only its radio's messages.
    Reply with B selected: the log shows `📻 [B's short name] Sent message …`, and the third
@@ -62,6 +69,8 @@ Read this first if you are picking the work up. Update it in the same commit as 
    on its own (`🔗🔁` log lines). A disconnects nothing.
 9. Quit Mesh Multi with both connected and reopen it: A reconnects as usual, then B comes back
    on its own ("remembered"). After ⋯ → Disconnect on B, a relaunch leaves B alone.
+10. Favorite a node: the log shows "Set node … as favorite on" for A and for B. After the next
+   node DB from either radio, the star stays.
 10. Worth watching: memory and CPU with two node dumps; any "Dropping an event from a
    disconnected additional radio" spam; whether BLE scanning while connected upsets pairing.
 - Small pull requests, ready for the owner to push (each is one commit on `origin/main`):
@@ -192,6 +201,20 @@ describes it well enough to rebuild.
   `NodeBackupManager+Import.swift` (`NodeBackupRestoreFieldTests` shows the pattern).
 - A BLE radio serves one phone connection at a time. The released app and the side-by-side
   build must not both target the same radio.
+- `#Predicate` with several optional comparisons (`localNodeNum`, `channelKey`, `?.num`) quickly
+  hits "unable to type-check this expression in reasonable time". Split it into variants
+  (`DirectMessageQuery`) or compose smaller predicates with `evaluate` (`ChannelMessageQuery`);
+  SwiftData runs both (covered by store tests). `($0.localNodeNum ?? x) == x` is the cheapest
+  "nil or x" test.
+- `MyInfoEntity.unreadMessages` warns that `toUser == nil` in a predicate crashes or miscounts
+  SwiftData on iOS 26 for badge counts. The conversation fetches already used it and still do;
+  badge counts (`ChannelEntity.unreadMessages`) keep filtering `toUser` in Swift.
+- Each radio's node DB writes its own `isFavorite`/`isIgnored` onto the shared node, last one
+  wins. That's why favorite/ignore go to every connected radio (`setFavorite`, `setIgnored`).
+  A radio that was offline when the user changed it will flip the flag back when it next
+  connects; syncing on reconnect is not built.
+- "Mine" in the views: channel rows use `ownRadioNums` (every `MyInfoEntity`); DM rows use the
+  selected radio of the thread. `UserDefaults.preferredPeripheralNum` is only the fallback.
 
 ## Device test checklist (fill in during Phase 10)
 

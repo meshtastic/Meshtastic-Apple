@@ -117,6 +117,8 @@ Long-press any node in the list to access quick actions:
 - **Ignore / Remove from ignored** — hide this node from normal views
 - **Remove** — remove the node from your local database
 
+With more than one radio connected, favoriting or ignoring a node applies to every connected radio, so each radio keeps it the same way.
+
 ## Display Names
 
 You can give any node a local nickname that's shown throughout the app instead of its device long name — in the node list, node details, and messages. Set it from the node's long-press menu ("Display name") or from the **Name** row in Node Detail. The avatar circle always shows the node's actual short code, unaffected by the nickname.
@@ -180,6 +182,10 @@ Tap any node to see the full detail view with hardware info, signal metrics, env
 ![Node Detail](../assets/screenshots/nodeDetail.png)
 
 For messageable nodes, use **Actions > Share Contact QR** to show a Meshtastic contact link and QR code that another device can scan.
+
+### Heard By
+
+When more than one of your radios has heard the node, a **Heard By** section lists each radio: how many hops away the node is from it (**Direct**, a hop count, or **MQTT**), the signal strength when it's heard directly, and how long ago that radio last heard it. **Offline** marks a radio that isn't connected now. The node list and map show the best of these: the fewest hops and the most recent time heard.
 
 ### Write a Contact to an NFC Tag
 

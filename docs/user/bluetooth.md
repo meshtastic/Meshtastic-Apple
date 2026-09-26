@@ -35,7 +35,7 @@ Long press a connected radio row to start a Live Activity (iOS 16.2+). The Live 
 
 You can connect up to four radios at once, over Bluetooth, TCP, or serial in any mix. All of them share one database: every message, node, and position they hear is stored once, and the app remembers which radio heard what.
 
-One connected radio is the **focused** radio. It is the one shown at the top of the Connect tab, and the one that settings, MQTT and location sharing use. Messages go through the focused radio too, except in a direct-message conversation that belongs to another radio (see [Messages](messages.md)). The other connected radios keep receiving in the background and are listed under **Also Connected**.
+One connected radio is the **focused** radio. It is the one shown at the top of the Connect tab, and the one that settings, MQTT and location sharing use. Messages go through the focused radio too, unless you pick another radio with **Via** in a conversation (see [Messages](messages.md)). The other connected radios keep receiving in the background and are listed under **Also Connected**, with their battery, Bluetooth signal and unread direct messages.
 
 Radios connect one at a time: while one downloads its settings and node list, another waits its turn, so connecting several at once takes a little longer than one.
 

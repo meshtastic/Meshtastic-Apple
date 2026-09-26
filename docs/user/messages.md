@@ -21,6 +21,12 @@ Channel conversations load the most recent **50 messages** by default. Scroll to
 | **0** (primary circle) | Primary channel — broadcast packets are sent here. Location data is broadcast from the first channel where it is enabled (firmware 2.7+). |
 | **1–7** | Secondary channels — separate messaging groups, each secured by their own key. |
 
+### Channels on More Than One Radio
+
+A channel is the same channel on two radios when its name and key match (and, for an unnamed primary channel, the LoRa preset), even if the radios keep it in different slots. With more than one radio, a channel's conversation shows its messages from every radio, stored once.
+
+When more than one connected radio has the channel, a **Via** control above the message field picks the radio that sends. A number after a radio's name is that radio's slot for the channel, when it differs. Your own messages show **via** and the radio that sent them.
+
 ### Channel Configuration
 
 ![Channel form](../assets/screenshots/channelForm_primary.png)
