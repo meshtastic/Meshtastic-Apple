@@ -85,6 +85,7 @@ final class NodeFilterParameters: ObservableObject {
 		static let deviceRoles = "nodeFilter.deviceRoles"
 		static let viaLora = "nodeFilter.viaLora"
 		static let viaMqtt = "nodeFilter.viaMqtt"
+		static let heardByRadio = "nodeFilter.heardByRadio"
 	}
 
 	/// Search text is intentionally **not** persisted — relaunching into a stale search that hides
@@ -104,6 +105,8 @@ final class NodeFilterParameters: ObservableObject {
 	@Published var maxDistance: Double { didSet { store.set(maxDistance, forKey: Keys.maxDistance) } }
 	@Published var hopsAway: Double { didSet { store.set(hopsAway, forKey: Keys.hopsAway) } }
 	@Published var roleFilter: Bool { didSet { store.set(roleFilter, forKey: Keys.roleFilter) } }
+	/// Only nodes this one of the user's radios has heard (feature 021, T087); 0 means any radio.
+	@Published var heardByRadio: Int64 { didSet { store.set(heardByRadio, forKey: Keys.heardByRadio) } }
 
 	@Published var deviceRoles: Set<Int> = [] {
 		didSet { store.set(Array(deviceRoles), forKey: Keys.deviceRoles) }
@@ -157,6 +160,7 @@ final class NodeFilterParameters: ObservableObject {
 		maxDistance = store.object(forKey: Keys.maxDistance) as? Double ?? 800_000
 		hopsAway = store.object(forKey: Keys.hopsAway) as? Double ?? -1.0
 		roleFilter = store.object(forKey: Keys.roleFilter) as? Bool ?? false
+		heardByRadio = (store.object(forKey: Keys.heardByRadio) as? NSNumber)?.int64Value ?? 0
 		_viaLora = store.object(forKey: Keys.viaLora) as? Bool ?? true
 		_viaMqtt = store.object(forKey: Keys.viaMqtt) as? Bool ?? true
 
@@ -179,6 +183,7 @@ final class NodeFilterParameters: ObservableObject {
 		maxDistance = 800_000
 		hopsAway = -1.0
 		roleFilter = false
+		heardByRadio = 0
 		deviceRoles = []
 		_viaLora = true
 		_viaMqtt = true
@@ -188,7 +193,7 @@ final class NodeFilterParameters: ObservableObject {
 	var isFiltering: Bool {
 		isOnline || isSigned || isPkiEncrypted || isFavorite || isIgnored || isEnvironment ||
 		distanceFilter || hopsAway >= 0.0 || (roleFilter && !deviceRoles.isEmpty) ||
-		(viaLora && !viaMqtt) || (!viaLora && viaMqtt)
+		(viaLora && !viaMqtt) || (!viaLora && viaMqtt) || heardByRadio != 0
 	}
 
 	/// Fallback origin for distance filtering when the phone's location services are
@@ -222,8 +227,12 @@ final class NodeFilterParameters: ObservableObject {
 		latestPosition: PositionEntity? = nil,
 		normalizedSearchText: String? = nil,
 		onlineThreshold: Date? = nil,
-		distanceBounds: NodeDistanceFilterBounds? = nil
+		distanceBounds: NodeDistanceFilterBounds? = nil,
+		heardByNodeNums: Set<Int64>? = nil
 	) -> Bool {
+		// Heard-by filter: `heardByNodeNums(in:)`, nil when not filtering by radio
+		if let heardByNodeNums, !heardByNodeNums.contains(node.num) { return false }
+
 		// Search text
 		let text = normalizedSearchText ?? searchText.lowercased()
 		if !text.isEmpty {

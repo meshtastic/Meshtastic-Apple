@@ -207,6 +207,7 @@ struct MeshMapMK: View {
 		let searchText = filters.searchText.lowercased()
 		let onlineThreshold = filters.isOnline ? Date().addingTimeInterval(-7_200) : nil
 		let distanceBounds = filters.currentDistanceBounds
+		let heardByNodeNums = filters.heardByNodeNums(in: context)
 		return positions.filter { position in
 			guard let node = position.nodePosition else { return false }
 			return filters.matches(
@@ -214,7 +215,8 @@ struct MeshMapMK: View {
 				latestPosition: position,
 				normalizedSearchText: searchText,
 				onlineThreshold: onlineThreshold,
-				distanceBounds: distanceBounds
+				distanceBounds: distanceBounds,
+				heardByNodeNums: heardByNodeNums
 			)
 		}
 	}

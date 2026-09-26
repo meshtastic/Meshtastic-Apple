@@ -310,12 +310,13 @@ private struct FilteredNodeList: View {
 		let searchText = filters.searchText.lowercased()
 		let onlineThreshold = filters.isOnline ? Date().addingTimeInterval(-7_200) : nil
 		let distanceBounds = filters.currentDistanceBounds
-		let filterLookup = NodeListFilterLookup(
+		var filterLookup = NodeListFilterLookup(
 			nodes: allNodes,
 			needsEnvironment: filters.isEnvironment,
 			distanceBounds: filters.distanceFilter ? distanceBounds : nil,
 			context: context
 		)
+		filterLookup.heardByNodeNums = filters.heardByNodeNums(in: context)
 		var seenNodeNums = Set<Int64>()
 		seenNodeNums.reserveCapacity(allNodes.count)
 		var connectedNode: NodeInfoEntity?
@@ -510,6 +511,8 @@ private struct NodeListFilterLookup {
 	/// so that nodes with no position data pass through the distance filter rather than
 	/// being silently excluded.
 	private let positionedNodeNums: Set<Int64>?
+	/// Nodes the "Heard By" radio has heard (feature 021); nil when not filtering by radio.
+	var heardByNodeNums: Set<Int64>?
 
 	init(
 		nodes: [NodeInfoEntity],
@@ -607,6 +610,9 @@ fileprivate extension NodeFilterParameters {
 		distanceBounds: NodeDistanceFilterBounds?,
 		lookup: NodeListFilterLookup
 	) -> Bool {
+		// Heard-by filter (feature 021): nil when not filtering by radio
+		if let heardByNodeNums = lookup.heardByNodeNums, !heardByNodeNums.contains(node.num) { return false }
+
 		// Search text (requires relationship traversal)
 		if !normalizedSearchText.isEmpty {
 			let matchesSearch = [

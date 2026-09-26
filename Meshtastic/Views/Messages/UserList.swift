@@ -115,13 +115,15 @@ private struct FilteredUserList: View {
 			distanceBounds: filters.distanceFilter ? distanceBounds : nil,
 			context: context
 		)
+		let heardByNodeNums = filters.heardByNodeNums(in: context)
 		return allUsers.filter {
 			filters.matches(
 				user: $0,
 				normalizedSearchText: searchText,
 				onlineThreshold: onlineThreshold,
 				distanceBounds: distanceBounds,
-				lookup: filterLookup
+				lookup: filterLookup,
+				heardByNodeNums: heardByNodeNums
 			)
 		}
 	}
@@ -459,8 +461,11 @@ fileprivate extension NodeFilterParameters {
 		normalizedSearchText: String,
 		onlineThreshold: Date?,
 		distanceBounds: NodeDistanceFilterBounds?,
-		lookup: UserListFilterLookup
+		lookup: UserListFilterLookup,
+		heardByNodeNums: Set<Int64>? = nil
 	) -> Bool {
+		// Heard-by filter (feature 021): nil when not filtering by radio
+		if let heardByNodeNums, !heardByNodeNums.contains(user.num) { return false }
 		// Search text
 		if !normalizedSearchText.isEmpty {
 			let matchesSearch = [user.userId, user.numString, user.hwModel, user.hwDisplayName, user.longName, user.shortName]

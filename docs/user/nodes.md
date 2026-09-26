@@ -139,6 +139,7 @@ Tap the filter icon above the list to narrow which nodes are shown. Filters appl
 | **Distance** | Limit to nodes within a chosen radius of your location. Falls back to the connected device's last position when phone location is unavailable. |
 | **Roles** | Show only the device roles you select. |
 | **Connection** | Show nodes reachable via LoRa, via MQTT, or both. At least one is always kept on. |
+| **Heard By** | Only shown when you use more than one radio. Pick one of your radios to see only the nodes it has heard; **Any Radio** shows every node. |
 
 Filters are **remembered between launches** — the app reopens with the same filters applied. Search text is the exception: it is intentionally cleared on relaunch so you never reopen into a stale search that hides most of your nodes. Use the **reset** affordance to clear every filter and the search text at once.
 
