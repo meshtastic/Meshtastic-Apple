@@ -82,6 +82,51 @@ private final class TwoPeripheralCentral: CBCentralManager, @unchecked Sendable 
 	}
 }
 
+/// A radio iOS restored still connected (T062).
+private final class RestoredPeripheralC: FakePeripheral, @unchecked Sendable {
+	static let id = UUID()
+	override static var fakeIdentifier: UUID { id }
+	override var state: CBPeripheralState { .connected }
+	override var name: String? { "C" }
+}
+
+private final class RestoredPeripheralD: FakePeripheral, @unchecked Sendable {
+	static let id = UUID()
+	override static var fakeIdentifier: UUID { id }
+	override var state: CBPeripheralState { .connected }
+	override var name: String? { "D" }
+}
+
+/// Records which peripherals had their link cancelled.
+private final class CancelRecordingCentral: CBCentralManager, @unchecked Sendable {
+	private let peripherals: [CBPeripheral]
+	private let connects: Reached
+	private let lock = NSLock()
+	private var cancelledIds: [UUID] = []
+
+	init(peripherals: [CBPeripheral], connects: Reached) {
+		self.peripherals = peripherals
+		self.connects = connects
+		super.init(delegate: nil, queue: nil, options: nil)
+	}
+
+	var cancelled: [UUID] { lock.withLock { cancelledIds } }
+
+	override var state: CBManagerState { .poweredOn }
+	override var isScanning: Bool { false }
+	override func stopScan() {}
+	override func scanForPeripherals(withServices serviceUUIDs: [CBUUID]?, options: [String: Any]? = nil) {}
+	override func retrievePeripherals(withIdentifiers identifiers: [UUID]) -> [CBPeripheral] {
+		peripherals.filter { identifiers.contains($0.identifier) }
+	}
+	override func connect(_ peripheral: CBPeripheral, options: [String: Any]? = nil) {
+		Task { await connects.mark() }
+	}
+	override func cancelPeripheralConnection(_ peripheral: CBPeripheral) {
+		lock.withLock { cancelledIds.append(peripheral.identifier) }
+	}
+}
+
 private func device(for peripheral: CBPeripheral, name: String) -> Device {
 	Device(id: peripheral.identifier, name: name, transportType: .ble, identifier: peripheral.identifier.uuidString)
 }
@@ -160,6 +205,58 @@ struct MultiRadioBLETransportTests {
 		await connects.wait(for: 3)
 		await transport.handleDidConnect(peripheral: peripheralA, central: central)
 		_ = try await again.value
+	}
+}
+
+// MARK: - BLE restoration (T062)
+
+private struct IdentifiedPeripheral: RestoredPeripheral {
+	let identifier: UUID
+}
+
+@Suite("Multi-radio BLE restoration", .timeLimit(.minutes(1)))
+struct MultiRadioBLERestorationTests {
+
+	@Test("The preferred radio is restored as the focused one, or else the first")
+	func focusedPeripheralChoice() {
+		let first = IdentifiedPeripheral(identifier: UUID())
+		let preferred = IdentifiedPeripheral(identifier: UUID())
+		let restored = [first, preferred]
+		#expect(BLETransport.focusedPeripheral(among: restored, preferredId: preferred.identifier.uuidString)?.identifier == preferred.identifier)
+		#expect(BLETransport.focusedPeripheral(among: restored, preferredId: UUID().uuidString)?.identifier == first.identifier)
+		#expect(BLETransport.focusedPeripheral(among: [IdentifiedPeripheral](), preferredId: "") == nil)
+	}
+
+	@Test("A radio restored still connected is taken over without connecting again")
+	func connectedRestoredRadioIsTakenOver() async throws {
+		let restored = RestoredPeripheralC.make()
+		let connects = Reached()
+		let central = CancelRecordingCentral(peripherals: [restored], connects: connects)
+		let transport = BLETransport(createCentralManagerImmediately: false, centralManager: central)
+		await transport.holdRestoredPeripherals([restored], gracePeriod: .seconds(60))
+
+		let connection = try #require(try await transport.connect(to: device(for: restored, name: "C")) as? BLEConnection)
+		#expect(await connection.peripheral.identifier == RestoredPeripheralC.id)
+		// Claimed once: a second connect is the ordinary busy case.
+		await #expect(throws: AccessoryError.self) {
+			_ = try await transport.connect(to: device(for: restored, name: "C"))
+		}
+		await transport.releaseUnclaimedRestoredPeripherals()
+		#expect(central.cancelled.isEmpty, "a claimed radio keeps its link")
+	}
+
+	@Test("A restored radio nobody claims is released")
+	func unclaimedRestoredRadioIsReleased() async throws {
+		let claimed = RestoredPeripheralC.make()
+		let unclaimed = RestoredPeripheralD.make()
+		let connects = Reached()
+		let central = CancelRecordingCentral(peripherals: [claimed, unclaimed], connects: connects)
+		let transport = BLETransport(createCentralManagerImmediately: false, centralManager: central)
+		await transport.holdRestoredPeripherals([claimed, unclaimed], gracePeriod: .milliseconds(50))
+		_ = try await transport.connect(to: device(for: claimed, name: "C"))
+
+		try await Task.sleep(for: .milliseconds(300))
+		#expect(central.cancelled == [RestoredPeripheralD.id])
 	}
 }
 

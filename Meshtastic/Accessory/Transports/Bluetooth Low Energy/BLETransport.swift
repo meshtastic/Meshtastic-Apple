@@ -32,6 +32,10 @@ actor BLETransport: Transport {
 	private var activeConnections: [UUID: BLEConnection] = [:]
 	private var connectContinuations: [UUID: CheckedContinuation<BLEConnection, Error>] = [:]
 	private var restoredConnectContinuation: CheckedContinuation<Void, Error>?
+	/// Feature 021 (T062): peripherals iOS restored along with the focused one. The
+	/// remembered-radio reconnect claims each through `connect(to:)`; any left unclaimed are
+	/// released so a radio isn't held by a link nobody uses.
+	private var restoredStandby: [UUID: CBPeripheral] = [:]
 	private var setupCompleteGate: AsyncGate
 	private var restoreInProgress: Bool = false
 	var status: TransportStatus = .uninitialized {
@@ -404,6 +408,15 @@ actor BLETransport: Transport {
 			throw AccessoryError.connectionFailed("Peripheral not found")
 		}
 		let id = peripheral.identifier
+		// A radio iOS restored still connected: take over its link rather than connecting again.
+		// One restored while connecting goes through the normal connect, which CoreBluetooth
+		// completes with the pending attempt.
+		if let restored = restoredStandby.removeValue(forKey: id), restored.state == .connected, centralManager != nil {
+			Logger.transport.info("🛜 [BLE] Taking over the restored link to \(restored.name ?? "Unknown", privacy: .public)")
+			let connection = BLEConnection(peripheral: restored, central: centralManager, transport: self)
+			activeConnections[id] = connection
+			return connection
+		}
 
 		do {
 			let returnConnection = try await withTaskCancellationHandler {
@@ -533,12 +546,15 @@ actor BLETransport: Transport {
 		/// look in the logs for the messages below.
 		Logger.transport.error("🛜 [BLE] Will Restore State was called. Attempting to restore connection.")
 		
-		/// Find the peripheral that was connected before
+		/// Find the peripherals that were connected before. Feature 021 (T062): the preferred radio,
+		/// or else the first, is restored as the focused radio; the others wait in
+		/// `restoredStandby` for the remembered-radio reconnect that follows the focused connect.
 		guard let peripherals = dict[CBCentralManagerRestoredStatePeripheralsKey] as? [CBPeripheral],
-			  let peripheral = peripherals.first else {
+			  let peripheral = Self.focusedPeripheral(among: peripherals, preferredId: UserDefaults.preferredPeripheralId) else {
 			Logger.transport.error("🛜 [BLE] No peripherals found in restore state dictionary.")
 			return
 		}
+		holdRestoredPeripherals(peripherals.filter { $0.identifier != peripheral.identifier })
 		
 		// Prevent device discovery during the restore process
 		restoreInProgress = true
@@ -546,7 +562,7 @@ actor BLETransport: Transport {
 		// Create a device object
 		// TODO: maybe serialize the whole device into UserDefaults on connect?
 		let id = peripheral.identifier
-		let nodeNum = UserDefaults.preferredPeripheralNum != 0 ? Int64(UserDefaults.preferredPeripheralNum) : nil
+		let nodeNum = await Self.restoredNodeNum(peripheralId: id)
 		var device = Device(id: id, name: peripheral.name ?? "Unknown", transportType: .ble, identifier: id.uuidString, num: nodeNum, wasRestored: true)
 		
 		// Get the device name
@@ -639,7 +655,58 @@ actor BLETransport: Transport {
 				self.restoreInProgress = false
 			}
 		}
-		
+
+	}
+
+	/// Keeps restored radios other than the focused one for the remembered-radio reconnect to
+	/// claim (`connect(to:)`), and releases whatever is left after `gracePeriod`.
+	func holdRestoredPeripherals(_ peripherals: [CBPeripheral], gracePeriod: Duration = restoredStandbyGracePeriod) {
+		guard !peripherals.isEmpty else { return }
+		for peripheral in peripherals {
+			Logger.transport.info("🛜 [BLE] Restored \(peripheral.name ?? "Unknown", privacy: .public) (\(cbPeripheralStateDescription(peripheral.state), privacy: .public)) to reconnect alongside the focused radio")
+			restoredStandby[peripheral.identifier] = peripheral
+			discoveredPeripherals[peripheral.identifier] = (peripheral: peripheral, lastSeen: Date())
+		}
+		Task {
+			try? await Task.sleep(for: gracePeriod)
+			self.releaseUnclaimedRestoredPeripherals()
+		}
+	}
+
+	/// How long restored radios wait to be claimed. Covers the focused radio's restore, including
+	/// a full handshake when it was restored while connecting.
+	static let restoredStandbyGracePeriod: Duration = .seconds(180)
+
+	/// The peripheral restored as the focused radio: the preferred one when iOS restored it,
+	/// otherwise the first.
+	static func focusedPeripheral<P: RestoredPeripheral>(among peripherals: [P], preferredId: String) -> P? {
+		peripherals.first { $0.identifier.uuidString == preferredId } ?? peripherals.first
+	}
+
+	/// The node number of the radio on `peripheralId`, from its `MyInfoEntity`. Before this
+	/// feature every restore assumed the preferred radio; with several radios that's only true
+	/// for one of them.
+	@MainActor
+	static func restoredNodeNum(peripheralId: UUID) -> Int64? {
+		let idString = peripheralId.uuidString
+		var descriptor = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.peripheralId == idString })
+		descriptor.fetchLimit = 1
+		if let myNodeNum = (try? PersistenceController.shared.context.fetch(descriptor))?.first?.myNodeNum, myNodeNum != 0 {
+			return myNodeNum
+		}
+		guard idString == UserDefaults.preferredPeripheralId, UserDefaults.preferredPeripheralNum != 0 else { return nil }
+		return Int64(UserDefaults.preferredPeripheralNum)
+	}
+
+	/// Drops the CoreBluetooth link of every restored radio nobody claimed (not remembered, or
+	/// the focused restore failed), so the radio is free for a later connect or another phone.
+	func releaseUnclaimedRestoredPeripherals() {
+		let unclaimed = restoredStandby
+		restoredStandby.removeAll()
+		for (id, peripheral) in unclaimed where activeConnections[id] == nil && connectContinuations[id] == nil {
+			Logger.transport.info("🛜 [BLE] Releasing the unclaimed restored link to \(peripheral.name ?? "Unknown", privacy: .public)")
+			centralManager?.cancelPeripheralConnection(peripheral)
+		}
 	}
 	
 	nonisolated func device(forManualConnection: String) -> Device? {
@@ -737,3 +804,10 @@ func cbPeripheralStateDescription(_ state: CBPeripheralState) -> String {
 		return "unhandled state"
 	}
 }
+
+/// What `BLETransport.focusedPeripheral(among:preferredId:)` needs from a restored peripheral.
+protocol RestoredPeripheral {
+	var identifier: UUID { get }
+}
+
+extension CBPeripheral: RestoredPeripheral {}

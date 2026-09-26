@@ -68,6 +68,8 @@ The app doesn't keep retrying these radios in the background.
 
 A radio connected alongside the focused one is remembered. If it drops out of range or restarts, the app keeps trying to reconnect it, backing off to once a minute. The next time the focused radio connects — for example when you open the app — the remembered radios are connected again too. Choosing **Disconnect** on a radio stops this until you connect it again yourself.
 
+If iOS closes the app in the background while Bluetooth radios are connected, it relaunches the app when one of them has something to send. Your usual radio is restored as the focused one and the others rejoin under **Also Connected**. A radio the app doesn't bring back within a few minutes is let go, so it's free for another connection.
+
 If the focused radio drops and doesn't come back within about 30 seconds, another connected radio becomes the focused one, and the dropped radio rejoins under **Also Connected** when it's back. Likewise, if your usual radio isn't around when you open the app, a remembered radio that's in range is connected after about 30 seconds, and your usual radio joins when it appears.
 
 ### Switching Radios

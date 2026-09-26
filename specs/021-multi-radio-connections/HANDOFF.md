@@ -51,10 +51,10 @@ Read this first if you are picking the work up. Update it in the same commit as 
   Watch (T102–T105) in the commit after it. See tasks.md for the partial ones.
 - Mesh Multi (`~/Applications/Mesh Multi.app`, side-by-side, own container) is rebuilt from the
   latest commit on this branch and ready for the first two-radio test below. Not yet run by anyone.
-- Next up: rebuild Mesh Multi and the owner's two-radio test; then BLE restoration (T062), the
-  Messages extension snapshot (T106) and Datadog per-event radio attributes (T107), removing the
-  switch-era helpers (T066) once the test passes, and the focused/additional unification (T060,
-  with T013/T014/T018 and focus without reconnecting in T082).
+- Next up: the focused/additional unification (T060, with T013/T014/T018 and focus without
+  reconnecting in T082), done in steps that each pass the full suite. The owner's two-radio test
+  waits on hardware; don't rebuild Mesh Multi for it unless asked. Removing the switch-era
+  helpers (T066) waits for that test.
 - Baseline and latest: the full suite passes in the iOS Simulator (3,368 Swift Testing tests plus
   29 XCTests, about 35–50 seconds of test time).
 
@@ -253,6 +253,11 @@ describes it well enough to rebuild.
   wins. That's why favorite/ignore go to every connected radio (`setFavorite`, `setIgnored`).
   A radio that was offline when the user changed it will flip the flag back when it next
   connects; syncing on reconnect is not built.
+- BLE restoration (T062): only the focused radio goes through the old restore path. Restored
+  radios alongside it are claimed by the remembered-radio reconnect, so a restored radio that
+  isn't remembered (`autoConnect` off) is released after `restoredStandbyGracePeriod`. If the
+  focused restore fails, the others are released too; the remembered-radio fallback at discovery
+  can bring one back as the focus.
 - Focus when things go wrong (`AccessoryManager+FocusHandover.swift`): the Connect tab's
   Disconnect hands the focus to another connected radio at once (`disconnectFocusedRadio`).
   If the focused radio drops, `closeConnection` starts `scheduleFocusHandover`: after 30 s
