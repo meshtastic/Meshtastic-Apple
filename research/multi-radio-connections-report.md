@@ -6,10 +6,12 @@
 
 ---
 
-> **Revision (follow-up discussion):** for radios **at the same location on the same mesh**,
-> a **single shared database** (a refined Option B) is the better fit, and it avoids the
-> container-switching risk (R1) entirely. See **§13 — Revised design: unified database**,
-> which supersedes the Option C recommendation below for that use case.
+> **Current recommendation:** use a **single shared database** (the refined Option B, detailed
+> in **§13 — Revised design: unified database**). This replaces the original Option C
+> recommendation. Option C (one store per radio) stays documented as the fallback if strict
+> per-radio data isolation ever becomes a requirement. §§5–8 describe Option C, but their
+> session, transport and service sections (§5.1, §5.2, §5.4, §5.5, and Phases 0, 2, 3 and 4)
+> apply to both designs.
 
 ## 1. Executive summary
 
@@ -19,13 +21,19 @@ The transport layer is **mostly** ready: every `Connection` is already its own a
 2. **The SwiftData store is deliberately per-radio, with no owner column.** The code says so directly: *"Nodes carry no owner column — the store is global"* (`AccessoryManager+FromRadio.swift:191`, `Connect.swift:1102`). Switching radios is a **backup → clear → restore → reconnect** cycle (`switchToDevice`, `Connect.swift:1166`), guarded by `defensiveResetIfForeignDatabase` so that one radio's nodes can't leak into another's store. Two radios writing to one store at once would cause exactly the "node bleed" that code was written to stop.
 3. **"My node" is a process-wide global.** `UserDefaults.preferredPeripheralNum` (51 refs / 19 files), `activeDeviceNum` (173 refs / 51 files), `activeConnection` (147 refs / 51 files) and `UserDefaults.firmwareVersion` are read directly by views, ingest code, the discovery engine, CarPlay, TAK and App Intents.
 
-**Recommendation:** use **one SwiftData store per radio**, managed by a new **`RadioSessionManager`** that holds N `RadioSession` objects. Each session owns its connection, state machine, `MeshPackets` ingest actor and `ModelContainer`. The UI binds to one **focused radio** at a time. `AccessoryManager` stays as a thin facade that forwards to the focused session, so most of the ~100 view files keep compiling during the migration.
+**Recommendation:** keep **one shared SwiftData database** for every radio, and add a new **`RadioSessionManager`** that holds N `RadioSession` objects. Each session owns its connection, state machine and per-connection services. Every session feeds packets, tagged with its `radioNum`, into the **single `MeshPackets` writer actor**, which **de-duplicates** traffic the radios share (node identity, positions, telemetry, channel messages keyed by channel identity rather than index). It **scopes** only what really belongs to one radio: DMs, per-radio node observations (hops, SNR, favorite/ignored, admin session keys), and reception details. A new `MeshtasticSchemaV2` adds this scoping. Denormalized aggregates on `NodeInfoEntity` keep the existing node list, map and `@Query` sites working unchanged. `AccessoryManager` stays as a thin facade over the focused session, so most of the ~100 view files keep compiling during the migration. Full design: §13.
 
-This fits the codebase's existing rule that each radio has its own data (backups are already per-radio SQLite files). It needs no schema migration of `NodeInfoEntity`/`MessageEntity`. It also removes the most fragile code in the app: the clear/restore switch flow and the container-swap SIGTRAP workarounds.
+Why this rather than Option C (one store per radio):
+- co-located radios hear mostly the same traffic, so a combined node list and channel timeline is the product users want;
+- one container for the process lifetime removes risk R1 (switching SwiftUI between containers);
+- it deletes the backup → clear → restore switch flow and the container-swap SIGTRAP workarounds, and doesn't replace them with a store registry;
+- it also fixes a problem that exists today: message uniqueness on `messageId` alone can drop a real message that collides with one from a different sender.
+
+The trade-off is a real schema migration (V1 → V2) plus merge-importing existing per-radio backups, which §13.7 covers.
 
 A cheaper **"primary + monitor"** option (§6, Option A) could ship in about 4–6 weeks as a stepping stone.
 
-**Rough effort for the recommended path:** 4–6 months for one senior engineer familiar with the codebase, delivered over 6 phases that can each ship on their own (§8).
+**Rough effort for the recommended path:** about 22–27 engineer-weeks for one senior engineer familiar with the codebase, delivered in phases that can each ship on their own (§13.9).
 
 ---
 
@@ -119,7 +127,7 @@ What is **restored** from A's backup (`NodeBackupManager.restoreFromBackup`): no
 What is **not** restored:
 - **Radio config entities.** The radio sends these again on connect, so nothing is lost.
 - **Discovery scan history** (`DiscoverySession*`, `DiscoveredBeacon/Node*`). It is cleared and not imported, so it is lost on every switch.
-- **Some `NodeInfoEntity` fields that `importNodes` doesn't copy:** ~~`powerChannelLabels` (user-edited, lost on switch), `nodeStatus`, `isKeyManuallyVerified`, `hasXeddsaSigned`~~. **Fixed** in `NodeBackupManager+Import.swift`, together with other stored fields the importer was dropping: waypoint geofence settings and `isLocal`, PM1.0/2.5/10 air-quality telemetry, and `MessageEntity.xeddsaSigned`. Covered by `MeshtasticTests/NodeBackupRestoreFieldTests.swift`. Only relationships are not copied field by field now; they are rebuilt by the per-entity importers, or the radio sends its config again on connect. Config fetched from *remote* nodes through remote admin is still not restored; it has to be requested again.
+- **Some `NodeInfoEntity` fields that `importNodes` doesn't copy:** `powerChannelLabels` (**user-edited**, so this is lost on switch and is a bug), `nodeStatus`, `isKeyManuallyVerified`, `hasXeddsaSigned`. The last three come back from the radio or the mesh, so only `powerChannelLabels` is really lost.
 - **Mesh traffic while the phone was on B.** The app never saw it. Radio A's node DB catches up on node state, but messages A received while you were away are not in the app, apart from whatever the firmware's small to-phone queue still holds when you reconnect.
 
 Skip conditions:
@@ -178,7 +186,7 @@ Keep today's full-featured connection as the **primary** radio (owns the store, 
 - **Pros:** small blast radius, no persistence changes, reuses the tvOS client design, about 4–6 weeks.
 - **Cons:** second-class radios, history lost on relaunch, and two code paths for packet decoding.
 
-### Option B — Single shared store with owner scoping (schema V2)
+### Option B — Single shared store with owner scoping (schema V2) (**recommended, as refined in §13**)
 
 Add a `RadioEntity` and an `observerNum`/`radio` relationship on everything observer-relative. Split `NodeInfoEntity` into an identity row plus a `NodeObservationEntity` per radio (hops, SNR, favorite, ignored, session passkey…). Add `radio` to `MessageEntity`, `TraceRouteEntity`, `PositionEntity`, `TelemetryEntity`, the config entities, and so on. Update all 55 `@Query` and 260 `FetchDescriptor` sites to filter by radio.
 
@@ -191,7 +199,7 @@ Add a `RadioEntity` and an `observerNum`/`radio` relationship on everything obse
   - Highest risk. Estimated at 7–10 months.
 - **Revised:** §13 shrinks this considerably. Keeping denormalized aggregates on `NodeInfoEntity` means most queries need **no** radio predicate, and only DMs, observations and admin sessions need scoping. That brings the estimate down to about 22–27 weeks.
 
-### Option C — One store per radio + session manager (**recommended**)
+### Option C — One store per radio + session manager (original recommendation, now the fallback)
 
 Each `RadioSession` owns its own `ModelContainer` (file named by the radio's `device_id`) and its own `MeshPackets` actor. The UI's `.modelContainer` points at the **focused** session's container. Background sessions keep ingesting into their own stores. Cross-radio surfaces (connection list, badges, notifications) come from lightweight per-session summaries, not from `@Query`.
 
@@ -205,11 +213,26 @@ Each `RadioSession` owns its own `ModelContainer` (file named by the radio's `de
   - A unified "all radios" node list or inbox needs fetches across containers (manual merge), not `@Query`.
   - Disk use grows with N stores (same as backups today).
 
-**Why C:** it keeps the rule that has made the app stable ("one radio's data never meets another's"), moves the multi-radio complexity into a new session layer, and lets most views stay unchanged behind a facade.
+**Original case for C:** it keeps the rule that has made the app stable ("one radio's data never meets another's"), moves the multi-radio complexity into a new session layer, and lets most views stay unchanged behind a facade.
+
+**Why B (refined) is now recommended instead:**
+- For radios sharing a mesh, users want the combined view that C can only offer through cross-container merges.
+- C's main risk (R1, switching SwiftUI between containers) doesn't exist with one container.
+- The refined B keeps queries unchanged through aggregates, which removes the original B's worst cost of adding a radio predicate everywhere.
+
+Choose C only if strict per-radio isolation becomes a requirement, for example radios belonging to different users or organisations whose data must never mix on the device.
 
 ---
 
 ## 5. Target architecture (Option C)
+
+> With the recommended shared database (§13), this architecture stays the same **except** for
+> storage: there is no `RadioStore` / `RadioStoreRegistry`, and no per-session `MeshPackets`.
+> All sessions share the one `PersistenceController` container and a single `MeshPackets`
+> writer, and each call carries `radioNum`. `RadioSession`, `RadioSessionManager`, the facade,
+> the transport changes (§5.2), the focus UI (§5.4) and the service ownership table (§5.5)
+> apply unchanged. With one container, a focus change is a UI-only filter change, not a
+> container rebind.
 
 ```
 Views ──@EnvironmentObject──▶ AccessoryManager (FACADE, keeps today's API)
@@ -303,6 +326,11 @@ About 4–6 weeks. It doesn't handle history, settings or MQTT/TAK on monitors.
 
 ## 7. Detailed change inventory (Option C)
 
+> The inventory applies to the recommended shared-database design as well, with two differences:
+> `MeshPackets.shared` stays as the single writer, with a `radioNum` argument added; and the
+> DM queries in `UserMessageList` plus the "is this me?" checks do need predicate or logic
+> changes (§13.4).
+
 Measured with `grep` at commit `6f3ee55b`:
 
 | Symbol / pattern | Files | Refs | Action |
@@ -335,6 +363,13 @@ Largest files that need structural edits:
 ---
 
 ## 8. Phased delivery plan
+
+> For the recommended shared-database design, use the phase table in **§13.9**:
+> - Phase 0 is identical.
+> - Phase 1 (per-radio stores) is replaced by Schema V2, the migration and the backup merge import.
+> - The ingest scoping and de-duplication phase is new.
+> - Phases 2–5 below (sessions, UI, services, hardening) carry over, apart from any wording
+>   about per-radio stores.
 
 Each phase ships on its own and leaves the app working with a single radio.
 
@@ -438,24 +473,29 @@ MQTT per session; position sharing per session; TAK target-radio setting; CarPla
 
 ## 11. Open questions for the maintainers
 
-1. Is the **focused-radio** model enough, or is a unified cross-radio inbox or node list required for v1? That decides between C and B.
+1. ~~Is the **focused-radio** model enough, or is a unified cross-radio inbox or node list required for v1? That decides between C and B.~~ **Answered:** a unified view is wanted for co-located radios, so B (refined, §13) is the choice.
 2. What is the target maximum number of simultaneous radios (2? 4?) and transport mix (BLE+BLE, BLE+TCP)?
 3. For TAK, MQTT and phone GPS, should "all radios" or only the focused radio be the default?
-4. Is a separate shared catalog store acceptable in Phase 1, or should hardware and firmware catalogs stay duplicated per store for v1?
-5. On Mac/iPad, is **one window per radio** a desirable UX? It would also reduce R1.
+4. ~~Is a separate shared catalog store acceptable in Phase 1, or should hardware and firmware catalogs stay duplicated per store for v1?~~ Not needed with a shared database.
+5. On Mac/iPad, is **one window per radio** a desirable UX? This is now purely a UX question, since R1 doesn't apply to a shared database.
 6. Should the tvOS target get multi-radio support? Its `MeshClient` is already easy to run as several instances, so it is a comparatively small follow-up.
+7. Is raising the iOS deployment target from 17.5 to 18 acceptable, so V2 can use `#Unique`/`#Index`? Otherwise compound uniqueness has to be enforced in the ingest actor (§13.3, item 7).
+8. When a user favorites or ignores a node, should it apply to **all connected radios** by default (§13.8), or only to the focused radio?
 
 ---
 
 ## 12. Recommended immediate next steps
 
-1. **Container-switch spike (R1)**, 1 week. This decides whether C is viable as designed or needs the per-scene fallback.
-2. **Land Phase 0 steps 1–3** (`RadioSession` extraction, explicit session in handlers, transport delegate). These are low-risk refactors that pay off on their own.
-3. Write `specs/0xx-multi-radio-connections/spec.md` and `plan.md` from this report using the SpecKit flow, once the open questions in §11 are answered.
+1. **Land Phase 0 steps 1–3** (`RadioSession` extraction, explicit session in handlers, transport delegate). These are low-risk refactors that pay off on their own and are needed whichever storage design is used.
+2. **Schema V2 prototype spike**, about 1–2 weeks, replacing the R1 spike, which no longer applies:
+   - `NodeObservationEntity` plus the aggregate recompute, `channelKey`, `fromNum`/`toNum`/`localNodeNum`, and the `(fromNum, messageId)` uniqueness;
+   - a custom V1 → V2 migration run against the `research/schema-history/` fixtures;
+   - a replay of two radios' captured traffic into one store, to check de-duplication, DM scoping and unchanged `@Query` results.
+3. Write `specs/0xx-multi-radio-connections/spec.md` and `plan.md` from §13 using the SpecKit flow, once the open questions in §11 are answered.
 
 ---
 
-## 13. Revised design: unified database (co-located radios)
+## 13. Revised design: unified database (**recommended**)
 
 **Premise from the follow-up discussion:** the radios are at the same location on the same mesh, so they hear mostly the same traffic. Instead of isolating each radio in its own store, keep **one database**, **deduplicate** what both radios hear, and **scope** only what really belongs to one radio.
 
