@@ -163,6 +163,10 @@ struct ChannelMessageRow: View {
 						Text("\(message.fromUser?.longName ?? "Unknown".localized ) (\(message.fromUser?.userId ?? "?"))")
 							.font(.caption).foregroundColor(.gray).offset(y: 8)
 							.accessibilityHidden(true) // Folded into the message bubble's combined label
+					} else if isCurrentUser, ownRadioNums.count > 1, let sender = message.fromUser {
+						// Feature 021 (T086): with several radios, which one sent it.
+						Text(String.localizedStringWithFormat("via %@".localized, sender.shortName ?? sender.longName ?? "?"))
+							.font(.caption).foregroundColor(.gray).offset(y: 8)
 					}
 					
 					// Message Bubble
