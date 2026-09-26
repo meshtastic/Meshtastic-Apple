@@ -1922,8 +1922,9 @@ actor MeshPackets {
 					// Android marks these read = fromLocal; we go further and also suppress the
 					// notification (Android's handlePacketNotification has no fromLocal guard and
 					// relies on dedupe alone, but that still fires for S&F replays of our own
-					// messages that were never locally stored).
-					let isFromSelf = Int64(packet.from) == connectedNode
+					// messages that were never locally stored). Any of the user's radios counts as
+					// self (feature 021): radio B hearing what the user sent through radio A.
+					let isFromSelf = fromNum == connectedNode || localRadioNums().contains(fromNum)
 
 					let newMessage = MessageEntity()
 					modelContext.insert(newMessage)

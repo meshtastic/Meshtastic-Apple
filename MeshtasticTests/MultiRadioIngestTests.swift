@@ -219,6 +219,72 @@ struct MultiRadioIngestTests {
 		])
 	}
 
+	// MARK: - Notifications
+
+	/// Both radios known to the store, each with an unmuted primary channel.
+	private func seedTwoRadios(in container: ModelContainer) throws {
+		try seedNodes([remote, radioA, radioB], in: container)
+		let context = ModelContext(container)
+		for radio in [radioA, radioB] {
+			let channel = ChannelEntity()
+			channel.index = 0
+			channel.name = "Primary"
+			context.insert(channel)
+			let myInfo = MyInfoEntity()
+			myInfo.myNodeNum = radio
+			myInfo.channels = [channel]
+			context.insert(myInfo)
+		}
+		try context.save()
+	}
+
+	private func makePackets(_ container: ModelContainer, recording box: MainActorBox<[MeshNotification]>) async -> MeshPackets {
+		let packets = MeshPackets(modelContainer: container)
+		await packets.replaceNotificationScheduler { @MainActor @Sendable notifications in
+			box.value.append(contentsOf: notifications)
+		}
+		return packets
+	}
+
+	@Test("A broadcast from the user's other radio lands read and silent")
+	func ownOtherRadioIsSelf() async throws {
+		let previous = UserDefaults.channelMessageNotifications
+		UserDefaults.channelMessageNotifications = true
+		defer { UserDefaults.channelMessageNotifications = previous }
+		let container = try makeContainer()
+		try seedTwoRadios(in: container)
+		let box = MainActorBox<[MeshNotification]>([])
+		let packets = await makePackets(container, recording: box)
+
+		// Sent through radio B (stored by nothing yet, e.g. a store-and-forward replay), heard by A.
+		await packets.textMessageAppPacket(packet: packet(id: 31, from: radioB, text: "mine"), wantRangeTestPackets: false, connectedNode: radioA, appState: nil)
+		await packets.savePendingChanges()
+		try? await Task.sleep(for: .milliseconds(100))
+
+		#expect(box.value.isEmpty)
+		#expect(try fetch(MessageEntity.self, in: container).first?.read == true)
+	}
+
+	@Test("A peer broadcast heard by two radios notifies once")
+	func peerBroadcastNotifiesOnce() async throws {
+		let previous = UserDefaults.channelMessageNotifications
+		UserDefaults.channelMessageNotifications = true
+		defer { UserDefaults.channelMessageNotifications = previous }
+		let container = try makeContainer()
+		try seedTwoRadios(in: container)
+		let box = MainActorBox<[MeshNotification]>([])
+		let packets = await makePackets(container, recording: box)
+		let broadcast = packet(id: 32, from: remote, text: "hi all")
+
+		await packets.textMessageAppPacket(packet: broadcast, wantRangeTestPackets: false, connectedNode: radioA, appState: nil)
+		await packets.savePendingChanges()
+		await packets.textMessageAppPacket(packet: broadcast, wantRangeTestPackets: false, connectedNode: radioB, appState: nil)
+		await packets.savePendingChanges()
+		try? await Task.sleep(for: .milliseconds(100))
+
+		#expect(box.value.count == 1)
+	}
+
 	@Test("A sent message and its echo merge on the key")
 	func sentMessageMergesWithEcho() async throws {
 		let container = try makeContainer()

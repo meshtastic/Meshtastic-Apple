@@ -27,6 +27,15 @@ enum ReceptionOutcome: Equatable {
 
 extension MeshPackets {
 
+	// MARK: - The user's radios
+
+	/// Node numbers of every radio the user has connected (one `MyInfoEntity` each). A packet
+	/// from any of them is the user's own, whichever radio delivered it (T047).
+	func localRadioNums() -> Set<Int64> {
+		let myInfos = (try? modelContext.fetch(FetchDescriptor<MyInfoEntity>())) ?? []
+		return Set(myInfos.map(\.myNodeNum).filter { $0 != 0 })
+	}
+
 	// MARK: - Receptions
 
 	/// Records that `radioNum` received `packet` and reports whether any local radio had it
