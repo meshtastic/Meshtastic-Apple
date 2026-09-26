@@ -74,7 +74,7 @@ phases don't change behaviour and keep the app shippable, which makes a rebase o
 
 ## Phase 5: Several sessions at once
 
-- [~] T060 `RadioSessionManager`: sessions dictionary, focus, cap of 4, facade forwards to the focused session. — first step in `40605d38`: the focused radio keeps `activeConnection` and the full flow; additional radios are `AdditionalRadio` sessions (`AccessoryManager+AdditionalRadios.swift`). A full `RadioSessionManager` that also owns the focused radio comes with focus switching without reconnecting (T082).
+- [~] T060 `RadioSessionManager`: sessions dictionary, focus, cap of 4, facade forwards to the focused session. — first step in `40605d38`: the focused radio keeps `activeConnection` and the full flow; additional radios are `AdditionalRadio` sessions (`AccessoryManager+AdditionalRadios.swift`). A full `RadioSessionManager` that also owns the focused radio comes with focus switching without reconnecting (T082). The split is replaced by D-17 (T068–T074).
 - [X] T061 `BLETransport`: per-peripheral connect continuations and active connections; route delegate callbacks by identifier; stop pausing the scan for the whole handshake. — commit `40605d38`, verified: `MultiRadioBLETransportTests`.
 - [X] T062 BLE restoration for every restored peripheral. — the preferred radio (else the first) is restored as the focused one, with its node number from its own `MyInfoEntity.peripheralId` rather than always the preferred radio's. The others wait in `BLETransport.restoredStandby`; the remembered-radio reconnect after the focused connect claims each through `connect(to:)`, which takes over a link restored as connected and completes one restored while connecting. Any left after 3 minutes are released (`releaseUnclaimedRestoredPeripherals`). Verified: `MultiRadioBLERestorationTests` (focused choice, takeover, release). Needs the device test: iOS restoration can't run in the simulator.
 - [X] T063 Discovery keeps running while connected; auto-connect uses the set of radios in `MyInfoEntity.autoConnect`. — discovery runs while connected on the Connect tab without changing the connection state (`40605d38`). Additional radios reconnect after a drop (`adfaad63`). Remembered radios (`autoConnect`, set when an additional radio connects, cleared when the user disconnects it) come back after the focused radio connects, and automatic connects are bounded to 20 s with CoreBluetooth's pending connect cancelled (`5754e69b`). Verified: `MultiRadioLifecycleTests`.
@@ -82,6 +82,16 @@ phases don't change behaviour and keep the app shippable, which makes a rebase o
 - [X] T065 Per-session firmware gate, lockdown and OTA scope. — commit `a32319ad` (`AccessoryManager+AdditionalRadioGates.swift`): a locked additional radio gets the passphrase saved for its peripheral once; after an unlock its waiting want-config is re-sent; no usable passphrase, or firmware below `minimumVersion`, fails its connect with `AdditionalRadioNeedsFocusError` (shown on the Connect tab, not retried). `LockdownCoordinator` and the update gate stay the focused radio's. OTA: the focused radio's OTA already pauses additional reconnects (they need a focused radio) and the focus handover. Verified: `MultiRadioLockdownTests`.
 - [~] T066 Remove `switchToDevice`, `backupCurrentAndRestoreDatabase`, `defensiveResetIfForeignDatabase` and `isSwitchingDevices`. — commit `40605d38`: the foreign-store reset is now renumber-only (`renumberIfSameRadio`), and `switchToDevice` no longer backs up, clears or restores. T030 landed in `6a050ce5`; left: remove the now unused switch-era helpers (`backupCurrentAndRestoreDatabase` and friends) after the two-radio test confirms nothing still needs them.
 - [~] T067 Tests: several mock sessions; BLE continuation routing with a fake central. — `MultiRadioSessionTests` and `MultiRadioBLETransportTests` (`40605d38`). Left: the two-stream replay through the real dispatch (was T050).
+
+### Every radio the same (D-17, plan.md › Every radio the same)
+
+- [~] T068 Characterization tests of today's connect flow (Steps 0–8) with a fake connection.
+- [ ] T069 Per-connection state onto `RadioSession`; `AccessoryManager` forwards to the focused session. No behaviour change.
+- [ ] T070 Split the connect steps into per-radio and once-per-app work.
+- [ ] T071 Every radio runs the same connect steps; remove the `AdditionalRadio` flow. Closes the gaps in plan.md's table (firmware warnings, region presets, firmware edition, canned messages, ringtone, timezone, heartbeat timeout, per-radio range test and store and forward).
+- [ ] T072 Focus as a pointer change: switching, focus handover and Disconnect on the focused radio don't reconnect anything.
+- [ ] T073 Lock-down passphrase and firmware update prompts for any connected radio, naming it.
+- [ ] T074 Device checklist additions for the unified flow (HANDOFF.md).
 
 **Checkpoint**: two TCP radios, or a mock pair, stay connected and ingest into one store.
 

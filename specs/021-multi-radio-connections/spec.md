@@ -37,6 +37,7 @@ reception details) is kept per radio.
 | D-14 | Two radios have "the same channel" when the display name and key match. For an unnamed primary channel the modem preset must also match. |
 | D-15 | Test hardware: several BLE radios, possibly one TCP radio. Simulator covers unit, migration and replay tests. A manual checklist covers devices. All testing happens on the Mac; the owner's phones are never used. |
 | D-16 | Schema changes follow the project's existing pattern: one `VersionedSchema` (V1) whose models change additively, relying on SwiftData's lightweight migration and proven by `SchemaHistoryUpgradeTests`. No frozen copies, no custom migration stages. Data backfills run as resumable jobs in the app. Decided 2026-09-25 after the T020 spike. |
+| D-17 | Every connected radio works the same way: the same connect flow, services, prompts and handling. The focused radio is only the default for Settings, sending and the services that follow it. Decided 2026-09-26; replaces the focused/additional split of the first Phase 5 step. See plan.md › Every radio the same. |
 
 ## Functional requirements
 

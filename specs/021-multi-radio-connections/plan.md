@@ -59,6 +59,54 @@ continuations, config refresh) still lives on `AccessoryManager`; it moves onto 
 Phase 5, when there is more than one, because moving it earlier means reworking the single-connection
 retry and teardown flow twice.
 
+## Every radio the same (D-17, decided 2026-09-26)
+
+The first multi-radio step (`40605d38`) made one radio "focused", with the full connect flow on
+`AccessoryManager`, and every other radio an `AdditionalRadio` with a shorter flow of its own
+(`AccessoryManager+AdditionalRadios.swift`). That was a shortcut, not the design: the owner
+needs every connected radio to work the same way. Focus only picks the default for Settings,
+sending and the services that follow it. It must never decide what a radio can do.
+
+What the split left behind (read from the code, 2026-09-26):
+
+| Area | Focused radio | Other radios |
+|---|---|---|
+| Connect | Steps 0–8 (`AccessoryManager+Connect.swift`) | Heartbeat, config and node-DB handshake, firmware check |
+| Heartbeat (TCP, serial) | Repeating timer plus a response timeout that closes a silent link | Sends every 15 s; gives up only when a send throws |
+| MQTT client proxy | `MqttClientProxyManager.shared` | `AdditionalRadioMqttBridge` |
+| Lock-down | `LockdownCoordinator` and its passphrase sheet | Saved passphrase only, otherwise turned away |
+| Firmware below `minimumVersion` | Stays connected behind the update screen | Turned away |
+| Firmware warnings (`clientNotification`) | Shown | Dropped (no case in `processAdditionalFromRadio`) |
+| Region presets, firmware edition | Stored on the manager | Dropped |
+| Canned messages, ringtone, blank timezone | Requested / filled in | Not |
+| Range test, store and forward | The focused radio's config decides for every radio's packets (`wantRangeTestPackets`) | Same flag |
+| Status (`state`, `isConnected`, node count while loading) | `@Published` on the manager | Only the Connect tab row |
+| Changing focus | — | `switchToDevice` disconnects both radios and runs a full connect and node-DB download for each |
+
+The target is the architecture above: `RadioSession` holds all per-connection state, every radio
+runs the same connect steps, `AccessoryManager` forwards its current properties to the focused
+session so the views don't change, and focus is a pointer change. Steps, each its own commit
+with the full suite passing and single-radio behaviour unchanged (tasks T068–T074):
+
+1. Characterization tests of today's connect flow with a fake connection (order of requests,
+   retries, lost bond, the Step 5 re-request guard, teardown). Only 6 test files touched the
+   connect internals before this, so these are the safety net for the rest.
+2. Move per-connection state onto `RadioSession`: stepper, event task, heartbeat timers, config
+   refresh and its waiters, node-DB gate and first-node continuation, lock-down state, firmware
+   edition, region presets, MQTT client, loading status, packet counters. The manager forwards.
+3. Split the steps into per-radio work and once-per-app work: the ingest actor recycle
+   (`MeshPackets.recreateShared`), the stale-node prune, the hardware catalog refresh and the
+   preferred radio. Stopping discovery after a connect goes (discovery stays on, T063).
+4. Every radio runs the per-radio steps; delete `AdditionalRadio`'s flow (`processAdditionalFromRadio`,
+   `requestHandshake`, its heartbeat, `AdditionalRadioMqttBridge`, `handleAdditionalLockdown`).
+5. Focus as a pointer change: `switchToDevice` for a connected radio, the focus handover and
+   Disconnect on the focused radio stop reconnecting.
+6. Lock-down and firmware prompts for any radio, naming the radio, instead of turning it away.
+7. Clean-up (T066, T110, T111) and docs.
+
+Things the code can't settle, left for the device test: CoreBluetooth with four links, lock-down
+firmware's reaction to a replayed status, and whether firmware warnings go to every phone link.
+
 ## Schema changes (D-16)
 
 This follows report §13.3, adjusted for D-06 and for how this project actually evolves its schema.

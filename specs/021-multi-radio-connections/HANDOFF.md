@@ -51,8 +51,9 @@ Read this first if you are picking the work up. Update it in the same commit as 
   Watch (T102–T105) in the commit after it. See tasks.md for the partial ones.
 - Mesh Multi (`~/Applications/Mesh Multi.app`, side-by-side, own container) is rebuilt from the
   latest commit on this branch and ready for the first two-radio test below. Not yet run by anyone.
-- Next up: the focused/additional unification (T060, with T013/T014/T018 and focus without
-  reconnecting in T082), done in steps that each pass the full suite. The owner's two-radio test
+- Next up: D-17, every radio the same (T068–T074 in tasks.md, steps in plan.md › Every radio the
+  same), done in steps that each pass the full suite. Don't design around the focused/additional
+  split: it was a shortcut, and the owner needs every radio to work the same way. The owner's two-radio test
   waits on hardware; don't rebuild Mesh Multi for it unless asked. Removing the switch-era
   helpers (T066) waits for that test.
 - Baseline and latest: the full suite passes in the iOS Simulator (3,368 Swift Testing tests plus
@@ -98,7 +99,9 @@ Read this first if you are picking the work up. Update it in the same commit as 
 
 ## In progress
 
-_Nothing. When you start a task, mark it `[~]` in tasks.md and note it here._
+- T068 (started 2026-09-26): characterization tests of the focused radio's connect flow, the
+  first step of D-17 (every radio the same; plan.md › Every radio the same). Next: T069.
+  When you start a task, mark it `[~]` in tasks.md and note it here.
 
 ## Blocked / waiting on the owner
 
