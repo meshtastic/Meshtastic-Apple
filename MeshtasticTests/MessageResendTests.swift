@@ -53,6 +53,39 @@ struct MessageResendTests {
 		#expect(message.messageId == 987_654)
 	}
 
+	@Test func aFailedTransmitPutsTheRowBackToFailed() {
+		// A transmit that never leaves must not leave the row in "Sending…". It would show no
+		// retry action until the ack timeout turned it into "Not delivered" minutes later, so
+		// the one thing the user wants to do again is the one thing they cannot.
+		let message = failedMessage(sentAgo: 10 * 60)
+		let originalError = message.ackError
+		let originalTimestamp = message.messageTimestamp
+
+		message.markResending()
+		#expect(message.deliveryStatus(isDirectMessage: true).text == MessageDeliveryStatus.sending.text)
+
+		message.markResendFailed(ackError: originalError, timestamp: originalTimestamp)
+
+		#expect(message.ackError == originalError)
+		#expect(message.messageTimestamp == originalTimestamp, "and back where it was in the thread")
+		#expect(message.deliveryStatus(isDirectMessage: true).canRetry, "retryable again straight away")
+	}
+
+	@Test func anAcknowledgementDuringTheTransmitWins() {
+		// The ack says the message got through, whatever the transport reported afterwards.
+		let message = failedMessage()
+		let originalError = message.ackError
+		let originalTimestamp = message.messageTimestamp
+		message.markResending()
+
+		message.receivedACK = true
+		message.realACK = true
+		message.markResendFailed(ackError: originalError, timestamp: originalTimestamp)
+
+		#expect(message.ackError == 0, "not dragged back to failed")
+		#expect(message.deliveryStatus(isDirectMessage: true).text == MessageDeliveryStatus.deliveredToRecipient.text)
+	}
+
 	@Test func aResendMovesTheTimestampForward() {
 		// The one that is easy to miss. Status is derived from how long ago the message was
 		// sent, so leaving the old timestamp in place would put it past sendAckTimeout

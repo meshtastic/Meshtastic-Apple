@@ -558,13 +558,22 @@ extension AccessoryManager {
 			Logger.services.error("Error while resending a message. No active device.")
 			throw AccessoryError.ioFailed("No active device")
 		}
+		// Not a silent return the way the first send treats an empty draft: there is no draft
+		// here, just a stored message with nothing in it. Returning would tell the caller the
+		// resend succeeded, and the channel path would report the message as sent.
 		guard let payload = message.messagePayload, !payload.isEmpty else {
-			Logger.mesh.info("🚫 Don't resend an empty message")
-			return
+			Logger.mesh.error("🚫 Cannot resend \(message.messageId, privacy: .public); it has no payload")
+			throw AccessoryError.ioFailed("Cannot resend a message with no payload")
 		}
 
 		let toUserNum = message.toUser?.num ?? 0
 		let messageId = message.messageId
+
+		// Kept so the row can go back to failed if the transmit never leaves: otherwise the
+		// message sits in "Sending…" with no retry action until the ack timeout turns it into
+		// "Not delivered", which is five minutes of looking like it is still on its way.
+		let previousAckError = message.ackError
+		let previousTimestamp = message.messageTimestamp
 
 		// The row goes back to "Sending…" and stays in place. Saved before the transmit for the
 		// same reason the first send is: the mesh echoes the packet back within seconds and the
@@ -617,7 +626,14 @@ extension AccessoryManager {
 		toRadio.packet = meshPacket
 		let logString = String.localizedStringWithFormat(
 			"Resent message %@ from %@ to %@".localized, String(messageId), fromUserNum.toHex(), toUserNum.toHex())
-		try await send(toRadio, debugDescription: logString)
+		do {
+			try await send(toRadio, debugDescription: logString)
+		} catch {
+			message.markResendFailed(ackError: previousAckError, timestamp: previousTimestamp)
+			try? context.save()
+			Logger.mesh.error("💥 Could not resend \(messageId, privacy: .public): \(error.localizedDescription, privacy: .public)")
+			throw error
+		}
 		Logger.mesh.info("💬 \(logString, privacy: .public)")
 	}
 
