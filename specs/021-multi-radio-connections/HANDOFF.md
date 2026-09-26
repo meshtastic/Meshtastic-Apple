@@ -38,7 +38,9 @@ Read this first if you are picking the work up. Update it in the same commit as 
   `d08fde38`. Node detail "Heard By" and favorite/ignore on every radio (T088, D-11) in
   `2af545de`. Focus keeps the previous radio (`6ae292ca`). Toolbar radio menu, Settings note and
   "on <radio>" in notifications (T082, T089, T091) in `bca4ecef`; the DM badge totals every radio
-  (T090) in `2d7ab3fa`. See tasks.md for the partial ones.
+  (T090) in `2d7ab3fa`. Notification links open the right radio's thread (T091) in `d22f9206`;
+  phone position to every radio (T101) in `3cb4e11a`; Disconnect on the focused radio hands the
+  focus to another connected radio in `721bc873`. See tasks.md for the partial ones.
 - Mesh Multi (`~/Applications/Mesh Multi.app`, side-by-side, own container) is rebuilt from the
   latest commit on this branch and ready for the first two-radio test below. Not yet run by anyone.
 - Next up: the owner's two-radio test; then BLE
@@ -216,6 +218,12 @@ describes it well enough to rebuild.
   wins. That's why favorite/ignore go to every connected radio (`setFavorite`, `setIgnored`).
   A radio that was offline when the user changed it will flip the flag back when it next
   connects; syncing on reconnect is not built.
+- Focus when things go wrong: only the Connect tab's Disconnect hands the focus on. If the
+  focused radio drops (out of range, powered off), the others stay connected and keep
+  receiving, but nothing is focused (the app shows "not connected") until the preferred radio's
+  own reconnect brings it back. At launch, remembered radios only come back after the preferred
+  radio connects; if it's off, none do. Both are candidates for the next step (promote a
+  connected radio after a timeout; fall back to a remembered radio at launch).
 - Editing tools: after changing a file with a script (`python3 /tmp/x.py`), re-read it before
   using the editor's find-and-replace on it. Once the editor applied an edit to its own stale
   copy of `UserMessageList.swift` and silently undid a script's refactor; `git diff` caught it.
