@@ -229,5 +229,6 @@ CI is handled by Xcode Cloud via `ci_scripts/ci_pre_xcodebuild.sh`. Do not modif
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan
-at `specs/013-docs-release-versioning/plan.md`
+at `specs/021-multi-radio-connections/plan.md`
+(work in progress: start with `specs/021-multi-radio-connections/HANDOFF.md`)
 <!-- SPECKIT END -->
