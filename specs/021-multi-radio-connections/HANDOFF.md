@@ -31,9 +31,10 @@ Read this first if you are picking the work up. Update it in the same commit as 
   sessions, per-peripheral BLE, no more store wipe on switch) and the connect dialog in
   `40605d38`; see tasks.md for the partial ones.
 - Mesh Multi (`~/Applications/Mesh Multi.app`, side-by-side, own container) was rebuilt from
-  `40605d38` and is ready for the first two-radio test below. Not yet run by anyone.
-- Next up: the owner's two-radio test; then auto-reconnect for additional radios (T063), BLE
-  restoration (T062), and the handshake gate (T064). T030 (merge old backups) before release.
+  `adfaad63` (adds reconnect of additional radios) and is ready for the first two-radio test
+  below. Not yet run by anyone.
+- Next up: the owner's two-radio test; then BLE restoration (T062), the handshake gate (T064),
+  and auto-connect of remembered radios at launch. T030 (merge old backups) before release.
 - Baseline and latest: the full suite passes in the iOS Simulator (3,326 Swift Testing tests plus
   29 XCTests, about 35–45 seconds of test time).
 
@@ -47,7 +48,9 @@ Read this first if you are picking the work up. Update it in the same commit as 
 5. ⋯ → Disconnect on B: A stays connected. Re-add B. ⋯ → Focus This Radio on B: A disconnects,
    B reconnects as focused, and nothing is wiped (messages and nodes from A remain).
 6. Settings › App Settings › Connecting Another Radio: try Keep Both / Switch.
-7. Worth watching: memory and CPU with two node dumps; any "Dropping an event from a
+7. Power-cycle B while both are connected: it should drop from "Also Connected" and come back
+   on its own (`🔗🔁` log lines). A disconnects nothing.
+8. Worth watching: memory and CPU with two node dumps; any "Dropping an event from a
    disconnected additional radio" spam; whether BLE scanning while connected upsets pairing.
 - Small pull requests, ready for the owner to push (each is one commit on `origin/main`):
   - `fix/restore-dropped-backup-fields` — the restore fix and its tests.
