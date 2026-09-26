@@ -129,7 +129,8 @@ enum AccessoryManagerState: Equatable {
 	}
 }
 
-private struct AutomaticConfigRefresh {
+/// A config-only want-config running on one connection (`RadioSession.automaticConfigRefresh`).
+struct AutomaticConfigRefresh {
 	let owner: AutomaticChannelRefreshOwner
 	let sessionID: UUID
 	let channelRefreshBaselineByNode: [Int64: [ChannelRefreshSnapshot]]
@@ -329,7 +330,8 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	/// Consumes `BLETransport.statusUpdates()` for the lifetime of this manager; see
 	/// `observeBLETransportStatus()`.
 	var bleStatusTask: Task<Void, Never>?
-	var connectionEventTask: Task <Void, Error>?
+	/// The focused connection's event loop (feature 021, T069: it lives on the session).
+	var connectionEventTask: Task<Void, Error>? { activeConnection?.eventTask }
 	var locationTask: Task<Void, Error>?
 	/// The detached device image/link pass spawned by connect Step 3b. Held so a disconnect can
 	/// cancel it — otherwise, on a captive portal, its ~78 image HEADs hang ~60s each (no request
@@ -375,18 +377,16 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	// default main delegateQueue, so onMqttMessageReceived runs on MainActor.
 	var mqttProxyDroppedNoPayload: Int = 0
 	
-	// Continuations
-	private var activeAutomaticConfigRefresh: AutomaticConfigRefresh?
-	private var automaticConfigRefreshTask: Task<Void, Never>?
+	// Continuations. The config refresh, the first-node wait and the node-DB gate belong to one
+	// connection and live on its `RadioSession` (feature 021, T069).
 	private var nextAutomaticConfigRefreshGeneration: UInt64 = 0
-	var firstDatabaseNodeInfoContinuation: CheckedContinuation<Void, Error>?
-	var wantDatabaseGate: AsyncGate = AsyncGate()
 
 	// Misc
 	@Published var expectedNodeDBSize: Int?
 	
-	var heartbeatTimer: ResettableTimer?
-	var heartbeatResponseTimer: ResettableTimer?
+	/// The focused connection's heartbeat timers (on its `RadioSession`, T069).
+	var heartbeatTimer: ResettableTimer? { activeConnection?.heartbeatTimer }
+	var heartbeatResponseTimer: ResettableTimer? { activeConnection?.heartbeatResponseTimer }
 	/// How long a TCP/serial connection may sit idle (no data or log packets) before we send a
 	/// keep-alive heartbeat. The timer is resettable, so an active link never sends one — heartbeats
 	/// only fire after this much silence. BLE does not use this at all (Core Bluetooth manages the
@@ -462,13 +462,14 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	}
 
 	func sendWantConfig() async throws {
-		if let activeAutomaticConfigRefresh {
-			return try await waitForAutomaticConfigRefresh(activeAutomaticConfigRefresh.owner)
-		}
-		guard let connection = activeConnection?.connection else {
+		guard let session = activeConnection else {
 			Logger.transport.error("Unable to send wantConfig (config): No device connected")
 			return
 		}
+		if let refresh = session.automaticConfigRefresh {
+			return try await waitForAutomaticConfigRefresh(refresh.owner, session: session)
+		}
+		let connection = session.connection
 
 		// Note: stale-node pruning used to run here, serializing a full fetch+delete+save on the
 		// ingestion actor ahead of the config handshake and node-DB dump (one cause of slow/hung
@@ -476,24 +477,24 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		// also prunes against post-dump lastHeard values instead of pre-dump ones.
 		nextAutomaticConfigRefreshGeneration &+= 1
 		let owner = AutomaticChannelRefreshOwner(
-			sessionID: activeConnection?.device.id ?? UUID(),
+			sessionID: session.device.id,
 			generation: nextAutomaticConfigRefreshGeneration
 		)
 		let channelRefreshBaselineByNode = MeshPackets.captureChannelRefreshBaselines(in: context)
-		activeAutomaticConfigRefresh = AutomaticConfigRefresh(
+		session.automaticConfigRefresh = AutomaticConfigRefresh(
 			owner: owner,
 			sessionID: owner.sessionID,
 			channelRefreshBaselineByNode: channelRefreshBaselineByNode,
-			nodeNum: activeConnection?.device.num ?? activeDeviceNum
+			nodeNum: session.device.num ?? activeDeviceNum
 		)
-		automaticConfigRefreshTask = Task { @MainActor [weak self] in
-			await self?.runAutomaticConfigRefresh(owner: owner, connection: connection)
+		session.automaticConfigRefreshTask = Task { @MainActor [weak self] in
+			await self?.runAutomaticConfigRefresh(owner: owner, session: session, connection: connection)
 		}
-		try await waitForAutomaticConfigRefresh(owner)
+		try await waitForAutomaticConfigRefresh(owner, session: session)
 	}
 
-	private func runAutomaticConfigRefresh(owner: AutomaticChannelRefreshOwner, connection: Connection) async {
-		guard !Task.isCancelled, activeAutomaticConfigRefresh?.owner == owner else { return }
+	private func runAutomaticConfigRefresh(owner: AutomaticChannelRefreshOwner, session: RadioSession, connection: Connection) async {
+		guard !Task.isCancelled, session.automaticConfigRefresh?.owner == owner else { return }
 		do {
 			try Task.checkCancellation()
 			var toRadio: ToRadio = ToRadio()
@@ -503,19 +504,19 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			try await connection.startDrainPendingPackets()
 			try Task.checkCancellation()
 		} catch {
-			await finishAutomaticConfigRefresh(owner: owner, error: error)
+			await finishAutomaticConfigRefresh(owner: owner, session: session, error: error)
 		}
 	}
 
-	private func waitForAutomaticConfigRefresh(_ owner: AutomaticChannelRefreshOwner) async throws {
+	private func waitForAutomaticConfigRefresh(_ owner: AutomaticChannelRefreshOwner, session: RadioSession) async throws {
 		let waiterID = UUID()
 		try await withTaskCancellationHandler {
 			try await withCheckedThrowingContinuation { continuation in
-				registerAutomaticConfigRefreshWaiter(continuation, id: waiterID, owner: owner)
+				registerAutomaticConfigRefreshWaiter(continuation, id: waiterID, owner: owner, session: session)
 			}
 		} onCancel: {
 			Task { @MainActor in
-				self.cancelAutomaticConfigRefreshWaiter(id: waiterID, owner: owner)
+				self.cancelAutomaticConfigRefreshWaiter(id: waiterID, owner: owner, session: session)
 			}
 		}
 	}
@@ -523,30 +524,31 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	private func registerAutomaticConfigRefreshWaiter(
 		_ continuation: CheckedContinuation<Void, Error>,
 		id: UUID,
-		owner: AutomaticChannelRefreshOwner
+		owner: AutomaticChannelRefreshOwner,
+		session: RadioSession
 	) {
 		guard !Task.isCancelled,
-			  var refresh = activeAutomaticConfigRefresh,
+			  var refresh = session.automaticConfigRefresh,
 			  refresh.owner == owner else {
 			continuation.resume(throwing: CancellationError())
 			return
 		}
 		refresh.waiters[id] = continuation
-		activeAutomaticConfigRefresh = refresh
+		session.automaticConfigRefresh = refresh
 	}
 
-	private func cancelAutomaticConfigRefreshWaiter(id: UUID, owner: AutomaticChannelRefreshOwner) {
-		guard var refresh = activeAutomaticConfigRefresh,
+	private func cancelAutomaticConfigRefreshWaiter(id: UUID, owner: AutomaticChannelRefreshOwner, session: RadioSession) {
+		guard var refresh = session.automaticConfigRefresh,
 			  refresh.owner == owner,
 			  let continuation = refresh.waiters.removeValue(forKey: id) else { return }
-		activeAutomaticConfigRefresh = refresh
+		session.automaticConfigRefresh = refresh
 		continuation.resume(throwing: CancellationError())
 	}
 
-	private func finishAutomaticConfigRefresh(owner: AutomaticChannelRefreshOwner, error: Error?) async {
-		guard let refresh = activeAutomaticConfigRefresh, refresh.owner == owner else { return }
-		activeAutomaticConfigRefresh = nil
-		automaticConfigRefreshTask = nil
+	private func finishAutomaticConfigRefresh(owner: AutomaticChannelRefreshOwner, session: RadioSession, error: Error?) async {
+		guard let refresh = session.automaticConfigRefresh, refresh.owner == owner else { return }
+		session.automaticConfigRefresh = nil
+		session.automaticConfigRefreshTask = nil
 		if let error {
 			if let nodeNum = refresh.nodeNum {
 				await MeshPackets.shared.discardChannelRefreshStage(for: nodeNum, owner: owner)
@@ -561,18 +563,18 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		}
 	}
 
-	func beginAutomaticChannelRefreshStageIfNeeded(for nodeNum: Int64) async {
-		guard var refresh = activeAutomaticConfigRefresh,
-			  refresh.sessionID == activeConnection?.device.id else { return }
+	func beginAutomaticChannelRefreshStageIfNeeded(for nodeNum: Int64, session: RadioSession) async {
+		guard var refresh = session.automaticConfigRefresh,
+			  refresh.sessionID == session.device.id else { return }
 		refresh.nodeNum = nodeNum
-		activeAutomaticConfigRefresh = refresh
+		session.automaticConfigRefresh = refresh
 		let owner = refresh.owner
 		let didBegin = await MeshPackets.shared.beginChannelRefreshStage(
 			for: nodeNum,
 			owner: owner,
 			baseline: refresh.channelRefreshBaselineByNode[nodeNum] ?? []
 		)
-		guard didBegin, activeAutomaticConfigRefresh?.owner == owner else {
+		guard didBegin, session.automaticConfigRefresh?.owner == owner else {
 			if didBegin {
 				await MeshPackets.shared.discardChannelRefreshStage(for: nodeNum, owner: owner)
 			}
@@ -581,16 +583,16 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	}
 
 	func sendWantDatabase() async throws {
-		if let firstDatabaseNodeInfoContinuation = firstDatabaseNodeInfoContinuation {
-			Logger.transport.info("[Accessory] Existing continuation for firstDatabaseNodeInfo. Cancelling.")
-			self.firstDatabaseNodeInfoContinuation = nil
-			firstDatabaseNodeInfoContinuation.resume(throwing: CancellationError())
-		}
-		
-		guard let connection = activeConnection?.connection else {
+		guard let session = activeConnection else {
 			Logger.transport.error("Unable to send wantConfig (Database): No device connected")
 			return
 		}
+		if let firstDatabaseNodeInfoContinuation = session.firstDatabaseNodeInfoContinuation {
+			Logger.transport.info("[Accessory] Existing continuation for firstDatabaseNodeInfo. Cancelling.")
+			session.firstDatabaseNodeInfoContinuation = nil
+			firstDatabaseNodeInfoContinuation.resume(throwing: CancellationError())
+		}
+		let connection = session.connection
 		
 		try await withTaskCancellationHandler {
 			var toRadio: ToRadio = ToRadio()
@@ -598,14 +600,14 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			try await self.send(toRadio)
 			try await connection.startDrainPendingPackets()
 			try await withCheckedThrowingContinuation { cont in
-				firstDatabaseNodeInfoContinuation = cont
+				session.firstDatabaseNodeInfoContinuation = cont
 			}
-			firstDatabaseNodeInfoContinuation = nil
+			session.firstDatabaseNodeInfoContinuation = nil
 			Logger.transport.info("✅ [Accessory] NONCE_ONLY_DB first NodeInfo received.")
 		} onCancel: {
 			Task { @MainActor in
-				if let continuation = firstDatabaseNodeInfoContinuation {
-					firstDatabaseNodeInfoContinuation = nil
+				if let continuation = session.firstDatabaseNodeInfoContinuation {
+					session.firstDatabaseNodeInfoContinuation = nil
 					continuation.resume(throwing: CancellationError())
 				}
 			}
@@ -613,7 +615,10 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	}
 	
 	func waitForWantDatabaseResponse() async throws {
-		try await wantDatabaseGate.wait()
+		guard let session = activeConnection else {
+			throw AccessoryError.disconnected("No device connected")
+		}
+		try await session.wantDatabaseGate.wait()
 	}
 
 	// Fully tears down a connection and sets up the AccessoryManager for the next.
@@ -636,6 +641,8 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		Logger.datadog.clearRadioContext()
 
 		let closingNodeNum = activeConnection?.device.num ?? activeDeviceNum
+		// The connection's own state lives on its session (T069); keep hold of it while it's torn down.
+		let closing = activeConnection
 
 		if let activeConnection {
 			updateDevice(deviceId: activeConnection.device.id, key: \.connectionState, value: .disconnected)
@@ -646,9 +653,9 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		scheduleFocusHandover(previousRadio: closingNodeNum)
 		self.activeDeviceNum = nil
 		self.firmwareUpdateRequired = false
-		if let refresh = activeAutomaticConfigRefresh {
-			automaticConfigRefreshTask?.cancel()
-			await finishAutomaticConfigRefresh(owner: refresh.owner, error: CancellationError())
+		if let closing, let refresh = closing.automaticConfigRefresh {
+			closing.automaticConfigRefreshTask?.cancel()
+			await finishAutomaticConfigRefresh(owner: refresh.owner, session: closing, error: CancellationError())
 		} else if let closingNodeNum {
 			await MeshPackets.shared.discardChannelRefreshStage(for: closingNodeNum)
 		}
@@ -661,8 +668,8 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		// keep the map flyover paused after the mesh goes quiet on disconnect.
 		meshTrafficMonitor.reset()
 
-		connectionEventTask?.cancel()
-		connectionEventTask = nil
+		closing?.eventTask?.cancel()
+		closing?.eventTask = nil
 
 		locationTask?.cancel()
 		locationTask = nil
@@ -673,19 +680,19 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		deviceRefreshTask?.cancel()
 		deviceRefreshTask = nil
 		
-		await heartbeatTimer?.cancel(withReason: "Closing connection")
-		await heartbeatResponseTimer?.cancel(withReason: "Closing connection")
-		heartbeatTimer = nil
-		heartbeatResponseTimer = nil
+		await closing?.heartbeatTimer?.cancel(withReason: "Closing connection")
+		await closing?.heartbeatResponseTimer?.cancel(withReason: "Closing connection")
+		closing?.heartbeatTimer = nil
+		closing?.heartbeatResponseTimer = nil
 		
 		// Clean up continuations — nil before resume to prevent double-resume races
-		if let continuation = firstDatabaseNodeInfoContinuation {
-			firstDatabaseNodeInfoContinuation = nil
+		if let continuation = closing?.firstDatabaseNodeInfoContinuation {
+			closing?.firstDatabaseNodeInfoContinuation = nil
 			continuation.resume(throwing: CancellationError())
 		}
 		
-		await wantDatabaseGate.cancelAll()
-		await wantDatabaseGate.reset()
+		await closing?.wantDatabaseGate.cancelAll()
+		await closing?.wantDatabaseGate.reset()
 
 		// Stop the MQTT proxy so it doesn't forward broker packets over BLE during reconnect,
 		// which would starve the wantConfig handshake. initializeMqtt() restarts it in Step 8.
@@ -869,8 +876,8 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 				MeshPackets.recreateShared()
 			}
 			Task {
-				await self.heartbeatResponseTimer?.cancel(withReason: "Data packet received")
-				await self.heartbeatTimer?.reset(delay: .seconds(Self.heartbeatInterval))
+				await source.heartbeatResponseTimer?.cancel(withReason: "Data packet received")
+				await source.heartbeatTimer?.reset(delay: .seconds(Self.heartbeatInterval))
 			}
 
 		case .logMessage(let message):
@@ -880,8 +887,8 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			}
 			self.didReceiveLog(message: message)
 			Task {
-				await self.heartbeatResponseTimer?.cancel(withReason: "Log message packet received")
-				await self.heartbeatTimer?.reset(delay: .seconds(Self.heartbeatInterval))
+				await source?.heartbeatResponseTimer?.cancel(withReason: "Log message packet received")
+				await source?.heartbeatTimer?.reset(delay: .seconds(Self.heartbeatInterval))
 			}
 		
 		case .rssiUpdate(let rssi):
@@ -1263,8 +1270,8 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			Logger.transport.info("✅ [Accessory] Notifying completions that have completed for configCompleteID: \(configCompleteID)")
 			switch configCompleteID {
 			case UInt32(NONCE_ONLY_CONFIG):
-				guard let refresh = activeAutomaticConfigRefresh,
-					  refresh.sessionID == activeConnection?.device.id else {
+				guard let refresh = session.automaticConfigRefresh,
+					  refresh.sessionID == session.device.id else {
 					Logger.transport.warning("[Accessory] Ignoring config completion without its active refresh owner")
 					break
 				}
@@ -1272,16 +1279,16 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 					await MeshPackets.shared.commitChannelRefreshStage(for: completedNodeNum, owner: refresh.owner)
 					MeshShareSnapshotBuilder.refresh(nodeNum: completedNodeNum, context: context)
 				}
-				await finishAutomaticConfigRefresh(owner: refresh.owner, error: nil)
+				await finishAutomaticConfigRefresh(owner: refresh.owner, session: session, error: nil)
 				
 			case UInt32(NONCE_ONLY_DB):
 				// Open the gate for the wantDatabaseContinuation
-				Task { await wantDatabaseGate.open() }
+				Task { await session.wantDatabaseGate.open() }
 
 				// If we get the "done" for NONCE_ONLY_DB, but are still waiting for the first NodeInfo,
 				// Then the database is probably empty, and can continue
-				if let firstDatabaseNodeInfoContinuation {
-					self.firstDatabaseNodeInfoContinuation = nil
+				if let firstDatabaseNodeInfoContinuation = session.firstDatabaseNodeInfoContinuation {
+					session.firstDatabaseNodeInfoContinuation = nil
 					firstDatabaseNodeInfoContinuation.resume()
 				}
 
@@ -1465,16 +1472,17 @@ extension AccessoryManager {
 
 extension AccessoryManager {
 	func setupPeriodicHeartbeat() async {
-		if heartbeatTimer != nil {
+		guard let session = activeConnection else { return }
+		if session.heartbeatTimer != nil {
 			Logger.transport.debug("💓 [Heartbeat] Cancelling existing heartbeat timer")
-			await self.heartbeatTimer?.cancel(withReason: "Duplicate setup, cancelling previous timer")
-			self.heartbeatTimer = nil
+			await session.heartbeatTimer?.cancel(withReason: "Duplicate setup, cancelling previous timer")
+			session.heartbeatTimer = nil
 		}
 		
 		// No debugName: this timer is reset on every received data/log packet, so a per-reset debug
 		// line would flood the log on busy TCP/serial links. The meaningful "heartbeat sent" log
 		// below still fires only when a heartbeat is actually sent (i.e. after an idle interval).
-		self.heartbeatTimer = ResettableTimer(isRepeating: true) {
+		session.heartbeatTimer = ResettableTimer(isRepeating: true) {
 			Logger.transport.debug("💓 [Heartbeat] Sending periodic heartbeat")
 			try? await self.sendHeartbeat()
 		}
@@ -1485,7 +1493,7 @@ extension AccessoryManager {
 			// No debugName: this timer is cancelled on every received data/log packet, so a per-cancel
 			// debug line would flood the log on busy links. The timeout error below still fires if a
 			// heartbeat truly goes unanswered.
-			self.heartbeatResponseTimer = ResettableTimer(isRepeating: false) { @MainActor in
+			session.heartbeatResponseTimer = ResettableTimer(isRepeating: false) { @MainActor in
 				Logger.transport.error("💓 [Heartbeat] Connection Timeout: Did not receive a packet after heartbeat.")
 				// If we're in the middle of a connection cancel it.
 				await self.connectionStepper?.cancel()
@@ -1499,7 +1507,7 @@ extension AccessoryManager {
 				}
 			}
 		}
-		await self.heartbeatTimer?.reset(delay: .seconds(Self.heartbeatInterval))
+		await session.heartbeatTimer?.reset(delay: .seconds(Self.heartbeatInterval))
 	}
 }
 

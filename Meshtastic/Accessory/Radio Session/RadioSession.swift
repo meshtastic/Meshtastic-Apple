@@ -32,4 +32,23 @@ final class RadioSession: Identifiable {
 
 	/// The radio's node number, once MyInfo has arrived.
 	var nodeNum: Int64? { device.num }
+
+	// MARK: - Connection lifecycle (feature 021, T069)
+
+	// State that belongs to this one connection, so each connected radio has its own
+	// (plan.md › Every radio the same). `AccessoryManager` drives it for the focused radio.
+
+	/// Delivers this connection's events to `AccessoryManager.didReceive(_:from:)`.
+	var eventTask: Task<Void, Error>?
+	/// For transports that need one: the idle heartbeat, and the timeout that closes the link
+	/// when a heartbeat goes unanswered (firmware 2.7.4 and later).
+	var heartbeatTimer: ResettableTimer?
+	var heartbeatResponseTimer: ResettableTimer?
+	/// Connect Step 5: resumed by the first NodeInfo of the node-DB dump, or by its completion.
+	var firstDatabaseNodeInfoContinuation: CheckedContinuation<Void, Error>?
+	/// Connect Step 5a: opened when the node-DB dump completes.
+	let wantDatabaseGate = AsyncGate()
+	/// A config-only want-config in progress (`AccessoryManager.sendWantConfig`), and its task.
+	var automaticConfigRefresh: AutomaticConfigRefresh?
+	var automaticConfigRefreshTask: Task<Void, Never>?
 }

@@ -346,6 +346,9 @@ struct ConnectFlowCharacterizationTests {
 		let radio = ScriptedRadio(nodeNum: uniqueNodeNum())
 		let manager = makeManager(ScriptedTransport(radio: radio))
 		try await manager.connect(to: device())
+		// The connection's own state is on its session (T069); check the one that was closed.
+		let session = try #require(manager.activeConnection)
+		#expect(session.eventTask != nil)
 
 		try await manager.disconnect()
 
@@ -354,9 +357,11 @@ struct ConnectFlowCharacterizationTests {
 		#expect(manager.state == .discovering)
 		#expect(!manager.isConnected)
 		#expect(!manager.allowDisconnect)
-		#expect(manager.connectionEventTask == nil)
+		#expect(session.eventTask == nil)
+		#expect(session.heartbeatTimer == nil)
+		#expect(session.firstDatabaseNodeInfoContinuation == nil)
+		#expect(session.automaticConfigRefresh == nil)
 		#expect(manager.locationTask == nil)
-		#expect(manager.heartbeatTimer == nil)
 		#expect(await radio.disconnects == 1)
 	}
 
@@ -471,11 +476,12 @@ struct ConnectFlowCharacterizationTests {
 		let manager = makeManager(ScriptedTransport(radio: radio, requiresPeriodicHeartbeat: true))
 		try await manager.connect(to: device())
 
-		#expect(manager.heartbeatTimer != nil)
-		#expect(manager.heartbeatResponseTimer != nil, "firmware 2.7.4 and later answers heartbeats")
+		let session = try #require(manager.activeConnection)
+		#expect(session.heartbeatTimer != nil)
+		#expect(session.heartbeatResponseTimer != nil, "firmware 2.7.4 and later answers heartbeats")
 		try await manager.disconnect()
-		#expect(manager.heartbeatTimer == nil)
-		#expect(manager.heartbeatResponseTimer == nil)
+		#expect(session.heartbeatTimer == nil)
+		#expect(session.heartbeatResponseTimer == nil)
 	}
 
 	@Test("An error from the link tears the connection down and keeps automatic reconnects on")

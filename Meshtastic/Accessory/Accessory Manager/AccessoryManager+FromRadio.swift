@@ -225,7 +225,7 @@ extension AccessoryManager {
 				// Onboard a new device connection here
 			}
 		}
-		await beginAutomaticChannelRefreshStageIfNeeded(for: Int64(myNodeInfo.myNodeNum))
+		await beginAutomaticChannelRefreshStageIfNeeded(for: Int64(myNodeInfo.myNodeNum), session: session)
 
 		// Auto-disable new-node notifications for event firmware editions
 		applyEventFirmwareNotificationDefaults(myNodeInfo.firmwareEdition)
@@ -323,8 +323,8 @@ extension AccessoryManager {
 
 	func handleNodeInfo(_ nodeInfo: NodeInfo, session: RadioSession? = nil) async {
 		let session = session ?? activeConnection
-		if let continuation = self.firstDatabaseNodeInfoContinuation {
-			self.firstDatabaseNodeInfoContinuation = nil
+		if let continuation = session?.firstDatabaseNodeInfoContinuation {
+			session?.firstDatabaseNodeInfoContinuation = nil
 			continuation.resume()
 		}
 

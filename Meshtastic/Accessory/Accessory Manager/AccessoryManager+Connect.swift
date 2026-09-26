@@ -119,7 +119,7 @@ extension AccessoryManager {
 					// Every event is tagged with the session it came from, so a late event from an
 					// earlier attempt's connection is never handled against this one.
 					let session = RadioSession(device: device, connection: connection)
-					self.connectionEventTask = Task {
+					session.eventTask = Task {
 						for await event in eventStream {
 							await self.didReceive(event, from: session)
 						}
