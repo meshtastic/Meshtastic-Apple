@@ -16,6 +16,8 @@ struct TextMessageField: View {
 	var onMessageSent: (@MainActor () -> Void)?
 	/// The connected radio that sends (feature 021); nil means the focused radio.
 	var viaRadio: Int64?
+	/// That radio's slot for the channel, when it differs from the destination's.
+	var viaChannel: Int32?
 
 	@State private var typingMessage: String = ""
 	@State private var totalBytes = 0
@@ -160,7 +162,7 @@ struct TextMessageField: View {
 				try await accessoryManager.sendMessage(
 					message: typingMessage,
 					toUserNum: destination.userNum,
-					channel: destination.channelNum,
+					channel: viaChannel ?? destination.channelNum,
 					isEmoji: false,
 					replyID: replyMessageId,
 					viaRadio: viaRadio)

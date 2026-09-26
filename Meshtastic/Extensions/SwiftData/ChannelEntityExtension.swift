@@ -43,12 +43,15 @@ extension ChannelEntity {
 
 	@MainActor
 	func unreadMessages(context: ModelContext) -> Int {
-		let channelIndex = self.index
-		let descriptor = FetchDescriptor<MessageEntity>(
-			predicate: #Predicate<MessageEntity> { msg in
-				msg.channel == channelIndex && msg.isEmoji == false && msg.read == false
-			}
+		// Feature 021: with more than one radio, the channel's messages are grouped by its key
+		// (ChannelMessageQuery); with one, this is the slot query it always was.
+		let query = ChannelMessageQuery(
+			channelIndex: self.index,
+			channelKey: self.channelKey,
+			radioNum: self.myInfoChannel?.myNodeNum ?? 0,
+			multiRadio: ChannelMessageQuery.isMultiRadio(in: context)
 		)
+		let descriptor = FetchDescriptor<MessageEntity>(predicate: query.unreadCandidates())
 		let messages = (try? context.fetch(descriptor)) ?? []
 		return messages.filter { $0.toUser == nil }.count
 	}
