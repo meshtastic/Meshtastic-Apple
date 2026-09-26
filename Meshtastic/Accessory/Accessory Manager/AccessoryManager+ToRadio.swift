@@ -195,12 +195,17 @@ extension AccessoryManager {
 
 	// Send an admin message to a radio, save a message to core data for logging
 	private func sendAdminMessageToRadio(meshPacket: MeshPacket, adminDescription: String?) async throws {
-
-		var toRadio: ToRadio!
-		toRadio = ToRadio()
-		toRadio.packet = meshPacket
-
-		try await send(toRadio)
+		// Feature 021: the connected radio it goes through (`adminRoute(for:)`). With one radio
+		// that's always the focused radio, as before.
+		guard let session = adminRoute(for: meshPacket) else {
+			var toRadio = ToRadio()
+			toRadio.packet = meshPacket
+			try await send(toRadio)
+			return
+		}
+		var toRadio = ToRadio()
+		toRadio.packet = adminPacket(meshPacket, relayedBy: session)
+		try await send(toRadio, via: session)
 		if let adminDescription {
 			Logger.admin.debug("\(adminDescription, privacy: .public)")
 		}

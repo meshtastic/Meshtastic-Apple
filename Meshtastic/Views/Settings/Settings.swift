@@ -765,6 +765,15 @@ struct Settings: View {
 												accessoryManager.activeConnection?.device.transportType.icon ?? Image(systemName: "questionmark.circle")
 											}
 											.tag(Int(node.num))
+										} else if let radio = accessoryManager.connectedSession(forRadio: node.num) {
+											/// Another connected radio (feature 021): configured over its own
+											/// connection, as local admin (`adminRoute(for:)`).
+											Label {
+												Text("Connected") + Text(verbatim: ": \(node.userLongName?.addingVariationSelectors ?? "Unknown".localized)")
+											} icon: {
+												radio.device.transportType.icon
+											}
+											.tag(Int(node.num))
 										} else if node.canRemoteAdmin && UserDefaults.enableAdministration && node.hasSessionPasskey { /// Nodes using the new PKI system
 											Label {
 												Text("Remote PKI Admin: \(node.userLongName ?? "Unknown".localized)")
@@ -810,7 +819,7 @@ struct Settings: View {
 									Text("Connected Node \(node.userLongName?.addingVariationSelectors ?? "Unknown".localized)")
 								}
 							}
-							OtherRadiosSettingsNote()
+							OtherRadiosSettingsNote(canPickRadio: node.canRemoteAdmin)
 						}
 					}
 					radioConfigurationSection

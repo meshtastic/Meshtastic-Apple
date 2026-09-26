@@ -8,6 +8,7 @@
 import Foundation
 import MeshtasticProtobufs
 import OSLog
+import SwiftData
 
 // MARK: - Sending through a chosen radio (feature 021, T084/T085)
 
@@ -47,6 +48,51 @@ extension AccessoryManager {
 		if let debugDescription {
 			Logger.transport.info("📻 [\(session.device.shortName ?? session.device.name, privacy: .public)] \(debugDescription, privacy: .public)")
 		}
+	}
+
+	// MARK: - Admin routing (T089)
+
+	/// The connected radio an admin packet goes through:
+	/// - addressed to one of the user's connected radios: that radio, on its own connection. The
+	///   firmware takes whatever a phone sends it as local admin, so Settings can configure any
+	///   connected radio without focusing it, and no session passkey is involved;
+	/// - otherwise the radio in `from`, when it's connected: the relay for remote admin;
+	/// - otherwise the focused radio.
+	/// Nil with no radio connected.
+	func adminRoute(for packet: MeshPacket) -> RadioSession? {
+		if let target = connectedSession(forRadio: Int64(packet.to)) {
+			return target
+		}
+		if let relay = connectedSession(forRadio: Int64(packet.from)) {
+			return relay
+		}
+		return activeConnection
+	}
+
+	/// `packet` as `session` sends it. Remote admin relayed by a radio other than the focused one
+	/// carries that radio's own session passkey for the node (T045: each radio gets its own), in
+	/// place of the node's, which is the focused radio's. Everything else is unchanged.
+	func adminPacket(_ packet: MeshPacket, relayedBy session: RadioSession) -> MeshPacket {
+		guard session !== activeConnection,
+			  let relayNum = session.nodeNum, Int64(packet.to) != relayNum,
+			  packet.decoded.portnum == .adminApp,
+			  var admin = try? AdminMessage(serializedBytes: packet.decoded.payload),
+			  !admin.sessionPasskey.isEmpty else {
+			return packet
+		}
+		let nodeNum = Int64(packet.to)
+		let descriptor = FetchDescriptor<NodeObservationEntity>(predicate: #Predicate {
+			$0.radioNum == relayNum && $0.nodeNum == nodeNum
+		})
+		guard let passkey = (try? context.fetch(descriptor).first)?.sessionPasskey, !passkey.isEmpty,
+			  passkey != admin.sessionPasskey else {
+			return packet
+		}
+		admin.sessionPasskey = passkey
+		guard let payload = try? admin.serializedData() else { return packet }
+		var relayed = packet
+		relayed.decoded.payload = payload
+		return relayed
 	}
 
 	// MARK: - Local admin on every radio (D-11)

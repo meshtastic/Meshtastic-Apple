@@ -49,7 +49,7 @@ Radio configuration requires a connected node. Select your node from the **Confi
 
 The Configure picker lists live nodes from the current node database, with favorites first. If the node database is reset or the selected node disappears, Settings clears that selection instead of opening configuration for a stale node. Reconnect to a radio or choose a currently listed node to continue configuring it.
 
-With more than one radio connected, Settings configures the focused radio, and a note under **Configure** says so. To configure another connected radio, focus it from the Connect tab or the radio indicator at the top of the screen.
+With more than one radio connected, Settings starts on the focused radio. The other connected radios are listed as **Connected** in the **Node** picker under **Configure**; pick one to configure it. The app talks to it over its own connection, so it doesn't need remote admin set up. If your radio doesn't offer the Node picker, focus the other radio from the Connect tab or the radio indicator at the top of the screen instead; the note under **Configure** says which.
 
 ### LoRa
 
