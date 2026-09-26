@@ -2115,7 +2115,9 @@ actor MeshPackets {
 							// channel badge, recomputing it for every incoming DM turns a burst into
 							// quadratic work, so it gets the same ~1/sec rate limit.
 							if packet.to == connectedNode, shouldRecomputeDirectUnread() {
-								let unreadCount = await newMessage.toUser?.unreadMessages(context: modelContext, skipLastMessageCheck: true) ?? 0 // skipLastMessageCheck=true because we don't update lastMessage on our own connected node
+								var unreadCount = await newMessage.toUser?.unreadMessages(context: modelContext, skipLastMessageCheck: true) ?? 0 // skipLastMessageCheck=true because we don't update lastMessage on our own connected node
+								// Feature 021 (T090): the badge counts direct messages to every radio.
+								unreadCount += unreadDirectMessageCount(toRadiosOtherThan: connectedNode)
 								Task { @MainActor in
 									appState?.unreadDirectMessages = unreadCount
 								}

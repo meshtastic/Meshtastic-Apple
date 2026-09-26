@@ -65,10 +65,11 @@ struct UserMessageList: View {
 			}
 			Logger.data.info("📖 [App] All unread direct messages marked as read for user \(user.num, privacy: .public).")
 
-			if let connectedPeripheralNum = accessoryManager.activeDeviceNum,
-			   let connectedNode = getNodeInfo(id: connectedPeripheralNum, context: context),
-			   let connectedUser = connectedNode.user {
-				appState.unreadDirectMessages = connectedUser.unreadMessages(context: context, skipLastMessageCheck: true) // skipLastMessageCheck=true because we don't update lastMessage on our own connected node
+			if let connectedPeripheralNum = accessoryManager.activeDeviceNum {
+				// Feature 021 (T090): the badge counts direct messages to every radio.
+				var radios = UserEntity.localRadioNums(context: context)
+				radios.insert(connectedPeripheralNum)
+				appState.unreadDirectMessages = UserEntity.unreadDirectMessages(toRadios: radios, context: context)
 			}
 			// Refresh other unread surfaces (CarPlay templates) too. Only when something was
 			// actually marked read: this view reloads on that notification, and an unconditional

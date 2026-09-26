@@ -334,6 +334,26 @@ struct MultiRadioIngestTests {
 		#expect(box.value.count == 1)
 	}
 
+	@Test("The direct-message badge counts unread messages to the other radios too")
+	func unreadAcrossRadios() async throws {
+		let container = try makeContainer()
+		try seedTwoRadios(in: container)
+		let context = ModelContext(container)
+		let rows: [(to: Int64, read: Bool)] = [(radioB, false), (radioB, false), (radioB, true), (radioA, false)]
+		for (offset, row) in rows.enumerated() {
+			let message = MessageEntity()
+			message.messageId = Int64(41 + offset)
+			message.toNum = row.to
+			message.read = row.read
+			context.insert(message)
+		}
+		try context.save()
+		let packets = await makePackets(container)
+
+		#expect(await packets.unreadDirectMessageCount(toRadiosOtherThan: radioA) == 2)
+		#expect(await packets.unreadDirectMessageCount(toRadiosOtherThan: radioB) == 1)
+	}
+
 	@Test("With two radios, a notification says which radio the message came in on")
 	func notificationNamesTheRadio() async throws {
 		let previous = UserDefaults.channelMessageNotifications

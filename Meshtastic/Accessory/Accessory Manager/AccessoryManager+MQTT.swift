@@ -64,7 +64,10 @@ extension AccessoryManager {
 				}
 				// Set initial unread message badge states
 				appState.unreadChannelMessages = fetchedNodeInfo[0].myInfo?.unreadMessages(context: context) ?? 0
-				appState.unreadDirectMessages = fetchedNodeInfo[0].user?.unreadMessages(context: context, skipLastMessageCheck: true) ?? 0 // skipLastMessageCheck=true because we don't update lastMessage on our own connected node
+				// Feature 021 (T090): direct messages to every radio count towards the badge.
+				var radios = UserEntity.localRadioNums(context: context)
+				radios.insert(fetchedNodeInfo[0].num)
+				appState.unreadDirectMessages = UserEntity.unreadDirectMessages(toRadios: radios, context: context)
 
 				// Set wantRangeTestPackets and wantStoreAndForwardPackets
 				wantRangeTestPackets = fetchedNodeInfo[0].rangeTestConfig?.enabled ?? false

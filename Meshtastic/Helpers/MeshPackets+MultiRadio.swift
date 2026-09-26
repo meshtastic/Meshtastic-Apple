@@ -57,6 +57,19 @@ extension MeshPackets {
 
 	// MARK: - Notifications (T091)
 
+	/// Unread direct messages addressed to the user's radios other than `radioNum` (T090), by
+	/// `toNum`, which every message received with more than one radio carries.
+	func unreadDirectMessageCount(toRadiosOtherThan radioNum: Int64?) -> Int {
+		var total = 0
+		for otherRadio in localRadioNums() where otherRadio != radioNum {
+			let predicate: Predicate<MessageEntity> = #Predicate { message in
+				message.toNum == otherRadio && message.read == false && message.isEmoji == false
+			}
+			total += (try? modelContext.fetchCount(FetchDescriptor(predicate: predicate))) ?? 0
+		}
+		return total
+	}
+
 	/// The short name of the radio `message` came in on, when the store knows more than one of
 	/// the user's radios; nil otherwise, so single-radio notifications don't change.
 	func receivingRadioName(for message: MessageEntity) -> String? {
