@@ -21,6 +21,8 @@ The app remembers your preferred device and reconnects automatically when the ra
 
 Swipe left on a connected radio in the Connect view and tap **Disconnect**. The radio continues operating on the mesh — it just stops syncing with the app.
 
+With other radios connected, one of them becomes the focused radio, and the radio you disconnected isn't reconnected automatically.
+
 ## Powering Off a Radio
 
 Long press a connected radio row and choose **Power Off** to shut the radio down completely. Unlike **Disconnect** — which only stops the app from syncing — Power Off turns the radio off entirely, and you must physically power it back on to use it again.

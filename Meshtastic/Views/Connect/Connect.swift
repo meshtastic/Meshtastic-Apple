@@ -262,7 +262,7 @@ struct Connect: View {
 								if accessoryManager.allowDisconnect {
 									Button(role: .destructive) {
 										Task {
-											try await accessoryManager.disconnect()
+											try await disconnectFocusedRadio(accessoryManager: accessoryManager)
 										}
 									} label: {
 										Label("Disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
@@ -315,7 +315,7 @@ struct Connect: View {
 										Button(role: .destructive) {
 											if accessoryManager.allowDisconnect {
 												Task {
-													try await accessoryManager.disconnect()
+													try await disconnectFocusedRadio(accessoryManager: accessoryManager)
 												}
 											}
 										} label: {
@@ -380,7 +380,7 @@ struct Connect: View {
 									if accessoryManager.allowDisconnect {
 										Button(role: .destructive) {
 											Task {
-												try await accessoryManager.disconnect()
+												try await disconnectFocusedRadio(accessoryManager: accessoryManager)
 											}
 										} label: {
 											Label("Disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
@@ -516,7 +516,7 @@ struct Connect: View {
 						Button(role: .destructive, action: {
 							if accessoryManager.allowDisconnect {
 								Task {
-									try await accessoryManager.disconnect()
+									try await disconnectFocusedRadio(accessoryManager: accessoryManager)
 								}
 							}
 						}) {
@@ -1247,6 +1247,24 @@ func backupCurrentAndRestoreDatabase(
 	return restoreResult
 }
 
+// MARK: - Disconnect Helper
+
+/// The Connect tab's Disconnect on the focused radio (feature 021). With other radios still
+/// connected, one of them becomes the focused radio instead of leaving them connected with none
+/// focused. The disconnected radio is no longer remembered, so it doesn't come straight back.
+@MainActor
+func disconnectFocusedRadio(accessoryManager: AccessoryManager) async throws {
+	if let previousNum = accessoryManager.activeConnection?.nodeNum {
+		await MeshPackets.shared.setRadioAutoConnect(nodeNum: previousNum, false)
+	}
+	guard let next = accessoryManager.additionalRadioDevices.first(where: { $0.connectionState == .connected }) else {
+		try await accessoryManager.disconnect()
+		return
+	}
+	Logger.transport.info("🔀 Disconnecting the focused radio; \(next.name, privacy: .public) takes the focus")
+	await switchToDevice(next, accessoryManager: accessoryManager, appState: accessoryManager.appState, keepPreviousRadio: false)
+}
+
 // MARK: - Node Switch Helper
 
 /// Makes `device` the focused radio (feature 021, T066).
@@ -1260,6 +1278,7 @@ func switchToDevice(
 	_ device: Device,
 	accessoryManager: AccessoryManager,
 	appState: AppState,
+	keepPreviousRadio: Bool = true,
 	onRestoreComplete: (@MainActor () -> Void)? = nil
 ) async {
 	Logger.transport.info("🔀 Switching the focused radio from \(accessoryManager.activeConnection?.device.name ?? "none", privacy: .public) to \(device.name, privacy: .public)")
@@ -1282,7 +1301,7 @@ func switchToDevice(
 		// Focusing a radio that's connected alongside: the previous focused radio stays in the
 		// set. Remembering it lets the connect below bring it back as an additional radio
 		// (`reconnectRememberedRadios`). A plain switch replaces it instead.
-		if let previousNum = accessoryManager.activeConnection?.nodeNum, previousNum != device.num {
+		if keepPreviousRadio, let previousNum = accessoryManager.activeConnection?.nodeNum, previousNum != device.num {
 			await MeshPackets.shared.setRadioAutoConnect(nodeNum: previousNum, true)
 		}
 		await accessoryManager.disconnectAdditionalRadio(device.id, byUser: true)
