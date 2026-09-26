@@ -444,7 +444,9 @@ struct SelfOriginatedMessageEchoTests {
 
 		await notificationRecorder.waitForNextNotification()
 		#expect(!notificationRecorder.notifications.isEmpty, "peer DM must schedule a notification")
-		#expect(notificationRecorder.notifications.first?.path == "meshtastic:///messages?userNum=\(peerNode)&messageId=\(id)")
+		// The shared test store can know several radios, which adds `&radio=` (feature 021).
+		let path = notificationRecorder.notifications.first?.path?.replacingOccurrences(of: #"&radio=\d+"#, with: "", options: .regularExpression)
+		#expect(path == "meshtastic:///messages?userNum=\(peerNode)&messageId=\(id)")
 	}
 }
 

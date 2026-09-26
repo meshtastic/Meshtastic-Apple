@@ -30,6 +30,7 @@ struct RouterURLRoutingTests {
 		} else {
 			#expect(Bool(false), "Expected directMessages state")
 		}
+		#expect(router.messagesRadio == nil)
 	}
 
 	@Test @MainActor func route_messages_channelWithMessageId() {
@@ -463,5 +464,31 @@ struct RouterURLRoutingTests {
 		router.route(url: url)
 		#expect(router.selectedTab == .settings)
 		#expect(router.settingsPath.isEmpty)
+	}
+}
+
+// MARK: - Radio in Messages deep links (feature 021)
+
+@Suite("Router radio deep links")
+struct RouterRadioDeepLinkTests {
+
+	/// Feature 021 (T091): a notification names the radio the message came in on.
+	@Test @MainActor func route_messages_withRadio() {
+		let router = Router()
+		router.route(url: URL(string: "meshtastic:///messages?userNum=42&messageId=7&radio=2827")!)
+		#expect(router.messagesRadio == 2827)
+		if case .directMessages(let userNum, let messageId) = router.messagesState {
+			#expect(userNum == 42)
+			#expect(messageId == 7)
+		} else {
+			#expect(Bool(false), "Expected directMessages state")
+		}
+
+		router.route(url: URL(string: "meshtastic:///messages?channelId=2&radio=11")!)
+		#expect(router.messagesRadio == 11)
+
+		// A link with no conversation doesn't leave a radio behind for the next one.
+		router.route(url: URL(string: "meshtastic:///messages?radio=11")!)
+		#expect(router.messagesRadio == nil)
 	}
 }

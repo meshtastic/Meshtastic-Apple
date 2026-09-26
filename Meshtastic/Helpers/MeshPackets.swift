@@ -1826,9 +1826,14 @@ actor MeshPackets {
 		replyMessageId: Int64? = nil
 	) -> Notification {
 		var subtitle = "AKA \(message.fromUser?.shortName ?? "?")"
-		if let radioName = receivingRadioName(for: message) {
-			// Feature 021 (T091): with several radios, which one it came in on.
+		var path = path
+		if let radioName = receivingRadioName(for: message), let radioNum = message.localNodeNum {
+			// Feature 021 (T091): with several radios, which one it came in on, and a deep link
+			// that opens that radio's thread.
 			subtitle += " · " + String.localizedStringWithFormat("on %@".localized, radioName)
+			if path.hasPrefix("meshtastic:///messages") {
+				path += "&radio=\(radioNum)"
+			}
 		}
 		var notification = Notification(
 			id: ("notification.id.\(message.messageId)"),

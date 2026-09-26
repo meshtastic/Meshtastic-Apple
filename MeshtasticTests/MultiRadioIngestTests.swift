@@ -370,6 +370,7 @@ struct MultiRadioIngestTests {
 
 		let subtitle = try #require(box.value.first?.subtitle)
 		#expect(subtitle.hasSuffix(String.localizedStringWithFormat("on %@".localized, radioB.toHex())))
+		#expect(box.value.first?.path?.hasSuffix("&radio=\(radioB)") == true)
 	}
 
 	@Test("A sent message and its echo merge on the key")

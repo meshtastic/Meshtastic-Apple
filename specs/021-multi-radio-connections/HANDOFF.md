@@ -41,11 +41,11 @@ Read this first if you are picking the work up. Update it in the same commit as 
   (T090) in `2d7ab3fa`. See tasks.md for the partial ones.
 - Mesh Multi (`~/Applications/Mesh Multi.app`, side-by-side, own container) is rebuilt from the
   latest commit on this branch and ready for the first two-radio test below. Not yet run by anyone.
-- Next up: the owner's two-radio test; then `radio=` in deep links (rest of T091), BLE
+- Next up: the owner's two-radio test; then BLE
   restoration (T062), per-session firmware gate/lockdown (T065), MQTT per session (T100), and
   moving admin sends onto sessions (T060, which T089's relaying radio needs). T030 (merge old
   backups) before release.
-- Baseline and latest: the full suite passes in the iOS Simulator (3,343 Swift Testing tests plus
+- Baseline and latest: the full suite passes in the iOS Simulator (3,344 Swift Testing tests plus
   29 XCTests, about 35–50 seconds of test time).
 
 ## First two-radio test (Mesh Multi, Mac)

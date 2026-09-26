@@ -24,6 +24,13 @@ class Router: ObservableObject {
 	@Published
 	var messagesSection: MessagesNavigationState?
 
+	/// The radio a Messages deep link names with `radio=` (feature 021, T091): the radio the
+	/// message came in on. Read once by the conversation it opens, which then clears it. Kept out
+	/// of `MessagesNavigationState` so the sidebar's payload-free values and their matches stay
+	/// as they are.
+	@Published
+	var messagesRadio: Int64?
+
 	@Published
 	var mapState: MapNavigationState?
 
@@ -184,6 +191,10 @@ class Router: ObservableObject {
 			.first(where: { $0.name == "messageId" })?
 			.value
 			.flatMap(Int64.init)
+		let radio = components.queryItems?
+			.first(where: { $0.name == "radio" })?
+			.value
+			.flatMap(Int64.init)
 
 		let state: MessagesNavigationState? = if let channelId {
 			.channels(channelId: channelId, messageId: messageId)
@@ -193,6 +204,7 @@ class Router: ObservableObject {
 			nil
 		}
 		selectedTab = .messages
+		messagesRadio = state == nil ? nil : radio
 		messagesState = state
 		messagesSection = state?.sidebarSection
 	}
@@ -222,6 +234,7 @@ class Router: ObservableObject {
 		case .messages:
 			messagesState = nil
 			messagesSection = nil
+			messagesRadio = nil
 		case .nodes:
 			selectedNodeNum = nil
 		case .map:

@@ -194,9 +194,10 @@ struct Messages: View {
 				userSelection = nil
 				break
 			}
-			guard let channel = node?.myInfo?.channels.first(where: { $0.id == channelId }) else {
+			guard let channel = deepLinkedChannel(channelId) else {
 				return // Not resolvable yet — keep the payload and retry on the next appear.
 			}
+			router.messagesRadio = nil
 			channelSelection = channel
 			// Clear the sibling DM selection so the detail pane (which prioritizes
 			// channelSelection) can't surface a stale conversation under the Channels section.
@@ -216,5 +217,18 @@ struct Messages: View {
 		}
 
 		router.messagesState = nil // Consumed — prevents a re-appear from re-resolving it.
+	}
+
+	/// The channel a deep link's `channelId` names. With `radio=` from another radio, the id is
+	/// that radio's slot; the same channel (by `channelKey`) is found in this radio's list, which
+	/// may keep it in another slot (feature 021, T091).
+	private func deepLinkedChannel(_ channelId: Int32) -> ChannelEntity? {
+		let channels = node?.myInfo?.channels ?? []
+		if let radio = router.messagesRadio, radio != node?.num,
+		   let key = (try? MultiRadioBackfill.channelKeysByIndex(for: radio, in: context, updateStored: false))?[channelId],
+		   let sameChannel = channels.first(where: { $0.channelKey == key }) {
+			return sameChannel
+		}
+		return channels.first(where: { $0.id == channelId })
 	}
 }

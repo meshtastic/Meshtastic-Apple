@@ -21,6 +21,7 @@ The app registers the `meshtastic:///` URL scheme. Use `Router.route(url:)` to h
 | [`meshtastic:///messages`](meshtastic:///messages) | Messages tab |
 | `meshtastic:///messages?channelId={channelId}&messageId={messageId}` | Channel messages (`messageId` is optional) |
 | `meshtastic:///messages?userNum={userNum}&messageId={messageId}` | Direct messages (`messageId` is optional) |
+| `…&radio={nodeNum}` on either Messages link | The radio the message came in on (optional, added to notifications when more than one radio is known). A direct message opens that radio's thread; a channel's `channelId` is read as that radio's slot and mapped to the same channel (by `channelKey`) on the focused radio. Held in `Router.messagesRadio`, outside `MessagesNavigationState`. |
 
 ## Connect
 

@@ -291,6 +291,12 @@ struct UserMessageList: View {
 					}
 				}
 				.task(id: "\(routerIsShowingThisUser())-\(user.num)") {
+					// Feature 021 (T091): a notification's deep link names the radio the message came
+					// in on; open that radio's thread.
+					if let radio = appState.router.messagesRadio {
+						chosenRadio = radio
+						appState.router.messagesRadio = nil
+					}
 					let isVisible = routerIsShowingThisUser()
 					loadMessages(markReadAfterLoad: isVisible)
 					guard isVisible else { return }
