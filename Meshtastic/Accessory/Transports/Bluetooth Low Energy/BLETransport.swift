@@ -328,6 +328,20 @@ actor BLETransport: Transport {
 		continuation.resume(throwing: CancellationError())
 	}
 
+	/// Feature 021 (T063): gives up a connect CoreBluetooth still has pending, after a
+	/// bounded reconnect attempt to an out-of-range radio timed out. Cancelling the task only
+	/// resumes the waiter; without this, CoreBluetooth would complete the link later with nobody
+	/// owning it. Leaves the peripheral alone if a newer attempt or a live connection has it.
+	func abandonPendingConnect(to deviceId: UUID) {
+		guard activeConnections[deviceId] == nil, connectContinuations[deviceId] == nil else { return }
+		connectingPeripherals.removeValue(forKey: deviceId)
+		guard let peripheral = discoveredPeripherals[deviceId]?.peripheral
+				?? centralManager?.retrievePeripherals(withIdentifiers: [deviceId]).first else { return }
+		Logger.transport.debug("🛜 [BLE] Abandoning the pending connect to \(deviceId.uuidString, privacy: .public)")
+		centralManager?.cancelPeripheralConnection(peripheral)
+		resumeScanningAfterFailedConnection()
+	}
+
 	/// True while this peripheral is connecting or connected (feature 021: other peripherals can be).
 	private func isBusy(_ id: UUID) -> Bool {
 		activeConnections[id] != nil || connectContinuations[id] != nil

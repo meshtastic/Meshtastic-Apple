@@ -33,6 +33,23 @@ extension AccessoryManager {
 		guard let transport = transportForType(device.transportType) else {
 			throw AccessoryError.connectionFailed("No transport for type")
 		}
+
+		// Feature 021 (T064): one handshake at a time across every radio. Step 7 recycles the
+		// ingest actor, which must not land in the middle of another radio's node dump.
+		let cancelGeneration = connectCancelGeneration
+		if handshakeGate.isBusy {
+			Logger.transport.info("🔗 [Connect] Waiting for another radio's handshake to finish")
+			updateDevice(deviceId: device.id, key: \.connectionState, value: .connecting)
+		}
+		await handshakeGate.acquire()
+		defer { handshakeGate.release() }
+		if connectCancelGeneration != cancelGeneration {
+			updateDevice(deviceId: device.id, key: \.connectionState, value: .disconnected)
+			throw AccessoryError.connectionFailed("Connection cancelled")
+		}
+		if activeConnection != nil {
+			throw AccessoryError.connectionFailed("Already connected to a device")
+		}
 		
 		// Clear any errors and stale state from last connection
 		lastConnectionError = nil
@@ -345,6 +362,12 @@ extension AccessoryManager {
 			// every step finished. Failed attempts resume via connectionDidDisconnect.
 			if let bleTransport = transportForType(.ble) as? BLETransport {
 				await bleTransport.resumeScanningAfterConnectionEstablished()
+			}
+			// Feature 021 (T063): remember this connection, then bring back the radios that were
+			// connected alongside it. Their attempts queue on the handshake gate behind this one.
+			if let focused = activeConnection, let nodeNum = focused.nodeNum {
+				await MeshPackets.shared.noteRadioConnected(nodeNum: nodeNum, transport: focused.device.transportType, autoConnect: nil)
+				await reconnectRememberedRadios()
 			}
 		} catch AccessoryError.tooManyRetries {
 			self.lastConnectionError = AccessoryError.tooManyRetries

@@ -277,6 +277,11 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	var retiredAdditionalSessionIDs: Set<UUID> = []
 	/// Reconnect loops for additional radios that dropped, by device id (T063).
 	var additionalRadioReconnects: [UUID: Task<Void, Never>] = [:]
+	/// One radio's config and node-DB handshake at a time, focused or not (T064).
+	let handshakeGate = HandshakeGate()
+	/// Bumped by `disconnect()`, so a focused connect still waiting at `handshakeGate` sees the
+	/// user cancelled it (there is no `connectionStepper` to cancel yet).
+	var connectCancelGeneration = 0
 
 	/// Reference to the active discovery scan engine, if any
 	var discoveryScanEngine: DiscoveryScanEngine?
@@ -700,6 +705,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	func disconnect() async throws {
 		guard !isClosingConnection else { return }
 		self.userRequestedConnectionCancellation = true
+		connectCancelGeneration &+= 1
 		// Cancel ongoing connection task if it exists
 		await self.connectionStepper?.cancel()
 
@@ -842,8 +848,9 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			// registered objects (see packetsAtLastIngestRecycle). Only while subscribed —
 			// never mid node-DB retrieval — and only here, between packets, where no in-flight
 			// handler still holds the retiring instance. Flush first: recreateShared's
-			// invalidate deliberately drops a retired instance's pending writes.
-			if case .subscribed = state, packetsReceived - packetsAtLastIngestRecycle >= Self.ingestRecycleInterval {
+			// invalidate deliberately drops a retired instance's pending writes. Never during
+			// another radio's handshake either (feature 021, T064).
+			if case .subscribed = state, !handshakeGate.isBusy, packetsReceived - packetsAtLastIngestRecycle >= Self.ingestRecycleInterval {
 				packetsAtLastIngestRecycle = packetsReceived
 				await MeshPackets.shared.flushDebouncedSaves()
 				MeshPackets.recreateShared()

@@ -1416,15 +1416,14 @@ actor MeshPackets {
 				recordAdminSession(passkey: adminMessage.sessionPasskey, nodeNum: Int64(packet.from), radioNum: connectedNodeNum)
 			}
 			// Save an ack for the admin message log for each admin message response received as we stopped sending acks if there is also a response to reduce airtime.
-			self.adminResponseAck(packet: packet)
+			self.adminResponseAck(packet: packet, radioNum: connectedNodeNum)
 		}
 	}
 
-	private func adminResponseAck (packet: MeshPacket) {
+	private func adminResponseAck (packet: MeshPacket, radioNum: Int64?) {
 		let requestID = Int64(packet.decoded.requestID)
-		let fetchDescriptor = FetchDescriptor<MessageEntity>(predicate: #Predicate { $0.messageId == requestID })
 		do {
-			let fetchedMessage = try modelContext.fetch(fetchDescriptor)
+			let fetchedMessage = try sentMessage(requestID: requestID, radioNum: radioNum).map { [$0] } ?? []
 			if fetchedMessage.count > 0 {
 				fetchedMessage[0].ackTimestamp = Int32(Date().timeIntervalSince1970)
 				fetchedMessage[0].ackError = Int32(RoutingError.none.rawValue)
@@ -1481,10 +1480,9 @@ actor MeshPackets {
 			Logger.mesh.info("🕸️ \(logString, privacy: .public)")
 
 			let requestID = Int64(packet.decoded.requestID)
-			let fetchDescriptor = FetchDescriptor<MessageEntity>(predicate: #Predicate { $0.messageId == requestID })
 
 			do {
-				let fetchedMessage = try modelContext.fetch(fetchDescriptor)
+				let fetchedMessage = try sentMessage(requestID: requestID, radioNum: connectedNodeNum).map { [$0] } ?? []
 				if fetchedMessage.count > 0 {
 					if fetchedMessage[0].toUser != nil {
 						// Real ACK from DM Recipient

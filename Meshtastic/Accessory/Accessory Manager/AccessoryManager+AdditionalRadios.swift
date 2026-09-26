@@ -35,6 +35,33 @@ final class AdditionalRadio: Identifiable {
 	}
 }
 
+/// Lets one radio at a time run its config and node-DB handshake (T064).
+///
+/// Two dumps at once double the ingest load, and the focused radio's connect recycles the
+/// ingest actor at its end (`MeshPackets.recreateShared()`), which must not happen in the
+/// middle of another radio's dump. Waiters are served in order.
+@MainActor
+final class HandshakeGate {
+	private(set) var isBusy = false
+	private var waiters: [CheckedContinuation<Void, Never>] = []
+
+	func acquire() async {
+		guard isBusy else {
+			isBusy = true
+			return
+		}
+		await withCheckedContinuation { waiters.append($0) }
+	}
+
+	func release() {
+		if waiters.isEmpty {
+			isBusy = false
+		} else {
+			waiters.removeFirst().resume()
+		}
+	}
+}
+
 /// What to do when the user connects a radio while another one is connected (D-05).
 enum AdditionalRadioBehavior: String, Codable, CaseIterable, Identifiable {
 	case ask
@@ -92,8 +119,9 @@ extension AccessoryManager {
 	// MARK: - Connect
 
 	/// Connects `device` alongside the focused radio. With no radio connected this is a normal
-	/// connect, and the radio becomes the focused one.
-	func connectAdditionalRadio(_ device: Device) async throws {
+	/// connect, and the radio becomes the focused one. `connectTimeout` bounds the transport
+	/// connect for automatic attempts; a user's tap waits as long as the transport does.
+	func connectAdditionalRadio(_ device: Device, connectTimeout: Duration? = nil) async throws {
 		guard activeConnection != nil else {
 			try await connect(to: device)
 			return
@@ -113,7 +141,12 @@ extension AccessoryManager {
 		let connection: any Connection
 		let events: AsyncStream<ConnectionEvent>
 		do {
-			connection = try await transport.connect(to: device)
+			connection = try await connectTransport(transport, to: device, within: connectTimeout)
+			// The connect can take a while (BLE waits for the radio). Re-check what it assumed.
+			guard !isRadioConnected(device.id), canConnectAnotherRadio, activeConnection != nil else {
+				try? await connection.disconnect(withError: nil, shouldReconnect: false)
+				throw AccessoryError.connectionFailed("No longer room for this radio")
+			}
 			events = try await connection.connect()
 		} catch {
 			updateDevice(deviceId: device.id, key: \.connectionState, value: .disconnected)
@@ -134,6 +167,14 @@ extension AccessoryManager {
 		}
 
 		do {
+			if handshakeGate.isBusy {
+				Logger.transport.info("🔗➕ [Additional] \(device.name, privacy: .public) waits for another radio's handshake")
+			}
+			await handshakeGate.acquire()
+			defer { handshakeGate.release() }
+			guard additionalRadios[device.id] === radio else {
+				throw AccessoryError.disconnected("Radio disconnected while waiting to connect")
+			}
 			try await sendAdditionalHeartbeat(radio)
 			try await requestHandshake(radio, nonce: UInt32(NONCE_ONLY_CONFIG), timeout: .seconds(30))
 			try await requestHandshake(radio, nonce: UInt32(NONCE_ONLY_DB), timeout: .seconds(120))
@@ -152,7 +193,46 @@ extension AccessoryManager {
 			await bleTransport.resumeScanningAfterConnectionEstablished()
 		}
 		WatchSessionManager.shared.sendNodesToWatch()
+		if let nodeNum = session.nodeNum {
+			await MeshPackets.shared.noteRadioConnected(nodeNum: nodeNum, transport: device.transportType, autoConnect: true)
+		}
+		if session.device.isManualConnection {
+			ManualConnectionList.shared.insert(device: session.device)
+		}
 		Logger.transport.info("🔗➕ [Additional] \(session.device.longName ?? device.name, privacy: .public) connected (\(radio.nodeCount) nodes); \(self.connectedRadioCount) radios connected")
+	}
+
+	/// `transport.connect(to:)`, given up after `timeout` when there is one. A BLE connect to an
+	/// out-of-range radio otherwise waits indefinitely, holding the scan paused.
+	private func connectTransport(_ transport: any Transport, to device: Device, within timeout: Duration?) async throws -> any Connection {
+		guard let timeout else {
+			return try await transport.connect(to: device)
+		}
+		let connection = try await withThrowingTaskGroup(of: (any Connection)?.self) { group -> (any Connection)? in
+			group.addTask { try await transport.connect(to: device) }
+			group.addTask {
+				try? await Task.sleep(for: timeout)
+				return nil
+			}
+			let first = try await group.next() ?? nil
+			group.cancelAll()
+			if first == nil {
+				// Timed out. The connect may still finish as it is cancelled; close anything it made.
+				while let late = try? await group.next() {
+					if let late {
+						try? await late.disconnect(withError: nil, shouldReconnect: false)
+					}
+				}
+			}
+			return first
+		}
+		guard let connection else {
+			if let bleTransport = transport as? BLETransport {
+				await bleTransport.abandonPendingConnect(to: device.id)
+			}
+			throw AccessoryError.timeout
+		}
+		return connection
 	}
 
 	/// Sends a want-config request and waits for its completion nonce.
@@ -220,12 +300,15 @@ extension AccessoryManager {
 	// MARK: - Disconnect
 
 	/// Disconnects one additional radio. The focused radio and the others are unaffected.
-	/// `byUser` also stops any automatic reconnect for it.
+	/// `byUser` also stops any automatic reconnect for it, now and at the next launch.
 	func disconnectAdditionalRadio(_ deviceId: UUID, byUser: Bool = false) async {
 		if byUser {
 			additionalRadioReconnects.removeValue(forKey: deviceId)?.cancel()
 		}
 		guard let radio = additionalRadios.removeValue(forKey: deviceId) else { return }
+		if byUser, let nodeNum = radio.session.nodeNum {
+			await MeshPackets.shared.setRadioAutoConnect(nodeNum: nodeNum, false)
+		}
 		retiredAdditionalSessionIDs.insert(radio.session.id)
 		radio.heartbeatTask?.cancel()
 		let pending = radio.pendingNonces
@@ -249,13 +332,13 @@ extension AccessoryManager {
 	// MARK: - Reconnect (T063)
 
 	/// Keeps trying to reconnect a radio that dropped, until it's back, the user disconnects
-	/// it, or it becomes the focused radio. Over BLE a connect attempt waits until the radio
-	/// is in range again; other transports fail fast, so attempts back off up to a minute.
-	func scheduleAdditionalRadioReconnect(_ device: Device) {
+	/// it, or it becomes the focused radio. Each attempt is bounded, so an out-of-range BLE radio
+	/// doesn't hold the scan paused; attempts back off up to a minute.
+	func scheduleAdditionalRadioReconnect(_ device: Device, firstDelay: Duration = .seconds(5)) {
 		guard additionalRadioReconnects[device.id] == nil else { return }
 		Logger.transport.info("🔗🔁 [Additional] Will reconnect \(device.name, privacy: .public) when it's back")
 		additionalRadioReconnects[device.id] = Task { @MainActor [weak self] in
-			var delay: Duration = .seconds(5)
+			var delay = firstDelay
 			defer { self?.additionalRadioReconnects.removeValue(forKey: device.id) }
 			while !Task.isCancelled {
 				try? await Task.sleep(for: delay)
@@ -265,16 +348,52 @@ extension AccessoryManager {
 				// radio, which is the preferred radio's own reconnect to make.
 				if self.activeConnection != nil, self.canConnectAnotherRadio {
 					do {
-						try await self.connectAdditionalRadio(device)
+						try await self.connectAdditionalRadio(device, connectTimeout: Self.additionalReconnectTimeout)
 						Logger.transport.info("🔗🔁 [Additional] Reconnected \(device.name, privacy: .public)")
 						return
 					} catch {
 						Logger.transport.info("🔗🔁 [Additional] Reconnect to \(device.name, privacy: .public) failed: \(error.localizedDescription, privacy: .public)")
 					}
 				}
-				delay = min(delay * 2, .seconds(60))
+				delay = min(max(delay, .seconds(5)) * 2, .seconds(60))
 			}
 		}
+	}
+
+	/// How long one automatic connect attempt waits for the transport.
+	static let additionalReconnectTimeout: Duration = .seconds(20)
+
+	// MARK: - Remembered radios (T063)
+
+	/// After the focused radio connects, brings back the radios that were connected alongside
+	/// it last time (`MyInfoEntity.autoConnect`). They go through the reconnect loop, so one
+	/// that's out of range keeps being tried without blocking the others.
+	func reconnectRememberedRadios() async {
+		guard activeConnection != nil else { return }
+		let connectedNums = Set(connectedRadios.compactMap(\.num))
+		let remembered = await MeshPackets.shared.rememberedRadios(excluding: connectedNums)
+		for radio in remembered {
+			guard let device = device(for: radio), !isRadioConnected(device.id) else {
+				Logger.transport.info("🔗🔁 [Additional] Can't bring back \(radio.name, privacy: .public) yet: not found on \(radio.transport.rawValue, privacy: .public)")
+				continue
+			}
+			scheduleAdditionalRadioReconnect(device, firstDelay: .zero)
+		}
+	}
+
+	/// A `Device` the transports can connect for a remembered radio: the discovered one, a saved
+	/// manual (TCP) connection, or for BLE the peripheral id alone, which CoreBluetooth resolves
+	/// without a scan.
+	func device(for remembered: MeshPackets.RememberedRadio) -> Device? {
+		guard let id = UUID(uuidString: remembered.peripheralId) else { return nil }
+		if let discovered = devices.first(where: { $0.id == id }) {
+			return discovered
+		}
+		if let manual = ManualConnectionList.shared.connectionsList.first(where: { $0.id == id }) {
+			return manual
+		}
+		guard remembered.transport == .ble else { return nil }
+		return Device(id: id, name: remembered.name, transportType: .ble, identifier: id.uuidString, num: remembered.nodeNum)
 	}
 
 	// MARK: - Events

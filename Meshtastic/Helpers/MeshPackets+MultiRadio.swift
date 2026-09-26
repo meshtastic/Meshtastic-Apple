@@ -55,6 +55,68 @@ extension MeshPackets {
 		}
 	}
 
+	// MARK: - Remembered radios
+
+	/// Records a finished connection on the radio's `MyInfoEntity`: when, over what, and
+	/// whether to bring it back automatically (`autoConnect`, nil leaves it as it is).
+	func noteRadioConnected(nodeNum: Int64, transport: TransportType, autoConnect: Bool?) {
+		var descriptor = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == nodeNum })
+		descriptor.fetchLimit = 1
+		guard let myInfo = try? modelContext.fetch(descriptor).first else { return }
+		myInfo.lastConnected = Date()
+		myInfo.transport = transport.rawValue
+		if let autoConnect {
+			myInfo.autoConnect = autoConnect
+		}
+		savePendingChanges()
+	}
+
+	func setRadioAutoConnect(nodeNum: Int64, _ autoConnect: Bool) {
+		var descriptor = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == nodeNum })
+		descriptor.fetchLimit = 1
+		guard let myInfo = try? modelContext.fetch(descriptor).first, myInfo.autoConnect != autoConnect else { return }
+		myInfo.autoConnect = autoConnect
+		savePendingChanges()
+	}
+
+	/// A radio to bring back alongside the focused one.
+	struct RememberedRadio: Sendable, Equatable {
+		let nodeNum: Int64
+		let peripheralId: String
+		let name: String
+		let transport: TransportType
+	}
+
+	/// Radios marked `autoConnect`, other than `excluding`.
+	func rememberedRadios(excluding: Set<Int64>) -> [RememberedRadio] {
+		let rows = (try? modelContext.fetch(FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.autoConnect }))) ?? []
+		return rows.compactMap { row in
+			guard !excluding.contains(row.myNodeNum), let peripheralId = row.peripheralId, !peripheralId.isEmpty else { return nil }
+			let transport = row.transport.flatMap(TransportType.init(rawValue:)) ?? .ble
+			let name = row.myInfoNode?.user?.longName ?? row.bleName ?? row.myNodeNum.toHex()
+			return RememberedRadio(nodeNum: row.myNodeNum, peripheralId: peripheralId, name: name, transport: transport)
+		}
+	}
+
+	// MARK: - ACK matching
+
+	/// The message a routing or admin response answers. A request id is a packet id the
+	/// delivering radio sent, so that radio's `messageKey` is tried first; rows without a key
+	/// (not yet backfilled, admin log entries) fall back to the id alone.
+	func sentMessage(requestID: Int64, radioNum: Int64?) throws -> MessageEntity? {
+		if let radioNum {
+			let key = MessageEntity.key(fromNum: radioNum, messageId: requestID)
+			var keyed = FetchDescriptor<MessageEntity>(predicate: #Predicate { $0.messageKey == key })
+			keyed.fetchLimit = 1
+			if let match = try modelContext.fetch(keyed).first {
+				return match
+			}
+		}
+		var byId = FetchDescriptor<MessageEntity>(predicate: #Predicate { $0.messageId == requestID })
+		byId.fetchLimit = 1
+		return try modelContext.fetch(byId).first
+	}
+
 	// MARK: - Receptions
 
 	/// Records that `radioNum` received `packet` and reports whether any local radio had it
