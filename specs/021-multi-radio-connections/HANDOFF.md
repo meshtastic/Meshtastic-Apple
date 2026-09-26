@@ -24,7 +24,11 @@ Read this first if you are picking the work up. Update it in the same commit as 
   - `67fba963` Sync the string catalog with the current source
   - `d913970a`, `230eda8c` Research report and recommendation
 - Done: tracking docs; split pull request branches (T005); side-by-side Mac tooling (T003/T004,
-  local only). Next up: Phase 2 (session extraction).
+  local only). Phase 2 receive path (T010–T012, T019, part of T016) in `5671f9d2`; channel
+  identity (T027) in `2a3e3653`; uniqueness spike (T020) in `6c173b7c`, which led to D-16.
+- Next up: Phase 3 schema changes (T023, T024, T025), then Phase 4 ingest scoping.
+- Baseline and latest: the full suite passes in the iOS Simulator (3,283 Swift Testing tests plus
+  29 XCTests, about 3.5 minutes).
 - Small pull requests, ready for the owner to push (each is one commit on `origin/main`):
   - `fix/restore-dropped-backup-fields` — the restore fix and its tests.
   - `chore/sync-string-catalog` — the string catalog sync.
@@ -94,7 +98,17 @@ describes it well enough to rebuild.
 
 ## Gotchas found so far
 
-- `MeshtasticSchemaV1` lists the live model types. Changing any `@Model` changes V1. Freeze V1 first (T021).
+- Schema changes: don't add a `VersionedSchema` or freeze V1 (D-16). Change the live models
+  additively and keep `SchemaHistoryUpgradeTests` green. Any new unique attribute must be optional
+  so existing rows migrate with NULL (proven in `MessageKeyMigrationSpikeTests`).
+- `RadioSession` is a class: code holding a session sees later `updateDevice` changes, where the
+  old tuple was a snapshot. Nothing relied on the snapshot behaviour (checked every
+  `activeConnection` read), but keep it in mind.
+- SwiftLint already warns about the length of `AccessoryManager` (type body),
+  `processFromRadio`, `connect(to:)` and `upsertNodeInfoPacket`. These warnings predate this
+  work, and the feature's changes add at most four lines to each. Splitting them up is part of T060.
+- `MeshtasticSchemaV1` lists the live model types, and that is intended (D-16): every release since
+  2.7.13 has changed them additively.
 - `MessageEntity.messageId` is `@Attribute(.unique)`. Code elsewhere relies on the constraint
   merging a sent message with its mesh echo across contexts (see `MessageEntity.deduplicatedByMessageId`).
   Keep an equivalent when uniqueness moves to `messageKey`.

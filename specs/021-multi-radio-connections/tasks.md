@@ -27,31 +27,31 @@ phases don't change behaviour and keep the app shippable, which makes a rebase o
 
 ## Phase 2: Session extraction (no behaviour change)
 
-- [ ] T010 Add `RadioSession` (`Meshtastic/Accessory/Radio Session/RadioSession.swift`) holding all per-connection state now on `AccessoryManager`: device/connection, state flags, `connectionStepper`, event task, heartbeats, config-refresh owner, DB gate, first-NodeInfo continuation, lockdown, firmware gate, OTA flag, counters, `expectedNodeDBSize`, region presets, firmware edition.
-- [ ] T011 `AccessoryManager` holds `session: RadioSession?`. Its old properties become computed forwarders, so views compile unchanged.
-- [ ] T012 Pass the session explicitly: `didReceive` → `processFromRadio` → every `handle*`. Remove `activeConnection?.device.num` reads inside handlers.
-- [ ] T013 [P] Move the connect steps (`AccessoryManager+Connect.swift`) onto the session.
-- [ ] T014 [P] Move the ToRadio builders onto the session (`RadioSession+ToRadio.swift`), with facade forwarders.
+- [X] T010 Add `RadioSession` (`Meshtastic/Accessory/Radio Session/RadioSession.swift`): device, connection, identity — commit `5671f9d2`, verified: `RadioSessionTests`, full suite. The rest of the per-connection state listed in the plan (stepper, event task, heartbeats, config-refresh owner, DB gate, first-NodeInfo continuation, lockdown, firmware gate, OTA flag, counters, `expectedNodeDBSize`, region presets, firmware edition) moves in T060, when there is more than one session (see plan.md › Architecture).
+- [X] T011 `AccessoryManager.activeConnection` is a `RadioSession?` (replaced the tuple; reads unchanged; `updateDevice` changes it in place) — commit `5671f9d2`.
+- [X] T012 Pass the session explicitly: every event is tagged with its session; `didReceive(_:from:)` drops data/log/RSSI from a stale session; `processFromRadio` and each `handle*` take the session — commit `5671f9d2`.
+- [ ] T013 [P] Move the connect steps (`AccessoryManager+Connect.swift`) onto the session. Deferred to T060.
+- [ ] T014 [P] Move the ToRadio builders onto the session (`RadioSession+ToRadio.swift`), with facade forwarders. Deferred to T060.
 - [ ] T015 [P] Add `TransportDelegate`; remove `AccessoryManager.shared` from `BLETransport` restoration and `TCPTransport.manuallyConnect`.
-- [ ] T016 [P] Replace `UserDefaults.preferredPeripheralNum` reads in ingest and services (`UpdateSwiftData.swift`, `AccessoryManager.swift:1472`, `DiscoveryScanEngine`) with the session's node number.
+- [~] T016 [P] Replace `UserDefaults.preferredPeripheralNum` reads in ingest and services with the session's node number. Done for ingest (`upsertNodeInfoPacket`, `ingestPassiveBeacon`) in `5671f9d2`. Left: `DiscoveryScanEngine` (12 reads; "which radio runs the scan", decided in Phase 7), `BLETransport` restoration, and the views (Phase 6).
 - [ ] T017 [P] Make `MqttClientProxyManager` an instance per session, with a per-instance forward gate.
 - [ ] T018 [P] Version gates read `session.firmwareVersion`; remove `UserDefaults.firmwareVersion` reads.
-- [ ] T019 Unit tests: session lifecycle with a mock `Connection`; facade forwarding.
+- [X] T019 Unit tests: session identity, in-place updates, stale-event dropping with a mock `Connection` — `RadioSessionTests`, commit `5671f9d2`.
 
 **Checkpoint**: all tests pass; the app behaves exactly as before with one radio.
 
-## Phase 3: Schema V2
+## Phase 3: Schema changes (D-16: additive, lightweight, no new VersionedSchema)
 
-- [ ] T020 Spike: confirm the two-stage `messageKey` uniqueness migration (plan.md Schema V2 item 2) on a scratch store; record the result in `HANDOFF.md`.
-- [ ] T021 Freeze V1: nested snapshot copies of all V1 models under `MeshtasticSchemaV1`. `SchemaHistoryUpgradeTests` must still pass unchanged.
-- [ ] T022 Add `MeshtasticSchemaV1_1` (new columns, not yet unique) and `MeshtasticSchemaV2` (`messageKey` unique), and point the live model types at V2.
-- [ ] T023 Add `NodeObservationEntity` and `PacketReceptionEntity`.
-- [ ] T024 Add the new attributes (plan.md Schema V2 item 5).
-- [ ] T025 Custom stage V1 → V1_1 with the `didMigrate` backfill (plan.md Schema V2 item 7).
-- [ ] T026 Lightweight stage V1_1 → V2.
-- [ ] T027 `channelKey` derivation (`ChannelEntity+Key.swift`) plus tests for: the default channel, custom channels, the same name with a different PSK, and different presets on an unnamed primary.
+- [X] T020 Spike: move message uniqueness to a sender-scoped key — commit `6c173b7c`, verified: `MessageKeyMigrationSpikeTests` (5 cases, incl. the single-step upgrade). Outcome recorded as D-16.
+- [-] T021 Freeze V1. Dropped by D-16: the project changes live models under V1 and proves every release store still opens (`SchemaHistoryUpgradeTests`).
+- [-] T022 `MeshtasticSchemaV1_1` / `V2`. Dropped by D-16.
+- [ ] T023 Add `NodeObservationEntity` and `PacketReceptionEntity` (added to `MeshtasticSchemaV1.models`).
+- [ ] T024 Add the new attributes (plan.md › Schema changes item 5), all optional or defaulted. `MessageEntity.messageId` loses `.unique`; `messageKey: String?` becomes the unique attribute.
+- [ ] T025 Resumable backfill job on `MeshPackets` (plan.md › Schema changes item 7), replacing the planned custom stage.
+- [-] T026 Lightweight stage V1_1 → V2. Dropped by D-16.
+- [X] T027 `channelKey` derivation (`ChannelIdentity.swift`) plus tests — commit `2a3e3653`, verified: `ChannelIdentityTests` (16 cases).
 - [ ] T028 Update the backup importer (`NodeBackupManager+Import.swift`) for the new entities and attributes.
-- [ ] T029 Migration tests: every fixture in `research/schema-history` opens as V2 with the backfill correct.
+- [ ] T029 Migration tests: every fixture in `research/schema-history` opens with the new models, and the backfill fills them correctly.
 - [ ] T030 Backup merge job (D-09): resumable, keyed merge, originals kept. Tests use two synthetic radio backups.
 
 **Checkpoint**: an existing store and its backups upgrade with nothing lost; the app still runs with one radio.

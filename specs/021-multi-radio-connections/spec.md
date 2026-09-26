@@ -35,7 +35,8 @@ reception details) is kept per radio.
 | D-12 | Services: each radio runs its own MQTT proxy. Phone position goes to every radio. TAK, CarPlay, Siri and Watch use a radio the user picks, defaulting to "follow the focused radio". |
 | D-13 | Sending on a channel several radios share goes through the focused radio by default, with a "send via" picker. A DM reply always goes through the radio that is part of that conversation. |
 | D-14 | Two radios have "the same channel" when the display name and key match. For an unnamed primary channel the modem preset must also match. |
-| D-15 | Test hardware: several BLE radios, possibly one TCP radio. Simulator covers unit, migration and replay tests. A manual checklist covers devices. |
+| D-15 | Test hardware: several BLE radios, possibly one TCP radio. Simulator covers unit, migration and replay tests. A manual checklist covers devices. All testing happens on the Mac; the owner's phones are never used. |
+| D-16 | Schema changes follow the project's existing pattern: one `VersionedSchema` (V1) whose models change additively, relying on SwiftData's lightweight migration and proven by `SchemaHistoryUpgradeTests`. No frozen copies, no custom migration stages. Data backfills run as resumable jobs in the app. Decided 2026-09-25 after the T020 spike. |
 
 ## Functional requirements
 

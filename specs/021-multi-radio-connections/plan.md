@@ -50,25 +50,33 @@ Rules:
 - A single writer actor does all ingest de-duplication, so the second copy of a packet always
   sees the first.
 
-## Schema V2
+Where this stands (2026-09-25): `RadioSession` exists and is `AccessoryManager.activeConnection`
+(it replaced the `(device, connection)` tuple, so existing reads compile unchanged). Every
+connection event carries the session it came from; data, log and RSSI events from a session that
+is no longer active are dropped. `processFromRadio` and the `handle*` functions resolve the radio
+from the session they are given. Connection lifecycle state (stepper, heartbeats, handshake
+continuations, config refresh) still lives on `AccessoryManager`; it moves onto the session in
+Phase 5, when there is more than one, because moving it earlier means reworking the single-connection
+retry and teardown flow twice.
 
-This follows report §13.3, with these differences for D-06:
+## Schema changes (D-16)
 
-1. **Freeze V1.** `MeshtasticSchemaV1` currently lists the live model types, so any model change
-   would silently alter V1. Before touching any model, V1 becomes a namespace of nested frozen
-   copies of all its models, byte-for-byte what shipped (SwiftData maps entities by class name,
-   so nested `MeshtasticSchemaV1.NodeInfoEntity` is still the entity `NodeInfoEntity`). The
-   `SchemaHistoryUpgradeTests` fixtures prove the frozen V1 still opens every released store.
-2. **Message uniqueness without `#Unique`.** Add `messageKey: Int64 = (fromNum << 32) | packetId`,
-   unique. `messageId` loses `.unique` and stays as the packet id for replies and tapbacks.
-   Because a new unique column can't be added and filled in one lightweight step, it takes two
-   stages:
-   - V1 → V1_1 (custom): add the columns (not unique), and fill them in `didMigrate`.
-   - V1_1 → V2 (lightweight): mark `messageKey` unique.
+This follows report §13.3, adjusted for D-06 and for how this project actually evolves its schema.
+"V2" below means "the models after this feature", not a new `VersionedSchema`.
 
-   The spike task confirms that SwiftData performs the uniqueness change as described. If it
-   doesn't, the fallback is to keep `messageId` unique and de-duplicate by `(fromNum, messageId)`
-   in the writer.
+1. **No schema freeze, no new versioned schema.** `MeshtasticSchemaV1` has listed the live models
+   since 2.7.13, and every release since has added properties and relied on SwiftData's automatic
+   lightweight migration. `SchemaHistoryUpgradeTests` opens a real store from each release to prove
+   it. This feature does the same: additive changes only, each covered by those tests. (The earlier
+   plan to freeze V1 and add V1_1/V2 with a custom stage would have meant copying 50+ models by
+   hand, against the project's own pattern.)
+2. **Message uniqueness without `#Unique`.** Add an optional `messageKey: String?`, unique, set to
+   `"\(fromNum):\(packetId)"`. `messageId` loses `.unique` and stays as the packet id for replies
+   and tapbacks. SQLite lets any number of NULLs sit under a unique index, so existing rows migrate
+   with a NULL key and a backfill in code fills them in; new rows get the key on insert.
+   **Spike done (T020):** `MessageKeyMigrationSpikeTests` proves on scratch stores that the
+   single-step upgrade keeps every row, that two senders can then share a packet id, and that the
+   same sender and id still collapse to one row.
 3. **No indexes.** Flat `fromNum`, `toNum`, `localNodeNum` and `channelKey` columns still avoid
    relationship joins. Measure with `PerformanceSeedData`.
 4. New entities:
@@ -76,19 +84,25 @@ This follows report §13.3, with these differences for D-06:
      a `key` column (`"\(radioNum):\(nodeNum)"`) marked `.unique`.
    - `PacketReceptionEntity`: one per (radio, sender, packet), with a unique `key` and a
      retention cap (30 days or 50k rows, pruned on the existing background prune pass).
-5. New attributes:
+5. New attributes (all optional or defaulted, so lightweight):
    - `ChannelEntity.channelKey`
    - `MessageEntity`: `channelKey`, `fromNum`, `toNum`, `localNodeNum`, `messageKey`
    - `PositionEntity.packetId`, `TelemetryEntity.packetId`
    - `MyInfoEntity`: `lastConnected`, `autoConnect`, `transport`, `sortOrder`, `displayColor`
 6. `NodeInfoEntity` keeps its observer fields as aggregates, recomputed by the writer
    (report §13.3.2). Existing queries stay as they are.
-7. Backfill (`didMigrate` of the custom stage): observations for the store's own radio,
-   `localNodeNum`, `fromNum`/`toNum` from relationships, `channelKey` from that radio's channels,
-   `messageKey`.
+7. **Backfill in code, not in a migration stage.** A resumable job after launch (on `MeshPackets`)
+   fills observations for the store's own radio, `localNodeNum`, `fromNum`/`toNum` from
+   relationships, `channelKey` from that radio's channels, and `messageKey`. Rows it hasn't reached
+   yet have NULLs, which every reader must tolerate.
 8. Backup merge (D-09): a one-time job after launch imports each backup through the existing
-   staged-container path, migrates it to V2 scoped to its radio, and merges by the keys above.
-   Its progress is saved, so an interrupted merge resumes.
+   staged-container path and merges by the keys above. Its progress is saved, so an interrupted
+   merge resumes.
+9. **Channel identity (T027, done):** `ChannelIdentity.key(...)` mirrors the firmware's
+   `Channels::getName`/`getKey`: an empty name becomes the preset's channel name (or "Custom"), the
+   1-byte PSK shorthand expands onto the default key, a secondary with no key borrows the
+   primary's, and short keys are zero-padded. The key is `c1:<8-byte SHA-256 of the key, or
+   "open">:<name>`, so the secret itself is never stored in it.
 
 ## Connect flow (D-05)
 
