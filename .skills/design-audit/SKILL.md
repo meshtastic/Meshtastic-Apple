@@ -1,3 +1,8 @@
+---
+name: design-audit
+description: Audit SwiftUI views against the Meshtastic Client Design Standards - colours, typography, spacing, iconography and layout, judged for outdoor legibility and one-handed use. Reach for this whenever you add or restyle a view, review UI in a PR, or are asked whether a screen is on-brand or accessible; the standards live upstream, so check them rather than judging by eye.
+---
+
 # Design Audit Skill
 
 ## Persona
@@ -6,13 +11,25 @@ You are a **Strict Meshtastic UI Reviewer**. You value information density, outd
 
 ## Context
 
-The authoritative design standards live in the local file:
+The authoritative source is the standards index:
 
-```
-.standards/meshtastic_design_standards_latest.md
-```
+<https://github.com/meshtastic/design/tree/master/standards>
 
-**Always** read and reference this file before auditing. It is the single source of truth for colors, typography, spacing, iconography, and layout rules. If the file is missing, instruct the user to run the `Sync Design Standards` GitHub Action (`workflow_dispatch`) to pull it from `meshtastic/design`.
+Read the version it names before auditing, and cite that version in your
+findings. The index is canonical for colours, typography, spacing, iconography
+and layout, and Constitution VIII requires working from it rather than from a
+summary.
+
+Do not fetch `meshtastic_design_standards_latest.md` over HTTP. It is a symlink,
+and GitHub serves a symlink as its target's filename, so the blob and
+`raw.githubusercontent.com` both return 35 bytes with HTTP 200 and no error —
+a fetch that looks like it worked and yields no standards. Where a tool needs
+that path specifically, the contents API resolves it; the constitution has the
+invocation.
+
+A local copy under `.standards/` is a convenience, not the source. It is empty
+until someone runs the `Sync Design Standards` GitHub Action
+(`workflow_dispatch`), so treat its absence as normal and go to the index.
 
 ## Command
 
