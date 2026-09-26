@@ -12,11 +12,11 @@ struct PositionLog: View {
 
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
-	@Environment(\.verticalSizeClass) var verticalSizeClass: UserInterfaceSizeClass?
-	@Environment(\.horizontalSizeClass) var horizontalSizeClass: UserInterfaceSizeClass?
-	var useGrid: Bool {
-		let result = (verticalSizeClass == .regular || verticalSizeClass == .compact) && horizontalSizeClass == .compact
-		return result
+	@Environment(\.horizontalSizeClass) private var horizontalSizeClass
+
+	/// Table on iPhone shows only its first column, even in a regular size class.
+	private var showsWideTable: Bool {
+		horizontalSizeClass == .regular && UIDevice.current.userInterfaceIdiom != .phone
 	}
 	@State var isExporting = false
 	@State var exportString = ""
@@ -29,8 +29,7 @@ struct PositionLog: View {
 	var body: some View {
 		VStack {
 			if totalPositionCount > 0 {
-				if UIDevice.current.userInterfaceIdiom == .pad && !useGrid || UIDevice.current.userInterfaceIdiom == .mac {
-					// Add a table for mac and ipad
+				if showsWideTable {
 					Table(positions, sortOrder: $sortOrder) {
 						TableColumn("Latitude") { position in
 							Text(String(format: "%.5f", position.latitude ?? 0))

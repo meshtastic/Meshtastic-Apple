@@ -37,19 +37,20 @@ enum SwitchStress {
 		return max(1, n)
 	}
 
-	static func runIfNeeded(accessoryManager: AccessoryManager, appState: AppState) async {
+	static func runIfNeeded(accessoryManager: AccessoryManager, appState: AppState, router: Router) async {
 		guard isActive, !started else { return }
 		started = true
 		// Unstructured task: the calling `.task` dies with the old ContentView identity on
 		// every databaseResetID bump, and a structured child would be cancelled with it.
+		// `router` lives on the window, above that identity, so the task can keep it.
 		Task {
-			await run(accessoryManager: accessoryManager, appState: appState)
+			await run(accessoryManager: accessoryManager, appState: appState, router: router)
 		}
 	}
 
 	/// Waits for discovery to surface at least two TCP devices, then alternates full
 	/// switch cycles between them, logging a machine-greppable verdict per cycle.
-	private static func run(accessoryManager: AccessoryManager, appState: AppState) async {
+	private static func run(accessoryManager: AccessoryManager, appState: AppState, router: Router) async {
 		let cycles = requestedCycles
 		Logger.services.warning("🧪 [SwitchStress] armed: \(cycles, privacy: .public) cycles")
 
@@ -97,7 +98,7 @@ enum SwitchStress {
 			lastIdentifier = target.identifier
 			Logger.services.warning("🧪 [SwitchStress] cycle \(cycle, privacy: .public)/\(cycles, privacy: .public): switching to \(target.name, privacy: .public) @ \(target.identifier, privacy: .public)")
 
-			await switchToDevice(target, accessoryManager: accessoryManager, appState: appState)
+			await switchToDevice(target, accessoryManager: accessoryManager, appState: appState, router: router)
 
 			// Give the connect + node dump a window, then judge by connected identifier.
 			var landed = false

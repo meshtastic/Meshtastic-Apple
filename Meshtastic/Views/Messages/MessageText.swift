@@ -8,7 +8,7 @@ import Translation
 struct MessageText: View {
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
-	@EnvironmentObject var appState: AppState
+	@EnvironmentObject private var router: Router
 
 	let message: MessageEntity
 	let tapBackDestination: MessageDestination
@@ -17,6 +17,7 @@ struct MessageText: View {
 	let onTapback: () -> Void
 	// State for handling channel URL sheet
 	@State private var saveChannelLink: SaveChannelLinkData?
+	@State private var pendingContact: PendingContact?
 	@State private var isShowingDeleteConfirmation = false
 	@State private var isShowingTranslationPresentation = false
 
@@ -37,6 +38,7 @@ struct MessageText: View {
 				.presentationDragIndicator(.visible)
 				#endif
 			}
+			.contactImportSheet($pendingContact, accessoryManager: accessoryManager)
 			.confirmationDialog(
 				"Are you sure you want to delete this message?",
 				isPresented: $isShowingDeleteConfirmation,
@@ -227,13 +229,14 @@ struct MessageText: View {
 		   components.path == "/nodes",
 		   let nodeNumStr = components.queryItems?.first(where: { $0.name == "nodenum" })?.value,
 		   let nodeNum = Int64(nodeNumStr) {
-			appState.router.navigateToNodeDetail(nodeNum: nodeNum)
+			router.navigateToNodeDetail(nodeNum: nodeNum)
 			return .handled
 		}
 		var addChannels = false
 		if ContactURLHandler.canHandle(url) {
-			// Handle contact URL
-			ContactURLHandler.handleContactUrl(url: url, accessoryManager: AccessoryManager.shared)
+			if let pending = ContactURLHandler.makePendingContact(from: url, accessoryManager: accessoryManager) {
+				pendingContact = pending
+			}
 			return .handled // Prevent default browser opening
 		} else if MeshtasticChannelURL.canHandle(url) {
 			do {

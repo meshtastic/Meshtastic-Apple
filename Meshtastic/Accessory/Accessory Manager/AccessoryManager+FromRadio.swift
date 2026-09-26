@@ -325,12 +325,10 @@ extension AccessoryManager {
 		_ = await NodeBackupManager.shared.createBackup(forNode: oldNum, deviceId: deviceId, nodeName: previousName)
 
 		// Detail views bound to the old node have to unmount before its identity changes
-		// underneath them, the same reason the reset path pops first.
-		if let router = appState?.router {
-			router.popToRoot(tab: .messages)
-			router.popToRoot(tab: .nodes)
-			router.popToRoot(tab: .map)
-			router.popToRoot(tab: .settings)
+		// underneath them, the same reason the reset path pops first. Every open
+		// window has its own router; pop them all and leave each window's tab.
+		if let appState {
+			appState.sceneRouters.popAllStacks()
 			await Task.yield()
 		}
 

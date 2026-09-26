@@ -130,7 +130,7 @@ enum PerformanceSeedData {
 		}
 	}
 
-	static func seedIfNeeded(using controller: PersistenceController, configuration: PerformanceSeedConfiguration, router: Router) {
+	static func seedIfNeeded(using controller: PersistenceController, configuration: PerformanceSeedConfiguration, appState: AppState) {
 		let start = Date()
 		let context = controller.container.mainContext
 
@@ -142,10 +142,10 @@ enum PerformanceSeedData {
 				seedMessageHistory(baseNodeNum: 0x0A00_0000, now: Date(), configuration: configuration, context: context)
 				try? context.save()
 			}
-			router.selectedTab = configuration.initialTab
-			if configuration.opensLocalStatsLog {
-				router.selectedNodeNum = 0x0A00_0000
-			}
+			appState.launchNavigation = NavigationState(
+				selectedTab: configuration.initialTab,
+				nodeListSelectedNodeNum: configuration.opensLocalStatsLog ? 0x0A00_0000 : nil
+			)
 			Logger.data.info("📈 [PerfSeed] Existing large mesh seed found; skipping reseed")
 			return
 		}
@@ -166,10 +166,10 @@ enum PerformanceSeedData {
 
 		do {
 			try context.save()
-			router.selectedTab = configuration.initialTab
-			if configuration.opensLocalStatsLog {
-				router.selectedNodeNum = baseNodeNum
-			}
+			appState.launchNavigation = NavigationState(
+				selectedTab: configuration.initialTab,
+				nodeListSelectedNodeNum: configuration.opensLocalStatsLog ? baseNodeNum : nil
+			)
 			let duration = Date().timeIntervalSince(start)
 			Logger.data.info("📈 [PerfSeed] Finished seeding \(configuration.nodeCount, privacy: .public) nodes in \(duration, privacy: .public) seconds")
 		} catch {
