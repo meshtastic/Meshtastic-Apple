@@ -26,9 +26,11 @@ actor BLETransport: Transport {
 	private var discoveredPeripherals: [UUID: (peripheral: CBPeripheral, lastSeen: Date)] = [:]
 	private var discoveredDeviceContinuation: AsyncStream<DiscoveryEvent>.Continuation?
 	private let delegate: BLEDelegate
-	private var connectingPeripheral: CBPeripheral?
-	private var activeConnection: BLEConnection?
-	private var connectContinuation: CheckedContinuation<BLEConnection, Error>?
+	// Feature 021: one entry per peripheral, so several radios can connect and stay connected at
+	// once. Every CoreBluetooth callback is routed by the peripheral's identifier.
+	private var connectingPeripherals: [UUID: CBPeripheral] = [:]
+	private var activeConnections: [UUID: BLEConnection] = [:]
+	private var connectContinuations: [UUID: CheckedContinuation<BLEConnection, Error>] = [:]
 	private var restoredConnectContinuation: CheckedContinuation<Void, Error>?
 	private var setupCompleteGate: AsyncGate
 	private var restoreInProgress: Bool = false
@@ -233,8 +235,8 @@ actor BLETransport: Transport {
 		Logger.transport.error("🛜 [BLE] State has transitioned to: \(cbManagerStateDescription(state), privacy: .public)")
 		switch state {
 		case .poweredOn:
-			if activeConnection != nil {
-				Logger.transport.info("🛜 [BLE] CBManager has poweredOn with an already active connection")
+			if !activeConnections.isEmpty {
+				Logger.transport.info("🛜 [BLE] CBManager has poweredOn with \(self.activeConnections.count) already active connection(s)")
 			}
 			status = .discovering
 			
@@ -257,11 +259,13 @@ actor BLETransport: Transport {
 			// the opposite of, so `.error` here also matches this file's own convention for
 			// every other non-powered-on state (.unauthorized, .unsupported, .resetting, etc.).
 			status = .error(Self.poweredOffStatusMessage)
-			if let continuation = connectContinuation {
-				connectContinuation = nil
+			let pending = connectContinuations
+			connectContinuations.removeAll()
+			connectingPeripherals.removeAll()
+			for continuation in pending.values {
 				continuation.resume(throwing: AccessoryError.disconnected("Bluetooth powered off"))
 			}
-			if let connection = activeConnection {
+			for connection in activeConnections.values {
 				Task {
 					Logger.transport.error("🛜 [BLE] Bluetooth has powered off during active connection. Cleaning up.")
 					try await connection.disconnect(withError: AccessoryError.disconnected("Bluetooth powered off"), shouldReconnect: true)
@@ -318,10 +322,15 @@ actor BLETransport: Transport {
 	}
 
 	func cancelConnectContinuation(for peripheral: CBPeripheral) {
-		guard connectingPeripheral?.identifier == peripheral.identifier,
-			  let connectContinuation else { return }
-		connectContinuation.resume(throwing: CancellationError())
-		self.connectContinuation = nil
+		let id = peripheral.identifier
+		guard let continuation = connectContinuations.removeValue(forKey: id) else { return }
+		connectingPeripherals.removeValue(forKey: id)
+		continuation.resume(throwing: CancellationError())
+	}
+
+	/// True while this peripheral is connecting or connected (feature 021: other peripherals can be).
+	private func isBusy(_ id: UUID) -> Bool {
+		activeConnections[id] != nil || connectContinuations[id] != nil
 	}
 
 	/// Stops duplicate-advertisement scanning before CoreBluetooth starts a connection. Keeping the
@@ -371,7 +380,7 @@ actor BLETransport: Transport {
 	}
 
 	func connect(to device: Device) async throws -> any Connection {
-		guard activeConnection == nil, connectContinuation == nil else {
+		if let id = UUID(uuidString: device.identifier), isBusy(id) {
 			throw AccessoryError.connectionFailed("BLE transport is busy: already connecting or connected")
 		}
 
@@ -380,24 +389,26 @@ actor BLETransport: Transport {
 			resumeScanningAfterFailedConnection()
 			throw AccessoryError.connectionFailed("Peripheral not found")
 		}
-		
+		let id = peripheral.identifier
+
 		do {
 			let returnConnection = try await withTaskCancellationHandler {
 				let newConnection: BLEConnection = try await withCheckedThrowingContinuation { cont in
-					if self.connectContinuation != nil || self.activeConnection != nil {
+					if self.isBusy(id) {
 						cont.resume(throwing: AccessoryError.connectionFailed("BLE transport is busy: already connecting or connected"))
 						return
 					}
-					self.connectContinuation = cont
-					self.connectingPeripheral = peripheral
+					self.connectContinuations[id] = cont
+					self.connectingPeripherals[id] = peripheral
 					guard centralManager != nil else {
-						self.connectContinuation = nil
+						self.connectContinuations.removeValue(forKey: id)
+						self.connectingPeripherals.removeValue(forKey: id)
 						cont.resume(throwing: AccessoryError.connectionFailed("Bluetooth not initialized"))
 						return
 					}
 					centralManager.connect(peripheral)
 				}
-				self.activeConnection = newConnection
+				self.activeConnections[id] = newConnection
 				return newConnection
 			} onCancel: {
 				Task {
@@ -413,23 +424,20 @@ actor BLETransport: Transport {
 	}
 
 	func handlePeripheralDisconnect(peripheral: CBPeripheral) {
-		if let continuation = self.connectContinuation,
-		   self.connectingPeripheral?.identifier == peripheral.identifier {
+		let id = peripheral.identifier
+		if let continuation = connectContinuations.removeValue(forKey: id) {
 			// Disconnect arrived while still waiting for didConnect — resume the
 			// pending continuation so the caller doesn't hang.
 			Logger.transport.debug("🛜 [BLETransport] Clean disconnect during connection phase. Resuming continuation with error.")
+			connectingPeripherals.removeValue(forKey: id)
 			continuation.resume(throwing: AccessoryError.connectionFailed("Peripheral disconnected before connection completed"))
-			self.connectContinuation = nil
-			self.connectingPeripheral = nil
-			discoveredPeripherals.removeValue(forKey: peripheral.identifier)
-			discoveredDeviceContinuation?.yield(.deviceLost(peripheral.identifier))
-		} else if let connection = self.activeConnection {
-			discoveredPeripherals.removeValue(forKey: peripheral.identifier)
-			discoveredDeviceContinuation?.yield(.deviceLost(peripheral.identifier))
+			discoveredPeripherals.removeValue(forKey: id)
+			discoveredDeviceContinuation?.yield(.deviceLost(id))
+		} else if let connection = activeConnections[id] {
+			discoveredPeripherals.removeValue(forKey: id)
+			discoveredDeviceContinuation?.yield(.deviceLost(id))
 			Task {
-				if await connection.peripheral.identifier == peripheral.identifier {
-					try await connection.disconnect(withError: AccessoryError.disconnected("BLE connection lost"), shouldReconnect: true)
-				}
+				try await connection.disconnect(withError: AccessoryError.disconnected("BLE connection lost"), shouldReconnect: true)
 			}
 		}
 	}
@@ -457,12 +465,12 @@ actor BLETransport: Transport {
 			Logger.transport.error("🛜 [BLETransport] Disconnected with non-CBError: \(otherError.localizedDescription, privacy: .public)")
 		}
 		
-		if let continuation = self.connectContinuation {
+		let id = peripheral.identifier
+		if let continuation = connectContinuations.removeValue(forKey: id) {
 			Logger.transport.debug("🛜 [BLETransport] Error while connecting. Resuming connection continuation with error.")
+			connectingPeripherals.removeValue(forKey: id)
 			continuation.resume(throwing: error)
-			self.connectContinuation = nil
-			self.connectingPeripheral = nil
-		} else if let activeConnection = self.activeConnection {
+		} else if let activeConnection = activeConnections[id] {
 			// Inform the active connection that there was an error and it should disconnect
 			Logger.transport.debug("🛜 [BLETransport] Error on active connection. Disconnecting.")
 			Task {
@@ -481,15 +489,13 @@ actor BLETransport: Transport {
 			return
 		}
 		Logger.transport.debug("🛜 [BLE] Handle Did Connect Connected to peripheral \(peripheral.name ?? "Unknown", privacy: .public)")
-		guard let cont = connectContinuation,
-			  let connPeripheral = connectingPeripheral,
-			  peripheral.identifier == connPeripheral.identifier else {
+		let id = peripheral.identifier
+		guard let cont = connectContinuations.removeValue(forKey: id) else {
 			return
 		}
+		connectingPeripherals.removeValue(forKey: id)
 		let connection = BLEConnection(peripheral: peripheral, central: central, transport: self)
 		cont.resume(returning: connection)
-		self.connectContinuation = nil
-		self.connectingPeripheral = nil
 	}
 
 	func handleDidFailToConnect(peripheral: CBPeripheral, error: Error?) {
@@ -499,14 +505,12 @@ actor BLETransport: Transport {
 			return
 		}
 		
-		guard let cont = connectContinuation,
-			  let connPeripheral = connectingPeripheral,
-			  peripheral.identifier == connPeripheral.identifier else {
+		let id = peripheral.identifier
+		guard let cont = connectContinuations.removeValue(forKey: id) else {
 			return
 		}
+		connectingPeripherals.removeValue(forKey: id)
 		cont.resume(throwing: error ?? AccessoryError.connectionFailed("Connection failed"))
-		self.connectContinuation = nil
-		self.connectingPeripheral = nil
 	}
 	
 	func handleWillRestoreState(dict: [String: Any], central: CBCentralManager) async {
@@ -567,7 +571,7 @@ actor BLETransport: Transport {
 			switch peripheral.state {
 			case .connecting:
 				let restoredConnection = BLEConnection(peripheral: peripheral, central: central, transport: self)
-				self.activeConnection = restoredConnection
+				self.activeConnections[id] = restoredConnection
 				Task {
 					do {
 						// Make sure we're in poweredOn before continuing
@@ -601,7 +605,7 @@ actor BLETransport: Transport {
 
 			case .connected:
 				let restoredConnection = BLEConnection(peripheral: peripheral, central: central, transport: self)
-				self.activeConnection = restoredConnection
+				self.activeConnections[id] = restoredConnection
 				Logger.transport.error("🛜 [BLE] Peripheral Connection found and state is connected setting this connection as the activeConnection.")
 				let connectTask = Task { @MainActor in
 					// In this case we need a full reconnect, so do the wantConfig, wantDatabase, and versionCheck
@@ -636,13 +640,14 @@ actor BLETransport: Transport {
 	func connectionDidDisconnect(fromPeripheral peripheral: CBPeripheral?) {
 		// Make sure we remove this device from the discovered list so that we send a
 		// new discovery event in when it is next seen.
+		// Only this peripheral's bookkeeping goes; other radios stay connected (feature 021).
 		if let peripheral {
-			discoveredPeripherals.removeValue(forKey: peripheral.identifier)
-			discoveredDeviceContinuation?.yield(.deviceLost(peripheral.identifier))
+			let id = peripheral.identifier
+			discoveredPeripherals.removeValue(forKey: id)
+			discoveredDeviceContinuation?.yield(.deviceLost(id))
+			activeConnections.removeValue(forKey: id)
+			connectingPeripherals.removeValue(forKey: id)
 		}
-		
-		self.activeConnection = nil
-		self.connectingPeripheral = nil
 		restoreInProgress = false
 		resumeScanningAfterFailedConnection()
 	}

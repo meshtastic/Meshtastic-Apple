@@ -1,0 +1,317 @@
+//
+//  MultiRadioTransportTests.swift
+//  MeshtasticTests
+//
+//  Feature 021: BLETransport keeps one connection per peripheral, so several radios can be
+//  connected at once, and AccessoryManager keeps an additional radio's events away from the
+//  focused radio.
+//
+
+@preconcurrency import CoreBluetooth
+import Foundation
+import MeshtasticProtobufs
+import ObjectiveC.runtime
+import SwiftData
+import Testing
+
+@testable import Meshtastic
+
+// MARK: - Doubles
+
+private actor Reached {
+	private var count = 0
+	private var waiters: [(Int, CheckedContinuation<Void, Never>)] = []
+
+	func mark() {
+		count += 1
+		let ready = waiters.filter { $0.0 <= count }
+		waiters.removeAll { $0.0 <= count }
+		ready.forEach { $0.1.resume() }
+	}
+
+	func wait(for target: Int) async {
+		guard count < target else { return }
+		await withCheckedContinuation { waiters.append((target, $0)) }
+	}
+}
+
+private class FakePeripheral: CBPeripheral, @unchecked Sendable {
+	class var fakeIdentifier: UUID { UUID() }
+	override var identifier: UUID { Self.fakeIdentifier }
+
+	static func make() -> Self {
+		// CBPeripheral has no public initializer; this double carries no CoreBluetooth state.
+		guard let instance = class_createInstance(self, 0) as? Self else {
+			fatalError("Unable to allocate a fake peripheral")
+		}
+		return instance
+	}
+}
+
+private final class PeripheralA: FakePeripheral, @unchecked Sendable {
+	static let id = UUID()
+	override static var fakeIdentifier: UUID { id }
+}
+
+private final class PeripheralB: FakePeripheral, @unchecked Sendable {
+	static let id = UUID()
+	override static var fakeIdentifier: UUID { id }
+}
+
+private final class TwoPeripheralCentral: CBCentralManager, @unchecked Sendable {
+	private let peripherals: [CBPeripheral]
+	private let connects: Reached
+
+	init(peripherals: [CBPeripheral], connects: Reached) {
+		self.peripherals = peripherals
+		self.connects = connects
+		super.init(delegate: nil, queue: nil, options: nil)
+	}
+
+	override var state: CBManagerState { .poweredOn }
+	override var isScanning: Bool { false }
+	override func stopScan() {}
+	override func scanForPeripherals(withServices serviceUUIDs: [CBUUID]?, options: [String: Any]? = nil) {}
+
+	override func retrievePeripherals(withIdentifiers identifiers: [UUID]) -> [CBPeripheral] {
+		peripherals.filter { identifiers.contains($0.identifier) }
+	}
+
+	override func connect(_ peripheral: CBPeripheral, options: [String: Any]? = nil) {
+		Task { await connects.mark() }
+	}
+}
+
+private func device(for peripheral: CBPeripheral, name: String) -> Device {
+	Device(id: peripheral.identifier, name: name, transportType: .ble, identifier: peripheral.identifier.uuidString)
+}
+
+// MARK: - BLE transport
+
+@Suite("Multi-radio BLE transport", .timeLimit(.minutes(1)))
+struct MultiRadioBLETransportTests {
+
+	@Test("Two radios can be connecting and connected at the same time")
+	func twoPeripheralsConnect() async throws {
+		let peripheralA = PeripheralA.make()
+		let peripheralB = PeripheralB.make()
+		let connects = Reached()
+		let central = TwoPeripheralCentral(peripherals: [peripheralA, peripheralB], connects: connects)
+		let transport = BLETransport(createCentralManagerImmediately: false, centralManager: central)
+
+		let first = Task { try await transport.connect(to: device(for: peripheralA, name: "A")) }
+		let second = Task { try await transport.connect(to: device(for: peripheralB, name: "B")) }
+		await connects.wait(for: 2)
+
+		// Out of order on purpose: each didConnect must reach its own caller.
+		await transport.handleDidConnect(peripheral: peripheralB, central: central)
+		await transport.handleDidConnect(peripheral: peripheralA, central: central)
+
+		let connectionA = try #require(try await first.value as? BLEConnection)
+		let connectionB = try #require(try await second.value as? BLEConnection)
+		#expect(await connectionA.peripheral.identifier == PeripheralA.id)
+		#expect(await connectionB.peripheral.identifier == PeripheralB.id)
+	}
+
+	@Test("The same radio can't connect twice")
+	func samePeripheralIsBusy() async throws {
+		let peripheralA = PeripheralA.make()
+		let connects = Reached()
+		let central = TwoPeripheralCentral(peripherals: [peripheralA], connects: connects)
+		let transport = BLETransport(createCentralManagerImmediately: false, centralManager: central)
+		let radio = device(for: peripheralA, name: "A")
+
+		let first = Task { try await transport.connect(to: radio) }
+		await connects.wait(for: 1)
+		await transport.handleDidConnect(peripheral: peripheralA, central: central)
+		_ = try await first.value
+
+		await #expect(throws: AccessoryError.self) {
+			_ = try await transport.connect(to: radio)
+		}
+	}
+
+	@Test("One radio disconnecting leaves the other connected")
+	func disconnectIsPerPeripheral() async throws {
+		let peripheralA = PeripheralA.make()
+		let peripheralB = PeripheralB.make()
+		let connects = Reached()
+		let central = TwoPeripheralCentral(peripherals: [peripheralA, peripheralB], connects: connects)
+		let transport = BLETransport(createCentralManagerImmediately: false, centralManager: central)
+		let radioA = device(for: peripheralA, name: "A")
+		let radioB = device(for: peripheralB, name: "B")
+
+		let first = Task { try await transport.connect(to: radioA) }
+		let second = Task { try await transport.connect(to: radioB) }
+		await connects.wait(for: 2)
+		await transport.handleDidConnect(peripheral: peripheralA, central: central)
+		await transport.handleDidConnect(peripheral: peripheralB, central: central)
+		_ = try await first.value
+		_ = try await second.value
+
+		await transport.connectionDidDisconnect(fromPeripheral: peripheralA)
+
+		// B is still connected, so connecting it again is refused...
+		await #expect(throws: AccessoryError.self) {
+			_ = try await transport.connect(to: radioB)
+		}
+		// ...while A can connect again.
+		let again = Task { try await transport.connect(to: radioA) }
+		await connects.wait(for: 3)
+		await transport.handleDidConnect(peripheral: peripheralA, central: central)
+		_ = try await again.value
+	}
+}
+
+// MARK: - Session routing
+
+private actor RecordingConnection: Connection {
+	let type: TransportType = .ble
+	var isConnected = true
+	private(set) var sent: [ToRadio] = []
+	private(set) var disconnects = 0
+
+	func send(_ data: ToRadio) async throws { sent.append(data) }
+	func connect() async throws -> AsyncStream<ConnectionEvent> { AsyncStream { $0.finish() } }
+	func disconnect(withError: Error?, shouldReconnect: Bool) async throws {
+		isConnected = false
+		disconnects += 1
+	}
+	func drainPendingPackets() async throws {}
+	func startDrainPendingPackets() throws {}
+	func appDidEnterBackground() {}
+	func appDidBecomeActive() {}
+}
+
+@MainActor
+@Suite("Multi-radio sessions", .serialized)
+struct MultiRadioSessionTests {
+
+	private func makeSession(name: String, num: Int64?) -> (RadioSession, RecordingConnection) {
+		let connection = RecordingConnection()
+		let device = Device(id: UUID(), name: name, transportType: .ble, identifier: name, connectionState: .connected, num: num)
+		return (RadioSession(device: device, connection: connection), connection)
+	}
+
+	private struct Fixture {
+		let manager: AccessoryManager
+		let focused: RadioSession
+		let focusedConnection: RecordingConnection
+	}
+
+	private func makeManager() -> Fixture {
+		let (focused, connection) = makeSession(name: "Focused", num: 0x0000_0A0A)
+		let manager = AccessoryManager(transports: [])
+		manager.activeConnection = focused
+		manager.isSwitchingDevices = true
+		manager.context = PersistenceController.shared.context
+		manager.updateState(.subscribed)
+		return Fixture(manager: manager, focused: focused, focusedConnection: connection)
+	}
+
+	private func addRadio(to manager: AccessoryManager, num: Int64? = 0x0000_0B0B) -> (AdditionalRadio, RecordingConnection) {
+		let (session, connection) = makeSession(name: "Extra", num: num)
+		let radio = AdditionalRadio(session: session)
+		manager.additionalRadios[session.device.id] = radio
+		return (radio, connection)
+	}
+
+	@Test("An additional radio's error disconnects only that radio")
+	func errorStaysWithItsRadio() async {
+		let fixture = makeManager()
+		let manager = fixture.manager, focused = fixture.focused, focusedConnection = fixture.focusedConnection
+		let (radio, extraConnection) = addRadio(to: manager)
+
+		await manager.didReceive(.error(AccessoryError.disconnected("lost")), from: radio.session)
+
+		#expect(manager.activeConnection === focused)
+		#expect(manager.additionalRadios.isEmpty)
+		#expect(await extraConnection.disconnects == 1)
+		#expect(await focusedConnection.disconnects == 0)
+	}
+
+	@Test("Late events from a disconnected additional radio are dropped")
+	func retiredSessionIsIgnored() async {
+		let fixture = makeManager()
+		let manager = fixture.manager, focused = fixture.focused, focusedConnection = fixture.focusedConnection
+		let (radio, _) = addRadio(to: manager)
+		await manager.disconnectAdditionalRadio(radio.id)
+
+		await manager.didReceive(.disconnected(shouldReconnect: false), from: radio.session)
+		await manager.didReceive(.rssiUpdate(-30), from: radio.session)
+
+		#expect(manager.activeConnection === focused)
+		#expect(await focusedConnection.disconnects == 0)
+		#expect(focused.device.rssi != -30)
+	}
+
+	@Test("An additional radio's handshake completes on its own nonce, not the focused radio's")
+	func configCompleteGoesToTheAdditionalRadio() async {
+		let manager = makeManager().manager
+		let (radio, _) = addRadio(to: manager)
+		var fromRadio = FromRadio()
+		fromRadio.payloadVariant = .configCompleteID(12_345)
+
+		await manager.didReceive(.data(fromRadio), from: radio.session)
+
+		// The focused radio's config-complete bookkeeping is untouched.
+		#expect(manager.lastConfigRefresh == nil)
+	}
+
+	@Test("An additional radio's MyInfo leaves the preferred radio alone")
+	func myInfoDoesNotChangeThePreferredRadio() async {
+		let previous = UserDefaults.preferredPeripheralNum
+		UserDefaults.preferredPeripheralNum = 0x0000_0A0A
+		defer { UserDefaults.preferredPeripheralNum = previous }
+		let manager = makeManager().manager
+		let (radio, _) = addRadio(to: manager, num: nil)
+		var myInfo = MyNodeInfo()
+		myInfo.myNodeNum = 0x0000_0C0C
+		var fromRadio = FromRadio()
+		fromRadio.payloadVariant = .myInfo(myInfo)
+
+		await manager.didReceive(.data(fromRadio), from: radio.session)
+
+		#expect(radio.session.nodeNum == 0x0000_0C0C)
+		#expect(UserDefaults.preferredPeripheralNum == 0x0000_0A0A)
+		#expect(manager.activeDeviceNum == nil || manager.activeDeviceNum == 0x0000_0A0A)
+
+		await MeshPackets.shared.flushDebouncedSaves()
+		let context = ModelContext(PersistenceController.shared.container)
+		let written: Int64 = 0x0000_0C0C
+		for row in (try? context.fetch(FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == written }))) ?? [] {
+			context.delete(row)
+		}
+		try? context.save()
+	}
+
+	@Test("A radio reporting the focused radio's number is dropped")
+	func duplicateOfFocusedIsDisconnected() async {
+		let fixture = makeManager()
+		let manager = fixture.manager, focused = fixture.focused
+		let (radio, _) = addRadio(to: manager, num: nil)
+		var myInfo = MyNodeInfo()
+		myInfo.myNodeNum = 0x0000_0A0A
+		var fromRadio = FromRadio()
+		fromRadio.payloadVariant = .myInfo(myInfo)
+
+		await manager.didReceive(.data(fromRadio), from: radio.session)
+
+		#expect(manager.additionalRadios.isEmpty)
+		#expect(manager.activeConnection === focused)
+	}
+
+	@Test("At most four radios are connected at once")
+	func capOfFour() {
+		let manager = makeManager().manager
+		#expect(manager.connectedRadioCount == 1)
+		for num in 1...3 {
+			#expect(manager.canConnectAnotherRadio)
+			_ = addRadio(to: manager, num: Int64(num))
+		}
+		#expect(manager.connectedRadioCount == 4)
+		#expect(!manager.canConnectAnotherRadio)
+		#expect(manager.connectedRadios.first?.name == "Focused")
+		#expect(manager.additionalRadioDevices.count == 3)
+	}
+}

@@ -70,6 +70,11 @@ struct Connect: View {
 		}
 	}
 
+	/// Discovered radios that aren't connected yet (feature 021).
+	private var addableDevices: [Device] {
+		sortedAvailableDevices.filter { !accessoryManager.isRadioConnected($0.id) }
+	}
+
 	/// The connected node, but only while it's still a live SwiftData object.
 	///
 	/// `node` is cached in `@State` and survives across connection state changes, so after a
@@ -403,6 +408,42 @@ struct Connect: View {
 						}
 					}
 					.textCase(nil)
+
+					// Feature 021: radios connected alongside the focused one, and radios that can be
+					// added while connected.
+					if !accessoryManager.additionalRadios.isEmpty {
+						Section(header: Text("Also Connected").font(.title)) {
+							ForEach(accessoryManager.additionalRadioDevices, id: \.id) { device in
+								AdditionalRadioRow(device: device, isSwitchingRadio: $isSwitchingRadio)
+							}
+						}
+						.textCase(nil)
+					}
+					if accessoryManager.isConnected {
+						Section(header: Text("Add a Radio").font(.title)) {
+							if !accessoryManager.canConnectAnotherRadio {
+								Text("You can connect up to \(AccessoryManager.maxConnectedRadios) radios at once. Disconnect one to add another.")
+									.font(.callout)
+									.foregroundStyle(.secondary)
+							} else if addableDevices.isEmpty {
+								Label("Looking for radios…", systemImage: "antenna.radiowaves.left.and.right")
+									.font(.callout)
+									.foregroundStyle(.secondary)
+							}
+							ForEach(addableDevices) { device in
+								DeviceConnectRow(device: device, isSwitchingRadio: $isSwitchingRadio)
+							}
+						}
+						.textCase(nil)
+						// The focused radio's connect stops discovery when it finishes, so start it
+						// again for each focused radio; scanning stops when the tab goes away.
+						.task(id: accessoryManager.activeDeviceNum) { accessoryManager.startDiscovery() }
+						.onDisappear {
+							if accessoryManager.isConnected {
+								accessoryManager.stopDiscovery()
+							}
+						}
+					}
 
 					if let firmwareUpdateNotice, accessoryManager.isConnected {
 						Section {
@@ -942,7 +983,52 @@ struct DeviceConnectRow: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	let device: Device
 	@Binding var isSwitchingRadio: Bool
-	
+	@State private var showingConnectChoice = false
+	@State private var connectError: String?
+
+	/// Feature 021 (D-05): with a radio already connected, keep it and add this one, or switch.
+	private func handleTap() {
+		guard !accessoryManager.isRadioConnected(device.id) else { return }
+		guard accessoryManager.activeConnection != nil else {
+			Task {
+				if UserDefaults.preferredPeripheralId.count > 0 && device.id.uuidString != UserDefaults.preferredPeripheralId {
+					await performRadioSwitch(device, isSwitchingRadio: $isSwitchingRadio, accessoryManager: accessoryManager)
+				} else {
+					try? await accessoryManager.connect(to: device)
+				}
+			}
+			return
+		}
+		switch UserDefaults.additionalRadioBehavior {
+		case .keepBoth where accessoryManager.canConnectAnotherRadio:
+			keepBoth()
+		case .switchRadio:
+			switchRadios()
+		default:
+			showingConnectChoice = true
+		}
+	}
+
+	private func keepBoth() {
+		Task {
+			do {
+				try await accessoryManager.connectAdditionalRadio(device)
+			} catch {
+				connectError = error.localizedDescription
+			}
+		}
+	}
+
+	private func switchRadios() {
+		Task {
+			await performRadioSwitch(device, isSwitchingRadio: $isSwitchingRadio, accessoryManager: accessoryManager)
+		}
+	}
+
+	private var focusedName: String {
+		accessoryManager.activeConnection.map { $0.device.longName ?? $0.device.name } ?? ""
+	}
+
 	var body: some View {
 		HStack {
 			if UserDefaults.preferredPeripheralId == device.id.uuidString {
@@ -955,18 +1041,26 @@ struct DeviceConnectRow: View {
 					.padding(.trailing)
 			}
 			VStack(alignment: .leading) {
-				Button(action: {
-					if UserDefaults.preferredPeripheralId.count > 0 && device.id.uuidString != UserDefaults.preferredPeripheralId {
-						Task {
-							await performRadioSwitch(device, isSwitchingRadio: $isSwitchingRadio, accessoryManager: accessoryManager)
-						}
-					} else {
-						Task {
-							try? await accessoryManager.connect(to: device)
-						}
-					}
-				}) {
+				Button(action: handleTap) {
 					Text(device.name).font(.callout)
+				}
+				.confirmationDialog("Connect \(device.name)?", isPresented: $showingConnectChoice, titleVisibility: .visible) {
+					if accessoryManager.canConnectAnotherRadio {
+						Button("Keep \(focusedName) and Add \(device.name)") { keepBoth() }
+					}
+					Button("Switch to \(device.name)") { switchRadios() }
+					Button("Cancel", role: .cancel) {}
+				} message: {
+					if accessoryManager.canConnectAnotherRadio {
+						Text("\(focusedName) is connected. Keep it connected and add \(device.name), or switch to \(device.name)? You can choose what happens by default in Settings › App Settings.")
+					} else {
+						Text("You can connect up to \(AccessoryManager.maxConnectedRadios) radios at once. Switching disconnects \(focusedName).")
+					}
+				}
+				.alert("Couldn't Connect", isPresented: Binding(get: { connectError != nil }, set: { if !$0 { connectError = nil } })) {
+					Button("OK", role: .cancel) {}
+				} message: {
+					Text(connectError ?? "")
 				}
 				// Show transport type
 #if !targetEnvironment(macCatalyst)
@@ -1060,6 +1154,10 @@ func backupCurrentAndRestoreDatabase(
 ) async -> NodeBackupResult {
 	await backupCurrentDatabase(forTargetNode: targetNodeNum, currentNodeNum: currentNodeNum, accessoryManager: accessoryManager)
 
+	// A restore replaces the whole shared store, so no other radio may keep writing to it
+	// (feature 021). The user reconnects them afterwards.
+	await accessoryManager.disconnectAllAdditionalRadios()
+
 	if disconnectCurrentDevice, accessoryManager.allowDisconnect {
 		Logger.backup.info("💾 Disconnecting current device before restore")
 		try? await accessoryManager.disconnect()
@@ -1151,17 +1249,12 @@ func backupCurrentAndRestoreDatabase(
 
 // MARK: - Node Switch Helper
 
-/// Handles the full node-switch lifecycle: backup, clear, restore, connect.
+/// Makes `device` the focused radio (feature 021, T066).
 ///
-/// Flow:
-/// 1. Capture current node number
-/// 2. Flush pending writes
-/// 3. Create backup of current node's database (full SQLite file copy)
-/// 4. Disconnect from current device
-/// 5. Clear database via MeshPackets actor (empties @Query results safely)
-/// 6. Swap database files and recreate ModelContainer (full restore)
-/// 7. Trigger UI reset so views rebind to the new container
-/// 8. Connect to new device (radio sends updates on top of restored data)
+/// The store is shared by every radio, so a switch no longer backs up, clears and restores
+/// it: the focused radio disconnects and `device` connects in its place. Additional radios
+/// stay connected. If `device` is one of them, it is disconnected first and reconnects as the
+/// focused radio.
 @MainActor
 func switchToDevice(
 	_ device: Device,
@@ -1169,70 +1262,37 @@ func switchToDevice(
 	appState: AppState,
 	onRestoreComplete: (@MainActor () -> Void)? = nil
 ) async {
-	let resolvedTargetNodeNum = await NodeBackupManager.shared.resolveNodeNum(forPeripheralId: device.id.uuidString)
-	let targetNodeNum = device.num ?? resolvedTargetNodeNum
-	let currentNodeNum = accessoryManager.activeDeviceNum ?? {
-		let num = Int64(UserDefaults.preferredPeripheralNum)
-		return num > 0 ? num : nil
-	}()
-	Logger.backup.info("💾 Node switch — current: \(currentNodeNum.map { String($0) } ?? "nil", privacy: .public), target: \(targetNodeNum.map { String($0) } ?? "unknown", privacy: .public)")
+	Logger.transport.info("🔀 Switching the focused radio from \(accessoryManager.activeConnection?.device.name ?? "none", privacy: .public) to \(device.name, privacy: .public)")
 
-	// The user's explicit choice IS the new preferred radio — record it at switch
-	// initiation, not only deep in the connect flow (Step 5 writes it again on success).
-	// When it moved only on a fully-successful connect, any failed switch left the OLD
-	// preferred in place, so the error-path auto-reconnect bounced back to the previous
-	// radio instead of retrying the node the user asked for — and that reconnect
-	// (a plain connect, no clear) dumped the previous radio's nodes on top of the target's
-	// freshly restored database. The node num moves with it (0 = unknown for a never-seen
-	// radio) so nothing keyed on the num keeps pointing at the abandoned node.
+	// The user's explicit choice is the new preferred radio, recorded up front so an
+	// error-path auto-reconnect retries this radio rather than the previous one.
 	UserDefaults.preferredPeripheralId = device.id.uuidString
-	UserDefaults.preferredPeripheralNum = Int(targetNodeNum ?? 0)
+	UserDefaults.preferredPeripheralNum = Int(device.num ?? 0)
 
-	// Mark the switch in flight so the disconnect's teardown doesn't re-arm discovery and
-	// auto-connect can't launch a second connect + node dump while the store is mid-reset.
+	// Keeps the disconnect's teardown from re-arming discovery and auto-connect mid-switch.
 	accessoryManager.isSwitchingDevices = true
 	defer {
 		accessoryManager.isSwitchingDevices = false
-		// closeConnection suppressed its usual discovery restart during the switch; if the
-		// switch's connect didn't succeed, restart discovery now so devices reappear.
 		if !accessoryManager.isConnected {
 			accessoryManager.startDiscovery()
 		}
 	}
 
-	// 4. Disconnect from current device
+	if accessoryManager.additionalRadios[device.id] != nil {
+		await accessoryManager.disconnectAdditionalRadio(device.id)
+	}
 	if accessoryManager.allowDisconnect {
 		try? await accessoryManager.disconnect()
 	}
-
-	// Clear (always) and restore (when the target has a backup). Runs even when the target
-	// node number is unknown — a switch to a never-seen radio previously skipped the clear
-	// and dumped the new radio's nodes on top of the old radio's data.
-	let restoreResult = await backupCurrentAndRestoreDatabase(
-		forNode: targetNodeNum,
-		currentNodeNum: currentNodeNum,
-		accessoryManager: accessoryManager,
-		appState: appState,
-		selectedTab: .connect
-	)
-	switch restoreResult {
-	case .success:
-		Logger.backup.info("💾 Backup restored for target node \(targetNodeNum.map { String($0) } ?? "?", privacy: .public)")
-	case .skipped(let reason):
-		Logger.backup.warning("💾 Restore skipped: \(reason, privacy: .public)")
-	case .noBackupFound:
-		Logger.backup.info("💾 No backup for target node \(targetNodeNum.map { String($0) } ?? "unknown", privacy: .public) — radio will populate fresh data")
-	}
-
+	// Settings screens describe the focused radio; leave them before it changes.
+	appState.router.popToRoot(tab: .settings)
 	onRestoreComplete?()
 
-	// 8. Clear notifications and connect to new device
-	clearNotifications()
 	do {
 		try await accessoryManager.connect(to: device, refreshDeviceHardwareFromAPI: true)
-		Logger.backup.info("💾 Connected to target device successfully")
+		Logger.transport.info("🔀 Connected to the new focused radio")
 	} catch {
-		Logger.backup.error("💾 Failed to connect to target: \(error.localizedDescription, privacy: .public)")
+		Logger.transport.error("🔀 Failed to connect to the new focused radio: \(error.localizedDescription, privacy: .public)")
 	}
 }
 

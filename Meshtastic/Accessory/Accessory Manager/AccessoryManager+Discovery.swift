@@ -34,7 +34,11 @@ extension AccessoryManager {
 			return
 		}
 		if otaInProgress { return }
-		updateState(.discovering)
+		// Feature 021: discovery also runs while radios are connected, to add another one.
+		// The connection state then stays as it is.
+		if activeConnection == nil {
+			updateState(.discovering)
+		}
 
 		discoveryTask = Task { @MainActor in
 			for await event in self.discoverAllDevices() {

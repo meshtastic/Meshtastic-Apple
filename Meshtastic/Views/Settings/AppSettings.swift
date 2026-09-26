@@ -38,6 +38,13 @@ struct AppSettings: View {
 	}, set: { newValue in
 		UserDefaults.autoconnectOnDiscovery = newValue
 	})
+	@State private var additionalRadioBehavior = UserDefaults.additionalRadioBehavior
+	private var additionalRadioBinding: Binding<AdditionalRadioBehavior> {
+		Binding(get: { additionalRadioBehavior }, set: { newValue in
+			additionalRadioBehavior = newValue
+			UserDefaults.additionalRadioBehavior = newValue
+		})
+	}
 	var body: some View {
 		VStack {
 			Form {
@@ -65,6 +72,16 @@ struct AppSettings: View {
 							Label("Automatically Connect", systemImage: "app.connected.to.app.below.fill")
 						}
 					}
+					Picker(selection: additionalRadioBinding) {
+						ForEach(AdditionalRadioBehavior.allCases) { behavior in
+							Text(behavior.label).tag(behavior)
+						}
+					} label: {
+						Label("Connecting Another Radio", systemImage: "antenna.radiowaves.left.and.right.circle")
+					}
+					Text("What happens when you connect a radio while another one is connected. Up to \(AccessoryManager.maxConnectedRadios) radios can stay connected at once.")
+						.foregroundStyle(.secondary)
+						.font(.caption)
 #if targetEnvironment(macCatalyst)
 					// App Icon Picker is disabled on macOS Catalyst
 #else

@@ -269,6 +269,12 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	/// The live connection, if any. A `RadioSession` rather than a bare (device, connection) pair
 	/// so every event and handler can carry which connection it belongs to (feature 021).
 	var activeConnection: RadioSession?
+	/// Feature 021: radios connected alongside the focused one (`activeConnection`), by device
+	/// id. See `AccessoryManager+AdditionalRadios.swift`.
+	@Published var additionalRadios: [UUID: AdditionalRadio] = [:]
+	/// Sessions of additional radios that have been disconnected. Their late events are
+	/// dropped rather than mistaken for the focused radio's.
+	var retiredAdditionalSessionIDs: Set<UUID> = []
 
 	/// Reference to the active discovery scan engine, if any
 	var discoveryScanEngine: DiscoveryScanEngine?
@@ -735,6 +741,12 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 				self.activeDeviceNum = activeConnection.device.num
 			}
 		}
+
+		// Feature 021: an additional radio's session device, updated in place like the focused one.
+		if let additional = additionalRadios[deviceId], additional.session.device[keyPath: key] != value {
+			self.objectWillChange.send()
+			additional.session.device[keyPath: key] = value
+		}
 		
 		// Update the device in the devices array if it exists
 		if let index = devices.firstIndex(where: { $0.id == deviceId }) {
@@ -794,6 +806,18 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	/// against whichever radio is connected now. Errors and disconnects are still handled as
 	/// before, since the connect retry flow depends on them.
 	func didReceive(_ event: ConnectionEvent, from session: RadioSession? = nil) async {
+		// Feature 021: an additional radio's events never reach the focused radio's handling,
+		// where an error or disconnect would tear the focused connection down.
+		if let session, session !== activeConnection {
+			if let radio = additionalRadio(for: session) {
+				await didReceiveAdditional(event, radio: radio)
+				return
+			}
+			if retiredAdditionalSessionIDs.contains(session.id) {
+				Logger.transport.debug("[Accessory] Dropping an event from a disconnected additional radio")
+				return
+			}
+		}
 		let shouldIgnoreTransientEvent = isClosingConnection || userRequestedConnectionCancellation || activeConnection == nil
 		let isFromStaleSession = session.map { $0 !== activeConnection } ?? false
 		let source = session ?? activeConnection
@@ -945,7 +969,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 
 	/// Routes one `FromRadio` to its handler. Everything here is about `session`, the radio the
 	/// packet arrived on — never "whichever radio is current" (feature 021).
-	private func processFromRadio(_ decodedInfo: FromRadio, session: RadioSession) async {
+	func processFromRadio(_ decodedInfo: FromRadio, session: RadioSession) async {
 		// Logger.transport.info("📻 [processFromRadio] Processing: \(String(describing: decodedInfo.payloadVariant), privacy: .public)")
 		switch decodedInfo.payloadVariant {
 		case .mqttClientProxyMessage(let mqttClientProxyMessage):
