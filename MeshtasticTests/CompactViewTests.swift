@@ -6,7 +6,10 @@
 //
 
 import Foundation
+import SwiftData
+import SwiftUI
 import Testing
+import UIKit
 @testable import Meshtastic
 
 // MARK: - NodeListDensity
@@ -90,5 +93,83 @@ struct NodeListPreferencesTests {
 		]
 		let unique = Set(allPrefs.map { $0.rawValue })
 		#expect(unique.count == allPrefs.count)
+	}
+}
+
+@Suite("Node list row refresh decision", .serialized)
+@MainActor
+struct NodeListRowRefreshDecisionTests {
+	private func makeNode() throws -> (ModelContainer, NodeInfoEntity) {
+		let container = try ModelContainer(
+			for: Schema(MeshtasticSchema.allModels),
+			configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+		)
+		let node = NodeInfoEntity()
+		node.num = 1
+		node.lastHeard = Date(timeIntervalSince1970: 1_700_000_000)
+		let user = UserEntity()
+		user.num = 1
+		user.longName = "Test Node"
+		user.shortName = "TEST"
+		node.user = user
+		container.mainContext.insert(node)
+		try container.mainContext.save()
+		return (container, node)
+	}
+
+	private func constructionCount<V: View>(for view: V, container: ModelContainer) async -> Int {
+		var count = 0
+		NodeListRowSummary.testInitializationObserver = { count += 1 }
+		defer { NodeListRowSummary.testInitializationObserver = nil }
+
+		let hostingController = UIHostingController(rootView: view.modelContainer(container))
+		let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 390, height: 180))
+		window.rootViewController = hostingController
+		window.isHidden = false
+		hostingController.view.frame = window.bounds
+		hostingController.view.layoutIfNeeded()
+		for _ in 0..<4 {
+			await Task.yield()
+		}
+		window.isHidden = true
+		return count
+	}
+
+	@Test func initialTaskDoesNotRefreshExistingSnapshot() {
+		var gate = NodeListRowRefreshGate()
+		let shouldRefresh = gate.shouldRefresh()
+
+		#expect(!shouldRefresh)
+	}
+
+	@Test func subsequentTasksRefreshSnapshot() {
+		var gate = NodeListRowRefreshGate()
+		let initialShouldRefresh = gate.shouldRefresh()
+		let secondShouldRefresh = gate.shouldRefresh()
+		let thirdShouldRefresh = gate.shouldRefresh()
+
+		#expect(!initialShouldRefresh)
+		#expect(secondShouldRefresh)
+		#expect(thirdShouldRefresh)
+	}
+
+	@Test func standardRowBuildsOneInitialSummary() async throws {
+		let (container, node) = try makeNode()
+		let count = await constructionCount(
+			for: NodeListItem(node: node, isDirectlyConnected: false, connectedNode: 2),
+			container: container
+		)
+
+		#expect(count == 1)
+	}
+
+	@Test func compactRowBuildsOneInitialSummary() async throws {
+		let (container, node) = try makeNode()
+		let count = await constructionCount(
+			for: NodeListItemCompact(node: node, isDirectlyConnected: false, connectedNode: 2),
+			container: container
+		)
+
+		#expect(count == 1)
 	}
 }
