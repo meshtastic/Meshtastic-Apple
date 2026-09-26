@@ -162,7 +162,10 @@ final class TAKServerManager: ObservableObject {
 	/// Returns true if the primary channel is valid for TAK server operation
 	func checkPrimaryChannelValidity() {
 		let context = PersistenceController.shared.context
-		var descriptor = FetchDescriptor<MyInfoEntity>()
+		// Feature 021: the radio TAK goes through. The shared store holds a MyInfo per radio,
+		// so an unfiltered fetch could check another radio's channels.
+		let takRadioNum = AccessoryManager.shared.radioNum(for: .tak) ?? Int64(UserDefaults.preferredPeripheralNum)
+		var descriptor = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == takRadioNum })
 		descriptor.fetchLimit = 1
 		
 		var issues: [PrimaryChannelIssue] = []
@@ -736,7 +739,8 @@ final class TAKServerManager: ObservableObject {
 
 		let context = PersistenceController.shared.context
 
-		guard let connectedNodeNum = accessoryManager.activeDeviceNum else {
+		// Feature 021: the radio TAK goes through (the focused radio unless another was picked).
+		guard let connectedNodeNum = accessoryManager.radioNum(for: .tak) else {
 			Logger.tak.error("Cannot fix channel: No active device number")
 			return false
 		}
@@ -747,7 +751,9 @@ final class TAKServerManager: ObservableObject {
 			return false
 		}
 
-		var descriptor = FetchDescriptor<MyInfoEntity>()
+		// That radio's own MyInfo: the shared store holds one per radio, so an unfiltered fetch
+		// could return another radio's channels.
+		var descriptor = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == connectedNodeNum })
 		descriptor.fetchLimit = 1
 
 		do {

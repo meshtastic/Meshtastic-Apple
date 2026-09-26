@@ -566,8 +566,8 @@ final class TAKMeshtasticBridge {
 		
 		let twoHoursAgo = Date().addingTimeInterval(-7200)
 		
-		// Get the connected node number to exclude it
-		let connectedNodeNum = AccessoryManager.shared.activeDeviceNum ?? 0
+		// Get the connected node number to exclude it (the radio TAK goes through, feature 021)
+		let connectedNodeNum = AccessoryManager.shared.radioNum(for: .tak) ?? 0
 		
 		Logger.tak.info("Starting broadcast of all mesh nodes to TAK (excluding node \(connectedNodeNum))")
 		

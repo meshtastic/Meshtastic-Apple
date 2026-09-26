@@ -85,6 +85,9 @@ class LocalNotificationManager {
 			if notification.userNum != nil {
 				content.userInfo["userNum"] = notification.userNum
 			}
+			if let radioNum = notification.radioNum {
+				content.userInfo["radioNum"] = radioNum
+			}
 			if notification.critical {
 				content.sound = UNNotificationSound.defaultCritical
 			}
@@ -169,6 +172,9 @@ struct Notification {
 	var replyMessageId: Int64?
 	var channel: Int32?
 	var userNum: Int64?
+	/// The radio the message came in on, when the user has more than one (feature 021). Quick
+	/// replies and tapbacks from the notification go out through it; nil means the focused radio.
+	var radioNum: Int64?
 	var critical: Bool = false
 	#if os(iOS)
 	var senderIntent: INSendMessageIntent?

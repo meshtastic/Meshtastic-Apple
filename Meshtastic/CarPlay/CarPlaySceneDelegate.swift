@@ -205,7 +205,7 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 
 	private func fetchFavoriteContactItems() -> [CPMessageListItem] {
 		do {
-			let activeNum = Int64(AccessoryManager.shared.activeDeviceNum ?? 0)
+			let activeNum = Int64(AccessoryManager.shared.radioNum(for: .carPlay) ?? 0)
 			var descriptor = FetchDescriptor<NodeInfoEntity>(
 				predicate: #Predicate<NodeInfoEntity> { $0.favorite == true && $0.num != activeNum },
 				sortBy: [SortDescriptor(\.lastHeard, order: .reverse)]
@@ -267,7 +267,7 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 	}
 
 	private func fetchChannelItems() -> [CPMessageListItem] {
-		guard let connectedNum = AccessoryManager.shared.activeDeviceNum,
+		guard let connectedNum = AccessoryManager.shared.radioNum(for: .carPlay),
 			  let connectedNode = getNodeInfo(id: connectedNum, context: context),
 			  let myInfo = connectedNode.myInfo else {
 			return []
@@ -333,7 +333,7 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 			)
 			descriptor.fetchLimit = 200
 			let users = try context.fetch(descriptor)
-			let connectedNum = AccessoryManager.shared.activeDeviceNum ?? 0
+			let connectedNum = AccessoryManager.shared.radioNum(for: .carPlay) ?? 0
 			let filteredUsers = users
 				.filter { user in
 					guard let node = user.userNode else { return false }
@@ -756,7 +756,7 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 			return
 		}
 
-		guard let connectedNum = AccessoryManager.shared.activeDeviceNum else { return }
+		guard let connectedNum = AccessoryManager.shared.radioNum(for: .carPlay) else { return }
 		let connectedNode = getNodeInfo(id: connectedNum, context: context)
 		let nodeName = connectedNode?.user?.longName ?? "Meshtastic"
 		let nodeShortName = connectedNode?.user?.shortName ?? "?"

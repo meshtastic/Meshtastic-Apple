@@ -544,7 +544,8 @@ actor MeshPackets {
 	func watchNodeSnapshot(
 		userLatitude: Double,
 		userLongitude: Double,
-		maxDistanceMeters: Double
+		maxDistanceMeters: Double,
+		heardBy radioNum: Int64? = nil
 	) -> [WatchNode] {
 		// A retired instance's container may already be torn down (see recreateShared()).
 		guard !invalidated else { return [] }
@@ -559,8 +560,22 @@ actor MeshPackets {
 			return []
 		}
 		let userLocation = CLLocation(latitude: userLatitude, longitude: userLongitude)
-		return results.compactMap {
+		let nodes = results.compactMap {
 			WatchNode.make(from: $0, userLocation: userLocation, maxDistanceMeters: maxDistanceMeters)
+		}
+		// Feature 021 (T105): with a radio picked for the Watch, the nodes it heard, as it heard them.
+		// A radio that's no longer one of the user's radios shows every node, like the Heard By filter.
+		guard let radioNum,
+			  ((try? modelContext.fetchCount(FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == radioNum }))) ?? 0) > 0 else {
+			return nodes
+		}
+		let observations = FetchDescriptor<NodeObservationEntity>(predicate: #Predicate { $0.radioNum == radioNum })
+		let byNode = Dictionary(
+			((try? modelContext.fetch(observations)) ?? []).map { ($0.nodeNum, $0) },
+			uniquingKeysWith: { first, _ in first }
+		)
+		return nodes.compactMap { node in
+			byNode[Int64(node.num)].map { node.heard(by: $0) }
 		}
 	}
 
@@ -1827,13 +1842,15 @@ actor MeshPackets {
 	) -> Notification {
 		var subtitle = "AKA \(message.fromUser?.shortName ?? "?")"
 		var path = path
+		var replyRadio: Int64?
 		if let radioName = receivingRadioName(for: message), let radioNum = message.localNodeNum {
 			// Feature 021 (T091): with several radios, which one it came in on, and a deep link
-			// that opens that radio's thread.
+			// that opens that radio's thread. Quick replies go out through it too.
 			subtitle += " · " + String.localizedStringWithFormat("on %@".localized, radioName)
 			if path.hasPrefix("meshtastic:///messages") {
 				path += "&radio=\(radioNum)"
 			}
+			replyRadio = radioNum
 		}
 		var notification = Notification(
 			id: ("notification.id.\(message.messageId)"),
@@ -1848,6 +1865,7 @@ actor MeshPackets {
 			userNum: userNum,
 			critical: critical
 		)
+		notification.radioNum = replyRadio
 		#if os(iOS) && !targetEnvironment(macCatalyst)
 		notification.senderIntent = CarPlayIntentDonation.incomingMessageIntent(from: message)
 		#endif

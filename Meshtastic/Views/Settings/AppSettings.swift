@@ -82,6 +82,7 @@ struct AppSettings: View {
 					Text("What happens when you connect a radio while another one is connected. Up to \(AccessoryManager.maxConnectedRadios) radios can stay connected at once.")
 						.foregroundStyle(.secondary)
 						.font(.caption)
+					ServiceRadioPickers()
 #if targetEnvironment(macCatalyst)
 					// App Icon Picker is disabled on macOS Catalyst
 #else

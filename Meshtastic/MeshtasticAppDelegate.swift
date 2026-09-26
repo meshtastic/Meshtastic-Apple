@@ -145,7 +145,8 @@ class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificat
 							toUserNum: userInfo["userNum"] as? Int64 ?? 0,
 							channel: channel,
 							isEmoji: true,
-							replyID: replyID
+							replyID: replyID,
+							viaRadio: userInfo["radioNum"] as? Int64
 						)
 						Logger.services.info("Tapback response sent")
 					} catch {
@@ -163,7 +164,8 @@ class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificat
 							toUserNum: userInfo["userNum"] as? Int64 ?? 0,
 							channel: channel,
 							isEmoji: true,
-							replyID: replyID
+							replyID: replyID,
+							viaRadio: userInfo["radioNum"] as? Int64
 						)
 						Logger.services.info("Tapback response sent")
 					} catch {
@@ -182,7 +184,8 @@ class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificat
 							toUserNum: userInfo["userNum"] as? Int64 ?? 0,
 							channel: channel,
 							isEmoji: false,
-							replyID: replyID
+							replyID: replyID,
+							viaRadio: userInfo["radioNum"] as? Int64
 						)
 
 						Logger.services.info("Actionable notification reply sent")

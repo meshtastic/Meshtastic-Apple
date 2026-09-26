@@ -19,6 +19,9 @@ struct MessageNodeIntent: AppIntent {
 	@Parameter(title: "Node Number")
 	var nodeNumber: Int
 
+	@Parameter(title: "Radio Node Number", description: "The connected radio to send through. Leave empty to use the radio chosen for CarPlay & Siri.")
+	var radioNumber: Int?
+
 	static var parameterSummary: some ParameterSummary {
 		Summary("Send \(\.$messageContent) to \(\.$nodeNumber)")
 	}
@@ -36,8 +39,12 @@ struct MessageNodeIntent: AppIntent {
 			throw $messageContent.needsValueError("Message content exceeds 200 bytes.")
 		}
 
+		guard let viaRadio = await AccessoryManager.shared.intentRadioNum(radioNumber) else {
+			throw $radioNumber.needsValueError("That radio isn't connected.")
+		}
+
 		do {
-			try await AccessoryManager.shared.sendMessage(message: messageContent, toUserNum: Int64(nodeNumber), channel: 0, isEmoji: false, replyID: 0)
+			try await AccessoryManager.shared.sendMessage(message: messageContent, toUserNum: Int64(nodeNumber), channel: 0, isEmoji: false, replyID: 0, viaRadio: viaRadio)
 		} catch {
 			throw AppIntentErrors.AppIntentError.message("Failed to send message")
 		}

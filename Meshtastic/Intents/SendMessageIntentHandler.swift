@@ -121,6 +121,8 @@ final class SendMessageIntentHandler: NSObject, INSendMessageIntentHandling {
 			return INSendMessageIntentResponse(code: .failure, userActivity: nil)
 		}
 
+		// Feature 021 (T104): the radio chosen for CarPlay & Siri, the focused radio by default.
+		let carPlayRadio = await AccessoryManager.shared.radioNum(for: .carPlay)
 		do {
 			if let groupName = intent.speakableGroupName {
 				// Channel message
@@ -139,7 +141,8 @@ final class SendMessageIntentHandler: NSObject, INSendMessageIntentHandling {
 					toUserNum: 0,
 					channel: Int32(channelIndex),
 					isEmoji: false,
-					replyID: 0
+					replyID: 0,
+					viaRadio: carPlayRadio
 				)
 			} else if let conversationId = intent.conversationIdentifier,
 					  let channelIndex = IntentMessageConverters.channelIndex(fromHandleOrName: conversationId) {
@@ -153,7 +156,8 @@ final class SendMessageIntentHandler: NSObject, INSendMessageIntentHandling {
 					toUserNum: 0,
 					channel: Int32(channelIndex),
 					isEmoji: false,
-					replyID: 0
+					replyID: 0,
+					viaRadio: carPlayRadio
 				)
 			} else if let recipient = intent.recipients?.first,
 					  let handleValue = recipient.personHandle?.value {
@@ -163,7 +167,8 @@ final class SendMessageIntentHandler: NSObject, INSendMessageIntentHandling {
 						toUserNum: 0,
 						channel: Int32(channelIndex),
 						isEmoji: false,
-						replyID: 0
+						replyID: 0,
+						viaRadio: carPlayRadio
 					)
 				} else if let nodeNum = IntentMessageConverters.directMessageNodeNum(from: handleValue) {
 				// Direct message to a single node
@@ -172,7 +177,8 @@ final class SendMessageIntentHandler: NSObject, INSendMessageIntentHandling {
 						toUserNum: nodeNum,
 						channel: 0,
 						isEmoji: false,
-						replyID: 0
+						replyID: 0,
+						viaRadio: carPlayRadio
 					)
 				} else {
 					return INSendMessageIntentResponse(code: .failure, userActivity: nil)

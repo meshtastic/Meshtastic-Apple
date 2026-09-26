@@ -35,6 +35,18 @@ What happens when you tap a radio on the Connect tab while another one is connec
 | Keep Both Connected | Adds the new radio without asking, up to four radios. At four, the app asks. |
 | Switch Radios | Disconnects the focused radio and connects the new one without asking. |
 
+### TAK, CarPlay & Siri, and Apple Watch
+
+With more than one radio, App Settings has a picker for each of these. **Follow Focused Radio** (the default) uses whichever radio is focused. Pick one of your radios to keep that service on it:
+
+| Service | What the chosen radio does |
+|---------|----------------------------|
+| TAK | Carries CoT from TAK clients to the mesh. The primary channel check and **Fix Channel** apply to it. |
+| CarPlay & Siri | Sends messages from CarPlay, Siri and Shortcuts, and supplies the channels and contacts CarPlay lists. |
+| Apple Watch | The Watch lists only the nodes this radio has heard, with its own signal and last heard time. |
+
+A chosen radio that isn't connected falls back to the focused radio, except on the Watch, which keeps showing what the chosen radio heard. Replies and reactions sent from a message notification always go through the radio the message came in on.
+
 ### Data Management
 
 - **Erase All App Data** — clears the local database, translation cache, and all stored settings, then immediately reloads the bundled device hardware catalog. Use this as a last resort.

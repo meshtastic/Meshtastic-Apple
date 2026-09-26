@@ -87,7 +87,8 @@ enum IntentMessageConverters {
 	/// breaking channel replies from CarPlay.
 	@MainActor
 	static func findChannels(matching name: String, in context: ModelContext) -> [ChannelEntity] {
-		let connectedNum = AccessoryManager.shared.activeDeviceNum
+		// Feature 021 (T104): the radio CarPlay & Siri send through.
+		let connectedNum = AccessoryManager.shared.radioNum(for: .carPlay)
 
 		// Filter to the connected node's myInfo in Swift, not the predicate —
 		// optional-relationship comparisons in #Predicate crash SwiftData on iOS 26.

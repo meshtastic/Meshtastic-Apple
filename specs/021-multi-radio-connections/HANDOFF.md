@@ -46,12 +46,15 @@ Read this first if you are picking the work up. Update it in the same commit as 
   `e29241dc` and `6a050ce5`. The pre-DM contact refresh and auto-favorite through the sending
   radio in `da10664f`; the Heard By filter (T087) in `ec1437de`; lock-down and the firmware check
   on additional radios (T065) in `a32319ad`; an MQTT client proxy per additional radio (T100) in
-  `8849b76f`. See tasks.md for the partial ones.
+  `8849b76f`; admin messages routed through the radio they concern, with the relaying radio's own
+  passkey (T045, part of T089) in `8636d5f1`; the radio pickers for TAK, CarPlay & Siri and the
+  Watch (T102–T105) in the commit after it. See tasks.md for the partial ones.
 - Mesh Multi (`~/Applications/Mesh Multi.app`, side-by-side, own container) is rebuilt from the
   latest commit on this branch and ready for the first two-radio test below. Not yet run by anyone.
-- Next up: the owner's two-radio test; then BLE restoration (T062), remote admin through a
-  chosen radio (T060/T089, which also reads T045's per-radio passkeys), the TAK/CarPlay/Watch
-  radio pickers (T102–T105), and removing the switch-era helpers (T066) once the test passes.
+- Next up: rebuild Mesh Multi and the owner's two-radio test; then BLE restoration (T062), the
+  Messages extension snapshot (T106) and Datadog per-event radio attributes (T107), removing the
+  switch-era helpers (T066) once the test passes, and the focused/additional unification (T060,
+  with T013/T014/T018 and focus without reconnecting in T082).
 - Baseline and latest: the full suite passes in the iOS Simulator (3,368 Swift Testing tests plus
   29 XCTests, about 35–50 seconds of test time).
 
@@ -148,7 +151,10 @@ describes it well enough to rebuild.
   with `git checkout -- Meshtastic.xcodeproj/project.pbxproj` unless `project.yml` changed.
 - Protobufs: keep the `protobufs` submodule on the committed pointer (`git submodule update protobufs`).
   `scripts/gen_protos.sh --no-pull` regenerates the Swift sources against it.
-- String catalog: when a build changes `Localizable.xcstrings`, run
+- Claude Code: `xcodebuild` and `swiftlint` fail inside its sandbox ("failed with exit code 0 but
+  produced no further output"); run them with the sandbox off.
+- String catalog: the feature's new strings aren't in `Localizable.xcstrings` yet (no feature
+  commit has touched it). Sync it once near the end (T134). When a build changes `Localizable.xcstrings`, run
   `python3 scripts/copy-registry-translations.py` so the new `meshtastic.*` keys pick up the
   existing translations. Don't commit reordered or pruned catalogs without checking them.
 - Terminal quirk in this environment: heredocs and multi-line quoted strings sometimes hang the
@@ -274,3 +280,6 @@ describes it well enough to rebuild.
 - [ ] Background the app for 30 minutes, then foreground → all radios still connected.
 - [ ] Kill the app while it's backgrounded → BLE restoration brings back every radio.
 - [ ] TCP radio plus BLE radios together.
+- [ ] App Settings › TAK / CarPlay & Siri / Apple Watch: pick B. TAK CoT goes out from B (log
+  `📻 [B] Sending TAKPacket…`); a Shortcuts "Send a Group Message" without a radio goes via B;
+  with B's node number while B is off, it fails. Reply to a notification from B: the reply goes via B.

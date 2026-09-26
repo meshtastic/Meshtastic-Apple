@@ -1390,7 +1390,11 @@ extension AccessoryManager {
 	/// supports PLI and GeoChat (no shapes, markers, routes, etc.).
 	///
 	var supportsTAKv2: Bool {
-		Self.isTAKv2Supported(firmwareVersion: connectedVersion)
+		// Feature 021 (T103): the firmware of the radio TAK goes through.
+		if let takSession = session(for: .tak), takSession !== activeConnection {
+			return Self.isTAKv2Supported(firmwareVersion: takSession.device.firmwareVersion)
+		}
+		return Self.isTAKv2Supported(firmwareVersion: connectedVersion)
 	}
 
 	static func isTAKv2Supported(firmwareVersion: String?) -> Bool {
