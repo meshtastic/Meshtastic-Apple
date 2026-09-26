@@ -38,21 +38,37 @@ extension AccessoryManager: LockdownSender {
 			Logger.mesh.warning("🔒 sendLockdownAuth: myNodeNum not yet known; dropping")
 			return
 		}
-
 		var lockdownAuth = LockdownAuth()
 		lockdownAuth.passphrase = passphrase
 		lockdownAuth.bootsRemaining = bootsRemaining
 		lockdownAuth.validUntilEpoch = validUntilEpoch
 		lockdownAuth.maxSessionSeconds = maxSessionSeconds
 		lockdownAuth.lockNow = lockNow
-
-		var adminMessage = AdminMessage()
-		adminMessage.payloadVariant = .lockdownAuth(lockdownAuth)
-
-		guard let adminData = try? adminMessage.serializedData() else {
+		guard let toRadio = Self.lockdownAuthPacket(to: myNum, auth: lockdownAuth) else {
 			Logger.mesh.error("🔒 sendLockdownAuth: failed to serialize AdminMessage")
 			return
 		}
+
+		let description = lockNow ? "🔒 Lockdown: Lock Now" : "🔒 Lockdown: passphrase submit"
+		// `send(...)` is async; the coordinator is fire-and-forget here so we hop
+		// to a Task and report failures via Logger.
+		Task {
+			do {
+				try await self.send(toRadio, debugDescription: description)
+			} catch {
+				Logger.mesh.error("🔒 sendLockdownAuth send failed: \(error.localizedDescription, privacy: .public)")
+			}
+		}
+	}
+
+	/// The `AdminMessage.lockdown_auth` packet for the radio `myNum`, with the field invariants
+	/// above. Shared by the focused radio and additional radios (feature 021). Nil if the admin
+	/// message can't be serialized.
+	static func lockdownAuthPacket(to myNum: UInt32, auth lockdownAuth: LockdownAuth) -> ToRadio? {
+		var adminMessage = AdminMessage()
+		adminMessage.payloadVariant = .lockdownAuth(lockdownAuth)
+
+		guard let adminData = try? adminMessage.serializedData() else { return nil }
 
 		var dataMessage = DataMessage()
 		dataMessage.portnum = .adminApp
@@ -73,16 +89,6 @@ extension AccessoryManager: LockdownSender {
 
 		var toRadio = ToRadio()
 		toRadio.packet = meshPacket
-
-		let description = lockNow ? "🔒 Lockdown: Lock Now" : "🔒 Lockdown: passphrase submit"
-		// `send(...)` is async; the coordinator is fire-and-forget here so we hop
-		// to a Task and report failures via Logger.
-		Task {
-			do {
-				try await self.send(toRadio, debugDescription: description)
-			} catch {
-				Logger.mesh.error("🔒 sendLockdownAuth send failed: \(error.localizedDescription, privacy: .public)")
-			}
-		}
+		return toRadio
 	}
 }

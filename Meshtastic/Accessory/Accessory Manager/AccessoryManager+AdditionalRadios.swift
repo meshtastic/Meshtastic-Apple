@@ -27,6 +27,8 @@ final class AdditionalRadio: Identifiable {
 	var pendingNonces: [UInt32: CheckedContinuation<Void, Error>] = [:]
 	/// Nodes received in the current node-DB dump.
 	var nodeCount = 0
+	/// A lock-down passphrase saved for this radio has been sent on this connection (T065).
+	var lockdownAutoAttempted = false
 
 	var id: UUID { session.device.id }
 
@@ -177,6 +179,7 @@ extension AccessoryManager {
 			}
 			try await sendAdditionalHeartbeat(radio)
 			try await requestHandshake(radio, nonce: UInt32(NONCE_ONLY_CONFIG), timeout: .seconds(30))
+			try checkAdditionalRadioFirmware(radio)
 			try await requestHandshake(radio, nonce: UInt32(NONCE_ONLY_DB), timeout: .seconds(120))
 		} catch {
 			Logger.transport.error("🔗➕ [Additional] Handshake with \(device.name, privacy: .public) failed: \(error.localizedDescription, privacy: .public)")
@@ -236,7 +239,7 @@ extension AccessoryManager {
 	}
 
 	/// Sends a want-config request and waits for its completion nonce.
-	private func requestHandshake(_ radio: AdditionalRadio, nonce: UInt32, timeout: Duration) async throws {
+	func requestHandshake(_ radio: AdditionalRadio, nonce: UInt32, timeout: Duration) async throws {
 		if nonce == UInt32(NONCE_ONLY_DB) {
 			radio.nodeCount = 0
 		}
@@ -260,7 +263,7 @@ extension AccessoryManager {
 		}
 	}
 
-	private func finishHandshake(_ radio: AdditionalRadio, nonce: UInt32, error: Error?) {
+	func finishHandshake(_ radio: AdditionalRadio, nonce: UInt32, error: Error?) {
 		guard let continuation = radio.pendingNonces.removeValue(forKey: nonce) else { return }
 		if let error {
 			continuation.resume(throwing: error)
@@ -350,6 +353,10 @@ extension AccessoryManager {
 					do {
 						try await self.connectAdditionalRadio(device, connectTimeout: Self.additionalReconnectTimeout)
 						Logger.transport.info("🔗🔁 [Additional] Reconnected \(device.name, privacy: .public)")
+						return
+					} catch let error as AdditionalRadioNeedsFocusError {
+						// Retrying can't fix it; the user has to focus it (to unlock or update it).
+						Logger.transport.info("🔗🔁 [Additional] Stopped reconnecting \(device.name, privacy: .public): \(error.localizedDescription, privacy: .public)")
 						return
 					} catch {
 						Logger.transport.info("🔗🔁 [Additional] Reconnect to \(device.name, privacy: .public) failed: \(error.localizedDescription, privacy: .public)")
@@ -481,6 +488,9 @@ extension AccessoryManager {
 
 		case .logRecord(let record):
 			didReceiveLog(message: record.stringRepresentation)
+
+		case .lockdownStatus(let status):
+			handleAdditionalLockdown(status, radio: radio)
 
 		case .rebooted:
 			Logger.transport.info("🔗➕ [Additional] \(session.device.name, privacy: .public) rebooted; refreshing its config")
