@@ -98,53 +98,25 @@ extension AccessoryManager {
 	}
 
 	func onMqttMessageReceived(message: CocoaMQTTMessage) {
-		if message.topic.contains("/stat/") {
+		// Drops provably-undeliverable packets before spending any BLE bandwidth on them, and
+		// clamps the hop limit to 0 (`MqttProxyPackets.downlink`).
+		let toRadio: ToRadio
+		switch MqttProxyPackets.downlink(topic: message.topic, payload: Data(message.payload), retained: message.retained, myNodeNum: myNodeNum) {
+		case .dropStat:
 			Logger.services.debug("📲 [MQTT] dropping /stat/ message on \(message.topic, privacy: .public)")
 			return
-		}
-
-		let rawData = Data(message.payload)
-
-		// Parse the ServiceEnvelope once. Fail open: unparseable bytes are
-		// forwarded unchanged (nil `parsed`), exactly as before this filter existed.
-		let parsed = try? ServiceEnvelope(serializedData: rawData)
-
-		// Drop provably-undeliverable packets before spending any BLE bandwidth on
-		// them. In client-proxy mode the public broker floods payload-less stubs the
-		// node can only decrypt-fail and discard; stopping them here saves BLE
-		// airtime, a decrypt attempt, and a node-side WARN per packet.
-		if let envelope = parsed {
-			let myHex = myNodeNum == 0 ? "" : myNodeNum.toHex()
-			if MqttForwardFilter.decide(envelope: envelope, myNodeHex: myHex) == .dropNoPayload {
-				mqttProxyDroppedNoPayload += 1
-				Logger.services.debug("📲 [MQTT] drop (no payload) topic=\(message.topic, privacy: .public) count=\(self.mqttProxyDroppedNoPayload, privacy: .public)")
-				return
+		case .dropNoPayload:
+			mqttProxyDroppedNoPayload += 1
+			Logger.services.debug("📲 [MQTT] drop (no payload) topic=\(message.topic, privacy: .public) count=\(self.mqttProxyDroppedNoPayload, privacy: .public)")
+			return
+		case .forward(let packet, let zeroedHopLimit):
+			toRadio = packet
+			if let zeroedHopLimit {
+				Logger.services.info("📲 [MQTT] forwarding \(message.topic, privacy: .public) — zeroed hop_limit \(zeroedHopLimit, privacy: .public)→0 bytes=\(message.payload.count, privacy: .public)")
+			} else {
+				Logger.services.info("📲 [MQTT] forwarding \(message.topic, privacy: .public) — hop_limit already 0 or non-envelope bytes=\(message.payload.count, privacy: .public)")
 			}
 		}
-
-		// Clamp hop_limit to 0 on downlink ServiceEnvelopes before forwarding to
-		// the device. Packets with hop_limit > 0 would be re-broadcast over RF,
-		// flooding the mesh with traffic that arrived via MQTT. hop_start is
-		// preserved so receivers can still compute how far the packet travelled.
-		let forwardData: Data
-		if var envelope = parsed,
-		   envelope.hasPacket, envelope.packet.hopLimit > 0 {
-			let original = envelope.packet.hopLimit
-			envelope.packet.hopLimit = 0
-			forwardData = (try? envelope.serializedData()) ?? rawData
-			Logger.services.info("📲 [MQTT] forwarding \(message.topic, privacy: .public) — zeroed hop_limit \(original, privacy: .public)→0 bytes=\(rawData.count, privacy: .public)")
-		} else {
-			forwardData = rawData
-			Logger.services.info("📲 [MQTT] forwarding \(message.topic, privacy: .public) — hop_limit already 0 or non-envelope bytes=\(rawData.count, privacy: .public)")
-		}
-
-		var proxyMessage = MqttClientProxyMessage()
-		proxyMessage.topic = message.topic
-		proxyMessage.data = forwardData
-		proxyMessage.retained = message.retained
-
-		var toRadio = ToRadio()
-		toRadio.mqttClientProxyMessage = proxyMessage
 
 		// Gate: drop this packet if a previous MQTT→BLE write is still in-flight.
 		// The public broker can deliver global LongFast traffic faster than BLE can

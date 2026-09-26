@@ -10,8 +10,9 @@ import SwiftUI
 
 /// A radio connected alongside the focused one (feature 021), shown on the Connect tab.
 ///
-/// "Focus" makes it the focused radio: settings, MQTT, location sharing and sending go through
-/// the focused radio. Every connected radio keeps receiving into the shared store either way.
+/// "Focus" makes it the focused radio: the one whose settings the app shows, and the default
+/// for sending. Every connected radio keeps receiving into the shared store either way, and
+/// runs its own MQTT client proxy when its config asks for one.
 struct AdditionalRadioRow: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.modelContext) private var context

@@ -39,6 +39,8 @@ Go to **Settings → MQTT**:
 | TLS Enabled | Use TLS for the MQTT connection. Requires a broker with TLS support. |
 | Proxy to Client | Route MQTT traffic through the phone app rather than directly from the radio. Useful for radios without Wi-Fi. |
 
+With more than one radio connected, each radio that has **Proxy to Client** on gets its own connection to its own broker, using that radio's MQTT settings and channels. A radio's MQTT traffic only ever goes to and from that radio. The **Settings → MQTT** screen shows and changes the focused radio's settings; focus another radio to change its settings.
+
 ## Topic Structure
 
 Meshtastic publishes to:

@@ -14,9 +14,11 @@ import OSLog
 /// A radio connected alongside the focused one.
 ///
 /// The focused radio (`AccessoryManager.activeConnection`) keeps the full connect flow: config
-/// refresh, MQTT, location, TAK, firmware gate, settings. An additional radio runs a smaller
-/// flow on its own connection: connect, config and node-DB handshake, then ingest into the
-/// shared store, tagged with its own node number. Nothing it does touches the focused radio's
+/// refresh, TAK, the firmware update gate, lock-down prompt, settings. An additional
+/// radio runs a smaller flow on its own connection: connect, config and node-DB handshake, then
+/// ingest into the shared store, tagged with its own node number; its own MQTT client proxy;
+/// a saved lock-down passphrase; and a firmware check that turns old firmware away (see
+/// `AccessoryManager+AdditionalRadioGates.swift`). Nothing it does touches the focused radio's
 /// state (see `processAdditionalFromRadio`).
 @MainActor
 final class AdditionalRadio: Identifiable {
@@ -29,6 +31,8 @@ final class AdditionalRadio: Identifiable {
 	var nodeCount = 0
 	/// A lock-down passphrase saved for this radio has been sent on this connection (T065).
 	var lockdownAutoAttempted = false
+	/// The radio's own MQTT client proxy, when its config asks for one (T100).
+	var mqtt: AdditionalRadioMqttBridge?
 
 	var id: UUID { session.device.id }
 
@@ -195,6 +199,7 @@ extension AccessoryManager {
 		if let bleTransport = transport as? BLETransport {
 			await bleTransport.resumeScanningAfterConnectionEstablished()
 		}
+		Task { await self.startAdditionalMqtt(radio) }
 		WatchSessionManager.shared.sendNodesToWatch()
 		if let nodeNum = session.nodeNum {
 			await MeshPackets.shared.noteRadioConnected(nodeNum: nodeNum, transport: device.transportType, autoConnect: true)
@@ -314,6 +319,7 @@ extension AccessoryManager {
 		}
 		retiredAdditionalSessionIDs.insert(radio.session.id)
 		radio.heartbeatTask?.cancel()
+		stopAdditionalMqtt(radio)
 		let pending = radio.pendingNonces
 		radio.pendingNonces.removeAll()
 		for continuation in pending.values {
@@ -492,11 +498,16 @@ extension AccessoryManager {
 		case .lockdownStatus(let status):
 			handleAdditionalLockdown(status, radio: radio)
 
+		case .mqttClientProxyMessage(let message):
+			radio.mqtt?.publish(message)
+
 		case .rebooted:
 			Logger.transport.info("🔗➕ [Additional] \(session.device.name, privacy: .public) rebooted; refreshing its config")
 			Task { @MainActor [weak self] in
 				guard let self, self.additionalRadios[radio.id] === radio else { return }
 				try? await self.requestHandshake(radio, nonce: UInt32(NONCE_ONLY_CONFIG), timeout: .seconds(30))
+				// Its MQTT settings may have changed with the reboot.
+				await self.startAdditionalMqtt(radio)
 			}
 
 		default:
