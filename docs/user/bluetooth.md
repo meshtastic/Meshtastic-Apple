@@ -49,7 +49,7 @@ While a radio is connected, the Connect tab lists nearby radios under **Add a Ra
 To stop the question, choose a default in **Settings › App Settings › Connecting Another Radio**: Ask Each Time, Keep Both Connected, or Switch Radios. With four radios connected, only switching is offered.
 
 > **Tip — Focus another radio**
-> In **Also Connected**, tap the **⋯** button next to a radio and choose **Focus This Radio** to make it the focused radio. Choose **Disconnect** to disconnect only that radio.
+> In **Also Connected**, tap the **⋯** button next to a radio and choose **Focus This Radio** to make it the focused radio. The previously focused radio reconnects under **Also Connected** a moment later. Choose **Disconnect** to disconnect only that radio.
 
 ### Reconnecting
 

@@ -1254,7 +1254,7 @@ func backupCurrentAndRestoreDatabase(
 /// The store is shared by every radio, so a switch no longer backs up, clears and restores
 /// it: the focused radio disconnects and `device` connects in its place. Additional radios
 /// stay connected. If `device` is one of them, it is disconnected first and reconnects as the
-/// focused radio.
+/// focused radio, and the previous focused radio comes back as an additional one.
 @MainActor
 func switchToDevice(
 	_ device: Device,
@@ -1279,6 +1279,12 @@ func switchToDevice(
 	}
 
 	if accessoryManager.additionalRadios[device.id] != nil || accessoryManager.additionalRadioReconnects[device.id] != nil {
+		// Focusing a radio that's connected alongside: the previous focused radio stays in the
+		// set. Remembering it lets the connect below bring it back as an additional radio
+		// (`reconnectRememberedRadios`). A plain switch replaces it instead.
+		if let previousNum = accessoryManager.activeConnection?.nodeNum, previousNum != device.num {
+			await MeshPackets.shared.setRadioAutoConnect(nodeNum: previousNum, true)
+		}
 		await accessoryManager.disconnectAdditionalRadio(device.id, byUser: true)
 	}
 	if accessoryManager.allowDisconnect {
