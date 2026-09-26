@@ -29,28 +29,40 @@ Read this first if you are picking the work up. Update it in the same commit as 
   Phase 3 schema (T023–T025, T028, T029) in `7cf22678` and `3579188b`. Phase 4 ingest
   (T041–T049) in `10b6cba4`, `35a0936c`, `5ea963bd`. Phase 5 first step (additional radio
   sessions, per-peripheral BLE, no more store wipe on switch) and the connect dialog in
-  `40605d38`; see tasks.md for the partial ones.
+  `40605d38`; reconnect after a drop in `adfaad63`. Handshake gate (T064), remembered radios
+  (rest of T063), bounded automatic connects and per-radio ACK matching in `5754e69b`. Per-radio
+  direct messages with a "Via" picker, and sending/resending through a chosen radio (T085, send
+  half of T084) in `2f5dcf6a`. See tasks.md for the partial ones.
 - Mesh Multi (`~/Applications/Mesh Multi.app`, side-by-side, own container) was rebuilt from
-  `adfaad63` (adds reconnect of additional radios) and is ready for the first two-radio test
-  below. Not yet run by anyone.
-- Next up: the owner's two-radio test; then BLE restoration (T062), the handshake gate (T064),
-  and auto-connect of remembered radios at launch. T030 (merge old backups) before release.
-- Baseline and latest: the full suite passes in the iOS Simulator (3,326 Swift Testing tests plus
+  `2f5dcf6a` and is ready for the first two-radio test below. Not yet run by anyone.
+- Next up: the owner's two-radio test; then the channel side of T083/T084 (channels grouped by
+  `channelKey`, "via" for channel messages), BLE restoration (T062), per-session firmware
+  gate/lockdown (T065). T030 (merge old backups) before release.
+- Baseline and latest: the full suite passes in the iOS Simulator (3,337 Swift Testing tests plus
   29 XCTests, about 35–45 seconds of test time).
 
 ## First two-radio test (Mesh Multi, Mac)
 
 1. Open Mesh Multi, connect radio A from Available Radios (normal first connect).
 2. On the Connect tab, "Add a Radio" lists radio B. Tap it; choose "Keep A and Add B".
+   If A is still downloading its node list, B shows Connecting… until A is done (one handshake
+   at a time; log line "waits for another radio's handshake").
 3. B shows under "Also Connected", Connecting… then Connected. Log lines start with `🔗➕`.
 4. Send a channel message from a third device: it appears once. Nodes heard by both radios
    appear once; the node list shows the best hops.
-5. ⋯ → Disconnect on B: A stays connected. Re-add B. ⋯ → Focus This Radio on B: A disconnects,
-   B reconnects as focused, and nothing is wiped (messages and nodes from A remain).
-6. Settings › App Settings › Connecting Another Radio: try Keep Both / Switch.
-7. Power-cycle B while both are connected: it should drop from "Also Connected" and come back
+5. Direct messages: from a third device, DM radio A, then DM radio B. Open the conversation with
+   that device: a "Via" picker shows A and B; each segment shows only its radio's messages.
+   Reply with B selected: the log shows `📻 [B's short name] Sent message …`, and the third
+   device sees the reply from B.
+6. ⋯ → Disconnect on B: A stays connected, and the conversation's B segment says Offline with
+   "Connect B to reply from it." Re-add B. ⋯ → Focus This Radio on B: A disconnects, B
+   reconnects as focused, and nothing is wiped (messages and nodes from A remain).
+7. Settings › App Settings › Connecting Another Radio: try Keep Both / Switch.
+8. Power-cycle B while both are connected: it should drop from "Also Connected" and come back
    on its own (`🔗🔁` log lines). A disconnects nothing.
-8. Worth watching: memory and CPU with two node dumps; any "Dropping an event from a
+9. Quit Mesh Multi with both connected and reopen it: A reconnects as usual, then B comes back
+   on its own ("remembered"). After ⋯ → Disconnect on B, a relaunch leaves B alone.
+10. Worth watching: memory and CPU with two node dumps; any "Dropping an event from a
    disconnected additional radio" spam; whether BLE scanning while connected upsets pairing.
 - Small pull requests, ready for the owner to push (each is one commit on `origin/main`):
   - `fix/restore-dropped-backup-fields` — the restore fix and its tests.
@@ -128,15 +140,33 @@ describes it well enough to rebuild.
   old tuple was a snapshot. Nothing relied on the snapshot behaviour (checked every
   `activeConnection` read), but keep it in mind.
 - SwiftLint already warns about the length of `AccessoryManager` (type body),
-  `processFromRadio`, `connect(to:)` and `upsertNodeInfoPacket`. These warnings predate this
-  work, and the feature's changes add at most four lines to each. Splitting them up is part of T060.
+  `processFromRadio`, `connect(to:)`, `upsertNodeInfoPacket` and `BLETransport` (type body, 476
+  lines before this work). These warnings predate this work, and the feature's changes add a few
+  lines to each. Splitting them up is part of T060.
 - `MeshtasticSchemaV1` lists the live model types, and that is intended (D-16): every release since
   2.7.13 has changed them additively.
 - `MessageEntity.messageId` is no longer unique (`10b6cba4`); `messageKey` ("sender:packetId")
   is. Both insert paths (ingest, `sendMessage`) set it, so a sent message and its echo still merge.
-  Anything that looks a message up by `messageId` alone (ACKs, `adminResponseAck`, tapback
-  replies) can in rare cases match another sender's message; the lists already dedupe by id
-  before building `Dictionary(uniqueKeysWithValues:)`, which would otherwise trap.
+  ACKs and admin response ACKs try the delivering radio's key first
+  (`MeshPackets.sentMessage(requestID:radioNum:)`). Tapback and reply lookups still go by
+  `messageId` alone and can in rare cases match another sender's message; the lists already
+  dedupe by id before building `Dictionary(uniqueKeysWithValues:)`, which would otherwise trap.
+- `HandshakeGate` (T064) is held for the whole focused connect, including BLE pairing (up to
+  90 s), and for an additional radio's config + node-DB handshake. Anything that runs while it's
+  held must never call `connect(to:)` or `connectAdditionalRadio` and await it, or it deadlocks.
+  `reconnectRememberedRadios()` only schedules reconnect tasks, which is why it's safe at the
+  end of `connect`.
+- A cancelled `BLETransport.connect` resumes its waiter but leaves CoreBluetooth's connect
+  pending. Automatic connects (`connectAdditionalRadio(_:connectTimeout:)`) call
+  `abandonPendingConnect(to:)` on timeout. The focused radio's connect is deliberately unchanged:
+  its Step 1 retry relies on CoreBluetooth's pending connect.
+- Direct messages: `DirectMessageQuery` only filters by radio when the conversation involves
+  more than one radio, so single-radio queries are exactly the old ones. Rows with no
+  `localNodeNum` (not yet backfilled) show under every radio.
+- `sendMessage(…, viaRadio:)` skips the pre-DM contact refresh and auto-favorite through a
+  non-focused radio; both are admin messages that still only go to the focused radio. A DM
+  through another radio to a node it has no key for can fail with a PKI error until T060 moves
+  admin sends onto sessions.
 - SwiftData `fetch` does not see unsaved inserts. The new lookups (`receptions`,
   `observations(ofNode:)`) also scan `modelContext.insertedModelsArray`, like `findOrCreateNode`.
 - Single-radio behaviour is kept on purpose: with one observation, `updateAnyPacketFrom` writes

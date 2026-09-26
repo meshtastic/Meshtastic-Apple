@@ -35,7 +35,9 @@ Long press a connected radio row to start a Live Activity (iOS 16.2+). The Live 
 
 You can connect up to four radios at once, over Bluetooth, TCP, or serial in any mix. All of them share one database: every message, node, and position they hear is stored once, and the app remembers which radio heard what.
 
-One connected radio is the **focused** radio. It is the one shown at the top of the Connect tab, and the one that settings, MQTT, location sharing, and sending use. The other connected radios keep receiving in the background and are listed under **Also Connected**.
+One connected radio is the **focused** radio. It is the one shown at the top of the Connect tab, and the one that settings, MQTT and location sharing use. Messages go through the focused radio too, except in a direct-message conversation that belongs to another radio (see [Messages](messages.md)). The other connected radios keep receiving in the background and are listed under **Also Connected**.
+
+Radios connect one at a time: while one downloads its settings and node list, another waits its turn, so connecting several at once takes a little longer than one.
 
 ### Adding a Radio
 
@@ -48,6 +50,10 @@ To stop the question, choose a default in **Settings › App Settings › Connec
 
 > **Tip — Focus another radio**
 > In **Also Connected**, tap the **⋯** button next to a radio and choose **Focus This Radio** to make it the focused radio. Choose **Disconnect** to disconnect only that radio.
+
+### Reconnecting
+
+A radio connected alongside the focused one is remembered. If it drops out of range or restarts, the app keeps trying to reconnect it, backing off to once a minute. The next time the focused radio connects — for example when you open the app — the remembered radios are connected again too. Choosing **Disconnect** on a radio stops this until you connect it again yourself.
 
 ### Switching Radios
 

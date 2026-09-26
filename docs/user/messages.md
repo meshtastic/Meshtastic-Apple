@@ -72,6 +72,19 @@ unmessagable, and nodes no public key has been received for, are left out — th
 send to them. A contact you already have a conversation with stays in the list either way, so an
 existing thread is never hidden.
 
+### Conversations With More Than One Radio
+
+A direct message is between one of your radios and the other node: only that radio can read it or reply as the node it was sent to. When a conversation involves more than one of your radios — because several are connected, or because you've messaged this node from another radio before — a **Via** control appears above the message field. Each segment is one of your radios:
+
+- Pick a radio to see only its messages with this node. Your replies, reactions and "mark as read" go through that radio.
+- A number after a radio's name is how many unread messages it has in this conversation.
+- **Offline** means the radio isn't connected. You can read its messages, but you need to connect it to reply from it.
+
+With one radio, the control doesn't appear and conversations work as before. Retrying a message that failed always uses the radio that sent it.
+
+> **Tip — Sharing your position**
+> The position button in the message field shares the focused radio's position, so it isn't attached to messages sent through another radio.
+
 ### Encryption
 
 ![Encryption legend](../assets/screenshots/lockLegend.png)
