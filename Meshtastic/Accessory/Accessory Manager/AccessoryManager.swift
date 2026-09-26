@@ -650,6 +650,36 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		try await session.wantDatabaseGate.wait()
 	}
 
+	/// Tears down what belongs to one connection (feature 021, T070): its config refresh (or a
+	/// channel refresh stage left open), its event loop, heartbeats and handshake waits. The
+	/// caller has already taken it out of `activeConnection`, so none of its events are handled
+	/// any more. Everything app-wide stays in `closeConnection()`.
+	func tearDown(_ session: RadioSession) async {
+		if let refresh = session.automaticConfigRefresh {
+			session.automaticConfigRefreshTask?.cancel()
+			await finishAutomaticConfigRefresh(owner: refresh.owner, session: session, error: CancellationError())
+		} else if let nodeNum = session.nodeNum {
+			await MeshPackets.shared.discardChannelRefreshStage(for: nodeNum)
+		}
+
+		session.eventTask?.cancel()
+		session.eventTask = nil
+
+		await session.heartbeatTimer?.cancel(withReason: "Closing connection")
+		await session.heartbeatResponseTimer?.cancel(withReason: "Closing connection")
+		session.heartbeatTimer = nil
+		session.heartbeatResponseTimer = nil
+
+		// Clean up continuations — nil before resume to prevent double-resume races
+		if let continuation = session.firstDatabaseNodeInfoContinuation {
+			session.firstDatabaseNodeInfoContinuation = nil
+			continuation.resume(throwing: CancellationError())
+		}
+
+		await session.wantDatabaseGate.cancelAll()
+		await session.wantDatabaseGate.reset()
+	}
+
 	// Fully tears down a connection and sets up the AccessoryManager for the next.
 	// If you are calling this in response to an error, then you should have
 	// exposed the error to the UI or handled the error prior to calling this.
@@ -682,9 +712,8 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		scheduleFocusHandover(previousRadio: closingNodeNum)
 		self.activeDeviceNum = nil
 		self.firmwareUpdateRequired = false
-		if let closing, let refresh = closing.automaticConfigRefresh {
-			closing.automaticConfigRefreshTask?.cancel()
-			await finishAutomaticConfigRefresh(owner: refresh.owner, session: closing, error: CancellationError())
+		if let closing {
+			await tearDown(closing)
 		} else if let closingNodeNum {
 			await MeshPackets.shared.discardChannelRefreshStage(for: closingNodeNum)
 		}
@@ -697,9 +726,6 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		// keep the map flyover paused after the mesh goes quiet on disconnect.
 		meshTrafficMonitor.reset()
 
-		closing?.eventTask?.cancel()
-		closing?.eventTask = nil
-
 		locationTask?.cancel()
 		locationTask = nil
 
@@ -708,20 +734,6 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		// connect still runs a real restore.
 		deviceRefreshTask?.cancel()
 		deviceRefreshTask = nil
-		
-		await closing?.heartbeatTimer?.cancel(withReason: "Closing connection")
-		await closing?.heartbeatResponseTimer?.cancel(withReason: "Closing connection")
-		closing?.heartbeatTimer = nil
-		closing?.heartbeatResponseTimer = nil
-		
-		// Clean up continuations — nil before resume to prevent double-resume races
-		if let continuation = closing?.firstDatabaseNodeInfoContinuation {
-			closing?.firstDatabaseNodeInfoContinuation = nil
-			continuation.resume(throwing: CancellationError())
-		}
-		
-		await closing?.wantDatabaseGate.cancelAll()
-		await closing?.wantDatabaseGate.reset()
 
 		// Stop the MQTT proxy so it doesn't forward broker packets over BLE during reconnect,
 		// which would starve the wantConfig handshake. initializeMqtt() restarts it in Step 8.

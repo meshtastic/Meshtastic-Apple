@@ -104,6 +104,25 @@ with the full suite passing and single-radio behaviour unchanged (tasks T068–T
 6. Lock-down and firmware prompts for any radio, naming the radio, instead of turning it away.
 7. Clean-up (T066, T110, T111) and docs.
 
+T070 in detail (what is per radio and what is once for the app, from `connect(to:)` and
+`closeConnection()` as they are after T069):
+
+| Where | Per radio | Once for the app (focused radio only for now) |
+|---|---|---|
+| Step 0–1 | connecting state, lock-down reset, transport connect, event loop, session | `activeConnection`, `activeDeviceNum` |
+| Steps 2–5a | heartbeat, want-config (config), catalog refresh from the bundle, heartbeat, want-config (node DB) and its waits | image/link refresh (3b, network), `preferredPeripheralId` (Step 5) |
+| Step 6 | version check | `UserDefaults.firmwareVersion`, the update gate (`firmwareUpdateRequired`) until T073 |
+| Step 7 | set time, connected state, ingest actor recycle (safe: the handshake gate is held), manual connection list | Messages snapshot, update notifier |
+| Step 8 | MQTT, heartbeat timer, Datadog connect action | stop discovery, stale-node prune, phone position loop, remembered radios |
+| Teardown | connection state, config refresh, event loop, heartbeats, waits, channel refresh stage | Datadog context, focus handover, `activeDeviceNum`, update gate, lock-down, traffic monitor, position loop, image refresh, shared MQTT client, context save, disconnect buttons, discovery restart |
+
+T070a splits the teardown into `tearDown(_ session:)` and the rest of `closeConnection()`.
+T070b gives the steps a `ConnectAttempt` that holds the session Step 1 makes, so every step works
+on its own radio's session and connection rather than `activeConnection`, and marks the app-wide
+work as the focused radio's, in the same order as today. T071 then runs other radios through the
+same steps with the app-wide work skipped, and adds per-radio connection status and teardown on
+retry (Step 0 calls `closeConnection()`, which is the focused radio's).
+
 Things the code can't settle, left for the device test: CoreBluetooth with four links, lock-down
 firmware's reaction to a replayed status, and whether firmware warnings go to every phone link.
 
