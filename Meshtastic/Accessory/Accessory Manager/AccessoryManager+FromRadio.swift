@@ -219,7 +219,7 @@ extension AccessoryManager {
 		// traps with "destroyed by ModelContext.reset". A fresh context has no such registrations,
 		// so it faults the current row from the store.
 		let myInfoResolveContext = ModelContext(context.container)
-		if let myInfoId, let myInfo = try? myInfoResolveContext.model(for: myInfoId) as? MyInfoEntity {
+		if let myInfoId, let myInfo = myInfoResolveContext.model(for: myInfoId) as? MyInfoEntity {
 			if let bleName = myInfo.bleName {
 				updateDevice(key: \.name, value: bleName)
 				updateDevice(key: \.longName, value: bleName)
