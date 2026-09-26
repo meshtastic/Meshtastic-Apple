@@ -727,6 +727,8 @@ final class NodeBackupManager: NodeBackupManaging {
 				try Self.importWaypoints(from: backupContext, into: liveContext)
 				try Self.importTraceRoutes(from: backupContext, into: liveContext, nodesByNum: nodesByNum)
 				try Self.importPaxCounters(from: backupContext, into: liveContext, nodesByNum: nodesByNum)
+				try Self.importNodeObservations(from: backupContext, into: liveContext)
+				try Self.importPacketReceptions(from: backupContext, into: liveContext)
 
 				try liveContext.save()
 				Logger.backup.info("💾 Full restore complete for node \(nodeNum)")

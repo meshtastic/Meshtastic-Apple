@@ -39,10 +39,32 @@ final class MessageEntity {
 	/// Firmware only ever sets this on broadcasts — never on DMs — so it can be trusted on its own.
 	var xeddsaSigned: Bool = false
 
+	// MARK: Multi-radio (feature 021)
+	// Optional: rows stored before these existed have nil until the backfill reaches them, and
+	// every reader must cope with that.
+
+	/// Sender's node number, flat so queries don't join through `fromUser`.
+	var fromNum: Int64?
+	/// Recipient's node number (the broadcast address for channel messages).
+	var toNum: Int64?
+	/// Node number of the local radio this message belongs to: the radio that received it, or the
+	/// one it was sent through. Scopes direct messages to the radio in the conversation.
+	var localNodeNum: Int64?
+	/// `ChannelIdentity` key of the channel, so channel messages group across radios whose slot
+	/// indexes differ. Nil for direct messages.
+	var channelKey: String?
+	/// `"\(fromNum):\(messageId)"`: a packet id is only unique per sender. Takes over uniqueness
+	/// from `messageId` once every insert sets it (see `specs/021-multi-radio-connections/plan.md`).
+	@Attribute(.unique) var messageKey: String?
+
 	var fromUser: UserEntity?
 	var toUser: UserEntity?
 
 	init() {}
+
+	static func key(fromNum: Int64, messageId: Int64) -> String {
+		"\(fromNum):\(messageId)"
+	}
 }
 
 extension MessageEntity {

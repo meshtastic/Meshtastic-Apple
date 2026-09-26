@@ -79,6 +79,67 @@ enum NodeRenumber {
 		for beacon in try fetchAll(DiscoveredBeaconEntity.self, in: context) where beacon.nodeNum == oldNum {
 			beacon.nodeNum = newNum
 		}
+		try rewriteMultiRadioRows(from: oldNum, to: newNum, in: context)
+	}
+
+	/// The feature-021 columns and keys that carry node numbers: message numbers and keys,
+	/// per-radio observations and packet receptions. The number can be either the observed
+	/// node or the local radio. Rows already stored under the new number lose to the old ones,
+	/// the same way `foldExistingRows` keeps the old node.
+	private static func rewriteMultiRadioRows(from oldNum: Int64, to newNum: Int64, in context: ModelContext) throws {
+		let old: Int64? = oldNum
+		let messages = try context.fetch(FetchDescriptor<MessageEntity>(
+			predicate: #Predicate { $0.fromNum == old || $0.toNum == old || $0.localNodeNum == old }
+		))
+		for message in messages {
+			if message.fromNum == oldNum {
+				message.fromNum = newNum
+				if message.messageKey != nil {
+					message.messageKey = MessageEntity.key(fromNum: newNum, messageId: message.messageId)
+				}
+			}
+			if message.toNum == oldNum { message.toNum = newNum }
+			if message.localNodeNum == oldNum { message.localNodeNum = newNum }
+		}
+
+		let observations = try context.fetch(FetchDescriptor<NodeObservationEntity>(
+			predicate: #Predicate { $0.radioNum == oldNum || $0.nodeNum == oldNum }
+		))
+		let targetObservationKeys = Set(observations.map {
+			NodeObservationEntity.key(radioNum: swap($0.radioNum, oldNum, newNum), nodeNum: swap($0.nodeNum, oldNum, newNum))
+		})
+		for existing in try context.fetch(FetchDescriptor<NodeObservationEntity>(
+			predicate: #Predicate { $0.radioNum == newNum || $0.nodeNum == newNum }
+		)) where targetObservationKeys.contains(existing.key) {
+			context.delete(existing)
+		}
+		for observation in observations {
+			observation.radioNum = swap(observation.radioNum, oldNum, newNum)
+			observation.nodeNum = swap(observation.nodeNum, oldNum, newNum)
+			observation.key = NodeObservationEntity.key(radioNum: observation.radioNum, nodeNum: observation.nodeNum)
+		}
+
+		let receptions = try context.fetch(FetchDescriptor<PacketReceptionEntity>(
+			predicate: #Predicate { $0.radioNum == oldNum || $0.fromNum == oldNum || $0.toNum == oldNum }
+		))
+		let targetReceptionKeys = Set(receptions.map {
+			PacketReceptionEntity.key(radioNum: swap($0.radioNum, oldNum, newNum), fromNum: swap($0.fromNum, oldNum, newNum), packetId: $0.packetId)
+		})
+		for existing in try context.fetch(FetchDescriptor<PacketReceptionEntity>(
+			predicate: #Predicate { $0.radioNum == newNum || $0.fromNum == newNum }
+		)) where targetReceptionKeys.contains(existing.key) {
+			context.delete(existing)
+		}
+		for reception in receptions {
+			reception.radioNum = swap(reception.radioNum, oldNum, newNum)
+			reception.fromNum = swap(reception.fromNum, oldNum, newNum)
+			reception.toNum = swap(reception.toNum, oldNum, newNum)
+			reception.key = PacketReceptionEntity.key(radioNum: reception.radioNum, fromNum: reception.fromNum, packetId: reception.packetId)
+		}
+	}
+
+	private static func swap(_ value: Int64, _ oldNum: Int64, _ newNum: Int64) -> Int64 {
+		value == oldNum ? newNum : value
 	}
 
 	/// The app can hear a radio on the mesh before it connects to it, so the new number may

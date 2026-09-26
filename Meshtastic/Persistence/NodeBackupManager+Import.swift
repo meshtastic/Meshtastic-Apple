@@ -92,6 +92,11 @@ extension NodeBackupManager {
 			dst.pioEnv = src.pioEnv
 			dst.rebootCount = src.rebootCount
 			dst.registered = src.registered
+			dst.lastConnected = src.lastConnected
+			dst.autoConnect = src.autoConnect
+			dst.transport = src.transport
+			dst.sortOrder = src.sortOrder
+			dst.displayColor = src.displayColor
 			if let srcNode = src.myInfoNode, let liveNode = nodesByNum[srcNode.num] {
 				dst.myInfoNode = liveNode
 				myInfosByNodeNum[srcNode.num] = dst
@@ -114,6 +119,7 @@ extension NodeBackupManager {
 			dst.psk = src.psk
 			dst.role = src.role
 			dst.uplinkEnabled = src.uplinkEnabled
+			dst.channelKey = src.channelKey
 			if let srcMyInfo = src.myInfoChannel,
 			   let srcNode = srcMyInfo.myInfoNode,
 			   let liveMyInfo = myInfosByNodeNum[srcNode.num] {
@@ -162,6 +168,7 @@ extension NodeBackupManager {
 			dst.snr = src.snr
 			dst.speed = src.speed
 			dst.time = src.time
+			dst.packetId = src.packetId
 			if let srcNode = src.nodePosition, let liveNode = nodesByNum[srcNode.num] {
 				dst.nodePosition = liveNode
 				if dst.latest { liveNode.latestPositionCache = dst }
@@ -176,6 +183,7 @@ extension NodeBackupManager {
 			let dst = TelemetryEntity()
 			dst.metricsType = src.metricsType
 			dst.time = src.time
+			dst.packetId = src.packetId
 			dst.airUtilTx = src.airUtilTx
 			dst.barometricPressure = src.barometricPressure
 			dst.batteryLevel = src.batteryLevel
@@ -262,6 +270,11 @@ extension NodeBackupManager {
 			dst.showTranslatedMessage = src.showTranslatedMessage
 			dst.snr = src.snr
 			dst.xeddsaSigned = src.xeddsaSigned
+			dst.fromNum = src.fromNum
+			dst.toNum = src.toNum
+			dst.localNodeNum = src.localNodeNum
+			dst.channelKey = src.channelKey
+			dst.messageKey = src.messageKey
 			if let fromNum = src.fromUser?.num, let liveUser = usersByNum[fromNum] {
 				dst.fromUser = liveUser
 			}
@@ -366,6 +379,44 @@ extension NodeBackupManager {
 			if let srcNode = src.paxNode, let liveNode = nodesByNum[srcNode.num] {
 				dst.paxNode = liveNode
 			}
+			liveContext.insert(dst)
+		}
+	}
+
+	// MARK: - Multi-radio (feature 021)
+
+	nonisolated static func importNodeObservations(from backupContext: ModelContext, into liveContext: ModelContext) throws {
+		for src in try backupContext.fetch(FetchDescriptor<NodeObservationEntity>()) {
+			let dst = NodeObservationEntity(radioNum: src.radioNum, nodeNum: src.nodeNum)
+			dst.firstHeard = src.firstHeard
+			dst.lastHeard = src.lastHeard
+			dst.hopsAway = src.hopsAway
+			dst.snr = src.snr
+			dst.rssi = src.rssi
+			dst.viaMqtt = src.viaMqtt
+			dst.channel = src.channel
+			dst.favorite = src.favorite
+			dst.ignored = src.ignored
+			dst.isKeyManuallyVerified = src.isKeyManuallyVerified
+			dst.sessionPasskey = src.sessionPasskey
+			dst.sessionExpiration = src.sessionExpiration
+			liveContext.insert(dst)
+		}
+	}
+
+	nonisolated static func importPacketReceptions(from backupContext: ModelContext, into liveContext: ModelContext) throws {
+		for src in try backupContext.fetch(FetchDescriptor<PacketReceptionEntity>()) {
+			let dst = PacketReceptionEntity(radioNum: src.radioNum, fromNum: src.fromNum, packetId: src.packetId)
+			dst.toNum = src.toNum
+			dst.portNum = src.portNum
+			dst.channel = src.channel
+			dst.rxTime = src.rxTime
+			dst.snr = src.snr
+			dst.rssi = src.rssi
+			dst.hopStart = src.hopStart
+			dst.hopLimit = src.hopLimit
+			dst.relayNode = src.relayNode
+			dst.viaMqtt = src.viaMqtt
 			liveContext.insert(dst)
 		}
 	}
