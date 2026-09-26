@@ -103,6 +103,19 @@ _Nothing. When you start a task, mark it `[~]` in tasks.md and note it here._
 ## Blocked / waiting on the owner
 
 - Real-radio testing: the owner is preparing two more radios and will test on the Mac when ready.
+- The radio menu in the status indicator (`RadioSwitcherMenu` wrapping `ConnectedDevice`,
+  `bca4ecef`, T082) goes against CLAUDE.md: the indicator is full and gets no controls. The owner
+  is asking the project admin whether multiple radios justify an exception. Options: keep the
+  menu and the "+N" badge; keep the menu without the badge (no extra width, but still a control);
+  or remove both and change focus from the Connect tab (Focus This Radio, already there), later
+  the iPad/Mac sidebar, optionally with a count on the Connect tab icon. Against it: the badge
+  adds width on phones, and a focus change reconnects both radios, so an accidental tap isn't
+  free. For it: focus applies to the whole app, the indicator already names the focused radio,
+  and single-radio users see no change. If it's removed, also update `docs/user/bluetooth.md`
+  (the "+1, +2 or +3" paragraph).
+- Pull request size: D-02 plans one pull request for the whole feature; CLAUDE.md asks for small,
+  single-purpose pull requests. The owner is discussing this with the project admin (spec.md ›
+  Open items).
 
 ## Side-by-side build (local only, Mac only)
 
