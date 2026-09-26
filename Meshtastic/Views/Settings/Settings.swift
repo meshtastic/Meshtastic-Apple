@@ -810,6 +810,7 @@ struct Settings: View {
 									Text("Connected Node \(node.userLongName?.addingVariationSelectors ?? "Unknown".localized)")
 								}
 							}
+							OtherRadiosSettingsNote()
 						}
 					}
 					radioConfigurationSection

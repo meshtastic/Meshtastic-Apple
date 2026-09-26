@@ -1825,10 +1825,15 @@ actor MeshPackets {
 		critical: Bool,
 		replyMessageId: Int64? = nil
 	) -> Notification {
+		var subtitle = "AKA \(message.fromUser?.shortName ?? "?")"
+		if let radioName = receivingRadioName(for: message) {
+			// Feature 021 (T091): with several radios, which one it came in on.
+			subtitle += " · " + String.localizedStringWithFormat("on %@".localized, radioName)
+		}
 		var notification = Notification(
 			id: ("notification.id.\(message.messageId)"),
 			title: "\(message.fromUser?.longName ?? "Unknown".localized)",
-			subtitle: "AKA \(message.fromUser?.shortName ?? "?")",
+			subtitle: subtitle,
 			content: content,
 			target: "messages",
 			path: path,

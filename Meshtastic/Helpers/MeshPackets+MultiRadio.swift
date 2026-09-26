@@ -55,6 +55,19 @@ extension MeshPackets {
 		}
 	}
 
+	// MARK: - Notifications (T091)
+
+	/// The short name of the radio `message` came in on, when the store knows more than one of
+	/// the user's radios; nil otherwise, so single-radio notifications don't change.
+	func receivingRadioName(for message: MessageEntity) -> String? {
+		guard let radioNum = message.localNodeNum,
+			  ((try? modelContext.fetchCount(FetchDescriptor<MyInfoEntity>())) ?? 0) > 1 else { return nil }
+		var descriptor = FetchDescriptor<UserEntity>(predicate: #Predicate { $0.num == radioNum })
+		descriptor.fetchLimit = 1
+		let user = try? modelContext.fetch(descriptor).first
+		return user?.shortName ?? user?.longName ?? radioNum.toHex()
+	}
+
 	// MARK: - Remembered radios
 
 	/// Records a finished connection on the radio's `MyInfoEntity`: when, over what, and

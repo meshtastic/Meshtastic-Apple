@@ -334,6 +334,24 @@ struct MultiRadioIngestTests {
 		#expect(box.value.count == 1)
 	}
 
+	@Test("With two radios, a notification says which radio the message came in on")
+	func notificationNamesTheRadio() async throws {
+		let previous = UserDefaults.channelMessageNotifications
+		UserDefaults.channelMessageNotifications = true
+		defer { UserDefaults.channelMessageNotifications = previous }
+		let container = try makeContainer()
+		try seedTwoRadios(in: container)
+		let box = MainActorBox<[MeshNotification]>([])
+		let packets = await makePackets(container, recording: box)
+
+		await packets.textMessageAppPacket(packet: packet(id: 33, from: remote, text: "via B"), wantRangeTestPackets: false, connectedNode: radioB, appState: nil)
+		await packets.savePendingChanges()
+		try? await Task.sleep(for: .milliseconds(100))
+
+		let subtitle = try #require(box.value.first?.subtitle)
+		#expect(subtitle.hasSuffix(String.localizedStringWithFormat("on %@".localized, radioB.toHex())))
+	}
+
 	@Test("A sent message and its echo merge on the key")
 	func sentMessageMergesWithEcho() async throws {
 		let container = try makeContainer()
