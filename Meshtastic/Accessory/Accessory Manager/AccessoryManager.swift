@@ -277,6 +277,12 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	var retiredAdditionalSessionIDs: Set<UUID> = []
 	/// Reconnect loops for additional radios that dropped, by device id (T063).
 	var additionalRadioReconnects: [UUID: Task<Void, Never>] = [:]
+	/// Hands the focus to another connected radio when the focused one dropped and doesn't come
+	/// back (`scheduleFocusHandover`).
+	var focusHandoverTask: Task<Void, Never>?
+	/// Connects a remembered radio when the preferred one doesn't show up
+	/// (`scheduleRememberedRadioFallback`).
+	var rememberedRadioFallbackTask: Task<Void, Never>?
 	/// One radio's config and node-DB handshake at a time, focused or not (T064).
 	let handshakeGate = HandshakeGate()
 	/// Bumped by `disconnect()`, so a focused connect still waiting at `handshakeGate` sees the
@@ -631,6 +637,9 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			updateDevice(deviceId: activeConnection.device.id, key: \.connectionState, value: .disconnected)
 			self.activeConnection = nil
 		}
+		// Feature 021: with other radios still connected, one takes the focus if this one
+		// doesn't come back.
+		scheduleFocusHandover(previousRadio: closingNodeNum)
 		self.activeDeviceNum = nil
 		self.firmwareUpdateRequired = false
 		if let refresh = activeAutomaticConfigRefresh {

@@ -218,12 +218,15 @@ describes it well enough to rebuild.
   wins. That's why favorite/ignore go to every connected radio (`setFavorite`, `setIgnored`).
   A radio that was offline when the user changed it will flip the flag back when it next
   connects; syncing on reconnect is not built.
-- Focus when things go wrong: only the Connect tab's Disconnect hands the focus on. If the
-  focused radio drops (out of range, powered off), the others stay connected and keep
-  receiving, but nothing is focused (the app shows "not connected") until the preferred radio's
-  own reconnect brings it back. At launch, remembered radios only come back after the preferred
-  radio connects; if it's off, none do. Both are candidates for the next step (promote a
-  connected radio after a timeout; fall back to a remembered radio at launch).
+- Focus when things go wrong (`AccessoryManager+FocusHandover.swift`): the Connect tab's
+  Disconnect hands the focus to another connected radio at once (`disconnectFocusedRadio`).
+  If the focused radio drops, `closeConnection` starts `scheduleFocusHandover`: after 30 s
+  (rechecking every 10 s, up to 5 min) with nothing focused or connecting, the first connected
+  additional radio takes the focus and the dropped one is remembered. When discovery starts
+  with nothing connected, `scheduleRememberedRadioFallback` connects a remembered radio that's
+  in range if the preferred one hasn't connected after 30 s, and remembers the preferred one.
+  Neither fires after a deliberate disconnect (`userRequestedConnectionCancellation`), during a
+  switch or an OTA. Watch for them in the device test: they change which radio is preferred.
 - Editing tools: after changing a file with a script (`python3 /tmp/x.py`), re-read it before
   using the editor's find-and-replace on it. Once the editor applied an edit to its own stale
   copy of `UserMessageList.swift` and silently undid a script's refactor; `git diff` caught it.

@@ -147,6 +147,72 @@ struct MultiRadioConnectLifecycleTests {
 		#expect(manager.device(for: bad) == nil)
 	}
 
+	@Test("A remembered radio in range stands in for a missing preferred radio")
+	func rememberedRadioFallback() {
+		let previousAuto = UserDefaults.autoconnectOnDiscovery
+		let previousPreferred = UserDefaults.preferredPeripheralId
+		defer {
+			UserDefaults.autoconnectOnDiscovery = previousAuto
+			UserDefaults.preferredPeripheralId = previousPreferred
+		}
+		UserDefaults.autoconnectOnDiscovery = true
+		let preferred = device("Preferred", transport: .ble)
+		let inRange = device("In range", transport: .ble)
+		let away = UUID()
+		UserDefaults.preferredPeripheralId = preferred.id.uuidString
+		let manager = AccessoryManager(transports: [])
+		manager.devices = [preferred, inRange]
+		let remembered = [
+			MeshPackets.RememberedRadio(nodeNum: 1, peripheralId: preferred.id.uuidString, name: "Preferred", transport: .ble),
+			MeshPackets.RememberedRadio(nodeNum: 2, peripheralId: away.uuidString, name: "Away", transport: .ble),
+			MeshPackets.RememberedRadio(nodeNum: 3, peripheralId: inRange.id.uuidString, name: "In range", transport: .ble)
+		]
+
+		// Not the preferred radio (its own auto-connect handles it), not one that's out of range.
+		#expect(manager.rememberedRadioFallbackCandidate(from: remembered)?.id == inRange.id)
+
+		manager.userRequestedConnectionCancellation = true
+		#expect(manager.rememberedRadioFallbackCandidate(from: remembered) == nil)
+		manager.userRequestedConnectionCancellation = false
+		UserDefaults.autoconnectOnDiscovery = false
+		#expect(manager.rememberedRadioFallbackCandidate(from: remembered) == nil)
+		UserDefaults.autoconnectOnDiscovery = true
+		manager.activeConnection = RadioSession(device: preferred, connection: IdleConnection())
+		#expect(manager.rememberedRadioFallbackCandidate(from: remembered) == nil)
+	}
+
+	@Test("When the focused radio drops, a connected radio can take the focus, unless something deliberate is going on")
+	func focusHandoverCandidate() {
+		let manager = AccessoryManager(transports: [])
+		// Nothing connected alongside: no handover, no watch.
+		#expect(manager.focusHandoverCandidate == nil)
+		manager.scheduleFocusHandover(previousRadio: 0x0A0A)
+		#expect(manager.focusHandoverTask == nil)
+
+		var extraDevice = device("Extra")
+		extraDevice.num = 0x0B0B
+		extraDevice.connectionState = .connected
+		manager.additionalRadios[extraDevice.id] = AdditionalRadio(session: RadioSession(device: extraDevice, connection: IdleConnection()))
+		#expect(manager.focusHandoverCandidate?.id == extraDevice.id)
+
+		manager.userRequestedConnectionCancellation = true
+		#expect(manager.focusHandoverCandidate == nil)
+		manager.userRequestedConnectionCancellation = false
+		manager.isSwitchingDevices = true
+		#expect(manager.focusHandoverCandidate == nil)
+		manager.isSwitchingDevices = false
+		manager.otaInProgress = true
+		#expect(manager.focusHandoverCandidate == nil)
+		manager.otaInProgress = false
+
+		manager.activeConnection = RadioSession(device: device("Focused"), connection: IdleConnection())
+		#expect(manager.focusHandoverCandidate == nil)
+
+		manager.scheduleFocusHandover(previousRadio: 0x0A0A, after: .seconds(3600))
+		#expect(manager.focusHandoverTask != nil)
+		manager.focusHandoverTask?.cancel()
+	}
+
 	@Test("Favoriting a node reaches every connected radio, each on its own connection")
 	func favoriteOnEveryRadio() async throws {
 		let focusedNum: Int64 = 0x0A0A, extraNum: Int64 = 0x0B0B

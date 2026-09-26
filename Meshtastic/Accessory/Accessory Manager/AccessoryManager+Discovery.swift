@@ -38,6 +38,7 @@ extension AccessoryManager {
 		// The connection state then stays as it is.
 		if activeConnection == nil {
 			updateState(.discovering)
+			scheduleRememberedRadioFallback()
 		}
 
 		discoveryTask = Task { @MainActor in

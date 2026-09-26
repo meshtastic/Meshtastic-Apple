@@ -59,6 +59,8 @@ With more than one radio connected, the radio indicator at the top of each scree
 
 A radio connected alongside the focused one is remembered. If it drops out of range or restarts, the app keeps trying to reconnect it, backing off to once a minute. The next time the focused radio connects — for example when you open the app — the remembered radios are connected again too. Choosing **Disconnect** on a radio stops this until you connect it again yourself.
 
+If the focused radio drops and doesn't come back within about 30 seconds, another connected radio becomes the focused one, and the dropped radio rejoins under **Also Connected** when it's back. Likewise, if your usual radio isn't around when you open the app, a remembered radio that's in range is connected after about 30 seconds, and your usual radio joins when it appears.
+
 ### Switching Radios
 
 Switching the focused radio disconnects it and connects the new one. The database stays as it is, so the previous radio's messages and nodes remain in the app. After the new radio finishes its initial config handshake, the app first reapplies the bundled Meshtastic hardware catalog that ships with the app, then refreshes the same catalog from the Meshtastic API in the background so hardware names, images, and firmware-target metadata stay current.
