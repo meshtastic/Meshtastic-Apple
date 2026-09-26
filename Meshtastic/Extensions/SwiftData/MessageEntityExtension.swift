@@ -48,6 +48,34 @@ extension MessageEntity {
 	/// message is orphaned. Kept generous so a slow, multi-hop mesh doesn't trip a false timeout.
 	static let sendAckTimeout: TimeInterval = 5 * 60
 
+	/// Puts a failed message back into the sending state so it can go out again under its own id.
+	///
+	/// The timestamp has to move with the ack fields. `deliveryStatus` decides between "Sending…"
+	/// and "Not delivered" by how long ago the message was sent, so a resend that kept the
+	/// original timestamp would be past `sendAckTimeout` already and the row would show as failed
+	/// again straight away.
+	func markResending(at date: Date = Date()) {
+		receivedACK = false
+		realACK = false
+		ackError = 0
+		messageTimestamp = Int32(date.timeIntervalSince1970)
+	}
+
+	/// Puts a message back the way it was when a resend never made it onto the air.
+	///
+	/// Without this the row keeps the fresh timestamp `markResending` gave it and shows
+	/// "Sending…" with no retry action, until the ack timeout turns it into "Not delivered"
+	/// minutes later. Restoring the old error and timestamp brings the retry action straight
+	/// back and leaves the message where it was in the conversation.
+	///
+	/// An acknowledgement that arrived while the transmit was failing wins: the message did get
+	/// through, whatever the transport reported afterwards.
+	func markResendFailed(ackError previousAckError: Int32, timestamp previousTimestamp: Int32) {
+		guard !receivedACK, ackError == 0 else { return }
+		ackError = previousAckError
+		messageTimestamp = previousTimestamp
+	}
+
 	func deliveryStatus(isDirectMessage: Bool) -> MessageDeliveryStatus {
 		if receivedACK {
 			if isDirectMessage {
