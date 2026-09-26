@@ -52,7 +52,7 @@ phases don't change behaviour and keep the app shippable, which makes a rebase o
 - [X] T027 `channelKey` derivation (`ChannelIdentity.swift`) plus tests — commit `2a3e3653`, verified: `ChannelIdentityTests` (16 cases).
 - [X] T028 Update the backup importer for the new entities and attributes; `NodeRenumber` moves the new node-number columns and keys too — commit `7cf22678`, verified: `MultiRadioSchemaTests`.
 - [X] T029 Migration tests: every release fixture opens with the new models, arrives with empty new columns, and is backfilled and saved — commit `3579188b`.
-- [ ] T030 Backup merge job (D-09): resumable, keyed merge, originals kept. Tests use two synthetic radio backups. **Moved next to T066**: a merge only makes sense once switching stops wiping the store, and it relies on `messageKey` (now in place).
+- [X] T030 Backup merge job (D-09): resumable, keyed merge, originals kept — commits `e29241dc` (copy helpers shared with the restore) and `6a050ce5` (`BackupMerge`, `MeshPackets.mergeBackups`, `NodeBackupManager.mergePendingBackups`, launch hook). Verified: `BackupMergeTests` (two synthetic radio backups: rows added, live wins, idempotent, known radio skipped, bad checksum kept, new backups not pending), full suite. Runs once per backup at launch, holding the handshake gate; recorded as `BackupEntry.mergedChecksum`.
 
 **Checkpoint**: an existing store and its backups upgrade with nothing lost; the app still runs with one radio.
 
@@ -80,7 +80,7 @@ phases don't change behaviour and keep the app shippable, which makes a rebase o
 - [X] T063 Discovery keeps running while connected; auto-connect uses the set of radios in `MyInfoEntity.autoConnect`. — discovery runs while connected on the Connect tab without changing the connection state (`40605d38`). Additional radios reconnect after a drop (`adfaad63`). Remembered radios (`autoConnect`, set when an additional radio connects, cleared when the user disconnects it) come back after the focused radio connects, and automatic connects are bounded to 20 s with CoreBluetooth's pending connect cancelled (`5754e69b`). Verified: `MultiRadioLifecycleTests`.
 - [X] T064 A global handshake gate: one config and node-DB dump at a time across sessions. — commit `5754e69b` (`HandshakeGate`; the ingest-actor recycle also waits; `disconnect()` cancels a connect still waiting at the gate). Verified: `MultiRadioLifecycleTests`.
 - [ ] T065 Per-session firmware gate, lockdown and OTA scope.
-- [~] T066 Remove `switchToDevice`, `backupCurrentAndRestoreDatabase`, `defensiveResetIfForeignDatabase` and `isSwitchingDevices`. — commit `40605d38`: the foreign-store reset is now renumber-only (`renumberIfSameRadio`), and `switchToDevice` no longer backs up, clears or restores. Left: remove the unused backup helpers once T030 lands.
+- [~] T066 Remove `switchToDevice`, `backupCurrentAndRestoreDatabase`, `defensiveResetIfForeignDatabase` and `isSwitchingDevices`. — commit `40605d38`: the foreign-store reset is now renumber-only (`renumberIfSameRadio`), and `switchToDevice` no longer backs up, clears or restores. T030 landed in `6a050ce5`; left: remove the now unused switch-era helpers (`backupCurrentAndRestoreDatabase` and friends) after the two-radio test confirms nothing still needs them.
 - [~] T067 Tests: several mock sessions; BLE continuation routing with a fake central. — `MultiRadioSessionTests` and `MultiRadioBLETransportTests` (`40605d38`). Left: the two-stream replay through the real dispatch (was T050).
 
 **Checkpoint**: two TCP radios, or a mock pair, stay connected and ingest into one store.
@@ -99,7 +99,7 @@ phases don't change behaviour and keep the app shippable, which makes a rebase o
 - [~] T089 Settings shows which radio it configures; remote admin shows the relaying radio. — `bca4ecef` (`OtherRadiosSettingsNote` under Configure). Left: remote admin always relays through the focused radio; showing or choosing the relaying radio needs admin sends on sessions (T060).
 - [X] T090 Per-radio unread badges; the app icon badge is the sum. — per-radio unread in the Connect rows (`d08fde38`) and the DM "Via" picker (`2f5dcf6a`); the Messages badge's quick updates total every radio (`2d7ab3fa`); the full recount already did.
 - [X] T091 Notifications name the radio; deep links take `radio=`, handled in `Router` and `NavigationState`. — subtitle "on <radio>" (`bca4ecef`); Messages notification links carry `&radio=` with more than one radio, `Router.messagesRadio` holds it (kept out of `MessagesNavigationState` so its matches don't change), the DM thread opens on that radio, and a channel link maps the radio's slot to the focused radio's by `channelKey`. Verified: `RouterRadioDeepLinkTests`, `MultiRadioIngestTests`.
-- [ ] T092 Snapshot tests for the new views (`<ViewName>SnapshotTests`).
+- [~] T092 Snapshot tests for the new views (`<ViewName>SnapshotTests`). — `42663087`: `AdditionalRadioRowSnapshotTests` (connected row, `forDocs: true`, referenced in bluetooth.md). Left: the Via picker, Heard By and the connect dialog.
 
 ## Phase 7: Services
 

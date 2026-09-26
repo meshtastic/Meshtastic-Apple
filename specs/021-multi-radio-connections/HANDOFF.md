@@ -40,14 +40,16 @@ Read this first if you are picking the work up. Update it in the same commit as 
   "on <radio>" in notifications (T082, T089, T091) in `bca4ecef`; the DM badge totals every radio
   (T090) in `2d7ab3fa`. Notification links open the right radio's thread (T091) in `d22f9206`;
   phone position to every radio (T101) in `3cb4e11a`; Disconnect on the focused radio hands the
-  focus to another connected radio in `721bc873`. See tasks.md for the partial ones.
+  focus to another connected radio in `721bc873`; focus handover after a drop and the
+  remembered-radio fallback at launch in `81b204a0`; connected-row snapshot (T092) in
+  `42663087`; old per-radio backups merged into the shared store at launch (T030) in
+  `e29241dc` and `6a050ce5`. See tasks.md for the partial ones.
 - Mesh Multi (`~/Applications/Mesh Multi.app`, side-by-side, own container) is rebuilt from the
   latest commit on this branch and ready for the first two-radio test below. Not yet run by anyone.
 - Next up: the owner's two-radio test; then BLE
   restoration (T062), per-session firmware gate/lockdown (T065), MQTT per session (T100), and
-  moving admin sends onto sessions (T060, which T089's relaying radio needs). T030 (merge old
-  backups) before release.
-- Baseline and latest: the full suite passes in the iOS Simulator (3,344 Swift Testing tests plus
+  moving admin sends onto sessions (T060, which T089's relaying radio needs).
+- Baseline and latest: the full suite passes in the iOS Simulator (3,354 Swift Testing tests plus
   29 XCTests, about 35–50 seconds of test time).
 
 ## First two-radio test (Mesh Multi, Mac)
@@ -188,7 +190,8 @@ describes it well enough to rebuild.
   second observation. Keep it that way; the owner's always-on radio must see no change.
 - The backfill attributes old rows to `UserDefaults.preferredPeripheralNum`, which is the store's
   owner only while the switch flow exists. When T066 removes switching, run the backfill for
-  each store before it is merged (T030), not after.
+  each store before it is merged (T030), not after. `BackupMerge` does: it backfills the staged
+  backup with its own radio as owner, and drains the live store's backfill before merging.
 - Additional radios must never reach the focused radio's handlers for anything but mesh
   packets: `handleMyInfo` writes the preferred radio, `handleConfig` sends a timezone to the
   focused radio, `handleModuleConfig` sends admin requests through it, and the `.error` /
@@ -202,6 +205,12 @@ describes it well enough to rebuild.
 - `SchemaHistoryUpgradeTests.fixtureInventoryCoversEverySwiftDataRelease` sometimes fails with a
   SQLite disk I/O error reading the bundled fixture's metadata. It predates this work and passes
   on a re-run.
+- Backup merge (T030): a backup is merged once, recorded as `BackupEntry.mergedChecksum`. A
+  backup of a radio the store already has a `MyInfoEntity` for is marked but not merged (it's an
+  older copy; merging would resurrect deletions). New backups are marked merged when taken,
+  and compaction carries the mark to the new checksum. The merge loads a backup's messages in
+  one fetch; fine for the sizes seen so far, but a very large backup may need chunking.
+  `NodeBackupManager`'s class body is over SwiftLint's limit (498 lines before, 502 now).
 - The restore importer copies fields by hand. Every new stored attribute must be added to
   `NodeBackupManager+Import.swift` (`NodeBackupRestoreFieldTests` shows the pattern).
 - A BLE radio serves one phone connection at a time. The released app and the side-by-side

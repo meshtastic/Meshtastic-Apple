@@ -70,6 +70,8 @@ Switching the focused radio disconnects it and connects the new one. The databas
 > **Warning — Restoring a backup**
 > Restoring a backup from **Settings › Backups** replaces the whole database, so the app disconnects any radios connected alongside the focused one first.
 
+Earlier versions kept each radio's messages and nodes in a separate backup and swapped them in when you switched radios. The first time you open this version, those backups are merged into the one database, so every radio's history is there at once. Anything already in the database is kept as it is; only messages, nodes and history it doesn't have are added. A backup of a radio the database already holds isn't merged, so messages you deleted don't come back. The backup files themselves aren't changed or deleted.
+
 ## BLE Signal Strength
 
 The app displays the Bluetooth signal strength of nearby devices during scanning:
