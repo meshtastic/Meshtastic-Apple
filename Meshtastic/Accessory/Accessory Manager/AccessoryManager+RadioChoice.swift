@@ -62,10 +62,12 @@ extension AccessoryManager {
 	}
 
 	/// Favorites or unfavorites `node` on every connected radio (D-11), the focused one first.
-	/// Throws only if the focused radio fails; another radio's failure is logged, since the
-	/// node is still favorited where it matters most and the next node DB will show the rest.
-	func setFavorite(_ favorite: Bool, node: NodeInfoEntity) async throws {
-		for (offset, radioNum) in connectedRadioNums.enumerated() where radioNum != node.num {
+	/// `radios` narrows that to some of them (still in connection order). Throws only if the
+	/// first radio fails; another radio's failure is logged, since the node is still favorited
+	/// where it matters most and the next node DB will show the rest.
+	func setFavorite(_ favorite: Bool, node: NodeInfoEntity, radios: [Int64]? = nil) async throws {
+		let targets = connectedRadioNums.filter { radios?.contains($0) ?? true }
+		for (offset, radioNum) in targets.enumerated() where radioNum != node.num {
 			do {
 				if favorite {
 					try await setFavoriteNode(node: node, connectedNodeNum: radioNum)

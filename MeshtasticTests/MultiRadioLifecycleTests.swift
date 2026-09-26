@@ -291,6 +291,67 @@ struct MultiRadioConnectLifecycleTests {
 			try await manager.sendMessage(message: "nope", toUserNum: remoteNum, channel: 0, isEmoji: false, replyID: 0, viaRadio: 0x0C0C)
 		}
 	}
+
+	@Test("An encrypted DM via another radio refreshes the contact on that radio and pins the node on both")
+	func encryptedDirectMessageFollowUpsUseTheSendingRadio() async throws {
+		let focusedNum: Int64 = 0x0A0A, extraNum: Int64 = 0x0B0B, remoteNum: Int64 = 0x7E57_0021
+		let schema = Schema(versionedSchema: MeshtasticSchema.current)
+		let container = try ModelContainer(for: schema, configurations: ModelConfiguration("SendViaPKI-\(UUID().uuidString)", schema: schema, isStoredInMemoryOnly: true, allowsSave: true))
+		let context = ModelContext(container)
+		for num in [focusedNum, extraNum] {
+			let user = UserEntity()
+			user.num = num
+			context.insert(user)
+		}
+		let remoteUser = UserEntity()
+		remoteUser.num = remoteNum
+		remoteUser.longName = "Remote"
+		remoteUser.pkiEncrypted = true
+		remoteUser.publicKey = Data(repeating: 7, count: 32)
+		context.insert(remoteUser)
+		let remoteNode = NodeInfoEntity()
+		remoteNode.num = remoteNum
+		context.insert(remoteNode)
+		remoteNode.user = remoteUser
+		try context.save()
+
+		let manager = AccessoryManager(transports: [])
+		manager.isSwitchingDevices = true
+		manager.context = context
+		let focusedConnection = IdleConnection()
+		var focusedDevice = device("Focused")
+		focusedDevice.num = focusedNum
+		manager.activeConnection = RadioSession(device: focusedDevice, connection: focusedConnection)
+		let extraConnection = IdleConnection()
+		var extraDevice = device("Extra")
+		extraDevice.num = extraNum
+		manager.additionalRadios[extraDevice.id] = AdditionalRadio(session: RadioSession(device: extraDevice, connection: extraConnection))
+
+		try await manager.sendMessage(message: "secret", toUserNum: remoteNum, channel: 0, isEmoji: false, replyID: 0, viaRadio: extraNum)
+
+		// Text, add-contact and favorite on B; favorite on A. Each runs in its own task.
+		var waited = 0
+		while waited < 200 {
+			let extraCount = await extraConnection.sent.count
+			let focusedCount = await focusedConnection.sent.count
+			if extraCount >= 3 && focusedCount >= 1 { break }
+			try await Task.sleep(for: .milliseconds(10))
+			waited += 1
+		}
+		func admins(_ sent: [ToRadio]) -> [AdminMessage] {
+			sent.filter { $0.packet.decoded.portnum == .adminApp }
+				.compactMap { try? AdminMessage(serializedBytes: $0.packet.decoded.payload) }
+		}
+		let extraSent = await extraConnection.sent
+		let focusedSent = await focusedConnection.sent
+		#expect(extraSent.contains { $0.packet.decoded.portnum == .textMessageApp && $0.packet.pkiEncrypted })
+		#expect(admins(extraSent).contains { $0.addContact.nodeNum == UInt32(remoteNum) })
+		#expect(admins(extraSent).contains { $0.setFavoriteNode == UInt32(remoteNum) })
+		// The focused radio gets the pin, but not the contact or the text.
+		#expect(admins(focusedSent).contains { $0.setFavoriteNode == UInt32(remoteNum) })
+		#expect(!admins(focusedSent).contains { $0.addContact.nodeNum == UInt32(remoteNum) })
+		#expect(!focusedSent.contains { $0.packet.decoded.portnum == .textMessageApp })
+	}
 }
 
 // MARK: - Remembered radios and ACK matching (store)

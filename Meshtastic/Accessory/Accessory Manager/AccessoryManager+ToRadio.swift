@@ -206,8 +206,10 @@ extension AccessoryManager {
 		}
 	}
 
-	public func addContactFromURL(base64UrlString: String) async throws {
-		guard let deviceNum = self.activeConnection?.device.num else {
+	/// Adds a shared contact to a radio. `viaRadio` picks the connected radio (feature 021); nil
+	/// means the focused radio.
+	public func addContactFromURL(base64UrlString: String, viaRadio: Int64? = nil) async throws {
+		guard let session = connectedSession(forRadio: viaRadio), let deviceNum = session.device.num else {
 			Logger.services.error("Error while sending CannedMessageModule request.  No active device.")
 			throw AccessoryError.ioFailed("No active device")
 		}
@@ -257,7 +259,7 @@ extension AccessoryManager {
 			toRadio.packet = meshPacket
 
 			let logString = String.localizedStringWithFormat("Added contact %@ to device".localized, contact.user.longName)
-			try await send(toRadio, debugDescription: logString)
+			try await send(toRadio, via: session, debugDescription: logString)
 
 			// Create a NodeInfo (User) packet for the newly added contact
 			var dataNodeMessage = DataMessage()
@@ -272,7 +274,7 @@ extension AccessoryManager {
 
 				// Update local database with the new node info
 				// Do not auto-favorite when using CLIENT_BASE role to avoid creating routing issues
-				let shouldFavorite = connectedDeviceRole != .clientBase
+				let shouldFavorite = radioRole(for: Int64(deviceNum)) != .clientBase
 				await MeshPackets.shared.upsertNodeInfoPacket(packet: nodeMeshPacket, favorite: shouldFavorite, overTheMesh: false)
 			}
 		} catch {
@@ -382,7 +384,6 @@ extension AccessoryManager {
 			Logger.services.error("Error while sending CannedMessageModule request.  No active device.")
 			throw AccessoryError.ioFailed("No active device")
 		}
-		let viaFocusedRadio = sendingSession === activeConnection
 
 		guard message.count > 0 else {
 			// Don't send an empty message
@@ -450,10 +451,10 @@ extension AccessoryManager {
 						meshPacket.publicKey = newMessage.toUser?.publicKey ?? Data()
 						// Send a contact to the phone every time we send a dm so that any nodes that have rolled out of the db are there and we don't get a PKI Failed error
 						Task { @MainActor in
-							// Both follow-ups below are admin messages to the focused radio. Through
-							// another radio they'd configure the wrong one (feature 021).
-							guard viaFocusedRadio else { return }
-							let am = AccessoryManager.shared
+							// Both follow-ups below are admin messages to the sending radio, so a DM
+							// through another radio refreshes and pins the contact on that radio
+							// (feature 021).
+							let am = self
 							if let user = newMessage.toUser {
 								var contact = SharedContact()
 								contact.manuallyVerified = false
@@ -465,7 +466,7 @@ extension AccessoryManager {
 									if contact.carriesPublicKey {
 										let contactString = try contact.serializedData().base64EncodedString()
 										do {
-											try await am.addContactFromURL(base64UrlString: contactString)
+											try await am.addContactFromURL(base64UrlString: contactString, viaRadio: fromUserNum)
 										} catch {
 											// Best effort. The message still goes out, and the radio may
 											// already hold the key, so a failure here is not fatal — but it
@@ -480,14 +481,17 @@ extension AccessoryManager {
 									// message: setting the local flag alone is overwritten by the next
 									// NodeInfo, so the star would appear and then quietly revert.
 									if let node = user.userNode,
-									   let connectedNodeNum = am.activeDeviceNum,
 									   AutoFavoriteRule.shouldFavorite(
 										destinationRole: node.deviceConfig?.role,
-										connectedRole: am.connectedDeviceRole,
+										connectedRole: am.radioRole(for: fromUserNum),
 										isAlreadyFavorite: node.favorite
 									   ) {
 										do {
-											try await am.setFavoriteNode(node: node, connectedNodeNum: Int64(connectedNodeNum))
+											// Favorited on every connected radio that isn't a client base:
+											// each radio's node DB writes the shared star, so pinning it on
+											// the sending radio alone would flip back.
+											let pinningRadios = am.connectedRadioNums.filter { am.radioRole(for: $0) != .clientBase }
+											try await am.setFavorite(true, node: node, radios: pinningRadios)
 											node.favorite = true
 										} catch {
 											Logger.services.error("Could not favorite \(user.num, privacy: .public) while sending a direct message: \(error.localizedDescription, privacy: .public)")

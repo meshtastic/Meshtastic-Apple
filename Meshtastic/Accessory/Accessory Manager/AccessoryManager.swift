@@ -1346,9 +1346,14 @@ extension AccessoryManager {
 
 	var connectedDeviceRole: DeviceRoles? {
 		guard let connectedNodeNum = activeDeviceNum else { return nil }
-		guard let connectedNode = getNodeInfo(id: connectedNodeNum, context: context) else { return nil }
-		guard let connectedNodeUser = connectedNode.user else { return nil }
-		return DeviceRoles(rawValue: Int(connectedNodeUser.role))
+		return radioRole(for: connectedNodeNum)
+	}
+
+	/// The role of one of the user's radios, from its node's user record (feature 021).
+	func radioRole(for radioNum: Int64) -> DeviceRoles? {
+		guard let radioNode = getNodeInfo(id: radioNum, context: context) else { return nil }
+		guard let radioUser = radioNode.user else { return nil }
+		return DeviceRoles(rawValue: Int(radioUser.role))
 	}
 
 	func checkIsVersionSupported(forVersion: String) -> Bool {
