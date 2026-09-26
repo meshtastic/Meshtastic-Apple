@@ -66,15 +66,20 @@ enum MultiRadioBackfill {
 		return filled
 	}
 
-	/// The radio's channel keys by slot index, computed the same way as `backfillChannels`.
-	static func channelKeysByIndex(for radioNum: Int64, in context: ModelContext) throws -> [Int32: String] {
+	/// The radio's channel keys by slot index, from its current channel and LoRa settings (a key
+	/// changes when the user edits a channel's name or key, or the preset). With `updateStored`,
+	/// stored `channelKey`s that differ are corrected; leave it off outside the ingest actor.
+	static func channelKeysByIndex(for radioNum: Int64, in context: ModelContext, updateStored: Bool = true) throws -> [Int32: String] {
 		let myInfos = try context.fetch(FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == radioNum }))
 		guard let myInfo = myInfos.first, let lora = myInfo.myInfoNode?.loRaConfig else { return [:] }
 		let primaryPSK = myInfo.channels.first { $0.index == 0 }?.psk
 		var keys: [Int32: String] = [:]
 		for channel in myInfo.channels {
-			keys[channel.index] = channel.channelKey
-				?? channel.identityKey(primaryPSK: primaryPSK, usePreset: lora.usePreset, modemPreset: lora.modemPreset)
+			let key = channel.identityKey(primaryPSK: primaryPSK, usePreset: lora.usePreset, modemPreset: lora.modemPreset)
+			if updateStored, channel.channelKey != key {
+				channel.channelKey = key
+			}
+			keys[channel.index] = key
 		}
 		return keys
 	}

@@ -448,6 +448,13 @@ actor MeshPackets {
 		let multiplier = Self.appIsActive ? 2 : 1
 		evictNodesIfOverCap(Self.maxTotalNodes * multiplier)
 		evictWaypointsIfOverCap(Self.maxTotalWaypoints * multiplier)
+		// Feature 021: receptions grow with every packet. Nothing renders them yet, so trimming
+		// them in the foreground can't pull rows from under a view (revisit with T087/T088).
+		do {
+			try PacketReceptionEntity.prune(in: modelContext, rowLimit: PacketReceptionEntity.retentionRowLimit * multiplier)
+		} catch {
+			Logger.data.error("💥 [Caps] Reception prune failed: \(error.localizedDescription, privacy: .public)")
+		}
 	}
 
 	/// Evict down to the strict caps and commit. Called on the background transition —
@@ -1137,6 +1144,8 @@ actor MeshPackets {
 						newNode.latestPositionCache = position
 					}
 
+					recordNodeDBObservation(nodeInfo, node: newNode, radioNum: connectedNodeNum)
+
 					// Look for a MyInfo
 					let myInfoNodeNum = Int64(nodeInfo.num)
 					let fetchMyInfoDescriptor = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == myInfoNodeNum })
@@ -1179,6 +1188,7 @@ actor MeshPackets {
 					// The radio owns manual verification (in-person contact exchange or its own
 					// verify flow), so its DB dump overwrites rather than latches.
 					fetchedNode[0].isKeyManuallyVerified = nodeInfo.isKeyManuallyVerified
+					recordNodeDBObservation(nodeInfo, node: fetchedNode[0], radioNum: connectedNodeNum)
 
 					if nodeInfo.hasUser {
 						if fetchedNode[0].user == nil {
@@ -1892,13 +1902,17 @@ actor MeshPackets {
 				do {
 					let fetchedUsers = try modelContext.fetch(fetchDescriptor)
 
-					// Dedupe: if we already have a row with this messageId, skip re-ingestion.
-					// messageId is @Attribute(.unique), so without this guard the radio echo
-					// upserts onto the row sendMessage() wrote, resetting read/ACK state and
-					// triggering a phantom notification. Mirrors Android's
-					// findPacketsWithId(dataPacket.id) guard in rememberDataPacket.
+					// Dedupe: if we already have a row for this packet, skip re-ingestion.
+					// Without this guard the radio echo upserts onto the row sendMessage() wrote,
+					// resetting read/ACK state and triggering a phantom notification. Mirrors
+					// Android's findPacketsWithId(dataPacket.id) guard in rememberDataPacket.
+					// A packet id is only unique per sender (feature 021), so the match is on
+					// `messageKey`; rows not yet backfilled have no key and match on the id alone.
 					let packetId = Int64(packet.id)
-					let existingDescriptor = FetchDescriptor<MessageEntity>(predicate: #Predicate { $0.messageId == packetId })
+					let messageKey = MessageEntity.key(fromNum: fromNum, messageId: packetId)
+					let existingDescriptor = FetchDescriptor<MessageEntity>(predicate: #Predicate {
+						$0.messageKey == messageKey || ($0.messageKey == nil && $0.messageId == packetId)
+					})
 					if let existing = try? modelContext.fetch(existingDescriptor), !existing.isEmpty {
 						Logger.data.debug("Skipping duplicate text message, messageId \(packetId, privacy: .public) already stored")
 						return
@@ -1914,6 +1928,13 @@ actor MeshPackets {
 					let newMessage = MessageEntity()
 					modelContext.insert(newMessage)
 					newMessage.messageId = Int64(packet.id)
+					newMessage.messageKey = messageKey
+					newMessage.fromNum = fromNum
+					newMessage.toNum = storeForwardBroadcast ? MultiRadioBackfill.broadcastNum : toNum
+					newMessage.localNodeNum = connectedNode
+					if isBroadcastMessage {
+						newMessage.channelKey = (try? MultiRadioBackfill.channelKeysByIndex(for: connectedNode, in: modelContext))?[Int32(truncatingIfNeeded: packet.channel)]
+					}
 					if packet.rxTime > 0 {
 						newMessage.messageTimestamp = Int32(bitPattern: packet.rxTime)
 					} else {

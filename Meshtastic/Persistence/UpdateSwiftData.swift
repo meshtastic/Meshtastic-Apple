@@ -286,16 +286,32 @@ extension MeshPackets {
 			if let node = try modelContext.fetch(descriptor).first {
 				node.id = Int64(packet.from)
 				node.num = Int64(packet.from)
+
+				// Feature 021: the packet updates the receiving radio's observation. With that
+				// the only one, the node is written directly exactly as before; with several
+				// radios hearing the node, the node holds their aggregate instead.
+				let observations = try self.observations(ofNode: node.num)
+				let observation = self.observation(of: node, by: activeDeviceNum, among: observations)
+				let heardTime: Date? = isImplicitAck ? nil : (packet.rxTime > 0 ? Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime))) : Date())
+				if let heardTime { observation.lastHeard = heardTime }
+				observation.snr = packet.rxSnr
+				observation.rssi = packet.rxRssi
+				observation.viaMqtt = packet.viaMqtt
+				if packet.hopStart != 0 && packet.hopLimit <= packet.hopStart {
+					observation.hopsAway = Int32(truncatingIfNeeded: packet.hopStart - packet.hopLimit)
+				}
+				let allObservations = observations.contains { $0 === observation } ? observations : observations + [observation]
+				if allObservations.count > 1 {
+					NodeObservationEntity.applyAggregate(allObservations, to: node)
+					Logger.data.debug("💾 [updateAnyPacketFrom] Aggregated node \(packet.from.toHex(), privacy: .public) across \(allObservations.count) radios")
+					return
+				}
 				
 				// Single source of truth for lastHeard on received packets: this runs for
 				// every packet (mirroring firmware NodeDB::updateFrom), so the per-packet
 				// handlers no longer touch lastHeard for remote nodes.
-				if !isImplicitAck {
-					if packet.rxTime > 0 {
-						node.lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
-					} else {
-						node.lastHeard = Date()
-					}
+				if let heardTime {
+					node.lastHeard = heardTime
 				}
 				
 				node.snr = packet.rxSnr

@@ -17,7 +17,9 @@ final class MessageEntity {
 	var adminDescription: String?
 	var channel: Int32 = 0
 	var isEmoji: Bool = false
-	@Attribute(.unique) var messageId: Int64 = 0
+	/// The mesh packet id. Only unique per sender, so uniqueness lives on `messageKey`
+	/// (feature 021); replies and tapbacks still refer to messages by this id.
+	var messageId: Int64 = 0
 	var messagePayload: String? = ""
 	var messagePayloadMarkdown: String?
 	var messagePayloadTranslated: String?
@@ -53,8 +55,9 @@ final class MessageEntity {
 	/// `ChannelIdentity` key of the channel, so channel messages group across radios whose slot
 	/// indexes differ. Nil for direct messages.
 	var channelKey: String?
-	/// `"\(fromNum):\(messageId)"`: a packet id is only unique per sender. Takes over uniqueness
-	/// from `messageId` once every insert sets it (see `specs/021-multi-radio-connections/plan.md`).
+	/// `"\(fromNum):\(messageId)"`: a packet id is only unique per sender. Set on every insert
+	/// (ingest and send), so a sent message and its mesh echo merge on it. Nil on rows the
+	/// backfill hasn't reached yet; SQLite allows any number of NULLs under the unique index.
 	@Attribute(.unique) var messageKey: String?
 
 	var fromUser: UserEntity?
@@ -70,9 +73,11 @@ final class MessageEntity {
 extension MessageEntity {
 	/// Drops later occurrences of a repeated `messageId`, preserving order.
 	///
-	/// `messageId` is `@Attribute(.unique)`, but uniqueness is enforced per save:
+	/// Uniqueness (`messageKey`) is enforced per save:
 	/// a sent message (main context) and its mesh echo (ingest actor) can coexist
-	/// briefly before the constraint merges them. The message lists key their
+	/// briefly before the constraint merges them. Two senders can also pick the same
+	/// packet id now that `messageId` itself isn't unique (rare: 32-bit random ids).
+	/// The message lists key their
 	/// `ForEach` on `messageId`, and handing SwiftUI duplicate ids corrupts the
 	/// List's collection-view batch update, which crashes. First occurrence wins —
 	/// in the lists' chronological order that is the row the user already sees.

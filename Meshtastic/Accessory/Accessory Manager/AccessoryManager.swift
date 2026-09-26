@@ -961,6 +961,18 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			// Feed the traffic-rate estimator one tick per inbound mesh packet — this is the busy path
 			// whose re-renders make the map flyover stutter, so it's exactly what we want to measure.
 			meshTrafficMonitor.recordInboundPacket()
+			// Feature 021: note which local radio heard this packet. When another of the user's
+			// radios already delivered the same broadcast, its handlers already stored it, so
+			// only this radio's reception and observation are recorded. Packets addressed to a
+			// radio only ever arrive through that radio, and are always handled.
+			var reception = ReceptionOutcome.untracked
+			if let radioNum = session.nodeNum {
+				reception = await MeshPackets.shared.recordReception(packet: packet, radioNum: radioNum)
+			}
+			let handledByAnotherRadio = reception == .heardByAnotherRadio && packet.to == Constants.maximumNodeNum
+			if handledByAnotherRadio {
+				Logger.mesh.debug("🕸️ Packet \(packet.id.toHex(), privacy: .public) from \(packet.from.toHex(), privacy: .public) already handled through another radio")
+			}
 			// All received packets get passed through updateAnyPacketFrom to update lastHeard, rxSnr, etc. (like firmware's NodeDB::updateFrom).
 			if let connectedNodeNum = session.nodeNum {
 				await MeshPackets.shared.updateAnyPacketFrom(packet: packet, activeDeviceNum: connectedNodeNum)
@@ -969,7 +981,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			}
 
 			// Dispatch based on packet contents.
-			if case let .decoded(data) = packet.payloadVariant {
+			if case let .decoded(data) = packet.payloadVariant, !handledByAnotherRadio {
 				// Forward packets to discovery scan engine if active
 				if let engine = discoveryScanEngine, engine.isScanning {
 					engine.handleMeshPacket(packet, portNum: data.portnum)
