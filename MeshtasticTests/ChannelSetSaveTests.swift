@@ -143,7 +143,7 @@ struct ChannelSetSaveTests {
 			connectionState: .connected,
 			num: deviceNum
 		)
-		manager.activeConnection = (device: device, connection: connection)
+		manager.activeConnection = RadioSession(device: device, connection: connection)
 		manager.activeDeviceNum = activeDeviceNum
 		return manager
 	}

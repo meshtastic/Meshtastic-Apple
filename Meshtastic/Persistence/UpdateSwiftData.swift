@@ -344,7 +344,11 @@ extension MeshPackets {
 	/// - Parameter overTheMesh: true when this NodeInfo arrived as an over-the-air packet from a
 	///   remote node — logged on .mesh so it appears in the Packet Stream. false for local updates
 	///   (e.g. the favorite action), which did not cross the mesh and log on .data.
-	func upsertNodeInfoPacket (packet: MeshPacket, favorite: Bool = false, overTheMesh: Bool = true) {
+	/// - Parameter receivedBy: node number of the local radio the packet arrived on, used to tell
+	///   whether it was addressed to us. Nil falls back to the stored preferred radio.
+	func upsertNodeInfoPacket (packet: MeshPacket, favorite: Bool = false, overTheMesh: Bool = true, receivedBy: Int64? = nil) {
+		let localNodeNum = receivedBy ?? Int64(UserDefaults.preferredPeripheralNum)
+		let isForUs = packet.to == Constants.maximumNodeNum || Int64(packet.to) == localNodeNum
 
 		let details = nodeInfoLogDetails(from: packet)
 		if overTheMesh {
@@ -382,7 +386,7 @@ extension MeshPackets {
 				newNode.rssi = packet.rxRssi
 				newNode.viaMqtt = packet.viaMqtt
 				
-				if packet.to == Constants.maximumNodeNum || packet.to == UserDefaults.preferredPeripheralNum {
+				if isForUs {
 					newNode.channel = Int32(truncatingIfNeeded: packet.channel)
 				}
 				if let nodeInfoMessage = try? NodeInfo(serializedBytes: packet.decoded.payload) {
@@ -507,7 +511,7 @@ extension MeshPackets {
 				
 			} else {
 				// Update an existing node
-				if packet.to == Constants.maximumNodeNum || packet.to == UserDefaults.preferredPeripheralNum {
+				if isForUs {
 					fetchedNode[0].channel = Int32(truncatingIfNeeded: packet.channel)
 				}
 				

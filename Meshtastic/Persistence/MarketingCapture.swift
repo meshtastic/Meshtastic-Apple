@@ -155,7 +155,7 @@ enum MarketingCapture {
 							identifier: "marketing-capture", connectionState: .connected, num: baseNodeNum)
 		device.shortName = MarketingSeed.anchors[0].short
 		device.longName = MarketingSeed.anchors[0].long
-		accessoryManager.activeConnection = (device, MarketingStubConnection())
+		accessoryManager.activeConnection = RadioSession(device: device, connection: MarketingStubConnection())
 		accessoryManager.activeDeviceNum = baseNodeNum
 		accessoryManager.isConnected = true
 	}

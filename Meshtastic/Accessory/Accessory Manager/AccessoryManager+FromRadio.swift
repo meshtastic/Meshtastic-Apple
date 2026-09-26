@@ -176,15 +176,17 @@ extension AccessoryManager {
 		return String(String(allowed).prefix(55)) + "_" + digest
 	}
 
-	func handleMyInfo(_ myNodeInfo: MyNodeInfo) async {
+	/// `session` is the connection the MyInfo arrived on; nil means the active one.
+	func handleMyInfo(_ myNodeInfo: MyNodeInfo, session: RadioSession? = nil) async {
 		// TODO: this works for connections like BLE that have a uniqueId, but what about ones like serial?
-		guard let connectedDeviceId = activeConnection?.device.id.uuidString else {
+		guard let session = session ?? activeConnection else {
 			Logger.services.error("⚠️ Failed to decode MyInfo, no connected device ID")
 			return
 		}
+		let connectedDeviceId = session.device.id.uuidString
 		Logger.services.info("handleMyInfo: \(myNodeInfo.debugDescription)")
 
-		updateDevice(key: \.num, value: Int64(myNodeInfo.myNodeNum))
+		updateDevice(deviceId: session.device.id, key: \.num, value: Int64(myNodeInfo.myNodeNum))
 
 		// Defensive cross-device guard: if this connect landed on another radio's database
 		// without going through the switch flow's clear+restore, reset before ingesting
@@ -221,8 +223,8 @@ extension AccessoryManager {
 		let myInfoResolveContext = ModelContext(context.container)
 		if let myInfoId, let myInfo = try? myInfoResolveContext.model(for: myInfoId) as? MyInfoEntity {
 			if let bleName = myInfo.bleName {
-				updateDevice(key: \.name, value: bleName)
-				updateDevice(key: \.longName, value: bleName)
+				updateDevice(deviceId: session.device.id, key: \.name, value: bleName)
+				updateDevice(deviceId: session.device.id, key: \.longName, value: bleName)
 			}
 
 			if myNodeInfo.nodedbCount > 0 {
@@ -366,7 +368,8 @@ extension AccessoryManager {
 		}
 	}
 
-	func handleNodeInfo(_ nodeInfo: NodeInfo) async {
+	func handleNodeInfo(_ nodeInfo: NodeInfo, session: RadioSession? = nil) async {
+		let session = session ?? activeConnection
 		if let continuation = self.firstDatabaseNodeInfoContinuation {
 			self.firstDatabaseNodeInfoContinuation = nil
 			continuation.resume()
@@ -383,12 +386,12 @@ extension AccessoryManager {
 		// throughput cliff behind slow/hung connects on large meshes. Deferred writes are
 		// flushed by the actor's debounced save (at most every 5s) and finally at
 		// configCompleteID (NONCE_ONLY_DB), which also batch-saves the main context.
-		_ = await MeshPackets.shared.nodeInfoPacket(nodeInfo: nodeInfo, channel: 0, deferSave: true, connectedNodeNum: activeConnection?.device.num)
+		_ = await MeshPackets.shared.nodeInfoPacket(nodeInfo: nodeInfo, channel: 0, deferSave: true, connectedNodeNum: session?.nodeNum)
 
 		// Update the connected device's display metadata straight from the protobuf — the
 		// previous code resolved the just-inserted entity on a fresh ModelContext for every
 		// node in the dump only to read fields the proto already carries.
-		if let activeDevice = activeConnection?.device, activeDevice.num == Int64(nodeInfo.num), nodeInfo.hasUser {
+		if let activeDevice = session?.device, activeDevice.num == Int64(nodeInfo.num), nodeInfo.hasUser {
 			let shortName = nodeInfo.user.shortName
 			let longName = nodeInfo.user.longName
 			let hwModel = String(describing: nodeInfo.user.hwModel).uppercased()
@@ -414,8 +417,8 @@ extension AccessoryManager {
 
 	}
 
-	func handleChannel(_ channel: Channel) async {
-		guard let deviceNum = activeConnection?.device.num else {
+	func handleChannel(_ channel: Channel, session: RadioSession? = nil) async {
+		guard let deviceNum = (session ?? activeConnection)?.device.num else {
 			Logger.data.error("Attempt to process channel information when no connected device.")
 			return
 		}
@@ -424,8 +427,8 @@ extension AccessoryManager {
 
 	}
 
-	func handleConfig(_ config: Config) async {
-		guard let device = activeConnection?.device, let deviceNum = device.num, let longName = device.longName else {
+	func handleConfig(_ config: Config, session: RadioSession? = nil) async {
+		guard let device = (session ?? activeConnection)?.device, let deviceNum = device.num, let longName = device.longName else {
 			Logger.data.error("Attempt to process channel information when no connected device.")
 			return
 		}
@@ -445,8 +448,8 @@ extension AccessoryManager {
 		}
 	}
 
-	func handleModuleConfig(_ moduleConfigPacket: ModuleConfig) async {
-		guard let device = activeConnection?.device, let deviceNum = device.num, let longName = device.longName else {
+	func handleModuleConfig(_ moduleConfigPacket: ModuleConfig, session: RadioSession? = nil) async {
+		guard let device = (session ?? activeConnection)?.device, let deviceNum = device.num, let longName = device.longName else {
 			Logger.services.error("Attempt to process channel information when no connected device.")
 			return
 		}
@@ -472,16 +475,16 @@ extension AccessoryManager {
 		Logger.services.info("✅ [handleRegionPresets] decoded \(decoded.count, privacy: .public) region(s) from \(regionPresets.groups.count, privacy: .public) preset group(s)")
 	}
 
-	func handleDeviceMetadata(_ metadata: DeviceMetadata) async {
+	func handleDeviceMetadata(_ metadata: DeviceMetadata, session: RadioSession? = nil) async {
 		// Note: moved firmware version check to be inline with connection process
-		guard let device = activeConnection?.device, let deviceNum = device.num else {
+		guard let session = session ?? activeConnection, let deviceNum = session.device.num else {
 			Logger.services.error("Attempt to process device metadata information when no connected device.")
 			return
 		}
 
 		Logger.transport.debug("[Version] handleDeviceMetadata returned version: \(metadata.firmwareVersion)")
 
-		updateDevice(key: \.firmwareVersion, value: metadata.firmwareVersion)
+		updateDevice(deviceId: session.device.id, key: \.firmwareVersion, value: metadata.firmwareVersion)
 		Logger.datadog.setRadioContext(.firmwareVersion, metadata.firmwareVersion)
 
 		await MeshPackets.shared.deviceMetadataPacket(metadata: metadata, fromNum: deviceNum)
@@ -525,8 +528,8 @@ extension AccessoryManager {
 
 	}
 
-	func handleTextMessageAppPacket(_ packet: MeshPacket) async {
-		guard let device = activeConnection?.device, let deviceNum = device.num else {
+	func handleTextMessageAppPacket(_ packet: MeshPacket, session: RadioSession? = nil) async {
+		guard let device = (session ?? activeConnection)?.device, let deviceNum = device.num else {
 			Logger.services.error("Attempt to handle text message when no connected device.")
 			return
 		}
@@ -644,8 +647,8 @@ extension AccessoryManager {
 		}
 	}
 
-	func handleTraceRouteApp(_ packet: MeshPacket) {
-		guard let device = activeConnection?.device, let deviceNum = device.num else {
+	func handleTraceRouteApp(_ packet: MeshPacket, session: RadioSession? = nil) {
+		guard let device = (session ?? activeConnection)?.device, let deviceNum = device.num else {
 			Logger.services.error("Attempt to handle trace route when no connected device.")
 			return
 		}
