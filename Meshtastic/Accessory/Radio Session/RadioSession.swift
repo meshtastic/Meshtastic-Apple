@@ -57,6 +57,8 @@ final class RadioSession: Identifiable {
 
 	/// How many nodes the radio's MyInfo said its node DB holds (the Connect tab's progress).
 	var expectedNodeDBSize: Int?
+	/// Nodes received since this connection asked for its node DB (connect Step 5).
+	var databaseNodeCount = 0
 	/// The firmware edition from its MyInfo (event firmware and the like).
 	var firmwareEdition: FirmwareEditions = .vanilla
 	/// The region → legal preset map it advertised in the config handshake (2.8+).

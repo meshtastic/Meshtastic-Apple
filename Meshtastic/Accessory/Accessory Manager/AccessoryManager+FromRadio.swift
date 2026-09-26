@@ -363,8 +363,9 @@ extension AccessoryManager {
 			}
 		}
 
-		// Bump the nodeCount
-		if case let .retrievingDatabase(nodeCount: nodeCount) = self.state {
+		// Bump the nodeCount: the radio's own, and the focused radio's shown progress.
+		session?.databaseNodeCount += 1
+		if session === activeConnection, case let .retrievingDatabase(nodeCount: nodeCount) = self.state {
 			updateState(.retrievingDatabase(nodeCount: nodeCount+1))
 		}
 

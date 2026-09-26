@@ -25,6 +25,11 @@ final class ConnectAttempt {
 	/// radios). Every connect is the focused radio's until other radios run these steps (T071).
 	let isFocused: Bool
 	var session: RadioSession?
+	/// This radio's connection status while it connects. The manager's `state` shows the
+	/// focused radio's (T071).
+	var status: AccessoryManagerState = .connecting
+	/// Runs the steps. A disconnect, a heartbeat timeout or a link error cancels it.
+	var stepper: SequentialSteps?
 
 	init(device: Device, isFocused: Bool = true) {
 		self.device = device
@@ -77,17 +82,19 @@ extension AccessoryManager {
 			throw AccessoryError.connectionFailed("Already connected to a device")
 		}
 		
-		// Clear any errors and stale state from last connection
-		lastConnectionError = nil
-		firmwareUpdateRequired = false
-		self.activeDeviceNum = nil
-		packetsSent = 0
-		packetsReceived = 0
-		packetsAtLastIngestRecycle = 0
-		expectedNodeDBSize = nil
+		let attempt = ConnectAttempt(device: device)
+		if attempt.isFocused {
+			// Clear any errors and stale state from last connection
+			lastConnectionError = nil
+			firmwareUpdateRequired = false
+			self.activeDeviceNum = nil
+			packetsSent = 0
+			packetsReceived = 0
+			packetsAtLastIngestRecycle = 0
 
-		self.allowDisconnect = true
-		self.userRequestedConnectionCancellation = false
+			self.allowDisconnect = true
+			self.userRequestedConnectionCancellation = false
+		}
 
 		// On a first-ever BLE connection, iOS presents the pairing PIN sheet during
 		// characteristic subscription (Step 1). The user needs time to read and type a
@@ -112,23 +119,27 @@ extension AccessoryManager {
 		let connectStepTimeout: Duration = isFirstTimeBLEBond ? .seconds(90) : .seconds(5)
 
 		// Prepare to connect
-		let attempt = ConnectAttempt(device: device)
-		self.connectionStepper = SequentialSteps(maxRetries: retries ?? maxRetries, retryDelay: retryDelay) {
+		attempt.stepper = SequentialSteps(maxRetries: retries ?? maxRetries, retryDelay: retryDelay) {
 			
 			// Step 0
 			Step { @MainActor retryAttempt in
 				Logger.transport.info("🔗👟 [Connect] Starting connection to \(device.id, privacy: .public)")
 				if retryAttempt > 0 {
-					try await self.closeConnection() // clean-up before retries.
-					self.updateState(.retrying(attempt: retryAttempt + 1, maxAttempts: retries ?? maxRetries))
-					self.allowDisconnect = true
+					try await self.cleanUpBeforeRetry(attempt) // clean-up before retries.
+					self.setStatus(.retrying(attempt: retryAttempt + 1, maxAttempts: retries ?? maxRetries), for: attempt)
+					if attempt.isFocused {
+						self.allowDisconnect = true
+					}
 				} else {
-					self.updateState(.connecting)
+					self.setStatus(.connecting, for: attempt)
 				}
 				self.updateDevice(deviceId: device.id, key: \.connectionState, value: .connecting)
 				// Lockdown: reset per-connection state. Firmware requires re-auth on every
-				// new BLE connection even if storage is already unlocked.
-				self.lockdownCoordinator?.onConnect(peripheralID: device.id)
+				// new BLE connection even if storage is already unlocked. The coordinator is the
+				// focused radio's until each radio gets its own prompt (T073).
+				if attempt.isFocused {
+					self.lockdownCoordinator?.onConnect(peripheralID: device.id)
+				}
 			}
 			
 			// Step 1: Setup the connection
@@ -142,7 +153,7 @@ extension AccessoryManager {
 						connection = try await transport.connect(to: device)
 					}
 					let eventStream = try await connection.connect()
-					self.updateState(.communicating)
+					self.setStatus(.communicating, for: attempt)
 					// Every event is tagged with the session it came from, so a late event from an
 					// earlier attempt's connection is never handled against this one.
 					let session = RadioSession(device: device, connection: connection)
@@ -169,7 +180,7 @@ extension AccessoryManager {
 					self.shouldAutomaticallyConnectToPreferredPeripheralAfterError = false
 					self.autoReconnectSuspendedForSession = true
 					self.lastConnectionError = AccessoryError.bondLost
-					await self.connectionStepper?.cancelCurrentlyExecutingStep(withError: AccessoryError.bondLost, cancelFullProcess: true)
+					await attempt.stepper?.cancelCurrentlyExecutingStep(withError: AccessoryError.bondLost, cancelFullProcess: true)
 				}
 			}
 			
@@ -249,13 +260,18 @@ extension AccessoryManager {
 				// streaming: the radio would restart the node DB from the top and the two dumps
 				// would interleave (slow connects, duplicate processing). If nodes are already
 				// arriving, treat the request as delivered and let Step 5a's gate do the waiting.
-				if case .retrievingDatabase(let nodeCount) = self.state, nodeCount > 0 {
-					Logger.transport.info("🔗👟 [Connect] Step 5: node dump already streaming (\(nodeCount) nodes) — not re-requesting")
+				let session = try attempt.requireSession()
+				if case .retrievingDatabase = attempt.status, session.databaseNodeCount > 0 {
+					Logger.transport.info("🔗👟 [Connect] Step 5: node dump already streaming (\(session.databaseNodeCount) nodes) — not re-requesting")
 					return
 				}
 				Logger.transport.info("🔗👟 [Connect] Step 5: Send wantConfig (database)")
-				self.updateState(.retrievingDatabase(nodeCount: 0))
-				self.allowDisconnect = true
+				// Counted from here: the config handshake before it also carries the radio's own node.
+				session.databaseNodeCount = 0
+				self.setStatus(.retrievingDatabase(nodeCount: 0), for: attempt)
+				if attempt.isFocused {
+					self.allowDisconnect = true
+				}
 
 				if attempt.isFocused {
 					Logger.transport.info("🔗 Saving preferredPeripheralId: \(device.id.uuidString)")
@@ -320,11 +336,13 @@ extension AccessoryManager {
 				try? await self.sendTime(on: attempt.requireSession())
 				
 				// Allow disconnect here too
-				self.allowDisconnect = true
+				if attempt.isFocused {
+					self.allowDisconnect = true
+				}
 
 				// We have an active connection
 				self.updateDevice(deviceId: device.id, key: \.connectionState, value: .connected)
-				self.updateState(.subscribed)
+				self.setStatus(.subscribed, for: attempt)
 
 				// Release accumulated ModelContext memory from DB retrieval
 				await MeshPackets.shared.flushDebouncedSaves()
@@ -385,9 +403,13 @@ extension AccessoryManager {
 			}
 		}
 		
+		if attempt.isFocused {
+			self.connectionStepper = attempt.stepper
+		}
+
 		// Run the connection process
 		do {
-			try await connectionStepper?.run()
+			try await attempt.stepper?.run()
 			Logger.transport.debug("🔗 [Connect] ConnectionStepper completed.")
 			// The scan pause covers the whole handshake — pairing happens during the
 			// notify subscription, after the link comes up — so resume only now that
@@ -403,17 +425,49 @@ extension AccessoryManager {
 			}
 		} catch AccessoryError.tooManyRetries {
 			self.lastConnectionError = AccessoryError.tooManyRetries
-			try await self.closeConnection()
-			updateState(.discovering)
+			try await self.cleanUpAfterFailedConnect(attempt)
 		} catch {
 			Logger.transport.error("🔗 [Connect] Error returned by connectionStepper: \(error, privacy: .public)")
-			try await self.closeConnection()
-			updateState(.discovering)
+			try await self.cleanUpAfterFailedConnect(attempt)
 			self.lastConnectionError = error
 		}
 		
 		// All done, one way or another, clean up
-		self.connectionStepper = nil
+		attempt.stepper = nil
+		if attempt.isFocused {
+			self.connectionStepper = nil
+		}
+	}
+
+	/// Sets `attempt`'s status, and the manager's too when it's the focused radio's (T071).
+	func setStatus(_ status: AccessoryManagerState, for attempt: ConnectAttempt) {
+		attempt.status = status
+		if attempt.isFocused {
+			updateState(status)
+		}
+	}
+
+	/// Step 0 before a retry: the previous try's connection goes. For the focused radio that's
+	/// the whole `closeConnection()`, as before.
+	private func cleanUpBeforeRetry(_ attempt: ConnectAttempt) async throws {
+		if attempt.isFocused {
+			try await closeConnection()
+		} else if let session = attempt.session {
+			attempt.session = nil
+			await tearDown(session)
+			try? await session.connection.disconnect(withError: nil, shouldReconnect: false)
+		}
+	}
+
+	/// After the steps gave up.
+	private func cleanUpAfterFailedConnect(_ attempt: ConnectAttempt) async throws {
+		if attempt.isFocused {
+			try await closeConnection()
+			updateState(.discovering)
+		} else {
+			try await cleanUpBeforeRetry(attempt)
+			updateDevice(deviceId: attempt.device.id, key: \.connectionState, value: .disconnected)
+		}
 	}
 	/// The firmware version this node last reported, from its own stored metadata.
 	///
