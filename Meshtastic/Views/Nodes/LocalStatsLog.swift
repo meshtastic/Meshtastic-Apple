@@ -14,7 +14,12 @@ import SwiftData
 struct LocalStatsLog: View {
 
 	@EnvironmentObject var accessoryManager: AccessoryManager
-	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
+	@Environment(\.horizontalSizeClass) private var horizontalSizeClass
+
+	/// Table on iPhone shows only its first column, even in a regular size class.
+	private var showsWideTable: Bool {
+		horizontalSizeClass == .regular && UIDevice.current.userInterfaceIdiom != .phone
+	}
 
 	@State private var isPresentingClearLogConfirm: Bool = false
 	@State var isExporting = false
@@ -48,7 +53,7 @@ struct LocalStatsLog: View {
 	}
 
 	private var chartXAxisLabelCount: Int {
-		idiom == .phone ? 2 : 6
+		horizontalSizeClass == .regular ? 6 : 2
 	}
 
 	private var chartXAxisFormat: Date.FormatStyle {
@@ -189,7 +194,7 @@ struct LocalStatsLog: View {
 				.chartXVisibleDomain(length: chartVisibleDuration)
 				.chartScrollPosition(x: $chartScrollPosition)
 				.chartLegend(.hidden)
-				.frame(height: idiom == .phone ? 240 : 320)
+				.frame(height: horizontalSizeClass == .regular ? 320 : 240)
 				.padding(.bottom, 8)
 			}
 		} label: {
@@ -225,10 +230,10 @@ struct LocalStatsLog: View {
 
 	@ViewBuilder
 	private var tableView: some View {
-		if idiom == .phone {
-			phoneTableView
-		} else {
+		if showsWideTable {
 			macTableView
+		} else {
+			phoneTableView
 		}
 	}
 
@@ -327,7 +332,7 @@ struct LocalStatsLog: View {
 				}
 				.buttonStyle(.bordered)
 				.buttonBorderShape(.capsule)
-				.controlSize(idiom == .phone ? .regular : .large)
+				.controlSize(horizontalSizeClass == .regular ? .large : .regular)
 				.confirmationDialog(
 					"Are you sure?",
 					isPresented: $isPresentingClearLogConfirm,
@@ -354,7 +359,7 @@ struct LocalStatsLog: View {
 			)
 			.buttonStyle(.bordered)
 			.buttonBorderShape(.capsule)
-			.controlSize(idiom == .phone ? .regular : .large)
+			.controlSize(horizontalSizeClass == .regular ? .large : .regular)
 
 			if !localStats.isEmpty {
 				Button {
@@ -370,7 +375,7 @@ struct LocalStatsLog: View {
 				}
 				.buttonStyle(.bordered)
 				.buttonBorderShape(.capsule)
-				.controlSize(idiom == .phone ? .regular : .large)
+				.controlSize(horizontalSizeClass == .regular ? .large : .regular)
 			}
 		}
 		.frame(maxWidth: .infinity)

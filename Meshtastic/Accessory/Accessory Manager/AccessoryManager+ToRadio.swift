@@ -514,6 +514,10 @@ extension AccessoryManager {
 						// the List's collection-view diff (the 2.7.19 SIGABRT batch-update crash).
 						try context.save()
 						Logger.data.info("💾 Saved a new sent message from \(self.activeDeviceNum?.toHex() ?? "0", privacy: .public) to \(toUserNum.toHex(), privacy: .public)")
+						// Each open conversation keeps its own fetched snapshot. The
+						// window that sent already reloads; the others only hear
+						// about a save through this notification.
+						NotificationCenter.default.post(name: .meshMessagesDidChange, object: nil)
 						Task {
 							let logString = String.localizedStringWithFormat("Sent message %@ from %@ to %@".localized, String(newMessage.messageId), fromUserNum.toHex(), toUserNum.toHex())
 							try await send(toRadio, debugDescription: logString)

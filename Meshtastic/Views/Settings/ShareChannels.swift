@@ -34,6 +34,7 @@ struct QrCodeImage {
 struct ShareChannels: View {
 
 	@Environment(\.modelContext) private var context
+	@Environment(\.horizontalSizeClass) private var horizontalSizeClass
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var dismiss
 	@State var channelSet: ChannelSet = ChannelSet()
@@ -84,6 +85,7 @@ struct ShareChannels: View {
 
 		GeometryReader { bounds in
 			let smallest = min(bounds.size.width, bounds.size.height)
+			let qrSide = smallest * (horizontalSizeClass == .regular ? 0.6 : 0.75)
 			ScrollView {
 				if node != nil && node?.myInfo != nil {
 					if shareableChannels.isEmpty {
@@ -156,10 +158,10 @@ struct ShareChannels: View {
 									.resizable()
 									.scaledToFit()
 									.frame(
-										minWidth: smallest * (UIDevice.current.userInterfaceIdiom == .phone ? 0.75 : 0.6),
-										maxWidth: smallest * (UIDevice.current.userInterfaceIdiom == .phone ? 0.75 : 0.6),
-										minHeight: smallest * (UIDevice.current.userInterfaceIdiom == .phone ? 0.75 : 0.6),
-										maxHeight: smallest * (UIDevice.current.userInterfaceIdiom == .phone ? 0.75 : 0.6),
+										minWidth: qrSide,
+										maxWidth: qrSide,
+										minHeight: qrSide,
+										maxHeight: qrSide,
 										alignment: .top
 									)
 							}

@@ -71,6 +71,18 @@ struct NodeFilterParametersTests {
 
 	// MARK: - Persistence Tests
 
+	@Test("A live instance does not follow another instance's edits")
+	func liveInstancesDoNotSync() {
+		let filters1 = NodeFilterParameters(store: defaults)
+		let filters2 = NodeFilterParameters(store: defaults)
+
+		filters1.isOnline = true
+		#expect(filters2.isOnline == false)
+
+		filters2.hopsAway = 2
+		#expect(filters1.hopsAway == -1)
+	}
+
 	@Test("Search text is not persisted across instances")
 	func searchTextIsNotPersisted() {
 		let filters1 = NodeFilterParameters(store: defaults)

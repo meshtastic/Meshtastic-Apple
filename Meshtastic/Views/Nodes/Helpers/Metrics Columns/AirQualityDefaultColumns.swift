@@ -20,13 +20,15 @@ private func pmColumn(id: String, keyPath: KeyPath<TelemetryEntity, UInt32?>, na
 		minWidth: 30, maxWidth: 60,
 		visible: visible,
 		tableBody: { _, value in
-			value.map {
-				if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
-					Text(verbatim: "\($0.formatted(.number.grouping(.never))) µg/m³")
-				} else {
-					Text($0.formatted(.number.grouping(.never)))
+			if let value {
+				MetricsColumnWidth {
+					Text(verbatim: "\(value.formatted(.number.grouping(.never))) µg/m³")
+				} compact: {
+					Text(value.formatted(.number.grouping(.never)))
 				}
-			} ?? Text(verbatim: Constants.nilValueIndicator)
+			} else {
+				Text(verbatim: Constants.nilValueIndicator)
+			}
 		})
 }
 
