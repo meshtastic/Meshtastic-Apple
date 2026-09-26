@@ -43,13 +43,16 @@ Read this first if you are picking the work up. Update it in the same commit as 
   focus to another connected radio in `721bc873`; focus handover after a drop and the
   remembered-radio fallback at launch in `81b204a0`; connected-row snapshot (T092) in
   `42663087`; old per-radio backups merged into the shared store at launch (T030) in
-  `e29241dc` and `6a050ce5`. See tasks.md for the partial ones.
+  `e29241dc` and `6a050ce5`. The pre-DM contact refresh and auto-favorite through the sending
+  radio in `da10664f`; the Heard By filter (T087) in `ec1437de`; lock-down and the firmware check
+  on additional radios (T065) in `a32319ad`; an MQTT client proxy per additional radio (T100) in
+  `8849b76f`. See tasks.md for the partial ones.
 - Mesh Multi (`~/Applications/Mesh Multi.app`, side-by-side, own container) is rebuilt from the
   latest commit on this branch and ready for the first two-radio test below. Not yet run by anyone.
-- Next up: the owner's two-radio test; then BLE
-  restoration (T062), per-session firmware gate/lockdown (T065), MQTT per session (T100), and
-  moving admin sends onto sessions (T060, which T089's relaying radio needs).
-- Baseline and latest: the full suite passes in the iOS Simulator (3,354 Swift Testing tests plus
+- Next up: the owner's two-radio test; then BLE restoration (T062), remote admin through a
+  chosen radio (T060/T089, which also reads T045's per-radio passkeys), the TAK/CarPlay/Watch
+  radio pickers (T102–T105), and removing the switch-era helpers (T066) once the test passes.
+- Baseline and latest: the full suite passes in the iOS Simulator (3,368 Swift Testing tests plus
   29 XCTests, about 35–50 seconds of test time).
 
 ## First two-radio test (Mesh Multi, Mac)
@@ -78,7 +81,11 @@ Read this first if you are picking the work up. Update it in the same commit as 
    on its own ("remembered"). After ⋯ → Disconnect on B, a relaunch leaves B alone.
 10. Favorite a node: the log shows "Set node … as favorite on" for A and for B. After the next
    node DB from either radio, the star stays.
-10. Worth watching: memory and CPU with two node dumps; any "Dropping an event from a
+11. Nodes tab › filter: "Heard By" lists A and B. Pick B: only nodes B has heard stay (the map
+   and the contact list follow, since the filter is shared). Set it back to Any Radio.
+12. If B has MQTT "Proxy to Client" on: log lines `📲 [MQTT] [B] connected; subscribing …` appear
+   after B connects, separate from the focused radio's MQTT lines.
+13. Worth watching: memory and CPU with two node dumps; any "Dropping an event from a
    disconnected additional radio" spam; whether BLE scanning while connected upsets pairing.
 - Small pull requests, ready for the owner to push (each is one commit on `origin/main`):
   - `fix/restore-dropped-backup-fields` — the restore fix and its tests.
@@ -241,6 +248,19 @@ describes it well enough to rebuild.
   copy of `UserMessageList.swift` and silently undid a script's refactor; `git diff` caught it.
 - "Mine" in the views: channel rows use `ownRadioNums` (every `MyInfoEntity`); DM rows use the
   selected radio of the thread. `UserDefaults.preferredPeripheralNum` is only the fallback.
+- Commit messages: write each to a new, unique file (`/tmp/mr-<topic>.txt`). `create_file`
+  refuses to overwrite, and an old `/tmp/msgN.txt` from an earlier session once went into a
+  commit unnoticed (fixed with `--amend`). Check `git log -1` after every commit.
+- Lock-down on additional radios (`AccessoryManager+AdditionalRadioGates.swift`) is untested on
+  real lock-down firmware. The unlock path re-sends the waiting want-config with the same nonce
+  whether or not the firmware would have carried on by itself; a duplicate config stream is
+  harmless. A radio turned away (`AdditionalRadioNeedsFocusError`) stays remembered, so it's
+  tried once per launch.
+- MQTT per radio: two radios with proxy-to-client on the same broker both subscribe to the same
+  channel topics, so the same broker traffic reaches both radios. The reception de-duplication
+  stores it once, but it costs each radio's airtime, as with two phones.
+- `AutoFavoriteRule` for a DM through radio B checks B's role; the pin then goes to every connected
+  radio that isn't a client base (`setFavorite(_:node:radios:)`).
 
 ## Device test checklist (fill in during Phase 10)
 
