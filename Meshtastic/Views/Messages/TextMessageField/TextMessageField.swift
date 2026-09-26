@@ -60,6 +60,7 @@ struct TextMessageField: View {
 							}
 						}
 						TextField("Message", text: $typingMessage, axis: .vertical)
+							.autocorrectionDisabled(false)
 							.frame(minHeight: 36)
 							.padding(.horizontal, 16)
 							.padding(.vertical, 12)
@@ -226,6 +227,8 @@ private struct FormattingComposeArea: View {
 					}
 				}
 				TextEditor(text: $typingMessage, selection: $textSelection)
+					// The conversation disables autocorrect for its search field, and this box inherits that.
+					.autocorrectionDisabled(false)
 					.frame(minHeight: 36, maxHeight: 200)
 					.padding(.horizontal, 16)
 					.padding(.vertical, 4)

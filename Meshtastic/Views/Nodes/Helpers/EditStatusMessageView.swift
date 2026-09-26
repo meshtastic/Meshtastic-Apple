@@ -42,6 +42,8 @@ private struct StatusMessageAlertModifier: ViewModifier {
 				presenting: node
 			) { presentedNode in
 				TextField("Node Status", text: $status)
+					// The node list disables autocorrect for its search field, and this alert inherits that.
+					.autocorrectionDisabled(false)
 					.onChange(of: status) { _, newValue in
 						let clamped = Self.clampedToStatusByteLimit(newValue)
 						if clamped != newValue { status = clamped }
