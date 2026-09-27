@@ -776,51 +776,45 @@ extension NodeBackupManager {
 	/// never changed, and stay until the user deletes them.
 	/// - Returns: The number of backups merged.
 	///
-	/// A backup gets `maxMergeAttempts` launches (T159). Each attempt is counted before it starts,
-	/// so a merge that fails every time, or that the system kills, stops being retried at every
-	/// launch (each attempt holds the handshake gate, so no radio connects meanwhile). The backup
-	/// stays, for a restore from Settings › Backups.
+	/// A backup gets `maxMergeAttempts` launches (T159). Its attempt is counted and saved right
+	/// before it merges, one backup at a time (T174), so a merge that fails every time, or that
+	/// the system kills, stops being retried at every launch, and doesn't use up the attempts of
+	/// the backups after it (each attempt holds the handshake gate, so no radio connects
+	/// meanwhile). The backup stays, for a restore from Settings › Backups.
 	@discardableResult
 	func mergePendingBackups(using packets: MeshPackets, ownRadio: Int64) async -> Int {
-		var pending: [MeshPackets.PendingBackupMerge] = []
-		var checksums: [String: String] = [:]
+		var merged = 0
 		for entry in unmergedBackups {
 			let attempts = entry.mergeAttempts ?? 0
 			guard attempts < Self.maxMergeAttempts else {
 				Logger.backup.warning("💾 [Merge] Not merging the backup of \(entry.nodeNum.toHex(), privacy: .public): \(attempts) attempts didn't finish; it stays for a restore")
 				continue
 			}
-			backupIndex.entries[entry.key]?.mergeAttempts = attempts + 1
 			let storeURL = backupBaseURL
 				.appendingPathComponent(entry.backupPath, isDirectory: true)
 				.appendingPathComponent(Self.storeFileName)
 			guard fileManager.fileExists(atPath: storeURL.path) else { continue }
+			backupIndex.entries[entry.key]?.mergeAttempts = attempts + 1
+			// On disk before the merge, which is what can crash.
+			saveIndex()
 			guard let checksum = try? await computeChecksum(for: storeURL), checksum == entry.checksum else {
 				Logger.backup.error("💾 [Merge] Skipping the backup of \(entry.nodeNum.toHex(), privacy: .public): its checksum doesn't match")
 				continue
 			}
-			pending.append(.init(key: entry.key, radioNum: entry.nodeNum, storeURL: storeURL))
-			checksums[entry.key] = checksum
-		}
-		// The counts are on disk before the merge, which is what can crash.
-		saveIndex()
-		guard !pending.isEmpty else { return 0 }
-
-		let outcomes = await packets.mergeBackups(pending, ownRadio: ownRadio)
-		var merged = 0
-		for (key, outcome) in outcomes {
-			switch outcome {
+			let pending = MeshPackets.PendingBackupMerge(key: entry.key, radioNum: entry.nodeNum, storeURL: storeURL)
+			let outcomes = await packets.mergeBackups([pending], ownRadio: ownRadio)
+			switch outcomes[entry.key] {
 			case .merged(let rows):
 				merged += 1
-				Logger.backup.info("💾 [Merge] Merged backup \(key, privacy: .public): \(rows) rows added")
+				Logger.backup.info("💾 [Merge] Merged backup \(entry.key, privacy: .public): \(rows) rows added")
 			case .alreadyKnown:
-				Logger.backup.info("💾 [Merge] Backup \(key, privacy: .public) is of a radio the store already holds; not merged")
-			case .failed:
+				Logger.backup.info("💾 [Merge] Backup \(entry.key, privacy: .public) is of a radio the store already holds; not merged")
+			case .failed, .none:
 				continue // Left unmerged, so the next launch tries again.
 			}
-			backupIndex.entries[key]?.mergedChecksum = checksums[key]
+			backupIndex.entries[entry.key]?.mergedChecksum = checksum
+			saveIndex()
 		}
-		saveIndex()
 		return merged
 	}
 

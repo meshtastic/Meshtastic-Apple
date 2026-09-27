@@ -175,7 +175,7 @@ All re-checked in the files and holding (2026-09-27). One commit each, full suit
 - [X] T171 N2 a handover keeps the dropped radio when a failed reconnect closes again. — `handoverPrevious` carries the pending handover's radio into a reschedule that has none. Verified: `MultiRadioConnectFlowTests.handoverKeepsDroppedRadio` (fails without the fix); the handover tests now wait for the reconnect itself, since focusing clears `focusHandoverTask` mid-handover.
 - [X] T172 N3 the recycle keeps the per-packet node and reception writes. — `recreateShared(invalidatingPrevious: false)` queues a save on the old instance right away and another after 2 s, which also bounds the two-context overlap. Verified: `MultiRadioConnectLifecycleTests.recycledActorSavesQueuedWrites` (fails without the fix).
 - [X] T173 V2-3 Purge Stale Nodes deletes the purged nodes' observations. — `clearStaleNodes` calls `deleteObservations(ofNodes:)`. Verified: `MultiRadioIngestTests.purgeDeletesObservations`.
-- [ ] T174 V2-4 a merge attempt is counted per backup, just before it merges.
+- [X] T174 V2-4 a merge attempt is counted per backup, just before it merges. — `mergePendingBackups` merges one backup at a time, counting and saving its attempt right before. Verified: `BackupMergeTests.attemptCountedPerBackup` and the existing merge tests; the case it's for (the app killed mid-merge) can't be unit tested.
 - [ ] T175 V2-2 CarPlay list rows and Siri read-back use the radio.
 - [ ] T176 V2-6 a reset doesn't copy an old single observation onto the node.
 - [ ] T177 V2-7 a merged backup's radio shares channels by stored key.

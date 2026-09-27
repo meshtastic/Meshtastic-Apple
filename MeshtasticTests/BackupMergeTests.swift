@@ -343,6 +343,21 @@ extension BackupMergeTests {
 		#expect(try ModelContext(liveContainer).fetchCount(FetchDescriptor<MessageEntity>()) == 1)
 	}
 
+	@Test("A merged backup is marked, with its one attempt counted")
+	@MainActor
+	func attemptCountedPerBackup() async throws {
+		let folder = try makeBackupFolder(radioNum: radioB) { try populateBackup($0) }
+		defer { try? FileManager.default.removeItem(at: folder.base) }
+		let liveContainer = try makeLiveContainer()
+		let manager = NodeBackupManager(baseURL: folder.base)
+
+		#expect(await manager.mergePendingBackups(using: MeshPackets(modelContainer: liveContainer), ownRadio: radioA) == 1)
+
+		let entry = try #require(NodeBackupManager(baseURL: folder.base).listBackups().first)
+		#expect(entry.mergeAttempts == 1)
+		#expect(entry.isMerged)
+	}
+
 	@Test("A backup that never merges is tried on a few launches, then left for a restore")
 	@MainActor
 	func managerGivesUpAfterAttempts() async throws {
