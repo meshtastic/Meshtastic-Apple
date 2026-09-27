@@ -235,6 +235,29 @@ struct MultiRadioBackfillTests {
 		#expect(rows.map(\.radioNum) == [secondRadio])
 	}
 
+	@Test("A store with old rows is backfilled in one go, attributed to the radio given")
+	func drainsAtOnce() async throws {
+		let context = try makeContext()
+		_ = makeOwnRadio(in: context)
+		let other = makeUser(remote, in: context)
+		for id in 1...30 {
+			let message = MessageEntity()
+			message.messageId = Int64(id)
+			message.fromUser = other
+			context.insert(message)
+		}
+		try context.save()
+		let packets = MeshPackets(modelContainer: context.container)
+		#expect(await packets.hasPendingBackfill())
+
+		let filled = try await packets.drainMultiRadioBackfill(ownRadio: ownRadio)
+
+		#expect(filled >= 30)
+		#expect(await !packets.hasPendingBackfill())
+		let rows = try ModelContext(context.container).fetch(FetchDescriptor<MessageEntity>())
+		#expect(rows.allSatisfy { $0.localNodeNum == ownRadio })
+	}
+
 	@Test("The backfill works in chunks and stops once everything is filled")
 	func resumesInChunks() throws {
 		let context = try makeContext()

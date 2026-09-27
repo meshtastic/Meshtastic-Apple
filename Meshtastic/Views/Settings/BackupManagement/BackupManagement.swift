@@ -207,6 +207,15 @@ struct BackupManagement: View {
 
 		switch restoreResult {
 		case .success:
+			// The restored rows are that radio's; attribute them now, before a background pass
+			// could credit them to whichever radio is preferred then (T162).
+			await accessoryManager.handshakeGate.acquire()
+			do {
+				try await MeshPackets.shared.drainMultiRadioBackfill(ownRadio: entry.nodeNum)
+			} catch {
+				Logger.data.error("💥 [MultiRadio] Backfill after restore failed: \(error.localizedDescription, privacy: .public)")
+			}
+			accessoryManager.handshakeGate.release()
 			refreshBackups()
 		case .skipped(let reason):
 			restoreErrorMessage = reason

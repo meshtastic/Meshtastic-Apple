@@ -157,12 +157,27 @@ struct MeshtasticAppleApp: App {
 			// Feature 021 (D-09): bring each radio's old backup into the shared store, once. It holds
 			// the handshake gate, so a radio connecting meanwhile waits rather than timing out behind
 			// the ingest actor, and the actor isn't recycled mid-merge.
-			if NodeBackupManager.shared.unmergedBackups.contains(where: { ($0.mergeAttempts ?? 0) < NodeBackupManager.maxMergeAttempts }) {
-				let manager = accessoryManager
-				Task { @MainActor in
-					await manager.handshakeGate.acquire()
-					defer { manager.handshakeGate.release() }
-					await NodeBackupManager.shared.mergePendingBackups(using: MeshPackets.shared, ownRadio: PreferredRadio.nodeNum)
+			// The merge drains the store's own backfill first. Without backups to merge, a store
+			// that still has rows waiting for it (the first launch after the upgrade) is backfilled
+			// now too, attributed to the radio it belongs to, rather than only in background passes
+			// a Mac in front may never get (T162).
+			let manager = accessoryManager
+			let mergesBackups = NodeBackupManager.shared.unmergedBackups.contains(where: { ($0.mergeAttempts ?? 0) < NodeBackupManager.maxMergeAttempts })
+			Task { @MainActor in
+				let packets = MeshPackets.shared
+				let backfills = await packets.hasPendingBackfill()
+				guard mergesBackups || backfills else { return }
+				await manager.handshakeGate.acquire()
+				defer { manager.handshakeGate.release() }
+				if mergesBackups {
+					await NodeBackupManager.shared.mergePendingBackups(using: packets, ownRadio: PreferredRadio.nodeNum)
+				} else {
+					do {
+						let filled = try await packets.drainMultiRadioBackfill(ownRadio: PreferredRadio.nodeNum)
+						Logger.data.info("🧭 [MultiRadio] Backfilled \(filled) rows at launch")
+					} catch {
+						Logger.data.error("💥 [MultiRadio] Launch backfill failed: \(error.localizedDescription, privacy: .public)")
+					}
 				}
 			}
 			if !UserDefaults.firstLaunch {

@@ -28,6 +28,37 @@ extension MeshPackets {
 		case failed(String)
 	}
 
+	/// Runs the backfill to the end in one go, attributing old rows to `ownRadio` (T162): at launch,
+	/// before a merge, and after a restore, rather than only in background passes, which a Mac
+	/// that stays in front may never get. Rolls back and rethrows on failure.
+	@discardableResult
+	func drainMultiRadioBackfill(ownRadio: Int64) throws -> Int {
+		var total = 0
+		var chunks = 0
+		do {
+			while !invalidated {
+				let filled = try MultiRadioBackfill.runChunk(in: modelContext, ownRadio: ownRadio, chunkSize: 2000).total
+				guard filled > 0 else { break }
+				total += filled
+				chunks += 1
+				guard chunks < 10_000 else { break }
+			}
+		} catch {
+			modelContext.rollback()
+			throw error
+		}
+		return total
+	}
+
+	/// Whether messages still wait for the backfill (a store from before feature 021, or a
+	/// restored backup). Channel keys aren't counted: a radio without LoRa settings keeps its
+	/// channels keyless, and they're set when its settings arrive (T144).
+	func hasPendingBackfill() -> Bool {
+		var messages = FetchDescriptor<MessageEntity>(predicate: #Predicate { $0.fromNum == nil })
+		messages.fetchLimit = 1
+		return ((try? modelContext.fetchCount(messages)) ?? 0) > 0
+	}
+
 	/// Merges each backup into the shared store, on the ingest actor so no packet write can race it.
 	///
 	/// The store's own backfill is drained first: the merge matches messages on `messageKey`, and a
@@ -39,13 +70,8 @@ extension MeshPackets {
 		var outcomes: [String: BackupMergeOutcome] = [:]
 		guard !invalidated else { return outcomes }
 		do {
-			var chunks = 0
-			while try MultiRadioBackfill.runChunk(in: modelContext, ownRadio: ownRadio, chunkSize: 2000).total > 0 {
-				chunks += 1
-				guard chunks < 10_000 else { break }
-			}
+			try drainMultiRadioBackfill(ownRadio: ownRadio)
 		} catch {
-			modelContext.rollback()
 			Logger.backup.error("💥 [Merge] The store's backfill failed, so no backup was merged: \(error.localizedDescription, privacy: .public)")
 			return outcomes
 		}

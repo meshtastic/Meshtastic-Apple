@@ -117,7 +117,7 @@ Every connected radio writes to the same store. Rows say which radio they came t
 - `NodeInfoEntity` keeps its signal, hops and last-heard fields. With one radio observing a node they are written directly, as before. With several, `NodeObservationEntity.applyAggregate` writes the best path (RF over MQTT, fewest hops, most recent) among the observations heard within an hour of the newest, and the latest last-heard. `channel` is a slot number on one radio, so it only comes from the focused radio's observation; requests to a node use `AccessoryManager.channelSlot(toReach:)`.
 - A broadcast another local radio already delivered records a reception and skips the packet handlers, so it is stored once.
 - A copy a radio couldn't decrypt (it doesn't have that channel) records nothing, so the decoded copy from another radio is still handled.
-- Rows from older builds get the new columns from `MultiRadioBackfill`, a resumable job in the background maintenance pass. Readers must cope with nil in those columns until it has run. Its node observations are copied from the node's own fields, so it only makes them while no other radio has observations.
+- Rows from older builds get the new columns from `MultiRadioBackfill`, a resumable job. It runs to the end at launch when messages still wait for it (holding the handshake gate, before the first radio connects) and after a backup restore, attributed to the restored radio (`drainMultiRadioBackfill`); the background maintenance pass picks up anything left. Readers must cope with nil in those columns until it has run. Its node observations are copied from the node's own fields, so it only makes them while no other radio has observations.
 
 ### `EventFirmwareEntity` — off-device event branding cache
 
