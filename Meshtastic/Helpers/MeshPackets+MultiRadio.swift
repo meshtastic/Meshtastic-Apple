@@ -278,6 +278,13 @@ extension MeshPackets {
 		modelContext.insert(observation)
 		return observation
 	}
+	/// Deletes every radio's observations of `nodeNums`, with the nodes themselves (T146).
+	/// Observations only hold the node number, so nothing cascades; left behind, they would
+	/// feed the aggregate and Heard By again when the node comes back. Doesn't save.
+	func deleteObservations(ofNodes nodeNums: [Int64]) {
+		NodeObservationEntity.delete(ofNodes: nodeNums, in: modelContext)
+	}
+
 	/// Mirrors a radio's node-DB entry into that radio's observation, after `nodeInfoPacket` has
 	/// written the node directly. With other radios observing the node too, the node then takes
 	/// their aggregate instead.
@@ -312,6 +319,19 @@ extension MeshPackets {
 // MARK: - Aggregate
 
 extension NodeObservationEntity {
+	/// Deletes every radio's observations of `nodeNums` in `context`. Doesn't save.
+	static func delete(ofNodes nodeNums: [Int64], in context: ModelContext) {
+		guard !nodeNums.isEmpty else { return }
+		let descriptor = FetchDescriptor<NodeObservationEntity>(predicate: #Predicate { nodeNums.contains($0.nodeNum) })
+		do {
+			for observation in try context.fetch(descriptor) {
+				context.delete(observation)
+			}
+		} catch {
+			Logger.data.error("💥 [MultiRadio] Observation delete failed: \(error.localizedDescription, privacy: .public)")
+		}
+	}
+
 	/// How far behind the newest observation another can be and still count as current. Nodes
 	/// send something at least every half hour by default, so a radio still in range of the
 	/// node has heard it within the hour.

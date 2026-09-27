@@ -1473,6 +1473,7 @@ extension AccessoryManager {
 				if let user = node.user {
 					context.delete(user)
 				}
+				NodeObservationEntity.delete(ofNodes: [node.num], in: context)
 				context.delete(node)
 				try context.save()
 			} catch {

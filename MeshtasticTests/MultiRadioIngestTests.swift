@@ -224,6 +224,30 @@ struct MultiRadioIngestTests {
 		#expect(manager.channelSlot(toReach: node) == 0)
 	}
 
+	@Test("An evicted node's observations go with it")
+	func evictionDeletesObservations() async throws {
+		let container = try makeContainer()
+		let kept: Int64 = 0x5555
+		try seedNodes([remote, kept], in: container)
+		let context = ModelContext(container)
+		for node in try context.fetch(FetchDescriptor<NodeInfoEntity>()) where node.num == kept {
+			node.lastHeard = .now
+		}
+		for num in [remote, kept] {
+			context.insert(NodeObservationEntity(radioNum: radioA, nodeNum: num))
+			context.insert(NodeObservationEntity(radioNum: radioB, nodeNum: num))
+		}
+		try context.save()
+		let packets = await makePackets(container)
+
+		#expect(await packets.evictNodesIfOverCap(1) == 1)
+		await packets.savePendingChanges()
+
+		let left = try fetch(NodeObservationEntity.self, in: container)
+		#expect(Set(left.map(\.nodeNum)) == [kept])
+		#expect(left.count == 2)
+	}
+
 	@Test("A radio's node database fills its observation")
 	func nodeDBObservation() async throws {
 		let container = try makeContainer()

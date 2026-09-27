@@ -144,7 +144,7 @@ each, full suite each time.
 - [X] T143 D5 the aggregate ignores stale observations and takes no other radio's channel slot. — only observations heard within an hour of the newest compete (`currentWindow`); `channel` comes from the focused radio's observation only; position exchange, client history and user info exchange use `channelSlot(toReach:)` (`node.channel` while only the focused radio heard the node, as on `main`). Verified: `MultiRadioIngestTests` (three new tests).
 - [X] T144 D7 channel keys set when a radio's channels and LoRa config arrive. — the staged channel commit, `channelPacket` and `upsertLoRaConfigPacket` recompute the radio's keys; with several radios a keyless channel's timeline, badge and tapbacks are limited to its own radio. Verified: `ChannelMessageQueryTests.keylessChannelStaysOnItsRadio`, `.keysSetOnArrival`.
 - [X] T145 D2 deleting a channel's messages deletes what its timeline shows. — `deleteChannelMessages(query:)` uses the timeline's `ChannelMessageQuery` (`ChannelEntity.messageQuery(context:)`). Verified: `ChannelMessageQueryTests.deleteFollowsTimeline`.
-- [ ] T146 D13 observations removed with their node.
+- [X] T146 D13 observations removed with their node. — node eviction and Remove Node delete every radio's observations of the node (`NodeObservationEntity.delete(ofNodes:in:)`). Verified: `MultiRadioIngestTests.evictionDeletesObservations`.
 - [ ] T147 D1, D16 reset rules, Remove This Radio, Clear App Data (D-18).
 - [ ] T148 C1 Unlock / Update while the radio is still connecting.
 - [ ] T149 C2, C3 after a handover the dropped radio comes back, and phone position keeps going.

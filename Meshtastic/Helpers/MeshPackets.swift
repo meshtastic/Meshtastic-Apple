@@ -611,6 +611,7 @@ actor MeshPackets {
 		descriptor.includePendingChanges = false
 		guard let stale = try? modelContext.fetch(descriptor), !stale.isEmpty else { return 0 }
 		for node in stale { modelContext.delete(node) }
+		deleteObservations(ofNodes: stale.map(\.num))
 		Logger.data.info("🗄️ [Caps] Evicted \(stale.count, privacy: .public) least-recently-heard node(s) (was \(nodeCount, privacy: .public), cap \(cap, privacy: .public))")
 		return stale.count
 	}

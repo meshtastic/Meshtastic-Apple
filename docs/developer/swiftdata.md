@@ -111,6 +111,7 @@ Key model types:
 Every connected radio writes to the same store. Rows say which radio they came through:
 
 - `MessageEntity.messageKey` (`"sender:packetId"`) is the unique key, since a packet id is only unique per sender. `messageId` is no longer unique; replies and tapbacks still refer to it. `fromNum`, `toNum`, `localNodeNum` (the radio that received or sent it) and `channelKey` (`ChannelIdentity`) are flat columns so queries don't join.
+- Observations hold only node numbers, so nothing cascades: evicting or removing a node deletes its observations explicitly.
 - `ChannelEntity.channelKey` is recomputed whenever a radio's channels or LoRa settings arrive (`MeshPackets.refreshChannelKeys`). With several radios, a channel with no key yet shows only its own radio's messages in its slot.
 - `NodeInfoEntity` keeps its signal, hops and last-heard fields. With one radio observing a node they are written directly, as before. With several, `NodeObservationEntity.applyAggregate` writes the best path (RF over MQTT, fewest hops, most recent) among the observations heard within an hour of the newest, and the latest last-heard. `channel` is a slot number on one radio, so it only comes from the focused radio's observation; requests to a node use `AccessoryManager.channelSlot(toReach:)`.
 - A broadcast another local radio already delivered records a reception and skips the packet handlers, so it is stored once.
