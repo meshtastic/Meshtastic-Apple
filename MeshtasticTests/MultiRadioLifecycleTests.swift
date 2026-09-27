@@ -213,6 +213,31 @@ struct MultiRadioConnectLifecycleTests {
 		manager.focusHandoverTask?.cancel()
 	}
 
+	@Test("Each radio's heartbeat timeout follows its own firmware, not the focused radio's")
+	func heartbeatTimeoutPerRadio() async {
+		let manager = AccessoryManager(transports: [])
+		var focused = device("Focused")
+		focused.firmwareVersion = "2.7.15.abcdef0"
+		manager.activeConnection = RadioSession(device: focused, connection: IdleConnection())
+		var old = device("Old")
+		old.num = 0x0B0B
+		old.firmwareVersion = "2.6.11.1234567"
+		let oldSession = RadioSession(device: old, connection: IdleConnection())
+		var unknown = device("Unknown")
+		unknown.num = 0x0C0C
+		let unknownSession = RadioSession(device: unknown, connection: IdleConnection())
+
+		#expect(!manager.isVersionSupported(forVersion: "2.7.4", on: oldSession))
+		#expect(manager.isVersionSupported(forVersion: "2.7.4", on: unknownSession), "unknown is permissive, as for the focused radio")
+		manager.knownFirmwareVersions[0x0C0C] = "2.5.20.1234567"
+		#expect(!manager.isVersionSupported(forVersion: "2.7.4", on: unknownSession))
+
+		await manager.setupPeriodicHeartbeat(on: oldSession)
+		#expect(oldSession.heartbeatTimer != nil)
+		#expect(oldSession.heartbeatResponseTimer == nil, "2.6 doesn't answer the heartbeat, so no timeout")
+		await oldSession.heartbeatTimer?.cancel(withReason: "test")
+	}
+
 	@Test("Favoriting a node reaches every connected radio, each on its own connection")
 	func favoriteOnEveryRadio() async throws {
 		let focusedNum: Int64 = 0x0A0A, extraNum: Int64 = 0x0B0B

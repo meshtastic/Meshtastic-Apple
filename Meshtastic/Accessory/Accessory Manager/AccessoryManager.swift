@@ -1428,6 +1428,14 @@ extension AccessoryManager {
 		return DeviceRoles(rawValue: Int(radioUser.role))
 	}
 
+	/// `checkIsVersionSupported` for one radio: the focused radio's is exactly that; another
+	/// radio's reads its own reported firmware, permissive while it's unknown (T150).
+	func isVersionSupported(forVersion version: String, on session: RadioSession) -> Bool {
+		guard session !== activeConnection else { return checkIsVersionSupported(forVersion: version) }
+		let reported = session.device.firmwareVersion ?? session.nodeNum.flatMap { knownFirmwareVersions[$0] }
+		return Self.isFirmwareSupported(reported, minimum: version)
+	}
+
 	func checkIsVersionSupported(forVersion: String) -> Bool {
 		// Prefer the live `connectedVersion` (full string including build hash,
 		// e.g. "2.8.0.3a0c08b"). Fall back to the version this radio last reported this launch
@@ -1552,8 +1560,8 @@ extension AccessoryManager {
 		}
 		
 		// We can send heartbeats for older versions just fine, but only 2.7.4 and up will respond with
-		// a definite queueStatus packet.
-		if self.checkIsVersionSupported(forVersion: "2.7.4") {
+		// a definite queueStatus packet. Decided by this radio's own firmware (T150).
+		if self.isVersionSupported(forVersion: "2.7.4", on: session) {
 			// No debugName: this timer is cancelled on every received data/log packet, so a per-cancel
 			// debug line would flood the log on busy links. The timeout error below still fires if a
 			// heartbeat truly goes unanswered.
