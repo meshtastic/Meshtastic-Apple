@@ -167,6 +167,30 @@ each, full suite each time.
 - [X] T166 D19 minors, and the `.localized` strings missing from the catalog. — a DM thread with nothing connected and one radio's history shows that radio's messages as sent; Node Detail › Heard By refreshes every 30 s; a stray `MyInfoEntity` no longer blocks its radio's backup (`storeHoldsData(ofRadio:)`); restoring a backup asks first when the store holds several radios, and deleting a DM conversation says it goes on all radios; the traffic monitor counts a packet once. The catalog has the 26 `.localized` / format strings Xcode doesn't extract (`extractionState: manual`), placed in Xcode's order, plus the SwiftUI strings the export added. Verified: `BackupMergeTests.strayRadioRowDoesNotBlockMerge`; the view changes aren't unit tested.
 - [X] T167 C13 (pre-existing on `main`): left as is for the focused radio (single-radio behaviour); documented. — HANDOFF › Device test checklist has the check that decides it.
 
+## Review V2 fixes (review-connections-v2.md N1–N10, review-data-v2.md V2-1–V2-8)
+
+All re-checked in the files and holding (2026-09-27). One commit each, full suite each time.
+
+- [X] T170 V2-1 the resets wait for the radio list, and count another connected radio as several. — `otherRadios` is nil until looked up and the reset buttons stay disabled until then; `hasOtherRadios` also counts any other connected radio. The view isn't unit tested.
+- [ ] T171 N2 a handover keeps the dropped radio when a failed reconnect closes again.
+- [ ] T172 N3 the recycle keeps the per-packet node and reception writes.
+- [ ] T173 V2-3 Purge Stale Nodes deletes the purged nodes' observations.
+- [ ] T174 V2-4 a merge attempt is counted per backup, just before it merges.
+- [ ] T175 V2-2 CarPlay list rows and Siri read-back use the radio.
+- [ ] T176 V2-6 a reset doesn't copy an old single observation onto the node.
+- [ ] T177 V2-7 a merged backup's radio shares channels by stored key.
+- [ ] T178 N4 BLE restore: a standby radio that connects first isn't dropped.
+- [ ] T179 N5 Unlock / Update while the focused radio is connecting.
+- [ ] T180 N6 the scan sees its radio's connect finish.
+- [ ] T181 N8 no prompt flash for a radio about to be disconnected.
+- [ ] T182 N9 the handover prefers a radio that doesn't need the user.
+- [ ] T183 N10 manual entry under Add a Radio asks Keep Both / Switch and shows failures.
+- [ ] T184 V2-8 the radio cache on a new radio; Heard By while looking up; the TAK slot on a new TAK radio.
+- [ ] T185 Phone position keeps going while a handover is pending.
+- [ ] T186 N7 (owner): no launch wait for a single-radio store; the backfill drains when a second radio first connects.
+- [ ] T187 V2-5 (owner): Remove a radio that isn't connected (a dead or sold radio, or one only a backup knows).
+- [ ] T188 N1 explained to the owner; waits on the device test.
+
 ## Phase 10: Hardening
 
 - [ ] T130 Four BLE radios for 24 hours (device checklist in `HANDOFF.md`).

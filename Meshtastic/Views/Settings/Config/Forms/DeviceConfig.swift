@@ -170,8 +170,9 @@ private struct DeviceResetSection: View {
 	let dismiss: DismissAction
 	@State private var confirmNodeDB = false
 	@State private var confirmFactory = false
-	/// The user's other radios whose data is in the store; empty for a single-radio user.
-	@State private var otherRadios: [StoredRadio] = []
+	/// The user's other radios whose data is in the store; empty for a single-radio user, nil
+	/// until looked up. The resets wait for it: an empty list means the full wipe (V2-1).
+	@State private var otherRadios: [StoredRadio]?
 	@State private var pendingReset: PendingReset?
 	@State private var confirmMessages = false
 	@State private var confirmRemove = false
@@ -189,6 +190,13 @@ private struct DeviceResetSection: View {
 		return accessoryManager.additionalRadioDevices.contains { $0.num == num && $0.connectionState == .connected }
 	}
 
+	/// Other radios' data in the store, or another radio connected that hasn't stored anything
+	/// yet (still in its first config download): either way a reset mustn't wipe the store.
+	private var hasOtherRadios: Bool {
+		let num = node?.num
+		return !(otherRadios ?? []).isEmpty || accessoryManager.connectedRadioNums.contains { $0 != num }
+	}
+
 	private var radioName: String {
 		node?.user?.longName ?? node?.user?.shortName ?? String(localized: "This radio")
 	}
@@ -197,18 +205,18 @@ private struct DeviceResetSection: View {
 		if isConnectedNode {
 			Section {
 				Button("Reset NodeDB", role: .destructive) { confirmNodeDB = true }
-					.disabled(node?.user == nil)
+					.disabled(node?.user == nil || otherRadios == nil)
 					.confirmationDialog("Are you sure?", isPresented: $confirmNodeDB, titleVisibility: .visible) {
 						Button("Reset node database, preserving favorites?") { start(.nodeDB(preserveFavorites: true)) }
 						Button("Reset node database and favorites?", role: .destructive) { start(.nodeDB(preserveFavorites: false)) }
 					}
 				Button("Factory Reset", role: .destructive) { confirmFactory = true }
-					.disabled(node?.user == nil)
+					.disabled(node?.user == nil || otherRadios == nil)
 					.confirmationDialog("Factory reset will delete device and app data.", isPresented: $confirmFactory, titleVisibility: .visible) {
 						Button("Delete all config? ", role: .destructive) { start(.factory(resetDevice: false)) }
 						Button("Delete all config, keys and BLE bonds? ", role: .destructive) { start(.factory(resetDevice: true)) }
 					}
-				if !otherRadios.isEmpty {
+				if hasOtherRadios {
 					Button("Remove This Radio", role: .destructive) { confirmRemove = true }
 						.confirmationDialog("Remove \(radioName) from the app?", isPresented: $confirmRemove, titleVisibility: .visible) {
 							Button("Remove This Radio", role: .destructive) { remove() }
@@ -233,7 +241,8 @@ private struct DeviceResetSection: View {
 	/// A single-radio user's reset runs as it always did; with other radios, the user is asked
 	/// about this radio's messages first.
 	private func start(_ reset: PendingReset) {
-		guard !otherRadios.isEmpty else {
+		guard otherRadios != nil else { return }
+		guard hasOtherRadios else {
 			switch reset {
 			case let .nodeDB(preserveFavorites): self.reset(preserveFavorites: preserveFavorites)
 			case let .factory(resetDevice): factoryReset(resetDevice: resetDevice)
