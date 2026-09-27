@@ -364,10 +364,18 @@ private struct BandwidthRow: View {
 /// A preset already at the highest redundancy has nothing to override.
 private struct CodingRateRows: View {
 	@Binding var config: Config.LoRaConfig
+	@EnvironmentObject private var accessoryManager: AccessoryManager
 
 	private var preset: ModemPresets { ModemPresets(rawValue: config.modemPreset.rawValue) ?? .longFast }
+	private var supportsOverride: Bool {
+		accessoryManager.checkIsVersionSupported(forVersion: CodingRates.overrideFirmwareVersion)
+	}
 	private var normalized: Int {
-		CodingRates.normalized(Int(config.codingRate), usePreset: config.usePreset, modemPreset: preset)
+		CodingRates.effective(
+			Int(config.codingRate),
+			usePreset: config.usePreset,
+			modemPreset: preset,
+			supportsOverride: supportsOverride)
 	}
 	private var presetDefault: Int { preset.defaultCodingRate }
 	private var canOverride: Bool { presetDefault < CodingRates.validRange.upperBound }
@@ -391,7 +399,11 @@ private struct CodingRateRows: View {
 			Text(CodingRates.description(for: normalized, modemPreset: preset))
 				.foregroundColor(.gray)
 				.font(.callout)
-			if config.usePreset {
+			if config.usePreset, !supportsOverride {
+				Text("Raising the coding rate above the preset's needs firmware \(CodingRates.overrideFirmwareVersion) or later. This radio uses \(preset.description)'s 4/\(presetDefault).")
+					.foregroundColor(.gray)
+					.font(.caption)
+			} else if config.usePreset {
 				Toggle("Follow Preset Coding Rate", isOn: followsPreset)
 					.disabled(!canOverride)
 				if !canOverride {
@@ -411,7 +423,7 @@ private struct CodingRateRows: View {
 					} maximumValueLabel: {
 						Text("4/\(CodingRates.validRange.upperBound)")
 					}
-					Text("Uses 4/\(normalized) while keeping the \(preset.description) bandwidth and spread factor.")
+					Text("Uses 4/\(normalized) while keeping the \(preset.description) bandwidth and spread factor. Every packet takes longer on air, which uses more of the duty cycle and channel utilization budget.")
 						.foregroundColor(.gray)
 						.font(.caption)
 				}
