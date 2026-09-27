@@ -4,6 +4,7 @@
 #if os(iOS)
 import Testing
 import Foundation
+import SwiftData
 @testable import Meshtastic
 
 // MARK: - IntentMessageConverters Pure Logic Tests
@@ -120,6 +121,57 @@ struct IntentChannelDisplayNameTests {
 }
 
 // MARK: - meshtasticDomain constant
+
+// MARK: - Conversations with a radio (feature 021, T157)
+
+@Suite("IntentMessageConverters conversations across radios")
+struct IntentConversationRadioTests {
+
+	@Test func identifiersCarryTheRadioOnlyWhenGiven() {
+		#expect(IntentMessageConverters.channelConversationIdentifier(index: 2, radioNum: nil) == "channel-2")
+		#expect(IntentMessageConverters.directMessageConversationIdentifier(nodeNum: 42, radioNum: nil) == "dm-42")
+		let channel = IntentMessageConverters.channelConversationIdentifier(index: 2, radioNum: 0x0A0A)
+		let dm = IntentMessageConverters.directMessageConversationIdentifier(nodeNum: 42, radioNum: 0x0B0B)
+		#expect(IntentMessageConverters.conversation(fromIdentifier: channel) == .channel(index: 2, radioNum: 0x0A0A))
+		#expect(IntentMessageConverters.conversation(fromIdentifier: dm) == .directMessage(nodeNum: 42, radioNum: 0x0B0B))
+		#expect(IntentMessageConverters.conversation(fromIdentifier: "channel-3") == .channel(index: 3, radioNum: nil))
+		#expect(IntentMessageConverters.conversation(fromIdentifier: "channel-9") == nil)
+		#expect(IntentMessageConverters.conversation(fromIdentifier: "other") == nil)
+		// The older parser still finds the slot in the new form.
+		#expect(IntentMessageConverters.channelIndex(fromHandleOrName: channel) == 2)
+	}
+
+	@Test @MainActor func radioNamedOnlyWithSeveralRadios() throws {
+		let schema = Schema(versionedSchema: MeshtasticSchema.current)
+		let config = ModelConfiguration("IntentConversationRadioTests-\(UUID().uuidString)", schema: schema, isStoredInMemoryOnly: true, allowsSave: true)
+		let context = ModelContext(try ModelContainer(for: schema, configurations: config))
+		func radio(_ num: Int64, channel name: String) {
+			let myInfo = MyInfoEntity()
+			myInfo.myNodeNum = num
+			myInfo.lastConnected = .now
+			context.insert(myInfo)
+			let channel = ChannelEntity()
+			channel.index = 2
+			channel.name = name
+			channel.myInfoChannel = myInfo
+			context.insert(channel)
+		}
+		radio(0x0A0A, channel: "Hiking")
+		let message = MessageEntity()
+		message.localNodeNum = 0x0B0B
+		message.channel = 2
+		context.insert(message)
+		try context.save()
+		#expect(IntentMessageConverters.conversationRadio(for: message) == nil, "one radio: identifiers as before")
+
+		radio(0x0B0B, channel: "Family")
+		try context.save()
+		#expect(IntentMessageConverters.conversationRadio(for: message) == 0x0B0B)
+		#expect(IntentMessageConverters.conversationIdentifier(for: message) == "channel-2:r\(Int64(0x0B0B))")
+		#expect(IntentMessageConverters.channelSpokenName(index: 2, radioNum: 0x0B0B, in: context) == "Family")
+		#expect(IntentMessageConverters.channelSpokenName(index: 2, radioNum: nil, in: context) == "Channel 2")
+	}
+}
 
 @Suite("IntentMessageConverters Constants")
 struct IntentConverterConstantsTests {

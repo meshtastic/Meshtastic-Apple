@@ -19,44 +19,9 @@ enum CarPlayIntentDonation {
 	/// Donates an incoming message interaction so it appears in CarPlay Messages.
 	/// Call this after saving a new `MessageEntity` to Core Data.
 	static func donateReceivedMessage(_ message: MessageEntity) {
-		guard let fromUser = message.fromUser else { return }
-		guard !message.isEmoji, !message.admin else { return }
-
-		let sender = IntentMessageConverters.inPerson(from: fromUser)
-		let me = mePerson()
-
-		let intent: INSendMessageIntent
-		if message.toUser != nil {
-			// Direct message
-			intent = INSendMessageIntent(
-				recipients: [me],
-				outgoingMessageType: .outgoingMessageText,
-				content: message.messagePayload,
-				speakableGroupName: nil,
-				conversationIdentifier: "dm-\(fromUser.num)",
-				serviceName: "Meshtastic",
-				sender: sender,
-				attachments: nil
-			)
-		} else {
-			// Channel message
-			let channelName = channelDisplayName(for: message.channel)
-			let groupName = INSpeakableString(spokenPhrase: channelName)
-			intent = INSendMessageIntent(
-				recipients: [me],
-				outgoingMessageType: .outgoingMessageText,
-				content: message.messagePayload,
-				speakableGroupName: groupName,
-				conversationIdentifier: "channel-\(message.channel)",
-				serviceName: "Meshtastic",
-				sender: sender,
-				attachments: nil
-			)
-			intent.setImage(
-				INImage(named: "antenna.radiowaves.left.and.right"),
-				forParameterNamed: \.speakableGroupName
-			)
-		}
+		guard !message.isEmoji, !message.admin,
+			  let intent = incomingMessageIntent(from: message) else { return }
+		let fromName = message.fromUser?.longName ?? "unknown"
 
 		let interaction = INInteraction(intent: intent, response: nil)
 		interaction.direction = .incoming
@@ -64,13 +29,15 @@ enum CarPlayIntentDonation {
 			if let error {
 				Logger.services.error("🚗 [CarPlay] Failed to donate interaction: \(error.localizedDescription, privacy: .public)")
 			} else {
-				Logger.services.debug("🚗 [CarPlay] Donated incoming message from \(fromUser.longName ?? "unknown", privacy: .public)")
+				Logger.services.debug("🚗 [CarPlay] Donated incoming message from \(fromName, privacy: .public)")
 			}
 		}
 	}
 
 	/// Donates an outgoing message interaction after the user sends a message.
-	static func donateOutgoingMessage(content: String, toUserNum: Int64, channel: Int32) {
+	/// `radioNum` is the radio it went out through, named in the conversation with several radios.
+	@MainActor
+	static func donateOutgoingMessage(content: String, toUserNum: Int64, channel: Int32, radioNum: Int64? = nil) {
 		let me = mePerson()
 
 		let intent: INSendMessageIntent
@@ -90,20 +57,20 @@ enum CarPlayIntentDonation {
 				outgoingMessageType: .outgoingMessageText,
 				content: content,
 				speakableGroupName: nil,
-				conversationIdentifier: "dm-\(toUserNum)",
+				conversationIdentifier: IntentMessageConverters.directMessageConversationIdentifier(nodeNum: toUserNum, radioNum: radioNum),
 				serviceName: "Meshtastic",
 				sender: me,
 				attachments: nil
 			)
 		} else {
-			let channelName = channelDisplayName(for: channel)
+			let channelName = IntentMessageConverters.channelSpokenName(index: channel, radioNum: radioNum, in: PersistenceController.shared.context)
 			let groupName = INSpeakableString(spokenPhrase: channelName)
 			intent = INSendMessageIntent(
 				recipients: nil,
 				outgoingMessageType: .outgoingMessageText,
 				content: content,
 				speakableGroupName: groupName,
-				conversationIdentifier: "channel-\(channel)",
+				conversationIdentifier: IntentMessageConverters.channelConversationIdentifier(index: channel, radioNum: radioNum),
 				serviceName: "Meshtastic",
 				sender: me,
 				attachments: nil
@@ -124,11 +91,16 @@ enum CarPlayIntentDonation {
 	/// Builds an INSendMessageIntent for a received message, suitable for use with
 	/// Communication Notifications (`UNMutableNotificationContent.updating(from:)`).
 	/// Returns nil if the message has no sender.
+	///
+	/// With several radios the conversation names the radio the message came in on, and a channel
+	/// is spoken by its name on that radio, so a reply goes out through that radio on its own slot
+	/// (feature 021, T157).
 	static func incomingMessageIntent(from message: MessageEntity) -> INSendMessageIntent? {
 		guard let fromUser = message.fromUser else { return nil }
 
 		let sender = IntentMessageConverters.inPerson(from: fromUser)
 		let me = mePerson()
+		let radioNum = IntentMessageConverters.conversationRadio(for: message)
 
 		if message.toUser != nil {
 			// Direct message
@@ -137,21 +109,21 @@ enum CarPlayIntentDonation {
 				outgoingMessageType: .outgoingMessageText,
 				content: message.messagePayload,
 				speakableGroupName: nil,
-				conversationIdentifier: "dm-\(fromUser.num)",
+				conversationIdentifier: IntentMessageConverters.directMessageConversationIdentifier(nodeNum: fromUser.num, radioNum: radioNum),
 				serviceName: "Meshtastic",
 				sender: sender,
 				attachments: nil
 			)
 		} else {
 			// Channel message
-			let channelName = channelDisplayName(for: message.channel)
+			let channelName = IntentMessageConverters.channelSpokenName(index: message.channel, radioNum: radioNum, in: message.modelContext)
 			let groupName = INSpeakableString(spokenPhrase: channelName)
 			let intent = INSendMessageIntent(
 				recipients: [me],
 				outgoingMessageType: .outgoingMessageText,
 				content: message.messagePayload,
 				speakableGroupName: groupName,
-				conversationIdentifier: "channel-\(message.channel)",
+				conversationIdentifier: IntentMessageConverters.channelConversationIdentifier(index: message.channel, radioNum: radioNum),
 				serviceName: "Meshtastic",
 				sender: sender,
 				attachments: nil

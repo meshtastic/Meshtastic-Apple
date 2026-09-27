@@ -559,7 +559,8 @@ extension AccessoryManager {
 						// (CarPlay is iPhone-only, so skip on Mac Catalyst).
 						if !isEmoji {
 							#if os(iOS) && !targetEnvironment(macCatalyst)
-							CarPlayIntentDonation.donateOutgoingMessage(content: message, toUserNum: toUserNum, channel: channel)
+							let donatedRadio = IntentMessageConverters.isMultiRadio(in: context) ? sendingSession.nodeNum : nil
+							CarPlayIntentDonation.donateOutgoingMessage(content: message, toUserNum: toUserNum, channel: channel, radioNum: donatedRadio)
 							#endif
 						}
 					} catch {

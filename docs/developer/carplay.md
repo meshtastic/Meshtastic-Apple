@@ -35,3 +35,13 @@ When a new CarPlay session starts, the set is cleared and up to 50 unread messag
 2. Register the handler in `IntentHandler.swift`'s `handler(for:)` switch.
 3. Declare the intent in `Meshtastic.entitlements` under `com.apple.developer.siri`.
 4. Add a usage description in `Info.plist` if the intent requires a new privacy permission.
+
+## Several radios (feature 021)
+
+With more than one radio connected with this version, conversation identifiers name the radio
+the conversation is on: `channel-<N>:r<radioNum>` and `dm-<nodeNum>:r<radioNum>`
+(`IntentMessageConverters.channelConversationIdentifier` / `directMessageConversationIdentifier`,
+parsed by `conversation(fromIdentifier:)`). With one radio they stay `channel-<N>` / `dm-<nodeNum>`.
+`SendMessageIntentHandler` replies through the named radio on its own slot, and a spoken channel
+name matched only on another radio (`channelSlot(for:in:)`) goes out through that radio. Every
+incoming donation is built by `CarPlayIntentDonation.incomingMessageIntent(from:)`.

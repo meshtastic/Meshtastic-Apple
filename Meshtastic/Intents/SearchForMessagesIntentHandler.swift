@@ -33,13 +33,14 @@ final class SearchForMessagesIntentHandler: NSObject, INSearchForMessagesIntentH
 			var results = fetched.filter { !$0.admin && !$0.isEmoji }
 
 			if let conversationIds = intent.conversationIdentifiers, !conversationIds.isEmpty {
-				let dmNums = Set(conversationIds.compactMap { convId -> Int64? in
-					guard convId.hasPrefix("dm-") else { return nil }
-					return Int64(convId.dropFirst("dm-".count))
+				let conversations = conversationIds.compactMap(IntentMessageConverters.conversation(fromIdentifier:))
+				let dmNums = Set(conversations.compactMap { conversation -> Int64? in
+					guard case let .directMessage(nodeNum, _) = conversation else { return nil }
+					return nodeNum
 				})
-				let channelNums = Set(conversationIds.compactMap { convId -> Int32? in
-					guard convId.hasPrefix("channel-") else { return nil }
-					return Int32(convId.dropFirst("channel-".count))
+				let channelNums = Set(conversations.compactMap { conversation -> Int32? in
+					guard case let .channel(index, _) = conversation else { return nil }
+					return Int32(index)
 				})
 
 				results = results.filter { message in

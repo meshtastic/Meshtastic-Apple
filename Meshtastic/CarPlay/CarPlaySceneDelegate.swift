@@ -413,6 +413,21 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 
 	// MARK: - Unread Count Batch Fetching
 
+	/// With several radios, the CarPlay radio: slot numbers and DM conversations are per radio,
+	/// so CarPlay's lists count and read back only that radio's messages (T157). nil with one
+	/// radio, where every message counts as before.
+	private var carPlayMessageRadio: Int64? {
+		guard IntentMessageConverters.isMultiRadio(in: context) else { return nil }
+		return AccessoryManager.shared.radioNum(for: .carPlay)
+	}
+
+	/// True when `message` is `radio`'s, or there's no radio to scope to. Rows the backfill
+	/// hasn't reached (no `localNodeNum`) count everywhere.
+	private func belongs(_ message: MessageEntity, to radio: Int64?) -> Bool {
+		guard let radio, let local = message.localNodeNum else { return true }
+		return local == radio
+	}
+
 	/// Fetches unread message counts for multiple DM node numbers in a single query,
 	/// then groups the results in-memory. This avoids the N+1 count-per-row pattern
 	/// while staying compatible with Core Data's relationship keypath restrictions.
@@ -432,7 +447,8 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 		// sender's DM badge — diverging from the in-app DM counts, which have
 		// always excluded channel traffic. (Checked in Swift, not the predicate:
 		// optional-relationship nil compares in #Predicate crash on iOS 26.)
-		for message in results where message.toUser != nil {
+		let radio = carPlayMessageRadio
+		for message in results where message.toUser != nil && belongs(message, to: radio) {
 			if let num = message.fromUser?.num, nodeNumSet.contains(num) {
 				counts[num, default: 0] += 1
 			}
@@ -453,7 +469,8 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 		)
 		let results = (try? context.fetch(descriptor)) ?? []
 		var counts = [Int32: Int]()
-		for message in results where message.toUser == nil && channelSet.contains(message.channel) {
+		let radio = carPlayMessageRadio
+		for message in results where message.toUser == nil && channelSet.contains(message.channel) && belongs(message, to: radio) {
 			counts[message.channel, default: 0] += 1
 		}
 		return counts
@@ -545,7 +562,8 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 		// Fetch a small batch and pick the first channel message in Swift.
 		descriptor.fetchLimit = 5
 
-		guard let message = (try? context.fetch(descriptor))?.first(where: { $0.toUser == nil }),
+		let radio = carPlayMessageRadio
+		guard let message = (try? context.fetch(descriptor))?.first(where: { $0.toUser == nil && belongs($0, to: radio) }),
 			  let fromUser = message.fromUser else { return }
 		// Dedup AFTER resolving the message, keyed by conversation + message, so a
 		// newer unread message re-donates and stays readable by Siri.
@@ -575,7 +593,8 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 		// don't belong to this conversation.
 		descriptor.fetchLimit = 5
 
-		guard let message = (try? context.fetch(descriptor))?.first(where: { $0.toUser != nil }),
+		let radio = carPlayMessageRadio
+		guard let message = (try? context.fetch(descriptor))?.first(where: { $0.toUser != nil && belongs($0, to: radio) }),
 			  let fromUser = message.fromUser else { return }
 		// Dedup AFTER resolving the message, keyed by conversation + message, so a
 		// newer unread message re-donates and stays readable by Siri.
@@ -671,43 +690,10 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 
 			guard let messages = try? context.fetch(descriptor) else { return }
 			for message in messages {
-				guard let fromUser = message.fromUser else { continue }
-
-				let sender = IntentMessageConverters.inPerson(from: fromUser)
-				let me = CarPlayIntentDonation.mePerson()
-
-				let conversationId: String
-				let intent: INSendMessageIntent
-
-				if message.toUser != nil {
-					// DM
-					conversationId = "dm-\(fromUser.num)"
-					intent = INSendMessageIntent(
-						recipients: [me],
-						outgoingMessageType: .outgoingMessageText,
-						content: message.messagePayload,
-						speakableGroupName: nil,
-						conversationIdentifier: conversationId,
-						serviceName: "Meshtastic",
-						sender: sender,
-						attachments: nil
-					)
-				} else {
-					// Channel message
-					conversationId = "channel-\(message.channel)"
-					let channelName = CarPlayIntentDonation.channelDisplayName(for: message.channel)
-					let groupName = INSpeakableString(spokenPhrase: channelName)
-					intent = INSendMessageIntent(
-						recipients: [me],
-						outgoingMessageType: .outgoingMessageText,
-						content: message.messagePayload,
-						speakableGroupName: groupName,
-						conversationIdentifier: conversationId,
-						serviceName: "Meshtastic",
-						sender: sender,
-						attachments: nil
-					)
-				}
+				// The same intent a live donation makes, so the conversation (and, with several
+				// radios, the radio it's on) matches the one a reply resolves (T157).
+				guard let intent = CarPlayIntentDonation.incomingMessageIntent(from: message),
+					  let conversationId = intent.conversationIdentifier else { continue }
 
 				// Shared dedup with the per-row donations: skip if this exact
 				// message has already been donated this session (e.g. a reconnect).

@@ -124,25 +124,46 @@ final class SendMessageIntentHandler: NSObject, INSendMessageIntentHandling {
 		// Feature 021 (T104): the radio chosen for CarPlay & Siri, the focused radio by default.
 		let carPlayRadio = await AccessoryManager.shared.radioNum(for: .carPlay)
 		do {
-			if let groupName = intent.speakableGroupName {
+			if let conversationId = intent.conversationIdentifier,
+			   let conversation = IntentMessageConverters.conversation(fromIdentifier: conversationId),
+			   let radioNum = conversation.radioNum {
+				// A reply in a conversation that names its radio (several radios, T157): through
+				// that radio, on its own slot for the channel, as notification replies do.
+				guard await AccessoryManager.shared.isRadioConnected(nodeNum: radioNum) else {
+					Logger.services.error("CarPlay/Siri: The conversation's radio \(radioNum.toHex(), privacy: .public) isn't connected")
+					return INSendMessageIntentResponse(code: .failureRequiringAppLaunch, userActivity: nil)
+				}
+				switch conversation {
+				case let .channel(index, _):
+					try await AccessoryManager.shared.sendMessage(message: content, toUserNum: 0, channel: Int32(index), isEmoji: false, replyID: 0, viaRadio: radioNum)
+				case let .directMessage(nodeNum, _):
+					try await AccessoryManager.shared.sendMessage(message: content, toUserNum: nodeNum, channel: 0, isEmoji: false, replyID: 0, viaRadio: radioNum)
+				}
+			} else if let groupName = intent.speakableGroupName {
 				// Channel message
-				let channelIndex = await MainActor.run {
+				let slot = await MainActor.run {
 					let context = PersistenceController.shared.context
-					return IntentMessageConverters.channelIndex(for: groupName.spokenPhrase, in: context)
+					return IntentMessageConverters.channelSlot(for: groupName.spokenPhrase, in: context)
 				}
 				// A group name that matches no channel is a failure — the old
 				// fallback to index 0 silently sent the reply to Primary instead.
-				guard let channelIndex else {
+				guard let slot else {
 					Logger.services.error("CarPlay/Siri: No channel matches group name \(groupName.spokenPhrase, privacy: .public)")
+					return INSendMessageIntentResponse(code: .failure, userActivity: nil)
+				}
+				// A channel only another radio has goes out through that radio, on its slot.
+				let viaRadio = slot.radioNum ?? carPlayRadio
+				if let other = slot.radioNum, await !AccessoryManager.shared.isRadioConnected(nodeNum: other) {
+					Logger.services.error("CarPlay/Siri: \(groupName.spokenPhrase, privacy: .public) is on a radio that isn't connected")
 					return INSendMessageIntentResponse(code: .failure, userActivity: nil)
 				}
 				try await AccessoryManager.shared.sendMessage(
 					message: content,
 					toUserNum: 0,
-					channel: Int32(channelIndex),
+					channel: Int32(slot.index),
 					isEmoji: false,
 					replyID: 0,
-					viaRadio: carPlayRadio
+					viaRadio: viaRadio
 				)
 			} else if let conversationId = intent.conversationIdentifier,
 					  let channelIndex = IntentMessageConverters.channelIndex(fromHandleOrName: conversationId) {
