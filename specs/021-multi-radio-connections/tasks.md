@@ -156,7 +156,7 @@ each, full suite each time.
 - [X] T155 C4, C5 BLE restoration continuation per peripheral; a connected radio is preferred. — `restoredConnect` carries its peripheral id; `focusedPeripheral` takes a connected radio first. Verified: `MultiRadioBLERestorationTests.restoreWaitIsPerPeripheral`, `.connectedRadioIsFocusedFirst`.
 - [X] T156 C8, C9 TCP radios alongside: manual connect from Add a Radio; remembered Bonjour radios. — Add a Radio has the Manual menu and lists saved manual connections; `recentlyDiscoveredDevices` and `awaitedRememberedRadios` bring back a remembered TCP radio. Verified: `MultiRadioLifecycleTests.rememberedTCPRadioComesBack`.
 - [X] T157 D6 Siri and CarPlay replies on the right radio and channel. — conversation ids carry the radio with several radios (`:r<num>`); the handler replies through it; a name found only on another radio sends through that radio; incoming donations share one builder and speak the channel's name; CarPlay counts and read-back are the CarPlay radio's. Verified: `IntentConversationRadioTests` (the handler itself isn't unit tested: it sends through `AccessoryManager.shared`).
-- [ ] T158 D8 mute and mentions across the user's radios.
+- [X] T158 D8 mute and mentions across the user's radios. — a channel muted on any radio with its key stays quiet (`isChannelMutedOnAnyRadio`); a mention of any of the user's radios notifies. Verified: `MultiRadioNotificationTests`.
 - [ ] T159 D9 the backup merge stops retrying a merge that keeps failing.
 - [ ] T160 D11 the scan and range test see their own radio's packets even when another radio delivered first.
 - [ ] T161 D12 TAK settings for the TAK radio.

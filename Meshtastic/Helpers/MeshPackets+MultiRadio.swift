@@ -65,6 +65,14 @@ extension MeshPackets {
 		}
 	}
 
+	/// True when any of the user's radios has the channel `key` muted (T158). Mute is set on one
+	/// radio's channel list, but the message may come in through another radio first.
+	func isChannelMutedOnAnyRadio(key: String?) -> Bool {
+		guard let key else { return false }
+		let muted = FetchDescriptor<ChannelEntity>(predicate: #Predicate { $0.channelKey == key && $0.mute })
+		return ((try? modelContext.fetchCount(muted)) ?? 0) > 0
+	}
+
 	// MARK: - Admin sessions
 
 	/// Stores a remote-admin session passkey on the asking radio's observation of the node

@@ -2232,13 +2232,19 @@ actor MeshPackets {
 									// to ~1/sec — the badge tolerates brief lag and resyncs on app-active and on read.
 									let recountUnread = shouldRecomputeChannelUnread()
 									let connectedNodeNum = connectedNode
+									// Feature 021 (T158): a message heard by several radios is handled by the
+									// first to deliver it, so mute and mentions can't depend on which that was.
+									// The channel is muted if the user muted it on any radio that has it, and
+									// a mention of any of the user's radios counts.
+									let receivingChannel = myInfo.channels.first { $0.index == newMessage.channel }
 									let channelNotificationsEnabled = UserDefaults.channelMessageNotifications
 										&& !(newMessage.fromUser?.mute ?? false)
-										&& myInfo.channels.contains(where: { $0.index == newMessage.channel && !$0.mute })
+										&& receivingChannel.map { !$0.mute } == true
+										&& !isChannelMutedOnAnyRadio(key: newMessage.channelKey ?? receivingChannel?.channelKey)
 									// A message that @mentions the local node notifies even when channel
 									// notifications are off or the channel is muted; a muted sender still wins.
 									let isSelfMentioned = !(newMessage.fromUser?.mute ?? false)
-										&& MentionParser.containsMention(of: connectedNode, in: messageText ?? "")
+										&& lookupRadios(first: connectedNode).contains { MentionParser.containsMention(of: $0, in: messageText ?? "") }
 									let senderName = newMessage.fromUser?.longName ?? "Unknown".localized
 									let channelUserNum = Int64(newMessage.fromUser?.userId ?? "0")
 									var channelNotification: Notification?
