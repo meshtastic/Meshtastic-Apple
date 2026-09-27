@@ -38,7 +38,10 @@ extension AccessoryManager {
 			  // A discovery scan's radio reboots into each preset; it comes back as the focus.
 			  discoveryScanEngine?.isScanning != true,
 			  !userRequestedConnectionCancellation else { return nil }
-		return additionalRadioDevices.first { $0.connectionState == .connected }
+		let connected = additionalRadioDevices.filter { $0.connectionState == .connected }
+		// A radio that needs the user (locked, old firmware) would put its passphrase sheet or
+		// update screen over the app; one that doesn't goes first (T182).
+		return connected.first { additionalRadios[$0.id]?.attention == nil } ?? connected.first
 	}
 
 	/// Called when the focused radio's connection closes. With other radios connected, waits

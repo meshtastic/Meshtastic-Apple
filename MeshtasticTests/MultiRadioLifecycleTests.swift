@@ -256,6 +256,19 @@ struct MultiRadioConnectLifecycleTests {
 		#expect(manager.focusHandoverCandidate == nil)
 		manager.otaInProgress = false
 
+		// A radio that doesn't need the user goes ahead of a locked one.
+		var lockedDevice = device("Locked")
+		lockedDevice.num = 0x0C0D
+		lockedDevice.connectionState = .connected
+		let locked = RadioSession(device: lockedDevice, connection: IdleConnection())
+		locked.attention = .locked
+		manager.additionalRadios[lockedDevice.id] = locked
+		manager.additionalRadios[extraDevice.id]?.attention = .firmwareTooOld(version: "2.3.0")
+		#expect(manager.focusHandoverCandidate != nil, "with nothing better, one that needs the user")
+		manager.additionalRadios[extraDevice.id]?.attention = nil
+		#expect(manager.focusHandoverCandidate?.id == extraDevice.id)
+		manager.additionalRadios.removeValue(forKey: lockedDevice.id)
+
 		manager.activeConnection = RadioSession(device: device("Focused"), connection: IdleConnection())
 		#expect(manager.focusHandoverCandidate == nil)
 
