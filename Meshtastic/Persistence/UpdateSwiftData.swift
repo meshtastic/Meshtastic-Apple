@@ -48,6 +48,9 @@ extension MeshPackets {
 			for node in staleNodes {
 				modelContext.delete(node)
 			}
+			// Observations only hold the node number, so they go explicitly (T173, as T146 for
+			// eviction and Remove Node).
+			deleteObservations(ofNodes: staleNodes.map(\.num))
 			try modelContext.save()
 			Logger.data.info("💾 [NodeInfoEntity] Cleared \(deletedNodes) stale nodes")
 			return true

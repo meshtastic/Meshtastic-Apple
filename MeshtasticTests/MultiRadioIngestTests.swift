@@ -283,6 +283,25 @@ struct MultiRadioIngestTests {
 		#expect(!node.ignored, "the merged backup's radio doesn't count")
 	}
 
+	@Test("Purging stale nodes deletes their observations")
+	func purgeDeletesObservations() async throws {
+		let container = try makeContainer()
+		let context = ModelContext(container)
+		let stale = NodeInfoEntity()
+		stale.num = remote
+		stale.lastHeard = Date(timeIntervalSinceNow: -40 * 86_400)
+		context.insert(stale)
+		context.insert(NodeObservationEntity(radioNum: radioA, nodeNum: remote))
+		context.insert(NodeObservationEntity(radioNum: radioB, nodeNum: remote))
+		try context.save()
+		let packets = await makePackets(container)
+
+		#expect(await packets.clearStaleNodes(nodeExpireDays: 30))
+
+		#expect(try fetch(NodeInfoEntity.self, in: container).isEmpty)
+		#expect(try fetch(NodeObservationEntity.self, in: container).isEmpty)
+	}
+
 	@Test("A radio's node database fills its observation")
 	func nodeDBObservation() async throws {
 		let container = try makeContainer()
