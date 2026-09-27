@@ -15,8 +15,8 @@ import OSLog
 // Every radio the same). One of them is focused (`AccessoryManager.activeConnection`); the others
 // are in `additionalRadios`, by device id. This file keeps track of the others: which are
 // connected, their events, disconnecting and reconnecting them, and the radios remembered from
-// last time. Lock-down and old firmware on a radio that isn't focused are handled in
-// `AccessoryManager+AdditionalRadioGates.swift` until each radio gets its own prompts (T073).
+// last time. A locked or outdated radio that isn't focused is handled in
+// `AccessoryManager+RadioAttention.swift`.
 
 /// Lets one radio at a time run its config and node-DB handshake (T064).
 ///

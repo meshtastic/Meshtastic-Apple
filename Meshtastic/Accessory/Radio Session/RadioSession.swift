@@ -8,12 +8,14 @@
 import Foundation
 import MeshtasticProtobufs
 
-/// One live connection to one radio.
+/// One live connection to one radio, and everything that belongs to it: its event loop,
+/// heartbeats, handshake waits, config refresh, what it reported, its MQTT client proxy and its
+/// lock-down state.
 ///
-/// Today `AccessoryManager` holds at most one of these (`activeConnection`). Everything that
-/// arrives from a radio is handled against the session it came from rather than against
-/// whichever radio happens to be current, so several sessions can run side by side later
-/// (feature 021, see `specs/021-multi-radio-connections/plan.md`).
+/// Every connected radio has one and runs the same connect steps (feature 021, D-17). The
+/// focused radio's is `AccessoryManager.activeConnection`; the others are in
+/// `AccessoryManager.additionalRadios`. Everything that arrives from a radio is handled against
+/// the session it came from, never against whichever radio happens to be focused.
 ///
 /// A class so its identity can be compared: an event from a session that is no longer the
 /// active one (a late packet from a torn-down connection) can be told apart from a current one.
@@ -24,7 +26,6 @@ final class RadioSession: Identifiable {
 	/// The radio as the app currently knows it. Updated in place by `AccessoryManager.updateDevice`.
 	var device: Device
 	let connection: any Connection
-	let startedAt = Date()
 
 	init(device: Device, connection: any Connection) {
 		self.device = device

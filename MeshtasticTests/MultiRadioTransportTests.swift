@@ -342,7 +342,7 @@ struct MultiRadioSessionTests {
 		#expect(focused.device.rssi != -30)
 	}
 
-	@Test("An additional radio's handshake completes on its own nonce, not the focused radio's")
+	@Test("Another radio's config completion leaves the focused radio's refresh stamp alone")
 	func configCompleteGoesToTheAdditionalRadio() async {
 		let manager = makeManager().manager
 		let (radio, _) = addRadio(to: manager)

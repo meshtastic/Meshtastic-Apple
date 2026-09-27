@@ -347,8 +347,6 @@ class AccessoryManager: ObservableObject {
 	/// Consumes `BLETransport.statusUpdates()` for the lifetime of this manager; see
 	/// `observeBLETransportStatus()`.
 	var bleStatusTask: Task<Void, Never>?
-	/// The focused connection's event loop (feature 021, T069: it lives on the session).
-	var connectionEventTask: Task<Void, Error>? { activeConnection?.eventTask }
 	var locationTask: Task<Void, Error>?
 	/// The detached device image/link pass spawned by connect Step 3b. Held so a disconnect can
 	/// cancel it — otherwise, on a captive portal, its ~78 image HEADs hang ~60s each (no request

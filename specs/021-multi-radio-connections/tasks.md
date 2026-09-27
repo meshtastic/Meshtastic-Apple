@@ -125,7 +125,7 @@ phases don't change behaviour and keep the app shippable, which makes a rebase o
 ## Phase 8: Clean-up and guard rails
 
 - [X] T110 SwiftLint custom rule banning `preferredPeripheralNum`, `preferredPeripheralId` and `UserDefaults.firmwareVersion` outside the migration code. — `preferred_radio_defaults` (error, in `.swiftlint.yml` and `.swiftlint-precommit.yml`): `UserDefaults.preferredPeripheralId/Num` and their key strings only in `PreferredRadio.swift` and `UserDefaults.swift`; tests excluded. `UserDefaults.firmwareVersion` no longer exists, so it needs no rule.
-- [ ] T111 Remove unused single-radio code paths and comments that describe the old switch flow.
+- [~] T111 Remove unused single-radio code paths and comments that describe the old switch flow. — what the feature left unused is gone (the `connectionEventTask` forwarder, `RadioSession.startedAt`, stale descriptions of the removed additional-radio flow). Left for T066, after the device test: the switch-era backup/clear/restore helpers and the comments about them. Unused code that predates the feature (`cleanupTAKBridge`, `connectionSteps`, `tryClearExistingChannels`, `BLEConnection.didUpdateRssi`, `forNotifyFailure`) is out of scope here, flagged as a separate task.
 
 ## Phase 9: Docs
 
