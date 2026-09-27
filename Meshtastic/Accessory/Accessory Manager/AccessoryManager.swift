@@ -1101,13 +1101,33 @@ class AccessoryManager: ObservableObject {
 				Logger.mesh.error("🕸️ Unable to determine connectedNodeNum for updateAnyPacketFrom. Skipping.")
 			}
 
-			// Dispatch based on packet contents.
-			if case let .decoded(data) = packet.payloadVariant, !handledByAnotherRadio {
-				// Forward packets to discovery scan engine if active
-				if let engine = discoveryScanEngine, engine.isScanning, engine.receivesPackets(from: session.nodeNum) {
-					engine.handleMeshPacket(packet, portNum: data.portnum)
+			// A discovery scan counts every packet its own radio heard, even one another radio
+			// delivered first and whose handlers already ran (T160).
+			if case let .decoded(data) = packet.payloadVariant,
+			   let engine = discoveryScanEngine, engine.isScanning, engine.receivesPackets(from: session.nodeNum) {
+				engine.handleMeshPacket(packet, portNum: data.portnum)
+				if handledByAnotherRadio {
+					switch data.portnum {
+					case .neighborinfoApp:
+						if let neighborInfo = try? NeighborInfo(serializedBytes: data.payload) {
+							engine.handleNeighborInfo(neighborInfo, packet: packet)
+						}
+					case .meshBeaconApp:
+						if let beacon = try? MeshBeacon(serializedBytes: data.payload) {
+							engine.handleBeacon(beacon, packet: packet)
+						}
+					default:
+						break
+					}
 				}
+			}
+			// A range test packet goes to this radio's handler when this radio wants range test
+			// packets, whether or not the radio that delivered it first did (T160). The handler
+			// stores a packet once, by sender and id.
+			let isOwnRangeTest = packet.decoded.portnum == .rangeTestApp && session.wantRangeTestPackets
 
+			// Dispatch based on packet contents.
+			if case let .decoded(data) = packet.payloadVariant, !handledByAnotherRadio || isOwnRangeTest {
 				switch data.portnum {
 				case .textMessageApp, .detectionSensorApp, .alertApp:
 					await handleTextMessageAppPacket(packet, session: session)
@@ -1454,6 +1474,18 @@ extension AccessoryManager {
 		guard let radioNode = getNodeInfo(id: radioNum, context: context) else { return nil }
 		guard let radioUser = radioNode.user else { return nil }
 		return DeviceRoles(rawValue: Int(radioUser.role))
+	}
+
+	/// Whether radio `radioNum` is connected, and whether its connect has finished, for code that
+	/// follows one radio whichever is focused (the discovery scan, T160). The focused radio's are
+	/// `isConnected` and `.subscribed`.
+	func linkState(ofRadio radioNum: Int64) -> (connected: Bool, subscribed: Bool) {
+		if let focused = activeConnection, focused.nodeNum == radioNum {
+			return (isConnected, state == .subscribed)
+		}
+		guard let session = additionalRadios.values.first(where: { $0.nodeNum == radioNum }) else { return (false, false) }
+		let connected = session.device.connectionState == .connected
+		return (connected, connected && connectAttempts[session.device.id] == nil)
 	}
 
 	/// `checkIsVersionSupported` for one radio: the focused radio's is exactly that; another

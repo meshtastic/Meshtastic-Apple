@@ -306,6 +306,47 @@ struct MultiRadioConnectLifecycleTests {
 		#expect(await !before.invalidated)
 	}
 
+	@Test("A discovery scan counts its radio's copy of a packet another radio delivered first")
+	func scanCountsItsOwnCopy() async throws {
+		let manager = AccessoryManager(transports: [])
+		var scanDevice = device("Scan")
+		scanDevice.num = 0x5CA1_0001
+		scanDevice.connectionState = .connected
+		manager.activeConnection = RadioSession(device: scanDevice, connection: IdleConnection())
+		manager.activeDeviceNum = scanDevice.num
+		var otherDevice = device("Other")
+		otherDevice.num = 0x5CA1_0002
+		otherDevice.connectionState = .connected
+		let other = RadioSession(device: otherDevice, connection: IdleConnection())
+		manager.additionalRadios[otherDevice.id] = other
+		let engine = DiscoveryScanEngine()
+		engine.configure(accessoryManager: manager, modelContext: sharedModelContainer.mainContext)
+		manager.discoveryScanEngine = engine
+		await engine.startCurrentPresetScan()
+		#expect(engine.currentState == .dwell)
+		#expect(manager.linkState(ofRadio: 0x5CA1_0002) == (true, true))
+
+		let remote: UInt32 = 0x5CA1_0F0F
+		var data = DataMessage()
+		data.portnum = .positionApp
+		var packet = MeshPacket()
+		packet.id = UInt32.random(in: 1...UInt32.max)
+		packet.from = remote
+		packet.to = Constants.maximumNodeNum
+		packet.decoded = data
+		var fromRadio = FromRadio()
+		fromRadio.packet = packet
+
+		// The other radio delivers first; the scan radio's copy still counts for the scan.
+		await manager.processFromRadio(fromRadio, session: other)
+		#expect(engine.session?.discoveredNodes.contains { $0.nodeNum == Int64(remote) } != true)
+		await manager.processFromRadio(fromRadio, session: try #require(manager.activeConnection))
+		#expect(engine.session?.discoveredNodes.contains { $0.nodeNum == Int64(remote) } == true)
+
+		await engine.stopScan()
+		manager.discoveryScanEngine = nil
+	}
+
 	@Test("Favoriting a node reaches every connected radio, each on its own connection")
 	func favoriteOnEveryRadio() async throws {
 		let focusedNum: Int64 = 0x0A0A, extraNum: Int64 = 0x0B0B

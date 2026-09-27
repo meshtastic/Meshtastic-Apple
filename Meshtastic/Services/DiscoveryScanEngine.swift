@@ -444,7 +444,8 @@ final class DiscoveryScanEngine {
 			Logger.discovery.info("📡 [Discovery] Sent LoRa config change to preset: \(preset.name)")
 
 			// Determine transport type for reconnection strategy
-			let transportType = await accessoryManager.activeConnection?.connection.type
+			// The scan radio's link, focused or not (T160).
+			let transportType = await accessoryManager.connectedSession(forRadio: scanRadioNum)?.connection.type
 
 			// Mark that we're awaiting a disconnect — prevents premature reconnection detection
 			awaitingDisconnect = true
@@ -477,32 +478,38 @@ final class DiscoveryScanEngine {
 		}
 	}
 
+	/// The scan radio's link: the scan follows its own radio, which may not stay the focused one.
+	private var scanLink: (connected: Bool, subscribed: Bool) {
+		accessoryManager?.linkState(ofRadio: scanRadioNum) ?? (false, false)
+	}
+
 	private func handleConnectionStateChange() {
-		guard let accessoryManager else { return }
+		guard accessoryManager != nil else { return }
+		let link = scanLink
 
 		switch currentState {
 		case .reconnecting:
-			if !accessoryManager.isConnected {
+			if !link.connected {
 				// Device has actually disconnected — clear the flag so we accept the next reconnection
 				if awaitingDisconnect {
 					awaitingDisconnect = false
 					Logger.discovery.info("📡 [Discovery] Device disconnected after config change — awaiting reconnection")
 				}
-			} else if accessoryManager.isConnected && accessoryManager.state == .subscribed && !awaitingDisconnect {
+			} else if link.connected && link.subscribed && !awaitingDisconnect {
 				Logger.discovery.info("📡 [Discovery] Reconnected after preset change → Dwell")
 				reconnectTimeoutTask?.cancel()
 				transitionTo(.dwell)
 				startDwellTimer()
 			}
 		case .paused:
-			if accessoryManager.isConnected && accessoryManager.state == .subscribed {
+			if link.connected && link.subscribed {
 				Logger.discovery.info("📡 [Discovery] Connection restored while paused → Resuming dwell")
 				awaitingDisconnect = false
 				transitionTo(.dwell)
 				startDwellTimer()
 			}
 		case .dwell:
-			if !accessoryManager.isConnected {
+			if !link.connected {
 				// Save remaining time so we can resume if connection is restored
 				interruptedDwellRemaining = dwellTimeRemaining
 				Logger.discovery.warning("📡 [Discovery] Connection lost during dwell (\(Int(self.dwellTimeRemaining))s remaining) — entering reconnecting state")
@@ -548,9 +555,8 @@ final class DiscoveryScanEngine {
 			// out the full timeout. (Checked regardless of awaitingDisconnect: the observer
 			// clears it on the disconnect edge, so gating this on it would skip the fast path in
 			// exactly the missed-subscribe-edge case it exists to handle.)
-			let connected = self.accessoryManager?.isConnected ?? false
-			let subscribed = self.accessoryManager.map { $0.state == .subscribed } ?? false
-			if connected && subscribed {
+			let link = self.scanLink
+			if link.connected && link.subscribed {
 				Logger.discovery.info("📡 [Discovery] Connected & subscribed after grace → Dwell")
 				self.transitionTo(.dwell)
 				self.startDwellTimer()
@@ -564,8 +570,8 @@ final class DiscoveryScanEngine {
 			do { try await Task.sleep(for: .seconds(remaining)) } catch { return }
 			guard self.currentState == .reconnecting else { return }
 			let resolution = Self.reconnectTimeoutResolution(
-				isConnected: self.accessoryManager?.isConnected ?? false,
-				isSubscribed: self.accessoryManager.map { $0.state == .subscribed } ?? false
+				isConnected: self.scanLink.connected,
+				isSubscribed: self.scanLink.subscribed
 			)
 			Logger.discovery.warning("📡 [Discovery] Reconnect window elapsed (\(Self.reconnectTimeoutSeconds)s) → \(resolution)")
 			self.transitionTo(resolution)
@@ -580,7 +586,7 @@ final class DiscoveryScanEngine {
 			do {
 				try await Task.sleep(for: .seconds(60))
 				guard let self, self.currentState == .reconnecting else { return }
-				guard let accessoryManager, accessoryManager.isConnected else {
+				guard self.scanLink.connected else {
 					Logger.discovery.warning("📡 [Discovery] TCP/Serial not connected after reboot wait → Paused")
 					self.transitionTo(.paused)
 					return
