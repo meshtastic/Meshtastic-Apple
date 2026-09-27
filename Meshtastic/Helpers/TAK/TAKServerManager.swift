@@ -74,6 +74,23 @@ final class TAKServerManager: ObservableObject {
 
 	@AppStorage("takServerChannel") var channel: Int = 0
 
+	/// The TAK channel is a slot number on the TAK radio, and on another radio that slot can be
+	/// another channel. When the TAK radio changes, the setting follows the channel to its slot on
+	/// the new radio, or goes to primary when the new radio doesn't have it (T184).
+	func moveChannel(from oldRadio: Int64?, to newRadio: Int64?) {
+		guard let oldRadio, let newRadio, oldRadio != newRadio else { return }
+		channel = Self.slot(forChannel: channel, from: oldRadio, to: newRadio, in: PersistenceController.shared.context)
+	}
+
+	static func slot(forChannel slot: Int, from oldRadio: Int64, to newRadio: Int64, in context: ModelContext) -> Int {
+		var descriptor = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == oldRadio })
+		descriptor.fetchLimit = 1
+		let stored = (try? context.fetch(descriptor))?.first?.channels.first { $0.index == Int32(slot) }?.channelKey
+		let computed = (try? MultiRadioBackfill.channelKeysByIndex(for: oldRadio, in: context, updateStored: false))?[Int32(slot)]
+		guard let key = computed ?? stored else { return 0 }
+		return ChannelMessageQuery.slots(for: key, among: [newRadio], in: context).first.map { Int($0.index) } ?? 0
+	}
+
 	@AppStorage("takServerEnabled") var enabled = false {
 		didSet {
 			Task {

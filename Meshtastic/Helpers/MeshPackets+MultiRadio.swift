@@ -128,6 +128,10 @@ extension MeshPackets {
 		var descriptor = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == nodeNum })
 		descriptor.fetchLimit = 1
 		guard let myInfo = try? modelContext.fetch(descriptor).first else { return }
+		if myInfo.lastConnected == nil {
+			// It now votes on favorite / ignored (`cachedConnectedRadios`), T184.
+			lookupRadiosReadAt = .distantPast
+		}
 		myInfo.lastConnected = Date()
 		myInfo.transport = transport.rawValue
 		if let autoConnect {

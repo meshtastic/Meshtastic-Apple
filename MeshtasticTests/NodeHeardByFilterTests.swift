@@ -83,6 +83,28 @@ struct NodeHeardByFilterTests {
 		#expect(filters.matches(node(radioB), heardByNodeNums: heardByB))
 	}
 
+	@Test("The Heard By set is there at the next launch, until it's looked up again")
+	func heardBySetSurvivesRelaunch() throws {
+		let context = try makeContext()
+		for radio in [radioA, radioB] {
+			let myInfo = MyInfoEntity()
+			myInfo.myNodeNum = radio
+			context.insert(myInfo)
+		}
+		context.insert(NodeObservationEntity(radioNum: radioB, nodeNum: 3))
+		try context.save()
+		let defaults = makeDefaults()
+		let filters = NodeFilterParameters(store: defaults)
+		filters.heardByRadio = radioB
+		filters.refreshHeardByNodeNums(in: context)
+
+		#expect(NodeFilterParameters(store: defaults).heardByNodeNums == [3, radioB])
+
+		// Another choice starts without a set.
+		filters.heardByRadio = radioA
+		#expect(NodeFilterParameters(store: defaults).heardByNodeNums == nil)
+	}
+
 	@Test("A radio that's no longer one of the user's radios doesn't filter anything")
 	func unknownRadioDoesNotFilter() throws {
 		let context = try makeContext()

@@ -86,6 +86,9 @@ final class NodeFilterParameters: ObservableObject {
 		static let viaLora = "nodeFilter.viaLora"
 		static let viaMqtt = "nodeFilter.viaMqtt"
 		static let heardByRadio = "nodeFilter.heardByRadio"
+		/// The last looked-up Heard By set and the radio it's for (T184).
+		static let heardByNodeNums = "nodeFilter.heardByNodeNums"
+		static let heardByNodeNumsRadio = "nodeFilter.heardByNodeNumsRadio"
 	}
 
 	/// Search text is intentionally **not** persisted — relaunching into a stale search that hides
@@ -109,16 +112,24 @@ final class NodeFilterParameters: ObservableObject {
 	@Published var heardByRadio: Int64 {
 		didSet {
 			store.set(heardByRadio, forKey: Keys.heardByRadio)
-			if heardByRadio != oldValue { heardByNodeNums = nil }
+			if heardByRadio != oldValue { setHeardByNodeNums(nil) }
 		}
 	}
 	/// The nodes `heardByRadio` has heard, looked up by `refreshHeardByNodeNums(in:)` from a
 	/// view's `.task` (`HeardByRefresh`), never while a list or the map renders (T163). Nil when
-	/// the filter is off or not looked up yet.
+	/// the filter is off or not looked up yet. Kept across launches, so a list opened with Heard
+	/// By set doesn't show every node until the first lookup (T184).
 	@Published private(set) var heardByNodeNums: Set<Int64>?
 
 	func setHeardByNodeNums(_ nodeNums: Set<Int64>?) {
 		heardByNodeNums = nodeNums
+		if let nodeNums {
+			store.set(nodeNums.sorted().map(NSNumber.init(value:)), forKey: Keys.heardByNodeNums)
+			store.set(heardByRadio, forKey: Keys.heardByNodeNumsRadio)
+		} else {
+			store.removeObject(forKey: Keys.heardByNodeNums)
+			store.removeObject(forKey: Keys.heardByNodeNumsRadio)
+		}
 	}
 
 	@Published var deviceRoles: Set<Int> = [] {
@@ -179,6 +190,11 @@ final class NodeFilterParameters: ObservableObject {
 
 		if let storedRoles = store.array(forKey: Keys.deviceRoles) as? [Int] {
 			deviceRoles = Set(storedRoles)
+		}
+		if self.heardByRadio != 0,
+		   (store.object(forKey: Keys.heardByNodeNumsRadio) as? NSNumber)?.int64Value == self.heardByRadio,
+		   let stored = store.array(forKey: Keys.heardByNodeNums) as? [NSNumber] {
+			heardByNodeNums = Set(stored.map(\.int64Value))
 		}
 	}
 

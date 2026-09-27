@@ -302,6 +302,19 @@ struct MultiRadioIngestTests {
 		#expect(try fetch(NodeObservationEntity.self, in: container).isEmpty)
 	}
 
+	@Test("A radio that joins is in the keyed lookups from its first packet")
+	func newRadioJoinsLookupsAtOnce() async throws {
+		let container = try makeContainer()
+		let packets = await makePackets(container)
+		#expect(await packets.lookupRadios(first: nil).isEmpty)
+
+		var info = MyNodeInfo()
+		info.myNodeNum = UInt32(radioB)
+		_ = await packets.myInfoPacket(myInfo: info, peripheralId: UUID().uuidString)
+
+		#expect(await packets.lookupRadios(first: nil) == [radioB], "not after the 5 s cache")
+	}
+
 	@Test("A radio's node database fills its observation")
 	func nodeDBObservation() async throws {
 		let container = try makeContainer()

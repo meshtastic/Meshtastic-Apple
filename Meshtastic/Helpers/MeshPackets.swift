@@ -903,6 +903,9 @@ actor MeshPackets {
 
 				let myInfoEntity = MyInfoEntity()
 				modelContext.insert(myInfoEntity)
+				// A new radio: keyed lookups must try it from its first packet on, not after the
+				// cached list next expires (T184).
+				lookupRadiosReadAt = .distantPast
 				myInfoEntity.peripheralId = peripheralId
 				myInfoEntity.myNodeNum = Int64(myInfo.myNodeNum)
 				myInfoEntity.rebootCount = Int32(truncatingIfNeeded: myInfo.rebootCount)

@@ -169,6 +169,19 @@ struct ChannelMessageQueryTests {
 		#expect(ids(left) == [3, 6])
 	}
 
+	@Test("The TAK channel follows its channel to the new TAK radio's slot, or goes to primary")
+	@MainActor
+	func takChannelMovesWithTheRadio() throws {
+		let context = try makeContext()
+		makeRadio(radioA, channels: [2: "Team", 3: "Other"], in: context)
+		makeRadio(radioB, channels: [1: "Team"], in: context)
+		try context.save()
+
+		#expect(TAKServerManager.slot(forChannel: 2, from: radioA, to: radioB, in: context) == 1)
+		#expect(TAKServerManager.slot(forChannel: 3, from: radioA, to: radioB, in: context) == 0)
+		#expect(TAKServerManager.slot(forChannel: 0, from: radioA, to: radioB, in: context) == 0)
+	}
+
 	@Test("With one radio, the timeline is the slot, as before")
 	func singleRadio() throws {
 		let context = try makeContext()

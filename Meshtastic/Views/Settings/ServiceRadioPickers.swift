@@ -44,11 +44,14 @@ struct ServiceRadioPickers: View {
 
 	private func binding(for service: RadioService) -> Binding<Int64> {
 		Binding(get: { choices[service, default: 0] }, set: { newValue in
+			let previousTAKRadio = accessoryManager.radioNum(for: .tak)
 			choices[service] = newValue
 			UserDefaults.setServiceRadio(newValue, for: service)
 			switch service {
 			case .watch: WatchSessionManager.shared.sendNodesToWatch()
-			case .tak: TAKServerManager.shared.checkPrimaryChannelValidity()
+			case .tak:
+				TAKServerManager.shared.moveChannel(from: previousTAKRadio, to: accessoryManager.radioNum(for: .tak))
+				TAKServerManager.shared.checkPrimaryChannelValidity()
 			case .carPlay: break
 			}
 		})
