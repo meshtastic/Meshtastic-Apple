@@ -313,6 +313,9 @@ class AccessoryManager: ObservableObject {
 	/// Hands the focus to another connected radio when the focused one dropped and doesn't come
 	/// back (`scheduleFocusHandover`).
 	var focusHandoverTask: Task<Void, Never>?
+	/// The radio a pending handover is for. A failed reconnect of that radio closes again with
+	/// nothing open, which reschedules the handover; this keeps the radio it's for (T171).
+	var handoverPrevious: (radioNum: Int64?, device: Device?)?
 	/// Connects a remembered radio when the preferred one doesn't show up
 	/// (`scheduleRememberedRadioFallback`).
 	var rememberedRadioFallbackTask: Task<Void, Never>?

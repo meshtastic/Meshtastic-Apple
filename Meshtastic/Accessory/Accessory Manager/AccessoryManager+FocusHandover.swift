@@ -46,14 +46,30 @@ extension AccessoryManager {
 	/// them. The dropped radio (`previousDevice`) is then tried again as an additional radio until
 	/// it's back (T149): discovery only brings back the preferred radio, which is now the new one.
 	func scheduleFocusHandover(previousRadio: Int64?, previousDevice: Device? = nil, after delay: Duration = focusHandoverDelay) {
+		// A close with nothing open (the dropped radio's own reconnect failing) while a handover
+		// is pending is still about the radio that dropped (T171).
+		var previousRadio = previousRadio
+		var previousDevice = previousDevice
+		if previousRadio == nil, previousDevice == nil, focusHandoverTask != nil, let pending = handoverPrevious {
+			previousRadio = pending.radioNum
+			previousDevice = pending.device
+		}
 		focusHandoverTask?.cancel()
 		guard !additionalRadios.isEmpty else {
 			focusHandoverTask = nil
+			handoverPrevious = nil
 			return
 		}
-		focusHandoverTask = Task { @MainActor [weak self] in
+		handoverPrevious = (previousRadio, previousDevice)
+		focusHandoverTask = Task { @MainActor [weak self, previousRadio, previousDevice] in
 			try? await Task.sleep(for: delay)
 			var waited = delay
+			defer {
+				if !Task.isCancelled {
+					self?.focusHandoverTask = nil
+					self?.handoverPrevious = nil
+				}
+			}
 			while !Task.isCancelled, let self {
 				if self.activeConnection != nil || self.additionalRadios.isEmpty {
 					return

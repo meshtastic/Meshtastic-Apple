@@ -285,13 +285,38 @@ struct MultiRadioConnectFlowTests {
 		try await dropped.connection.disconnect(withError: nil, shouldReconnect: true)
 		try await manager.closeConnection()
 		manager.scheduleFocusHandover(previousRadio: Int64(radios.firstNum), previousDevice: dropped.device, after: .milliseconds(10))
-		try await waitUntil { manager.activeConnection != nil }
+		try await waitUntil { manager.activeConnection != nil && manager.additionalRadioReconnects[radios.firstDevice.id] != nil }
 
 		#expect(manager.activeConnection === secondSession)
 		#expect(await radios.second.disconnects == 0)
 		#expect(await radios.second.sent.map(describe).filter { $0 == .wantConfig(69420) }.count == 1, "not connected again")
 		#expect(manager.additionalRadioReconnects[radios.firstDevice.id] != nil, "the dropped radio is tried again")
 		#expect(manager.locationTask != nil, "the phone's position keeps going to every radio")
+		manager.additionalRadioReconnects.values.forEach { $0.cancel() }
+		manager.isSwitchingDevices = true
+		try await manager.disconnect()
+	}
+
+	@Test("A failed reconnect of the dropped radio doesn't make the handover forget it")
+	func handoverKeepsDroppedRadio() async throws {
+		let saved = SavedDefaults()
+		defer { saved.restore() }
+		let radios = try await connectTwoRadios()
+		let manager = radios.manager
+		manager.isSwitchingDevices = false
+		let secondSession = try #require(manager.additionalRadios[radios.secondDevice.id])
+		let dropped = try #require(manager.activeConnection)
+
+		try await dropped.connection.disconnect(withError: nil, shouldReconnect: true)
+		try await manager.closeConnection()
+		manager.scheduleFocusHandover(previousRadio: Int64(radios.firstNum), previousDevice: dropped.device, after: .seconds(3600))
+		// The dropped radio's own reconnect fails and closes again with nothing open.
+		manager.scheduleFocusHandover(previousRadio: nil, previousDevice: nil, after: .milliseconds(10))
+		#expect(manager.handoverPrevious?.device?.id == radios.firstDevice.id, "kept across the second close")
+		try await waitUntil { manager.activeConnection != nil && manager.additionalRadioReconnects[radios.firstDevice.id] != nil }
+
+		#expect(manager.activeConnection === secondSession)
+		#expect(manager.additionalRadioReconnects[radios.firstDevice.id] != nil, "the dropped radio is still tried again")
 		manager.additionalRadioReconnects.values.forEach { $0.cancel() }
 		manager.isSwitchingDevices = true
 		try await manager.disconnect()

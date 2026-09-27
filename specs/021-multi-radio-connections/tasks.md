@@ -172,7 +172,7 @@ each, full suite each time.
 All re-checked in the files and holding (2026-09-27). One commit each, full suite each time.
 
 - [X] T170 V2-1 the resets wait for the radio list, and count another connected radio as several. — `otherRadios` is nil until looked up and the reset buttons stay disabled until then; `hasOtherRadios` also counts any other connected radio. The view isn't unit tested.
-- [ ] T171 N2 a handover keeps the dropped radio when a failed reconnect closes again.
+- [X] T171 N2 a handover keeps the dropped radio when a failed reconnect closes again. — `handoverPrevious` carries the pending handover's radio into a reschedule that has none. Verified: `MultiRadioConnectFlowTests.handoverKeepsDroppedRadio` (fails without the fix); the handover tests now wait for the reconnect itself, since focusing clears `focusHandoverTask` mid-handover.
 - [ ] T172 N3 the recycle keeps the per-packet node and reception writes.
 - [ ] T173 V2-3 Purge Stale Nodes deletes the purged nodes' observations.
 - [ ] T174 V2-4 a merge attempt is counted per backup, just before it merges.
