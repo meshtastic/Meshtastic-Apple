@@ -124,7 +124,7 @@ phases don't change behaviour and keep the app shippable, which makes a rebase o
 
 ## Phase 8: Clean-up and guard rails
 
-- [ ] T110 SwiftLint custom rule banning `preferredPeripheralNum`, `preferredPeripheralId` and `UserDefaults.firmwareVersion` outside the migration code.
+- [X] T110 SwiftLint custom rule banning `preferredPeripheralNum`, `preferredPeripheralId` and `UserDefaults.firmwareVersion` outside the migration code. — `preferred_radio_defaults` (error, in `.swiftlint.yml` and `.swiftlint-precommit.yml`): `UserDefaults.preferredPeripheralId/Num` and their key strings only in `PreferredRadio.swift` and `UserDefaults.swift`; tests excluded. `UserDefaults.firmwareVersion` no longer exists, so it needs no rule.
 - [ ] T111 Remove unused single-radio code paths and comments that describe the old switch flow.
 
 ## Phase 9: Docs
