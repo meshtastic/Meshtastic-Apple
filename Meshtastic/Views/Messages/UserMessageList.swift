@@ -45,6 +45,9 @@ struct UserMessageList: View {
 	/// The radio picked in the "Via" control; nil follows the focused radio.
 	@State private var chosenRadio: Int64?
 	@State private var unreadByRadio: [Int64: Int] = [:]
+	/// Short and long names of the conversation's radios, looked up with them rather than while
+	/// the picker renders (T163).
+	@State private var storedRadioNames: [Int64: (short: String?, long: String?)] = [:]
 
 	init(user: UserEntity) {
 		self.user = user
@@ -465,14 +468,22 @@ private extension UserMessageList {
 		if unread != unreadByRadio {
 			unreadByRadio = unread
 		}
+		var names: [Int64: (short: String?, long: String?)] = [:]
+		for radioNum in radios where storedRadioNames[radioNum] == nil {
+			let user = getNodeInfo(id: radioNum, context: context)?.user
+			names[radioNum] = (user?.shortName, user?.longName)
+		}
+		if !names.isEmpty {
+			storedRadioNames.merge(names) { _, new in new }
+		}
 	}
 
 	func radioName(_ radioNum: Int64, short: Bool = false) -> String {
 		if let device = accessoryManager.connectedSession(forRadio: radioNum)?.device {
 			return (short ? device.shortName : device.longName) ?? device.name
 		}
-		let user = getNodeInfo(id: radioNum, context: context)?.user
-		return (short ? user?.shortName : user?.longName) ?? radioNum.toHex()
+		let stored = storedRadioNames[radioNum]
+		return (short ? stored?.short : stored?.long) ?? radioNum.toHex()
 	}
 
 	func radioLabel(_ radioNum: Int64) -> String {

@@ -12,12 +12,14 @@ import SwiftUI
 
 extension NodeFilterParameters {
 
-	/// The nodes the chosen radio has heard, for `matches(…, heardByNodeNums:)`. Nil when the
-	/// filter is off, or when the chosen radio is no longer one of the user's radios, so a stale
-	/// choice never empties the lists.
-	func heardByNodeNums(in context: ModelContext) -> Set<Int64>? {
-		guard heardByRadio != 0 else { return nil }
-		return Self.nodeNums(heardBy: heardByRadio, in: context)
+	/// Looks up the nodes the chosen radio has heard, for `matches(…, heardByNodeNums:)`. Nil
+	/// when the filter is off, or when the chosen radio is no longer one of the user's radios,
+	/// so a stale choice never empties the lists. Only assigned when it changed.
+	func refreshHeardByNodeNums(in context: ModelContext) {
+		let nodeNums = heardByRadio == 0 ? nil : Self.nodeNums(heardBy: heardByRadio, in: context)
+		if nodeNums != heardByNodeNums {
+			setHeardByNodeNums(nodeNums)
+		}
 	}
 
 	/// Every node `radioNum` has an observation of, plus the radio itself. Nil when `radioNum`
@@ -33,10 +35,32 @@ extension NodeFilterParameters {
 	}
 }
 
+/// Keeps `NodeFilterParameters.heardByNodeNums` current for a list or map: looked up when the
+/// chosen radio changes and every 15 s while the filter is on, as the radio hears more nodes.
+struct HeardByRefresh: ViewModifier {
+	@Environment(\.modelContext) private var context
+	@ObservedObject var filters: NodeFilterParameters
+
+	func body(content: Content) -> some View {
+		content.task(id: filters.heardByRadio) {
+			while !Task.isCancelled {
+				filters.refreshHeardByNodeNums(in: context)
+				guard filters.heardByRadio != 0 else { return }
+				try? await Task.sleep(for: .seconds(15))
+			}
+		}
+	}
+}
+
+extension View {
+	func refreshesHeardBy(_ filters: NodeFilterParameters) -> some View {
+		modifier(HeardByRefresh(filters: filters))
+	}
+}
+
 /// "Heard By" picker for the node, map and contact filters. Only shown once the user has more
 /// than one radio; with one, every node is heard by it.
 struct NodeHeardByFilterPicker: View {
-	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@ObservedObject var filters: NodeFilterParameters
 	@Query(sort: \MyInfoEntity.myNodeNum) private var radios: [MyInfoEntity]
@@ -62,11 +86,12 @@ struct NodeHeardByFilterPicker: View {
 		}
 	}
 
+	/// From the queried radios' relationships, not a fetch: this runs while the picker renders.
 	private func radioName(_ radioNum: Int64) -> String {
 		if let device = accessoryManager.connectedSession(forRadio: radioNum)?.device {
 			return device.shortName ?? device.longName ?? device.name
 		}
-		let user = getNodeInfo(id: radioNum, context: context)?.user
+		let user = radios.first { $0.myNodeNum == radioNum }?.myInfoNode?.user
 		return user?.longName ?? user?.shortName ?? radioNum.toHex()
 	}
 }

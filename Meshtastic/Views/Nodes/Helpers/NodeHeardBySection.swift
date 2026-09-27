@@ -18,6 +18,9 @@ struct NodeHeardBySection: View {
 	/// Changes when the node is heard again, so the table refreshes with it.
 	let lastHeard: Date?
 	@State private var observations: [NodeObservationEntity] = []
+	/// Names of the observing radios, looked up with the observations rather than while the
+	/// section renders (T163).
+	@State private var storedRadioNames: [Int64: String] = [:]
 
 	var body: some View {
 		Group {
@@ -39,14 +42,19 @@ struct NodeHeardBySection: View {
 			sortBy: [SortDescriptor(\.lastHeard, order: .reverse)]
 		)
 		observations = ((try? context.fetch(descriptor)) ?? []).filter { $0.radioNum != nodeNum }
+		var names: [Int64: String] = [:]
+		for radioNum in Set(observations.map(\.radioNum)) {
+			let user = getNodeInfo(id: radioNum, context: context)?.user
+			names[radioNum] = user?.shortName ?? user?.longName
+		}
+		storedRadioNames = names
 	}
 
 	private func radioName(_ radioNum: Int64) -> String {
 		if let device = accessoryManager.connectedSession(forRadio: radioNum)?.device {
 			return device.shortName ?? device.longName ?? device.name
 		}
-		let user = getNodeInfo(id: radioNum, context: context)?.user
-		return user?.shortName ?? user?.longName ?? radioNum.toHex()
+		return storedRadioNames[radioNum] ?? radioNum.toHex()
 	}
 
 	@ViewBuilder

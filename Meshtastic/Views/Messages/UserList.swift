@@ -24,6 +24,7 @@ struct UserList: View {
 	var body: some View {
 		VStack {
 			FilteredUserList(withFilters: filters, node: $node, userSelection: $userSelection)
+			.refreshesHeardBy(filters)
 			.sheet(isPresented: $editingFilters) {
 				NodeListFilter(filterTitle: "Contact Filters", showsEncryptedFilter: false, filters: filters)
 			}
@@ -115,7 +116,7 @@ private struct FilteredUserList: View {
 			distanceBounds: filters.distanceFilter ? distanceBounds : nil,
 			context: context
 		)
-		let heardByNodeNums = filters.heardByNodeNums(in: context)
+		let heardByNodeNums = filters.heardByNodeNums
 		return allUsers.filter {
 			filters.matches(
 				user: $0,

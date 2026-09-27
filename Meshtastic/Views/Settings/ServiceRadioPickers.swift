@@ -11,7 +11,6 @@ import SwiftUI
 /// App Settings pickers for the radio TAK, CarPlay & Siri and the Apple Watch use (feature 021,
 /// T102). Only shown once the user has more than one radio; with one, every service uses it.
 struct ServiceRadioPickers: View {
-	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Query(sort: \MyInfoEntity.myNodeNum) private var radios: [MyInfoEntity]
 	@State private var choices: [RadioService: Int64] = Dictionary(
@@ -55,11 +54,12 @@ struct ServiceRadioPickers: View {
 		})
 	}
 
+	/// From the queried radios' relationships, not a fetch: this runs while the pickers render.
 	private func radioName(_ radioNum: Int64) -> String {
 		if let device = accessoryManager.connectedSession(forRadio: radioNum)?.device {
 			return device.shortName ?? device.longName ?? device.name
 		}
-		let user = getNodeInfo(id: radioNum, context: context)?.user
+		let user = radios.first { $0.myNodeNum == radioNum }?.myInfoNode?.user
 		return user?.longName ?? user?.shortName ?? radioNum.toHex()
 	}
 }

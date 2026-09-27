@@ -56,6 +56,7 @@ struct NodeList: View {
 			}
 		}
 		.navigationSplitViewStyle(.balanced)
+		.refreshesHeardBy(filters)
 		.onAppear {
 			filters.fallbackLocation = connectedNode?.latestPosition?.nodeCoordinate
 		}
@@ -316,7 +317,7 @@ private struct FilteredNodeList: View {
 			distanceBounds: filters.distanceFilter ? distanceBounds : nil,
 			context: context
 		)
-		filterLookup.heardByNodeNums = filters.heardByNodeNums(in: context)
+		filterLookup.heardByNodeNums = filters.heardByNodeNums
 		var seenNodeNums = Set<Int64>()
 		seenNodeNums.reserveCapacity(allNodes.count)
 		var connectedNode: NodeInfoEntity?

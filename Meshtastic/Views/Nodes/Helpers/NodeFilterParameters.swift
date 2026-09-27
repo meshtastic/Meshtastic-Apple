@@ -106,7 +106,20 @@ final class NodeFilterParameters: ObservableObject {
 	@Published var hopsAway: Double { didSet { store.set(hopsAway, forKey: Keys.hopsAway) } }
 	@Published var roleFilter: Bool { didSet { store.set(roleFilter, forKey: Keys.roleFilter) } }
 	/// Only nodes this one of the user's radios has heard (feature 021, T087); 0 means any radio.
-	@Published var heardByRadio: Int64 { didSet { store.set(heardByRadio, forKey: Keys.heardByRadio) } }
+	@Published var heardByRadio: Int64 {
+		didSet {
+			store.set(heardByRadio, forKey: Keys.heardByRadio)
+			if heardByRadio != oldValue { heardByNodeNums = nil }
+		}
+	}
+	/// The nodes `heardByRadio` has heard, looked up by `refreshHeardByNodeNums(in:)` from a
+	/// view's `.task` (`HeardByRefresh`), never while a list or the map renders (T163). Nil when
+	/// the filter is off or not looked up yet.
+	@Published private(set) var heardByNodeNums: Set<Int64>?
+
+	func setHeardByNodeNums(_ nodeNums: Set<Int64>?) {
+		heardByNodeNums = nodeNums
+	}
 
 	@Published var deviceRoles: Set<Int> = [] {
 		didSet { store.set(Array(deviceRoles), forKey: Keys.deviceRoles) }
@@ -230,7 +243,7 @@ final class NodeFilterParameters: ObservableObject {
 		distanceBounds: NodeDistanceFilterBounds? = nil,
 		heardByNodeNums: Set<Int64>? = nil
 	) -> Bool {
-		// Heard-by filter: `heardByNodeNums(in:)`, nil when not filtering by radio
+		// Heard-by filter: `heardByNodeNums`, nil when not filtering by radio
 		if let heardByNodeNums, !heardByNodeNums.contains(node.num) { return false }
 
 		// Search text

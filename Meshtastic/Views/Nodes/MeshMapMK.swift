@@ -207,7 +207,7 @@ struct MeshMapMK: View {
 		let searchText = filters.searchText.lowercased()
 		let onlineThreshold = filters.isOnline ? Date().addingTimeInterval(-7_200) : nil
 		let distanceBounds = filters.currentDistanceBounds
-		let heardByNodeNums = filters.heardByNodeNums(in: context)
+		let heardByNodeNums = filters.heardByNodeNums
 		return positions.filter { position in
 			guard let node = position.nodePosition else { return false }
 			return filters.matches(
@@ -776,6 +776,7 @@ struct MeshMapMK: View {
 
 	private var mapWithDataHooks: some View {
 		mapNavigation
+			.refreshesHeardBy(filters)
 			.task(id: isMapVisible) {
 				// Throttled position refresh: re-derive the visible positions on a gentle
 				// cadence instead of on every SwiftData write (see `allLatestPositions`).

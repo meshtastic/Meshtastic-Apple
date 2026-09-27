@@ -63,10 +63,13 @@ struct NodeHeardByFilterTests {
 		try context.save()
 
 		let filters = NodeFilterParameters(store: makeDefaults())
-		#expect(filters.heardByNodeNums(in: context) == nil)
+		filters.refreshHeardByNodeNums(in: context)
+		#expect(filters.heardByNodeNums == nil)
 
 		filters.heardByRadio = radioB
-		let heardByB = try #require(filters.heardByNodeNums(in: context))
+		#expect(filters.heardByNodeNums == nil, "looked up by the views' task, not while they render")
+		filters.refreshHeardByNodeNums(in: context)
+		let heardByB = try #require(filters.heardByNodeNums)
 		#expect(heardByB == [1, 3, radioB])
 
 		func node(_ num: Int64) -> NodeInfoEntity {
@@ -88,6 +91,7 @@ struct NodeHeardByFilterTests {
 
 		let filters = NodeFilterParameters(store: makeDefaults())
 		filters.heardByRadio = radioB
-		#expect(filters.heardByNodeNums(in: context) == nil)
+		filters.refreshHeardByNodeNums(in: context)
+		#expect(filters.heardByNodeNums == nil)
 	}
 }

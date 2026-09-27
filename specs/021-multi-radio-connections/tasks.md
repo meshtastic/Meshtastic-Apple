@@ -161,7 +161,7 @@ each, full suite each time.
 - [X] T160 D11 the scan and range test see their own radio's packets even when another radio delivered first. — the scan radio's packets (and its neighbor info and beacons) reach the engine before the dedupe skip; a radio that wants range test packets gets its handler; the scan's reconnect logic reads its own radio (`linkState(ofRadio:)`). Verified: `MultiRadioConnectLifecycleTests.scanCountsItsOwnCopy` (fails without the fix).
 - [X] T161 D12 TAK settings for the TAK radio. — identity, role warning, Share Channels and the channel picker use `radioNum(for: .tak)`; the picker lists only that radio's channels. Verified: `MultiRadioServiceRadioTests.takChannelsAreTheTAKRadios`.
 - [X] T162 D14 backfill attribution. — the backfill drains at launch when messages wait for it and after a restore, with the restored radio as `ownRadio`. Verified: `MultiRadioBackfillTests.drainsAtOnce`; the launch and restore hooks aren't unit tested.
-- [ ] T163 D15 no SwiftData fetches in view bodies (new code).
+- [X] T163 D15 no SwiftData fetches in view bodies (new code). — the Heard By set is looked up by `HeardByRefresh` (`.refreshesHeardBy`, on change and every 15 s) into `NodeFilterParameters.heardByNodeNums`; offline radio names come from the queried radios' relationships (pickers) or are looked up with the data they belong to (DM radio picker, Heard By section). Verified: `NodeHeardByFilterTests`.
 - [ ] T164 D17 favorite, ignored and key verification as FR-022 says.
 - [ ] T165 D18 renumber by peripheral id only without device ids.
 - [ ] T166 D19 minors, and the `.localized` strings missing from the catalog.
