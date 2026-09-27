@@ -245,6 +245,9 @@ actor MeshPackets {
 
 	/// The user's radios for keyed lookups, re-read every few seconds (`lookupRadios(first:)`).
 	var cachedLookupRadios: Set<Int64> = []
+	/// Of those, the radios connected with this version (`MyInfoEntity.lastConnected`), read with
+	/// them: a merged backup's radio doesn't vote on favorite / ignored (T164).
+	var cachedConnectedRadios: Set<Int64> = []
 	var lookupRadiosReadAt = Date.distantPast
 
 	func invalidate() {

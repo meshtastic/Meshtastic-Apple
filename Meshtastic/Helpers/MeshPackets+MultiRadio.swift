@@ -43,7 +43,9 @@ extension MeshPackets {
 	func lookupRadios(first: Int64?) -> [Int64] {
 		let now = Date()
 		if now.timeIntervalSince(lookupRadiosReadAt) > 5 {
-			cachedLookupRadios = localRadioNums()
+			let myInfos = (try? modelContext.fetch(FetchDescriptor<MyInfoEntity>())) ?? []
+			cachedLookupRadios = Set(myInfos.map(\.myNodeNum).filter { $0 != 0 })
+			cachedConnectedRadios = Set(myInfos.filter { $0.lastConnected != nil }.map(\.myNodeNum).filter { $0 != 0 })
 			lookupRadiosReadAt = now
 		}
 		var radios: [Int64] = []
@@ -317,6 +319,14 @@ extension MeshPackets {
 			let all = existing.contains { $0 === observation } ? existing : existing + [observation]
 			if all.count > 1 {
 				NodeObservationEntity.applyAggregate(all, to: node, focusedRadio: PreferredRadio.nodeNum)
+				// FR-022: favorite, ignored and a verified key hold if any of the user's radios says
+				// so, not whichever radio's node DB came last (T164). Radios only a merged backup
+				// knows don't count; the radio this dump is from always does.
+				_ = lookupRadios(first: radioNum)
+				let voting = all.filter { $0.radioNum == radioNum || cachedConnectedRadios.contains($0.radioNum) }
+				node.favorite = voting.contains { $0.favorite }
+				node.ignored = voting.contains { $0.ignored }
+				node.isKeyManuallyVerified = voting.contains { $0.isKeyManuallyVerified }
 			}
 		} catch {
 			Logger.data.error("💥 [MultiRadio] Node-DB observation failed: \(error.localizedDescription, privacy: .public)")

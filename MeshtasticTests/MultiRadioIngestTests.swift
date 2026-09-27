@@ -248,6 +248,41 @@ struct MultiRadioIngestTests {
 		#expect(left.count == 2)
 	}
 
+	@Test("A node is a favorite if any of the user's radios says so, whichever node DB came last")
+	func favoriteFromAnyRadio() async throws {
+		let container = try makeContainer()
+		let context = ModelContext(container)
+		for radio in [radioA, radioB] {
+			let myInfo = MyInfoEntity()
+			myInfo.myNodeNum = radio
+			myInfo.lastConnected = .now
+			context.insert(myInfo)
+		}
+		// A radio only a merged backup knows, which favorited and ignored the node long ago.
+		let oldRadio: Int64 = 0x0E0E_0E0E
+		let old = MyInfoEntity()
+		old.myNodeNum = oldRadio
+		context.insert(old)
+		let stale = NodeObservationEntity(radioNum: oldRadio, nodeNum: remote)
+		stale.ignored = true
+		context.insert(stale)
+		try context.save()
+		let packets = await makePackets(container)
+
+		var favorite = NodeInfo()
+		favorite.num = UInt32(remote)
+		favorite.isFavorite = true
+		var plain = NodeInfo()
+		plain.num = UInt32(remote)
+		_ = await packets.nodeInfoPacket(nodeInfo: favorite, channel: 0, connectedNodeNum: radioA)
+		_ = await packets.nodeInfoPacket(nodeInfo: plain, channel: 0, connectedNodeNum: radioB)
+		await packets.savePendingChanges()
+
+		let node = try #require(try fetch(NodeInfoEntity.self, in: container).first { $0.num == remote })
+		#expect(node.favorite, "B's node DB came last, but A favorited it")
+		#expect(!node.ignored, "the merged backup's radio doesn't count")
+	}
+
 	@Test("A radio's node database fills its observation")
 	func nodeDBObservation() async throws {
 		let container = try makeContainer()

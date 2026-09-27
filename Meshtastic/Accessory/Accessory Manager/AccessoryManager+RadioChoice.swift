@@ -120,11 +120,25 @@ extension AccessoryManager {
 		}
 	}
 
+	/// Sets the user's choice on every radio's observation of `node`, so the node's combined flag
+	/// (any radio, T164) is what the user chose until a radio's node DB says otherwise. Saved
+	/// with the node.
+	/// `radios` limits it to those radios' observations.
+	private func recordChoice(on node: NodeInfoEntity, radios: [Int64]? = nil, _ apply: (NodeObservationEntity) -> Void) {
+		guard let context = node.modelContext else { return }
+		let nodeNum = node.num
+		let observations = (try? context.fetch(FetchDescriptor<NodeObservationEntity>(predicate: #Predicate { $0.nodeNum == nodeNum }))) ?? []
+		for observation in observations where radios?.contains(observation.radioNum) ?? true {
+			apply(observation)
+		}
+	}
+
 	/// Favorites or unfavorites `node` on every connected radio (D-11), the focused one first.
 	/// `radios` narrows that to some of them (still in connection order). Throws only if the
 	/// first radio fails; another radio's failure is logged, since the node is still favorited
 	/// where it matters most and the next node DB will show the rest.
 	func setFavorite(_ favorite: Bool, node: NodeInfoEntity, radios: [Int64]? = nil) async throws {
+		recordChoice(on: node, radios: radios) { $0.favorite = favorite }
 		let targets = connectedRadioNums.filter { radios?.contains($0) ?? true }
 		for (offset, radioNum) in targets.enumerated() where radioNum != node.num {
 			do {
@@ -141,6 +155,7 @@ extension AccessoryManager {
 
 	/// Ignores or un-ignores `node` on every connected radio (D-11), like `setFavorite`.
 	func setIgnored(_ ignored: Bool, node: NodeInfoEntity) async throws {
+		recordChoice(on: node) { $0.ignored = ignored }
 		for (offset, radioNum) in connectedRadioNums.enumerated() where radioNum != node.num {
 			do {
 				if ignored {

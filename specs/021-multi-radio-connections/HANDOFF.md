@@ -292,10 +292,12 @@ describes it well enough to rebuild.
 - `MyInfoEntity.unreadMessages` warns that `toUser == nil` in a predicate crashes or miscounts
   SwiftData on iOS 26 for badge counts. The conversation fetches already used it and still do;
   badge counts (`ChannelEntity.unreadMessages`) keep filtering `toUser` in Swift.
-- Each radio's node DB writes its own `isFavorite`/`isIgnored` onto the shared node, last one
-  wins. That's why favorite/ignore go to every connected radio (`setFavorite`, `setIgnored`).
-  A radio that was offline when the user changed it will flip the flag back when it next
-  connects; syncing on reconnect is not built.
+- With several radios observing a node, its favorite, ignored and verified flags are true if any
+  radio connected with this version says so (FR-022, T164; a merged backup's radio doesn't vote).
+  The user's change goes to every connected radio and onto every radio's observation
+  (`setFavorite`, `setIgnored`). A radio that was offline when the user changed it will set the
+  flag back when it next connects and dumps its node DB; syncing on reconnect is not built.
+  Key verification has no app-side setter; it follows the radios' node DBs the same way.
 - BLE restoration (T062): only the focused radio goes through the old restore path. Restored
   radios alongside it are claimed by the remembered-radio reconnect, so a restored radio that
   isn't remembered (`autoConnect` off) is released after `restoredStandbyGracePeriod`. If the

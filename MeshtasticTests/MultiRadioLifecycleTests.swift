@@ -347,6 +347,29 @@ struct MultiRadioConnectLifecycleTests {
 		manager.discoveryScanEngine = nil
 	}
 
+	@Test("Un-favoriting a node clears every radio's observation of it, so no radio's old view brings it back")
+	func unfavoriteRecordsOnEveryObservation() async throws {
+		let schema = Schema(versionedSchema: MeshtasticSchema.current)
+		let config = ModelConfiguration("Unfavorite-\(UUID().uuidString)", schema: schema, isStoredInMemoryOnly: true, allowsSave: true)
+		let context = ModelContext(try ModelContainer(for: schema, configurations: config))
+		let node = NodeInfoEntity()
+		node.num = 0x4242
+		node.favorite = true
+		context.insert(node)
+		for radio: Int64 in [0x0A0A, 0x0B0B] {
+			let observation = NodeObservationEntity(radioNum: radio, nodeNum: 0x4242)
+			observation.favorite = true
+			context.insert(observation)
+		}
+		try context.save()
+
+		try await AccessoryManager(transports: []).setFavorite(false, node: node)
+
+		let observations = try context.fetch(FetchDescriptor<NodeObservationEntity>())
+		#expect(observations.count == 2)
+		#expect(observations.allSatisfy { !$0.favorite })
+	}
+
 	@Test("Favoriting a node reaches every connected radio, each on its own connection")
 	func favoriteOnEveryRadio() async throws {
 		let focusedNum: Int64 = 0x0A0A, extraNum: Int64 = 0x0B0B
