@@ -48,16 +48,15 @@ Read this first if you are picking the work up. Update it in the same commit as 
   on additional radios (T065) in `a32319ad`; an MQTT client proxy per additional radio (T100) in
   `8849b76f`; admin messages routed through the radio they concern, with the relaying radio's own
   passkey (T045, part of T089) in `8636d5f1`; the radio pickers for TAK, CarPlay & Siri and the
-  Watch (T102–T105) in the commit after it. See tasks.md for the partial ones.
+  Watch (T102–T105) in the commit after it. D-17 (every radio the same, T068–T074) and the
+  review fixes (T140–T167, D-18 for resets) since. See tasks.md for the partial ones.
 - Mesh Multi (`~/Applications/Mesh Multi.app`, side-by-side, own container) is rebuilt from the
   latest commit on this branch and ready for the first two-radio test below. Not yet run by anyone.
-- Next up: D-17, every radio the same (T068–T074 in tasks.md, steps in plan.md › Every radio the
-  same), done in steps that each pass the full suite. Don't design around the focused/additional
-  split: it was a shortcut, and the owner needs every radio to work the same way. The owner's two-radio test
-  waits on hardware; don't rebuild Mesh Multi for it unless asked. Removing the switch-era
-  helpers (T066) waits for that test.
-- Baseline and latest: the full suite passes in the iOS Simulator (3,368 Swift Testing tests plus
-  29 XCTests, about 35–50 seconds of test time).
+- Next up: the owner's device test (checklist below), which waits on hardware; don't rebuild
+  Mesh Multi for it unless asked. Don't design around the focused/additional split: every radio
+  works the same way (D-17). Removing the switch-era helpers (T066) waits for that test.
+- Baseline and latest: the full suite passes in the iOS Simulator (3,442 Swift Testing tests plus
+  the XCTests, about 55 seconds of test time).
 
 ## First two-radio test (Mesh Multi, Mac)
 
@@ -99,33 +98,23 @@ Read this first if you are picking the work up. Update it in the same commit as 
 
 ## In progress
 
-- Review triage (2026-09-27): two read-only reviews, `review-connections.md` (C1–C14) and
-  `review-data.md` (D1–D19), next to this file. Every finding was re-checked in the files and
-  holds. One more of mine: strings written as `"…".localized` aren't extracted by Xcode, so the
-  catalog sync (`30924072`) missed them ("on %@", "via %@", "CarPlay & Siri", "Apple Watch",
-  "%@ is locked", "%@ needs a firmware update", "Unlock", "Update", "Radio: %@", "%d hops", …);
-  they need adding by hand. Nothing is fixed yet. Grouped:
-  - Before the device test (data loss, or they break what the test checks): D1 (NodeDB reset,
-    factory reset and Clear App Data wipe every radio's data and disconnect the focused radio,
-    not the one reset; needs the owner's decision on what a reset clears), D2 (deleting a
-    channel's messages deletes other radios' messages in the same slot), D3 (an undecodable
-    copy from one radio hides the decoded copy from another), D4 (the backfill fabricates
-    observations for the preferred radio every pass), D5 (the aggregate ignores age and copies
-    another radio's channel slot; single-radio users with old backups are affected), D7
-    (channel keys only set by text ingest, so a channel can show another radio's slot), D10
-    (per-packet reception and observation lookups scan unindexed columns, also for one radio),
-    C1 (Unlock while the radio is still connecting reconnects), C2 (a radio that dropped and
-    was handed over never comes back, a T072 regression), C3 (phone position stops after a
-    handover), C7 (heartbeat timeout follows the focused radio's firmware).
-  - After the test: C4, C5 (BLE restoration with several peripherals, iOS only), C6/C10 (the
-    ingest actor recycle drops queued writes, and counts only the focused radio's packets), C8,
-    C9 (TCP radios alongside: manual connect, Bonjour-found remembered radios), C11, C12, C13
-    (pre-existing), C14, D6 (Siri/CarPlay replies), D8 (mute and mentions), D9 (backup merge
-    in one transaction), D11 (scan and range test behind the dedupe), D12 (TAK settings), D13
-    (observations never removed), D14, D15 (fetches in view bodies), D18 (renumber by
-    peripheral id), D19.
-  - Owner decisions: D1 (what resetting one radio clears), D16 (a way to forget a radio), D17
-    (favorite/ignore: any radio, or the last node DB).
+- Review fixes (2026-09-27): every finding in `review-connections.md` (C1–C14) and
+  `review-data.md` (D1–D19) is fixed, one commit each (`8fac5ca7` … `512dcb1c`, T140–T166 in
+  tasks.md), except C13, which is `main`'s behaviour for the focused radio and is left as is
+  (T167; a check for it is in the device test checklist). Choices made along the way that the
+  owner should confirm:
+  - Remove This Radio keeps favorites (D-18 gives the choice only for a reset). It sits with the
+    resets in Settings › Device and is only offered with several radios' data in the store, so a
+    radio that isn't connected (sold, lent) can't be removed yet.
+  - The node's hops and signal use observations heard within an hour of the newest
+    (`NodeObservationEntity.currentWindow`); the channel slot comes only from the focused radio.
+  - Favorite / ignored / verified: a radio only a merged backup knows doesn't vote.
+  - A different radio on the same serial port or TCP address now joins the store as another
+    radio; on `main` it took over the first radio's history (T165).
+  - Restoring a backup asks first when the store holds several radios (on `main` it never asks).
+  - A backup merge gets three launches; the merge itself is still one transaction (D9's
+    chunking isn't done).
+  - Siri / CarPlay conversation ids gain a radio suffix (`:r<num>`) only with several radios.
 - D-17 (every radio the same) is done through T073: one connect flow, focus without
   reconnecting, and lock-down / old firmware prompting by name on any radio. Next: the device
   test when the owner's hardware is ready (checklist below). Also done since: T016, T018, T110,
@@ -369,7 +358,17 @@ describes it well enough to rebuild.
 - [ ] Lock-down firmware on B with no saved passphrase: B connects alongside A, its row says
   Locked, and a prompt names B. Unlock focuses B without reconnecting and shows the passphrase
   sheet with B's name; after unlocking, B's real config and node DB arrive. Watch whether B's
-  connect retried while it waited (Step 5).
+  connect retried while it waited (Step 5). Unlock tapped while B is still connecting focuses B
+  once its connect finishes, and A stays connected (T148). After unlocking through the sheet,
+  check that B's real config arrives without the app asking again; if it doesn't, the sheet's
+  path needs the `sendWantConfig` the saved-passphrase path already does (C13, T167).
+- [ ] Reset NodeDB on B with A connected (Settings › Node › B › Device): only B disconnects and
+  comes back; the app asks about B's messages. With A and B on the same preset and frequency the
+  nodes stay; with B on another preset, the nodes only B heard go. Remove This Radio on B: B
+  disconnects, isn't reconnected, and no longer appears as one of your radios.
+- [ ] Clear App Data with A and B connected: the confirmation names both, both disconnect.
+- [ ] Focused A dropped for more than 30 s: B takes the focus, A comes back alongside when it's in
+  range, and the phone's position keeps going to both (T149).
 - [ ] Old firmware on B: B stays connected, its row says it needs an update, Update focuses it and
   shows the update screen named B; the update screen's Disconnect hands the focus to A.
 - [ ] App Settings › TAK / CarPlay & Siri / Apple Watch: pick B. TAK CoT goes out from B (log
