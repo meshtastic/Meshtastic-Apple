@@ -192,7 +192,7 @@ struct MultiRadioConnectLifecycleTests {
 		var extraDevice = device("Extra")
 		extraDevice.num = 0x0B0B
 		extraDevice.connectionState = .connected
-		manager.additionalRadios[extraDevice.id] = AdditionalRadio(session: RadioSession(device: extraDevice, connection: IdleConnection()))
+		manager.additionalRadios[extraDevice.id] = RadioSession(device: extraDevice, connection: IdleConnection())
 		#expect(manager.focusHandoverCandidate?.id == extraDevice.id)
 
 		manager.userRequestedConnectionCancellation = true
@@ -225,7 +225,7 @@ struct MultiRadioConnectLifecycleTests {
 		let extraConnection = IdleConnection()
 		var extraDevice = device("Extra")
 		extraDevice.num = extraNum
-		manager.additionalRadios[extraDevice.id] = AdditionalRadio(session: RadioSession(device: extraDevice, connection: extraConnection))
+		manager.additionalRadios[extraDevice.id] = RadioSession(device: extraDevice, connection: extraConnection)
 		let node = NodeInfoEntity()
 		node.num = 0x1234
 
@@ -263,7 +263,7 @@ struct MultiRadioConnectLifecycleTests {
 		let extraConnection = IdleConnection()
 		var extraDevice = device("Extra")
 		extraDevice.num = extraNum
-		let extra = AdditionalRadio(session: RadioSession(device: extraDevice, connection: extraConnection))
+		let extra = RadioSession(device: extraDevice, connection: extraConnection)
 		manager.additionalRadios[extraDevice.id] = extra
 
 		try await manager.sendMessage(message: "hello", toUserNum: remoteNum, channel: 0, isEmoji: false, replyID: 0, viaRadio: extraNum)
@@ -325,7 +325,7 @@ struct MultiRadioConnectLifecycleTests {
 		let extraConnection = IdleConnection()
 		var extraDevice = device("Extra")
 		extraDevice.num = extraNum
-		manager.additionalRadios[extraDevice.id] = AdditionalRadio(session: RadioSession(device: extraDevice, connection: extraConnection))
+		manager.additionalRadios[extraDevice.id] = RadioSession(device: extraDevice, connection: extraConnection)
 
 		try await manager.sendMessage(message: "secret", toUserNum: remoteNum, channel: 0, isEmoji: false, replyID: 0, viaRadio: extraNum)
 

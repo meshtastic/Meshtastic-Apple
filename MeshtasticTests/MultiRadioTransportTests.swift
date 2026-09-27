@@ -306,9 +306,9 @@ struct MultiRadioSessionTests {
 		return Fixture(manager: manager, focused: focused, focusedConnection: connection)
 	}
 
-	private func addRadio(to manager: AccessoryManager, num: Int64? = 0x0000_0B0B) -> (AdditionalRadio, RecordingConnection) {
+	private func addRadio(to manager: AccessoryManager, num: Int64? = 0x0000_0B0B) -> (RadioSession, RecordingConnection) {
 		let (session, connection) = makeSession(name: "Extra", num: num)
-		let radio = AdditionalRadio(session: session)
+		let radio = session
 		manager.additionalRadios[session.device.id] = radio
 		return (radio, connection)
 	}
@@ -319,7 +319,7 @@ struct MultiRadioSessionTests {
 		let manager = fixture.manager, focused = fixture.focused, focusedConnection = fixture.focusedConnection
 		let (radio, extraConnection) = addRadio(to: manager)
 
-		await manager.didReceive(.error(AccessoryError.disconnected("lost")), from: radio.session)
+		await manager.didReceive(.error(AccessoryError.disconnected("lost")), from: radio)
 
 		#expect(manager.activeConnection === focused)
 		#expect(manager.additionalRadios.isEmpty)
@@ -332,10 +332,10 @@ struct MultiRadioSessionTests {
 		let fixture = makeManager()
 		let manager = fixture.manager, focused = fixture.focused, focusedConnection = fixture.focusedConnection
 		let (radio, _) = addRadio(to: manager)
-		await manager.disconnectAdditionalRadio(radio.id)
+		await manager.disconnectAdditionalRadio(radio.device.id)
 
-		await manager.didReceive(.disconnected(shouldReconnect: false), from: radio.session)
-		await manager.didReceive(.rssiUpdate(-30), from: radio.session)
+		await manager.didReceive(.disconnected(shouldReconnect: false), from: radio)
+		await manager.didReceive(.rssiUpdate(-30), from: radio)
 
 		#expect(manager.activeConnection === focused)
 		#expect(await focusedConnection.disconnects == 0)
@@ -349,7 +349,7 @@ struct MultiRadioSessionTests {
 		var fromRadio = FromRadio()
 		fromRadio.payloadVariant = .configCompleteID(12_345)
 
-		await manager.didReceive(.data(fromRadio), from: radio.session)
+		await manager.didReceive(.data(fromRadio), from: radio)
 
 		// The focused radio's config-complete bookkeeping is untouched.
 		#expect(manager.lastConfigRefresh == nil)
@@ -367,9 +367,9 @@ struct MultiRadioSessionTests {
 		var fromRadio = FromRadio()
 		fromRadio.payloadVariant = .myInfo(myInfo)
 
-		await manager.didReceive(.data(fromRadio), from: radio.session)
+		await manager.didReceive(.data(fromRadio), from: radio)
 
-		#expect(radio.session.nodeNum == 0x0000_0C0C)
+		#expect(radio.nodeNum == 0x0000_0C0C)
 		#expect(UserDefaults.preferredPeripheralNum == 0x0000_0A0A)
 		#expect(manager.activeDeviceNum == nil || manager.activeDeviceNum == 0x0000_0A0A)
 
@@ -392,7 +392,7 @@ struct MultiRadioSessionTests {
 		var fromRadio = FromRadio()
 		fromRadio.payloadVariant = .myInfo(myInfo)
 
-		await manager.didReceive(.data(fromRadio), from: radio.session)
+		await manager.didReceive(.data(fromRadio), from: radio)
 
 		#expect(manager.additionalRadios.isEmpty)
 		#expect(manager.activeConnection === focused)
@@ -405,13 +405,13 @@ struct MultiRadioSessionTests {
 		let (refused, _) = addRadio(to: manager, num: 2)
 		let (closed, _) = addRadio(to: manager, num: 3)
 
-		await manager.didReceive(.error(AccessoryError.disconnected("lost")), from: dropped.session)
-		await manager.didReceive(.errorWithoutReconnect(AccessoryError.bondLost), from: refused.session)
-		await manager.didReceive(.disconnected(shouldReconnect: false), from: closed.session)
+		await manager.didReceive(.error(AccessoryError.disconnected("lost")), from: dropped)
+		await manager.didReceive(.errorWithoutReconnect(AccessoryError.bondLost), from: refused)
+		await manager.didReceive(.disconnected(shouldReconnect: false), from: closed)
 
-		#expect(Set(manager.additionalRadioReconnects.keys) == [dropped.id])
+		#expect(Set(manager.additionalRadioReconnects.keys) == [dropped.device.id])
 
-		await manager.disconnectAdditionalRadio(dropped.id, byUser: true)
+		await manager.disconnectAdditionalRadio(dropped.device.id, byUser: true)
 		#expect(manager.additionalRadioReconnects.isEmpty)
 	}
 

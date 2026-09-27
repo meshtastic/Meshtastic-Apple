@@ -132,7 +132,8 @@ T071 in commits (each with the full suite passing; the MultiRadio tests that bui
   focused radio's, and discovering/idle when nothing is focused. The connect stepper moves onto
   `ConnectAttempt`, one per radio being connected, so `disconnect()`, the heartbeat timeout and a
   link error cancel that radio's attempt.
-- T071b: one set of sessions. The focused radio is a pointer into it. Reconnects, remembered
+- (Done with T071d in one commit: renaming first would have churned code T071d deletes.)
+  T071b: one set of sessions. The focused radio is a pointer into it. Reconnects, remembered
   radios, the retired-session list, the Connect tab rows and `send(_:via:)` work on sessions. A
   link error or disconnect tears down that session; only the focused radio's also runs focus
   handover and discovery.

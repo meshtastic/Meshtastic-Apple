@@ -21,7 +21,7 @@ extension AccessoryManager {
 		if activeConnection?.nodeNum == radioNum {
 			return activeConnection
 		}
-		return additionalRadios.values.first { $0.session.nodeNum == radioNum }?.session
+		return additionalRadios.values.first { $0.nodeNum == radioNum }
 	}
 
 	/// True when `radioNum` is connected, focused or not.

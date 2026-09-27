@@ -45,11 +45,11 @@ extension AccessoryManager {
 		return comparison == .orderedAscending || comparison == .orderedSame
 	}
 
-	/// Throws when the additional radio's firmware is below `minimumVersion`. The focused radio
-	/// stays connected on old firmware behind the update gate; an additional radio has no gate,
-	/// so it's turned away and the user focuses it to update it.
-	func checkAdditionalRadioFirmware(_ radio: AdditionalRadio) throws {
-		let device = radio.session.device
+	/// Throws when the radio's firmware is below `minimumVersion`. The focused radio stays
+	/// connected on old firmware behind the update gate; another radio has no gate yet (T073), so
+	/// its connect ends here (Step 6) and the user focuses it to update it.
+	func checkAdditionalRadioFirmware(_ session: RadioSession) throws {
+		let device = session.device
 		guard !Self.isFirmwareSupported(device.firmwareVersion, minimum: minimumVersion) else { return }
 		throw AdditionalRadioNeedsFocusError(
 			radioName: device.longName ?? device.name,
@@ -62,16 +62,17 @@ extension AccessoryManager {
 
 extension AccessoryManager {
 
-	/// Lock-down status from an additional radio. The focused radio keeps `LockdownCoordinator`
-	/// and its passphrase sheet; an additional radio has no prompt of its own, so:
+	/// Lock-down status from a radio that isn't focused. The focused radio keeps
+	/// `LockdownCoordinator` and its passphrase sheet until each radio gets its own (T073), so:
 	/// - locked, with a passphrase saved for this radio (by an earlier unlock while it was
 	///   focused): the passphrase is sent once on this connection;
-	/// - unlocked: a waiting handshake's request is sent again, or else the config is fetched
-	///   again, the way the coordinator's unlock does for the focused radio;
+	/// - unlocked: a connect in progress carries on by itself (the config request finished
+	///   before the status arrived, and Step 5 asks for the node DB again if the first request
+	///   went unanswered); a radio that was already connected gets its config again;
 	/// - locked with no usable passphrase, needing provisioning, or refusing the passphrase:
-	///   the connect fails with `AdditionalRadioNeedsFocusError` and it isn't retried.
-	func handleAdditionalLockdown(_ status: LockdownStatus, radio: AdditionalRadio, store: LockdownPassphraseStoring = LockdownPassphraseStore.shared) {
-		let session = radio.session
+	///   its connect ends with `AdditionalRadioNeedsFocusError`, which isn't retried, or it's
+	///   disconnected if it was already connected.
+	func handleAdditionalLockdown(_ status: LockdownStatus, session: RadioSession, store: LockdownPassphraseStoring = LockdownPassphraseStore.shared) {
 		let name = session.device.longName ?? session.device.name
 		switch status.state {
 		case .disabled, .unspecified, .UNRECOGNIZED:
@@ -79,26 +80,15 @@ extension AccessoryManager {
 
 		case .unlocked:
 			Logger.transport.info("🔒🔗➕ [Additional] \(name, privacy: .public) unlocked")
-			// A handshake still waiting gets its request again (the same nonce, so the waiting
-			// connect completes on it); otherwise the config is refreshed.
-			let waiting = Array(radio.pendingNonces.keys)
+			guard additionalRadio(for: session) != nil, connectAttempts[session.device.id]?.session !== session else { return }
 			Task { @MainActor [weak self] in
-				guard let self, self.additionalRadios[radio.id] === radio else { return }
-				guard !waiting.isEmpty else {
-					try? await self.requestHandshake(radio, nonce: UInt32(NONCE_ONLY_CONFIG), timeout: .seconds(30))
-					return
-				}
-				for nonce in waiting {
-					var toRadio = ToRadio()
-					toRadio.wantConfigID = nonce
-					try? await session.connection.send(toRadio)
-				}
+				try? await self?.sendWantConfig(on: session)
 			}
 
 		case .locked:
-			if !radio.lockdownAutoAttempted,
+			if !session.lockdownAutoAttempted,
 			   let myNum = session.nodeNum.map({ UInt32(truncatingIfNeeded: $0) }), myNum != 0,
-			   let stored = store.get(peripheralID: radio.id),
+			   let stored = store.get(peripheralID: session.device.id),
 			   let passphrase = stored.passphrase.data(using: .utf8) {
 				var auth = LockdownAuth()
 				auth.passphrase = passphrase
@@ -106,40 +96,36 @@ extension AccessoryManager {
 				auth.validUntilEpoch = stored.validUntilEpoch
 				auth.maxSessionSeconds = stored.maxSessionSeconds
 				guard let toRadio = Self.lockdownAuthPacket(to: myNum, auth: auth) else { return }
-				radio.lockdownAutoAttempted = true
+				session.lockdownAutoAttempted = true
 				Logger.transport.info("🔒🔗➕ [Additional] \(name, privacy: .public) is locked; sending its saved passphrase")
 				Task { @MainActor [weak self] in
 					do {
 						try await session.connection.send(toRadio)
 					} catch {
 						Logger.transport.error("🔒🔗➕ [Additional] Passphrase to \(name, privacy: .public) failed: \(error.localizedDescription, privacy: .public)")
-						await self?.stopLockedAdditionalRadio(radio)
+						await self?.stopLockedAdditionalRadio(session)
 					}
 				}
 				return
 			}
 			Logger.transport.warning("🔒🔗➕ [Additional] \(name, privacy: .public) is locked and has no saved passphrase that works")
-			Task { await stopLockedAdditionalRadio(radio) }
+			Task { await stopLockedAdditionalRadio(session) }
 
 		case .needsProvision, .unlockFailed:
 			Logger.transport.warning("🔒🔗➕ [Additional] \(name, privacy: .public) lock-down: \(String(describing: status.state), privacy: .public)")
-			Task { await stopLockedAdditionalRadio(radio) }
+			Task { await stopLockedAdditionalRadio(session) }
 		}
 	}
 
-	/// Fails the radio's waiting handshakes with `AdditionalRadioNeedsFocusError`, which ends its
-	/// connect (and disconnects it). With nothing waiting, it's disconnected here, without a
-	/// reconnect.
-	private func stopLockedAdditionalRadio(_ radio: AdditionalRadio) async {
-		guard additionalRadios[radio.id] === radio else { return }
-		let error = AdditionalRadioNeedsFocusError(radioName: radio.session.device.longName ?? radio.session.device.name, reason: .locked)
-		let waiting = Array(radio.pendingNonces.keys)
-		guard !waiting.isEmpty else {
-			await disconnectAdditionalRadio(radio.id)
+	/// Ends the radio's connect with `AdditionalRadioNeedsFocusError`, which also disconnects it.
+	/// A radio that was already connected is disconnected here, without a reconnect.
+	private func stopLockedAdditionalRadio(_ session: RadioSession) async {
+		guard additionalRadio(for: session) != nil else { return }
+		let error = AdditionalRadioNeedsFocusError(radioName: session.device.longName ?? session.device.name, reason: .locked)
+		if let attempt = connectAttempts[session.device.id], attempt.session === session, let stepper = attempt.stepper {
+			await stepper.cancelCurrentlyExecutingStep(withError: error, cancelFullProcess: true)
 			return
 		}
-		for nonce in waiting {
-			finishHandshake(radio, nonce: nonce, error: error)
-		}
+		await disconnectAdditionalRadio(session.device.id)
 	}
 }

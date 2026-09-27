@@ -55,7 +55,7 @@ struct MultiRadioServiceRadioTests {
 		var extraDevice = Device(id: UUID(), name: "Extra", transportType: .tcp, identifier: "b.local:4403")
 		extraDevice.num = extraNum
 		let extra = RadioSession(device: extraDevice, connection: IdleConnection())
-		manager.additionalRadios[extraDevice.id] = AdditionalRadio(session: extra)
+		manager.additionalRadios[extraDevice.id] = extra
 		return Radios(manager: manager, focused: focused, extra: extra)
 	}
 

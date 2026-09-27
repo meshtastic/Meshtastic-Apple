@@ -40,21 +40,23 @@ struct MultiRadioLockdownTests {
 
 	private struct Fixture {
 		let manager: AccessoryManager
-		let radio: AdditionalRadio
+		let radio: RadioSession
 		let connection: RecordingIdleConnection
 	}
 
-	/// A manager with a focused radio and one additional radio, B.
-	private func makeFixture() -> Fixture {
-		let manager = AccessoryManager(transports: [])
+	/// A manager with a focused radio and one connected alongside it, B.
+	private func makeFixture(transports: [any Transport] = []) -> Fixture {
+		let manager = AccessoryManager(transports: transports)
 		manager.isSwitchingDevices = true
+		manager.context = PersistenceController.shared.context
+		manager.appState = AppState(router: Router())
 		var focused = Device(id: UUID(), name: "Focused", transportType: .tcp, identifier: "a.local:4403")
 		focused.num = 0x0A0A
 		manager.activeConnection = RadioSession(device: focused, connection: RecordingIdleConnection())
 		let connection = RecordingIdleConnection()
 		var extra = Device(id: UUID(), name: "Extra", transportType: .tcp, identifier: "b.local:4403")
 		extra.num = extraNum
-		let radio = AdditionalRadio(session: RadioSession(device: extra, connection: connection))
+		let radio = RadioSession(device: extra, connection: connection)
 		manager.additionalRadios[extra.id] = radio
 		return Fixture(manager: manager, radio: radio, connection: connection)
 	}
@@ -78,9 +80,9 @@ struct MultiRadioLockdownTests {
 		let fixture = makeFixture()
 		let manager = fixture.manager, radio = fixture.radio, connection = fixture.connection
 		let store = InMemoryPassphraseStore()
-		store.entries[radio.id] = StoredPassphrase(passphrase: "hunter2", bootsRemaining: 3, validUntilEpoch: 0)
+		store.entries[radio.device.id] = StoredPassphrase(passphrase: "hunter2", bootsRemaining: 3, validUntilEpoch: 0)
 
-		manager.handleAdditionalLockdown(status(.locked), radio: radio, store: store)
+		manager.handleAdditionalLockdown(status(.locked), session: radio, store: store)
 		try await waitUntil { await !connection.sent.isEmpty }
 
 		let sent = await connection.sent
@@ -94,61 +96,60 @@ struct MultiRadioLockdownTests {
 		#expect(admin.lockdownAuth.bootsRemaining == 3)
 
 		// Still locked after that: the passphrase isn't sent again, and the radio is dropped.
-		manager.handleAdditionalLockdown(status(.locked), radio: radio, store: store)
-		try await waitUntil { await MainActor.run { manager.additionalRadios[radio.id] == nil } }
-		#expect(manager.additionalRadios[radio.id] == nil)
+		manager.handleAdditionalLockdown(status(.locked), session: radio, store: store)
+		try await waitUntil { await MainActor.run { manager.additionalRadios[radio.device.id] == nil } }
+		#expect(manager.additionalRadios[radio.device.id] == nil)
 		#expect(await connection.sent.count == 1)
 	}
 
-	@Test("A locked radio with no saved passphrase fails its connect with a reason, and isn't retried")
-	func lockedWithoutPassphraseFailsTheHandshake() async throws {
-		let fixture = makeFixture()
-		let manager = fixture.manager, radio = fixture.radio
-		let handshake = Task { @MainActor in
-			try await manager.requestHandshake(radio, nonce: 42, timeout: .seconds(30))
-		}
-		try await waitUntil { await MainActor.run { !radio.pendingNonces.isEmpty } }
-
-		manager.handleAdditionalLockdown(status(.locked), radio: radio, store: InMemoryPassphraseStore())
+	@Test("A locked radio with no saved passphrase ends its connect with a reason, and isn't kept")
+	func lockedWithoutPassphraseEndsTheConnect() async throws {
+		var locked = LockdownStatus()
+		locked.state = .locked
+		let scripted = ScriptedRadio(nodeNum: 0x5100_0001, afterConfig: [.lockdownStatus(locked)])
+		let fixture = makeFixture(transports: [ScriptedTransport(radio: scripted)])
+		let manager = fixture.manager
+		let device = Device(id: UUID(), name: "Locked", transportType: .tcp, identifier: "locked.local:4403")
 
 		await #expect(throws: AdditionalRadioNeedsFocusError.self) {
-			try await handshake.value
+			try await manager.connectAdditionalRadio(device)
 		}
+		#expect(manager.additionalRadios[device.id] == nil)
+		#expect(manager.connectAttempts[device.id] == nil)
+		#expect(await scripted.disconnects >= 1)
 		#expect(AdditionalRadioNeedsFocusError(radioName: "Extra", reason: .locked).errorDescription?.contains("Extra") == true)
 	}
 
-	@Test("Firmware below the minimum turns an additional radio away; unknown or newer firmware doesn't")
-	func firmwareGate() throws {
+	@Test("Firmware below the minimum turns a radio away; unknown or newer firmware doesn't")
+	func firmwareGate() async throws {
 		#expect(AccessoryManager.isFirmwareSupported(nil, minimum: "2.5.14"))
 		#expect(AccessoryManager.isFirmwareSupported("", minimum: "2.5.14"))
 		#expect(AccessoryManager.isFirmwareSupported("2.5.14", minimum: "2.5.14"))
 		#expect(AccessoryManager.isFirmwareSupported("2.7.15.567b8ea", minimum: "2.5.14"))
 		#expect(!AccessoryManager.isFirmwareSupported("2.3.2.63df972", minimum: "2.5.14"))
 
-		let fixture = makeFixture()
-		let manager = fixture.manager, radio = fixture.radio
-		try manager.checkAdditionalRadioFirmware(radio)
-		radio.session.device.firmwareVersion = "2.3.2.63df972"
-		#expect(throws: AdditionalRadioNeedsFocusError(radioName: "Extra", reason: .firmwareTooOld(version: "2.3.2.63df972"))) {
-			try manager.checkAdditionalRadioFirmware(radio)
+		let old = ScriptedRadio(nodeNum: 0x5100_0002, firmwareVersion: "2.3.2.63df972")
+		let fixture = makeFixture(transports: [ScriptedTransport(radio: old)])
+		let manager = fixture.manager
+		try manager.checkAdditionalRadioFirmware(fixture.radio)
+		let device = Device(id: UUID(), name: "Old", transportType: .tcp, identifier: "old.local:4403")
+
+		await #expect(throws: AdditionalRadioNeedsFocusError(radioName: "Scripted Radio", reason: .firmwareTooOld(version: "2.3.2.63df972"))) {
+			try await manager.connectAdditionalRadio(device)
 		}
+		#expect(manager.additionalRadios[device.id] == nil)
 	}
 
-	@Test("Unlocking mid-handshake asks for the same config again")
-	func unlockResendsTheWaitingRequest() async throws {
+	@Test("Unlocking a connected radio fetches its config again")
+	func unlockRefreshesAConnectedRadio() async throws {
 		let fixture = makeFixture()
 		let manager = fixture.manager, radio = fixture.radio, connection = fixture.connection
-		let handshake = Task { @MainActor in
-			try await manager.requestHandshake(radio, nonce: 42, timeout: .seconds(30))
-		}
-		try await waitUntil { await connection.sent.count == 1 }
 
-		manager.handleAdditionalLockdown(status(.unlocked), radio: radio, store: InMemoryPassphraseStore())
-		try await waitUntil { await connection.sent.count == 2 }
+		manager.handleAdditionalLockdown(status(.unlocked), session: radio, store: InMemoryPassphraseStore())
+		try await waitUntil { await !connection.sent.isEmpty }
 
-		let requests = await connection.sent.map(\.wantConfigID)
-		#expect(requests == [42, 42])
-		manager.finishHandshake(radio, nonce: 42, error: nil)
-		try await handshake.value
+		#expect(await connection.sent.map(\.wantConfigID) == [69420])
+		// Nothing answers this connection; end the waiting refresh.
+		await manager.tearDown(radio)
 	}
 }

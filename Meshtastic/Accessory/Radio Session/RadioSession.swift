@@ -59,6 +59,14 @@ final class RadioSession: Identifiable {
 	var expectedNodeDBSize: Int?
 	/// Nodes received since this connection asked for its node DB (connect Step 5).
 	var databaseNodeCount = 0
+
+	// MARK: - Services for a radio that isn't focused (T071; one type for every radio in T071c)
+
+	/// Its MQTT client proxy, when its config asks for one (T100). The focused radio uses
+	/// `MqttClientProxyManager.shared` until T071c.
+	var mqtt: AdditionalRadioMqttBridge?
+	/// A lock-down passphrase saved for this radio has been sent on this connection (T065).
+	var lockdownAutoAttempted = false
 	/// The firmware edition from its MyInfo (event firmware and the like).
 	var firmwareEdition: FirmwareEditions = .vanilla
 	/// The region → legal preset map it advertised in the config handshake (2.8+).

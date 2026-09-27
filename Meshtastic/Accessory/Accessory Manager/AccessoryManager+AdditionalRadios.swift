@@ -9,37 +9,14 @@ import Foundation
 import MeshtasticProtobufs
 import OSLog
 
-// MARK: - Additional radios (feature 021, Phase 5)
+// MARK: - Radios connected alongside the focused one (feature 021)
 
-/// A radio connected alongside the focused one.
-///
-/// The focused radio (`AccessoryManager.activeConnection`) keeps the full connect flow: config
-/// refresh, TAK, the firmware update gate, lock-down prompt, settings. An additional
-/// radio runs a smaller flow on its own connection: connect, config and node-DB handshake, then
-/// ingest into the shared store, tagged with its own node number; its own MQTT client proxy;
-/// a saved lock-down passphrase; and a firmware check that turns old firmware away (see
-/// `AccessoryManager+AdditionalRadioGates.swift`). Nothing it does touches the focused radio's
-/// state (see `processAdditionalFromRadio`).
-@MainActor
-final class AdditionalRadio: Identifiable {
-	let session: RadioSession
-	var eventTask: Task<Void, Never>?
-	var heartbeatTask: Task<Void, Never>?
-	/// Handshake requests waiting for their `configCompleteID`, by nonce.
-	var pendingNonces: [UInt32: CheckedContinuation<Void, Error>] = [:]
-	/// Nodes received in the current node-DB dump.
-	var nodeCount = 0
-	/// A lock-down passphrase saved for this radio has been sent on this connection (T065).
-	var lockdownAutoAttempted = false
-	/// The radio's own MQTT client proxy, when its config asks for one (T100).
-	var mqtt: AdditionalRadioMqttBridge?
-
-	var id: UUID { session.device.id }
-
-	init(session: RadioSession) {
-		self.session = session
-	}
-}
+// Every connected radio is a `RadioSession` and runs the same connect steps (D-17, plan.md ›
+// Every radio the same). One of them is focused (`AccessoryManager.activeConnection`); the others
+// are in `additionalRadios`, by device id. This file keeps track of the others: which are
+// connected, their events, disconnecting and reconnecting them, and the radios remembered from
+// last time. Lock-down and old firmware on a radio that isn't focused are handled in
+// `AccessoryManager+AdditionalRadioGates.swift` until each radio gets its own prompts (T073).
 
 /// Lets one radio at a time run its config and node-DB handshake (T064).
 ///
@@ -101,7 +78,7 @@ extension AccessoryManager {
 
 	/// True when `deviceId` is connected or connecting, focused or not.
 	func isRadioConnected(_ deviceId: UUID) -> Bool {
-		activeConnection?.device.id == deviceId || additionalRadios[deviceId] != nil
+		activeConnection?.device.id == deviceId || additionalRadios[deviceId] != nil || connectAttempts[deviceId] != nil
 	}
 
 	/// Every connected radio's device, the focused one first.
@@ -114,19 +91,21 @@ extension AccessoryManager {
 	/// The additional radios' devices, by name.
 	var additionalRadioDevices: [Device] {
 		additionalRadios.values
-			.map(\.session.device)
+			.map(\.device)
 			.sorted { ($0.longName ?? $0.name) < ($1.longName ?? $1.name) }
 	}
 
-	func additionalRadio(for session: RadioSession) -> AdditionalRadio? {
-		additionalRadios[session.device.id].flatMap { $0.session === session ? $0 : nil }
+	/// `session` when it's one of the radios connected alongside the focused one.
+	func additionalRadio(for session: RadioSession) -> RadioSession? {
+		additionalRadios[session.device.id].flatMap { $0 === session ? $0 : nil }
 	}
 
 	// MARK: - Connect
 
-	/// Connects `device` alongside the focused radio. With no radio connected this is a normal
-	/// connect, and the radio becomes the focused one. `connectTimeout` bounds the transport
-	/// connect for automatic attempts; a user's tap waits as long as the transport does.
+	/// Connects `device` alongside the focused radio, through the same connect steps as the
+	/// focused one (D-17). With no radio connected this is a normal connect, and the radio becomes
+	/// the focused one. `connectTimeout` bounds the transport connect for automatic attempts; a
+	/// user's tap waits as long as the transport does. Throws when the radio didn't connect.
 	func connectAdditionalRadio(_ device: Device, connectTimeout: Duration? = nil) async throws {
 		guard activeConnection != nil else {
 			try await connect(to: device)
@@ -138,88 +117,14 @@ extension AccessoryManager {
 		guard canConnectAnotherRadio else {
 			throw AccessoryError.connectionFailed(String.localizedStringWithFormat("You can connect up to %d radios at once.".localized, Self.maxConnectedRadios))
 		}
-		guard let transport = transportForType(device.transportType) else {
-			throw AccessoryError.connectionFailed("No transport for type")
-		}
 		Logger.transport.info("🔗➕ [Additional] Connecting \(device.name, privacy: .public) alongside \(self.activeConnection?.device.name ?? "?", privacy: .public)")
-		updateDevice(deviceId: device.id, key: \.connectionState, value: .connecting)
-
-		let connection: any Connection
-		let events: AsyncStream<ConnectionEvent>
-		do {
-			connection = try await connectTransport(transport, to: device, within: connectTimeout)
-			// The connect can take a while (BLE waits for the radio). Re-check what it assumed.
-			guard !isRadioConnected(device.id), canConnectAnotherRadio, activeConnection != nil else {
-				try? await connection.disconnect(withError: nil, shouldReconnect: false)
-				throw AccessoryError.connectionFailed("No longer room for this radio")
-			}
-			events = try await connection.connect()
-		} catch {
-			updateDevice(deviceId: device.id, key: \.connectionState, value: .disconnected)
-			if let bleTransport = transport as? BLETransport {
-				await bleTransport.resumeScanningAfterConnectionEstablished()
-			}
-			throw error
-		}
-
-		let session = RadioSession(device: device, connection: connection)
-		let radio = AdditionalRadio(session: session)
-		additionalRadios[device.id] = radio
-		radio.eventTask = Task { @MainActor [weak self] in
-			for await event in events {
-				await self?.didReceive(event, from: session)
-			}
-			Logger.transport.info("🔗➕ [Additional] Event stream closed for \(device.name, privacy: .public)")
-		}
-
-		do {
-			if handshakeGate.isBusy {
-				Logger.transport.info("🔗➕ [Additional] \(device.name, privacy: .public) waits for another radio's handshake")
-			}
-			await handshakeGate.acquire()
-			defer { handshakeGate.release() }
-			guard additionalRadios[device.id] === radio else {
-				throw AccessoryError.disconnected("Radio disconnected while waiting to connect")
-			}
-			try await sendAdditionalHeartbeat(radio)
-			try await requestHandshake(radio, nonce: UInt32(NONCE_ONLY_CONFIG), timeout: .seconds(30))
-			try checkAdditionalRadioFirmware(radio)
-			try await requestHandshake(radio, nonce: UInt32(NONCE_ONLY_DB), timeout: .seconds(120))
-		} catch {
-			Logger.transport.error("🔗➕ [Additional] Handshake with \(device.name, privacy: .public) failed: \(error.localizedDescription, privacy: .public)")
-			await disconnectAdditionalRadio(device.id)
-			throw error
-		}
-
-		await MeshPackets.shared.flushDebouncedSaves()
-		updateDevice(deviceId: device.id, key: \.connectionState, value: .connected)
-		if transport.requiresPeriodicHeartbeat {
-			startAdditionalHeartbeat(radio)
-		}
-		if let bleTransport = transport as? BLETransport {
-			await bleTransport.resumeScanningAfterConnectionEstablished()
-		}
-		Task { await self.startAdditionalMqtt(radio) }
-		WatchSessionManager.shared.sendNodesToWatch()
-		if let nodeNum = session.nodeNum {
-			await MeshPackets.shared.noteRadioConnected(nodeNum: nodeNum, transport: device.transportType, autoConnect: true)
-		}
-		if session.device.isManualConnection {
-			ManualConnectionList.shared.insert(device: session.device)
-		}
-		Logger.datadog.action(.connect(
-			firmwareVersion: reportedFirmwareVersion(for: session.device),
-			transportType: session.device.transportType.rawValue,
-			hardwareModel: session.device.hardwareModel,
-			nodes: radio.nodeCount,
-			additionalRadio: true
-		))
-		Logger.transport.info("🔗➕ [Additional] \(session.device.longName ?? device.name, privacy: .public) connected (\(radio.nodeCount) nodes); \(self.connectedRadioCount) radios connected")
+		try await connect(to: device, asFocused: false, connectTimeout: connectTimeout)
+		Logger.transport.info("🔗➕ [Additional] \(device.name, privacy: .public) connected; \(self.connectedRadioCount) radios connected")
 	}
 
 	/// `transport.connect(to:)`, given up after `timeout` when there is one. A BLE connect to an
 	/// out-of-range radio otherwise waits indefinitely, holding the scan paused.
-	private func connectTransport(_ transport: any Transport, to device: Device, within timeout: Duration?) async throws -> any Connection {
+	func connectTransport(_ transport: any Transport, to device: Device, within timeout: Duration?) async throws -> any Connection {
 		guard let timeout else {
 			return try await transport.connect(to: device)
 		}
@@ -250,68 +155,6 @@ extension AccessoryManager {
 		return connection
 	}
 
-	/// Sends a want-config request and waits for its completion nonce.
-	func requestHandshake(_ radio: AdditionalRadio, nonce: UInt32, timeout: Duration) async throws {
-		if nonce == UInt32(NONCE_ONLY_DB) {
-			radio.nodeCount = 0
-		}
-		let connection = radio.session.connection
-		try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
-			radio.pendingNonces[nonce] = continuation
-			Task { @MainActor [weak self] in
-				do {
-					var toRadio = ToRadio()
-					toRadio.wantConfigID = nonce
-					try await connection.send(toRadio)
-					try await connection.startDrainPendingPackets()
-				} catch {
-					self?.finishHandshake(radio, nonce: nonce, error: error)
-				}
-			}
-			Task { @MainActor [weak self] in
-				try? await Task.sleep(for: timeout)
-				self?.finishHandshake(radio, nonce: nonce, error: AccessoryError.timeout)
-			}
-		}
-	}
-
-	func finishHandshake(_ radio: AdditionalRadio, nonce: UInt32, error: Error?) {
-		guard let continuation = radio.pendingNonces.removeValue(forKey: nonce) else { return }
-		if let error {
-			continuation.resume(throwing: error)
-		} else {
-			continuation.resume()
-		}
-	}
-
-	/// A heartbeat on this radio's own connection. Unlike `sendHeartbeat`, it leaves the focused
-	/// radio's heartbeat timers alone.
-	private func sendAdditionalHeartbeat(_ radio: AdditionalRadio) async throws {
-		var heartbeat = Heartbeat()
-		heartbeat.nonce = UInt32.random(in: 2...UInt32.max)
-		var toRadio = ToRadio()
-		toRadio.payloadVariant = .heartbeat(heartbeat)
-		try await radio.session.connection.send(toRadio)
-	}
-
-	private func startAdditionalHeartbeat(_ radio: AdditionalRadio) {
-		radio.heartbeatTask?.cancel()
-		radio.heartbeatTask = Task { @MainActor [weak self, weak radio] in
-			while !Task.isCancelled {
-				try? await Task.sleep(for: .seconds(Self.heartbeatInterval))
-				guard let self, let radio, !Task.isCancelled else { return }
-				do {
-					try await self.sendAdditionalHeartbeat(radio)
-				} catch {
-					Logger.transport.error("🔗➕ [Additional] Heartbeat to \(radio.session.device.name, privacy: .public) failed: \(error.localizedDescription, privacy: .public)")
-					await self.disconnectAdditionalRadio(radio.id)
-					self.scheduleAdditionalRadioReconnect(radio.session.device)
-					return
-				}
-			}
-		}
-	}
-
 	// MARK: - Disconnect
 
 	/// Disconnects one additional radio. The focused radio and the others are unaffected.
@@ -320,23 +163,28 @@ extension AccessoryManager {
 		if byUser {
 			additionalRadioReconnects.removeValue(forKey: deviceId)?.cancel()
 		}
-		guard let radio = additionalRadios.removeValue(forKey: deviceId) else { return }
-		if byUser, let nodeNum = radio.session.nodeNum {
+		// A connect still in progress for it stops, whether it's waiting for the handshake gate
+		// or running its steps.
+		if let attempt = connectAttempts[deviceId], !attempt.isFocused {
+			attempt.isCancelled = true
+			await attempt.stepper?.cancelCurrentlyExecutingStep(withError: AccessoryError.disconnected("Radio disconnected"), cancelFullProcess: true)
+		}
+		guard let session = additionalRadios.removeValue(forKey: deviceId) else {
+			if connectAttempts[deviceId] != nil {
+				updateDevice(deviceId: deviceId, key: \.connectionState, value: .disconnected)
+			}
+			return
+		}
+		if byUser, let nodeNum = session.nodeNum {
 			await MeshPackets.shared.setRadioAutoConnect(nodeNum: nodeNum, false)
 		}
-		retiredAdditionalSessionIDs.insert(radio.session.id)
-		radio.heartbeatTask?.cancel()
-		stopAdditionalMqtt(radio)
-		let pending = radio.pendingNonces
-		radio.pendingNonces.removeAll()
-		for continuation in pending.values {
-			continuation.resume(throwing: AccessoryError.disconnected("Radio disconnected"))
-		}
+		retiredAdditionalSessionIDs.insert(session.id)
+		stopAdditionalMqtt(session)
 		await MeshPackets.shared.flushDebouncedSaves()
-		try? await radio.session.connection.disconnect(withError: nil, shouldReconnect: false)
-		radio.eventTask?.cancel()
+		await tearDown(session)
+		try? await session.connection.disconnect(withError: nil, shouldReconnect: false)
 		updateDevice(deviceId: deviceId, key: \.connectionState, value: .disconnected)
-		Logger.transport.info("🔗➖ [Additional] Disconnected \(radio.session.device.name, privacy: .public); \(self.connectedRadioCount) radios connected")
+		Logger.transport.info("🔗➖ [Additional] Disconnected \(session.device.name, privacy: .public); \(self.connectedRadioCount) radios connected")
 	}
 
 	func disconnectAllAdditionalRadios() async {
@@ -418,107 +266,48 @@ extension AccessoryManager {
 
 	// MARK: - Events
 
-	/// Handles one event from an additional radio.
-	func didReceiveAdditional(_ event: ConnectionEvent, radio: AdditionalRadio) async {
+	/// Handles one event from a radio connected alongside the focused one. Its data takes the
+	/// same path as the focused radio's (`processFromRadio`, scoped to the session). An error or a
+	/// disconnect ends only this radio: a connect in progress retries or gives up as the focused
+	/// radio's would, and a connected radio is disconnected and, unless told otherwise,
+	/// reconnected when it's back.
+	func didReceiveAdditional(_ event: ConnectionEvent, session: RadioSession) async {
 		switch event {
 		case .data(let fromRadio):
-			await processAdditionalFromRadio(fromRadio, radio: radio)
+			await processFromRadio(fromRadio, session: session)
+			Task {
+				await session.heartbeatResponseTimer?.cancel(withReason: "Data packet received")
+				await session.heartbeatTimer?.reset(delay: .seconds(Self.heartbeatInterval))
+			}
 		case .logMessage(let message):
 			didReceiveLog(message: message)
-		case .rssiUpdate(let rssi):
-			updateDevice(deviceId: radio.id, key: \.rssi, value: rssi)
-		case .error(let error):
-			Logger.transport.error("🔗➕ [Additional] \(radio.session.device.name, privacy: .public) reported: \(error.localizedDescription, privacy: .public)")
-			await disconnectAdditionalRadio(radio.id)
-			scheduleAdditionalRadioReconnect(radio.session.device)
-		case .errorWithoutReconnect(let error):
-			Logger.transport.error("🔗➕ [Additional] \(radio.session.device.name, privacy: .public) reported: \(error.localizedDescription, privacy: .public)")
-			await disconnectAdditionalRadio(radio.id)
-		case .disconnected(let shouldReconnect):
-			await disconnectAdditionalRadio(radio.id)
-			if shouldReconnect {
-				scheduleAdditionalRadioReconnect(radio.session.device)
+			Task {
+				await session.heartbeatResponseTimer?.cancel(withReason: "Log message packet received")
+				await session.heartbeatTimer?.reset(delay: .seconds(Self.heartbeatInterval))
 			}
-		}
-	}
-
-	/// Routes one `FromRadio` from an additional radio. Mesh packets take the same path as the
-	/// focused radio's (`processFromRadio`), which is already scoped to the session. The
-	/// handshake variants are handled here without the focused-radio side effects: no
-	/// preferred-radio update, no foreign-store reset, no connect-flow state, no MQTT, no
-	/// follow-up admin requests.
-	private func processAdditionalFromRadio(_ fromRadio: FromRadio, radio: AdditionalRadio) async {
-		let session = radio.session
-		switch fromRadio.payloadVariant {
-		case .packet:
-			await processFromRadio(fromRadio, session: session)
-
-		case .myInfo(let myInfo):
-			let nodeNum = Int64(myInfo.myNodeNum)
-			if let focusedNum = activeConnection?.device.num, focusedNum == nodeNum {
-				Logger.transport.error("🔗➕ [Additional] \(session.device.name, privacy: .public) reports the focused radio's node number; disconnecting it")
-				await disconnectAdditionalRadio(radio.id)
+		case .rssiUpdate(let rssi):
+			updateDevice(deviceId: session.device.id, key: \.rssi, value: rssi)
+		case .error(let error), .errorWithoutReconnect(let error):
+			Logger.transport.error("🔗➕ [Additional] \(session.device.name, privacy: .public) reported: \(error.localizedDescription, privacy: .public)")
+			let reconnect: Bool
+			if case .errorWithoutReconnect = event { reconnect = false } else { reconnect = true }
+			if let attempt = connectAttempts[session.device.id], attempt.session === session, let stepper = attempt.stepper {
+				await stepper.cancelCurrentlyExecutingStep(withError: error, cancelFullProcess: !reconnect)
 				return
 			}
-			updateDevice(deviceId: session.device.id, key: \.num, value: nodeNum)
-			_ = await MeshPackets.shared.myInfoPacket(myInfo: myInfo, peripheralId: session.device.id.uuidString)
-			if session.device.longName == nil {
-				updateDevice(deviceId: session.device.id, key: \.longName, value: session.device.name)
+			await disconnectAdditionalRadio(session.device.id)
+			if reconnect {
+				scheduleAdditionalRadioReconnect(session.device)
 			}
-
-		case .nodeInfo(let nodeInfo):
-			guard nodeInfo.num > 0 else { return }
-			radio.nodeCount += 1
-			_ = await MeshPackets.shared.nodeInfoPacket(nodeInfo: nodeInfo, channel: 0, deferSave: true, connectedNodeNum: session.nodeNum)
-			if session.nodeNum == Int64(nodeInfo.num), nodeInfo.hasUser {
-				let user = nodeInfo.user
-				updateDevice(deviceId: session.device.id, key: \.shortName, value: user.shortName.isEmpty ? "?" : user.shortName)
-				updateDevice(deviceId: session.device.id, key: \.longName, value: user.longName.isEmpty ? "Unknown".localized : user.longName)
-				updateDevice(deviceId: session.device.id, key: \.hardwareModel, value: String(describing: user.hwModel).uppercased())
+		case .disconnected(let shouldReconnect):
+			if let attempt = connectAttempts[session.device.id], attempt.session === session, let stepper = attempt.stepper {
+				await stepper.cancelCurrentlyExecutingStep(withError: AccessoryError.disconnected("Radio disconnected"), cancelFullProcess: !shouldReconnect)
+				return
 			}
-
-		case .channel(let channel):
-			await handleChannel(channel, session: session)
-
-		case .config(let config):
-			guard let nodeNum = session.nodeNum else { return }
-			await MeshPackets.shared.localConfig(config: config, nodeNum: nodeNum, nodeLongName: session.device.longName ?? session.device.name)
-
-		case .moduleConfig(let moduleConfig):
-			guard let nodeNum = session.nodeNum else { return }
-			await MeshPackets.shared.moduleConfig(config: moduleConfig, nodeNum: nodeNum, nodeLongName: session.device.longName ?? session.device.name)
-
-		case .metadata(let metadata):
-			guard let nodeNum = session.nodeNum else { return }
-			updateDevice(deviceId: session.device.id, key: \.firmwareVersion, value: metadata.firmwareVersion)
-			await MeshPackets.shared.deviceMetadataPacket(metadata: metadata, fromNum: nodeNum)
-
-		case .configCompleteID(let nonce):
-			if nonce == UInt32(NONCE_ONLY_DB) {
-				await MeshPackets.shared.flushDebouncedSaves()
+			await disconnectAdditionalRadio(session.device.id)
+			if shouldReconnect {
+				scheduleAdditionalRadioReconnect(session.device)
 			}
-			finishHandshake(radio, nonce: nonce, error: nil)
-
-		case .logRecord(let record):
-			didReceiveLog(message: record.stringRepresentation)
-
-		case .lockdownStatus(let status):
-			handleAdditionalLockdown(status, radio: radio)
-
-		case .mqttClientProxyMessage(let message):
-			radio.mqtt?.publish(message)
-
-		case .rebooted:
-			Logger.transport.info("🔗➕ [Additional] \(session.device.name, privacy: .public) rebooted; refreshing its config")
-			Task { @MainActor [weak self] in
-				guard let self, self.additionalRadios[radio.id] === radio else { return }
-				try? await self.requestHandshake(radio, nonce: UInt32(NONCE_ONLY_CONFIG), timeout: .seconds(30))
-				// Its MQTT settings may have changed with the reboot.
-				await self.startAdditionalMqtt(radio)
-			}
-
-		default:
-			Logger.transport.debug("🔗➕ [Additional] Unhandled FromRadio variant from \(session.device.name, privacy: .public)")
 		}
 	}
 }

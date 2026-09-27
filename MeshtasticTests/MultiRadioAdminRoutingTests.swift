@@ -57,7 +57,7 @@ struct MultiRadioAdminRoutingTests {
 		var extraDevice = Device(id: UUID(), name: "Extra", transportType: .tcp, identifier: "b.local:4403")
 		extraDevice.num = extraNum
 		let extraSession = RadioSession(device: extraDevice, connection: extra)
-		manager.additionalRadios[extraDevice.id] = AdditionalRadio(session: extraSession)
+		manager.additionalRadios[extraDevice.id] = extraSession
 		return Fixture(manager: manager, context: context, focused: focused, extra: extra, extraSession: extraSession)
 	}
 

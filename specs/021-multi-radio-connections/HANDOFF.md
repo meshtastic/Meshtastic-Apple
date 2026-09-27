@@ -99,10 +99,10 @@ Read this first if you are picking the work up. Update it in the same commit as 
 
 ## In progress
 
-- T071 (next): every radio runs the same connect steps, and the `AdditionalRadio` flow goes.
-  Step 4 of D-17 (every radio the same; plan.md › Every radio the same). T069 and T070 are done;
-  tasks.md lists what T070 left on the manager for T071 (status, lock-down reset, retry teardown,
-  MQTT, the stepper). T068's `ConnectFlowCharacterizationTests` must keep passing unchanged through T069–T072;
+- T071 (in progress): every radio runs the same connect steps. T071a and the shared flow
+  (T071b/T071d together) are done; next is T071c, one MQTT client type for every radio and range
+  test / store and forward per radio. Then T072 (focus as a pointer change). Step 4 of D-17
+  (plan.md › Every radio the same). T068's `ConnectFlowCharacterizationTests` must keep passing unchanged through T069–T072;
   a test that has to change there means behaviour changed, so say why in the commit.
   When you start a task, mark it `[~]` in tasks.md and note it here.
 
@@ -224,11 +224,17 @@ describes it well enough to rebuild.
   owner only while the switch flow exists. When T066 removes switching, run the backfill for
   each store before it is merged (T030), not after. `BackupMerge` does: it backfills the staged
   backup with its own radio as owner, and drains the live store's backfill before merging.
-- Additional radios must never reach the focused radio's handlers for anything but mesh
-  packets: `handleMyInfo` writes the preferred radio, `handleConfig` sends a timezone to the
-  focused radio, `handleModuleConfig` sends admin requests through it, and the `.error` /
-  `.disconnected` branches of `didReceive` close the focused connection. Route through
-  `processAdditionalFromRadio`.
+- Every radio's data goes through `processFromRadio(_:session:)` (T071). Anything app-wide in a
+  handler must check `session === activeConnection` (see `handleMyInfo`: the preferred radio,
+  event firmware defaults, TAK bridge; the Datadog context; `lastConfigRefresh`; the Messages
+  snapshot; the lock-down coordinator). Admin requests a handler sends must go through
+  `sendAdminMessageToRadio`, never `send(_:)`, which is the focused connection:
+  `getCannedMessageModuleMessages` and `getRingtone` used `send(_:)` and asked the focused radio
+  about another one until T071. Errors and disconnects of another radio go to
+  `didReceiveAdditional`, never the focused radio's `.error` / `.disconnected` handling.
+- `renumberStore` moved `preferredPeripheralNum` for any radio; it now only moves it when the
+  radio being renumbered is the preferred one (T071). Tests that script several radios need
+  distinct `MyNodeInfo.deviceID`s, or the app takes the second for the first renumbered.
 - `MeshPackets.recreateShared()` (connect Step 7 and every `ingestRecycleInterval` packets)
   invalidates the old actor; an additional radio's handler that captured it mid-write loses
   that write. Rare, but a candidate for the 24-hour test's "missing packet" findings.
@@ -310,6 +316,10 @@ describes it well enough to rebuild.
 - [ ] Background the app for 30 minutes, then foreground → all radios still connected.
 - [ ] Kill the app while it's backgrounded → BLE restoration brings back every radio.
 - [ ] TCP radio plus BLE radios together.
+- [ ] Connect B alongside A: B's log shows the same connect steps as A (`[Connect] Step 1` to
+  `Step 8`), B's canned messages and ringtone are requested on B's connection, and a firmware
+  warning from B names it. On TCP, power B off without closing the link: B's heartbeat
+  timeout drops it (A's doesn't change).
 - [ ] App Settings › TAK / CarPlay & Siri / Apple Watch: pick B. TAK CoT goes out from B (log
   `📻 [B] Sending TAKPacket…`); a Shortcuts "Send a Group Message" without a radio goes via B;
   with B's node number while B is off, it fails. Reply to a notification from B: the reply goes via B.

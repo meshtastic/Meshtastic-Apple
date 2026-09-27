@@ -106,7 +106,7 @@ struct AdditionalRadioMqttTests {
 		let connection = SentRecorder()
 		var device = Device(id: UUID(), name: "Extra", transportType: .tcp, identifier: "b.local:4403")
 		device.num = 0x0B0B
-		let radio = AdditionalRadio(session: RadioSession(device: device, connection: connection))
+		let radio = RadioSession(device: device, connection: connection)
 		let bridge = AdditionalRadioMqttBridge(radio: radio)
 
 		var envelope = ServiceEnvelope()
@@ -138,7 +138,7 @@ struct AdditionalRadioMqttTests {
 		manager.isSwitchingDevices = true
 		var device = Device(id: UUID(), name: "Extra", transportType: .tcp, identifier: "b.local:4403")
 		device.num = 0x7E57_0100
-		let radio = AdditionalRadio(session: RadioSession(device: device, connection: SentRecorder()))
+		let radio = RadioSession(device: device, connection: SentRecorder())
 		manager.additionalRadios[device.id] = radio
 
 		await manager.startAdditionalMqtt(radio)

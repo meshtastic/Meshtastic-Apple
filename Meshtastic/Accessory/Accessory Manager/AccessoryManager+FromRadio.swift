@@ -29,7 +29,8 @@ extension AccessoryManager {
 		MqttClientProxyManager.shared.mqttClientProxy?.publish(message)
 	}
 
-	func handleClientNotification(_ clientNotification: ClientNotification) {
+	/// `session`: the radio it came from. With other radios connected, the notice names it.
+	func handleClientNotification(_ clientNotification: ClientNotification, session: RadioSession? = nil) {
 		Logger.services.info("handleClientNotification: \(clientNotification.debugDescription)")
 		var path = "meshtastic:///settings/debugLogs"
 		if clientNotification.hasReplyID {
@@ -83,13 +84,20 @@ extension AccessoryManager {
 				// security warning that was still pending.
 				id: "client.notification.\(Self.noticeIdentifierFragment(key))",
 				title: "Firmware Notification".localized,
-				subtitle: "\(clientNotification.level)".capitalized,
+				subtitle: firmwareNoticeSubtitle(level: clientNotification.level, session: session),
 				content: clientNotification.message,
 				target: "settings",
 				path: path
 			)
 		]
 		manager.schedule()
+	}
+
+	/// The level, and the radio's name when more than one radio is connected (T071).
+	func firmwareNoticeSubtitle(level: LogRecord.Level, session: RadioSession?) -> String {
+		let levelText = "\(level)".capitalized
+		guard connectedRadioCount > 1, let device = session?.device else { return levelText }
+		return levelText + " · " + String.localizedStringWithFormat("on %@".localized, device.shortName ?? device.longName ?? device.name)
 	}
 
 	// MARK: - Firmware notification backoff
@@ -175,6 +183,12 @@ extension AccessoryManager {
 		}
 		let connectedDeviceId = session.device.id.uuidString
 		Logger.services.info("handleMyInfo: \(myNodeInfo.debugDescription)")
+		let isFocused = session === activeConnection
+		if !isFocused, let focusedNum = activeConnection?.device.num, focusedNum == Int64(myNodeInfo.myNodeNum) {
+			Logger.transport.error("🔗➕ [Additional] \(session.device.name, privacy: .public) reports the focused radio's node number; disconnecting it")
+			await disconnectAdditionalRadio(session.device.id)
+			return
+		}
 
 		updateDevice(deviceId: session.device.id, key: \.num, value: Int64(myNodeInfo.myNodeNum))
 
@@ -217,19 +231,27 @@ extension AccessoryManager {
 				update(session, \.expectedNodeDBSize, to: Int(myNodeInfo.nodedbCount))
 			}
 
-			// Compare BEFORE persisting the new num — the previous code assigned first, so
-			// newConnection was always false and this hook was dead.
-			let newConnection = Int64(UserDefaults.preferredPeripheralNum) != Int64(myInfo.myNodeNum)
-			UserDefaults.preferredPeripheralNum = Int(myInfo.myNodeNum)
-			if newConnection {
-				// Onboard a new device connection here
+			// The preferred radio is the focused one.
+			if isFocused {
+				// Compare BEFORE persisting the new num — the previous code assigned first, so
+				// newConnection was always false and this hook was dead.
+				let newConnection = Int64(UserDefaults.preferredPeripheralNum) != Int64(myInfo.myNodeNum)
+				UserDefaults.preferredPeripheralNum = Int(myInfo.myNodeNum)
+				if newConnection {
+					// Onboard a new device connection here
+				}
 			}
 		}
 		await beginAutomaticChannelRefreshStageIfNeeded(for: Int64(myNodeInfo.myNodeNum), session: session)
 
+		update(session, \.firmwareEdition, to: FirmwareEditions(from: myNodeInfo.firmwareEdition))
+		if session.device.longName == nil {
+			updateDevice(deviceId: session.device.id, key: \.longName, value: session.device.name)
+		}
+		guard isFocused else { return }
+
 		// Auto-disable new-node notifications for event firmware editions
 		applyEventFirmwareNotificationDefaults(myNodeInfo.firmwareEdition)
-		update(session, \.firmwareEdition, to: FirmwareEditions(from: myNodeInfo.firmwareEdition))
 
 		// Initialize TAK bridge for TAK integration
 		initializeTAKBridge()
@@ -295,7 +317,10 @@ extension AccessoryManager {
 			Logger.data.error("💾 [Database] Renumbering failed, leaving the store as it is")
 			return
 		}
-		UserDefaults.preferredPeripheralNum = Int(newNum)
+		// With several radios, only the preferred radio's own renumber moves the preference.
+		if Int64(UserDefaults.preferredPeripheralNum) == oldNum {
+			UserDefaults.preferredPeripheralNum = Int(newNum)
+		}
 		appState?.databaseResetID = UUID()
 	}
 
@@ -351,7 +376,9 @@ extension AccessoryManager {
 			updateDevice(deviceId: activeDevice.id, key: \.shortName, value: shortName.isEmpty ? "?" : shortName)
 			updateDevice(deviceId: activeDevice.id, key: \.longName, value: longName.isEmpty ? "Unknown".localized : longName)
 			updateDevice(deviceId: activeDevice.id, key: \.hardwareModel, value: hwModel)
-			Logger.datadog.setRadioContext(.hardwareModel, hwModel)
+			if session === activeConnection {
+				Logger.datadog.setRadioContext(.hardwareModel, hwModel)
+			}
 
 			if activeDevice.isManualConnection {
 				// We just received a NodeInfo for the currently connected node and this is a
@@ -439,7 +466,9 @@ extension AccessoryManager {
 		Logger.transport.debug("[Version] handleDeviceMetadata returned version: \(metadata.firmwareVersion)")
 
 		updateDevice(deviceId: session.device.id, key: \.firmwareVersion, value: metadata.firmwareVersion)
-		Logger.datadog.setRadioContext(.firmwareVersion, metadata.firmwareVersion)
+		if session === activeConnection {
+			Logger.datadog.setRadioContext(.firmwareVersion, metadata.firmwareVersion)
+		}
 
 		await MeshPackets.shared.deviceMetadataPacket(metadata: metadata, fromNum: deviceNum)
 		Logger.transport.info("✅ [handleDeviceMetadata] deviceMetadataPacket completed for \(deviceNum.toHex(), privacy: .public)")

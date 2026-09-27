@@ -288,9 +288,11 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	}
 	/// Feature 021: radios connected alongside the focused one (`activeConnection`), by device
 	/// id. See `AccessoryManager+AdditionalRadios.swift`.
-	@Published var additionalRadios: [UUID: AdditionalRadio] = [:] {
+	@Published var additionalRadios: [UUID: RadioSession] = [:] {
 		didSet { Logger.datadog.setConnectedRadioCount(connectedRadioCount) }
 	}
+	/// Connects in progress, focused or not, by device id (T071): one at a time per radio.
+	var connectAttempts: [UUID: ConnectAttempt] = [:]
 	/// Sessions of additional radios that have been disconnected. Their late events are
 	/// dropped rather than mistaken for the focused radio's.
 	var retiredAdditionalSessionIDs: Set<UUID> = []
@@ -814,9 +816,9 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		}
 
 		// Feature 021: an additional radio's session device, updated in place like the focused one.
-		if let additional = additionalRadios[deviceId], additional.session.device[keyPath: key] != value {
+		if let additional = additionalRadios[deviceId], additional.device[keyPath: key] != value {
 			self.objectWillChange.send()
-			additional.session.device[keyPath: key] = value
+			additional.device[keyPath: key] = value
 		}
 		
 		// Update the device in the devices array if it exists
@@ -881,7 +883,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		// where an error or disconnect would tear the focused connection down.
 		if let session, session !== activeConnection {
 			if let radio = additionalRadio(for: session) {
-				await didReceiveAdditional(event, radio: radio)
+				await didReceiveAdditional(event, session: radio)
 				return
 			}
 			if retiredAdditionalSessionIDs.contains(session.id) {
@@ -1045,10 +1047,15 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		// Logger.transport.info("📻 [processFromRadio] Processing: \(String(describing: decodedInfo.payloadVariant), privacy: .public)")
 		switch decodedInfo.payloadVariant {
 		case .mqttClientProxyMessage(let mqttClientProxyMessage):
-			handleMqttClientProxyMessage(mqttClientProxyMessage)
+			// Each radio's MQTT client proxy carries only that radio's traffic (T100).
+			if session === activeConnection {
+				handleMqttClientProxyMessage(mqttClientProxyMessage)
+			} else {
+				session.mqtt?.publish(mqttClientProxyMessage)
+			}
 
 		case .clientNotification(let clientNotification):
-			handleClientNotification(clientNotification)
+			handleClientNotification(clientNotification, session: session)
 
 		case .myInfo(let myNodeInfo):
 			await handleMyInfo(myNodeInfo, session: session)
@@ -1307,8 +1314,11 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			// Logger.mesh.error("✅ [Accessory] Unknown UNHANDLED confligCompleteID: \(configCompleteID)")
 			// }
 
-			// Stamp the arrival so callers can tell a post-reboot refresh from a stale cache.
-			lastConfigRefresh = Date()
+			// Stamp the arrival so callers can tell a post-reboot refresh from a stale cache. It's
+			// the focused radio's, which Settings shows.
+			if session === activeConnection {
+				lastConfigRefresh = Date()
+			}
 
 			Logger.transport.info("✅ [Accessory] Notifying completions that have completed for configCompleteID: \(configCompleteID)")
 			switch configCompleteID {
@@ -1320,7 +1330,10 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 				}
 				if let completedNodeNum = refresh.nodeNum {
 					await MeshPackets.shared.commitChannelRefreshStage(for: completedNodeNum, owner: refresh.owner)
-					MeshShareSnapshotBuilder.refresh(nodeNum: completedNodeNum, context: context)
+					// The Messages snapshot is the focused radio's (T106).
+					if session === activeConnection {
+						MeshShareSnapshotBuilder.refresh(nodeNum: completedNodeNum, context: context)
+					}
 				}
 				await finishAutomaticConfigRefresh(owner: refresh.owner, session: session, error: nil)
 				
@@ -1345,7 +1358,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 					do {
 						try context.save()
 						Logger.data.info("💾 [Database] Batch saved all node info after database retrieval")
-						if let completedNodeNum = session.nodeNum {
+						if session === activeConnection, let completedNodeNum = session.nodeNum {
 							MeshShareSnapshotBuilder.refresh(
 								nodeNum: completedNodeNum,
 								context: context
@@ -1366,15 +1379,30 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			
 		case .rebooted:
 			// If we had an existing connection, then we can probably get away with just a wantConfig?
-			if state == .subscribed {
-				Task { try? await sendWantConfig() }
+			if session === activeConnection {
+				if state == .subscribed {
+					Task { try? await sendWantConfig(on: session) }
+				}
+			} else if additionalRadio(for: session) != nil, session.device.connectionState == .connected {
+				Logger.transport.info("🔗➕ [Additional] \(session.device.name, privacy: .public) rebooted; refreshing its config")
+				Task {
+					try? await sendWantConfig(on: session)
+					// Its MQTT settings may have changed with the reboot.
+					await startAdditionalMqtt(session)
+				}
 			}
 
 		case .lockdownStatus(let status):
 			// MESHTASTIC_LOCKDOWN-hardened firmware reports state after config_complete_id
 			// (and again in response to each LockdownAuth admin command). Route to the
 			// coordinator, which owns the per-connection state machine + passphrase cache.
-			lockdownCoordinator?.handle(status)
+			// The coordinator and its passphrase sheet are the focused radio's until each radio
+			// gets its own prompt (T073).
+			if session === activeConnection {
+				lockdownCoordinator?.handle(status)
+			} else {
+				handleAdditionalLockdown(status, session: session)
+			}
 
 		default:
 			Logger.transport.error("Unknown FromRadio variant: \(decodedInfo.payloadVariant.debugDescription)")
@@ -1540,8 +1568,10 @@ extension AccessoryManager {
 			// heartbeat truly goes unanswered.
 			session.heartbeatResponseTimer = ResettableTimer(isRepeating: false) { @MainActor [weak session] in
 				Logger.transport.error("💓 [Heartbeat] Connection Timeout: Did not receive a packet after heartbeat.")
-				// If we're in the middle of a connection cancel it.
-				await self.connectionStepper?.cancel()
+				// If this radio's connect is still running, cancel it.
+				if let session {
+					await self.connectAttempts[session.device.id]?.stepper?.cancel()
+				}
 				
 				// Close out this radio's connection. Its timers stop when it's torn down, so the
 				// session is the one that timed out.

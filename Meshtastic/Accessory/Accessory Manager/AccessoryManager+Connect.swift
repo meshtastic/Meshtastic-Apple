@@ -30,6 +30,8 @@ final class ConnectAttempt {
 	var status: AccessoryManagerState = .connecting
 	/// Runs the steps. A disconnect, a heartbeat timeout or a link error cancels it.
 	var stepper: SequentialSteps?
+	/// Set when the radio is disconnected while its connect is still waiting to start.
+	var isCancelled = false
 
 	init(device: Device, isFocused: Bool = true) {
 		self.device = device
@@ -46,6 +48,9 @@ final class ConnectAttempt {
 }
 
 extension AccessoryManager {
+	/// Connects `device` through the connect steps. `asFocused: false` connects it alongside the
+	/// focused radio (`connectAdditionalRadio`), with the same steps and without the app-wide work;
+	/// that connect throws when it fails, and `connectTimeout` bounds its transport connect.
 	func connect(
 		to device: Device,
 		withConnection: Connection? = nil,
@@ -53,16 +58,29 @@ extension AccessoryManager {
 		wantDatabase: Bool = true,
 		versionCheck: Bool = true,
 		refreshDeviceHardwareFromAPI: Bool = false,
-		retries: Int? = nil
+		retries: Int? = nil,
+		asFocused: Bool = true,
+		connectTimeout: Duration? = nil
 	) async throws {
-		Logger.transport.info("AccessoryManager.connect(to: \(device.name, privacy: .public), withConnection: \(withConnection != nil), wantConfig: \(wantConfig), wantDatabase: \(wantDatabase), versionCheck: \(versionCheck), refreshDeviceHardwareFromAPI: \(refreshDeviceHardwareFromAPI))")
+		Logger.transport.info("AccessoryManager.connect(to: \(device.name, privacy: .public), withConnection: \(withConnection != nil), wantConfig: \(wantConfig), wantDatabase: \(wantDatabase), versionCheck: \(versionCheck), refreshDeviceHardwareFromAPI: \(refreshDeviceHardwareFromAPI), focused: \(asFocused))")
 		// Prevent new connection if one is active
-		if activeConnection != nil {
+		if asFocused, activeConnection != nil {
 			throw AccessoryError.connectionFailed("Already connected to a device")
+		}
+		if !asFocused, connectAttempts[device.id] != nil || additionalRadios[device.id] != nil {
+			throw AccessoryError.connectionFailed("This radio is already connected")
 		}
 		
 		guard let transport = transportForType(device.transportType) else {
 			throw AccessoryError.connectionFailed("No transport for type")
+		}
+
+		let attempt = ConnectAttempt(device: device, isFocused: asFocused)
+		connectAttempts[device.id] = attempt
+		defer {
+			if connectAttempts[device.id] === attempt {
+				connectAttempts.removeValue(forKey: device.id)
+			}
 		}
 
 		// Feature 021 (T064): one handshake at a time across every radio. Step 7 recycles the
@@ -74,15 +92,18 @@ extension AccessoryManager {
 		}
 		await handshakeGate.acquire()
 		defer { handshakeGate.release() }
-		if connectCancelGeneration != cancelGeneration {
+		if (asFocused && connectCancelGeneration != cancelGeneration) || attempt.isCancelled {
 			updateDevice(deviceId: device.id, key: \.connectionState, value: .disconnected)
 			throw AccessoryError.connectionFailed("Connection cancelled")
 		}
-		if activeConnection != nil {
+		if asFocused, activeConnection != nil {
 			throw AccessoryError.connectionFailed("Already connected to a device")
 		}
+		if !asFocused, activeConnection == nil || !canConnectAnotherRadio {
+			updateDevice(deviceId: device.id, key: \.connectionState, value: .disconnected)
+			throw AccessoryError.connectionFailed("No longer room for this radio")
+		}
 		
-		let attempt = ConnectAttempt(device: device)
 		if attempt.isFocused {
 			// Clear any errors and stale state from last connection
 			lastConnectionError = nil
@@ -119,7 +140,82 @@ extension AccessoryManager {
 		let connectStepTimeout: Duration = isFirstTimeBLEBond ? .seconds(90) : .seconds(5)
 
 		// Prepare to connect
-		attempt.stepper = SequentialSteps(maxRetries: retries ?? maxRetries, retryDelay: retryDelay) {
+		attempt.stepper = connectSteps(
+			attempt,
+			transport: transport,
+			withConnection: withConnection,
+			wantConfig: wantConfig,
+			wantDatabase: wantDatabase,
+			versionCheck: versionCheck,
+			refreshDeviceHardwareFromAPI: refreshDeviceHardwareFromAPI,
+			retries: retries,
+			connectTimeout: connectTimeout,
+			connectStepTimeout: connectStepTimeout
+		)
+
+		if attempt.isFocused {
+			self.connectionStepper = attempt.stepper
+		}
+
+		// Run the connection process
+		do {
+			try await attempt.stepper?.run()
+			Logger.transport.debug("🔗 [Connect] ConnectionStepper completed.")
+			// The scan pause covers the whole handshake — pairing happens during the
+			// notify subscription, after the link comes up — so resume only now that
+			// every step finished. Failed attempts resume via connectionDidDisconnect.
+			if let bleTransport = transportForType(.ble) as? BLETransport {
+				await bleTransport.resumeScanningAfterConnectionEstablished()
+			}
+			// Feature 021 (T063): remember this connection, then bring back the radios that were
+			// connected alongside it. Their attempts queue on the handshake gate behind this one.
+			if attempt.isFocused, let focused = activeConnection, let nodeNum = focused.nodeNum {
+				await MeshPackets.shared.noteRadioConnected(nodeNum: nodeNum, transport: focused.device.transportType, autoConnect: nil)
+				await reconnectRememberedRadios()
+			} else if !attempt.isFocused, let session = attempt.session {
+				// Remembered, so it comes back next time alongside the focused radio.
+				if let nodeNum = session.nodeNum {
+					await MeshPackets.shared.noteRadioConnected(nodeNum: nodeNum, transport: device.transportType, autoConnect: true)
+				}
+				WatchSessionManager.shared.sendNodesToWatch()
+			}
+		} catch {
+			Logger.transport.error("🔗 [Connect] Error returned by connectionStepper: \(error, privacy: .public)")
+			attempt.stepper = nil
+			try await self.cleanUpAfterFailedConnect(attempt)
+			guard attempt.isFocused else {
+				// The caller (the reconnect loop, the Connect tab) decides what to do next.
+				throw error
+			}
+			self.lastConnectionError = error
+			self.connectionStepper = nil
+			return
+		}
+		
+		// All done, one way or another, clean up
+		attempt.stepper = nil
+		if attempt.isFocused {
+			self.connectionStepper = nil
+		}
+	}
+
+	/// The connect steps for one radio (T070/T071): the same for every radio, with the app-wide
+	/// work only in the focused radio's (`attempt.isFocused`).
+	// swiftlint:disable:next function_parameter_count
+	private func connectSteps(
+		_ attempt: ConnectAttempt,
+		transport: any Transport,
+		withConnection: Connection?,
+		wantConfig: Bool,
+		wantDatabase: Bool,
+		versionCheck: Bool,
+		refreshDeviceHardwareFromAPI: Bool,
+		retries: Int?,
+		connectTimeout: Duration?,
+		connectStepTimeout: Duration
+	) -> SequentialSteps {
+		let device = attempt.device
+		return SequentialSteps(maxRetries: retries ?? maxRetries, retryDelay: retryDelay) {
 			
 			// Step 0
 			Step { @MainActor retryAttempt in
@@ -149,8 +245,15 @@ extension AccessoryManager {
 					let connection: Connection
 					if let providedConnection = withConnection {
 						connection = providedConnection
-					} else {
+					} else if attempt.isFocused {
 						connection = try await transport.connect(to: device)
+					} else {
+						connection = try await self.connectTransport(transport, to: device, within: connectTimeout)
+						// The connect can take a while (BLE waits for the radio). Re-check what it assumed.
+						guard self.activeConnection != nil, self.additionalRadios[device.id] == nil, self.canConnectAnotherRadio else {
+							try? await connection.disconnect(withError: nil, shouldReconnect: false)
+							throw AccessoryError.connectionFailed("No longer room for this radio")
+						}
 					}
 					let eventStream = try await connection.connect()
 					self.setStatus(.communicating, for: attempt)
@@ -167,6 +270,10 @@ extension AccessoryManager {
 					if attempt.isFocused {
 						self.activeConnection = session
 						self.activeDeviceNum = device.num
+					} else {
+						// Registered before its first event is handled, so its events go to its own
+						// handling rather than being dropped as a stale connection's.
+						self.additionalRadios[device.id] = session
 					}
 					// The mesh-traffic monitor (map flyover gate) self-starts its decay timer on the
 					// first inbound packet and is cleared by Step 0's closeConnection() reset(), so
@@ -207,12 +314,15 @@ extension AccessoryManager {
 				// awaited inside a 30s Step budget, so it must stay local (issue #2196). Device images
 				// and the "I want one" msh.to links are network-backed and are restored by the detached
 				// pass below instead.
-				do {
-					Logger.transport.info("🔗👟 [Connect] Step 3a: Refresh bundled Meshtastic device hardware data")
-					try await MeshtasticAPI.shared.refreshBundledDevicesData()
-					Logger.services.info("✅ [MeshtasticAPI] Refreshed bundled device hardware data after config completion")
-				} catch {
-					Logger.services.warning("Failed to refresh bundled device hardware data after config completion: \(error.localizedDescription, privacy: .public)")
+				// The catalog is app-wide, so the focused radio's connect refreshes it.
+				if attempt.isFocused {
+					do {
+						Logger.transport.info("🔗👟 [Connect] Step 3a: Refresh bundled Meshtastic device hardware data")
+						try await MeshtasticAPI.shared.refreshBundledDevicesData()
+						Logger.services.info("✅ [MeshtasticAPI] Refreshed bundled device hardware data after config completion")
+					} catch {
+						Logger.services.warning("Failed to refresh bundled device hardware data after config completion: \(error.localizedDescription, privacy: .public)")
+					}
 				}
 
 				// Step 3b: images and msh.to links. `clearDatabase` batch-deletes
@@ -302,31 +412,7 @@ extension AccessoryManager {
 					return
 				}
 				Logger.transport.info("🔗👟 [Connect] Step 6: Version check")
-
-				guard let firmwareVersion = attempt.session?.device.firmwareVersion else {
-					Logger.transport.error("🔗 [Connect] Firmware version not available for device \(device.name, privacy: .public)")
-					throw AccessoryError.connectionFailed("Firmware version not available")
-				}
-				
-				let lastDotIndex = firmwareVersion.lastIndex(of: ".")
-				if lastDotIndex == nil {
-					throw AccessoryError.versionMismatch("🚨" + "Update Your Firmware".localized)
-				}
-				
-				let version = firmwareVersion[...(lastDotIndex ?? String.Index(utf16Offset: 6, in: firmwareVersion))].dropLast()
-				
-				// The stored version and the update gate are the focused radio's until each radio
-				// gets its own update prompt (T073).
-				if attempt.isFocused {
-					// TODO: do we really need to store the firmware version in the UserDefaults?
-					UserDefaults.firmwareVersion = String(version)
-
-					// Below-minimum firmware keeps its connection. Throwing here used to retry the
-					// whole process and then disconnect, which left the user no way to update the
-					// radio from the app. The gate in ContentView blocks everything but the
-					// firmware update screen instead.
-					self.firmwareUpdateRequired = !self.checkIsVersionSupported(forVersion: self.minimumVersion)
-				}
+				try await self.checkConnectedFirmware(attempt)
 			}
 			
 			// Step 7: Update UI and status to connected
@@ -385,10 +471,12 @@ extension AccessoryManager {
 					// pruning decisions more accurate.
 					_ = await MeshPackets.shared.clearStaleNodes(nodeExpireDays: Int(UserDefaults.purgeStaleNodeDays))
 				}
-				await self.initializeMqtt()
 				if attempt.isFocused {
+					await self.initializeMqtt()
 					// One loop shares the phone's position with every connected radio (T101).
 					self.initializeLocationProvider()
+				} else {
+					Task { await self.startAdditionalMqtt(session) }
 				}
 				if transport.requiresPeriodicHeartbeat {
 					await self.setupPeriodicHeartbeat(on: session)
@@ -399,43 +487,46 @@ extension AccessoryManager {
 												transportType: session.device.transportType.rawValue,
 												hardwareModel: session.device.hardwareModel,
 												nodes: session.expectedNodeDBSize,
-												connectionRestored: connectionWasRestored))
+												connectionRestored: connectionWasRestored,
+												additionalRadio: !attempt.isFocused))
 			}
-		}
-		
-		if attempt.isFocused {
-			self.connectionStepper = attempt.stepper
+				}
+	}
+
+	/// Connect Step 6: the radio's firmware version.
+	private func checkConnectedFirmware(_ attempt: ConnectAttempt) async throws {
+		guard let firmwareVersion = attempt.session?.device.firmwareVersion else {
+			Logger.transport.error("🔗 [Connect] Firmware version not available for device \(attempt.device.name, privacy: .public)")
+			throw AccessoryError.connectionFailed("Firmware version not available")
 		}
 
-		// Run the connection process
-		do {
-			try await attempt.stepper?.run()
-			Logger.transport.debug("🔗 [Connect] ConnectionStepper completed.")
-			// The scan pause covers the whole handshake — pairing happens during the
-			// notify subscription, after the link comes up — so resume only now that
-			// every step finished. Failed attempts resume via connectionDidDisconnect.
-			if let bleTransport = transportForType(.ble) as? BLETransport {
-				await bleTransport.resumeScanningAfterConnectionEstablished()
-			}
-			// Feature 021 (T063): remember this connection, then bring back the radios that were
-			// connected alongside it. Their attempts queue on the handshake gate behind this one.
-			if attempt.isFocused, let focused = activeConnection, let nodeNum = focused.nodeNum {
-				await MeshPackets.shared.noteRadioConnected(nodeNum: nodeNum, transport: focused.device.transportType, autoConnect: nil)
-				await reconnectRememberedRadios()
-			}
-		} catch AccessoryError.tooManyRetries {
-			self.lastConnectionError = AccessoryError.tooManyRetries
-			try await self.cleanUpAfterFailedConnect(attempt)
-		} catch {
-			Logger.transport.error("🔗 [Connect] Error returned by connectionStepper: \(error, privacy: .public)")
-			try await self.cleanUpAfterFailedConnect(attempt)
-			self.lastConnectionError = error
+		let lastDotIndex = firmwareVersion.lastIndex(of: ".")
+		if lastDotIndex == nil {
+			throw AccessoryError.versionMismatch("🚨" + "Update Your Firmware".localized)
 		}
-		
-		// All done, one way or another, clean up
-		attempt.stepper = nil
+
+		let version = firmwareVersion[...(lastDotIndex ?? String.Index(utf16Offset: 6, in: firmwareVersion))].dropLast()
+
+		// The stored version and the update gate are the focused radio's until each radio gets
+		// its own update prompt (T073). Another radio below the minimum is turned away, and the
+		// user focuses it to update it.
+		if !attempt.isFocused, let session = attempt.session {
+			do {
+				try checkAdditionalRadioFirmware(session)
+			} catch {
+				await attempt.stepper?.cancelCurrentlyExecutingStep(withError: error, cancelFullProcess: true)
+				throw error
+			}
+		}
 		if attempt.isFocused {
-			self.connectionStepper = nil
+			// TODO: do we really need to store the firmware version in the UserDefaults?
+			UserDefaults.firmwareVersion = String(version)
+
+			// Below-minimum firmware keeps its connection. Throwing here used to retry the
+			// whole process and then disconnect, which left the user no way to update the
+			// radio from the app. The gate in ContentView blocks everything but the
+			// firmware update screen instead.
+			firmwareUpdateRequired = !checkIsVersionSupported(forVersion: minimumVersion)
 		}
 	}
 
@@ -454,6 +545,11 @@ extension AccessoryManager {
 			try await closeConnection()
 		} else if let session = attempt.session {
 			attempt.session = nil
+			if additionalRadios[session.device.id] === session {
+				additionalRadios.removeValue(forKey: session.device.id)
+			}
+			retiredAdditionalSessionIDs.insert(session.id)
+			stopAdditionalMqtt(session)
 			await tearDown(session)
 			try? await session.connection.disconnect(withError: nil, shouldReconnect: false)
 		}

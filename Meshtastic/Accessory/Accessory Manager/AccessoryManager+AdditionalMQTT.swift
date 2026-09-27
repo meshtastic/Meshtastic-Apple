@@ -23,20 +23,20 @@ import OSLog
 @MainActor
 final class AdditionalRadioMqttBridge: @preconcurrency MqttClientProxyManagerDelegate {
 	let proxy: MqttClientProxyManager
-	private weak var radio: AdditionalRadio?
+	private weak var radio: RadioSession?
 	/// One broker-to-radio write at a time; extra packets are dropped, like the focused radio's.
 	private let forwardGate = MqttForwardGate()
 	private(set) var isConnected = false
 	private(set) var droppedNoPayload = 0
 
-	init(radio: AdditionalRadio, proxy: MqttClientProxyManager = MqttClientProxyManager()) {
+	init(radio: RadioSession, proxy: MqttClientProxyManager = MqttClientProxyManager()) {
 		self.radio = radio
 		self.proxy = proxy
 		proxy.delegate = self
 	}
 
 	private var radioName: String {
-		radio.map { $0.session.device.shortName ?? $0.session.device.name } ?? "?"
+		radio.map { $0.device.shortName ?? $0.device.name } ?? "?"
 	}
 
 	/// Publishes a proxy message from the radio to the broker.
@@ -76,7 +76,7 @@ final class AdditionalRadioMqttBridge: @preconcurrency MqttClientProxyManagerDel
 
 	func onMqttMessageReceived(message: CocoaMQTTMessage) {
 		guard let radio else { return }
-		let myNodeNum = UInt32(truncatingIfNeeded: radio.session.nodeNum ?? 0)
+		let myNodeNum = UInt32(truncatingIfNeeded: radio.nodeNum ?? 0)
 		switch MqttProxyPackets.downlink(topic: message.topic, payload: Data(message.payload), retained: message.retained, myNodeNum: myNodeNum) {
 		case .dropStat:
 			return
@@ -84,7 +84,7 @@ final class AdditionalRadioMqttBridge: @preconcurrency MqttClientProxyManagerDel
 			droppedNoPayload += 1
 			return
 		case .forward(let toRadio, _):
-			let connection = radio.session.connection
+			let connection = radio.connection
 			let gate = forwardGate
 			Task {
 				guard await gate.tryAcquire() else { return }
@@ -101,10 +101,10 @@ extension AccessoryManager {
 
 	/// Starts the radio's own MQTT client proxy when its config asks for one (MQTT enabled
 	/// with "proxy to client"). Called once its config handshake is done.
-	func startAdditionalMqtt(_ radio: AdditionalRadio) async {
+	func startAdditionalMqtt(_ radio: RadioSession) async {
 		radio.mqtt?.stop()
 		radio.mqtt = nil
-		guard let radioNum = radio.session.nodeNum else { return }
+		guard let radioNum = radio.nodeNum else { return }
 		let descriptor = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == radioNum })
 		guard let node = try? context.fetch(descriptor).first,
 			  let mqttConfig = node.mqttConfig, mqttConfig.enabled, mqttConfig.proxyToClientEnabled else {
@@ -112,15 +112,15 @@ extension AccessoryManager {
 		}
 		let bridge = AdditionalRadioMqttBridge(radio: radio)
 		radio.mqtt = bridge
-		Logger.mqtt.info("📲 [MQTT] Starting the client proxy for \(radio.session.device.name, privacy: .public)")
+		Logger.mqtt.info("📲 [MQTT] Starting the client proxy for \(radio.device.name, privacy: .public)")
 		// Same short delay as the focused radio's: CFNetwork callbacks firing before the app is
 		// ready have crashed CocoaMQTT's stream parser at launch.
 		try? await Task.sleep(for: .seconds(1))
-		guard additionalRadios[radio.id] === radio, radio.mqtt === bridge else { return }
+		guard additionalRadios[radio.device.id] === radio, radio.mqtt === bridge else { return }
 		bridge.proxy.connectFromConfigSettings(node: node)
 	}
 
-	func stopAdditionalMqtt(_ radio: AdditionalRadio) {
+	func stopAdditionalMqtt(_ radio: RadioSession) {
 		radio.mqtt?.stop()
 		radio.mqtt = nil
 	}

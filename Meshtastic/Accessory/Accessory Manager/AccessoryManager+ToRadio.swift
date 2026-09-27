@@ -28,7 +28,9 @@ extension LocalStatsRequestTransport {
 extension AccessoryManager {
 
 	public func getCannedMessageModuleMessages(destNum: Int64, wantResponse: Bool) throws {
-		guard let deviceNum = self.activeConnection?.device.num else {
+		// Sent by the radio it's for when that's one of the connected radios (its own local admin),
+		// otherwise by the focused radio (feature 021, T071).
+		guard let deviceNum = (connectedSession(forRadio: destNum) ?? self.activeConnection)?.device.num else {
 			Logger.services.error("Error while sending CannedMessageModule request.  No active device.")
 			throw AccessoryError.ioFailed("No active device")
 		}
@@ -60,12 +62,14 @@ extension AccessoryManager {
 
 		let logString = String.localizedStringWithFormat("Requested Canned Messages Module Messages for node: %@".localized, String(deviceNum))
 		Task {
-			try await send(toRadio, debugDescription: logString)
+			try await sendAdminMessageToRadio(meshPacket: toRadio.packet, adminDescription: logString)
 		}
 	}
 	
 	public func getRingtone(destNum: Int64, wantResponse: Bool) throws {
-		guard let deviceNum = self.activeConnection?.device.num else {
+		// Sent by the radio it's for when that's one of the connected radios (its own local admin),
+		// otherwise by the focused radio (feature 021, T071).
+		guard let deviceNum = (connectedSession(forRadio: destNum) ?? self.activeConnection)?.device.num else {
 			Logger.services.error("Error while sending RtttlConfig request.  No active device.")
 			throw AccessoryError.ioFailed("No active device")
 		}
@@ -97,7 +101,7 @@ extension AccessoryManager {
 
 		let logString = String.localizedStringWithFormat("Requested RTTTL Config Module ringtone for node: %@".localized, String(deviceNum))
 		Task {
-			try await send(toRadio, debugDescription: logString)
+			try await sendAdminMessageToRadio(meshPacket: toRadio.packet, adminDescription: logString)
 		}
 	}
 
