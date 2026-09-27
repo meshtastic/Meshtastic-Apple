@@ -154,9 +154,23 @@ extension MeshPackets {
 	/// Deletes `radioNum`'s direct messages, and its channel messages whose channel none of
 	/// `others` has. Returns how many went. Doesn't save.
 	private func deleteMessagesOfRadio(_ radioNum: Int64, keepingChannelsOf others: Set<Int64>) throws -> Int {
-		let ownKeys = try MultiRadioBackfill.channelKeysByIndex(for: radioNum, in: modelContext, updateStored: false)
+		// Keys from each radio's LoRa settings, and the keys stored on its channels: a radio only
+		// a merged backup knows has no LoRa settings in the store, but its channels keep their
+		// keys (T177).
+		let myInfos = try modelContext.fetch(FetchDescriptor<MyInfoEntity>())
+		func storedKeys(of radio: Int64) -> [Int32: String] {
+			var keys: [Int32: String] = [:]
+			for channel in myInfos.first(where: { $0.myNodeNum == radio })?.channels ?? [] {
+				if let key = channel.channelKey { keys[channel.index] = key }
+			}
+			return keys
+		}
+		let ownKeys = storedKeys(of: radioNum).merging(
+			try MultiRadioBackfill.channelKeysByIndex(for: radioNum, in: modelContext, updateStored: false)
+		) { _, computed in computed }
 		var sharedKeys: Set<String> = []
 		for other in others {
+			sharedKeys.formUnion(storedKeys(of: other).values)
 			sharedKeys.formUnion(try MultiRadioBackfill.channelKeysByIndex(for: other, in: modelContext, updateStored: false).values)
 		}
 		let messages = try modelContext.fetch(FetchDescriptor<MessageEntity>(predicate: #Predicate { $0.localNodeNum == radioNum }))

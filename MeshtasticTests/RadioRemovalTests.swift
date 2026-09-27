@@ -261,6 +261,31 @@ struct RadioRemovalTests {
 		#expect(Set(try rows(MessageEntity.self, in: container).map(\.messageId)) == [2, 4])
 	}
 
+	@Test("A channel a merged backup's radio has keeps its history, by the key stored on its channel")
+	func backupRadioSharesByStoredKey() async throws {
+		let container = try makeContainer()
+		let context = ModelContext(container)
+		let keysA = try seed(in: context)
+		// C is only known from a merged backup: no LoRa settings, but "Hiking" with its stored key.
+		let radioC: Int64 = 0x0C0C_0C0C
+		let myInfo = MyInfoEntity()
+		myInfo.myNodeNum = radioC
+		context.insert(myInfo)
+		let hiking = ChannelEntity()
+		hiking.index = 3
+		hiking.name = "Hiking"
+		hiking.channelKey = keysA[1]
+		hiking.myInfoChannel = myInfo
+		context.insert(hiking)
+		observe(onlyB, by: radioC, in: context)
+		try context.save()
+
+		await MeshPackets(modelContainer: container).removeRadioData(radioA, .reset(preserveFavorites: true, deleteMessages: true))
+
+		// The DM goes; the primary and Hiking keep theirs.
+		#expect(Set(try rows(MessageEntity.self, in: container).map(\.messageId)) == [2, 3, 4, 5])
+	}
+
 	// MARK: - Remove
 
 	@Test("Removing a radio forgets it and deletes its messages")

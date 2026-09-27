@@ -178,7 +178,7 @@ All re-checked in the files and holding (2026-09-27). One commit each, full suit
 - [X] T174 V2-4 a merge attempt is counted per backup, just before it merges. — `mergePendingBackups` merges one backup at a time, counting and saving its attempt right before. Verified: `BackupMergeTests.attemptCountedPerBackup` and the existing merge tests; the case it's for (the app killed mid-merge) can't be unit tested.
 - [X] T175 V2-2 CarPlay list rows and Siri read-back use the radio. — the CarPlay list is the CarPlay radio's view: with several radios its row ids name that radio, so read-back, mark-as-read and list replies stay on it; `SearchForMessagesIntentHandler` filters by the id's radio. Verified: `SearchMessagesRadioTests`.
 - [X] T176 V2-6 a reset doesn't copy an old single observation onto the node. — `reaggregate` takes a lone observation's path only when it's within `currentWindow` of the node's last heard, and never moves last heard back. Verified: `RadioRemovalTests.oldSingleObservationDoesNotTakeOver`.
-- [ ] T177 V2-7 a merged backup's radio shares channels by stored key.
+- [X] T177 V2-7 a merged backup's radio shares channels by stored key. — `deleteMessagesOfRadio` adds each radio's stored `ChannelEntity.channelKey`s to the keys from its LoRa settings. Verified: `RadioRemovalTests.backupRadioSharesByStoredKey`.
 - [ ] T178 N4 BLE restore: a standby radio that connects first isn't dropped.
 - [ ] T179 N5 Unlock / Update while the focused radio is connecting.
 - [ ] T180 N6 the scan sees its radio's connect finish.
