@@ -12,8 +12,8 @@ import Foundation
 /// Covers `AccessoryManager.appliesLoRaConfigWithoutReboot(liveVersion:)`.
 ///
 /// Firmware 2.8 applies LoRa changes live, so the connection survives a save. The gate reads only
-/// the live connection's version: `UserDefaults.firmwareVersion` is global rather than per radio,
-/// so consulting it right after a radio switch would answer for the previous radio.
+/// the live connection's version: a stored one could answer for the previous radio right after a
+/// radio switch.
 @Suite("LoRa save reboot capability")
 struct LoRaRebootCapabilityTests {
 
@@ -42,15 +42,11 @@ struct LoRaRebootCapabilityTests {
 		#expect(!AccessoryManager.appliesLoRaConfigWithoutReboot(liveVersion: ""))
 	}
 
-	@Test("the stored global version has no influence")
-	func storedVersionDoesNotLeakAcrossRadios() {
-		// The switching-radio regression: a 2.8 radio was connected, its version persisted, then a
-		// pre-2.8 radio connects and the live version is briefly unknown. The stored value must not
-		// make the gate claim the new radio applies LoRa config live.
-		let previous = UserDefaults.firmwareVersion
-		defer { UserDefaults.firmwareVersion = previous }
-
-		UserDefaults.firmwareVersion = "2.8.1"
+	@Test("an unknown live version assumes a reboot")
+	func unknownLiveVersionAssumesReboot() {
+		// The switching-radio regression: a 2.8 radio was connected, then a pre-2.8 radio connects
+		// and the live version is briefly unknown. The gate must not claim the new radio applies
+		// LoRa config live. (The app-wide stored version it once leaked from is gone, T018.)
 		#expect(!AccessoryManager.appliesLoRaConfigWithoutReboot(liveVersion: nil))
 		#expect(!AccessoryManager.appliesLoRaConfigWithoutReboot(liveVersion: "2.7.21"))
 	}

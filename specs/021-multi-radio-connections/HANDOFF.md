@@ -101,8 +101,9 @@ Read this first if you are picking the work up. Update it in the same commit as 
 
 - D-17 (every radio the same) is done through T073: one connect flow, focus without
   reconnecting, and lock-down / old firmware prompting by name on any radio. Next: the device
-  test when the owner's hardware is ready (checklist below), then the clean-up (T066 after that
-  test, T110, T111, T016/T018 remainders) and docs (T120–T122).
+  test when the owner's hardware is ready (checklist below). T016, T018 and T110 are done. Left:
+  T111 (unused single-radio code), docs (T120–T122), the string catalog sync, and T066 after the
+  device test.
   a test that has to change there means behaviour changed, so say why in the commit.
   When you start a task, mark it `[~]` in tasks.md and note it here.
 
@@ -276,6 +277,16 @@ describes it well enough to rebuild.
   Step 5 times out after 10 s and asks again. Real radios haven't shown it, since the round trip
   is slower than that gap, but the unified flow should start waiting before it sends.
   `ScriptedRadio` answers after 20 ms for that reason.
+- Nothing a view calls while rendering may fetch from SwiftData: `checkIsVersionSupported` (and
+  the `supports…` getters built on it) run in view bodies, and a fetch there traps once a view's
+  store is gone. T018's first try did that and crashed NodeDetail's snapshot test; the fallback
+  reads `knownFirmwareVersions` instead. `storedFirmwareVersion(for:)` is fine off the render path.
+- The preferred radio is `PreferredRadio` (the radio reconnected and restored at launch; the
+  focused radio whenever one is connected). `UserDefaults.preferredPeripheralId/Num` directly is a
+  lint error outside `PreferredRadio.swift`. Code meaning "the radio I'm working with" uses its
+  session, or `activeDeviceNum` for the focused one.
+- The discovery scan runs on the radio focused when it starts (`scanRadioNum`) and only takes that
+  radio's packets; the focus handover waits while it scans (the preset change reboots the radio).
 - Focus when things go wrong (`AccessoryManager+FocusHandover.swift`): the Connect tab's
   Disconnect hands the focus to another connected radio at once (`disconnectFocusedRadio`).
   If the focused radio drops, `closeConnection` starts `scheduleFocusHandover`: after 30 s

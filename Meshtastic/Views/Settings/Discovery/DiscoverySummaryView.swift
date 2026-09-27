@@ -805,7 +805,7 @@ extension DiscoverySummaryView {
 	/// connected node's LoRa config + primary channel and delegates to the pure decision in
 	/// `LoRaChannelCalculator`.
 	func beaconJoinOption(for beacon: DiscoveredBeaconEntity) -> BeaconJoinOption {
-		let num = Int64(UserDefaults.preferredPeripheralNum)
+		let num = PreferredRadio.nodeNum
 		let node = getNodeInfo(id: num, context: context)
 		return LoRaChannelCalculator.beaconJoinOption(
 			hasOfferChannel: beacon.hasOfferChannel,

@@ -550,7 +550,7 @@ actor BLETransport: Transport {
 		/// or else the first, is restored as the focused radio; the others wait in
 		/// `restoredStandby` for the remembered-radio reconnect that follows the focused connect.
 		guard let peripherals = dict[CBCentralManagerRestoredStatePeripheralsKey] as? [CBPeripheral],
-			  let peripheral = Self.focusedPeripheral(among: peripherals, preferredId: UserDefaults.preferredPeripheralId) else {
+			  let peripheral = Self.focusedPeripheral(among: peripherals, preferredId: PreferredRadio.peripheralId) else {
 			Logger.transport.error("🛜 [BLE] No peripherals found in restore state dictionary.")
 			return
 		}
@@ -694,8 +694,8 @@ actor BLETransport: Transport {
 		if let myNodeNum = (try? PersistenceController.shared.context.fetch(descriptor))?.first?.myNodeNum, myNodeNum != 0 {
 			return myNodeNum
 		}
-		guard idString == UserDefaults.preferredPeripheralId, UserDefaults.preferredPeripheralNum != 0 else { return nil }
-		return Int64(UserDefaults.preferredPeripheralNum)
+		guard idString == PreferredRadio.peripheralId, PreferredRadio.nodeNum != 0 else { return nil }
+		return PreferredRadio.nodeNum
 	}
 
 	/// Drops the CoreBluetooth link of every restored radio nobody claimed (not remembered, or

@@ -171,7 +171,7 @@ struct Messages: View {
 	}
 
 	private func bootstrapNodeNum() {
-		let nodeId = Int64(UserDefaults.preferredPeripheralNum)
+		let nodeId = PreferredRadio.nodeNum
 		if nodeId > 0 && nodeNum == nil {
 			nodeNum = nodeId
 		}

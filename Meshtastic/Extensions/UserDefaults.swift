@@ -176,9 +176,6 @@ extension UserDefaults {
 	@UserDefault(.modemPreset, defaultValue: 0)
 	static var modemPreset: Int
 
-	@UserDefault(.firmwareVersion, defaultValue: "0.0.0")
-	static var firmwareVersion: String
-
 	@UserDefault(.hardwareModel, defaultValue: "Unset")
 	static var hardwareModel: String
 

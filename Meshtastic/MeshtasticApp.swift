@@ -162,7 +162,7 @@ struct MeshtasticAppleApp: App {
 				Task { @MainActor in
 					await manager.handshakeGate.acquire()
 					defer { manager.handshakeGate.release() }
-					await NodeBackupManager.shared.mergePendingBackups(using: MeshPackets.shared, ownRadio: Int64(UserDefaults.preferredPeripheralNum))
+					await NodeBackupManager.shared.mergePendingBackups(using: MeshPackets.shared, ownRadio: PreferredRadio.nodeNum)
 				}
 			}
 			if !UserDefaults.firstLaunch {
@@ -232,7 +232,7 @@ struct MeshtasticAppleApp: App {
 			// The backfill attributes old rows to the radio the store belongs to, so it must
 			// not run while a switch is swapping the store for another radio's.
 			if !accessoryManager.isSwitchingDevices {
-				await MeshPackets.shared.runMultiRadioMaintenance(ownRadio: Int64(UserDefaults.preferredPeripheralNum))
+				await MeshPackets.shared.runMultiRadioMaintenance(ownRadio: PreferredRadio.nodeNum)
 			}
 			// Nothing to clear: the next pass takes a new number, which supersedes any
 			// expiry recorded against this one.

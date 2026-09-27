@@ -252,13 +252,11 @@ enum ConnectFlowSupport {
 	struct SavedDefaults {
 		let preferredPeripheralId = UserDefaults.preferredPeripheralId
 		let preferredPeripheralNum = UserDefaults.preferredPeripheralNum
-		let firmwareVersion = UserDefaults.firmwareVersion
 		let lastFirmwareAPIUpdate = UserDefaults.lastFirmwareAPIUpdate
 
 		func restore() {
 			UserDefaults.preferredPeripheralId = preferredPeripheralId
 			UserDefaults.preferredPeripheralNum = preferredPeripheralNum
-			UserDefaults.firmwareVersion = firmwareVersion
 			UserDefaults.lastFirmwareAPIUpdate = lastFirmwareAPIUpdate
 		}
 	}

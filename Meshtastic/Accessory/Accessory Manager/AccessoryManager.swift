@@ -290,6 +290,9 @@ class AccessoryManager: ObservableObject {
 	}
 	/// Connects in progress, focused or not, by device id (T071): one at a time per radio.
 	var connectAttempts: [UUID: ConnectAttempt] = [:]
+	/// Each radio's firmware version as it last reported it this launch, by node number (T018):
+	/// what `checkIsVersionSupported` falls back to while a radio's live version is unknown.
+	var knownFirmwareVersions: [Int64: String] = [:]
 	/// A radio that isn't focused needs the user (locked, or firmware too old); ContentView asks
 	/// about it by name (T073).
 	@Published var radioAttentionPrompt: RadioAttentionPrompt?
@@ -475,7 +478,7 @@ class AccessoryManager: ObservableObject {
 		// updater for the device while it is rebooting into its bootloader.
 		if otaInProgress { return }
 		if !self.isConnected && !self.isConnecting,
-		   let preferredDevice = device ?? self.devices.first(where: { $0.id.uuidString == UserDefaults.preferredPeripheralId }) {
+		   let preferredDevice = device ?? self.devices.first(where: { $0.id.uuidString == PreferredRadio.peripheralId }) {
 			Task {
 				try await self.connect(to: preferredDevice)
 			}
@@ -1073,7 +1076,7 @@ class AccessoryManager: ObservableObject {
 			// Dispatch based on packet contents.
 			if case let .decoded(data) = packet.payloadVariant, !handledByAnotherRadio {
 				// Forward packets to discovery scan engine if active
-				if let engine = discoveryScanEngine, engine.isScanning {
+				if let engine = discoveryScanEngine, engine.isScanning, engine.receivesPackets(from: session.nodeNum) {
 					engine.handleMeshPacket(packet, portNum: data.portnum)
 				}
 
@@ -1190,7 +1193,7 @@ class AccessoryManager: ObservableObject {
 					handleTraceRouteApp(packet, session: session)
 				case .neighborinfoApp:
 					if let neighborInfo = try? NeighborInfo(serializedBytes: decodedInfo.packet.decoded.payload) {
-						if let engine = discoveryScanEngine, engine.isScanning {
+						if let engine = discoveryScanEngine, engine.isScanning, engine.receivesPackets(from: session.nodeNum) {
 							engine.handleNeighborInfo(neighborInfo, packet: decodedInfo.packet)
 						} else {
 							Logger.mesh.info("[Neighbor Info] packet received from \(packet.from.toHex(), privacy: .public) — \(neighborInfo.neighbors.count, privacy: .public) neighbors")
@@ -1202,7 +1205,7 @@ class AccessoryManager: ObservableObject {
 					Logger.mesh.info("[Map Report] packet received from \(packet.from.toHex(), privacy: .public)")
 				case .meshBeaconApp:
 					if let beacon = try? MeshBeacon(serializedBytes: decodedInfo.packet.decoded.payload) {
-						if let engine = discoveryScanEngine, engine.isScanning {
+						if let engine = discoveryScanEngine, engine.isScanning, engine.receivesPackets(from: session.nodeNum) {
 							engine.handleBeacon(beacon, packet: decodedInfo.packet)
 						} else {
 							// No active scan: passively capture the beacon as a session-less record so it
@@ -1426,18 +1429,19 @@ extension AccessoryManager {
 
 	func checkIsVersionSupported(forVersion: String) -> Bool {
 		// Prefer the live `connectedVersion` (full string including build hash,
-		// e.g. "2.8.0.3a0c08b"). Fall back to the persisted UserDefaults value
-		// (stripped of trailing hash, e.g. "2.8.0") because
-		// `activeConnection?.device.firmwareVersion` is briefly nil during
-		// reconnects before `handleDeviceMetadata` repopulates it — using only
-		// `connectedVersion` in that window collapses `myVersion` to "0.0.0"
-		// and incorrectly returns false for every capability check.
-		let storedVersion = UserDefaults.firmwareVersion
+		// e.g. "2.8.0.3a0c08b"). Fall back to the version this radio last reported this launch
+		// (`knownFirmwareVersions`), because `activeConnection?.device.firmwareVersion` is briefly
+		// nil during reconnects before `handleDeviceMetadata` repopulates it — using only
+		// `connectedVersion` in that window collapses `myVersion` to "0.0.0" and incorrectly
+		// returns false for every capability check. Offline, the preferred radio's. It used to
+		// read one app-wide stored version, which with several radios was whichever was checked
+		// last (T018). In memory on purpose: views call this while rendering, and a SwiftData
+		// fetch there traps once a view's store has gone (it crashed NodeDetail's snapshot test).
 		let myVersion: String
 		if let live = connectedVersion, !live.isEmpty {
 			myVersion = live
-		} else if storedVersion != "0.0.0" {
-			myVersion = storedVersion
+		} else if let known = knownFirmwareVersions[activeConnection?.nodeNum ?? activeDeviceNum ?? PreferredRadio.nodeNum] {
+			myVersion = known
 		} else {
 			// No firmware info at all — be permissive (matches the prior
 			// "first-launch" behavior; newer firmware is the common case).
@@ -1509,8 +1513,8 @@ extension AccessoryManager {
 	/// satisfies.
 	///
 	/// Deliberately conservative where the other gates here are permissive, and read from the live
-	/// connection only. `UserDefaults.firmwareVersion` is global rather than per radio, so falling
-	/// back to it right after switching radios answers for the *previous* radio — and assuming
+	/// connection only. A stored version could answer for the *previous* radio right after
+	/// switching radios — and assuming
 	/// "no reboot" on the wrong radio is the direction that hurts: it warns nobody before a reboot
 	/// they did not expect, and turns a real post-save failure into a shrug. No live version means
 	/// assume it may reboot, which merely restores the old forgiving behavior for that window.
@@ -1616,13 +1620,13 @@ extension AccessoryManager {
 	/// heard it and de-dupes against a recent identical capture (same node + channel within a
 	/// short window) so a beacon broadcast repeatedly doesn't spam the list.
 	///
-	/// `receivedBy` is the node number of the radio the beacon arrived on; nil falls back to the
-	/// stored preferred radio, which is what this used before sessions carried it.
+	/// `receivedBy` is the node number of the radio the beacon arrived on; nil (a radio whose
+	/// MyInfo hasn't arrived yet) falls back to the focused radio.
 	func ingestPassiveBeacon(_ beacon: MeshBeacon, packet: MeshPacket, receivedBy: Int64? = nil) {
 		let fromNodeNum = Int64(packet.from)
 
 		// Ignore self-beacons (FR-001/FR-002).
-		let connectedNodeNum = receivedBy ?? Int64(UserDefaults.preferredPeripheralNum)
+		let connectedNodeNum = receivedBy ?? activeDeviceNum ?? 0
 		guard fromNodeNum != connectedNodeNum else { return }
 
 		// FR-015: only capture passive beacons when the connected node is configured to listen

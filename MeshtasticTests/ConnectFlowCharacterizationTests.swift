@@ -59,7 +59,8 @@ struct ConnectFlowCharacterizationTests {
 		// What the flow records about the radio.
 		#expect(UserDefaults.preferredPeripheralId == radioDevice.id.uuidString)
 		#expect(UserDefaults.preferredPeripheralNum == Int(nodeNum))
-		#expect(UserDefaults.firmwareVersion == "2.7.15")
+		await MeshPackets.shared.flushDebouncedSaves()
+		#expect(manager.storedFirmwareVersion(for: Int64(nodeNum)) == "2.7.15", "kept per radio, in its own metadata, without the build suffix")
 		let myNodeNum = Int64(nodeNum)
 		let myInfo = try PersistenceController.shared.context.fetch(FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == myNodeNum })).first
 		#expect(myInfo?.peripheralId == radioDevice.id.uuidString)
@@ -80,7 +81,8 @@ struct ConnectFlowCharacterizationTests {
 		#expect(manager.firmwareUpdateRequired)
 		#expect(manager.isConnected)
 		#expect(manager.state == .subscribed)
-		#expect(UserDefaults.firmwareVersion == "2.3.0")
+		await MeshPackets.shared.flushDebouncedSaves()
+		#expect(manager.storedFirmwareVersion(for: manager.activeDeviceNum) == "2.3.0")
 		try await manager.disconnect()
 	}
 

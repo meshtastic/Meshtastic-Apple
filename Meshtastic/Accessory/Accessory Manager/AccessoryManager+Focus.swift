@@ -65,12 +65,9 @@ extension AccessoryManager {
 	/// The app-wide state the focused radio's connect sets (plan.md › T070's table), for a radio
 	/// that was already connected when it took the focus.
 	private func applyFocusedRadioState(_ session: RadioSession) {
-		UserDefaults.preferredPeripheralId = session.device.id.uuidString
+		PreferredRadio.peripheralId = session.device.id.uuidString
 		if let nodeNum = session.nodeNum {
-			UserDefaults.preferredPeripheralNum = Int(nodeNum)
-		}
-		if let version = reportedFirmwareVersion(for: session.device) {
-			UserDefaults.firmwareVersion = version
+			PreferredRadio.nodeNum = nodeNum
 		}
 		firmwareUpdateRequired = !checkIsVersionSupported(forVersion: minimumVersion)
 		allowDisconnect = true

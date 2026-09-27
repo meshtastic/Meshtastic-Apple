@@ -131,7 +131,7 @@ extension AccessoryManager {
 		// window instead of being pinned to the fast reconnect timeout forever.
 		if !UserDefaults.migratedPreferredPeripheralPairing {
 			UserDefaults.migratedPreferredPeripheralPairing = true
-			if let preferredUUID = UUID(uuidString: UserDefaults.preferredPeripheralId) {
+			if let preferredUUID = UUID(uuidString: PreferredRadio.peripheralId) {
 				UserDefaults.rememberPairedPeripheral(preferredUUID)
 			}
 		}
@@ -385,7 +385,7 @@ extension AccessoryManager {
 
 				if attempt.isFocused {
 					Logger.transport.info("🔗 Saving preferredPeripheralId: \(device.id.uuidString)")
-					UserDefaults.preferredPeripheralId = device.id.uuidString
+					PreferredRadio.peripheralId = device.id.uuidString
 				}
 
 				try await self.sendWantDatabase(on: attempt.requireSession())
@@ -501,12 +501,9 @@ extension AccessoryManager {
 			throw AccessoryError.connectionFailed("Firmware version not available")
 		}
 
-		let lastDotIndex = firmwareVersion.lastIndex(of: ".")
-		if lastDotIndex == nil {
+		if firmwareVersion.lastIndex(of: ".") == nil {
 			throw AccessoryError.versionMismatch("🚨" + "Update Your Firmware".localized)
 		}
-
-		let version = firmwareVersion[...(lastDotIndex ?? String.Index(utf16Offset: 6, in: firmwareVersion))].dropLast()
 
 		// Below-minimum firmware keeps its connection on every radio (D-17). The focused radio
 		// shows the update gate; another radio is marked as needing an update, which prompts the
@@ -515,9 +512,6 @@ extension AccessoryManager {
 			setAttention(attention, for: session)
 		}
 		if attempt.isFocused {
-			// TODO: do we really need to store the firmware version in the UserDefaults?
-			UserDefaults.firmwareVersion = String(version)
-
 			// Below-minimum firmware keeps its connection. Throwing here used to retry the
 			// whole process and then disconnect, which left the user no way to update the
 			// radio from the app. The gate in ContentView blocks everything but the
@@ -562,9 +556,8 @@ extension AccessoryManager {
 	}
 	/// The firmware version this node last reported, from its own stored metadata.
 	///
-	/// Per node on purpose. `UserDefaults.firmwareVersion` holds whichever radio was version
-	/// checked last, so using it here would report one radio's firmware against another when
-	/// a second radio connects before its metadata arrives.
+	/// Per node on purpose: an app-wide stored version would report one radio's firmware against
+	/// another when a second radio connects before its metadata arrives.
 	func storedFirmwareVersion(for nodeNum: Int64?) -> String? {
 		guard let nodeNum else { return nil }
 		let descriptor = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == nodeNum })

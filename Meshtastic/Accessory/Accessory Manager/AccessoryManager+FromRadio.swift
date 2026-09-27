@@ -220,8 +220,8 @@ extension AccessoryManager {
 			if isFocused {
 				// Compare BEFORE persisting the new num — the previous code assigned first, so
 				// newConnection was always false and this hook was dead.
-				let newConnection = Int64(UserDefaults.preferredPeripheralNum) != Int64(myInfo.myNodeNum)
-				UserDefaults.preferredPeripheralNum = Int(myInfo.myNodeNum)
+				let newConnection = PreferredRadio.nodeNum != Int64(myInfo.myNodeNum)
+				PreferredRadio.nodeNum = Int64(myInfo.myNodeNum)
 				if newConnection {
 					// Onboard a new device connection here
 				}
@@ -303,8 +303,8 @@ extension AccessoryManager {
 			return
 		}
 		// With several radios, only the preferred radio's own renumber moves the preference.
-		if Int64(UserDefaults.preferredPeripheralNum) == oldNum {
-			UserDefaults.preferredPeripheralNum = Int(newNum)
+		if PreferredRadio.nodeNum == oldNum {
+			PreferredRadio.nodeNum = newNum
 		}
 		appState?.databaseResetID = UUID()
 	}
@@ -451,6 +451,9 @@ extension AccessoryManager {
 		Logger.transport.debug("[Version] handleDeviceMetadata returned version: \(metadata.firmwareVersion)")
 
 		updateDevice(deviceId: session.device.id, key: \.firmwareVersion, value: metadata.firmwareVersion)
+		if !metadata.firmwareVersion.isEmpty {
+			knownFirmwareVersions[deviceNum] = metadata.firmwareVersion
+		}
 		if session === activeConnection {
 			Logger.datadog.setRadioContext(.firmwareVersion, metadata.firmwareVersion)
 		}

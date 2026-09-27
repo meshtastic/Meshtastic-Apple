@@ -164,7 +164,7 @@ final class TAKServerManager: ObservableObject {
 		let context = PersistenceController.shared.context
 		// Feature 021: the radio TAK goes through. The shared store holds a MyInfo per radio,
 		// so an unfiltered fetch could check another radio's channels.
-		let takRadioNum = AccessoryManager.shared.radioNum(for: .tak) ?? Int64(UserDefaults.preferredPeripheralNum)
+		let takRadioNum = AccessoryManager.shared.radioNum(for: .tak) ?? PreferredRadio.nodeNum
 		var descriptor = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == takRadioNum })
 		descriptor.fetchLimit = 1
 		

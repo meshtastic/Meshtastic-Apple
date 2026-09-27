@@ -946,25 +946,25 @@ struct Settings: View {
 					clear: { router.clearSettingsFieldFocus() }
 				))
 			}
-			.onChange(of: UserDefaults.preferredPeripheralNum ) { _, newConnectedNode in
+			.onChange(of: PreferredRadio.nodeNum) { _, newConnectedNode in
 				// If the preferred node changes, then select the newly preferred node
 				// This should only happen during connect
-				preferredNodeNum = newConnectedNode
+				preferredNodeNum = Int(newConnectedNode)
 				selectedNode = Int(accessoryManager.isConnected ? newConnectedNode : 0)
 			}
 			.onChange(of: accessoryManager.isConnected) { _, isConnectedNow in
 				// If we are on this screen, haven't iniatialized the selection yet,
 				// And we transition, to connected, then initialize the selection
 				if isConnectedNow, self.selectedNode == 0 {
-					self.preferredNodeNum = UserDefaults.preferredPeripheralNum
-					setSelectedNode(to: UserDefaults.preferredPeripheralNum)
+					self.preferredNodeNum = Int(PreferredRadio.nodeNum)
+					setSelectedNode(to: Int(PreferredRadio.nodeNum))
 				}
 			}
 			.onChange(of: accessoryManager.activeDeviceNum) { oldDevice, newDevice in
 				if newDevice == nil {
 					// The transport dropped — often just the radio rebooting after a config
 					// save, not a real device change. preferredNodeNum tracks
-					// UserDefaults.preferredPeripheralNum (see the onChange above), which a
+					// the preferred radio (see the onChange above), which a
 					// reboot doesn't touch, so leave it alone: zeroing it here collapsed the
 					// Configure/Radio/Device/Module/Logging sections every time a save
 					// rebooted the node, even though it's still the preferred node. Only the
@@ -982,8 +982,8 @@ struct Settings: View {
 				// not select the node and it will remain 0
 				refreshNodes()
 				if self.preferredNodeNum <= 0 {
-					self.preferredNodeNum = UserDefaults.preferredPeripheralNum
-					setSelectedNode(to: UserDefaults.preferredPeripheralNum)
+					self.preferredNodeNum = Int(PreferredRadio.nodeNum)
+					setSelectedNode(to: Int(PreferredRadio.nodeNum))
 				}
 			}
 			.task(id: router.selectedTab) {

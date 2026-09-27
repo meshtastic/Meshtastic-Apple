@@ -33,7 +33,7 @@ func projectedDisplayChannels(from channels: [ChannelEntity]) -> [ChannelEntity]
 /// direction — hiding an offer on bad data would be the harmful failure.
 @MainActor
 func configuredChannelOfferKeys(context: ModelContext) -> Set<String> {
-	let num = Int64(UserDefaults.preferredPeripheralNum)
+	let num = PreferredRadio.nodeNum
 	guard num > 0 else { return [] }
 	var descriptor = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == num })
 	descriptor.fetchLimit = 1

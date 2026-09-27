@@ -58,7 +58,7 @@ struct Connect: View {
 
 	private var sortedAvailableDevices: [Device] {
 		accessoryManager.devices.sorted { lhs, rhs in
-			let preferredId = UserDefaults.preferredPeripheralId
+			let preferredId = PreferredRadio.peripheralId
 			let lhsIsPreferred = lhs.id.uuidString == preferredId
 			let rhsIsPreferred = rhs.id.uuidString == preferredId
 
@@ -695,7 +695,7 @@ struct Connect: View {
 	@MainActor
 	private func refreshConnectedNodeState() {
 		guard let deviceNum = accessoryManager.activeDeviceNum,
-		      UserDefaults.preferredPeripheralId.count > 0,
+		      PreferredRadio.peripheralId.count > 0,
 		      accessoryManager.state == .subscribed else {
 			firmwareUpdateNotice = nil
 			return
@@ -962,7 +962,7 @@ struct ManualConnectionMenu: View {
 			Button("OK", action: {
 				if !connectionString.isEmpty {
 					if let device = selectedTransport.transport.device(forManualConnection: connectionString) {
-						if UserDefaults.preferredPeripheralId == device.id.uuidString {
+						if PreferredRadio.peripheralId == device.id.uuidString {
 							Task {
 								try await selectedTransport.transport.manuallyConnect(toDevice: device)
 							}
@@ -991,7 +991,7 @@ struct DeviceConnectRow: View {
 		guard !accessoryManager.isRadioConnected(device.id) else { return }
 		guard accessoryManager.activeConnection != nil else {
 			Task {
-				if UserDefaults.preferredPeripheralId.count > 0 && device.id.uuidString != UserDefaults.preferredPeripheralId {
+				if PreferredRadio.peripheralId.count > 0 && device.id.uuidString != PreferredRadio.peripheralId {
 					await performRadioSwitch(device, isSwitchingRadio: $isSwitchingRadio, accessoryManager: accessoryManager)
 				} else {
 					try? await accessoryManager.connect(to: device)
@@ -1031,7 +1031,7 @@ struct DeviceConnectRow: View {
 
 	var body: some View {
 		HStack {
-			if UserDefaults.preferredPeripheralId == device.id.uuidString {
+			if PreferredRadio.peripheralId == device.id.uuidString {
 				Image(systemName: "star.fill")
 					.imageScale(.large).foregroundColor(.yellow)
 					.padding(.trailing)
@@ -1298,8 +1298,8 @@ func switchToDevice(
 
 	// The user's explicit choice is the new preferred radio, recorded up front so an
 	// error-path auto-reconnect retries this radio rather than the previous one.
-	UserDefaults.preferredPeripheralId = device.id.uuidString
-	UserDefaults.preferredPeripheralNum = Int(device.num ?? 0)
+	PreferredRadio.peripheralId = device.id.uuidString
+	PreferredRadio.nodeNum = device.num ?? 0
 
 	// Keeps the disconnect's teardown from re-arming discovery and auto-connect mid-switch.
 	accessoryManager.isSwitchingDevices = true

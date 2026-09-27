@@ -72,7 +72,7 @@ extension AccessoryManager {
 						if self.shouldAutomaticallyConnectToPreferredPeripheralAfterError, !userRequestedConnectionCancellation,
 						   !self.autoReconnectSuspendedForSession,
 						   !self.isSwitchingDevices,
-						   UserDefaults.autoconnectOnDiscovery, UserDefaults.preferredPeripheralId == newDevice.id.uuidString {
+						   UserDefaults.autoconnectOnDiscovery, PreferredRadio.peripheralId == newDevice.id.uuidString {
 							Logger.transport.debug("🔎 [Discovery] Found preferred peripheral \(newDevice.name)")
 							self.connectToPreferredDevice(device: newDevice)
 						}

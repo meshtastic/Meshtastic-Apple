@@ -518,7 +518,7 @@ fileprivate extension NodeFilterParameters {
 		// Ignored
 		if user.userNode?.ignored == true { return false }
 		// Connected node
-		if user.numString == String(UserDefaults.preferredPeripheralNum) { return false }
+		if user.numString == String(PreferredRadio.nodeNum) { return false }
 		return true
 	}
 }

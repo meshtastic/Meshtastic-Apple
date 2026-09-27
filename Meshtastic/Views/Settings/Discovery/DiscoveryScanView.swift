@@ -49,7 +49,7 @@ struct DiscoveryScanView: View {
 	/// The connected radio's region as the protobuf enum used to key `loRaRegionPresets`, derived the
 	/// same way as the LoRa Config screen (`RegionCodes(rawValue:)` on the stored region code).
 	private var connectedRegionCode: Config.LoRaConfig.RegionCode? {
-		let num = Int64(UserDefaults.preferredPeripheralNum)
+		let num = PreferredRadio.nodeNum
 		var descriptor = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == num })
 		descriptor.fetchLimit = 1
 		guard let raw = (try? context.fetch(descriptor))?.first?.loRaConfig?.regionCode,

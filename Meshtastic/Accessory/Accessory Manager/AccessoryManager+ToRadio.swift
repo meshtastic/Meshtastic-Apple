@@ -284,7 +284,7 @@ extension AccessoryManager {
 				// Update local database with the new node info
 				// Do not auto-favorite when using CLIENT_BASE role to avoid creating routing issues
 				let shouldFavorite = radioRole(for: Int64(deviceNum)) != .clientBase
-				await MeshPackets.shared.upsertNodeInfoPacket(packet: nodeMeshPacket, favorite: shouldFavorite, overTheMesh: false)
+				await MeshPackets.shared.upsertNodeInfoPacket(packet: nodeMeshPacket, favorite: shouldFavorite, overTheMesh: false, receivedBy: Int64(deviceNum))
 			}
 		} catch {
 			// The contact decoded fine and carries a key; this is the radio send failing.

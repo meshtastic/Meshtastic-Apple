@@ -28,6 +28,8 @@ extension AccessoryManager {
 			  !isConnecting,
 			  !isSwitchingDevices,
 			  !otaInProgress,
+			  // A discovery scan's radio reboots into each preset; it comes back as the focus.
+			  discoveryScanEngine?.isScanning != true,
 			  !userRequestedConnectionCancellation else { return nil }
 		return additionalRadioDevices.first { $0.connectionState == .connected }
 	}
@@ -79,7 +81,7 @@ extension AccessoryManager {
 			  !otaInProgress,
 			  !userRequestedConnectionCancellation,
 			  UserDefaults.autoconnectOnDiscovery else { return nil }
-		let preferredId = UserDefaults.preferredPeripheralId
+		let preferredId = PreferredRadio.peripheralId
 		for radio in remembered where radio.peripheralId != preferredId {
 			if let seen = devices.first(where: { $0.id.uuidString == radio.peripheralId }) {
 				return seen
@@ -99,7 +101,7 @@ extension AccessoryManager {
 			let remembered = await MeshPackets.shared.rememberedRadios(excluding: [])
 			guard let device = self.rememberedRadioFallbackCandidate(from: remembered) else { return }
 			Logger.transport.info("🔁 [Remembered] The preferred radio didn't show up; connecting \(device.name, privacy: .public)")
-			let preferredNum = Int64(UserDefaults.preferredPeripheralNum)
+			let preferredNum = PreferredRadio.nodeNum
 			if preferredNum > 0 {
 				await MeshPackets.shared.setRadioAutoConnect(nodeNum: preferredNum, true)
 			}

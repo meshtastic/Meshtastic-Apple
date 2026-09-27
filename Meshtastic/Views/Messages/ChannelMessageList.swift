@@ -21,7 +21,11 @@ struct ChannelMessageList: View {
 	@Bindable var myInfo: MyInfoEntity
 	@Bindable var channel: ChannelEntity
 	@State private var replyMessageId: Int64 = 0
-	@AppStorage("preferredPeripheralNum") private var preferredPeripheralNum = -1
+	/// The focused radio, or offline the preferred one; -1 for none. Redraws with the manager.
+	private var preferredPeripheralNum: Int {
+		if let focused = accessoryManager.activeDeviceNum { return Int(focused) }
+		return PreferredRadio.nodeNum > 0 ? Int(PreferredRadio.nodeNum) : -1
+	}
 	@State private var messageToHighlight: Int64 = 0
 	@State private var messageLimit: Int = 100
 	@State private var messages: [MessageEntity] = []

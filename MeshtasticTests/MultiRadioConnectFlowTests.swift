@@ -157,7 +157,7 @@ struct MultiRadioConnectFlowTests {
 		#expect(manager.isConnected)
 		#expect(UserDefaults.preferredPeripheralId == radios.secondDevice.id.uuidString)
 		#expect(UserDefaults.preferredPeripheralNum == Int(radios.secondNum))
-		#expect(UserDefaults.firmwareVersion == "2.7.9")
+		#expect(manager.connectedVersion == "2.7.9.1234567")
 		let previousNum = Int64(radios.firstNum)
 		let previous = try PersistenceController.shared.context.fetch(FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == previousNum })).first
 		#expect(previous?.autoConnect == true, "the previous radio comes back alongside next time")
@@ -211,6 +211,23 @@ struct MultiRadioConnectFlowTests {
 		#expect(await radios.second.disconnects == 0)
 		#expect(await radios.second.sent.map(describe).filter { $0 == .wantConfig(69420) }.count == 1, "not connected again")
 		manager.isSwitchingDevices = true
+		try await manager.disconnect()
+	}
+
+	@Test("While the focused radio's live version is unknown, version checks use its own stored one")
+	func versionCheckUsesTheFocusedRadiosOwnVersion() async throws {
+		let saved = SavedDefaults()
+		defer { saved.restore() }
+		// A runs 2.7.15, B runs 2.7.9.
+		let radios = try await connectTwoRadios()
+		let manager = radios.manager
+		let focused = try #require(manager.activeConnection)
+		#expect(manager.checkIsVersionSupported(forVersion: "2.7.15"))
+
+		// A reconnect window: the live version is briefly unknown.
+		focused.device.firmwareVersion = nil
+		#expect(manager.checkIsVersionSupported(forVersion: "2.7.15"), "A's own stored 2.7.15, not B's 2.7.9")
+		#expect(!manager.checkIsVersionSupported(forVersion: "2.7.16"))
 		try await manager.disconnect()
 	}
 }

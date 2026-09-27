@@ -153,6 +153,22 @@ final class DiscoveryScanEngine {
 	/// Paces the animated reveal of seeded nodes onto the map during a current-preset scan.
 	private var seedTask: Task<Void, Never>?
 
+	/// The radio a scan runs on, fixed when it starts (feature 021, T016): a focus change mid-scan,
+	/// or the reboot a preset change causes, must not move it to another radio, and only its own
+	/// packets are measured (`receivesPackets(from:)`).
+	private(set) var scanRadioNum: Int64 = 0
+
+	/// The focused radio, or offline the preferred one, whose saved config an offline analysis uses.
+	private var currentRadioNum: Int64 {
+		accessoryManager?.activeDeviceNum ?? PreferredRadio.nodeNum
+	}
+
+	/// True for packets `radioNum` received when it's this scan's radio. Other connected radios
+	/// are on their own presets and meshes.
+	func receivesPackets(from radioNum: Int64?) -> Bool {
+		radioNum == scanRadioNum
+	}
+
 	var isScanning: Bool {
 		switch currentState {
 		case .shifting, .reconnecting, .dwell, .paused, .restoring:
@@ -199,7 +215,9 @@ final class DiscoveryScanEngine {
 		// Clear any previous error
 		errorMessage = nil
 
-		let connectedNodeNum = Int64(UserDefaults.preferredPeripheralNum)
+		// This scan's radio, for the whole scan (T016).
+		scanRadioNum = currentRadioNum
+		let connectedNodeNum = scanRadioNum
 		let connectedNode = getNodeInfo(id: connectedNodeNum, context: context)
 
 		// Connection-only setup: snapshot the home LoRa config and, if needed, temporarily switch
@@ -326,7 +344,7 @@ final class DiscoveryScanEngine {
 		// Skip the config change only for a plain public target we're already sitting on (no region
 		// override, no custom channel). Custom-channel / region-override targets always re-send.
 		if !target.isCustomChannel, target.regionRaw == nil, accessoryManager != nil, let context = modelContext {
-			let connectedNodeNum = Int64(UserDefaults.preferredPeripheralNum)
+			let connectedNodeNum = scanRadioNum
 			let node = getNodeInfo(id: connectedNodeNum, context: context)
 			if let currentModemPreset = node?.loRaConfig?.modemPreset,
 			   ModemPresets(rawValue: Int(currentModemPreset)) == nextPreset {
@@ -383,7 +401,7 @@ final class DiscoveryScanEngine {
 		let preset = target.preset
 		guard let accessoryManager, let context = modelContext else { return }
 
-		let connectedNodeNum = Int64(UserDefaults.preferredPeripheralNum)
+		let connectedNodeNum = scanRadioNum
 		guard let connectedNode = getNodeInfo(id: connectedNodeNum, context: context),
 			  let fromUser = connectedNode.user,
 			  let toUser = connectedNode.user else {
@@ -634,7 +652,7 @@ final class DiscoveryScanEngine {
 
 		Logger.discovery.info("📡 [Discovery] NeighborInfo from node \(neighborInfo.nodeID): \(neighborInfo.neighbors.count) neighbors")
 
-		let connectedNodeNum = Int64(UserDefaults.preferredPeripheralNum)
+		let connectedNodeNum = scanRadioNum
 		for neighbor in neighborInfo.neighbors {
 			let nodeNum = Int64(neighbor.nodeID)
 			// Skip the scanning node itself
@@ -676,7 +694,7 @@ final class DiscoveryScanEngine {
 
 		let fromNodeNum = Int64(packet.from)
 		// Skip beacons from the scanning node itself.
-		let connectedNodeNum = Int64(UserDefaults.preferredPeripheralNum)
+		let connectedNodeNum = scanRadioNum
 		guard fromNodeNum != connectedNodeNum else { return }
 
 		let hasCustomChannel = beacon.hasOfferChannel && !beacon.offerChannel.name.isEmpty
@@ -742,7 +760,7 @@ final class DiscoveryScanEngine {
 		let fromNodeNum = Int64(packet.from)
 
 		// Skip packets from the scanning node itself
-		let connectedNodeNum = Int64(UserDefaults.preferredPeripheralNum)
+		let connectedNodeNum = scanRadioNum
 		guard fromNodeNum != connectedNodeNum else { return }
 
 		let hopLimit = Int(packet.hopLimit)
@@ -897,7 +915,7 @@ extension DiscoveryScanEngine {
 			return
 		}
 
-		let connectedNodeNum = Int64(UserDefaults.preferredPeripheralNum)
+		let connectedNodeNum = scanRadioNum
 		guard let connectedNode = getNodeInfo(id: connectedNodeNum, context: context),
 			  let fromUser = connectedNode.user,
 			  let toUser = connectedNode.user else {
@@ -1037,7 +1055,7 @@ extension DiscoveryScanEngine {
 	private func captureLocalStats() {
 		guard let context = modelContext, let result = currentPresetResult else { return }
 
-		let connectedNodeNum = Int64(UserDefaults.preferredPeripheralNum)
+		let connectedNodeNum = scanRadioNum
 		guard let connectedNode = getNodeInfo(id: connectedNodeNum, context: context) else {
 			Logger.discovery.warning("📡 [Discovery] Cannot read local stats — no connected node")
 			return
@@ -1134,7 +1152,8 @@ extension DiscoveryScanEngine {
 		// Prefer the connected node's live LoRa preset. When no node/config is available — e.g.
 		// running offline with no radio connected — fall back to the last preset the app persisted
 		// in UserDefaults, then to LongFast. This lets "Analyze Current Preset" work fully offline.
-		let connectedNodeNum = Int64(UserDefaults.preferredPeripheralNum)
+		scanRadioNum = currentRadioNum
+		let connectedNodeNum = scanRadioNum
 		let preset = (getNodeInfo(id: connectedNodeNum, context: context)?.loRaConfig?.modemPreset)
 			.flatMap { ModemPresets(rawValue: Int($0)) }
 			?? ModemPresets(rawValue: UserDefaults.modemPreset)
@@ -1156,7 +1175,7 @@ extension DiscoveryScanEngine {
 	func revealSeededNodesFromDatabase() async {
 		guard let context = modelContext, let session, let result = currentPresetResult else { return }
 		let presetName = activePreset?.name ?? result.presetName
-		let connectedNodeNum = Int64(UserDefaults.preferredPeripheralNum)
+		let connectedNodeNum = scanRadioNum
 
 		// Per-node text-message counts (single fetch, grouped by sender).
 		var messageCounts: [Int64: Int] = [:]
@@ -1333,7 +1352,7 @@ extension DiscoveryScanEngine {
 	/// snapshotted the first time we tune away and restored verbatim in `restorePrimaryChannel()`.
 	private func applyChannel(for target: ScanTarget) async {
 		guard let accessoryManager, let context = modelContext else { return }
-		let connectedNodeNum = Int64(UserDefaults.preferredPeripheralNum)
+		let connectedNodeNum = scanRadioNum
 		guard let connectedNode = getNodeInfo(id: connectedNodeNum, context: context),
 			  let fromUser = connectedNode.user,
 			  let primary = connectedNode.myInfo?.channels.first(where: { $0.role == 1 }) else { return }
@@ -1373,7 +1392,7 @@ extension DiscoveryScanEngine {
 	/// while the link is up.
 	private func restorePrimaryChannel() async {
 		guard let homePrimaryChannel, let accessoryManager, let context = modelContext else { return }
-		let connectedNodeNum = Int64(UserDefaults.preferredPeripheralNum)
+		let connectedNodeNum = scanRadioNum
 		guard let connectedNode = getNodeInfo(id: connectedNodeNum, context: context),
 			  let fromUser = connectedNode.user else {
 			Logger.discovery.error("📡 [Discovery] Cannot restore primary channel — no connected node")

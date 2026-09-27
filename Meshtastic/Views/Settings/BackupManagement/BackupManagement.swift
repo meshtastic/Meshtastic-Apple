@@ -193,7 +193,7 @@ struct BackupManagement: View {
 
 		// Resolve the outgoing node before the flow disconnects anything.
 		let currentNodeNum = accessoryManager.activeDeviceNum ?? {
-			let num = Int64(UserDefaults.preferredPeripheralNum)
+			let num = PreferredRadio.nodeNum
 			return num > 0 ? num : nil
 		}()
 		let restoreResult = await backupCurrentAndRestoreDatabase(
@@ -218,7 +218,7 @@ struct BackupManagement: View {
 	@MainActor
 	private func backupNow() async {
 		let nodeNum: Int64? = accessoryManager.activeDeviceNum ?? {
-			let num = Int64(UserDefaults.preferredPeripheralNum)
+			let num = PreferredRadio.nodeNum
 			return num > 0 ? num : nil
 		}()
 		guard let nodeNum else {
