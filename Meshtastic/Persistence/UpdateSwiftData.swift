@@ -302,7 +302,7 @@ extension MeshPackets {
 				}
 				let allObservations = observations.contains { $0 === observation } ? observations : observations + [observation]
 				if allObservations.count > 1 {
-					NodeObservationEntity.applyAggregate(allObservations, to: node)
+					NodeObservationEntity.applyAggregate(allObservations, to: node, focusedRadio: PreferredRadio.nodeNum)
 					Logger.data.debug("💾 [updateAnyPacketFrom] Aggregated node \(packet.from.toHex(), privacy: .public) across \(allObservations.count) radios")
 					return
 				}

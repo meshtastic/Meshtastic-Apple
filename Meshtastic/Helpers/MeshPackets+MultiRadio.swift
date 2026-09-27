@@ -288,7 +288,7 @@ extension MeshPackets {
 			observation.isKeyManuallyVerified = nodeInfo.isKeyManuallyVerified
 			let all = existing.contains { $0 === observation } ? existing : existing + [observation]
 			if all.count > 1 {
-				NodeObservationEntity.applyAggregate(all, to: node)
+				NodeObservationEntity.applyAggregate(all, to: node, focusedRadio: PreferredRadio.nodeNum)
 			}
 		} catch {
 			Logger.data.error("💥 [MultiRadio] Node-DB observation failed: \(error.localizedDescription, privacy: .public)")
@@ -299,26 +299,52 @@ extension MeshPackets {
 // MARK: - Aggregate
 
 extension NodeObservationEntity {
+	/// How far behind the newest observation another can be and still count as current. Nodes
+	/// send something at least every half hour by default, so a radio still in range of the
+	/// node has heard it within the hour.
+	static let currentWindow: TimeInterval = 60 * 60
+
 	/// Writes the node's per-radio fields as the aggregate of every local radio's observation
 	/// (report §13.3.2), so the node list and map keep reading `NodeInfoEntity` unchanged:
 	/// - `lastHeard` is the latest and `firstHeard` the earliest of any radio;
-	/// - hops, signal, MQTT and channel come from the best path: heard over RF rather than MQTT,
-	///   then fewest hops, then most recently.
+	/// - hops, signal and MQTT come from the best current path: among observations heard within
+	///   `currentWindow` of the newest, heard over RF rather than MQTT, then fewest hops, then
+	///   most recently. An old observation (a radio that's away, a merged backup) doesn't count;
+	/// - `channel` is a slot number on one radio, so it comes only from `focusedRadio`'s own
+	///   observation, the radio that sends to the node; without one it is left as it is (T143).
 	/// With a single observation its values are copied as they are.
-	static func applyAggregate(_ observations: [NodeObservationEntity], to node: NodeInfoEntity) {
-		guard let best = observations.min(by: isBetterPath) else { return }
-		if observations.count == 1 {
-			node.firstHeard = best.firstHeard
-			node.lastHeard = best.lastHeard
-		} else {
-			node.firstHeard = observations.compactMap(\.firstHeard).min() ?? node.firstHeard
-			node.lastHeard = observations.compactMap(\.lastHeard).max() ?? node.lastHeard
+	static func applyAggregate(_ observations: [NodeObservationEntity], to node: NodeInfoEntity, focusedRadio: Int64) {
+		guard !observations.isEmpty else { return }
+		if observations.count == 1, let only = observations.first {
+			node.firstHeard = only.firstHeard
+			node.lastHeard = only.lastHeard
+			node.hopsAway = only.hopsAway
+			node.snr = only.snr
+			node.rssi = only.rssi
+			node.viaMqtt = only.viaMqtt
+			node.channel = only.channel
+			return
 		}
+		node.firstHeard = observations.compactMap(\.firstHeard).min() ?? node.firstHeard
+		node.lastHeard = observations.compactMap(\.lastHeard).max() ?? node.lastHeard
+		guard let best = current(observations).min(by: isBetterPath) else { return }
 		node.hopsAway = best.hopsAway
 		node.snr = best.snr
 		node.rssi = best.rssi
 		node.viaMqtt = best.viaMqtt
-		node.channel = best.channel
+		if let focused = observations.first(where: { $0.radioNum == focusedRadio }) {
+			node.channel = focused.channel
+		}
+	}
+
+	/// The observations heard within `currentWindow` of the newest; all of them when none has
+	/// been heard.
+	static func current(_ observations: [NodeObservationEntity]) -> [NodeObservationEntity] {
+		guard let newest = observations.compactMap(\.lastHeard).max() else { return observations }
+		return observations.filter { observation in
+			guard let heard = observation.lastHeard else { return false }
+			return newest.timeIntervalSince(heard) <= currentWindow
+		}
 	}
 
 	private static func isBetterPath(_ lhs: NodeObservationEntity, _ rhs: NodeObservationEntity) -> Bool {

@@ -141,7 +141,7 @@ each, full suite each time.
 - [X] T140 D10 per-packet reception and observation lookups by their indexed keys. — `receptions`, `observations(ofNode:)` and `sentMessage` look up `radio:…` keys one radio at a time (the given radio first, the store's radios cached for 5 s). Reply and tapback lookups by `messageId` still scan: the target's sender isn't known there.
 - [X] T141 D3 a copy one radio couldn't decrypt no longer hides the decoded copy. — `recordReception` returns `.untracked` for an undecoded packet and records nothing. Verified: `MultiRadioIngestTests.undecodedCopyIsNotRecorded`.
 - [X] T142 D4 the observation backfill only for a one-radio store. — it creates nothing once any other radio has an observation (stray `MyInfoEntity` rows in old stores rule out counting those). Verified: `MultiRadioBackfillTests.observationsStopWithAnotherRadio`.
-- [ ] T143 D5 the aggregate ignores stale observations and takes no other radio's channel slot.
+- [X] T143 D5 the aggregate ignores stale observations and takes no other radio's channel slot. — only observations heard within an hour of the newest compete (`currentWindow`); `channel` comes from the focused radio's observation only; position exchange, client history and user info exchange use `channelSlot(toReach:)` (`node.channel` while only the focused radio heard the node, as on `main`). Verified: `MultiRadioIngestTests` (three new tests).
 - [ ] T144 D7 channel keys set when a radio's channels and LoRa config arrive.
 - [ ] T145 D2 deleting a channel's messages deletes what its timeline shows.
 - [ ] T146 D13 observations removed with their node.

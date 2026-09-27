@@ -157,6 +157,73 @@ struct MultiRadioIngestTests {
 		#expect(observations.first { $0.radioNum == radioB }?.hopsAway == 1)
 	}
 
+	private func observation(_ radioNum: Int64, hops: Int32, snr: Float, heard: Date, channel: Int32) -> NodeObservationEntity {
+		let observation = NodeObservationEntity(radioNum: radioNum, nodeNum: remote)
+		observation.hopsAway = hops
+		observation.snr = snr
+		observation.lastHeard = heard
+		observation.channel = channel
+		return observation
+	}
+
+	@Test("An observation heard long before the newest doesn't set the node's path")
+	func staleObservationIsIgnored() {
+		let now = Date(timeIntervalSince1970: 1_800_000_000)
+		let node = NodeInfoEntity()
+		let live = observation(radioA, hops: 3, snr: -5, heard: now, channel: 0)
+		let old = observation(radioB, hops: 0, snr: 8, heard: now.addingTimeInterval(-86_400), channel: 2)
+
+		NodeObservationEntity.applyAggregate([live, old], to: node, focusedRadio: radioA)
+
+		#expect(node.hopsAway == 3)
+		#expect(node.snr == -5)
+		#expect(node.lastHeard == now)
+	}
+
+	@Test("The node's channel slot comes only from the focused radio")
+	func channelFromFocusedRadio() {
+		let now = Date(timeIntervalSince1970: 1_800_000_000)
+		let node = NodeInfoEntity()
+		node.channel = 1
+		let focused = observation(radioA, hops: 3, snr: -5, heard: now, channel: 0)
+		let better = observation(radioB, hops: 0, snr: 8, heard: now, channel: 2)
+
+		NodeObservationEntity.applyAggregate([focused, better], to: node, focusedRadio: radioA)
+		#expect(node.hopsAway == 0)
+		#expect(node.channel == 0)
+
+		// The focused radio hasn't heard the node: the slot is left as it was.
+		node.channel = 1
+		NodeObservationEntity.applyAggregate([focused, better], to: node, focusedRadio: 0x0C0C_0C0C)
+		#expect(node.channel == 1)
+	}
+
+	@Test("Requests to a node go out on the focused radio's own slot for it")
+	func channelSlotForSending() throws {
+		let container = try makeContainer()
+		try seedNodes([remote], in: container)
+		let context = container.mainContext
+		let node = try #require(try context.fetch(FetchDescriptor<NodeInfoEntity>()).first)
+		node.channel = 2
+		let manager = AccessoryManager(transports: [])
+		manager.activeDeviceNum = radioA
+
+		// Nobody's observation, or only the focused radio's: `node.channel`, as before 021.
+		#expect(manager.channelSlot(toReach: node) == 2)
+		context.insert(observation(radioA, hops: 1, snr: 0, heard: .now, channel: 2))
+		#expect(manager.channelSlot(toReach: node) == 2)
+
+		// B heard it on B's slot 2, which is nothing on A: A's own slot.
+		let own = try #require(try context.fetch(FetchDescriptor<NodeObservationEntity>()).first)
+		own.channel = 1
+		context.insert(observation(radioB, hops: 0, snr: 0, heard: .now, channel: 2))
+		#expect(manager.channelSlot(toReach: node) == 1)
+
+		// Only B heard it: primary.
+		context.delete(own)
+		#expect(manager.channelSlot(toReach: node) == 0)
+	}
+
 	@Test("A radio's node database fills its observation")
 	func nodeDBObservation() async throws {
 		let container = try makeContainer()

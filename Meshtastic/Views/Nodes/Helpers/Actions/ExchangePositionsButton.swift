@@ -20,7 +20,7 @@ struct ExchangePositionsButton: View {
 			Task {
 				do {
 					try await accessoryManager.sendPosition(
-						channel: node.channel,
+						channel: accessoryManager.channelSlot(toReach: node),
 						destNum: node.num,
 						hopsAway: hopsAway,
 						wantResponse: true

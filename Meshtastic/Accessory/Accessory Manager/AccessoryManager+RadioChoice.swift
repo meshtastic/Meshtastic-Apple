@@ -29,6 +29,19 @@ extension AccessoryManager {
 		connectedSession(forRadio: radioNum) != nil
 	}
 
+	/// The channel slot the focused radio reaches `node` on. Once other radios hear the node,
+	/// `node.channel` can be another radio's slot number, so the focused radio's own observation
+	/// decides, and primary (0) when it has none (T143). While only the focused radio has heard
+	/// the node this is `node.channel`, as before. Read when a request is sent, not in a view body.
+	func channelSlot(toReach node: NodeInfoEntity) -> Int32 {
+		guard let context = node.modelContext else { return node.channel }
+		let nodeNum = node.num
+		let descriptor = FetchDescriptor<NodeObservationEntity>(predicate: #Predicate { $0.nodeNum == nodeNum })
+		let observations = (try? context.fetch(descriptor)) ?? []
+		guard observations.contains(where: { $0.radioNum != activeDeviceNum }) else { return node.channel }
+		return observations.first { $0.radioNum == activeDeviceNum }?.channel ?? 0
+	}
+
 	/// Node numbers of every connected radio, the focused one first.
 	var connectedRadioNums: [Int64] {
 		connectedRadios.compactMap(\.num)
