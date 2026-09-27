@@ -163,7 +163,7 @@ each, full suite each time.
 - [X] T162 D14 backfill attribution. — the backfill drains at launch when messages wait for it and after a restore, with the restored radio as `ownRadio`. Verified: `MultiRadioBackfillTests.drainsAtOnce`; the launch and restore hooks aren't unit tested.
 - [X] T163 D15 no SwiftData fetches in view bodies (new code). — the Heard By set is looked up by `HeardByRefresh` (`.refreshesHeardBy`, on change and every 15 s) into `NodeFilterParameters.heardByNodeNums`; offline radio names come from the queried radios' relationships (pickers) or are looked up with the data they belong to (DM radio picker, Heard By section). Verified: `NodeHeardByFilterTests`.
 - [X] T164 D17 favorite, ignored and key verification as FR-022 says. — any voting radio's observation (radios with `lastConnected`, and the one dumping); the user's change is written to every observation. Verified: `MultiRadioIngestTests.favoriteFromAnyRadio`, `MultiRadioConnectLifecycleTests.unfavoriteRecordsOnEveryObservation`.
-- [ ] T165 D18 renumber by peripheral id only without device ids.
+- [X] T165 D18 renumber by peripheral id only without device ids. — `AccessoryManager.sameRadio(among:incomingDeviceId:peripheralId:)`. A different radio on the same serial port or TCP address now joins the store as another radio instead of taking over the first one's history (on `main` it was renamed). Verified: `MultiRadioSchemaTests.sameRadioMatching`.
 - [ ] T166 D19 minors, and the `.localized` strings missing from the catalog.
 - [ ] T167 C13 (pre-existing on `main`): left as is for the focused radio (single-radio behaviour); documented.
 

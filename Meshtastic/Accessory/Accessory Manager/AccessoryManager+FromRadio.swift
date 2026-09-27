@@ -261,21 +261,30 @@ extension AccessoryManager {
 			return // A radio the store already knows under this number.
 		}
 
-		// device_id is the radio's own hardware identifier, so it holds over TCP and serial where
-		// there is no BLE identifier, and it survives a re-pair. The MyInfo row also records the
-		// peripheral it came from, which is the fallback for radios that report no device id.
-		if !incomingDeviceId.isEmpty,
-		   let sameRadio = myInfos.first(where: { $0.deviceId == incomingDeviceId }) {
-			await renumberStore(from: sameRadio.myNodeNum, to: incomingNodeNum, deviceId: incomingDeviceId)
-			return
-		}
-		if let sameRadio = myInfos.first(where: { $0.peripheralId == peripheralId }) {
+		if let sameRadio = Self.sameRadio(among: myInfos, incomingDeviceId: incomingDeviceId, peripheralId: peripheralId) {
 			await renumberStore(from: sameRadio.myNodeNum, to: incomingNodeNum, deviceId: incomingDeviceId)
 			return
 		}
 
 		let known = myInfos.map { $0.myNodeNum.toHex() }.joined(separator: ", ")
 		Logger.data.info("💾 [Database] Node \(incomingNodeNum.toHex(), privacy: .public) joins the shared store (already holds \(known, privacy: .public))")
+	}
+
+	/// The radio the store knows that the connecting one is, under an old node number.
+	///
+	/// device_id is the radio's own hardware identifier, so it holds over TCP and serial where
+	/// there is no BLE identifier, and it survives a re-pair. The MyInfo row also records the
+	/// peripheral it came from, which is the fallback only when a device id is missing on either
+	/// side (T165): serial ids hash the port path and manual TCP ids hash host:port, so a different
+	/// radio on the same port or address has the same peripheral id, and with two device ids that
+	/// differ it is another radio, whose history mustn't be renamed.
+	static func sameRadio(among myInfos: [MyInfoEntity], incomingDeviceId: Data, peripheralId: String) -> MyInfoEntity? {
+		if !incomingDeviceId.isEmpty, let match = myInfos.first(where: { $0.deviceId == incomingDeviceId }) {
+			return match
+		}
+		return myInfos.first { myInfo in
+			myInfo.peripheralId == peripheralId && (incomingDeviceId.isEmpty || (myInfo.deviceId ?? Data()).isEmpty)
+		}
 	}
 
 	/// Rewrites the store from the node number this radio used to report to the one it reports

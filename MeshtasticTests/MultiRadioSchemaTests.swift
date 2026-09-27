@@ -246,6 +246,28 @@ struct MultiRadioSchemaTests {
 
 	// MARK: - Node renumber
 
+	@Test("A renumber matches by device id, and by peripheral only when a device id is missing")
+	@MainActor
+	func sameRadioMatching() {
+		func myInfo(_ num: Int64, deviceId: Data?, peripheral: String) -> MyInfoEntity {
+			let myInfo = MyInfoEntity()
+			myInfo.myNodeNum = num
+			myInfo.deviceId = deviceId
+			myInfo.peripheralId = peripheral
+			return myInfo
+		}
+		let port = "serial-port-hash"
+		let known = myInfo(0x0A, deviceId: Data([1, 2]), peripheral: port)
+		let noId = myInfo(0x0B, deviceId: nil, peripheral: "tcp-hash")
+
+		#expect(AccessoryManager.sameRadio(among: [known, noId], incomingDeviceId: Data([1, 2]), peripheralId: "other") === known)
+		// Another radio on the same serial port, with its own device id: not the same radio.
+		#expect(AccessoryManager.sameRadio(among: [known, noId], incomingDeviceId: Data([9, 9]), peripheralId: port) == nil)
+		// No device id to compare on one side: the peripheral decides, as before.
+		#expect(AccessoryManager.sameRadio(among: [known, noId], incomingDeviceId: Data(), peripheralId: port) === known)
+		#expect(AccessoryManager.sameRadio(among: [known, noId], incomingDeviceId: Data([7]), peripheralId: "tcp-hash") === noId)
+	}
+
 	@Test("Renumbering a radio moves its observations, receptions and message columns")
 	func renumberMovesMultiRadioRows() throws {
 		let context = try makeContext()
