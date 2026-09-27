@@ -689,6 +689,9 @@ final class DiscoveryScanEngine {
 		entity.hasOfferChannel = hasCustomChannel
 		entity.offerChannelName = hasCustomChannel ? beacon.offerChannel.name : ""
 		entity.offerChannelPSK = hasCustomChannel ? beacon.offerChannel.psk : Data()
+		// Sent only by a mesh that sits on a slot its name would not derive. Zero is
+		// the same as absent, which the proto says explicitly.
+		entity.offerFrequencySlot = beacon.hasOfferFrequencySlot ? Int(beacon.offerFrequencySlot) : 0
 		entity.snr = packet.rxSnr
 		entity.rssi = Int(packet.rxRssi)
 		entity.timestamp = Date()
@@ -705,7 +708,7 @@ final class DiscoveryScanEngine {
 		session?.beacons.append(entity)
 		currentPresetResult?.beacons.append(entity)
 
-		Logger.discovery.info("📡 [Discovery] Beacon from \(fromNodeNum, privacy: .private) — offerPreset \(entity.offerPreset), offerRegion \(entity.offerRegion), customChannel \(hasCustomChannel)")
+		Logger.discovery.info("📡 [Discovery] Beacon from \(fromNodeNum, privacy: .private) — offerPreset \(entity.offerPreset), offerRegion \(entity.offerRegion), customChannel \(hasCustomChannel), pinnedSlot \(entity.offerFrequencySlot)")
 
 		autoQueueBeacon(beacon)
 	}
