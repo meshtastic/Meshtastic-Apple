@@ -2774,3 +2774,47 @@ struct CannedMessagesConfigSnapshotTests {
 		await assertViewSnapshot(of: view, width: 390, height: 1500, named: "cannedMessagesConfigForm")
 	}
 }
+
+// MARK: - BackupRestoreSection Snapshot Tests
+
+/// Backup and restore moved from Developers → Tools onto the Settings list, where
+/// Android has it. These render the section the two ways it can appear: ready, and
+/// disabled because a mesh administrator owns the radio's configuration.
+@Suite("BackupRestoreSection Snapshots")
+struct BackupRestoreSectionSnapshotTests {
+
+	/// `Section` is not standalone — SwiftUI needs a Form or List to host it.
+	/// The section reads `AccessoryManager.shared.isConnected` to decide whether the
+	/// rows are usable, the same flag `TAKIdentitySectionSnapshotTests` sets here.
+	@MainActor
+	private func wrap(isManaged: Bool) -> some View {
+		AccessoryManager.shared.isConnected = true
+		return Form {
+			BackupRestoreSection(isManaged: isManaged)
+		}
+		.environmentObject(AccessoryManager.shared)
+		.modelContainer(sharedModelContainer)
+	}
+
+	@Test
+	@MainActor
+	func backupRestoreSection() async {
+		await assertViewSnapshot(
+			of: wrap(isManaged: false),
+			width: 390,
+			height: 260,
+			colorScheme: .light,
+			named: "backupRestoreSection")
+	}
+
+	@Test
+	@MainActor
+	func backupRestoreSectionManaged() async {
+		await assertViewSnapshot(
+			of: wrap(isManaged: true),
+			width: 390,
+			height: 260,
+			colorScheme: .light,
+			named: "backupRestoreSection_managed")
+	}
+}
