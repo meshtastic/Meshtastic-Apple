@@ -1310,7 +1310,7 @@ func switchToDevice(
 	// (T072). `keepPreviousRadio: false` then disconnects the previous one, as before.
 	if accessoryManager.canFocusWithoutReconnecting(device.id) {
 		let previous = accessoryManager.activeConnection?.device.id
-		if await accessoryManager.focusConnectedRadio(device.id) {
+		if await accessoryManager.focusConnectedRadio(device.id, previousStays: keepPreviousRadio) {
 			onRestoreComplete?()
 			if !keepPreviousRadio, let previous {
 				await accessoryManager.disconnectAdditionalRadio(previous, byUser: true)

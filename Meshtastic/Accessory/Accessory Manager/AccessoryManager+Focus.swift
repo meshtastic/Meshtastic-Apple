@@ -31,8 +31,11 @@ extension AccessoryManager {
 	/// (D-17: every radio runs the same steps and handlers, so focus is only which session
 	/// `activeConnection` points at). The previous focused radio, if any, stays connected
 	/// alongside it. Returns false, changing nothing, when `canFocusWithoutReconnecting` says no.
+	///
+	/// `previousStays: false` is for a previous radio that's disconnected straight after (Disconnect
+	/// on the focused radio, a reset or removal): it gets no prompt or reminder first (T181).
 	@discardableResult
-	func focusConnectedRadio(_ deviceId: UUID) async -> Bool {
+	func focusConnectedRadio(_ deviceId: UUID, previousStays: Bool = true) async -> Bool {
 		guard canFocusWithoutReconnecting(deviceId), let session = additionalRadios[deviceId] else { return false }
 		let previous = activeConnection
 		Logger.transport.info("🔀 Focusing \(session.device.name, privacy: .public) without reconnecting; \(previous?.device.name ?? "nothing", privacy: .public) stays connected")
@@ -52,10 +55,10 @@ extension AccessoryManager {
 		objectWillChange.send()
 
 		applyFocusedRadioState(session)
-		if let previous, let attention = attentionAfterLosingFocus(previous) {
+		if previousStays, let previous, let attention = attentionAfterLosingFocus(previous) {
 			setAttention(attention, for: previous)
 		}
-		if let previous, let previousNum = previous.nodeNum {
+		if previousStays, let previous, let previousNum = previous.nodeNum {
 			// Remembered, so it comes back alongside the focused radio next time.
 			await MeshPackets.shared.noteRadioConnected(nodeNum: previousNum, transport: previous.device.transportType, autoConnect: true)
 		}

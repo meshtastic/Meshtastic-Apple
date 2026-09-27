@@ -218,6 +218,23 @@ struct MultiRadioLockdownTests {
 		#expect(manager.activeConnection === focused)
 	}
 
+	@Test("A locked radio that loses the focus only to be disconnected isn't asked about")
+	func noPromptForARadioBeingDisconnected() async throws {
+		let fixture = makeFixture()
+		let manager = fixture.manager
+		let focused = try #require(manager.activeConnection)
+		focused.lastLockdownStatus = status(.locked)
+		var ready = Device(id: UUID(), name: "Ready", transportType: .tcp, identifier: "ready2.local:4403")
+		ready.num = 0x0D0E
+		ready.connectionState = .connected
+		manager.additionalRadios[ready.id] = RadioSession(device: ready, connection: RecordingIdleConnection())
+
+		#expect(await manager.focusConnectedRadio(ready.id, previousStays: false))
+
+		#expect(focused.attention == nil)
+		#expect(manager.radioAttentionPrompt == nil)
+	}
+
 	@Test("A second radio needing the user waits for the first radio's prompt to close")
 	func promptsForSeveralRadiosQueue() async throws {
 		let fixture = makeFixture()

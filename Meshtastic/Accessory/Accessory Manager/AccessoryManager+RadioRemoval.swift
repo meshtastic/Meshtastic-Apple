@@ -26,8 +26,12 @@ extension AccessoryManager {
 		let device = session.device
 		if session === activeConnection {
 			let next = additionalRadios.values.first { canFocusWithoutReconnecting($0.device.id) }
-			if let next, await focusConnectedRadio(next.device.id) {
+			if let next, await focusConnectedRadio(next.device.id, previousStays: false) {
 				Logger.transport.info("🔀 \(next.device.name, privacy: .public) takes the focus from \(device.name, privacy: .public), which is being reset or removed")
+				if reconnect {
+					// A reset radio comes back alongside, now and at the next launch.
+					await MeshPackets.shared.setRadioAutoConnect(nodeNum: radioNum, true)
+				}
 			} else {
 				// Nothing else can take the focus: the radio leaves as the only one did before.
 				if reconnect {
