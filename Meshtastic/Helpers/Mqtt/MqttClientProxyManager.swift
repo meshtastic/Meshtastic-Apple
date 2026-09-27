@@ -19,8 +19,7 @@ protocol MqttClientProxyManagerDelegate: AnyObject {
 }
 
 class MqttClientProxyManager {
-	// Singleton Instance
-	static let shared = MqttClientProxyManager()
+	// One instance per connected radio (`RadioMqttClient`, feature 021).
 	private static let defaultKeepAliveInterval: Int32 = 60
 	weak var delegate: MqttClientProxyManagerDelegate?
 	var mqttClientProxy: CocoaMQTT?

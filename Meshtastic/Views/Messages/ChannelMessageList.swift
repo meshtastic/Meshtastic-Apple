@@ -355,9 +355,9 @@ struct ChannelMessageList: View {
 						mqttTopic: {
 								let name = channel.name ?? ""
 								if name.isEmpty {
-									return accessoryManager.mqttManager.topics.first ?? ""
+									return accessoryManager.mqttTopics.first ?? ""
 								}
-								return accessoryManager.mqttManager.topics.first(where: { $0.contains("/2/e/\(name)/") }) ?? accessoryManager.mqttManager.topics.first ?? ""
+								return accessoryManager.mqttTopics.first(where: { $0.contains("/2/e/\(name)/") }) ?? accessoryManager.mqttTopics.first ?? ""
 							}()
 					)
 				}

@@ -14,21 +14,6 @@ import OSLog
 
 extension AccessoryManager {
 
-	func handleMqttClientProxyMessage(_ mqttClientProxyMessage: MqttClientProxyMessage) {
-		Logger.services.info("handleMqttClientProxyMessage topic: \(mqttClientProxyMessage.topic, privacy: .public)")
-
-		// MqttClientProxyMessage carries its payload in a oneof — either binary
-		// `data` (service envelope / map report protobuf) or `text` (JSON / stat
-		// topics).  Previously this always read `.data`, which silently produced
-		// an empty payload whenever the firmware used the `.text` variant — the
-		// root cause of map-report packets never reaching the MQTT broker.
-		guard let message = MqttProxyPackets.uplink(mqttClientProxyMessage) else {
-			Logger.services.warning("📲 [MQTT Client Proxy] received proxy message with no payload on topic: \(mqttClientProxyMessage.topic, privacy: .public)")
-			return
-		}
-		MqttClientProxyManager.shared.mqttClientProxy?.publish(message)
-	}
-
 	/// `session`: the radio it came from. With other radios connected, the notice names it.
 	func handleClientNotification(_ clientNotification: ClientNotification, session: RadioSession? = nil) {
 		Logger.services.info("handleClientNotification: \(clientNotification.debugDescription)")
@@ -519,7 +504,7 @@ extension AccessoryManager {
 
 		await MeshPackets.shared.textMessageAppPacket(
 			packet: packet,
-			wantRangeTestPackets: wantRangeTestPackets,
+			wantRangeTestPackets: (session ?? activeConnection)?.wantRangeTestPackets ?? false,
 			connectedNode: deviceNum,
 			appState: appState
 		)

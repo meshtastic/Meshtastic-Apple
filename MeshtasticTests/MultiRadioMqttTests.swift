@@ -107,7 +107,7 @@ struct AdditionalRadioMqttTests {
 		var device = Device(id: UUID(), name: "Extra", transportType: .tcp, identifier: "b.local:4403")
 		device.num = 0x0B0B
 		let radio = RadioSession(device: device, connection: connection)
-		let bridge = AdditionalRadioMqttBridge(radio: radio)
+		let bridge = RadioMqttClient(radio: radio)
 
 		var envelope = ServiceEnvelope()
 		envelope.channelID = "LongFast"
@@ -141,7 +141,43 @@ struct AdditionalRadioMqttTests {
 		let radio = RadioSession(device: device, connection: SentRecorder())
 		manager.additionalRadios[device.id] = radio
 
-		await manager.startAdditionalMqtt(radio)
+		await manager.startMqtt(radio)
 		#expect(radio.mqtt == nil)
+	}
+
+	@Test("Each radio's MQTT state is its own; the MQTT icon shows the focused radio's")
+	func stateIsPerRadio() {
+		let manager = AccessoryManager(transports: [])
+		manager.isSwitchingDevices = true
+		var focusedDevice = Device(id: UUID(), name: "Focused", transportType: .tcp, identifier: "a.local:4403")
+		focusedDevice.num = 0x0A0A
+		let focused = RadioSession(device: focusedDevice, connection: SentRecorder())
+		manager.activeConnection = focused
+		var extraDevice = Device(id: UUID(), name: "Extra", transportType: .tcp, identifier: "b.local:4403")
+		extraDevice.num = 0x0B0B
+		let extra = RadioSession(device: extraDevice, connection: SentRecorder())
+		manager.additionalRadios[extraDevice.id] = extra
+		#expect(!manager.mqttProxyConnected)
+
+		var redraws = 0
+		let cancellable = manager.objectWillChange.sink { redraws += 1 }
+		defer { cancellable.cancel() }
+		let extraClient = RadioMqttClient(radio: extra)
+		extraClient.onStateChange = { manager.objectWillChange.send() }
+		extra.mqtt = extraClient
+		extraClient.onMqttConnected()
+		#expect(redraws == 1, "its MQTT settings redraw")
+		#expect(!manager.mqttProxyConnected, "another radio's broker doesn't light the focused radio's icon")
+		#expect(manager.mqttClient(forRadio: 0x0B0B)?.isConnected == true)
+
+		let focusedClient = RadioMqttClient(radio: focused)
+		focused.mqtt = focusedClient
+		focusedClient.onMqttError(message: "Refused")
+		#expect(manager.mqttError == "Refused")
+		focusedClient.onMqttConnected()
+		#expect(manager.mqttProxyConnected)
+		#expect(manager.mqttError.isEmpty)
+		extraClient.stop()
+		focusedClient.stop()
 	}
 }

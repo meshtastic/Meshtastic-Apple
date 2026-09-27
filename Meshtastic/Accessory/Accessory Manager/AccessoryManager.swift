@@ -139,7 +139,7 @@ struct AutomaticConfigRefresh {
 }
 
 @MainActor
-class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
+class AccessoryManager: ObservableObject {
 	// Singleton Access.  Conditionally compiled
 #if targetEnvironment(macCatalyst)
 	static let shared = AccessoryManager(transports: [BLETransport(), TCPTransport(), SerialTransport()])
@@ -167,7 +167,6 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	static let firmwareNoticeBackoff: [TimeInterval] = [0, 300, 1_800, 7_200, 43_200]
 	/// A notice unseen for this long is forgotten, so it alerts immediately if it returns.
 	static let firmwareNoticeForgetAfter: TimeInterval = 86_400
-	let mqttManager = MqttClientProxyManager.shared
 
 	// MARK: - Database reset
 
@@ -227,10 +226,8 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	}
 
 	// Published Stuff
-	@Published var mqttProxyConnected: Bool = false
 	@Published var devices: [Device] = []
 	@Published var state: AccessoryManagerState
-	@Published var mqttError: String = ""
 	@Published var activeDeviceNum: Int64?
 	@Published var allowDisconnect = false
 	@Published var lastConnectionError: Error?
@@ -319,8 +316,6 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	let transports: [any Transport]
 
 	// Config
-	public var wantRangeTestPackets = false
-	var wantStoreAndForwardPackets = false
 	var shouldAutomaticallyConnectToPreferredPeripheralAfterError = true
 	/// Set when a lost bond ends a connect. Auto-reconnect stays off for the rest of the app
 	/// session — reconnecting can never fix a lost bond, and any later transient error would
@@ -385,13 +380,6 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	/// accumulation is proportional to packets processed. Recycling costs one context teardown
 	/// plus cold caches on the next few fetches.
 	static let ingestRecycleInterval = 5_000
-
-	// Debug counter: MQTT client-proxy downlink packets dropped before forwarding
-	// to the device because they carried no payload (see MqttForwardFilter). NOT
-	// @Published — read only for debug logging, so it needn't drive view updates.
-	// Mutated on the main actor: CocoaMQTT delivers delegate callbacks on its
-	// default main delegateQueue, so onMqttMessageReceived runs on MainActor.
-	var mqttProxyDroppedNoPayload: Int = 0
 	
 	// Continuations. The config refresh, the first-node wait and the node-DB gate belong to one
 	// connection and live on its `RadioSession` (feature 021, T069).
@@ -428,7 +416,6 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	init(transports: [any Transport] = [BLETransport(), TCPTransport()]) {
 		self.transports = transports
 		self.state = .uninitialized
-		self.mqttManager.delegate = self
 
 		// Listen for system memory warnings to proactively save pending changes
 		if ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil {
@@ -659,6 +646,8 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	/// caller has already taken it out of `activeConnection`, so none of its events are handled
 	/// any more. Everything app-wide stays in `closeConnection()`.
 	func tearDown(_ session: RadioSession) async {
+		// Its MQTT client proxy goes first, so broker packets stop coming in for it.
+		stopMqtt(session)
 		if let refresh = session.automaticConfigRefresh {
 			session.automaticConfigRefreshTask?.cancel()
 			await finishAutomaticConfigRefresh(owner: refresh.owner, session: session, error: CancellationError())
@@ -738,11 +727,6 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		// connect still runs a real restore.
 		deviceRefreshTask?.cancel()
 		deviceRefreshTask = nil
-
-		// Stop the MQTT proxy so it doesn't forward broker packets over BLE during reconnect,
-		// which would starve the wantConfig handshake. initializeMqtt() restarts it in Step 8.
-		// Disconnect unconditionally — mqttProxyConnected can be stale during a teardown race.
-		mqttManager.mqttClientProxy?.disconnect()
 
 		// Save any pending changes and let SwiftData manage object lifecycle on disconnect.
 		try? context.save()
@@ -1047,12 +1031,8 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		// Logger.transport.info("📻 [processFromRadio] Processing: \(String(describing: decodedInfo.payloadVariant), privacy: .public)")
 		switch decodedInfo.payloadVariant {
 		case .mqttClientProxyMessage(let mqttClientProxyMessage):
-			// Each radio's MQTT client proxy carries only that radio's traffic (T100).
-			if session === activeConnection {
-				handleMqttClientProxyMessage(mqttClientProxyMessage)
-			} else {
-				session.mqtt?.publish(mqttClientProxyMessage)
-			}
+			// Each radio's MQTT client proxy carries only that radio's traffic (T100, T071c).
+			session.mqtt?.publish(mqttClientProxyMessage)
 
 		case .clientNotification(let clientNotification):
 			handleClientNotification(clientNotification, session: session)
@@ -1151,7 +1131,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 						Logger.mesh.error("🕸️ No active connection. Unable to determine connectedNodeNum for replyApp.")
 						return
 					}
-					await MeshPackets.shared.textMessageAppPacket(packet: packet, wantRangeTestPackets: wantRangeTestPackets, connectedNode: deviceNum, appState: appState)
+					await MeshPackets.shared.textMessageAppPacket(packet: packet, wantRangeTestPackets: session.wantRangeTestPackets, connectedNode: deviceNum, appState: appState)
 				case .ipTunnelApp:
 					Logger.mesh.info("[IP Tunnel] packet received from \(packet.from.toHex(), privacy: .public)")
 				case .serialApp:
@@ -1167,7 +1147,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 						Logger.mesh.error("🕸️ No active connection. Unable to determine connectedNodeNum for rangeTestApp.")
 						return
 					}
-					if wantRangeTestPackets {
+					if session.wantRangeTestPackets {
 						await MeshPackets.shared.textMessageAppPacket(
 							packet: packet,
 							wantRangeTestPackets: true,
@@ -1379,16 +1359,14 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			
 		case .rebooted:
 			// If we had an existing connection, then we can probably get away with just a wantConfig?
-			if session === activeConnection {
-				if state == .subscribed {
-					Task { try? await sendWantConfig(on: session) }
-				}
-			} else if additionalRadio(for: session) != nil, session.device.connectionState == .connected {
-				Logger.transport.info("🔗➕ [Additional] \(session.device.name, privacy: .public) rebooted; refreshing its config")
+			let isUp = session === activeConnection ? state == .subscribed : (additionalRadio(for: session) != nil && session.device.connectionState == .connected)
+			if isUp {
+				Logger.transport.info("🔗 \(session.device.name, privacy: .public) rebooted; refreshing its config")
 				Task {
 					try? await sendWantConfig(on: session)
-					// Its MQTT settings may have changed with the reboot.
-					await startAdditionalMqtt(session)
+					// Its MQTT and module settings may have changed with the reboot.
+					applyModuleSettings(session)
+					await startMqtt(session)
 				}
 			}
 

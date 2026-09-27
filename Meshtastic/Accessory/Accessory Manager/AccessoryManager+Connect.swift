@@ -471,12 +471,13 @@ extension AccessoryManager {
 					// pruning decisions more accurate.
 					_ = await MeshPackets.shared.clearStaleNodes(nodeExpireDays: Int(UserDefaults.purgeStaleNodeDays))
 				}
+				// Every radio's own module settings and MQTT client proxy (T071c).
+				self.applyModuleSettings(session)
+				Task { await self.startMqtt(session) }
 				if attempt.isFocused {
-					await self.initializeMqtt()
+					self.initializeUnreadBadges()
 					// One loop shares the phone's position with every connected radio (T101).
 					self.initializeLocationProvider()
-				} else {
-					Task { await self.startAdditionalMqtt(session) }
 				}
 				if transport.requiresPeriodicHeartbeat {
 					await self.setupPeriodicHeartbeat(on: session)
@@ -549,7 +550,6 @@ extension AccessoryManager {
 				additionalRadios.removeValue(forKey: session.device.id)
 			}
 			retiredAdditionalSessionIDs.insert(session.id)
-			stopAdditionalMqtt(session)
 			await tearDown(session)
 			try? await session.connection.disconnect(withError: nil, shouldReconnect: false)
 		}

@@ -99,10 +99,11 @@ Read this first if you are picking the work up. Update it in the same commit as 
 
 ## In progress
 
-- T071 (in progress): every radio runs the same connect steps. T071a and the shared flow
-  (T071b/T071d together) are done; next is T071c, one MQTT client type for every radio and range
-  test / store and forward per radio. Then T072 (focus as a pointer change). Step 4 of D-17
-  (plan.md › Every radio the same). T068's `ConnectFlowCharacterizationTests` must keep passing unchanged through T069–T072;
+- T072 (next): focus as a pointer change. Switching to a connected radio, the focus handover
+  after a drop and Disconnect on the focused radio should move `activeConnection` between
+  sessions instead of disconnecting and reconnecting (`switchToDevice`, `scheduleFocusHandover`,
+  `disconnectFocusedRadio`). T071 is done: every radio runs the same steps, handlers and MQTT
+  client. Step 5 of D-17 (plan.md › Every radio the same). T068's `ConnectFlowCharacterizationTests` must keep passing unchanged through T069–T072;
   a test that has to change there means behaviour changed, so say why in the commit.
   When you start a task, mark it `[~]` in tasks.md and note it here.
 

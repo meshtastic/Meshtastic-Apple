@@ -564,7 +564,7 @@ struct Connect: View {
 						deviceConnected: accessoryManager.isConnected,
 						name: accessoryManager.activeConnection?.device.shortName ?? "?",
 						mqttProxyConnected: accessoryManager.mqttProxyConnected,
-						mqttTopic: accessoryManager.mqttManager.topics.first ?? ""
+						mqttTopic: accessoryManager.mqttTopics.first ?? ""
 					)
 				}
 			}

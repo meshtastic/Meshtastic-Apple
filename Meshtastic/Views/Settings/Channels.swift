@@ -351,7 +351,8 @@ struct Channels: View {
 								channelRole	= 2
 								hasChanges = false
 							}
-							accessoryManager.mqttManager.connectFromConfigSettings(node: node)
+							// Its MQTT client proxy subscribes by channel; restart it with the new ones.
+							await accessoryManager.startMqtt(forRadio: node.num)
 						}
 					} label: {
 						Label("Save", systemImage: "square.and.arrow.down")

@@ -179,7 +179,6 @@ extension AccessoryManager {
 			await MeshPackets.shared.setRadioAutoConnect(nodeNum: nodeNum, false)
 		}
 		retiredAdditionalSessionIDs.insert(session.id)
-		stopAdditionalMqtt(session)
 		await MeshPackets.shared.flushDebouncedSaves()
 		await tearDown(session)
 		try? await session.connection.disconnect(withError: nil, shouldReconnect: false)

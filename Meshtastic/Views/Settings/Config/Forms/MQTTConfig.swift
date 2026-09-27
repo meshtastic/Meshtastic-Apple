@@ -161,6 +161,11 @@ private struct MQTTProxyRows: View {
 	let node: NodeInfoEntity?
 	@State private var connected = false
 
+	/// This radio's own MQTT client proxy is connected (feature 021: each radio has its own).
+	private var isProxyConnected: Bool {
+		accessoryManager.mqttClient(forRadio: node?.num)?.isConnected ?? false
+	}
+
 	private static let metadata = FieldMetadataRegistry.get("meshtastic.ModuleConfig.MQTTConfig", tag: 9)
 
 	var body: some View {
@@ -177,19 +182,21 @@ private struct MQTTProxyRows: View {
 		if config.enabled, config.proxyToClientEnabled, node?.mqttConfig?.proxyToClientEnabled == true {
 			Toggle(isOn: $connected) {
 				Label("Connect to MQTT via Proxy", systemImage: "server.rack")
-				if !accessoryManager.mqttError.isEmpty {
-					Text(accessoryManager.mqttError)
+				if let error = accessoryManager.mqttClient(forRadio: node?.num)?.errorMessage, !error.isEmpty {
+					Text(error)
 						.fixedSize(horizontal: false, vertical: true)
 						.foregroundColor(.red)
 				}
 			}
-			.onAppear { connected = accessoryManager.mqttProxyConnected }
-			.onChange(of: accessoryManager.mqttProxyConnected) { _, now in connected = now }
+			// The radio being configured, which may not be the focused one (feature 021).
+			.onAppear { connected = isProxyConnected }
+			.onChange(of: isProxyConnected) { _, now in connected = now }
 			.onChange(of: connected) { _, on in
+				guard let radioNum = node?.num else { return }
 				if on {
-					if !accessoryManager.mqttProxyConnected, let node { accessoryManager.mqttManager.connectFromConfigSettings(node: node) }
-				} else if accessoryManager.mqttProxyConnected {
-					accessoryManager.mqttManager.disconnect()
+					if !isProxyConnected { Task { await accessoryManager.startMqtt(forRadio: radioNum) } }
+				} else if isProxyConnected {
+					accessoryManager.stopMqtt(forRadio: radioNum)
 				}
 			}
 		}
