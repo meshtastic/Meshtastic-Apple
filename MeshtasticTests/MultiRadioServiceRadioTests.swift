@@ -185,4 +185,31 @@ struct MultiRadioServiceRadioTests {
 		let nodes = await mesh.watchNodeSnapshot(userLatitude: 48, userLongitude: -122, maxDistanceMeters: 804.672, heardBy: offlineNum)
 		#expect(Set(nodes.map(\.num)) == [1, 2])
 	}
+
+	@Test("The TAK channel picker lists only the TAK radio's channels")
+	func takChannelsAreTheTAKRadios() throws {
+		let schema = Schema(versionedSchema: MeshtasticSchema.current)
+		let config = ModelConfiguration("TAKChannels-\(UUID().uuidString)", schema: schema, isStoredInMemoryOnly: true, allowsSave: true)
+		let context = ModelContext(try ModelContainer(for: schema, configurations: config))
+		var all: [ChannelEntity] = []
+		for (radio, names) in [(focusedNum, ["Primary", "Team"]), (extraNum, ["Primary", "Family"])] {
+			let myInfo = MyInfoEntity()
+			myInfo.myNodeNum = radio
+			context.insert(myInfo)
+			for (index, name) in names.enumerated() {
+				let channel = ChannelEntity()
+				channel.index = Int32(index)
+				channel.name = name
+				channel.myInfoChannel = myInfo
+				context.insert(channel)
+				all.append(channel)
+			}
+		}
+		try context.save()
+
+		let extraChannels = TAKServerConfig.channels(all, ofRadio: extraNum)
+		#expect(extraChannels.map(\.name) == ["Primary", "Family"])
+		#expect(Set(extraChannels.map(\.index)).count == extraChannels.count, "one row per slot")
+		#expect(TAKServerConfig.channels(all, ofRadio: nil).isEmpty)
+	}
 }

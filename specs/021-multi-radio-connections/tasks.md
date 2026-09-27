@@ -159,7 +159,7 @@ each, full suite each time.
 - [X] T158 D8 mute and mentions across the user's radios. — a channel muted on any radio with its key stays quiet (`isChannelMutedOnAnyRadio`); a mention of any of the user's radios notifies. Verified: `MultiRadioNotificationTests`.
 - [X] T159 D9 the backup merge stops retrying a merge that keeps failing. — `BackupEntry.mergeAttempts`, counted and saved before each attempt, three at most; the backup stays for a restore. Not done: merging in chunks (HANDOFF › Gotchas). Verified: `BackupMergeTests.managerGivesUpAfterAttempts`.
 - [X] T160 D11 the scan and range test see their own radio's packets even when another radio delivered first. — the scan radio's packets (and its neighbor info and beacons) reach the engine before the dedupe skip; a radio that wants range test packets gets its handler; the scan's reconnect logic reads its own radio (`linkState(ofRadio:)`). Verified: `MultiRadioConnectLifecycleTests.scanCountsItsOwnCopy` (fails without the fix).
-- [ ] T161 D12 TAK settings for the TAK radio.
+- [X] T161 D12 TAK settings for the TAK radio. — identity, role warning, Share Channels and the channel picker use `radioNum(for: .tak)`; the picker lists only that radio's channels. Verified: `MultiRadioServiceRadioTests.takChannelsAreTheTAKRadios`.
 - [ ] T162 D14 backfill attribution.
 - [ ] T163 D15 no SwiftData fetches in view bodies (new code).
 - [ ] T164 D17 favorite, ignored and key verification as FR-022 says.

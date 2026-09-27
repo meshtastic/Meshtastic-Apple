@@ -22,7 +22,19 @@ struct TAKServerConfig: View {
 
 	@Query(filter: #Predicate<ChannelEntity> { $0.role > 0 },
 		   sort: \ChannelEntity.index)
-	private var channels: [ChannelEntity]
+	private var allChannels: [ChannelEntity]
+
+	/// The TAK radio's channels (feature 021, T161): the store holds every radio's, and the chosen
+	/// slot is used on the TAK radio. Filtered in Swift: an optional-relationship compare in a
+	/// `#Predicate` crashes SwiftData on iOS 26.
+	private var channels: [ChannelEntity] {
+		Self.channels(allChannels, ofRadio: accessoryManager.radioNum(for: .tak))
+	}
+
+	static func channels(_ all: [ChannelEntity], ofRadio radioNum: Int64?) -> [ChannelEntity] {
+		guard let radioNum else { return [] }
+		return all.filter { $0.myInfoChannel?.myNodeNum == radioNum }
+	}
 
 	@StateObject private var takServer = TAKServerManager.shared
 	@Environment(\.dismiss) private var dismiss
@@ -58,7 +70,8 @@ struct TAKServerConfig: View {
 		.navigationTitle("TAK Server")
 		.onAppear {
 			takServer.checkPrimaryChannelValidity()
-			if let nodeNum = accessoryManager.activeDeviceNum {
+			// The TAK radio's identity, role and channels, whichever radio is focused (T161).
+			if let nodeNum = accessoryManager.radioNum(for: .tak) {
 				connectedNode = getNodeInfo(id: nodeNum, context: context)
 			}
 		}
@@ -687,7 +700,7 @@ struct TAKIdentitySection: View {
 	// here so the embedded section converges on the same payload.
 	private func requestTakConfigIfNeeded() {
 		guard accessoryManager.isConnected,
-			  let deviceNum = accessoryManager.activeDeviceNum,
+			  let deviceNum = accessoryManager.radioNum(for: .tak),
 			  let node,
 			  node.num == deviceNum,
 			  node.takConfig == nil,
@@ -718,7 +731,7 @@ struct TAKIdentitySection: View {
 		// connected (otherwise the pickers are disabled), so a generic
 		// "Not connected" was misleading — these failures mean the node
 		// metadata isn't yet populated in SwiftData even though the link is up.
-		guard let connectedNode = getNodeInfo(id: accessoryManager.activeDeviceNum ?? -1, context: context) else {
+		guard let connectedNode = getNodeInfo(id: accessoryManager.radioNum(for: .tak) ?? -1, context: context) else {
 			saveError = "Local node info unavailable — try reconnecting."
 			return
 		}

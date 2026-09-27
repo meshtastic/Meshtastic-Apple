@@ -118,7 +118,7 @@ Up to `AccessoryManager.maxConnectedRadios` (4) radios can be connected, and eve
 - **BLE.** `BLETransport` keeps its connect continuations and active connections per peripheral identifier, so every CoreBluetooth callback reaches the right radio. The same peripheral still can't connect twice.
 - **Switching** the focused radio (`switchToDevice`) disconnects it and connects the chosen radio. It no longer backs up, clears and restores the store, which every connected radio shares. A radio the store hasn't seen joins it; only a radio reporting a new node number for a known `deviceId` renumbers the store (`renumberIfSameRadio`).
 
-Not yet handled for additional radios: BLE state restoration after iOS relaunches the app, remote admin through a chosen radio, and TAK, CarPlay and the Watch (all still follow the focused radio).
+BLE state restoration brings back every restored radio (`BLETransport.handleWillRestoreState`, T062/T155). Remote admin goes through the radio it's addressed from (`adminRoute(for:)`). TAK, CarPlay & Siri and the Watch use the radio chosen for them in App Settings (`session(for:)`, T102–T105), the focused one by default; the TAK settings screen edits that radio's identity and lists its channels (T161).
 
 ### BLE Pairing PIN Handshake
 
