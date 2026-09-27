@@ -48,16 +48,18 @@ struct SettingsNodeSnapshot: Identifiable, Equatable {
 
 		// `SecurityConfig.is_managed` is where this lives now — `DeviceConfig.is_managed`
 		// is deprecated upstream and marked "Moved to SecurityConfig", so reading only the
-		// device copy misses a radio that sets the current field. Read both, which is also
-		// the field Android reads.
+		// device copy misses a radio that sets the current field. Android reads security.
+		//
+		// A radio that sends a SecurityConfig at all has the field, so its answer is the
+		// answer, including `false`. OR-ing the two would let a stale `true` left in the
+		// device copy keep saying managed after it was turned off. Only a radio too old to
+		// send SecurityConfig falls back to the deprecated field.
 		var managed = false
 		if let securityConfig = node.securityConfig,
 			securityConfig.modelContext != nil,
 			!securityConfig.isDeleted {
 			managed = securityConfig.isManaged
-		}
-		if !managed,
-			let deviceConfig = node.deviceConfig,
+		} else if let deviceConfig = node.deviceConfig,
 			deviceConfig.modelContext != nil,
 			!deviceConfig.isDeleted {
 			managed = deviceConfig.isManaged
@@ -573,6 +575,15 @@ struct Settings: View {
 		}
 	}
 
+	/// Android shows this only while the local radio is the target; a remote admin
+	/// session backs up nothing this phone is holding.
+	@ViewBuilder
+	var backupRestoreSection: some View {
+		if selectedNode == 0 || selectedNode == preferredNodeNum {
+			BackupRestoreSection(isManaged: connectedNodeIsManaged)
+		}
+	}
+
 	var loggingSection: some View {
 		Section(header: Text("Logging")) {
 			NavigationLink(value: SettingsNavigationState.debugLogs) {
@@ -760,6 +771,10 @@ struct Settings: View {
 							.font(.callout)
 							.foregroundStyle(.orange)
 					}
+					// The configuration sections are hidden on a managed radio, but backup and
+					// restore still belong on screen: Android shows them disabled with the
+					// reason rather than leaving the user to wonder where they went.
+					backupRestoreSection
 				}
 				if let node, !node.isManaged {
 					if accessoryManager.isConnected {
@@ -828,11 +843,7 @@ struct Settings: View {
 					radioConfigurationSection
 					deviceConfigurationSection
 					moduleConfigurationSection
-					// Android shows this only while the local radio is the target; a remote
-					// admin session backs up nothing this phone is holding.
-					if selectedNode == 0 || selectedNode == preferredNodeNum {
-						BackupRestoreSection(isManaged: connectedNodeIsManaged)
-					}
+					backupRestoreSection
 					loggingSection
 					if showsDevelopersSection {
 						developersSection
