@@ -133,6 +133,40 @@ phases don't change behaviour and keep the app shippable, which makes a rebase o
 - [X] T121 Developer docs listed in plan.md. — architecture (sessions, focus, the new extension files, `PreferredRadio`), transport (Several Radios at Once), SwiftData (observations, receptions, message keys) and deep links (`radio=`) are current.
 - [ ] T122 Regenerate bundled docs and copy snapshots. — the owner's decision: run it as the last step before opening the pull request, not before (`bash scripts/build-docs.sh --output Meshtastic/Resources/docs`, then commit the HTML). `cmark-gfm` is installed on this Mac.
 
+## Review fixes (review-connections.md C1–C14, review-data.md D1–D19)
+
+Every finding was re-checked in the files and holds (HANDOFF.md › In progress). Fixed one commit
+each, full suite each time.
+
+- [ ] T140 D10 per-packet reception and observation lookups by their indexed keys.
+- [ ] T141 D3 a copy one radio couldn't decrypt no longer hides the decoded copy.
+- [ ] T142 D4 the observation backfill only for a one-radio store.
+- [ ] T143 D5 the aggregate ignores stale observations and takes no other radio's channel slot.
+- [ ] T144 D7 channel keys set when a radio's channels and LoRa config arrive.
+- [ ] T145 D2 deleting a channel's messages deletes what its timeline shows.
+- [ ] T146 D13 observations removed with their node.
+- [ ] T147 D1, D16 reset rules, Remove This Radio, Clear App Data (D-18).
+- [ ] T148 C1 Unlock / Update while the radio is still connecting.
+- [ ] T149 C2, C3 after a handover the dropped radio comes back, and phone position keeps going.
+- [ ] T150 C7 the heartbeat timeout by each radio's own firmware.
+- [ ] T151 C6, C10 the ingest actor recycle keeps queued writes and counts every radio's packets.
+- [ ] T152 C11 one connect at a time per radio, focused too.
+- [ ] T153 C12 a radio losing the focus keeps its lock-down or firmware prompt.
+- [ ] T154 C14 background/foreground to every radio; same radio twice; prompts for several radios; BLE scan pause per radio.
+- [ ] T155 C4, C5 BLE restoration continuation per peripheral; a connected radio is preferred.
+- [ ] T156 C8, C9 TCP radios alongside: manual connect from Add a Radio; remembered Bonjour radios.
+- [ ] T157 D6 Siri and CarPlay replies on the right radio and channel.
+- [ ] T158 D8 mute and mentions across the user's radios.
+- [ ] T159 D9 the backup merge stops retrying a merge that keeps failing.
+- [ ] T160 D11 the scan and range test see their own radio's packets even when another radio delivered first.
+- [ ] T161 D12 TAK settings for the TAK radio.
+- [ ] T162 D14 backfill attribution.
+- [ ] T163 D15 no SwiftData fetches in view bodies (new code).
+- [ ] T164 D17 favorite, ignored and key verification as FR-022 says.
+- [ ] T165 D18 renumber by peripheral id only without device ids.
+- [ ] T166 D19 minors, and the `.localized` strings missing from the catalog.
+- [ ] T167 C13 (pre-existing on `main`): left as is for the focused radio (single-radio behaviour); documented.
+
 ## Phase 10: Hardening
 
 - [ ] T130 Four BLE radios for 24 hours (device checklist in `HANDOFF.md`).
