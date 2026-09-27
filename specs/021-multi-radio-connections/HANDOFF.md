@@ -99,17 +99,31 @@ Read this first if you are picking the work up. Update it in the same commit as 
 
 ## In progress
 
-- Review triage (2026-09-26): two read-only reviews are in `review-connections.md` (C1–C14) and
-  `review-data.md` (D1–D19), next to this file. Checked against the code so far and holding:
-  C1 (Unlock while the radio is still connecting takes the reconnect path), C2 (after a
-  handover the dropped radio is never brought back: the T072 fast path skips
-  `reconnectRememberedRadios`), C3 (the phone position loop isn't restarted after a handover),
-  C4 (the restore continuation resumes for any peripheral), C5 (a pending preferred restore
-  blocks a connected one), C6 (`recreateShared()` drops writes queued on the retired actor;
-  callers: connect Step 7, `AccessoryManager.swift:187` and the periodic recycle), C7 (the
-  heartbeat timeout follows the focused radio's firmware), C10, C11. Still to check: C8, C9,
-  C12–C14 and all of D1–D19. D1 (reset wipes every radio's data) needs checking first: it can
-  lose data during the owner's device test. Nothing fixed yet.
+- Review triage (2026-09-27): two read-only reviews, `review-connections.md` (C1–C14) and
+  `review-data.md` (D1–D19), next to this file. Every finding was checked against the code and
+  holds (C12–C14, D9, D14, D16, D17 and D19 from code already read rather than re-opened).
+  Nothing is fixed yet. Grouped:
+  - Before the device test (data loss, or they break what the test checks): D1 (NodeDB reset,
+    factory reset and Clear App Data wipe every radio's data and disconnect the focused radio,
+    not the one reset; needs the owner's decision on what a reset clears), D2 (deleting a
+    channel's messages deletes other radios' messages in the same slot), D3 (an undecodable
+    copy from one radio hides the decoded copy from another), D4 (the backfill fabricates
+    observations for the preferred radio every pass), D5 (the aggregate ignores age and copies
+    another radio's channel slot; single-radio users with old backups are affected), D7
+    (channel keys only set by text ingest, so a channel can show another radio's slot), D10
+    (per-packet reception and observation lookups scan unindexed columns, also for one radio),
+    C1 (Unlock while the radio is still connecting reconnects), C2 (a radio that dropped and
+    was handed over never comes back, a T072 regression), C3 (phone position stops after a
+    handover), C7 (heartbeat timeout follows the focused radio's firmware).
+  - After the test: C4, C5 (BLE restoration with several peripherals, iOS only), C6/C10 (the
+    ingest actor recycle drops queued writes, and counts only the focused radio's packets), C8,
+    C9 (TCP radios alongside: manual connect, Bonjour-found remembered radios), C11, C12, C13
+    (pre-existing), C14, D6 (Siri/CarPlay replies), D8 (mute and mentions), D9 (backup merge
+    in one transaction), D11 (scan and range test behind the dedupe), D12 (TAK settings), D13
+    (observations never removed), D14, D15 (fetches in view bodies), D18 (renumber by
+    peripheral id), D19.
+  - Owner decisions: D1 (what resetting one radio clears), D16 (a way to forget a radio), D17
+    (favorite/ignore: any radio, or the last node DB).
 - D-17 (every radio the same) is done through T073: one connect flow, focus without
   reconnecting, and lock-down / old firmware prompting by name on any radio. Next: the device
   test when the owner's hardware is ready (checklist below). Also done since: T016, T018, T110,
