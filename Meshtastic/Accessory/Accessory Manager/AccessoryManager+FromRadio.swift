@@ -312,7 +312,7 @@ extension AccessoryManager {
 	/// When event firmware is detected (DEFCON, BURNING_MAN, OPEN_SAUCE, etc.),
 	/// auto-disable new-node notifications on first connection when the user has them enabled.
 	/// Reconnecting to vanilla firmware restores only a preference that the app changed.
-	private func applyEventFirmwareNotificationDefaults(_ edition: FirmwareEdition) {
+	func applyEventFirmwareNotificationDefaults(_ edition: FirmwareEdition) {
 		let current = EventFirmwareNotificationSettings(
 			newNodeNotifications: UserDefaults.newNodeNotifications,
 			autoDisabledForEvent: UserDefaults.nodeNotificationsAutoDisabledForEvent,

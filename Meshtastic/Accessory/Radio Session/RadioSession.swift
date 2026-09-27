@@ -72,4 +72,7 @@ final class RadioSession: Identifiable {
 	var wantRangeTestPackets = false
 	/// A lock-down passphrase saved for this radio has been sent on this connection (T065).
 	var lockdownAutoAttempted = false
+	/// The last lock-down status it reported, so the focused radio's sheet and Settings
+	/// section show it when it takes the focus without reconnecting (T072).
+	var lastLockdownStatus: LockdownStatus?
 }

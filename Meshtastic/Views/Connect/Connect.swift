@@ -1283,6 +1283,19 @@ func switchToDevice(
 ) async {
 	Logger.transport.info("🔀 Switching the focused radio from \(accessoryManager.activeConnection?.device.name ?? "none", privacy: .public) to \(device.name, privacy: .public)")
 
+	// A radio already connected alongside takes the focus without reconnecting anything
+	// (T072). `keepPreviousRadio: false` then disconnects the previous one, as before.
+	if accessoryManager.canFocusWithoutReconnecting(device.id) {
+		let previous = accessoryManager.activeConnection?.device.id
+		if await accessoryManager.focusConnectedRadio(device.id) {
+			onRestoreComplete?()
+			if !keepPreviousRadio, let previous {
+				await accessoryManager.disconnectAdditionalRadio(previous, byUser: true)
+			}
+			return
+		}
+	}
+
 	// The user's explicit choice is the new preferred radio, recorded up front so an
 	// error-path auto-reconnect retries this radio rather than the previous one.
 	UserDefaults.preferredPeripheralId = device.id.uuidString

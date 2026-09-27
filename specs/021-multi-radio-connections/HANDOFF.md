@@ -75,9 +75,9 @@ Read this first if you are picking the work up. Update it in the same commit as 
    Reply with B selected: the log shows `📻 [B's short name] Sent message …`, and the third
    device sees the reply from B.
 6. ⋯ → Disconnect on B: A stays connected, and the conversation's B segment says Offline with
-   "Connect B to reply from it." Re-add B. ⋯ → Focus This Radio on B: A disconnects, B
-   reconnects as focused, then A comes back under "Also Connected" (`6ae292ca`). Nothing is
-   wiped (messages and nodes from A remain).
+   "Connect B to reply from it." Re-add B. ⋯ → Focus This Radio on B: nothing disconnects (log
+   `🔀 Focusing B without reconnecting`); B is focused, A is under "Also Connected", Settings
+   shows B, and both keep receiving (T072). Nothing is wiped.
 7. Settings › App Settings › Connecting Another Radio: try Keep Both / Switch.
 8. Power-cycle B while both are connected: it should drop from "Also Connected" and come back
    on its own (`🔗🔁` log lines). A disconnects nothing.
@@ -99,11 +99,10 @@ Read this first if you are picking the work up. Update it in the same commit as 
 
 ## In progress
 
-- T072 (next): focus as a pointer change. Switching to a connected radio, the focus handover
-  after a drop and Disconnect on the focused radio should move `activeConnection` between
-  sessions instead of disconnecting and reconnecting (`switchToDevice`, `scheduleFocusHandover`,
-  `disconnectFocusedRadio`). T071 is done: every radio runs the same steps, handlers and MQTT
-  client. Step 5 of D-17 (plan.md › Every radio the same). T068's `ConnectFlowCharacterizationTests` must keep passing unchanged through T069–T072;
+- T073 (next): lock-down passphrase and firmware update prompts for any connected radio, naming
+  it, instead of turning a locked or outdated radio away (`AdditionalRadioNeedsFocusError`).
+  T072 is done: focus moves between connected radios without reconnecting. Step 6 of D-17
+  (plan.md › Every radio the same).
   a test that has to change there means behaviour changed, so say why in the commit.
   When you start a task, mark it `[~]` in tasks.md and note it here.
 

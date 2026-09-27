@@ -1376,6 +1376,7 @@ class AccessoryManager: ObservableObject {
 			// coordinator, which owns the per-connection state machine + passphrase cache.
 			// The coordinator and its passphrase sheet are the focused radio's until each radio
 			// gets its own prompt (T073).
+			session.lastLockdownStatus = status
 			if session === activeConnection {
 				lockdownCoordinator?.handle(status)
 			} else {

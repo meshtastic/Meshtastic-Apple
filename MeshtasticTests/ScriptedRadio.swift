@@ -241,3 +241,51 @@ func describe(_ toRadio: ToRadio) -> SentItem {
 		return .other
 	}
 }
+
+// MARK: - Connect-flow test support
+
+/// Setup shared by the connect-flow suites (`ConnectFlowCharacterizationTests`,
+/// `MultiRadioConnectFlowTests`).
+@MainActor
+enum ConnectFlowSupport {
+	/// The UserDefaults the connect flow writes, put back after each test.
+	struct SavedDefaults {
+		let preferredPeripheralId = UserDefaults.preferredPeripheralId
+		let preferredPeripheralNum = UserDefaults.preferredPeripheralNum
+		let firmwareVersion = UserDefaults.firmwareVersion
+		let lastFirmwareAPIUpdate = UserDefaults.lastFirmwareAPIUpdate
+
+		func restore() {
+			UserDefaults.preferredPeripheralId = preferredPeripheralId
+			UserDefaults.preferredPeripheralNum = preferredPeripheralNum
+			UserDefaults.firmwareVersion = firmwareVersion
+			UserDefaults.lastFirmwareAPIUpdate = lastFirmwareAPIUpdate
+		}
+	}
+
+	static func makeManager(_ transport: ScriptedTransport) -> AccessoryManager {
+		// The firmware-update notifier would otherwise refresh from the network in Step 7.
+		UserDefaults.lastFirmwareAPIUpdate = Date()
+		let manager = AccessoryManager(transports: [transport])
+		manager.isSwitchingDevices = true
+		manager.context = PersistenceController.shared.context
+		manager.appState = AppState(router: Router())
+		return manager
+	}
+
+	static func uniqueNodeNum() -> UInt32 {
+		UInt32.random(in: 0x5000_0000...0x5FFF_FFFF)
+	}
+
+	/// Polls `condition` for up to two seconds; the tests then check the outcome themselves.
+	static func waitUntil(_ condition: () async -> Bool) async throws {
+		for _ in 0..<200 {
+			if await condition() { return }
+			try await Task.sleep(for: .milliseconds(10))
+		}
+	}
+
+	static func device() -> Device {
+		Device(id: UUID(), name: "Scripted", transportType: .tcp, identifier: "scripted-\(UUID().uuidString).local:4403")
+	}
+}

@@ -53,7 +53,7 @@ While a radio is connected, the Connect tab lists nearby radios under **Add a Ra
 To stop the question, choose a default in **Settings › App Settings › Connecting Another Radio**: Ask Each Time, Keep Both Connected, or Switch Radios. With four radios connected, only switching is offered.
 
 > **Tip — Focus another radio**
-> In **Also Connected**, tap the **⋯** button next to a radio and choose **Focus This Radio** to make it the focused radio. The previously focused radio reconnects under **Also Connected** a moment later. Choose **Disconnect** to disconnect only that radio.
+> In **Also Connected**, tap the **⋯** button next to a radio and choose **Focus This Radio** to make it the focused radio. Nothing disconnects: the previously focused radio moves to **Also Connected**, and both keep receiving. Choose **Disconnect** to disconnect only that radio.
 
 With more than one radio connected, the radio indicator at the top of each screen shows **+1**, **+2** or **+3** for the other radios. Tap it to see them all and focus a different one from anywhere in the app.
 
@@ -70,11 +70,11 @@ A radio connected alongside the focused one is remembered. If it drops out of ra
 
 If iOS closes the app in the background while Bluetooth radios are connected, it relaunches the app when one of them has something to send. Your usual radio is restored as the focused one and the others rejoin under **Also Connected**. A radio the app doesn't bring back within a few minutes is let go, so it's free for another connection.
 
-If the focused radio drops and doesn't come back within about 30 seconds, another connected radio becomes the focused one, and the dropped radio rejoins under **Also Connected** when it's back. Likewise, if your usual radio isn't around when you open the app, a remembered radio that's in range is connected after about 30 seconds, and your usual radio joins when it appears.
+If the focused radio drops and doesn't come back within about 30 seconds, another connected radio becomes the focused one without reconnecting, and the dropped radio rejoins under **Also Connected** when it's back. Likewise, if your usual radio isn't around when you open the app, a remembered radio that's in range is connected after about 30 seconds, and your usual radio joins when it appears.
 
 ### Switching Radios
 
-Switching the focused radio disconnects it and connects the new one. The database stays as it is, so the previous radio's messages and nodes remain in the app. After the new radio finishes its initial config handshake, the app first reapplies the bundled Meshtastic hardware catalog that ships with the app, then refreshes the same catalog from the Meshtastic API in the background so hardware names, images, and firmware-target metadata stay current.
+Switching to a radio that isn't connected yet disconnects the focused radio and connects the new one; switching to one that's already connected only moves the focus. The database stays as it is, so the previous radio's messages and nodes remain in the app. After the new radio finishes its initial config handshake, the app first reapplies the bundled Meshtastic hardware catalog that ships with the app, then refreshes the same catalog from the Meshtastic API in the background so hardware names, images, and firmware-target metadata stay current.
 
 > **Warning — Restoring a backup**
 > Restoring a backup from **Settings › Backups** replaces the whole database, so the app disconnects any radios connected alongside the focused one first.

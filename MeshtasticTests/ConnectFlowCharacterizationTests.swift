@@ -20,46 +20,12 @@ import Testing
 @Suite("Connect flow (characterization)", .serialized, .timeLimit(.minutes(1)))
 struct ConnectFlowCharacterizationTests {
 
-	/// The UserDefaults the connect flow writes, put back after each test.
-	private struct SavedDefaults {
-		let preferredPeripheralId = UserDefaults.preferredPeripheralId
-		let preferredPeripheralNum = UserDefaults.preferredPeripheralNum
-		let firmwareVersion = UserDefaults.firmwareVersion
-		let lastFirmwareAPIUpdate = UserDefaults.lastFirmwareAPIUpdate
-
-		func restore() {
-			UserDefaults.preferredPeripheralId = preferredPeripheralId
-			UserDefaults.preferredPeripheralNum = preferredPeripheralNum
-			UserDefaults.firmwareVersion = firmwareVersion
-			UserDefaults.lastFirmwareAPIUpdate = lastFirmwareAPIUpdate
-		}
-	}
-
-	private func makeManager(_ transport: ScriptedTransport) -> AccessoryManager {
-		// The firmware-update notifier would otherwise refresh from the network in Step 7.
-		UserDefaults.lastFirmwareAPIUpdate = Date()
-		let manager = AccessoryManager(transports: [transport])
-		manager.isSwitchingDevices = true
-		manager.context = PersistenceController.shared.context
-		manager.appState = AppState(router: Router())
-		return manager
-	}
-
-	private func uniqueNodeNum() -> UInt32 {
-		UInt32.random(in: 0x5000_0000...0x5FFF_FFFF)
-	}
-
-	/// Polls `condition` for up to two seconds; the tests then check the outcome themselves.
-	private func waitUntil(_ condition: () async -> Bool) async throws {
-		for _ in 0..<200 {
-			if await condition() { return }
-			try await Task.sleep(for: .milliseconds(10))
-		}
-	}
-
-	private func device() -> Device {
-		Device(id: UUID(), name: "Scripted", transportType: .tcp, identifier: "scripted-\(UUID().uuidString).local:4403")
-	}
+	// Shared setup: `ConnectFlowSupport` in ScriptedRadio.swift.
+	private typealias SavedDefaults = ConnectFlowSupport.SavedDefaults
+	private func makeManager(_ transport: ScriptedTransport) -> AccessoryManager { ConnectFlowSupport.makeManager(transport) }
+	private func uniqueNodeNum() -> UInt32 { ConnectFlowSupport.uniqueNodeNum() }
+	private func waitUntil(_ condition: () async -> Bool) async throws { try await ConnectFlowSupport.waitUntil(condition) }
+	private func device() -> Device { ConnectFlowSupport.device() }
 
 	@Test("A connect runs heartbeat, config, heartbeat, node DB, then sets the time, and ends connected")
 	func happyPath() async throws {
@@ -312,88 +278,5 @@ struct ConnectFlowCharacterizationTests {
 		#expect(await radio.sent.map(describe).filter { $0 == .wantConfig(69420) }.count == before + 1)
 		#expect(manager.isConnected)
 		try await manager.disconnect()
-	}
-
-	// MARK: - Every radio the same (D-17, T071)
-
-	@Test("A radio connected alongside gets the same requests as the focused one, and stays second")
-	func secondRadioRunsTheSameSteps() async throws {
-		let saved = SavedDefaults()
-		defer { saved.restore() }
-		let focusedNum = uniqueNodeNum()
-		let secondNum = focusedNum &+ 0x100
-		let focusedRadio = ScriptedRadio(nodeNum: focusedNum, dumpNodes: [focusedNum &+ 1])
-		let secondRadio = ScriptedRadio(nodeNum: secondNum, dumpNodes: [secondNum &+ 1], timezone: "", cannedMessages: true)
-		let secondDevice = device()
-		let transport = ScriptedTransport(radio: focusedRadio, radiosByIdentifier: [secondDevice.identifier: secondRadio])
-		let manager = makeManager(transport)
-		let focusedDevice = device()
-
-		try await manager.connect(to: focusedDevice)
-		try await manager.connectAdditionalRadio(secondDevice)
-
-		// The step requests, in order. The second radio's blank timezone adds a reply between them.
-		func steps(_ items: [SentItem]) -> [SentItem] {
-			Array(items.filter { [.heartbeat, .wantConfig(69420), .wantConfig(69421), .setTime].contains($0) }.prefix(5))
-		}
-		let expectedSteps: [SentItem] = [.heartbeat, .wantConfig(69420), .heartbeat, .wantConfig(69421), .setTime]
-		#expect(steps(await focusedRadio.sent.map(describe)) == expectedSteps)
-		#expect(steps(await secondRadio.sent.map(describe)) == expectedSteps, "the same steps as the focused radio")
-		try await waitUntil { await secondRadio.sent.map(describe).contains(.cannedMessagesRequest) }
-		#expect(await secondRadio.sent.map(describe).contains(.cannedMessagesRequest), "its own module config is handled like the focused radio's, on its own connection")
-		#expect(!(await focusedRadio.sent.map(describe).contains(.cannedMessagesRequest)))
-		try await waitUntil {
-			await secondRadio.sent.map(describe).contains { if case .setTimezone = $0 { return true } else { return false } }
-		}
-		#expect(await secondRadio.sent.map(describe).contains { if case .setTimezone = $0 { return true } else { return false } })
-
-		// Focus and the app-wide state stay with the first radio.
-		#expect(manager.activeConnection?.device.id == focusedDevice.id)
-		#expect(manager.activeDeviceNum == Int64(focusedNum))
-		#expect(UserDefaults.preferredPeripheralId == focusedDevice.id.uuidString)
-		#expect(UserDefaults.preferredPeripheralNum == Int(focusedNum))
-		#expect(manager.state == .subscribed)
-
-		// The second radio is connected, with its own session state, and remembered.
-		let second = try #require(manager.additionalRadios[secondDevice.id])
-		#expect(second.nodeNum == Int64(secondNum))
-		#expect(second.device.connectionState == .connected)
-		#expect(second.device.longName == "Scripted Radio")
-		#expect(second.device.firmwareVersion == "2.7.15.567b8ea")
-		#expect(second.eventTask != nil)
-		#expect(manager.connectAttempts.isEmpty)
-		let secondRadioNum = Int64(secondNum)
-		let myInfo = try PersistenceController.shared.context.fetch(FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == secondRadioNum })).first
-		#expect(myInfo?.peripheralId == secondDevice.id.uuidString)
-		#expect(myInfo?.autoConnect == true)
-		#expect(myInfo?.channels.count == 1)
-
-		await manager.disconnectAdditionalRadio(secondDevice.id, byUser: true)
-		#expect(manager.additionalRadios.isEmpty)
-		#expect(second.eventTask == nil, "torn down like the focused radio's")
-		#expect(await secondRadio.disconnects == 1)
-		#expect(manager.activeConnection?.device.id == focusedDevice.id)
-		try await manager.disconnect()
-	}
-
-	@Test("A radio connected alongside that fails to connect throws, and leaves the focused radio alone")
-	func secondRadioFailureIsItsOwn() async throws {
-		let saved = SavedDefaults()
-		defer { saved.restore() }
-		let transport = ScriptedTransport(radio: ScriptedRadio(nodeNum: uniqueNodeNum()), failure: AccessoryError.connectionFailed("Refused"))
-		let manager = makeManager(transport)
-		let focused = ScriptedRadio(nodeNum: uniqueNodeNum())
-		manager.activeConnection = RadioSession(device: device(), connection: focused)
-		let refusing = device()
-
-		await #expect(throws: (any Error).self) {
-			try await manager.connectAdditionalRadio(refusing)
-		}
-		#expect(transport.connectAttempts == 2, "retried like the focused radio's connect")
-		#expect(manager.additionalRadios.isEmpty)
-		#expect(manager.connectAttempts.isEmpty)
-		#expect(manager.activeConnection != nil)
-		#expect(await focused.disconnects == 0)
-		#expect(manager.lastConnectionError == nil, "the focused radio's error state is untouched")
 	}
 }
