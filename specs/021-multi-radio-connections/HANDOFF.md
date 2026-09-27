@@ -300,7 +300,10 @@ describes it well enough to rebuild.
   radios alongside it are claimed by the remembered-radio reconnect, so a restored radio that
   isn't remembered (`autoConnect` off) is released after `restoredStandbyGracePeriod`. If the
   focused restore fails, the others are released too; the remembered-radio fallback at discovery
-  can bring one back as the focus.
+  can bring one back as the focus. A radio restored still connected is the focused restore ahead
+  of a preferred one still connecting, and the restore's wait only ends on its own peripheral's
+  didConnect (T155). A focused restore still connecting waits with no timeout and holds discovery
+  off meanwhile, as on `main`.
 - Connect Step 5 (found writing T068, fixed in T154): an answer to the node-DB request that
   arrives before `sendWantDatabase` starts waiting sets `RadioSession.databaseResponseArrived`,
   so the wait is skipped instead of timing out. `ScriptedRadio(replyDelay: .zero)` answers inside

@@ -212,6 +212,7 @@ struct MultiRadioBLETransportTests {
 
 private struct IdentifiedPeripheral: RestoredPeripheral {
 	let identifier: UUID
+	var state: CBPeripheralState = .connecting
 }
 
 @Suite("Multi-radio BLE restoration", .timeLimit(.minutes(1)))
@@ -225,6 +226,41 @@ struct MultiRadioBLERestorationTests {
 		#expect(BLETransport.focusedPeripheral(among: restored, preferredId: preferred.identifier.uuidString)?.identifier == preferred.identifier)
 		#expect(BLETransport.focusedPeripheral(among: restored, preferredId: UUID().uuidString)?.identifier == first.identifier)
 		#expect(BLETransport.focusedPeripheral(among: [IdentifiedPeripheral](), preferredId: "") == nil)
+	}
+
+	@Test("A radio restored still connected is the focused one over a preferred radio still connecting")
+	func connectedRadioIsFocusedFirst() {
+		let preferred = IdentifiedPeripheral(identifier: UUID(), state: .connecting)
+		let connected = IdentifiedPeripheral(identifier: UUID(), state: .connected)
+		let alsoConnected = IdentifiedPeripheral(identifier: UUID(), state: .connected)
+		#expect(BLETransport.focusedPeripheral(among: [preferred, connected], preferredId: preferred.identifier.uuidString)?.identifier == connected.identifier)
+		#expect(BLETransport.focusedPeripheral(among: [connected, alsoConnected], preferredId: alsoConnected.identifier.uuidString)?.identifier == alsoConnected.identifier)
+	}
+
+	@Test("Another radio's connect finishing doesn't end the focused restore's wait")
+	func restoreWaitIsPerPeripheral() async throws {
+		let peripheralA = PeripheralA.make()
+		let peripheralB = PeripheralB.make()
+		let connects = Reached()
+		let central = TwoPeripheralCentral(peripherals: [peripheralA, peripheralB], connects: connects)
+		let transport = BLETransport(createCentralManagerImmediately: false, centralManager: central)
+		let finished = Reached()
+
+		let restore = Task {
+			try await transport.waitForRestoredConnect(of: peripheralA)
+			await finished.mark()
+		}
+		await connects.wait(for: 1)
+		let other = Task { try await transport.connect(to: device(for: peripheralB, name: "B")) }
+		await connects.wait(for: 2)
+
+		await transport.handleDidConnect(peripheral: peripheralB, central: central)
+		let connectionB = try #require(try await other.value as? BLEConnection)
+		#expect(await connectionB.peripheral.identifier == PeripheralB.id, "B's didConnect reaches B's connect")
+
+		await transport.handleDidConnect(peripheral: peripheralA, central: central)
+		try await restore.value
+		await finished.wait(for: 1)
 	}
 
 	@Test("A radio restored still connected is taken over without connecting again")
