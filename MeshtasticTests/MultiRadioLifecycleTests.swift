@@ -33,6 +33,30 @@ private actor IdleConnection: Connection {
 	func appDidBecomeActive() {}
 }
 
+/// A TCP transport whose discovery finds `found` once asked to.
+private final class OneDeviceDiscoveryTransport: Transport, @unchecked Sendable {
+	let type: TransportType = .tcp
+	var status: TransportStatus { .ready }
+	let requiresPeriodicHeartbeat = false
+	let supportsManualConnection = false
+	let found: Device
+
+	init(found: Device) { self.found = found }
+
+	func discoverDevices() async -> AsyncStream<DiscoveryEvent> {
+		let found = found
+		return AsyncStream { continuation in
+			continuation.yield(.deviceFound(found))
+		}
+	}
+	func connect(to device: Device) async throws -> any Connection {
+		try await Task.sleep(for: .seconds(3600))
+		return IdleConnection()
+	}
+	func device(forManualConnection: String) -> Device? { nil }
+	func manuallyConnect(toDevice: Device) async throws {}
+}
+
 /// A TCP transport whose connect never finishes on its own, like BLE to an out-of-range radio.
 private final class HangingTransport: Transport, @unchecked Sendable {
 	let type: TransportType = .tcp
@@ -145,6 +169,33 @@ struct MultiRadioConnectLifecycleTests {
 
 		let bad = MeshPackets.RememberedRadio(nodeNum: 0x0D0D, peripheralId: "not-a-uuid", name: "Radio D", transport: .ble)
 		#expect(manager.device(for: bad) == nil)
+	}
+
+	@Test("A remembered TCP radio seen by discovery is brought back, even after discovery stopped")
+	func rememberedTCPRadioComesBack() async throws {
+		var tcpDevice = device("Radio C")
+		tcpDevice.num = 0x0C0C
+		let manager = AccessoryManager(transports: [OneDeviceDiscoveryTransport(found: tcpDevice)])
+		manager.activeConnection = RadioSession(device: device("Focused"), connection: IdleConnection())
+		let remembered = MeshPackets.RememberedRadio(nodeNum: 0x0C0C, peripheralId: tcpDevice.id.uuidString, name: "Radio C", transport: .tcp)
+
+		// Not seen yet: waited for, then brought back when discovery finds it.
+		#expect(manager.device(for: remembered) == nil)
+		manager.awaitedRememberedRadios.insert(tcpDevice.id)
+		manager.startDiscovery()
+		var waited = 0
+		while manager.additionalRadioReconnects[tcpDevice.id] == nil, waited < 200 {
+			try await Task.sleep(for: .milliseconds(10))
+			waited += 1
+		}
+		#expect(manager.additionalRadioReconnects[tcpDevice.id] != nil)
+		#expect(manager.awaitedRememberedRadios.isEmpty)
+
+		// Seen before discovery stopped: still resolvable.
+		manager.stopDiscovery()
+		#expect(manager.devices.isEmpty)
+		#expect(manager.device(for: remembered)?.id == tcpDevice.id)
+		manager.additionalRadioReconnects.values.forEach { $0.cancel() }
 	}
 
 	@Test("A remembered radio in range stands in for a missing preferred radio")

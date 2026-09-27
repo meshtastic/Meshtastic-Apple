@@ -45,7 +45,7 @@ Radios connect one at a time: while one downloads its settings and node list, an
 
 ### Adding a Radio
 
-While a radio is connected, the Connect tab lists nearby radios under **Add a Radio**. Tap one to connect it. The app asks what you want to do:
+While a radio is connected, the Connect tab lists nearby radios and your saved manual connections under **Add a Radio**. Tap one to connect it, or use **Manual** in the section header to enter a TCP radio's address. The app asks what you want to do:
 
 - **Keep [radio] and Add [new radio]** connects the new radio and keeps the current one.
 - **Switch to [new radio]** disconnects the focused radio and connects the new one in its place. Nothing is deleted.
@@ -66,7 +66,7 @@ With more than one radio connected, the passphrase sheet and the update screen s
 
 ### Reconnecting
 
-A radio connected alongside the focused one is remembered. If it drops out of range or restarts, the app keeps trying to reconnect it, backing off to once a minute. The next time the focused radio connects — for example when you open the app — the remembered radios are connected again too. Choosing **Disconnect** on a radio stops this until you connect it again yourself.
+A radio connected alongside the focused one is remembered. If it drops out of range or restarts, the app keeps trying to reconnect it, backing off to once a minute. The next time the focused radio connects — for example when you open the app — the remembered radios are connected again too. A network radio that isn't found right then is connected when the app next sees it. Choosing **Disconnect** on a radio stops this until you connect it again yourself.
 
 If iOS closes the app in the background while Bluetooth radios are connected, it relaunches the app when one of them has something to send. Your usual radio is restored as the focused one and the others rejoin under **Also Connected**. A radio the app doesn't bring back within a few minutes is let go, so it's free for another connection.
 

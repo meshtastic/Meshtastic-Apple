@@ -71,8 +71,12 @@ struct Connect: View {
 	}
 
 	/// Discovered radios that aren't connected yet (feature 021).
+	/// Radios that can be added while connected: the discovered ones, and saved manual
+	/// connections (a TCP radio Bonjour doesn't find), none of them already connected (T156).
 	private var addableDevices: [Device] {
-		sortedAvailableDevices.filter { !accessoryManager.isRadioConnected($0.id) }
+		let discovered = sortedAvailableDevices
+		let manual = manualConnections.connectionsList.filter { saved in !discovered.contains { $0.id == saved.id } }
+		return (discovered + manual).filter { !accessoryManager.isRadioConnected($0.id) }
 	}
 
 	/// The connected node, but only while it's still a live SwiftData object.
@@ -420,7 +424,11 @@ struct Connect: View {
 						.textCase(nil)
 					}
 					if accessoryManager.isConnected {
-						Section(header: Text("Add a Radio").font(.title)) {
+						Section(header: HStack {
+							Text("Add a Radio").font(.title)
+							Spacer()
+							ManualConnectionMenu(isSwitchingRadio: $isSwitchingRadio)
+						}) {
 							if !accessoryManager.canConnectAnotherRadio {
 								Text("You can connect up to \(AccessoryManager.maxConnectedRadios) radios at once. Disconnect one to add another.")
 									.font(.callout)
@@ -962,7 +970,22 @@ struct ManualConnectionMenu: View {
 			Button("OK", action: {
 				if !connectionString.isEmpty {
 					if let device = selectedTransport.transport.device(forManualConnection: connectionString) {
-						if PreferredRadio.peripheralId == device.id.uuidString {
+						if accessoryManager.activeConnection != nil {
+							// Entered under Add a Radio: added alongside, unless the user's default
+							// is to switch (T156).
+							guard !accessoryManager.isRadioConnected(device.id) else { return }
+							Task {
+								if UserDefaults.additionalRadioBehavior == .switchRadio || !accessoryManager.canConnectAnotherRadio {
+									await performRadioSwitch(device, isSwitchingRadio: $isSwitchingRadio, accessoryManager: accessoryManager)
+								} else {
+									do {
+										try await accessoryManager.connectAdditionalRadio(device)
+									} catch {
+										Logger.transport.error("🌐 [Manual] Adding \(device.name, privacy: .public) failed: \(error.localizedDescription, privacy: .public)")
+									}
+								}
+							}
+						} else if PreferredRadio.peripheralId == device.id.uuidString {
 							Task {
 								try await selectedTransport.transport.manuallyConnect(toDevice: device)
 							}

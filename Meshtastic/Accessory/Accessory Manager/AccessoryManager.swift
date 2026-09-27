@@ -316,6 +316,13 @@ class AccessoryManager: ObservableObject {
 	/// Connects a remembered radio when the preferred one doesn't show up
 	/// (`scheduleRememberedRadioFallback`).
 	var rememberedRadioFallbackTask: Task<Void, Never>?
+	/// Radios discovery has seen this launch, kept after `stopDiscovery()` empties `devices`, so a
+	/// remembered TCP radio found by Bonjour can still be brought back after the focused radio's
+	/// connect stops discovery (T156).
+	var recentlyDiscoveredDevices: [UUID: Device] = [:]
+	/// Remembered radios that weren't found when the focused radio connected; each is brought
+	/// back when discovery next sees it (T156).
+	var awaitedRememberedRadios: Set<UUID> = []
 	/// A radio whose Unlock or Update the user chose while its connect was still running; it
 	/// takes the focus when that connect finishes (`focusRadioNeedingAttention`, T148).
 	var pendingAttentionFocus: UUID?

@@ -80,9 +80,21 @@ extension AccessoryManager {
 						// Update the list of discovered devices on the main thread for presentation
 						// in the user interface
 						self.devices = devices.sorted { $0.name < $1.name }
+
+						// Feature 021 (T156): a remembered radio that wasn't around when the focused
+						// radio connected comes back alongside it now.
+						self.recentlyDiscoveredDevices[newDevice.id] = newDevice
+						if self.awaitedRememberedRadios.contains(newDevice.id), self.activeConnection != nil {
+							self.awaitedRememberedRadios.remove(newDevice.id)
+							if !self.isRadioConnected(newDevice.id) {
+								Logger.transport.info("🔗🔁 [Additional] Remembered radio \(newDevice.name, privacy: .public) found; bringing it back")
+								self.scheduleAdditionalRadioReconnect(newDevice, firstDelay: .zero)
+							}
+						}
 						
 					case .deviceLost(let deviceId):
 						devices = devices.filter { $0.id != deviceId }
+						recentlyDiscoveredDevices.removeValue(forKey: deviceId)
 					
 					case .deviceReportedRssi(let deviceId, let newRssi):
 						updateDevice(deviceId: deviceId, key: \.rssi, value: newRssi)

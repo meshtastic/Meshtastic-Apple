@@ -168,6 +168,7 @@ extension AccessoryManager {
 	func disconnectAdditionalRadio(_ deviceId: UUID, byUser: Bool = false) async {
 		if byUser {
 			additionalRadioReconnects.removeValue(forKey: deviceId)?.cancel()
+			awaitedRememberedRadios.remove(deviceId)
 		}
 		// A connect still in progress for it stops, whether it's waiting for the handshake gate
 		// or running its steps.
@@ -243,10 +244,14 @@ extension AccessoryManager {
 		let connectedNums = Set(connectedRadios.compactMap(\.num))
 		let remembered = await MeshPackets.shared.rememberedRadios(excluding: connectedNums)
 		for radio in remembered {
-			guard let device = device(for: radio), !isRadioConnected(device.id) else {
-				Logger.transport.info("🔗🔁 [Additional] Can't bring back \(radio.name, privacy: .public) yet: not found on \(radio.transport.rawValue, privacy: .public)")
+			guard let device = device(for: radio) else {
+				Logger.transport.info("🔗🔁 [Additional] Can't bring back \(radio.name, privacy: .public) yet: not found on \(radio.transport.rawValue, privacy: .public); waiting for discovery to see it")
+				if let id = UUID(uuidString: radio.peripheralId) {
+					awaitedRememberedRadios.insert(id)
+				}
 				continue
 			}
+			guard !isRadioConnected(device.id) else { continue }
 			scheduleAdditionalRadioReconnect(device, firstDelay: .zero)
 		}
 	}
@@ -256,7 +261,7 @@ extension AccessoryManager {
 	/// without a scan.
 	func device(for remembered: MeshPackets.RememberedRadio) -> Device? {
 		guard let id = UUID(uuidString: remembered.peripheralId) else { return nil }
-		if let discovered = devices.first(where: { $0.id == id }) {
+		if let discovered = devices.first(where: { $0.id == id }) ?? recentlyDiscoveredDevices[id] {
 			return discovered
 		}
 		if let manual = ManualConnectionList.shared.connectionsList.first(where: { $0.id == id }) {
