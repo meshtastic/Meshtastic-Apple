@@ -182,6 +182,21 @@ extension MeshPackets {
 		let nodes = try modelContext.fetch(FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { nodeNums.contains($0.num) }))
 		for node in nodes {
 			guard let remaining = byNode[node.num], !remaining.isEmpty else { continue }
+			if remaining.count == 1, let only = remaining.first {
+				// One observation left, perhaps a merged backup's from months ago: it only takes over
+				// the path when it's current next to what the node last showed, and never moves the
+				// node's last heard back (T176).
+				let current = node.lastHeard.map { shown in
+					(only.lastHeard ?? .distantPast) >= shown.addingTimeInterval(-NodeObservationEntity.currentWindow)
+				} ?? true
+				guard current else { continue }
+				node.hopsAway = only.hopsAway
+				node.snr = only.snr
+				node.rssi = only.rssi
+				node.viaMqtt = only.viaMqtt
+				if only.radioNum == PreferredRadio.nodeNum { node.channel = only.channel }
+				continue
+			}
 			NodeObservationEntity.applyAggregate(remaining, to: node, focusedRadio: PreferredRadio.nodeNum)
 		}
 	}
