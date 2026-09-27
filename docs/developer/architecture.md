@@ -40,19 +40,25 @@ Deep links use the `meshtastic:///` URL scheme. `Router.route(url:)` parses the 
 
 ## AccessoryManager
 
-`AccessoryManager` is the central connectivity manager split across extension files:
+`AccessoryManager` is the central connectivity manager split across extension files. Up to four radios can be connected at once. Each has a `RadioSession` (`Meshtastic/Accessory/Radio Session/`) holding everything that belongs to that connection, and every radio runs the same connect steps and packet handling. One is focused (`activeConnection`): the default for Settings, sending and the services that follow it. The others are in `additionalRadios`. See [Transport Layer › Several Radios at Once](transport.md) for the details.
 
 | File | Responsibility |
 |------|---------------|
 | `AccessoryManager+Discovery.swift` | BLE scanning, device discovery |
-| `AccessoryManager+Connect.swift` | Connection lifecycle, reconnect logic |
+| `AccessoryManager+Connect.swift` | The connect steps every radio runs, reconnect logic |
+| `AccessoryManager+AdditionalRadios.swift` | Radios connected alongside the focused one: events, disconnect, reconnect, remembered radios |
+| `AccessoryManager+Focus.swift` | Moving the focus between connected radios without reconnecting |
+| `AccessoryManager+FocusHandover.swift` | Another radio takes the focus when the focused one drops |
+| `AccessoryManager+RadioAttention.swift` | A locked or outdated radio that isn't focused: the prompt naming it |
+| `AccessoryManager+RadioChoice.swift` | Sending, and admin messages, through a chosen radio |
+| `AccessoryManager+ServiceRadios.swift` | The radio TAK, CarPlay & Siri and the Watch use |
 | `AccessoryManager+ToRadio.swift` | Packets sent to the radio |
 | `AccessoryManager+FromRadio.swift` | Packets received from the radio |
-| `AccessoryManager+Position.swift` | GPS position sharing |
-| `AccessoryManager+MQTT.swift` | MQTT proxy |
+| `AccessoryManager+Position.swift` | GPS position sharing, to every connected radio |
+| `AccessoryManager+MQTT.swift`, `+RadioMQTT.swift` | Each radio's MQTT client proxy |
 | `AccessoryManager+TAK.swift` | TAK/CoT integration |
 
-Transport protocols are in `Meshtastic/Accessory/Transports/`.
+Transport protocols are in `Meshtastic/Accessory/Transports/`. `PreferredRadio` is the radio reconnected at launch.
 
 ## Persistence
 

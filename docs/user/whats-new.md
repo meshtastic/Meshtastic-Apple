@@ -14,6 +14,8 @@ Recent user-facing changes from roughly the last 12 months. Newest at the top.
 Show roughly the last 12 months of changes; archive entries older than a year by removing them.
 -->
 
+**Sep 2026** — [Bluetooth Device Connection](bluetooth.md) — Up to four radios can stay connected at once, over Bluetooth, TCP and serial, all in one node list and message history; focusing another connected radio no longer disconnects anything, and a locked or outdated radio stays connected while the app asks about it by name.
+
 **Aug 2026** — [Settings](settings.md) — New Waypoints notification setting: received-waypoint alerts can be switched off on their own. Reaction alerts follow the existing message notification settings.
 
 **Jul 2026** — [Settings](settings.md) — Packet Authenticity: on firmware that reports XEdDSA support, Security settings gains a Protection Level of Compatible, Balanced, or Strict, controlling whether your radio accepts mesh packets it cannot cryptographically authenticate; Strict asks for confirmation first, and the setting matches the Meshtastic app for Android.
