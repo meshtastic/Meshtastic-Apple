@@ -72,6 +72,16 @@ If iOS closes the app in the background while Bluetooth radios are connected, it
 
 If the focused radio drops and doesn't come back within about 30 seconds, another connected radio becomes the focused one without reconnecting, and the dropped radio rejoins under **Also Connected** when it's back. Likewise, if your usual radio isn't around when you open the app, a remembered radio that's in range is connected after about 30 seconds, and your usual radio joins when it appears.
 
+### Resetting or Removing One of Several Radios
+
+With one radio, **Reset NodeDB** and **Factory Reset** (in the radio's **Device** settings) clear the app's data as they always have. When the app holds more than one radio's data, a reset only affects the radio you reset:
+
+- Only that radio disconnects. A reset radio restarts and reconnects on its own, except after a factory reset that also clears its Bluetooth bonds. If it was the focused radio, another connected radio takes the focus.
+- Nodes stay when another of your radios is on the same mesh: the same region, the same preset (or bandwidth, spreading factor and coding rate) and the same frequency. When the reset radio is on a mesh of its own, the nodes only it heard are removed, keeping favorites if you chose to preserve them.
+- The app asks whether to delete the radio's messages too. If you do, its direct messages are deleted, and so are its messages on channels none of your other radios has. A channel another radio has keeps all its messages.
+
+**Remove This Radio**, in the same place, takes a radio out of the app without resetting it: it disconnects and isn't reconnected, its data is removed as for a reset with its messages deleted (favorites are kept), and it no longer counts as one of your radios. Connect it again to add it back. It is only offered while the app holds more than one radio's data.
+
 ### Switching Radios
 
 Switching to a radio that isn't connected yet disconnects the focused radio and connects the new one; switching to one that's already connected only moves the focus. The database stays as it is, so the previous radio's messages and nodes remain in the app. After the new radio finishes its initial config handshake, the app first reapplies the bundled Meshtastic hardware catalog that ships with the app, then refreshes the same catalog from the Meshtastic API in the background so hardware names, images, and firmware-target metadata stay current.

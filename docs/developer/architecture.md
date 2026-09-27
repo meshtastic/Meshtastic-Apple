@@ -50,6 +50,7 @@ Deep links use the `meshtastic:///` URL scheme. `Router.route(url:)` parses the 
 | `AccessoryManager+Focus.swift` | Moving the focus between connected radios without reconnecting |
 | `AccessoryManager+FocusHandover.swift` | Another radio takes the focus when the focused one drops |
 | `AccessoryManager+RadioAttention.swift` | A locked or outdated radio that isn't focused: the prompt naming it |
+| `AccessoryManager+RadioRemoval.swift` | Resetting or removing one of several radios: it leaves while the others stay (D-18) |
 | `AccessoryManager+RadioChoice.swift` | Sending, and admin messages, through a chosen radio |
 | `AccessoryManager+ServiceRadios.swift` | The radio TAK, CarPlay & Siri and the Watch use |
 | `AccessoryManager+ToRadio.swift` | Packets sent to the radio |

@@ -192,6 +192,47 @@ struct MultiRadioConnectFlowTests {
 		try await manager.disconnect()
 	}
 
+	@Test("Resetting the focused radio hands the focus over and brings the reset radio back alongside")
+	func resetFocusedRadioHandsOver() async throws {
+		let saved = SavedDefaults()
+		defer { saved.restore() }
+		let radios = try await connectTwoRadios()
+		let manager = radios.manager
+		let firstSession = try #require(manager.activeConnection)
+		let secondSession = try #require(manager.additionalRadios[radios.secondDevice.id])
+
+		await manager.takeRadioOffline(Int64(radios.firstNum), reconnect: true)
+
+		#expect(manager.activeConnection === secondSession)
+		#expect(manager.additionalRadios[radios.firstDevice.id] == nil)
+		#expect(await radios.first.disconnects == 1)
+		#expect(await radios.second.disconnects == 0)
+		#expect(manager.additionalRadioReconnects[radios.firstDevice.id] != nil, "a reset radio reboots and comes back")
+		manager.additionalRadioReconnects.values.forEach { $0.cancel() }
+		try await manager.disconnect()
+	}
+
+	@Test("Removing a radio alongside disconnects only it, and it isn't brought back")
+	func removeAdditionalRadio() async throws {
+		let saved = SavedDefaults()
+		defer { saved.restore() }
+		let radios = try await connectTwoRadios()
+		let manager = radios.manager
+		let firstSession = try #require(manager.activeConnection)
+
+		await manager.removeRadio(Int64(radios.secondNum))
+
+		#expect(manager.activeConnection === firstSession)
+		#expect(manager.additionalRadios.isEmpty)
+		#expect(manager.additionalRadioReconnects.isEmpty)
+		#expect(await radios.second.disconnects == 1)
+		#expect(await radios.first.disconnects == 0)
+		let secondNum = Int64(radios.secondNum)
+		let second = try PersistenceController.shared.context.fetch(FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == secondNum }))
+		#expect(second.isEmpty, "a removed radio is no longer one of the user's radios")
+		try await manager.disconnect()
+	}
+
 	@Test("When the focused radio drops, another connected radio takes the focus in place")
 	func handoverWithoutReconnecting() async throws {
 		let saved = SavedDefaults()

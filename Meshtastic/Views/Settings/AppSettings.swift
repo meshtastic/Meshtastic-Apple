@@ -12,6 +12,9 @@ struct AppSettings: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@State var totalDownloadedTileSize = ""
 	@State private var isPresentingCoreDataResetConfirm = false
+	/// The user's radios whose data Clear App Data erases; named in its confirmation when there
+	/// are several (feature 021, D-18).
+	@State private var radiosToErase: [StoredRadio] = []
 	@State private var isPresentingDeleteMapTilesConfirm = false
 	@State private var isPresentingAppIconSheet = false
 	@State private var purgeStaleNodes: Bool = false
@@ -199,7 +202,10 @@ struct AppSettings: View {
 							.font(idiom == .phone ? .caption : .callout)
 					}
 					Button {
-						isPresentingCoreDataResetConfirm = true
+						Task {
+							radiosToErase = await MeshPackets.shared.storedRadios()
+							isPresentingCoreDataResetConfirm = true
+						}
 					} label: {
 						Label("Clear App Data", systemImage: "trash")
 							.foregroundColor(.red)
@@ -211,6 +217,9 @@ struct AppSettings: View {
 					) {
 						Button("Erase all app data?", role: .destructive) {
 							Task {
+								// Every radio disconnects first, so none keeps writing into the
+								// cleared store. With one radio there are none alongside it.
+								await accessoryManager.disconnectAllAdditionalRadios()
 								try await accessoryManager.disconnect()
 								
 								/// Clear translation cache
@@ -235,6 +244,10 @@ struct AppSettings: View {
 									await MeshtasticAPI.shared.refreshDevicesPreferringAPI()
 								}
 							}
+						}
+					} message: {
+						if radiosToErase.count > 1 {
+							Text("This erases the data of all your radios: \(ListFormatter.localizedString(byJoining: radiosToErase.map(\.name))). They all disconnect.")
 						}
 					}
 					Button {
