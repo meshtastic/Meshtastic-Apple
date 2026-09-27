@@ -190,6 +190,34 @@ struct MultiRadioLockdownTests {
 		#expect(manager.radioAttentionPrompt?.id == focused.device.id)
 	}
 
+	@Test("Unlock while the focused radio is connecting or updating focuses the radio once that ends")
+	func unlockWaitsForFocusedConnectAndUpdate() async throws {
+		let fixture = makeFixture()
+		let manager = fixture.manager, radio = fixture.radio
+		radio.device.connectionState = .connected
+		let focused = try #require(manager.activeConnection)
+		focused.device.connectionState = .connected
+
+		// The focused radio is reconnecting.
+		manager.connectAttempts[focused.device.id] = ConnectAttempt(device: focused.device)
+		await manager.focusRadioNeedingAttention(radio.device.id)
+		#expect(manager.activeConnection === focused)
+		#expect(manager.pendingAttentionFocus == radio.device.id)
+		manager.connectAttempts.removeValue(forKey: focused.device.id)
+		manager.retryPendingAttentionFocusSoon()
+		try await waitUntil { await MainActor.run { manager.activeConnection === radio } }
+		#expect(manager.activeConnection === radio)
+		#expect(manager.pendingAttentionFocus == nil)
+
+		// A firmware update is in progress: the previous radio waits for it the same way.
+		manager.otaInProgress = true
+		await manager.focusRadioNeedingAttention(focused.device.id)
+		#expect(manager.pendingAttentionFocus == focused.device.id)
+		manager.otaInProgress = false
+		try await waitUntil { await MainActor.run { manager.activeConnection === focused } }
+		#expect(manager.activeConnection === focused)
+	}
+
 	@Test("A second radio needing the user waits for the first radio's prompt to close")
 	func promptsForSeveralRadiosQueue() async throws {
 		let fixture = makeFixture()

@@ -82,6 +82,9 @@ extension AccessoryManager {
 		}
 
 		let attempt = ConnectAttempt(device: device, isFocused: asFocused)
+		// Runs last, after the attempt is gone: an Unlock or Update waiting on this connect, or
+		// on the focused radio's, can take the focus now (T148, T179).
+		defer { retryPendingAttentionFocusSoon() }
 		connectAttempts[device.id] = attempt
 		defer {
 			if connectAttempts[device.id] === attempt {

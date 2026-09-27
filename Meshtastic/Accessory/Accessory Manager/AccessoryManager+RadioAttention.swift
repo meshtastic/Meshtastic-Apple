@@ -88,20 +88,38 @@ extension AccessoryManager {
 	/// middle of its connect, and a radio can't take the focus until its connect finishes, so
 	/// then it takes the focus as soon as it does (T148). Reconnecting it as the focused radio
 	/// instead would disconnect the focused one.
+	///
+	/// The same wait covers the other things that hold off a focus change: the focused radio's
+	/// own connect and a firmware update (T179). The radio takes the focus when whichever it was
+	/// ends (`retryPendingAttentionFocusSoon`).
 	func focusRadioNeedingAttention(_ deviceId: UUID) async {
 		if await focusConnectedRadio(deviceId) { return }
 		guard additionalRadios[deviceId] != nil else { return }
 		pendingAttentionFocus = deviceId
-		Logger.transport.info("🔀 [Radios] Will focus \(self.additionalRadios[deviceId]?.device.name ?? "?", privacy: .public) when its connect finishes")
+		Logger.transport.info("🔀 [Radios] Will focus \(self.additionalRadios[deviceId]?.device.name ?? "?", privacy: .public) once connects and updates in progress finish")
 	}
 
-	/// After a connect alongside finishes: the radio the user chose Unlock or Update for while
-	/// it was connecting takes the focus now.
+	/// The radio the user chose Unlock or Update for takes the focus, if nothing holds it off any
+	/// more; otherwise it keeps waiting. Called when a connect finishes and when an update ends.
 	func focusPendingAttentionRadio(_ deviceId: UUID) async {
 		guard pendingAttentionFocus == deviceId else { return }
+		guard additionalRadios[deviceId] != nil else {
+			pendingAttentionFocus = nil
+			return
+		}
+		guard canFocusWithoutReconnecting(deviceId) else { return }
 		pendingAttentionFocus = nil
 		if !(await focusConnectedRadio(deviceId)) {
-			Logger.transport.info("🔀 [Radios] Couldn't focus \(deviceId, privacy: .public) after its connect")
+			Logger.transport.info("🔀 [Radios] Couldn't focus \(deviceId, privacy: .public)")
+		}
+	}
+
+	/// Tries the waiting Unlock or Update again once the current work is done: after the caller
+	/// returns, so a connect's attempt is gone by then.
+	func retryPendingAttentionFocusSoon() {
+		guard let deviceId = pendingAttentionFocus else { return }
+		Task { @MainActor [weak self] in
+			await self?.focusPendingAttentionRadio(deviceId)
 		}
 	}
 

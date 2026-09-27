@@ -364,7 +364,12 @@ class AccessoryManager: ObservableObject {
 	var connectionSteps: SequentialSteps?
 	
 	// Public due to file separation
-	var otaInProgress: Bool = false
+	var otaInProgress: Bool = false {
+		didSet {
+			// An Unlock or Update chosen during the update can take the focus now (T179).
+			if oldValue && !otaInProgress { retryPendingAttentionFocusSoon() }
+		}
+	}
 	var discoveryTask: Task<Void, Never>?
 	/// Consumes `BLETransport.statusUpdates()` for the lifetime of this manager; see
 	/// `observeBLETransportStatus()`.
