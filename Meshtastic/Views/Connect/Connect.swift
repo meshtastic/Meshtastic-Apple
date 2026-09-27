@@ -939,8 +939,71 @@ struct ManualConnectionMenu: View {
 	@State private var selectedTransport: IterableTransport?
 	@State private var showAlert: Bool = false
 	@State private var connectionString = ""
+	/// A radio entered while another is connected, waiting for Keep Both / Switch (T183), and why
+	/// adding it failed, as the other rows under Add a Radio ask and show.
+	@State private var radioToAdd: Device?
+	@State private var connectError: String?
+
+	private var focusedName: String {
+		accessoryManager.activeConnection.map { $0.device.longName ?? $0.device.name } ?? ""
+	}
+
+	/// The same choice as tapping a radio listed under Add a Radio (`DeviceConnectRow`).
+	private func addAlongside(_ device: Device) {
+		guard !accessoryManager.isRadioConnected(device.id) else { return }
+		switch UserDefaults.additionalRadioBehavior {
+		case .keepBoth where accessoryManager.canConnectAnotherRadio:
+			keepBoth(device)
+		case .switchRadio:
+			switchTo(device)
+		default:
+			// Asked from the text entry's OK: once that alert has closed, or it isn't shown.
+			Task {
+				try? await Task.sleep(for: .milliseconds(500))
+				radioToAdd = device
+			}
+		}
+	}
+
+	private func keepBoth(_ device: Device) {
+		Task {
+			do {
+				try await accessoryManager.connectAdditionalRadio(device)
+			} catch {
+				connectError = error.localizedDescription
+			}
+		}
+	}
+
+	private func switchTo(_ device: Device) {
+		Task {
+			await performRadioSwitch(device, isSwitchingRadio: $isSwitchingRadio, accessoryManager: accessoryManager)
+		}
+	}
 
 	var body: some View {
+		menu
+			.confirmationDialog("Connect \(radioToAdd?.name ?? "")?", isPresented: Binding(get: { radioToAdd != nil }, set: { if !$0 { radioToAdd = nil } }), titleVisibility: .visible, presenting: radioToAdd) { device in
+				if accessoryManager.canConnectAnotherRadio {
+					Button("Keep \(focusedName) and Add \(device.name)") { keepBoth(device) }
+				}
+				Button("Switch to \(device.name)") { switchTo(device) }
+				Button("Cancel", role: .cancel) {}
+			} message: { device in
+				if accessoryManager.canConnectAnotherRadio {
+					Text("\(focusedName) is connected. Keep it connected and add \(device.name), or switch to \(device.name)? You can choose what happens by default in Settings › App Settings.")
+				} else {
+					Text("You can connect up to \(AccessoryManager.maxConnectedRadios) radios at once. Switching disconnects \(focusedName).")
+				}
+			}
+			.alert("Couldn't Connect", isPresented: Binding(get: { connectError != nil }, set: { if !$0 { connectError = nil } })) {
+				Button("OK", role: .cancel) {}
+			} message: {
+				Text(connectError ?? "")
+			}
+	}
+
+	private var menu: some View {
 		Menu {
 			ForEach(transports) { transport in
 				Button {
@@ -971,20 +1034,9 @@ struct ManualConnectionMenu: View {
 				if !connectionString.isEmpty {
 					if let device = selectedTransport.transport.device(forManualConnection: connectionString) {
 						if accessoryManager.activeConnection != nil {
-							// Entered under Add a Radio: added alongside, unless the user's default
-							// is to switch (T156).
-							guard !accessoryManager.isRadioConnected(device.id) else { return }
-							Task {
-								if UserDefaults.additionalRadioBehavior == .switchRadio || !accessoryManager.canConnectAnotherRadio {
-									await performRadioSwitch(device, isSwitchingRadio: $isSwitchingRadio, accessoryManager: accessoryManager)
-								} else {
-									do {
-										try await accessoryManager.connectAdditionalRadio(device)
-									} catch {
-										Logger.transport.error("🌐 [Manual] Adding \(device.name, privacy: .public) failed: \(error.localizedDescription, privacy: .public)")
-									}
-								}
-							}
+							// Entered under Add a Radio: the same Keep Both / Switch choice as the
+							// radios listed there (T156, T183).
+							addAlongside(device)
 						} else if PreferredRadio.peripheralId == device.id.uuidString {
 							Task {
 								try await selectedTransport.transport.manuallyConnect(toDevice: device)

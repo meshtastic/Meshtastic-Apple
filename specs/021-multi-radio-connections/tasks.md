@@ -184,7 +184,7 @@ All re-checked in the files and holding (2026-09-27). One commit each, full suit
 - [X] T180 N6 the scan sees its radio's connect finish. — removing a connect attempt sends `objectWillChange`. Not unit tested (the scan's reconnect wait needs a real preset change).
 - [X] T181 N8 no prompt flash for a radio about to be disconnected. — `focusConnectedRadio(_:previousStays: false)` (switching with Disconnect, resets, removal) gives the previous radio no prompt and doesn't remember it; a reset radio is remembered explicitly. Verified: `MultiRadioLockdownTests.noPromptForARadioBeingDisconnected`.
 - [X] T182 N9 the handover prefers a radio that doesn't need the user. — `focusHandoverCandidate` takes a connected radio without attention first. Verified: `MultiRadioConnectLifecycleTests.focusHandoverCandidate`.
-- [ ] T183 N10 manual entry under Add a Radio asks Keep Both / Switch and shows failures.
+- [X] T183 N10 manual entry under Add a Radio asks Keep Both / Switch and shows failures. — `ManualConnectionMenu` follows the Connecting Another Radio setting like `DeviceConnectRow`, with the same dialog (shown once the text entry alert has closed) and "Couldn't Connect" alert. Not unit tested (view).
 - [ ] T184 V2-8 the radio cache on a new radio; Heard By while looking up; the TAK slot on a new TAK radio.
 - [ ] T185 Phone position keeps going while a handover is pending.
 - [ ] T186 N7 (owner): no launch wait for a single-radio store; the backfill drains when a second radio first connects.
