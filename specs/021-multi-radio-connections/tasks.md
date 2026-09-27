@@ -131,7 +131,7 @@ phases don't change behaviour and keep the app shippable, which makes a rebase o
 
 - [X] T120 User docs listed in plan.md, with screenshots from the snapshot tests (`forDocs: true`). — updated with each change (Bluetooth, Messages, Nodes, Map, Settings, MQTT, CarPlay, TAK, Watch), plus a What's New entry. The connected-radio row is the one snapshot for the docs (`AdditionalRadioRowSnapshotTests`); more (Via picker, Heard By, connect dialog, the attention prompt) are still open under T092.
 - [X] T121 Developer docs listed in plan.md. — architecture (sessions, focus, the new extension files, `PreferredRadio`), transport (Several Radios at Once), SwiftData (observations, receptions, message keys) and deep links (`radio=`) are current.
-- [ ] T122 Regenerate bundled docs and copy snapshots. — not run yet: `scripts/build-docs.sh` needs `cmark-gfm` (`brew install cmark-gfm`), which isn't installed on this Mac. Run it last before the pull request.
+- [ ] T122 Regenerate bundled docs and copy snapshots. — the owner's decision: run it as the last step before opening the pull request, not before (`bash scripts/build-docs.sh --output Meshtastic/Resources/docs`, then commit the HTML). `cmark-gfm` is installed on this Mac.
 
 ## Phase 10: Hardening
 
