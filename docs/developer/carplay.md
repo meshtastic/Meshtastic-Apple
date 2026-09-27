@@ -44,4 +44,6 @@ the conversation is on: `channel-<N>:r<radioNum>` and `dm-<nodeNum>:r<radioNum>`
 parsed by `conversation(fromIdentifier:)`). With one radio they stay `channel-<N>` / `dm-<nodeNum>`.
 `SendMessageIntentHandler` replies through the named radio on its own slot, and a spoken channel
 name matched only on another radio (`channelSlot(for:in:)`) goes out through that radio. Every
-incoming donation is built by `CarPlayIntentDonation.incomingMessageIntent(from:)`.
+incoming donation is built by `CarPlayIntentDonation.incomingMessageIntent(from:)`. The CarPlay
+lists are the CarPlay radio's view: their row ids name that radio, and Siri read-back
+(`SearchForMessagesIntentHandler`) and mark-as-read only take the named radio's messages.

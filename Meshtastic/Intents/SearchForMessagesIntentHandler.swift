@@ -33,23 +33,24 @@ final class SearchForMessagesIntentHandler: NSObject, INSearchForMessagesIntentH
 			var results = fetched.filter { !$0.admin && !$0.isEmoji }
 
 			if let conversationIds = intent.conversationIdentifiers, !conversationIds.isEmpty {
+				// With several radios a conversation names its radio: only that radio's messages
+				// belong to it (T175). Rows the backfill hasn't reached count everywhere.
 				let conversations = conversationIds.compactMap(IntentMessageConverters.conversation(fromIdentifier:))
-				let dmNums = Set(conversations.compactMap { conversation -> Int64? in
-					guard case let .directMessage(nodeNum, _) = conversation else { return nil }
-					return nodeNum
-				})
-				let channelNums = Set(conversations.compactMap { conversation -> Int32? in
-					guard case let .channel(index, _) = conversation else { return nil }
-					return Int32(index)
-				})
-
+				func onRadio(_ message: MessageEntity, _ radioNum: Int64?) -> Bool {
+					guard let radioNum, let local = message.localNodeNum else { return true }
+					return local == radioNum
+				}
 				results = results.filter { message in
-					let isDM = message.toUser != nil && (
-						message.fromUser.map { dmNums.contains($0.num) } ?? false ||
-						message.toUser.map { dmNums.contains($0.num) } ?? false
-					)
-					let isChannel = message.toUser == nil && channelNums.contains(message.channel)
-					return isDM || isChannel
+					conversations.contains { conversation in
+						switch conversation {
+						case let .directMessage(nodeNum, radioNum):
+							return message.toUser != nil
+								&& (message.fromUser?.num == nodeNum || message.toUser?.num == nodeNum)
+								&& onRadio(message, radioNum)
+						case let .channel(index, radioNum):
+							return message.toUser == nil && message.channel == Int32(index) && onRadio(message, radioNum)
+						}
+					}
 				}
 			}
 

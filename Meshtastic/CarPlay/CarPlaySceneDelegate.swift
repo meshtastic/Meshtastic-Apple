@@ -214,6 +214,7 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 			let nodes = try context.fetch(descriptor)
 			let nodeNums = nodes.compactMap { $0.user != nil ? $0.num : nil as Int64? }
 			let unreadCounts = fetchUnreadCountsForDMs(nodeNums: nodeNums)
+			let listRadio = carPlayMessageRadio
 			let now = Date()
 
 			return nodes.compactMap { node -> CPMessageListItem? in
@@ -221,7 +222,9 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 				let name = user.longName ?? user.shortName ?? "Unknown"
 				let unreadCount = unreadCounts[node.num] ?? 0
 				let hasUnread = unreadCount > 0
-				let convId = "dm-\(node.num)"
+				// The CarPlay list is the CarPlay radio's view; with several radios its rows name it,
+				// so read-back, mark-as-read and replies stay on that radio (T175).
+				let convId = IntentMessageConverters.directMessageConversationIdentifier(nodeNum: node.num, radioNum: listRadio)
 
 				let leadingConfig = CPMessageListItemLeadingConfiguration(
 					leadingItem: .star,
@@ -278,6 +281,7 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 			.sorted { $0.index < $1.index }
 		let channelIndices = activeChannels.map { $0.index }
 		let unreadCounts = fetchUnreadCountsForChannels(channelIndices: channelIndices)
+		let listRadio = carPlayMessageRadio
 
 		return activeChannels.compactMap { channel -> CPMessageListItem? in
 			let name = (channel.name?.isEmpty ?? true)
@@ -286,7 +290,7 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 			let channelIndex = Int(channel.index)
 			let unreadCount = unreadCounts[channel.index] ?? 0
 			let hasUnread = unreadCount > 0
-			let convId = "channel-\(channelIndex)"
+			let convId = IntentMessageConverters.channelConversationIdentifier(index: channel.index, radioNum: listRadio)
 
 			let leadingConfig = CPMessageListItemLeadingConfiguration(
 				leadingItem: .none,
@@ -359,6 +363,7 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 				.prefix(24)
 			let nodeNums = filteredUsers.compactMap { $0.userNode?.num }
 			let unreadCounts = fetchUnreadCountsForDMs(nodeNums: nodeNums)
+			let listRadio = carPlayMessageRadio
 			let now = Date()
 
 			return filteredUsers.compactMap { user -> CPMessageListItem? in
@@ -367,7 +372,7 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 				let nodeNum = node.num
 				let unreadCount = unreadCounts[nodeNum] ?? 0
 				let hasUnread = unreadCount > 0
-				let convId = "dm-\(nodeNum)"
+				let convId = IntentMessageConverters.directMessageConversationIdentifier(nodeNum: nodeNum, radioNum: listRadio)
 
 				let leadingConfig = CPMessageListItemLeadingConfiguration(
 					leadingItem: .none,

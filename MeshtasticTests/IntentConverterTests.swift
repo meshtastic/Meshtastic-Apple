@@ -5,6 +5,7 @@
 import Testing
 import Foundation
 import SwiftData
+import Intents
 @testable import Meshtastic
 
 // MARK: - IntentMessageConverters Pure Logic Tests
@@ -170,6 +171,40 @@ struct IntentConversationRadioTests {
 		#expect(IntentMessageConverters.conversationIdentifier(for: message) == "channel-2:r\(Int64(0x0B0B))")
 		#expect(IntentMessageConverters.channelSpokenName(index: 2, radioNum: 0x0B0B, in: context) == "Family")
 		#expect(IntentMessageConverters.channelSpokenName(index: 2, radioNum: nil, in: context) == "Channel 2")
+	}
+}
+
+@Suite("Siri read-back across radios", .serialized)
+struct SearchMessagesRadioTests {
+
+	@Test @MainActor func readBackStaysOnTheConversationsRadio() async throws {
+		let context = PersistenceController.shared.context
+		let radioA: Int64 = 0x5EA0_000A, radioB: Int64 = 0x5EA0_000B
+		let base = Int64.random(in: 1_000_000...9_000_000)
+		var inserted: [MessageEntity] = []
+		for (offset, radio) in [radioA, radioB].enumerated() {
+			let message = MessageEntity()
+			message.messageId = base + Int64(offset)
+			message.channel = 2
+			message.localNodeNum = radio
+			message.messagePayload = "slot 2 on \(radio)"
+			context.insert(message)
+			inserted.append(message)
+		}
+		try context.save()
+		defer {
+			inserted.forEach(context.delete)
+			try? context.save()
+		}
+
+		let ids = inserted.map { String($0.messageId) }
+		func search(_ conversation: String) async -> [String] {
+			let intent = INSearchForMessagesIntent(recipients: nil, senders: nil, searchTerms: nil, attributes: [], dateTime: nil,
+				identifiers: ids, notificationIdentifiers: nil, speakableGroupNames: nil, conversationIdentifiers: [conversation])
+			return (await SearchForMessagesIntentHandler().handle(intent: intent)).messages?.map(\.identifier) ?? []
+		}
+		#expect(await search(IntentMessageConverters.channelConversationIdentifier(index: 2, radioNum: radioA)) == [String(base)])
+		#expect(Set(await search("channel-2")) == Set(ids), "without a radio, as before")
 	}
 }
 
