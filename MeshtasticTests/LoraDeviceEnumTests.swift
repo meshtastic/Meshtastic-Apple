@@ -190,6 +190,24 @@ struct CodingRatesTests {
 		#expect(CodingRates.normalized(0, usePreset: false, modemPreset: .longFast) == 5)
 		#expect(CodingRates.normalized(9, usePreset: false, modemPreset: .longFast) == 5)
 	}
+
+	@Test func presetMode_reportsThePresetRateWhenTheRadioCannotOverrideIt() {
+		// Firmware before 2.7.18 takes the coding rate from the preset whatever the
+		// field holds, so a stored override is not what the radio is using.
+		#expect(CodingRates.effective(7, usePreset: true, modemPreset: .longFast, supportsOverride: false) == 0)
+		#expect(CodingRates.effective(0, usePreset: true, modemPreset: .longFast, supportsOverride: false) == 0)
+	}
+
+	@Test func presetMode_reportsTheOverrideWhenTheRadioUsesIt() {
+		#expect(CodingRates.effective(7, usePreset: true, modemPreset: .longFast, supportsOverride: true) == 7)
+		#expect(CodingRates.effective(5, usePreset: true, modemPreset: .longFast, supportsOverride: true) == 0)
+	}
+
+	@Test func customMode_isUnaffectedByTheFirmwareVersion() {
+		// `coding_rate` has always applied with `use_preset` off.
+		#expect(CodingRates.effective(7, usePreset: false, modemPreset: .longFast, supportsOverride: false) == 7)
+		#expect(CodingRates.effective(9, usePreset: false, modemPreset: .longFast, supportsOverride: false) == 5)
+	}
 }
 
 // MARK: - Bandwidths
