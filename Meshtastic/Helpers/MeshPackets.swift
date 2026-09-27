@@ -1854,11 +1854,19 @@ actor MeshPackets {
 				return
 			}
 			var storeForwardBroadcast = false
+			// The identity of the message being replayed. A router gives each replay a fresh
+			// outer packet id and carries the original in `original_id`, so that is what the
+			// message is stored and deduped under. Zero means a router that still reuses the
+			// outer id, where the outer id is the identity.
+			var storeForwardOriginalId: UInt32 = 0
 			if storeForward {
 				if let storeAndForwardMessage = try? StoreAndForward(serializedBytes: packet.decoded.payload) {
 					messageText = String(bytes: storeAndForwardMessage.text, encoding: .utf8)
 					if storeAndForwardMessage.rr == .routerTextBroadcast {
 						storeForwardBroadcast = true
+					}
+					if storeAndForwardMessage.rr == .routerTextBroadcast || storeAndForwardMessage.rr == .routerTextDirect {
+						storeForwardOriginalId = storeAndForwardMessage.originalID
 					}
 				}
 			}
@@ -1897,7 +1905,10 @@ actor MeshPackets {
 					// upserts onto the row sendMessage() wrote, resetting read/ACK state and
 					// triggering a phantom notification. Mirrors Android's
 					// findPacketsWithId(dataPacket.id) guard in rememberDataPacket.
-					let packetId = Int64(packet.id)
+					// A replay stores under the message it replays, so a second replay — and a
+					// replay of something already received live — lands on this row instead of
+					// inserting another one.
+					let packetId = Int64(storeForwardOriginalId != 0 ? storeForwardOriginalId : packet.id)
 					let existingDescriptor = FetchDescriptor<MessageEntity>(predicate: #Predicate { $0.messageId == packetId })
 					if let existing = try? modelContext.fetch(existingDescriptor), !existing.isEmpty {
 						Logger.data.debug("Skipping duplicate text message, messageId \(packetId, privacy: .public) already stored")
@@ -1913,7 +1924,7 @@ actor MeshPackets {
 
 					let newMessage = MessageEntity()
 					modelContext.insert(newMessage)
-					newMessage.messageId = Int64(packet.id)
+					newMessage.messageId = packetId
 					if packet.rxTime > 0 {
 						newMessage.messageTimestamp = Int32(bitPattern: packet.rxTime)
 					} else {
