@@ -89,6 +89,9 @@ extension AccessoryManager {
 		defer {
 			if connectAttempts[device.id] === attempt {
 				connectAttempts.removeValue(forKey: device.id)
+				// A radio whose connect ends is ready now (`linkState(ofRadio:)`); observers such as
+				// the discovery scan learn it from this, not from the next unrelated change (T180).
+				objectWillChange.send()
 			}
 		}
 

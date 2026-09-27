@@ -181,7 +181,7 @@ All re-checked in the files and holding (2026-09-27). One commit each, full suit
 - [X] T177 V2-7 a merged backup's radio shares channels by stored key. — `deleteMessagesOfRadio` adds each radio's stored `ChannelEntity.channelKey`s to the keys from its LoRa settings. Verified: `RadioRemovalTests.backupRadioSharesByStoredKey`.
 - [X] T178 N4 BLE restore: a standby radio that connects first isn't dropped. — `handleDidConnect` hands the focused restore to a standby radio that connects while it still waits (`handOverRestore`); the waiting radio joins the standby radios. The restore body is split into `restoredDevice(for:)`, `restoreAsFocused` and `completeFocusedRestore`. Verified: `MultiRadioBLERestorationTests.standbyConnectingFirstTakesOver` (through the `restoreTakeover` seam; the real connect needs a device).
 - [X] T179 N5 Unlock / Update while the focused radio is connecting. — `pendingAttentionFocus` also waits out the focused radio's connect and a firmware update; `connect` (on return) and `otaInProgress` (on ending) call `retryPendingAttentionFocusSoon`, and the wait only ends when the radio can take the focus or is gone. Verified: `MultiRadioLockdownTests.unlockWaitsForFocusedConnectAndUpdate`.
-- [ ] T180 N6 the scan sees its radio's connect finish.
+- [X] T180 N6 the scan sees its radio's connect finish. — removing a connect attempt sends `objectWillChange`. Not unit tested (the scan's reconnect wait needs a real preset change).
 - [ ] T181 N8 no prompt flash for a radio about to be disconnected.
 - [ ] T182 N9 the handover prefers a radio that doesn't need the user.
 - [ ] T183 N10 manual entry under Add a Radio asks Keep Both / Switch and shows failures.
