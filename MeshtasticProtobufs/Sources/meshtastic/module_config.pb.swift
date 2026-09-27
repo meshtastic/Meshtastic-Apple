@@ -1428,7 +1428,25 @@ public struct ModuleConfig: Sendable {
     public var flags: UInt32 = 0
 
     ///
-    /// Message to include in each beacon broadcast. Max 100 bytes enforced by firmware.
+    /// Frequency slot to advertise, 1-based, matching Config.LoRaConfig.channel_num.
+    /// Unset means the receiver derives it from the advertised region, channel name and
+    /// preset, which covers a region that mandates a slot and a mesh on the default hash.
+    /// Set it only where the mesh deliberately pins a non-default slot. Do not send 0.
+    public var broadcastOfferFrequencySlot: UInt32 {
+      get {_broadcastOfferFrequencySlot ?? 0}
+      set {_broadcastOfferFrequencySlot = newValue}
+    }
+    /// Returns true if `broadcastOfferFrequencySlot` has been explicitly set.
+    public var hasBroadcastOfferFrequencySlot: Bool {self._broadcastOfferFrequencySlot != nil}
+    /// Clears the value of `broadcastOfferFrequencySlot`. Subsequent reads from it will return its default value.
+    public mutating func clearBroadcastOfferFrequencySlot() {self._broadcastOfferFrequencySlot = nil}
+
+    ///
+    /// Message to include in each beacon broadcast.
+    /// Every beacon copy carries this on the air, so it is the largest single cost in both
+    /// this config and the packet it produces. Held to 60 bytes for that reason. The nanopb
+    /// max_size is 61 because it counts the terminator, which is what leaves a client a
+    /// round 60.
     public var broadcastMessage: String = String()
 
     ///
@@ -1572,16 +1590,32 @@ public struct ModuleConfig: Sendable {
       /// Clears the value of `channelIndex`. Subsequent reads from it will return its default value.
       public mutating func clearChannelIndex() {self._channelIndex = nil}
 
+      ///
+      /// Frequency slot to transmit this target's beacon on, 1-based, matching
+      /// Config.LoRaConfig.channel_num. Unset means derive it the way any node on this
+      /// channel would: the region's override slot if it has one, otherwise the hash of the
+      /// target channel's name. Do not send 0 - it is the same as unset.
+      public var frequencySlot: UInt32 {
+        get {_frequencySlot ?? 0}
+        set {_frequencySlot = newValue}
+      }
+      /// Returns true if `frequencySlot` has been explicitly set.
+      public var hasFrequencySlot: Bool {self._frequencySlot != nil}
+      /// Clears the value of `frequencySlot`. Subsequent reads from it will return its default value.
+      public mutating func clearFrequencySlot() {self._frequencySlot = nil}
+
       public var unknownFields = SwiftProtobuf.UnknownStorage()
 
       public init() {}
 
       fileprivate var _preset: Config.LoRaConfig.ModemPreset? = nil
       fileprivate var _channelIndex: UInt32? = nil
+      fileprivate var _frequencySlot: UInt32? = nil
     }
 
     public init() {}
 
+    fileprivate var _broadcastOfferFrequencySlot: UInt32? = nil
     fileprivate var _broadcastOfferChannel: ChannelSettings? = nil
     fileprivate var _broadcastOfferPreset: Config.LoRaConfig.ModemPreset? = nil
   }
@@ -2936,7 +2970,7 @@ extension ModuleConfig.StatusMessageConfig: SwiftProtobuf.Message, SwiftProtobuf
 
 extension ModuleConfig.MeshBeaconConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = ModuleConfig.protoMessageName + ".MeshBeaconConfig"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}flags\0\u{4}\u{3}broadcast_message\0\u{3}broadcast_offer_channel\0\u{3}broadcast_offer_region\0\u{3}broadcast_offer_preset\0\u{4}\u{4}broadcast_interval_secs\0\u{4}\u{2}broadcast_targets\0\u{b}broadcast_send_as_node\0\u{b}broadcast_on_channel\0\u{b}broadcast_on_region\0\u{b}broadcast_on_preset\0\u{c}\u{3}\u{1}\u{c}\u{8}\u{1}\u{c}\u{9}\u{1}\u{c}\u{a}\u{1}")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}flags\0\u{3}broadcast_offer_frequency_slot\0\u{4}\u{2}broadcast_message\0\u{3}broadcast_offer_channel\0\u{3}broadcast_offer_region\0\u{3}broadcast_offer_preset\0\u{4}\u{4}broadcast_interval_secs\0\u{4}\u{2}broadcast_targets\0\u{b}broadcast_send_as_node\0\u{b}broadcast_on_channel\0\u{b}broadcast_on_region\0\u{b}broadcast_on_preset\0\u{c}\u{3}\u{1}\u{c}\u{8}\u{1}\u{c}\u{9}\u{1}\u{c}\u{a}\u{1}")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2945,6 +2979,7 @@ extension ModuleConfig.MeshBeaconConfig: SwiftProtobuf.Message, SwiftProtobuf._M
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularUInt32Field(value: &self.flags) }()
+      case 2: try { try decoder.decodeSingularUInt32Field(value: &self._broadcastOfferFrequencySlot) }()
       case 4: try { try decoder.decodeSingularStringField(value: &self.broadcastMessage) }()
       case 5: try { try decoder.decodeSingularMessageField(value: &self._broadcastOfferChannel) }()
       case 6: try { try decoder.decodeSingularEnumField(value: &self.broadcastOfferRegion) }()
@@ -2964,6 +2999,9 @@ extension ModuleConfig.MeshBeaconConfig: SwiftProtobuf.Message, SwiftProtobuf._M
     if self.flags != 0 {
       try visitor.visitSingularUInt32Field(value: self.flags, fieldNumber: 1)
     }
+    try { if let v = self._broadcastOfferFrequencySlot {
+      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 2)
+    } }()
     if !self.broadcastMessage.isEmpty {
       try visitor.visitSingularStringField(value: self.broadcastMessage, fieldNumber: 4)
     }
@@ -2987,6 +3025,7 @@ extension ModuleConfig.MeshBeaconConfig: SwiftProtobuf.Message, SwiftProtobuf._M
 
   public static func ==(lhs: ModuleConfig.MeshBeaconConfig, rhs: ModuleConfig.MeshBeaconConfig) -> Bool {
     if lhs.flags != rhs.flags {return false}
+    if lhs._broadcastOfferFrequencySlot != rhs._broadcastOfferFrequencySlot {return false}
     if lhs.broadcastMessage != rhs.broadcastMessage {return false}
     if lhs._broadcastOfferChannel != rhs._broadcastOfferChannel {return false}
     if lhs.broadcastOfferRegion != rhs.broadcastOfferRegion {return false}
@@ -3004,7 +3043,7 @@ extension ModuleConfig.MeshBeaconConfig.Flags: SwiftProtobuf._ProtoNameProviding
 
 extension ModuleConfig.MeshBeaconConfig.BroadcastTarget: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = ModuleConfig.MeshBeaconConfig.protoMessageName + ".BroadcastTarget"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}preset\0\u{1}region\0\u{4}\u{2}channel_index\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}preset\0\u{1}region\0\u{4}\u{2}channel_index\0\u{3}frequency_slot\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -3015,6 +3054,7 @@ extension ModuleConfig.MeshBeaconConfig.BroadcastTarget: SwiftProtobuf.Message, 
       case 1: try { try decoder.decodeSingularEnumField(value: &self._preset) }()
       case 2: try { try decoder.decodeSingularEnumField(value: &self.region) }()
       case 4: try { try decoder.decodeSingularUInt32Field(value: &self._channelIndex) }()
+      case 5: try { try decoder.decodeSingularUInt32Field(value: &self._frequencySlot) }()
       default: break
       }
     }
@@ -3034,6 +3074,9 @@ extension ModuleConfig.MeshBeaconConfig.BroadcastTarget: SwiftProtobuf.Message, 
     try { if let v = self._channelIndex {
       try visitor.visitSingularUInt32Field(value: v, fieldNumber: 4)
     } }()
+    try { if let v = self._frequencySlot {
+      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 5)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -3041,6 +3084,7 @@ extension ModuleConfig.MeshBeaconConfig.BroadcastTarget: SwiftProtobuf.Message, 
     if lhs._preset != rhs._preset {return false}
     if lhs.region != rhs.region {return false}
     if lhs._channelIndex != rhs._channelIndex {return false}
+    if lhs._frequencySlot != rhs._frequencySlot {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

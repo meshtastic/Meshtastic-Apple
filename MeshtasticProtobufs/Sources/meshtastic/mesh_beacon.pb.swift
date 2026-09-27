@@ -62,12 +62,30 @@ public struct MeshBeacon: Sendable {
   /// Clears the value of `offerPreset`. Subsequent reads from it will return its default value.
   public mutating func clearOfferPreset() {self._offerPreset = nil}
 
+  ///
+  /// Frequency slot this mesh uses, 1-based, matching Config.LoRaConfig.channel_num.
+  /// OMITTED when a receiver can derive the slot itself from offer_region, offer_channel's
+  /// name and offer_preset - an unset offer_preset means the region's default preset. That
+  /// covers both a region with a mandated slot and a mesh on the default name hash.
+  /// PRESENT means this mesh deliberately deviates from what derivation would produce; a
+  /// client should still validate the result against its own region before offering to join.
+  /// Do not send 0 - it is the same as omitting the field.
+  public var offerFrequencySlot: UInt32 {
+    get {_offerFrequencySlot ?? 0}
+    set {_offerFrequencySlot = newValue}
+  }
+  /// Returns true if `offerFrequencySlot` has been explicitly set.
+  public var hasOfferFrequencySlot: Bool {self._offerFrequencySlot != nil}
+  /// Clears the value of `offerFrequencySlot`. Subsequent reads from it will return its default value.
+  public mutating func clearOfferFrequencySlot() {self._offerFrequencySlot = nil}
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
 
   fileprivate var _offerChannel: ChannelSettings? = nil
   fileprivate var _offerPreset: Config.LoRaConfig.ModemPreset? = nil
+  fileprivate var _offerFrequencySlot: UInt32? = nil
 }
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
@@ -76,7 +94,7 @@ fileprivate let _protobuf_package = "meshtastic"
 
 extension MeshBeacon: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".MeshBeacon"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}message\0\u{3}offer_channel\0\u{3}offer_region\0\u{3}offer_preset\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}message\0\u{3}offer_channel\0\u{3}offer_region\0\u{3}offer_preset\0\u{3}offer_frequency_slot\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -88,6 +106,7 @@ extension MeshBeacon: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
       case 2: try { try decoder.decodeSingularMessageField(value: &self._offerChannel) }()
       case 3: try { try decoder.decodeSingularEnumField(value: &self.offerRegion) }()
       case 4: try { try decoder.decodeSingularEnumField(value: &self._offerPreset) }()
+      case 5: try { try decoder.decodeSingularUInt32Field(value: &self._offerFrequencySlot) }()
       default: break
       }
     }
@@ -110,6 +129,9 @@ extension MeshBeacon: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
     try { if let v = self._offerPreset {
       try visitor.visitSingularEnumField(value: v, fieldNumber: 4)
     } }()
+    try { if let v = self._offerFrequencySlot {
+      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 5)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -118,6 +140,7 @@ extension MeshBeacon: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
     if lhs._offerChannel != rhs._offerChannel {return false}
     if lhs.offerRegion != rhs.offerRegion {return false}
     if lhs._offerPreset != rhs._offerPreset {return false}
+    if lhs._offerFrequencySlot != rhs._offerFrequencySlot {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
