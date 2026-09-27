@@ -170,7 +170,7 @@ extension AccessoryManager {
 			// notify subscription, after the link comes up — so resume only now that
 			// every step finished. Failed attempts resume via connectionDidDisconnect.
 			if let bleTransport = transportForType(.ble) as? BLETransport {
-				await bleTransport.resumeScanningAfterConnectionEstablished()
+				await bleTransport.resumeScanningAfterConnectionEstablished(for: UUID(uuidString: device.identifier) ?? device.id)
 			}
 			// Feature 021 (T063): remember this connection, then bring back the radios that were
 			// connected alongside it. Their attempts queue on the handshake gate behind this one.

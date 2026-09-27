@@ -169,8 +169,13 @@ extension AccessoryManager {
 		let connectedDeviceId = session.device.id.uuidString
 		Logger.services.info("handleMyInfo: \(myNodeInfo.debugDescription)")
 		let isFocused = session === activeConnection
-		if !isFocused, let focusedNum = activeConnection?.device.num, focusedNum == Int64(myNodeInfo.myNodeNum) {
-			Logger.transport.error("🔗➕ [Additional] \(session.device.name, privacy: .public) reports the focused radio's node number; disconnecting it")
+		// The same radio connected twice (over BLE and TCP, say): the second link goes, and isn't
+		// retried, without touching the radio's remembered state, which is the first link's (T154).
+		let reportedNum = Int64(myNodeInfo.myNodeNum)
+		let otherSessions = [activeConnection].compactMap { $0 } + Array(additionalRadios.values)
+		if !isFocused, otherSessions.contains(where: { $0 !== session && $0.device.num == reportedNum }) {
+			Logger.transport.error("🔗➕ [Additional] \(session.device.name, privacy: .public) reports the node number of a radio that's already connected; disconnecting it")
+			additionalRadioReconnects.removeValue(forKey: session.device.id)?.cancel()
 			await disconnectAdditionalRadio(session.device.id)
 			return
 		}
@@ -333,6 +338,7 @@ extension AccessoryManager {
 
 	func handleNodeInfo(_ nodeInfo: NodeInfo, session: RadioSession? = nil) async {
 		let session = session ?? activeConnection
+		session?.databaseResponseArrived = true
 		if let continuation = session?.firstDatabaseNodeInfoContinuation {
 			session?.firstDatabaseNodeInfoContinuation = nil
 			continuation.resume()

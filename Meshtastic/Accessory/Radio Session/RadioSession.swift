@@ -48,6 +48,9 @@ final class RadioSession: Identifiable {
 	var heartbeatResponseTimer: ResettableTimer?
 	/// Connect Step 5: resumed by the first NodeInfo of the node-DB dump, or by its completion.
 	var firstDatabaseNodeInfoContinuation: CheckedContinuation<Void, Error>?
+	/// Set when the node-DB dump's first NodeInfo or its completion arrives, so Step 5 doesn't
+	/// wait for one that came before it started waiting (T154).
+	var databaseResponseArrived = false
 	/// Connect Step 5a: opened when the node-DB dump completes.
 	let wantDatabaseGate = AsyncGate()
 	/// A config-only want-config in progress (`AccessoryManager.sendWantConfig`), and its task.

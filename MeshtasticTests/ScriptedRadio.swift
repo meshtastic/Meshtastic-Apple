@@ -32,6 +32,8 @@ actor ScriptedRadio: Connection {
 	let cannedMessages: Bool
 	/// Sent after the config request completes, as lock-down firmware sends its status.
 	let afterConfig: [FromRadio.OneOf_PayloadVariant]
+	/// How long a want-config takes to be answered; zero answers inside `send`.
+	let replyDelay: Duration
 
 	init(
 		nodeNum: UInt32,
@@ -40,7 +42,8 @@ actor ScriptedRadio: Connection {
 		answersConfig: Bool = true,
 		timezone: String = "UTC0",
 		cannedMessages: Bool = false,
-		afterConfig: [FromRadio.OneOf_PayloadVariant] = []
+		afterConfig: [FromRadio.OneOf_PayloadVariant] = [],
+		replyDelay: Duration = .milliseconds(20)
 	) {
 		self.nodeNum = nodeNum
 		self.firmwareVersion = firmwareVersion
@@ -49,6 +52,7 @@ actor ScriptedRadio: Connection {
 		self.timezone = timezone
 		self.cannedMessages = cannedMessages
 		self.afterConfig = afterConfig
+		self.replyDelay = replyDelay
 	}
 
 	/// Sends an event as if the link produced it.
@@ -70,10 +74,15 @@ actor ScriptedRadio: Connection {
 		guard isConnected else { throw AccessoryError.connectionFailed("Scripted radio disconnected") }
 		sent.append(data)
 		if case .wantConfigID(let nonce) = data.payloadVariant {
-			// After a round trip, like a real radio. Answering inside `send` beats the app's
-			// first-node wait for an empty node DB (see HANDOFF.md › Gotchas, T068).
+			// After a round trip, like a real radio. With no delay, the answer can arrive before
+			// the app's first-node wait starts, which Step 5 has to cope with (T154).
+			guard replyDelay > .zero else {
+				answer(nonce)
+				return
+			}
+			let delay = replyDelay
 			Task {
-				try? await Task.sleep(for: .milliseconds(20))
+				try? await Task.sleep(for: delay)
 				self.answer(nonce)
 			}
 		}

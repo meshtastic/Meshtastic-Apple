@@ -115,10 +115,39 @@ extension AccessoryManager {
 		if let attention {
 			Logger.transport.info("⚠️ [Radios] \(name, privacy: .public): \(attention.shortCaption, privacy: .public)")
 			if session !== activeConnection {
-				radioAttentionPrompt = RadioAttentionPrompt(id: session.device.id, radioName: name, attention: attention)
+				let prompt = RadioAttentionPrompt(id: session.device.id, radioName: name, attention: attention)
+				pendingAttentionPrompts.removeAll { $0.id == prompt.id }
+				if let shown = radioAttentionPrompt, shown.id != prompt.id {
+					// Another radio's prompt is up; this one waits its turn rather than replacing it.
+					pendingAttentionPrompts.append(prompt)
+				} else {
+					radioAttentionPrompt = prompt
+				}
 			}
-		} else if radioAttentionPrompt?.id == session.device.id {
-			radioAttentionPrompt = nil
+		} else {
+			pendingAttentionPrompts.removeAll { $0.id == session.device.id }
+			if radioAttentionPrompt?.id == session.device.id {
+				radioAttentionPrompt = nil
+			}
+		}
+	}
+
+	/// After a prompt closes: the next waiting radio that still needs the user and isn't focused.
+	/// A moment later, so the closing alert is gone before the next one is presented.
+	func showNextAttentionPrompt() {
+		while let next = pendingAttentionPrompts.first {
+			pendingAttentionPrompts.removeFirst()
+			guard additionalRadios[next.id]?.attention == next.attention else { continue }
+			Task { @MainActor [weak self] in
+				try? await Task.sleep(for: .milliseconds(600))
+				guard let self, self.additionalRadios[next.id]?.attention == next.attention else { return }
+				if self.radioAttentionPrompt == nil {
+					self.radioAttentionPrompt = next
+				} else if self.radioAttentionPrompt?.id != next.id {
+					self.pendingAttentionPrompts.insert(next, at: 0)
+				}
+			}
+			return
 		}
 	}
 

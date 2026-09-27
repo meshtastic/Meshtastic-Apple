@@ -301,12 +301,11 @@ describes it well enough to rebuild.
   isn't remembered (`autoConnect` off) is released after `restoredStandbyGracePeriod`. If the
   focused restore fails, the others are released too; the remembered-radio fallback at discovery
   can bring one back as the focus.
-- Connect Step 5 (found writing T068): `sendWantDatabase` sends the node-DB request, then
-  starts waiting for the first NodeInfo. If the radio's "node DB complete" arrives before that
-  wait starts (an empty node DB answered faster than the app gets there), the wait is missed and
-  Step 5 times out after 10 s and asks again. Real radios haven't shown it, since the round trip
-  is slower than that gap, but the unified flow should start waiting before it sends.
-  `ScriptedRadio` answers after 20 ms for that reason.
+- Connect Step 5 (found writing T068, fixed in T154): an answer to the node-DB request that
+  arrives before `sendWantDatabase` starts waiting sets `RadioSession.databaseResponseArrived`,
+  so the wait is skipped instead of timing out. `ScriptedRadio(replyDelay: .zero)` answers inside
+  `send` to exercise it (`MultiRadioConnectFlowTests.immediateNodeDBAnswer`); the default stays
+  20 ms, like a real round trip.
 - Nothing a view calls while rendering may fetch from SwiftData: `checkIsVersionSupported` (and
   the `supports…` getters built on it) run in view bodies, and a fetch there traps once a view's
   store is gone. T018's first try did that and crashed NodeDetail's snapshot test; the fallback

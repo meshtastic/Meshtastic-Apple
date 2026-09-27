@@ -60,7 +60,10 @@ actor BLETransport: Transport {
 	static let poweredOffStatusMessage = "Bluetooth is powered off"
 
 	private var cleanupTask: Task<Void, Never>?
-	private var scanningPausedForConnection = false
+	/// The radios whose connect has the scan paused (feature 021, T154): with several radios, one
+	/// finishing or failing mustn't resume the scan while another is still in its pairing window.
+	private var scanPausedForConnections: Set<UUID> = []
+	private var scanningPausedForConnection: Bool { !scanPausedForConnections.isEmpty }
 	private let discoverySetupHandler: (@Sendable () async -> Void)?
 	
 	// Transport properties
@@ -215,7 +218,7 @@ actor BLETransport: Transport {
 
 	private func stopScanning() {
 		Logger.transport.debug("🛜 [BLE] Stop Scanning: BLE Discovery has been stopped.")
-		scanningPausedForConnection = false
+		scanPausedForConnections.removeAll()
 		guard centralManager != nil else {
 			discoveredPeripherals.removeAll()
 			discoveredDeviceContinuation = nil
@@ -343,7 +346,7 @@ actor BLETransport: Transport {
 				?? centralManager?.retrievePeripherals(withIdentifiers: [deviceId]).first else { return }
 		Logger.transport.debug("🛜 [BLE] Abandoning the pending connect to \(deviceId.uuidString, privacy: .public)")
 		centralManager?.cancelPeripheralConnection(peripheral)
-		resumeScanningAfterFailedConnection()
+		resumeScanningAfterFailedConnection(for: deviceId)
 	}
 
 	/// True while this peripheral is connecting or connected (feature 021: other peripherals can be).
@@ -354,8 +357,8 @@ actor BLETransport: Transport {
 	/// Stops duplicate-advertisement scanning before CoreBluetooth starts a connection. Keeping the
 	/// discovery stream and cache alive preserves the selected peripheral while the pairing sheet is
 	/// active. A failed attempt restarts the scan so normal discovery and retries can continue.
-	func pauseScanningForConnection() {
-		scanningPausedForConnection = true
+	func pauseScanningForConnection(to deviceId: UUID) {
+		scanPausedForConnections.insert(deviceId)
 		guard centralManager?.isScanning == true else { return }
 		centralManager.stopScan()
 	}
@@ -364,18 +367,24 @@ actor BLETransport: Transport {
 	/// window, which runs through the notify subscription — after the link itself comes
 	/// up. Once the handshake is fully established, resume so the Available Radios list
 	/// stays live for device switching while connected.
-	func resumeScanningAfterConnectionEstablished() {
-		resumeScanningIfPaused()
+	func resumeScanningAfterConnectionEstablished(for deviceId: UUID) {
+		resumeScanningIfPaused(for: deviceId)
 	}
 
-	private func resumeScanningAfterFailedConnection() {
-		resumeScanningIfPaused()
+	private func resumeScanningAfterFailedConnection(for deviceId: UUID?) {
+		resumeScanningIfPaused(for: deviceId)
 	}
 
-	private func resumeScanningIfPaused() {
+	/// Ends `deviceId`'s pause (every pause when nil) and scans again once no connect holds one.
+	private func resumeScanningIfPaused(for deviceId: UUID?) {
 		guard scanningPausedForConnection else { return }
-		scanningPausedForConnection = false
-		guard discoveredDeviceContinuation != nil,
+		if let deviceId {
+			scanPausedForConnections.remove(deviceId)
+		} else {
+			scanPausedForConnections.removeAll()
+		}
+		guard !scanningPausedForConnection,
+			  discoveredDeviceContinuation != nil,
 			  centralManager?.state == .poweredOn,
 			  !restoreInProgress else { return }
 		centralManager.scanForPeripherals(
@@ -402,9 +411,10 @@ actor BLETransport: Transport {
 			throw AccessoryError.connectionFailed("BLE transport is busy: already connecting or connected")
 		}
 
-		pauseScanningForConnection()
+		let pauseId = UUID(uuidString: device.identifier) ?? device.id
+		pauseScanningForConnection(to: pauseId)
 		guard let peripheral = resolvePeripheral(for: device) else {
-			resumeScanningAfterFailedConnection()
+			resumeScanningAfterFailedConnection(for: pauseId)
 			throw AccessoryError.connectionFailed("Peripheral not found")
 		}
 		let id = peripheral.identifier
@@ -730,7 +740,7 @@ actor BLETransport: Transport {
 			connectingPeripherals.removeValue(forKey: id)
 		}
 		restoreInProgress = false
-		resumeScanningAfterFailedConnection()
+		resumeScanningAfterFailedConnection(for: peripheral?.identifier)
 	}
 }
 

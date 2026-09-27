@@ -233,6 +233,23 @@ struct MultiRadioConnectFlowTests {
 		try await manager.disconnect()
 	}
 
+	@Test("A radio that answers the node-DB request straight away doesn't stall the connect")
+	func immediateNodeDBAnswer() async throws {
+		let saved = SavedDefaults()
+		defer { saved.restore() }
+		let radio = ScriptedRadio(nodeNum: uniqueNodeNum(), replyDelay: .zero)
+		let manager = makeManager(ScriptedTransport(radio: radio))
+		let start = ContinuousClock.now
+
+		try await manager.connect(to: device())
+
+		#expect(manager.activeConnection != nil)
+		// Missing the answer meant Step 5's 10 s timeout and a second request.
+		#expect(ContinuousClock.now - start < .seconds(8))
+		#expect(await radio.sent.map(describe).filter { $0 == .wantConfig(69420) }.count == 1)
+		try await manager.disconnect()
+	}
+
 	@Test("A second connect to a radio whose connect waits at the handshake gate is refused")
 	func duplicateConnectRefused() async throws {
 		let saved = SavedDefaults()

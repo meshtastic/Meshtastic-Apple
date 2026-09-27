@@ -294,8 +294,17 @@ class AccessoryManager: ObservableObject {
 	/// what `checkIsVersionSupported` falls back to while a radio's live version is unknown.
 	var knownFirmwareVersions: [Int64: String] = [:]
 	/// A radio that isn't focused needs the user (locked, or firmware too old); ContentView asks
-	/// about it by name (T073).
-	@Published var radioAttentionPrompt: RadioAttentionPrompt?
+	/// about it by name (T073). One at a time; when it's answered or dismissed, the next radio
+	/// waiting in `pendingAttentionPrompts` is asked about (T154).
+	@Published var radioAttentionPrompt: RadioAttentionPrompt? {
+		didSet {
+			if radioAttentionPrompt == nil, oldValue != nil {
+				showNextAttentionPrompt()
+			}
+		}
+	}
+	/// Radios that needed the user while another radio's prompt was up, oldest first.
+	var pendingAttentionPrompts: [RadioAttentionPrompt] = []
 	/// Sessions of additional radios that have been disconnected. Their late events are
 	/// dropped rather than mistaken for the focused radio's.
 	var retiredAdditionalSessionIDs: Set<UUID> = []
@@ -638,10 +647,14 @@ class AccessoryManager: ObservableObject {
 		try await withTaskCancellationHandler {
 			var toRadio: ToRadio = ToRadio()
 			toRadio.wantConfigID = UInt32(NONCE_ONLY_DB)
+			session.databaseResponseArrived = false
 			try await self.send(toRadio, via: session)
 			try await connection.startDrainPendingPackets()
-			try await withCheckedThrowingContinuation { cont in
-				session.firstDatabaseNodeInfoContinuation = cont
+			// An empty node DB can be answered before this point; then there's nothing to wait for.
+			if !session.databaseResponseArrived {
+				try await withCheckedThrowingContinuation { cont in
+					session.firstDatabaseNodeInfoContinuation = cont
+				}
 			}
 			session.firstDatabaseNodeInfoContinuation = nil
 			Logger.transport.info("✅ [Accessory] NONCE_ONLY_DB first NodeInfo received.")
@@ -1341,6 +1354,7 @@ class AccessoryManager: ObservableObject {
 
 				// If we get the "done" for NONCE_ONLY_DB, but are still waiting for the first NodeInfo,
 				// Then the database is probably empty, and can continue
+				session.databaseResponseArrived = true
 				if let firstDatabaseNodeInfoContinuation = session.firstDatabaseNodeInfoContinuation {
 					session.firstDatabaseNodeInfoContinuation = nil
 					firstDatabaseNodeInfoContinuation.resume()
@@ -1604,6 +1618,11 @@ extension AccessoryManager {
 		// Persist any debounced position/telemetry/nodeinfo changes before suspension,
 		// since the debounce timer may not fire while backgrounded.
 		Task { await MeshPackets.shared.flushDebouncedSaves() }
+		// Every radio's connection, so BLE radios alongside stop polling RSSI too (T154).
+		for session in additionalRadios.values {
+			let connection = session.connection
+			Task { await connection.appDidEnterBackground() }
+		}
 		if let connection = self.activeConnection?.connection {
 			Logger.transport.info("[AccessoryManager] informing active connection that we are entering the background")
 			Task { await connection.appDidEnterBackground() }
@@ -1615,6 +1634,10 @@ extension AccessoryManager {
 	
 	func appDidBecomeActive() {
 		if self.state == .uninitialized { return }
+		for session in additionalRadios.values {
+			let connection = session.connection
+			Task { await connection.appDidBecomeActive() }
+		}
 		if let connection = self.activeConnection?.connection {
 			Logger.transport.info("[AccessoryManager] informing previously active connection that we are active again")
 			Task { await connection.appDidBecomeActive() }

@@ -190,6 +190,26 @@ struct MultiRadioLockdownTests {
 		#expect(manager.radioAttentionPrompt?.id == focused.device.id)
 	}
 
+	@Test("A second radio needing the user waits for the first radio's prompt to close")
+	func promptsForSeveralRadiosQueue() async throws {
+		let fixture = makeFixture()
+		let manager = fixture.manager, first = fixture.radio
+		var other = Device(id: UUID(), name: "Other", transportType: .tcp, identifier: "other.local:4403")
+		other.num = 0x0D0D
+		let second = RadioSession(device: other, connection: RecordingIdleConnection())
+		manager.additionalRadios[other.id] = second
+
+		manager.setAttention(.locked, for: first)
+		manager.setAttention(.firmwareTooOld(version: "2.3.0"), for: second)
+		#expect(manager.radioAttentionPrompt?.id == first.device.id, "the first prompt isn't replaced")
+		#expect(manager.pendingAttentionPrompts.map(\.id) == [other.id])
+
+		manager.radioAttentionPrompt = nil
+		try await waitUntil { await MainActor.run { manager.radioAttentionPrompt != nil } }
+		#expect(manager.radioAttentionPrompt?.id == other.id)
+		#expect(manager.pendingAttentionPrompts.isEmpty)
+	}
+
 	@Test("Firmware below the minimum keeps a radio connected and prompts for an update")
 	func firmwareGate() async throws {
 		#expect(AccessoryManager.isFirmwareSupported(nil, minimum: "2.5.14"))
