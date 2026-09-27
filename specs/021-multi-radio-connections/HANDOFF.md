@@ -101,9 +101,10 @@ Read this first if you are picking the work up. Update it in the same commit as 
 
 - D-17 (every radio the same) is done through T073: one connect flow, focus without
   reconnecting, and lock-down / old firmware prompting by name on any radio. Next: the device
-  test when the owner's hardware is ready (checklist below). T016, T018 and T110 are done. Left:
-  T111 (unused single-radio code), docs (T120–T122), the string catalog sync, and T066 after the
-  device test.
+  test when the owner's hardware is ready (checklist below). Also done since: T016, T018, T110,
+  most of T111, T120, T121 and the string catalog sync (`30924072`). Left: T066 and the rest of
+  T111 after the device test; T122 (bundled HTML; needs `brew install cmark-gfm`, not installed on
+  this Mac); more doc snapshots (T092); then Phase 10 (T130–T135).
   a test that has to change there means behaviour changed, so say why in the commit.
   When you start a task, mark it `[~]` in tasks.md and note it here.
 
