@@ -151,7 +151,7 @@ each, full suite each time.
 - [X] T150 C7 the heartbeat timeout by each radio's own firmware. — `isVersionSupported(forVersion:on:)` (the focused radio's is `checkIsVersionSupported`). Verified: `MultiRadioLifecycleTests.heartbeatTimeoutPerRadio`.
 - [X] T151 C6, C10 the ingest actor recycle keeps queued writes and counts every radio's packets. — memory recycles no longer invalidate the old actor (`recreateShared(invalidatingPrevious: false)`); `noteIngestedPacket` counts every radio's data packets. Verified: `MultiRadioLifecycleTests.ingestRecycleCountsEveryRadio`.
 - [X] T152 C11 one connect at a time per radio, focused too. — `connect` refuses a radio with a live attempt; `disconnect()` marks focused attempts cancelled; `hasFocusedConnectInProgress` (a focused attempt at the gate) holds off `connectToPreferredDevice`, the focus handover and the remembered-radio fallback. Verified: `MultiRadioConnectFlowTests.duplicateConnectRefused`.
-- [ ] T153 C12 a radio losing the focus keeps its lock-down or firmware prompt.
+- [X] T153 C12 a radio losing the focus keeps its lock-down or firmware prompt. — `focusConnectedRadio` sets `attentionAfterLosingFocus` (old firmware, or its last lock-down status) on the previous radio. Verified: `MultiRadioLockdownTests.lockedRadioLosingFocusKeepsItsPrompt`.
 - [ ] T154 C14 background/foreground to every radio; same radio twice; prompts for several radios; BLE scan pause per radio.
 - [ ] T155 C4, C5 BLE restoration continuation per peripheral; a connected radio is preferred.
 - [ ] T156 C8, C9 TCP radios alongside: manual connect from Add a Radio; remembered Bonjour radios.

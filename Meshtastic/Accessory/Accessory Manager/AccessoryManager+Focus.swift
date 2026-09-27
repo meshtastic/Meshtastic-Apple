@@ -52,6 +52,9 @@ extension AccessoryManager {
 		objectWillChange.send()
 
 		applyFocusedRadioState(session)
+		if let previous, let attention = attentionAfterLosingFocus(previous) {
+			setAttention(attention, for: previous)
+		}
 		if let previous, let previousNum = previous.nodeNum {
 			// Remembered, so it comes back alongside the focused radio next time.
 			await MeshPackets.shared.noteRadioConnected(nodeNum: previousNum, transport: previous.device.transportType, autoConnect: true)

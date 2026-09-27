@@ -140,6 +140,21 @@ extension AccessoryManager {
 		return .firmwareTooOld(version: version ?? "?")
 	}
 
+	/// Why a radio that just lost the focus still needs the user: its firmware is too old, or
+	/// its last lock-down status says it's locked. The focused radio's screens covered this; as
+	/// an additional radio it gets its prompt and its row's caption back (T153).
+	func attentionAfterLosingFocus(_ session: RadioSession) -> RadioAttention? {
+		if let firmware = firmwareAttention(for: session) {
+			return firmware
+		}
+		switch session.lastLockdownStatus?.state {
+		case .locked: return session.lockdownAutoAttempted ? .unlockFailed : .locked
+		case .needsProvision: return .needsPassphrase
+		case .unlockFailed: return .unlockFailed
+		default: return nil
+		}
+	}
+
 	// MARK: - Lock-down on a radio that isn't focused (T065, T073)
 
 	/// Lock-down status from a radio that isn't focused. The focused radio's goes to

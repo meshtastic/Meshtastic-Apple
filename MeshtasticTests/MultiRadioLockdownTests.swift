@@ -172,6 +172,24 @@ struct MultiRadioLockdownTests {
 		#expect(await scripted.disconnects == 0)
 	}
 
+	@Test("A locked radio that loses the focus is still shown as locked and asked about")
+	func lockedRadioLosingFocusKeepsItsPrompt() async throws {
+		let fixture = makeFixture()
+		let manager = fixture.manager
+		let focused = try #require(manager.activeConnection)
+		focused.lastLockdownStatus = status(.locked)
+		var ready = Device(id: UUID(), name: "Ready", transportType: .tcp, identifier: "ready.local:4403")
+		ready.num = 0x0C0C
+		ready.connectionState = .connected
+		manager.additionalRadios[ready.id] = RadioSession(device: ready, connection: RecordingIdleConnection())
+
+		#expect(await manager.focusConnectedRadio(ready.id))
+
+		#expect(manager.additionalRadios[focused.device.id] === focused)
+		#expect(focused.attention == .locked)
+		#expect(manager.radioAttentionPrompt?.id == focused.device.id)
+	}
+
 	@Test("Firmware below the minimum keeps a radio connected and prompts for an update")
 	func firmwareGate() async throws {
 		#expect(AccessoryManager.isFirmwareSupported(nil, minimum: "2.5.14"))
