@@ -286,6 +286,25 @@ extension BackupMergeTests {
 		#expect(try ModelContext(liveContainer).fetchCount(FetchDescriptor<MessageEntity>()) == 1)
 	}
 
+	@Test("A stray radio row from an old store doesn't stop that radio's backup from merging")
+	@MainActor
+	func strayRadioRowDoesNotBlockMerge() async throws {
+		let folder = try makeBackupFolder(radioNum: radioB) { try populateBackup($0) }
+		defer { try? FileManager.default.removeItem(at: folder.base) }
+		let liveContainer = try makeLiveContainer()
+		let live = ModelContext(liveContainer)
+		let stray = MyInfoEntity()
+		stray.myNodeNum = radioB
+		live.insert(stray)
+		try live.save()
+		let manager = NodeBackupManager(baseURL: folder.base)
+
+		let merged = await manager.mergePendingBackups(using: MeshPackets(modelContainer: liveContainer), ownRadio: radioA)
+
+		#expect(merged == 1)
+		#expect(try ModelContext(liveContainer).fetchCount(FetchDescriptor<MessageEntity>()) == 3)
+	}
+
 	@Test("A backup this build takes is a copy of the shared store, so it isn't pending")
 	@MainActor
 	func newBackupIsNotPending() async throws {

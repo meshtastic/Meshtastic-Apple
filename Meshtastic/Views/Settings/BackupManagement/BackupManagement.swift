@@ -18,6 +18,9 @@ struct BackupManagement: View {
 	@State private var entryToDelete: BackupEntry?
 	@State private var isRestoringBackup = false
 	@State private var restoreErrorMessage: String?
+	/// A restore waiting for the user to confirm it replaces several radios' data (T166).
+	@State private var entryToRestore: BackupEntry?
+	@State private var radiosReplacedByRestore: [StoredRadio] = []
 	@State private var isBackingUp = false
 	@State private var backupErrorMessage: String?
 
@@ -67,7 +70,7 @@ struct BackupManagement: View {
 							showDeleteButton: showsInlineDeleteButton,
 							onRestore: {
 								Task {
-									await restoreBackup(entry)
+									await requestRestore(entry)
 								}
 							},
 							onDelete: {
@@ -78,7 +81,7 @@ struct BackupManagement: View {
 						.contextMenu {
 							Button {
 								Task {
-									await restoreBackup(entry)
+									await requestRestore(entry)
 								}
 							} label: {
 								Label("Restore", systemImage: "arrow.counterclockwise")
@@ -95,7 +98,7 @@ struct BackupManagement: View {
 							.swipeActions(edge: .trailing, allowsFullSwipe: false) {
 								Button {
 									Task {
-										await restoreBackup(entry)
+										await requestRestore(entry)
 									}
 								} label: {
 									Label("Restore", systemImage: "arrow.counterclockwise")
@@ -157,6 +160,17 @@ struct BackupManagement: View {
 				}
 			}
 		}
+		.alert("Restore Backup?", isPresented: Binding(
+			get: { entryToRestore != nil },
+			set: { if !$0 { entryToRestore = nil } }
+		), presenting: entryToRestore) { entry in
+			Button("Restore", role: .destructive) {
+				Task { await restoreBackup(entry) }
+			}
+			Button("Cancel", role: .cancel) {}
+		} message: { entry in
+			Text("Restoring \(entry.nodeName ?? "Node \(entry.nodeNum)")'s backup replaces the data of all your radios: \(ListFormatter.localizedString(byJoining: radiosReplacedByRestore.map(\.name))). They disconnect first.")
+		}
 		.alert("Delete Backup?", isPresented: $showDeleteConfirmation, presenting: entryToDelete) { entry in
 			Button("Delete", role: .destructive) {
 				Task { @MainActor in
@@ -185,6 +199,18 @@ struct BackupManagement: View {
 	}
 
 	@MainActor
+	/// With one radio's data in the store a restore starts straight away, as it always has.
+	/// With several, the user first confirms that every radio's data is replaced (T166).
+	private func requestRestore(_ entry: BackupEntry) async {
+		let radios = await MeshPackets.shared.storedRadios()
+		guard radios.count > 1 else {
+			await restoreBackup(entry)
+			return
+		}
+		radiosReplacedByRestore = radios
+		entryToRestore = entry
+	}
+
 	private func restoreBackup(_ entry: BackupEntry) async {
 		isRestoringBackup = true
 		defer {

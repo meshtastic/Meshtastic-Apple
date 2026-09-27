@@ -266,6 +266,8 @@ private struct DirectMessageUserRow: View {
 	let currentDay: Int
 	@Binding var isPresentingDeleteUserMessagesConfirm: Bool
 	@Binding var userToDeleteMessages: UserEntity?
+	/// With several radios, the delete confirmation says the conversation goes on all of them.
+	@State private var deletesOnAllRadios = false
 
 	private var hasMessages: Bool { summary != nil }
 	private var unreadCount: Int { summary?.unreadCount ?? 0 }
@@ -367,6 +369,7 @@ private struct DirectMessageUserRow: View {
 			}
 			if hasMessages {
 				Button(role: .destructive) {
+					deletesOnAllRadios = IntentMessageConverters.isMultiRadio(in: context)
 					isPresentingDeleteUserMessagesConfirm = true
 					userToDeleteMessages = user
 				} label: {
@@ -390,6 +393,11 @@ private struct DirectMessageUserRow: View {
 				}
 			} label: {
 				Text("Delete")
+			}
+		} message: {
+			// The contact row is per node, so the conversation goes on every radio (T166).
+			if deletesOnAllRadios {
+				Text("It is deleted on all your radios.")
 			}
 		}
 	}

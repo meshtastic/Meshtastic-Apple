@@ -1079,9 +1079,6 @@ class AccessoryManager: ObservableObject {
 			await handleMyInfo(myNodeInfo, session: session)
 
 		case .packet(let packet):
-			// Feed the traffic-rate estimator one tick per inbound mesh packet — this is the busy path
-			// whose re-renders make the map flyover stutter, so it's exactly what we want to measure.
-			meshTrafficMonitor.recordInboundPacket()
 			// Feature 021: note which local radio heard this packet. When another of the user's
 			// radios already delivered the same broadcast, its handlers already stored it, so
 			// only this radio's reception and observation are recorded. Packets addressed to a
@@ -1091,6 +1088,12 @@ class AccessoryManager: ObservableObject {
 				reception = await MeshPackets.shared.recordReception(packet: packet, radioNum: radioNum)
 			}
 			let handledByAnotherRadio = reception == .heardByAnotherRadio && packet.to == Constants.maximumNodeNum
+			// Feed the traffic-rate estimator one tick per inbound mesh packet — this is the busy path
+			// whose re-renders make the map flyover stutter, so it's exactly what we want to measure.
+			// A copy another radio already delivered causes no re-render, so it isn't counted (T166).
+			if !handledByAnotherRadio {
+				meshTrafficMonitor.recordInboundPacket()
+			}
 			if handledByAnotherRadio {
 				Logger.mesh.debug("🕸️ Packet \(packet.id.toHex(), privacy: .public) from \(packet.from.toHex(), privacy: .public) already handled through another radio")
 			}

@@ -448,9 +448,13 @@ private extension UserMessageList {
 
 	var showsRadioPicker: Bool { conversationRadios.count > 1 }
 
-	/// Which sender's bubbles are "mine" in the shown thread.
+	/// Which sender's bubbles are "mine" in the shown thread: the thread's radio. With nothing
+	/// connected and the history on one radio only, that radio rather than the preferred one,
+	/// whose sent messages would otherwise show as incoming (T166).
 	var rowOwnerNum: Int {
-		radioFilter.map { Int($0) } ?? preferredPeripheralNum
+		if let radioFilter { return Int(radioFilter) }
+		if conversationRadios.count == 1, let only = conversationRadios.first { return Int(only) }
+		return preferredPeripheralNum
 	}
 
 	/// Connected radios, plus the user's other radios that have messages with this node. Uses

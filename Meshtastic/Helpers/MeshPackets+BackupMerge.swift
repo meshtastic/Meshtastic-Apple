@@ -50,6 +50,20 @@ extension MeshPackets {
 		return total
 	}
 
+	/// Whether the store already holds `radioNum`'s data, so its backup would only be an older
+	/// copy: the store's own radio, a radio connected with this version, or one with observations.
+	/// A stray `MyInfoEntity` alone, which stores from before the multi-radio fix can carry,
+	/// doesn't count, so it no longer blocks that radio's real backup (T166).
+	func storeHoldsData(ofRadio radioNum: Int64, ownRadio: Int64) -> Bool {
+		var descriptor = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == radioNum })
+		descriptor.fetchLimit = 1
+		guard let myInfo = try? modelContext.fetch(descriptor).first else { return false }
+		if radioNum == ownRadio || myInfo.lastConnected != nil { return true }
+		var observed = FetchDescriptor<NodeObservationEntity>(predicate: #Predicate { $0.radioNum == radioNum })
+		observed.fetchLimit = 1
+		return ((try? modelContext.fetchCount(observed)) ?? 0) > 0
+	}
+
 	/// Whether messages still wait for the backfill (a store from before feature 021, or a
 	/// restored backup). Channel keys aren't counted: a radio without LoRa settings keeps its
 	/// channels keyless, and they're set when its settings arrive (T144).
@@ -80,8 +94,7 @@ extension MeshPackets {
 		for backup in backups {
 			guard !invalidated else { break }
 			let radioNum = backup.radioNum
-			let known = (try? modelContext.fetchCount(FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == radioNum }))) ?? 0
-			guard known == 0 else {
+			guard !storeHoldsData(ofRadio: radioNum, ownRadio: ownRadio) else {
 				outcomes[backup.key] = .alreadyKnown
 				continue
 			}

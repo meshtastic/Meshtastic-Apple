@@ -32,7 +32,14 @@ struct NodeHeardBySection: View {
 				}
 			}
 		}
-		.task(id: lastHeard) { refresh() }
+		// Also every 30 s: another radio hearing the node again doesn't move the node's latest
+		// time when this radio's is newer, so `lastHeard` alone misses it (T166).
+		.task(id: lastHeard) {
+			while !Task.isCancelled {
+				refresh()
+				try? await Task.sleep(for: .seconds(30))
+			}
+		}
 	}
 
 	private func refresh() {
