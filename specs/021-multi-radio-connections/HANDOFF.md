@@ -99,6 +99,17 @@ Read this first if you are picking the work up. Update it in the same commit as 
 
 ## In progress
 
+- Review triage (2026-09-26): two read-only reviews are in `review-connections.md` (C1–C14) and
+  `review-data.md` (D1–D19), next to this file. Checked against the code so far and holding:
+  C1 (Unlock while the radio is still connecting takes the reconnect path), C2 (after a
+  handover the dropped radio is never brought back: the T072 fast path skips
+  `reconnectRememberedRadios`), C3 (the phone position loop isn't restarted after a handover),
+  C4 (the restore continuation resumes for any peripheral), C5 (a pending preferred restore
+  blocks a connected one), C6 (`recreateShared()` drops writes queued on the retired actor;
+  callers: connect Step 7, `AccessoryManager.swift:187` and the periodic recycle), C7 (the
+  heartbeat timeout follows the focused radio's firmware), C10, C11. Still to check: C8, C9,
+  C12–C14 and all of D1–D19. D1 (reset wipes every radio's data) needs checking first: it can
+  lose data during the owner's device test. Nothing fixed yet.
 - D-17 (every radio the same) is done through T073: one connect flow, focus without
   reconnecting, and lock-down / old firmware prompting by name on any radio. Next: the device
   test when the owner's hardware is ready (checklist below). Also done since: T016, T018, T110,
