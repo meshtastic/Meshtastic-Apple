@@ -68,8 +68,7 @@ struct ContentView: View {
 					title: Text(prompt.attention.title(radioName: prompt.radioName)),
 					message: Text(prompt.attention.message),
 					primaryButton: .default(Text(prompt.attention.actionTitle)) {
-						guard let device = accessoryManager.additionalRadios[prompt.id]?.device else { return }
-						Task { await switchToDevice(device, accessoryManager: accessoryManager, appState: appState) }
+						Task { await accessoryManager.focusRadioNeedingAttention(prompt.id) }
 					},
 					secondaryButton: .cancel(Text("Later"))
 				)

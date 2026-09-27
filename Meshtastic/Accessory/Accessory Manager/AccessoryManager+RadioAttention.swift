@@ -83,6 +83,28 @@ struct RadioAttentionPrompt: Identifiable, Equatable {
 
 extension AccessoryManager {
 
+	/// Unlock or Update on a radio that isn't focused: focuses it without reconnecting, which
+	/// shows its passphrase sheet or update screen. A locked radio reports its status in the
+	/// middle of its connect, and a radio can't take the focus until its connect finishes, so
+	/// then it takes the focus as soon as it does (T148). Reconnecting it as the focused radio
+	/// instead would disconnect the focused one.
+	func focusRadioNeedingAttention(_ deviceId: UUID) async {
+		if await focusConnectedRadio(deviceId) { return }
+		guard additionalRadios[deviceId] != nil else { return }
+		pendingAttentionFocus = deviceId
+		Logger.transport.info("🔀 [Radios] Will focus \(self.additionalRadios[deviceId]?.device.name ?? "?", privacy: .public) when its connect finishes")
+	}
+
+	/// After a connect alongside finishes: the radio the user chose Unlock or Update for while
+	/// it was connecting takes the focus now.
+	func focusPendingAttentionRadio(_ deviceId: UUID) async {
+		guard pendingAttentionFocus == deviceId else { return }
+		pendingAttentionFocus = nil
+		if !(await focusConnectedRadio(deviceId)) {
+			Logger.transport.info("🔀 [Radios] Couldn't focus \(deviceId, privacy: .public) after its connect")
+		}
+	}
+
 	/// Sets why `session`'s radio needs the user, or clears it. For a radio that isn't focused,
 	/// a new reason also prompts the user, naming the radio (`radioAttentionPrompt`).
 	func setAttention(_ attention: RadioAttention?, for session: RadioSession) {

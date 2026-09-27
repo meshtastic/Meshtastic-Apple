@@ -146,6 +146,32 @@ struct MultiRadioLockdownTests {
 		#expect(await scripted.disconnects == 0)
 	}
 
+	@Test("Unlock while the locked radio is still connecting focuses it once connected, without disconnecting the focused radio")
+	func unlockDuringConnectWaits() async throws {
+		var locked = LockdownStatus()
+		locked.state = .locked
+		let scripted = ScriptedRadio(nodeNum: 0x5100_0005, afterConfig: [.lockdownStatus(locked)])
+		let fixture = makeFixture(transports: [ScriptedTransport(radio: scripted)])
+		let manager = fixture.manager
+		manager.lockdownCoordinator = LockdownCoordinator(store: InMemoryPassphraseStore())
+		let focusedConnection = try #require(manager.activeConnection?.connection as? RecordingIdleConnection)
+		let device = Device(id: UUID(), name: "Locked", transportType: .tcp, identifier: "locked3.local:4403")
+
+		let connect = Task { try await manager.connectAdditionalRadio(device) }
+		try await waitUntil { await MainActor.run { manager.radioAttentionPrompt?.id == device.id } }
+		let stillConnecting = manager.connectAttempts[device.id] != nil
+		await manager.focusRadioNeedingAttention(device.id)
+		if stillConnecting {
+			#expect(manager.pendingAttentionFocus == device.id, "it waits for the connect")
+		}
+		try await connect.value
+
+		#expect(manager.activeConnection?.device.id == device.id)
+		#expect(manager.pendingAttentionFocus == nil)
+		#expect(await focusedConnection.isConnected, "the previously focused radio isn't disconnected")
+		#expect(await scripted.disconnects == 0)
+	}
+
 	@Test("Firmware below the minimum keeps a radio connected and prompts for an update")
 	func firmwareGate() async throws {
 		#expect(AccessoryManager.isFirmwareSupported(nil, minimum: "2.5.14"))

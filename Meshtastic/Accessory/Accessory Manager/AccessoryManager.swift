@@ -307,6 +307,9 @@ class AccessoryManager: ObservableObject {
 	/// Connects a remembered radio when the preferred one doesn't show up
 	/// (`scheduleRememberedRadioFallback`).
 	var rememberedRadioFallbackTask: Task<Void, Never>?
+	/// A radio whose Unlock or Update the user chose while its connect was still running; it
+	/// takes the focus when that connect finishes (`focusRadioNeedingAttention`, T148).
+	var pendingAttentionFocus: UUID?
 	/// One radio's config and node-DB handshake at a time, focused or not (T064).
 	let handshakeGate = HandshakeGate()
 	/// Bumped by `disconnect()`, so a focused connect still waiting at `handshakeGate` sees the

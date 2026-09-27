@@ -146,7 +146,7 @@ each, full suite each time.
 - [X] T145 D2 deleting a channel's messages deletes what its timeline shows. — `deleteChannelMessages(query:)` uses the timeline's `ChannelMessageQuery` (`ChannelEntity.messageQuery(context:)`). Verified: `ChannelMessageQueryTests.deleteFollowsTimeline`.
 - [X] T146 D13 observations removed with their node. — node eviction and Remove Node delete every radio's observations of the node (`NodeObservationEntity.delete(ofNodes:in:)`). Verified: `MultiRadioIngestTests.evictionDeletesObservations`.
 - [X] T147 D1, D16 reset rules, Remove This Radio, Clear App Data (D-18). — Settings › Device's resets show for any connected radio; with only that radio's data in the store they run as on `main`; otherwise `takeRadioOffline` + `removeRadioData` after asking about messages. Remove This Radio sits with them (only offered with several radios; keeps favorites; the radio must be connected, so a radio that's away can't be removed yet). Clear App Data disconnects every radio and names them. Verified: `RadioRemovalTests` (6), `MultiRadioConnectFlowTests.resetFocusedRadioHandsOver`, `.removeAdditionalRadio`.
-- [ ] T148 C1 Unlock / Update while the radio is still connecting.
+- [X] T148 C1 Unlock / Update while the radio is still connecting. — the prompt and the row call `focusRadioNeedingAttention`: focused in place, or, while its connect runs, as soon as it finishes (`pendingAttentionFocus`); never the reconnect path. Verified: `MultiRadioLockdownTests.unlockDuringConnectWaits`.
 - [ ] T149 C2, C3 after a handover the dropped radio comes back, and phone position keeps going.
 - [ ] T150 C7 the heartbeat timeout by each radio's own firmware.
 - [ ] T151 C6, C10 the ingest actor recycle keeps queued writes and counts every radio's packets.

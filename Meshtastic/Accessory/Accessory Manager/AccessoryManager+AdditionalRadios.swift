@@ -118,8 +118,14 @@ extension AccessoryManager {
 			throw AccessoryError.connectionFailed(String.localizedStringWithFormat("You can connect up to %d radios at once.".localized, Self.maxConnectedRadios))
 		}
 		Logger.transport.info("🔗➕ [Additional] Connecting \(device.name, privacy: .public) alongside \(self.activeConnection?.device.name ?? "?", privacy: .public)")
-		try await connect(to: device, asFocused: false, connectTimeout: connectTimeout)
+		do {
+			try await connect(to: device, asFocused: false, connectTimeout: connectTimeout)
+		} catch {
+			if pendingAttentionFocus == device.id { pendingAttentionFocus = nil }
+			throw error
+		}
 		Logger.transport.info("🔗➕ [Additional] \(device.name, privacy: .public) connected; \(self.connectedRadioCount) radios connected")
+		await focusPendingAttentionRadio(device.id)
 	}
 
 	/// `transport.connect(to:)`, given up after `timeout` when there is one. A BLE connect to an
@@ -169,6 +175,7 @@ extension AccessoryManager {
 			attempt.isCancelled = true
 			await attempt.stepper?.cancelCurrentlyExecutingStep(withError: AccessoryError.disconnected("Radio disconnected"), cancelFullProcess: true)
 		}
+		if pendingAttentionFocus == deviceId { pendingAttentionFocus = nil }
 		guard let session = additionalRadios.removeValue(forKey: deviceId) else {
 			if connectAttempts[deviceId] != nil {
 				updateDevice(deviceId: deviceId, key: \.connectionState, value: .disconnected)

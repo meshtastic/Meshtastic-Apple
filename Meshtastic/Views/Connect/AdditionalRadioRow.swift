@@ -103,7 +103,11 @@ struct AdditionalRadioRow: View {
 			Menu {
 				Button {
 					Task {
-						await performRadioSwitch(device, isSwitchingRadio: $isSwitchingRadio, accessoryManager: accessoryManager)
+						if attention != nil {
+							await accessoryManager.focusRadioNeedingAttention(device.id)
+						} else {
+							await performRadioSwitch(device, isSwitchingRadio: $isSwitchingRadio, accessoryManager: accessoryManager)
+						}
 					}
 				} label: {
 					// Focusing it shows its passphrase sheet or update screen (T073).
