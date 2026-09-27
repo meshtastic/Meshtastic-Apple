@@ -17,7 +17,8 @@ import SwiftData
 /// - messages: `fromNum`, `toNum`, `messageKey`, `localNodeNum`, and `channelKey` for channel
 ///   messages;
 /// - channels: `channelKey`, from the owning radio's LoRa settings;
-/// - observations: one `NodeObservationEntity` per node, copied from the node's own fields.
+/// - observations: one `NodeObservationEntity` per node, copied from the node's own fields,
+///   while no other radio has observations.
 ///
 /// It works in chunks and is resumable: a row counts as done once it has its marker (`fromNum`
 /// for messages, `channelKey` for channels, an observation for nodes), so an interrupted pass
@@ -117,7 +118,14 @@ enum MultiRadioBackfill {
 
 	/// Creates the store radio's observation of up to `limit` nodes that don't have one, copied
 	/// from the node's fields (which, in a one-radio store, are that radio's view).
+	///
+	/// Once another radio has observations, the node's fields are that radio's view or the
+	/// aggregate, and a copy would claim `ownRadio` heard nodes it never did, so nothing is
+	/// created (T142). `MyInfoEntity` rows can't tell this: old stores may hold stray ones.
 	static func backfillObservations(in context: ModelContext, ownRadio: Int64, limit: Int) throws -> Int {
+		var others = FetchDescriptor<NodeObservationEntity>(predicate: #Predicate { $0.radioNum != ownRadio })
+		others.fetchLimit = 1
+		guard try context.fetch(others).isEmpty else { return 0 }
 		let existing = try context.fetch(FetchDescriptor<NodeObservationEntity>(predicate: #Predicate { $0.radioNum == ownRadio }))
 		let observed = Set(existing.map(\.nodeNum))
 		// Nodes are few (capped), so one sorted fetch of all of them is cheaper than paging with

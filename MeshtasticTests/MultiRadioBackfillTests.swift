@@ -219,6 +219,22 @@ struct MultiRadioBackfillTests {
 		#expect(observation.sessionPasskey == Data([9]))
 	}
 
+	@Test("No observations are copied once another radio has its own")
+	func observationsStopWithAnotherRadio() throws {
+		let context = try makeContext()
+		_ = makeOwnRadio(in: context)
+		makeUser(remote, in: context)
+		let secondRadio: Int64 = 0x0B0B_0B0B
+		makeUser(0x3333, in: context)
+		context.insert(NodeObservationEntity(radioNum: secondRadio, nodeNum: 0x3333))
+		try context.save()
+
+		_ = try drain(context, ownRadio: ownRadio)
+
+		let rows = try context.fetch(FetchDescriptor<NodeObservationEntity>())
+		#expect(rows.map(\.radioNum) == [secondRadio])
+	}
+
 	@Test("The backfill works in chunks and stops once everything is filled")
 	func resumesInChunks() throws {
 		let context = try makeContext()
