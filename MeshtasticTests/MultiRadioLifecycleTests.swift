@@ -306,6 +306,31 @@ struct MultiRadioConnectLifecycleTests {
 		#expect(await !before.invalidated)
 	}
 
+	@Test("A write that doesn't save itself, left on a recycled ingest actor, still reaches the store")
+	func recycledActorSavesQueuedWrites() async throws {
+		let before = MeshPackets.shared
+		MeshPackets.recreateShared(invalidatingPrevious: false)
+		var data = DataMessage()
+		data.portnum = .positionApp
+		var packet = MeshPacket()
+		packet.id = UInt32.random(in: 1...UInt32.max)
+		packet.from = 0x7E57_0001
+		packet.to = Constants.maximumNodeNum
+		packet.decoded = data
+		let radioNum: Int64 = 0x7E57_00AA
+		// `recordReception` never saves; the save after it goes to the new instance.
+		#expect(await before.recordReception(packet: packet, radioNum: radioNum) == .first)
+
+		let key = PacketReceptionEntity.key(radioNum: radioNum, fromNum: Int64(packet.from), packetId: Int64(packet.id))
+		var saved = 0
+		for _ in 0..<40 where saved == 0 {
+			try await Task.sleep(for: .milliseconds(100))
+			let context = ModelContext(PersistenceController.shared.container)
+			saved = (try? context.fetchCount(FetchDescriptor<PacketReceptionEntity>(predicate: #Predicate { $0.key == key }))) ?? 0
+		}
+		#expect(saved == 1)
+	}
+
 	@Test("A discovery scan counts its radio's copy of a packet another radio delivered first")
 	func scanCountsItsOwnCopy() async throws {
 		let manager = AccessoryManager(transports: [])

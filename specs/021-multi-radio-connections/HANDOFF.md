@@ -256,7 +256,9 @@ describes it well enough to rebuild.
   distinct `MyNodeInfo.deviceID`s, or the app takes the second for the first renumbered.
 - The ingest-actor memory recycle (connect Step 7, and every `ingestRecycleInterval` packets
   from any radio) is `recreateShared(invalidatingPrevious: false)`: the old actor keeps saving
-  what other radios had in flight (T151). Only the clear / repoint paths invalidate, and they
+  what other radios had in flight (T151), and gets a save queued at once and another 2 s later,
+  since `updateAnyPacketFrom` and `recordReception` don't save themselves (T172). For those 2 s
+  two contexts write the same store. Only the clear / repoint paths invalidate, and they
   invalidate earlier recycled instances too.
 - Discovery while connected must not call `updateState(.discovering)`; `startDiscovery` only
   does that with no focused radio now.

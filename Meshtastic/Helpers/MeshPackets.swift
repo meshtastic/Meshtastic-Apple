@@ -231,6 +231,18 @@ actor MeshPackets {
 			_recycled = _recycled.filter { $0.instance != nil } + [WeakMeshPackets(instance: previous)]
 		}
 		_lock.unlock()
+		if !invalidatingPrevious {
+			// Calls queued on the old instance before the swap still write to it after, and some
+			// never save themselves: `updateAnyPacketFrom` and `recordReception` rely on the save at
+			// the end of `processFromRadio`, which now goes to the new instance. A save queued now
+			// runs after them, and a second one catches anything slower, so their writes land and
+			// the two contexts overlap for a couple of seconds at most (T172).
+			Task {
+				await previous.flushDebouncedSaves()
+				try? await Task.sleep(for: .seconds(2))
+				await previous.flushDebouncedSaves()
+			}
+		}
 		for instance in retired {
 			Task { await instance.invalidate() }
 		}
