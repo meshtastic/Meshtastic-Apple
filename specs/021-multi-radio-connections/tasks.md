@@ -157,7 +157,7 @@ each, full suite each time.
 - [X] T156 C8, C9 TCP radios alongside: manual connect from Add a Radio; remembered Bonjour radios. — Add a Radio has the Manual menu and lists saved manual connections; `recentlyDiscoveredDevices` and `awaitedRememberedRadios` bring back a remembered TCP radio. Verified: `MultiRadioLifecycleTests.rememberedTCPRadioComesBack`.
 - [X] T157 D6 Siri and CarPlay replies on the right radio and channel. — conversation ids carry the radio with several radios (`:r<num>`); the handler replies through it; a name found only on another radio sends through that radio; incoming donations share one builder and speak the channel's name; CarPlay counts and read-back are the CarPlay radio's. Verified: `IntentConversationRadioTests` (the handler itself isn't unit tested: it sends through `AccessoryManager.shared`).
 - [X] T158 D8 mute and mentions across the user's radios. — a channel muted on any radio with its key stays quiet (`isChannelMutedOnAnyRadio`); a mention of any of the user's radios notifies. Verified: `MultiRadioNotificationTests`.
-- [ ] T159 D9 the backup merge stops retrying a merge that keeps failing.
+- [X] T159 D9 the backup merge stops retrying a merge that keeps failing. — `BackupEntry.mergeAttempts`, counted and saved before each attempt, three at most; the backup stays for a restore. Not done: merging in chunks (HANDOFF › Gotchas). Verified: `BackupMergeTests.managerGivesUpAfterAttempts`.
 - [ ] T160 D11 the scan and range test see their own radio's packets even when another radio delivered first.
 - [ ] T161 D12 TAK settings for the TAK radio.
 - [ ] T162 D14 backfill attribution.

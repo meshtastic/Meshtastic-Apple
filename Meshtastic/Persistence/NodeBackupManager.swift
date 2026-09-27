@@ -761,6 +761,9 @@ final class NodeBackupManager: NodeBackupManaging {
 
 extension NodeBackupManager {
 
+	/// How many launches may try to merge one backup.
+	static let maxMergeAttempts = 3
+
 	/// Backups not yet merged into the shared store, oldest first.
 	var unmergedBackups: [BackupEntry] {
 		backupIndex.entries.values.filter { !$0.isMerged }.sorted { $0.createdAt < $1.createdAt }
@@ -772,11 +775,22 @@ extension NodeBackupManager {
 	/// it: the file is left in place, since nothing is lost by not merging it. The backup files are
 	/// never changed, and stay until the user deletes them.
 	/// - Returns: The number of backups merged.
+	///
+	/// A backup gets `maxMergeAttempts` launches (T159). Each attempt is counted before it starts,
+	/// so a merge that fails every time, or that the system kills, stops being retried at every
+	/// launch (each attempt holds the handshake gate, so no radio connects meanwhile). The backup
+	/// stays, for a restore from Settings › Backups.
 	@discardableResult
 	func mergePendingBackups(using packets: MeshPackets, ownRadio: Int64) async -> Int {
 		var pending: [MeshPackets.PendingBackupMerge] = []
 		var checksums: [String: String] = [:]
 		for entry in unmergedBackups {
+			let attempts = entry.mergeAttempts ?? 0
+			guard attempts < Self.maxMergeAttempts else {
+				Logger.backup.warning("💾 [Merge] Not merging the backup of \(entry.nodeNum.toHex(), privacy: .public): \(attempts) attempts didn't finish; it stays for a restore")
+				continue
+			}
+			backupIndex.entries[entry.key]?.mergeAttempts = attempts + 1
 			let storeURL = backupBaseURL
 				.appendingPathComponent(entry.backupPath, isDirectory: true)
 				.appendingPathComponent(Self.storeFileName)
@@ -788,6 +802,8 @@ extension NodeBackupManager {
 			pending.append(.init(key: entry.key, radioNum: entry.nodeNum, storeURL: storeURL))
 			checksums[entry.key] = checksum
 		}
+		// The counts are on disk before the merge, which is what can crash.
+		saveIndex()
 		guard !pending.isEmpty else { return 0 }
 
 		let outcomes = await packets.mergeBackups(pending, ownRadio: ownRadio)

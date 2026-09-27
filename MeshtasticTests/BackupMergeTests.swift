@@ -323,4 +323,28 @@ extension BackupMergeTests {
 		#expect(manager.listBackups().count == 1) // not deleted, unlike a failed restore
 		#expect(try ModelContext(liveContainer).fetchCount(FetchDescriptor<MessageEntity>()) == 1)
 	}
+
+	@Test("A backup that never merges is tried on a few launches, then left for a restore")
+	@MainActor
+	func managerGivesUpAfterAttempts() async throws {
+		let folder = try makeBackupFolder(radioNum: radioB) { try populateBackup($0) }
+		defer { try? FileManager.default.removeItem(at: folder.base) }
+		var index = BackupIndex()
+		var entry = folder.entry
+		entry.checksum = String(repeating: "0", count: 64)
+		index.entries[entry.key] = entry
+		try JSONEncoder().encode(index).write(to: folder.base.appendingPathComponent("backup-index.json"))
+		let liveContainer = try makeLiveContainer()
+
+		for launch in 1...NodeBackupManager.maxMergeAttempts {
+			// A new manager each time, as a relaunch reads the index from disk.
+			let manager = NodeBackupManager(baseURL: folder.base)
+			_ = await manager.mergePendingBackups(using: MeshPackets(modelContainer: liveContainer), ownRadio: radioA)
+			#expect(NodeBackupManager(baseURL: folder.base).unmergedBackups.first?.mergeAttempts == launch)
+		}
+		let manager = NodeBackupManager(baseURL: folder.base)
+		_ = await manager.mergePendingBackups(using: MeshPackets(modelContainer: liveContainer), ownRadio: radioA)
+		#expect(manager.unmergedBackups.first?.mergeAttempts == NodeBackupManager.maxMergeAttempts, "not tried again")
+		#expect(manager.listBackups().count == 1, "the backup stays")
+	}
 }

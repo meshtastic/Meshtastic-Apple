@@ -157,7 +157,7 @@ struct MeshtasticAppleApp: App {
 			// Feature 021 (D-09): bring each radio's old backup into the shared store, once. It holds
 			// the handshake gate, so a radio connecting meanwhile waits rather than timing out behind
 			// the ingest actor, and the actor isn't recycled mid-merge.
-			if !NodeBackupManager.shared.unmergedBackups.isEmpty {
+			if NodeBackupManager.shared.unmergedBackups.contains(where: { ($0.mergeAttempts ?? 0) < NodeBackupManager.maxMergeAttempts }) {
 				let manager = accessoryManager
 				Task { @MainActor in
 					await manager.handshakeGate.acquire()

@@ -278,7 +278,7 @@ describes it well enough to rebuild.
   backup of a radio the store already has a `MyInfoEntity` for is marked but not merged (it's an
   older copy; merging would resurrect deletions). New backups are marked merged when taken,
   and compaction carries the mark to the new checksum. The merge loads a backup's messages in
-  one fetch; fine for the sizes seen so far, but a very large backup may need chunking.
+  one fetch; fine for the sizes seen so far, but a very large backup may need chunking. Since T159 a backup gets three launches (`NodeBackupManager.maxMergeAttempts`, counted before each attempt), so one that keeps failing or gets the app killed stops being retried; the merge itself is still one transaction.
   `NodeBackupManager`'s class body is over SwiftLint's limit (498 lines before, 502 now).
 - The restore importer copies fields by hand. Every new stored attribute must be added to
   `NodeBackupManager+Import.swift` (`NodeBackupRestoreFieldTests` shows the pattern).
