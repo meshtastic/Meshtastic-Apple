@@ -100,9 +100,11 @@ Read this first if you are picking the work up. Update it in the same commit as 
 ## In progress
 
 - Review triage (2026-09-27): two read-only reviews, `review-connections.md` (C1–C14) and
-  `review-data.md` (D1–D19), next to this file. Every finding was checked against the code and
-  holds (C12–C14, D9, D14, D16, D17 and D19 from code already read rather than re-opened).
-  Nothing is fixed yet. Grouped:
+  `review-data.md` (D1–D19), next to this file. Every finding was re-checked in the files and
+  holds. One more of mine: strings written as `"…".localized` aren't extracted by Xcode, so the
+  catalog sync (`30924072`) missed them ("on %@", "via %@", "CarPlay & Siri", "Apple Watch",
+  "%@ is locked", "%@ needs a firmware update", "Unlock", "Update", "Radio: %@", "%d hops", …);
+  they need adding by hand. Nothing is fixed yet. Grouped:
   - Before the device test (data loss, or they break what the test checks): D1 (NodeDB reset,
     factory reset and Clear App Data wipe every radio's data and disconnect the focused radio,
     not the one reset; needs the owner's decision on what a reset clears), D2 (deleting a
