@@ -156,6 +156,19 @@ struct ChannelMessageQueryTests {
 		#expect(afterLoRa[1] == afterChannel[1])
 	}
 
+	@Test("Deleting a channel's messages deletes what its timeline shows")
+	func deleteFollowsTimeline() async throws {
+		let context = try makeContext()
+		try seedMessages(in: context)
+		let packets = MeshPackets(modelContainer: context.container)
+
+		await packets.deleteChannelMessages(query: ChannelMessageQuery(channelIndex: 1, channelKey: hikersKey, radioNum: radioA, multiRadio: true))
+
+		// B's Cyclists in slot 1 stays; Hikers through B in slot 2 goes; the tapback stays.
+		let left = try ModelContext(context.container).fetch(FetchDescriptor<MessageEntity>())
+		#expect(ids(left) == [3, 6])
+	}
+
 	@Test("With one radio, the timeline is the slot, as before")
 	func singleRadio() throws {
 		let context = try makeContext()

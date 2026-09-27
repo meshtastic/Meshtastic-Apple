@@ -41,16 +41,21 @@ extension ChannelEntity {
 		return batch.first { $0.toUser == nil }
 	}
 
+	/// The query for this channel's timeline. Feature 021: with more than one radio, the
+	/// channel's messages are grouped by its key; with one, it's the slot query it always was.
 	@MainActor
-	func unreadMessages(context: ModelContext) -> Int {
-		// Feature 021: with more than one radio, the channel's messages are grouped by its key
-		// (ChannelMessageQuery); with one, this is the slot query it always was.
-		let query = ChannelMessageQuery(
+	func messageQuery(context: ModelContext) -> ChannelMessageQuery {
+		ChannelMessageQuery(
 			channelIndex: self.index,
 			channelKey: self.channelKey,
 			radioNum: self.myInfoChannel?.myNodeNum ?? 0,
 			multiRadio: ChannelMessageQuery.isMultiRadio(in: context)
 		)
+	}
+
+	@MainActor
+	func unreadMessages(context: ModelContext) -> Int {
+		let query = messageQuery(context: context)
 		let descriptor = FetchDescriptor<MessageEntity>(predicate: query.unreadCandidates())
 		let messages = (try? context.fetch(descriptor)) ?? []
 		return messages.filter { $0.toUser == nil }.count

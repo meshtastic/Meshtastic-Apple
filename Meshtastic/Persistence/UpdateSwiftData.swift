@@ -114,13 +114,11 @@ extension MeshPackets {
 		return false
 	}
 	
-	public func deleteChannelMessages(channel: ChannelEntity) {
-		let channelIndex = channel.index
-		let descriptor = FetchDescriptor<MessageEntity>(
-			predicate: #Predicate<MessageEntity> { msg in
-				msg.channel == channelIndex && msg.isEmoji == false
-			}
-		)
+	/// Deletes what the channel's timeline shows (`query.messages()`): with several radios, the
+	/// channel's messages through every radio and in any slot, and nothing of another channel
+	/// that shares the slot number on another radio (T145). Tapbacks stay, as before.
+	func deleteChannelMessages(query: ChannelMessageQuery) {
+		let descriptor = FetchDescriptor<MessageEntity>(predicate: query.messages())
 		do {
 			let objects = try modelContext.fetch(descriptor)
 			for object in objects where object.toUser == nil {

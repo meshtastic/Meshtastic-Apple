@@ -175,7 +175,8 @@ struct ChannelList: View {
 			) {
 				Button(role: .destructive) {
 					Task {
-						await MeshPackets.shared.deleteChannelMessages(channel: channelToDeleteMessages!)
+						guard let channel = channelToDeleteMessages else { return }
+						await MeshPackets.shared.deleteChannelMessages(query: channel.messageQuery(context: context))
 						await MainActor.run {
 							channelToDeleteMessages = nil
 						}
