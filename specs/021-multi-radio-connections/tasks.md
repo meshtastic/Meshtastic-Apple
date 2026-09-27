@@ -150,7 +150,7 @@ each, full suite each time.
 - [X] T149 C2, C3 after a handover the dropped radio comes back, and phone position keeps going. — the handover schedules the dropped radio's reconnect as an additional radio; `applyFocusedRadioState` restarts the location loop (`initializeLocationProvider` now replaces any running loop). Verified: `MultiRadioConnectFlowTests.handoverWithoutReconnecting`.
 - [X] T150 C7 the heartbeat timeout by each radio's own firmware. — `isVersionSupported(forVersion:on:)` (the focused radio's is `checkIsVersionSupported`). Verified: `MultiRadioLifecycleTests.heartbeatTimeoutPerRadio`.
 - [X] T151 C6, C10 the ingest actor recycle keeps queued writes and counts every radio's packets. — memory recycles no longer invalidate the old actor (`recreateShared(invalidatingPrevious: false)`); `noteIngestedPacket` counts every radio's data packets. Verified: `MultiRadioLifecycleTests.ingestRecycleCountsEveryRadio`.
-- [ ] T152 C11 one connect at a time per radio, focused too.
+- [X] T152 C11 one connect at a time per radio, focused too. — `connect` refuses a radio with a live attempt; `disconnect()` marks focused attempts cancelled; `hasFocusedConnectInProgress` (a focused attempt at the gate) holds off `connectToPreferredDevice`, the focus handover and the remembered-radio fallback. Verified: `MultiRadioConnectFlowTests.duplicateConnectRefused`.
 - [ ] T153 C12 a radio losing the focus keeps its lock-down or firmware prompt.
 - [ ] T154 C14 background/foreground to every radio; same radio twice; prompts for several radios; BLE scan pause per radio.
 - [ ] T155 C4, C5 BLE restoration continuation per peripheral; a connected radio is preferred.

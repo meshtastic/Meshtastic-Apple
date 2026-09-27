@@ -20,12 +20,19 @@ extension AccessoryManager {
 	/// When it stops waiting.
 	static let focusHandoverGiveUp: Duration = .seconds(300)
 
+	/// A focused connect is running or waiting for the handshake gate. `isConnecting` only says so
+	/// once it has passed the gate (T152).
+	var hasFocusedConnectInProgress: Bool {
+		connectAttempts.values.contains { $0.isFocused && !$0.isCancelled }
+	}
+
 	/// The connected radio that would take the focus now, or nil when nothing should: a radio is
 	/// focused or connecting, a switch or firmware update is in progress, or the user
 	/// disconnected on purpose.
 	var focusHandoverCandidate: Device? {
 		guard activeConnection == nil,
 			  !isConnecting,
+			  !hasFocusedConnectInProgress,
 			  !isSwitchingDevices,
 			  !otaInProgress,
 			  // A discovery scan's radio reboots into each preset; it comes back as the focus.
@@ -81,6 +88,7 @@ extension AccessoryManager {
 		guard activeConnection == nil,
 			  additionalRadios.isEmpty,
 			  !isConnecting,
+			  !hasFocusedConnectInProgress,
 			  !isSwitchingDevices,
 			  !otaInProgress,
 			  !userRequestedConnectionCancellation,

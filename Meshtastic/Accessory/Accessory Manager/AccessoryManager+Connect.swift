@@ -67,8 +67,14 @@ extension AccessoryManager {
 		if asFocused, activeConnection != nil {
 			throw AccessoryError.connectionFailed("Already connected to a device")
 		}
-		if !asFocused, connectAttempts[device.id] != nil || additionalRadios[device.id] != nil {
+		if !asFocused, additionalRadios[device.id] != nil {
 			throw AccessoryError.connectionFailed("This radio is already connected")
+		}
+		// One connect per radio at a time, focused or not (T152). A focused connect waiting at the
+		// handshake gate doesn't show as connecting yet, so discovery or a restore could start a
+		// second one for the same radio.
+		if let existing = connectAttempts[device.id], !existing.isCancelled {
+			throw AccessoryError.connectionFailed("This radio is already connecting")
 		}
 		
 		guard let transport = transportForType(device.transportType) else {

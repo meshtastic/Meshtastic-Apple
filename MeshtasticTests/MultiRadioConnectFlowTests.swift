@@ -233,6 +233,28 @@ struct MultiRadioConnectFlowTests {
 		try await manager.disconnect()
 	}
 
+	@Test("A second connect to a radio whose connect waits at the handshake gate is refused")
+	func duplicateConnectRefused() async throws {
+		let saved = SavedDefaults()
+		defer { saved.restore() }
+		let radio = ScriptedRadio(nodeNum: uniqueNodeNum())
+		let manager = makeManager(ScriptedTransport(radio: radio))
+		let target = device()
+		await manager.handshakeGate.acquire()
+
+		let first = Task { try await manager.connect(to: target) }
+		try await waitUntil { manager.connectAttempts[target.id] != nil }
+		#expect(manager.hasFocusedConnectInProgress)
+		#expect(manager.focusHandoverCandidate == nil)
+		await #expect(throws: AccessoryError.self) { try await manager.connect(to: target) }
+
+		manager.handshakeGate.release()
+		try await first.value
+		#expect(manager.activeConnection?.device.id == target.id)
+		#expect(!manager.hasFocusedConnectInProgress)
+		try await manager.disconnect()
+	}
+
 	@Test("When the focused radio drops, another connected radio takes the focus in place")
 	func handoverWithoutReconnecting() async throws {
 		let saved = SavedDefaults()

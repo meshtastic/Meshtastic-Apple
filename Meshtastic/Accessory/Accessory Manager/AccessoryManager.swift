@@ -492,7 +492,7 @@ class AccessoryManager: ObservableObject {
 		// A firmware update owns the radio: reconnecting mid-update fights the
 		// updater for the device while it is rebooting into its bootloader.
 		if otaInProgress { return }
-		if !self.isConnected && !self.isConnecting,
+		if !self.isConnected && !self.isConnecting && !hasFocusedConnectInProgress,
 		   let preferredDevice = device ?? self.devices.first(where: { $0.id.uuidString == PreferredRadio.peripheralId }) {
 			Task {
 				try await self.connect(to: preferredDevice)
@@ -780,6 +780,9 @@ class AccessoryManager: ObservableObject {
 		guard !isClosingConnection else { return }
 		self.userRequestedConnectionCancellation = true
 		connectCancelGeneration &+= 1
+		for attempt in connectAttempts.values where attempt.isFocused {
+			attempt.isCancelled = true
+		}
 		// Cancel ongoing connection task if it exists
 		await self.connectionStepper?.cancel()
 
