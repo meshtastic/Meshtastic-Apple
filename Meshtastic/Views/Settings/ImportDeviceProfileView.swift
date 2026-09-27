@@ -12,7 +12,6 @@ import SwiftUI
 import MeshtasticProtobufs
 import OSLog
 
-@available(iOS 18, *)
 struct ImportDeviceProfileView: View {
 	@EnvironmentObject private var accessoryManager: AccessoryManager
 	@Environment(\.modelContext) private var context

@@ -46,6 +46,26 @@ struct SettingsNodeSnapshot: Identifiable, Equatable {
 		canRemoteAdmin = node.canRemoteAdmin
 		hasSessionPasskey = node.sessionPasskey != nil
 
+		// `SecurityConfig.is_managed` is where this lives now — `DeviceConfig.is_managed`
+		// is deprecated upstream and marked "Moved to SecurityConfig", so reading only the
+		// device copy misses a radio that sets the current field. Android reads security.
+		//
+		// A radio that sends a SecurityConfig at all has the field, so its answer is the
+		// answer, including `false`. OR-ing the two would let a stale `true` left in the
+		// device copy keep saying managed after it was turned off. Only a radio too old to
+		// send SecurityConfig falls back to the deprecated field.
+		var managed = false
+		if let securityConfig = node.securityConfig,
+			securityConfig.modelContext != nil,
+			!securityConfig.isDeleted {
+			managed = securityConfig.isManaged
+		} else if let deviceConfig = node.deviceConfig,
+			deviceConfig.modelContext != nil,
+			!deviceConfig.isDeleted {
+			managed = deviceConfig.isManaged
+		}
+		isManaged = managed
+
 		if let user = node.user,
 			user.modelContext != nil,
 			!user.isDeleted {
@@ -57,10 +77,8 @@ struct SettingsNodeSnapshot: Identifiable, Equatable {
 			if let deviceConfig = node.deviceConfig,
 				deviceConfig.modelContext != nil,
 				!deviceConfig.isDeleted {
-				isManaged = deviceConfig.isManaged
 				role = deviceConfig.role
 			} else {
-				isManaged = false
 				role = userRole
 			}
 		} else {
@@ -71,10 +89,8 @@ struct SettingsNodeSnapshot: Identifiable, Equatable {
 			if let deviceConfig = node.deviceConfig,
 				deviceConfig.modelContext != nil,
 				!deviceConfig.isDeleted {
-				isManaged = deviceConfig.isManaged
 				role = deviceConfig.role
 			} else {
-				isManaged = false
 				role = nil
 			}
 		}
@@ -559,6 +575,15 @@ struct Settings: View {
 		}
 	}
 
+	/// Android shows this only while the local radio is the target; a remote admin
+	/// session backs up nothing this phone is holding.
+	@ViewBuilder
+	var backupRestoreSection: some View {
+		if selectedNode == 0 || selectedNode == preferredNodeNum {
+			BackupRestoreSection(isManaged: connectedNodeIsManaged)
+		}
+	}
+
 	var loggingSection: some View {
 		Section(header: Text("Logging")) {
 			NavigationLink(value: SettingsNavigationState.debugLogs) {
@@ -608,13 +633,12 @@ struct Settings: View {
 					Image(systemName: "folder")
 				}
 			}
-			// Tools hosts NFC actions AND device-configuration import/export. Gating the whole entry
-			// point on NFC hardware made sense while it was NFC-only, but it now hides import/export
-			// completely on iPad, Mac Catalyst, and the Simulator, with no other way to reach them.
-			// Show it when either capability is usable; Tools itself hides the sections that are not.
+			// NFC actions only, now that backup and restore live on the Settings list. The
+			// entry point was widened to "or connected" while import/export were in here,
+			// because this gate otherwise hid them entirely on iPad, Mac and the Simulator.
 			#if !targetEnvironment(macCatalyst)
 			if #available(iOS 18, *) {
-				if NFCReader.isAvailable || accessoryManager.isConnected {
+				if NFCReader.isAvailable {
 					NavigationLink(value: SettingsNavigationState.tools) {
 						Label {
 							Text("Tools")
@@ -747,6 +771,10 @@ struct Settings: View {
 							.font(.callout)
 							.foregroundStyle(.orange)
 					}
+					// The configuration sections are hidden on a managed radio, but backup and
+					// restore still belong on screen: Android shows them disabled with the
+					// reason rather than leaving the user to wonder where they went.
+					backupRestoreSection
 				}
 				if let node, !node.isManaged {
 					if accessoryManager.isConnected {
@@ -815,6 +843,7 @@ struct Settings: View {
 					radioConfigurationSection
 					deviceConfigurationSection
 					moduleConfigurationSection
+					backupRestoreSection
 					loggingSection
 					if showsDevelopersSection {
 						developersSection
