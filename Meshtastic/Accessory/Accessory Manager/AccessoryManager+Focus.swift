@@ -88,6 +88,9 @@ extension AccessoryManager {
 			MeshShareSnapshotBuilder.refresh(nodeNum: nodeNum, context: context)
 		}
 		initializeUnreadBadges()
+		// The loop that shares the phone's position with every radio stops when a focused radio
+		// drops; a radio taking the focus after that starts it again (T149).
+		initializeLocationProvider()
 		applyEventFirmwareNotificationDefaults(FirmwareEdition(rawValue: session.firmwareEdition.rawValue) ?? .vanilla)
 		initializeTAKBridge()
 		WatchSessionManager.shared.sendNodesToWatch()

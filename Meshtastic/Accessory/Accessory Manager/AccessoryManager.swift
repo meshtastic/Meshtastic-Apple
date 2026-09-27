@@ -713,7 +713,7 @@ class AccessoryManager: ObservableObject {
 		}
 		// Feature 021: with other radios still connected, one takes the focus if this one
 		// doesn't come back.
-		scheduleFocusHandover(previousRadio: closingNodeNum)
+		scheduleFocusHandover(previousRadio: closingNodeNum, previousDevice: closing?.device)
 		self.activeDeviceNum = nil
 		self.firmwareUpdateRequired = false
 		if let closing {

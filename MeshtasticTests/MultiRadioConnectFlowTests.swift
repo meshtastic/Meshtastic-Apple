@@ -245,12 +245,15 @@ struct MultiRadioConnectFlowTests {
 
 		try await dropped.connection.disconnect(withError: nil, shouldReconnect: true)
 		try await manager.closeConnection()
-		manager.scheduleFocusHandover(previousRadio: Int64(radios.firstNum), after: .milliseconds(10))
+		manager.scheduleFocusHandover(previousRadio: Int64(radios.firstNum), previousDevice: dropped.device, after: .milliseconds(10))
 		try await waitUntil { manager.activeConnection != nil }
 
 		#expect(manager.activeConnection === secondSession)
 		#expect(await radios.second.disconnects == 0)
 		#expect(await radios.second.sent.map(describe).filter { $0 == .wantConfig(69420) }.count == 1, "not connected again")
+		#expect(manager.additionalRadioReconnects[radios.firstDevice.id] != nil, "the dropped radio is tried again")
+		#expect(manager.locationTask != nil, "the phone's position keeps going to every radio")
+		manager.additionalRadioReconnects.values.forEach { $0.cancel() }
 		manager.isSwitchingDevices = true
 		try await manager.disconnect()
 	}

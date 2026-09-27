@@ -16,6 +16,8 @@ extension AccessoryManager {
 	}
 
 	func initializeLocationProvider() {
+		// One loop at a time: it's started again when another radio takes the focus.
+		locationTask?.cancel()
 		self.locationTask = Task {
 			repeat {
 				let sleepSeconds = Self.locationProviderSleepSeconds(configuredInterval: UserDefaults.provideLocationInterval)

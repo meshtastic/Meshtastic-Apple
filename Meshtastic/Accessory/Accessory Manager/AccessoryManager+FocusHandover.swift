@@ -36,8 +36,9 @@ extension AccessoryManager {
 
 	/// Called when the focused radio's connection closes. With other radios connected, waits
 	/// `focusHandoverDelay` for the focused radio's own reconnect, then gives the focus to one of
-	/// them. The dropped radio is remembered, so it comes back as an additional radio.
-	func scheduleFocusHandover(previousRadio: Int64?, after delay: Duration = focusHandoverDelay) {
+	/// them. The dropped radio (`previousDevice`) is then tried again as an additional radio until
+	/// it's back (T149): discovery only brings back the preferred radio, which is now the new one.
+	func scheduleFocusHandover(previousRadio: Int64?, previousDevice: Device? = nil, after delay: Duration = focusHandoverDelay) {
 		focusHandoverTask?.cancel()
 		guard !additionalRadios.isEmpty else {
 			focusHandoverTask = nil
@@ -56,6 +57,9 @@ extension AccessoryManager {
 						await MeshPackets.shared.setRadioAutoConnect(nodeNum: previousRadio, true)
 					}
 					await switchToDevice(next, accessoryManager: self, appState: self.appState, keepPreviousRadio: false)
+					if let previousDevice, self.activeConnection != nil, !self.isRadioConnected(previousDevice.id) {
+						self.scheduleAdditionalRadioReconnect(previousDevice)
+					}
 					return
 				}
 				guard waited < Self.focusHandoverGiveUp else { return }
