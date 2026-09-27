@@ -36,6 +36,21 @@ extension MeshPackets {
 		return Set(myInfos.map(\.myNodeNum).filter { $0 != 0 })
 	}
 
+	/// The radios a keyed lookup tries, `first` (the radio at hand) leading: the user's radios,
+	/// re-read at most every few seconds rather than on every packet. A radio added since is
+	/// covered by `first`, which is the radio the packet came in on.
+	func lookupRadios(first: Int64?) -> [Int64] {
+		let now = Date()
+		if now.timeIntervalSince(lookupRadiosReadAt) > 5 {
+			cachedLookupRadios = localRadioNums()
+			lookupRadiosReadAt = now
+		}
+		var radios: [Int64] = []
+		if let first, first != 0 { radios.append(first) }
+		radios.append(contentsOf: cachedLookupRadios.subtracting(radios).sorted())
+		return radios
+	}
+
 	// MARK: - Admin sessions
 
 	/// Stores a remote-admin session passkey on the asking radio's observation of the node
@@ -47,7 +62,7 @@ extension MeshPackets {
 		descriptor.fetchLimit = 1
 		do {
 			guard let node = try modelContext.fetch(descriptor).first else { return }
-			let observation = observation(of: node, by: radioNum, among: try observations(ofNode: nodeNum))
+			let observation = observation(of: node, by: radioNum, among: try observations(ofNode: nodeNum, radioNum: radioNum))
 			observation.sessionPasskey = passkey
 			observation.sessionExpiration = Date().addingTimeInterval(300)
 		} catch {
@@ -130,17 +145,20 @@ extension MeshPackets {
 	/// delivering radio sent, so that radio's `messageKey` is tried first; rows without a key
 	/// (not yet backfilled, admin log entries) fall back to the id alone.
 	func sentMessage(requestID: Int64, radioNum: Int64?) throws -> MessageEntity? {
-		if let radioNum {
-			let key = MessageEntity.key(fromNum: radioNum, messageId: requestID)
+		// Every message the user sends is keyed by the radio that sent it, the delivering radio
+		// first. Lookups by key use its index; `messageId` has none (T140).
+		for sender in lookupRadios(first: radioNum) {
+			let key = MessageEntity.key(fromNum: sender, messageId: requestID)
 			var keyed = FetchDescriptor<MessageEntity>(predicate: #Predicate { $0.messageKey == key })
 			keyed.fetchLimit = 1
 			if let match = try modelContext.fetch(keyed).first {
 				return match
 			}
 		}
-		var byId = FetchDescriptor<MessageEntity>(predicate: #Predicate { $0.messageId == requestID })
-		byId.fetchLimit = 1
-		return try modelContext.fetch(byId).first
+		// Rows the backfill hasn't keyed yet. `messageKey == nil` is served by the same index.
+		var legacy = FetchDescriptor<MessageEntity>(predicate: #Predicate { $0.messageKey == nil && $0.messageId == requestID })
+		legacy.fetchLimit = 1
+		return try modelContext.fetch(legacy).first
 	}
 
 	// MARK: - Receptions
@@ -153,7 +171,7 @@ extension MeshPackets {
 		let packetId = Int64(packet.id)
 		let known: [PacketReceptionEntity]
 		do {
-			known = try receptions(fromNum: fromNum, packetId: packetId)
+			known = try receptions(fromNum: fromNum, packetId: packetId, radioNum: radioNum)
 		} catch {
 			Logger.data.error("💥 [MultiRadio] Reception lookup failed: \(error.localizedDescription, privacy: .public)")
 			return .untracked
@@ -178,10 +196,17 @@ extension MeshPackets {
 	}
 
 	/// Saved and still-unsaved receptions of one packet (`fetch` only sees saved rows).
-	func receptions(fromNum: Int64, packetId: Int64) throws -> [PacketReceptionEntity] {
-		var found = try modelContext.fetch(FetchDescriptor<PacketReceptionEntity>(
-			predicate: #Predicate { $0.fromNum == fromNum && $0.packetId == packetId }
-		))
+	/// Looked up by key for each of the user's radios (`radioNum` first): a reception only ever
+	/// comes from one of them, and the key is indexed where `fromNum` and `packetId` aren't, so
+	/// this is a handful of index lookups per packet rather than a table scan (T140).
+	func receptions(fromNum: Int64, packetId: Int64, radioNum: Int64? = nil) throws -> [PacketReceptionEntity] {
+		var found: [PacketReceptionEntity] = []
+		for radio in lookupRadios(first: radioNum) {
+			let key = PacketReceptionEntity.key(radioNum: radio, fromNum: fromNum, packetId: packetId)
+			var descriptor = FetchDescriptor<PacketReceptionEntity>(predicate: #Predicate { $0.key == key })
+			descriptor.fetchLimit = 1
+			found.append(contentsOf: try modelContext.fetch(descriptor))
+		}
 		let pending = modelContext.insertedModelsArray.lazy
 			.compactMap { $0 as? PacketReceptionEntity }
 			.filter { $0.fromNum == fromNum && $0.packetId == packetId }
@@ -193,11 +218,16 @@ extension MeshPackets {
 
 	// MARK: - Observations
 
-	/// Saved and still-unsaved observations of one node, by every local radio.
-	func observations(ofNode nodeNum: Int64) throws -> [NodeObservationEntity] {
-		var found = try modelContext.fetch(FetchDescriptor<NodeObservationEntity>(
-			predicate: #Predicate { $0.nodeNum == nodeNum }
-		))
+	/// Saved and still-unsaved observations of one node, by every local radio (`radioNum` first).
+	/// By key, like `receptions`: `nodeNum` has no index (T140).
+	func observations(ofNode nodeNum: Int64, radioNum: Int64? = nil) throws -> [NodeObservationEntity] {
+		var found: [NodeObservationEntity] = []
+		for radio in lookupRadios(first: radioNum) {
+			let key = NodeObservationEntity.key(radioNum: radio, nodeNum: nodeNum)
+			var descriptor = FetchDescriptor<NodeObservationEntity>(predicate: #Predicate { $0.key == key })
+			descriptor.fetchLimit = 1
+			found.append(contentsOf: try modelContext.fetch(descriptor))
+		}
 		let pending = modelContext.insertedModelsArray.lazy
 			.compactMap { $0 as? NodeObservationEntity }
 			.filter { $0.nodeNum == nodeNum }
@@ -237,7 +267,7 @@ extension MeshPackets {
 	func recordNodeDBObservation(_ nodeInfo: NodeInfo, node: NodeInfoEntity, radioNum: Int64?) {
 		guard let radioNum, radioNum != 0, node.num != radioNum else { return }
 		do {
-			let existing = try observations(ofNode: node.num)
+			let existing = try observations(ofNode: node.num, radioNum: radioNum)
 			let observation = observation(of: node, by: radioNum, among: existing)
 			if nodeInfo.lastHeard > 0 {
 				let candidate = Date(timeIntervalSince1970: TimeInterval(nodeInfo.lastHeard))

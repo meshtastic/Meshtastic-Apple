@@ -290,7 +290,7 @@ extension MeshPackets {
 				// Feature 021: the packet updates the receiving radio's observation. With that
 				// the only one, the node is written directly exactly as before; with several
 				// radios hearing the node, the node holds their aggregate instead.
-				let observations = try self.observations(ofNode: node.num)
+				let observations = try self.observations(ofNode: node.num, radioNum: activeDeviceNum)
 				let observation = self.observation(of: node, by: activeDeviceNum, among: observations)
 				let heardTime: Date? = isImplicitAck ? nil : (packet.rxTime > 0 ? Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime))) : Date())
 				if let heardTime { observation.lastHeard = heardTime }

@@ -222,6 +222,10 @@ actor MeshPackets {
 	/// never persist again — see `recreateShared()`.
 	private(set) var invalidated = false
 
+	/// The user's radios for keyed lookups, re-read every few seconds (`lookupRadios(first:)`).
+	var cachedLookupRadios: Set<Int64> = []
+	var lookupRadiosReadAt = Date.distantPast
+
 	func invalidate() {
 		invalidated = true
 		debounceSaveTask?.cancel()
