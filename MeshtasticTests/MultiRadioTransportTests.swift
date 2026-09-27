@@ -210,6 +210,14 @@ struct MultiRadioBLETransportTests {
 
 // MARK: - BLE restoration (T062)
 
+private final class TakeoverRecord<Value>: @unchecked Sendable {
+	private let lock = NSLock()
+	private var value: Value
+	init(_ value: Value) { self.value = value }
+	func set(_ newValue: Value) { lock.withLock { value = newValue } }
+	func get() -> Value { lock.withLock { value } }
+}
+
 private struct IdentifiedPeripheral: RestoredPeripheral {
 	let identifier: UUID
 	var state: CBPeripheralState = .connecting
@@ -235,6 +243,30 @@ struct MultiRadioBLERestorationTests {
 		let alsoConnected = IdentifiedPeripheral(identifier: UUID(), state: .connected)
 		#expect(BLETransport.focusedPeripheral(among: [preferred, connected], preferredId: preferred.identifier.uuidString)?.identifier == connected.identifier)
 		#expect(BLETransport.focusedPeripheral(among: [connected, alsoConnected], preferredId: alsoConnected.identifier.uuidString)?.identifier == alsoConnected.identifier)
+	}
+
+	@Test("A standby radio that connects while the focused restore still waits takes over the restore")
+	func standbyConnectingFirstTakesOver() async throws {
+		let peripheralA = PeripheralA.make()
+		let peripheralB = PeripheralB.make()
+		let connects = Reached()
+		let central = TwoPeripheralCentral(peripherals: [peripheralA, peripheralB], connects: connects)
+		let transport = BLETransport(createCentralManagerImmediately: false, centralManager: central)
+		let tookOver = Reached()
+		let takenOverId = TakeoverRecord<UUID?>(nil)
+		await transport.setRestoreTakeover { peripheral, _ in
+			takenOverId.set(peripheral.identifier)
+			await tookOver.mark()
+		}
+		await transport.holdRestoredPeripherals([peripheralB], gracePeriod: .seconds(60))
+
+		let restore = Task { try await transport.waitForRestoredConnect(of: peripheralA) }
+		await connects.wait(for: 1)
+		await transport.handleDidConnect(peripheral: peripheralB, central: central)
+
+		await #expect(throws: BLETransport.RestoreHandedOver.self) { try await restore.value }
+		await tookOver.wait(for: 1)
+		#expect(takenOverId.get() == PeripheralB.id)
 	}
 
 	@Test("Another radio's connect finishing doesn't end the focused restore's wait")

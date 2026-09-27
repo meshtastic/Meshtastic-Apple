@@ -528,6 +528,9 @@ actor BLETransport: Transport {
 			restoredConnect.continuation.resume()
 			return
 		}
+		if handOverRestore(to: peripheral, central: central) {
+			return
+		}
 		Logger.transport.debug("🛜 [BLE] Handle Did Connect Connected to peripheral \(peripheral.name ?? "Unknown", privacy: .public)")
 		let id = peripheral.identifier
 		guard let cont = connectContinuations.removeValue(forKey: id) else {
@@ -568,16 +571,17 @@ actor BLETransport: Transport {
 			return
 		}
 		holdRestoredPeripherals(peripherals.filter { $0.identifier != peripheral.identifier })
-		
-		// Prevent device discovery during the restore process
-		restoreInProgress = true
+		let device = await restoredDevice(for: peripheral)
+		restoreAsFocused(peripheral, central: central, device: device)
+	}
 
-		// Create a device object
+	/// The `Device` for a peripheral iOS restored: its node number and names from the store.
+	func restoredDevice(for peripheral: CBPeripheral) async -> Device {
 		// TODO: maybe serialize the whole device into UserDefaults on connect?
 		let id = peripheral.identifier
 		let nodeNum = await Self.restoredNodeNum(peripheralId: id)
 		var device = Device(id: id, name: peripheral.name ?? "Unknown", transportType: .ble, identifier: id.uuidString, num: nodeNum, wasRestored: true)
-		
+
 		// Get the device name
 		if let nodeNum {
 			let nodeNumVal = Int64(nodeNum)
@@ -603,7 +607,19 @@ actor BLETransport: Transport {
 				device.shortName = shortName
 			}
 		}
-		
+		return device
+	}
+
+	/// A focused restore still waiting was given up because a standby radio connected first
+	/// (T178); that radio is the focused restore now.
+	struct RestoreHandedOver: Error {}
+
+	/// Restores `peripheral` as the focused radio: taken over if iOS kept it connected, or its
+	/// pending connect completed and then a full handshake.
+	func restoreAsFocused(_ peripheral: CBPeripheral, central: CBCentralManager, device: Device) {
+		// Prevent device discovery during the restore process
+		restoreInProgress = true
+		let id = peripheral.identifier
 		discoveredPeripherals[id] = (peripheral: peripheral, lastSeen: Date())
 	
 		Logger.transport.error("🛜 [BLE] Found peripheral to restore: \(peripheral.name ?? "Unknown", privacy: .public) ID: \(peripheral.identifier, privacy: .public) State: \(cbPeripheralStateDescription(peripheral.state), privacy: .public).")
@@ -626,16 +642,11 @@ actor BLETransport: Transport {
 						try await self.waitForRestoredConnect(of: peripheral)
 						
 						Logger.transport.error("🛜 [BLE] Restoring peripheral in connecting state.  ✅ didConnect Received!")
-						let connectTask = Task { @MainActor in
-							try await AccessoryManager.shared.connect(to: device, withConnection: restoredConnection, wantConfig: true, wantDatabase: true, versionCheck: true)
-						}
-						
-						do {
-							try await connectTask.value
-						} catch {
-							Logger.transport.error("🛜 [BLE] Error connecting during state restoration: \(error, privacy: .public)")
-						}
-						self.restoreInProgress = false
+						await self.completeFocusedRestore(device: device, connection: restoredConnection, fullHandshake: true)
+					} catch is RestoreHandedOver {
+						// Another restored radio connected first and is the focused restore now; this
+						// one waits with the others (T178). `restoreInProgress` is that restore's.
+						Logger.transport.info("🛜 [BLE] \(device.name, privacy: .public) is still connecting; another restored radio takes the focus")
 					} catch {
 						// We had a connection failure during restoration.
 						Logger.transport.error("🛜 [BLE] Error restoring peripheral in connecting state. \(error, privacy: .public)")
@@ -647,17 +658,8 @@ actor BLETransport: Transport {
 				let restoredConnection = BLEConnection(peripheral: peripheral, central: central, transport: self)
 				self.activeConnections[id] = restoredConnection
 				Logger.transport.error("🛜 [BLE] Peripheral Connection found and state is connected setting this connection as the activeConnection.")
-				let connectTask = Task { @MainActor in
-					// In this case we need a full reconnect, so do the wantConfig, wantDatabase, and versionCheck
-					try await AccessoryManager.shared.connect(to: device, withConnection: restoredConnection, wantConfig: false, wantDatabase: false, versionCheck: false)
-				}
-				do {
-					try await connectTask.value
-				} catch {
-					Logger.transport.error("🛜 [BLE] Error connecting during state restoration: \(error, privacy: .public)")
-				}
-
-				self.restoreInProgress = false
+				// iOS kept the link, so the radio has no new config to send.
+				await self.completeFocusedRestore(device: device, connection: restoredConnection, fullHandshake: false)
 				Logger.transport.error("🛜 [BLE] Connection state successfully restored in the background.")
 			default:
 				// Since we're not going to attempt to reconnect in then allow normal device discovery
@@ -665,7 +667,54 @@ actor BLETransport: Transport {
 				self.restoreInProgress = false
 			}
 		}
+	}
 
+	/// Runs the focused radio's connect over a restored link, then lets discovery run again.
+	private func completeFocusedRestore(device: Device, connection: BLEConnection, fullHandshake: Bool) async {
+		let connectTask = Task { @MainActor in
+			try await AccessoryManager.shared.connect(to: device, withConnection: connection, wantConfig: fullHandshake, wantDatabase: fullHandshake, versionCheck: fullHandshake)
+		}
+		do {
+			try await connectTask.value
+		} catch {
+			Logger.transport.error("🛜 [BLE] Error connecting during state restoration: \(error, privacy: .public)")
+		}
+		restoreInProgress = false
+	}
+
+	/// Test seam for `handleDidConnect`'s hand-over (T178): what happens to the standby radio
+	/// that connected first. Nil runs the focused restore.
+	private(set) var restoreTakeover: (@Sendable (CBPeripheral, CBCentralManager) async -> Void)?
+
+	func setRestoreTakeover(_ takeover: (@Sendable (CBPeripheral, CBCentralManager) async -> Void)?) {
+		restoreTakeover = takeover
+	}
+
+	/// A standby radio's didConnect while the focused restore still waits: that radio, which is
+	/// the one in range, becomes the focused restore, and the waiting one joins the standby radios
+	/// so the remembered-radio reconnect claims it when it connects (T178). Returns false when
+	/// this isn't that case.
+	private func handOverRestore(to peripheral: CBPeripheral, central: CBCentralManager) -> Bool {
+		guard let pending = restoredConnect, pending.peripheralId != peripheral.identifier,
+			  let standby = restoredStandby.removeValue(forKey: peripheral.identifier) else { return false }
+		restoredConnect = nil
+		activeConnections.removeValue(forKey: pending.peripheralId)
+		if let waiting = discoveredPeripherals[pending.peripheralId]?.peripheral {
+			restoredStandby[pending.peripheralId] = waiting
+		}
+		pending.continuation.resume(throwing: RestoreHandedOver())
+		Task {
+			if let restoreTakeover = self.restoreTakeover {
+				await restoreTakeover(standby, central)
+				return
+			}
+			let device = await self.restoredDevice(for: standby)
+			self.restoreInProgress = true
+			let connection = BLEConnection(peripheral: standby, central: central, transport: self)
+			self.activeConnections[standby.identifier] = connection
+			await self.completeFocusedRestore(device: device, connection: connection, fullHandshake: true)
+		}
+		return true
 	}
 
 	/// Completes the pending connect of `peripheral`, restored while connecting, and waits for its

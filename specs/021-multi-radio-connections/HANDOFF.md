@@ -295,8 +295,10 @@ describes it well enough to rebuild.
   focused restore fails, the others are released too; the remembered-radio fallback at discovery
   can bring one back as the focus. A radio restored still connected is the focused restore ahead
   of a preferred one still connecting, and the restore's wait only ends on its own peripheral's
-  didConnect (T155). A focused restore still connecting waits with no timeout and holds discovery
-  off meanwhile, as on `main`.
+  didConnect (T155). When a standby radio connects while the focused restore still waits, that
+  radio takes over the restore and the waiting one joins the standby radios (T178). A focused
+  restore still connecting with no other radio restored waits with no timeout and holds
+  discovery off meanwhile, as on `main`.
 - Connect Step 5 (found writing T068, fixed in T154): an answer to the node-DB request that
   arrives before `sendWantDatabase` starts waiting sets `RadioSession.databaseResponseArrived`,
   so the wait is skipped instead of timing out. `ScriptedRadio(replyDelay: .zero)` answers inside
