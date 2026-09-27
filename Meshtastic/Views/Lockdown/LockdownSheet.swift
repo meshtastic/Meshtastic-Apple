@@ -36,6 +36,24 @@ struct LockdownSheet: View {
 				}
 			}
 			.interactiveDismissDisabled(true)
+			.safeAreaInset(edge: .top) { RadioNameBanner() }
+		}
+	}
+}
+
+/// With more than one radio connected, which radio a full-screen gate is about: the focused
+/// one (feature 021, T073). Shared by the lock-down sheet and the firmware update gate.
+struct RadioNameBanner: View {
+	@EnvironmentObject private var accessoryManager: AccessoryManager
+
+	var body: some View {
+		if accessoryManager.connectedRadioCount > 1, let device = accessoryManager.activeConnection?.device {
+			Label(device.longName ?? device.name, systemImage: "antenna.radiowaves.left.and.right")
+				.font(.headline)
+				.frame(maxWidth: .infinity)
+				.padding(.vertical, 8)
+				.background(.regularMaterial)
+				.accessibilityLabel(String.localizedStringWithFormat("Radio: %@".localized, device.longName ?? device.name))
 		}
 	}
 }

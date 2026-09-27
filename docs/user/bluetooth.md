@@ -57,12 +57,12 @@ To stop the question, choose a default in **Settings › App Settings › Connec
 
 With more than one radio connected, the radio indicator at the top of each screen shows **+1**, **+2** or **+3** for the other radios. Tap it to see them all and focus a different one from anywhere in the app.
 
-Some radios have to be focused before they can join alongside another one:
+Some radios need you before they can be used, whether they're focused or not. They stay connected, and the app asks about them by name:
 
-- **A locked radio** (lock-down firmware) needs its passphrase, and the passphrase prompt only appears for the focused radio. Focus it once and unlock it; after that the app remembers the passphrase and unlocks the radio on its own when it's connected alongside.
-- **A radio on firmware the app no longer supports** is turned away with a message. Focus it to update its firmware.
+- **A locked radio** (lock-down firmware) needs its passphrase. A radio with a passphrase the app has saved is unlocked on its own. Otherwise the app says the radio is locked; **Unlock** focuses it and shows the passphrase sheet. Its row under **Also Connected** says **Locked** until then.
+- **A radio on firmware the app no longer supports** needs an update. **Update** focuses it and shows the firmware update screen. Its row says **Needs a firmware update** until then.
 
-The app doesn't keep retrying these radios in the background.
+With more than one radio connected, the passphrase sheet and the update screen show the name of the radio they're for.
 
 ### Reconnecting
 

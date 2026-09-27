@@ -214,10 +214,6 @@ extension AccessoryManager {
 						try await self.connectAdditionalRadio(device, connectTimeout: Self.additionalReconnectTimeout)
 						Logger.transport.info("🔗🔁 [Additional] Reconnected \(device.name, privacy: .public)")
 						return
-					} catch let error as AdditionalRadioNeedsFocusError {
-						// Retrying can't fix it; the user has to focus it (to unlock or update it).
-						Logger.transport.info("🔗🔁 [Additional] Stopped reconnecting \(device.name, privacy: .public): \(error.localizedDescription, privacy: .public)")
-						return
 					} catch {
 						Logger.transport.info("🔗🔁 [Additional] Reconnect to \(device.name, privacy: .public) failed: \(error.localizedDescription, privacy: .public)")
 					}

@@ -25,6 +25,11 @@ struct AdditionalRadioRow: View {
 		device.connectionState == .connecting
 	}
 
+	/// Why this radio needs the user, if it does (T073).
+	private var attention: RadioAttention? {
+		accessoryManager.additionalRadios[device.id]?.attention
+	}
+
 	/// The radio's latest battery reading and its unread direct messages. On an interval rather
 	/// than in `body`, for the same reason as the focused radio's battery on the Connect tab.
 	private func refreshStatus() {
@@ -65,6 +70,11 @@ struct AdditionalRadioRow: View {
 							.foregroundStyle(.secondary)
 					}
 				}
+				if let attention {
+					Label(attention.shortCaption, systemImage: attention.isLockdown ? "lock.fill" : "exclamationmark.triangle.fill")
+						.font(.caption)
+						.foregroundStyle(.orange)
+				}
 				// T081: battery, signal and unread direct messages, like the focused radio's row.
 				HStack(spacing: 10) {
 					if let batteryLevel {
@@ -96,9 +106,14 @@ struct AdditionalRadioRow: View {
 						await performRadioSwitch(device, isSwitchingRadio: $isSwitchingRadio, accessoryManager: accessoryManager)
 					}
 				} label: {
-					Label("Focus This Radio", systemImage: "scope")
+					// Focusing it shows its passphrase sheet or update screen (T073).
+					if let attention {
+						Label(attention.actionTitle, systemImage: attention.isLockdown ? "lock.open" : "arrow.down.circle")
+					} else {
+						Label("Focus This Radio", systemImage: "scope")
+					}
 				}
-				.disabled(isConnecting)
+				.disabled(isConnecting && attention == nil)
 				Button(role: .destructive) {
 					Task { await accessoryManager.disconnectAdditionalRadio(device.id, byUser: true) }
 				} label: {

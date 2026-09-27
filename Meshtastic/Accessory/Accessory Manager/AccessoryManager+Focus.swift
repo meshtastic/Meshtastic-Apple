@@ -41,6 +41,8 @@ extension AccessoryManager {
 		// radio is handled while neither owns it.
 		focusHandoverTask?.cancel()
 		focusHandoverTask = nil
+		// Its lock-down sheet or update screen takes over from the prompt (T073).
+		setAttention(nil, for: session)
 		additionalRadios.removeValue(forKey: deviceId)
 		if let previous {
 			additionalRadios[previous.device.id] = previous

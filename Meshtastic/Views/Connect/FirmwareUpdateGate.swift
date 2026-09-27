@@ -21,13 +21,19 @@ struct FirmwareUpdateGate: View {
 	var body: some View {
 		NavigationStack {
 			Firmware(node: node)
-				.safeAreaInset(edge: .top) { header }
+				.safeAreaInset(edge: .top) {
+					VStack(spacing: 0) {
+						RadioNameBanner()
+						header
+					}
+				}
 				.navigationTitle("Update Your Firmware")
 				.navigationBarTitleDisplayMode(.inline)
 				.toolbar {
 					ToolbarItem(placement: .topBarTrailing) {
 						Button("Disconnect", role: .destructive) {
-							Task { try? await accessoryManager.disconnect() }
+							// With other radios connected, one of them takes the focus (feature 021).
+							Task { try? await disconnectFocusedRadio(accessoryManager: accessoryManager) }
 						}
 					}
 				}

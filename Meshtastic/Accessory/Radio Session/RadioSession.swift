@@ -75,4 +75,6 @@ final class RadioSession: Identifiable {
 	/// The last lock-down status it reported, so the focused radio's sheet and Settings
 	/// section show it when it takes the focus without reconnecting (T072).
 	var lastLockdownStatus: LockdownStatus?
+	/// Why it needs the user, when it does (T073; set through `AccessoryManager.setAttention`).
+	var attention: RadioAttention?
 }

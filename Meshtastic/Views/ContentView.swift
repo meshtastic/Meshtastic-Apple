@@ -61,6 +61,19 @@ struct ContentView: View {
 			.fullScreenCover(isPresented: $isShowingFirmwareGate) {
 				FirmwareUpdateGate()
 			}
+			// A radio that isn't focused needs the user (feature 021, T073). Its button focuses it,
+			// which shows its passphrase sheet or update screen.
+			.alert(item: $accessoryManager.radioAttentionPrompt) { prompt in
+				Alert(
+					title: Text(prompt.attention.title(radioName: prompt.radioName)),
+					message: Text(prompt.attention.message),
+					primaryButton: .default(Text(prompt.attention.actionTitle)) {
+						guard let device = accessoryManager.additionalRadios[prompt.id]?.device else { return }
+						Task { await switchToDevice(device, accessoryManager: accessoryManager, appState: appState) }
+					},
+					secondaryButton: .cancel(Text("Later"))
+				)
+			}
 			.onAppear {
 				// Trust the first-launch flag only when this process can actually read it. Launched
 				// in the background before the phone's first unlock (Bluetooth state restoration

@@ -75,7 +75,7 @@ struct MultiRadioLockdownTests {
 		}
 	}
 
-	@Test("A locked radio with a saved passphrase gets it once, on its own connection")
+	@Test("A locked radio with a saved passphrase gets it once; still locked, it stays connected and prompts by name")
 	func savedPassphraseIsSentOnce() async throws {
 		let fixture = makeFixture()
 		let manager = fixture.manager, radio = fixture.radio, connection = fixture.connection
@@ -94,16 +94,18 @@ struct MultiRadioLockdownTests {
 		let admin = try AdminMessage(serializedBytes: packet.decoded.payload)
 		#expect(admin.lockdownAuth.passphrase == Data("hunter2".utf8))
 		#expect(admin.lockdownAuth.bootsRemaining == 3)
+		#expect(radio.attention == nil, "nothing to ask while the saved passphrase is tried")
 
-		// Still locked after that: the passphrase isn't sent again, and the radio is dropped.
+		// Still locked after that: the passphrase isn't sent again, and the user is asked.
 		manager.handleAdditionalLockdown(status(.locked), session: radio, store: store)
-		try await waitUntil { await MainActor.run { manager.additionalRadios[radio.device.id] == nil } }
-		#expect(manager.additionalRadios[radio.device.id] == nil)
+		#expect(manager.additionalRadios[radio.device.id] === radio, "it stays connected")
+		#expect(radio.attention == .unlockFailed)
+		#expect(manager.radioAttentionPrompt == RadioAttentionPrompt(id: radio.device.id, radioName: "Extra", attention: .unlockFailed))
 		#expect(await connection.sent.count == 1)
 	}
 
-	@Test("A locked radio with no saved passphrase ends its connect with a reason, and isn't kept")
-	func lockedWithoutPassphraseEndsTheConnect() async throws {
+	@Test("A locked radio with no saved passphrase connects, stays connected, and prompts by name")
+	func lockedWithoutPassphraseStaysConnected() async throws {
 		var locked = LockdownStatus()
 		locked.state = .locked
 		let scripted = ScriptedRadio(nodeNum: 0x5100_0001, afterConfig: [.lockdownStatus(locked)])
@@ -111,16 +113,40 @@ struct MultiRadioLockdownTests {
 		let manager = fixture.manager
 		let device = Device(id: UUID(), name: "Locked", transportType: .tcp, identifier: "locked.local:4403")
 
-		await #expect(throws: AdditionalRadioNeedsFocusError.self) {
-			try await manager.connectAdditionalRadio(device)
-		}
-		#expect(manager.additionalRadios[device.id] == nil)
-		#expect(manager.connectAttempts[device.id] == nil)
-		#expect(await scripted.disconnects >= 1)
-		#expect(AdditionalRadioNeedsFocusError(radioName: "Extra", reason: .locked).errorDescription?.contains("Extra") == true)
+		try await manager.connectAdditionalRadio(device)
+
+		let session = try #require(manager.additionalRadios[device.id])
+		#expect(session.attention == .locked)
+		#expect(session.lastLockdownStatus?.state == .locked)
+		#expect(manager.radioAttentionPrompt?.id == device.id)
+		#expect(manager.radioAttentionPrompt?.attention.title(radioName: "Scripted Radio") == "Scripted Radio is locked")
+		#expect(await scripted.disconnects == 0)
+		await manager.disconnectAdditionalRadio(device.id, byUser: true)
+		#expect(manager.radioAttentionPrompt == nil, "a radio that's gone isn't asked about")
 	}
 
-	@Test("Firmware below the minimum turns a radio away; unknown or newer firmware doesn't")
+	@Test("Focusing a locked radio shows its passphrase sheet, without reconnecting it")
+	func focusingALockedRadioShowsTheSheet() async throws {
+		var locked = LockdownStatus()
+		locked.state = .locked
+		let scripted = ScriptedRadio(nodeNum: 0x5100_0003, afterConfig: [.lockdownStatus(locked)])
+		let fixture = makeFixture(transports: [ScriptedTransport(radio: scripted)])
+		let manager = fixture.manager
+		let coordinator = LockdownCoordinator(store: InMemoryPassphraseStore())
+		manager.lockdownCoordinator = coordinator
+		let device = Device(id: UUID(), name: "Locked", transportType: .tcp, identifier: "locked2.local:4403")
+		try await manager.connectAdditionalRadio(device)
+
+		#expect(await manager.focusConnectedRadio(device.id))
+
+		#expect(manager.activeConnection?.device.id == device.id)
+		#expect(coordinator.isBlockingSession, "the focused radio's passphrase sheet is up, for this radio")
+		#expect(manager.radioAttentionPrompt == nil)
+		#expect(manager.activeConnection?.attention == nil)
+		#expect(await scripted.disconnects == 0)
+	}
+
+	@Test("Firmware below the minimum keeps a radio connected and prompts for an update")
 	func firmwareGate() async throws {
 		#expect(AccessoryManager.isFirmwareSupported(nil, minimum: "2.5.14"))
 		#expect(AccessoryManager.isFirmwareSupported("", minimum: "2.5.14"))
@@ -131,23 +157,29 @@ struct MultiRadioLockdownTests {
 		let old = ScriptedRadio(nodeNum: 0x5100_0002, firmwareVersion: "2.3.2.63df972")
 		let fixture = makeFixture(transports: [ScriptedTransport(radio: old)])
 		let manager = fixture.manager
-		try manager.checkAdditionalRadioFirmware(fixture.radio)
+		#expect(manager.firmwareAttention(for: fixture.radio) == nil)
 		let device = Device(id: UUID(), name: "Old", transportType: .tcp, identifier: "old.local:4403")
 
-		await #expect(throws: AdditionalRadioNeedsFocusError(radioName: "Scripted Radio", reason: .firmwareTooOld(version: "2.3.2.63df972"))) {
-			try await manager.connectAdditionalRadio(device)
-		}
-		#expect(manager.additionalRadios[device.id] == nil)
+		try await manager.connectAdditionalRadio(device)
+
+		let session = try #require(manager.additionalRadios[device.id])
+		#expect(session.attention == .firmwareTooOld(version: "2.3.2.63df972"))
+		#expect(manager.radioAttentionPrompt?.attention.actionTitle == "Update")
+		#expect(!manager.firmwareUpdateRequired, "the focused radio's gate isn't raised for another radio")
 	}
 
-	@Test("Unlocking a connected radio fetches its config again")
+	@Test("Unlocking a connected radio clears its prompt and fetches its config again")
 	func unlockRefreshesAConnectedRadio() async throws {
 		let fixture = makeFixture()
 		let manager = fixture.manager, radio = fixture.radio, connection = fixture.connection
+		manager.handleAdditionalLockdown(status(.locked), session: radio, store: InMemoryPassphraseStore())
+		#expect(radio.attention == .locked)
 
 		manager.handleAdditionalLockdown(status(.unlocked), session: radio, store: InMemoryPassphraseStore())
 		try await waitUntil { await !connection.sent.isEmpty }
 
+		#expect(radio.attention == nil)
+		#expect(manager.radioAttentionPrompt == nil)
 		#expect(await connection.sent.map(\.wantConfigID) == [69420])
 		// Nothing answers this connection; end the waiting refresh.
 		await manager.tearDown(radio)

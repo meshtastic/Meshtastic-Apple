@@ -412,7 +412,7 @@ extension AccessoryManager {
 					return
 				}
 				Logger.transport.info("🔗👟 [Connect] Step 6: Version check")
-				try await self.checkConnectedFirmware(attempt)
+				try self.checkConnectedFirmware(attempt)
 			}
 			
 			// Step 7: Update UI and status to connected
@@ -495,7 +495,7 @@ extension AccessoryManager {
 	}
 
 	/// Connect Step 6: the radio's firmware version.
-	private func checkConnectedFirmware(_ attempt: ConnectAttempt) async throws {
+	private func checkConnectedFirmware(_ attempt: ConnectAttempt) throws {
 		guard let firmwareVersion = attempt.session?.device.firmwareVersion else {
 			Logger.transport.error("🔗 [Connect] Firmware version not available for device \(attempt.device.name, privacy: .public)")
 			throw AccessoryError.connectionFailed("Firmware version not available")
@@ -508,16 +508,11 @@ extension AccessoryManager {
 
 		let version = firmwareVersion[...(lastDotIndex ?? String.Index(utf16Offset: 6, in: firmwareVersion))].dropLast()
 
-		// The stored version and the update gate are the focused radio's until each radio gets
-		// its own update prompt (T073). Another radio below the minimum is turned away, and the
-		// user focuses it to update it.
-		if !attempt.isFocused, let session = attempt.session {
-			do {
-				try checkAdditionalRadioFirmware(session)
-			} catch {
-				await attempt.stepper?.cancelCurrentlyExecutingStep(withError: error, cancelFullProcess: true)
-				throw error
-			}
+		// Below-minimum firmware keeps its connection on every radio (D-17). The focused radio
+		// shows the update gate; another radio is marked as needing an update, which prompts the
+		// user by name (T073).
+		if !attempt.isFocused, let session = attempt.session, let attention = firmwareAttention(for: session) {
+			setAttention(attention, for: session)
 		}
 		if attempt.isFocused {
 			// TODO: do we really need to store the firmware version in the UserDefaults?

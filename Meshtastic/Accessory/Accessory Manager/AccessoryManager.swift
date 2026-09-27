@@ -290,6 +290,9 @@ class AccessoryManager: ObservableObject {
 	}
 	/// Connects in progress, focused or not, by device id (T071): one at a time per radio.
 	var connectAttempts: [UUID: ConnectAttempt] = [:]
+	/// A radio that isn't focused needs the user (locked, or firmware too old); ContentView asks
+	/// about it by name (T073).
+	@Published var radioAttentionPrompt: RadioAttentionPrompt?
 	/// Sessions of additional radios that have been disconnected. Their late events are
 	/// dropped rather than mistaken for the focused radio's.
 	var retiredAdditionalSessionIDs: Set<UUID> = []
@@ -648,6 +651,10 @@ class AccessoryManager: ObservableObject {
 	func tearDown(_ session: RadioSession) async {
 		// Its MQTT client proxy goes first, so broker packets stop coming in for it.
 		stopMqtt(session)
+		// A prompt about a radio that's gone no longer applies (T073).
+		if radioAttentionPrompt?.id == session.device.id {
+			radioAttentionPrompt = nil
+		}
 		if let refresh = session.automaticConfigRefresh {
 			session.automaticConfigRefreshTask?.cancel()
 			await finishAutomaticConfigRefresh(owner: refresh.owner, session: session, error: CancellationError())

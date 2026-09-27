@@ -99,10 +99,10 @@ Read this first if you are picking the work up. Update it in the same commit as 
 
 ## In progress
 
-- T073 (next): lock-down passphrase and firmware update prompts for any connected radio, naming
-  it, instead of turning a locked or outdated radio away (`AdditionalRadioNeedsFocusError`).
-  T072 is done: focus moves between connected radios without reconnecting. Step 6 of D-17
-  (plan.md › Every radio the same).
+- D-17 (every radio the same) is done through T073: one connect flow, focus without
+  reconnecting, and lock-down / old firmware prompting by name on any radio. Next: the device
+  test when the owner's hardware is ready (checklist below), then the clean-up (T066 after that
+  test, T110, T111, T016/T018 remainders) and docs (T120–T122).
   a test that has to change there means behaviour changed, so say why in the commit.
   When you start a task, mark it `[~]` in tasks.md and note it here.
 
@@ -293,11 +293,12 @@ describes it well enough to rebuild.
 - Commit messages: write each to a new, unique file (`/tmp/mr-<topic>.txt`). `create_file`
   refuses to overwrite, and an old `/tmp/msgN.txt` from an earlier session once went into a
   commit unnoticed (fixed with `--amend`). Check `git log -1` after every commit.
-- Lock-down on additional radios (`AccessoryManager+AdditionalRadioGates.swift`) is untested on
-  real lock-down firmware. The unlock path re-sends the waiting want-config with the same nonce
-  whether or not the firmware would have carried on by itself; a duplicate config stream is
-  harmless. A radio turned away (`AdditionalRadioNeedsFocusError`) stays remembered, so it's
-  tried once per launch.
+- Lock-down on a radio that isn't focused (`AccessoryManager+RadioAttention.swift`) is untested on
+  real lock-down firmware. Since T073 a locked or outdated radio stays connected with a
+  `RadioAttention` and a prompt naming it; nothing turns it away. What the code can't tell: whether
+  lock-down firmware answers the node-DB request (Step 5) while locked. If it doesn't, that
+  radio's connect times out and retries, as the focused radio's already would; watch for it in
+  the device test.
 - MQTT per radio: two radios with proxy-to-client on the same broker both subscribe to the same
   channel topics, so the same broker traffic reaches both radios. The reception de-duplication
   stores it once, but it costs each radio's airtime, as with two phones.
@@ -320,6 +321,12 @@ describes it well enough to rebuild.
   `Step 8`), B's canned messages and ringtone are requested on B's connection, and a firmware
   warning from B names it. On TCP, power B off without closing the link: B's heartbeat
   timeout drops it (A's doesn't change).
+- [ ] Lock-down firmware on B with no saved passphrase: B connects alongside A, its row says
+  Locked, and a prompt names B. Unlock focuses B without reconnecting and shows the passphrase
+  sheet with B's name; after unlocking, B's real config and node DB arrive. Watch whether B's
+  connect retried while it waited (Step 5).
+- [ ] Old firmware on B: B stays connected, its row says it needs an update, Update focuses it and
+  shows the update screen named B; the update screen's Disconnect hands the focus to A.
 - [ ] App Settings › TAK / CarPlay & Siri / Apple Watch: pick B. TAK CoT goes out from B (log
   `📻 [B] Sending TAKPacket…`); a Shortcuts "Send a Group Message" without a radio goes via B;
   with B's node number while B is off, it fails. Reply to a notification from B: the reply goes via B.
