@@ -70,6 +70,20 @@ struct SendMessageIntentDestinationTests {
 			hasRecipients: true) == .recipients)
 	}
 
+	/// `INIntentResolutionResult` publishes no accessor for its outcome, so a test
+	/// cannot otherwise tell "ask the user" from "nothing to ask". Its description
+	/// carries the code. `theOutcomeCheckStillReadsTheOutcome` fails loudly if that
+	/// ever stops being true, rather than letting the assertions below go vacuous.
+	private func needsValue(_ result: INSendMessageRecipientResolutionResult) -> Bool {
+		String(describing: result).contains("resolutionResultCode = NeedsValue")
+	}
+
+	@Test func theOutcomeCheckStillReadsTheOutcome() {
+		#expect(needsValue(.needsValue()))
+		#expect(!needsValue(.notRequired()))
+		#expect(!needsValue(.unsupported()))
+	}
+
 	@Test func aChannelReplyIsNotAskedWhoItIsFor() async {
 		let intent = INSendMessageIntent(
 			recipients: nil,
@@ -84,7 +98,7 @@ struct SendMessageIntentDestinationTests {
 
 		let resolved = await Handler().resolveRecipients(for: intent)
 
-		#expect(resolved.isEmpty, "a channel needs no recipient; one result here is the prompt")
+		#expect(resolved.isEmpty, "a channel needs no recipient; any result here is a question")
 	}
 
 	@Test func aMessageWithNoDestinationStillAsksWhoItIsFor() async {
@@ -101,6 +115,7 @@ struct SendMessageIntentDestinationTests {
 
 		let resolved = await Handler().resolveRecipients(for: intent)
 
-		#expect(resolved.count == 1, "with nothing to address, asking is correct")
+		#expect(resolved.count == 1)
+		#expect(resolved.first.map(needsValue) == true, "with nothing to address, asking is correct")
 	}
 }

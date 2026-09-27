@@ -189,7 +189,9 @@ final class SendMessageIntentHandler: NSObject, INSendMessageIntentHandling {
 				// A group name that matches no channel is a failure — the old
 				// fallback to index 0 silently sent the reply to Primary instead.
 				guard let channelIndex else {
-					Logger.services.error("CarPlay/Siri: No channel matches group name \(name, privacy: .public)")
+					// The group name is whatever the user said, so it is redacted like
+					// message content is: it can carry a person, a place, anything.
+					Logger.services.error("CarPlay/Siri: No channel matches group name \(name, privacy: .private)")
 					return INSendMessageIntentResponse(code: .failure, userActivity: nil)
 				}
 				try await AccessoryManager.shared.sendMessage(
