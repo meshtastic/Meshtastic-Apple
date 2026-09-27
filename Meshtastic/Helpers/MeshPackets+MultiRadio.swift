@@ -52,6 +52,19 @@ extension MeshPackets {
 		return radios
 	}
 
+	// MARK: - Channel keys
+
+	/// Recomputes `radioNum`'s stored channel keys from its channels and LoRa settings, after
+	/// either changes (T144). A channel without a key would show every radio's messages in its
+	/// slot; a stale key another channel's. Doesn't save; the caller does.
+	func refreshChannelKeys(radioNum: Int64) {
+		do {
+			_ = try MultiRadioBackfill.channelKeysByIndex(for: radioNum, in: modelContext)
+		} catch {
+			Logger.data.error("💥 [MultiRadio] Channel keys failed: \(error.localizedDescription, privacy: .public)")
+		}
+	}
+
 	// MARK: - Admin sessions
 
 	/// Stores a remote-admin session passkey on the asking radio's observation of the node

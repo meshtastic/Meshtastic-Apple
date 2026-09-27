@@ -336,6 +336,9 @@ actor MeshPackets {
 				apply(stagedChannel: staged, to: channel)
 				myInfo.channels.append(channel)
 			}
+			// The timeline groups a channel's messages by key, so the key follows the channels
+			// the radio just sent (T144). Without LoRa settings yet, the LoRa config sets it.
+			_ = try MultiRadioBackfill.channelKeysByIndex(for: nodeNum, in: context)
 			try context.save()
 			Logger.data.info("💾 Committed \(enabledChannels.count, privacy: .public) staged channel(s) for: \(nodeNum, privacy: .public)")
 		} catch {
@@ -951,6 +954,7 @@ actor MeshPackets {
 					if channel.role == Channel.Role.disabled {
 						if let existing {
 							modelContext.delete(existing)
+							refreshChannelKeys(radioNum: fromNum)
 							savePendingChanges()
 							Logger.data.info("💾 Deleted MyInfo channel \(channel.index, privacy: .public) from Channel App Packet For: \(fetchedMyInfo[0].myNodeNum, privacy: .public)")
 						}
@@ -965,6 +969,7 @@ actor MeshPackets {
 						fetchedMyInfo[0].channels.append(newChannel)
 					}
 					apply(stagedChannel: stagedChannel(from: channel), to: newChannel)
+					refreshChannelKeys(radioNum: fromNum)
 					savePendingChanges()
 					Logger.data.info("💾 Updated MyInfo channel \(channel.index, privacy: .public) from Channel App Packet For: \(fetchedMyInfo[0].myNodeNum, privacy: .public)")
 				} else if channel.role.rawValue > 0 {

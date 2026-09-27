@@ -109,6 +109,53 @@ struct ChannelMessageQueryTests {
 		#expect(ids(try context.fetch(FetchDescriptor(predicate: query.tapbacks(to: [1])))) == [6])
 	}
 
+	@Test("With several radios and no key yet, a channel shows only its own radio's slot")
+	func keylessChannelStaysOnItsRadio() throws {
+		let context = try makeContext()
+		try seedMessages(in: context)
+		let query = ChannelMessageQuery(channelIndex: 1, channelKey: nil, radioNum: radioA, multiRadio: true)
+
+		// Not 3: B's slot 1 is another channel.
+		#expect(ids(try ChannelMessageQuery.fetch(query.messages(), limit: nil, in: context)) == [1, 4, 5])
+		let queryB = ChannelMessageQuery(channelIndex: 2, channelKey: nil, radioNum: radioB, multiRadio: true)
+		#expect(ids(try context.fetch(FetchDescriptor(predicate: queryB.unreadCandidates()))) == [2])
+		#expect(ids(try context.fetch(FetchDescriptor(predicate: queryB.tapbacks(to: [1])))) == [6])
+		#expect(ids(try context.fetch(FetchDescriptor(predicate: query.tapbacks(to: [1])))).isEmpty)
+	}
+
+	@Test("A radio's channel keys follow its channels and LoRa settings as they arrive")
+	func keysSetOnArrival() async throws {
+		let context = try makeContext()
+		makeRadio(radioA, channels: [1: "Hikers"], in: context)
+		try context.save()
+		let packets = MeshPackets(modelContainer: context.container)
+
+		var channel = Channel()
+		channel.index = 2
+		channel.role = .secondary
+		channel.settings.name = "Cyclists"
+		channel.settings.psk = Data(repeating: 7, count: 32)
+		await packets.channelPacket(channel: channel, fromNum: radioA, stageIfRefreshing: false)
+
+		func storedKeys() throws -> [Int32: String?] {
+			let rows = try ModelContext(context.container).fetch(FetchDescriptor<ChannelEntity>())
+			return Dictionary(uniqueKeysWithValues: rows.map { ($0.index, $0.channelKey) })
+		}
+		let afterChannel = try storedKeys()
+		#expect(afterChannel.count == 3)
+		#expect(afterChannel.values.allSatisfy { $0 != nil })
+
+		var lora = Config.LoRaConfig()
+		lora.usePreset = true
+		lora.modemPreset = .mediumFast
+		await packets.upsertLoRaConfigPacket(config: lora, nodeNum: radioA)
+		// The unnamed primary is named after the preset, so its key moves; named ones don't.
+		let afterLoRa = try storedKeys()
+		#expect(afterLoRa[0] != afterChannel[0])
+		#expect(afterLoRa[0]??.hasSuffix(":MediumFast") == true)
+		#expect(afterLoRa[1] == afterChannel[1])
+	}
+
 	@Test("With one radio, the timeline is the slot, as before")
 	func singleRadio() throws {
 		let context = try makeContext()

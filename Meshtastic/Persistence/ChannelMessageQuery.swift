@@ -14,7 +14,8 @@ import SwiftData
 /// in different slots, or different channels in the same slot. With more than one radio
 /// (`multiRadio`) and a known `channelKey`, the timeline is every message with that key, plus this
 /// radio's messages in this slot (which covers rows from before the channel was renamed or rekeyed,
-/// and rows the backfill hasn't reached). Otherwise it's the single-radio query by slot.
+/// and rows the backfill hasn't reached). Without a key yet, it's this radio's messages in this
+/// slot. With one radio it's the single-radio query by slot, as before.
 struct ChannelMessageQuery {
 	let channelIndex: Int32
 	let channelKey: String?
@@ -22,18 +23,22 @@ struct ChannelMessageQuery {
 	let radioNum: Int64
 	let multiRadio: Bool
 
-	private var groupsByKey: Bool { multiRadio && channelKey != nil }
-
 	/// The channel's messages, or only its unread ones.
 	func messages(unreadOnly: Bool = false) -> Predicate<MessageEntity> {
 		let channelIndex = channelIndex
-		guard groupsByKey, let key = channelKey else {
+		let radioNum = radioNum
+		guard multiRadio else {
 			return #Predicate<MessageEntity> {
 				$0.channel == channelIndex && $0.toUser == nil && $0.isEmoji == false
 				&& (!unreadOnly || $0.read == false)
 			}
 		}
-		let radioNum = radioNum
+		guard let key = channelKey else {
+			return #Predicate<MessageEntity> {
+				$0.channel == channelIndex && ($0.localNodeNum ?? radioNum) == radioNum
+				&& $0.toUser == nil && $0.isEmoji == false && (!unreadOnly || $0.read == false)
+			}
+		}
 		// Composed from parts: as one expression it's too much for the type checker.
 		let base = #Predicate<MessageEntity> {
 			$0.toUser == nil && $0.isEmoji == false && (!unreadOnly || $0.read == false)
@@ -51,9 +56,18 @@ struct ChannelMessageQuery {
 	/// another slot, so the slot isn't part of the match.
 	func tapbacks(to messageIDs: [Int64]) -> Predicate<MessageEntity> {
 		let channelIndex = channelIndex
-		guard groupsByKey else {
+		let radioNum = radioNum
+		guard multiRadio else {
 			return #Predicate<MessageEntity> { message in
 				message.channel == channelIndex
+				&& message.isEmoji == true
+				&& messageIDs.contains(message.replyID)
+			}
+		}
+		guard channelKey != nil else {
+			return #Predicate<MessageEntity> { message in
+				message.channel == channelIndex
+				&& (message.localNodeNum ?? radioNum) == radioNum
 				&& message.isEmoji == true
 				&& messageIDs.contains(message.replyID)
 			}
@@ -69,12 +83,18 @@ struct ChannelMessageQuery {
 	/// in Swift (see `MyInfoEntity.unreadMessages` for why).
 	func unreadCandidates() -> Predicate<MessageEntity> {
 		let channelIndex = channelIndex
-		guard groupsByKey, let key = channelKey else {
+		let radioNum = radioNum
+		guard multiRadio else {
 			return #Predicate<MessageEntity> { msg in
 				msg.channel == channelIndex && msg.isEmoji == false && msg.read == false
 			}
 		}
-		let radioNum = radioNum
+		guard let key = channelKey else {
+			return #Predicate<MessageEntity> { msg in
+				msg.channel == channelIndex && (msg.localNodeNum ?? radioNum) == radioNum
+				&& msg.isEmoji == false && msg.read == false
+			}
+		}
 		let base = #Predicate<MessageEntity> { $0.isEmoji == false && $0.read == false }
 		let byKey = #Predicate<MessageEntity> { $0.channelKey == key }
 		let bySlot = #Predicate<MessageEntity> {
