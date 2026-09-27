@@ -139,7 +139,7 @@ Every finding was re-checked in the files and holds (HANDOFF.md › In progress)
 each, full suite each time.
 
 - [X] T140 D10 per-packet reception and observation lookups by their indexed keys. — `receptions`, `observations(ofNode:)` and `sentMessage` look up `radio:…` keys one radio at a time (the given radio first, the store's radios cached for 5 s). Reply and tapback lookups by `messageId` still scan: the target's sender isn't known there.
-- [ ] T141 D3 a copy one radio couldn't decrypt no longer hides the decoded copy.
+- [X] T141 D3 a copy one radio couldn't decrypt no longer hides the decoded copy. — `recordReception` returns `.untracked` for an undecoded packet and records nothing. Verified: `MultiRadioIngestTests.undecodedCopyIsNotRecorded`.
 - [ ] T142 D4 the observation backfill only for a one-radio store.
 - [ ] T143 D5 the aggregate ignores stale observations and takes no other radio's channel slot.
 - [ ] T144 D7 channel keys set when a radio's channels and LoRa config arrive.

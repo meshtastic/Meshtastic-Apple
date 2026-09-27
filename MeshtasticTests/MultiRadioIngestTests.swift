@@ -96,6 +96,22 @@ struct MultiRadioIngestTests {
 		#expect(Set(rows.filter { $0.fromNum == remote }.map(\.radioNum)) == [radioA, radioB])
 	}
 
+	@Test("A copy one radio couldn't decrypt doesn't hide the copy another radio decrypted")
+	func undecodedCopyIsNotRecorded() async throws {
+		let container = try makeContainer()
+		let packets = await makePackets(container)
+		var encrypted = packet(id: 43, from: remote)
+		encrypted.encrypted = Data([0x01, 0x02, 0x03])
+
+		#expect(await packets.recordReception(packet: encrypted, radioNum: radioA) == .untracked)
+		#expect(await packets.recordReception(packet: packet(id: 43, from: remote), radioNum: radioB) == .first)
+		#expect(await packets.recordReception(packet: encrypted, radioNum: radioA) == .untracked)
+
+		await packets.savePendingChanges()
+		let rows = try fetch(PacketReceptionEntity.self, in: container)
+		#expect(rows.map(\.radioNum) == [radioB])
+	}
+
 	// MARK: - Observations
 
 	@Test("With one radio the node is written as before and mirrored in its observation")

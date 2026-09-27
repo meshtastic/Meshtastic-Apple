@@ -14,7 +14,8 @@ import SwiftData
 
 /// What `recordReception` found out about a packet.
 enum ReceptionOutcome: Equatable {
-	/// No id or sender to track it by (locally generated packets).
+	/// No id or sender to track it by (locally generated packets), or a copy this radio couldn't
+	/// decrypt: its handlers don't run, so it mustn't stand in for another radio's decoded copy.
 	case untracked
 	/// No local radio has delivered this packet before.
 	case first
@@ -167,6 +168,9 @@ extension MeshPackets {
 	/// already. Doesn't save; the caller's debounced save does.
 	func recordReception(packet: MeshPacket, radioNum: Int64) -> ReceptionOutcome {
 		guard packet.id != 0, packet.from != 0, radioNum != 0 else { return .untracked }
+		// A radio without the packet's channel still passes it on encrypted. Recording it would
+		// mark the packet handled and drop the decoded copy another radio delivers (T141).
+		guard case .decoded = packet.payloadVariant else { return .untracked }
 		let fromNum = Int64(packet.from)
 		let packetId = Int64(packet.id)
 		let known: [PacketReceptionEntity]
