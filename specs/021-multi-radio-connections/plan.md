@@ -112,7 +112,7 @@ T070 in detail (what is per radio and what is once for the app, from `connect(to
 | Step 0–1 | connecting state, lock-down reset, transport connect, event loop, session | `activeConnection`, `activeDeviceNum` |
 | Steps 2–5a | heartbeat, want-config (config), catalog refresh from the bundle, heartbeat, want-config (node DB) and its waits | image/link refresh (3b, network), `preferredPeripheralId` (Step 5) |
 | Step 6 | version check | `UserDefaults.firmwareVersion`, the update gate (`firmwareUpdateRequired`) until T073 |
-| Step 7 | set time, connected state, ingest actor recycle (safe: the handshake gate is held), manual connection list | Messages snapshot, update notifier |
+| Step 7 | set time, connected state, ingest actor recycle (the handshake gate keeps other dumps out; the retired actor keeps saving other radios' live writes, T151), manual connection list | Messages snapshot, update notifier |
 | Step 8 | MQTT, heartbeat timer, Datadog connect action | stop discovery, stale-node prune, phone position loop, remembered radios |
 | Teardown | connection state, config refresh, event loop, heartbeats, waits, channel refresh stage | Datadog context, focus handover, `activeDeviceNum`, update gate, lock-down, traffic monitor, position loop, image refresh, shared MQTT client, context save, disconnect buttons, discovery restart |
 

@@ -277,6 +277,7 @@ extension AccessoryManager {
 		switch event {
 		case .data(let fromRadio):
 			await processFromRadio(fromRadio, session: session)
+			await noteIngestedPacket()
 			Task {
 				await session.heartbeatResponseTimer?.cancel(withReason: "Data packet received")
 				await session.heartbeatTimer?.reset(delay: .seconds(Self.heartbeatInterval))

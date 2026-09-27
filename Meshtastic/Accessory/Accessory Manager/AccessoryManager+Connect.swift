@@ -111,7 +111,6 @@ extension AccessoryManager {
 			self.activeDeviceNum = nil
 			packetsSent = 0
 			packetsReceived = 0
-			packetsAtLastIngestRecycle = 0
 
 			self.allowDisconnect = true
 			self.userRequestedConnectionCancellation = false
@@ -430,9 +429,11 @@ extension AccessoryManager {
 				self.updateDevice(deviceId: device.id, key: \.connectionState, value: .connected)
 				self.setStatus(.subscribed, for: attempt)
 
-				// Release accumulated ModelContext memory from DB retrieval
+				// Release accumulated ModelContext memory from DB retrieval. Other radios keep
+				// receiving meanwhile, so the retired actor keeps saving what they had in flight.
 				await MeshPackets.shared.flushDebouncedSaves()
-				MeshPackets.recreateShared()
+				MeshPackets.recreateShared(invalidatingPrevious: false)
+				self.ingestPacketsSinceRecycle = 0
 				
 				// If we successfully connected to a manual connection, then save it to the list
 				// Remember, Device is a value type (struct) so don't use use `device` here, thats

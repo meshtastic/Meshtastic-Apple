@@ -238,6 +238,23 @@ struct MultiRadioConnectLifecycleTests {
 		await oldSession.heartbeatTimer?.cancel(withReason: "test")
 	}
 
+	@Test("Every radio's packets count towards the ingest recycle, and the retired actor keeps saving")
+	func ingestRecycleCountsEveryRadio() async throws {
+		let manager = AccessoryManager(transports: [])
+		manager.ingestPacketsSinceRecycle = AccessoryManager.ingestRecycleInterval - 2
+		let before = MeshPackets.shared
+
+		await manager.noteIngestedPacket()
+		#expect(MeshPackets.shared === before)
+		await manager.noteIngestedPacket()
+
+		#expect(MeshPackets.shared !== before)
+		#expect(manager.ingestPacketsSinceRecycle == 0)
+		// A memory recycle clears nothing: what other radios had in flight is still saved.
+		try await Task.sleep(for: .milliseconds(50))
+		#expect(await !before.invalidated)
+	}
+
 	@Test("Favoriting a node reaches every connected radio, each on its own connection")
 	func favoriteOnEveryRadio() async throws {
 		let focusedNum: Int64 = 0x0A0A, extraNum: Int64 = 0x0B0B

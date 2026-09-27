@@ -374,12 +374,13 @@ class AccessoryManager: ObservableObject {
 	@Published private(set) var isHighMeshTraffic = false
 	private var meshTrafficCancellable: AnyCancellable?
 
-	/// Packet count at the last periodic MeshPackets recycle (see `didReceive`). The ingest
-	/// actor's ModelContext registers every entity it inserts or faults and never lets go, so a
-	/// long high-traffic session accumulates them without bound (a sustained TCP stress replay
-	/// reached millions of live model objects / multi-GB RSS). Recreating the actor releases
-	/// them; connect-time recreation alone doesn't help a session that stays connected.
-	var packetsAtLastIngestRecycle: Int = 0
+	/// Data packets from every radio since the last periodic MeshPackets recycle
+	/// (`noteIngestedPacket`). The ingest actor's ModelContext registers every entity it inserts
+	/// or faults and never lets go, so a long high-traffic session accumulates them without bound
+	/// (a sustained TCP stress replay reached millions of live model objects / multi-GB RSS).
+	/// Recreating the actor releases them; connect-time recreation alone doesn't help a session
+	/// that stays connected. Every radio's packets go through the same actor, so all count (T151).
+	var ingestPacketsSinceRecycle: Int = 0
 	/// How many packets between recycles. Each processed packet leaves a handful of registered
 	/// objects behind, so this bounds the ingest context's working set to a few hundred MB at
 	/// worst. Under a saturating TCP replay this fires every couple of minutes; on a busy real
@@ -387,6 +388,19 @@ class AccessoryManager: ObservableObject {
 	/// accumulation is proportional to packets processed. Recycling costs one context teardown
 	/// plus cold caches on the next few fetches.
 	static let ingestRecycleInterval = 5_000
+
+	/// Counts one handled data packet, from any radio, and every `ingestRecycleInterval` of them
+	/// recycles the ingest actor so its ModelContext releases accumulated registered objects.
+	/// Never during a radio's handshake (its node dump runs on the actor, T064); between packets
+	/// otherwise, flushing first. The retired actor keeps saving writes still in flight from
+	/// other radios (`recreateShared(invalidatingPrevious: false)`).
+	func noteIngestedPacket() async {
+		ingestPacketsSinceRecycle += 1
+		guard ingestPacketsSinceRecycle >= Self.ingestRecycleInterval, !handshakeGate.isBusy else { return }
+		ingestPacketsSinceRecycle = 0
+		await MeshPackets.shared.flushDebouncedSaves()
+		MeshPackets.recreateShared(invalidatingPrevious: false)
+	}
 	
 	// Continuations. The config refresh, the first-node wait and the node-DB gate belong to one
 	// connection and live on its `RadioSession` (feature 021, T069).
@@ -904,17 +918,7 @@ class AccessoryManager: ObservableObject {
 			}
 			// Logger.transport.info("✅ [Accessory] didReceive: \(fromRadio.payloadVariant.debugDescription)")
 			await self.processFromRadio(fromRadio, session: source)
-			// Periodically recycle the ingest actor so its ModelContext releases accumulated
-			// registered objects (see packetsAtLastIngestRecycle). Only while subscribed —
-			// never mid node-DB retrieval — and only here, between packets, where no in-flight
-			// handler still holds the retiring instance. Flush first: recreateShared's
-			// invalidate deliberately drops a retired instance's pending writes. Never during
-			// another radio's handshake either (feature 021, T064).
-			if case .subscribed = state, !handshakeGate.isBusy, packetsReceived - packetsAtLastIngestRecycle >= Self.ingestRecycleInterval {
-				packetsAtLastIngestRecycle = packetsReceived
-				await MeshPackets.shared.flushDebouncedSaves()
-				MeshPackets.recreateShared()
-			}
+			await noteIngestedPacket()
 			Task {
 				await source.heartbeatResponseTimer?.cancel(withReason: "Data packet received")
 				await source.heartbeatTimer?.reset(delay: .seconds(Self.heartbeatInterval))

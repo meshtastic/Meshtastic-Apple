@@ -124,6 +124,13 @@ actor MeshPackets {
 	/// Periodically recreated to release accumulated ModelContext memory.
 	nonisolated(unsafe) private static var _shared: MeshPackets = MeshPackets(modelContainer: _container)
 	private static let _lock = NSLock()
+	/// Instances retired by a memory recycle, still saving the writes that were in flight
+	/// (`recreateShared(invalidatingPrevious: false)`). Weak, so they go once those finish.
+	nonisolated(unsafe) private static var _recycled: [WeakMeshPackets] = []
+
+	private struct WeakMeshPackets {
+		weak var instance: MeshPackets?
+	}
 
 	/// Staged automatic channel refreshes, keyed by node number. Deliberately static rather
 	/// than actor state: `recreateShared()` swaps the shared instance to release memory, and a
@@ -200,19 +207,33 @@ actor MeshPackets {
 	}
 
 	/// Discards the current actor and creates a fresh one with a new ModelContext.
-	/// Call after DB retrieval completes or periodically to release accumulated memory.
-	static func recreateShared() {
+	///
+	/// After a data clear (`invalidatingPrevious`, the default) the retired instance never saves
+	/// again. In-flight tasks that captured `MeshPackets.shared` before the swap (a debounced
+	/// save, a late packet) still hold the old actor, whose context points at the SAME on-disk
+	/// store; letting those writes land after a clearDatabase resurrects cleared rows (nodes
+	/// bleeding across devices) and can trip reused-rowid "destroyed by ModelContext.reset" traps.
+	/// Instances an earlier memory recycle retired are invalidated then too.
+	///
+	/// A memory recycle (`invalidatingPrevious: false`: after a connect's node dump, or every
+	/// `ingestRecycleInterval` packets) clears nothing, so the retired instance keeps saving what
+	/// was in flight. Other radios keep receiving through it, and dropping their writes lost
+	/// positions and telemetry (T151).
+	static func recreateShared(invalidatingPrevious: Bool = true) {
 		_lock.lock()
 		let previous = _shared
 		_shared = MeshPackets(modelContainer: _container)
+		var retired: [MeshPackets] = []
+		if invalidatingPrevious {
+			retired = [previous] + _recycled.compactMap(\.instance)
+			_recycled.removeAll()
+		} else {
+			_recycled = _recycled.filter { $0.instance != nil } + [WeakMeshPackets(instance: previous)]
+		}
 		_lock.unlock()
-		// Invalidate the retired instance. In-flight tasks that captured `MeshPackets.shared`
-		// before the swap (a debounced save, a late packet for the previous radio) still hold
-		// the old actor, whose context is bound to the old container — which points at the SAME
-		// on-disk store as the new one. Letting those writes land after a device-switch
-		// clearDatabase resurrects the previous radio's rows (nodes bleeding across devices)
-		// and can trip reused-rowid "destroyed by ModelContext.reset" traps.
-		Task { await previous.invalidate() }
+		for instance in retired {
+			Task { await instance.invalidate() }
+		}
 		Logger.data.info("♻️ [MeshPackets] Recreated shared instance to release ModelContext memory")
 	}
 

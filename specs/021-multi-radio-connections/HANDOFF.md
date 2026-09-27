@@ -265,9 +265,10 @@ describes it well enough to rebuild.
 - `renumberStore` moved `preferredPeripheralNum` for any radio; it now only moves it when the
   radio being renumbered is the preferred one (T071). Tests that script several radios need
   distinct `MyNodeInfo.deviceID`s, or the app takes the second for the first renumbered.
-- `MeshPackets.recreateShared()` (connect Step 7 and every `ingestRecycleInterval` packets)
-  invalidates the old actor; an additional radio's handler that captured it mid-write loses
-  that write. Rare, but a candidate for the 24-hour test's "missing packet" findings.
+- The ingest-actor memory recycle (connect Step 7, and every `ingestRecycleInterval` packets
+  from any radio) is `recreateShared(invalidatingPrevious: false)`: the old actor keeps saving
+  what other radios had in flight (T151). Only the clear / repoint paths invalidate, and they
+  invalidate earlier recycled instances too.
 - Discovery while connected must not call `updateState(.discovering)`; `startDiscovery` only
   does that with no focused radio now.
 - `SchemaHistoryUpgradeTests.fixtureInventoryCoversEverySwiftDataRelease` sometimes fails with a
