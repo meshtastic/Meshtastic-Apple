@@ -277,6 +277,26 @@ struct MultiRadioConnectLifecycleTests {
 		manager.focusHandoverTask?.cancel()
 	}
 
+	@Test("The phone position loop keeps going for the other radios when the focused one closes")
+	func positionLoopOutlivesFocusedClose() async throws {
+		let manager = AccessoryManager(transports: [])
+		manager.activeConnection = RadioSession(device: device("Focused"), connection: IdleConnection())
+		var extra = device("Extra")
+		extra.num = 0x0B0C
+		extra.connectionState = .connected
+		manager.additionalRadios[extra.id] = RadioSession(device: extra, connection: IdleConnection())
+		manager.initializeLocationProvider()
+
+		try await manager.closeConnection()
+		#expect(manager.locationTask != nil, "another radio is still connected")
+		manager.focusHandoverTask?.cancel()
+
+		manager.additionalRadios.removeAll()
+		manager.activeConnection = RadioSession(device: device("Only"), connection: IdleConnection())
+		try await manager.closeConnection()
+		#expect(manager.locationTask == nil, "with one radio it stops, as before")
+	}
+
 	@Test("Each radio's heartbeat timeout follows its own firmware, not the focused radio's")
 	func heartbeatTimeoutPerRadio() async {
 		let manager = AccessoryManager(transports: [])

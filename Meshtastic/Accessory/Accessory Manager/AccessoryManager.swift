@@ -772,8 +772,12 @@ class AccessoryManager: ObservableObject {
 		// keep the map flyover paused after the mesh goes quiet on disconnect.
 		meshTrafficMonitor.reset()
 
-		locationTask?.cancel()
-		locationTask = nil
+		// With other radios still connected the loop keeps sharing the phone's position with
+		// them until another radio takes the focus (T185); with none, it stops as before.
+		if additionalRadios.isEmpty {
+			locationTask?.cancel()
+			locationTask = nil
+		}
 
 		// Cancel the detached device image/link pass so its outstanding image HEADs unwind instead of
 		// hanging past teardown. The pass leaves the throttle un-armed when cancelled, so the next

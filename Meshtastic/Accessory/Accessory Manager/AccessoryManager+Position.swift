@@ -23,15 +23,21 @@ extension AccessoryManager {
 				let sleepSeconds = Self.locationProviderSleepSeconds(configuredInterval: UserDefaults.provideLocationInterval)
 				try? await Task.sleep(for: .seconds(sleepSeconds)) // Throws if task is cancelled
 
-				guard let fromNodeNum = activeConnection?.device.num else {
+				// Every connected radio, the focused one first. With the focused radio gone and
+				// others still connected (a handover pending), they keep getting it (T185).
+				let radios = connectedRadioNums
+				guard !radios.isEmpty else {
 					return
 				}
+				let focusedNum = activeConnection?.device.num
 
 				if UserDefaults.provideLocation {
-					_ = try await sendPosition(channel: 0, destNum: fromNodeNum, wantResponse: false)
+					if let focusedNum {
+						_ = try await sendPosition(channel: 0, destNum: focusedNum, wantResponse: false)
+					}
 					// Feature 021 (T101): every connected radio gets the phone's position, each on
 					// its own connection. Their failures don't end the loop the focused radio drives.
-					for radioNum in connectedRadioNums where radioNum != fromNodeNum {
+					for radioNum in radios where radioNum != focusedNum {
 						do {
 							try await sendPosition(channel: 0, destNum: radioNum, wantResponse: false, viaRadio: radioNum)
 						} catch {
