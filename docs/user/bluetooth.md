@@ -80,7 +80,7 @@ With one radio, **Reset NodeDB** and **Factory Reset** (in the radio's **Device*
 - Nodes stay when another of your radios is on the same mesh: the same region, the same preset (or bandwidth, spreading factor and coding rate) and the same frequency. When the reset radio is on a mesh of its own, the nodes only it heard are removed, keeping favorites if you chose to preserve them.
 - The app asks whether to delete the radio's messages too. If you do, its direct messages are deleted, and so are its messages on channels none of your other radios has. A channel another radio has keeps all its messages.
 
-**Remove This Radio**, in the same place, takes a radio out of the app without resetting it: it disconnects and isn't reconnected, its data is removed as for a reset with its messages deleted (favorites are kept), and it no longer counts as one of your radios. Connect it again to add it back. It is only offered while the app holds more than one radio's data.
+**Remove This Radio**, in the same place, takes a radio out of the app without resetting it: it disconnects and isn't reconnected, its data is removed as for a reset with its messages deleted (favorites are kept), and it no longer counts as one of your radios. Its messages on channels another of your radios has are kept, and move to that radio's channel. Connect it again to add it back. It is only offered while the app holds more than one radio's data.
 
 A radio that isn't connected (one that stopped working, one you gave away, or one only known from an earlier version's backup) is removed from **Settings › App Settings › Your Radios**, which lists the radios the app knows that aren't connected or connecting now.
 

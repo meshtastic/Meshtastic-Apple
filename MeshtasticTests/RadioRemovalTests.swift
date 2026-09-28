@@ -312,6 +312,32 @@ struct RadioRemovalTests {
 		#expect(Set(try rows(MessageEntity.self, in: container).map(\.messageId)) == [2, 3, 4, 5])
 	}
 
+	@Test("Removing a radio moves its kept channel messages to the remaining radio's slot for them")
+	func removalMovesKeptMessagesToTheirSlot() async throws {
+		let container = try makeContainer()
+		let context = ModelContext(container)
+		let keysA = try seed(in: context)
+		// C (a merged backup's radio) has A's "Hiking" in slot 3.
+		let radioC: Int64 = 0x0C0C_0C0C
+		let myInfo = MyInfoEntity()
+		myInfo.myNodeNum = radioC
+		context.insert(myInfo)
+		let hiking = ChannelEntity()
+		hiking.index = 3
+		hiking.channelKey = keysA[1]
+		hiking.myInfoChannel = myInfo
+		context.insert(hiking)
+		observe(onlyB, by: radioC, in: context)
+		try context.save()
+
+		await MeshPackets(modelContainer: container).removeRadioData(radioA, .remove)
+
+		// Both of A's Hiking rows, the keyed one and the keyless one, are C's now, in slot 3.
+		let moved = try rows(MessageEntity.self, in: container).filter { [3, 5].contains($0.messageId) }
+		#expect(moved.count == 2)
+		#expect(moved.allSatisfy { $0.localNodeNum == radioC && $0.channel == 3 && $0.channelKey == keysA[1] })
+	}
+
 	// MARK: - Remove
 
 	@Test("Removing a radio forgets it and deletes its messages")
@@ -325,6 +351,12 @@ struct RadioRemovalTests {
 		#expect(try rows(MyInfoEntity.self, in: container).map(\.myNodeNum) == [radioB])
 		#expect(try rows(ChannelEntity.self, in: container).count == 1)
 		#expect(Set(try rows(MessageEntity.self, in: container).map(\.messageId)) == [2, 4])
+		// A's kept primary message now belongs to B, in B's slot for it, so it stays in that
+		// channel once B is the only radio (T222).
+		let kept = try #require(try rows(MessageEntity.self, in: container).first { $0.messageId == 2 })
+		#expect(kept.localNodeNum == radioB)
+		#expect(kept.channel == 0)
+		#expect(kept.channelKey != nil)
 		// Nobody else hears A, so its own node goes; the rest stay (shared mesh).
 		#expect(Set(try rows(NodeInfoEntity.self, in: container).map(\.num)) == [radioB, onlyA, both, onlyB])
 		#expect(await packets.storedRadios().map(\.nodeNum) == [radioB])

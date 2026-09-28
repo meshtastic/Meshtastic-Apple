@@ -235,7 +235,7 @@ suite each time. To resume: the first unchecked item.
 
 - [X] T220 H1 the observation backfill decides "another radio has observations" once, when the drain starts. — `drainMultiRadioBackfill` passes `othersObserved`, decided before its first chunk, to every `runChunk`; background passes still check each time. Verified: `MultiRadioBackfillTests.observationGateDecidedAtStart`.
 - [X] T221 H2 auto-connect also takes the focused (preferred) radio while the connect-first override is set. — discovery uses `PreferredRadio.connectsAutomatically`; `connectToPreferredDevice` tries the connect-first radio, then the preferred one. Verified: `MultiRadioConnectFlowTests.connectFirstOverride`.
-- [ ] T222 R6-1 a removed radio's kept channel messages move to a remaining radio with that channel.
+- [X] T222 R6-1 a removed radio's kept channel messages move to a remaining radio with that channel. — on `.remove`, `deleteMessagesOfRadio` sets a kept message's `localNodeNum`, `channel` and `channelKey` to the remaining radio's slot for its key (the preferred radio first); a reset leaves them. Verified: `RadioRemovalTests.removalMovesKeptMessagesToTheirSlot`, `.removeRadio`.
 
 ## Phase 10: Hardening
 

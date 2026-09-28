@@ -92,7 +92,7 @@ extension MeshPackets {
 			let ownRadios = Set(myInfos.map(\.myNodeNum)).union([radioNum])
 
 			if deleteMessages {
-				result.messages = try deleteMessagesOfRadio(radioNum, keepingChannelsOf: others)
+				result.messages = try deleteMessagesOfRadio(radioNum, keepingChannelsOf: others, moveKept: removal == .remove)
 				try modelContext.save()
 			}
 
@@ -153,7 +153,12 @@ extension MeshPackets {
 
 	/// Deletes `radioNum`'s direct messages, and its channel messages whose channel none of
 	/// `others` has. Returns how many went. Doesn't save.
-	private func deleteMessagesOfRadio(_ radioNum: Int64, keepingChannelsOf others: Set<Int64>) throws -> Int {
+	///
+	/// With `moveKept` (a removal), each kept channel message is moved onto a remaining radio that
+	/// has its channel: that radio, its slot for the channel, and the key if the row had none
+	/// (T222). Left on a radio that's gone, it would show in whatever channel has its slot number
+	/// once one radio is left, or in no channel at all.
+	private func deleteMessagesOfRadio(_ radioNum: Int64, keepingChannelsOf others: Set<Int64>, moveKept: Bool = false) throws -> Int {
 		// Keys from each radio's LoRa settings, and the keys stored on its channels: a radio only
 		// a merged backup knows has no LoRa settings in the store, but its channels keep their
 		// keys (T177).
@@ -169,9 +174,18 @@ extension MeshPackets {
 			try MultiRadioBackfill.channelKeysByIndex(for: radioNum, in: modelContext, updateStored: false)
 		) { _, computed in computed }
 		var sharedKeys: Set<String> = []
-		for other in others {
-			sharedKeys.formUnion(storedKeys(of: other).values)
-			sharedKeys.formUnion(try MultiRadioBackfill.channelKeysByIndex(for: other, in: modelContext, updateStored: false).values)
+		// Where each shared channel lives on the remaining radios: the preferred radio's slot
+		// first, then the lowest radio number's.
+		var slotForKey: [String: (radio: Int64, index: Int32)] = [:]
+		let preferred = PreferredRadio.nodeNum
+		for other in others.sorted(by: { ($0 == preferred ? 0 : 1, $0) < ($1 == preferred ? 0 : 1, $1) }) {
+			let keys = storedKeys(of: other).merging(
+				try MultiRadioBackfill.channelKeysByIndex(for: other, in: modelContext, updateStored: false)
+			) { _, computed in computed }
+			for (index, key) in keys.sorted(by: { $0.key < $1.key }) where slotForKey[key] == nil {
+				slotForKey[key] = (other, index)
+			}
+			sharedKeys.formUnion(keys.values)
 		}
 		let messages = try modelContext.fetch(FetchDescriptor<MessageEntity>(predicate: #Predicate { $0.localNodeNum == radioNum }))
 		var deleted = 0
@@ -180,6 +194,11 @@ extension MeshPackets {
 			if toNum == MultiRadioBackfill.broadcastNum {
 				// A row without a key is placed by its slot on this radio.
 				if let key = message.channelKey ?? ownKeys[message.channel], sharedKeys.contains(key) {
+					if moveKept, let slot = slotForKey[key] {
+						message.localNodeNum = slot.radio
+						message.channel = slot.index
+						message.channelKey = key
+					}
 					continue
 				}
 			}
