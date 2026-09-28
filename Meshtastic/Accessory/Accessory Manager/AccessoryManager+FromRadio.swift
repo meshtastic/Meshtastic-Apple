@@ -194,6 +194,11 @@ extension AccessoryManager {
 			peripheralId: connectedDeviceId
 		)
 
+		// Rows from before feature 021 belong to the radio the store held until now; attribute
+		// them before another radio's data joins them, added alongside or switched to (T186,
+		// T193, T203). Once per store; the store's own radio doesn't wait for it.
+		await backfillBeforeAnotherRadioJoins(radioNum: reportedNum, name: session.device.longName ?? session.device.name)
+
 		let myInfoId = await MeshPackets.shared.myInfoPacket(myInfo: myNodeInfo, peripheralId: connectedDeviceId)
 
 		// Move this radio's backup onto its device id if it is still filed under a node number, and

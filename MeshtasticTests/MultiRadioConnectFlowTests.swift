@@ -444,9 +444,10 @@ struct MultiRadioConnectFlowTests {
 			try? PersistenceController.shared.context.save()
 		}
 
-		// The store's own radio connecting: nothing to wait for.
+		// The store's own radio connecting, even from a new phone (another peripheral id):
+		// nothing to wait for (T203).
 		let ownerManager = makeManager(ScriptedTransport(radio: ScriptedRadio(nodeNum: UInt32(ownerNum))))
-		try await ownerManager.connect(to: ownerDevice)
+		try await ownerManager.connect(to: device())
 		#expect(try localNodeNum(ofMessage: old.messageId) == nil)
 		try await ownerManager.disconnect()
 

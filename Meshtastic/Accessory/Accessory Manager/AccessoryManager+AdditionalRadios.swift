@@ -167,29 +167,29 @@ extension AccessoryManager {
 		return connection
 	}
 
-	/// Runs the backfill for rows from before feature 021 before `device` connects, when `device`
+	/// Runs the backfill for rows from before feature 021 when radio `radioNum` reports itself and
 	/// isn't the radio those rows belong to (`BackfillOwner`), focused or not: a radio added
-	/// alongside, or one the user switched to (T186, T193). The store's own radio connecting
-	/// doesn't wait for it, so a single-radio user's launch doesn't either. Runs holding the
-	/// handshake gate, so no node dump runs meanwhile, and lets packets through between chunks.
-	func backfillBeforeAnotherRadioJoins(_ device: Device) async {
+	/// alongside, or one the user switched to (T186, T193). Called from `handleMyInfo`, before any
+	/// of its data is stored, and matched by node number (T203): a peripheral id changes on a new
+	/// phone, a node number doesn't. The store's own radio doesn't wait for it, so a single-radio
+	/// user's connect doesn't either. Its connect holds the handshake gate, so no node dump runs
+	/// meanwhile, and the drain lets packets through between chunks.
+	func backfillBeforeAnotherRadioJoins(radioNum: Int64, name: String) async {
 		let packets = MeshPackets.shared
 		guard await packets.hasPendingBackfill() else {
 			BackfillOwner.clear()
 			return
 		}
 		let owner = BackfillOwner.current()
-		guard owner.nodeNum != 0,
-			  device.id.uuidString != owner.peripheralId,
-			  device.num != owner.nodeNum else { return }
+		guard owner.nodeNum != 0, radioNum != owner.nodeNum else { return }
 		do {
 			let filled = try await packets.drainMultiRadioBackfill(ownRadio: owner.nodeNum)
-			Logger.data.info("🧭 [MultiRadio] Backfilled \(filled) rows for \(owner.nodeNum.toHex(), privacy: .public) before \(device.name, privacy: .public) connected")
+			Logger.data.info("🧭 [MultiRadio] Backfilled \(filled) rows for \(owner.nodeNum.toHex(), privacy: .public) before \(name, privacy: .public) joined")
 			if await !packets.hasPendingBackfill() {
 				BackfillOwner.clear()
 			}
 		} catch {
-			Logger.data.error("💥 [MultiRadio] Backfill before \(device.name, privacy: .public) connected failed: \(error.localizedDescription, privacy: .public)")
+			Logger.data.error("💥 [MultiRadio] Backfill before \(name, privacy: .public) joined failed: \(error.localizedDescription, privacy: .public)")
 		}
 	}
 
