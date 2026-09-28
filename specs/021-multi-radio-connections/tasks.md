@@ -234,7 +234,7 @@ All re-checked in the files and holding (2026-09-28); the owner approved. One co
 suite each time. To resume: the first unchecked item.
 
 - [X] T220 H1 the observation backfill decides "another radio has observations" once, when the drain starts. — `drainMultiRadioBackfill` passes `othersObserved`, decided before its first chunk, to every `runChunk`; background passes still check each time. Verified: `MultiRadioBackfillTests.observationGateDecidedAtStart`.
-- [ ] T221 H2 auto-connect also takes the focused (preferred) radio while the connect-first override is set.
+- [X] T221 H2 auto-connect also takes the focused (preferred) radio while the connect-first override is set. — discovery uses `PreferredRadio.connectsAutomatically`; `connectToPreferredDevice` tries the connect-first radio, then the preferred one. Verified: `MultiRadioConnectFlowTests.connectFirstOverride`.
 - [ ] T222 R6-1 a removed radio's kept channel messages move to a remaining radio with that channel.
 
 ## Phase 10: Hardening

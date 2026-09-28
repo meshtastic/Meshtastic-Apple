@@ -50,6 +50,13 @@ enum PreferredRadio {
 		connectFirstOverride?.peripheralId ?? peripheralId
 	}
 
+	/// Whether discovery connects `peripheralId` on its own: the radio to connect first, and the
+	/// preferred (focused) radio too, so a focused radio that drops while the override names
+	/// another is reconnected at once rather than after the fallback (T221).
+	static func connectsAutomatically(_ peripheralId: String) -> Bool {
+		!peripheralId.isEmpty && (peripheralId == connectFirstPeripheralId || peripheralId == Self.peripheralId)
+	}
+
 	/// Remembers `device` as the preferred radio.
 	static func set(_ device: Device) {
 		peripheralId = device.id.uuidString

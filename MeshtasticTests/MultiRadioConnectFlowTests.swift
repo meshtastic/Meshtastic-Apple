@@ -336,6 +336,11 @@ struct MultiRadioConnectFlowTests {
 		#expect(PreferredRadio.connectFirstPeripheralId == elsewhere)
 		#expect(PreferredRadio.peripheralId == radios.firstDevice.id.uuidString, "preferred stays the focused radio")
 
+		// Both are connected on their own when discovery sees them (T221).
+		#expect(PreferredRadio.connectsAutomatically(elsewhere))
+		#expect(PreferredRadio.connectsAutomatically(radios.firstDevice.id.uuidString))
+		#expect(!PreferredRadio.connectsAutomatically(UUID().uuidString))
+
 		#expect(await manager.focusConnectedRadio(radios.secondDevice.id))
 		#expect(PreferredRadio.connectFirstOverride == nil)
 		#expect(PreferredRadio.connectFirstPeripheralId == radios.secondDevice.id.uuidString)

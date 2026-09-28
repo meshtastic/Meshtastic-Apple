@@ -524,7 +524,9 @@ class AccessoryManager: ObservableObject {
 		// updater for the device while it is rebooting into its bootloader.
 		if otaInProgress { return }
 		if !self.isConnected && !self.isConnecting && !hasFocusedConnectInProgress,
-		   let preferredDevice = device ?? self.devices.first(where: { $0.id.uuidString == PreferredRadio.connectFirstPeripheralId }) {
+		   let preferredDevice = device
+			?? self.devices.first(where: { $0.id.uuidString == PreferredRadio.connectFirstPeripheralId })
+			?? self.devices.first(where: { $0.id.uuidString == PreferredRadio.peripheralId }) {
 			Task {
 				try await self.connect(to: preferredDevice)
 			}
