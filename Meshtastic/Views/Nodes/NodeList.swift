@@ -52,8 +52,25 @@ struct NodeList: View {
 		horizontalSizeClass == .regular && UIDevice.current.userInterfaceIdiom == .phone
 	}
 
+	/// The stack's contents, expressed as the selected node so that everything which
+	/// drives the split view's detail column drives this too.
+	///
+	/// `selectedNodeNum` is the app's handle on this screen: `navigateToNodeDetail`
+	/// sets it for deep links and notification taps, and `popToRoot(tab: .nodes)`
+	/// clears it — which is how `popAllStacks()` unmounts the detail views holding
+	/// model objects before the store is replaced. A stack that only pushed on a row
+	/// tap would ignore both, so a deep link would go nowhere and a node switch would
+	/// leave this screen mounted across the container swap.
+	private var nodeDetailPath: Binding<[Int64]> {
+		Binding(
+			get: { router.selectedNodeNum.map { [$0] } ?? [] },
+			set: { router.selectedNodeNum = $0.first }
+		)
+	}
+
 	@ViewBuilder
 	private var detailContent: some View {
+
 		if let selectedNum = router.selectedNodeNum,
 		   let node = router.cachedNodeInfo(id: selectedNum, context: context) {
 			if opensSeededLocalStatsLog {
@@ -70,7 +87,7 @@ struct NodeList: View {
 	var body: some View {
 		Group {
 			if prefersStackOverOverlaySidebar {
-				NavigationStack {
+				NavigationStack(path: nodeDetailPath) {
 					sidebarContent
 						// The sidebar's rows are `NavigationLink(value:)`, which the split
 						// view turns into a selection. In a stack they need a destination
