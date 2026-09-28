@@ -59,7 +59,7 @@ With more than one radio connected, the radio indicator at the top of each scree
 
 Some radios need you before they can be used, whether they're focused or not. They stay connected, and the app asks about them by name:
 
-- **A locked radio** (lock-down firmware) needs its passphrase. A radio with a passphrase the app has saved is unlocked on its own. Otherwise the app says the radio is locked; **Unlock** focuses it and shows the passphrase sheet. Its row under **Also Connected** says **Locked** until then.
+- **A locked radio** (lock-down firmware) needs its passphrase. A radio with a passphrase the app has saved is unlocked on its own. Otherwise the app says the radio is locked; **Unlock** opens a passphrase sheet for that radio, and the focus stays where it is. The passphrase is saved for the radio once it unlocks, as for the focused radio. Its row under **Also Connected** says **Locked** until then.
 - **A radio on firmware the app no longer supports** needs an update. **Update** focuses it and shows the firmware update screen. Its row says **Needs a firmware update** until then.
 
 With more than one radio connected, the passphrase sheet and the update screen show the name of the radio they're for.

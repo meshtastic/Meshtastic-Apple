@@ -101,10 +101,8 @@ Read this first if you are picking the work up. Update it in the same commit as 
 - Review V2 (2026-09-27): `review-connections-v2.md` (N1–N10) and `review-data-v2.md`
   (V2-1–V2-8), checked in the files; all held. Fixed one commit each (`5d517b58` … `dfc22694`,
   T170–T187 in tasks.md), including the owner's calls: no launch wait for a single-radio store
-  (T186) and removing a radio that isn't connected (T187). Open: N1 (T188), a locked radio that
-  isn't focused can't reach the passphrase sheet if lock-down firmware doesn't answer the
-  node-DB request while locked; the owner chooses between waiting for the device test and giving
-  that radio its own passphrase entry.
+  (T186), removing a radio that isn't connected (T187), and N1: a locked radio that isn't
+  focused gets its own passphrase sheet rather than waiting for the focus (T188).
 - Review fixes (2026-09-27): every finding in `review-connections.md` (C1–C14) and
   `review-data.md` (D1–D19) is fixed, one commit each (`8fac5ca7` … `512dcb1c`, T140–T166 in
   tasks.md), except C13, which is `main`'s behaviour for the focused radio and is left as is
@@ -368,12 +366,13 @@ describes it well enough to rebuild.
   warning from B names it. On TCP, power B off without closing the link: B's heartbeat
   timeout drops it (A's doesn't change).
 - [ ] Lock-down firmware on B with no saved passphrase: B connects alongside A, its row says
-  Locked, and a prompt names B. Unlock focuses B without reconnecting and shows the passphrase
-  sheet with B's name; after unlocking, B's real config and node DB arrive. Watch whether B's
-  connect retried while it waited (Step 5). Unlock tapped while B is still connecting focuses B
-  once its connect finishes, and A stays connected (T148). After unlocking through the sheet,
-  check that B's real config arrives without the app asking again; if it doesn't, the sheet's
-  path needs the `sendWantConfig` the saved-passphrase path already does (C13, T167).
+  Locked, and a prompt names B. Unlock opens B's own passphrase sheet (B's name at the top) and
+  A stays focused (T188); after unlocking, B's real config and node DB arrive, and on B's next
+  connect the saved passphrase unlocks it without asking. Watch whether B's connect retried
+  while it waited (Step 5): with the sheet it no longer matters for unlocking. After unlocking A
+  (focused) through its sheet, check that A's real config arrives without the app asking again;
+  if it doesn't, the focused path needs the `sendWantConfig` the other radios' path already does
+  (C13, T167).
 - [ ] Reset NodeDB on B with A connected (Settings › Node › B › Device): only B disconnects and
   comes back; the app asks about B's messages. With A and B on the same preset and frequency the
   nodes stay; with B on another preset, the nodes only B heard go. Remove This Radio on B: B

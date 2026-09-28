@@ -305,6 +305,9 @@ class AccessoryManager: ObservableObject {
 	}
 	/// Radios that needed the user while another radio's prompt was up, oldest first.
 	var pendingAttentionPrompts: [RadioAttentionPrompt] = []
+	/// A locked radio that isn't focused whose passphrase the user is entering; ContentView shows
+	/// its passphrase sheet (T188).
+	@Published var radioUnlockRequest: RadioUnlockRequest?
 	/// Sessions of additional radios that have been disconnected. Their late events are
 	/// dropped rather than mistaken for the focused radio's.
 	var retiredAdditionalSessionIDs: Set<UUID> = []

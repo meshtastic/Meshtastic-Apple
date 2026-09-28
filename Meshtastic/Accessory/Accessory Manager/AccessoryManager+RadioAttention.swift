@@ -73,6 +73,13 @@ enum RadioAttention: Equatable {
 	}
 }
 
+/// A locked radio that isn't focused, whose passphrase the user is entering (T188).
+struct RadioUnlockRequest: Identifiable, Equatable {
+	/// The radio's device id.
+	let id: UUID
+	let radioName: String
+}
+
 /// The prompt for a radio that isn't focused and needs the user (T073).
 struct RadioAttentionPrompt: Identifiable, Equatable {
 	/// The radio's device id.
@@ -92,7 +99,16 @@ extension AccessoryManager {
 	/// The same wait covers the other things that hold off a focus change: the focused radio's
 	/// own connect and a firmware update (T179). The radio takes the focus when whichever it was
 	/// ends (`retryPendingAttentionFocusSoon`).
+	///
+	/// A locked radio doesn't take the focus for its passphrase any more: it gets its own
+	/// passphrase sheet, sent on its own connection (T188). Its connect may never finish while
+	/// it's locked (if lock-down firmware doesn't answer the node-DB request then), and only a
+	/// finished connect can take the focus. Update still focuses the radio for the update screen.
 	func focusRadioNeedingAttention(_ deviceId: UUID) async {
+		if let session = additionalRadios[deviceId], session.attention?.isLockdown == true {
+			radioUnlockRequest = RadioUnlockRequest(id: deviceId, radioName: session.device.longName ?? session.device.name)
+			return
+		}
 		if await focusConnectedRadio(deviceId) { return }
 		guard additionalRadios[deviceId] != nil else { return }
 		pendingAttentionFocus = deviceId
@@ -202,14 +218,44 @@ extension AccessoryManager {
 		}
 	}
 
-	// MARK: - Lock-down on a radio that isn't focused (T065, T073)
+	// MARK: - Lock-down on a radio that isn't focused (T065, T073, T188)
+
+	/// Sends a passphrase the user entered for radio `deviceId`, which isn't focused, on its own
+	/// connection, in the same packet as the focused radio's (`lockdownAuthPacket`). It's saved for
+	/// the radio when the radio reports unlocked (`handleAdditionalLockdown`). False when it can't
+	/// be sent: the radio is gone, hasn't reported its node number yet, or the passphrase isn't
+	/// 1 to 32 bytes.
+	@discardableResult
+	func submitPassphrase(_ passphrase: String, bootsRemaining: UInt32, validUntilEpoch: UInt32, maxSessionSeconds: UInt32, toRadio deviceId: UUID) async -> Bool {
+		guard let session = additionalRadios[deviceId],
+			  let myNum = session.nodeNum.map({ UInt32(truncatingIfNeeded: $0) }), myNum != 0,
+			  let data = passphrase.data(using: .utf8), (1...32).contains(data.count) else { return false }
+		var auth = LockdownAuth()
+		auth.passphrase = data
+		auth.bootsRemaining = bootsRemaining
+		auth.validUntilEpoch = validUntilEpoch
+		auth.maxSessionSeconds = maxSessionSeconds
+		guard let toRadio = Self.lockdownAuthPacket(to: myNum, auth: auth) else { return false }
+		session.pendingPassphrase = StoredPassphrase(passphrase: passphrase, bootsRemaining: bootsRemaining, validUntilEpoch: validUntilEpoch, maxSessionSeconds: maxSessionSeconds)
+		let name = session.device.longName ?? session.device.name
+		Logger.transport.info("🔒🔗➕ [Additional] Sending the entered passphrase to \(name, privacy: .public)")
+		do {
+			try await session.connection.send(toRadio)
+			return true
+		} catch {
+			session.pendingPassphrase = nil
+			Logger.transport.error("🔒🔗➕ [Additional] Passphrase to \(name, privacy: .public) failed: \(error.localizedDescription, privacy: .public)")
+			return false
+		}
+	}
 
 	/// Lock-down status from a radio that isn't focused. The focused radio's goes to
 	/// `LockdownCoordinator` and its passphrase sheet.
 	/// - locked, with a passphrase saved for this radio (by an earlier unlock): the passphrase is
 	///   sent once on this connection;
 	/// - locked otherwise, needing a passphrase, or refusing one: the radio stays connected and
-	///   needs the user (`setAttention`), who unlocks it by focusing it;
+	///   needs the user (`setAttention`), who enters its passphrase in its own sheet
+	///   (`submitPassphrase(_:…toRadio:)`, T188);
 	/// - unlocked: that's cleared; a connect in progress carries on by itself (the config request
 	///   finished before the status arrived, and Step 5 asks for the node DB again if the first
 	///   request went unanswered), and a radio that was already connected gets its config again.
@@ -221,6 +267,16 @@ extension AccessoryManager {
 
 		case .unlocked:
 			Logger.transport.info("🔒🔗➕ [Additional] \(name, privacy: .public) unlocked")
+			// A passphrase the user entered for it is kept for next time, as the focused radio's is.
+			if let entered = session.pendingPassphrase {
+				session.pendingPassphrase = nil
+				if !store.save(peripheralID: session.device.id, entered) {
+					Logger.transport.warning("🔒🔗➕ [Additional] Couldn't save the passphrase for \(name, privacy: .public)")
+				}
+			}
+			if radioUnlockRequest?.id == session.device.id {
+				radioUnlockRequest = nil
+			}
 			if session.attention?.isLockdown == true {
 				setAttention(nil, for: session)
 			}
@@ -230,6 +286,7 @@ extension AccessoryManager {
 			}
 
 		case .locked:
+			session.pendingPassphrase = nil
 			if !session.lockdownAutoAttempted,
 			   let myNum = session.nodeNum.map({ UInt32(truncatingIfNeeded: $0) }), myNum != 0,
 			   let stored = store.get(peripheralID: session.device.id),
@@ -259,6 +316,13 @@ extension AccessoryManager {
 			setAttention(.needsPassphrase, for: session)
 
 		case .unlockFailed:
+			// A saved passphrase that's refused outright is wrong now; the focused radio's
+			// coordinator drops it the same way. One the user just typed was never saved.
+			let enteredByUser = session.pendingPassphrase != nil
+			session.pendingPassphrase = nil
+			if !enteredByUser, session.lockdownAutoAttempted, status.backoffSeconds == 0 {
+				_ = store.delete(peripheralID: session.device.id)
+			}
 			setAttention(.unlockFailed, for: session)
 		}
 	}

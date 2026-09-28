@@ -61,8 +61,13 @@ struct ContentView: View {
 			.fullScreenCover(isPresented: $isShowingFirmwareGate) {
 				FirmwareUpdateGate()
 			}
-			// A radio that isn't focused needs the user (feature 021, T073). Its button focuses it,
-			// which shows its passphrase sheet or update screen.
+			// A locked radio that isn't focused enters its passphrase here, without taking the
+			// focus (feature 021, T188).
+			.sheet(item: $accessoryManager.radioUnlockRequest) { request in
+				RadioUnlockSheet(request: request)
+			}
+			// A radio that isn't focused needs the user (feature 021, T073). Unlock opens its
+			// passphrase sheet above; Update focuses it, which shows the update screen.
 			.alert(item: $accessoryManager.radioAttentionPrompt) { prompt in
 				Alert(
 					title: Text(prompt.attention.title(radioName: prompt.radioName)),

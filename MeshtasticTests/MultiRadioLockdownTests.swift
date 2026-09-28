@@ -146,30 +146,62 @@ struct MultiRadioLockdownTests {
 		#expect(await scripted.disconnects == 0)
 	}
 
-	@Test("Unlock while the locked radio is still connecting focuses it once connected, without disconnecting the focused radio")
-	func unlockDuringConnectWaits() async throws {
+	@Test("Unlock on a locked radio that's still connecting opens its passphrase sheet, and the focus stays")
+	func unlockDuringConnectOpensItsSheet() async throws {
 		var locked = LockdownStatus()
 		locked.state = .locked
 		let scripted = ScriptedRadio(nodeNum: 0x5100_0005, afterConfig: [.lockdownStatus(locked)])
 		let fixture = makeFixture(transports: [ScriptedTransport(radio: scripted)])
 		let manager = fixture.manager
 		manager.lockdownCoordinator = LockdownCoordinator(store: InMemoryPassphraseStore())
-		let focusedConnection = try #require(manager.activeConnection?.connection as? RecordingIdleConnection)
+		let focused = try #require(manager.activeConnection)
+		let focusedConnection = try #require(focused.connection as? RecordingIdleConnection)
 		let device = Device(id: UUID(), name: "Locked", transportType: .tcp, identifier: "locked3.local:4403")
 
 		let connect = Task { try await manager.connectAdditionalRadio(device) }
 		try await waitUntil { await MainActor.run { manager.radioAttentionPrompt?.id == device.id } }
-		let stillConnecting = manager.connectAttempts[device.id] != nil
 		await manager.focusRadioNeedingAttention(device.id)
-		if stillConnecting {
-			#expect(manager.pendingAttentionFocus == device.id, "it waits for the connect")
-		}
-		try await connect.value
 
-		#expect(manager.activeConnection?.device.id == device.id)
+		// No wait for the connect to finish: it may not while the radio is locked.
+		#expect(manager.radioUnlockRequest?.id == device.id)
+		#expect(manager.activeConnection === focused)
 		#expect(manager.pendingAttentionFocus == nil)
-		#expect(await focusedConnection.isConnected, "the previously focused radio isn't disconnected")
+		try await connect.value
+		#expect(manager.activeConnection === focused)
+		#expect(await focusedConnection.isConnected, "the focused radio isn't disconnected")
 		#expect(await scripted.disconnects == 0)
+	}
+
+	@Test("A passphrase entered for a radio that isn't focused goes out on its connection, and is saved once it unlocks")
+	func passphraseForARadioThatIsntFocused() async throws {
+		let fixture = makeFixture()
+		let manager = fixture.manager, radio = fixture.radio, connection = fixture.connection
+		let store = InMemoryPassphraseStore()
+		manager.handleAdditionalLockdown(status(.locked), session: radio, store: store)
+		#expect(radio.attention == .locked)
+		await manager.focusRadioNeedingAttention(radio.device.id)
+		#expect(manager.radioUnlockRequest?.id == radio.device.id)
+
+		#expect(await manager.submitPassphrase("hunter2", bootsRemaining: 5, validUntilEpoch: 0, maxSessionSeconds: 0, toRadio: radio.device.id))
+
+		let packet = try #require(await connection.sent.last?.packet)
+		#expect(packet.to == UInt32(extraNum))
+		let admin = try AdminMessage(serializedBytes: packet.decoded.payload)
+		#expect(admin.lockdownAuth.passphrase == Data("hunter2".utf8))
+		#expect(admin.lockdownAuth.bootsRemaining == 5)
+		#expect(store.entries.isEmpty, "not saved before the radio accepts it")
+
+		manager.handleAdditionalLockdown(status(.unlocked), session: radio, store: store)
+		#expect(store.entries[radio.device.id]?.passphrase == "hunter2")
+		#expect(radio.attention == nil)
+		#expect(manager.radioUnlockRequest == nil)
+
+		// A wrong one is never saved.
+		store.entries.removeAll()
+		#expect(await manager.submitPassphrase("wrong", bootsRemaining: 0, validUntilEpoch: 0, maxSessionSeconds: 0, toRadio: radio.device.id))
+		manager.handleAdditionalLockdown(status(.unlockFailed), session: radio, store: store)
+		#expect(store.entries.isEmpty)
+		#expect(radio.attention == .unlockFailed)
 	}
 
 	@Test("A locked radio that loses the focus is still shown as locked and asked about")

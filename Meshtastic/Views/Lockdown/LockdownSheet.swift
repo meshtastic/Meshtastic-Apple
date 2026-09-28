@@ -58,6 +58,56 @@ struct RadioNameBanner: View {
 	}
 }
 
+/// The passphrase entry for a locked radio that isn't focused (feature 021, T188). The passphrase
+/// goes out on that radio's own connection (`AccessoryManager.submitPassphrase(_:…toRadio:)`), so
+/// the radio doesn't need the focus, which waits for a connect that locked firmware may not
+/// finish. It closes when the radio unlocks, stops needing a passphrase, or disconnects.
+struct RadioUnlockSheet: View {
+	let request: RadioUnlockRequest
+
+	@EnvironmentObject private var accessoryManager: AccessoryManager
+	@Environment(\.dismiss) private var dismiss
+
+	private var session: RadioSession? {
+		accessoryManager.additionalRadios[request.id]
+	}
+
+	var body: some View {
+		NavigationStack {
+			Group {
+				if let session, let attention = session.attention, attention.isLockdown {
+					PassphraseEntryContent(
+						mode: attention == .needsPassphrase ? .provision : .unlock(reason: session.lastLockdownStatus?.lockReason ?? "needs_auth"),
+						inlineError: attention == .unlockFailed ? "lockdown.passphrase.wrong".localized : nil,
+						isReady: session.nodeNum != nil,
+						onSubmit: { passphrase, boots, validUntil, maxSession in
+							Task {
+								await accessoryManager.submitPassphrase(passphrase, bootsRemaining: boots, validUntilEpoch: validUntil, maxSessionSeconds: maxSession, toRadio: request.id)
+							}
+							dismiss()
+						}
+					)
+				} else {
+					Color.clear.onAppear { dismiss() }
+				}
+			}
+			.toolbar {
+				ToolbarItem(placement: .cancellationAction) {
+					Button("Cancel") { dismiss() }
+				}
+			}
+			.safeAreaInset(edge: .top) {
+				Label(request.radioName, systemImage: "antenna.radiowaves.left.and.right")
+					.font(.headline)
+					.frame(maxWidth: .infinity)
+					.padding(.vertical, 8)
+					.background(.regularMaterial)
+					.accessibilityLabel(String.localizedStringWithFormat("Radio: %@".localized, request.radioName))
+			}
+		}
+	}
+}
+
 // MARK: - Passphrase entry (provision + unlock)
 
 private struct PassphraseEntryContent: View {
@@ -69,6 +119,10 @@ private struct PassphraseEntryContent: View {
 
 	let mode: Mode
 	var inlineError: String?
+	/// For a radio that isn't focused (T188): whether it can take a passphrase yet, and what
+	/// submitting does. Nil for the focused radio, which goes through `LockdownCoordinator`.
+	var isReady: Bool?
+	var onSubmit: ((_ passphrase: String, _ bootsRemaining: UInt32, _ validUntilEpoch: UInt32, _ maxSessionSeconds: UInt32) -> Void)?
 
 	@EnvironmentObject private var lockdown: LockdownCoordinator
 	@EnvironmentObject private var accessoryManager: AccessoryManager
@@ -108,7 +162,7 @@ private struct PassphraseEntryContent: View {
 	}
 
 	private var coordinatorReady: Bool {
-		accessoryManager.activeConnection?.device.num != nil
+		isReady ?? (accessoryManager.activeConnection?.device.num != nil)
 	}
 
 	private var isSubmitEnabled: Bool {
@@ -251,10 +305,14 @@ private struct PassphraseEntryContent: View {
 			guard let minutes = sessionMinutesParsed, minutes > 0 else { return 0 }
 			return UInt32(clamping: UInt64(minutes) * 60)
 		}()
-		lockdown.submitPassphrase(passphrase,
-								  bootsRemaining: boots,
-								  validUntilEpoch: validUntilEpoch,
-								  maxSessionSeconds: maxSessionSeconds)
+		if let onSubmit {
+			onSubmit(passphrase, boots, validUntilEpoch, maxSessionSeconds)
+		} else {
+			lockdown.submitPassphrase(passphrase,
+									  bootsRemaining: boots,
+									  validUntilEpoch: validUntilEpoch,
+									  maxSessionSeconds: maxSessionSeconds)
+		}
 		// Wipe local copy immediately; coordinator also clears its own pending copy
 		// on response. NFR-002.
 		passphrase = ""
