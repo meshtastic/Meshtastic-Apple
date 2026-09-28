@@ -169,11 +169,12 @@ extension AccessoryManager {
 
 	/// Runs the backfill for rows from before feature 021 when radio `radioNum` reports itself and
 	/// isn't the radio those rows belong to (`BackfillOwner`), focused or not: a radio added
-	/// alongside, or one the user switched to (T186, T193). Called from `handleMyInfo`, before any
-	/// of its data is stored, and matched by node number (T203): a peripheral id changes on a new
-	/// phone, a node number doesn't. The store's own radio doesn't wait for it, so a single-radio
-	/// user's connect doesn't either. Its connect holds the handshake gate, so no node dump runs
-	/// meanwhile, and the drain lets packets through between chunks.
+	/// alongside, or one the user switched to (T186, T193). Run by connect Step 3c, once the
+	/// config is in and before the radio's node DB, and matched by node number (T203): a
+	/// peripheral id changes on a new phone, a node number doesn't. The store's own radio doesn't
+	/// wait for it, so a single-radio user's connect doesn't either. Its connect holds the
+	/// handshake gate, so no node dump runs meanwhile, and the drain lets packets through between
+	/// chunks.
 	func backfillBeforeAnotherRadioJoins(radioNum: Int64, name: String) async {
 		let packets = MeshPackets.shared
 		guard await packets.hasPendingBackfill() else {

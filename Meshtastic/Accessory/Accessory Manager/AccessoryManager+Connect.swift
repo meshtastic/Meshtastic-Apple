@@ -365,6 +365,16 @@ extension AccessoryManager {
 				}
 			}
 			
+			// Step 3c: rows from before feature 021 go to the store's radio before this radio's node
+			// DB joins them (T186, T193, T203). Its own step once the config is in and the radio's
+			// node number known: no step timeout runs here, and the radio's event loop isn't held
+			// up meanwhile (T210). The store's own radio doesn't wait.
+			Step { @MainActor _ in
+				let session = try attempt.requireSession()
+				guard let radioNum = session.nodeNum else { return }
+				await self.backfillBeforeAnotherRadioJoins(radioNum: radioNum, name: session.device.longName ?? session.device.name)
+			}
+
 			// Step 4: Send Heartbeat before wantConfig (database)
 			Step { @MainActor _ in
 				guard wantDatabase else {
