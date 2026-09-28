@@ -36,14 +36,18 @@ enum MultiRadioBackfill {
 	}
 
 	/// Runs one chunk of each step and saves. Returns what it filled; zero means done.
+	///
+	/// `othersObserved` is whether another radio had observations when a multi-chunk drain began
+	/// (T220): the drain lets packets through between chunks, and a joining radio's first packet
+	/// would otherwise stop the observations for the rest of the nodes. Nil checks now.
 	@discardableResult
-	static func runChunk(in context: ModelContext, ownRadio: Int64, chunkSize: Int = 500) throws -> ChunkResult {
+	static func runChunk(in context: ModelContext, ownRadio: Int64, chunkSize: Int = 500, othersObserved: Bool? = nil) throws -> ChunkResult {
 		var result = ChunkResult()
 		result.channels = try backfillChannels(in: context)
 		let channelKeys = try ownRadio == 0 ? [:] : channelKeysByIndex(for: ownRadio, in: context)
 		result.messages = try backfillMessages(in: context, ownRadio: ownRadio, channelKeys: channelKeys, limit: chunkSize)
 		if ownRadio != 0 {
-			result.observations = try backfillObservations(in: context, ownRadio: ownRadio, limit: chunkSize)
+			result.observations = try backfillObservations(in: context, ownRadio: ownRadio, limit: chunkSize, othersObserved: othersObserved)
 		}
 		if context.hasChanges {
 			try context.save()
@@ -116,16 +120,21 @@ enum MultiRadioBackfill {
 
 	// MARK: - Observations
 
+	/// Whether any radio other than `ownRadio` has an observation.
+	static func otherRadiosHaveObservations(than ownRadio: Int64, in context: ModelContext) throws -> Bool {
+		var others = FetchDescriptor<NodeObservationEntity>(predicate: #Predicate { $0.radioNum != ownRadio })
+		others.fetchLimit = 1
+		return try !context.fetch(others).isEmpty
+	}
+
 	/// Creates the store radio's observation of up to `limit` nodes that don't have one, copied
 	/// from the node's fields (which, in a one-radio store, are that radio's view).
 	///
 	/// Once another radio has observations, the node's fields are that radio's view or the
 	/// aggregate, and a copy would claim `ownRadio` heard nodes it never did, so nothing is
 	/// created (T142). `MyInfoEntity` rows can't tell this: old stores may hold stray ones.
-	static func backfillObservations(in context: ModelContext, ownRadio: Int64, limit: Int) throws -> Int {
-		var others = FetchDescriptor<NodeObservationEntity>(predicate: #Predicate { $0.radioNum != ownRadio })
-		others.fetchLimit = 1
-		guard try context.fetch(others).isEmpty else { return 0 }
+	static func backfillObservations(in context: ModelContext, ownRadio: Int64, limit: Int, othersObserved: Bool? = nil) throws -> Int {
+		guard !(try othersObserved ?? otherRadiosHaveObservations(than: ownRadio, in: context)) else { return 0 }
 		let existing = try context.fetch(FetchDescriptor<NodeObservationEntity>(predicate: #Predicate { $0.radioNum == ownRadio }))
 		let observed = Set(existing.map(\.nodeNum))
 		// Nodes are few (capped), so one sorted fetch of all of them is cheaper than paging with

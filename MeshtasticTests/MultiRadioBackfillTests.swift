@@ -258,6 +258,24 @@ struct MultiRadioBackfillTests {
 		#expect(rows.allSatisfy { $0.localNodeNum == ownRadio })
 	}
 
+	@Test("A drain keeps creating observations after another radio's first packet between chunks")
+	func observationGateDecidedAtStart() throws {
+		let context = try makeContext()
+		_ = makeOwnRadio(in: context)
+		for num in 1...4 { makeUser(Int64(0x3000 + num), in: context) }
+		try context.save()
+
+		// The first chunk runs before anything else; then a joining radio's packet arrives.
+		#expect(try MultiRadioBackfill.runChunk(in: context, ownRadio: ownRadio, chunkSize: 2, othersObserved: false).observations == 2)
+		context.insert(NodeObservationEntity(radioNum: 0x0B0B_0B0B, nodeNum: 0x3001))
+		try context.save()
+		#expect(try MultiRadioBackfill.runChunk(in: context, ownRadio: ownRadio, chunkSize: 2, othersObserved: false).observations == 2, "the drain's decision stands")
+		// Checking afresh, as a background pass does, it stops.
+		makeUser(0x3009, in: context)
+		try context.save()
+		#expect(try MultiRadioBackfill.runChunk(in: context, ownRadio: ownRadio, chunkSize: 2).observations == 0)
+	}
+
 	@Test("The backfill works in chunks and stops once everything is filled")
 	func resumesInChunks() throws {
 		let context = try makeContext()

@@ -40,8 +40,11 @@ extension MeshPackets {
 		var total = 0
 		var chunks = 0
 		do {
+			// Decided once: packets let through between chunks create other radios' observations,
+			// which mustn't stop this radio's for the rest of the nodes (T220).
+			let othersObserved = try MultiRadioBackfill.otherRadiosHaveObservations(than: ownRadio, in: modelContext)
 			while !invalidated {
-				let filled = try MultiRadioBackfill.runChunk(in: modelContext, ownRadio: ownRadio, chunkSize: 2000).total
+				let filled = try MultiRadioBackfill.runChunk(in: modelContext, ownRadio: ownRadio, chunkSize: 2000, othersObserved: othersObserved).total
 				guard filled > 0 else { break }
 				total += filled
 				chunks += 1

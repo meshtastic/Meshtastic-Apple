@@ -233,7 +233,7 @@ commit each, full suite each time. To resume: the first unchecked item.
 All re-checked in the files and holding (2026-09-28); the owner approved. One commit each, full
 suite each time. To resume: the first unchecked item.
 
-- [ ] T220 H1 the observation backfill decides "another radio has observations" once, when the drain starts.
+- [X] T220 H1 the observation backfill decides "another radio has observations" once, when the drain starts. — `drainMultiRadioBackfill` passes `othersObserved`, decided before its first chunk, to every `runChunk`; background passes still check each time. Verified: `MultiRadioBackfillTests.observationGateDecidedAtStart`.
 - [ ] T221 H2 auto-connect also takes the focused (preferred) radio while the connect-first override is set.
 - [ ] T222 R6-1 a removed radio's kept channel messages move to a remaining radio with that channel.
 
