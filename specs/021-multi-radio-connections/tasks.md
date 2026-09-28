@@ -237,6 +237,15 @@ suite each time. To resume: the first unchecked item.
 - [X] T221 H2 auto-connect also takes the focused (preferred) radio while the connect-first override is set. — discovery uses `PreferredRadio.connectsAutomatically`; `connectToPreferredDevice` tries the connect-first radio, then the preferred one. Verified: `MultiRadioConnectFlowTests.connectFirstOverride`.
 - [X] T222 R6-1 a removed radio's kept channel messages move to a remaining radio with that channel. — on `.remove`, `deleteMessagesOfRadio` sets a kept message's `localNodeNum`, `channel` and `channelKey` to the remaining radio's slot for its key (the preferred radio first); a reset leaves them. Verified: `RadioRemovalTests.removalMovesKeptMessagesToTheirSlot`, `.removeRadio`.
 
+## Review V7 fixes (review-connections-v7.md I1–I2, review-data-v7.md R7-1)
+
+All re-checked in the files and holding (2026-09-28); the owner approved, R7-1 with per-radio
+pruning. One commit each, full suite each time. To resume: the first unchecked item.
+
+- [ ] T230 I1 decide "another radio has observations" before the joining radio's first packet: in connect Step 0, before its event stream starts, and pass it to the join backfill's drain.
+- [ ] T231 I2 discovery connects the preferred radio alongside the connect-first one only once the preferred radio has been the focused one in this run of the app.
+- [ ] T232 R7-1 prune messages per radio (`localNodeNum`), each keeping its newest 50,000, rows on no radio together; a store with one radio prunes as `main`.
+
 ## Phase 10: Hardening
 
 - [ ] T130 Four BLE radios for 24 hours (device checklist in `HANDOFF.md`).
