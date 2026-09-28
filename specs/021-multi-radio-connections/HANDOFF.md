@@ -279,6 +279,10 @@ describes it well enough to rebuild.
   invalidate earlier recycled instances too.
 - Discovery while connected must not call `updateState(.discovering)`; `startDiscovery` only
   does that with no focused radio now.
+- `BackupMergeTests.attemptCountedPerBackup` failed once (2026-09-28) and passed on four reruns:
+  the log shows the backup skipped for a checksum mismatch, which fits the test store's SQLite
+  file changing after its checksum was taken (a late WAL checkpoint). A test-only timing issue;
+  closing the test container before checksumming would settle it.
 - `SchemaHistoryUpgradeTests.fixtureInventoryCoversEverySwiftDataRelease` sometimes fails with a
   SQLite disk I/O error reading the bundled fixture's metadata. It predates this work and passes
   on a re-run.

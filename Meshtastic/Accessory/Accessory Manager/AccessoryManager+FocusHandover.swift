@@ -116,7 +116,7 @@ extension AccessoryManager {
 			  !otaInProgress,
 			  !userRequestedConnectionCancellation,
 			  UserDefaults.autoconnectOnDiscovery else { return nil }
-		let preferredId = PreferredRadio.peripheralId
+		let preferredId = PreferredRadio.connectFirstPeripheralId
 		for radio in remembered where radio.peripheralId != preferredId {
 			if let seen = devices.first(where: { $0.id.uuidString == radio.peripheralId }) {
 				return seen

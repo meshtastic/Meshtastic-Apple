@@ -566,7 +566,7 @@ actor BLETransport: Transport {
 		/// or else the first, is restored as the focused radio; the others wait in
 		/// `restoredStandby` for the remembered-radio reconnect that follows the focused connect.
 		guard let peripherals = dict[CBCentralManagerRestoredStatePeripheralsKey] as? [CBPeripheral],
-			  let peripheral = Self.focusedPeripheral(among: peripherals, preferredId: PreferredRadio.peripheralId) else {
+			  let peripheral = Self.focusedPeripheral(among: peripherals, preferredId: PreferredRadio.connectFirstPeripheralId) else {
 			Logger.transport.error("🛜 [BLE] No peripherals found in restore state dictionary.")
 			return
 		}
@@ -574,7 +574,7 @@ actor BLETransport: Transport {
 		holdRestoredPeripherals(alongside)
 		// Remembered so they're claimed after the focused restore, the preferred radio too when
 		// another is the focused restore; that one takes the focus back once it's here (T190).
-		let preferredId = UUID(uuidString: PreferredRadio.peripheralId)
+		let preferredId = UUID(uuidString: PreferredRadio.connectFirstPeripheralId)
 		let displaced = alongside.contains { $0.identifier == preferredId } ? preferredId : nil
 		await AccessoryManager.shared.noteRestoredAlongside(peripheralIds: alongside.map(\.identifier), displacedPreferred: displaced)
 		let device = await restoredDevice(for: peripheral)
@@ -713,7 +713,7 @@ actor BLETransport: Transport {
 		Task {
 			// The radio it displaced is remembered and claimed after this restore; if it's the
 			// preferred radio, it takes the focus back once it's here (T190).
-			let displacedPreferred = displacedId.uuidString == PreferredRadio.peripheralId ? displacedId : nil
+			let displacedPreferred = displacedId.uuidString == PreferredRadio.connectFirstPeripheralId ? displacedId : nil
 			await AccessoryManager.shared.noteRestoredAlongside(peripheralIds: [displacedId], displacedPreferred: displacedPreferred)
 			if let restoreTakeover = self.restoreTakeover {
 				await restoreTakeover(standby, central)
@@ -723,15 +723,15 @@ actor BLETransport: Transport {
 			self.restoreInProgress = true
 			let connection = BLEConnection(peripheral: standby, central: central, transport: self)
 			self.activeConnections[standby.identifier] = connection
-			// Its full handshake makes it the preferred radio (connect Step 5). The radio it took
-			// over from stays preferred, so later launches connect it first, as before iOS closed
-			// the app, even if it doesn't come back this session (T201).
-			let keptPreferred = await MainActor.run { (PreferredRadio.peripheralId, PreferredRadio.nodeNum) }
+			// Its full handshake makes it the preferred radio (connect Step 5), and it's the focused
+			// one, which Settings and Messages follow. The radio it took over from is still the one
+			// to connect first at later launches, as before iOS closed the app, even if it doesn't
+			// come back this session (T201, T212).
+			let kept = await MainActor.run { (PreferredRadio.connectFirstPeripheralId, PreferredRadio.connectFirstOverride?.nodeNum ?? PreferredRadio.nodeNum) }
 			await self.completeFocusedRestore(device: device, connection: connection, fullHandshake: true)
 			if displacedPreferred != nil {
 				await MainActor.run {
-					PreferredRadio.peripheralId = keptPreferred.0
-					PreferredRadio.nodeNum = keptPreferred.1
+					PreferredRadio.connectFirstOverride = (kept.0, kept.1)
 				}
 			}
 		}

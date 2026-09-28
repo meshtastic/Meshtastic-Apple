@@ -27,6 +27,29 @@ enum PreferredRadio {
 		set { UserDefaults.preferredPeripheralNum = Int(newValue) }
 	}
 
+	/// The radio to connect first at launch and to restore as the focused one, when it isn't the
+	/// preferred radio: a BLE restore made another radio the focused one while this one wasn't back
+	/// (T212). The preferred radio stays the focused one, which Settings and Messages follow;
+	/// this only decides what's connected first. Cleared when a focus is chosen or a radio is
+	/// connected as the focused one.
+	static var connectFirstOverride: (peripheralId: String, nodeNum: Int64)? {
+		get {
+			guard let id = UserDefaults.standard.string(forKey: connectFirstIdKey), !id.isEmpty else { return nil }
+			return (id, Int64(UserDefaults.standard.integer(forKey: connectFirstNumKey)))
+		}
+		set {
+			UserDefaults.standard.set(newValue?.peripheralId, forKey: connectFirstIdKey)
+			UserDefaults.standard.set(newValue.map { Int($0.nodeNum) }, forKey: connectFirstNumKey)
+		}
+	}
+	private static let connectFirstIdKey = "multiRadio.connectFirstPeripheralId"
+	private static let connectFirstNumKey = "multiRadio.connectFirstNodeNum"
+
+	/// The radio to connect first: the override when there is one, otherwise the preferred radio.
+	static var connectFirstPeripheralId: String {
+		connectFirstOverride?.peripheralId ?? peripheralId
+	}
+
 	/// Remembers `device` as the preferred radio.
 	static func set(_ device: Device) {
 		peripheralId = device.id.uuidString

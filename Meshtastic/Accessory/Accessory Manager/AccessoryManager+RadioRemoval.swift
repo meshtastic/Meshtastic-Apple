@@ -81,5 +81,8 @@ extension AccessoryManager {
 				PreferredRadio.nodeNum = 0
 			}
 		}
+		if PreferredRadio.connectFirstOverride?.nodeNum == radioNum {
+			PreferredRadio.connectFirstOverride = nil
+		}
 	}
 }

@@ -411,6 +411,9 @@ extension AccessoryManager {
 				if attempt.isFocused {
 					Logger.transport.info("🔗 Saving preferredPeripheralId: \(device.id.uuidString)")
 					PreferredRadio.peripheralId = device.id.uuidString
+					// A radio connected as the focused one is also the one to connect first (T212);
+					// a restore hand-over sets its override again afterwards.
+					PreferredRadio.connectFirstOverride = nil
 				}
 
 				try await self.sendWantDatabase(on: attempt.requireSession())

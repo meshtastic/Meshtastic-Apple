@@ -321,6 +321,27 @@ struct MultiRadioConnectFlowTests {
 		try await manager.disconnect()
 	}
 
+	@Test("The radio to connect first can differ from the focused one until a focus is chosen")
+	func connectFirstOverride() async throws {
+		let saved = SavedDefaults()
+		defer {
+			saved.restore()
+			PreferredRadio.connectFirstOverride = nil
+		}
+		let radios = try await connectTwoRadios()
+		let manager = radios.manager
+		let elsewhere = UUID().uuidString
+
+		PreferredRadio.connectFirstOverride = (elsewhere, 0x0E0E)
+		#expect(PreferredRadio.connectFirstPeripheralId == elsewhere)
+		#expect(PreferredRadio.peripheralId == radios.firstDevice.id.uuidString, "preferred stays the focused radio")
+
+		#expect(await manager.focusConnectedRadio(radios.secondDevice.id))
+		#expect(PreferredRadio.connectFirstOverride == nil)
+		#expect(PreferredRadio.connectFirstPeripheralId == radios.secondDevice.id.uuidString)
+		try await manager.disconnect()
+	}
+
 	@Test("The restore's give-back is dropped once the user picks a focus or disconnects that radio")
 	func restoreGiveBackExpires() async throws {
 		let saved = SavedDefaults()
