@@ -55,8 +55,9 @@ Read this first if you are picking the work up. Update it in the same commit as 
 - Next up: the owner's device test (checklist below), which waits on hardware; don't rebuild
   Mesh Multi for it unless asked. Don't design around the focused/additional split: every radio
   works the same way (D-17). Removing the switch-era helpers (T066) waits for that test.
-- Baseline and latest: the full suite passes in the iOS Simulator (3,458 Swift Testing tests plus
-  the XCTests, about 50 seconds of test time).
+- Baseline and latest: the full suite passes in the iOS Simulator (3,465 Swift Testing tests plus
+  the XCTests, about 55 seconds of test time). Run it with the simulator to itself: another
+  session's test runs on the same simulator kill the test host partway.
 
 ## First two-radio test (Mesh Multi, Mac)
 
@@ -98,6 +99,10 @@ Read this first if you are picking the work up. Update it in the same commit as 
 
 ## In progress
 
+- Review V3 (2026-09-27): `review-connections-v3.md` (R1–R4) and `review-data-v3.md`
+  (R3-1–R3-5), checked in the files; all held. Fixed one commit each (`c0000d3b` … `1b8ef1b8`,
+  T190–T198 in tasks.md). Both reviewers' full runs were disturbed by another session's tests on
+  the same simulator; a quiet run passed.
 - Review V2 (2026-09-27): `review-connections-v2.md` (N1–N10) and `review-data-v2.md`
   (V2-1–V2-8), checked in the files; all held. Fixed one commit each (`5d517b58` … `dfc22694`,
   T170–T187 in tasks.md), including the owner's calls: no launch wait for a single-radio store
