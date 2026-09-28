@@ -215,7 +215,7 @@ the first unchecked item, re-check its cited lines in the files, fix, full suite
 - [X] T202 F3 removing a radio while its focus handover is pending stops the handover bringing it back. — the handover reads `handoverPrevious` when it fires; `stopBringingBack` clears it for the removed radio. Verified: `MultiRadioConnectFlowTests.removedDuringHandover`.
 - [X] T203 F4 the store's own radio doesn't wait for the backfill on a new phone (match by node number once known). — the check moved from the start of `connect` to `handleMyInfo`, before the radio's data is stored, and compares node numbers. Verified: `MultiRadioConnectFlowTests.backfillBeforeSwitchedRadio` (the owner connects from another peripheral id).
 - [X] T204 R4-1 NodeInfo and position packets don't overwrite the aggregate's hops and slot with several radios. — `upsertNodeInfoPacket` and `upsertPositionPacket` skip those writes when `nodeFieldsAreAggregated`; with one radio they write as before (closes T042's "last writer wins until the next aggregate"). Verified: `MultiRadioIngestTests.handlersKeepTheAggregate`.
-- [ ] T205 R4-2 a failed backfill chunk doesn't roll back packet writes made during the drain.
+- [X] T205 R4-2 a failed backfill chunk doesn't roll back packet writes made during the drain. — `drainMultiRadioBackfill` saves pending changes after each yield, before the next chunk. Not unit tested (a chunk failure between interleaved packets can't be set up without injecting a fault into SwiftData).
 
 ## Phase 10: Hardening
 

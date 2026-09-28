@@ -47,6 +47,9 @@ extension MeshPackets {
 				chunks += 1
 				guard chunks < 10_000 else { break }
 				await Task.yield()
+				// Packets handled while the actor was given back wrote to this same context; save
+				// them before the next chunk, so a chunk that fails only rolls back itself (T205).
+				savePendingChanges(caller: "drainMultiRadioBackfill")
 			}
 		} catch {
 			modelContext.rollback()
