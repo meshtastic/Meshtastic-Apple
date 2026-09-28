@@ -196,7 +196,7 @@ All re-checked in the files and holding (2026-09-27). One commit each, full suit
 All re-checked in the files and holding (2026-09-27). One commit each, full suite each time.
 
 - [X] T190 R1 a BLE restore that picks another radio brings the preferred radio back, and gives it the focus again. — `noteRestoredAlongside` remembers every radio restored alongside the focused restore (`MeshPackets.rememberRadios`), so the remembered-radio reconnect claims it, and records a displaced preferred radio (`restoreDisplacedPreferred`), which takes the focus back when its connect alongside finishes. Called from `handleWillRestoreState` and `handOverRestore`. Verified: `MultiRadioConnectFlowTests.displacedPreferredTakesFocusBack`, `MultiRadioIngestTests.restoredRadiosAreRemembered`.
-- [ ] T191 R2 removing a radio that isn't connected stops its reconnects.
+- [X] T191 R2 removing a radio that isn't connected stops its reconnects. — `stopBringingBack` runs `disconnectAdditionalRadio(byUser: true)` for its peripheral id and any connect attempt for its number: the reconnect loop, the wait for discovery and the attempt all stop. Verified: `MultiRadioConnectFlowTests.removeOfflineRadio`.
 - [ ] T192 R3-1 CarPlay and Siri take a channel's messages by channel key.
 - [ ] T193 R3-2 the backfill runs before any other radio connects, focused or not.
 - [ ] T194 R3 the backfill lets packets through between chunks.

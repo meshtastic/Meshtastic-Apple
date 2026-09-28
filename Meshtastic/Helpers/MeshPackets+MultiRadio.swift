@@ -152,6 +152,13 @@ extension MeshPackets {
 		savePendingChanges()
 	}
 
+	/// The peripheral radio `nodeNum` last connected from, if the store knows it.
+	func peripheralId(ofRadio nodeNum: Int64) -> String? {
+		var descriptor = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == nodeNum })
+		descriptor.fetchLimit = 1
+		return (try? modelContext.fetch(descriptor))?.first?.peripheralId
+	}
+
 	func setRadioAutoConnect(nodeNum: Int64, _ autoConnect: Bool) {
 		var descriptor = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == nodeNum })
 		descriptor.fetchLimit = 1

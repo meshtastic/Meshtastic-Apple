@@ -20,6 +20,7 @@ extension AccessoryManager {
 		guard let session = connectedSession(forRadio: radioNum) else {
 			if !reconnect {
 				await MeshPackets.shared.setRadioAutoConnect(nodeNum: radioNum, false)
+				await stopBringingBack(radioNum)
 			}
 			return
 		}
@@ -46,6 +47,19 @@ extension AccessoryManager {
 		await disconnectAdditionalRadio(device.id, byUser: !reconnect)
 		if reconnect {
 			scheduleAdditionalRadioReconnect(device)
+		}
+	}
+
+	/// Stops everything that would bring back radio `radioNum`, which isn't connected (T191): its
+	/// reconnect loop, a wait for discovery to see it, and a connect in progress, as Disconnect
+	/// does for a connected radio. Found by its peripheral id and by any attempt for its number.
+	func stopBringingBack(_ radioNum: Int64) async {
+		var deviceIds = Set(connectAttempts.values.filter { $0.device.num == radioNum || $0.session?.nodeNum == radioNum }.map(\.device.id))
+		if let peripheralId = await MeshPackets.shared.peripheralId(ofRadio: radioNum), let id = UUID(uuidString: peripheralId) {
+			deviceIds.insert(id)
+		}
+		for deviceId in deviceIds {
+			await disconnectAdditionalRadio(deviceId, byUser: true)
 		}
 	}
 

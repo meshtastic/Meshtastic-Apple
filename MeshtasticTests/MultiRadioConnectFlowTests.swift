@@ -336,8 +336,17 @@ struct MultiRadioConnectFlowTests {
 		PreferredRadio.peripheralId = UUID().uuidString
 		PreferredRadio.nodeNum = deadNum
 
+		// It dropped earlier, so it has a reconnect loop and is waited for by discovery.
+		let deadId = UUID()
+		dead.peripheralId = deadId.uuidString
+		try context.save()
+		manager.scheduleAdditionalRadioReconnect(Device(id: deadId, name: "Dead", transportType: .tcp, identifier: "dead.local:4403", num: deadNum), firstDelay: .seconds(3600))
+		manager.awaitedRememberedRadios.insert(deadId)
+
 		await manager.removeRadio(deadNum)
 
+		#expect(manager.additionalRadioReconnects[deadId] == nil, "it isn't brought back")
+		#expect(!manager.awaitedRememberedRadios.contains(deadId))
 		let fresh = ModelContext(PersistenceController.shared.container)
 		#expect(try fresh.fetchCount(FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == deadNum })) == 0)
 		#expect(PreferredRadio.nodeNum == 0)
