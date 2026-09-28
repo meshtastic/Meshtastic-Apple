@@ -55872,6 +55872,9 @@
     "It runs firmware %@, which is no longer supported. It stays connected so you can update it." : {
       "extractionState" : "manual"
     },
+    "It's no longer one of your radios and isn't reconnected. Its direct messages go, and messages on channels none of your other radios has. When it was on a mesh of its own, the nodes only it heard go too." : {
+
+    },
     "Italic" : {
       "comment" : "VoiceOver: italic formatting toolbar button",
       "localizations" : {
@@ -56792,6 +56795,9 @@
         }
       }
     },
+    "Known from an earlier version's backup" : {
+
+    },
     "Label Channels" : {
       "localizations" : {
         "es" : {
@@ -56814,6 +56820,9 @@
     },
     "lan" : {
       "comment" : "Search keyword"
+    },
+    "Last connected %@" : {
+
     },
     "Last heard" : {
       "localizations" : {
@@ -104815,6 +104824,9 @@
     "Radios advertising TCP appear automatically" : {
 
     },
+    "Radios the app knows that aren't connected now. Remove one you no longer have, such as a radio that stopped working or that you gave away." : {
+
+    },
     "Radius" : {
       "localizations" : {
         "es" : {
@@ -107625,6 +107637,9 @@
       }
     },
     "Remove %@ from the app?" : {
+
+    },
+    "Remove %@?" : {
 
     },
     "Remove %lld nodes?" : {
@@ -147691,6 +147706,9 @@
           }
         }
       }
+    },
+    "Your Radios" : {
+
     },
     "Your region has a %lld%% duty cycle. MQTT is not advised when you are duty cycle restricted, the extra traffic will quickly overwhelm your LoRa mesh." : {
       "localizations" : {
