@@ -184,6 +184,10 @@ extension AccessoryManager {
 			}
 			// Feature 021 (T063): remember this connection, then bring back the radios that were
 			// connected alongside it. Their attempts queue on the handshake gate behind this one.
+			if attempt.isFocused, restoreDisplacedPreferred == device.id {
+				// It came back as the focused radio itself: nothing left to give back (T200).
+				restoreDisplacedPreferred = nil
+			}
 			if attempt.isFocused, let focused = activeConnection, let nodeNum = focused.nodeNum {
 				await MeshPackets.shared.noteRadioConnected(nodeNum: nodeNum, transport: focused.device.transportType, autoConnect: nil)
 				await reconnectRememberedRadios()

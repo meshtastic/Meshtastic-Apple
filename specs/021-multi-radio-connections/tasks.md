@@ -210,7 +210,7 @@ All re-checked in the files and holding (2026-09-27). One commit each, full suit
 The owner asked (2026-09-27) to fix all of them and to resume when the session's tokens reset: take
 the first unchecked item, re-check its cited lines in the files, fix, full suite, commit, tick it.
 
-- [ ] T200 F1 the "take the focus back after a restore" marker expires: cleared by a user's focus choice, Disconnect, Remove, or the radio coming back focused.
+- [X] T200 F1 the "take the focus back after a restore" marker expires: cleared by a user's focus choice, Disconnect, Remove, or the radio coming back focused. — `focusConnectedRadio`, `disconnectAdditionalRadio(byUser: true)` (so Remove too) and a focused connect of that radio clear `restoreDisplacedPreferred`. Verified: `MultiRadioConnectFlowTests.restoreGiveBackExpires`.
 - [ ] T201 F2 after a restore hand-over, the preferred radio stays preferred even if it doesn't return that session.
 - [ ] T202 F3 removing a radio while its focus handover is pending stops the handover bringing it back.
 - [ ] T203 F4 the store's own radio doesn't wait for the backfill on a new phone (match by node number once known).

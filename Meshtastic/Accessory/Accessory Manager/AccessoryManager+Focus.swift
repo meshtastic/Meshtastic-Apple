@@ -40,6 +40,8 @@ extension AccessoryManager {
 		let previous = activeConnection
 		Logger.transport.info("🔀 Focusing \(session.device.name, privacy: .public) without reconnecting; \(previous?.device.name ?? "nothing", privacy: .public) stays connected")
 
+		// A focus chosen now replaces the one a restore meant to give back (T200).
+		restoreDisplacedPreferred = nil
 		// The roles swap in one step, with no suspension in between, so no event from either
 		// radio is handled while neither owns it.
 		focusHandoverTask?.cancel()

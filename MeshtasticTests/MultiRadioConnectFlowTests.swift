@@ -321,6 +321,24 @@ struct MultiRadioConnectFlowTests {
 		try await manager.disconnect()
 	}
 
+	@Test("The restore's give-back is dropped once the user picks a focus or disconnects that radio")
+	func restoreGiveBackExpires() async throws {
+		let saved = SavedDefaults()
+		defer { saved.restore() }
+		let radios = try await connectTwoRadios()
+		let manager = radios.manager
+		let displaced = UUID()
+
+		manager.restoreDisplacedPreferred = displaced
+		#expect(await manager.focusConnectedRadio(radios.secondDevice.id))
+		#expect(manager.restoreDisplacedPreferred == nil, "the user's focus wins")
+
+		manager.restoreDisplacedPreferred = displaced
+		await manager.disconnectAdditionalRadio(displaced, byUser: true)
+		#expect(manager.restoreDisplacedPreferred == nil)
+		try await manager.disconnect()
+	}
+
 	@Test("A radio that isn't connected can be removed, and stops being the preferred one")
 	func removeOfflineRadio() async throws {
 		let saved = SavedDefaults()
