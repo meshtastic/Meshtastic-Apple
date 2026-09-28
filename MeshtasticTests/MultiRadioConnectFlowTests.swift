@@ -363,6 +363,10 @@ struct MultiRadioConnectFlowTests {
 		let secondDevice = device()
 		let manager = makeManager(ScriptedTransport(radio: first, radiosByIdentifier: [secondDevice.identifier: second]))
 		try await manager.connect(to: device())
+		// The store belongs to the first radio, as recorded at launch.
+		BackfillOwner.clear()
+		BackfillOwner.recordIfNeeded()
+		defer { BackfillOwner.clear() }
 
 		// A message stored by a build before feature 021: no radio columns yet.
 		let context = PersistenceController.shared.context
@@ -383,6 +387,54 @@ struct MultiRadioConnectFlowTests {
 		let row = try #require(try fresh.fetch(FetchDescriptor<MessageEntity>(predicate: #Predicate { $0.messageId == oldId })).first)
 		#expect(row.localNodeNum == Int64(firstNum))
 		manager.additionalRadioReconnects.values.forEach { $0.cancel() }
+		try await manager.disconnect()
+	}
+
+	/// A message stored by a build before feature 021, in the shared store; removed by the caller.
+	private func insertOldMessage() throws -> MessageEntity {
+		let context = PersistenceController.shared.context
+		let old = MessageEntity()
+		old.messageId = Int64.random(in: 1_000_000...9_000_000)
+		old.messagePayload = "from before"
+		context.insert(old)
+		try context.save()
+		return old
+	}
+
+	private func localNodeNum(ofMessage id: Int64) throws -> Int64? {
+		let fresh = ModelContext(PersistenceController.shared.container)
+		return try fresh.fetch(FetchDescriptor<MessageEntity>(predicate: #Predicate { $0.messageId == id })).first?.localNodeNum
+	}
+
+	@Test("Switching to another radio backfills old rows for the store's radio first, and its own radio doesn't wait")
+	func backfillBeforeSwitchedRadio() async throws {
+		let saved = SavedDefaults()
+		defer { saved.restore() }
+		// The store's radio A, recorded at launch; the user switches to B, which is preferred now.
+		let ownerNum = Int64(uniqueNodeNum())
+		let ownerDevice = device()
+		PreferredRadio.peripheralId = ownerDevice.id.uuidString
+		PreferredRadio.nodeNum = ownerNum
+		BackfillOwner.clear()
+		BackfillOwner.recordIfNeeded()
+		defer { BackfillOwner.clear() }
+		let switched = device()
+		PreferredRadio.peripheralId = switched.id.uuidString
+		let old = try insertOldMessage()
+		defer {
+			PersistenceController.shared.context.delete(old)
+			try? PersistenceController.shared.context.save()
+		}
+
+		// The store's own radio connecting: nothing to wait for.
+		let ownerManager = makeManager(ScriptedTransport(radio: ScriptedRadio(nodeNum: UInt32(ownerNum))))
+		try await ownerManager.connect(to: ownerDevice)
+		#expect(try localNodeNum(ofMessage: old.messageId) == nil)
+		try await ownerManager.disconnect()
+
+		let manager = makeManager(ScriptedTransport(radio: ScriptedRadio(nodeNum: uniqueNodeNum())))
+		try await manager.connect(to: switched)
+		#expect(try localNodeNum(ofMessage: old.messageId) == ownerNum, "A's, not B's")
 		try await manager.disconnect()
 	}
 

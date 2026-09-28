@@ -163,6 +163,8 @@ struct MeshtasticAppleApp: App {
 			// front may never get (T162). A single-radio store isn't: the old rows only matter once
 			// another radio's data joins them, and the backfill runs then (T186), so a single-radio
 			// user's launch doesn't wait, as on `main`.
+			// Before anything connects: the radio the store's old rows belong to (T193).
+			BackfillOwner.recordIfNeeded()
 			let manager = accessoryManager
 			let mergesBackups = NodeBackupManager.shared.unmergedBackups.contains(where: { ($0.mergeAttempts ?? 0) < NodeBackupManager.maxMergeAttempts })
 			Task { @MainActor in
@@ -174,10 +176,10 @@ struct MeshtasticAppleApp: App {
 				await manager.handshakeGate.acquire()
 				defer { manager.handshakeGate.release() }
 				if mergesBackups {
-					await NodeBackupManager.shared.mergePendingBackups(using: packets, ownRadio: PreferredRadio.nodeNum)
+					await NodeBackupManager.shared.mergePendingBackups(using: packets, ownRadio: BackfillOwner.current().nodeNum)
 				} else {
 					do {
-						let filled = try await packets.drainMultiRadioBackfill(ownRadio: PreferredRadio.nodeNum)
+						let filled = try await packets.drainMultiRadioBackfill(ownRadio: BackfillOwner.current().nodeNum)
 						Logger.data.info("🧭 [MultiRadio] Backfilled \(filled) rows at launch")
 					} catch {
 						Logger.data.error("💥 [MultiRadio] Launch backfill failed: \(error.localizedDescription, privacy: .public)")
@@ -251,7 +253,7 @@ struct MeshtasticAppleApp: App {
 			// The backfill attributes old rows to the radio the store belongs to, so it must
 			// not run while a switch is swapping the store for another radio's.
 			if !accessoryManager.isSwitchingDevices {
-				await MeshPackets.shared.runMultiRadioMaintenance(ownRadio: PreferredRadio.nodeNum)
+				await MeshPackets.shared.runMultiRadioMaintenance(ownRadio: BackfillOwner.current().nodeNum)
 			}
 			// Nothing to clear: the next pass takes a new number, which supersedes any
 			// expiry recorded against this one.
