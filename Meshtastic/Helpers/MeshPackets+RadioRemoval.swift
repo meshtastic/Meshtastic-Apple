@@ -196,22 +196,26 @@ extension MeshPackets {
 		let nodes = try modelContext.fetch(FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { nodeNums.contains($0.num) }))
 		for node in nodes {
 			guard let remaining = byNode[node.num], !remaining.isEmpty else { continue }
-			if remaining.count == 1, let only = remaining.first {
-				// One observation left, perhaps a merged backup's from months ago: it only takes over
-				// the path when it's current next to what the node last showed, and never moves the
-				// node's last heard back (T176).
-				let current = node.lastHeard.map { shown in
-					(only.lastHeard ?? .distantPast) >= shown.addingTimeInterval(-NodeObservationEntity.currentWindow)
-				} ?? true
-				guard current else { continue }
+			// What's left may be merged backups' observations from months ago: they only take over
+			// the path when they're current next to what the node last showed, and never move the
+			// node's last heard back (T176 for one left, T195 for several).
+			let shown = node.lastHeard
+			let newest = remaining.compactMap(\.lastHeard).max() ?? .distantPast
+			if let shown, newest < shown.addingTimeInterval(-NodeObservationEntity.currentWindow) { continue }
+			if remaining.count > 1 {
+				let firstHeard = node.firstHeard
+				NodeObservationEntity.applyAggregate(remaining, to: node, focusedRadio: PreferredRadio.nodeNum)
+				if let shown, (node.lastHeard ?? .distantPast) < shown { node.lastHeard = shown }
+				if let firstHeard, (node.firstHeard ?? .distantFuture) > firstHeard { node.firstHeard = firstHeard }
+				continue
+			}
+			if let only = remaining.first {
 				node.hopsAway = only.hopsAway
 				node.snr = only.snr
 				node.rssi = only.rssi
 				node.viaMqtt = only.viaMqtt
 				if only.radioNum == PreferredRadio.nodeNum { node.channel = only.channel }
-				continue
 			}
-			NodeObservationEntity.applyAggregate(remaining, to: node, focusedRadio: PreferredRadio.nodeNum)
 		}
 	}
 }

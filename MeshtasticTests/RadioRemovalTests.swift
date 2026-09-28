@@ -248,6 +248,32 @@ struct RadioRemovalTests {
 		#expect(after.hopsAway == 0, "B's months-old 4 hops don't replace it")
 	}
 
+	@Test("After a reset, a node left with several old observations keeps what it showed")
+	func oldObservationsDoNotTakeOver() async throws {
+		let container = try makeContainer()
+		let context = ModelContext(container)
+		_ = try seed(in: context)
+		let now = Date()
+		let node = try #require(try context.fetch(FetchDescriptor<NodeInfoEntity>()).first { $0.num == both })
+		node.lastHeard = now
+		node.hopsAway = 0
+		// A merged backup's radio C heard it too, also months ago.
+		let radioC: Int64 = 0x0C0C_0C0C
+		let fromC = NodeObservationEntity(radioNum: radioC, nodeNum: both)
+		fromC.hopsAway = 6
+		context.insert(fromC)
+		for observation in try context.fetch(FetchDescriptor<NodeObservationEntity>()) where observation.nodeNum == both {
+			observation.lastHeard = observation.radioNum == radioA ? now : now.addingTimeInterval(-60 * 86_400)
+		}
+		try context.save()
+
+		await MeshPackets(modelContainer: container).removeRadioData(radioA, .reset(preserveFavorites: true, deleteMessages: false))
+
+		let after = try #require(try rows(NodeInfoEntity.self, in: container).first { $0.num == both })
+		#expect(after.lastHeard == now)
+		#expect(after.hopsAway == 0)
+	}
+
 	@Test("Deleting a reset radio's messages keeps channels another radio has")
 	func resetDeletesMessages() async throws {
 		let container = try makeContainer()
