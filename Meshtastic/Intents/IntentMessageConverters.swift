@@ -74,6 +74,31 @@ enum IntentMessageConverters {
 		return ((try? context.fetchCount(connected)) ?? 0) > 1
 	}
 
+	/// `radioNum`'s channel keys by slot: from its LoRa settings, or the keys stored on its
+	/// channels when those aren't in the store.
+	static func channelKeys(ofRadio radioNum: Int64, in context: ModelContext) -> [Int32: String] {
+		var keys: [Int32: String] = [:]
+		var descriptor = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == radioNum })
+		descriptor.fetchLimit = 1
+		for channel in (try? context.fetch(descriptor))?.first?.channels ?? [] {
+			if let key = channel.channelKey { keys[channel.index] = key }
+		}
+		let computed = (try? MultiRadioBackfill.channelKeysByIndex(for: radioNum, in: context, updateStored: false)) ?? [:]
+		return keys.merging(computed) { _, fresh in fresh }
+	}
+
+	/// Whether a channel message belongs to slot `index` of `radioNum`, as the app's timeline
+	/// decides it (`ChannelMessageQuery`, T192): by channel key, since a channel several radios
+	/// have is stored once under whichever radio delivered it first; otherwise, for a row without
+	/// a key, by this radio's slot. With no radio, by slot as before. `keys` is
+	/// `channelKeys(ofRadio:in:)`, looked up once by the caller.
+	static func channelMessage(_ message: MessageEntity, isInSlot index: Int32, ofRadio radioNum: Int64?, keys: [Int32: String]) -> Bool {
+		guard message.toUser == nil else { return false }
+		guard let radioNum else { return message.channel == index }
+		if let key = keys[index], message.channelKey == key { return true }
+		return message.channel == index && (message.localNodeNum ?? radioNum) == radioNum
+	}
+
 	/// The spoken name of slot `index`: the channel's own name on `radioNum` when it has one,
 	/// so "reply to Family" finds it; otherwise "Primary Channel" / "Channel N" as before.
 	static func channelSpokenName(index: Int32, radioNum: Int64?, in context: ModelContext?) -> String {

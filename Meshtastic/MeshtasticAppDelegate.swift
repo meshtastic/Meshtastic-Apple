@@ -89,15 +89,17 @@ class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificat
 					message.read = true
 					readMessageIDs.append(message.messageId)
 				}
-			} else if case let .channel(index, _) = conversation {
+			} else if case let .channel(index, radioNum) = conversation {
 				let channelIndex = Int32(index)
-				let descriptor = FetchDescriptor<MessageEntity>(
-					predicate: #Predicate { message in
+				// With several radios, the channel's messages go by its key (T192).
+				let descriptor = radioNum == nil
+					? FetchDescriptor<MessageEntity>(predicate: #Predicate { message in
 						message.read == false && message.channel == channelIndex
-					}
-				)
+					})
+					: FetchDescriptor<MessageEntity>(predicate: #Predicate { message in message.read == false })
+				let keys = radioNum.map { IntentMessageConverters.channelKeys(ofRadio: $0, in: context) } ?? [:]
 				let messages = try context.fetch(descriptor)
-				for message in messages where message.toUser == nil && onRadio(message) {
+				for message in messages where IntentMessageConverters.channelMessage(message, isInSlot: channelIndex, ofRadio: radioNum, keys: keys) {
 					message.read = true
 					readMessageIDs.append(message.messageId)
 				}

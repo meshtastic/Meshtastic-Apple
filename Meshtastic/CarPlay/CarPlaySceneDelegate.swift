@@ -475,8 +475,17 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 		let results = (try? context.fetch(descriptor)) ?? []
 		var counts = [Int32: Int]()
 		let radio = carPlayMessageRadio
-		for message in results where message.toUser == nil && channelSet.contains(message.channel) && belongs(message, to: radio) {
-			counts[message.channel, default: 0] += 1
+		guard let radio else {
+			for message in results where message.toUser == nil && channelSet.contains(message.channel) {
+				counts[message.channel, default: 0] += 1
+			}
+			return counts
+		}
+		// With several radios, a channel's messages go by its key, not the slot or radio they came
+		// in through (T192).
+		let keys = IntentMessageConverters.channelKeys(ofRadio: radio, in: context)
+		for index in channelSet {
+			counts[index] = results.filter { IntentMessageConverters.channelMessage($0, isInSlot: index, ofRadio: radio, keys: keys) }.count
 		}
 		return counts
 	}
@@ -554,21 +563,35 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 	/// Posts a Communication Notification for the most recent unread channel message.
 	/// This is required for CarPlay to offer read-back instead of compose when tapped.
 	private func donateLatestIncomingChannelMessage(channelIndex: Int32, conversationId: String, channelName: String) {
-		var descriptor = FetchDescriptor<MessageEntity>(
-			predicate: #Predicate { message in
-				message.read == false &&
-				message.admin == false &&
-				message.isEmoji == false &&
-				message.channel == channelIndex
-			},
-			sortBy: [SortDescriptor(\MessageEntity.messageTimestamp, order: .reverse)]
-		)
-		// toUser == nil intentionally absent from predicate (crashes SwiftData on iOS 26).
-		// Fetch a small batch and pick the first channel message in Swift.
-		descriptor.fetchLimit = 5
-
 		let radio = carPlayMessageRadio
-		guard let message = (try? context.fetch(descriptor))?.first(where: { $0.toUser == nil && belongs($0, to: radio) }),
+		var descriptor: FetchDescriptor<MessageEntity>
+		if radio == nil {
+			descriptor = FetchDescriptor<MessageEntity>(
+				predicate: #Predicate { message in
+					message.read == false &&
+					message.admin == false &&
+					message.isEmoji == false &&
+					message.channel == channelIndex
+				},
+				sortBy: [SortDescriptor(\MessageEntity.messageTimestamp, order: .reverse)]
+			)
+			// toUser == nil intentionally absent from predicate (crashes SwiftData on iOS 26).
+			// Fetch a small batch and pick the first channel message in Swift.
+			descriptor.fetchLimit = 5
+		} else {
+			// With several radios the channel's messages can sit in another radio's slot (T192).
+			descriptor = FetchDescriptor<MessageEntity>(
+				predicate: #Predicate { message in
+					message.read == false && message.admin == false && message.isEmoji == false
+				},
+				sortBy: [SortDescriptor(\MessageEntity.messageTimestamp, order: .reverse)]
+			)
+			descriptor.fetchLimit = 50
+		}
+		let keys = radio.map { IntentMessageConverters.channelKeys(ofRadio: $0, in: context) } ?? [:]
+		guard let message = (try? context.fetch(descriptor))?.first(where: {
+				IntentMessageConverters.channelMessage($0, isInSlot: channelIndex, ofRadio: radio, keys: keys)
+			  }),
 			  let fromUser = message.fromUser else { return }
 		// Dedup AFTER resolving the message, keyed by conversation + message, so a
 		// newer unread message re-donates and stays readable by Siri.

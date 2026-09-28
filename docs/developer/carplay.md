@@ -46,4 +46,6 @@ parsed by `conversation(fromIdentifier:)`). With one radio they stay `channel-<N
 name matched only on another radio (`channelSlot(for:in:)`) goes out through that radio. Every
 incoming donation is built by `CarPlayIntentDonation.incomingMessageIntent(from:)`. The CarPlay
 lists are the CarPlay radio's view: their row ids name that radio, and Siri read-back
-(`SearchForMessagesIntentHandler`) and mark-as-read only take the named radio's messages.
+(`SearchForMessagesIntentHandler`) and mark-as-read only take the named radio's messages: its DMs, and
+its channels' messages by channel key (`channelMessage(_:isInSlot:ofRadio:keys:)`), since a channel
+several radios have is stored once under whichever radio delivered it first.

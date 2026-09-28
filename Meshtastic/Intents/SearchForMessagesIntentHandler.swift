@@ -40,6 +40,11 @@ final class SearchForMessagesIntentHandler: NSObject, INSearchForMessagesIntentH
 					guard let radioNum, let local = message.localNodeNum else { return true }
 					return local == radioNum
 				}
+				// A channel's messages go by its key on the named radio (T192).
+				var keysByRadio: [Int64: [Int32: String]] = [:]
+				for case let .channel(_, radioNum?) in conversations where keysByRadio[radioNum] == nil {
+					keysByRadio[radioNum] = IntentMessageConverters.channelKeys(ofRadio: radioNum, in: context)
+				}
 				results = results.filter { message in
 					conversations.contains { conversation in
 						switch conversation {
@@ -48,7 +53,7 @@ final class SearchForMessagesIntentHandler: NSObject, INSearchForMessagesIntentH
 								&& (message.fromUser?.num == nodeNum || message.toUser?.num == nodeNum)
 								&& onRadio(message, radioNum)
 						case let .channel(index, radioNum):
-							return message.toUser == nil && message.channel == Int32(index) && onRadio(message, radioNum)
+							return IntentMessageConverters.channelMessage(message, isInSlot: Int32(index), ofRadio: radioNum, keys: radioNum.flatMap { keysByRadio[$0] } ?? [:])
 						}
 					}
 				}
