@@ -55,7 +55,7 @@ Read this first if you are picking the work up. Update it in the same commit as 
 - Next up: the owner's device test (checklist below), which waits on hardware; don't rebuild
   Mesh Multi for it unless asked. Don't design around the focused/additional split: every radio
   works the same way (D-17). Removing the switch-era helpers (T066) waits for that test.
-- Baseline and latest: the full suite passes in the iOS Simulator (3,468 Swift Testing tests plus
+- Baseline and latest: the full suite passes in the iOS Simulator (3,471 Swift Testing tests plus
   the XCTests, about 55 seconds of test time). Run it with the simulator to itself: another
   session's test runs on the same simulator kill the test host partway.
 
@@ -99,8 +99,9 @@ Read this first if you are picking the work up. Update it in the same commit as 
 
 ## In progress
 
-- **Resume here.** Review V5 (`review-connections-v5.md` G1–G4, `review-data-v5.md` R5-1–R5-2):
-  approved by the owner; work through tasks.md › Review V5 fixes (T210–T214) in order.
+- Review V5 (2026-09-28): `review-connections-v5.md` (G1–G4) and `review-data-v5.md`
+  (R5-1–R5-2; G4 and R5-1 are the same), checked in the files; all held. Fixed one commit each
+  (`2f150709` … `48628ca7`, T210–T214 in tasks.md).
 - Review V4 (2026-09-27/28): `review-connections-v4.md` (F1–F4) and `review-data-v4.md`
   (R4-1–R4-2), checked in the files; all held. Fixed one commit each (`39ece463` … `f1cff86b`,
   T200–T205 in tasks.md).
