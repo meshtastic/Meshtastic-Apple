@@ -54,6 +54,10 @@ extension AccessoryManager {
 	/// reconnect loop, a wait for discovery to see it, and a connect in progress, as Disconnect
 	/// does for a connected radio. Found by its peripheral id and by any attempt for its number.
 	func stopBringingBack(_ radioNum: Int64) async {
+		// A pending focus handover for it would otherwise remember it and start its reconnect.
+		if handoverPrevious?.radioNum == radioNum {
+			handoverPrevious = nil
+		}
 		var deviceIds = Set(connectAttempts.values.filter { $0.device.num == radioNum || $0.session?.nodeNum == radioNum }.map(\.device.id))
 		if let peripheralId = await MeshPackets.shared.peripheralId(ofRadio: radioNum), let id = UUID(uuidString: peripheralId) {
 			deviceIds.insert(id)

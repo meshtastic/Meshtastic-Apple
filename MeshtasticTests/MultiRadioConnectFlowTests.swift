@@ -481,6 +481,28 @@ struct MultiRadioConnectFlowTests {
 		try await manager.disconnect()
 	}
 
+	@Test("A radio removed while its focus handover waits isn't brought back by it")
+	func removedDuringHandover() async throws {
+		let saved = SavedDefaults()
+		defer { saved.restore() }
+		let radios = try await connectTwoRadios()
+		let manager = radios.manager
+		manager.isSwitchingDevices = false
+		let dropped = try #require(manager.activeConnection)
+		try await dropped.connection.disconnect(withError: nil, shouldReconnect: true)
+		try await manager.closeConnection()
+		manager.scheduleFocusHandover(previousRadio: Int64(radios.firstNum), previousDevice: dropped.device, after: .milliseconds(200))
+
+		await manager.removeRadio(Int64(radios.firstNum))
+		try await waitUntil { manager.activeConnection != nil && manager.focusHandoverTask == nil }
+		try await Task.sleep(for: .milliseconds(100))
+
+		#expect(manager.activeConnection?.device.id == radios.secondDevice.id)
+		#expect(manager.additionalRadioReconnects[radios.firstDevice.id] == nil, "the removed radio isn't retried")
+		manager.isSwitchingDevices = true
+		try await manager.disconnect()
+	}
+
 	@Test("While the focused radio's live version is unknown, version checks use its own stored one")
 	func versionCheckUsesTheFocusedRadiosOwnVersion() async throws {
 		let saved = SavedDefaults()

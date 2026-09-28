@@ -64,7 +64,7 @@ extension AccessoryManager {
 			return
 		}
 		handoverPrevious = (previousRadio, previousDevice)
-		focusHandoverTask = Task { @MainActor [weak self, previousRadio, previousDevice] in
+		focusHandoverTask = Task { @MainActor [weak self] in
 			try? await Task.sleep(for: delay)
 			var waited = delay
 			defer {
@@ -79,6 +79,10 @@ extension AccessoryManager {
 				}
 				if let next = self.focusHandoverCandidate {
 					Logger.transport.info("🔀 The focused radio didn't come back; \(next.name, privacy: .public) takes the focus")
+					// Read now, not when scheduled: a radio removed meanwhile is no longer here
+					// (`stopBringingBack`, T202).
+					let previousRadio = self.handoverPrevious?.radioNum
+					let previousDevice = self.handoverPrevious?.device
 					if let previousRadio {
 						await MeshPackets.shared.setRadioAutoConnect(nodeNum: previousRadio, true)
 					}
