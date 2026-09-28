@@ -205,6 +205,18 @@ All re-checked in the files and holding (2026-09-27). One commit each, full suit
 - [X] T197 R3-4 Your Radios leaves out connecting radios and labels radios without a connect honestly. — radios with a connect attempt (by number or peripheral) aren't listed; a radio with no connect since the update says "Not connected since the update". Not unit tested (view).
 - [X] T198 R3-5 the Heard By set in a small file; no double-stored packets across a recycle. — the set is kept in `Caches/heard-by-node-nums.json` (UserDefaults only keeps its radio); a recycle marks the old instance retired at the swap (`RetiringFlag`), after which `recordReception` and `updateAnyPacketFrom` save as they happen. Verified: `NodeHeardByFilterTests.heardBySetSurvivesRelaunch`, `MultiRadioConnectLifecycleTests.recycledActorSavesQueuedWrites` (fails without the flag).
 
+## Review V4 fixes (review-connections-v4.md F1–F4, review-data-v4.md R4-1–R4-2)
+
+The owner asked (2026-09-27) to fix all of them and to resume when the session's tokens reset: take
+the first unchecked item, re-check its cited lines in the files, fix, full suite, commit, tick it.
+
+- [ ] T200 F1 the "take the focus back after a restore" marker expires: cleared by a user's focus choice, Disconnect, Remove, or the radio coming back focused.
+- [ ] T201 F2 after a restore hand-over, the preferred radio stays preferred even if it doesn't return that session.
+- [ ] T202 F3 removing a radio while its focus handover is pending stops the handover bringing it back.
+- [ ] T203 F4 the store's own radio doesn't wait for the backfill on a new phone (match by node number once known).
+- [ ] T204 R4-1 NodeInfo and position packets don't overwrite the aggregate's hops and slot with several radios.
+- [ ] T205 R4-2 a failed backfill chunk doesn't roll back packet writes made during the drain.
+
 ## Phase 10: Hardening
 
 - [ ] T130 Four BLE radios for 24 hours (device checklist in `HANDOFF.md`).

@@ -99,6 +99,10 @@ Read this first if you are picking the work up. Update it in the same commit as 
 
 ## In progress
 
+- **Resume here.** Review V4 (`review-connections-v4.md` F1–F4, `review-data-v4.md` R4-1–R4-2):
+  the owner asked to fix all of them and to carry on after the token reset. Work through
+  tasks.md › Review V4 fixes (T200–T205) in order: re-check the cited lines, fix, run the full
+  suite with the simulator to itself, commit, tick the item.
 - Review V3 (2026-09-27): `review-connections-v3.md` (R1–R4) and `review-data-v3.md`
   (R3-1–R3-5), checked in the files; all held. Fixed one commit each (`c0000d3b` … `1b8ef1b8`,
   T190–T198 in tasks.md). Both reviewers' full runs were disturbed by another session's tests on
