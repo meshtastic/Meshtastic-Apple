@@ -74,6 +74,7 @@ extension AccessoryManager {
 	/// that was already connected when it took the focus.
 	private func applyFocusedRadioState(_ session: RadioSession) {
 		PreferredRadio.peripheralId = session.device.id.uuidString
+		radiosFocusedThisRun.insert(session.device.id.uuidString)
 		// A focus chosen now is also the radio to connect first (T212).
 		PreferredRadio.connectFirstOverride = nil
 		if let nodeNum = session.nodeNum {

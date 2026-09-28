@@ -329,6 +329,10 @@ class AccessoryManager: ObservableObject {
 	/// Remembered radios that weren't found when the focused radio connected; each is brought
 	/// back when discovery next sees it (T156).
 	var awaitedRememberedRadios: Set<UUID> = []
+	/// Peripheral ids of the radios that have been the focused one since the app started, so
+	/// discovery reconnects a focused radio that drops while another is set to connect first,
+	/// but at launch connects only that one (T231).
+	var radiosFocusedThisRun: Set<String> = []
 	/// The preferred radio when a BLE restore made another radio the focused one (it wasn't back
 	/// yet, or the other connected first). It takes the focus back once it's connected alongside,
 	/// so the app is as it was before iOS closed it (T190).

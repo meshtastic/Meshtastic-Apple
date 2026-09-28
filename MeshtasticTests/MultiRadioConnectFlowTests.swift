@@ -336,12 +336,19 @@ struct MultiRadioConnectFlowTests {
 		#expect(PreferredRadio.connectFirstPeripheralId == elsewhere)
 		#expect(PreferredRadio.peripheralId == radios.firstDevice.id.uuidString, "preferred stays the focused radio")
 
-		// Both are connected on their own when discovery sees them (T221).
-		#expect(PreferredRadio.connectsAutomatically(elsewhere))
-		#expect(PreferredRadio.connectsAutomatically(radios.firstDevice.id.uuidString))
-		#expect(!PreferredRadio.connectsAutomatically(UUID().uuidString))
+		// Both are connected on their own when discovery sees them, the focused radio because it
+		// has been the focused one in this run (T221).
+		let focusedThisRun = manager.radiosFocusedThisRun
+		#expect(focusedThisRun.contains(radios.firstDevice.id.uuidString))
+		#expect(PreferredRadio.connectsAutomatically(elsewhere, focusedThisRun: focusedThisRun))
+		#expect(PreferredRadio.connectsAutomatically(radios.firstDevice.id.uuidString, focusedThisRun: focusedThisRun))
+		#expect(!PreferredRadio.connectsAutomatically(UUID().uuidString, focusedThisRun: focusedThisRun))
+		// At a launch, only the radio to connect first, so the other can't take the focus (T231).
+		#expect(PreferredRadio.connectsAutomatically(elsewhere, focusedThisRun: []))
+		#expect(!PreferredRadio.connectsAutomatically(radios.firstDevice.id.uuidString, focusedThisRun: []))
 
 		#expect(await manager.focusConnectedRadio(radios.secondDevice.id))
+		#expect(manager.radiosFocusedThisRun.contains(radios.secondDevice.id.uuidString))
 		#expect(PreferredRadio.connectFirstOverride == nil)
 		#expect(PreferredRadio.connectFirstPeripheralId == radios.secondDevice.id.uuidString)
 		try await manager.disconnect()
