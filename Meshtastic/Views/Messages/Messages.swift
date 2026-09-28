@@ -14,6 +14,7 @@ struct Messages: View {
 
 	@Environment(\.modelContext) private var context
 	@Environment(\.colorScheme) private var colorScheme
+	@EnvironmentObject private var accessoryManager: AccessoryManager
 	@ObservedObject	var router: Router
 	@Binding var unreadChannelMessages: Int
 	@Binding var unreadDirectMessages: Int
@@ -159,6 +160,13 @@ struct Messages: View {
 			consumeDeepLink(router.messagesState)
 		}.onChange(of: router.messagesState) { _, newValue in
 			consumeDeepLink(newValue)
+		}.onChange(of: accessoryManager.activeDeviceNum) { _, newValue in
+			// The channel list is the focused radio's (T083). A focus change without reconnecting
+			// (T072) doesn't rebuild this view, so follow it here (T211). A channel picked on the
+			// previous radio isn't this radio's; a DM contact is the same node on every radio.
+			guard let newValue, newValue != nodeNum else { return }
+			nodeNum = newValue
+			channelSelection = nil
 		}.onChange(of: router.messagesSection) { _, newValue in
 			// A reset (e.g. `popToRoot` on disconnect) nils the section; clear the detail pane to
 			// match. Section *changes* between .channels/.directMessages are reset by the sidebar
@@ -171,7 +179,7 @@ struct Messages: View {
 	}
 
 	private func bootstrapNodeNum() {
-		let nodeId = PreferredRadio.nodeNum
+		let nodeId = accessoryManager.activeDeviceNum ?? PreferredRadio.nodeNum
 		if nodeId > 0 && nodeNum == nil {
 			nodeNum = nodeId
 		}

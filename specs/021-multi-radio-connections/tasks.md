@@ -223,7 +223,7 @@ All re-checked in the files and holding (2026-09-28); the owner approved the fix
 commit each, full suite each time. To resume: the first unchecked item.
 
 - [X] T210 G1 the backfill before another radio joins runs as its own connect step after the config, not inside `handleMyInfo`. — connect Step 3c (no step timeout) runs `backfillBeforeAnotherRadioJoins` with the session's node number; `handleMyInfo` no longer calls it, so a config refresh outside a connect doesn't either. Verified: `MultiRadioConnectFlowTests.backfillBeforeSwitchedRadio`, `.backfillWhenSecondRadioJoins` (both through Step 3c now).
-- [ ] T211 G2 Messages follows the focused radio.
+- [X] T211 G2 Messages follows the focused radio. — `Messages` switches `nodeNum` on `activeDeviceNum` changes (clearing a channel selection) and bootstraps from the focused radio. Not unit tested (view).
 - [ ] T212 G3 "the radio to connect first at launch" kept apart from the preferred (focused) radio; the restore hand-over sets only that.
 - [ ] T213 G4, R5-1 a renumber moves `BackfillOwner` with the radio.
 - [ ] T214 R5-2 a renumber moves the service radio choices and the Heard By choice.
