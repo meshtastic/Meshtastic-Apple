@@ -32,6 +32,9 @@ final class ConnectAttempt {
 	var stepper: SequentialSteps?
 	/// Set when the radio is disconnected while its connect is still waiting to start.
 	var isCancelled = false
+	/// Whether radios other than the backfill owner had observations before this radio's first
+	/// packet, for the backfill before it joins (T230). Nil when no backfill owner is set.
+	var othersObservedBeforeJoin: Bool?
 
 	init(device: Device, isFocused: Bool = true) {
 		self.device = device
@@ -251,6 +254,15 @@ extension AccessoryManager {
 				if attempt.isFocused {
 					self.lockdownCoordinator?.onConnect(peripheralID: device.id)
 				}
+				// Asked before the event stream starts: the packets this radio queued arrive with its
+				// config and write its observations before Step 3c gets to the backfill (T230). The
+				// store's own radio, known by its number, doesn't need it.
+				if retryAttempt == 0 {
+					let owner = BackfillOwner.current().nodeNum
+					if owner != 0, device.num != owner {
+						attempt.othersObservedBeforeJoin = await MeshPackets.shared.otherRadiosHaveObservations(than: owner)
+					}
+				}
 			}
 			
 			// Step 1: Setup the connection
@@ -372,7 +384,7 @@ extension AccessoryManager {
 			Step { @MainActor _ in
 				let session = try attempt.requireSession()
 				guard let radioNum = session.nodeNum else { return }
-				await self.backfillBeforeAnotherRadioJoins(radioNum: radioNum, name: session.device.longName ?? session.device.name)
+				await self.backfillBeforeAnotherRadioJoins(radioNum: radioNum, name: session.device.longName ?? session.device.name, othersObserved: attempt.othersObservedBeforeJoin)
 			}
 
 			// Step 4: Send Heartbeat before wantConfig (database)

@@ -242,7 +242,7 @@ suite each time. To resume: the first unchecked item.
 All re-checked in the files and holding (2026-09-28); the owner approved, R7-1 with per-radio
 pruning. One commit each, full suite each time. To resume: the first unchecked item.
 
-- [ ] T230 I1 decide "another radio has observations" before the joining radio's first packet: in connect Step 0, before its event stream starts, and pass it to the join backfill's drain.
+- [X] T230 I1 decide "another radio has observations" before the joining radio's first packet. — connect Step 0 (no timeout, first try only, only with a backfill owner set and not for the owner's own radio) asks before the event stream starts and keeps the answer on the `ConnectAttempt`; Step 3c passes it to `drainMultiRadioBackfill(ownRadio:othersObserved:)`. Verified: `MultiRadioBackfillTests.drainTakesTheJoinAnswer`. Not unit tested: the Step 0 timing in a real connect (the shared test store holds other radios' observations).
 - [ ] T231 I2 discovery connects the preferred radio alongside the connect-first one only once the preferred radio has been the focused one in this run of the app.
 - [ ] T232 R7-1 prune messages per radio (`localNodeNum`), each keeping its newest 50,000, rows on no radio together; a store with one radio prunes as `main`.
 

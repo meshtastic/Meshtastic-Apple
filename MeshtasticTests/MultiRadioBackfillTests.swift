@@ -235,6 +235,26 @@ struct MultiRadioBackfillTests {
 		#expect(rows.map(\.radioNum) == [secondRadio])
 	}
 
+	@Test("A join's drain goes by the answer from before the joining radio's first packet")
+	func drainTakesTheJoinAnswer() async throws {
+		let context = try makeContext()
+		_ = makeOwnRadio(in: context)
+		for num in 1...3 { makeUser(Int64(0x4000 + num), in: context) }
+		try context.save()
+		let packets = MeshPackets(modelContainer: context.container)
+		#expect(await !packets.otherRadiosHaveObservations(than: ownRadio))
+
+		// The joining radio's queued packet is handled before its Step 3c reaches the drain.
+		context.insert(NodeObservationEntity(radioNum: 0x0B0B_0B0B, nodeNum: 0x4001))
+		try context.save()
+		#expect(await packets.otherRadiosHaveObservations(than: ownRadio))
+
+		try await packets.drainMultiRadioBackfill(ownRadio: ownRadio, othersObserved: false)
+
+		let own = try ModelContext(context.container).fetch(FetchDescriptor<NodeObservationEntity>(predicate: #Predicate { $0.radioNum == 0x0A0A_0A0A }))
+		#expect(Set(own.map(\.nodeNum)) == [0x4001, 0x4002, 0x4003])
+	}
+
 	@Test("A store with old rows is backfilled in one go, attributed to the radio given")
 	func drainsAtOnce() async throws {
 		let context = try makeContext()

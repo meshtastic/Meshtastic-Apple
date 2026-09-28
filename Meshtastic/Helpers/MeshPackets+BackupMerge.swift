@@ -35,14 +35,17 @@ extension MeshPackets {
 	/// Each chunk is saved, then the actor is given back before the next one, so packets every
 	/// radio delivers meanwhile are handled between chunks instead of waiting for the whole
 	/// table; a TCP or serial radio would otherwise miss its heartbeat answer and drop (T194).
+	///
+	/// `othersObserved` is whether other radios already had observations; decided here when not
+	/// given. A radio joining gives the answer from before its first packet (T230).
 	@discardableResult
-	func drainMultiRadioBackfill(ownRadio: Int64) async throws -> Int {
+	func drainMultiRadioBackfill(ownRadio: Int64, othersObserved given: Bool? = nil) async throws -> Int {
 		var total = 0
 		var chunks = 0
 		do {
 			// Decided once: packets let through between chunks create other radios' observations,
 			// which mustn't stop this radio's for the rest of the nodes (T220).
-			let othersObserved = try MultiRadioBackfill.otherRadiosHaveObservations(than: ownRadio, in: modelContext)
+			let othersObserved = try given ?? MultiRadioBackfill.otherRadiosHaveObservations(than: ownRadio, in: modelContext)
 			while !invalidated {
 				let filled = try MultiRadioBackfill.runChunk(in: modelContext, ownRadio: ownRadio, chunkSize: 2000, othersObserved: othersObserved).total
 				guard filled > 0 else { break }
@@ -73,6 +76,12 @@ extension MeshPackets {
 		var observed = FetchDescriptor<NodeObservationEntity>(predicate: #Predicate { $0.radioNum == radioNum })
 		observed.fetchLimit = 1
 		return ((try? modelContext.fetchCount(observed)) ?? 0) > 0
+	}
+
+	/// Whether radios other than `ownRadio` have observations, which stops the backfill creating
+	/// `ownRadio`'s (T142).
+	func otherRadiosHaveObservations(than ownRadio: Int64) -> Bool {
+		(try? MultiRadioBackfill.otherRadiosHaveObservations(than: ownRadio, in: modelContext)) ?? true
 	}
 
 	/// Whether messages still wait for the backfill (a store from before feature 021, or a

@@ -174,8 +174,8 @@ extension AccessoryManager {
 	/// peripheral id changes on a new phone, a node number doesn't. The store's own radio doesn't
 	/// wait for it, so a single-radio user's connect doesn't either. Its connect holds the
 	/// handshake gate, so no node dump runs meanwhile, and the drain lets packets through between
-	/// chunks.
-	func backfillBeforeAnotherRadioJoins(radioNum: Int64, name: String) async {
+	/// chunks. `othersObserved` is what its connect found before the radio's first packet (T230).
+	func backfillBeforeAnotherRadioJoins(radioNum: Int64, name: String, othersObserved: Bool? = nil) async {
 		let packets = MeshPackets.shared
 		guard await packets.hasPendingBackfill() else {
 			BackfillOwner.clear()
@@ -184,7 +184,7 @@ extension AccessoryManager {
 		let owner = BackfillOwner.current()
 		guard owner.nodeNum != 0, radioNum != owner.nodeNum else { return }
 		do {
-			let filled = try await packets.drainMultiRadioBackfill(ownRadio: owner.nodeNum)
+			let filled = try await packets.drainMultiRadioBackfill(ownRadio: owner.nodeNum, othersObserved: othersObserved)
 			Logger.data.info("🧭 [MultiRadio] Backfilled \(filled) rows for \(owner.nodeNum.toHex(), privacy: .public) before \(name, privacy: .public) joined")
 			if await !packets.hasPendingBackfill() {
 				BackfillOwner.clear()
