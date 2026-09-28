@@ -723,7 +723,17 @@ actor BLETransport: Transport {
 			self.restoreInProgress = true
 			let connection = BLEConnection(peripheral: standby, central: central, transport: self)
 			self.activeConnections[standby.identifier] = connection
+			// Its full handshake makes it the preferred radio (connect Step 5). The radio it took
+			// over from stays preferred, so later launches connect it first, as before iOS closed
+			// the app, even if it doesn't come back this session (T201).
+			let keptPreferred = await MainActor.run { (PreferredRadio.peripheralId, PreferredRadio.nodeNum) }
 			await self.completeFocusedRestore(device: device, connection: connection, fullHandshake: true)
+			if displacedPreferred != nil {
+				await MainActor.run {
+					PreferredRadio.peripheralId = keptPreferred.0
+					PreferredRadio.nodeNum = keptPreferred.1
+				}
+			}
 		}
 		return true
 	}
