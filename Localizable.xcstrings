@@ -56795,9 +56795,6 @@
         }
       }
     },
-    "Known from an earlier version's backup" : {
-
-    },
     "Label Channels" : {
       "localizations" : {
         "es" : {
@@ -93773,6 +93770,9 @@
           }
         }
       }
+    },
+    "Not connected since the update" : {
+
     },
     "Not encrypted" : {
       "comment" : "VoiceOver label for an unencrypted contact",

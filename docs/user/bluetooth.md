@@ -82,7 +82,7 @@ With one radio, **Reset NodeDB** and **Factory Reset** (in the radio's **Device*
 
 **Remove This Radio**, in the same place, takes a radio out of the app without resetting it: it disconnects and isn't reconnected, its data is removed as for a reset with its messages deleted (favorites are kept), and it no longer counts as one of your radios. Connect it again to add it back. It is only offered while the app holds more than one radio's data.
 
-A radio that isn't connected (one that stopped working, one you gave away, or one only known from an earlier version's backup) is removed from **Settings › App Settings › Your Radios**, which lists the radios the app knows that aren't connected now.
+A radio that isn't connected (one that stopped working, one you gave away, or one only known from an earlier version's backup) is removed from **Settings › App Settings › Your Radios**, which lists the radios the app knows that aren't connected or connecting now.
 
 ### Switching Radios
 

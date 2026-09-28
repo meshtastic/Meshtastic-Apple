@@ -19,8 +19,15 @@ struct StoredRadiosSection: View {
 	@State private var radioToRemove: MyInfoEntity?
 	@State private var removing: Set<Int64> = []
 
+	/// Radios neither connected nor connecting (T197): removing one that's connecting would delete
+	/// its data while its connect goes on writing for it.
 	private var offlineRadios: [MyInfoEntity] {
-		radios.filter { $0.myNodeNum != 0 && !accessoryManager.isRadioConnected(nodeNum: $0.myNodeNum) }
+		let connecting = accessoryManager.connectAttempts.values
+		return radios.filter { radio in
+			radio.myNodeNum != 0
+				&& !accessoryManager.isRadioConnected(nodeNum: radio.myNodeNum)
+				&& !connecting.contains { $0.device.num == radio.myNodeNum || $0.device.id.uuidString == radio.peripheralId }
+		}
 	}
 
 	private func name(_ radio: MyInfoEntity) -> String {
@@ -40,7 +47,9 @@ struct StoredRadiosSection: View {
 									.font(.caption)
 									.foregroundStyle(.secondary)
 							} else {
-								Text("Known from an earlier version's backup")
+								// The store's own radio before its first connect since the update, a
+								// merged backup's radio, or a row an older version left (T197).
+								Text("Not connected since the update")
 									.font(.caption)
 									.foregroundStyle(.secondary)
 							}
