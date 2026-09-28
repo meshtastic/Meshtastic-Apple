@@ -217,6 +217,17 @@ the first unchecked item, re-check its cited lines in the files, fix, full suite
 - [X] T204 R4-1 NodeInfo and position packets don't overwrite the aggregate's hops and slot with several radios. — `upsertNodeInfoPacket` and `upsertPositionPacket` skip those writes when `nodeFieldsAreAggregated`; with one radio they write as before (closes T042's "last writer wins until the next aggregate"). Verified: `MultiRadioIngestTests.handlersKeepTheAggregate`.
 - [X] T205 R4-2 a failed backfill chunk doesn't roll back packet writes made during the drain. — `drainMultiRadioBackfill` saves pending changes after each yield, before the next chunk. Not unit tested (a chunk failure between interleaved packets can't be set up without injecting a fault into SwiftData).
 
+## Review V5 fixes (review-connections-v5.md G1–G4, review-data-v5.md R5-1–R5-2)
+
+All re-checked in the files and holding (2026-09-28); the owner approved the fixes below. One
+commit each, full suite each time. To resume: the first unchecked item.
+
+- [ ] T210 G1 the backfill before another radio joins runs as its own connect step after the config, not inside `handleMyInfo`.
+- [ ] T211 G2 Messages follows the focused radio.
+- [ ] T212 G3 "the radio to connect first at launch" kept apart from the preferred (focused) radio; the restore hand-over sets only that.
+- [ ] T213 G4, R5-1 a renumber moves `BackfillOwner` with the radio.
+- [ ] T214 R5-2 a renumber moves the service radio choices and the Heard By choice.
+
 ## Phase 10: Hardening
 
 - [ ] T130 Four BLE radios for 24 hours (device checklist in `HANDOFF.md`).
