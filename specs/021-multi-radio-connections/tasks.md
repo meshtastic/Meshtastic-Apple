@@ -199,7 +199,7 @@ All re-checked in the files and holding (2026-09-27). One commit each, full suit
 - [X] T191 R2 removing a radio that isn't connected stops its reconnects. — `stopBringingBack` runs `disconnectAdditionalRadio(byUser: true)` for its peripheral id and any connect attempt for its number: the reconnect loop, the wait for discovery and the attempt all stop. Verified: `MultiRadioConnectFlowTests.removeOfflineRadio`.
 - [X] T192 R3-1 CarPlay and Siri take a channel's messages by channel key. — `IntentMessageConverters.channelMessage(_:isInSlot:ofRadio:keys:)` decides as `ChannelMessageQuery` does; CarPlay's channel counts and read-back, Siri search and mark-as-read use it. DMs stay scoped by radio. Verified: `SearchMessagesRadioTests.sharedChannelMessagesDeliveredByAnotherRadioAreFound`.
 - [ ] T193 R3-2 the backfill runs before any other radio connects, focused or not.
-- [ ] T194 R3 the backfill lets packets through between chunks.
+- [X] T194 R3 the backfill lets packets through between chunks. — `drainMultiRadioBackfill` is async and yields the actor after each saved chunk of 2,000 (`mergeBackups` is async with it). Not unit tested: showing packets interleaving would depend on timing; the existing drain and merge tests pass.
 - [ ] T195 R3-3 a reset doesn't move a node back with several old observations left.
 - [ ] T196 R4 the passphrase sheet for a radio that isn't focused: backoff, and failed sends.
 - [ ] T197 R3-4 Your Radios leaves out connecting radios and labels radios without a connect honestly.

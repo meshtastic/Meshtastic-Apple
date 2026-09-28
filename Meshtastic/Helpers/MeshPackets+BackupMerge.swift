@@ -31,8 +31,12 @@ extension MeshPackets {
 	/// Runs the backfill to the end in one go, attributing old rows to `ownRadio` (T162): at launch,
 	/// before a merge, and after a restore, rather than only in background passes, which a Mac
 	/// that stays in front may never get. Rolls back and rethrows on failure.
+	///
+	/// Each chunk is saved, then the actor is given back before the next one, so packets every
+	/// radio delivers meanwhile are handled between chunks instead of waiting for the whole
+	/// table; a TCP or serial radio would otherwise miss its heartbeat answer and drop (T194).
 	@discardableResult
-	func drainMultiRadioBackfill(ownRadio: Int64) throws -> Int {
+	func drainMultiRadioBackfill(ownRadio: Int64) async throws -> Int {
 		var total = 0
 		var chunks = 0
 		do {
@@ -42,6 +46,7 @@ extension MeshPackets {
 				total += filled
 				chunks += 1
 				guard chunks < 10_000 else { break }
+				await Task.yield()
 			}
 		} catch {
 			modelContext.rollback()
@@ -80,11 +85,11 @@ extension MeshPackets {
 	///
 	/// A backup for a radio the store already knows is skipped rather than merged. It can only be an
 	/// older snapshot of what the store has, and merging it would bring back anything deleted since.
-	func mergeBackups(_ backups: [PendingBackupMerge], ownRadio: Int64) -> [String: BackupMergeOutcome] {
+	func mergeBackups(_ backups: [PendingBackupMerge], ownRadio: Int64) async -> [String: BackupMergeOutcome] {
 		var outcomes: [String: BackupMergeOutcome] = [:]
 		guard !invalidated else { return outcomes }
 		do {
-			try drainMultiRadioBackfill(ownRadio: ownRadio)
+			try await drainMultiRadioBackfill(ownRadio: ownRadio)
 		} catch {
 			Logger.backup.error("💥 [Merge] The store's backfill failed, so no backup was merged: \(error.localizedDescription, privacy: .public)")
 			return outcomes
