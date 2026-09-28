@@ -228,6 +228,15 @@ commit each, full suite each time. To resume: the first unchecked item.
 - [X] T213 G4, R5-1 a renumber moves `BackfillOwner` with the radio. — `renumberStore` calls `BackfillOwner.renumber(from:to:)`. Verified: `MultiRadioConnectFlowTests.backfillOwnerFollowsRenumber`.
 - [X] T214 R5-2 a renumber moves the service radio choices and the Heard By choice. — `moveSavedRadioChoices(from:to:)`, called by `renumberStore`, also moves the connect-first override's number. Verified: `MultiRadioConnectFlowTests.savedChoicesFollowRenumber`.
 
+## Review V6 fixes (review-connections-v6.md H1–H2, review-data-v6.md R6-1)
+
+All re-checked in the files and holding (2026-09-28); the owner approved. One commit each, full
+suite each time. To resume: the first unchecked item.
+
+- [ ] T220 H1 the observation backfill decides "another radio has observations" once, when the drain starts.
+- [ ] T221 H2 auto-connect also takes the focused (preferred) radio while the connect-first override is set.
+- [ ] T222 R6-1 a removed radio's kept channel messages move to a remaining radio with that channel.
+
 ## Phase 10: Hardening
 
 - [ ] T130 Four BLE radios for 24 hours (device checklist in `HANDOFF.md`).
