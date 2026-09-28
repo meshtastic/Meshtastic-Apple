@@ -55,7 +55,7 @@ Read this first if you are picking the work up. Update it in the same commit as 
 - Next up: the owner's device test (checklist below), which waits on hardware; don't rebuild
   Mesh Multi for it unless asked. Don't design around the focused/additional split: every radio
   works the same way (D-17). Removing the switch-era helpers (T066) waits for that test.
-- Baseline and latest: the full suite passes in the iOS Simulator (3,473 Swift Testing tests plus
+- Baseline and latest: the full suite passes in the iOS Simulator (3,476 Swift Testing tests plus
   the XCTests, about 55 seconds of test time). Run it with the simulator to itself: another
   session's test runs on the same simulator kill the test host partway.
 
@@ -99,6 +99,10 @@ Read this first if you are picking the work up. Update it in the same commit as 
 
 ## In progress
 
+- Review V7 (2026-09-28): `review-connections-v7.md` (I1–I2) and `review-data-v7.md` (R7-1),
+  checked in the files; all held. Fixed one commit each (T230–T232 in tasks.md). R7-1 was a
+  policy choice: the owner chose per-radio message pruning (each radio keeps its newest 50,000;
+  one radio prunes as `main`).
 - Review V6 (2026-09-28): `review-connections-v6.md` (H1–H2) and `review-data-v6.md` (R6-1),
   checked in the files; all held. Fixed one commit each (T220–T222 in tasks.md).
 - Review V5 (2026-09-28): `review-connections-v5.md` (G1–G4) and `review-data-v5.md`

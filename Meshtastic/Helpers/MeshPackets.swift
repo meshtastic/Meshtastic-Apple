@@ -842,6 +842,40 @@ actor MeshPackets {
 		return false
 	}
 
+	/// Deletes the oldest messages over `cap`. With several of the user's radios in the store,
+	/// each radio keeps its newest `cap`, and the rows on none of them (still waiting for the
+	/// backfill) count together, so one radio's traffic or a merged backup doesn't push out another
+	/// radio's history (T232). With one radio, the whole table counts, as before.
+	func pruneMessageHistory(cap: Int = MeshPackets.maxTotalMessages) throws {
+		let radios = storedRadios().map(\.nodeNum)
+		guard radios.count > 1 else {
+			try pruneOldestMessages(matching: nil, cap: cap)
+			return
+		}
+		for radio in radios {
+			try pruneOldestMessages(matching: #Predicate { $0.localNodeNum == radio }, cap: cap)
+		}
+		// Optional elements, so the store can compare the optional column (`??` has no SQL form).
+		let onRadios: [Int64?] = radios
+		try pruneOldestMessages(matching: #Predicate { $0.localNodeNum == nil || !onRadios.contains($0.localNodeNum) }, cap: cap)
+	}
+
+	private func pruneOldestMessages(matching predicate: Predicate<MessageEntity>?, cap: Int) throws {
+		let total = (try? modelContext.fetchCount(FetchDescriptor<MessageEntity>(predicate: predicate))) ?? 0
+		guard total > cap else { return }
+		var oldestDescriptor = FetchDescriptor<MessageEntity>(
+			predicate: predicate,
+			sortBy: [SortDescriptor(\MessageEntity.messageTimestamp, order: .forward)]
+		)
+		oldestDescriptor.fetchLimit = total - cap
+		guard let oldMessages = try? modelContext.fetch(oldestDescriptor) else { return }
+		for old in oldMessages {
+			modelContext.delete(old)
+		}
+		try modelContext.save()
+		Logger.data.info("🗑️ Pruned \(oldMessages.count) old messages (cap: \(cap))")
+	}
+
 	func localConfig (config: Config, nodeNum: Int64, nodeLongName: String) {
 		switch config.payloadVariant {
 		case .bluetooth:
@@ -2162,21 +2196,7 @@ actor MeshPackets {
 						// Keep message storage bounded without scanning the whole table
 						// after every incoming text.
 						if shouldPruneMessageHistory() {
-							let countDescriptor = FetchDescriptor<MessageEntity>()
-							let totalMessages = (try? modelContext.fetchCount(countDescriptor)) ?? 0
-							if totalMessages > MeshPackets.maxTotalMessages {
-								var oldestDescriptor = FetchDescriptor<MessageEntity>(
-									sortBy: [SortDescriptor(\MessageEntity.messageTimestamp, order: .forward)]
-								)
-								oldestDescriptor.fetchLimit = totalMessages - MeshPackets.maxTotalMessages
-								if let oldMessages = try? modelContext.fetch(oldestDescriptor) {
-									for old in oldMessages {
-										modelContext.delete(old)
-									}
-									try modelContext.save()
-									Logger.data.info("🗑️ Pruned \(oldMessages.count) old messages (cap: \(MeshPackets.maxTotalMessages))")
-								}
-							}
+							try pruneMessageHistory()
 						}
 					} catch {
 						Logger.data.error("💥 Failed to save new MessageEntity: \(error.localizedDescription, privacy: .public)")

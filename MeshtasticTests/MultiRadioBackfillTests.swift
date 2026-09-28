@@ -317,6 +317,61 @@ struct MultiRadioBackfillTests {
 		#expect(try MultiRadioBackfill.runChunk(in: context, ownRadio: ownRadio).total == 0)
 	}
 
+	// MARK: - Message cap (T232)
+
+	/// Messages 1...count on `radio` (nil: waiting for the backfill), older with lower ids.
+	private func insertMessages(_ ids: ClosedRange<Int>, radio: Int64?, in context: ModelContext) {
+		for id in ids {
+			let message = MessageEntity()
+			message.messageId = Int64(id)
+			message.messageTimestamp = Int32(1_700_000_000 + id)
+			message.localNodeNum = radio
+			context.insert(message)
+		}
+	}
+
+	private func connectedRadio(_ num: Int64, in context: ModelContext) {
+		let myInfo = MyInfoEntity()
+		myInfo.myNodeNum = num
+		myInfo.lastConnected = Date()
+		context.insert(myInfo)
+	}
+
+	private func messageIds(in context: ModelContext) throws -> Set<Int64> {
+		Set(try ModelContext(context.container).fetch(FetchDescriptor<MessageEntity>()).map(\.messageId))
+	}
+
+	@Test("With several radios, each keeps its newest messages, and rows on none count together")
+	func messageCapPerRadio() async throws {
+		let context = try makeContext()
+		let second: Int64 = 0x0B0B_0B0B
+		connectedRadio(ownRadio, in: context)
+		connectedRadio(second, in: context)
+		insertMessages(1...5, radio: ownRadio, in: context)
+		insertMessages(11...12, radio: second, in: context)
+		insertMessages(21...24, radio: nil, in: context)
+		// A radio the store keeps no data for (a stray row from an older version) counts with them.
+		insertMessages(31...31, radio: 0x0C0C_0C0C, in: context)
+		try context.save()
+
+		try await MeshPackets(modelContainer: context.container).pruneMessageHistory(cap: 3)
+
+		#expect(try messageIds(in: context) == [3, 4, 5, 11, 12, 23, 24, 31], "the second radio's older messages stay")
+	}
+
+	@Test("With one radio, the whole table counts, as before")
+	func messageCapOneRadio() async throws {
+		let context = try makeContext()
+		connectedRadio(ownRadio, in: context)
+		insertMessages(1...3, radio: nil, in: context)
+		insertMessages(4...6, radio: ownRadio, in: context)
+		try context.save()
+
+		try await MeshPackets(modelContainer: context.container).pruneMessageHistory(cap: 4)
+
+		#expect(try messageIds(in: context) == [3, 4, 5, 6])
+	}
+
 	// MARK: - Reception retention
 
 	@Test("Receptions older than the retention window are pruned")

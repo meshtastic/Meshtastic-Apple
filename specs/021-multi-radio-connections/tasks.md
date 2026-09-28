@@ -244,7 +244,7 @@ pruning. One commit each, full suite each time. To resume: the first unchecked i
 
 - [X] T230 I1 decide "another radio has observations" before the joining radio's first packet. — connect Step 0 (no timeout, first try only, only with a backfill owner set and not for the owner's own radio) asks before the event stream starts and keeps the answer on the `ConnectAttempt`; Step 3c passes it to `drainMultiRadioBackfill(ownRadio:othersObserved:)`. Verified: `MultiRadioBackfillTests.drainTakesTheJoinAnswer`. Not unit tested: the Step 0 timing in a real connect (the shared test store holds other radios' observations).
 - [X] T231 I2 discovery connects the preferred radio alongside the connect-first one only once the preferred radio has been the focused one in this run of the app. — `AccessoryManager.radiosFocusedThisRun`, filled by a focused connect's Step 5 and by `applyFocusedRadioState`; `PreferredRadio.connectsAutomatically(_:focusedThisRun:)`. At launch the other radio comes back as a remembered radio once the connect-first one is up, or through the fallback. Verified: `MultiRadioConnectFlowTests.connectFirstOverride`.
-- [ ] T232 R7-1 prune messages per radio (`localNodeNum`), each keeping its newest 50,000, rows on no radio together; a store with one radio prunes as `main`.
+- [X] T232 R7-1 prune messages per radio (`localNodeNum`), each keeping its newest 50,000, rows on no radio together; a store with one radio prunes as `main`. — `MeshPackets.pruneMessageHistory(cap:)`, radios from `storedRadios()`; a merged backup (one radio's, under `main`'s cap) needs no change. Verified: `MultiRadioBackfillTests.messageCapPerRadio`, `.messageCapOneRadio`.
 
 ## Phase 10: Hardening
 
