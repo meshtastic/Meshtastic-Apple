@@ -322,7 +322,23 @@ extension AccessoryManager {
 		}
 		// The radio the store's old rows belong to, if it's this one (T213).
 		BackfillOwner.renumber(from: oldNum, to: newNum)
+		Self.moveSavedRadioChoices(from: oldNum, to: newNum)
 		appState?.databaseResetID = UUID()
+	}
+
+	/// Choices saved by a radio's node number follow it to its new number (T214): the radios TAK,
+	/// CarPlay & Siri and the Watch use, the Heard By filter, and the radio to connect first.
+	/// Otherwise they'd name a number no radio has and quietly fall back.
+	static func moveSavedRadioChoices(from oldNum: Int64, to newNum: Int64, store: UserDefaults = .standard, filters: NodeFilterParameters = .shared) {
+		for service in RadioService.allCases where UserDefaults.serviceRadio(service, in: store) == oldNum {
+			UserDefaults.setServiceRadio(newNum, for: service, in: store)
+		}
+		if filters.heardByRadio == oldNum {
+			filters.heardByRadio = newNum
+		}
+		if let override = PreferredRadio.connectFirstOverride, override.nodeNum == oldNum {
+			PreferredRadio.connectFirstOverride = (override.peripheralId, newNum)
+		}
 	}
 
 	/// When event firmware is detected (DEFCON, BURNING_MAN, OPEN_SAUCE, etc.),

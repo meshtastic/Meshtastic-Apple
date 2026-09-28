@@ -462,6 +462,23 @@ struct MultiRadioConnectFlowTests {
 		#expect(BackfillOwner.current(in: store) == BackfillOwner.Radio(nodeNum: 0x0D0D, peripheralId: "radio-a"))
 	}
 
+	@Test("A renumber moves the service radio choices and the Heard By choice to the new number")
+	func savedChoicesFollowRenumber() {
+		let name = "RenumberChoices-\(UUID().uuidString)"
+		let store = UserDefaults(suiteName: name)!
+		defer { store.removePersistentDomain(forName: name) }
+		let filters = NodeFilterParameters(store: store, heardByFileURL: FileManager.default.temporaryDirectory.appendingPathComponent("\(name).json"))
+		UserDefaults.setServiceRadio(0x0A0A, for: .tak, in: store)
+		UserDefaults.setServiceRadio(0x0B0B, for: .watch, in: store)
+		filters.heardByRadio = 0x0A0A
+
+		AccessoryManager.moveSavedRadioChoices(from: 0x0A0A, to: 0x0D0D, store: store, filters: filters)
+
+		#expect(UserDefaults.serviceRadio(.tak, in: store) == 0x0D0D)
+		#expect(UserDefaults.serviceRadio(.watch, in: store) == 0x0B0B, "another radio's choice stays")
+		#expect(filters.heardByRadio == 0x0D0D)
+	}
+
 	@Test("Switching to another radio backfills old rows for the store's radio first, and its own radio doesn't wait")
 	func backfillBeforeSwitchedRadio() async throws {
 		let saved = SavedDefaults()
