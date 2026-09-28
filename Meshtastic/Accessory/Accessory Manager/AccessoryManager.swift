@@ -329,6 +329,10 @@ class AccessoryManager: ObservableObject {
 	/// Remembered radios that weren't found when the focused radio connected; each is brought
 	/// back when discovery next sees it (T156).
 	var awaitedRememberedRadios: Set<UUID> = []
+	/// The preferred radio when a BLE restore made another radio the focused one (it wasn't back
+	/// yet, or the other connected first). It takes the focus back once it's connected alongside,
+	/// so the app is as it was before iOS closed it (T190).
+	var restoreDisplacedPreferred: UUID?
 	/// A radio whose Unlock or Update the user chose while its connect was still running; it
 	/// takes the focus when that connect finishes (`focusRadioNeedingAttention`, T148).
 	var pendingAttentionFocus: UUID?

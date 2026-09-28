@@ -126,6 +126,12 @@ extension AccessoryManager {
 		}
 		Logger.transport.info("🔗➕ [Additional] \(device.name, privacy: .public) connected; \(self.connectedRadioCount) radios connected")
 		await focusPendingAttentionRadio(device.id)
+		if restoreDisplacedPreferred == device.id {
+			restoreDisplacedPreferred = nil
+			if await focusConnectedRadio(device.id) {
+				Logger.transport.info("🔀 \(device.name, privacy: .public) is back and takes the focus it had before the restore")
+			}
+		}
 	}
 
 	/// `transport.connect(to:)`, given up after `timeout` when there is one. A BLE connect to an
@@ -174,6 +180,17 @@ extension AccessoryManager {
 		} catch {
 			Logger.data.error("💥 [MultiRadio] Backfill before another radio joined failed: \(error.localizedDescription, privacy: .public)")
 		}
+	}
+
+	/// A BLE restore (T190): the radios restored alongside the focused one are remembered, so
+	/// the remembered-radio reconnect after the focused connect claims them, and `displacedPreferred`
+	/// (the preferred radio, when another radio is the focused restore) takes the focus back once
+	/// it's connected.
+	func noteRestoredAlongside(peripheralIds: [UUID], displacedPreferred: UUID?) async {
+		if let displacedPreferred {
+			restoreDisplacedPreferred = displacedPreferred
+		}
+		await MeshPackets.shared.rememberRadios(peripheralIds: peripheralIds.map(\.uuidString))
 	}
 
 	// MARK: - Disconnect

@@ -297,6 +297,30 @@ struct MultiRadioConnectFlowTests {
 		try await manager.disconnect()
 	}
 
+	@Test("The preferred radio a BLE restore passed over takes the focus back when it rejoins")
+	func displacedPreferredTakesFocusBack() async throws {
+		let saved = SavedDefaults()
+		defer { saved.restore() }
+		let restoredNum = uniqueNodeNum()
+		let restored = ScriptedRadio(nodeNum: restoredNum)
+		let preferred = ScriptedRadio(nodeNum: restoredNum &+ 0x200)
+		let preferredDevice = device()
+		let manager = makeManager(ScriptedTransport(radio: restored, radiosByIdentifier: [preferredDevice.identifier: preferred]))
+		let restoredDevice = device()
+		try await manager.connect(to: restoredDevice)
+		let restoredSession = try #require(manager.activeConnection)
+
+		await manager.noteRestoredAlongside(peripheralIds: [preferredDevice.id], displacedPreferred: preferredDevice.id)
+		try await manager.connectAdditionalRadio(preferredDevice)
+
+		#expect(manager.activeConnection?.device.id == preferredDevice.id)
+		#expect(manager.additionalRadios[restoredDevice.id] === restoredSession, "the restored radio stays alongside")
+		#expect(manager.restoreDisplacedPreferred == nil)
+		#expect(await restored.disconnects == 0)
+		manager.additionalRadioReconnects.values.forEach { $0.cancel() }
+		try await manager.disconnect()
+	}
+
 	@Test("A radio that isn't connected can be removed, and stops being the preferred one")
 	func removeOfflineRadio() async throws {
 		let saved = SavedDefaults()

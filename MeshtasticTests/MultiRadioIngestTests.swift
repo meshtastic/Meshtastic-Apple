@@ -315,6 +315,27 @@ struct MultiRadioIngestTests {
 		#expect(await packets.lookupRadios(first: nil) == [radioB], "not after the 5 s cache")
 	}
 
+	@Test("Radios iOS restored alongside the focused one are remembered to come back")
+	func restoredRadiosAreRemembered() async throws {
+		let container = try makeContainer()
+		let context = ModelContext(container)
+		let peripheral = UUID().uuidString
+		for (num, id) in [(radioA, peripheral), (radioB, UUID().uuidString)] {
+			let myInfo = MyInfoEntity()
+			myInfo.myNodeNum = num
+			myInfo.peripheralId = id
+			context.insert(myInfo)
+		}
+		try context.save()
+		let packets = await makePackets(container)
+
+		await packets.rememberRadios(peripheralIds: [peripheral])
+
+		let rows = try fetch(MyInfoEntity.self, in: container)
+		#expect(rows.first { $0.myNodeNum == radioA }?.autoConnect == true)
+		#expect(rows.first { $0.myNodeNum == radioB }?.autoConnect == false)
+	}
+
 	@Test("A radio's node database fills its observation")
 	func nodeDBObservation() async throws {
 		let container = try makeContainer()

@@ -140,6 +140,18 @@ extension MeshPackets {
 		savePendingChanges()
 	}
 
+	/// Remembers the radios on `peripheralIds` to come back alongside the focused one: radios iOS
+	/// restored that aren't the focused restore (T190). A radio only ever focused isn't
+	/// remembered otherwise, and the remembered-radio reconnect is what claims restored radios.
+	func rememberRadios(peripheralIds: [String]) {
+		guard !peripheralIds.isEmpty else { return }
+		let myInfos = (try? modelContext.fetch(FetchDescriptor<MyInfoEntity>())) ?? []
+		for myInfo in myInfos where myInfo.peripheralId.map(peripheralIds.contains) == true && !myInfo.autoConnect {
+			myInfo.autoConnect = true
+		}
+		savePendingChanges()
+	}
+
 	func setRadioAutoConnect(nodeNum: Int64, _ autoConnect: Bool) {
 		var descriptor = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == nodeNum })
 		descriptor.fetchLimit = 1

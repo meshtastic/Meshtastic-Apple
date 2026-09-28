@@ -570,7 +570,13 @@ actor BLETransport: Transport {
 			Logger.transport.error("🛜 [BLE] No peripherals found in restore state dictionary.")
 			return
 		}
-		holdRestoredPeripherals(peripherals.filter { $0.identifier != peripheral.identifier })
+		let alongside = peripherals.filter { $0.identifier != peripheral.identifier }
+		holdRestoredPeripherals(alongside)
+		// Remembered so they're claimed after the focused restore, the preferred radio too when
+		// another is the focused restore; that one takes the focus back once it's here (T190).
+		let preferredId = UUID(uuidString: PreferredRadio.peripheralId)
+		let displaced = alongside.contains { $0.identifier == preferredId } ? preferredId : nil
+		await AccessoryManager.shared.noteRestoredAlongside(peripheralIds: alongside.map(\.identifier), displacedPreferred: displaced)
 		let device = await restoredDevice(for: peripheral)
 		restoreAsFocused(peripheral, central: central, device: device)
 	}
@@ -703,7 +709,12 @@ actor BLETransport: Transport {
 			restoredStandby[pending.peripheralId] = waiting
 		}
 		pending.continuation.resume(throwing: RestoreHandedOver())
+		let displacedId = pending.peripheralId
 		Task {
+			// The radio it displaced is remembered and claimed after this restore; if it's the
+			// preferred radio, it takes the focus back once it's here (T190).
+			let displacedPreferred = displacedId.uuidString == PreferredRadio.peripheralId ? displacedId : nil
+			await AccessoryManager.shared.noteRestoredAlongside(peripheralIds: [displacedId], displacedPreferred: displacedPreferred)
 			if let restoreTakeover = self.restoreTakeover {
 				await restoreTakeover(standby, central)
 				return

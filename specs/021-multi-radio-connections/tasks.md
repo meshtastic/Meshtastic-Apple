@@ -191,6 +191,20 @@ All re-checked in the files and holding (2026-09-27). One commit each, full suit
 - [X] T187 V2-5 (owner): Remove a radio that isn't connected (a dead or sold radio, or one only a backup knows). — App Settings › Your Radios (`StoredRadiosSection`) lists the radios the app knows that aren't connected, each with Remove (`removeRadio`, which already handled a radio with no session). Shown only with more than one radio. Verified: `MultiRadioConnectFlowTests.removeOfflineRadio`; the section isn't unit tested.
 - [X] T188 N1 a locked radio that isn't focused has its own passphrase entry (the owner's choice). — Unlock opens `RadioUnlockSheet` (`radioUnlockRequest`) instead of waiting for the focus; `submitPassphrase(_:…toRadio:)` sends on the radio's connection with `lockdownAuthPacket`; `handleAdditionalLockdown` saves it on unlocked, drops a refused saved one, never saves a refused typed one. `PassphraseEntryContent` takes an optional submit handler. Verified: `MultiRadioLockdownTests.unlockDuringConnectOpensItsSheet`, `.passphraseForARadioThatIsntFocused` (the T148 test for focus-after-connect is replaced, since Unlock no longer focuses).
 
+## Review V3 fixes (review-connections-v3.md R1–R4, review-data-v3.md R3-1–R3-5)
+
+All re-checked in the files and holding (2026-09-27). One commit each, full suite each time.
+
+- [X] T190 R1 a BLE restore that picks another radio brings the preferred radio back, and gives it the focus again. — `noteRestoredAlongside` remembers every radio restored alongside the focused restore (`MeshPackets.rememberRadios`), so the remembered-radio reconnect claims it, and records a displaced preferred radio (`restoreDisplacedPreferred`), which takes the focus back when its connect alongside finishes. Called from `handleWillRestoreState` and `handOverRestore`. Verified: `MultiRadioConnectFlowTests.displacedPreferredTakesFocusBack`, `MultiRadioIngestTests.restoredRadiosAreRemembered`.
+- [ ] T191 R2 removing a radio that isn't connected stops its reconnects.
+- [ ] T192 R3-1 CarPlay and Siri take a channel's messages by channel key.
+- [ ] T193 R3-2 the backfill runs before any other radio connects, focused or not.
+- [ ] T194 R3 the backfill lets packets through between chunks.
+- [ ] T195 R3-3 a reset doesn't move a node back with several old observations left.
+- [ ] T196 R4 the passphrase sheet for a radio that isn't focused: backoff, and failed sends.
+- [ ] T197 R3-4 Your Radios leaves out connecting radios and labels radios without a connect honestly.
+- [ ] T198 R3-5 the Heard By set in a small file; no double-stored packets across a recycle.
+
 ## Phase 10: Hardening
 
 - [ ] T130 Four BLE radios for 24 hours (device checklist in `HANDOFF.md`).
