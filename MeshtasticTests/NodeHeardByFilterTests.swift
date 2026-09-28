@@ -94,15 +94,18 @@ struct NodeHeardByFilterTests {
 		context.insert(NodeObservationEntity(radioNum: radioB, nodeNum: 3))
 		try context.save()
 		let defaults = makeDefaults()
-		let filters = NodeFilterParameters(store: defaults)
+		let file = FileManager.default.temporaryDirectory.appendingPathComponent("heard-by-\(UUID().uuidString).json")
+		defer { try? FileManager.default.removeItem(at: file) }
+		let filters = NodeFilterParameters(store: defaults, heardByFileURL: file)
 		filters.heardByRadio = radioB
 		filters.refreshHeardByNodeNums(in: context)
 
-		#expect(NodeFilterParameters(store: defaults).heardByNodeNums == [3, radioB])
+		#expect(NodeFilterParameters(store: defaults, heardByFileURL: file).heardByNodeNums == [3, radioB])
+		#expect(FileManager.default.fileExists(atPath: file.path), "in its own file, not UserDefaults")
 
 		// Another choice starts without a set.
 		filters.heardByRadio = radioA
-		#expect(NodeFilterParameters(store: defaults).heardByNodeNums == nil)
+		#expect(NodeFilterParameters(store: defaults, heardByFileURL: file).heardByNodeNums == nil)
 	}
 
 	@Test("A radio that's no longer one of the user's radios doesn't filter anything")

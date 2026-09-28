@@ -229,6 +229,8 @@ actor MeshPackets {
 			_recycled.removeAll()
 		} else {
 			_recycled = _recycled.filter { $0.instance != nil } + [WeakMeshPackets(instance: previous)]
+			// Before anything else runs on it: from here on its writes save as they happen.
+			previous.retiring.set()
 		}
 		_lock.unlock()
 		if !invalidatingPrevious {
@@ -254,6 +256,23 @@ actor MeshPackets {
 	/// Set when this instance has been replaced by `recreateShared()`. A retired instance must
 	/// never persist again — see `recreateShared()`.
 	private(set) var invalidated = false
+
+	/// Set, from any thread, when a memory recycle retires this instance (T198). A retired
+	/// instance saves each write that doesn't save itself (`recordReception`, `updateAnyPacketFrom`)
+	/// straight away, so the new instance sees it: another radio's copy of the same packet must
+	/// find its reception.
+	final class RetiringFlag: @unchecked Sendable {
+		private let lock = NSLock()
+		private var value = false
+		var isSet: Bool { lock.withLock { value } }
+		func set() { lock.withLock { value = true } }
+	}
+	nonisolated let retiring = RetiringFlag()
+
+	/// Saves now when this instance is retired by a memory recycle (T198).
+	func saveIfRetiring() {
+		if retiring.isSet { savePendingChanges(caller: "retiring") }
+	}
 
 	/// The user's radios for keyed lookups, re-read every few seconds (`lookupRadios(first:)`).
 	var cachedLookupRadios: Set<Int64> = []

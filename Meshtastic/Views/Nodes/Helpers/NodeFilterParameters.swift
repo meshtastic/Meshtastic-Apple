@@ -86,9 +86,15 @@ final class NodeFilterParameters: ObservableObject {
 		static let viaLora = "nodeFilter.viaLora"
 		static let viaMqtt = "nodeFilter.viaMqtt"
 		static let heardByRadio = "nodeFilter.heardByRadio"
-		/// The last looked-up Heard By set and the radio it's for (T184).
-		static let heardByNodeNums = "nodeFilter.heardByNodeNums"
+		/// The radio the saved Heard By set is for (T184); the set itself is in `heardByFileURL`.
 		static let heardByNodeNumsRadio = "nodeFilter.heardByNodeNumsRadio"
+	}
+
+	/// Where the last looked-up Heard By set is kept between launches: a small file rather than
+	/// UserDefaults, which loads all of its contents at launch and would rewrite a list of up to
+	/// every node each time it changes (T198).
+	nonisolated static var defaultHeardByFileURL: URL {
+		FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0].appendingPathComponent("heard-by-node-nums.json")
 	}
 
 	/// Search text is intentionally **not** persisted — relaunching into a stale search that hides
@@ -123,11 +129,11 @@ final class NodeFilterParameters: ObservableObject {
 
 	func setHeardByNodeNums(_ nodeNums: Set<Int64>?) {
 		heardByNodeNums = nodeNums
-		if let nodeNums {
-			store.set(nodeNums.sorted().map(NSNumber.init(value:)), forKey: Keys.heardByNodeNums)
+		if let nodeNums, let data = try? JSONEncoder().encode(nodeNums.sorted()) {
+			try? data.write(to: heardByFileURL, options: .atomic)
 			store.set(heardByRadio, forKey: Keys.heardByNodeNumsRadio)
 		} else {
-			store.removeObject(forKey: Keys.heardByNodeNums)
+			try? FileManager.default.removeItem(at: heardByFileURL)
 			store.removeObject(forKey: Keys.heardByNodeNumsRadio)
 		}
 	}
@@ -145,6 +151,7 @@ final class NodeFilterParameters: ObservableObject {
 	/// Backing store for all persisted filter values. Defaults to `.standard`; tests inject an
 	/// isolated suite so they don't read or clobber the shared `UserDefaults.standard` domain.
 	private let store: UserDefaults
+	private let heardByFileURL: URL
 
 	// Public computed wrappers with enforcement
 	var viaLora: Bool {
@@ -169,8 +176,9 @@ final class NodeFilterParameters: ObservableObject {
 
 	/// - Parameter store: The `UserDefaults` instance backing all persisted filter values.
 	///   Defaults to `.standard`; pass an isolated suite in tests.
-	init(store: UserDefaults = .standard) {
+	init(store: UserDefaults = .standard, heardByFileURL: URL = NodeFilterParameters.defaultHeardByFileURL) {
 		self.store = store
+		self.heardByFileURL = heardByFileURL
 
 		// Property observers do not fire for assignments made inside `init`, so loading persisted
 		// values here reads from `store` without writing back to it.
@@ -193,8 +201,9 @@ final class NodeFilterParameters: ObservableObject {
 		}
 		if self.heardByRadio != 0,
 		   (store.object(forKey: Keys.heardByNodeNumsRadio) as? NSNumber)?.int64Value == self.heardByRadio,
-		   let stored = store.array(forKey: Keys.heardByNodeNums) as? [NSNumber] {
-			heardByNodeNums = Set(stored.map(\.int64Value))
+		   let data = try? Data(contentsOf: heardByFileURL),
+		   let stored = try? JSONDecoder().decode([Int64].self, from: data) {
+			heardByNodeNums = Set(stored)
 		}
 	}
 

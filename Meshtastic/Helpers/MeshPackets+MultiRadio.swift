@@ -241,6 +241,7 @@ extension MeshPackets {
 		reception.relayNode = Int64(packet.relayNode)
 		reception.viaMqtt = packet.viaMqtt
 
+		saveIfRetiring()
 		if mine != nil { return .repeatFromSameRadio }
 		return known.isEmpty ? .first : .heardByAnotherRadio
 	}

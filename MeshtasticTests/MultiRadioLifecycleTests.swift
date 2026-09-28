@@ -351,17 +351,25 @@ struct MultiRadioConnectLifecycleTests {
 		packet.to = Constants.maximumNodeNum
 		packet.decoded = data
 		let radioNum: Int64 = 0x7E57_00AA
+		// One of the user's radios, so keyed lookups try it.
+		let shared = PersistenceController.shared.context
+		let myInfo = MyInfoEntity()
+		myInfo.myNodeNum = radioNum
+		shared.insert(myInfo)
+		try shared.save()
+		defer {
+			shared.delete(myInfo)
+			try? shared.save()
+		}
 		// `recordReception` never saves; the save after it goes to the new instance.
 		#expect(await before.recordReception(packet: packet, radioNum: radioNum) == .first)
 
 		let key = PacketReceptionEntity.key(radioNum: radioNum, fromNum: Int64(packet.from), packetId: Int64(packet.id))
-		var saved = 0
-		for _ in 0..<40 where saved == 0 {
-			try await Task.sleep(for: .milliseconds(100))
-			let context = ModelContext(PersistenceController.shared.container)
-			saved = (try? context.fetchCount(FetchDescriptor<PacketReceptionEntity>(predicate: #Predicate { $0.key == key }))) ?? 0
-		}
-		#expect(saved == 1)
+		// Saved as it happened, so the new instance sees it at once (T198): another radio's copy
+		// of the packet is a copy, not a first delivery.
+		let context = ModelContext(PersistenceController.shared.container)
+		#expect(((try? context.fetchCount(FetchDescriptor<PacketReceptionEntity>(predicate: #Predicate { $0.key == key }))) ?? 0) == 1)
+		#expect(await MeshPackets.shared.recordReception(packet: packet, radioNum: 0x7E57_00BB) == .heardByAnotherRadio)
 	}
 
 	@Test("A discovery scan counts its radio's copy of a packet another radio delivered first")

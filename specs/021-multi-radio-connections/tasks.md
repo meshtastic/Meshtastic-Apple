@@ -203,7 +203,7 @@ All re-checked in the files and holding (2026-09-27). One commit each, full suit
 - [X] T195 R3-3 a reset doesn't move a node back with several old observations left. — `reaggregate` skips the node unless the newest remaining observation is within `currentWindow` of what it showed, and never moves last heard back or first heard forward. Verified: `RadioRemovalTests.oldObservationsDoNotTakeOver`.
 - [X] T196 R4 the passphrase sheet for a radio that isn't focused: backoff, and failed sends. — `RadioSession.unlockBackoffUntil` from the radio's backoff; the sheet shows the focused radio's countdown until then; it closes only once the passphrase is sent, and a failed send stays open with the reason. Verified: `MultiRadioLockdownTests.backoffAndFailedSend`; the sheet itself isn't unit tested.
 - [X] T197 R3-4 Your Radios leaves out connecting radios and labels radios without a connect honestly. — radios with a connect attempt (by number or peripheral) aren't listed; a radio with no connect since the update says "Not connected since the update". Not unit tested (view).
-- [ ] T198 R3-5 the Heard By set in a small file; no double-stored packets across a recycle.
+- [X] T198 R3-5 the Heard By set in a small file; no double-stored packets across a recycle. — the set is kept in `Caches/heard-by-node-nums.json` (UserDefaults only keeps its radio); a recycle marks the old instance retired at the swap (`RetiringFlag`), after which `recordReception` and `updateAnyPacketFrom` save as they happen. Verified: `NodeHeardByFilterTests.heardBySetSurvivesRelaunch`, `MultiRadioConnectLifecycleTests.recycledActorSavesQueuedWrites` (fails without the flag).
 
 ## Phase 10: Hardening
 

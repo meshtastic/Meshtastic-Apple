@@ -264,6 +264,8 @@ extension MeshPackets {
 	}
 	
 	func updateAnyPacketFrom (packet: MeshPacket, activeDeviceNum: Int64) {
+		// It doesn't save; on an instance a recycle retired, that has to happen now (T198).
+		defer { saveIfRetiring() }
 		// Update NodeInfoEntity for any packet received. This mirrors the firmware's NodeDB::updateFrom, which sniffs ALL received packets and updates the radio's nodeDB with packet.from's:
 		// - last_heard (from rxTime)
 		// - snr
