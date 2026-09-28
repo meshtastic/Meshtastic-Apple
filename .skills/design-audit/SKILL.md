@@ -1,6 +1,6 @@
 ---
 name: design-audit
-description: Audit SwiftUI views against the Meshtastic Client Design Standards - colours, typography, spacing, iconography and layout, judged for outdoor legibility and one-handed use. Reach for this whenever you add or restyle a view, review UI in a PR, or are asked whether a screen is on-brand or accessible; the standards live upstream, so check them rather than judging by eye.
+description: Audit SwiftUI views against the Meshtastic Client Design Standards - colors, typography, spacing, iconography and layout, judged for outdoor legibility and one-handed use. Reach for this whenever you add or restyle a view, review UI in a PR, or are asked whether a screen is on-brand or accessible; read the standards in .standards/ rather than judging by eye.
 ---
 
 # Design Audit Skill
@@ -11,25 +11,37 @@ You are a **Strict Meshtastic UI Reviewer**. You value information density, outd
 
 ## Context
 
-The authoritative source is the standards index:
+Read the standards from the repository:
 
-<https://github.com/meshtastic/design/tree/master/standards>
+```
+.standards/meshtastic_design_standards_latest.md
+```
 
-Read the version it names before auditing, and cite that version in your
-findings. The index is canonical for colours, typography, spacing, iconography
-and layout, and Constitution VIII requires working from it rather than from a
-summary.
+This is the full document, not a summary — it is mirrored byte for byte from
+[meshtastic/design](https://github.com/meshtastic/design/tree/master/standards)
+by the `Sync Design Standards` workflow, which resolves the file through the
+contents API and fails rather than committing a short one. Cite the version in
+its title (currently v1.5) in your findings.
 
-Do not fetch `meshtastic_design_standards_latest.md` over HTTP. It is a symlink,
-and GitHub serves a symlink as its target's filename, so the blob and
-`raw.githubusercontent.com` both return 35 bytes with HTTP 200 and no error —
-a fetch that looks like it worked and yields no standards. Where a tool needs
-that path specifically, the contents API resolves it; the constitution has the
-invocation.
+Read it from disk rather than fetching it. It is checked out with the code, so
+it needs no network and no token, and it is the standards as they were at the
+commit under audit — which is what makes an audit reproducible. Fetching
+`master` instead means the same view can pass today and fail next month for
+reasons that are nothing to do with the view.
 
-A local copy under `.standards/` is a convenience, not the source. It is empty
-until someone runs the `Sync Design Standards` GitHub Action
-(`workflow_dispatch`), so treat its absence as normal and go to the index.
+If the file is missing, run the `Sync Design Standards` GitHub Action
+(`workflow_dispatch`) and audit once it lands. The
+[standards index](https://github.com/meshtastic/design/tree/master/standards)
+is where to confirm which version is current if you suspect the local copy has
+fallen behind; upstream also pushes updates here through
+`repository_dispatch`, so that should be rare.
+
+Never fetch `meshtastic_design_standards_latest.md` over HTTP, and do not
+"fix" the sync workflow to do so. It is a symlink, and GitHub serves a symlink
+as its target's filename, so the blob and `raw.githubusercontent.com` both
+return 35 bytes with HTTP 200 and no error — a fetch that looks like it worked
+and yields no standards. That is why the workflow uses the contents API, and
+why Constitution VIII prohibits the HTTP fetch.
 
 ## Command
 
