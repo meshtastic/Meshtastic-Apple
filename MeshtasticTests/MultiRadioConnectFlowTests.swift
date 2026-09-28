@@ -445,6 +445,23 @@ struct MultiRadioConnectFlowTests {
 		return try fresh.fetch(FetchDescriptor<MessageEntity>(predicate: #Predicate { $0.messageId == id })).first?.localNodeNum
 	}
 
+	@Test("A renumber moves the recorded backfill owner to the radio's new number")
+	func backfillOwnerFollowsRenumber() {
+		let name = "BackfillOwner-\(UUID().uuidString)"
+		let store = UserDefaults(suiteName: name)!
+		defer { store.removePersistentDomain(forName: name) }
+		let saved = SavedDefaults()
+		defer { saved.restore() }
+		PreferredRadio.nodeNum = 0x0A0A
+		PreferredRadio.peripheralId = "radio-a"
+		BackfillOwner.recordIfNeeded(in: store)
+
+		BackfillOwner.renumber(from: 0x0B0B, to: 0x0C0C, in: store)
+		#expect(BackfillOwner.current(in: store).nodeNum == 0x0A0A, "another radio's renumber leaves it")
+		BackfillOwner.renumber(from: 0x0A0A, to: 0x0D0D, in: store)
+		#expect(BackfillOwner.current(in: store) == BackfillOwner.Radio(nodeNum: 0x0D0D, peripheralId: "radio-a"))
+	}
+
 	@Test("Switching to another radio backfills old rows for the store's radio first, and its own radio doesn't wait")
 	func backfillBeforeSwitchedRadio() async throws {
 		let saved = SavedDefaults()

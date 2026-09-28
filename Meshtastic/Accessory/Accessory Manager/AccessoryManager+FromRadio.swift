@@ -320,6 +320,8 @@ extension AccessoryManager {
 		if PreferredRadio.nodeNum == oldNum {
 			PreferredRadio.nodeNum = newNum
 		}
+		// The radio the store's old rows belong to, if it's this one (T213).
+		BackfillOwner.renumber(from: oldNum, to: newNum)
 		appState?.databaseResetID = UUID()
 	}
 

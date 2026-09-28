@@ -35,6 +35,14 @@ enum BackfillOwner {
 		store.set(PreferredRadio.peripheralId, forKey: peripheralIdKey)
 	}
 
+	/// The store was renumbered (the 2.8 node number change): an owner recorded under the old
+	/// number is the same radio under the new one (T213). Otherwise the backfill would credit the
+	/// old rows to a number no radio has.
+	static func renumber(from oldNum: Int64, to newNum: Int64, in store: UserDefaults = .standard) {
+		guard (store.object(forKey: nodeNumKey) as? NSNumber)?.int64Value == oldNum else { return }
+		store.set(NSNumber(value: newNum), forKey: nodeNumKey)
+	}
+
 	static func clear(in store: UserDefaults = .standard) {
 		store.removeObject(forKey: nodeNumKey)
 		store.removeObject(forKey: peripheralIdKey)
