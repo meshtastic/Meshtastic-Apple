@@ -101,6 +101,7 @@ struct AppSettings: View {
 					}
 #endif
 				}
+				StoredRadiosSection()
 				Section(header: Text("Node Layout")) {
 					List {
 						Picker("Node List Density", selection: $nodeListDensity.animation()) {

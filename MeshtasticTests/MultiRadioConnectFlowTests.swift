@@ -297,6 +297,29 @@ struct MultiRadioConnectFlowTests {
 		try await manager.disconnect()
 	}
 
+	@Test("A radio that isn't connected can be removed, and stops being the preferred one")
+	func removeOfflineRadio() async throws {
+		let saved = SavedDefaults()
+		defer { saved.restore() }
+		let manager = makeManager(ScriptedTransport(radio: ScriptedRadio(nodeNum: uniqueNodeNum())))
+		let deadNum = Int64(uniqueNodeNum())
+		let context = PersistenceController.shared.context
+		let dead = MyInfoEntity()
+		dead.myNodeNum = deadNum
+		dead.lastConnected = .now
+		context.insert(dead)
+		try context.save()
+		PreferredRadio.peripheralId = UUID().uuidString
+		PreferredRadio.nodeNum = deadNum
+
+		await manager.removeRadio(deadNum)
+
+		let fresh = ModelContext(PersistenceController.shared.container)
+		#expect(try fresh.fetchCount(FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == deadNum })) == 0)
+		#expect(PreferredRadio.nodeNum == 0)
+		#expect(PreferredRadio.peripheralId.isEmpty)
+	}
+
 	@Test("Old rows are attributed to the first radio when a second radio first connects")
 	func backfillWhenSecondRadioJoins() async throws {
 		let saved = SavedDefaults()

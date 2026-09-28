@@ -103,9 +103,10 @@ Read this first if you are picking the work up. Update it in the same commit as 
   tasks.md), except C13, which is `main`'s behaviour for the focused radio and is left as is
   (T167; a check for it is in the device test checklist). Choices made along the way that the
   owner should confirm:
-  - Remove This Radio keeps favorites (D-18 gives the choice only for a reset). It sits with the
-    resets in Settings › Device and is only offered with several radios' data in the store, so a
-    radio that isn't connected (sold, lent) can't be removed yet.
+  - Remove This Radio keeps favorites (D-18 gives the choice only for a reset). For a connected
+    radio it sits with the resets in Settings › Device (only offered with several radios); a radio
+    that isn't connected is removed from App Settings › Your Radios (T187, the owner's call:
+    a radio can die and leave a ghost).
   - The node's hops and signal use observations heard within an hour of the newest
     (`NodeObservationEntity.currentWindow`); the channel slot comes only from the focused radio.
   - Favorite / ignored / verified: a radio only a merged backup knows doesn't vote.
