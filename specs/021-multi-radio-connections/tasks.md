@@ -189,7 +189,7 @@ All re-checked in the files and holding (2026-09-27). One commit each, full suit
 - [X] T185 Phone position keeps going while a handover is pending. — `closeConnection` only stops the loop when no other radio is connected, and the loop sends to every connected radio, with or without a focused one. Verified: `MultiRadioConnectLifecycleTests.positionLoopOutlivesFocusedClose`.
 - [X] T186 N7 (owner): no launch wait for a single-radio store; the backfill drains when a second radio first connects. — the launch drain needs pending rows and several stored radios; `backfillBeforeAnotherRadioJoins` runs in a second radio's connect once it holds the handshake gate, attributing to the focused radio. The backup merge (D-09) and the post-restore drain are unchanged. Verified: `MultiRadioConnectFlowTests.backfillWhenSecondRadioJoins`.
 - [X] T187 V2-5 (owner): Remove a radio that isn't connected (a dead or sold radio, or one only a backup knows). — App Settings › Your Radios (`StoredRadiosSection`) lists the radios the app knows that aren't connected, each with Remove (`removeRadio`, which already handled a radio with no session). Shown only with more than one radio. Verified: `MultiRadioConnectFlowTests.removeOfflineRadio`; the section isn't unit tested.
-- [ ] T188 N1 explained to the owner; waits on the device test.
+- [ ] T188 N1 explained to the owner (2026-09-27); waiting on the owner's choice: wait for the device test, or give a radio that isn't focused its own passphrase entry.
 
 ## Phase 10: Hardening
 

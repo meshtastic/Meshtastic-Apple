@@ -55,8 +55,8 @@ Read this first if you are picking the work up. Update it in the same commit as 
 - Next up: the owner's device test (checklist below), which waits on hardware; don't rebuild
   Mesh Multi for it unless asked. Don't design around the focused/additional split: every radio
   works the same way (D-17). Removing the switch-era helpers (T066) waits for that test.
-- Baseline and latest: the full suite passes in the iOS Simulator (3,442 Swift Testing tests plus
-  the XCTests, about 55 seconds of test time).
+- Baseline and latest: the full suite passes in the iOS Simulator (3,458 Swift Testing tests plus
+  the XCTests, about 50 seconds of test time).
 
 ## First two-radio test (Mesh Multi, Mac)
 
@@ -98,6 +98,13 @@ Read this first if you are picking the work up. Update it in the same commit as 
 
 ## In progress
 
+- Review V2 (2026-09-27): `review-connections-v2.md` (N1–N10) and `review-data-v2.md`
+  (V2-1–V2-8), checked in the files; all held. Fixed one commit each (`5d517b58` … `dfc22694`,
+  T170–T187 in tasks.md), including the owner's calls: no launch wait for a single-radio store
+  (T186) and removing a radio that isn't connected (T187). Open: N1 (T188), a locked radio that
+  isn't focused can't reach the passphrase sheet if lock-down firmware doesn't answer the
+  node-DB request while locked; the owner chooses between waiting for the device test and giving
+  that radio its own passphrase entry.
 - Review fixes (2026-09-27): every finding in `review-connections.md` (C1–C14) and
   `review-data.md` (D1–D19) is fixed, one commit each (`8fac5ca7` … `512dcb1c`, T140–T166 in
   tasks.md), except C13, which is `main`'s behaviour for the focused radio and is left as is
