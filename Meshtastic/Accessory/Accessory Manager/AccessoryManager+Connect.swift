@@ -115,6 +115,12 @@ extension AccessoryManager {
 			updateDevice(deviceId: device.id, key: \.connectionState, value: .disconnected)
 			throw AccessoryError.connectionFailed("No longer room for this radio")
 		}
+		if !asFocused {
+			// Rows from before feature 021 belong to the radio the store held until now; attribute
+			// them before this radio's data joins them (T186). Once per store, and never with one
+			// radio, whose launch doesn't wait for it.
+			await backfillBeforeAnotherRadioJoins()
+		}
 		
 		if attempt.isFocused {
 			// Clear any errors and stale state from last connection

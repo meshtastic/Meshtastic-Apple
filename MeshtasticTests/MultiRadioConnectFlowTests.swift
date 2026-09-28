@@ -297,6 +297,39 @@ struct MultiRadioConnectFlowTests {
 		try await manager.disconnect()
 	}
 
+	@Test("Old rows are attributed to the first radio when a second radio first connects")
+	func backfillWhenSecondRadioJoins() async throws {
+		let saved = SavedDefaults()
+		defer { saved.restore() }
+		let firstNum = uniqueNodeNum()
+		let first = ScriptedRadio(nodeNum: firstNum)
+		let second = ScriptedRadio(nodeNum: firstNum &+ 0x200)
+		let secondDevice = device()
+		let manager = makeManager(ScriptedTransport(radio: first, radiosByIdentifier: [secondDevice.identifier: second]))
+		try await manager.connect(to: device())
+
+		// A message stored by a build before feature 021: no radio columns yet.
+		let context = PersistenceController.shared.context
+		let old = MessageEntity()
+		old.messageId = Int64.random(in: 1_000_000...9_000_000)
+		old.messagePayload = "from before"
+		context.insert(old)
+		try context.save()
+		let oldId = old.messageId
+		defer {
+			context.delete(old)
+			try? context.save()
+		}
+
+		try await manager.connectAdditionalRadio(secondDevice)
+
+		let fresh = ModelContext(PersistenceController.shared.container)
+		let row = try #require(try fresh.fetch(FetchDescriptor<MessageEntity>(predicate: #Predicate { $0.messageId == oldId })).first)
+		#expect(row.localNodeNum == Int64(firstNum))
+		manager.additionalRadioReconnects.values.forEach { $0.cancel() }
+		try await manager.disconnect()
+	}
+
 	@Test("A failed reconnect of the dropped radio doesn't make the handover forget it")
 	func handoverKeepsDroppedRadio() async throws {
 		let saved = SavedDefaults()

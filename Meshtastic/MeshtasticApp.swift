@@ -158,14 +158,18 @@ struct MeshtasticAppleApp: App {
 			// the handshake gate, so a radio connecting meanwhile waits rather than timing out behind
 			// the ingest actor, and the actor isn't recycled mid-merge.
 			// The merge drains the store's own backfill first. Without backups to merge, a store
-			// that still has rows waiting for it (the first launch after the upgrade) is backfilled
-			// now too, attributed to the radio it belongs to, rather than only in background passes
-			// a Mac in front may never get (T162).
+			// that already holds several radios and still has rows waiting is backfilled now too,
+			// attributed to the radio it belongs to, rather than only in background passes a Mac in
+			// front may never get (T162). A single-radio store isn't: the old rows only matter once
+			// another radio's data joins them, and the backfill runs then (T186), so a single-radio
+			// user's launch doesn't wait, as on `main`.
 			let manager = accessoryManager
 			let mergesBackups = NodeBackupManager.shared.unmergedBackups.contains(where: { ($0.mergeAttempts ?? 0) < NodeBackupManager.maxMergeAttempts })
 			Task { @MainActor in
 				let packets = MeshPackets.shared
-				let backfills = await packets.hasPendingBackfill()
+				let pendingBackfill = await packets.hasPendingBackfill()
+				let severalRadios = await packets.storedRadios().count > 1
+				let backfills = pendingBackfill && severalRadios
 				guard mergesBackups || backfills else { return }
 				await manager.handshakeGate.acquire()
 				defer { manager.handshakeGate.release() }

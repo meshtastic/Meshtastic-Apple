@@ -161,6 +161,21 @@ extension AccessoryManager {
 		return connection
 	}
 
+	/// Runs the backfill for rows from before feature 021, attributed to the focused radio, when a
+	/// second radio's connect gets the handshake gate (T186). Holding the gate keeps any node dump
+	/// out meanwhile.
+	func backfillBeforeAnotherRadioJoins() async {
+		let packets = MeshPackets.shared
+		guard await packets.hasPendingBackfill() else { return }
+		let ownRadio = activeConnection?.nodeNum ?? PreferredRadio.nodeNum
+		do {
+			let filled = try await packets.drainMultiRadioBackfill(ownRadio: ownRadio)
+			Logger.data.info("🧭 [MultiRadio] Backfilled \(filled) rows before another radio joined")
+		} catch {
+			Logger.data.error("💥 [MultiRadio] Backfill before another radio joined failed: \(error.localizedDescription, privacy: .public)")
+		}
+	}
+
 	// MARK: - Disconnect
 
 	/// Disconnects one additional radio. The focused radio and the others are unaffected.
