@@ -501,6 +501,7 @@ extension ModuleConfig.MeshBeaconConfig: ConfigSchemaMessage {
 
 	enum Fields {
 		static let flags = ConfigField<ModuleConfig.MeshBeaconConfig, UInt32>(tag: 1, name: "flags", keyPath: \.flags, identity: FieldIdentity(messageName: "meshtastic.ModuleConfig.MeshBeaconConfig", tag: 1))
+		static let broadcastOfferFrequencySlot = ConfigField<ModuleConfig.MeshBeaconConfig, UInt32>(tag: 2, name: "broadcast_offer_frequency_slot", keyPath: \.broadcastOfferFrequencySlot, identity: FieldIdentity(messageName: "meshtastic.ModuleConfig.MeshBeaconConfig", tag: 2))
 		static let broadcastMessage = ConfigField<ModuleConfig.MeshBeaconConfig, String>(tag: 4, name: "broadcast_message", keyPath: \.broadcastMessage, identity: FieldIdentity(messageName: "meshtastic.ModuleConfig.MeshBeaconConfig", tag: 4))
 		static let broadcastOfferChannel = ConfigField<ModuleConfig.MeshBeaconConfig, ChannelSettings>(tag: 5, name: "broadcast_offer_channel", keyPath: \.broadcastOfferChannel, identity: FieldIdentity(messageName: "meshtastic.ModuleConfig.MeshBeaconConfig", tag: 5))
 		static let broadcastOfferChannel_channelNum = ConfigField<ModuleConfig.MeshBeaconConfig, UInt32>(tag: 1, name: "broadcast_offer_channel.channel_num", keyPath: \.broadcastOfferChannel.channelNum, identity: FieldIdentity(messageName: "meshtastic.ChannelSettings", tag: 1))
@@ -518,6 +519,7 @@ extension ModuleConfig.MeshBeaconConfig: ConfigSchemaMessage {
 
 	static let allFields: [AnyConfigField<ModuleConfig.MeshBeaconConfig>] = [
 		.init(Fields.flags, kind: .uint32),
+		.init(Fields.broadcastOfferFrequencySlot, kind: .uint32),
 		.init(Fields.broadcastMessage, kind: .string),
 		.init(Fields.broadcastOfferChannel, kind: .message),
 		.init(Fields.broadcastOfferChannel_channelNum, kind: .uint32, isDeprecated: true),
@@ -542,12 +544,14 @@ extension ModuleConfig.MeshBeaconConfig.BroadcastTarget: ConfigSchemaMessage {
 		static let preset = ConfigField<ModuleConfig.MeshBeaconConfig.BroadcastTarget, Config.LoRaConfig.ModemPreset>(tag: 1, name: "preset", keyPath: \.preset, identity: FieldIdentity(messageName: "meshtastic.ModuleConfig.MeshBeaconConfig.BroadcastTarget", tag: 1))
 		static let region = ConfigField<ModuleConfig.MeshBeaconConfig.BroadcastTarget, Config.LoRaConfig.RegionCode>(tag: 2, name: "region", keyPath: \.region, identity: FieldIdentity(messageName: "meshtastic.ModuleConfig.MeshBeaconConfig.BroadcastTarget", tag: 2))
 		static let channelIndex = ConfigField<ModuleConfig.MeshBeaconConfig.BroadcastTarget, UInt32>(tag: 4, name: "channel_index", keyPath: \.channelIndex, identity: FieldIdentity(messageName: "meshtastic.ModuleConfig.MeshBeaconConfig.BroadcastTarget", tag: 4))
+		static let frequencySlot = ConfigField<ModuleConfig.MeshBeaconConfig.BroadcastTarget, UInt32>(tag: 5, name: "frequency_slot", keyPath: \.frequencySlot, identity: FieldIdentity(messageName: "meshtastic.ModuleConfig.MeshBeaconConfig.BroadcastTarget", tag: 5))
 	}
 
 	static let allFields: [AnyConfigField<ModuleConfig.MeshBeaconConfig.BroadcastTarget>] = [
 		.init(Fields.preset, kind: .enumeration, enumTypeName: "meshtastic.Config.LoRaConfig.ModemPreset"),
 		.init(Fields.region, kind: .enumeration, enumTypeName: "meshtastic.Config.LoRaConfig.RegionCode"),
 		.init(Fields.channelIndex, kind: .uint32),
+		.init(Fields.frequencySlot, kind: .uint32),
 	]
 }
 

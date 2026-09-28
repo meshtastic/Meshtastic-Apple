@@ -100,27 +100,60 @@ struct PowerConfig: View {
 
 /// The ADC multiplier as the old screen offered it: a toggle, and the number while on.
 /// Zero means no override, so switching off clears the value.
+/// How the ADC override switch and the message relate.
+///
+/// Its own type so the rules can be tested without rendering: the switch state is read from
+/// the multiplier rather than copied into `@State`, which is what stopped a stored override
+/// showing when the screen opened.
+enum ADCOverride {
+	/// Where the number starts when the override is switched on with nothing to restore. The
+	/// field documents a range of two to six, so this is the low end of it — a starting point
+	/// to correct, not a recommendation.
+	static let startingMultiplier: Float = 2
+
+	/// Zero is how the message stores "no override", so it is also how the switch reads off.
+	static func isOn(_ multiplier: Float) -> Bool { multiplier != 0 }
+
+	/// The multiplier to store when the switch moves. Switching off keeps nothing, so the
+	/// caller holds the last number to put back.
+	static func multiplier(switchedOn on: Bool, remembered: Float) -> Float {
+		guard on else { return 0 }
+		return remembered > 0 ? remembered : startingMultiplier
+	}
+}
+
 private struct ADCOverrideField: View {
 	@Binding var multiplier: Float
-	@State private var overriding = false
+
+	/// The number being edited, which the message cannot hold on its own: switching the
+	/// override off stores zero, and the value has to survive that to come back when it is
+	/// switched on again. Kept in step with the message below rather than copied on appear.
 	@State private var typed: Float = 0
 
 	private static let label = FieldMetadataRegistry.get("meshtastic.Config.PowerConfig", tag: 3)?.label ?? "ADC Override"
 
+	/// Read from the message rather than copied out of it on appear.
+	///
+	/// This row is built before the form has loaded the config, so a copy taken then reads
+	/// zero and the switch shows off on a radio that has an override stored. Worse, switching
+	/// it on and off again from there writes zero over the stored value.
+	private var overriding: Binding<Bool> {
+		Binding(
+			get: { ADCOverride.isOn(multiplier) },
+			set: { on in multiplier = ADCOverride.multiplier(switchedOn: on, remembered: typed) }
+		)
+	}
+
 	var body: some View {
-		Toggle(isOn: $overriding) {
+		Toggle(isOn: overriding) {
 			Text(Self.label)
 		}
-		.onAppear {
-			overriding = multiplier != 0
-			typed = multiplier
+		.onChange(of: multiplier, initial: true) { _, new in
+			// Follows the message, including the first time the form fills it in. Zero is the
+			// off state rather than a multiplier, so the last real value stays to be restored.
+			if new > 0 { typed = new }
 		}
-		.onChange(of: overriding) { _, on in
-			// Switching back on has to restore what is on screen: leaving `multiplier`
-			// at zero would save "no override" while the field shows a value.
-			multiplier = on ? (typed > 0 ? typed : multiplier) : 0
-		}
-		if overriding {
+		if ADCOverride.isOn(multiplier) {
 			HStack {
 				Text("Multiplier")
 				Spacer()

@@ -23,8 +23,6 @@ struct MeshtasticAppleApp: App {
 	private let persistenceController: PersistenceController?
 	private let accessoryManager: AccessoryManager
 	@Environment(\.scenePhase) var scenePhase
-	@State var saveChannelLink: SaveChannelLinkData?
-	@State var incomingUrl: URL?
 
 	private static let isRunningTests = NSClassFromString("XCTestCase") != nil || ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
 	private static let isChirpyOTADemo: Bool = {
@@ -37,10 +35,6 @@ struct MeshtasticAppleApp: App {
 	private static var shouldInitializeAppServices: Bool {
 		!isRunningTests && !isChirpyOTADemo
 	}
-	/// TipKit configuration must run once per process; the owning `.task` re-runs whenever the
-	/// database-reset gate remounts the main tree after a node switch.
-	@MainActor private static var hasConfiguredTips = false
-
 	init() {
 
 		let persistenceController: PersistenceController? = Self.shouldInitializeAppServices ? PersistenceController.shared : nil
@@ -54,9 +48,7 @@ struct MeshtasticAppleApp: App {
 		let performanceSeedDisablesDiscovery = false
 #endif
 
-		let appState = AppState(
-			router: Router()
-		)
+		let appState = AppState()
 
 		if Self.shouldInitializeAppServices {
 			// Initialize Datadog
@@ -120,9 +112,8 @@ struct MeshtasticAppleApp: App {
 		self._appState = StateObject(wrappedValue: appState)
 
 		self.persistenceController = persistenceController
-		// Wire up router
 #if os(iOS)
-		self.appDelegate.router = appState.router
+		self.appDelegate.appState = appState
 #endif
 
 #if DEBUG
@@ -130,7 +121,7 @@ struct MeshtasticAppleApp: App {
 			PerformanceSeedData.seedIfNeeded(
 				using: persistenceController,
 				configuration: performanceSeedConfiguration,
-				router: appState.router
+				appState: appState
 			)
 		}
 		// Independent of the node performance seed: seeds a sample Discovery session with beacons
@@ -226,48 +217,6 @@ struct MeshtasticAppleApp: App {
 		}
 	}
 
-	/// Single dispatch point for every URL the app receives — universal links
-	/// (user activities), custom-scheme opens, and file opens all route here.
-	private func dispatchIncomingURL(_ url: URL, fromActivity: Bool) {
-		if url.isFileURL {
-			// "Open in Meshtastic" from the Share Sheet / Files app / drag-and-drop —
-			// distinct from the meshtastic:// scheme handled below.
-			appState.router.importMapFile(url: url)
-		} else if ContactURLHandler.canHandle(url) {
-			ContactURLHandler.handleContactUrl(url: url, accessoryManager: accessoryManager)
-		} else if MeshtasticChannelURL.canHandle(url) {
-			handleChannelLinkURL(url, fromActivity: fromActivity)
-		} else if url.absoluteString.lowercased().contains("meshtastic:///") {
-			appState.router.route(url: url)
-		}
-	}
-
-	@discardableResult
-	private func handleChannelLinkURL(_ url: URL, fromActivity: Bool) -> Bool {
-		// Reset the state before processing a new URL
-		self.saveChannelLink = nil
-
-		guard MeshtasticChannelURL.canHandle(url) else {
-			return false
-		}
-
-		let channelLink: MeshtasticChannelURL
-		do {
-			channelLink = try MeshtasticChannelURL.parse(url.absoluteString)
-		} catch {
-			Logger.mesh.error("Could not parse channel URL: \(error.localizedDescription, privacy: .public)")
-			return false
-		}
-
-		self.saveChannelLink = SaveChannelLinkData(data: channelLink.payload, add: channelLink.addChannels)
-		Logger.services.debug("Add Channel \(channelLink.addChannels, privacy: .public)")
-
-		// Log based on the calling context
-		let source = fromActivity ? "User Activity" : "Open URL"
-		Logger.mesh.debug("User wants to open a Channel Settings URL (\(source, privacy: .public))")
-		return true
-	}
-
 	var body: some Scene {
 		WindowGroup {
 			Group {
@@ -282,19 +231,10 @@ struct MeshtasticAppleApp: App {
 				#if DEBUG
 				FirmwareUpdateGameDemoHost()
 				#endif
-			} else if appState.isDatabaseResetting {
-				// Unmount the WHOLE SwiftData-bound tree — including the `.modelContainer`
-				// modifier in mainAppContent — while a node switch clears the store. The
-				// modifier's SwiftData↔SwiftUI bridge observes save notifications process-wide
-				// and never rebinds (its attachment point is structurally stable, so
-				// `.id(databaseResetID)` deeper down can't recreate it); stale bridges from any
-				// container the app has moved off of trap on the next save callout (the "silent
-				// exit" flavor of Datadog 324bff02 — no crash report, EXC_BREAKPOINT in
-				// _SwiftData_SwiftUI, caught live in lldb). This gate plus the process-lifetime
-				// container (see backupCurrentAndRestoreDatabase) is the pair that ended it.
-				DatabaseResettingPlaceholder()
-			} else {
-				mainAppContent
+			} else if let persistenceController {
+				// Stays mounted across a node switch so this window's router survives.
+				// The SwiftData tree unmounts inside MainScene.
+				MainScene(persistenceController: persistenceController)
 			}
 			}
 			.onChange(of: lockdownCoordinator.state) { _, newState in
@@ -340,7 +280,6 @@ struct MeshtasticAppleApp: App {
 		.environmentObject(appState)
 		.environmentObject(accessoryManager)
 		.environmentObject(lockdownCoordinator)
-		.environmentObject(appState.router)
 		.environmentObject(MeshtasticAPI.shared)
 
 			WindowGroup("Mesh Map", id: "meshmap-window") {
@@ -357,7 +296,6 @@ struct MeshtasticAppleApp: App {
 					.environmentObject(appState)
 					.environmentObject(accessoryManager)
 					.environmentObject(lockdownCoordinator)
-					.environmentObject(appState.router)
 					.environmentObject(MeshtasticAPI.shared)
 				}
 			}
@@ -366,96 +304,5 @@ struct MeshtasticAppleApp: App {
 		#if os(visionOS)
 		.windowStyle(.plain)
 		#endif
-	}
-
-	/// The full SwiftData-bound app tree, extracted from the WindowGroup builder both to keep
-	/// the scene-level expression type-checkable in reasonable time (the four-branch builder
-	/// with this chain inlined blew Swift's type-check budget on CI) and so the database-reset
-	/// gate can unmount it — `.modelContainer` included — as one unit.
-	@ViewBuilder
-	private var mainAppContent: some View {
-		EventFirmwareTintScope {
-					ContentView(
-						appState: appState,
-						router: appState.router
-					)
-				// Rebuild the whole view tree (and re-run every @Query) after a node-switch
-				// restore so views drop the previous node's cached objects. See AppState.databaseResetID.
-				.id(appState.databaseResetID)
-				.sheet(item: $saveChannelLink
-				) { link in
-					SaveChannelQRCode(
-						channelSetLink: link.data,
-						addChannels: link.add, // <-- Uses the now reliable 'add' boolean
-						accessoryManager: accessoryManager				)
-					.trackScreen(.saveChannelQRCode)
-					.presentationDetents([.large])
-					#if !targetEnvironment(macCatalyst)
-					.presentationDragIndicator(.visible)
-					#endif
-					}
-					.sheet(item: $appState.pendingContactToAdd) { pendingContact in
-						AddContactConfirmationView(
-							pendingContact: pendingContact,
-							accessoryManager: accessoryManager
-						)
-						.trackScreen(.addContact)
-						.presentationDetents([.medium, .large])
-						#if !targetEnvironment(macCatalyst)
-						.presentationDragIndicator(.visible)
-						#endif
-					}
-					.onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { userActivity in
-						Logger.mesh.debug("Browsing web user activity received")
-						self.incomingUrl = userActivity.webpageURL
-						self.saveChannelLink = nil
-
-						if let url = userActivity.webpageURL {
-							dispatchIncomingURL(url, fromActivity: true)
-						}
-
-						if self.saveChannelLink != nil {
-							Logger.mesh.debug("User wants to open Channel Settings URL")
-						}
-					}
-					.onOpenURL(perform: { (url) in
-						Logger.mesh.debug("URL received")
-						self.incomingUrl = url
-
-						dispatchIncomingURL(url, fromActivity: false)
-					})
-					// Keep the badge in sync with read-state changes that happen outside
-					// the message lists (Siri/CarPlay read-aloud, background ingest) —
-					// previously those only reconciled on the next scene-active pass.
-					.onReceive(
-						NotificationCenter.default.publisher(for: .meshMessagesDidChange)
-							.debounce(for: .seconds(1), scheduler: DispatchQueue.main)
-					) { _ in
-						guard let persistenceController else { return }
-						appState.refreshBadgeCount(context: persistenceController.container.mainContext)
-					}
-				}
-				.task {
-					// Skip TipKit entirely during marketing screenshot capture so tip popovers never
-					// appear in the shots (unconfigured TipKit displays nothing). The once-guard
-					// matters now that this branch remounts after every node switch (the database
-					// reset gate above) — Tips.configure must not re-run per switch.
-					if !Self.hasConfiguredTips, !CommandLine.arguments.contains("--marketing-capture") {
-						Self.hasConfiguredTips = true
-						try? Tips.configure(
-							[
-								.datastoreLocation(.applicationDefault),
-								// When should the tips be presented? If you use .immediate, they'll all be presented whenever a screen with a tip appears.
-								// You can adjust this on per tip level as well
-								.displayFrequency(.immediate)
-							]
-						)
-					}
-				}
-				.modelContainer(persistenceController!.container)
-				.environmentObject(appState)
-				.environmentObject(accessoryManager)
-				.environmentObject(appState.router)
-				.environmentObject(MeshtasticAPI.shared)
 	}
 }

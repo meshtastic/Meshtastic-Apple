@@ -23,7 +23,7 @@ struct NodeList: View {
 	@State private var shareContactNode: NodeInfoEntity?
 	@State private var nodeForDisplayNameEdit: NodeInfoEntity?
 	@State private var nodeForStatusMessageEdit: NodeInfoEntity?
-	@ObservedObject var filters = NodeFilterParameters.shared
+	@EnvironmentObject private var filters: NodeFilterParameters
 	@State var isEditingFilters = false
 	@State private var showingHelp = false
 	@SceneStorage("selectedDetailView") var selectedDetailView: String?
@@ -271,7 +271,7 @@ private struct FilteredNodeList: View {
 		self._selectedNodeNum = selectedNodeNum
 	}
 
-	/// Fetch descriptor for the node set, built from the live shared `filters` at fetch time so
+	/// Fetch descriptor for the node set, built from this window's `filters` at fetch time so
 	/// predicate-level filter edits apply on the next refresh tick. Applied via explicit fetches
 	/// on a throttled cadence (see `.task`) rather than a live `@Query` — a live query
 	/// re-evaluated `body` on every SwiftData write, and under heavy ingestion that meant a

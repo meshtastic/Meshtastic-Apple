@@ -459,22 +459,6 @@ enum SettingsSearchCatalogue {
 			label: String(localized: "Write Contact to NFC Tag", comment: "Settings control"),
 			requiresConnection: false,
 			requiresDeveloperBuild: true),
-		.init(
-			destination: .tools,
-			screenTitle: String(localized: "Tools", comment: "Settings screen"),
-			sectionTitle: String(localized: "Export Device Configuration", comment: "Settings section"),
-			listSection: .developers,
-			label: String(localized: "Export Configuration", comment: "Settings control"),
-			requiresConnection: false,
-			requiresDeveloperBuild: true),
-		.init(
-			destination: .tools,
-			screenTitle: String(localized: "Tools", comment: "Settings screen"),
-			sectionTitle: String(localized: "Import Device Configuration", comment: "Settings section"),
-			listSection: .developers,
-			label: String(localized: "Import Configuration", comment: "Settings control"),
-			requiresConnection: false,
-			requiresDeveloperBuild: true),
 
 		// MARK: User
 		.init(
