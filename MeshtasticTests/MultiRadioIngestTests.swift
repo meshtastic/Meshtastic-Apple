@@ -336,6 +336,49 @@ struct MultiRadioIngestTests {
 		#expect(rows.first { $0.myNodeNum == radioB }?.autoConnect == false)
 	}
 
+	@Test("With several radios, a NodeInfo or position doesn't overwrite the aggregate's hops and slot")
+	func handlersKeepTheAggregate() async throws {
+		let container = try makeContainer()
+		try seedNodes([remote], in: container)
+		let context = ModelContext(container)
+		let node = try #require(try context.fetch(FetchDescriptor<NodeInfoEntity>()).first)
+		node.hopsAway = 0
+		node.channel = 0
+		for (radio, hops) in [(radioA, Int32(0)), (radioB, 3)] {
+			let myInfo = MyInfoEntity()
+			myInfo.myNodeNum = radio
+			context.insert(myInfo)
+			let observation = NodeObservationEntity(radioNum: radio, nodeNum: remote)
+			observation.hopsAway = hops
+			observation.lastHeard = .now
+			context.insert(observation)
+		}
+		try context.save()
+		let packets = await makePackets(container)
+
+		var user = User()
+		user.id = "!12345678"
+		user.longName = "Remote"
+		user.shortName = "RM"
+		var data = DataMessage()
+		data.portnum = .nodeinfoApp
+		data.payload = try user.serializedData()
+		var info = MeshPacket()
+		info.id = 0x4E01
+		info.from = UInt32(remote)
+		info.to = UInt32(radioB)
+		info.channel = 2
+		info.hopStart = 3
+		info.hopLimit = 0
+		info.decoded = data
+		await packets.upsertNodeInfoPacket(packet: info, receivedBy: radioB)
+		await packets.savePendingChanges()
+
+		let after = try #require(try fetch(NodeInfoEntity.self, in: container).first)
+		#expect(after.hopsAway == 0, "A hears it directly; B's 3 hops don't replace that")
+		#expect(after.channel == 0, "B's slot isn't the focused radio's")
+	}
+
 	@Test("A radio's node database fills its observation")
 	func nodeDBObservation() async throws {
 		let container = try makeContainer()

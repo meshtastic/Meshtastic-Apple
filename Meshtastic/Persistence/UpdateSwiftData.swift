@@ -529,8 +529,10 @@ extension MeshPackets {
 				Logger.data.debug("💾 [Node Info] Buffered a Node Info for node number: \(packet.from.toHex(), privacy: .public)")
 				
 			} else {
-				// Update an existing node
-				if isForUs {
+				// Update an existing node. With several radios hearing it, its hops and channel slot
+				// are the aggregate's, not this packet's radio's (T204).
+				let aggregated = nodeFieldsAreAggregated(fetchedNode[0].num)
+				if isForUs, !aggregated {
 					fetchedNode[0].channel = Int32(truncatingIfNeeded: packet.channel)
 				}
 				
@@ -608,11 +610,11 @@ extension MeshPackets {
 					}
 					// Security (finding H1): first-wins on the public key. See `applyInboundPublicKey`.
 					fetchedNode[0].user?.applyInboundPublicKey(userMessage.publicKey, nodeNum: Int64(packet.from))
-					if packet.hopStart != 0 && packet.hopLimit <= packet.hopStart {
+					if !aggregated, packet.hopStart != 0 && packet.hopLimit <= packet.hopStart {
 						fetchedNode[0].hopsAway = Int32(truncatingIfNeeded: packet.hopStart - packet.hopLimit)
 					}
 
-				} else if packet.hopStart != 0 && packet.hopLimit <= packet.hopStart {
+				} else if !aggregated, packet.hopStart != 0 && packet.hopLimit <= packet.hopStart {
 					fetchedNode[0].hopsAway = Int32(truncatingIfNeeded: packet.hopStart - packet.hopLimit)
 				}
 				if fetchedNode[0].user == nil {
@@ -766,7 +768,10 @@ extension MeshPackets {
 							}
 						}
 
-						fetchedNode[0].channel = Int32(truncatingIfNeeded: packet.channel)
+						// With several radios the slot is the aggregate's (the focused radio's), T204.
+						if !nodeFieldsAreAggregated(fetchedNode[0].num) {
+							fetchedNode[0].channel = Int32(truncatingIfNeeded: packet.channel)
+						}
 						
 						scheduleDebouncedSave()
 						Logger.data.debug("📍 [Position] buffered for Node: \(fetchedNode[0].num.toHex(), privacy: .public)")

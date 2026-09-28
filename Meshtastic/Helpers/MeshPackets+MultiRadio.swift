@@ -269,6 +269,13 @@ extension MeshPackets {
 
 	// MARK: - Observations
 
+	/// True when several of the user's radios observe `nodeNum`: its hops and channel slot are then
+	/// the aggregate's (`applyAggregate`), and a packet handler mustn't overwrite them with the
+	/// radio that delivered this packet (T204). With one radio the handlers write them as before.
+	func nodeFieldsAreAggregated(_ nodeNum: Int64) -> Bool {
+		((try? observations(ofNode: nodeNum))?.count ?? 0) > 1
+	}
+
 	/// Saved and still-unsaved observations of one node, by every local radio (`radioNum` first).
 	/// By key, like `receptions`: `nodeNum` has no index (T140).
 	func observations(ofNode nodeNum: Int64, radioNum: Int64? = nil) throws -> [NodeObservationEntity] {
