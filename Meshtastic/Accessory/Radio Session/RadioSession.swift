@@ -79,6 +79,8 @@ final class RadioSession: Identifiable {
 	/// A passphrase the user entered for this radio while it isn't focused, sent and waiting for
 	/// its answer; saved for the radio once it reports unlocked (T188).
 	var pendingPassphrase: StoredPassphrase?
+	/// Until when it refuses passphrases after too many wrong ones, as it reported (T196).
+	var unlockBackoffUntil: Date?
 	/// The last lock-down status it reported, so the focused radio's sheet and Settings
 	/// section show it when it takes the focus without reconnecting (T072).
 	var lastLockdownStatus: LockdownStatus?

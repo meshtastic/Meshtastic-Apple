@@ -204,6 +204,24 @@ struct MultiRadioLockdownTests {
 		#expect(radio.attention == .unlockFailed)
 	}
 
+	@Test("A rate-limited radio's sheet waits out the backoff, and a passphrase that can't be sent says so")
+	func backoffAndFailedSend() async throws {
+		let fixture = makeFixture()
+		let manager = fixture.manager, radio = fixture.radio
+		let store = InMemoryPassphraseStore()
+		var limited = status(.unlockFailed)
+		limited.backoffSeconds = 30
+		manager.handleAdditionalLockdown(limited, session: radio, store: store)
+
+		let until = try #require(radio.unlockBackoffUntil)
+		#expect(until > Date().addingTimeInterval(25) && until <= Date().addingTimeInterval(30))
+		manager.handleAdditionalLockdown(status(.unlocked), session: radio, store: store)
+		#expect(radio.unlockBackoffUntil == nil)
+
+		// A radio that's gone can't take one.
+		#expect(await !manager.submitPassphrase("hunter2", bootsRemaining: 0, validUntilEpoch: 0, maxSessionSeconds: 0, toRadio: UUID()))
+	}
+
 	@Test("A locked radio that loses the focus is still shown as locked and asked about")
 	func lockedRadioLosingFocusKeepsItsPrompt() async throws {
 		let fixture = makeFixture()

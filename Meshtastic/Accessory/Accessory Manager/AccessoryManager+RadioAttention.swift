@@ -267,6 +267,7 @@ extension AccessoryManager {
 
 		case .unlocked:
 			Logger.transport.info("🔒🔗➕ [Additional] \(name, privacy: .public) unlocked")
+			session.unlockBackoffUntil = nil
 			// A passphrase the user entered for it is kept for next time, as the focused radio's is.
 			if let entered = session.pendingPassphrase {
 				session.pendingPassphrase = nil
@@ -320,6 +321,8 @@ extension AccessoryManager {
 			// coordinator drops it the same way. One the user just typed was never saved.
 			let enteredByUser = session.pendingPassphrase != nil
 			session.pendingPassphrase = nil
+			// Rate limited: its sheet counts down instead of taking another try (T196).
+			session.unlockBackoffUntil = status.backoffSeconds > 0 ? Date(timeIntervalSinceNow: TimeInterval(status.backoffSeconds)) : nil
 			if !enteredByUser, session.lockdownAutoAttempted, status.backoffSeconds == 0 {
 				_ = store.delete(peripheralID: session.device.id)
 			}

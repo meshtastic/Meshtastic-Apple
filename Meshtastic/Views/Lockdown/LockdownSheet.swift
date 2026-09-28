@@ -67,6 +67,8 @@ struct RadioUnlockSheet: View {
 
 	@EnvironmentObject private var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var dismiss
+	/// Why the last passphrase couldn't be sent (T196): the sheet stays open to say so.
+	@State private var sendError: String?
 
 	private var session: RadioSession? {
 		accessoryManager.additionalRadios[request.id]
@@ -76,17 +78,20 @@ struct RadioUnlockSheet: View {
 		NavigationStack {
 			Group {
 				if let session, let attention = session.attention, attention.isLockdown {
-					PassphraseEntryContent(
-						mode: attention == .needsPassphrase ? .provision : .unlock(reason: session.lastLockdownStatus?.lockReason ?? "needs_auth"),
-						inlineError: attention == .unlockFailed ? "lockdown.passphrase.wrong".localized : nil,
-						isReady: session.nodeNum != nil,
-						onSubmit: { passphrase, boots, validUntil, maxSession in
-							Task {
-								await accessoryManager.submitPassphrase(passphrase, bootsRemaining: boots, validUntilEpoch: validUntil, maxSessionSeconds: maxSession, toRadio: request.id)
-							}
-							dismiss()
+					// Rate limited after wrong passphrases: a countdown, as for the focused radio,
+					// then the entry again (T196).
+					TimelineView(.periodic(from: .now, by: 1)) { context in
+						if let until = session.unlockBackoffUntil, until > context.date {
+							BackoffCountdownContent(deadline: until)
+						} else {
+							PassphraseEntryContent(
+								mode: attention == .needsPassphrase ? .provision : .unlock(reason: session.lastLockdownStatus?.lockReason ?? "needs_auth"),
+								inlineError: sendError ?? (attention == .unlockFailed ? "lockdown.passphrase.wrong".localized : nil),
+								isReady: session.nodeNum != nil,
+								onSubmit: submit
+							)
 						}
-					)
+					}
 				} else {
 					Color.clear.onAppear { dismiss() }
 				}
@@ -103,6 +108,22 @@ struct RadioUnlockSheet: View {
 					.padding(.vertical, 8)
 					.background(.regularMaterial)
 					.accessibilityLabel(String.localizedStringWithFormat("Radio: %@".localized, request.radioName))
+			}
+		}
+	}
+}
+
+private extension RadioUnlockSheet {
+	/// Closes once the passphrase is sent; the radio's answer arrives as its lock-down status. A
+	/// send that fails keeps the sheet open with the reason (T196).
+	func submit(_ passphrase: String, _ boots: UInt32, _ validUntil: UInt32, _ maxSession: UInt32) {
+		sendError = nil
+		Task {
+			let sent = await accessoryManager.submitPassphrase(passphrase, bootsRemaining: boots, validUntilEpoch: validUntil, maxSessionSeconds: maxSession, toRadio: request.id)
+			if sent {
+				dismiss()
+			} else {
+				sendError = String.localizedStringWithFormat("The passphrase couldn't be sent to %@. Check that it's still connected, then try again.".localized, request.radioName)
 			}
 		}
 	}
