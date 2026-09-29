@@ -10,6 +10,7 @@
 import Foundation
 import MeshtasticProtobufs
 import SwiftData
+import SwiftUI
 import Testing
 @testable import Meshtastic
 
@@ -112,6 +113,33 @@ struct MultiRadioConnectFlowTests {
 		#expect(!status.canDisconnect)
 		await manager.disconnectAdditionalRadio(refusing.id, byUser: true)
 		#expect(manager.linkStatus(of: refusing.id).lastError == nil)
+	}
+
+	@Test("A window's radio finds its own session and number; the default window follows the focused radio")
+	func windowRadioLookups() async throws {
+		let saved = SavedDefaults()
+		defer { saved.restore() }
+		let radios = try await connectTwoRadios()
+		let manager = radios.manager
+		let first = RadioWindow(deviceId: radios.firstDevice.id)
+		let second = RadioWindow(deviceId: radios.secondDevice.id)
+
+		#expect(EnvironmentValues().windowRadio == .focused)
+		#expect(manager.session(for: .focused) === manager.activeConnection)
+		#expect(manager.nodeNum(for: .focused) == manager.activeDeviceNum)
+		#expect(manager.session(for: first) === manager.activeConnection)
+		#expect(manager.session(for: second) === manager.additionalRadios[radios.secondDevice.id])
+		#expect(manager.nodeNum(for: first) == Int64(radios.firstNum))
+		#expect(manager.nodeNum(for: second) == Int64(radios.secondNum))
+		#expect(manager.isConnected(second))
+		#expect(manager.linkStatus(for: second).state == .subscribed)
+
+		let gone = RadioWindow(deviceId: UUID())
+		#expect(manager.session(for: gone) == nil)
+		#expect(manager.nodeNum(for: gone) == nil)
+		#expect(!manager.isConnected(gone))
+		manager.additionalRadioReconnects.values.forEach { $0.cancel() }
+		try await manager.disconnect()
 	}
 
 	@Test("Every radio's connection reads the same way, focused or not")

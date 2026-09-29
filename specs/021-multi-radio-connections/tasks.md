@@ -269,10 +269,10 @@ focused one, so each commit leaves the app as it is.
 
 Per-radio state (plan step 1)
 - [X] T300 One read of a radio's connection for any radio: `linkStatus(of:)` → `RadioLinkStatus` (state, can disconnect, attention, last error). — the focused radio's from the manager's fields, another's from its attempt, session and the new `radioConnectErrors`; `lockdownAttention(for:)` split out of `attentionAfterLosingFocus`. Changed from the plan: the state isn't moved onto the session yet, since the focused radio's is set before its session exists and after it's gone; it moves to one per-radio record in T315, when the focus goes, and the views read `linkStatus` meanwhile. Verified: `MultiRadioConnectFlowTests.linkStatusForEveryRadio`, `.secondRadioFailureIsItsOwn`.
-- [ ] T301 Lock-down per radio: its state on the session, the passphrase sheet for any radio from it (the focused radio's Settings section included).
+- [ ] T301 Lock-down per radio: its state on the session, the passphrase sheet for any radio from it (the focused radio's Settings section included). After T302: each window gets its radio's lock-down state.
 
 The window's radio (plan step 2)
-- [ ] T302 `RadioWindow`, `\.windowRadio`, `AccessoryManager.session(for:)` / `nodeNum(for:)`; the one window's radio is the focused one. Tests for the lookups.
+- [X] T302 `RadioWindow`, `\.windowRadio`, `AccessoryManager.session(for:)` / `nodeNum(for:)` / `isConnected(_:)` / `linkStatus(for:)`. — in `Radio Session/RadioWindow.swift`; the environment's default is `.focused` (no device id), whose lookups answer exactly as `activeConnection` / `activeDeviceNum` / `isConnected` do, so views can switch over without a change in behaviour; T310 gives windows their own radio. Done before T301, which needs it. Verified: `MultiRadioConnectFlowTests.windowRadioLookups`.
 - [ ] T303 [P] Connect and the connection status indicator read the window's radio.
 - [ ] T304 [P] Settings (every page, and the config and module forms) reads the window's radio.
 - [ ] T305 [P] Messages (channel list, conversations, composer) reads the window's radio.
