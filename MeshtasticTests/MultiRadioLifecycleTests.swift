@@ -184,6 +184,29 @@ struct MultiRadioConnectLifecycleTests {
 		#expect(manager.device(for: bad) == nil)
 	}
 
+	@Test("A remembered radio seen by discovery comes back while only radios other than the first are connected")
+	func rememberedRadioComesBackWithoutTheFirst() async throws {
+		var tcpDevice = device("Radio C")
+		tcpDevice.num = 0x0C0D
+		let manager = AccessoryManager(transports: [OneDeviceDiscoveryTransport(found: tcpDevice)])
+		// The first radio dropped; another stays connected (D-19).
+		var other = device("Other")
+		other.num = 0x0B0E
+		other.connectionState = .connected
+		manager.additionalRadios[other.id] = RadioSession(device: other, connection: IdleConnection())
+		manager.awaitedRememberedRadios.insert(tcpDevice.id)
+
+		manager.startDiscovery()
+		var waited = 0
+		while manager.additionalRadioReconnects[tcpDevice.id] == nil, waited < 200 {
+			try await Task.sleep(for: .milliseconds(10))
+			waited += 1
+		}
+		#expect(manager.additionalRadioReconnects[tcpDevice.id] != nil)
+		manager.stopDiscovery()
+		manager.additionalRadioReconnects.values.forEach { $0.cancel() }
+	}
+
 	@Test("A remembered TCP radio seen by discovery is brought back, even after discovery stopped")
 	func rememberedTCPRadioComesBack() async throws {
 		var tcpDevice = device("Radio C")
