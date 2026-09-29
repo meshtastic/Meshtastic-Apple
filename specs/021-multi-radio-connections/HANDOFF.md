@@ -99,6 +99,9 @@ Read this first if you are picking the work up. Update it in the same commit as 
 
 ## In progress
 
+- Review V10 (2026-09-29): `review-connections-v10.md`, K1's fix and `connect(to:)` through
+  Step 1 re-read whole; no findings. Next: one full review of each area after the device test,
+  before T122; delta reviews only for fixes in that agent's area.
 - Review V9 (2026-09-29): `review-connections-v9.md` (K1) and `review-data-v9.md` (no
   findings), checked in the files; K1 held and is fixed (T250 in tasks.md).
 - Review V8 (2026-09-28): `review-connections-v8.md` (J1, one edge) and `review-data-v8.md`
