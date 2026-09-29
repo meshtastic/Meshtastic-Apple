@@ -55,7 +55,7 @@ Read this first if you are picking the work up. Update it in the same commit as 
 - Next up: the owner's device test (checklist below), which waits on hardware; don't rebuild
   Mesh Multi for it unless asked. Don't design around the focused/additional split: every radio
   works the same way (D-17). Removing the switch-era helpers (T066) waits for that test.
-- Baseline and latest: the full suite passes in the iOS Simulator (3,476 Swift Testing tests plus
+- Baseline and latest: the full suite passes in the iOS Simulator (3,477 Swift Testing tests plus
   the XCTests, about 55 seconds of test time). Run it with the simulator to itself: another
   session's test runs on the same simulator kill the test host partway.
 
@@ -286,10 +286,9 @@ describes it well enough to rebuild.
   invalidate earlier recycled instances too.
 - Discovery while connected must not call `updateState(.discovering)`; `startDiscovery` only
   does that with no focused radio now.
-- `BackupMergeTests.attemptCountedPerBackup` failed once (2026-09-28) and passed on four reruns:
-  the log shows the backup skipped for a checksum mismatch, which fits the test store's SQLite
-  file changing after its checksum was taken (a late WAL checkpoint). A test-only timing issue;
-  closing the test container before checksumming would settle it.
+- `BackupMergeTests.attemptCountedPerBackup` and `.strayRadioRowDoesNotBlockMerge` failed now and
+  then with a checksum mismatch: the test store's file changed after its hash (a late WAL
+  checkpoint). The helper now checkpoints the file and drops its journal before hashing (T241).
 - `SchemaHistoryUpgradeTests.fixtureInventoryCoversEverySwiftDataRelease` sometimes fails with a
   SQLite disk I/O error reading the bundled fixture's metadata. It predates this work and passes
   on a re-run.

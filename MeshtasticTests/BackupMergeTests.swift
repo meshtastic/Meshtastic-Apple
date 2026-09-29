@@ -8,6 +8,7 @@
 import Foundation
 import CryptoKit
 import MeshtasticProtobufs
+import SQLite3
 import SwiftData
 import Testing
 @testable import Meshtastic
@@ -223,12 +224,31 @@ extension BackupMergeTests {
 			context.autosaveEnabled = false
 			try populate(context)
 		}()
+		try settle(storeURL)
 		let checksum = SHA256.hash(data: try Data(contentsOf: storeURL)).map { String(format: "%02x", $0) }.joined()
 		let entry = BackupEntry(nodeNum: radioNum, deviceId: nil, nodeName: "Radio", createdAt: .now, fileSize: 0, checksum: checksum, backupPath: dirName)
 		var index = BackupIndex()
 		index.entries[entry.key] = entry
 		try JSONEncoder().encode(index).write(to: base.appendingPathComponent("backup-index.json"))
 		return BackupFolder(base: base, entry: entry)
+	}
+
+	/// Writes everything into the store file and leaves it with no journal, so nothing changes it
+	/// after it's hashed. The container just released may still be checkpointing its WAL, which
+	/// made the merge's checksum check fail now and then.
+	private func settle(_ storeURL: URL) throws {
+		var database: OpaquePointer?
+		guard sqlite3_open_v2(storeURL.path, &database, SQLITE_OPEN_READWRITE, nil) == SQLITE_OK, let database else {
+			sqlite3_close(database)
+			throw CocoaError(.fileReadUnknown)
+		}
+		defer { sqlite3_close(database) }
+		sqlite3_busy_timeout(database, 5_000)
+		for sql in ["PRAGMA wal_checkpoint(TRUNCATE);", "PRAGMA journal_mode=DELETE;"] {
+			guard sqlite3_exec(database, sql, nil, nil, nil) == SQLITE_OK else {
+				throw CocoaError(.fileWriteUnknown, userInfo: [NSLocalizedDescriptionKey: String(cString: sqlite3_errmsg(database))])
+			}
+		}
 	}
 
 	private func makeLiveContainer() throws -> ModelContainer {
