@@ -72,9 +72,11 @@ struct LockdownSheet: View {
 /// one (feature 021, T073). Shared by the lock-down sheet and the firmware update gate.
 struct RadioNameBanner: View {
 	@EnvironmentObject private var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 
 	var body: some View {
-		if accessoryManager.connectedRadioCount > 1, let device = accessoryManager.activeConnection?.device {
+		if accessoryManager.connectedRadioCount > 1, let device = accessoryManager.session(for: windowRadio)?.device {
 			Label(device.longName ?? device.name, systemImage: "antenna.radiowaves.left.and.right")
 				.font(.headline)
 				.frame(maxWidth: .infinity)

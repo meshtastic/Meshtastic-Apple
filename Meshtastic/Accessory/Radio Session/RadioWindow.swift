@@ -89,6 +89,13 @@ extension AccessoryManager {
 		session(for: window)?.loRaRegionPresets ?? [:]
 	}
 
+	/// Whether `window`'s radio's firmware is below the minimum, which puts the update gate over
+	/// the window. For `.focused`, `firmwareUpdateRequired`.
+	func firmwareUpdateRequired(for window: RadioWindow) -> Bool {
+		guard window.deviceId != nil else { return firmwareUpdateRequired }
+		return linkStatus(for: window).firmwareUpdateRequired
+	}
+
 	/// When `window`'s radio last finished sending its configuration. For `.focused`,
 	/// `lastConfigRefresh`.
 	func lastConfigRefresh(for window: RadioWindow) -> Date? {

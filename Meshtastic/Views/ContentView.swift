@@ -9,6 +9,8 @@ import UIKit
 struct ContentView: View {
 	@ObservedObject var appState: AppState
 	@EnvironmentObject var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 	@EnvironmentObject var lockdown: LockdownCoordinator
 	// Observe (not just hold) the router so a *programmatic* `selectedTab` change re-renders
 	// ContentView and the TabView re-reads its selection binding immediately. As plain @State this
@@ -91,7 +93,7 @@ struct ContentView: View {
 				// Present the gate if the device is already in a blocking state when
 				// this view appears.
 				isShowingLockdownGate = isLockdownGateActive
-				isShowingFirmwareGate = accessoryManager.firmwareUpdateRequired
+				isShowingFirmwareGate = accessoryManager.firmwareUpdateRequired(for: windowRadio)
 			}
 			.onChange(of: isLockdownGateActive) { _, active in
 				// Follow the coordinator's blocking state. The gate never closes from
@@ -100,7 +102,7 @@ struct ContentView: View {
 				// that shows or hides it.
 				isShowingLockdownGate = active
 			}
-			.onChange(of: accessoryManager.firmwareUpdateRequired) { _, required in
+			.onChange(of: accessoryManager.firmwareUpdateRequired(for: windowRadio)) { _, required in
 				// Same rule as the lockdown gate: only the manager's state opens or closes it.
 				isShowingFirmwareGate = required
 			}
@@ -173,6 +175,8 @@ struct ContentView: View {
 		@ObservedObject var appState: AppState
 		@ObservedObject var router: Router
 		@EnvironmentObject var accessoryManager: AccessoryManager
+		/// The radio this window works with (feature 021, D-19).
+		@Environment(\.windowRadio) private var windowRadio
 		/// True while the first-launch device-onboarding sheet is up. The event sheet
 		/// must not auto-present over it — two sheets presented from different levels
 		/// of the tree fight, and the event sheet ends up covering onboarding.
@@ -212,10 +216,10 @@ struct ContentView: View {
 
 		private var eventPresentation: EventFirmwarePresentation? {
 			EventFirmwarePresentation.resolve(
-				isConnected: accessoryManager.isConnected,
-				edition: accessoryManager.firmwareEdition,
+				isConnected: accessoryManager.isConnected(windowRadio),
+				edition: accessoryManager.firmwareEdition(for: windowRadio),
 				metadata: eventFirmwareEditions,
-				deviceFirmwareVersion: accessoryManager.connectedVersion
+				deviceFirmwareVersion: accessoryManager.firmwareVersion(for: windowRadio)
 			)
 		}
 
