@@ -68,17 +68,24 @@ struct NodeList: View {
 		)
 	}
 
+	/// What a selected node opens. Shared so the stack and the split view's detail
+	/// column agree — including the seeded local-stats harness, which otherwise
+	/// worked folded and silently did nothing open.
+	@ViewBuilder
+	private func nodeDestination(_ node: NodeInfoEntity, nodeNum: Int64) -> some View {
+		if opensSeededLocalStatsLog {
+			LocalStatsLog(node: node)
+		} else {
+			NodeDetail(node: node, nodeNum: nodeNum)
+				.trackScreen(.nodeDetail)
+		}
+	}
+
 	@ViewBuilder
 	private var detailContent: some View {
-
 		if let selectedNum = router.selectedNodeNum,
 		   let node = router.cachedNodeInfo(id: selectedNum, context: context) {
-			if opensSeededLocalStatsLog {
-				LocalStatsLog(node: node)
-			} else {
-				NodeDetail(node: node, nodeNum: selectedNum)
-					.trackScreen(.nodeDetail)
-			}
+			nodeDestination(node, nodeNum: selectedNum)
 		} else {
 			ContentUnavailableView("Select a Node", systemImage: "flipphone")
 		}
@@ -94,8 +101,7 @@ struct NodeList: View {
 						// to push, and pushing is what gives the detail screens a back button.
 						.navigationDestination(for: Int64.self) { nodeNum in
 							if let node = router.cachedNodeInfo(id: nodeNum, context: context) {
-								NodeDetail(node: node, nodeNum: nodeNum)
-									.trackScreen(.nodeDetail)
+								nodeDestination(node, nodeNum: nodeNum)
 							}
 						}
 				}
