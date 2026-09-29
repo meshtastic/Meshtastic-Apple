@@ -56,6 +56,14 @@ struct Connect: View {
 	/// or updates a row, with no manual re-fetch wiring on connect or appear.
 	@Query private var eventFirmwareEditions: [EventFirmwareEntity]
 
+	/// The radio this window works with (feature 021, D-19, T303), and what it reads about it.
+	@Environment(\.windowRadio) private var windowRadio
+	private var radioSession: RadioSession? { accessoryManager.session(for: windowRadio) }
+	private var link: RadioLinkStatus { accessoryManager.linkStatus(for: windowRadio) }
+	private var isRadioConnected: Bool { accessoryManager.isConnected(windowRadio) }
+	private var isRadioConnecting: Bool { accessoryManager.isConnecting(windowRadio) }
+	private var radioFirmwareEdition: FirmwareEditions { radioSession?.firmwareEdition ?? .vanilla }
+
 	private var sortedAvailableDevices: [Device] {
 		accessoryManager.devices.sorted { lhs, rhs in
 			let preferredId = PreferredRadio.peripheralId
@@ -123,8 +131,8 @@ struct Connect: View {
 			VStack(spacing: 0) {
 				List {
 					Section {
-						if let connectedDevice = accessoryManager.activeConnection?.device,
-						   accessoryManager.isConnected || accessoryManager.isConnecting {
+						if let connectedDevice = radioSession?.device,
+						   isRadioConnected || isRadioConnecting {
 							TipView(ConnectionTip(), arrowEdge: .bottom)
 										.tipViewStyle(PersistentTipStyle())
 								.tipBackground(colorScheme == .dark ? Color(.systemBackground) : Color(.secondarySystemBackground))
@@ -165,7 +173,7 @@ struct Connect: View {
 											Text("Firmware Version").font(.callout)+Text(": \(safeNode?.metadata?.firmwareVersion ?? "Unknown".localized)")
 												.font(.callout).foregroundColor(Color.gray)
 										}
-										if accessoryManager.firmwareEdition.isEvent {
+										if radioFirmwareEdition.isEvent {
 											// Event branding lives here, in the Connect device box — never in the
 											// top-left nav logo. When event metadata is available the edition row
 											// becomes the tappable entry to the event info sheet, with the event icon.
@@ -175,7 +183,7 @@ struct Connect: View {
 												} label: {
 													VStack(alignment: .leading, spacing: 6) {
 														HStack(spacing: 4) {
-															Text(eventPresentation.info.displayName ?? accessoryManager.firmwareEdition.name)
+															Text(eventPresentation.info.displayName ?? radioFirmwareEdition.name)
 																.font(.headline)
 															Image(systemName: "chevron.right")
 																.font(.caption2)
@@ -197,12 +205,12 @@ struct Connect: View {
 												)
 											} else {
 												Text("Firmware Edition").font(.callout)
-													+ Text(": \(eventFirmware?.displayName ?? accessoryManager.firmwareEdition.name)")
+													+ Text(": \(eventFirmware?.displayName ?? radioFirmwareEdition.name)")
 													.font(.callout)
 													.foregroundColor(Color.gray)
 											}
 										}
-										switch accessoryManager.state {
+										switch link.state {
 										case .subscribed:
 											Text("Subscribed").font(.callout)
 												.foregroundColor(.green)
@@ -212,7 +220,7 @@ struct Connect: View {
 													.symbolRenderingMode(.multicolor)
 													.symbolEffect(.variableColor.reversing.cumulative, options: .repeat(20).speed(3))
 													.foregroundColor(.teal)
-												if let expectedNodeDBSize = accessoryManager.expectedNodeDBSize {
+												if let expectedNodeDBSize = radioSession?.expectedNodeDBSize {
 													if UIDevice.current.userInterfaceIdiom == .phone {
 														VStack(alignment: .leading, spacing: 2.0) {
 															Text("Retrieving nodes").font(.callout)
@@ -263,7 +271,7 @@ struct Connect: View {
 							.foregroundColor(Color.gray)
 							.padding([.top])
 							.swipeActions {
-								if accessoryManager.allowDisconnect {
+								if link.canDisconnect {
 									Button(role: .destructive) {
 										Task {
 											try await disconnectFocusedRadio(accessoryManager: accessoryManager)
@@ -282,7 +290,7 @@ struct Connect: View {
 								if let node = safeNode {
 									Label("\(String(node.num))", systemImage: "number")
 #if !targetEnvironment(macCatalyst)
-									if accessoryManager.state == .subscribed {
+									if link.state == .subscribed {
 										Button {
 											if !liveActivityStarted {
 #if canImport(ActivityKit)
@@ -315,9 +323,9 @@ struct Connect: View {
 											Label("Share Contact", systemImage: "qrcode")
 										}
 									}
-									if accessoryManager.allowDisconnect {
+									if link.canDisconnect {
 										Button(role: .destructive) {
-											if accessoryManager.allowDisconnect {
+											if link.canDisconnect {
 												Task {
 													try await disconnectFocusedRadio(accessoryManager: accessoryManager)
 												}
@@ -354,7 +362,7 @@ struct Connect: View {
 								}
 							}
 						} else {
-							if accessoryManager.isConnecting {
+							if isRadioConnecting {
 								HStack {
 									Image(systemName: "antenna.radiowaves.left.and.right")
 										.resizable()
@@ -362,7 +370,7 @@ struct Connect: View {
 										.foregroundColor(.orange)
 										.frame(width: 60, height: 60)
 										.padding(.trailing)
-									switch accessoryManager.state {
+									switch link.state {
 									case .connecting, .communicating:
 										Text("Connecting . .")
 											.font(.title2)
@@ -381,7 +389,7 @@ struct Connect: View {
 								}
 								.padding()
 								.swipeActions {
-									if accessoryManager.allowDisconnect {
+									if link.canDisconnect {
 										Button(role: .destructive) {
 											Task {
 												try await disconnectFocusedRadio(accessoryManager: accessoryManager)
@@ -395,7 +403,7 @@ struct Connect: View {
 								
 							} else {
 								
-								if let lastError = accessoryManager.lastConnectionError as? Error {
+								if let lastError = link.lastError {
 									Text(lastError.localizedDescription).font(.callout).foregroundColor(.red)
 								}
 								HStack {
@@ -445,7 +453,7 @@ struct Connect: View {
 						.textCase(nil)
 						// The focused radio's connect stops discovery when it finishes, so start it
 						// again for each focused radio; scanning stops when the tab goes away.
-						.task(id: accessoryManager.activeDeviceNum) { accessoryManager.startDiscovery() }
+						.task(id: accessoryManager.nodeNum(for: windowRadio)) { accessoryManager.startDiscovery() }
 						.onDisappear {
 							if accessoryManager.isConnected {
 								accessoryManager.stopDiscovery()
@@ -520,9 +528,9 @@ struct Connect: View {
 					Spacer()
 #if targetEnvironment(macCatalyst)
 					// TODO: should this be allowDisconnect?
-					if accessoryManager.allowDisconnect {
+					if link.canDisconnect {
 						Button(role: .destructive, action: {
-							if accessoryManager.allowDisconnect {
+							if link.canDisconnect {
 								Task {
 									try await disconnectFocusedRadio(accessoryManager: accessoryManager)
 								}
@@ -569,10 +577,10 @@ struct Connect: View {
 				}
 				ToolbarItem(placement: .topBarTrailing) {
 					ConnectedDevice(
-						deviceConnected: accessoryManager.isConnected,
-						name: accessoryManager.activeConnection?.device.shortName ?? "?",
-						mqttProxyConnected: accessoryManager.mqttProxyConnected,
-						mqttTopic: accessoryManager.mqttTopics.first ?? ""
+						deviceConnected: isRadioConnected,
+						name: radioSession?.device.shortName ?? "?",
+						mqttProxyConnected: radioSession?.mqtt?.isConnected ?? false,
+						mqttTopic: radioSession?.mqtt?.topics.first ?? ""
 					)
 				}
 			}
@@ -615,12 +623,12 @@ struct Connect: View {
 			}
 		}
 		.sheet(isPresented: $showSecurityVersionNag) {
-			SecurityVersionNag(minimumSecureVersion: accessoryManager.securityVersion, version: accessoryManager.activeConnection?.device.firmwareVersion ?? "?.?.?")
+			SecurityVersionNag(minimumSecureVersion: accessoryManager.securityVersion, version: radioSession?.device.firmwareVersion ?? "?.?.?")
 				.trackScreen(.firmwareSecurityWarning)
 				.presentationDetents([.large])
 				.presentationDragIndicator(.automatic)
 		}
-		.onChange(of: self.accessoryManager.state) { _, state in
+		.onChange(of: link.state) { _, state in
 			if state != .subscribed {
 				node = nil
 				firmwareUpdateNotice = nil
@@ -658,10 +666,10 @@ struct Connect: View {
 	/// connected edition changes.
 	private var eventFirmware: EventFirmwareEntity? {
 		EventFirmwarePresentation.resolve(
-			isConnected: accessoryManager.isConnected,
-			edition: accessoryManager.firmwareEdition,
+			isConnected: isRadioConnected,
+			edition: radioFirmwareEdition,
 			metadata: eventFirmwareEditions,
-			deviceFirmwareVersion: accessoryManager.connectedVersion
+			deviceFirmwareVersion: radioSession?.device.firmwareVersion
 		)?.info
 	}
 
@@ -695,16 +703,16 @@ struct Connect: View {
 	}
 
 	private func handleSuccessfulLoRaSave(_ savedNodeNum: Int64, _ savedRegion: RegionCodes) {
-		guard accessoryManager.state == .subscribed,
-			  savedNodeNum == accessoryManager.activeDeviceNum else { return }
+		guard link.state == .subscribed,
+			  savedNodeNum == accessoryManager.nodeNum(for: windowRadio) else { return }
 		isUnsetRegion = savedRegion == .unset
 	}
 
 	@MainActor
 	private func refreshConnectedNodeState() {
-		guard let deviceNum = accessoryManager.activeDeviceNum,
+		guard let deviceNum = accessoryManager.nodeNum(for: windowRadio),
 		      PreferredRadio.peripheralId.count > 0,
-		      accessoryManager.state == .subscribed else {
+		      link.state == .subscribed else {
 			firmwareUpdateNotice = nil
 			return
 		}
@@ -729,16 +737,16 @@ struct Connect: View {
 		}
 
 		refreshFirmwareUpdateNotice()
-		if let firmwareVersion = accessoryManager.activeConnection?.device.firmwareVersion, firmwareVersion != "?.?.?" && !firmwareVersion.isEmpty {
-			let meetsMinimumVersion = accessoryManager.checkIsVersionSupported(forVersion: accessoryManager.minimumVersion)
-			let meetsSecurityVersion = accessoryManager.checkIsVersionSupported(forVersion: accessoryManager.securityVersion)
+		if let firmwareVersion = radioSession?.device.firmwareVersion, firmwareVersion != "?.?.?" && !firmwareVersion.isEmpty {
+			let meetsMinimumVersion = accessoryManager.isVersionSupported(forVersion: accessoryManager.minimumVersion, for: windowRadio)
+			let meetsSecurityVersion = accessoryManager.isVersionSupported(forVersion: accessoryManager.securityVersion, for: windowRadio)
 			showSecurityVersionNag = meetsMinimumVersion && !meetsSecurityVersion
 		}
 	}
 
 	@MainActor
 	private func refreshFirmwareUpdateNotice() {
-		firmwareUpdateNotice = FirmwareUpdateNotifier.notice(accessoryManager: accessoryManager)
+		firmwareUpdateNotice = FirmwareUpdateNotifier.notice(accessoryManager: accessoryManager, window: windowRadio)
 	}
 
 	@MainActor

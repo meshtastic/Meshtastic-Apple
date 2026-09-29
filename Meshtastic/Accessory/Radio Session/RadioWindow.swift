@@ -50,10 +50,23 @@ extension AccessoryManager {
 		return session(for: window)?.nodeNum
 	}
 
-	/// Whether `window`'s radio is connected.
+	/// Whether `window`'s radio is connected, as `isConnected` counts it for the focused radio.
 	func isConnected(_ window: RadioWindow) -> Bool {
 		guard window.deviceId != nil else { return isConnected }
-		return session(for: window)?.device.connectionState == .connected
+		return linkStatus(for: window).isConnected
+	}
+
+	/// Whether `window`'s radio is connecting, as `isConnecting` counts it for the focused radio.
+	func isConnecting(_ window: RadioWindow) -> Bool {
+		guard window.deviceId != nil else { return isConnecting }
+		return linkStatus(for: window).isConnecting
+	}
+
+	/// `checkIsVersionSupported` for `window`'s radio: its own reported firmware
+	/// (`isVersionSupported(forVersion:on:)`); for `.focused`, exactly `checkIsVersionSupported`.
+	func isVersionSupported(forVersion version: String, for window: RadioWindow) -> Bool {
+		guard window.deviceId != nil, let session = session(for: window) else { return checkIsVersionSupported(forVersion: version) }
+		return isVersionSupported(forVersion: version, on: session)
 	}
 
 	/// `window`'s radio's connection (`linkStatus(of:)`). For `.focused` with no radio at all,

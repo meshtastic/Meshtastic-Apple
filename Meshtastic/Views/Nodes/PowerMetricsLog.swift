@@ -296,7 +296,7 @@ struct PowerMetricsLog: View {
 				}
 			}
 			ToolbarItem(placement: .topBarTrailing) {
-				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
+				WindowConnectedDevice()
 			}
 		}
 		.sheet(isPresented: $isEditingLabels) {

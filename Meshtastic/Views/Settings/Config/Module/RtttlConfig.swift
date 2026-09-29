@@ -66,7 +66,7 @@ struct RtttlConfig: View {
 		.navigationTitle("Ringtone Config")
 		.toolbar {
 			ToolbarItem(placement: .topBarTrailing) {
-				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
+				WindowConnectedDevice()
 			}
 		}
 		.onFirstAppear {

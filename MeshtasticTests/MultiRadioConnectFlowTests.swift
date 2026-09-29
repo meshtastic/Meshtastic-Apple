@@ -132,7 +132,16 @@ struct MultiRadioConnectFlowTests {
 		#expect(manager.nodeNum(for: first) == Int64(radios.firstNum))
 		#expect(manager.nodeNum(for: second) == Int64(radios.secondNum))
 		#expect(manager.isConnected(second))
+		#expect(!manager.isConnecting(second))
+		#expect(manager.isConnecting(.focused) == manager.isConnecting)
 		#expect(manager.linkStatus(for: second).state == .subscribed)
+		#expect(manager.isVersionSupported(forVersion: "2.5.0", for: second))
+		#expect(!manager.isVersionSupported(forVersion: "9.0.0", for: second), "its own firmware, 2.7.15")
+
+		// Connected and connecting count as the manager's flags do.
+		#expect(RadioLinkStatus(state: .retrievingDatabase(nodeCount: 3), canDisconnect: true).isConnected)
+		#expect(RadioLinkStatus(state: .retrying(attempt: 2, maxAttempts: 3), canDisconnect: true).isConnecting)
+		#expect(!RadioLinkStatus(state: .idle, canDisconnect: false).isConnected)
 
 		let gone = RadioWindow(deviceId: UUID())
 		#expect(manager.session(for: gone) == nil)

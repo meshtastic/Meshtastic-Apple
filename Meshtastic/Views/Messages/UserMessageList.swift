@@ -413,9 +413,7 @@ struct UserMessageList: View {
 			}
 			ToolbarItem(placement: .navigationBarTrailing) {
 				ZStack {
-					ConnectedDevice(
-						deviceConnected: accessoryManager.isConnected,
-						name: accessoryManager.activeConnection?.device.shortName ?? "?")
+					WindowConnectedDevice()
 				}
 			}
 		}

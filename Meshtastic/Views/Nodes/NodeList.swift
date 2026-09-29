@@ -186,11 +186,7 @@ struct NodeList: View {
 				MeshtasticLogo()
 			}
 			ToolbarItem(placement: .topBarTrailing) {
-				ConnectedDevice(
-					deviceConnected: accessoryManager.isConnected,
-					name: accessoryManager.activeConnection?.device.shortName ?? "?",
-					phoneOnly: true
-				)
+				WindowConnectedDevice(phoneOnly: true)
 				.accessibilityElement(children: .contain)
 			}
 		}

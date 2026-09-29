@@ -29,6 +29,22 @@ struct RadioLinkStatus {
 		if case .firmwareTooOld = attention { return true }
 		return false
 	}
+
+	/// Connected, as `AccessoryManager.isConnected` counts it: subscribed, or getting its node DB.
+	var isConnected: Bool {
+		switch state {
+		case .subscribed, .retrievingDatabase: return true
+		default: return false
+		}
+	}
+
+	/// Connecting, as `AccessoryManager.isConnecting` counts it.
+	var isConnecting: Bool {
+		switch state {
+		case .connecting, .communicating, .retrying: return true
+		default: return false
+		}
+	}
 }
 
 extension AccessoryManager {

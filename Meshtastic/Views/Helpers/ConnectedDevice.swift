@@ -5,6 +5,22 @@
 
 import SwiftUI
 
+/// The indicator for the window's radio (feature 021, D-19, T303): its short name and whether it's
+/// connected. Screens use this rather than reading the manager's focused radio.
+struct WindowConnectedDevice: View {
+	@EnvironmentObject private var accessoryManager: AccessoryManager
+	@Environment(\.windowRadio) private var windowRadio
+	var phoneOnly = false
+
+	var body: some View {
+		ConnectedDevice(
+			deviceConnected: accessoryManager.isConnected(windowRadio),
+			name: accessoryManager.session(for: windowRadio)?.device.shortName ?? "?",
+			phoneOnly: phoneOnly
+		)
+	}
+}
+
 struct ConnectedDevice: View {
 
 	let deviceConnected: Bool

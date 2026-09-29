@@ -821,7 +821,7 @@ struct MeshMapMK: View {
 							}
 							.accessibilityLabel(String(localized: "Open map in new window", comment: "VoiceOver label for the open map in a new window button"))
 						}
-						ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
+						WindowConnectedDevice()
 					}
 				}
 			}
