@@ -211,6 +211,9 @@ This follows report §13.3, adjusted for D-06 and for how this project actually 
 
 ## Pickers (D-12, D-13)
 
+Replaced by D-19 (see One window per radio): the composer's picker goes, and the services no
+longer follow a focused radio.
+
 - Composer: a "via [radio]" control. The default is the focused radio, limited to radios that
   have the channel (by `channelKey`). DMs lock it to the conversation's radio.
 - Settings › App Settings › "Radio for TAK / CarPlay & Siri / Watch": "Follow focused radio"
@@ -241,6 +244,83 @@ Nothing below is committed: `.local/` and `MeshtasticSxS.xcodeproj/` are listed 
   time, so don't point both apps at the same radio.
 - Safety: a Mac Catalyst run of the normal project (tests included) shares the App Store app's
   container on this Mac. Run unit tests in the iOS Simulator only.
+
+## One window per radio (D-19, decided 2026-09-29)
+
+Spec: [windows.md](./windows.md). This replaces the focused radio. Numbers below were counted on
+`feature/multi-radio` at `9787c7a1`.
+
+### The window's radio
+
+- `RadioWindow`: a `Codable`, `Hashable` value naming a radio by its peripheral id, which is known
+  before the node number. The node number comes from the radio's session, or its `MyInfoEntity`.
+- Radio windows are a `WindowGroup(for: RadioWindow.self)`. SwiftUI brings an already open window
+  to the front when the same value is opened again, which is W-03.
+- The window's radio reaches the views as an environment value, `\.windowRadio`, and the menu bar
+  as a focused scene value (W-07).
+- `AccessoryManager` gets lookups by window: `session(for: RadioWindow)`, `nodeNum(for:)`.
+- iPhone: one window. Its radio is kept in `@SceneStorage`, so it opens on the same radio after a
+  relaunch or a restore. Picking a radio in Connect sets it (W-04).
+- The Connect window on the Mac and iPad (W-02) is its own `WindowGroup(id:)`, opened from the
+  File menu ("Add Radio…") and at launch when no remembered radio reconnects.
+
+### What reads the focus today
+
+- 56 view files, 22 of them already changed on this branch, 34 untouched against `main`.
+- `AccessoryManager.swift` (56 references), `+ToRadio` (22), `+FromRadio` (15), `+Connect` (11
+  references and 30 `isFocused` branches), `+RadioChoice` (9), `+AdditionalRadios` (8), and a few
+  in the others.
+- Admin messages already route by the user they're from (`adminRoute(for:)`), so a Settings page
+  that passes its window's radio as `fromUser` sends through that radio with no change below it.
+- The message queries already take a radio (`ChannelMessageQuery`, `DirectMessageQuery`).
+
+### Order of work
+
+Each step keeps the app working and the suite passing. Until step 5 there is one window and its
+radio is the focused one, so nothing changes for the user.
+
+1. **Per-radio state onto `RadioSession`**: connection status, last error, "firmware update
+   required", whether Disconnect is allowed, the connect stepper, and lock-down (one
+   `LockdownCoordinator` per radio, or its state on the session). The manager keeps read-only
+   properties that return the focused session's values, so the views don't change yet.
+2. **`\.windowRadio`, and the views read it**, in groups: Connect, Settings, Messages, Nodes and
+   the map, Tools and the rest. The one window's radio is the focused radio, so behaviour stays
+   the same at every commit.
+3. **A router per window.** Each window owns its `Router`. Deep links and notification taps go to
+   a small registry of open windows, which picks the window by radio (W-05) and opens it if it's
+   hidden. `MeshtasticAppDelegate`'s single `router` goes.
+4. **App-wide work out of the connect steps.** The `isFocused` branches split into work done once
+   per launch (device catalog and images, stopping discovery, stale-node prune, unread badges,
+   the position loop, remembered-radio reconnect), run by whichever connect finishes first, and
+   the per-radio state from step 1.
+5. **Windows on the Mac and iPad.** A radio's window opens when it connects; closing it only hides
+   it (W-01); disconnecting closes it (W-02); the Window menu lists the connected radios, and
+   reopens a hidden one; at launch each radio that reconnects gets its window back.
+6. **No app-wide focus.** `activeConnection` and `additionalRadios` become one dictionary of
+   sessions. `focusConnectedRadio`, `+FocusHandover`, `restoreDisplacedPreferred`,
+   `PreferredRadio.connectFirstOverride`, `radiosFocusedThisRun` and the manager's focus-compat
+   properties from step 1 go. `PreferredRadio` becomes the radios to reconnect
+   (`MyInfoEntity.autoConnect`). BLE restore restores every radio iOS hands back the same way.
+7. **Services** (W-08 to W-11): ask once per radio at its first connect whether to make it the
+   Siri and CarPlay default; a `RadioEntity` (App Intents) so commands name a radio; a "set the
+   default radio" command; TAK and Watch use their chosen radio or the only one connected.
+8. **Composer**: the "via [radio]" control goes. A window sends through its own radio, as a
+   separate copy of the app would.
+
+### Single-radio users
+
+With one radio there is one window and one radio, as on `main`. Step 7's question isn't asked with
+only one radio known; the services use the only radio.
+
+### Testing
+
+- Steps 1 to 4 keep today's tests, updated where they read focus state.
+- Tests of the focus handover, the restore hand-over and the connect-first override are removed
+  with the code in step 6; restore gets a test that every restored radio connects.
+- New tests: window lookups, the window registry's choice for a notification (W-05), the ask-once
+  rule (W-09), the intents with and without a radio name.
+- Windows themselves (open, hide, close on disconnect, relaunch) go on the device checklist: the
+  Mac build, run by the owner.
 
 ## Testing
 

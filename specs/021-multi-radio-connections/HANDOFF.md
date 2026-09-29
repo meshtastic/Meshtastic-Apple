@@ -100,8 +100,9 @@ Read this first if you are picking the work up. Update it in the same commit as 
 ## In progress
 
 - D-19 (2026-09-29): one window per radio, no app-wide focused radio; part of 021, same pull
-  request. Spec in `windows.md` (decisions W-01 to W-11). Next: its plan and tasks, then the work.
-  The owner's device test of the current build runs meanwhile.
+  request. Spec in `windows.md` (decisions W-01 to W-11), plan in plan.md › One window per radio,
+  tasks in tasks.md › Phase 11 (T300–T323). To resume: the first unchecked task there. The
+  owner's device test of the current build runs meanwhile.
 - Review V10 (2026-09-29): `review-connections-v10.md`, K1's fix and `connect(to:)` through
   Step 1 re-read whole; no findings. Next: one full review of each area after the device test,
   before T122; delta reviews only for fixes in that agent's area.

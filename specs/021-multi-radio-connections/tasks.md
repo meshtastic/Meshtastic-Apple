@@ -261,6 +261,54 @@ Re-checked in the files and holding (2026-09-29); the owner approved.
 
 - [X] T250 K1 a failed send of the phone's position to the focused radio no longer ends the loop while other radios are connected. — the loop's round is `sharePhonePosition()`; the focused send's error is caught and logged only when another radio is connected, so with one radio it still ends the loop as on `main`. Verified: `MultiRadioConnectLifecycleTests.focusedPositionFailureKeepsLoop`. The one-radio case (`main`'s own behaviour) is left for a separate PR against `main` if the owner wants it.
 
+## Phase 11: One window per radio (D-19, plan.md › One window per radio, windows.md)
+
+Replaces the app-wide focused radio. Built before Phase 10, which then tests the result. One
+commit per task, full suite each time. Until T310 there is one window and its radio is the
+focused one, so each commit leaves the app as it is.
+
+Per-radio state (plan step 1)
+- [ ] T300 Connection status, last error, "firmware update required", whether Disconnect is allowed and the connect stepper move onto `RadioSession`; the manager's properties read the focused session's.
+- [ ] T301 Lock-down per radio: its state on the session, the passphrase sheet for any radio from it (the focused radio's Settings section included).
+
+The window's radio (plan step 2)
+- [ ] T302 `RadioWindow`, `\.windowRadio`, `AccessoryManager.session(for:)` / `nodeNum(for:)`; the one window's radio is the focused one. Tests for the lookups.
+- [ ] T303 [P] Connect and the connection status indicator read the window's radio.
+- [ ] T304 [P] Settings (every page, and the config and module forms) reads the window's radio.
+- [ ] T305 [P] Messages (channel list, conversations, composer) reads the window's radio.
+- [ ] T306 [P] Nodes, node details and the map read the window's radio.
+- [ ] T307 [P] Tools and the remaining views read the window's radio.
+
+Routing (plan step 3)
+- [ ] T308 A router per window; a registry of open windows picks the window for a deep link or a notification tap (W-05). Tests for the choice.
+
+App-wide work (plan step 4)
+- [ ] T309 The connect steps' `isFocused` branches split: once-per-launch work run by the first connect to finish, per-radio state from T300.
+
+Windows (plan step 5)
+- [ ] T310 Radio windows as `WindowGroup(for: RadioWindow.self)` on the Mac and iPad; a radio's window opens when it connects.
+- [ ] T311 Closing a radio's window hides it (W-01); disconnecting closes it (W-02); the Window menu lists connected radios and reopens a hidden one.
+- [ ] T312 The Connect window ("Add Radio…" in the File menu), shown at launch when no remembered radio reconnects.
+- [ ] T313 Menu bar commands act on the key window's radio, disabled for the Connect window (W-07).
+- [ ] T314 iPhone: the window's radio in `@SceneStorage`, set from Connect (W-04).
+
+No app-wide focus (plan step 6)
+- [ ] T315 `activeConnection` / `additionalRadios` become one dictionary of sessions; the focus-compat properties from T300 go.
+- [ ] T316 Remove `focusConnectedRadio`, `+FocusHandover`, `restoreDisplacedPreferred`, the connect-first override and `radiosFocusedThisRun`, with their tests.
+- [ ] T317 `PreferredRadio` becomes the radios to reconnect (`MyInfoEntity.autoConnect`); launch reconnects all of them.
+- [ ] T318 BLE restore restores every radio iOS hands back the same way, one handshake at a time.
+
+Services (plan step 7)
+- [ ] T319 Ask once per radio, at its first connect with another radio known, whether to make it the Siri and CarPlay default (W-09).
+- [ ] T320 A `RadioEntity` for App Intents; the Shortcuts commands name a radio (W-10); a "set the default radio" command (W-11).
+- [ ] T321 TAK, Watch, CarPlay and Siri: the chosen radio, or the only one connected; with several and none chosen, a command asks and App Settings shows the choice as needed.
+
+Composer (plan step 8)
+- [ ] T322 Remove the composer's "via [radio]" control; a window sends through its own radio.
+
+Wrap-up
+- [ ] T323 Device checklist in HANDOFF for windows (open, hide, reopen, close on disconnect, relaunch, Siri/CarPlay default) replaces the focus handover and restore hand-over checks.
+
 ## Phase 10: Hardening
 
 - [ ] T130 Four BLE radios for 24 hours (device checklist in `HANDOFF.md`).
