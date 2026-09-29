@@ -55,7 +55,7 @@ Read this first if you are picking the work up. Update it in the same commit as 
 - Next up: the owner's device test (checklist below), which waits on hardware; don't rebuild
   Mesh Multi for it unless asked. Don't design around the focused/additional split: every radio
   works the same way (D-17). Removing the switch-era helpers (T066) waits for that test.
-- Baseline and latest: the full suite passes in the iOS Simulator (3,478 Swift Testing tests plus
+- Baseline and latest: the full suite passes in the iOS Simulator (3,483 Swift Testing tests plus
   the XCTests, about 55 seconds of test time). Run it with the simulator to itself: another
   session's test runs on the same simulator kill the test host partway.
 
@@ -100,9 +100,11 @@ Read this first if you are picking the work up. Update it in the same commit as 
 ## In progress
 
 - D-19 (2026-09-29): one window per radio, no app-wide focused radio; part of 021, same pull
-  request. Spec in `windows.md` (decisions W-01 to W-11), plan in plan.md › One window per radio,
-  tasks in tasks.md › Phase 11 (T300–T323). To resume: the first unchecked task there. The
-  owner's device test of the current build runs meanwhile.
+  request. Spec in `windows.md` (decisions W-01 to W-14), plan in plan.md › One window per radio,
+  tasks in tasks.md › Phase 11 (T300–T325), all done 2026-09-29 except T315 (dropped, see its
+  note). Nothing of the windows was run: the iOS Simulator suite and a Mac build (built, not run)
+  pass; the device checklist below has what needs the owner's Mac, iPhone and Siri. Next: the
+  owner's device test, then the full reviews of each area, then T122.
 - Review V10 (2026-09-29): `review-connections-v10.md`, K1's fix and `connect(to:)` through
   Step 1 re-read whole; no findings. Next: one full review of each area after the device test,
   before T122; delta reviews only for fixes in that agent's area.
@@ -341,7 +343,7 @@ describes it well enough to rebuild.
   didConnect (T155). When a standby radio connects while the focused restore still waits, that
   radio takes over the restore and the waiting one joins the standby radios (T178). Every radio
   restored alongside the focused restore is remembered, so it's claimed after the focused
-  connect, and a preferred radio passed over takes the focus back when it rejoins (T190). A focused
+  connect, and comes back as it was (T190, T318). A focused
   restore still connecting with no other radio restored waits with no timeout and holds
   discovery off meanwhile, as on `main`.
 - Connect Step 5 (found writing T068, fixed in T154): an answer to the node-DB request that
@@ -357,17 +359,15 @@ describes it well enough to rebuild.
   focused radio whenever one is connected). `UserDefaults.preferredPeripheralId/Num` directly is a
   lint error outside `PreferredRadio.swift`. Code meaning "the radio I'm working with" uses its
   session, or `activeDeviceNum` for the focused one.
-- The discovery scan runs on the radio focused when it starts (`scanRadioNum`) and only takes that
-  radio's packets; the focus handover waits while it scans (the preset change reboots the radio).
-- Focus when things go wrong (`AccessoryManager+FocusHandover.swift`): the Connect tab's
-  Disconnect hands the focus to another connected radio at once (`disconnectFocusedRadio`).
-  If the focused radio drops, `closeConnection` starts `scheduleFocusHandover`: after 30 s
-  (rechecking every 10 s, up to 5 min) with nothing focused or connecting, the first connected
-  additional radio takes the focus and the dropped one is remembered. When discovery starts
-  with nothing connected, `scheduleRememberedRadioFallback` connects a remembered radio that's
-  in range if the preferred one hasn't connected after 30 s, and remembers the preferred one.
-  Neither fires after a deliberate disconnect (`userRequestedConnectionCancellation`), during a
-  switch or an OTA. Watch for them in the device test: they change which radio is preferred.
+- The discovery scan runs on the radio connected first when it starts (`scanRadioNum`) and only
+  takes that radio's packets.
+- No focus handover any more (D-19, T316): when the radio connected first drops, the others stay
+  and nothing takes its place; it's brought back by discovery as a single radio is, and a radio
+  still connected alongside is never connected again as the first. When discovery starts with
+  nothing connected, `scheduleRememberedRadioFallback` (`+LaunchFallback.swift`) connects a
+  remembered radio that's in range if the preferred one hasn't connected after 30 s. It doesn't
+  fire after a deliberate disconnect (`userRequestedConnectionCancellation`), during a switch or an
+  OTA. Watch for it in the device test: it changes which radio is preferred.
 - Editing tools: after changing a file with a script (`python3 /tmp/x.py`), re-read it before
   using the editor's find-and-replace on it. Once the editor applied an edit to its own stale
   copy of `UserMessageList.swift` and silently undid a script's refactor; `git diff` caught it.
@@ -390,8 +390,8 @@ describes it well enough to rebuild.
 
 ## Device test checklist (fill in during Phase 10)
 
-- [ ] Connect radio A, then B → dialog shows; "Keep both" leaves both connected.
-- [ ] "Switch" disconnects the focused radio without clearing any data.
+- [ ] Connect radio A, then add B under Add a Radio: no question, both stay connected, and the
+  window shows B (W-12). On the Mac, B opens in its own window once connected.
 - [ ] Four BLE radios connected; a fifth is refused with the reason shown.
 - [ ] A channel shared by all radios shows one timeline; each message is stored once, with "heard by" details.
 - [ ] A DM to radio B only appears in B's conversation; replying sends through B.
@@ -406,21 +406,34 @@ describes it well enough to rebuild.
   timeout drops it (A's doesn't change).
 - [ ] Lock-down firmware on B with no saved passphrase: B connects alongside A, its row says
   Locked, and a prompt names B. Unlock opens B's own passphrase sheet (B's name at the top) and
-  A stays focused (T188); after unlocking, B's real config and node DB arrive, and on B's next
-  connect the saved passphrase unlocks it without asking. Watch whether B's connect retried
-  while it waited (Step 5): with the sheet it no longer matters for unlocking. After unlocking A
-  (focused) through its sheet, check that A's real config arrives without the app asking again;
-  if it doesn't, the focused path needs the `sendWantConfig` the other radios' path already does
-  (C13, T167).
+  nothing else moves (T188, T301); a passphrase that can't be sent keeps the sheet up with the
+  reason; Lock Now in B's Settings closes B's link and it asks again on reconnect; after unlocking, B's real config and node DB arrive, and on B's next
+  connect the saved passphrase unlocks it without asking. After unlocking A (the radio connected
+  first) through its sheet, check that A's real config arrives without the app asking again; if it
+  doesn't, A's path needs the `sendWantConfig` the other radios' already does (C13, T167).
 - [ ] Reset NodeDB on B with A connected (Settings › Node › B › Device): only B disconnects and
   comes back; the app asks about B's messages. With A and B on the same preset and frequency the
   nodes stay; with B on another preset, the nodes only B heard go. Remove This Radio on B: B
   disconnects, isn't reconnected, and no longer appears as one of your radios.
 - [ ] Clear App Data with A and B connected: the confirmation names both, both disconnect.
-- [ ] Focused A dropped for more than 30 s: B takes the focus, A comes back alongside when it's in
-  range, and the phone's position keeps going to both (T149).
-- [ ] Old firmware on B: B stays connected, its row says it needs an update, Update focuses it and
-  shows the update screen named B; the update screen's Disconnect hands the focus to A.
+- [ ] A (connected first) out of range for minutes: B stays as it is, the window keeps showing A as
+  reconnecting (nothing takes its place, D-19), A comes back on its own when it's in range, and the
+  phone's position keeps going to B meanwhile.
+- [ ] Old firmware on B: B stays connected, its row says it needs an update, Update shows B in the
+  window with the update screen; the update screen's Disconnect disconnects B only.
+- [ ] iPhone: with A and B connected, Connect › B › Show This Radio and the indicator's radio menu
+  switch the window to B with no reconnect (both radios' logs quiet); relaunch opens on B (W-04).
+- [ ] Mac windows (D-19): each connected radio has its own window, the whole app for it; the
+  Connect window lists them with Open and Disconnect; closing a radio's window only hides it
+  (still connected, Radios menu reopens it); Radios › Disconnect acts on the key window's radio and
+  closes its window; File › Add Radio… (⇧⌘N) opens the Connect window; after a relaunch each radio
+  that reconnects has its window again; a notification tap opens the window of the radio it's
+  about; the composer has no Via picker. With A's window and B's window open, navigating in one
+  doesn't move the other.
+- [ ] Siri and CarPlay (W-09 to W-11): connecting B the first time while A is known asks once
+  whether to use B; "Set my Meshtastic radio" and "Make B my Meshtastic radio" set it; a Shortcuts
+  message without a radio, with A and B connected and none chosen, asks which; naming a radio
+  that's off fails without sending through the other.
 - [ ] App Settings › TAK / CarPlay & Siri / Apple Watch: pick B. TAK CoT goes out from B (log
   `📻 [B] Sending TAKPacket…`); a Shortcuts "Send a Group Message" without a radio goes via B;
   with B's node number while B is off, it fails. Reply to a notification from B: the reply goes via B.

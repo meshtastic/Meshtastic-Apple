@@ -309,7 +309,7 @@ Adding, switching, composer (plan step 8)
 - [X] T325 The composer's "Via" picker defaults to the window's radio (then the channel list's, then the first) and is hidden on the Mac, where each radio sends from its own window (W-14). Verified: full suite; the picker itself is on the device checklist.
 
 Wrap-up
-- [ ] T323 Device checklist in HANDOFF for windows (open, hide, reopen, close on disconnect, relaunch, Siri/CarPlay default) replaces the focus handover and restore hand-over checks.
+- [X] T323 Device checklist in HANDOFF for windows, switching the one window's radio, adding a radio, a dropped first radio, lock-down and Siri/CarPlay; the focus handover and give-back checks replaced.
 
 ## Phase 10: Hardening
 
