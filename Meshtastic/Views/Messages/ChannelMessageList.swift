@@ -326,7 +326,8 @@ struct ChannelMessageList: View {
 						processTapback()
 					}
 			}
-			if channelSlots.count > 1 {
+			// On the Mac each radio has its own window to send from (W-14).
+			if channelSlots.count > 1, !RadioWindows.areEnabled {
 				radioPicker
 			}
 			TextMessageField(
@@ -391,7 +392,9 @@ private extension ChannelMessageList {
 	/// The slot the next message uses; nil (one radio with the channel) is the window's radio.
 	var sendingSlot: ChannelSlot? {
 		guard channelSlots.count > 1 else { return nil }
+		let windowNum = accessoryManager.nodeNum(for: windowRadio)
 		return channelSlots.first { $0.radio == chosenRadio }
+			?? channelSlots.first { $0.radio == windowNum }
 			?? channelSlots.first { $0.radio == myInfo.myNodeNum }
 			?? channelSlots.first
 	}
