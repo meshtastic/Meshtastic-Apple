@@ -24,6 +24,9 @@ struct UserMessageList: View {
 	@AppStorage("preferredPeripheralNum") private var preferredPeripheralNum = -1
 	@State private var messageLimit: Int = 100
 	@State private var messages: [MessageEntity] = []
+	@State private var bottomScrollRequest = 0
+	@State private var bottomMarkerY: CGFloat = .infinity
+	@State private var scrollViewportHeight: CGFloat = 0
 	@State private var searchQuery = ""
 	@State private var searchMatches: [MessageSearchMatch] = []
 	@State private var currentMatchIndex = -1
@@ -38,6 +41,10 @@ struct UserMessageList: View {
 
 	init(user: UserEntity) {
 		self.user = user
+	}
+
+	private var isNearBottom: Bool {
+		bottomMarkerY <= scrollViewportHeight + 24
 	}
 
 	func markMessagesAsRead() {
@@ -78,6 +85,8 @@ struct UserMessageList: View {
 	@MainActor
 	private func loadMessages(markReadAfterLoad: Bool = false) {
 		do {
+			let previousLastID = messages.last?.messageId
+			let followNewMessage = isNearBottom
 			let fetchedMessages = try fetchMessages(limit: messageLimit + 1)
 			hasEarlierMessages = fetchedMessages.count > messageLimit
 
@@ -92,6 +101,10 @@ struct UserMessageList: View {
 			let previousMessage = hasEarlierMessages ? fetchedMessages[messageLimit] : nil
 
 			messages = visibleMessages
+			if #unavailable(iOS 18.0, macOS 15.0), followNewMessage,
+			   visibleMessages.last?.messageId != previousLastID {
+				bottomScrollRequest &+= 1
+			}
 			previousByID = buildPreviousByID(for: visibleMessages, previousMessage: previousMessage)
 			repliesByID = try fetchReplies(for: visibleMessages)
 			replaceTapbacks(try fetchTapbacks(for: visibleMessages))
@@ -305,15 +318,22 @@ struct UserMessageList: View {
 						// Invisible spacer to detect reaching bottom
 						Color.clear
 							.frame(height: 1)
+							.trackMessageBottomPosition($bottomMarkerY)
 							.id("bottomAnchor")
 					}
 				}
+				.trackMessageScrollViewport($scrollViewportHeight)
+				.messageBottomScrollPosition(request: bottomScrollRequest)
 				.defaultScrollAnchor(.bottom)
 				.defaultScrollAnchorBottomSizeChanges()
 				.scrollDismissesKeyboard(.immediately)
 				.onAppear {
 					DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-						scrollView.scrollTo("bottomAnchor", anchor: .bottom)
+						if #available(iOS 18.0, macOS 15.0, *) {
+							bottomScrollRequest &+= 1
+						} else {
+							scrollView.scrollTo("bottomAnchor", anchor: .bottom)
+						}
 					}
 				}
 				.task(id: "\(routerIsShowingThisUser())-\(user.num)") {
@@ -328,9 +348,11 @@ struct UserMessageList: View {
 						loadMessages(markReadAfterLoad: routerIsShowingThisUser())
 					}
 				}
-				.onChange(of: messages.last?.messageId) {
-					DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-						scrollView.scrollTo("bottomAnchor", anchor: .bottom)
+				.onChange(of: bottomScrollRequest) {
+					// On iOS 17, follow the real message row only when loadMessages saw
+					// the reader near the bottom, or after the reader sends a message.
+					if #unavailable(iOS 18.0, macOS 15.0), let lastID = messages.last?.messageId {
+						scrollView.scrollTo(lastID, anchor: .bottom)
 					}
 				}
 				// Message writes happen on the packet actor's own context, which SwiftData does
@@ -346,7 +368,11 @@ struct UserMessageList: View {
 				.onChange(of: messageFieldFocused) {
 					if messageFieldFocused {
 						DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-							scrollView.scrollTo("bottomAnchor", anchor: .bottom)
+							if #available(iOS 18.0, macOS 15.0, *) {
+								bottomScrollRequest &+= 1
+							} else {
+								scrollView.scrollTo("bottomAnchor", anchor: .bottom)
+							}
 						}
 					}
 				}
@@ -375,7 +401,16 @@ struct UserMessageList: View {
 				destination: .user(user),
 				replyMessageId: $replyMessageId,
 				isFocused: $messageFieldFocused,
-				onMessageSent: { loadMessages(markReadAfterLoad: routerIsShowingThisUser()) }
+				onMessageSent: {
+					let previousScrollRequest = bottomScrollRequest
+					loadMessages(markReadAfterLoad: routerIsShowingThisUser())
+					if #available(iOS 18.0, macOS 15.0, *) {
+						bottomScrollRequest &+= 1
+					} else if bottomScrollRequest == previousScrollRequest {
+						// Sends follow even if the reader was in older history or the last ID stayed equal.
+						bottomScrollRequest &+= 1
+					}
+				}
 			)
 			.fixedSize(horizontal: false, vertical: true)
 		}
