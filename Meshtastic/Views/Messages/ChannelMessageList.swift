@@ -26,8 +26,7 @@ struct ChannelMessageList: View {
 	@State private var messageLimit: Int = 100
 	@State private var messages: [MessageEntity] = []
 	@State private var bottomScrollRequest = 0
-	@State private var bottomMarkerY: CGFloat = .infinity
-	@State private var scrollViewportHeight: CGFloat = 0
+	@State private var scrollTracker = MessageScrollTracker()
 	@State private var searchQuery = ""
 	@State private var searchMatches: [MessageSearchMatch] = []
 	@State private var currentMatchIndex = -1
@@ -43,10 +42,6 @@ struct ChannelMessageList: View {
 	init(myInfo: MyInfoEntity, channel: ChannelEntity) {
 		self.myInfo = myInfo
 		self.channel = channel
-	}
-
-	private var isNearBottom: Bool {
-		bottomMarkerY <= scrollViewportHeight + 24
 	}
 
 	func markMessagesAsRead() {
@@ -89,7 +84,9 @@ struct ChannelMessageList: View {
 	private func loadMessages(markReadAfterLoad: Bool = false) {
 		do {
 			let previousLastID = messages.last?.messageId
-			let followNewMessage = isNearBottom
+			// Read before the fetch. New rows move the marker, so a later read would
+			// describe the layout this reload is about to change.
+			let followNewMessage = scrollTracker.isNearBottom
 			let fetchedMessages = try fetchMessages(limit: messageLimit + 1)
 			hasEarlierMessages = fetchedMessages.count > messageLimit
 
@@ -104,8 +101,11 @@ struct ChannelMessageList: View {
 			let previousMessage = hasEarlierMessages ? fetchedMessages[messageLimit] : nil
 
 			messages = visibleMessages
-			if #unavailable(iOS 18.0, macOS 15.0), followNewMessage,
-			   visibleMessages.last?.messageId != previousLastID {
+			if MessageScrollTracker.shouldFollowReload(
+				nearBottomBeforeFetch: followNewMessage,
+				previousLastID: previousLastID,
+				newLastID: visibleMessages.last?.messageId
+			) {
 				bottomScrollRequest &+= 1
 			}
 			previousByID = buildPreviousByID(for: visibleMessages, previousMessage: previousMessage)
@@ -279,11 +279,11 @@ struct ChannelMessageList: View {
 					}
 					Color.clear
 						.frame(height: 1)
-						.trackMessageBottomPosition($bottomMarkerY)
+						.trackMessageBottomPosition(scrollTracker)
 						.id("bottomAnchor")
 				}
 			}
-			.trackMessageScrollViewport($scrollViewportHeight)
+			.trackMessageScrollViewport(scrollTracker)
 			.messageBottomScrollPosition(request: bottomScrollRequest)
 			.defaultScrollAnchor(.bottom)
 			.defaultScrollAnchorBottomSizeChanges()
@@ -364,10 +364,9 @@ struct ChannelMessageList: View {
 				onMessageSent: {
 					let previousScrollRequest = bottomScrollRequest
 					loadMessages(markReadAfterLoad: routerIsShowingThisChannel())
-					if #available(iOS 18.0, macOS 15.0, *) {
-						bottomScrollRequest &+= 1
-					} else if bottomScrollRequest == previousScrollRequest {
-						// Sends follow even if the reader was in older history or the last ID stayed equal.
+					if MessageScrollTracker.shouldFollowSend(
+						scrollRequestChangedDuringLoad: bottomScrollRequest != previousScrollRequest
+					) {
 						bottomScrollRequest &+= 1
 					}
 				}
