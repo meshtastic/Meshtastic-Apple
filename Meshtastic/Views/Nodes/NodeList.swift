@@ -12,6 +12,7 @@ import Foundation
 
 struct NodeList: View {
 	@Environment(\.modelContext) private var context
+	@Environment(\.horizontalSizeClass) private var horizontalSizeClass
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@EnvironmentObject var router: Router
 	@AppStorage("nodeListDensity") private var nodeListDensity: NodeListDensity = .standard
@@ -37,25 +38,84 @@ struct NodeList: View {
 
 	@State private var columnVisibility: NavigationSplitViewVisibility = .all
 
+	/// The open iPhone Duo display is regular width but only about 669pt across, which
+	/// is not enough for two real columns. `NavigationSplitView` then draws the sidebar
+	/// as an overlay on top of the detail column, and with `columnVisibility` pinned to
+	/// `.all` it stays there — covering the detail column's navigation bar and the back
+	/// button with it, so a pushed screen like the Local Stats Log cannot be dismissed.
+	///
+	/// A phone-idiom device never has room for the two-column layout, so at this width it
+	/// gets the same single stack it gets folded. Compact width still goes through the
+	/// split view, which collapses to a stack on its own and is the path every iPhone
+	/// already takes.
+	private var prefersStackOverOverlaySidebar: Bool {
+		horizontalSizeClass == .regular && UIDevice.current.userInterfaceIdiom == .phone
+	}
+
+	/// The stack's contents, expressed as the selected node so that everything which
+	/// drives the split view's detail column drives this too.
+	///
+	/// `selectedNodeNum` is the app's handle on this screen: `navigateToNodeDetail`
+	/// sets it for deep links and notification taps, and `popToRoot(tab: .nodes)`
+	/// clears it — which is how `popAllStacks()` unmounts the detail views holding
+	/// model objects before the store is replaced. A stack that only pushed on a row
+	/// tap would ignore both, so a deep link would go nowhere and a node switch would
+	/// leave this screen mounted across the container swap.
+	private var nodeDetailPath: Binding<[Int64]> {
+		Binding(
+			get: { router.selectedNodeNum.map { [$0] } ?? [] },
+			set: { router.selectedNodeNum = $0.first }
+		)
+	}
+
+	/// What a selected node opens. Shared so the stack and the split view's detail
+	/// column agree — including the seeded local-stats harness, which otherwise
+	/// worked folded and silently did nothing open.
+	@ViewBuilder
+	private func nodeDestination(_ node: NodeInfoEntity, nodeNum: Int64) -> some View {
+		if opensSeededLocalStatsLog {
+			LocalStatsLog(node: node)
+		} else {
+			NodeDetail(node: node, nodeNum: nodeNum)
+				.trackScreen(.nodeDetail)
+		}
+	}
+
+	@ViewBuilder
+	private var detailContent: some View {
+		if let selectedNum = router.selectedNodeNum,
+		   let node = router.cachedNodeInfo(id: selectedNum, context: context) {
+			nodeDestination(node, nodeNum: selectedNum)
+		} else {
+			ContentUnavailableView("Select a Node", systemImage: "flipphone")
+		}
+	}
+
 	var body: some View {
-		NavigationSplitView(columnVisibility: $columnVisibility) {
-			sidebarContent
-		} detail: {
-			NavigationStack {
-				if let selectedNum = router.selectedNodeNum,
-				   let node = router.cachedNodeInfo(id: selectedNum, context: context) {
-					if opensSeededLocalStatsLog {
-						LocalStatsLog(node: node)
-					} else {
-						NodeDetail(node: node, nodeNum: selectedNum)
-							.trackScreen(.nodeDetail)
-					}
-				} else {
-					ContentUnavailableView("Select a Node", systemImage: "flipphone")
+		Group {
+			if prefersStackOverOverlaySidebar {
+				NavigationStack(path: nodeDetailPath) {
+					sidebarContent
+						// The sidebar's rows are `NavigationLink(value:)`, which the split
+						// view turns into a selection. In a stack they need a destination
+						// to push, and pushing is what gives the detail screens a back button.
+						.navigationDestination(for: Int64.self) { nodeNum in
+							if let node = router.cachedNodeInfo(id: nodeNum, context: context) {
+								nodeDestination(node, nodeNum: nodeNum)
+							}
+						}
 				}
+			} else {
+				NavigationSplitView(columnVisibility: $columnVisibility) {
+					sidebarContent
+				} detail: {
+					NavigationStack {
+						detailContent
+					}
+				}
+				.navigationSplitViewStyle(.balanced)
 			}
 		}
-		.navigationSplitViewStyle(.balanced)
 		.onAppear {
 			filters.fallbackLocation = connectedNode?.latestPosition?.nodeCoordinate
 		}
