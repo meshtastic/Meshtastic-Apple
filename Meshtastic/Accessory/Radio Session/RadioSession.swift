@@ -76,6 +76,9 @@ final class RadioSession: Identifiable {
 	var databaseNodeCount = 0
 	/// The firmware edition from its MyInfo (event firmware and the like).
 	var firmwareEdition: FirmwareEditions = .vanilla
+	/// When it last finished sending its configuration, to tell a fresh readback from a stale
+	/// cache (`AccessoryManager.lastConfigRefresh` is the focused radio's).
+	var lastConfigRefresh: Date?
 	/// The region → legal preset map it advertised in the config handshake (2.8+).
 	var loRaRegionPresets: [Config.LoRaConfig.RegionCode: RegionPresetInfo] = [:]
 

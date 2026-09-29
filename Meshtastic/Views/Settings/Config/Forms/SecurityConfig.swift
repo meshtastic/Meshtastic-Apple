@@ -135,6 +135,8 @@ extension Config.SecurityConfig {
 struct SecurityConfig: View {
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject private var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 	@EnvironmentObject private var lockdown: LockdownCoordinator
 	@State private var showLockNowAlert = false
 	let node: NodeInfoEntity?
@@ -194,7 +196,7 @@ struct SecurityConfig: View {
 				// now that choosing a level commits straight away.
 				PacketAuthenticitySection(
 					capability: PacketAuthenticityCapability(metadata: node?.metadata),
-					isConnected: accessoryManager.isConnected,
+					isConnected: accessoryManager.isConnected(windowRadio),
 					policy: config.packetSignaturePolicy)
 			},
 			trailing: { _ in

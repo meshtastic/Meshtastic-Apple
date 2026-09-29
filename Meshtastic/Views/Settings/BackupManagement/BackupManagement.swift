@@ -12,6 +12,8 @@ import SwiftData
 /// Settings screen showing all node backups with total storage usage and swipe-to-delete.
 struct BackupManagement: View {
 	@EnvironmentObject private var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 	@State private var backups: [BackupEntry] = []
 	@State private var totalSize: Int64 = 0
 	@State private var showDeleteConfirmation = false
@@ -218,8 +220,8 @@ struct BackupManagement: View {
 		}
 
 		// Resolve the outgoing node before the flow disconnects anything.
-		let currentNodeNum = accessoryManager.activeDeviceNum ?? {
-			let num = PreferredRadio.nodeNum
+		let currentNodeNum = accessoryManager.nodeNum(for: windowRadio) ?? {
+			let num = accessoryManager.radioNodeNum(for: windowRadio)
 			return num > 0 ? num : nil
 		}()
 		let restoreResult = await backupCurrentAndRestoreDatabase(
@@ -252,8 +254,8 @@ struct BackupManagement: View {
 
 	@MainActor
 	private func backupNow() async {
-		let nodeNum: Int64? = accessoryManager.activeDeviceNum ?? {
-			let num = PreferredRadio.nodeNum
+		let nodeNum: Int64? = accessoryManager.nodeNum(for: windowRadio) ?? {
+			let num = accessoryManager.radioNodeNum(for: windowRadio)
 			return num > 0 ? num : nil
 		}()
 		guard let nodeNum else {

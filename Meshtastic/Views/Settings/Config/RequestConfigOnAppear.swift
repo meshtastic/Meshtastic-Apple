@@ -17,11 +17,12 @@ func requestRemoteConfig(
 	node: NodeInfoEntity?,
 	context: ModelContext,
 	accessoryManager: AccessoryManager,
+	window: RadioWindow = .focused,
 	configIsNil: @escaping (NodeInfoEntity) -> Bool,
 	request: @escaping (_ fromUser: UserEntity, _ toUser: UserEntity) async throws -> Void,
 	requestForConnectedNode: Bool = false
 ) {
-	guard let deviceNum = accessoryManager.activeDeviceNum,
+	guard let deviceNum = accessoryManager.nodeNum(for: window),
 		  let node,
 		  let connectedNode = getNodeInfo(id: deviceNum, context: context)
 	else { return }

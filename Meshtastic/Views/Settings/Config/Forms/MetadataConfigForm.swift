@@ -21,6 +21,8 @@ import MeshtasticProtobufs
 struct MetadataConfigForm<M: ConfigFormMessage, Leading: View, Trailing: View>: View {
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject private var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 	@Environment(\.dismiss) private var goBack
 
 	let node: NodeInfoEntity?
@@ -106,14 +108,14 @@ struct MetadataConfigForm<M: ConfigFormMessage, Leading: View, Trailing: View>: 
 	/// only the controls are inert. Disabling the `Form` itself would take the scroll
 	/// gesture with it and leave the screen unreadable below the fold.
 	private var isEditable: Bool {
-		accessoryManager.isConnected && node?[keyPath: M.entityKeyPath] != nil && inFlight == nil
+		accessoryManager.isConnected(windowRadio) && node?[keyPath: M.entityKeyPath] != nil && inFlight == nil
 	}
 
 	private var environment: ConfigFormEnvironment {
-		let isConnectedNode = node != nil && node?.num == accessoryManager.activeDeviceNum
+		let isConnectedNode = node != nil && node?.num == accessoryManager.nodeNum(for: windowRadio)
 		return ConfigFormEnvironment(
 			node: node,
-			isConnected: accessoryManager.isConnected,
+			isConnected: accessoryManager.isConnected(windowRadio),
 			isConnectedNode: isConnectedNode,
 			isDIYHardware: DIYHardware.isDIY(slug: node?.user?.hwModel),
 			hasWifi: node?.metadata?.hasWifi ?? false,
@@ -124,10 +126,10 @@ struct MetadataConfigForm<M: ConfigFormMessage, Leading: View, Trailing: View>: 
 			// asking the gateway would gate the wrong radio's fields.
 			firmwareAtLeast: { version in
 				isConnectedNode
-					? accessoryManager.checkIsVersionSupported(forVersion: version)
+					? accessoryManager.isVersionSupported(forVersion: version, for: windowRadio)
 					: node?.firmwareAtLeast(version) ?? true
 			},
-			isFirmwareKnown: isConnectedNode ? accessoryManager.isConnected : node?.knownFirmwareVersion != nil
+			isFirmwareKnown: isConnectedNode ? accessoryManager.isConnected(windowRadio) : node?.knownFirmwareVersion != nil
 		)
 	}
 
@@ -185,7 +187,7 @@ struct MetadataConfigForm<M: ConfigFormMessage, Leading: View, Trailing: View>: 
 			}
 		}
 		.onFirstAppear {
-			requestRemoteConfig(node: node, context: context, accessoryManager: accessoryManager,
+			requestRemoteConfig(node: node, context: context, accessoryManager: accessoryManager, window: windowRadio,
 								configIsNil: { $0[keyPath: M.entityKeyPath] == nil }, request: request)
 		}
 		.onChange(of: config) { _, _ in
@@ -276,7 +278,7 @@ struct MetadataConfigForm<M: ConfigFormMessage, Leading: View, Trailing: View>: 
 	private func performSave() {
 		let sent = config
 		inFlight = sent
-		performConfigSave(node: node, context: context, accessoryManager: accessoryManager,
+		performConfigSave(node: node, context: context, accessoryManager: accessoryManager, window: windowRadio,
 						  hasChanges: hasChanges, dismiss: goBack,
 						  onError: { message in
 							  saveError = message

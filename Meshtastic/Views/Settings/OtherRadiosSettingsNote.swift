@@ -13,12 +13,14 @@ import SwiftUI
 /// radio configures that one.
 struct OtherRadiosSettingsNote: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 	/// The Node picker is shown, so the other radios can be picked in it.
 	var canPickRadio = false
 
 	var body: some View {
 		let others = accessoryManager.additionalRadioDevices
-		if !others.isEmpty, let focused = accessoryManager.activeConnection?.device {
+		if !others.isEmpty, let focused = accessoryManager.session(for: windowRadio)?.device {
 			let otherNames = ListFormatter.localizedString(byJoining: others.map { $0.shortName ?? $0.longName ?? $0.name })
 			Label {
 				if canPickRadio {

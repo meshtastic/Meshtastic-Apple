@@ -12,6 +12,8 @@ import CryptoKit
 
 struct ESP32BLEOTASheet: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 	@Environment(\.dismiss) var dismiss
 	@Environment(\.modelContext) var context
 	@StateObject var ota = ESP32BLEOTAViewModel()
@@ -37,7 +39,7 @@ struct ESP32BLEOTASheet: View {
 			statusState: ota.otaStatus,
 			statusMessage: ota.statusMessage,
 			inRetryWorkflow: inRetryWorkflow,
-			isStartDisabled: accessoryManager.activeDeviceNum == nil,
+			isStartDisabled: accessoryManager.nodeNum(for: windowRadio) == nil,
 			onStart: { startBLEProcess() },
 			onRetry: {
 				inRetryWorkflow = true
@@ -58,7 +60,7 @@ struct ESP32BLEOTASheet: View {
 		)
 		.task {
 			// Attempt to grab peripheral from current BLE connection
-			if let connection = accessoryManager.activeConnection?.connection as? BLEConnection {
+			if let connection = accessoryManager.session(for: windowRadio)?.connection as? BLEConnection {
 				self.peripheral = await connection.peripheral
 			}
 		}
@@ -101,7 +103,7 @@ struct ESP32BLEOTASheet: View {
 	
 	private func startBLEProcess() {
 		// Safe unwrap of required data
-		guard let deviceNum = accessoryManager.activeDeviceNum,
+		guard let deviceNum = accessoryManager.nodeNum(for: windowRadio),
 			  let connectedNode = getNodeInfo(id: deviceNum, context: context),
 			  let user = connectedNode.user else {
 			return

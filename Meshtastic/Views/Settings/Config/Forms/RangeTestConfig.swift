@@ -20,6 +20,8 @@ extension ModuleConfig.RangeTestConfig: ConfigFormMessage {
 
 struct RangeTestConfig: View {
 	@EnvironmentObject private var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 	let node: NodeInfoEntity?
 
 	private typealias F = ModuleConfig.RangeTestConfig.Fields
@@ -59,7 +61,7 @@ struct RangeTestConfig: View {
 							.font(.callout)
 							.foregroundColor(.orange)
 					}
-				} else if accessoryManager.isConnected, node != nil, node?.rangeTestConfig == nil {
+				} else if accessoryManager.isConnected(windowRadio), node != nil, node?.rangeTestConfig == nil {
 					Section {
 						Label("Range test configuration has not been received from the radio. Try reconnecting to the device.", systemImage: "exclamationmark.triangle.fill")
 							.font(.callout)

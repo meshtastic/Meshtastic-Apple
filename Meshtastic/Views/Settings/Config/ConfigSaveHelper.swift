@@ -35,12 +35,13 @@ func performConfigSave(
 	node: NodeInfoEntity?,
 	context: ModelContext,
 	accessoryManager: AccessoryManager,
+	window: RadioWindow = .focused,
 	hasChanges: Binding<Bool>,
 	dismiss: DismissAction,
 	onError: ((String) -> Void)? = nil,
 	save: @escaping (_ fromUser: UserEntity, _ toUser: UserEntity) async throws -> Void
 ) {
-	guard let deviceNum = accessoryManager.activeDeviceNum,
+	guard let deviceNum = accessoryManager.nodeNum(for: window),
 		  let connectedNode = getNodeInfo(id: deviceNum, context: context),
 		  let fromUser = connectedNode.user,
 		  let toUser = node?.user

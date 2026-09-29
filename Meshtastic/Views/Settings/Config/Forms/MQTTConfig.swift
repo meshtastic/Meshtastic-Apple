@@ -33,6 +33,8 @@ extension ModuleConfig.MQTTConfig: ConfigFormMessage {
 
 struct MQTTConfig: View {
 	@EnvironmentObject private var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 	let node: NodeInfoEntity?
 
 	private typealias F = ModuleConfig.MQTTConfig.Fields
@@ -129,7 +131,7 @@ struct MQTTConfig: View {
 	}
 
 	var body: some View {
-		let tlsRequired = accessoryManager.checkIsVersionSupported(forVersion: Self.tlsRequiredFirmware)
+		let tlsRequired = accessoryManager.isVersionSupported(forVersion: Self.tlsRequiredFirmware, for: windowRadio)
 		MetadataConfigForm(
 			node: node, title: "MQTT", overlay: Self.overlay(node: node),
 			normalize: { Self.normalize($0, tlsRequired: tlsRequired) },

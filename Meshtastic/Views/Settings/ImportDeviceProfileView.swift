@@ -15,6 +15,8 @@ import OSLog
 @available(iOS 18, *)
 struct ImportDeviceProfileView: View {
 	@EnvironmentObject private var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 	@Environment(\.modelContext) private var context
 	@Environment(\.dismiss) private var dismiss
 
@@ -56,14 +58,14 @@ struct ImportDeviceProfileView: View {
 	}
 
 	private var connectedNode: NodeInfoEntity? {
-		guard let num = accessoryManager.activeDeviceNum else { return nil }
+		guard let num = accessoryManager.nodeNum(for: windowRadio) else { return nil }
 		return getNodeInfo(id: num, context: context)
 	}
 
 	private var isApplying: Bool { phase == .applying }
 
 	private var canImport: Bool {
-		accessoryManager.isConnected && !selection.isEmpty && !isApplying
+		accessoryManager.isConnected(windowRadio) && !selection.isEmpty && !isApplying
 	}
 
 	var body: some View {
@@ -139,7 +141,7 @@ struct ImportDeviceProfileView: View {
 			Section {
 				Text("Apply this saved configuration to \(connectedNode?.user?.longName ?? "the connected node").")
 					.font(.callout)
-				if !accessoryManager.isConnected {
+				if !accessoryManager.isConnected(windowRadio) {
 					Label("Connect to a radio before importing.", systemImage: "antenna.radiowaves.left.and.right.slash")
 						.font(.caption)
 						.foregroundColor(.orange)
@@ -456,7 +458,7 @@ struct ImportDeviceProfileView: View {
 		phase = .applying
 		// Snapshot what the radio holds now. The import cannot be verified from the sends alone: firmware
 		// acks writes it discards, so only a later readback distinguishes applied from lost.
-		let source = NodeProfileConfigSource(node: node, lastConfigRefresh: accessoryManager.lastConfigRefresh)
+		let source = NodeProfileConfigSource(node: node, lastConfigRefresh: accessoryManager.lastConfigRefresh(for: windowRadio))
 		configBeforeImport = Dictionary(
 			uniqueKeysWithValues: plan.items(for: selection).compactMap { item in
 				source.currentPayload(for: item.kind).map { (item.kind, $0) }
@@ -492,14 +494,14 @@ struct ImportDeviceProfileView: View {
 	/// which is indistinguishable from a real total failure. So the action stays disabled until the
 	/// radio has actually reported back after its reboot.
 	private var canVerify: Bool {
-		guard let importFinishedAt, let refreshed = accessoryManager.lastConfigRefresh else { return false }
+		guard let importFinishedAt, let refreshed = accessoryManager.lastConfigRefresh(for: windowRadio) else { return false }
 		return refreshed >= importFinishedAt
 	}
 
 	private func runVerification(_ result: DeviceProfileImportResult) {
 		guard let node = connectedNode else { return }
 		let source = NodeProfileConfigSource(node: node,
-											 lastConfigRefresh: accessoryManager.lastConfigRefresh)
+											 lastConfigRefresh: accessoryManager.lastConfigRefresh(for: windowRadio))
 		verification = DeviceProfileVerifier.verify(
 			applied: result.applied,
 			plan: plan,

@@ -5,6 +5,7 @@
 //  Copyright(c) Meshtastic 2026.
 //
 
+import MeshtasticProtobufs
 import SwiftUI
 
 /// The radio a window works with (feature 021, D-19): every screen in the window shows that
@@ -60,6 +61,48 @@ extension AccessoryManager {
 	func isConnecting(_ window: RadioWindow) -> Bool {
 		guard window.deviceId != nil else { return isConnecting }
 		return linkStatus(for: window).isConnecting
+	}
+
+	/// The node number of `window`'s radio, also while it's disconnected. For `.focused` the
+	/// preferred radio's, `PreferredRadio.nodeNum`.
+	func radioNodeNum(for window: RadioWindow) -> Int64 {
+		guard window.deviceId != nil else { return PreferredRadio.nodeNum }
+		return session(for: window)?.nodeNum ?? 0
+	}
+
+	/// The peripheral id of `window`'s radio. For `.focused`, `PreferredRadio.peripheralId`.
+	func radioPeripheralId(for window: RadioWindow) -> String {
+		window.deviceId?.uuidString ?? PreferredRadio.peripheralId
+	}
+
+	/// What `window`'s radio reported: its firmware edition, version and region presets. For
+	/// `.focused`, the manager's `firmwareEdition`, `connectedVersion` and `loRaRegionPresets`.
+	func firmwareEdition(for window: RadioWindow) -> FirmwareEditions {
+		session(for: window)?.firmwareEdition ?? .vanilla
+	}
+
+	func firmwareVersion(for window: RadioWindow) -> String? {
+		session(for: window)?.device.firmwareVersion
+	}
+
+	func loRaRegionPresets(for window: RadioWindow) -> [Config.LoRaConfig.RegionCode: RegionPresetInfo] {
+		session(for: window)?.loRaRegionPresets ?? [:]
+	}
+
+	/// When `window`'s radio last finished sending its configuration. For `.focused`,
+	/// `lastConfigRefresh`.
+	func lastConfigRefresh(for window: RadioWindow) -> Date? {
+		guard window.deviceId != nil else { return lastConfigRefresh }
+		return session(for: window)?.lastConfigRefresh
+	}
+
+	/// `window`'s radio's MQTT client proxy. For `.focused`, `mqttProxyConnected` and `mqttTopics`.
+	func mqttProxyConnected(for window: RadioWindow) -> Bool {
+		session(for: window)?.mqtt?.isConnected ?? false
+	}
+
+	func mqttTopics(for window: RadioWindow) -> [String] {
+		session(for: window)?.mqtt?.topics ?? []
 	}
 
 	/// `checkIsVersionSupported` for `window`'s radio: its own reported firmware

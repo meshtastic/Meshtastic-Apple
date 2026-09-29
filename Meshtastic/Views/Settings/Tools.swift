@@ -13,6 +13,8 @@ import UniformTypeIdentifiers
 @available(iOS 18, *)
 struct Tools: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 	@Environment(\.modelContext) private var context
 
 	#if !targetEnvironment(macCatalyst)
@@ -40,7 +42,7 @@ struct Tools: View {
 	}
 
 	var connectedNode: NodeInfoEntity? {
-		if let num = accessoryManager.activeDeviceNum {
+		if let num = accessoryManager.nodeNum(for: windowRadio) {
 			return getNodeInfo(id: num, context: context)
 		}
 		return nil
@@ -240,7 +242,7 @@ struct Tools: View {
 				// than sent into a silent no-op (the firmware acks unknown module configs as success).
 				let plan = try DeviceProfileImportPlan(profile: profile, currentUser: currentUser,
 													   currentSecurity: node.securityConfig?.protoConfig,
-													   firmwareVersion: accessoryManager.connectedVersion)
+													   firmwareVersion: accessoryManager.firmwareVersion(for: windowRadio))
 				pendingImport = PendingImport(plan: plan)
 			} catch DeviceProfileImportError.nothingToImport {
 				importFailedMessage = "This configuration file doesn't contain anything to import."

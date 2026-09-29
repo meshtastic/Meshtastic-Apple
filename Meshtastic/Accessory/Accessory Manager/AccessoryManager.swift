@@ -1378,10 +1378,12 @@ class AccessoryManager: ObservableObject {
 			// Logger.mesh.error("✅ [Accessory] Unknown UNHANDLED confligCompleteID: \(configCompleteID)")
 			// }
 
-			// Stamp the arrival so callers can tell a post-reboot refresh from a stale cache. It's
-			// the focused radio's, which Settings shows.
+			// Stamp the arrival so callers can tell a post-reboot refresh from a stale cache, on
+			// the radio's session; the manager's is the focused radio's.
+			let refreshed = Date()
+			session.lastConfigRefresh = refreshed
 			if session === activeConnection {
-				lastConfigRefresh = Date()
+				lastConfigRefresh = refreshed
 			}
 
 			Logger.transport.info("✅ [Accessory] Notifying completions that have completed for configCompleteID: \(configCompleteID)")

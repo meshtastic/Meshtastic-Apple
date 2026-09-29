@@ -11,6 +11,8 @@ import CryptoKit
 
 struct ESP32WifiOTASheet: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 	@Environment(\.dismiss) var dismiss
 	@Environment(\.modelContext) var context
 	@StateObject var ota = ESP32WifiOTAViewModel()
@@ -43,7 +45,7 @@ struct ESP32WifiOTASheet: View {
 			statusState: ota.otaState,
 			statusMessage: ota.statusMessage,
 			inRetryWorkflow: inRetryWorkflow,
-			isStartDisabled: accessoryManager.activeDeviceNum == nil,
+			isStartDisabled: accessoryManager.nodeNum(for: windowRadio) == nil,
 			onStart: { startWifiProcess() },
 			onRetry: {
 				inRetryWorkflow = true
@@ -64,7 +66,7 @@ struct ESP32WifiOTASheet: View {
 		)
 		.task {
 			// Attempt to grab host from current TCP connection if available
-			if let connection = accessoryManager.activeConnection?.connection as? TCPConnection {
+			if let connection = accessoryManager.session(for: windowRadio)?.connection as? TCPConnection {
 				self.host = await connection.host.stringValue
 			}
 		}
@@ -104,7 +106,7 @@ struct ESP32WifiOTASheet: View {
 	// MARK: - Logic
 	
 	private func startWifiProcess() {
-		guard let deviceNum = accessoryManager.activeDeviceNum,
+		guard let deviceNum = accessoryManager.nodeNum(for: windowRadio),
 			  let connectedNode = getNodeInfo(id: deviceNum, context: context),
 			  let user = connectedNode.user else {
 			return
@@ -113,7 +115,7 @@ struct ESP32WifiOTASheet: View {
 		otaTask = Task {
 			do {
 				if let host {
-					let device = accessoryManager.activeConnection?.device
+					let device = accessoryManager.session(for: windowRadio)?.device
 					
 					if !alreadyRebooted {
 						// Claim the radio before the reboot command goes out. The device reboots

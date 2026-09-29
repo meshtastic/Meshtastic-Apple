@@ -592,6 +592,8 @@ struct ZipDocument: FileDocument {
 struct TAKIdentitySection: View {
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject private var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 
 	let node: NodeInfoEntity?
 
@@ -609,7 +611,7 @@ struct TAKIdentitySection: View {
 		return DeviceRoles(rawValue: Int(raw))
 	}
 
-	private var canEdit: Bool { accessoryManager.isConnected && node?.takConfig != nil }
+	private var canEdit: Bool { accessoryManager.isConnected(windowRadio) && node?.takConfig != nil }
 
 	var body: some View {
 		Section(header: Text("TAK Identity")) {
@@ -619,7 +621,7 @@ struct TAKIdentitySection: View {
 					.foregroundColor(.orange)
 			}
 
-			if accessoryManager.isConnected, node?.takConfig == nil {
+			if accessoryManager.isConnected(windowRadio), node?.takConfig == nil {
 				HStack(spacing: 12) {
 					ProgressView()
 					Text("Loading TAK config from the node.")
@@ -680,7 +682,7 @@ struct TAKIdentitySection: View {
 		}
 		.onChange(of: node?.takConfig?.team) { _, _ in resyncFromNode() }
 		.onChange(of: node?.takConfig?.role) { _, _ in resyncFromNode() }
-		.onChange(of: accessoryManager.isConnected) { _, isConnected in
+		.onChange(of: accessoryManager.isConnected(windowRadio)) { _, isConnected in
 			if isConnected { requestTakConfigIfNeeded() }
 		}
 		.onChange(of: team) { _, newTeam in
@@ -699,7 +701,7 @@ struct TAKIdentitySection: View {
 	// `TAKModuleConfig` screen did this in `.onAppear`; mirror the behavior
 	// here so the embedded section converges on the same payload.
 	private func requestTakConfigIfNeeded() {
-		guard accessoryManager.isConnected,
+		guard accessoryManager.isConnected(windowRadio),
 			  let deviceNum = accessoryManager.radioNum(for: .tak),
 			  let node,
 			  node.num == deviceNum,

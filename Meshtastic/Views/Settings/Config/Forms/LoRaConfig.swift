@@ -44,6 +44,8 @@ extension Config.LoRaConfig: ConfigFormMessage {
 struct LoRaConfig: View {
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject private var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 	let node: NodeInfoEntity?
 	/// Connect.swift follows a successful save to re-read the channel it just moved to.
 	let onSuccessfulSave: (_ nodeNum: Int64, _ region: RegionCodes) -> Void
@@ -170,7 +172,7 @@ struct LoRaConfig: View {
 					overrideFrequency: config.overrideFrequency, bandwidth: Int32(config.bandwidth),
 					spreadFactor: Int32(config.spreadFactor), codingRate: Int32(config.codingRate))
 
-				if let deviceNum = accessoryManager.activeDeviceNum,
+				if let deviceNum = accessoryManager.nodeNum(for: windowRadio),
 				   let connectedNode = getNodeInfo(id: deviceNum, context: context),
 				   connectedNode.num == node?.user?.num ?? 0 {
 					UserDefaults.modemPreset = config.modemPreset.rawValue
@@ -197,12 +199,14 @@ private struct RegionRow: View {
 	@Binding var config: Config.LoRaConfig
 	let node: NodeInfoEntity?
 	@EnvironmentObject private var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 
 	private static let metadata = FieldMetadataRegistry.get("meshtastic.Config.LoRaConfig", tag: 7)
 
 	/// The 2.8 rework added ham and narrow-band regions. Older firmware has no band table
 	/// for them, so they are not offered there.
-	private var supports2_8: Bool { accessoryManager.checkIsVersionSupported(forVersion: "2.8.0") }
+	private var supports2_8: Bool { accessoryManager.isVersionSupported(forVersion: "2.8.0", for: windowRadio) }
 
 	private var selection: Binding<Int> {
 		Binding(get: { config.region.rawValue },
@@ -211,7 +215,7 @@ private struct RegionRow: View {
 
 	private var presetInfo: RegionPresetInfo? {
 		guard supports2_8, let code = RegionCodes(rawValue: config.region.rawValue)?.protoEnumValue() else { return nil }
-		return accessoryManager.loRaRegionPresets[code]
+		return accessoryManager.loRaRegionPresets(for: windowRadio)[code]
 	}
 
 	var body: some View {
@@ -272,10 +276,12 @@ private struct ModemPresetRow: View {
 	@Binding var config: Config.LoRaConfig
 	let node: NodeInfoEntity?
 	@EnvironmentObject private var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 
 	private static let metadata = FieldMetadataRegistry.get("meshtastic.Config.LoRaConfig", tag: 2)
 
-	private var supports2_8: Bool { accessoryManager.checkIsVersionSupported(forVersion: "2.8.0") }
+	private var supports2_8: Bool { accessoryManager.isVersionSupported(forVersion: "2.8.0", for: windowRadio) }
 
 	private var selection: Binding<Int> {
 		Binding(get: { config.modemPreset.rawValue },
@@ -292,7 +298,7 @@ private struct ModemPresetRow: View {
 		var presets = base
 		if supports2_8,
 		   let code = RegionCodes(rawValue: config.region.rawValue)?.protoEnumValue(),
-		   let info = accessoryManager.loRaRegionPresets[code], !info.presets.isEmpty {
+		   let info = accessoryManager.loRaRegionPresets(for: windowRadio)[code], !info.presets.isEmpty {
 			let constrained = base.filter { info.presets.contains($0.protoEnumValue()) }
 			if !constrained.isEmpty { presets = constrained }
 		}

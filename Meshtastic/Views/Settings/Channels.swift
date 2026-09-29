@@ -32,8 +32,7 @@ func projectedDisplayChannels(from channels: [ChannelEntity]) -> [ChannelEntity]
 /// every offer stays visible, which is the pre-suppression behavior and the safe
 /// direction — hiding an offer on bad data would be the harmful failure.
 @MainActor
-func configuredChannelOfferKeys(context: ModelContext) -> Set<String> {
-	let num = PreferredRadio.nodeNum
+func configuredChannelOfferKeys(context: ModelContext, radioNum num: Int64 = PreferredRadio.nodeNum) -> Set<String> {
 	guard num > 0 else { return [] }
 	var descriptor = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == num })
 	descriptor.fetchLimit = 1
@@ -87,6 +86,8 @@ struct Channels: View {
 
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 	@Environment(\.dismiss) private var goBack
 	@Environment(\.sizeCategory) var sizeCategory
 	@Environment(\.colorScheme) private var colorScheme
@@ -119,7 +120,7 @@ struct Channels: View {
 	}
 
 	private var locationSharingChannelIndex: Int32? {
-		if accessoryManager.checkIsVersionSupported(forVersion: "2.6.10") {
+		if accessoryManager.isVersionSupported(forVersion: "2.6.10", for: windowRadio) {
 			return displayChannels.first { $0.positionPrecision > 0 }?.index
 		}
 		guard let primary = displayChannels.first(where: { $0.index == 0 || $0.role == 1 }),
@@ -268,7 +269,7 @@ struct Channels: View {
 					.presentationDragIndicator(.visible)
 					#endif
 				.onFirstAppear {
-					supportedVersion = accessoryManager.checkIsVersionSupported(forVersion: minimumVersion)
+					supportedVersion = accessoryManager.isVersionSupported(forVersion: minimumVersion, for: windowRadio)
 				}
 				HStack {
 					Button {
@@ -357,7 +358,7 @@ struct Channels: View {
 					} label: {
 						Label("Save", systemImage: "square.and.arrow.down")
 					}
-					.disabled(!accessoryManager.isConnected)// || !hasChanges)// !hasValidKey)
+					.disabled(!accessoryManager.isConnected(windowRadio))// || !hasChanges)// !hasValidKey)
 					.buttonStyle(.bordered)
 					.buttonBorderShape(.capsule)
 					.controlSize(.large)

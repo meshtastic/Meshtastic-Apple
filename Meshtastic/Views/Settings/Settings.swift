@@ -113,6 +113,8 @@ struct Settings: View {
 	@Environment(\.modelContext) private var context
 	@Environment(\.colorScheme) private var colorScheme
 	@EnvironmentObject var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 	/// Node snapshots for the admin picker / config gating, refreshed on a throttled cadence (see the
 	/// `.task` in `body`) instead of a live `@Query`. A live query re-evaluated this whole view's
 	/// `body` on every node write — and TabView keeps Settings alive on other tabs, so under heavy
@@ -614,7 +616,7 @@ struct Settings: View {
 			// Show it when either capability is usable; Tools itself hides the sections that are not.
 			#if !targetEnvironment(macCatalyst)
 			if #available(iOS 18, *) {
-				if NFCReader.isAvailable || accessoryManager.isConnected {
+				if NFCReader.isAvailable || accessoryManager.isConnected(windowRadio) {
 					NavigationLink(value: SettingsNavigationState.tools) {
 						Label {
 							Text("Tools")
@@ -644,7 +646,7 @@ struct Settings: View {
 
 	private var searchAvailability: SettingsSearchEngine.Availability {
 		SettingsSearchEngine.Availability(
-			isConnected: accessoryManager.isConnected,
+			isConnected: accessoryManager.isConnected(windowRadio),
 			// The DIY tag marks a product line rather than how a unit was built, so
 			// this is a hint and not a fact. See spec 019 FR-012a.
 			isDIYHardware: connectedHardwareIsDIY,
@@ -741,7 +743,7 @@ struct Settings: View {
 
 				// A managed radio hides the configuration sections; say why instead of
 				// showing nothing (same message as Android).
-				if let node, node.isManaged, accessoryManager.isConnected {
+				if let node, node.isManaged, accessoryManager.isConnected(windowRadio) {
 					Section("Configure") {
 						Label("This radio is managed and can only be changed by a remote admin.", systemImage: "lock.shield")
 							.font(.callout)
@@ -749,7 +751,7 @@ struct Settings: View {
 					}
 				}
 				if let node, !node.isManaged {
-					if accessoryManager.isConnected {
+					if accessoryManager.isConnected(windowRadio) {
 						Section("Configure") {
 							if node.canRemoteAdmin {
 								Picker("Node", selection: $selectedNode) {
@@ -758,11 +760,11 @@ struct Settings: View {
 									}
 									ForEach(sortedNodes) { node in
 										/// Connected Node
-										if node.num == accessoryManager.activeDeviceNum ?? 0 {
+										if node.num == accessoryManager.nodeNum(for: windowRadio) ?? 0 {
 											Label {
 												Text("Connected") + Text(verbatim: ": \(node.userLongName?.addingVariationSelectors ?? "Unknown".localized)")
 											} icon: {
-												accessoryManager.activeConnection?.device.transportType.icon ?? Image(systemName: "questionmark.circle")
+												accessoryManager.session(for: windowRadio)?.device.transportType.icon ?? Image(systemName: "questionmark.circle")
 											}
 											.tag(Int(node.num))
 										} else if let radio = accessoryManager.connectedSession(forRadio: node.num) {
@@ -815,7 +817,7 @@ struct Settings: View {
 									.tipBackground(colorScheme == .dark ? Color(.systemBackground) : Color(.secondarySystemBackground))
 									.listRowSeparator(.hidden)
 							} else {
-								if accessoryManager.isConnected {
+								if accessoryManager.isConnected(windowRadio) {
 									Text("Connected Node \(node.userLongName?.addingVariationSelectors ?? "Unknown".localized)")
 								}
 							}
@@ -946,21 +948,21 @@ struct Settings: View {
 					clear: { router.clearSettingsFieldFocus() }
 				))
 			}
-			.onChange(of: PreferredRadio.nodeNum) { _, newConnectedNode in
+			.onChange(of: accessoryManager.radioNodeNum(for: windowRadio)) { _, newConnectedNode in
 				// If the preferred node changes, then select the newly preferred node
 				// This should only happen during connect
 				preferredNodeNum = Int(newConnectedNode)
-				selectedNode = Int(accessoryManager.isConnected ? newConnectedNode : 0)
+				selectedNode = Int(accessoryManager.isConnected(windowRadio) ? newConnectedNode : 0)
 			}
-			.onChange(of: accessoryManager.isConnected) { _, isConnectedNow in
+			.onChange(of: accessoryManager.isConnected(windowRadio)) { _, isConnectedNow in
 				// If we are on this screen, haven't iniatialized the selection yet,
 				// And we transition, to connected, then initialize the selection
 				if isConnectedNow, self.selectedNode == 0 {
-					self.preferredNodeNum = Int(PreferredRadio.nodeNum)
-					setSelectedNode(to: Int(PreferredRadio.nodeNum))
+					self.preferredNodeNum = Int(accessoryManager.radioNodeNum(for: windowRadio))
+					setSelectedNode(to: Int(accessoryManager.radioNodeNum(for: windowRadio)))
 				}
 			}
-			.onChange(of: accessoryManager.activeDeviceNum) { oldDevice, newDevice in
+			.onChange(of: accessoryManager.nodeNum(for: windowRadio)) { oldDevice, newDevice in
 				if newDevice == nil {
 					// The transport dropped — often just the radio rebooting after a config
 					// save, not a real device change. preferredNodeNum tracks
@@ -982,8 +984,8 @@ struct Settings: View {
 				// not select the node and it will remain 0
 				refreshNodes()
 				if self.preferredNodeNum <= 0 {
-					self.preferredNodeNum = Int(PreferredRadio.nodeNum)
-					setSelectedNode(to: Int(PreferredRadio.nodeNum))
+					self.preferredNodeNum = Int(accessoryManager.radioNodeNum(for: windowRadio))
+					setSelectedNode(to: Int(accessoryManager.radioNodeNum(for: windowRadio)))
 				}
 			}
 			.task(id: router.selectedTab) {
@@ -1021,10 +1023,10 @@ struct Settings: View {
 
 		if sortedNodes.count > 1 {
 			if selectedNode == 0 {
-				self.selectedNode = Int(accessoryManager.isConnected ? nodeNum : 0)
+				self.selectedNode = Int(accessoryManager.isConnected(windowRadio) ? nodeNum : 0)
 			}
 		} else {
-			self.selectedNode = Int(accessoryManager.isConnected ? nodeNum: 0)
+			self.selectedNode = Int(accessoryManager.isConnected(windowRadio) ? nodeNum: 0)
 		}
 	}
 

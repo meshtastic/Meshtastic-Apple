@@ -22,6 +22,8 @@ import UniformTypeIdentifiers
 
 struct BootloaderUpgradeView: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 	@Environment(\.dismiss) var dismiss
 	@Environment(\.modelContext) var context
 
@@ -152,7 +154,7 @@ struct BootloaderUpgradeView: View {
 	@ViewBuilder
 	func rebootIntoDFUButton() -> some View {
 		Button {
-			let connectedNode = getNodeInfo(id: accessoryManager.activeDeviceNum ?? 0, context: context)
+			let connectedNode = getNodeInfo(id: accessoryManager.nodeNum(for: windowRadio) ?? 0, context: context)
 			if let connectedNode, let user = connectedNode.user {
 				Task {
 					do {
@@ -168,7 +170,7 @@ struct BootloaderUpgradeView: View {
 		.buttonStyle(.borderedProminent)
 		.controlSize(.large)
 		.frame(maxWidth: .infinity)
-		.disabled(accessoryManager.activeDeviceNum == nil)
+		.disabled(accessoryManager.nodeNum(for: windowRadio) == nil)
 	}
 
 	@ViewBuilder

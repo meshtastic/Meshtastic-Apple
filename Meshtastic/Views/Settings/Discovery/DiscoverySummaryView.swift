@@ -17,6 +17,8 @@ struct DiscoverySummaryView: View {
 	let session: DiscoverySessionEntity
 
 	@EnvironmentObject private var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 	@Environment(\.modelContext) private var context
 
 	@State private var aiSummary: String = ""
@@ -288,7 +290,7 @@ struct DiscoverySummaryView: View {
 						}
 						.buttonStyle(.bordered)
 						.controlSize(.small)
-						.disabled(!accessoryManager.isConnected)
+						.disabled(!accessoryManager.isConnected(windowRadio))
 					}
 					Button {
 						beaconToJoin = beacon
@@ -298,7 +300,7 @@ struct DiscoverySummaryView: View {
 					}
 					.buttonStyle(.bordered)
 					.controlSize(.small)
-					.disabled(!accessoryManager.isConnected)
+					.disabled(!accessoryManager.isConnected(windowRadio))
 				}
 				.padding(.top, 2)
 			}
@@ -805,14 +807,14 @@ extension DiscoverySummaryView {
 	/// connected node's LoRa config + primary channel and delegates to the pure decision in
 	/// `LoRaChannelCalculator`.
 	func beaconJoinOption(for beacon: DiscoveredBeaconEntity) -> BeaconJoinOption {
-		let num = PreferredRadio.nodeNum
+		let num = accessoryManager.radioNodeNum(for: windowRadio)
 		let node = getNodeInfo(id: num, context: context)
 		return LoRaChannelCalculator.beaconJoinOption(
 			hasOfferChannel: beacon.hasOfferChannel,
 			offerChannelName: beacon.offerChannelName,
 			offeredPreset: beacon.offeredPreset,
 			offerRegion: beacon.offerRegion,
-			isConnected: accessoryManager.isConnected,
+			isConnected: accessoryManager.isConnected(windowRadio),
 			loRaConfig: node?.loRaConfig,
 			primaryChannelName: beaconPrimaryChannelName(for: node)
 		)

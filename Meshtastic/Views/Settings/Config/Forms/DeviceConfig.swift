@@ -165,6 +165,8 @@ private struct DeviceRolePicker: View {
 /// Remove This Radio takes it out of the app without resetting it.
 private struct DeviceResetSection: View {
 	@EnvironmentObject private var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 	let node: NodeInfoEntity?
 	@Binding var isResetting: Bool
 	let dismiss: DismissAction
@@ -184,7 +186,7 @@ private struct DeviceResetSection: View {
 
 	private var isConnectedNode: Bool {
 		guard let num = node?.num else { return false }
-		if accessoryManager.isConnected && num == accessoryManager.activeConnection?.device.num {
+		if accessoryManager.isConnected(windowRadio) && num == accessoryManager.session(for: windowRadio)?.device.num {
 			return true
 		}
 		return accessoryManager.additionalRadioDevices.contains { $0.num == num && $0.connectionState == .connected }
@@ -301,7 +303,7 @@ private struct DeviceResetSection: View {
 			do {
 				try await accessoryManager.sendNodeDBReset(fromUser: user, toUser: user, preserveFavorites: preserveFavorites)
 				try await Task.sleep(for: .seconds(1))
-				if let conn = accessoryManager.activeConnection {
+				if let conn = accessoryManager.session(for: windowRadio) {
 					try await conn.connection.disconnect(withError: nil, shouldReconnect: true)
 				}
 				dismiss()
@@ -326,7 +328,7 @@ private struct DeviceResetSection: View {
 				try? await Task.sleep(for: .seconds(1))
 				if resetDevice {
 					try await accessoryManager.disconnect()
-				} else if let conn = accessoryManager.activeConnection {
+				} else if let conn = accessoryManager.session(for: windowRadio) {
 					try await conn.connection.disconnect(withError: nil, shouldReconnect: true)
 				}
 				dismiss()
