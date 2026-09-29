@@ -338,9 +338,6 @@ extension AccessoryManager {
 		if filters.heardByRadio == oldNum {
 			filters.heardByRadio = newNum
 		}
-		if let override = PreferredRadio.connectFirstOverride, override.nodeNum == oldNum {
-			PreferredRadio.connectFirstOverride = (override.peripheralId, newNum)
-		}
 	}
 
 	/// When event firmware is detected (DEFCON, BURNING_MAN, OPEN_SAUCE, etc.),

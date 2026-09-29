@@ -27,46 +27,6 @@ enum PreferredRadio {
 		set { UserDefaults.preferredPeripheralNum = Int(newValue) }
 	}
 
-	/// The radio to connect first at launch and to restore as the focused one, when it isn't the
-	/// preferred radio: a BLE restore made another radio the focused one while this one wasn't back
-	/// (T212). The preferred radio stays the focused one, which Settings and Messages follow;
-	/// this only decides what's connected first. Cleared when a focus is chosen or a radio is
-	/// connected as the focused one.
-	static var connectFirstOverride: (peripheralId: String, nodeNum: Int64)? {
-		get {
-			guard let id = UserDefaults.standard.string(forKey: connectFirstIdKey), !id.isEmpty else { return nil }
-			return (id, Int64(UserDefaults.standard.integer(forKey: connectFirstNumKey)))
-		}
-		set {
-			UserDefaults.standard.set(newValue?.peripheralId, forKey: connectFirstIdKey)
-			UserDefaults.standard.set(newValue.map { Int($0.nodeNum) }, forKey: connectFirstNumKey)
-		}
-	}
-	private static let connectFirstIdKey = "multiRadio.connectFirstPeripheralId"
-	private static let connectFirstNumKey = "multiRadio.connectFirstNodeNum"
-
-	/// The radio to connect first: the override when there is one, otherwise the preferred radio.
-	static var connectFirstPeripheralId: String {
-		connectFirstOverride?.peripheralId ?? peripheralId
-	}
-
-	/// The radio to connect first with its node number, kept as the override across a restore
-	/// that makes another radio the focused one (T240).
-	static var connectFirst: (peripheralId: String, nodeNum: Int64) {
-		(connectFirstPeripheralId, connectFirstOverride?.nodeNum ?? nodeNum)
-	}
-
-	/// Whether discovery connects `peripheralId` on its own: the radio to connect first, and the
-	/// preferred (focused) radio too once it has been the focused one in this run of the app
-	/// (`focusedThisRun`), so a focused radio that drops while the override names another is
-	/// reconnected at once (T221). At launch only the radio to connect first is, or whichever
-	/// radio discovery saw first would take the focus and clear the override (T231).
-	static func connectsAutomatically(_ peripheralId: String, focusedThisRun: Set<String>) -> Bool {
-		guard !peripheralId.isEmpty else { return false }
-		return peripheralId == connectFirstPeripheralId
-			|| (peripheralId == Self.peripheralId && focusedThisRun.contains(peripheralId))
-	}
-
 	/// Remembers `device` as the preferred radio.
 	static func set(_ device: Device) {
 		peripheralId = device.id.uuidString

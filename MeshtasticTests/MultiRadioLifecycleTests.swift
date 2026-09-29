@@ -245,50 +245,6 @@ struct MultiRadioConnectLifecycleTests {
 		#expect(manager.rememberedRadioFallbackCandidate(from: remembered) == nil)
 	}
 
-	@Test("When the focused radio drops, a connected radio can take the focus, unless something deliberate is going on")
-	func focusHandoverCandidate() {
-		let manager = AccessoryManager(transports: [])
-		// Nothing connected alongside: no handover, no watch.
-		#expect(manager.focusHandoverCandidate == nil)
-		manager.scheduleFocusHandover(previousRadio: 0x0A0A)
-		#expect(manager.focusHandoverTask == nil)
-
-		var extraDevice = device("Extra")
-		extraDevice.num = 0x0B0B
-		extraDevice.connectionState = .connected
-		manager.additionalRadios[extraDevice.id] = RadioSession(device: extraDevice, connection: IdleConnection())
-		#expect(manager.focusHandoverCandidate?.id == extraDevice.id)
-
-		manager.userRequestedConnectionCancellation = true
-		#expect(manager.focusHandoverCandidate == nil)
-		manager.userRequestedConnectionCancellation = false
-		manager.isSwitchingDevices = true
-		#expect(manager.focusHandoverCandidate == nil)
-		manager.isSwitchingDevices = false
-		manager.otaInProgress = true
-		#expect(manager.focusHandoverCandidate == nil)
-		manager.otaInProgress = false
-
-		// A radio that doesn't need the user goes ahead of a locked one.
-		var lockedDevice = device("Locked")
-		lockedDevice.num = 0x0C0D
-		lockedDevice.connectionState = .connected
-		let locked = RadioSession(device: lockedDevice, connection: IdleConnection())
-		locked.attention = .locked
-		manager.additionalRadios[lockedDevice.id] = locked
-		manager.additionalRadios[extraDevice.id]?.attention = .firmwareTooOld(version: "2.3.0")
-		#expect(manager.focusHandoverCandidate != nil, "with nothing better, one that needs the user")
-		manager.additionalRadios[extraDevice.id]?.attention = nil
-		#expect(manager.focusHandoverCandidate?.id == extraDevice.id)
-		manager.additionalRadios.removeValue(forKey: lockedDevice.id)
-
-		manager.activeConnection = RadioSession(device: device("Focused"), connection: IdleConnection())
-		#expect(manager.focusHandoverCandidate == nil)
-
-		manager.scheduleFocusHandover(previousRadio: 0x0A0A, after: .seconds(3600))
-		#expect(manager.focusHandoverTask != nil)
-		manager.focusHandoverTask?.cancel()
-	}
 
 	@Test("The phone position loop keeps going for the other radios when the focused one closes")
 	func positionLoopOutlivesFocusedClose() async throws {
@@ -302,7 +258,6 @@ struct MultiRadioConnectLifecycleTests {
 
 		try await manager.closeConnection()
 		#expect(manager.locationTask != nil, "another radio is still connected")
-		manager.focusHandoverTask?.cancel()
 
 		manager.additionalRadios.removeAll()
 		manager.activeConnection = RadioSession(device: device("Only"), connection: IdleConnection())

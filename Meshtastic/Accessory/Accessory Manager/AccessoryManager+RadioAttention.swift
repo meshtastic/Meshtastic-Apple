@@ -90,55 +90,6 @@ struct RadioAttentionPrompt: Identifiable, Equatable {
 
 extension AccessoryManager {
 
-	/// Unlock or Update on a radio that isn't focused: focuses it without reconnecting, which
-	/// shows its passphrase sheet or update screen. A locked radio reports its status in the
-	/// middle of its connect, and a radio can't take the focus until its connect finishes, so
-	/// then it takes the focus as soon as it does (T148). Reconnecting it as the focused radio
-	/// instead would disconnect the focused one.
-	///
-	/// The same wait covers the other things that hold off a focus change: the focused radio's
-	/// own connect and a firmware update (T179). The radio takes the focus when whichever it was
-	/// ends (`retryPendingAttentionFocusSoon`).
-	///
-	/// A locked radio doesn't take the focus for its passphrase any more: it gets its own
-	/// passphrase sheet, sent on its own connection (T188). Its connect may never finish while
-	/// it's locked (if lock-down firmware doesn't answer the node-DB request then), and only a
-	/// finished connect can take the focus. Update still focuses the radio for the update screen.
-	func focusRadioNeedingAttention(_ deviceId: UUID) async {
-		if let session = additionalRadios[deviceId], session.attention?.isLockdown == true {
-			radioUnlockRequest = RadioUnlockRequest(id: deviceId, radioName: session.device.longName ?? session.device.name)
-			return
-		}
-		if await focusConnectedRadio(deviceId) { return }
-		guard additionalRadios[deviceId] != nil else { return }
-		pendingAttentionFocus = deviceId
-		Logger.transport.info("🔀 [Radios] Will focus \(self.additionalRadios[deviceId]?.device.name ?? "?", privacy: .public) once connects and updates in progress finish")
-	}
-
-	/// The radio the user chose Unlock or Update for takes the focus, if nothing holds it off any
-	/// more; otherwise it keeps waiting. Called when a connect finishes and when an update ends.
-	func focusPendingAttentionRadio(_ deviceId: UUID) async {
-		guard pendingAttentionFocus == deviceId else { return }
-		guard additionalRadios[deviceId] != nil else {
-			pendingAttentionFocus = nil
-			return
-		}
-		guard canFocusWithoutReconnecting(deviceId) else { return }
-		pendingAttentionFocus = nil
-		if !(await focusConnectedRadio(deviceId)) {
-			Logger.transport.info("🔀 [Radios] Couldn't focus \(deviceId, privacy: .public)")
-		}
-	}
-
-	/// Tries the waiting Unlock or Update again once the current work is done: after the caller
-	/// returns, so a connect's attempt is gone by then.
-	func retryPendingAttentionFocusSoon() {
-		guard let deviceId = pendingAttentionFocus else { return }
-		Task { @MainActor [weak self] in
-			await self?.focusPendingAttentionRadio(deviceId)
-		}
-	}
-
 	/// Sets why `session`'s radio needs the user, or clears it. For a radio that isn't focused,
 	/// a new reason also prompts the user, naming the radio (`radioAttentionPrompt`).
 	func setAttention(_ attention: RadioAttention?, for session: RadioSession) {
@@ -201,13 +152,6 @@ extension AccessoryManager {
 		let version = session.device.firmwareVersion
 		guard !Self.isFirmwareSupported(version, minimum: minimumVersion) else { return nil }
 		return .firmwareTooOld(version: version ?? "?")
-	}
-
-	/// Why a radio that just lost the focus still needs the user: its firmware is too old, or
-	/// its last lock-down status says it's locked. The focused radio's screens covered this; as
-	/// an additional radio it gets its prompt and its row's caption back (T153).
-	func attentionAfterLosingFocus(_ session: RadioSession) -> RadioAttention? {
-		firmwareAttention(for: session) ?? lockdownAttention(for: session)
 	}
 
 	/// Why `session`'s radio needs the user from its lock-down state: locked, unlocking failed or

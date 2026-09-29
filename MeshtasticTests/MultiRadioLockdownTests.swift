@@ -149,8 +149,8 @@ struct MultiRadioLockdownTests {
 		#expect(manager.radioAttentionPrompt == nil, "a radio that's gone isn't asked about")
 	}
 
-	@Test("Focusing a locked radio shows its passphrase sheet, without reconnecting it")
-	func focusingALockedRadioShowsTheSheet() async throws {
+	@Test("A window showing a locked radio shows its passphrase sheet, without reconnecting it")
+	func windowOfALockedRadioShowsTheSheet() async throws {
 		var locked = LockdownStatus()
 		locked.state = .locked
 		let scripted = ScriptedRadio(nodeNum: 0x5100_0003, afterConfig: [.lockdownStatus(locked)])
@@ -159,16 +159,14 @@ struct MultiRadioLockdownTests {
 		let device = Device(id: UUID(), name: "Locked", transportType: .tcp, identifier: "locked2.local:4403")
 		try await manager.connectAdditionalRadio(device)
 
-		#expect(await manager.focusConnectedRadio(device.id))
-
-		#expect(manager.activeConnection?.device.id == device.id)
-		#expect(manager.session(for: .focused)?.lockdown.isBlockingSession == true, "the window's passphrase sheet is up, for this radio")
-		#expect(manager.radioAttentionPrompt == nil)
-		#expect(manager.activeConnection?.attention == nil)
+		// The window that shows it (the one window after Show This Radio, or its own on the Mac).
+		let window = RadioWindow(deviceId: device.id)
+		#expect(manager.session(for: window)?.lockdown.isBlockingSession == true, "the window's passphrase sheet is up, for this radio")
+		#expect(manager.linkStatus(for: window).attention == .locked)
 		#expect(await scripted.disconnects == 0)
 	}
 
-	@Test("Unlock on a locked radio that's still connecting opens its passphrase sheet, and the focus stays")
+	@Test("A locked radio that's still connecting is asked about by name, and nothing else moves")
 	func unlockDuringConnectOpensItsSheet() async throws {
 		var locked = LockdownStatus()
 		locked.state = .locked
@@ -181,12 +179,8 @@ struct MultiRadioLockdownTests {
 
 		let connect = Task { try await manager.connectAdditionalRadio(device) }
 		try await waitUntil { await MainActor.run { manager.radioAttentionPrompt?.id == device.id } }
-		await manager.focusRadioNeedingAttention(device.id)
-
-		// No wait for the connect to finish: it may not while the radio is locked.
-		#expect(manager.radioUnlockRequest?.id == device.id)
+		#expect(manager.radioAttentionPrompt?.id == device.id)
 		#expect(manager.activeConnection === focused)
-		#expect(manager.pendingAttentionFocus == nil)
 		try await connect.value
 		#expect(manager.activeConnection === focused)
 		#expect(await focusedConnection.isConnected, "the focused radio isn't disconnected")
@@ -200,8 +194,8 @@ struct MultiRadioLockdownTests {
 		let store = fixture.store
 		deliver(status(.locked), to: radio, manager)
 		#expect(radio.attention == .locked)
-		await manager.focusRadioNeedingAttention(radio.device.id)
-		#expect(manager.radioUnlockRequest?.id == radio.device.id)
+		// Its Unlock (the prompt's, or Connect's) opens its own sheet.
+		manager.radioUnlockRequest = RadioUnlockRequest(id: radio.device.id, radioName: "Extra")
 
 		#expect(radio.lockdown.canSend)
 		radio.lockdown.submitPassphrase("hunter2", bootsRemaining: 5, validUntilEpoch: 0)
@@ -277,68 +271,8 @@ struct MultiRadioLockdownTests {
 		#expect(radio.attention == nil, "nothing to ask: the user locked it")
 	}
 
-	@Test("A locked radio that loses the focus is still shown as locked and asked about")
-	func lockedRadioLosingFocusKeepsItsPrompt() async throws {
-		let fixture = makeFixture()
-		let manager = fixture.manager
-		let focused = try #require(manager.activeConnection)
-		focused.lockdown.handle(status(.locked))
-		var ready = Device(id: UUID(), name: "Ready", transportType: .tcp, identifier: "ready.local:4403")
-		ready.num = 0x0C0C
-		ready.connectionState = .connected
-		manager.additionalRadios[ready.id] = RadioSession(device: ready, connection: RecordingIdleConnection())
 
-		#expect(await manager.focusConnectedRadio(ready.id))
 
-		#expect(manager.additionalRadios[focused.device.id] === focused)
-		#expect(focused.attention == .locked)
-		#expect(manager.radioAttentionPrompt?.id == focused.device.id)
-	}
-
-	@Test("Unlock while the focused radio is connecting or updating focuses the radio once that ends")
-	func unlockWaitsForFocusedConnectAndUpdate() async throws {
-		let fixture = makeFixture()
-		let manager = fixture.manager, radio = fixture.radio
-		radio.device.connectionState = .connected
-		let focused = try #require(manager.activeConnection)
-		focused.device.connectionState = .connected
-
-		// The focused radio is reconnecting.
-		manager.connectAttempts[focused.device.id] = ConnectAttempt(device: focused.device)
-		await manager.focusRadioNeedingAttention(radio.device.id)
-		#expect(manager.activeConnection === focused)
-		#expect(manager.pendingAttentionFocus == radio.device.id)
-		manager.connectAttempts.removeValue(forKey: focused.device.id)
-		manager.retryPendingAttentionFocusSoon()
-		try await waitUntil { await MainActor.run { manager.activeConnection === radio } }
-		#expect(manager.activeConnection === radio)
-		#expect(manager.pendingAttentionFocus == nil)
-
-		// A firmware update is in progress: the previous radio waits for it the same way.
-		manager.otaInProgress = true
-		await manager.focusRadioNeedingAttention(focused.device.id)
-		#expect(manager.pendingAttentionFocus == focused.device.id)
-		manager.otaInProgress = false
-		try await waitUntil { await MainActor.run { manager.activeConnection === focused } }
-		#expect(manager.activeConnection === focused)
-	}
-
-	@Test("A locked radio that loses the focus only to be disconnected isn't asked about")
-	func noPromptForARadioBeingDisconnected() async throws {
-		let fixture = makeFixture()
-		let manager = fixture.manager
-		let focused = try #require(manager.activeConnection)
-		focused.lockdown.handle(status(.locked))
-		var ready = Device(id: UUID(), name: "Ready", transportType: .tcp, identifier: "ready2.local:4403")
-		ready.num = 0x0D0E
-		ready.connectionState = .connected
-		manager.additionalRadios[ready.id] = RadioSession(device: ready, connection: RecordingIdleConnection())
-
-		#expect(await manager.focusConnectedRadio(ready.id, previousStays: false))
-
-		#expect(focused.attention == nil)
-		#expect(manager.radioAttentionPrompt == nil)
-	}
 
 	@Test("A second radio needing the user waits for the first radio's prompt to close")
 	func promptsForSeveralRadiosQueue() async throws {

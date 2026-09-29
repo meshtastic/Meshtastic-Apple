@@ -1281,20 +1281,15 @@ func backupCurrentAndRestoreDatabase(
 
 // MARK: - Disconnect Helper
 
-/// The Connect tab's Disconnect on the focused radio (feature 021). With other radios still
-/// connected, one of them becomes the focused radio instead of leaving them connected with none
-/// focused. The disconnected radio is no longer remembered, so it doesn't come straight back.
+/// Disconnect on the radio the app connected first (feature 021): it disconnects as a single
+/// radio does, and isn't remembered, so it doesn't come straight back. The other radios stay as
+/// they are; nothing takes its place (D-19).
 @MainActor
 func disconnectFocusedRadio(accessoryManager: AccessoryManager) async throws {
 	if let previousNum = accessoryManager.activeConnection?.nodeNum {
 		await MeshPackets.shared.setRadioAutoConnect(nodeNum: previousNum, false)
 	}
-	guard let next = accessoryManager.additionalRadioDevices.first(where: { $0.connectionState == .connected }) else {
-		try await accessoryManager.disconnect()
-		return
-	}
-	Logger.transport.info("🔀 Disconnecting the focused radio; \(next.name, privacy: .public) takes the focus")
-	await switchToDevice(next, accessoryManager: accessoryManager, appState: accessoryManager.appState, keepPreviousRadio: false)
+	try await accessoryManager.disconnect()
 }
 
 // MARK: - Node Switch Helper
@@ -1314,19 +1309,6 @@ func switchToDevice(
 	onRestoreComplete: (@MainActor () -> Void)? = nil
 ) async {
 	Logger.transport.info("🔀 Switching the focused radio from \(accessoryManager.activeConnection?.device.name ?? "none", privacy: .public) to \(device.name, privacy: .public)")
-
-	// A radio already connected alongside takes the focus without reconnecting anything
-	// (T072). `keepPreviousRadio: false` then disconnects the previous one, as before.
-	if accessoryManager.canFocusWithoutReconnecting(device.id) {
-		let previous = accessoryManager.activeConnection?.device.id
-		if await accessoryManager.focusConnectedRadio(device.id, previousStays: keepPreviousRadio) {
-			onRestoreComplete?()
-			if !keepPreviousRadio, let previous {
-				await accessoryManager.disconnectAdditionalRadio(previous, byUser: true)
-			}
-			return
-		}
-	}
 
 	// The user's explicit choice is the new preferred radio, recorded up front so an
 	// error-path auto-reconnect retries this radio rather than the previous one.

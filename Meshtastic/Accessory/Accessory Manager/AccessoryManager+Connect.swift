@@ -70,6 +70,11 @@ extension AccessoryManager {
 		if asFocused, activeConnection != nil {
 			throw AccessoryError.connectionFailed("Already connected to a device")
 		}
+		// The first radio can drop while the others stay; one of them isn't connected again as
+		// the first (D-19).
+		if asFocused, additionalRadios[device.id] != nil {
+			throw AccessoryError.connectionFailed("This radio is already connected")
+		}
 		if !asFocused, additionalRadios[device.id] != nil {
 			throw AccessoryError.connectionFailed("This radio is already connected")
 		}
@@ -85,9 +90,6 @@ extension AccessoryManager {
 		}
 
 		let attempt = ConnectAttempt(device: device, isFocused: asFocused)
-		// Runs last, after the attempt is gone: an Unlock or Update waiting on this connect, or
-		// on the focused radio's, can take the focus now (T148, T179).
-		defer { retryPendingAttentionFocusSoon() }
 		connectAttempts[device.id] = attempt
 		defer {
 			if connectAttempts[device.id] === attempt {
@@ -185,10 +187,6 @@ extension AccessoryManager {
 			}
 			// Feature 021 (T063): remember this connection, then bring back the radios that were
 			// connected alongside it. Their attempts queue on the handshake gate behind this one.
-			if attempt.isFocused, restoreDisplacedPreferred == device.id {
-				// It came back as the focused radio itself: nothing left to give back (T200).
-				restoreDisplacedPreferred = nil
-			}
 			if attempt.isFocused, let focused = activeConnection, let nodeNum = focused.nodeNum {
 				await MeshPackets.shared.noteRadioConnected(nodeNum: nodeNum, transport: focused.device.transportType, autoConnect: nil)
 				await reconnectRememberedRadios()
@@ -405,10 +403,6 @@ extension AccessoryManager {
 						// No MyInfo comes without the config handshake; the restore found the number.
 						PreferredRadio.nodeNum = nodeNum
 					}
-					self.radiosFocusedThisRun.insert(device.id.uuidString)
-					// A radio connected as the focused one is also the one to connect first (T212);
-					// a restore that passed over that radio sets its override again afterwards.
-					PreferredRadio.connectFirstOverride = nil
 				}
 				guard wantDatabase else {
 					Logger.transport.info("👟 [Connect] Step 5: wantDatabase = false, skipping wantDatabase")

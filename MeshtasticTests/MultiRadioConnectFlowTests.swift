@@ -304,8 +304,8 @@ struct MultiRadioConnectFlowTests {
 		return TwoRadios(manager: manager, first: first, second: second, firstDevice: firstDevice, secondDevice: secondDevice, firstNum: firstNum, secondNum: secondNum)
 	}
 
-	@Test("Focusing a connected radio reconnects neither radio, and each radio's events stay its own")
-	func focusWithoutReconnecting() async throws {
+	@Test("Showing another radio in the window reconnects neither radio, and each radio's events stay its own")
+	func showAnotherRadioWithoutReconnecting() async throws {
 		let saved = SavedDefaults()
 		defer { saved.restore() }
 		let radios = try await connectTwoRadios()
@@ -315,37 +315,29 @@ struct MultiRadioConnectFlowTests {
 		let firstRequests = await radios.first.sent.count
 		let secondRequests = await radios.second.sent.count
 
-		await switchToDevice(radios.secondDevice, accessoryManager: manager, appState: manager.appState)
+		// What the window's radio menu or Connect's Show This Radio set (T324).
+		let window = manager.oneWindowRadio(stored: radios.secondDevice.id)
 
-		#expect(manager.activeConnection === secondSession)
-		#expect(manager.additionalRadios[radios.firstDevice.id] === firstSession)
-		#expect(manager.additionalRadios[radios.secondDevice.id] == nil)
+		#expect(manager.session(for: window) === secondSession)
+		#expect(manager.nodeNum(for: window) == Int64(radios.secondNum))
+		#expect(manager.activeConnection === firstSession, "the connections don't change")
 		#expect(await radios.first.disconnects == 0)
 		#expect(await radios.second.disconnects == 0)
-		#expect(await radios.first.sent.count == firstRequests, "nothing is asked of the previous radio")
-		#expect(await radios.second.sent.count == secondRequests, "no second connect for the new one")
-		#expect(manager.activeDeviceNum == Int64(radios.secondNum))
-		#expect(manager.state == .subscribed)
-		#expect(manager.isConnected)
-		#expect(UserDefaults.preferredPeripheralId == radios.secondDevice.id.uuidString)
-		#expect(UserDefaults.preferredPeripheralNum == Int(radios.secondNum))
-		#expect(manager.connectedVersion == "2.7.9.1234567")
-		let previousNum = Int64(radios.firstNum)
-		let previous = try PersistenceController.shared.context.fetch(FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == previousNum })).first
-		#expect(previous?.autoConnect == true, "the previous radio comes back alongside next time")
+		#expect(await radios.first.sent.count == firstRequests)
+		#expect(await radios.second.sent.count == secondRequests)
 
-		// An error from the previous radio now ends only that radio.
-		await radios.first.emit(.error(AccessoryError.disconnected("Link lost")))
-		try await waitUntil { manager.additionalRadios[radios.firstDevice.id] == nil }
-		#expect(manager.additionalRadios[radios.firstDevice.id] == nil)
-		#expect(manager.activeConnection === secondSession)
-		#expect(await radios.second.disconnects == 0)
+		// An error from the second radio ends only that radio.
+		await radios.second.emit(.error(AccessoryError.disconnected("Link lost")))
+		try await waitUntil { manager.additionalRadios[radios.secondDevice.id] == nil }
+		#expect(manager.additionalRadios[radios.secondDevice.id] == nil)
+		#expect(manager.activeConnection === firstSession)
+		#expect(await radios.first.disconnects == 0)
 		manager.additionalRadioReconnects.values.forEach { $0.cancel() }
 		try await manager.disconnect()
 	}
 
-	@Test("Disconnect on the focused radio hands the focus over without reconnecting the other")
-	func disconnectFocusedHandsOver() async throws {
+	@Test("Disconnect on the first radio leaves the other as it is, and the one window shows it")
+	func disconnectFirstLeavesTheOther() async throws {
 		let saved = SavedDefaults()
 		defer { saved.restore() }
 		let radios = try await connectTwoRadios()
@@ -354,18 +346,19 @@ struct MultiRadioConnectFlowTests {
 
 		try await disconnectFocusedRadio(accessoryManager: manager)
 
-		#expect(manager.activeConnection === secondSession)
-		#expect(manager.additionalRadios.isEmpty)
+		#expect(manager.activeConnection == nil, "nothing takes its place (D-19)")
+		#expect(manager.additionalRadios[radios.secondDevice.id] === secondSession)
 		#expect(await radios.first.disconnects == 1)
 		#expect(await radios.second.disconnects == 0)
+		#expect(manager.oneWindowRadio(stored: nil) == RadioWindow(deviceId: radios.secondDevice.id))
 		let firstNum = Int64(radios.firstNum)
 		let first = try PersistenceController.shared.context.fetch(FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == firstNum })).first
 		#expect(first?.autoConnect == false, "a radio the user disconnected isn't brought back")
-		try await manager.disconnect()
+		await manager.disconnectRadio(radios.secondDevice.id)
 	}
 
-	@Test("Resetting the focused radio hands the focus over and brings the reset radio back alongside")
-	func resetFocusedRadioHandsOver() async throws {
+	@Test("Resetting the first radio disconnects it to come back, and leaves the other as it is")
+	func resetFirstRadio() async throws {
 		let saved = SavedDefaults()
 		defer { saved.restore() }
 		let radios = try await connectTwoRadios()
@@ -375,11 +368,11 @@ struct MultiRadioConnectFlowTests {
 
 		await manager.takeRadioOffline(Int64(radios.firstNum), reconnect: true)
 
-		#expect(manager.activeConnection === secondSession)
-		#expect(manager.additionalRadios[radios.firstDevice.id] == nil)
+		// Its link closes asking to reconnect, as a single radio's does; nothing takes its place.
 		#expect(await radios.first.disconnects == 1)
 		#expect(await radios.second.disconnects == 0)
-		#expect(manager.additionalRadioReconnects[radios.firstDevice.id] != nil, "a reset radio reboots and comes back")
+		#expect(manager.additionalRadios[radios.secondDevice.id] === secondSession)
+		#expect(manager.activeConnection === firstSession, "until its link reports the close")
 		manager.additionalRadioReconnects.values.forEach { $0.cancel() }
 		try await manager.disconnect()
 	}
@@ -434,7 +427,6 @@ struct MultiRadioConnectFlowTests {
 		let first = Task { try await manager.connect(to: target) }
 		try await waitUntil { manager.connectAttempts[target.id] != nil }
 		#expect(manager.hasFocusedConnectInProgress)
-		#expect(manager.focusHandoverCandidate == nil)
 		await #expect(throws: AccessoryError.self) { try await manager.connect(to: target) }
 
 		manager.handshakeGate.release()
@@ -444,63 +436,34 @@ struct MultiRadioConnectFlowTests {
 		try await manager.disconnect()
 	}
 
-	@Test("When the focused radio drops, another connected radio takes the focus in place")
-	func handoverWithoutReconnecting() async throws {
+	@Test("When the first radio drops, the other stays as it is and nothing takes its place")
+	func firstRadioDropsNothingMoves() async throws {
 		let saved = SavedDefaults()
 		defer { saved.restore() }
 		let radios = try await connectTwoRadios()
 		let manager = radios.manager
-		manager.isSwitchingDevices = false
 		let secondSession = try #require(manager.additionalRadios[radios.secondDevice.id])
 		let dropped = try #require(manager.activeConnection)
 
 		try await dropped.connection.disconnect(withError: nil, shouldReconnect: true)
 		try await manager.closeConnection()
-		manager.scheduleFocusHandover(previousRadio: Int64(radios.firstNum), previousDevice: dropped.device, after: .milliseconds(10))
-		try await waitUntil { manager.activeConnection != nil && manager.additionalRadioReconnects[radios.firstDevice.id] != nil }
 
-		#expect(manager.activeConnection === secondSession)
+		#expect(manager.activeConnection == nil)
+		#expect(manager.additionalRadios[radios.secondDevice.id] === secondSession)
 		#expect(await radios.second.disconnects == 0)
 		#expect(await radios.second.sent.map(describe).filter { $0 == .wantConfig(69420) }.count == 1, "not connected again")
-		#expect(manager.additionalRadioReconnects[radios.firstDevice.id] != nil, "the dropped radio is tried again")
-		#expect(manager.locationTask != nil, "the phone's position keeps going to every radio")
-		manager.additionalRadioReconnects.values.forEach { $0.cancel() }
-		manager.isSwitchingDevices = true
-		try await manager.disconnect()
+		#expect(manager.locationTask != nil, "the phone's position keeps going to the other radio")
+		// The one window keeps the radio that dropped while it's brought back (D-19).
+		#expect(manager.oneWindowRadio(stored: nil) == .focused)
+		await manager.disconnectRadio(radios.secondDevice.id)
 	}
 
-	@Test("The preferred radio a BLE restore passed over takes the focus back when it rejoins")
-	func displacedPreferredTakesFocusBack() async throws {
-		let saved = SavedDefaults()
-		defer { saved.restore() }
-		let restoredNum = uniqueNodeNum()
-		let restored = ScriptedRadio(nodeNum: restoredNum)
-		let preferred = ScriptedRadio(nodeNum: restoredNum &+ 0x200)
-		let preferredDevice = device()
-		let manager = makeManager(ScriptedTransport(radio: restored, radiosByIdentifier: [preferredDevice.identifier: preferred]))
-		let restoredDevice = device()
-		try await manager.connect(to: restoredDevice)
-		let restoredSession = try #require(manager.activeConnection)
-
-		await manager.noteRestoredAlongside(peripheralIds: [preferredDevice.id], displacedPreferred: preferredDevice.id)
-		try await manager.connectAdditionalRadio(preferredDevice)
-
-		#expect(manager.activeConnection?.device.id == preferredDevice.id)
-		#expect(manager.additionalRadios[restoredDevice.id] === restoredSession, "the restored radio stays alongside")
-		#expect(manager.restoreDisplacedPreferred == nil)
-		#expect(await restored.disconnects == 0)
-		manager.additionalRadioReconnects.values.forEach { $0.cancel() }
-		try await manager.disconnect()
-	}
 
 	@Test("A focused connect without a handshake, as a restore of a radio iOS kept connected, makes it the preferred radio")
 	func restoreWithoutHandshakeIsPreferred() async throws {
 		let saved = SavedDefaults()
-		defer {
-			saved.restore()
-			PreferredRadio.connectFirstOverride = nil
-		}
-		// A is preferred and still connecting; iOS kept B connected, so B is the focused restore.
+		defer { saved.restore() }
+		// A is preferred and still connecting; iOS kept B connected, so B is the first restore.
 		PreferredRadio.peripheralId = UUID().uuidString
 		PreferredRadio.nodeNum = 0x0A0A
 		let num = uniqueNodeNum()
@@ -514,61 +477,11 @@ struct MultiRadioConnectFlowTests {
 		#expect(manager.activeConnection?.device.id == restored.id)
 		#expect(PreferredRadio.peripheralId == restored.id.uuidString)
 		#expect(PreferredRadio.nodeNum == Int64(num), "from the restore, as no MyInfo comes")
-		#expect(manager.radiosFocusedThisRun.contains(restored.id.uuidString))
 		#expect(!(await radio.sent.map(describe).contains(.wantConfig(69420))), "no handshake")
 		try await manager.disconnect()
 	}
 
-	@Test("The radio to connect first can differ from the focused one until a focus is chosen")
-	func connectFirstOverride() async throws {
-		let saved = SavedDefaults()
-		defer {
-			saved.restore()
-			PreferredRadio.connectFirstOverride = nil
-		}
-		let radios = try await connectTwoRadios()
-		let manager = radios.manager
-		let elsewhere = UUID().uuidString
 
-		PreferredRadio.connectFirstOverride = (elsewhere, 0x0E0E)
-		#expect(PreferredRadio.connectFirstPeripheralId == elsewhere)
-		#expect(PreferredRadio.peripheralId == radios.firstDevice.id.uuidString, "preferred stays the focused radio")
-
-		// Both are connected on their own when discovery sees them, the focused radio because it
-		// has been the focused one in this run (T221).
-		let focusedThisRun = manager.radiosFocusedThisRun
-		#expect(focusedThisRun.contains(radios.firstDevice.id.uuidString))
-		#expect(PreferredRadio.connectsAutomatically(elsewhere, focusedThisRun: focusedThisRun))
-		#expect(PreferredRadio.connectsAutomatically(radios.firstDevice.id.uuidString, focusedThisRun: focusedThisRun))
-		#expect(!PreferredRadio.connectsAutomatically(UUID().uuidString, focusedThisRun: focusedThisRun))
-		// At a launch, only the radio to connect first, so the other can't take the focus (T231).
-		#expect(PreferredRadio.connectsAutomatically(elsewhere, focusedThisRun: []))
-		#expect(!PreferredRadio.connectsAutomatically(radios.firstDevice.id.uuidString, focusedThisRun: []))
-
-		#expect(await manager.focusConnectedRadio(radios.secondDevice.id))
-		#expect(manager.radiosFocusedThisRun.contains(radios.secondDevice.id.uuidString))
-		#expect(PreferredRadio.connectFirstOverride == nil)
-		#expect(PreferredRadio.connectFirstPeripheralId == radios.secondDevice.id.uuidString)
-		try await manager.disconnect()
-	}
-
-	@Test("The restore's give-back is dropped once the user picks a focus or disconnects that radio")
-	func restoreGiveBackExpires() async throws {
-		let saved = SavedDefaults()
-		defer { saved.restore() }
-		let radios = try await connectTwoRadios()
-		let manager = radios.manager
-		let displaced = UUID()
-
-		manager.restoreDisplacedPreferred = displaced
-		#expect(await manager.focusConnectedRadio(radios.secondDevice.id))
-		#expect(manager.restoreDisplacedPreferred == nil, "the user's focus wins")
-
-		manager.restoreDisplacedPreferred = displaced
-		await manager.disconnectAdditionalRadio(displaced, byUser: true)
-		#expect(manager.restoreDisplacedPreferred == nil)
-		try await manager.disconnect()
-	}
 
 	@Test("A radio that isn't connected can be removed, and stops being the preferred one")
 	func removeOfflineRadio() async throws {
@@ -722,52 +635,7 @@ struct MultiRadioConnectFlowTests {
 		try await manager.disconnect()
 	}
 
-	@Test("A failed reconnect of the dropped radio doesn't make the handover forget it")
-	func handoverKeepsDroppedRadio() async throws {
-		let saved = SavedDefaults()
-		defer { saved.restore() }
-		let radios = try await connectTwoRadios()
-		let manager = radios.manager
-		manager.isSwitchingDevices = false
-		let secondSession = try #require(manager.additionalRadios[radios.secondDevice.id])
-		let dropped = try #require(manager.activeConnection)
 
-		try await dropped.connection.disconnect(withError: nil, shouldReconnect: true)
-		try await manager.closeConnection()
-		manager.scheduleFocusHandover(previousRadio: Int64(radios.firstNum), previousDevice: dropped.device, after: .seconds(3600))
-		// The dropped radio's own reconnect fails and closes again with nothing open.
-		manager.scheduleFocusHandover(previousRadio: nil, previousDevice: nil, after: .milliseconds(10))
-		#expect(manager.handoverPrevious?.device?.id == radios.firstDevice.id, "kept across the second close")
-		try await waitUntil { manager.activeConnection != nil && manager.additionalRadioReconnects[radios.firstDevice.id] != nil }
-
-		#expect(manager.activeConnection === secondSession)
-		#expect(manager.additionalRadioReconnects[radios.firstDevice.id] != nil, "the dropped radio is still tried again")
-		manager.additionalRadioReconnects.values.forEach { $0.cancel() }
-		manager.isSwitchingDevices = true
-		try await manager.disconnect()
-	}
-
-	@Test("A radio removed while its focus handover waits isn't brought back by it")
-	func removedDuringHandover() async throws {
-		let saved = SavedDefaults()
-		defer { saved.restore() }
-		let radios = try await connectTwoRadios()
-		let manager = radios.manager
-		manager.isSwitchingDevices = false
-		let dropped = try #require(manager.activeConnection)
-		try await dropped.connection.disconnect(withError: nil, shouldReconnect: true)
-		try await manager.closeConnection()
-		manager.scheduleFocusHandover(previousRadio: Int64(radios.firstNum), previousDevice: dropped.device, after: .milliseconds(200))
-
-		await manager.removeRadio(Int64(radios.firstNum))
-		try await waitUntil { manager.activeConnection != nil && manager.focusHandoverTask == nil }
-		try await Task.sleep(for: .milliseconds(100))
-
-		#expect(manager.activeConnection?.device.id == radios.secondDevice.id)
-		#expect(manager.additionalRadioReconnects[radios.firstDevice.id] == nil, "the removed radio isn't retried")
-		manager.isSwitchingDevices = true
-		try await manager.disconnect()
-	}
 
 	@Test("While the focused radio's live version is unknown, version checks use its own stored one")
 	func versionCheckUsesTheFocusedRadiosOwnVersion() async throws {

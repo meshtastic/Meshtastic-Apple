@@ -34,8 +34,10 @@ struct FirmwareUpdateGate: View {
 				.toolbar {
 					ToolbarItem(placement: .topBarTrailing) {
 						Button("Disconnect", role: .destructive) {
-							// With other radios connected, one of them takes the focus (feature 021).
-							Task { try? await disconnectFocusedRadio(accessoryManager: accessoryManager) }
+							// The other radios stay as they are (feature 021, D-19).
+							if let deviceId = accessoryManager.session(for: windowRadio)?.device.id {
+								Task { await accessoryManager.disconnectRadio(deviceId) }
+							}
 						}
 					}
 				}

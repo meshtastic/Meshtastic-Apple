@@ -16,7 +16,7 @@ extension AccessoryManager {
 	}
 
 	func initializeLocationProvider() {
-		// One loop at a time: it's started again when another radio takes the focus.
+		// One loop at a time: a connect with no other radio connected starts it again (T309).
 		locationTask?.cancel()
 		self.locationTask = Task {
 			repeat {
@@ -24,7 +24,7 @@ extension AccessoryManager {
 				try? await Task.sleep(for: .seconds(sleepSeconds)) // Throws if task is cancelled
 
 				// Every connected radio, the focused one first. With the focused radio gone and
-				// others still connected (a handover pending), they keep getting it (T185).
+				// others still connected, they keep getting it (T185).
 				guard !connectedRadioNums.isEmpty else {
 					return
 				}

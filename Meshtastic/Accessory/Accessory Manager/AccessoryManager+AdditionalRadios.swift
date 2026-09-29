@@ -127,20 +127,8 @@ extension AccessoryManager {
 			throw AccessoryError.connectionFailed(String.localizedStringWithFormat("You can connect up to %d radios at once.".localized, Self.maxConnectedRadios))
 		}
 		Logger.transport.info("🔗➕ [Additional] Connecting \(device.name, privacy: .public) alongside \(self.activeConnection?.device.name ?? "?", privacy: .public)")
-		do {
-			try await connect(to: device, asFocused: false, connectTimeout: connectTimeout)
-		} catch {
-			if pendingAttentionFocus == device.id { pendingAttentionFocus = nil }
-			throw error
-		}
+		try await connect(to: device, asFocused: false, connectTimeout: connectTimeout)
 		Logger.transport.info("🔗➕ [Additional] \(device.name, privacy: .public) connected; \(self.connectedRadioCount) radios connected")
-		await focusPendingAttentionRadio(device.id)
-		if restoreDisplacedPreferred == device.id {
-			restoreDisplacedPreferred = nil
-			if await focusConnectedRadio(device.id) {
-				Logger.transport.info("🔀 \(device.name, privacy: .public) is back and takes the focus it had before the restore")
-			}
-		}
 	}
 
 	/// `transport.connect(to:)`, given up after `timeout` when there is one. A BLE connect to an
@@ -203,14 +191,10 @@ extension AccessoryManager {
 		}
 	}
 
-	/// A BLE restore (T190): the radios restored alongside the focused one are remembered, so
-	/// the remembered-radio reconnect after the focused connect claims them, and `displacedPreferred`
-	/// (the preferred radio, when another radio is the focused restore) takes the focus back once
-	/// it's connected.
-	func noteRestoredAlongside(peripheralIds: [UUID], displacedPreferred: UUID?) async {
-		if let displacedPreferred {
-			restoreDisplacedPreferred = displacedPreferred
-		}
+	/// A BLE restore (T190): the radios restored alongside the first one are remembered, so the
+	/// remembered-radio reconnect after its connect claims them. Each comes back as it was; none
+	/// takes another's place (D-19).
+	func noteRestoredAlongside(peripheralIds: [UUID]) async {
 		await MeshPackets.shared.rememberRadios(peripheralIds: peripheralIds.map(\.uuidString))
 	}
 
@@ -227,7 +211,6 @@ extension AccessoryManager {
 			additionalRadioReconnects.removeValue(forKey: deviceId)?.cancel()
 			awaitedRememberedRadios.remove(deviceId)
 			radioConnectErrors.removeValue(forKey: deviceId)
-			if restoreDisplacedPreferred == deviceId { restoreDisplacedPreferred = nil }
 		}
 		// A connect still in progress for it stops, whether it's waiting for the handshake gate
 		// or running its steps.
@@ -235,7 +218,6 @@ extension AccessoryManager {
 			attempt.isCancelled = true
 			await attempt.stepper?.cancelCurrentlyExecutingStep(withError: AccessoryError.disconnected("Radio disconnected"), cancelFullProcess: true)
 		}
-		if pendingAttentionFocus == deviceId { pendingAttentionFocus = nil }
 		guard let session = additionalRadios.removeValue(forKey: deviceId) else {
 			if connectAttempts[deviceId] != nil {
 				updateDevice(deviceId: deviceId, key: \.connectionState, value: .disconnected)

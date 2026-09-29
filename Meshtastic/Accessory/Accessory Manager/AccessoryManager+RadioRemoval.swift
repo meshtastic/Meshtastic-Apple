@@ -13,9 +13,8 @@ import OSLog
 extension AccessoryManager {
 
 	/// Disconnects radio `radioNum` for a reset or a removal while the other radios stay
-	/// connected. Focused, it first hands the focus to another connected radio, so it leaves as
-	/// any additional radio does. With `reconnect` (a NodeDB or config reset: the radio reboots
-	/// and comes back) it is tried again until it's back; without, it isn't remembered.
+	/// connected, as they are. With `reconnect` (a NodeDB or config reset: the radio reboots and
+	/// comes back) it is tried again until it's back; without, it isn't remembered.
 	func takeRadioOffline(_ radioNum: Int64, reconnect: Bool) async {
 		guard let session = connectedSession(forRadio: radioNum) else {
 			if !reconnect {
@@ -26,23 +25,14 @@ extension AccessoryManager {
 		}
 		let device = session.device
 		if session === activeConnection {
-			let next = additionalRadios.values.first { canFocusWithoutReconnecting($0.device.id) }
-			if let next, await focusConnectedRadio(next.device.id, previousStays: false) {
-				Logger.transport.info("🔀 \(next.device.name, privacy: .public) takes the focus from \(device.name, privacy: .public), which is being reset or removed")
-				if reconnect {
-					// A reset radio comes back alongside, now and at the next launch.
-					await MeshPackets.shared.setRadioAutoConnect(nodeNum: radioNum, true)
-				}
+			// It leaves as a single radio does; the other radios stay as they are (D-19).
+			if reconnect {
+				try? await session.connection.disconnect(withError: nil, shouldReconnect: true)
 			} else {
-				// Nothing else can take the focus: the radio leaves as the only one did before.
-				if reconnect {
-					try? await session.connection.disconnect(withError: nil, shouldReconnect: true)
-				} else {
-					await MeshPackets.shared.setRadioAutoConnect(nodeNum: radioNum, false)
-					try? await disconnect()
-				}
-				return
+				await MeshPackets.shared.setRadioAutoConnect(nodeNum: radioNum, false)
+				try? await disconnect()
 			}
+			return
 		}
 		await disconnectAdditionalRadio(device.id, byUser: !reconnect)
 		if reconnect {
@@ -54,10 +44,6 @@ extension AccessoryManager {
 	/// reconnect loop, a wait for discovery to see it, and a connect in progress, as Disconnect
 	/// does for a connected radio. Found by its peripheral id and by any attempt for its number.
 	func stopBringingBack(_ radioNum: Int64) async {
-		// A pending focus handover for it would otherwise remember it and start its reconnect.
-		if handoverPrevious?.radioNum == radioNum {
-			handoverPrevious = nil
-		}
 		var deviceIds = Set(connectAttempts.values.filter { $0.device.num == radioNum || $0.session?.nodeNum == radioNum }.map(\.device.id))
 		if let peripheralId = await MeshPackets.shared.peripheralId(ofRadio: radioNum), let id = UUID(uuidString: peripheralId) {
 			deviceIds.insert(id)
@@ -80,9 +66,6 @@ extension AccessoryManager {
 				PreferredRadio.peripheralId = ""
 				PreferredRadio.nodeNum = 0
 			}
-		}
-		if PreferredRadio.connectFirstOverride?.nodeNum == radioNum {
-			PreferredRadio.connectFirstOverride = nil
 		}
 	}
 }

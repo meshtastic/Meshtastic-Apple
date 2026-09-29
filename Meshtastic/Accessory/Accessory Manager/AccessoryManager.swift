@@ -319,12 +319,6 @@ class AccessoryManager: ObservableObject {
 	var retiredAdditionalSessionIDs: Set<UUID> = []
 	/// Reconnect loops for additional radios that dropped, by device id (T063).
 	var additionalRadioReconnects: [UUID: Task<Void, Never>] = [:]
-	/// Hands the focus to another connected radio when the focused one dropped and doesn't come
-	/// back (`scheduleFocusHandover`).
-	var focusHandoverTask: Task<Void, Never>?
-	/// The radio a pending handover is for. A failed reconnect of that radio closes again with
-	/// nothing open, which reschedules the handover; this keeps the radio it's for (T171).
-	var handoverPrevious: (radioNum: Int64?, device: Device?)?
 	/// Connects a remembered radio when the preferred one doesn't show up
 	/// (`scheduleRememberedRadioFallback`).
 	var rememberedRadioFallbackTask: Task<Void, Never>?
@@ -335,17 +329,6 @@ class AccessoryManager: ObservableObject {
 	/// Remembered radios that weren't found when the focused radio connected; each is brought
 	/// back when discovery next sees it (T156).
 	var awaitedRememberedRadios: Set<UUID> = []
-	/// Peripheral ids of the radios that have been the focused one since the app started, so
-	/// discovery reconnects a focused radio that drops while another is set to connect first,
-	/// but at launch connects only that one (T231).
-	var radiosFocusedThisRun: Set<String> = []
-	/// The preferred radio when a BLE restore made another radio the focused one (it wasn't back
-	/// yet, or the other connected first). It takes the focus back once it's connected alongside,
-	/// so the app is as it was before iOS closed it (T190).
-	var restoreDisplacedPreferred: UUID?
-	/// A radio whose Unlock or Update the user chose while its connect was still running; it
-	/// takes the focus when that connect finishes (`focusRadioNeedingAttention`, T148).
-	var pendingAttentionFocus: UUID?
 	/// One radio's config and node-DB handshake at a time, focused or not (T064).
 	let handshakeGate = HandshakeGate()
 	/// Bumped by `disconnect()`, so a focused connect still waiting at `handshakeGate` sees the
@@ -381,12 +364,7 @@ class AccessoryManager: ObservableObject {
 	var connectionSteps: SequentialSteps?
 	
 	// Public due to file separation
-	var otaInProgress: Bool = false {
-		didSet {
-			// An Unlock or Update chosen during the update can take the focus now (T179).
-			if oldValue && !otaInProgress { retryPendingAttentionFocusSoon() }
-		}
-	}
+	var otaInProgress: Bool = false
 	var discoveryTask: Task<Void, Never>?
 	/// Consumes `BLETransport.statusUpdates()` for the lifetime of this manager; see
 	/// `observeBLETransportStatus()`.
@@ -535,8 +513,9 @@ class AccessoryManager: ObservableObject {
 		if otaInProgress { return }
 		if !self.isConnected && !self.isConnecting && !hasFocusedConnectInProgress,
 		   let preferredDevice = device
-			?? self.devices.first(where: { $0.id.uuidString == PreferredRadio.connectFirstPeripheralId })
-			?? self.devices.first(where: { $0.id.uuidString == PreferredRadio.peripheralId }) {
+			?? self.devices.first(where: { $0.id.uuidString == PreferredRadio.peripheralId }),
+		   // Connected alongside already (the first radio dropped and this one stayed).
+		   !isRadioConnected(preferredDevice.id) {
 			Task {
 				try await self.connect(to: preferredDevice)
 			}
@@ -775,9 +754,8 @@ class AccessoryManager: ObservableObject {
 			updateDevice(deviceId: activeConnection.device.id, key: \.connectionState, value: .disconnected)
 			self.activeConnection = nil
 		}
-		// Feature 021: with other radios still connected, one takes the focus if this one
-		// doesn't come back.
-		scheduleFocusHandover(previousRadio: closingNodeNum, previousDevice: closing?.device)
+		// Feature 021: other radios stay connected and keep their windows; this one is brought
+		// back by discovery, as a single radio is (D-19: nothing takes its place).
 		self.activeDeviceNum = nil
 		self.firmwareUpdateRequired = false
 		if let closing {
@@ -791,7 +769,7 @@ class AccessoryManager: ObservableObject {
 		meshTrafficMonitor.reset()
 
 		// With other radios still connected the loop keeps sharing the phone's position with
-		// them until another radio takes the focus (T185); with none, it stops as before.
+		// them (T185); with none, it stops as before.
 		if additionalRadios.isEmpty {
 			locationTask?.cancel()
 			locationTask = nil

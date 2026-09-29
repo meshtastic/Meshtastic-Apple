@@ -294,7 +294,7 @@ Windows (plan step 5)
 
 No app-wide focus (plan step 6)
 - [ ] T315 `activeConnection` / `additionalRadios` become one dictionary of sessions; each radio's state (status, last error, Disconnect allowed, firmware gate) is kept per radio behind `linkStatus(of:)`, and the manager's focused-radio fields go.
-- [ ] T316 Remove `focusConnectedRadio`, `+FocusHandover`, `restoreDisplacedPreferred`, the connect-first override and `radiosFocusedThisRun`, with their tests.
+- [X] T316 Removed `focusConnectedRadio` (+Focus.swift), the focus handover (`scheduleFocusHandover`, `focusHandoverCandidate`, `handoverPrevious`), the restore's give-back (`restoreDisplacedPreferred`), the connect-first override and `radiosFocusedThisRun`, the Unlock/Update focus wait (`focusRadioNeedingAttention`, `pendingAttentionFocus`), `attentionAfterLosingFocus`, and `switchToDevice`'s focus-in-place branch, with their tests. — When the first radio drops, the others stay and nothing takes its place; it's brought back by discovery as a single radio is. Disconnect or reset of the first radio leaves the others as they are. A radio connected alongside isn't connected again as the first. Discovery auto-connects the preferred radio, as on `main`. The remembered-radio fallback stays (+LaunchFallback.swift). Verified: `MultiRadioConnectFlowTests.firstRadioDropsNothingMoves`, `.disconnectFirstLeavesTheOther`, `.showAnotherRadioWithoutReconnecting`, `.resetFirstRadio`; 9 tests of the removed behaviour deleted; iOS suite and Mac build.
 - [ ] T317 `PreferredRadio` becomes the radios to reconnect (`MyInfoEntity.autoConnect`); launch reconnects all of them.
 - [ ] T318 BLE restore restores every radio iOS hands back the same way, one handshake at a time.
 
