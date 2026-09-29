@@ -246,6 +246,15 @@ pruning. One commit each, full suite each time. To resume: the first unchecked i
 - [X] T231 I2 discovery connects the preferred radio alongside the connect-first one only once the preferred radio has been the focused one in this run of the app. — `AccessoryManager.radiosFocusedThisRun`, filled by a focused connect's Step 5 and by `applyFocusedRadioState`; `PreferredRadio.connectsAutomatically(_:focusedThisRun:)`. At launch the other radio comes back as a remembered radio once the connect-first one is up, or through the fallback. Verified: `MultiRadioConnectFlowTests.connectFirstOverride`.
 - [X] T232 R7-1 prune messages per radio (`localNodeNum`), each keeping its newest 50,000, rows on no radio together; a store with one radio prunes as `main`. — `MeshPackets.pruneMessageHistory(cap:)`, radios from `storedRadios()`; a merged backup (one radio's, under `main`'s cap) needs no change. Verified: `MultiRadioBackfillTests.messageCapPerRadio`, `.messageCapOneRadio`.
 
+## Review V8 fixes (review-connections-v8.md J1 and the edge, review-data-v8.md R8-1)
+
+All re-checked in the files and holding (2026-09-28); the owner approved. One commit each, full
+suite each time. To resume: the first unchecked item.
+
+- [ ] T240 J1 a focused connect without a handshake (a BLE restore of a radio iOS kept connected) records the preferred radio, "focused this run" and the override clear in Step 5 before the `wantDatabase` guard, with the node number from the device; `completeFocusedRestore(keepsConnectFirst:)` keeps the connect-first radio for both restore paths.
+- [ ] T241 the backup merge tests' helper checkpoints the backup store and switches it to `journal_mode=DELETE` before hashing it (the flaky `strayRadioRowDoesNotBlockMerge` / `attemptCountedPerBackup`).
+- [ ] T242 notes: the edge (a joining radio's observations from an earlier, unfinished connect) in HANDOFF's gotchas; R8-1 (message table up to four times larger, unindexed message queries) under T132.
+
 ## Phase 10: Hardening
 
 - [ ] T130 Four BLE radios for 24 hours (device checklist in `HANDOFF.md`).
