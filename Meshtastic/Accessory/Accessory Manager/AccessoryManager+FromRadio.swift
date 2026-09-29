@@ -302,11 +302,13 @@ extension AccessoryManager {
 
 		// Detail views bound to the old node have to unmount before its identity changes
 		// underneath them, the same reason the reset path pops first.
-		if let router = appState?.router {
-			router.popToRoot(tab: .messages)
-			router.popToRoot(tab: .nodes)
-			router.popToRoot(tab: .map)
-			router.popToRoot(tab: .settings)
+		if let routers = appState?.windows.allRouters {
+			for router in routers {
+				router.popToRoot(tab: .messages)
+				router.popToRoot(tab: .nodes)
+				router.popToRoot(tab: .map)
+				router.popToRoot(tab: .settings)
+			}
 			await Task.yield()
 		}
 

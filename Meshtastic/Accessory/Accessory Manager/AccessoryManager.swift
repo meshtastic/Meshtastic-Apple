@@ -215,11 +215,13 @@ class AccessoryManager: ObservableObject {
 			Logger.data.error("💾 [Database] resetDatabaseAfterClear skipped: appState is nil — cannot pop views before recreating the container")
 			return
 		}
-		let router = appState.router
-		router.popToRoot(tab: .messages)
-		router.popToRoot(tab: .nodes)
-		router.popToRoot(tab: .map)
-		router.popToRoot(tab: .settings)
+		// Every window's (T308).
+		for router in appState.windows.allRouters {
+			router.popToRoot(tab: .messages)
+			router.popToRoot(tab: .nodes)
+			router.popToRoot(tab: .map)
+			router.popToRoot(tab: .settings)
+		}
 		await Task.yield()
 		repointToFreshContainer()
 		appState.databaseResetID = UUID()

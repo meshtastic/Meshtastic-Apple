@@ -13,7 +13,8 @@ import OSLog
 
 class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate, ObservableObject {
 
-	var router: Router?
+	/// The open windows' routers: a notification tap goes to the window it's about (T308).
+	var windows: WindowRouters?
 
 	func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
 		guard NSClassFromString("XCTestCase") == nil && ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil else {
@@ -213,7 +214,7 @@ class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificat
 		   let url = URL(string: deepLink) {
 			Logger.services.info("userNotificationCenter didReceiveResponse handling deeplink: \(targetValue, privacy: .public) \(deepLink, privacy: .public)")
 			if url.scheme == "meshtastic" {
-				router?.route(url: url)
+				windows?.route(url: url, manager: AccessoryManager.shared)
 			} else if targetValue == FirmwareUpdateNotifier.flasherTarget && url.absoluteString == FirmwareUpdateNotifier.flasherPath {
 				UIApplication.shared.open(url)
 			} else {

@@ -372,3 +372,50 @@ struct RouterTests {
 		#expect(state == destination)
 	}
 }
+
+// MARK: - One router per window (feature 021, D-19, T308)
+
+@MainActor
+@Suite("Window routers")
+struct WindowRoutersTests {
+	private let windowA = RadioWindow(deviceId: UUID())
+	private let windowB = RadioWindow(deviceId: UUID())
+
+	@Test("A direct message goes to the window of the radio that received it")
+	func directMessageGoesToItsRadio() {
+		let windows = [(window: windowA, radioNum: Int64?(0x0A)), (window: windowB, radioNum: Int64?(0x0B))]
+		#expect(WindowRouters.choose(windows: windows, radio: 0x0B, channelRadios: nil, lastActive: windowA) == windowB)
+		#expect(WindowRouters.choose(windows: windows, radio: 0x0A, channelRadios: nil, lastActive: windowB) == windowA)
+	}
+
+	@Test("A channel message goes to the first window, in the order they opened, whose radio has the channel")
+	func channelMessageGoesToTheFirstWindowWithIt() {
+		let windows = [(window: windowB, radioNum: Int64?(0x0B)), (window: windowA, radioNum: Int64?(0x0A))]
+		#expect(WindowRouters.choose(windows: windows, radio: 0x0A, channelRadios: [0x0A, 0x0B], lastActive: windowA) == windowB)
+		#expect(WindowRouters.choose(windows: windows, radio: 0x0A, channelRadios: [0x0A], lastActive: windowB) == windowA)
+	}
+
+	@Test("With no window for its radio, a link goes to the window last used, then the first")
+	func fallsBackToTheLastWindow() {
+		let windows = [(window: windowA, radioNum: Int64?(0x0A)), (window: windowB, radioNum: Int64?(0x0B))]
+		#expect(WindowRouters.choose(windows: windows, radio: 0x0C, channelRadios: nil, lastActive: windowB) == windowB)
+		#expect(WindowRouters.choose(windows: windows, radio: nil, channelRadios: nil, lastActive: nil) == windowA)
+		#expect(WindowRouters.choose(windows: [], radio: 0x0A, channelRadios: nil, lastActive: nil) == nil)
+	}
+
+	@Test("Windows register and leave; with one open, every link uses its router")
+	func registry() throws {
+		let fallback = Router()
+		let registry = WindowRouters(fallback: fallback)
+		#expect(registry.allRouters.map(ObjectIdentifier.init) == [ObjectIdentifier(fallback)])
+		let first = Router()
+		registry.register(.focused, router: first)
+		let url = try #require(URL(string: "meshtastic:///messages?userNum=123&radio=456"))
+		#expect(registry.router(for: url, manager: AccessoryManager(transports: [])) === first)
+		let second = Router()
+		registry.register(windowB, router: second)
+		#expect(registry.allRouters.count == 2)
+		registry.unregister(router: first)
+		#expect(registry.allRouters.map(ObjectIdentifier.init) == [ObjectIdentifier(second)])
+	}
+}

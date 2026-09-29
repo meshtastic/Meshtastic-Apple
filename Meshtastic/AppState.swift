@@ -35,6 +35,9 @@ extension NSNotification.Name {
 class AppState: ObservableObject {
 
 	@Published var router: Router
+	/// The open windows' routers, which deep links and notification taps go through (T308).
+	/// `router` is the first window's.
+	let windows: WindowRouters
 	@Published var unreadChannelMessages: Int
 	@Published var unreadDirectMessages: Int
 	/// Bumped after a node-switch restore to force @Query-backed views to rebuild and
@@ -69,6 +72,7 @@ class AppState: ObservableObject {
 
 	init(router: Router) {
 		self.router = router
+		self.windows = WindowRouters(fallback: router)
 		self.unreadChannelMessages = 0
 		self.unreadDirectMessages = 0
 

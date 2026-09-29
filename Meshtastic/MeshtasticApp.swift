@@ -113,7 +113,7 @@ struct MeshtasticAppleApp: App {
 		self.persistenceController = persistenceController
 		// Wire up router
 #if os(iOS)
-		self.appDelegate.router = appState.router
+		self.appDelegate.windows = appState.windows
 #endif
 
 #if DEBUG
@@ -266,7 +266,7 @@ struct MeshtasticAppleApp: App {
 		} else if MeshtasticChannelURL.canHandle(url) {
 			handleChannelLinkURL(url, fromActivity: fromActivity)
 		} else if url.absoluteString.lowercased().contains("meshtastic:///") {
-			appState.router.route(url: url)
+			appState.windows.route(url: url, manager: accessoryManager)
 		}
 	}
 

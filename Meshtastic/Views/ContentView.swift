@@ -39,6 +39,7 @@ struct ContentView: View {
 	/// blocking state clears it.
 	@State private var isShowingLockdownGate: Bool = false
 	@State private var isShowingFirmwareGate: Bool = false
+	@Environment(\.scenePhase) private var scenePhase
 
 	init(appState: AppState, router: Router) {
 		self.appState = appState
@@ -47,6 +48,13 @@ struct ContentView: View {
 
 	var body: some View {
 		gatedContent
+			// This window's router, which links and notification taps about its radio go to (T308).
+			.onAppear { appState.windows.register(windowRadio, router: router) }
+			.onDisappear { appState.windows.unregister(router: router) }
+			.onChange(of: windowRadio) { _, window in appState.windows.register(window, router: router) }
+			.onChange(of: scenePhase) { _, phase in
+				if phase == .active { appState.windows.activated(windowRadio) }
+			}
 			.sheet(
 				isPresented: $isShowingDeviceOnboardingFlow,
 				onDismiss: {

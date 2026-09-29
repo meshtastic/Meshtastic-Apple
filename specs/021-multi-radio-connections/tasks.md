@@ -280,7 +280,7 @@ The window's radio (plan step 2)
 - [X] T307 Tools and the remaining views read the window's radio. — `ContentView` (the firmware update gate over the window, via `firmwareUpdateRequired(for:)`, and event firmware), `FirmwareUpdateGate`, the RX/TX lights, onboarding and the lock-down sheet's radio name. What still reads the focus in views is the focus itself: Connect's switch / add actions and `RadioSwitcherMenu` (T322, T324). Outside the views, Siri, CarPlay and the Shortcuts use the CarPlay & Siri radio (T319–T321). Verified: full suite.
 
 Routing (plan step 3)
-- [ ] T308 A router per window; a registry of open windows picks the window for a deep link or a notification tap (W-05). Tests for the choice.
+- [X] T308 A router per window; a registry of open windows picks the window for a deep link or a notification tap (W-05). — `WindowRouters` (on `AppState.windows`): each `ContentView` registers its window and router, and says when it's active; `route(url:manager:)` sends a DM link to the window of its radio, a channel link to the first open window whose radio has that channel, else the window last used, then the first; the notification delegate and `meshtastic://` links go through it; a store reset or a renumber pops every window's views. `AppState.router` stays the first window's until windows get their own (T310). Verified: `WindowRoutersTests` (4).
 
 App-wide work (plan step 4)
 - [ ] T309 The connect steps' `isFocused` branches split: once-per-launch work run by the first connect to finish, per-radio state from T300.
