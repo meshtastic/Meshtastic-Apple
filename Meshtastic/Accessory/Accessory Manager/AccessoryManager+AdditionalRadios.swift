@@ -45,23 +45,6 @@ final class HandshakeGate {
 	}
 }
 
-/// What to do when the user connects a radio while another one is connected (D-05).
-enum AdditionalRadioBehavior: String, Codable, CaseIterable, Identifiable {
-	case ask
-	case keepBoth
-	case switchRadio
-
-	var id: String { rawValue }
-
-	var label: String {
-		switch self {
-		case .ask: return "Ask Each Time".localized
-		case .keepBoth: return "Keep Both Connected".localized
-		case .switchRadio: return "Switch Radios".localized
-		}
-	}
-}
-
 extension AccessoryManager {
 
 	/// At most this many radios at once, the focused one included (D-10).
@@ -86,6 +69,16 @@ extension AccessoryManager {
 		var result: [Device] = []
 		if let focused = activeConnection?.device { result.append(focused) }
 		return result + additionalRadioDevices
+	}
+
+	/// Adds `device` alongside the connected radios (W-12): the others stay connected. With one
+	/// window (iPhone, iPad) the window then shows it; on the Mac it opens in its own window.
+	/// Throws when it can't connect.
+	func addRadio(_ device: Device) async throws {
+		try await connectAdditionalRadio(device)
+		if !RadioWindows.areEnabled {
+			_ = await focusConnectedRadio(device.id, previousStays: true)
+		}
 	}
 
 	/// Whether `session` is the only radio connected: a connect that does the app's own work

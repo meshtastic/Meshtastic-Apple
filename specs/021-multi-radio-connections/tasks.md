@@ -304,7 +304,7 @@ Services (plan step 7)
 - [ ] T321 TAK, Watch, CarPlay and Siri: the chosen radio, or the only one connected; with several and none chosen, a command asks and App Settings shows the choice as needed.
 
 Adding, switching, composer (plan step 8)
-- [ ] T322 Adding a radio always keeps the others (W-12): the Keep Both / Switch question and its App Settings choice go; at four radios the radios to add are disabled with the reason; on iPhone the window shows the new radio.
+- [X] T322 Adding a radio always keeps the others (W-12). — `AccessoryManager.addRadio(_:)` connects it alongside and, with one window, shows it (the focus moves, the previous radio stays connected); on the Mac it will get its own window. The Keep Both / Switch dialogs, `AdditionalRadioBehavior` and its App Settings picker go; at four radios the radios to add are disabled and a manual entry says why. Connecting with no radio connected is unchanged. Done before T310 so the Mac Connect window's add is this. Verified: `MultiRadioConnectFlowTests.addRadioKeepsTheOther`. The SwiftUI strings the dialogs and picker used go stale in the catalog at the next export (T122).
 - [ ] T324 Switching the window's radio from Connect and the indicator's radio menu, never disconnecting (W-13).
 - [ ] T325 The composer's "Via" picker defaults to the window's radio and is hidden on the Mac (W-14).
 

@@ -86,6 +86,27 @@ struct MultiRadioConnectFlowTests {
 		try await manager.disconnect()
 	}
 
+	@Test("Adding a radio keeps the other connected, and the one window shows the new radio")
+	func addRadioKeepsTheOther() async throws {
+		let saved = SavedDefaults()
+		defer { saved.restore() }
+		let firstNum = uniqueNodeNum()
+		let first = ScriptedRadio(nodeNum: firstNum)
+		let second = ScriptedRadio(nodeNum: firstNum &+ 0x300)
+		let secondDevice = device()
+		let manager = makeManager(ScriptedTransport(radio: first, radiosByIdentifier: [secondDevice.identifier: second]))
+		let firstDevice = device()
+		try await manager.connect(to: firstDevice)
+
+		try await manager.addRadio(secondDevice)
+
+		#expect(manager.activeConnection?.device.id == secondDevice.id, "the window shows the new radio")
+		#expect(manager.additionalRadios[firstDevice.id] != nil, "the other stays connected")
+		#expect(await first.disconnects == 0)
+		manager.additionalRadioReconnects.values.forEach { $0.cancel() }
+		try await manager.disconnect()
+	}
+
 	@Test("A radio connected alongside that fails to connect throws, and leaves the focused radio alone")
 	func secondRadioFailureIsItsOwn() async throws {
 		let saved = SavedDefaults()

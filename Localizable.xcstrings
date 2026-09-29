@@ -15449,9 +15449,6 @@
         }
       }
     },
-    "Ask Each Time" : {
-      "extractionState" : "manual"
-    },
     "Ask me anything about Meshtastic.\nI'll search the docs and answer in plain language." : {
       "localizations" : {
         "de" : {
@@ -56272,9 +56269,6 @@
           }
         }
       }
-    },
-    "Keep Both Connected" : {
-      "extractionState" : "manual"
     },
     "Keep Messages" : {
 
@@ -127170,9 +127164,6 @@
           }
         }
       }
-    },
-    "Switch Radios" : {
-      "extractionState" : "manual"
     },
     "Switch to %@" : {
 

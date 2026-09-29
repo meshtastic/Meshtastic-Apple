@@ -21,6 +21,16 @@ struct RadioWindow: Codable, Hashable, Sendable {
 	static let focused = RadioWindow(deviceId: nil)
 }
 
+/// Whether each radio gets its own window (feature 021, D-19): on the Mac. iPhone and iPad keep
+/// one window that switches between radios (W-04; iPad decided 2026-09-29).
+enum RadioWindows {
+	static var areEnabled: Bool { ProcessInfo.processInfo.isMacCatalystApp }
+	/// A radio's window (`WindowGroup(for: RadioWindow.self)`).
+	static let radioWindowID = "radio-window"
+	/// The Connect window on the Mac, and the one window elsewhere.
+	static let mainWindowID = "main"
+}
+
 private struct WindowRadioKey: EnvironmentKey {
 	static let defaultValue = RadioWindow.focused
 }

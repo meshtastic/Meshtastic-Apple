@@ -83,7 +83,6 @@ extension UserDefaults {
 		case showDeviceOnboarding
 		case usageDataAndCrashReporting
 		case autoconnectOnDiscovery
-		case additionalRadioBehavior
 		case purgeStaleNodeDays
 		case manualConnections
 		case testIntEnum
@@ -199,10 +198,6 @@ extension UserDefaults {
 
 	@UserDefault(.autoconnectOnDiscovery, defaultValue: true)
 	static var autoconnectOnDiscovery: Bool
-
-	/// Feature 021 (D-05): what tapping a radio does while another one is connected.
-	@UserDefault(.additionalRadioBehavior, defaultValue: AdditionalRadioBehavior.ask)
-	static var additionalRadioBehavior: AdditionalRadioBehavior
 
 	@UserDefault(.purgeStaleNodeDays, defaultValue: 0)
 	static var purgeStaleNodeDays: Double
