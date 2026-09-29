@@ -419,3 +419,24 @@ struct WindowRoutersTests {
 		#expect(registry.allRouters.map(ObjectIdentifier.init) == [ObjectIdentifier(second)])
 	}
 }
+
+// MARK: - Radio windows on the Mac (feature 021, D-19, T310)
+
+@MainActor
+@Suite("Radio window tracker")
+struct RadioWindowTrackerTests {
+	@Test("A radio's window opens once when it connects, and again only after the user disconnects it")
+	func opensOnce() {
+		let tracker = RadioWindowTracker()
+		let a = UUID(), b = UUID()
+		#expect(tracker.toOpen(connected: [a]) == [a])
+		#expect(tracker.toOpen(connected: [a]).isEmpty, "closing the window only hid it (W-01)")
+		#expect(tracker.toOpen(connected: [a, b]) == [b])
+		// Dropped and back: its window is still open or hidden, so nothing opens.
+		#expect(tracker.toOpen(connected: [b]).isEmpty)
+		#expect(tracker.toOpen(connected: [a, b]).isEmpty)
+		// Disconnected by the user (W-02): its window opens the next time it connects.
+		tracker.forget(a)
+		#expect(tracker.toOpen(connected: [a, b]) == [a])
+	}
+}

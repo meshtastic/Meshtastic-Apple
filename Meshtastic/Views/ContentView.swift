@@ -73,12 +73,13 @@ struct ContentView: View {
 			}
 			// A locked radio that isn't focused enters its passphrase here, without taking the
 			// focus (feature 021, T188).
-			.sheet(item: $accessoryManager.radioUnlockRequest) { request in
+			// On the Mac each radio's own window shows its sheets instead (D-19).
+			.sheet(item: RadioWindows.areEnabled ? .constant(nil) : $accessoryManager.radioUnlockRequest) { request in
 				RadioUnlockSheet(request: request)
 			}
 			// A radio that isn't focused needs the user (feature 021, T073). Unlock opens its
 			// passphrase sheet above; Update focuses it, which shows the update screen.
-			.alert(item: $accessoryManager.radioAttentionPrompt) { prompt in
+			.alert(item: RadioWindows.areEnabled ? .constant(nil) : $accessoryManager.radioAttentionPrompt) { prompt in
 				Alert(
 					title: Text(prompt.attention.title(radioName: prompt.radioName)),
 					message: Text(prompt.attention.message),
@@ -95,7 +96,8 @@ struct ContentView: View {
 				// default `true` — which re-ran the whole setup wizard on an installed app (#2243).
 				// A pre-unlock launch can never be a genuine first launch: a fresh install has no
 				// restoration session to be relaunched for.
-				if UserDefaults.firstLaunch && UIApplication.shared.isProtectedDataAvailable {
+				// On the Mac the Connect window runs it (D-19).
+				if UserDefaults.firstLaunch && UIApplication.shared.isProtectedDataAvailable && !RadioWindows.areEnabled {
 					isShowingDeviceOnboardingFlow = true
 				}
 				// Present the gate if the device is already in a blocking state when
@@ -143,12 +145,12 @@ struct ContentView: View {
 	/// directly instead and forgoes tap-to-pop.
 	private var tabSelection: Binding<NavigationState.Tab> {
 		Binding(
-			get: { appState.router.selectedTab },
+			get: { router.selectedTab },
 			set: { newTab in
-				if newTab == appState.router.selectedTab {
-					appState.router.popToRoot(tab: newTab)
+				if newTab == router.selectedTab {
+					router.popToRoot(tab: newTab)
 				}
-				appState.router.selectedTab = newTab
+				router.selectedTab = newTab
 			}
 		)
 	}
@@ -273,7 +275,7 @@ struct ContentView: View {
 			TabView(selection: tabSelection) {
 				Tab("Messages", systemImage: "message", value: NavigationState.Tab.messages) {
 					Messages(
-						router: appState.router,
+						router: router,
 						unreadChannelMessages: $appState.unreadChannelMessages,
 						unreadDirectMessages: $appState.unreadDirectMessages
 					)
@@ -287,7 +289,7 @@ struct ContentView: View {
 				}
 
 				Tab("Map", systemImage: "map", value: NavigationState.Tab.map) {
-					MeshMapMK(router: appState.router)
+					MeshMapMK(router: router)
 						.trackScreen(NavigationState.Tab.map.screenName)
 				}
 
@@ -298,7 +300,7 @@ struct ContentView: View {
 
 				Tab("Connect", systemImage: "link", value: NavigationState.Tab.connect) {
 					Connect(
-						router: appState.router
+						router: router
 					)
 					.trackScreen(NavigationState.Tab.connect.screenName)
 				}
@@ -359,15 +361,15 @@ struct ContentView: View {
 		switch tab {
 		case .messages:
 			Messages(
-				router: appState.router,
+				router: router,
 				unreadChannelMessages: $appState.unreadChannelMessages,
 				unreadDirectMessages: $appState.unreadDirectMessages
 			)
 			.trackScreen(tab.value.screenName)
 		case .nodes: NodeList().trackScreen(tab.value.screenName)
-		case .map: MeshMapMK(router: appState.router).trackScreen(tab.value.screenName)
+		case .map: MeshMapMK(router: router).trackScreen(tab.value.screenName)
 		case .settings: Settings().trackScreen(tab.value.screenName)
-		case .connect: Connect(router: appState.router).trackScreen(tab.value.screenName)
+		case .connect: Connect(router: router).trackScreen(tab.value.screenName)
 		}
 	}
 

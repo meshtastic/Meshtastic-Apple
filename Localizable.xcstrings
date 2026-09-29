@@ -35062,6 +35062,9 @@
         }
       }
     },
+    "Disconnect %@" : {
+      "extractionState" : "manual"
+    },
     "Disconnect Node" : {
       "localizations" : {
         "de" : {

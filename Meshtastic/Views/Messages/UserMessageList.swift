@@ -14,6 +14,8 @@ import MeshtasticProtobufs // Added to ensure RoutingError is accessible if need
 
 struct UserMessageList: View {
 	@EnvironmentObject var appState: AppState
+	/// This window's router (feature 021, T308).
+	@EnvironmentObject private var router: Router
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	/// The radio this window works with (feature 021, D-19).
 	@Environment(\.windowRadio) private var windowRadio
@@ -205,7 +207,7 @@ struct UserMessageList: View {
 	}
 
 	private func routerIsShowingThisUser() -> Bool {
-		guard appState.router.selectedTab == .messages else { return false }
+		guard router.selectedTab == .messages else { return false }
 		return scenePhase == .active
 	}
 
@@ -302,9 +304,9 @@ struct UserMessageList: View {
 				.task(id: "\(routerIsShowingThisUser())-\(user.num)") {
 					// Feature 021 (T091): a notification's deep link names the radio the message came
 					// in on; open that radio's thread.
-					if let radio = appState.router.messagesRadio {
+					if let radio = router.messagesRadio {
 						chosenRadio = radio
-						appState.router.messagesRadio = nil
+						router.messagesRadio = nil
 					}
 					let isVisible = routerIsShowingThisUser()
 					loadMessages(markReadAfterLoad: isVisible)

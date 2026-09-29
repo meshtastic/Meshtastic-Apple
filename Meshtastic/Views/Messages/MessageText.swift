@@ -9,6 +9,8 @@ struct MessageText: View {
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@EnvironmentObject var appState: AppState
+	/// This window's router (feature 021, T308).
+	@EnvironmentObject private var router: Router
 
 	let message: MessageEntity
 	let tapBackDestination: MessageDestination
@@ -227,7 +229,7 @@ struct MessageText: View {
 		   components.path == "/nodes",
 		   let nodeNumStr = components.queryItems?.first(where: { $0.name == "nodenum" })?.value,
 		   let nodeNum = Int64(nodeNumStr) {
-			appState.router.navigateToNodeDetail(nodeNum: nodeNum)
+			router.navigateToNodeDetail(nodeNum: nodeNum)
 			return .handled
 		}
 		var addChannels = false

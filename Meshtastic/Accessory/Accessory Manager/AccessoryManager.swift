@@ -291,6 +291,8 @@ class AccessoryManager: ObservableObject {
 	/// next connect starts or it's disconnected by the user (T300). The focused radio's is
 	/// `lastConnectionError`.
 	@Published var radioConnectErrors: [UUID: Error] = [:]
+	/// A radio the user disconnected, by device id: its window on the Mac closes (D-19, W-02).
+	let radioDisconnectedByUser = PassthroughSubject<UUID, Never>()
 	/// Each radio's firmware version as it last reported it this launch, by node number (T018):
 	/// what `checkIsVersionSupported` falls back to while a radio's live version is unknown.
 	var knownFirmwareVersions: [Int64: String] = [:]
@@ -823,6 +825,11 @@ class AccessoryManager: ObservableObject {
 	// Should only be called by UI-facing callers.
 	func disconnect() async throws {
 		guard !isClosingConnection else { return }
+		// Its window on the Mac closes once it's disconnected (W-02).
+		let disconnectedId = activeConnection?.device.id ?? connectAttempts.values.first(where: \.isFocused)?.device.id
+		defer {
+			if let disconnectedId { radioDisconnectedByUser.send(disconnectedId) }
+		}
 		self.userRequestedConnectionCancellation = true
 		connectCancelGeneration &+= 1
 		for attempt in connectAttempts.values where attempt.isFocused {

@@ -1181,10 +1181,12 @@ func backupCurrentAndRestoreDatabase(
 		try? await accessoryManager.disconnect()
 	}
 
-	appState.router.popToRoot(tab: .messages)
-	appState.router.popToRoot(tab: .nodes)
-	appState.router.popToRoot(tab: .map)
-	appState.router.popToRoot(tab: .settings)
+	for router in appState.windows.allRouters {
+		router.popToRoot(tab: .messages)
+		router.popToRoot(tab: .nodes)
+		router.popToRoot(tab: .map)
+		router.popToRoot(tab: .settings)
+	}
 	appState.router.selectedTab = selectedTab
 
 	// Unmount every @Query holder (the gate replaces the tree AND the query-owning wrappers —

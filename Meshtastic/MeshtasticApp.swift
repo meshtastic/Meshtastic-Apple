@@ -297,7 +297,8 @@ struct MeshtasticAppleApp: App {
 	}
 
 	var body: some Scene {
-		WindowGroup {
+		// The one window; on the Mac, the Connect window, beside each radio's own (D-19).
+		WindowGroup(id: RadioWindows.mainWindowID) {
 			Group {
 			if Self.isRunningTests {
 				Color.clear
@@ -363,6 +364,25 @@ struct MeshtasticAppleApp: App {
 		.environmentObject(accessoryManager)
 		.environmentObject(appState.router)
 		.environmentObject(MeshtasticAPI.shared)
+		.commands {
+			RadioWindowCommands(accessoryManager: accessoryManager)
+		}
+
+			// A radio's own window on the Mac (feature 021, D-19, T310): opened when the radio
+			// connects, and from the Window menu.
+			WindowGroup(id: RadioWindows.radioWindowID, for: RadioWindow.self) { $window in
+				if Self.shouldInitializeAppServices, let persistenceController, !appState.isDatabaseResetting {
+					EventFirmwareTintScope {
+						RadioWindowRoot(window: window)
+							.id(appState.databaseResetID)
+					}
+					.modelContainer(persistenceController.container)
+					.environmentObject(appState)
+					.environmentObject(accessoryManager)
+					.environmentObject(MeshtasticAPI.shared)
+				}
+			}
+			.handlesExternalEvents(matching: [])
 
 			WindowGroup("Mesh Map", id: "meshmap-window") {
 				// Gated on shouldInitializeAppServices (not just tests): in Chirpy OTA demo mode
@@ -396,10 +416,18 @@ struct MeshtasticAppleApp: App {
 	@ViewBuilder
 	private var mainAppContent: some View {
 		EventFirmwareTintScope {
-					ContentView(
-						appState: appState,
-						router: appState.router
-					)
+					Group {
+						if RadioWindows.areEnabled {
+							// On the Mac this is the Connect window; each radio has its own (W-02).
+							RadioListWindow()
+								.modifier(RadioWindowOpener(tracker: appState.radioWindowTracker))
+						} else {
+							ContentView(
+								appState: appState,
+								router: appState.router
+							)
+						}
+					}
 				// Rebuild the whole view tree (and re-run every @Query) after a node-switch
 				// restore so views drop the previous node's cached objects. See AppState.databaseResetID.
 				.id(appState.databaseResetID)

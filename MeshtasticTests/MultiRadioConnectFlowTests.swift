@@ -7,6 +7,7 @@
 //  `ConnectFlowCharacterizationTests`.
 //
 
+import Combine
 import Foundation
 import MeshtasticProtobufs
 import SwiftData
@@ -178,6 +179,25 @@ struct MultiRadioConnectFlowTests {
 		#expect(!manager.isConnected(gone))
 		manager.additionalRadioReconnects.values.forEach { $0.cancel() }
 		try await manager.disconnect()
+	}
+
+	@Test("Disconnecting a radio, focused or not, says so, so its window on the Mac closes")
+	func disconnectRadioSaysSo() async throws {
+		let saved = SavedDefaults()
+		defer { saved.restore() }
+		let radios = try await connectTwoRadios()
+		let manager = radios.manager
+		var disconnected: [UUID] = []
+		let subscription = manager.radioDisconnectedByUser.sink { disconnected.append($0) }
+		defer { subscription.cancel() }
+
+		await manager.disconnectRadio(radios.secondDevice.id)
+		#expect(disconnected == [radios.secondDevice.id])
+		#expect(manager.additionalRadios[radios.secondDevice.id] == nil)
+
+		await manager.disconnectRadio(radios.firstDevice.id)
+		#expect(disconnected == [radios.secondDevice.id, radios.firstDevice.id])
+		#expect(manager.activeConnection == nil)
 	}
 
 	@Test("The app's own connect work runs for a radio connected with no other")

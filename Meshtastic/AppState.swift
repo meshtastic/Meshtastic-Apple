@@ -38,6 +38,8 @@ class AppState: ObservableObject {
 	/// The open windows' routers, which deep links and notification taps go through (T308).
 	/// `router` is the first window's.
 	let windows: WindowRouters
+	/// Which radios' windows the Mac has opened (T310).
+	let radioWindowTracker = RadioWindowTracker()
 	@Published var unreadChannelMessages: Int
 	@Published var unreadDirectMessages: Int
 	/// Bumped after a node-switch restore to force @Query-backed views to rebuild and

@@ -81,6 +81,16 @@ extension AccessoryManager {
 		}
 	}
 
+	/// Disconnects radio `deviceId` for the user, focused or not (D-19): it isn't brought back, and
+	/// its window on the Mac closes (W-02). The focused radio hands the focus to another first.
+	func disconnectRadio(_ deviceId: UUID) async {
+		if activeConnection?.device.id == deviceId {
+			try? await disconnectFocusedRadio(accessoryManager: self)
+		} else {
+			await disconnectAdditionalRadio(deviceId, byUser: true)
+		}
+	}
+
 	/// Whether `session` is the only radio connected: a connect that does the app's own work
 	/// (device catalog, stale-node prune, unread badges, T309) is one with no other radio connected.
 	/// With one radio that's every connect, as before.
@@ -212,6 +222,10 @@ extension AccessoryManager {
 	/// Disconnects one additional radio. The focused radio and the others are unaffected.
 	/// `byUser` also stops any automatic reconnect for it, now and at the next launch.
 	func disconnectAdditionalRadio(_ deviceId: UUID, byUser: Bool = false) async {
+		// Its window on the Mac closes once it's disconnected (W-02).
+		defer {
+			if byUser { radioDisconnectedByUser.send(deviceId) }
+		}
 		if byUser {
 			additionalRadioReconnects.removeValue(forKey: deviceId)?.cancel()
 			awaitedRememberedRadios.remove(deviceId)
