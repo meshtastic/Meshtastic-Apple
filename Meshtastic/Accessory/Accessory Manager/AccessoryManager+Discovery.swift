@@ -81,10 +81,11 @@ extension AccessoryManager {
 						// in the user interface
 						self.devices = devices.sorted { $0.name < $1.name }
 
-						// Feature 021 (T156): a remembered radio that wasn't around when the focused
-						// radio connected comes back alongside it now.
+						// Feature 021 (T156): a remembered radio that wasn't around when the first radio
+						// connected comes back alongside the connected radios now, the first one
+						// included or not (T317).
 						self.recentlyDiscoveredDevices[newDevice.id] = newDevice
-						if self.awaitedRememberedRadios.contains(newDevice.id), self.activeConnection != nil {
+						if self.awaitedRememberedRadios.contains(newDevice.id), self.connectedRadioCount > 0 {
 							self.awaitedRememberedRadios.remove(newDevice.id)
 							if !self.isRadioConnected(newDevice.id) {
 								Logger.transport.info("🔗🔁 [Additional] Remembered radio \(newDevice.name, privacy: .public) found; bringing it back")

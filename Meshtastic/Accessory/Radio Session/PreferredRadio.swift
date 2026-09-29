@@ -7,11 +7,13 @@
 
 import Foundation
 
-/// The radio the app connects to at launch and restores in the background: the focused radio,
-/// remembered across launches (feature 021).
+/// The radio the app connects first at launch and restores first in the background, remembered
+/// across launches: the last one connected that way. The other radios the user keeps connected
+/// are remembered on their `MyInfoEntity` (`autoConnect`) and come back alongside it, or when
+/// discovery sees them (feature 021, T317).
 ///
-/// It is not "the connected radio". Code that means the radio it's working with uses its
-/// `RadioSession`, or `AccessoryManager.activeDeviceNum` for the focused one. This is the only
+/// It is not "the radio a window shows": a window has its own (`RadioWindow`, D-19). Code that
+/// means the radio it's working with uses its `RadioSession` or its window's. This is the only
 /// place that reads or writes `UserDefaults.preferredPeripheralId` / `preferredPeripheralNum`
 /// (enforced by the `preferred_radio_defaults` SwiftLint rule, T110).
 enum PreferredRadio {
