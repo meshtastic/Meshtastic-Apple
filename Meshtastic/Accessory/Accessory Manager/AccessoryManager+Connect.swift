@@ -129,6 +129,8 @@ extension AccessoryManager {
 
 			self.allowDisconnect = true
 			self.userRequestedConnectionCancellation = false
+		} else {
+			radioConnectErrors.removeValue(forKey: device.id)
 		}
 
 		// On a first-ever BLE connection, iOS presents the pairing PIN sheet during
@@ -203,6 +205,7 @@ extension AccessoryManager {
 			try await self.cleanUpAfterFailedConnect(attempt)
 			guard attempt.isFocused else {
 				// The caller (the reconnect loop, the Connect tab) decides what to do next.
+				radioConnectErrors[device.id] = error
 				throw error
 			}
 			self.lastConnectionError = error

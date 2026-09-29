@@ -268,7 +268,7 @@ commit per task, full suite each time. Until T310 there is one window and its ra
 focused one, so each commit leaves the app as it is.
 
 Per-radio state (plan step 1)
-- [ ] T300 Connection status, last error, "firmware update required", whether Disconnect is allowed and the connect stepper move onto `RadioSession`; the manager's properties read the focused session's.
+- [X] T300 One read of a radio's connection for any radio: `linkStatus(of:)` → `RadioLinkStatus` (state, can disconnect, attention, last error). — the focused radio's from the manager's fields, another's from its attempt, session and the new `radioConnectErrors`; `lockdownAttention(for:)` split out of `attentionAfterLosingFocus`. Changed from the plan: the state isn't moved onto the session yet, since the focused radio's is set before its session exists and after it's gone; it moves to one per-radio record in T315, when the focus goes, and the views read `linkStatus` meanwhile. Verified: `MultiRadioConnectFlowTests.linkStatusForEveryRadio`, `.secondRadioFailureIsItsOwn`.
 - [ ] T301 Lock-down per radio: its state on the session, the passphrase sheet for any radio from it (the focused radio's Settings section included).
 
 The window's radio (plan step 2)
@@ -293,7 +293,7 @@ Windows (plan step 5)
 - [ ] T314 iPhone: the window's radio in `@SceneStorage`, set from Connect (W-04).
 
 No app-wide focus (plan step 6)
-- [ ] T315 `activeConnection` / `additionalRadios` become one dictionary of sessions; the focus-compat properties from T300 go.
+- [ ] T315 `activeConnection` / `additionalRadios` become one dictionary of sessions; each radio's state (status, last error, Disconnect allowed, firmware gate) is kept per radio behind `linkStatus(of:)`, and the manager's focused-radio fields go.
 - [ ] T316 Remove `focusConnectedRadio`, `+FocusHandover`, `restoreDisplacedPreferred`, the connect-first override and `radiosFocusedThisRun`, with their tests.
 - [ ] T317 `PreferredRadio` becomes the radios to reconnect (`MyInfoEntity.autoConnect`); launch reconnects all of them.
 - [ ] T318 BLE restore restores every radio iOS hands back the same way, one handshake at a time.

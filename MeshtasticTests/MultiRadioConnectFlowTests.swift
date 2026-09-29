@@ -104,6 +104,48 @@ struct MultiRadioConnectFlowTests {
 		#expect(manager.activeConnection != nil)
 		#expect(await focused.disconnects == 0)
 		#expect(manager.lastConnectionError == nil, "the focused radio's error state is untouched")
+
+		// Its window reads why it failed, until the user disconnects it (T300).
+		let status = manager.linkStatus(of: refusing.id)
+		#expect(status.lastError != nil)
+		#expect(status.state == .idle)
+		#expect(!status.canDisconnect)
+		await manager.disconnectAdditionalRadio(refusing.id, byUser: true)
+		#expect(manager.linkStatus(of: refusing.id).lastError == nil)
+	}
+
+	@Test("Every radio's connection reads the same way, focused or not")
+	func linkStatusForEveryRadio() async throws {
+		let saved = SavedDefaults()
+		defer { saved.restore() }
+		let radios = try await connectTwoRadios()
+		let manager = radios.manager
+
+		for id in [radios.firstDevice.id, radios.secondDevice.id] {
+			let status = manager.linkStatus(of: id)
+			#expect(status.state == .subscribed)
+			#expect(status.canDisconnect)
+			#expect(status.attention == nil)
+			#expect(status.lastError == nil)
+		}
+		#expect(manager.focusedDeviceId == radios.firstDevice.id)
+
+		// The radio that isn't focused shows its own attention; the focused radio's comes from the
+		// manager's firmware gate.
+		let second = try #require(manager.additionalRadios[radios.secondDevice.id])
+		manager.setAttention(.firmwareTooOld(version: "2.3.0"), for: second)
+		#expect(manager.linkStatus(of: radios.secondDevice.id).firmwareUpdateRequired)
+		#expect(!manager.linkStatus(of: radios.firstDevice.id).firmwareUpdateRequired)
+		manager.firmwareUpdateRequired = true
+		#expect(manager.linkStatus(of: radios.firstDevice.id).firmwareUpdateRequired)
+		manager.firmwareUpdateRequired = false
+		manager.setAttention(nil, for: second)
+
+		let unknown = manager.linkStatus(of: UUID())
+		#expect(unknown.state == .idle)
+		#expect(!unknown.canDisconnect)
+		manager.additionalRadioReconnects.values.forEach { $0.cancel() }
+		try await manager.disconnect()
 	}
 
 	// MARK: - Focus without reconnecting (T072)

@@ -207,9 +207,12 @@ extension AccessoryManager {
 	/// its last lock-down status says it's locked. The focused radio's screens covered this; as
 	/// an additional radio it gets its prompt and its row's caption back (T153).
 	func attentionAfterLosingFocus(_ session: RadioSession) -> RadioAttention? {
-		if let firmware = firmwareAttention(for: session) {
-			return firmware
-		}
+		firmwareAttention(for: session) ?? lockdownAttention(for: session)
+	}
+
+	/// Why `session`'s radio needs the user from its last lock-down status: locked, unlocking
+	/// failed, or it needs a passphrase. Nil when unlocked or not lock-down firmware.
+	func lockdownAttention(for session: RadioSession) -> RadioAttention? {
 		switch session.lastLockdownStatus?.state {
 		case .locked: return session.lockdownAutoAttempted ? .unlockFailed : .locked
 		case .needsProvision: return .needsPassphrase

@@ -10,6 +10,67 @@ import MeshtasticProtobufs
 import OSLog
 import SwiftData
 
+// MARK: - One radio's connection (feature 021, D-19, T300)
+
+/// One radio's connection, as the window that shows the radio reads it: the same for every radio,
+/// whether or not it's the focused one.
+struct RadioLinkStatus {
+	/// `.connecting` through `.subscribed` while it connects or is connected; otherwise what's
+	/// left: `.idle`, or for the focused radio the manager's own state (`.discovering`).
+	var state: AccessoryManagerState
+	/// Whether Disconnect applies: it's connecting or connected.
+	var canDisconnect: Bool
+	/// Why it needs the user: locked, or its firmware is too old.
+	var attention: RadioAttention?
+	/// Why its last connect failed, until its next connect starts.
+	var lastError: Error?
+
+	var firmwareUpdateRequired: Bool {
+		if case .firmwareTooOld = attention { return true }
+		return false
+	}
+}
+
+extension AccessoryManager {
+
+	/// The radio whose state is the manager's own (`state`, `allowDisconnect`,
+	/// `lastConnectionError`, `firmwareUpdateRequired`): the focused radio, the one a focused
+	/// connect is for, or the preferred radio when neither.
+	var focusedDeviceId: UUID? {
+		activeConnection?.device.id
+			?? connectAttempts.values.first(where: \.isFocused)?.device.id
+			?? UUID(uuidString: PreferredRadio.peripheralId)
+	}
+
+	/// Radio `deviceId`'s connection. The focused radio's comes from the manager's fields, any
+	/// other's from its connect attempt, its session and `radioConnectErrors`. Until the focus
+	/// goes (T315) those are where each is kept; windows read this rather than either.
+	func linkStatus(of deviceId: UUID) -> RadioLinkStatus {
+		if deviceId == focusedDeviceId {
+			var attention: RadioAttention?
+			if let session = activeConnection {
+				if firmwareUpdateRequired {
+					attention = .firmwareTooOld(version: session.device.firmwareVersion ?? "?")
+				} else {
+					attention = lockdownAttention(for: session)
+				}
+			}
+			return RadioLinkStatus(state: state, canDisconnect: allowDisconnect, attention: attention, lastError: lastConnectionError)
+		}
+		let session = additionalRadios[deviceId]
+		let attempt = connectAttempts[deviceId]
+		let state: AccessoryManagerState
+		if let attempt {
+			state = attempt.status
+		} else if session?.device.connectionState == .connected {
+			state = .subscribed
+		} else {
+			state = .idle
+		}
+		return RadioLinkStatus(state: state, canDisconnect: attempt != nil || session != nil, attention: session?.attention, lastError: radioConnectErrors[deviceId])
+	}
+}
+
 // MARK: - Sending through a chosen radio (feature 021, T084/T085)
 
 extension AccessoryManager {

@@ -290,6 +290,10 @@ class AccessoryManager: ObservableObject {
 	}
 	/// Connects in progress, focused or not, by device id (T071): one at a time per radio.
 	var connectAttempts: [UUID: ConnectAttempt] = [:]
+	/// Why the last connect of a radio other than the focused one failed, by device id, until its
+	/// next connect starts or it's disconnected by the user (T300). The focused radio's is
+	/// `lastConnectionError`.
+	@Published var radioConnectErrors: [UUID: Error] = [:]
 	/// Each radio's firmware version as it last reported it this launch, by node number (T018):
 	/// what `checkIsVersionSupported` falls back to while a radio's live version is unknown.
 	var knownFirmwareVersions: [Int64: String] = [:]

@@ -213,6 +213,7 @@ extension AccessoryManager {
 		if byUser {
 			additionalRadioReconnects.removeValue(forKey: deviceId)?.cancel()
 			awaitedRememberedRadios.remove(deviceId)
+			radioConnectErrors.removeValue(forKey: deviceId)
 			if restoreDisplacedPreferred == deviceId { restoreDisplacedPreferred = nil }
 		}
 		// A connect still in progress for it stops, whether it's waiting for the handshake gate
