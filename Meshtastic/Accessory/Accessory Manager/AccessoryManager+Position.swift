@@ -25,27 +25,37 @@ extension AccessoryManager {
 
 				// Every connected radio, the focused one first. With the focused radio gone and
 				// others still connected (a handover pending), they keep getting it (T185).
-				let radios = connectedRadioNums
-				guard !radios.isEmpty else {
+				guard !connectedRadioNums.isEmpty else {
 					return
 				}
-				let focusedNum = activeConnection?.device.num
 
 				if UserDefaults.provideLocation {
-					if let focusedNum {
-						_ = try await sendPosition(channel: 0, destNum: focusedNum, wantResponse: false)
-					}
-					// Feature 021 (T101): every connected radio gets the phone's position, each on
-					// its own connection. Their failures don't end the loop the focused radio drives.
-					for radioNum in radios where radioNum != focusedNum {
-						do {
-							try await sendPosition(channel: 0, destNum: radioNum, wantResponse: false, viaRadio: radioNum)
-						} catch {
-							Logger.services.warning("📍 Could not share the phone's position with \(radioNum.toHex(), privacy: .public): \(error.localizedDescription, privacy: .public)")
-						}
-					}
+					try await sharePhonePosition()
 				}
 			} while !Task.isCancelled
+		}
+	}
+
+	/// One round of the position loop: the phone's position to every connected radio, each on its
+	/// own connection (feature 021, T101). A radio's failed send is logged and the others still
+	/// get theirs. The focused radio's ends the loop when it's the only radio connected, as before;
+	/// with others connected it doesn't, or none of them would get it again (T250).
+	func sharePhonePosition() async throws {
+		let radios = connectedRadioNums
+		let focusedNum = activeConnection?.device.num
+		if let focusedNum {
+			do {
+				_ = try await sendPosition(channel: 0, destNum: focusedNum, wantResponse: false)
+			} catch where radios.contains(where: { $0 != focusedNum }) {
+				Logger.services.warning("📍 Could not share the phone's position with the focused radio \(focusedNum.toHex(), privacy: .public): \(error.localizedDescription, privacy: .public)")
+			}
+		}
+		for radioNum in radios where radioNum != focusedNum {
+			do {
+				try await sendPosition(channel: 0, destNum: radioNum, wantResponse: false, viaRadio: radioNum)
+			} catch {
+				Logger.services.warning("📍 Could not share the phone's position with \(radioNum.toHex(), privacy: .public): \(error.localizedDescription, privacy: .public)")
+			}
 		}
 	}
 

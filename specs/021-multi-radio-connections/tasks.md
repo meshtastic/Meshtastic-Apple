@@ -255,6 +255,12 @@ suite each time. To resume: the first unchecked item.
 - [X] T241 the backup merge tests' helper checkpoints the backup store and switches it to `journal_mode=DELETE` before hashing it. — `BackupMergeTests.settle(_:)`, called by `makeBackupFolder`. Verified: the merge suite passed six runs in a row and the full suite passes.
 - [X] T242 notes: the edge (a joining radio's observations from an earlier, unfinished connect) in HANDOFF's gotchas; R8-1 (message table up to four times larger, unindexed message queries) under T132.
 
+## Review V9 fixes (review-connections-v9.md K1; review-data-v9.md had no findings)
+
+Re-checked in the files and holding (2026-09-29); the owner approved.
+
+- [X] T250 K1 a failed send of the phone's position to the focused radio no longer ends the loop while other radios are connected. — the loop's round is `sharePhonePosition()`; the focused send's error is caught and logged only when another radio is connected, so with one radio it still ends the loop as on `main`. Verified: `MultiRadioConnectLifecycleTests.focusedPositionFailureKeepsLoop`. The one-radio case (`main`'s own behaviour) is left for a separate PR against `main` if the owner wants it.
+
 ## Phase 10: Hardening
 
 - [ ] T130 Four BLE radios for 24 hours (device checklist in `HANDOFF.md`).

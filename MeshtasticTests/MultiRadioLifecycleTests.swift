@@ -33,6 +33,19 @@ private actor IdleConnection: Connection {
 	func appDidBecomeActive() {}
 }
 
+/// A connection whose sends fail.
+private actor FailingConnection: Connection {
+	let type: TransportType = .tcp
+	var isConnected = true
+	func send(_ data: ToRadio) async throws { throw AccessoryError.ioFailed("Send failed") }
+	func connect() async throws -> AsyncStream<ConnectionEvent> { AsyncStream { $0.finish() } }
+	func disconnect(withError: Error?, shouldReconnect: Bool) async throws { isConnected = false }
+	func drainPendingPackets() async throws {}
+	func startDrainPendingPackets() throws {}
+	func appDidEnterBackground() {}
+	func appDidBecomeActive() {}
+}
+
 /// A TCP transport whose discovery finds `found` once asked to.
 private final class OneDeviceDiscoveryTransport: Transport, @unchecked Sendable {
 	let type: TransportType = .tcp
@@ -295,6 +308,25 @@ struct MultiRadioConnectLifecycleTests {
 		manager.activeConnection = RadioSession(device: device("Only"), connection: IdleConnection())
 		try await manager.closeConnection()
 		#expect(manager.locationTask == nil, "with one radio it stops, as before")
+	}
+
+	@Test("A failed send to the focused radio doesn't end the position loop while other radios are connected")
+	func focusedPositionFailureKeepsLoop() async throws {
+		let manager = AccessoryManager(transports: [])
+		var focused = device("Focused")
+		focused.num = 0x0A0B
+		focused.connectionState = .connected
+		manager.activeConnection = RadioSession(device: focused, connection: FailingConnection())
+		// Fails whether or not the phone has a location: without one there's nothing to send.
+		await #expect(throws: (any Error).self, "with one radio it ends the loop, as before") {
+			try await manager.sharePhonePosition()
+		}
+
+		var extra = device("Extra")
+		extra.num = 0x0B0D
+		extra.connectionState = .connected
+		manager.additionalRadios[extra.id] = RadioSession(device: extra, connection: FailingConnection())
+		try await manager.sharePhonePosition()
 	}
 
 	@Test("Each radio's heartbeat timeout follows its own firmware, not the focused radio's")
