@@ -88,6 +88,15 @@ extension AccessoryManager {
 		return result + additionalRadioDevices
 	}
 
+	/// Whether `session` is the only radio connected: a connect that does the app's own work
+	/// (device catalog, stale-node prune, unread badges, T309) is one with no other radio connected.
+	/// With one radio that's every connect, as before.
+	func isOnlyConnectedRadio(_ session: RadioSession?) -> Bool {
+		guard let session else { return false }
+		return (activeConnection == nil || activeConnection === session)
+			&& additionalRadios.values.allSatisfy { $0 === session }
+	}
+
 	/// The additional radios' devices, by name.
 	var additionalRadioDevices: [Device] {
 		additionalRadios.values

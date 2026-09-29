@@ -338,8 +338,8 @@ extension AccessoryManager {
 				// awaited inside a 30s Step budget, so it must stay local (issue #2196). Device images
 				// and the "I want one" msh.to links are network-backed and are restored by the detached
 				// pass below instead.
-				// The catalog is app-wide, so the focused radio's connect refreshes it.
-				if attempt.isFocused {
+				// The catalog is app-wide: a connect with no other radio connected refreshes it (T309).
+				if self.isOnlyConnectedRadio(attempt.session) {
 					do {
 						Logger.transport.info("🔗👟 [Connect] Step 3a: Refresh bundled Meshtastic device hardware data")
 						try await MeshtasticAPI.shared.refreshBundledDevicesData()
@@ -361,8 +361,8 @@ extension AccessoryManager {
 				// Held on the manager so closeConnection can cancel it: on a captive portal the pass's
 				// image HEADs would otherwise hang ~60s past a disconnect. A prior pass from a rapid
 				// reconnect is cancelled before the new one replaces the handle.
-				// App-wide, so the focused radio's connect runs it.
-				if attempt.isFocused {
+				// App-wide, so a connect with no other radio connected runs it (T309).
+				if self.isOnlyConnectedRadio(attempt.session) {
 					self.deviceRefreshTask?.cancel()
 					self.deviceRefreshTask = Task.detached(priority: .utility) {
 						if refreshDeviceHardwareFromAPI {
@@ -493,22 +493,23 @@ extension AccessoryManager {
 				// peripheral reconnects with wantConfig and wantDatabase false (BLETransport's
 				// `.connected` case), so neither completion fires and the extension is left
 				// reporting no radio. Every connect path reaches this step.
-				// The snapshot and the update notice are the focused radio's (T106, T073).
-				if attempt.isFocused {
-					if let activeDeviceNum = self.activeDeviceNum {
-						MeshShareSnapshotBuilder.refresh(nodeNum: activeDeviceNum, context: self.context)
-					}
-
-					// Best-effort: the notifier bounds stale API refresh and cannot roll back a completed connect.
-					await FirmwareUpdateNotifier.notifyIfNeeded(accessoryManager: self)
+				// The snapshot is the focused radio's (T106) until it follows the CarPlay & Siri radio
+				// (T321).
+				if attempt.isFocused, let activeDeviceNum = self.activeDeviceNum {
+					MeshShareSnapshotBuilder.refresh(nodeNum: activeDeviceNum, context: self.context)
 				}
+				// Each radio's update notice is its own (T309). Best-effort: the notifier bounds stale
+				// API refresh and cannot roll back a completed connect.
+				await FirmwareUpdateNotifier.notifyIfNeeded(accessoryManager: self, window: RadioWindow(deviceId: device.id))
 			}
 			
 			// Step 8: Update UI and status to connected
 			Step { @MainActor _ in
 				Logger.transport.debug("🔗👟 [Connect] Step 8: Initialize MQTT and Location Provider")
 				let session = try attempt.requireSession()
-				if attempt.isFocused {
+				// App-wide: a connect with no other radio connected does it (T309).
+				let isOnlyRadio = self.isOnlyConnectedRadio(session)
+				if isOnlyRadio {
 					self.stopDiscovery()
 					// Prune stale nodes now that the dump is in, instead of at the head of
 					// sendWantConfig where the fetch+delete+save serialized ahead of the whole
@@ -519,9 +520,12 @@ extension AccessoryManager {
 				// Every radio's own module settings and MQTT client proxy (T071c).
 				self.applyModuleSettings(session)
 				Task { await self.startMqtt(session) }
-				if attempt.isFocused {
+				if isOnlyRadio {
 					self.initializeUnreadBadges()
-					// One loop shares the phone's position with every connected radio (T101).
+				}
+				// One loop shares the phone's position with every connected radio (T101); started by
+				// the first radio's connect.
+				if isOnlyRadio || self.locationTask == nil {
 					self.initializeLocationProvider()
 				}
 				if transport.requiresPeriodicHeartbeat {

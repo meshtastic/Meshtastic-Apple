@@ -283,7 +283,7 @@ Routing (plan step 3)
 - [X] T308 A router per window; a registry of open windows picks the window for a deep link or a notification tap (W-05). — `WindowRouters` (on `AppState.windows`): each `ContentView` registers its window and router, and says when it's active; `route(url:manager:)` sends a DM link to the window of its radio, a channel link to the first open window whose radio has that channel, else the window last used, then the first; the notification delegate and `meshtastic://` links go through it; a store reset or a renumber pops every window's views. `AppState.router` stays the first window's until windows get their own (T310). Verified: `WindowRoutersTests` (4).
 
 App-wide work (plan step 4)
-- [ ] T309 The connect steps' `isFocused` branches split: once-per-launch work run by the first connect to finish, per-radio state from T300.
+- [X] T309 The connect steps' app-wide work no longer depends on the focus. — the device catalog and images (Steps 3a, 3b), stopping discovery, the stale-node prune and the unread badges run on a connect with no other radio connected (`isOnlyConnectedRadio`), which with one radio is every connect, as on `main`; the position loop starts then or when none is running; each radio's connect asks about its own firmware update notice (`notifyIfNeeded(accessoryManager:window:)`). The per-radio `isFocused` branches (status, Disconnect, stepper, registration, preferred radio) are the focus itself and go in T315; the Messages sharing snapshot stays the focused radio's until T321. Verified: `MultiRadioConnectFlowTests.onlyConnectedRadio`, full suite.
 
 Windows (plan step 5)
 - [ ] T310 Radio windows as `WindowGroup(for: RadioWindow.self)` on the Mac and iPad; a radio's window opens when it connects.

@@ -151,12 +151,14 @@ enum FirmwareUpdateNotifier {
 		)
 	}
 
+	/// Notifies once about an update for `window`'s radio (feature 021: each radio's connect asks
+	/// about its own).
 	@MainActor
-	static func notifyIfNeeded(accessoryManager: AccessoryManager) async {
+	static func notifyIfNeeded(accessoryManager: AccessoryManager, window: RadioWindow = .focused) async {
 		await refreshFirmwareDataIfStale()
 		guard !Task.isCancelled else { return }
 
-		guard let candidate = candidate(accessoryManager: accessoryManager),
+		guard let candidate = candidate(accessoryManager: accessoryManager, window: window),
 		      let notification = notification(
 			      for: candidate,
 			      alreadyNotified: UserDefaults.firmwareUpdateNotificationKeySet
@@ -171,8 +173,8 @@ enum FirmwareUpdateNotifier {
 		UserDefaults.recordFirmwareUpdateNotificationKey(notification.id)
 	}
 
-	@MainActor
 	/// The update notice for `window`'s radio (feature 021, D-19); `.focused` is the focused radio.
+	@MainActor
 	static func notice(accessoryManager: AccessoryManager, window: RadioWindow = .focused) -> FirmwareUpdateNotice? {
 		guard let candidate = candidate(accessoryManager: accessoryManager, window: window) else { return nil }
 		return notice(for: candidate)

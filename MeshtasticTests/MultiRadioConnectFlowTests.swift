@@ -159,6 +159,26 @@ struct MultiRadioConnectFlowTests {
 		try await manager.disconnect()
 	}
 
+	@Test("The app's own connect work runs for a radio connected with no other")
+	func onlyConnectedRadio() async throws {
+		let saved = SavedDefaults()
+		defer { saved.restore() }
+		let radios = try await connectTwoRadios()
+		let manager = radios.manager
+		let first = try #require(manager.activeConnection)
+		let second = try #require(manager.additionalRadios[radios.secondDevice.id])
+
+		#expect(!manager.isOnlyConnectedRadio(first), "another radio is connected")
+		#expect(!manager.isOnlyConnectedRadio(second))
+		#expect(!manager.isOnlyConnectedRadio(nil))
+		#expect(manager.locationTask != nil, "the position loop runs for both")
+
+		await manager.disconnectAdditionalRadio(radios.secondDevice.id, byUser: true)
+		#expect(manager.isOnlyConnectedRadio(first))
+		manager.additionalRadioReconnects.values.forEach { $0.cancel() }
+		try await manager.disconnect()
+	}
+
 	@Test("Every radio's connection reads the same way, focused or not")
 	func linkStatusForEveryRadio() async throws {
 		let saved = SavedDefaults()
