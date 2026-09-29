@@ -251,12 +251,6 @@ extension AccessoryManager {
 					self.setStatus(.connecting, for: attempt)
 				}
 				self.updateDevice(deviceId: device.id, key: \.connectionState, value: .connecting)
-				// Lockdown: reset per-connection state. Firmware requires re-auth on every
-				// new BLE connection even if storage is already unlocked. The coordinator is the
-				// focused radio's until each radio gets its own prompt (T073).
-				if attempt.isFocused {
-					self.lockdownCoordinator?.onConnect(peripheralID: device.id)
-				}
 				// Asked before the event stream starts: the packets this radio queued arrive with its
 				// config and write its observations before Step 3c gets to the backfill (T230). The
 				// store's own radio, known by its number, doesn't need it.

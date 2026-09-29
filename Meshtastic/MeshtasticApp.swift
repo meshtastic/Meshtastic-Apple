@@ -19,7 +19,6 @@ struct MeshtasticAppleApp: App {
 	@UIApplicationDelegateAdaptor(MeshtasticAppDelegate.self) private var appDelegate
 #endif
 	@StateObject var appState: AppState
-	@StateObject private var lockdownCoordinator: LockdownCoordinator
 	private let persistenceController: PersistenceController?
 	private let accessoryManager: AccessoryManager
 	@Environment(\.scenePhase) var scenePhase
@@ -108,14 +107,6 @@ struct MeshtasticAppleApp: App {
 
 		accessoryManager = AccessoryManager.shared
 		accessoryManager.appState = appState
-
-		// Lockdown coordinator. Constructed here so it lives at app scope and is
-		// injected into the SwiftUI environment for views to observe. The sender
-		// is wired after construction to avoid an init-time cycle with AccessoryManager.
-		let lockdown = LockdownCoordinator()
-		lockdown.setSender(accessoryManager)
-		accessoryManager.lockdownCoordinator = lockdown
-		self._lockdownCoordinator = StateObject(wrappedValue: lockdown)
 
 		self._appState = StateObject(wrappedValue: appState)
 
@@ -334,14 +325,8 @@ struct MeshtasticAppleApp: App {
 				mainAppContent
 			}
 			}
-			.onChange(of: lockdownCoordinator.state) { _, newState in
-				// US-3: when the coordinator resolves to .lockNowAcknowledged
-				// (either via inbound LOCKED status or a BLE disconnect race),
-				// tear down the connection so the next reconnect re-auths.
-				if case .lockNowAcknowledged = newState {
-					Task { try? await accessoryManager.closeConnection() }
-				}
-			}
+			// The window's radio's lock-down state (T301).
+			.modifier(WindowLockdownScope())
 		}
 		.onChange(of: scenePhase) { (_, newScenePhase) in
 			// Also skipped in Chirpy OTA demo mode, where persistenceController is nil —
@@ -376,7 +361,6 @@ struct MeshtasticAppleApp: App {
 		}
 		.environmentObject(appState)
 		.environmentObject(accessoryManager)
-		.environmentObject(lockdownCoordinator)
 		.environmentObject(appState.router)
 		.environmentObject(MeshtasticAPI.shared)
 
@@ -393,7 +377,7 @@ struct MeshtasticAppleApp: App {
 					.modelContainer(persistenceController.container)
 					.environmentObject(appState)
 					.environmentObject(accessoryManager)
-					.environmentObject(lockdownCoordinator)
+					.modifier(WindowLockdownScope())
 					.environmentObject(appState.router)
 					.environmentObject(MeshtasticAPI.shared)
 				}

@@ -27,10 +27,21 @@ final class RadioSession: Identifiable {
 	var device: Device
 	let connection: any Connection
 
-	init(device: Device, connection: any Connection) {
+	init(device: Device, connection: any Connection, passphraseStore: LockdownPassphraseStoring = LockdownPassphraseStore.shared) {
 		self.device = device
 		self.connection = connection
+		self.lockdown = LockdownCoordinator(store: passphraseStore)
+		lockdownSender.session = self
+		lockdown.setSender(lockdownSender)
+		// Firmware asks for the passphrase again on every new connection.
+		lockdown.onConnect(peripheralID: device.id)
 	}
+
+	/// Its lock-down state: the saved passphrase tried once, the passphrase sheet, Lock Now
+	/// (feature 021, T301). The same state machine for every radio.
+	let lockdown: LockdownCoordinator
+	/// What `lockdown` sends through, on this connection. Kept here: the coordinator holds it weakly.
+	private let lockdownSender = SessionLockdownSender()
 
 	/// The radio's node number, once MyInfo has arrived.
 	var nodeNum: Int64? { device.num }
@@ -74,16 +85,6 @@ final class RadioSession: Identifiable {
 	var mqtt: RadioMqttClient?
 	/// Its range test module is on: range test packets it receives are stored as messages.
 	var wantRangeTestPackets = false
-	/// A lock-down passphrase saved for this radio has been sent on this connection (T065).
-	var lockdownAutoAttempted = false
-	/// A passphrase the user entered for this radio while it isn't focused, sent and waiting for
-	/// its answer; saved for the radio once it reports unlocked (T188).
-	var pendingPassphrase: StoredPassphrase?
-	/// Until when it refuses passphrases after too many wrong ones, as it reported (T196).
-	var unlockBackoffUntil: Date?
-	/// The last lock-down status it reported, so the focused radio's sheet and Settings
-	/// section show it when it takes the focus without reconnecting (T072).
-	var lastLockdownStatus: LockdownStatus?
 	/// Why it needs the user, when it does (T073; set through `AccessoryManager.setAttention`).
 	var attention: RadioAttention?
 }

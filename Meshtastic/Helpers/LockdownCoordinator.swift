@@ -41,6 +41,23 @@ final class LockdownCoordinator: ObservableObject {
 
 	@Published private(set) var state: LockdownState = .none
 
+	/// Why the last passphrase couldn't be sent, shown in the passphrase sheet until the next
+	/// try or the radio's next status (feature 021, T301).
+	@Published private(set) var sendError: String?
+
+	/// A passphrase was sent and the radio hasn't answered yet.
+	var isWaitingForAnswer: Bool {
+		pendingPassphrase != nil
+	}
+
+	/// Whether a passphrase can be sent: the radio has reported its node number.
+	var canSend: Bool {
+		(sender?.myNodeNum ?? 0) != 0
+	}
+
+	/// For views with no connected radio (feature 021, T301): never blocks, never sends.
+	static let noRadio = LockdownCoordinator()
+
 	/// `true` iff `state == .unlocked(...)`. Convenience for views that gate
 	/// banners or actions on the session being authorized.
 	var sessionAuthorized: Bool {
@@ -76,6 +93,9 @@ final class LockdownCoordinator: ObservableObject {
 	private var pendingValidUntilEpoch: UInt32 = 0
 	private var pendingMaxSessionSeconds: UInt32 = 0
 	private var pendingLockNow = false
+	/// What the sheet showed before the pending passphrase was submitted, to go back to if it
+	/// can't be sent.
+	private var stateBeforeSubmit: LockdownState?
 
 	/// Returns the coordinator to passphrase entry when an unlock backoff
 	/// deadline passes. Without this the non-dismissable sheet counts down to
@@ -107,6 +127,7 @@ final class LockdownCoordinator: ObservableObject {
 		clearPendingPassphrase()
 		pendingLockNow = false
 		cancelBackoffExpiry()
+		sendError = nil
 		state = .none
 	}
 
@@ -133,6 +154,7 @@ final class LockdownCoordinator: ObservableObject {
 		// A fresh status supersedes any running backoff countdown; entering a new
 		// backoff re-arms it in enterBackoff.
 		cancelBackoffExpiry()
+		sendError = nil
 		switch status.state {
 		case .needsProvision:
 			state = .needsProvision
@@ -254,6 +276,8 @@ final class LockdownCoordinator: ObservableObject {
 		pendingValidUntilEpoch = validUntilEpoch
 		pendingMaxSessionSeconds = maxSessionSeconds
 		wasAutoAttempt = false
+		sendError = nil
+		stateBeforeSubmit = state
 		// Hide the sheet while we wait for the firmware response.
 		state = .none
 		sender.sendLockdownAuth(passphrase: data,
@@ -261,6 +285,16 @@ final class LockdownCoordinator: ObservableObject {
 								validUntilEpoch: validUntilEpoch,
 								maxSessionSeconds: maxSessionSeconds,
 								lockNow: false)
+	}
+
+	/// The passphrase just submitted couldn't be sent (feature 021, T301): the sheet comes back,
+	/// saying so, rather than staying hidden waiting for an answer that won't come.
+	func passphraseSendFailed(_ message: String) {
+		guard pendingPassphrase != nil, case .none = state else { return }
+		let previous = stateBeforeSubmit
+		clearPendingPassphrase()
+		sendError = message
+		state = previous ?? .locked(reason: "needs_auth")
 	}
 
 	func lockNow() {
@@ -290,6 +324,7 @@ final class LockdownCoordinator: ObservableObject {
 	/// window. See NFR-002 in spec.md.
 	private func clearPendingPassphrase() {
 		pendingPassphrase = nil
+		stateBeforeSubmit = nil
 		pendingBootsRemaining = 0
 		pendingValidUntilEpoch = 0
 		pendingMaxSessionSeconds = 0

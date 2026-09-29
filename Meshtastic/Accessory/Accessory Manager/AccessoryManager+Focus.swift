@@ -89,12 +89,6 @@ extension AccessoryManager {
 		Logger.datadog.setRadioContext(.firmwareVersion, session.device.firmwareVersion)
 		Logger.datadog.setRadioContext(.hardwareModel, session.device.hardwareModel)
 
-		// The passphrase sheet and Settings' lock-down section follow the focused radio.
-		lockdownCoordinator?.onConnect(peripheralID: session.device.id)
-		if let status = session.lastLockdownStatus {
-			lockdownCoordinator?.handle(status)
-		}
-
 		if let nodeNum = session.nodeNum {
 			MeshShareSnapshotBuilder.refresh(nodeNum: nodeNum, context: context)
 		}

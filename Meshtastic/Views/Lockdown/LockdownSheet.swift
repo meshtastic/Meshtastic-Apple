@@ -14,6 +14,11 @@ import OSLog
 
 struct LockdownSheet: View {
 
+	/// For a radio that isn't focused (feature 021, T188, T301): its name, shown at the top, and
+	/// what Cancel does. Nil for the focused radio's full-screen sheet, which has no Cancel.
+	var radioName: String?
+	var onCancel: (() -> Void)?
+
 	@EnvironmentObject private var lockdown: LockdownCoordinator
 	@EnvironmentObject private var accessoryManager: AccessoryManager
 
@@ -22,21 +27,43 @@ struct LockdownSheet: View {
 			Group {
 				switch lockdown.state {
 				case .needsProvision:
-					PassphraseEntryContent(mode: .provision)
+					PassphraseEntryContent(mode: .provision, inlineError: lockdown.sendError)
 				case .locked(let reason):
-					PassphraseEntryContent(mode: .unlock(reason: reason))
+					PassphraseEntryContent(mode: .unlock(reason: reason), inlineError: lockdown.sendError)
 				case .unlockFailed:
 					PassphraseEntryContent(mode: .unlock(reason: "auto_replay_wrong_passphrase"),
-										   inlineError: "lockdown.passphrase.wrong".localized)
+										   inlineError: lockdown.sendError ?? "lockdown.passphrase.wrong".localized)
 				case .unlockBackoff(let deadline):
 					BackoffCountdownContent(deadline: deadline)
+				case .none where lockdown.isWaitingForAnswer:
+					// A radio's own sheet stays up while it answers (T301).
+					ProgressView()
+						.frame(maxWidth: .infinity, maxHeight: .infinity)
 				case .none, .unlocked, .lockNowAcknowledged:
 					// Sheet should already be dismissed by ContentView's cover binding.
 					EmptyView()
 				}
 			}
-			.interactiveDismissDisabled(true)
-			.safeAreaInset(edge: .top) { RadioNameBanner() }
+			.interactiveDismissDisabled(onCancel == nil)
+			.toolbar {
+				if let onCancel {
+					ToolbarItem(placement: .cancellationAction) {
+						Button("Cancel", action: onCancel)
+					}
+				}
+			}
+			.safeAreaInset(edge: .top) {
+				if let radioName {
+					Label(radioName, systemImage: "antenna.radiowaves.left.and.right")
+						.font(.headline)
+						.frame(maxWidth: .infinity)
+						.padding(.vertical, 8)
+						.background(.regularMaterial)
+						.accessibilityLabel(String.localizedStringWithFormat("Radio: %@".localized, radioName))
+				} else {
+					RadioNameBanner()
+				}
+			}
 		}
 	}
 }
@@ -58,74 +85,44 @@ struct RadioNameBanner: View {
 	}
 }
 
-/// The passphrase entry for a locked radio that isn't focused (feature 021, T188). The passphrase
-/// goes out on that radio's own connection (`AccessoryManager.submitPassphrase(_:…toRadio:)`), so
-/// the radio doesn't need the focus, which waits for a connect that locked firmware may not
-/// finish. It closes when the radio unlocks, stops needing a passphrase, or disconnects.
+/// The passphrase sheet for a locked radio that isn't focused (feature 021, T188): the same sheet
+/// as the focused radio's, on that radio's own coordinator (T301), so the passphrase goes out on
+/// its own connection. It closes when the radio unlocks, stops needing a passphrase, or
+/// disconnects; a wrong passphrase, or one that couldn't be sent, shows in it.
 struct RadioUnlockSheet: View {
 	let request: RadioUnlockRequest
 
 	@EnvironmentObject private var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var dismiss
-	/// Why the last passphrase couldn't be sent (T196): the sheet stays open to say so.
-	@State private var sendError: String?
 
 	private var session: RadioSession? {
 		accessoryManager.additionalRadios[request.id]
 	}
 
 	var body: some View {
-		NavigationStack {
-			Group {
-				if let session, let attention = session.attention, attention.isLockdown {
-					// Rate limited after wrong passphrases: a countdown, as for the focused radio,
-					// then the entry again (T196).
-					TimelineView(.periodic(from: .now, by: 1)) { context in
-						if let until = session.unlockBackoffUntil, until > context.date {
-							BackoffCountdownContent(deadline: until)
-						} else {
-							PassphraseEntryContent(
-								mode: attention == .needsPassphrase ? .provision : .unlock(reason: session.lastLockdownStatus?.lockReason ?? "needs_auth"),
-								inlineError: sendError ?? (attention == .unlockFailed ? "lockdown.passphrase.wrong".localized : nil),
-								isReady: session.nodeNum != nil,
-								onSubmit: submit
-							)
-						}
-					}
-				} else {
-					Color.clear.onAppear { dismiss() }
-				}
-			}
-			.toolbar {
-				ToolbarItem(placement: .cancellationAction) {
-					Button("Cancel") { dismiss() }
-				}
-			}
-			.safeAreaInset(edge: .top) {
-				Label(request.radioName, systemImage: "antenna.radiowaves.left.and.right")
-					.font(.headline)
-					.frame(maxWidth: .infinity)
-					.padding(.vertical, 8)
-					.background(.regularMaterial)
-					.accessibilityLabel(String.localizedStringWithFormat("Radio: %@".localized, request.radioName))
-			}
+		if let session, session.lockdown.isBlockingSession || session.lockdown.isWaitingForAnswer {
+			RadioLockdownSheet(lockdown: session.lockdown, radioName: request.radioName, onCancel: { dismiss() })
+		} else {
+			Color.clear.onAppear { dismiss() }
 		}
 	}
 }
 
-private extension RadioUnlockSheet {
-	/// Closes once the passphrase is sent; the radio's answer arrives as its lock-down status. A
-	/// send that fails keeps the sheet open with the reason (T196).
-	func submit(_ passphrase: String, _ boots: UInt32, _ validUntil: UInt32, _ maxSession: UInt32) {
-		sendError = nil
-		Task {
-			let sent = await accessoryManager.submitPassphrase(passphrase, bootsRemaining: boots, validUntilEpoch: validUntil, maxSessionSeconds: maxSession, toRadio: request.id)
-			if sent {
-				dismiss()
-			} else {
-				sendError = String.localizedStringWithFormat("The passphrase couldn't be sent to %@. Check that it's still connected, then try again.".localized, request.radioName)
+/// Observes one radio's coordinator, so its sheet follows that radio's state.
+private struct RadioLockdownSheet: View {
+	@ObservedObject var lockdown: LockdownCoordinator
+	let radioName: String
+	let onCancel: () -> Void
+	@Environment(\.dismiss) private var dismiss
+
+	var body: some View {
+		LockdownSheet(radioName: radioName, onCancel: onCancel)
+			.environmentObject(lockdown)
+			.onChange(of: lockdown.state) { _, _ in
+				// Stays up while a passphrase it sent waits for the answer, and shows why when it
+				// couldn't be sent.
+				if !lockdown.isBlockingSession, !lockdown.isWaitingForAnswer { dismiss() }
 			}
-		}
 	}
 }
 
@@ -140,10 +137,6 @@ private struct PassphraseEntryContent: View {
 
 	let mode: Mode
 	var inlineError: String?
-	/// For a radio that isn't focused (T188): whether it can take a passphrase yet, and what
-	/// submitting does. Nil for the focused radio, which goes through `LockdownCoordinator`.
-	var isReady: Bool?
-	var onSubmit: ((_ passphrase: String, _ bootsRemaining: UInt32, _ validUntilEpoch: UInt32, _ maxSessionSeconds: UInt32) -> Void)?
 
 	@EnvironmentObject private var lockdown: LockdownCoordinator
 	@EnvironmentObject private var accessoryManager: AccessoryManager
@@ -183,7 +176,7 @@ private struct PassphraseEntryContent: View {
 	}
 
 	private var coordinatorReady: Bool {
-		isReady ?? (accessoryManager.activeConnection?.device.num != nil)
+		lockdown.canSend
 	}
 
 	private var isSubmitEnabled: Bool {
@@ -326,14 +319,10 @@ private struct PassphraseEntryContent: View {
 			guard let minutes = sessionMinutesParsed, minutes > 0 else { return 0 }
 			return UInt32(clamping: UInt64(minutes) * 60)
 		}()
-		if let onSubmit {
-			onSubmit(passphrase, boots, validUntilEpoch, maxSessionSeconds)
-		} else {
-			lockdown.submitPassphrase(passphrase,
-									  bootsRemaining: boots,
-									  validUntilEpoch: validUntilEpoch,
-									  maxSessionSeconds: maxSessionSeconds)
-		}
+		lockdown.submitPassphrase(passphrase,
+								  bootsRemaining: boots,
+								  validUntilEpoch: validUntilEpoch,
+								  maxSessionSeconds: maxSessionSeconds)
 		// Wipe local copy immediately; coordinator also clears its own pending copy
 		// on response. NFR-002.
 		passphrase = ""

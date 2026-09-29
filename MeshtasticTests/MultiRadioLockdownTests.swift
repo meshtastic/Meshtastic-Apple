@@ -2,7 +2,8 @@
 //  MultiRadioLockdownTests.swift
 //  MeshtasticTests
 //
-//  Feature 021, T065: lock-down status from a radio connected alongside the focused one.
+//  Feature 021, T065, T301: lock-down status from any connected radio, each on its own
+//  coordinator.
 //
 
 import Foundation
@@ -17,6 +18,19 @@ private actor RecordingIdleConnection: Connection {
 	private(set) var sent: [ToRadio] = []
 
 	func send(_ data: ToRadio) async throws { sent.append(data) }
+	func connect() async throws -> AsyncStream<ConnectionEvent> { AsyncStream { $0.finish() } }
+	func disconnect(withError: Error?, shouldReconnect: Bool) async throws { isConnected = false }
+	func drainPendingPackets() async throws {}
+	func startDrainPendingPackets() throws {}
+	func appDidEnterBackground() {}
+	func appDidBecomeActive() {}
+}
+
+/// A connection whose sends fail.
+private actor FailingSendConnection: Connection {
+	let type: TransportType = .tcp
+	var isConnected = true
+	func send(_ data: ToRadio) async throws { throw AccessoryError.ioFailed("Send failed") }
 	func connect() async throws -> AsyncStream<ConnectionEvent> { AsyncStream { $0.finish() } }
 	func disconnect(withError: Error?, shouldReconnect: Bool) async throws { isConnected = false }
 	func drainPendingPackets() async throws {}
@@ -42,9 +56,11 @@ struct MultiRadioLockdownTests {
 		let manager: AccessoryManager
 		let radio: RadioSession
 		let connection: RecordingIdleConnection
+		let store: InMemoryPassphraseStore
 	}
 
-	/// A manager with a focused radio and one connected alongside it, B.
+	/// A manager with a focused radio and one connected alongside it, B, whose saved passphrases
+	/// are in `store`.
 	private func makeFixture(transports: [any Transport] = []) -> Fixture {
 		let manager = AccessoryManager(transports: transports)
 		manager.isSwitchingDevices = true
@@ -52,13 +68,20 @@ struct MultiRadioLockdownTests {
 		manager.appState = AppState(router: Router())
 		var focused = Device(id: UUID(), name: "Focused", transportType: .tcp, identifier: "a.local:4403")
 		focused.num = 0x0A0A
-		manager.activeConnection = RadioSession(device: focused, connection: RecordingIdleConnection())
+		let store = InMemoryPassphraseStore()
+		manager.activeConnection = RadioSession(device: focused, connection: RecordingIdleConnection(), passphraseStore: store)
 		let connection = RecordingIdleConnection()
 		var extra = Device(id: UUID(), name: "Extra", transportType: .tcp, identifier: "b.local:4403")
 		extra.num = extraNum
-		let radio = RadioSession(device: extra, connection: connection)
+		let radio = RadioSession(device: extra, connection: connection, passphraseStore: store)
 		manager.additionalRadios[extra.id] = radio
-		return Fixture(manager: manager, radio: radio, connection: connection)
+		return Fixture(manager: manager, radio: radio, connection: connection, store: store)
+	}
+
+	/// A lock-down status from `session`'s radio, as the event loop hands it on.
+	private func deliver(_ status: LockdownStatus, to session: RadioSession, _ manager: AccessoryManager) {
+		session.lockdown.handle(status)
+		manager.lockdownStateChanged(session)
 	}
 
 	private func status(_ state: LockdownStatus.State) -> LockdownStatus {
@@ -75,14 +98,14 @@ struct MultiRadioLockdownTests {
 		}
 	}
 
-	@Test("A locked radio with a saved passphrase gets it once; still locked, it stays connected and prompts by name")
+	@Test("A locked radio with a saved passphrase gets it; refused, it stays connected and prompts by name")
 	func savedPassphraseIsSentOnce() async throws {
 		let fixture = makeFixture()
 		let manager = fixture.manager, radio = fixture.radio, connection = fixture.connection
-		let store = InMemoryPassphraseStore()
+		let store = fixture.store
 		store.entries[radio.device.id] = StoredPassphrase(passphrase: "hunter2", bootsRemaining: 3, validUntilEpoch: 0)
 
-		manager.handleAdditionalLockdown(status(.locked), session: radio, store: store)
+		deliver(status(.locked), to: radio, manager)
 		try await waitUntil { await !connection.sent.isEmpty }
 
 		let sent = await connection.sent
@@ -96,8 +119,9 @@ struct MultiRadioLockdownTests {
 		#expect(admin.lockdownAuth.bootsRemaining == 3)
 		#expect(radio.attention == nil, "nothing to ask while the saved passphrase is tried")
 
-		// Still locked after that: the passphrase isn't sent again, and the user is asked.
-		manager.handleAdditionalLockdown(status(.locked), session: radio, store: store)
+		// Refused: the saved passphrase is dropped, isn't sent again, and the user is asked.
+		deliver(status(.unlockFailed), to: radio, manager)
+		#expect(store.entries[radio.device.id] == nil)
 		#expect(manager.additionalRadios[radio.device.id] === radio, "it stays connected")
 		#expect(radio.attention == .unlockFailed)
 		#expect(manager.radioAttentionPrompt == RadioAttentionPrompt(id: radio.device.id, radioName: "Extra", attention: .unlockFailed))
@@ -117,7 +141,7 @@ struct MultiRadioLockdownTests {
 
 		let session = try #require(manager.additionalRadios[device.id])
 		#expect(session.attention == .locked)
-		#expect(session.lastLockdownStatus?.state == .locked)
+		#expect(session.lockdown.isBlockingSession)
 		#expect(manager.radioAttentionPrompt?.id == device.id)
 		#expect(manager.radioAttentionPrompt?.attention.title(radioName: "Scripted Radio") == "Scripted Radio is locked")
 		#expect(await scripted.disconnects == 0)
@@ -132,15 +156,13 @@ struct MultiRadioLockdownTests {
 		let scripted = ScriptedRadio(nodeNum: 0x5100_0003, afterConfig: [.lockdownStatus(locked)])
 		let fixture = makeFixture(transports: [ScriptedTransport(radio: scripted)])
 		let manager = fixture.manager
-		let coordinator = LockdownCoordinator(store: InMemoryPassphraseStore())
-		manager.lockdownCoordinator = coordinator
 		let device = Device(id: UUID(), name: "Locked", transportType: .tcp, identifier: "locked2.local:4403")
 		try await manager.connectAdditionalRadio(device)
 
 		#expect(await manager.focusConnectedRadio(device.id))
 
 		#expect(manager.activeConnection?.device.id == device.id)
-		#expect(coordinator.isBlockingSession, "the focused radio's passphrase sheet is up, for this radio")
+		#expect(manager.session(for: .focused)?.lockdown.isBlockingSession == true, "the window's passphrase sheet is up, for this radio")
 		#expect(manager.radioAttentionPrompt == nil)
 		#expect(manager.activeConnection?.attention == nil)
 		#expect(await scripted.disconnects == 0)
@@ -153,7 +175,6 @@ struct MultiRadioLockdownTests {
 		let scripted = ScriptedRadio(nodeNum: 0x5100_0005, afterConfig: [.lockdownStatus(locked)])
 		let fixture = makeFixture(transports: [ScriptedTransport(radio: scripted)])
 		let manager = fixture.manager
-		manager.lockdownCoordinator = LockdownCoordinator(store: InMemoryPassphraseStore())
 		let focused = try #require(manager.activeConnection)
 		let focusedConnection = try #require(focused.connection as? RecordingIdleConnection)
 		let device = Device(id: UUID(), name: "Locked", transportType: .tcp, identifier: "locked3.local:4403")
@@ -176,13 +197,16 @@ struct MultiRadioLockdownTests {
 	func passphraseForARadioThatIsntFocused() async throws {
 		let fixture = makeFixture()
 		let manager = fixture.manager, radio = fixture.radio, connection = fixture.connection
-		let store = InMemoryPassphraseStore()
-		manager.handleAdditionalLockdown(status(.locked), session: radio, store: store)
+		let store = fixture.store
+		deliver(status(.locked), to: radio, manager)
 		#expect(radio.attention == .locked)
 		await manager.focusRadioNeedingAttention(radio.device.id)
 		#expect(manager.radioUnlockRequest?.id == radio.device.id)
 
-		#expect(await manager.submitPassphrase("hunter2", bootsRemaining: 5, validUntilEpoch: 0, maxSessionSeconds: 0, toRadio: radio.device.id))
+		#expect(radio.lockdown.canSend)
+		radio.lockdown.submitPassphrase("hunter2", bootsRemaining: 5, validUntilEpoch: 0)
+		#expect(radio.lockdown.isWaitingForAnswer, "its sheet stays up for the answer")
+		try await waitUntil { await !connection.sent.isEmpty }
 
 		let packet = try #require(await connection.sent.last?.packet)
 		#expect(packet.to == UInt32(extraNum))
@@ -191,15 +215,16 @@ struct MultiRadioLockdownTests {
 		#expect(admin.lockdownAuth.bootsRemaining == 5)
 		#expect(store.entries.isEmpty, "not saved before the radio accepts it")
 
-		manager.handleAdditionalLockdown(status(.unlocked), session: radio, store: store)
+		deliver(status(.unlocked), to: radio, manager)
 		#expect(store.entries[radio.device.id]?.passphrase == "hunter2")
 		#expect(radio.attention == nil)
 		#expect(manager.radioUnlockRequest == nil)
 
 		// A wrong one is never saved.
 		store.entries.removeAll()
-		#expect(await manager.submitPassphrase("wrong", bootsRemaining: 0, validUntilEpoch: 0, maxSessionSeconds: 0, toRadio: radio.device.id))
-		manager.handleAdditionalLockdown(status(.unlockFailed), session: radio, store: store)
+		deliver(status(.locked), to: radio, manager)
+		radio.lockdown.submitPassphrase("wrong", bootsRemaining: 0, validUntilEpoch: 0)
+		deliver(status(.unlockFailed), to: radio, manager)
 		#expect(store.entries.isEmpty)
 		#expect(radio.attention == .unlockFailed)
 	}
@@ -208,18 +233,48 @@ struct MultiRadioLockdownTests {
 	func backoffAndFailedSend() async throws {
 		let fixture = makeFixture()
 		let manager = fixture.manager, radio = fixture.radio
-		let store = InMemoryPassphraseStore()
 		var limited = status(.unlockFailed)
 		limited.backoffSeconds = 30
-		manager.handleAdditionalLockdown(limited, session: radio, store: store)
+		deliver(limited, to: radio, manager)
 
-		let until = try #require(radio.unlockBackoffUntil)
+		guard case .unlockBackoff(let until) = radio.lockdown.state else {
+			Issue.record("expected a backoff, got \(radio.lockdown.state)")
+			return
+		}
 		#expect(until > Date().addingTimeInterval(25) && until <= Date().addingTimeInterval(30))
-		manager.handleAdditionalLockdown(status(.unlocked), session: radio, store: store)
-		#expect(radio.unlockBackoffUntil == nil)
+		#expect(radio.attention == .unlockFailed)
+		deliver(status(.unlocked), to: radio, manager)
+		#expect(!radio.lockdown.isBlockingSession)
+		#expect(radio.attention == nil)
 
-		// A radio that's gone can't take one.
-		#expect(await !manager.submitPassphrase("hunter2", bootsRemaining: 0, validUntilEpoch: 0, maxSessionSeconds: 0, toRadio: UUID()))
+		// A passphrase that can't be sent brings the sheet back, saying so.
+		var brokenDevice = Device(id: UUID(), name: "Broken", transportType: .tcp, identifier: "broken.local:4403")
+		brokenDevice.num = 0x0E0E
+		let broken = RadioSession(device: brokenDevice, connection: FailingSendConnection(), passphraseStore: fixture.store)
+		manager.additionalRadios[brokenDevice.id] = broken
+		deliver(status(.locked), to: broken, manager)
+		broken.lockdown.submitPassphrase("hunter2", bootsRemaining: 0, validUntilEpoch: 0)
+		try await waitUntil { await MainActor.run { broken.lockdown.sendError != nil } }
+		#expect(broken.lockdown.sendError?.contains("Broken") == true)
+		#expect(broken.lockdown.isBlockingSession)
+	}
+
+	@Test("Lock Now on a radio that isn't focused closes its connection once it locks, to be connected again")
+	func lockNowOnARadioThatIsntFocused() async throws {
+		let fixture = makeFixture()
+		let manager = fixture.manager, radio = fixture.radio, connection = fixture.connection
+
+		radio.lockdown.lockNow()
+		try await waitUntil { await !connection.sent.isEmpty }
+		let packet = try #require(await connection.sent.last?.packet)
+		let admin = try AdminMessage(serializedBytes: packet.decoded.payload)
+		#expect(admin.lockdownAuth.lockNow)
+
+		deliver(status(.locked), to: radio, manager)
+		#expect(radio.lockdown.state == .lockNowAcknowledged)
+		try await waitUntil { await !connection.isConnected }
+		#expect(await !connection.isConnected)
+		#expect(radio.attention == nil, "nothing to ask: the user locked it")
 	}
 
 	@Test("A locked radio that loses the focus is still shown as locked and asked about")
@@ -227,7 +282,7 @@ struct MultiRadioLockdownTests {
 		let fixture = makeFixture()
 		let manager = fixture.manager
 		let focused = try #require(manager.activeConnection)
-		focused.lastLockdownStatus = status(.locked)
+		focused.lockdown.handle(status(.locked))
 		var ready = Device(id: UUID(), name: "Ready", transportType: .tcp, identifier: "ready.local:4403")
 		ready.num = 0x0C0C
 		ready.connectionState = .connected
@@ -273,7 +328,7 @@ struct MultiRadioLockdownTests {
 		let fixture = makeFixture()
 		let manager = fixture.manager
 		let focused = try #require(manager.activeConnection)
-		focused.lastLockdownStatus = status(.locked)
+		focused.lockdown.handle(status(.locked))
 		var ready = Device(id: UUID(), name: "Ready", transportType: .tcp, identifier: "ready2.local:4403")
 		ready.num = 0x0D0E
 		ready.connectionState = .connected
@@ -331,10 +386,10 @@ struct MultiRadioLockdownTests {
 	func unlockRefreshesAConnectedRadio() async throws {
 		let fixture = makeFixture()
 		let manager = fixture.manager, radio = fixture.radio, connection = fixture.connection
-		manager.handleAdditionalLockdown(status(.locked), session: radio, store: InMemoryPassphraseStore())
+		deliver(status(.locked), to: radio, manager)
 		#expect(radio.attention == .locked)
 
-		manager.handleAdditionalLockdown(status(.unlocked), session: radio, store: InMemoryPassphraseStore())
+		deliver(status(.unlocked), to: radio, manager)
 		try await waitUntil { await !connection.sent.isEmpty }
 
 		#expect(radio.attention == nil)

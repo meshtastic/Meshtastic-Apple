@@ -83,6 +83,48 @@ final class LockdownCoordinatorTests: XCTestCase {
 		return s
 	}
 
+	// MARK: Sending (feature 021, T301)
+
+	func testPassphraseSendFailed_bringsTheSheetBackWithTheReason() {
+		let (coordinator, sender, _) = makeCoordinator()
+		coordinator.onConnect(peripheralID: peripheralID)
+		coordinator.handle(makeStatus(state: .needsProvision))
+		XCTAssertTrue(coordinator.canSend)
+
+		coordinator.submitPassphrase("hunter2", bootsRemaining: 0, validUntilEpoch: 0)
+		XCTAssertEqual(coordinator.state, .none)
+		XCTAssertTrue(coordinator.isWaitingForAnswer)
+		XCTAssertEqual(sender.calls.count, 1)
+
+		coordinator.passphraseSendFailed("Couldn't send")
+		XCTAssertEqual(coordinator.state, .needsProvision, "back to what it asked for before")
+		XCTAssertEqual(coordinator.sendError, "Couldn't send")
+		XCTAssertFalse(coordinator.isWaitingForAnswer)
+
+		// The next try clears it.
+		coordinator.submitPassphrase("hunter2", bootsRemaining: 0, validUntilEpoch: 0)
+		XCTAssertNil(coordinator.sendError)
+	}
+
+	func testPassphraseSendFailed_ignoredOnceTheRadioAnswered() {
+		let (coordinator, _, _) = makeCoordinator()
+		coordinator.onConnect(peripheralID: peripheralID)
+		coordinator.handle(makeStatus(state: .locked, lockReason: "needs_auth"))
+		coordinator.submitPassphrase("hunter2", bootsRemaining: 0, validUntilEpoch: 0)
+		coordinator.handle(makeStatus(state: .unlocked))
+
+		coordinator.passphraseSendFailed("Couldn't send")
+		XCTAssertEqual(coordinator.state, .unlocked(bootsRemaining: 0, validUntilEpoch: 0))
+		XCTAssertNil(coordinator.sendError)
+	}
+
+	func testCanSend_needsTheRadiosNodeNumber() {
+		let (coordinator, sender, _) = makeCoordinator()
+		sender.myNodeNum = 0
+		XCTAssertFalse(coordinator.canSend)
+		XCTAssertFalse(LockdownCoordinator.noRadio.canSend)
+	}
+
 	// MARK: Initial state
 
 	func testInitialState_isNone() {

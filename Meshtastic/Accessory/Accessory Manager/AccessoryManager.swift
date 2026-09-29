@@ -260,11 +260,6 @@ class AccessoryManager: ObservableObject {
 	/// another round of plumbing. See `isBluetoothPoweredOff` below and `observeBLETransportStatus()`.
 	@Published var bleTransportStatus: TransportStatus = .uninitialized
 
-	/// MESHTASTIC_LOCKDOWN-hardened firmware state machine. See
-	/// Meshtastic/Helpers/LockdownCoordinator.swift and
-	/// specs/007-lockdown-mode/. Set by MeshtasticApp at startup.
-	var lockdownCoordinator: LockdownCoordinator?
-
 	/// Region → legal-preset lookup advertised by the connected radio during the
 	/// want_config handshake (FromRadio.region_presets, 2.8+). Empty when the
 	/// firmware predates the feature or hasn't sent it yet — callers must treat an
@@ -714,6 +709,9 @@ class AccessoryManager: ObservableObject {
 	func tearDown(_ session: RadioSession) async {
 		// Its MQTT client proxy goes first, so broker packets stop coming in for it.
 		stopMqtt(session)
+		// Lock-down: clear its per-connection state. If a Lock Now was in flight, the
+		// disconnect resolves its coordinator to `.lockNowAcknowledged`.
+		session.lockdown.onDisconnect()
 		// A prompt about a radio that's gone no longer applies (T073).
 		if radioAttentionPrompt?.id == session.device.id {
 			radioAttentionPrompt = nil
@@ -780,10 +778,6 @@ class AccessoryManager: ObservableObject {
 		} else if let closingNodeNum {
 			await MeshPackets.shared.discardChannelRefreshStage(for: closingNodeNum)
 		}
-
-		// Lockdown: clear per-connection state. If a Lock Now was in flight, the
-		// disconnect resolves the coordinator to `.lockNowAcknowledged`.
-		lockdownCoordinator?.onDisconnect()
 
 		// Stop sampling and clear the traffic gate so a stale "high traffic" flag can't linger and
 		// keep the map flyover paused after the mesh goes quiet on disconnect.
@@ -1463,16 +1457,10 @@ class AccessoryManager: ObservableObject {
 
 		case .lockdownStatus(let status):
 			// MESHTASTIC_LOCKDOWN-hardened firmware reports state after config_complete_id
-			// (and again in response to each LockdownAuth admin command). Route to the
-			// coordinator, which owns the per-connection state machine + passphrase cache.
-			// The coordinator and its passphrase sheet are the focused radio's until each radio
-			// gets its own prompt (T073).
-			session.lastLockdownStatus = status
-			if session === activeConnection {
-				lockdownCoordinator?.handle(status)
-			} else {
-				handleAdditionalLockdown(status, session: session)
-			}
+			// (and again in response to each LockdownAuth admin command). Route to the radio's
+			// own coordinator, which owns its state machine + passphrase cache (T301).
+			session.lockdown.handle(status)
+			lockdownStateChanged(session)
 
 		default:
 			Logger.transport.error("Unknown FromRadio variant: \(decodedInfo.payloadVariant.debugDescription)")

@@ -65,3 +65,15 @@ extension AccessoryManager {
 		return RadioLinkStatus(state: state, canDisconnect: allowDisconnect, attention: nil, lastError: lastConnectionError)
 	}
 }
+
+/// Gives a window's views its radio's lock-down state (feature 021, T301): the passphrase sheet,
+/// Settings' lock-down section and the gates that wait on it follow the window's radio. Lock Now
+/// acknowledged is handled by the manager (`lockdownStateChanged`).
+struct WindowLockdownScope: ViewModifier {
+	@ObservedObject private var accessoryManager = AccessoryManager.shared
+	@Environment(\.windowRadio) private var windowRadio
+
+	func body(content: Content) -> some View {
+		content.environmentObject(accessoryManager.session(for: windowRadio)?.lockdown ?? LockdownCoordinator.noRadio)
+	}
+}
