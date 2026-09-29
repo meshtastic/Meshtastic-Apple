@@ -41,6 +41,9 @@ window owns one value, its radio, and nothing hands it over.
 | W-06 | Read state is shared: one row per message, so reading the shared channel in one window marks it read in every window. Direct messages belong to one radio anyway. |
 | W-07 | Menu bar commands act on the radio of the key (active) window. With the Connect window in front, commands that need a radio are disabled. |
 | W-08 | Siri and CarPlay use a default radio the user picks (W-09 to W-11). |
+| W-12 | Adding a radio always keeps the others connected: "Add a Radio" means add. The Keep Both / Switch question (D-05) and its App Settings choice go. The new radio opens in its own window on the Mac and iPad; on iPhone the window shows it, and the previous radio stays connected. At four radios, the radios to add are disabled with the reason shown; the app never disconnects one on its own. |
+| W-13 | Switching the window's radio (iPhone, or an iPad window) is from Connect or from the connection indicator's radio menu (`RadioSwitcherMenu`). Switching never disconnects anything; disconnecting is always its own action. |
+| W-14 | The composer's "Via" picker (sending on a shared channel through another connected radio that has it) stays on iPhone and iPad, defaulting to the window's radio, and goes on the Mac, where that radio has its own window. The choice lasts while the conversation is open, as today. |
 
 ## What's shared and what's per window
 
@@ -121,6 +124,7 @@ Neither is hard; it's a list of places to change, each small.
    close (W-01), reopened at launch for every radio that reconnects, and the Window menu listing
    the connected radios.
 6. **Siri and CarPlay** as W-09 to W-11.
+7. **Adding and switching** as W-12 and W-13; the composer's picker as W-14.
 
 ## Risks
 

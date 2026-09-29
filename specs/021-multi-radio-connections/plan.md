@@ -211,8 +211,9 @@ This follows report §13.3, adjusted for D-06 and for how this project actually 
 
 ## Pickers (D-12, D-13)
 
-Replaced by D-19 (see One window per radio): the composer's picker goes, and the services no
-longer follow a focused radio.
+Replaced by D-19 (see One window per radio): the composer's picker stays on iPhone and iPad,
+defaulting to the window's radio, and goes on the Mac (W-14); the services no longer follow a
+focused radio.
 
 - Composer: a "via [radio]" control. The default is the focused radio, limited to radios that
   have the channel (by `channelKey`). DMs lock it to the conversation's radio.
@@ -304,8 +305,10 @@ radio is the focused one, so nothing changes for the user.
 7. **Services** (W-08 to W-11): ask once per radio at its first connect whether to make it the
    Siri and CarPlay default; a `RadioEntity` (App Intents) so commands name a radio; a "set the
    default radio" command; TAK and Watch use their chosen radio or the only one connected.
-8. **Composer**: the "via [radio]" control goes. A window sends through its own radio, as a
-   separate copy of the app would.
+8. **Adding, switching, composer** (W-12 to W-14): adding a radio always keeps the others, and
+   the Keep Both / Switch question and setting go; switching is from Connect or the indicator's
+   radio menu and never disconnects; the "Via" picker stays on iPhone and iPad and is hidden on
+   the Mac.
 
 ### Single-radio users
 

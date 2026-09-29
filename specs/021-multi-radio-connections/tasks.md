@@ -303,8 +303,10 @@ Services (plan step 7)
 - [ ] T320 A `RadioEntity` for App Intents; the Shortcuts commands name a radio (W-10); a "set the default radio" command (W-11).
 - [ ] T321 TAK, Watch, CarPlay and Siri: the chosen radio, or the only one connected; with several and none chosen, a command asks and App Settings shows the choice as needed.
 
-Composer (plan step 8)
-- [ ] T322 Remove the composer's "via [radio]" control; a window sends through its own radio.
+Adding, switching, composer (plan step 8)
+- [ ] T322 Adding a radio always keeps the others (W-12): the Keep Both / Switch question and its App Settings choice go; at four radios the radios to add are disabled with the reason; on iPhone the window shows the new radio.
+- [ ] T324 Switching the window's radio from Connect and the indicator's radio menu, never disconnecting (W-13).
+- [ ] T325 The composer's "Via" picker defaults to the window's radio and is hidden on the Mac (W-14).
 
 Wrap-up
 - [ ] T323 Device checklist in HANDOFF for windows (open, hide, reopen, close on disconnect, relaunch, Siri/CarPlay default) replaces the focus handover and restore hand-over checks.
