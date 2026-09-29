@@ -1039,10 +1039,10 @@ extension AccessoryManager {
 		let messageDescription = "🛟 Saved Channel \(channel.index) for \(toUser.longName ?? "Unknown".localized)"
 		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
 		if refreshShareSnapshot,
-		   let activeDeviceNum,
-		   fromUser.num == activeDeviceNum,
-		   toUser.num == activeDeviceNum {
-			MeshShareSnapshotBuilder.refresh(nodeNum: activeDeviceNum, context: context)
+		   let sharingRadio = radioNum(for: .carPlay),
+		   fromUser.num == sharingRadio,
+		   toUser.num == sharingRadio {
+			MeshShareSnapshotBuilder.refresh(nodeNum: sharingRadio, context: context)
 		}
 		return Int64(meshPacket.id)
 	}

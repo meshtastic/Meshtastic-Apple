@@ -13,15 +13,19 @@ struct RestartNodeIntent: AppIntent {
 
 	static let description: IntentDescription = "Restart to the node you are connected to"
 
+	@Parameter(title: "Radio", description: "The connected radio to use. Leave empty for the radio chosen for CarPlay & Siri, or the only one connected.")
+	var radio: RadioEntity?
+
 	func perform() async throws -> some IntentResult {
 
-		if !(await AccessoryManager.shared.isConnected) {
-			throw AppIntentErrors.AppIntentError.notConnected
-		}
+		// The radio it names, the CarPlay & Siri radio, or the only one connected (T320).
+		let radioNum = try await AccessoryManager.shared.intentRadio(radio?.nodeNum).radioNum(
+			noRadio: AppIntentErrors.AppIntentError.notConnected,
+			needsValue: $radio.needsValueError("Which radio?")
+		)
 		// Safely unwrap the connectedNode using if let
 		let context = await MainActor.run { PersistenceController.shared.context }
-		if let connectedPeripheralNum = await AccessoryManager.shared.activeDeviceNum,
-		   let connectedNode = getNodeInfo(id: connectedPeripheralNum, context: context),
+		if let connectedNode = getNodeInfo(id: radioNum, context: context),
 		   let fromUser = connectedNode.user,
 		   let toUser = connectedNode.user {
 

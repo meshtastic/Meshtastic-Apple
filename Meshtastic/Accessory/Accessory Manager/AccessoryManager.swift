@@ -294,6 +294,8 @@ class AccessoryManager: ObservableObject {
 	/// The radio the one window shows (iPhone, iPad), set by `OneWindowRadioScope`: it isn't
 	/// asked about by name, since the window shows its own sheets (T314).
 	var oneWindowShownRadio: UUID?
+	/// Whether a radio that just connected should be the Siri and CarPlay radio (T319).
+	@Published var serviceRadioQuestion: ServiceRadioQuestion?
 	/// A radio the user disconnected, by device id: its window on the Mac closes (D-19, W-02).
 	let radioDisconnectedByUser = PassthroughSubject<UUID, Never>()
 	/// Each radio's firmware version as it last reported it this launch, by node number (T018):
@@ -1386,8 +1388,8 @@ class AccessoryManager: ObservableObject {
 				}
 				if let completedNodeNum = refresh.nodeNum {
 					await MeshPackets.shared.commitChannelRefreshStage(for: completedNodeNum, owner: refresh.owner)
-					// The Messages snapshot is the focused radio's (T106).
-					if session === activeConnection {
+					// The Messages snapshot is the CarPlay & Siri radio's (T106, T321).
+					if session === self.session(for: .carPlay) {
 						MeshShareSnapshotBuilder.refresh(nodeNum: completedNodeNum, context: context)
 					}
 				}
@@ -1415,7 +1417,7 @@ class AccessoryManager: ObservableObject {
 					do {
 						try context.save()
 						Logger.data.info("💾 [Database] Batch saved all node info after database retrieval")
-						if session === activeConnection, let completedNodeNum = session.nodeNum {
+						if session === self.session(for: .carPlay), let completedNodeNum = session.nodeNum {
 							MeshShareSnapshotBuilder.refresh(
 								nodeNum: completedNodeNum,
 								context: context

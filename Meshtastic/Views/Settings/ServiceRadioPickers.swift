@@ -22,7 +22,7 @@ struct ServiceRadioPickers: View {
 		if radioNums.count > 1 {
 			ForEach(RadioService.allCases) { service in
 				Picker(selection: binding(for: service)) {
-					Text("Follow Focused Radio").tag(Int64(0))
+					Text("Automatic").tag(Int64(0))
 					ForEach(radioNums, id: \.self) { radioNum in
 						Text(radioName(radioNum)).tag(radioNum)
 					}
@@ -36,7 +36,7 @@ struct ServiceRadioPickers: View {
 					binding(for: service).wrappedValue = 0
 				}
 			}
-			Text("Which radio TAK, CarPlay & Siri and the Apple Watch use. A chosen radio that isn't connected falls back to the focused radio.")
+			Text("Which radio TAK, CarPlay & Siri and the Apple Watch use. Automatic, or a chosen radio that isn't connected, uses the radio connected first; with several connected, Siri and Shortcuts ask which.")
 				.foregroundStyle(.secondary)
 				.font(.caption)
 		}
@@ -52,7 +52,7 @@ struct ServiceRadioPickers: View {
 			case .tak:
 				TAKServerManager.shared.moveChannel(from: previousTAKRadio, to: accessoryManager.radioNum(for: .tak))
 				TAKServerManager.shared.checkPrimaryChannelValidity()
-			case .carPlay: break
+			case .carPlay: accessoryManager.refreshShareSnapshot()
 			}
 		})
 	}
@@ -64,5 +64,27 @@ struct ServiceRadioPickers: View {
 		}
 		let user = radios.first { $0.myNodeNum == radioNum }?.myInfoNode?.user
 		return user?.longName ?? user?.shortName ?? radioNum.toHex()
+	}
+}
+
+/// Asks once, when a radio connects and another is known, whether it should be the radio Siri,
+/// CarPlay and Shortcuts use when a command doesn't name one (feature 021, W-09, T319).
+struct ServiceRadioQuestionAlert: ViewModifier {
+	@ObservedObject private var accessoryManager = AccessoryManager.shared
+
+	func body(content: Content) -> some View {
+		content.background(
+			Color.clear.alert(item: $accessoryManager.serviceRadioQuestion) { question in
+				Alert(
+					title: Text("Use \(question.radioName) for Siri and CarPlay?"),
+					message: Text("Siri, CarPlay and Shortcuts use it when a command doesn't name a radio. You can change it in App Settings."),
+					primaryButton: .default(Text("Use \(question.radioName)")) {
+						UserDefaults.setServiceRadio(question.nodeNum, for: .carPlay)
+						accessoryManager.refreshShareSnapshot()
+					},
+					secondaryButton: .cancel(Text("Not Now"))
+				)
+			}
+		)
 	}
 }

@@ -88,6 +88,17 @@ extension AccessoryManager {
 		}
 	}
 
+	/// The Disconnect command for radio `radioNum` (T320): the radio connected first disconnects
+	/// as it always has; another as Disconnect on its row does.
+	func disconnectRadio(nodeNum radioNum: Int64) async throws {
+		guard let session = connectedSession(forRadio: radioNum) else { return }
+		if session === activeConnection {
+			try await disconnect()
+		} else {
+			await disconnectAdditionalRadio(session.device.id, byUser: true)
+		}
+	}
+
 	/// Whether `session` is the only radio connected: a connect that does the app's own work
 	/// (device catalog, stale-node prune, unread badges, T309) is one with no other radio connected.
 	/// With one radio that's every connect, as before.

@@ -19,16 +19,13 @@ struct MessageNodeIntent: AppIntent {
 	@Parameter(title: "Node Number")
 	var nodeNumber: Int
 
-	@Parameter(title: "Radio Node Number", description: "The connected radio to send through. Leave empty to use the radio chosen for CarPlay & Siri.")
-	var radioNumber: Int?
+	@Parameter(title: "Radio", description: "The connected radio to use. Leave empty for the radio chosen for CarPlay & Siri, or the only one connected.")
+	var radio: RadioEntity?
 
 	static var parameterSummary: some ParameterSummary {
 		Summary("Send \(\.$messageContent) to \(\.$nodeNumber)")
 	}
 	func perform() async throws -> some IntentResult {
-		if await !AccessoryManager.shared.isConnected {
-			throw AppIntentErrors.AppIntentError.notConnected
-		}
 
 		// Convert messageContent to data and check its length
 		guard let messageData = messageContent.data(using: .utf8) else {
@@ -39,9 +36,11 @@ struct MessageNodeIntent: AppIntent {
 			throw $messageContent.needsValueError("Message content exceeds 200 bytes.")
 		}
 
-		guard let viaRadio = await AccessoryManager.shared.intentRadioNum(radioNumber) else {
-			throw $radioNumber.needsValueError("That radio isn't connected.")
-		}
+		// The radio it names, the CarPlay & Siri radio, or the only one connected (T320).
+		let viaRadio = try await AccessoryManager.shared.intentRadio(radio?.nodeNum).radioNum(
+			noRadio: AppIntentErrors.AppIntentError.notConnected,
+			needsValue: $radio.needsValueError("Which radio?")
+		)
 
 		do {
 			try await AccessoryManager.shared.sendMessage(message: messageContent, toUserNum: Int64(nodeNumber), channel: 0, isEmoji: false, replyID: 0, viaRadio: viaRadio)

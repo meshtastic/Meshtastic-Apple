@@ -19,16 +19,13 @@ struct MessageChannelIntent: AppIntent {
 	@Parameter(title: "Channel", controlStyle: .stepper, inclusiveRange: (lowerBound: 0, upperBound: 7))
 	var channelNumber: Int
 
-	@Parameter(title: "Radio Node Number", description: "The connected radio to send through, on its own channel with this number. Leave empty to use the radio chosen for CarPlay & Siri.")
-	var radioNumber: Int?
+	@Parameter(title: "Radio", description: "The connected radio to use. Leave empty for the radio chosen for CarPlay & Siri, or the only one connected.")
+	var radio: RadioEntity?
 
 	static var parameterSummary: some ParameterSummary {
 		Summary("Send \(\.$messageContent) to \(\.$channelNumber)")
 	}
 	func perform() async throws -> some IntentResult {
-		if !(await AccessoryManager.shared.isConnected) {
-			throw AppIntentErrors.AppIntentError.notConnected
-		}
 
 		// Check if channel number is between 1 and 7
 		guard (0...7).contains(channelNumber) else {
@@ -44,9 +41,11 @@ struct MessageChannelIntent: AppIntent {
 			throw $messageContent.needsValueError("Message content exceeds 200 bytes.")
 		}
 
-		guard let viaRadio = await AccessoryManager.shared.intentRadioNum(radioNumber) else {
-			throw $radioNumber.needsValueError("That radio isn't connected.")
-		}
+		// The radio it names, the CarPlay & Siri radio, or the only one connected (T320).
+		let viaRadio = try await AccessoryManager.shared.intentRadio(radio?.nodeNum).radioNum(
+			noRadio: AppIntentErrors.AppIntentError.notConnected,
+			needsValue: $radio.needsValueError("Which radio?")
+		)
 
 		do {
 			try await AccessoryManager.shared.sendMessage(message: messageContent, toUserNum: 0, channel: Int32(channelNumber), isEmoji: false, replyID: 0, viaRadio: viaRadio)

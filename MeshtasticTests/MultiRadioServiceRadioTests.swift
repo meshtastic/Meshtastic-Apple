@@ -71,7 +71,7 @@ struct MultiRadioServiceRadioTests {
 		#expect(UserDefaults.serviceRadio(.tak, in: store) == 0)
 	}
 
-	@Test("A service follows the focused radio unless a connected radio was chosen for it")
+	@Test("A service uses the radio chosen for it while it's connected, else the radio connected first, else the one connected")
 	func sessionChoice() {
 		let store = makeStore()
 		let radios = makeManager()
@@ -86,20 +86,44 @@ struct MultiRadioServiceRadioTests {
 		UserDefaults.setServiceRadio(offlineNum, for: .tak, in: store)
 		#expect(manager.session(for: .tak, store: store) === focused, "a chosen radio that isn't connected falls back")
 
+		// The first radio dropped; the other stays (D-19).
 		manager.activeConnection = nil
+		#expect(manager.session(for: .tak, store: store) === extra)
 		manager.additionalRadios = [:]
 		#expect(manager.session(for: .tak, store: store) == nil)
 	}
 
-	@Test("Shortcuts send through the radio they name, or the CarPlay & Siri radio")
+	@Test("A Siri or Shortcuts command uses the radio it names, the CarPlay & Siri radio, or the only one connected; else it asks")
 	func intentRadio() {
 		let store = makeStore()
 		let manager = makeManager().manager
-		#expect(manager.intentRadioNum(nil, store: store) == focusedNum)
+		#expect(manager.intentRadio(nil, store: store) == .needsChoice, "two connected and none chosen")
 		UserDefaults.setServiceRadio(extraNum, for: .carPlay, in: store)
-		#expect(manager.intentRadioNum(nil, store: store) == extraNum)
-		#expect(manager.intentRadioNum(Int(focusedNum), store: store) == focusedNum)
-		#expect(manager.intentRadioNum(Int(offlineNum), store: store) == nil, "never sent from another radio")
+		#expect(manager.intentRadio(nil, store: store) == .radio(extraNum))
+		#expect(manager.intentRadio(focusedNum, store: store) == .radio(focusedNum))
+		#expect(manager.intentRadio(offlineNum, store: store) == .notConnected, "never sent from another radio")
+
+		manager.additionalRadios = [:]
+		UserDefaults.setServiceRadio(0, for: .carPlay, in: store)
+		#expect(manager.intentRadio(nil, store: store) == .radio(focusedNum), "one radio: that one, as before")
+		manager.activeConnection = nil
+		#expect(manager.intentRadio(nil, store: store) == .noRadio)
+		#expect(throws: AppIntentErrors.AppIntentError.self) {
+			try IntentRadioChoice.noRadio.radioNum(noRadio: AppIntentErrors.AppIntentError.notConnected, needsValue: AppIntentErrors.AppIntentError.message("which"))
+		}
+	}
+
+	@Test("A radio is asked about for Siri and CarPlay once, and only with another radio known")
+	func askOnce() {
+		let store = makeStore()
+		#expect(!AccessoryManager.shouldAskAboutServiceRadio(extraNum, otherRadiosKnown: false, store: store), "one radio: never")
+		#expect(AccessoryManager.shouldAskAboutServiceRadio(extraNum, otherRadiosKnown: true, store: store))
+		UserDefaults.setAskedServiceRadios([extraNum], in: store)
+		#expect(!AccessoryManager.shouldAskAboutServiceRadio(extraNum, otherRadiosKnown: true, store: store), "asked once")
+		#expect(AccessoryManager.shouldAskAboutServiceRadio(focusedNum, otherRadiosKnown: true, store: store))
+		UserDefaults.setServiceRadio(focusedNum, for: .carPlay, in: store)
+		#expect(!AccessoryManager.shouldAskAboutServiceRadio(focusedNum, otherRadiosKnown: true, store: store), "already the one")
+		#expect(UserDefaults.askedServiceRadios(in: store) == [extraNum])
 	}
 
 	// MARK: - Datadog (T107)
