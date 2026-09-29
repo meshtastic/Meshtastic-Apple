@@ -5,6 +5,8 @@ import SwiftUI
 struct FavoriteNodeButton: View {
 
 	@EnvironmentObject var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 	@Environment(\.modelContext) private var context
 
 	@Bindable var node: NodeInfoEntity
@@ -19,7 +21,7 @@ struct FavoriteNodeButton: View {
 				return
 			}
 			// Normal case: perform action immediately
-			guard let connectedNodeNum = accessoryManager.activeDeviceNum else { return }
+			guard let connectedNodeNum = accessoryManager.nodeNum(for: windowRadio) else { return }
 			Task {
 				await assignFavorite(node: node, setToFavorite: !node.favorite, connectedNodeNum: Int64(connectedNodeNum))
 			}
@@ -37,7 +39,7 @@ struct FavoriteNodeButton: View {
 			titleVisibility: .visible
 		) {
 			Button("Yes, I control this node") {
-				guard let connectedNodeNum = accessoryManager.activeDeviceNum else { return }
+				guard let connectedNodeNum = accessoryManager.nodeNum(for: windowRadio) else { return }
 				Task {
 					await assignFavorite(node: node, setToFavorite: true, connectedNodeNum: Int64(connectedNodeNum))
 				}

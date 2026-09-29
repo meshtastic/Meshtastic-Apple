@@ -37,6 +37,8 @@ enum UnheardNodesStrings {
 struct UnheardNodesBanner: View {
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject private var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 
 	@State private var unheardNodes: [NodeInfoEntity] = []
 	@State private var isConfirming = false
@@ -45,7 +47,7 @@ struct UnheardNodesBanner: View {
 	/// Resolved here rather than passed in. A parent that only builds this view once a radio is
 	/// connected has to be re-evaluated when one arrives, and inside a `safeAreaInset` that
 	/// evaluates during layout — before the connection is established — it simply stays empty.
-	private var connectedNodeNum: Int64? { accessoryManager.activeDeviceNum }
+	private var connectedNodeNum: Int64? { accessoryManager.nodeNum(for: windowRadio) }
 
 	var body: some View {
 		Group {
@@ -55,7 +57,7 @@ struct UnheardNodesBanner: View {
 			}
 		}
 		.onAppear(perform: refresh)
-		.onChange(of: accessoryManager.activeDeviceNum) { _, _ in refresh() }
+		.onChange(of: accessoryManager.nodeNum(for: windowRadio)) { _, _ in refresh() }
 	}
 
 	private func content(connectedNodeNum: Int64) -> some View {

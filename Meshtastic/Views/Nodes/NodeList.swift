@@ -13,6 +13,8 @@ import Foundation
 struct NodeList: View {
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 	@EnvironmentObject var router: Router
 	@AppStorage("nodeListDensity") private var nodeListDensity: NodeListDensity = .standard
 	@State private var isPresentingTraceRouteSentAlert = false
@@ -29,7 +31,7 @@ struct NodeList: View {
 	@SceneStorage("selectedDetailView") var selectedDetailView: String?
 
 	var connectedNode: NodeInfoEntity? {
-		if let num = accessoryManager.activeDeviceNum {
+		if let num = accessoryManager.nodeNum(for: windowRadio) {
 			return getNodeInfo(id: num, context: context)
 		}
 		return nil
@@ -60,7 +62,7 @@ struct NodeList: View {
 		.onAppear {
 			filters.fallbackLocation = connectedNode?.latestPosition?.nodeCoordinate
 		}
-		.onChange(of: accessoryManager.activeDeviceNum) {
+		.onChange(of: accessoryManager.nodeNum(for: windowRadio)) {
 			filters.fallbackLocation = connectedNode?.latestPosition?.nodeCoordinate
 		}
 	}
@@ -174,7 +176,7 @@ struct NodeList: View {
 			// Mirror NodeDetail's rule: only your own (connected) node is marked
 			// manually verified when shared.
 			ShareContactQRDialog(
-				manuallyVerified: selectedNode.num == accessoryManager.activeDeviceNum,
+				manuallyVerified: selectedNode.num == accessoryManager.nodeNum(for: windowRadio),
 				node: selectedNode.toProto()
 			)
 		}
@@ -200,7 +202,7 @@ struct NodeList: View {
 				if let node = deleteNode {
 					Task {
 						do {
-							try await accessoryManager.removeNode(node: node, connectedNodeNum: accessoryManager.activeDeviceNum ?? -1)
+							try await accessoryManager.removeNode(node: node, connectedNodeNum: accessoryManager.nodeNum(for: windowRadio) ?? -1)
 						} catch {
 							let nodeName = node.user?.longName ?? "Unknown"
 							Logger.data.error("Failed to delete node \(nodeName, privacy: .public)")
@@ -226,6 +228,8 @@ private struct NodeListEntry: Identifiable {
 
 private struct FilteredNodeList: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 	@EnvironmentObject var router: Router
 	@Environment(\.modelContext) private var context
 	/// Throttled snapshot of the filtered/sorted nodes actually shown. Recomputed on a gentle
@@ -376,13 +380,13 @@ private struct FilteredNodeList: View {
 					case .compact:
 						NodeListItemCompact(
 							node: entry.node,
-							isDirectlyConnected: entry.id == accessoryManager.activeDeviceNum,
-							connectedNode: accessoryManager.activeConnection?.device.num ?? -1)
+							isDirectlyConnected: entry.id == accessoryManager.nodeNum(for: windowRadio),
+							connectedNode: accessoryManager.session(for: windowRadio)?.device.num ?? -1)
 					case .standard:
 						NodeListItem(
 							node: entry.node,
-							isDirectlyConnected: entry.id == accessoryManager.activeDeviceNum,
-							connectedNode: accessoryManager.activeConnection?.device.num ?? -1
+							isDirectlyConnected: entry.id == accessoryManager.nodeNum(for: windowRadio),
+							connectedNode: accessoryManager.session(for: windowRadio)?.device.num ?? -1
 						)
 					}
 				}
@@ -432,7 +436,7 @@ private struct FilteredNodeList: View {
 		guard boundContainerGeneration == PersistenceController.shared.containerGeneration else { return }
 		guard router.selectedTab == .nodes else { return }
 		let allNodes = (try? context.fetch(makeNodeFetchDescriptor())) ?? []
-		replaceDisplayedNodesIfNeeded(with: displayNodes(from: allNodes, activeNodeNum: accessoryManager.activeDeviceNum))
+		replaceDisplayedNodesIfNeeded(with: displayNodes(from: allNodes, activeNodeNum: accessoryManager.nodeNum(for: windowRadio)))
 		router.updateNodeIndex(from: allNodes)
 	}
 

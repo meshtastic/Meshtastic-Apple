@@ -5,13 +5,15 @@ import SwiftUI
 struct IgnoreNodeButton: View {
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 
 	@Bindable
 	var node: NodeInfoEntity
 
 	var body: some View {
 		Button(role: .destructive) {
-			guard accessoryManager.activeDeviceNum != nil else { return }
+			guard accessoryManager.nodeNum(for: windowRadio) != nil else { return }
 			Task {
 				do {
 					// Feature 021 (D-11): on every connected radio, the focused one first.

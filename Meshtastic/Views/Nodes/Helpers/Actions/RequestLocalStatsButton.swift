@@ -16,6 +16,8 @@ enum LocalStatsRequestTransport {
 
 struct RequestLocalStatsButton: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 	@StateObject private var rateLimitStorage = RateLimitStorage.shared
 
 	var node: NodeInfoEntity
@@ -71,7 +73,7 @@ struct RequestLocalStatsButton: View {
 
 	private func requestLocalStats() {
 		let destination = node.user?.num ?? 0
-		let source = accessoryManager.activeConnection?.device.num ?? 0
+		let source = accessoryManager.session(for: windowRadio)?.device.num ?? 0
 		if LocalStatsRequestTransport.shouldChooseMethod(from: source, to: destination) {
 			presentedSheet = .method
 		} else {

@@ -24,6 +24,8 @@ struct MeshMapMK: View {
 	@Environment(\.supportsMultipleWindows) private var supportsMultipleWindows
 	@Environment(\.openWindow) private var openWindow
 	@EnvironmentObject var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 
 	@ObservedObject
 	var router: Router
@@ -141,7 +143,7 @@ struct MeshMapMK: View {
 	/// The connected device's latest coordinate, used as a fallback origin
 	/// for distance filtering when the phone's location services are unavailable.
 	private var activeDeviceCoordinate: CLLocationCoordinate2D? {
-		guard let num = accessoryManager.activeDeviceNum else { return nil }
+		guard let num = accessoryManager.nodeNum(for: windowRadio) else { return nil }
 		return getNodeInfo(id: num, context: context)?.latestPosition?.nodeCoordinate
 	}
 
@@ -678,7 +680,7 @@ struct MeshMapMK: View {
 				// Remember where the user is looking so the map reopens here next launch.
 				persistVisibleRegion()
 			}
-			.onChange(of: accessoryManager.activeDeviceNum) {
+			.onChange(of: accessoryManager.nodeNum(for: windowRadio)) {
 				syncFallbackLocation()
 			}
 			.onChange(of: accessoryManager.isInBackground) {
@@ -871,13 +873,13 @@ struct MeshMapMK: View {
 
 	/// The connected radio's LoRa config, used to prefill frequency / power / sensitivity.
 	private var connectedLoRaConfig: LoRaConfigEntity? {
-		guard let num = accessoryManager.activeDeviceNum else { return nil }
+		guard let num = accessoryManager.nodeNum(for: windowRadio) else { return nil }
 		return getNodeInfo(id: num, context: context)?.loRaConfig
 	}
 
 	/// The connected radio's primary channel name (for the firmware-accurate frequency-slot hash).
 	private var connectedPrimaryChannelName: String {
-		guard let num = accessoryManager.activeDeviceNum,
+		guard let num = accessoryManager.nodeNum(for: windowRadio),
 			  let node = getNodeInfo(id: num, context: context) else { return "LongFast" }
 		if let primary = node.myInfo?.channels.first(where: { $0.index == 0 || $0.role == 1 }),
 		   let name = primary.name, !name.isEmpty {
@@ -1026,8 +1028,8 @@ struct MeshMapMK: View {
 			if let node = getNodeInfo(id: snapshot.nodeNum, context: context) {
 				NodeListItem(
 					node: node,
-					isDirectlyConnected: snapshot.nodeNum == accessoryManager.activeDeviceNum,
-					connectedNode: accessoryManager.activeConnection?.device.num ?? -1
+					isDirectlyConnected: snapshot.nodeNum == accessoryManager.nodeNum(for: windowRadio),
+					connectedNode: accessoryManager.session(for: windowRadio)?.device.num ?? -1
 				)
 			} else {
 				Text(snapshot.longName)
@@ -1835,7 +1837,7 @@ struct MeshMapMK: View {
 
 	private func densityLimitedPositions(_ positions: [PositionEntity]) -> [PositionEntity] {
 		guard positions.count > denseMapPositionLimit else { return positions }
-		let activeNodeNum = Int64(accessoryManager.activeDeviceNum ?? 0)
+		let activeNodeNum = Int64(accessoryManager.nodeNum(for: windowRadio) ?? 0)
 		var pinnedPositions: [PositionEntity] = []
 		var onlinePositions: [PositionEntity] = []
 		var regularPositions: [PositionEntity] = []
