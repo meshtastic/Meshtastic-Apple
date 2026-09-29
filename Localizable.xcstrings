@@ -3884,7 +3884,7 @@
         }
       }
     },
-    "%d more radios connected. Opens a menu to focus another radio." : {
+    "%d more radios connected. Opens a menu to show another radio." : {
       "extractionState" : "manual"
     },
     "%d unread direct messages" : {

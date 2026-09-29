@@ -148,7 +148,7 @@ extension AccessoryManager {
 		let name = session.device.longName ?? session.device.name
 		if let attention {
 			Logger.transport.info("⚠️ [Radios] \(name, privacy: .public): \(attention.shortCaption, privacy: .public)")
-			if session !== activeConnection {
+			if session !== activeConnection, session.device.id != oneWindowShownRadio {
 				let prompt = RadioAttentionPrompt(id: session.device.id, radioName: name, attention: attention)
 				pendingAttentionPrompts.removeAll { $0.id == prompt.id }
 				if let shown = radioAttentionPrompt, shown.id != prompt.id {

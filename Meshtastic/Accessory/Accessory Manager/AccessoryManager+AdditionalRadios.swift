@@ -71,20 +71,17 @@ extension AccessoryManager {
 		return result + additionalRadioDevices
 	}
 
-	/// Adds `device` alongside the connected radios (W-12): the others stay connected. With one
-	/// window (iPhone, iPad) the window then shows it; on the Mac it opens in its own window.
-	/// Throws when it can't connect.
+	/// Adds `device` alongside the connected radios (W-12): the others stay connected. The caller
+	/// shows it (`selectWindowRadio`): the one window switches to it on iPhone and iPad; on the Mac
+	/// it opens in its own window once connected. Throws when it can't connect.
 	func addRadio(_ device: Device) async throws {
 		try await connectAdditionalRadio(device)
-		if !RadioWindows.areEnabled {
-			_ = await focusConnectedRadio(device.id, previousStays: true)
-		}
 	}
 
 	/// Disconnects radio `deviceId` for the user, focused or not (D-19): it isn't brought back, and
 	/// its window on the Mac closes (W-02). The focused radio hands the focus to another first.
 	func disconnectRadio(_ deviceId: UUID) async {
-		if activeConnection?.device.id == deviceId {
+		if activeConnection?.device.id == deviceId || connectAttempts[deviceId]?.isFocused == true {
 			try? await disconnectFocusedRadio(accessoryManager: self)
 		} else {
 			await disconnectAdditionalRadio(deviceId, byUser: true)

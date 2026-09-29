@@ -101,10 +101,34 @@ struct MultiRadioConnectFlowTests {
 
 		try await manager.addRadio(secondDevice)
 
-		#expect(manager.activeConnection?.device.id == secondDevice.id, "the window shows the new radio")
-		#expect(manager.additionalRadios[firstDevice.id] != nil, "the other stays connected")
+		#expect(manager.additionalRadios[secondDevice.id] != nil)
+		#expect(manager.activeConnection?.device.id == firstDevice.id, "the other stays connected, and nothing moves")
 		#expect(await first.disconnects == 0)
+		// The window, set to show it (`selectWindowRadio`), shows it.
+		#expect(manager.oneWindowRadio(stored: secondDevice.id) == RadioWindow(deviceId: secondDevice.id))
 		manager.additionalRadioReconnects.values.forEach { $0.cancel() }
+		try await manager.disconnect()
+	}
+
+	@Test("The one window shows the radio picked while it's around, else the radio the app connects first")
+	func oneWindowRadioChoice() async throws {
+		let saved = SavedDefaults()
+		defer { saved.restore() }
+		let radios = try await connectTwoRadios()
+		let manager = radios.manager
+
+		#expect(manager.oneWindowRadio(stored: nil) == .focused, "one radio's users never pick: as before")
+		#expect(manager.oneWindowRadio(stored: radios.firstDevice.id) == .focused)
+		#expect(manager.oneWindowRadio(stored: radios.secondDevice.id) == RadioWindow(deviceId: radios.secondDevice.id))
+		#expect(manager.oneWindowRadio(stored: UUID()) == .focused, "a radio that's gone")
+
+		// Dropped, and being brought back: the window keeps it.
+		manager.scheduleAdditionalRadioReconnect(radios.secondDevice, firstDelay: .seconds(3600))
+		manager.additionalRadios.removeValue(forKey: radios.secondDevice.id)
+		#expect(manager.oneWindowRadio(stored: radios.secondDevice.id) == RadioWindow(deviceId: radios.secondDevice.id))
+		manager.additionalRadioReconnects.values.forEach { $0.cancel() }
+		manager.additionalRadioReconnects.removeAll()
+		#expect(manager.oneWindowRadio(stored: radios.secondDevice.id) == .focused, "not coming back")
 		try await manager.disconnect()
 	}
 

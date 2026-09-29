@@ -8,11 +8,11 @@
 import SwiftData
 import SwiftUI
 
-/// A radio connected alongside the focused one (feature 021), shown on the Connect tab.
+/// A connected radio this window doesn't show (feature 021), on the Connect tab.
 ///
-/// "Focus" makes it the focused radio: the one whose settings the app shows, and the default
-/// for sending. Every connected radio keeps receiving into the shared store either way, and
-/// runs its own MQTT client proxy when its config asks for one.
+/// "Show This Radio" shows it in the window (W-13), without disconnecting anything. Every
+/// connected radio keeps receiving into the shared store either way, and runs its own MQTT
+/// client proxy when its config asks for one.
 struct AdditionalRadioRow: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.modelContext) private var context
@@ -25,9 +25,11 @@ struct AdditionalRadioRow: View {
 		device.connectionState == .connecting
 	}
 
+	@Environment(\.selectWindowRadio) private var selectWindowRadio
+
 	/// Why this radio needs the user, if it does (T073).
 	private var attention: RadioAttention? {
-		accessoryManager.additionalRadios[device.id]?.attention
+		accessoryManager.linkStatus(of: device.id).attention
 	}
 
 	/// The radio's latest battery reading and its unread direct messages. On an interval rather
@@ -102,24 +104,21 @@ struct AdditionalRadioRow: View {
 			Spacer()
 			Menu {
 				Button {
-					Task {
-						if attention != nil {
-							await accessoryManager.focusRadioNeedingAttention(device.id)
-						} else {
-							await performRadioSwitch(device, isSwitchingRadio: $isSwitchingRadio, accessoryManager: accessoryManager)
-						}
+					if let attention, attention.isLockdown {
+						accessoryManager.radioUnlockRequest = RadioUnlockRequest(id: device.id, radioName: device.longName ?? device.name)
+					} else {
+						selectWindowRadio(device.id)
 					}
 				} label: {
-					// Focusing it shows its passphrase sheet or update screen (T073).
+					// Showing it shows its passphrase sheet or update screen (T073, T324).
 					if let attention {
 						Label(attention.actionTitle, systemImage: attention.isLockdown ? "lock.open" : "arrow.down.circle")
 					} else {
-						Label("Focus This Radio", systemImage: "scope")
+						Label("Show This Radio", systemImage: "scope")
 					}
 				}
-				.disabled(isConnecting && attention == nil)
 				Button(role: .destructive) {
-					Task { await accessoryManager.disconnectAdditionalRadio(device.id, byUser: true) }
+					Task { await accessoryManager.disconnectRadio(device.id) }
 				} label: {
 					Label("Disconnect", systemImage: "xmark.circle")
 				}

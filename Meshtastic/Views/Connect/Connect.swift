@@ -63,6 +63,14 @@ struct Connect: View {
 	private var isRadioConnected: Bool { accessoryManager.isConnected(windowRadio) }
 	private var isRadioConnecting: Bool { accessoryManager.isConnecting(windowRadio) }
 	private var radioFirmwareEdition: FirmwareEditions { radioSession?.firmwareEdition ?? .vanilla }
+	/// The connected radios this window doesn't show; tapping one shows it (W-13).
+	private var otherConnectedRadios: [Device] {
+		accessoryManager.connectedRadios.filter { $0.id != radioSession?.device.id }
+	}
+	/// This window's radio, to disconnect: its session's, or the one it's connecting.
+	private var radioDeviceId: UUID? {
+		radioSession?.device.id ?? windowRadio.deviceId ?? accessoryManager.focusedDeviceId
+	}
 
 	private var sortedAvailableDevices: [Device] {
 		accessoryManager.devices.sorted { lhs, rhs in
@@ -274,7 +282,7 @@ struct Connect: View {
 								if link.canDisconnect {
 									Button(role: .destructive) {
 										Task {
-											try await disconnectFocusedRadio(accessoryManager: accessoryManager)
+											if let radioDeviceId { await accessoryManager.disconnectRadio(radioDeviceId) }
 										}
 									} label: {
 										Label("Disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
@@ -327,7 +335,7 @@ struct Connect: View {
 										Button(role: .destructive) {
 											if link.canDisconnect {
 												Task {
-													try await disconnectFocusedRadio(accessoryManager: accessoryManager)
+													if let radioDeviceId { await accessoryManager.disconnectRadio(radioDeviceId) }
 												}
 											}
 										} label: {
@@ -392,7 +400,7 @@ struct Connect: View {
 									if link.canDisconnect {
 										Button(role: .destructive) {
 											Task {
-												try await disconnectFocusedRadio(accessoryManager: accessoryManager)
+												if let radioDeviceId { await accessoryManager.disconnectRadio(radioDeviceId) }
 											}
 										} label: {
 											Label("Disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
@@ -423,9 +431,9 @@ struct Connect: View {
 
 					// Feature 021: radios connected alongside the focused one, and radios that can be
 					// added while connected.
-					if !accessoryManager.additionalRadios.isEmpty {
+					if !otherConnectedRadios.isEmpty {
 						Section(header: Text("Also Connected").font(.title)) {
-							ForEach(accessoryManager.additionalRadioDevices, id: \.id) { device in
+							ForEach(otherConnectedRadios, id: \.id) { device in
 								AdditionalRadioRow(device: device, isSwitchingRadio: $isSwitchingRadio)
 							}
 						}
@@ -532,7 +540,7 @@ struct Connect: View {
 						Button(role: .destructive, action: {
 							if link.canDisconnect {
 								Task {
-									try await disconnectFocusedRadio(accessoryManager: accessoryManager)
+									if let radioDeviceId { await accessoryManager.disconnectRadio(radioDeviceId) }
 								}
 							}
 						}) {
@@ -949,6 +957,7 @@ struct ManualConnectionMenu: View {
 	@State private var connectionString = ""
 	/// Why adding the entered radio failed, as the other rows under Add a Radio show.
 	@State private var connectError: String?
+	@Environment(\.selectWindowRadio) private var selectWindowRadio
 
 	/// Entered under Add a Radio: added alongside the others, as the radios listed there (W-12).
 	private func addAlongside(_ device: Device) {
@@ -960,6 +969,7 @@ struct ManualConnectionMenu: View {
 		Task {
 			do {
 				try await accessoryManager.addRadio(device)
+				selectWindowRadio(device.id)
 			} catch {
 				connectError = error.localizedDescription
 			}
@@ -1030,6 +1040,7 @@ struct DeviceConnectRow: View {
 	let device: Device
 	@Binding var isSwitchingRadio: Bool
 	@State private var connectError: String?
+	@Environment(\.selectWindowRadio) private var selectWindowRadio
 
 	/// With a radio already connected, this one is added alongside it (W-12).
 	private func handleTap() {
@@ -1048,6 +1059,7 @@ struct DeviceConnectRow: View {
 		Task {
 			do {
 				try await accessoryManager.addRadio(device)
+				selectWindowRadio(device.id)
 			} catch {
 				connectError = error.localizedDescription
 			}

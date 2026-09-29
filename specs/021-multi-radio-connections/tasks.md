@@ -290,7 +290,7 @@ Windows (plan step 5)
 - [X] T311 Closing a radio's window hides it (W-01): nothing else happens, and it isn't opened again while connected; disconnecting closes it (W-02) through `radioDisconnectedByUser`, sent by `disconnect()` and `disconnectAdditionalRadio(byUser: true)`; the Radios menu lists the connected radios and reopens a hidden one. — `AccessoryManager.disconnectRadio(_:)`. Verified: `MultiRadioConnectFlowTests.disconnectRadioSaysSo`, `RadioWindowTrackerTests`. The Window menu's own list can't be added to from Catalyst, so the radios have their own menu.
 - [X] T312 The Connect window on the Mac (`RadioListWindow`, the main window there): connected radios with Open and Disconnect, the radios to add, App Settings, the first-launch setup; File › Add Radio… (⇧⌘N) opens it. The per-radio prompts in ContentView are off on the Mac, where each window shows its radio's own sheets.
 - [X] T313 Menu bar commands act on the key window's radio (W-07): Radios › Disconnect <radio> through `@FocusedValue(\.windowRadio)`, disabled for the Connect window. The app had no other menu commands.
-- [ ] T314 iPhone: the window's radio in `@SceneStorage`, set from Connect (W-04).
+- [X] T314 iPhone and iPad: the window's radio is kept with the window (`@SceneStorage`, `OneWindowRadioScope`), set when the user shows another radio (W-04). — `oneWindowRadio(stored:)`: the picked radio while it's connected, connecting or being brought back, else the radio the app connects first (`.focused`), or another connected one when the user disconnected that; a single-radio user never picks one, so the window is `.focused`, as before. The window's own radio isn't asked about by name (`oneWindowShownRadio`). Verified: `MultiRadioConnectFlowTests.oneWindowRadioChoice`, `.addRadioKeepsTheOther`.
 
 No app-wide focus (plan step 6)
 - [ ] T315 `activeConnection` / `additionalRadios` become one dictionary of sessions; each radio's state (status, last error, Disconnect allowed, firmware gate) is kept per radio behind `linkStatus(of:)`, and the manager's focused-radio fields go.
@@ -305,7 +305,7 @@ Services (plan step 7)
 
 Adding, switching, composer (plan step 8)
 - [X] T322 Adding a radio always keeps the others (W-12). — `AccessoryManager.addRadio(_:)` connects it alongside and, with one window, shows it (the focus moves, the previous radio stays connected); on the Mac it will get its own window. The Keep Both / Switch dialogs, `AdditionalRadioBehavior` and its App Settings picker go; at four radios the radios to add are disabled and a manual entry says why. Connecting with no radio connected is unchanged. Done before T310 so the Mac Connect window's add is this. Verified: `MultiRadioConnectFlowTests.addRadioKeepsTheOther`. The SwiftUI strings the dialogs and picker used go stale in the catalog at the next export (T122).
-- [ ] T324 Switching the window's radio from Connect and the indicator's radio menu, never disconnecting (W-13).
+- [X] T324 Switching the window's radio from Connect ("Show This Radio") and the indicator's radio menu sets the window's radio (`selectWindowRadio`); nothing is disconnected and the connections don't change (W-13). On the Mac it opens that radio's window. The Update prompt shows the radio in the window; Unlock opens its passphrase sheet; Connect's Disconnect and "Also Connected" act on the window's radio and the ones it doesn't show. Verified: as T314; the full suite; Mac build.
 - [ ] T325 The composer's "Via" picker defaults to the window's radio and is hidden on the Mac (W-14).
 
 Wrap-up

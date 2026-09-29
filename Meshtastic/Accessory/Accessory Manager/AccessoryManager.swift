@@ -291,6 +291,9 @@ class AccessoryManager: ObservableObject {
 	/// next connect starts or it's disconnected by the user (T300). The focused radio's is
 	/// `lastConnectionError`.
 	@Published var radioConnectErrors: [UUID: Error] = [:]
+	/// The radio the one window shows (iPhone, iPad), set by `OneWindowRadioScope`: it isn't
+	/// asked about by name, since the window shows its own sheets (T314).
+	var oneWindowShownRadio: UUID?
 	/// A radio the user disconnected, by device id: its window on the Mac closes (D-19, W-02).
 	let radioDisconnectedByUser = PassthroughSubject<UUID, Never>()
 	/// Each radio's firmware version as it last reported it this launch, by node number (T018):

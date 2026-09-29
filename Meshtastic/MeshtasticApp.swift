@@ -422,10 +422,12 @@ struct MeshtasticAppleApp: App {
 							RadioListWindow()
 								.modifier(RadioWindowOpener(tracker: appState.radioWindowTracker))
 						} else {
-							ContentView(
-								appState: appState,
-								router: appState.router
-							)
+							OneWindowRadioScope {
+								ContentView(
+									appState: appState,
+									router: appState.router
+								)
+							}
 						}
 					}
 				// Rebuild the whole view tree (and re-run every @Query) after a node-switch

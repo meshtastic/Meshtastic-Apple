@@ -40,6 +40,7 @@ struct ContentView: View {
 	@State private var isShowingLockdownGate: Bool = false
 	@State private var isShowingFirmwareGate: Bool = false
 	@Environment(\.scenePhase) private var scenePhase
+	@Environment(\.selectWindowRadio) private var selectWindowRadio
 
 	init(appState: AppState, router: Router) {
 		self.appState = appState
@@ -77,14 +78,19 @@ struct ContentView: View {
 			.sheet(item: RadioWindows.areEnabled ? .constant(nil) : $accessoryManager.radioUnlockRequest) { request in
 				RadioUnlockSheet(request: request)
 			}
-			// A radio that isn't focused needs the user (feature 021, T073). Unlock opens its
-			// passphrase sheet above; Update focuses it, which shows the update screen.
+			// A radio this window doesn't show needs the user (feature 021, T073). Unlock opens its
+			// passphrase sheet above; Update shows it in the window, which shows the update screen
+			// (T324).
 			.alert(item: RadioWindows.areEnabled ? .constant(nil) : $accessoryManager.radioAttentionPrompt) { prompt in
 				Alert(
 					title: Text(prompt.attention.title(radioName: prompt.radioName)),
 					message: Text(prompt.attention.message),
 					primaryButton: .default(Text(prompt.attention.actionTitle)) {
-						Task { await accessoryManager.focusRadioNeedingAttention(prompt.id) }
+						if prompt.attention.isLockdown {
+							accessoryManager.radioUnlockRequest = RadioUnlockRequest(id: prompt.id, radioName: prompt.radioName)
+						} else {
+							selectWindowRadio(prompt.id)
+						}
 					},
 					secondaryButton: .cancel(Text("Later"))
 				)

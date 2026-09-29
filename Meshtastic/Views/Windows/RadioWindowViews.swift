@@ -67,6 +67,7 @@ struct RadioWindowRoot: View {
 	@EnvironmentObject private var appState: AppState
 	@EnvironmentObject private var accessoryManager: AccessoryManager
 	@Environment(\.dismissWindow) private var dismissWindow
+	@Environment(\.openWindow) private var openWindow
 	@StateObject private var router = Router()
 
 	var body: some View {
@@ -77,6 +78,10 @@ struct RadioWindowRoot: View {
 				.focusedSceneValue(\.windowRadio, window)
 				.environmentObject(router)
 				.environment(\.windowRadio, window)
+				// Showing another radio opens its own window (W-13).
+				.environment(\.selectWindowRadio, SelectWindowRadioAction { deviceId in
+					openWindow(id: RadioWindows.radioWindowID, value: RadioWindow(deviceId: deviceId))
+				})
 				.navigationTitle(title(for: window))
 				.onReceive(accessoryManager.radioDisconnectedByUser) { deviceId in
 					if deviceId == window.deviceId {

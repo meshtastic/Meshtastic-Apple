@@ -35,15 +35,72 @@ private struct WindowRadioKey: EnvironmentKey {
 	static let defaultValue = RadioWindow.focused
 }
 
+/// Shows another connected radio in this window (W-13): on iPhone and iPad the one window
+/// switches to it, without disconnecting anything; on the Mac its own window opens.
+struct SelectWindowRadioAction {
+	let select: @MainActor (UUID) -> Void
+
+	@MainActor
+	func callAsFunction(_ deviceId: UUID) {
+		select(deviceId)
+	}
+}
+
+private struct SelectWindowRadioKey: EnvironmentKey {
+	static let defaultValue = SelectWindowRadioAction { _ in }
+}
+
 extension EnvironmentValues {
 	/// The radio of the window this view is in.
 	var windowRadio: RadioWindow {
 		get { self[WindowRadioKey.self] }
 		set { self[WindowRadioKey.self] = newValue }
 	}
+
+	/// Shows another radio in this window (W-13).
+	var selectWindowRadio: SelectWindowRadioAction {
+		get { self[SelectWindowRadioKey.self] }
+		set { self[SelectWindowRadioKey.self] = newValue }
+	}
+}
+
+/// The one window on iPhone and iPad (W-04): shows the radio the user last picked, kept with the
+/// window, and switches when they pick another (T314, T324). With one radio the user never picks
+/// one, so the window follows the radio the app connects, as before.
+struct OneWindowRadioScope<Content: View>: View {
+	@SceneStorage("windowRadioId") private var storedId = ""
+	@ObservedObject private var accessoryManager = AccessoryManager.shared
+	@ViewBuilder let content: () -> Content
+
+	var body: some View {
+		let window = accessoryManager.oneWindowRadio(stored: UUID(uuidString: storedId))
+		content()
+			.modifier(WindowLockdownScope())
+			.environment(\.windowRadio, window)
+			.environment(\.selectWindowRadio, SelectWindowRadioAction { storedId = $0.uuidString })
+			.onChange(of: accessoryManager.session(for: window)?.device.id, initial: true) { _, shown in
+				accessoryManager.oneWindowShownRadio = shown
+			}
+	}
 }
 
 extension AccessoryManager {
+
+	/// What the one window shows (iPhone, iPad; W-04), given the radio the user last picked
+	/// (`stored`): that radio while it's connected, connecting or being brought back; otherwise the
+	/// radio the app connects first (`.focused`), or, when the user disconnected that one and
+	/// another is still connected, the other one.
+	func oneWindowRadio(stored: UUID?) -> RadioWindow {
+		if let stored, stored != activeConnection?.device.id,
+		   isRadioConnected(stored) || connectAttempts[stored] != nil || additionalRadioReconnects[stored] != nil {
+			return RadioWindow(deviceId: stored)
+		}
+		if activeConnection == nil, userRequestedConnectionCancellation,
+		   let other = additionalRadios.values.first(where: { $0.device.connectionState == .connected }) {
+			return RadioWindow(deviceId: other.device.id)
+		}
+		return .focused
+	}
 
 	/// The connected session of `window`'s radio, if it's connected.
 	func session(for window: RadioWindow) -> RadioSession? {
