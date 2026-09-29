@@ -542,7 +542,8 @@ final class TAKMeshtasticBridge {
 			latitude: latitude,
 			longitude: longitude,
 			altitude: Double(position.altitude),
-			speed: Double(position.speed),
+			// Stored speed is km/h as it arrives from the mesh; CoT track speed is m/s.
+			speed: Double(position.speed) / 3.6,
 			course: Double(position.heading),
 			team: "Green",  // Meshtastic nodes shown as green by default
 			role: "Team Member",

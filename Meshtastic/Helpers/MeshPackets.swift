@@ -1127,11 +1127,7 @@ actor MeshPackets {
 						position.altitude = nodeInfo.position.altitude
 						position.satsInView = Int32(truncatingIfNeeded: nodeInfo.position.satsInView)
 						position.speed = Int32(truncatingIfNeeded: nodeInfo.position.groundSpeed)
-						// Range-check the UInt32 before converting (mirrors upsertPositionPacket) so a garbage
-						// groundTrack does not persist as an invalid heading.
-						if nodeInfo.position.groundTrack <= 360 {
-							position.heading = Int32(nodeInfo.position.groundTrack)
-						}
+						position.heading = nodeInfo.position.groundTrackDegrees ?? 0
 						position.time = Date(timeIntervalSince1970: TimeInterval(Int64(nodeInfo.position.time)))
 						position.nodePosition = newNode
 						newNode.latestPositionCache = position
