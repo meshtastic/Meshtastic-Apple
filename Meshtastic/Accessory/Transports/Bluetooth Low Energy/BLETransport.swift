@@ -578,7 +578,7 @@ actor BLETransport: Transport {
 		let displaced = alongside.contains { $0.identifier == preferredId } ? preferredId : nil
 		await AccessoryManager.shared.noteRestoredAlongside(peripheralIds: alongside.map(\.identifier), displacedPreferred: displaced)
 		let device = await restoredDevice(for: peripheral)
-		restoreAsFocused(peripheral, central: central, device: device)
+		restoreAsFocused(peripheral, central: central, device: device, keepsConnectFirst: displaced != nil)
 	}
 
 	/// The `Device` for a peripheral iOS restored: its node number and names from the store.
@@ -621,8 +621,9 @@ actor BLETransport: Transport {
 	struct RestoreHandedOver: Error {}
 
 	/// Restores `peripheral` as the focused radio: taken over if iOS kept it connected, or its
-	/// pending connect completed and then a full handshake.
-	func restoreAsFocused(_ peripheral: CBPeripheral, central: CBCentralManager, device: Device) {
+	/// pending connect completed and then a full handshake. `keepsConnectFirst`: the radio to
+	/// connect first is another one, waiting among the restored radios (T240).
+	func restoreAsFocused(_ peripheral: CBPeripheral, central: CBCentralManager, device: Device, keepsConnectFirst: Bool = false) {
 		// Prevent device discovery during the restore process
 		restoreInProgress = true
 		let id = peripheral.identifier
@@ -648,7 +649,7 @@ actor BLETransport: Transport {
 						try await self.waitForRestoredConnect(of: peripheral)
 						
 						Logger.transport.error("🛜 [BLE] Restoring peripheral in connecting state.  ✅ didConnect Received!")
-						await self.completeFocusedRestore(device: device, connection: restoredConnection, fullHandshake: true)
+						await self.completeFocusedRestore(device: device, connection: restoredConnection, fullHandshake: true, keepsConnectFirst: keepsConnectFirst)
 					} catch is RestoreHandedOver {
 						// Another restored radio connected first and is the focused restore now; this
 						// one waits with the others (T178). `restoreInProgress` is that restore's.
@@ -665,7 +666,7 @@ actor BLETransport: Transport {
 				self.activeConnections[id] = restoredConnection
 				Logger.transport.error("🛜 [BLE] Peripheral Connection found and state is connected setting this connection as the activeConnection.")
 				// iOS kept the link, so the radio has no new config to send.
-				await self.completeFocusedRestore(device: device, connection: restoredConnection, fullHandshake: false)
+				await self.completeFocusedRestore(device: device, connection: restoredConnection, fullHandshake: false, keepsConnectFirst: keepsConnectFirst)
 				Logger.transport.error("🛜 [BLE] Connection state successfully restored in the background.")
 			default:
 				// Since we're not going to attempt to reconnect in then allow normal device discovery
@@ -676,7 +677,13 @@ actor BLETransport: Transport {
 	}
 
 	/// Runs the focused radio's connect over a restored link, then lets discovery run again.
-	private func completeFocusedRestore(device: Device, connection: BLEConnection, fullHandshake: Bool) async {
+	///
+	/// The connect makes the restored radio the preferred one (connect Step 5), and it's the
+	/// focused one, which Settings and Messages follow. With `keepsConnectFirst`, the radio it
+	/// passed over is still the one to connect first at later launches, as before iOS closed the
+	/// app, even if it doesn't come back this session (T201, T212, T240).
+	private func completeFocusedRestore(device: Device, connection: BLEConnection, fullHandshake: Bool, keepsConnectFirst: Bool) async {
+		let kept = keepsConnectFirst ? await MainActor.run { PreferredRadio.connectFirst } : nil
 		let connectTask = Task { @MainActor in
 			try await AccessoryManager.shared.connect(to: device, withConnection: connection, wantConfig: fullHandshake, wantDatabase: fullHandshake, versionCheck: fullHandshake)
 		}
@@ -684,6 +691,11 @@ actor BLETransport: Transport {
 			try await connectTask.value
 		} catch {
 			Logger.transport.error("🛜 [BLE] Error connecting during state restoration: \(error, privacy: .public)")
+		}
+		if let kept {
+			await MainActor.run {
+				PreferredRadio.connectFirstOverride = kept
+			}
 		}
 		restoreInProgress = false
 	}
@@ -723,17 +735,7 @@ actor BLETransport: Transport {
 			self.restoreInProgress = true
 			let connection = BLEConnection(peripheral: standby, central: central, transport: self)
 			self.activeConnections[standby.identifier] = connection
-			// Its full handshake makes it the preferred radio (connect Step 5), and it's the focused
-			// one, which Settings and Messages follow. The radio it took over from is still the one
-			// to connect first at later launches, as before iOS closed the app, even if it doesn't
-			// come back this session (T201, T212).
-			let kept = await MainActor.run { (PreferredRadio.connectFirstPeripheralId, PreferredRadio.connectFirstOverride?.nodeNum ?? PreferredRadio.nodeNum) }
-			await self.completeFocusedRestore(device: device, connection: connection, fullHandshake: true)
-			if displacedPreferred != nil {
-				await MainActor.run {
-					PreferredRadio.connectFirstOverride = (kept.0, kept.1)
-				}
-			}
+			await self.completeFocusedRestore(device: device, connection: connection, fullHandshake: true, keepsConnectFirst: displacedPreferred != nil)
 		}
 		return true
 	}

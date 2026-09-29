@@ -399,6 +399,20 @@ extension AccessoryManager {
 			
 			// Step 5: Send WantConfig (database)
 			Step(timeout: .seconds(10.0), onFailure: .retryStep(attempts: 3)) { @MainActor _ in
+				// Recorded for every focused connect, a restore without a handshake too (T240): it's
+				// the focused radio either way.
+				if attempt.isFocused {
+					Logger.transport.info("🔗 Saving preferredPeripheralId: \(device.id.uuidString)")
+					PreferredRadio.peripheralId = device.id.uuidString
+					if !wantConfig, let nodeNum = device.num {
+						// No MyInfo comes without the config handshake; the restore found the number.
+						PreferredRadio.nodeNum = nodeNum
+					}
+					self.radiosFocusedThisRun.insert(device.id.uuidString)
+					// A radio connected as the focused one is also the one to connect first (T212);
+					// a restore that passed over that radio sets its override again afterwards.
+					PreferredRadio.connectFirstOverride = nil
+				}
 				guard wantDatabase else {
 					Logger.transport.info("👟 [Connect] Step 5: wantDatabase = false, skipping wantDatabase")
 					return
@@ -418,15 +432,6 @@ extension AccessoryManager {
 				self.setStatus(.retrievingDatabase(nodeCount: 0), for: attempt)
 				if attempt.isFocused {
 					self.allowDisconnect = true
-				}
-
-				if attempt.isFocused {
-					Logger.transport.info("🔗 Saving preferredPeripheralId: \(device.id.uuidString)")
-					PreferredRadio.peripheralId = device.id.uuidString
-					self.radiosFocusedThisRun.insert(device.id.uuidString)
-					// A radio connected as the focused one is also the one to connect first (T212);
-					// a restore hand-over sets its override again afterwards.
-					PreferredRadio.connectFirstOverride = nil
 				}
 
 				try await self.sendWantDatabase(on: attempt.requireSession())

@@ -50,6 +50,12 @@ enum PreferredRadio {
 		connectFirstOverride?.peripheralId ?? peripheralId
 	}
 
+	/// The radio to connect first with its node number, kept as the override across a restore
+	/// that makes another radio the focused one (T240).
+	static var connectFirst: (peripheralId: String, nodeNum: Int64) {
+		(connectFirstPeripheralId, connectFirstOverride?.nodeNum ?? nodeNum)
+	}
+
 	/// Whether discovery connects `peripheralId` on its own: the radio to connect first, and the
 	/// preferred (focused) radio too once it has been the focused one in this run of the app
 	/// (`focusedThisRun`), so a focused radio that drops while the override names another is

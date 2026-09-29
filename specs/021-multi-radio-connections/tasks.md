@@ -251,7 +251,7 @@ pruning. One commit each, full suite each time. To resume: the first unchecked i
 All re-checked in the files and holding (2026-09-28); the owner approved. One commit each, full
 suite each time. To resume: the first unchecked item.
 
-- [ ] T240 J1 a focused connect without a handshake (a BLE restore of a radio iOS kept connected) records the preferred radio, "focused this run" and the override clear in Step 5 before the `wantDatabase` guard, with the node number from the device; `completeFocusedRestore(keepsConnectFirst:)` keeps the connect-first radio for both restore paths.
+- [X] T240 J1 a focused connect without a handshake (a BLE restore of a radio iOS kept connected) is recorded as the focused radio. — Step 5 sets `PreferredRadio.peripheralId`, the node number from the device when there's no config handshake, `radiosFocusedThisRun` and the override clear before its `wantDatabase` guard; `completeFocusedRestore(keepsConnectFirst:)` sets the override back to the radio passed over, for the restore entry (`displaced`) and the hand-over. Verified: `MultiRadioConnectFlowTests.restoreWithoutHandshakeIsPreferred`. Not unit tested: the override in the CoreBluetooth restore paths.
 - [ ] T241 the backup merge tests' helper checkpoints the backup store and switches it to `journal_mode=DELETE` before hashing it (the flaky `strayRadioRowDoesNotBlockMerge` / `attemptCountedPerBackup`).
 - [ ] T242 notes: the edge (a joining radio's observations from an earlier, unfinished connect) in HANDOFF's gotchas; R8-1 (message table up to four times larger, unindexed message queries) under T132.
 

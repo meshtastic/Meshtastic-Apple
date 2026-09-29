@@ -321,6 +321,32 @@ struct MultiRadioConnectFlowTests {
 		try await manager.disconnect()
 	}
 
+	@Test("A focused connect without a handshake, as a restore of a radio iOS kept connected, makes it the preferred radio")
+	func restoreWithoutHandshakeIsPreferred() async throws {
+		let saved = SavedDefaults()
+		defer {
+			saved.restore()
+			PreferredRadio.connectFirstOverride = nil
+		}
+		// A is preferred and still connecting; iOS kept B connected, so B is the focused restore.
+		PreferredRadio.peripheralId = UUID().uuidString
+		PreferredRadio.nodeNum = 0x0A0A
+		let num = uniqueNodeNum()
+		let radio = ScriptedRadio(nodeNum: num)
+		let manager = makeManager(ScriptedTransport(radio: radio))
+		var restored = device()
+		restored.num = Int64(num)
+
+		try await manager.connect(to: restored, withConnection: radio, wantConfig: false, wantDatabase: false, versionCheck: false)
+
+		#expect(manager.activeConnection?.device.id == restored.id)
+		#expect(PreferredRadio.peripheralId == restored.id.uuidString)
+		#expect(PreferredRadio.nodeNum == Int64(num), "from the restore, as no MyInfo comes")
+		#expect(manager.radiosFocusedThisRun.contains(restored.id.uuidString))
+		#expect(!(await radio.sent.map(describe).contains(.wantConfig(69420))), "no handshake")
+		try await manager.disconnect()
+	}
+
 	@Test("The radio to connect first can differ from the focused one until a focus is chosen")
 	func connectFirstOverride() async throws {
 		let saved = SavedDefaults()
