@@ -17,14 +17,16 @@ struct ChannelMessageList: View {
 	@Environment(\.scenePhase) var scenePhase
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 	@FocusState var messageFieldFocused: Bool
 	@Bindable var myInfo: MyInfoEntity
 	@Bindable var channel: ChannelEntity
 	@State private var replyMessageId: Int64 = 0
 	/// The focused radio, or offline the preferred one; -1 for none. Redraws with the manager.
 	private var preferredPeripheralNum: Int {
-		if let focused = accessoryManager.activeDeviceNum { return Int(focused) }
-		return PreferredRadio.nodeNum > 0 ? Int(PreferredRadio.nodeNum) : -1
+		if let focused = accessoryManager.nodeNum(for: windowRadio) { return Int(focused) }
+		return accessoryManager.radioNodeNum(for: windowRadio) > 0 ? Int(accessoryManager.radioNodeNum(for: windowRadio)) : -1
 	}
 	@State private var messageToHighlight: Int64 = 0
 	@State private var messageLimit: Int = 100
@@ -188,7 +190,7 @@ struct ChannelMessageList: View {
 					channel: sendingSlot?.index ?? destination.channelNum,
 					isEmoji: true,
 					replyID: target.messageId,
-					viaRadio: sendingSlot?.radio
+					viaRadio: sendingRadio
 				)
 				await MainActor.run { loadMessages(markReadAfterLoad: routerIsShowingThisChannel()) }
 			} catch {
@@ -330,7 +332,7 @@ struct ChannelMessageList: View {
 				replyMessageId: $replyMessageId,
 				isFocused: $messageFieldFocused,
 				onMessageSent: { loadMessages(markReadAfterLoad: routerIsShowingThisChannel()) },
-				viaRadio: sendingSlot?.radio,
+				viaRadio: sendingRadio,
 				viaChannel: sendingSlot?.index
 			)
 			.fixedSize(horizontal: false, vertical: true)
@@ -351,17 +353,17 @@ struct ChannelMessageList: View {
 			ToolbarItem(placement: .navigationBarTrailing) {
 				ZStack {
 					ConnectedDevice(
-						deviceConnected: accessoryManager.isConnected,
-						name: accessoryManager.activeConnection?.device.shortName ?? "?",
-						mqttProxyConnected: accessoryManager.mqttProxyConnected && (channel.uplinkEnabled || channel.downlinkEnabled),
+						deviceConnected: accessoryManager.isConnected(windowRadio),
+						name: accessoryManager.session(for: windowRadio)?.device.shortName ?? "?",
+						mqttProxyConnected: accessoryManager.mqttProxyConnected(for: windowRadio) && (channel.uplinkEnabled || channel.downlinkEnabled),
 						mqttUplinkEnabled: channel.uplinkEnabled,
 						mqttDownlinkEnabled: channel.downlinkEnabled,
 						mqttTopic: {
 								let name = channel.name ?? ""
 								if name.isEmpty {
-									return accessoryManager.mqttTopics.first ?? ""
+									return accessoryManager.mqttTopics(for: windowRadio).first ?? ""
 								}
-								return accessoryManager.mqttTopics.first(where: { $0.contains("/2/e/\(name)/") }) ?? accessoryManager.mqttTopics.first ?? ""
+								return accessoryManager.mqttTopics(for: windowRadio).first(where: { $0.contains("/2/e/\(name)/") }) ?? accessoryManager.mqttTopics(for: windowRadio).first ?? ""
 							}()
 					)
 				}
@@ -378,7 +380,13 @@ private extension ChannelMessageList {
 		ChannelMessageQuery(channelIndex: channel.index, channelKey: channel.channelKey, radioNum: myInfo.myNodeNum, multiRadio: ownRadioNums.count > 1)
 	}
 
-	/// The slot the next message uses; nil (one radio with the channel) is the focused radio as before.
+	/// The radio the next message goes out through: the picked slot's, else the window's radio
+	/// (D-19), which for the one window is the focused radio as before.
+	var sendingRadio: Int64? {
+		sendingSlot?.radio ?? accessoryManager.nodeNum(for: windowRadio)
+	}
+
+	/// The slot the next message uses; nil (one radio with the channel) is the window's radio.
 	var sendingSlot: ChannelSlot? {
 		guard channelSlots.count > 1 else { return nil }
 		return channelSlots.first { $0.radio == chosenRadio }

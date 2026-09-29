@@ -15,6 +15,8 @@ import MeshtasticProtobufs // Added to ensure RoutingError is accessible if need
 struct UserMessageList: View {
 	@EnvironmentObject var appState: AppState
 	@EnvironmentObject var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 	@Environment(\.scenePhase) var scenePhase
 	@Environment(\.modelContext) private var context
 	@FocusState var messageFieldFocused: Bool
@@ -23,8 +25,8 @@ struct UserMessageList: View {
 	@State private var messageToHighlight: Int64 = 0
 	/// The focused radio, or offline the preferred one; -1 for none. Redraws with the manager.
 	private var preferredPeripheralNum: Int {
-		if let focused = accessoryManager.activeDeviceNum { return Int(focused) }
-		return PreferredRadio.nodeNum > 0 ? Int(PreferredRadio.nodeNum) : -1
+		if let focused = accessoryManager.nodeNum(for: windowRadio) { return Int(focused) }
+		return accessoryManager.radioNodeNum(for: windowRadio) > 0 ? Int(accessoryManager.radioNodeNum(for: windowRadio)) : -1
 	}
 	@State private var messageLimit: Int = 100
 	@State private var messages: [MessageEntity] = []
@@ -72,7 +74,7 @@ struct UserMessageList: View {
 			}
 			Logger.data.info("📖 [App] All unread direct messages marked as read for user \(user.num, privacy: .public).")
 
-			if let connectedPeripheralNum = accessoryManager.activeDeviceNum {
+			if let connectedPeripheralNum = accessoryManager.nodeNum(for: windowRadio) {
 				// Feature 021 (T090): the badge counts direct messages to every radio.
 				var radios = UserEntity.localRadioNums(context: context)
 				radios.insert(connectedPeripheralNum)
@@ -430,7 +432,7 @@ private extension UserMessageList {
 		if let chosenRadio, conversationRadios.contains(chosenRadio) {
 			return chosenRadio
 		}
-		if let focused = accessoryManager.activeDeviceNum, conversationRadios.contains(focused) {
+		if let focused = accessoryManager.nodeNum(for: windowRadio), conversationRadios.contains(focused) {
 			return focused
 		}
 		return conversationRadios.first
@@ -441,8 +443,8 @@ private extension UserMessageList {
 		conversationRadios.count > 1 ? selectedRadio : nil
 	}
 
-	/// The radio replies go out through; nil is the focused radio.
-	var sendingRadio: Int64? { radioFilter }
+	/// The radio replies go out through: the shown thread's, else the window's radio (D-19).
+	var sendingRadio: Int64? { radioFilter ?? accessoryManager.nodeNum(for: windowRadio) }
 
 	var showsRadioPicker: Bool { conversationRadios.count > 1 }
 

@@ -87,6 +87,8 @@ struct UserList: View {
 
 private struct FilteredUserList: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 	@EnvironmentObject var appState: AppState
 	@Environment(\.modelContext) private var context
 
@@ -124,7 +126,8 @@ private struct FilteredUserList: View {
 				onlineThreshold: onlineThreshold,
 				distanceBounds: distanceBounds,
 				lookup: filterLookup,
-				heardByNodeNums: heardByNodeNums
+				heardByNodeNums: heardByNodeNums,
+				radioNum: accessoryManager.radioNodeNum(for: windowRadio)
 			)
 		}
 	}
@@ -132,7 +135,7 @@ private struct FilteredUserList: View {
 	var body: some View {
 		let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMdd", options: 0, locale: Locale.current)
 		let dateFormatString = (localeDateFormat ?? "MM/dd/YY")
-		let activeDeviceNum = Int64(accessoryManager.activeDeviceNum ?? 0)
+		let activeDeviceNum = Int64(accessoryManager.nodeNum(for: windowRadio) ?? 0)
 		let visibleUsers = users.filter { $0.num != activeDeviceNum }
 		let summaryUsers = visibleUsers.filter { $0.lastMessage != nil }
 		let summaryRefreshKey = directMessageSummaryRefreshKey(for: summaryUsers)
@@ -471,7 +474,8 @@ fileprivate extension NodeFilterParameters {
 		onlineThreshold: Date?,
 		distanceBounds: NodeDistanceFilterBounds?,
 		lookup: UserListFilterLookup,
-		heardByNodeNums: Set<Int64>? = nil
+		heardByNodeNums: Set<Int64>? = nil,
+		radioNum: Int64 = PreferredRadio.nodeNum
 	) -> Bool {
 		// Heard-by filter (feature 021): nil when not filtering by radio
 		if let heardByNodeNums, !heardByNodeNums.contains(user.num) { return false }
@@ -527,7 +531,7 @@ fileprivate extension NodeFilterParameters {
 		// Ignored
 		if user.userNode?.ignored == true { return false }
 		// Connected node
-		if user.numString == String(PreferredRadio.nodeNum) { return false }
+		if user.numString == String(radioNum) { return false }
 		return true
 	}
 }

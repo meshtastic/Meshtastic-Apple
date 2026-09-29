@@ -3,6 +3,8 @@ import OSLog
 
 struct RetryButton: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 
 	let message: MessageEntity
 	let destination: MessageDestination
@@ -49,7 +51,7 @@ struct RetryButton: View {
 	/// timestamp: the row disappeared from the conversation and a different one appeared at the
 	/// bottom. A send that threw left nothing behind at all, so the text was gone.
 	private func retryMessage() {
-		guard status.canRetry, accessoryManager.isConnected else {
+		guard status.canRetry, accessoryManager.isConnected(windowRadio) else {
 			return
 		}
 		let messageID = message.messageId
