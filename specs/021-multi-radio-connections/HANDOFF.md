@@ -99,6 +99,9 @@ Read this first if you are picking the work up. Update it in the same commit as 
 
 ## In progress
 
+- Review V8 (2026-09-28): `review-connections-v8.md` (J1, one edge) and `review-data-v8.md`
+  (R8-1, a cost to measure), checked in the files; all held. J1 and the flaky merge tests fixed
+  one commit each; the edge and R8-1 recorded as notes (T240–T242 in tasks.md).
 - Review V7 (2026-09-28): `review-connections-v7.md` (I1–I2) and `review-data-v7.md` (R7-1),
   checked in the files; all held. Fixed one commit each (T230–T232 in tasks.md). R7-1 was a
   policy choice: the owner chose per-radio message pruning (each radio keeps its newest 50,000;
@@ -284,6 +287,10 @@ describes it well enough to rebuild.
   on it's marked retired and those two save as they happen, so the new instance sees their rows
   (T198); for those 2 s two contexts write the same store. Only the clear / repoint paths invalidate, and they
   invalidate earlier recycled instances too.
+- The owner's observation backfill decides from what the store held at the joining radio's
+  connect Step 0 (T230). If an earlier connect of that radio got packets in and ended before its
+  drain finished (the app killed mid-drain), its observations are already there and the owner
+  gets none. Rare; left as is, since fixing it means keeping the answer across launches.
 - Discovery while connected must not call `updateState(.discovering)`; `startDiscovery` only
   does that with no focused radio now.
 - `BackupMergeTests.attemptCountedPerBackup` and `.strayRadioRowDoesNotBlockMerge` failed now and

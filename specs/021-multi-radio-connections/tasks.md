@@ -253,13 +253,13 @@ suite each time. To resume: the first unchecked item.
 
 - [X] T240 J1 a focused connect without a handshake (a BLE restore of a radio iOS kept connected) is recorded as the focused radio. — Step 5 sets `PreferredRadio.peripheralId`, the node number from the device when there's no config handshake, `radiosFocusedThisRun` and the override clear before its `wantDatabase` guard; `completeFocusedRestore(keepsConnectFirst:)` sets the override back to the radio passed over, for the restore entry (`displaced`) and the hand-over. Verified: `MultiRadioConnectFlowTests.restoreWithoutHandshakeIsPreferred`. Not unit tested: the override in the CoreBluetooth restore paths.
 - [X] T241 the backup merge tests' helper checkpoints the backup store and switches it to `journal_mode=DELETE` before hashing it. — `BackupMergeTests.settle(_:)`, called by `makeBackupFolder`. Verified: the merge suite passed six runs in a row and the full suite passes.
-- [ ] T242 notes: the edge (a joining radio's observations from an earlier, unfinished connect) in HANDOFF's gotchas; R8-1 (message table up to four times larger, unindexed message queries) under T132.
+- [X] T242 notes: the edge (a joining radio's observations from an earlier, unfinished connect) in HANDOFF's gotchas; R8-1 (message table up to four times larger, unindexed message queries) under T132.
 
 ## Phase 10: Hardening
 
 - [ ] T130 Four BLE radios for 24 hours (device checklist in `HANDOFF.md`).
 - [ ] T131 BLE + TCP mix; background and foreground cycles; restoration after the app is killed.
-- [ ] T132 Memory and main-actor load under four sessions (`PerformanceSeedData` and a replay).
+- [ ] T132 Memory and main-actor load under four sessions (`PerformanceSeedData` and a replay). Include four radios at the message cap (200,000 messages, T232): the channel and DM queries and the unread badge scan the unindexed table on each change (review-data-v8 R8-1).
 - [ ] T133 Upgrade test with a real long-lived store (side-by-side build seeded from the owner's backup).
 - [ ] T134 Full test suite, SwiftLint, XcodeGen drift check.
 - [ ] T135 PR description (Summary / What changed / Testing), with screenshots.
