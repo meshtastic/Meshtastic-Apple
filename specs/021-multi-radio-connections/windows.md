@@ -40,7 +40,7 @@ window owns one value, its radio, and nothing hands it over.
 | W-05 | Tapping a notification: a direct message opens the window of the radio that received it; a channel message opens the channel in the first open window whose radio has that channel. |
 | W-06 | Read state is shared: one row per message, so reading the shared channel in one window marks it read in every window. Direct messages belong to one radio anyway. |
 | W-07 | Menu bar commands act on the radio of the key (active) window. With the Connect window in front, commands that need a radio are disabled. |
-| W-08 | Siri and CarPlay use a default radio the user picks (W-09 to W-11). |
+| W-08 | Siri and CarPlay use a default radio the user picks (W-10, W-11, W-15). |
 | W-12 | Adding a radio always keeps the others connected: "Add a Radio" means add. The Keep Both / Switch question (D-05) and its App Settings choice go. The new radio opens in its own window on the Mac and iPad; on iPhone the window shows it, and the previous radio stays connected. At four radios, the radios to add are disabled with the reason shown; the app never disconnects one on its own. |
 | W-13 | Switching the window's radio (iPhone, or an iPad window) is from Connect or from the connection indicator's radio menu (`RadioSwitcherMenu`). Switching never disconnects anything; disconnecting is always its own action. |
 | W-14 | The composer's "Via" picker (sending on a shared channel through another connected radio that has it) stays on iPhone and iPad, defaulting to the window's radio, and goes on the Mac, where that radio has its own window. The choice lasts while the conversation is open, as today. |
@@ -64,19 +64,30 @@ What's there today (checked 2026-09-29): App Settings has a "CarPlay & Siri" rad
 use the CarPlay & Siri radio, which today falls back to the focused one. TAK and the Apple Watch
 have the same kind of choice.
 
-- **W-09.** When a radio connects for the first time and another radio is already known, the app
-  asks whether to make it the default radio for Siri and CarPlay. (Asked once per radio, not on
-  every reconnect.) App Settings keeps the choice.
+- **W-09.** Replaced by W-15 (2026-09-29): the radio for Siri and CarPlay is a required choice, not
+  a one-time question that can be put off.
 - **W-10.** The Shortcuts commands take a radio by name, not by node number: "Send a message to
   Alice via Base Station". With no radio named, the default is used. A named radio that isn't
   connected is an error, never a send through another radio (as today).
 - **W-11.** A new command sets the default radio: "Make Base Station my Meshtastic radio".
-- With no default chosen and more than one radio connected, a command asks which radio. With one
-  radio connected, it uses that one, as on `main`.
+- With one radio known, every service uses it, as on `main`, and nothing is asked.
 - The voice "send a message" that goes through SiriKit (`INSendMessageIntent`) has no place for a
   radio name, so it always uses the default.
-- TAK and the Apple Watch get the same rule: the radio chosen for them, or the only radio
-  connected; with several and none chosen, App Settings asks for one.
+- **W-15** (decided 2026-09-29, replaces W-09 and the "radio connected first" fallback): with two or
+  more of the user's radios known (connected with this version), a service that's in use must have
+  a radio chosen; the user is made to pick one. In use means:
+  - TAK: the TAK server is on. Turning it on asks first; without a pick it stays off.
+  - Apple Watch: a paired watch has the Meshtastic app.
+  - CarPlay & Siri: always, as soon as a second radio is known (it also drives the Share sheet and
+    notification replies).
+  A sheet lists the radios, connected first, and closes only once each such service has a radio;
+  it shows in the one window, and in the Connect window on the Mac. App Settings has no
+  "Automatic"; a service not in use shows "Not set".
+- Removing the chosen radio clears that choice; if the service is in use and two or more radios
+  remain, the sheet asks again; with one left, that radio is used, as for a single-radio user.
+- A chosen radio that isn't connected is waited for, never replaced by another: TAK stops bridging
+  until it's back, Siri and Shortcuts say it isn't connected, CarPlay shows its conversations but
+  a send says it isn't connected, and the Watch shows its nodes.
 
 ## BLE restore (iPhone and iPad)
 

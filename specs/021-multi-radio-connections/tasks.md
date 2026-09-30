@@ -311,6 +311,23 @@ Adding, switching, composer (plan step 8)
 Wrap-up
 - [X] T323 Device checklist in HANDOFF for windows, switching the one window's radio, adding a radio, a dropped first radio, lock-down and Siri/CarPlay; the focus handover and give-back checks replaced.
 
+## Review fixes after Phase 11 (review-connections-v11.md X1, W1–W7; review-data-v10.md R10-1–R10-8)
+
+All re-checked in the files and holding (2026-09-29); the owner approved, R10-6 as W-15 (windows.md:
+a required radio choice for services in use). One commit each, full suite and a Mac build each
+time. To resume: the first unchecked item.
+
+- [ ] T330 X1, R10-1, R10-2, R10-4, R10-8a: the sends a window makes go through its own radio: saving a channel set (QR, link, profile import), the discovery scan and beacon join / add, waypoints, trace route, local stats, exchanging positions and user info, and the mesh beacon module save.
+- [ ] T331 W1: the ESP32 update releases the window's own radio for the update, without closing its window or touching the first radio.
+- [ ] T332 W7, R10-3, minor: each radio's last known node number, so a window whose radio is disconnected keeps it (Settings, the version check), and messages from it fail instead of going through another radio; the DM thread doesn't flip.
+- [ ] T333 W2, W3: with the first radio gone and others connected, radios alongside reconnect and a radio added connects alongside, leaving the preferred radio as it was.
+- [ ] T334 W4: links and notification taps always pick the window by radio; on the Mac a hidden or closed radio window is reopened for them.
+- [ ] T335 W5: every radio's lock-down and firmware attention is set, and prompted unless the window shows that radio; the per-radio passphrase sheet finds the first radio too.
+- [ ] T336 R10-5: Siri's voice send needs any radio connected, uses the chosen radio and fails when it's off, never swapping it.
+- [ ] T337 R10-7: a named radio that's off is an error, not a new question; factory reset and shutdown settle the radio first and name it in their confirmation.
+- [ ] T338 R10-6, R10-8b, minor: W-15, the required radio choice for services in use; the fallback to another radio goes; "known" means connected with this version.
+- [ ] T339 minor: `disconnectRadio`'s comment; the Mesh Map window's radio noted as known.
+
 ## Phase 10: Hardening
 
 - [ ] T130 Four BLE radios for 24 hours (device checklist in `HANDOFF.md`).
