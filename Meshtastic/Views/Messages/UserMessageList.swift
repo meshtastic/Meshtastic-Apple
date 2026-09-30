@@ -437,11 +437,15 @@ private extension UserMessageList {
 		}
 		// The window's radio, also while it's off: its thread stays, and a reply fails rather than
 		// going from another radio (review V10 R10-3).
-		let windowNum = accessoryManager.nodeNum(for: windowRadio) ?? accessoryManager.radioNodeNum(for: windowRadio)
-		if conversationRadios.contains(windowNum) {
-			return windowNum
+		if conversationRadios.contains(windowRadioNum) {
+			return windowRadioNum
 		}
 		return conversationRadios.first
+	}
+
+	/// The window's radio, also while it's off; 0 when none is known.
+	var windowRadioNum: Int64 {
+		accessoryManager.nodeNum(for: windowRadio) ?? accessoryManager.radioNodeNum(for: windowRadio)
 	}
 
 	/// Only filtered when there's a choice; with one radio the queries are exactly as before.
@@ -463,15 +467,19 @@ private extension UserMessageList {
 		return preferredPeripheralNum
 	}
 
-	/// Connected radios, plus the user's other radios that have messages with this node. Uses
-	/// counts per radio (a handful at most), so a long conversation isn't loaded to find them.
+	/// Connected radios, plus the user's other radios that have messages with this node, and the
+	/// window's radio (`DirectMessageQuery.conversationRadios`). Uses counts per radio (a handful
+	/// at most), so a long conversation isn't loaded to find them.
 	func refreshConversationRadios() {
 		let userNum = user.num
 		let known = ((try? context.fetch(FetchDescriptor<MyInfoEntity>())) ?? []).map(\.myNodeNum)
 		let (withHistory, unread) = DirectMessageQuery.radiosWithHistory(userNum: userNum, among: Set(known), in: context)
-		let connected = accessoryManager.connectedRadioNums.filter { $0 != userNum }
-		let others = withHistory.subtracting(connected).sorted()
-		let radios = connected + others
+		let radios = DirectMessageQuery.conversationRadios(
+			connected: accessoryManager.connectedRadioNums,
+			withHistory: withHistory,
+			windowRadio: windowRadioNum,
+			userNum: userNum
+		)
 		if radios != conversationRadios {
 			conversationRadios = radios
 		}

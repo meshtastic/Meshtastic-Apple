@@ -100,4 +100,16 @@ struct DirectMessageQueryTests {
 		#expect(result.unread[radioB] == 2)
 		#expect(result.unread[radioC] == nil)
 	}
+
+	@Test("A conversation's radios: the connected first, then those with history, and the window's radio always")
+	func conversationRadios() {
+		let radioC: Int64 = 0x0C0C_0C0C
+		// The window's radio C is off and has no messages with the node: it's still one of them.
+		#expect(DirectMessageQuery.conversationRadios(connected: [radioB], withHistory: [radioA], windowRadio: radioC, userNum: remote) == [radioB, radioA, radioC])
+		#expect(DirectMessageQuery.conversationRadios(connected: [radioA, radioB], withHistory: [radioA], windowRadio: radioA, userNum: remote) == [radioA, radioB])
+		// One radio, as before: nothing added.
+		#expect(DirectMessageQuery.conversationRadios(connected: [radioA], withHistory: [], windowRadio: radioA, userNum: remote) == [radioA])
+		#expect(DirectMessageQuery.conversationRadios(connected: [], withHistory: [], windowRadio: 0, userNum: remote).isEmpty, "no radio known")
+		#expect(DirectMessageQuery.conversationRadios(connected: [radioA, remote], withHistory: [], windowRadio: remote, userNum: remote) == [radioA], "never the node itself")
+	}
 }

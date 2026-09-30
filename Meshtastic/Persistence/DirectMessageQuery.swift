@@ -75,6 +75,19 @@ struct DirectMessageQuery {
 		return try context.fetch(descriptor)
 	}
 
+	/// The radios a direct conversation involves, as its Via picker lists them: the connected ones
+	/// first, then the user's other radios with messages with `userNum`. The window's radio is
+	/// always one of them, also while it's off with no messages, so its own thread shows and a
+	/// reply goes through it and fails rather than from another radio (review V11 R11-3).
+	static func conversationRadios(connected: [Int64], withHistory: Set<Int64>, windowRadio: Int64, userNum: Int64) -> [Int64] {
+		let connected = connected.filter { $0 != userNum }
+		var others = withHistory
+		if windowRadio > 0, windowRadio != userNum {
+			others.insert(windowRadio)
+		}
+		return connected + others.subtracting(connected).sorted()
+	}
+
 	/// Of `radios`, the ones with messages in a conversation with `userNum`, and how many of
 	/// the remote node's messages each has unread. Counts only, so a long conversation isn't
 	/// loaded; there is one query or three per radio, and the user has a handful of radios.
