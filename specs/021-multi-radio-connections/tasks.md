@@ -349,6 +349,15 @@ each time. To resume: the first unchecked item.
 - [X] T358 R11-3: Exchange User Info fails when its radio isn't connected instead of using the first radio (the button shows its failure alert). Verified: `MultiRadioConnectLifecycleTests.exchangeUserInfoOnItsRadio`.
 - [X] T359 Device checks in both reviews: the one window's sheets, covers and alerts come up one at a time. The lock-down and firmware gates come first and wait only while the Choose Radios sheet or another radio's prompt is up (a gate that's up stays up); the Choose Radios sheet (`ServiceRadioChoiceGate(waits:isUp:onClose:)`) waits for the gates and the other radios' prompts, and comes up a moment after they close; another radio's attention alert and passphrase sheet wait for the gates and the Choose Radios sheet (`isGateUp`, cleared in each one's onDismiss). With one radio only the gates and onboarding are used, as before. Not unit tested (presentation); on the device checklist.
 
+## Review fixes after V13 (review-connections-v13.md Z1–Z2; review-data-v12.md R12-1)
+
+All re-checked in the files and holding (2026-09-30); the owner approved. One commit each, full
+suite and a Mac build each time. To resume: the first unchecked item.
+
+- [ ] T360 Z1: a radio alongside that drops with no other radio connected or connecting comes back as the first radio once discovery sees it.
+- [ ] T361 Z2: Remove This Radio on the first radio with another connected makes that one the preferred radio, as Disconnect does (T352).
+- [ ] T362 R12-1: a Choose Radios sheet that was asked for but never came up doesn't hold the other sheets, gates and prompts back, and is asked for again.
+
 ## Phase 10: Hardening
 
 - [ ] T130 Four BLE radios for 24 hours (device checklist in `HANDOFF.md`).
