@@ -101,7 +101,8 @@ class TCPTransport: NSObject, Transport, NetServiceBrowserDelegate, NetServiceDe
 			nodeName = String(data: shortNameData, encoding: .utf8) ?? ""
 		}
 		if let nodeId = txtRecords?["id"], nodeId.count > 4,
-		   let suffix = String(data: Data(nodeId.suffix(4)), encoding: .utf8), !suffix.isEmpty {
+		   let suffix = String(data: Data(nodeId.suffix(4)), encoding: .utf8),
+		   !suffix.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
 			if !nodeName.isEmpty {
 				nodeName += "_"
 			}
