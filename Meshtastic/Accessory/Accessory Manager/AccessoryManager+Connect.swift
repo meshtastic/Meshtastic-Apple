@@ -15,6 +15,19 @@ private let maxRetries = 2
 private let retryDelay: Duration = .seconds(2)
 
 extension AccessoryManager {
+
+	/// Closes a connection that never became `activeConnection`. Best effort: the
+	/// attempt is already failing, and a failure to close cannot be reported anywhere
+	/// more useful than the log.
+	static func releasePendingConnection(_ connection: Connection?) async {
+		guard let connection else { return }
+		do {
+			try await connection.disconnect(withError: nil, shouldReconnect: false)
+		} catch {
+			Logger.transport.error("[Connect] Could not close an abandoned connection: \(error.localizedDescription, privacy: .public)")
+		}
+	}
+
 	func connect(
 		to device: Device,
 		withConnection: Connection? = nil,
@@ -25,10 +38,14 @@ extension AccessoryManager {
 		retries: Int? = nil
 	) async throws {
 		Logger.transport.info("AccessoryManager.connect(to: \(device.name, privacy: .public), withConnection: \(withConnection != nil), wantConfig: \(wantConfig), wantDatabase: \(wantDatabase), versionCheck: \(versionCheck), refreshDeviceHardwareFromAPI: \(refreshDeviceHardwareFromAPI))")
-		// Prevent new connection if one is active
-		if activeConnection != nil {
+		// Reserve the whole handshake before its first await. `activeConnection` is only
+		// assigned at the end of Step 1, so on its own it cannot turn away a dial that is
+		// already in flight — two callers could both get past it and both reach the transport.
+		if activeConnection != nil || connectInFlight {
 			throw AccessoryError.connectionFailed("Already connected to a device")
 		}
+		connectInFlight = true
+		defer { connectInFlight = false }
 		
 		guard let transport = transportForType(device.transportType) else {
 			throw AccessoryError.connectionFailed("No transport for type")
@@ -90,6 +107,10 @@ extension AccessoryManager {
 			// Step 1: Setup the connection
 			Step(timeout: connectStepTimeout) { @MainActor _ in
 				Logger.transport.info("🔗👟[Connect] Step 1: connection to \(device.id, privacy: .public)")
+				// Held between the transport handing back a connection and `activeConnection`
+				// taking ownership of it. A throw inside that window would otherwise leave a
+				// live connection that nothing is tracking and nothing will close.
+				var pendingConnection: Connection?
 				do {
 					let connection: Connection
 					if let providedConnection = withConnection {
@@ -97,6 +118,7 @@ extension AccessoryManager {
 					} else {
 						connection = try await transport.connect(to: device)
 					}
+					pendingConnection = connection
 					let eventStream = try await connection.connect()
 					self.updateState(.communicating)
 					self.connectionEventTask = Task {
@@ -106,11 +128,13 @@ extension AccessoryManager {
 						Logger.transport.info("[Accessory] Event stream closed")
 					}
 					self.activeConnection = (device: device, connection: connection)
+					pendingConnection = nil
 					self.activeDeviceNum = device.num
 					// The mesh-traffic monitor (map flyover gate) self-starts its decay timer on the
 					// first inbound packet and is cleared by Step 0's closeConnection() reset(), so
 					// there's no explicit start to make here — it stays correct across connect retries.
 				} catch let error where BLEConnection.terminatesConnectRetries(error) {
+					await Self.releasePendingConnection(pendingConnection)
 					// A lost bond cannot be fixed by retrying or reconnecting — the user has to
 					// forget the device in iOS Settings. The old catch matched only the raw CBError,
 					// but the transport maps that into AccessoryError.bondLost before throwing, so
@@ -120,6 +144,9 @@ extension AccessoryManager {
 					self.autoReconnectSuspendedForSession = true
 					self.lastConnectionError = AccessoryError.bondLost
 					await self.connectionStepper?.cancelCurrentlyExecutingStep(withError: AccessoryError.bondLost, cancelFullProcess: true)
+				} catch {
+					await Self.releasePendingConnection(pendingConnection)
+					throw error
 				}
 			}
 			

@@ -307,6 +307,10 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	/// timeout) past teardown, wasting network and pinning the hardware-list spinner.
 	var deviceRefreshTask: Task<Void, Never>?
 	var connectionStepper: SequentialSteps?
+	/// Reserved synchronously at `connect()` entry, before the transport can suspend.
+	var connectInFlight = false
+	/// Stops two autoconnects to the preferred device racing each other into `connect()`.
+	private var preferredConnectPending = false
 	
 	// Flash counters — NOT @Published to avoid triggering re-renders of all observing views.
 	// RXTXIndicatorWidget observes these via onChange polling.
@@ -424,9 +428,11 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		// A firmware update owns the radio: reconnecting mid-update fights the
 		// updater for the device while it is rebooting into its bootloader.
 		if otaInProgress { return }
-		if !self.isConnected && !self.isConnecting,
+		if !self.isConnected && !self.isConnecting && !connectInFlight && !preferredConnectPending,
 		   let preferredDevice = device ?? self.devices.first(where: { $0.id.uuidString == UserDefaults.preferredPeripheralId }) {
+			preferredConnectPending = true
 			Task {
+				defer { self.preferredConnectPending = false }
 				try await self.connect(to: preferredDevice)
 			}
 		}
