@@ -122,15 +122,17 @@ extension AccessoryManager {
 		scheduleAdditionalRadioReconnect(device)
 	}
 
-	/// The Disconnect command for radio `radioNum` (T320): the radio connected first disconnects
-	/// as it always has; another as Disconnect on its row does.
+	/// The Disconnect command for radio `radioNum` (T320): the same as Disconnect on its row.
 	func disconnectRadio(nodeNum radioNum: Int64) async throws {
 		guard let session = connectedSession(forRadio: radioNum) else { return }
-		if session === activeConnection {
-			try await disconnect()
-		} else {
-			await disconnectAdditionalRadio(session.device.id, byUser: true)
-		}
+		await disconnectRadio(session.device.id)
+	}
+
+	/// With the first radio disconnected by the user, the connected radio that stands in for it:
+	/// the one window shows it (T314), and it's the preferred radio from then on (review V12 Y3).
+	/// The first by name, so both are the same radio.
+	var connectedRadioAfterFirst: Device? {
+		additionalRadioDevices.first { $0.connectionState == .connected }
 	}
 
 	/// Whether `session` is the only radio connected: a connect that does the app's own work

@@ -97,8 +97,8 @@ extension AccessoryManager {
 			return RadioWindow(deviceId: stored)
 		}
 		if activeConnection == nil, userRequestedConnectionCancellation, !firstRadioReleasedForUpdate,
-		   let other = additionalRadios.values.first(where: { $0.device.connectionState == .connected }) {
-			return RadioWindow(deviceId: other.device.id)
+		   let other = connectedRadioAfterFirst {
+			return RadioWindow(deviceId: other.id)
 		}
 		return .firstRadio
 	}

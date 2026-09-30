@@ -431,6 +431,8 @@ describes it well enough to rebuild.
   nodes stay; with B on another preset, the nodes only B heard go. Remove This Radio on B: B
   disconnects, isn't reconnected, and no longer appears as one of your radios.
 - [ ] Clear App Data with A and B connected: the confirmation names both, both disconnect.
+- [ ] Disconnect A (connected first) with B connected, then relaunch: B connects and A stays off
+  (T352). With only A, Disconnect and relaunch: A connects again, as on `main`.
 - [ ] A (connected first) out of range for minutes: B stays as it is, the window keeps showing A as
   reconnecting (nothing takes its place, D-19), A comes back on its own when it's in range, and the
   phone's position keeps going to B meanwhile.

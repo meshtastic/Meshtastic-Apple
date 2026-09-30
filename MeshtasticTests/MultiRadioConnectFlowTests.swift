@@ -458,7 +458,28 @@ struct MultiRadioConnectFlowTests {
 		let firstNum = Int64(radios.firstNum)
 		let first = try PersistenceController.shared.context.fetch(FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == firstNum })).first
 		#expect(first?.autoConnect == false, "a radio the user disconnected isn't brought back")
+		#expect(PreferredRadio.peripheralId == radios.secondDevice.id.uuidString, "nor at the next launch: the other is the preferred radio")
+		#expect(PreferredRadio.nodeNum == Int64(radios.secondNum))
 		await manager.disconnectRadio(radios.secondDevice.id)
+	}
+
+	@Test("Disconnect on the only radio, from Shortcuts too, leaves it the preferred radio, as on main")
+	func disconnectOnlyRadioStaysPreferred() async throws {
+		let saved = SavedDefaults()
+		defer { saved.restore() }
+		let num = uniqueNodeNum()
+		let manager = makeManager(ScriptedTransport(radio: ScriptedRadio(nodeNum: num)))
+		let onlyDevice = device()
+		try await manager.connect(to: onlyDevice)
+		#expect(PreferredRadio.peripheralId == onlyDevice.id.uuidString)
+
+		try await manager.disconnectRadio(nodeNum: Int64(num))
+
+		#expect(manager.activeConnection == nil)
+		#expect(PreferredRadio.peripheralId == onlyDevice.id.uuidString)
+		let radioNum = Int64(num)
+		let stored = try PersistenceController.shared.context.fetch(FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == radioNum })).first
+		#expect(stored?.autoConnect == false, "the same as Disconnect in Connect")
 	}
 
 	@Test("Resetting the first radio disconnects it to come back, and leaves the other as it is")

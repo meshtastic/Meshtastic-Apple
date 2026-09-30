@@ -1284,13 +1284,18 @@ func backupCurrentAndRestoreDatabase(
 
 /// Disconnect on the radio the app connected first (feature 021): it disconnects as a single
 /// radio does, and isn't remembered, so it doesn't come straight back. The other radios stay as
-/// they are; nothing takes its place (D-19).
+/// they are; nothing takes its place (D-19). With another radio connected, that one becomes the
+/// preferred radio, so the next launch doesn't bring this one back either, as for any other radio
+/// (review V12 Y3); with one radio it stays the preferred one, as on `main`.
 @MainActor
 func disconnectFirstRadio(accessoryManager: AccessoryManager) async throws {
 	if let previousNum = accessoryManager.activeConnection?.nodeNum {
 		await MeshPackets.shared.setRadioAutoConnect(nodeNum: previousNum, false)
 	}
 	try await accessoryManager.disconnect()
+	if let other = accessoryManager.connectedRadioAfterFirst {
+		PreferredRadio.set(other)
+	}
 }
 
 // MARK: - Node Switch Helper
