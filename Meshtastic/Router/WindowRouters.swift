@@ -112,6 +112,13 @@ final class WindowRouters {
 			openWindowHandler(RadioWindow(deviceId: deviceId))
 			return
 		}
+		// A link about no radio with no window open, on the Mac: a connected radio's window, since
+		// the Connect window shows no router (review V12 Y4).
+		if let openWindowHandler, radio == nil, entries.isEmpty, let deviceId = manager.connectedRadios.first?.id {
+			pendingLinks[deviceId] = url
+			openWindowHandler(RadioWindow(deviceId: deviceId))
+			return
+		}
 		let chosen = Self.fallback(windows: windows.map(\.window), lastActive: lastActive)
 		(entries.first { $0.window == chosen }?.router ?? fallback).route(url: url)
 	}

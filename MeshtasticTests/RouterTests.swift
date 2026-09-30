@@ -426,6 +426,25 @@ struct WindowRoutersTests {
 		#expect(registry.pendingLinks.isEmpty)
 	}
 
+	@Test("On the Mac, a link about no radio with no window open opens a connected radio's window")
+	func radiolessLinkOpensAWindow() throws {
+		let fallback = Router()
+		let registry = WindowRouters(fallback: fallback)
+		let manager = AccessoryManager(transports: [])
+		var opened: [RadioWindow] = []
+		registry.openWindowHandler = { opened.append($0) }
+		let url = try #require(URL(string: "meshtastic:///settings/debugLogs"))
+
+		registry.route(url: url, manager: manager)
+		#expect(opened.isEmpty, "nothing connected: no window to show it in")
+
+		let device = Device(id: UUID(), name: "A", transportType: .tcp, identifier: "a.local:4403")
+		manager.activeConnection = RadioSession(device: device, connection: ScriptedRadio(nodeNum: 0x1234))
+		registry.route(url: url, manager: manager)
+		#expect(opened == [RadioWindow(deviceId: device.id)])
+		#expect(registry.pendingLinks[device.id] == url)
+	}
+
 	@Test("Windows register and leave; with one open, every link uses its router")
 	func registry() throws {
 		let fallback = Router()
