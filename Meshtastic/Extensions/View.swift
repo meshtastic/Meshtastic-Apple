@@ -29,6 +29,23 @@ extension View {
 		}
 	}
 
+	/// Re-anchor after keyboard and composer layout changes, including the toolbar's
+	/// delayed collapse after sending. A message-change callback can run before that
+	/// collapse, leaving the latest bubble outside the final viewport.
+	@ViewBuilder
+	func conversationViewportAnchor(_ scrollView: ScrollViewProxy) -> some View {
+		if #available(iOS 18, macOS 15, *) {
+			self.onGeometryChange(for: CGFloat.self) { geometry in
+				geometry.size.height
+			} action: { oldHeight, newHeight in
+				guard oldHeight > 0, newHeight > 0, oldHeight != newHeight else { return }
+				scrollView.scrollTo("bottomAnchor", anchor: .bottom)
+			}
+		} else {
+			self
+		}
+	}
+
 	@ViewBuilder func `if`<Content: View>(_ condition: @autoclosure () -> Bool, transform: (Self) -> Content) -> some View {
 		if condition() {
 			transform(self)

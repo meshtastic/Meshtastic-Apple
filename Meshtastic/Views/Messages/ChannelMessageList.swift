@@ -272,6 +272,7 @@ struct ChannelMessageList: View {
 			}
 			.defaultScrollAnchor(.bottom)
 			.defaultScrollAnchorBottomSizeChanges()
+			.conversationViewportAnchor(scrollView)
 			.scrollDismissesKeyboard(.immediately)
 			.onAppear {
 				DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
