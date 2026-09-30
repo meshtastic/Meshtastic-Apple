@@ -434,8 +434,11 @@ private extension UserMessageList {
 		if let chosenRadio, conversationRadios.contains(chosenRadio) {
 			return chosenRadio
 		}
-		if let focused = accessoryManager.nodeNum(for: windowRadio), conversationRadios.contains(focused) {
-			return focused
+		// The window's radio, also while it's off: its thread stays, and a reply fails rather than
+		// going from another radio (review V10 R10-3).
+		let windowNum = accessoryManager.nodeNum(for: windowRadio) ?? accessoryManager.radioNodeNum(for: windowRadio)
+		if conversationRadios.contains(windowNum) {
+			return windowNum
 		}
 		return conversationRadios.first
 	}
@@ -446,7 +449,7 @@ private extension UserMessageList {
 	}
 
 	/// The radio replies go out through: the shown thread's, else the window's radio (D-19).
-	var sendingRadio: Int64? { radioFilter ?? accessoryManager.nodeNum(for: windowRadio) }
+	var sendingRadio: Int64? { radioFilter ?? accessoryManager.sendingRadio(for: windowRadio) }
 
 	var showsRadioPicker: Bool { conversationRadios.count > 1 }
 

@@ -88,6 +88,15 @@ extension AccessoryManager {
 		}
 	}
 
+	/// Fills `knownNodeNums` from the store's radios, at launch (review V11 W7).
+	func seedKnownNodeNums() async {
+		for (peripheralId, nodeNum) in await MeshPackets.shared.radioPeripheralIds() {
+			if let id = UUID(uuidString: peripheralId), knownNodeNums[id] == nil {
+				knownNodeNums[id] = nodeNum
+			}
+		}
+	}
+
 	/// Releases radio `deviceId` for a firmware update (review V11 W1): its link closes so the
 	/// updater can reach it in update mode. Its window stays, it stays remembered, and the other
 	/// radios are left as they are. `reclaimRadioAfterUpdate(_:)` brings it back.

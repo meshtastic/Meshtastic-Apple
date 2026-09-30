@@ -159,6 +159,14 @@ extension MeshPackets {
 		return (try? modelContext.fetch(descriptor))?.first?.peripheralId
 	}
 
+	/// Every radio in the store with the peripheral id it was last connected on.
+	func radioPeripheralIds() -> [(String, Int64)] {
+		((try? modelContext.fetch(FetchDescriptor<MyInfoEntity>())) ?? []).compactMap { myInfo in
+			guard let peripheralId = myInfo.peripheralId, !peripheralId.isEmpty, myInfo.myNodeNum != 0 else { return nil }
+			return (peripheralId, myInfo.myNodeNum)
+		}
+	}
+
 	func setRadioAutoConnect(nodeNum: Int64, _ autoConnect: Bool) {
 		var descriptor = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == nodeNum })
 		descriptor.fetchLimit = 1

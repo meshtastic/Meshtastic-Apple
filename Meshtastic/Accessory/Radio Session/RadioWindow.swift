@@ -133,8 +133,8 @@ extension AccessoryManager {
 	/// The node number of `window`'s radio, also while it's disconnected. For `.focused` the
 	/// preferred radio's, `PreferredRadio.nodeNum`.
 	func radioNodeNum(for window: RadioWindow) -> Int64 {
-		guard window.deviceId != nil else { return PreferredRadio.nodeNum }
-		return session(for: window)?.nodeNum ?? 0
+		guard let deviceId = window.deviceId else { return PreferredRadio.nodeNum }
+		return session(for: window)?.nodeNum ?? knownNodeNums[deviceId] ?? 0
 	}
 
 	/// The radio a window's sends go through: nil, the radio connected first, for `.focused`;
@@ -190,7 +190,11 @@ extension AccessoryManager {
 	/// `checkIsVersionSupported` for `window`'s radio: its own reported firmware
 	/// (`isVersionSupported(forVersion:on:)`); for `.focused`, exactly `checkIsVersionSupported`.
 	func isVersionSupported(forVersion version: String, for window: RadioWindow) -> Bool {
-		guard window.deviceId != nil, let session = session(for: window) else { return checkIsVersionSupported(forVersion: version) }
+		guard window.deviceId != nil else { return checkIsVersionSupported(forVersion: version) }
+		guard let session = session(for: window) else {
+			// Disconnected: the version it last reported, not another radio's (review V11).
+			return Self.isFirmwareSupported(knownFirmwareVersions[radioNodeNum(for: window)], minimum: version)
+		}
 		return isVersionSupported(forVersion: version, on: session)
 	}
 

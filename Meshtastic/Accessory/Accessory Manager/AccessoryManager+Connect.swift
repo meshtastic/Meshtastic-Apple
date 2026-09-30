@@ -295,6 +295,9 @@ extension AccessoryManager {
 						Logger.transport.info("[Accessory] Event stream closed")
 					}
 					attempt.session = session
+					if let num = device.num, num != 0 {
+						self.knownNodeNums[device.id] = num
+					}
 					if attempt.isFocused {
 						self.activeConnection = session
 						self.activeDeviceNum = device.num

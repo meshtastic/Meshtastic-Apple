@@ -157,6 +157,8 @@ struct MeshtasticAppleApp: App {
 			// Before anything connects: the radio the store's old rows belong to (T193).
 			BackfillOwner.recordIfNeeded()
 			let manager = accessoryManager
+			// Each radio's node number, for a window whose radio isn't connected yet (review V11 W7).
+			Task { @MainActor in await manager.seedKnownNodeNums() }
 			let mergesBackups = NodeBackupManager.shared.unmergedBackups.contains(where: { ($0.mergeAttempts ?? 0) < NodeBackupManager.maxMergeAttempts })
 			Task { @MainActor in
 				let packets = MeshPackets.shared

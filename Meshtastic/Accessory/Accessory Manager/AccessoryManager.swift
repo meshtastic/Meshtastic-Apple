@@ -291,6 +291,9 @@ class AccessoryManager: ObservableObject {
 	/// next connect starts or it's disconnected by the user (T300). The focused radio's is
 	/// `lastConnectionError`.
 	@Published var radioConnectErrors: [UUID: Error] = [:]
+	/// Each radio's node number by device id, kept after it disconnects, so a window whose radio
+	/// is off still knows which radio it is (review V11 W7). Seeded at launch from the store.
+	var knownNodeNums: [UUID: Int64] = [:]
 	/// The radio the one window shows (iPhone, iPad), set by `OneWindowRadioScope`: it isn't
 	/// asked about by name, since the window shows its own sheets (T314).
 	var oneWindowShownRadio: UUID?
@@ -848,6 +851,9 @@ class AccessoryManager: ObservableObject {
 		guard let deviceId = deviceId ?? self.activeConnection?.device.id else {
 			Logger.transport.error("updateDevice<T> with nil deviceId")
 			return
+		}
+		if (key as AnyKeyPath) == \Device.num, let num = value as? Int64, num != 0 {
+			knownNodeNums[deviceId] = num
 		}
 		
 		// Update the active device if the UUID's match

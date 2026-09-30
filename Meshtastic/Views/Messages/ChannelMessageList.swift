@@ -384,19 +384,20 @@ private extension ChannelMessageList {
 	}
 
 	/// The radio the next message goes out through: the picked slot's, else the window's radio
-	/// (D-19), which for the one window is the focused radio as before.
+	/// (D-19), which for the one window on one radio is the radio as before. A window whose radio
+	/// is off sends through it and fails, never through another radio (review V10 R10-3).
 	var sendingRadio: Int64? {
-		sendingSlot?.radio ?? accessoryManager.nodeNum(for: windowRadio)
+		sendingSlot?.radio ?? accessoryManager.sendingRadio(for: windowRadio)
 	}
 
-	/// The slot the next message uses; nil (one radio with the channel) is the window's radio.
+	/// The slot the next message uses; nil (one radio with the channel, or the window's radio off)
+	/// is the window's radio.
 	var sendingSlot: ChannelSlot? {
 		guard channelSlots.count > 1 else { return nil }
 		let windowNum = accessoryManager.nodeNum(for: windowRadio)
 		return channelSlots.first { $0.radio == chosenRadio }
 			?? channelSlots.first { $0.radio == windowNum }
 			?? channelSlots.first { $0.radio == myInfo.myNodeNum }
-			?? channelSlots.first
 	}
 
 	func refreshChannelRadios() {

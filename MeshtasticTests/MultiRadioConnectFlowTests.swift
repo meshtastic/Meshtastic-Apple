@@ -228,6 +228,24 @@ struct MultiRadioConnectFlowTests {
 		#expect(manager.activeConnection == nil)
 	}
 
+	@Test("A window whose radio is off still knows which radio it is, and sends through it")
+	func windowKeepsItsRadioWhileOff() async throws {
+		let saved = SavedDefaults()
+		defer { saved.restore() }
+		let radios = try await connectTwoRadios()
+		let manager = radios.manager
+		let second = RadioWindow(deviceId: radios.secondDevice.id)
+
+		await manager.disconnectRadio(radios.secondDevice.id)
+		#expect(manager.session(for: second) == nil)
+
+		#expect(manager.radioNodeNum(for: second) == Int64(radios.secondNum), "Settings keeps its radio")
+		#expect(manager.sendingRadio(for: second) == Int64(radios.secondNum), "a send fails rather than using the other radio")
+		#expect(!manager.isVersionSupported(forVersion: "9.0.0", for: second), "its own firmware, not the other radio's")
+		#expect(manager.isVersionSupported(forVersion: "2.5.0", for: second))
+		try await manager.disconnect()
+	}
+
 	@Test("A firmware update releases only its radio, keeps its window, and brings it back")
 	func releaseForUpdate() async throws {
 		let saved = SavedDefaults()
