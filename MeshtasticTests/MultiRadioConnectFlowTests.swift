@@ -263,6 +263,117 @@ struct MultiRadioConnectFlowTests {
 		await manager.disconnectRadio(thirdDevice.id)
 	}
 
+	/// Lets a test's manager start discovery, as the app's does, and stops it afterwards.
+	private func allowDiscovery(_ manager: AccessoryManager) {
+		manager.isSwitchingDevices = false
+	}
+
+	private func endDiscovery(_ manager: AccessoryManager) {
+		manager.isSwitchingDevices = true
+		manager.rememberedRadioFallbackTask?.cancel()
+		manager.stopDiscovery()
+		manager.additionalRadioReconnects.values.forEach { $0.cancel() }
+	}
+
+	@Test("After Disconnect on the first radio, the radio kept connected comes back as the first radio when it drops, once it's seen")
+	func keptRadioComesBackAsFirst() async throws {
+		let saved = SavedDefaults()
+		defer { saved.restore() }
+		let radios = try await connectTwoRadios()
+		let manager = radios.manager
+		try await disconnectFirstRadio(accessoryManager: manager)
+		// B drops, not by the user: no radio is left for it to join.
+		await manager.disconnectAdditionalRadio(radios.secondDevice.id)
+		#expect(manager.connectedRadioCount == 0)
+		allowDiscovery(manager)
+
+		// Not seen by discovery: its loop doesn't connect it blind.
+		manager.scheduleAdditionalRadioReconnect(radios.secondDevice, firstDelay: .zero)
+		try await Task.sleep(for: .milliseconds(300))
+		#expect(manager.activeConnection == nil)
+		#expect(manager.additionalRadioReconnects[radios.secondDevice.id] != nil, "still waiting for it")
+
+		// Seen: back as the first radio.
+		manager.droppedRadioSeen(radios.secondDevice)
+		try await waitUntil { manager.activeConnection?.device.id == radios.secondDevice.id }
+		#expect(manager.activeConnection?.device.id == radios.secondDevice.id)
+		#expect(PreferredRadio.peripheralId == radios.secondDevice.id.uuidString)
+		let firstNum = Int64(radios.firstNum)
+		let first = try PersistenceController.shared.context.fetch(FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == firstNum })).first
+		#expect(first?.autoConnect == false, "the radio the user disconnected stays off")
+		endDiscovery(manager)
+		try await manager.disconnect()
+	}
+
+	@Test("With the first radio dropped, the other radio dropping comes back as the first radio, and the first is remembered to join it")
+	func lastRadioComesBackAsFirst() async throws {
+		let saved = SavedDefaults()
+		defer { saved.restore() }
+		let radios = try await connectTwoRadios()
+		let manager = radios.manager
+		// The first radio drops (not the user), then the other one.
+		try await manager.closeConnection()
+		await manager.disconnectAdditionalRadio(radios.secondDevice.id)
+		#expect(manager.connectedRadioCount == 0)
+		allowDiscovery(manager)
+		manager.devices = [radios.secondDevice]
+
+		manager.scheduleAdditionalRadioReconnect(radios.secondDevice, firstDelay: .zero)
+		try await waitUntil { manager.activeConnection?.device.id == radios.secondDevice.id }
+		#expect(manager.activeConnection?.device.id == radios.secondDevice.id)
+		let firstNum = Int64(radios.firstNum)
+		let first = try PersistenceController.shared.context.fetch(FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == firstNum })).first
+		#expect(first?.autoConnect == true, "the first radio joins when it's back, as the fallback has it")
+		endDiscovery(manager)
+		for deviceId in Array(manager.additionalRadios.keys) {
+			await manager.disconnectRadio(deviceId)
+		}
+		try await manager.disconnect()
+	}
+
+	@Test("A radio that dropped comes back as the first radio after the user disconnected the first one, which stays off")
+	func droppedRadioComesBackWithoutTheDisconnectedOne() async throws {
+		let saved = SavedDefaults()
+		defer { saved.restore() }
+		let radios = try await connectTwoRadios()
+		let manager = radios.manager
+		// B drops first; then the user disconnects A, the preferred radio, with nothing else connected.
+		await manager.disconnectAdditionalRadio(radios.secondDevice.id)
+		try await disconnectFirstRadio(accessoryManager: manager)
+		#expect(PreferredRadio.peripheralId == radios.firstDevice.id.uuidString, "no other radio was connected to take it")
+		allowDiscovery(manager)
+		manager.devices = [radios.secondDevice]
+
+		manager.scheduleAdditionalRadioReconnect(radios.secondDevice, firstDelay: .zero)
+		try await waitUntil { manager.activeConnection?.device.id == radios.secondDevice.id }
+		#expect(manager.activeConnection?.device.id == radios.secondDevice.id)
+		let firstNum = Int64(radios.firstNum)
+		let first = try PersistenceController.shared.context.fetch(FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == firstNum })).first
+		#expect(first?.autoConnect == false, "not remembered: the user disconnected it")
+		endDiscovery(manager)
+		try await manager.disconnect()
+	}
+
+	@Test("A dropped radio waits rather than taking the first place during a switch, an OTA, an update of the first radio, or with another radio connected")
+	func droppedRadioWaitsWhenItShould() {
+		let manager = AccessoryManager(transports: [])
+		let dropped = device()
+		#expect(manager.mayConnectAsFirst(dropped))
+		manager.isSwitchingDevices = true
+		#expect(!manager.mayConnectAsFirst(dropped))
+		manager.isSwitchingDevices = false
+		manager.otaInProgress = true
+		#expect(!manager.mayConnectAsFirst(dropped))
+		manager.otaInProgress = false
+		manager.firstRadioReleasedForUpdate = true
+		#expect(!manager.mayConnectAsFirst(dropped))
+		manager.firstRadioReleasedForUpdate = false
+		var other = device()
+		other.num = 0x0A0A
+		manager.additionalRadios[other.id] = RadioSession(device: other, connection: ScriptedRadio(nodeNum: 0x0A0A))
+		#expect(!manager.mayConnectAsFirst(dropped), "it joins the connected radio instead")
+	}
+
 	@Test("A window whose radio is off still knows which radio it is, and sends through it")
 	func windowKeepsItsRadioWhileOff() async throws {
 		let saved = SavedDefaults()

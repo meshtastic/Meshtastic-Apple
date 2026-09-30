@@ -274,7 +274,9 @@ extension AccessoryManager {
 					if let providedConnection = withConnection {
 						connection = providedConnection
 					} else if attempt.isFirst {
-						connection = try await transport.connect(to: device)
+						// Bounded when asked, as the other radios' connects are: a radio alongside
+						// brought back as the first one (review V13 Z1). Without a bound, as before.
+						connection = try await self.connectTransport(transport, to: device, within: connectTimeout)
 					} else {
 						connection = try await self.connectTransport(transport, to: device, within: connectTimeout)
 						// The connect can take a while (BLE waits for the radio). Re-check what it assumed.

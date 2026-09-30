@@ -167,6 +167,19 @@ struct MultiRadioConnectLifecycleTests {
 		#expect(!manager.handshakeGate.isBusy)
 	}
 
+	@Test("A connect as the first radio with a bound gives up on a radio that never answers, as the others' do")
+	func boundedFirstConnect() async throws {
+		let manager = AccessoryManager(transports: [HangingTransport()])
+		manager.isSwitchingDevices = true
+		manager.context = PersistenceController.shared.context
+		let absent = device("Absent")
+		let started = ContinuousClock.now
+		try await manager.connect(to: absent, retries: 1, connectTimeout: .milliseconds(200))
+		#expect(ContinuousClock.now - started < .seconds(3), "the bound, not the 5 s step timeout")
+		#expect(manager.activeConnection == nil)
+		#expect(!manager.handshakeGate.isBusy)
+	}
+
 	@Test("A remembered BLE radio resolves by its peripheral id; an unknown TCP one doesn't")
 	func rememberedRadioResolution() {
 		let manager = AccessoryManager(transports: [])

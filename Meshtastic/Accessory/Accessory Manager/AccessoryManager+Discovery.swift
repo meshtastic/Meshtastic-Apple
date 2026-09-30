@@ -92,6 +92,7 @@ extension AccessoryManager {
 								self.scheduleAdditionalRadioReconnect(newDevice, firstDelay: .zero)
 							}
 						}
+						self.droppedRadioSeen(newDevice)
 						
 					case .deviceLost(let deviceId):
 						devices = devices.filter { $0.id != deviceId }

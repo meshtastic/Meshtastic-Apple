@@ -439,6 +439,9 @@ describes it well enough to rebuild.
 - [ ] Clear App Data with A and B connected: the confirmation names both, both disconnect.
 - [ ] Disconnect A (connected first) with B connected, then relaunch: B connects and A stays off
   (T352). With only A, Disconnect and relaunch: A connects again, as on `main`.
+- [ ] Disconnect A, keep B, then make B reboot (save a LoRa setting in B's window): B comes back on
+  its own, as the first radio, and A stays off (T360). Same with A dropped and away instead: B
+  comes back, and A joins it once it's back in range.
 - [ ] A (connected first) out of range for minutes: B stays as it is, the window keeps showing A as
   reconnecting (nothing takes its place, D-19), A comes back on its own when it's in range, and the
   phone's position keeps going to B meanwhile.

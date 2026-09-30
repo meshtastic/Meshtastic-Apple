@@ -354,7 +354,7 @@ each time. To resume: the first unchecked item.
 All re-checked in the files and holding (2026-09-30); the owner approved. One commit each, full
 suite and a Mac build each time. To resume: the first unchecked item.
 
-- [ ] T360 Z1: a radio alongside that drops with no other radio connected or connecting comes back as the first radio once discovery sees it.
+- [X] T360 Z1: a radio alongside that drops with no other radio connected or connecting comes back as the first radio once discovery sees it. Its reconnect loop starts discovery and connects it as the first radio when discovery has it (`mayConnectAsFirst`: not during a switch, an OTA or an update of the first radio); discovery does it at once when it sees it (`droppedRadioSeen`). The loop now waits out a connect of its radio instead of ending on it, so a first connect that fails is tried again. As the launch fallback does, the preferred radio is remembered to join, unless the user disconnected it. A connect as the first radio takes a bound when given one (`connectTransport`), as the other radios' do; existing callers pass none. Verified: `MultiRadioConnectFlowTests.keptRadioComesBackAsFirst`, `.lastRadioComesBackAsFirst`, `.droppedRadioComesBackWithoutTheDisconnectedOne`, `.droppedRadioWaitsWhenItShould`, `MultiRadioConnectLifecycleTests.boundedFirstConnect`; reboot on the device checklist.
 - [ ] T361 Z2: Remove This Radio on the first radio with another connected makes that one the preferred radio, as Disconnect does (T352).
 - [ ] T362 R12-1: a Choose Radios sheet that was asked for but never came up doesn't hold the other sheets, gates and prompts back, and is asked for again.
 
