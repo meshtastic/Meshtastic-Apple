@@ -307,6 +307,9 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	/// timeout) past teardown, wasting network and pinning the hardware-list spinner.
 	var deviceRefreshTask: Task<Void, Never>?
 	var connectionStepper: SequentialSteps?
+	/// Reserved synchronously at connect() entry, before any transport can suspend.
+	var connectInFlight = false
+	private var preferredConnectPending = false
 	
 	// Flash counters — NOT @Published to avoid triggering re-renders of all observing views.
 	// RXTXIndicatorWidget observes these via onChange polling.
@@ -363,7 +366,8 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	/// only fire after this much silence. BLE does not use this at all (Core Bluetooth manages the
 	/// link); see `Transport.requiresPeriodicHeartbeat`.
 	static let heartbeatInterval: TimeInterval = 15.0
-	private var isClosingConnection = false
+	private(set) var isClosingConnection = false
+	private var closeConnectionWaiters: [CheckedContinuation<Void, Never>] = []
 
 	init(transports: [any Transport] = [BLETransport(), TCPTransport()]) {
 		self.transports = transports
@@ -424,9 +428,11 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		// A firmware update owns the radio: reconnecting mid-update fights the
 		// updater for the device while it is rebooting into its bootloader.
 		if otaInProgress { return }
-		if !self.isConnected && !self.isConnecting,
+		if !self.isConnected && !self.isConnecting && !connectInFlight && !preferredConnectPending,
 		   let preferredDevice = device ?? self.devices.first(where: { $0.id.uuidString == UserDefaults.preferredPeripheralId }) {
+			preferredConnectPending = true
 			Task {
+				defer { self.preferredConnectPending = false }
 				try await self.connect(to: preferredDevice)
 			}
 		}
@@ -590,13 +596,18 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	// Fully tears down a connection and sets up the AccessoryManager for the next.
 	// If you are calling this in response to an error, then you should have
 	// exposed the error to the UI or handled the error prior to calling this.
-	func closeConnection() async throws {
-		guard !isClosingConnection else {
-			Logger.transport.debug("[AccessoryManager] closeConnection ignored while teardown is already in progress")
+	func closeConnection(transportAlreadyDisconnected: Bool = false) async throws {
+		if isClosingConnection {
+			await withCheckedContinuation { closeConnectionWaiters.append($0) }
 			return
 		}
 		isClosingConnection = true
-		defer { isClosingConnection = false }
+		defer {
+			isClosingConnection = false
+			let waiters = closeConnectionWaiters
+			closeConnectionWaiters.removeAll()
+			waiters.forEach { $0.resume() }
+		}
 
 		Logger.transport.debug("[AccessoryManager] received disconnect request")
 
@@ -611,6 +622,15 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		if let activeConnection {
 			updateDevice(deviceId: activeConnection.device.id, key: \.connectionState, value: .disconnected)
 			self.activeConnection = nil
+			// Finish transport teardown before cancelling its stream or allowing another dial.
+			// disconnect() already did this for the user-requested path.
+			if !transportAlreadyDisconnected {
+				do {
+					try await activeConnection.connection.disconnect(withError: nil, shouldReconnect: false)
+				} catch {
+					Logger.transport.error("[AccessoryManager] Transport disconnect failed: \(error, privacy: .public)")
+				}
+			}
 		}
 		self.activeDeviceNum = nil
 		self.firmwareUpdateRequired = false
@@ -702,7 +722,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 				disconnectError = error
 			}
 		}
-		try await closeConnection()
+		try await closeConnection(transportAlreadyDisconnected: true)
 		updateState(.discovering)
 
 		if let disconnectError {
@@ -835,7 +855,12 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			updateDevice(deviceId: deviceId, key: \.rssi, value: rssi)
 			
 		case .error(let error), .errorWithoutReconnect(let error):
+			guard !shouldIgnoreTransientEvent else {
+				Logger.transport.debug("[Accessory] Ignoring error event during disconnect teardown")
+				return
+			}
 			Task {
+				guard !isClosingConnection && !userRequestedConnectionCancellation && activeConnection != nil else { return }
 				// Figure out if we'll reconnect
 				if case .errorWithoutReconnect = event {
 					shouldAutomaticallyConnectToPreferredPeripheralAfterError = false
@@ -871,6 +896,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 				return
 			}
 			Task {
+				guard !isClosingConnection && !userRequestedConnectionCancellation && activeConnection != nil else { return }
 				// This is user-initiated, so don't reconnect
 				shouldAutomaticallyConnectToPreferredPeripheralAfterError = false
 				try? await self.closeConnection()
